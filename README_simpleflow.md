@@ -73,13 +73,13 @@ const account=account[0]
 
 const asset=ocean.assets.loadFromDataToken(erc20_address)
 
-const file=asset.download()
+const file=asset.download(account)
 
 ```
 where
 ```javascript
 class assets{
-    async function download(asset){
+    async function download(account){
         const publisher = Ocean.publisher.loadFromERC20(ERC20address)
         const transaction = publisher.prepare(asset.ERC20address)
         await account.signTransaction(transaction)
