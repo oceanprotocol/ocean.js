@@ -63,7 +63,7 @@ dataToken.transfer(1,bob_address, account[0])
 
 ## 4. Bob consumes dataset
 
-Now, we are Bob :)
+Now, you are Bob :)
 
 ```javascript
 const ocean = Ocean(rpc_url='https://pacific.oceanprotocol.com',factoryABI=Ocean.factoryABI,dataTokenABI=Ocean.dataTokenABI,factoryAddress='0x123',web3Provider: web3)
@@ -79,13 +79,20 @@ const file=asset.download(account)
 where
 ```javascript
 class assets{
+    let ERC20address;
+    
+    function loadFromDataToken(erc20_address){
+        this.ERC20address=erc20_address
+    }
+
     async function download(account){
-        const publisher = Ocean.publisher.loadFromERC20(ERC20address)
-        const transaction = publisher.prepare(asset.ERC20address)
+        const publisher = Ocean.publisher.loadFromERC20(this.ERC20address)
+        const transaction = publisher.prepare(this.ERC20address)
         await account.signTransaction(transaction)
-        const file=await publisher.download(asset.ERC20address)
+        const file=await publisher.download(this.ERC20address)
         return file
     }
 }
 ```
 
+Disclaimer: this is a logical flow only
