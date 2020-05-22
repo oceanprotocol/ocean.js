@@ -47,10 +47,11 @@ const config={
 const ocean = Ocean(alice_config)
 const account = await ocean.accounts.list()[0]
 const myToken = ocean.datatoken.create('localhost:8030',account)
-console.log(myToken.getAddress())
+const dt_address=myToken.getAddress()
+console.log(dt_address)
 ```
 
-## 2.Alice hosts a dataset
+## 2. Alice hosts the dataset
 
 A locally providerService is required, which will serve just one file for this demo.
 Let's create the file to be shared:
@@ -82,7 +83,7 @@ myToken.transfer(1,BobAddress)
 ## 5. Bob consumes dataset
 
 Now, you are Bob :)
-Given then the provider serves only one file, it will serve the same file for any ERC20 DT 
+
 
 ```javascript
 
