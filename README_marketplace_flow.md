@@ -1,21 +1,4 @@
- Alice -> Alice: create new ID
-    Alice -> Alice: define PublisherService in DDO
-    Alice -> Alice : initialize MetaData with services
-    Alice -> Library: publish asset
-    Library -> Provider: get ID for URL
-    Provider -> Library : URL
-    Library -> Alice: sign DeployDToken transaction
-    Alice -> Library: sign DeployDToken
-    Library -> contracts: DeployDToken(blob)
-    contracts -> Library : Deployed: (0x12345)
-    Library -> Library: update MetaData ERC20 with DT address
-else import MetaData
-    Alice -> Library: import MetaData
-
-
-
-
-# ocean-lib
+ # ocean-lib
 
 
 `ocean-lib-js` is a Javascript/Typescript library to privately & securely publish, exchange, and consume data. With it, you can:
