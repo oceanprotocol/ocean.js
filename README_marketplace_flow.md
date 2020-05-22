@@ -99,8 +99,7 @@ myToken.mint(100)
 ```
 
 ## 4. Exchange of value : How Bob gets DT
-```
-
+```javascript
 const bob_config={
    network: 'rinkeby',
    privateKey:'1234ef21b864d2cc526dbdb2a120bd2874c36c9d0a1fb7f8c63d7f7a8b41de8f'  
@@ -117,9 +116,6 @@ const num_dt_needed = assets.getDtCost(serviceIndex)
 const {price, currency } = ocean.marketplace.getPrice(num_dt_needed,asset.dtAddress)
 bob_account.approve(price, currency, marketPlaceAddress)
 ocean.marketplace.buy(num_dt_needed,asset.dtAddress)
-
-
-
 ```
 
 ## 5. Bob consumes dataset
