@@ -94,7 +94,7 @@ const bob_ocean = Ocean(bob_config)
 
 
 const account = await bob_ocean.accounts.list()[0]
-const asset=bob_ocean.assets.get(dt_address)
+const asset=bob_ocean.assets.getFromDTAddress(dt_address)
 const file=asset.download(account)
 
 ```
