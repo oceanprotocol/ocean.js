@@ -39,26 +39,25 @@ For now, you're Alice:) Let's proceed.
 
 ```javascript
 const { Ocean, Logger } = require('@oceanprotocol/lib')
-//you can use default ABIs or use custom ones
-//you can use default factoryAddress or use default one, depending on the network (auto-determined)
-const ocean = Ocean(rpc_url='https://pacific.oceanprotocol.com',factoryABI=Ocean.factoryABI,dataTokenABI=Ocean.dataTokenABI,factoryAddress='0x123',web3Provider: web3)
-
-const accounts = await ocean.accounts.list()
-erc20_address = ocean.datatokens.deployNewDT(publisher_service_url='123.com',account[0])
+const config={
+   network: 'rinkeby',
+   privateKey:'8da4ef21b864d2cc526dbdb2a120bd2874c36c9d0a1fb7f8c63d7f7a8b41de8f'
+}
+const ocean = Ocean(config)
+const account = await ocean.accounts.list()[0]
+const myToken = ocean.datatoken.create('123.com',account)
 ```
 
 ## 2. Alice mints 100 tokens
 
 ```javascript
-const dataToken=Ocean.datatokens.loadContract(erc20_address)
-dataToken.mint(100,account[0])
+myToken.mint(100)
 ```
 
 ## 3. Alice transfers 1 token to Bob
 
 ```javascript
-//transfer amount to destination using account
-dataToken.transfer(1,bob_address, account[0])
+myToken.transfer(1,BobAddress)
 ```
 
 ## 4. Bob consumes dataset
@@ -66,14 +65,18 @@ dataToken.transfer(1,bob_address, account[0])
 Now, you are Bob :)
 
 ```javascript
-const ocean = Ocean(rpc_url='https://pacific.oceanprotocol.com',factoryABI=Ocean.factoryABI,dataTokenABI=Ocean.dataTokenABI,factoryAddress='0x123',web3Provider: web3)
 
-const accounts = await ocean.accounts.list()
-const account=account[0]
+const config={
+   network: 'rinkeby',
+   privateKey:'8da4ef21b864d2cc526dbdb2a120bd2874c36c9d0a1fb7f8c63d7f7a8b41de8f'
+}
+const ocean = Ocean(config)
 
-const asset=ocean.assets.loadFromDataToken(erc20_address)
 
-const file=asset.download(account)
+const account = await ocean.accounts.list()[0]
+const myToken = ocean.datatoken.load(erc20_address)
+const asset=ocean.assets.loadFromDataToken(myToken)
+const file=ocean.assets.download(asset,account)
 
 ```
 where
