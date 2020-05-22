@@ -41,61 +41,62 @@ For now, you're Alice:) Let's proceed.
 const { Ocean, Logger } = require('@oceanprotocol/lib')
 const config={
    network: 'rinkeby',
-   privateKey:'8da4ef21b864d2cc526dbdb2a120bd2874c36c9d0a1fb7f8c63d7f7a8b41de8f'
+   privateKey:'8da4ef21b864d2cc526dbdb2a120bd2874c36c9d0a1fb7f8c63d7f7a8b41de8f',
+   providerUri: 'localhost:8030'  //this is the provider URL
 }
-const ocean = Ocean(config)
+const ocean = Ocean(alice_config)
 const account = await ocean.accounts.list()[0]
-const myToken = ocean.datatoken.create('123.com',account)
+const myToken = ocean.datatoken.create('localhost:8030',account)
+console.log(myToken.getAddress())
 ```
 
-## 2. Alice mints 100 tokens
+## 2.Alice hosts a dataset
+
+A locally providerService is required, which will serve just one file for this demo.
+Let's create the file to be shared:
+```
+touch /var/mydata/myFolder1/file
+````
+
+Run the providerService:
+(given that ERC20 contract address from the above is 0x1234)
+
+```
+ENV DT="{'0x1234':'/var/mydata/myFolder1'}"
+docker run @oceanprotocol/provider-py -e CONFIG=DT
+```
+
+
+## 3. Alice mints 100 tokens
 
 ```javascript
 myToken.mint(100)
 ```
 
-## 3. Alice transfers 1 token to Bob
+## 4. Alice transfers 1 token to Bob
 
 ```javascript
 myToken.transfer(1,BobAddress)
 ```
 
-## 4. Bob consumes dataset
+## 5. Bob consumes dataset
 
 Now, you are Bob :)
+Given then the provider serves only one file, it will serve the same file for any ERC20 DT 
 
 ```javascript
 
-const config={
+const bob_config={
    network: 'rinkeby',
-   privateKey:'8da4ef21b864d2cc526dbdb2a120bd2874c36c9d0a1fb7f8c63d7f7a8b41de8f'
+   privateKey:'1234ef21b864d2cc526dbdb2a120bd2874c36c9d0a1fb7f8c63d7f7a8b41de8f'  
 }
-const ocean = Ocean(config)
+const bob_ocean = Ocean(bob_config)
 
 
-const account = await ocean.accounts.list()[0]
-const myToken = ocean.datatoken.load(erc20_address)
-const asset=ocean.assets.loadFromDataToken(myToken)
-const file=ocean.assets.download(asset,account)
+const account = await bob_ocean.accounts.list()[0]
+const asset=bob_ocean.assets.load(dt_address)
+const file=bob_ocean.assets.download(asset,account)
 
 ```
-where
-```javascript
-class assets{
-    let ERC20address;
-    
-    function loadFromDataToken(erc20_address){
-        this.ERC20address=erc20_address
-    }
 
-    async function download(account){
-        const publisher = Ocean.publisher.loadFromERC20(this.ERC20address)
-        const transaction = publisher.prepare(this.ERC20address)
-        await account.signTransaction(transaction)
-        const file=await publisher.download(this.ERC20address)
-        return file
-    }
-}
-```
 
-Disclaimer: this is a logical flow only
