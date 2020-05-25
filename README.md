@@ -3,7 +3,7 @@
 
 <h1 align="center">Ocean-js</h1>
 
-> 🦑 JavaScript client library for Ocean Protocol
+> JavaScript client library for Ocean Protocol
 > [oceanprotocol.com](https://oceanprotocol.com)
 
 This is in alpha state and you can expect running into problems. If you run into them, please open up a [new issue](/issues).
