@@ -2,7 +2,7 @@ import { OceanAccounts } from './OceanAccounts'
 
 import { Assets } from './Assets'
 import { OceanAuth } from './OceanAuth'
-import { OceanCompute } from './OceanCompute'
+import { Compute } from './Compute'
 
 import { OceanTokens } from './OceanTokens'
 import { OceanVersions } from './OceanVersions'
@@ -93,9 +93,9 @@ export class Ocean extends Instantiable {
 
     /**
      * Ocean compute submodule
-     * @type {OceanCompute}
+     * @type {Compute}
      */
-    public compute: OceanCompute
+    public compute: Compute
 
     /**
      * Ocean secretStore submodule

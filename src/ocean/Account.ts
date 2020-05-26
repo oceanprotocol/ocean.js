@@ -42,6 +42,8 @@ export default class Account extends Instantiable {
         return this.password
     }
 
+    //TODO - Check with Samer if authentificate is still needed or we can use sign
+    
     /**
      * Set account token.
      * @param {string} token Token for account.
@@ -73,13 +75,24 @@ export default class Account extends Instantiable {
         return this.ocean.auth.store(this)
     }
 
+    
+    
+    
+    
     /**
      * Balance of Ocean Token.
      * @return {Promise<number>}
      */
-    public async getOceanBalance(): Promise<number> {
-        const { token } = this.ocean.keeper
-        return (await token.balanceOf(this.id)) / 10 ** (await token.decimals())
+    public async getTokenBalance(TokenAdress:string): Promise<number> {
+        //TO DO
+    }
+    
+    /**
+     * Symbol of a Token
+     * @return {Promise<string>}
+     */
+    public async getTokenSymbol(TokenAdress:string): Promise<number> {
+        //TO DO
     }
 
     /**
@@ -87,40 +100,25 @@ export default class Account extends Instantiable {
      * @return {Promise<number>}
      */
     public async getEtherBalance(): Promise<number> {
-        return this.web3.eth
+        //TO DO
+        /*return this.web3.eth
             .getBalance(this.id, 'latest')
             .then((balance: string): number => {
                 return new BigNumber(balance).toNumber()
             })
+         
     }
 
     /**
      * Balances of Ether and Ocean Token.
      * @return {Promise<Balance>}
      */
-    public async getBalance(): Promise<Balance> {
-        return {
-            eth: await this.getEtherBalance(),
-            ocn: await this.getOceanBalance()
-        }
-    }
-
-    /**
-     * Request Ocean Tokens.
-     * @param  {number} amount Tokens to be requested.
-     * @return {Promise<number>}
-     */
-    public async requestTokens(amount: number | string): Promise<string> {
-        amount = String(amount)
-        if (!this.ocean.keeper.dispenser) {
-            throw new Error('Dispenser not available on this network.')
-        }
-        try {
-            await this.ocean.keeper.dispenser.requestTokens(amount, this.id)
-        } catch (e) {
-            this.logger.error(e)
-            throw new Error('Error requesting tokens')
-        }
-        return amount
+    public async getBalance(TokenAddress:string): Promise<Balance> {
+        let symbol = await getTokenSymbol(TokenAddress)
+        let balance = []
+        balance['eth'] = await this.getEtherBalance()
+        balance[symbol] = await this.getTokenBalance(TokenAdress)
+        return(balance)
+        
     }
 }
