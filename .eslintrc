@@ -1,0 +1,48 @@
+{
+    "parser": "@typescript-eslint/parser",
+    "parserOptions": {
+        "sourceType": "module",
+        "ecmaFeatures": {
+            "jsx": false
+        },
+        "project": [
+            "./tsconfig.json",
+            "./test/unit/tsconfig.json",
+            "./test/integration/tsconfig.json"
+        ]
+    },
+    "extends": [
+        "oceanprotocol",
+        "prettier/standard",
+        "plugin:prettier/recommended",
+        "plugin:@typescript-eslint/recommended",
+        "prettier/@typescript-eslint"
+    ],
+    "plugins": ["@typescript-eslint", "prettier"],
+    "rules": {
+        "@typescript-eslint/member-delimiter-style": [
+            "error",
+            { "multiline": { "delimiter": "none" } }
+        ],
+        "@typescript-eslint/ban-ts-ignore": "off",
+        "@typescript-eslint/indent": "off",
+        "@typescript-eslint/no-explicit-any": "off",
+        "@typescript-eslint/no-inferrable-types": "off",
+        "@typescript-eslint/no-non-null-assertion": "off",
+        "@typescript-eslint/explicit-function-return-type": "off",
+        "@typescript-eslint/explicit-member-accessibility": "off",
+        "@typescript-eslint/no-var-requires": "off",
+        "@typescript-eslint/no-use-before-define": "off",
+        "@typescript-eslint/no-object-literal-type-assertion": "off",
+        "@typescript-eslint/no-parameter-properties": "off",
+        "no-empty": ["error", { "allowEmptyCatch": true }],
+        "prefer-destructuring": ["warn"],
+        "no-dupe-class-members": ["warn"],
+        "no-useless-constructor": ["warn"]
+    },
+    "env": {
+        "es6": true,
+        "browser": true,
+        "mocha": true
+    }
+}

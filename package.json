@@ -1,0 +1,124 @@
+{
+  "name": "@oceanprotocol/lib",
+  "version": "0.0.1",
+  "description": "JavaScript client library for Ocean Protocol",
+  "main": "./dist/node/lib.js",
+  "typings": "./dist/node/lib.d.ts",
+  "unpkg": "./dist/browser/lib.cjs2.min.js",
+  "scripts": {
+    "build": "npm run clean && npm run build:tsc && npm run build:dist",
+    "build:tsc": "tsc --sourceMap",
+    "build:dist": "cross-env NODE_ENV=production webpack",
+    "clean": "rm -rf ./dist/ ./doc/ ./.nyc_output",
+    "lint": "eslint --ignore-path .gitignore --ext .ts,.tsx .",
+    "format": "prettier --parser typescript --ignore-path .gitignore --write '**/*.{js,jsx,ts,tsx}'",
+    "run": "ts-node",
+    "release": "release-it --non-interactive",
+    "changelog": "auto-changelog -p",
+    "prepublishOnly": "npm run build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/oceanprotocol/ocean-lib-js.git"
+  },
+  "keywords": [],
+  "author": "Ocean Protocol <devops@oceanprotocol.com>",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/oceanprotocol/ocean-lib-js/issues"
+  },
+  "homepage": "https://github.com/oceanprotocol/ocean-lib-js#readme",
+  "peerDependencies": {
+    "web3": "^1.2.3"
+  },
+  "dependencies": {
+    "@ethereum-navigator/navigator": "^0.5.0",
+    "@oceanprotocol/keeper-contracts": "^0.13.2",
+    "@oceanprotocol/secret-store-client": "^0.0.15",
+    "bignumber.js": "^9.0.0",
+    "deprecated-decorator": "^0.1.6",
+    "node-fetch": "^2.6.0",
+    "save-file": "^2.3.1",
+    "uuid": "^8.0.0",
+    "web3": "^1.2.6",
+    "whatwg-url": "^8.0.0"
+  },
+  "devDependencies": {
+    "@release-it/bumper": "^1.1.0",
+    "@truffle/hdwallet-provider": "^1.0.33",
+    "@types/chai": "^4.2.11",
+    "@types/chai-spies": "^1.0.1",
+    "@types/mocha": "^7.0.2",
+    "@types/node": "^14.0.0",
+    "@types/node-fetch": "^2.5.5",
+    "@types/sinon": "^9.0.0",
+    "@typescript-eslint/eslint-plugin": "^2.23.0",
+    "@typescript-eslint/parser": "^2.23.0",
+    "auto-changelog": "^2.0.0",
+    "chai": "^4.2.0",
+    "chai-spies": "^1.0.0",
+    "cross-env": "^7.0.2",
+    "eslint": "^6.8.0",
+    "eslint-config-oceanprotocol": "^1.5.0",
+    "eslint-config-prettier": "^6.10.0",
+    "eslint-plugin-prettier": "^3.1.2",
+    "lcov-result-merger": "^3.1.0",
+    "mocha": "^7.1.0",
+    "mock-local-storage": "^1.1.11",
+    "nyc": "^15.0.0",
+    "ora": "^4.0.2",
+    "prettier": "^1.19.1",
+    "sinon": "^9.0.1",
+    "source-map-support": "^0.5.16",
+    "ts-node": "^8.6.2",
+    "typedoc": "^0.17.1",
+    "typescript": "^3.8.3",
+    "uglifyjs-webpack-plugin": "^2.2.0",
+    "webpack": "^4.42.0",
+    "webpack-cli": "^3.3.11",
+    "webpack-merge": "^4.2.2"
+  },
+  "nyc": {
+    "include": [
+      "src/**/*.ts"
+    ],
+    "extension": [
+      ".ts"
+    ],
+    "require": [
+      "ts-node/register"
+    ],
+    "reporter": [
+      "text",
+      "lcov",
+      "html"
+    ],
+    "sourceMap": true,
+    "instrument": true
+  },
+  "release-it": {
+    "hooks": {
+      "after:bump": "npm run changelog && npm run doc:json"
+    },
+    "plugins": {
+      "@release-it/bumper": {
+        "out": [
+          "package.json",
+          "package-lock.json"
+        ]
+      }
+    },
+    "git": {
+      "tagName": "v${version}"
+    },
+    "github": {
+      "release": true,
+      "assets": [
+        "dist/squid-js.json"
+      ]
+    },
+    "npm": {
+      "publish": false
+    }
+  }
+}
