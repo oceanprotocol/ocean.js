@@ -1,6 +1,6 @@
 import { OceanAccounts } from './OceanAccounts'
 
-import { OceanAssets } from './OceanAssets'
+import { Assets } from './Assets'
 import { OceanAuth } from './OceanAuth'
 import { OceanCompute } from './OceanCompute'
 
