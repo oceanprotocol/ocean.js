@@ -48,7 +48,7 @@ export class Ocean extends Instantiable {
         instance.accounts = await OceanAccounts.getInstance(instanceConfig)
         instance.auth = await OceanAuth.getInstance(instanceConfig)
         instance.assets = await Assets.getInstance(instanceConfig)
-        instance.compute = await OceanCompute.getInstance(instanceConfig)
+        instance.compute = await Compute.getInstance(instanceConfig)
         instance.datatokens = new DataTokens(
             instanceConfig.config.factoryAddress,
             instanceConfig.config.factoryABI,
