@@ -58,6 +58,25 @@ export class DataTokens {
     }
 
     /**
+     * Approve & Lock for a specified number of blocks (reverts after that if not used)
+     * @param {String} dataTokenAddress
+     * @param {String} toAddress
+     * @param {Number} amount
+     * @param {Number} blocks
+     * @param {Account} account
+     * @return {Promise<string>} transactionId
+     */
+    public async approveAndLock(
+        dataTokenAddress: string,
+        toAddress: string,
+        amount: number,
+        blocks: number,
+        account: Account
+    ): Promise<string> {
+        // TO DO
+    }
+
+    /**
      * Mint
      * @param {String} dataTokenAddress
      * @param {Account} account
