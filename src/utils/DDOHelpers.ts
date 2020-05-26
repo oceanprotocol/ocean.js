@@ -1,8 +1,8 @@
-import { DDO } from '../ddo/DDO'
+import { DDO } from '../metadata/Metadata'
 import {
     ServiceAgreementTemplateCondition,
     ServiceAgreementTemplateParameter
-} from '../ddo/ServiceAgreementTemplate'
+} from '../metadata/ServiceAgreementTemplate'
 
 function fillParameterWithDDO(
     parameter: ServiceAgreementTemplateParameter,

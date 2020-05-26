@@ -1,9 +1,9 @@
-import { File, MetaDataAlgorithm } from '../ddo/MetaData'
+import { File, MetaDataAlgorithm } from '../metadata/MetadataInterfaces'
 import Account from '../ocean/Account'
 import { noZeroX } from '../utils'
 import { Instantiable, InstantiableConfig } from '../Instantiable.abstract'
-import { DDO } from '../ddo/DDO'
-import { ServiceType } from '../ddo/Service'
+import { DDO } from '../metadata/Metadata'
+import { ServiceType } from '../metadata/Service'
 import { ComputeJob, Output } from '../ocean/OceanCompute'
 
 const apiPath = '/api/v1/brizo/services'

@@ -9,8 +9,8 @@ import { DataTokens } from './datatokens/Datatokens'
 import * as utils from './utils'
 
 // Exports
-export * from './ddo/DDO'
-export * from './ddo/MetaData'
+export * from './metadata/Metadata'
+export * from './metadata/MetadataInterfaces'
 
 export { CreateProgressStep } from './ocean/OceanAssets'
 export { ComputeJob, ComputeJobStatus } from './ocean/OceanCompute'

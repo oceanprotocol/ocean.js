@@ -1,4 +1,4 @@
-import { MetaData } from './MetaData'
+import { MetaData } from './MetadataInterfaces'
 
 export type ServiceType = 'authorization' | 'metadata' | 'access' | 'compute'
 

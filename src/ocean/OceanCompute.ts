@@ -1,11 +1,11 @@
 import { Instantiable, InstantiableConfig } from '../Instantiable.abstract'
-import { MetaData, MetaDataAlgorithm } from '../ddo/MetaData'
+import { MetaData, MetaDataAlgorithm } from '../metadata/MetadataInterfaces'
 import Account from './Account'
-import { DDO } from '../ddo/DDO'
+import { DDO } from '../metadata/Metadata'
 import { SubscribablePromise } from '../utils'
 import { OrderProgressStep } from './utils/ServiceUtils'
 import { DID } from '../squid'
-import { Service, ServiceCompute, ServiceComputePrivacy } from '../ddo/Service'
+import { Service, ServiceCompute, ServiceComputePrivacy } from '../metadata/Service'
 
 export const ComputeJobStatus = Object.freeze({
     Started: 10,

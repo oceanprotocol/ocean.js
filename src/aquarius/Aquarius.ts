@@ -1,7 +1,7 @@
 import { URL } from 'whatwg-url'
-import { DDO } from '../ddo/DDO'
+import { DDO } from '../metadata/Metadata'
 import DID from '../ocean/DID'
-import { EditableMetaData } from '../ddo/MetaData'
+import { EditableMetaData } from '../metadata/MetadataInterfaces'
 import { Logger } from '../utils'
 import { WebServiceConnector } from '../ocean/utils/WebServiceConnector'
 

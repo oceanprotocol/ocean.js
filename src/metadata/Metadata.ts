@@ -9,25 +9,25 @@ import { Service, ServiceType } from './Service'
  * DID Descriptor Object.
  * Contains all the data related to an asset.
  */
-export class DDO {
+export class Metadata {
     /**
-     * Serializes the DDO object.
-     * @param  {DDO} DDO to be serialized.
-     * @return {string} DDO serialized.
+     * Serializes the Metadata object.
+     * @param  {Metadata} Metadata to be serialized.
+     * @return {string} Metadata serialized.
      */
-    public static serialize(ddo: DDO): string {
-        return JSON.stringify(ddo, null, 2)
+    public static serialize(metadata: Metadata): string {
+        return JSON.stringify(metadata, null, 2)
     }
 
     /**
-     * Deserializes the DDO object.
-     * @param  {DDO} DDO to be deserialized.
-     * @return {string} DDO deserialized.
+     * Deserializes the Metadata object.
+     * @param  {Metadata} Metadata to be deserialized.
+     * @return {string} Metadata deserialized.
      */
-    public static deserialize(ddoString: string): DDO {
-        const ddo = JSON.parse(ddoString)
+    public static deserialize(metadataString: string): Metadata {
+        const metadata = JSON.parse(metadataString)
 
-        return new DDO(ddo)
+        return new Metadata(metadata)
     }
 
     public '@context': string = 'https://w3id.org/did/v1'
@@ -52,19 +52,20 @@ export class DDO {
 
     public proof: Proof
 
-    public constructor(ddo: Partial<DDO> = {}) {
-        Object.assign(this, ddo, {
+    public constructor(metadata: Partial<Metadata> = {}) {
+        Object.assign(this, metadata, {
             created:
-                (ddo && ddo.created) || new Date().toISOString().replace(/\.[0-9]{3}/, '')
+                (metadata && metadata.created) || new Date().toISOString().replace(/\.[0-9]{3}/, '')
         })
     }
 
     public shortId(): string {
+        //TODO: should be replacing did:op thing 
         return this.id.replace('did:op:', '')
     }
 
     /**
-     * Finds a service of a DDO by index.
+     * Finds a service of a Metadata by index.
      * @param  {number} Service index.
      * @return {Service} Service.
      */
@@ -79,7 +80,7 @@ export class DDO {
     }
 
     /**
-     * Finds a service of a DDO by type.
+     * Finds a service of a Metadata by type.
      * @param  {string} serviceType Service type.
      * @return {Service} Service.
      */
@@ -93,7 +94,7 @@ export class DDO {
 
     /**
      * Generate the checksum using the current content.
-     * @return {string[]} DDO checksum.
+     * @return {string[]} Metadata checksum.
      */
     public getChecksum(): string {
         const { attributes } = this.findServiceByType('metadata')
@@ -135,13 +136,13 @@ export class DDO {
         return {
             created: new Date().toISOString().replace(/\.[0-9]{3}/, ''),
             creator: publicKey,
-            type: 'DDOIntegritySignature',
+            type: 'MetadataIntegritySignature',
             signatureValue: signature
         }
     }
 
     /**
-     * Generates and adds a proof using personal sing on the DDO.
+     * Generates and adds a proof using personal sing on the Metadata.
      * @param  {Ocean}          ocean     Ocean instance.
      * @param  {string}         publicKey Public key to be used on personal sign.
      * @param  {string}         password  Password if it's required.
