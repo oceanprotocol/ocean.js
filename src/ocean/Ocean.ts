@@ -10,14 +10,14 @@ import { OceanUtils } from './utils/OceanUtils'
 
 import { Aquarius } from '../aquarius/Aquarius'
 import { Brizo } from '../brizo/Brizo'
-
+import { DataTokens } from '../datatokens/Datatokens'
 import { Config } from '../models/Config'
 
 import {
     Instantiable,
     generateIntantiableConfigFromConfig
 } from '../Instantiable.abstract'
-import { DataTokens } from '../lib'
+
 
 /**
  * Main interface for Ocean Protocol.
@@ -47,7 +47,7 @@ export class Ocean extends Instantiable {
 
         instance.accounts = await OceanAccounts.getInstance(instanceConfig)
         instance.auth = await OceanAuth.getInstance(instanceConfig)
-        instance.assets = await OceanAssets.getInstance(instanceConfig)
+        instance.assets = await Assets.getInstance(instanceConfig)
         instance.compute = await Compute.getInstance(instanceConfig)
         instance.datatokens = new DataTokens(
             instanceConfig.config.factoryAddress,
@@ -87,9 +87,9 @@ export class Ocean extends Instantiable {
 
     /**
      * Ocean assets submodule
-     * @type {OceanAssets}
+     * @type {Assets}
      */
-    public assets: OceanAssets
+    public assets: Assets
 
     /**
      * Ocean compute submodule
