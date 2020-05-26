@@ -5,7 +5,7 @@ import { OceanAuth } from './OceanAuth'
 import { Compute } from './Compute'
 
 import { OceanTokens } from './OceanTokens'
-import { OceanVersions } from './OceanVersions'
+import { OceanVersions } from './Versions'
 import { OceanUtils } from './utils/OceanUtils'
 
 import { Aquarius } from '../aquarius/Aquarius'

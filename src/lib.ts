@@ -20,6 +20,6 @@ export {
     OceanPlatformTech,
     OceanPlatformKeeperTech,
     OceanPlatformVersions
-} from './ocean/OceanVersions'
+} from './ocean/Versions'
 
 export { Ocean, Account, Config, DID, Logger, Aquarius, DataTokens, utils }

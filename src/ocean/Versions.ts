@@ -1,4 +1,4 @@
-import * as keeperPackageJson from '@oceanprotocol/keeper-contracts/package.json'
+import * as OceanPackageJson from '@oceanprotocol/ocean-contracts/package.json'
 import * as metadata from '../metadata.json'
 
 import { Instantiable, InstantiableConfig } from '../Instantiable.abstract'
@@ -17,16 +17,16 @@ export interface OceanPlatformTech {
     status: OceanPlatformTechStatus
 }
 
-export interface OceanPlatformKeeperTech extends OceanPlatformTech {
+export interface OceanPlatformContractsTech extends OceanPlatformTech {
     network?: string
-    keeperVersion?: string
+    ContractsVersion?: string
     contracts?: { [contractName: string]: string }
 }
 
 export interface OceanPlatformVersions {
-    squid: OceanPlatformKeeperTech
-    aquarius: OceanPlatformTech
-    brizo: OceanPlatformKeeperTech
+    lib: OceanPlatformContractsTech
+    metadataStore: OceanPlatformTech
+    provider: OceanPlatformContractsTech
     status: {
         ok: boolean
         contracts: boolean
@@ -37,81 +37,72 @@ export interface OceanPlatformVersions {
 /**
  * Versions submodule of Ocean Protocol.
  */
-export class OceanVersions extends Instantiable {
+export class Versions extends Instantiable {
     /**
-     * Returns the instance of OceanVersions.
-     * @return {Promise<OceanVersions>}
+     * Returns the instance of Ocean Stack Versions.
+     * @return {Promise<Versions>}
      */
-    public static async getInstance(config: InstantiableConfig): Promise<OceanVersions> {
-        const instance = new OceanVersions()
+    public static async getInstance(config: InstantiableConfig): Promise<Versions> {
+        const instance = new Versions()
         instance.setInstanceConfig(config)
-
         return instance
     }
 
     public async get(): Promise<OceanPlatformVersions> {
         const versions = {} as OceanPlatformVersions
 
-        // Squid
-        versions.squid = {
-            name: 'Squid-js',
+        versions.lib = {
+            name: 'Ocean-lib-js',
             version: metadata.version,
             commit: metadata.commit,
             status: OceanPlatformTechStatus.Working,
-            network: (await this.ocean.keeper.getNetworkName()).toLowerCase(),
-            keeperVersion: keeperPackageJson.version,
-            contracts: Object.values(await this.ocean.keeper.getAllInstances())
-                .filter(_ => !!_)
-                .reduce(
-                    (acc, { contractName, address }) => ({
-                        ...acc,
-                        [contractName]: address
-                    }),
-                    {}
-                )
+            network:(await this.ocean.network.getNetworkName()).toLowerCase(),
+            ContractsVersion: OceanPackageJson.version,
+            contracts: {}
         }
 
-        // Brizo
+        // Provider
         try {
             const {
                 contracts,
-                'keeper-version': keeperVersion,
+                contractsVersion,
                 network,
                 software: name,
                 version
-            } = await this.ocean.brizo.getVersionInfo()
-            versions.brizo = {
+            } = await this.ocean.provider.getVersionInfo()
+
+            versions.provider = {
                 name,
                 status: OceanPlatformTechStatus.Working,
                 version,
                 contracts,
                 network,
-                keeperVersion: keeperVersion.replace(/^v/, '')
+                ContractsVersion: contractsVersion
             }
         } catch {
-            versions.brizo = {
-                name: 'Brizo',
+            versions.provider = {
+                name: 'Provider',
                 status: OceanPlatformTechStatus.Stopped
             }
         }
 
-        // Aquarius
+        // MetadataStore
         try {
-            const { software: name, version } = await this.ocean.aquarius.getVersionInfo()
-            versions.aquarius = {
+            const { software: name, version } = await this.ocean.metadataStore.getVersionInfo()
+            versions.metadataStore = {
                 name,
                 status: OceanPlatformTechStatus.Working,
                 version
             }
         } catch {
-            versions.aquarius = {
-                name: 'Aquarius',
+            versions.metadataStore = {
+                name: 'MetadataStore',
                 status: OceanPlatformTechStatus.Stopped
             }
         }
 
         // Status
-        const techs: OceanPlatformKeeperTech[] = Object.values(versions as any)
+        const techs: OceanPlatformContractsTech[] = Object.values(versions as any)
 
         const networks = techs
             .map(({ network }) => network)
