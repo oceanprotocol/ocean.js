@@ -23,13 +23,13 @@ export enum CreateProgressStep {
 /**
  * Assets submodule of Ocean Protocol.
  */
-export class OceanAssets extends Instantiable {
+export class Assets extends Instantiable {
     /**
-     * Returns the instance of OceanAssets.
-     * @return {Promise<OceanAssets>}
+     * Returns the instance of Assets.
+     * @return {Promise<Assets>}
      */
-    public static async getInstance(config: InstantiableConfig): Promise<OceanAssets> {
-        const instance = new OceanAssets()
+    public static async getInstance(config: InstantiableConfig): Promise<Assets> {
+        const instance = new Assets()
         instance.setInstanceConfig(config)
 
         return instance

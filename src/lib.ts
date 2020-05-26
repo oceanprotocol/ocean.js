@@ -12,7 +12,7 @@ import * as utils from './utils'
 export * from './ddo/DDO'
 export * from './ddo/MetaData'
 
-export { CreateProgressStep } from './ocean/OceanAssets'
+export { CreateProgressStep } from './ocean/Assets'
 export { ComputeJob, ComputeJobStatus } from './ocean/OceanCompute'
 export { OrderProgressStep } from './ocean/utils/ServiceUtils'
 export {
