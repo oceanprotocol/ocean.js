@@ -2,7 +2,7 @@ import { OceanAccounts } from './OceanAccounts'
 
 import { Assets } from './Assets'
 import { OceanAuth } from './OceanAuth'
-import { OceanCompute } from './OceanCompute'
+import { Compute } from './Compute'
 
 import { OceanTokens } from './OceanTokens'
 import { OceanVersions } from './OceanVersions'
@@ -48,7 +48,7 @@ export class Ocean extends Instantiable {
         instance.accounts = await OceanAccounts.getInstance(instanceConfig)
         instance.auth = await OceanAuth.getInstance(instanceConfig)
         instance.assets = await OceanAssets.getInstance(instanceConfig)
-        instance.compute = await OceanCompute.getInstance(instanceConfig)
+        instance.compute = await Compute.getInstance(instanceConfig)
         instance.datatokens = new DataTokens(
             instanceConfig.config.factoryAddress,
             instanceConfig.config.factoryABI,
@@ -93,9 +93,9 @@ export class Ocean extends Instantiable {
 
     /**
      * Ocean compute submodule
-     * @type {OceanCompute}
+     * @type {Compute}
      */
-    public compute: OceanCompute
+    public compute: Compute
 
     /**
      * Ocean secretStore submodule

@@ -4,7 +4,7 @@ import { noZeroX } from '../utils'
 import { Instantiable, InstantiableConfig } from '../Instantiable.abstract'
 import { DDO } from '../ddo/DDO'
 import { ServiceType } from '../ddo/Service'
-import { ComputeJob, Output } from '../ocean/OceanCompute'
+import { ComputeJob, Output } from '../ocean/Compute'
 
 const apiPath = '/api/v1/brizo/services'
 

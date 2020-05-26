@@ -50,13 +50,13 @@ export interface ComputeJob {
 /**
  * Compute submodule of Ocean Protocol.
  */
-export class OceanCompute extends Instantiable {
+export class Compute extends Instantiable {
     /**
-     * Returns the instance of OceanCompute.
-     * @return {Promise<OceanCompute>}
+     * Returns the instance of Compute.
+     * @return {Promise<Compute>}
      */
-    public static async getInstance(config: InstantiableConfig): Promise<OceanCompute> {
-        const instance = new OceanCompute()
+    public static async getInstance(config: InstantiableConfig): Promise<Compute> {
+        const instance = new Compute()
         instance.setInstanceConfig(config)
 
         return instance
