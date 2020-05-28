@@ -1,12 +1,11 @@
-import { OceanAccounts } from './OceanAccounts'
+import { Accounts } from './Accounts'
 
 import { Assets } from './Assets'
-import { OceanAuth } from './OceanAuth'
-import { Compute } from './Compute'
 
-import { OceanTokens } from './OceanTokens'
-import { OceanVersions } from './OceanVersions'
-import { OceanUtils } from './utils/OceanUtils'
+// import { Compute } from './Compute'
+
+import { Versions } from './Versions'
+import { OceanUtils } from './utils/Utils'
 
 import { Aquarius } from '../aquarius/Aquarius'
 import { Brizo } from '../brizo/Brizo'
@@ -17,7 +16,6 @@ import {
     Instantiable,
     generateIntantiableConfigFromConfig
 } from '../Instantiable.abstract'
-
 
 /**
  * Main interface for Ocean Protocol.
@@ -45,18 +43,17 @@ export class Ocean extends Instantiable {
             instanceConfig.logger
         )
 
-        instance.accounts = await OceanAccounts.getInstance(instanceConfig)
-        instance.auth = await OceanAuth.getInstance(instanceConfig)
+        instance.accounts = await Accounts.getInstance(instanceConfig)
+        // instance.auth = await Auth.getInstance(instanceConfig)
         instance.assets = await Assets.getInstance(instanceConfig)
-        instance.compute = await Compute.getInstance(instanceConfig)
+        // instance.compute = await Compute.getInstance(instanceConfig)
         instance.datatokens = new DataTokens(
             instanceConfig.config.factoryAddress,
             instanceConfig.config.factoryABI,
             instanceConfig.config.datatokensABI,
             instanceConfig.config.web3Provider
         )
-        instance.tokens = await OceanTokens.getInstance(instanceConfig)
-        instance.versions = await OceanVersions.getInstance(instanceConfig)
+        instance.versions = await Versions.getInstance(instanceConfig)
 
         return instance
     }
@@ -68,6 +65,12 @@ export class Ocean extends Instantiable {
     public brizo: Brizo
 
     /**
+     * Web3 provider.
+     * @type {any}
+     */
+    public web3Provider: any
+
+    /**
      * Aquarius instance.
      * @type {Aquarius}
      */
@@ -75,15 +78,16 @@ export class Ocean extends Instantiable {
 
     /**
      * Ocean account submodule
-     * @type {OceanAccounts}
+     * @type {Accounts}
      */
-    public accounts: OceanAccounts
+    public accounts: Accounts
 
     /**
      * Ocean auth submodule
      * @type {OceanAuth}
-     */
+     
     public auth: OceanAuth
+    */
 
     /**
      * Ocean assets submodule
@@ -94,8 +98,9 @@ export class Ocean extends Instantiable {
     /**
      * Ocean compute submodule
      * @type {Compute}
-     */
+     
     public compute: Compute
+    */
 
     /**
      * Ocean secretStore submodule
@@ -106,14 +111,15 @@ export class Ocean extends Instantiable {
     /**
      * Ocean tokens submodule
      * @type {OceanTokens}
-     */
+     
     public tokens: OceanTokens
+    */
 
     /**
      * Ocean versions submodule
-     * @type {OceanVersions}
+     * @type {Versions}
      */
-    public versions: OceanVersions
+    public versions: Versions
 
     /**
      * Ocean utils submodule

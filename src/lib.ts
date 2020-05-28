@@ -12,14 +12,12 @@ import * as utils from './utils'
 export * from './ddo/DDO'
 export * from './ddo/MetaData'
 
-export { CreateProgressStep } from './ocean/Assets'
-export { ComputeJob, ComputeJobStatus } from './ocean/Compute'
-export { OrderProgressStep } from './ocean/utils/ServiceUtils'
+export { CreateProgressStep, OrderProgressStep } from './ocean/Assets'
+
 export {
     OceanPlatformTechStatus,
     OceanPlatformTech,
-    OceanPlatformKeeperTech,
     OceanPlatformVersions
-} from './ocean/OceanVersions'
+} from './ocean/Versions'
 
 export { Ocean, Account, Config, DID, Logger, Aquarius, DataTokens, utils }

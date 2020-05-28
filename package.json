@@ -33,8 +33,6 @@
   },
   "dependencies": {
     "@ethereum-navigator/navigator": "^0.5.0",
-    "@oceanprotocol/keeper-contracts": "^0.13.2",
-    "@oceanprotocol/secret-store-client": "^0.0.15",
     "bignumber.js": "^9.0.0",
     "deprecated-decorator": "^0.1.6",
     "node-fetch": "^2.6.0",

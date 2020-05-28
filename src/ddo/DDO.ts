@@ -1,4 +1,3 @@
-import Web3Provider from '../keeper/Web3Provider'
 import { Ocean } from '../ocean/Ocean'
 import { Authentication } from './Authentication'
 import { Proof } from './Proof'
@@ -93,9 +92,10 @@ export class DDO {
 
     /**
      * Generate the checksum using the current content.
+     * @param  {Any}  web3Provider
      * @return {string[]} DDO checksum.
      */
-    public getChecksum(): string {
+    public getChecksum(web3Provider: any): string {
         const { attributes } = this.findServiceByType('metadata')
         const { files, name, author, license } = attributes.main
 
@@ -107,7 +107,8 @@ export class DDO {
             this.id
         ]
 
-        return Web3Provider.getWeb3()
+        return web3Provider
+            .getWeb3()
             .utils.sha3(values.join(''))
             .replace(/^0x([a-f0-9]{64})(:!.+)?$/i, '0x$1')
     }
@@ -124,7 +125,7 @@ export class DDO {
         publicKey: string,
         password?: string
     ): Promise<Proof> {
-        const checksum = this.getChecksum()
+        const checksum = this.getChecksum(ocean.web3Provider)
 
         const signature = await ocean.utils.signature.signText(
             checksum,

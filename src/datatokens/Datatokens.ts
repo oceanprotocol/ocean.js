@@ -38,6 +38,7 @@ export class DataTokens {
      */
     public async create(metaDataStoreURI: string, account: Account): Promise<string> {
         // TO DO
+        return ''
     }
 
     /**
@@ -55,6 +56,7 @@ export class DataTokens {
         account: Account
     ): Promise<string> {
         // TO DO
+        return ''
     }
 
     /**
@@ -74,6 +76,7 @@ export class DataTokens {
         account: Account
     ): Promise<string> {
         // TO DO
+        return ''
     }
 
     /**
@@ -91,6 +94,7 @@ export class DataTokens {
         toAddress?: string
     ): Promise<string> {
         // TO DO
+        return ''
     }
 
     /**
@@ -108,6 +112,7 @@ export class DataTokens {
         account: Account
     ): Promise<string> {
         // TO DO
+        return ''
     }
 
     /**
@@ -125,15 +130,17 @@ export class DataTokens {
         account: Account
     ): Promise<string> {
         // TO DO
+        return ''
     }
 
     /**
      * Get Account Balance for datatoken
      * @param {String} dataTokenAddress
      * @param {Account} account
-     * @return {Promise<string>} transactionId
+     * @return {Promise<number>} balance
      */
     public async balance(dataTokenAddress: string, account: Account): Promise<number> {
         // TO DO
+        return 0
     }
 }

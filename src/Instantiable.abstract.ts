@@ -23,7 +23,7 @@ export function generateIntantiableConfigFromConfig(
             : (config.verbose as LogLevel)
     return {
         config,
-        web3: Web3Provider.getWeb3(config),
+        web3: config.web3Provider,
         logger: new Logger(logLevel)
     }
 }

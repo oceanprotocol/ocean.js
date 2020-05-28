@@ -1,1 +1,1 @@
-export const OceanDataTokenABI = { }
+export const OceanDataTokenABI = {}
