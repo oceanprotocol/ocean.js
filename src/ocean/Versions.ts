@@ -18,8 +18,8 @@ export interface OceanPlatformTech {
 
 export interface OceanPlatformVersions {
     lib: OceanPlatformTech
-    aquarius: OceanPlatformTech
-    brizo: OceanPlatformTech
+    metadataStore: OceanPlatformTech
+    provider: OceanPlatformTech
     status: {
         ok: boolean
     }
@@ -30,20 +30,18 @@ export interface OceanPlatformVersions {
  */
 export class Versions extends Instantiable {
     /**
-     * Returns the instance of OceanVersions.
-     * @return {Promise<OceanVersions>}
+     * Returns the instance of Ocean Stack Versions.
+     * @return {Promise<Versions>}
      */
     public static async getInstance(config: InstantiableConfig): Promise<Versions> {
         const instance = new Versions()
         instance.setInstanceConfig(config)
-
         return instance
     }
 
     public async get(): Promise<OceanPlatformVersions> {
         const versions = {} as OceanPlatformVersions
 
-        // Squid
         versions.lib = {
             name: 'Lib',
             version: metadata.version,
@@ -51,36 +49,17 @@ export class Versions extends Instantiable {
             status: OceanPlatformTechStatus.Working
         }
 
-        // Brizo
-        try {
-            const {
-                network,
-                software: name,
-                version
-            } = await this.ocean.brizo.getVersionInfo()
-            versions.brizo = {
-                name,
-                status: OceanPlatformTechStatus.Working,
-                version
-            }
-        } catch {
-            versions.brizo = {
-                name: 'Brizo',
-                status: OceanPlatformTechStatus.Stopped
-            }
-        }
-
-        // Aquarius
+        // MetadataStore
         try {
             const { software: name, version } = await this.ocean.aquarius.getVersionInfo()
-            versions.aquarius = {
+            versions.metadataStore = {
                 name,
                 status: OceanPlatformTechStatus.Working,
                 version
             }
         } catch {
-            versions.aquarius = {
-                name: 'Aquarius',
+            versions.metadataStore = {
+                name: 'MetadataStore',
                 status: OceanPlatformTechStatus.Stopped
             }
         }
