@@ -5,6 +5,7 @@ import { Ocean } from './ocean/Ocean'
 import { LoggerInstance as Logger } from './utils/Logger'
 import { Aquarius } from './aquarius/Aquarius'
 import { DataTokens } from './datatokens/Datatokens'
+import { ConfigHelper } from './utils/ConfigHelper'
 
 import * as utils from './utils'
 
@@ -20,4 +21,4 @@ export {
     OceanPlatformVersions
 } from './ocean/Versions'
 
-export { Ocean, Account, Config, DID, Logger, Aquarius, DataTokens, utils }
+export { Ocean, Account, Config, DID, Logger, Aquarius, DataTokens, utils, ConfigHelper }
