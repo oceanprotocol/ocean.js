@@ -1,5 +1,5 @@
 import { BodyInit, RequestInit, Response } from 'node-fetch'
-import fs from 'fs'
+import * as fs from 'fs'
 import { Logger } from '../../utils'
 
 const fetch = require('node-fetch')

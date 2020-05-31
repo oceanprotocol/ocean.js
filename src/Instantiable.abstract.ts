@@ -2,8 +2,6 @@ import Web3 from 'web3'
 import Config from './models/Config'
 import { Logger, LoggerInstance, LogLevel } from './utils'
 import { Ocean } from './ocean/Ocean'
-import { OceanFactoryABI } from './datatokens/FactoryABI'
-import { OceanDataTokenABI } from './datatokens/DatatokensABI'
 
 export interface InstantiableConfig {
     ocean: Ocean

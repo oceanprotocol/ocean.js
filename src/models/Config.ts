@@ -6,13 +6,13 @@ export class Config {
      * Aquarius URL.
      * @type {string}
      */
-    public aquariusUri: string
+    public aquariusUri?: string
 
     /**
      * Brizo URL.
      * @type {string}
      */
-    public brizoUri: string
+    public brizoUri?: string
 
     /**
      * Web3 Provider.
@@ -30,13 +30,13 @@ export class Config {
      * Factory ABI
      * @type {string}
      */
-    public factoryABI: object
+    public factoryABI?: object
 
     /**
      * datatokens ABI
      * @type {string}
      */
-    public datatokensABI: object
+    public datatokensABI?: object
 
     /**
      * Log level.
