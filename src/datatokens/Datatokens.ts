@@ -38,29 +38,19 @@ export class DataTokens {
      * Create new datatoken
      * @param {String} metaDataStoreURI
      * @param {Account} account
-     * @param {String} name
-     * @param {String} symbol
-     * @param {Number} cap
      * @return {Promise<string>} datatoken address
      */
     public async create(
         metaDataStoreURI: string,
-        account: Account,
-        name?: string,
-        symbol?: string,
-        cap?: number
+        account: Account
     ): Promise<string> {
-        // TODO  - Autogenerate name, symbol & cap if missing
-        if (!name) name = 'DTTest1'
-        if (!symbol) symbol = 'DT1'
-        if (!cap) cap = 1000000
         // Create factory contract object
         const factory = new this.web3.eth.Contract(this.factoryABI, this.factoryAddress, {
             from: account.getId()
         })
         // Invoke createToken function of the contract
         const trxReceipt = await factory.methods
-            .createToken(name, symbol, cap, metaDataStoreURI, account.getId())
+            .createToken(metaDataStoreURI)
             .send()
         let tokenAddress = null
         try {

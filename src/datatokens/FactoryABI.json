@@ -1,1 +1,131 @@
-[{"inputs":[{"name":"_template","type":"address"},{"name":"_feeManager","type":"address"}],"payable":false,"stateMutability":"nonpayable","type":"constructor"},{"anonymous":false,"inputs":[{"indexed":false,"name":"newTokenAddress","type":"address"},{"indexed":false,"name":"templateAddress","type":"address"},{"indexed":false,"name":"tokenName","type":"string"}],"name":"TokenCreated","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"name":"tokenAddress","type":"address"},{"indexed":true,"name":"tokenName","type":"string"},{"indexed":true,"name":"tokenSymbol","type":"string"},{"indexed":false,"name":"tokenCap","type":"uint256"},{"indexed":false,"name":"RegisteredBy","type":"address"},{"indexed":false,"name":"RegisteredAt","type":"uint256"},{"indexed":false,"name":"blob","type":"string"}],"name":"TokenRegistered","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"name":"instance","type":"address"}],"name":"InstanceDeployed","type":"event"},{"constant":false,"inputs":[{"name":"_name","type":"string"},{"name":"_symbol","type":"string"},{"name":"_cap","type":"uint256"},{"name":"_blob","type":"string"},{"name":"_minter","type":"address"}],"name":"createToken","outputs":[{"name":"token","type":"address"}],"payable":false,"stateMutability":"nonpayable","type":"function"}]
+[
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "value",
+          "type": "uint256"
+        }
+      ],
+      "name": "uintToString",
+      "outputs": [
+        {
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "pure",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "name": "_template",
+          "type": "address"
+        },
+        {
+          "name": "_feeManager",
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "name": "newTokenAddress",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "name": "templateAddress",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "name": "tokenName",
+          "type": "string"
+        }
+      ],
+      "name": "TokenCreated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "name": "tokenAddress",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "name": "tokenName",
+          "type": "string"
+        },
+        {
+          "indexed": true,
+          "name": "tokenSymbol",
+          "type": "string"
+        },
+        {
+          "indexed": false,
+          "name": "tokenCap",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "name": "RegisteredBy",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "name": "RegisteredAt",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "name": "blob",
+          "type": "string"
+        }
+      ],
+      "name": "TokenRegistered",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "name": "instance",
+          "type": "address"
+        }
+      ],
+      "name": "InstanceDeployed",
+      "type": "event"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "blob",
+          "type": "string"
+        }
+      ],
+      "name": "createToken",
+      "outputs": [
+        {
+          "name": "token",
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ]
