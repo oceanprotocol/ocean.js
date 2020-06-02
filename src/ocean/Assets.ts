@@ -80,7 +80,7 @@ export class Assets extends Instantiable {
                 const metadataStoreURI = this.ocean.aquarius.getURI()
                 const jsonBlob = { t: 1, url: metadataStoreURI }
                 const { datatokens } = this.ocean
-                dtAddress = await datatokens.create({ metaDataStoreURI: JSON.stringify(jsonBlob), account: publisher })
+                dtAddress = await datatokens.create(JSON.stringify(jsonBlob), publisher )
                 this.logger.log('DataToken creted')
                 observer.next(CreateProgressStep.DataTokenCreated)
             }
