@@ -52,7 +52,8 @@ export class Assets extends Instantiable {
         const publisherURI = this.ocean.brizo.getURI()
         const jsonBlob = { t: 0, url: publisherURI }
         const { datatokens } = this.ocean
-        return datatokens.create(JSON.stringify(jsonBlob), publisher)
+        return datatokens.create( JSON.stringify(jsonBlob), publisher)
+        
     }
 
     /**
@@ -79,7 +80,7 @@ export class Assets extends Instantiable {
                 const metadataStoreURI = this.ocean.aquarius.getURI()
                 const jsonBlob = { t: 1, url: metadataStoreURI }
                 const { datatokens } = this.ocean
-                dtAddress = await datatokens.create(JSON.stringify(jsonBlob), publisher)
+                dtAddress = await datatokens.create({ metaDataStoreURI: JSON.stringify(jsonBlob), account: publisher })
                 this.logger.log('DataToken creted')
                 observer.next(CreateProgressStep.DataTokenCreated)
             }

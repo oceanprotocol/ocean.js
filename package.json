@@ -36,6 +36,7 @@
     "@ethereum-navigator/navigator": "^0.5.0",
     "bignumber.js": "^9.0.0",
     "deprecated-decorator": "^0.1.6",
+    "fs": "0.0.1-security",
     "node-fetch": "^2.6.0",
     "save-file": "^2.3.1",
     "uuid": "^8.0.0",
