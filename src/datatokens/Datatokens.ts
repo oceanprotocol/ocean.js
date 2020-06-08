@@ -5,7 +5,7 @@ const defaultDatatokensABI = require('../datatokens/DatatokensABI.json')
 
 /**
  * Provides a interface to DataTokens
- 
+
  */
 export class DataTokens {
     public factoryAddress: string
@@ -46,12 +46,22 @@ export class DataTokens {
     ): Promise<string> {
         // Create factory contract object
         const factory = new this.web3.eth.Contract(this.factoryABI, this.factoryAddress, {
-            from: account.getId()
+            from: account
         })
+        const estGas = await factory.methods
+                            .createToken(metaDataStoreURI)
+                            .estimateGas(function(err, estGas){
+                            return estGas
+                      })
         // Invoke createToken function of the contract
         const trxReceipt = await factory.methods
             .createToken(metaDataStoreURI)
-            .send()
+            .send({
+                    from: account,
+                    gas: estGas+1,
+                    gasPrice: '30000000000000'
+                  })
+
         let tokenAddress = null
         try {
             tokenAddress = trxReceipt.events.TokenCreated.returnValues[0]
@@ -82,26 +92,6 @@ export class DataTokens {
         )
         const trxReceipt = await datatoken.methods.approve(spender, amount).send()
         return trxReceipt
-    }
-
-    /**
-     * Approve & Lock for a specified number of blocks (reverts after that if not used)
-     * @param {String} dataTokenAddress
-     * @param {String} toAddress
-     * @param {Number} amount
-     * @param {Number} blocks
-     * @param {Account} account
-     * @return {Promise<string>} transactionId
-     */
-    public async approveAndLock(
-        dataTokenAddress: string,
-        toAddress: string,
-        amount: number,
-        blocks: number,
-        account: Account
-    ): Promise<string> {
-        // TO DO
-        return ''
     }
 
     /**

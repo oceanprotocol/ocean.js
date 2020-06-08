@@ -1,4 +1,5 @@
 import { assert } from 'chai'
+import { DataTokens } from '../../src/datatokens/Datatokens'
 
 const Web3 = require('web3');
 const web3 = new Web3("http://127.0.0.1:8545");
@@ -7,19 +8,32 @@ const factoryABI = require('../../src/datatokens/FactoryABI.json')
 const datatokensABI = require('../../src/datatokens/DatatokensABI.json')
 const feemanagerABI = require('../../src/datatokens/FeeManagerABI.json')
 
-describe('Datatokens', () => {
- 
+describe('DataTokens', () => {
+    let Factory
+    let Template
+    let FeeManager
+
+    let feeManager
+    let template
+    let factory
+    
+    let accounts
+    let blob
+    let minter
+    let zeroAddress
+    let cap
+
     beforeEach(async () => {
-	   const accounts = await web3.eth.getAccounts()
+	   accounts = await web3.eth.getAccounts()
 
-	   const Factory = new web3.eth.Contract(factoryABI)
-	   const Template = new web3.eth.Contract(datatokensABI)
-	   const FeeManager = new web3.eth.Contract(feemanagerABI)
+	   Factory = new web3.eth.Contract(factoryABI)
+	   Template = new web3.eth.Contract(datatokensABI)
+	   FeeManager = new web3.eth.Contract(feemanagerABI)
 
-     let blob = 'https://example.com/dataset-1'
-     let minter = accounts[0]
-     let zeroAddress = '0x0000000000000000000000000000000000000000'
-     let cap = 1400000000
+     blob = 'https://example.com/dataset-1'
+     minter = accounts[0]
+     zeroAddress = '0x0000000000000000000000000000000000000000'
+     cap = 1400000000
 
      // Deploy FeeManager
      let feeManagerBytecode = "0x608060405234801561001057600080fd5b506103ec806100206000396000f3fe608060405234801561001057600080fd5b5060043610610053576000357c01000000000000000000000000000000000000000000000000000000009004806334e731221461005857806390d3d862146100a4575b600080fd5b61008e6004803603604081101561006e57600080fd5b8101908080359060200190929190803590602001909291905050506100e6565b6040518082815260200191505060405180910390f35b6100d0600480360360208110156100ba57600080fd5b81019080803590602001909291905050506101bc565b6040518082815260200191505060405180910390f35b60008282101561015e576040517f08c379a000000000000000000000000000000000000000000000000000000000815260040180806020018281038252601a8152602001807f46656543616c63756c61746f723a20496e76616c69642063617000000000000081525060200191505060405180910390fd5b6000610169846101bc565b9050600061018261abe08361020990919063ffffffff16565b90506101b2600a6101a4610195876101bc565b8461028f90919063ffffffff16565b61028f90919063ffffffff16565b9250505092915050565b600080829050600080905060008090505b600a83106101fe576101e9600a8461028f90919063ffffffff16565b925060018201915080806001019150506101cd565b508092505050919050565b60008083141561021c5760009050610289565b600082840290508284828161022d57fe5b0414610284576040517f08c379a00000000000000000000000000000000000000000000000000000000081526004018080602001828103825260218152602001806103a06021913960400191505060405180910390fd5b809150505b92915050565b60006102d183836040518060400160405280601a81526020017f536166654d6174683a206469766973696f6e206279207a65726f0000000000008152506102d9565b905092915050565b60008083118290610385576040517f08c379a00000000000000000000000000000000000000000000000000000000081526004018080602001828103825283818151815260200191508051906020019080838360005b8381101561034a57808201518184015260208101905061032f565b50505050905090810190601f1680156103775780820380516001836020036101000a031916815260200191505b509250505060405180910390fd5b50600083858161039157fe5b04905080915050939250505056fe536166654d6174683a206d756c7469706c69636174696f6e206f766572666c6f77a165627a7a72305820735116290a59582c41578d47cdb770b710e8e0c8f396b9079b0e3a7b077eb7e00029"
@@ -31,7 +45,7 @@ describe('Datatokens', () => {
                             return estGas
                       })
      // deploy the contract and get it's address
-     let feeManager = await FeeManager.deploy({data:feeManagerBytecode})
+     feeManager = await FeeManager.deploy({data:feeManagerBytecode})
                        .send({
                            from: minter,
                            gas: estGas+1,
@@ -52,7 +66,7 @@ describe('Datatokens', () => {
                             return estGas
                       })
      // deploy the contract and get it's address
-     let template = await Template.deploy({
+     template = await Template.deploy({
                        data:templateBytecode, 
                        arguments:['Template Contract', 'TEMPLATE', minter, cap, blob, feeManager]
                        })
@@ -75,7 +89,7 @@ describe('Datatokens', () => {
                             return estGas
                       })
      // deploy the contract and get it's address
-     let factory = await Factory.deploy({
+     factory = await Factory.deploy({
                        data:factoryBytecode, 
                        arguments:[template, feeManager]
                        })
@@ -89,10 +103,15 @@ describe('Datatokens', () => {
                        })
     })
 
-    describe('#test()', () => {
-        it('should test', async () => {
-            const test = true
-            assert(test === true)
+    describe('#test', () => {
+        it('should create Datatoken object', async () => {
+            const datatoken = new DataTokens(factory, factoryABI, datatokensABI, web3)
+            assert(datatoken !== null)
+        })
+
+        it('should create Datatoken contract', async () => {
+            const datatoken = new DataTokens(factory, factoryABI, datatokensABI, web3)
+            await datatoken.create(blob, minter)
         })
     })
 })
