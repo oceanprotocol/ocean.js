@@ -55,12 +55,12 @@ export class DataTokens {
                       })
         // Invoke createToken function of the contract
         const trxReceipt = await factory.methods
-            .createToken(metaDataStoreURI)
-            .send({
-                    from: account,
-                    gas: estGas+1,
-                    gasPrice: '30000000000000'
-                  })
+                            .createToken(metaDataStoreURI)
+                            .send({
+                                    from: account,
+                                    gas: estGas+1,
+                                    gasPrice: '3000000000'
+                                  })
 
         let tokenAddress = null
         try {
@@ -108,13 +108,27 @@ export class DataTokens {
         amount: number,
         toAddress?: string
     ): Promise<string> {
-        const address = toAddress || account.getId()
+        const address = toAddress || account
         const datatoken = new this.web3.eth.Contract(
             this.datatokensABI,
             dataTokenAddress,
-            { from: account.getId() }
+            { from: account }
         )
-        const trxReceipt = await datatoken.methods.mint(address, amount).send()
+        let fee = await this.web3.utils.toWei('1', 'ether')
+
+        const estGas = await datatoken.methods.mint(address, amount)
+                            .estimateGas(function(err, estGas){
+                            return estGas
+                      })
+
+        const trxReceipt = await datatoken.methods.mint(address, amount)
+                                                  .send({
+                                                          value:fee, 
+                                                          from:account,
+                                                          gas: estGas*2,
+                                                          gasPrice: '3000000000'
+                                                       })
+
         return trxReceipt
     }
 
