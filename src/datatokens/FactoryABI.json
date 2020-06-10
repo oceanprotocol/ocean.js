@@ -46,10 +46,6 @@
         {
           "name": "_template",
           "type": "address"
-        },
-        {
-          "name": "_feeManager",
-          "type": "address"
         }
       ],
       "payable": false,
