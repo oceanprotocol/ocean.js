@@ -114,8 +114,7 @@ export class DataTokens {
             dataTokenAddress,
             { from: account }
         )
-        let fee = await this.web3.utils.toWei('1', 'ether')
-
+        
         const estGas = await datatoken.methods.mint(address, amount)
                             .estimateGas(function(err, estGas){
                             return estGas
@@ -123,7 +122,6 @@ export class DataTokens {
 
         const trxReceipt = await datatoken.methods.mint(address, amount)
                                                   .send({
-                                                          value:fee, 
                                                           from:account,
                                                           gas: estGas*2,
                                                           gasPrice: '3000000000'
