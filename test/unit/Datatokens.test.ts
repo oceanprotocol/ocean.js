@@ -1,6 +1,6 @@
 import { assert } from 'chai'
-import { DataTokens } from '../../src/datatokens/Datatokens'
 import { TestContractHandler } from './TestContractHandler'
+import { DataTokens } from '../../src/datatokens/Datatokens'
 
 const Web3 = require('web3')
 const web3 = new Web3("http://127.0.0.1:8545")
@@ -12,6 +12,8 @@ describe('DataTokens', () => {
 
     let minter
     let contracts
+    let datatoken
+    let tokenAddress
 
     let tokenAmount = 100
     let blob = 'https://example.com/dataset-1'
@@ -22,24 +24,24 @@ describe('DataTokens', () => {
 
       minter = contracts.accounts[0]
       await contracts.deployContracts(minter)
-    }) 
+    })
 
     describe('#test', () => {
         it('should create Datatoken object', async () => {
-            const datatoken = new DataTokens(contracts.factoryAddress, factoryABI, datatokensABI, web3)
+            datatoken = new DataTokens(contracts.factoryAddress, factoryABI, datatokensABI, web3)
             assert(datatoken !== null)
         })
 
         it('should create Datatoken contract', async () => {
-            const datatoken = new DataTokens(contracts.factoryAddress, factoryABI, datatokensABI, web3)
-            const token = await datatoken.create(blob, minter)
-            assert(token !== null)
+            tokenAddress = await datatoken.create(blob, minter)
+            assert(tokenAddress !== null)
         })
 
         it('should mint Datatokens', async () => {
-            const datatoken = new DataTokens(contracts.factoryAddress, factoryABI, datatokensABI, web3)
             const tokenAddress = await datatoken.create(blob, minter)
             await datatoken.mint(tokenAddress, minter, tokenAmount)
+            let balance = await datatoken.balance(tokenAddress, minter)
+            // assert(balance === tokenAmount)
         })
     })
 })

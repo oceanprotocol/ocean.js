@@ -114,7 +114,7 @@ export class DataTokens {
             dataTokenAddress,
             { from: account }
         )
-        
+
         const estGas = await datatoken.methods.mint(address, amount)
                             .estimateGas(function(err, estGas){
                             return estGas
@@ -188,9 +188,9 @@ export class DataTokens {
         const datatoken = new this.web3.eth.Contract(
             this.datatokensABI,
             dataTokenAddress,
-            { from: account.getId() }
+            { from: account }
         )
-        const trxReceipt = await datatoken.methods.balanceOf(account.getId()).call()
+        const trxReceipt = await datatoken.methods.balanceOf(account).call()
         return trxReceipt
     }
 
