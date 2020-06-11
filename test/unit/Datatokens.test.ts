@@ -41,7 +41,7 @@ describe('DataTokens', () => {
             const tokenAddress = await datatoken.create(blob, minter)
             await datatoken.mint(tokenAddress, minter, tokenAmount)
             let balance = await datatoken.balance(tokenAddress, minter)
-            // assert(balance === tokenAmount)
+            assert(balance.toString() === tokenAmount.toString())
         })
     })
 })
