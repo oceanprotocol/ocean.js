@@ -88,7 +88,7 @@ export class DataTokens {
         const datatoken = new this.web3.eth.Contract(
             this.datatokensABI,
             dataTokenAddress,
-            { from: account.getId() }
+            { from: account }
         )
         const trxReceipt = await datatoken.methods.approve(spender, amount).send()
         return trxReceipt
@@ -147,7 +147,7 @@ export class DataTokens {
         const datatoken = new this.web3.eth.Contract(
             this.datatokensABI,
             dataTokenAddress,
-            { from: account.getId() }
+            { from: account }
         )
         const trxReceipt = await datatoken.methods.transfer(toAddress, amount).send()
         return trxReceipt
@@ -170,10 +170,10 @@ export class DataTokens {
         const datatoken = new this.web3.eth.Contract(
             this.datatokensABI,
             dataTokenAddress,
-            { from: account.getId() }
+            { from: account }
         )
         const trxReceipt = await datatoken.methods
-            .transferFrom(fromAddress, account.getId(), amount)
+            .transferFrom(fromAddress, account, amount)
             .send()
         return trxReceipt
     }

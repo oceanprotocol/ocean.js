@@ -11,6 +11,8 @@ const datatokensABI = require('../../src/datatokens/DatatokensABI.json')
 describe('DataTokens', () => {
 
     let minter
+    let spender
+    let balance
     let contracts
     let datatoken
     let tokenAddress
@@ -18,15 +20,15 @@ describe('DataTokens', () => {
     let tokenAmount = 100
     let blob = 'https://example.com/dataset-1'
 
-    beforeEach(async () => {
-      contracts = new TestContractHandler(factoryABI,datatokensABI)
-      await contracts.getAccounts()
-
-      minter = contracts.accounts[0]
-      await contracts.deployContracts(minter)
-    })
-
     describe('#test', () => {
+        it('should deploy contracts', async () => {
+            contracts = new TestContractHandler(factoryABI,datatokensABI)
+            await contracts.getAccounts()
+            minter = contracts.accounts[0]
+            spender = contracts.accounts[1]
+            await contracts.deployContracts(minter)
+        })
+
         it('should create Datatoken object', async () => {
             datatoken = new DataTokens(contracts.factoryAddress, factoryABI, datatokensABI, web3)
             assert(datatoken !== null)
@@ -38,10 +40,27 @@ describe('DataTokens', () => {
         })
 
         it('should mint Datatokens', async () => {
-            const tokenAddress = await datatoken.create(blob, minter)
             await datatoken.mint(tokenAddress, minter, tokenAmount)
-            let balance = await datatoken.balance(tokenAddress, minter)
+            balance = await datatoken.balance(tokenAddress, minter)
             assert(balance.toString() === tokenAmount.toString())
         })
+
+        it('should transfer Datatokens to spender', async () => {
+            await datatoken.transfer(tokenAddress, spender, tokenAmount, minter)
+            balance = await datatoken.balance(tokenAddress, spender)
+            assert(balance.toString() === tokenAmount.toString())
+
+        })
+
+        it('should approve Datatokens to spend', async () => {
+            await datatoken.approve(tokenAddress, minter, tokenAmount, spender)
+        })
+
+        it('should transferFrom Datatokens back to the minter', async () => {
+            await datatoken.transferFrom(tokenAddress, spender, tokenAmount, minter)
+            minter = await datatoken.balance(tokenAddress, spender)
+            assert(balance.toString() === tokenAmount.toString())
+        })
+
     })
 })
