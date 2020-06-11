@@ -3,6 +3,29 @@
       "constant": true,
       "inputs": [
         {
+          "name": "str1",
+          "type": "string"
+        },
+        {
+          "name": "str2",
+          "type": "string"
+        }
+      ],
+      "name": "concatenateStrings",
+      "outputs": [
+        {
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "pure",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
           "name": "value",
           "type": "uint256"
         }
@@ -22,10 +45,6 @@
       "inputs": [
         {
           "name": "_template",
-          "type": "address"
-        },
-        {
-          "name": "_feeManager",
           "type": "address"
         }
       ],

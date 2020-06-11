@@ -195,10 +195,6 @@
         {
           "name": "blob",
           "type": "string"
-        },
-        {
-          "name": "feeManager",
-          "type": "address"
         }
       ],
       "payable": false,
@@ -271,10 +267,6 @@
         {
           "name": "blob",
           "type": "string"
-        },
-        {
-          "name": "feeManager",
-          "type": "address"
         }
       ],
       "name": "initialize",

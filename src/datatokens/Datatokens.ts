@@ -5,7 +5,7 @@ const defaultDatatokensABI = require('../datatokens/DatatokensABI.json')
 
 /**
  * Provides a interface to DataTokens
- 
+
  */
 export class DataTokens {
     public factoryAddress: string
@@ -46,12 +46,22 @@ export class DataTokens {
     ): Promise<string> {
         // Create factory contract object
         const factory = new this.web3.eth.Contract(this.factoryABI, this.factoryAddress, {
-            from: account.getId()
+            from: account
         })
+        const estGas = await factory.methods
+                            .createToken(metaDataStoreURI)
+                            .estimateGas(function(err, estGas){
+                            return estGas
+                      })
         // Invoke createToken function of the contract
         const trxReceipt = await factory.methods
-            .createToken(metaDataStoreURI)
-            .send()
+                            .createToken(metaDataStoreURI)
+                            .send({
+                                    from: account,
+                                    gas: estGas+1,
+                                    gasPrice: '3000000000'
+                                  })
+
         let tokenAddress = null
         try {
             tokenAddress = trxReceipt.events.TokenCreated.returnValues[0]
@@ -78,30 +88,10 @@ export class DataTokens {
         const datatoken = new this.web3.eth.Contract(
             this.datatokensABI,
             dataTokenAddress,
-            { from: account.getId() }
+            { from: account }
         )
         const trxReceipt = await datatoken.methods.approve(spender, amount).send()
         return trxReceipt
-    }
-
-    /**
-     * Approve & Lock for a specified number of blocks (reverts after that if not used)
-     * @param {String} dataTokenAddress
-     * @param {String} toAddress
-     * @param {Number} amount
-     * @param {Number} blocks
-     * @param {Account} account
-     * @return {Promise<string>} transactionId
-     */
-    public async approveAndLock(
-        dataTokenAddress: string,
-        toAddress: string,
-        amount: number,
-        blocks: number,
-        account: Account
-    ): Promise<string> {
-        // TO DO
-        return ''
     }
 
     /**
@@ -118,13 +108,25 @@ export class DataTokens {
         amount: number,
         toAddress?: string
     ): Promise<string> {
-        const address = toAddress || account.getId()
+        const address = toAddress || account
         const datatoken = new this.web3.eth.Contract(
             this.datatokensABI,
             dataTokenAddress,
-            { from: account.getId() }
+            { from: account }
         )
-        const trxReceipt = await datatoken.methods.mint(address, amount).send()
+
+        const estGas = await datatoken.methods.mint(address, amount)
+                            .estimateGas(function(err, estGas){
+                            return estGas
+                      })
+
+        const trxReceipt = await datatoken.methods.mint(address, amount)
+                                                  .send({
+                                                          from:account,
+                                                          gas: estGas*2,
+                                                          gasPrice: '3000000000'
+                                                       })
+
         return trxReceipt
     }
 
@@ -145,7 +147,7 @@ export class DataTokens {
         const datatoken = new this.web3.eth.Contract(
             this.datatokensABI,
             dataTokenAddress,
-            { from: account.getId() }
+            { from: account }
         )
         const trxReceipt = await datatoken.methods.transfer(toAddress, amount).send()
         return trxReceipt
@@ -168,10 +170,10 @@ export class DataTokens {
         const datatoken = new this.web3.eth.Contract(
             this.datatokensABI,
             dataTokenAddress,
-            { from: account.getId() }
+            { from: account }
         )
         const trxReceipt = await datatoken.methods
-            .transferFrom(fromAddress, account.getId(), amount)
+            .transferFrom(fromAddress, account, amount)
             .send()
         return trxReceipt
     }
@@ -186,9 +188,9 @@ export class DataTokens {
         const datatoken = new this.web3.eth.Contract(
             this.datatokensABI,
             dataTokenAddress,
-            { from: account.getId() }
+            { from: account }
         )
-        const trxReceipt = await datatoken.methods.balanceOf(account.getId()).call()
+        const trxReceipt = await datatoken.methods.balanceOf(account).call()
         return trxReceipt
     }
 
