@@ -2,7 +2,6 @@
 'use strict'
 
 const packageInfo = require('../package.json')
-
 const execSync = require('child_process').execSync
 
 process.stdout.write(
