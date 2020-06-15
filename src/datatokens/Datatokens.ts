@@ -123,7 +123,7 @@ export class DataTokens {
         const trxReceipt = await datatoken.methods.mint(address, amount)
                                                   .send({
                                                           from:account,
-                                                          gas: estGas*2,
+                                                          gas: estGas+1,
                                                           gasPrice: '3000000000'
                                                        })
 

@@ -10,8 +10,10 @@ const datatokensABI = require('../../src/datatokens/DatatokensABI.json')
 
 describe('Simple flow', () => {
 
-    let minter
-    let spender
+    let owner
+    let alice
+    let bob
+    let marketplace
     let balance
     let contracts
     let datatoken
@@ -21,23 +23,28 @@ describe('Simple flow', () => {
     let blob = 'https://example.com/dataset-1'
 
     describe('#test', () => {
-        it('should deploy contracts', async () => {
+        it('Initialize Ocean contracts v3', async () => {
             contracts = new TestContractHandler(factoryABI,datatokensABI)
             await contracts.getAccounts()
-            minter = contracts.accounts[0]
-            spender = contracts.accounts[1]
-            await contracts.deployContracts(minter)
+            owner = contracts.accounts[0]
+            alice = contracts.accounts[1]
+            bob = contracts.accounts[2]
+            marketplace = contracts.accounts[3]
+            await contracts.deployContracts(owner)
         })
 
-        it('should create Datatoken object', async () => {
+        it('Alice publishes a dataset', async () => {
+            //Alice's config
+            const config={
+               network: 'ganache',
+               providerUri: 'localhost:8030'
+            }
+
             datatoken = new DataTokens(contracts.factoryAddress, factoryABI, datatokensABI, web3)
-            assert(datatoken !== null)
-        })
+            tokenAddress = await datatoken.create(config.providerUri, alice)
 
-        it('should create Datatoken contract', async () => {
-            tokenAddress = await datatoken.create(blob, minter)
-            assert(tokenAddress !== null)
+            //Alice allows MarketPlace to transfer tokenAmount of DT
+            await datatoken.approve(tokenAddress, alice, tokenAmount, marketplace)
         })
-
     })
 })
