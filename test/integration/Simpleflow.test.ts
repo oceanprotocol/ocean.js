@@ -8,7 +8,7 @@ const web3 = new Web3("http://127.0.0.1:8545")
 const factoryABI = require('../../src/datatokens/FactoryABI.json')
 const datatokensABI = require('../../src/datatokens/DatatokensABI.json')
 
-describe('DataTokens', () => {
+describe('Simple flow', () => {
 
     let minter
     let spender
@@ -39,26 +39,5 @@ describe('DataTokens', () => {
             assert(tokenAddress !== null)
         })
 
-        it('should mint Datatokens', async () => {
-            await datatoken.mint(tokenAddress, minter, tokenAmount)
-            balance = await datatoken.balance(tokenAddress, minter)
-            assert(balance.toString() === tokenAmount.toString())
-        })
-
-        it('should transfer Datatokens to spender', async () => {
-            await datatoken.transfer(tokenAddress, spender, tokenAmount, minter)
-            balance = await datatoken.balance(tokenAddress, spender)
-            assert(balance.toString() === tokenAmount.toString())
-        })
-
-        it('should approve Datatokens to spend', async () => {
-            await datatoken.approve(tokenAddress, minter, tokenAmount, spender)
-        })
-
-        it('should transferFrom Datatokens back to the minter', async () => {
-            await datatoken.transferFrom(tokenAddress, spender, tokenAmount, minter)
-            minter = await datatoken.balance(tokenAddress, spender)
-            assert(balance.toString() === tokenAmount.toString())
-        })
     })
 })
