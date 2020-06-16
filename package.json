@@ -67,7 +67,7 @@
     "lcov-result-merger": "^3.1.0",
     "mocha": "^7.1.0",
     "mock-local-storage": "^1.1.11",
-    "nyc": "^15.0.0",
+    "nyc": "^15.1.0",
     "ora": "^4.0.2",
     "prettier": "^1.19.1",
     "sinon": "^9.0.1",
