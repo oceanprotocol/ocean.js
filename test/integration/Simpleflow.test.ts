@@ -13,14 +13,14 @@ describe('Simple flow', () => {
     let owner
     let alice
     let bob
-    let marketplace
     let balance
     let contracts
     let datatoken
     let tokenAddress
 
     let tokenAmount = 100
-    let blob = 'https://example.com/dataset-1'
+    let transferAmount = 1
+    let blob = 'localhost:8030/api/v1/services'
 
     describe('#test', () => {
         it('Initialize Ocean contracts v3', async () => {
@@ -29,7 +29,6 @@ describe('Simple flow', () => {
             owner = contracts.accounts[0]
             alice = contracts.accounts[1]
             bob = contracts.accounts[2]
-            marketplace = contracts.accounts[3]
             await contracts.deployContracts(owner)
         })
 
@@ -39,12 +38,21 @@ describe('Simple flow', () => {
                network: 'ganache',
                providerUri: 'localhost:8030'
             }
-
+            // Alice creates a Datatoken
             datatoken = new DataTokens(contracts.factoryAddress, factoryABI, datatokensABI, web3)
             tokenAddress = await datatoken.create(config.providerUri, alice)
+        })
 
-            //Alice allows MarketPlace to transfer tokenAmount of DT
-            await datatoken.approve(tokenAddress, alice, tokenAmount, marketplace)
+        it('Alice mints 100 tokens', async () => {
+            datatoken.mint(tokenAddress, alice, tokenAmount)
+        })
+
+        it('Alice transfers 1 token to Bob', async () => {
+            datatoken.transfer(tokenAddress, bob, tokenAmount, alice)
+        })
+
+        it('Bob consumes dataset', async () => {
+            datatoken.transfer(tokenAddress, bob, tokenAmount, alice)
         })
     })
 })
