@@ -1,7 +1,6 @@
 import Account from '../ocean/Account'
-
-const defaultFactoryABI = require('../datatokens/FactoryABI.json')
-const defaultDatatokensABI = require('../datatokens/DatatokensABI.json')
+const defaultFactoryABI = require('@oceanprotocol/artifacts/development/Factory.json')
+const defaultDatatokensABI = require('@oceanprotocol/artifacts/development/DatatokenTemplate.json')
 
 /**
  * Provides a interface to DataTokens
