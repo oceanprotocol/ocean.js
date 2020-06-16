@@ -40,7 +40,7 @@
     "node-fetch": "^2.6.0",
     "save-file": "^2.3.1",
     "uuid": "^8.0.0",
-    "web3": "^1.2.6",
+    "web3": "^1.2.9",
     "web3-eth-contract": "^1.2.9",
     "whatwg-url": "^8.0.0"
   },
