@@ -170,4 +170,35 @@ export class Assets extends Instantiable {
             return storedDdo
         })
     }
+
+    public async download(
+        agreementId: string,
+        serviceEndpoint: string,
+        account: Account,
+        files: File[],
+        destination: string,
+        index: number = -1
+    ): Promise<string> {
+        // const signature = await this.createSignature(account, agreementId)
+        const filesPromises = files
+            .filter((_, i) => index === -1 || i === index)
+            .map(async ({ index: i }) => {
+                let consumeUrl = serviceEndpoint
+                consumeUrl += `?index=${i}`
+                consumeUrl += `&serviceAgreementId=${noZeroX(agreementId)}`
+                consumeUrl += `&consumerAddress=${account.getId()}`
+                // consumeUrl += `&signature=${signature}`
+                try {
+                    // TODO: change to WebServiceConnector.ts
+                    await this.ocean.utils.fetch.downloadFile(consumeUrl, destination, i)
+                } catch (e) {
+                    this.logger.error('Error consuming assets')
+                    this.logger.error(e)
+                    throw e
+                }
+            })
+        await Promise.all(filesPromises)
+        return destination
+    }
+
 }

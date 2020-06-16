@@ -11,8 +11,8 @@ const datatokensABI = require('../../src/datatokens/DatatokensABI.json')
 describe('Simple flow', () => {
 
     let owner
-    let alice
     let bob
+    let alice
     let balance
     let contracts
     let datatoken
