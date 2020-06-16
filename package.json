@@ -56,7 +56,7 @@
     "@types/sinon": "^9.0.0",
     "@typescript-eslint/eslint-plugin": "^2.23.0",
     "@typescript-eslint/parser": "^2.23.0",
-    "auto-changelog": "^2.0.0",
+    "auto-changelog": "^2.1.0",
     "chai": "^4.2.0",
     "chai-spies": "^1.0.0",
     "cross-env": "^7.0.2",
