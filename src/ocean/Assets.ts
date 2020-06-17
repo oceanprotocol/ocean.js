@@ -1,5 +1,6 @@
 import { TransactionReceipt } from 'web3-core'
 import { SearchQuery } from '../aquarius/Aquarius'
+import { File, MetaDataAlgorithm } from '../ddo/MetaData'
 import { DDO } from '../ddo/DDO'
 import { MetaData, EditableMetaData } from '../ddo/MetaData'
 import { Service, ServiceAccess, ServiceComputePrivacy } from '../ddo/Service'
@@ -8,6 +9,7 @@ import DID from './DID'
 import { SubscribablePromise, didZeroX } from '../utils'
 import { Instantiable, InstantiableConfig } from '../Instantiable.abstract'
 
+import { WebServiceConnector } from './utils/WebServiceConnector'
 import { DataTokens } from '../lib'
 
 export enum CreateProgressStep {
@@ -172,7 +174,7 @@ export class Assets extends Instantiable {
     }
 
     public async download(
-        agreementId: string,
+        dtAddress: string,
         serviceEndpoint: string,
         account: Account,
         files: File[],
@@ -185,12 +187,15 @@ export class Assets extends Instantiable {
             .map(async ({ index: i }) => {
                 let consumeUrl = serviceEndpoint
                 consumeUrl += `?index=${i}`
-                consumeUrl += `&serviceAgreementId=${noZeroX(agreementId)}`
-                consumeUrl += `&consumerAddress=${account.getId()}`
+                consumeUrl += `&serviceAgreementId=${dtAddress}`
+                // consumeUrl += `&consumerAddress=${account.getId()}`
                 // consumeUrl += `&signature=${signature}`
+
+                let serviceConnector = new WebServiceConnector(this.logger)
+
                 try {
                     // TODO: change to WebServiceConnector.ts
-                    await this.ocean.utils.fetch.downloadFile(consumeUrl, destination, i)
+                    await serviceConnector.downloadFile(consumeUrl, destination, i)
                 } catch (e) {
                     this.logger.error('Error consuming assets')
                     this.logger.error(e)
