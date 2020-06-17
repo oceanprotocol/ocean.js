@@ -1,8 +1,8 @@
 import { TransactionReceipt } from 'web3-core'
 import { SearchQuery } from '../aquarius/Aquarius'
 import { DDO } from '../ddo/DDO'
-import { MetaData, EditableMetaData } from '../ddo/MetaData'
-import { Service, ServiceAccess, ServiceComputePrivacy } from '../ddo/Service'
+import { Metadata } from '../ddo/interfaces/Metadata'
+import { Service } from '../ddo/interfaces/Service'
 import Account from './Account'
 import DID from './DID'
 import { SubscribablePromise, didZeroX } from '../utils'
@@ -52,8 +52,7 @@ export class Assets extends Instantiable {
         const publisherURI = this.ocean.brizo.getURI()
         const jsonBlob = { t: 0, url: publisherURI }
         const { datatokens } = this.ocean
-        return datatokens.create( JSON.stringify(jsonBlob), publisher)
-        
+        return datatokens.create(JSON.stringify(jsonBlob), publisher)
     }
 
     /**
@@ -64,13 +63,13 @@ export class Assets extends Instantiable {
      * @return {Promise<DDO>}
      */
     public create(
-        metadata: MetaData,
+        metadata: Metadata,
         publisher: Account,
         services: Service[] = [],
         dtAddress?: string
     ): SubscribablePromise<CreateProgressStep, DDO> {
         this.logger.log('Creating asset')
-        return new SubscribablePromise(async observer => {
+        return new SubscribablePromise(async (observer) => {
             if (services.length === 0) {
                 this.logger.log('You have no services. Are you sure about this?')
             }
@@ -80,7 +79,7 @@ export class Assets extends Instantiable {
                 const metadataStoreURI = this.ocean.aquarius.getURI()
                 const jsonBlob = { t: 1, url: metadataStoreURI }
                 const { datatokens } = this.ocean
-                dtAddress = await datatokens.create(JSON.stringify(jsonBlob), publisher )
+                dtAddress = await datatokens.create(JSON.stringify(jsonBlob), publisher)
                 this.logger.log('DataToken creted')
                 observer.next(CreateProgressStep.DataTokenCreated)
             }
@@ -149,7 +148,7 @@ export class Assets extends Instantiable {
                     )
                     .reverse()
                     // Adding index
-                    .map(_ => ({
+                    .map((_) => ({
                         ..._,
                         index: indexCount++
                     })) as Service[]

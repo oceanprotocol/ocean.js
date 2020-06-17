@@ -1,4 +1,4 @@
-import { MetaData } from './MetaData'
+import { Metadata } from './Metadata'
 
 export type ServiceType = 'authorization' | 'metadata' | 'access' | 'compute'
 
@@ -69,7 +69,7 @@ export interface ServiceComputeProvider {
 
 export interface ServiceMetadata extends ServiceCommon {
     type: 'metadata'
-    attributes: MetaData
+    attributes: Metadata
 }
 
 export interface ServiceAccess extends ServiceCommon {
