@@ -25,7 +25,7 @@ export class ConfigHelper {
         confighelp.factoryAddress = null
         confighelp.url = null
         confighelp.network = network
-        const knownconfig = configs.find(c => c.network === network)
+        const knownconfig = configs.find((c) => c.network === network)
         if (knownconfig) {
             confighelp.factoryAddress = knownconfig.factoryAddress
             confighelp.url = knownconfig.url
