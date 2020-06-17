@@ -36,11 +36,6 @@ describe('Simple flow', () => {
         })
 
         it('Alice publishes a dataset', async () => {
-            //Alice's config
-            const config={
-               network: 'ganache',
-               providerUri: 'localhost:8030'
-            }
             // Alice creates a Datatoken
             datatoken = new DataTokens(contracts.factoryAddress, factoryABI, datatokensABI, web3)
             tokenAddress = await datatoken.create(config.providerUri, alice)

@@ -180,8 +180,8 @@ export class Assets extends Instantiable {
     ): Promise<string> {
         
         let consumeUrl = serviceEndpoint
-        consumeUrl += `&consumerAddress=${account}`
-        consumeUrl += `&serviceAgreementId=${dtAddress}`
+        // consumeUrl += `&consumerAddress=${account}`
+        // consumeUrl += `&serviceAgreementId=${dtAddress}`
 
         let serviceConnector = new WebServiceConnector(this.logger)
 
