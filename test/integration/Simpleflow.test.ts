@@ -23,7 +23,7 @@ describe('Simple flow', () => {
 
     let tokenAmount = 100
     let transferAmount = 1
-    let blob = 'https://localhost:8030/api/v1/services'
+    let blob = 'http://localhost:8030/api/v1/provider/services'
 
     describe('#test', () => {
         it('Initialize Ocean contracts v3', async () => {
@@ -56,7 +56,6 @@ describe('Simple flow', () => {
 
         it('Bob consumes dataset', async () => {
             const config = new Config()        
-
             let ocean = await Ocean.getInstance(config)
             ocean.assets.download(tokenAddress, blob, bob)
         })
