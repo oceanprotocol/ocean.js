@@ -92,8 +92,18 @@ export class DataTokens {
             dataTokenAddress,
             { from: account }
         )
-        const trxReceipt = null
-        // TODO:
+        const estGas = await datatoken.methods.mint(address, amount)
+                            .estimateGas(function(err, estGas){
+                            return estGas
+                      })
+
+        const trxReceipt = await datatoken.methods.mint(address, amount)
+                                                  .send({
+                                                          from:account,
+                                                          gas: estGas+1,
+                                                          gasPrice: '3000000000'
+                                                       })
+
         return trxReceipt
     }
 

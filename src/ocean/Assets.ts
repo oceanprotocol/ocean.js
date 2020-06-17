@@ -1,5 +1,6 @@
 import { TransactionReceipt } from 'web3-core'
 import { SearchQuery } from '../aquarius/Aquarius'
+import { File, MetaDataAlgorithm } from '../ddo/MetaData'
 import { DDO } from '../ddo/DDO'
 import { Metadata } from '../ddo/interfaces/Metadata'
 import { Service } from '../ddo/interfaces/Service'
@@ -8,6 +9,7 @@ import DID from './DID'
 import { SubscribablePromise, didZeroX } from '../utils'
 import { Instantiable, InstantiableConfig } from '../Instantiable.abstract'
 
+import { WebServiceConnector } from './utils/WebServiceConnector'
 import { DataTokens } from '../lib'
 
 export enum CreateProgressStep {
@@ -169,4 +171,28 @@ export class Assets extends Instantiable {
             return storedDdo
         })
     }
+
+    public async download(
+        dtAddress: string,
+        serviceEndpoint: string,
+        account: string
+    ): Promise<string> {
+        
+        let consumeUrl = serviceEndpoint
+        // consumeUrl += `&consumerAddress=${account}`
+        // consumeUrl += `&serviceAgreementId=${dtAddress}`
+
+        let serviceConnector = new WebServiceConnector(this.logger)
+
+        try {
+            await serviceConnector.downloadFile(consumeUrl)
+                } catch (e) {
+                    this.logger.error('Error consuming assets')
+                    this.logger.error(e)
+                    throw e
+        }
+            
+        return serviceEndpoint
+    }
+
 }

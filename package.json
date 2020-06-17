@@ -16,7 +16,8 @@
     "release": "release-it --non-interactive",
     "changelog": "auto-changelog -p",
     "prepublishOnly": "npm run build",
-    "test": "mocha --opts test/unit/mocha.opts"
+    "test": "mocha --opts test/unit/mocha.opts",
+    "test:integration": "mocha --opts test/integration/mocha.opts"  
   },
   "repository": {
     "type": "git",
