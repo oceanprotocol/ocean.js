@@ -1,7 +1,7 @@
 [![banner](https://raw.githubusercontent.com/oceanprotocol/art/master/github/repo-banner%402x.png)](https://oceanprotocol.com)
 
 
-<h1 align="center">Ocean-js</h1>
+<h1 align="center">Lib-js</h1>
 
 > JavaScript client library for Ocean Protocol
 > [oceanprotocol.com](https://oceanprotocol.com)
