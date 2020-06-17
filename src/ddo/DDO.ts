@@ -1,8 +1,8 @@
 import { Ocean } from '../ocean/Ocean'
-import { Authentication } from './Authentication'
-import { Proof } from './Proof'
-import { PublicKey } from './PublicKey'
-import { Service, ServiceType } from './Service'
+import { Authentication } from './interfaces/Authentication'
+import { Proof } from './interfaces/Proof'
+import { PublicKey } from './interfaces/PublicKey'
+import { Service, ServiceType } from './interfaces/Service'
 
 /**
  * DID Descriptor Object.

@@ -1,7 +1,7 @@
 import { URL } from 'whatwg-url'
 import { DDO } from '../ddo/DDO'
 import DID from '../ocean/DID'
-import { EditableMetaData } from '../ddo/MetaData'
+import { EditableMetadata } from '../ddo/interfaces/EditableMetadata'
 import { Logger } from '../utils'
 import { WebServiceConnector } from '../ocean/utils/WebServiceConnector'
 
@@ -318,14 +318,14 @@ export class Aquarius {
     /**
      * Edit Metadata for a DDO.
      * @param  {did} string DID.
-     * @param  {newMetadata}  EditableMetaData Metadata fields & new values.
+     * @param  {newMetadata}  EditableMetadata Metadata fields & new values.
      * @param  {String} updated Updated field of the DDO
      * @param  {String} signature Signature using updated field to verify that the consumer has rights
      * @return {Promise<String>} Result.
      */
     public async editMetadata(
         did: DID | string,
-        newMetadata: EditableMetaData,
+        newMetadata: EditableMetadata,
         updated: string,
         signature: string
     ): Promise<string> {

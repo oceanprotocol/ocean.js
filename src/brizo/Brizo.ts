@@ -1,15 +1,14 @@
-import { File, MetaDataAlgorithm } from '../ddo/MetaData'
 import Account from '../ocean/Account'
-import { noZeroX, noDidPrefixed } from '../utils'
+import { noZeroX } from '../utils'
 import { Instantiable, InstantiableConfig } from '../Instantiable.abstract'
-import { DDO } from '../ddo/DDO'
-import { ServiceType } from '../ddo/Service'
 
 const apiPath = '/api/v1/brizo/services'
 
 /**
- * Provides a interface with Brizo.
- * Brizo is the technical component executed by the Publishers allowing to them to provide extended data services.
+ * Provides an interface for provider service.
+ * Provider service is the technical component executed
+ * by the Publishers allowing to them to provide extended
+ * data services.
  */
 export class Brizo extends Instantiable {
     private get url() {

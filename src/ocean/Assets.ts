@@ -1,8 +1,8 @@
 import { TransactionReceipt } from 'web3-core'
 import { SearchQuery } from '../aquarius/Aquarius'
 import { DDO } from '../ddo/DDO'
-import { MetaData, EditableMetaData } from '../ddo/MetaData'
-import { Service, ServiceAccess, ServiceComputePrivacy } from '../ddo/Service'
+import { Metadata } from '../ddo/interfaces/Metadata'
+import { Service } from '../ddo/interfaces/Service'
 import Account from './Account'
 import DID from './DID'
 import { SubscribablePromise, didZeroX } from '../utils'
@@ -63,7 +63,7 @@ export class Assets extends Instantiable {
      * @return {Promise<DDO>}
      */
     public create(
-        metadata: MetaData,
+        metadata: Metadata,
         publisher: Account,
         services: Service[] = [],
         dtAddress?: string
