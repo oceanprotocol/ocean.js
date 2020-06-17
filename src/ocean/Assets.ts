@@ -176,34 +176,24 @@ export class Assets extends Instantiable {
     public async download(
         dtAddress: string,
         serviceEndpoint: string,
-        account: Account,
-        files: File[],
-        destination: string,
-        index: number = -1
+        account: string
     ): Promise<string> {
-        // const signature = await this.createSignature(account, agreementId)
-        const filesPromises = files
-            .filter((_, i) => index === -1 || i === index)
-            .map(async ({ index: i }) => {
-                let consumeUrl = serviceEndpoint
-                consumeUrl += `?index=${i}`
-                consumeUrl += `&serviceAgreementId=${dtAddress}`
-                // consumeUrl += `&consumerAddress=${account.getId()}`
-                // consumeUrl += `&signature=${signature}`
+        
+        let consumeUrl = serviceEndpoint
+        consumeUrl += `&consumerAddress=${account}`
+        consumeUrl += `&serviceAgreementId=${dtAddress}`
 
-                let serviceConnector = new WebServiceConnector(this.logger)
+        let serviceConnector = new WebServiceConnector(this.logger)
 
-                try {
-                    // TODO: change to WebServiceConnector.ts
-                    await serviceConnector.downloadFile(consumeUrl, destination, i)
+        try {
+            await serviceConnector.downloadFile(consumeUrl)
                 } catch (e) {
                     this.logger.error('Error consuming assets')
                     this.logger.error(e)
                     throw e
-                }
-            })
-        await Promise.all(filesPromises)
-        return destination
+        }
+            
+        return serviceEndpoint
     }
 
 }

@@ -1,6 +1,9 @@
 import { assert } from 'chai'
 import { TestContractHandler } from '../TestContractHandler'
 import { DataTokens } from '../../src/datatokens/Datatokens'
+import { Ocean } from '../../src/ocean/Ocean'
+import { Config } from '../../src/models/Config'
+
 
 const Web3 = require('web3')
 const web3 = new Web3("http://127.0.0.1:8545")
@@ -20,7 +23,7 @@ describe('Simple flow', () => {
 
     let tokenAmount = 100
     let transferAmount = 1
-    let blob = 'localhost:8030/api/v1/services'
+    let blob = 'https://localhost:8030/api/v1/services'
 
     describe('#test', () => {
         it('Initialize Ocean contracts v3', async () => {
@@ -52,7 +55,10 @@ describe('Simple flow', () => {
         })
 
         it('Bob consumes dataset', async () => {
-            datatoken.transfer(tokenAddress, bob, tokenAmount, alice)
+            const config = new Config()        
+
+            let ocean = await Ocean.getInstance(config)
+            ocean.assets.download(tokenAddress, blob, bob)
         })
     })
 })
