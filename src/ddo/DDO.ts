@@ -1,8 +1,8 @@
 import { Ocean } from '../ocean/Ocean'
-import { Authentication } from './Authentication'
-import { Proof } from './Proof'
-import { PublicKey } from './PublicKey'
-import { Service, ServiceType } from './Service'
+import { Authentication } from './interfaces/Authentication'
+import { Proof } from './interfaces/Proof'
+import { PublicKey } from './interfaces/PublicKey'
+import { Service, ServiceType } from './interfaces/Service'
 
 /**
  * DID Descriptor Object.
@@ -72,7 +72,7 @@ export class DDO {
             throw new Error('index is not set')
         }
 
-        const service = this.service.find(s => s.index === index)
+        const service = this.service.find((s) => s.index === index)
 
         return service as Service<T>
     }
@@ -87,7 +87,7 @@ export class DDO {
             throw new Error('serviceType not set')
         }
 
-        return this.service.find(s => s.type === serviceType) as Service<T>
+        return this.service.find((s) => s.type === serviceType) as Service<T>
     }
 
     /**
@@ -100,7 +100,7 @@ export class DDO {
         const { files, name, author, license } = attributes.main
 
         const values = [
-            ...(files || []).map(({ checksum }) => checksum).filter(_ => !!_),
+            ...(files || []).map(({ checksum }) => checksum).filter((_) => !!_),
             name,
             author,
             license,
