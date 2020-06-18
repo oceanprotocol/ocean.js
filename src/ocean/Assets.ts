@@ -181,8 +181,7 @@ export class Assets extends Instantiable {
     ): Promise<string> {
         
         let consumeUrl = serviceEndpoint
-        consumeUrl += `?`
-        consumeUrl += `consumerAddress=${account}`
+        consumeUrl += `?consumerAddress=${account}`
         consumeUrl += `&tokenAddress=${dtAddress}`
         consumeUrl += `&transferTxId=${txId}`
 

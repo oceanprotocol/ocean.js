@@ -54,7 +54,7 @@ describe('Simple flow', () => {
         it('Bob consumes dataset', async () => {
             const config = new Config()        
             let ocean = await Ocean.getInstance(config)
-            await ocean.assets.download(tokenAddress, blob, bob, transactionId)
+            await ocean.assets.download(tokenAddress, blob, transactionId, bob)
         })
     })
 })
