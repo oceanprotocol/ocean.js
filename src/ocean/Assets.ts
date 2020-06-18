@@ -175,21 +175,23 @@ export class Assets extends Instantiable {
     public async download(
         dtAddress: string,
         serviceEndpoint: string,
+        txId: string,
         account: string
     ): Promise<string> {
         
         let consumeUrl = serviceEndpoint
-        // consumeUrl += `&consumerAddress=${account}`
-        // consumeUrl += `&serviceAgreementId=${dtAddress}`
+        consumeUrl += `?consumerAddress=${account}`
+        consumeUrl += `&tokenAddress=${dtAddress}`
+        consumeUrl += `&transferTxId=${txId}`
 
         let serviceConnector = new WebServiceConnector(this.logger)
 
         try {
             await serviceConnector.downloadFile(consumeUrl)
-                } catch (e) {
-                    this.logger.error('Error consuming assets')
-                    this.logger.error(e)
-                    throw e
+        } catch (e) {
+            this.logger.error('Error consuming assets')
+            this.logger.error(e)
+            throw e
         }
             
         return serviceEndpoint

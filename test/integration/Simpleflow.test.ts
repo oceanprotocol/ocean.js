@@ -20,6 +20,7 @@ describe('Simple flow', () => {
     let contracts
     let datatoken
     let tokenAddress
+    let transactionId
 
     let tokenAmount = 100
     let transferAmount = 1
@@ -38,21 +39,22 @@ describe('Simple flow', () => {
         it('Alice publishes a dataset', async () => {
             // Alice creates a Datatoken
             datatoken = new DataTokens(contracts.factoryAddress, factoryABI, datatokensABI, web3)
-            tokenAddress = await datatoken.create(config.providerUri, alice)
+            tokenAddress = await datatoken.create(blob, alice)
         })
 
         it('Alice mints 100 tokens', async () => {
-            datatoken.mint(tokenAddress, alice, tokenAmount)
+            await datatoken.mint(tokenAddress, alice, tokenAmount)
         })
 
         it('Alice transfers 1 token to Bob', async () => {
-            datatoken.transfer(tokenAddress, bob, tokenAmount, alice)
+            const ts = await datatoken.transfer(tokenAddress, bob, tokenAmount, alice)
+            transactionId = ts['transactionHash']
         })
 
         it('Bob consumes dataset', async () => {
             const config = new Config()        
             let ocean = await Ocean.getInstance(config)
-            ocean.assets.download(tokenAddress, blob, bob)
+            await ocean.assets.download(tokenAddress, blob, transactionId, bob)
         })
     })
 })
