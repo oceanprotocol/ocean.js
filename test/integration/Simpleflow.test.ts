@@ -1,4 +1,3 @@
-import { assert } from 'chai'
 import { TestContractHandler } from '../TestContractHandler'
 import { DataTokens } from '../../src/datatokens/Datatokens'
 import { Ocean } from '../../src/ocean/Ocean'
@@ -16,15 +15,14 @@ describe('Simple flow', () => {
     let owner
     let bob
     let alice
-    let balance
     let contracts
     let datatoken
     let tokenAddress
     let transactionId
 
-    let tokenAmount = 100
-    let transferAmount = 1
-    let blob = 'http://localhost:8030/api/v1/provider/services'
+    const tokenAmount = 100
+    const transferAmount = 1
+    const blob = 'http://localhost:8030/api/v1/provider/services'
 
     describe('#test', () => {
         it('Initialize Ocean contracts v3', async () => {
@@ -47,13 +45,13 @@ describe('Simple flow', () => {
         })
 
         it('Alice transfers 1 token to Bob', async () => {
-            const ts = await datatoken.transfer(tokenAddress, bob, tokenAmount, alice)
+            const ts = await datatoken.transfer(tokenAddress, bob, transferAmount, alice)
             transactionId = ts['transactionHash']
         })
 
         it('Bob consumes dataset', async () => {
             const config = new Config()        
-            let ocean = await Ocean.getInstance(config)
+            const ocean = await Ocean.getInstance(config)
             await ocean.assets.download(tokenAddress, blob, transactionId, bob)
         })
     })
