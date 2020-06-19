@@ -26,7 +26,7 @@ describe('Simple flow', () => {
     describe('#test', () => {
         it('Initialize Ocean contracts v3', async () => {
             contracts = new TestContractHandler(
-                factory.abi, 
+                factory.abi,
                 datatokensTemplate.abi,
                 datatokensTemplate.bytecode,
                 factory.bytecode
