@@ -46,7 +46,7 @@
     "whatwg-url": "^8.0.0"
   },
   "devDependencies": {
-    "@release-it/bumper": "^1.1.0",
+    "@release-it/bumper": "^1.4.0",
     "@truffle/hdwallet-provider": "^1.0.33",
     "@types/chai": "^4.2.11",
     "@types/chai-spies": "^1.0.1",
