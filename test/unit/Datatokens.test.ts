@@ -6,25 +6,22 @@ import Web3 from 'web3'
 const factory = require('@oceanprotocol/contracts/artifacts/development/Factory.json')
 const datatokensTemplate = require('@oceanprotocol/contracts/artifacts/development/DataTokenTemplate.json')
 
-
-const web3 = new Web3("http://127.0.0.1:8545")
-
+const web3 = new Web3('http://127.0.0.1:8545')
 
 describe('DataTokens', () => {
-
     let minter
     let spender
     let balance
     let contracts
     let datatoken
     let tokenAddress
-    let tokenAmount = 100
-    let blob = 'https://example.com/dataset-1'
+    const tokenAmount = 100
+    const blob = 'https://example.com/dataset-1'
 
     describe('#test', () => {
         it('#deploy', async () => {
             contracts = new TestContractHandler(
-                factory.abi, 
+                factory.abi,
                 datatokensTemplate.abi,
                 datatokensTemplate.bytecode,
                 factory.bytecode
@@ -37,9 +34,9 @@ describe('DataTokens', () => {
 
         it('#init', async () => {
             datatoken = new DataTokens(
-                contracts.factoryAddress, 
-                factory.abi, 
-                datatokensTemplate.abi, 
+                contracts.factoryAddress,
+                factory.abi,
+                datatokensTemplate.abi,
                 web3
             )
             assert(datatoken !== null)

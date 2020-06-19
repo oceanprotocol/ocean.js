@@ -178,13 +178,12 @@ export class Assets extends Instantiable {
         txId: string,
         account: string
     ): Promise<string> {
-        
         let consumeUrl = serviceEndpoint
         consumeUrl += `?consumerAddress=${account}`
         consumeUrl += `&tokenAddress=${dtAddress}`
         consumeUrl += `&transferTxId=${txId}`
 
-        let serviceConnector = new WebServiceConnector(this.logger)
+        const serviceConnector = new WebServiceConnector(this.logger)
 
         try {
             await serviceConnector.downloadFile(consumeUrl)
@@ -193,8 +192,7 @@ export class Assets extends Instantiable {
             this.logger.error(e)
             throw e
         }
-            
+
         return serviceEndpoint
     }
-
 }

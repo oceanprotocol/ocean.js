@@ -40,26 +40,20 @@ export class DataTokens {
      */
     public async create(metaDataStoreURI: string, account: Account): Promise<string> {
         // Create factory contract object
-        const factory = new this.web3.eth.Contract(
-            this.factoryABI, 
-            this.factoryAddress, 
-            {
-                from: account
-            }
-        )
+        const factory = new this.web3.eth.Contract(this.factoryABI, this.factoryAddress, {
+            from: account
+        })
         const estGas = await factory.methods
-                            .createToken(metaDataStoreURI)
-                            .estimateGas(function(err, estGas){
-                                return estGas
-                      })
+            .createToken(metaDataStoreURI)
+            .estimateGas(function (err, estGas) {
+                return estGas
+            })
         // Invoke createToken function of the contract
-        const trxReceipt = await factory.methods
-                            .createToken(metaDataStoreURI)
-                            .send({
-                                    from: account,
-                                    gas: estGas+1,
-                                    gasPrice: '3000000000'
-                                  })
+        const trxReceipt = await factory.methods.createToken(metaDataStoreURI).send({
+            from: account,
+            gas: estGas + 1,
+            gasPrice: '3000000000'
+        })
 
         let tokenAddress = null
         try {
@@ -113,17 +107,17 @@ export class DataTokens {
             dataTokenAddress,
             { from: account }
         )
-        const estGas = await datatoken.methods.mint(address, amount)
-                            .estimateGas(function(err, estGas){
-                            return estGas
-                      })
+        const estGas = await datatoken.methods
+            .mint(address, amount)
+            .estimateGas(function (err, estGas) {
+                return estGas
+            })
 
-        const trxReceipt = await datatoken.methods.mint(address, amount)
-                                                  .send({
-                                                          from:account,
-                                                          gas: estGas+1,
-                                                          gasPrice: '3000000000'
-                                                       })
+        const trxReceipt = await datatoken.methods.mint(address, amount).send({
+            from: account,
+            gas: estGas + 1,
+            gasPrice: '3000000000'
+        })
 
         return trxReceipt
     }
