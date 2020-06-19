@@ -16,8 +16,8 @@
     "release": "release-it --non-interactive",
     "changelog": "auto-changelog -p",
     "prepublishOnly": "npm run build",
-    "test": "mocha --opts test/unit/mocha.opts",
-    "test:integration": "mocha --opts test/integration/mocha.opts"  
+    "test": "mocha --config=test/unit/.mocharc.json --node-env=test --exit",
+    "test:integration": "mocha --opts test/integration/mocha.opts"
   },
   "repository": {
     "type": "git",
@@ -46,8 +46,8 @@
     "whatwg-url": "^8.0.0"
   },
   "devDependencies": {
+    "@oceanprotocol/contracts": "^0.2.2",
     "@release-it/bumper": "^1.4.0",
-    "@oceanprotocol/contracts": "^0.2.0",
     "@truffle/hdwallet-provider": "^1.0.33",
     "@types/chai": "^4.2.11",
     "@types/chai-spies": "^1.0.1",
@@ -76,10 +76,7 @@
     "ts-node": "^8.10.2",
     "typedoc": "^0.17.1",
     "typescript": "^3.9.5",
-    "uglifyjs-webpack-plugin": "^2.2.0",
-    "webpack": "^4.42.0",
-    "webpack-cli": "^3.3.11",
-    "webpack-merge": "^4.2.2"
+    "yargs": "^15.3.1"
   },
   "nyc": {
     "include": [
