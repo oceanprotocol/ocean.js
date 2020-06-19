@@ -1,7 +1,7 @@
 import { URL } from 'whatwg-url'
 import { DDO } from '../ddo/DDO'
 import DID from '../ocean/DID'
-import { EditableMetaData } from '../ddo/MetaData'
+import { EditableMetadata } from '../ddo/interfaces/EditableMetadata'
 import { Logger } from '../utils'
 import { WebServiceConnector } from '../ocean/utils/WebServiceConnector'
 
@@ -64,7 +64,7 @@ export class Aquarius {
                 this.logger.error('Success accessing consume endpoint: ', consumptionUrl)
                 return consumptionUrl
             })
-            .catch(error => {
+            .catch((error) => {
                 this.logger.error(
                     'Error fetching the data asset consumption url: ',
                     error
@@ -94,10 +94,10 @@ export class Aquarius {
                 )
                 return this.transformResult()
             })
-            .then(results => {
+            .then((results) => {
                 return this.transformResult(results)
             })
-            .catch(error => {
+            .catch((error) => {
                 this.logger.error('Error fetching querying metadata: ', error)
                 return this.transformResult()
             })
@@ -133,10 +133,10 @@ export class Aquarius {
                 )
                 return this.transformResult()
             })
-            .then(results => {
+            .then((results) => {
                 return this.transformResult(results)
             })
-            .catch(error => {
+            .catch((error) => {
                 this.logger.error('Error fetching querying metadata by text: ', error)
                 return this.transformResult()
             })
@@ -168,7 +168,7 @@ export class Aquarius {
             .then((response: DDO) => {
                 return new DDO(response) as DDO
             })
-            .catch(error => {
+            .catch((error) => {
                 this.logger.error('Error fetching querying metadata: ', error)
                 return null as DDO
             })
@@ -204,7 +204,7 @@ export class Aquarius {
             .then((response: DDO) => {
                 return new DDO(response) as DDO
             })
-            .catch(error => {
+            .catch((error) => {
                 this.logger.error('Error fetching querying metadata: ', error)
                 return null as DDO
             })
@@ -253,7 +253,7 @@ export class Aquarius {
                 return null
             })
 
-            .catch(error => {
+            .catch((error) => {
                 this.logger.error('Error transfering ownership metadata: ', error)
                 return null
             })
@@ -307,7 +307,7 @@ export class Aquarius {
                 return null
             })
 
-            .catch(error => {
+            .catch((error) => {
                 this.logger.error('Error updating compute privacy: ', error)
                 return null
             })
@@ -318,14 +318,14 @@ export class Aquarius {
     /**
      * Edit Metadata for a DDO.
      * @param  {did} string DID.
-     * @param  {newMetadata}  EditableMetaData Metadata fields & new values.
+     * @param  {newMetadata}  EditableMetadata Metadata fields & new values.
      * @param  {String} updated Updated field of the DDO
      * @param  {String} signature Signature using updated field to verify that the consumer has rights
      * @return {Promise<String>} Result.
      */
     public async editMetadata(
         did: DID | string,
-        newMetadata: EditableMetaData,
+        newMetadata: EditableMetadata,
         updated: string,
         signature: string
     ): Promise<string> {
@@ -353,7 +353,7 @@ export class Aquarius {
                 return null
             })
 
-            .catch(error => {
+            .catch((error) => {
                 this.logger.error('Error transfering ownership metadata: ', error)
                 return null
             })
@@ -391,7 +391,7 @@ export class Aquarius {
                 return null
             })
 
-            .catch(error => {
+            .catch((error) => {
                 this.logger.error('Error transfering ownership metadata: ', error)
                 return null
             })
@@ -416,7 +416,7 @@ export class Aquarius {
         }
     ): QueryResult {
         return {
-            results: (results || []).map(ddo => new DDO(ddo as DDO)),
+            results: (results || []).map((ddo) => new DDO(ddo as DDO)),
             page,
             totalPages,
             totalResults

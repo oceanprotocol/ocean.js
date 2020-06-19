@@ -1,0 +1,28 @@
+dist: xenial
+sudo: required
+language: node_js
+node_js:
+  - '12'
+
+services:
+  - docker
+
+cache: npm
+
+matrix:
+  fast_finish: true
+
+before_install:
+  - npm install -g npm
+  - npm install -g ganache-cli@~6.7.0
+
+before_script:
+  - ganache-cli > ganache-cli.log &
+
+script:
+  - npm run lint
+  - npm run build
+  - npm run test:unit  
+
+notifications:
+  email: false
