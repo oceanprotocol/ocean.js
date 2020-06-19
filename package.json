@@ -43,7 +43,8 @@
     "uuid": "^8.0.0",
     "web3": "^1.2.9",
     "web3-eth-contract": "^1.2.9",
-    "whatwg-url": "^8.0.0"
+    "whatwg-url": "^8.0.0",
+    "mocha": "^8.0.1"
   },
   "devDependencies": {
     "@oceanprotocol/contracts": "^0.2.2",

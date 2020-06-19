@@ -8,5 +8,5 @@
     "bail": true,
     "exit": true,
     "timeout": 20000,
-    "file": ["test/unit/tsconfig.json", "test/unit/DataTokens.test.ts"]
+    "file": ["./test/unit/tsconfig.json", "./test/unit/DataTokens.test.ts"]
 }
