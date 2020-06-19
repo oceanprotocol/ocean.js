@@ -5,7 +5,6 @@
     "mock-local-storage"
   ],
   "full-trace": true,
-  "bail": true,
   "exit": true,
-  "timeout": "20000"
+  "timeout": "300000"
 }

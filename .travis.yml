@@ -14,7 +14,7 @@ matrix:
 
 before_install:
   - npm install -g npm
-  - npm install -g ganache-cli@~6.5.1
+  - npm install -g ganache-cli@~6.7.0
 
 before_script:
   - ganache-cli > ganache-cli.log &
@@ -22,7 +22,7 @@ before_script:
 script:
   - npm run lint
   - npm run build
-  - npm run test
+  - npm run test:unit  
 
 notifications:
   email: false

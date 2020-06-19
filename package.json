@@ -16,7 +16,7 @@
     "release": "release-it --non-interactive",
     "changelog": "auto-changelog -p",
     "prepublishOnly": "npm run build",
-    "test": "mocha --config=test/unit/.mocharc.json --node-env=test --exit",
+    "test:unit": "mocha --config=test/unit/.mocharc.json --node-env=test --exit test/unit/**/*.ts",
     "test:integration": "mocha --opts test/integration/mocha.opts"
   },
   "repository": {
@@ -43,8 +43,7 @@
     "uuid": "^8.0.0",
     "web3": "^1.2.9",
     "web3-eth-contract": "^1.2.9",
-    "whatwg-url": "^8.0.0",
-    "mocha": "^8.0.1"
+    "whatwg-url": "^8.0.0"
   },
   "devDependencies": {
     "@oceanprotocol/contracts": "^0.2.2",
@@ -73,8 +72,9 @@
     "ora": "^4.0.2",
     "prettier": "^2.0.5",
     "sinon": "^9.0.1",
-    "source-map-support": "^0.5.16",
+    "source-map-support": "^0.5.19",
     "ts-node": "^8.10.2",
+    "ts-node-register": "^1.0.0",
     "typedoc": "^0.17.1",
     "typescript": "^3.9.5",
     "yargs": "^15.3.1"
