@@ -41,6 +41,7 @@ export class TestContractHandler {
                 arguments: ['Template Contract', 'TEMPLATE', minter, cap, blob]
             })
             .estimateGas(function (err, estGas) {
+                if (err) console.log('DeployContracts: ' + err)
                 return estGas
             })
         // deploy the contract and get it's address
@@ -64,6 +65,7 @@ export class TestContractHandler {
                 arguments: [this.templateAddress]
             })
             .estimateGas(function (err, estGas) {
+                if (err) console.log('DeployContracts: ' + err)
                 return estGas
             })
         // deploy the contract and get it's address

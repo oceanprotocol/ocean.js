@@ -46,6 +46,7 @@ export class DataTokens {
         const estGas = await factory.methods
             .createToken(metaDataStoreURI)
             .estimateGas(function (err, estGas) {
+                if (err) console.log('Datatokens: ' + err)
                 return estGas
             })
         // Invoke createToken function of the contract
@@ -110,6 +111,7 @@ export class DataTokens {
         const estGas = await datatoken.methods
             .mint(address, amount)
             .estimateGas(function (err, estGas) {
+                if (err) console.log('Datatokens: ' + err)
                 return estGas
             })
 
