@@ -1,6 +1,6 @@
 import { TransactionReceipt } from 'web3-core'
 import { SearchQuery } from '../aquarius/Aquarius'
-import {  MetadataAlgorithm } from '../ddo/interfaces/MetadataAlgorithm'
+import { MetadataAlgorithm } from '../ddo/interfaces/MetadataAlgorithm'
 import { File } from '../ddo/interfaces/File'
 import { DDO } from '../ddo/DDO'
 import { Metadata } from '../ddo/interfaces/Metadata'
