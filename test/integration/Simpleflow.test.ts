@@ -1,4 +1,3 @@
-import { assert } from 'chai'
 import { TestContractHandler } from '../TestContractHandler'
 import { DataTokens } from '../../src/datatokens/Datatokens'
 import { Ocean } from '../../src/ocean/Ocean'
@@ -13,7 +12,6 @@ describe('Simple flow', () => {
     let owner
     let bob
     let alice
-    let balance
     let contracts
     let datatoken
     let tokenAddress

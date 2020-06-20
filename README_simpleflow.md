@@ -36,47 +36,46 @@ Let's go through each of these in detail.
 
 For now, you're Alice:) Let's proceed.
 
+Run `ganache-cli` locally:
+```bash
+ganache-cli
+```
 
 ```javascript
-const { Ocean, Logger } = require('@oceanprotocol/lib')
-const config={
-   network: 'rinkeby',
-   privateKey:'8da4ef21b864d2cc526dbdb2a120bd2874c36c9d0a1fb7f8c63d7f7a8b41de8f',
-}
-const ocean = Ocean(alice_config)
-const account = await ocean.accounts.list()[0]
-const myToken = ocean.datatoken.create('localhost:8030',account)
-const dt_address=myToken.getAddress()
-console.log(dt_address)
+const tokenAmount = 100
+const transferAmount = 1
+const blob = 'http://localhost:8030/api/v1/provider/services'
+
+const alice = await ocean.accounts.list()[0]
+const bob = await ocean.accounts.list()[0]
+// create datatoken class
+const datatoken = new DataTokens(contracts.factoryAddress, factoryABI, datatokensABI, web3)
+// deploy datatoken
+const tokenAddress = await datatoken.create(blob, alice)
+
 ```
 
 ## 2. Alice hosts the dataset
 
-A locally providerService is required, which will serve just one file for this demo.
-Let's create the file to be shared:
-```
-touch /var/mydata/myFolder1/file
-````
-
-Run the providerService:
-(given that ERC20 contract address from the above is 0x1234)
+Clone [provider-py](https://github.com/oceanprotocol/provider-py) and update your local environment variables:
 
 ```
-ENV DT="{'0x1234':'/var/mydata/myFolder1'}"
-docker run @oceanprotocol/provider-py -e CONFIG=DT
+export PROVIDER_ADDRESS=your_provider_address
+export PROVIDER_KEY=your_provider_key
+export CONFIG='{"File": "https://raw.githubusercontent.com/oceanprotocol/barge/master/README.md"}'
 ```
-
 
 ## 3. Alice mints 100 tokens
 
 ```javascript
-myToken.mint(100)
+datatoken.mint(tokenAddress, alice, tokenAmount)
 ```
 
 ## 4. Alice transfers 1 token to Bob
 
 ```javascript
-myToken.transfer(1,BobAddress)
+const ts = await datatoken.transfer(tokenAddress, bob, transferAmount, alice)
+const transactionId = ts['transactionHash']
 ```
 
 ## 5. Bob consumes dataset
@@ -86,17 +85,10 @@ Now, you are Bob :)
 
 ```javascript
 
-const bob_config={
-   network: 'rinkeby',
-   privateKey:'1234ef21b864d2cc526dbdb2a120bd2874c36c9d0a1fb7f8c63d7f7a8b41de8f'  
-}
-const bob_ocean = Ocean(bob_config)
+const config = new Config()        
+const ocean = await Ocean.getInstance()
 
-
-const account = await bob_ocean.accounts.list()[0]
-const asset=bob_ocean.assets.getFromDTAddress(dt_address)[0]
-const file=asset.download(account)
-
+await ocean.assets.download(tokenAddress, blob, transactionId, bob)
 ```
 
 
