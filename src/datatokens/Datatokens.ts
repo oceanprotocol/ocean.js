@@ -1,7 +1,7 @@
 import Account from '../ocean/Account'
 
-import * as defaultFactoryABI from '@oceanprotocol/contracts/artifacts/development/Factory.json'
-import * as defaultDatatokensABI from '@oceanprotocol/contracts/artifacts/development/DataTokenTemplate.json'
+const defaultFactoryABI = require('@oceanprotocol/contracts/artifacts/development/Factory.json')
+const defaultDatatokensABI = require('@oceanprotocol/contracts/artifacts/development/DataTokenTemplate.json')
 
 /**
  * Provides a interface to DataTokens
@@ -27,7 +27,6 @@ export class DataTokens {
         web3: any
     ) {
         this.factoryAddress = factoryAddress
-
         this.factoryABI = factoryABI || defaultFactoryABI
         this.datatokensABI = datatokensABI || defaultDatatokensABI
         this.web3 = web3
@@ -41,11 +40,28 @@ export class DataTokens {
      */
     public async create(metaDataStoreURI: string, account: Account): Promise<string> {
         // Create factory contract object
-        const tokenAddress = null
         const factory = new this.web3.eth.Contract(this.factoryABI, this.factoryAddress, {
             from: account
         })
-        // TODO:
+        const estGas = await factory.methods
+            .createToken(metaDataStoreURI)
+            .estimateGas(function (err, estGas) {
+                if (err) console.log('Datatokens: ' + err)
+                return estGas
+            })
+        // Invoke createToken function of the contract
+        const trxReceipt = await factory.methods.createToken(metaDataStoreURI).send({
+            from: account,
+            gas: estGas + 1,
+            gasPrice: '3000000000'
+        })
+
+        let tokenAddress = null
+        try {
+            tokenAddress = trxReceipt.events.TokenCreated.returnValues[0]
+        } catch (e) {
+            console.error(e)
+        }
         return tokenAddress
     }
 
@@ -92,17 +108,18 @@ export class DataTokens {
             dataTokenAddress,
             { from: account }
         )
-        const estGas = await datatoken.methods.mint(address, amount)
-                            .estimateGas(function(err, estGas){
-                            return estGas
-                      })
+        const estGas = await datatoken.methods
+            .mint(address, amount)
+            .estimateGas(function (err, estGas) {
+                if (err) console.log('Datatokens: ' + err)
+                return estGas
+            })
 
-        const trxReceipt = await datatoken.methods.mint(address, amount)
-                                                  .send({
-                                                          from:account,
-                                                          gas: estGas+1,
-                                                          gasPrice: '3000000000'
-                                                       })
+        const trxReceipt = await datatoken.methods.mint(address, amount).send({
+            from: account,
+            gas: estGas + 1,
+            gasPrice: '3000000000'
+        })
 
         return trxReceipt
     }

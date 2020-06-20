@@ -1,6 +1,7 @@
 import { TransactionReceipt } from 'web3-core'
 import { SearchQuery } from '../aquarius/Aquarius'
-import { File, MetaDataAlgorithm } from '../ddo/MetaData'
+import { MetadataAlgorithm } from '../ddo/interfaces/MetadataAlgorithm'
+import { File } from '../ddo/interfaces/File'
 import { DDO } from '../ddo/DDO'
 import { Metadata } from '../ddo/interfaces/Metadata'
 import { Service } from '../ddo/interfaces/Service'
@@ -178,13 +179,12 @@ export class Assets extends Instantiable {
         txId: string,
         account: string
     ): Promise<string> {
-        
         let consumeUrl = serviceEndpoint
         consumeUrl += `?consumerAddress=${account}`
         consumeUrl += `&tokenAddress=${dtAddress}`
         consumeUrl += `&transferTxId=${txId}`
 
-        let serviceConnector = new WebServiceConnector(this.logger)
+        const serviceConnector = new WebServiceConnector(this.logger)
 
         try {
             await serviceConnector.downloadFile(consumeUrl)
@@ -193,8 +193,7 @@ export class Assets extends Instantiable {
             this.logger.error(e)
             throw e
         }
-            
+
         return serviceEndpoint
     }
-
 }
