@@ -8,7 +8,8 @@ const web3 = new Web3('http://127.0.0.1:8545')
 const factory = require('@oceanprotocol/contracts/artifacts/development/Factory.json')
 const datatokensTemplate = require('@oceanprotocol/contracts/artifacts/development/DataTokenTemplate.json')
 
-describe('Simple flow', () => {
+describe('Marketplace flow', () => {
+    let ddo
     let owner
     let bob
     let alice
@@ -44,22 +45,28 @@ describe('Simple flow', () => {
                 datatokensTemplate.abi,
                 web3
             )
-            tokenAddress = await datatoken.create(blob, alice)
-        })
-
-        it('Alice mints 100 tokens', async () => {
-            await datatoken.mint(tokenAddress, alice, tokenAmount)
-        })
-
-        it('Alice transfers 1 token to Bob', async () => {
-            const ts = await datatoken.transfer(tokenAddress, bob, tokenAmount, alice)
-            transactionId = ts.transactionHash
-        })
-
-        it('Bob consumes dataset', async () => {
+            // tokenAddress = await datatoken.create(blob, alice)
+        
             const config = new Config()
             const ocean = await Ocean.getInstance(config)
-            await ocean.assets.download(tokenAddress, blob, transactionId, bob)
+
+            ddo = await ocean.assets.createSimpleAsset(datatoken, alice, blob)
+
         })
+
+        // it('Alice mints 100 tokens', async () => {
+        //     await datatoken.mint(tokenAddress, alice, tokenAmount)
+        // })
+
+        // it('Alice transfers 1 token to Bob', async () => {
+        //     const ts = await datatoken.transfer(tokenAddress, bob, transferAmount, alice)
+        //     transactionId = ts.transactionHash
+        // })
+
+        // it('Bob consumes dataset', async () => {
+        //     const config = new Config()
+        //     const ocean = await Ocean.getInstance(config)
+        //     await ocean.assets.download(tokenAddress, blob, transactionId, bob)
+        // })
     })
 })
