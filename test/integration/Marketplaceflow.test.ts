@@ -45,7 +45,7 @@ describe('Marketplace flow', () => {
                 datatokensTemplate.abi,
                 web3
             )
-        
+
             const config = new Config()
             const ocean = await Ocean.getInstance(config)
 

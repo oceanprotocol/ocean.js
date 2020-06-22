@@ -15,7 +15,6 @@ describe('Rinkeby test', () => {
     const tokenAmount = 100
     const blob = 'http://localhost:8030/api/v1/provider/services'
 
-
     describe('#test', () => {
         it('Initialize Ocean contracts v3', async () => {
             contracts = new TestContractHandler(
@@ -25,7 +24,7 @@ describe('Rinkeby test', () => {
                 factory.bytecode,
                 web3
             )
-            
+
             const privateKey = 'PRIVATE_KEY'
             account = web3.eth.accounts.privateKeyToAccount('0x' + privateKey)
             web3.eth.accounts.wallet.add(account)
