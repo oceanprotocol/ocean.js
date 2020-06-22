@@ -53,7 +53,7 @@ describe('Simple flow', () => {
         })
 
         it('Alice transfers 1 token to Bob', async () => {
-            const ts = await datatoken.transfer(tokenAddress, bob, tokenAmount, alice)
+            const ts = await datatoken.transfer(tokenAddress, bob, transferAmount, alice)
             transactionId = ts.transactionHash
         })
 
