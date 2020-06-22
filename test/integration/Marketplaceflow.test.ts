@@ -27,7 +27,8 @@ describe('Marketplace flow', () => {
                 factory.abi,
                 datatokensTemplate.abi,
                 datatokensTemplate.bytecode,
-                factory.bytecode
+                factory.bytecode,
+                web3
             )
             await contracts.getAccounts()
             owner = contracts.accounts[0]

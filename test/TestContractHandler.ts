@@ -1,8 +1,5 @@
 import { Contract } from 'web3-eth-contract'
 
-const Web3 = require('web3')
-const web3 = new Web3('http://127.0.0.1:8545')
-
 export class TestContractHandler {
     public factory: Contract
     public template: Contract
@@ -11,21 +8,24 @@ export class TestContractHandler {
     public factoryBytecode: string
     public factoryAddress: string
     public templateAddress: string
+    public web3: any
 
     constructor(
         factoryABI: Contract,
         datatokensABI: Contract,
         templateBytecode: string,
-        factoryBytecode: string
+        factoryBytecode: string,
+        web3: any
     ) {
-        this.factory = new web3.eth.Contract(factoryABI)
-        this.template = new web3.eth.Contract(datatokensABI)
+        this.web3 = web3
+        this.factory = new this.web3.eth.Contract(factoryABI)
+        this.template = new this.web3.eth.Contract(datatokensABI)
         this.templateBytecode = templateBytecode
         this.factoryBytecode = factoryBytecode
     }
 
     public async getAccounts() {
-        this.accounts = await web3.eth.getAccounts()
+        this.accounts = await this.web3.eth.getAccounts()
     }
 
     public async deployContracts(minter: string) {
