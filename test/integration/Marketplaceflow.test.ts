@@ -15,7 +15,7 @@ describe('Marketplace flow', () => {
     let alice
     let contracts
     let datatoken
-    let tokenAddress
+    // let tokenAddress
     let transactionId
 
     const tokenAmount = 100
@@ -45,28 +45,28 @@ describe('Marketplace flow', () => {
                 datatokensTemplate.abi,
                 web3
             )
-            // tokenAddress = await datatoken.create(blob, alice)
         
             const config = new Config()
             const ocean = await Ocean.getInstance(config)
 
             ddo = await ocean.assets.createSimpleAsset(datatoken, alice, blob)
 
+            await console.log(ddo)
         })
 
-        // it('Alice mints 100 tokens', async () => {
-        //     await datatoken.mint(tokenAddress, alice, tokenAmount)
-        // })
+        it('Alice mints 100 tokens', async () => {
+            await datatoken.mint(ddo, alice, tokenAmount)
+        })
 
-        // it('Alice transfers 1 token to Bob', async () => {
-        //     const ts = await datatoken.transfer(tokenAddress, bob, transferAmount, alice)
-        //     transactionId = ts.transactionHash
-        // })
+        it('Bob gets 1 datatoken', async () => {
+            const ts = await datatoken.transfer(ddo, bob, transferAmount, alice)
+            transactionId = ts.transactionHash
+        })
 
-        // it('Bob consumes dataset', async () => {
-        //     const config = new Config()
-        //     const ocean = await Ocean.getInstance(config)
-        //     await ocean.assets.download(tokenAddress, blob, transactionId, bob)
-        // })
+        it('Bob consumes dataset', async () => {
+            const config = new Config()
+            const ocean = await Ocean.getInstance(config)
+            await ocean.assets.download(ddo, blob, transactionId, bob)
+        })
     })
 })
