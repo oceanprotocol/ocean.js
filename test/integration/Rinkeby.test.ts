@@ -6,7 +6,6 @@ const factory = require('@oceanprotocol/contracts/artifacts/development/Factory.
 const datatokensTemplate = require('@oceanprotocol/contracts/artifacts/development/DataTokenTemplate.json')
 
 describe('Rinkeby test', () => {
-    let owner
     let contracts
 
     describe('#test', () => {
@@ -18,7 +17,12 @@ describe('Rinkeby test', () => {
                 factory.bytecode,
                 web3
             )
-            await contracts.deployContracts(owner)
+            
+            const privateKey = 'PRIVATE_KEY'
+            const account = web3.eth.accounts.privateKeyToAccount('0x' + privateKey)
+            web3.eth.accounts.wallet.add(account)
+
+            await contracts.deployContracts(account.address)
         })
 
     })

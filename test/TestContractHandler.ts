@@ -53,7 +53,7 @@ export class TestContractHandler {
             .send({
                 from: minter,
                 gas: estGas + 1,
-                gasPrice: '12345678'
+                gasPrice: '3000000000'
             })
             .then(function (contract) {
                 return contract.options.address
@@ -77,7 +77,7 @@ export class TestContractHandler {
             .send({
                 from: minter,
                 gas: estGas + 1,
-                gasPrice: '12345678'
+                gasPrice: '3000000000'
             })
             .then(function (contract) {
                 return contract.options.address
