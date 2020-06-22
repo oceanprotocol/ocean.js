@@ -15,7 +15,6 @@ describe('Marketplace flow', () => {
     let alice
     let contracts
     let datatoken
-    // let tokenAddress
     let transactionId
 
     const tokenAmount = 100
@@ -50,8 +49,6 @@ describe('Marketplace flow', () => {
             const ocean = await Ocean.getInstance(config)
 
             ddo = await ocean.assets.createSimpleAsset(datatoken, alice, blob)
-
-            await console.log(ddo)
         })
 
         it('Alice mints 100 tokens', async () => {
