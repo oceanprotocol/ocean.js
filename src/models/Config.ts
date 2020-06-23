@@ -18,13 +18,13 @@ export class Config {
      * Web3 Provider.
      * @type {any}
      */
-    public web3Provider: any
+    public web3Provider?: any
 
     /**
      * Factory address
      * @type {string}
      */
-    public factoryAddress: string
+    public factoryAddress?: string
 
     /**
      * Factory ABI

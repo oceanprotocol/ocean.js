@@ -2,10 +2,10 @@ import { assert, expect, spy, use } from 'chai'
 import spies from 'chai-spies'
 
 import { DDO } from '../../../src/ddo/DDO'
-import { Service } from '../../../src/ddo/Service'
+import { Service } from '../../../src/ddo/interfaces/Service'
 import { Ocean } from '../../../src/ocean/Ocean'
-import config from '../config'
-import TestContractHandler from '../keeper/TestContractHandler'
+import { Config } from '../config'
+import { TestContractHandler  } from '../../TestContractHandler'
 
 import * as jsonDDO from '../__fixtures__/ddo.json'
 
@@ -167,7 +167,7 @@ describe('DDO', () => {
 
     beforeEach(async () => {
         await TestContractHandler.prepareContracts()
-        ocean = await Ocean.getInstance(config)
+        ocean = await Ocean.getInstance(Config)
     })
 
     afterEach(() => {

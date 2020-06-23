@@ -10,6 +10,7 @@ import { OceanUtils } from './utils/Utils'
 import { Aquarius } from '../aquarius/Aquarius'
 import { Brizo } from '../brizo/Brizo'
 import { DataTokens } from '../datatokens/Datatokens'
+import { Network } from '../datatokens/Network'
 import { Config } from '../models/Config'
 
 import {
@@ -54,10 +55,11 @@ export class Ocean extends Instantiable {
             instanceConfig.config.web3Provider
         )
         instance.versions = await Versions.getInstance(instanceConfig)
-
+        instance.network = new Network()
         return instance
     }
 
+    public network: Network
     /**
      * Brizo instance.
      * @type {Brizo}

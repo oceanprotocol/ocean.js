@@ -5,11 +5,9 @@ import { Service, ServiceAccess, ServiceComputePrivacy } from '../ddo/interfaces
 import { EditableMetadata } from '../ddo/interfaces/EditableMetadata'
 import Account from './Account'
 import DID from './DID'
-import { SubscribablePromise, didZeroX } from '../utils'
+import { SubscribablePromise } from '../utils'
 import { Instantiable, InstantiableConfig } from '../Instantiable.abstract'
-
 import { WebServiceConnector } from './utils/WebServiceConnector'
-import { DataTokens } from '../lib'
 
 export enum CreateProgressStep {
     CreatingDataToken,
@@ -297,7 +295,7 @@ export class Assets extends Instantiable {
      */
     public async creator(did: string): Promise<string> {
         const ddo = await this.resolve(did)
-        const checksum = ddo.getChecksum()
+        const checksum = ddo.getChecksum(this.ocean.web3Provider)
         const { creator, signatureValue } = ddo.proof
         const signer = await this.ocean.utils.signature.verifyText(
             checksum,

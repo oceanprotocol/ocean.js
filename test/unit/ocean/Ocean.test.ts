@@ -4,7 +4,7 @@ import spies from 'chai-spies'
 import Account from '../../../src/ocean/Account'
 import { Ocean } from '../../../src/ocean/Ocean'
 import config from '../config'
-import TestContractHandler from '../keeper/TestContractHandler'
+import { TestContractHandler } from '../../TestContractHandler'
 
 use(spies)
 
