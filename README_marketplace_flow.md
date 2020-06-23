@@ -1,154 +1,126 @@
- # ocean-lib
+# Quickstart: Marketplace Flow
 
+This batteries-included flow includes metadata, multiple services for one datatoken, and compute-to-data.
 
-`ocean-lib-js` is a Javascript/Typescript library to privately & securely publish, exchange, and consume data. With it, you can:
-* **Publish** data services: static data, streaming data, or compute-to-data. Every data service gets its own [ERC20](https://github.com/ethereum/EIPs/blob/7f4f0377730f5fc266824084188cc17cf246932e/EIPS/eip-20.md) token.
-* **Mint** data tokens for a given data service
-* **Transfer** data tokens to another owner
-* **Consume** data tokens, to access the service
-
-`ocean-lib-js` is part of the [Ocean Protocol](www.oceanprotocol.com) toolset.
-
-# Installation
-```
-// ES6
-import { Ocean, Logger } from '@oceanprotocol/lib'
-
-// ES2015
-const { Ocean, Logger } = require('@oceanprotocol/lib')
-
-```
-
-# Quickstart
-
-This section describes a marketplace flow with multiple services
+It focuses on Alice's experience as a publisher, and Bob's experience as a buyer & consumer. The rest are services used by Alice and Bob.
 
 Here's the steps.
-1. Alice publishes a dataset (= publishes a datatoken contract)
+1. Initialize services
+1. Alice publishes assets for data services (= publishes a datatoken contract and metadata)
 1. Alice mints 100 tokens
-1. Alice transfers 1 token to Bob
-1. Bob consumes dataset
+1. Alice allows marketplace to sell her datatokens
+1. Marketplace posts asset for sale
+1. Value swap: Bob buys datatokens from marketplace
+1. Bob uses a service he just purchased (download)
 
-Let's go through each of these in detail.
+Let's go through each step.
 
+## 0. Installation
 
-## 1. Alice hosts the dataset
+If you haven't installed yet:
+```console
+pip install ocean-lib
+```
 
-A locally providerService ,metadatastore and marketplace are required:
+## 1. Initialize services
 
-Run the providerService and metadatastore:
+This quickstart treats the publisher service, metadata store, and marketplace as 
+externally-run services. For convenience, we run them locally in default settings.
+
 ```
 docker run @oceanprotocol/provider-py:latest
-docker run @oceanprotocol/aquarius:latest
+docker run @oceanprotocol/metadatastore:latest
 docker run @oceanprotocol/marketplace:latest
 ```
 
+## 2. Alice publishes assets for data services (= publishes a datatoken contract)
 
-## 2. Alice publishes a dataset (= publishes a datatoken contract)
+```python
+from ocean_lib import Ocean
+from ocean_lib.web3_internal.utils import get_account
 
-For now, you're Alice:) Let's proceed.
-
-
-```javascript
-const { Ocean, Logger } = require('@oceanprotocol/lib')
-
-const marketPlaceAddress='0x9876'
-//Alice's config
-const config={
-   network: 'rinkeby',
-   privateKey:'8da4ef21b864d2cc526dbdb2a120bd2874c36c9d0a1fb7f8c63d7f7a8b41de8f',
-   metadataStoreURI: 'localhost:5000',
-   providerUri: 'localhost:8030'
+#Alice's config
+config = {
+   'network' : 'rinkeby',
+   'privateKey' :'8da4ef21b864d2cc526dbdb2a120bd2874c36c9d0a1fb7f8c63d7f7a8b41de8f',
+   'metadataStoreUri' : 'localhost:5000',
+   'providerUri' : 'localhost:8030'
 }
-const ocean = Ocean(alice_config)
-const account = await ocean.accounts.list()[0]
+ocean = Ocean(config)
+account = get_account(0)
 
+data_token = ocean.create_data_token(ocean.config.metadata_store_url, account)
+token_address = data_token.address
 
-const myToken = ocean.datatoken.create(config.metadataStoreURI,account)
-//Alice allows MarketPlace to transfer 20 DT
-myToken.approve(marketPlaceAddress,20)
+metadata =  {"main": {
+    "type": "dataset", "name": "10 Monkey Species Small", "author": "Mario", 
+    "license": "CC0: Public Domain", "dateCreated": "2012-02-01T10:55:11Z", 
+    "files": [{ "index": 0, "contentType": "application/zip", "url": "https://s3.amazonaws.com/datacommons-seeding-us-east/10_Monkey_Species_Small/assets/training.zip"},
+              { "index": 1, "contentType": "text/text", "url": "https://s3.amazonaws.com/datacommons-seeding-us-east/10_Monkey_Species_Small/assets/monkey_labels.txt"},
+              { "index": 2, "contentType": "application/zip", "url": "https://s3.amazonaws.com/datacommons-seeding-us-east/10_Monkey_Species_Small/assets/validation.zip"}]}}
+asset = ocean.assets.create(metadata, account, data_token_address=token_address)
+assert token_address == asset._other_values['dataTokenAddress']
 
-const dt_address=myToken.getAddress()
-
-//create asset 1
-const metaData={
-   "did":"did:op:1234",
-   "owner":"0xaaaaa",
-   "dtAddress":dt_address,
-   "name":"Asset1",
-   "services="[
-      {  "id":0, "serviceEndpoint":"providerUri", "type":"download", "dtCost":10, "timeout":0,
-         "files":[{"url":"http://example.net"},{"url":"http://example.com" }]
-      },
-      { "id":1, "type":"compute", "serviceEndpoint":"providerUri", "dtCost":1,"timeout":3600},
-      { "id":2,   "type":"compute",  "serviceEndpoint":"providerUri",  "dtCost":2, "timeout":7200 },
-   ]
-}
-//create will encrypt the URLs using publisher and update the ddo before pushing to aquarius
-//create will require that metaData.dtAddress is a valid DT Contract address
-const asset = ocean.assets.create(metaData,account)
-const did = asset.did
+did = asset.did
 ```
-
-
 
 ## 3. Alice mints 100 tokens
 
-```javascript
-myToken.mint(100)
+```python
+data_token.mint(account.address, 100, account)
 ```
 
-## 4. Exchange of value : How Bob gets DT
-```javascript
-const bob_config={
-   network: 'rinkeby',
-   privateKey:'1234ef21b864d2cc526dbdb2a120bd2874c36c9d0a1fb7f8c63d7f7a8b41de8f'  
-   marketPlaceUri: 'localhost:3000'
-}
-const bob_ocean = Ocean(bob_config)
-const bob_account = await bob_ocean.accounts.list()[0]
+## 4. Alice allows marketplace to sell her datatokens
 
-const asset = ocean.assets.resolve(did)
-const serviceIndex = assets.findServiceByType('compute')
-const num_dt_needed = assets.getDtCost(serviceIndex)
-//Bob need to buy num_dt_needed . DTAddress = asset.dtAddress
-
-const {price, currency } = ocean.marketplace.getPrice(num_dt_needed,asset.dtAddress)
-bob_account.approve(price, currency, marketPlaceAddress)
-ocean.marketplace.buy(num_dt_needed,asset.dtAddress)
+```python
+marketplace_address = '0x068ed00cf0441e4829d9784fcbe7b9e26d4bd8d0'
+data_token.approve(marketplace_address, 20)
 ```
 
-## 5. Bob consumes dataset
+## 5. Marketplace posts asset for sale
+Now, you're the marketplace:)
 
-Now, you are Bob :)
+```python
+from ocean_lib import Ocean
 
-
-```javascript
-
-const bob_config={
-   network: 'rinkeby',
-   privateKey:'1234ef21b864d2cc526dbdb2a120bd2874c36c9d0a1fb7f8c63d7f7a8b41de8f'  
+#Market's config
+config = {
+   'network': 'rinkeby',
+   'privateKey':'1234ef21b864d2cc526dbdb2a120bd2874c36c9d0a1fb7f8c63d7f7a8b41de8f',
 }
-const bob_ocean = Ocean(bob_config)
+market_ocean = Ocean(config)
 
+asset = ocean.assets.resolve(did)
+service1 = asset.get_service('download')
+service2 = asset.get_service('access')
+price = 10.0 #marketplace-set price of 10 USD / datatoken
 
-const account = await bob_ocean.accounts.list()[0]
-const asset = ocean.assets.getFromDID(did)
-const serviceIndex = assets.findServiceByType('compute')
-
-export const rawAlgoMeta = {
-  rawcode: `console.log('Hello world'!)`,
-  format: 'docker-image',
-  version: '0.1',
-  container: {
-    entrypoint: 'node $ALGO',
-    image: 'node',
-    tag: '10'
-  }
-}
-
-const computeJob=asset.StartCompute(serviceIndex, rawAlgoMeta, account)
-
+#Display key asset information, such as the cost of each service
+print(f"Service 1 costs {service1.get_num_dt_needed() * price} USD") # 1.5 * 10 = 15
+print(f"Service 2 costs {service2.get_num_dt_needed() * price} USD") # 2.5 * 10 = 25
 ```
 
+## 6. Value swap: Bob buys datatokens from marketplace
 
+```python
+#Not shown: in marketplace GUI, Bob uses Stripe to send USD to marketplace (or other methods / currencies).
+
+market_token = market_ocean.get_data_token(token_address)
+market_token.transfer(dst_address=bob_address, 1.0)
+```
+   
+## 7. Bob uses a service he just purchased (download)
+Now, you're Bob:)
+
+```python
+
+#Bob's config
+config = {
+   'network': 'rinkeby',
+   'privateKey':'1234ef21b864d2cc526dbdb2a120bd2874c36c9d0a1fb7f8c63d7f7a8b41de8o',
+}
+market_ocean = Ocean(config)
+
+service = asset.get_service('access')
+file_path = bob_ocean.assets.download(asset.did, service.index, bob_account, '~/my-datasets')
+```
