@@ -15,10 +15,10 @@ export class Config {
     public aquariusUri?: string
 
     /**
-     * Brizo URL.
+     * Provider URL.
      * @type {string}
      */
-    public brizoUri?: string
+    public providerUri?: string
 
     /**
      * Web3 Provider.

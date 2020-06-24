@@ -2,7 +2,7 @@ import Account from '../ocean/Account'
 import { noZeroX } from '../utils'
 import { Instantiable, InstantiableConfig } from '../Instantiable.abstract'
 
-const apiPath = '/api/v1/brizo/services'
+const apiPath = '/api/v1/service/'
 
 /**
  * Provides an interface for provider service.
@@ -10,9 +10,9 @@ const apiPath = '/api/v1/brizo/services'
  * by the Publishers allowing to them to provide extended
  * data services.
  */
-export class Brizo extends Instantiable {
+export class Provider extends Instantiable {
     private get url() {
-        return this.config.brizoUri
+        return this.config.providerUri
     }
 
     constructor(config: InstantiableConfig) {

@@ -5,7 +5,7 @@ LoggerInstance.setLevel(LogLevel.Error)
 
 export default {
     aquariusUri: 'http://localhost:5000',
-    brizoUri: 'http://localhost:8030',
+    providerUri: 'http://localhost:8030',
     nodeUri: `http://localhost:${process.env.ETH_PORT || 8545}`,
     parityUri: 'http://localhost:9545',
     secretStoreUri: 'http://localhost:12001',

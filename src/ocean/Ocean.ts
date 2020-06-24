@@ -8,7 +8,7 @@ import { Versions } from './Versions'
 import { OceanUtils } from './utils/Utils'
 
 import { Aquarius } from '../aquarius/Aquarius'
-import { Brizo } from '../brizo/Brizo'
+import { Provider } from '../provider/Provider'
 import { DataTokens } from '../datatokens/Datatokens'
 import { Network } from '../datatokens/Network'
 import { Config } from '../models/Config'
@@ -38,7 +38,7 @@ export class Ocean extends Instantiable {
 
         instance.utils = await OceanUtils.getInstance(instanceConfig)
 
-        instance.brizo = new Brizo(instanceConfig)
+        instance.provider = new Provider(instanceConfig)
         instance.aquarius = new Aquarius(
             instanceConfig.config.aquariusUri,
             instanceConfig.logger
@@ -59,12 +59,17 @@ export class Ocean extends Instantiable {
         return instance
     }
 
-    public network: Network
     /**
-     * Brizo instance.
-     * @type {Brizo}
+     * Network instance
+     * @type {Network}
      */
-    public brizo: Brizo
+    public network: Network
+
+    /**
+     * Provider instance.
+     * @type {Provider}
+     */
+    public provider: Provider
 
     /**
      * Web3 provider.

@@ -48,7 +48,7 @@ export class Assets extends Instantiable {
      * @return {Promise<String>}
      */
     public createSimpleAsset(publisher: Account): Promise<string> {
-        const publisherURI = this.ocean.brizo.getURI()
+        const publisherURI = this.ocean.provider.getURI()
         const jsonBlob = { t: 0, url: publisherURI }
         const { datatokens } = this.ocean
         return datatokens.create(JSON.stringify(jsonBlob), publisher)
@@ -87,7 +87,7 @@ export class Assets extends Instantiable {
 
             this.logger.log('Encrypting files')
             observer.next(CreateProgressStep.EncryptingFiles)
-            const encryptedFiles = await this.ocean.brizo.encrypt(
+            const encryptedFiles = await this.ocean.provider.encrypt(
                 did.getId(),
                 metadata.main.files,
                 publisher,
@@ -364,7 +364,7 @@ export class Assets extends Instantiable {
         return {
             type: 'access',
             index: 2,
-            serviceEndpoint: this.ocean.brizo.getConsumeEndpoint(),
+            serviceEndpoint: this.ocean.provider.getConsumeEndpoint(),
             attributes: {
                 main: {
                     creator: consumerAccount.getId(),
