@@ -200,14 +200,13 @@ export class Assets extends Instantiable {
         return this.ocean.aquarius.retrieveDDOByUrl(serviceEndpoint)
     }
 
-
     public async resolveByDTAddress(
         dtAddress: string,
         offset?: number,
-        page? : number,
-        sort? : number,
-        query? : number
-    ) : Promise<QueryResult> {
+        page?: number,
+        sort?: number,
+        query?: number
+    ): Promise<QueryResult> {
         const searchQuery = {
             offset: offset || 100,
             page: page || 1,
@@ -221,6 +220,7 @@ export class Assets extends Instantiable {
         } as SearchQuery
         return this.ocean.aquarius.queryMetadata(searchQuery)
     }
+
     /**
      * Edit Metadata for a DDO.
      * @param  {did} string DID.
