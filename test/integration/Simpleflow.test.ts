@@ -27,7 +27,8 @@ describe('Simple flow', () => {
                 factory.abi,
                 datatokensTemplate.abi,
                 datatokensTemplate.bytecode,
-                factory.bytecode
+                factory.bytecode,
+                web3
             )
             await contracts.getAccounts()
             owner = contracts.accounts[0]
@@ -52,7 +53,7 @@ describe('Simple flow', () => {
         })
 
         it('Alice transfers 1 token to Bob', async () => {
-            const ts = await datatoken.transfer(tokenAddress, bob, tokenAmount, alice)
+            const ts = await datatoken.transfer(tokenAddress, bob, transferAmount, alice)
             transactionId = ts.transactionHash
         })
 

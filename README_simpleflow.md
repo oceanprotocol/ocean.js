@@ -41,6 +41,7 @@ Run `ganache-cli` locally:
 ganache-cli
 ```
 
+Then proceed in with your code:
 ```javascript
 const tokenAmount = 100
 const transferAmount = 1
@@ -60,6 +61,7 @@ const tokenAddress = await datatoken.create(blob, alice)
 Clone [provider-py](https://github.com/oceanprotocol/provider-py) and update your local environment variables:
 
 ```
+export FLASK_APP=ocean_provider/run.py
 export PROVIDER_ADDRESS=your_provider_address
 export PROVIDER_KEY=your_provider_key
 export CONFIG='{"File": "https://raw.githubusercontent.com/oceanprotocol/barge/master/README.md"}'

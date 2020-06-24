@@ -24,7 +24,8 @@ describe('DataTokens', () => {
                 factory.abi,
                 datatokensTemplate.abi,
                 datatokensTemplate.bytecode,
-                factory.bytecode
+                factory.bytecode,
+                web3
             )
             await contracts.getAccounts()
             minter = contracts.accounts[0]

@@ -2,7 +2,7 @@ import Account from '../ocean/Account'
 import { noZeroX } from '../utils'
 import { Instantiable, InstantiableConfig } from '../Instantiable.abstract'
 
-const apiPath = '/api/v1/brizo/services'
+const apiPath = '/api/v1/provider/services'
 
 /**
  * Provides an interface for provider service.

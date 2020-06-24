@@ -51,11 +51,14 @@ export class Assets extends Instantiable {
      * @param  {Account}  publisher Publisher account.
      * @return {Promise<String>}
      */
-    public createSimpleAsset(publisher: Account): Promise<string> {
+    public createSimpleAsset(
+        datatoken: DataTokens,
+        publisher: Account,
+        blob: string
+    ): Promise<string> {
         const publisherURI = this.ocean.brizo.getURI()
-        const jsonBlob = { t: 0, url: publisherURI }
-        const { datatokens } = this.ocean
-        return datatokens.create(JSON.stringify(jsonBlob), publisher)
+        // const jsonBlob = { t: 0, url: publisherURI }
+        return datatoken.create(JSON.stringify(blob), publisher)
     }
 
     /**
