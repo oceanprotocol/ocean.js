@@ -3,6 +3,12 @@ export { LogLevel } from '../utils/Logger'
 
 export class Config {
     /**
+     * Ethereum node URL.
+     * @type {string}
+     */
+    public nodeUri?: string
+
+    /**
      * Aquarius URL.
      * @type {string}
      */

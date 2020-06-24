@@ -3,7 +3,7 @@ import { WebServiceConnector } from '../../../src/ocean/utils/WebServiceConnecto
 // @ts-ignore
 export default class WebServiceConnectorMock extends WebServiceConnector {
     constructor(private returnData: any) {
-        super()
+        super(returnData)
     }
 
     // @ts-ignore
