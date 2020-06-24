@@ -1,4 +1,4 @@
-import { SearchQuery, QueryResult } from '../aquarius/Aquarius'
+import { SearchQuery, QueryResult } from '../metadatastore/MetadataStore'
 import { DDO } from '../ddo/DDO'
 import { Metadata } from '../ddo/interfaces/Metadata'
 import { Service, ServiceAccess, ServiceComputePrivacy } from '../ddo/interfaces/Service'
@@ -75,7 +75,7 @@ export class Assets extends Instantiable {
             if (!dtAddress) {
                 this.logger.log('Creating datatoken')
                 observer.next(CreateProgressStep.CreatingDataToken)
-                const metadataStoreURI = this.ocean.aquarius.getURI()
+                const metadataStoreURI = this.ocean.metadatastore.getURI()
                 const jsonBlob = { t: 1, url: metadataStoreURI }
                 const { datatokens } = this.ocean
                 dtAddress = await datatokens.create(JSON.stringify(jsonBlob), publisher)
@@ -160,7 +160,7 @@ export class Assets extends Instantiable {
             observer.next(CreateProgressStep.ProofGenerated)
             this.logger.log('Storing DDO')
             observer.next(CreateProgressStep.StoringDdo)
-            const storedDdo = await this.ocean.aquarius.storeDDO(ddo)
+            const storedDdo = await this.ocean.metadatastore.storeDDO(ddo)
             this.logger.log('DDO stored')
             observer.next(CreateProgressStep.DdoStored)
             return storedDdo
@@ -196,7 +196,7 @@ export class Assets extends Instantiable {
      * @return {Promise<DDO>}
      */
     public async resolve(did: string): Promise<DDO> {
-        return this.ocean.aquarius.retrieveDDO(did)
+        return this.ocean.metadatastore.retrieveDDO(did)
     }
 
     public async resolveByDTAddress(
@@ -216,7 +216,7 @@ export class Assets extends Instantiable {
             },
             text: dtAddress
         } as SearchQuery
-        return (await this.ocean.aquarius.queryMetadata(searchQuery)).results
+        return (await this.ocean.metadatastore.queryMetadata(searchQuery)).results
     }
 
     /**
@@ -231,7 +231,7 @@ export class Assets extends Instantiable {
         newMetadata: EditableMetadata,
         account: Account
     ): Promise<string> {
-        const oldDdo = await this.ocean.aquarius.retrieveDDO(did)
+        const oldDdo = await this.ocean.metadatastore.retrieveDDO(did)
         // get a signature
         const signature = await this.ocean.utils.signature.signForAquarius(
             oldDdo.updated,
@@ -239,7 +239,7 @@ export class Assets extends Instantiable {
         )
         let result = null
         if (signature != null)
-            result = await this.ocean.aquarius.editMetadata(
+            result = await this.ocean.metadatastore.editMetadata(
                 did,
                 newMetadata,
                 oldDdo.updated,
@@ -263,7 +263,7 @@ export class Assets extends Instantiable {
         computePrivacy: ServiceComputePrivacy,
         account: Account
     ): Promise<string> {
-        const oldDdo = await this.ocean.aquarius.retrieveDDO(did)
+        const oldDdo = await this.ocean.metadatastore.retrieveDDO(did)
         // get a signature
         const signature = await this.ocean.utils.signature.signForAquarius(
             oldDdo.updated,
@@ -271,7 +271,7 @@ export class Assets extends Instantiable {
         )
         let result = null
         if (signature != null)
-            result = await this.ocean.aquarius.updateComputePrivacy(
+            result = await this.ocean.metadatastore.updateComputePrivacy(
                 did,
                 serviceIndex,
                 computePrivacy.allowRawAlgorithm,
@@ -291,7 +291,7 @@ export class Assets extends Instantiable {
      * @return {Promise<string>}
      */
     public async retire(did: string, account: Account): Promise<string> {
-        const oldDdo = await this.ocean.aquarius.retrieveDDO(did)
+        const oldDdo = await this.ocean.metadatastore.retrieveDDO(did)
         // get a signature
         const signature = await this.ocean.utils.signature.signForAquarius(
             oldDdo.updated,
@@ -299,7 +299,7 @@ export class Assets extends Instantiable {
         )
         let result = null
         if (signature != null)
-            result = await this.ocean.aquarius.retire(did, oldDdo.updated, signature)
+            result = await this.ocean.metadatastore.retire(did, oldDdo.updated, signature)
         return result
     }
 
@@ -332,7 +332,7 @@ export class Assets extends Instantiable {
      * @return {Promise<DDO[]>}
      */
     public async query(query: SearchQuery) {
-        return this.ocean.aquarius.queryMetadata(query)
+        return this.ocean.metadatastore.queryMetadata(query)
     }
 
     /**
@@ -341,7 +341,7 @@ export class Assets extends Instantiable {
      * @return {Promise<DDO[]>}
      */
     public async search(text: string) {
-        return this.ocean.aquarius.queryMetadataByText({
+        return this.ocean.metadatastore.queryMetadataByText({
             text,
             page: 1,
             offset: 100,

@@ -7,7 +7,7 @@ import { Assets } from './Assets'
 import { Versions } from './Versions'
 import { OceanUtils } from './utils/Utils'
 
-import { Aquarius } from '../aquarius/Aquarius'
+import { MetadataStore } from '../metadatastore/MetadataStore'
 import { Provider } from '../provider/Provider'
 import { DataTokens } from '../datatokens/Datatokens'
 import { Network } from '../datatokens/Network'
@@ -39,8 +39,8 @@ export class Ocean extends Instantiable {
         instance.utils = await OceanUtils.getInstance(instanceConfig)
 
         instance.provider = new Provider(instanceConfig)
-        instance.aquarius = new Aquarius(
-            instanceConfig.config.aquariusUri,
+        instance.metadatastore = new MetadataStore(
+            instanceConfig.config.metadataStoreUri,
             instanceConfig.logger
         )
 
@@ -78,10 +78,10 @@ export class Ocean extends Instantiable {
     public web3Provider: any
 
     /**
-     * Aquarius instance.
-     * @type {Aquarius}
+     * MetadataStore instance.
+     * @type {MetadataStore}
      */
-    public aquarius: Aquarius
+    public metadatastore: MetadataStore
 
     /**
      * Ocean account submodule

@@ -9,10 +9,10 @@ export class Config {
     public nodeUri?: string
 
     /**
-     * Aquarius URL.
+     * Metadata Store URL.
      * @type {string}
      */
-    public aquariusUri?: string
+    public metadataStoreUri?: string
 
     /**
      * Provider URL.

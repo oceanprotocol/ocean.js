@@ -51,7 +51,10 @@ export class Versions extends Instantiable {
 
         // MetadataStore
         try {
-            const { software: name, version } = await this.ocean.aquarius.getVersionInfo()
+            const {
+                software: name,
+                version
+            } = await this.ocean.metadatastore.getVersionInfo()
             versions.metadataStore = {
                 name,
                 status: OceanPlatformTechStatus.Working,

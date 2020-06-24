@@ -1,7 +1,7 @@
 import { assert, spy, use } from 'chai'
 import spies from 'chai-spies'
 
-import { SearchQuery } from '../../../src/aquarius/Aquarius'
+import { SearchQuery } from '../../../src/metadatastore/MetadataStore'
 import { Ocean } from '../../../src/ocean/Ocean'
 import config from '../config'
 
