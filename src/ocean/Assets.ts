@@ -1,4 +1,4 @@
-import { SearchQuery } from '../aquarius/Aquarius'
+import { SearchQuery, QueryResult } from '../aquarius/Aquarius'
 import { DDO } from '../ddo/DDO'
 import { Metadata } from '../ddo/interfaces/Metadata'
 import { Service, ServiceAccess, ServiceComputePrivacy } from '../ddo/interfaces/Service'
@@ -196,14 +196,31 @@ export class Assets extends Instantiable {
      * @return {Promise<DDO>}
      */
     public async resolve(did: string): Promise<DDO> {
-        // TODO: get serviceEndpoint from datatoken
-        // const {
-        //     serviceEndpoint
-        // } = await this.ocean.keeper.didRegistry.getAttributesByDid(did)
         const serviceEndpoint = 'https://123.com'
         return this.ocean.aquarius.retrieveDDOByUrl(serviceEndpoint)
     }
 
+
+    public async resolveByDTAddress(
+        dtAddress: string,
+        offset?: number,
+        page? : number,
+        sort? : number,
+        query? : number
+    ) : Promise<QueryResult> {
+        const searchQuery = {
+            offset: offset || 100,
+            page: page || 1,
+            query: {
+                value: query || 1
+            },
+            sort: {
+                value: sort || 1
+            },
+            text: dtAddress
+        } as SearchQuery
+        return this.ocean.aquarius.queryMetadata(searchQuery)
+    }
     /**
      * Edit Metadata for a DDO.
      * @param  {did} string DID.

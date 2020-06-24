@@ -406,7 +406,7 @@ export class Aquarius {
     public getURI() {
         return `${this.url}`
     }
-
+    
     private transformResult(
         { results, page, total_pages: totalPages, total_results: totalResults }: any = {
             result: [],
