@@ -203,14 +203,14 @@ export class Assets extends Instantiable {
         dtAddress: string,
         offset?: number,
         page?: number,
-        sort?: number,
-        query?: number
+        sort?: number
     ): Promise<DDO[]> {
+        const query = { "query": {"dtAddress": [dtAddress]}}
         const searchQuery = {
             offset: offset || 100,
             page: page || 1,
             query: {
-                value: query || 1
+                value: query
             },
             sort: {
                 value: sort || 1
