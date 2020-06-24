@@ -13,15 +13,19 @@ describe('Marketplace flow', () => {
     let owner
     let bob
     let asset
+    let marketplace
+    let marketOcean
     let contracts
     let datatoken
     let tokenAddress
     let transactionId
+    let service1
+    let service2
 
     let alice = new Accounts()
 
     const tokenAmount = 100
-    const transferAmount = 1
+    const transferAmount = 2
     const blob = 'http://localhost:8030/api/v1/provider/services'
 
     describe('#test', () => {
@@ -36,11 +40,16 @@ describe('Marketplace flow', () => {
             await contracts.getAccounts()
             owner = contracts.accounts[0]
             bob = contracts.accounts[2]
+            marketplace = contracts.accounts[3]
 
             await alice.setId(contracts.accounts[1])
             await alice.setPassword("0x4a608ef70ce229351d37be7b07ddd7a3ce46709911cf8c8c4bcabd8a6c563711")
 
             await contracts.deployContracts(owner)
+        })
+
+        it('Alice publishes a datatoken contract', async () => {
+            tokenAddress = await datatoken.create(blob, alice.getId())
         })
 
         it('Generates metadata', async () => {
@@ -72,22 +81,35 @@ describe('Marketplace flow', () => {
             const ocean = await Ocean.getInstance(config)
 
             tokenAddress = await datatoken.create(blob, alice.getId())
-            await ocean.assets.create(asset, alice, [], tokenAddress)
+            asset = await ocean.assets.create(asset, alice, [], tokenAddress)
         })
 
-        // it('Alice mints 100 tokens', async () => {
-        //     await datatoken.mint(ddo, alice, tokenAmount)
-        // })
+        it('Alice mints 100 tokens', async () => {
+            await datatoken.mint(tokenAddress, alice.getId(), tokenAmount)
+        })
 
-        // it('Bob gets 1 datatoken', async () => {
-        //     const ts = await datatoken.transfer(ddo, bob, transferAmount, alice)
-        //     transactionId = ts.transactionHash
-        // })
+        it('Marketplace posts asset for sale', async () => {
+            const config = new Config()
+            marketOcean = await Ocean.getInstance(config)
 
-        // it('Bob consumes dataset', async () => {
-        //     const config = new Config()
-        //     const ocean = await Ocean.getInstance(config)
-        //     await ocean.assets.download(ddo, blob, transactionId, bob)
-        // })
+            service1 = marketOcean.assets.getService('download')
+            service2 = marketOcean.assets.getService('access')
+
+        })
+
+        it('Bob gets datatokens', async () => {
+            const ts = await datatoken.transfer(tokenAddress, bob, transferAmount, alice)
+            transactionId = ts.transactionHash
+        })
+
+        it('Bob consumes asset 1', async () => {
+            const config = new Config()
+            const ocean = await Ocean.getInstance(config)
+            await ocean.assets.download(asset.did, service1.index, bob, '~/my-datasets')
+        })
+
+        it('Bob consumes asset 2', async () => {
+               // TODO
+        })
     })
 })
