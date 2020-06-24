@@ -2,7 +2,7 @@ import Account from '../ocean/Account'
 import { noZeroX } from '../utils'
 import { Instantiable, InstantiableConfig } from '../Instantiable.abstract'
 
-const apiPath = '/api/v1/service/'
+const apiPath = '/api/v1/services/'
 
 /**
  * Provides an interface for provider service.
@@ -37,6 +37,10 @@ export class Provider extends Instantiable {
     }
 
     public getEncryptEndpoint() {
+        return `${this.url}${apiPath}/encrypt`
+    }
+
+    public getPublishEndpoint() {
         return `${this.url}${apiPath}/publish`
     }
 
