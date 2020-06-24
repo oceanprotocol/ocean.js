@@ -196,8 +196,7 @@ export class Assets extends Instantiable {
      * @return {Promise<DDO>}
      */
     public async resolve(did: string): Promise<DDO> {
-        const serviceEndpoint = 'https://123.com'
-        return this.ocean.aquarius.retrieveDDOByUrl(serviceEndpoint)
+        return this.ocean.aquarius.retrieveDDO(did)
     }
 
     public async resolveByDTAddress(
