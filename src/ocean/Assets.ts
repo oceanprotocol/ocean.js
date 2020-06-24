@@ -68,7 +68,7 @@ export class Assets extends Instantiable {
         dtAddress?: string
     ): SubscribablePromise<CreateProgressStep, DDO> {
         this.logger.log('Creating asset')
-        return new SubscribablePromise(async (observer) => {
+        return new SubscribablePromise(async observer => {
             if (services.length === 0) {
                 this.logger.log('You have no services. Are you sure about this?')
             }
@@ -147,7 +147,7 @@ export class Assets extends Instantiable {
                     )
                     .reverse()
                     // Adding index
-                    .map((_) => ({
+                    .map(_ => ({
                         ..._,
                         index: indexCount++
                     })) as Service[]
@@ -205,12 +205,11 @@ export class Assets extends Instantiable {
         page?: number,
         sort?: number
     ): Promise<DDO[]> {
-        const query = { "query": {"dtAddress": [dtAddress]}}
         const searchQuery = {
             offset: offset || 100,
             page: page || 1,
             query: {
-                value: query
+                dtAddress: [dtAddress]
             },
             sort: {
                 value: sort || 1
