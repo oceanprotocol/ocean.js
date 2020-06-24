@@ -18,7 +18,7 @@
     "changelog": "auto-changelog -p",
     "prepublishOnly": "npm run build",
     "test:unit": "mocha --config=test/unit/.mocharc.json --node-env=test --exit test/unit/**/*.ts",
-    "test:integration": "mocha --opts test/integration/mocha.opts",
+    "test:integration": "mocha --config=test/integration/.mocharc.json --node-env=test --exit test/integration/**/*.ts",
     "test:cover": "nyc --report-dir coverage/unit npm run test:unit"
   },
   "repository": {
@@ -42,7 +42,7 @@
     "fs": "0.0.1-security",
     "node-fetch": "^2.6.0",
     "save-file": "^2.3.1",
-    "uuid": "^8.0.0",
+    "uuid": "^8.2.0",
     "web3": "^1.2.9",
     "web3-eth-contract": "^1.2.9",
     "whatwg-url": "^8.0.0"
