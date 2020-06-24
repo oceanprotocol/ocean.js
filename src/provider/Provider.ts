@@ -1,6 +1,7 @@
 import Account from '../ocean/Account'
 import { noZeroX } from '../utils'
 import { Instantiable, InstantiableConfig } from '../Instantiable.abstract'
+import { DDO } from '../ddo/DDO'
 
 const apiPath = '/api/v1/services/'
 
@@ -18,34 +19,6 @@ export class Provider extends Instantiable {
     constructor(config: InstantiableConfig) {
         super()
         this.setInstanceConfig(config)
-    }
-
-    public async getVersionInfo() {
-        return (await this.ocean.utils.fetch.get(this.url)).json()
-    }
-
-    public getURI() {
-        return `${this.url}`
-    }
-
-    public getPurchaseEndpoint() {
-        return `${this.url}${apiPath}/access/initialize`
-    }
-
-    public getConsumeEndpoint() {
-        return `${this.url}${apiPath}/consume`
-    }
-
-    public getEncryptEndpoint() {
-        return `${this.url}${apiPath}/encrypt`
-    }
-
-    public getPublishEndpoint() {
-        return `${this.url}${apiPath}/publish`
-    }
-
-    public getComputeEndpoint() {
-        return `${this.url}${apiPath}/compute`
     }
 
     public async createSignature(account: Account, agreementId: string): Promise<string> {
@@ -66,12 +39,7 @@ export class Provider extends Instantiable {
         return signature
     }
 
-    public async encrypt(
-        did: string,
-        document: any,
-        account: Account,
-        dtAddress: string
-    ): Promise<string> {
+    public async encrypt(did: string, document: any, account: Account): Promise<string> {
         const signature = this.ocean.utils.signature.signWithHash(
             did,
             account.getId(),
@@ -98,5 +66,64 @@ export class Provider extends Instantiable {
             this.logger.error(e)
             throw new Error('HTTP request failed')
         }
+    }
+
+    public async initialize(
+        did: string,
+        serviceIndex: number,
+        serviceType: string,
+        consumerAddress: string
+    ): Promise<any> {
+        const DDO = await this.ocean.assets.resolve(did)
+        const { dtAddress } = DDO
+        const args = {
+            did,
+            dtAddress,
+            serviceIndex,
+            serviceType,
+            consumerAddress
+        }
+
+        try {
+            return await this.ocean.utils.fetch.post(
+                this.getInitializeEndpoint(),
+                decodeURI(JSON.stringify(args))
+            )
+        } catch (e) {
+            this.logger.error(e)
+            throw new Error('HTTP request failed')
+        }
+    }
+
+    public async getVersionInfo() {
+        return (await this.ocean.utils.fetch.get(this.url)).json()
+    }
+
+    public getURI() {
+        return `${this.url}`
+    }
+
+    public getInitializeEndpoint() {
+        return `${this.url}${apiPath}/initialize`
+    }
+
+    public getConsumeEndpoint() {
+        return `${this.url}${apiPath}/consume`
+    }
+
+    public getEncryptEndpoint() {
+        return `${this.url}${apiPath}/encrypt`
+    }
+
+    public getPublishEndpoint() {
+        return `${this.url}${apiPath}/publish`
+    }
+
+    public getComputeEndpoint() {
+        return `${this.url}${apiPath}/compute`
+    }
+
+    public getDownloadEndpoint() {
+        return `${this.url}${apiPath}/download`
     }
 }
