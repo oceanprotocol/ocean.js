@@ -3,7 +3,7 @@ import { noZeroX } from '../utils'
 import { Instantiable, InstantiableConfig } from '../Instantiable.abstract'
 import { DDO } from '../ddo/DDO'
 
-const apiPath = '/api/v1/services/'
+const apiPath = '/api/v1/provider/services'
 
 /**
  * Provides an interface for provider service.

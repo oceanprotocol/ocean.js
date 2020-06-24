@@ -45,6 +45,13 @@ npm i
 
 ```
 
+Generate metadata:
+```bash
+
+./scripts/get-metadata.js > src/metadata.json
+
+```
+
 # Testing
 
 Run tests with 
