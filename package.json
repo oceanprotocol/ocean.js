@@ -11,6 +11,7 @@
     "build:metadata": "./scripts/get-metadata.js > src/metadata.json",
     "clean": "rm -rf ./dist/ ./doc/ ./.nyc_output",
     "lint": "eslint --ignore-path .gitignore --ext .ts,.tsx .",
+    "lint:fix": "eslint --ignore-path .gitignore --ext .ts,.tsx . --fix",
     "format": "prettier --parser typescript --ignore-path .gitignore --write '**/*.{js,jsx,ts,tsx}'",
     "run": "ts-node",
     "release": "release-it --non-interactive",

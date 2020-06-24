@@ -7,9 +7,10 @@ import { Assets } from './Assets'
 import { Versions } from './Versions'
 import { OceanUtils } from './utils/Utils'
 
-import { Aquarius } from '../aquarius/Aquarius'
-import { Brizo } from '../brizo/Brizo'
+import { MetadataStore } from '../metadatastore/MetadataStore'
+import { Provider } from '../provider/Provider'
 import { DataTokens } from '../datatokens/Datatokens'
+import { Network } from '../datatokens/Network'
 import { Config } from '../models/Config'
 
 import {
@@ -37,9 +38,9 @@ export class Ocean extends Instantiable {
 
         instance.utils = await OceanUtils.getInstance(instanceConfig)
 
-        instance.brizo = new Brizo(instanceConfig)
-        instance.aquarius = new Aquarius(
-            instanceConfig.config.aquariusUri,
+        instance.provider = new Provider(instanceConfig)
+        instance.metadatastore = new MetadataStore(
+            instanceConfig.config.metadataStoreUri,
             instanceConfig.logger
         )
 
@@ -54,15 +55,21 @@ export class Ocean extends Instantiable {
             instanceConfig.config.web3Provider
         )
         instance.versions = await Versions.getInstance(instanceConfig)
-
+        instance.network = new Network()
         return instance
     }
 
     /**
-     * Brizo instance.
-     * @type {Brizo}
+     * Network instance
+     * @type {Network}
      */
-    public brizo: Brizo
+    public network: Network
+
+    /**
+     * Provider instance.
+     * @type {Provider}
+     */
+    public provider: Provider
 
     /**
      * Web3 provider.
@@ -71,10 +78,10 @@ export class Ocean extends Instantiable {
     public web3Provider: any
 
     /**
-     * Aquarius instance.
-     * @type {Aquarius}
+     * MetadataStore instance.
+     * @type {MetadataStore}
      */
-    public aquarius: Aquarius
+    public metadatastore: MetadataStore
 
     /**
      * Ocean account submodule

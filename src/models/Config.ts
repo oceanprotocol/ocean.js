@@ -3,28 +3,34 @@ export { LogLevel } from '../utils/Logger'
 
 export class Config {
     /**
-     * Aquarius URL.
+     * Ethereum node URL.
      * @type {string}
      */
-    public aquariusUri?: string
+    public nodeUri?: string
 
     /**
-     * Brizo URL.
+     * Metadata Store URL.
      * @type {string}
      */
-    public brizoUri?: string
+    public metadataStoreUri?: string
+
+    /**
+     * Provider URL.
+     * @type {string}
+     */
+    public providerUri?: string
 
     /**
      * Web3 Provider.
      * @type {any}
      */
-    public web3Provider: any
+    public web3Provider?: any
 
     /**
      * Factory address
      * @type {string}
      */
-    public factoryAddress: string
+    public factoryAddress?: string
 
     /**
      * Factory ABI
