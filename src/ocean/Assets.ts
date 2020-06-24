@@ -205,7 +205,7 @@ export class Assets extends Instantiable {
         page?: number,
         sort?: number,
         query?: number
-    ): Promise<QueryResult> {
+    ): Promise<DDO[]> {
         const searchQuery = {
             offset: offset || 100,
             page: page || 1,
@@ -217,7 +217,7 @@ export class Assets extends Instantiable {
             },
             text: dtAddress
         } as SearchQuery
-        return this.ocean.aquarius.queryMetadata(searchQuery)
+        return (await this.ocean.aquarius.queryMetadata(searchQuery)).results
     }
 
     /**
