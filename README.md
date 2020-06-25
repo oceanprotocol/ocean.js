@@ -1,6 +1,6 @@
 [![banner](https://raw.githubusercontent.com/oceanprotocol/art/master/github/repo-banner%402x.png)](https://oceanprotocol.com)
 
-|[![Build Status](https://travis-ci.com/oceanprotocol/ocean-lib-js.svg?token=soMi2nNfCZq19zS1Rx4i&branch=develop)](https://travis-ci.com/oceanprotocol/lib-js)
+[![Build Status](https://travis-ci.com/oceanprotocol/ocean-lib-js.svg?token=soMi2nNfCZq19zS1Rx4i&branch=develop)](https://travis-ci.com/oceanprotocol/lib-js)
 
 <h1 align="center">Ocean-lib</h1>
 
