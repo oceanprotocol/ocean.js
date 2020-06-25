@@ -208,7 +208,7 @@ export class Assets extends Instantiable {
             offset: offset || 100,
             page: page || 1,
             query: {
-                dtAddress: [dtAddress]
+                dataToken: [dtAddress]
             },
             sort: {
                 value: sort || 1
@@ -355,7 +355,7 @@ export class Assets extends Instantiable {
 
     public async createAccessServiceAttributes(
         consumerAccount: Account,
-        dtCost: number,
+        cost: number,
         datePublished: string,
         timeout: number = 0
     ): Promise<ServiceAccess> {
@@ -367,7 +367,7 @@ export class Assets extends Instantiable {
                 main: {
                     creator: consumerAccount.getId(),
                     datePublished,
-                    dtCost,
+                    cost,
                     timeout: timeout,
                     name: 'dataAssetAccessServiceAgreement'
                 }
