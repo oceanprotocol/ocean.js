@@ -47,8 +47,8 @@ export class Provider extends Instantiable {
         )
 
         const args = {
-            did,
-            signature,
+            documentId: did,
+            signature: signature,
             document: JSON.stringify(document),
             publisherAddress: account.getId()
         }
