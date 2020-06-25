@@ -23,27 +23,27 @@ export interface SearchQuery {
 }
 
 /**
- * Provides an interface with Aquarius.
- * Aquarius provides an off-chain database store for metadata about data assets.
+ * Provides an interface with Metadata Store.
+ * Metadata Store provides an off-chain database store for metadata about data assets.
  */
-export class Aquarius {
+export class MetadataStore {
     public fetch: WebServiceConnector
     private logger: Logger
-    private aquariusUri: string
+    private metadataStoreUri: string
 
     private get url() {
-        return this.aquariusUri
+        return this.metadataStoreUri
     }
 
     /**
-     * Instantiate Aquarius (independently of Ocean) for off-chain interaction.
-     * @param {String} aquariusUri
+     * Instantiate Metadata Store (independently of Ocean) for off-chain interaction.
+     * @param {String} metadataStoreUri
      * @param {Logger} logger
      */
-    constructor(aquariusUri: string, logger: Logger) {
+    constructor(metadataStoreUri: string, logger: Logger) {
         this.fetch = new WebServiceConnector(logger)
         this.logger = logger
-        this.aquariusUri = aquariusUri
+        this.metadataStoreUri = metadataStoreUri
     }
 
     public async getVersionInfo() {
@@ -145,7 +145,7 @@ export class Aquarius {
     }
 
     /**
-     * Stores a DDO in Aquarius.
+     * Stores a DDO in Metadata Store.
      * @param  {DDO} ddo DDO to be stored.
      * @return {Promise<DDO>} Final DDO.
      */
