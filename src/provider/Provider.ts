@@ -1,7 +1,7 @@
 import Account from '../ocean/Account'
 import { noZeroX } from '../utils'
 import { Instantiable, InstantiableConfig } from '../Instantiable.abstract'
-import { DDO } from '../ddo/DDO'
+import { File } from '../ddo/interfaces/File'
 
 const apiPath = '/api/v1/provider/services'
 
@@ -74,14 +74,21 @@ export class Provider extends Instantiable {
         serviceType: string,
         consumerAddress: string
     ): Promise<any> {
-        const DDO = await this.ocean.assets.resolve(did)
+        let DDO
+        try {
+            DDO = await this.ocean.assets.resolve(did)
+        } catch (e) {
+            this.logger.error(e)
+            throw new Error('Failed to resolve DID')
+        }
         const { dtAddress } = DDO
+
         const args = {
-            did,
-            dtAddress,
-            serviceIndex,
-            serviceType,
-            consumerAddress
+            documentId: did,
+            serviceId: serviceIndex,
+            serviceType: serviceType,
+            tokenAddress: dtAddress,
+            consumerAddress: consumerAddress
         }
 
         try {
@@ -93,6 +100,43 @@ export class Provider extends Instantiable {
             this.logger.error(e)
             throw new Error('HTTP request failed')
         }
+    }
+
+    public async download(
+        did: string,
+        txId: string,
+        tokenAddress: string,
+        serviceType: string,
+        serviceIndex: string,
+        destination: string,
+        account: Account,
+        files: File[],
+        index: number = -1
+    ): Promise<any> {
+        const signature = await this.createSignature(account, did)
+        const filesPromises = files
+            .filter((_, i) => index === -1 || i === index)
+            .map(async ({ index: i }) => {
+                let consumeUrl = this.getDownloadEndpoint()
+                consumeUrl += `?index=${i}`
+                consumeUrl += `&documentId=${did}`
+                consumeUrl += `&serviceId=${serviceIndex}`
+                consumeUrl += `&serviceType=${serviceType}`
+                consumeUrl += `tokenAddress=${tokenAddress}`
+                consumeUrl += `&transferTxId=${txId}`
+                consumeUrl += `&consumerAddress=${account.getId()}`
+                consumeUrl += `&signature=${signature}`
+
+                try {
+                    await this.ocean.utils.fetch.downloadFile(consumeUrl, destination, i)
+                } catch (e) {
+                    this.logger.error('Error consuming assets')
+                    this.logger.error(e)
+                    throw e
+                }
+            })
+        await Promise.all(filesPromises)
+        return destination
     }
 
     public async getVersionInfo() {
