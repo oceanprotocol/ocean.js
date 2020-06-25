@@ -74,14 +74,21 @@ export class Provider extends Instantiable {
         serviceType: string,
         consumerAddress: string
     ): Promise<any> {
-        const DDO = await this.ocean.assets.resolve(did)
+        let DDO
+        try {
+            DDO = await this.ocean.assets.resolve(did)
+        } catch (e) {
+            this.logger.error(e)
+            throw new Error('Failed to resolve DID')
+        }
         const { dtAddress } = DDO
+
         const args = {
-            did,
-            dtAddress,
-            serviceIndex,
-            serviceType,
-            consumerAddress
+            documentId: did,
+            serviceId: serviceIndex,
+            serviceType: serviceType,
+            tokenAddress: dtAddress,
+            consumerAddress: consumerAddress
         }
 
         try {
