@@ -1,93 +1,47 @@
 [![banner](https://raw.githubusercontent.com/oceanprotocol/art/master/github/repo-banner%402x.png)](https://oceanprotocol.com)
 
-|[![Build Status](https://travis-ci.com/oceanprotocol/lib-js.svg?token=soMi2nNfCZq19zS1Rx4i&branch=develop)](https://travis-ci.com/oceanprotocol/lib-js)
+|[![Build Status](https://travis-ci.com/oceanprotocol/ocean-lib-js.svg?token=soMi2nNfCZq19zS1Rx4i&branch=develop)](https://travis-ci.com/oceanprotocol/lib-js)
 
-<h1 align="center">Lib-js</h1>
+<h1 align="center">Ocean-lib</h1>
 
-> JavaScript client library for Ocean Protocol
-> [oceanprotocol.com](https://oceanprotocol.com)
+`ocean-lib` is a Javascript library to privately & securely publish, exchange, 
+and consume data. With it, you can:
+* **Publish** data services: downloadable files, streaming data, or compute-to-data. 
+Ocean creates a new [ERC20](https://github.com/ethereum/EIPs/blob/7f4f0377730f5fc266824084188cc17cf246932e/EIPS/eip-20.md) 
+data token for each data service or set of services.
+* **Mint** data tokens for the service
+* **Consume** data tokens, to access the service
+* **Transfer** data tokens to another owner, and **all other ERC20 actions** 
+using [web3.js](https://web3js.readthedocs.io/en/v1.2.9/web3-eth-contract.html) etc.
+
+`ocean-lib` is part of the [Ocean Protocol](www.oceanprotocol.com) toolset.
 
 This is in alpha state and you can expect running into problems. If you run into them, please open up a [new issue](/issues).
 
-## Table of Contents
+## Quick Install
 
-  - [Get Started](#get-started)
-     - [Local development](#local-development)
-  - [Testing](#testing)
-     - [Code Linting](#code-linting)
-  - [Packages](#packages)
-  - [Documentation](#documentation)
-  - [Contributing](#contributing)
-  - [Prior Art](#prior-art)
-  - [License](#license)
+```npm i @oceanprotocol/lib```
 
-# Get Started
+## Quickstart: Simple Flow
 
-TBD
+This stripped-down flow shows the essence of Ocean. Just downloading, no metadata.
 
-### Local development
+[Go to simple flow](README_simple_flow.md)
 
-As a pre-requisite, you need:
+## Quickstart: Marketplace Flow
 
-- Node.js
-- npm
+This batteries-included flow includes metadata, multiple services for one datatoken, and compute-to-data.
 
-Note: For MacOS, make sure to have `node@10` installed.
+[Go to marketplace flow](README_marketplace_flow.md)
 
-Clone the project and install all dependencies:
+## For ocean-lib Developers
 
-```bash
-git clone git@github.com:oceanprotocol/ocean-js.git
-cd ocean-js/
-
-# install packages
-npm i
-
-```
-
-# Testing
-
-Run tests with 
-
-```bash
-# for unit tests
-TBD
-
-# for test coverage
-TBD
-```
-
-### Code Linting
-
-Linting is setup for `JavaScript` with [ESLint](https://eslint.org) 
-
-```bash
-# to check lint issues
-npm run lint
-```
-Code style is enforced through the CI test process, builds will fail if there're any linting errors.
-
-## Documentation
-
-* [Release process](doc/RELEASE_PROCESS.md)
-* [Core Documentation](doc/contracts/README.md)
-* [Packaging of libraries](doc/PACKAGING.md)
-
-## Contributing
-
-See the page titled "[Ways to Contribute](https://docs.oceanprotocol.com/concepts/contributing/)" in the Ocean Protocol documentation.
-
-
-
-## Prior Art
-
-This project builds on top of the work done in open source projects:
-- [OpenZeppelin/openzeppelin-contracts](https://github.com/OpenZeppelin/openzeppelin-contracts)
+[Go to ocean-lib-developers flow](README_ocean-lib-developers.md)
 
 ## License
 
 ```
-Copyright 2018 Ocean Protocol Foundation
+Copyright ((C)) 2020 Ocean Protocol Foundation
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
