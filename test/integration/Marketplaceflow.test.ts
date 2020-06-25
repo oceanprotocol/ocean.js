@@ -13,6 +13,7 @@ const datatokensTemplate = require('@oceanprotocol/contracts/artifacts/developme
 describe('Marketplace flow', () => {
     let owner
     let bob
+    let ddo
     let alice
     let asset
     let accounts
@@ -64,7 +65,6 @@ describe('Marketplace flow', () => {
         })
 
         it('Generates metadata', async () => {
-
             asset = {
                 main: {
                     type: 'dataset',
@@ -74,13 +74,24 @@ describe('Marketplace flow', () => {
                             .toISOString()
                             .split('.')[0] + 'Z', // remove milliseconds
                     author: 'oceanprotocol-team',
-                    license: 'MIT'
+                    license: 'MIT',
+                    files: [
+                        {
+                            url: 'https://raw.githubusercontent.com/tbertinmahieux/MSongsDB/master/Tasks_Demos/CoverSongs/shs_dataset_test.txt',
+                            checksum: 'efb2c764274b745f5fc37f97c6b0e761',
+                            contentLength: '4535431',
+                            contentType: 'text/csv',
+                            encoding: 'UTF-8',
+                            compression: 'zip'
+                        }
+            ]
                 }            
             }
         })
 
         it('Alice publishes a dataset', async () => {
-            asset = await ocean.assets.create(asset, alice, [], tokenAddress)
+            ddo = await ocean.assets.create(asset, alice, [], tokenAddress)
+
         })
 
         // it('Alice mints 100 tokens', async () => {
