@@ -1,4 +1,4 @@
-import { SearchQuery, QueryResult } from '../metadatastore/MetadataStore'
+import { SearchQuery } from '../metadatastore/MetadataStore'
 import { DDO } from '../ddo/DDO'
 import { Metadata } from '../ddo/interfaces/Metadata'
 import { Service, ServiceAccess, ServiceComputePrivacy } from '../ddo/interfaces/Service'
@@ -99,7 +99,7 @@ export class Assets extends Instantiable {
             // create ddo itself
             const ddo: DDO = new DDO({
                 id: did.getDid(),
-                dtAddress: dtAddress,
+                dataToken: dtAddress,
                 authentication: [
                     {
                         type: 'RsaSignatureAuthentication2018',
@@ -151,7 +151,6 @@ export class Assets extends Instantiable {
                         index: indexCount++
                     })) as Service[]
             })
-
             this.logger.log('Generating proof')
             observer.next(CreateProgressStep.GeneratingProof)
             await ddo.addProof(this.ocean, publisher.getId(), publisher.getPassword())
