@@ -23,6 +23,7 @@ before_script:
   - git checkout v3
   - bash -x start_ocean.sh --no-commons --no-dashboard 2>&1 > start_ocean.log &
   - cd ..
+  - sleep 120 
 
 script:
   - npm run lint
