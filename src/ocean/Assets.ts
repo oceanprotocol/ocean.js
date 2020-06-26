@@ -1,4 +1,4 @@
-import { SearchQuery, QueryResult } from '../metadatastore/MetadataStore'
+import { SearchQuery } from '../metadatastore/MetadataStore'
 import { DDO } from '../ddo/DDO'
 import { Metadata } from '../ddo/interfaces/Metadata'
 import { Service, ServiceAccess, ServiceComputePrivacy } from '../ddo/interfaces/Service'
@@ -8,7 +8,6 @@ import DID from './DID'
 import { SubscribablePromise } from '../utils'
 import { Instantiable, InstantiableConfig } from '../Instantiable.abstract'
 import { WebServiceConnector } from './utils/WebServiceConnector'
-import { ECANCELED } from 'constants'
 
 export enum CreateProgressStep {
     CreatingDataToken,
