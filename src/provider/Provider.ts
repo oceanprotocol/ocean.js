@@ -3,7 +3,7 @@ import { noZeroX } from '../utils'
 import { Instantiable, InstantiableConfig } from '../Instantiable.abstract'
 import { File } from '../ddo/interfaces/File'
 
-const apiPath = '/api/v1/provider/services'
+const apiPath = '/api/v1/services'
 
 /**
  * Provides an interface for provider service.
@@ -40,7 +40,7 @@ export class Provider extends Instantiable {
     }
 
     public async encrypt(did: string, document: any, account: Account): Promise<string> {
-        const signature = this.ocean.utils.signature.signWithHash(
+        const signature = await this.ocean.utils.signature.signWithHash(
             did,
             account.getId(),
             account.getPassword()
@@ -52,15 +52,12 @@ export class Provider extends Instantiable {
             document: JSON.stringify(document),
             publisherAddress: account.getId()
         }
-
+        console.log(args)
         try {
             const response = await this.ocean.utils.fetch.post(
                 this.getEncryptEndpoint(),
                 decodeURI(JSON.stringify(args))
             )
-            if (!response.ok) {
-                throw new Error('HTTP request failed')
-            }
             return await response.text()
         } catch (e) {
             this.logger.error(e)
