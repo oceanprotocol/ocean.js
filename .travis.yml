@@ -20,7 +20,7 @@ before_script:
   - ganache-cli > ganache-cli.log &
   - git clone https://github.com/oceanprotocol/barge
   - cd barge
-  - git checkout origin/v3
+  - git checkout v3
   - bash -x start_ocean.sh --no-commons --no-dashboard 2>&1 > start_ocean.log &
   - cd ..
 
