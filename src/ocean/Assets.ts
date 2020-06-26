@@ -8,6 +8,7 @@ import DID from './DID'
 import { SubscribablePromise } from '../utils'
 import { Instantiable, InstantiableConfig } from '../Instantiable.abstract'
 import { WebServiceConnector } from './utils/WebServiceConnector'
+import { ECANCELED } from 'constants'
 
 export enum CreateProgressStep {
     CreatingDataToken,
@@ -99,7 +100,7 @@ export class Assets extends Instantiable {
             // create ddo itself
             const ddo: DDO = new DDO({
                 id: did.getDid(),
-                dtAddress: dtAddress,
+                dataToken: dtAddress,
                 authentication: [
                     {
                         type: 'RsaSignatureAuthentication2018',
@@ -151,7 +152,6 @@ export class Assets extends Instantiable {
                         index: indexCount++
                     })) as Service[]
             })
-
             this.logger.log('Generating proof')
             observer.next(CreateProgressStep.GeneratingProof)
             await ddo.addProof(this.ocean, publisher.getId(), publisher.getPassword())

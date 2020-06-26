@@ -41,7 +41,7 @@ export class DDO {
 
     public updated: string
 
-    public dtAddress: string
+    public dataToken: string
 
     public publicKey: PublicKey[] = []
 
