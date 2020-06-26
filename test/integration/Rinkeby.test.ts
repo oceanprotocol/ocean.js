@@ -11,10 +11,8 @@ describe('Rinkeby test', () => {
     // let contracts
     // let datatoken
     // let tokenAddress
-
     // const tokenAmount = 100
     // const blob = 'http://localhost:8030/api/v1/provider/services'
-
     // describe('#test', () => {
     //     it('Initialize Ocean contracts v3', async () => {
     //         contracts = new TestContractHandler(
@@ -24,14 +22,11 @@ describe('Rinkeby test', () => {
     //             factory.bytecode,
     //             web3
     //         )
-
     //         const privateKey = 'PRIVATE_KEY'
     //         account = web3.eth.accounts.privateKeyToAccount('0x' + privateKey)
     //         web3.eth.accounts.wallet.add(account)
-
     //         await contracts.deployContracts(account.address)
     //     })
-
     //     it('Publish a dataset', async () => {
     //         datatoken = new DataTokens(
     //             contracts.factoryAddress,
@@ -39,10 +34,8 @@ describe('Rinkeby test', () => {
     //             datatokensTemplate.abi,
     //             web3
     //         )
-
     //         tokenAddress = await datatoken.create(blob, account.address)
     //     })
-
     //     it('Mint 100 tokens', async () => {
     //         await datatoken.mint(tokenAddress, account.address, tokenAmount)
     //     })

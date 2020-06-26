@@ -3,7 +3,7 @@ import { Authentication } from './interfaces/Authentication'
 import { Proof } from './interfaces/Proof'
 import { PublicKey } from './interfaces/PublicKey'
 import { Service, ServiceType } from './interfaces/Service'
-import  Web3Provider  from '../datatokens/Web3Provider'
+import Web3Provider from '../datatokens/Web3Provider'
 /**
  * DID Descriptor Object.
  * Contains all the data related to an asset.
@@ -106,8 +106,7 @@ export class DDO {
             this.id
         ]
 
-        return Web3Provider
-            .getWeb3()
+        return Web3Provider.getWeb3()
             .utils.sha3(values.join(''))
             .replace(/^0x([a-f0-9]{64})(:!.+)?$/i, '0x$1')
     }

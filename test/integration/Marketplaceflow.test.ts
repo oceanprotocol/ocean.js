@@ -3,7 +3,7 @@ import { DataTokens } from '../../src/datatokens/Datatokens'
 import { Ocean } from '../../src/ocean/Ocean'
 import config from './config'
 
-// import Accounts from "../../src/ocean/Account" 
+// import Accounts from "../../src/ocean/Account"
 
 const Web3 = require('web3')
 const web3 = new Web3('http://127.0.0.1:8545')
@@ -50,11 +50,10 @@ describe('Marketplace flow', () => {
             marketplace = (await ocean.accounts.list())[3]
 
             await contracts.deployContracts(owner.getId())
-
         })
 
         it('Alice publishes a datatoken contract', async () => {
-           datatoken = new DataTokens(
+            datatoken = new DataTokens(
                 contracts.factoryAddress,
                 factory.abi,
                 datatokensTemplate.abi,
@@ -69,29 +68,26 @@ describe('Marketplace flow', () => {
                 main: {
                     type: 'dataset',
                     name: 'test-dataset',
-                    dateCreated:
-                        new Date(Date.now())
-                            .toISOString()
-                            .split('.')[0] + 'Z', // remove milliseconds
+                    dateCreated: new Date(Date.now()).toISOString().split('.')[0] + 'Z', // remove milliseconds
                     author: 'oceanprotocol-team',
                     license: 'MIT',
                     files: [
                         {
-                            url: 'https://raw.githubusercontent.com/tbertinmahieux/MSongsDB/master/Tasks_Demos/CoverSongs/shs_dataset_test.txt',
+                            url:
+                                'https://raw.githubusercontent.com/tbertinmahieux/MSongsDB/master/Tasks_Demos/CoverSongs/shs_dataset_test.txt',
                             checksum: 'efb2c764274b745f5fc37f97c6b0e761',
                             contentLength: '4535431',
                             contentType: 'text/csv',
                             encoding: 'UTF-8',
                             compression: 'zip'
                         }
-            ]
-                }            
+                    ]
+                }
             }
         })
 
         it('Alice publishes a dataset', async () => {
             ddo = await ocean.assets.create(asset, alice, [], tokenAddress)
-
         })
 
         // it('Alice mints 100 tokens', async () => {

@@ -18,11 +18,17 @@ before_install:
 
 before_script:
   - ganache-cli > ganache-cli.log &
+  - git clone https://github.com/oceanprotocol/barge
+  - cd barge
+  - git checkout origin/v3
+  - bash -x start_ocean.sh --no-commons --no-dashboard 2>&1 > start_ocean.log &
+  - cd ..
 
 script:
   - npm run lint
   - npm run build
-  - npm run test:cover  
+  - npm run test:cover
+  - npm run test:integration
 
 notifications:
   email: false
