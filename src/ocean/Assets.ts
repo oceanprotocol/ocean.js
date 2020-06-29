@@ -353,7 +353,7 @@ export class Assets extends Instantiable {
     }
 
     public async createAccessServiceAttributes(
-        consumerAccount: Account,
+        creator: Account,
         dtCost: number,
         datePublished: string,
         timeout: number = 0
@@ -364,7 +364,7 @@ export class Assets extends Instantiable {
             serviceEndpoint: this.ocean.provider.getConsumeEndpoint(),
             attributes: {
                 main: {
-                    creator: consumerAccount.getId(),
+                    creator: creator.getId(),
                     datePublished,
                     dtCost,
                     timeout: timeout,

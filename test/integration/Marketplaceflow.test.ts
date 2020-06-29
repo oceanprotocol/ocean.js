@@ -26,7 +26,7 @@ describe('Marketplace flow', () => {
     let transactionId
     let service1
     let service2
-
+    let price
     let ocean
 
     const marketplaceAllowance = 20
@@ -86,10 +86,21 @@ describe('Marketplace flow', () => {
                     ]
                 }
             }
+
+            
         })
 
         it('Alice publishes a dataset', async () => {
-            ddo = await ocean.assets.create(asset, alice, [], tokenAddress)
+            price = 10 // in datatoken
+            const publishedDate = new Date(Date.now()).toISOString().split('.')[0] + 'Z'
+            const timeout = 0
+            service1 = await ocean.assets.createAccessServiceAttributes(
+                alice,
+                price,
+                publishedDate,
+                timeout
+            )
+            ddo = await ocean.assets.create(asset, alice, [service1], tokenAddress)
             assert(ddo.dataToken === tokenAddress)
         })
 
@@ -137,8 +148,12 @@ describe('Marketplace flow', () => {
             assert(ddo, await ocean.assets.resolve(ddo.id))
         })
 
+        it('Marketplace creates access service', async () => {
+            
+        })
+
         it('Marketplace posts asset for sale', async () => {
-            // const downloadService = await ocean.assets.getService(ddo.id, 'download')
+            //const downloadService = await ocean.assets.getService(ddo.id, 'download')
         })
 
         it('Bob gets datatokens', async () => {
