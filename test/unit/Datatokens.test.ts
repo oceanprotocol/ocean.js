@@ -65,7 +65,7 @@ describe('DataTokens', () => {
 
         it('#transferFrom', async () => {
             await datatoken.transferFrom(tokenAddress, spender, tokenAmount, minter)
-            balance = await datatoken.balance(tokenAddress, spender)
+            balance = await datatoken.balance(tokenAddress, minter)
             assert(balance.toString() === tokenAmount.toString())
         })
     })
