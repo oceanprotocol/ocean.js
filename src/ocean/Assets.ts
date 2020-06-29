@@ -1,7 +1,12 @@
 import { SearchQuery } from '../metadatastore/MetadataStore'
 import { DDO } from '../ddo/DDO'
 import { Metadata } from '../ddo/interfaces/Metadata'
-import { Service, ServiceAccess, ServiceComputePrivacy } from '../ddo/interfaces/Service'
+import {
+    Service,
+    ServiceAccess,
+    ServiceComputePrivacy,
+    ServiceCommon
+} from '../ddo/interfaces/Service'
 import { EditableMetadata } from '../ddo/interfaces/EditableMetadata'
 import Account from './Account'
 import DID from './DID'
@@ -352,8 +357,19 @@ export class Assets extends Instantiable {
         } as SearchQuery)
     }
 
+    public async getService(did: string, serviceType: string): Promise<ServiceCommon> {
+        const services: ServiceCommon[] = (await this.resolve(did)).service
+        let service
+        services.forEach((serv) => {
+            if (serv.type.toString() === serviceType) {
+                service = serv
+            }
+        })
+        return service
+    }
+
     public async createAccessServiceAttributes(
-        consumerAccount: Account,
+        creator: Account,
         dtCost: number,
         datePublished: string,
         timeout: number = 0
@@ -364,7 +380,7 @@ export class Assets extends Instantiable {
             serviceEndpoint: this.ocean.provider.getConsumeEndpoint(),
             attributes: {
                 main: {
-                    creator: consumerAccount.getId(),
+                    creator: creator.getId(),
                     datePublished,
                     dtCost,
                     timeout: timeout,
