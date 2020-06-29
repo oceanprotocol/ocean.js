@@ -17,15 +17,11 @@ describe('Marketplace flow', () => {
     let ddo
     let alice
     let asset
-    let accounts
     let marketplace
-    let marketOcean
     let contracts
     let datatoken
     let tokenAddress
-    let transactionId
     let service1
-    let service2
     let price
     let ocean
 
@@ -153,23 +149,18 @@ describe('Marketplace flow', () => {
         })
 
         it('Bob gets datatokens', async () => {
-            const ts = await datatoken.transfer(
-                tokenAddress,
-                bob.getId(),
-                transferAmount,
-                alice.getId()
-            )
-            transactionId = ts.transactionHash
+            await datatoken
+                .transfer(tokenAddress, bob.getId(), transferAmount, alice.getId())
+                .then(async () => {
+                    const balance = await datatoken.balance(tokenAddress, bob.getId())
+                    assert(balance.toString() === transferAmount.toString())
+                })
         })
 
         // it('Bob consumes asset 1', async () => {
         //     // const config = new Config()
         //     const ocean = await Ocean.getInstance(config)
         //     await ocean.assets.download(asset.did, service1.index, bob, '~/my-datasets')
-        // })
-
-        // it('Bob consumes asset 2', async () => {
-        //     // TODO
         // })
     })
 })
