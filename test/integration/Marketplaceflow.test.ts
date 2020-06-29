@@ -86,8 +86,6 @@ describe('Marketplace flow', () => {
                     ]
                 }
             }
-
-            
         })
 
         it('Alice publishes a dataset', async () => {
@@ -148,12 +146,8 @@ describe('Marketplace flow', () => {
             assert(ddo, await ocean.assets.resolve(ddo.id))
         })
 
-        it('Marketplace creates access service', async () => {
-            
-        })
-
         it('Marketplace posts asset for sale', async () => {
-            //const downloadService = await ocean.assets.getService(ddo.id, 'download')
+            // const downloadService = await ocean.assets.getService(ddo.id, 'download')
         })
 
         it('Bob gets datatokens', async () => {
