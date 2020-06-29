@@ -29,6 +29,7 @@ describe('Marketplace flow', () => {
 
     let ocean
 
+    const marketplaceAllowance = 20
     const tokenAmount = 100
     const transferAmount = 2
     const blob = 'http://localhost:8030/api/v1/provider/services'
@@ -89,11 +90,40 @@ describe('Marketplace flow', () => {
 
         it('Alice publishes a dataset', async () => {
             ddo = await ocean.assets.create(asset, alice, [], tokenAddress)
-            assert(ddo != null)
+            assert(ddo.dataToken === tokenAddress)
         })
 
         it('Alice mints 100 tokens', async () => {
             await datatoken.mint(tokenAddress, alice.getId(), tokenAmount)
+        })
+
+        it('Alice allows marketplace to sell her datatokens', async () => {
+            await datatoken.approve(
+                tokenAddress,
+                marketplace.getId(),
+                marketplaceAllowance, 
+                alice.getId()
+            ).then(async () => {
+                const allowance = await datatoken.allowance(
+                    tokenAddress,
+                    alice.getId(),
+                    marketplace.getId()
+                )
+                assert(allowance.toString() === marketplaceAllowance.toString())
+            })
+        })
+
+        it('Marketplace withdraw Alice tokens from allowance', async () => {
+            const allowance = await datatoken.allowance(
+                tokenAddress,
+                alice.getId(),
+                marketplace.getId()
+            )
+            await datatoken.transferFrom(tokenAddress, alice.getId(), allowance, marketplace.getId())
+            .then(async () => {
+                const marketplaceBalance = await datatoken.balance(tokenAddress, marketplace.getId())
+                assert(marketplaceBalance.toString() === marketplaceAllowance.toString())
+            })
         })
 
         // it('Marketplace posts asset for sale', async () => {
