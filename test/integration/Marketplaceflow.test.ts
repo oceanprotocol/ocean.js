@@ -147,7 +147,9 @@ describe('Marketplace flow', () => {
         })
 
         it('Marketplace posts asset for sale', async () => {
-            // const downloadService = await ocean.assets.getService(ddo.id, 'download')
+            const accessService = await ocean.assets.getService(ddo.id, 'access')
+            const price = 20
+            assert(accessService.attributes.main.dtCost * price === 200)
         })
 
         it('Bob gets datatokens', async () => {
