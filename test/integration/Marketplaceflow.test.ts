@@ -2,6 +2,7 @@ import { TestContractHandler } from '../TestContractHandler'
 import { DataTokens } from '../../src/datatokens/Datatokens'
 import { Ocean } from '../../src/ocean/Ocean'
 import config from './config'
+import { assert } from 'console'
 
 // import Accounts from "../../src/ocean/Account"
 
@@ -88,11 +89,12 @@ describe('Marketplace flow', () => {
 
         it('Alice publishes a dataset', async () => {
             ddo = await ocean.assets.create(asset, alice, [], tokenAddress)
+            assert(ddo != null)
         })
 
-        // it('Alice mints 100 tokens', async () => {
-        //     await datatoken.mint(tokenAddress, alice.getId(), tokenAmount)
-        // })
+        it('Alice mints 100 tokens', async () => {
+            await datatoken.mint(tokenAddress, alice.getId(), tokenAmount)
+        })
 
         // it('Marketplace posts asset for sale', async () => {
         //     const config = new Config()

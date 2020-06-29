@@ -52,7 +52,6 @@ export class Provider extends Instantiable {
             document: JSON.stringify(document),
             publisherAddress: account.getId()
         }
-        console.log(args)
         try {
             const response = await this.ocean.utils.fetch.post(
                 this.getEncryptEndpoint(),

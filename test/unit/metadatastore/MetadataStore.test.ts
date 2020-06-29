@@ -90,7 +90,6 @@ describe('MetadataStore', () => {
         it('should query metadata by text', async () => {
             spy.on(metadataStore.fetch, 'get', () => reponsify(getResults([new DDO()])))
             const result = await metadataStore.queryMetadataByText(query)
-            console.log(result)
 
             assert.typeOf(result.results, 'array')
             assert.lengthOf(result.results, 1)
