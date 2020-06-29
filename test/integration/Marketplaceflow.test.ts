@@ -24,6 +24,7 @@ describe('Marketplace flow', () => {
     let service1
     let price
     let ocean
+    let accessService
 
     const marketplaceAllowance = 20
     const tokenAmount = 100
@@ -143,8 +144,8 @@ describe('Marketplace flow', () => {
         })
 
         it('Marketplace posts asset for sale', async () => {
-            const accessService = await ocean.assets.getService(ddo.id, 'access')
-            const price = 20
+            accessService = await ocean.assets.getService(ddo.id, 'access')
+            price = 20
             assert(accessService.attributes.main.dtCost * price === 200)
         })
 
@@ -157,10 +158,8 @@ describe('Marketplace flow', () => {
                 })
         })
 
-        // it('Bob consumes asset 1', async () => {
-        //     // const config = new Config()
-        //     const ocean = await Ocean.getInstance(config)
-        //     await ocean.assets.download(asset.did, service1.index, bob, '~/my-datasets')
-        // })
+        it('Bob consumes asset 1', async () => {
+            await ocean.assets.download(ddo.did, accessService.index, bob.getId(), '~/my-datasets')
+        })
     })
 })
