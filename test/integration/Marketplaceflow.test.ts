@@ -105,13 +105,13 @@ describe('Marketplace flow', () => {
 
         // })
 
-        // it('Bob gets datatokens', async () => {
-        //     const ts = await datatoken.transfer(tokenAddress, bob, transferAmount, alice)
-        //     transactionId = ts.transactionHash
-        // })
+        it('Bob gets datatokens', async () => {
+            const ts = await datatoken.transfer(tokenAddress, bob.getId(), transferAmount, alice.getId())
+            transactionId = ts.transactionHash
+        })
 
         // it('Bob consumes asset 1', async () => {
-        //     const config = new Config()
+        //     // const config = new Config()
         //     const ocean = await Ocean.getInstance(config)
         //     await ocean.assets.download(asset.did, service1.index, bob, '~/my-datasets')
         // })
