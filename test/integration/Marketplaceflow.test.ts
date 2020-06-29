@@ -98,19 +98,21 @@ describe('Marketplace flow', () => {
         })
 
         it('Alice allows marketplace to sell her datatokens', async () => {
-            await datatoken.approve(
-                tokenAddress,
-                marketplace.getId(),
-                marketplaceAllowance, 
-                alice.getId()
-            ).then(async () => {
-                const allowance = await datatoken.allowance(
+            await datatoken
+                .approve(
                     tokenAddress,
-                    alice.getId(),
-                    marketplace.getId()
+                    marketplace.getId(),
+                    marketplaceAllowance,
+                    alice.getId()
                 )
-                assert(allowance.toString() === marketplaceAllowance.toString())
-            })
+                .then(async () => {
+                    const allowance = await datatoken.allowance(
+                        tokenAddress,
+                        alice.getId(),
+                        marketplace.getId()
+                    )
+                    assert(allowance.toString() === marketplaceAllowance.toString())
+                })
         })
 
         it('Marketplace withdraw Alice tokens from allowance', async () => {
@@ -119,11 +121,17 @@ describe('Marketplace flow', () => {
                 alice.getId(),
                 marketplace.getId()
             )
-            await datatoken.transferFrom(tokenAddress, alice.getId(), allowance, marketplace.getId())
-            .then(async () => {
-                const marketplaceBalance = await datatoken.balance(tokenAddress, marketplace.getId())
-                assert(marketplaceBalance.toString() === marketplaceAllowance.toString())
-            })
+            await datatoken
+                .transferFrom(tokenAddress, alice.getId(), allowance, marketplace.getId())
+                .then(async () => {
+                    const marketplaceBalance = await datatoken.balance(
+                        tokenAddress,
+                        marketplace.getId()
+                    )
+                    assert(
+                        marketplaceBalance.toString() === marketplaceAllowance.toString()
+                    )
+                })
         })
 
         // it('Marketplace posts asset for sale', async () => {
@@ -136,7 +144,12 @@ describe('Marketplace flow', () => {
         // })
 
         it('Bob gets datatokens', async () => {
-            const ts = await datatoken.transfer(tokenAddress, bob.getId(), transferAmount, alice.getId())
+            const ts = await datatoken.transfer(
+                tokenAddress,
+                bob.getId(),
+                transferAmount,
+                alice.getId()
+            )
             transactionId = ts.transactionHash
         })
 

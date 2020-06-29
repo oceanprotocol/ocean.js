@@ -189,11 +189,15 @@ export class DataTokens {
     }
 
     /**
-     * 
-     * @param dataTokenAddress 
-     * @param account 
+     *
+     * @param dataTokenAddress
+     * @param account
      */
-    public async allowance(dataTokenAddress: string, owner: string, spender: string): Promise<string> {
+    public async allowance(
+        dataTokenAddress: string,
+        owner: string,
+        spender: string
+    ): Promise<string> {
         const datatoken = new this.web3.eth.Contract(
             this.datatokensABI,
             dataTokenAddress,
