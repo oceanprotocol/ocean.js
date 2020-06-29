@@ -133,15 +133,13 @@ describe('Marketplace flow', () => {
                     )
                 })
         })
+        it('Marketplace should resolve asset using DID', async () => {
+            assert(ddo, await ocean.assets.resolve(ddo.id))
+        })
 
-        // it('Marketplace posts asset for sale', async () => {
-        //     const config = new Config()
-        //     marketOcean = await Ocean.getInstance(config)
-
-        //     service1 = marketOcean.assets.getService('download')
-        //     service2 = marketOcean.assets.getService('access')
-
-        // })
+        it('Marketplace posts asset for sale', async () => {
+            // const downloadService = await ocean.assets.getService(ddo.id, 'download')
+        })
 
         it('Bob gets datatokens', async () => {
             const ts = await datatoken.transfer(
