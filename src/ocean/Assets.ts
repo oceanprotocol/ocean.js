@@ -25,6 +25,10 @@ export enum CreateProgressStep {
     DdoStored
 }
 
+export enum OrderProgressStep {
+    TransferDataToken
+}
+
 /**
  * Assets submodule of Ocean Protocol.
  */

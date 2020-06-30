@@ -25,6 +25,7 @@ describe('Marketplace flow', () => {
     let price
     let ocean
     let accessService
+    let data
     let blob
 
     const marketplaceAllowance = 20
@@ -46,7 +47,8 @@ describe('Marketplace flow', () => {
             alice = (await ocean.accounts.list())[1]
             bob = (await ocean.accounts.list())[2]
             marketplace = (await ocean.accounts.list())[3]
-            blob = ocean.config.metadataStoreUri
+            data = { t: 1, url: ocean.config.metadataStoreUri }
+            blob = JSON.stringify(data)
             await contracts.deployContracts(owner.getId())
         })
 
