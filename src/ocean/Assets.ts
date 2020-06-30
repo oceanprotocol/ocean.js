@@ -386,10 +386,8 @@ export class Assets extends Instantiable {
     public async order(
         did: string,
         serviceType: string,
-        tokenAddress,
         consumerAddress: string
-    ): Promise<void> {
-        // provider.initialize
+    ): Promise<string> {
         const service = await this.getService(did, serviceType)
         return await this.ocean.provider.initialize(
             did,

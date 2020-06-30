@@ -69,7 +69,7 @@ export class Provider extends Instantiable {
         serviceIndex: number,
         serviceType: string,
         consumerAddress: string
-    ): Promise<any> {
+    ): Promise<string> {
         let DDO
         try {
             DDO = await this.ocean.assets.resolve(did)
@@ -78,20 +78,16 @@ export class Provider extends Instantiable {
             throw new Error('Failed to resolve DID')
         }
 
-        const args = {
-            documentId: did,
-            serviceId: serviceIndex,
-            serviceType: serviceType,
-            tokenAddress: DDO.dataToken,
-            consumerAddress: consumerAddress
-        }
-        console.log(args)
+        let initializeUrl = this.getInitializeEndpoint()
+        initializeUrl += `?documentId=${did}`
+        initializeUrl += `&serviceId=${serviceIndex}`
+        initializeUrl += `&serviceType=${serviceType}`
+        initializeUrl += `&tokenAddress=${DDO.dataToken}`
+        initializeUrl += `&consumerAddress=${consumerAddress}`
 
         try {
-            return await this.ocean.utils.fetch.post(
-                this.getInitializeEndpoint(),
-                decodeURI(JSON.stringify(args))
-            )
+            const response = await this.ocean.utils.fetch.get(initializeUrl)
+            return await response.text()
         } catch (e) {
             this.logger.error(e)
             throw new Error('HTTP request failed')
