@@ -77,15 +77,15 @@ export class Provider extends Instantiable {
             this.logger.error(e)
             throw new Error('Failed to resolve DID')
         }
-        const { dtAddress } = DDO
 
         const args = {
             documentId: did,
             serviceId: serviceIndex,
             serviceType: serviceType,
-            tokenAddress: dtAddress,
+            tokenAddress: DDO.dataToken,
             consumerAddress: consumerAddress
         }
+        console.log(args)
 
         try {
             return await this.ocean.utils.fetch.post(

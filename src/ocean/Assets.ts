@@ -25,13 +25,6 @@ export enum CreateProgressStep {
     DdoStored
 }
 
-export enum OrderProgressStep {
-    CreatingAgreement,
-    AgreementInitialized,
-    LockingPayment,
-    LockedPayment
-}
-
 /**
  * Assets submodule of Ocean Protocol.
  */
@@ -390,6 +383,22 @@ export class Assets extends Instantiable {
         }
     }
 
+    public async order(
+        did: string,
+        serviceType: string,
+        tokenAddress,
+        consumerAddress: string
+    ): Promise<void> {
+        // provider.initialize
+        const service = await this.getService(did, serviceType)
+        return await this.ocean.provider.initialize(
+            did,
+            service.index,
+            serviceType,
+            consumerAddress
+        )
+    }
+
     public async download(
         dtAddress: string,
         serviceEndpoint: string,
@@ -400,7 +409,7 @@ export class Assets extends Instantiable {
         consumeUrl += `?consumerAddress=${account}`
         consumeUrl += `&tokenAddress=${dtAddress}`
         consumeUrl += `&transferTxId=${txId}`
-
+        console.log(consumeUrl)
         const serviceConnector = new WebServiceConnector(this.logger)
 
         try {

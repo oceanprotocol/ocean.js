@@ -159,7 +159,15 @@ describe('Marketplace flow', () => {
         })
 
         it('Bob consumes asset 1', async () => {
-            await ocean.assets.download(ddo.did, accessService.index, bob.getId(), '~/my-datasets')
+            console.log(
+                await ocean.assets.order(
+                    ddo.id,
+                    accessService.type,
+                    ddo.dataToken,
+                    bob.getId()
+                )
+            )
+            // await ocean.assets.download(tokenAddress, accessService.serviceEndpoint, accessService.index, bob.getId(), '~/my-datasets')
         })
     })
 })
