@@ -82,7 +82,7 @@ export class Provider extends Instantiable {
         initializeUrl += `?documentId=${did}`
         initializeUrl += `&serviceId=${serviceIndex}`
         initializeUrl += `&serviceType=${serviceType}`
-        initializeUrl += `&tokenAddress=${DDO.dataToken}`
+        initializeUrl += `&dataToken=${DDO.dataToken}`
         initializeUrl += `&consumerAddress=${consumerAddress}`
 
         try {

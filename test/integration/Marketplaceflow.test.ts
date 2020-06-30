@@ -25,11 +25,11 @@ describe('Marketplace flow', () => {
     let price
     let ocean
     let accessService
+    let blob
 
     const marketplaceAllowance = 20
     const tokenAmount = 100
     const transferAmount = 2
-    const blob = 'http://localhost:8030/api/v1/provider/services'
 
     describe('#test', () => {
         it('Initialize Ocean contracts v3', async () => {
@@ -42,12 +42,11 @@ describe('Marketplace flow', () => {
             )
 
             ocean = await Ocean.getInstance(config)
-
             owner = (await ocean.accounts.list())[0]
             alice = (await ocean.accounts.list())[1]
             bob = (await ocean.accounts.list())[2]
             marketplace = (await ocean.accounts.list())[3]
-
+            blob = ocean.config.metadataStoreUri
             await contracts.deployContracts(owner.getId())
         })
 
@@ -58,8 +57,7 @@ describe('Marketplace flow', () => {
                 datatokensTemplate.abi,
                 web3
             )
-
-            tokenAddress = await datatoken.create(blob, alice.getId())
+            blob = tokenAddress = await datatoken.create(blob, alice.getId())
         })
 
         it('Generates metadata', async () => {
