@@ -379,7 +379,7 @@ export class Assets extends Instantiable {
                 main: {
                     creator: creator.getId(),
                     datePublished,
-                    dtCost,
+                    cost: dtCost,
                     timeout: timeout,
                     name: 'dataAssetAccessServiceAgreement'
                 }
