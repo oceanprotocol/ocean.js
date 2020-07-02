@@ -4,8 +4,6 @@ import { Ocean } from '../../src/ocean/Ocean'
 import config from './config'
 import { assert } from 'console'
 
-// import Accounts from "../../src/ocean/Account"
-
 const Web3 = require('web3')
 const web3 = new Web3('http://127.0.0.1:8545')
 const factory = require('@oceanprotocol/contracts/artifacts/development/Factory.json')
@@ -140,26 +138,40 @@ describe('Marketplace flow', () => {
                 })
         })
         it('Marketplace should resolve asset using DID', async () => {
-            assert(ddo, await ocean.assets.resolve(ddo.id))
+            await ocean.assets.resolve(ddo.id).then((newDDO) => {
+                assert(newDDO.id === ddo.id)
+            })
         })
 
         it('Marketplace posts asset for sale', async () => {
             accessService = await ocean.assets.getService(ddo.id, 'access')
             price = 20
-            assert(accessService.attributes.main.dtCost * price === 200)
+            assert(accessService.attributes.main.cost * price === 200)
         })
 
         it('Bob gets datatokens', async () => {
+            const dTamount = 20
             await datatoken
-                .transfer(tokenAddress, bob.getId(), transferAmount, alice.getId())
+                .transfer(tokenAddress, bob.getId(), dTamount, alice.getId())
                 .then(async () => {
                     const balance = await datatoken.balance(tokenAddress, bob.getId())
-                    assert(balance.toString() === transferAmount.toString())
+                    assert(balance.toString() === dTamount.toString())
                 })
         })
 
         it('Bob consumes asset 1', async () => {
-            console.log(await ocean.assets.order(ddo.id, accessService.type, bob.getId()))
+            await ocean.assets
+                .order(ddo.id, accessService.type, bob.getId())
+                .then(async (res: string) => {
+                    res = JSON.parse(res)
+                    await datatoken.transfer(
+                        res['dataToken'],
+                        res['to'],
+                        res['numTokens'],
+                        res['from']
+                    )
+                })
+
             // await ocean.assets.download(tokenAddress, accessService.serviceEndpoint, accessService.index, bob.getId(), '~/my-datasets')
         })
     })
