@@ -4,8 +4,6 @@ import { Ocean } from '../../src/ocean/Ocean'
 import config from './config'
 import { assert } from 'console'
 
-// import Accounts from "../../src/ocean/Account"
-
 const Web3 = require('web3')
 const web3 = new Web3('http://127.0.0.1:8545')
 const factory = require('@oceanprotocol/contracts/artifacts/development/Factory.json')
@@ -24,11 +22,12 @@ describe('Marketplace flow', () => {
     let service1
     let price
     let ocean
+    let accessService
+    let data
+    let blob
 
     const marketplaceAllowance = 20
     const tokenAmount = 100
-    const transferAmount = 2
-    const blob = 'http://localhost:8030/api/v1/provider/services'
 
     describe('#test', () => {
         it('Initialize Ocean contracts v3', async () => {
@@ -41,12 +40,12 @@ describe('Marketplace flow', () => {
             )
 
             ocean = await Ocean.getInstance(config)
-
             owner = (await ocean.accounts.list())[0]
             alice = (await ocean.accounts.list())[1]
             bob = (await ocean.accounts.list())[2]
             marketplace = (await ocean.accounts.list())[3]
-
+            data = { t: 1, url: ocean.config.metadataStoreUri }
+            blob = JSON.stringify(data)
             await contracts.deployContracts(owner.getId())
         })
 
@@ -57,8 +56,8 @@ describe('Marketplace flow', () => {
                 datatokensTemplate.abi,
                 web3
             )
-
             tokenAddress = await datatoken.create(blob, alice.getId())
+            console.log(blob)
         })
 
         it('Generates metadata', async () => {
@@ -139,28 +138,48 @@ describe('Marketplace flow', () => {
                 })
         })
         it('Marketplace should resolve asset using DID', async () => {
-            assert(ddo, await ocean.assets.resolve(ddo.id))
+            await ocean.assets.resolve(ddo.id).then((newDDO) => {
+                assert(newDDO.id === ddo.id)
+            })
         })
 
         it('Marketplace posts asset for sale', async () => {
-            const accessService = await ocean.assets.getService(ddo.id, 'access')
-            const price = 20
-            assert(accessService.attributes.main.dtCost * price === 200)
+            accessService = await ocean.assets.getServiceByType(ddo.id, 'access')
+            price = 20
+            assert(accessService.attributes.main.cost * price === 200)
         })
 
         it('Bob gets datatokens', async () => {
+            const dTamount = 20
             await datatoken
-                .transfer(tokenAddress, bob.getId(), transferAmount, alice.getId())
+                .transfer(tokenAddress, bob.getId(), dTamount, alice.getId())
                 .then(async () => {
                     const balance = await datatoken.balance(tokenAddress, bob.getId())
-                    assert(balance.toString() === transferAmount.toString())
+                    assert(balance.toString() === dTamount.toString())
                 })
         })
 
-        // it('Bob consumes asset 1', async () => {
-        //     // const config = new Config()
-        //     const ocean = await Ocean.getInstance(config)
-        //     await ocean.assets.download(asset.did, service1.index, bob, '~/my-datasets')
-        // })
+        it('Bob consumes asset 1', async () => {
+            await ocean.assets
+                .order(ddo.id, accessService.type, bob.getId())
+                .then(async (res: string) => {
+                    res = JSON.parse(res)
+                    return await datatoken.transfer(
+                        res['dataToken'],
+                        res['to'],
+                        res['numTokens'],
+                        res['from']
+                    )
+                })
+                .then(async (tx) => {
+                    await ocean.assets.download(
+                        ddo.id,
+                        tx.transactionHash,
+                        tokenAddress,
+                        bob,
+                        '~/my-datasets'
+                    )
+                })
+        })
     })
 })

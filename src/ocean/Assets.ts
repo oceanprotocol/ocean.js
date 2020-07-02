@@ -26,10 +26,7 @@ export enum CreateProgressStep {
 }
 
 export enum OrderProgressStep {
-    CreatingAgreement,
-    AgreementInitialized,
-    LockingPayment,
-    LockedPayment
+    TransferDataToken
 }
 
 /**
@@ -357,7 +354,10 @@ export class Assets extends Instantiable {
         } as SearchQuery)
     }
 
-    public async getService(did: string, serviceType: string): Promise<ServiceCommon> {
+    public async getServiceByType(
+        did: string,
+        serviceType: string
+    ): Promise<ServiceCommon> {
         const services: ServiceCommon[] = (await this.resolve(did)).service
         let service
         services.forEach((serv) => {
@@ -382,7 +382,7 @@ export class Assets extends Instantiable {
                 main: {
                     creator: creator.getId(),
                     datePublished,
-                    dtCost,
+                    cost: dtCost,
                     timeout: timeout,
                     name: 'dataAssetAccessServiceAgreement'
                 }
@@ -390,7 +390,61 @@ export class Assets extends Instantiable {
         }
     }
 
+    public async order(
+        did: string,
+        serviceType: string,
+        consumerAddress: string
+    ): Promise<string> {
+        const service = await this.getServiceByType(did, serviceType)
+        return await this.ocean.provider.initialize(
+            did,
+            service.index,
+            serviceType,
+            consumerAddress
+        )
+    }
+
+    // marketplace flow
     public async download(
+        did: string,
+        txId: string,
+        tokenAddress: string,
+        consumerAccount: Account,
+        destination: string
+    ): Promise<string | true> {
+        const ddo = await this.resolve(did)
+        const { attributes } = ddo.findServiceByType('metadata')
+        const service = ddo.findServiceByType('access')
+        const { files } = attributes.main
+        const { serviceEndpoint } = service
+
+        if (!serviceEndpoint) {
+            throw new Error(
+                'Consume asset failed, service definition is missing the `serviceEndpoint`.'
+            )
+        }
+
+        this.logger.log('Consuming files')
+
+        destination = destination
+            ? `${destination}/datafile.${ddo.shortId()}.${service.index}/`
+            : undefined
+
+        await this.ocean.provider.download(
+            did,
+            txId,
+            tokenAddress,
+            service.type,
+            service.index.toString(),
+            destination,
+            consumerAccount,
+            files
+        )
+        return true
+    }
+
+    // simple flow
+    public async simpleDownload(
         dtAddress: string,
         serviceEndpoint: string,
         txId: string,
@@ -400,9 +454,8 @@ export class Assets extends Instantiable {
         consumeUrl += `?consumerAddress=${account}`
         consumeUrl += `&tokenAddress=${dtAddress}`
         consumeUrl += `&transferTxId=${txId}`
-
         const serviceConnector = new WebServiceConnector(this.logger)
-
+        console.log(consumeUrl)
         try {
             await serviceConnector.downloadFile(consumeUrl)
         } catch (e) {

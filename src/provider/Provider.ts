@@ -69,7 +69,7 @@ export class Provider extends Instantiable {
         serviceIndex: number,
         serviceType: string,
         consumerAddress: string
-    ): Promise<any> {
+    ): Promise<string> {
         let DDO
         try {
             DDO = await this.ocean.assets.resolve(did)
@@ -77,21 +77,17 @@ export class Provider extends Instantiable {
             this.logger.error(e)
             throw new Error('Failed to resolve DID')
         }
-        const { dtAddress } = DDO
 
-        const args = {
-            documentId: did,
-            serviceId: serviceIndex,
-            serviceType: serviceType,
-            tokenAddress: dtAddress,
-            consumerAddress: consumerAddress
-        }
+        let initializeUrl = this.getInitializeEndpoint()
+        initializeUrl += `?documentId=${did}`
+        initializeUrl += `&serviceId=${serviceIndex}`
+        initializeUrl += `&serviceType=${serviceType}`
+        initializeUrl += `&dataToken=${DDO.dataToken}`
+        initializeUrl += `&consumerAddress=${consumerAddress}`
 
         try {
-            return await this.ocean.utils.fetch.post(
-                this.getInitializeEndpoint(),
-                decodeURI(JSON.stringify(args))
-            )
+            const response = await this.ocean.utils.fetch.get(initializeUrl)
+            return await response.text()
         } catch (e) {
             this.logger.error(e)
             throw new Error('HTTP request failed')
@@ -114,11 +110,11 @@ export class Provider extends Instantiable {
             .filter((_, i) => index === -1 || i === index)
             .map(async ({ index: i }) => {
                 let consumeUrl = this.getDownloadEndpoint()
-                consumeUrl += `?index=${i}`
+                consumeUrl += `?fileIndex=${i}`
                 consumeUrl += `&documentId=${did}`
                 consumeUrl += `&serviceId=${serviceIndex}`
                 consumeUrl += `&serviceType=${serviceType}`
-                consumeUrl += `tokenAddress=${tokenAddress}`
+                consumeUrl += `&dataToken=${tokenAddress}`
                 consumeUrl += `&transferTxId=${txId}`
                 consumeUrl += `&consumerAddress=${account.getId()}`
                 consumeUrl += `&signature=${signature}`
