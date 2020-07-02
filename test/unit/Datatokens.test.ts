@@ -1,6 +1,6 @@
 import { assert } from 'chai'
-import { TestContractHandler } from '../../TestContractHandler'
-import { DataTokens } from '../../../src/datatokens/Datatokens'
+import { TestContractHandler } from '../TestContractHandler'
+import { DataTokens } from '../../src/datatokens/Datatokens'
 
 const Web3 = require('web3')
 const factory = require('@oceanprotocol/contracts/artifacts/development/Factory.json')
@@ -24,7 +24,8 @@ describe('DataTokens', () => {
                 factory.abi,
                 datatokensTemplate.abi,
                 datatokensTemplate.bytecode,
-                factory.bytecode
+                factory.bytecode,
+                web3
             )
             await contracts.getAccounts()
             minter = contracts.accounts[0]
