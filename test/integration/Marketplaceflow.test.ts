@@ -28,7 +28,6 @@ describe('Marketplace flow', () => {
 
     const marketplaceAllowance = 20
     const tokenAmount = 100
-    const transferAmount = 2
 
     describe('#test', () => {
         it('Initialize Ocean contracts v3', async () => {
@@ -57,7 +56,8 @@ describe('Marketplace flow', () => {
                 datatokensTemplate.abi,
                 web3
             )
-            blob = tokenAddress = await datatoken.create(blob, alice.getId())
+            tokenAddress = await datatoken.create(blob, alice.getId())
+            console.log(blob)
         })
 
         it('Generates metadata', async () => {
@@ -144,7 +144,7 @@ describe('Marketplace flow', () => {
         })
 
         it('Marketplace posts asset for sale', async () => {
-            accessService = await ocean.assets.getService(ddo.id, 'access')
+            accessService = await ocean.assets.getServiceByType(ddo.id, 'access')
             price = 20
             assert(accessService.attributes.main.cost * price === 200)
         })
@@ -164,15 +164,22 @@ describe('Marketplace flow', () => {
                 .order(ddo.id, accessService.type, bob.getId())
                 .then(async (res: string) => {
                     res = JSON.parse(res)
-                    await datatoken.transfer(
+                    return await datatoken.transfer(
                         res['dataToken'],
                         res['to'],
                         res['numTokens'],
                         res['from']
                     )
                 })
-
-            // await ocean.assets.download(tokenAddress, accessService.serviceEndpoint, accessService.index, bob.getId(), '~/my-datasets')
+                .then(async (tx) => {
+                    await ocean.assets.download(
+                        ddo.id,
+                        tx.transactionHash,
+                        tokenAddress,
+                        bob,
+                        '~/my-datasets'
+                    )
+                })
         })
     })
 })

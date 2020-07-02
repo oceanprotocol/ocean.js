@@ -110,11 +110,11 @@ export class Provider extends Instantiable {
             .filter((_, i) => index === -1 || i === index)
             .map(async ({ index: i }) => {
                 let consumeUrl = this.getDownloadEndpoint()
-                consumeUrl += `?index=${i}`
+                consumeUrl += `?fileIndex=${i}`
                 consumeUrl += `&documentId=${did}`
                 consumeUrl += `&serviceId=${serviceIndex}`
                 consumeUrl += `&serviceType=${serviceType}`
-                consumeUrl += `tokenAddress=${tokenAddress}`
+                consumeUrl += `&dataToken=${tokenAddress}`
                 consumeUrl += `&transferTxId=${txId}`
                 consumeUrl += `&consumerAddress=${account.getId()}`
                 consumeUrl += `&signature=${signature}`
