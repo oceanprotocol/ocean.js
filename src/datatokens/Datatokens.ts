@@ -159,7 +159,7 @@ export class DataTokens {
         dataTokenAddress: string,
         fromAddress: string,
         amount: number,
-        account: Account
+        account: string
     ): Promise<string> {
         const datatoken = new this.web3.eth.Contract(
             this.datatokensABI,
@@ -185,6 +185,25 @@ export class DataTokens {
             { from: account }
         )
         const trxReceipt = await datatoken.methods.balanceOf(account).call()
+        return trxReceipt
+    }
+
+    /**
+     *
+     * @param dataTokenAddress
+     * @param account
+     */
+    public async allowance(
+        dataTokenAddress: string,
+        owner: string,
+        spender: string
+    ): Promise<string> {
+        const datatoken = new this.web3.eth.Contract(
+            this.datatokensABI,
+            dataTokenAddress,
+            { from: spender }
+        )
+        const trxReceipt = await datatoken.methods.allowance(owner, spender).call()
         return trxReceipt
     }
 

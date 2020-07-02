@@ -19,12 +19,13 @@ describe('DataTokens', () => {
     const blob = 'https://example.com/dataset-1'
 
     describe('#test', () => {
-        it('#deploy', async () => {
+        it('should deploy contracts', async () => {
             contracts = new TestContractHandler(
                 factory.abi,
                 datatokensTemplate.abi,
                 datatokensTemplate.bytecode,
-                factory.bytecode
+                factory.bytecode,
+                web3
             )
             await contracts.getAccounts()
             minter = contracts.accounts[0]
@@ -32,7 +33,7 @@ describe('DataTokens', () => {
             await contracts.deployContracts(minter)
         })
 
-        it('#init', async () => {
+        it('should initialize datatokens class', async () => {
             datatoken = new DataTokens(
                 contracts.factoryAddress,
                 factory.abi,
@@ -42,30 +43,30 @@ describe('DataTokens', () => {
             assert(datatoken !== null)
         })
 
-        it('#create', async () => {
+        it('should create datatokens smart contract', async () => {
             tokenAddress = await datatoken.create(blob, minter)
             assert(tokenAddress !== null)
         })
 
-        it('#mint', async () => {
+        it('should mint datatokens', async () => {
             await datatoken.mint(tokenAddress, minter, tokenAmount)
             balance = await datatoken.balance(tokenAddress, minter)
             assert(balance.toString() === tokenAmount.toString())
         })
 
-        it('#transfer', async () => {
+        it('should transfer datatokens', async () => {
             await datatoken.transfer(tokenAddress, spender, tokenAmount, minter)
             balance = await datatoken.balance(tokenAddress, spender)
             assert(balance.toString() === tokenAmount.toString())
         })
 
-        it('#approve', async () => {
+        it('should approve datatokens transfer', async () => {
             await datatoken.approve(tokenAddress, minter, tokenAmount, spender)
         })
 
-        it('#transferFrom', async () => {
+        it('should transferFrom datatokens', async () => {
             await datatoken.transferFrom(tokenAddress, spender, tokenAmount, minter)
-            minter = await datatoken.balance(tokenAddress, spender)
+            balance = await datatoken.balance(tokenAddress, minter)
             assert(balance.toString() === tokenAmount.toString())
         })
     })

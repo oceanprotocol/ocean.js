@@ -4,7 +4,7 @@ import { Instantiable, InstantiableConfig } from '../Instantiable.abstract'
 /**
  * Account information.
  */
-export default class Accounts extends Instantiable {
+export default class Account extends Instantiable {
     private password?: string
 
     private token?: string

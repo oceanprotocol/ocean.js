@@ -14,15 +14,21 @@ matrix:
 
 before_install:
   - npm install -g npm
-  - npm install -g ganache-cli@~6.7.0
-
+  
 before_script:
-  - ganache-cli > ganache-cli.log &
+  - git clone https://github.com/oceanprotocol/barge
+  - cd barge
+  - git checkout v3
+  - export PROVIDER_VERSION=alex
+  - bash -x start_ocean.sh --no-dashboard 2>&1 > start_ocean.log &
+  - cd ..
+  - sleep 300
 
 script:
   - npm run lint
   - npm run build
-  - npm run test:cover  
+  - npm run test:cover
+  - npm run test:integration
 
 notifications:
   email: false

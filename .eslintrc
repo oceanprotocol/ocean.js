@@ -38,7 +38,8 @@
         "no-empty": ["error", { "allowEmptyCatch": true }],
         "prefer-destructuring": ["warn"],
         "no-dupe-class-members": ["warn"],
-        "no-useless-constructor": ["warn"]
+        "no-useless-constructor": ["warn"],
+        "dot-notation": 0
     },
     "env": {
         "es6": true,
