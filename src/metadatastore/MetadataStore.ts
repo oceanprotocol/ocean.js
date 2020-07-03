@@ -315,6 +315,20 @@ export class MetadataStore {
         return result
     }
 
+    public async getOwnerAssets(owner: string): Promise<DDO[]> {
+        const query = {
+            offset: 100,
+            page: 1,
+            query: {
+                'publickey.id.owner': owner
+            },
+            sort: {
+                value: 1
+            }
+        }
+        return (await this.queryMetadata(query)).results
+    }
+
     /**
      * Edit Metadata for a DDO.
      * @param  {did} string DID.

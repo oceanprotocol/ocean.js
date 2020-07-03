@@ -172,10 +172,8 @@ export class Assets extends Instantiable {
      * @param  {string} owner Owner address.
      * @return {Promise<string[]>} List of DIDs.
      */
-    public async ownerAssets(owner: string): Promise<string[]> {
-        // TODO:
-        // return this.ocean.keeper.didRegistry.getAttributesByOwner(owner)
-        return ['']
+    public async ownerAssets(owner: string): Promise<DDO[]> {
+        return this.ocean.metadatastore.getOwnerAssets(owner)
     }
 
     /**
