@@ -1,6 +1,6 @@
 {
   "name": "@oceanprotocol/lib",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "JavaScript client library for Ocean Protocol",
   "main": "./dist/node/lib.js",
   "typings": "./dist/node/lib.d.ts",
@@ -13,6 +13,7 @@
     "lint": "eslint --ignore-path .gitignore --ext .ts,.tsx .",
     "lint:fix": "eslint --ignore-path .gitignore --ext .ts,.tsx . --fix",
     "format": "prettier --parser typescript --ignore-path .gitignore --write '**/*.{js,jsx,ts,tsx}'",
+    "doc:json": "./scripts/typedoc.js",
     "run": "ts-node",
     "release": "release-it --non-interactive",
     "changelog": "auto-changelog -p",
@@ -59,7 +60,6 @@
     "@types/sinon": "^9.0.0",
     "@typescript-eslint/eslint-plugin": "^2.23.0",
     "@typescript-eslint/parser": "^2.23.0",
-    "auto-changelog": "^2.1.0",
     "chai": "^4.2.0",
     "chai-spies": "^1.0.0",
     "cross-env": "^7.0.2",
@@ -79,7 +79,8 @@
     "ts-node-register": "^1.0.0",
     "typedoc": "^0.17.8",
     "typescript": "^3.9.6",
-    "yargs": "^15.4.0"
+    "yargs": "^15.4.0",
+    "auto-changelog": "2.0.0"
   },
   "nyc": {
     "include": [
@@ -117,7 +118,7 @@
     "github": {
       "release": true,
       "assets": [
-        "dist/squid-js.json"
+        "dist/lib-js.json"
       ]
     },
     "npm": {
