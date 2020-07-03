@@ -50,7 +50,7 @@
   "devDependencies": {
     "@oceanprotocol/contracts": "^0.2.2",
     "@release-it/bumper": "^1.4.0",
-    "@truffle/hdwallet-provider": "^1.0.36",
+    "@truffle/hdwallet-provider": "^1.0.37",
     "@types/chai": "^4.2.11",
     "@types/chai-spies": "^1.0.1",
     "@types/mocha": "^7.0.2",
