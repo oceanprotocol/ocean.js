@@ -57,7 +57,7 @@ describe('Marketplace flow', () => {
                 web3
             )
             tokenAddress = await datatoken.create(blob, alice.getId())
-            console.log(blob)
+            assert(tokenAddress != null)
         })
 
         it('Generates metadata', async () => {
@@ -177,9 +177,13 @@ describe('Marketplace flow', () => {
                         tx.transactionHash,
                         tokenAddress,
                         bob,
-                        '~/my-datasets'
+                        './node_modules/my-datasets'
                     )
                 })
+        })
+        it('owner can list there assets', async () => {
+            const assets = await ocean.assets.ownerAssets(alice.getId())
+            assert(assets.length > 0)
         })
     })
 })
