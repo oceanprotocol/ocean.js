@@ -168,18 +168,6 @@ export class Assets extends Instantiable {
     }
 
     /**
-     * Returns the owner of an asset.
-     * @param  {string} did Decentralized ID.
-     * @return {Promise<string>} Returns Account ID
-     */
-    public async owner(did: string): Promise<string> {
-        // TODO:
-        // const owner = await this.ocean.keeper.didRegistry.getDIDOwner(did)
-        // return owner
-        return ''
-    }
-
-    /**
      * Returns the assets of a owner.
      * @param  {string} owner Owner address.
      * @return {Promise<string[]>} List of DIDs.

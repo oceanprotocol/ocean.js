@@ -41,6 +41,7 @@ describe('Marketplace flow', () => {
 
             ocean = await Ocean.getInstance(config)
             owner = (await ocean.accounts.list())[0]
+            console.log(owner.getId())
             alice = (await ocean.accounts.list())[1]
             bob = (await ocean.accounts.list())[2]
             marketplace = (await ocean.accounts.list())[3]
@@ -57,7 +58,7 @@ describe('Marketplace flow', () => {
                 web3
             )
             tokenAddress = await datatoken.create(blob, alice.getId())
-            console.log(blob)
+            assert(tokenAddress != null)
         })
 
         it('Generates metadata', async () => {
