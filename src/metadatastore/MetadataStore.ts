@@ -316,7 +316,7 @@ export class MetadataStore {
     }
 
     public async getOwnerAssets(owner: string): Promise<DDO[]> {
-        let q = {
+        const q = {
             offset: 100,
             page: 1,
             query: {

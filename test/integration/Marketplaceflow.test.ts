@@ -181,10 +181,8 @@ describe('Marketplace flow', () => {
                     )
                 })
         })
-        it ('owner can list there assets', async () => {
-            const assets = await ocean.assets.ownerAssets(
-                alice.getId()
-            )
+        it('owner can list there assets', async () => {
+            const assets = await ocean.assets.ownerAssets(alice.getId())
             assert(assets.length > 0)
         })
     })
