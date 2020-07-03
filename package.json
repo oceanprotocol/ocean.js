@@ -79,7 +79,7 @@
     "ts-node-register": "^1.0.0",
     "typedoc": "^0.17.8",
     "typescript": "^3.9.6",
-    "yargs": "^15.3.1"
+    "yargs": "^15.4.0"
   },
   "nyc": {
     "include": [
