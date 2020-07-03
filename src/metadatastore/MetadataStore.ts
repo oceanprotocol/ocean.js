@@ -316,17 +316,17 @@ export class MetadataStore {
     }
 
     public async getOwnerAssets(owner: string): Promise<DDO[]> {
-        const query = {
+        let q = {
             offset: 100,
             page: 1,
             query: {
-                'publickey.id.owner': owner
+                'publicKey.owner': [owner]
             },
             sort: {
                 value: 1
             }
-        }
-        return (await this.queryMetadata(query)).results
+        } as SearchQuery
+        return (await this.queryMetadata(q)).results
     }
 
     /**
