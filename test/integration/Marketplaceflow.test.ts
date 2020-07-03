@@ -177,7 +177,7 @@ describe('Marketplace flow', () => {
                         tx.transactionHash,
                         tokenAddress,
                         bob,
-                        '~/my-datasets'
+                        './node_modules/my-datasets'
                     )
                 })
         })
