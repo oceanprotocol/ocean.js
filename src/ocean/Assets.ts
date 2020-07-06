@@ -6,7 +6,8 @@ import {
     Service,
     ServiceAccess,
     ServiceComputePrivacy,
-    ServiceCommon
+    ServiceCommon,
+    ServiceCompute
 } from '../ddo/interfaces/Service'
 import { EditableMetadata } from '../ddo/interfaces/EditableMetadata'
 import Account from './Account'
@@ -29,7 +30,6 @@ export enum CreateProgressStep {
 export enum OrderProgressStep {
     TransferDataToken
 }
-
 
 export const ComputeJobStatus = Object.freeze({
     Started: 10,
@@ -483,7 +483,6 @@ export class Assets extends Instantiable {
         return serviceEndpoint
     }
 
-
     /**
      * Start the execution of a compute job.
      * @param  {Account} consumerAccount The account of the consumer ordering the service.
@@ -515,7 +514,149 @@ export class Assets extends Instantiable {
         } else return null
     }
 
-        /**
+    /**
+     * Ends a running compute job.
+     * @param  {Account} consumerAccount The account of the consumer ordering the service.
+     * @param  {string} did Decentralized identifier.
+     * @param  {string} jobId The ID of the compute job to be stopped
+     * @return {Promise<ComputeJob>} Returns the new status of a job
+     */
+    public async stop(
+        consumerAccount: Account,
+        did: string,
+        jobId: string
+    ): Promise<ComputeJob> {
+        const computeJobsList = await this.ocean.provider.compute(
+            'put',
+            did,
+            consumerAccount,
+            undefined,
+            undefined,
+            jobId
+        )
+
+        return computeJobsList[0] as ComputeJob
+    }
+
+    /**
+     * Deletes a compute job and all resources associated with the job. If job is running it will be stopped first.
+     * @param  {Account} consumerAccount The account of the consumer ordering the service.
+     * @param  {string} did Decentralized identifier.
+     * @param  {string} jobId The ID of the compute job to be stopped
+     * @return {Promise<ComputeJob>} Returns the new status of a job
+     */
+    public async delete(
+        consumerAccount: Account,
+        did: string,
+        jobId: string
+    ): Promise<ComputeJob> {
+        const computeJobsList = await this.ocean.provider.compute(
+            'delete',
+            did,
+            consumerAccount,
+            undefined,
+            undefined,
+            jobId
+        )
+
+        return computeJobsList[0] as ComputeJob
+    }
+
+    /**
+     * Ends a running compute job and starts it again.
+     * @param  {Account} consumerAccount The account of the consumer ordering the service.
+     * @param  {string} did Decentralized identifier.
+     * @param  {string} jobId The ID of the compute job to be stopped
+     * @return {Promise<ComputeJob>} Returns the new status of a job
+     */
+    public async restart(
+        consumerAccount: Account,
+        did: string,
+        jobId: string
+    ): Promise<ComputeJob> {
+        await this.stop(consumerAccount, did, jobId)
+        const result = await this.start(consumerAccount, did, jobId)
+        return result
+    }
+
+    /**
+     * Returns information about the status of all compute jobs, or a single compute job.
+     * @param  {Account} consumerAccount The account of the consumer ordering the service.
+     * @param  {string} did Decentralized identifier.
+     * @param  {string} jobId The ID of the compute job to be stopped
+     * @return {Promise<ComputeJob[]>} Returns the status
+     */
+    public async status(
+        consumerAccount: Account,
+        did?: string,
+        jobId?: string
+    ): Promise<ComputeJob[]> {
+        const computeJobsList = await this.ocean.provider.compute(
+            'get',
+            did,
+            consumerAccount,
+            undefined,
+            undefined,
+            jobId
+        )
+
+        return computeJobsList as ComputeJob[]
+    }
+
+    /**
+     * Returns the final result of a specific compute job published as an asset.
+     * @param  {Account} consumerAccount The account of the consumer ordering the service.
+     * @param  {string} did Decentralized identifier.
+     * @param  {string} jobId The ID of the compute job to be stopped.
+     * @return {Promise<ComputeJob>} Returns the DDO of the result asset.
+     */
+    public async result(
+        consumerAccount: Account,
+        did: string,
+        jobId: string
+    ): Promise<ComputeJob> {
+        const computeJobsList = await this.ocean.provider.compute(
+            'get',
+            did,
+            consumerAccount,
+            undefined,
+            undefined,
+            jobId
+        )
+
+        return computeJobsList[0] as ComputeJob
+    }
+
+    public async createComputeServiceAttributes(
+        consumerAccount: Account,
+        price: string,
+        datePublished: string,
+        computePrivacy?: ServiceComputePrivacy,
+        timeout?: number
+    ): Promise<ServiceCompute> {
+        const name = 'dataAssetComputingService'
+        if (!timeout) timeout = 3600
+        // TODO
+        const service = {
+            type: 'compute',
+            index: 3,
+            serviceEndpoint: this.ocean.provider.getComputeEndpoint(),
+            attributes: {
+                main: {
+                    creator: consumerAccount.getId(),
+                    datePublished,
+                    price,
+                    privacy: {},
+                    timeout: timeout,
+                    name
+                }
+            }
+        }
+        if (computePrivacy) service.attributes.main.privacy = computePrivacy
+        return service as ServiceCompute
+    }
+
+    /**
      * Check the output object and add default properties if needed
      * @param  {Account} consumerAccount The account of the consumer ordering the service.
      * @param  {Output} output Output section used for publishing the result.
