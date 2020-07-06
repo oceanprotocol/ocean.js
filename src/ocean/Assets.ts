@@ -45,18 +45,6 @@ export class Assets extends Instantiable {
     }
 
     /**
-     * Creates a simple asset and a datatoken
-     * @param  {Account}  publisher Publisher account.
-     * @return {Promise<String>}
-     */
-    public createSimpleAsset(publisher: Account): Promise<string> {
-        const publisherURI = this.ocean.provider.getURI()
-        const jsonBlob = { t: 0, url: publisherURI }
-        const { datatokens } = this.ocean
-        return datatokens.create(JSON.stringify(jsonBlob), publisher)
-    }
-
-    /**
      * Creates a new DDO and publishes it
      * @param  {Metadata} metadata DDO metadata.
      * @param  {Account}  publisher Publisher account.
@@ -370,7 +358,7 @@ export class Assets extends Instantiable {
                     datePublished,
                     cost: dtCost,
                     timeout: timeout,
-                    name: 'dataAssetAccessServiceAgreement'
+                    name: 'dataAssetAccess'
                 }
             }
         }
