@@ -9,6 +9,12 @@ export class Config {
     public nodeUri?: string
 
     /**
+     * Address of Provider.
+     * @type {string}
+     */
+    public providerAddress?: string
+
+    /**
      * Metadata Store URL.
      * @type {string}
      */

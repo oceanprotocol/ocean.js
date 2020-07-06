@@ -1,6 +1,7 @@
 import { SearchQuery } from '../metadatastore/MetadataStore'
 import { DDO } from '../ddo/DDO'
 import { Metadata } from '../ddo/interfaces/Metadata'
+import { MetadataAlgorithm } from '../ddo/interfaces/MetadataAlgorithm'
 import {
     Service,
     ServiceAccess,
@@ -27,6 +28,47 @@ export enum CreateProgressStep {
 
 export enum OrderProgressStep {
     TransferDataToken
+}
+
+
+export const ComputeJobStatus = Object.freeze({
+    Started: 10,
+    ConfiguringVolumes: 20,
+    ProvisioningSuccess: 30,
+    DataProvisioningFailed: 31,
+    AlgorithmProvisioningFailed: 32,
+    RunningAlgorithm: 40,
+    FilteringResults: 50,
+    PublishingResult: 60,
+    Completed: 70,
+    Stopped: 80,
+    Deleted: 90
+})
+
+export interface Output {
+    publishAlgorithmLog?: boolean
+    publishOutput?: boolean
+    providerAddress?: string
+    providerUri?: string
+    metadata?: Metadata
+    metadataUri?: string
+    nodeUri?: string
+    owner?: string
+    secretStoreUri?: string
+    whitelist?: string[]
+}
+
+export interface ComputeJob {
+    owner: string
+    did: string
+    jobId: string
+    dateCreated: string
+    dateFinished: string
+    status: number
+    statusText: string
+    algorithmLogUrl: string
+    resultsUrls: string[]
+    resultsDid?: DID
 }
 
 /**
@@ -439,5 +481,65 @@ export class Assets extends Instantiable {
         }
 
         return serviceEndpoint
+    }
+
+
+    /**
+     * Start the execution of a compute job.
+     * @param  {Account} consumerAccount The account of the consumer ordering the service.
+     * @param  {string} did Decentralized identifer for the asset
+     * @param  {string} algorithmDid The DID of the algorithm asset (of type `algorithm`) to run on the asset.
+     * @param  {MetaData} algorithmMeta Metadata about the algorithm being run if `algorithm` is being used. This is ignored when `algorithmDid` is specified.
+     * @param  {Output} output Define algorithm output publishing. Publishing the result of a compute job is turned off by default.
+     * @return {Promise<ComputeJob>} Returns compute job ID under status.jobId
+     */
+    public async start(
+        consumerAccount: Account,
+        did: string,
+        algorithmDid?: string,
+        algorithmMeta?: MetadataAlgorithm,
+        output?: Output
+    ): Promise<ComputeJob> {
+        output = this.checkOutput(consumerAccount, output)
+        if (did) {
+            const computeJobsList = await this.ocean.provider.compute(
+                'post',
+                did,
+                consumerAccount,
+                algorithmDid,
+                algorithmMeta,
+                undefined,
+                output
+            )
+            return computeJobsList[0] as ComputeJob
+        } else return null
+    }
+
+        /**
+     * Check the output object and add default properties if needed
+     * @param  {Account} consumerAccount The account of the consumer ordering the service.
+     * @param  {Output} output Output section used for publishing the result.
+     * @return {Promise<Output>} Returns output object
+     */
+    private checkOutput(consumerAccount: Account, output?: Output): Output {
+        const isDefault =
+            !output || (!output.publishAlgorithmLog && !output.publishOutput)
+
+        if (isDefault) {
+            return {
+                publishAlgorithmLog: false,
+                publishOutput: false
+            }
+        }
+
+        return {
+            publishAlgorithmLog: output.publishAlgorithmLog,
+            publishOutput: output.publishOutput,
+            providerAddress: output.providerAddress || this.config.providerAddress,
+            providerUri: output.providerUri || this.config.providerUri,
+            metadataUri: output.metadataUri || this.config.metadataStoreUri,
+            nodeUri: output.nodeUri || this.config.nodeUri,
+            owner: output.owner || consumerAccount.getId()
+        }
     }
 }

@@ -2,6 +2,8 @@ import Account from '../ocean/Account'
 import { noZeroX } from '../utils'
 import { Instantiable, InstantiableConfig } from '../Instantiable.abstract'
 import { File } from '../ddo/interfaces/File'
+import { ComputeJob, Output } from '../ocean/Assets'
+import { MetadataAlgorithm } from '../ddo/interfaces/MetadataAlgorithm'
 
 const apiPath = '/api/v1/services'
 
@@ -129,6 +131,79 @@ export class Provider extends Instantiable {
             })
         await Promise.all(filesPromises)
         return destination
+    }
+
+    public async compute(
+        method: string,
+        did: string,
+        consumerAccount: Account,
+        algorithmDid?: string,
+        algorithmMeta?: MetadataAlgorithm,
+        jobId?: string,
+        output?: Output
+    ): Promise<ComputeJob | ComputeJob[]> {
+        const address = consumerAccount.getId()
+
+        let signatureMessage = address
+        signatureMessage += jobId || ''
+        signatureMessage += (did && `${noZeroX(did)}`) || ''
+        const signature = await this.createHashSignature(
+            consumerAccount,
+            signatureMessage
+        )
+
+        // construct Brizo URL
+        let url = this.getComputeEndpoint()
+        url += `?signature=${signature}`
+        url += `&consumerAddress=${address}`
+        url += `&did=${noZeroX(did)}`
+        url += (algorithmDid && `&algorithmDid=${algorithmDid}`) || ''
+        url +=
+            (algorithmMeta &&
+                `&algorithmMeta=${encodeURIComponent(JSON.stringify(algorithmMeta))}`) ||
+            ''
+        url += (output && `&output=${JSON.stringify(output)}`) || ''
+        url += (jobId && `&jobId=${jobId}`) || ''
+
+        // switch fetch method
+        let fetch
+
+        switch (method) {
+            case 'post':
+                fetch = this.ocean.utils.fetch.post(url, '')
+                break
+            case 'put':
+                fetch = this.ocean.utils.fetch.put(url, '')
+                break
+            case 'delete':
+                fetch = this.ocean.utils.fetch.delete(url)
+                break
+            default:
+                fetch = this.ocean.utils.fetch.get(url)
+                break
+        }
+
+        const result = await fetch
+            .then((response: any) => {
+                if (response.ok) {
+                    return response.json()
+                }
+
+                this.logger.error(
+                    'Compute job failed:',
+                    response.status,
+                    response.statusText
+                )
+
+                return null
+            })
+            .catch((error: Error) => {
+                this.logger.error('Error with compute job')
+                this.logger.error(error.message)
+                throw error
+            })
+
+        return result
     }
 
     public async getVersionInfo() {
