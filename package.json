@@ -80,7 +80,7 @@
     "typedoc": "^0.17.8",
     "typescript": "^3.9.6",
     "yargs": "^15.4.0",
-    "auto-changelog": "2.0.0"
+    "auto-changelog": "2.2.0"
   },
   "nyc": {
     "include": [
