@@ -141,7 +141,11 @@ export class Provider extends Instantiable {
         algorithmDid?: string,
         algorithmMeta?: MetadataAlgorithm,
         jobId?: string,
-        output?: Output
+        output?: Output,
+        txId?: string,
+        serviceIndex?: string,
+        serviceType?: string,
+        tokenAddress?: string
     ): Promise<ComputeJob | ComputeJob[]> {
         const address = consumerAccount.getId()
 
@@ -156,15 +160,20 @@ export class Provider extends Instantiable {
         // construct Brizo URL
         let url = this.getComputeEndpoint()
         url += `?signature=${signature}`
-        url += `&consumerAddress=${address}`
-        url += `&did=${noZeroX(did)}`
+        url += `&documentId=${noZeroX(did)}`
+        url += (output && `&output=${JSON.stringify(output)}`) || ''
         url += (algorithmDid && `&algorithmDid=${algorithmDid}`) || ''
         url +=
             (algorithmMeta &&
                 `&algorithmMeta=${encodeURIComponent(JSON.stringify(algorithmMeta))}`) ||
             ''
-        url += (output && `&output=${JSON.stringify(output)}`) || ''
         url += (jobId && `&jobId=${jobId}`) || ''
+        url += `&consumerAddress=${address}`
+        url += `&transferTxId=${txId}` || ''
+        url += `&serviceId=${serviceIndex}` || ''
+        url += `&serviceType=${serviceType}` || ''
+        url += `&dataToken=${tokenAddress}` || ''
+        url += `&consumerAccount=${consumerAccount}` || ''
 
         // switch fetch method
         let fetch
