@@ -173,7 +173,7 @@ export class Provider extends Instantiable {
         url += `&serviceId=${serviceIndex}` || ''
         url += `&serviceType=${serviceType}` || ''
         url += `&dataToken=${tokenAddress}` || ''
-        url += `&consumerAccount=${consumerAccount}` || ''
+        url += `&consumerAddress=${consumerAccount.getId()}` || ''
 
         // switch fetch method
         let fetch
