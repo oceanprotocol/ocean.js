@@ -15,6 +15,8 @@ import DID from './DID'
 import { SubscribablePromise } from '../utils'
 import { Instantiable, InstantiableConfig } from '../Instantiable.abstract'
 import { WebServiceConnector } from './utils/WebServiceConnector'
+import { Output } from './interfaces/ComputeOutput'
+import { ComputeJob } from './interfaces/ComputeJob'
 
 export enum CreateProgressStep {
     CreatingDataToken,
@@ -44,32 +46,6 @@ export const ComputeJobStatus = Object.freeze({
     Stopped: 80,
     Deleted: 90
 })
-
-export interface Output {
-    publishAlgorithmLog?: boolean
-    publishOutput?: boolean
-    providerAddress?: string
-    providerUri?: string
-    metadata?: Metadata
-    metadataUri?: string
-    nodeUri?: string
-    owner?: string
-    secretStoreUri?: string
-    whitelist?: string[]
-}
-
-export interface ComputeJob {
-    owner: string
-    did: string
-    jobId: string
-    dateCreated: string
-    dateFinished: string
-    status: number
-    statusText: string
-    algorithmLogUrl: string
-    resultsUrls: string[]
-    resultsDid?: DID
-}
 
 /**
  * Assets submodule of Ocean Protocol.
