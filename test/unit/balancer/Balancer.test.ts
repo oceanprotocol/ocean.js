@@ -220,7 +220,7 @@ describe('Balancer flow', () => {
             assert(parseFloat(sharesBalance) > 0)
         })
 
-        it('Bob should remove DT liquidity from pool ', async () => {
+        it('Bob should remove Ocean liquidity from pool ', async () => {
             const currentDtReserve = await alicePool.getBalance(oceanTokenAddress)
             const bobDtBalance = web3.utils.fromWei(
                 await datatoken.balance(oceanTokenAddress, bob)
