@@ -5,7 +5,6 @@ import { DataTokens } from '../../../src/datatokens/Datatokens'
 import { Balancer } from '../../../src/balancer/balancerlib'
 import { Ocean } from '../../../src/ocean/Ocean'
 import { Config } from '../../../src/models/Config'
-import { POINT_CONVERSION_COMPRESSED } from 'constants'
 
 const Web3 = require('web3')
 const web3 = new Web3('http://127.0.0.1:8545')

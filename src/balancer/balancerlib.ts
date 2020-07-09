@@ -211,8 +211,9 @@ export class Balancer {
         })
         let result = null
         try {
-            result = this.web3.utils.fromWei(await token.methods
-                .balanceOf(address)
+            result = this.web3.utils.fromWei(
+                await token.methods
+                    .balanceOf(address)
                     .call({ from: this.account, gas: this.GASLIMIT_DEFAULT })
             )
         } catch (e) {
