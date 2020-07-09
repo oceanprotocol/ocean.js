@@ -5,6 +5,7 @@ import { DataTokens } from '../../../src/datatokens/Datatokens'
 import { Balancer } from '../../../src/balancer/balancerlib'
 import { Ocean } from '../../../src/ocean/Ocean'
 import { Config } from '../../../src/models/Config'
+import { POINT_CONVERSION_COMPRESSED } from 'constants'
 
 const Web3 = require('web3')
 const web3 = new Web3('http://127.0.0.1:8545')
@@ -25,6 +26,7 @@ describe('Balancer flow', () => {
     let alicePoolAddress
     let bobPool
     let currentDtPrice
+    let bobPoolShares
     let owner
     let bob
     let alice
@@ -159,6 +161,81 @@ describe('Balancer flow', () => {
             const bobOceanBalance = await datatoken.balance(oceanTokenAddress, bob)
             assert(bobDtBalance > 0)
             assert(bobOceanBalance > 0)
+        })
+        it('Bob should add DT liquidity to pool ', async () => {
+            const currentDtReserve = await alicePool.getBalance(tokenAddress)
+            const bobDtBalance = web3.utils.fromWei(
+                await datatoken.balance(tokenAddress, bob)
+            )
+
+            await bobPool.addDTLiquidity(bobDtBalance)
+
+            const newbobDtBalance = web3.utils.fromWei(
+                await datatoken.balance(tokenAddress, bob)
+            )
+
+            const newDtReserve = await alicePool.getBalance(tokenAddress)
+
+            const sharesBalance = await bobPool.sharesBalance(bob)
+            assert(parseFloat(newbobDtBalance) < parseFloat(bobDtBalance))
+            assert(parseFloat(newDtReserve) > parseFloat(currentDtReserve))
+            assert(parseFloat(sharesBalance) > 0)
+        })
+
+        it('Bob should remove DT liquidity from pool ', async () => {
+            const currentDtReserve = await alicePool.getBalance(tokenAddress)
+            const bobDtBalance = web3.utils.fromWei(
+                await datatoken.balance(tokenAddress, bob)
+            )
+            const poolShares = await bobPool.sharesBalance(bob)
+            await bobPool.removeDTLiquidity('0.75', poolShares)
+
+            const newDtReserve = await alicePool.getBalance(tokenAddress)
+            const newbobDtBalance = web3.utils.fromWei(
+                await datatoken.balance(tokenAddress, bob)
+            )
+            const newpoolShares = await bobPool.sharesBalance(bob)
+            assert(parseFloat(newDtReserve) < parseFloat(currentDtReserve))
+            assert(parseFloat(bobDtBalance) < parseFloat(newbobDtBalance))
+            assert(parseFloat(poolShares) > parseFloat(newpoolShares))
+        })
+
+        it('Bob should add Ocean liquidity to pool ', async () => {
+            const currentDtReserve = await alicePool.getBalance(oceanTokenAddress)
+            const bobDtBalance = web3.utils.fromWei(
+                await datatoken.balance(oceanTokenAddress, bob)
+            )
+
+            await bobPool.addOceanLiquidity('1')
+
+            const newbobDtBalance = web3.utils.fromWei(
+                await datatoken.balance(oceanTokenAddress, bob)
+            )
+
+            const newDtReserve = await alicePool.getBalance(oceanTokenAddress)
+
+            const sharesBalance = await bobPool.sharesBalance(bob)
+            assert(parseFloat(newbobDtBalance) < parseFloat(bobDtBalance))
+            assert(parseFloat(newDtReserve) > parseFloat(currentDtReserve))
+            assert(parseFloat(sharesBalance) > 0)
+        })
+
+        it('Bob should remove DT liquidity from pool ', async () => {
+            const currentDtReserve = await alicePool.getBalance(oceanTokenAddress)
+            const bobDtBalance = web3.utils.fromWei(
+                await datatoken.balance(oceanTokenAddress, bob)
+            )
+            const poolShares = await bobPool.sharesBalance(bob)
+            await bobPool.removeOceanLiquidity('0.75', poolShares)
+
+            const newDtReserve = await alicePool.getBalance(oceanTokenAddress)
+            const newbobDtBalance = web3.utils.fromWei(
+                await datatoken.balance(oceanTokenAddress, bob)
+            )
+            const newpoolShares = await bobPool.sharesBalance(bob)
+            assert(parseFloat(newDtReserve) < parseFloat(currentDtReserve))
+            assert(parseFloat(bobDtBalance) < parseFloat(newbobDtBalance))
+            assert(parseFloat(poolShares) > parseFloat(newpoolShares))
         })
     })
 })

@@ -179,6 +179,48 @@ export class Balancer {
         return result
     }
 
+    async sharesBalance(address: string): Promise<any> {
+        if (this.pool == null) {
+            console.error('BPool not initialiez. Maybe you missed newPool or loadPool ?')
+            return null
+        }
+        const tokenAddress = this.poolAddress
+        const minABI = [
+            {
+                constant: true,
+                inputs: [
+                    {
+                        name: '_owner',
+                        type: 'address'
+                    }
+                ],
+                name: 'balanceOf',
+                outputs: [
+                    {
+                        name: 'balance',
+                        type: 'uint256'
+                    }
+                ],
+                payable: false,
+                stateMutability: 'view',
+                type: 'function'
+            }
+        ]
+        const token = new this.web3.eth.Contract(minABI, tokenAddress, {
+            from: this.account
+        })
+        let result = null
+        try {
+            result = this.web3.utils.fromWei(await token.methods
+                .balanceOf(address)
+                    .call({ from: this.account, gas: this.GASLIMIT_DEFAULT })
+            )
+        } catch (e) {
+            console.error(e)
+        }
+        return result
+    }
+
     /**
      * Adds tokens to pool
      * @param {Array} tokens Array of token object { address,amount,weight}
@@ -698,6 +740,37 @@ export class Balancer {
     }
 
     /**
+     * Specify tokenAmountOut of token tokenOut that you want to get out of the pool. This costs poolAmountIn pool shares (these went into the pool).
+     * @param {String} tokenOut
+     * @param {String} tokenAmountOut will be converted to wei
+     * @param {String} maxPoolAmountIn  will be converted to wei
+     * @return {any}
+     */
+    async exitswapExternAmountOut(
+        tokenOut: string,
+        tokenAmountOut: string,
+        maxPoolAmountIn: string
+    ): Promise<any> {
+        if (this.pool == null) {
+            console.error('BPool not initialiez. Maybe you missed newPool or loadPool ?')
+            return null
+        }
+        let result = null
+        try {
+            result = await this.pool.methods
+                .exitswapExternAmountOut(
+                    tokenOut,
+                    this.web3.utils.toWei(tokenAmountOut),
+                    this.web3.utils.toWei(maxPoolAmountIn)
+                )
+                .send({ from: this.account, gas: this.GASLIMIT_DEFAULT })
+        } catch (e) {
+            console.error(e)
+        }
+        return result
+    }
+
+    /**
      * Get Spot Price of swaping tokenIn to tokenOut
      * @param {String} tokenIn
      * @param {String} tokenOut
@@ -904,12 +977,22 @@ export class Balancer {
     /**
      * Add Data Token amount to pool liquidity
      * @param {String} amount  Data Token Amount
-     * @param {String} maxOceanAmount  Maximum Ocean Token Amount required
      * @return {any}
      */
-    public addDTLiquidity(amount: string, maxOceanAmount: string): Promise<any> {
-        const amounts = [amount, maxOceanAmount]
-        return this.joinPool('0', amounts)
+    public async addDTLiquidity(amount: string): Promise<any> {
+        if (this.dtAddress == null) {
+            console.error(
+                'dtAddress is not defined. Did you do loadDTPool or createDTPool ?'
+            )
+            return null
+        }
+        await this.approve(
+            this.dtAddress,
+            this.poolAddress,
+            this.web3.utils.toWei(amount)
+        )
+        const result = await this.joinswapExternAmountIn(this.dtAddress, amount, '0')
+        return result
     }
 
     /**
@@ -917,8 +1000,48 @@ export class Balancer {
      * @param {String} amount  pool Liquidity Amount
      * @return {any}
      */
-    public removeDTLiquidity(amount: string): Promise<any> {
-        return this.exitPool(amount, '0')
+    public removeDTLiquidity(amount: string, maximumPoolShares: string): Promise<any> {
+        if (this.dtAddress == null) {
+            console.error(
+                'dtAddress is not defined. Did you do loadDTPool or createDTPool ?'
+            )
+            return null
+        }
+        // TODO Check balance of PoolShares before doing exit
+        return this.exitswapExternAmountOut(this.dtAddress, amount, maximumPoolShares)
+    }
+
+    /**
+     * Add Ocean Token amount to pool liquidity
+     * @param {String} amount  Data Token Amount
+     * @return {any}
+     */
+    public async addOceanLiquidity(amount: string): Promise<any> {
+        if (this.oceanAddress == null) {
+            console.error('oceanAddress is not defined')
+            return null
+        }
+        await this.approve(
+            this.oceanAddress,
+            this.poolAddress,
+            this.web3.utils.toWei(amount)
+        )
+        const result = await this.joinswapExternAmountIn(this.oceanAddress, amount, '0')
+        return result
+    }
+
+    /**
+     * Remove Ocean Token amount from pool liquidity
+     * @param {String} amount  pool Liquidity Amount
+     * @return {any}
+     */
+    public removeOceanLiquidity(amount: string, maximumPoolShares: string): Promise<any> {
+        if (this.oceanAddress == null) {
+            console.error('oceanAddress is not defined')
+            return null
+        }
+        // TODO Check balance of PoolShares before doing exit
+        return this.exitswapExternAmountOut(this.oceanAddress, amount, maximumPoolShares)
     }
 
     /**
