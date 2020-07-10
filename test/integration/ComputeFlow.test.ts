@@ -132,11 +132,18 @@ describe('Marketplace flow', () => {
         })
 
         it('Bob starts compute job', async () => {
-            // TODO
             const algorithmMeta = {
-
+                'language': 'scala',
+                'format': 'docker-image',
+                'version': '0.1',
+                'url': 'https://raw.githubusercontent.com/oceanprotocol/test-algorithm/master/javascript/algo.js',
+                'container': {
+                  'entrypoint': 'node $ALGO',
+                  'image': 'node',
+                  'tag': '10'
+                }
             }
-            // TODO
+
             const output = {
 
             }
