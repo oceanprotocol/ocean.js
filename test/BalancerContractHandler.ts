@@ -10,10 +10,18 @@ export class BalancerContractHandler {
     public poolAddress: string
     public web3: any
 
-    constructor(factoryABI: Contract, factoryBytecode: string, web3: any) {
+    constructor(
+        factoryABI: Contract,
+        factoryBytecode: string,
+        poolABI: Contract,
+        poolBytecode: string,
+        web3: any
+    ) {
         this.web3 = web3
         this.factory = new this.web3.eth.Contract(factoryABI)
         this.factoryBytecode = factoryBytecode
+        this.pool = new this.web3.eth.Contract(poolABI)
+        this.poolBytecode = poolBytecode
     }
 
     public async getAccounts() {
@@ -30,11 +38,66 @@ export class BalancerContractHandler {
                 if (err) console.log('DeployContracts: ' + err)
                 return estGas
             })
+        console.log('estGas:' + estGas)
         // deploy the contract and get it's address
         this.factoryAddress = await this.factory
             .deploy({
                 data: this.factoryBytecode,
                 arguments: []
+            })
+            .send({
+                from: minter,
+                gas: estGas + 1,
+                gasPrice: '3000000000'
+            })
+            .then(function (contract) {
+                return contract.options.address
+            })
+    }
+
+    public async SdeployContracts(minter: string) {
+        let estGas
+
+        estGas = await this.pool
+            .deploy({
+                data: this.poolBytecode,
+                arguments: []
+            })
+            .estimateGas({ from: minter, gas: 9007199254740991 }, function (err, estGas) {
+                if (err) console.log('DeployContracts: ' + err)
+                return estGas
+            })
+        // deploy the contract and get it's address
+        console.log('estGas:' + estGas)
+        this.poolAddress = await this.pool
+            .deploy({
+                data: this.poolBytecode,
+                arguments: []
+            })
+            .send({
+                from: minter,
+                gas: estGas + 1,
+                gasPrice: '3000000000'
+            })
+            .then(function (contract) {
+                return contract.options.address
+            })
+
+        estGas = await this.factory
+            .deploy({
+                data: this.factoryBytecode,
+                arguments: [this.poolAddress]
+            })
+            .estimateGas(function (err, estGas) {
+                if (err) console.log('DeployContracts: ' + err)
+                return estGas
+            })
+        console.log('estGas:' + estGas)
+        // deploy the contract and get it's address
+        this.factoryAddress = await this.factory
+            .deploy({
+                data: this.factoryBytecode,
+                arguments: [this.poolAddress]
             })
             .send({
                 from: minter,

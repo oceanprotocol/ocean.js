@@ -2,7 +2,8 @@ import { assert } from 'chai'
 import { TestContractHandler } from '../../TestContractHandler'
 import { BalancerContractHandler } from '../../BalancerContractHandler'
 import { DataTokens } from '../../../src/datatokens/Datatokens'
-import { Balancer } from '../../../src/balancer/balancerlib'
+// import { Balancer } from '../../../src/balancer/balancerlib'
+import { OceanPool } from '../../../src/balancer/OceanPool'
 import { Ocean } from '../../../src/ocean/Ocean'
 import { Config } from '../../../src/models/Config'
 
@@ -12,14 +13,17 @@ const factory = require('@oceanprotocol/contracts/artifacts/development/Factory.
 const datatokensTemplate = require('@oceanprotocol/contracts/artifacts/development/DataTokenTemplate.json')
 
 // this will be replaced by our SFactory/SPool
-const balancerFactory = require('../../../src/balancer/artifacts/BFactory.json')
-const balancerPool = require('../../../src/balancer/artifacts/BPool.json')
+const SFactory = require('../../../src/balancer/artifacts/SFactory.json')
+const SPool = require('../../../src/balancer/artifacts/SPool.json')
+
+const OceanPoolFactory = require('../../../src/balancer/artifacts/BFactory.json')
+const OceanPoolPool = require('../../../src/balancer/artifacts/BPool.json')
 
 describe('Balancer flow', () => {
     let oceanTokenAddress
-    let balancerFactoryAddress
-    let balancer
-    let balancerContracts
+    let OceanPoolFactoryAddress
+    let Pool
+    let OceanPoolContracts
     let oceandatatoken
     let alicePool
     let alicePoolAddress
@@ -75,28 +79,50 @@ describe('Balancer flow', () => {
             )
             oceanTokenAddress = await oceandatatoken.create(blob, alice)
         })
-        it('Deploy Balancer Factory', async () => {
-            balancerContracts = new BalancerContractHandler(
-                balancerFactory.abi,
-                balancerFactory.bytecode,
+        it('Deploy OceanPool Factory', async () => {
+            OceanPoolContracts = new BalancerContractHandler(
+                OceanPoolFactory.abi,
+                OceanPoolFactory.bytecode,
+                OceanPoolPool.abi,
+                OceanPoolPool.bytecode,
                 web3
             )
-            await balancerContracts.getAccounts()
-            owner = balancerContracts.accounts[0]
-            await balancerContracts.deployContracts(owner)
-            balancerFactoryAddress = balancerContracts.factoryAddress
-            assert(balancerFactoryAddress !== null)
+            await OceanPoolContracts.getAccounts()
+            owner = OceanPoolContracts.accounts[0]
+            console.log('Owner:' + owner)
+            await OceanPoolContracts.deployContracts(owner)
+            OceanPoolFactoryAddress = OceanPoolContracts.factoryAddress
+            assert(OceanPoolFactoryAddress !== null)
         })
-        it('should initialize balancer class', async () => {
-            balancer = new Balancer(
+
+
+        it('Deploy SFactory', async () => {
+            const SContracts = new BalancerContractHandler(
+                SFactory.abi,
+                SFactory.bytecode,
+                SPool.abi,
+                SPool.bytecode,
+                web3
+            )
+            await SContracts.getAccounts()
+            owner = SContracts.accounts[0]
+            console.log('Owner:' + owner)
+            await SContracts.SdeployContracts(owner)
+            const SFactoryAddress = SContracts.factoryAddress
+            assert(SFactoryAddress !== null)
+        })
+
+
+        it('should initialize OceanPool class', async () => {
+            Pool = new OceanPool(
                 web3,
                 alice,
-                balancerFactory.abi,
-                balancerPool.abi,
-                balancerFactoryAddress,
+                OceanPoolFactory.abi,
+                OceanPoolPool.abi,
+                OceanPoolFactoryAddress,
                 oceanTokenAddress
             )
-            assert(balancer !== null)
+            assert(Pool !== null)
         })
 
         it('Alice mints 1000 tokens', async () => {
@@ -114,10 +140,10 @@ describe('Balancer flow', () => {
             )
             transactionId = ts.transactionHash
         })
-        it('Alice creates a new balancer pool', async () => {
+        it('Alice creates a new OceanPool pool', async () => {
             /// new pool with total DT = 45 , dt weight=90% with swap fee 2%
-            alicePoolAddress = await balancer.createDTPool(tokenAddress, 45, 9, '0.02')
-            alicePool = await balancer.loadDTPool(alicePoolAddress)
+            alicePoolAddress = await Pool.createDTPool(tokenAddress, 45, 9, '0.02')
+            alicePool = await Pool.loadDTPool(alicePoolAddress)
             assert(alicePool !== null)
         })
         it('Get pool information', async () => {
@@ -143,12 +169,12 @@ describe('Balancer flow', () => {
             assert(currentOceanReserve > 0)
         })
         it("Bob should load Alice's pool ", async () => {
-            bobPool = new Balancer(
+            bobPool = new OceanPool(
                 web3,
                 bob,
-                balancerFactory.abi,
-                balancerPool.abi,
-                balancerFactoryAddress,
+                OceanPoolFactory.abi,
+                OceanPoolPool.abi,
+                OceanPoolFactoryAddress,
                 oceanTokenAddress
             )
             await bobPool.loadDTPool(alicePoolAddress)
