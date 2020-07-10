@@ -121,7 +121,7 @@ describe('Marketplace flow', () => {
             assert(computeService.attributes.main.cost === price)
         })
 
-        it('Bob buys datatokens from open market and order a compute service', async () => {
+        it('Bob gets datatokens from Alice to be able to try the compute service', async () => {
             const dTamount = 20
             await datatoken
                 .transfer(tokenAddress, bob.getId(), dTamount, alice.getId())
@@ -131,7 +131,40 @@ describe('Marketplace flow', () => {
                 })
         })
 
-        // it('Bob starts compute job', async () => {})
+        it('Bob starts compute job', async () => {
+            // TODO
+            const algorithmMeta = {
+
+            }
+            // TODO
+            const output = {
+
+            }
+
+            await ocean.assets
+                .order(ddo.id, computeService.type, bob.getId())
+                .then(async (res: string) => {
+                    res = JSON.parse(res)
+                    return await datatoken.transfer(
+                        res['dataToken'],
+                        res['to'],
+                        res['numTokens'],
+                        res['from']
+                    )
+                })
+                .then(async (tx) => {
+                    await ocean.compute.start(
+                        ddo.id,
+                        tx.transactionHash,
+                        tokenAddress,
+                        bob,
+                        algorithmMeta,
+                        output
+
+                    )
+                })
+
+        })
 
         // it('Bob gets the compute job status', async () => {})
 

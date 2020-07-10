@@ -53,17 +53,22 @@ export class Compute extends Instantiable {
 
     /**
      * Start the execution of a compute job.
-     * @param  {Account} consumerAccount The account of the consumer ordering the service.
      * @param  {string} did Decentralized identifer for the asset
+     * @param  {string} txId
+     * @param  {string} tokenAddress
+     * @param  {Account} consumerAccount The account of the consumer ordering the service.
      * @param  {string} algorithmDid The DID of the algorithm asset (of type `algorithm`) to run on the asset.
      * @param  {MetaData} algorithmMeta Metadata about the algorithm being run if `algorithm` is being used. This is ignored when `algorithmDid` is specified.
      * @param  {Output} output Define algorithm output publishing. Publishing the result of a compute job is turned off by default.
      * @return {Promise<ComputeJob>} Returns compute job ID under status.jobId
      */
     public async start(
-        consumerAccount: Account,
         did: string,
+        txId: string,
+        tokenAddress: string,
+        consumerAccount: Account,
         algorithmDid?: string,
+        algorithmTokenAddress?: string,
         algorithmMeta?: MetadataAlgorithm,
         output?: Output
     ): Promise<ComputeJob> {
