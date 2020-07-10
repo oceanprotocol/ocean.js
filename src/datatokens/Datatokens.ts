@@ -40,9 +40,9 @@ export class DataTokens {
      */
     public async create(metaDataStoreURI: string, account: Account): Promise<string> {
         // Create factory contract object
-        const factory = new this.web3.eth.Contract(this.factoryABI, this.factoryAddress, {
-            from: account
-        })
+        const factory = new this.web3.eth.Contract(
+            this.factoryABI, this.factoryAddress, {from: account}
+            )
         const estGas = await factory.methods
             .createToken(metaDataStoreURI)
             .estimateGas(function (err, estGas) {

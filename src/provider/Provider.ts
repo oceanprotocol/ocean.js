@@ -174,6 +174,17 @@ export class Provider extends Instantiable {
         url += `&serviceType=${serviceType}` || ''
         url += `&dataToken=${tokenAddress}` || ''
         url += `&consumerAddress=${consumerAccount.getId()}` || ''
+        // 'signature': signature,
+        // 'documentId': did,
+        // 'serviceId': sa.index,
+        // 'serviceType': sa.type,
+        // 'consumerAddress': cons_acc.address,
+        // 'transferTxId': Web3.toHex(tx_id),
+        // 'dataToken': data_token,
+        // 'output': build_stage_output_dict(dict(), dataset_ddo_w_compute_service, cons_acc.address, pub_acc),
+        // 'algorithmDid': alg_ddo.did,
+        // 'algorithmMeta': {},
+        // 'algorithmDataToken': alg_data_token
 
         // switch fetch method
         let fetch

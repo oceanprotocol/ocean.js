@@ -22,9 +22,10 @@ describe('Marketplace flow', () => {
     let service1
     let price
     let ocean
-    let accessService
+    let computeService
     let data
     let blob
+    const dateCreated = new Date(Date.now()).toISOString().split('.')[0] + 'Z' // remove milliseconds
 
     const marketplaceAllowance = 20
     const tokenAmount = 100
@@ -60,13 +61,75 @@ describe('Marketplace flow', () => {
             assert(tokenAddress != null)
         })
 
-        // it('Alice publishes dataset with a compute service', async () => {})
+        it('Generates metadata', async () => {
+            asset = {
+                main: {
+                    type: 'dataset',
+                    name: 'UK Weather information 2011',
+                    dateCreated: dateCreated,
+                    author: 'Met Office',
+                    license: 'CC-BY',
+                    files: [
+                        {
+                            url:'https://raw.githubusercontent.com/tbertinmahieux/MSongsDB/master/Tasks_Demos/CoverSongs/shs_dataset_test.txt',
+                            checksum: 'efb2c764274b745f5fc37f97c6b0e764',
+                            contentLength: '4535431',
+                            contentType: 'text/csv',
+                            encoding: 'UTF-8',
+                            compression: 'zip'
+                        }
+                    ]
+                }
+            }
+        })
 
-        // it('Alice mints 100 DTs and tranfers them to the compute marketplace', async () => {})
+        it('Alice publishes dataset with a compute service', async () => {
+            price = 10 // in datatoken
+            const timeout = 86400
+            const cluster = ocean.compute.createClusterAttributes('Kubernetes', 'http://10.0.0.17/xxx')
+            const servers = [
+                ocean.compute.createServerAttributes('1', 'xlsize', '50', '16', '0', '128gb', '160gb', timeout)
+            ]
+            const containers = [
+                ocean.compute.createContainerAttributes(
+                    'tensorflow/tensorflow',
+                    'latest',
+                    'sha256:cb57ecfa6ebbefd8ffc7f75c0f00e57a7fa739578a429b6f72a0df19315deadc'
+                )
+            ]
+            const provider = ocean.compute.createProviderAttributes(
+                'Azure',
+                'Compute service with 16gb ram for each node.',
+                cluster,
+                containers,
+                servers
+            )
+            const computeService = ocean.compute.createComputeService(
+                alice, price, dateCreated, provider
+            )
+            ddo = await ocean.assets.create(asset, alice, [computeService], tokenAddress)
+            assert(ddo.dataToken === tokenAddress)
 
-        // it('Markeplace post compute service for sale', async () => {})
+        })
 
-        // it('Bob buys datatokens from open market and order a compute service', async () => {})
+        it('Alice mints 100 DTs and tranfers them to the compute marketplace', async () => {
+            await datatoken.mint(tokenAddress, alice.getId(), tokenAmount)
+        })
+
+        it('Marketplace posts compute service for sale', async () => {
+            computeService = await ocean.assets.getServiceByType(ddo.id, 'compute')
+            assert(computeService.attributes.main.cost === price)
+        })
+
+        it('Bob buys datatokens from open market and order a compute service', async () => {
+            const dTamount = 20
+            await datatoken
+                .transfer(tokenAddress, bob.getId(), dTamount, alice.getId())
+                .then(async () => {
+                    const balance = await datatoken.balance(tokenAddress, bob.getId())
+                    assert(balance.toString() === dTamount.toString())
+                })
+        })
 
         // it('Bob starts compute job', async () => {})
 
