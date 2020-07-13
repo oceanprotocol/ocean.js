@@ -60,7 +60,7 @@ export class Provider extends Instantiable {
                 this.getEncryptEndpoint(),
                 decodeURI(JSON.stringify(args))
             )
-            return await response.text()
+            return (await response.json()).encryptedDocument
         } catch (e) {
             this.logger.error(e)
             throw new Error('HTTP request failed')
@@ -87,7 +87,6 @@ export class Provider extends Instantiable {
         initializeUrl += `&serviceType=${serviceType}`
         initializeUrl += `&dataToken=${DDO.dataToken}`
         initializeUrl += `&consumerAddress=${consumerAddress}`
-
         try {
             const response = await this.ocean.utils.fetch.get(initializeUrl)
             return await response.text()
@@ -145,10 +144,11 @@ export class Provider extends Instantiable {
         txId?: string,
         serviceIndex?: string,
         serviceType?: string,
-        tokenAddress?: string
+        tokenAddress?: string,
+        algorithmTransferTxId?: string,
+        algorithmDataToken?: string
     ): Promise<ComputeJob | ComputeJob[]> {
         const address = consumerAccount.getId()
-
         let signatureMessage = address
         signatureMessage += jobId || ''
         signatureMessage += (did && `${noZeroX(did)}`) || ''
@@ -170,10 +170,26 @@ export class Provider extends Instantiable {
         url += (jobId && `&jobId=${jobId}`) || ''
         url += `&consumerAddress=${address}`
         url += `&transferTxId=${txId}` || ''
+        url +=
+            (algorithmTransferTxId &&
+                `&algorithmTransferTxId=${algorithmTransferTxId}`) ||
+            ''
+        url += (algorithmDataToken && `&algorithmDataToken=${algorithmDataToken}`) || ''
         url += `&serviceId=${serviceIndex}` || ''
         url += `&serviceType=${serviceType}` || ''
         url += `&dataToken=${tokenAddress}` || ''
         url += `&consumerAddress=${consumerAccount.getId()}` || ''
+        // 'signature': signature,
+        // 'documentId': did,
+        // 'serviceId': sa.index,
+        // 'serviceType': sa.type,
+        // 'consumerAddress': cons_acc.address,
+        // 'transferTxId': Web3.toHex(tx_id),
+        // 'dataToken': data_token,
+        // 'output': build_stage_output_dict(dict(), dataset_ddo_w_compute_service, cons_acc.address, pub_acc),
+        // 'algorithmDid': alg_ddo.did,
+        // 'algorithmMeta': {},
+        // 'algorithmDataToken': alg_data_token
 
         // switch fetch method
         let fetch

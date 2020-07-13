@@ -1,9 +1,15 @@
-import { Instantiable, InstantiableConfig } from '../Instantiable.abstract'
+import { DDO } from '../ddo/DDO'
 import { MetadataAlgorithm } from '../ddo/interfaces/MetadataAlgorithm'
+import { Service, ServiceComputePrivacy, ServiceCompute } from '../ddo/interfaces/Service'
 import Account from './Account'
-import { ServiceComputePrivacy, ServiceCompute } from '../ddo/interfaces/Service'
+import { SubscribablePromise } from '../utils'
+import { Instantiable, InstantiableConfig } from '../Instantiable.abstract'
 import { Output } from './interfaces/ComputeOutput'
 import { ComputeJob } from './interfaces/ComputeJob'
+
+export enum OrderProgressStep {
+    TransferDataToken
+}
 
 export const ComputeJobStatus = Object.freeze({
     Started: 10,
@@ -24,8 +30,8 @@ export const ComputeJobStatus = Object.freeze({
  */
 export class Compute extends Instantiable {
     /**
-     * Returns the instance of OceanCompute.
-     * @return {Promise<OceanCompute>}
+     * Returns the instance of Compute.
+     * @return {Promise<Assets>}
      */
     public static async getInstance(config: InstantiableConfig): Promise<Compute> {
         const instance = new Compute()
@@ -35,42 +41,28 @@ export class Compute extends Instantiable {
     }
 
     /**
-     * Starts an order of a compute service that is defined in an asset's services.
-     * @param  {Account} consumerAccount The account of the consumer ordering the service.
-     * @param  {string} datasetDid The DID of the dataset asset (of type `dataset`) to run the algorithm on.
-     * @param  {string} algorithmDid The DID of the algorithm asset (of type `algorithm`) to run on the asset.
-     * @param  {MetaData} algorithmMeta Metadata about the algorithm being run if `algorithm` is being used. This is ignored when `algorithmDid` is specified.
-     * @return {Promise<string>} Returns a compute job ID.
-     *
-     * Note:  algorithmDid and algorithmMeta are optional, but if they are not passed,
-     * you can end up in the situation that you are ordering and paying for your agreement,
-     * but brizo will not allow the compute, due to privacy settings of the ddo
-     */
-    public order(
-        consumerAccount: Account,
-        datasetDid: string,
-        algorithmDid?: string,
-        algorithmMeta?: MetadataAlgorithm,
-        provider?: string
-    ): Promise<any> {
-        return Promise.resolve('')
-    }
-
-    /**
      * Start the execution of a compute job.
-     * @param  {Account} consumerAccount The account of the consumer ordering the service.
      * @param  {string} did Decentralized identifer for the asset
+     * @param  {string} txId
+     * @param  {string} tokenAddress
+     * @param  {Account} consumerAccount The account of the consumer ordering the service.
      * @param  {string} algorithmDid The DID of the algorithm asset (of type `algorithm`) to run on the asset.
      * @param  {MetaData} algorithmMeta Metadata about the algorithm being run if `algorithm` is being used. This is ignored when `algorithmDid` is specified.
      * @param  {Output} output Define algorithm output publishing. Publishing the result of a compute job is turned off by default.
      * @return {Promise<ComputeJob>} Returns compute job ID under status.jobId
      */
     public async start(
-        consumerAccount: Account,
         did: string,
+        txId: string,
+        tokenAddress: string,
+        consumerAccount: Account,
         algorithmDid?: string,
         algorithmMeta?: MetadataAlgorithm,
-        output?: Output
+        output?: Output,
+        serviceIndex?: string,
+        serviceType?: string,
+        algorithmTransferTxId?: string,
+        algorithmDataToken?: string
     ): Promise<ComputeJob> {
         output = this.checkOutput(consumerAccount, output)
         if (did) {
@@ -81,7 +73,13 @@ export class Compute extends Instantiable {
                 algorithmDid,
                 algorithmMeta,
                 undefined,
-                output
+                output,
+                txId,
+                serviceIndex,
+                serviceType,
+                tokenAddress,
+                algorithmTransferTxId,
+                algorithmDataToken
             )
             return computeJobsList[0] as ComputeJob
         } else return null
@@ -136,23 +134,6 @@ export class Compute extends Instantiable {
     }
 
     /**
-     * Ends a running compute job and starts it again.
-     * @param  {Account} consumerAccount The account of the consumer ordering the service.
-     * @param  {string} did Decentralized identifier.
-     * @param  {string} jobId The ID of the compute job to be stopped
-     * @return {Promise<ComputeJob>} Returns the new status of a job
-     */
-    public async restart(
-        consumerAccount: Account,
-        did: string,
-        jobId: string
-    ): Promise<ComputeJob> {
-        await this.stop(consumerAccount, did, jobId)
-        const result = await this.start(consumerAccount, did, jobId)
-        return result
-    }
-
-    /**
      * Returns information about the status of all compute jobs, or a single compute job.
      * @param  {Account} consumerAccount The account of the consumer ordering the service.
      * @param  {string} did Decentralized identifier.
@@ -200,31 +181,85 @@ export class Compute extends Instantiable {
         return computeJobsList[0] as ComputeJob
     }
 
-    public async createComputeServiceAttributes(
+    public createServerAttributes(
+        serverId: string,
+        serverType: string,
+        cost: string,
+        cpu: string,
+        gpu: string,
+        memory: string,
+        disk: string,
+        maxExecutionTime: number
+    ): object {
+        return {
+            serverId,
+            serverType,
+            cost,
+            cpu,
+            gpu,
+            memory,
+            disk,
+            maxExecutionTime
+        }
+    }
+
+    public createContainerAttributes(
+        image: string,
+        tag: string,
+        checksum: string
+    ): object {
+        return { image, tag, checksum }
+    }
+
+    public createClusterAttributes(type: string, url: string): object {
+        return { type, url }
+    }
+
+    public createProviderAttributes(
+        type: string,
+        description: string,
+        cluster: object,
+        containers: object[],
+        servers: object[]
+    ): object {
+        return {
+            type,
+            description,
+            environment: {
+                cluster: cluster,
+                supportedServers: containers,
+                supportedContainers: servers
+            }
+        }
+    }
+
+    public createComputeService(
         consumerAccount: Account,
-        price: string,
+        cost: string,
         datePublished: string,
+        providerAttributes: object,
         computePrivacy?: ServiceComputePrivacy,
         timeout?: number
-    ): Promise<ServiceCompute> {
+    ): ServiceCompute {
         const name = 'dataAssetComputingService'
         if (!timeout) timeout = 3600
-        // TODO
         const service = {
             type: 'compute',
             index: 3,
             serviceEndpoint: this.ocean.provider.getComputeEndpoint(),
             attributes: {
                 main: {
+                    name,
                     creator: consumerAccount.getId(),
                     datePublished,
-                    price,
-                    privacy: {},
+                    cost,
                     timeout: timeout,
-                    name
+                    provider: providerAttributes,
+                    privacy: {}
                 }
             }
         }
+
         if (computePrivacy) service.attributes.main.privacy = computePrivacy
         return service as ServiceCompute
     }
@@ -255,5 +290,62 @@ export class Compute extends Instantiable {
             nodeUri: output.nodeUri || this.config.nodeUri,
             owner: output.owner || consumerAccount.getId()
         }
+    }
+
+    /**
+     * Starts an order of a compute service that is defined in an asset's services.
+     * @param  {String} consumerAccount The account of the consumer ordering the service.
+     * @param  {string} datasetDid The DID of the dataset asset (of type `dataset`) to run the algorithm on.
+     * @param  {string} serviceIndex The Service index
+     * @param  {string} algorithmDid The DID of the algorithm asset (of type `algorithm`) to run on the asset.
+     * @param  {MetaData} algorithmMeta Metadata about the algorithm being run if `algorithm` is being used. This is ignored when `algorithmDid` is specified.
+     * @return {Promise<string>} Returns the transaction details
+     *
+     * Note:  algorithmDid and algorithmMeta are optional, but if they are not passed,
+     * you can end up in the situation that you are ordering and paying for your compute job,
+     * but provider will not allow the compute, due to privacy settings of the ddo
+     */
+    public order(
+        consumerAccount: string,
+        datasetDid: string,
+        serviceIndex: number,
+        algorithmDid?: string,
+        algorithmMeta?: MetadataAlgorithm
+    ): SubscribablePromise<OrderProgressStep, string> {
+        return new SubscribablePromise(async (observer) => {
+            const ddo: DDO = await this.ocean.assets.resolve(datasetDid)
+            // const service: Service = ddo.findServiceByType('compute')
+            const service: Service = ddo.findServiceById(serviceIndex)
+            if (!service) return null
+            if (service.type !== 'compute') return null
+            if (algorithmMeta) {
+                // check if raw algo is allowed
+                if (service.attributes.main.privacy)
+                    if (!service.attributes.main.privacy.allowRawAlgorithm) {
+                        console.error('This service does not allow Raw Algo')
+                        return null
+                    }
+            }
+            if (algorithmDid) {
+                // check if did is in trusted list
+                if (service.attributes.main.privacy)
+                    if (service.attributes.main.privacy.trustedAlgorithms)
+                        if (service.attributes.main.privacy.trustedAlgorithms.length > 0)
+                            if (
+                                !service.attributes.main.privacy.trustedAlgorithms.includes(
+                                    algorithmDid
+                                )
+                            ) {
+                                console.error('This service does not allow this Algo')
+                                return null
+                            }
+            }
+            const order = await this.ocean.assets.order(
+                datasetDid,
+                service.type,
+                consumerAccount
+            )
+            return order
+        })
     }
 }

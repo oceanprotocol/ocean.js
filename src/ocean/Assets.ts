@@ -347,6 +347,20 @@ export class Assets extends Instantiable {
         return service
     }
 
+    public async getServiceByIndex(
+        did: string,
+        serviceIndex: number
+    ): Promise<ServiceCommon> {
+        const services: ServiceCommon[] = (await this.resolve(did)).service
+        let service
+        services.forEach((serv) => {
+            if (serv.index === serviceIndex) {
+                service = serv
+            }
+        })
+        return service
+    }
+
     public async createAccessServiceAttributes(
         creator: Account,
         dtCost: number,
@@ -372,12 +386,19 @@ export class Assets extends Instantiable {
     public async order(
         did: string,
         serviceType: string,
-        consumerAddress: string
+        consumerAddress: string,
+        serviceIndex: number = -1
     ): Promise<string> {
-        const service = await this.getServiceByType(did, serviceType)
+        if (serviceIndex === -1) {
+            const service = await this.getServiceByType(did, serviceType)
+            serviceIndex = service.index
+        } else {
+            const service = await this.getServiceByIndex(did, serviceIndex)
+            serviceType = service.type
+        }
         return await this.ocean.provider.initialize(
             did,
-            service.index,
+            serviceIndex,
             serviceType,
             consumerAddress
         )

@@ -17,6 +17,7 @@ import {
     Instantiable,
     generateIntantiableConfigFromConfig
 } from '../Instantiable.abstract'
+import { Compute } from './Compute'
 
 /**
  * Main interface for Ocean Protocol.
@@ -47,7 +48,7 @@ export class Ocean extends Instantiable {
         instance.accounts = await Accounts.getInstance(instanceConfig)
         // instance.auth = await Auth.getInstance(instanceConfig)
         instance.assets = await Assets.getInstance(instanceConfig)
-        // instance.compute = await Compute.getInstance(instanceConfig)
+        instance.compute = await Compute.getInstance(instanceConfig)
         instance.datatokens = new DataTokens(
             instanceConfig.config.factoryAddress,
             instanceConfig.config.factoryABI,
@@ -105,9 +106,8 @@ export class Ocean extends Instantiable {
     /**
      * Ocean compute submodule
      * @type {Compute}
-     
+     */
     public compute: Compute
-    */
 
     /**
      * Ocean secretStore submodule
