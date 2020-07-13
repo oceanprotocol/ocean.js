@@ -287,15 +287,16 @@ export class Compute extends Instantiable {
 
     /**
      * Starts an order of a compute service that is defined in an asset's services.
-     * @param  {Account} consumerAccount The account of the consumer ordering the service.
+     * @param  {String} consumerAccount The account of the consumer ordering the service.
      * @param  {string} datasetDid The DID of the dataset asset (of type `dataset`) to run the algorithm on.
+     * @param  {string} serviceIndex The Service index
      * @param  {string} algorithmDid The DID of the algorithm asset (of type `algorithm`) to run on the asset.
      * @param  {MetaData} algorithmMeta Metadata about the algorithm being run if `algorithm` is being used. This is ignored when `algorithmDid` is specified.
-     * @return {Promise<string>} Returns the Service Agreement ID, representation of `bytes32` ID.
+     * @return {Promise<string>} Returns the transaction details
      *
      * Note:  algorithmDid and algorithmMeta are optional, but if they are not passed,
-     * you can end up in the situation that you are ordering and paying for your agreement,
-     * but brizo will not allow the compute, due to privacy settings of the ddo
+     * you can end up in the situation that you are ordering and paying for your compute job,
+     * but provider will not allow the compute, due to privacy settings of the ddo
      */
     public order(
         consumerAccount: string,
