@@ -17,7 +17,7 @@ import {
     Instantiable,
     generateIntantiableConfigFromConfig
 } from '../Instantiable.abstract'
-import {Compute} from "./Compute";
+import { Compute } from './Compute'
 
 /**
  * Main interface for Ocean Protocol.

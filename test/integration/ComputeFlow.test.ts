@@ -3,7 +3,7 @@ import { DataTokens } from '../../src/datatokens/Datatokens'
 import { Ocean } from '../../src/ocean/Ocean'
 import config from './config'
 import { assert } from 'console'
-import {ComputeJob} from "../../src/ocean/interfaces/ComputeJob";
+import { ComputeJob } from '../../src/ocean/interfaces/ComputeJob'
 import {
     Service,
     ServiceComputePrivacy,
@@ -38,7 +38,7 @@ describe('Marketplace flow', () => {
     let cluster
     let servers
     let containers
-    let provider 
+    let provider
 
     const dateCreated = new Date(Date.now()).toISOString().split('.')[0] + 'Z' // remove milliseconds
 
@@ -88,7 +88,8 @@ describe('Marketplace flow', () => {
                     license: 'CC-BY',
                     files: [
                         {
-                            url:'https://raw.githubusercontent.com/tbertinmahieux/MSongsDB/master/Tasks_Demos/CoverSongs/shs_dataset_test.txt',
+                            url:
+                                'https://raw.githubusercontent.com/tbertinmahieux/MSongsDB/master/Tasks_Demos/CoverSongs/shs_dataset_test.txt',
                             checksum: 'efb2c764274b745f5fc37f97c6b0e764',
                             contentLength: '4535431',
                             contentType: 'text/csv',
@@ -102,9 +103,21 @@ describe('Marketplace flow', () => {
 
         it('Alice publishes dataset with a compute service', async () => {
             price = 10 // in datatoken
-            cluster = ocean.compute.createClusterAttributes('Kubernetes', 'http://10.0.0.17/xxx')
+            cluster = ocean.compute.createClusterAttributes(
+                'Kubernetes',
+                'http://10.0.0.17/xxx'
+            )
             servers = [
-                ocean.compute.createServerAttributes('1', 'xlsize', '50', '16', '0', '128gb', '160gb', timeout)
+                ocean.compute.createServerAttributes(
+                    '1',
+                    'xlsize',
+                    '50',
+                    '16',
+                    '0',
+                    '128gb',
+                    '160gb',
+                    timeout
+                )
             ]
             containers = [
                 ocean.compute.createContainerAttributes(
@@ -120,23 +133,25 @@ describe('Marketplace flow', () => {
                 containers,
                 servers
             )
-            
+
             const computeService = ocean.compute.createComputeService(
-                alice, price, dateCreated, provider
+                alice,
+                price,
+                dateCreated,
+                provider
             )
             ddo = await ocean.assets.create(asset, alice, [computeService], tokenAddress)
             assert(ddo.dataToken === tokenAddress)
-
         })
 
-        //alex
+        // alex
         it('should publish a dataset with a compute service object that does not allow rawAlgo', async () => {
             const origComputePrivacy = {
                 allowRawAlgorithm: false,
                 allowNetworkAccess: false,
                 trustedAlgorithms: []
             }
-    
+
             const computeService = ocean.compute.createComputeService(
                 alice,
                 '1000',
@@ -144,17 +159,22 @@ describe('Marketplace flow', () => {
                 provider,
                 origComputePrivacy as ServiceComputePrivacy
             )
-            datasetNoRawAlgo = await ocean.assets.create(asset, alice, [computeService], tokenAddress)
+            datasetNoRawAlgo = await ocean.assets.create(
+                asset,
+                alice,
+                [computeService],
+                tokenAddress
+            )
             assert(datasetNoRawAlgo.dataToken === tokenAddress)
         })
-    
+
         it('should publish a dataset with a compute service object that allows only algo with did:op:1234', async () => {
             const origComputePrivacy = {
                 allowRawAlgorithm: false,
                 allowNetworkAccess: false,
                 trustedAlgorithms: ['did:op:1234']
             }
-    
+
             const computeService = ocean.compute.createComputeService(
                 alice,
                 '1000',
@@ -162,10 +182,15 @@ describe('Marketplace flow', () => {
                 provider,
                 origComputePrivacy as ServiceComputePrivacy
             )
-            datasetWithTrustedAlgo = await ocean.assets.create(asset, alice, [computeService], tokenAddress)
+            datasetWithTrustedAlgo = await ocean.assets.create(
+                asset,
+                alice,
+                [computeService],
+                tokenAddress
+            )
             assert(datasetWithTrustedAlgo.dataToken === tokenAddress)
         })
-    
+
         it('should publish an algorithm', async () => {
             const algoAsset = {
                 main: {
@@ -176,22 +201,22 @@ describe('Marketplace flow', () => {
                     license: 'CC-BY',
                     files: [
                         {
-                            url:'https://raw.githubusercontent.com/oceanprotocol/test-algorithm/master/javascript/algo.js',
+                            url:
+                                'https://raw.githubusercontent.com/oceanprotocol/test-algorithm/master/javascript/algo.js',
                             contentType: 'text/js',
                             encoding: 'UTF-8'
-                            
                         }
                     ],
-                    "algorithm": {
-                        "language": "js",
-                        "format": "docker-image",
-                        "version": "0.1",
-                        "container": {
-                          "entrypoint": "node $ALGO",
-                          "image": "node",
-                          "tag": "10"
+                    algorithm: {
+                        language: 'js',
+                        format: 'docker-image',
+                        version: '0.1',
+                        container: {
+                            entrypoint: 'node $ALGO',
+                            image: 'node',
+                            tag: '10'
                         }
-                      },
+                    }
                 }
             }
             const service1 = await ocean.assets.createAccessServiceAttributes(
@@ -200,12 +225,15 @@ describe('Marketplace flow', () => {
                 dateCreated,
                 0
             )
-            algorithmAsset = await ocean.assets.create(algoAsset, alice,[service1],tokenAddress)
+            algorithmAsset = await ocean.assets.create(
+                algoAsset,
+                alice,
+                [service1],
+                tokenAddress
+            )
             assert(algorithmAsset.dataToken === tokenAddress)
-            
         })
 
-        
         it('Alice mints 100 DTs and tranfers them to the compute marketplace', async () => {
             await datatoken.mint(tokenAddress, alice.getId(), tokenAmount)
         })
@@ -225,29 +253,32 @@ describe('Marketplace flow', () => {
                 })
         })
 
-        it('Bob starts compute job', async () => {
+        it('Bob starts compute job with a raw Algo', async () => {
             const algorithmMeta = {
-                'language': 'scala',
-                'format': 'docker-image',
-                'version': '0.1',
-                'url': 'https://raw.githubusercontent.com/oceanprotocol/test-algorithm/master/javascript/algo.js',
-                'container': {
-                  'entrypoint': 'node $ALGO',
-                  'image': 'node',
-                  'tag': '10'
+                language: 'js',
+                format: 'docker-image',
+                version: '0.1',
+                url:
+                    'https://raw.githubusercontent.com/oceanprotocol/test-algorithm/master/javascript/algo.js',
+                container: {
+                    entrypoint: 'node $ALGO',
+                    image: 'node',
+                    tag: '10'
                 }
             }
 
-            const output = {
-
-            }
-            let order = await ocean.assets.order(ddo.id, computeService.type, bob.getId())
-            let computeOrder=JSON.parse(order)
-            let tx=await datatoken.transfer(
-                computeOrder["dataToken"],
-                computeOrder["to"],
-                computeOrder["numTokens"],
-                computeOrder["from"]
+            const output = {}
+            const order = await ocean.assets.order(
+                ddo.id,
+                computeService.type,
+                bob.getId()
+            )
+            const computeOrder = JSON.parse(order)
+            const tx = await datatoken.transfer(
+                computeOrder['dataToken'],
+                computeOrder['to'],
+                computeOrder['numTokens'],
+                computeOrder['from']
             )
             const response = await ocean.compute.start(
                 ddo.id,
@@ -262,24 +293,23 @@ describe('Marketplace flow', () => {
                 computeService.type
             )
             jobId = response.jobId
-            assert(response.status>=10)
-            
+            assert(response.status >= 10)
         })
 
         it('Bob should get status of a compute job', async () => {
             const response = await ocean.compute.status(bob, ddo.id, jobId)
-            assert(response[0].jobId==jobId)
+            assert(response[0].jobId === jobId)
         })
-    
+
         it('should get status of all compute jobs for an address', async () => {
             const response = await ocean.compute.status(bob, undefined, undefined)
-            assert(response.length>0)
-            
+            assert(response.length > 0)
         })
-    
 
+        // it('should not allow order the compute service with raw algo for dataset that does not allow raw algo', async () => {})
+        // it('should not allow order the compute service with did != did:op:1234 for dataset that allows only did:op:1234 as algo', async () => {})
+        // it('should start a compute job with a published algo', async () => {
         // it('Bob restarts compute job', async () => {})
-
         // it('Bob gets outputs', async () => {})
     })
 })

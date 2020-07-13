@@ -2,18 +2,14 @@ import { SearchQuery } from '../metadatastore/MetadataStore'
 import { DDO } from '../ddo/DDO'
 import { Metadata } from '../ddo/interfaces/Metadata'
 import { MetadataAlgorithm } from '../ddo/interfaces/MetadataAlgorithm'
-import {
-    Service,
-    ServiceComputePrivacy,
-    ServiceCompute
-} from '../ddo/interfaces/Service'
+import { Service, ServiceComputePrivacy, ServiceCompute } from '../ddo/interfaces/Service'
 import { EditableMetadata } from '../ddo/interfaces/EditableMetadata'
 import Account from './Account'
 import DID from './DID'
 import { SubscribablePromise } from '../utils'
 import { Instantiable, InstantiableConfig } from '../Instantiable.abstract'
-import {Output} from "./interfaces/ComputeOutput";
-import {ComputeJob} from "./interfaces/ComputeJob";
+import { Output } from './interfaces/ComputeOutput'
+import { ComputeJob } from './interfaces/ComputeJob'
 // import { WebServiceConnector } from './utils/WebServiceConnector'
 // import { Output } from './interfaces/ComputeOutput'
 // import { ComputeJob } from './interfaces/ComputeJob'
@@ -72,7 +68,7 @@ export class Compute extends Instantiable {
         algorithmMeta?: MetadataAlgorithm,
         output?: Output,
         serviceIndex?: string,
-        serviceType?: string        
+        serviceType?: string
     ): Promise<ComputeJob> {
         output = this.checkOutput(consumerAccount, output)
         if (did) {
@@ -88,7 +84,6 @@ export class Compute extends Instantiable {
                 serviceIndex,
                 serviceType,
                 tokenAddress
-
             )
             return computeJobsList[0] as ComputeJob
         } else return null
@@ -167,25 +162,45 @@ export class Compute extends Instantiable {
     }
 
     public createServerAttributes(
-        serverId: string, serverType: string, cost: string,
-        cpu: string, gpu: string, memory: string,
-        disk: string, maxExecutionTime: number
+        serverId: string,
+        serverType: string,
+        cost: string,
+        cpu: string,
+        gpu: string,
+        memory: string,
+        disk: string,
+        maxExecutionTime: number
     ): object {
         return {
-            serverId, serverType, cost, cpu, gpu, memory, disk, maxExecutionTime
+            serverId,
+            serverType,
+            cost,
+            cpu,
+            gpu,
+            memory,
+            disk,
+            maxExecutionTime
         }
     }
 
-    public createContainerAttributes(image: string, tag: string, checksum: string): object {
-        return {image, tag, checksum}
+    public createContainerAttributes(
+        image: string,
+        tag: string,
+        checksum: string
+    ): object {
+        return { image, tag, checksum }
     }
 
     public createClusterAttributes(type: string, url: string): object {
-        return {type, url}
+        return { type, url }
     }
 
     public createProviderAttributes(
-        type: string, description: string, cluster: object, containers: object[], servers: object[]
+        type: string,
+        description: string,
+        cluster: object,
+        containers: object[],
+        servers: object[]
     ): object {
         return {
             type,
@@ -204,7 +219,7 @@ export class Compute extends Instantiable {
         datePublished: string,
         providerAttributes: object,
         computePrivacy?: ServiceComputePrivacy,
-        timeout?: number,
+        timeout?: number
     ): ServiceCompute {
         const name = 'dataAssetComputingService'
         if (!timeout) timeout = 3600
@@ -226,13 +241,12 @@ export class Compute extends Instantiable {
             }
         }
 
-        if (computePrivacy)
-            service.attributes.main.privacy = computePrivacy
+        if (computePrivacy) service.attributes.main.privacy = computePrivacy
 
         return service as ServiceCompute
     }
 
-        /**
+    /**
      * Check the output object and add default properties if needed
      * @param  {Account} consumerAccount The account of the consumer ordering the service.
      * @param  {Output} output Output section used for publishing the result.
@@ -270,52 +284,51 @@ export class Compute extends Instantiable {
             owner: output.owner || consumerAccount.getId()
         }
     }
-
 }
 // "creator": "0x00Bd138aBD70e2F00903268F3Db08f2D25677C9e",
-        // "datePublished": "2019-04-09T19:02:11Z",
-        // "cost": "10",
-        // "timeout": 86400,
-        // "provider": {
-        //   "type": "Azure",
-        //   "description": "",
-        //   "environment": {
-        //     "cluster": {
-        //       "type": "Kubernetes",
-        //       "url": "http://10.0.0.17/xxx"
-        //     },
-        //     "supportedContainers": [
-        //       {
-        //         "image": "tensorflow/tensorflow",
-        //         "tag": "latest",
-        //         "checksum": "sha256:cb57ecfa6ebbefd8ffc7f75c0f00e57a7fa739578a429b6f72a0df19315deadc"
-        //       },
-        //       {
-        //         "image": "tensorflow/tensorflow",
-        //         "tag": "latest",
-        //         "checksum": "sha256:cb57ecfa6ebbefd8ffc7f75c0f00e57a7fa739578a429b6f72a0df19315deadc"
-        //       }
-        //     ],
-        //     "supportedServers": [
-        //       {
-        //         "serverId": "1",
-        //         "serverType": "xlsize",
-        //         "cost": "50",
-        //         "cpu": "16",
-        //         "gpu": "0",
-        //         "memory": "128gb",
-        //         "disk": "160gb",
-        //         "maxExecutionTime": 86400
-        //       },
-        //       {
-        //         "serverId": "2",
-        //         "serverType": "medium",
-        //         "cost": "10",
-        //         "cpu": "2",
-        //         "gpu": "0",
-        //         "memory": "8gb",
-        //         "disk": "80gb",
-        //         "maxExecutionTime": 86400
-        //       }
-        //     ]
-        //   }
+// "datePublished": "2019-04-09T19:02:11Z",
+// "cost": "10",
+// "timeout": 86400,
+// "provider": {
+//   "type": "Azure",
+//   "description": "",
+//   "environment": {
+//     "cluster": {
+//       "type": "Kubernetes",
+//       "url": "http://10.0.0.17/xxx"
+//     },
+//     "supportedContainers": [
+//       {
+//         "image": "tensorflow/tensorflow",
+//         "tag": "latest",
+//         "checksum": "sha256:cb57ecfa6ebbefd8ffc7f75c0f00e57a7fa739578a429b6f72a0df19315deadc"
+//       },
+//       {
+//         "image": "tensorflow/tensorflow",
+//         "tag": "latest",
+//         "checksum": "sha256:cb57ecfa6ebbefd8ffc7f75c0f00e57a7fa739578a429b6f72a0df19315deadc"
+//       }
+//     ],
+//     "supportedServers": [
+//       {
+//         "serverId": "1",
+//         "serverType": "xlsize",
+//         "cost": "50",
+//         "cpu": "16",
+//         "gpu": "0",
+//         "memory": "128gb",
+//         "disk": "160gb",
+//         "maxExecutionTime": 86400
+//       },
+//       {
+//         "serverId": "2",
+//         "serverType": "medium",
+//         "cost": "10",
+//         "cpu": "2",
+//         "gpu": "0",
+//         "memory": "8gb",
+//         "disk": "80gb",
+//         "maxExecutionTime": 86400
+//       }
+//     ]
+//   }
