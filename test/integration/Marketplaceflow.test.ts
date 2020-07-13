@@ -29,7 +29,7 @@ describe('Marketplace flow', () => {
     const marketplaceAllowance = 20
     const tokenAmount = 100
 
-    describe('#test', () => {
+    describe('#MarketplaceDownloadFlow-Test', () => {
         it('Initialize Ocean contracts v3', async () => {
             contracts = new TestContractHandler(
                 factory.abi,

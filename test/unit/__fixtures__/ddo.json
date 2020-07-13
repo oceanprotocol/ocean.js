@@ -41,166 +41,26 @@
     {
       "type": "access",
       "index": 0,
-      "serviceEndpoint": "http://mybrizo.org/api/v1/brizo/services/consume?pubKey=${pubKey}&serviceId={serviceId}&url={url}",
+      "serviceEndpoint": "http://myprovider.org/api/v1/services/consume?pubKey=${pubKey}&serviceId={serviceId}&url={url}",
       "templateId": "044852b2a670ade5407e78fb2863c51000000000000000000000000000000000",
       "attributes": {
         "main": {
-          "name": "dataAssetAccessServiceAgreement",
+          "name": "dataAssetAccess",
           "creator": "0x36A7f3383A63279cDaF4DfC0F3ABc07d90252C6b",
           "datePublished": "2019-11-15T14:11:23Z",
           "price": "",
           "timeout": 36000
-        },
-        "serviceAgreementTemplate": {
-          "contractName": "EscrowAccessSecretStoreTemplate",
-          "events": [
-            {
-              "name": "AgreementCreated",
-              "actorType": "consumer",
-              "handler": {
-                "moduleName": "escrowAccessSecretStoreTemplate",
-                "functionName": "fulfillLockRewardCondition",
-                "version": "0.1"
-              }
-            }
-          ],
-          "fulfillmentOrder": [
-            "lockReward.fulfill",
-            "accessSecretStore.fulfill",
-            "escrowReward.fulfill"
-          ],
-          "conditionDependency": {
-            "lockReward": [],
-            "accessSecretStore": [],
-            "escrowReward": ["lockReward", "accessSecretStore"]
-          },
-          "conditions": [
-            {
-              "name": "lockReward",
-              "timelock": 0,
-              "timeout": 0,
-              "contractName": "LockRewardCondition",
-              "functionName": "fulfill",
-              "parameters": [
-                {
-                  "name": "_rewardAddress",
-                  "type": "address",
-                  "value": "0x36A7f3383A63279cDaF4DfC0F3ABc07d90252C6b"
-                },
-                {
-                  "name": "_amount",
-                  "type": "uint256",
-                  "value": "0"
-                }
-              ],
-              "events": [
-                {
-                  "name": "Fulfilled",
-                  "actorType": "publisher",
-                  "handler": {
-                    "moduleName": "lockRewardCondition",
-                    "functionName": "fulfillAccessSecretStoreCondition",
-                    "version": "0.1"
-                  }
-                }
-              ]
-            },
-            {
-              "name": "accessSecretStore",
-              "timelock": 0,
-              "timeout": 0,
-              "contractName": "AccessSecretStoreCondition",
-              "functionName": "fulfill",
-              "parameters": [
-                {
-                  "name": "_documentId",
-                  "type": "bytes32",
-                  "value": "c678e7e5963d4fdc99afea49ac221d4d4177790f30204417823319d4d35f851f"
-                },
-                {
-                  "name": "_grantee",
-                  "type": "address",
-                  "value": ""
-                }
-              ],
-              "events": [
-                {
-                  "name": "Fulfilled",
-                  "actorType": "publisher",
-                  "handler": {
-                    "moduleName": "accessSecretStore",
-                    "functionName": "fulfillEscrowRewardCondition",
-                    "version": "0.1"
-                  }
-                },
-                {
-                  "name": "TimedOut",
-                  "actorType": "consumer",
-                  "handler": {
-                    "moduleName": "accessSecretStore",
-                    "functionName": "refundReward",
-                    "version": "0.1"
-                  }
-                }
-              ]
-            },
-            {
-              "name": "escrowReward",
-              "timelock": 0,
-              "timeout": 0,
-              "contractName": "EscrowReward",
-              "functionName": "fulfill",
-              "parameters": [
-                {
-                  "name": "_amount",
-                  "type": "uint256",
-                  "value": "0"
-                },
-                {
-                  "name": "_receiver",
-                  "type": "address",
-                  "value": ""
-                },
-                {
-                  "name": "_sender",
-                  "type": "address",
-                  "value": ""
-                },
-                {
-                  "name": "_lockCondition",
-                  "type": "bytes32",
-                  "value": ""
-                },
-                {
-                  "name": "_releaseCondition",
-                  "type": "bytes32",
-                  "value": ""
-                }
-              ],
-              "events": [
-                {
-                  "name": "Fulfilled",
-                  "actorType": "publisher",
-                  "handler": {
-                    "moduleName": "escrowRewardCondition",
-                    "functionName": "verifyRewardTokens",
-                    "version": "0.1"
-                  }
-                }
-              ]
-            }
-          ]
         }
       }
     },
     {
       "type": "compute",
       "index": 1,
-      "serviceEndpoint": "http://localhost:8030/api/v1/brizo/services/compute",
+      "serviceEndpoint": "http://localhost:8030/api/v1/services/compute",
       "templateId": "",
       "attributes": {
         "main": {
-          "name": "dataAssetComputingServiceAgreement",
+          "name": "dataAssetComputing",
           "creator": "0x36A7f3383A63279cDaF4DfC0F3ABc07d90252C6b",
           "datePublished": "2019-04-09T19:02:11Z",
           "price": "10",
@@ -250,147 +110,7 @@
             }
           }
         },
-        "additionalInformation": {},
-        "serviceAgreementTemplate": {
-          "contractName": "EscrowComputeExecutionTemplate",
-          "events": [
-            {
-              "name": "AgreementActorAdded",
-              "actorType": "provider",
-              "handler": {
-                "moduleName": "",
-                "functionName": "fulfillLockRewardCondition",
-                "version": "0.1"
-              }
-            }
-          ],
-          "fulfillmentOrder": [
-            "lockReward.fulfill",
-            "computeExecution.fulfill",
-            "escrowReward.fulfill"
-          ],
-          "conditionDependency": {
-            "lockReward": [],
-            "computeExecution": [],
-            "releaseReward": ["lockReward", "computeExecution"]
-          },
-          "conditions": [
-            {
-              "name": "lockReward",
-              "timelock": 0,
-              "timeout": 0,
-              "contractName": "LockRewardCondition",
-              "functionName": "fulfill",
-              "parameters": [
-                {
-                  "name": "_rewardAddress",
-                  "type": "address",
-                  "value": ""
-                },
-                {
-                  "name": "_amount",
-                  "type": "uint256",
-                  "value": ""
-                }
-              ],
-              "events": [
-                {
-                  "name": "Fulfilled",
-                  "actorType": "provider",
-                  "handler": {
-                    "moduleName": "lockRewardExecutionCondition",
-                    "functionName": "fulfillComputeExecutionCondition",
-                    "version": "0.1"
-                  }
-                }
-              ]
-            },
-            {
-              "name": "computeExecution",
-              "timelock": 0,
-              "timeout": 0,
-              "contractName": "ComputeExecutionCondition",
-              "functionName": "fulfill",
-              "parameters": [
-                {
-                  "name": "_documentId",
-                  "type": "bytes32",
-                  "value": ""
-                },
-                {
-                  "name": "_grantee",
-                  "type": "address",
-                  "value": ""
-                }
-              ],
-              "events": [
-                {
-                  "name": "Fulfilled",
-                  "actorType": "provider",
-                  "handler": {
-                    "moduleName": "accessSecretStore",
-                    "functionName": "fulfillEscrowRewardCondition",
-                    "version": "0.1"
-                  }
-                },
-                {
-                  "name": "TimedOut",
-                  "actorType": "consumer",
-                  "handler": {
-                    "moduleName": "accessSecretStore",
-                    "functionName": "refundReward",
-                    "version": "0.1"
-                  }
-                }
-              ]
-            },
-            {
-              "name": "escrowReward",
-              "timelock": 0,
-              "timeout": 0,
-              "contractName": "EscrowReward",
-              "functionName": "fulfill",
-              "parameters": [
-                {
-                  "name": "_amount",
-                  "type": "uint256",
-                  "value": ""
-                },
-                {
-                  "name": "_receiver",
-                  "type": "address",
-                  "value": ""
-                },
-                {
-                  "name": "_sender",
-                  "type": "address",
-                  "value": ""
-                },
-                {
-                  "name": "_lockCondition",
-                  "type": "bytes32",
-                  "value": ""
-                },
-                {
-                  "name": "_releaseCondition",
-                  "type": "bytes32",
-                  "value": ""
-                }
-              ],
-              "events": [
-                {
-                  "name": "Fulfilled",
-                  "actorType": "provider",
-                  "handler": {
-                    "moduleName": "escrowRewardCondition",
-                    "functionName": "verifyRewardTokens",
-                    "version": "0.1"
-                  }
-                }
-              ]
-            }
-          ]
-        }
+        "additionalInformation": {}
       }
     },
     {

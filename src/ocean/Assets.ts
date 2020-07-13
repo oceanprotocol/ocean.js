@@ -1,18 +1,23 @@
 import { SearchQuery } from '../metadatastore/MetadataStore'
 import { DDO } from '../ddo/DDO'
 import { Metadata } from '../ddo/interfaces/Metadata'
+import { MetadataAlgorithm } from '../ddo/interfaces/MetadataAlgorithm'
 import {
     Service,
     ServiceAccess,
     ServiceComputePrivacy,
-    ServiceCommon
+    ServiceCommon,
+    ServiceCompute
 } from '../ddo/interfaces/Service'
+
 import { EditableMetadata } from '../ddo/interfaces/EditableMetadata'
 import Account from './Account'
 import DID from './DID'
 import { SubscribablePromise } from '../utils'
 import { Instantiable, InstantiableConfig } from '../Instantiable.abstract'
 import { WebServiceConnector } from './utils/WebServiceConnector'
+import { Output } from './interfaces/ComputeOutput'
+import { ComputeJob } from './interfaces/ComputeJob'
 
 export enum CreateProgressStep {
     CreatingDataToken,
@@ -42,18 +47,6 @@ export class Assets extends Instantiable {
         instance.setInstanceConfig(config)
 
         return instance
-    }
-
-    /**
-     * Creates a simple asset and a datatoken
-     * @param  {Account}  publisher Publisher account.
-     * @return {Promise<String>}
-     */
-    public createSimpleAsset(publisher: Account): Promise<string> {
-        const publisherURI = this.ocean.provider.getURI()
-        const jsonBlob = { t: 0, url: publisherURI }
-        const { datatokens } = this.ocean
-        return datatokens.create(JSON.stringify(jsonBlob), publisher)
     }
 
     /**
@@ -354,6 +347,20 @@ export class Assets extends Instantiable {
         return service
     }
 
+    public async getServiceByIndex(
+        did: string,
+        serviceIndex: number
+    ): Promise<ServiceCommon> {
+        const services: ServiceCommon[] = (await this.resolve(did)).service
+        let service
+        services.forEach((serv) => {
+            if (serv.index === serviceIndex) {
+                service = serv
+            }
+        })
+        return service
+    }
+
     public async createAccessServiceAttributes(
         creator: Account,
         dtCost: number,
@@ -370,7 +377,7 @@ export class Assets extends Instantiable {
                     datePublished,
                     cost: dtCost,
                     timeout: timeout,
-                    name: 'dataAssetAccessServiceAgreement'
+                    name: 'dataAssetAccess'
                 }
             }
         }
@@ -379,12 +386,19 @@ export class Assets extends Instantiable {
     public async order(
         did: string,
         serviceType: string,
-        consumerAddress: string
+        consumerAddress: string,
+        serviceIndex: number = -1
     ): Promise<string> {
-        const service = await this.getServiceByType(did, serviceType)
+        if (serviceIndex === -1) {
+            const service = await this.getServiceByType(did, serviceType)
+            serviceIndex = service.index
+        } else {
+            const service = await this.getServiceByIndex(did, serviceIndex)
+            serviceType = service.type
+        }
         return await this.ocean.provider.initialize(
             did,
-            service.index,
+            serviceIndex,
             serviceType,
             consumerAddress
         )
