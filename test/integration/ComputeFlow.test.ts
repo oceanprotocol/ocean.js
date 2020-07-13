@@ -46,6 +46,18 @@ describe('Marketplace flow', () => {
     const tokenAmount = 100
 
     const timeout = 86400
+    const algorithmMeta = {
+        language: 'js',
+        format: 'docker-image',
+        version: '0.1',
+        url:
+            'https://raw.githubusercontent.com/oceanprotocol/test-algorithm/master/javascript/algo.js',
+        container: {
+            entrypoint: 'node $ALGO',
+            image: 'node',
+            tag: '10'
+        }
+    }
 
     describe('#MarketplaceComputeFlow-Test', () => {
         it('Initialize Ocean contracts v3', async () => {
@@ -101,7 +113,7 @@ describe('Marketplace flow', () => {
             }
         })
 
-        it('Alice publishes dataset with a compute service', async () => {
+        it('Alice publishes dataset with a compute service that allows Raw Algo', async () => {
             price = 10 // in datatoken
             cluster = ocean.compute.createClusterAttributes(
                 'Kubernetes',
@@ -133,12 +145,17 @@ describe('Marketplace flow', () => {
                 containers,
                 servers
             )
-
+            const origComputePrivacy = {
+                allowRawAlgorithm: true,
+                allowNetworkAccess: false,
+                trustedAlgorithms: []
+            }
             const computeService = ocean.compute.createComputeService(
                 alice,
                 price,
                 dateCreated,
-                provider
+                provider,
+                origComputePrivacy as ServiceComputePrivacy
             )
             ddo = await ocean.assets.create(asset, alice, [computeService], tokenAddress)
             assert(ddo.dataToken === tokenAddress)
@@ -254,25 +271,15 @@ describe('Marketplace flow', () => {
         })
 
         it('Bob starts compute job with a raw Algo', async () => {
-            const algorithmMeta = {
-                language: 'js',
-                format: 'docker-image',
-                version: '0.1',
-                url:
-                    'https://raw.githubusercontent.com/oceanprotocol/test-algorithm/master/javascript/algo.js',
-                container: {
-                    entrypoint: 'node $ALGO',
-                    image: 'node',
-                    tag: '10'
-                }
-            }
-
             const output = {}
-            const order = await ocean.assets.order(
+            const order = await ocean.compute.order(
+                bob.getId(),
                 ddo.id,
-                computeService.type,
-                bob.getId()
+                computeService.index,
+                undefined,
+                algorithmMeta
             )
+            assert(order != null)
             const computeOrder = JSON.parse(order)
             const tx = await datatoken.transfer(
                 computeOrder['dataToken'],
@@ -306,8 +313,30 @@ describe('Marketplace flow', () => {
             assert(response.length > 0)
         })
 
-        // it('should not allow order the compute service with raw algo for dataset that does not allow raw algo', async () => {})
-        // it('should not allow order the compute service with did != did:op:1234 for dataset that allows only did:op:1234 as algo', async () => {})
+        it('should not allow order the compute service with raw algo for dataset that does not allow raw algo', async () => {
+            const service1 = datasetNoRawAlgo.findServiceByType('compute')
+            assert(service1 !== null)
+            const order = await ocean.compute.order(
+                bob.getId(),
+                datasetNoRawAlgo.id,
+                service1.index,
+                undefined,
+                algorithmMeta
+            )
+            assert(order === null)
+        })
+        it('should not allow order the compute service with algoDid != "did:op:1234" for dataset that allows only "did:op:1234" as algo', async () => {
+            const service1 = datasetWithTrustedAlgo.findServiceByType('compute')
+            assert(service1 !== null)
+            const order = await ocean.compute.order(
+                bob.getId(),
+                datasetWithTrustedAlgo.id,
+                service1.index,
+                'did:op:77777',
+                undefined
+            )
+            assert(order === null)
+        })
         // it('should start a compute job with a published algo', async () => {
         // it('Bob restarts compute job', async () => {})
         // it('Bob gets outputs', async () => {})

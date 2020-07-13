@@ -284,6 +284,62 @@ export class Compute extends Instantiable {
             owner: output.owner || consumerAccount.getId()
         }
     }
+
+    /**
+     * Starts an order of a compute service that is defined in an asset's services.
+     * @param  {Account} consumerAccount The account of the consumer ordering the service.
+     * @param  {string} datasetDid The DID of the dataset asset (of type `dataset`) to run the algorithm on.
+     * @param  {string} algorithmDid The DID of the algorithm asset (of type `algorithm`) to run on the asset.
+     * @param  {MetaData} algorithmMeta Metadata about the algorithm being run if `algorithm` is being used. This is ignored when `algorithmDid` is specified.
+     * @return {Promise<string>} Returns the Service Agreement ID, representation of `bytes32` ID.
+     *
+     * Note:  algorithmDid and algorithmMeta are optional, but if they are not passed,
+     * you can end up in the situation that you are ordering and paying for your agreement,
+     * but brizo will not allow the compute, due to privacy settings of the ddo
+     */
+    public order(
+        consumerAccount: string,
+        datasetDid: string,
+        serviceIndex: number,
+        algorithmDid?: string,
+        algorithmMeta?: MetadataAlgorithm
+    ): SubscribablePromise<OrderProgressStep, string> {
+        return new SubscribablePromise(async (observer) => {
+            const ddo: DDO = await this.ocean.assets.resolve(datasetDid)
+            // const service: Service = ddo.findServiceByType('compute')
+            const service: Service = ddo.findServiceById(serviceIndex)
+            if (!service) return null
+            if (service.type !== 'compute') return null
+            if (algorithmMeta) {
+                // check if raw algo is allowed
+                if (service.attributes.main.privacy)
+                    if (!service.attributes.main.privacy.allowRawAlgorithm) {
+                        console.error('This service does not allow Raw Algo')
+                        return null
+                    }
+            }
+            if (algorithmDid) {
+                // check if did is in trusted list
+                if (service.attributes.main.privacy)
+                    if (service.attributes.main.privacy.trustedAlgorithms)
+                        if (service.attributes.main.privacy.trustedAlgorithms.length > 0)
+                            if (
+                                !service.attributes.main.privacy.trustedAlgorithms.includes(
+                                    algorithmDid
+                                )
+                            ) {
+                                console.error('This service does not allow this Algo')
+                                return null
+                            }
+            }
+            const order = await this.ocean.assets.order(
+                datasetDid,
+                service.type,
+                consumerAccount
+            )
+            return order
+        })
+    }
 }
 // "creator": "0x00Bd138aBD70e2F00903268F3Db08f2D25677C9e",
 // "datePublished": "2019-04-09T19:02:11Z",
