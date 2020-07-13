@@ -87,7 +87,6 @@ export class Provider extends Instantiable {
         initializeUrl += `&serviceType=${serviceType}`
         initializeUrl += `&dataToken=${DDO.dataToken}`
         initializeUrl += `&consumerAddress=${consumerAddress}`
-
         try {
             const response = await this.ocean.utils.fetch.get(initializeUrl)
             return await response.text()
@@ -187,6 +186,7 @@ export class Provider extends Instantiable {
         // 'algorithmDataToken': alg_data_token
 
         // switch fetch method
+        
         let fetch
 
         switch (method) {

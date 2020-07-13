@@ -70,7 +70,9 @@ export class Compute extends Instantiable {
         algorithmDid?: string,
         algorithmTokenAddress?: string,
         algorithmMeta?: MetadataAlgorithm,
-        output?: Output
+        output?: Output,
+        serviceIndex?: string,
+        serviceType?: string        
     ): Promise<ComputeJob> {
         output = this.checkOutput(consumerAccount, output)
         if (did) {
@@ -81,7 +83,12 @@ export class Compute extends Instantiable {
                 algorithmDid,
                 algorithmMeta,
                 undefined,
-                output
+                output,
+                txId,
+                serviceIndex,
+                serviceType,
+                tokenAddress
+
             )
             return computeJobsList[0] as ComputeJob
         } else return null
