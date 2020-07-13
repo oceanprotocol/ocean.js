@@ -64,7 +64,6 @@ export class Compute extends Instantiable {
         tokenAddress: string,
         consumerAccount: Account,
         algorithmDid?: string,
-        algorithmTokenAddress?: string,
         algorithmMeta?: MetadataAlgorithm,
         output?: Output,
         serviceIndex?: string,

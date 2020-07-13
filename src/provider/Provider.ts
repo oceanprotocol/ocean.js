@@ -192,7 +192,6 @@ export class Provider extends Instantiable {
         // 'algorithmDataToken': alg_data_token
 
         // switch fetch method
-
         let fetch
 
         switch (method) {

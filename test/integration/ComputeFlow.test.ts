@@ -293,7 +293,6 @@ describe('Marketplace flow', () => {
                 tokenAddress,
                 bob,
                 undefined,
-                undefined,
                 algorithmMeta,
                 output,
                 computeService.index,
@@ -312,7 +311,11 @@ describe('Marketplace flow', () => {
             const response = await ocean.compute.status(bob, undefined, undefined)
             assert(response.length > 0)
         })
-
+        it('Bob should stop compute job', async () => {
+            await ocean.compute.stop(bob, ddo.id, jobId)
+            const response = await ocean.compute.status(bob, ddo.id, jobId)
+            assert(response[0].stopreq === 1)
+        })
         it('should not allow order the compute service with raw algo for dataset that does not allow raw algo', async () => {
             const service1 = datasetNoRawAlgo.findServiceByType('compute')
             assert(service1 !== null)
@@ -372,18 +375,18 @@ describe('Marketplace flow', () => {
                 tx.transactionHash,
                 tokenAddress,
                 bob,
+                algorithmAsset.id,
                 undefined,
-                undefined,
-                algorithmMeta,
                 output,
                 computeService.index,
                 computeService.type,
-                algoTx,
-                algorithmAsset.datatoken
+                algoTx.transactionHash,
+                algorithmAsset.dataToken
             )
             jobId = response.jobId
             assert(response.status >= 10)
         })
+
         // it('Bob restarts compute job', async () => {})
         // it('Bob gets outputs', async () => {})
     })
