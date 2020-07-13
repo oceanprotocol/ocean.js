@@ -35,10 +35,10 @@ export class DataTokens {
     /**
      * Create new datatoken
      * @param {String} metaDataStoreURI
-     * @param {Account} account
+     * @param {String} account
      * @return {Promise<string>} datatoken address
      */
-    public async create(metaDataStoreURI: string, account: Account): Promise<string> {
+    public async create(metaDataStoreURI: string, account: string): Promise<string> {
         // Create factory contract object
         const factory = new this.web3.eth.Contract(this.factoryABI, this.factoryAddress, {
             from: account
