@@ -60,7 +60,7 @@ export class Provider extends Instantiable {
                 this.getEncryptEndpoint(),
                 decodeURI(JSON.stringify(args))
             )
-            return await response.text()
+            return (await response.json()).encryptedDocument
         } catch (e) {
             this.logger.error(e)
             throw new Error('HTTP request failed')
