@@ -118,6 +118,47 @@ export class Compute extends Instantiable {
     }
 
     /**
+     * Deletes a compute job and all resources associated with the job. If job is running it will be stopped first.
+     * @param  {Account} consumerAccount The account of the consumer ordering the service.
+     * @param  {string} did Decentralized identifier.
+     * @param  {string} jobId The ID of the compute job to be stopped
+     * @return {Promise<ComputeJob>} Returns the new status of a job
+     */
+    public async delete(
+        consumerAccount: Account,
+        did: string,
+        jobId: string
+    ): Promise<ComputeJob> {
+        const computeJobsList = await this.ocean.provider.compute(
+            'delete',
+            did,
+            consumerAccount,
+            undefined,
+            undefined,
+            jobId
+        )
+
+        return computeJobsList[0] as ComputeJob
+    }
+
+    /**
+     * Ends a running compute job and starts it again.
+     * @param  {Account} consumerAccount The account of the consumer ordering the service.
+     * @param  {string} did Decentralized identifier.
+     * @param  {string} jobId The ID of the compute job to be stopped
+     * @return {Promise<ComputeJob>} Returns the new status of a job
+     */
+    public async restart(
+        consumerAccount: Account,
+        did: string,
+        jobId: string
+    ): Promise<ComputeJob> {
+        await this.stop(consumerAccount, did, jobId)
+        const result = await this.start(consumerAccount, did, jobId)
+        return result
+    }
+
+    /**
      * Returns information about the status of all compute jobs, or a single compute job.
      * @param  {Account} consumerAccount The account of the consumer ordering the service.
      * @param  {string} did Decentralized identifier.
@@ -227,7 +268,6 @@ export class Compute extends Instantiable {
     ): ServiceCompute {
         const name = 'dataAssetComputingService'
         if (!timeout) timeout = 3600
-
         const service = {
             type: 'compute',
             index: 3,
@@ -246,7 +286,6 @@ export class Compute extends Instantiable {
         }
 
         if (computePrivacy) service.attributes.main.privacy = computePrivacy
-
         return service as ServiceCompute
     }
 

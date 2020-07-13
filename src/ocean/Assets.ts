@@ -9,6 +9,7 @@ import {
     ServiceCommon,
     ServiceCompute
 } from '../ddo/interfaces/Service'
+
 import { EditableMetadata } from '../ddo/interfaces/EditableMetadata'
 import Account from './Account'
 import DID from './DID'
