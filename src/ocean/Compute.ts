@@ -141,22 +141,22 @@ export class Compute extends Instantiable {
         return computeJobsList[0] as ComputeJob
     }
 
-    /**
-     * Ends a running compute job and starts it again.
-     * @param  {Account} consumerAccount The account of the consumer ordering the service.
-     * @param  {string} did Decentralized identifier.
-     * @param  {string} jobId The ID of the compute job to be stopped
-     * @return {Promise<ComputeJob>} Returns the new status of a job
-     */
-    public async restart(
-        consumerAccount: Account,
-        did: string,
-        jobId: string
-    ): Promise<ComputeJob> {
-        await this.stop(consumerAccount, did, jobId)
-        const result = await this.start(consumerAccount, did, jobId)
-        return result
-    }
+    // /**
+    //  * Ends a running compute job and starts it again.
+    //  * @param  {Account} consumerAccount The account of the consumer ordering the service.
+    //  * @param  {string} did Decentralized identifier.
+    //  * @param  {string} jobId The ID of the compute job to be stopped
+    //  * @return {Promise<ComputeJob>} Returns the new status of a job
+    //  */
+    // public async restart(
+    //     consumerAccount: Account,
+    //     did: string,
+    //     jobId: string
+    // ): Promise<ComputeJob> {
+    //     await this.stop(consumerAccount, did, jobId)
+    //     const result = await this.start(consumerAccount, did, jobId)
+    //     return result
+    // }
 
     /**
      * Returns information about the status of all compute jobs, or a single compute job.
