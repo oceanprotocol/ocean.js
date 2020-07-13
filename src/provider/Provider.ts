@@ -144,10 +144,11 @@ export class Provider extends Instantiable {
         txId?: string,
         serviceIndex?: string,
         serviceType?: string,
-        tokenAddress?: string
+        tokenAddress?: string,
+        algorithmTransferTxId?: string,
+        algorithmDataToken?: string
     ): Promise<ComputeJob | ComputeJob[]> {
         const address = consumerAccount.getId()
-
         let signatureMessage = address
         signatureMessage += jobId || ''
         signatureMessage += (did && `${noZeroX(did)}`) || ''
@@ -169,6 +170,11 @@ export class Provider extends Instantiable {
         url += (jobId && `&jobId=${jobId}`) || ''
         url += `&consumerAddress=${address}`
         url += `&transferTxId=${txId}` || ''
+        url +=
+            (algorithmTransferTxId &&
+                `&algorithmTransferTxId=${algorithmTransferTxId}`) ||
+            ''
+        url += (algorithmDataToken && `&algorithmDataToken=${algorithmDataToken}`) || ''
         url += `&serviceId=${serviceIndex}` || ''
         url += `&serviceType=${serviceType}` || ''
         url += `&dataToken=${tokenAddress}` || ''

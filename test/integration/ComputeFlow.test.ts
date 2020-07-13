@@ -114,7 +114,7 @@ describe('Marketplace flow', () => {
         })
 
         it('Alice publishes dataset with a compute service that allows Raw Algo', async () => {
-            price = 10 // in datatoken
+            price = 2 // in datatoken
             cluster = ocean.compute.createClusterAttributes(
                 'Kubernetes',
                 'http://10.0.0.17/xxx'
@@ -337,7 +337,53 @@ describe('Marketplace flow', () => {
             )
             assert(order === null)
         })
-        // it('should start a compute job with a published algo', async () => {
+        it('should start a compute job with a published algo', async () => {
+            const output = {}
+            const serviceAlgo = algorithmAsset.findServiceByType('access')
+            const orderalgo = await ocean.assets.order(
+                algorithmAsset.id,
+                serviceAlgo.type,
+                bob.getId()
+            )
+            const algoOrder = JSON.parse(orderalgo)
+            const algoTx = await datatoken.transfer(
+                algoOrder['dataToken'],
+                algoOrder['to'],
+                algoOrder['numTokens'],
+                algoOrder['from']
+            )
+            const order = await ocean.compute.order(
+                bob.getId(),
+                ddo.id,
+                computeService.index,
+                algorithmAsset.id,
+                undefined
+            )
+            assert(order != null)
+            const computeOrder = JSON.parse(order)
+            const tx = await datatoken.transfer(
+                computeOrder['dataToken'],
+                computeOrder['to'],
+                computeOrder['numTokens'],
+                computeOrder['from']
+            )
+            const response = await ocean.compute.start(
+                ddo.id,
+                tx.transactionHash,
+                tokenAddress,
+                bob,
+                undefined,
+                undefined,
+                algorithmMeta,
+                output,
+                computeService.index,
+                computeService.type,
+                algoTx,
+                algorithmAsset.datatoken
+            )
+            jobId = response.jobId
+            assert(response.status >= 10)
+        })
         // it('Bob restarts compute job', async () => {})
         // it('Bob gets outputs', async () => {})
     })
