@@ -69,7 +69,7 @@ export class DataTokens {
      * Approve
      * @param {String} dataTokenAddress
      * @param {String} toAddress
-     * @param {Number} amount
+     * @param {Number} amount Number of datatokens, as number. Will be converted to wei
      * @param {Account} account
      * @return {Promise<string>} transactionId
      */
@@ -84,7 +84,9 @@ export class DataTokens {
             dataTokenAddress,
             { from: account }
         )
-        const trxReceipt = await datatoken.methods.approve(spender, amount).send()
+        const trxReceipt = await datatoken.methods
+            .approve(spender, this.web3.utils.toWei(String(amount)))
+            .send()
         return trxReceipt
     }
 
@@ -92,7 +94,7 @@ export class DataTokens {
      * Mint
      * @param {String} dataTokenAddress
      * @param {Account} account
-     * @param {Number} amount
+     * @param {Number} amount Number of datatokens, as number. Will be converted to wei
      * @param {String} toAddress   - only if toAddress is different from the minter
      * @return {Promise<string>} transactionId
      */
@@ -109,17 +111,19 @@ export class DataTokens {
             { from: account }
         )
         const estGas = await datatoken.methods
-            .mint(address, amount)
+            .mint(address, this.web3.utils.toWei(String(amount)))
             .estimateGas(function (err, estGas) {
                 if (err) console.log('Datatokens: ' + err)
                 return estGas
             })
 
-        const trxReceipt = await datatoken.methods.mint(address, amount).send({
-            from: account,
-            gas: estGas + 1,
-            gasPrice: '3000000000'
-        })
+        const trxReceipt = await datatoken.methods
+            .mint(address, this.web3.utils.toWei(String(amount)))
+            .send({
+                from: account,
+                gas: estGas + 1,
+                gasPrice: '3000000000'
+            })
 
         return trxReceipt
     }
@@ -128,7 +132,7 @@ export class DataTokens {
      * Transfer from Account to Address
      * @param {String} dataTokenAddress
      * @param {String} toAddress
-     * @param {Number} amount
+     * @param {Number} amount Number of datatokens, as number. Will be converted to wei
      * @param {Account} account
      * @return {Promise<string>} transactionId
      */
@@ -143,7 +147,9 @@ export class DataTokens {
             dataTokenAddress,
             { from: account }
         )
-        const trxReceipt = await datatoken.methods.transfer(toAddress, amount).send()
+        const trxReceipt = await datatoken.methods
+            .transfer(toAddress, this.web3.utils.toWei(String(amount)))
+            .send()
         return trxReceipt
     }
 
@@ -151,7 +157,7 @@ export class DataTokens {
      * Transfer from Address to Account  (needs an Approve operation before)
      * @param {String} dataTokenAddress
      * @param {String} fromAddress
-     * @param {Number} amount
+     * @param {Number} amount Number of datatokens, as number. Will be converted to wei
      * @param {Account} account
      * @return {Promise<string>} transactionId
      */
@@ -167,7 +173,7 @@ export class DataTokens {
             { from: account }
         )
         const trxReceipt = await datatoken.methods
-            .transferFrom(fromAddress, account, amount)
+            .transferFrom(fromAddress, account, this.web3.utils.toWei(String(amount)))
             .send()
         return trxReceipt
     }
@@ -176,7 +182,7 @@ export class DataTokens {
      * Get Account Balance for datatoken
      * @param {String} dataTokenAddress
      * @param {Account} account
-     * @return {Promise<number>} balance
+     * @return {Promise<number>} balance  Number of datatokens, as number. Will be converted from wei
      */
     public async balance(dataTokenAddress: string, account: Account): Promise<number> {
         const datatoken = new this.web3.eth.Contract(
@@ -185,7 +191,7 @@ export class DataTokens {
             { from: account }
         )
         const trxReceipt = await datatoken.methods.balanceOf(account).call()
-        return trxReceipt
+        return this.web3.utils.fromWei(trxReceipt)
     }
 
     /**
@@ -204,7 +210,7 @@ export class DataTokens {
             { from: spender }
         )
         const trxReceipt = await datatoken.methods.allowance(owner, spender).call()
-        return trxReceipt
+        return this.web3.utils.fromWei(trxReceipt)
     }
 
     /** Get Blob
@@ -264,6 +270,6 @@ export class DataTokens {
             { from: account.getId() }
         )
         const trxReceipt = await datatoken.methods.cap().call()
-        return trxReceipt
+        return this.web3.utils.fromWei(trxReceipt)
     }
 }
