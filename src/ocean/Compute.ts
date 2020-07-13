@@ -1,18 +1,11 @@
-import { SearchQuery } from '../metadatastore/MetadataStore'
 import { DDO } from '../ddo/DDO'
-import { Metadata } from '../ddo/interfaces/Metadata'
 import { MetadataAlgorithm } from '../ddo/interfaces/MetadataAlgorithm'
 import { Service, ServiceComputePrivacy, ServiceCompute } from '../ddo/interfaces/Service'
-import { EditableMetadata } from '../ddo/interfaces/EditableMetadata'
 import Account from './Account'
-import DID from './DID'
 import { SubscribablePromise } from '../utils'
 import { Instantiable, InstantiableConfig } from '../Instantiable.abstract'
 import { Output } from './interfaces/ComputeOutput'
 import { ComputeJob } from './interfaces/ComputeJob'
-// import { WebServiceConnector } from './utils/WebServiceConnector'
-// import { Output } from './interfaces/ComputeOutput'
-// import { ComputeJob } from './interfaces/ComputeJob'
 
 export enum OrderProgressStep {
     TransferDataToken
@@ -139,23 +132,6 @@ export class Compute extends Instantiable {
 
         return computeJobsList[0] as ComputeJob
     }
-
-    // /**
-    //  * Ends a running compute job and starts it again.
-    //  * @param  {Account} consumerAccount The account of the consumer ordering the service.
-    //  * @param  {string} did Decentralized identifier.
-    //  * @param  {string} jobId The ID of the compute job to be stopped
-    //  * @return {Promise<ComputeJob>} Returns the new status of a job
-    //  */
-    // public async restart(
-    //     consumerAccount: Account,
-    //     did: string,
-    //     jobId: string
-    // ): Promise<ComputeJob> {
-    //     await this.stop(consumerAccount, did, jobId)
-    //     const result = await this.start(consumerAccount, did, jobId)
-    //     return result
-    // }
 
     /**
      * Returns information about the status of all compute jobs, or a single compute job.
@@ -304,17 +280,6 @@ export class Compute extends Instantiable {
                 publishOutput: false
             }
         }
-        // 'signature': signature,
-        // 'documentId': did,
-        // 'serviceId': sa.index,
-        // 'serviceType': sa.type,
-        // 'consumerAddress': cons_acc.address,
-        // 'transferTxId': Web3.toHex(tx_id),
-        // 'dataToken': data_token,
-        // 'output': build_stage_output_dict(dict(), dataset_ddo_w_compute_service, cons_acc.address, pub_acc),
-        // 'algorithmDid': alg_ddo.did,
-        // 'algorithmMeta': {},
-        // 'algorithmDataToken': alg_data_token
 
         return {
             publishAlgorithmLog: output.publishAlgorithmLog,
@@ -384,50 +349,3 @@ export class Compute extends Instantiable {
         })
     }
 }
-// "creator": "0x00Bd138aBD70e2F00903268F3Db08f2D25677C9e",
-// "datePublished": "2019-04-09T19:02:11Z",
-// "cost": "10",
-// "timeout": 86400,
-// "provider": {
-//   "type": "Azure",
-//   "description": "",
-//   "environment": {
-//     "cluster": {
-//       "type": "Kubernetes",
-//       "url": "http://10.0.0.17/xxx"
-//     },
-//     "supportedContainers": [
-//       {
-//         "image": "tensorflow/tensorflow",
-//         "tag": "latest",
-//         "checksum": "sha256:cb57ecfa6ebbefd8ffc7f75c0f00e57a7fa739578a429b6f72a0df19315deadc"
-//       },
-//       {
-//         "image": "tensorflow/tensorflow",
-//         "tag": "latest",
-//         "checksum": "sha256:cb57ecfa6ebbefd8ffc7f75c0f00e57a7fa739578a429b6f72a0df19315deadc"
-//       }
-//     ],
-//     "supportedServers": [
-//       {
-//         "serverId": "1",
-//         "serverType": "xlsize",
-//         "cost": "50",
-//         "cpu": "16",
-//         "gpu": "0",
-//         "memory": "128gb",
-//         "disk": "160gb",
-//         "maxExecutionTime": 86400
-//       },
-//       {
-//         "serverId": "2",
-//         "serverType": "medium",
-//         "cost": "10",
-//         "cpu": "2",
-//         "gpu": "0",
-//         "memory": "8gb",
-//         "disk": "80gb",
-//         "maxExecutionTime": 86400
-//       }
-//     ]
-//   }
