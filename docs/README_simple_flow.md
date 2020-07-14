@@ -92,5 +92,3 @@ const ocean = await Ocean.getInstance()
 
 await ocean.assets.download(tokenAddress, blob, transactionId, bob)
 ```
-
-
