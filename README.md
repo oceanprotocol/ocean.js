@@ -34,10 +34,6 @@ This batteries-included flow includes metadata, multiple services for one datato
 
 [Go to marketplace flow](doc/README_marketplace_flow.md)
 
-## For ocean-lib Developers
-
-[Go to ocean-lib-developers flow](doc/README_ocean-lib-developers.md)
-
 ## License
 
 ```
