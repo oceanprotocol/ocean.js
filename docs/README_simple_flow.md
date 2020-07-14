@@ -10,6 +10,12 @@
 `ocean-lib-js` is part of the [Ocean Protocol](www.oceanprotocol.com) toolset.
 
 # Installation
+
+```
+npm i --save @oceanprotocol/lib
+```
+# Usage
+
 ```
 // ES6
 import { Ocean, Logger } from '@oceanprotocol/lib'
