@@ -73,7 +73,10 @@ export class Assets extends Instantiable {
                 const metadataStoreURI = this.ocean.metadatastore.getURI()
                 const jsonBlob = { t: 1, url: metadataStoreURI }
                 const { datatokens } = this.ocean
-                dtAddress = await datatokens.create(JSON.stringify(jsonBlob), publisher)
+                dtAddress = await datatokens.create(
+                    JSON.stringify(jsonBlob),
+                    publisher.getId()
+                )
                 this.logger.log('DataToken creted')
                 observer.next(CreateProgressStep.DataTokenCreated)
             }
@@ -361,9 +364,17 @@ export class Assets extends Instantiable {
         return service
     }
 
+    /**
+     * Creates an access service
+     * @param {Account} creator
+     * @param {String} cost  number of datatokens needed for this service, expressed in wei
+     * @param {String} datePublished
+     * @param {Number} timeout
+     * @return {Promise<string>} service
+     */
     public async createAccessServiceAttributes(
         creator: Account,
-        dtCost: number,
+        cost: string,
         datePublished: string,
         timeout: number = 0
     ): Promise<ServiceAccess> {
@@ -375,7 +386,7 @@ export class Assets extends Instantiable {
                 main: {
                     creator: creator.getId(),
                     datePublished,
-                    cost: dtCost,
+                    cost,
                     timeout: timeout,
                     name: 'dataAssetAccess'
                 }

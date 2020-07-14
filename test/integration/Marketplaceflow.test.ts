@@ -84,7 +84,7 @@ describe('Marketplace flow', () => {
         })
 
         it('Alice publishes a dataset', async () => {
-            price = 10 // in datatoken
+            price = datatoken.toWei(10) // in datatoken
             const publishedDate = new Date(Date.now()).toISOString().split('.')[0] + 'Z'
             const timeout = 0
             service1 = await ocean.assets.createAccessServiceAttributes(
@@ -146,7 +146,7 @@ describe('Marketplace flow', () => {
         it('Marketplace posts asset for sale', async () => {
             accessService = await ocean.assets.getServiceByType(ddo.id, 'access')
             price = 20
-            assert(accessService.attributes.main.cost * price === 200)
+            assert(accessService.attributes.main.cost * price === datatoken.toWei(200))
         })
 
         it('Bob gets datatokens', async () => {
@@ -164,7 +164,7 @@ describe('Marketplace flow', () => {
                 .order(ddo.id, accessService.type, bob.getId())
                 .then(async (res: string) => {
                     res = JSON.parse(res)
-                    return await datatoken.transfer(
+                    return await datatoken.transferWei(
                         res['dataToken'],
                         res['to'],
                         res['numTokens'],

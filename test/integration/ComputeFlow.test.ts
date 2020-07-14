@@ -114,7 +114,7 @@ describe('Marketplace flow', () => {
         })
 
         it('Alice publishes dataset with a compute service that allows Raw Algo', async () => {
-            price = 2 // in datatoken
+            price = datatoken.toWei(2) // in datatoken
             cluster = ocean.compute.createClusterAttributes(
                 'Kubernetes',
                 'http://10.0.0.17/xxx'
@@ -281,7 +281,7 @@ describe('Marketplace flow', () => {
             )
             assert(order != null)
             const computeOrder = JSON.parse(order)
-            const tx = await datatoken.transfer(
+            const tx = await datatoken.transferWei(
                 computeOrder['dataToken'],
                 computeOrder['to'],
                 computeOrder['numTokens'],
@@ -349,7 +349,7 @@ describe('Marketplace flow', () => {
                 bob.getId()
             )
             const algoOrder = JSON.parse(orderalgo)
-            const algoTx = await datatoken.transfer(
+            const algoTx = await datatoken.transferWei(
                 algoOrder['dataToken'],
                 algoOrder['to'],
                 algoOrder['numTokens'],
@@ -364,7 +364,7 @@ describe('Marketplace flow', () => {
             )
             assert(order != null)
             const computeOrder = JSON.parse(order)
-            const tx = await datatoken.transfer(
+            const tx = await datatoken.transferWei(
                 computeOrder['dataToken'],
                 computeOrder['to'],
                 computeOrder['numTokens'],

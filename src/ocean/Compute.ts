@@ -233,6 +233,16 @@ export class Compute extends Instantiable {
         }
     }
 
+    /**
+     * Creates a compute service
+     * @param {Account} consumerAccount
+     * @param {String} cost  number of datatokens needed for this service, expressed in wei
+     * @param {String} datePublished
+     * @param {Object} providerAttributes
+     * @param {Object} computePrivacy
+     * @param {Number} timeout
+     * @return {Promise<string>} service
+     */
     public createComputeService(
         consumerAccount: Account,
         cost: string,
