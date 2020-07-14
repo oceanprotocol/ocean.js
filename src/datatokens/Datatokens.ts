@@ -70,14 +70,14 @@ export class DataTokens {
      * @param {String} dataTokenAddress
      * @param {String} toAddress
      * @param {Number} amount
-     * @param {Account} account
+     * @param {String} account
      * @return {Promise<string>} transactionId
      */
     public async approve(
         dataTokenAddress: string,
         spender: string,
         amount: number,
-        account: Account
+        account: string
     ): Promise<string> {
         const datatoken = new this.web3.eth.Contract(
             this.datatokensABI,
@@ -91,14 +91,14 @@ export class DataTokens {
     /**
      * Mint
      * @param {String} dataTokenAddress
-     * @param {Account} account
+     * @param {String} account
      * @param {Number} amount
      * @param {String} toAddress   - only if toAddress is different from the minter
      * @return {Promise<string>} transactionId
      */
     public async mint(
         dataTokenAddress: string,
-        account: Account,
+        account: string,
         amount: number,
         toAddress?: string
     ): Promise<string> {
@@ -129,14 +129,14 @@ export class DataTokens {
      * @param {String} dataTokenAddress
      * @param {String} toAddress
      * @param {Number} amount
-     * @param {Account} account
+     * @param {String} account
      * @return {Promise<string>} transactionId
      */
     public async transfer(
         dataTokenAddress: string,
         toAddress: string,
         amount: number,
-        account: Account
+        account: string
     ): Promise<string> {
         const datatoken = new this.web3.eth.Contract(
             this.datatokensABI,
@@ -152,7 +152,7 @@ export class DataTokens {
      * @param {String} dataTokenAddress
      * @param {String} fromAddress
      * @param {Number} amount
-     * @param {Account} account
+     * @param {String} account
      * @return {Promise<string>} transactionId
      */
     public async transferFrom(
@@ -175,10 +175,10 @@ export class DataTokens {
     /**
      * Get Account Balance for datatoken
      * @param {String} dataTokenAddress
-     * @param {Account} account
+     * @param {String} account
      * @return {Promise<number>} balance
      */
-    public async balance(dataTokenAddress: string, account: Account): Promise<number> {
+    public async balance(dataTokenAddress: string, account: string): Promise<number> {
         const datatoken = new this.web3.eth.Contract(
             this.datatokensABI,
             dataTokenAddress,
