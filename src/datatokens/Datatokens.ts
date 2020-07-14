@@ -159,15 +159,8 @@ export class DataTokens {
         amount: number,
         account: Account
     ): Promise<string> {
-        const datatoken = new this.web3.eth.Contract(
-            this.datatokensABI,
-            dataTokenAddress,
-            { from: account }
-        )
-        const trxReceipt = await datatoken.methods
-            .transfer(toAddress, this.web3.utils.toWei(String(amount)))
-            .send()
-        return trxReceipt
+        const weiAmount = this.web3.utils.toWei(String(amount))
+        return this.transferWei(dataTokenAddress, toAddress, weiAmount, account)
     }
 
     /**
@@ -232,8 +225,8 @@ export class DataTokens {
             dataTokenAddress,
             { from: account }
         )
-        const trxReceipt = await datatoken.methods.balanceOf(account).call()
-        return this.web3.utils.fromWei(trxReceipt)
+        const balance = await datatoken.methods.balanceOf(account).call()
+        return this.web3.utils.fromWei(balance)
     }
 
     /**

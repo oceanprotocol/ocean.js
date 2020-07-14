@@ -371,7 +371,7 @@ export class Assets extends Instantiable {
      */
     public async createAccessServiceAttributes(
         creator: Account,
-        dtCost: string,
+        cost: string,
         datePublished: string,
         timeout: number = 0
     ): Promise<ServiceAccess> {
@@ -383,7 +383,7 @@ export class Assets extends Instantiable {
                 main: {
                     creator: creator.getId(),
                     datePublished,
-                    cost: dtCost,
+                    cost,
                     timeout: timeout,
                     name: 'dataAssetAccess'
                 }
