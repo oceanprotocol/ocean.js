@@ -129,7 +129,7 @@ export class DataTokens {
     }
 
     /**
-     * Transfer from Account to Address
+     * Transfer as number from Account to Address
      * @param {String} dataTokenAddress
      * @param {String} toAddress
      * @param {Number} amount Number of datatokens, as number. Will be converted to wei
@@ -142,6 +142,23 @@ export class DataTokens {
         amount: number,
         account: Account
     ): Promise<string> {
+        return this.transferToken(dataTokenAddress, toAddress, amount, account)
+    }
+
+    /**
+     * Transfer as number from Account to Address
+     * @param {String} dataTokenAddress
+     * @param {String} toAddress
+     * @param {Number} amount Number of datatokens, as number. Will be converted to wei
+     * @param {Account} account
+     * @return {Promise<string>} transactionId
+     */
+    public async transferToken(
+        dataTokenAddress: string,
+        toAddress: string,
+        amount: number,
+        account: Account
+    ): Promise<string> {
         const datatoken = new this.web3.eth.Contract(
             this.datatokensABI,
             dataTokenAddress,
@@ -149,6 +166,31 @@ export class DataTokens {
         )
         const trxReceipt = await datatoken.methods
             .transfer(toAddress, this.web3.utils.toWei(String(amount)))
+            .send()
+        return trxReceipt
+    }
+
+    /**
+     * Transfer in wei from Account to Address
+     * @param {String} dataTokenAddress
+     * @param {String} toAddress
+     * @param {Number} amount Number of datatokens, as number. Expressed as wei
+     * @param {Account} account
+     * @return {Promise<string>} transactionId
+     */
+    public async transferWei(
+        dataTokenAddress: string,
+        toAddress: string,
+        amount: string,
+        account: Account
+    ): Promise<string> {
+        const datatoken = new this.web3.eth.Contract(
+            this.datatokensABI,
+            dataTokenAddress,
+            { from: account }
+        )
+        const trxReceipt = await datatoken.methods
+            .transfer(toAddress, String(amount))
             .send()
         return trxReceipt
     }
@@ -271,5 +313,21 @@ export class DataTokens {
         )
         const trxReceipt = await datatoken.methods.cap().call()
         return this.web3.utils.fromWei(trxReceipt)
+    }
+
+    /** Convert from number to wei
+     * @param {Number} amount
+     * @return {Promise<string>} string
+     */
+    public toWei(amount) {
+        return this.web3.utils.toWei(String(amount))
+    }
+
+    /** Convert from wei to number
+     * @param {String} amount
+     * @return {Promise<string>} string
+     */
+    public fromWei(amount) {
+        return this.web3.utils.fromWei(amount)
     }
 }

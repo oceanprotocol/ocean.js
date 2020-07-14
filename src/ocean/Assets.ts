@@ -361,9 +361,17 @@ export class Assets extends Instantiable {
         return service
     }
 
+    /**
+     * Creates an access service
+     * @param {Account} creator
+     * @param {String} cost  number of datatokens needed for this service, expressed in wei
+     * @param {String} datePublished
+     * @param {Number} timeout
+     * @return {Promise<string>} service
+     */
     public async createAccessServiceAttributes(
         creator: Account,
-        dtCost: number,
+        dtCost: string,
         datePublished: string,
         timeout: number = 0
     ): Promise<ServiceAccess> {

@@ -19,7 +19,7 @@ export interface ServiceAccessAttributes extends ServiceCommonAttributes {
         creator: string
         name: string
         datePublished: string
-        cost: number
+        cost: string
         timeout: number
     }
 }
