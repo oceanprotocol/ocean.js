@@ -3,12 +3,7 @@ import { DataTokens } from '../../src/datatokens/Datatokens'
 import { Ocean } from '../../src/ocean/Ocean'
 import config from './config'
 import { assert } from 'console'
-import { ComputeJob } from '../../src/ocean/interfaces/ComputeJob'
-import {
-    Service,
-    ServiceComputePrivacy,
-    ServiceCompute
-} from '../../src/ddo/interfaces/Service'
+import { ServiceComputePrivacy } from '../../src/ddo/interfaces/Service'
 const Web3 = require('web3')
 const web3 = new Web3('http://127.0.0.1:8545')
 const factory = require('@oceanprotocol/contracts/artifacts/development/Factory.json')
@@ -23,11 +18,9 @@ describe('Compute flow', () => {
     let datasetNoRawAlgo
     let datasetWithTrustedAlgo
     let algorithmAsset
-    let marketplace
     let contracts
     let datatoken
     let tokenAddress
-    let service1
     let price
     let ocean
     let computeService
@@ -42,7 +35,6 @@ describe('Compute flow', () => {
 
     const dateCreated = new Date(Date.now()).toISOString().split('.')[0] + 'Z' // remove milliseconds
 
-    const marketplaceAllowance = 20
     const tokenAmount = 100
 
     const timeout = 86400
@@ -73,7 +65,7 @@ describe('Compute flow', () => {
             owner = (await ocean.accounts.list())[0]
             alice = (await ocean.accounts.list())[1]
             bob = (await ocean.accounts.list())[2]
-            marketplace = (await ocean.accounts.list())[3]
+            (await ocean.accounts.list())[3]
             data = { t: 1, url: ocean.config.metadataStoreUri }
             blob = JSON.stringify(data)
             await contracts.deployContracts(owner.getId())
