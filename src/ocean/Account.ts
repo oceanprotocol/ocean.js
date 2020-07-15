@@ -104,7 +104,7 @@ export default class Account extends Instantiable {
         ]
         let result = null
         try {
-            const token = new this.web3.eth.Contract(minABI, TokenAdress, {
+            const token = new this.web3.eth.Contract(minABI as any, TokenAdress, {
                 from: this.id
             })
             result = this.web3.utils.fromWei(
