@@ -31,13 +31,22 @@ export class Accounts extends Instantiable {
     }
 
     /**
-     * Return account balance.
+     * Return account balance for a given ERC20 token
      * @param  {String}          TokenAddress .
      * @param  {Account}          account Account instance.
      * @return {Promise<Balance>}         Ether and Ocean Token balance.
      */
-    public balance(TokenAddress: string, account: Account): Promise<number> {
+    public getTokenBalance(TokenAddress: string, account: Account): Promise<number> {
         return account.getTokenBalance(TokenAddress)
+    }
+
+    /**
+     * Return account balance for a Ocean Tokens
+     * @param  {Account}          account Account instance.
+     * @return {Promise<Balance>}         Ether and Ocean Token balance.
+     */
+    public getOceanBalance(account: Account): Promise<number> {
+        return account.getOceanBalance()
     }
 
     /**
@@ -45,7 +54,7 @@ export class Accounts extends Instantiable {
      * @param  {Account}          account Account instance.
      * @return {Promise<Balance>}         Ether and Ocean Token balance.
      */
-    public ETHbalance(account: Account): Promise<number> {
+    public getEtherBalance(account: Account): Promise<number> {
         return account.getEtherBalance()
     }
 }
