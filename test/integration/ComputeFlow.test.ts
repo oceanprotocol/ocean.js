@@ -35,7 +35,8 @@ describe('Compute flow', () => {
 
     const dateCreated = new Date(Date.now()).toISOString().split('.')[0] + 'Z' // remove milliseconds
 
-    const tokenAmount = 100
+    const marketplaceAllowance = '20'
+    const tokenAmount = '100'
 
     const timeout = 86400
     const algorithmMeta = {
@@ -105,7 +106,7 @@ describe('Compute flow', () => {
         })
 
         it('Alice publishes dataset with a compute service that allows Raw Algo', async () => {
-            price = datatoken.toWei(2) // in datatoken
+            price = datatoken.toWei('2') // in datatoken
             cluster = ocean.compute.createClusterAttributes(
                 'Kubernetes',
                 'http://10.0.0.17/xxx'
@@ -252,7 +253,7 @@ describe('Compute flow', () => {
         })
 
         it('Bob gets datatokens from Alice to be able to try the compute service', async () => {
-            const dTamount = 20
+            const dTamount = '20'
             await datatoken
                 .transfer(tokenAddress, bob.getId(), dTamount, alice.getId())
                 .then(async () => {
@@ -275,7 +276,7 @@ describe('Compute flow', () => {
             const tx = await datatoken.transferWei(
                 computeOrder['dataToken'],
                 computeOrder['to'],
-                computeOrder['numTokens'],
+                String(computeOrder['numTokens']),
                 computeOrder['from']
             )
             const response = await ocean.compute.start(
@@ -343,7 +344,7 @@ describe('Compute flow', () => {
             const algoTx = await datatoken.transferWei(
                 algoOrder['dataToken'],
                 algoOrder['to'],
-                algoOrder['numTokens'],
+                String(algoOrder['numTokens']),
                 algoOrder['from']
             )
             const order = await ocean.compute.order(
@@ -358,7 +359,7 @@ describe('Compute flow', () => {
             const tx = await datatoken.transferWei(
                 computeOrder['dataToken'],
                 computeOrder['to'],
-                computeOrder['numTokens'],
+                String(computeOrder['numTokens']),
                 computeOrder['from']
             )
             const response = await ocean.compute.start(

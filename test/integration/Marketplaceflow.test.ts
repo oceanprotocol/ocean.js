@@ -26,8 +26,8 @@ describe('Marketplace flow', () => {
     let data
     let blob
 
-    const marketplaceAllowance = 20
-    const tokenAmount = 100
+    const marketplaceAllowance = '20'
+    const tokenAmount = '100'
 
     describe('#MarketplaceDownloadFlow-Test', () => {
         it('Initialize Ocean contracts v3', async () => {
@@ -84,7 +84,7 @@ describe('Marketplace flow', () => {
         })
 
         it('Alice publishes a dataset', async () => {
-            price = datatoken.toWei(10) // in datatoken
+            price = datatoken.toWei('10') // in datatoken
             const publishedDate = new Date(Date.now()).toISOString().split('.')[0] + 'Z'
             const timeout = 0
             service1 = await ocean.assets.createAccessServiceAttributes(
@@ -146,11 +146,11 @@ describe('Marketplace flow', () => {
         it('Marketplace posts asset for sale', async () => {
             accessService = await ocean.assets.getServiceByType(ddo.id, 'access')
             price = 20
-            assert(accessService.attributes.main.cost * price === datatoken.toWei(200))
+            assert(accessService.attributes.main.cost * price === datatoken.toWei('200'))
         })
 
         it('Bob gets datatokens', async () => {
-            const dTamount = 20
+            const dTamount = '20'
             await datatoken
                 .transfer(tokenAddress, bob.getId(), dTamount, alice.getId())
                 .then(async () => {
@@ -167,7 +167,7 @@ describe('Marketplace flow', () => {
                     return await datatoken.transferWei(
                         res['dataToken'],
                         res['to'],
-                        res['numTokens'],
+                        String(res['numTokens']),
                         res['from']
                     )
                 })

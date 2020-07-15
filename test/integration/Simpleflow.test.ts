@@ -16,8 +16,8 @@ describe('Simple flow', () => {
     let datatoken
     let tokenAddress
     let transactionId
-    const tokenAmount = 100
-    const transferAmount = 1
+    const tokenAmount = '100'
+    const transferAmount = '1'
     const blob = 'http://localhost:8030/api/v1/services/consume'
     describe('#test', () => {
         it('Initialize Ocean contracts v3', async () => {
