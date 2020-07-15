@@ -6,24 +6,19 @@ const defaultDatatokensABI = require('@oceanprotocol/contracts/artifacts/develop
  */
 export class DataTokens {
     public factoryAddress: string
-    public factoryABI: object
-    public datatokensABI: object
+    public factoryABI: any
+    public datatokensABI: any
     public web3: any
 
     /**
      * Instantiate DataTokens (independently of Ocean).
      * @param {String} factoryAddress
-     * @param {Object} factoryABI
-     * @param {Object} datatokensABI
-     * @param {Object} web3 
+     * @param {any} factoryABI
+     * @param {any} datatokensABI
+     * @param {any} web3 
      
      */
-    constructor(
-        factoryAddress: string,
-        factoryABI: object,
-        datatokensABI: object,
-        web3: any
-    ) {
+    constructor(factoryAddress: string, factoryABI: any, datatokensABI: any, web3: any) {
         this.factoryAddress = factoryAddress
         this.factoryABI = factoryABI || defaultFactoryABI
         this.datatokensABI = datatokensABI || defaultDatatokensABI

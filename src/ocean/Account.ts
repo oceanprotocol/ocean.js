@@ -76,12 +76,52 @@ export default class Account extends Instantiable {
     */
 
     /**
-     * Balance of Any Token.
-     * @return {Promise<number>}
+     * Balance of Any Token (converted from wei).
+     * @return {Promise<string>}
      */
-    public async getTokenBalance(TokenAdress: string): Promise<number> {
-        // TO DO
-        return 0
+    public async getTokenBalance(TokenAdress: string): Promise<string> {
+        if (TokenAdress === null) return null
+        const minABI = [
+            {
+                constant: true,
+                inputs: [
+                    {
+                        name: '_owner',
+                        type: 'address'
+                    }
+                ],
+                name: 'balanceOf',
+                outputs: [
+                    {
+                        name: 'balance',
+                        type: 'uint256'
+                    }
+                ],
+                payable: false,
+                stateMutability: 'view',
+                type: 'function'
+            }
+        ]
+        let result = null
+        try {
+            const token = new this.web3.eth.Contract(minABI as any, TokenAdress, {
+                from: this.id
+            })
+            result = this.web3.utils.fromWei(
+                await token.methods.balanceOf(this.id).call()
+            )
+        } catch (e) {
+            console.error(e)
+        }
+        return result
+    }
+
+    /**
+     * Balance of Ocean Token. (converted from wei).
+     * @return {Promise<string>}
+     */
+    public async getOceanBalance(): Promise<string> {
+        return this.getTokenBalance(this.config.oceanTokenAddress)
     }
 
     /**
@@ -94,17 +134,11 @@ export default class Account extends Instantiable {
     }
 
     /**
-     * Balance of Ether.
-     * @return {Promise<number>}
+     * Balance of Ether.(converted from wei).
+     * @return {Promise<string>}
      */
-    public async getEtherBalance(): Promise<number> {
-        // TO DO
-        /* return this.web3.eth
-            .getBalance(this.id, 'latest')
-            .then((balance: string): number => {
-                return new BigNumber(balance).toNumber()
-            })
-        */
-        return 0
+    public async getEtherBalance(): Promise<string> {
+        const result = await this.web3.eth.getBalance(this.id, 'latest')
+        return this.web3.utils.fromWei(result)
     }
 }
