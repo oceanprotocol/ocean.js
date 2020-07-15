@@ -1,6 +1,6 @@
 {
   "name": "@oceanprotocol/lib",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "JavaScript client library for Ocean Protocol",
   "main": "./dist/node/lib.js",
   "typings": "./dist/node/lib.d.ts",
