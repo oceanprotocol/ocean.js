@@ -33,6 +33,12 @@ export class Config {
     public web3Provider?: any
 
     /**
+     * Ocean Token address
+     * @type {string}
+     */
+    public oceanTokenAddress?: string
+
+    /**
      * Factory address
      * @type {string}
      */
