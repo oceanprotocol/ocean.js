@@ -14,7 +14,7 @@ const web3 = new Web3('http://127.0.0.1:8545')
 const factory = require('@oceanprotocol/contracts/artifacts/development/Factory.json')
 const datatokensTemplate = require('@oceanprotocol/contracts/artifacts/development/DataTokenTemplate.json')
 
-describe('Marketplace flow', () => {
+describe('Compute flow', () => {
     let owner
     let bob
     let ddo
