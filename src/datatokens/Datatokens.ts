@@ -1,5 +1,5 @@
 const defaultFactoryABI = require('@oceanprotocol/contracts/artifacts/development/Factory.json')
-const defaultDatatokensABI = require('@oceanprotocol/contracts/artifacts/development/DataTokenTemplate.json')
+const defaultFactoryABI = require('@oceanprotocol/contracts/artifacts/development/DTFactory.json')
 
 /**
  * Provides a interface to DataTokens
