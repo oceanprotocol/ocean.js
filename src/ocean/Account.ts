@@ -79,7 +79,7 @@ export default class Account extends Instantiable {
      * Balance of Any Token (converted from wei).
      * @return {Promise<string>}
      */
-    public async getTokenBalance(TokenAdress: string): Promise<number> {
+    public async getTokenBalance(TokenAdress: string): Promise<string> {
         if (TokenAdress === null) return null
         const minABI = [
             {
@@ -117,10 +117,10 @@ export default class Account extends Instantiable {
     }
 
     /**
-     * Balance of Ocean Token.
+     * Balance of Ocean Token. (converted from wei).
      * @return {Promise<string>}
      */
-    public async getOceanBalance(): Promise<number> {
+    public async getOceanBalance(): Promise<string> {
         return this.getTokenBalance(this.config.oceanTokenAddress)
     }
 
@@ -134,17 +134,11 @@ export default class Account extends Instantiable {
     }
 
     /**
-     * Balance of Ether.
-     * @return {Promise<number>}
+     * Balance of Ether.(converted from wei).
+     * @return {Promise<string>}
      */
-    public async getEtherBalance(): Promise<number> {
-        // TO DO
-        /* return this.web3.eth
-            .getBalance(this.id, 'latest')
-            .then((balance: string): number => {
-                return new BigNumber(balance).toNumber()
-            })
-        */
-        return 0
+    public async getEtherBalance(): Promise<string> {
+        const result = await this.web3.eth.getBalance(this.id, 'latest')
+        return this.web3.utils.fromWei(result)
     }
 }
