@@ -6,7 +6,7 @@ import { assert } from 'console'
 
 const Web3 = require('web3')
 const web3 = new Web3('http://127.0.0.1:8545')
-const factory = require('@oceanprotocol/contracts/artifacts/development/Factory.json')
+const factory = require('@oceanprotocol/contracts/artifacts/development/DTFactory.json')
 const datatokensTemplate = require('@oceanprotocol/contracts/artifacts/development/DataTokenTemplate.json')
 
 describe('Marketplace flow', () => {
