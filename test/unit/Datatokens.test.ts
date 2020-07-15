@@ -3,7 +3,7 @@ import { TestContractHandler } from '../TestContractHandler'
 import { DataTokens } from '../../src/datatokens/Datatokens'
 
 const Web3 = require('web3')
-const factory = require('@oceanprotocol/contracts/artifacts/development/Factory.json')
+const factory = require('@oceanprotocol/contracts/artifacts/development/DTFactory.json')
 const datatokensTemplate = require('@oceanprotocol/contracts/artifacts/development/DataTokenTemplate.json')
 
 const web3 = new Web3('http://127.0.0.1:8545')
