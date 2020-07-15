@@ -20,8 +20,8 @@ export class DataTokens {
      */
     constructor(factoryAddress: string, factoryABI: any, datatokensABI: any, web3: any) {
         this.factoryAddress = factoryAddress
-        this.factoryABI = factoryABI || defaultFactoryABI
-        this.datatokensABI = datatokensABI || defaultDatatokensABI
+        this.factoryABI = factoryABI || defaultFactoryABI.abi
+        this.datatokensABI = datatokensABI || defaultDatatokensABI.abi
         this.web3 = web3
     }
 
