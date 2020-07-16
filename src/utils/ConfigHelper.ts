@@ -14,6 +14,12 @@ const configs = [
         oceanTokenAddress: '0x012578f9381e876A9E2a9111Dfd436FF91A451ae'
     },
     {
+        network: 'rinkeby',
+        url: 'https://rinkeby.infura.io/v3/YOUR-PROJECT-ID',
+        factoryAddress: '0xB9d406D24B310A7D821D0b782a36909e8c925471',
+        oceanTokenAddress: '0x8967BCF84170c91B0d24D4302C2376283b0B3a07'
+    },
+    {
         network: 'mainnet',
         url: 'https://mainnet.infura.io/v3/YOUR-PROJECT-ID',
         factoryAddress: '0x1234',
