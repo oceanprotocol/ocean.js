@@ -89,14 +89,12 @@ describe('Balancer flow', () => {
             )
             await OceanPoolContracts.getAccounts()
             owner = OceanPoolContracts.accounts[0]
-            console.log('Owner:' + owner)
+            
             await OceanPoolContracts.deployContracts(owner)
             OceanPoolFactoryAddress = OceanPoolContracts.factoryAddress
             assert(OceanPoolFactoryAddress !== null)
         })
-
-
-        it('Deploy SFactory', async () => {
+        it('Deploy Spool/SFactory', async () => {
             const SContracts = new BalancerContractHandler(
                 SFactory.abi,
                 SFactory.bytecode,
@@ -106,7 +104,7 @@ describe('Balancer flow', () => {
             )
             await SContracts.getAccounts()
             owner = SContracts.accounts[0]
-            console.log('Owner:' + owner)
+            
             await SContracts.SdeployContracts(owner)
             const SFactoryAddress = SContracts.factoryAddress
             assert(SFactoryAddress !== null)
