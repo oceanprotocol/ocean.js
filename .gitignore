@@ -9,3 +9,4 @@ src/**/*.js
 src/metadata\.json
 .idea
 .vscode
+.DS_Store

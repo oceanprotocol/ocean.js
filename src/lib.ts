@@ -11,7 +11,7 @@ import * as utils from './utils'
 
 // Exports
 export * from './ddo/DDO'
-export * from './ddo/interfaces/Metadata'
+export * from './ddo/interfaces'
 
 export { CreateProgressStep, OrderProgressStep } from './ocean/Assets'
 
