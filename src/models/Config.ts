@@ -9,6 +9,12 @@ export class Config {
     public nodeUri?: string
 
     /**
+     * Address of Provider.
+     * @type {string}
+     */
+    public providerAddress?: string
+
+    /**
      * Metadata Store URL.
      * @type {string}
      */
@@ -25,6 +31,12 @@ export class Config {
      * @type {any}
      */
     public web3Provider?: any
+
+    /**
+     * Ocean Token address
+     * @type {string}
+     */
+    public oceanTokenAddress?: string
 
     /**
      * Factory address

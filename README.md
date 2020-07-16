@@ -26,17 +26,13 @@ This is in alpha state and you can expect running into problems. If you run into
 
 This stripped-down flow shows the essence of Ocean. Just downloading, no metadata.
 
-[Go to simple flow](README_simple_flow.md)
+[Go to simple flow](docs/README_simple_flow.md)
 
 ## Quickstart: Marketplace Flow
 
 This batteries-included flow includes metadata, multiple services for one datatoken, and compute-to-data.
 
-[Go to marketplace flow](README_marketplace_flow.md)
-
-## For ocean-lib Developers
-
-[Go to ocean-lib-developers flow](README_ocean-lib-developers.md)
+[Go to marketplace flow](docs/README_marketplace_flow.md)
 
 ## License
 

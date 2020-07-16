@@ -5,7 +5,7 @@ import { Config } from '../../src/models/Config'
 
 const Web3 = require('web3')
 const web3 = new Web3('http://127.0.0.1:8545')
-const factory = require('@oceanprotocol/contracts/artifacts/development/Factory.json')
+const factory = require('@oceanprotocol/contracts/artifacts/development/DTFactory.json')
 const datatokensTemplate = require('@oceanprotocol/contracts/artifacts/development/DataTokenTemplate.json')
 
 describe('Simple flow', () => {
@@ -16,8 +16,8 @@ describe('Simple flow', () => {
     let datatoken
     let tokenAddress
     let transactionId
-    const tokenAmount = 100
-    const transferAmount = 1
+    const tokenAmount = '100'
+    const transferAmount = '1'
     const blob = 'http://localhost:8030/api/v1/services/consume'
     describe('#test', () => {
         it('Initialize Ocean contracts v3', async () => {

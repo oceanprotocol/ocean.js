@@ -6,7 +6,7 @@ import { assert } from 'console'
 
 const Web3 = require('web3')
 const web3 = new Web3('http://127.0.0.1:8545')
-const factory = require('@oceanprotocol/contracts/artifacts/development/Factory.json')
+const factory = require('@oceanprotocol/contracts/artifacts/development/DTFactory.json')
 const datatokensTemplate = require('@oceanprotocol/contracts/artifacts/development/DataTokenTemplate.json')
 
 describe('Marketplace flow', () => {
@@ -26,10 +26,10 @@ describe('Marketplace flow', () => {
     let data
     let blob
 
-    const marketplaceAllowance = 20
-    const tokenAmount = 100
+    const marketplaceAllowance = '20'
+    const tokenAmount = '100'
 
-    describe('#test', () => {
+    describe('#MarketplaceDownloadFlow-Test', () => {
         it('Initialize Ocean contracts v3', async () => {
             contracts = new TestContractHandler(
                 factory.abi,
@@ -84,7 +84,7 @@ describe('Marketplace flow', () => {
         })
 
         it('Alice publishes a dataset', async () => {
-            price = 10 // in datatoken
+            price = datatoken.toWei('10') // in datatoken
             const publishedDate = new Date(Date.now()).toISOString().split('.')[0] + 'Z'
             const timeout = 0
             service1 = await ocean.assets.createAccessServiceAttributes(
@@ -146,11 +146,11 @@ describe('Marketplace flow', () => {
         it('Marketplace posts asset for sale', async () => {
             accessService = await ocean.assets.getServiceByType(ddo.id, 'access')
             price = 20
-            assert(accessService.attributes.main.cost * price === 200)
+            assert(accessService.attributes.main.cost * price === datatoken.toWei('200'))
         })
 
         it('Bob gets datatokens', async () => {
-            const dTamount = 20
+            const dTamount = '20'
             await datatoken
                 .transfer(tokenAddress, bob.getId(), dTamount, alice.getId())
                 .then(async () => {
@@ -164,10 +164,10 @@ describe('Marketplace flow', () => {
                 .order(ddo.id, accessService.type, bob.getId())
                 .then(async (res: string) => {
                     res = JSON.parse(res)
-                    return await datatoken.transfer(
+                    return await datatoken.transferWei(
                         res['dataToken'],
                         res['to'],
-                        res['numTokens'],
+                        String(res['numTokens']),
                         res['from']
                     )
                 })

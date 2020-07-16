@@ -53,13 +53,6 @@ export interface MetadataMain {
     license: string
 
     /**
-     * Price of the asset in vodka (attoOCEAN). It must be an integer encoded as a string.
-     * @type {string}
-     * @example "1000000000000000000"
-     */
-    price: string
-
-    /**
      * Array of File objects including the encrypted file urls and some additional information.
      * @type {File[]}
      */

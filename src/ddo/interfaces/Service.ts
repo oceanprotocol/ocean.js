@@ -19,7 +19,7 @@ export interface ServiceAccessAttributes extends ServiceCommonAttributes {
         creator: string
         name: string
         datePublished: string
-        cost: number
+        cost: string
         timeout: number
     }
 }
@@ -33,7 +33,7 @@ export interface ServiceComputeAttributes extends ServiceCommonAttributes {
     main: {
         creator: string
         datePublished: string
-        price: string
+        cost: string
         timeout: number
         provider?: ServiceComputeProvider
         name: string
@@ -57,7 +57,7 @@ export interface ServiceComputeProvider {
         supportedServers: {
             serverId: string
             serverType: string
-            price: string
+            cost: string
             cpu: string
             gpu: string
             memory: string
@@ -74,13 +74,11 @@ export interface ServiceMetadata extends ServiceCommon {
 
 export interface ServiceAccess extends ServiceCommon {
     type: 'access'
-    templateId?: string
     attributes: ServiceAccessAttributes
 }
 
 export interface ServiceCompute extends ServiceCommon {
     type: 'compute'
-    templateId?: string
     attributes: ServiceComputeAttributes
 }
 
