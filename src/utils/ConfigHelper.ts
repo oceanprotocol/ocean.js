@@ -3,6 +3,8 @@ export interface ConfigHelper {
     url: string
     factoryAddress: string
     oceanTokenAddress: string
+    metadataStoreUri?: string
+    providerUri?: string
 }
 
 const configs = [
@@ -17,7 +19,9 @@ const configs = [
         network: 'rinkeby',
         url: 'https://rinkeby.infura.io/v3/YOUR-PROJECT-ID',
         factoryAddress: '0xB9d406D24B310A7D821D0b782a36909e8c925471',
-        oceanTokenAddress: '0x8967BCF84170c91B0d24D4302C2376283b0B3a07'
+        oceanTokenAddress: '0x8967BCF84170c91B0d24D4302C2376283b0B3a07',
+        metadataStoreUri: 'https://aquarius.rinkeby.v3.dev-ocean.com/',
+        providerUri: 'https://provider.rinkeby.v3.dev-ocean.com/',
     },
     {
         network: 'mainnet',
@@ -35,12 +39,17 @@ export class ConfigHelper {
         confighelp.url = null
         confighelp.network = network
         confighelp.oceanTokenAddress = null
+        confighelp.metadataStoreUri = null
+        confighelp.providerUri = null
+        
         const knownconfig = configs.find((c) => c.network === network)
         if (knownconfig) {
             confighelp.factoryAddress = knownconfig.factoryAddress
             confighelp.oceanTokenAddress = knownconfig.oceanTokenAddress
             confighelp.url = knownconfig.url
             confighelp.network = knownconfig.network
+            confighelp.metadataStoreUri = knownconfig.metadataStoreUri
+            confighelp.providerUri = knownconfig.providerUri
         }
         return confighelp
     }
