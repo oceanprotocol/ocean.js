@@ -89,7 +89,7 @@ describe('Balancer flow', () => {
             )
             await OceanPoolContracts.getAccounts()
             owner = OceanPoolContracts.accounts[0]
-            
+
             await OceanPoolContracts.deployContracts(owner)
             OceanPoolFactoryAddress = OceanPoolContracts.factoryAddress
             assert(OceanPoolFactoryAddress !== null)
@@ -104,12 +104,11 @@ describe('Balancer flow', () => {
             )
             await SContracts.getAccounts()
             owner = SContracts.accounts[0]
-            
+
             await SContracts.SdeployContracts(owner)
             const SFactoryAddress = SContracts.factoryAddress
             assert(SFactoryAddress !== null)
         })
-
 
         it('should initialize OceanPool class', async () => {
             Pool = new OceanPool(

@@ -58,7 +58,7 @@ export class BalancerContractHandler {
     public async SdeployContracts(minter: string) {
         let estGas
         console.log('Trying to deploy SPool')
-        console.log("Bytecode size:"+this.poolBytecode.length)
+        console.log('Bytecode size:' + this.poolBytecode.length)
         estGas = await this.pool
             .deploy({
                 data: this.poolBytecode,
@@ -83,7 +83,7 @@ export class BalancerContractHandler {
             .then(function (contract) {
                 return contract.options.address
             })
-        console.log("Pool deployed:"+this.poolAddress)
+        console.log('Pool deployed:' + this.poolAddress)
         estGas = await this.factory
             .deploy({
                 data: this.factoryBytecode,
