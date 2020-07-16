@@ -9,12 +9,12 @@ import { Config } from '../../../src/models/Config'
 
 const Web3 = require('web3')
 const web3 = new Web3('http://127.0.0.1:8545')
-const factory = require('@oceanprotocol/contracts/artifacts/development/Factory.json')
+const factory = require('@oceanprotocol/contracts/artifacts/development/DTFactory.json')
 const datatokensTemplate = require('@oceanprotocol/contracts/artifacts/development/DataTokenTemplate.json')
 
 // this will be replaced by our SFactory/SPool
-const SFactory = require('../../../src/balancer/artifacts/SFactory.json')
-const SPool = require('../../../src/balancer/artifacts/SPool.json')
+const SFactory = require('@oceanprotocol/contracts/artifacts/development/SFactory.json')
+const SPool = require('@oceanprotocol/contracts/artifacts/development/SPool.json')
 
 const OceanPoolFactory = require('../../../src/balancer/artifacts/BFactory.json')
 const OceanPoolPool = require('../../../src/balancer/artifacts/BPool.json')
