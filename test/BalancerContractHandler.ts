@@ -64,7 +64,7 @@ export class BalancerContractHandler {
                 data: this.poolBytecode,
                 arguments: []
             })
-            .estimateGas({ from: minter, gas: 9007199254740991 }, function (err, estGas) {
+            .estimateGas(function (err, estGas) {
                 if (err) console.log('Pool deploy estimate gas: ' + err)
                 return estGas
             })
