@@ -1,7 +1,9 @@
-import fetch, { BodyInit, RequestInit, Response } from 'node-fetch'
+import { BodyInit, RequestInit, Response } from 'node-fetch'
 import fs from 'fs'
 import { Logger } from '../../utils'
 import save from 'save-file'
+
+const fetch = require('node-fetch')
 
 /**
  * Provides a common interface to web services.
