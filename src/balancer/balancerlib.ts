@@ -18,7 +18,7 @@ export interface TokensToAdd {
 export class PoolFactory {
     public GASLIMIT_DEFAULT: number = 5000000
     public web3: any = null
-    private FactoryABI: any
+    public FactoryABI: any
     public factoryAddress: any
     constructor(
         web3: any,
@@ -286,7 +286,7 @@ export class Pool extends PoolFactory {
      * @param {String} poolAddress
      * @return {Array}
      */
-    async getCurrentTokens(account: string, poolAddress: string): Promise<any> {
+    async getCurrentTokens(account: string, poolAddress: string): Promise<string[]> {
         const pool = new this.web3.eth.Contract(this.PoolABI, poolAddress, {
             from: account
         })

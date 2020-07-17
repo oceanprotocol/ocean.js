@@ -304,4 +304,24 @@ export class OceanPool extends Pool {
         await this.getDTAddress(account, poolAddress)
         return super.getSpotPrice(account, poolAddress, this.dtAddress, this.oceanAddress)
     }
+
+    public async searchPoolforDT(account: string, dtAddress: string): Promise<string[]> {
+        const result: string[] = []
+        const factory = new this.web3.eth.Contract(this.FactoryABI, this.factoryAddress, {
+            from: account
+        })
+        const events = await factory.getPastEvents('LOG_NEW_POOL', {
+            filter: {},
+            fromBlock: 0,
+            toBlock: 'latest'
+        })
+        for (let i = 0; i < events.length; i++) {
+            const constituents = await super.getCurrentTokens(
+                account,
+                events[i].returnValues[1]
+            )
+            if (constituents.includes(dtAddress)) result.push(events[i].returnValues[1])
+        }
+        return result
+    }
 }
