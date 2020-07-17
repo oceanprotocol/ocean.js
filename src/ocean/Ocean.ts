@@ -56,6 +56,13 @@ export class Ocean extends Instantiable {
             instanceConfig.config.datatokensABI,
             instanceConfig.config.web3Provider
         )
+        instance.pool = new OceanPool(
+            instanceConfig.config.web3Provider,
+            instanceConfig.config.pollFactoryABI,
+            instanceConfig.config.poolABI,
+            instanceConfig.config.poolFactoryAddress,
+            instanceConfig.config.oceanTokenAddress
+        )
         instance.versions = await Versions.getInstance(instanceConfig)
         instance.network = new Network()
         return instance
@@ -111,10 +118,16 @@ export class Ocean extends Instantiable {
     public compute: Compute
 
     /**
-     * Ocean secretStore submodule
-     * @type {OceanSecretStore}
+     * Ocean DataTokens submodule
+     * @type {DataTokens}
      */
     public datatokens: DataTokens
+
+    /**
+     * Ocean Pools submodule
+     * @type {OceanPool}
+     */
+    public pool: OceanPool
 
     /**
      * Ocean tokens submodule

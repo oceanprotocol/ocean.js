@@ -70,9 +70,9 @@ export class OceanPool extends Pool {
      * @param {String} poolAddress
      * @return {string}
      */
-    public async getDTAddress(account: string, poolAddress: string): Promise<string>{
+    public async getDTAddress(account: string, poolAddress: string): Promise<string> {
         this.dtAddress = null
-        const tokens = await this.getCurrentTokens(account,poolAddress)
+        const tokens = await this.getCurrentTokens(account, poolAddress)
         let token
         for (token of tokens) {
             if (token !== this.oceanAddress) this.dtAddress = token
