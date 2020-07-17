@@ -395,7 +395,6 @@ export class Pool extends PoolFactory {
         poolAddress: string,
         token: string
     ): Promise<string> {
-        console.log('getReserve for token:' + token)
         const pool = new this.web3.eth.Contract(this.PoolABI, poolAddress, {
             from: account
         })

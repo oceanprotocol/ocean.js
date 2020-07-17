@@ -38,7 +38,6 @@ export class BalancerContractHandler {
                 if (err) console.log('DeployContracts: ' + err)
                 return estGas
             })
-        console.log('estGas:' + estGas)
         // deploy the contract and get it's address
         this.factoryAddress = await this.factory
             .deploy({

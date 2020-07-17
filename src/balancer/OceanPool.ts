@@ -306,7 +306,7 @@ export class OceanPool extends Pool {
     }
 
     /**
-     * Search all pools that has DT in his composition
+     * Search all pools that have DT in their composition
      * @param {String} account
      * @param {String} dtAddress
      * @return {String[]}
