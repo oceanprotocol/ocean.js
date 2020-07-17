@@ -15,37 +15,33 @@ export interface TokensToAdd {
     weight: string
 }
 
-export class BalancerFactory {
+export class PoolFactory {
     public GASLIMIT_DEFAULT: number = 5000000
     public web3: any = null
-    public account: string = null
     private FactoryABI: any
     public factoryAddress: any
     constructor(
         web3: any,
-        account: string,
         FactoryABI: any = null,
-        factoryAddress: string = null
+        factoryAddress: string = null,
+        gaslimit?: number
     ) {
         this.web3 = web3
-        this.account = account
+
         if (FactoryABI) this.FactoryABI = FactoryABI
         else this.FactoryABI = jsonFactoryABI.abi
         if (factoryAddress) {
             this.factoryAddress = factoryAddress
         }
+        if (gaslimit) this.GASLIMIT_DEFAULT = gaslimit
     }
 
     /**
      * Creates a new pool
      */
-    async newPool(): Promise<string> {
+    async createPool(account: string): Promise<string> {
         if (this.web3 == null) {
             console.error('Web3 object is null')
-            return null
-        }
-        if (this.account == null) {
-            console.error('Account is null')
             return null
         }
         if (this.factoryAddress == null) {
@@ -53,11 +49,11 @@ export class BalancerFactory {
             return null
         }
         const factory = new this.web3.eth.Contract(this.FactoryABI, this.factoryAddress, {
-            from: this.account
+            from: account
         })
         const transactiondata = await factory.methods
             .newBPool()
-            .send({ from: this.account, gas: this.GASLIMIT_DEFAULT })
+            .send({ from: account, gas: this.GASLIMIT_DEFAULT })
         let pooladdress = null
         try {
             pooladdress = transactiondata.events.LOG_NEW_POOL.returnValues[1]
@@ -68,19 +64,17 @@ export class BalancerFactory {
     }
 }
 
-export class BalancerPool extends BalancerFactory {
+export class Pool extends PoolFactory {
     private PoolABI: any
-    private pool: any = null
-    public poolAddress: string = null
 
     constructor(
         web3: any,
-        account: string,
         FactoryABI: any = null,
         PoolABI: any = null,
-        factoryAddress: string = null
+        factoryAddress: string = null,
+        gaslimit?: number
     ) {
-        super(web3, account, FactoryABI, factoryAddress)
+        super(web3, FactoryABI, factoryAddress, gaslimit)
         if (PoolABI) this.PoolABI = PoolABI
         else this.PoolABI = jsonPoolABI.abi
     }
@@ -88,50 +82,24 @@ export class BalancerPool extends BalancerFactory {
     /**
      * Creates a new pool
      */
-    async newPool(): Promise<string> {
-        const pooladdress = await super.newPool()
-        this.poolAddress = pooladdress
-        this.pool = new this.web3.eth.Contract(this.PoolABI, pooladdress, {
-            from: this.account
-        })
+    async createPool(account: string): Promise<string> {
+        const pooladdress = await super.createPool(account)
         return pooladdress
     }
 
     /**
-     * Loads a new pool
-     */
-    async loadPool(address: string): Promise<any> {
-        if (this.web3 == null) {
-            console.error('Web3 object is null')
-            return null
-        }
-        if (this.account == null) {
-            console.error('Account is null')
-            return null
-        }
-        if (this.factoryAddress == null) {
-            console.error('Cannot init. Maybe wrong network?')
-            return null
-        }
-        try {
-            this.pool = new this.web3.eth.Contract(this.PoolABI, address, {
-                from: this.account
-            })
-            this.poolAddress = address
-            return address
-        } catch (e) {
-            console.error(e)
-            return null
-        }
-    }
-
-    /**
      * Approve spender to spent amount tokens
+     * @param {String} account
      * @param {String} tokenAddress
      * @param {String} spender
      * @param {String} amount  (always expressed as wei)
      */
-    async approve(tokenAddress: string, spender: string, amount: string): Promise<any> {
+    async approve(
+        account: string,
+        tokenAddress: string,
+        spender: string,
+        amount: string
+    ): Promise<any> {
         const minABI = [
             {
                 constant: false,
@@ -158,25 +126,26 @@ export class BalancerPool extends BalancerFactory {
             }
         ]
         const token = new this.web3.eth.Contract(minABI, tokenAddress, {
-            from: this.account
+            from: account
         })
         let result = null
         try {
             result = await token.methods
                 .approve(spender, amount)
-                .send({ from: this.account, gas: this.GASLIMIT_DEFAULT })
+                .send({ from: account, gas: this.GASLIMIT_DEFAULT })
         } catch (e) {
             console.error(e)
         }
         return result
     }
 
-    async sharesBalance(address: string): Promise<any> {
-        if (this.pool == null) {
-            console.error('BPool not initialiez. Maybe you missed newPool or loadPool ?')
-            return null
-        }
-        const tokenAddress = this.poolAddress
+    /**
+     * Get Pool shares 
+     * @param {String} account
+     * @param {String} poolAddress
+     
+     */
+    async sharesBalance(account: string, poolAddress: string): Promise<any> {
         const minABI = [
             {
                 constant: true,
@@ -198,15 +167,15 @@ export class BalancerPool extends BalancerFactory {
                 type: 'function'
             }
         ]
-        const token = new this.web3.eth.Contract(minABI, tokenAddress, {
-            from: this.account
+        const token = new this.web3.eth.Contract(minABI, poolAddress, {
+            from: account
         })
         let result = null
         try {
             result = this.web3.utils.fromWei(
                 await token.methods
-                    .balanceOf(address)
-                    .call({ from: this.account, gas: this.GASLIMIT_DEFAULT })
+                    .balanceOf(account)
+                    .call({ from: account, gas: this.GASLIMIT_DEFAULT })
             )
         } catch (e) {
             console.error(e)
@@ -216,29 +185,36 @@ export class BalancerPool extends BalancerFactory {
 
     /**
      * Adds tokens to pool
+     * @param {String} account
+     * @param {String} poolAddress
      * @param {Array} tokens Array of token object { address,amount,weight}
      */
-    async addToPool(tokens: TokensToAdd[]): Promise<void> {
-        if (this.pool == null) {
-            console.error('BPool not initialiez. Maybe you missed newPool or loadPool ?')
-            return null
-        }
+    async addToPool(
+        account: string,
+        poolAddress: string,
+        tokens: TokensToAdd[]
+    ): Promise<void> {
+        const pool = new this.web3.eth.Contract(this.PoolABI, poolAddress, {
+            from: account
+        })
+
         let token
         for (token of tokens) {
             try {
                 // approve spending first
                 await this.approve(
+                    account,
                     token.address,
-                    this.poolAddress,
+                    poolAddress,
                     this.web3.utils.toWei(token.amount)
                 )
-                await this.pool.methods
+                await pool.methods
                     .bind(
                         token.address,
                         this.web3.utils.toWei(token.amount),
                         this.web3.utils.toWei(token.weight)
                     )
-                    .send({ from: this.account, gas: this.GASLIMIT_DEFAULT })
+                    .send({ from: account, gas: this.GASLIMIT_DEFAULT })
             } catch (e) {
                 console.error(e)
             }
@@ -247,18 +223,19 @@ export class BalancerPool extends BalancerFactory {
 
     /**
      * Set pool fee
+     * @param {String} account
+     * @param {String} poolAddress
      * @param {String} fee (will be converted to wei)
      */
-    async setSwapFee(fee: string): Promise<any> {
-        if (this.pool == null) {
-            console.error('BPool not initialiez. Maybe you missed newPool or loadPool ?')
-            return null
-        }
+    async setSwapFee(account: string, poolAddress: string, fee: string): Promise<any> {
+        const pool = new this.web3.eth.Contract(this.PoolABI, poolAddress, {
+            from: account
+        })
         let result = null
         try {
-            result = await this.pool.methods
+            result = await pool.methods
                 .setSwapFee(this.web3.utils.toWei(fee))
-                .send({ from: this.account, gas: this.GASLIMIT_DEFAULT })
+                .send({ from: account, gas: this.GASLIMIT_DEFAULT })
         } catch (e) {
             console.error(e)
         }
@@ -267,17 +244,18 @@ export class BalancerPool extends BalancerFactory {
 
     /**
      * Finalize a pool
+     * @param {String} account
+     * @param {String} poolAddress
      */
-    async finalize(): Promise<any> {
-        if (this.pool == null) {
-            console.error('BPool not initialiez. Maybe you missed newPool or loadPool ?')
-            return null
-        }
+    async finalize(account: string, poolAddress: string): Promise<any> {
+        const pool = new this.web3.eth.Contract(this.PoolABI, poolAddress, {
+            from: account
+        })
         let result = null
         try {
-            result = await this.pool.methods
+            result = await pool.methods
                 .finalize()
-                .send({ from: this.account, gas: this.GASLIMIT_DEFAULT })
+                .send({ from: account, gas: this.GASLIMIT_DEFAULT })
         } catch (e) {
             console.error(e)
         }
@@ -286,15 +264,16 @@ export class BalancerPool extends BalancerFactory {
 
     /**
      * Get number of tokens composing this pool
+     * @param {String} account
+     * @param {String} poolAddress
      */
-    async getNumTokens(): Promise<any> {
-        if (this.pool == null) {
-            console.error('BPool not initialiez. Maybe you missed newPool or loadPool ?')
-            return null
-        }
+    async getNumTokens(account: string, poolAddress: string): Promise<any> {
+        const pool = new this.web3.eth.Contract(this.PoolABI, poolAddress, {
+            from: account
+        })
         let result = null
         try {
-            result = await this.pool.methods.getNumTokens().call()
+            result = await pool.methods.getNumTokens().call()
         } catch (e) {
             console.error(e)
         }
@@ -303,16 +282,17 @@ export class BalancerPool extends BalancerFactory {
 
     /**
      * Get tokens composing this pool
+     * @param {String} account
+     * @param {String} poolAddress
      * @return {Array}
      */
-    async getCurrentTokens(): Promise<any> {
-        if (this.pool == null) {
-            console.error('BPool not initialiez. Maybe you missed newPool or loadPool ?')
-            return null
-        }
+    async getCurrentTokens(account: string, poolAddress: string): Promise<any> {
+        const pool = new this.web3.eth.Contract(this.PoolABI, poolAddress, {
+            from: account
+        })
         let result = null
         try {
-            result = await this.pool.methods.getCurrentTokens().call()
+            result = await pool.methods.getCurrentTokens().call()
         } catch (e) {
             console.error(e)
         }
@@ -321,16 +301,17 @@ export class BalancerPool extends BalancerFactory {
 
     /**
      * Get the final tokens composing this pool
+     * @param {String} account
+     * @param {String} poolAddress
      * @return {Array}
      */
-    async getFinalTokens(): Promise<any> {
-        if (this.pool == null) {
-            console.error('BPool not initialiez. Maybe you missed newPool or loadPool ?')
-            return null
-        }
+    async getFinalTokens(account: string, poolAddress: string): Promise<any> {
+        const pool = new this.web3.eth.Contract(this.PoolABI, poolAddress, {
+            from: account
+        })
         let result = null
         try {
-            result = await this.pool.methods.getFinalTokens().call()
+            result = await pool.methods.getFinalTokens().call()
         } catch (e) {
             console.error(e)
         }
@@ -339,16 +320,17 @@ export class BalancerPool extends BalancerFactory {
 
     /**
      * Get controller address of this pool
+     * @param {String} account
+     * @param {String} poolAddress
      * @return {String}
      */
-    async getController(): Promise<any> {
-        if (this.pool == null) {
-            console.error('BPool not initialiez. Maybe you missed newPool or loadPool ?')
-            return null
-        }
+    async getController(account: string, poolAddress: string): Promise<any> {
+        const pool = new this.web3.eth.Contract(this.PoolABI, poolAddress, {
+            from: account
+        })
         let result = null
         try {
-            result = await this.pool.methods.getController().call()
+            result = await pool.methods.getController().call()
         } catch (e) {
             console.error(e)
         }
@@ -357,19 +339,24 @@ export class BalancerPool extends BalancerFactory {
 
     /**
      * Set controller address of this pool
-     * @param {String} address
+     * @param {String} account
+     * @param {String} poolAddress
+     * @param {String} controllerAddress
      * @return {String}
      */
-    async setController(address: string): Promise<any> {
-        if (this.pool == null) {
-            console.error('BPool not initialiez. Maybe you missed newPool or loadPool ?')
-            return null
-        }
+    async setController(
+        account: string,
+        poolAddress: string,
+        controllerAddress: string
+    ): Promise<any> {
+        const pool = new this.web3.eth.Contract(this.PoolABI, poolAddress, {
+            from: account
+        })
         let result = null
         try {
-            result = await this.pool.methods
-                .setController(address)
-                .send({ from: this.account, gas: this.GASLIMIT_DEFAULT })
+            result = await pool.methods
+                .setController(controllerAddress)
+                .send({ from: account, gas: this.GASLIMIT_DEFAULT })
         } catch (e) {
             console.error(e)
         }
@@ -378,17 +365,18 @@ export class BalancerPool extends BalancerFactory {
 
     /**
      * Get if a token is bounded to a pool
+     * @param {String} account
+     * @param {String} poolAddress
      * @param {String} token  Address of the token
      * @return {Boolean}
      */
-    async isBound(token: string): Promise<any> {
-        if (this.pool == null) {
-            console.error('BPool not initialiez. Maybe you missed newPool or loadPool ?')
-            return null
-        }
+    async isBound(account: string, poolAddress: string, token: string): Promise<any> {
+        const pool = new this.web3.eth.Contract(this.PoolABI, poolAddress, {
+            from: account
+        })
         let result = null
         try {
-            result = await this.pool.methods.isBound(token).call()
+            result = await pool.methods.isBound(token).call()
         } catch (e) {
             console.error(e)
         }
@@ -397,17 +385,23 @@ export class BalancerPool extends BalancerFactory {
 
     /**
      * Get how many tokens are in the pool
+     * @param {String} account
+     * @param {String} poolAddress
      * @param {String} token  Address of the token
      * @return {Boolean}
      */
-    async getBalance(token: string): Promise<any> {
-        if (this.pool == null) {
-            console.error('BPool not initialiez. Maybe you missed newPool or loadPool ?')
-            return null
-        }
+    async getReserve(
+        account: string,
+        poolAddress: string,
+        token: string
+    ): Promise<string> {
+        console.log('getReserve for token:' + token)
+        const pool = new this.web3.eth.Contract(this.PoolABI, poolAddress, {
+            from: account
+        })
         let amount = null
         try {
-            const result = await this.pool.methods.getBalance(token).call()
+            const result = await pool.methods.getBalance(token).call()
             amount = this.web3.utils.fromWei(result)
         } catch (e) {
             console.error(e)
@@ -417,16 +411,17 @@ export class BalancerPool extends BalancerFactory {
 
     /**
      * Get if a pool is finalized
+     * @param {String} account
+     * @param {String} poolAddress
      * @return {Boolean}
      */
-    async isFinalized(): Promise<any> {
-        if (this.pool == null) {
-            console.error('BPool not initialiez. Maybe you missed newPool or loadPool ?')
-            return null
-        }
+    async isFinalized(account: string, poolAddress: string): Promise<any> {
+        const pool = new this.web3.eth.Contract(this.PoolABI, poolAddress, {
+            from: account
+        })
         let result = null
         try {
-            result = await this.pool.methods.isFinalized().call()
+            result = await pool.methods.isFinalized().call()
         } catch (e) {
             console.error(e)
         }
@@ -435,16 +430,17 @@ export class BalancerPool extends BalancerFactory {
 
     /**
      * Get pool fee
-     * @return {String}
+     * @param {String} account
+     * @param {String} poolAddress
+     * @return {String} Swap fee in wei
      */
-    async getSwapFee(): Promise<any> {
-        if (this.pool == null) {
-            console.error('BPool not initialiez. Maybe you missed newPool or loadPool ?')
-            return null
-        }
+    async getSwapFee(account: string, poolAddress: string): Promise<string> {
+        const pool = new this.web3.eth.Contract(this.PoolABI, poolAddress, {
+            from: account
+        })
         let fee = null
         try {
-            const result = await this.pool.methods.getSwapFee().call()
+            const result = await pool.methods.getSwapFee().call()
             fee = this.web3.utils.fromWei(result)
         } catch (e) {
             console.error(e)
@@ -454,17 +450,22 @@ export class BalancerPool extends BalancerFactory {
 
     /**
      * The normalized weight of a token. The combined normalized weights of all tokens will sum up to 1. (Note: the actual sum may be 1 plus or minus a few wei due to division precision loss)
+     * @param {String} account
+     * @param {String} poolAddress
      * @param {String} token
      * @return {Number}
      */
-    async getNormalizedWeight(token: string): Promise<any> {
-        if (this.pool == null) {
-            console.error('BPool not initialiez. Maybe you missed newPool or loadPool ?')
-            return null
-        }
+    async getNormalizedWeight(
+        account: string,
+        poolAddress: string,
+        token: string
+    ): Promise<string> {
+        const pool = new this.web3.eth.Contract(this.PoolABI, poolAddress, {
+            from: account
+        })
         let weight = null
         try {
-            const result = await this.pool.methods.getNormalizedWeight(token).call()
+            const result = await pool.methods.getNormalizedWeight(token).call()
             weight = this.web3.utils.fromWei(result)
         } catch (e) {
             console.error(e)
@@ -474,17 +475,22 @@ export class BalancerPool extends BalancerFactory {
 
     /**
      * getDenormalizedWeight of a token in pool
+     * @param {String} account
+     * @param {String} poolAddress
      * @param {String} token
      * @return {Number}
      */
-    async getDenormalizedWeight(token: string): Promise<any> {
-        if (this.pool == null) {
-            console.error('BPool not initialiez. Maybe you missed newPool or loadPool ?')
-            return null
-        }
+    async getDenormalizedWeight(
+        account: string,
+        poolAddress: string,
+        token: string
+    ): Promise<string> {
+        const pool = new this.web3.eth.Contract(this.PoolABI, poolAddress, {
+            from: account
+        })
         let weight = null
         try {
-            const result = await this.pool.methods.getDenormalizedWeight(token).call()
+            const result = await pool.methods.getDenormalizedWeight(token).call()
             weight = this.web3.utils.fromWei(result)
         } catch (e) {
             console.error(e)
@@ -494,16 +500,20 @@ export class BalancerPool extends BalancerFactory {
 
     /**
      * getTotalDenormalizedWeight in pool
-     * @return {Number}
+     * @param {String} account
+     * @param {String} poolAddress
+     * @return {String}
      */
-    async getTotalDenormalizedWeight(): Promise<any> {
-        if (this.pool == null) {
-            console.error('BPool not initialiez. Maybe you missed newPool or loadPool ?')
-            return null
-        }
+    async getTotalDenormalizedWeight(
+        account: string,
+        poolAddress: string
+    ): Promise<string> {
+        const pool = new this.web3.eth.Contract(this.PoolABI, poolAddress, {
+            from: account
+        })
         let weight = null
         try {
-            const result = await this.pool.methods.getTotalDenormalizedWeight().call()
+            const result = await pool.methods.getTotalDenormalizedWeight().call()
             weight = this.web3.utils.fromWei(result)
         } catch (e) {
             console.error(e)
@@ -513,6 +523,8 @@ export class BalancerPool extends BalancerFactory {
 
     /**
      * swapExactAmountIn - Trades an exact tokenAmountIn of tokenIn taken from the caller by the pool, in exchange for at least minAmountOut of tokenOut given to the caller from the pool, with a maximum marginal price of maxPrice.         Returns (tokenAmountOut, spotPriceAfter), where tokenAmountOut is the amount of token that came out of the pool, and spotPriceAfter is the new marginal spot price, ie, the result of getSpotPrice after the call. (These values are what are limited by the arguments; you are guaranteed tokenAmountOut >= minAmountOut and spotPriceAfter <= maxPrice).
+     * @param {String} account
+     * @param {String} poolAddress
      * @param {String} tokenIn
      * @param {String} tokenAmountIn  will be converted to wei
      * @param {String} tokenOut
@@ -521,19 +533,20 @@ export class BalancerPool extends BalancerFactory {
      * @return {any}
      */
     async swapExactAmountIn(
+        account: string,
+        poolAddress: string,
         tokenIn: string,
         tokenAmountIn: string,
         tokenOut: string,
         minAmountOut: string,
         maxPrice: string
     ): Promise<any> {
-        if (this.pool == null) {
-            console.error('BPool not initialiez. Maybe you missed newPool or loadPool ?')
-            return null
-        }
+        const pool = new this.web3.eth.Contract(this.PoolABI, poolAddress, {
+            from: account
+        })
         let result = null
         try {
-            result = await this.pool.methods
+            result = await pool.methods
                 .swapExactAmountIn(
                     tokenIn,
                     this.web3.utils.toWei(tokenAmountIn),
@@ -541,7 +554,7 @@ export class BalancerPool extends BalancerFactory {
                     this.web3.utils.toWei(minAmountOut),
                     this.web3.utils.toWei(maxPrice)
                 )
-                .send({ from: this.account, gas: this.GASLIMIT_DEFAULT })
+                .send({ from: account, gas: this.GASLIMIT_DEFAULT })
         } catch (e) {
             console.error(e)
         }
@@ -550,6 +563,8 @@ export class BalancerPool extends BalancerFactory {
 
     /**
      * swapExactAmountOut
+     * @param {String} account
+     * @param {String} poolAddress
      * @param {String} tokenIn
      * @param {String} maxAmountIn  will be converted to wei
      * @param {String} tokenOut
@@ -558,19 +573,20 @@ export class BalancerPool extends BalancerFactory {
      * @return {any}
      */
     async swapExactAmountOut(
+        account: string,
+        poolAddress: string,
         tokenIn: string,
         maxAmountIn: string,
         tokenOut: string,
         minAmountOut: string,
         maxPrice: string
     ): Promise<any> {
-        if (this.pool == null) {
-            console.error('BPool not initialiez. Maybe you missed newPool or loadPool ?')
-            return null
-        }
+        const pool = new this.web3.eth.Contract(this.PoolABI, poolAddress, {
+            from: account
+        })
         let result = null
         try {
-            result = await this.pool.methods
+            result = await pool.methods
                 .swapExactAmountOut(
                     tokenIn,
                     this.web3.utils.toWei(maxAmountIn),
@@ -578,7 +594,7 @@ export class BalancerPool extends BalancerFactory {
                     this.web3.utils.toWei(minAmountOut),
                     this.web3.utils.toWei(maxPrice)
                 )
-                .send({ from: this.account, gas: this.GASLIMIT_DEFAULT })
+                .send({ from: account, gas: this.GASLIMIT_DEFAULT })
         } catch (e) {
             console.error(e)
         }
@@ -587,15 +603,21 @@ export class BalancerPool extends BalancerFactory {
 
     /**
      * Join the pool, getting poolAmountOut pool tokens. This will pull some of each of the currently trading tokens in the pool, meaning you must have called approve for each token for this pool. These values are limited by the array of maxAmountsIn in the order of the pool tokens.
+     * @param {String} account
+     * @param {String} poolAddress
      * @param {String} poolAmountOut will be converted to wei
      * @param {String} maxAmountsIn  array holding maxAmount per each token, will be converted to wei
      * @return {any}
      */
-    async joinPool(poolAmountOut: string, maxAmountsIn: any): Promise<any> {
-        if (this.pool == null) {
-            console.error('BPool not initialiez. Maybe you missed newPool or loadPool ?')
-            return null
-        }
+    async joinPool(
+        account: string,
+        poolAddress: string,
+        poolAmountOut: string,
+        maxAmountsIn: any
+    ): Promise<any> {
+        const pool = new this.web3.eth.Contract(this.PoolABI, poolAddress, {
+            from: account
+        })
         const weiMaxAmountsIn = []
         let amount
         for (amount of maxAmountsIn) {
@@ -603,9 +625,9 @@ export class BalancerPool extends BalancerFactory {
         }
         let result = null
         try {
-            result = await this.pool.methods
+            result = await pool.methods
                 .joinPool(this.web3.utils.toWei(poolAmountOut), weiMaxAmountsIn)
-                .send({ from: this.account, gas: this.GASLIMIT_DEFAULT })
+                .send({ from: account, gas: this.GASLIMIT_DEFAULT })
         } catch (e) {
             console.error(e)
         }
@@ -614,15 +636,21 @@ export class BalancerPool extends BalancerFactory {
 
     /**
      * Exit the pool, paying poolAmountIn pool tokens and getting some of each of the currently trading tokens in return. These values are limited by the array of minAmountsOut in the order of the pool tokens.
+     * @param {String} account
+     * @param {String} poolAddress
      * @param {String} poolAmountIn will be converted to wei
      * @param {String} maxAmountsIn  array holding maxAmount per each token, will be converted to wei
      * @return {any}
      */
-    async exitPool(poolAmountIn: string, minAmountsOut: string): Promise<any> {
-        if (this.pool == null) {
-            console.error('BPool not initialiez. Maybe you missed newPool or loadPool ?')
-            return null
-        }
+    async exitPool(
+        account: string,
+        poolAddress: string,
+        poolAmountIn: string,
+        minAmountsOut: string
+    ): Promise<any> {
+        const pool = new this.web3.eth.Contract(this.PoolABI, poolAddress, {
+            from: account
+        })
         const weiMinAmountsOut = []
         let amount
         for (amount of minAmountsOut) {
@@ -630,9 +658,9 @@ export class BalancerPool extends BalancerFactory {
         }
         let result = null
         try {
-            result = await this.pool.methods
+            result = await pool.methods
                 .exitPool(this.web3.utils.toWei(poolAmountIn), weiMinAmountsOut)
-                .send({ from: this.account, gas: this.GASLIMIT_DEFAULT })
+                .send({ from: account, gas: this.GASLIMIT_DEFAULT })
         } catch (e) {
             console.error(e)
         }
@@ -641,29 +669,32 @@ export class BalancerPool extends BalancerFactory {
 
     /**
      * Pay tokenAmountIn of token tokenIn to join the pool, getting poolAmountOut of the pool shares.
+     * @param {String} account
+     * @param {String} poolAddress
      * @param {String} tokenIn
      * @param {String} tokenAmountIn will be converted to wei
      * @param {String} minPoolAmountOut  will be converted to wei
      * @return {any}
      */
     async joinswapExternAmountIn(
+        account: string,
+        poolAddress: string,
         tokenIn: string,
         tokenAmountIn: string,
         minPoolAmountOut: string
     ): Promise<any> {
-        if (this.pool == null) {
-            console.error('BPool not initialiez. Maybe you missed newPool or loadPool ?')
-            return null
-        }
+        const pool = new this.web3.eth.Contract(this.PoolABI, poolAddress, {
+            from: account
+        })
         let result = null
         try {
-            result = await this.pool.methods
+            result = await pool.methods
                 .joinswapExternAmountIn(
                     tokenIn,
                     this.web3.utils.toWei(tokenAmountIn),
                     this.web3.utils.toWei(minPoolAmountOut)
                 )
-                .send({ from: this.account, gas: this.GASLIMIT_DEFAULT })
+                .send({ from: account, gas: this.GASLIMIT_DEFAULT })
         } catch (e) {
             console.error(e)
         }
@@ -672,29 +703,32 @@ export class BalancerPool extends BalancerFactory {
 
     /**
      * Specify poolAmountOut pool shares that you want to get, and a token tokenIn to pay with. This costs tokenAmountIn tokens (these went into the pool).
+     * @param {String} account
+     * @param {String} poolAddress
      * @param {String} tokenIn
      * @param {String} poolAmountOut will be converted to wei
      * @param {String} maxAmountIn  will be converted to wei
      * @return {any}
      */
     async joinswapPoolAmountOut(
+        account: string,
+        poolAddress: string,
         tokenIn: string,
         poolAmountOut: string,
         maxAmountIn: string
     ): Promise<any> {
-        if (this.pool == null) {
-            console.error('BPool not initialiez. Maybe you missed newPool or loadPool ?')
-            return null
-        }
+        const pool = new this.web3.eth.Contract(this.PoolABI, poolAddress, {
+            from: account
+        })
         let result = null
         try {
-            result = await this.pool.methods
+            result = await pool.methods
                 .joinswapPoolAmountOut(
                     tokenIn,
                     this.web3.utils.toWei(poolAmountOut),
                     this.web3.utils.toWei(maxAmountIn)
                 )
-                .send({ from: this.account, gas: this.GASLIMIT_DEFAULT })
+                .send({ from: account, gas: this.GASLIMIT_DEFAULT })
         } catch (e) {
             console.error(e)
         }
@@ -703,29 +737,32 @@ export class BalancerPool extends BalancerFactory {
 
     /**
      * Pay poolAmountIn pool shares into the pool, getting minTokenAmountOut of the given token tokenOut out of the pool.
+     * @param {String} account
+     * @param {String} poolAddress
      * @param {String} tokenOut
      * @param {String} poolAmountIn will be converted to wei
      * @param {String} minTokenAmountOut  will be converted to wei
      * @return {any}
      */
     async exitswapPoolAmountIn(
+        account: string,
+        poolAddress: string,
         tokenOut: string,
         poolAmountIn: string,
         minTokenAmountOut: string
     ): Promise<any> {
-        if (this.pool == null) {
-            console.error('BPool not initialiez. Maybe you missed newPool or loadPool ?')
-            return null
-        }
+        const pool = new this.web3.eth.Contract(this.PoolABI, poolAddress, {
+            from: account
+        })
         let result = null
         try {
-            result = await this.pool.methods
+            result = await pool.methods
                 .exitswapPoolAmountIn(
                     tokenOut,
                     this.web3.utils.toWei(poolAmountIn),
                     this.web3.utils.toWei(minTokenAmountOut)
                 )
-                .send({ from: this.account, gas: this.GASLIMIT_DEFAULT })
+                .send({ from: account, gas: this.GASLIMIT_DEFAULT })
         } catch (e) {
             console.error(e)
         }
@@ -734,29 +771,32 @@ export class BalancerPool extends BalancerFactory {
 
     /**
      * Specify tokenAmountOut of token tokenOut that you want to get out of the pool. This costs poolAmountIn pool shares (these went into the pool).
+     * @param {String} account
+     * @param {String} poolAddress
      * @param {String} tokenOut
      * @param {String} tokenAmountOut will be converted to wei
      * @param {String} maxPoolAmountIn  will be converted to wei
      * @return {any}
      */
     async exitswapExternAmountOut(
+        account: string,
+        poolAddress: string,
         tokenOut: string,
         tokenAmountOut: string,
         maxPoolAmountIn: string
     ): Promise<any> {
-        if (this.pool == null) {
-            console.error('BPool not initialiez. Maybe you missed newPool or loadPool ?')
-            return null
-        }
+        const pool = new this.web3.eth.Contract(this.PoolABI, poolAddress, {
+            from: account
+        })
         let result = null
         try {
-            result = await this.pool.methods
+            result = await pool.methods
                 .exitswapExternAmountOut(
                     tokenOut,
                     this.web3.utils.toWei(tokenAmountOut),
                     this.web3.utils.toWei(maxPoolAmountIn)
                 )
-                .send({ from: this.account, gas: this.GASLIMIT_DEFAULT })
+                .send({ from: account, gas: this.GASLIMIT_DEFAULT })
         } catch (e) {
             console.error(e)
         }
@@ -765,18 +805,24 @@ export class BalancerPool extends BalancerFactory {
 
     /**
      * Get Spot Price of swaping tokenIn to tokenOut
+     * @param {String} account
+     * @param {String} poolAddress
      * @param {String} tokenIn
      * @param {String} tokenOut
      * @return {any}
      */
-    async getSpotPrice(tokenIn: string, tokenOut: string): Promise<any> {
-        if (this.pool == null) {
-            console.error('BPool not initialiez. Maybe you missed newPool or loadPool ?')
-            return null
-        }
+    async getSpotPrice(
+        account: string,
+        poolAddress: string,
+        tokenIn: string,
+        tokenOut: string
+    ): Promise<any> {
+        const pool = new this.web3.eth.Contract(this.PoolABI, poolAddress, {
+            from: account
+        })
         let price = null
         try {
-            const result = await this.pool.methods.getSpotPrice(tokenIn, tokenOut).call()
+            const result = await pool.methods.getSpotPrice(tokenIn, tokenOut).call()
             price = this.web3.utils.fromWei(result)
         } catch (e) {
             console.error(e)
@@ -786,18 +832,24 @@ export class BalancerPool extends BalancerFactory {
 
     /**
      * Get Spot Price of swaping tokenIn to tokenOut without fees
+     * @param {String} account
+     * @param {String} poolAddress
      * @param {String} tokenIn
      * @param {String} tokenOut
      * @return {any}
      */
-    async getSpotPriceSansFee(tokenIn: string, tokenOut: string): Promise<any> {
-        if (this.pool == null) {
-            console.error('BPool not initialiez. Maybe you missed newPool or loadPool ?')
-            return null
-        }
+    async getSpotPriceSansFee(
+        account: string,
+        poolAddress: string,
+        tokenIn: string,
+        tokenOut: string
+    ): Promise<any> {
+        const pool = new this.web3.eth.Contract(this.PoolABI, poolAddress, {
+            from: account
+        })
         let price = null
         try {
-            const result = await this.pool.methods
+            const result = await pool.methods
                 .getSpotPriceSansFee(tokenIn, tokenOut)
                 .call()
             price = this.web3.utils.fromWei(result)

@@ -18,6 +18,7 @@ import {
     generateIntantiableConfigFromConfig
 } from '../Instantiable.abstract'
 import { Compute } from './Compute'
+import { OceanPool } from '../balancer/OceanPool'
 
 /**
  * Main interface for Ocean Protocol.

@@ -25,20 +25,17 @@ describe('Balancer flow', () => {
     let Pool
     let OceanPoolContracts
     let oceandatatoken
-    let alicePool
     let alicePoolAddress
-    let bobPool
     let currentDtPrice
-    let bobPoolShares
     let owner
     let bob
     let alice
     let contracts
     let datatoken
     let tokenAddress
-    let transactionId
-    const tokenAmount = web3.utils.toWei('1000')
-    const transferAmount = web3.utils.toWei('200')
+    let consoleDebug: false
+    const tokenAmount = '1000'
+    const transferAmount = '200'
     const blob = 'http://localhost:8030/api/v1/services/consume'
     describe('#test', () => {
         it('Initialize Ocean contracts v3', async () => {
@@ -94,7 +91,7 @@ describe('Balancer flow', () => {
             OceanPoolFactoryAddress = OceanPoolContracts.factoryAddress
             assert(OceanPoolFactoryAddress !== null)
         })
-        it('Deploy Spool/SFactory', async () => {
+        /* it('Deploy Spool/SFactory', async () => {
             const SContracts = new BalancerContractHandler(
                 SFactory.abi,
                 SFactory.bytecode,
@@ -109,11 +106,11 @@ describe('Balancer flow', () => {
             const SFactoryAddress = SContracts.factoryAddress
             assert(SFactoryAddress !== null)
         })
+        */
 
         it('should initialize OceanPool class', async () => {
             Pool = new OceanPool(
                 web3,
-                alice,
                 OceanPoolFactory.abi,
                 OceanPoolPool.abi,
                 OceanPoolFactoryAddress,
@@ -135,126 +132,124 @@ describe('Balancer flow', () => {
                 transferAmount,
                 alice
             )
-            transactionId = ts.transactionHash
         })
         it('Alice creates a new OceanPool pool', async () => {
             /// new pool with total DT = 45 , dt weight=90% with swap fee 2%
-            alicePoolAddress = await Pool.createDTPool(tokenAddress, 45, 9, '0.02')
-            alicePool = await Pool.loadDTPool(alicePoolAddress)
-            assert(alicePool !== null)
+            alicePoolAddress = await Pool.createDTPool(alice, tokenAddress, 45, 9, '0.02')
         })
         it('Get pool information', async () => {
-            const currentTokens = await alicePool.getCurrentTokens()
+            const currentTokens = await Pool.getCurrentTokens(alice, alicePoolAddress)
             assert(currentTokens.length === 2)
             assert(currentTokens.includes(tokenAddress))
             assert(currentTokens.includes(oceanTokenAddress))
         })
         it('Get pool swap fee', async () => {
-            const currentSwapFee = await alicePool.getSwapFee()
+            const currentSwapFee = await Pool.getSwapFee(alice, alicePoolAddress)
             assert(currentSwapFee === '0.02')
         })
         it('Get dtPrice from the pool ', async () => {
-            currentDtPrice = await alicePool.getDTPrice()
+            currentDtPrice = await Pool.getDTPrice(alice, alicePoolAddress)
             assert(currentDtPrice > 0)
         })
         it('Get dtToken pool reserve ', async () => {
-            const currentDtReserve = await alicePool.getBalance(tokenAddress)
+            const currentDtReserve = await Pool.getDTReserve(alice, alicePoolAddress)
             assert(currentDtReserve > 0)
         })
         it('Get dtToken pool reserve ', async () => {
-            const currentOceanReserve = await alicePool.getOceanBalance()
+            const currentOceanReserve = await Pool.getOceanReserve(
+                alice,
+                alicePoolAddress
+            )
             assert(currentOceanReserve > 0)
         })
-        it("Bob should load Alice's pool ", async () => {
-            bobPool = new OceanPool(
-                web3,
-                bob,
-                OceanPoolFactory.abi,
-                OceanPoolPool.abi,
-                OceanPoolFactoryAddress,
-                oceanTokenAddress
-            )
-            await bobPool.loadDTPool(alicePoolAddress)
-        })
+
         it('Bob should buy a DT ', async () => {
             const maxPrice = parseFloat(currentDtPrice) * 2
-            await bobPool.buyDT('1', '2', String(maxPrice))
+            await Pool.buyDT(bob, alicePoolAddress, '1', '2', String(maxPrice))
             const bobDtBalance = await datatoken.balance(tokenAddress, bob)
             const bobOceanBalance = await datatoken.balance(oceanTokenAddress, bob)
             assert(bobDtBalance > 0)
             assert(bobOceanBalance > 0)
         })
         it('Bob should add DT liquidity to pool ', async () => {
-            const currentDtReserve = await alicePool.getBalance(tokenAddress)
-            const bobDtBalance = web3.utils.fromWei(
-                await datatoken.balance(tokenAddress, bob)
-            )
+            const currentDtReserve = await Pool.getDTReserve(bob, alicePoolAddress)
+            if (consoleDebug) console.log('currentDtReserve:' + currentDtReserve)
+            const bobDtBalance = await datatoken.balance(tokenAddress, bob)
+            if (consoleDebug) console.log('BOB DT Balance:' + bobDtBalance)
+            await Pool.addDTLiquidity(bob, alicePoolAddress, bobDtBalance)
 
-            await bobPool.addDTLiquidity(bobDtBalance)
+            const newbobDtBalance = await datatoken.balance(tokenAddress, bob)
 
-            const newbobDtBalance = web3.utils.fromWei(
-                await datatoken.balance(tokenAddress, bob)
-            )
+            const newDtReserve = await Pool.getDTReserve(bob, alicePoolAddress)
 
-            const newDtReserve = await alicePool.getBalance(tokenAddress)
-
-            const sharesBalance = await bobPool.sharesBalance(bob)
+            const sharesBalance = await Pool.sharesBalance(bob, alicePoolAddress)
+            if (consoleDebug) console.log('newDtReserve:' + newDtReserve)
+            if (consoleDebug) console.log('newbobDtBalance:' + newbobDtBalance)
+            if (consoleDebug) console.log('sharesBalance:' + sharesBalance)
             assert(parseFloat(newbobDtBalance) < parseFloat(bobDtBalance))
             assert(parseFloat(newDtReserve) > parseFloat(currentDtReserve))
             assert(parseFloat(sharesBalance) > 0)
         })
 
         it('Bob should remove DT liquidity from pool ', async () => {
-            const currentDtReserve = await alicePool.getBalance(tokenAddress)
-            const bobDtBalance = web3.utils.fromWei(
-                await datatoken.balance(tokenAddress, bob)
-            )
-            const poolShares = await bobPool.sharesBalance(bob)
-            await bobPool.removeDTLiquidity('0.75', poolShares)
+            const currentDtReserve = await Pool.getDTReserve(bob, alicePoolAddress)
+            if (consoleDebug) console.log('currentDtReserve:' + currentDtReserve)
+            const bobDtBalance = await datatoken.balance(tokenAddress, bob)
+            if (consoleDebug) console.log('bobDtBalance:' + bobDtBalance)
+            const poolShares = await Pool.sharesBalance(bob, alicePoolAddress)
+            if (consoleDebug) console.log('poolShares:' + poolShares)
+            await Pool.removeDTLiquidity(bob, alicePoolAddress, '0.75', poolShares)
 
-            const newDtReserve = await alicePool.getBalance(tokenAddress)
-            const newbobDtBalance = web3.utils.fromWei(
-                await datatoken.balance(tokenAddress, bob)
-            )
-            const newpoolShares = await bobPool.sharesBalance(bob)
+            const newDtReserve = await Pool.getDTReserve(bob, alicePoolAddress)
+            if (consoleDebug) console.log('newDtReserve:' + newDtReserve)
+            const newbobDtBalance = await datatoken.balance(tokenAddress, bob)
+            if (consoleDebug) console.log('newbobDtBalance:' + newbobDtBalance)
+            const newpoolShares = await Pool.sharesBalance(bob, alicePoolAddress)
+            if (consoleDebug) console.log('newpoolShares:' + newpoolShares)
             assert(parseFloat(newDtReserve) < parseFloat(currentDtReserve))
             assert(parseFloat(bobDtBalance) < parseFloat(newbobDtBalance))
             assert(parseFloat(poolShares) > parseFloat(newpoolShares))
         })
 
         it('Bob should add Ocean liquidity to pool ', async () => {
-            const currentDtReserve = await alicePool.getBalance(oceanTokenAddress)
-            const bobDtBalance = web3.utils.fromWei(
-                await datatoken.balance(oceanTokenAddress, bob)
-            )
+            const currentDtReserve = await Pool.getOceanReserve(bob, alicePoolAddress)
+            const bobDtBalance = await datatoken.balance(oceanTokenAddress, bob)
+            if (consoleDebug) console.log('currentDtReserve:' + currentDtReserve)
+            if (consoleDebug) console.log('bobDtBalance:' + bobDtBalance)
 
-            await bobPool.addOceanLiquidity('1')
+            await Pool.addOceanLiquidity(bob, alicePoolAddress, '1')
 
-            const newbobDtBalance = web3.utils.fromWei(
-                await datatoken.balance(oceanTokenAddress, bob)
-            )
+            const newbobDtBalance = await datatoken.balance(oceanTokenAddress, bob)
 
-            const newDtReserve = await alicePool.getBalance(oceanTokenAddress)
+            const newDtReserve = await Pool.getOceanReserve(bob, alicePoolAddress)
 
-            const sharesBalance = await bobPool.sharesBalance(bob)
+            const sharesBalance = await Pool.sharesBalance(bob, alicePoolAddress)
+            if (consoleDebug) console.log('newDtReserve:' + newDtReserve)
+            if (consoleDebug) console.log('newbobDtBalance:' + newbobDtBalance)
+            if (consoleDebug) console.log('sharesBalance:' + sharesBalance)
             assert(parseFloat(newbobDtBalance) < parseFloat(bobDtBalance))
             assert(parseFloat(newDtReserve) > parseFloat(currentDtReserve))
             assert(parseFloat(sharesBalance) > 0)
         })
 
         it('Bob should remove Ocean liquidity from pool ', async () => {
-            const currentDtReserve = await alicePool.getBalance(oceanTokenAddress)
-            const bobDtBalance = web3.utils.fromWei(
-                await datatoken.balance(oceanTokenAddress, bob)
-            )
-            const poolShares = await bobPool.sharesBalance(bob)
-            await bobPool.removeOceanLiquidity('0.75', poolShares)
+            const currentDtReserve = await Pool.getOceanReserve(bob, alicePoolAddress)
+            const bobDtBalance = await datatoken.balance(oceanTokenAddress, bob)
 
-            const newDtReserve = await alicePool.getBalance(oceanTokenAddress)
-            const newbobDtBalance = web3.utils.fromWei(
-                await datatoken.balance(oceanTokenAddress, bob)
-            )
-            const newpoolShares = await bobPool.sharesBalance(bob)
+            const poolShares = await Pool.sharesBalance(bob, alicePoolAddress)
+            if (consoleDebug) console.log('currentDtReserve:' + currentDtReserve)
+            if (consoleDebug) console.log('bobDtBalance:' + bobDtBalance)
+            if (consoleDebug) console.log('poolShares:' + poolShares)
+
+            await Pool.removeOceanLiquidity(bob, alicePoolAddress, '0.75', poolShares)
+
+            const newDtReserve = await Pool.getOceanReserve(bob, alicePoolAddress)
+            const newbobDtBalance = await datatoken.balance(oceanTokenAddress, bob)
+            const newpoolShares = await Pool.sharesBalance(bob, alicePoolAddress)
+
+            if (consoleDebug) console.log('newDtReserve:' + newDtReserve)
+            if (consoleDebug) console.log('newbobDtBalance:' + newbobDtBalance)
+            if (consoleDebug) console.log('newpoolShares:' + newpoolShares)
             assert(parseFloat(newDtReserve) < parseFloat(currentDtReserve))
             assert(parseFloat(bobDtBalance) < parseFloat(newbobDtBalance))
             assert(parseFloat(poolShares) > parseFloat(newpoolShares))
