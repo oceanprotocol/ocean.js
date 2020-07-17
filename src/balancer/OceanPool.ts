@@ -305,6 +305,12 @@ export class OceanPool extends Pool {
         return super.getSpotPrice(account, poolAddress, this.dtAddress, this.oceanAddress)
     }
 
+    /**
+     * Search all pools that has DT in his composition
+     * @param {String} account
+     * @param {String} dtAddress
+     * @return {String[]}
+     */
     public async searchPoolforDT(account: string, dtAddress: string): Promise<string[]> {
         const result: string[] = []
         const factory = new this.web3.eth.Contract(this.FactoryABI, this.factoryAddress, {
