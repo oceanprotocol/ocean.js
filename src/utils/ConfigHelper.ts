@@ -26,7 +26,7 @@ const configs = [
     {
         network: 'rinkeby',
         url: 'https://rinkeby.infura.io/v3/YOUR-PROJECT-ID',
-        factoryAddress: '0xB9d406D24B310A7D821D0b782a36909e8c925471',
+        factoryAddress: '0xcDfEe5D80041224cDCe9AE2334E85B3236385EA3',
         oceanTokenAddress: '0x8967BCF84170c91B0d24D4302C2376283b0B3a07',
         metadataStoreUri: 'https://aquarius.rinkeby.v3.dev-ocean.com/',
         providerUri: 'https://provider.rinkeby.v3.dev-ocean.com/'
