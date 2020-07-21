@@ -202,7 +202,7 @@ export class DataTokens {
         )
         const trxReceipt = await datatoken.methods
             .transferFrom(fromAddress, address, this.web3.utils.toWei(amount))
-            .send({ from: address})
+            .send({ from: address })
         return trxReceipt
     }
 
