@@ -2,10 +2,7 @@ import { assert } from 'chai'
 import { TestContractHandler } from '../../TestContractHandler'
 import { BalancerContractHandler } from '../../BalancerContractHandler'
 import { DataTokens } from '../../../src/datatokens/Datatokens'
-// import { Balancer } from '../../../src/balancer/balancerlib'
 import { OceanPool } from '../../../src/balancer/OceanPool'
-import { Ocean } from '../../../src/ocean/Ocean'
-import { Config } from '../../../src/models/Config'
 
 const Web3 = require('web3')
 const web3 = new Web3('http://127.0.0.1:8545')
@@ -20,7 +17,6 @@ describe('Balancer flow', () => {
     let oceanTokenAddress
     let OceanPoolFactoryAddress
     let Pool
-    let OceanPoolContracts
     let oceandatatoken
     let alicePoolAddress
     let currentDtPrice
