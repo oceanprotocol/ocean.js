@@ -14,7 +14,7 @@ const datatokensTemplate = require('@oceanprotocol/contracts/artifacts/developme
 
 // this will be replaced by our SFactory/SPool
 const OceanPoolFactory = require('@oceanprotocol/contracts/artifacts/development/SFactory.json')
-const OceanPoolPool = require('@oceanprotocol/contracts/artifacts/development/SPool.json')
+const OceanSPool = require('@oceanprotocol/contracts/artifacts/development/SPool.json')
 
 describe('Balancer flow', () => {
     let oceanTokenAddress
@@ -41,8 +41,8 @@ describe('Balancer flow', () => {
             const SContracts = new BalancerContractHandler(
                 OceanPoolFactory.abi,
                 OceanPoolFactory.bytecode,
-                OceanPoolPool.abi,
-                OceanPoolPool.bytecode,
+                OceanSPool.abi,
+                OceanSPool.bytecode,
                 web3
             )
             await SContracts.getAccounts()
@@ -94,7 +94,7 @@ describe('Balancer flow', () => {
             Pool = new OceanPool(
                 web3,
                 OceanPoolFactory.abi,
-                OceanPoolPool.abi,
+                OceanSPool.abi,
                 OceanPoolFactoryAddress,
                 oceanTokenAddress
             )
