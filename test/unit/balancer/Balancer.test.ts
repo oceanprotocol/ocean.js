@@ -13,11 +13,8 @@ const factory = require('@oceanprotocol/contracts/artifacts/development/DTFactor
 const datatokensTemplate = require('@oceanprotocol/contracts/artifacts/development/DataTokenTemplate.json')
 
 // this will be replaced by our SFactory/SPool
-const SFactory = require('@oceanprotocol/contracts/artifacts/development/SFactory.json')
-const SPool = require('@oceanprotocol/contracts/artifacts/development/SPool.json')
-
-const OceanPoolFactory = require('../../../src/balancer/artifacts/BFactory.json')
-const OceanPoolPool = require('../../../src/balancer/artifacts/BPool.json')
+const OceanPoolFactory = require('@oceanprotocol/contracts/artifacts/development/SFactory.json')
+const OceanPoolPool = require('@oceanprotocol/contracts/artifacts/development/SPool.json')
 
 describe('Balancer flow', () => {
     let oceanTokenAddress
@@ -39,7 +36,23 @@ describe('Balancer flow', () => {
     const transferAmount = '200'
     const blob = 'http://localhost:8030/api/v1/services/consume'
     describe('#test', () => {
-        it('Initialize Ocean contracts v3', async () => {
+        before(async () => {
+            // deploy SFactory
+            const SContracts = new BalancerContractHandler(
+                OceanPoolFactory.abi,
+                OceanPoolFactory.bytecode,
+                OceanPoolPool.abi,
+                OceanPoolPool.bytecode,
+                web3
+            )
+            await SContracts.getAccounts()
+            owner = SContracts.accounts[0]
+
+            await SContracts.SdeployContracts(owner)
+            OceanPoolFactoryAddress = SContracts.factoryAddress
+            assert(OceanPoolFactoryAddress !== null)
+
+            // deploy DT Factory
             contracts = new TestContractHandler(
                 factory.abi,
                 datatokensTemplate.abi,
@@ -52,8 +65,8 @@ describe('Balancer flow', () => {
             alice = contracts.accounts[1]
             bob = contracts.accounts[2]
             await contracts.deployContracts(owner)
-        })
-        it('should initialize datatokens class', async () => {
+
+            // initialize DataTokens
             datatoken = new DataTokens(
                 contracts.factoryAddress,
                 factory.abi,
@@ -77,38 +90,6 @@ describe('Balancer flow', () => {
             )
             oceanTokenAddress = await oceandatatoken.create(blob, alice)
         })
-        it('Deploy OceanPool Factory', async () => {
-            OceanPoolContracts = new BalancerContractHandler(
-                OceanPoolFactory.abi,
-                OceanPoolFactory.bytecode,
-                OceanPoolPool.abi,
-                OceanPoolPool.bytecode,
-                web3
-            )
-            await OceanPoolContracts.getAccounts()
-            owner = OceanPoolContracts.accounts[0]
-
-            await OceanPoolContracts.deployContracts(owner)
-            OceanPoolFactoryAddress = OceanPoolContracts.factoryAddress
-            assert(OceanPoolFactoryAddress !== null)
-        })
-        /* it('Deploy Spool/SFactory', async () => {
-            const SContracts = new BalancerContractHandler(
-                SFactory.abi,
-                SFactory.bytecode,
-                SPool.abi,
-                SPool.bytecode,
-                web3
-            )
-            await SContracts.getAccounts()
-            owner = SContracts.accounts[0]
-
-            await SContracts.SdeployContracts(owner)
-            const SFactoryAddress = SContracts.factoryAddress
-            assert(SFactoryAddress !== null)
-        })
-        */
-
         it('should initialize OceanPool class', async () => {
             Pool = new OceanPool(
                 web3,

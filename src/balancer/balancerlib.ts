@@ -1,8 +1,8 @@
 // import * as jsonFactoryABI from './artifacts/SFactory.json'
 // import * as jsonPoolABI from './artifacts/SPool.json'
 
-import * as jsonFactoryABI from './artifacts/BFactory.json'
-import * as jsonPoolABI from './artifacts/BPool.json'
+import * as jsonFactoryABI from '@oceanprotocol/contracts/artifacts/development/SFactory.json'
+import * as jsonPoolABI from '@oceanprotocol/contracts/artifacts/development/SPool.json'
 
 /**
  * Provides a interface to Balancer BPool & BFactory
@@ -52,11 +52,11 @@ export class PoolFactory {
             from: account
         })
         const transactiondata = await factory.methods
-            .newBPool()
+            .newSPool()
             .send({ from: account, gas: this.GASLIMIT_DEFAULT })
         let pooladdress = null
         try {
-            pooladdress = transactiondata.events.LOG_NEW_POOL.returnValues[1]
+            pooladdress = transactiondata.events.SPoolRegistered.returnValues[0]
         } catch (e) {
             console.error(e)
         }

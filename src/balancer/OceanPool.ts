@@ -316,7 +316,7 @@ export class OceanPool extends Pool {
         const factory = new this.web3.eth.Contract(this.FactoryABI, this.factoryAddress, {
             from: account
         })
-        const events = await factory.getPastEvents('LOG_NEW_POOL', {
+        const events = await factory.getPastEvents('SPoolRegistered', {
             filter: {},
             fromBlock: 0,
             toBlock: 'latest'
@@ -324,9 +324,9 @@ export class OceanPool extends Pool {
         for (let i = 0; i < events.length; i++) {
             const constituents = await super.getCurrentTokens(
                 account,
-                events[i].returnValues[1]
+                events[i].returnValues[0]
             )
-            if (constituents.includes(dtAddress)) result.push(events[i].returnValues[1])
+            if (constituents.includes(dtAddress)) result.push(events[i].returnValues[0])
         }
         return result
     }

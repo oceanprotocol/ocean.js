@@ -66,7 +66,7 @@ export class Config {
      * Pool Factory ABI
      * @type {string}
      */
-    public pollFactoryABI?: object
+    public poolFactoryABI?: object
 
     /**
      * Pool ABI

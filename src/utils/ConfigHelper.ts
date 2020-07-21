@@ -18,22 +18,13 @@ const configs = [
         poolFactoryAddress: null
     },
     {
-        network: 'pacific',
-        url: 'https://pacific.oceanprotocol.com',
-        factoryAddress: '0x1234',
-        oceanTokenAddress: '0x012578f9381e876A9E2a9111Dfd436FF91A451ae',
-        metadataStoreUri: null,
-        providerUri: null,
-        poolFactoryAddress: null
-    },
-    {
         network: 'rinkeby',
         url: 'https://rinkeby.infura.io/v3/YOUR-PROJECT-ID',
-        factoryAddress: '0xB9d406D24B310A7D821D0b782a36909e8c925471',
+        factoryAddress: '0xcDfEe5D80041224cDCe9AE2334E85B3236385EA3',
         oceanTokenAddress: '0x8967BCF84170c91B0d24D4302C2376283b0B3a07',
         metadataStoreUri: 'https://aquarius.rinkeby.v3.dev-ocean.com/',
         providerUri: 'https://provider.rinkeby.v3.dev-ocean.com/',
-        poolFactoryAddress: null
+        poolFactoryAddress: '0xA4531C624A3D88323a1e178DABe1233AF178701B'
     },
     {
         network: 'mainnet',
