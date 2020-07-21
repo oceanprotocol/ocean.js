@@ -57,6 +57,24 @@ export class Config {
     public datatokensABI?: object
 
     /**
+     * Pool Factory address
+     * @type {string}
+     */
+    public poolFactoryAddress?: string
+
+    /**
+     * Pool Factory ABI
+     * @type {string}
+     */
+    public poolFactoryABI?: object
+
+    /**
+     * Pool ABI
+     * @type {string}
+     */
+    public poolABI?: object
+
+    /**
      * Log level.
      * @type {boolean | LogLevel}
      */

@@ -18,6 +18,7 @@ import {
     generateIntantiableConfigFromConfig
 } from '../Instantiable.abstract'
 import { Compute } from './Compute'
+import { OceanPool } from '../balancer/OceanPool'
 
 /**
  * Main interface for Ocean Protocol.
@@ -54,6 +55,13 @@ export class Ocean extends Instantiable {
             instanceConfig.config.factoryABI,
             instanceConfig.config.datatokensABI,
             instanceConfig.config.web3Provider
+        )
+        instance.pool = new OceanPool(
+            instanceConfig.config.web3Provider,
+            instanceConfig.config.poolFactoryABI,
+            instanceConfig.config.poolABI,
+            instanceConfig.config.poolFactoryAddress,
+            instanceConfig.config.oceanTokenAddress
         )
         instance.versions = await Versions.getInstance(instanceConfig)
         instance.network = new Network()
@@ -110,10 +118,16 @@ export class Ocean extends Instantiable {
     public compute: Compute
 
     /**
-     * Ocean secretStore submodule
-     * @type {OceanSecretStore}
+     * Ocean DataTokens submodule
+     * @type {DataTokens}
      */
     public datatokens: DataTokens
+
+    /**
+     * Ocean Pools submodule
+     * @type {OceanPool}
+     */
+    public pool: OceanPool
 
     /**
      * Ocean tokens submodule
