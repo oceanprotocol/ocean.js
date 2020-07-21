@@ -79,7 +79,7 @@ export class DataTokens {
         )
         const trxReceipt = await datatoken.methods
             .approve(spender, this.web3.utils.toWei(amount))
-            .send()
+            .send({ from: address })
         return trxReceipt
     }
 
