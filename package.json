@@ -54,10 +54,11 @@
     "@types/chai": "^4.2.11",
     "@types/chai-spies": "^1.0.1",
     "@types/mocha": "^8.0.0",
-    "@types/node": "^14.0.18",
+    "@types/node": "^14.0.25",
     "@types/node-fetch": "^2.5.5",
     "@typescript-eslint/eslint-plugin": "^2.23.0",
     "@typescript-eslint/parser": "^2.23.0",
+    "auto-changelog": "2.0.0",
     "chai": "^4.2.0",
     "chai-spies": "^1.0.0",
     "cross-env": "^7.0.2",
@@ -75,8 +76,7 @@
     "ts-node": "^8.10.2",
     "ts-node-register": "^1.0.0",
     "typedoc": "^0.17.8",
-    "typescript": "^3.9.6",
-    "auto-changelog": "2.0.0"
+    "typescript": "^3.9.6"
   },
   "nyc": {
     "include": [
