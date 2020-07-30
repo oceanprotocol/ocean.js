@@ -15,6 +15,7 @@ const apiPath = '/api/v1/services'
  * data services.
  */
 export class Provider extends Instantiable {
+    public nonce: string
     private get url() {
         return this.config.providerUri
     }
@@ -22,6 +23,7 @@ export class Provider extends Instantiable {
     constructor(config: InstantiableConfig) {
         super()
         this.setInstanceConfig(config)
+        this.nonce = '0'
     }
 
     public async createSignature(account: Account, agreementId: string): Promise<string> {
@@ -43,8 +45,9 @@ export class Provider extends Instantiable {
     }
 
     public async encrypt(did: string, document: any, account: Account): Promise<string> {
+        await this.getNonce(account.getId())
         const signature = await this.ocean.utils.signature.signWithHash(
-            did,
+            did + this.nonce,
             account.getId(),
             account.getPassword()
         )
@@ -61,6 +64,23 @@ export class Provider extends Instantiable {
                 decodeURI(JSON.stringify(args))
             )
             return (await response.json()).encryptedDocument
+        } catch (e) {
+            this.logger.error(e)
+            throw new Error('HTTP request failed')
+        }
+    }
+
+    /** Get nonce from provider
+     * @param {String} consumerAddress
+     * @return {Promise<string>} string
+     */
+    public async getNonce(consumerAddress: string): Promise<string> {
+        let initializeUrl = this.getNonceEndpoint()
+        initializeUrl += `?userAddress=${consumerAddress}`
+        try {
+            const response = await this.ocean.utils.fetch.get(initializeUrl)
+            this.nonce = String((await response.json()).nonce)
+            return this.nonce
         } catch (e) {
             this.logger.error(e)
             throw new Error('HTTP request failed')
@@ -107,7 +127,8 @@ export class Provider extends Instantiable {
         files: File[],
         index: number = -1
     ): Promise<any> {
-        const signature = await this.createSignature(account, did)
+        await this.getNonce(account.getId())
+        const signature = await this.createSignature(account, did + this.nonce)
         const filesPromises = files
             .filter((_, i) => index === -1 || i === index)
             .map(async ({ index: i }) => {
@@ -149,9 +170,11 @@ export class Provider extends Instantiable {
         algorithmDataToken?: string
     ): Promise<ComputeJob | ComputeJob[]> {
         const address = consumerAccount.getId()
+        await this.getNonce(consumerAccount.getId())
         let signatureMessage = address
         signatureMessage += jobId || ''
         signatureMessage += (did && `${noZeroX(did)}`) || ''
+        signatureMessage += this.nonce
         const signature = await this.createHashSignature(
             consumerAccount,
             signatureMessage
@@ -242,6 +265,10 @@ export class Provider extends Instantiable {
 
     public getInitializeEndpoint() {
         return `${this.url}${apiPath}/initialize`
+    }
+
+    public getNonceEndpoint() {
+        return `${this.url}${apiPath}/nonce`
     }
 
     public getConsumeEndpoint() {
