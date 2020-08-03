@@ -330,4 +330,41 @@ export class OceanPool extends Pool {
         }
         return result
     }
+
+    public async getOceanNeeded(
+        account: string,
+        poolAddress: string,
+        dtRequired: string
+    ): Promise<string> {
+        await this.getDTAddress(account, poolAddress)
+        const tokenBalanceIn = await this.getReserve(
+            account,
+            poolAddress,
+            this.oceanAddress
+        )
+        const tokenWeightIn = await this.getDenormalizedWeight(
+            account,
+            poolAddress,
+            this.oceanAddress
+        )
+        const tokenBalanceOut = await this.getReserve(
+            account,
+            poolAddress,
+            this.dtAddress
+        )
+        const tokenWeightOut = await this.getDenormalizedWeight(
+            account,
+            poolAddress,
+            this.dtAddress
+        )
+        const swapFee = await this.getSwapFee(account, poolAddress)
+        return super.calcInGivenOut(
+            tokenBalanceIn,
+            tokenWeightIn,
+            tokenBalanceOut,
+            tokenWeightOut,
+            dtRequired,
+            swapFee
+        )
+    }
 }
