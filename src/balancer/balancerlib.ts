@@ -1,8 +1,9 @@
 // import * as jsonFactoryABI from './artifacts/SFactory.json'
 // import * as jsonPoolABI from './artifacts/SPool.json'
-
 import * as jsonFactoryABI from '@oceanprotocol/contracts/artifacts/development/SFactory.json'
 import * as jsonPoolABI from '@oceanprotocol/contracts/artifacts/development/SPool.json'
+
+const Decimal = require('decimal.js')
 
 /**
  * Provides a interface to Balancer BPool & BFactory
@@ -856,5 +857,23 @@ export class Pool extends PoolFactory {
             console.error(e)
         }
         return price
+    }
+
+    public async calcInGivenOut(
+        tokenBalanceIn,
+        tokenWeightIn,
+        tokenBalanceOut,
+        tokenWeightOut,
+        tokenAmountOut,
+        swapFee
+    ) {
+        const weightRatio = Decimal(tokenWeightOut).div(Decimal(tokenWeightIn))
+        const diff = Decimal(tokenBalanceOut).minus(tokenAmountOut)
+        const y = Decimal(tokenBalanceOut).div(diff)
+        const foo = y.pow(weightRatio).minus(Decimal(1))
+        const tokenAmountIn = Decimal(tokenBalanceIn)
+            .times(foo)
+            .div(Decimal(1).minus(Decimal(swapFee)))
+        return tokenAmountIn
     }
 }
