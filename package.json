@@ -70,7 +70,7 @@
     "mocha": "^8.0.1",
     "mock-local-storage": "^1.1.11",
     "nyc": "^15.1.0",
-    "ora": "^4.0.2",
+    "ora": "^5.0.0",
     "prettier": "^2.0.5",
     "source-map-support": "^0.5.19",
     "ts-node": "^8.10.2",
