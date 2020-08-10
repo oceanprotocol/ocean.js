@@ -75,7 +75,7 @@
     "source-map-support": "^0.5.19",
     "ts-node": "^8.10.2",
     "ts-node-register": "^1.0.0",
-    "typedoc": "^0.17.8",
+    "typedoc": "^0.18.0",
     "typescript": "^3.9.6",
     "auto-changelog": "2.0.0"
   },
