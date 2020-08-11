@@ -1,7 +1,7 @@
 import { config } from 'process'
 
 export interface ConfigHelper {
-    chainId: string
+    chainId?: number
     network: string
     url: string
     factoryAddress: string
@@ -13,7 +13,7 @@ export interface ConfigHelper {
 
 const configs = [
     {
-        chaindId: '',
+        chaindId: null,
         network: 'development',
         url: 'http://localhost:8545',
         factoryAddress: null,
@@ -22,7 +22,7 @@ const configs = [
         poolFactoryAddress: null
     },
     {
-        chainId: '4',
+        chainId: 4,
         network: 'rinkeby',
         url: 'https://rinkeby.infura.io/v3',
         factoryAddress: '0xcDfEe5D80041224cDCe9AE2334E85B3236385EA3',
@@ -32,7 +32,7 @@ const configs = [
         poolFactoryAddress: '0xA4531C624A3D88323a1e178DABe1233AF178701B'
     },
     {
-        chainId: '1',
+        chainId: 1,
         network: 'mainnet',
         url: 'https://mainnet.infura.io/v3',
         factoryAddress: '0x1234',
@@ -72,7 +72,7 @@ export class ConfigHelper {
         return confighelp
     }
 
-    public getConfigById(chainId: string, infuraProjectId?: string): ConfigHelper {
+    public getConfigById(chainId: number, infuraProjectId?: string): ConfigHelper {
         const confighelp = new ConfigHelper()
         // fill unknown values
         confighelp.chainId = chainId
