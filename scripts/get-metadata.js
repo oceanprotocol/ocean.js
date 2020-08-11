@@ -8,9 +8,7 @@ process.stdout.write(
     JSON.stringify(
         {
             version: require('../package.json').version,
-            commit: execSync(`git rev-parse HEAD`)
-                .toString()
-                .trim()
+            commit: execSync(`git rev-parse HEAD`).toString().trim()
         },
         null,
         '  '
