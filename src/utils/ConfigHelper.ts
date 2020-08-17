@@ -1,4 +1,7 @@
+import { config } from 'process'
+
 export interface ConfigHelper {
+    chainId?: number
     network: string
     url: string
     factoryAddress: string
@@ -10,6 +13,7 @@ export interface ConfigHelper {
 
 const configs = [
     {
+        chaindId: null,
         network: 'development',
         url: 'http://localhost:8545',
         factoryAddress: null,
@@ -18,6 +22,7 @@ const configs = [
         poolFactoryAddress: null
     },
     {
+        chainId: 4,
         network: 'rinkeby',
         url: 'https://rinkeby.infura.io/v3',
         factoryAddress: '0xcDfEe5D80041224cDCe9AE2334E85B3236385EA3',
@@ -27,6 +32,7 @@ const configs = [
         poolFactoryAddress: '0xA4531C624A3D88323a1e178DABe1233AF178701B'
     },
     {
+        chainId: 1,
         network: 'mainnet',
         url: 'https://mainnet.infura.io/v3',
         factoryAddress: '0x1234',
@@ -41,6 +47,7 @@ export class ConfigHelper {
     public getConfig(network: string, infuraProjectId?: string): ConfigHelper {
         const confighelp = new ConfigHelper()
         // fill unknown values
+        confighelp.chainId = null
         confighelp.factoryAddress = null
         confighelp.url = null
         confighelp.network = network
@@ -52,6 +59,35 @@ export class ConfigHelper {
         const knownconfig = configs.find((c) => c.network === network)
 
         if (knownconfig) {
+            confighelp.chainId = knownconfig.chainId
+            confighelp.factoryAddress = knownconfig.factoryAddress
+            confighelp.oceanTokenAddress = knownconfig.oceanTokenAddress
+            confighelp.url = `${knownconfig.url}/${infuraProjectId}`
+            confighelp.network = knownconfig.network
+            confighelp.metadataStoreUri = knownconfig.metadataStoreUri
+            confighelp.providerUri = knownconfig.providerUri
+            confighelp.poolFactoryAddress = knownconfig.poolFactoryAddress
+        }
+
+        return confighelp
+    }
+
+    public getConfigById(chainId: number, infuraProjectId?: string): ConfigHelper {
+        const confighelp = new ConfigHelper()
+        // fill unknown values
+        confighelp.chainId = chainId
+        confighelp.factoryAddress = null
+        confighelp.url = null
+        confighelp.network = null
+        confighelp.oceanTokenAddress = null
+        confighelp.metadataStoreUri = null
+        confighelp.providerUri = null
+        confighelp.poolFactoryAddress = null
+
+        const knownconfig = configs.find((c) => c.chainId === chainId)
+
+        if (knownconfig) {
+            confighelp.chainId = knownconfig.chainId
             confighelp.factoryAddress = knownconfig.factoryAddress
             confighelp.oceanTokenAddress = knownconfig.oceanTokenAddress
             confighelp.url = `${knownconfig.url}/${infuraProjectId}`
