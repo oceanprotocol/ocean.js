@@ -6,12 +6,12 @@ import { OceanPool } from '../../../src/balancer/OceanPool'
 
 const Web3 = require('web3')
 const web3 = new Web3('http://127.0.0.1:8545')
-const factory = require('@oceanprotocol/contracts/artifacts/development/DTFactory.json')
-const datatokensTemplate = require('@oceanprotocol/contracts/artifacts/development/DataTokenTemplate.json')
+const factory = require('@oceanprotocol/contracts/artifacts/DTFactory.json')
+const datatokensTemplate = require('@oceanprotocol/contracts/artifacts/DataTokenTemplate.json')
 
 // this will be replaced by our SFactory/SPool
-const OceanPoolFactory = require('@oceanprotocol/contracts/artifacts/development/SFactory.json')
-const OceanSPool = require('@oceanprotocol/contracts/artifacts/development/SPool.json')
+const OceanPoolFactory = require('@oceanprotocol/contracts/artifacts/SFactory.json')
+const OceanSPool = require('@oceanprotocol/contracts/artifacts/SPool.json')
 
 describe('Balancer flow', () => {
   let oceanTokenAddress

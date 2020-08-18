@@ -14,7 +14,7 @@ matrix:
 
 before_install:
   - npm install -g npm
-  
+
 before_script:
   - git clone https://github.com/oceanprotocol/barge
   - cd barge

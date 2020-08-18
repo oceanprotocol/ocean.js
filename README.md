@@ -4,15 +4,16 @@
 
 <h1 align="center">Ocean-lib</h1>
 
-`ocean-lib` is a Javascript library to privately & securely publish, exchange, 
+`ocean-lib` is a Javascript library to privately & securely publish, exchange,
 and consume data. With it, you can:
-* **Publish** data services: downloadable files, streaming data, or compute-to-data. 
-Ocean creates a new [ERC20](https://github.com/ethereum/EIPs/blob/7f4f0377730f5fc266824084188cc17cf246932e/EIPS/eip-20.md) 
-data token for each data service or set of services.
-* **Mint** data tokens for the service
-* **Consume** data tokens, to access the service
-* **Transfer** data tokens to another owner, and **all other ERC20 actions** 
-using [web3.js](https://web3js.readthedocs.io/en/v1.2.9/web3-eth-contract.html) etc.
+
+- **Publish** data services: downloadable files, streaming data, or compute-to-data.
+  Ocean creates a new [ERC20](https://github.com/ethereum/EIPs/blob/7f4f0377730f5fc266824084188cc17cf246932e/EIPS/eip-20.md)
+  data token for each data service or set of services.
+- **Mint** data tokens for the service
+- **Consume** data tokens, to access the service
+- **Transfer** data tokens to another owner, and **all other ERC20 actions**
+  using [web3.js](https://web3js.readthedocs.io/en/v1.2.9/web3-eth-contract.html) etc.
 
 `ocean-lib` is part of the [Ocean Protocol](https://oceanprotocol.com) toolset.
 
@@ -20,7 +21,7 @@ This is in alpha state and you can expect running into problems. If you run into
 
 ## Quick Install
 
-```npm i @oceanprotocol/lib```
+`npm i @oceanprotocol/lib`
 
 ## Quickstart: Simple Flow
 
