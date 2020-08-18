@@ -38,7 +38,7 @@
   },
   "dependencies": {
     "@ethereum-navigator/navigator": "^0.5.0",
-    "@oceanprotocol/contracts": "0.3.3",
+    "@oceanprotocol/contracts": "0.3.4",
     "bignumber.js": "^9.0.0",
     "decimal.js": "^10.2.0",
     "fs": "0.0.1-security",
