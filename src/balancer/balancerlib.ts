@@ -1,7 +1,7 @@
 // import * as jsonFactoryABI from './artifacts/SFactory.json'
 // import * as jsonPoolABI from './artifacts/SPool.json'
-import * as jsonFactoryABI from '@oceanprotocol/contracts/artifacts/development/SFactory.json'
-import * as jsonPoolABI from '@oceanprotocol/contracts/artifacts/development/SPool.json'
+import * as jsonFactoryABI from '@oceanprotocol/contracts/artifacts/SFactory.json'
+import * as jsonPoolABI from '@oceanprotocol/contracts/artifacts/SPool.json'
 import Web3 from 'web3'
 
 const Decimal = require('decimal.js')
