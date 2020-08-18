@@ -1,11 +1,11 @@
-
 # ocean-lib
 
 `ocean-lib-js` is a Javascript/Typescript library to privately & securely publish, exchange, and consume data. With it, you can:
-* **Publish** data services: static data, streaming data, or compute-to-data. Every data service gets its own [ERC20](https://github.com/ethereum/EIPs/blob/7f4f0377730f5fc266824084188cc17cf246932e/EIPS/eip-20.md) token.
-* **Mint** data tokens for a given data service
-* **Transfer** data tokens to another owner
-* **Consume** data tokens, to access the service
+
+- **Publish** data services: static data, streaming data, or compute-to-data. Every data service gets its own [ERC20](https://github.com/ethereum/EIPs/blob/7f4f0377730f5fc266824084188cc17cf246932e/EIPS/eip-20.md) token.
+- **Mint** data tokens for a given data service
+- **Transfer** data tokens to another owner
+- **Consume** data tokens, to access the service
 
 `ocean-lib-js` is part of the [Ocean Protocol](www.oceanprotocol.com) toolset.
 
@@ -14,6 +14,7 @@
 ```
 npm i --save @oceanprotocol/lib
 ```
+
 # Usage
 
 ```
@@ -30,6 +31,7 @@ const { Ocean, Logger } = require('@oceanprotocol/lib')
 This section describes a flow with the simplest transfer of value, for static data.
 
 Here's the steps.
+
 1. Alice publishes a dataset (= publishes a datatoken contract)
 1. Alice mints 100 tokens
 1. Alice transfers 1 token to Bob
@@ -37,17 +39,18 @@ Here's the steps.
 
 Let's go through each of these in detail.
 
-
 ## 1. Alice publishes a dataset (= publishes a datatoken contract)
 
 For now, you're Alice:) Let's proceed.
 
 Run `ganache-cli` locally:
+
 ```bash
 ganache-cli
 ```
 
 Then proceed in with your code:
+
 ```javascript
 const tokenAmount = 100
 const transferAmount = 1
@@ -56,10 +59,14 @@ const blob = 'http://localhost:8030/api/v1/provider/services'
 const alice = await ocean.accounts.list()[0]
 const bob = await ocean.accounts.list()[0]
 // create datatoken class
-const datatoken = new DataTokens(contracts.factoryAddress, factoryABI, datatokensABI, web3)
+const datatoken = new DataTokens(
+  contracts.factoryAddress,
+  factoryABI,
+  datatokensABI,
+  web3
+)
 // deploy datatoken
 const tokenAddress = await datatoken.create(blob, alice)
-
 ```
 
 ## 2. Alice hosts the dataset
@@ -90,10 +97,8 @@ const transactionId = ts['transactionHash']
 
 Now, you are Bob :)
 
-
 ```javascript
-
-const config = new Config()        
+const config = new Config()
 const ocean = await Ocean.getInstance()
 
 await ocean.assets.download(tokenAddress, blob, transactionId, bob)
