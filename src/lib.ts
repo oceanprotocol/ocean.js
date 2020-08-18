@@ -16,19 +16,19 @@ export * from './ddo/interfaces'
 export { CreateProgressStep, OrderProgressStep } from './ocean/Assets'
 
 export {
-    OceanPlatformTechStatus,
-    OceanPlatformTech,
-    OceanPlatformVersions
+  OceanPlatformTechStatus,
+  OceanPlatformTech,
+  OceanPlatformVersions
 } from './ocean/Versions'
 
 export {
-    Ocean,
-    Account,
-    Config,
-    DID,
-    Logger,
-    MetadataStore,
-    DataTokens,
-    utils,
-    ConfigHelper
+  Ocean,
+  Account,
+  Config,
+  DID,
+  Logger,
+  MetadataStore,
+  DataTokens,
+  utils,
+  ConfigHelper
 }
