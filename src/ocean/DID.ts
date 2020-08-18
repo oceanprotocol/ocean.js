@@ -6,60 +6,60 @@ const prefix = 'did:op:'
  * Decentralized ID.
  */
 export default class DID {
-    /**
-     * Parses a DID from a string.
-     * @param  {string} didString DID in string.
-     * @return {DID}
-     */
-    public static parse(didString: string | DID): DID {
-        if (didString instanceof DID) {
-            didString = didString.getDid()
-        }
-        let did: DID
-        const didMatch = didString.match(/^did:op:([a-f0-9]{64})$/i)
+  /**
+   * Parses a DID from a string.
+   * @param  {string} didString DID in string.
+   * @return {DID}
+   */
+  public static parse(didString: string | DID): DID {
+    if (didString instanceof DID) {
+      didString = didString.getDid()
+    }
+    let did: DID
+    const didMatch = didString.match(/^did:op:([a-f0-9]{64})$/i)
 
-        if (didMatch) {
-            did = new DID(didMatch[1])
-        }
-
-        if (!did) {
-            throw new Error(`Parsing DID failed, ${didString}`)
-        }
-
-        return did
+    if (didMatch) {
+      did = new DID(didMatch[1])
     }
 
-    /**
-     * Returns a new DID.
-     * @return {DID}
-     */
-    public static generate(): DID {
-        return new DID(generateId())
+    if (!did) {
+      throw new Error(`Parsing DID failed, ${didString}`)
     }
 
-    /**
-     * ID.
-     * @type {string}
-     */
-    private id: string
+    return did
+  }
 
-    private constructor(id: string) {
-        this.id = id
-    }
+  /**
+   * Returns a new DID.
+   * @return {DID}
+   */
+  public static generate(): DID {
+    return new DID(generateId())
+  }
 
-    /**
-     * Returns the DID.
-     * @return {string}
-     */
-    public getDid(): string {
-        return `${prefix}${this.id}`
-    }
+  /**
+   * ID.
+   * @type {string}
+   */
+  private id: string
 
-    /**
-     * Returns the ID.
-     * @return {string}
-     */
-    public getId(): string {
-        return this.id
-    }
+  private constructor(id: string) {
+    this.id = id
+  }
+
+  /**
+   * Returns the DID.
+   * @return {string}
+   */
+  public getDid(): string {
+    return `${prefix}${this.id}`
+  }
+
+  /**
+   * Returns the ID.
+   * @return {string}
+   */
+  public getId(): string {
+    return this.id
+  }
 }

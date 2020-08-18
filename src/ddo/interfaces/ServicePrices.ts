@@ -1,4 +1,4 @@
 export interface ServicePrices {
-    serviceIndex: number
-    price: string
+  serviceIndex: number
+  price: string
 }
