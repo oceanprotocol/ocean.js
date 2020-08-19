@@ -1,7 +1,7 @@
 import Web3 from 'web3'
 import { AbiItem } from 'web3-utils/types'
 import Decimal from 'decimal.js'
-import * as jsonpoolABI from '@oceanprotocol/contracts/artifacts/SPool.json'
+import jsonpoolABI from '@oceanprotocol/contracts/artifacts/SPool.json'
 import { PoolFactory } from './PoolFactory'
 
 /**
@@ -25,7 +25,7 @@ export class Pool extends PoolFactory {
   ) {
     super(web3, factoryABI, factoryAddress, gaslimit)
     if (poolABI) this.poolABI = poolABI
-    else this.poolABI = jsonpoolABI.abi
+    else this.poolABI = jsonpoolABI.abi as AbiItem[]
   }
 
   /**
@@ -73,7 +73,7 @@ export class Pool extends PoolFactory {
         stateMutability: 'nonpayable',
         type: 'function'
       }
-    ]
+    ] as AbiItem[]
     const token = new this.web3.eth.Contract(minABI, tokenAddress, {
       from: account
     })
@@ -115,7 +115,7 @@ export class Pool extends PoolFactory {
         stateMutability: 'view',
         type: 'function'
       }
-    ]
+    ] as AbiItem[]
     const token = new this.web3.eth.Contract(minABI, poolAddress, {
       from: account
     })
@@ -155,7 +155,7 @@ export class Pool extends PoolFactory {
           account,
           token.address,
           poolAddress,
-          this.web3.utils.toWei(token.amount)
+          this.web3.utils.toWei(token.amount) as any
         )
         await pool.methods
           .bind(

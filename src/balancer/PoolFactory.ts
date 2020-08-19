@@ -1,6 +1,6 @@
 import Web3 from 'web3'
 import { AbiItem } from 'web3-utils/types'
-import * as jsonFactoryABI from '@oceanprotocol/contracts/artifacts/SFactory.json'
+import jsonFactoryABI from '@oceanprotocol/contracts/artifacts/SFactory.json'
 
 export class PoolFactory {
   public GASLIMIT_DEFAULT = 5000000
@@ -17,7 +17,7 @@ export class PoolFactory {
     this.web3 = web3
 
     if (factoryABI) this.factoryABI = factoryABI
-    else this.factoryABI = jsonFactoryABI.abi
+    else this.factoryABI = jsonFactoryABI.abi as AbiItem[]
     if (factoryAddress) {
       this.factoryAddress = factoryAddress
     }

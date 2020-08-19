@@ -28,8 +28,8 @@ export class DataTokens {
     web3: Web3
   ) {
     this.factoryAddress = factoryAddress
-    this.factoryABI = factoryABI || defaultFactoryABI.abi
-    this.datatokensABI = datatokensABI || defaultDatatokensABI.abi
+    this.factoryABI = factoryABI || (defaultFactoryABI.abi as AbiItem[])
+    this.datatokensABI = datatokensABI || (defaultDatatokensABI.abi as AbiItem[])
     this.web3 = web3
   }
 
