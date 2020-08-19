@@ -1,13 +1,14 @@
+import { AbiItem } from 'web3-utils/types'
 import { TestContractHandler } from '../TestContractHandler'
 import { DataTokens } from '../../src/datatokens/Datatokens'
 import { Ocean } from '../../src/ocean/Ocean'
 import config from './config'
 import { assert } from 'console'
 
-const Web3 = require('web3')
+import Web3 from 'web3'
+import factory from '@oceanprotocol/contracts/artifacts/DTFactory.json'
+import datatokensTemplate from '@oceanprotocol/contracts/artifacts/DataTokenTemplate.json'
 const web3 = new Web3('http://127.0.0.1:8545')
-const factory = require('@oceanprotocol/contracts/artifacts/DTFactory.json')
-const datatokensTemplate = require('@oceanprotocol/contracts/artifacts/DataTokenTemplate.json')
 
 describe('Marketplace flow', () => {
   let owner
@@ -32,8 +33,8 @@ describe('Marketplace flow', () => {
   describe('#MarketplaceDownloadFlow-Test', () => {
     it('Initialize Ocean contracts v3', async () => {
       contracts = new TestContractHandler(
-        factory.abi,
-        datatokensTemplate.abi,
+        factory.abi as AbiItem[],
+        datatokensTemplate.abi as AbiItem[],
         datatokensTemplate.bytecode,
         factory.bytecode,
         web3
@@ -52,8 +53,8 @@ describe('Marketplace flow', () => {
     it('Alice publishes a datatoken contract', async () => {
       datatoken = new DataTokens(
         contracts.factoryAddress,
-        factory.abi,
-        datatokensTemplate.abi,
+        factory.abi as AbiItem[],
+        datatokensTemplate.abi as AbiItem[],
         web3
       )
       tokenAddress = await datatoken.create(blob, alice.getId())
@@ -155,13 +156,13 @@ describe('Marketplace flow', () => {
     it('Bob consumes asset 1', async () => {
       await ocean.assets
         .order(ddo.id, accessService.type, bob.getId())
-        .then(async (res: string) => {
+        .then(async (res: any) => {
           res = JSON.parse(res)
           return await datatoken.transferWei(
-            res['dataToken'],
-            res['to'],
-            String(res['numTokens']),
-            res['from']
+            res.dataToken,
+            res.to,
+            String(res.numTokens),
+            res.from
           )
         })
         .then(async (tx) => {

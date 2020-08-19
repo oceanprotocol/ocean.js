@@ -1,84 +1,31 @@
-// import * as jsonFactoryABI from './artifacts/SFactory.json'
-// import * as jsonPoolABI from './artifacts/SPool.json'
-import * as jsonFactoryABI from '@oceanprotocol/contracts/artifacts/SFactory.json'
-import * as jsonPoolABI from '@oceanprotocol/contracts/artifacts/SPool.json'
 import Web3 from 'web3'
-
-const Decimal = require('decimal.js')
+import { AbiItem } from 'web3-utils/types'
+import Decimal from 'decimal.js'
+import jsonpoolABI from '@oceanprotocol/contracts/artifacts/SPool.json'
+import { PoolFactory } from './PoolFactory'
 
 /**
  * Provides an interface to Balancer BPool & BFactory
  */
-
 export interface TokensToAdd {
   address: string
   amount: string
   weight: string
 }
 
-export class PoolFactory {
-  public GASLIMIT_DEFAULT: number = 5000000
-  public web3: any = null
-  public FactoryABI: any
-  public factoryAddress: any
-
-  constructor(
-    web3: Web3,
-    FactoryABI: any = null,
-    factoryAddress: string = null,
-    gaslimit?: number
-  ) {
-    this.web3 = web3
-
-    if (FactoryABI) this.FactoryABI = FactoryABI
-    else this.FactoryABI = jsonFactoryABI.abi
-    if (factoryAddress) {
-      this.factoryAddress = factoryAddress
-    }
-    if (gaslimit) this.GASLIMIT_DEFAULT = gaslimit
-  }
-
-  /**
-   * Creates a new pool
-   */
-  async createPool(account: string): Promise<string> {
-    if (this.web3 == null) {
-      console.error('Web3 object is null')
-      return null
-    }
-    if (this.factoryAddress == null) {
-      console.error('bfactoryAddress is null')
-      return null
-    }
-    const factory = new this.web3.eth.Contract(this.FactoryABI, this.factoryAddress, {
-      from: account
-    })
-    const transactiondata = await factory.methods
-      .newSPool()
-      .send({ from: account, gas: this.GASLIMIT_DEFAULT })
-    let pooladdress = null
-    try {
-      pooladdress = transactiondata.events.SPoolRegistered.returnValues[0]
-    } catch (e) {
-      console.error(e)
-    }
-    return pooladdress
-  }
-}
-
 export class Pool extends PoolFactory {
-  private PoolABI: any
+  private poolABI: AbiItem | AbiItem[]
 
   constructor(
     web3: Web3,
-    FactoryABI: any = null,
-    PoolABI: any = null,
+    factoryABI: AbiItem | AbiItem[] = null,
+    poolABI: AbiItem | AbiItem[] = null,
     factoryAddress: string = null,
     gaslimit?: number
   ) {
-    super(web3, FactoryABI, factoryAddress, gaslimit)
-    if (PoolABI) this.PoolABI = PoolABI
-    else this.PoolABI = jsonPoolABI.abi
+    super(web3, factoryABI, factoryAddress, gaslimit)
+    if (poolABI) this.poolABI = poolABI
+    else this.poolABI = jsonpoolABI.abi as AbiItem[]
   }
 
   /**
@@ -126,7 +73,7 @@ export class Pool extends PoolFactory {
         stateMutability: 'nonpayable',
         type: 'function'
       }
-    ]
+    ] as AbiItem[]
     const token = new this.web3.eth.Contract(minABI, tokenAddress, {
       from: account
     })
@@ -142,12 +89,12 @@ export class Pool extends PoolFactory {
   }
 
   /**
-     * Get Pool shares 
-     * @param {String} account
-     * @param {String} poolAddress
-     
-     */
-  async sharesBalance(account: string, poolAddress: string): Promise<any> {
+   * Get Pool shares
+   * @param {String} account
+   * @param {String} poolAddress
+   * @return {String}
+   */
+  async sharesBalance(account: string, poolAddress: string): Promise<string> {
     const minABI = [
       {
         constant: true,
@@ -168,7 +115,7 @@ export class Pool extends PoolFactory {
         stateMutability: 'view',
         type: 'function'
       }
-    ]
+    ] as AbiItem[]
     const token = new this.web3.eth.Contract(minABI, poolAddress, {
       from: account
     })
@@ -196,7 +143,7 @@ export class Pool extends PoolFactory {
     poolAddress: string,
     tokens: TokensToAdd[]
   ): Promise<void> {
-    const pool = new this.web3.eth.Contract(this.PoolABI, poolAddress, {
+    const pool = new this.web3.eth.Contract(this.poolABI, poolAddress, {
       from: account
     })
 
@@ -208,7 +155,7 @@ export class Pool extends PoolFactory {
           account,
           token.address,
           poolAddress,
-          this.web3.utils.toWei(token.amount)
+          this.web3.utils.toWei(token.amount) as any
         )
         await pool.methods
           .bind(
@@ -230,7 +177,7 @@ export class Pool extends PoolFactory {
    * @param {String} fee (will be converted to wei)
    */
   async setSwapFee(account: string, poolAddress: string, fee: string): Promise<any> {
-    const pool = new this.web3.eth.Contract(this.PoolABI, poolAddress, {
+    const pool = new this.web3.eth.Contract(this.poolABI, poolAddress, {
       from: account
     })
     let result = null
@@ -250,7 +197,7 @@ export class Pool extends PoolFactory {
    * @param {String} poolAddress
    */
   async finalize(account: string, poolAddress: string): Promise<any> {
-    const pool = new this.web3.eth.Contract(this.PoolABI, poolAddress, {
+    const pool = new this.web3.eth.Contract(this.poolABI, poolAddress, {
       from: account
     })
     let result = null
@@ -270,7 +217,7 @@ export class Pool extends PoolFactory {
    * @param {String} poolAddress
    */
   async getNumTokens(account: string, poolAddress: string): Promise<any> {
-    const pool = new this.web3.eth.Contract(this.PoolABI, poolAddress, {
+    const pool = new this.web3.eth.Contract(this.poolABI, poolAddress, {
       from: account
     })
     let result = null
@@ -286,10 +233,10 @@ export class Pool extends PoolFactory {
    * Get tokens composing this pool
    * @param {String} account
    * @param {String} poolAddress
-   * @return {Array}
+   * @return {String[]}
    */
   async getCurrentTokens(account: string, poolAddress: string): Promise<string[]> {
-    const pool = new this.web3.eth.Contract(this.PoolABI, poolAddress, {
+    const pool = new this.web3.eth.Contract(this.poolABI, poolAddress, {
       from: account
     })
     let result = null
@@ -305,10 +252,10 @@ export class Pool extends PoolFactory {
    * Get the final tokens composing this pool
    * @param {String} account
    * @param {String} poolAddress
-   * @return {Array}
+   * @return {String[]}
    */
-  async getFinalTokens(account: string, poolAddress: string): Promise<any> {
-    const pool = new this.web3.eth.Contract(this.PoolABI, poolAddress, {
+  async getFinalTokens(account: string, poolAddress: string): Promise<string[]> {
+    const pool = new this.web3.eth.Contract(this.poolABI, poolAddress, {
       from: account
     })
     let result = null
@@ -326,8 +273,8 @@ export class Pool extends PoolFactory {
    * @param {String} poolAddress
    * @return {String}
    */
-  async getController(account: string, poolAddress: string): Promise<any> {
-    const pool = new this.web3.eth.Contract(this.PoolABI, poolAddress, {
+  async getController(account: string, poolAddress: string): Promise<string> {
+    const pool = new this.web3.eth.Contract(this.poolABI, poolAddress, {
       from: account
     })
     let result = null
@@ -350,8 +297,8 @@ export class Pool extends PoolFactory {
     account: string,
     poolAddress: string,
     controllerAddress: string
-  ): Promise<any> {
-    const pool = new this.web3.eth.Contract(this.PoolABI, poolAddress, {
+  ): Promise<string> {
+    const pool = new this.web3.eth.Contract(this.poolABI, poolAddress, {
       from: account
     })
     let result = null
@@ -372,8 +319,8 @@ export class Pool extends PoolFactory {
    * @param {String} token  Address of the token
    * @return {Boolean}
    */
-  async isBound(account: string, poolAddress: string, token: string): Promise<any> {
-    const pool = new this.web3.eth.Contract(this.PoolABI, poolAddress, {
+  async isBound(account: string, poolAddress: string, token: string): Promise<boolean> {
+    const pool = new this.web3.eth.Contract(this.poolABI, poolAddress, {
       from: account
     })
     let result = null
@@ -390,10 +337,10 @@ export class Pool extends PoolFactory {
    * @param {String} account
    * @param {String} poolAddress
    * @param {String} token  Address of the token
-   * @return {Boolean}
+   * @return {String}
    */
   async getReserve(account: string, poolAddress: string, token: string): Promise<string> {
-    const pool = new this.web3.eth.Contract(this.PoolABI, poolAddress, {
+    const pool = new this.web3.eth.Contract(this.poolABI, poolAddress, {
       from: account
     })
     let amount = null
@@ -412,8 +359,8 @@ export class Pool extends PoolFactory {
    * @param {String} poolAddress
    * @return {Boolean}
    */
-  async isFinalized(account: string, poolAddress: string): Promise<any> {
-    const pool = new this.web3.eth.Contract(this.PoolABI, poolAddress, {
+  async isFinalized(account: string, poolAddress: string): Promise<boolean> {
+    const pool = new this.web3.eth.Contract(this.poolABI, poolAddress, {
       from: account
     })
     let result = null
@@ -432,7 +379,7 @@ export class Pool extends PoolFactory {
    * @return {String} Swap fee in wei
    */
   async getSwapFee(account: string, poolAddress: string): Promise<string> {
-    const pool = new this.web3.eth.Contract(this.PoolABI, poolAddress, {
+    const pool = new this.web3.eth.Contract(this.poolABI, poolAddress, {
       from: account
     })
     let fee = null
@@ -450,14 +397,14 @@ export class Pool extends PoolFactory {
    * @param {String} account
    * @param {String} poolAddress
    * @param {String} token
-   * @return {Number}
+   * @return {String}
    */
   async getNormalizedWeight(
     account: string,
     poolAddress: string,
     token: string
   ): Promise<string> {
-    const pool = new this.web3.eth.Contract(this.PoolABI, poolAddress, {
+    const pool = new this.web3.eth.Contract(this.poolABI, poolAddress, {
       from: account
     })
     let weight = null
@@ -475,14 +422,14 @@ export class Pool extends PoolFactory {
    * @param {String} account
    * @param {String} poolAddress
    * @param {String} token
-   * @return {Number}
+   * @return {String}
    */
   async getDenormalizedWeight(
     account: string,
     poolAddress: string,
     token: string
   ): Promise<string> {
-    const pool = new this.web3.eth.Contract(this.PoolABI, poolAddress, {
+    const pool = new this.web3.eth.Contract(this.poolABI, poolAddress, {
       from: account
     })
     let weight = null
@@ -505,7 +452,7 @@ export class Pool extends PoolFactory {
     account: string,
     poolAddress: string
   ): Promise<string> {
-    const pool = new this.web3.eth.Contract(this.PoolABI, poolAddress, {
+    const pool = new this.web3.eth.Contract(this.poolABI, poolAddress, {
       from: account
     })
     let weight = null
@@ -538,7 +485,7 @@ export class Pool extends PoolFactory {
     minAmountOut: string,
     maxPrice: string
   ): Promise<any> {
-    const pool = new this.web3.eth.Contract(this.PoolABI, poolAddress, {
+    const pool = new this.web3.eth.Contract(this.poolABI, poolAddress, {
       from: account
     })
     let result = null
@@ -578,7 +525,7 @@ export class Pool extends PoolFactory {
     minAmountOut: string,
     maxPrice: string
   ): Promise<any> {
-    const pool = new this.web3.eth.Contract(this.PoolABI, poolAddress, {
+    const pool = new this.web3.eth.Contract(this.poolABI, poolAddress, {
       from: account
     })
     let result = null
@@ -603,16 +550,16 @@ export class Pool extends PoolFactory {
    * @param {String} account
    * @param {String} poolAddress
    * @param {String} poolAmountOut will be converted to wei
-   * @param {String} maxAmountsIn  array holding maxAmount per each token, will be converted to wei
+   * @param {String[]} maxAmountsIn  array holding maxAmount per each token, will be converted to wei
    * @return {any}
    */
   async joinPool(
     account: string,
     poolAddress: string,
     poolAmountOut: string,
-    maxAmountsIn: any
+    maxAmountsIn: string[]
   ): Promise<any> {
-    const pool = new this.web3.eth.Contract(this.PoolABI, poolAddress, {
+    const pool = new this.web3.eth.Contract(this.poolABI, poolAddress, {
       from: account
     })
     const weiMaxAmountsIn = []
@@ -640,7 +587,7 @@ export class Pool extends PoolFactory {
    * @param {String} account
    * @param {String} poolAddress
    * @param {String} poolAmountIn will be converted to wei
-   * @param {String} maxAmountsIn  array holding maxAmount per each token, will be converted to wei
+   * @param {String[]} minAmountsOut  array holding minAmount per each token, will be converted to wei
    * @return {any}
    */
   async exitPool(
@@ -649,7 +596,7 @@ export class Pool extends PoolFactory {
     poolAmountIn: string,
     minAmountsOut: string
   ): Promise<any> {
-    const pool = new this.web3.eth.Contract(this.PoolABI, poolAddress, {
+    const pool = new this.web3.eth.Contract(this.poolABI, poolAddress, {
       from: account
     })
     const weiMinAmountsOut = []
@@ -684,7 +631,7 @@ export class Pool extends PoolFactory {
     tokenAmountIn: string,
     minPoolAmountOut: string
   ): Promise<any> {
-    const pool = new this.web3.eth.Contract(this.PoolABI, poolAddress, {
+    const pool = new this.web3.eth.Contract(this.poolABI, poolAddress, {
       from: account
     })
     let result = null
@@ -718,7 +665,7 @@ export class Pool extends PoolFactory {
     poolAmountOut: string,
     maxAmountIn: string
   ): Promise<any> {
-    const pool = new this.web3.eth.Contract(this.PoolABI, poolAddress, {
+    const pool = new this.web3.eth.Contract(this.poolABI, poolAddress, {
       from: account
     })
     let result = null
@@ -752,7 +699,7 @@ export class Pool extends PoolFactory {
     poolAmountIn: string,
     minTokenAmountOut: string
   ): Promise<any> {
-    const pool = new this.web3.eth.Contract(this.PoolABI, poolAddress, {
+    const pool = new this.web3.eth.Contract(this.poolABI, poolAddress, {
       from: account
     })
     let result = null
@@ -786,7 +733,7 @@ export class Pool extends PoolFactory {
     tokenAmountOut: string,
     maxPoolAmountIn: string
   ): Promise<any> {
-    const pool = new this.web3.eth.Contract(this.PoolABI, poolAddress, {
+    const pool = new this.web3.eth.Contract(this.poolABI, poolAddress, {
       from: account
     })
     let result = null
@@ -818,7 +765,7 @@ export class Pool extends PoolFactory {
     tokenIn: string,
     tokenOut: string
   ): Promise<any> {
-    const pool = new this.web3.eth.Contract(this.PoolABI, poolAddress, {
+    const pool = new this.web3.eth.Contract(this.poolABI, poolAddress, {
       from: account
     })
     let price = null
@@ -837,15 +784,15 @@ export class Pool extends PoolFactory {
    * @param {String} poolAddress
    * @param {String} tokenIn
    * @param {String} tokenOut
-   * @return {any}
+   * @return {String}
    */
   async getSpotPriceSansFee(
     account: string,
     poolAddress: string,
     tokenIn: string,
     tokenOut: string
-  ): Promise<any> {
-    const pool = new this.web3.eth.Contract(this.PoolABI, poolAddress, {
+  ): Promise<string> {
+    const pool = new this.web3.eth.Contract(this.poolABI, poolAddress, {
       from: account
     })
     let price = null
@@ -859,20 +806,21 @@ export class Pool extends PoolFactory {
   }
 
   public async calcInGivenOut(
-    tokenBalanceIn,
-    tokenWeightIn,
-    tokenBalanceOut,
-    tokenWeightOut,
-    tokenAmountOut,
-    swapFee
+    tokenBalanceIn: string,
+    tokenWeightIn: string,
+    tokenBalanceOut: string,
+    tokenWeightOut: string,
+    tokenAmountOut: string,
+    swapFee: string
   ): Promise<string> {
-    const weightRatio = Decimal(tokenWeightOut).div(Decimal(tokenWeightIn))
-    const diff = Decimal(tokenBalanceOut).minus(tokenAmountOut)
-    const y = Decimal(tokenBalanceOut).div(diff)
-    const foo = y.pow(weightRatio).minus(Decimal(1))
-    const tokenAmountIn = Decimal(tokenBalanceIn)
+    const weightRatio = new Decimal(tokenWeightOut).div(new Decimal(tokenWeightIn))
+    const diff = new Decimal(tokenBalanceOut).minus(tokenAmountOut)
+    const y = new Decimal(tokenBalanceOut).div(diff)
+    const foo = y.pow(weightRatio).minus(new Decimal(1))
+    const tokenAmountIn = new Decimal(tokenBalanceIn)
       .times(foo)
-      .div(Decimal(1).minus(Decimal(swapFee)))
-    return tokenAmountIn
+      .div(new Decimal(1).minus(new Decimal(swapFee)))
+
+    return tokenAmountIn.toString()
   }
 }

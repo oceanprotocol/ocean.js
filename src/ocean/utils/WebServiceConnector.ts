@@ -3,6 +3,7 @@ import fs from 'fs'
 import { Logger } from '../../utils'
 import save from 'save-file'
 
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const fetch = require('node-fetch')
 
 /**

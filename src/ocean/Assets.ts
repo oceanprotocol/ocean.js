@@ -365,7 +365,7 @@ export class Assets extends Instantiable {
     creator: Account,
     cost: string,
     datePublished: string,
-    timeout: number = 0
+    timeout = 0
   ): Promise<ServiceAccess> {
     return {
       type: 'access',
@@ -387,7 +387,7 @@ export class Assets extends Instantiable {
     did: string,
     serviceType: string,
     consumerAddress: string,
-    serviceIndex: number = -1
+    serviceIndex = -1
   ): Promise<string> {
     if (serviceIndex === -1) {
       const service = await this.getServiceByType(did, serviceType)

@@ -1,4 +1,4 @@
-import * as metadata from '../metadata.json'
+import metadata from '../metadata.json'
 
 import { Instantiable, InstantiableConfig } from '../Instantiable.abstract'
 

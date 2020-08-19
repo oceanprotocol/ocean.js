@@ -1,9 +1,9 @@
 import { Config, LogLevel } from '../../src/models/Config'
 import { LoggerInstance } from '../../src/utils'
 
-LoggerInstance.setLevel(LogLevel.Error)
+import Web3 from 'web3'
 
-const Web3 = require('web3')
+LoggerInstance.setLevel(LogLevel.Error)
 const web3 = new Web3('http://127.0.0.1:8545')
 
 export default {

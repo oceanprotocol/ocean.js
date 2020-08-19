@@ -29,7 +29,7 @@ export default class ContractHandler extends Instantiable {
     this.setInstanceConfig(config)
   }
 
-  public async get(what: string, optional: boolean = false): Promise<Contract> {
+  public async get(what: string, optional = false): Promise<Contract> {
     const where = (await this.ocean.network.getNetworkName()).toLowerCase()
     const networkId = await this.ocean.network.getNetworkId()
     try {
@@ -47,6 +47,7 @@ export default class ContractHandler extends Instantiable {
 
   private async load(what: string, where: string, networkId: number): Promise<Contract> {
     this.logger.debug('Loading', what, 'from', where)
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
     const artifact = require(`@oceanprotocol/contracts/artifacts/${where}/${what}.json`)
     // Logger.log('Loaded artifact', artifact)
     const code = await this.web3.eth.getCode(artifact.address)

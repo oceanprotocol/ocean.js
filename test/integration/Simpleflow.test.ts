@@ -1,12 +1,11 @@
 import { TestContractHandler } from '../TestContractHandler'
 import { DataTokens } from '../../src/datatokens/Datatokens'
-import { Ocean } from '../../src/ocean/Ocean'
-import { Config } from '../../src/models/Config'
+import { AbiItem } from 'web3-utils/types'
 
-const Web3 = require('web3')
+import Web3 from 'web3'
+import factory from '@oceanprotocol/contracts/artifacts/DTFactory.json'
+import datatokensTemplate from '@oceanprotocol/contracts/artifacts/DataTokenTemplate.json'
 const web3 = new Web3('http://127.0.0.1:8545')
-const factory = require('@oceanprotocol/contracts/artifacts/DTFactory.json')
-const datatokensTemplate = require('@oceanprotocol/contracts/artifacts/DataTokenTemplate.json')
 
 describe('Simple flow', () => {
   let owner
@@ -22,8 +21,8 @@ describe('Simple flow', () => {
   describe('#test', () => {
     it('Initialize Ocean contracts v3', async () => {
       contracts = new TestContractHandler(
-        factory.abi,
-        datatokensTemplate.abi,
+        factory.abi as AbiItem[],
+        datatokensTemplate.abi as AbiItem[],
         datatokensTemplate.bytecode,
         factory.bytecode,
         web3
@@ -38,8 +37,8 @@ describe('Simple flow', () => {
       // Alice creates a Datatoken
       datatoken = new DataTokens(
         contracts.factoryAddress,
-        factory.abi,
-        datatokensTemplate.abi,
+        factory.abi as AbiItem[],
+        datatokensTemplate.abi as AbiItem[],
         web3
       )
       tokenAddress = await datatoken.create(blob, alice)

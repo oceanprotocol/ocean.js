@@ -1,3 +1,5 @@
+import Web3 from 'web3'
+import { AbiItem } from 'web3-utils/types'
 import { Contract } from 'web3-eth-contract'
 
 export class BalancerContractHandler {
@@ -8,14 +10,14 @@ export class BalancerContractHandler {
   public factoryBytecode: string
   public factoryAddress: string
   public poolAddress: string
-  public web3: any
+  public web3: Web3
 
   constructor(
-    factoryABI: Contract,
+    factoryABI: AbiItem | AbiItem[],
     factoryBytecode: string,
-    poolABI: Contract,
+    poolABI: AbiItem | AbiItem[],
     poolBytecode: string,
-    web3: any
+    web3: Web3
   ) {
     this.web3 = web3
     this.factory = new this.web3.eth.Contract(factoryABI)

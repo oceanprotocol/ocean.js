@@ -8,7 +8,6 @@
     "declaration": true,
     "module": "commonjs",
     "target": "es5",
-    "noImplicitAny": false,
     "removeComments": true,
     "experimentalDecorators": true,
     "preserveConstEnums": true,

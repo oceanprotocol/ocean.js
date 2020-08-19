@@ -27,28 +27,28 @@ export function generateIntantiableConfigFromConfig(
 }
 
 export abstract class Instantiable {
-  protected get ocean() {
+  protected get ocean(): Ocean {
     if (!this._ocean) {
       this.logger.error('Ocean instance is not defined.')
     }
     return this._ocean
   }
 
-  protected get web3() {
+  protected get web3(): Web3 {
     if (!this._web3) {
       this.logger.error('Web3 instance is not defined.')
     }
     return this._web3
   }
 
-  protected get config() {
+  protected get config(): Config {
     if (!this._config) {
       this.logger.error('Config instance is not defined.')
     }
     return this._config
   }
 
-  protected get logger() {
+  protected get logger(): Logger {
     if (!this._logger) {
       LoggerInstance.error('Logger instance is not defined.')
       LoggerInstance.error('Using default instance.')

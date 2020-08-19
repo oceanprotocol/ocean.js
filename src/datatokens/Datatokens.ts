@@ -1,27 +1,34 @@
-const defaultFactoryABI = require('@oceanprotocol/contracts/artifacts/DTFactory.json')
-const defaultDatatokensABI = require('@oceanprotocol/contracts/artifacts/DataTokenTemplate.json')
+import Web3 from 'web3'
+import { AbiItem } from 'web3-utils/types'
+
+import defaultFactoryABI from '@oceanprotocol/contracts/artifacts/DTFactory.json'
+import defaultDatatokensABI from '@oceanprotocol/contracts/artifacts/DataTokenTemplate.json'
 
 /**
  * Provides a interface to DataTokens
  */
 export class DataTokens {
   public factoryAddress: string
-  public factoryABI: any
-  public datatokensABI: any
-  public web3: any
+  public factoryABI: AbiItem | AbiItem[]
+  public datatokensABI: AbiItem | AbiItem[]
+  public web3: Web3
 
   /**
-     * Instantiate DataTokens (independently of Ocean).
-     * @param {String} factoryAddress
-     * @param {any} factoryABI
-     * @param {any} datatokensABI
-     * @param {any} web3 
-     
-     */
-  constructor(factoryAddress: string, factoryABI: any, datatokensABI: any, web3: any) {
+   * Instantiate DataTokens (independently of Ocean).
+   * @param {String} factoryAddress
+   * @param {AbiItem | AbiItem[]} factoryABI
+   * @param {AbiItem | AbiItem[]} datatokensABI
+   * @param {Web3} web3
+   */
+  constructor(
+    factoryAddress: string,
+    factoryABI: AbiItem | AbiItem[],
+    datatokensABI: AbiItem | AbiItem[],
+    web3: Web3
+  ) {
     this.factoryAddress = factoryAddress
-    this.factoryABI = factoryABI || defaultFactoryABI.abi
-    this.datatokensABI = datatokensABI || defaultDatatokensABI.abi
+    this.factoryABI = factoryABI || (defaultFactoryABI.abi as AbiItem[])
+    this.datatokensABI = datatokensABI || (defaultDatatokensABI.abi as AbiItem[])
     this.web3 = web3
   }
 

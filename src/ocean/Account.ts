@@ -1,4 +1,3 @@
-import BigNumber from 'bignumber.js'
 import { Instantiable, InstantiableConfig } from '../Instantiable.abstract'
 
 /**

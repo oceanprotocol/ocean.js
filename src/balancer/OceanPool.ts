@@ -1,32 +1,35 @@
-import { Pool } from './balancerlib'
 import Web3 from 'web3'
+import { AbiItem } from 'web3-utils/types'
+import { Pool } from './Pool'
 
+/**
+ * Ocean Pools submodule exposed under ocean.pool
+ */
 export class OceanPool extends Pool {
-  /** Ocean related functions */
   public oceanAddress: string = null
   public dtAddress: string = null
 
   constructor(
     web3: Web3,
-    FactoryABI: any = null,
-    PoolABI: any = null,
+    factoryABI: AbiItem | AbiItem[] = null,
+    poolABI: AbiItem | AbiItem[] = null,
     factoryAddress: string = null,
     oceanAddress: string = null,
     gaslimit?: number
   ) {
-    super(web3, FactoryABI, PoolABI, factoryAddress, gaslimit)
+    super(web3, factoryABI, poolABI, factoryAddress, gaslimit)
     if (oceanAddress) {
       this.oceanAddress = oceanAddress
     }
   }
 
   /**
-     * create DataToken pool
+     * Create DataToken pool
      @param {String} account
-     * @param {String} token  Data Token Address
-     * @param {String} amount Data Token Amount
-     * @param {String} weight Data Token Weight
-     * @return {any}
+     * @param {String} token  Data Token address
+     * @param {String} amount Data Token amount
+     * @param {String} weight Data Token weight
+     * @return {String}
      */
   public async createDTPool(
     account: string,
@@ -34,8 +37,8 @@ export class OceanPool extends Pool {
     amount: string,
     weight: string,
     fee: string,
-    finalize: boolean = true
-  ): Promise<any> {
+    finalize = true
+  ): Promise<string> {
     if (this.oceanAddress == null) {
       console.error('oceanAddress is not defined')
       return null
@@ -66,7 +69,8 @@ export class OceanPool extends Pool {
     return address
   }
 
-  /* Get DataToken address of token in this pool
+  /**
+   * Get DataToken address of token in this pool
    * @param {String} account
    * @param {String} poolAddress
    * @return {string}
@@ -76,6 +80,7 @@ export class OceanPool extends Pool {
     const tokens = await this.getCurrentTokens(account, poolAddress)
     let token
     for (token of tokens) {
+      // TODO: Potential timing attack, left side: true
       if (token !== this.oceanAddress) this.dtAddress = token
     }
     return this.dtAddress
@@ -85,9 +90,9 @@ export class OceanPool extends Pool {
    * Get Ocean Token balance of a pool
    * @param {String} account
    * @param {String} poolAddress
-   * @return {any}
+   * @return {String}
    */
-  public async getOceanReserve(account: string, poolAddress: string): Promise<any> {
+  public async getOceanReserve(account: string, poolAddress: string): Promise<string> {
     if (this.oceanAddress == null) {
       console.error('oceanAddress is not defined')
       return null
@@ -99,20 +104,20 @@ export class OceanPool extends Pool {
    * Get Data Token balance of a pool
    * @param {String} account
    * @param {String} poolAddress
-   * @return {any}
+   * @return {String}
    */
-  public async getDTReserve(account: string, poolAddress: string): Promise<any> {
+  public async getDTReserve(account: string, poolAddress: string): Promise<string> {
     await this.getDTAddress(account, poolAddress)
     return super.getReserve(account, poolAddress, this.dtAddress)
   }
 
   /**
-   * Buy Data Token from  a pool
+   * Buy Data Token from a pool
    * @param {String} account
    * @param {String} poolAddress
-   * @param {String} amount  Data Token Amount
-   * @param {String} oceanAmount  Ocean Token Amount payed
-   * @param {String} maxPrice  Maximum Price to pay
+   * @param {String} amount  Data Token amount
+   * @param {String} oceanAmount  Ocean Token amount payed
+   * @param {String} maxPrice  Maximum price to pay
    * @return {any}
    */
   public async buyDT(
@@ -151,9 +156,9 @@ export class OceanPool extends Pool {
    * Sell Data Token
    * @param {String} account
    * @param {String} poolAddress
-   * @param {String} amount  Data Token Amount
-   * @param {String} oceanAmount  Ocean Token Amount expected
-   * @param {String} maxPrice  Minimum Price to sell
+   * @param {String} amount  Data Token amount
+   * @param {String} oceanAmount  Ocean Token amount expected
+   * @param {String} maxPrice  Minimum price to sell
    * @return {any}
    */
   public async sellDT(
@@ -183,7 +188,7 @@ export class OceanPool extends Pool {
    * Add Data Token amount to pool liquidity
    * @param {String} account
    * @param {String} poolAddress
-   * @param {String} amount  Data Token Amount
+   * @param {String} amount Data Token amount
    * @return {any}
    */
   public async addDTLiquidity(
@@ -212,7 +217,7 @@ export class OceanPool extends Pool {
    * Remove Data Token amount from pool liquidity
    * @param {String} account
    * @param {String} poolAddress
-   * @param {String} amount  pool Liquidity Amount
+   * @param {String} amount Data Token amount
    * @return {any}
    */
   public async removeDTLiquidity(
@@ -236,7 +241,7 @@ export class OceanPool extends Pool {
    * Add Ocean Token amount to pool liquidity
    * @param {String} account
    * @param {String} poolAddress
-   * @param {String} amount  Data Token Amount
+   * @param {String} amount Ocean Token amount in OCEAN
    * @return {any}
    */
   public async addOceanLiquidity(
@@ -268,7 +273,7 @@ export class OceanPool extends Pool {
    * Remove Ocean Token amount from pool liquidity
    * @param {String} account
    * @param {String} poolAddress
-   * @param {String} amount  pool Liquidity Amount
+   * @param {String} amount Ocean Token amount in OCEAN
    * @return {any}
    */
   public removeOceanLiquidity(
@@ -292,12 +297,12 @@ export class OceanPool extends Pool {
   }
 
   /**
-   * Get Data Token Price from pool
+   * Get Data Token price from pool
    * @param {String} account
    * @param {String} poolAddress
-   * @return {any}
+   * @return {String}
    */
-  public async getDTPrice(account: string, poolAddress: string): Promise<any> {
+  public async getDTPrice(account: string, poolAddress: string): Promise<string> {
     if (this.oceanAddress == null) {
       console.error('oceanAddress is not defined')
       return null
@@ -307,14 +312,14 @@ export class OceanPool extends Pool {
   }
 
   /**
-   * Search all pools that have DT in their composition
+   * Search all pools that have Data Token in their composition
    * @param {String} account
    * @param {String} dtAddress
    * @return {String[]}
    */
   public async searchPoolforDT(account: string, dtAddress: string): Promise<string[]> {
     const result: string[] = []
-    const factory = new this.web3.eth.Contract(this.FactoryABI, this.factoryAddress, {
+    const factory = new this.web3.eth.Contract(this.factoryABI, this.factoryAddress, {
       from: account
     })
     const events = await factory.getPastEvents('SPoolRegistered', {
