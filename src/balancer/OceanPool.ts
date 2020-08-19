@@ -29,7 +29,7 @@ export class OceanPool extends Pool {
      * @param {String} token  Data Token address
      * @param {String} amount Data Token amount
      * @param {String} weight Data Token weight
-     * @return {any}
+     * @return {String}
      */
   public async createDTPool(
     account: string,
@@ -38,7 +38,7 @@ export class OceanPool extends Pool {
     weight: string,
     fee: string,
     finalize = true
-  ): Promise<any> {
+  ): Promise<string> {
     if (this.oceanAddress == null) {
       console.error('oceanAddress is not defined')
       return null
@@ -90,9 +90,9 @@ export class OceanPool extends Pool {
    * Get Ocean Token balance of a pool
    * @param {String} account
    * @param {String} poolAddress
-   * @return {any}
+   * @return {String}
    */
-  public async getOceanReserve(account: string, poolAddress: string): Promise<any> {
+  public async getOceanReserve(account: string, poolAddress: string): Promise<string> {
     if (this.oceanAddress == null) {
       console.error('oceanAddress is not defined')
       return null
@@ -104,9 +104,9 @@ export class OceanPool extends Pool {
    * Get Data Token balance of a pool
    * @param {String} account
    * @param {String} poolAddress
-   * @return {any}
+   * @return {String}
    */
-  public async getDTReserve(account: string, poolAddress: string): Promise<any> {
+  public async getDTReserve(account: string, poolAddress: string): Promise<string> {
     await this.getDTAddress(account, poolAddress)
     return super.getReserve(account, poolAddress, this.dtAddress)
   }
