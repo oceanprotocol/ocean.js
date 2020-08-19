@@ -1,5 +1,5 @@
 export class SubscribableObserver<T, P> {
-  public completed: boolean = false
+  public completed = false
 
   private subscriptions = new Set<{
     onNext?: (next: T) => void

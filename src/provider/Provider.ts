@@ -126,7 +126,7 @@ export class Provider extends Instantiable {
     destination: string,
     account: Account,
     files: File[],
-    index: number = -1
+    index = -1
   ): Promise<any> {
     await this.getNonce(account.getId())
     const signature = await this.createSignature(account, did + this.nonce)

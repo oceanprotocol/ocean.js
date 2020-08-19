@@ -274,10 +274,10 @@ describe('Compute flow', () => {
       assert(order != null)
       const computeOrder = JSON.parse(order)
       const tx = await datatoken.transferWei(
-        computeOrder['dataToken'],
-        computeOrder['to'],
-        String(computeOrder['numTokens']),
-        computeOrder['from']
+        computeOrder.dataToken,
+        computeOrder.to,
+        String(computeOrder.numTokens),
+        computeOrder.from
       )
       const response = await ocean.compute.start(
         ddo.id,
@@ -342,10 +342,10 @@ describe('Compute flow', () => {
       )
       const algoOrder = JSON.parse(orderalgo)
       const algoTx = await datatoken.transferWei(
-        algoOrder['dataToken'],
-        algoOrder['to'],
-        String(algoOrder['numTokens']),
-        algoOrder['from']
+        algoOrder.dataToken,
+        algoOrder.to,
+        String(algoOrder.numTokens),
+        algoOrder.from
       )
       const order = await ocean.compute.order(
         bob.getId(),
@@ -357,10 +357,10 @@ describe('Compute flow', () => {
       assert(order != null)
       const computeOrder = JSON.parse(order)
       const tx = await datatoken.transferWei(
-        computeOrder['dataToken'],
-        computeOrder['to'],
-        String(computeOrder['numTokens']),
-        computeOrder['from']
+        computeOrder.dataToken,
+        computeOrder.to,
+        String(computeOrder.numTokens),
+        computeOrder.from
       )
       const response = await ocean.compute.start(
         ddo.id,

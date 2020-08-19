@@ -29,7 +29,7 @@ export default class ContractHandler extends Instantiable {
     this.setInstanceConfig(config)
   }
 
-  public async get(what: string, optional: boolean = false): Promise<Contract> {
+  public async get(what: string, optional = false): Promise<Contract> {
     const where = (await this.ocean.network.getNetworkName()).toLowerCase()
     const networkId = await this.ocean.network.getNetworkId()
     try {

@@ -155,13 +155,13 @@ describe('Marketplace flow', () => {
     it('Bob consumes asset 1', async () => {
       await ocean.assets
         .order(ddo.id, accessService.type, bob.getId())
-        .then(async (res: string) => {
+        .then(async (res: any) => {
           res = JSON.parse(res)
           return await datatoken.transferWei(
-            res['dataToken'],
-            res['to'],
-            String(res['numTokens']),
-            res['from']
+            res.dataToken,
+            res.to,
+            String(res.numTokens),
+            res.from
           )
         })
         .then(async (tx) => {
