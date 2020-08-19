@@ -20,7 +20,7 @@ export class OceanPool extends Pool {
   }
 
   /**
-     * create DataToken pool
+     * Create DataToken pool
      @param {String} account
      * @param {String} token  Data Token address
      * @param {String} amount Data Token amount
@@ -33,7 +33,7 @@ export class OceanPool extends Pool {
     amount: string,
     weight: string,
     fee: string,
-    finalize: boolean = true
+    finalize = true
   ): Promise<any> {
     if (this.oceanAddress == null) {
       console.error('oceanAddress is not defined')
@@ -107,7 +107,7 @@ export class OceanPool extends Pool {
   }
 
   /**
-   * Buy Data Token from  a pool
+   * Buy Data Token from a pool
    * @param {String} account
    * @param {String} poolAddress
    * @param {String} amount  Data Token amount

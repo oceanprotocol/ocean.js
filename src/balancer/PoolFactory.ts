@@ -2,7 +2,7 @@ import Web3 from 'web3'
 import * as jsonFactoryABI from '@oceanprotocol/contracts/artifacts/SFactory.json'
 
 export class PoolFactory {
-  public GASLIMIT_DEFAULT: number = 5000000
+  public GASLIMIT_DEFAULT = 5000000
   public web3: any = null
   public FactoryABI: any
   public factoryAddress: any

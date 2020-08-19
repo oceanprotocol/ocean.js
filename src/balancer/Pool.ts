@@ -232,7 +232,7 @@ export class Pool extends PoolFactory {
    * Get tokens composing this pool
    * @param {String} account
    * @param {String} poolAddress
-   * @return {Array}
+   * @return {String[]}
    */
   async getCurrentTokens(account: string, poolAddress: string): Promise<string[]> {
     const pool = new this.web3.eth.Contract(this.PoolABI, poolAddress, {
@@ -251,9 +251,9 @@ export class Pool extends PoolFactory {
    * Get the final tokens composing this pool
    * @param {String} account
    * @param {String} poolAddress
-   * @return {Array}
+   * @return {String[]}
    */
-  async getFinalTokens(account: string, poolAddress: string): Promise<any> {
+  async getFinalTokens(account: string, poolAddress: string): Promise<string[]> {
     const pool = new this.web3.eth.Contract(this.PoolABI, poolAddress, {
       from: account
     })
@@ -272,7 +272,7 @@ export class Pool extends PoolFactory {
    * @param {String} poolAddress
    * @return {String}
    */
-  async getController(account: string, poolAddress: string): Promise<any> {
+  async getController(account: string, poolAddress: string): Promise<string> {
     const pool = new this.web3.eth.Contract(this.PoolABI, poolAddress, {
       from: account
     })
@@ -296,7 +296,7 @@ export class Pool extends PoolFactory {
     account: string,
     poolAddress: string,
     controllerAddress: string
-  ): Promise<any> {
+  ): Promise<string> {
     const pool = new this.web3.eth.Contract(this.PoolABI, poolAddress, {
       from: account
     })
@@ -318,7 +318,7 @@ export class Pool extends PoolFactory {
    * @param {String} token  Address of the token
    * @return {Boolean}
    */
-  async isBound(account: string, poolAddress: string, token: string): Promise<any> {
+  async isBound(account: string, poolAddress: string, token: string): Promise<boolean> {
     const pool = new this.web3.eth.Contract(this.PoolABI, poolAddress, {
       from: account
     })
@@ -336,7 +336,7 @@ export class Pool extends PoolFactory {
    * @param {String} account
    * @param {String} poolAddress
    * @param {String} token  Address of the token
-   * @return {Boolean}
+   * @return {String}
    */
   async getReserve(account: string, poolAddress: string, token: string): Promise<string> {
     const pool = new this.web3.eth.Contract(this.PoolABI, poolAddress, {
@@ -358,7 +358,7 @@ export class Pool extends PoolFactory {
    * @param {String} poolAddress
    * @return {Boolean}
    */
-  async isFinalized(account: string, poolAddress: string): Promise<any> {
+  async isFinalized(account: string, poolAddress: string): Promise<boolean> {
     const pool = new this.web3.eth.Contract(this.PoolABI, poolAddress, {
       from: account
     })
@@ -396,7 +396,7 @@ export class Pool extends PoolFactory {
    * @param {String} account
    * @param {String} poolAddress
    * @param {String} token
-   * @return {Number}
+   * @return {String}
    */
   async getNormalizedWeight(
     account: string,
@@ -421,7 +421,7 @@ export class Pool extends PoolFactory {
    * @param {String} account
    * @param {String} poolAddress
    * @param {String} token
-   * @return {Number}
+   * @return {String}
    */
   async getDenormalizedWeight(
     account: string,
@@ -549,14 +549,14 @@ export class Pool extends PoolFactory {
    * @param {String} account
    * @param {String} poolAddress
    * @param {String} poolAmountOut will be converted to wei
-   * @param {String} maxAmountsIn  array holding maxAmount per each token, will be converted to wei
+   * @param {String[]} maxAmountsIn  array holding maxAmount per each token, will be converted to wei
    * @return {any}
    */
   async joinPool(
     account: string,
     poolAddress: string,
     poolAmountOut: string,
-    maxAmountsIn: any
+    maxAmountsIn: string[]
   ): Promise<any> {
     const pool = new this.web3.eth.Contract(this.PoolABI, poolAddress, {
       from: account
@@ -586,7 +586,7 @@ export class Pool extends PoolFactory {
    * @param {String} account
    * @param {String} poolAddress
    * @param {String} poolAmountIn will be converted to wei
-   * @param {String} maxAmountsIn  array holding maxAmount per each token, will be converted to wei
+   * @param {String[]} minAmountsOut  array holding minAmount per each token, will be converted to wei
    * @return {any}
    */
   async exitPool(
@@ -783,14 +783,14 @@ export class Pool extends PoolFactory {
    * @param {String} poolAddress
    * @param {String} tokenIn
    * @param {String} tokenOut
-   * @return {any}
+   * @return {String}
    */
   async getSpotPriceSansFee(
     account: string,
     poolAddress: string,
     tokenIn: string,
     tokenOut: string
-  ): Promise<any> {
+  ): Promise<string> {
     const pool = new this.web3.eth.Contract(this.PoolABI, poolAddress, {
       from: account
     })
