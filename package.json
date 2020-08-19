@@ -6,6 +6,7 @@
   "typings": "./dist/node/lib.d.ts",
   "unpkg": "./dist/browser/lib.cjs2.min.js",
   "scripts": {
+    "start": "npm run clean && npm run build:metadata && tsc -w",
     "build": "npm run clean && npm run build:metadata && npm run build:tsc",
     "build:tsc": "tsc --sourceMap",
     "build:metadata": "./scripts/get-metadata.js > src/metadata.json",
