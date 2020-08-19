@@ -1,22 +1,23 @@
 import Web3 from 'web3'
+import { AbiItem } from 'web3-utils/types'
 import * as jsonFactoryABI from '@oceanprotocol/contracts/artifacts/SFactory.json'
 
 export class PoolFactory {
   public GASLIMIT_DEFAULT = 5000000
-  public web3: any = null
-  public FactoryABI: any
-  public factoryAddress: any
+  public web3: Web3 = null
+  public factoryABI: AbiItem | AbiItem[]
+  public factoryAddress: string
 
   constructor(
     web3: Web3,
-    FactoryABI: any = null,
+    factoryABI: AbiItem | AbiItem[] = null,
     factoryAddress: string = null,
     gaslimit?: number
   ) {
     this.web3 = web3
 
-    if (FactoryABI) this.FactoryABI = FactoryABI
-    else this.FactoryABI = jsonFactoryABI.abi
+    if (factoryABI) this.factoryABI = factoryABI
+    else this.factoryABI = jsonFactoryABI.abi
     if (factoryAddress) {
       this.factoryAddress = factoryAddress
     }
@@ -37,7 +38,7 @@ export class PoolFactory {
       return null
     }
 
-    const factory = new this.web3.eth.Contract(this.FactoryABI, this.factoryAddress, {
+    const factory = new this.web3.eth.Contract(this.factoryABI, this.factoryAddress, {
       from: account
     })
 

@@ -1,18 +1,12 @@
 import { Accounts } from './Accounts'
-
 import { Assets } from './Assets'
-
-// import { Compute } from './Compute'
-
 import { Versions } from './Versions'
 import { OceanUtils } from './utils/Utils'
-
 import { MetadataStore } from '../metadatastore/MetadataStore'
 import { Provider } from '../provider/Provider'
 import { DataTokens } from '../datatokens/Datatokens'
 import { Network } from '../datatokens/Network'
 import { Config } from '../models/Config'
-
 import {
   Instantiable,
   generateIntantiableConfigFromConfig

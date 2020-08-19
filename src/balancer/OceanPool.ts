@@ -1,19 +1,23 @@
 import Web3 from 'web3'
+import { AbiItem } from 'web3-utils/types'
 import { Pool } from './Pool'
 
+/**
+ * Ocean Pools submodule exposed under ocean.pool
+ */
 export class OceanPool extends Pool {
   public oceanAddress: string = null
   public dtAddress: string = null
 
   constructor(
     web3: Web3,
-    FactoryABI: any = null,
-    PoolABI: any = null,
+    factoryABI: AbiItem | AbiItem[] = null,
+    poolABI: AbiItem | AbiItem[] = null,
     factoryAddress: string = null,
     oceanAddress: string = null,
     gaslimit?: number
   ) {
-    super(web3, FactoryABI, PoolABI, factoryAddress, gaslimit)
+    super(web3, factoryABI, poolABI, factoryAddress, gaslimit)
     if (oceanAddress) {
       this.oceanAddress = oceanAddress
     }
@@ -76,6 +80,7 @@ export class OceanPool extends Pool {
     const tokens = await this.getCurrentTokens(account, poolAddress)
     let token
     for (token of tokens) {
+      // TODO: Potential timing attack, left side: true
       if (token !== this.oceanAddress) this.dtAddress = token
     }
     return this.dtAddress
@@ -314,7 +319,7 @@ export class OceanPool extends Pool {
    */
   public async searchPoolforDT(account: string, dtAddress: string): Promise<string[]> {
     const result: string[] = []
-    const factory = new this.web3.eth.Contract(this.FactoryABI, this.factoryAddress, {
+    const factory = new this.web3.eth.Contract(this.factoryABI, this.factoryAddress, {
       from: account
     })
     const events = await factory.getPastEvents('SPoolRegistered', {

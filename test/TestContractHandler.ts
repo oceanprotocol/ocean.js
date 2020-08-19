@@ -1,4 +1,6 @@
+import Web3 from 'web3'
 import { Contract } from 'web3-eth-contract'
+import { AbiItem } from 'web3-utils/types'
 
 export class TestContractHandler {
   public factory: Contract
@@ -8,14 +10,14 @@ export class TestContractHandler {
   public factoryBytecode: string
   public factoryAddress: string
   public templateAddress: string
-  public web3: any
+  public web3: Web3
 
   constructor(
-    factoryABI: Contract,
-    datatokensABI: Contract,
+    factoryABI: AbiItem | AbiItem[],
+    datatokensABI: AbiItem | AbiItem[],
     templateBytecode: string,
     factoryBytecode: string,
-    web3: any
+    web3: Web3
   ) {
     this.web3 = web3
     this.factory = new this.web3.eth.Contract(factoryABI)
