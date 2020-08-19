@@ -1,13 +1,14 @@
+import { AbiItem } from 'web3-utils/types'
 import { TestContractHandler } from '../TestContractHandler'
 import { DataTokens } from '../../src/datatokens/Datatokens'
 import { Ocean } from '../../src/ocean/Ocean'
 import config from './config'
 import { assert } from 'console'
 import { ServiceComputePrivacy } from '../../src/ddo/interfaces/Service'
-const Web3 = require('web3')
+import Web3 from 'web3'
+import factory from '@oceanprotocol/contracts/artifacts/DTFactory.json'
+import datatokensTemplate from '@oceanprotocol/contracts/artifacts/DataTokenTemplate.json'
 const web3 = new Web3('http://127.0.0.1:8545')
-const factory = require('@oceanprotocol/contracts/artifacts/DTFactory.json')
-const datatokensTemplate = require('@oceanprotocol/contracts/artifacts/DataTokenTemplate.json')
 
 describe('Compute flow', () => {
   let owner
@@ -55,8 +56,8 @@ describe('Compute flow', () => {
   describe('#MarketplaceComputeFlow-Test', () => {
     it('Initialize Ocean contracts v3', async () => {
       contracts = new TestContractHandler(
-        factory.abi,
-        datatokensTemplate.abi,
+        factory.abi as AbiItem[],
+        datatokensTemplate.abi as AbiItem[],
         datatokensTemplate.bytecode,
         factory.bytecode,
         web3
@@ -74,8 +75,8 @@ describe('Compute flow', () => {
     it('Alice deploys datatoken contract', async () => {
       datatoken = new DataTokens(
         contracts.factoryAddress,
-        factory.abi,
-        datatokensTemplate.abi,
+        factory.abi as AbiItem[],
+        datatokensTemplate.abi as AbiItem[],
         web3
       )
       tokenAddress = await datatoken.create(blob, alice.getId())

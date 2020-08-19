@@ -14,13 +14,12 @@ export class DataTokens {
   public web3: Web3
 
   /**
-     * Instantiate DataTokens (independently of Ocean).
-     * @param {String} factoryAddress
-     * @param {any} factoryABI
-     * @param {any} datatokensABI
-     * @param {any} web3 
-     
-     */
+   * Instantiate DataTokens (independently of Ocean).
+   * @param {String} factoryAddress
+   * @param {AbiItem | AbiItem[]} factoryABI
+   * @param {AbiItem | AbiItem[]} datatokensABI
+   * @param {Web3} web3
+   */
   constructor(
     factoryAddress: string,
     factoryABI: AbiItem | AbiItem[],

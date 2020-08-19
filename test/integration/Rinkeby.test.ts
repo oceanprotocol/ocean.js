@@ -1,10 +1,10 @@
 import { TestContractHandler } from '../TestContractHandler'
 import { DataTokens } from '../../src/datatokens/Datatokens'
 
-const Web3 = require('web3')
+import Web3 from 'web3'
+import factory from '@oceanprotocol/contracts/artifacts/DTFactory.json'
+import datatokensTemplate from '@oceanprotocol/contracts/artifacts/DataTokenTemplate.json'
 const web3 = new Web3('wss://rinkeby.infura.io/ws/v3/357f2fe737db4304bd2f7285c5602d0d')
-const factory = require('@oceanprotocol/contracts/artifacts/DTFactory.json')
-const datatokensTemplate = require('@oceanprotocol/contracts/artifacts/DataTokenTemplate.json')
 
 describe('Rinkeby test', () => {
   // let account

@@ -20,8 +20,6 @@
   ],
   "plugins": ["@typescript-eslint", "prettier"],
   "rules": {
-    "@typescript-eslint/explicit-member-accessibility": "off",
-    "@typescript-eslint/no-var-requires": "off",
     "no-empty": ["error", { "allowEmptyCatch": true }],
     "prefer-destructuring": ["warn"],
     "no-dupe-class-members": ["warn"],

@@ -47,6 +47,7 @@ export default class ContractHandler extends Instantiable {
 
   private async load(what: string, where: string, networkId: number): Promise<Contract> {
     this.logger.debug('Loading', what, 'from', where)
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
     const artifact = require(`@oceanprotocol/contracts/artifacts/${where}/${what}.json`)
     // Logger.log('Loaded artifact', artifact)
     const code = await this.web3.eth.getCode(artifact.address)

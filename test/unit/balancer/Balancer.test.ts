@@ -1,17 +1,18 @@
 import { assert } from 'chai'
+import { AbiItem } from 'web3-utils/types'
 import { TestContractHandler } from '../../TestContractHandler'
 import { BalancerContractHandler } from '../../BalancerContractHandler'
 import { DataTokens } from '../../../src/datatokens/Datatokens'
 import { OceanPool } from '../../../src/balancer/OceanPool'
 
-const Web3 = require('web3')
-const web3 = new Web3('http://127.0.0.1:8545')
-const factory = require('@oceanprotocol/contracts/artifacts/DTFactory.json')
-const datatokensTemplate = require('@oceanprotocol/contracts/artifacts/DataTokenTemplate.json')
+import Web3 from 'web3'
+import factory from '@oceanprotocol/contracts/artifacts/DTFactory.json'
+import datatokensTemplate from '@oceanprotocol/contracts/artifacts/DataTokenTemplate.json'
 
 // this will be replaced by our SFactory/SPool
-const OceanPoolFactory = require('@oceanprotocol/contracts/artifacts/SFactory.json')
-const OceanSPool = require('@oceanprotocol/contracts/artifacts/SPool.json')
+import OceanPoolFactory from '@oceanprotocol/contracts/artifacts/SFactory.json'
+import OceanSPool from '@oceanprotocol/contracts/artifacts/SPool.json'
+const web3 = new Web3('http://127.0.0.1:8545')
 
 describe('Balancer flow', () => {
   let oceanTokenAddress
@@ -35,9 +36,9 @@ describe('Balancer flow', () => {
     before(async () => {
       // deploy SFactory
       const SContracts = new BalancerContractHandler(
-        OceanPoolFactory.abi,
+        OceanPoolFactory.abi as AbiItem[],
         OceanPoolFactory.bytecode,
-        OceanSPool.abi,
+        OceanSPool.abi as AbiItem[],
         OceanSPool.bytecode,
         web3
       )
@@ -50,8 +51,8 @@ describe('Balancer flow', () => {
 
       // deploy DT Factory
       contracts = new TestContractHandler(
-        factory.abi,
-        datatokensTemplate.abi,
+        factory.abi as AbiItem[],
+        datatokensTemplate.abi as AbiItem[],
         datatokensTemplate.bytecode,
         factory.bytecode,
         web3
@@ -65,8 +66,8 @@ describe('Balancer flow', () => {
       // initialize DataTokens
       datatoken = new DataTokens(
         contracts.factoryAddress,
-        factory.abi,
-        datatokensTemplate.abi,
+        factory.abi as AbiItem[],
+        datatokensTemplate.abi as AbiItem[],
         web3
       )
       assert(datatoken !== null)
@@ -80,8 +81,8 @@ describe('Balancer flow', () => {
       // Alice creates a Datatoken
       oceandatatoken = new DataTokens(
         contracts.factoryAddress,
-        factory.abi,
-        datatokensTemplate.abi,
+        factory.abi as AbiItem[],
+        datatokensTemplate.abi as AbiItem[],
         web3
       )
       oceanTokenAddress = await oceandatatoken.create(blob, alice)
@@ -89,8 +90,8 @@ describe('Balancer flow', () => {
     it('should initialize OceanPool class', async () => {
       Pool = new OceanPool(
         web3,
-        OceanPoolFactory.abi,
-        OceanSPool.abi,
+        OceanPoolFactory.abi as AbiItem[],
+        OceanSPool.abi as AbiItem[],
         OceanPoolFactoryAddress,
         oceanTokenAddress
       )
