@@ -1,69 +1,15 @@
-// import * as jsonFactoryABI from './artifacts/SFactory.json'
-// import * as jsonPoolABI from './artifacts/SPool.json'
-import * as jsonFactoryABI from '@oceanprotocol/contracts/artifacts/SFactory.json'
-import * as jsonPoolABI from '@oceanprotocol/contracts/artifacts/SPool.json'
 import Web3 from 'web3'
-
-const Decimal = require('decimal.js')
+import Decimal from 'decimal.js'
+import * as jsonPoolABI from '@oceanprotocol/contracts/artifacts/SPool.json'
+import { PoolFactory } from './PoolFactory'
 
 /**
  * Provides an interface to Balancer BPool & BFactory
  */
-
 export interface TokensToAdd {
   address: string
   amount: string
   weight: string
-}
-
-export class PoolFactory {
-  public GASLIMIT_DEFAULT: number = 5000000
-  public web3: any = null
-  public FactoryABI: any
-  public factoryAddress: any
-
-  constructor(
-    web3: Web3,
-    FactoryABI: any = null,
-    factoryAddress: string = null,
-    gaslimit?: number
-  ) {
-    this.web3 = web3
-
-    if (FactoryABI) this.FactoryABI = FactoryABI
-    else this.FactoryABI = jsonFactoryABI.abi
-    if (factoryAddress) {
-      this.factoryAddress = factoryAddress
-    }
-    if (gaslimit) this.GASLIMIT_DEFAULT = gaslimit
-  }
-
-  /**
-   * Creates a new pool
-   */
-  async createPool(account: string): Promise<string> {
-    if (this.web3 == null) {
-      console.error('Web3 object is null')
-      return null
-    }
-    if (this.factoryAddress == null) {
-      console.error('bfactoryAddress is null')
-      return null
-    }
-    const factory = new this.web3.eth.Contract(this.FactoryABI, this.factoryAddress, {
-      from: account
-    })
-    const transactiondata = await factory.methods
-      .newSPool()
-      .send({ from: account, gas: this.GASLIMIT_DEFAULT })
-    let pooladdress = null
-    try {
-      pooladdress = transactiondata.events.SPoolRegistered.returnValues[0]
-    } catch (e) {
-      console.error(e)
-    }
-    return pooladdress
-  }
 }
 
 export class Pool extends PoolFactory {
@@ -142,12 +88,12 @@ export class Pool extends PoolFactory {
   }
 
   /**
-     * Get Pool shares 
-     * @param {String} account
-     * @param {String} poolAddress
-     
-     */
-  async sharesBalance(account: string, poolAddress: string): Promise<any> {
+   * Get Pool shares
+   * @param {String} account
+   * @param {String} poolAddress
+   * @return {String}
+   */
+  async sharesBalance(account: string, poolAddress: string): Promise<string> {
     const minABI = [
       {
         constant: true,
@@ -859,20 +805,21 @@ export class Pool extends PoolFactory {
   }
 
   public async calcInGivenOut(
-    tokenBalanceIn,
-    tokenWeightIn,
-    tokenBalanceOut,
-    tokenWeightOut,
-    tokenAmountOut,
-    swapFee
+    tokenBalanceIn: string,
+    tokenWeightIn: string,
+    tokenBalanceOut: string,
+    tokenWeightOut: string,
+    tokenAmountOut: string,
+    swapFee: string
   ): Promise<string> {
-    const weightRatio = Decimal(tokenWeightOut).div(Decimal(tokenWeightIn))
-    const diff = Decimal(tokenBalanceOut).minus(tokenAmountOut)
-    const y = Decimal(tokenBalanceOut).div(diff)
-    const foo = y.pow(weightRatio).minus(Decimal(1))
-    const tokenAmountIn = Decimal(tokenBalanceIn)
+    const weightRatio = new Decimal(tokenWeightOut).div(new Decimal(tokenWeightIn))
+    const diff = new Decimal(tokenBalanceOut).minus(tokenAmountOut)
+    const y = new Decimal(tokenBalanceOut).div(diff)
+    const foo = y.pow(weightRatio).minus(new Decimal(1))
+    const tokenAmountIn = new Decimal(tokenBalanceIn)
       .times(foo)
-      .div(Decimal(1).minus(Decimal(swapFee)))
-    return tokenAmountIn
+      .div(new Decimal(1).minus(new Decimal(swapFee)))
+
+    return tokenAmountIn.toString()
   }
 }
