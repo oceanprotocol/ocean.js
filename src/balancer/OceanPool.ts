@@ -307,8 +307,7 @@ export class OceanPool extends Pool {
       console.error('oceanAddress is not defined')
       return null
     }
-    await this.getDTAddress(account, poolAddress)
-    return super.getSpotPrice(account, poolAddress, this.dtAddress, this.oceanAddress)
+    return this.getOceanNeeded(account, poolAddress, '1')
   }
 
   /**
