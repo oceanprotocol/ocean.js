@@ -116,16 +116,17 @@ export class Pool extends PoolFactory {
         type: 'function'
       }
     ] as AbiItem[]
-    const token = new this.web3.eth.Contract(minABI, poolAddress, {
-      from: account
-    })
+
     let result = null
+
     try {
-      result = this.web3.utils.fromWei(
-        await token.methods
-          .balanceOf(account)
-          .call({ from: account, gas: this.GASLIMIT_DEFAULT })
-      )
+      const token = new this.web3.eth.Contract(minABI, poolAddress, {
+        from: account
+      })
+      const balance = await token.methods
+        .balanceOf(account)
+        .call({ from: account, gas: this.GASLIMIT_DEFAULT })
+      result = this.web3.utils.fromWei(balance)
     } catch (e) {
       console.error(e)
     }
@@ -154,12 +155,10 @@ export class Pool extends PoolFactory {
       }
     ] as AbiItem[]
 
-    const token = new this.web3.eth.Contract(minABI, poolAddress)
-    // const pool = new this.web3.eth.Contract(this.poolABI, poolAddress)
-
     let result = null
 
     try {
+      const token = new this.web3.eth.Contract(minABI, poolAddress)
       const totalSupply = await token.methods.totalSupply().call()
       result = this.web3.utils.fromWei(totalSupply)
     } catch (e) {
