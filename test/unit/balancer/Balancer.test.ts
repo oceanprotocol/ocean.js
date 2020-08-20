@@ -133,6 +133,10 @@ describe('Balancer flow', () => {
       const currentOceanReserve = await Pool.getOceanReserve(alice, alicePoolAddress)
       assert(currentOceanReserve > 0)
     })
+    it('Get total supply of pool tokens', async () => {
+      const totalSupply = await Pool.totalSupply(alicePoolAddress)
+      assert(totalSupply > 0)
+    })
     it('Get amount of Ocean needed to buy 1 dtToken', async () => {
       const requiredOcean = await Pool.getOceanNeeded(alice, alicePoolAddress, '1')
       assert(requiredOcean > 0)
