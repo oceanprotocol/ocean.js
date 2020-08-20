@@ -89,7 +89,7 @@ export class Pool extends PoolFactory {
   }
 
   /**
-   * Get Pool shares
+   * Get user shares of pool tokens
    * @param {String} account
    * @param {String} poolAddress
    * @return {String}
@@ -116,16 +116,35 @@ export class Pool extends PoolFactory {
         type: 'function'
       }
     ] as AbiItem[]
-    const token = new this.web3.eth.Contract(minABI, poolAddress, {
-      from: account
-    })
+
     let result = null
+
     try {
-      result = this.web3.utils.fromWei(
-        await token.methods
-          .balanceOf(account)
-          .call({ from: account, gas: this.GASLIMIT_DEFAULT })
-      )
+      const token = new this.web3.eth.Contract(minABI, poolAddress, {
+        from: account
+      })
+      const balance = await token.methods
+        .balanceOf(account)
+        .call({ from: account, gas: this.GASLIMIT_DEFAULT })
+      result = this.web3.utils.fromWei(balance)
+    } catch (e) {
+      console.error(e)
+    }
+    return result
+  }
+
+  /**
+   * Get total supply of pool tokens
+   * @param {String} poolAddress
+   * @return {String}
+   */
+  async totalSupply(poolAddress: string): Promise<string> {
+    let result = null
+
+    try {
+      const pool = new this.web3.eth.Contract(this.poolABI, poolAddress)
+      const totalSupply = await pool.methods.totalSupply().call()
+      result = this.web3.utils.fromWei(totalSupply)
     } catch (e) {
       console.error(e)
     }
