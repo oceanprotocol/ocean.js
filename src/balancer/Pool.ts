@@ -139,27 +139,11 @@ export class Pool extends PoolFactory {
    * @return {String}
    */
   async totalSupply(poolAddress: string): Promise<string> {
-    const minABI = [
-      {
-        constant: true,
-        name: 'totalSupply',
-        outputs: [
-          {
-            name: 'balance',
-            type: 'uint256'
-          }
-        ],
-        payable: false,
-        stateMutability: 'view',
-        type: 'function'
-      }
-    ] as AbiItem[]
-
     let result = null
 
     try {
-      const token = new this.web3.eth.Contract(minABI, poolAddress)
-      const totalSupply = await token.methods.totalSupply().call()
+      const pool = new this.web3.eth.Contract(this.poolABI, poolAddress)
+      const totalSupply = await pool.methods.totalSupply().call()
       result = this.web3.utils.fromWei(totalSupply)
     } catch (e) {
       console.error(e)
