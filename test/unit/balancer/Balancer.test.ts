@@ -105,13 +105,15 @@ describe('Balancer flow', () => {
       await oceandatatoken.mint(oceanTokenAddress, alice, tokenAmount)
     })
     it('Alice transfers 200 ocean token to Bob', async () => {
-      const ts = await datatoken.transfer(oceanTokenAddress, bob, transferAmount, alice)
+      await datatoken.transfer(oceanTokenAddress, bob, transferAmount, alice)
     })
     it('Alice creates a new OceanPool pool', async () => {
       /// new pool with total DT = 45 , dt weight=90% with swap fee 2%
       alicePoolAddress = await Pool.createDTPool(alice, tokenAddress, '45', '9', '0.02')
-      assert(await Pool.totalSupply(alicePoolAddress) == 100)
-      assert(await Pool.getNumTokens(alice, alicePoolAddress) == 2)
+      const s = await Pool.totalSupply(alicePoolAddress)
+      assert(String(s) === '100', 'totalSupply does not match: ' + s)
+      const n = await Pool.getNumTokens(alice, alicePoolAddress)
+      assert(String(n) === '2', 'unexpected num tokens: ' + n)
     })
     it('Get pool information', async () => {
       const currentTokens = await Pool.getCurrentTokens(alice, alicePoolAddress)

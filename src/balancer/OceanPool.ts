@@ -37,7 +37,7 @@ export class OceanPool extends Pool {
     token: string,
     amount: string,
     weight: string,
-    fee: string,
+    fee: string
   ): Promise<string> {
     if (this.oceanAddress == null) {
       console.error('oceanAddress is not defined')
@@ -66,9 +66,14 @@ export class OceanPool extends Pool {
     )
 
     await super.setup(
-      account, address,
-      token, this.web3.utils.toWei(String(amount)), this.web3.utils.toWei(String(weight)),
-      this.oceanAddress, this.web3.utils.toWei(String(oceanAmount)), this.web3.utils.toWei(String(oceanWeight)),
+      account,
+      address,
+      token,
+      this.web3.utils.toWei(String(amount)),
+      this.web3.utils.toWei(String(weight)),
+      this.oceanAddress,
+      this.web3.utils.toWei(String(oceanAmount)),
+      this.web3.utils.toWei(String(oceanWeight)),
       this.web3.utils.toWei(fee)
     )
 
