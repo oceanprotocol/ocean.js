@@ -68,12 +68,24 @@ export class Config {
    */
   public poolFactoryABI?: any
 
+  
   /**
    * Pool ABI
    * @type {string}
    */
   public poolABI?: any
 
+  /**
+   * FixedRateExchangeAddress
+   * @type {string}
+   */
+  public fixedRateExchangeAddress?: string
+
+  /**
+   * FixedRateExchangeAddressABI
+   * @type {any}
+   */
+  public fixedRateExchangeAddressABI?: any
   /**
    * Log level.
    * @type {boolean | LogLevel}

@@ -19,7 +19,8 @@ const configs = [
     factoryAddress: null,
     metadataStoreUri: 'http://127.0.0.1:5000',
     providerUri: 'http://127.0.0.1:8030',
-    poolFactoryAddress: null
+    poolFactoryAddress: null,
+    fixedRateExchangeAddress: null
   },
   {
     chainId: 4,
@@ -29,7 +30,8 @@ const configs = [
     oceanTokenAddress: '0x8967BCF84170c91B0d24D4302C2376283b0B3a07',
     metadataStoreUri: 'https://aquarius.rinkeby.v3.dev-ocean.com',
     providerUri: 'https://provider.rinkeby.v3.dev-ocean.com',
-    poolFactoryAddress: '0xA4531C624A3D88323a1e178DABe1233AF178701B'
+    poolFactoryAddress: '0xA4531C624A3D88323a1e178DABe1233AF178701B',
+    fixedRateExchangeAddress: '0x7219AfFc1C2b474830D9d9b0423ecf47073C5488'
   },
   {
     chainId: 1,
@@ -39,7 +41,8 @@ const configs = [
     oceanTokenAddress: '0x985dd3d42de1e256d09e1c10f112bccb8015ad41',
     metadataStoreUri: null,
     providerUri: null,
-    poolFactoryAddress: null
+    poolFactoryAddress: null,
+    fixedRateExchangeAddress: null
   }
 ]
 
