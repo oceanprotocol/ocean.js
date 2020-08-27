@@ -32,8 +32,54 @@ export class Pool extends PoolFactory {
    * Creates a new pool
    */
   async createPool(account: string): Promise<string> {
-    const pooladdress = await super.createPool(account)
-    return pooladdress
+    return await super.createPool(account)
+  }
+
+  /**
+   * Setup a new pool by setting datatoken, base token, swap fee and
+   * finalizing the pool to make it public.
+   *
+   * @param {String} account ethereum address to use for sending this transaction
+   * @param {String} poolAddress address of new Balancer Pool
+   * @param {String} dataToken address of datatoken ERC20 contract
+   * @param {String} dataTokenAmount in wei
+   * @param {String} dataTokenWeight in wei
+   * @param {String} baseToken address of base token ERC20 contract
+   * @param {String} baseTokenAmount in wei
+   * @param {String} baseTokenWeight in wei
+   * @param {String} swapFee in wei
+   */
+  async setup(
+    account: string,
+    poolAddress: string,
+    dataToken: string,
+    dataTokenAmount: string,
+    dataTokenWeight: string,
+    baseToken: string,
+    baseTokenAmount: string,
+    baseTokenWeight: string,
+    swapFee: string
+  ): Promise<string> {
+    const pool = new this.web3.eth.Contract(this.poolABI, poolAddress, {
+      from: account
+    })
+    let result = null
+    try {
+      result = await pool.methods
+        .setup(
+          dataToken,
+          dataTokenAmount,
+          dataTokenWeight,
+          baseToken,
+          baseTokenAmount,
+          baseTokenWeight,
+          swapFee
+        )
+        .send({ from: account, gas: this.GASLIMIT_DEFAULT })
+    } catch (e) {
+      console.error('Pool.setup failed:' + e)
+    }
+    return result
   }
 
   /**
