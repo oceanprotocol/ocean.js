@@ -32,8 +32,50 @@ export class Pool extends PoolFactory {
    * Creates a new pool
    */
   async createPool(account: string): Promise<string> {
-    const pooladdress = await super.createPool(account)
-    return pooladdress
+    return await super.createPool(account)
+  }
+
+    /**
+     * Setup a new pool by setting datatoken, base token, swap fee and
+     * finalizing the pool to make it public.
+     *
+     * @param account
+     * @param poolAddress
+     * @param dataToken
+     * @param dataTokenAmount
+     * @param dataTokenWeight
+     * @param baseToken
+     * @param baseTokenAmount
+     * @param baseTokenWeight
+     * @param swapFee
+     */
+  async setup(
+    account: string,
+    poolAddress: string,
+    dataToken: string,
+    dataTokenAmount: string,
+    dataTokenWeight: string,
+    baseToken: string,
+    baseTokenAmount: string,
+    baseTokenWeight: string,
+    swapFee: string,
+  ): Promise<string> {
+    const pool = new this.web3.eth.Contract(this.poolABI, poolAddress, {
+      from: account
+    })
+    let result = null
+    try {
+      result = await pool.methods
+        .setup(
+          dataToken, dataTokenAmount, dataTokenWeight,
+          baseToken, baseTokenAmount, baseTokenWeight,
+          swapFee
+        ).send({ from: account, gas: this.GASLIMIT_DEFAULT })
+    } catch (e) {
+      console.error(e)
+    }
+    return result
+
   }
 
   /**

@@ -26,9 +26,10 @@ export class OceanPool extends Pool {
   /**
      * Create DataToken pool
      @param {String} account
-     * @param {String} token  Data Token address
-     * @param {String} amount Data Token amount
-     * @param {String} weight Data Token weight
+     * @param {String} token  DataToken address
+     * @param {String} amount DataToken amount
+     * @param {String} weight DataToken weight
+     * @param {String} fee    Swap fee in Wei
      * @return {String}
      */
   public async createDTPool(
@@ -37,7 +38,6 @@ export class OceanPool extends Pool {
     amount: string,
     weight: string,
     fee: string,
-    finalize = true
   ): Promise<string> {
     if (this.oceanAddress == null) {
       console.error('oceanAddress is not defined')
@@ -50,22 +50,28 @@ export class OceanPool extends Pool {
     const address = await super.createPool(account)
     const oceanWeight = 10 - parseFloat(weight)
     const oceanAmount = (parseFloat(amount) * oceanWeight) / parseFloat(weight)
-    const tokens = [
-      {
-        address: token,
-        amount: String(amount),
-        weight: String(weight)
-      },
-      {
-        address: this.oceanAddress,
-        amount: String(oceanAmount),
-        weight: String(oceanWeight)
-      }
-    ]
     this.dtAddress = token
-    await super.addToPool(account, address, tokens)
-    await super.setSwapFee(account, address, fee)
-    if (finalize) await super.finalize(account, address)
+
+    await this.approve(
+      account,
+      token,
+      address,
+      this.web3.utils.toWei(String(amount)) as any
+    )
+    await this.approve(
+      account,
+      this.oceanAddress,
+      address,
+      this.web3.utils.toWei(String(oceanAmount)) as any
+    )
+
+    super.setup(
+      account, address,
+      token, String(amount), String(weight),
+      this.oceanAddress, String(oceanAmount), String(oceanWeight),
+      this.web3.utils.toWei(fee)
+    )
+
     return address
   }
 
