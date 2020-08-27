@@ -95,13 +95,24 @@ export class OceanFixedRateExchange {
     dataTokenAmount: string,
     address: string
   ): Promise<any> {
-    const estGas = await this.contract.methods
-      .swap(exchangeId, this.web3.utils.toWei(String(dataTokenAmount)))
-      .estimateGas(function (err, estGas) {
-        if (err) console.log('FixedPriceExchange: ' + err)
-        return estGas
-      })
 
+    let estGas
+    try {
+        estGas = await this.contract.methods
+            .swap(exchangeId, this.web3.utils.toWei(String(dataTokenAmount)))
+            .estimateGas(function (err, g) {
+                if (err) {
+                    console.log('FixedPriceExchange: ' + err)
+                    return 200000
+                } else {
+                    return g
+                }
+            })
+    } catch (e) {
+        console.log('FixedPriceExchange: ' + e)
+        estGas = 200000
+    }
+    console.log('estGas: ' + estGas)
     const trxReceipt = await this.contract.methods
       .swap(exchangeId, this.web3.utils.toWei(String(dataTokenAmount)))
       .send({
