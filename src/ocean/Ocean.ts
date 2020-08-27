@@ -13,7 +13,7 @@ import {
 } from '../Instantiable.abstract'
 import { Compute } from './Compute'
 import { OceanPool } from '../balancer/OceanPool'
-import {OceanFixedRateExchange, FixedPricedExchange} from '../exchange/FixRateExchange'
+import { OceanFixedRateExchange, FixedPricedExchange } from '../exchange/FixRateExchange'
 
 /**
  * Main interface for Ocean Protocol.
@@ -63,7 +63,6 @@ export class Ocean extends Instantiable {
       instanceConfig.config.fixedRateExchangeAddress,
       instanceConfig.config.fixedRateExchangeAddressABI,
       instanceConfig.config.oceanTokenAddress
-
     )
     instance.versions = await Versions.getInstance(instanceConfig)
     instance.network = new Network()

@@ -1,4 +1,4 @@
-const defaultFixedRateExchangeABI = require('@oceanprotocol/contracts/artifacts/FixedRateExchange.json')
+import defaultFixedRateExchangeABI from '@oceanprotocol/contracts/artifacts/FixedRateExchange.json'
 
 export interface FixedPricedExchange {
   exchangeOwner: string
@@ -101,7 +101,7 @@ export class OceanFixedRateExchange {
         if (err) console.log('FixedPriceExchange: ' + err)
         return estGas
       })
-      
+
     const trxReceipt = await this.contract.methods
       .swap(exchangeId, this.web3.utils.toWei(String(dataTokenAmount)))
       .send({

@@ -9,15 +9,10 @@ export class FixedPricedContractHandler {
   public contractAddress: string
   public web3: Web3
 
-  constructor(
-    contractABI: AbiItem | AbiItem[],
-    contractBytecode: string,
-    web3: Web3
-  ) {
+  constructor(contractABI: AbiItem | AbiItem[], contractBytecode: string, web3: Web3) {
     this.web3 = web3
     this.contract = new this.web3.eth.Contract(contractABI)
     this.contractBytecode = contractBytecode
-    
   }
 
   public async getAccounts() {
@@ -25,11 +20,9 @@ export class FixedPricedContractHandler {
   }
 
   public async deployContracts() {
-    let estGas
-
     await this.getAccounts()
     // get est gascost
-    estGas = await this.contract
+    const estGas = await this.contract
       .deploy({
         data: this.contractBytecode,
         arguments: []
@@ -52,7 +45,5 @@ export class FixedPricedContractHandler {
       .then(function (contract) {
         return contract.options.address
       })
-
-    
   }
 }
