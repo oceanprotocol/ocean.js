@@ -39,15 +39,15 @@ export class Pool extends PoolFactory {
      * Setup a new pool by setting datatoken, base token, swap fee and
      * finalizing the pool to make it public.
      *
-     * @param account
-     * @param poolAddress
-     * @param dataToken
-     * @param dataTokenAmount
-     * @param dataTokenWeight
-     * @param baseToken
-     * @param baseTokenAmount
-     * @param baseTokenWeight
-     * @param swapFee
+     * @param {String} account ethereum address to use for sending this transaction
+     * @param {String} poolAddress address of new Balancer Pool
+     * @param {String} dataToken address of datatoken ERC20 contract
+     * @param {String} dataTokenAmount in wei
+     * @param {String} dataTokenWeight in wei
+     * @param {String} baseToken address of base token ERC20 contract
+     * @param {String} baseTokenAmount in wei
+     * @param {String} baseTokenWeight in wei
+     * @param {String} swapFee in wei
      */
   async setup(
     account: string,

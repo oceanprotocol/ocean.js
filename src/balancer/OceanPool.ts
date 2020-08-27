@@ -29,7 +29,7 @@ export class OceanPool extends Pool {
      * @param {String} token  DataToken address
      * @param {String} amount DataToken amount
      * @param {String} weight DataToken weight
-     * @param {String} fee    Swap fee in Wei
+     * @param {String} fee    Swap fee (as float)
      * @return {String}
      */
   public async createDTPool(
