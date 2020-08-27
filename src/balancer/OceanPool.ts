@@ -65,10 +65,10 @@ export class OceanPool extends Pool {
       this.web3.utils.toWei(String(oceanAmount)) as any
     )
 
-    super.setup(
+    await super.setup(
       account, address,
-      token, String(amount), String(weight),
-      this.oceanAddress, String(oceanAmount), String(oceanWeight),
+      token, this.web3.utils.toWei(String(amount)), this.web3.utils.toWei(String(weight)),
+      this.oceanAddress, this.web3.utils.toWei(String(oceanAmount)), this.web3.utils.toWei(String(oceanWeight)),
       this.web3.utils.toWei(fee)
     )
 

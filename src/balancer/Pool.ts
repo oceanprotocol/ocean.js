@@ -72,7 +72,7 @@ export class Pool extends PoolFactory {
           swapFee
         ).send({ from: account, gas: this.GASLIMIT_DEFAULT })
     } catch (e) {
-      console.error(e)
+      console.error('Pool.setup failed:' + e)
     }
     return result
 
