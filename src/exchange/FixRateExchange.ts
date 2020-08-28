@@ -1,11 +1,14 @@
 import defaultFixedRateExchangeABI from '@oceanprotocol/contracts/artifacts/FixedRateExchange.json'
+import BigNumber from 'bignumber.js'
 
 export interface FixedPricedExchange {
+  exchangeID?: string
   exchangeOwner: string
   dataToken: string
   baseToken: string
-  fixedRate: number
+  fixedRate: string
   active: boolean
+  supply: string
 }
 
 export class OceanFixedRateExchange {
@@ -90,25 +93,47 @@ export class OceanFixedRateExchange {
    * @param {String} address User address
    * @return {Promise<any>} transaction receipt
    */
-  public async swap(
+  public async buyDT(
     exchangeId: string,
     dataTokenAmount: string,
     address: string
   ): Promise<any> {
-    const estGas = await this.contract.methods
-      .swap(exchangeId, this.web3.utils.toWei(String(dataTokenAmount)))
-      .estimateGas(function (err, estGas) {
-        if (err) console.log('FixedPriceExchange: ' + err)
-        return estGas
-      })
-
-    const trxReceipt = await this.contract.methods
-      .swap(exchangeId, this.web3.utils.toWei(String(dataTokenAmount)))
-      .send({
-        from: address,
-        gas: estGas + 1
-      })
-    return trxReceipt
+    let estGas
+    try {
+      estGas = await this.contract.methods
+        .swap(exchangeId, this.web3.utils.toWei(String(dataTokenAmount)))
+        .estimateGas(function (err, g) {
+          if (err) {
+            // console.log('FixedPriceExchange: ' + err)
+            return 200000
+          } else {
+            return g
+          }
+        })
+    } catch (e) {
+      // console.log('FixedPriceExchange: ' + e)
+      estGas = 200000
+    }
+    // console.log('estGas: ' + estGas)
+    /* const estGas = await this.contract.methods
+        .swap(exchangeId, this.web3.utils.toWei(String(dataTokenAmount)))
+        .estimateGas(function (err, estGas) {
+          if (err) console.log('FixedPriceExchange: ' + err)
+          return estGas
+        })
+       */
+    try {
+      const trxReceipt = await this.contract.methods
+        .swap(exchangeId, this.web3.utils.toWei(String(dataTokenAmount)))
+        .send({
+          from: address,
+          gas: estGas + 1
+        })
+      return trxReceipt
+    } catch (e) {
+      console.error(e)
+      return null
+    }
   }
 
   /**
@@ -134,12 +159,20 @@ export class OceanFixedRateExchange {
     newRate: number,
     address: string
   ): Promise<any> {
-    const estGas = await this.contract.methods
-      .setRate(exchangeId, this.web3.utils.toWei(String(newRate)))
-      .estimateGas(function (err, estGas) {
-        if (err) console.log('FixedPriceExchange: ' + err)
-        return estGas
-      })
+    let estGas
+    try {
+      estGas = await this.contract.methods
+        .setRate(exchangeId, this.web3.utils.toWei(String(newRate)))
+        .estimateGas(function (err, estGas) {
+          if (err) {
+            // console.log('FixedPriceExchange: ' + err)
+            return 200000
+          }
+          return estGas
+        })
+    } catch (e) {
+      estGas = 200000
+    }
     const trxReceipt = await this.contract.methods
       .setRate(exchangeId, this.web3.utils.toWei(String(newRate)))
       .send({
@@ -156,12 +189,20 @@ export class OceanFixedRateExchange {
    * @return {Promise<any>} transaction receipt
    */
   public async activate(exchangeId: string, address: string): Promise<any> {
-    const estGas = await this.contract.methods
-      .activate(exchangeId)
-      .estimateGas(function (err, estGas) {
-        if (err) console.log('FixedPriceExchange: ' + err)
-        return estGas
-      })
+    let estGas
+    try {
+      estGas = await this.contract.methods
+        .activate(exchangeId)
+        .estimateGas(function (err, estGas) {
+          if (err) {
+            // console.log('FixedPriceExchange: ' + err)
+            estGas = 200000
+          }
+          return estGas
+        })
+    } catch (e) {
+      estGas = 200000
+    }
     const trxReceipt = await this.contract.methods.activate(exchangeId).send({
       from: address,
       gas: estGas + 1
@@ -176,12 +217,20 @@ export class OceanFixedRateExchange {
    * @return {Promise<any>} transaction receipt
    */
   public async deactivate(exchangeId: string, address: string): Promise<any> {
-    const estGas = await this.contract.methods
-      .deactivate(exchangeId)
-      .estimateGas(function (err, estGas) {
-        if (err) console.log('FixedPriceExchange: ' + err)
-        return estGas
-      })
+    let estGas
+    try {
+      estGas = await this.contract.methods
+        .deactivate(exchangeId)
+        .estimateGas(function (err, estGas) {
+          if (err) {
+            // console.log('FixedPriceExchange: ' + err)
+            estGas = 200000
+          }
+          return estGas
+        })
+    } catch (e) {
+      estGas = 200000
+    }
     const trxReceipt = await this.contract.methods.deactivate(exchangeId).send({
       from: address,
       gas: estGas + 1
@@ -196,6 +245,32 @@ export class OceanFixedRateExchange {
    */
   public async getRate(exchangeId: string): Promise<string> {
     const weiRate = await this.contract.methods.getRate(exchangeId).call()
+    return this.web3.utils.fromWei(weiRate)
+  }
+
+  /**
+   * Get Supply
+   * @param {String} exchangeId ExchangeId
+   * @return {Promise<string>} Rate (converted from wei)
+   */
+  public async getSupply(exchangeId: string): Promise<string> {
+    const weiRate = await this.contract.methods.getSupply(exchangeId).call()
+    return this.web3.utils.fromWei(weiRate)
+  }
+
+  /**
+   * getOceanNeeded
+   * @param {String} exchangeId ExchangeId
+   * @param {Number} dataTokenAmount Amount of Data Tokens
+   * @return {Promise<string>} Ocean amount needed
+   */
+  public async getOceanNeeded(
+    exchangeId: string,
+    dataTokenAmount: string
+  ): Promise<string> {
+    const weiRate = await this.contract.methods
+      .CalcInGivenOut(exchangeId, this.web3.utils.toWei(dataTokenAmount))
+      .call()
     return this.web3.utils.fromWei(weiRate)
   }
 
@@ -228,6 +303,46 @@ export class OceanFixedRateExchange {
    */
   public async isActive(exchangeId: string): Promise<boolean> {
     const result = await this.contract.methods.isActive(exchangeId).call()
+    return result
+  }
+
+  /**
+   * Calculates how many basetokens are needed to get specifyed amount of datatokens
+   * @param {String} exchangeId ExchangeId
+   * @param {String} dataTokenAmount dataTokenAmount
+   * @return {Promise<Boolean>} Result
+   */
+  public async CalcInGivenOut(
+    exchangeId: string,
+    dataTokenAmount: string
+  ): Promise<boolean> {
+    const result = await this.contract.methods
+      .CalcInGivenOut(exchangeId, this.web3.utils.toWei(dataTokenAmount))
+      .call()
+    return this.web3.utils.fromWei(result)
+  }
+
+  public async searchforDT(
+    dataTokenAddress: string,
+    minSupply: string
+  ): Promise<FixedPricedExchange[]> {
+    const result: FixedPricedExchange[] = []
+    const events = await this.contract.getPastEvents('ExchangeCreated', {
+      filter: { datatoken: dataTokenAddress },
+      fromBlock: 0,
+      toBlock: 'latest'
+    })
+    for (let i = 0; i < events.length; i++) {
+      const constituents = await this.getExchange(events[i].returnValues[0])
+      constituents.exchangeID = events[i].returnValues[0]
+      if (constituents.active === true) {
+        const supply = new BigNumber(this.web3.utils.fromWei(constituents.supply))
+        const required = new BigNumber(minSupply)
+        if (supply >= required) {
+          result.push(constituents)
+        }
+      }
+    }
     return result
   }
 }

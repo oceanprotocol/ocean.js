@@ -32,10 +32,12 @@ describe('FixedRateExchange flow', () => {
   let owner
   let contracts
 
-  let consoleDebug: false
+  const consoleDebug = false
   let greatPool
-  const tokenAmount = '1000'
-  const transferAmount = '200'
+  const tokenAmount = '1000000000000000000000000000000000'
+  const fixedPriceRate = '0.5'
+  const updatedPriceRate = '0.5'
+  const swapAmount = '1'
   const blob = 'http://localhost:8030/api/v1/services/consume'
   describe('#test', () => {
     before(async () => {
@@ -79,7 +81,8 @@ describe('FixedRateExchange flow', () => {
     it('should create datatokens smart contract', async () => {
       tokenAddress = await datatoken.create(blob, alice)
       assert(tokenAddress !== null)
-      console.log('data Token address:' + tokenAddress)
+      if (consoleDebug) console.log("Alice's address:" + alice)
+      if (consoleDebug) console.log('data Token address:' + tokenAddress)
     })
     it('Create a dummy OceanToken', async () => {
       // Bob creates a Datatoken
@@ -90,7 +93,8 @@ describe('FixedRateExchange flow', () => {
         web3
       )
       oceanTokenAddress = await oceandatatoken.create(blob, bob)
-      console.log('oceanTokenAddress:' + oceanTokenAddress)
+      if (consoleDebug) console.log("Bob's address:" + bob)
+      if (consoleDebug) console.log('oceanTokenAddress:' + oceanTokenAddress)
     })
 
     it('should initialize FixedExchangeRate class', async () => {
@@ -104,33 +108,40 @@ describe('FixedRateExchange flow', () => {
     })
 
     it('Alice mints 1000 tokens', async () => {
-      await datatoken.mint(tokenAddress, alice, tokenAmount)
+      const txid = await datatoken.mint(tokenAddress, alice, tokenAmount)
+      if (consoleDebug) console.log(txid)
+      assert(txid !== null)
     })
     it('Bob mints 1000 Ocean tokens', async () => {
-      await oceandatatoken.mint(oceanTokenAddress, bob, tokenAmount)
+      const txid = await oceandatatoken.mint(oceanTokenAddress, bob, tokenAmount)
+      if (consoleDebug) console.log(txid)
+      assert(txid !== null)
     })
     it('Alice should have 1000 tokens', async () => {
       const balance = await datatoken.balance(tokenAddress, alice)
-      console.log(balance)
+      if (consoleDebug) console.log("Alice's datatoke balance:" + balance)
     })
     it('Bob should have 1000 ocean tokens', async () => {
       const balance = await oceandatatoken.balance(oceanTokenAddress, bob)
-      console.log(balance)
-    })
-    it('Alice creates a new FixedRate Exchange with a rate of 0.5', async () => {
-      aliceExchangeId = await FixedRateClass.create(tokenAddress, '0.1', alice)
-      console.log(aliceExchangeId)
+      if (consoleDebug) console.log("Bob's ocean balance:" + balance)
     })
     it('Alice allows Exchange to spend 1000 data tokens', async () => {
-      await datatoken.approve(tokenAddress, FixedRateExchangeAddress, tokenAmount, alice)
+      const txid = await datatoken.approve(
+        tokenAddress,
+        FixedRateExchangeAddress,
+        tokenAmount,
+        alice
+      )
+      if (consoleDebug) console.log(txid)
     })
     it('Bob allows Exchange to spend 1000 ocean tokens', async () => {
-      await oceandatatoken.approve(
+      const txid = await oceandatatoken.approve(
         oceanTokenAddress,
         FixedRateExchangeAddress,
         tokenAmount,
         bob
       )
+      if (consoleDebug) console.log(txid)
     })
     it('Alice should aproved speding datatokens', async () => {
       const balance = await datatoken.allowance(
@@ -138,7 +149,7 @@ describe('FixedRateExchange flow', () => {
         alice,
         FixedRateExchangeAddress
       )
-      console.log(balance)
+      if (consoleDebug) console.log('Alice datatoken allowance:' + balance)
     })
     it('Bob should aproved speding oceantokens', async () => {
       const balance = await oceandatatoken.allowance(
@@ -146,16 +157,67 @@ describe('FixedRateExchange flow', () => {
         bob,
         FixedRateExchangeAddress
       )
-      console.log(balance)
+      if (consoleDebug) console.log('Bob ocean allowance:' + balance)
+    })
+    it('Alice creates a new FixedRate Exchange with a rate of 0.5', async () => {
+      aliceExchangeId = await FixedRateClass.create(tokenAddress, fixedPriceRate, alice)
+      if (consoleDebug) console.log('aliceExchangeId:' + aliceExchangeId)
+    })
+    it('Bob should find the exchange', async () => {
+      const exchangeDetails = await FixedRateClass.searchforDT(tokenAddress, '0')
+      assert(exchangeDetails[0].exchangeID === aliceExchangeId)
     })
     it('Bob should get the exchange details', async () => {
       const exchangeDetails = await FixedRateClass.getExchange(aliceExchangeId)
-      console.log(exchangeDetails)
+      if (consoleDebug) console.log(exchangeDetails)
+    })
+
+    it('Bob should get the amount of Ocean needed', async () => {
+      const OceansNeeded = await FixedRateClass.CalcInGivenOut(
+        aliceExchangeId,
+        swapAmount
+      )
+      if (consoleDebug) console.log('Oceans needed:' + OceansNeeded)
+      assert(OceansNeeded !== null)
     })
     it('Bob should swap 1 DataToken', async () => {
-      const swapResult = await FixedRateClass.swap(aliceExchangeId, '1', bob)
-      console.log(swapResult)
+      const swapResult = await FixedRateClass.buyDT(aliceExchangeId, swapAmount, bob)
+      if (consoleDebug) console.log(swapResult)
+      assert(swapResult !== null)
     })
+    it('Alice datatoken balance after swap', async () => {
+      const balance = await datatoken.balance(tokenAddress, alice)
+      if (consoleDebug) console.log('Alice datatoken balance:' + balance)
+    })
+    it('Alice ocean  balance after swap', async () => {
+      const balance = await oceandatatoken.balance(oceanTokenAddress, alice)
+      if (consoleDebug) console.log('Alice ocean balance:' + balance)
+    })
+    it('Bob datatoken balance after swap', async () => {
+      const balance = await datatoken.balance(tokenAddress, bob)
+      if (consoleDebug) console.log('Bob datatoken balance:' + balance)
+    })
+    it('Bob ocean  balance after swap', async () => {
+      const balance = await oceandatatoken.balance(oceanTokenAddress, bob)
+      if (consoleDebug) console.log('Bob ocean balance:' + balance)
+    })
+    it('Alice should update the rate', async () => {
+      const tx = await FixedRateClass.setRate(aliceExchangeId, updatedPriceRate, alice)
+      assert(tx !== null)
+    })
+    it('Alice should be able to deactivate the exchange', async () => {
+      const tx = await FixedRateClass.deactivate(aliceExchangeId, alice)
+      assert(tx !== null)
+      const exchangeDetails = await FixedRateClass.getExchange(aliceExchangeId)
+      assert(exchangeDetails.active === false)
+    })
+    it('Alice should be able to activate the exchange', async () => {
+      const tx = await FixedRateClass.activate(aliceExchangeId, alice)
+      assert(tx !== null)
+      const exchangeDetails = await FixedRateClass.getExchange(aliceExchangeId)
+      assert(exchangeDetails.active === true)
+    })
+
     /*
     it('Alice creates a new OceanPool pool', async () => {
       /// new pool with total DT = 45 , dt weight=90% with swap fee 2%
