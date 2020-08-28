@@ -1,5 +1,6 @@
 import Web3 from 'web3'
 import { AbiItem } from 'web3-utils/types'
+import { TransactionReceipt } from 'web3-core'
 import { Pool } from './Pool'
 
 /**
@@ -170,7 +171,7 @@ export class OceanPool extends Pool {
    * @param {String} amount  Data Token amount
    * @param {String} oceanAmount  Ocean Token amount expected
    * @param {String} maxPrice  Minimum price to sell
-   * @return {any}
+   * @return {TransactionReceipt}
    */
   public async sellDT(
     account: string,
@@ -178,7 +179,7 @@ export class OceanPool extends Pool {
     amount: string,
     oceanAmount: string,
     minPrice: string
-  ): Promise<any> {
+  ): Promise<TransactionReceipt> {
     if (this.oceanAddress == null) {
       console.error('oceanAddress is not defined')
       return null
@@ -200,13 +201,13 @@ export class OceanPool extends Pool {
    * @param {String} account
    * @param {String} poolAddress
    * @param {String} amount Data Token amount
-   * @return {any}
+   * @return {TransactionReceipt}
    */
   public async addDTLiquidity(
     account: string,
     poolAddress: string,
     amount: string
-  ): Promise<any> {
+  ): Promise<TransactionReceipt> {
     await this.getDTAddress(account, poolAddress)
     await super.approve(
       account,
@@ -229,14 +230,14 @@ export class OceanPool extends Pool {
    * @param {String} account
    * @param {String} poolAddress
    * @param {String} amount Data Token amount
-   * @return {any}
+   * @return {TransactionReceipt}
    */
   public async removeDTLiquidity(
     account: string,
     poolAddress: string,
     amount: string,
     maximumPoolShares: string
-  ): Promise<any> {
+  ): Promise<TransactionReceipt> {
     await this.getDTAddress(account, poolAddress)
     // TODO Check balance of PoolShares before doing exit
     return this.exitswapExternAmountOut(
@@ -253,13 +254,13 @@ export class OceanPool extends Pool {
    * @param {String} account
    * @param {String} poolAddress
    * @param {String} amount Ocean Token amount in OCEAN
-   * @return {any}
+   * @return {TransactionReceipt}
    */
   public async addOceanLiquidity(
     account: string,
     poolAddress: string,
     amount: string
-  ): Promise<any> {
+  ): Promise<TransactionReceipt> {
     if (this.oceanAddress == null) {
       console.error('oceanAddress is not defined')
       return null
@@ -285,14 +286,14 @@ export class OceanPool extends Pool {
    * @param {String} account
    * @param {String} poolAddress
    * @param {String} amount Ocean Token amount in OCEAN
-   * @return {any}
+   * @return {TransactionReceipt}
    */
   public removeOceanLiquidity(
     account: string,
     poolAddress: string,
     amount: string,
     maximumPoolShares: string
-  ): Promise<any> {
+  ): Promise<TransactionReceipt> {
     if (this.oceanAddress == null) {
       console.error('oceanAddress is not defined')
       return null
