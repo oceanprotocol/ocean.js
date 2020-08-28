@@ -144,7 +144,7 @@ export class Pool extends PoolFactory {
     let result = null
     try {
       const token = new this.web3.eth.Contract(this.poolABI, poolAddress)
-      const balance = await token.methods.balanceOf(account)
+      const balance = await token.methods.balanceOf(account).call()
       result = this.web3.utils.fromWei(balance)
     } catch (e) {
       console.error(e)
