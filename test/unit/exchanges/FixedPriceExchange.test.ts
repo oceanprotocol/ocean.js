@@ -6,7 +6,7 @@ import { DataTokens } from '../../../src/datatokens/Datatokens'
 import {
   OceanFixedRateExchange,
   FixedPricedExchange
-} from '../../../src/exchange/FixRateExchange'
+} from '../../../src/exchange/FixedRateExchange'
 
 import Web3 from 'web3'
 import factory from '@oceanprotocol/contracts/artifacts/DTFactory.json'

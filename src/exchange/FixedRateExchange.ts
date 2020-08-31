@@ -11,6 +11,8 @@ export interface FixedPricedExchange {
   supply: string
 }
 
+const DEFAULT_GAS_LIMIT = 200000
+
 export class OceanFixedRateExchange {
   /** Ocean related functions */
   public oceanAddress: string = null
@@ -104,24 +106,14 @@ export class OceanFixedRateExchange {
         .swap(exchangeId, this.web3.utils.toWei(String(dataTokenAmount)))
         .estimateGas(function (err, g) {
           if (err) {
-            // console.log('FixedPriceExchange: ' + err)
-            return 200000
+            return DEFAULT_GAS_LIMIT
           } else {
             return g
           }
         })
     } catch (e) {
-      // console.log('FixedPriceExchange: ' + e)
-      estGas = 200000
+      estGas = DEFAULT_GAS_LIMIT
     }
-    // console.log('estGas: ' + estGas)
-    /* const estGas = await this.contract.methods
-        .swap(exchangeId, this.web3.utils.toWei(String(dataTokenAmount)))
-        .estimateGas(function (err, estGas) {
-          if (err) console.log('FixedPriceExchange: ' + err)
-          return estGas
-        })
-       */
     try {
       const trxReceipt = await this.contract.methods
         .swap(exchangeId, this.web3.utils.toWei(String(dataTokenAmount)))
@@ -166,12 +158,12 @@ export class OceanFixedRateExchange {
         .estimateGas(function (err, estGas) {
           if (err) {
             // console.log('FixedPriceExchange: ' + err)
-            return 200000
+            return DEFAULT_GAS_LIMIT
           }
           return estGas
         })
     } catch (e) {
-      estGas = 200000
+      estGas = DEFAULT_GAS_LIMIT
     }
     const trxReceipt = await this.contract.methods
       .setRate(exchangeId, this.web3.utils.toWei(String(newRate)))
@@ -196,12 +188,12 @@ export class OceanFixedRateExchange {
         .estimateGas(function (err, estGas) {
           if (err) {
             // console.log('FixedPriceExchange: ' + err)
-            estGas = 200000
+            estGas = DEFAULT_GAS_LIMIT
           }
           return estGas
         })
     } catch (e) {
-      estGas = 200000
+      estGas = DEFAULT_GAS_LIMIT
     }
     const trxReceipt = await this.contract.methods.activate(exchangeId).send({
       from: address,
@@ -224,12 +216,12 @@ export class OceanFixedRateExchange {
         .estimateGas(function (err, estGas) {
           if (err) {
             // console.log('FixedPriceExchange: ' + err)
-            estGas = 200000
+            estGas = DEFAULT_GAS_LIMIT
           }
           return estGas
         })
     } catch (e) {
-      estGas = 200000
+      estGas = DEFAULT_GAS_LIMIT
     }
     const trxReceipt = await this.contract.methods.deactivate(exchangeId).send({
       from: address,
@@ -292,8 +284,7 @@ export class OceanFixedRateExchange {
    * @return {Promise<String[]>} Exchanges list
    */
   public async getExchanges(): Promise<string[]> {
-    const result = await this.contract.methods.getExchanges().call()
-    return result
+    return await this.contract.methods.getExchanges().call()
   }
 
   /**

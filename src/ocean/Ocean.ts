@@ -13,7 +13,10 @@ import {
 } from '../Instantiable.abstract'
 import { Compute } from './Compute'
 import { OceanPool } from '../balancer/OceanPool'
-import { OceanFixedRateExchange, FixedPricedExchange } from '../exchange/FixRateExchange'
+import {
+  OceanFixedRateExchange,
+  FixedPricedExchange
+} from '../exchange/FixedRateExchange'
 
 /**
  * Main interface for Ocean Protocol.
