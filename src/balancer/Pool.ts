@@ -1,5 +1,6 @@
 import Web3 from 'web3'
 import { AbiItem } from 'web3-utils/types'
+import { TransactionReceipt } from 'web3-core'
 import Decimal from 'decimal.js'
 import jsonpoolABI from '@oceanprotocol/contracts/artifacts/BPool.json'
 import { PoolFactory } from './PoolFactory'
@@ -32,8 +33,54 @@ export class Pool extends PoolFactory {
    * Creates a new pool
    */
   async createPool(account: string): Promise<string> {
-    const pooladdress = await super.createPool(account)
-    return pooladdress
+    return await super.createPool(account)
+  }
+
+  /**
+   * Setup a new pool by setting datatoken, base token, swap fee and
+   * finalizing the pool to make it public.
+   *
+   * @param {String} account ethereum address to use for sending this transaction
+   * @param {String} poolAddress address of new Balancer Pool
+   * @param {String} dataToken address of datatoken ERC20 contract
+   * @param {String} dataTokenAmount in wei
+   * @param {String} dataTokenWeight in wei
+   * @param {String} baseToken address of base token ERC20 contract
+   * @param {String} baseTokenAmount in wei
+   * @param {String} baseTokenWeight in wei
+   * @param {String} swapFee in wei
+   */
+  async setup(
+    account: string,
+    poolAddress: string,
+    dataToken: string,
+    dataTokenAmount: string,
+    dataTokenWeight: string,
+    baseToken: string,
+    baseTokenAmount: string,
+    baseTokenWeight: string,
+    swapFee: string
+  ): Promise<string> {
+    const pool = new this.web3.eth.Contract(this.poolABI, poolAddress, {
+      from: account
+    })
+    let result = null
+    try {
+      result = await pool.methods
+        .setup(
+          dataToken,
+          dataTokenAmount,
+          dataTokenWeight,
+          baseToken,
+          baseTokenAmount,
+          baseTokenWeight,
+          swapFee
+        )
+        .send({ from: account, gas: this.GASLIMIT_DEFAULT })
+    } catch (e) {
+      console.error('Pool.setup failed:' + e)
+    }
+    return result
   }
 
   /**
@@ -95,37 +142,10 @@ export class Pool extends PoolFactory {
    * @return {String}
    */
   async sharesBalance(account: string, poolAddress: string): Promise<string> {
-    const minABI = [
-      {
-        constant: true,
-        inputs: [
-          {
-            name: '_owner',
-            type: 'address'
-          }
-        ],
-        name: 'balanceOf',
-        outputs: [
-          {
-            name: 'balance',
-            type: 'uint256'
-          }
-        ],
-        payable: false,
-        stateMutability: 'view',
-        type: 'function'
-      }
-    ] as AbiItem[]
-
     let result = null
-
     try {
-      const token = new this.web3.eth.Contract(minABI, poolAddress, {
-        from: account
-      })
-      const balance = await token.methods
-        .balanceOf(account)
-        .call({ from: account, gas: this.GASLIMIT_DEFAULT })
+      const token = new this.web3.eth.Contract(this.poolABI, poolAddress)
+      const balance = await token.methods.balanceOf(account).call()
       result = this.web3.utils.fromWei(balance)
     } catch (e) {
       console.error(e)
@@ -493,7 +513,7 @@ export class Pool extends PoolFactory {
    * @param {String} tokenOut
    * @param {String} minAmountOut will be converted to wei
    * @param {String} maxPrice will be converted to wei
-   * @return {any}
+   * @return {TransactionReceipt}
    */
   async swapExactAmountIn(
     account: string,
@@ -503,7 +523,7 @@ export class Pool extends PoolFactory {
     tokenOut: string,
     minAmountOut: string,
     maxPrice: string
-  ): Promise<any> {
+  ): Promise<TransactionReceipt> {
     const pool = new this.web3.eth.Contract(this.poolABI, poolAddress, {
       from: account
     })
@@ -533,7 +553,7 @@ export class Pool extends PoolFactory {
    * @param {String} tokenOut
    * @param {String} minAmountOut will be converted to wei
    * @param {String} maxPrice will be converted to wei
-   * @return {any}
+   * @return {TransactionReceipt}
    */
   async swapExactAmountOut(
     account: string,
@@ -543,7 +563,7 @@ export class Pool extends PoolFactory {
     tokenOut: string,
     minAmountOut: string,
     maxPrice: string
-  ): Promise<any> {
+  ): Promise<TransactionReceipt> {
     const pool = new this.web3.eth.Contract(this.poolABI, poolAddress, {
       from: account
     })
@@ -641,7 +661,7 @@ export class Pool extends PoolFactory {
    * @param {String} tokenIn
    * @param {String} tokenAmountIn will be converted to wei
    * @param {String} minPoolAmountOut  will be converted to wei
-   * @return {any}
+   * @return {TransactionReceipt}
    */
   async joinswapExternAmountIn(
     account: string,
@@ -649,7 +669,7 @@ export class Pool extends PoolFactory {
     tokenIn: string,
     tokenAmountIn: string,
     minPoolAmountOut: string
-  ): Promise<any> {
+  ): Promise<TransactionReceipt> {
     const pool = new this.web3.eth.Contract(this.poolABI, poolAddress, {
       from: account
     })
@@ -675,7 +695,7 @@ export class Pool extends PoolFactory {
    * @param {String} tokenIn
    * @param {String} poolAmountOut will be converted to wei
    * @param {String} maxAmountIn  will be converted to wei
-   * @return {any}
+   * @return {TransactionReceipt}
    */
   async joinswapPoolAmountOut(
     account: string,
@@ -683,7 +703,7 @@ export class Pool extends PoolFactory {
     tokenIn: string,
     poolAmountOut: string,
     maxAmountIn: string
-  ): Promise<any> {
+  ): Promise<TransactionReceipt> {
     const pool = new this.web3.eth.Contract(this.poolABI, poolAddress, {
       from: account
     })
@@ -709,7 +729,7 @@ export class Pool extends PoolFactory {
    * @param {String} tokenOut
    * @param {String} poolAmountIn will be converted to wei
    * @param {String} minTokenAmountOut  will be converted to wei
-   * @return {any}
+   * @return {TransactionReceipt}
    */
   async exitswapPoolAmountIn(
     account: string,
@@ -717,7 +737,7 @@ export class Pool extends PoolFactory {
     tokenOut: string,
     poolAmountIn: string,
     minTokenAmountOut: string
-  ): Promise<any> {
+  ): Promise<TransactionReceipt> {
     const pool = new this.web3.eth.Contract(this.poolABI, poolAddress, {
       from: account
     })
@@ -743,7 +763,7 @@ export class Pool extends PoolFactory {
    * @param {String} tokenOut
    * @param {String} tokenAmountOut will be converted to wei
    * @param {String} maxPoolAmountIn  will be converted to wei
-   * @return {any}
+   * @return {TransactionReceipt}
    */
   async exitswapExternAmountOut(
     account: string,
@@ -751,7 +771,7 @@ export class Pool extends PoolFactory {
     tokenOut: string,
     tokenAmountOut: string,
     maxPoolAmountIn: string
-  ): Promise<any> {
+  ): Promise<TransactionReceipt> {
     const pool = new this.web3.eth.Contract(this.poolABI, poolAddress, {
       from: account
     })
@@ -776,14 +796,14 @@ export class Pool extends PoolFactory {
    * @param {String} poolAddress
    * @param {String} tokenIn
    * @param {String} tokenOut
-   * @return {any}
+   * @return {String}
    */
   async getSpotPrice(
     account: string,
     poolAddress: string,
     tokenIn: string,
     tokenOut: string
-  ): Promise<any> {
+  ): Promise<string> {
     const pool = new this.web3.eth.Contract(this.poolABI, poolAddress, {
       from: account
     })
