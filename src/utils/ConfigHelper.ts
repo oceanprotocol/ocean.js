@@ -26,12 +26,12 @@ const configs = [
     chainId: 4,
     network: 'rinkeby',
     url: 'https://rinkeby.infura.io/v3',
-    factoryAddress: '0xcDfEe5D80041224cDCe9AE2334E85B3236385EA3',
+    factoryAddress: '0x2C63bf697f74C72CFB727Fb5eB8e6266cE341e13',
     oceanTokenAddress: '0x8967BCF84170c91B0d24D4302C2376283b0B3a07',
     metadataStoreUri: 'https://aquarius.rinkeby.v3.dev-ocean.com',
     providerUri: 'https://provider.rinkeby.v3.dev-ocean.com',
-    poolFactoryAddress: '0xA4531C624A3D88323a1e178DABe1233AF178701B',
-    fixedRateExchangeAddress: '0x7219AfFc1C2b474830D9d9b0423ecf47073C5488'
+    poolFactoryAddress: '0x2C63bf697f74C72CFB727Fb5eB8e6266cE341e13',
+    fixedRateExchangeAddress: '0x2C63bf697f74C72CFB727Fb5eB8e6266cE341e13'
   },
   {
     chainId: 1,
