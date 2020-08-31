@@ -40,7 +40,14 @@ export class TestContractHandler {
     estGas = await this.template
       .deploy({
         data: this.templateBytecode,
-        arguments: ['Template Contract', 'TEMPLATE', minter, cap, blob, communityCollector]
+        arguments: [
+          'Template Contract',
+          'TEMPLATE',
+          minter,
+          cap,
+          blob,
+          communityCollector
+        ]
       })
       .estimateGas(function (err, estGas) {
         if (err) console.log('DeployContracts: ' + err)
@@ -50,7 +57,14 @@ export class TestContractHandler {
     this.templateAddress = await this.template
       .deploy({
         data: this.templateBytecode,
-        arguments: ['Template Contract', 'TEMPLATE', minter, cap, blob, communityCollector]
+        arguments: [
+          'Template Contract',
+          'TEMPLATE',
+          minter,
+          cap,
+          blob,
+          communityCollector
+        ]
       })
       .send({
         from: minter,
