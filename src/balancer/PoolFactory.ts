@@ -1,6 +1,6 @@
 import Web3 from 'web3'
 import { AbiItem } from 'web3-utils/types'
-import jsonFactoryABI from '@oceanprotocol/contracts/artifacts/SFactory.json'
+import jsonFactoryABI from '@oceanprotocol/contracts/artifacts/BFactory.json'
 
 export class PoolFactory {
   public GASLIMIT_DEFAULT = 5000000
@@ -43,13 +43,13 @@ export class PoolFactory {
     })
 
     const transactiondata = await factory.methods
-      .newSPool()
+      .newBPool()
       .send({ from: account, gas: this.GASLIMIT_DEFAULT })
 
     let pooladdress: string
 
     try {
-      pooladdress = transactiondata.events.SPoolRegistered.returnValues[0]
+      pooladdress = transactiondata.events.BPoolRegistered.returnValues[0]
     } catch (e) {
       console.error(e)
     }

@@ -1,7 +1,7 @@
 import Web3 from 'web3'
 import { AbiItem } from 'web3-utils/types'
 import Decimal from 'decimal.js'
-import jsonpoolABI from '@oceanprotocol/contracts/artifacts/SPool.json'
+import jsonpoolABI from '@oceanprotocol/contracts/artifacts/BPool.json'
 import { PoolFactory } from './PoolFactory'
 
 /**
