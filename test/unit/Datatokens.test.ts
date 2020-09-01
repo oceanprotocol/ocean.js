@@ -45,7 +45,7 @@ describe('DataTokens', () => {
     })
 
     it('should create datatokens smart contract', async () => {
-      tokenAddress = await datatoken.create(blob, minter)
+      tokenAddress = await datatoken.create(blob, 'AliceDT', 'DTA', '10000000000', minter)
       assert(tokenAddress !== null)
     })
 

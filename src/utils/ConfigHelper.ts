@@ -19,17 +19,19 @@ const configs = [
     factoryAddress: null,
     metadataStoreUri: 'http://127.0.0.1:5000',
     providerUri: 'http://127.0.0.1:8030',
-    poolFactoryAddress: null
+    poolFactoryAddress: null,
+    fixedRateExchangeAddress: null
   },
   {
     chainId: 4,
     network: 'rinkeby',
     url: 'https://rinkeby.infura.io/v3',
-    factoryAddress: '0xcDfEe5D80041224cDCe9AE2334E85B3236385EA3',
+    factoryAddress: '0x3ECd1429101f93149D799Ef257C07a2B1Dc30897',
     oceanTokenAddress: '0x8967BCF84170c91B0d24D4302C2376283b0B3a07',
     metadataStoreUri: 'https://aquarius.rinkeby.v3.dev-ocean.com',
     providerUri: 'https://provider.rinkeby.v3.dev-ocean.com',
-    poolFactoryAddress: '0xA4531C624A3D88323a1e178DABe1233AF178701B'
+    poolFactoryAddress: '0x9B90A1358fbeEC1C4bB1DA7D4E85C708f87556Ec',
+    fixedRateExchangeAddress: '0x991c08bD00761A299d3126a81a985329096896D4'
   },
   {
     chainId: 1,
@@ -39,7 +41,8 @@ const configs = [
     oceanTokenAddress: '0x985dd3d42de1e256d09e1c10f112bccb8015ad41',
     metadataStoreUri: null,
     providerUri: null,
-    poolFactoryAddress: null
+    poolFactoryAddress: null,
+    fixedRateExchangeAddress: null
   }
 ]
 

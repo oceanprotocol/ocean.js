@@ -35,26 +35,37 @@ export class DataTokens {
   /**
    * Create new datatoken
    * @param {String} metaDataStoreURI
+   * @param {String} name Token name
+   * @param {String} symbol Token symbol
+   * @param {String} cap Maximum cap (Number) - will be converted to wei
    * @param {String} address
    * @return {Promise<string>} datatoken address
    */
-  public async create(metaDataStoreURI: string, address: string): Promise<string> {
+  public async create(
+    metaDataStoreURI: string,
+    name: string,
+    symbol: string,
+    cap: string,
+    address: string
+  ): Promise<string> {
     // Create factory contract object
     const factory = new this.web3.eth.Contract(this.factoryABI, this.factoryAddress, {
       from: address
     })
     const estGas = await factory.methods
-      .createToken(metaDataStoreURI)
+      .createToken(metaDataStoreURI, name, symbol, this.web3.utils.toWei(cap))
       .estimateGas(function (err, estGas) {
         if (err) console.log('Datatokens: ' + err)
         return estGas
       })
     // Invoke createToken function of the contract
-    const trxReceipt = await factory.methods.createToken(metaDataStoreURI).send({
-      from: address,
-      gas: estGas + 1,
-      gasPrice: '3000000000'
-    })
+    const trxReceipt = await factory.methods
+      .createToken(metaDataStoreURI, name, symbol, this.web3.utils.toWei(cap))
+      .send({
+        from: address,
+        gas: estGas + 1,
+        gasPrice: '3000000000'
+      })
 
     let tokenAddress = null
     try {

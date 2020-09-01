@@ -57,7 +57,13 @@ describe('Marketplace flow', () => {
         datatokensTemplate.abi as AbiItem[],
         web3
       )
-      tokenAddress = await datatoken.create(blob, alice.getId())
+      tokenAddress = await datatoken.create(
+        blob,
+        'AliceDT',
+        'DTA',
+        '10000000000',
+        alice.getId()
+      )
       assert(tokenAddress != null)
     })
 

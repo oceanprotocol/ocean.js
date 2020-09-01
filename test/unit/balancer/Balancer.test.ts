@@ -10,8 +10,8 @@ import factory from '@oceanprotocol/contracts/artifacts/DTFactory.json'
 import datatokensTemplate from '@oceanprotocol/contracts/artifacts/DataTokenTemplate.json'
 
 // this will be replaced by our SFactory/SPool
-import OceanPoolFactory from '@oceanprotocol/contracts/artifacts/SFactory.json'
-import OceanSPool from '@oceanprotocol/contracts/artifacts/SPool.json'
+import OceanPoolFactory from '@oceanprotocol/contracts/artifacts/BFactory.json'
+import OceanSPool from '@oceanprotocol/contracts/artifacts/BPool.json'
 const web3 = new Web3('http://127.0.0.1:8545')
 
 describe('Balancer flow', () => {
@@ -74,7 +74,7 @@ describe('Balancer flow', () => {
     })
 
     it('should create datatokens smart contract', async () => {
-      tokenAddress = await datatoken.create(blob, alice)
+      tokenAddress = await datatoken.create(blob, 'AliceDT', 'DTA', '10000000000', alice)
       assert(tokenAddress !== null)
     })
     it('Create a dummy OceanToken', async () => {
@@ -85,7 +85,13 @@ describe('Balancer flow', () => {
         datatokensTemplate.abi as AbiItem[],
         web3
       )
-      oceanTokenAddress = await oceandatatoken.create(blob, alice)
+      oceanTokenAddress = await oceandatatoken.create(
+        blob,
+        'AliceDT2',
+        'DTA2',
+        '10000000000',
+        alice
+      )
     })
     it('should initialize OceanPool class', async () => {
       Pool = new OceanPool(

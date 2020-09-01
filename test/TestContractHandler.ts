@@ -1,7 +1,7 @@
 import Web3 from 'web3'
 import { Contract } from 'web3-eth-contract'
 import { AbiItem } from 'web3-utils/types'
-
+const communityCollector = '0xeE9300b7961e0a01d9f0adb863C7A227A07AaD75'
 export class TestContractHandler {
   public factory: Contract
   public template: Contract
@@ -40,7 +40,14 @@ export class TestContractHandler {
     estGas = await this.template
       .deploy({
         data: this.templateBytecode,
-        arguments: ['Template Contract', 'TEMPLATE', minter, cap, blob]
+        arguments: [
+          'Template Contract',
+          'TEMPLATE',
+          minter,
+          cap,
+          blob,
+          communityCollector
+        ]
       })
       .estimateGas(function (err, estGas) {
         if (err) console.log('DeployContracts: ' + err)
@@ -50,7 +57,14 @@ export class TestContractHandler {
     this.templateAddress = await this.template
       .deploy({
         data: this.templateBytecode,
-        arguments: ['Template Contract', 'TEMPLATE', minter, cap, blob]
+        arguments: [
+          'Template Contract',
+          'TEMPLATE',
+          minter,
+          cap,
+          blob,
+          communityCollector
+        ]
       })
       .send({
         from: minter,
@@ -64,7 +78,7 @@ export class TestContractHandler {
     estGas = await this.factory
       .deploy({
         data: this.factoryBytecode,
-        arguments: [this.templateAddress]
+        arguments: [this.templateAddress, communityCollector]
       })
       .estimateGas(function (err, estGas) {
         if (err) console.log('DeployContracts: ' + err)
@@ -74,7 +88,7 @@ export class TestContractHandler {
     this.factoryAddress = await this.factory
       .deploy({
         data: this.factoryBytecode,
-        arguments: [this.templateAddress]
+        arguments: [this.templateAddress, communityCollector]
       })
       .send({
         from: minter,
