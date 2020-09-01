@@ -1,5 +1,6 @@
 import defaultFixedRateExchangeABI from '@oceanprotocol/contracts/artifacts/FixedRateExchange.json'
 import BigNumber from 'bignumber.js'
+import { TransactionReceipt } from 'web3-core'
 
 export interface FixedPricedExchange {
   exchangeID?: string
@@ -93,13 +94,13 @@ export class OceanFixedRateExchange {
    * @param {String} exchangeId ExchangeId
    * @param {Number} dataTokenAmount Amount of Data Tokens
    * @param {String} address User address
-   * @return {Promise<any>} transaction receipt
+   * @return {Promise<TransactionReceipt>} transaction receipt
    */
   public async buyDT(
     exchangeId: string,
     dataTokenAmount: string,
     address: string
-  ): Promise<any> {
+  ): Promise<TransactionReceipt> {
     let estGas
     try {
       estGas = await this.contract.methods
@@ -144,13 +145,13 @@ export class OceanFixedRateExchange {
    * @param {String} exchangeId ExchangeId
    * @param {Number} newRate New rate
    * @param {String} address User account
-   * @return {Promise<any>} transaction receipt
+   * @return {Promise<TransactionReceipt>} transaction receipt
    */
   public async setRate(
     exchangeId: string,
     newRate: number,
     address: string
-  ): Promise<any> {
+  ): Promise<TransactionReceipt> {
     let estGas
     try {
       estGas = await this.contract.methods
@@ -178,9 +179,12 @@ export class OceanFixedRateExchange {
    * Activate an exchange
    * @param {String} exchangeId ExchangeId
    * @param {String} address User address
-   * @return {Promise<any>} transaction receipt
+   * @return {Promise<TransactionReceipt>} transaction receipt
    */
-  public async activate(exchangeId: string, address: string): Promise<any> {
+  public async activate(
+    exchangeId: string,
+    address: string
+  ): Promise<TransactionReceipt> {
     let estGas
     try {
       estGas = await this.contract.methods
@@ -206,9 +210,12 @@ export class OceanFixedRateExchange {
    * Deactivate an exchange
    * @param {String} exchangeId ExchangeId
    * @param {String} address User address
-   * @return {Promise<any>} transaction receipt
+   * @return {Promise<TransactionReceipt>} transaction receipt
    */
-  public async deactivate(exchangeId: string, address: string): Promise<any> {
+  public async deactivate(
+    exchangeId: string,
+    address: string
+  ): Promise<TransactionReceipt> {
     let estGas
     try {
       estGas = await this.contract.methods
