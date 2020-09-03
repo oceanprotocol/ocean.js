@@ -3,16 +3,12 @@ import { AbiItem } from 'web3-utils/types'
 import { TestContractHandler } from '../../TestContractHandler'
 import { FixedPricedContractHandler } from '../../FixedPriceContractHandler'
 import { DataTokens } from '../../../src/datatokens/Datatokens'
-import {
-  OceanFixedRateExchange,
-  FixedPricedExchange
-} from '../../../src/exchange/FixedRateExchange'
+import { OceanFixedRateExchange } from '../../../src/exchange/FixedRateExchange'
 
 import Web3 from 'web3'
 import factory from '@oceanprotocol/contracts/artifacts/DTFactory.json'
 import datatokensTemplate from '@oceanprotocol/contracts/artifacts/DataTokenTemplate.json'
 
-import BigNumber from 'bignumber.js'
 import FixedRateExchangeContract = require('@oceanprotocol/contracts/artifacts/FixedRateExchange.json')
 const web3 = new Web3('http://127.0.0.1:8545')
 
@@ -27,13 +23,10 @@ describe('FixedRateExchange flow', () => {
   let datatoken
   let tokenAddress
 
-  let alicePoolAddress
-  let currentDtPrice
   let owner
   let contracts
 
   const consoleDebug = false
-  let greatPool
   const tokenAmount = '1000000000000000000000000000000000'
   const fixedPriceRate = '0.5'
   const updatedPriceRate = '2'
@@ -82,7 +75,7 @@ describe('FixedRateExchange flow', () => {
       tokenAddress = await datatoken.create(
         blob,
         alice,
-        web3.utils.toWei('1000000000000000'),
+        '1000000000000000',
         'AliceDT',
         'DTA'
       )
@@ -101,7 +94,7 @@ describe('FixedRateExchange flow', () => {
       oceanTokenAddress = await oceandatatoken.create(
         blob,
         bob,
-        web3.utils.toWei('1000000000000000'),
+        '1000000000000000',
         'BobDT',
         'DTB'
       )
