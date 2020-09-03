@@ -36,7 +36,7 @@ export class DataTokens {
 
   /**
    * Generate new datatoken name & symbol from a word list
-   * @return {<{ name: String; symbol: String }>} datatoken name & symbol. Produces e.g. "Endemic Jellyfish Token" & "ENDJEL-145"
+   * @return {<{ name: String; symbol: String }>} datatoken name & symbol. Produces e.g. "Endemic Jellyfish Token" & "ENDJEL-45"
    */
   public generateDtName(wordList?: {
     nouns: string[]
@@ -63,19 +63,26 @@ export class DataTokens {
   /**
    * Create new datatoken
    * @param {String} metaDataStoreURI
+   * @param {String} address
+   * @param {String} cap Maximum cap (Number) - will be converted to wei
    * @param {String} name Token name
    * @param {String} symbol Token symbol
-   * @param {String} cap Maximum cap (Number) - will be converted to wei
-   * @param {String} address
    * @return {Promise<string>} datatoken address
    */
   public async create(
     metaDataStoreURI: string,
-    name: string,
-    symbol: string,
-    cap: string,
-    address: string
+    address: string,
+    cap?: string,
+    name?: string,
+    symbol?: string
   ): Promise<string> {
+    if (!cap) cap = '1410000000000000000000000000'
+
+    // Generate name & symbol if not present
+    if (!name || !symbol) {
+      ;({ name, symbol } = this.generateDtName())
+    }
+
     // Create factory contract object
     const factory = new this.web3.eth.Contract(this.factoryABI, this.factoryAddress, {
       from: address
