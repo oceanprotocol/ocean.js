@@ -41,7 +41,7 @@ describe('Simple flow', () => {
         datatokensTemplate.abi as AbiItem[],
         web3
       )
-      tokenAddress = await datatoken.create(blob, 'AliceDT', 'DTA', '10000000000', alice)
+      tokenAddress = await datatoken.create(blob, alice, '10000000000', 'AliceDT', 'DTA')
     })
     it('Alice mints 100 tokens', async () => {
       await datatoken.mint(tokenAddress, alice, tokenAmount)

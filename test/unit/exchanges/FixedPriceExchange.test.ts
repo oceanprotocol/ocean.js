@@ -81,10 +81,10 @@ describe('FixedRateExchange flow', () => {
     it('should create datatokens smart contract', async () => {
       tokenAddress = await datatoken.create(
         blob,
-        'AliceDT',
-        'DTA',
+        alice,
         web3.utils.toWei('1000000000000000'),
-        alice
+        'AliceDT',
+        'DTA'
       )
       assert(tokenAddress !== null)
       if (consoleDebug) console.log("Alice's address:" + alice)
@@ -100,10 +100,10 @@ describe('FixedRateExchange flow', () => {
       )
       oceanTokenAddress = await oceandatatoken.create(
         blob,
-        'BobDT',
-        'DTB',
+        bob,
         web3.utils.toWei('1000000000000000'),
-        bob
+        'BobDT',
+        'DTB'
       )
       if (consoleDebug) console.log("Bob's address:" + bob)
       if (consoleDebug) console.log('oceanTokenAddress:' + oceanTokenAddress)
