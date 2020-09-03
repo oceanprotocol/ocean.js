@@ -16,22 +16,23 @@ describe('FixedRateExchange flow', () => {
   let oceanTokenAddress
   let FixedRateExchangeAddress
   let FixedRateClass
-  let oceandatatoken
+  let oceandatatoken: DataTokens
   let aliceExchangeId
-  let bob
-  let alice
-  let datatoken
+  let bob: string
+  let alice: string
+  let datatoken: DataTokens
   let tokenAddress
 
   let owner
-  let contracts
+  let contracts: TestContractHandler
 
   const consoleDebug = false
-  const tokenAmount = '1000000000000000000000000000000000'
+  const tokenAmount = '1000'
   const fixedPriceRate = '0.5'
   const updatedPriceRate = '2'
   const swapAmount = '1'
   const blob = 'http://localhost:8030/api/v1/services/consume'
+
   describe('#test', () => {
     before(async () => {
       // deploy SFactory
@@ -125,10 +126,12 @@ describe('FixedRateExchange flow', () => {
     it('Alice should have 1000 tokens', async () => {
       const balance = await datatoken.balance(tokenAddress, alice)
       if (consoleDebug) console.log("Alice's datatoke balance:" + balance)
+      assert(balance === tokenAmount)
     })
     it('Bob should have 1000 ocean tokens', async () => {
       const balance = await oceandatatoken.balance(oceanTokenAddress, bob)
       if (consoleDebug) console.log("Bob's ocean balance:" + balance)
+      assert(balance === tokenAmount)
     })
     it('Alice allows Exchange to spend 1000 data tokens', async () => {
       const txid = await datatoken.approve(
