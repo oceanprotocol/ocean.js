@@ -10,13 +10,13 @@ import datatokensTemplate from '@oceanprotocol/contracts/artifacts/DataTokenTemp
 const web3 = new Web3('http://127.0.0.1:8545')
 
 describe('DataTokens', () => {
-  let minter
-  let spender
-  let balance
-  let contracts
-  let datatoken
-  let tokenAddress
-  const tokenAmount = 100
+  let minter: string
+  let spender: string
+  let balance: string
+  let contracts: TestContractHandler
+  let datatoken: DataTokens
+  let tokenAddress: string
+  const tokenAmount = '100'
   const blob = 'https://example.com/dataset-1'
 
   describe('#test', () => {
@@ -52,18 +52,23 @@ describe('DataTokens', () => {
     it('should create datatokens with fallback cap, name & symbol', async () => {
       tokenAddress = await datatoken.create(blob, minter)
       assert(tokenAddress !== null)
+
+      const tokenName = await datatoken.getName(tokenAddress, minter)
+      const tokenSymbol = await datatoken.getSymbol(tokenAddress, minter)
+      assert(tokenName !== null || tokenName !== '')
+      assert(tokenSymbol !== null || tokenSymbol !== '')
     })
 
     it('should mint datatokens', async () => {
       await datatoken.mint(tokenAddress, minter, tokenAmount)
       balance = await datatoken.balance(tokenAddress, minter)
-      assert(balance.toString() === tokenAmount.toString())
+      assert(balance === tokenAmount)
     })
 
     it('should transfer datatokens', async () => {
       await datatoken.transfer(tokenAddress, spender, tokenAmount, minter)
       balance = await datatoken.balance(tokenAddress, spender)
-      assert(balance.toString() === tokenAmount.toString())
+      assert(balance === tokenAmount)
     })
 
     it('should approve datatokens transfer', async () => {
@@ -73,7 +78,7 @@ describe('DataTokens', () => {
     it('should transferFrom datatokens', async () => {
       await datatoken.transferFrom(tokenAddress, spender, tokenAmount, minter)
       balance = await datatoken.balance(tokenAddress, minter)
-      assert(balance.toString() === tokenAmount.toString())
+      assert(balance === tokenAmount)
     })
   })
 })
