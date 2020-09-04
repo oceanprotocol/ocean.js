@@ -27,8 +27,8 @@ before_script:
 script:
   - npm run lint
   - npm run build
-  - npm run test:cover
-  - npm run test:integration
+  - npm run test:unit:cover
+  - npm run test:integration:cover
 
 notifications:
   email: false

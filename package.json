@@ -21,8 +21,9 @@
     "changelog": "auto-changelog -p",
     "prepublishOnly": "npm run build",
     "test:unit": "mocha --config=test/unit/.mocharc.json --node-env=test --exit 'test/unit/**/*.test.ts'",
+    "test:unit:cover": "nyc --report-dir coverage/unit npm run test:unit",
     "test:integration": "mocha --config=test/integration/.mocharc.json --node-env=test --exit 'test/integration/**/*.test.ts'",
-    "test:cover": "nyc --report-dir coverage/unit npm run test:unit"
+    "test:integration:cover": "nyc --report-dir coverage/integration npm run test:integration"
   },
   "repository": {
     "type": "git",
