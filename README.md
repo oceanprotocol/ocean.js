@@ -6,6 +6,8 @@
 
 [![npm](https://img.shields.io/npm/v/@oceanprotocol/lib.svg)](https://www.npmjs.com/package/@oceanprotocol/lib)
 [![Build Status](https://travis-ci.com/oceanprotocol/ocean-lib-js.svg?token=soMi2nNfCZq19zS1Rx4i&branch=main)](https://travis-ci.com/oceanprotocol/ocean-lib-js)
+[![Maintainability](https://api.codeclimate.com/v1/badges/58a59c9029ac615acadc/maintainability)](https://codeclimate.com/repos/5f521329523d1e017600e2ae/maintainability)
+[![Test Coverage](https://api.codeclimate.com/v1/badges/58a59c9029ac615acadc/test_coverage)](https://codeclimate.com/repos/5f521329523d1e017600e2ae/test_coverage)
 [![code style: prettier](https://img.shields.io/badge/code_style-prettier-7b1173.svg?style=flat-square)](https://github.com/prettier/prettier)
 [![js oceanprotocol](https://img.shields.io/badge/js-oceanprotocol-7b1173.svg)](https://github.com/oceanprotocol/eslint-config-oceanprotocol)
 
