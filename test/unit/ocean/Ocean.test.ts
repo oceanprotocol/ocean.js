@@ -11,7 +11,7 @@ let ocean: Ocean
 
 describe('Ocean', () => {
   before(async () => {
-    // await TestContractHandler.prepareContracts()
+    // await TestContractHandler.deployContracts()
     // ocean = await Ocean.getInstance(config)
   })
 
@@ -22,12 +22,12 @@ describe('Ocean', () => {
     })
   })
 
-  describe('#getAccounts()', () => {
-    // it('should list accounts', async () => {
-    //   const accs: Account[] = await ocean.accounts.list()
-    //   assert(accs.length === 10)
-    //   assert((await accs[5].getOceanBalance()) === '0')
-    //   assert(typeof accs[0].getId() === 'string')
-    // })
-  })
+  // describe('#getAccounts()', () => {
+  //   it('should list accounts', async () => {
+  //     const accs: Account[] = await ocean.accounts.list()
+  //     assert(accs.length === 10)
+  //     assert((await accs[5].getOceanBalance()) === '0')
+  //     assert(typeof accs[0].getId() === 'string')
+  //   })
+  // })
 })
