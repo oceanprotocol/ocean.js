@@ -76,7 +76,7 @@ export class DataTokens {
     name?: string,
     symbol?: string
   ): Promise<string> {
-    if (!cap) cap = '1410000000000000000000000000'
+    if (!cap) cap = '1000'
 
     // Generate name & symbol if not present
     if (!name || !symbol) {
