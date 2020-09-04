@@ -1,6 +1,6 @@
 [![banner](https://raw.githubusercontent.com/oceanprotocol/art/master/github/repo-banner%402x.png)](https://oceanprotocol.com)
 
-<h1 align="center">Ocean-lib</h1>
+<h1 align="center">ocean-lib-js</h1>
 
 > JavaScript library to privately & securely publish, exchange, and consume data.
 
@@ -21,7 +21,7 @@ With it, you can:
 - **Transfer** data tokens to another owner, and **all other ERC20 actions**
   using [web3.js](https://web3js.readthedocs.io/en/v1.2.9/web3-eth-contract.html) etc.
 
-`ocean-lib` is part of the [Ocean Protocol](https://oceanprotocol.com) toolset.
+`ocean-lib-js` is part of the [Ocean Protocol](https://oceanprotocol.com) toolset.
 
 This is in alpha state and you can expect running into problems. If you run into them, please open up a [new issue](/issues).
 
@@ -31,6 +31,9 @@ This is in alpha state and you can expect running into problems. If you run into
   - [Marketplace Flow](#marketplace-flow)
 - [🦑 Development](#-development)
 - [✨ Code Style](#-code-style)
+- [👩‍🔬 Testing](#-testing)
+  - [Unit Tests](#unit-tests)
+  - [Integration Tests](#integration-tests)
 - [🛳 Production](#-production)
 - [⬆️ Releases](#️-releases)
   - [Production](#production)
@@ -76,6 +79,47 @@ npm run lint
 
 # auto format all js & css with prettier, taking all configs into account
 npm run format
+```
+
+## 👩‍🔬 Testing
+
+Test suite for unit & integration tests is setup with [Mocha](https://mochajs.org) as test runner, and [nyc](https://github.com/istanbuljs/nyc) for coverage reporting. A combined coverage report is sent to CodeClimate via Travis.
+
+### Unit Tests
+
+Running unit tests requires running Ganache beforehand:
+
+```bash
+npm i -g ganache-cli
+ganache-cli
+```
+
+After that is running you can execute the unit tests in another terminal:
+
+```bash
+npm run test:unit
+# same thing, but with coverage reporting
+npm run test:unit:coverage
+```
+
+### Integration Tests
+
+Running integration tests requires running Ocean Protocol components beforehand with [Barge](https://github.com/oceanprotocol/barge):
+
+```bash
+git clone https://github.com/oceanprotocol/barge
+cd barge
+git checkout v3
+export PROVIDER_VERSION=latest
+bash -x start_ocean.sh --no-dashboard 2>&1 > start_ocean.log
+```
+
+After that is running you can execute the integration tests in another terminal:
+
+```bash
+npm run test:integration
+# same thing, but with coverage reporting
+npm run test:integration:coverage
 ```
 
 ## 🛳 Production
