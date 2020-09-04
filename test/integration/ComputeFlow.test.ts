@@ -81,10 +81,10 @@ describe('Compute flow', () => {
       )
       tokenAddress = await datatoken.create(
         blob,
-        'AliceDT',
-        'DTA',
+        alice.getId(),
         '10000000000',
-        alice.getId()
+        'AliceDT',
+        'DTA'
       )
       assert(tokenAddress != null)
     })

@@ -17,21 +17,22 @@ const web3 = new Web3('http://127.0.0.1:8545')
 describe('Balancer flow', () => {
   let oceanTokenAddress
   let OceanPoolFactoryAddress
-  let Pool
-  let oceandatatoken
+  let Pool: OceanPool
+  let oceandatatoken: DataTokens
   let alicePoolAddress
   let currentDtPrice
-  let owner
-  let bob
-  let alice
-  let contracts
-  let datatoken
-  let tokenAddress
+  let owner: string
+  let bob: string
+  let alice: string
+  let contracts: TestContractHandler
+  let datatoken: DataTokens
+  let tokenAddress: string
   let consoleDebug: false
   let greatPool
   const tokenAmount = '1000'
   const transferAmount = '200'
   const blob = 'http://localhost:8030/api/v1/services/consume'
+
   describe('#test', () => {
     before(async () => {
       // deploy SFactory
@@ -74,7 +75,7 @@ describe('Balancer flow', () => {
     })
 
     it('should create datatokens smart contract', async () => {
-      tokenAddress = await datatoken.create(blob, 'AliceDT', 'DTA', '10000000000', alice)
+      tokenAddress = await datatoken.create(blob, alice, '10000000000', 'AliceDT', 'DTA')
       assert(tokenAddress !== null)
     })
     it('Create a dummy OceanToken', async () => {
@@ -87,10 +88,10 @@ describe('Balancer flow', () => {
       )
       oceanTokenAddress = await oceandatatoken.create(
         blob,
-        'AliceDT2',
-        'DTA2',
+        alice,
         '10000000000',
-        alice
+        'AliceDT2',
+        'DTA2'
       )
     })
     it('should initialize OceanPool class', async () => {
@@ -137,19 +138,19 @@ describe('Balancer flow', () => {
     })
     it('Get dtToken pool reserve ', async () => {
       const currentDtReserve = await Pool.getDTReserve(alice, alicePoolAddress)
-      assert(currentDtReserve > 0)
+      assert(Number(currentDtReserve) > 0)
     })
     it('Get Ocean pool reserve ', async () => {
       const currentOceanReserve = await Pool.getOceanReserve(alice, alicePoolAddress)
-      assert(currentOceanReserve > 0)
+      assert(Number(currentOceanReserve) > 0)
     })
     it('Get total supply of pool tokens', async () => {
       const totalSupply = await Pool.totalSupply(alicePoolAddress)
-      assert(totalSupply > 0)
+      assert(Number(totalSupply) > 0)
     })
     it('Get amount of Ocean needed to buy 1 dtToken', async () => {
       const requiredOcean = await Pool.getOceanNeeded(alice, alicePoolAddress, '1')
-      assert(requiredOcean > 0)
+      assert(Number(requiredOcean) > 0)
     })
 
     it('Bob should search for pools with this DT', async () => {
@@ -162,8 +163,8 @@ describe('Balancer flow', () => {
       await Pool.buyDT(bob, greatPool, '1', '2', String(maxPrice))
       const bobDtBalance = await datatoken.balance(tokenAddress, bob)
       const bobOceanBalance = await datatoken.balance(oceanTokenAddress, bob)
-      assert(bobDtBalance > 0)
-      assert(bobOceanBalance > 0)
+      assert(Number(bobDtBalance) > 0)
+      assert(Number(bobOceanBalance) > 0)
     })
     it('Bob should add DT liquidity to pool ', async () => {
       const currentDtReserve = await Pool.getDTReserve(bob, greatPool)

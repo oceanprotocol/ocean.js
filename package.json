@@ -20,8 +20,8 @@
     "release": "release-it --non-interactive",
     "changelog": "auto-changelog -p",
     "prepublishOnly": "npm run build",
-    "test:unit": "mocha --config=test/unit/.mocharc.json --node-env=test --exit test/unit/**/*.ts",
-    "test:integration": "mocha --config=test/integration/.mocharc.json --node-env=test --exit test/integration/*.ts",
+    "test:unit": "mocha --config=test/unit/.mocharc.json --node-env=test --exit 'test/unit/**/*.test.ts'",
+    "test:integration": "mocha --config=test/integration/.mocharc.json --node-env=test --exit 'test/integration/**/*.test.ts'",
     "test:cover": "nyc --report-dir coverage/unit npm run test:unit"
   },
   "repository": {

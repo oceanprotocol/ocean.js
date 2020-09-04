@@ -4,6 +4,8 @@ import { AbiItem } from 'web3-utils/types'
 import defaultFactoryABI from '@oceanprotocol/contracts/artifacts/DTFactory.json'
 import defaultDatatokensABI from '@oceanprotocol/contracts/artifacts/DataTokenTemplate.json'
 
+import wordListDefault from '../data/words.json'
+
 /**
  * Provides a interface to DataTokens
  */
@@ -33,21 +35,54 @@ export class DataTokens {
   }
 
   /**
+   * Generate new datatoken name & symbol from a word list
+   * @return {<{ name: String; symbol: String }>} datatoken name & symbol. Produces e.g. "Endemic Jellyfish Token" & "ENDJEL-45"
+   */
+  public generateDtName(wordList?: {
+    nouns: string[]
+    adjectives: string[]
+  }): { name: string; symbol: string } {
+    const list = wordList || wordListDefault
+    const random1 = Math.floor(Math.random() * list.adjectives.length)
+    const random2 = Math.floor(Math.random() * list.nouns.length)
+    const indexNumber = Math.floor(Math.random() * 100)
+
+    // Capitalized adjective & noun
+    const adjective = list.adjectives[random1].replace(/^\w/, (c) => c.toUpperCase())
+    const noun = list.nouns[random2].replace(/^\w/, (c) => c.toUpperCase())
+
+    const name = `${adjective} ${noun} Token`
+    // use first 3 letters of name, uppercase it, and add random number
+    const symbol = `${(
+      adjective.substring(0, 3) + noun.substring(0, 3)
+    ).toUpperCase()}-${indexNumber}`
+
+    return { name, symbol }
+  }
+
+  /**
    * Create new datatoken
    * @param {String} metaDataStoreURI
+   * @param {String} address
+   * @param {String} cap Maximum cap (Number) - will be converted to wei
    * @param {String} name Token name
    * @param {String} symbol Token symbol
-   * @param {String} cap Maximum cap (Number) - will be converted to wei
-   * @param {String} address
    * @return {Promise<string>} datatoken address
    */
   public async create(
     metaDataStoreURI: string,
-    name: string,
-    symbol: string,
-    cap: string,
-    address: string
+    address: string,
+    cap?: string,
+    name?: string,
+    symbol?: string
   ): Promise<string> {
+    if (!cap) cap = '1000'
+
+    // Generate name & symbol if not present
+    if (!name || !symbol) {
+      ;({ name, symbol } = this.generateDtName())
+    }
+
     // Create factory contract object
     const factory = new this.web3.eth.Contract(this.factoryABI, this.factoryAddress, {
       from: address

@@ -3,16 +3,12 @@ import { AbiItem } from 'web3-utils/types'
 import { TestContractHandler } from '../../TestContractHandler'
 import { FixedPricedContractHandler } from '../../FixedPriceContractHandler'
 import { DataTokens } from '../../../src/datatokens/Datatokens'
-import {
-  OceanFixedRateExchange,
-  FixedPricedExchange
-} from '../../../src/exchange/FixedRateExchange'
+import { OceanFixedRateExchange } from '../../../src/exchange/FixedRateExchange'
 
 import Web3 from 'web3'
 import factory from '@oceanprotocol/contracts/artifacts/DTFactory.json'
 import datatokensTemplate from '@oceanprotocol/contracts/artifacts/DataTokenTemplate.json'
 
-import BigNumber from 'bignumber.js'
 import FixedRateExchangeContract = require('@oceanprotocol/contracts/artifacts/FixedRateExchange.json')
 const web3 = new Web3('http://127.0.0.1:8545')
 
@@ -20,25 +16,23 @@ describe('FixedRateExchange flow', () => {
   let oceanTokenAddress
   let FixedRateExchangeAddress
   let FixedRateClass
-  let oceandatatoken
+  let oceandatatoken: DataTokens
   let aliceExchangeId
-  let bob
-  let alice
-  let datatoken
+  let bob: string
+  let alice: string
+  let datatoken: DataTokens
   let tokenAddress
 
-  let alicePoolAddress
-  let currentDtPrice
   let owner
-  let contracts
+  let contracts: TestContractHandler
 
   const consoleDebug = false
-  let greatPool
-  const tokenAmount = '1000000000000000000000000000000000'
+  const tokenAmount = '1000'
   const fixedPriceRate = '0.5'
   const updatedPriceRate = '2'
   const swapAmount = '1'
   const blob = 'http://localhost:8030/api/v1/services/consume'
+
   describe('#test', () => {
     before(async () => {
       // deploy SFactory
@@ -81,10 +75,10 @@ describe('FixedRateExchange flow', () => {
     it('should create datatokens smart contract', async () => {
       tokenAddress = await datatoken.create(
         blob,
+        alice,
+        '1000000000000000',
         'AliceDT',
-        'DTA',
-        web3.utils.toWei('1000000000000000'),
-        alice
+        'DTA'
       )
       assert(tokenAddress !== null)
       if (consoleDebug) console.log("Alice's address:" + alice)
@@ -100,10 +94,10 @@ describe('FixedRateExchange flow', () => {
       )
       oceanTokenAddress = await oceandatatoken.create(
         blob,
+        bob,
+        '1000000000000000',
         'BobDT',
-        'DTB',
-        web3.utils.toWei('1000000000000000'),
-        bob
+        'DTB'
       )
       if (consoleDebug) console.log("Bob's address:" + bob)
       if (consoleDebug) console.log('oceanTokenAddress:' + oceanTokenAddress)
@@ -132,10 +126,12 @@ describe('FixedRateExchange flow', () => {
     it('Alice should have 1000 tokens', async () => {
       const balance = await datatoken.balance(tokenAddress, alice)
       if (consoleDebug) console.log("Alice's datatoke balance:" + balance)
+      assert(balance === tokenAmount)
     })
     it('Bob should have 1000 ocean tokens', async () => {
       const balance = await oceandatatoken.balance(oceanTokenAddress, bob)
       if (consoleDebug) console.log("Bob's ocean balance:" + balance)
+      assert(balance === tokenAmount)
     })
     it('Alice allows Exchange to spend 1000 data tokens', async () => {
       const txid = await datatoken.approve(

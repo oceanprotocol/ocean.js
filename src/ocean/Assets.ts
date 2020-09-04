@@ -50,6 +50,10 @@ export class Assets extends Instantiable {
    * @param  {Metadata} metadata DDO metadata.
    * @param  {Account}  publisher Publisher account.
    * @param  {list} services list of Service description documents
+   * @param {String} dtAddress existing Data Token Address
+   * @param {String} cap Maximum cap (Number) - will be converted to wei
+   * @param {String} name Token name
+   * @param {String} symbol Token symbol
    * @return {Promise<DDO>}
    */
   public create(
@@ -57,9 +61,9 @@ export class Assets extends Instantiable {
     publisher: Account,
     services: Service[] = [],
     dtAddress?: string,
+    cap?: string,
     name?: string,
-    symbol?: string,
-    cap?: string
+    symbol?: string
   ): SubscribablePromise<CreateProgressStep, DDO> {
     this.logger.log('Creating asset')
     return new SubscribablePromise(async (observer) => {
@@ -68,19 +72,16 @@ export class Assets extends Instantiable {
       }
       if (!dtAddress) {
         this.logger.log('Creating datatoken')
-        if (!name) name = 'DataToken'
-        if (!symbol) symbol = 'DT'
-        if (!cap) cap = '1410000000000000000000000000'
         observer.next(CreateProgressStep.CreatingDataToken)
         const metadataStoreURI = this.ocean.metadatastore.getURI()
         const jsonBlob = { t: 1, url: metadataStoreURI }
         const { datatokens } = this.ocean
         dtAddress = await datatokens.create(
           JSON.stringify(jsonBlob),
-          name,
-          symbol,
+          publisher.getId(),
           cap,
-          publisher.getId()
+          name,
+          symbol
         )
         this.logger.log('DataToken creted')
         observer.next(CreateProgressStep.DataTokenCreated)
