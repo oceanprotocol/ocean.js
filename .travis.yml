@@ -16,6 +16,11 @@ before_install:
   - npm install -g npm
 
 before_script:
+  # CodeClimate test reporter setup
+  - curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
+  - chmod +x ./cc-test-reporter
+  - ./cc-test-reporter before-build
+  # Barge setup
   - git clone https://github.com/oceanprotocol/barge
   - cd barge
   - git checkout v3
@@ -27,8 +32,14 @@ before_script:
 script:
   - npm run lint
   - npm run build
-  - npm run test:cover
-  - npm run test:integration
+  - npm run test:unit:cover
+  - npm run test:integration:cover
+
+after_script:
+  - ./cc-test-reporter format-coverage -t lcov -o coverage/codeclimate.unit.json coverage/unit/lcov.info # Format unit test coverage
+  - ./cc-test-reporter format-coverage -t lcov -o coverage/codeclimate.integration.json coverage/integration/lcov.info # Format integration test coverage
+  - ./cc-test-reporter sum-coverage coverage/codeclimate.*.json -p 2 # Sum both coverage parts into coverage/codeclimate.json
+  - if [[ "$TRAVIS_TEST_RESULT" == 0 ]]; then ./cc-test-reporter upload-coverage; fi # Upload coverage/codeclimate.json
 
 notifications:
   email: false

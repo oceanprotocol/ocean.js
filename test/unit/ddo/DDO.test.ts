@@ -1,5 +1,5 @@
 import { assert, expect, spy, use } from 'chai'
-import spies from 'chai-spies'
+// import spies from 'chai-spies'
 
 import { DDO } from '../../../src/ddo/DDO'
 import { Service } from '../../../src/ddo/interfaces/Service'
@@ -9,7 +9,7 @@ import { TestContractHandler } from '../../TestContractHandler'
 
 import * as jsonDDO from '../__fixtures__/ddo.json'
 
-use(spies)
+// use(spies)
 
 describe('DDO', () => {
   const testDDO: DDO = new DDO({
@@ -158,76 +158,69 @@ describe('DDO', () => {
     ]
   })
 
-  let ocean: Ocean
-
-  beforeEach(async () => {
-    // await TestContractHandler.prepareContracts()
-    // ocean = await Ocean.getInstance(Config)
-  })
-
-  afterEach(() => {
-    spy.restore()
-  })
+  // afterEach(() => {
+  //   spy.restore()
+  // })
 
   describe('#serialize()', () => {
     it('should properly serialize', async () => {
-      // const ddoString = DDO.serialize(testDDO)
-      // assert(ddoString)
-      // assert(ddoString.startsWith('{'))
+      const ddoString = DDO.serialize(testDDO)
+      assert(ddoString)
+      assert(ddoString.startsWith('{'))
     })
   })
 
   describe('#constructor()', () => {
     it('should create an empty ddo', async () => {
-      // const ddo = new DDO()
-      // assert(ddo)
-      // assert(ddo.service.length === 0)
-      // assert(ddo.authentication.length === 0)
-      // assert(ddo.publicKey.length === 0)
+      const ddo = new DDO()
+      assert(ddo)
+      assert(ddo.service.length === 0)
+      assert(ddo.authentication.length === 0)
+      assert(ddo.publicKey.length === 0)
     })
 
     it('should create an predefined ddo', async () => {
-      // const service: Partial<Service> & any = {
-      //     serviceEndpoint: 'http://',
-      //     description: 'nice service'
-      // }
-      // const ddo = new DDO({
-      //     service: [service as any]
-      // })
-      // assert(ddo)
-      // assert(ddo.service.length === 1)
-      // assert((ddo.service[0] as any).description === service.description)
-      // assert(ddo.authentication.length === 0)
-      // assert(ddo.publicKey.length === 0)
+      const service: Partial<Service> & any = {
+        serviceEndpoint: 'http://',
+        description: 'nice service'
+      }
+      const ddo = new DDO({
+        service: [service as any]
+      })
+      assert(ddo)
+      assert(ddo.service.length === 1)
+      assert((ddo.service[0] as any).description === service.description)
+      assert(ddo.authentication.length === 0)
+      assert(ddo.publicKey.length === 0)
     })
   })
 
   describe('#deserialize()', () => {
     it('should properly deserialize from serialized object', async () => {
-      // const ddoString = DDO.serialize(testDDO)
-      // assert.typeOf(ddoString, 'string')
-      // const ddo: DDO = DDO.deserialize(ddoString)
-      // assert.instanceOf(ddo, DDO)
-      // assert.equal(ddo.id, testDDO.id)
-      // assert.equal(ddo.publicKey[0].publicKeyPem, testDDO.publicKey[0].publicKeyPem)
+      const ddoString = DDO.serialize(testDDO)
+      assert.typeOf(ddoString, 'string')
+      const ddo: DDO = DDO.deserialize(ddoString)
+      assert.instanceOf(ddo, DDO)
+      assert.equal(ddo.id, testDDO.id)
+      assert.equal(ddo.publicKey[0].publicKeyPem, testDDO.publicKey[0].publicKeyPem)
     })
 
     it('should properly deserialize from json file', async () => {
-      // const ddo: DDO = DDO.deserialize(JSON.stringify(jsonDDO))
-      // assert(ddo)
-      // assert.equal(ddo.id, jsonDDO.id)
-      // assert.equal(ddo.publicKey[0].publicKeyPem, jsonDDO.publicKey[0].publicKeyPem)
+      const ddo: DDO = DDO.deserialize(JSON.stringify(jsonDDO))
+      assert(ddo)
+      assert.equal(ddo.id, jsonDDO.id)
+      assert.equal(ddo.publicKey[0].publicKeyPem, jsonDDO.publicKey[0].publicKeyPem)
     })
   })
 
   describe('#getChecksum()', () => {
     it('should properly generate a the checksum DDO', async () => {
-      // const ddo = new DDO(testDDO)
-      // const checksum = ddo.getChecksum()
-      // assert.equal(
-      //     checksum,
-      //     '0x15f27a7a3c7b15d2b06dec7347c6b8da168adddd7df51a8ebbbe87b59b80049b'
-      // )
+      const ddo = new DDO(testDDO)
+      const checksum = ddo.getChecksum()
+      assert.equal(
+        checksum,
+        '0x15f27a7a3c7b15d2b06dec7347c6b8da168adddd7df51a8ebbbe87b59b80049b'
+      )
     })
   })
 
@@ -241,9 +234,9 @@ describe('DDO', () => {
       // const checksum = ddo.getChecksum()
       // const proof = await ddo.generateProof(ocean, publicKey)
       // assert.include(proof as any, {
-      //     creator: publicKey,
-      //     type: 'DDOIntegritySignature',
-      //     signatureValue: signature
+      //   creator: publicKey,
+      //   type: 'DDOIntegritySignature',
+      //   signatureValue: signature
       // })
       // expect(signTextSpy).to.have.been.called.with(checksum, publicKey)
     })

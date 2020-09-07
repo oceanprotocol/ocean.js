@@ -2,16 +2,16 @@ import { Metadata } from './Metadata'
 
 export type ServiceType = 'authorization' | 'metadata' | 'access' | 'compute'
 
+export interface ServiceCommonAttributes {
+  main: { [key: string]: any }
+  additionalInformation?: { [key: string]: any }
+}
+
 export interface ServiceCommon {
   type: ServiceType
   index: number
   serviceEndpoint?: string
   attributes: ServiceCommonAttributes
-}
-
-export interface ServiceCommonAttributes {
-  main: { [key: string]: any }
-  additionalInformation?: { [key: string]: any }
 }
 
 export interface ServiceAccessAttributes extends ServiceCommonAttributes {
@@ -27,18 +27,6 @@ export interface ServiceComputePrivacy {
   allowRawAlgorithm: boolean
   allowNetworkAccess: boolean
   trustedAlgorithms: string[]
-}
-
-export interface ServiceComputeAttributes extends ServiceCommonAttributes {
-  main: {
-    creator: string
-    datePublished: string
-    cost: string
-    timeout: number
-    provider?: ServiceComputeProvider
-    name: string
-    privacy?: ServiceComputePrivacy
-  }
 }
 
 export interface ServiceComputeProvider {
@@ -64,6 +52,18 @@ export interface ServiceComputeProvider {
       disk: string
       maxExecutionTime: number
     }[]
+  }
+}
+
+export interface ServiceComputeAttributes extends ServiceCommonAttributes {
+  main: {
+    creator: string
+    datePublished: string
+    cost: string
+    timeout: number
+    provider?: ServiceComputeProvider
+    name: string
+    privacy?: ServiceComputePrivacy
   }
 }
 

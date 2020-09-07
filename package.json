@@ -21,8 +21,9 @@
     "changelog": "auto-changelog -p",
     "prepublishOnly": "npm run build",
     "test:unit": "mocha --config=test/unit/.mocharc.json --node-env=test --exit 'test/unit/**/*.test.ts'",
+    "test:unit:cover": "nyc --report-dir coverage/unit npm run test:unit",
     "test:integration": "mocha --config=test/integration/.mocharc.json --node-env=test --exit 'test/integration/**/*.test.ts'",
-    "test:cover": "nyc --report-dir coverage/unit npm run test:unit"
+    "test:integration:cover": "nyc --report-dir coverage/integration npm run test:integration"
   },
   "repository": {
     "type": "git",
@@ -43,23 +44,23 @@
     "@oceanprotocol/contracts": "^0.4.1",
     "decimal.js": "^10.2.0",
     "fs": "0.0.1-security",
-    "node-fetch": "^2.6.0",
+    "node-fetch": "^2.6.1",
     "save-file": "^2.3.1",
     "uuid": "^8.3.0",
     "web3": "^1.2.11",
     "web3-eth-contract": "^1.2.11",
-    "whatwg-url": "^8.0.0"
+    "whatwg-url": "^8.2.2"
   },
   "devDependencies": {
-    "@release-it/bumper": "^1.4.1",
+    "@release-it/bumper": "^2.0.0",
     "@truffle/hdwallet-provider": "^1.0.37",
     "@types/chai": "^4.2.11",
     "@types/chai-spies": "^1.0.1",
     "@types/mocha": "^8.0.3",
-    "@types/node": "^14.6.0",
+    "@types/node": "^14.6.4",
     "@types/node-fetch": "^2.5.5",
-    "@typescript-eslint/eslint-plugin": "^4.0.0",
-    "@typescript-eslint/parser": "^3.9.1",
+    "@typescript-eslint/eslint-plugin": "^4.0.1",
+    "@typescript-eslint/parser": "^4.0.1",
     "auto-changelog": "^2.2.0",
     "chai": "^4.2.0",
     "chai-spies": "^1.0.0",
@@ -72,12 +73,12 @@
     "mocha": "^8.0.1",
     "mock-local-storage": "^1.1.11",
     "nyc": "^15.1.0",
-    "ora": "^5.0.0",
+    "ora": "^5.1.0",
     "prettier": "^2.0.5",
     "source-map-support": "^0.5.19",
     "ts-node": "^9.0.0",
     "ts-node-register": "^1.0.0",
-    "typedoc": "^0.19.0",
+    "typedoc": "^0.19.1",
     "typescript": "^4.0.2"
   },
   "nyc": {
