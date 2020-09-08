@@ -1,8 +1,7 @@
 dist: xenial
 sudo: required
 language: node_js
-node_js:
-  - '12'
+node_js: node
 
 services:
   - docker
@@ -11,9 +10,6 @@ cache: npm
 
 matrix:
   fast_finish: true
-
-before_install:
-  - npm install -g npm
 
 before_script:
   # CodeClimate test reporter setup
