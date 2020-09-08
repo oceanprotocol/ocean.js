@@ -26,10 +26,8 @@ before_script:
   - sleep 300
 
 script:
-  - npm run lint
+  - npm test
   - npm run build
-  - npm run test:unit:cover
-  - npm run test:integration:cover
 
 after_script:
   - ./cc-test-reporter format-coverage -t lcov -o coverage/codeclimate.unit.json coverage/unit/lcov.info # Format unit test coverage

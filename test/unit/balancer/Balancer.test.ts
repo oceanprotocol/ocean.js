@@ -155,7 +155,7 @@ describe('Balancer flow', () => {
 
   it('Get dtPrice from the pool ', async () => {
     currentDtPrice = await Pool.getDTPrice(alice, alicePoolAddress)
-    assert(currentDtPrice > 0)
+    assert(Number(currentDtPrice) > 0)
   })
   it('Get dtToken pool reserve ', async () => {
     const currentDtReserve = await Pool.getDTReserve(alice, alicePoolAddress)
