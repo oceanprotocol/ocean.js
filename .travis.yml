@@ -11,9 +11,6 @@ cache: npm
 matrix:
   fast_finish: true
 
-before_install:
-  - npm install -g npm
-
 before_script:
   # CodeClimate test reporter setup
   - curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
