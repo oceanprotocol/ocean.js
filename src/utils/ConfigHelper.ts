@@ -1,7 +1,7 @@
 import Config from '../models/Config'
 
 export interface ConfigHelperConfig extends Config {
-  chainId?: number
+  chainId: 1 | 4 | number
   network: 'mainnet' | 'rinkeby' | 'development' | string
 }
 
