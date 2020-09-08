@@ -47,10 +47,13 @@ npm install @oceanprotocol/lib
 
 ## 🏄 Quick Start
 
-```js
-import { Ocean, ConfigHelper } from '@oceanprotocol/lib'
+```ts
+import { Ocean, Config, ConfigHelper } from '@oceanprotocol/lib'
 
-const defaultConfig = new ConfigHelper().getConfig('rinkeby', 'YOUR_INFURA_PROJECT_ID')
+const defaultConfig: Config = new ConfigHelper().getConfig(
+  'rinkeby',
+  'YOUR_INFURA_PROJECT_ID'
+)
 
 const config = {
   ...defaultConfig,

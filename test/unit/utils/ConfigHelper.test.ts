@@ -5,7 +5,7 @@ describe('ConfigHelper', () => {
   it('should get config based on network name', () => {
     const network = 'rinkeby'
     const config = new ConfigHelper().getConfig(network)
-    assert(config.network === network)
+    assert(config.nodeUri.includes(network))
   })
 
   it('should get config based on network name, and add passed Infura ID', () => {
@@ -18,7 +18,7 @@ describe('ConfigHelper', () => {
   it('should get config based on chain ID', () => {
     const network = 4
     const config = new ConfigHelper().getConfig(network)
-    assert(config.chainId === network)
+    assert(config.nodeUri.includes('rinkeby'))
   })
 
   it('should return nothing with unknown network', () => {

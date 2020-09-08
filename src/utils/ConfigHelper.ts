@@ -53,7 +53,7 @@ export class ConfigHelper {
   public getConfig(
     network: ConfigHelperNetworkName | ConfigHelperNetworkId,
     infuraProjectId?: string
-  ): ConfigHelperConfig {
+  ): Config {
     const filterBy = typeof network === 'string' ? 'network' : 'chainId'
     const config = configs.find((c) => c[filterBy] === network)
 
