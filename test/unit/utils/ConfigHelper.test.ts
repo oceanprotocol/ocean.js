@@ -14,10 +14,4 @@ describe('ConfigHelper', () => {
     const config = new ConfigHelper().getConfig(network, infuraId)
     assert(config.nodeUri.includes(infuraId))
   })
-
-  it('should get config based on chain ID', () => {
-    const chainId = 4
-    const config = new ConfigHelper().getConfigById(chainId)
-    assert(config.chainId === chainId)
-  })
 })

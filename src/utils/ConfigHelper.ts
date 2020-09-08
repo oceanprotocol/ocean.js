@@ -1,8 +1,16 @@
 import Config from '../models/Config'
 
+export declare type ConfigHelperNetworkName =
+  | 'mainnet'
+  | 'rinkeby'
+  | 'development'
+  | string
+
+export declare type ConfigHelperNetworkId = 1 | 4 | number
+
 export interface ConfigHelperConfig extends Config {
-  chainId: 1 | 4 | number
-  network: 'mainnet' | 'rinkeby' | 'development' | string
+  chainId: ConfigHelperNetworkId
+  network: ConfigHelperNetworkName
 }
 
 const configs: ConfigHelperConfig[] = [
@@ -41,23 +49,17 @@ const configs: ConfigHelperConfig[] = [
 ]
 
 export class ConfigHelper {
-  private getNodeUri(config: ConfigHelperConfig, infuraProjectId?: string) {
+  public getConfig(
+    network: ConfigHelperNetworkName | ConfigHelperNetworkId,
+    infuraProjectId?: string
+  ): ConfigHelperConfig {
+    const filterBy = typeof network === 'string' ? 'network' : 'chainId'
+    const config = configs.find((c) => c[filterBy] === network)
+
     const nodeUri = infuraProjectId
       ? `${config.nodeUri}/${infuraProjectId}`
       : config.nodeUri
 
-    return nodeUri
-  }
-
-  public getConfig(network: string, infuraProjectId?: string): ConfigHelperConfig {
-    const knownconfig = configs.find((c) => c.network === network)
-    const nodeUri = this.getNodeUri(knownconfig, infuraProjectId)
-    return knownconfig ? { ...knownconfig, nodeUri } : null
-  }
-
-  public getConfigById(chainId: number, infuraProjectId?: string): ConfigHelperConfig {
-    const knownconfig = configs.find((c) => c.chainId === chainId)
-    const nodeUri = this.getNodeUri(knownconfig, infuraProjectId)
-    return knownconfig ? { ...knownconfig, nodeUri } : null
+    return config ? { ...config, nodeUri } : null
   }
 }
