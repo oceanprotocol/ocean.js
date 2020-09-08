@@ -40,7 +40,7 @@ const configs: ConfigHelperConfig[] = [
     network: 'mainnet',
     nodeUri: 'https://mainnet.infura.io/v3',
     factoryAddress: '0x1234',
-    oceanTokenAddress: '0x985dd3d42de1e256d09e1c10f112bccb8015ad41',
+    oceanTokenAddress: '0x7AFeBBB46fDb47ed17b22ed075Cde2447694fB9e',
     metadataStoreUri: null,
     providerUri: null,
     poolFactoryAddress: null,
