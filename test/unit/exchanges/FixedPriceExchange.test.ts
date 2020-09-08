@@ -13,15 +13,15 @@ import FixedRateExchangeContract = require('@oceanprotocol/contracts/artifacts/F
 const web3 = new Web3('http://127.0.0.1:8545')
 
 describe('FixedRateExchange flow', () => {
-  let oceanTokenAddress
-  let FixedRateExchangeAddress
+  let oceanTokenAddress: string
+  let FixedRateExchangeAddress: string
   let FixedRateClass
   let oceandatatoken: DataTokens
-  let aliceExchangeId
+  let aliceExchangeId: string
   let bob: string
   let alice: string
   let datatoken: DataTokens
-  let tokenAddress
+  let tokenAddress: string
 
   let owner
   let contracts: TestContractHandler
@@ -107,7 +107,7 @@ describe('FixedRateExchange flow', () => {
       FixedRateClass = new OceanFixedRateExchange(
         web3,
         FixedRateExchangeAddress,
-        FixedRateExchangeContract.abi,
+        FixedRateExchangeContract.abi as AbiItem[],
         oceanTokenAddress
       )
       assert(FixedRateClass !== null)

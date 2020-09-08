@@ -1,5 +1,5 @@
-import { Config, LogLevel } from '../../src/models/Config'
-import { LoggerInstance } from '../../src/utils'
+import { Config } from '../../src/models/Config'
+import { LoggerInstance, LogLevel } from '../../src/utils'
 
 import Web3 from 'web3'
 
