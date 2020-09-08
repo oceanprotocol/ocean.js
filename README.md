@@ -85,16 +85,25 @@ npm run format
 
 Test suite for unit & integration tests is setup with [Mocha](https://mochajs.org) as test runner, and [nyc](https://github.com/istanbuljs/nyc) for coverage reporting. A combined coverage report is sent to CodeClimate via Travis.
 
-### Unit Tests
-
-Running unit tests requires running Ganache beforehand:
+Running all tests requires running Ocean Protocol components beforehand with [Barge](https://github.com/oceanprotocol/barge), which also runs a `ganache-cli` instance:
 
 ```bash
-npm i -g ganache-cli
-ganache-cli
+git clone https://github.com/oceanprotocol/barge
+cd barge
+git checkout v3
+export PROVIDER_VERSION=latest
+./start_ocean.sh --no-dashboard
 ```
 
-After that is running you can execute the unit tests in another terminal:
+You can then proceed to run in another terminal, executing linting, type checking, unit, and integration tests with coverage reporting all in one go:
+
+```bash
+npm test
+```
+
+### Unit Tests
+
+You can execute the unit tests individually with:
 
 ```bash
 npm run test:unit
@@ -104,17 +113,7 @@ npm run test:unit:coverage
 
 ### Integration Tests
 
-Running integration tests requires running Ocean Protocol components beforehand with [Barge](https://github.com/oceanprotocol/barge):
-
-```bash
-git clone https://github.com/oceanprotocol/barge
-cd barge
-git checkout v3
-export PROVIDER_VERSION=latest
-bash -x start_ocean.sh --no-dashboard 2>&1 > start_ocean.log
-```
-
-After that is running you can execute the integration tests in another terminal:
+You can execute the integration tests individually with:
 
 ```bash
 npm run test:integration

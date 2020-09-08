@@ -60,7 +60,7 @@ describe('MetadataStore', () => {
 
     it('should query metadata with a new instance', async () => {
       const metadatastoreNew = new MetadataStore(config.metadataStoreUri, LoggerInstance)
-      spy.on(metadatastoreNew.fetch, 'get', () => reponsify(getResults([new DDO()])))
+      spy.on(metadatastoreNew.fetch, 'post', () => reponsify(getResults([new DDO()])))
 
       const result = await metadatastoreNew.queryMetadata(query)
       assert.typeOf(result.results, 'array')
