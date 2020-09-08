@@ -53,17 +53,12 @@ export class OceanPool extends Pool {
     const oceanAmount = (parseFloat(amount) * oceanWeight) / parseFloat(weight)
     this.dtAddress = token
 
-    await this.approve(
-      account,
-      token,
-      address,
-      this.web3.utils.toWei(String(amount)) as any
-    )
+    await this.approve(account, token, address, this.web3.utils.toWei(String(amount)))
     await this.approve(
       account,
       this.oceanAddress,
       address,
-      this.web3.utils.toWei(String(oceanAmount)) as any
+      this.web3.utils.toWei(String(oceanAmount))
     )
 
     await super.setup(
@@ -90,7 +85,8 @@ export class OceanPool extends Pool {
   public async getDTAddress(account: string, poolAddress: string): Promise<string> {
     this.dtAddress = null
     const tokens = await this.getCurrentTokens(account, poolAddress)
-    let token
+    let token: string
+
     for (token of tokens) {
       // TODO: Potential timing attack, left side: true
       if (token !== this.oceanAddress) this.dtAddress = token
@@ -130,7 +126,7 @@ export class OceanPool extends Pool {
    * @param {String} amount  Data Token amount
    * @param {String} oceanAmount  Ocean Token amount payed
    * @param {String} maxPrice  Maximum price to pay
-   * @return {any}
+   * @return {TransactionReceipt}
    */
   public async buyDT(
     account: string,
@@ -138,7 +134,7 @@ export class OceanPool extends Pool {
     amount: string,
     oceanAmount: string,
     maxPrice: string
-  ): Promise<any> {
+  ): Promise<TransactionReceipt> {
     if (this.oceanAddress == null) {
       console.error('oceanAddress is not defined')
       return null

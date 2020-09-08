@@ -26,8 +26,9 @@ export class BalancerContractHandler {
     this.poolBytecode = poolBytecode
   }
 
-  public async getAccounts() {
+  public async getAccounts(): Promise<string[]> {
     this.accounts = await this.web3.eth.getAccounts()
+    return this.accounts
   }
 
   public async deployContracts(minter: string) {

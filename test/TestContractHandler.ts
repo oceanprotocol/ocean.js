@@ -1,7 +1,9 @@
 import Web3 from 'web3'
 import { Contract } from 'web3-eth-contract'
 import { AbiItem } from 'web3-utils/types'
+
 const communityCollector = '0xeE9300b7961e0a01d9f0adb863C7A227A07AaD75'
+
 export class TestContractHandler {
   public factory: Contract
   public template: Contract
@@ -26,8 +28,9 @@ export class TestContractHandler {
     this.factoryBytecode = factoryBytecode
   }
 
-  public async getAccounts() {
+  public async getAccounts(): Promise<string[]> {
     this.accounts = await this.web3.eth.getAccounts()
+    return this.accounts
   }
 
   public async deployContracts(minter: string) {

@@ -6,6 +6,7 @@ import { ComputeJob } from '../ocean/interfaces/ComputeJob'
 import { Output } from '../ocean/interfaces/ComputeOutput'
 import { MetadataAlgorithm } from '../ddo/interfaces/MetadataAlgorithm'
 import { Versions } from '../ocean/Versions'
+import { Response } from 'node-fetch'
 
 const apiPath = '/api/v1/services'
 
@@ -229,7 +230,7 @@ export class Provider extends Instantiable {
     }
 
     const result = await fetch
-      .then((response: any) => {
+      .then((response: Response) => {
         if (response.ok) {
           return response.json()
         }

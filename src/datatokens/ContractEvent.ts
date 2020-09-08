@@ -1,3 +1,4 @@
+import { EventData, Filter } from 'web3-eth-contract'
 import ContractBase from './contracts/ContractBase'
 
 interface EventEmitter {
@@ -10,14 +11,15 @@ export interface ContractEventSubscription {
 }
 
 export class ContractEvent {
+  // eslint-disable-next-line no-useless-constructor
   constructor(
     private eventEmitter: EventEmitter,
     private contract: ContractBase,
     private eventName: string,
-    private filter: { [key: string]: any }
+    private filter: Filter
   ) {}
 
-  public subscribe(callback: (events: any[]) => void): ContractEventSubscription {
+  public subscribe(callback: (events: EventData[]) => void): ContractEventSubscription {
     const onEvent = async (blockNumber: number) => {
       const events = await this.contract.getEventData(this.eventName, {
         filter: this.filter,
@@ -35,7 +37,7 @@ export class ContractEvent {
     }
   }
 
-  public once(callback?: (events: any[]) => void): Promise<any[]> {
+  public once(callback?: (events: EventData[]) => void): Promise<any[]> {
     return new Promise((resolve) => {
       const subscription = this.subscribe((events) => {
         subscription.unsubscribe()

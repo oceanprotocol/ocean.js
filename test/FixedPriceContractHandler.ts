@@ -9,14 +9,15 @@ export class FixedPricedContractHandler {
   public contractAddress: string
   public web3: Web3
 
-  constructor(contractABI: AbiItem | AbiItem[], contractBytecode: string, web3: Web3) {
+  constructor(contractABI: AbiItem[], contractBytecode: string, web3: Web3) {
     this.web3 = web3
     this.contract = new this.web3.eth.Contract(contractABI)
     this.contractBytecode = contractBytecode
   }
 
-  public async getAccounts() {
+  public async getAccounts(): Promise<string[]> {
     this.accounts = await this.web3.eth.getAccounts()
+    return this.accounts
   }
 
   public async deployContracts() {

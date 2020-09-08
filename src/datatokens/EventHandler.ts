@@ -2,6 +2,7 @@ import { ContractEvent } from './ContractEvent'
 import ContractBase from './contracts/ContractBase'
 
 import { Instantiable, InstantiableConfig } from '../Instantiable.abstract'
+import { Filter } from 'web3-eth-contract'
 
 export class EventHandler extends Instantiable {
   get count(): number {
@@ -44,7 +45,7 @@ export class EventHandler extends Instantiable {
   public getEvent(
     contract: ContractBase,
     eventName: string,
-    filter: { [key: string]: any }
+    filter: Filter
   ): ContractEvent {
     return new ContractEvent(this, contract, eventName, filter)
   }

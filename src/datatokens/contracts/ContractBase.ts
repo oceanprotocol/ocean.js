@@ -1,8 +1,13 @@
-import { Contract, EventData } from 'web3-eth-contract'
+import { Contract, EventData, EventOptions, Filter } from 'web3-eth-contract'
 import { TransactionReceipt } from 'web3-core'
 import ContractHandler from '../ContractHandler'
 
 import { Instantiable, InstantiableConfig } from '../../Instantiable.abstract'
+
+export interface EventDataOptions extends EventOptions {
+  fromBlock: string | number
+  toBlock: string | number
+}
 
 export abstract class ContractBase extends Instantiable {
   protected static instance = null
@@ -20,17 +25,17 @@ export abstract class ContractBase extends Instantiable {
     this.contractName = contractName
   }
 
-  public async getEventData(eventName: string, options: any): Promise<EventData[]> {
+  public async getEventData(
+    eventName: string,
+    options: EventDataOptions
+  ): Promise<EventData[]> {
     if (!this.contract.events[eventName]) {
       throw new Error(`Event "${eventName}" not found on contract "${this.contractName}"`)
     }
     return this.contract.getPastEvents(eventName, options)
   }
 
-  public getPastEvents(
-    eventName: string,
-    filter: { [key: string]: any }
-  ): Promise<EventData[]> {
+  public getPastEvents(eventName: string, filter: Filter): Promise<EventData[]> {
     return this.getEventData(eventName, {
       filter,
       fromBlock: 0,

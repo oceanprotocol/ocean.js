@@ -66,7 +66,7 @@ export class OceanAuth extends Instantiable {
    * Generates and stores the token for a account.
    * @param {Account} account Signer account.
    */
-  public async store(account: Account) {
+  public async store(account: Account): Promise<void> {
     const token = await this.get(account)
     this.writeToken(account.getId(), token)
   }
