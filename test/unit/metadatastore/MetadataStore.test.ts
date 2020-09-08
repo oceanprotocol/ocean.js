@@ -58,56 +58,22 @@ describe('MetadataStore', () => {
       assert.equal(result.totalResults, 1)
     })
 
+    it('should query metadata with a new instance', async () => {
+      const metadatastoreNew = new MetadataStore(config.metadataStoreUri, LoggerInstance)
+      spy.on(metadatastoreNew.fetch, 'get', () => reponsify(getResults([new DDO()])))
+
+      const result = await metadatastoreNew.queryMetadata(query)
+      assert.typeOf(result.results, 'array')
+      assert.lengthOf(result.results, 1)
+      assert.equal(result.page, 0)
+      assert.equal(result.totalPages, 1)
+      assert.equal(result.totalResults, 1)
+    })
+
     it('should query metadata and return real ddo', async () => {
       spy.on(metadataStore.fetch, 'post', () => reponsify(getResults([new DDO()])))
 
       const result = await metadataStore.queryMetadata(query)
-      assert.typeOf(result.results, 'array')
-      assert.lengthOf(result.results, 1)
-      assert.isDefined(result.results[0].findServiceById)
-    })
-  })
-
-  describe('#queryMetadataByText()', () => {
-    const query = {
-      offset: 100,
-      page: 1,
-      query: {
-        value: 1
-      },
-      sort: {
-        value: 1
-      },
-      text: 'Office'
-    } as SearchQuery
-
-    it('should query metadata by text', async () => {
-      spy.on(metadataStore.fetch, 'get', () => reponsify(getResults([new DDO()])))
-      const result = await metadataStore.queryMetadataByText(query)
-
-      assert.typeOf(result.results, 'array')
-      assert.lengthOf(result.results, 1)
-      assert.equal(result.page, 0)
-      assert.equal(result.totalPages, 1)
-      assert.equal(result.totalResults, 1)
-    })
-
-    it('should query metadata by text with a new instance', async () => {
-      const metadatastoreNew = new MetadataStore(config.metadataStoreUri, LoggerInstance)
-      spy.on(metadatastoreNew.fetch, 'get', () => reponsify(getResults([new DDO()])))
-
-      const result = await metadatastoreNew.queryMetadataByText(query)
-      assert.typeOf(result.results, 'array')
-      assert.lengthOf(result.results, 1)
-      assert.equal(result.page, 0)
-      assert.equal(result.totalPages, 1)
-      assert.equal(result.totalResults, 1)
-    })
-
-    it('should query metadata and return real ddo', async () => {
-      spy.on(metadataStore.fetch, 'get', () => reponsify(getResults([new DDO()])))
-
-      const result = await metadataStore.queryMetadataByText(query)
       assert.typeOf(result.results, 'array')
       assert.lengthOf(result.results, 1)
       assert.isDefined(result.results[0].findServiceById)

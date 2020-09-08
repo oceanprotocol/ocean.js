@@ -1,4 +1,3 @@
-import { URL } from 'whatwg-url'
 import { DDO } from '../ddo/DDO'
 import DID from '../ocean/DID'
 import { EditableMetadata } from '../ddo/interfaces/EditableMetadata'
@@ -92,42 +91,6 @@ export class MetadataStore {
       })
       .catch((error) => {
         this.logger.error('Error fetching querying metadata: ', error)
-        return this.transformResult()
-      })
-
-    return result
-  }
-
-  /**
-   * Search over the DDOs using a query.
-   * @param  {SearchQuery} query Query to filter the DDOs.
-   * @return {Promise<QueryResult>}
-   */
-  public async queryMetadataByText(query: SearchQuery): Promise<QueryResult> {
-    const fullUrl = new URL(`${this.url}${apiPath}/query`)
-    fullUrl.searchParams.append('text', query.text)
-    fullUrl.searchParams.append('sort', decodeURIComponent(JSON.stringify(query.sort)))
-    fullUrl.searchParams.append('offset', query.offset.toString())
-    fullUrl.searchParams.append('page', query.page.toString())
-
-    const result: QueryResult = await this.fetch
-      .get(fullUrl)
-      .then((response: any) => {
-        if (response.ok) {
-          return response.json() as DDO[]
-        }
-        this.logger.log(
-          'queryMetadataByText failed:',
-          response.status,
-          response.statusText
-        )
-        return this.transformResult()
-      })
-      .then((results) => {
-        return this.transformResult(results)
-      })
-      .catch((error) => {
-        this.logger.error('Error fetching querying metadata by text: ', error)
         return this.transformResult()
       })
 
