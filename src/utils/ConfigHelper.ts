@@ -1,4 +1,5 @@
 import Config from '../models/Config'
+import { Logger } from '../lib'
 
 export declare type ConfigHelperNetworkName =
   | 'mainnet'
@@ -56,10 +57,15 @@ export class ConfigHelper {
     const filterBy = typeof network === 'string' ? 'network' : 'chainId'
     const config = configs.find((c) => c[filterBy] === network)
 
+    if (!config) {
+      Logger.error(`No config found for given network '${network}'`)
+      return null
+    }
+
     const nodeUri = infuraProjectId
       ? `${config.nodeUri}/${infuraProjectId}`
       : config.nodeUri
 
-    return config ? { ...config, nodeUri } : null
+    return { ...config, nodeUri }
   }
 }

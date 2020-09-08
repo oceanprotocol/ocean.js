@@ -47,6 +47,23 @@ npm install @oceanprotocol/lib
 
 ## 🏄 Quick Start
 
+```js
+import { Ocean, ConfigHelper } from '@oceanprotocol/lib'
+
+const defaultConfig = new ConfigHelper().getConfig('rinkeby', 'YOUR_INFURA_PROJECT_ID')
+
+const config = {
+  ...defaultConfig,
+  metadataStoreUri: 'https://your-metadata-store.com',
+  providerUri: 'https://your-provider.com'
+}
+
+async function init() {
+  const ocean = await Ocean.getInstance(config)
+  return ocean
+}
+```
+
 ### Simple Flow
 
 This stripped-down flow shows the essence of Ocean. Just downloading, no metadata.
