@@ -325,7 +325,7 @@ export class Assets extends Instantiable {
    * @return {Promise<QueryResult>}
    */
   public async search(text: string): Promise<QueryResult> {
-    return this.ocean.metadatastore.queryMetadataByText({
+    return this.ocean.metadatastore.queryMetadata({
       text,
       page: 1,
       offset: 100,

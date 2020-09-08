@@ -6,24 +6,13 @@ import { DDO } from '../../../src/ddo/DDO'
 import DID from '../../../src/ocean/DID'
 import config from '../config'
 import { LoggerInstance } from '../../../src/utils'
+import { responsify, getSearchResults } from '../helpers'
 
 use(spies)
-
-const reponsify = async (data) => ({
-  ok: true,
-  json: () => Promise.resolve(data)
-})
 
 describe('MetadataStore', () => {
   let ocean: Ocean
   let metadataStore: MetadataStore
-
-  const getResults = (results: DDO[], page = 0, total_pages = 1, total_results = 1) => ({
-    results,
-    page,
-    total_pages,
-    total_results
-  })
 
   beforeEach(async () => {
     ocean = await Ocean.getInstance(config)
@@ -48,7 +37,7 @@ describe('MetadataStore', () => {
     } as SearchQuery
 
     it('should query metadata', async () => {
-      spy.on(metadataStore.fetch, 'post', () => reponsify(getResults([new DDO()])))
+      spy.on(metadataStore.fetch, 'post', () => responsify(getSearchResults([new DDO()])))
 
       const result = await metadataStore.queryMetadata(query)
       assert.typeOf(result.results, 'array')
@@ -58,45 +47,13 @@ describe('MetadataStore', () => {
       assert.equal(result.totalResults, 1)
     })
 
-    it('should query metadata and return real ddo', async () => {
-      spy.on(metadataStore.fetch, 'post', () => reponsify(getResults([new DDO()])))
-
-      const result = await metadataStore.queryMetadata(query)
-      assert.typeOf(result.results, 'array')
-      assert.lengthOf(result.results, 1)
-      assert.isDefined(result.results[0].findServiceById)
-    })
-  })
-
-  describe('#queryMetadataByText()', () => {
-    const query = {
-      offset: 100,
-      page: 1,
-      query: {
-        value: 1
-      },
-      sort: {
-        value: 1
-      },
-      text: 'Office'
-    } as SearchQuery
-
-    it('should query metadata by text', async () => {
-      spy.on(metadataStore.fetch, 'get', () => reponsify(getResults([new DDO()])))
-      const result = await metadataStore.queryMetadataByText(query)
-
-      assert.typeOf(result.results, 'array')
-      assert.lengthOf(result.results, 1)
-      assert.equal(result.page, 0)
-      assert.equal(result.totalPages, 1)
-      assert.equal(result.totalResults, 1)
-    })
-
-    it('should query metadata by text with a new instance', async () => {
+    it('should query metadata with a new instance', async () => {
       const metadatastoreNew = new MetadataStore(config.metadataStoreUri, LoggerInstance)
-      spy.on(metadatastoreNew.fetch, 'get', () => reponsify(getResults([new DDO()])))
+      spy.on(metadatastoreNew.fetch, 'post', () =>
+        responsify(getSearchResults([new DDO()]))
+      )
 
-      const result = await metadatastoreNew.queryMetadataByText(query)
+      const result = await metadatastoreNew.queryMetadata(query)
       assert.typeOf(result.results, 'array')
       assert.lengthOf(result.results, 1)
       assert.equal(result.page, 0)
@@ -105,9 +62,9 @@ describe('MetadataStore', () => {
     })
 
     it('should query metadata and return real ddo', async () => {
-      spy.on(metadataStore.fetch, 'get', () => reponsify(getResults([new DDO()])))
+      spy.on(metadataStore.fetch, 'post', () => responsify(getSearchResults([new DDO()])))
 
-      const result = await metadataStore.queryMetadataByText(query)
+      const result = await metadataStore.queryMetadata(query)
       assert.typeOf(result.results, 'array')
       assert.lengthOf(result.results, 1)
       assert.isDefined(result.results[0].findServiceById)
@@ -121,7 +78,7 @@ describe('MetadataStore', () => {
         id: did.getId()
       })
 
-      spy.on(metadataStore.fetch, 'post', () => reponsify(ddo))
+      spy.on(metadataStore.fetch, 'post', () => responsify(ddo))
 
       const result: DDO = await metadataStore.storeDDO(ddo)
       assert(result)
@@ -136,8 +93,8 @@ describe('MetadataStore', () => {
         id: did.getId()
       })
 
-      spy.on(metadataStore.fetch, 'post', () => reponsify(ddo))
-      spy.on(metadataStore.fetch, 'get', () => reponsify(ddo))
+      spy.on(metadataStore.fetch, 'post', () => responsify(ddo))
+      spy.on(metadataStore.fetch, 'get', () => responsify(ddo))
 
       const storageResult: DDO = await metadataStore.storeDDO(ddo)
       assert(storageResult)
