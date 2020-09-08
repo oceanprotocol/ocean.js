@@ -1,17 +1,21 @@
 import { assert, spy, use } from 'chai'
 import spies from 'chai-spies'
 
-import { SearchQuery } from '../../../src/metadatastore/MetadataStore'
+import { SearchQuery, MetadataStore } from '../../../src/metadatastore/MetadataStore'
 import { Ocean } from '../../../src/ocean/Ocean'
 import config from '../config'
+import { DDO } from '../../../src/lib'
+import { responsify, getSearchResults } from '../helpers'
 
 use(spies)
 
-let ocean: Ocean
-
 describe('Assets', () => {
-  before(async () => {
+  let ocean: Ocean
+  let metadataStore: MetadataStore
+
+  beforeEach(async () => {
     ocean = await Ocean.getInstance(config)
+    metadataStore = ocean.metadatastore // eslint-disable-line prefer-destructuring
   })
 
   afterEach(() => {
@@ -31,18 +35,24 @@ describe('Assets', () => {
         }
       } as SearchQuery
 
+      spy.on(metadataStore.fetch, 'post', () => responsify(getSearchResults([new DDO()])))
       const assets = await ocean.assets.query(query)
 
-      assert(assets)
+      assert.typeOf(assets.results, 'array')
+      assert.lengthOf(assets.results, 1)
+      assert.isDefined(assets.results[0].findServiceById)
     })
   })
 
   describe('#search()', () => {
     it('should search for assets', async () => {
       const text = 'office'
+      spy.on(metadataStore.fetch, 'post', () => responsify(getSearchResults([new DDO()])))
       const assets = await ocean.assets.search(text)
 
-      assert(assets)
+      assert.typeOf(assets.results, 'array')
+      assert.lengthOf(assets.results, 1)
+      assert.isDefined(assets.results[0].findServiceById)
     })
   })
 })
