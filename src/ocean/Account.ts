@@ -1,4 +1,5 @@
 import { Instantiable, InstantiableConfig } from '../Instantiable.abstract'
+import { AbiItem } from 'web3-utils/types'
 
 /**
  * Account information.
@@ -15,11 +16,11 @@ export default class Account extends Instantiable {
     }
   }
 
-  public getId() {
+  public getId(): string {
     return this.id
   }
 
-  public setId(id) {
+  public setId(id: string): void {
     this.id = id
   }
 
@@ -100,10 +101,12 @@ export default class Account extends Instantiable {
         stateMutability: 'view',
         type: 'function'
       }
-    ]
+    ] as AbiItem[]
+
     let result = null
+
     try {
-      const token = new this.web3.eth.Contract(minABI as any, TokenAdress, {
+      const token = new this.web3.eth.Contract(minABI, TokenAdress, {
         from: this.id
       })
       result = this.web3.utils.fromWei(await token.methods.balanceOf(this.id).call())

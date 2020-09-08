@@ -1,5 +1,3 @@
-import { config } from 'process'
-
 export interface ConfigHelper {
   chainId?: number
   network: string

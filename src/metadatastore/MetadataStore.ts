@@ -3,6 +3,7 @@ import DID from '../ocean/DID'
 import { EditableMetadata } from '../ddo/interfaces/EditableMetadata'
 import { Logger } from '../utils'
 import { WebServiceConnector } from '../ocean/utils/WebServiceConnector'
+import { Response } from 'node-fetch'
 
 const apiPath = '/api/v1/aquarius/assets/ddo'
 
@@ -52,7 +53,7 @@ export class MetadataStore {
   public async getAccessUrl(accessToken: any, payload: any): Promise<string> {
     const accessUrl: string = await this.fetch
       .post(`${accessToken.service_endpoint}/${accessToken.resource_id}`, payload)
-      .then((response: any): string => {
+      .then((response: Response) => {
         if (response.ok) {
           return response.text()
         }
@@ -79,9 +80,9 @@ export class MetadataStore {
   public async queryMetadata(query: SearchQuery): Promise<QueryResult> {
     const result: QueryResult = await this.fetch
       .post(`${this.url}${apiPath}/query`, JSON.stringify(query))
-      .then((response: any) => {
+      .then((response: Response) => {
         if (response.ok) {
-          return response.json() as DDO[]
+          return response.json()
         }
         this.logger.error('queryMetadata failed:', response.status, response.statusText)
         return this.transformResult()
@@ -106,7 +107,7 @@ export class MetadataStore {
     const fullUrl = `${this.url}${apiPath}`
     const result: DDO = await this.fetch
       .post(fullUrl, DDO.serialize(ddo))
-      .then((response: any) => {
+      .then((response: Response) => {
         if (response.ok) {
           return response.json()
         }
@@ -137,7 +138,7 @@ export class MetadataStore {
     const fullUrl = metadataServiceEndpoint || `${this.url}${apiPath}/${did.getDid()}`
     const result = await this.fetch
       .get(fullUrl)
-      .then((response: any) => {
+      .then((response: Response) => {
         if (response.ok) {
           return response.json()
         }
@@ -184,7 +185,7 @@ export class MetadataStore {
           newOwner: newOwner
         })
       )
-      .then((response: any) => {
+      .then((response: Response) => {
         if (response.ok) {
           return response.text
         }
@@ -234,7 +235,7 @@ export class MetadataStore {
           trustedAlgorithms: trustedAlgorithms
         })
       )
-      .then((response: any) => {
+      .then((response: Response) => {
         if (response.ok) {
           return response.text
         }
@@ -293,7 +294,7 @@ export class MetadataStore {
     data.signature = signature
     const result = await this.fetch
       .put(fullUrl, JSON.stringify(data))
-      .then((response: any) => {
+      .then((response: Response) => {
         if (response.ok) {
           return response.text
         }
@@ -331,7 +332,7 @@ export class MetadataStore {
           updated: updated
         })
       )
-      .then((response: any) => {
+      .then((response: Response) => {
         if (response.ok) {
           return response.text
         }
@@ -364,7 +365,7 @@ export class MetadataStore {
     }
   ): QueryResult {
     return {
-      results: (results || []).map((ddo) => new DDO(ddo as DDO)),
+      results: (results || []).map((ddo: DDO) => new DDO(ddo as DDO)),
       page,
       totalPages,
       totalResults

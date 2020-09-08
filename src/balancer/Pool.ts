@@ -95,7 +95,7 @@ export class Pool extends PoolFactory {
     tokenAddress: string,
     spender: string,
     amount: string
-  ): Promise<any> {
+  ): Promise<TransactionReceipt> {
     const minABI = [
       {
         constant: false,
@@ -194,7 +194,7 @@ export class Pool extends PoolFactory {
           account,
           token.address,
           poolAddress,
-          this.web3.utils.toWei(token.amount) as any
+          this.web3.utils.toWei(`${token.amount}`)
         )
         await pool.methods
           .bind(
@@ -215,7 +215,11 @@ export class Pool extends PoolFactory {
    * @param {String} poolAddress
    * @param {String} fee (will be converted to wei)
    */
-  async setSwapFee(account: string, poolAddress: string, fee: string): Promise<any> {
+  async setSwapFee(
+    account: string,
+    poolAddress: string,
+    fee: string
+  ): Promise<TransactionReceipt> {
     const pool = new this.web3.eth.Contract(this.poolABI, poolAddress, {
       from: account
     })
@@ -235,7 +239,7 @@ export class Pool extends PoolFactory {
    * @param {String} account
    * @param {String} poolAddress
    */
-  async finalize(account: string, poolAddress: string): Promise<any> {
+  async finalize(account: string, poolAddress: string): Promise<TransactionReceipt> {
     const pool = new this.web3.eth.Contract(this.poolABI, poolAddress, {
       from: account
     })
@@ -254,8 +258,9 @@ export class Pool extends PoolFactory {
    * Get number of tokens composing this pool
    * @param {String} account
    * @param {String} poolAddress
+   * @return {String}
    */
-  async getNumTokens(account: string, poolAddress: string): Promise<any> {
+  async getNumTokens(account: string, poolAddress: string): Promise<string> {
     const pool = new this.web3.eth.Contract(this.poolABI, poolAddress, {
       from: account
     })
@@ -590,20 +595,20 @@ export class Pool extends PoolFactory {
    * @param {String} poolAddress
    * @param {String} poolAmountOut will be converted to wei
    * @param {String[]} maxAmountsIn  array holding maxAmount per each token, will be converted to wei
-   * @return {any}
+   * @return {TransactionReceipt}
    */
   async joinPool(
     account: string,
     poolAddress: string,
     poolAmountOut: string,
     maxAmountsIn: string[]
-  ): Promise<any> {
+  ): Promise<TransactionReceipt> {
     const pool = new this.web3.eth.Contract(this.poolABI, poolAddress, {
       from: account
     })
     const weiMaxAmountsIn = []
 
-    let amount
+    let amount: string
 
     for (amount of maxAmountsIn) {
       weiMaxAmountsIn.push(this.web3.utils.toWei(amount))
@@ -627,19 +632,20 @@ export class Pool extends PoolFactory {
    * @param {String} poolAddress
    * @param {String} poolAmountIn will be converted to wei
    * @param {String[]} minAmountsOut  array holding minAmount per each token, will be converted to wei
-   * @return {any}
+   * @return {TransactionReceipt}
    */
   async exitPool(
     account: string,
     poolAddress: string,
     poolAmountIn: string,
     minAmountsOut: string
-  ): Promise<any> {
+  ): Promise<TransactionReceipt> {
     const pool = new this.web3.eth.Contract(this.poolABI, poolAddress, {
       from: account
     })
     const weiMinAmountsOut = []
-    let amount
+    let amount: string
+
     for (amount of minAmountsOut) {
       weiMinAmountsOut.push(this.web3.utils.toWei(amount))
     }

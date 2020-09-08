@@ -1,6 +1,9 @@
 import defaultFixedRateExchangeABI from '@oceanprotocol/contracts/artifacts/FixedRateExchange.json'
 import BigNumber from 'bignumber.js'
 import { TransactionReceipt } from 'web3-core'
+import { Contract } from 'web3-eth-contract'
+import { AbiItem } from 'web3-utils/types'
+import Web3 from 'web3'
 
 export interface FixedPricedExchange {
   exchangeID?: string
@@ -18,9 +21,9 @@ export class OceanFixedRateExchange {
   /** Ocean related functions */
   public oceanAddress: string = null
   public fixedRateExchangeAddress: string
-  public fixedRateExchangeABI: any
-  public web3: any
-  public contract: any = null
+  public fixedRateExchangeABI: AbiItem | AbiItem[]
+  public web3: Web3
+  public contract: Contract = null
 
   /**
    * Instantiate FixedRateExchange
@@ -30,14 +33,15 @@ export class OceanFixedRateExchange {
    * @param {String} oceanAddress
    */
   constructor(
-    web3: any,
+    web3: Web3,
     fixedRateExchangeAddress: string = null,
-    fixedRateExchangeABI: any = null,
+    fixedRateExchangeABI: AbiItem | AbiItem[] = null,
     oceanAddress: string = null
   ) {
     this.web3 = web3
     this.fixedRateExchangeAddress = fixedRateExchangeAddress
-    this.fixedRateExchangeABI = fixedRateExchangeABI || defaultFixedRateExchangeABI.abi
+    this.fixedRateExchangeABI =
+      fixedRateExchangeABI || (defaultFixedRateExchangeABI.abi as AbiItem[])
     this.oceanAddress = oceanAddress
     if (web3)
       this.contract = new this.web3.eth.Contract(
@@ -308,12 +312,12 @@ export class OceanFixedRateExchange {
    * Calculates how many basetokens are needed to get specifyed amount of datatokens
    * @param {String} exchangeId ExchangeId
    * @param {String} dataTokenAmount dataTokenAmount
-   * @return {Promise<Boolean>} Result
+   * @return {Promise<String>} Result
    */
   public async CalcInGivenOut(
     exchangeId: string,
     dataTokenAmount: string
-  ): Promise<boolean> {
+  ): Promise<string> {
     const result = await this.contract.methods
       .CalcInGivenOut(exchangeId, this.web3.utils.toWei(dataTokenAmount))
       .call()

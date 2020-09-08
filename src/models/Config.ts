@@ -1,5 +1,5 @@
 import { LogLevel } from '../utils/Logger'
-export { LogLevel } from '../utils/Logger'
+import { AbiItem } from 'web3-utils/types'
 
 export class Config {
   /**
@@ -48,13 +48,13 @@ export class Config {
    * Factory ABI
    * @type {string}
    */
-  public factoryABI?: any
+  public factoryABI?: AbiItem | AbiItem[]
 
   /**
    * datatokens ABI
    * @type {string}
    */
-  public datatokensABI?: any
+  public datatokensABI?: AbiItem | AbiItem[]
 
   /**
    * Pool Factory address
@@ -66,13 +66,13 @@ export class Config {
    * Pool Factory ABI
    * @type {string}
    */
-  public poolFactoryABI?: any
+  public poolFactoryABI?: AbiItem | AbiItem[]
 
   /**
    * Pool ABI
    * @type {string}
    */
-  public poolABI?: any
+  public poolABI?: AbiItem | AbiItem[]
 
   /**
    * FixedRateExchangeAddress
@@ -84,7 +84,7 @@ export class Config {
    * FixedRateExchangeAddressABI
    * @type {any}
    */
-  public fixedRateExchangeAddressABI?: any
+  public fixedRateExchangeAddressABI?: AbiItem | AbiItem[]
   /**
    * Log level.
    * @type {boolean | LogLevel}

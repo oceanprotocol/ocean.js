@@ -21,7 +21,7 @@
   "plugins": ["@typescript-eslint", "prettier"],
   "rules": {
     "no-empty": ["error", { "allowEmptyCatch": true }],
-    "prefer-destructuring": ["warn"],
+    "prefer-destructuring": ["warn", { "object": true, "array": false }],
     "no-dupe-class-members": ["warn"],
     "no-useless-constructor": ["warn"]
   },

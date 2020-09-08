@@ -89,7 +89,7 @@ export class DataTokens {
     })
     const estGas = await factory.methods
       .createToken(metaDataStoreURI, name, symbol, this.web3.utils.toWei(cap))
-      .estimateGas(function (err, estGas) {
+      .estimateGas(function (err: string, estGas: string) {
         if (err) console.log('Datatokens: ' + err)
         return estGas
       })

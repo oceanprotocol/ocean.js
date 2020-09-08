@@ -13,10 +13,7 @@ import {
 } from '../Instantiable.abstract'
 import { Compute } from './Compute'
 import { OceanPool } from '../balancer/OceanPool'
-import {
-  OceanFixedRateExchange,
-  FixedPricedExchange
-} from '../exchange/FixedRateExchange'
+import { OceanFixedRateExchange } from '../exchange/FixedRateExchange'
 
 /**
  * Main interface for Ocean Protocol.
@@ -157,8 +154,4 @@ export class Ocean extends Instantiable {
    * @type {OceanUtils}
    */
   public utils: OceanUtils
-
-  private constructor() {
-    super()
-  }
 }
