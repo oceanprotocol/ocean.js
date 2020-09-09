@@ -16,14 +16,6 @@ Here's the steps.
 
 Let's go through each step.
 
-## 0. Installation
-
-If you haven't installed yet:
-
-```bash
-npm i @oceanprotocol/lib
-```
-
 ## 1. Initialize services
 
 This quickstart treats the publisher service, ganache-cli, metadata store, and marketplace as
@@ -33,7 +25,7 @@ externally-run services. For convenience, we run barge locally in default settin
 git clone https://github.com/oceanprotocol/barge.git
 cd barge/
 git checkout v3
-export PROVIDER_VERSION=phase2
+export PROVIDER_VERSION=latest
 ./start_ocean.sh --no-dashboard
 ```
 

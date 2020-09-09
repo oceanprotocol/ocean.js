@@ -1,41 +1,13 @@
-# ocean-lib
-
-`ocean-lib-js` is a Javascript/Typescript library to privately & securely publish, exchange, and consume data. With it, you can:
-
-- **Publish** data services: static data, streaming data, or compute-to-data. Every data service gets its own [ERC20](https://github.com/ethereum/EIPs/blob/7f4f0377730f5fc266824084188cc17cf246932e/EIPS/eip-20.md) token.
-- **Mint** data tokens for a given data service
-- **Transfer** data tokens to another owner
-- **Consume** data tokens, to access the service
-
-`ocean-lib-js` is part of the [Ocean Protocol](www.oceanprotocol.com) toolset.
-
-# Installation
-
-```
-npm i --save @oceanprotocol/lib
-```
-
-# Usage
-
-```
-// ES6
-import { Ocean, Logger } from '@oceanprotocol/lib'
-
-// ES2015
-const { Ocean, Logger } = require('@oceanprotocol/lib')
-
-```
-
-# Quickstart
+# Quickstart: Simple Flow
 
 This section describes a flow with the simplest transfer of value, for static data.
 
 Here's the steps.
 
 1. Alice publishes a dataset (= publishes a datatoken contract)
-1. Alice mints 100 tokens
-1. Alice transfers 1 token to Bob
-1. Bob consumes dataset
+2. Alice mints 100 tokens
+3. Alice transfers 1 token to Bob
+4. Bob consumes dataset
 
 Let's go through each of these in detail.
 
@@ -73,7 +45,7 @@ const tokenAddress = await datatoken.create(blob, alice)
 
 Clone [provider-py](https://github.com/oceanprotocol/provider-py) and update your local environment variables:
 
-```
+```bash
 export FLASK_APP=ocean_provider/run.py
 export PROVIDER_ADDRESS=your_provider_address
 export PROVIDER_KEY=your_provider_key

@@ -71,13 +71,13 @@ async function init() {
 
 This stripped-down flow shows the essence of Ocean. Just downloading, no metadata.
 
-[Go to simple flow](docs/README_simple_flow.md)
+[Go to simple flow](docs/quickstart_simple.md)
 
 ### Marketplace Flow
 
 This batteries-included flow includes metadata, multiple services for one datatoken, and compute-to-data.
 
-[Go to marketplace flow](docs/README_marketplace_flow.md)
+[Go to marketplace flow](docs/quickstart_marketplace.md)
 
 ## 🦑 Development
 
