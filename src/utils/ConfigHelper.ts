@@ -1,19 +1,24 @@
-export interface ConfigHelper {
-  chainId?: number
-  network: string
-  url: string
-  factoryAddress: string
-  poolFactoryAddress: string
-  oceanTokenAddress: string
-  metadataStoreUri: string
-  providerUri: string
+import Config from '../models/Config'
+import { Logger } from '../lib'
+
+export declare type ConfigHelperNetworkName =
+  | 'mainnet'
+  | 'rinkeby'
+  | 'development'
+  | string
+
+export declare type ConfigHelperNetworkId = 1 | 4 | number
+
+export interface ConfigHelperConfig extends Config {
+  chainId: ConfigHelperNetworkId
+  network: ConfigHelperNetworkName
 }
 
-const configs = [
+const configs: ConfigHelperConfig[] = [
   {
-    chaindId: null,
+    chainId: null,
     network: 'development',
-    url: 'http://localhost:8545',
+    nodeUri: 'http://localhost:8545',
     factoryAddress: null,
     metadataStoreUri: 'http://127.0.0.1:5000',
     providerUri: 'http://127.0.0.1:8030',
@@ -23,7 +28,7 @@ const configs = [
   {
     chainId: 4,
     network: 'rinkeby',
-    url: 'https://rinkeby.infura.io/v3',
+    nodeUri: 'https://rinkeby.infura.io/v3',
     factoryAddress: '0x3ECd1429101f93149D799Ef257C07a2B1Dc30897',
     oceanTokenAddress: '0x8967BCF84170c91B0d24D4302C2376283b0B3a07',
     metadataStoreUri: 'https://aquarius.rinkeby.v3.dev-ocean.com',
@@ -34,9 +39,9 @@ const configs = [
   {
     chainId: 1,
     network: 'mainnet',
-    url: 'https://mainnet.infura.io/v3',
+    nodeUri: 'https://mainnet.infura.io/v3',
     factoryAddress: '0x1234',
-    oceanTokenAddress: '0x985dd3d42de1e256d09e1c10f112bccb8015ad41',
+    oceanTokenAddress: '0x7AFeBBB46fDb47ed17b22ed075Cde2447694fB9e',
     metadataStoreUri: null,
     providerUri: null,
     poolFactoryAddress: null,
@@ -45,59 +50,22 @@ const configs = [
 ]
 
 export class ConfigHelper {
-  public getConfig(network: string, infuraProjectId?: string): ConfigHelper {
-    const confighelp = new ConfigHelper()
-    // fill unknown values
-    confighelp.chainId = null
-    confighelp.factoryAddress = null
-    confighelp.url = null
-    confighelp.network = network
-    confighelp.oceanTokenAddress = null
-    confighelp.metadataStoreUri = null
-    confighelp.providerUri = null
-    confighelp.poolFactoryAddress = null
+  public getConfig(
+    network: ConfigHelperNetworkName | ConfigHelperNetworkId,
+    infuraProjectId?: string
+  ): Config {
+    const filterBy = typeof network === 'string' ? 'network' : 'chainId'
+    const config = configs.find((c) => c[filterBy] === network)
 
-    const knownconfig = configs.find((c) => c.network === network)
-
-    if (knownconfig) {
-      confighelp.chainId = knownconfig.chainId
-      confighelp.factoryAddress = knownconfig.factoryAddress
-      confighelp.oceanTokenAddress = knownconfig.oceanTokenAddress
-      confighelp.url = `${knownconfig.url}/${infuraProjectId}`
-      confighelp.network = knownconfig.network
-      confighelp.metadataStoreUri = knownconfig.metadataStoreUri
-      confighelp.providerUri = knownconfig.providerUri
-      confighelp.poolFactoryAddress = knownconfig.poolFactoryAddress
+    if (!config) {
+      Logger.error(`No config found for given network '${network}'`)
+      return null
     }
 
-    return confighelp
-  }
+    const nodeUri = infuraProjectId
+      ? `${config.nodeUri}/${infuraProjectId}`
+      : config.nodeUri
 
-  public getConfigById(chainId: number, infuraProjectId?: string): ConfigHelper {
-    const confighelp = new ConfigHelper()
-    // fill unknown values
-    confighelp.chainId = chainId
-    confighelp.factoryAddress = null
-    confighelp.url = null
-    confighelp.network = null
-    confighelp.oceanTokenAddress = null
-    confighelp.metadataStoreUri = null
-    confighelp.providerUri = null
-    confighelp.poolFactoryAddress = null
-
-    const knownconfig = configs.find((c) => c.chainId === chainId)
-
-    if (knownconfig) {
-      confighelp.chainId = knownconfig.chainId
-      confighelp.factoryAddress = knownconfig.factoryAddress
-      confighelp.oceanTokenAddress = knownconfig.oceanTokenAddress
-      confighelp.url = `${knownconfig.url}/${infuraProjectId}`
-      confighelp.network = knownconfig.network
-      confighelp.metadataStoreUri = knownconfig.metadataStoreUri
-      confighelp.providerUri = knownconfig.providerUri
-      confighelp.poolFactoryAddress = knownconfig.poolFactoryAddress
-    }
-
-    return confighelp
+    return { ...config, nodeUri }
   }
 }
