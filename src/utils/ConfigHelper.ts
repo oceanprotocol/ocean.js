@@ -7,6 +7,7 @@ export interface ConfigHelper {
   oceanTokenAddress: string
   metadataStoreUri: string
   providerUri: string
+  fixedRateExchangeAddress: string
 }
 
 const configs = [
@@ -56,6 +57,7 @@ export class ConfigHelper {
     confighelp.metadataStoreUri = null
     confighelp.providerUri = null
     confighelp.poolFactoryAddress = null
+    confighelp.fixedRateExchangeAddress = null
 
     const knownconfig = configs.find((c) => c.network === network)
 
@@ -68,6 +70,7 @@ export class ConfigHelper {
       confighelp.metadataStoreUri = knownconfig.metadataStoreUri
       confighelp.providerUri = knownconfig.providerUri
       confighelp.poolFactoryAddress = knownconfig.poolFactoryAddress
+      confighelp.fixedRateExchangeAddress = knownconfig.fixedRateExchangeAddress
     }
 
     return confighelp
@@ -96,6 +99,7 @@ export class ConfigHelper {
       confighelp.metadataStoreUri = knownconfig.metadataStoreUri
       confighelp.providerUri = knownconfig.providerUri
       confighelp.poolFactoryAddress = knownconfig.poolFactoryAddress
+      confighelp.fixedRateExchangeAddress = knownconfig.fixedRateExchangeAddress
     }
 
     return confighelp
