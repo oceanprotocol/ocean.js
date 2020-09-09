@@ -60,7 +60,7 @@ export class OceanFixedRateExchange {
   public async create(dataToken: string, rate: string, address: string): Promise<string> {
     let estGas
     try {
-      estGas = await this.contract.methods
+      /*estGas = await this.contract.methods
         .create(this.oceanAddress, dataToken, this.web3.utils.toWei(rate))
         .estimateGas(function (err, g) {
           if (err) {
@@ -69,6 +69,8 @@ export class OceanFixedRateExchange {
             return g
           }
         })
+        */
+       estGas = DEFAULT_GAS_LIMIT
     } catch (e) {
       estGas = DEFAULT_GAS_LIMIT
     }
