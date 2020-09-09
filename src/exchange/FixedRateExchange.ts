@@ -15,7 +15,7 @@ export interface FixedPricedExchange {
   supply: string
 }
 
-const DEFAULT_GAS_LIMIT = 200000
+const DEFAULT_GAS_LIMIT = 300000
 
 export class OceanFixedRateExchange {
   /** Ocean related functions */
@@ -58,21 +58,31 @@ export class OceanFixedRateExchange {
    * @return {Promise<string>} exchangeId
    */
   public async create(dataToken: string, rate: string, address: string): Promise<string> {
-    const estGas = await this.contract.methods
-      .create(this.oceanAddress, dataToken, this.web3.utils.toWei(rate))
-      .estimateGas(function (err, estGas) {
-        if (err) console.log('FixedPriceExchange: ' + err)
-        return estGas
-      })
-    const trxReceipt = await this.contract.methods
-      .create(this.oceanAddress, dataToken, this.web3.utils.toWei(rate))
-      .send({
-        from: address,
-        gas: estGas + 1
-      })
+    let estGas
+    try {
+      /* estGas = await this.contract.methods
+        .create(this.oceanAddress, dataToken, this.web3.utils.toWei(rate))
+        .estimateGas(function (err, g) {
+          if (err) {
+            return DEFAULT_GAS_LIMIT
+          } else {
+            return g
+          }
+        })
+        */
+      estGas = DEFAULT_GAS_LIMIT
+    } catch (e) {
+      estGas = DEFAULT_GAS_LIMIT
+    }
 
     let exchangeId = null
     try {
+      const trxReceipt = await this.contract.methods
+        .create(this.oceanAddress, dataToken, this.web3.utils.toWei(rate))
+        .send({
+          from: address,
+          gas: estGas + 1
+        })
       exchangeId = trxReceipt.events.ExchangeCreated.returnValues[0]
     } catch (e) {
       console.error(e)
