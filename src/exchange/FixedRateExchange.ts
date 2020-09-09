@@ -70,7 +70,7 @@ export class OceanFixedRateExchange {
           }
         })
         */
-       estGas = DEFAULT_GAS_LIMIT
+      estGas = DEFAULT_GAS_LIMIT
     } catch (e) {
       estGas = DEFAULT_GAS_LIMIT
     }
