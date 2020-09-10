@@ -347,7 +347,7 @@ export class OceanFixedRateExchange {
     for (let i = 0; i < events.length; i++) {
       const constituents = await this.getExchange(events[i].returnValues[0])
       constituents.exchangeID = events[i].returnValues[0]
-      if (constituents.active === true) {
+      if (constituents.active === true && constituents.dataToken === dataTokenAddress) {
         const supply = new BigNumber(this.web3.utils.fromWei(constituents.supply))
         const required = new BigNumber(minSupply)
         if (supply >= required) {
