@@ -350,7 +350,7 @@ export class OceanFixedRateExchange {
       if (constituents.active === true && constituents.dataToken === dataTokenAddress) {
         const supply = new BigNumber(await this.getSupply(constituents.exchangeID))
         const required = new BigNumber(minSupply)
-        if (supply.gte(required)){
+        if (supply.gte(required)) {
           result.push(constituents)
         }
       }
