@@ -105,7 +105,7 @@ export class Assets extends Instantiable {
         observer.next(CreateProgressStep.DataTokenCreated)
       }
 
-      const did: DID = DID.generate()
+      const did: DID = DID.generate(dtAddress)
 
       this.logger.log('Encrypting files')
       observer.next(CreateProgressStep.EncryptingFiles)

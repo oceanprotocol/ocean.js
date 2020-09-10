@@ -1,6 +1,6 @@
 import { v4 } from 'uuid'
 
-export function generateId(length = 64): string {
+export function generateId(dataTokenAddress: string, length = 64): string {
   let id = ''
   while (id.length < length) {
     id += v4().replace(/-/g, '')

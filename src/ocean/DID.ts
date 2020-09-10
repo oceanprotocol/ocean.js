@@ -31,10 +31,11 @@ export default class DID {
 
   /**
    * Returns a new DID.
+   * @param  {string} dataTokenAddress Address of data token to use for DID.
    * @return {DID}
    */
-  public static generate(): DID {
-    return new DID(generateId())
+  public static generate(dataTokenAddress: string): DID {
+    return new DID(generateId(dataTokenAddress))
   }
 
   /**
