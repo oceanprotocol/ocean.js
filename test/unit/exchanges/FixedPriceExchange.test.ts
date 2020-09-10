@@ -173,6 +173,7 @@ describe('FixedRateExchange flow', () => {
   it('Bob should find the exchange', async () => {
     const exchangeDetails = await FixedRateClass.searchforDT(tokenAddress, '0')
     assert(exchangeDetails[0].exchangeID === aliceExchangeId)
+    assert(exchangeDetails.length === 1)
   })
   it('Bob should get the exchange details', async () => {
     const exchangeDetails = await FixedRateClass.getExchange(aliceExchangeId)
@@ -220,5 +221,9 @@ describe('FixedRateExchange flow', () => {
     assert(tx !== null)
     const exchangeDetails = await FixedRateClass.getExchange(aliceExchangeId)
     assert(exchangeDetails.active === true)
+  })
+  it('Bob should not find the exchange', async () => {
+    const exchangeDetails = await FixedRateClass.searchforDT(tokenAddress, tokenAmount)
+    assert(exchangeDetails.length === 0)
   })
 })
