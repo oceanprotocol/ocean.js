@@ -499,7 +499,7 @@ export class Assets extends Instantiable {
       const txid = await datatokens.startOrder(
         providerData.dataToken,
         providerData.to,
-        String(providerData.numTokens),
+        this.web3.utils.fromWei(String(providerData.numTokens)),
         didZeroX(did),
         serviceIndex,
         mpAddress,
