@@ -19,7 +19,8 @@ before_script:
   # Barge setup
   - git clone https://github.com/oceanprotocol/barge
   - cd barge
-  - git checkout v3
+  - git checkout feature/ocean-contracts
+  - export AQUARIUS_VERSION=latest
   - export PROVIDER_VERSION=latest
   - bash -x start_ocean.sh --no-dashboard 2>&1 > start_ocean.log &
   - cd ..
