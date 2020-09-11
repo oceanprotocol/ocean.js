@@ -270,16 +270,9 @@ describe('Compute flow', () => {
       algorithmMeta
     )
     assert(order != null)
-    const computeOrder = JSON.parse(order)
-    const tx = await datatoken.transferWei(
-      computeOrder.dataToken,
-      computeOrder.to,
-      String(computeOrder.numTokens),
-      computeOrder.from
-    )
     const response = await ocean.compute.start(
       ddo.id,
-      tx.transactionHash,
+      order,
       tokenAddress,
       bob,
       undefined,
@@ -293,6 +286,7 @@ describe('Compute flow', () => {
   })
 
   it('Bob should get status of a compute job', async () => {
+    assert(jobId != null)
     const response = await ocean.compute.status(bob, ddo.id, jobId)
     assert(response[0].jobId === jobId)
   })
@@ -302,6 +296,7 @@ describe('Compute flow', () => {
     assert(response.length > 0)
   })
   it('Bob should stop compute job', async () => {
+    assert(jobId != null)
     await ocean.compute.stop(bob, ddo.id, jobId)
     const response = await ocean.compute.status(bob, ddo.id, jobId)
     assert(response[0].stopreq === 1)
@@ -338,13 +333,7 @@ describe('Compute flow', () => {
       serviceAlgo.type,
       bob.getId()
     )
-    const algoOrder = JSON.parse(orderalgo)
-    const algoTx = await datatoken.transferWei(
-      algoOrder.dataToken,
-      algoOrder.to,
-      String(algoOrder.numTokens),
-      algoOrder.from
-    )
+    assert(orderalgo != null)
     const order = await ocean.compute.order(
       bob.getId(),
       ddo.id,
@@ -353,16 +342,9 @@ describe('Compute flow', () => {
       undefined
     )
     assert(order != null)
-    const computeOrder = JSON.parse(order)
-    const tx = await datatoken.transferWei(
-      computeOrder.dataToken,
-      computeOrder.to,
-      String(computeOrder.numTokens),
-      computeOrder.from
-    )
     const response = await ocean.compute.start(
       ddo.id,
-      tx.transactionHash,
+      order,
       tokenAddress,
       bob,
       algorithmAsset.id,
@@ -370,7 +352,7 @@ describe('Compute flow', () => {
       output,
       computeService.index,
       computeService.type,
-      algoTx.transactionHash,
+      orderalgo,
       algorithmAsset.dataToken
     )
     jobId = response.jobId

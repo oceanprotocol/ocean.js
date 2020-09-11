@@ -11,9 +11,11 @@ import {
 import { EditableMetadata } from '../ddo/interfaces/EditableMetadata'
 import Account from './Account'
 import DID from './DID'
-import { SubscribablePromise } from '../utils'
+import { SubscribablePromise, didZeroX } from '../utils'
 import { Instantiable, InstantiableConfig } from '../Instantiable.abstract'
 import { WebServiceConnector } from './utils/WebServiceConnector'
+import { DataTokens } from '../lib'
+import BigNumber from 'bignumber.js'
 
 export enum CreateProgressStep {
   CreatingDataToken,
@@ -396,11 +398,65 @@ export class Assets extends Instantiable {
     }
   }
 
+  /**
+   * Initialize a service
+   * Can be used to compute totalCost for ordering a service
+   * @param {String} did
+   * @param {String} serviceType
+   * @param {String} consumerAddress
+   * @param {Number} serviceIndex
+   * @param {String} mpFeePercent  will be converted to Wei
+   * @param {String} mpAddress mp fee collector address
+   * @return {Promise<any>} Order details
+   */
+  public async initialize(
+    did: string,
+    serviceType: string,
+    consumerAddress: string,
+    serviceIndex = -1,
+    mpFeePercent?: string
+  ): Promise<any> {
+    const res = await this.ocean.provider.initialize(
+      did,
+      serviceIndex,
+      serviceType,
+      consumerAddress
+    )
+    if (res === null) return null
+    const providerData = JSON.parse(res)
+    const { datatokens } = this.ocean
+    const dtCost = new BigNumber(this.web3.utils.fromWei(String(providerData.numTokens)))
+    const totalFee = new BigNumber(
+      await datatokens.calculateTotalFee(
+        providerData.dataToken,
+        this.web3.utils.fromWei(String(providerData.numTokens)),
+        mpFeePercent,
+        consumerAddress
+      )
+    )
+    providerData.totalFee = totalFee.toString()
+    providerData.dtCost = dtCost.toString()
+    providerData.totalCost = dtCost.plus(totalFee).toString()
+    return providerData
+  }
+
+  /**
+   * Orders & pays for a service
+   * @param {String} did
+   * @param {String} serviceType
+   * @param {String} consumerAddress
+   * @param {Number} serviceIndex
+   * @param {String} mpFeePercent  will be converted to Wei
+   * @param {String} mpAddress mp fee collector address
+   * @return {Promise<String>} transactionHash of the payment
+   */
   public async order(
     did: string,
     serviceType: string,
     consumerAddress: string,
-    serviceIndex = -1
+    serviceIndex = -1,
+    mpFeePercent?: string,
+    mpAddress?: string
   ): Promise<string> {
     if (serviceIndex === -1) {
       const service = await this.getServiceByType(did, serviceType)
@@ -409,12 +465,53 @@ export class Assets extends Instantiable {
       const service = await this.getServiceByIndex(did, serviceIndex)
       serviceType = service.type
     }
-    return await this.ocean.provider.initialize(
-      did,
-      serviceIndex,
-      serviceType,
-      consumerAddress
-    )
+    if (!mpFeePercent) mpFeePercent = '0'
+    if (!mpAddress) mpAddress = '0x000000000000000000000000000000000000dEaD'
+    const { datatokens } = this.ocean
+    try {
+      const providerData = await this.initialize(
+        did,
+        serviceType,
+        consumerAddress,
+        serviceIndex,
+        mpFeePercent
+      )
+      if (!providerData) return null
+      const balance = new BigNumber(
+        await datatokens.balance(providerData.dataToken, consumerAddress)
+      )
+      const totalCost = new BigNumber(providerData.totalCost)
+      if (balance.isLessThanOrEqualTo(totalCost)) {
+        console.error('Not enough funds')
+
+        return null
+      }
+      console.log(
+        'Balance:' +
+          balance.toString() +
+          '| dtCost:' +
+          providerData.dtCost.toString() +
+          '|Fees:' +
+          providerData.totalFee.toString() +
+          '|Total:' +
+          providerData.totalCost.toString()
+      )
+      const txid = await datatokens.startOrder(
+        providerData.dataToken,
+        providerData.to,
+        String(providerData.numTokens),
+        didZeroX(did),
+        serviceIndex,
+        mpAddress,
+        mpFeePercent,
+        consumerAddress
+      )
+      if (txid) return txid.transactionHash
+      else return null
+    } catch (e) {
+      console.error(e)
+      return null
+    }
   }
 
   // marketplace flow

@@ -5,7 +5,7 @@ import defaultFactoryABI from '@oceanprotocol/contracts/artifacts/DTFactory.json
 import defaultDatatokensABI from '@oceanprotocol/contracts/artifacts/DataTokenTemplate.json'
 
 import wordListDefault from '../data/words.json'
-
+import { TransactionReceipt } from 'web3-core'
 /**
  * Provides a interface to DataTokens
  */
@@ -349,5 +349,72 @@ export class DataTokens {
    */
   public fromWei(amount: string): string {
     return this.web3.utils.fromWei(amount)
+  }
+
+  /** Calculate total fee
+   * @param {String} dataTokenAddress
+   * @param {String} amount
+   * @param {String} mpFeePercentage
+   * @param {String} address
+   * @return {Promise<string>} string
+   */
+  public async calculateTotalFee(
+    dataTokenAddress: string,
+    amount: string,
+    mpFeePercentage: string,
+    address: string
+  ): Promise<string> {
+    const datatoken = new this.web3.eth.Contract(this.datatokensABI, dataTokenAddress, {
+      from: address
+    })
+    const totalFee = await datatoken.methods
+      .calculateTotalFee(
+        this.web3.utils.toWei(amount),
+        this.web3.utils.toWei(mpFeePercentage)
+      )
+      .call()
+    return this.web3.utils.fromWei(totalFee)
+  }
+
+  /** Start Order
+   * @param {String} dataTokenAddress
+   * @param {String} providerAddress
+   * @param {String} amount
+   * @param {String} did
+   * @param {Number} serviceId
+   * @param {String} mpFeeAddress
+   * @param {String} mpFeePercentage
+   * @param {String} address
+   * @return {Promise<string>} string
+   */
+  public async startOrder(
+    dataTokenAddress: string,
+    providerAddress: string,
+    amount: string,
+    did: string,
+    serviceId: number,
+    mpFeeAddress: string,
+    mpFeePercentage: string,
+    address: string
+  ): Promise<TransactionReceipt> {
+    const datatoken = new this.web3.eth.Contract(this.datatokensABI, dataTokenAddress, {
+      from: address
+    })
+    try {
+      const trxReceipt = await datatoken.methods
+        .startOrder(
+          providerAddress,
+          this.web3.utils.toWei(amount),
+          String(did),
+          String(serviceId),
+          mpFeeAddress,
+          this.web3.utils.toWei(mpFeePercentage)
+        )
+        .send({ from: address })
+      return trxReceipt
+    } catch (e) {
+      console.error(e)
+      return null
+    }
   }
 }
