@@ -22,6 +22,7 @@ export function didTransformer(input = '', prefixOutput: boolean): string {
 
 // 0x + did:op: transformer
 export const didZeroX = (input: string): string => zeroX(didTransformer(input, false))
+export const didNoZeroX = (input: string): string => noZeroX(didTransformer(input, false))
 
 // Shared functions
 function inputMatch(

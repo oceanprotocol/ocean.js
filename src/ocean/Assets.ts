@@ -477,25 +477,30 @@ export class Assets extends Instantiable {
         mpFeePercent
       )
       if (!providerData) return null
+      const service = await this.getServiceByIndex(did, serviceIndex)
+      const previousOrder = await datatokens.getPreviousValidOrders(
+        providerData.dataToken,
+        providerData.to,
+        providerData.numTokens,
+        didZeroX(did),
+        serviceIndex,
+        service.attributes.main.timeout,
+        consumerAddress
+      )
+      if (previousOrder) return previousOrder
       const balance = new BigNumber(
         await datatokens.balance(providerData.dataToken, consumerAddress)
       )
       const totalCost = new BigNumber(providerData.totalCost)
       if (balance.isLessThanOrEqualTo(totalCost)) {
-        console.error('Not enough funds')
-
+        console.error(
+          'Not enough funds. Needed ' +
+            totalCost.toString() +
+            ' but balance is ' +
+            balance.toString()
+        )
         return null
       }
-      console.log(
-        'Balance:' +
-          balance.toString() +
-          '| dtCost:' +
-          providerData.dtCost.toString() +
-          '|Fees:' +
-          providerData.totalFee.toString() +
-          '|Total:' +
-          providerData.totalCost.toString()
-      )
       const txid = await datatokens.startOrder(
         providerData.dataToken,
         providerData.to,

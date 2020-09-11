@@ -6,6 +6,8 @@ import defaultDatatokensABI from '@oceanprotocol/contracts/artifacts/DataTokenTe
 
 import wordListDefault from '../data/words.json'
 import { TransactionReceipt } from 'web3-core'
+import { time } from 'console'
+import BigNumber from 'bignumber.js'
 /**
  * Provides a interface to DataTokens
  */
@@ -384,7 +386,7 @@ export class DataTokens {
    * @param {Number} serviceId
    * @param {String} mpFeeAddress
    * @param {String} mpFeePercentage
-   * @param {String} address
+   * @param {String} address consumer Address
    * @return {Promise<string>} string
    */
   public async startOrder(
@@ -405,16 +407,62 @@ export class DataTokens {
         .startOrder(
           providerAddress,
           this.web3.utils.toWei(amount),
-          String(did),
+          did,
           String(serviceId),
           mpFeeAddress,
           this.web3.utils.toWei(mpFeePercentage)
         )
-        .send({ from: address })
+        .send({ from: address, gas: 600000 })
       return trxReceipt
     } catch (e) {
       console.error(e)
       return null
     }
+  }
+
+  /** Search and return txid for a previous valid order with the same params
+   * @param {String} dataTokenAddress
+   * @param {String} providerAddress
+   * @param {String} amount
+   * @param {String} did
+   * @param {Number} serviceId
+   * @param {Number} timeout service timeout
+   * @param {String} address consumer Address
+   * @return {Promise<string>} string
+   */
+  public async getPreviousValidOrders(
+    dataTokenAddress: string,
+    providerAddress: string,
+    amount: string,
+    did: string,
+    serviceId: number,
+    timeout: number,
+    address: string
+  ): Promise<string> {
+    const datatoken = new this.web3.eth.Contract(this.datatokensABI, dataTokenAddress, {
+      from: address
+    })
+    const events = await datatoken.getPastEvents('OrderStarted', {
+      fromBlock: 0,
+      toBlock: 'latest'
+    })
+    for (let i = 0; i < events.length; i++) {
+      if (
+        events[i].returnValues.did === did &&
+        String(events[i].returnValues.amount) === String(amount) &&
+        events[i].returnValues.receiver === providerAddress &&
+        String(events[i].returnValues.serviceId) === String(serviceId)
+      ) {
+        const transaction = await this.web3.eth.getTransaction(events[i].transactionHash)
+        if (transaction.from === address) {
+          if (timeout === 0) return events[i].transactionHash
+          const blockDetails = await this.web3.eth.getBlock(events[i].blockHash)
+          const expiry = new BigNumber(blockDetails.timestamp).plus(timeout)
+          const unixTime = new BigNumber(Math.floor(Date.now() / 1000))
+          if (unixTime.isLessThan(expiry)) return events[i].transactionHash
+        }
+      }
+    }
+    return null
   }
 }
