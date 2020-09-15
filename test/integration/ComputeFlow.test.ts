@@ -2,7 +2,8 @@ import { AbiItem } from 'web3-utils/types'
 import { TestContractHandler } from '../TestContractHandler'
 import { DataTokens } from '../../src/datatokens/Datatokens'
 import { Ocean } from '../../src/ocean/Ocean'
-import config from './config'
+import { ConfigHelper } from '../../src/utils/ConfigHelper'
+
 import { assert } from 'console'
 import { ServiceComputePrivacy } from '../../src/ddo/interfaces/Service'
 import Web3 from 'web3'
@@ -61,7 +62,8 @@ describe('Compute flow', () => {
       factory.bytecode,
       web3
     )
-
+    const config = new ConfigHelper().getConfig('development')
+    config.web3Provider = web3
     ocean = await Ocean.getInstance(config)
     owner = (await ocean.accounts.list())[0]
     alice = (await ocean.accounts.list())[1]

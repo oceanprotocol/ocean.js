@@ -161,10 +161,16 @@ export class Assets extends Instantiable {
       observer.next(CreateProgressStep.ProofGenerated)
       this.logger.log('Storing DDO')
       observer.next(CreateProgressStep.StoringDdo)
-      const storedDdo = await this.ocean.metadatastore.storeDDO(ddo)
+      // const storedDdo = await this.ocean.metadatastore.storeDDO(ddo)
+      const storeTx = await this.ocean.OnChainMetadataStore.publish(
+        ddo.id,
+        ddo,
+        publisher.getId()
+      )
       this.logger.log('DDO stored')
       observer.next(CreateProgressStep.DdoStored)
-      return storedDdo
+      if (storeTx) return ddo
+      else return null
     })
   }
 

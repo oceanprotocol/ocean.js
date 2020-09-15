@@ -19,8 +19,10 @@ before_script:
   # Barge setup
   - git clone https://github.com/oceanprotocol/barge
   - cd barge
-  - git checkout v3
+  - git checkout feature/ocean-contracts
   - export PROVIDER_VERSION=latest
+  - export ADDRESS_FILE="${HOME}/.ocean/ocean-contracts/artifacts/address.json"
+  - export AQUARIUS_URI="http://172.15.0.5:5000"
   - bash -x start_ocean.sh --no-dashboard 2>&1 > start_ocean.log &
   - cd ..
   - sleep 300
