@@ -11,6 +11,12 @@ import factory from '@oceanprotocol/contracts/artifacts/DTFactory.json'
 import datatokensTemplate from '@oceanprotocol/contracts/artifacts/DataTokenTemplate.json'
 const web3 = new Web3('http://127.0.0.1:8545')
 
+function sleep(ms) {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms)
+  })
+}
+
 describe('Marketplace flow', () => {
   let owner
   let bob
@@ -103,6 +109,7 @@ describe('Marketplace flow', () => {
     )
     ddo = await ocean.assets.create(asset, alice, [service1], tokenAddress)
     assert(ddo.dataToken === tokenAddress)
+    await sleep(6000)
   })
 
   it('Alice mints 100 tokens', async () => {

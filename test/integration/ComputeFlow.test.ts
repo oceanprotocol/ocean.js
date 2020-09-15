@@ -11,6 +11,12 @@ import factory from '@oceanprotocol/contracts/artifacts/DTFactory.json'
 import datatokensTemplate from '@oceanprotocol/contracts/artifacts/DataTokenTemplate.json'
 const web3 = new Web3('http://127.0.0.1:8545')
 
+function sleep(ms) {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms)
+  })
+}
+
 describe('Compute flow', () => {
   let owner
   let bob
@@ -156,6 +162,7 @@ describe('Compute flow', () => {
     )
     ddo = await ocean.assets.create(asset, alice, [computeService], tokenAddress)
     assert(ddo.dataToken === tokenAddress)
+    await sleep(6000)
   })
 
   // alex
@@ -180,6 +187,7 @@ describe('Compute flow', () => {
       tokenAddress
     )
     assert(datasetNoRawAlgo.dataToken === tokenAddress)
+    await sleep(6000)
   })
 
   it('should publish a dataset with a compute service object that allows only algo with did:op:1234', async () => {
@@ -203,6 +211,7 @@ describe('Compute flow', () => {
       tokenAddress
     )
     assert(datasetWithTrustedAlgo.dataToken === tokenAddress)
+    await sleep(6000)
   })
 
   it('should publish an algorithm', async () => {
@@ -241,6 +250,7 @@ describe('Compute flow', () => {
     )
     algorithmAsset = await ocean.assets.create(algoAsset, alice, [service1], tokenAddress)
     assert(algorithmAsset.dataToken === tokenAddress)
+    await sleep(6000)
   })
 
   it('Alice mints 100 DTs and tranfers them to the compute marketplace', async () => {
