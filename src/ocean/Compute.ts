@@ -294,12 +294,18 @@ export class Compute extends Instantiable {
       type: 'compute',
       index: 3,
 <<<<<<< HEAD
+<<<<<<< HEAD
       serviceEndpoint: customProvider
         ? customProvider + this.ocean.provider.getComputeEndpointShort()
         : this.ocean.provider.getComputeEndpoint(),
 =======
       serviceEndpoint: customProvider || this.ocean.provider.getComputeEndpoint(),
 >>>>>>> 17e61d0... allow customProvider on publish
+=======
+      serviceEndpoint: customProvider
+        ? customProvider + this.ocean.provider.getComputeEndpointShort()
+        : this.ocean.provider.getComputeEndpoint(),
+>>>>>>> 960e90f... extra checks
       attributes: {
         main: {
           name,

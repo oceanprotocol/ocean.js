@@ -394,10 +394,16 @@ export class Assets extends Instantiable {
       type: 'access',
       index: 2,
 <<<<<<< HEAD
+<<<<<<< HEAD
       serviceEndpoint: customProvider || this.ocean.provider.url,
 =======
       serviceEndpoint: customProvider || this.ocean.provider.getConsumeEndpoint(),
 >>>>>>> 17e61d0... allow customProvider on publish
+=======
+      serviceEndpoint: customProvider
+        ? customProvider + this.ocean.provider.getConsumeEndpointShort()
+        : this.ocean.provider.getConsumeEndpoint(),
+>>>>>>> 960e90f... extra checks
       attributes: {
         main: {
           creator: creator.getId(),
