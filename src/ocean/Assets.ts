@@ -378,12 +378,13 @@ export class Assets extends Instantiable {
     creator: Account,
     cost: string,
     datePublished: string,
-    timeout = 0
+    timeout = 0,
+    customProvider?: string
   ): Promise<ServiceAccess> {
     return {
       type: 'access',
       index: 2,
-      serviceEndpoint: this.ocean.provider.getConsumeEndpoint(),
+      serviceEndpoint: customProvider || this.ocean.provider.getConsumeEndpoint(),
       attributes: {
         main: {
           creator: creator.getId(),
