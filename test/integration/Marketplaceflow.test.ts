@@ -170,26 +170,32 @@ describe('Marketplace flow', () => {
   })
 
   it('Bob consumes asset 1', async () => {
-    await ocean.assets
-      .order(ddo.id, accessService.type, bob.getId())
-      .then(async (res: any) => {
-        res = JSON.parse(res)
-        return await datatoken.transferWei(
-          res.dataToken,
-          res.to,
-          String(res.numTokens),
-          res.from
-        )
-      })
-      .then(async (tx) => {
-        await ocean.assets.download(
-          ddo.id,
-          tx.transactionHash,
-          tokenAddress,
-          bob,
-          './node_modules/my-datasets'
-        )
-      })
+    await ocean.assets.order(ddo.id, accessService.type, bob.getId()).then(async (tx) => {
+      assert(tx != null)
+      await ocean.assets.download(
+        ddo.id,
+        tx,
+        tokenAddress,
+        bob,
+        './node_modules/my-datasets'
+      )
+    })
+  })
+
+  it('Bob consumes same asset again, without paying', async () => {
+    const balanceBefore = await datatoken.balance(tokenAddress, bob.getId())
+    await ocean.assets.order(ddo.id, accessService.type, bob.getId()).then(async (tx) => {
+      assert(tx != null)
+      await ocean.assets.download(
+        ddo.id,
+        tx,
+        tokenAddress,
+        bob,
+        './node_modules/my-datasets'
+      )
+    })
+    const balanceAfter = await datatoken.balance(tokenAddress, bob.getId())
+    assert(balanceBefore === balanceAfter)
   })
   it('owner can list there assets', async () => {
     const assets = await ocean.assets.ownerAssets(alice.getId())
