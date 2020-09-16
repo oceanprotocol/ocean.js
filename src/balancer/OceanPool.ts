@@ -372,4 +372,167 @@ export class OceanPool extends Pool {
       swapFee
     )
   }
+
+  /**
+   * Search all pools created by an address
+   * @param {String} account If empty, will return all pools ever created by anybody
+   * @return {String[]}
+   */
+  public async searchPoolsbyCreator(account?: string): Promise<string[]> {
+    const result: string[] = []
+    const factory = new this.web3.eth.Contract(this.factoryABI, this.factoryAddress, {
+      from: account
+    })
+    let myFilter
+    if (account) {
+      myFilter = { registeredBy: account }
+    } else {
+      myFilter = {}
+    }
+    const events = await factory.getPastEvents('BPoolRegistered', {
+      filter: myFilter,
+      fromBlock: 0,
+      toBlock: 'latest'
+    })
+    for (let i = 0; i < events.length; i++) {
+      if (account) {
+        if (events[i].returnValues[1] === account) {
+          result.push(events[i].returnValues[0])
+        }
+      } else result.push(events[i].returnValues[0])
+    }
+    return result
+  }
+
+  /**
+   * Get all actions from a pool (join,exit,swap)
+   * @param {String} poolAddress Pool address
+   * @param {String} account
+   * @param {Boolean} swaps Include swaps
+   * @param {Boolean} joins Include joins
+   * @param {Boolean} exists Include exits
+   * @return {String[]}
+   */
+  public async getPoolLogs(
+    poolAddress: string,
+    account?: string,
+    swaps?: boolean,
+    joins?: boolean,
+    exits?: boolean
+  ): Promise<string[]> {
+    const results = []
+    const pool = new this.web3.eth.Contract(this.poolABI, poolAddress, {
+      from: account
+    })
+    let events
+    let myFilter
+    if (account) myFilter = { caller: account }
+    else myFilter = {}
+    if (swaps) {
+      events = await pool.getPastEvents('LOG_SWAP', {
+        filter: myFilter,
+        fromBlock: 0,
+        toBlock: 'latest'
+      })
+      for (let i = 0; i < events.length; i++) {
+        if (account) {
+          if (events[i].returnValues[0] === account) {
+            results.push(this.getEventData('swap', poolAddress, events[i]))
+          }
+        } else {
+          results.push(this.getEventData('swap', poolAddress, events[i]))
+        }
+      }
+    }
+    if (joins) {
+      events = await pool.getPastEvents('LOG_JOIN', {
+        filter: myFilter,
+        fromBlock: 0,
+        toBlock: 'latest'
+      })
+      for (let i = 0; i < events.length; i++) {
+        if (account) {
+          if (events[i].returnValues[0] === account) {
+            results.push(this.getEventData('join', poolAddress, events[i]))
+          }
+        } else {
+          results.push(this.getEventData('join', poolAddress, events[i]))
+        }
+      }
+    }
+    if (exits) {
+      events = await pool.getPastEvents('LOG_EXIT', {
+        filter: myFilter,
+        fromBlock: 0,
+        toBlock: 'latest'
+      })
+      for (let i = 0; i < events.length; i++) {
+        if (account) {
+          if (events[i].returnValues[0] === account) {
+            results.push(this.getEventData('exit', poolAddress, events[i]))
+          }
+        } else {
+          results.push(this.getEventData('exit', poolAddress, events[i]))
+        }
+      }
+    }
+    return results
+  }
+
+  /**
+   * Get all logs on all pools for a specific address
+   * @param {String} account
+   * @param {Boolean} swaps Include swaps
+   * @param {Boolean} joins Include joins
+   * @param {Boolean} exists Include exits
+   * @return {String[]}
+   */
+  public async getAllPoolLogs(
+    account: string,
+    swaps?: boolean,
+    joins?: boolean,
+    exits?: boolean
+  ): Promise<any> {
+    const results = []
+    const factory = new this.web3.eth.Contract(this.factoryABI, this.factoryAddress, {
+      from: account
+    })
+    const events = await factory.getPastEvents('BPoolRegistered', {
+      filter: {},
+      fromBlock: 0,
+      toBlock: 'latest'
+    })
+    for (let i = 0; i < events.length; i++) {
+      results.push(
+        await this.getPoolLogs(events[i].returnValues[0], account, swaps, joins, exits)
+      )
+    }
+    return results
+  }
+
+  private getEventData(action: string, poolAddress: string, data: any) {
+    const result = Object()
+    result.action = action
+    result.poolAddress = poolAddress
+    result.caller = data.returnValues[0]
+    result.transactionHash = data.transactionHash
+    result.blockNumber = data.blockNumber
+    switch (action) {
+      case 'swap':
+        result.tokenIn = data.returnValues[1]
+        result.tokenOut = data.returnValues[2]
+        result.tokenAmountIn = data.returnValues[3]
+        result.tokenAmountOut = data.returnValues[4]
+        break
+      case 'join':
+        result.tokenIn = data.returnValues[1]
+        result.tokenAmountIn = data.returnValues[2]
+        break
+      case 'exit':
+        result.tokenOut = data.returnValues[1]
+        result.tokenAmountOut = data.returnValues[2]
+        break
+    }
+    return result
+  }
 }

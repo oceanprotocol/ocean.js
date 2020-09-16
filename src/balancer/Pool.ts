@@ -15,7 +15,7 @@ export interface TokensToAdd {
 }
 
 export class Pool extends PoolFactory {
-  private poolABI: AbiItem | AbiItem[]
+  public poolABI: AbiItem | AbiItem[]
 
   constructor(
     web3: Web3,
