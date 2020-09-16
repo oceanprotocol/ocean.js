@@ -60,7 +60,7 @@ export class OnChainMetadataStore {
     consumerAccount: string
   ): Promise<TransactionReceipt> {
     let flags = 0
-    const compressed = this.LZMACompressDDO(ddo)
+    const compressed = await this.LZMACompressDDO(ddo)
     flags = flags | 1
     return this.publishRaw(didZeroX(did), flags, compressed, consumerAccount)
   }
@@ -78,7 +78,7 @@ export class OnChainMetadataStore {
     consumerAccount: string
   ): Promise<TransactionReceipt> {
     let flags = 0
-    const compressed = this.LZMACompressDDO(ddo)
+    const compressed = await this.LZMACompressDDO(ddo)
     flags = flags | 1
     return this.updateRaw(didZeroX(did), flags, compressed, consumerAccount)
   }
