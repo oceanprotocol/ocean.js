@@ -471,7 +471,9 @@ export class Assets extends Instantiable {
       const balance = new BigNumber(
         await datatokens.balance(providerData.dataToken, consumerAddress)
       )
-      const totalCost = new BigNumber(providerData.numTokens)
+      const totalCost = new BigNumber(
+        this.web3.utils.fromWei(String(providerData.numTokens))
+      )
       if (balance.isLessThanOrEqualTo(totalCost)) {
         console.error(
           'Not enough funds. Needed ' +
