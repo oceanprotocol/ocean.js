@@ -19,15 +19,11 @@ before_script:
   # Barge setup
   - git clone https://github.com/oceanprotocol/barge
   - cd barge
-  - git checkout feature/ocean-contracts
+  - git checkout v3
   - export PROVIDER_VERSION=v0.3.0
-  - export ADDRESS_FILE="${HOME}/.ocean/ocean-contracts/artifacts/address.json"
-  - export AQUARIUS_URI="http://172.15.0.5:5000"
-  - export DEPLOY_CONTRACTS=true
-
   - bash -x start_ocean.sh --no-dashboard 2>&1 > start_ocean.log &
   - cd ..
-  - ./scripts/waitforcontracts.sh
+  - sleep 300
 
 script:
   - npm test
