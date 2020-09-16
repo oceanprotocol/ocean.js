@@ -492,11 +492,10 @@ export class Assets extends Instantiable {
         consumerAddress
       )
       if (txid) return txid.transactionHash
-      else return null
     } catch (e) {
       console.error(e)
-      return null
     }
+    return null
   }
 
   // marketplace flow
