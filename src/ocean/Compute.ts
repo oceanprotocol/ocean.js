@@ -94,7 +94,7 @@ export class Compute extends Instantiable {
     if (did && txId) {
       const provider = new Provider(this.instanceConfig)
       provider.setBaseUrl(serviceEndpoint)
-      const computeJobsList = await this.ocean.provider.compute(
+      const computeJobsList = await provider.compute(
         'post',
         did,
         consumerAccount,
@@ -293,9 +293,13 @@ export class Compute extends Instantiable {
     const service = {
       type: 'compute',
       index: 3,
+<<<<<<< HEAD
       serviceEndpoint: customProvider
         ? customProvider + this.ocean.provider.getComputeEndpointShort()
         : this.ocean.provider.getComputeEndpoint(),
+=======
+      serviceEndpoint: customProvider || this.ocean.provider.getComputeEndpoint(),
+>>>>>>> 17e61d0... allow customProvider on publish
       attributes: {
         main: {
           name,
