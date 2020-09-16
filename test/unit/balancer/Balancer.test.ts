@@ -270,4 +270,19 @@ describe('Balancer flow', () => {
     assert(parseFloat(bobDtBalance) < parseFloat(newbobDtBalance))
     assert(parseFloat(poolShares) > parseFloat(newpoolShares))
   })
+
+  it('ALice should get all the pools that she created', async () => {
+    const alicePools = await Pool.searchPoolsbyCreator(alice)
+    assert(alicePools.length > 0)
+  })
+
+  it('ALice should get the logs for her pool', async () => {
+    const poolLogs = await Pool.getPoolLogs(greatPool, null, true, true, true)
+    assert(poolLogs.length > 0)
+  })
+  it('Bob should get the logs for all his activities', async () => {
+    const poolLogs = await Pool.getAllPoolLogs(bob, true, true, true)
+    assert(poolLogs.length > 0)
+  })
+
 })

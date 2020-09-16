@@ -357,4 +357,76 @@ export class OceanFixedRateExchange {
     }
     return result
   }
+
+  /**
+   * Get all exchanges, filtered by creator(if any)
+   * @param {String} account
+   * @return {Promise<FixedPricedExchange[]>}
+   */
+  public async searchExchangesbyCreator(
+    account?: string
+  ): Promise<FixedPricedExchange[]> {
+    const result: FixedPricedExchange[] = []
+    const events = await this.contract.getPastEvents('ExchangeCreated', {
+      filter: {},
+      fromBlock: 0,
+      toBlock: 'latest'
+    })
+    for (let i = 0; i < events.length; i++) {
+      if (account) {
+        if (events[i].returnValues[3] === account)
+          result.push(await this.getExchange(events[i].returnValues[0]))
+      } else result.push(await this.getExchange(events[i].returnValues[0]))
+    }
+    return result
+  }
+
+  /**
+   * Get all swaps for an exchange, filtered by account(if any)
+   * @param {String} exchangeId
+   * @param {String} account
+   * @return {Promise<any>}
+   */
+  public async searchExchangesSwaps(exchangeId: string, account?: string): Promise<any> {
+    const result: FixedPricedExchange[] = []
+    const events = await this.contract.getPastEvents('Swapped', {
+      filter: { exchangeId: exchangeId },
+      fromBlock: 0,
+      toBlock: 'latest'
+    })
+    for (let i = 0; i < events.length; i++) {
+      if (account) {
+        if (events[i].returnValues[1] === account)
+          result.push(await this.getEventData(events[i]))
+      } else result.push(await this.getEventData(events[i]))
+    }
+    return result
+  }
+
+  /**
+   * Get all swaps for an account
+   * @param {String} account
+   * @return {Promise<any>}
+   */
+  public async searchAllExchangesSwaps(account: string): Promise<any> {
+    const result = []
+    const events = await this.contract.getPastEvents('ExchangeCreated', {
+      filter: {},
+      fromBlock: 0,
+      toBlock: 'latest'
+    })
+    for (let i = 0; i < events.length; i++) {
+      result.push(await this.searchExchangesSwaps(events[i].returnValues[0], account))
+    }
+    return result
+  }
+
+  private getEventData(data: any) {
+    const result = Object()
+    result.exchangeID = data.returnValues[0]
+    result.caller = data.returnValues[1]
+    result.baseTokenAmount = data.returnValues[2]
+    result.dataTokenAmount = data.returnValues[3]
+    return result
+  }
 }
