@@ -99,7 +99,6 @@ export class OnChainMetadataStore {
       return null
     }
     try {
-      // const data = this.web3.utils.bytesToHex(ddo)
       const estGas = await this.DDOContract.methods
         .create(did, flags, data)
         .estimateGas(function (err, estGas) {
@@ -127,7 +126,7 @@ export class OnChainMetadataStore {
   public async updateRaw(
     did: string,
     flags: any,
-    ddo: any,
+    data: any,
     consumerAccount: string
   ): Promise<TransactionReceipt> {
     if (!this.DDOContract) {
@@ -135,16 +134,9 @@ export class OnChainMetadataStore {
       return null
     }
     try {
-      const data = this.web3.utils.bytesToHex(ddo)
-      const estGas = await this.DDOContract.methods
-        .update(did, flags, data)
-        .estimateGas(function (err, estGas) {
-          if (err) console.log('OnChainMetadataStore: ' + err)
-          return estGas
-        })
       const trxReceipt = await this.DDOContract.methods
         .update(did, flags, data)
-        .send({ from: consumerAccount, gas: estGas + 1 })
+        .send({ from: consumerAccount })
       return trxReceipt
     } catch (e) {
       console.error(e)

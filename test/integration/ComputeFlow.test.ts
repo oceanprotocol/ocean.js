@@ -388,6 +388,42 @@ describe('Compute flow', () => {
     jobId = response.jobId
     assert(response.status >= 10)
   })
+  it('Alice updates Compute Privacy', async () => {
+    const newComputePrivacy = {
+      allowRawAlgorithm: false,
+      allowNetworkAccess: true,
+      trustedAlgorithms: ['did:op:1234', 'did:op:1235']
+    }
+    let computeIndex = 0
+    for (let i = 0; i < ddo.service.length; i++) {
+      if (ddo.service[i].type === 'compute') {
+        computeIndex = i
+        break
+      }
+    }
+    assert(computeIndex > 0)
+    const newDdo = await ocean.assets.updateComputePrivacy(
+      ddo.id,
+      computeIndex,
+      newComputePrivacy,
+      alice
+    )
+    assert(newDdo !== null)
+    await sleep(6000)
+    const metaData = await ocean.assets.getServiceByType(ddo.id, 'compute')
+    assert(
+      metaData.attributes.main.privacy.allowRawAlgorithm ===
+        newComputePrivacy.allowRawAlgorithm
+    )
+    assert(
+      metaData.attributes.main.privacy.allowNetworkAccess ===
+        newComputePrivacy.allowNetworkAccess
+    )
+    assert(
+      metaData.attributes.main.privacy.trustedAlgorithms ===
+        newComputePrivacy.trustedAlgorithms
+    )
+  })
 
   // it('Bob restarts compute job', async () => {})
   // it('Bob gets outputs', async () => {})
