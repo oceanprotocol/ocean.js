@@ -284,5 +284,4 @@ describe('Balancer flow', () => {
     const poolLogs = await Pool.getAllPoolLogs(bob, true, true, true)
     assert(poolLogs.length > 0)
   })
-
 })
