@@ -284,13 +284,17 @@ export class Provider extends Instantiable {
     return `${this.url}${apiPath}/download`
   }
 
+  /** Check for a valid provider at URL
+   * @param {String} url
+   * @return {Promise<boolean>} string
+   */
   public async isValidProvider(url: string): Promise<boolean> {
     const fetch = this.ocean.utils.fetch.get(url)
     await fetch
       .then((response: Response) => {
         if (response.ok) {
           const params = response.json()
-          if (params) return true
+          if (params['provider-address']) return true
         }
         return false
       })
