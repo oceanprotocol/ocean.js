@@ -20,7 +20,7 @@ before_script:
   - git clone https://github.com/oceanprotocol/barge
   - cd barge
   - git checkout v3
-  - export PROVIDER_VERSION=latest
+  - export PROVIDER_VERSION=v0.3.0
   - bash -x start_ocean.sh --no-dashboard 2>&1 > start_ocean.log &
   - cd ..
   - sleep 300

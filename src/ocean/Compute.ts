@@ -350,7 +350,6 @@ export class Compute extends Instantiable {
     serviceIndex: number,
     algorithmDid?: string,
     algorithmMeta?: MetadataAlgorithm,
-    mpFeePercent?: string,
     mpAddress?: string
   ): SubscribablePromise<OrderProgressStep, string> {
     return new SubscribablePromise(async (observer) => {
@@ -384,7 +383,6 @@ export class Compute extends Instantiable {
         service.type,
         consumerAccount,
         -1,
-        mpFeePercent,
         mpAddress
       )
       return order

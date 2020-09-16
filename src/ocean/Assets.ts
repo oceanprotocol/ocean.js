@@ -413,8 +413,7 @@ export class Assets extends Instantiable {
     did: string,
     serviceType: string,
     consumerAddress: string,
-    serviceIndex = -1,
-    mpFeePercent?: string
+    serviceIndex = -1
   ): Promise<any> {
     const res = await this.ocean.provider.initialize(
       did,
@@ -424,19 +423,6 @@ export class Assets extends Instantiable {
     )
     if (res === null) return null
     const providerData = JSON.parse(res)
-    const { datatokens } = this.ocean
-    const dtCost = new BigNumber(this.web3.utils.fromWei(String(providerData.numTokens)))
-    const totalFee = new BigNumber(
-      await datatokens.calculateTotalFee(
-        providerData.dataToken,
-        this.web3.utils.fromWei(String(providerData.numTokens)),
-        mpFeePercent,
-        consumerAddress
-      )
-    )
-    providerData.totalFee = totalFee.toString()
-    providerData.dtCost = dtCost.toString()
-    providerData.totalCost = dtCost.plus(totalFee).toString()
     return providerData
   }
 
@@ -446,7 +432,6 @@ export class Assets extends Instantiable {
    * @param {String} serviceType
    * @param {String} consumerAddress
    * @param {Number} serviceIndex
-   * @param {String} mpFeePercent  will be converted to Wei
    * @param {String} mpAddress mp fee collector address
    * @return {Promise<String>} transactionHash of the payment
    */
@@ -455,7 +440,6 @@ export class Assets extends Instantiable {
     serviceType: string,
     consumerAddress: string,
     serviceIndex = -1,
-    mpFeePercent?: string,
     mpAddress?: string
   ): Promise<string> {
     if (serviceIndex === -1) {
@@ -465,22 +449,18 @@ export class Assets extends Instantiable {
       const service = await this.getServiceByIndex(did, serviceIndex)
       serviceType = service.type
     }
-    if (!mpFeePercent) mpFeePercent = '0'
-    if (!mpAddress) mpAddress = '0x000000000000000000000000000000000000dEaD'
     const { datatokens } = this.ocean
     try {
       const providerData = await this.initialize(
         did,
         serviceType,
         consumerAddress,
-        serviceIndex,
-        mpFeePercent
+        serviceIndex
       )
       if (!providerData) return null
       const service = await this.getServiceByIndex(did, serviceIndex)
       const previousOrder = await datatokens.getPreviousValidOrders(
         providerData.dataToken,
-        providerData.to,
         providerData.numTokens,
         didZeroX(did),
         serviceIndex,
@@ -491,7 +471,7 @@ export class Assets extends Instantiable {
       const balance = new BigNumber(
         await datatokens.balance(providerData.dataToken, consumerAddress)
       )
-      const totalCost = new BigNumber(providerData.totalCost)
+      const totalCost = new BigNumber(providerData.numTokens)
       if (balance.isLessThanOrEqualTo(totalCost)) {
         console.error(
           'Not enough funds. Needed ' +
@@ -503,12 +483,10 @@ export class Assets extends Instantiable {
       }
       const txid = await datatokens.startOrder(
         providerData.dataToken,
-        providerData.to,
         this.web3.utils.fromWei(String(providerData.numTokens)),
         didZeroX(did),
         serviceIndex,
         mpAddress,
-        mpFeePercent,
         consumerAddress
       )
       if (txid) return txid.transactionHash

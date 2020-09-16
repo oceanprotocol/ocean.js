@@ -380,23 +380,19 @@ export class DataTokens {
 
   /** Start Order
    * @param {String} dataTokenAddress
-   * @param {String} providerAddress
    * @param {String} amount
    * @param {String} did
    * @param {Number} serviceId
    * @param {String} mpFeeAddress
-   * @param {String} mpFeePercentage
    * @param {String} address consumer Address
    * @return {Promise<string>} string
    */
   public async startOrder(
     dataTokenAddress: string,
-    providerAddress: string,
     amount: string,
     did: string,
     serviceId: number,
     mpFeeAddress: string,
-    mpFeePercentage: string,
     address: string
   ): Promise<TransactionReceipt> {
     const datatoken = new this.web3.eth.Contract(this.datatokensABI, dataTokenAddress, {
@@ -404,14 +400,7 @@ export class DataTokens {
     })
     try {
       const trxReceipt = await datatoken.methods
-        .startOrder(
-          providerAddress,
-          this.web3.utils.toWei(amount),
-          did,
-          String(serviceId),
-          mpFeeAddress,
-          this.web3.utils.toWei(mpFeePercentage)
-        )
+        .startOrder(this.web3.utils.toWei(amount), did, String(serviceId), mpFeeAddress)
         .send({ from: address, gas: 600000 })
       return trxReceipt
     } catch (e) {
@@ -422,7 +411,6 @@ export class DataTokens {
 
   /** Search and return txid for a previous valid order with the same params
    * @param {String} dataTokenAddress
-   * @param {String} providerAddress
    * @param {String} amount
    * @param {String} did
    * @param {Number} serviceId
@@ -432,7 +420,6 @@ export class DataTokens {
    */
   public async getPreviousValidOrders(
     dataTokenAddress: string,
-    providerAddress: string,
     amount: string,
     did: string,
     serviceId: number,
@@ -450,7 +437,6 @@ export class DataTokens {
       if (
         events[i].returnValues.did === did &&
         String(events[i].returnValues.amount) === String(amount) &&
-        events[i].returnValues.receiver === providerAddress &&
         String(events[i].returnValues.serviceId) === String(serviceId)
       ) {
         const transaction = await this.web3.eth.getTransaction(events[i].transactionHash)
