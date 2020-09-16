@@ -87,7 +87,7 @@ export class Compute extends Instantiable {
     algorithmDataToken?: string
   ): Promise<ComputeJob> {
     output = this.checkOutput(consumerAccount, output)
-    if (did) {
+    if (did && txId) {
       const computeJobsList = await this.ocean.provider.compute(
         'post',
         did,
@@ -352,7 +352,8 @@ export class Compute extends Instantiable {
     datasetDid: string,
     serviceIndex: number,
     algorithmDid?: string,
-    algorithmMeta?: MetadataAlgorithm
+    algorithmMeta?: MetadataAlgorithm,
+    mpAddress?: string
   ): SubscribablePromise<OrderProgressStep, string> {
     return new SubscribablePromise(async (observer) => {
       const ddo: DDO = await this.ocean.assets.resolve(datasetDid)
@@ -383,7 +384,9 @@ export class Compute extends Instantiable {
       const order = await this.ocean.assets.order(
         datasetDid,
         service.type,
-        consumerAccount
+        consumerAccount,
+        -1,
+        mpAddress
       )
       return order
     })
