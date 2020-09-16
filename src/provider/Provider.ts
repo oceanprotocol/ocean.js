@@ -283,4 +283,22 @@ export class Provider extends Instantiable {
   public getDownloadEndpoint(): string {
     return `${this.url}${apiPath}/download`
   }
+
+  public async isValidProvider(url: string): Promise<boolean> {
+    const fetch = this.ocean.utils.fetch.get(url)
+    await fetch
+      .then((response: Response) => {
+        if (response.ok) {
+          const params = response.json()
+          if (params) return true
+        }
+        return false
+      })
+      .catch((error: Error) => {
+        this.logger.error('Error validating provider')
+        this.logger.error(error.message)
+        return false
+      })
+    return false
+  }
 }
