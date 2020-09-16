@@ -167,7 +167,7 @@ export class Assets extends Instantiable {
         ddo,
         publisher.getId()
       )
-      this.logger.log('DDO stored')
+      this.logger.log('DDO stored ' + ddo.id)
       observer.next(CreateProgressStep.DdoStored)
       if (storeTx) return ddo
       else return null

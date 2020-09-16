@@ -34,6 +34,19 @@ export class OnChainMetadataStore {
       )
   }
 
+  /** Compress DDO using LZMA
+   *
+   */
+  public async LZMACompressDDO(ddo: DDO): Promise<any> {
+    const data = DDO.serialize(ddo)
+    const lzma = new LZMA()
+    // see https://github.com/LZMA-JS/LZMA-JS/issues/44
+    lzma.disableEndMark = true
+    let compressed = lzma.compress(data, 9)
+    compressed = this.getHex(compressed)
+    return compressed
+  }
+
   /**
    * Publish a new DDO
    * @param {String} did
@@ -47,12 +60,7 @@ export class OnChainMetadataStore {
     consumerAccount: string
   ): Promise<TransactionReceipt> {
     let flags = 0
-    const data = DDO.serialize(ddo)
-    const lzma = new LZMA()
-    // see https://github.com/LZMA-JS/LZMA-JS/issues/44
-    lzma.disableEndMark = true
-    let compressed = lzma.compress(data, 9)
-    compressed = this.getHex(compressed)
+    const compressed = this.LZMACompressDDO(ddo)
     flags = flags | 1
     return this.publishRaw(didZeroX(did), flags, compressed, consumerAccount)
   }
@@ -70,12 +78,7 @@ export class OnChainMetadataStore {
     consumerAccount: string
   ): Promise<TransactionReceipt> {
     let flags = 0
-    const data = DDO.serialize(ddo)
-    const lzma = new LZMA()
-    // see https://github.com/LZMA-JS/LZMA-JS/issues/44
-    lzma.disableEndMark = true
-    let compressed = lzma.compress(data, 9)
-    compressed = this.getHex(compressed)
+    const compressed = this.LZMACompressDDO(ddo)
     flags = flags | 1
     return this.updateRaw(didZeroX(did), flags, compressed, consumerAccount)
   }
