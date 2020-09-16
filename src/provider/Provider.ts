@@ -264,8 +264,12 @@ export class Provider extends Instantiable {
     return `${this.url}${apiPath}/nonce`
   }
 
+  public getConsumeEndpointShort(): string {
+    return `${apiPath}/consume`
+  }
+
   public getConsumeEndpoint(): string {
-    return `${this.url}${apiPath}/consume`
+    return `${this.url}` + this.getConsumeEndpointShort()
   }
 
   public getEncryptEndpoint(): string {
@@ -276,8 +280,12 @@ export class Provider extends Instantiable {
     return `${this.url}${apiPath}/publish`
   }
 
+  public getComputeEndpointShort(): string {
+    return `${apiPath}/compute`
+  }
+
   public getComputeEndpoint(): string {
-    return `${this.url}${apiPath}/compute`
+    return `${this.url}` + this.getComputeEndpointShort()
   }
 
   public getDownloadEndpoint(): string {

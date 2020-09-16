@@ -384,7 +384,9 @@ export class Assets extends Instantiable {
     return {
       type: 'access',
       index: 2,
-      serviceEndpoint: customProvider || this.ocean.provider.getConsumeEndpoint(),
+      serviceEndpoint: customProvider
+        ? customProvider + this.ocean.provider.getConsumeEndpointShort()
+        : this.ocean.provider.getConsumeEndpoint(),
       attributes: {
         main: {
           creator: creator.getId(),

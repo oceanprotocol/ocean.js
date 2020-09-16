@@ -287,7 +287,9 @@ export class Compute extends Instantiable {
     const service = {
       type: 'compute',
       index: 3,
-      serviceEndpoint: customProvider || this.ocean.provider.getComputeEndpoint(),
+      serviceEndpoint: customProvider
+        ? customProvider + this.ocean.provider.getComputeEndpointShort()
+        : this.ocean.provider.getComputeEndpoint(),
       attributes: {
         main: {
           name,
