@@ -163,10 +163,16 @@ export class Assets extends Instantiable {
       observer.next(CreateProgressStep.ProofGenerated)
       this.logger.log('Storing DDO')
       observer.next(CreateProgressStep.StoringDdo)
-      const storedDdo = await this.ocean.metadatastore.storeDDO(ddo)
-      this.logger.log('DDO stored')
+      // const storedDdo = await this.ocean.metadatastore.storeDDO(ddo)
+      const storeTx = await this.ocean.OnChainMetadataStore.publish(
+        ddo.id,
+        ddo,
+        publisher.getId()
+      )
+      this.logger.log('DDO stored ' + ddo.id)
       observer.next(CreateProgressStep.DdoStored)
-      return storedDdo
+      if (storeTx) return ddo
+      else return null
     })
   }
 
@@ -219,23 +225,39 @@ export class Assets extends Instantiable {
     did: string,
     newMetadata: EditableMetadata,
     account: Account
-  ): Promise<string> {
+  ): Promise<DDO> {
     const oldDdo = await this.ocean.metadatastore.retrieveDDO(did)
-    // get a signature
-    const signature = await this.ocean.utils.signature.signForAquarius(
-      oldDdo.updated,
-      account
+    let i
+    for (i = 0; i < oldDdo.service.length; i++) {
+      if (oldDdo.service[i].type === 'metadata') {
+        if (newMetadata.title) oldDdo.service[i].attributes.main.name = newMetadata.title
+        if (!oldDdo.service[i].attributes.additionalInformation)
+          oldDdo.service[i].attributes.additionalInformation = Object()
+        if (newMetadata.description)
+          oldDdo.service[i].attributes.additionalInformation.description =
+            newMetadata.description
+        if (newMetadata.links)
+          oldDdo.service[i].attributes.additionalInformation.links = newMetadata.links
+      }
+    }
+    if (newMetadata.servicePrices) {
+      for (i = 0; i < newMetadata.servicePrices.length; i++) {
+        if (
+          newMetadata.servicePrices[i].cost &&
+          newMetadata.servicePrices[i].serviceIndex
+        ) {
+          oldDdo.service[newMetadata.servicePrices[i].serviceIndex].attributes.main.cost =
+            newMetadata.servicePrices[i].cost
+        }
+      }
+    }
+    const storeTx = await this.ocean.OnChainMetadataStore.update(
+      oldDdo.id,
+      oldDdo,
+      account.getId()
     )
-    let result = null
-    if (signature != null)
-      result = await this.ocean.metadatastore.editMetadata(
-        did,
-        newMetadata,
-        oldDdo.updated,
-        signature
-      )
-
-    return result
+    if (storeTx) return oldDdo
+    else return null
   }
 
   /**
@@ -251,45 +273,22 @@ export class Assets extends Instantiable {
     serviceIndex: number,
     computePrivacy: ServiceComputePrivacy,
     account: Account
-  ): Promise<string> {
+  ): Promise<DDO> {
     const oldDdo = await this.ocean.metadatastore.retrieveDDO(did)
-    // get a signature
-    const signature = await this.ocean.utils.signature.signForAquarius(
-      oldDdo.updated,
-      account
+    if (oldDdo.service[serviceIndex].type !== 'compute') return null
+    oldDdo.service[serviceIndex].attributes.main.privacy.allowRawAlgorithm =
+      computePrivacy.allowRawAlgorithm
+    oldDdo.service[serviceIndex].attributes.main.privacy.allowNetworkAccess =
+      computePrivacy.allowNetworkAccess
+    oldDdo.service[serviceIndex].attributes.main.privacy.trustedAlgorithms =
+      computePrivacy.trustedAlgorithms
+    const storeTx = await this.ocean.OnChainMetadataStore.update(
+      oldDdo.id,
+      oldDdo,
+      account.getId()
     )
-    let result = null
-    if (signature != null)
-      result = await this.ocean.metadatastore.updateComputePrivacy(
-        did,
-        serviceIndex,
-        computePrivacy.allowRawAlgorithm,
-        computePrivacy.allowNetworkAccess,
-        computePrivacy.trustedAlgorithms,
-        oldDdo.updated,
-        signature
-      )
-
-    return result
-  }
-
-  /**
-   * Retire a DDO (Delete)
-   * @param  {did} string DID.
-   * @param  {Account} account Ethereum account of owner to sign and prove the ownership.
-   * @return {Promise<string>}
-   */
-  public async retire(did: string, account: Account): Promise<string> {
-    const oldDdo = await this.ocean.metadatastore.retrieveDDO(did)
-    // get a signature
-    const signature = await this.ocean.utils.signature.signForAquarius(
-      oldDdo.updated,
-      account
-    )
-    let result = null
-    if (signature != null)
-      result = await this.ocean.metadatastore.retire(did, oldDdo.updated, signature)
-    return result
+    if (storeTx) return oldDdo
+    else return null
   }
 
   /**

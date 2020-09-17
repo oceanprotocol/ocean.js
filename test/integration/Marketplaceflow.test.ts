@@ -2,13 +2,22 @@ import { AbiItem } from 'web3-utils/types'
 import { TestContractHandler } from '../TestContractHandler'
 import { DataTokens } from '../../src/datatokens/Datatokens'
 import { Ocean } from '../../src/ocean/Ocean'
-import config from './config'
+import { ConfigHelper } from '../../src/utils/ConfigHelper'
+
+// import config from './config'
 import { assert } from 'console'
 
 import Web3 from 'web3'
 import factory from '@oceanprotocol/contracts/artifacts/DTFactory.json'
 import datatokensTemplate from '@oceanprotocol/contracts/artifacts/DataTokenTemplate.json'
+import { EditableMetadata } from '../../src/lib'
 const web3 = new Web3('http://127.0.0.1:8545')
+
+function sleep(ms) {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms)
+  })
+}
 
 describe('Marketplace flow', () => {
   let owner
@@ -38,7 +47,8 @@ describe('Marketplace flow', () => {
       factory.bytecode,
       web3
     )
-
+    const config = new ConfigHelper().getConfig('development')
+    config.web3Provider = web3
     ocean = await Ocean.getInstance(config)
     owner = (await ocean.accounts.list())[0]
     alice = (await ocean.accounts.list())[1]
@@ -101,6 +111,7 @@ describe('Marketplace flow', () => {
     )
     ddo = await ocean.assets.create(asset, alice, [service1], tokenAddress)
     assert(ddo.dataToken === tokenAddress)
+    await sleep(6000)
   })
 
   it('Alice mints 100 tokens', async () => {
@@ -189,5 +200,21 @@ describe('Marketplace flow', () => {
   it('owner can list there assets', async () => {
     const assets = await ocean.assets.ownerAssets(alice.getId())
     assert(assets.length > 0)
+  })
+  it('Alice updates metadata', async () => {
+    const newMetaData: EditableMetadata = {
+      description: 'new description',
+      title: 'new title',
+      links: [{ name: 'link1', type: 'sample', url: 'http://example.net' }]
+    }
+    const newDdo = await ocean.assets.editMetadata(ddo.id, newMetaData, alice)
+    assert(newDdo !== null)
+    await sleep(6000)
+    const metaData = await ocean.assets.getServiceByType(ddo.id, 'metadata')
+    assert(metaData.attributes.main.name === newMetaData.title)
+    assert(
+      metaData.attributes.additionalInformation.description === newMetaData.description
+    )
+    assert(metaData.attributes.additionalInformation.links === newMetaData.links)
   })
 })
