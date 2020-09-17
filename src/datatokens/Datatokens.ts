@@ -5,7 +5,9 @@ import defaultFactoryABI from '@oceanprotocol/contracts/artifacts/DTFactory.json
 import defaultDatatokensABI from '@oceanprotocol/contracts/artifacts/DataTokenTemplate.json'
 
 import wordListDefault from '../data/words.json'
-
+import { TransactionReceipt } from 'web3-core'
+import { time } from 'console'
+import BigNumber from 'bignumber.js'
 /**
  * Provides a interface to DataTokens
  */
@@ -349,5 +351,80 @@ export class DataTokens {
    */
   public fromWei(amount: string): string {
     return this.web3.utils.fromWei(amount)
+  }
+
+  /** Start Order
+   * @param {String} dataTokenAddress
+   * @param {String} amount
+   * @param {String} did
+   * @param {Number} serviceId
+   * @param {String} mpFeeAddress
+   * @param {String} address consumer Address
+   * @return {Promise<string>} string
+   */
+  public async startOrder(
+    dataTokenAddress: string,
+    amount: string,
+    did: string,
+    serviceId: number,
+    mpFeeAddress: string,
+    address: string
+  ): Promise<TransactionReceipt> {
+    const datatoken = new this.web3.eth.Contract(this.datatokensABI, dataTokenAddress, {
+      from: address
+    })
+    if (!mpFeeAddress) mpFeeAddress = '0x0000000000000000000000000000000000000000'
+    try {
+      const trxReceipt = await datatoken.methods
+        .startOrder(this.web3.utils.toWei(amount), did, String(serviceId), mpFeeAddress)
+        .send({ from: address, gas: 600000 })
+      return trxReceipt
+    } catch (e) {
+      console.error(e)
+      return null
+    }
+  }
+
+  /** Search and return txid for a previous valid order with the same params
+   * @param {String} dataTokenAddress
+   * @param {String} amount
+   * @param {String} did
+   * @param {Number} serviceId
+   * @param {Number} timeout service timeout
+   * @param {String} address consumer Address
+   * @return {Promise<string>} string
+   */
+  public async getPreviousValidOrders(
+    dataTokenAddress: string,
+    amount: string,
+    did: string,
+    serviceId: number,
+    timeout: number,
+    address: string
+  ): Promise<string> {
+    const datatoken = new this.web3.eth.Contract(this.datatokensABI, dataTokenAddress, {
+      from: address
+    })
+    const events = await datatoken.getPastEvents('OrderStarted', {
+      fromBlock: 0,
+      toBlock: 'latest'
+    })
+    for (let i = 0; i < events.length; i++) {
+      if (
+        events[i].returnValues.did === did &&
+        String(events[i].returnValues.amount) === String(amount) &&
+        String(events[i].returnValues.serviceId) === String(serviceId)
+      ) {
+        const transaction = await this.web3.eth.getTransaction(events[i].transactionHash)
+        if (transaction.from === address) {
+          if (timeout === 0) return events[i].transactionHash
+          const blockDetails = await this.web3.eth.getBlock(events[i].blockHash)
+          const expiry = new BigNumber(blockDetails.timestamp).plus(timeout)
+          const unixTime = new BigNumber(Math.floor(Date.now() / 1000))
+          if (unixTime.isLessThan(expiry)) return events[i].transactionHash
+        }
+      }
+    }
+    return null
   }
 }
