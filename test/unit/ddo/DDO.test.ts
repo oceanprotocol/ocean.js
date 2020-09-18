@@ -3,9 +3,9 @@ import { assert, expect, spy, use } from 'chai'
 
 import { DDO } from '../../../src/ddo/DDO'
 import { Service } from '../../../src/ddo/interfaces/Service'
-import { Ocean } from '../../../src/ocean/Ocean'
-import Config from '../config'
-import { TestContractHandler } from '../../TestContractHandler'
+// import { Ocean } from '../../../src/ocean/Ocean'
+// import Config from '../config'
+// import { TestContractHandler } from '../../TestContractHandler'
 
 import * as jsonDDO from '../__fixtures__/ddo.json'
 

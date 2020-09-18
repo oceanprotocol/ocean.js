@@ -10,6 +10,8 @@ import { responsify, getSearchResults } from '../helpers'
 
 use(spies)
 
+const dataTokenMock = '0x0000000000000000000000000000000000000000'
+
 describe('MetadataStore', () => {
   let ocean: Ocean
   let metadataStore: MetadataStore
@@ -73,9 +75,9 @@ describe('MetadataStore', () => {
 
   describe('#storeDDO()', () => {
     it('should store a ddo', async () => {
-      const did: DID = DID.generate()
+      const did: DID = DID.generate(dataTokenMock)
       const ddo: DDO = new DDO({
-        id: did.getId()
+        id: did.getDid()
       })
 
       spy.on(metadataStore.fetch, 'post', () => responsify(ddo))
@@ -88,9 +90,9 @@ describe('MetadataStore', () => {
 
   describe('#retrieveDDO()', () => {
     it('should store a ddo', async () => {
-      const did: DID = DID.generate()
+      const did: DID = DID.generate(dataTokenMock)
       const ddo: DDO = new DDO({
-        id: did.getId()
+        id: did.getDid()
       })
 
       spy.on(metadataStore.fetch, 'post', () => responsify(ddo))
@@ -99,12 +101,12 @@ describe('MetadataStore', () => {
       const storageResult: DDO = await metadataStore.storeDDO(ddo)
       assert(storageResult)
 
-      assert(storageResult.id === did.getId())
+      assert(storageResult.id === did.getDid())
 
       const restrieveResult: DDO = await metadataStore.retrieveDDO(did)
       assert(restrieveResult)
 
-      assert(restrieveResult.id === did.getId())
+      assert(restrieveResult.id === did.getDid())
       assert(restrieveResult.id === storageResult.id)
     })
   })
