@@ -1,5 +1,3 @@
-import { generateId } from '../utils/GeneratorHelpers'
-
 const prefix = 'did:op:'
 
 /**
@@ -16,7 +14,7 @@ export default class DID {
       didString = didString.getDid()
     }
     let did: DID
-    const didMatch = didString.match(/^did:op:([a-f0-9]{64})$/i)
+    const didMatch = didString.match(/^did:op:([a-f0-9]{42})$/i)
 
     if (didMatch) {
       did = new DID(didMatch[1])
@@ -35,7 +33,7 @@ export default class DID {
    * @return {DID}
    */
   public static generate(dataTokenAddress: string): DID {
-    return new DID(generateId(dataTokenAddress))
+    return new DID(`${prefix}${dataTokenAddress}`)
   }
 
   /**

@@ -1,6 +1,6 @@
 {
   "@context": "https://w3id.org/future-method/v1",
-  "id": "did:op:08a429b8529856d59867503f8056903a680935a76950bb9649785cc97869a43d",
+  "id": "did:op:0xcd2a3d9f938e13cd947ec05abc7fe734df8dd826",
   "publicKey": [
     {
       "id": "did:op:123456789abcdefghi#keys-1",
