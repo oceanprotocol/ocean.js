@@ -401,7 +401,7 @@ describe('Compute flow', () => {
       metaData.attributes.main.privacy.allowNetworkAccess,
       newComputePrivacy.allowNetworkAccess
     )
-    assert.equal(
+    assert.deepEqual(
       metaData.attributes.main.privacy.trustedAlgorithms,
       newComputePrivacy.trustedAlgorithms
     )

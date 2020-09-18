@@ -219,7 +219,7 @@ describe('Marketplace flow', () => {
       metaData.attributes.additionalInformation.description,
       newMetaData.description
     )
-    assert.equal(metaData.attributes.additionalInformation.links, newMetaData.links)
+    assert.deepEqual(metaData.attributes.additionalInformation.links, newMetaData.links)
   })
 
   it('Alice publishes a dataset but passed data token is invalid', async () => {
