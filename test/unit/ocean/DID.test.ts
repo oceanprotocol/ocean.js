@@ -43,7 +43,7 @@ describe('DID', () => {
       const did: DID = DID.generate(dataTokenMock)
 
       assert(did)
-      assert(did.getDid().startsWith('did:op:'))
+      assert(did.getDid() === `did:op:${dataTokenMock}`)
     })
   })
 })

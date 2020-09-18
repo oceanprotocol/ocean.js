@@ -41,7 +41,7 @@ export default class DID {
       didString = didString.getDid()
     }
     let did: DID
-    const didMatch = didString.match(/^did:op:([a-f0-9]{42})$/i)
+    const didMatch = didString.match(/^did:op:0x([a-f0-9]{40})$/i)
 
     if (didMatch) {
       did = new DID(didMatch[1])
