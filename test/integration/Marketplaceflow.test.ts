@@ -197,10 +197,12 @@ describe('Marketplace flow', () => {
     const balanceAfter = await datatoken.balance(tokenAddress, bob.getId())
     assert(balanceBefore === balanceAfter)
   })
+
   it('owner can list there assets', async () => {
     const assets = await ocean.assets.ownerAssets(alice.getId())
     assert(assets.length > 0)
   })
+
   it('Alice updates metadata', async () => {
     const newMetaData: EditableMetadata = {
       description: 'new description',
@@ -216,5 +218,19 @@ describe('Marketplace flow', () => {
       metaData.attributes.additionalInformation.description === newMetaData.description
     )
     assert(metaData.attributes.additionalInformation.links === newMetaData.links)
+  })
+
+  it('Alice publishes a dataset but created data token is invalid', async () => {
+    price = datatoken.toWei('10') // in datatoken
+    const publishedDate = new Date(Date.now()).toISOString().split('.')[0] + 'Z'
+    const timeout = 0
+    service1 = await ocean.assets.createAccessServiceAttributes(
+      alice,
+      price,
+      publishedDate,
+      timeout
+    )
+    ddo = await ocean.assets.create(asset, '0xxxxx', [service1])
+    assert(ddo === null)
   })
 })
