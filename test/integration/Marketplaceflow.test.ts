@@ -222,6 +222,21 @@ describe('Marketplace flow', () => {
     assert.equal(metaData.attributes.additionalInformation.links, newMetaData.links)
   })
 
+  it('Alice publishes a dataset but passed data token is invalid', async () => {
+    price = datatoken.toWei('10') // in datatoken
+    const publishedDate = new Date(Date.now()).toISOString().split('.')[0] + 'Z'
+    const timeout = 0
+    service1 = await ocean.assets.createAccessServiceAttributes(
+      alice,
+      price,
+      publishedDate,
+      timeout
+    )
+
+    ddo = await ocean.assets.create(asset, alice, [service1], 'gibberishDataToken')
+    assert.equal(ddo, null)
+  })
+
   it('Alice publishes a dataset but created data token is invalid', async () => {
     price = datatoken.toWei('10') // in datatoken
     const publishedDate = new Date(Date.now()).toISOString().split('.')[0] + 'Z'
