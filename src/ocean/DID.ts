@@ -5,6 +5,33 @@ const prefix = 'did:op:'
  */
 export default class DID {
   /**
+   * DID.
+   * @type {string}
+   */
+  private did: string
+
+  private constructor(did: string) {
+    this.did = did
+  }
+
+  /**
+   * Returns the DID.
+   * @return {string}
+   */
+  public getDid(): string {
+    return this.did
+  }
+
+  /**
+   * Generate a new DID.
+   * @param  {string} dataTokenAddress Address of data token to use for DID.
+   * @return {DID}
+   */
+  public static generate(dataTokenAddress: string): DID {
+    return new DID(`${prefix}${dataTokenAddress}`)
+  }
+
+  /**
    * Parses a DID from a string.
    * @param  {string} didString DID in string.
    * @return {DID}
@@ -25,40 +52,5 @@ export default class DID {
     }
 
     return did
-  }
-
-  /**
-   * Returns a new DID.
-   * @param  {string} dataTokenAddress Address of data token to use for DID.
-   * @return {DID}
-   */
-  public static generate(dataTokenAddress: string): DID {
-    return new DID(`${prefix}${dataTokenAddress}`)
-  }
-
-  /**
-   * ID.
-   * @type {string}
-   */
-  private id: string
-
-  private constructor(id: string) {
-    this.id = id
-  }
-
-  /**
-   * Returns the DID.
-   * @return {string}
-   */
-  public getDid(): string {
-    return `${prefix}${this.id}`
-  }
-
-  /**
-   * Returns the ID.
-   * @return {string}
-   */
-  public getId(): string {
-    return this.id
   }
 }
