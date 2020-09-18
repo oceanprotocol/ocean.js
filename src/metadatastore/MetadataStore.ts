@@ -349,7 +349,7 @@ export class MetadataStore {
   }
 
   public getServiceEndpoint(did: DID): string {
-    return `${this.url}/api/v1/aquarius/assets/ddo/did:op:${did.getId()}`
+    return `${this.url}/api/v1/aquarius/assets/ddo/${did.getDid()}`
   }
 
   public getURI(): string {

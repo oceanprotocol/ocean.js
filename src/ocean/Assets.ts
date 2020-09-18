@@ -110,7 +110,7 @@ export class Assets extends Instantiable {
       this.logger.log('Encrypting files')
       observer.next(CreateProgressStep.EncryptingFiles)
       const encryptedFiles = await this.ocean.provider.encrypt(
-        did.getId(),
+        did.getDid(),
         metadata.main.files,
         publisher
       )
