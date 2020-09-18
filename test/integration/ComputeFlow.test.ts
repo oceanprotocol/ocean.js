@@ -4,7 +4,7 @@ import { DataTokens } from '../../src/datatokens/Datatokens'
 import { Ocean } from '../../src/ocean/Ocean'
 import { ConfigHelper } from '../../src/utils/ConfigHelper'
 
-import { assert } from 'console'
+import { assert } from 'chai'
 import { ServiceComputePrivacy } from '../../src/ddo/interfaces/Service'
 import Web3 from 'web3'
 import factory from '@oceanprotocol/contracts/artifacts/DTFactory.json'
@@ -393,17 +393,17 @@ describe('Compute flow', () => {
     assert(newDdo !== null)
     await sleep(6000)
     const metaData = await ocean.assets.getServiceByType(ddo.id, 'compute')
-    assert(
-      metaData.attributes.main.privacy.allowRawAlgorithm ===
-        newComputePrivacy.allowRawAlgorithm
+    assert.equal(
+      metaData.attributes.main.privacy.allowRawAlgorithm,
+      newComputePrivacy.allowRawAlgorithm
     )
-    assert(
-      metaData.attributes.main.privacy.allowNetworkAccess ===
-        newComputePrivacy.allowNetworkAccess
+    assert.equal(
+      metaData.attributes.main.privacy.allowNetworkAccess,
+      newComputePrivacy.allowNetworkAccess
     )
-    assert(
-      metaData.attributes.main.privacy.trustedAlgorithms ===
-        newComputePrivacy.trustedAlgorithms
+    assert.equal(
+      metaData.attributes.main.privacy.trustedAlgorithms,
+      newComputePrivacy.trustedAlgorithms
     )
   })
 

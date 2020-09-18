@@ -1,11 +1,10 @@
 import { AbiItem } from 'web3-utils/types'
+import { assert, spy, use } from 'chai'
+import spies from 'chai-spies'
 import { TestContractHandler } from '../TestContractHandler'
 import { DataTokens } from '../../src/datatokens/Datatokens'
 import { Ocean } from '../../src/ocean/Ocean'
 import { ConfigHelper } from '../../src/utils/ConfigHelper'
-
-// import config from './config'
-import { assert } from 'console'
 
 import Web3 from 'web3'
 import factory from '@oceanprotocol/contracts/artifacts/DTFactory.json'
@@ -18,6 +17,8 @@ function sleep(ms) {
     setTimeout(resolve, ms)
   })
 }
+
+use(spies)
 
 describe('Marketplace flow', () => {
   let owner
@@ -156,7 +157,7 @@ describe('Marketplace flow', () => {
   it('Marketplace posts asset for sale', async () => {
     accessService = await ocean.assets.getServiceByType(ddo.id, 'access')
     price = 20
-    assert(accessService.attributes.main.cost * price === datatoken.toWei('200'))
+    assert.equal(accessService.attributes.main.cost * price, datatoken.toWei('200'))
   })
 
   it('Bob gets datatokens', async () => {
@@ -213,11 +214,12 @@ describe('Marketplace flow', () => {
     assert(newDdo !== null)
     await sleep(6000)
     const metaData = await ocean.assets.getServiceByType(ddo.id, 'metadata')
-    assert(metaData.attributes.main.name === newMetaData.title)
-    assert(
-      metaData.attributes.additionalInformation.description === newMetaData.description
+    assert.equal(metaData.attributes.main.name, newMetaData.title)
+    assert.equal(
+      metaData.attributes.additionalInformation.description,
+      newMetaData.description
     )
-    assert(metaData.attributes.additionalInformation.links === newMetaData.links)
+    assert.equal(metaData.attributes.additionalInformation.links, newMetaData.links)
   })
 
   it('Alice publishes a dataset but created data token is invalid', async () => {
@@ -230,7 +232,9 @@ describe('Marketplace flow', () => {
       publishedDate,
       timeout
     )
-    ddo = await ocean.assets.create(asset, '0xxxxx', [service1])
-    assert(ddo === null)
+
+    spy.on(datatoken, 'create', () => null)
+    ddo = await ocean.assets.create(asset, alice, [service1])
+    assert.equal(ddo, null)
   })
 })
