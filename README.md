@@ -111,7 +111,7 @@ Running all tests requires running Ocean Protocol components beforehand with [Ba
 git clone https://github.com/oceanprotocol/barge
 cd barge
 git checkout v3
-export PROVIDER_VERSION=latest
+
 ./start_ocean.sh --no-dashboard
 ```
 

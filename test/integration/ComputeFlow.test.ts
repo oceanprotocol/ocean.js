@@ -2,13 +2,20 @@ import { AbiItem } from 'web3-utils/types'
 import { TestContractHandler } from '../TestContractHandler'
 import { DataTokens } from '../../src/datatokens/Datatokens'
 import { Ocean } from '../../src/ocean/Ocean'
-import config from './config'
+import { ConfigHelper } from '../../src/utils/ConfigHelper'
+
 import { assert } from 'console'
 import { ServiceComputePrivacy } from '../../src/ddo/interfaces/Service'
 import Web3 from 'web3'
 import factory from '@oceanprotocol/contracts/artifacts/DTFactory.json'
 import datatokensTemplate from '@oceanprotocol/contracts/artifacts/DataTokenTemplate.json'
 const web3 = new Web3('http://127.0.0.1:8545')
+
+function sleep(ms) {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms)
+  })
+}
 
 describe('Compute flow', () => {
   let owner
@@ -61,7 +68,8 @@ describe('Compute flow', () => {
       factory.bytecode,
       web3
     )
-
+    const config = new ConfigHelper().getConfig('development')
+    config.web3Provider = web3
     ocean = await Ocean.getInstance(config)
     owner = (await ocean.accounts.list())[0]
     alice = (await ocean.accounts.list())[1]
@@ -154,6 +162,7 @@ describe('Compute flow', () => {
     )
     ddo = await ocean.assets.create(asset, alice, [computeService], tokenAddress)
     assert(ddo.dataToken === tokenAddress)
+    await sleep(6000)
   })
 
   // alex
@@ -178,6 +187,7 @@ describe('Compute flow', () => {
       tokenAddress
     )
     assert(datasetNoRawAlgo.dataToken === tokenAddress)
+    await sleep(6000)
   })
 
   it('should publish a dataset with a compute service object that allows only algo with did:op:1234', async () => {
@@ -201,6 +211,7 @@ describe('Compute flow', () => {
       tokenAddress
     )
     assert(datasetWithTrustedAlgo.dataToken === tokenAddress)
+    await sleep(6000)
   })
 
   it('should publish an algorithm', async () => {
@@ -239,6 +250,7 @@ describe('Compute flow', () => {
     )
     algorithmAsset = await ocean.assets.create(algoAsset, alice, [service1], tokenAddress)
     assert(algorithmAsset.dataToken === tokenAddress)
+    await sleep(6000)
   })
 
   it('Alice mints 100 DTs and tranfers them to the compute marketplace', async () => {
@@ -357,6 +369,42 @@ describe('Compute flow', () => {
     )
     jobId = response.jobId
     assert(response.status >= 10)
+  })
+  it('Alice updates Compute Privacy', async () => {
+    const newComputePrivacy = {
+      allowRawAlgorithm: false,
+      allowNetworkAccess: true,
+      trustedAlgorithms: ['did:op:1234', 'did:op:1235']
+    }
+    let computeIndex = 0
+    for (let i = 0; i < ddo.service.length; i++) {
+      if (ddo.service[i].type === 'compute') {
+        computeIndex = i
+        break
+      }
+    }
+    assert(computeIndex > 0)
+    const newDdo = await ocean.assets.updateComputePrivacy(
+      ddo.id,
+      computeIndex,
+      newComputePrivacy,
+      alice
+    )
+    assert(newDdo !== null)
+    await sleep(6000)
+    const metaData = await ocean.assets.getServiceByType(ddo.id, 'compute')
+    assert(
+      metaData.attributes.main.privacy.allowRawAlgorithm ===
+        newComputePrivacy.allowRawAlgorithm
+    )
+    assert(
+      metaData.attributes.main.privacy.allowNetworkAccess ===
+        newComputePrivacy.allowNetworkAccess
+    )
+    assert(
+      metaData.attributes.main.privacy.trustedAlgorithms ===
+        newComputePrivacy.trustedAlgorithms
+    )
   })
 
   // it('Bob restarts compute job', async () => {})

@@ -3,6 +3,7 @@ import { Assets } from './Assets'
 import { Versions } from './Versions'
 import { OceanUtils } from './utils/Utils'
 import { MetadataStore } from '../metadatastore/MetadataStore'
+import { OnChainMetadataStore } from '../metadatastore/OnChainMetaData'
 import { Provider } from '../provider/Provider'
 import { DataTokens } from '../datatokens/Datatokens'
 import { Network } from '../datatokens/Network'
@@ -64,6 +65,11 @@ export class Ocean extends Instantiable {
       instanceConfig.config.fixedRateExchangeAddressABI,
       instanceConfig.config.oceanTokenAddress
     )
+    instance.OnChainMetadataStore = new OnChainMetadataStore(
+      instanceConfig.config.web3Provider,
+      instanceConfig.config.DDOContractAddress,
+      instanceConfig.config.DDOContractABI
+    )
     instance.versions = await Versions.getInstance(instanceConfig)
     instance.network = new Network()
     return instance
@@ -92,7 +98,11 @@ export class Ocean extends Instantiable {
    * @type {MetadataStore}
    */
   public metadatastore: MetadataStore
-
+  /**
+   * OnChainMetadataStore instance.
+   * @type {OnChainMetadataStore}
+   */
+  public OnChainMetadataStore: OnChainMetadataStore
   /**
    * Ocean account submodule
    * @type {Accounts}

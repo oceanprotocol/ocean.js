@@ -86,6 +86,17 @@ export class Config {
    */
   public fixedRateExchangeAddressABI?: AbiItem | AbiItem[]
   /**
+   * DDOContractAddress
+   * @type {string}
+   */
+  public DDOContractAddress?: string
+
+  /**
+   * DDOContractABI
+   * @type {any}
+   */
+  public DDOContractABI?: AbiItem | AbiItem[]
+  /**
    * Log level.
    * @type {boolean | LogLevel}
    */

@@ -45,6 +45,7 @@
     "@oceanprotocol/contracts": "^0.4.2",
     "decimal.js": "^10.2.0",
     "fs": "0.0.1-security",
+    "lzma": "^2.3.2",
     "node-fetch": "^2.6.1",
     "save-file": "^2.3.1",
     "uuid": "^8.3.0",
