@@ -89,19 +89,12 @@ export class Compute extends Instantiable {
   ): Promise<ComputeJob> {
     output = this.checkOutput(consumerAccount, output)
     const ddo = await this.ocean.assets.resolve(did)
-    const service = ddo.findServiceByType('access')
+    const service = ddo.findServiceByType('compute')
     const { serviceEndpoint } = service
     if (did && txId) {
       const provider = new Provider(this.instanceConfig)
       provider.setBaseUrl(serviceEndpoint)
-<<<<<<< HEAD
-<<<<<<< HEAD
       const computeJobsList = await provider.compute(
-=======
-=======
->>>>>>> ae4011914b2749d3fa467d513c49ef97a8d22ed6
-      const computeJobsList = await this.ocean.provider.compute(
->>>>>>> 11b58cb... more customProvider code
         'post',
         did,
         consumerAccount,
@@ -132,7 +125,12 @@ export class Compute extends Instantiable {
     did: string,
     jobId: string
   ): Promise<ComputeJob> {
-    const computeJobsList = await this.ocean.provider.compute(
+    const ddo = await this.ocean.assets.resolve(did)
+    const service = ddo.findServiceByType('compute')
+    const { serviceEndpoint } = service
+    const provider = new Provider(this.instanceConfig)
+    provider.setBaseUrl(serviceEndpoint)
+    const computeJobsList = await provider.compute(
       'put',
       did,
       consumerAccount,
@@ -156,7 +154,12 @@ export class Compute extends Instantiable {
     did: string,
     jobId: string
   ): Promise<ComputeJob> {
-    const computeJobsList = await this.ocean.provider.compute(
+    const ddo = await this.ocean.assets.resolve(did)
+    const service = ddo.findServiceByType('compute')
+    const { serviceEndpoint } = service
+    const provider = new Provider(this.instanceConfig)
+    provider.setBaseUrl(serviceEndpoint)
+    const computeJobsList = await provider.compute(
       'delete',
       did,
       consumerAccount,
@@ -180,7 +183,12 @@ export class Compute extends Instantiable {
     did?: string,
     jobId?: string
   ): Promise<ComputeJob[]> {
-    const computeJobsList = await this.ocean.provider.compute(
+    const ddo = await this.ocean.assets.resolve(did)
+    const service = ddo.findServiceByType('compute')
+    const { serviceEndpoint } = service
+    const provider = new Provider(this.instanceConfig)
+    provider.setBaseUrl(serviceEndpoint)
+    const computeJobsList = await provider.compute(
       'get',
       did,
       consumerAccount,
@@ -204,7 +212,12 @@ export class Compute extends Instantiable {
     did: string,
     jobId: string
   ): Promise<ComputeJob> {
-    const computeJobsList = await this.ocean.provider.compute(
+    const ddo = await this.ocean.assets.resolve(did)
+    const service = ddo.findServiceByType('compute')
+    const { serviceEndpoint } = service
+    const provider = new Provider(this.instanceConfig)
+    provider.setBaseUrl(serviceEndpoint)
+    const computeJobsList = await provider.compute(
       'get',
       did,
       consumerAccount,
@@ -300,25 +313,7 @@ export class Compute extends Instantiable {
     const service = {
       type: 'compute',
       index: 3,
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-      serviceEndpoint: customProvider
-        ? customProvider + this.ocean.provider.getComputeEndpointShort()
-        : this.ocean.provider.getComputeEndpoint(),
-=======
-      serviceEndpoint: customProvider || this.ocean.provider.getComputeEndpoint(),
->>>>>>> 17e61d0... allow customProvider on publish
-=======
-      serviceEndpoint: customProvider
-        ? customProvider + this.ocean.provider.getComputeEndpointShort()
-        : this.ocean.provider.getComputeEndpoint(),
->>>>>>> 960e90f... extra checks
-=======
-      serviceEndpoint: customProvider
-        ? customProvider + this.ocean.provider.getComputeEndpointShort()
-        : this.ocean.provider.getComputeEndpoint(),
->>>>>>> ae4011914b2749d3fa467d513c49ef97a8d22ed6
+      serviceEndpoint: customProvider || this.ocean.provider.url,
       attributes: {
         main: {
           name,
