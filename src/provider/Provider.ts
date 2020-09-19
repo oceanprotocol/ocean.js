@@ -308,9 +308,7 @@ export class Provider extends Instantiable {
       .then((response: Response) => {
         if (response.ok) {
           const params = response.json()
-          if(params)
-            if (params['provider-address'])
-              return true
+          if (params) if (params['provider-address']) return true
         }
         return false
       })
