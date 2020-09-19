@@ -6,6 +6,7 @@ import { SubscribablePromise } from '../utils'
 import { Instantiable, InstantiableConfig } from '../Instantiable.abstract'
 import { Output } from './interfaces/ComputeOutput'
 import { ComputeJob } from './interfaces/ComputeJob'
+import { Provider } from '../provider/Provider'
 
 export enum OrderProgressStep {
   TransferDataToken
@@ -87,7 +88,12 @@ export class Compute extends Instantiable {
     algorithmDataToken?: string
   ): Promise<ComputeJob> {
     output = this.checkOutput(consumerAccount, output)
+    const ddo = await this.ocean.assets.resolve(did)
+    const service = ddo.findServiceByType('access')
+    const { serviceEndpoint } = service
     if (did && txId) {
+      const provider = new Provider(this.instanceConfig)
+      provider.setBaseUrl(serviceEndpoint)
       const computeJobsList = await this.ocean.provider.compute(
         'post',
         did,
