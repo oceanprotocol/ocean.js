@@ -307,8 +307,10 @@ export class Provider extends Instantiable {
     await fetch
       .then((response: Response) => {
         if (response.ok) {
-          const params = response.json()
-          if (params) if (params['provider-address']) return true
+          try {
+            const params = response.json()
+            if (params) if (params['provider-address']) return true
+          } catch (e) {}
         }
         return false
       })

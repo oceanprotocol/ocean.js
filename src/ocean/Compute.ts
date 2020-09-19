@@ -183,11 +183,16 @@ export class Compute extends Instantiable {
     did?: string,
     jobId?: string
   ): Promise<ComputeJob[]> {
-    const ddo = await this.ocean.assets.resolve(did)
-    const service = ddo.findServiceByType('compute')
-    const { serviceEndpoint } = service
-    const provider = new Provider(this.instanceConfig)
-    provider.setBaseUrl(serviceEndpoint)
+    let provider
+    if (did) {
+      const ddo = await this.ocean.assets.resolve(did)
+      const service = ddo.findServiceByType('compute')
+      const { serviceEndpoint } = service
+      provider = new Provider(this.instanceConfig)
+      provider.setBaseUrl(serviceEndpoint)
+    } else {
+      provider = this.ocean.provider
+    }
     const computeJobsList = await provider.compute(
       'get',
       did,
