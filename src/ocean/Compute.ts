@@ -94,7 +94,11 @@ export class Compute extends Instantiable {
     if (did && txId) {
       const provider = new Provider(this.instanceConfig)
       provider.setBaseUrl(serviceEndpoint)
+<<<<<<< HEAD
       const computeJobsList = await provider.compute(
+=======
+      const computeJobsList = await this.ocean.provider.compute(
+>>>>>>> 11b58cb... more customProvider code
         'post',
         did,
         consumerAccount,

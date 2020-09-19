@@ -395,6 +395,7 @@ export class Assets extends Instantiable {
       index: 2,
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       serviceEndpoint: customProvider || this.ocean.provider.url,
 =======
       serviceEndpoint: customProvider || this.ocean.provider.getConsumeEndpoint(),
@@ -404,6 +405,9 @@ export class Assets extends Instantiable {
         ? customProvider + this.ocean.provider.getConsumeEndpointShort()
         : this.ocean.provider.getConsumeEndpoint(),
 >>>>>>> 960e90f... extra checks
+=======
+      serviceEndpoint: customProvider || this.ocean.provider.url,
+>>>>>>> 11b58cb... more customProvider code
       attributes: {
         main: {
           creator: creator.getId(),
