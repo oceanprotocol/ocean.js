@@ -95,8 +95,11 @@ export class Compute extends Instantiable {
       const provider = new Provider(this.instanceConfig)
       provider.setBaseUrl(serviceEndpoint)
 <<<<<<< HEAD
+<<<<<<< HEAD
       const computeJobsList = await provider.compute(
 =======
+=======
+>>>>>>> ae4011914b2749d3fa467d513c49ef97a8d22ed6
       const computeJobsList = await this.ocean.provider.compute(
 >>>>>>> 11b58cb... more customProvider code
         'post',
@@ -299,6 +302,7 @@ export class Compute extends Instantiable {
       index: 3,
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       serviceEndpoint: customProvider
         ? customProvider + this.ocean.provider.getComputeEndpointShort()
         : this.ocean.provider.getComputeEndpoint(),
@@ -310,6 +314,11 @@ export class Compute extends Instantiable {
         ? customProvider + this.ocean.provider.getComputeEndpointShort()
         : this.ocean.provider.getComputeEndpoint(),
 >>>>>>> 960e90f... extra checks
+=======
+      serviceEndpoint: customProvider
+        ? customProvider + this.ocean.provider.getComputeEndpointShort()
+        : this.ocean.provider.getComputeEndpoint(),
+>>>>>>> ae4011914b2749d3fa467d513c49ef97a8d22ed6
       attributes: {
         main: {
           name,

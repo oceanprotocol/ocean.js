@@ -300,23 +300,30 @@ export class Provider extends Instantiable {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 48cb847... extra check
+=======
+>>>>>>> ae4011914b2749d3fa467d513c49ef97a8d22ed6
   /** Check for a valid provider at URL
    * @param {String} url
    * @return {Promise<boolean>} string
    */
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 17e61d0... allow customProvider on publish
 =======
 >>>>>>> 48cb847... extra check
+=======
+>>>>>>> ae4011914b2749d3fa467d513c49ef97a8d22ed6
   public async isValidProvider(url: string): Promise<boolean> {
     const fetch = this.ocean.utils.fetch.get(url)
     await fetch
       .then((response: Response) => {
         if (response.ok) {
           const params = response.json()
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
           if (params['provider-address']) return true
@@ -326,6 +333,9 @@ export class Provider extends Instantiable {
 =======
           if (params['provider-address']) return true
 >>>>>>> 48cb847... extra check
+=======
+          if (params['provider-address']) return true
+>>>>>>> ae4011914b2749d3fa467d513c49ef97a8d22ed6
         }
         return false
       })

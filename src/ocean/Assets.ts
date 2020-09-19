@@ -396,6 +396,7 @@ export class Assets extends Instantiable {
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       serviceEndpoint: customProvider || this.ocean.provider.url,
 =======
       serviceEndpoint: customProvider || this.ocean.provider.getConsumeEndpoint(),
@@ -408,6 +409,9 @@ export class Assets extends Instantiable {
 =======
       serviceEndpoint: customProvider || this.ocean.provider.url,
 >>>>>>> 11b58cb... more customProvider code
+=======
+      serviceEndpoint: customProvider || this.ocean.provider.url,
+>>>>>>> ae4011914b2749d3fa467d513c49ef97a8d22ed6
       attributes: {
         main: {
           creator: creator.getId(),
