@@ -18,14 +18,20 @@ const apiPath = '/api/v1/services'
  */
 export class Provider extends Instantiable {
   public nonce: string
-  private get url() {
-    return this.config.providerUri
+  private baseUrl: string
+  public get url() {
+    return this.baseUrl
   }
 
   constructor(config: InstantiableConfig) {
     super()
     this.setInstanceConfig(config)
+    this.baseUrl = this.config.providerUri
     this.nonce = '0'
+  }
+
+  public setBaseUrl(url: string): void {
+    this.baseUrl = url
   }
 
   public async createSignature(account: Account, agreementId: string): Promise<string> {
