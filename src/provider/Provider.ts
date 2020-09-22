@@ -306,7 +306,7 @@ export class Provider extends Instantiable {
     try {
       const response = await this.ocean.utils.fetch.get(url)
       if (response?.ok) {
-        const params = response.json()
+        const params = await response.json()
         if (params && params['provider-address']) return true
       }
       return false
