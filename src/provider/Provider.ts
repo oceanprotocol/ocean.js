@@ -270,7 +270,7 @@ export class Provider extends Instantiable {
     return `${this.url}${apiPath}/nonce`
   }
 
-  public getConsumeEndpointShort(): string {
+  public getConsumeEndpointPath(): string {
     return `${apiPath}/consume`
   }
 
