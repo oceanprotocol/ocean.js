@@ -286,7 +286,7 @@ export class Provider extends Instantiable {
     return `${this.url}${apiPath}/publish`
   }
 
-  public getComputeEndpointShort(): string {
+  public getComputeEndpointPath(): string {
     return `${apiPath}/compute`
   }
 
