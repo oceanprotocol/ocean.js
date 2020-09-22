@@ -57,7 +57,7 @@ export class Assets extends Instantiable {
    * @param {String} cap Maximum cap (Number) - will be converted to wei
    * @param {String} name Token name
    * @param {String} symbol Token symbol
-   * @param {String} customProviderURL
+   * @param {String} providerUri
    * @return {Promise<DDO>}
    */
   public create(
@@ -68,7 +68,7 @@ export class Assets extends Instantiable {
     cap?: string,
     name?: string,
     symbol?: string,
-    customProviderURL?: string
+    providerUri?: string
   ): SubscribablePromise<CreateProgressStep, DDO> {
     if (!isAddress(dtAddress)) {
       this.logger.error(
@@ -113,9 +113,9 @@ export class Assets extends Instantiable {
       this.logger.log('Encrypting files')
       observer.next(CreateProgressStep.EncryptingFiles)
       let provider
-      if (customProviderURL) {
+      if (providerUri) {
         provider = new Provider(this.instanceConfig)
-        provider.setBaseUrl(customProviderURL)
+        provider.setBaseUrl(providerUri)
       } else provider = this.ocean.provider
       const encryptedFiles = await provider.encrypt(
         did.getId(),
@@ -404,12 +404,12 @@ export class Assets extends Instantiable {
     cost: string,
     datePublished: string,
     timeout = 0,
-    customProvider?: string
+    providerUri?: string
   ): Promise<ServiceAccess> {
     return {
       type: 'access',
       index: 2,
-      serviceEndpoint: customProvider || this.ocean.provider.url,
+      serviceEndpoint: providerUri || this.ocean.provider.url,
       attributes: {
         main: {
           creator: creator.getId(),

@@ -311,14 +311,14 @@ export class Compute extends Instantiable {
     providerAttributes: any,
     computePrivacy?: ServiceComputePrivacy,
     timeout?: number,
-    customProvider?: string
+    providerUri?: string
   ): ServiceCompute {
     const name = 'dataAssetComputingService'
     if (!timeout) timeout = 3600
     const service = {
       type: 'compute',
       index: 3,
-      serviceEndpoint: customProvider || this.ocean.provider.url,
+      serviceEndpoint: providerUri || this.ocean.provider.url,
       attributes: {
         main: {
           name,
