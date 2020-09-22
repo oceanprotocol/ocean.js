@@ -6,10 +6,10 @@ import defaultDatatokensABI from '@oceanprotocol/contracts/artifacts/DataTokenTe
 
 import wordListDefault from '../data/words.json'
 import { TransactionReceipt } from 'web3-core'
-import { time } from 'console'
 import BigNumber from 'bignumber.js'
+
 /**
- * Provides a interface to DataTokens
+ * Provides an interface to DataTokens
  */
 export class DataTokens {
   public factoryAddress: string

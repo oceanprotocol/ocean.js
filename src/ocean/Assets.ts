@@ -14,8 +14,8 @@ import DID from './DID'
 import { SubscribablePromise, didZeroX } from '../utils'
 import { Instantiable, InstantiableConfig } from '../Instantiable.abstract'
 import { WebServiceConnector } from './utils/WebServiceConnector'
-import { DataTokens } from '../lib'
 import BigNumber from 'bignumber.js'
+import { isAddress } from 'web3-utils'
 
 export enum CreateProgressStep {
   CreatingDataToken,
@@ -67,6 +67,13 @@ export class Assets extends Instantiable {
     name?: string,
     symbol?: string
   ): SubscribablePromise<CreateProgressStep, DDO> {
+    if (!isAddress(dtAddress)) {
+      this.logger.error(
+        `Passed Data Token address ${dtAddress} is not valid. Aborting publishing.`
+      )
+      return null
+    }
+
     this.logger.log('Creating asset')
     return new SubscribablePromise(async (observer) => {
       if (services.length === 0) {
@@ -78,6 +85,7 @@ export class Assets extends Instantiable {
         const metadataStoreURI = this.ocean.metadatastore.getURI()
         const jsonBlob = { t: 1, url: metadataStoreURI }
         const { datatokens } = this.ocean
+
         dtAddress = await datatokens.create(
           JSON.stringify(jsonBlob),
           publisher.getId(),
@@ -85,7 +93,15 @@ export class Assets extends Instantiable {
           name,
           symbol
         )
-        this.logger.log('DataToken creted')
+
+        if (!isAddress(dtAddress)) {
+          this.logger.error(
+            `Created Data Token address ${dtAddress} is not valid. Aborting publishing.`
+          )
+          return null
+        }
+
+        this.logger.log(`DataToken ${dtAddress} created`)
         observer.next(CreateProgressStep.DataTokenCreated)
       }
 
