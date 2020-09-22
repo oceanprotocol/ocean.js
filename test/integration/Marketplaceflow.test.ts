@@ -1,11 +1,10 @@
 import { AbiItem } from 'web3-utils/types'
+import { assert, spy, use } from 'chai'
+import spies from 'chai-spies'
 import { TestContractHandler } from '../TestContractHandler'
 import { DataTokens } from '../../src/datatokens/Datatokens'
 import { Ocean } from '../../src/ocean/Ocean'
 import { ConfigHelper } from '../../src/utils/ConfigHelper'
-
-// import config from './config'
-import { assert } from 'console'
 
 import Web3 from 'web3'
 import factory from '@oceanprotocol/contracts/artifacts/DTFactory.json'
@@ -18,6 +17,8 @@ function sleep(ms) {
     setTimeout(resolve, ms)
   })
 }
+
+use(spies)
 
 describe('Marketplace flow', () => {
   let owner
@@ -156,7 +157,7 @@ describe('Marketplace flow', () => {
   it('Marketplace posts asset for sale', async () => {
     accessService = await ocean.assets.getServiceByType(ddo.id, 'access')
     price = 20
-    assert(accessService.attributes.main.cost * price === datatoken.toWei('200'))
+    assert.equal(accessService.attributes.main.cost * price, datatoken.toWei('200'))
   })
 
   it('Bob gets datatokens', async () => {
@@ -197,10 +198,12 @@ describe('Marketplace flow', () => {
     const balanceAfter = await datatoken.balance(tokenAddress, bob.getId())
     assert(balanceBefore === balanceAfter)
   })
+
   it('owner can list there assets', async () => {
     const assets = await ocean.assets.ownerAssets(alice.getId())
     assert(assets.length > 0)
   })
+
   it('Alice updates metadata', async () => {
     const newMetaData: EditableMetadata = {
       description: 'new description',
@@ -211,10 +214,42 @@ describe('Marketplace flow', () => {
     assert(newDdo !== null)
     await sleep(6000)
     const metaData = await ocean.assets.getServiceByType(ddo.id, 'metadata')
-    assert(metaData.attributes.main.name === newMetaData.title)
-    assert(
-      metaData.attributes.additionalInformation.description === newMetaData.description
+    assert.equal(metaData.attributes.main.name, newMetaData.title)
+    assert.equal(
+      metaData.attributes.additionalInformation.description,
+      newMetaData.description
     )
-    assert(metaData.attributes.additionalInformation.links === newMetaData.links)
+    assert.deepEqual(metaData.attributes.additionalInformation.links, newMetaData.links)
+  })
+
+  it('Alice publishes a dataset but passed data token is invalid', async () => {
+    price = datatoken.toWei('10') // in datatoken
+    const publishedDate = new Date(Date.now()).toISOString().split('.')[0] + 'Z'
+    const timeout = 0
+    service1 = await ocean.assets.createAccessServiceAttributes(
+      alice,
+      price,
+      publishedDate,
+      timeout
+    )
+
+    ddo = await ocean.assets.create(asset, alice, [service1], 'gibberishDataToken')
+    assert.equal(ddo, null)
+  })
+
+  it('Alice publishes a dataset but created data token is invalid', async () => {
+    price = datatoken.toWei('10') // in datatoken
+    const publishedDate = new Date(Date.now()).toISOString().split('.')[0] + 'Z'
+    const timeout = 0
+    service1 = await ocean.assets.createAccessServiceAttributes(
+      alice,
+      price,
+      publishedDate,
+      timeout
+    )
+
+    spy.on(datatoken, 'create', () => null)
+    ddo = await ocean.assets.create(asset, alice, [service1])
+    assert.equal(ddo, null)
   })
 })
