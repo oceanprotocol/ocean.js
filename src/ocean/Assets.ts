@@ -15,6 +15,7 @@ import { SubscribablePromise, didZeroX } from '../utils'
 import { Instantiable, InstantiableConfig } from '../Instantiable.abstract'
 import { WebServiceConnector } from './utils/WebServiceConnector'
 import BigNumber from 'bignumber.js'
+import { Provider } from '../provider/Provider'
 import { isAddress } from 'web3-utils'
 
 export enum CreateProgressStep {
@@ -56,6 +57,7 @@ export class Assets extends Instantiable {
    * @param {String} cap Maximum cap (Number) - will be converted to wei
    * @param {String} name Token name
    * @param {String} symbol Token symbol
+   * @param {String} providerUri
    * @return {Promise<DDO>}
    */
   public create(
@@ -65,7 +67,8 @@ export class Assets extends Instantiable {
     dtAddress?: string,
     cap?: string,
     name?: string,
-    symbol?: string
+    symbol?: string,
+    providerUri?: string
   ): SubscribablePromise<CreateProgressStep, DDO> {
     if (!isAddress(dtAddress)) {
       this.logger.error(
@@ -109,7 +112,12 @@ export class Assets extends Instantiable {
 
       this.logger.log('Encrypting files')
       observer.next(CreateProgressStep.EncryptingFiles)
-      const encryptedFiles = await this.ocean.provider.encrypt(
+      let provider
+      if (providerUri) {
+        provider = new Provider(this.instanceConfig)
+        provider.setBaseUrl(providerUri)
+      } else provider = this.ocean.provider
+      const encryptedFiles = await provider.encrypt(
         did.getId(),
         metadata.main.files,
         publisher
@@ -395,12 +403,13 @@ export class Assets extends Instantiable {
     creator: Account,
     cost: string,
     datePublished: string,
-    timeout = 0
+    timeout = 0,
+    providerUri?: string
   ): Promise<ServiceAccess> {
     return {
       type: 'access',
       index: 2,
-      serviceEndpoint: this.ocean.provider.getConsumeEndpoint(),
+      serviceEndpoint: providerUri || this.ocean.provider.url,
       attributes: {
         main: {
           creator: creator.getId(),
@@ -428,14 +437,12 @@ export class Assets extends Instantiable {
     did: string,
     serviceType: string,
     consumerAddress: string,
-    serviceIndex = -1
+    serviceIndex = -1,
+    serviceEndpoint: string
   ): Promise<any> {
-    const res = await this.ocean.provider.initialize(
-      did,
-      serviceIndex,
-      serviceType,
-      consumerAddress
-    )
+    const provider = new Provider(this.instanceConfig)
+    provider.setBaseUrl(serviceEndpoint)
+    const res = await provider.initialize(did, serviceIndex, serviceType, consumerAddress)
     if (res === null) return null
     const providerData = JSON.parse(res)
     return providerData
@@ -457,11 +464,12 @@ export class Assets extends Instantiable {
     serviceIndex = -1,
     mpAddress?: string
   ): Promise<string> {
+    let service
     if (serviceIndex === -1) {
-      const service = await this.getServiceByType(did, serviceType)
+      service = await this.getServiceByType(did, serviceType)
       serviceIndex = service.index
     } else {
-      const service = await this.getServiceByIndex(did, serviceIndex)
+      service = await this.getServiceByIndex(did, serviceIndex)
       serviceType = service.type
     }
     const { datatokens } = this.ocean
@@ -470,10 +478,11 @@ export class Assets extends Instantiable {
         did,
         serviceType,
         consumerAddress,
-        serviceIndex
+        serviceIndex,
+        service.serviceEndpoint
       )
       if (!providerData) return null
-      const service = await this.getServiceByIndex(did, serviceIndex)
+      service = await this.getServiceByIndex(did, serviceIndex)
       const previousOrder = await datatokens.getPreviousValidOrders(
         providerData.dataToken,
         providerData.numTokens,
@@ -538,8 +547,9 @@ export class Assets extends Instantiable {
     destination = destination
       ? `${destination}/datafile.${ddo.shortId()}.${service.index}/`
       : undefined
-
-    await this.ocean.provider.download(
+    const provider = new Provider(this.instanceConfig)
+    provider.setBaseUrl(serviceEndpoint)
+    await provider.download(
       did,
       txId,
       tokenAddress,

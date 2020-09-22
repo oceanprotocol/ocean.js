@@ -6,6 +6,7 @@ import { SubscribablePromise } from '../utils'
 import { Instantiable, InstantiableConfig } from '../Instantiable.abstract'
 import { Output } from './interfaces/ComputeOutput'
 import { ComputeJob } from './interfaces/ComputeJob'
+import { Provider } from '../provider/Provider'
 
 export enum OrderProgressStep {
   TransferDataToken
@@ -87,8 +88,13 @@ export class Compute extends Instantiable {
     algorithmDataToken?: string
   ): Promise<ComputeJob> {
     output = this.checkOutput(consumerAccount, output)
+    const ddo = await this.ocean.assets.resolve(did)
+    const service = ddo.findServiceByType('compute')
+    const { serviceEndpoint } = service
     if (did && txId) {
-      const computeJobsList = await this.ocean.provider.compute(
+      const provider = new Provider(this.instanceConfig)
+      provider.setBaseUrl(serviceEndpoint)
+      const computeJobsList = await provider.compute(
         'post',
         did,
         consumerAccount,
@@ -119,7 +125,12 @@ export class Compute extends Instantiable {
     did: string,
     jobId: string
   ): Promise<ComputeJob> {
-    const computeJobsList = await this.ocean.provider.compute(
+    const ddo = await this.ocean.assets.resolve(did)
+    const service = ddo.findServiceByType('compute')
+    const { serviceEndpoint } = service
+    const provider = new Provider(this.instanceConfig)
+    provider.setBaseUrl(serviceEndpoint)
+    const computeJobsList = await provider.compute(
       'put',
       did,
       consumerAccount,
@@ -143,7 +154,12 @@ export class Compute extends Instantiable {
     did: string,
     jobId: string
   ): Promise<ComputeJob> {
-    const computeJobsList = await this.ocean.provider.compute(
+    const ddo = await this.ocean.assets.resolve(did)
+    const service = ddo.findServiceByType('compute')
+    const { serviceEndpoint } = service
+    const provider = new Provider(this.instanceConfig)
+    provider.setBaseUrl(serviceEndpoint)
+    const computeJobsList = await provider.compute(
       'delete',
       did,
       consumerAccount,
@@ -167,7 +183,17 @@ export class Compute extends Instantiable {
     did?: string,
     jobId?: string
   ): Promise<ComputeJob[]> {
-    const computeJobsList = await this.ocean.provider.compute(
+    let provider
+    if (did) {
+      const ddo = await this.ocean.assets.resolve(did)
+      const service = ddo.findServiceByType('compute')
+      const { serviceEndpoint } = service
+      provider = new Provider(this.instanceConfig)
+      provider.setBaseUrl(serviceEndpoint)
+    } else {
+      provider = this.ocean.provider
+    }
+    const computeJobsList = await provider.compute(
       'get',
       did,
       consumerAccount,
@@ -191,7 +217,12 @@ export class Compute extends Instantiable {
     did: string,
     jobId: string
   ): Promise<ComputeJob> {
-    const computeJobsList = await this.ocean.provider.compute(
+    const ddo = await this.ocean.assets.resolve(did)
+    const service = ddo.findServiceByType('compute')
+    const { serviceEndpoint } = service
+    const provider = new Provider(this.instanceConfig)
+    provider.setBaseUrl(serviceEndpoint)
+    const computeJobsList = await provider.compute(
       'get',
       did,
       consumerAccount,
@@ -279,14 +310,15 @@ export class Compute extends Instantiable {
     datePublished: string,
     providerAttributes: any,
     computePrivacy?: ServiceComputePrivacy,
-    timeout?: number
+    timeout?: number,
+    providerUri?: string
   ): ServiceCompute {
     const name = 'dataAssetComputingService'
     if (!timeout) timeout = 3600
     const service = {
       type: 'compute',
       index: 3,
-      serviceEndpoint: this.ocean.provider.getComputeEndpoint(),
+      serviceEndpoint: providerUri || this.ocean.provider.url,
       attributes: {
         main: {
           name,

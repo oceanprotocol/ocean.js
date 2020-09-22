@@ -18,14 +18,20 @@ const apiPath = '/api/v1/services'
  */
 export class Provider extends Instantiable {
   public nonce: string
-  private get url() {
-    return this.config.providerUri
+  private baseUrl: string
+  public get url() {
+    return this.baseUrl
   }
 
   constructor(config: InstantiableConfig) {
     super()
     this.setInstanceConfig(config)
+    this.baseUrl = this.config.providerUri
     this.nonce = '0'
+  }
+
+  public setBaseUrl(url: string): void {
+    this.baseUrl = url
   }
 
   public async createSignature(account: Account, agreementId: string): Promise<string> {
@@ -264,8 +270,12 @@ export class Provider extends Instantiable {
     return `${this.url}${apiPath}/nonce`
   }
 
+  public getConsumeEndpointPath(): string {
+    return `${apiPath}/consume`
+  }
+
   public getConsumeEndpoint(): string {
-    return `${this.url}${apiPath}/consume`
+    return `${this.url}` + this.getConsumeEndpointPath()
   }
 
   public getEncryptEndpoint(): string {
@@ -276,11 +286,33 @@ export class Provider extends Instantiable {
     return `${this.url}${apiPath}/publish`
   }
 
+  public getComputeEndpointPath(): string {
+    return `${apiPath}/compute`
+  }
+
   public getComputeEndpoint(): string {
-    return `${this.url}${apiPath}/compute`
+    return `${this.url}` + this.getComputeEndpointPath()
   }
 
   public getDownloadEndpoint(): string {
     return `${this.url}${apiPath}/download`
+  }
+
+  /** Check for a valid provider at URL
+   * @param {String} url
+   * @return {Promise<boolean>} string
+   */
+  public async isValidProvider(url: string): Promise<boolean> {
+    try {
+      const response = await this.ocean.utils.fetch.get(url)
+      if (response?.ok) {
+        const params = await response.json()
+        if (params && params['provider-address']) return true
+      }
+      return false
+    } catch (error) {
+      this.logger.error(`Error validating provider: ${error.message}`)
+      return false
+    }
   }
 }
