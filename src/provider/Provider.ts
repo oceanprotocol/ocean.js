@@ -275,7 +275,7 @@ export class Provider extends Instantiable {
   }
 
   public getConsumeEndpoint(): string {
-    return `${this.url}` + this.getConsumeEndpointShort()
+    return `${this.url}` + this.getConsumeEndpointPath()
   }
 
   public getEncryptEndpoint(): string {
@@ -291,7 +291,7 @@ export class Provider extends Instantiable {
   }
 
   public getComputeEndpoint(): string {
-    return `${this.url}` + this.getComputeEndpointShort()
+    return `${this.url}` + this.getComputeEndpointPath()
   }
 
   public getDownloadEndpoint(): string {
@@ -303,22 +303,16 @@ export class Provider extends Instantiable {
    * @return {Promise<boolean>} string
    */
   public async isValidProvider(url: string): Promise<boolean> {
-    const fetch = this.ocean.utils.fetch.get(url)
-    await fetch
-      .then((response: Response) => {
-        if (response.ok) {
-          try {
-            const params = response.json()
-            if (params) if (params['provider-address']) return true
-          } catch (e) {}
-        }
-        return false
-      })
-      .catch((error: Error) => {
-        this.logger.error('Error validating provider')
-        this.logger.error(error.message)
-        return false
-      })
-    return false
+    try {
+      const response = await this.ocean.utils.fetch.get(url)
+      if (response?.ok) {
+        const params = response.json()
+        if (params && params['provider-address']) return true
+      }
+      return false
+    } catch (error) {
+      this.logger.error(`Error validating provider: ${error.message}`)
+      return false
+    }
   }
 }
