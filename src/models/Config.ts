@@ -95,7 +95,7 @@ export class Config {
    * DDOContractABI
    * @type {any}
    */
-  public MetadataContractABI?: AbiItem | AbiItem[]
+  public metadataContractABI?: AbiItem | AbiItem[]
   /**
    * Log level.
    * @type {boolean | LogLevel}
