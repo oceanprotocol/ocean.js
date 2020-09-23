@@ -255,7 +255,7 @@ export class MetadataStore {
     return result
   }
 
-  public async getOwnerAssets(owner: string): Promise<DDO[]> {
+  public async getOwnerAssets(owner: string): Promise<QueryResult> {
     const q = {
       offset: 100,
       page: 1,
@@ -266,7 +266,9 @@ export class MetadataStore {
         value: 1
       }
     } as SearchQuery
-    return (await this.queryMetadata(q)).results
+
+    const result = await this.queryMetadata(q)
+    return result
   }
 
   /**

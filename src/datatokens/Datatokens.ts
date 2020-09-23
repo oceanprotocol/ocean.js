@@ -119,14 +119,14 @@ export class DataTokens {
    * @param {String} toAddress
    * @param {string} amount Number of datatokens, as number. Will be converted to wei
    * @param {String} address
-   * @return {Promise<string>} transactionId
+   * @return {Promise<TransactionReceipt>} transactionId
    */
   public async approve(
     dataTokenAddress: string,
     spender: string,
     amount: string,
     address: string
-  ): Promise<string> {
+  ): Promise<TransactionReceipt> {
     const datatoken = new this.web3.eth.Contract(this.datatokensABI, dataTokenAddress, {
       from: address
     })
@@ -142,14 +142,14 @@ export class DataTokens {
    * @param {String} address
    * @param {String} amount Number of datatokens, as number. Will be converted to wei
    * @param {String} toAddress   - only if toAddress is different from the minter
-   * @return {Promise<string>} transactionId
+   * @return {Promise<TransactionReceipt>} transactionId
    */
   public async mint(
     dataTokenAddress: string,
     address: string,
     amount: string,
     toAddress?: string
-  ): Promise<string> {
+  ): Promise<TransactionReceipt> {
     const destAddress = toAddress || address
     const datatoken = new this.web3.eth.Contract(this.datatokensABI, dataTokenAddress, {
       from: address
@@ -178,14 +178,14 @@ export class DataTokens {
    * @param {String} toAddress
    * @param {String} amount Number of datatokens, as number. Will be converted to wei
    * @param {String} address
-   * @return {Promise<string>} transactionId
+   * @return {Promise<TransactionReceipt>} transactionId
    */
   public async transfer(
     dataTokenAddress: string,
     toAddress: string,
     amount: string,
     address: string
-  ): Promise<string> {
+  ): Promise<TransactionReceipt> {
     return this.transferToken(dataTokenAddress, toAddress, amount, address)
   }
 
@@ -195,14 +195,14 @@ export class DataTokens {
    * @param {String} toAddress
    * @param {String} amount Number of datatokens, as number. Will be converted to wei
    * @param {String} address
-   * @return {Promise<string>} transactionId
+   * @return {Promise<TransactionReceipt>} transactionId
    */
   public async transferToken(
     dataTokenAddress: string,
     toAddress: string,
     amount: string,
     address: string
-  ): Promise<string> {
+  ): Promise<TransactionReceipt> {
     const weiAmount = this.web3.utils.toWei(amount)
     return this.transferWei(dataTokenAddress, toAddress, weiAmount, address)
   }
@@ -213,14 +213,14 @@ export class DataTokens {
    * @param {String} toAddress
    * @param {String} amount Number of datatokens, as number. Expressed as wei
    * @param {String} address
-   * @return {Promise<string>} transactionId
+   * @return {Promise<TransactionReceipt>} transactionId
    */
   public async transferWei(
     dataTokenAddress: string,
     toAddress: string,
     amount: string,
     address: string
-  ): Promise<string> {
+  ): Promise<TransactionReceipt> {
     const datatoken = new this.web3.eth.Contract(this.datatokensABI, dataTokenAddress, {
       from: address
     })
