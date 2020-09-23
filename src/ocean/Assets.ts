@@ -108,7 +108,7 @@ export class Assets extends Instantiable {
         observer.next(CreateProgressStep.DataTokenCreated)
       }
 
-      const did: DID = DID.generate()
+      const did: DID = DID.generate(dtAddress)
 
       this.logger.log('Encrypting files')
       observer.next(CreateProgressStep.EncryptingFiles)
@@ -118,7 +118,7 @@ export class Assets extends Instantiable {
         provider.setBaseUrl(providerUri)
       } else provider = this.ocean.provider
       const encryptedFiles = await provider.encrypt(
-        did.getId(),
+        did.getDid(),
         metadata.main.files,
         publisher
       )
@@ -486,7 +486,6 @@ export class Assets extends Instantiable {
       const previousOrder = await datatokens.getPreviousValidOrders(
         providerData.dataToken,
         providerData.numTokens,
-        didZeroX(did),
         serviceIndex,
         service.attributes.main.timeout,
         consumerAddress
@@ -495,9 +494,7 @@ export class Assets extends Instantiable {
       const balance = new BigNumber(
         await datatokens.balance(providerData.dataToken, consumerAddress)
       )
-      const totalCost = new BigNumber(
-        this.web3.utils.fromWei(String(providerData.numTokens))
-      )
+      const totalCost = new BigNumber(String(providerData.numTokens))
       if (balance.isLessThanOrEqualTo(totalCost)) {
         console.error(
           'Not enough funds. Needed ' +
@@ -509,8 +506,7 @@ export class Assets extends Instantiable {
       }
       const txid = await datatokens.startOrder(
         providerData.dataToken,
-        this.web3.utils.fromWei(String(providerData.numTokens)),
-        didZeroX(did),
+        String(providerData.numTokens),
         serviceIndex,
         mpAddress,
         consumerAddress

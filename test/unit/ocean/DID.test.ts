@@ -4,14 +4,14 @@ import DID from '../../../src/ocean/DID'
 describe('DID', () => {
   describe('#generate()', () => {
     it('should generate a new did', () => {
-      const did: DID = DID.generate()
+      const did: DID = DID.generate('0x8248b0E583B9db96Ca3764EadF36e0024035Cc3A')
       assert(did)
     })
   })
 
   describe('#parse()', () => {
     it('should parse a valid did', () => {
-      const id = 'a'.repeat(64)
+      const id = 'a'.repeat(40)
       const did: DID = DID.parse(`did:op:${id}`)
       assert(did)
 
@@ -41,7 +41,7 @@ describe('DID', () => {
 
   describe('#getDid()', () => {
     it('should return the full did', () => {
-      const did: DID = DID.generate()
+      const did: DID = DID.generate('0x8248b0E583B9db96Ca3764EadF36e0024035Cc3A')
       assert(did)
 
       assert(did.getDid().startsWith('did:op:'))
@@ -50,7 +50,7 @@ describe('DID', () => {
 
   describe('#getDid()', () => {
     it('should return only the id part of the did', () => {
-      const id = 'a'.repeat(64)
+      const id = 'a'.repeat(40)
       const did: DID = DID.parse(`did:op:${id}`)
       assert(did)
 

@@ -89,13 +89,13 @@ export class Config {
    * DDOContractAddress
    * @type {string}
    */
-  public DDOContractAddress?: string
+  public metadataContractAddress?: string
 
   /**
    * DDOContractABI
    * @type {any}
    */
-  public DDOContractABI?: AbiItem | AbiItem[]
+  public metadataContractABI?: AbiItem | AbiItem[]
   /**
    * Log level.
    * @type {boolean | LogLevel}
