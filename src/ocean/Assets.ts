@@ -108,7 +108,7 @@ export class Assets extends Instantiable {
         observer.next(CreateProgressStep.DataTokenCreated)
       }
 
-      const did: DID = DID.generate()
+      const did: DID = DID.generate(dtAddress)
 
       this.logger.log('Encrypting files')
       observer.next(CreateProgressStep.EncryptingFiles)
@@ -486,7 +486,6 @@ export class Assets extends Instantiable {
       const previousOrder = await datatokens.getPreviousValidOrders(
         providerData.dataToken,
         providerData.numTokens,
-        didZeroX(did),
         serviceIndex,
         service.attributes.main.timeout,
         consumerAddress
@@ -510,7 +509,6 @@ export class Assets extends Instantiable {
       const txid = await datatokens.startOrder(
         providerData.dataToken,
         this.web3.utils.fromWei(String(providerData.numTokens)),
-        didZeroX(did),
         serviceIndex,
         mpAddress,
         consumerAddress

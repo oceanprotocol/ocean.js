@@ -1,5 +1,5 @@
 import { generateId } from '../utils/GeneratorHelpers'
-
+import { noZeroX, didZeroX } from '../utils'
 const prefix = 'did:op:'
 
 /**
@@ -16,8 +16,7 @@ export default class DID {
       didString = didString.getDid()
     }
     let did: DID
-    const didMatch = didString.match(/^did:op:([a-f0-9]{64})$/i)
-
+    const didMatch = didString.match(/^did:op:([a-f0-9]{40})$/i)
     if (didMatch) {
       did = new DID(didMatch[1])
     }
@@ -30,11 +29,12 @@ export default class DID {
   }
 
   /**
-   * Returns a new DID.
+   * Generate a new DID.
+   * @param  {string} dataTokenAddress Address of data token to use for DID.
    * @return {DID}
    */
-  public static generate(): DID {
-    return new DID(generateId())
+  public static generate(dataTokenAddress: string): DID {
+    return new DID(noZeroX(dataTokenAddress))
   }
 
   /**

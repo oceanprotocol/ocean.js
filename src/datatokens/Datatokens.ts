@@ -356,7 +356,6 @@ export class DataTokens {
   /** Start Order
    * @param {String} dataTokenAddress
    * @param {String} amount
-   * @param {String} did
    * @param {Number} serviceId
    * @param {String} mpFeeAddress
    * @param {String} address consumer Address
@@ -365,7 +364,6 @@ export class DataTokens {
   public async startOrder(
     dataTokenAddress: string,
     amount: string,
-    did: string,
     serviceId: number,
     mpFeeAddress: string,
     address: string
@@ -376,7 +374,7 @@ export class DataTokens {
     if (!mpFeeAddress) mpFeeAddress = '0x0000000000000000000000000000000000000000'
     try {
       const trxReceipt = await datatoken.methods
-        .startOrder(this.web3.utils.toWei(amount), did, String(serviceId), mpFeeAddress)
+        .startOrder(this.web3.utils.toWei(amount), String(serviceId), mpFeeAddress)
         .send({ from: address, gas: 600000 })
       return trxReceipt
     } catch (e) {
@@ -397,7 +395,6 @@ export class DataTokens {
   public async getPreviousValidOrders(
     dataTokenAddress: string,
     amount: string,
-    did: string,
     serviceId: number,
     timeout: number,
     address: string
@@ -411,7 +408,6 @@ export class DataTokens {
     })
     for (let i = 0; i < events.length; i++) {
       if (
-        events[i].returnValues.did === did &&
         String(events[i].returnValues.amount) === String(amount) &&
         String(events[i].returnValues.serviceId) === String(serviceId)
       ) {

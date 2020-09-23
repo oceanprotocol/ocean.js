@@ -3,7 +3,7 @@ import { TransactionReceipt } from 'web3-core'
 import { Contract } from 'web3-eth-contract'
 import { AbiItem } from 'web3-utils/types'
 import Web3 from 'web3'
-import defaultDDOContractABI from '@oceanprotocol/contracts/artifacts/DDO.json'
+import defaultDDOContractABI from '@oceanprotocol/contracts/artifacts/Metadata.json'
 import { didZeroX } from '../utils'
 import { LZMA } from 'lzma'
 
@@ -102,15 +102,16 @@ export class OnChainMetadataStore {
       return null
     }
     try {
-      const estGas = await this.DDOContract.methods
-        .create(did, flags, data)
+      /* const estGas = await this.DDOContract.methods
+        .create(didZeroX(did), flags, data)
         .estimateGas(function (err, estGas) {
-          if (err) console.log('OnChainMetadataStore: ' + err)
+          if (err) console.log('OnChainMetadataStoreEstimateGas: ' + err)
           return estGas
         })
+      */
       const trxReceipt = await this.DDOContract.methods
-        .create(did, flags, data)
-        .send({ from: consumerAccount, gas: estGas + 1 })
+        .create(didZeroX(did), flags, data)
+        .send({ from: consumerAccount })
       return trxReceipt
     } catch (e) {
       console.error(e)
@@ -138,7 +139,7 @@ export class OnChainMetadataStore {
     }
     try {
       const trxReceipt = await this.DDOContract.methods
-        .update(did, flags, data)
+        .update(didZeroX(did), flags, data)
         .send({ from: consumerAccount })
       return trxReceipt
     } catch (e) {

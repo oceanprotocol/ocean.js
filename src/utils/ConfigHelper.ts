@@ -25,7 +25,7 @@ const configs: ConfigHelperConfig[] = [
     providerUri: 'http://127.0.0.1:8030',
     poolFactoryAddress: null,
     fixedRateExchangeAddress: null,
-    DDOContractAddress: null
+    MetadataContractAddress: null
   },
   {
     chainId: 4,
@@ -37,7 +37,7 @@ const configs: ConfigHelperConfig[] = [
     providerUri: 'https://provider.rinkeby.v3.dev-ocean.com',
     poolFactoryAddress: '0x9B90A1358fbeEC1C4bB1DA7D4E85C708f87556Ec',
     fixedRateExchangeAddress: '0x991c08bD00761A299d3126a81a985329096896D4',
-    DDOContractAddress: '0xEfA25E39192b3175d451D79C1c0a41Fa3C32c87d'
+    MetadataContractAddress: '0xEfA25E39192b3175d451D79C1c0a41Fa3C32c87d'
   },
   {
     chainId: 1,
@@ -48,8 +48,8 @@ const configs: ConfigHelperConfig[] = [
     metadataStoreUri: null,
     providerUri: null,
     poolFactoryAddress: null,
-    fixedRateExchangeAddress: null,
-    DDOContractAddress: null
+    fixedRateExchangeAddress: null, 
+    MetadataContractAddress: null
   }
 ]
 
@@ -64,7 +64,7 @@ export class ConfigHelper {
           if (data.ganache.BFactory) configs[0].poolFactoryAddress = data.ganache.BFactory
           if (data.ganache.FixedRateExchange)
             configs[0].fixedRateExchangeAddress = data.ganache.FixedRateExchange
-          if (data.ganache.DDO) configs[0].DDOContractAddress = data.ganache.DDO
+          if (data.ganache.Metadata) configs[0].MetadataContractAddress = data.ganache.Metadata
         }
       }
       if (process.env.AQUARIUS_URI) configs[0].metadataStoreUri = process.env.AQUARIUS_URI

@@ -14,7 +14,7 @@ export const noDidPrefixed = (input: string): string => didTransformer(input, fa
 export function didTransformer(input = '', prefixOutput: boolean): string {
   const { valid, output } = inputMatch(
     input,
-    /^(?:0x|did:op:)*([a-f0-9]{64})$/i,
+    /^(?:0x|did:op:)*([a-f0-9]{40})$/i,
     'didTransformer'
   )
   return (prefixOutput && valid ? 'did:op:' : '') + output
