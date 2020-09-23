@@ -48,7 +48,7 @@ const configs: ConfigHelperConfig[] = [
     metadataStoreUri: null,
     providerUri: null,
     poolFactoryAddress: null,
-    fixedRateExchangeAddress: null, 
+    fixedRateExchangeAddress: null,
     MetadataContractAddress: null
   }
 ]
@@ -64,7 +64,8 @@ export class ConfigHelper {
           if (data.ganache.BFactory) configs[0].poolFactoryAddress = data.ganache.BFactory
           if (data.ganache.FixedRateExchange)
             configs[0].fixedRateExchangeAddress = data.ganache.FixedRateExchange
-          if (data.ganache.Metadata) configs[0].MetadataContractAddress = data.ganache.Metadata
+          if (data.ganache.Metadata)
+            configs[0].MetadataContractAddress = data.ganache.Metadata
         }
       }
       if (process.env.AQUARIUS_URI) configs[0].metadataStoreUri = process.env.AQUARIUS_URI
