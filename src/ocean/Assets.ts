@@ -11,7 +11,7 @@ import {
 import { EditableMetadata } from '../ddo/interfaces/EditableMetadata'
 import Account from './Account'
 import DID from './DID'
-import { SubscribablePromise, didZeroX } from '../utils'
+import { SubscribablePromise } from '../utils'
 import { Instantiable, InstantiableConfig } from '../Instantiable.abstract'
 import { WebServiceConnector } from './utils/WebServiceConnector'
 import BigNumber from 'bignumber.js'
@@ -205,7 +205,7 @@ export class Assets extends Instantiable {
    * @param  {string} owner Owner address.
    * @return {Promise<string[]>} List of DIDs.
    */
-  public async ownerAssets(owner: string): Promise<DDO[]> {
+  public async ownerAssets(owner: string): Promise<QueryResult> {
     return this.ocean.metadatastore.getOwnerAssets(owner)
   }
 
