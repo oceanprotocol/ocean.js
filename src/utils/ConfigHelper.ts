@@ -25,7 +25,7 @@ const configs: ConfigHelperConfig[] = [
     providerUri: 'http://127.0.0.1:8030',
     poolFactoryAddress: null,
     fixedRateExchangeAddress: null,
-    MetadataContractAddress: null
+    metadataContractAddress: null
   },
   {
     chainId: 4,
@@ -37,7 +37,7 @@ const configs: ConfigHelperConfig[] = [
     providerUri: 'https://provider.rinkeby.v3.dev-ocean.com',
     poolFactoryAddress: '0x1735C3A59EcedC617bB570b79A71A6FC7C0380E8',
     fixedRateExchangeAddress: '0x2B8da1F6DE33EfCDEc254ebE57d1D854a314b81b',
-    MetadataContractAddress: '0x01906293EAd697f6038b0E3E1f0591F56ABf8EC0'
+    metadataContractAddress: '0x01906293EAd697f6038b0E3E1f0591F56ABf8EC0'
   },
   {
     chainId: 1,
@@ -49,7 +49,7 @@ const configs: ConfigHelperConfig[] = [
     providerUri: null,
     poolFactoryAddress: null,
     fixedRateExchangeAddress: null,
-    MetadataContractAddress: null
+    metadataContractAddress: null
   }
 ]
 
@@ -65,7 +65,7 @@ export class ConfigHelper {
           if (data.ganache.FixedRateExchange)
             configs[0].fixedRateExchangeAddress = data.ganache.FixedRateExchange
           if (data.ganache.Metadata)
-            configs[0].MetadataContractAddress = data.ganache.Metadata
+            configs[0].metadataContractAddress = data.ganache.Metadata
         }
       }
       if (process.env.AQUARIUS_URI) configs[0].metadataStoreUri = process.env.AQUARIUS_URI

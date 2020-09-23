@@ -89,7 +89,7 @@ export class Config {
    * DDOContractAddress
    * @type {string}
    */
-  public MetadataContractAddress?: string
+  public metadataContractAddress?: string
 
   /**
    * DDOContractABI

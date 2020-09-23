@@ -67,7 +67,7 @@ export class Ocean extends Instantiable {
     )
     instance.OnChainMetadataStore = new OnChainMetadataStore(
       instanceConfig.config.web3Provider,
-      instanceConfig.config.MetadataContractAddress,
+      instanceConfig.config.metadataContractAddress,
       instanceConfig.config.MetadataContractABI
     )
     instance.versions = await Versions.getInstance(instanceConfig)
