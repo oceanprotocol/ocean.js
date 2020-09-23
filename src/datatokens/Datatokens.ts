@@ -408,7 +408,7 @@ export class DataTokens {
     })
     for (let i = 0; i < events.length; i++) {
       if (
-        String(events[i].returnValues.amount) === String(amount) &&
+        String(events[i].returnValues.amount) === this.web3.utils.toWei(String(amount)) &&
         String(events[i].returnValues.serviceId) === String(serviceId)
       ) {
         const transaction = await this.web3.eth.getTransaction(events[i].transactionHash)

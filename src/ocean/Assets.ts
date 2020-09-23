@@ -118,7 +118,7 @@ export class Assets extends Instantiable {
         provider.setBaseUrl(providerUri)
       } else provider = this.ocean.provider
       const encryptedFiles = await provider.encrypt(
-        did.getId(),
+        did.getDid(),
         metadata.main.files,
         publisher
       )
@@ -494,9 +494,7 @@ export class Assets extends Instantiable {
       const balance = new BigNumber(
         await datatokens.balance(providerData.dataToken, consumerAddress)
       )
-      const totalCost = new BigNumber(
-        this.web3.utils.fromWei(String(providerData.numTokens))
-      )
+      const totalCost = new BigNumber(String(providerData.numTokens))
       if (balance.isLessThanOrEqualTo(totalCost)) {
         console.error(
           'Not enough funds. Needed ' +
@@ -508,7 +506,7 @@ export class Assets extends Instantiable {
       }
       const txid = await datatokens.startOrder(
         providerData.dataToken,
-        this.web3.utils.fromWei(String(providerData.numTokens)),
+        String(providerData.numTokens),
         serviceIndex,
         mpAddress,
         consumerAddress

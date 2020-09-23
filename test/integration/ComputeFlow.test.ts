@@ -29,6 +29,9 @@ describe('Compute flow', () => {
   let contracts
   let datatoken
   let tokenAddress
+  let tokenAddressNoRawAlgo
+  let tokenAddressWithTrustedAlgo
+  let tokenAddressAlgorithm
   let price
   let ocean
   let computeService
@@ -79,7 +82,7 @@ describe('Compute flow', () => {
     await contracts.deployContracts(owner.getId())
   })
 
-  it('Alice deploys datatoken contract', async () => {
+  it('Alice deploys datatoken contracts', async () => {
     datatoken = new DataTokens(
       contracts.factoryAddress,
       factory.abi as AbiItem[],
@@ -94,6 +97,32 @@ describe('Compute flow', () => {
       'DTA'
     )
     assert(tokenAddress != null)
+    tokenAddressNoRawAlgo = await datatoken.create(
+      blob,
+      alice.getId(),
+      '10000000000',
+      'AliceDT',
+      'DTA'
+    )
+    assert(tokenAddressNoRawAlgo != null)
+
+    tokenAddressWithTrustedAlgo = await datatoken.create(
+      blob,
+      alice.getId(),
+      '10000000000',
+      'AliceDT',
+      'DTA'
+    )
+    assert(tokenAddressWithTrustedAlgo != null)
+
+    tokenAddressAlgorithm = await datatoken.create(
+      blob,
+      alice.getId(),
+      '10000000000',
+      'AliceDT',
+      'DTA'
+    )
+    assert(tokenAddressAlgorithm != null)
   })
 
   it('Generates metadata', async () => {
@@ -120,7 +149,7 @@ describe('Compute flow', () => {
   })
 
   it('Alice publishes dataset with a compute service that allows Raw Algo', async () => {
-    price = datatoken.toWei('2') // in datatoken
+    price = '2' // in datatoken
     cluster = ocean.compute.createClusterAttributes('Kubernetes', 'http://10.0.0.17/xxx')
     servers = [
       ocean.compute.createServerAttributes(
@@ -165,7 +194,6 @@ describe('Compute flow', () => {
     await sleep(6000)
   })
 
-  // alex
   it('should publish a dataset with a compute service object that does not allow rawAlgo', async () => {
     const origComputePrivacy = {
       allowRawAlgorithm: false,
@@ -184,9 +212,9 @@ describe('Compute flow', () => {
       asset,
       alice,
       [computeService],
-      tokenAddress
+      tokenAddressNoRawAlgo
     )
-    assert(datasetNoRawAlgo.dataToken === tokenAddress)
+    assert(datasetNoRawAlgo.dataToken === tokenAddressNoRawAlgo)
     await sleep(6000)
   })
 
@@ -208,9 +236,9 @@ describe('Compute flow', () => {
       asset,
       alice,
       [computeService],
-      tokenAddress
+      tokenAddressWithTrustedAlgo
     )
-    assert(datasetWithTrustedAlgo.dataToken === tokenAddress)
+    assert(datasetWithTrustedAlgo.dataToken === tokenAddressWithTrustedAlgo)
     await sleep(6000)
   })
 
@@ -248,13 +276,21 @@ describe('Compute flow', () => {
       dateCreated,
       0
     )
-    algorithmAsset = await ocean.assets.create(algoAsset, alice, [service1], tokenAddress)
-    assert(algorithmAsset.dataToken === tokenAddress)
+    algorithmAsset = await ocean.assets.create(
+      algoAsset,
+      alice,
+      [service1],
+      tokenAddressAlgorithm
+    )
+    assert(algorithmAsset.dataToken === tokenAddressAlgorithm)
     await sleep(6000)
   })
 
   it('Alice mints 100 DTs and tranfers them to the compute marketplace', async () => {
     await datatoken.mint(tokenAddress, alice.getId(), tokenAmount)
+    await datatoken.mint(tokenAddressNoRawAlgo, alice.getId(), tokenAmount)
+    await datatoken.mint(tokenAddressWithTrustedAlgo, alice.getId(), tokenAmount)
+    await datatoken.mint(tokenAddressAlgorithm, alice.getId(), tokenAmount)
   })
 
   it('Marketplace posts compute service for sale', async () => {
@@ -268,6 +304,24 @@ describe('Compute flow', () => {
       .transfer(tokenAddress, bob.getId(), dTamount, alice.getId())
       .then(async () => {
         const balance = await datatoken.balance(tokenAddress, bob.getId())
+        assert(balance.toString() === dTamount.toString())
+      })
+    await datatoken
+      .transfer(tokenAddressNoRawAlgo, bob.getId(), dTamount, alice.getId())
+      .then(async () => {
+        const balance = await datatoken.balance(tokenAddressNoRawAlgo, bob.getId())
+        assert(balance.toString() === dTamount.toString())
+      })
+    await datatoken
+      .transfer(tokenAddressWithTrustedAlgo, bob.getId(), dTamount, alice.getId())
+      .then(async () => {
+        const balance = await datatoken.balance(tokenAddressWithTrustedAlgo, bob.getId())
+        assert(balance.toString() === dTamount.toString())
+      })
+    await datatoken
+      .transfer(tokenAddressAlgorithm, bob.getId(), dTamount, alice.getId())
+      .then(async () => {
+        const balance = await datatoken.balance(tokenAddressAlgorithm, bob.getId())
         assert(balance.toString() === dTamount.toString())
       })
   })
