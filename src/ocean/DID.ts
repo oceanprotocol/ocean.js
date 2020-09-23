@@ -1,5 +1,4 @@
-import { generateId } from '../utils/GeneratorHelpers'
-import { noZeroX, didZeroX } from '../utils'
+import { noZeroX } from '../utils'
 const prefix = 'did:op:'
 
 /**
