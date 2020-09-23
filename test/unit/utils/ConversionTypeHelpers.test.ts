@@ -31,7 +31,7 @@ describe('ConversionTypeHelpers', () => {
   })
 
   describe('#didTransformer()', () => {
-    const did = 'a'.repeat(64)
+    const did = 'a'.repeat(40)
 
     it("should return the input if it's not valid", async () => {
       const result1 = didPrefixed('Test 1')
