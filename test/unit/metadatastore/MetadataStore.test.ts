@@ -73,7 +73,7 @@ describe('MetadataStore', () => {
 
   describe('#storeDDO()', () => {
     it('should store a ddo', async () => {
-      const did: DID = DID.generate()
+      const did: DID = DID.generate('0x858048e3Ebdd3754e14F63d1185F8252eF142393')
       const ddo: DDO = new DDO({
         id: did.getId()
       })
@@ -88,7 +88,7 @@ describe('MetadataStore', () => {
 
   describe('#retrieveDDO()', () => {
     it('should store a ddo', async () => {
-      const did: DID = DID.generate()
+      const did: DID = DID.generate('0x8248b0E583B9db96Ca3764EadF36e0024035Cc3A')
       const ddo: DDO = new DDO({
         id: did.getId()
       })
