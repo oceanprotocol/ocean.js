@@ -8,13 +8,14 @@ import datatokensTemplate from '@oceanprotocol/contracts/artifacts/DataTokenTemp
 const web3 = new Web3('http://127.0.0.1:8545')
 
 describe('Simple flow', () => {
-  let owner
-  let bob
-  let alice
-  let contracts
-  let datatoken
-  let tokenAddress
-  let transactionId
+  let owner: string
+  let bob: string
+  let alice: string
+  let contracts: TestContractHandler
+  let datatoken: DataTokens
+  let tokenAddress: string
+  let transactionId: string
+
   const tokenAmount = '100'
   const transferAmount = '1'
   const blob = 'http://localhost:8030/api/v1/services/consume'

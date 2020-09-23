@@ -5,7 +5,7 @@ import { Ocean } from '../../src/ocean/Ocean'
 import { ConfigHelper } from '../../src/utils/ConfigHelper'
 
 import { assert } from 'chai'
-import { ServiceComputePrivacy } from '../../src/ddo/interfaces/Service'
+import { ServiceCommon, ServiceComputePrivacy } from '../../src/ddo/interfaces/Service'
 import Web3 from 'web3'
 import factory from '@oceanprotocol/contracts/artifacts/DTFactory.json'
 import datatokensTemplate from '@oceanprotocol/contracts/artifacts/DataTokenTemplate.json'
@@ -27,14 +27,14 @@ describe('Compute flow', () => {
   let datasetWithTrustedAlgo
   let algorithmAsset
   let contracts
-  let datatoken
+  let datatoken: DataTokens
   let tokenAddress
   let tokenAddressNoRawAlgo
   let tokenAddressWithTrustedAlgo
   let tokenAddressAlgorithm
-  let price
+  let price: string
   let ocean
-  let computeService
+  let computeService: ServiceCommon
   let data
   let blob
   let jobId
@@ -77,7 +77,7 @@ describe('Compute flow', () => {
     owner = (await ocean.accounts.list())[0]
     alice = (await ocean.accounts.list())[1]
     bob = (await ocean.accounts.list())[2]
-    data = { t: 1, url: ocean.config.metadataStoreUri }
+    data = { t: 1, url: config.metadataStoreUri }
     blob = JSON.stringify(data)
     await contracts.deployContracts(owner.getId())
   })

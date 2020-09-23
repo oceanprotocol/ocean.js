@@ -9,10 +9,10 @@ import { ConfigHelper } from '../../src/utils/ConfigHelper'
 import Web3 from 'web3'
 import factory from '@oceanprotocol/contracts/artifacts/DTFactory.json'
 import datatokensTemplate from '@oceanprotocol/contracts/artifacts/DataTokenTemplate.json'
-import { EditableMetadata } from '../../src/lib'
+import { Account, EditableMetadata, ServiceAccess, ServiceCommon } from '../../src/lib'
 const web3 = new Web3('http://127.0.0.1:8545')
 
-function sleep(ms) {
+function sleep(ms: number) {
   return new Promise((resolve) => {
     setTimeout(resolve, ms)
   })
@@ -21,19 +21,19 @@ function sleep(ms) {
 use(spies)
 
 describe('Marketplace flow', () => {
-  let owner
-  let bob
+  let owner: Account
+  let bob: Account
   let ddo
-  let alice
+  let alice: Account
   let asset
-  let marketplace
-  let contracts
-  let datatoken
-  let tokenAddress
-  let service1
-  let price
-  let ocean
-  let accessService
+  let marketplace: Account
+  let contracts: TestContractHandler
+  let datatoken: DataTokens
+  let tokenAddress: string
+  let service1: ServiceAccess
+  let price: string
+  let ocean: Ocean
+  let accessService: ServiceCommon
   let data
   let blob
 
@@ -55,7 +55,7 @@ describe('Marketplace flow', () => {
     alice = (await ocean.accounts.list())[1]
     bob = (await ocean.accounts.list())[2]
     marketplace = (await ocean.accounts.list())[3]
-    data = { t: 1, url: ocean.config.metadataStoreUri }
+    data = { t: 1, url: config.metadataStoreUri }
     blob = JSON.stringify(data)
     await contracts.deployContracts(owner.getId())
   })
@@ -156,8 +156,8 @@ describe('Marketplace flow', () => {
 
   it('Marketplace posts asset for sale', async () => {
     accessService = await ocean.assets.getServiceByType(ddo.id, 'access')
-    price = 20
-    assert.equal(accessService.attributes.main.cost * price, 200)
+    price = '20'
+    assert.equal(accessService.attributes.main.cost * Number(price), 200)
   })
 
   it('Bob gets datatokens', async () => {
@@ -199,9 +199,9 @@ describe('Marketplace flow', () => {
     assert(balanceBefore === balanceAfter)
   })
 
-  it('owner can list there assets', async () => {
+  it('owner can list their assets', async () => {
     const assets = await ocean.assets.ownerAssets(alice.getId())
-    assert(assets.length > 0)
+    assert(assets.results.length > 0)
   })
 
   it('Alice updates metadata', async () => {
