@@ -5,7 +5,7 @@ import { AbiItem } from 'web3-utils/types'
 import Web3 from 'web3'
 import defaultDDOContractABI from '@oceanprotocol/contracts/artifacts/Metadata.json'
 import { didZeroX } from '../utils'
-import { LZMA } from 'lzma'
+import lzma from 'lzma-native'
 
 /**
  * Provides an interface with Metadata Store.
@@ -34,17 +34,13 @@ export class OnChainMetadataStore {
       )
   }
 
-  /** Compress DDO using LZMA
-   *
+  /**
+   * Compress DDO using LZMA
    */
-  public async LZMACompressDDO(ddo: DDO): Promise<any> {
+  public async LZMACompressDDO(ddo: DDO): Promise<string> {
     const data = DDO.serialize(ddo)
-    const lzma = new LZMA()
-    // see https://github.com/LZMA-JS/LZMA-JS/issues/44
-    lzma.disableEndMark = true
-    let compressed = lzma.compress(data, 9)
-    compressed = this.getHex(compressed)
-    return compressed
+    const compressed = lzma.compress(data, 9)
+    return this.getHex(compressed)
   }
 
   /**
