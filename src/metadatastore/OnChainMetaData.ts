@@ -5,7 +5,7 @@ import { AbiItem } from 'web3-utils/types'
 import Web3 from 'web3'
 import defaultDDOContractABI from '@oceanprotocol/contracts/artifacts/Metadata.json'
 import { didZeroX } from '../utils'
-import lz from 'lz-string'
+import { Compressor } from 'xz'
 
 /**
  * Provides an interface with Metadata Store.
@@ -35,12 +35,14 @@ export class OnChainMetadataStore {
   }
 
   /**
-   * Compress DDO using lz-string
+   * Compress DDO using xz/lzma2
    */
   public async compressDDO(ddo: DDO): Promise<string> {
     const data = DDO.serialize(ddo)
-    const compressed = lz.compress(data)
-    return this.getHex(compressed)
+    const buffer = Buffer.from(data)
+    const compression = new Compressor({ preset: 9 })
+    const compressed = await compression.updatePromise(buffer)
+    return this.getHex(compressed.toString())
   }
 
   /**
