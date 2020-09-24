@@ -39,7 +39,7 @@ export class OnChainMetadataStore {
    */
   public async LZMACompressDDO(ddo: DDO): Promise<string> {
     const data = DDO.serialize(ddo)
-    const compressed = lzma.compress(data, 9)
+    const compressed = await lzma.compress(data, 9)
     return this.getHex(compressed)
   }
 
