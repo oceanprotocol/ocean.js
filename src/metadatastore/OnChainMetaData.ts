@@ -114,7 +114,7 @@ export class OnChainMetadataStore {
         .send({ from: consumerAccount })
       return trxReceipt
     } catch (e) {
-      console.error(e)
+      console.error(e.message)
       return null
     }
   }
