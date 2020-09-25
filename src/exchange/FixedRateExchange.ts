@@ -429,8 +429,8 @@ export class OceanFixedRateExchange {
       )
       swaps.forEach((swap) => {
         result.push(swap)
-       })
-     }
+      })
+    }
     return result
   }
 

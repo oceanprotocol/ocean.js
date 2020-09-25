@@ -8,6 +8,22 @@ export interface PoolDetails {
   tokens: string[]
 }
 
+export interface PoolAction {
+  poolAddress: string
+  caller: string
+  transactionHash: string
+  blockNumber: number
+  tokenIn?: string
+  tokenOut?: string
+  tokenAmountIn?: string
+  tokenAmountOut?: string
+}
+
+export interface PoolLogs {
+  joins?: PoolAction[]
+  exists?: PoolAction[]
+  swaps?: PoolAction[]
+}
 /**
  * Ocean Pools submodule exposed under ocean.pool
  */
@@ -423,7 +439,7 @@ export class OceanPool extends Pool {
    * @param {Boolean} swaps Include swaps
    * @param {Boolean} joins Include joins
    * @param {Boolean} exists Include exits
-   * @return {String[]}
+   * @return {PoolLogs[]}
    */
   public async getPoolLogs(
     poolAddress: string,
@@ -431,8 +447,8 @@ export class OceanPool extends Pool {
     swaps?: boolean,
     joins?: boolean,
     exits?: boolean
-  ): Promise<string[]> {
-    const results = []
+  ): Promise<PoolLogs> {
+    const results: PoolLogs = { joins: [], exists: [], swaps: [] }
     const pool = new this.web3.eth.Contract(this.poolABI, poolAddress, {
       from: account
     })
@@ -449,10 +465,10 @@ export class OceanPool extends Pool {
       for (let i = 0; i < events.length; i++) {
         if (account) {
           if (events[i].returnValues[0] === account) {
-            results.push(this.getEventData('swap', poolAddress, events[i]))
+            results.swaps.push(this.getEventData('swap', poolAddress, events[i]))
           }
         } else {
-          results.push(this.getEventData('swap', poolAddress, events[i]))
+          results.swaps.push(this.getEventData('swap', poolAddress, events[i]))
         }
       }
     }
@@ -465,10 +481,10 @@ export class OceanPool extends Pool {
       for (let i = 0; i < events.length; i++) {
         if (account) {
           if (events[i].returnValues[0] === account) {
-            results.push(this.getEventData('join', poolAddress, events[i]))
+            results.joins.push(this.getEventData('join', poolAddress, events[i]))
           }
         } else {
-          results.push(this.getEventData('join', poolAddress, events[i]))
+          results.joins.push(this.getEventData('join', poolAddress, events[i]))
         }
       }
     }
@@ -481,10 +497,10 @@ export class OceanPool extends Pool {
       for (let i = 0; i < events.length; i++) {
         if (account) {
           if (events[i].returnValues[0] === account) {
-            results.push(this.getEventData('exit', poolAddress, events[i]))
+            results.exists.push(this.getEventData('exit', poolAddress, events[i]))
           }
         } else {
-          results.push(this.getEventData('exit', poolAddress, events[i]))
+          results.exists.push(this.getEventData('exit', poolAddress, events[i]))
         }
       }
     }
@@ -497,15 +513,15 @@ export class OceanPool extends Pool {
    * @param {Boolean} swaps Include swaps
    * @param {Boolean} joins Include joins
    * @param {Boolean} exists Include exits
-   * @return {String[]}
+   * @return {PoolLogs}
    */
   public async getAllPoolLogs(
     account: string,
     swaps?: boolean,
     joins?: boolean,
     exits?: boolean
-  ): Promise<any> {
-    const results = []
+  ): Promise<PoolLogs> {
+    const results: PoolLogs = { joins: [], exists: [], swaps: [] }
     const factory = new this.web3.eth.Contract(this.factoryABI, this.factoryAddress, {
       from: account
     })
@@ -515,14 +531,27 @@ export class OceanPool extends Pool {
       toBlock: 'latest'
     })
     for (let i = 0; i < events.length; i++) {
-      results.push(
-        await this.getPoolLogs(events[i].returnValues[0], account, swaps, joins, exits)
+      const logs = await this.getPoolLogs(
+        events[i].returnValues[0],
+        account,
+        swaps,
+        joins,
+        exits
       )
+      logs.joins.forEach((log) => {
+        results.joins.push(log)
+      })
+      logs.exists.forEach((log) => {
+        results.exists.push(log)
+      })
+      logs.swaps.forEach((log) => {
+        results.swaps.push(log)
+      })
     }
     return results
   }
 
-  private getEventData(action: string, poolAddress: string, data: any) {
+  private getEventData(action: string, poolAddress: string, data: any): PoolAction {
     const result = Object()
     result.action = action
     result.poolAddress = poolAddress
