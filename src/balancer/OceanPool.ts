@@ -382,9 +382,7 @@ export class OceanPool extends Pool {
    */
   public async getPoolsbyCreator(account?: string): Promise<PoolDetails[]> {
     const result: PoolDetails[] = []
-    const factory = new this.web3.eth.Contract(this.factoryABI, this.factoryAddress, {
-      from: account
-    })
+    const factory = new this.web3.eth.Contract(this.factoryABI, this.factoryAddress)
     let myFilter
     if (account) {
       myFilter = { registeredBy: account }
@@ -405,9 +403,14 @@ export class OceanPool extends Pool {
     }
     return result
   }
+  /**
+   * Get pool details
+   * @param {String} poolAddress Pool address
+   * @return {PoolDetails[]}
+   */
 
   public async getPoolDetails(poolAddress: string): Promise<PoolDetails> {
-    const details: PoolDetails = null
+    const details: PoolDetails = { poolAddress: null, tokens: null }
     details.poolAddress = poolAddress
     details.tokens = await super.getFinalTokens(poolAddress)
     return details

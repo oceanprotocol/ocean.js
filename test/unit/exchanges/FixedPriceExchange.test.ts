@@ -227,11 +227,11 @@ describe('FixedRateExchange flow', () => {
     assert(exchangeDetails.length === 0)
   })
   it('Bob should find all the exchanges created by Alice', async () => {
-    const exchangeDetails = await FixedRateClass.searchExchangesbyCreator(alice)
+    const exchangeDetails = await FixedRateClass.getExchangesbyCreator(alice)
     assert(exchangeDetails.length > 0)
   })
   it('Bob should find all his swaps', async () => {
-    const exchangeDetails = await FixedRateClass.searchAllExchangesSwaps(bob)
+    const exchangeDetails = await FixedRateClass.getAllExchangesSwaps(bob)
     assert(exchangeDetails.length > 0)
   })
 })

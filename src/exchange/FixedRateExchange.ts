@@ -15,6 +15,12 @@ export interface FixedPricedExchange {
   supply: string
 }
 
+export interface FixedPricedSwap {
+  exchangeID: string
+  caller: string
+  baseTokenAmount: string
+  dataTokenAmount: string
+}
 const DEFAULT_GAS_LIMIT = 300000
 
 export class OceanFixedRateExchange {
@@ -363,9 +369,7 @@ export class OceanFixedRateExchange {
    * @param {String} account
    * @return {Promise<FixedPricedExchange[]>}
    */
-  public async searchExchangesbyCreator(
-    account?: string
-  ): Promise<FixedPricedExchange[]> {
+  public async getExchangesbyCreator(account?: string): Promise<FixedPricedExchange[]> {
     const result: FixedPricedExchange[] = []
     const events = await this.contract.getPastEvents('ExchangeCreated', {
       filter: {},
@@ -385,10 +389,13 @@ export class OceanFixedRateExchange {
    * Get all swaps for an exchange, filtered by account(if any)
    * @param {String} exchangeId
    * @param {String} account
-   * @return {Promise<any>}
+   * @return {Promise<FixedPricedSwap[]>}
    */
-  public async searchExchangesSwaps(exchangeId: string, account?: string): Promise<any> {
-    const result: FixedPricedExchange[] = []
+  public async getExchangeSwaps(
+    exchangeId: string,
+    account?: string
+  ): Promise<FixedPricedSwap[]> {
+    const result: FixedPricedSwap[] = []
     const events = await this.contract.getPastEvents('Swapped', {
       filter: { exchangeId: exchangeId },
       fromBlock: 0,
@@ -406,23 +413,34 @@ export class OceanFixedRateExchange {
   /**
    * Get all swaps for an account
    * @param {String} account
-   * @return {Promise<any>}
+   * @return {Promise<FixedPricedSwap[]>}
    */
-  public async searchAllExchangesSwaps(account: string): Promise<any> {
-    const result = []
+  public async getAllExchangesSwaps(account: string): Promise<FixedPricedSwap[]> {
+    const result: FixedPricedSwap[] = []
     const events = await this.contract.getPastEvents('ExchangeCreated', {
       filter: {},
       fromBlock: 0,
       toBlock: 'latest'
     })
     for (let i = 0; i < events.length; i++) {
-      result.push(await this.searchExchangesSwaps(events[i].returnValues[0], account))
-    }
+      const swaps: FixedPricedSwap[] = await this.getExchangeSwaps(
+        events[i].returnValues[0],
+        account
+      )
+      swaps.forEach((swap) => {
+        result.push(swap)
+       })
+     }
     return result
   }
 
-  private getEventData(data: any) {
-    const result = Object()
+  private getEventData(data: any): FixedPricedSwap {
+    const result: FixedPricedSwap = {
+      exchangeID: null,
+      caller: null,
+      baseTokenAmount: null,
+      dataTokenAmount: null
+    }
     result.exchangeID = data.returnValues[0]
     result.caller = data.returnValues[1]
     result.baseTokenAmount = data.returnValues[2]
