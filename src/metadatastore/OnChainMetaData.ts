@@ -5,7 +5,10 @@ import { AbiItem } from 'web3-utils/types'
 import Web3 from 'web3'
 import defaultDDOContractABI from '@oceanprotocol/contracts/artifacts/Metadata.json'
 import { didZeroX } from '../utils'
-import { LZMA } from 'lzma'
+
+// Using limited, compress-only version
+// See https://github.com/LZMA-JS/LZMA-JS#but-i-dont-want-to-use-web-workers
+import { LZMA } from 'lzma/src/lzma-c'
 
 /**
  * Provides an interface with Metadata Store.
@@ -34,17 +37,16 @@ export class OnChainMetadataStore {
       )
   }
 
-  /** Compress DDO using LZMA
-   *
+  /**
+   * Compress DDO using xz/lzma2
    */
-  public async LZMACompressDDO(ddo: DDO): Promise<any> {
+
+  public async compressDDO(ddo: DDO): Promise<string> {
     const data = DDO.serialize(ddo)
-    const lzma = new LZMA()
     // see https://github.com/LZMA-JS/LZMA-JS/issues/44
-    lzma.disableEndMark = true
-    let compressed = lzma.compress(data, 9)
-    compressed = this.getHex(compressed)
-    return compressed
+    LZMA.disableEndMark = true
+    const compressed = LZMA.compress(data, 9)
+    return this.getHex(compressed)
   }
 
   /**
@@ -60,7 +62,7 @@ export class OnChainMetadataStore {
     consumerAccount: string
   ): Promise<TransactionReceipt> {
     let flags = 0
-    const compressed = await this.LZMACompressDDO(ddo)
+    const compressed = await this.compressDDO(ddo)
     flags = flags | 1
     return this.publishRaw(didZeroX(did), flags, compressed, consumerAccount)
   }
@@ -78,7 +80,7 @@ export class OnChainMetadataStore {
     consumerAccount: string
   ): Promise<TransactionReceipt> {
     let flags = 0
-    const compressed = await this.LZMACompressDDO(ddo)
+    const compressed = await this.compressDDO(ddo)
     flags = flags | 1
     return this.updateRaw(didZeroX(did), flags, compressed, consumerAccount)
   }
