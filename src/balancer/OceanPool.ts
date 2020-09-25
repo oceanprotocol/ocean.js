@@ -3,6 +3,11 @@ import { AbiItem } from 'web3-utils/types'
 import { TransactionReceipt } from 'web3-core'
 import { Pool } from './Pool'
 
+export interface PoolDetails {
+  poolAddress: string
+  tokens: string[]
+}
+
 /**
  * Ocean Pools submodule exposed under ocean.pool
  */
@@ -84,7 +89,7 @@ export class OceanPool extends Pool {
    */
   public async getDTAddress(account: string, poolAddress: string): Promise<string> {
     this.dtAddress = null
-    const tokens = await this.getCurrentTokens(account, poolAddress)
+    const tokens = await this.getCurrentTokens(poolAddress)
     let token: string
 
     for (token of tokens) {
@@ -335,10 +340,7 @@ export class OceanPool extends Pool {
       toBlock: 'latest'
     })
     for (let i = 0; i < events.length; i++) {
-      const constituents = await super.getCurrentTokens(
-        account,
-        events[i].returnValues[0]
-      )
+      const constituents = await super.getCurrentTokens(events[i].returnValues[0])
       if (constituents.includes(dtAddress)) result.push(events[i].returnValues[0])
     }
     return result
@@ -378,8 +380,8 @@ export class OceanPool extends Pool {
    * @param {String} account If empty, will return all pools ever created by anybody
    * @return {String[]}
    */
-  public async searchPoolsbyCreator(account?: string): Promise<string[]> {
-    const result: string[] = []
+  public async getPoolsbyCreator(account?: string): Promise<PoolDetails[]> {
+    const result: PoolDetails[] = []
     const factory = new this.web3.eth.Contract(this.factoryABI, this.factoryAddress, {
       from: account
     })
@@ -397,11 +399,18 @@ export class OceanPool extends Pool {
     for (let i = 0; i < events.length; i++) {
       if (account) {
         if (events[i].returnValues[1] === account) {
-          result.push(events[i].returnValues[0])
+          result.push(await this.getPoolDetails(events[i].returnValues[0]))
         }
-      } else result.push(events[i].returnValues[0])
+      } else result.push(await this.getPoolDetails(events[i].returnValues[0]))
     }
     return result
+  }
+
+  public async getPoolDetails(poolAddress: string): Promise<PoolDetails> {
+    const details: PoolDetails = null
+    details.poolAddress = poolAddress
+    details.tokens = await super.getFinalTokens(poolAddress)
+    return details
   }
 
   /**
