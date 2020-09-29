@@ -404,8 +404,8 @@ export class OceanFixedRateExchange {
     for (let i = 0; i < events.length; i++) {
       if (account) {
         if (events[i].returnValues[1] === account)
-          result.push(await this.getEventData(events[i]))
-      } else result.push(await this.getEventData(events[i]))
+          result.push(this.getEventData(events[i]))
+      } else result.push(this.getEventData(events[i]))
     }
     return result
   }

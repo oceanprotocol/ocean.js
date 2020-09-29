@@ -2,7 +2,7 @@ import Web3 from 'web3'
 import { AbiItem } from 'web3-utils/types'
 import { TransactionReceipt } from 'web3-core'
 import { Pool } from './Pool'
-import { EventData } from 'web3-eth-contract'
+import { EventData, Filter } from 'web3-eth-contract'
 
 export interface PoolDetails {
   poolAddress: string
@@ -395,22 +395,18 @@ export class OceanPool extends Pool {
   /**
    * Search all pools created by an address
    * @param {String} account If empty, will return all pools ever created by anybody
-   * @return {String[]}
+   * @return {PoolDetails[]}
    */
   public async getPoolsbyCreator(account?: string): Promise<PoolDetails[]> {
     const result: PoolDetails[] = []
     const factory = new this.web3.eth.Contract(this.factoryABI, this.factoryAddress)
-    let myFilter
-    if (account) {
-      myFilter = { registeredBy: account }
-    } else {
-      myFilter = {}
-    }
+
     const events = await factory.getPastEvents('BPoolRegistered', {
-      filter: myFilter,
+      filter: account ? { registeredBy: account } : {},
       fromBlock: 0,
       toBlock: 'latest'
     })
+
     for (let i = 0; i < events.length; i++) {
       if (account) {
         if (events[i].returnValues[1] === account) {
@@ -420,16 +416,15 @@ export class OceanPool extends Pool {
     }
     return result
   }
+
   /**
    * Get pool details
    * @param {String} poolAddress Pool address
-   * @return {PoolDetails[]}
+   * @return {PoolDetails}
    */
-
   public async getPoolDetails(poolAddress: string): Promise<PoolDetails> {
-    const details: PoolDetails = { poolAddress: null, tokens: null }
-    details.poolAddress = poolAddress
-    details.tokens = await super.getFinalTokens(poolAddress)
+    const tokens = await super.getFinalTokens(poolAddress)
+    const details: PoolDetails = { poolAddress, tokens }
     return details
   }
 
@@ -440,7 +435,7 @@ export class OceanPool extends Pool {
    * @param {Boolean} swaps Include swaps
    * @param {Boolean} joins Include joins
    * @param {Boolean} exits Include exits
-   * @return {PoolLogs[]}
+   * @return {PoolLogs}
    */
   public async getPoolLogs(
     poolAddress: string,
@@ -450,15 +445,9 @@ export class OceanPool extends Pool {
     exits?: boolean
   ): Promise<PoolLogs> {
     const results: PoolLogs = { joins: [], exits: [], swaps: [] }
-    const pool = new this.web3.eth.Contract(this.poolABI, poolAddress, {
-      from: account
-    })
-
+    const pool = new this.web3.eth.Contract(this.poolABI, poolAddress, { from: account })
+    const myFilter: Filter = account ? { caller: account } : {}
     let events: EventData[]
-    let myFilter
-
-    if (account) myFilter = { caller: account }
-    else myFilter = {}
 
     if (swaps) {
       events = await pool.getPastEvents('LOG_SWAP', {
@@ -555,7 +544,11 @@ export class OceanPool extends Pool {
     return results
   }
 
-  private getEventData(action: string, poolAddress: string, data: EventData): PoolAction {
+  private getEventData(
+    action: 'swap' | 'join' | 'exit',
+    poolAddress: string,
+    data: EventData
+  ): PoolAction {
     let result: PoolAction = {
       poolAddress,
       caller: data.returnValues[0],
