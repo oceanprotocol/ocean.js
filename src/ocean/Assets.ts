@@ -495,7 +495,7 @@ export class Assets extends Instantiable {
         await datatokens.balance(providerData.dataToken, consumerAddress)
       )
       const totalCost = new BigNumber(String(providerData.numTokens))
-      if (balance.isLessThanOrEqualTo(totalCost)) {
+      if (balance.isLessThan(totalCost)) {
         console.error(
           'Not enough funds. Needed ' +
             totalCost.toString() +
