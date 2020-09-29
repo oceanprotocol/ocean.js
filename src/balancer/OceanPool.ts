@@ -2,6 +2,7 @@ import Web3 from 'web3'
 import { AbiItem } from 'web3-utils/types'
 import { TransactionReceipt } from 'web3-core'
 import { Pool } from './Pool'
+import { EventData } from 'web3-eth-contract'
 
 export interface PoolDetails {
   poolAddress: string
@@ -21,7 +22,7 @@ export interface PoolAction {
 
 export interface PoolLogs {
   joins?: PoolAction[]
-  exists?: PoolAction[]
+  exits?: PoolAction[]
   swaps?: PoolAction[]
 }
 /**
@@ -438,7 +439,7 @@ export class OceanPool extends Pool {
    * @param {String} account
    * @param {Boolean} swaps Include swaps
    * @param {Boolean} joins Include joins
-   * @param {Boolean} exists Include exits
+   * @param {Boolean} exits Include exits
    * @return {PoolLogs[]}
    */
   public async getPoolLogs(
@@ -448,14 +449,17 @@ export class OceanPool extends Pool {
     joins?: boolean,
     exits?: boolean
   ): Promise<PoolLogs> {
-    const results: PoolLogs = { joins: [], exists: [], swaps: [] }
+    const results: PoolLogs = { joins: [], exits: [], swaps: [] }
     const pool = new this.web3.eth.Contract(this.poolABI, poolAddress, {
       from: account
     })
-    let events
+
+    let events: EventData[]
     let myFilter
+
     if (account) myFilter = { caller: account }
     else myFilter = {}
+
     if (swaps) {
       events = await pool.getPastEvents('LOG_SWAP', {
         filter: myFilter,
@@ -497,10 +501,10 @@ export class OceanPool extends Pool {
       for (let i = 0; i < events.length; i++) {
         if (account) {
           if (events[i].returnValues[0] === account) {
-            results.exists.push(this.getEventData('exit', poolAddress, events[i]))
+            results.exits.push(this.getEventData('exit', poolAddress, events[i]))
           }
         } else {
-          results.exists.push(this.getEventData('exit', poolAddress, events[i]))
+          results.exits.push(this.getEventData('exit', poolAddress, events[i]))
         }
       }
     }
@@ -512,7 +516,7 @@ export class OceanPool extends Pool {
    * @param {String} account
    * @param {Boolean} swaps Include swaps
    * @param {Boolean} joins Include joins
-   * @param {Boolean} exists Include exits
+   * @param {Boolean} exits Include exits
    * @return {PoolLogs}
    */
   public async getAllPoolLogs(
@@ -521,7 +525,7 @@ export class OceanPool extends Pool {
     joins?: boolean,
     exits?: boolean
   ): Promise<PoolLogs> {
-    const results: PoolLogs = { joins: [], exists: [], swaps: [] }
+    const results: PoolLogs = { joins: [], exits: [], swaps: [] }
     const factory = new this.web3.eth.Contract(this.factoryABI, this.factoryAddress, {
       from: account
     })
@@ -541,8 +545,8 @@ export class OceanPool extends Pool {
       logs.joins.forEach((log) => {
         results.joins.push(log)
       })
-      logs.exists.forEach((log) => {
-        results.exists.push(log)
+      logs.exits.forEach((log) => {
+        results.exits.push(log)
       })
       logs.swaps.forEach((log) => {
         results.swaps.push(log)
