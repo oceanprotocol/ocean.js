@@ -394,7 +394,7 @@ export class Assets extends Instantiable {
   /**
    * Creates an access service
    * @param {Account} creator
-   * @param {String} cost  number of datatokens needed for this service, expressed in wei
+   * @param {String} cost  number of datatokens needed for this service
    * @param {String} datePublished
    * @param {Number} timeout
    * @return {Promise<string>} service
