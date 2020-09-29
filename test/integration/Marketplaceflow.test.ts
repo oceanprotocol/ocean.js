@@ -1,15 +1,15 @@
-import { AbiItem } from 'web3-utils/types'
+import datatokensTemplate from '@oceanprotocol/contracts/artifacts/DataTokenTemplate.json'
+import factory from '@oceanprotocol/contracts/artifacts/DTFactory.json'
 import { assert, spy, use } from 'chai'
 import spies from 'chai-spies'
-import { TestContractHandler } from '../TestContractHandler'
+import Web3 from 'web3'
+import { AbiItem } from 'web3-utils/types'
 import { DataTokens } from '../../src/datatokens/Datatokens'
+import { Account, EditableMetadata, ServiceAccess, ServiceCommon } from '../../src/lib'
 import { Ocean } from '../../src/ocean/Ocean'
 import { ConfigHelper } from '../../src/utils/ConfigHelper'
+import { TestContractHandler } from '../TestContractHandler'
 
-import Web3 from 'web3'
-import factory from '@oceanprotocol/contracts/artifacts/DTFactory.json'
-import datatokensTemplate from '@oceanprotocol/contracts/artifacts/DataTokenTemplate.json'
-import { Account, EditableMetadata, ServiceAccess, ServiceCommon } from '../../src/lib'
 const web3 = new Web3('http://127.0.0.1:8545')
 
 function sleep(ms: number) {
@@ -248,7 +248,7 @@ describe('Marketplace flow', () => {
       timeout
     )
 
-    spy.on(datatoken, 'create', () => null)
+    spy.on(ocean.datatokens, 'create', () => Promise.resolve(null))
     ddo = await ocean.assets.create(asset, alice, [service1])
     assert.equal(ddo, null)
   })

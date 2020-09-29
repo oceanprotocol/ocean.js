@@ -70,18 +70,18 @@ export class Assets extends Instantiable {
     symbol?: string,
     providerUri?: string
   ): SubscribablePromise<CreateProgressStep, DDO> {
-    if (!isAddress(dtAddress)) {
+    if (dtAddress && !isAddress(dtAddress)) {
       this.logger.error(
         `Passed Data Token address ${dtAddress} is not valid. Aborting publishing.`
       )
       return null
     }
-
     this.logger.log('Creating asset')
     return new SubscribablePromise(async (observer) => {
       if (services.length === 0) {
         this.logger.log('You have no services. Are you sure about this?')
       }
+
       if (!dtAddress) {
         this.logger.log('Creating datatoken')
         observer.next(CreateProgressStep.CreatingDataToken)
@@ -394,7 +394,7 @@ export class Assets extends Instantiable {
   /**
    * Creates an access service
    * @param {Account} creator
-   * @param {String} cost  number of datatokens needed for this service, expressed in wei
+   * @param {String} cost  number of datatokens needed for this service
    * @param {String} datePublished
    * @param {Number} timeout
    * @return {Promise<string>} service
@@ -495,7 +495,7 @@ export class Assets extends Instantiable {
         await datatokens.balance(providerData.dataToken, consumerAddress)
       )
       const totalCost = new BigNumber(String(providerData.numTokens))
-      if (balance.isLessThanOrEqualTo(totalCost)) {
+      if (balance.isLessThan(totalCost)) {
         console.error(
           'Not enough funds. Needed ' +
             totalCost.toString() +
