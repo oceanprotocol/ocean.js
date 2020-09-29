@@ -70,18 +70,18 @@ export class Assets extends Instantiable {
     symbol?: string,
     providerUri?: string
   ): SubscribablePromise<CreateProgressStep, DDO> {
-    if (!isAddress(dtAddress)) {
+    if (dtAddress && !isAddress(dtAddress)) {
       this.logger.error(
         `Passed Data Token address ${dtAddress} is not valid. Aborting publishing.`
       )
       return null
     }
-
     this.logger.log('Creating asset')
     return new SubscribablePromise(async (observer) => {
       if (services.length === 0) {
         this.logger.log('You have no services. Are you sure about this?')
       }
+
       if (!dtAddress) {
         this.logger.log('Creating datatoken')
         observer.next(CreateProgressStep.CreatingDataToken)
