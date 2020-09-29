@@ -555,27 +555,37 @@ export class OceanPool extends Pool {
     return results
   }
 
-  private getEventData(action: string, poolAddress: string, data: any): PoolAction {
-    const result = Object()
-    result.action = action
-    result.poolAddress = poolAddress
-    result.caller = data.returnValues[0]
-    result.transactionHash = data.transactionHash
-    result.blockNumber = data.blockNumber
+  private getEventData(action: string, poolAddress: string, data: EventData): PoolAction {
+    let result: PoolAction = {
+      poolAddress,
+      caller: data.returnValues[0],
+      transactionHash: data.transactionHash,
+      blockNumber: data.blockNumber
+    }
+
     switch (action) {
       case 'swap':
-        result.tokenIn = data.returnValues[1]
-        result.tokenOut = data.returnValues[2]
-        result.tokenAmountIn = data.returnValues[3]
-        result.tokenAmountOut = data.returnValues[4]
+        result = {
+          ...result,
+          tokenIn: data.returnValues[1],
+          tokenOut: data.returnValues[2],
+          tokenAmountIn: data.returnValues[3],
+          tokenAmountOut: data.returnValues[4]
+        }
         break
       case 'join':
-        result.tokenIn = data.returnValues[1]
-        result.tokenAmountIn = data.returnValues[2]
+        result = {
+          ...result,
+          tokenIn: data.returnValues[1],
+          tokenAmountIn: data.returnValues[2]
+        }
         break
       case 'exit':
-        result.tokenOut = data.returnValues[1]
-        result.tokenAmountOut = data.returnValues[2]
+        result = {
+          ...result,
+          tokenOut: data.returnValues[1],
+          tokenAmountOut: data.returnValues[2]
+        }
         break
     }
     return result

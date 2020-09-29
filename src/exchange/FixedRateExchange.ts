@@ -1,7 +1,7 @@
 import defaultFixedRateExchangeABI from '@oceanprotocol/contracts/artifacts/FixedRateExchange.json'
 import BigNumber from 'bignumber.js'
 import { TransactionReceipt } from 'web3-core'
-import { Contract } from 'web3-eth-contract'
+import { Contract, EventData } from 'web3-eth-contract'
 import { AbiItem } from 'web3-utils/types'
 import Web3 from 'web3'
 
@@ -434,17 +434,13 @@ export class OceanFixedRateExchange {
     return result
   }
 
-  private getEventData(data: any): FixedPricedSwap {
+  private getEventData(data: EventData): FixedPricedSwap {
     const result: FixedPricedSwap = {
-      exchangeID: null,
-      caller: null,
-      baseTokenAmount: null,
-      dataTokenAmount: null
+      exchangeID: data.returnValues[0],
+      caller: data.returnValues[1],
+      baseTokenAmount: data.returnValues[2],
+      dataTokenAmount: data.returnValues[3]
     }
-    result.exchangeID = data.returnValues[0]
-    result.caller = data.returnValues[1]
-    result.baseTokenAmount = data.returnValues[2]
-    result.dataTokenAmount = data.returnValues[3]
     return result
   }
 }
