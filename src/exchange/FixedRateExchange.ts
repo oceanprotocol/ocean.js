@@ -5,7 +5,7 @@ import { Contract, EventData } from 'web3-eth-contract'
 import { AbiItem } from 'web3-utils/types'
 import Web3 from 'web3'
 
-export interface FixedPricedExchange {
+export interface FixedPriceExchange {
   exchangeID?: string
   exchangeOwner: string
   dataToken: string
@@ -15,7 +15,7 @@ export interface FixedPricedExchange {
   supply: string
 }
 
-export interface FixedPricedSwap {
+export interface FixedPriceSwap {
   exchangeID: string
   caller: string
   baseTokenAmount: string
@@ -298,8 +298,8 @@ export class OceanFixedRateExchange {
    * @param {String} exchangeId ExchangeId
    * @return {Promise<FixedPricedExchange>} Exchange details
    */
-  public async getExchange(exchangeId: string): Promise<FixedPricedExchange> {
-    const result: FixedPricedExchange = await this.contract.methods
+  public async getExchange(exchangeId: string): Promise<FixedPriceExchange> {
+    const result: FixedPriceExchange = await this.contract.methods
       .getExchange(exchangeId)
       .call()
     return result
@@ -343,8 +343,8 @@ export class OceanFixedRateExchange {
   public async searchforDT(
     dataTokenAddress: string,
     minSupply: string
-  ): Promise<FixedPricedExchange[]> {
-    const result: FixedPricedExchange[] = []
+  ): Promise<FixedPriceExchange[]> {
+    const result: FixedPriceExchange[] = []
     const events = await this.contract.getPastEvents('ExchangeCreated', {
       filter: { datatoken: dataTokenAddress },
       fromBlock: 0,
@@ -369,8 +369,8 @@ export class OceanFixedRateExchange {
    * @param {String} account
    * @return {Promise<FixedPricedExchange[]>}
    */
-  public async getExchangesbyCreator(account?: string): Promise<FixedPricedExchange[]> {
-    const result: FixedPricedExchange[] = []
+  public async getExchangesbyCreator(account?: string): Promise<FixedPriceExchange[]> {
+    const result: FixedPriceExchange[] = []
     const events = await this.contract.getPastEvents('ExchangeCreated', {
       filter: {},
       fromBlock: 0,
@@ -394,8 +394,8 @@ export class OceanFixedRateExchange {
   public async getExchangeSwaps(
     exchangeId: string,
     account?: string
-  ): Promise<FixedPricedSwap[]> {
-    const result: FixedPricedSwap[] = []
+  ): Promise<FixedPriceSwap[]> {
+    const result: FixedPriceSwap[] = []
     const events = await this.contract.getPastEvents('Swapped', {
       filter: { exchangeId: exchangeId },
       fromBlock: 0,
@@ -415,15 +415,15 @@ export class OceanFixedRateExchange {
    * @param {String} account
    * @return {Promise<FixedPricedSwap[]>}
    */
-  public async getAllExchangesSwaps(account: string): Promise<FixedPricedSwap[]> {
-    const result: FixedPricedSwap[] = []
+  public async getAllExchangesSwaps(account: string): Promise<FixedPriceSwap[]> {
+    const result: FixedPriceSwap[] = []
     const events = await this.contract.getPastEvents('ExchangeCreated', {
       filter: {},
       fromBlock: 0,
       toBlock: 'latest'
     })
     for (let i = 0; i < events.length; i++) {
-      const swaps: FixedPricedSwap[] = await this.getExchangeSwaps(
+      const swaps: FixedPriceSwap[] = await this.getExchangeSwaps(
         events[i].returnValues[0],
         account
       )
@@ -434,8 +434,8 @@ export class OceanFixedRateExchange {
     return result
   }
 
-  private getEventData(data: EventData): FixedPricedSwap {
-    const result: FixedPricedSwap = {
+  private getEventData(data: EventData): FixedPriceSwap {
+    const result: FixedPriceSwap = {
       exchangeID: data.returnValues[0],
       caller: data.returnValues[1],
       baseTokenAmount: data.returnValues[2],

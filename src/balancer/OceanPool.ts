@@ -427,10 +427,7 @@ export class OceanPool extends Pool {
    * Get all actions from a pool (join,exit,swap)
    * @param {String} poolAddress Pool address
    * @param {String} account
-   * @param {Boolean} swaps Include swaps
-   * @param {Boolean} joins Include joins
-   * @param {Boolean} exits Include exits
-   * @return {PoolLogs}
+   * @return {PoolTransaction[]}
    */
   public async getPoolLogs(
     poolAddress: string,
@@ -478,7 +475,7 @@ export class OceanPool extends Pool {
   /**
    * Get all logs on all pools for a specific address
    * @param {String} account
-   * @return {PoolLogs}
+   * @return {PoolTransaction[]}
    */
   public async getAllPoolLogs(account: string): Promise<PoolTransaction[]> {
     const results: PoolTransaction[] = []
