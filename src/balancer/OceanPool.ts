@@ -22,7 +22,7 @@ export interface PoolTransaction {
   tokenOut?: string
   tokenAmountIn?: string
   tokenAmountOut?: string
-  type: 'join' | 'exit' | 'swap'
+  type: PoolTransactionType
 }
 
 /**
