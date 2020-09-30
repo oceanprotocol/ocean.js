@@ -103,7 +103,7 @@
   },
   "release-it": {
     "hooks": {
-      "after:bump": "npm run changelog && npm run doc:json"
+      "after:bump": "npm run build && npm run changelog && npm run doc:json"
     },
     "plugins": {
       "@release-it/bumper": {
