@@ -377,10 +377,8 @@ export class OceanFixedRateExchange {
       toBlock: 'latest'
     })
     for (let i = 0; i < events.length; i++) {
-      if (account) {
-        if (events[i].returnValues[3] === account)
-          result.push(await this.getExchange(events[i].returnValues[0]))
-      } else result.push(await this.getExchange(events[i].returnValues[0]))
+      if (!account || events[i].returnValues[3] === account)
+        result.push(await this.getExchange(events[i].returnValues[0]))
     }
     return result
   }
@@ -402,10 +400,8 @@ export class OceanFixedRateExchange {
       toBlock: 'latest'
     })
     for (let i = 0; i < events.length; i++) {
-      if (account) {
-        if (events[i].returnValues[1] === account)
-          result.push(this.getEventData(events[i]))
-      } else result.push(this.getEventData(events[i]))
+      if (!account || events[i].returnValues[1] === account)
+        result.push(this.getEventData(events[i]))
     }
     return result
   }
