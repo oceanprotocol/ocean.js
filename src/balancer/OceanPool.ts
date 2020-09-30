@@ -9,22 +9,20 @@ export interface PoolDetails {
   tokens: string[]
 }
 
-export interface PoolAction {
+export interface PoolTransaction {
   poolAddress: string
+  dtAddress: string
   caller: string
   transactionHash: string
   blockNumber: number
+  timestamp: number
   tokenIn?: string
   tokenOut?: string
   tokenAmountIn?: string
   tokenAmountOut?: string
+  type: 'join' | 'exit' | 'swap'
 }
 
-export interface PoolLogs {
-  joins?: PoolAction[]
-  exits?: PoolAction[]
-  swaps?: PoolAction[]
-}
 /**
  * Ocean Pools submodule exposed under ocean.pool
  */
@@ -104,7 +102,7 @@ export class OceanPool extends Pool {
    * @param {String} poolAddress
    * @return {string}
    */
-  public async getDTAddress(account: string, poolAddress: string): Promise<string> {
+  public async getDTAddress(poolAddress: string): Promise<string> {
     this.dtAddress = null
     const tokens = await this.getCurrentTokens(poolAddress)
     let token: string
@@ -137,7 +135,7 @@ export class OceanPool extends Pool {
    * @return {String}
    */
   public async getDTReserve(account: string, poolAddress: string): Promise<string> {
-    await this.getDTAddress(account, poolAddress)
+    await this.getDTAddress(poolAddress)
     return super.getReserve(account, poolAddress, this.dtAddress)
   }
 
@@ -161,7 +159,7 @@ export class OceanPool extends Pool {
       console.error('oceanAddress is not defined')
       return null
     }
-    await this.getDTAddress(account, poolAddress)
+    await this.getDTAddress(poolAddress)
 
     // TODO - check balances first
     await super.approve(
@@ -202,7 +200,7 @@ export class OceanPool extends Pool {
       console.error('oceanAddress is not defined')
       return null
     }
-    await this.getDTAddress(account, poolAddress)
+    await this.getDTAddress(poolAddress)
     return this.swapExactAmountOut(
       account,
       poolAddress,
@@ -226,7 +224,7 @@ export class OceanPool extends Pool {
     poolAddress: string,
     amount: string
   ): Promise<TransactionReceipt> {
-    await this.getDTAddress(account, poolAddress)
+    await this.getDTAddress(poolAddress)
     await super.approve(
       account,
       this.dtAddress,
@@ -256,7 +254,7 @@ export class OceanPool extends Pool {
     amount: string,
     maximumPoolShares: string
   ): Promise<TransactionReceipt> {
-    await this.getDTAddress(account, poolAddress)
+    await this.getDTAddress(poolAddress)
     // TODO Check balance of PoolShares before doing exit
     return this.exitswapExternAmountOut(
       account,
@@ -368,7 +366,7 @@ export class OceanPool extends Pool {
     poolAddress: string,
     dtRequired: string
   ): Promise<string> {
-    await this.getDTAddress(account, poolAddress)
+    await this.getDTAddress(poolAddress)
     const tokenBalanceIn = await this.getReserve(account, poolAddress, this.oceanAddress)
     const tokenWeightIn = await this.getDenormalizedWeight(
       account,
@@ -439,82 +437,69 @@ export class OceanPool extends Pool {
    */
   public async getPoolLogs(
     poolAddress: string,
-    account?: string,
-    swaps?: boolean,
-    joins?: boolean,
-    exits?: boolean
-  ): Promise<PoolLogs> {
-    const results: PoolLogs = { joins: [], exits: [], swaps: [] }
+    account?: string
+  ): Promise<PoolTransaction[]> {
+    const results: PoolTransaction[] = []
     const pool = new this.web3.eth.Contract(this.poolABI, poolAddress, { from: account })
+    const dtAddress = await this.getDTAddress(poolAddress)
     const myFilter: Filter = account ? { caller: account } : {}
     let events: EventData[]
 
-    if (swaps) {
-      events = await pool.getPastEvents('LOG_SWAP', {
-        filter: myFilter,
-        fromBlock: 0,
-        toBlock: 'latest'
-      })
-      for (let i = 0; i < events.length; i++) {
-        if (account) {
-          if (events[i].returnValues[0] === account) {
-            results.swaps.push(this.getEventData('swap', poolAddress, events[i]))
-          }
-        } else {
-          results.swaps.push(this.getEventData('swap', poolAddress, events[i]))
+    events = await pool.getPastEvents('LOG_SWAP', {
+      filter: myFilter,
+      fromBlock: 0,
+      toBlock: 'latest'
+    })
+    for (let i = 0; i < events.length; i++) {
+      if (account) {
+        if (events[i].returnValues[0] === account) {
+          results.push(await this.getEventData('swap', poolAddress, dtAddress, events[i]))
         }
+      } else {
+        results.push(await this.getEventData('swap', poolAddress, dtAddress, events[i]))
       }
     }
-    if (joins) {
-      events = await pool.getPastEvents('LOG_JOIN', {
-        filter: myFilter,
-        fromBlock: 0,
-        toBlock: 'latest'
-      })
-      for (let i = 0; i < events.length; i++) {
-        if (account) {
-          if (events[i].returnValues[0] === account) {
-            results.joins.push(this.getEventData('join', poolAddress, events[i]))
-          }
-        } else {
-          results.joins.push(this.getEventData('join', poolAddress, events[i]))
+
+    events = await pool.getPastEvents('LOG_JOIN', {
+      filter: myFilter,
+      fromBlock: 0,
+      toBlock: 'latest'
+    })
+    for (let i = 0; i < events.length; i++) {
+      if (account) {
+        if (events[i].returnValues[0] === account) {
+          results.push(await this.getEventData('join', poolAddress, dtAddress, events[i]))
         }
+      } else {
+        results.push(await this.getEventData('join', poolAddress, dtAddress, events[i]))
       }
     }
-    if (exits) {
-      events = await pool.getPastEvents('LOG_EXIT', {
-        filter: myFilter,
-        fromBlock: 0,
-        toBlock: 'latest'
-      })
-      for (let i = 0; i < events.length; i++) {
-        if (account) {
-          if (events[i].returnValues[0] === account) {
-            results.exits.push(this.getEventData('exit', poolAddress, events[i]))
-          }
-        } else {
-          results.exits.push(this.getEventData('exit', poolAddress, events[i]))
+
+    events = await pool.getPastEvents('LOG_EXIT', {
+      filter: myFilter,
+      fromBlock: 0,
+      toBlock: 'latest'
+    })
+    for (let i = 0; i < events.length; i++) {
+      if (account) {
+        if (events[i].returnValues[0] === account) {
+          results.push(await this.getEventData('exit', poolAddress, dtAddress, events[i]))
         }
+      } else {
+        results.push(await this.getEventData('exit', poolAddress, dtAddress, events[i]))
       }
     }
+
     return results
   }
 
   /**
    * Get all logs on all pools for a specific address
    * @param {String} account
-   * @param {Boolean} swaps Include swaps
-   * @param {Boolean} joins Include joins
-   * @param {Boolean} exits Include exits
    * @return {PoolLogs}
    */
-  public async getAllPoolLogs(
-    account: string,
-    swaps?: boolean,
-    joins?: boolean,
-    exits?: boolean
-  ): Promise<PoolLogs> {
-    const results: PoolLogs = { joins: [], exits: [], swaps: [] }
+  public async getAllPoolLogs(account: string): Promise<PoolTransaction[]> {
+    const results: PoolTransaction[] = []
     const factory = new this.web3.eth.Contract(this.factoryABI, this.factoryAddress, {
       from: account
     })
@@ -524,36 +509,27 @@ export class OceanPool extends Pool {
       toBlock: 'latest'
     })
     for (let i = 0; i < events.length; i++) {
-      const logs = await this.getPoolLogs(
-        events[i].returnValues[0],
-        account,
-        swaps,
-        joins,
-        exits
-      )
-      logs.joins.forEach((log) => {
-        results.joins.push(log)
-      })
-      logs.exits.forEach((log) => {
-        results.exits.push(log)
-      })
-      logs.swaps.forEach((log) => {
-        results.swaps.push(log)
-      })
+      const logs = await this.getPoolLogs(events[i].returnValues[0], account)
+      for (let j = 0; j < logs.length; j++) results.push(logs[j])
     }
     return results
   }
 
-  private getEventData(
+  private async getEventData(
     action: 'swap' | 'join' | 'exit',
     poolAddress: string,
+    dtAddress: string,
     data: EventData
-  ): PoolAction {
-    let result: PoolAction = {
+  ): Promise<PoolTransaction> {
+    const blockDetails = await this.web3.eth.getBlock(data.blockNumber)
+    let result: PoolTransaction = {
       poolAddress,
+      dtAddress,
       caller: data.returnValues[0],
       transactionHash: data.transactionHash,
-      blockNumber: data.blockNumber
+      blockNumber: data.blockNumber,
+      timestamp: parseInt(String(blockDetails.timestamp)),
+      type: action
     }
 
     switch (action) {

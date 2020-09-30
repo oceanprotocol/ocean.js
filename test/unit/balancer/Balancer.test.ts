@@ -277,11 +277,11 @@ describe('Balancer flow', () => {
   })
 
   it('ALice should get the logs for her pool', async () => {
-    const poolLogs = await Pool.getPoolLogs(greatPool, null, true, true, true)
-    assert(poolLogs.joins.length > 0)
+    const poolLogs = await Pool.getPoolLogs(greatPool, null)
+    assert(poolLogs.length > 0)
   })
   it('Bob should get the logs for all his activities', async () => {
-    const poolLogs = await Pool.getAllPoolLogs(bob, true, true, true)
-    assert(poolLogs.swaps.length > 0)
+    const poolLogs = await Pool.getAllPoolLogs(bob)
+    assert(poolLogs.length > 0)
   })
 })
