@@ -493,7 +493,7 @@ export class OceanPool extends Pool {
   }
 
   private async getEventData(
-    action: 'swap' | 'join' | 'exit',
+    type: 'swap' | 'join' | 'exit',
     poolAddress: string,
     dtAddress: string,
     data: EventData
@@ -506,10 +506,10 @@ export class OceanPool extends Pool {
       transactionHash: data.transactionHash,
       blockNumber: data.blockNumber,
       timestamp: parseInt(String(blockDetails.timestamp)),
-      type: action
+      type
     }
 
-    switch (action) {
+    switch (type) {
       case 'swap':
         result = {
           ...result,
