@@ -520,8 +520,8 @@ export class OceanPool extends Pool {
           ...result,
           tokenIn: data.returnValues[1],
           tokenOut: data.returnValues[2],
-          tokenAmountIn: data.returnValues[3],
-          tokenAmountOut: data.returnValues[4]
+          tokenAmountIn: this.web3.utils.fromWei(data.returnValues[3]),
+          tokenAmountOut: this.web3.utils.fromWei(data.returnValues[4])
         }
         break
       case 'join':
