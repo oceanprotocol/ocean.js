@@ -4,6 +4,8 @@ import { TransactionReceipt } from 'web3-core'
 import { Pool } from './Pool'
 import { EventData, Filter } from 'web3-eth-contract'
 
+declare type PoolTransactionType = 'swap' | 'join' | 'exit'
+
 export interface PoolDetails {
   poolAddress: string
   tokens: string[]
@@ -493,7 +495,7 @@ export class OceanPool extends Pool {
   }
 
   private async getEventData(
-    type: 'swap' | 'join' | 'exit',
+    type: PoolTransactionType,
     poolAddress: string,
     dtAddress: string,
     data: EventData
