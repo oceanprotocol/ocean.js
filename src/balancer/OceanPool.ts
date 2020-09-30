@@ -438,31 +438,33 @@ export class OceanPool extends Pool {
     const results: PoolTransaction[] = []
     const pool = new this.web3.eth.Contract(this.poolABI, poolAddress)
     const dtAddress = await this.getDTAddress(poolAddress)
-    const myFilter: Filter = account ? { caller: account } : {}
+    const filter: Filter = account ? { caller: account } : {}
     let events: EventData[]
 
     events = await pool.getPastEvents('LOG_SWAP', {
-      filter: myFilter,
+      filter,
       fromBlock: 0,
       toBlock: 'latest'
     })
+
     for (let i = 0; i < events.length; i++) {
       if (!account || events[i].returnValues[0].toLowerCase() === account.toLowerCase())
         results.push(await this.getEventData('swap', poolAddress, dtAddress, events[i]))
     }
 
     events = await pool.getPastEvents('LOG_JOIN', {
-      filter: myFilter,
+      filter,
       fromBlock: 0,
       toBlock: 'latest'
     })
+    console.log(events)
     for (let i = 0; i < events.length; i++) {
       if (!account || events[i].returnValues[0].toLowerCase() === account.toLowerCase())
         results.push(await this.getEventData('join', poolAddress, dtAddress, events[i]))
     }
 
     events = await pool.getPastEvents('LOG_EXIT', {
-      filter: myFilter,
+      filter,
       fromBlock: 0,
       toBlock: 'latest'
     })
@@ -487,6 +489,7 @@ export class OceanPool extends Pool {
       fromBlock: 0,
       toBlock: 'latest'
     })
+    console.log(events)
     for (let i = 0; i < events.length; i++) {
       const logs = await this.getPoolLogs(events[i].returnValues[0], account)
       for (let j = 0; j < logs.length; j++) results.push(logs[j])
