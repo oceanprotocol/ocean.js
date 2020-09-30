@@ -406,11 +406,8 @@ export class OceanPool extends Pool {
     })
 
     for (let i = 0; i < events.length; i++) {
-      if (account) {
-        if (events[i].returnValues[1] === account) {
-          result.push(await this.getPoolDetails(events[i].returnValues[0]))
-        }
-      } else result.push(await this.getPoolDetails(events[i].returnValues[0]))
+      if (!account || events[i].returnValues[1] === account)
+        result.push(await this.getPoolDetails(events[i].returnValues[0]))
     }
     return result
   }
@@ -440,7 +437,7 @@ export class OceanPool extends Pool {
     account?: string
   ): Promise<PoolTransaction[]> {
     const results: PoolTransaction[] = []
-    const pool = new this.web3.eth.Contract(this.poolABI, poolAddress, { from: account })
+    const pool = new this.web3.eth.Contract(this.poolABI, poolAddress)
     const dtAddress = await this.getDTAddress(poolAddress)
     const myFilter: Filter = account ? { caller: account } : {}
     let events: EventData[]
@@ -451,13 +448,8 @@ export class OceanPool extends Pool {
       toBlock: 'latest'
     })
     for (let i = 0; i < events.length; i++) {
-      if (account) {
-        if (events[i].returnValues[0] === account) {
-          results.push(await this.getEventData('swap', poolAddress, dtAddress, events[i]))
-        }
-      } else {
+      if (!account || events[i].returnValues[0] === account)
         results.push(await this.getEventData('swap', poolAddress, dtAddress, events[i]))
-      }
     }
 
     events = await pool.getPastEvents('LOG_JOIN', {
@@ -466,13 +458,8 @@ export class OceanPool extends Pool {
       toBlock: 'latest'
     })
     for (let i = 0; i < events.length; i++) {
-      if (account) {
-        if (events[i].returnValues[0] === account) {
-          results.push(await this.getEventData('join', poolAddress, dtAddress, events[i]))
-        }
-      } else {
+      if (!account || events[i].returnValues[0] === account)
         results.push(await this.getEventData('join', poolAddress, dtAddress, events[i]))
-      }
     }
 
     events = await pool.getPastEvents('LOG_EXIT', {
@@ -481,13 +468,8 @@ export class OceanPool extends Pool {
       toBlock: 'latest'
     })
     for (let i = 0; i < events.length; i++) {
-      if (account) {
-        if (events[i].returnValues[0] === account) {
-          results.push(await this.getEventData('exit', poolAddress, dtAddress, events[i]))
-        }
-      } else {
+      if (!account || events[i].returnValues[0] === account)
         results.push(await this.getEventData('exit', poolAddress, dtAddress, events[i]))
-      }
     }
 
     return results
@@ -500,9 +482,7 @@ export class OceanPool extends Pool {
    */
   public async getAllPoolLogs(account: string): Promise<PoolTransaction[]> {
     const results: PoolTransaction[] = []
-    const factory = new this.web3.eth.Contract(this.factoryABI, this.factoryAddress, {
-      from: account
-    })
+    const factory = new this.web3.eth.Contract(this.factoryABI, this.factoryAddress)
     const events = await factory.getPastEvents('BPoolRegistered', {
       filter: {},
       fromBlock: 0,
