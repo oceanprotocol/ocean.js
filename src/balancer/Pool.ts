@@ -15,7 +15,7 @@ export interface TokensToAdd {
 }
 
 export class Pool extends PoolFactory {
-  private poolABI: AbiItem | AbiItem[]
+  public poolABI: AbiItem | AbiItem[]
 
   constructor(
     web3: Web3,
@@ -275,14 +275,11 @@ export class Pool extends PoolFactory {
 
   /**
    * Get tokens composing this pool
-   * @param {String} account
    * @param {String} poolAddress
    * @return {String[]}
    */
-  async getCurrentTokens(account: string, poolAddress: string): Promise<string[]> {
-    const pool = new this.web3.eth.Contract(this.poolABI, poolAddress, {
-      from: account
-    })
+  async getCurrentTokens(poolAddress: string): Promise<string[]> {
+    const pool = new this.web3.eth.Contract(this.poolABI, poolAddress)
     let result = null
     try {
       result = await pool.methods.getCurrentTokens().call()
@@ -294,14 +291,11 @@ export class Pool extends PoolFactory {
 
   /**
    * Get the final tokens composing this pool
-   * @param {String} account
    * @param {String} poolAddress
    * @return {String[]}
    */
-  async getFinalTokens(account: string, poolAddress: string): Promise<string[]> {
-    const pool = new this.web3.eth.Contract(this.poolABI, poolAddress, {
-      from: account
-    })
+  async getFinalTokens(poolAddress: string): Promise<string[]> {
+    const pool = new this.web3.eth.Contract(this.poolABI, poolAddress)
     let result = null
     try {
       result = await pool.methods.getFinalTokens().call()

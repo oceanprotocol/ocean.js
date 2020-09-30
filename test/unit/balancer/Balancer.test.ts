@@ -122,7 +122,7 @@ describe('Balancer flow', () => {
     assert(String(n) === '2', 'unexpected num tokens: ' + n)
   })
   it('Get pool information', async () => {
-    const currentTokens = await Pool.getCurrentTokens(alice, alicePoolAddress)
+    const currentTokens = await Pool.getCurrentTokens(alicePoolAddress)
     assert(currentTokens.length === 2)
     assert(currentTokens.includes(tokenAddress))
     assert(currentTokens.includes(oceanTokenAddress))
@@ -269,5 +269,19 @@ describe('Balancer flow', () => {
     assert(parseFloat(newDtReserve) < parseFloat(currentDtReserve))
     assert(parseFloat(bobDtBalance) < parseFloat(newbobDtBalance))
     assert(parseFloat(poolShares) > parseFloat(newpoolShares))
+  })
+
+  it('ALice should get all the pools that she created', async () => {
+    const alicePools = await Pool.getPoolsbyCreator(alice)
+    assert(alicePools.length > 0)
+  })
+
+  it('ALice should get the logs for her pool', async () => {
+    const poolLogs = await Pool.getPoolLogs(greatPool, null)
+    assert(poolLogs.length > 0)
+  })
+  it('Bob should get the logs for all his activities', async () => {
+    const poolLogs = await Pool.getAllPoolLogs(bob)
+    assert(poolLogs.length > 0)
   })
 })
