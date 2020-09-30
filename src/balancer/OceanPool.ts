@@ -448,7 +448,7 @@ export class OceanPool extends Pool {
     })
 
     for (let i = 0; i < events.length; i++) {
-      if (!account || events[i].returnValues[0].toLowerCase() === account.toLowerCase())
+      if (!account || events[i].returnValues[0] === account)
         results.push(await this.getEventData('swap', poolAddress, dtAddress, events[i]))
     }
 
@@ -457,9 +457,9 @@ export class OceanPool extends Pool {
       fromBlock: 0,
       toBlock: 'latest'
     })
-    console.log(events)
+
     for (let i = 0; i < events.length; i++) {
-      if (!account || events[i].returnValues[0].toLowerCase() === account.toLowerCase())
+      if (!account || events[i].returnValues[0] === account)
         results.push(await this.getEventData('join', poolAddress, dtAddress, events[i]))
     }
 
@@ -469,7 +469,7 @@ export class OceanPool extends Pool {
       toBlock: 'latest'
     })
     for (let i = 0; i < events.length; i++) {
-      if (!account || events[i].returnValues[0].toLowerCase() === account.toLowerCase())
+      if (!account || events[i].returnValues[0] === account)
         results.push(await this.getEventData('exit', poolAddress, dtAddress, events[i]))
     }
 
@@ -489,7 +489,7 @@ export class OceanPool extends Pool {
       fromBlock: 0,
       toBlock: 'latest'
     })
-    console.log(events)
+
     for (let i = 0; i < events.length; i++) {
       const logs = await this.getPoolLogs(events[i].returnValues[0], account)
       for (let j = 0; j < logs.length; j++) results.push(logs[j])
