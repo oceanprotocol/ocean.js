@@ -401,13 +401,13 @@ export class DataTokens {
         String(events[i].returnValues.serviceId) === String(serviceId) &&
         events[i].returnValues.consumer.toLowerCase() === address.toLowerCase()
       ) {
-          if (timeout === 0) return events[i].transactionHash
-          const blockDetails = await this.web3.eth.getBlock(events[i].blockHash)
-          const expiry = new BigNumber(blockDetails.timestamp).plus(timeout)
-          const unixTime = new BigNumber(Math.floor(Date.now() / 1000))
-          if (unixTime.isLessThan(expiry)) return events[i].transactionHash
-        //}
+        if (timeout === 0) return events[i].transactionHash
+        const blockDetails = await this.web3.eth.getBlock(events[i].blockHash)
+        const expiry = new BigNumber(blockDetails.timestamp).plus(timeout)
+        const unixTime = new BigNumber(Math.floor(Date.now() / 1000))
+        if (unixTime.isLessThan(expiry)) return events[i].transactionHash
       }
+    }
     return null
   }
 }
