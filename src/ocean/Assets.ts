@@ -595,9 +595,13 @@ export class Assets extends Instantiable {
   /**
    * get Order History
    * @param {Account} account
+   * @param {string} serviceType Optional, filter by
    * @return {Promise<OrderHistory[]>} transactionHash of the payment
    */
-  public async getOrderHistory(account: Account): Promise<OrderHistory[]> {
+  public async getOrderHistory(
+    account: Account,
+    serviceType?: string
+  ): Promise<OrderHistory[]> {
     const results: OrderHistory[] = []
     const address = this.web3.utils.toChecksumAddress(account.getId())
     const events = await this.web3.eth.getPastLogs({
@@ -623,7 +627,8 @@ export class Assets extends Instantiable {
       order.did = didPrefixed(didNoZeroX(order.dtAddress))
       const service = await this.getServiceByIndex(order.did, order.serviceId)
       order.serviceType = service.type
-      results.push(order)
+      if (!serviceType || (serviceType && serviceType === service.type))
+        results.push(order)
     }
     return results
   }
