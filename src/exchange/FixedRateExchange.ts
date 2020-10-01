@@ -205,10 +205,13 @@ export class OceanFixedRateExchange {
     exchangeId: string,
     address: string
   ): Promise<TransactionReceipt> {
+    const exchange = await this.getExchange(exchangeId)
+    if (!exchange) return null
+    if (exchange.active === true) return null
     let estGas
     try {
       estGas = await this.contract.methods
-        .activate(exchangeId)
+        .toggleExchangeState(exchangeId)
         .estimateGas(function (err, estGas) {
           if (err) {
             // console.log('FixedPriceExchange: ' + err)
@@ -219,7 +222,7 @@ export class OceanFixedRateExchange {
     } catch (e) {
       estGas = DEFAULT_GAS_LIMIT
     }
-    const trxReceipt = await this.contract.methods.activate(exchangeId).send({
+    const trxReceipt = await this.contract.methods.toggleExchangeState(exchangeId).send({
       from: address,
       gas: estGas + 1
     })
@@ -236,10 +239,13 @@ export class OceanFixedRateExchange {
     exchangeId: string,
     address: string
   ): Promise<TransactionReceipt> {
+    const exchange = await this.getExchange(exchangeId)
+    if (!exchange) return null
+    if (exchange.active === false) return null
     let estGas
     try {
       estGas = await this.contract.methods
-        .deactivate(exchangeId)
+        .toggleExchangeState(exchangeId)
         .estimateGas(function (err, estGas) {
           if (err) {
             // console.log('FixedPriceExchange: ' + err)
@@ -250,7 +256,7 @@ export class OceanFixedRateExchange {
     } catch (e) {
       estGas = DEFAULT_GAS_LIMIT
     }
-    const trxReceipt = await this.contract.methods.deactivate(exchangeId).send({
+    const trxReceipt = await this.contract.methods.toggleExchangeState(exchangeId).send({
       from: address,
       gas: estGas + 1
     })
