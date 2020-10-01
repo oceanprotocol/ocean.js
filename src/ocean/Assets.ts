@@ -33,7 +33,7 @@ export enum OrderProgressStep {
   TransferDataToken
 }
 
-export interface OrderHistory {
+export interface Order {
   dtAddress: string
   amount: string
   timestamp: number
@@ -603,8 +603,8 @@ export class Assets extends Instantiable {
     account: Account,
     serviceType?: string,
     fromBlock?: number
-  ): Promise<OrderHistory[]> {
-    const results: OrderHistory[] = []
+  ): Promise<Order[]> {
+    const results: Order[] = []
     const address = this.web3.utils.toChecksumAddress(account.getId())
     const events = await this.web3.eth.getPastLogs({
       topics: [
@@ -614,7 +614,7 @@ export class Assets extends Instantiable {
     })
     for (let i = 0; i < events.length; i++) {
       const blockDetails = await this.web3.eth.getBlock(events[i].blockNumber)
-      const order: OrderHistory = {
+      const order: Order = {
         dtAddress: events[i].address,
         timestamp: parseInt(String(blockDetails.timestamp)),
         transactionHash: events[i].transactionHash,
