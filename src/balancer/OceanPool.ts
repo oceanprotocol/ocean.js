@@ -326,7 +326,6 @@ export class OceanPool extends Pool {
 
   /**
    * Get Data Token price from pool
-   * @param {String} account
    * @param {String} poolAddress
    * @return {String}
    */
@@ -340,7 +339,6 @@ export class OceanPool extends Pool {
 
   /**
    * Search all pools that have Data Token in their composition
-   * @param {String} account
    * @param {String} dtAddress
    * @return {String[]}
    */
