@@ -11,7 +11,7 @@ import {
 import { EditableMetadata } from '../ddo/interfaces/EditableMetadata'
 import Account from './Account'
 import DID from './DID'
-import { SubscribablePromise } from '../utils'
+import { SubscribablePromise, didNoZeroX, didPrefixed } from '../utils'
 import { Instantiable, InstantiableConfig } from '../Instantiable.abstract'
 import { WebServiceConnector } from './utils/WebServiceConnector'
 import BigNumber from 'bignumber.js'
@@ -31,6 +31,15 @@ export enum CreateProgressStep {
 
 export enum OrderProgressStep {
   TransferDataToken
+}
+
+export interface OrderHistory {
+  dtAddress: string
+  timestamp: number
+  transactionHash: string
+  did?: string
+  serviceId?: number
+  serviceType?: string
 }
 
 /**
@@ -580,5 +589,39 @@ export class Assets extends Instantiable {
     }
 
     return serviceEndpoint
+  }
+
+  /**
+   * get Order History
+   * @param {Account} account
+   * @return {Promise<OrderHistory[]>} transactionHash of the payment
+   */
+  public async getOrderHistory(account: Account): Promise<OrderHistory[]> {
+    const results: OrderHistory[] = []
+    const address = this.web3.utils.toChecksumAddress(account.getId())
+    const events = await this.web3.eth.getPastLogs({
+      topics: [
+        ['0x24c95b9bea47f62df4b9eea32c98c597eccfc5cac47f8477647be875ad925eee', address]
+      ],
+      fromBlock: 0
+    })
+    for (let i = 0; i < events.length; i++) {
+      const blockDetails = await this.web3.eth.getBlock(events[i].blockNumber)
+      const order: OrderHistory = {
+        dtAddress: events[i].address,
+        timestamp: parseInt(String(blockDetails.timestamp)),
+        transactionHash: events[i].transactionHash
+      }
+      const params = this.web3.eth.abi.decodeParameters(
+        ['uint256', 'uint256', 'uint256', 'uint256'],
+        events[i].data
+      )
+      order.serviceId = parseInt(params[1])
+      order.did = didPrefixed(didNoZeroX(order.dtAddress))
+      const service = await this.getServiceByIndex(order.did, order.serviceId)
+      order.serviceType = service.type
+      results.push(order)
+    }
+    return results
   }
 }
