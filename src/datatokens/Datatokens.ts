@@ -391,22 +391,21 @@ export class DataTokens {
       from: address
     })
     const events = await datatoken.getPastEvents('OrderStarted', {
+      filter: { consumer: address },
       fromBlock: 0,
       toBlock: 'latest'
     })
     for (let i = 0; i < events.length; i++) {
       if (
         String(events[i].returnValues.amount) === this.web3.utils.toWei(String(amount)) &&
-        String(events[i].returnValues.serviceId) === String(serviceId)
+        String(events[i].returnValues.serviceId) === String(serviceId) &&
+        events[i].returnValues.consumer.toLowerCase() === address.toLowerCase()
       ) {
-        const transaction = await this.web3.eth.getTransaction(events[i].transactionHash)
-        if (transaction.from === address) {
-          if (timeout === 0) return events[i].transactionHash
-          const blockDetails = await this.web3.eth.getBlock(events[i].blockHash)
-          const expiry = new BigNumber(blockDetails.timestamp).plus(timeout)
-          const unixTime = new BigNumber(Math.floor(Date.now() / 1000))
-          if (unixTime.isLessThan(expiry)) return events[i].transactionHash
-        }
+        if (timeout === 0) return events[i].transactionHash
+        const blockDetails = await this.web3.eth.getBlock(events[i].blockHash)
+        const expiry = new BigNumber(blockDetails.timestamp).plus(timeout)
+        const unixTime = new BigNumber(Math.floor(Date.now() / 1000))
+        if (unixTime.isLessThan(expiry)) return events[i].transactionHash
       }
     }
     return null
