@@ -596,11 +596,13 @@ export class Assets extends Instantiable {
    * get Order History
    * @param {Account} account
    * @param {string} serviceType Optional, filter by
+   * @param {number} fromBlock Optional, start at block
    * @return {Promise<OrderHistory[]>} transactionHash of the payment
    */
   public async getOrderHistory(
     account: Account,
-    serviceType?: string
+    serviceType?: string,
+    fromBlock?: number
   ): Promise<OrderHistory[]> {
     const results: OrderHistory[] = []
     const address = this.web3.utils.toChecksumAddress(account.getId())
@@ -608,7 +610,7 @@ export class Assets extends Instantiable {
       topics: [
         ['0x24c95b9bea47f62df4b9eea32c98c597eccfc5cac47f8477647be875ad925eee', address]
       ],
-      fromBlock: 0
+      fromBlock: fromBlock || 0
     })
     for (let i = 0; i < events.length; i++) {
       const blockDetails = await this.web3.eth.getBlock(events[i].blockNumber)
