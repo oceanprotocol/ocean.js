@@ -252,4 +252,8 @@ describe('Marketplace flow', () => {
     ddo = await ocean.assets.create(asset, alice, [service1])
     assert.equal(ddo, null)
   })
+  it('Alice gets hers order History', async () => {
+    const history = await ocean.assets.getOrderHistory(alice)
+    assert(history.length > 0)
+  })
 })

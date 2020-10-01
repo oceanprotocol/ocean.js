@@ -460,7 +460,10 @@ describe('Compute flow', () => {
       newComputePrivacy.trustedAlgorithms
     )
   })
-
+  it('Bob gets his order History', async () => {
+    const history = await ocean.assets.getOrderHistory(bob)
+    assert(history.length > 0)
+  })
   // it('Bob restarts compute job', async () => {})
   // it('Bob gets outputs', async () => {})
 })

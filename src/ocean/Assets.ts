@@ -11,7 +11,7 @@ import {
 import { EditableMetadata } from '../ddo/interfaces/EditableMetadata'
 import Account from './Account'
 import DID from './DID'
-import { SubscribablePromise } from '../utils'
+import { SubscribablePromise, didNoZeroX, didPrefixed } from '../utils'
 import { Instantiable, InstantiableConfig } from '../Instantiable.abstract'
 import { WebServiceConnector } from './utils/WebServiceConnector'
 import BigNumber from 'bignumber.js'
@@ -31,6 +31,16 @@ export enum CreateProgressStep {
 
 export enum OrderProgressStep {
   TransferDataToken
+}
+
+export interface Order {
+  dtAddress: string
+  amount: string
+  timestamp: number
+  transactionHash: string
+  did?: string
+  serviceId?: number
+  serviceType?: string
 }
 
 /**
@@ -580,5 +590,48 @@ export class Assets extends Instantiable {
     }
 
     return serviceEndpoint
+  }
+
+  /**
+   * get Order History
+   * @param {Account} account
+   * @param {string} serviceType Optional, filter by
+   * @param {number} fromBlock Optional, start at block
+   * @return {Promise<OrderHistory[]>} transactionHash of the payment
+   */
+  public async getOrderHistory(
+    account: Account,
+    serviceType?: string,
+    fromBlock?: number
+  ): Promise<Order[]> {
+    const results: Order[] = []
+    const address = this.web3.utils.toChecksumAddress(account.getId())
+    const events = await this.web3.eth.getPastLogs({
+      topics: [
+        ['0x24c95b9bea47f62df4b9eea32c98c597eccfc5cac47f8477647be875ad925eee', address]
+      ],
+      fromBlock: fromBlock || 0
+    })
+    for (let i = 0; i < events.length; i++) {
+      const blockDetails = await this.web3.eth.getBlock(events[i].blockNumber)
+      const order: Order = {
+        dtAddress: events[i].address,
+        timestamp: parseInt(String(blockDetails.timestamp)),
+        transactionHash: events[i].transactionHash,
+        amount: null
+      }
+      const params = this.web3.eth.abi.decodeParameters(
+        ['uint256', 'uint256', 'uint256', 'uint256'],
+        events[i].data
+      )
+      order.serviceId = parseInt(params[1])
+      order.amount = this.web3.utils.fromWei(params[0])
+      order.did = didPrefixed(didNoZeroX(order.dtAddress))
+      const service = await this.getServiceByIndex(order.did, order.serviceId)
+      order.serviceType = service.type
+      if (!serviceType || (serviceType && serviceType === service.type))
+        results.push(order)
+    }
+    return results
   }
 }
