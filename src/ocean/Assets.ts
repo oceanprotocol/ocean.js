@@ -35,6 +35,7 @@ export enum OrderProgressStep {
 
 export interface OrderHistory {
   dtAddress: string
+  amount: string
   timestamp: number
   transactionHash: string
   did?: string
@@ -610,13 +611,15 @@ export class Assets extends Instantiable {
       const order: OrderHistory = {
         dtAddress: events[i].address,
         timestamp: parseInt(String(blockDetails.timestamp)),
-        transactionHash: events[i].transactionHash
+        transactionHash: events[i].transactionHash,
+        amount: null
       }
       const params = this.web3.eth.abi.decodeParameters(
         ['uint256', 'uint256', 'uint256', 'uint256'],
         events[i].data
       )
       order.serviceId = parseInt(params[1])
+      order.amount = this.web3.utils.fromWei(params[0])
       order.did = didPrefixed(didNoZeroX(order.dtAddress))
       const service = await this.getServiceByIndex(order.did, order.serviceId)
       order.serviceType = service.type
