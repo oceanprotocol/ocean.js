@@ -118,7 +118,7 @@ describe('Balancer flow', () => {
     alicePoolAddress = await Pool.createDTPool(alice, tokenAddress, '45', '9', '0.02')
     const s = await Pool.totalSupply(alicePoolAddress)
     assert(String(s) === '100', 'totalSupply does not match: ' + s)
-    const n = await Pool.getNumTokens(alice, alicePoolAddress)
+    const n = await Pool.getNumTokens(alicePoolAddress)
     assert(String(n) === '2', 'unexpected num tokens: ' + n)
   })
   it('Get pool information', async () => {
@@ -129,13 +129,12 @@ describe('Balancer flow', () => {
   })
 
   it('Get pool swap fee', async () => {
-    const currentSwapFee = await Pool.getSwapFee(alice, alicePoolAddress)
+    const currentSwapFee = await Pool.getSwapFee(alicePoolAddress)
     assert(currentSwapFee === '0.02')
   })
 
   it('Get spot price for swapping', async () => {
     const spotPrice = await Pool.getSpotPrice(
-      alice,
       alicePoolAddress,
       tokenAddress,
       oceanTokenAddress
@@ -145,7 +144,6 @@ describe('Balancer flow', () => {
 
   it('Get spot price for swapping without fees', async () => {
     const spotPrice = await Pool.getSpotPriceSansFee(
-      alice,
       alicePoolAddress,
       tokenAddress,
       oceanTokenAddress
@@ -154,15 +152,15 @@ describe('Balancer flow', () => {
   })
 
   it('Get dtPrice from the pool ', async () => {
-    currentDtPrice = await Pool.getDTPrice(alice, alicePoolAddress)
+    currentDtPrice = await Pool.getDTPrice(alicePoolAddress)
     assert(Number(currentDtPrice) > 0)
   })
   it('Get dtToken pool reserve ', async () => {
-    const currentDtReserve = await Pool.getDTReserve(alice, alicePoolAddress)
+    const currentDtReserve = await Pool.getDTReserve(alicePoolAddress)
     assert(Number(currentDtReserve) > 0)
   })
   it('Get Ocean pool reserve ', async () => {
-    const currentOceanReserve = await Pool.getOceanReserve(alice, alicePoolAddress)
+    const currentOceanReserve = await Pool.getOceanReserve(alicePoolAddress)
     assert(Number(currentOceanReserve) > 0)
   })
   it('Get total supply of pool tokens', async () => {
@@ -170,12 +168,12 @@ describe('Balancer flow', () => {
     assert(Number(totalSupply) > 0)
   })
   it('Get amount of Ocean needed to buy 1 dtToken', async () => {
-    const requiredOcean = await Pool.getOceanNeeded(alice, alicePoolAddress, '1')
+    const requiredOcean = await Pool.getOceanNeeded(alicePoolAddress, '1')
     assert(Number(requiredOcean) > 0)
   })
 
   it('Bob should search for pools with this DT', async () => {
-    const pools = await Pool.searchPoolforDT(bob, tokenAddress)
+    const pools = await Pool.searchPoolforDT(tokenAddress)
     assert(pools.length > 0)
     greatPool = pools[0]
   })
@@ -188,7 +186,7 @@ describe('Balancer flow', () => {
     assert(Number(bobOceanBalance) > 0)
   })
   it('Bob should add DT liquidity to pool ', async () => {
-    const currentDtReserve = await Pool.getDTReserve(bob, greatPool)
+    const currentDtReserve = await Pool.getDTReserve(greatPool)
     if (consoleDebug) console.log('currentDtReserve:' + currentDtReserve)
     const bobDtBalance = await datatoken.balance(tokenAddress, bob)
     if (consoleDebug) console.log('BOB DT Balance:' + bobDtBalance)
@@ -196,7 +194,7 @@ describe('Balancer flow', () => {
 
     const newbobDtBalance = await datatoken.balance(tokenAddress, bob)
 
-    const newDtReserve = await Pool.getDTReserve(bob, greatPool)
+    const newDtReserve = await Pool.getDTReserve(greatPool)
 
     const sharesBalance = await Pool.sharesBalance(bob, greatPool)
     if (consoleDebug) console.log('newDtReserve:' + newDtReserve)
@@ -208,7 +206,7 @@ describe('Balancer flow', () => {
   })
 
   it('Bob should remove DT liquidity from pool ', async () => {
-    const currentDtReserve = await Pool.getDTReserve(bob, greatPool)
+    const currentDtReserve = await Pool.getDTReserve(greatPool)
     if (consoleDebug) console.log('currentDtReserve:' + currentDtReserve)
     const bobDtBalance = await datatoken.balance(tokenAddress, bob)
     if (consoleDebug) console.log('bobDtBalance:' + bobDtBalance)
@@ -216,7 +214,7 @@ describe('Balancer flow', () => {
     if (consoleDebug) console.log('poolShares:' + poolShares)
     await Pool.removeDTLiquidity(bob, greatPool, '0.75', poolShares)
 
-    const newDtReserve = await Pool.getDTReserve(bob, greatPool)
+    const newDtReserve = await Pool.getDTReserve(greatPool)
     if (consoleDebug) console.log('newDtReserve:' + newDtReserve)
     const newbobDtBalance = await datatoken.balance(tokenAddress, bob)
     if (consoleDebug) console.log('newbobDtBalance:' + newbobDtBalance)
@@ -228,7 +226,7 @@ describe('Balancer flow', () => {
   })
 
   it('Bob should add Ocean liquidity to pool ', async () => {
-    const currentDtReserve = await Pool.getOceanReserve(bob, greatPool)
+    const currentDtReserve = await Pool.getOceanReserve(greatPool)
     const bobDtBalance = await datatoken.balance(oceanTokenAddress, bob)
     if (consoleDebug) console.log('currentDtReserve:' + currentDtReserve)
     if (consoleDebug) console.log('bobDtBalance:' + bobDtBalance)
@@ -237,7 +235,7 @@ describe('Balancer flow', () => {
 
     const newbobDtBalance = await datatoken.balance(oceanTokenAddress, bob)
 
-    const newDtReserve = await Pool.getOceanReserve(bob, greatPool)
+    const newDtReserve = await Pool.getOceanReserve(greatPool)
 
     const sharesBalance = await Pool.sharesBalance(bob, greatPool)
     if (consoleDebug) console.log('newDtReserve:' + newDtReserve)
@@ -249,7 +247,7 @@ describe('Balancer flow', () => {
   })
 
   it('Bob should remove Ocean liquidity from pool ', async () => {
-    const currentDtReserve = await Pool.getOceanReserve(bob, greatPool)
+    const currentDtReserve = await Pool.getOceanReserve(greatPool)
     const bobDtBalance = await datatoken.balance(oceanTokenAddress, bob)
 
     const poolShares = await Pool.sharesBalance(bob, greatPool)
@@ -259,7 +257,7 @@ describe('Balancer flow', () => {
 
     await Pool.removeOceanLiquidity(bob, greatPool, '0.75', poolShares)
 
-    const newDtReserve = await Pool.getOceanReserve(bob, greatPool)
+    const newDtReserve = await Pool.getOceanReserve(greatPool)
     const newbobDtBalance = await datatoken.balance(oceanTokenAddress, bob)
     const newpoolShares = await Pool.sharesBalance(bob, greatPool)
 

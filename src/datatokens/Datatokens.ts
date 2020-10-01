@@ -287,52 +287,40 @@ export class DataTokens {
 
   /** Get Blob
    * @param {String} dataTokenAddress
-   * @param {String} address
    * @return {Promise<string>} string
    */
-  public async getBlob(dataTokenAddress: string, address: string): Promise<string> {
-    const datatoken = new this.web3.eth.Contract(this.datatokensABI, dataTokenAddress, {
-      from: address
-    })
+  public async getBlob(dataTokenAddress: string): Promise<string> {
+    const datatoken = new this.web3.eth.Contract(this.datatokensABI, dataTokenAddress)
     const trxReceipt = await datatoken.methods.blob().call()
     return trxReceipt
   }
 
   /** Get Name
    * @param {String} dataTokenAddress
-   * @param {String} address
    * @return {Promise<string>} string
    */
-  public async getName(dataTokenAddress: string, address: string): Promise<string> {
-    const datatoken = new this.web3.eth.Contract(this.datatokensABI, dataTokenAddress, {
-      from: address
-    })
+  public async getName(dataTokenAddress: string): Promise<string> {
+    const datatoken = new this.web3.eth.Contract(this.datatokensABI, dataTokenAddress)
     const trxReceipt = await datatoken.methods.name().call()
     return trxReceipt
   }
 
   /** Get Symbol
    * @param {String} dataTokenAddress
-   * @param {String} address
    * @return {Promise<string>} string
    */
-  public async getSymbol(dataTokenAddress: string, address: string): Promise<string> {
-    const datatoken = new this.web3.eth.Contract(this.datatokensABI, dataTokenAddress, {
-      from: address
-    })
+  public async getSymbol(dataTokenAddress: string): Promise<string> {
+    const datatoken = new this.web3.eth.Contract(this.datatokensABI, dataTokenAddress)
     const trxReceipt = await datatoken.methods.symbol().call()
     return trxReceipt
   }
 
   /** Get Cap
    * @param {String} dataTokenAddress
-   * @param {String} address
    * @return {Promise<string>} string
    */
-  public async getCap(dataTokenAddress: string, address: string): Promise<string> {
-    const datatoken = new this.web3.eth.Contract(this.datatokensABI, dataTokenAddress, {
-      from: address
-    })
+  public async getCap(dataTokenAddress: string): Promise<string> {
+    const datatoken = new this.web3.eth.Contract(this.datatokensABI, dataTokenAddress)
     const trxReceipt = await datatoken.methods.cap().call()
     return this.web3.utils.fromWei(trxReceipt)
   }

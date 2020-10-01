@@ -118,27 +118,25 @@ export class OceanPool extends Pool {
 
   /**
    * Get Ocean Token balance of a pool
-   * @param {String} account
    * @param {String} poolAddress
    * @return {String}
    */
-  public async getOceanReserve(account: string, poolAddress: string): Promise<string> {
+  public async getOceanReserve(poolAddress: string): Promise<string> {
     if (this.oceanAddress == null) {
       console.error('oceanAddress is not defined')
       return null
     }
-    return super.getReserve(account, poolAddress, this.oceanAddress)
+    return super.getReserve(poolAddress, this.oceanAddress)
   }
 
   /**
    * Get Data Token balance of a pool
-   * @param {String} account
    * @param {String} poolAddress
    * @return {String}
    */
-  public async getDTReserve(account: string, poolAddress: string): Promise<string> {
+  public async getDTReserve(poolAddress: string): Promise<string> {
     await this.getDTAddress(poolAddress)
-    return super.getReserve(account, poolAddress, this.dtAddress)
+    return super.getReserve(poolAddress, this.dtAddress)
   }
 
   /**
@@ -332,12 +330,12 @@ export class OceanPool extends Pool {
    * @param {String} poolAddress
    * @return {String}
    */
-  public async getDTPrice(account: string, poolAddress: string): Promise<string> {
+  public async getDTPrice(poolAddress: string): Promise<string> {
     if (this.oceanAddress == null) {
       console.error('oceanAddress is not defined')
       return null
     }
-    return this.getOceanNeeded(account, poolAddress, '1')
+    return this.getOceanNeeded(poolAddress, '1')
   }
 
   /**
@@ -346,11 +344,9 @@ export class OceanPool extends Pool {
    * @param {String} dtAddress
    * @return {String[]}
    */
-  public async searchPoolforDT(account: string, dtAddress: string): Promise<string[]> {
+  public async searchPoolforDT(dtAddress: string): Promise<string[]> {
     const result: string[] = []
-    const factory = new this.web3.eth.Contract(this.factoryABI, this.factoryAddress, {
-      from: account
-    })
+    const factory = new this.web3.eth.Contract(this.factoryABI, this.factoryAddress)
     const events = await factory.getPastEvents('BPoolRegistered', {
       filter: {},
       fromBlock: 0,
@@ -363,25 +359,13 @@ export class OceanPool extends Pool {
     return result
   }
 
-  public async getOceanNeeded(
-    account: string,
-    poolAddress: string,
-    dtRequired: string
-  ): Promise<string> {
+  public async getOceanNeeded(poolAddress: string, dtRequired: string): Promise<string> {
     await this.getDTAddress(poolAddress)
-    const tokenBalanceIn = await this.getReserve(account, poolAddress, this.oceanAddress)
-    const tokenWeightIn = await this.getDenormalizedWeight(
-      account,
-      poolAddress,
-      this.oceanAddress
-    )
-    const tokenBalanceOut = await this.getReserve(account, poolAddress, this.dtAddress)
-    const tokenWeightOut = await this.getDenormalizedWeight(
-      account,
-      poolAddress,
-      this.dtAddress
-    )
-    const swapFee = await this.getSwapFee(account, poolAddress)
+    const tokenBalanceIn = await this.getReserve(poolAddress, this.oceanAddress)
+    const tokenWeightIn = await this.getDenormalizedWeight(poolAddress, this.oceanAddress)
+    const tokenBalanceOut = await this.getReserve(poolAddress, this.dtAddress)
+    const tokenWeightOut = await this.getDenormalizedWeight(poolAddress, this.dtAddress)
+    const swapFee = await this.getSwapFee(poolAddress)
     return super.calcInGivenOut(
       tokenBalanceIn,
       tokenWeightIn,
@@ -428,7 +412,7 @@ export class OceanPool extends Pool {
   /**
    * Get all actions from a pool (join,exit,swap)
    * @param {String} poolAddress Pool address
-   * @param {String} account
+   * @param {String} account Optional, filter for this address
    * @return {PoolTransaction[]}
    */
   public async getPoolLogs(

@@ -52,8 +52,8 @@ describe('DataTokens', () => {
     tokenAddress = await datatoken.create(blob, minter)
     assert(tokenAddress !== null)
 
-    const tokenName = await datatoken.getName(tokenAddress, minter)
-    const tokenSymbol = await datatoken.getSymbol(tokenAddress, minter)
+    const tokenName = await datatoken.getName(tokenAddress)
+    const tokenSymbol = await datatoken.getSymbol(tokenAddress)
     assert(tokenName !== null || tokenName !== '')
     assert(tokenSymbol !== null || tokenSymbol !== '')
   })
