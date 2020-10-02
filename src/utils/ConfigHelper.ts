@@ -12,13 +12,13 @@ export declare type ConfigHelperNetworkName =
 export declare type ConfigHelperNetworkId = 1 | 4 | number
 
 export interface ConfigHelperConfig extends Config {
-  chainId: ConfigHelperNetworkId
+  networkId: ConfigHelperNetworkId
   network: ConfigHelperNetworkName
 }
 
 const configs: ConfigHelperConfig[] = [
   {
-    chainId: null,
+    networkId: null,
     network: 'development',
     nodeUri: 'http://localhost:8545',
     factoryAddress: null,
@@ -29,7 +29,19 @@ const configs: ConfigHelperConfig[] = [
     metadataContractAddress: null
   },
   {
-    chainId: 4,
+    // barge
+    networkId: 8996,
+    network: 'development',
+    nodeUri: 'http://localhost:8545',
+    factoryAddress: null,
+    metadataStoreUri: 'http://127.0.0.1:5000',
+    providerUri: 'http://127.0.0.1:8030',
+    poolFactoryAddress: null,
+    fixedRateExchangeAddress: null,
+    metadataContractAddress: null
+  },
+  {
+    networkId: 4,
     network: 'rinkeby',
     nodeUri: 'https://rinkeby.infura.io/v3',
     factoryAddress: '0x241D0f315d2bfe32b90282e6863AC22A309EbFa0',
@@ -41,7 +53,7 @@ const configs: ConfigHelperConfig[] = [
     metadataContractAddress: '0x0220D0b4FfCC4A14C7601215aA23da06d5b1c921'
   },
   {
-    chainId: 1,
+    networkId: 1,
     network: 'mainnet',
     nodeUri: 'https://mainnet.infura.io/v3',
     factoryAddress: '0x1234',
@@ -87,7 +99,7 @@ export class ConfigHelper {
     network: ConfigHelperNetworkName | ConfigHelperNetworkId,
     infuraProjectId?: string
   ): Config {
-    const filterBy = typeof network === 'string' ? 'network' : 'chainId'
+    const filterBy = typeof network === 'string' ? 'network' : 'networkId'
     let config = configs.find((c) => c[filterBy] === network)
 
     if (!config) {
