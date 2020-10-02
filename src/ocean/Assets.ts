@@ -38,6 +38,8 @@ export interface Order {
   amount: string
   timestamp: number
   transactionHash: string
+  consumer: string
+  payer: string
   did?: string
   serviceId?: number
   serviceType?: string
@@ -462,19 +464,22 @@ export class Assets extends Instantiable {
    * Orders & pays for a service
    * @param {String} did
    * @param {String} serviceType
-   * @param {String} consumerAddress
+   * @param {String} payerAddress
    * @param {Number} serviceIndex
    * @param {String} mpAddress mp fee collector address
+   * @param {String} consumerAddress Optionally, if the consumer is another address than payer
    * @return {Promise<String>} transactionHash of the payment
    */
   public async order(
     did: string,
     serviceType: string,
-    consumerAddress: string,
+    payerAddress: string,
     serviceIndex = -1,
-    mpAddress?: string
+    mpAddress?: string,
+    consumerAddress?: string
   ): Promise<string> {
     let service
+    if (!consumerAddress) consumerAddress = payerAddress
     if (serviceIndex === -1) {
       service = await this.getServiceByType(did, serviceType)
       serviceIndex = service.index
@@ -487,7 +492,7 @@ export class Assets extends Instantiable {
       const providerData = await this.initialize(
         did,
         serviceType,
-        consumerAddress,
+        payerAddress,
         serviceIndex,
         service.serviceEndpoint
       )
@@ -502,7 +507,7 @@ export class Assets extends Instantiable {
       )
       if (previousOrder) return previousOrder
       const balance = new BigNumber(
-        await datatokens.balance(providerData.dataToken, consumerAddress)
+        await datatokens.balance(providerData.dataToken, payerAddress)
       )
       const totalCost = new BigNumber(String(providerData.numTokens))
       if (balance.isLessThan(totalCost)) {
@@ -516,10 +521,11 @@ export class Assets extends Instantiable {
       }
       const txid = await datatokens.startOrder(
         providerData.dataToken,
+        consumerAddress,
         String(providerData.numTokens),
         serviceIndex,
         mpAddress,
-        consumerAddress
+        payerAddress
       )
       if (txid) return txid.transactionHash
     } catch (e) {
@@ -605,26 +611,32 @@ export class Assets extends Instantiable {
     fromBlock?: number
   ): Promise<Order[]> {
     const results: Order[] = []
-    const address = this.web3.utils.toChecksumAddress(account.getId())
+    const address = account.getId().toLowerCase()
     const events = await this.web3.eth.getPastLogs({
       topics: [
-        ['0x24c95b9bea47f62df4b9eea32c98c597eccfc5cac47f8477647be875ad925eee', address]
+        [
+          '0xe1c4fa794edfa8f619b8257a077398950357b9c6398528f94480307352f9afcc',
+          null,
+          '0x000000000000000000000000' + address.substring(address.length - 40)
+        ]
       ],
       fromBlock: fromBlock || 0
     })
     for (let i = 0; i < events.length; i++) {
-      const blockDetails = await this.web3.eth.getBlock(events[i].blockNumber)
       const order: Order = {
         dtAddress: events[i].address,
-        timestamp: parseInt(String(blockDetails.timestamp)),
+        timestamp: 0,
         transactionHash: events[i].transactionHash,
-        amount: null
+        amount: null,
+        consumer: '0x' + events[i].topics[1].substring(events[i].topics[1].length - 40),
+        payer: '0x' + events[i].topics[2].substring(events[i].topics[2].length - 40)
       }
       const params = this.web3.eth.abi.decodeParameters(
         ['uint256', 'uint256', 'uint256', 'uint256'],
         events[i].data
       )
       order.serviceId = parseInt(params[1])
+      order.timestamp = parseInt(params[2])
       order.amount = this.web3.utils.fromWei(params[0])
       order.did = didPrefixed(didNoZeroX(order.dtAddress))
       const service = await this.getServiceByIndex(order.did, order.serviceId)
