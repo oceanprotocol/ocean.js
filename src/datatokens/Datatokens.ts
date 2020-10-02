@@ -343,6 +343,7 @@ export class DataTokens {
 
   /** Start Order
    * @param {String} dataTokenAddress
+   * @param {String} consumer consumer Address
    * @param {String} amount
    * @param {Number} serviceId
    * @param {String} mpFeeAddress
@@ -351,6 +352,7 @@ export class DataTokens {
    */
   public async startOrder(
     dataTokenAddress: string,
+    consumer: string,
     amount: string,
     serviceId: number,
     mpFeeAddress: string,
@@ -362,7 +364,12 @@ export class DataTokens {
     if (!mpFeeAddress) mpFeeAddress = '0x0000000000000000000000000000000000000000'
     try {
       const trxReceipt = await datatoken.methods
-        .startOrder(this.web3.utils.toWei(amount), String(serviceId), mpFeeAddress)
+        .startOrder(
+          consumer,
+          this.web3.utils.toWei(amount),
+          String(serviceId),
+          mpFeeAddress
+        )
         .send({ from: address, gas: 600000 })
       return trxReceipt
     } catch (e) {

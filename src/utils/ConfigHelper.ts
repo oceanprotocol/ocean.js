@@ -44,13 +44,13 @@ const configs: ConfigHelperConfig[] = [
     networkId: 4,
     network: 'rinkeby',
     nodeUri: 'https://rinkeby.infura.io/v3',
-    factoryAddress: '0x241D0f315d2bfe32b90282e6863AC22A309EbFa0',
+    factoryAddress: '0x3fd7A00106038Fb5c802c6d63fa7147Fe429E83a',
     oceanTokenAddress: '0x8967BCF84170c91B0d24D4302C2376283b0B3a07',
     metadataStoreUri: 'https://aquarius.rinkeby.v3.dev-ocean.com',
     providerUri: 'https://provider.rinkeby.v3.dev-ocean.com',
-    poolFactoryAddress: '0xf32E0784F5D127471883aF938c50349A97aF7085',
-    fixedRateExchangeAddress: '0x223B65841d5BAE99c615D0Da7980b2Fc0aFF1dB2',
-    metadataContractAddress: '0x0220D0b4FfCC4A14C7601215aA23da06d5b1c921'
+    poolFactoryAddress: '0x53eDF9289B0898e1652Ce009AACf8D25fA9A42F8',
+    fixedRateExchangeAddress: '0xeD1DfC5F3a589CfC4E8B91C1fbfC18FC6699Fbde',
+    metadataContractAddress: '0x2C63bf697f74C72CFB727Fb5eB8e6266cE341e13'
   },
   {
     networkId: 1,
