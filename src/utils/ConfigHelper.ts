@@ -19,7 +19,7 @@ export interface ConfigHelperConfig extends Config {
 const configs: ConfigHelperConfig[] = [
   {
     networkId: null,
-    network: 'development',
+    network: 'unknown',
     nodeUri: 'http://localhost:8545',
     factoryAddress: null,
     metadataStoreUri: 'http://127.0.0.1:5000',
