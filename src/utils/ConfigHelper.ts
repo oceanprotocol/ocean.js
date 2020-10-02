@@ -50,7 +50,7 @@ const configs: ConfigHelperConfig[] = [
     providerUri: 'https://provider.rinkeby.v3.dev-ocean.com',
     poolFactoryAddress: '0x53eDF9289B0898e1652Ce009AACf8D25fA9A42F8',
     fixedRateExchangeAddress: '0xeD1DfC5F3a589CfC4E8B91C1fbfC18FC6699Fbde',
-    metadataContractAddress: '0x2C63bf697f74C72CFB727Fb5eB8e6266cE341e13'
+    metadataContractAddress: '0xFD8a7b6297153397B7eb4356C47dbd381d58bFF4'
   },
   {
     networkId: 1,
