@@ -52,7 +52,7 @@ export class OceanPool extends Pool {
      * @param {String} token  DataToken address
      * @param {String} amount DataToken amount
      * @param {String} weight DataToken weight
-     * @param {String} fee Swap fee. 0.1=10% fee(max allowed:0.5)
+     * @param {String} fee Swap fee. 0.1=10% fee(max allowed)
      * @return {String}
      */
   public async createDTPool(
@@ -66,7 +66,7 @@ export class OceanPool extends Pool {
       console.error('oceanAddress is not defined')
       return null
     }
-    if (parseFloat(fee) > 0.5) {
+    if (parseFloat(fee) > 0.1) {
       console.error('Swap fee to high')
       return null
     }
