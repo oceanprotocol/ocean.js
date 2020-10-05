@@ -52,7 +52,7 @@ export class OceanPool extends Pool {
      * @param {String} token  DataToken address
      * @param {String} amount DataToken amount
      * @param {String} weight DataToken weight
-     * @param {String} fee Swap fee. 0.1=10% fee(max allowed)
+     * @param {String} fee Swap fee. 0.1=10% fee(max allowed:0.5)
      * @return {String}
      */
   public async createDTPool(
