@@ -67,7 +67,7 @@ export class OceanPool extends Pool {
       return null
     }
     if (parseFloat(fee) > 0.1) {
-      console.error('Swap fee to high')
+      console.error('Swap fee too high. The maximum allowed swapFee is 0.1 (10%).')
       return null
     }
     if (parseFloat(weight) > 9 || parseFloat(weight) < 1) {
