@@ -52,7 +52,7 @@ export class OceanPool extends Pool {
      * @param {String} token  DataToken address
      * @param {String} amount DataToken amount
      * @param {String} weight DataToken weight
-     * @param {String} fee Swap fee. 0.1=10% fee(max allowed)
+     * @param {String} fee Swap fee. E.g. to get a 0.1% swapFee use `0.001`. The maximum allowed swapFee is `0.1` (10%).
      * @return {String}
      */
   public async createDTPool(
