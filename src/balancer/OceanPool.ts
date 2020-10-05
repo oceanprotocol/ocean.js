@@ -66,7 +66,7 @@ export class OceanPool extends Pool {
       console.error('oceanAddress is not defined')
       return null
     }
-    if (parseFloat(fee) > 0.1) {
+    if (parseFloat(fee) > 0.5) {
       console.error('Swap fee to high')
       return null
     }
