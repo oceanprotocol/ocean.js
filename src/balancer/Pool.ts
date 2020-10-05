@@ -398,7 +398,7 @@ export class Pool extends PoolFactory {
   /**
    * Get pool fee
    * @param {String} poolAddress
-   * @return {String} Swap fee (0.1=10% fee)
+   * @return {String} Swap fee. To get the percentage value, substract by 100. E.g. `0.1` represents a 10% swap fee.
    */
   async getSwapFee(poolAddress: string): Promise<string> {
     const pool = new this.web3.eth.Contract(this.poolABI, poolAddress)
