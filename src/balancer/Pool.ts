@@ -368,9 +368,9 @@ export class Pool extends PoolFactory {
    * @return {String}
    */
   async getReserve(poolAddress: string, token: string): Promise<string> {
-    const pool = new this.web3.eth.Contract(this.poolABI, poolAddress)
     let amount = null
     try {
+      const pool = new this.web3.eth.Contract(this.poolABI, poolAddress)
       const result = await pool.methods.getBalance(token).call()
       amount = this.web3.utils.fromWei(result)
     } catch (e) {

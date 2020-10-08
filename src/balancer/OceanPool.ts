@@ -139,8 +139,8 @@ export class OceanPool extends Pool {
    * @return {String}
    */
   public async getDTReserve(poolAddress: string): Promise<string> {
-    await this.getDTAddress(poolAddress)
-    return super.getReserve(poolAddress, this.dtAddress)
+    const dtAddress = await this.getDTAddress(poolAddress)
+    return super.getReserve(poolAddress, dtAddress)
   }
 
   /**
@@ -163,7 +163,7 @@ export class OceanPool extends Pool {
       console.error('oceanAddress is not defined')
       return null
     }
-    await this.getDTAddress(poolAddress)
+    const dtAddress = await this.getDTAddress(poolAddress)
 
     // TODO - check balances first
     await super.approve(
@@ -178,7 +178,7 @@ export class OceanPool extends Pool {
       poolAddress,
       this.oceanAddress,
       oceanAmount,
-      this.dtAddress,
+      dtAddress,
       amount,
       maxPrice
     )
@@ -204,11 +204,11 @@ export class OceanPool extends Pool {
       console.error('oceanAddress is not defined')
       return null
     }
-    await this.getDTAddress(poolAddress)
+    const dtAddress = await this.getDTAddress(poolAddress)
     return this.swapExactAmountOut(
       account,
       poolAddress,
-      this.dtAddress,
+      dtAddress,
       amount,
       this.oceanAddress,
       oceanAmount,
@@ -228,17 +228,12 @@ export class OceanPool extends Pool {
     poolAddress: string,
     amount: string
   ): Promise<TransactionReceipt> {
-    await this.getDTAddress(poolAddress)
-    await super.approve(
-      account,
-      this.dtAddress,
-      poolAddress,
-      this.web3.utils.toWei(amount)
-    )
+    const dtAddress = await this.getDTAddress(poolAddress)
+    await super.approve(account, dtAddress, poolAddress, this.web3.utils.toWei(amount))
     const result = await super.joinswapExternAmountIn(
       account,
       poolAddress,
-      this.dtAddress,
+      dtAddress,
       amount,
       '0'
     )
@@ -258,12 +253,12 @@ export class OceanPool extends Pool {
     amount: string,
     maximumPoolShares: string
   ): Promise<TransactionReceipt> {
-    await this.getDTAddress(poolAddress)
+    const dtAddress = await this.getDTAddress(poolAddress)
     // TODO Check balance of PoolShares before doing exit
     return this.exitswapExternAmountOut(
       account,
       poolAddress,
-      this.dtAddress,
+      dtAddress,
       amount,
       maximumPoolShares
     )
@@ -362,11 +357,11 @@ export class OceanPool extends Pool {
   }
 
   public async getOceanNeeded(poolAddress: string, dtRequired: string): Promise<string> {
-    await this.getDTAddress(poolAddress)
+    const dtAddress = await this.getDTAddress(poolAddress)
     const tokenBalanceIn = await this.getReserve(poolAddress, this.oceanAddress)
     const tokenWeightIn = await this.getDenormalizedWeight(poolAddress, this.oceanAddress)
-    const tokenBalanceOut = await this.getReserve(poolAddress, this.dtAddress)
-    const tokenWeightOut = await this.getDenormalizedWeight(poolAddress, this.dtAddress)
+    const tokenBalanceOut = await this.getReserve(poolAddress, dtAddress)
+    const tokenWeightOut = await this.getDenormalizedWeight(poolAddress, dtAddress)
     const swapFee = await this.getSwapFee(poolAddress)
     return super.calcInGivenOut(
       tokenBalanceIn,
