@@ -51,6 +51,12 @@ export class DDO {
 
   public proof: Proof
 
+  public dtBalance: number
+
+  public OceanBalance: number
+
+  public dtPrice: number
+
   public constructor(ddo: Partial<DDO> = {}) {
     Object.assign(this, ddo, {
       created: (ddo && ddo.created) || new Date().toISOString().replace(/\.[0-9]{3}/, '')
