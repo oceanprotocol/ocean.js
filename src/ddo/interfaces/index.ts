@@ -1,5 +1,6 @@
 export * from './AdditionalInformation'
 export * from './Authentication'
+export * from './BestPrice'
 export * from './Curation'
 export * from './EditableMetadata'
 export * from './EditableMetadataLinks'
