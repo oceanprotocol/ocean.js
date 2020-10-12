@@ -21,6 +21,7 @@ before_script:
   - cd barge
   - git checkout v3
   - export ADDRESS_FILE="${HOME}/.ocean/ocean-contracts/artifacts/address.json"
+  - touch ADDRESS_FILE
   - export AQUARIUS_URI="http://172.15.0.5:5000"
   - export DEPLOY_CONTRACTS="true"
   - export CONTRACTS_VERSION=v0.5.5
