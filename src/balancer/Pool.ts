@@ -271,6 +271,23 @@ export class Pool extends PoolFactory {
   }
 
   /**
+   * Get total supply of pool shares
+   * @param {String} poolAddress
+   * @return {String}
+   */
+  async getPoolSharesTotalSupply(poolAddress: string): Promise<string> {
+    const pool = new this.web3.eth.Contract(this.poolABI, poolAddress)
+    let amount = null
+    try {
+      const result = await pool.methods.totalSupply().call()
+      amount = this.web3.utils.fromWei(result)
+    } catch (e) {
+      console.error(e)
+    }
+    return amount
+  }
+
+  /**
    * Get tokens composing this pool
    * @param {String} poolAddress
    * @return {String[]}
@@ -594,7 +611,7 @@ export class Pool extends PoolFactory {
     account: string,
     poolAddress: string,
     poolAmountIn: string,
-    minAmountsOut: string
+    minAmountsOut: string[]
   ): Promise<TransactionReceipt> {
     const pool = new this.web3.eth.Contract(this.poolABI, poolAddress, {
       from: account
@@ -799,6 +816,7 @@ export class Pool extends PoolFactory {
   }
 
   public async calcInGivenOut(
+    poolAddress: string,
     tokenBalanceIn: string,
     tokenWeightIn: string,
     tokenBalanceOut: string,
@@ -806,14 +824,168 @@ export class Pool extends PoolFactory {
     tokenAmountOut: string,
     swapFee: string
   ): Promise<string> {
-    const weightRatio = new Decimal(tokenWeightOut).div(new Decimal(tokenWeightIn))
-    const diff = new Decimal(tokenBalanceOut).minus(tokenAmountOut)
-    const y = new Decimal(tokenBalanceOut).div(diff)
-    const foo = y.pow(weightRatio).minus(new Decimal(1))
-    const tokenAmountIn = new Decimal(tokenBalanceIn)
-      .times(foo)
-      .div(new Decimal(1).minus(new Decimal(swapFee)))
+    const pool = new this.web3.eth.Contract(this.poolABI, poolAddress)
+    let amount = null
+    try {
+      const result = await pool.methods
+        .calcInGivenOut(
+          this.web3.utils.toWei(tokenBalanceIn),
+          this.web3.utils.toWei(tokenWeightIn),
+          this.web3.utils.toWei(tokenBalanceOut),
+          this.web3.utils.toWei(tokenWeightOut),
+          this.web3.utils.toWei(tokenAmountOut),
+          this.web3.utils.toWei(swapFee)
+        )
+        .call()
+      amount = this.web3.utils.fromWei(result)
+    } catch (e) {
+      console.error(e)
+    }
+    return amount
+  }
 
-    return tokenAmountIn.toString()
+  public async calcOutGivenIn(
+    poolAddress: string,
+    tokenBalanceIn: string,
+    tokenWeightIn: string,
+    tokenBalanceOut: string,
+    tokenWeightOut: string,
+    tokenAmountIn: string,
+    swapFee: string
+  ): Promise<string> {
+    const pool = new this.web3.eth.Contract(this.poolABI, poolAddress)
+    let amount = null
+    try {
+      const result = await pool.methods
+        .calcOutGivenIn(
+          this.web3.utils.toWei(tokenBalanceIn),
+          this.web3.utils.toWei(tokenWeightIn),
+          this.web3.utils.toWei(tokenBalanceOut),
+          this.web3.utils.toWei(tokenWeightOut),
+          this.web3.utils.toWei(tokenAmountIn),
+          this.web3.utils.toWei(swapFee)
+        )
+        .call()
+      amount = this.web3.utils.fromWei(result)
+    } catch (e) {
+      console.error(e)
+    }
+    return amount
+  }
+
+  public async calcPoolOutGivenSingleIn(
+    poolAddress: string,
+    tokenBalanceIn: string,
+    tokenWeightIn: string,
+    poolSupply: string,
+    totalWeight: string,
+    tokenAmountIn: string,
+    swapFee: string
+  ): Promise<string> {
+    const pool = new this.web3.eth.Contract(this.poolABI, poolAddress)
+    let amount = null
+    try {
+      const result = await pool.methods
+        .calcPoolOutGivenSingleIn(
+          this.web3.utils.toWei(tokenBalanceIn),
+          this.web3.utils.toWei(tokenWeightIn),
+          this.web3.utils.toWei(poolSupply),
+          this.web3.utils.toWei(totalWeight),
+          this.web3.utils.toWei(tokenAmountIn),
+          this.web3.utils.toWei(swapFee)
+        )
+        .call()
+      amount = this.web3.utils.fromWei(result)
+    } catch (e) {
+      console.error(e)
+    }
+    return amount
+  }
+
+  public async calcSingleInGivenPoolOut(
+    poolAddress: string,
+    tokenBalanceIn: string,
+    tokenWeightIn: string,
+    poolSupply: string,
+    totalWeight: string,
+    poolAmountOut: string,
+    swapFee: string
+  ): Promise<string> {
+    const pool = new this.web3.eth.Contract(this.poolABI, poolAddress)
+    let amount = null
+    try {
+      const result = await pool.methods
+        .calcSingleInGivenPoolOut(
+          this.web3.utils.toWei(tokenBalanceIn),
+          this.web3.utils.toWei(tokenWeightIn),
+          this.web3.utils.toWei(poolSupply),
+          this.web3.utils.toWei(totalWeight),
+          this.web3.utils.toWei(poolAmountOut),
+          this.web3.utils.toWei(swapFee)
+        )
+        .call()
+      amount = this.web3.utils.fromWei(result)
+    } catch (e) {
+      console.error(e)
+    }
+    return amount
+  }
+
+  public async calcSingleOutGivenPoolIn(
+    poolAddress: string,
+    tokenBalanceOut: string,
+    tokenWeightOut: string,
+    poolSupply: string,
+    totalWeight: string,
+    poolAmountIn: string,
+    swapFee: string
+  ): Promise<string> {
+    const pool = new this.web3.eth.Contract(this.poolABI, poolAddress)
+    let amount = null
+    try {
+      const result = await pool.methods
+        .calcSingleOutGivenPoolIn(
+          this.web3.utils.toWei(tokenBalanceOut),
+          this.web3.utils.toWei(tokenWeightOut),
+          this.web3.utils.toWei(poolSupply),
+          this.web3.utils.toWei(totalWeight),
+          this.web3.utils.toWei(poolAmountIn),
+          this.web3.utils.toWei(swapFee)
+        )
+        .call()
+      amount = this.web3.utils.fromWei(result)
+    } catch (e) {
+      console.error(e)
+    }
+    return amount
+  }
+
+  public async calcPoolInGivenSingleOut(
+    poolAddress: string,
+    tokenBalanceOut: string,
+    tokenWeightOut: string,
+    poolSupply: string,
+    totalWeight: string,
+    tokenAmountOut: string,
+    swapFee: string
+  ): Promise<string> {
+    const pool = new this.web3.eth.Contract(this.poolABI, poolAddress)
+    let amount = null
+    try {
+      const result = await pool.methods
+        .calcPoolInGivenSingleOut(
+          this.web3.utils.toWei(tokenBalanceOut),
+          this.web3.utils.toWei(tokenWeightOut),
+          this.web3.utils.toWei(poolSupply),
+          this.web3.utils.toWei(totalWeight),
+          this.web3.utils.toWei(tokenAmountOut),
+          this.web3.utils.toWei(swapFee)
+        )
+        .call()
+      amount = this.web3.utils.fromWei(result)
+    } catch (e) {
+      console.error(e)
+    }
+    return amount
   }
 }

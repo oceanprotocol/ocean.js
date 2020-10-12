@@ -27,7 +27,7 @@ describe('Balancer flow', () => {
   let contracts: TestContractHandler
   let datatoken: DataTokens
   let tokenAddress: string
-  let consoleDebug: false
+  let consoleDebug: true
   let greatPool: string
   const tokenAmount = '1000'
   const transferAmount = '200'
@@ -185,12 +185,29 @@ describe('Balancer flow', () => {
     assert(Number(bobDtBalance) > 0)
     assert(Number(bobOceanBalance) > 0)
   })
+  it('Bob should get maximum DT liquidity that he can add to pool ', async () => {
+    const maxDT = await Pool.getMaxAddLiquidity(greatPool, tokenAddress)
+    if (consoleDebug) console.error('maxDT:' + maxDT)
+    assert(parseFloat(maxDT) > 0)
+  })
+
+  it('Bob should fail to add more than maximum DT liquidity that he can add to pool ', async () => {
+    const maxDT = await Pool.getMaxAddLiquidity(greatPool, tokenAddress)
+    const tx = await Pool.addDTLiquidity(bob, greatPool, String(parseFloat(maxDT) * 2))
+    assert(tx === null)
+  })
   it('Bob should add DT liquidity to pool ', async () => {
+    const maxDT = await Pool.getMaxAddLiquidity(greatPool, tokenAddress)
+    if (consoleDebug) console.error('maxDT:' + maxDT)
     const currentDtReserve = await Pool.getDTReserve(greatPool)
     if (consoleDebug) console.log('currentDtReserve:' + currentDtReserve)
     const bobDtBalance = await datatoken.balance(tokenAddress, bob)
     if (consoleDebug) console.log('BOB DT Balance:' + bobDtBalance)
-    await Pool.addDTLiquidity(bob, greatPool, bobDtBalance)
+    await Pool.addDTLiquidity(
+      bob,
+      greatPool,
+      String(Math.min(parseFloat(maxDT), parseFloat(bobDtBalance)))
+    )
 
     const newbobDtBalance = await datatoken.balance(tokenAddress, bob)
 
@@ -204,7 +221,23 @@ describe('Balancer flow', () => {
     assert(parseFloat(newDtReserve) > parseFloat(currentDtReserve))
     assert(parseFloat(sharesBalance) > 0)
   })
-
+  it('Bob should get maximum DT liquidity that he can remove from pool ', async () => {
+    const maxDT = await Pool.getMaxRemoveLiquidity(greatPool, tokenAddress)
+    if (consoleDebug) console.log('maxDT:' + maxDT)
+    assert(parseFloat(maxDT) > 0)
+  })
+  it('Bob should fail to remove more than maximum DT liquidity that he can remove from the pool ', async () => {
+    const maxDT = await Pool.getMaxRemoveLiquidity(greatPool, tokenAddress)
+    if (consoleDebug) console.log('maxDT:' + maxDT)
+    const poolShares = await Pool.sharesBalance(bob, greatPool)
+    const tx = await Pool.removeDTLiquidity(
+      bob,
+      greatPool,
+      String(parseFloat(maxDT) * 2),
+      poolShares
+    )
+    assert(tx === null)
+  })
   it('Bob should remove DT liquidity from pool ', async () => {
     const currentDtReserve = await Pool.getDTReserve(greatPool)
     if (consoleDebug) console.log('currentDtReserve:' + currentDtReserve)
@@ -212,7 +245,14 @@ describe('Balancer flow', () => {
     if (consoleDebug) console.log('bobDtBalance:' + bobDtBalance)
     const poolShares = await Pool.sharesBalance(bob, greatPool)
     if (consoleDebug) console.log('poolShares:' + poolShares)
-    await Pool.removeDTLiquidity(bob, greatPool, '0.75', poolShares)
+    const maxDT = await Pool.getMaxRemoveLiquidity(greatPool, tokenAddress)
+    if (consoleDebug) console.log('maxDT:' + maxDT)
+    await Pool.removeDTLiquidity(
+      bob,
+      greatPool,
+      String(Math.min(parseFloat(maxDT), parseFloat('0.75'))),
+      poolShares
+    )
 
     const newDtReserve = await Pool.getDTReserve(greatPool)
     if (consoleDebug) console.log('newDtReserve:' + newDtReserve)
@@ -225,13 +265,28 @@ describe('Balancer flow', () => {
     assert(parseFloat(poolShares) > parseFloat(newpoolShares))
   })
 
+  it('Bob should get maximum Ocean liquidity that he can add to pool ', async () => {
+    const maxOcean = await Pool.getMaxAddLiquidity(greatPool, oceanTokenAddress)
+    assert(parseFloat(maxOcean) > 0)
+  })
+
+  it('Bob should fail to add more than maximum Ocean liquidity that he can add to pool ', async () => {
+    const maxOcean = await Pool.getMaxAddLiquidity(greatPool, oceanTokenAddress)
+    const tx = await Pool.addOceanLiquidity(
+      bob,
+      greatPool,
+      String(parseFloat(maxOcean) * 2)
+    )
+    assert(tx === null)
+  })
+
   it('Bob should add Ocean liquidity to pool ', async () => {
     const currentDtReserve = await Pool.getOceanReserve(greatPool)
     const bobDtBalance = await datatoken.balance(oceanTokenAddress, bob)
     if (consoleDebug) console.log('currentDtReserve:' + currentDtReserve)
     if (consoleDebug) console.log('bobDtBalance:' + bobDtBalance)
-
-    await Pool.addOceanLiquidity(bob, greatPool, '1')
+    const maxOcean = await Pool.getMaxAddLiquidity(greatPool, oceanTokenAddress)
+    await Pool.addOceanLiquidity(bob, greatPool, maxOcean)
 
     const newbobDtBalance = await datatoken.balance(oceanTokenAddress, bob)
 
@@ -245,7 +300,21 @@ describe('Balancer flow', () => {
     assert(parseFloat(newDtReserve) > parseFloat(currentDtReserve))
     assert(parseFloat(sharesBalance) > 0)
   })
-
+  it('Bob should get maximum Ocean liquidity that he can remove from pool ', async () => {
+    const maxOcean = await Pool.getMaxRemoveLiquidity(greatPool, oceanTokenAddress)
+    assert(parseFloat(maxOcean) > 0)
+  })
+  it('Bob should fail to remove more than maximum Ocean liquidity that he can remove from the pool ', async () => {
+    const maxOcean = await Pool.getMaxRemoveLiquidity(greatPool, oceanTokenAddress)
+    const poolShares = await Pool.sharesBalance(bob, greatPool)
+    const tx = await Pool.removeOceanLiquidity(
+      bob,
+      greatPool,
+      String(parseFloat(maxOcean) * 2),
+      poolShares
+    )
+    assert(tx === null)
+  })
   it('Bob should remove Ocean liquidity from pool ', async () => {
     const currentDtReserve = await Pool.getOceanReserve(greatPool)
     const bobDtBalance = await datatoken.balance(oceanTokenAddress, bob)
