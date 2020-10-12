@@ -23,7 +23,7 @@ before_script:
   - export ADDRESS_FILE="${HOME}/.ocean/ocean-contracts/artifacts/address.json"
   - export AQUARIUS_URI="http://172.15.0.5:5000"
   - export DEPLOY_CONTRACTS=true
-  - export CONTRACTS_VERSION=v0.5.3
+  - export CONTRACTS_VERSION=v0.5.5
   - bash -x start_ocean.sh --no-dashboard 2>&1 > start_ocean.log &
   - cd ..
   - ./scripts/waitforcontracts.sh
