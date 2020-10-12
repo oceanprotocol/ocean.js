@@ -612,10 +612,11 @@ export class Assets extends Instantiable {
   ): Promise<Order[]> {
     const results: Order[] = []
     const address = account.getId().toLowerCase()
+    const { datatokens } = this.ocean
     const events = await this.web3.eth.getPastLogs({
       topics: [
         [
-          '0xe1c4fa794edfa8f619b8257a077398950357b9c6398528f94480307352f9afcc',
+          datatokens.getStartOrderEventSignature(),
           null,
           '0x000000000000000000000000' + address.substring(address.length - 40)
         ]
