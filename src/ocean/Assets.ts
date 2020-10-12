@@ -613,15 +613,11 @@ export class Assets extends Instantiable {
     const results: Order[] = []
     const address = account.getId().toLowerCase()
     const { datatokens } = this.ocean
+    const topic1 = '0x000000000000000000000000' + address.substring(2)
     const events = await this.web3.eth.getPastLogs({
-      topics: [
-        [
-          datatokens.getStartOrderEventSignature(),
-          null,
-          '0x000000000000000000000000' + address.substring(address.length - 40)
-        ]
-      ],
-      fromBlock: fromBlock || 0
+      topics: [[datatokens.getStartOrderEventSignature(), null, topic1]],
+      fromBlock: fromBlock || 0,
+      toBlock: 'latest'
     })
     for (let i = 0; i < events.length; i++) {
       const order: Order = {
@@ -632,18 +628,20 @@ export class Assets extends Instantiable {
         consumer: '0x' + events[i].topics[1].substring(events[i].topics[1].length - 40),
         payer: '0x' + events[i].topics[2].substring(events[i].topics[2].length - 40)
       }
-      const params = this.web3.eth.abi.decodeParameters(
-        ['uint256', 'uint256', 'uint256', 'uint256'],
-        events[i].data
-      )
-      order.serviceId = parseInt(params[1])
-      order.timestamp = parseInt(params[2])
-      order.amount = this.web3.utils.fromWei(params[0])
-      order.did = didPrefixed(didNoZeroX(order.dtAddress))
-      const service = await this.getServiceByIndex(order.did, order.serviceId)
-      order.serviceType = service.type
-      if (!serviceType || (serviceType && serviceType === service.type))
-        results.push(order)
+      try {
+        const params = this.web3.eth.abi.decodeParameters(
+          ['uint256', 'uint256', 'uint256', 'uint256'],
+          events[i].data
+        )
+        order.serviceId = parseInt(params[1])
+        order.timestamp = parseInt(params[2])
+        order.amount = this.web3.utils.fromWei(params[0])
+        order.did = didPrefixed(didNoZeroX(order.dtAddress))
+        const service = await this.getServiceByIndex(order.did, order.serviceId)
+        order.serviceType = service.type
+        if (!serviceType || (serviceType && serviceType === service.type))
+          results.push(order)
+      } catch (e) {}
     }
     return results
   }
