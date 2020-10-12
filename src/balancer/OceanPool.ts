@@ -158,6 +158,24 @@ export class OceanPool extends Pool {
   }
 
   /**
+   * Returns max amount of OCEAN that you can buy.
+   * @param poolAddress
+   * @param tokenAddress
+   */
+  public async getOceanMaxBuyQuantity(poolAddress: string): Promise<string> {
+    return this.getMaxBuyQuantity(poolAddress, this.oceanAddress)
+  }
+
+  /**
+   * Returns max amount of DT that you can buy.
+   * @param poolAddress
+   * @param tokenAddress
+   */
+  public async getDTMaxBuyQuantity(poolAddress: string): Promise<string> {
+    return this.getMaxBuyQuantity(poolAddress, await this.getDTAddress(poolAddress))
+  }
+
+  /**
    * Returns tokenInAmount required to get tokenOutAmount
    * @param poolAddress
    * @param tokenInAddress
@@ -438,8 +456,7 @@ export class OceanPool extends Pool {
     }
     const dtAddress = await this.getDTAddress(poolAddress)
     if (
-      parseFloat(dtAmountWanted) >
-      parseFloat(await this.getMaxBuyQuantity(poolAddress, dtAddress))
+      parseFloat(dtAmountWanted) > parseFloat(await this.getDTMaxBuyQuantity(poolAddress))
     ) {
       console.error('Buy quantity exceeds quantity allowed')
       return null
@@ -495,7 +512,7 @@ export class OceanPool extends Pool {
     const dtAddress = await this.getDTAddress(poolAddress)
     if (
       parseFloat(oceanAmountWanted) >
-      parseFloat(await this.getMaxBuyQuantity(poolAddress, this.oceanAddress))
+      parseFloat(await this.getOceanMaxBuyQuantity(poolAddress))
     ) {
       console.error('Buy quantity exceeds quantity allowed')
       return null
@@ -572,7 +589,7 @@ export class OceanPool extends Pool {
     }
     if (
       parseFloat(maximumPoolShares) <
-      parseFloat(await this.calcPoolInGivenSingleOut(poolAddress, dtAddress, amount))
+      parseFloat(await this.getPoolSharesRequiredToRemoveDT(poolAddress, amount))
     ) {
       console.error('Not enough poolShares')
       return null
@@ -652,9 +669,7 @@ export class OceanPool extends Pool {
     }
     if (
       parseFloat(maximumPoolShares) <
-      parseFloat(
-        await this.calcPoolInGivenSingleOut(poolAddress, this.oceanAddress, amount)
-      )
+      parseFloat(await this.getPoolSharesRequiredToRemoveOcean(poolAddress, amount))
     ) {
       console.error('Not enough poolShares')
       return null
