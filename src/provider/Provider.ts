@@ -20,7 +20,8 @@ const apiPath = '/api/v1/services'
 export class Provider extends Instantiable {
   public nonce: string
   private baseUrl: string
-  public get url() {
+
+  public get url(): string {
     return this.baseUrl
   }
 

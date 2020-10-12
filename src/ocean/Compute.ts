@@ -183,7 +183,8 @@ export class Compute extends Instantiable {
     did?: string,
     jobId?: string
   ): Promise<ComputeJob[]> {
-    let provider
+    let provider: Provider
+
     if (did) {
       const ddo = await this.ocean.assets.resolve(did)
       const service = ddo.findServiceByType('compute')
