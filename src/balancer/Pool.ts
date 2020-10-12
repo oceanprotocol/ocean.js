@@ -2,9 +2,13 @@ import Web3 from 'web3'
 import { AbiItem } from 'web3-utils/types'
 import { TransactionReceipt } from 'web3-core'
 import Decimal from 'decimal.js'
+import BigNumber from 'bignumber.js'
 import jsonpoolABI from '@oceanprotocol/contracts/artifacts/BPool.json'
 import { PoolFactory } from './PoolFactory'
 
+const MaxUint256: BigNumber = new BigNumber(
+  '0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff'
+)
 /**
  * Provides an interface to Balancer BPool & BFactory
  */
@@ -500,7 +504,7 @@ export class Pool extends PoolFactory {
     tokenAmountIn: string,
     tokenOut: string,
     minAmountOut: string,
-    maxPrice: string
+    maxPrice?: string
   ): Promise<TransactionReceipt> {
     const pool = new this.web3.eth.Contract(this.poolABI, poolAddress, {
       from: account
@@ -513,7 +517,7 @@ export class Pool extends PoolFactory {
           this.web3.utils.toWei(tokenAmountIn),
           tokenOut,
           this.web3.utils.toWei(minAmountOut),
-          this.web3.utils.toWei(maxPrice)
+          maxPrice ? this.web3.utils.toWei(maxPrice) : MaxUint256
         )
         .send({ from: account, gas: this.GASLIMIT_DEFAULT })
     } catch (e) {
@@ -540,7 +544,7 @@ export class Pool extends PoolFactory {
     maxAmountIn: string,
     tokenOut: string,
     minAmountOut: string,
-    maxPrice: string
+    maxPrice?: string
   ): Promise<TransactionReceipt> {
     const pool = new this.web3.eth.Contract(this.poolABI, poolAddress, {
       from: account
@@ -553,7 +557,7 @@ export class Pool extends PoolFactory {
           this.web3.utils.toWei(maxAmountIn),
           tokenOut,
           this.web3.utils.toWei(minAmountOut),
-          this.web3.utils.toWei(maxPrice)
+          maxPrice ? this.web3.utils.toWei(maxPrice) : MaxUint256
         )
         .send({ from: account, gas: this.GASLIMIT_DEFAULT })
     } catch (e) {

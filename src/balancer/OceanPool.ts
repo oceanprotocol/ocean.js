@@ -3,6 +3,8 @@ import { AbiItem } from 'web3-utils/types'
 import { TransactionReceipt } from 'web3-core'
 import { Pool } from './Pool'
 import { EventData, Filter } from 'web3-eth-contract'
+import BigNumber from 'bignumber.js'
+import Decimal from 'decimal.js'
 
 declare type PoolTransactionType = 'swap' | 'join' | 'exit'
 
@@ -336,7 +338,7 @@ export class OceanPool extends Pool {
    * @param poolAddress
    * @param poolShares
    */
-  public async getPoolSharesForRemoveDT(
+  public async getDTRemovedforPoolShares(
     poolAddress: string,
     poolShares: string
   ): Promise<string> {
@@ -357,11 +359,11 @@ export class OceanPool extends Pool {
   }
 
   /**
-   * Returns DT amnount received after spending poolShares
+   * Returns Ocean amnount received after spending poolShares
    * @param poolAddress
    * @param poolShares
    */
-  public async getPoolSharesForRemoveOcean(
+  public async getOceanRemovedforPoolShares(
     poolAddress: string,
     poolShares: string
   ): Promise<string> {
@@ -395,7 +397,11 @@ export class OceanPool extends Pool {
     tokenAddress: string
   ): Promise<string> {
     const balance = await super.getReserve(poolAddress, tokenAddress)
-    return String(parseFloat(balance) / 2)
+    const result = new BigNumber(this.web3.utils.toWei(balance))
+      .dividedBy(3)
+      .integerValue(BigNumber.ROUND_DOWN)
+      .minus(1)
+    return this.web3.utils.fromWei(result.toString())
   }
 
   /**
@@ -408,7 +414,11 @@ export class OceanPool extends Pool {
     tokenAddress: string
   ): Promise<string> {
     const balance = await super.getReserve(poolAddress, tokenAddress)
-    return String(parseFloat(balance) / 3)
+    const result = new BigNumber(this.web3.utils.toWei(balance))
+      .dividedBy(3)
+      .integerValue(BigNumber.ROUND_DOWN)
+      .minus(1)
+    return this.web3.utils.fromWei(result.toString())
   }
 
   /**
@@ -449,9 +459,6 @@ export class OceanPool extends Pool {
     if (this.oceanAddress == null) {
       console.error('oceanAddress is not defined')
       return null
-    }
-    if (!maxPrice) {
-      maxPrice = String(2 ** 256 - 1)
     }
     const dtAddress = await this.getDTAddress(poolAddress)
     if (
@@ -501,9 +508,6 @@ export class OceanPool extends Pool {
     oceanAmountWanted: string,
     maxPrice?: string
   ): Promise<TransactionReceipt> {
-    if (!maxPrice) {
-      maxPrice = String(2 ** 256 - 1)
-    }
     if (this.oceanAddress == null) {
       console.error('oceanAddress is not defined')
       return null
@@ -522,6 +526,7 @@ export class OceanPool extends Pool {
       console.error('Not enough Data Tokens')
       return null
     }
+    await super.approve(account, dtAddress, poolAddress, this.web3.utils.toWei(dtAmount))
     return this.swapExactAmountIn(
       account,
       poolAddress,
@@ -618,7 +623,7 @@ export class OceanPool extends Pool {
       console.error('oceanAddress is not defined')
       return null
     }
-    const maxAmount = await this.getMaxAddLiquidity(poolAddress, this.oceanAddress)
+    const maxAmount = await this.getOceanMaxAddLiquidity(poolAddress)
     if (parseFloat(amount) > parseFloat(maxAmount)) {
       console.error('Too much reserve to add')
       return null
