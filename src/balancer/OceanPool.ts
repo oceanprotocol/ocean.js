@@ -302,6 +302,56 @@ export class OceanPool extends Pool {
   }
 
   /**
+   * Returns no of pool shares required to  receive specified amount of DT
+   * @param poolAddress
+   * @param dtAmount
+   */
+  public async getPoolSharesRequiredToRemoveDT(
+    poolAddress: string,
+    dtAmount: string
+  ): Promise<string> {
+    const dtAddress = await this.getDTAddress(poolAddress)
+    return this.calcPoolInGivenSingleOut(poolAddress, dtAddress, dtAmount)
+  }
+
+  /**
+   * Returns DT amnount received after spending poolShares
+   * @param poolAddress
+   * @param poolShares
+   */
+  public async getPoolSharesForRemoveDT(
+    poolAddress: string,
+    poolShares: string
+  ): Promise<string> {
+    const dtAddress = await this.getDTAddress(poolAddress)
+    return this.calcSingleOutGivenPoolIn(poolAddress, dtAddress, poolShares)
+  }
+
+  /**
+   * Returns no of pool shares required to  receive specified amount of DT
+   * @param poolAddress
+   * @param dtAmount
+   */
+  public async getPoolSharesRequiredToRemoveOcean(
+    poolAddress: string,
+    oceanAmount: string
+  ): Promise<string> {
+    return this.calcPoolInGivenSingleOut(poolAddress, this.oceanAddress, oceanAmount)
+  }
+
+  /**
+   * Returns DT amnount received after spending poolShares
+   * @param poolAddress
+   * @param poolShares
+   */
+  public async getPoolSharesForRemoveOcean(
+    poolAddress: string,
+    poolShares: string
+  ): Promise<string> {
+    return this.calcSingleOutGivenPoolIn(poolAddress, this.oceanAddress, poolShares)
+  }
+
+  /**
    * Returns max amount of tokens that you can add to the pool
    * @param poolAddress
    * @param tokenAddress
@@ -325,6 +375,25 @@ export class OceanPool extends Pool {
   ): Promise<string> {
     const balance = await super.getReserve(poolAddress, tokenAddress)
     return String(parseFloat(balance) / 3)
+  }
+
+  /**
+   * Returns max amount of DT that you can withdraw from the pool
+   * @param poolAddress
+   * @param tokenAddress
+   */
+  public async getDTMaxRemoveLiquidity(poolAddress: string): Promise<string> {
+    const dtAddress = await this.getDTAddress(poolAddress)
+    return this.getMaxRemoveLiquidity(poolAddress, dtAddress)
+  }
+
+  /**
+   * Returns max amount of Ocean that you can withdraw from the pool
+   * @param poolAddress
+   * @param tokenAddress
+   */
+  public async getOceanMaxRemoveLiquidity(poolAddress: string): Promise<string> {
+    return this.getMaxRemoveLiquidity(poolAddress, this.oceanAddress)
   }
 
   /**
@@ -358,12 +427,7 @@ export class OceanPool extends Pool {
       console.error('Buy quantity exceeds quantity allowed')
       return null
     }
-    const calcInGivenOut = await this.calcInGivenOut(
-      poolAddress,
-      this.oceanAddress,
-      dtAddress,
-      dtAmountWanted
-    )
+    const calcInGivenOut = await this.getOceanNeeded(poolAddress, dtAmountWanted)
 
     if (parseFloat(calcInGivenOut) > parseFloat(maxOceanAmount)) {
       console.error('Not enough Ocean Tokens')
@@ -419,12 +483,8 @@ export class OceanPool extends Pool {
       console.error('Buy quantity exceeds quantity allowed')
       return null
     }
-    const calcOutGivenIn = await this.calcOutGivenIn(
-      poolAddress,
-      dtAddress,
-      this.oceanAddress,
-      dtAmount
-    )
+    const calcOutGivenIn = await this.getOceanReceived(poolAddress, dtAmount)
+
     if (parseFloat(calcOutGivenIn) < parseFloat(oceanAmountWanted)) {
       console.error('Not enough Data Tokens')
       return null
@@ -483,7 +543,7 @@ export class OceanPool extends Pool {
     maximumPoolShares: string
   ): Promise<TransactionReceipt> {
     const dtAddress = await this.getDTAddress(poolAddress)
-    const maxAmount = await this.getMaxRemoveLiquidity(poolAddress, dtAddress)
+    const maxAmount = await this.getDTMaxRemoveLiquidity(poolAddress)
     if (parseFloat(amount) > parseFloat(maxAmount)) {
       console.error('Too much reserve to remove')
       return null
@@ -563,7 +623,7 @@ export class OceanPool extends Pool {
       console.error('oceanAddress is not defined')
       return null
     }
-    const maxAmount = await this.getMaxRemoveLiquidity(poolAddress, this.oceanAddress)
+    const maxAmount = await this.getOceanMaxRemoveLiquidity(poolAddress)
     if (parseFloat(amount) > parseFloat(maxAmount)) {
       console.error('Too much reserve to remove')
       return null
@@ -648,6 +708,16 @@ export class OceanPool extends Pool {
   public async getOceanNeeded(poolAddress: string, dtRequired: string): Promise<string> {
     const dtAddress = await this.getDTAddress(poolAddress)
     return this.calcInGivenOut(poolAddress, this.oceanAddress, dtAddress, dtRequired)
+  }
+
+  public async getOceanReceived(poolAddress: string, dtSold: string): Promise<string> {
+    const dtAddress = await this.getDTAddress(poolAddress)
+    return this.calcOutGivenIn(poolAddress, dtAddress, this.oceanAddress, dtSold)
+  }
+
+  public async getDTNeeded(poolAddress: string, OceanRequired: string): Promise<string> {
+    const dtAddress = await this.getDTAddress(poolAddress)
+    return this.calcInGivenOut(poolAddress, dtAddress, this.oceanAddress, OceanRequired)
   }
 
   /**
