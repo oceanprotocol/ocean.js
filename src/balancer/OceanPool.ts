@@ -3,7 +3,7 @@ import { AbiItem } from 'web3-utils/types'
 import { TransactionReceipt } from 'web3-core'
 import { Pool } from './Pool'
 import { EventData, Filter } from 'web3-eth-contract'
-import { parse } from 'path'
+
 
 declare type PoolTransactionType = 'swap' | 'join' | 'exit'
 
