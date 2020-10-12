@@ -352,6 +352,23 @@ export class OceanPool extends Pool {
   }
 
   /**
+   * Returns max DT amount that you can add to the pool
+   * @param poolAddress
+   */
+  public async getDTMaxAddLiquidity(poolAddress: string): Promise<string> {
+    const dtAddress = await this.getDTAddress(poolAddress)
+    return this.getMaxAddLiquidity(poolAddress, dtAddress)
+  }
+
+  /**
+   * Returns max Ocean amount that you can add to the pool
+   * @param poolAddress
+   */
+  public async getOceanMaxAddLiquidity(poolAddress: string): Promise<string> {
+    return this.getMaxAddLiquidity(poolAddress, this.oceanAddress)
+  }
+
+  /**
    * Returns max amount of tokens that you can add to the pool
    * @param poolAddress
    * @param tokenAddress
