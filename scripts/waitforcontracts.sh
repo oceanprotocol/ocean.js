@@ -3,3 +3,4 @@ if [ "${DEPLOY_CONTRACTS}" = "true" ]; then
     sleep 2
   done
 fi
+cat "${HOME}/.ocean/ocean-contracts/artifacts/address.json"
