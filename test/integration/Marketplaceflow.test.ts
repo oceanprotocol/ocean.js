@@ -112,7 +112,7 @@ describe('Marketplace flow', () => {
     )
     ddo = await ocean.assets.create(asset, alice, [service1], tokenAddress)
     assert(ddo.dataToken === tokenAddress)
-    await sleep(6000)
+    await sleep(60000)
   })
 
   it('Alice mints 100 tokens', async () => {
@@ -212,7 +212,7 @@ describe('Marketplace flow', () => {
     }
     const newDdo = await ocean.assets.editMetadata(ddo.id, newMetaData, alice)
     assert(newDdo !== null)
-    await sleep(6000)
+    await sleep(60000)
     const metaData = await ocean.assets.getServiceByType(ddo.id, 'metadata')
     assert.equal(metaData.attributes.main.name, newMetaData.title)
     assert.equal(

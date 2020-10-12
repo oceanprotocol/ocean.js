@@ -445,7 +445,7 @@ describe('Compute flow', () => {
       alice
     )
     assert(newDdo !== null)
-    await sleep(6000)
+    await sleep(60000)
     const metaData = await ocean.assets.getServiceByType(ddo.id, 'compute')
     assert.equal(
       metaData.attributes.main.privacy.allowRawAlgorithm,
