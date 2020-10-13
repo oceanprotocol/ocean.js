@@ -11,7 +11,7 @@ const libJsPackage = require('../package.json')
 const { description, version } = libJsPackage
 
 // Setup our paths, relative to project root
-const outPath = './dist/lib-js.json'
+const outPath = './dist/lib.json'
 const files = ['./src/lib.ts']
 
 // specifically point to tsconfig, otherwise TypeDoc fails

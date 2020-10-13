@@ -28,15 +28,15 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/oceanprotocol/ocean-lib-js.git"
+    "url": "git+https://github.com/oceanprotocol/ocean.js.git"
   },
   "keywords": [],
   "author": "Ocean Protocol <devops@oceanprotocol.com>",
   "license": "Apache-2.0",
   "bugs": {
-    "url": "https://github.com/oceanprotocol/ocean-lib-js/issues"
+    "url": "https://github.com/oceanprotocol/ocean.js/issues"
   },
-  "homepage": "https://github.com/oceanprotocol/ocean-lib-js#readme",
+  "homepage": "https://github.com/oceanprotocol/ocean.js#readme",
   "peerDependencies": {
     "web3": "^1.2.3"
   },
@@ -119,7 +119,7 @@
     "github": {
       "release": true,
       "assets": [
-        "dist/lib-js.json"
+        "dist/lib.json"
       ]
     },
     "npm": {
