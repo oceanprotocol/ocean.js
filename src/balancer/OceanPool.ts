@@ -65,15 +65,15 @@ export class OceanPool extends Pool {
     fee: string
   ): Promise<string> {
     if (this.oceanAddress == null) {
-      console.error('oceanAddress is not defined')
+      console.error('ERROR: oceanAddress is not defined')
       return null
     }
     if (parseFloat(fee) > 0.1) {
-      console.error('Swap fee too high. The maximum allowed swapFee is 0.1 (10%).')
+      console.error('ERROR: Swap fee too high. The maximum allowed swapFee is 0.1 (10%).')
       return null
     }
     if (parseFloat(weight) > 9 || parseFloat(weight) < 1) {
-      console.error('Weight out of bounds (min 1, max9)')
+      console.error('ERROR: Weight out of bounds (min 1, max9)')
       return null
     }
     const address = await super.createPool(account)
@@ -88,7 +88,7 @@ export class OceanPool extends Pool {
       this.web3.utils.toWei(String(amount))
     )
     if (!txid) {
-      console.error('DT approve failed')
+      console.error('ERROR: Failed to call approve DT token')
       return null
     }
     txid = await this.approve(
@@ -98,7 +98,7 @@ export class OceanPool extends Pool {
       this.web3.utils.toWei(String(oceanAmount))
     )
     if (!txid) {
-      console.error('OCEAN approve failed')
+      console.error('ERROR: Failed to call approve OCEAN token')
       return null
     }
     txid = await super.setup(
@@ -113,7 +113,7 @@ export class OceanPool extends Pool {
       this.web3.utils.toWei(fee)
     )
     if (!txid) {
-      console.error('Pool creation failed')
+      console.error('ERROR: Failed to create a new pool')
       return null
     }
     return address
@@ -144,7 +144,7 @@ export class OceanPool extends Pool {
    */
   public async getOceanReserve(poolAddress: string): Promise<string> {
     if (this.oceanAddress == null) {
-      console.error('oceanAddress is not defined')
+      console.error('ERROR: oceanAddress is not defined')
       return null
     }
     return super.getReserve(poolAddress, this.oceanAddress)
@@ -412,11 +412,13 @@ export class OceanPool extends Pool {
     tokenAddress: string
   ): Promise<string> {
     const balance = await super.getReserve(poolAddress, tokenAddress)
-    const result = new BigNumber(this.web3.utils.toWei(balance))
-      .dividedBy(3)
-      .integerValue(BigNumber.ROUND_DOWN)
-      .minus(1)
-    return this.web3.utils.fromWei(result.toString())
+    if (parseFloat(balance) > 0) {
+      const result = new BigNumber(this.web3.utils.toWei(balance))
+        .dividedBy(3)
+        .integerValue(BigNumber.ROUND_DOWN)
+        .minus(1)
+      return this.web3.utils.fromWei(result.toString())
+    } else return '0'
   }
 
   /**
@@ -429,11 +431,13 @@ export class OceanPool extends Pool {
     tokenAddress: string
   ): Promise<string> {
     const balance = await super.getReserve(poolAddress, tokenAddress)
-    const result = new BigNumber(this.web3.utils.toWei(balance))
-      .dividedBy(4)
-      .integerValue(BigNumber.ROUND_DOWN)
-      .minus(1)
-    return this.web3.utils.fromWei(result.toString())
+    if (parseFloat(balance) > 0) {
+      const result = new BigNumber(this.web3.utils.toWei(balance))
+        .dividedBy(4)
+        .integerValue(BigNumber.ROUND_DOWN)
+        .minus(1)
+      return this.web3.utils.fromWei(result.toString())
+    } else return '0'
   }
 
   /**
@@ -472,20 +476,20 @@ export class OceanPool extends Pool {
     maxPrice?: string
   ): Promise<TransactionReceipt> {
     if (this.oceanAddress == null) {
-      console.error('oceanAddress is not defined')
+      console.error('ERROR: undefined ocean token contract address')
       return null
     }
     const dtAddress = await this.getDTAddress(poolAddress)
     if (
       parseFloat(dtAmountWanted) > parseFloat(await this.getDTMaxBuyQuantity(poolAddress))
     ) {
-      console.error('Buy quantity exceeds quantity allowed')
+      console.error('ERROR: Buy quantity exceeds quantity allowed')
       return null
     }
     const calcInGivenOut = await this.getOceanNeeded(poolAddress, dtAmountWanted)
 
     if (parseFloat(calcInGivenOut) > parseFloat(maxOceanAmount)) {
-      console.error('Not enough Ocean Tokens')
+      console.error('ERROR: Not enough Ocean Tokens')
       return null
     }
     // TODO - check balances first
@@ -496,7 +500,7 @@ export class OceanPool extends Pool {
       this.web3.utils.toWei(maxOceanAmount)
     )
     if (!txid) {
-      console.error('OCEAN approve failed')
+      console.error('ERROR: OCEAN approve failed')
       return null
     }
     return this.swapExactAmountOut(
@@ -527,7 +531,7 @@ export class OceanPool extends Pool {
     maxPrice?: string
   ): Promise<TransactionReceipt> {
     if (this.oceanAddress == null) {
-      console.error('oceanAddress is not defined')
+      console.error('ERROR: oceanAddress is not defined')
       return null
     }
     const dtAddress = await this.getDTAddress(poolAddress)
@@ -535,13 +539,13 @@ export class OceanPool extends Pool {
       parseFloat(oceanAmountWanted) >
       parseFloat(await this.getOceanMaxBuyQuantity(poolAddress))
     ) {
-      console.error('Buy quantity exceeds quantity allowed')
+      console.error('ERROR: Buy quantity exceeds quantity allowed')
       return null
     }
     const calcOutGivenIn = await this.getOceanReceived(poolAddress, dtAmount)
 
     if (parseFloat(calcOutGivenIn) < parseFloat(oceanAmountWanted)) {
-      console.error('Not enough Data Tokens')
+      console.error('ERROR: Not enough Data Tokens')
       return null
     }
     const txid = await super.approve(
@@ -551,7 +555,7 @@ export class OceanPool extends Pool {
       this.web3.utils.toWei(dtAmount)
     )
     if (!txid) {
-      console.error('DT approve failed')
+      console.error('ERROR: DT approve failed')
       return null
     }
     return this.swapExactAmountIn(
@@ -580,7 +584,7 @@ export class OceanPool extends Pool {
     const dtAddress = await this.getDTAddress(poolAddress)
     const maxAmount = await this.getMaxAddLiquidity(poolAddress, dtAddress)
     if (parseFloat(amount) > parseFloat(maxAmount)) {
-      console.error('Too much reserve to add')
+      console.error('ERROR: Too much reserve to add')
       return null
     }
     const txid = await super.approve(
@@ -590,7 +594,7 @@ export class OceanPool extends Pool {
       this.web3.utils.toWei(amount)
     )
     if (!txid) {
-      console.error('DT approve failed')
+      console.error('ERROR: DT approve failed')
       return null
     }
     const result = await super.joinswapExternAmountIn(
@@ -619,19 +623,19 @@ export class OceanPool extends Pool {
     const dtAddress = await this.getDTAddress(poolAddress)
     const maxAmount = await this.getDTMaxRemoveLiquidity(poolAddress)
     if (parseFloat(amount) > parseFloat(maxAmount)) {
-      console.error('Too much reserve to remove')
+      console.error('ERROR: Too much reserve to remove')
       return null
     }
     const usershares = await this.sharesBalance(account, poolAddress)
     if (parseFloat(usershares) < parseFloat(maximumPoolShares)) {
-      console.error('Not enough poolShares')
+      console.error('ERROR: Not enough poolShares')
       return null
     }
     if (
       parseFloat(maximumPoolShares) <
       parseFloat(await this.getPoolSharesRequiredToRemoveDT(poolAddress, amount))
     ) {
-      console.error('Not enough poolShares')
+      console.error('ERROR: Not enough poolShares')
       return null
     }
     return this.exitswapExternAmountOut(
@@ -656,12 +660,12 @@ export class OceanPool extends Pool {
     amount: string
   ): Promise<TransactionReceipt> {
     if (this.oceanAddress == null) {
-      console.error('oceanAddress is not defined')
+      console.error('ERROR: oceanAddress is not defined')
       return null
     }
     const maxAmount = await this.getOceanMaxAddLiquidity(poolAddress)
     if (parseFloat(amount) > parseFloat(maxAmount)) {
-      console.error('Too much reserve to add')
+      console.error('ERROR: Too much reserve to add')
       return null
     }
     const txid = await super.approve(
@@ -671,7 +675,7 @@ export class OceanPool extends Pool {
       this.web3.utils.toWei(amount)
     )
     if (!txid) {
-      console.error('OCEAN approve failed')
+      console.error('ERROR: OCEAN approve failed')
       return null
     }
     const result = await super.joinswapExternAmountIn(
@@ -698,24 +702,24 @@ export class OceanPool extends Pool {
     maximumPoolShares: string
   ): Promise<TransactionReceipt> {
     if (this.oceanAddress == null) {
-      console.error('oceanAddress is not defined')
+      console.error('ERROR: oceanAddress is not defined')
       return null
     }
     const maxAmount = await this.getOceanMaxRemoveLiquidity(poolAddress)
     if (parseFloat(amount) > parseFloat(maxAmount)) {
-      console.error('Too much reserve to remove')
+      console.error('ERROR: Too much reserve to remove')
       return null
     }
     const usershares = await this.sharesBalance(account, poolAddress)
     if (parseFloat(usershares) < parseFloat(maximumPoolShares)) {
-      console.error('Not enough poolShares')
+      console.error('ERROR: Not enough poolShares')
       return null
     }
     if (
       parseFloat(maximumPoolShares) <
       parseFloat(await this.getPoolSharesRequiredToRemoveOcean(poolAddress, amount))
     ) {
-      console.error('Not enough poolShares')
+      console.error('ERROR: Not enough poolShares')
       return null
     }
     return super.exitswapExternAmountOut(
@@ -741,7 +745,7 @@ export class OceanPool extends Pool {
   ): Promise<TransactionReceipt> {
     const usershares = await this.sharesBalance(account, poolAddress)
     if (parseFloat(usershares) < parseFloat(poolShares)) {
-      console.error('Not enough poolShares')
+      console.error('ERROR: Not enough poolShares')
       return null
     }
 
@@ -755,7 +759,7 @@ export class OceanPool extends Pool {
    */
   public async getDTPrice(poolAddress: string): Promise<string> {
     if (this.oceanAddress == null) {
-      console.error('oceanAddress is not defined')
+      console.error('ERROR: oceanAddress is not defined')
       return null
     }
     return this.getOceanNeeded(poolAddress, '1')
