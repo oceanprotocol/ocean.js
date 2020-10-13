@@ -1,11 +1,11 @@
 [![banner](https://raw.githubusercontent.com/oceanprotocol/art/master/github/repo-banner%402x.png)](https://oceanprotocol.com)
 
-<h1 align="center">ocean-lib-js</h1>
+<h1 align="center">ocean.js</h1>
 
 > JavaScript library to privately & securely publish, exchange, and consume data.
 
 [![npm](https://img.shields.io/npm/v/@oceanprotocol/lib.svg)](https://www.npmjs.com/package/@oceanprotocol/lib)
-[![Build Status](https://travis-ci.com/oceanprotocol/ocean-lib-js.svg?token=soMi2nNfCZq19zS1Rx4i&branch=main)](https://travis-ci.com/oceanprotocol/ocean-lib-js)
+[![Build Status](https://travis-ci.com/oceanprotocol/ocean.js.svg?token=soMi2nNfCZq19zS1Rx4i&branch=main)](https://travis-ci.com/oceanprotocol/ocean.js)
 [![Maintainability](https://api.codeclimate.com/v1/badges/58a59c9029ac615acadc/maintainability)](https://codeclimate.com/repos/5f521329523d1e017600e2ae/maintainability)
 [![Test Coverage](https://api.codeclimate.com/v1/badges/58a59c9029ac615acadc/test_coverage)](https://codeclimate.com/repos/5f521329523d1e017600e2ae/test_coverage)
 [![code style: prettier](https://img.shields.io/badge/code_style-prettier-7b1173.svg?style=flat-square)](https://github.com/prettier/prettier)
@@ -21,7 +21,7 @@ With it, you can:
 - **Transfer** data tokens to another owner, and **all other ERC20 actions**
   using [web3.js](https://web3js.readthedocs.io/en/v1.2.9/web3-eth-contract.html) etc.
 
-`ocean-lib-js` is part of the [Ocean Protocol](https://oceanprotocol.com) toolset.
+`ocean.js` is part of the [Ocean Protocol](https://oceanprotocol.com) toolset.
 
 This is in alpha state and you can expect running into problems. If you run into them, please open up a [new issue](/issues).
 
@@ -155,13 +155,13 @@ Releases are managed semi-automatically. They are always manually triggered from
 
 ### Production
 
-From a clean `main` branch you can run any release task bumping the version accordingly based on semantic versioning:
+From a clean `main` branch you can run the release task bumping the version accordingly based on semantic versioning:
 
-- To bump a patch version: `npm run release`
-- To bump a minor version: `npm run release -- minor`
-- To bump a major version: `npm run release -- major`
+```bash
+npm run release
+```
 
-Every task does the following:
+The task does the following:
 
 - bumps the project version in `package.json`, `package-lock.json`
 - auto-generates and updates the CHANGELOG.md file from commit messages
