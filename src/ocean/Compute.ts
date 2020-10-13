@@ -357,7 +357,7 @@ export class Compute extends Instantiable {
       publishOutput: output.publishOutput,
       providerAddress: output.providerAddress || this.config.providerAddress,
       providerUri: output.providerUri || this.config.providerUri,
-      metadataUri: output.metadataUri || this.config.metadataStoreUri,
+      metadataUri: output.metadataUri || this.config.metadataCacheUri,
       nodeUri: output.nodeUri || this.config.nodeUri,
       owner: output.owner || consumerAccount.getId()
     }

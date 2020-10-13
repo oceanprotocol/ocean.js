@@ -18,7 +18,7 @@ export interface OceanPlatformTech {
 
 export interface OceanPlatformVersions {
   lib: OceanPlatformTech
-  metadataStore: OceanPlatformTech
+  metadataCache: OceanPlatformTech
   provider: OceanPlatformTech
   status: {
     ok: boolean
@@ -49,17 +49,17 @@ export class Versions extends Instantiable {
       status: OceanPlatformTechStatus.Working
     }
 
-    // MetadataStore
+    // MetadataCache
     try {
-      const { software: name, version } = await this.ocean.metadatastore.getVersionInfo()
-      versions.metadataStore = {
+      const { software: name, version } = await this.ocean.metadatacache.getVersionInfo()
+      versions.metadataCache = {
         name,
         status: OceanPlatformTechStatus.Working,
         version
       }
     } catch {
-      versions.metadataStore = {
-        name: 'MetadataStore',
+      versions.metadataCache = {
+        name: 'MetadataCache',
         status: OceanPlatformTechStatus.Stopped
       }
     }

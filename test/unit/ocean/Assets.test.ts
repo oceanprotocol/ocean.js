@@ -1,7 +1,7 @@
 import { assert, spy, use } from 'chai'
 import spies from 'chai-spies'
 
-import { SearchQuery, MetadataStore } from '../../../src/metadatastore/MetadataStore'
+import { SearchQuery, MetadataCache } from '../../../src/metadatacache/MetadataCache'
 import { Ocean } from '../../../src/ocean/Ocean'
 import config from '../config'
 import { DDO } from '../../../src/lib'
@@ -11,11 +11,11 @@ use(spies)
 
 describe('Assets', () => {
   let ocean: Ocean
-  let metadataStore: MetadataStore
+  let metadataCache: MetadataCache
 
   beforeEach(async () => {
     ocean = await Ocean.getInstance(config)
-    metadataStore = ocean.metadatastore // eslint-disable-line prefer-destructuring
+    metadataCache = ocean.metadatacache // eslint-disable-line prefer-destructuring
   })
 
   afterEach(() => {
@@ -35,7 +35,7 @@ describe('Assets', () => {
         }
       } as SearchQuery
 
-      spy.on(metadataStore.fetch, 'post', () => responsify(getSearchResults([new DDO()])))
+      spy.on(metadataCache.fetch, 'post', () => responsify(getSearchResults([new DDO()])))
       const assets = await ocean.assets.query(query)
 
       assert.typeOf(assets.results, 'array')
@@ -47,7 +47,7 @@ describe('Assets', () => {
   describe('#search()', () => {
     it('should search for assets', async () => {
       const text = 'office'
-      spy.on(metadataStore.fetch, 'post', () => responsify(getSearchResults([new DDO()])))
+      spy.on(metadataCache.fetch, 'post', () => responsify(getSearchResults([new DDO()])))
       const assets = await ocean.assets.search(text)
 
       assert.typeOf(assets.results, 'array')

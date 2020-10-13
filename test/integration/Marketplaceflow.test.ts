@@ -55,7 +55,7 @@ describe('Marketplace flow', () => {
     alice = (await ocean.accounts.list())[1]
     bob = (await ocean.accounts.list())[2]
     marketplace = (await ocean.accounts.list())[3]
-    data = { t: 1, url: config.metadataStoreUri }
+    data = { t: 1, url: config.metadataCacheUri }
     blob = JSON.stringify(data)
     await contracts.deployContracts(owner.getId())
   })

@@ -22,7 +22,7 @@ const configs: ConfigHelperConfig[] = [
     network: 'unknown',
     nodeUri: 'http://localhost:8545',
     factoryAddress: null,
-    metadataStoreUri: 'http://127.0.0.1:5000',
+    metadataCacheUri: 'http://127.0.0.1:5000',
     providerUri: 'http://127.0.0.1:8030',
     poolFactoryAddress: null,
     fixedRateExchangeAddress: null,
@@ -34,7 +34,7 @@ const configs: ConfigHelperConfig[] = [
     network: 'development',
     nodeUri: 'http://localhost:8545',
     factoryAddress: null,
-    metadataStoreUri: 'http://127.0.0.1:5000',
+    metadataCacheUri: 'http://127.0.0.1:5000',
     providerUri: 'http://127.0.0.1:8030',
     poolFactoryAddress: null,
     fixedRateExchangeAddress: null,
@@ -46,7 +46,7 @@ const configs: ConfigHelperConfig[] = [
     nodeUri: 'https://rinkeby.infura.io/v3',
     factoryAddress: '0x3fd7A00106038Fb5c802c6d63fa7147Fe429E83a',
     oceanTokenAddress: '0x8967BCF84170c91B0d24D4302C2376283b0B3a07',
-    metadataStoreUri: 'https://aquarius.rinkeby.v3.dev-ocean.com',
+    metadataCacheUri: 'https://aquarius.rinkeby.v3.dev-ocean.com',
     providerUri: 'https://provider.rinkeby.v3.dev-ocean.com',
     poolFactoryAddress: '0x53eDF9289B0898e1652Ce009AACf8D25fA9A42F8',
     fixedRateExchangeAddress: '0xeD1DfC5F3a589CfC4E8B91C1fbfC18FC6699Fbde',
@@ -58,7 +58,7 @@ const configs: ConfigHelperConfig[] = [
     nodeUri: 'https://mainnet.infura.io/v3',
     factoryAddress: '0x1234',
     oceanTokenAddress: '0x7AFeBBB46fDb47ed17b22ed075Cde2447694fB9e',
-    metadataStoreUri: null,
+    metadataCacheUri: null,
     providerUri: null,
     poolFactoryAddress: null,
     fixedRateExchangeAddress: null,
@@ -86,7 +86,7 @@ export class ConfigHelper {
         fixedRateExchangeAddress: FixedRateExchange,
         metadataContractAddress: Metadata,
         oceanTokenAddress: Ocean,
-        ...(process.env.AQUARIUS_URI && { metadataStoreUri: process.env.AQUARIUS_URI })
+        ...(process.env.AQUARIUS_URI && { metadataCacheUri: process.env.AQUARIUS_URI })
       }
 
       return configAddresses
