@@ -151,7 +151,7 @@ export class OceanPool extends Pool {
   }
 
   /**
-   * Get Data Token balance of a pool
+   * Get datatoken balance of a pool
    * @param {String} poolAddress
    * @return {String}
    */
@@ -460,10 +460,10 @@ export class OceanPool extends Pool {
   }
 
   /**
-   * Buy Data Token from a pool
+   * Buy datatoken from a pool
    * @param {String} account
    * @param {String} poolAddress
-   * @param {String} amount  Data Token amount
+   * @param {String} amount  datatoken amount
    * @param {String} oceanAmount  Ocean Token amount payed
    * @param {String} maxPrice  Maximum price to pay
    * @return {TransactionReceipt}
@@ -515,10 +515,10 @@ export class OceanPool extends Pool {
   }
 
   /**
-   * Sell Data Token
+   * Sell datatoken
    * @param {String} account
    * @param {String} poolAddress
-   * @param {String} amount  Data Token amount to be sold
+   * @param {String} amount  datatoken amount to be sold
    * @param {String} oceanAmount  Ocean Token amount expected
    * @param {String} maxPrice  Minimum price to sell
    * @return {TransactionReceipt}
@@ -545,7 +545,7 @@ export class OceanPool extends Pool {
     const calcOutGivenIn = await this.getOceanReceived(poolAddress, dtAmount)
 
     if (parseFloat(calcOutGivenIn) < parseFloat(oceanAmountWanted)) {
-      console.error('ERROR: Not enough Data Tokens')
+      console.error('ERROR: Not enough datatokens')
       return null
     }
     const txid = await super.approve(
@@ -570,10 +570,10 @@ export class OceanPool extends Pool {
   }
 
   /**
-   * Add Data Token amount to pool liquidity
+   * Add datatoken amount to pool liquidity
    * @param {String} account
    * @param {String} poolAddress
-   * @param {String} amount Data Token amount
+   * @param {String} amount datatoken amount
    * @return {TransactionReceipt}
    */
   public async addDTLiquidity(
@@ -608,10 +608,10 @@ export class OceanPool extends Pool {
   }
 
   /**
-   * Remove Data Token amount from pool liquidity
+   * Remove datatoken amount from pool liquidity
    * @param {String} account
    * @param {String} poolAddress
-   * @param {String} amount Data Token amount
+   * @param {String} amount datatoken amount
    * @return {TransactionReceipt}
    */
   public async removeDTLiquidity(
@@ -736,12 +736,16 @@ export class OceanPool extends Pool {
    * @param {String} account
    * @param {String} poolAddress
    * @param {String} poolShares
+   * @param {String} minDT Minimum DT expected (defaults 0)
+   * @param {String} poolShares Minim Ocean expected (defaults 0)
    * @return {TransactionReceipt}
    */
   public async removePoolLiquidity(
     account: string,
     poolAddress: string,
-    poolShares: string
+    poolShares: string,
+    minDT = '0',
+    minOcean = '0'
   ): Promise<TransactionReceipt> {
     const usershares = await this.sharesBalance(account, poolAddress)
     if (parseFloat(usershares) < parseFloat(poolShares)) {
@@ -749,11 +753,11 @@ export class OceanPool extends Pool {
       return null
     }
 
-    return this.exitPool(account, poolAddress, poolShares, ['0', '0'])
+    return this.exitPool(account, poolAddress, poolShares, [minDT, minOcean])
   }
 
   /**
-   * Get Data Token price from pool
+   * Get datatoken price from pool
    * @param {String} poolAddress
    * @return {String}
    */
@@ -766,7 +770,7 @@ export class OceanPool extends Pool {
   }
 
   /**
-   * Search all pools that have Data Token in their composition
+   * Search all pools that have datatoken in their composition
    * @param {String} dtAddress
    * @return {String[]}
    */
