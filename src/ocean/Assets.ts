@@ -1,13 +1,7 @@
 import { SearchQuery, QueryResult } from '../metadatastore/MetadataStore'
 import { DDO } from '../ddo/DDO'
 import { Metadata } from '../ddo/interfaces/Metadata'
-import {
-  Service,
-  ServiceAccess,
-  ServiceComputePrivacy,
-  ServiceCommon
-} from '../ddo/interfaces/Service'
-
+import { Service, ServiceAccess, ServiceComputePrivacy } from '../ddo/interfaces/Service'
 import { EditableMetadata } from '../ddo/interfaces/EditableMetadata'
 import Account from './Account'
 import DID from './DID'
@@ -17,6 +11,7 @@ import { WebServiceConnector } from './utils/WebServiceConnector'
 import BigNumber from 'bignumber.js'
 import { Provider } from '../provider/Provider'
 import { isAddress } from 'web3-utils'
+import { MetadataMain } from '../ddo/interfaces'
 
 export enum CreateProgressStep {
   CreatingDataToken,
@@ -124,7 +119,8 @@ export class Assets extends Instantiable {
 
       this.logger.log('Encrypting files')
       observer.next(CreateProgressStep.EncryptingFiles)
-      let provider
+      let provider: Provider
+
       if (providerUri) {
         provider = new Provider(this.instanceConfig)
         provider.setBaseUrl(providerUri)
@@ -175,7 +171,7 @@ export class Assets extends Instantiable {
                   index,
                   url: undefined
                 }))
-              } as any
+              } as MetadataMain
             }
           },
           ...services
@@ -263,7 +259,8 @@ export class Assets extends Instantiable {
     account: Account
   ): Promise<DDO> {
     const oldDdo = await this.ocean.metadatastore.retrieveDDO(did)
-    let i
+    let i: number
+
     for (i = 0; i < oldDdo.service.length; i++) {
       if (oldDdo.service[i].type === 'metadata') {
         if (newMetadata.title) oldDdo.service[i].attributes.main.name = newMetadata.title
@@ -375,12 +372,10 @@ export class Assets extends Instantiable {
     } as SearchQuery)
   }
 
-  public async getServiceByType(
-    did: string,
-    serviceType: string
-  ): Promise<ServiceCommon> {
-    const services: ServiceCommon[] = (await this.resolve(did)).service
-    let service
+  public async getServiceByType(did: string, serviceType: string): Promise<Service> {
+    let service: Service
+    const services: Service[] = (await this.resolve(did)).service
+
     services.forEach((serv) => {
       if (serv.type.toString() === serviceType) {
         service = serv
@@ -389,12 +384,10 @@ export class Assets extends Instantiable {
     return service
   }
 
-  public async getServiceByIndex(
-    did: string,
-    serviceIndex: number
-  ): Promise<ServiceCommon> {
-    const services: ServiceCommon[] = (await this.resolve(did)).service
-    let service
+  public async getServiceByIndex(did: string, serviceIndex: number): Promise<Service> {
+    let service: Service
+    const services: Service[] = (await this.resolve(did)).service
+
     services.forEach((serv) => {
       if (serv.index === serviceIndex) {
         service = serv
@@ -441,8 +434,7 @@ export class Assets extends Instantiable {
    * @param {String} serviceType
    * @param {String} consumerAddress
    * @param {Number} serviceIndex
-   * @param {String} mpFeePercent  will be converted to Wei
-   * @param {String} mpAddress mp fee collector address
+   * @param {String} serviceEndpoint
    * @return {Promise<any>} Order details
    */
   public async initialize(
@@ -466,7 +458,7 @@ export class Assets extends Instantiable {
    * @param {String} serviceType
    * @param {String} payerAddress
    * @param {Number} serviceIndex
-   * @param {String} mpAddress mp fee collector address
+   * @param {String} mpAddress Marketplace fee collector address
    * @param {String} consumerAddress Optionally, if the consumer is another address than payer
    * @return {Promise<String>} transactionHash of the payment
    */
@@ -478,7 +470,8 @@ export class Assets extends Instantiable {
     mpAddress?: string,
     consumerAddress?: string
   ): Promise<string> {
-    let service
+    let service: Service
+
     if (!consumerAddress) consumerAddress = payerAddress
     if (serviceIndex === -1) {
       service = await this.getServiceByType(did, serviceType)
