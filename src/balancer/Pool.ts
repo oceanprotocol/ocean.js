@@ -158,24 +158,6 @@ export class Pool extends PoolFactory {
   }
 
   /**
-   * Get total supply of pool tokens
-   * @param {String} poolAddress
-   * @return {String}
-   */
-  async totalSupply(poolAddress: string): Promise<string> {
-    let result = null
-
-    try {
-      const pool = new this.web3.eth.Contract(this.poolABI, poolAddress)
-      const totalSupply = await pool.methods.totalSupply().call()
-      result = this.web3.utils.fromWei(totalSupply)
-    } catch (e) {
-      console.error(e)
-    }
-    return result
-  }
-
-  /**
    * Adds tokens to pool
    * @param {String} account
    * @param {String} poolAddress
