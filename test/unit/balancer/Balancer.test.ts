@@ -171,6 +171,10 @@ describe('Balancer flow', () => {
     const requiredOcean = await Pool.getOceanNeeded(alicePoolAddress, '1')
     assert(Number(requiredOcean) > 0)
   })
+  it('Get amount of DT needed to buy 1 Ocean', async () => {
+    const requiredOcean = await Pool.getDTNeeded(alicePoolAddress, '1')
+    assert(Number(requiredOcean) > 0)
+  })
 
   it('Bob should search for pools with this DT', async () => {
     const pools = await Pool.searchPoolforDT(tokenAddress)
@@ -379,6 +383,18 @@ describe('Balancer flow', () => {
     assert(parseFloat(poolShares) > parseFloat(newpoolShares))
   })
 
+  it('ALice should remove all liquidity', async () => {
+    const aliceShares = await Pool.sharesBalance(alice, greatPool)
+    const aliceDtBalance = await datatoken.balance(tokenAddress, alice)
+    const aliceOceanBalance = await datatoken.balance(oceanTokenAddress, alice)
+    await Pool.removePoolLiquidity(alice, greatPool, aliceShares)
+    const newAliceDtBalance = await datatoken.balance(tokenAddress, alice)
+    const newAliceOceanBalance = await datatoken.balance(oceanTokenAddress, alice)
+    const newAliceShares = await Pool.sharesBalance(alice, greatPool)
+    assert(parseFloat(aliceDtBalance) < parseFloat(newAliceDtBalance))
+    assert(parseFloat(aliceOceanBalance) < parseFloat(newAliceOceanBalance))
+    assert(parseFloat(aliceShares) > parseFloat(newAliceShares))
+  })
   it('ALice should get all the pools that she created', async () => {
     const alicePools = await Pool.getPoolsbyCreator(alice)
     assert(alicePools.length > 0)
