@@ -417,4 +417,13 @@ export class DataTokens {
     }
     return null
   }
+
+  public getStartOrderEventSignature(): string {
+    const abi = this.datatokensABI as AbiItem[]
+    const eventdata = abi.find(function (o) {
+      if (o.name === 'OrderStarted' && o.type === 'event') return o
+    })
+    const topic = this.web3.eth.abi.encodeEventSignature(eventdata as any)
+    return topic
+  }
 }
