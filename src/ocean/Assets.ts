@@ -18,8 +18,6 @@ export enum CreateProgressStep {
   DataTokenCreated,
   EncryptingFiles,
   FilesEncrypted,
-  GeneratingProof,
-  ProofGenerated,
   StoringDdo,
   DdoStored
 }
@@ -188,11 +186,7 @@ export class Assets extends Instantiable {
             index: indexCount++
           })) as Service[]
       })
-      this.logger.log('Generating proof')
-      observer.next(CreateProgressStep.GeneratingProof)
-      await ddo.addProof(this.ocean, publisher.getId(), publisher.getPassword())
-      this.logger.log('Proof generated')
-      observer.next(CreateProgressStep.ProofGenerated)
+      await ddo.addProof(this.ocean, publisher.getId())
       this.logger.log('Storing DDO')
       observer.next(CreateProgressStep.StoringDdo)
       // const storedDdo = await this.ocean.metadatacache.storeDDO(ddo)
