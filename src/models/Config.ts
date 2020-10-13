@@ -18,7 +18,7 @@ export class Config {
    * Metadata Store URL.
    * @type {string}
    */
-  public metadataStoreUri?: string
+  public metadataCacheUri?: string
 
   /**
    * Provider URL.

@@ -3,7 +3,7 @@ import Account from './ocean/Account'
 import DID from './ocean/DID'
 import { Ocean } from './ocean/Ocean'
 import { LoggerInstance as Logger } from './utils/Logger'
-import { MetadataStore } from './metadatastore/MetadataStore'
+import { MetadataCache } from './metadatacache/MetadataCache'
 import { DataTokens } from './datatokens/Datatokens'
 import { ConfigHelper } from './utils/ConfigHelper'
 
@@ -27,7 +27,7 @@ export {
   Config,
   DID,
   Logger,
-  MetadataStore,
+  MetadataCache,
   DataTokens,
   utils,
   ConfigHelper

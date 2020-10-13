@@ -77,7 +77,7 @@ describe('Compute flow', () => {
     owner = (await ocean.accounts.list())[0]
     alice = (await ocean.accounts.list())[1]
     bob = (await ocean.accounts.list())[2]
-    data = { t: 1, url: config.metadataStoreUri }
+    data = { t: 1, url: config.metadataCacheUri }
     blob = JSON.stringify(data)
     await contracts.deployContracts(owner.getId())
   })

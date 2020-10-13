@@ -44,7 +44,7 @@ const datatokensTemplate = require('@oceanprotocol/contracts/artifacts/DataToken
 
 // Alice's config
 const config = {
-  metadataStoreUri: 'http://aquarius:5000',
+  metadataCacheUri: 'http://aquarius:5000',
   providerUri: 'http://localhost:8030',
   nodeUri: `http://localhost:${process.env.ETH_PORT || 8545}`,
   verbose: LogLevel.Error,
@@ -60,7 +60,7 @@ datatoken = new DataTokens(
   datatokensTemplate.abi,
   web3
 )
-const data = { t: 1, url: ocean.config.metadataStoreUri }
+const data = { t: 1, url: ocean.config.metadataCacheUri }
 const blob = JSON.stringify(data)
 
 const dataTokenAddress = await datatoken.create(blob, alice.getId())

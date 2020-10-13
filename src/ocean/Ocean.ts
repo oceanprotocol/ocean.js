@@ -2,8 +2,8 @@ import { Accounts } from './Accounts'
 import { Assets } from './Assets'
 import { Versions } from './Versions'
 import { OceanUtils } from './utils/Utils'
-import { MetadataStore } from '../metadatastore/MetadataStore'
-import { OnChainMetadataStore } from '../metadatastore/OnChainMetaData'
+import { MetadataCache } from '../metadatacache/MetadataCache'
+import { OnChainMetadataCache } from '../metadatacache/OnChainMetaDataCache'
 import { Provider } from '../provider/Provider'
 import { DataTokens } from '../datatokens/Datatokens'
 import { Network } from '../datatokens/Network'
@@ -37,8 +37,8 @@ export class Ocean extends Instantiable {
     instance.utils = await OceanUtils.getInstance(instanceConfig)
 
     instance.provider = new Provider(instanceConfig)
-    instance.metadatastore = new MetadataStore(
-      instanceConfig.config.metadataStoreUri,
+    instance.metadatacache = new MetadataCache(
+      instanceConfig.config.metadataCacheUri,
       instanceConfig.logger
     )
 
@@ -65,7 +65,7 @@ export class Ocean extends Instantiable {
       instanceConfig.config.fixedRateExchangeAddressABI,
       instanceConfig.config.oceanTokenAddress
     )
-    instance.OnChainMetadataStore = new OnChainMetadataStore(
+    instance.OnChainMetadataCache = new OnChainMetadataCache(
       instanceConfig.config.web3Provider,
       instanceConfig.config.metadataContractAddress,
       instanceConfig.config.metadataContractABI
@@ -94,15 +94,15 @@ export class Ocean extends Instantiable {
   public web3Provider: any
 
   /**
-   * MetadataStore instance.
-   * @type {MetadataStore}
+   * MetadataCache instance.
+   * @type {MetadataCache}
    */
-  public metadatastore: MetadataStore
+  public metadatacache: MetadataCache
   /**
-   * OnChainMetadataStore instance.
-   * @type {OnChainMetadataStore}
+   * OnChainMetadataCache instance.
+   * @type {OnChainMetadataCache}
    */
-  public OnChainMetadataStore: OnChainMetadataStore
+  public OnChainMetadataCache: OnChainMetadataCache
   /**
    * Ocean account submodule
    * @type {Accounts}

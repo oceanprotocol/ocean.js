@@ -57,7 +57,7 @@ const defaultConfig: Config = new ConfigHelper().getConfig(
 
 const config = {
   ...defaultConfig,
-  metadataStoreUri: 'https://your-metadata-store.com',
+  metadataCacheUri: 'https://your-metadata-cache.com',
   providerUri: 'https://your-provider.com'
 }
 

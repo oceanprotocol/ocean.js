@@ -11,10 +11,10 @@ import { didZeroX } from '../utils'
 import { LZMA } from 'lzma/src/lzma-c'
 
 /**
- * Provides an interface with Metadata Store.
- * Metadata Store provides an off-chain database store for metadata about data assets.
+ * Provides an interface with Metadata Cache.
+ * Metadata Cache provides an off-chain database store for metadata about data assets.
  */
-export class OnChainMetadataStore {
+export class OnChainMetadataCache {
   public DDOContractAddress: string
   public DDOContractABI: AbiItem | AbiItem[]
   public web3: Web3
@@ -107,7 +107,7 @@ export class OnChainMetadataStore {
       /* const estGas = await this.DDOContract.methods
         .create(didZeroX(did), flags, data)
         .estimateGas(function (err, estGas) {
-          if (err) console.log('OnChainMetadataStoreEstimateGas: ' + err)
+          if (err) console.log('OnChainMetadataCacheEstimateGas: ' + err)
           return estGas
         })
       */

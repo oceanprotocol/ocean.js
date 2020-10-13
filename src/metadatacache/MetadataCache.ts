@@ -23,27 +23,27 @@ export interface SearchQuery {
 }
 
 /**
- * Provides an interface with Metadata Store.
- * Metadata Store provides an off-chain database store for metadata about data assets.
+ * Provides an interface with Metadata Cache.
+ * Metadata Cache provides an off-chain database cache for on-chain metadata about data assets.
  */
-export class MetadataStore {
+export class MetadataCache {
   public fetch: WebServiceConnector
   private logger: Logger
-  private metadataStoreUri: string
+  private metadataCacheUri: string
 
   private get url() {
-    return this.metadataStoreUri
+    return this.metadataCacheUri
   }
 
   /**
-   * Instantiate Metadata Store (independently of Ocean) for off-chain interaction.
-   * @param {String} metadataStoreUri
+   * Instantiate Metadata Cache (independently of Ocean) for off-chain interaction.
+   * @param {String} metadataCacheUri
    * @param {Logger} logger
    */
-  constructor(metadataStoreUri: string, logger: Logger) {
+  constructor(metadataCacheUri: string, logger: Logger) {
     this.fetch = new WebServiceConnector(logger)
     this.logger = logger
-    this.metadataStoreUri = metadataStoreUri
+    this.metadataCacheUri = metadataCacheUri
   }
 
   public async getVersionInfo(): Promise<any> {
