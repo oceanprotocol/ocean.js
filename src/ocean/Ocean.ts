@@ -57,7 +57,8 @@ export class Ocean extends Instantiable {
       instanceConfig.config.poolFactoryABI,
       instanceConfig.config.poolABI,
       instanceConfig.config.poolFactoryAddress,
-      instanceConfig.config.oceanTokenAddress
+      instanceConfig.config.oceanTokenAddress,
+      instance.metadatacache
     )
     instance.fixedRateExchange = new OceanFixedRateExchange(
       instanceConfig.config.web3Provider,

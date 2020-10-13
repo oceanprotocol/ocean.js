@@ -4,8 +4,8 @@ import { TransactionReceipt } from 'web3-core'
 import { Pool } from './Pool'
 import { EventData, Filter } from 'web3-eth-contract'
 import BigNumber from 'bignumber.js'
-import Decimal from 'decimal.js'
-
+import { MetadataCache } from '../metadatacache/MetadataCache'
+import { didNoZeroX, didPrefixed } from '../utils'
 declare type PoolTransactionType = 'swap' | 'join' | 'exit'
 
 export interface PoolDetails {
@@ -33,19 +33,21 @@ export interface PoolTransaction {
 export class OceanPool extends Pool {
   public oceanAddress: string = null
   public dtAddress: string = null
-
+  public MetadataCache: MetadataCache = null
   constructor(
     web3: Web3,
     factoryABI: AbiItem | AbiItem[] = null,
     poolABI: AbiItem | AbiItem[] = null,
     factoryAddress: string = null,
     oceanAddress: string = null,
+    MetadataCache: MetadataCache = null,
     gaslimit?: number
   ) {
     super(web3, factoryABI, poolABI, factoryAddress, gaslimit)
     if (oceanAddress) {
       this.oceanAddress = oceanAddress
     }
+    this.MetadataCache = MetadataCache
   }
 
   /**
@@ -775,18 +777,12 @@ export class OceanPool extends Pool {
    * @return {String[]}
    */
   public async searchPoolforDT(dtAddress: string): Promise<string[]> {
-    const result: string[] = []
-    const factory = new this.web3.eth.Contract(this.factoryABI, this.factoryAddress)
-    const events = await factory.getPastEvents('BPoolRegistered', {
-      filter: {},
-      fromBlock: 0,
-      toBlock: 'latest'
-    })
-    events.sort((a, b) => (a.blockNumber > b.blockNumber ? 1 : -1))
-    for (let i = 0; i < events.length; i++) {
-      const constituents = await super.getCurrentTokens(events[i].returnValues[0])
-      if (constituents.includes(dtAddress)) result.push(events[i].returnValues[0])
-    }
+    const did = didPrefixed(didNoZeroX(dtAddress))
+    let result: string[] = []
+    try {
+      const ddo = await this.MetadataCache.retrieveDDO(did)
+      result = ddo.price.pools
+    } catch (e) {}
     return result
   }
 
