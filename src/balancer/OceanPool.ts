@@ -782,6 +782,7 @@ export class OceanPool extends Pool {
       fromBlock: 0,
       toBlock: 'latest'
     })
+    events.sort((a, b) => (a.blockNumber > b.blockNumber ? 1 : -1))
     for (let i = 0; i < events.length; i++) {
       const constituents = await super.getCurrentTokens(events[i].returnValues[0])
       if (constituents.includes(dtAddress)) result.push(events[i].returnValues[0])
