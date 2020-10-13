@@ -7,6 +7,7 @@ import { Output } from '../ocean/interfaces/ComputeOutput'
 import { MetadataAlgorithm } from '../ddo/interfaces/MetadataAlgorithm'
 import { Versions } from '../ocean/Versions'
 import { Response } from 'node-fetch'
+import { DDO } from '../ddo/DDO'
 
 const apiPath = '/api/v1/services'
 
@@ -19,7 +20,8 @@ const apiPath = '/api/v1/services'
 export class Provider extends Instantiable {
   public nonce: string
   private baseUrl: string
-  public get url() {
+
+  public get url(): string {
     return this.baseUrl
   }
 
@@ -101,7 +103,8 @@ export class Provider extends Instantiable {
     serviceType: string,
     consumerAddress: string
   ): Promise<string> {
-    let DDO
+    let DDO: DDO
+
     try {
       DDO = await this.ocean.assets.resolve(did)
     } catch (e) {

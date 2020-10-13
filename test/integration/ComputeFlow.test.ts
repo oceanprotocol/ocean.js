@@ -3,50 +3,50 @@ import { TestContractHandler } from '../TestContractHandler'
 import { DataTokens } from '../../src/datatokens/Datatokens'
 import { Ocean } from '../../src/ocean/Ocean'
 import { ConfigHelper } from '../../src/utils/ConfigHelper'
-
 import { assert } from 'chai'
-import { ServiceCommon, ServiceComputePrivacy } from '../../src/ddo/interfaces/Service'
+import { Service, ServiceComputePrivacy } from '../../src/ddo/interfaces/Service'
 import Web3 from 'web3'
 import factory from '@oceanprotocol/contracts/artifacts/DTFactory.json'
 import datatokensTemplate from '@oceanprotocol/contracts/artifacts/DataTokenTemplate.json'
+import { Account, DDO, Metadata } from '../../src/lib'
+import { Cluster, Container, Server } from '../../src/ocean/Compute'
 const web3 = new Web3('http://127.0.0.1:8545')
 
-function sleep(ms) {
+function sleep(ms: number) {
   return new Promise((resolve) => {
     setTimeout(resolve, ms)
   })
 }
 
 describe('Compute flow', () => {
-  let owner
-  let bob
-  let ddo
-  let alice
-  let asset
-  let datasetNoRawAlgo
-  let datasetWithTrustedAlgo
-  let algorithmAsset
-  let contracts
+  let owner: Account
+  let bob: Account
+  let ddo: DDO
+  let alice: Account
+  let asset: Metadata
+  let datasetNoRawAlgo: DDO
+  let datasetWithTrustedAlgo: DDO
+  let algorithmAsset: DDO
+  let contracts: TestContractHandler
   let datatoken: DataTokens
-  let tokenAddress
-  let tokenAddressNoRawAlgo
-  let tokenAddressWithTrustedAlgo
-  let tokenAddressAlgorithm
+  let tokenAddress: string
+  let tokenAddressNoRawAlgo: string
+  let tokenAddressWithTrustedAlgo: string
+  let tokenAddressAlgorithm: string
   let price: string
-  let ocean
-  let computeService: ServiceCommon
-  let data
-  let blob
-  let jobId
+  let ocean: Ocean
+  let computeService: Service
+  let data: { t: number; url: string }
+  let blob: string
+  let jobId: string
 
-  let cluster
-  let servers
-  let containers
-  let provider
+  let cluster: Cluster
+  let servers: Server[]
+  let containers: Container[]
+  let providerAttributes: any
 
   const dateCreated = new Date(Date.now()).toISOString().split('.')[0] + 'Z' // remove milliseconds
 
-  const marketplaceAllowance = '20'
   const tokenAmount = '100'
 
   const timeout = 86400
@@ -170,7 +170,7 @@ describe('Compute flow', () => {
         'sha256:cb57ecfa6ebbefd8ffc7f75c0f00e57a7fa739578a429b6f72a0df19315deadc'
       )
     ]
-    provider = ocean.compute.createProviderAttributes(
+    providerAttributes = ocean.compute.createProviderAttributes(
       'Azure',
       'Compute service with 16gb ram for each node.',
       cluster,
@@ -186,7 +186,7 @@ describe('Compute flow', () => {
       alice,
       price,
       dateCreated,
-      provider,
+      providerAttributes,
       origComputePrivacy as ServiceComputePrivacy
     )
     ddo = await ocean.assets.create(asset, alice, [computeService], tokenAddress)
@@ -205,7 +205,7 @@ describe('Compute flow', () => {
       alice,
       '1000',
       dateCreated,
-      provider,
+      providerAttributes,
       origComputePrivacy as ServiceComputePrivacy
     )
     datasetNoRawAlgo = await ocean.assets.create(
@@ -229,7 +229,7 @@ describe('Compute flow', () => {
       alice,
       '1000',
       dateCreated,
-      provider,
+      providerAttributes,
       origComputePrivacy as ServiceComputePrivacy
     )
     datasetWithTrustedAlgo = await ocean.assets.create(
@@ -243,7 +243,7 @@ describe('Compute flow', () => {
   })
 
   it('should publish an algorithm', async () => {
-    const algoAsset = {
+    const algoAsset: Metadata = {
       main: {
         type: 'algorithm',
         name: 'Test Algo',
@@ -344,7 +344,7 @@ describe('Compute flow', () => {
       undefined,
       algorithmMeta,
       output,
-      computeService.index,
+      `${computeService.index}`,
       computeService.type
     )
     jobId = response.jobId
@@ -365,7 +365,8 @@ describe('Compute flow', () => {
     assert(jobId != null)
     await ocean.compute.stop(bob, ddo.id, jobId)
     const response = await ocean.compute.status(bob, ddo.id, jobId)
-    assert(response[0].stopreq === 1)
+    // TODO: typings say that `stopreq` does not exist
+    assert((response[0] as any).stopreq === 1)
   })
   it('should not allow order the compute service with raw algo for dataset that does not allow raw algo', async () => {
     const service1 = datasetNoRawAlgo.findServiceByType('compute')
@@ -416,7 +417,7 @@ describe('Compute flow', () => {
       algorithmAsset.id,
       undefined,
       output,
-      computeService.index,
+      `${computeService.index}`,
       computeService.type,
       orderalgo,
       algorithmAsset.dataToken

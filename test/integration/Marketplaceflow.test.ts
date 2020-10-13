@@ -5,7 +5,7 @@ import spies from 'chai-spies'
 import Web3 from 'web3'
 import { AbiItem } from 'web3-utils/types'
 import { DataTokens } from '../../src/datatokens/Datatokens'
-import { Account, EditableMetadata, ServiceAccess, ServiceCommon } from '../../src/lib'
+import { Account, EditableMetadata, Service, ServiceAccess } from '../../src/lib'
 import { Ocean } from '../../src/ocean/Ocean'
 import { ConfigHelper } from '../../src/utils/ConfigHelper'
 import { TestContractHandler } from '../TestContractHandler'
@@ -33,7 +33,7 @@ describe('Marketplace flow', () => {
   let service1: ServiceAccess
   let price: string
   let ocean: Ocean
-  let accessService: ServiceCommon
+  let accessService: Service
   let data
   let blob
 
