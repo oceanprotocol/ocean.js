@@ -159,10 +159,9 @@ export class DDO {
   }
 
   /**
-   * Generates and adds a simple proof
+   * Generates and adds a simple hash proof
    * @param  {Ocean}          ocean     Ocean instance.
    * @param  {string}         publicKey Public key to be used on personal sign.
-   * @param  {string}         password  Password if it's required.
    * @return {Promise<Proof>}           Proof object.
    */
   public async addSimpleProof(ocean: Ocean, publicKey: string): Promise<void> {
