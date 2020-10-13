@@ -157,4 +157,27 @@ export class DDO {
     }
     this.proof = await this.generateProof(ocean, publicKey, password)
   }
+
+  /**
+   * Generates and adds a simple proof
+   * @param  {Ocean}          ocean     Ocean instance.
+   * @param  {string}         publicKey Public key to be used on personal sign.
+   * @param  {string}         password  Password if it's required.
+   * @return {Promise<Proof>}           Proof object.
+   */
+  public async addSimpleProof(ocean: Ocean, publicKey: string): Promise<void> {
+    if (this.proof) {
+      throw new Error('Proof already exists')
+    }
+
+    this.proof = {
+      created: new Date().toISOString().replace(/\.[0-9]{3}/, ''),
+      creator: publicKey,
+      type: 'AddressHash',
+      signatureValue: Web3Provider.getWeb3()
+        .utils.sha3(publicKey)
+        // TODO: security/detect-unsafe-regex
+        .replace(/^0x([a-f0-9]{64})(:!.+)?$/i, '0x$1')
+    }
+  }
 }
