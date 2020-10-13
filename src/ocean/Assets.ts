@@ -190,7 +190,7 @@ export class Assets extends Instantiable {
       })
       // this.logger.log('Generating proof')
       // observer.next(CreateProgressStep.GeneratingProof)
-      await ddo.addSimpleProof(this.ocean, publisher.getId())
+      await ddo.addProof(this.ocean, publisher.getId())
       // this.logger.log('Proof generated')
       // observer.next(CreateProgressStep.ProofGenerated)
       this.logger.log('Storing DDO')

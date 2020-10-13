@@ -117,35 +117,10 @@ export class DDO {
   }
 
   /**
-   * Generates proof using personal sing.
+   * Generates and adds a simple hash proof on publicKey
    * @param  {Ocean}          ocean     Ocean instance.
    * @param  {string}         publicKey Public key to be used on personal sign.
-   * @param  {string}         password  Password if it's required.
-   * @return {Promise<Proof>}           Proof object.
-   */
-  public async generateProof(
-    ocean: Ocean,
-    publicKey: string,
-    password?: string
-  ): Promise<Proof> {
-    const checksum = this.getChecksum()
-
-    const signature = await ocean.utils.signature.signText(checksum, publicKey, password)
-
-    return {
-      created: new Date().toISOString().replace(/\.[0-9]{3}/, ''),
-      creator: publicKey,
-      type: 'DDOIntegritySignature',
-      signatureValue: signature
-    }
-  }
-
-  /**
-   * Generates and adds a proof using personal sing on the DDO.
-   * @param  {Ocean}          ocean     Ocean instance.
-   * @param  {string}         publicKey Public key to be used on personal sign.
-   * @param  {string}         password  Password if it's required.
-   * @return {Promise<Proof>}           Proof object.
+   * @return {Promise<void>}
    */
   public async addProof(
     ocean: Ocean,
@@ -155,20 +130,6 @@ export class DDO {
     if (this.proof) {
       throw new Error('Proof already exists')
     }
-    this.proof = await this.generateProof(ocean, publicKey, password)
-  }
-
-  /**
-   * Generates and adds a simple hash proof
-   * @param  {Ocean}          ocean     Ocean instance.
-   * @param  {string}         publicKey Public key to be used on personal sign.
-   * @return {Promise<Proof>}           Proof object.
-   */
-  public async addSimpleProof(ocean: Ocean, publicKey: string): Promise<void> {
-    if (this.proof) {
-      throw new Error('Proof already exists')
-    }
-
     this.proof = {
       created: new Date().toISOString().replace(/\.[0-9]{3}/, ''),
       creator: publicKey,
