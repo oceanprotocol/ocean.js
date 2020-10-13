@@ -80,16 +80,28 @@ export class OceanPool extends Pool {
     const oceanWeight = 10 - parseFloat(weight)
     const oceanAmount = (parseFloat(amount) * oceanWeight) / parseFloat(weight)
     this.dtAddress = token
-
-    await this.approve(account, token, address, this.web3.utils.toWei(String(amount)))
-    await this.approve(
+    let txid
+    txid = await this.approve(
+      account,
+      token,
+      address,
+      this.web3.utils.toWei(String(amount))
+    )
+    if (!txid) {
+      console.error('DT approve failed')
+      return null
+    }
+    txid = await this.approve(
       account,
       this.oceanAddress,
       address,
       this.web3.utils.toWei(String(oceanAmount))
     )
-
-    await super.setup(
+    if (!txid) {
+      console.error('OCEAN approve failed')
+      return null
+    }
+    txid = await super.setup(
       account,
       address,
       token,
@@ -100,7 +112,10 @@ export class OceanPool extends Pool {
       this.web3.utils.toWei(String(oceanWeight)),
       this.web3.utils.toWei(fee)
     )
-
+    if (!txid) {
+      console.error('Pool creation failed')
+      return null
+    }
     return address
   }
 
@@ -415,7 +430,7 @@ export class OceanPool extends Pool {
   ): Promise<string> {
     const balance = await super.getReserve(poolAddress, tokenAddress)
     const result = new BigNumber(this.web3.utils.toWei(balance))
-      .dividedBy(3)
+      .dividedBy(4)
       .integerValue(BigNumber.ROUND_DOWN)
       .minus(1)
     return this.web3.utils.fromWei(result.toString())
@@ -474,13 +489,16 @@ export class OceanPool extends Pool {
       return null
     }
     // TODO - check balances first
-    await super.approve(
+    const txid = await super.approve(
       account,
       this.oceanAddress,
       poolAddress,
       this.web3.utils.toWei(maxOceanAmount)
     )
-
+    if (!txid) {
+      console.error('OCEAN approve failed')
+      return null
+    }
     return this.swapExactAmountOut(
       account,
       poolAddress,
@@ -526,7 +544,16 @@ export class OceanPool extends Pool {
       console.error('Not enough Data Tokens')
       return null
     }
-    await super.approve(account, dtAddress, poolAddress, this.web3.utils.toWei(dtAmount))
+    const txid = await super.approve(
+      account,
+      dtAddress,
+      poolAddress,
+      this.web3.utils.toWei(dtAmount)
+    )
+    if (!txid) {
+      console.error('DT approve failed')
+      return null
+    }
     return this.swapExactAmountIn(
       account,
       poolAddress,
@@ -556,7 +583,16 @@ export class OceanPool extends Pool {
       console.error('Too much reserve to add')
       return null
     }
-    await super.approve(account, dtAddress, poolAddress, this.web3.utils.toWei(amount))
+    const txid = await super.approve(
+      account,
+      dtAddress,
+      poolAddress,
+      this.web3.utils.toWei(amount)
+    )
+    if (!txid) {
+      console.error('DT approve failed')
+      return null
+    }
     const result = await super.joinswapExternAmountIn(
       account,
       poolAddress,
@@ -628,12 +664,16 @@ export class OceanPool extends Pool {
       console.error('Too much reserve to add')
       return null
     }
-    await super.approve(
+    const txid = await super.approve(
       account,
       this.oceanAddress,
       poolAddress,
       this.web3.utils.toWei(amount)
     )
+    if (!txid) {
+      console.error('OCEAN approve failed')
+      return null
+    }
     const result = await super.joinswapExternAmountIn(
       account,
       poolAddress,
