@@ -778,11 +778,23 @@ export class OceanPool extends Pool {
    */
   public async searchPoolforDT(dtAddress: string): Promise<string[]> {
     const did = didPrefixed(didNoZeroX(dtAddress))
-    let result: string[] = []
+    const result: string[] = []
     try {
       const ddo = await this.MetadataCache.retrieveDDO(did)
-      result = ddo.price.pools
+      return ddo.price.pools
     } catch (e) {}
+    // fallback in case we don't have the asset registred in aqua
+    const factory = new this.web3.eth.Contract(this.factoryABI, this.factoryAddress)
+    const events = await factory.getPastEvents('BPoolRegistered', {
+      filter: {},
+      fromBlock: 0,
+      toBlock: 'latest'
+    })
+    events.sort((a, b) => (a.blockNumber > b.blockNumber ? 1 : -1))
+    for (let i = 0; i < events.length; i++) {
+      const constituents = await super.getCurrentTokens(events[i].returnValues[0])
+      if (constituents.includes(dtAddress)) result.push(events[i].returnValues[0])
+    }
     return result
   }
 
