@@ -14,6 +14,13 @@ import OceanPoolFactory from '@oceanprotocol/contracts/artifacts/BFactory.json'
 import OceanSPool from '@oceanprotocol/contracts/artifacts/BPool.json'
 const web3 = new Web3('http://127.0.0.1:8545')
 
+
+function sleep(ms: number) {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms)
+  })
+}
+
 describe('Balancer flow', () => {
   let oceanTokenAddress: string
   let OceanPoolFactoryAddress: string
@@ -116,7 +123,7 @@ describe('Balancer flow', () => {
   it('Alice creates a new OceanPool pool', async () => {
     /// new pool with total DT = 45 , dt weight=90% with swap fee 2%
     alicePoolAddress = await Pool.createDTPool(alice, tokenAddress, '45', '9', '0.02')
-    const s = await Pool.totalSupply(alicePoolAddress)
+    const s = await Pool.getPoolSharesTotalSupply(alicePoolAddress)
     assert(String(s) === '100', 'totalSupply does not match: ' + s)
     const n = await Pool.getNumTokens(alicePoolAddress)
     assert(String(n) === '2', 'unexpected num tokens: ' + n)
@@ -164,7 +171,7 @@ describe('Balancer flow', () => {
     assert(Number(currentOceanReserve) > 0)
   })
   it('Get total supply of pool tokens', async () => {
-    const totalSupply = await Pool.totalSupply(alicePoolAddress)
+    const totalSupply = await Pool.getPoolSharesTotalSupply(alicePoolAddress)
     assert(Number(totalSupply) > 0)
   })
   it('Get amount of Ocean needed to buy 1 dtToken', async () => {
