@@ -388,7 +388,12 @@ describe('Balancer flow', () => {
     assert(parseFloat(bobDtBalance) < parseFloat(newbobDtBalance))
     assert(parseFloat(poolShares) > parseFloat(newpoolShares))
   })
-
+  it('ALice should know how many tokens she will get for removing all liquidity', async () => {
+    const aliceShares = await Pool.sharesBalance(alice, greatPool)
+    const amounts = await Pool.getTokensRemovedforPoolShares(greatPool, aliceShares)
+    assert(parseFloat(amounts.dtAmount) > 0)
+    assert(parseFloat(amounts.oceanAmount) > 0)
+  })
   it('ALice should remove all liquidity', async () => {
     const aliceShares = await Pool.sharesBalance(alice, greatPool)
     const aliceDtBalance = await datatoken.balance(tokenAddress, alice)
