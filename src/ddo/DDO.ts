@@ -5,6 +5,7 @@ import { PublicKey } from './interfaces/PublicKey'
 import { Service, ServiceType } from './interfaces/Service'
 import Web3Provider from '../datatokens/Web3Provider'
 import { BestPrice } from './interfaces/BestPrice'
+import { DataTokenInfo } from './interfaces/DataTokenInfo'
 /**
  * DID Descriptor Object.
  * Contains all the data related to an asset.
@@ -53,6 +54,8 @@ export class DDO {
   public proof: Proof
 
   public price: BestPrice
+
+  public dataTokenInfo?: DataTokenInfo
 
   public constructor(ddo: Partial<DDO> = {}) {
     Object.assign(this, ddo, {
