@@ -390,28 +390,31 @@ export class OceanPool extends Pool {
   }
 
   /**
-   * Returns datatoken & Ocean  amounts received after spending poolShares
-   * @param poolAddress
-   * @param poolShares
+   * Returns Datatoken & Ocean amounts received after spending poolShares
+   * @param {String} poolAddress
+   * @param {String} poolShares
    * @return {TokensReceived}
    */
   public async getTokensRemovedforPoolShares(
     poolAddress: string,
     poolShares: string
   ): Promise<TokensReceived> {
-    const amounts = { dtAmount: '0', oceanAmount: '0' }
     try {
       const totalPoolTokens = await this.getPoolSharesTotalSupply(poolAddress)
-      amounts.dtAmount = String(
-        (Number(poolShares) / Number(totalPoolTokens)) *
-          Number(await this.getDTReserve(poolAddress))
-      )
-      amounts.oceanAmount = String(
-        (Number(poolShares) / Number(totalPoolTokens)) *
-          Number(await this.getOceanReserve(poolAddress))
-      )
-    } catch (e) {}
-    return amounts
+      const dtReserve = await this.getDTReserve(poolAddress)
+      const oceanReserve = await this.getOceanReserve(poolAddress)
+
+      const dtAmount = `${
+        (Number(poolShares) / Number(totalPoolTokens)) * Number(dtReserve)
+      }`
+      const oceanAmount = `${
+        (Number(poolShares) / Number(totalPoolTokens)) * Number(oceanReserve)
+      }`
+
+      return { dtAmount, oceanAmount }
+    } catch (e) {
+      console.error(`ERROR: Unable to get token info. ${e.message}`)
+    }
   }
 
   /**
