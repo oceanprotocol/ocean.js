@@ -1,4 +1,4 @@
-import assert from 'assert'
+import { assert } from 'chai'
 import DID from '../../../src/ocean/DID'
 
 describe('DID', () => {

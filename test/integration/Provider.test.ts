@@ -1,6 +1,6 @@
 import { Ocean } from '../../src/ocean/Ocean'
 import config from './config'
-import { assert } from 'console'
+import { assert } from 'chai'
 
 describe('Provider tests', () => {
   let ocean: Ocean
