@@ -5,12 +5,18 @@ import { Pool } from './Pool'
 import { EventData, Filter } from 'web3-eth-contract'
 import BigNumber from 'bignumber.js'
 import Decimal from 'decimal.js'
+import { createDiffieHellman } from 'crypto'
 
 declare type PoolTransactionType = 'swap' | 'join' | 'exit'
 
 export interface PoolDetails {
   poolAddress: string
   tokens: string[]
+}
+
+export interface TokensReceived {
+  dtAmount: string
+  oceanAmount: string
 }
 
 export interface PoolTransaction {
@@ -383,6 +389,31 @@ export class OceanPool extends Pool {
     poolShares: string
   ): Promise<string> {
     return this.calcSingleOutGivenPoolIn(poolAddress, this.oceanAddress, poolShares)
+  }
+
+  /**
+   * Returns datatoken & Ocean  amounts received after spending poolShares
+   * @param poolAddress
+   * @param poolShares
+   * @return {TokensReceived}
+   */
+  public async getTokensRemovedforPoolShares(
+    poolAddress: string,
+    poolShares: string
+  ): Promise<TokensReceived> {
+    const amounts = { dtAmount: '0', oceanAmount: '0' }
+    try {
+      const totalPoolTokens = await this.getPoolSharesTotalSupply(poolAddress)
+      amounts.dtAmount = String(
+        (Number(poolShares) / Number(totalPoolTokens)) *
+          Number(await this.getDTReserve(poolAddress))
+      )
+      amounts.oceanAmount = String(
+        (Number(poolShares) / Number(totalPoolTokens)) *
+          Number(await this.getOceanReserve(poolAddress))
+      )
+    } catch (e) {}
+    return amounts
   }
 
   /**
