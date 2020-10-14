@@ -4,4 +4,5 @@ export interface BestPrice {
   value: number
   ocean?: number
   datatoken?: number
+  pools: string[]
 }

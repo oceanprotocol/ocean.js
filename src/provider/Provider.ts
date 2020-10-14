@@ -56,15 +56,8 @@ export class Provider extends Instantiable {
 
   public async encrypt(did: string, document: any, account: Account): Promise<string> {
     await this.getNonce(account.getId())
-    const signature = await this.ocean.utils.signature.signWithHash(
-      did + this.nonce,
-      account.getId(),
-      account.getPassword()
-    )
-
     const args = {
       documentId: did,
-      signature: signature,
       document: JSON.stringify(document),
       publisherAddress: account.getId()
     }
