@@ -13,6 +13,11 @@ export interface PoolDetails {
   tokens: string[]
 }
 
+export interface TokensReceived {
+  dtAmount: string
+  oceanAmount: string
+}
+
 export interface PoolTransaction {
   poolAddress: string
   dtAddress: string
@@ -385,6 +390,34 @@ export class OceanPool extends Pool {
     poolShares: string
   ): Promise<string> {
     return this.calcSingleOutGivenPoolIn(poolAddress, this.oceanAddress, poolShares)
+  }
+
+  /**
+   * Returns Datatoken & Ocean amounts received after spending poolShares
+   * @param {String} poolAddress
+   * @param {String} poolShares
+   * @return {TokensReceived}
+   */
+  public async getTokensRemovedforPoolShares(
+    poolAddress: string,
+    poolShares: string
+  ): Promise<TokensReceived> {
+    try {
+      const totalPoolTokens = await this.getPoolSharesTotalSupply(poolAddress)
+      const dtReserve = await this.getDTReserve(poolAddress)
+      const oceanReserve = await this.getOceanReserve(poolAddress)
+
+      const dtAmount = `${
+        (Number(poolShares) / Number(totalPoolTokens)) * Number(dtReserve)
+      }`
+      const oceanAmount = `${
+        (Number(poolShares) / Number(totalPoolTokens)) * Number(oceanReserve)
+      }`
+
+      return { dtAmount, oceanAmount }
+    } catch (e) {
+      console.error(`ERROR: Unable to get token info. ${e.message}`)
+    }
   }
 
   /**
