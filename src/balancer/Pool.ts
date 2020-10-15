@@ -812,6 +812,7 @@ export class Pool extends PoolFactory {
   ): Promise<string> {
     const pool = new this.web3.eth.Contract(this.poolABI, poolAddress)
     let amount = null
+    if (parseFloat(tokenAmountOut) >= parseFloat(tokenBalanceOut)) return null
     try {
       const result = await pool.methods
         .calcInGivenOut(
