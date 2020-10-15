@@ -100,14 +100,14 @@ export class OnChainMetadataCache {
     consumerAccount: string
   ): Promise<TransactionReceipt> {
     if (!this.DDOContract) {
-      console.error('Missing DDOContract')
+      console.error('ERROR: Missing DDOContract')
       return null
     }
     try {
       /* const estGas = await this.DDOContract.methods
         .create(didZeroX(did), flags, data)
         .estimateGas(function (err, estGas) {
-          if (err) console.log('OnChainMetadataCacheEstimateGas: ' + err)
+          if (err) console.error('ERROR: OnChainMetadataCacheEstimateGas: ' + err)
           return estGas
         })
       */
@@ -116,7 +116,7 @@ export class OnChainMetadataCache {
         .send({ from: consumerAccount })
       return trxReceipt
     } catch (e) {
-      console.error(e.message)
+      console.error(`ERROR: Failed to publish raw DDO : ${e.message}`)
       return null
     }
   }
@@ -136,7 +136,7 @@ export class OnChainMetadataCache {
     consumerAccount: string
   ): Promise<TransactionReceipt> {
     if (!this.DDOContract) {
-      console.error('Missing DDOContract')
+      console.error('ERROR: Missing DDOContract')
       return null
     }
     try {
@@ -145,7 +145,7 @@ export class OnChainMetadataCache {
         .send({ from: consumerAccount })
       return trxReceipt
     } catch (e) {
-      console.error(e)
+      console.error(`ERROR: Failed to update raw DDO : ${e.message}`)
       return null
     }
   }
@@ -171,7 +171,7 @@ export class OnChainMetadataCache {
         })
       return trxReceipt
     } catch (e) {
-      console.error(e)
+      console.error(`ERROR: Failed to transfer DDO ownership : ${e.message}`)
       return null
     }
   }
@@ -201,7 +201,7 @@ export class OnChainMetadataCache {
         hex += '' + hexChar[(message[i] >> 4) & 0x0f] + hexChar[message[i] & 0x0f]
       }
     } catch (e) {
-      console.error(e)
+      console.error(`ERROR: Failed to get hex message value : ${e.message}`)
     }
     const hexMessage = '0x' + hex
     return hexMessage

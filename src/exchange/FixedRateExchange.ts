@@ -91,7 +91,7 @@ export class OceanFixedRateExchange {
         })
       exchangeId = trxReceipt.events.ExchangeCreated.returnValues[0]
     } catch (e) {
-      console.error(e)
+      console.error(`ERROR: Failed to create new exchange: ${e.message}`)
     }
     return exchangeId
   }
@@ -144,7 +144,7 @@ export class OceanFixedRateExchange {
         })
       return trxReceipt
     } catch (e) {
-      console.error(e)
+      console.error(`ERROR: Failed to buy datatokens: ${e.message}`)
       return null
     }
   }
@@ -178,7 +178,7 @@ export class OceanFixedRateExchange {
         .setRate(exchangeId, this.web3.utils.toWei(String(newRate)))
         .estimateGas(function (err, estGas) {
           if (err) {
-            // console.log('FixedPriceExchange: ' + err)
+            console.error(`ERROR: FixedPriceExchange: ${err.message}`)
             return DEFAULT_GAS_LIMIT
           }
           return estGas
@@ -214,7 +214,7 @@ export class OceanFixedRateExchange {
         .toggleExchangeState(exchangeId)
         .estimateGas(function (err, estGas) {
           if (err) {
-            // console.log('FixedPriceExchange: ' + err)
+            console.error(`ERROR: FixedPriceExchange: ${err.message}`)
             estGas = DEFAULT_GAS_LIMIT
           }
           return estGas
@@ -248,7 +248,7 @@ export class OceanFixedRateExchange {
         .toggleExchangeState(exchangeId)
         .estimateGas(function (err, estGas) {
           if (err) {
-            // console.log('FixedPriceExchange: ' + err)
+            console.error(`ERROR: FixedPriceExchange: ${err.message}`)
             estGas = DEFAULT_GAS_LIMIT
           }
           return estGas
