@@ -750,7 +750,7 @@ export class Pool extends PoolFactory {
         )
         .send({ from: account, gas: this.GASLIMIT_DEFAULT })
     } catch (e) {
-      console.error(`ERROR: Failed to specify token amount out that will get out of the pool. ${e.message}`)
+      console.error('ERROR: Failed to exitswapExternAmountOut')
     }
     return result
   }
@@ -796,7 +796,7 @@ export class Pool extends PoolFactory {
       const result = await pool.methods.getSpotPriceSansFee(tokenIn, tokenOut).call()
       price = this.web3.utils.fromWei(result)
     } catch (e) {
-      console.error(`ERROR: Failed to get spot price of swapping tokenIn to tokenOut without fees: ${e.message}`)
+      console.error('ERROR: Failed to getSpotPriceSansFee')
     }
     return price
   }
@@ -825,7 +825,7 @@ export class Pool extends PoolFactory {
         .call()
       amount = this.web3.utils.fromWei(result)
     } catch (e) {
-      console.error(`ERROR: Failed to calculate input token-pair amount giving output token-pair amount: ${e.message}`)
+      console.error('ERROR: Failed to calcInGivenOut')
     }
     return amount
   }
@@ -854,7 +854,7 @@ export class Pool extends PoolFactory {
         .call()
       amount = this.web3.utils.fromWei(result)
     } catch (e) {
-      console.error(`ERROR: Failed to calculate output token-pair amount giving the input token-pair amount : ${e.message}`)
+      console.error('ERROR: Failed to calcOutGivenIn')
     }
     return amount
   }
