@@ -173,6 +173,13 @@ describe('Balancer flow', () => {
     const totalSupply = await Pool.getPoolSharesTotalSupply(alicePoolAddress)
     assert(Number(totalSupply) > 0)
   })
+  it('Should fail to get amount of Ocean needed to buy more dtTokens than reserve', async () => {
+    const requiredOcean = await Pool.getOceanNeeded(
+      alicePoolAddress,
+      await Pool.getDTReserve(alicePoolAddress)
+    )
+    assert(requiredOcean === null)
+  })
   it('Get amount of Ocean needed to buy 1 dtToken', async () => {
     const requiredOcean = await Pool.getOceanNeeded(alicePoolAddress, '1')
     assert(Number(requiredOcean) > 0)
