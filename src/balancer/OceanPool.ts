@@ -8,6 +8,9 @@ import { MetadataCache } from '../metadatacache/MetadataCache'
 import { didNoZeroX, didPrefixed } from '../utils'
 declare type PoolTransactionType = 'swap' | 'join' | 'exit'
 
+const POOL_MAX_AMOUNT_IN_LIMIT = 0.25 // maximum 1/4 of the pool reserve
+const POOL_MAX_AMOUNT_OUT_LIMIT = 0.25 // maximum 1/4 of the pool reserve
+
 export interface PoolDetails {
   poolAddress: string
   tokens: string[]
@@ -449,7 +452,7 @@ export class OceanPool extends Pool {
     const balance = await super.getReserve(poolAddress, tokenAddress)
     if (parseFloat(balance) > 0) {
       const result = new BigNumber(this.web3.utils.toWei(balance))
-        .dividedBy(3)
+        .multipliedBy(POOL_MAX_AMOUNT_IN_LIMIT)
         .integerValue(BigNumber.ROUND_DOWN)
         .minus(1)
       return this.web3.utils.fromWei(result.toString())
@@ -468,7 +471,7 @@ export class OceanPool extends Pool {
     const balance = await super.getReserve(poolAddress, tokenAddress)
     if (parseFloat(balance) > 0) {
       const result = new BigNumber(this.web3.utils.toWei(balance))
-        .dividedBy(4)
+        .multipliedBy(POOL_MAX_AMOUNT_OUT_LIMIT)
         .integerValue(BigNumber.ROUND_DOWN)
         .minus(1)
       return this.web3.utils.fromWei(result.toString())
