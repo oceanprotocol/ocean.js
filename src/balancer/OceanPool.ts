@@ -813,6 +813,7 @@ export class OceanPool extends Pool {
    * @return {String[]}
    */
   public async searchPoolforDT(dtAddress: string): Promise<string[]> {
+    const result: string[] = []
     const factory = new this.web3.eth.Contract(this.factoryABI, this.factoryAddress)
     const events = await factory.getPastEvents('BPoolRegistered', {
       filter: {},
