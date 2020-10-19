@@ -4,8 +4,7 @@ import { TransactionReceipt } from 'web3-core'
 import { Pool } from './Pool'
 import { EventData, Filter } from 'web3-eth-contract'
 import BigNumber from 'bignumber.js'
-import { MetadataCache } from '../metadatacache/MetadataCache'
-import { didNoZeroX, didPrefixed } from '../utils'
+
 declare type PoolTransactionType = 'swap' | 'join' | 'exit'
 
 const POOL_MAX_AMOUNT_IN_LIMIT = 0.25 // maximum 1/4 of the pool reserve
@@ -41,21 +40,19 @@ export interface PoolTransaction {
 export class OceanPool extends Pool {
   public oceanAddress: string = null
   public dtAddress: string = null
-  public MetadataCache: MetadataCache = null
+
   constructor(
     web3: Web3,
     factoryABI: AbiItem | AbiItem[] = null,
     poolABI: AbiItem | AbiItem[] = null,
     factoryAddress: string = null,
     oceanAddress: string = null,
-    MetadataCache: MetadataCache = null,
     gaslimit?: number
   ) {
     super(web3, factoryABI, poolABI, factoryAddress, gaslimit)
     if (oceanAddress) {
       this.oceanAddress = oceanAddress
     }
-    this.MetadataCache = MetadataCache
   }
 
   /**
@@ -813,13 +810,7 @@ export class OceanPool extends Pool {
    * @return {String[]}
    */
   public async searchPoolforDT(dtAddress: string): Promise<string[]> {
-    const did = didPrefixed(didNoZeroX(dtAddress))
     const result: string[] = []
-    try {
-      const ddo = await this.MetadataCache.retrieveDDO(did)
-      return ddo.price.pools
-    } catch (e) {}
-    // fallback in case we don't have the asset registred in aqua
     const factory = new this.web3.eth.Contract(this.factoryABI, this.factoryAddress)
     const events = await factory.getPastEvents('BPoolRegistered', {
       filter: {},
