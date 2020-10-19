@@ -4,7 +4,7 @@ import { TestContractHandler } from '../../TestContractHandler'
 import { FixedPricedContractHandler } from '../../FixedPriceContractHandler'
 import { DataTokens } from '../../../src/datatokens/Datatokens'
 import { OceanFixedRateExchange } from '../../../src/exchange/FixedRateExchange'
-
+import { Logger } from '../../../src/utils'
 import Web3 from 'web3'
 import factory from '@oceanprotocol/contracts/artifacts/DTFactory.json'
 import datatokensTemplate from '@oceanprotocol/contracts/artifacts/DataTokenTemplate.json'
@@ -107,7 +107,8 @@ describe('FixedRateExchange flow', () => {
       web3,
       FixedRateExchangeAddress,
       FixedRateExchangeContract.abi as AbiItem[],
-      oceanTokenAddress
+      oceanTokenAddress,
+      new Logger()
     )
     assert(FixedRateClass !== null)
   })
