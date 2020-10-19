@@ -813,13 +813,6 @@ export class OceanPool extends Pool {
    * @return {String[]}
    */
   public async searchPoolforDT(dtAddress: string): Promise<string[]> {
-    const did = didPrefixed(didNoZeroX(dtAddress))
-    const result: string[] = []
-    try {
-      const ddo = await this.MetadataCache.retrieveDDO(did)
-      return ddo.price.pools
-    } catch (e) {}
-    // fallback in case we don't have the asset registred in aqua
     const factory = new this.web3.eth.Contract(this.factoryABI, this.factoryAddress)
     const events = await factory.getPastEvents('BPoolRegistered', {
       filter: {},
