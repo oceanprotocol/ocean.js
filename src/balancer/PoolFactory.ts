@@ -29,12 +29,12 @@ export class PoolFactory {
    */
   async createPool(account: string): Promise<string> {
     if (this.web3 === null) {
-      console.error('Web3 object is null')
+      console.error('ERROR: Web3 object is null')
       return null
     }
 
     if (this.factoryAddress === null) {
-      console.error('bfactoryAddress is null')
+      console.error('ERROR: bfactoryAddress is null')
       return null
     }
 
@@ -51,7 +51,7 @@ export class PoolFactory {
     try {
       pooladdress = transactiondata.events.BPoolRegistered.returnValues[0]
     } catch (e) {
-      console.error(e)
+      console.error(`ERROR: Failed to create new pool: ${e.message}`)
     }
     return pooladdress
   }

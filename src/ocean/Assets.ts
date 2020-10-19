@@ -498,7 +498,7 @@ export class Assets extends Instantiable {
       const totalCost = new BigNumber(String(providerData.numTokens))
       if (balance.isLessThan(totalCost)) {
         console.error(
-          'Not enough funds. Needed ' +
+          'ERROR: Not enough funds Needed ' +
             totalCost.toString() +
             ' but balance is ' +
             balance.toString()
@@ -515,7 +515,7 @@ export class Assets extends Instantiable {
       )
       if (txid) return txid.transactionHash
     } catch (e) {
-      console.error(e)
+      console.error(`ERROR: Failed to order: ${e.message}`)
     }
     return null
   }
@@ -572,7 +572,6 @@ export class Assets extends Instantiable {
     consumeUrl += `&tokenAddress=${dtAddress}`
     consumeUrl += `&transferTxId=${txId}`
     const serviceConnector = new WebServiceConnector(this.logger)
-    console.log(consumeUrl)
     try {
       await serviceConnector.downloadFile(consumeUrl)
     } catch (e) {
@@ -580,7 +579,6 @@ export class Assets extends Instantiable {
       this.logger.error(e)
       throw e
     }
-
     return serviceEndpoint
   }
 

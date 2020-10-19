@@ -91,7 +91,7 @@ export class ConfigHelper {
 
       return configAddresses
     } catch (e) {
-      console.error(`Could not load local contract address file: ${e.message}`)
+      console.error(`ERROR: Could not load local contract address file: ${e.message}`)
       return null
     }
   }

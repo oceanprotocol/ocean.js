@@ -92,7 +92,7 @@ export class DataTokens {
     const estGas = await factory.methods
       .createToken(metadataCacheUri, name, symbol, this.web3.utils.toWei(cap))
       .estimateGas(function (err: string, estGas: string) {
-        if (err) console.log('Datatokens: ' + err)
+        if (err) console.error(`ERROR: Datatokens : ${err}`)
         return estGas
       })
     // Invoke createToken function of the contract
@@ -108,7 +108,7 @@ export class DataTokens {
     try {
       tokenAddress = trxReceipt.events.TokenCreated.returnValues[0]
     } catch (e) {
-      console.error(e)
+      console.error(`ERROR: Failed to create datatoken : ${e.message}`)
     }
     return tokenAddress
   }
@@ -157,7 +157,7 @@ export class DataTokens {
     const estGas = await datatoken.methods
       .mint(destAddress, this.web3.utils.toWei(amount))
       .estimateGas(function (err, estGas) {
-        if (err) console.log('Datatokens: ' + err)
+        if (err) console.error(`ERROR: Datatokens : ${err}`)
         return estGas
       })
 
@@ -373,7 +373,7 @@ export class DataTokens {
         .send({ from: address, gas: 600000 })
       return trxReceipt
     } catch (e) {
-      console.error(e)
+      console.error(`ERROR: Failed to start order : ${e.message}`)
       return null
     }
   }
