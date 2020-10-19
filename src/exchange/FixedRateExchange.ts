@@ -3,6 +3,7 @@ import BigNumber from 'bignumber.js'
 import { TransactionReceipt } from 'web3-core'
 import { Contract, EventData } from 'web3-eth-contract'
 import { AbiItem } from 'web3-utils/types'
+import { Logger } from '../utils'
 import Web3 from 'web3'
 
 export interface FixedPriceExchange {
@@ -30,6 +31,7 @@ export class OceanFixedRateExchange {
   public fixedRateExchangeABI: AbiItem | AbiItem[]
   public web3: Web3
   public contract: Contract = null
+  private logger: Logger
 
   /**
    * Instantiate FixedRateExchange
@@ -42,7 +44,8 @@ export class OceanFixedRateExchange {
     web3: Web3,
     fixedRateExchangeAddress: string = null,
     fixedRateExchangeABI: AbiItem | AbiItem[] = null,
-    oceanAddress: string = null
+    oceanAddress: string = null,
+    logger: Logger
   ) {
     this.web3 = web3
     this.fixedRateExchangeAddress = fixedRateExchangeAddress
@@ -54,6 +57,7 @@ export class OceanFixedRateExchange {
         this.fixedRateExchangeABI,
         this.fixedRateExchangeAddress
       )
+    this.logger = logger
   }
 
   /**
@@ -91,7 +95,7 @@ export class OceanFixedRateExchange {
         })
       exchangeId = trxReceipt.events.ExchangeCreated.returnValues[0]
     } catch (e) {
-      console.error(`ERROR: Failed to create new exchange: ${e.message}`)
+      this.logger.error(`ERROR: Failed to create new exchange: ${e.message}`)
     }
     return exchangeId
   }
@@ -144,7 +148,7 @@ export class OceanFixedRateExchange {
         })
       return trxReceipt
     } catch (e) {
-      console.error(`ERROR: Failed to buy datatokens: ${e.message}`)
+      this.logger.error(`ERROR: Failed to buy datatokens: ${e.message}`)
       return null
     }
   }
@@ -178,7 +182,7 @@ export class OceanFixedRateExchange {
         .setRate(exchangeId, this.web3.utils.toWei(String(newRate)))
         .estimateGas(function (err, estGas) {
           if (err) {
-            console.error(`ERROR: FixedPriceExchange: ${err.message}`)
+            this.logger.error(`ERROR: FixedPriceExchange: ${err.message}`)
             return DEFAULT_GAS_LIMIT
           }
           return estGas
@@ -214,7 +218,7 @@ export class OceanFixedRateExchange {
         .toggleExchangeState(exchangeId)
         .estimateGas(function (err, estGas) {
           if (err) {
-            console.error(`ERROR: FixedPriceExchange: ${err.message}`)
+            this.logger.error(`ERROR: FixedPriceExchange: ${err.message}`)
             estGas = DEFAULT_GAS_LIMIT
           }
           return estGas
@@ -248,7 +252,7 @@ export class OceanFixedRateExchange {
         .toggleExchangeState(exchangeId)
         .estimateGas(function (err, estGas) {
           if (err) {
-            console.error(`ERROR: FixedPriceExchange: ${err.message}`)
+            this.logger.error(`ERROR: FixedPriceExchange: ${err.message}`)
             estGas = DEFAULT_GAS_LIMIT
           }
           return estGas
