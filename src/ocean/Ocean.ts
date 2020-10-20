@@ -54,6 +54,7 @@ export class Ocean extends Instantiable {
     )
     instance.pool = new OceanPool(
       instanceConfig.config.web3Provider,
+      instanceConfig.logger,
       instanceConfig.config.poolFactoryABI,
       instanceConfig.config.poolABI,
       instanceConfig.config.poolFactoryAddress,

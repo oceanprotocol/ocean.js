@@ -12,6 +12,7 @@ import datatokensTemplate from '@oceanprotocol/contracts/artifacts/DataTokenTemp
 // this will be replaced by our SFactory/SPool
 import OceanPoolFactory from '@oceanprotocol/contracts/artifacts/BFactory.json'
 import OceanSPool from '@oceanprotocol/contracts/artifacts/BPool.json'
+import { LoggerInstance } from '../../../src/utils'
 const web3 = new Web3('http://127.0.0.1:8545')
 
 function sleep(ms: number) {
@@ -102,6 +103,7 @@ describe('Balancer flow', () => {
   it('should initialize OceanPool class', async () => {
     Pool = new OceanPool(
       web3,
+      LoggerInstance,
       OceanPoolFactory.abi as AbiItem[],
       OceanSPool.abi as AbiItem[],
       OceanPoolFactoryAddress,
