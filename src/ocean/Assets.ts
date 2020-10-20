@@ -598,11 +598,13 @@ export class Assets extends Instantiable {
     const address = account.getId().toLowerCase()
     const { datatokens } = this.ocean
     const topic1 = '0x000000000000000000000000' + address.substring(2)
+    const topic0 = datatokens.getStartOrderEventSignature()
     const events = await this.web3.eth.getPastLogs({
-      topics: [[datatokens.getStartOrderEventSignature(), null, topic1]],
+      topics: [topic0, null, topic1],
       fromBlock: fromBlock || 0,
       toBlock: 'latest'
     })
+
     for (let i = 0; i < events.length; i++) {
       const order: Order = {
         dtAddress: events[i].address,
