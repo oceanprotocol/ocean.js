@@ -61,10 +61,10 @@ export class Ocean extends Instantiable {
     )
     instance.fixedRateExchange = new OceanFixedRateExchange(
       instanceConfig.config.web3Provider,
+      instanceConfig.logger,
       instanceConfig.config.fixedRateExchangeAddress,
       instanceConfig.config.fixedRateExchangeAddressABI,
-      instanceConfig.config.oceanTokenAddress,
-      instanceConfig.logger
+      instanceConfig.config.oceanTokenAddress
     )
     instance.OnChainMetadataCache = new OnChainMetadataCache(
       instanceConfig.config.web3Provider,

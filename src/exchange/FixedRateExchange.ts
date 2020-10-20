@@ -1,9 +1,9 @@
+import { Logger } from '../utils'
 import defaultFixedRateExchangeABI from '@oceanprotocol/contracts/artifacts/FixedRateExchange.json'
 import BigNumber from 'bignumber.js'
 import { TransactionReceipt } from 'web3-core'
 import { Contract, EventData } from 'web3-eth-contract'
 import { AbiItem } from 'web3-utils/types'
-import { Logger } from '../utils'
 import Web3 from 'web3'
 
 export interface FixedPriceExchange {
@@ -42,10 +42,10 @@ export class OceanFixedRateExchange {
    */
   constructor(
     web3: Web3,
+    logger: Logger,
     fixedRateExchangeAddress: string = null,
     fixedRateExchangeABI: AbiItem | AbiItem[] = null,
-    oceanAddress: string = null,
-    logger: Logger
+    oceanAddress: string = null
   ) {
     this.web3 = web3
     this.fixedRateExchangeAddress = fixedRateExchangeAddress
@@ -182,7 +182,7 @@ export class OceanFixedRateExchange {
         .setRate(exchangeId, this.web3.utils.toWei(String(newRate)))
         .estimateGas(function (err, estGas) {
           if (err) {
-            this.logger.error(`ERROR: FixedPriceExchange: ${err.message}`)
+            console.error(`ERROR: FixedPriceExchange: ${err.message}`)
             return DEFAULT_GAS_LIMIT
           }
           return estGas
@@ -218,12 +218,13 @@ export class OceanFixedRateExchange {
         .toggleExchangeState(exchangeId)
         .estimateGas(function (err, estGas) {
           if (err) {
-            this.logger.error(`ERROR: FixedPriceExchange: ${err.message}`)
+            console.error(`ERROR: FixedPriceExchange: ${err.message}`)
             estGas = DEFAULT_GAS_LIMIT
           }
           return estGas
         })
     } catch (e) {
+      this.logger.error(`ERROR: FixedPriceExchange: ${e.message}`)
       estGas = DEFAULT_GAS_LIMIT
     }
     const trxReceipt = await this.contract.methods.toggleExchangeState(exchangeId).send({
@@ -252,12 +253,13 @@ export class OceanFixedRateExchange {
         .toggleExchangeState(exchangeId)
         .estimateGas(function (err, estGas) {
           if (err) {
-            this.logger.error(`ERROR: FixedPriceExchange: ${err.message}`)
+            console.error(`ERROR: FixedPriceExchange: ${err.message}`)
             estGas = DEFAULT_GAS_LIMIT
           }
           return estGas
         })
     } catch (e) {
+      this.logger.error(`ERROR: FixedPriceExchange: ${e.message}`)
       estGas = DEFAULT_GAS_LIMIT
     }
     const trxReceipt = await this.contract.methods.toggleExchangeState(exchangeId).send({

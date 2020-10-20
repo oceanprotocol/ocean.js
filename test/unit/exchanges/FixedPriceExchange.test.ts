@@ -4,7 +4,7 @@ import { TestContractHandler } from '../../TestContractHandler'
 import { FixedPricedContractHandler } from '../../FixedPriceContractHandler'
 import { DataTokens } from '../../../src/datatokens/Datatokens'
 import { OceanFixedRateExchange } from '../../../src/exchange/FixedRateExchange'
-import { Logger } from '../../../src/utils'
+import { LoggerInstance } from '../../../src/utils'
 import Web3 from 'web3'
 import factory from '@oceanprotocol/contracts/artifacts/DTFactory.json'
 import datatokensTemplate from '@oceanprotocol/contracts/artifacts/DataTokenTemplate.json'
@@ -105,10 +105,10 @@ describe('FixedRateExchange flow', () => {
   it('should initialize FixedExchangeRate class', async () => {
     FixedRateClass = new OceanFixedRateExchange(
       web3,
+      LoggerInstance,
       FixedRateExchangeAddress,
       FixedRateExchangeContract.abi as AbiItem[],
-      oceanTokenAddress,
-      new Logger()
+      oceanTokenAddress
     )
     assert(FixedRateClass !== null)
   })
@@ -208,6 +208,7 @@ describe('FixedRateExchange flow', () => {
     if (consoleDebug) console.log('Bob ocean balance:' + balance)
   })
   it('Alice should update the rate', async () => {
+    // console.log(await FixedRateClass.getLogger())
     const tx = await FixedRateClass.setRate(aliceExchangeId, updatedPriceRate, alice)
     assert(tx !== null)
   })
