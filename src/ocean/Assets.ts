@@ -12,6 +12,7 @@ import BigNumber from 'bignumber.js'
 import { Provider } from '../provider/Provider'
 import { isAddress } from 'web3-utils'
 import { MetadataMain } from '../ddo/interfaces'
+import { DataTokens } from '../lib'
 
 export enum CreateProgressStep {
   CreatingDataToken,
@@ -86,13 +87,12 @@ export class Assets extends Instantiable {
       if (services.length === 0) {
         this.logger.log('You have no services. Are you sure about this?')
       }
-
+      const { datatokens } = this.ocean
       if (!dtAddress) {
         this.logger.log('Creating datatoken')
         observer.next(CreateProgressStep.CreatingDataToken)
         const metadataCacheUri = this.ocean.metadatacache.getURI()
         const jsonBlob = { t: 1, url: metadataCacheUri }
-        const { datatokens } = this.ocean
 
         dtAddress = await datatokens.create(
           JSON.stringify(jsonBlob),
@@ -187,6 +187,13 @@ export class Assets extends Instantiable {
           })) as Service[]
       })
       await ddo.addProof(this.ocean, publisher.getId())
+      ddo.dataTokenInfo = {
+        name: await datatokens.getName(dtAddress),
+        symbol: await datatokens.getSymbol(dtAddress),
+        address: dtAddress,
+        blob: await datatokens.getBlob(dtAddress),
+        cap: parseFloat(await datatokens.getCap(dtAddress))
+      }
       this.logger.log('Storing DDO')
       observer.next(CreateProgressStep.StoringDdo)
       // const storedDdo = await this.ocean.metadatacache.storeDDO(ddo)
