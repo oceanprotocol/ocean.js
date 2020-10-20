@@ -20,7 +20,6 @@ export interface TokensToAdd {
 
 export class Pool extends PoolFactory {
   public poolABI: AbiItem | AbiItem[]
-  public logger: Logger
 
   constructor(
     web3: Web3,
@@ -30,10 +29,9 @@ export class Pool extends PoolFactory {
     factoryAddress: string = null,
     gaslimit?: number
   ) {
-    super(web3, factoryABI, factoryAddress, gaslimit)
+    super(web3, logger, factoryABI, factoryAddress, gaslimit)
     if (poolABI) this.poolABI = poolABI
     else this.poolABI = jsonpoolABI.abi as AbiItem[]
-    this.logger = logger
   }
 
   /**
