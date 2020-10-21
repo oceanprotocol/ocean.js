@@ -4,8 +4,7 @@ import { TransactionReceipt } from 'web3-core'
 import { Pool } from './Pool'
 import { EventData, Filter } from 'web3-eth-contract'
 import BigNumber from 'bignumber.js'
-import { Logger } from '../utils'
-import { SubscribablePromise } from '../utils'
+import { SubscribablePromise, Logger } from '../utils'
 
 declare type PoolTransactionType = 'swap' | 'join' | 'exit'
 

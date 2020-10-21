@@ -1,11 +1,10 @@
-import { Logger } from '../utils'
 import defaultFixedRateExchangeABI from '@oceanprotocol/contracts/artifacts/FixedRateExchange.json'
 import BigNumber from 'bignumber.js'
 import { TransactionReceipt } from 'web3-core'
 import { Contract, EventData } from 'web3-eth-contract'
 import { AbiItem } from 'web3-utils/types'
 import Web3 from 'web3'
-import { SubscribablePromise } from '../utils'
+import { SubscribablePromise, Logger } from '../utils'
 import { DataTokens } from '../datatokens/Datatokens'
 
 export interface FixedPriceExchange {
