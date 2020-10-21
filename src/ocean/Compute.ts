@@ -395,7 +395,7 @@ export class Compute extends Instantiable {
         // check if raw algo is allowed
         if (service.attributes.main.privacy)
           if (!service.attributes.main.privacy.allowRawAlgorithm) {
-            console.error('ERROR: This service does not allow raw algorithm')
+            this.logger.error('ERROR: This service does not allow raw algorithm')
             return null
           }
       }
@@ -407,7 +407,7 @@ export class Compute extends Instantiable {
               if (
                 !service.attributes.main.privacy.trustedAlgorithms.includes(algorithmDid)
               ) {
-                console.error('ERROR: This service does not allow this algorithm')
+                this.logger.error('ERROR: This service does not allow this algorithm')
                 return null
               }
       }

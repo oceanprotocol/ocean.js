@@ -111,7 +111,7 @@ export default class Account extends Instantiable {
       })
       result = this.web3.utils.fromWei(await token.methods.balanceOf(this.id).call())
     } catch (e) {
-      console.error(`ERROR: Failed to get the balance: ${e.message}`)
+      this.logger.error(`ERROR: Failed to get the balance: ${e.message}`)
     }
     return result
   }

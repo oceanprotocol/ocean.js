@@ -497,7 +497,7 @@ export class Assets extends Instantiable {
       )
       const totalCost = new BigNumber(String(providerData.numTokens))
       if (balance.isLessThan(totalCost)) {
-        console.error(
+        this.logger.error(
           'ERROR: Not enough funds Needed ' +
             totalCost.toString() +
             ' but balance is ' +
@@ -515,7 +515,7 @@ export class Assets extends Instantiable {
       )
       if (txid) return txid.transactionHash
     } catch (e) {
-      console.error(`ERROR: Failed to order: ${e.message}`)
+      this.logger.error(`ERROR: Failed to order: ${e.message}`)
     }
     return null
   }
