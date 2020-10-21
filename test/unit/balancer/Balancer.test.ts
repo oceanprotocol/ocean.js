@@ -15,11 +15,11 @@ import OceanSPool from '@oceanprotocol/contracts/artifacts/BPool.json'
 import { LoggerInstance } from '../../../src/utils'
 const web3 = new Web3('http://127.0.0.1:8545')
 
-function sleep(ms: number) {
-  return new Promise((resolve) => {
-    setTimeout(resolve, ms)
-  })
-}
+// function sleep(ms: number) {
+//   return new Promise((resolve) => {
+//     setTimeout(resolve, ms)
+//   })
+// }
 
 describe('Balancer flow', () => {
   let oceanTokenAddress: string

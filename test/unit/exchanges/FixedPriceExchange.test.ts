@@ -10,7 +10,6 @@ import factory from '@oceanprotocol/contracts/artifacts/DTFactory.json'
 import datatokensTemplate from '@oceanprotocol/contracts/artifacts/DataTokenTemplate.json'
 
 import FixedRateExchangeContract = require('@oceanprotocol/contracts/artifacts/FixedRateExchange.json')
-import { Logger } from '../../../src/lib'
 const web3 = new Web3('http://127.0.0.1:8545')
 
 describe('FixedRateExchange flow', () => {
