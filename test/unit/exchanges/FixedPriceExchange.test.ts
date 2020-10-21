@@ -107,7 +107,8 @@ describe('FixedRateExchange flow', () => {
       web3,
       FixedRateExchangeAddress,
       FixedRateExchangeContract.abi as AbiItem[],
-      oceanTokenAddress
+      oceanTokenAddress,
+      datatoken
     )
     assert(FixedRateClass !== null)
   })
