@@ -4,6 +4,8 @@ import { TransactionReceipt } from 'web3-core'
 import { Contract, EventData } from 'web3-eth-contract'
 import { AbiItem } from 'web3-utils/types'
 import Web3 from 'web3'
+import { SubscribablePromise } from '../utils'
+import { DataTokens } from '../datatokens/Datatokens'
 
 export interface FixedPriceExchange {
   exchangeID?: string
@@ -21,6 +23,12 @@ export interface FixedPriceSwap {
   baseTokenAmount: string
   dataTokenAmount: string
 }
+
+export enum FixedRateCreateProgressStep {
+  CreatingExchange,
+  ApprovingDatatoken
+}
+
 const DEFAULT_GAS_LIMIT = 300000
 
 export class OceanFixedRateExchange {
@@ -30,6 +38,7 @@ export class OceanFixedRateExchange {
   public fixedRateExchangeABI: AbiItem | AbiItem[]
   public web3: Web3
   public contract: Contract = null
+  public datatokens: DataTokens
 
   /**
    * Instantiate FixedRateExchange
@@ -42,13 +51,15 @@ export class OceanFixedRateExchange {
     web3: Web3,
     fixedRateExchangeAddress: string = null,
     fixedRateExchangeABI: AbiItem | AbiItem[] = null,
-    oceanAddress: string = null
+    oceanAddress: string = null,
+    datatokens: DataTokens
   ) {
     this.web3 = web3
     this.fixedRateExchangeAddress = fixedRateExchangeAddress
     this.fixedRateExchangeABI =
       fixedRateExchangeABI || (defaultFixedRateExchangeABI.abi as AbiItem[])
     this.oceanAddress = oceanAddress
+    this.datatokens = datatokens
     if (web3)
       this.contract = new this.web3.eth.Contract(
         this.fixedRateExchangeABI,
@@ -61,39 +72,52 @@ export class OceanFixedRateExchange {
    * @param {String} dataToken Data Token Contract Address
    * @param {Number} rate exchange rate
    * @param {String} address User address
-   * @return {Promise<string>} exchangeId
+   * @param {String} amount Optional, amount of datatokens to be approved for the exchange
+   * @return {Promise<TransactionReceipt>} TransactionReceipt
    */
-  public async create(dataToken: string, rate: string, address: string): Promise<string> {
-    let estGas
-    try {
-      /* estGas = await this.contract.methods
-        .create(this.oceanAddress, dataToken, this.web3.utils.toWei(rate))
-        .estimateGas(function (err, g) {
-          if (err) {
-            return DEFAULT_GAS_LIMIT
-          } else {
-            return g
-          }
-        })
-        */
-      estGas = DEFAULT_GAS_LIMIT
-    } catch (e) {
-      estGas = DEFAULT_GAS_LIMIT
-    }
-
-    let exchangeId = null
-    try {
-      const trxReceipt = await this.contract.methods
-        .create(this.oceanAddress, dataToken, this.web3.utils.toWei(rate))
-        .send({
-          from: address,
-          gas: estGas + 1
-        })
-      exchangeId = trxReceipt.events.ExchangeCreated.returnValues[0]
-    } catch (e) {
-      console.error(`ERROR: Failed to create new exchange: ${e.message}`)
-    }
-    return exchangeId
+  public create(
+    dataToken: string,
+    rate: string,
+    address: string,
+    amount?: string
+  ): SubscribablePromise<FixedRateCreateProgressStep, TransactionReceipt> {
+    return new SubscribablePromise(async (observer) => {
+      observer.next(FixedRateCreateProgressStep.CreatingExchange)
+      let estGas
+      try {
+        /* estGas = await this.contract.methods
+            .create(this.oceanAddress, dataToken, this.web3.utils.toWei(rate))
+            .estimateGas(function (err, g) {
+              if (err) {
+                return DEFAULT_GAS_LIMIT
+              } else {
+                return g
+              }
+            })
+            */
+        estGas = DEFAULT_GAS_LIMIT
+      } catch (e) {
+        estGas = DEFAULT_GAS_LIMIT
+      }
+      let exchangeId = null
+      let trxReceipt = null
+      try {
+        trxReceipt = await this.contract.methods
+          .create(this.oceanAddress, dataToken, this.web3.utils.toWei(rate))
+          .send({
+            from: address,
+            gas: estGas + 1
+          })
+        exchangeId = trxReceipt.events.ExchangeCreated.returnValues[0]
+      } catch (e) {
+        console.error(`ERROR: Failed to create new exchange: ${e.message}`)
+      }
+      if (amount && exchangeId) {
+        observer.next(FixedRateCreateProgressStep.ApprovingDatatoken)
+        this.datatokens.approve(dataToken, this.fixedRateExchangeAddress, amount, address)
+      }
+      return trxReceipt
+    })
   }
 
   /**

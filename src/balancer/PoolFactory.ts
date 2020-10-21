@@ -1,6 +1,7 @@
 import Web3 from 'web3'
 import { AbiItem } from 'web3-utils/types'
 import jsonFactoryABI from '@oceanprotocol/contracts/artifacts/BFactory.json'
+import { TransactionReceipt } from 'web3-core'
 
 export class PoolFactory {
   public GASLIMIT_DEFAULT = 5000000
@@ -27,7 +28,7 @@ export class PoolFactory {
   /**
    * Creates a new pool
    */
-  async createPool(account: string): Promise<string> {
+  async createPool(account: string): Promise<TransactionReceipt> {
     if (this.web3 === null) {
       console.error('ERROR: Web3 object is null')
       return null
@@ -41,18 +42,15 @@ export class PoolFactory {
     const factory = new this.web3.eth.Contract(this.factoryABI, this.factoryAddress, {
       from: account
     })
-
-    const transactiondata = await factory.methods
-      .newBPool()
-      .send({ from: account, gas: this.GASLIMIT_DEFAULT })
-
-    let pooladdress: string
-
+    let txid = null
     try {
-      pooladdress = transactiondata.events.BPoolRegistered.returnValues[0]
+      txid = await factory.methods
+        .newBPool()
+        .send({ from: account, gas: this.GASLIMIT_DEFAULT })
+      // pooladdress = transactiondata.events.BPoolRegistered.returnValues[0]
     } catch (e) {
       console.error(`ERROR: Failed to create new pool: ${e.message}`)
     }
-    return pooladdress
+    return txid
   }
 }
