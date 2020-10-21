@@ -37,7 +37,7 @@ export class Pool extends PoolFactory {
   /**
    * Creates a new pool
    */
-  async createPool(account: string): Promise<string> {
+  async createPool(account: string): Promise<TransactionReceipt> {
     return await super.createPool(account)
   }
 

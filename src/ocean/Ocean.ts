@@ -66,7 +66,8 @@ export class Ocean extends Instantiable {
       instanceConfig.logger,
       instanceConfig.config.fixedRateExchangeAddress,
       instanceConfig.config.fixedRateExchangeAddressABI,
-      instanceConfig.config.oceanTokenAddress
+      instanceConfig.config.oceanTokenAddress,
+      instance.datatokens
     )
     instance.OnChainMetadataCache = new OnChainMetadataCache(
       instanceConfig.config.web3Provider,
