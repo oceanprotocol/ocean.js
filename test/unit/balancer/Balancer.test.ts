@@ -121,7 +121,7 @@ describe('Balancer flow', () => {
   })
   it('Alice creates a new OceanPool pool', async () => {
     /// new pool with total DT = 45 , dt weight=90% with swap fee 2%
-    alicePoolAddress = await Pool.createDTPool(alice, tokenAddress, '45', '9', '0.02')
+    alicePoolAddress = await Pool.create(alice, tokenAddress, '45', '9', '0.02')
     const s = await Pool.getPoolSharesTotalSupply(alicePoolAddress)
     assert(String(s) === '100', 'totalSupply does not match: ' + s)
     const n = await Pool.getNumTokens(alicePoolAddress)

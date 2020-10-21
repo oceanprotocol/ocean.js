@@ -4,7 +4,7 @@ import { TransactionReceipt } from 'web3-core'
 import { Pool } from './Pool'
 import { EventData, Filter } from 'web3-eth-contract'
 import BigNumber from 'bignumber.js'
-
+import { SubscribablePromise } from '../utils'
 declare type PoolTransactionType = 'swap' | 'join' | 'exit'
 
 const POOL_MAX_AMOUNT_IN_LIMIT = 0.25 // maximum 1/4 of the pool reserve
@@ -32,6 +32,13 @@ export interface PoolTransaction {
   tokenAmountIn?: string
   tokenAmountOut?: string
   type: PoolTransactionType
+}
+
+export enum PoolCreateProgressStep {
+  CreatingPool,
+  ApprovingDatatoken,
+  ApprovingOcean,
+  SetupPool
 }
 
 /**
@@ -64,13 +71,13 @@ export class OceanPool extends Pool {
      * @param {String} fee Swap fee. E.g. to get a 0.1% swapFee use `0.001`. The maximum allowed swapFee is `0.1` (10%).
      * @return {String}
      */
-  public async createDTPool(
+  public create(
     account: string,
     token: string,
     amount: string,
     weight: string,
     fee: string
-  ): Promise<string> {
+  ): SubscribablePromise<PoolCreateProgressStep, string> {
     if (this.oceanAddress == null) {
       console.error('ERROR: oceanAddress is not defined')
       return null
@@ -83,47 +90,53 @@ export class OceanPool extends Pool {
       console.error('ERROR: Weight out of bounds (min 1, max9)')
       return null
     }
-    const address = await super.createPool(account)
-    const oceanWeight = 10 - parseFloat(weight)
-    const oceanAmount = (parseFloat(amount) * oceanWeight) / parseFloat(weight)
-    this.dtAddress = token
-    let txid
-    txid = await this.approve(
-      account,
-      token,
-      address,
-      this.web3.utils.toWei(String(amount))
-    )
-    if (!txid) {
-      console.error('ERROR: Failed to call approve DT token')
-      return null
-    }
-    txid = await this.approve(
-      account,
-      this.oceanAddress,
-      address,
-      this.web3.utils.toWei(String(oceanAmount))
-    )
-    if (!txid) {
-      console.error('ERROR: Failed to call approve OCEAN token')
-      return null
-    }
-    txid = await super.setup(
-      account,
-      address,
-      token,
-      this.web3.utils.toWei(String(amount)),
-      this.web3.utils.toWei(String(weight)),
-      this.oceanAddress,
-      this.web3.utils.toWei(String(oceanAmount)),
-      this.web3.utils.toWei(String(oceanWeight)),
-      this.web3.utils.toWei(fee)
-    )
-    if (!txid) {
-      console.error('ERROR: Failed to create a new pool')
-      return null
-    }
-    return address
+    return new SubscribablePromise(async (observer) => {
+      observer.next(PoolCreateProgressStep.CreatingPool)
+      const address = await super.createPool(account)
+      const oceanWeight = 10 - parseFloat(weight)
+      const oceanAmount = (parseFloat(amount) * oceanWeight) / parseFloat(weight)
+      this.dtAddress = token
+      observer.next(PoolCreateProgressStep.ApprovingDatatoken)
+      let txid
+      txid = await this.approve(
+        account,
+        token,
+        address,
+        this.web3.utils.toWei(String(amount))
+      )
+      if (!txid) {
+        console.error('ERROR: Failed to call approve DT token')
+        return null
+      }
+      observer.next(PoolCreateProgressStep.ApprovingOcean)
+      txid = await this.approve(
+        account,
+        this.oceanAddress,
+        address,
+        this.web3.utils.toWei(String(oceanAmount))
+      )
+      if (!txid) {
+        console.error('ERROR: Failed to call approve OCEAN token')
+        return null
+      }
+      observer.next(PoolCreateProgressStep.SetupPool)
+      txid = await super.setup(
+        account,
+        address,
+        token,
+        this.web3.utils.toWei(String(amount)),
+        this.web3.utils.toWei(String(weight)),
+        this.oceanAddress,
+        this.web3.utils.toWei(String(oceanAmount)),
+        this.web3.utils.toWei(String(oceanWeight)),
+        this.web3.utils.toWei(fee)
+      )
+      if (!txid) {
+        console.error('ERROR: Failed to create a new pool')
+        return null
+      }
+      return address
+    })
   }
 
   /**
