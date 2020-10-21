@@ -1,5 +1,5 @@
 export interface BestPrice {
-  type: 'pool' | 'exchange'
+  type: 'pool' | 'exchange' | ''
   address: string
   value: number
   ocean?: number
