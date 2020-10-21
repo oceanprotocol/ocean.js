@@ -3,7 +3,7 @@ import { AbiItem } from 'web3-utils/types'
 
 import defaultFactoryABI from '@oceanprotocol/contracts/artifacts/DTFactory.json'
 import defaultDatatokensABI from '@oceanprotocol/contracts/artifacts/DataTokenTemplate.json'
-
+import { Logger } from '../utils'
 import wordListDefault from '../data/words.json'
 import { TransactionReceipt } from 'web3-core'
 import BigNumber from 'bignumber.js'
@@ -16,7 +16,7 @@ export class DataTokens {
   public factoryABI: AbiItem | AbiItem[]
   public datatokensABI: AbiItem | AbiItem[]
   public web3: Web3
-
+  private logger: Logger
   /**
    * Instantiate DataTokens (independently of Ocean).
    * @param {String} factoryAddress
@@ -28,12 +28,14 @@ export class DataTokens {
     factoryAddress: string,
     factoryABI: AbiItem | AbiItem[],
     datatokensABI: AbiItem | AbiItem[],
-    web3: Web3
+    web3: Web3,
+    logger: Logger
   ) {
     this.factoryAddress = factoryAddress
     this.factoryABI = factoryABI || (defaultFactoryABI.abi as AbiItem[])
     this.datatokensABI = datatokensABI || (defaultDatatokensABI.abi as AbiItem[])
     this.web3 = web3
+    this.logger = logger
   }
 
   /**
@@ -108,7 +110,7 @@ export class DataTokens {
     try {
       tokenAddress = trxReceipt.events.TokenCreated.returnValues[0]
     } catch (e) {
-      console.error(`ERROR: Failed to create datatoken : ${e.message}`)
+      this.logger.error(`ERROR: Failed to create datatoken : ${e.message}`)
     }
     return tokenAddress
   }
@@ -373,7 +375,7 @@ export class DataTokens {
         .send({ from: address, gas: 600000 })
       return trxReceipt
     } catch (e) {
-      console.error(`ERROR: Failed to start order : ${e.message}`)
+      this.logger.error(`ERROR: Failed to start order : ${e.message}`)
       return null
     }
   }

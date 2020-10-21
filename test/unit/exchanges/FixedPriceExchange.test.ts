@@ -10,6 +10,7 @@ import factory from '@oceanprotocol/contracts/artifacts/DTFactory.json'
 import datatokensTemplate from '@oceanprotocol/contracts/artifacts/DataTokenTemplate.json'
 
 import FixedRateExchangeContract = require('@oceanprotocol/contracts/artifacts/FixedRateExchange.json')
+import { Logger } from '../../../src/lib'
 const web3 = new Web3('http://127.0.0.1:8545')
 
 describe('FixedRateExchange flow', () => {
@@ -66,7 +67,8 @@ describe('FixedRateExchange flow', () => {
       contracts.factoryAddress,
       factory.abi as AbiItem[],
       datatokensTemplate.abi as AbiItem[],
-      web3
+      web3,
+      LoggerInstance
     )
     assert(datatoken !== null)
   })
@@ -89,7 +91,8 @@ describe('FixedRateExchange flow', () => {
       contracts.factoryAddress,
       factory.abi as AbiItem[],
       datatokensTemplate.abi as AbiItem[],
-      web3
+      web3,
+      LoggerInstance
     )
     oceanTokenAddress = await oceandatatoken.create(
       blob,
@@ -208,7 +211,6 @@ describe('FixedRateExchange flow', () => {
     if (consoleDebug) console.log('Bob ocean balance:' + balance)
   })
   it('Alice should update the rate', async () => {
-    // console.log(await FixedRateClass.getLogger())
     const tx = await FixedRateClass.setRate(aliceExchangeId, updatedPriceRate, alice)
     assert(tx !== null)
   })

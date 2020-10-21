@@ -75,7 +75,8 @@ describe('Balancer flow', () => {
       contracts.factoryAddress,
       factory.abi as AbiItem[],
       datatokensTemplate.abi as AbiItem[],
-      web3
+      web3,
+      LoggerInstance
     )
     assert(datatoken !== null)
   })
@@ -90,7 +91,8 @@ describe('Balancer flow', () => {
       contracts.factoryAddress,
       factory.abi as AbiItem[],
       datatokensTemplate.abi as AbiItem[],
-      web3
+      web3,
+      LoggerInstance
     )
     oceanTokenAddress = await oceandatatoken.create(
       blob,
