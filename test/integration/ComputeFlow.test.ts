@@ -10,6 +10,7 @@ import factory from '@oceanprotocol/contracts/artifacts/DTFactory.json'
 import datatokensTemplate from '@oceanprotocol/contracts/artifacts/DataTokenTemplate.json'
 import { Account, DDO, Metadata } from '../../src/lib'
 import { Cluster, Container, Server } from '../../src/ocean/Compute'
+import { LoggerInstance } from '../../src/utils'
 const web3 = new Web3('http://127.0.0.1:8545')
 
 function sleep(ms: number) {
@@ -87,7 +88,8 @@ describe('Compute flow', () => {
       contracts.factoryAddress,
       factory.abi as AbiItem[],
       datatokensTemplate.abi as AbiItem[],
-      web3
+      web3,
+      LoggerInstance
     )
     tokenAddress = await datatoken.create(
       blob,

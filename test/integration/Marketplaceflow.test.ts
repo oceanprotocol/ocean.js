@@ -9,6 +9,7 @@ import { Account, EditableMetadata, Service, ServiceAccess } from '../../src/lib
 import { Ocean } from '../../src/ocean/Ocean'
 import { ConfigHelper } from '../../src/utils/ConfigHelper'
 import { TestContractHandler } from '../TestContractHandler'
+import { LoggerInstance } from '../../src/utils'
 
 const web3 = new Web3('http://127.0.0.1:8545')
 
@@ -65,7 +66,8 @@ describe('Marketplace flow', () => {
       contracts.factoryAddress,
       factory.abi as AbiItem[],
       datatokensTemplate.abi as AbiItem[],
-      web3
+      web3,
+      LoggerInstance
     )
     tokenAddress = await datatoken.create(
       blob,
