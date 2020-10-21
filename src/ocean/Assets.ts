@@ -92,15 +92,8 @@ export class Assets extends Instantiable {
         this.logger.log('Creating datatoken')
         observer.next(CreateProgressStep.CreatingDataToken)
         const metadataCacheUri = this.ocean.metadatacache.getURI()
-        const jsonBlob = { t: 1, url: metadataCacheUri }
-
-        dtAddress = await datatokens.create(
-          JSON.stringify(jsonBlob),
-          publisher.getId(),
-          cap,
-          name,
-          symbol
-        )
+        // const jsonBlob = { t: 1, url: metadataCacheUri }
+        dtAddress = await datatokens.create('', publisher.getId(), cap, name, symbol)
 
         if (!isAddress(dtAddress)) {
           this.logger.error(
