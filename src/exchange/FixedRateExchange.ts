@@ -376,14 +376,17 @@ export class OceanFixedRateExchange {
   ): Promise<FixedPriceExchange[]> {
     const result: FixedPriceExchange[] = []
     const events = await this.contract.getPastEvents('ExchangeCreated', {
-      filter: { datatoken: dataTokenAddress },
+      filter: { datatoken: dataTokenAddress.toLowerCase() },
       fromBlock: 0,
       toBlock: 'latest'
     })
     for (let i = 0; i < events.length; i++) {
       const constituents = await this.getExchange(events[i].returnValues[0])
       constituents.exchangeID = events[i].returnValues[0]
-      if (constituents.active === true && constituents.dataToken === dataTokenAddress) {
+      if (
+        constituents.active === true &&
+        constituents.dataToken.toLowerCase() === dataTokenAddress.toLowerCase()
+      ) {
         const supply = new BigNumber(await this.getSupply(constituents.exchangeID))
         const required = new BigNumber(minSupply)
         if (supply.gte(required)) {
