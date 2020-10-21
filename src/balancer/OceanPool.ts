@@ -77,7 +77,7 @@ export class OceanPool extends Pool {
     amount: string,
     weight: string,
     fee: string
-  ): SubscribablePromise<PoolCreateProgressStep, string> {
+  ): SubscribablePromise<PoolCreateProgressStep, TransactionReceipt> {
     if (this.oceanAddress == null) {
       console.error('ERROR: oceanAddress is not defined')
       return null
@@ -92,7 +92,12 @@ export class OceanPool extends Pool {
     }
     return new SubscribablePromise(async (observer) => {
       observer.next(PoolCreateProgressStep.CreatingPool)
-      const address = await super.createPool(account)
+      const createTxid = await super.createPool(account)
+      if (!createTxid) {
+        console.error('ERROR: Failed to call approve DT token')
+        return null
+      }
+      const address = createTxid.events.BPoolRegistered.returnValues[0]
       const oceanWeight = 10 - parseFloat(weight)
       const oceanAmount = (parseFloat(amount) * oceanWeight) / parseFloat(weight)
       this.dtAddress = token
@@ -135,7 +140,7 @@ export class OceanPool extends Pool {
         console.error('ERROR: Failed to create a new pool')
         return null
       }
-      return address
+      return createTxid
     })
   }
 
