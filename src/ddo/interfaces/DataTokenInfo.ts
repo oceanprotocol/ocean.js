@@ -3,9 +3,9 @@ export interface DataTokenInfo {
   name: string
   symbol: string
   blob: string
-  decimals: number
-  totalSupply: number
-  cap: number
-  minter: string
-  minterBalance: number
+  decimals?: number
+  totalSupply?: number
+  cap?: number
+  minter?: string
+  minterBalance?: number
 }
