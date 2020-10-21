@@ -184,7 +184,6 @@ export class Assets extends Instantiable {
         name: await datatokens.getName(dtAddress),
         symbol: await datatokens.getSymbol(dtAddress),
         address: dtAddress,
-        blob: await datatokens.getBlob(dtAddress),
         cap: parseFloat(await datatokens.getCap(dtAddress))
       }
       this.logger.log('Storing DDO')
