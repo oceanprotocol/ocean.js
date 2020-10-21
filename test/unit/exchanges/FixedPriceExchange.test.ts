@@ -168,7 +168,8 @@ describe('FixedRateExchange flow', () => {
     if (consoleDebug) console.log('Bob ocean allowance:' + balance)
   })
   it('Alice creates a new FixedRate Exchange with a rate of 0.5', async () => {
-    aliceExchangeId = await FixedRateClass.create(tokenAddress, fixedPriceRate, alice)
+    const trxReceipt = await FixedRateClass.create(tokenAddress, fixedPriceRate, alice)
+    aliceExchangeId = trxReceipt.events.ExchangeCreated.returnValues[0]
     if (consoleDebug) console.log('aliceExchangeId:' + aliceExchangeId)
   })
   it('Bob should find the exchange', async () => {

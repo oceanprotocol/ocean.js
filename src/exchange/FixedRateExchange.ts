@@ -73,14 +73,14 @@ export class OceanFixedRateExchange {
    * @param {Number} rate exchange rate
    * @param {String} address User address
    * @param {String} amount Optional, amount of datatokens to be approved for the exchange
-   * @return {Promise<string>} exchangeId
+   * @return {Promise<TransactionReceipt>} TransactionReceipt
    */
   public create(
     dataToken: string,
     rate: string,
     address: string,
     amount?: string
-  ): SubscribablePromise<FixedRateCreateProgressStep, string> {
+  ): SubscribablePromise<FixedRateCreateProgressStep, TransactionReceipt> {
     return new SubscribablePromise(async (observer) => {
       observer.next(FixedRateCreateProgressStep.CreatingExchange)
       let estGas
@@ -116,7 +116,7 @@ export class OceanFixedRateExchange {
         observer.next(FixedRateCreateProgressStep.ApprovingDatatoken)
         this.datatokens.approve(dataToken, this.fixedRateExchangeAddress, amount, address)
       }
-      return exchangeId
+      return trxReceipt
     })
   }
 
