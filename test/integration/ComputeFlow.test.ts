@@ -40,6 +40,7 @@ describe('Compute flow', () => {
   let data: { t: number; url: string }
   let blob: string
   let jobId: string
+  let computeOrderId: string
 
   let cluster: Cluster
   let servers: Server[]
@@ -330,17 +331,17 @@ describe('Compute flow', () => {
 
   it('Bob starts compute job with a raw Algo', async () => {
     const output = {}
-    const order = await ocean.compute.order(
+    computeOrderId = await ocean.compute.order(
       bob.getId(),
       ddo.id,
       computeService.index,
       undefined,
       algorithmMeta
     )
-    assert(order != null)
+    assert(computeOrderId != null)
     const response = await ocean.compute.start(
       ddo.id,
-      order,
+      computeOrderId,
       tokenAddress,
       bob,
       undefined,
@@ -352,14 +353,31 @@ describe('Compute flow', () => {
     jobId = response.jobId
     assert(response.status >= 10)
   })
+  it('Bob should get status of a compute job with a specific order txId', async () => {
+    assert(jobId != null)
+    const response = await ocean.compute.status(
+      bob,
+      undefined,
+      undefined,
+      computeOrderId,
+      true
+    )
+    assert(response[0].jobId === jobId)
+  })
   it('Bob should get status of a compute job without signing', async () => {
     assert(jobId != null)
-    const response = await ocean.compute.status(bob, ddo.id, jobId, false)
+    const response = await ocean.compute.status(bob, ddo.id, jobId, undefined, false)
     assert(response[0].jobId === jobId)
   })
 
   it('should get status of all compute jobs for an address without signing', async () => {
-    const response = await ocean.compute.status(bob, undefined, undefined, false)
+    const response = await ocean.compute.status(
+      bob,
+      undefined,
+      undefined,
+      undefined,
+      false
+    )
     assert(response.length > 0)
   })
   it('Bob should get status of a compute job', async () => {

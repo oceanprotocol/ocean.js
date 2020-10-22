@@ -175,7 +175,8 @@ export class Compute extends Instantiable {
    * Returns information about the status of all compute jobs, or a single compute job.
    * @param  {Account} consumerAccount The account of the consumer ordering the service.
    * @param  {string} did Decentralized identifier.
-   * @param  {string} jobId The ID of the compute job to be stopped
+   * @param  {string} jobId The jobId of the compute job
+   * @param  {string} jobId The Order transaction id
    * @param  {boolean} sign If the provider request is going to be signed(default) (full status) or not (short status)
    * @return {Promise<ComputeJob[]>} Returns the status
    */
@@ -183,6 +184,7 @@ export class Compute extends Instantiable {
     consumerAccount: Account,
     did?: string,
     jobId?: string,
+    txId?: string,
     sign = true
   ): Promise<ComputeJob[]> {
     let provider: Provider
@@ -204,7 +206,7 @@ export class Compute extends Instantiable {
       undefined,
       jobId,
       undefined,
-      undefined,
+      txId,
       undefined,
       undefined,
       undefined,
