@@ -91,16 +91,9 @@ export class Assets extends Instantiable {
       if (!dtAddress) {
         this.logger.log('Creating datatoken')
         observer.next(CreateProgressStep.CreatingDataToken)
-        const metadataCacheUri = this.ocean.metadatacache.getURI()
-        const jsonBlob = { t: 1, url: metadataCacheUri }
-
-        dtAddress = await datatokens.create(
-          JSON.stringify(jsonBlob),
-          publisher.getId(),
-          cap,
-          name,
-          symbol
-        )
+        // const metadataCacheUri = this.ocean.metadatacache.getURI()
+        // const jsonBlob = { t: 1, url: metadataCacheUri }
+        dtAddress = await datatokens.create('', publisher.getId(), cap, name, symbol)
 
         if (!isAddress(dtAddress)) {
           this.logger.error(
@@ -191,7 +184,6 @@ export class Assets extends Instantiable {
         name: await datatokens.getName(dtAddress),
         symbol: await datatokens.getSymbol(dtAddress),
         address: dtAddress,
-        blob: await datatokens.getBlob(dtAddress),
         cap: parseFloat(await datatokens.getCap(dtAddress))
       }
       this.logger.log('Storing DDO')
