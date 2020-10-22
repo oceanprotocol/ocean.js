@@ -186,7 +186,7 @@ export class Provider extends Instantiable {
       const signature = await this.createHashSignature(consumerAccount, signatureMessage)
       url += `&signature=${signature}`
     }
-    // consitnue to construct Provider URL
+    // continue to construct Provider URL
     url += (output && `&output=${JSON.stringify(output)}`) || ''
     url += (algorithmDid && `&algorithmDid=${algorithmDid}`) || ''
     url +=
