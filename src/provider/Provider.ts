@@ -171,20 +171,22 @@ export class Provider extends Instantiable {
     serviceType?: string,
     tokenAddress?: string,
     algorithmTransferTxId?: string,
-    algorithmDataToken?: string
+    algorithmDataToken?: string,
+    sign = true
   ): Promise<ComputeJob | ComputeJob[]> {
     const address = consumerAccount.getId()
     await this.getNonce(consumerAccount.getId())
-    let signatureMessage = address
-    signatureMessage += jobId || ''
-    signatureMessage += (did && `${noZeroX(did)}`) || ''
-    signatureMessage += this.nonce
-    const signature = await this.createHashSignature(consumerAccount, signatureMessage)
-
-    // construct Brizo URL
     let url = this.getComputeEndpoint()
-    url += `?signature=${signature}`
-    url += `&documentId=${noZeroX(did)}`
+    url += `?documentId=${noZeroX(did)}`
+    if (sign) {
+      let signatureMessage = address
+      signatureMessage += jobId || ''
+      signatureMessage += (did && `${noZeroX(did)}`) || ''
+      signatureMessage += this.nonce
+      const signature = await this.createHashSignature(consumerAccount, signatureMessage)
+      url += `&signature=${signature}`
+    }
+    // continue to construct Provider URL
     url += (output && `&output=${JSON.stringify(output)}`) || ''
     url += (algorithmDid && `&algorithmDid=${algorithmDid}`) || ''
     url +=
@@ -215,7 +217,6 @@ export class Provider extends Instantiable {
 
     // switch fetch method
     let fetch
-
     switch (method) {
       case 'post':
         fetch = this.ocean.utils.fetch.post(url, '')

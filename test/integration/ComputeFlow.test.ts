@@ -352,7 +352,16 @@ describe('Compute flow', () => {
     jobId = response.jobId
     assert(response.status >= 10)
   })
+  it('Bob should get status of a compute job without signing', async () => {
+    assert(jobId != null)
+    const response = await ocean.compute.status(bob, ddo.id, jobId, false)
+    assert(response[0].jobId === jobId)
+  })
 
+  it('should get status of all compute jobs for an address without signing', async () => {
+    const response = await ocean.compute.status(bob, undefined, undefined, false)
+    assert(response.length > 0)
+  })
   it('Bob should get status of a compute job', async () => {
     assert(jobId != null)
     const response = await ocean.compute.status(bob, ddo.id, jobId)
