@@ -176,12 +176,14 @@ export class Compute extends Instantiable {
    * @param  {Account} consumerAccount The account of the consumer ordering the service.
    * @param  {string} did Decentralized identifier.
    * @param  {string} jobId The ID of the compute job to be stopped
+   * @param  {boolean} sign If the provider request is going to be signed(default) (full status) or not (short status)
    * @return {Promise<ComputeJob[]>} Returns the status
    */
   public async status(
     consumerAccount: Account,
     did?: string,
-    jobId?: string
+    jobId?: string,
+    sign = true
   ): Promise<ComputeJob[]> {
     let provider: Provider
 
@@ -200,7 +202,15 @@ export class Compute extends Instantiable {
       consumerAccount,
       undefined,
       undefined,
-      jobId
+      jobId,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      sign
     )
 
     return computeJobsList as ComputeJob[]
