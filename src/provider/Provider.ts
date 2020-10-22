@@ -177,16 +177,14 @@ export class Provider extends Instantiable {
     const address = consumerAccount.getId()
     await this.getNonce(consumerAccount.getId())
     let url = this.getComputeEndpoint()
+    url += `?documentId=${noZeroX(did)}`
     if (sign) {
       let signatureMessage = address
       signatureMessage += jobId || ''
       signatureMessage += (did && `${noZeroX(did)}`) || ''
       signatureMessage += this.nonce
       const signature = await this.createHashSignature(consumerAccount, signatureMessage)
-      url += `?signature=${signature}`
-      url += `&documentId=${noZeroX(did)}`
-    } else {
-      url += `?documentId=${noZeroX(did)}`
+      url += `&signature=${signature}`
     }
     // consitnue to construct Provider URL
     url += (output && `&output=${JSON.stringify(output)}`) || ''
