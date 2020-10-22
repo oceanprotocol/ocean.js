@@ -195,7 +195,7 @@ export class Provider extends Instantiable {
       ''
     url += (jobId && `&jobId=${jobId}`) || ''
     url += `&consumerAddress=${address}`
-    url += `&transferTxId=${txId}` || ''
+    url += (txId && `&transferTxId=${txId}`) || ''
     url +=
       (algorithmTransferTxId && `&algorithmTransferTxId=${algorithmTransferTxId}`) || ''
     url += (algorithmDataToken && `&algorithmDataToken=${algorithmDataToken}`) || ''
