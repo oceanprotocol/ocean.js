@@ -4,7 +4,7 @@ import { TestContractHandler } from '../../TestContractHandler'
 import { FixedPricedContractHandler } from '../../FixedPriceContractHandler'
 import { DataTokens } from '../../../src/datatokens/Datatokens'
 import { OceanFixedRateExchange } from '../../../src/exchange/FixedRateExchange'
-
+import { LoggerInstance } from '../../../src/utils'
 import Web3 from 'web3'
 import factory from '@oceanprotocol/contracts/artifacts/DTFactory.json'
 import datatokensTemplate from '@oceanprotocol/contracts/artifacts/DataTokenTemplate.json'
@@ -66,7 +66,8 @@ describe('FixedRateExchange flow', () => {
       contracts.factoryAddress,
       factory.abi as AbiItem[],
       datatokensTemplate.abi as AbiItem[],
-      web3
+      web3,
+      LoggerInstance
     )
     assert(datatoken !== null)
   })
@@ -89,7 +90,8 @@ describe('FixedRateExchange flow', () => {
       contracts.factoryAddress,
       factory.abi as AbiItem[],
       datatokensTemplate.abi as AbiItem[],
-      web3
+      web3,
+      LoggerInstance
     )
     oceanTokenAddress = await oceandatatoken.create(
       blob,
@@ -105,6 +107,7 @@ describe('FixedRateExchange flow', () => {
   it('should initialize FixedExchangeRate class', async () => {
     FixedRateClass = new OceanFixedRateExchange(
       web3,
+      LoggerInstance,
       FixedRateExchangeAddress,
       FixedRateExchangeContract.abi as AbiItem[],
       oceanTokenAddress,

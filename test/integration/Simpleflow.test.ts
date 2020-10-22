@@ -5,6 +5,7 @@ import { AbiItem } from 'web3-utils/types'
 import Web3 from 'web3'
 import factory from '@oceanprotocol/contracts/artifacts/DTFactory.json'
 import datatokensTemplate from '@oceanprotocol/contracts/artifacts/DataTokenTemplate.json'
+import { LoggerInstance } from '../../src/utils'
 const web3 = new Web3('http://127.0.0.1:8545')
 
 describe('Simple flow', () => {
@@ -40,7 +41,8 @@ describe('Simple flow', () => {
       contracts.factoryAddress,
       factory.abi as AbiItem[],
       datatokensTemplate.abi as AbiItem[],
-      web3
+      web3,
+      LoggerInstance
     )
     tokenAddress = await datatoken.create(blob, alice, '10000000000', 'AliceDT', 'DTA')
   })

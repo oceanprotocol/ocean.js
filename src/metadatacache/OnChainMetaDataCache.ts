@@ -4,8 +4,7 @@ import { Contract } from 'web3-eth-contract'
 import { AbiItem } from 'web3-utils/types'
 import Web3 from 'web3'
 import defaultDDOContractABI from '@oceanprotocol/contracts/artifacts/Metadata.json'
-import { didZeroX } from '../utils'
-
+import { didZeroX, Logger } from '../utils'
 // Using limited, compress-only version
 // See https://github.com/LZMA-JS/LZMA-JS#but-i-dont-want-to-use-web-workers
 import { LZMA } from 'lzma/src/lzma-c'
@@ -19,11 +18,13 @@ export class OnChainMetadataCache {
   public DDOContractABI: AbiItem | AbiItem[]
   public web3: Web3
   public DDOContract: Contract = null
+  private logger: Logger
   /**
    * Instantiate OnChainMetadata Store for on-chain interaction.
    */
   constructor(
     web3: Web3,
+    logger: Logger,
     DDOContractAddress: string = null,
     DDOContractABI: AbiItem | AbiItem[] = null
   ) {
@@ -35,6 +36,7 @@ export class OnChainMetadataCache {
         this.DDOContractABI,
         this.DDOContractAddress
       )
+    this.logger = logger
   }
 
   /**
@@ -100,7 +102,7 @@ export class OnChainMetadataCache {
     consumerAccount: string
   ): Promise<TransactionReceipt> {
     if (!this.DDOContract) {
-      console.error('ERROR: Missing DDOContract')
+      this.logger.error('ERROR: Missing DDOContract')
       return null
     }
     try {
@@ -116,7 +118,7 @@ export class OnChainMetadataCache {
         .send({ from: consumerAccount })
       return trxReceipt
     } catch (e) {
-      console.error(`ERROR: Failed to publish raw DDO : ${e.message}`)
+      this.logger.error(`ERROR: Failed to publish raw DDO : ${e.message}`)
       return null
     }
   }
@@ -136,7 +138,7 @@ export class OnChainMetadataCache {
     consumerAccount: string
   ): Promise<TransactionReceipt> {
     if (!this.DDOContract) {
-      console.error('ERROR: Missing DDOContract')
+      this.logger.error('ERROR: Missing DDOContract')
       return null
     }
     try {
@@ -145,7 +147,7 @@ export class OnChainMetadataCache {
         .send({ from: consumerAccount })
       return trxReceipt
     } catch (e) {
-      console.error(`ERROR: Failed to update raw DDO : ${e.message}`)
+      this.logger.error(`ERROR: Failed to update raw DDO : ${e.message}`)
       return null
     }
   }
@@ -171,7 +173,7 @@ export class OnChainMetadataCache {
         })
       return trxReceipt
     } catch (e) {
-      console.error(`ERROR: Failed to transfer DDO ownership : ${e.message}`)
+      this.logger.error(`ERROR: Failed to transfer DDO ownership : ${e.message}`)
       return null
     }
   }
@@ -201,7 +203,7 @@ export class OnChainMetadataCache {
         hex += '' + hexChar[(message[i] >> 4) & 0x0f] + hexChar[message[i] & 0x0f]
       }
     } catch (e) {
-      console.error(`ERROR: Failed to get hex message value : ${e.message}`)
+      this.logger.error(`ERROR: Failed to get hex message value : ${e.message}`)
     }
     const hexMessage = '0x' + hex
     return hexMessage

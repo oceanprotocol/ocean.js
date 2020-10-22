@@ -4,7 +4,7 @@ import { TransactionReceipt } from 'web3-core'
 import { Contract, EventData } from 'web3-eth-contract'
 import { AbiItem } from 'web3-utils/types'
 import Web3 from 'web3'
-import { SubscribablePromise } from '../utils'
+import { SubscribablePromise, Logger } from '../utils'
 import { DataTokens } from '../datatokens/Datatokens'
 
 export interface FixedPriceExchange {
@@ -38,6 +38,7 @@ export class OceanFixedRateExchange {
   public fixedRateExchangeABI: AbiItem | AbiItem[]
   public web3: Web3
   public contract: Contract = null
+  private logger: Logger
   public datatokens: DataTokens
 
   /**
@@ -49,6 +50,7 @@ export class OceanFixedRateExchange {
    */
   constructor(
     web3: Web3,
+    logger: Logger,
     fixedRateExchangeAddress: string = null,
     fixedRateExchangeABI: AbiItem | AbiItem[] = null,
     oceanAddress: string = null,
@@ -65,6 +67,7 @@ export class OceanFixedRateExchange {
         this.fixedRateExchangeABI,
         this.fixedRateExchangeAddress
       )
+    this.logger = logger
   }
 
   /**
@@ -110,7 +113,7 @@ export class OceanFixedRateExchange {
           })
         exchangeId = trxReceipt.events.ExchangeCreated.returnValues[0]
       } catch (e) {
-        console.error(`ERROR: Failed to create new exchange: ${e.message}`)
+        this.logger.error(`ERROR: Failed to create new exchange: ${e.message}`)
       }
       if (amount && exchangeId) {
         observer.next(FixedRateCreateProgressStep.ApprovingDatatoken)
@@ -168,7 +171,7 @@ export class OceanFixedRateExchange {
         })
       return trxReceipt
     } catch (e) {
-      console.error(`ERROR: Failed to buy datatokens: ${e.message}`)
+      this.logger.error(`ERROR: Failed to buy datatokens: ${e.message}`)
       return null
     }
   }
@@ -244,6 +247,7 @@ export class OceanFixedRateExchange {
           return estGas
         })
     } catch (e) {
+      this.logger.error(`ERROR: FixedPriceExchange: ${e.message}`)
       estGas = DEFAULT_GAS_LIMIT
     }
     const trxReceipt = await this.contract.methods.toggleExchangeState(exchangeId).send({
@@ -278,6 +282,7 @@ export class OceanFixedRateExchange {
           return estGas
         })
     } catch (e) {
+      this.logger.error(`ERROR: FixedPriceExchange: ${e.message}`)
       estGas = DEFAULT_GAS_LIMIT
     }
     const trxReceipt = await this.contract.methods.toggleExchangeState(exchangeId).send({

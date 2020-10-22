@@ -50,10 +50,12 @@ export class Ocean extends Instantiable {
       instanceConfig.config.factoryAddress,
       instanceConfig.config.factoryABI,
       instanceConfig.config.datatokensABI,
-      instanceConfig.config.web3Provider
+      instanceConfig.config.web3Provider,
+      instanceConfig.logger
     )
     instance.pool = new OceanPool(
       instanceConfig.config.web3Provider,
+      instanceConfig.logger,
       instanceConfig.config.poolFactoryABI,
       instanceConfig.config.poolABI,
       instanceConfig.config.poolFactoryAddress,
@@ -61,6 +63,7 @@ export class Ocean extends Instantiable {
     )
     instance.fixedRateExchange = new OceanFixedRateExchange(
       instanceConfig.config.web3Provider,
+      instanceConfig.logger,
       instanceConfig.config.fixedRateExchangeAddress,
       instanceConfig.config.fixedRateExchangeAddressABI,
       instanceConfig.config.oceanTokenAddress,
@@ -68,6 +71,7 @@ export class Ocean extends Instantiable {
     )
     instance.OnChainMetadataCache = new OnChainMetadataCache(
       instanceConfig.config.web3Provider,
+      instanceConfig.logger,
       instanceConfig.config.metadataContractAddress,
       instanceConfig.config.metadataContractABI
     )
