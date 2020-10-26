@@ -90,6 +90,10 @@ export class OceanPool extends Pool {
       this.logger.error('ERROR: Swap fee too high. The maximum allowed swapFee is 10%')
       return null
     }
+    if (parseFloat(dtAmount) < 2) {
+      this.logger.error('ERROR: Amount of DT is too low')
+      return null
+    }
     if (parseFloat(dtWeight) > 9 || parseFloat(dtWeight) < 1) {
       this.logger.error('ERROR: Weight out of bounds (min 1, max9)')
       return null
