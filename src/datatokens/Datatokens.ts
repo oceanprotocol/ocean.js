@@ -102,8 +102,7 @@ export class DataTokens {
       .createToken(metadataCacheUri, name, symbol, this.web3.utils.toWei(cap))
       .send({
         from: address,
-        gas: estGas + 1,
-        gasPrice: '3000000000'
+        gas: estGas + 1
       })
 
     let tokenAddress = null
@@ -167,8 +166,7 @@ export class DataTokens {
       .mint(destAddress, this.web3.utils.toWei(amount))
       .send({
         from: address,
-        gas: estGas + 1,
-        gasPrice: '3000000000'
+        gas: estGas + 1
       })
 
     return trxReceipt
@@ -365,6 +363,18 @@ export class DataTokens {
     })
     if (!mpFeeAddress) mpFeeAddress = '0x0000000000000000000000000000000000000000'
     try {
+      const estGas = await datatoken.methods
+        .startOrder(
+          consumer,
+          this.web3.utils.toWei(amount),
+          String(serviceId),
+          mpFeeAddress
+        )
+        .estimateGas(function (err, estGas) {
+          if (err) console.error(`ERROR: Datatokens : ${err}`)
+          return estGas
+        })
+
       const trxReceipt = await datatoken.methods
         .startOrder(
           consumer,
@@ -372,7 +382,7 @@ export class DataTokens {
           String(serviceId),
           mpFeeAddress
         )
-        .send({ from: address, gas: 600000 })
+        .send({ from: address, gas: estGas + 1 })
       return trxReceipt
     } catch (e) {
       this.logger.error(`ERROR: Failed to start order : ${e.message}`)

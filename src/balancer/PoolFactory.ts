@@ -5,7 +5,7 @@ import jsonFactoryABI from '@oceanprotocol/contracts/artifacts/BFactory.json'
 import { TransactionReceipt } from 'web3-core'
 
 export class PoolFactory {
-  public GASLIMIT_DEFAULT = 5000000
+  public GASLIMIT_DEFAULT = 8000000
   public web3: Web3 = null
   public factoryABI: AbiItem | AbiItem[]
   public factoryAddress: string

@@ -29,7 +29,7 @@ export enum FixedRateCreateProgressStep {
   ApprovingDatatoken
 }
 
-const DEFAULT_GAS_LIMIT = 300000
+const DEFAULT_GAS_LIMIT = 1000000
 
 export class OceanFixedRateExchange {
   /** Ocean related functions */
