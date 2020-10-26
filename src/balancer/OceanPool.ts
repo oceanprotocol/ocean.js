@@ -70,6 +70,7 @@ export class OceanPool extends Pool {
      * @param {String} token  DataToken address
      * @param {String} amount DataToken amount
      * @param {String} weight DataToken weight
+     * @param {String} oceanAmount Ocean amount
      * @param {String} fee Swap fee. E.g. to get a 0.1% swapFee use `0.001`. The maximum allowed swapFee is `0.1` (10%).
      * @return {String}
      */
@@ -78,6 +79,7 @@ export class OceanPool extends Pool {
     token: string,
     amount: string,
     weight: string,
+    oceanAmount: string,
     fee: string
   ): SubscribablePromise<PoolCreateProgressStep, TransactionReceipt> {
     if (this.oceanAddress == null) {
@@ -101,7 +103,6 @@ export class OceanPool extends Pool {
       }
       const address = createTxid.events.BPoolRegistered.returnValues[0]
       const oceanWeight = 10 - parseFloat(weight)
-      const oceanAmount = (parseFloat(amount) * oceanWeight) / parseFloat(weight)
       this.dtAddress = token
       observer.next(PoolCreateProgressStep.ApprovingDatatoken)
       let txid
