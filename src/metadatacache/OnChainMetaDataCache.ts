@@ -8,7 +8,7 @@ import { didZeroX, Logger } from '../utils'
 // Using limited, compress-only version
 // See https://github.com/LZMA-JS/LZMA-JS#but-i-dont-want-to-use-web-workers
 import { LZMA } from 'lzma/src/lzma-c'
-const DEFAULT_GAS_LIMIT = 10000000
+const DEFAULT_GAS_LIMIT = 1000000
 /**
  * Provides an interface with Metadata Cache.
  * Metadata Cache provides an off-chain database store for metadata about data assets.
