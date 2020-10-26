@@ -106,6 +106,7 @@ export class OnChainMetadataCache {
       return null
     }
     let estGas
+    /*
     try {
       estGas = await this.DDOContract.methods
         .create(didZeroX(did), flags, data)
@@ -119,10 +120,21 @@ export class OnChainMetadataCache {
     } catch (e) {
       estGas = DEFAULT_GAS_LIMIT
     }
+    
     try {
       const trxReceipt = await this.DDOContract.methods
         .create(didZeroX(did), flags, data)
         .send({ from: consumerAccount, gas: estGas + 1 })
+      return trxReceipt
+    } catch (e) {
+      this.logger.error(`ERROR: Failed to publish raw DDO : ${e.message}`)
+      return null
+    }
+    */
+    try {
+      const trxReceipt = await this.DDOContract.methods
+        .create(didZeroX(did), flags, data)
+        .send({ from: consumerAccount, gas: DEFAULT_GAS_LIMIT })
       return trxReceipt
     } catch (e) {
       this.logger.error(`ERROR: Failed to publish raw DDO : ${e.message}`)
