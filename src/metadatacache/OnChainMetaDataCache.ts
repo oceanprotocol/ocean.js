@@ -8,7 +8,7 @@ import { didZeroX, Logger } from '../utils'
 // Using limited, compress-only version
 // See https://github.com/LZMA-JS/LZMA-JS#but-i-dont-want-to-use-web-workers
 import { LZMA } from 'lzma/src/lzma-c'
-
+const DEFAULT_GAS_LIMIT = 1000000
 /**
  * Provides an interface with Metadata Cache.
  * Metadata Cache provides an off-chain database store for metadata about data assets.
@@ -105,17 +105,24 @@ export class OnChainMetadataCache {
       this.logger.error('ERROR: Missing DDOContract')
       return null
     }
+    let estGas
     try {
-      /* const estGas = await this.DDOContract.methods
+      estGas = await this.DDOContract.methods
         .create(didZeroX(did), flags, data)
         .estimateGas(function (err, estGas) {
-          if (err) console.error('ERROR: OnChainMetadataCacheEstimateGas: ' + err)
+          if (err) {
+            //  console.error('ERROR: OnChainMetadataCacheEstimateGas: ' + err)
+            return DEFAULT_GAS_LIMIT
+          }
           return estGas
         })
-      */
+    } catch (e) {
+      estGas = DEFAULT_GAS_LIMIT
+    }
+    try {
       const trxReceipt = await this.DDOContract.methods
         .create(didZeroX(did), flags, data)
-        .send({ from: consumerAccount })
+        .send({ from: consumerAccount, gas: estGas + 1 })
       return trxReceipt
     } catch (e) {
       this.logger.error(`ERROR: Failed to publish raw DDO : ${e.message}`)
@@ -141,10 +148,24 @@ export class OnChainMetadataCache {
       this.logger.error('ERROR: Missing DDOContract')
       return null
     }
+    let estGas
+    try {
+      estGas = await this.DDOContract.methods
+        .update(didZeroX(did), flags, data)
+        .estimateGas(function (err, estGas) {
+          if (err) {
+            //  console.error('ERROR: OnChainMetadataCacheEstimateGas: ' + err)
+            return DEFAULT_GAS_LIMIT
+          }
+          return estGas
+        })
+    } catch (e) {
+      estGas = DEFAULT_GAS_LIMIT
+    }
     try {
       const trxReceipt = await this.DDOContract.methods
         .update(didZeroX(did), flags, data)
-        .send({ from: consumerAccount })
+        .send({ from: consumerAccount, gas: estGas + 1 })
       return trxReceipt
     } catch (e) {
       this.logger.error(`ERROR: Failed to update raw DDO : ${e.message}`)
