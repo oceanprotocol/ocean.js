@@ -9,6 +9,6 @@ export interface ComputeJob {
   status: number
   statusText: string
   algorithmLogUrl: string
-  resultsUrls: string[]
+  resultsUrl: string[]
   resultsDid?: DID
 }
