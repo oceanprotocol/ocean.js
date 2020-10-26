@@ -125,7 +125,19 @@ describe('Balancer flow', () => {
   })
   it('Alice creates a new OceanPool pool', async () => {
     /// new pool with total DT = 45 , dt weight=90% with swap fee 2%
-    const createTx = await Pool.create(alice, tokenAddress, '45', '9', '0.02')
+    const dtAmount = '45'
+    const dtWeight = '9'
+    const oceanAmount =
+      (parseFloat(dtAmount) * (10 - parseFloat(dtWeight))) / parseFloat(dtWeight)
+    const fee = '0.02'
+    const createTx = await Pool.create(
+      alice,
+      tokenAddress,
+      dtAmount,
+      dtWeight,
+      String(oceanAmount),
+      fee
+    )
     alicePoolAddress = createTx.events.BPoolRegistered.returnValues[0]
     const s = await Pool.getPoolSharesTotalSupply(alicePoolAddress)
     assert(String(s) === '100', 'totalSupply does not match: ' + s)
