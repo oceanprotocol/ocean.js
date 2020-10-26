@@ -67,18 +67,18 @@ export class OceanPool extends Pool {
   /**
      * Create DataToken pool
      @param {String} account
-     * @param {String} token  DataToken address
-     * @param {String} amount DataToken amount
-     * @param {String} weight DataToken weight
+     * @param {String} dtAddress  DataToken address
+     * @param {String} dtAmount DataToken amount
+     * @param {String} dtWeight DataToken weight
      * @param {String} oceanAmount Ocean amount
      * @param {String} fee Swap fee. E.g. to get a 0.1% swapFee use `0.001`. The maximum allowed swapFee is `0.1` (10%).
      * @return {String}
      */
   public create(
     account: string,
-    token: string,
-    amount: string,
-    weight: string,
+    dtAddress: string,
+    dtAmount: string,
+    dtWeight: string,
     oceanAmount: string,
     fee: string
   ): SubscribablePromise<PoolCreateProgressStep, TransactionReceipt> {
@@ -90,7 +90,7 @@ export class OceanPool extends Pool {
       this.logger.error('ERROR: Swap fee too high. The maximum allowed swapFee is 10%')
       return null
     }
-    if (parseFloat(weight) > 9 || parseFloat(weight) < 1) {
+    if (parseFloat(dtWeight) > 9 || parseFloat(dtWeight) < 1) {
       this.logger.error('ERROR: Weight out of bounds (min 1, max9)')
       return null
     }
@@ -102,15 +102,15 @@ export class OceanPool extends Pool {
         return null
       }
       const address = createTxid.events.BPoolRegistered.returnValues[0]
-      const oceanWeight = 10 - parseFloat(weight)
-      this.dtAddress = token
+      const oceanWeight = 10 - parseFloat(dtWeight)
+      this.dtAddress = dtAddress
       observer.next(PoolCreateProgressStep.ApprovingDatatoken)
       let txid
       txid = await this.approve(
         account,
-        token,
+        dtAddress,
         address,
-        this.web3.utils.toWei(String(amount))
+        this.web3.utils.toWei(String(dtAmount))
       )
       if (!txid) {
         this.logger.error('ERROR: Failed to call approve DT token')
@@ -131,9 +131,9 @@ export class OceanPool extends Pool {
       txid = await super.setup(
         account,
         address,
-        token,
-        this.web3.utils.toWei(String(amount)),
-        this.web3.utils.toWei(String(weight)),
+        dtAddress,
+        this.web3.utils.toWei(String(dtAmount)),
+        this.web3.utils.toWei(String(dtWeight)),
         this.oceanAddress,
         this.web3.utils.toWei(String(oceanAmount)),
         this.web3.utils.toWei(String(oceanWeight)),
