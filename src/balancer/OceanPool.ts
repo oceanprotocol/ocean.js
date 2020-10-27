@@ -477,7 +477,7 @@ export class OceanPool extends Pool {
         .multipliedBy(POOL_MAX_AMOUNT_IN_LIMIT)
         .integerValue(BigNumber.ROUND_DOWN)
         .minus(1)
-      return this.web3.utils.fromWei(result.toString())
+      return this.web3.utils.fromWei(result.toString(10))
     } else return '0'
   }
 
@@ -496,7 +496,7 @@ export class OceanPool extends Pool {
         .multipliedBy(POOL_MAX_AMOUNT_OUT_LIMIT)
         .integerValue(BigNumber.ROUND_DOWN)
         .minus(1)
-      return this.web3.utils.fromWei(result.toString())
+      return this.web3.utils.fromWei(result.toString(10))
     } else return '0'
   }
 
