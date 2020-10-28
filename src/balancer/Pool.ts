@@ -130,18 +130,12 @@ export class Pool extends PoolFactory {
       from: account
     })
     let result = null
-
+    const gasLimitDefault = this.GASLIMIT_DEFAULT
     let estGas
     try {
       estGas = await token.methods
         .approve(spender, amount)
-        .estimateGas(function (err, estGas) {
-          if (err) {
-            //  console.error('ERROR: OnChainMetadataCacheEstimateGas: ' + err)
-            return this.GASLIMIT_DEFAULT
-          }
-          return estGas
-        })
+        .estimateGas((err, estGas) => (err ? gasLimitDefault : estGas))
     } catch (e) {
       estGas = this.GASLIMIT_DEFAULT
     }
@@ -511,6 +505,7 @@ export class Pool extends PoolFactory {
       from: account
     })
     let result = null
+    const gasLimitDefault = this.GASLIMIT_DEFAULT
     let estGas
     try {
       estGas = await pool.methods
@@ -521,13 +516,7 @@ export class Pool extends PoolFactory {
           this.web3.utils.toWei(minAmountOut),
           maxPrice ? this.web3.utils.toWei(maxPrice) : MaxUint256
         )
-        .estimateGas(function (err, estGas) {
-          if (err) {
-            //  console.error('ERROR: OnChainMetadataCacheEstimateGas: ' + err)
-            return this.GASLIMIT_DEFAULT
-          }
-          return estGas
-        })
+        .estimateGas((err, estGas) => (err ? gasLimitDefault : estGas))
     } catch (e) {
       estGas = this.GASLIMIT_DEFAULT
     }
@@ -571,6 +560,7 @@ export class Pool extends PoolFactory {
       from: account
     })
     let result = null
+    const gasLimitDefault = this.GASLIMIT_DEFAULT
     let estGas
     try {
       estGas = await pool.methods
@@ -581,13 +571,7 @@ export class Pool extends PoolFactory {
           this.web3.utils.toWei(minAmountOut),
           maxPrice ? this.web3.utils.toWei(maxPrice) : MaxUint256
         )
-        .estimateGas(function (err, estGas) {
-          if (err) {
-            //  console.error('ERROR: OnChainMetadataCacheEstimateGas: ' + err)
-            return this.GASLIMIT_DEFAULT
-          }
-          return estGas
-        })
+        .estimateGas((err, estGas) => (err ? gasLimitDefault : estGas))
     } catch (e) {
       estGas = this.GASLIMIT_DEFAULT
     }
@@ -633,11 +617,19 @@ export class Pool extends PoolFactory {
     }
 
     let result = null
-
+    const gasLimitDefault = this.GASLIMIT_DEFAULT
+    let estGas
+    try {
+      estGas = await await pool.methods
+        .joinPool(this.web3.utils.toWei(poolAmountOut), weiMaxAmountsIn)
+        .estimateGas((err, estGas) => (err ? gasLimitDefault : estGas))
+    } catch (e) {
+      estGas = this.GASLIMIT_DEFAULT
+    }
     try {
       result = await pool.methods
         .joinPool(this.web3.utils.toWei(poolAmountOut), weiMaxAmountsIn)
-        .send({ from: account, gas: this.GASLIMIT_DEFAULT })
+        .send({ from: account, gas: estGas + 1 })
     } catch (e) {
       this.logger.error(`ERROR: Failed to join pool: ${e.message}`)
     }
@@ -668,10 +660,19 @@ export class Pool extends PoolFactory {
       weiMinAmountsOut.push(this.web3.utils.toWei(amount))
     }
     let result = null
+    const gasLimitDefault = this.GASLIMIT_DEFAULT
+    let estGas
+    try {
+      estGas = await await pool.methods
+        .exitPool(this.web3.utils.toWei(poolAmountIn), weiMinAmountsOut)
+        .estimateGas((err, estGas) => (err ? gasLimitDefault : estGas))
+    } catch (e) {
+      estGas = this.GASLIMIT_DEFAULT
+    }
     try {
       result = await pool.methods
         .exitPool(this.web3.utils.toWei(poolAmountIn), weiMinAmountsOut)
-        .send({ from: account, gas: this.GASLIMIT_DEFAULT })
+        .send({ from: account, gas: estGas })
     } catch (e) {
       this.logger.error(`ERROR: Failed to exit pool: ${e.message}`)
     }
@@ -698,6 +699,7 @@ export class Pool extends PoolFactory {
       from: account
     })
     let result = null
+    const gasLimitDefault = this.GASLIMIT_DEFAULT
     let estGas
     try {
       estGas = await await pool.methods
@@ -706,13 +708,7 @@ export class Pool extends PoolFactory {
           this.web3.utils.toWei(tokenAmountIn),
           this.web3.utils.toWei(minPoolAmountOut)
         )
-        .estimateGas(function (err, estGas) {
-          if (err) {
-            //  console.error('ERROR: OnChainMetadataCacheEstimateGas: ' + err)
-            return this.GASLIMIT_DEFAULT
-          }
-          return estGas
-        })
+        .estimateGas((err, estGas) => (err ? gasLimitDefault : estGas))
     } catch (e) {
       estGas = this.GASLIMIT_DEFAULT
     }
@@ -751,6 +747,19 @@ export class Pool extends PoolFactory {
       from: account
     })
     let result = null
+    const gasLimitDefault = this.GASLIMIT_DEFAULT
+    let estGas
+    try {
+      estGas = await await pool.methods
+        .joinswapPoolAmountOut(
+          tokenIn,
+          this.web3.utils.toWei(poolAmountOut),
+          this.web3.utils.toWei(maxAmountIn)
+        )
+        .estimateGas((err, estGas) => (err ? gasLimitDefault : estGas))
+    } catch (e) {
+      estGas = this.GASLIMIT_DEFAULT
+    }
     try {
       result = await pool.methods
         .joinswapPoolAmountOut(
@@ -758,7 +767,7 @@ export class Pool extends PoolFactory {
           this.web3.utils.toWei(poolAmountOut),
           this.web3.utils.toWei(maxAmountIn)
         )
-        .send({ from: account, gas: this.GASLIMIT_DEFAULT })
+        .send({ from: account, gas: estGas + 1 })
     } catch (e) {
       this.logger.error('ERROR: Failed to join swap pool amount out')
     }
@@ -785,6 +794,19 @@ export class Pool extends PoolFactory {
       from: account
     })
     let result = null
+    const gasLimitDefault = this.GASLIMIT_DEFAULT
+    let estGas
+    try {
+      estGas = await await pool.methods
+        .exitswapPoolAmountIn(
+          tokenOut,
+          this.web3.utils.toWei(poolAmountIn),
+          this.web3.utils.toWei(minTokenAmountOut)
+        )
+        .estimateGas((err, estGas) => (err ? gasLimitDefault : estGas))
+    } catch (e) {
+      estGas = this.GASLIMIT_DEFAULT
+    }
     try {
       result = await pool.methods
         .exitswapPoolAmountIn(
