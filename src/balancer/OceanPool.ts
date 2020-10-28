@@ -691,13 +691,15 @@ export class OceanPool extends Pool {
       this.logger.error('ERROR: Not enough poolShares')
       return null
     }
-    if (
-      parseFloat(maximumPoolShares) <
-      parseFloat(await this.getPoolSharesRequiredToRemoveDT(poolAddress, amount))
-    ) {
+    const sharesRequired = await this.getPoolSharesRequiredToRemoveDT(poolAddress, amount)
+    if (parseFloat(maximumPoolShares) < parseFloat(sharesRequired)) {
       this.logger.error('ERROR: Not enough poolShares')
       return null
     }
+    // Balancer bug fix
+    if (parseFloat(maximumPoolShares) < parseFloat(sharesRequired))
+      maximumPoolShares = String(parseFloat(maximumPoolShares) * 0.9999)
+    // Balance bug fix
     return this.exitswapExternAmountOut(
       account,
       poolAddress,
@@ -775,13 +777,18 @@ export class OceanPool extends Pool {
       this.logger.error('ERROR: Not enough poolShares')
       return null
     }
-    if (
-      parseFloat(maximumPoolShares) <
-      parseFloat(await this.getPoolSharesRequiredToRemoveOcean(poolAddress, amount))
-    ) {
+    const sharesRequired = await this.getPoolSharesRequiredToRemoveOcean(
+      poolAddress,
+      amount
+    )
+    if (parseFloat(maximumPoolShares) < parseFloat(sharesRequired)) {
       this.logger.error('ERROR: Not enough poolShares')
       return null
     }
+    // Balancer bug fix
+    if (parseFloat(maximumPoolShares) < parseFloat(sharesRequired))
+      maximumPoolShares = String(parseFloat(maximumPoolShares) * 0.9999)
+    // Balance bug fix
     return super.exitswapExternAmountOut(
       account,
       poolAddress,
@@ -812,7 +819,10 @@ export class OceanPool extends Pool {
       this.logger.error('ERROR: Not enough poolShares')
       return null
     }
-
+    // Balancer bug fix
+    if (parseFloat(usershares) === parseFloat(poolShares))
+      poolShares = String(parseFloat(poolShares) * 0.9999)
+    // Balance bug fix
     return this.exitPool(account, poolAddress, poolShares, [minDT, minOcean])
   }
 
