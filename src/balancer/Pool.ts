@@ -815,11 +815,14 @@ export class Pool extends PoolFactory {
     tokenAmountOut: string,
     maxPoolAmountIn: string
   ): Promise<TransactionReceipt> {
+    const gasLimitDefault = this.GASLIMIT_DEFAULT
+
     const pool = new this.web3.eth.Contract(this.poolABI, poolAddress, {
       from: account
     })
     let result = null
     let estGas
+
     try {
       estGas = await pool.methods
         .exitswapExternAmountOut(
@@ -827,16 +830,11 @@ export class Pool extends PoolFactory {
           this.web3.utils.toWei(tokenAmountOut),
           this.web3.utils.toWei(maxPoolAmountIn)
         )
-        .estimateGas(function (err, estGas) {
-          if (err) {
-            //  console.error('ERROR: OnChainMetadataCacheEstimateGas: ' + err)
-            return this.GASLIMIT_DEFAULT
-          }
-          return estGas
-        })
+        .estimateGas((err, estGas) => (err ? gasLimitDefault : estGas))
     } catch (e) {
-      estGas = this.GASLIMIT_DEFAULT
+      estGas = gasLimitDefault
     }
+
     try {
       result = await pool.methods
         .exitswapExternAmountOut(
