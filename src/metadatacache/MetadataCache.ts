@@ -313,6 +313,19 @@ export class MetadataCache {
   }
 
   /**
+   * Validate DDO.
+   * @param  {ddp} string DDO.
+   * @return {Promise<String>} Result (200 OK, 500 INVALID).
+   */
+  public async validate(ddo: DDO): Promise<string> {
+    return await this.fetch
+      .post(`${this.url}${apiPath}/validate`, JSON.stringify(ddo))
+      .then((response: Response) => {
+        return response.json()
+      })
+  }
+
+  /**
    * Retire a DDO (Delete)
    * @param  {DID | string} did DID of the asset to update.
    * @param  {String} updated Updated field of the DDO
