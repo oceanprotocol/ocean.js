@@ -315,9 +315,9 @@ export class MetadataCache {
   /**
    * Validate DDO.
    * @param  {ddp} string DDO.
-   * @return {Promise<String>} Result (200 OK, 500 INVALID).
+   * @return {Promise<any>} Result (200 OK, 500 INVALID).
    */
-  public async validate(ddo: DDO): Promise<string> {
+  public async validate(ddo: DDO): Promise<any> {
     return await this.fetch
       .post(`${this.url}${apiPath}/validate`, JSON.stringify(ddo))
       .then((response: Response) => {

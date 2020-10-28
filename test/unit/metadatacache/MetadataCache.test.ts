@@ -108,4 +108,15 @@ describe('MetadataCache', () => {
       assert(restrieveResult.id === storageResult.id)
     })
   })
+  describe('#validateDDO()', () => {
+    it('should return 200 in case of valid ddo', async () => {
+      const did: DID = DID.generate('0x858048e3Ebdd3754e14F63d1185F8252eF142393')
+      const ddo: DDO = new DDO({
+        id: did.getId()
+      })
+      spy.on(metadataCache.fetch, 'post', () => responsify(ddo))
+      const result: DDO = await metadataCache.validate(ddo)
+      assert(result.id === did.getId())
+    })
+  })
 })
