@@ -85,7 +85,7 @@ export class Pool extends PoolFactory {
         )
         .estimateGas((err, estGas) => (err ? gasLimitDefault : estGas))
     } catch (e) {
-      estGas = this.GASLIMIT_DEFAULT
+      estGas = gasLimitDefault
     }
     try {
       result = await pool.methods
@@ -158,7 +158,7 @@ export class Pool extends PoolFactory {
         .approve(spender, amount)
         .estimateGas((err, estGas) => (err ? gasLimitDefault : estGas))
     } catch (e) {
-      estGas = this.GASLIMIT_DEFAULT
+      estGas = gasLimitDefault
     }
 
     try {
@@ -549,7 +549,7 @@ export class Pool extends PoolFactory {
         )
         .estimateGas((err, estGas) => (err ? gasLimitDefault : estGas))
     } catch (e) {
-      estGas = this.GASLIMIT_DEFAULT
+      estGas = gasLimitDefault
     }
     try {
       result = await pool.methods
@@ -608,7 +608,7 @@ export class Pool extends PoolFactory {
         )
         .estimateGas((err, estGas) => (err ? gasLimitDefault : estGas))
     } catch (e) {
-      estGas = this.GASLIMIT_DEFAULT
+      estGas = gasLimitDefault
     }
     try {
       result = await pool.methods
@@ -663,7 +663,7 @@ export class Pool extends PoolFactory {
         .joinPool(this.web3.utils.toWei(poolAmountOut), weiMaxAmountsIn)
         .estimateGas((err, estGas) => (err ? gasLimitDefault : estGas))
     } catch (e) {
-      estGas = this.GASLIMIT_DEFAULT
+      estGas = gasLimitDefault
     }
     try {
       result = await pool.methods
@@ -710,7 +710,7 @@ export class Pool extends PoolFactory {
         .exitPool(this.web3.utils.toWei(poolAmountIn), weiMinAmountsOut)
         .estimateGas((err, estGas) => (err ? gasLimitDefault : estGas))
     } catch (e) {
-      estGas = this.GASLIMIT_DEFAULT
+      estGas = gasLimitDefault
     }
     try {
       result = await pool.methods
@@ -753,7 +753,7 @@ export class Pool extends PoolFactory {
         )
         .estimateGas((err, estGas) => (err ? gasLimitDefault : estGas))
     } catch (e) {
-      estGas = this.GASLIMIT_DEFAULT
+      estGas = gasLimitDefault
     }
     try {
       result = await pool.methods
@@ -805,7 +805,7 @@ export class Pool extends PoolFactory {
         )
         .estimateGas((err, estGas) => (err ? gasLimitDefault : estGas))
     } catch (e) {
-      estGas = this.GASLIMIT_DEFAULT
+      estGas = gasLimitDefault
     }
     try {
       result = await pool.methods
@@ -856,7 +856,7 @@ export class Pool extends PoolFactory {
         )
         .estimateGas((err, estGas) => (err ? gasLimitDefault : estGas))
     } catch (e) {
-      estGas = this.GASLIMIT_DEFAULT
+      estGas = gasLimitDefault
     }
     try {
       result = await pool.methods

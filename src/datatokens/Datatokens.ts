@@ -99,7 +99,7 @@ export class DataTokens {
         .createToken(metadataCacheUri, name, symbol, this.web3.utils.toWei(cap))
         .estimateGas((err, estGas) => (err ? gasLimitDefault : estGas))
     } catch (e) {
-      estGas = this.GASLIMIT_DEFAULT
+      estGas = gasLimitDefault
     }
 
     // Invoke createToken function of the contract
@@ -144,7 +144,7 @@ export class DataTokens {
         .approve(spender, this.web3.utils.toWei(amount))
         .estimateGas((err, estGas) => (err ? gasLimitDefault : estGas))
     } catch (e) {
-      estGas = this.GASLIMIT_DEFAULT
+      estGas = gasLimitDefault
     }
     const trxReceipt = await datatoken.methods
       .approve(spender, this.web3.utils.toWei(amount))
@@ -181,7 +181,7 @@ export class DataTokens {
         .mint(destAddress, this.web3.utils.toWei(amount))
         .estimateGas((err, estGas) => (err ? gasLimitDefault : estGas))
     } catch (e) {
-      estGas = this.GASLIMIT_DEFAULT
+      estGas = gasLimitDefault
     }
     const trxReceipt = await datatoken.methods
       .mint(destAddress, this.web3.utils.toWei(amount))
@@ -253,7 +253,7 @@ export class DataTokens {
         .transfer(toAddress, amount)
         .estimateGas((err, estGas) => (err ? gasLimitDefault : estGas))
     } catch (e) {
-      estGas = this.GASLIMIT_DEFAULT
+      estGas = gasLimitDefault
     }
     const trxReceipt = await datatoken.methods.transfer(toAddress, amount).send({
       from: address,
@@ -287,7 +287,7 @@ export class DataTokens {
         .transferFrom(fromAddress, address, this.web3.utils.toWei(amount))
         .estimateGas((err, estGas) => (err ? gasLimitDefault : estGas))
     } catch (e) {
-      estGas = this.GASLIMIT_DEFAULT
+      estGas = gasLimitDefault
     }
     const trxReceipt = await datatoken.methods
       .transferFrom(fromAddress, address, this.web3.utils.toWei(amount))
@@ -421,7 +421,7 @@ export class DataTokens {
           )
           .estimateGas((err, estGas) => (err ? gasLimitDefault : estGas))
       } catch (e) {
-        estGas = this.GASLIMIT_DEFAULT
+        estGas = gasLimitDefault
       }
       const trxReceipt = await datatoken.methods
         .startOrder(
