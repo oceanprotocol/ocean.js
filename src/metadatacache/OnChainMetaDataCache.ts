@@ -4,7 +4,7 @@ import { Contract } from 'web3-eth-contract'
 import { AbiItem } from 'web3-utils/types'
 import Web3 from 'web3'
 import defaultDDOContractABI from '@oceanprotocol/contracts/artifacts/Metadata.json'
-import { didZeroX, Logger } from '../utils'
+import { didZeroX, Logger, getFairGasPrice } from '../utils'
 // Using limited, compress-only version
 // See https://github.com/LZMA-JS/LZMA-JS#but-i-dont-want-to-use-web-workers
 import { LZMA } from 'lzma/src/lzma-c'
@@ -134,7 +134,11 @@ export class OnChainMetadataCache {
     try {
       const trxReceipt = await this.DDOContract.methods
         .create(didZeroX(did), flags, data)
-        .send({ from: consumerAccount, gas: DEFAULT_GAS_LIMIT })
+        .send({
+          from: consumerAccount,
+          gas: DEFAULT_GAS_LIMIT,
+          gasPrice: await getFairGasPrice(this.web3)
+        })
       return trxReceipt
     } catch (e) {
       this.logger.error(`ERROR: Failed to publish raw DDO : ${e.message}`)
@@ -177,7 +181,11 @@ export class OnChainMetadataCache {
     try {
       const trxReceipt = await this.DDOContract.methods
         .update(didZeroX(did), flags, data)
-        .send({ from: consumerAccount, gas: estGas + 1 })
+        .send({
+          from: consumerAccount,
+          gas: estGas + 1,
+          gasPrice: await getFairGasPrice(this.web3)
+        })
       return trxReceipt
     } catch (e) {
       this.logger.error(`ERROR: Failed to update raw DDO : ${e.message}`)

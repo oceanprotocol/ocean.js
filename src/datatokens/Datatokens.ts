@@ -3,7 +3,7 @@ import { AbiItem } from 'web3-utils/types'
 
 import defaultFactoryABI from '@oceanprotocol/contracts/artifacts/DTFactory.json'
 import defaultDatatokensABI from '@oceanprotocol/contracts/artifacts/DataTokenTemplate.json'
-import { Logger } from '../utils'
+import { Logger, getFairGasPrice } from '../utils'
 import wordListDefault from '../data/words.json'
 import { TransactionReceipt } from 'web3-core'
 import BigNumber from 'bignumber.js'
@@ -12,6 +12,7 @@ import BigNumber from 'bignumber.js'
  * Provides an interface to DataTokens
  */
 export class DataTokens {
+  public GASLIMIT_DEFAULT = 1000000
   public factoryAddress: string
   public factoryABI: AbiItem | AbiItem[]
   public datatokensABI: AbiItem | AbiItem[]
@@ -91,18 +92,23 @@ export class DataTokens {
     const factory = new this.web3.eth.Contract(this.factoryABI, this.factoryAddress, {
       from: address
     })
-    const estGas = await factory.methods
-      .createToken(metadataCacheUri, name, symbol, this.web3.utils.toWei(cap))
-      .estimateGas(function (err: string, estGas: string) {
-        if (err) console.error(`ERROR: Datatokens : ${err}`)
-        return estGas
-      })
+    const gasLimitDefault = this.GASLIMIT_DEFAULT
+    let estGas
+    try {
+      estGas = await factory.methods
+        .createToken(metadataCacheUri, name, symbol, this.web3.utils.toWei(cap))
+        .estimateGas((err, estGas) => (err ? gasLimitDefault : estGas))
+    } catch (e) {
+      estGas = this.GASLIMIT_DEFAULT
+    }
+
     // Invoke createToken function of the contract
     const trxReceipt = await factory.methods
       .createToken(metadataCacheUri, name, symbol, this.web3.utils.toWei(cap))
       .send({
         from: address,
-        gas: estGas + 1
+        gas: estGas + 1,
+        gasPrice: await getFairGasPrice(this.web3)
       })
 
     let tokenAddress = null
@@ -131,9 +137,22 @@ export class DataTokens {
     const datatoken = new this.web3.eth.Contract(this.datatokensABI, dataTokenAddress, {
       from: address
     })
+    const gasLimitDefault = this.GASLIMIT_DEFAULT
+    let estGas
+    try {
+      estGas = await datatoken.methods
+        .approve(spender, this.web3.utils.toWei(amount))
+        .estimateGas((err, estGas) => (err ? gasLimitDefault : estGas))
+    } catch (e) {
+      estGas = this.GASLIMIT_DEFAULT
+    }
     const trxReceipt = await datatoken.methods
       .approve(spender, this.web3.utils.toWei(amount))
-      .send({ from: address })
+      .send({
+        from: address,
+        gas: estGas + 1,
+        gasPrice: await getFairGasPrice(this.web3)
+      })
     return trxReceipt
   }
 
@@ -155,18 +174,21 @@ export class DataTokens {
     const datatoken = new this.web3.eth.Contract(this.datatokensABI, dataTokenAddress, {
       from: address
     })
-    const estGas = await datatoken.methods
-      .mint(destAddress, this.web3.utils.toWei(amount))
-      .estimateGas(function (err, estGas) {
-        if (err) console.error(`ERROR: Datatokens : ${err}`)
-        return estGas
-      })
-
+    const gasLimitDefault = this.GASLIMIT_DEFAULT
+    let estGas
+    try {
+      estGas = await datatoken.methods
+        .mint(destAddress, this.web3.utils.toWei(amount))
+        .estimateGas((err, estGas) => (err ? gasLimitDefault : estGas))
+    } catch (e) {
+      estGas = this.GASLIMIT_DEFAULT
+    }
     const trxReceipt = await datatoken.methods
       .mint(destAddress, this.web3.utils.toWei(amount))
       .send({
         from: address,
-        gas: estGas + 1
+        gas: estGas + 1,
+        gasPrice: await getFairGasPrice(this.web3)
       })
 
     return trxReceipt
@@ -224,9 +246,20 @@ export class DataTokens {
     const datatoken = new this.web3.eth.Contract(this.datatokensABI, dataTokenAddress, {
       from: address
     })
-    const trxReceipt = await datatoken.methods
-      .transfer(toAddress, amount)
-      .send({ from: address })
+    const gasLimitDefault = this.GASLIMIT_DEFAULT
+    let estGas
+    try {
+      estGas = await datatoken.methods
+        .transfer(toAddress, amount)
+        .estimateGas((err, estGas) => (err ? gasLimitDefault : estGas))
+    } catch (e) {
+      estGas = this.GASLIMIT_DEFAULT
+    }
+    const trxReceipt = await datatoken.methods.transfer(toAddress, amount).send({
+      from: address,
+      gas: estGas + 1,
+      gasPrice: await getFairGasPrice(this.web3)
+    })
     return trxReceipt
   }
 
@@ -247,9 +280,22 @@ export class DataTokens {
     const datatoken = new this.web3.eth.Contract(this.datatokensABI, dataTokenAddress, {
       from: address
     })
+    const gasLimitDefault = this.GASLIMIT_DEFAULT
+    let estGas
+    try {
+      estGas = await datatoken.methods
+        .transferFrom(fromAddress, address, this.web3.utils.toWei(amount))
+        .estimateGas((err, estGas) => (err ? gasLimitDefault : estGas))
+    } catch (e) {
+      estGas = this.GASLIMIT_DEFAULT
+    }
     const trxReceipt = await datatoken.methods
       .transferFrom(fromAddress, address, this.web3.utils.toWei(amount))
-      .send({ from: address })
+      .send({
+        from: address,
+        gas: estGas + 1,
+        gasPrice: await getFairGasPrice(this.web3)
+      })
     return trxReceipt
   }
 
@@ -363,18 +409,20 @@ export class DataTokens {
     })
     if (!mpFeeAddress) mpFeeAddress = '0x0000000000000000000000000000000000000000'
     try {
-      const estGas = await datatoken.methods
-        .startOrder(
-          consumer,
-          this.web3.utils.toWei(amount),
-          String(serviceId),
-          mpFeeAddress
-        )
-        .estimateGas(function (err, estGas) {
-          if (err) console.error(`ERROR: Datatokens : ${err}`)
-          return estGas
-        })
-
+      const gasLimitDefault = this.GASLIMIT_DEFAULT
+      let estGas
+      try {
+        estGas = await datatoken.methods
+          .startOrder(
+            consumer,
+            this.web3.utils.toWei(amount),
+            String(serviceId),
+            mpFeeAddress
+          )
+          .estimateGas((err, estGas) => (err ? gasLimitDefault : estGas))
+      } catch (e) {
+        estGas = this.GASLIMIT_DEFAULT
+      }
       const trxReceipt = await datatoken.methods
         .startOrder(
           consumer,
@@ -382,7 +430,11 @@ export class DataTokens {
           String(serviceId),
           mpFeeAddress
         )
-        .send({ from: address, gas: estGas + 1 })
+        .send({
+          from: address,
+          gas: estGas + 1,
+          gasPrice: await getFairGasPrice(this.web3)
+        })
       return trxReceipt
     } catch (e) {
       this.logger.error(`ERROR: Failed to start order : ${e.message}`)

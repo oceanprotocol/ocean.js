@@ -1,7 +1,7 @@
 import Web3 from 'web3'
 import { AbiItem } from 'web3-utils/types'
 import { TransactionReceipt } from 'web3-core'
-import { Logger } from '../utils'
+import { Logger, getFairGasPrice } from '../utils'
 import BigNumber from 'bignumber.js'
 import jsonpoolABI from '@oceanprotocol/contracts/artifacts/BPool.json'
 import { PoolFactory } from './PoolFactory'
@@ -70,6 +70,23 @@ export class Pool extends PoolFactory {
       from: account
     })
     let result = null
+    const gasLimitDefault = this.GASLIMIT_DEFAULT
+    let estGas
+    try {
+      estGas = await pool.methods
+        .setup(
+          dataToken,
+          dataTokenAmount,
+          dataTokenWeight,
+          baseToken,
+          baseTokenAmount,
+          baseTokenWeight,
+          swapFee
+        )
+        .estimateGas((err, estGas) => (err ? gasLimitDefault : estGas))
+    } catch (e) {
+      estGas = this.GASLIMIT_DEFAULT
+    }
     try {
       result = await pool.methods
         .setup(
@@ -81,7 +98,11 @@ export class Pool extends PoolFactory {
           baseTokenWeight,
           swapFee
         )
-        .send({ from: account, gas: this.GASLIMIT_DEFAULT })
+        .send({
+          from: account,
+          gas: estGas,
+          gasPrice: await getFairGasPrice(this.web3)
+        })
     } catch (e) {
       this.logger.error(`ERROR: Failed to setup a pool: ${e.message}`)
     }
@@ -141,9 +162,11 @@ export class Pool extends PoolFactory {
     }
 
     try {
-      result = await token.methods
-        .approve(spender, amount)
-        .send({ from: account, gas: estGas + 1 })
+      result = await token.methods.approve(spender, amount).send({
+        from: account,
+        gas: estGas + 1,
+        gasPrice: await getFairGasPrice(this.web3)
+      })
     } catch (e) {
       this.logger.error(`ERRPR: Failed to approve spender to spend tokens : ${e.message}`)
     }
@@ -199,7 +222,11 @@ export class Pool extends PoolFactory {
             this.web3.utils.toWei(token.amount),
             this.web3.utils.toWei(token.weight)
           )
-          .send({ from: account, gas: this.GASLIMIT_DEFAULT })
+          .send({
+            from: account,
+            gas: this.GASLIMIT_DEFAULT,
+            gasPrice: await getFairGasPrice(this.web3)
+          })
       } catch (e) {
         this.logger.error(`ERROR: Failed to add tokens to pool: ${e.message}`)
       }
@@ -222,9 +249,11 @@ export class Pool extends PoolFactory {
     })
     let result = null
     try {
-      result = await pool.methods
-        .setSwapFee(this.web3.utils.toWei(fee))
-        .send({ from: account, gas: this.GASLIMIT_DEFAULT })
+      result = await pool.methods.setSwapFee(this.web3.utils.toWei(fee)).send({
+        from: account,
+        gas: this.GASLIMIT_DEFAULT,
+        gasPrice: await getFairGasPrice(this.web3)
+      })
     } catch (e) {
       this.logger.error(`ERROR: Failed to set pool swap fee: ${e.message}`)
     }
@@ -242,9 +271,11 @@ export class Pool extends PoolFactory {
     })
     let result = null
     try {
-      result = await pool.methods
-        .finalize()
-        .send({ from: account, gas: this.GASLIMIT_DEFAULT })
+      result = await pool.methods.finalize().send({
+        from: account,
+        gas: this.GASLIMIT_DEFAULT,
+        gasPrice: await getFairGasPrice(this.web3)
+      })
     } catch (e) {
       this.logger.error(`ERROR: Failed to finalize pool: ${e.message}`)
     }
@@ -529,7 +560,11 @@ export class Pool extends PoolFactory {
           this.web3.utils.toWei(minAmountOut),
           maxPrice ? this.web3.utils.toWei(maxPrice) : MaxUint256
         )
-        .send({ from: account, gas: estGas + 1 })
+        .send({
+          from: account,
+          gas: estGas + 1,
+          gasPrice: await getFairGasPrice(this.web3)
+        })
     } catch (e) {
       this.logger.error(`ERROR: Failed to swap exact amount in : ${e.message}`)
     }
@@ -584,7 +619,11 @@ export class Pool extends PoolFactory {
           this.web3.utils.toWei(minAmountOut),
           maxPrice ? this.web3.utils.toWei(maxPrice) : MaxUint256
         )
-        .send({ from: account, gas: estGas + 1 })
+        .send({
+          from: account,
+          gas: estGas + 1,
+          gasPrice: await getFairGasPrice(this.web3)
+        })
     } catch (e) {
       this.logger.error(`ERROR: Failed to swap exact amount out: ${e.message}`)
     }
@@ -629,7 +668,11 @@ export class Pool extends PoolFactory {
     try {
       result = await pool.methods
         .joinPool(this.web3.utils.toWei(poolAmountOut), weiMaxAmountsIn)
-        .send({ from: account, gas: estGas + 1 })
+        .send({
+          from: account,
+          gas: estGas + 1,
+          gasPrice: await getFairGasPrice(this.web3)
+        })
     } catch (e) {
       this.logger.error(`ERROR: Failed to join pool: ${e.message}`)
     }
@@ -672,7 +715,7 @@ export class Pool extends PoolFactory {
     try {
       result = await pool.methods
         .exitPool(this.web3.utils.toWei(poolAmountIn), weiMinAmountsOut)
-        .send({ from: account, gas: estGas })
+        .send({ from: account, gas: estGas, gasPrice: await getFairGasPrice(this.web3) })
     } catch (e) {
       this.logger.error(`ERROR: Failed to exit pool: ${e.message}`)
     }
@@ -719,7 +762,11 @@ export class Pool extends PoolFactory {
           this.web3.utils.toWei(tokenAmountIn),
           this.web3.utils.toWei(minPoolAmountOut)
         )
-        .send({ from: account, gas: estGas + 1 })
+        .send({
+          from: account,
+          gas: estGas + 1,
+          gasPrice: await getFairGasPrice(this.web3)
+        })
     } catch (e) {
       this.logger.error(`ERROR: Failed to pay tokens in order to \
       join the pool: ${e.message}`)
@@ -767,7 +814,11 @@ export class Pool extends PoolFactory {
           this.web3.utils.toWei(poolAmountOut),
           this.web3.utils.toWei(maxAmountIn)
         )
-        .send({ from: account, gas: estGas + 1 })
+        .send({
+          from: account,
+          gas: estGas + 1,
+          gasPrice: await getFairGasPrice(this.web3)
+        })
     } catch (e) {
       this.logger.error('ERROR: Failed to join swap pool amount out')
     }
@@ -814,7 +865,11 @@ export class Pool extends PoolFactory {
           this.web3.utils.toWei(poolAmountIn),
           this.web3.utils.toWei(minTokenAmountOut)
         )
-        .send({ from: account, gas: this.GASLIMIT_DEFAULT })
+        .send({
+          from: account,
+          gas: this.GASLIMIT_DEFAULT,
+          gasPrice: await getFairGasPrice(this.web3)
+        })
     } catch (e) {
       this.logger.error(`ERROR: Failed to pay pool shares into the pool: ${e.message}`)
     }
@@ -864,7 +919,11 @@ export class Pool extends PoolFactory {
           this.web3.utils.toWei(tokenAmountOut),
           this.web3.utils.toWei(maxPoolAmountIn)
         )
-        .send({ from: account, gas: estGas + 1 })
+        .send({
+          from: account,
+          gas: estGas + 1,
+          gasPrice: await getFairGasPrice(this.web3)
+        })
     } catch (e) {
       this.logger.error('ERROR: Failed to exitswapExternAmountOut')
     }
