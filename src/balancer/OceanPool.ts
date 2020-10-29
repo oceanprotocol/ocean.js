@@ -913,23 +913,25 @@ export class OceanPool extends Pool {
     const factory = new this.web3.eth.Contract(this.factoryABI, this.factoryAddress)
 
     const events = await factory.getPastEvents('BPoolRegistered', {
-      filter: account ? { registeredBy: account } : {},
+      filter: {},
       fromBlock: BPFACTORY_DEPLOY_BLOCK,
       toBlock: 'latest'
     })
 
     for (let i = 0; i < events.length; i++) {
       const shares = await super.sharesBalance(account, events[i].returnValues[0])
-      if (shares) {
-        const onePool: PoolShare = {
-          shares,
-          poolAddress: events[i].returnValues[0],
-          did: didPrefixed(didNoZeroX(await this.getDTAddress(events[i].returnValues[0])))
+      if (parseFloat(shares) > 0) {
+        const dtAddress = await this.getDTAddress(events[i].returnValues[0])
+        if (dtAddress) {
+          const onePool: PoolShare = {
+            shares,
+            poolAddress: events[i].returnValues[0],
+            did: didPrefixed(didNoZeroX(dtAddress))
+          }
+          result.push(onePool)
         }
-        result.push(onePool)
       }
     }
-    console.log(result)
     return result
   }
 
