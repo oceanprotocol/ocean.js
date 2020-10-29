@@ -389,7 +389,6 @@ describe('Balancer flow', () => {
     if (consoleDebug) console.log('poolShares:' + poolShares)
     assert(parseFloat(poolShares) > 0)
   })
-
   it('Bob should remove Ocean liquidity from pool ', async () => {
     const currentDtReserve = await Pool.getOceanReserve(greatPool)
     const bobDtBalance = await datatoken.balance(oceanTokenAddress, bob)
@@ -418,6 +417,11 @@ describe('Balancer flow', () => {
     assert(parseFloat(amounts.dtAmount) > 0)
     assert(parseFloat(amounts.oceanAmount) > 0)
   })
+  it('ALice should get all her shares for all the pools', async () => {
+    const aliceShares = await Pool.getPoolSharesByAddress(alice)
+    assert(aliceShares.length > 0)
+  })
+
   it('ALice should remove all liquidity', async () => {
     const aliceShares = await Pool.sharesBalance(alice, greatPool)
     const aliceDtBalance = await datatoken.balance(tokenAddress, alice)
