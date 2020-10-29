@@ -4,16 +4,17 @@ import { Contract } from 'web3-eth-contract'
 import { AbiItem } from 'web3-utils/types'
 import Web3 from 'web3'
 import defaultDDOContractABI from '@oceanprotocol/contracts/artifacts/Metadata.json'
-import { didZeroX, Logger } from '../utils'
+import { didZeroX, Logger, getFairGasPrice } from '../utils'
 // Using limited, compress-only version
 // See https://github.com/LZMA-JS/LZMA-JS#but-i-dont-want-to-use-web-workers
 import { LZMA } from 'lzma/src/lzma-c'
-const DEFAULT_GAS_LIMIT = 1000000
+
 /**
  * Provides an interface with Metadata Cache.
  * Metadata Cache provides an off-chain database store for metadata about data assets.
  */
 export class OnChainMetadataCache {
+  public GASLIMIT_DEFAULT = 1000000
   public DDOContractAddress: string
   public DDOContractABI: AbiItem | AbiItem[]
   public web3: Web3
@@ -105,36 +106,23 @@ export class OnChainMetadataCache {
       this.logger.error('ERROR: Missing DDOContract')
       return null
     }
+    const gasLimitDefault = this.GASLIMIT_DEFAULT
     let estGas
-    /*
     try {
       estGas = await this.DDOContract.methods
         .create(didZeroX(did), flags, data)
-        .estimateGas(function (err, estGas) {
-          if (err) {
-            //  console.error('ERROR: OnChainMetadataCacheEstimateGas: ' + err)
-            return DEFAULT_GAS_LIMIT
-          }
-          return estGas
+        .estimateGas((err, estGas) => (err ? gasLimitDefault : estGas))
+    } catch (e) {
+      estGas = gasLimitDefault
+    }
+    try {
+      const trxReceipt = await this.DDOContract.methods
+        .create(didZeroX(did), flags, data)
+        .send({
+          from: consumerAccount,
+          gas: estGas + 1,
+          gasPrice: await getFairGasPrice(this.web3)
         })
-    } catch (e) {
-      estGas = DEFAULT_GAS_LIMIT
-    }
-    
-    try {
-      const trxReceipt = await this.DDOContract.methods
-        .create(didZeroX(did), flags, data)
-        .send({ from: consumerAccount, gas: estGas + 1 })
-      return trxReceipt
-    } catch (e) {
-      this.logger.error(`ERROR: Failed to publish raw DDO : ${e.message}`)
-      return null
-    }
-    */
-    try {
-      const trxReceipt = await this.DDOContract.methods
-        .create(didZeroX(did), flags, data)
-        .send({ from: consumerAccount, gas: DEFAULT_GAS_LIMIT })
       return trxReceipt
     } catch (e) {
       this.logger.error(`ERROR: Failed to publish raw DDO : ${e.message}`)
@@ -160,24 +148,23 @@ export class OnChainMetadataCache {
       this.logger.error('ERROR: Missing DDOContract')
       return null
     }
+    const gasLimitDefault = this.GASLIMIT_DEFAULT
     let estGas
     try {
       estGas = await this.DDOContract.methods
         .update(didZeroX(did), flags, data)
-        .estimateGas(function (err, estGas) {
-          if (err) {
-            //  console.error('ERROR: OnChainMetadataCacheEstimateGas: ' + err)
-            return DEFAULT_GAS_LIMIT
-          }
-          return estGas
-        })
+        .estimateGas((err, estGas) => (err ? gasLimitDefault : estGas))
     } catch (e) {
-      estGas = DEFAULT_GAS_LIMIT
+      estGas = gasLimitDefault
     }
     try {
       const trxReceipt = await this.DDOContract.methods
         .update(didZeroX(did), flags, data)
-        .send({ from: consumerAccount, gas: estGas + 1 })
+        .send({
+          from: consumerAccount,
+          gas: estGas + 1,
+          gasPrice: await getFairGasPrice(this.web3)
+        })
       return trxReceipt
     } catch (e) {
       this.logger.error(`ERROR: Failed to update raw DDO : ${e.message}`)
