@@ -913,7 +913,7 @@ export class OceanPool extends Pool {
     const factory = new this.web3.eth.Contract(this.factoryABI, this.factoryAddress)
 
     const events = await factory.getPastEvents('BPoolRegistered', {
-      filter: account ? { registeredBy: account } : {},
+      filter: {},
       fromBlock: BPFACTORY_DEPLOY_BLOCK,
       toBlock: 'latest'
     })
