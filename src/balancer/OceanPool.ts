@@ -10,10 +10,15 @@ declare type PoolTransactionType = 'swap' | 'join' | 'exit'
 
 const POOL_MAX_AMOUNT_IN_LIMIT = 0.25 // maximum 1/4 of the pool reserve
 const POOL_MAX_AMOUNT_OUT_LIMIT = 0.25 // maximum 1/4 of the pool reserve
-
+const BPFACTORY_DEPLOY_BLOCK = 0
 export interface PoolDetails {
   poolAddress: string
   tokens: string[]
+}
+
+export interface AllPoolsShares {
+  poolAddress: string
+  shares: string
 }
 
 export interface TokensReceived {
@@ -849,7 +854,7 @@ export class OceanPool extends Pool {
     const factory = new this.web3.eth.Contract(this.factoryABI, this.factoryAddress)
     const events = await factory.getPastEvents('BPoolRegistered', {
       filter: {},
-      fromBlock: 0,
+      fromBlock: BPFACTORY_DEPLOY_BLOCK,
       toBlock: 'latest'
     })
     events.sort((a, b) => (a.blockNumber > b.blockNumber ? 1 : -1))
@@ -886,7 +891,7 @@ export class OceanPool extends Pool {
 
     const events = await factory.getPastEvents('BPoolRegistered', {
       filter: account ? { registeredBy: account } : {},
-      fromBlock: 0,
+      fromBlock: BPFACTORY_DEPLOY_BLOCK,
       toBlock: 'latest'
     })
 
@@ -894,6 +899,32 @@ export class OceanPool extends Pool {
       if (!account || events[i].returnValues[1].toLowerCase() === account.toLowerCase())
         result.push(await this.getPoolDetails(events[i].returnValues[0]))
     }
+    return result
+  }
+
+  /**
+   * Search all pools in which a user has shares
+   * @param {String} account
+   * @return {AllPoolsShares[]}
+   */
+  public async getPoolsSharesbyAddress(account: string): Promise<AllPoolsShares[]> {
+    const result: AllPoolsShares[] = []
+    const factory = new this.web3.eth.Contract(this.factoryABI, this.factoryAddress)
+
+    const events = await factory.getPastEvents('BPoolRegistered', {
+      filter: account ? { registeredBy: account } : {},
+      fromBlock: BPFACTORY_DEPLOY_BLOCK,
+      toBlock: 'latest'
+    })
+
+    for (let i = 0; i < events.length; i++) {
+      const shares = await super.sharesBalance(account, events[i].returnValues[0])
+      if (shares) {
+        const onePool: AllPoolsShares = { shares, poolAddress: events[i].returnValues[0] }
+        result.push(onePool)
+      }
+    }
+    console.log(result)
     return result
   }
 
@@ -926,7 +957,7 @@ export class OceanPool extends Pool {
 
     events = await pool.getPastEvents('LOG_SWAP', {
       filter,
-      fromBlock: 0,
+      fromBlock: BPFACTORY_DEPLOY_BLOCK,
       toBlock: 'latest'
     })
 
@@ -937,7 +968,7 @@ export class OceanPool extends Pool {
 
     events = await pool.getPastEvents('LOG_JOIN', {
       filter,
-      fromBlock: 0,
+      fromBlock: BPFACTORY_DEPLOY_BLOCK,
       toBlock: 'latest'
     })
 
@@ -948,7 +979,7 @@ export class OceanPool extends Pool {
 
     events = await pool.getPastEvents('LOG_EXIT', {
       filter,
-      fromBlock: 0,
+      fromBlock: BPFACTORY_DEPLOY_BLOCK,
       toBlock: 'latest'
     })
     for (let i = 0; i < events.length; i++) {
@@ -969,7 +1000,7 @@ export class OceanPool extends Pool {
     const factory = new this.web3.eth.Contract(this.factoryABI, this.factoryAddress)
     const events = await factory.getPastEvents('BPoolRegistered', {
       filter: {},
-      fromBlock: 0,
+      fromBlock: BPFACTORY_DEPLOY_BLOCK,
       toBlock: 'latest'
     })
 
