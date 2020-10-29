@@ -418,7 +418,7 @@ describe('Balancer flow', () => {
     assert(parseFloat(amounts.oceanAmount) > 0)
   })
   it('ALice should get all her shares for all the pools', async () => {
-    const aliceShares = await Pool.getPoolsSharesbyAddress(alice)
+    const aliceShares = await Pool.getPoolSharesByAddress(alice)
     assert(aliceShares.length > 0)
   })
 

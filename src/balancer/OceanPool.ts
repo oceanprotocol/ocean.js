@@ -4,7 +4,7 @@ import { TransactionReceipt } from 'web3-core'
 import { Pool } from './Pool'
 import { EventData, Filter } from 'web3-eth-contract'
 import BigNumber from 'bignumber.js'
-import { SubscribablePromise, Logger } from '../utils'
+import { SubscribablePromise, Logger, didNoZeroX, didPrefixed } from '../utils'
 
 declare type PoolTransactionType = 'swap' | 'join' | 'exit'
 
@@ -16,9 +16,10 @@ export interface PoolDetails {
   tokens: string[]
 }
 
-export interface AllPoolsShares {
+export interface PoolShare {
   poolAddress: string
   shares: string
+  did: string
 }
 
 export interface TokensReceived {
@@ -907,8 +908,8 @@ export class OceanPool extends Pool {
    * @param {String} account
    * @return {AllPoolsShares[]}
    */
-  public async getPoolsSharesbyAddress(account: string): Promise<AllPoolsShares[]> {
-    const result: AllPoolsShares[] = []
+  public async getPoolSharesByAddress(account: string): Promise<PoolShare[]> {
+    const result: PoolShare[] = []
     const factory = new this.web3.eth.Contract(this.factoryABI, this.factoryAddress)
 
     const events = await factory.getPastEvents('BPoolRegistered', {
@@ -920,7 +921,11 @@ export class OceanPool extends Pool {
     for (let i = 0; i < events.length; i++) {
       const shares = await super.sharesBalance(account, events[i].returnValues[0])
       if (shares) {
-        const onePool: AllPoolsShares = { shares, poolAddress: events[i].returnValues[0] }
+        const onePool: PoolShare = {
+          shares,
+          poolAddress: events[i].returnValues[0],
+          did: didPrefixed(didNoZeroX(await this.getDTAddress(events[i].returnValues[0])))
+        }
         result.push(onePool)
       }
     }
