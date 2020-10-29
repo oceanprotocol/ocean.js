@@ -920,16 +920,18 @@ export class OceanPool extends Pool {
 
     for (let i = 0; i < events.length; i++) {
       const shares = await super.sharesBalance(account, events[i].returnValues[0])
-      if (shares) {
-        const onePool: PoolShare = {
-          shares,
-          poolAddress: events[i].returnValues[0],
-          did: didPrefixed(didNoZeroX(await this.getDTAddress(events[i].returnValues[0])))
+      if (parseFloat(shares) > 0) {
+        const dtAddress = await this.getDTAddress(events[i].returnValues[0])
+        if (dtAddress) {
+          const onePool: PoolShare = {
+            shares,
+            poolAddress: events[i].returnValues[0],
+            did: didPrefixed(didNoZeroX(dtAddress))
+          }
+          result.push(onePool)
         }
-        result.push(onePool)
       }
     }
-    console.log(result)
     return result
   }
 
