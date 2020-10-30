@@ -337,6 +337,8 @@ export class OceanFixedRateExchange {
     const result: FixedPriceExchange = await this.contract.methods
       .getExchange(exchangeId)
       .call()
+    result.fixedRate = this.web3.utils.fromWei(result.fixedRate)
+    result.supply = this.web3.utils.fromWei(result.supply)
     return result
   }
 
@@ -392,7 +394,7 @@ export class OceanFixedRateExchange {
         constituents.active === true &&
         constituents.dataToken.toLowerCase() === dataTokenAddress.toLowerCase()
       ) {
-        const supply = new BigNumber(await this.getSupply(constituents.exchangeID))
+        const supply = new BigNumber(constituents.supply)
         const required = new BigNumber(minSupply)
         if (supply.gte(required)) {
           result.push(constituents)
