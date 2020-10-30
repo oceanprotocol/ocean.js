@@ -840,7 +840,7 @@ export class OceanPool extends Pool {
   public async getDTPrice(poolAddress: string): Promise<string> {
     if (this.oceanAddress == null) {
       this.logger.error('ERROR: oceanAddress is not defined')
-      return null
+      return '0'
     }
     return this.getOceanNeeded(poolAddress, '1')
   }
@@ -868,6 +868,11 @@ export class OceanPool extends Pool {
 
   public async getOceanNeeded(poolAddress: string, dtRequired: string): Promise<string> {
     const dtAddress = await this.getDTAddress(poolAddress)
+    if (
+      parseFloat(dtRequired) > parseFloat(await this.getDTMaxBuyQuantity(poolAddress))
+    ) {
+      return '0'
+    }
     return this.calcInGivenOut(poolAddress, this.oceanAddress, dtAddress, dtRequired)
   }
 
@@ -878,6 +883,12 @@ export class OceanPool extends Pool {
 
   public async getDTNeeded(poolAddress: string, OceanRequired: string): Promise<string> {
     const dtAddress = await this.getDTAddress(poolAddress)
+    if (
+      parseFloat(OceanRequired) >
+      parseFloat(await this.getOceanMaxBuyQuantity(poolAddress))
+    ) {
+      return '0'
+    }
     return this.calcInGivenOut(poolAddress, dtAddress, this.oceanAddress, OceanRequired)
   }
 
