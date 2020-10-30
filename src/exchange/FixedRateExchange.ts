@@ -474,8 +474,8 @@ export class OceanFixedRateExchange {
     const result: FixedPriceSwap = {
       exchangeID: data.returnValues[0],
       caller: data.returnValues[1],
-      baseTokenAmount: data.returnValues[2],
-      dataTokenAmount: data.returnValues[3]
+      baseTokenAmount: this.web3.utils.fromWei(data.returnValues[2]),
+      dataTokenAmount: this.web3.utils.fromWei(data.returnValues[3])
     }
     return result
   }
