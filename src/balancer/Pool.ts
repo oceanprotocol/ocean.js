@@ -659,7 +659,7 @@ export class Pool extends PoolFactory {
     const gasLimitDefault = this.GASLIMIT_DEFAULT
     let estGas
     try {
-      estGas = await await pool.methods
+      estGas = await pool.methods
         .joinPool(this.web3.utils.toWei(poolAmountOut), weiMaxAmountsIn)
         .estimateGas((err, estGas) => (err ? gasLimitDefault : estGas))
     } catch (e) {
@@ -706,7 +706,7 @@ export class Pool extends PoolFactory {
     const gasLimitDefault = this.GASLIMIT_DEFAULT
     let estGas
     try {
-      estGas = await await pool.methods
+      estGas = await pool.methods
         .exitPool(this.web3.utils.toWei(poolAmountIn), weiMinAmountsOut)
         .estimateGas((err, estGas) => (err ? gasLimitDefault : estGas))
     } catch (e) {
@@ -745,7 +745,7 @@ export class Pool extends PoolFactory {
     const gasLimitDefault = this.GASLIMIT_DEFAULT
     let estGas
     try {
-      estGas = await await pool.methods
+      estGas = await pool.methods
         .joinswapExternAmountIn(
           tokenIn,
           this.web3.utils.toWei(tokenAmountIn),
@@ -797,7 +797,7 @@ export class Pool extends PoolFactory {
     const gasLimitDefault = this.GASLIMIT_DEFAULT
     let estGas
     try {
-      estGas = await await pool.methods
+      estGas = await pool.methods
         .joinswapPoolAmountOut(
           tokenIn,
           this.web3.utils.toWei(poolAmountOut),
@@ -848,7 +848,7 @@ export class Pool extends PoolFactory {
     const gasLimitDefault = this.GASLIMIT_DEFAULT
     let estGas
     try {
-      estGas = await await pool.methods
+      estGas = await pool.methods
         .exitswapPoolAmountIn(
           tokenOut,
           this.web3.utils.toWei(poolAmountIn),
