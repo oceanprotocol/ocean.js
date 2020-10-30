@@ -1009,7 +1009,6 @@ export class OceanPool extends Pool {
       fromBlock: BPFACTORY_DEPLOY_BLOCK,
       toBlock: 'latest'
     })
-    console.log(events)
     for (let i = 0; i < events.length; i++) {
       const logs = await this.getPoolLogs(
         events[i].returnValues[0],
