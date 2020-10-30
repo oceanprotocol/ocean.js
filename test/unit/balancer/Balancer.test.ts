@@ -195,7 +195,7 @@ describe('Balancer flow', () => {
       alicePoolAddress,
       await Pool.getDTReserve(alicePoolAddress)
     )
-    assert(requiredOcean === null)
+    assert(requiredOcean === '0')
   })
   it('Get amount of Ocean needed to buy 1 dtToken', async () => {
     const requiredOcean = await Pool.getOceanNeeded(alicePoolAddress, '1')
