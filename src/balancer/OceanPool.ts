@@ -895,7 +895,6 @@ export class OceanPool extends Pool {
       fromBlock: BPFACTORY_DEPLOY_BLOCK,
       toBlock: 'latest'
     })
-
     for (let i = 0; i < events.length; i++) {
       if (!account || events[i].returnValues[1].toLowerCase() === account.toLowerCase())
         result.push(await this.getPoolDetails(events[i].returnValues[0]))
@@ -917,7 +916,6 @@ export class OceanPool extends Pool {
       fromBlock: BPFACTORY_DEPLOY_BLOCK,
       toBlock: 'latest'
     })
-
     for (let i = 0; i < events.length; i++) {
       const shares = await super.sharesBalance(account, events[i].returnValues[0])
       if (parseFloat(shares) > 0) {
@@ -954,6 +952,7 @@ export class OceanPool extends Pool {
    */
   public async getPoolLogs(
     poolAddress: string,
+    startBlock = 0,
     account?: string
   ): Promise<PoolTransaction[]> {
     const results: PoolTransaction[] = []
@@ -964,7 +963,7 @@ export class OceanPool extends Pool {
 
     events = await pool.getPastEvents('LOG_SWAP', {
       filter,
-      fromBlock: BPFACTORY_DEPLOY_BLOCK,
+      fromBlock: startBlock,
       toBlock: 'latest'
     })
 
@@ -975,7 +974,7 @@ export class OceanPool extends Pool {
 
     events = await pool.getPastEvents('LOG_JOIN', {
       filter,
-      fromBlock: BPFACTORY_DEPLOY_BLOCK,
+      fromBlock: startBlock,
       toBlock: 'latest'
     })
 
@@ -986,7 +985,7 @@ export class OceanPool extends Pool {
 
     events = await pool.getPastEvents('LOG_EXIT', {
       filter,
-      fromBlock: BPFACTORY_DEPLOY_BLOCK,
+      fromBlock: startBlock,
       toBlock: 'latest'
     })
     for (let i = 0; i < events.length; i++) {
@@ -1010,9 +1009,13 @@ export class OceanPool extends Pool {
       fromBlock: BPFACTORY_DEPLOY_BLOCK,
       toBlock: 'latest'
     })
-
+    console.log(events)
     for (let i = 0; i < events.length; i++) {
-      const logs = await this.getPoolLogs(events[i].returnValues[0], account)
+      const logs = await this.getPoolLogs(
+        events[i].returnValues[0],
+        events[i].blockNumber,
+        account
+      )
       for (let j = 0; j < logs.length; j++) results.push(logs[j])
     }
     return results
