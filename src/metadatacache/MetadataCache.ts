@@ -319,7 +319,10 @@ export class MetadataCache {
    */
   public async validate(ddo: DDO): Promise<any> {
     return await this.fetch
-      .post(`${this.url}${apiPath}/validate`, JSON.stringify(ddo))
+      .post(
+        `${this.url}${apiPath}/validate`,
+        JSON.stringify(ddo.findServiceByType('metadata'))
+      )
       .then((response: Response) => {
         return response.json()
       })
