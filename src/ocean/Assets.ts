@@ -229,7 +229,7 @@ export class Assets extends Instantiable {
       offset: offset || 100,
       page: page || 1,
       query: {
-        dtAddress: [dtAddress]
+        dataToken: [dtAddress]
       },
       sort: {
         value: sort || 1
