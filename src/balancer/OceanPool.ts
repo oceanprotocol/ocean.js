@@ -876,9 +876,26 @@ export class OceanPool extends Pool {
     return this.calcInGivenOut(poolAddress, this.oceanAddress, dtAddress, dtRequired)
   }
 
-  public async getOceanReceived(poolAddress: string, dtSold: string): Promise<string> {
+  /**
+   * Calculate how many Ocean Tokens are you going to receive for selling a specific dtAmount (selling DT)
+   * @param {String} poolAddress
+   * @param {String} dtAmount
+   * @return {String[]} - amount of ocean tokens received
+   */
+  public async getOceanReceived(poolAddress: string, dtAmount: string): Promise<string> {
     const dtAddress = await this.getDTAddress(poolAddress)
-    return this.calcOutGivenIn(poolAddress, dtAddress, this.oceanAddress, dtSold)
+    return this.calcOutGivenIn(poolAddress, dtAddress, this.oceanAddress, dtAmount)
+  }
+
+  /**
+   * Calculate how many data token are you going to receive for selling a specific oceanAmount (buying DT)
+   * @param {String} poolAddress
+   * @param {String} oceanAmount
+   * @return {String[]} - amount of ocean tokens received
+   */
+  public async getDTReceived(poolAddress: string, oceanAmount: string): Promise<string> {
+    const dtAddress = await this.getDTAddress(poolAddress)
+    return this.calcOutGivenIn(poolAddress, this.oceanAddress, dtAddress, oceanAmount)
   }
 
   public async getDTNeeded(poolAddress: string, OceanRequired: string): Promise<string> {
