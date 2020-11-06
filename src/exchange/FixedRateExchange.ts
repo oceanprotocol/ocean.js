@@ -39,6 +39,7 @@ export class OceanFixedRateExchange {
   public contract: Contract = null
   private logger: Logger
   public datatokens: DataTokens
+  public startBlock: number
 
   /**
    * Instantiate FixedRateExchange
@@ -53,10 +54,13 @@ export class OceanFixedRateExchange {
     fixedRateExchangeAddress: string = null,
     fixedRateExchangeABI: AbiItem | AbiItem[] = null,
     oceanAddress: string = null,
-    datatokens: DataTokens
+    datatokens: DataTokens,
+    startBlock?: number
   ) {
     this.web3 = web3
     this.fixedRateExchangeAddress = fixedRateExchangeAddress
+    if (startBlock) this.startBlock = startBlock
+    else this.startBlock = 0
     this.fixedRateExchangeABI =
       fixedRateExchangeABI || (defaultFixedRateExchangeABI.abi as AbiItem[])
     this.oceanAddress = oceanAddress

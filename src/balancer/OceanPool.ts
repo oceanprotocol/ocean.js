@@ -54,6 +54,7 @@ export enum PoolCreateProgressStep {
 export class OceanPool extends Pool {
   public oceanAddress: string = null
   public dtAddress: string = null
+  public startBlock: number
 
   constructor(
     web3: Web3,
@@ -62,12 +63,14 @@ export class OceanPool extends Pool {
     poolABI: AbiItem | AbiItem[] = null,
     factoryAddress: string = null,
     oceanAddress: string = null,
-    gaslimit?: number
+    startBlock?: number
   ) {
-    super(web3, logger, factoryABI, poolABI, factoryAddress, gaslimit)
+    super(web3, logger, factoryABI, poolABI, factoryAddress)
     if (oceanAddress) {
       this.oceanAddress = oceanAddress
     }
+    if (startBlock) this.startBlock = startBlock
+    else this.startBlock = 0
   }
 
   /**
@@ -855,7 +858,7 @@ export class OceanPool extends Pool {
     const factory = new this.web3.eth.Contract(this.factoryABI, this.factoryAddress)
     const events = await factory.getPastEvents('BPoolRegistered', {
       filter: {},
-      fromBlock: BPFACTORY_DEPLOY_BLOCK,
+      fromBlock: this.startBlock,
       toBlock: 'latest'
     })
     events.sort((a, b) => (a.blockNumber > b.blockNumber ? 1 : -1))
@@ -920,7 +923,7 @@ export class OceanPool extends Pool {
 
     const events = await factory.getPastEvents('BPoolRegistered', {
       filter: account ? { registeredBy: account } : {},
-      fromBlock: BPFACTORY_DEPLOY_BLOCK,
+      fromBlock: this.startBlock,
       toBlock: 'latest'
     })
     for (let i = 0; i < events.length; i++) {
@@ -941,7 +944,7 @@ export class OceanPool extends Pool {
 
     const events = await factory.getPastEvents('BPoolRegistered', {
       filter: {},
-      fromBlock: BPFACTORY_DEPLOY_BLOCK,
+      fromBlock: this.startBlock,
       toBlock: 'latest'
     })
     for (let i = 0; i < events.length; i++) {
@@ -988,7 +991,7 @@ export class OceanPool extends Pool {
     const dtAddress = await this.getDTAddress(poolAddress)
     const filter: Filter = account ? { caller: account } : {}
     let events: EventData[]
-
+    if (startBlock === 0) startBlock = this.startBlock
     events = await pool.getPastEvents('LOG_SWAP', {
       filter,
       fromBlock: startBlock,
@@ -1034,7 +1037,7 @@ export class OceanPool extends Pool {
     const factory = new this.web3.eth.Contract(this.factoryABI, this.factoryAddress)
     const events = await factory.getPastEvents('BPoolRegistered', {
       filter: {},
-      fromBlock: BPFACTORY_DEPLOY_BLOCK,
+      fromBlock: this.startBlock,
       toBlock: 'latest'
     })
     for (let i = 0; i < events.length; i++) {

@@ -109,7 +109,8 @@ describe('Balancer flow', () => {
       OceanPoolFactory.abi as AbiItem[],
       OceanSPool.abi as AbiItem[],
       OceanPoolFactoryAddress,
-      oceanTokenAddress
+      oceanTokenAddress,
+      0
     )
     assert(Pool !== null)
   })
