@@ -1149,4 +1149,43 @@ export class Pool extends PoolFactory {
     }
     return amount
   }
+
+  /**
+   * Get LOG_SWAP encoded topic
+   * @return {String}
+   */
+  public getSwapEventSignature(): string {
+    const abi = this.poolABI as AbiItem[]
+    const eventdata = abi.find(function (o) {
+      if (o.name === 'LOG_SWAP' && o.type === 'event') return o
+    })
+    const topic = this.web3.eth.abi.encodeEventSignature(eventdata as any)
+    return topic
+  }
+
+  /**
+   * Get LOG_JOIN encoded topic
+   * @return {String}
+   */
+  public getJoinEventSignature(): string {
+    const abi = this.poolABI as AbiItem[]
+    const eventdata = abi.find(function (o) {
+      if (o.name === 'LOG_JOIN' && o.type === 'event') return o
+    })
+    const topic = this.web3.eth.abi.encodeEventSignature(eventdata as any)
+    return topic
+  }
+
+  /**
+   * Get LOG_EXIT encoded topic
+   * @return {String}
+   */
+  public getExitEventSignature(): string {
+    const abi = this.poolABI as AbiItem[]
+    const eventdata = abi.find(function (o) {
+      if (o.name === 'LOG_EXIT' && o.type === 'event') return o
+    })
+    const topic = this.web3.eth.abi.encodeEventSignature(eventdata as any)
+    return topic
+  }
 }

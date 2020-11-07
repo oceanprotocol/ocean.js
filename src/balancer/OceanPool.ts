@@ -1,6 +1,6 @@
 import Web3 from 'web3'
 import { AbiItem } from 'web3-utils/types'
-import { TransactionReceipt } from 'web3-core'
+import { TransactionReceipt, Log } from 'web3-core'
 import { Pool } from './Pool'
 import { EventData, Filter } from 'web3-eth-contract'
 import BigNumber from 'bignumber.js'
@@ -987,43 +987,34 @@ export class OceanPool extends Pool {
     account?: string
   ): Promise<PoolTransaction[]> {
     const results: PoolTransaction[] = []
-    const pool = new this.web3.eth.Contract(this.poolABI, poolAddress)
     const dtAddress = await this.getDTAddress(poolAddress)
-    const filter: Filter = account ? { caller: account } : {}
-    let events: EventData[]
     if (startBlock === 0) startBlock = this.startBlock
-    events = await pool.getPastEvents('LOG_SWAP', {
-      filter,
-      fromBlock: startBlock,
-      toBlock: 'latest'
-    })
-
-    for (let i = 0; i < events.length; i++) {
-      if (!account || events[i].returnValues[0].toLowerCase() === account.toLowerCase())
-        results.push(await this.getEventData('swap', poolAddress, dtAddress, events[i]))
-    }
-
-    events = await pool.getPastEvents('LOG_JOIN', {
-      filter,
-      fromBlock: startBlock,
-      toBlock: 'latest'
-    })
-
-    for (let i = 0; i < events.length; i++) {
-      if (!account || events[i].returnValues[0].toLowerCase() === account.toLowerCase())
-        results.push(await this.getEventData('join', poolAddress, dtAddress, events[i]))
-    }
-
-    events = await pool.getPastEvents('LOG_EXIT', {
-      filter,
+    const swapTopic = super.getSwapEventSignature()
+    const joinTopic = super.getJoinEventSignature()
+    const exitTopic = super.getExitEventSignature()
+    let addressTopic
+    if (account)
+      addressTopic = '0x000000000000000000000000' + account.substring(2).toLowerCase()
+    else addressTopic = null
+    const events = await this.web3.eth.getPastLogs({
+      address: poolAddress,
+      topics: [[swapTopic, joinTopic, exitTopic], addressTopic],
       fromBlock: startBlock,
       toBlock: 'latest'
     })
     for (let i = 0; i < events.length; i++) {
-      if (!account || events[i].returnValues[0].toLowerCase() === account.toLowerCase())
-        results.push(await this.getEventData('exit', poolAddress, dtAddress, events[i]))
+      switch (events[i].topics[0]) {
+        case swapTopic:
+          results.push(await this.getEventData('swap', poolAddress, dtAddress, events[i]))
+          break
+        case joinTopic:
+          results.push(await this.getEventData('join', poolAddress, dtAddress, events[i]))
+          break
+        case exitTopic:
+          results.push(await this.getEventData('exit', poolAddress, dtAddress, events[i]))
+          break
+      }
     }
-
     return results
   }
 
@@ -1055,41 +1046,44 @@ export class OceanPool extends Pool {
     type: PoolTransactionType,
     poolAddress: string,
     dtAddress: string,
-    data: EventData
+    data: Log
   ): Promise<PoolTransaction> {
     const blockDetails = await this.web3.eth.getBlock(data.blockNumber)
     let result: PoolTransaction = {
       poolAddress,
       dtAddress,
-      caller: data.returnValues[0],
+      caller: data.topics[1],
       transactionHash: data.transactionHash,
       blockNumber: data.blockNumber,
       timestamp: parseInt(String(blockDetails.timestamp)),
       type
     }
-
+    let params
     switch (type) {
       case 'swap':
+        params = this.web3.eth.abi.decodeParameters(['uint256', 'uint256'], data.data)
         result = {
           ...result,
-          tokenIn: data.returnValues[1],
-          tokenOut: data.returnValues[2],
-          tokenAmountIn: this.web3.utils.fromWei(data.returnValues[3]),
-          tokenAmountOut: this.web3.utils.fromWei(data.returnValues[4])
+          tokenIn: '0x' + data.topics[2].substring(data.topics[2].length - 40),
+          tokenOut: '0x' + data.topics[2].substring(data.topics[3].length - 40),
+          tokenAmountIn: this.web3.utils.fromWei(params[0]),
+          tokenAmountOut: this.web3.utils.fromWei(params[1])
         }
         break
       case 'join':
+        params = this.web3.eth.abi.decodeParameters(['uint256'], data.data)
         result = {
           ...result,
-          tokenIn: data.returnValues[1],
-          tokenAmountIn: this.web3.utils.fromWei(data.returnValues[2])
+          tokenIn: '0x' + data.topics[2].substring(data.topics[2].length - 40),
+          tokenAmountIn: this.web3.utils.fromWei(params[0])
         }
         break
       case 'exit':
+        params = this.web3.eth.abi.decodeParameters(['uint256'], data.data)
         result = {
           ...result,
-          tokenOut: data.returnValues[1],
-          tokenAmountOut: this.web3.utils.fromWei(data.returnValues[2])
+          tokenOut: '0x' + data.topics[2].substring(data.topics[2].length - 40),
+          tokenAmountOut: this.web3.utils.fromWei(params[0])
         }
         break
     }
