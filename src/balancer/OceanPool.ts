@@ -887,9 +887,7 @@ export class OceanPool extends Pool {
    * @return {String[]} - amount of ocean tokens received
    */
   public async getOceanReceived(poolAddress: string, dtAmount: string): Promise<string> {
-    console.log('poolAddress', poolAddress)
     const dtAddress = await this.getDTAddress(poolAddress)
-    console.log('dtAddress', dtAddress)
     return this.calcOutGivenIn(poolAddress, dtAddress, this.oceanAddress, dtAmount)
   }
 
@@ -950,6 +948,7 @@ export class OceanPool extends Pool {
       }
     }
   }
+
   /**
    * Search all pools in which a user has shares
    * @param {String} account
@@ -1067,14 +1066,13 @@ export class OceanPool extends Pool {
       toBlock: 'latest'
     })
 
-    let eventsResults = await Promise.all(
+    const eventsResults = await Promise.all(
       events.map((event) => {
         return this.getPoolLogs(event.returnValues[0], event.blockNumber, account)
       })
     )
 
     const eventResults = eventsResults.reduce((elem1, elem2) => elem1.concat(elem2))
-    console.log(eventResults)
     results.push(...eventResults)
 
     return results
