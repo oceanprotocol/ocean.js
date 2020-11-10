@@ -39,6 +39,7 @@ export class OceanFixedRateExchange {
   public contract: Contract = null
   private logger: Logger
   public datatokens: DataTokens
+  public startBlock: number
 
   /**
    * Instantiate FixedRateExchange
@@ -53,10 +54,13 @@ export class OceanFixedRateExchange {
     fixedRateExchangeAddress: string = null,
     fixedRateExchangeABI: AbiItem | AbiItem[] = null,
     oceanAddress: string = null,
-    datatokens: DataTokens
+    datatokens: DataTokens,
+    startBlock?: number
   ) {
     this.web3 = web3
     this.fixedRateExchangeAddress = fixedRateExchangeAddress
+    if (startBlock) this.startBlock = startBlock
+    else this.startBlock = 0
     this.fixedRateExchangeABI =
       fixedRateExchangeABI || (defaultFixedRateExchangeABI.abi as AbiItem[])
     this.oceanAddress = oceanAddress
@@ -359,7 +363,7 @@ export class OceanFixedRateExchange {
     const result: FixedPriceExchange[] = []
     const events = await this.contract.getPastEvents('ExchangeCreated', {
       filter: { datatoken: dataTokenAddress.toLowerCase() },
-      fromBlock: 0,
+      fromBlock: this.startBlock,
       toBlock: 'latest'
     })
     for (let i = 0; i < events.length; i++) {
@@ -388,7 +392,7 @@ export class OceanFixedRateExchange {
     const result: FixedPriceExchange[] = []
     const events = await this.contract.getPastEvents('ExchangeCreated', {
       filter: {},
-      fromBlock: 0,
+      fromBlock: this.startBlock,
       toBlock: 'latest'
     })
     for (let i = 0; i < events.length; i++) {
@@ -411,7 +415,7 @@ export class OceanFixedRateExchange {
     const result: FixedPriceSwap[] = []
     const events = await this.contract.getPastEvents('Swapped', {
       filter: { exchangeId: exchangeId },
-      fromBlock: 0,
+      fromBlock: this.startBlock,
       toBlock: 'latest'
     })
     for (let i = 0; i < events.length; i++) {
@@ -430,7 +434,7 @@ export class OceanFixedRateExchange {
     const result: FixedPriceSwap[] = []
     const events = await this.contract.getPastEvents('ExchangeCreated', {
       filter: {},
-      fromBlock: 0,
+      fromBlock: this.startBlock,
       toBlock: 'latest'
     })
     for (let i = 0; i < events.length; i++) {

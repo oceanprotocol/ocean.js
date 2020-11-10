@@ -27,7 +27,8 @@ const configs: ConfigHelperConfig[] = [
     factoryAddress: '0x1234',
     poolFactoryAddress: null,
     fixedRateExchangeAddress: null,
-    metadataContractAddress: null
+    metadataContractAddress: null,
+    startBlock: 0
   },
   {
     // barge
@@ -40,7 +41,8 @@ const configs: ConfigHelperConfig[] = [
     factoryAddress: null,
     poolFactoryAddress: null,
     fixedRateExchangeAddress: null,
-    metadataContractAddress: null
+    metadataContractAddress: null,
+    startBlock: 0
   },
   {
     networkId: 4,
@@ -52,7 +54,8 @@ const configs: ConfigHelperConfig[] = [
     factoryAddress: null,
     poolFactoryAddress: null,
     fixedRateExchangeAddress: null,
-    metadataContractAddress: null
+    metadataContractAddress: null,
+    startBlock: 7294090
   },
   {
     networkId: 1,
@@ -64,7 +67,8 @@ const configs: ConfigHelperConfig[] = [
     factoryAddress: null,
     poolFactoryAddress: null,
     fixedRateExchangeAddress: null,
-    metadataContractAddress: null
+    metadataContractAddress: null,
+    startBlock: 11105522
   }
 ]
 

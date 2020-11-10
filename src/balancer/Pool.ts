@@ -26,10 +26,9 @@ export class Pool extends PoolFactory {
     logger: Logger,
     factoryABI: AbiItem | AbiItem[] = null,
     poolABI: AbiItem | AbiItem[] = null,
-    factoryAddress: string = null,
-    gaslimit?: number
+    factoryAddress: string = null
   ) {
-    super(web3, logger, factoryABI, factoryAddress, gaslimit)
+    super(web3, logger, factoryABI, factoryAddress)
     if (poolABI) this.poolABI = poolABI
     else this.poolABI = jsonpoolABI.abi as AbiItem[]
   }
@@ -1149,5 +1148,44 @@ export class Pool extends PoolFactory {
       this.logger.error(`ERROR: Failed to calculate PoolInGivenSingleOut : ${e.message}`)
     }
     return amount
+  }
+
+  /**
+   * Get LOG_SWAP encoded topic
+   * @return {String}
+   */
+  public getSwapEventSignature(): string {
+    const abi = this.poolABI as AbiItem[]
+    const eventdata = abi.find(function (o) {
+      if (o.name === 'LOG_SWAP' && o.type === 'event') return o
+    })
+    const topic = this.web3.eth.abi.encodeEventSignature(eventdata as any)
+    return topic
+  }
+
+  /**
+   * Get LOG_JOIN encoded topic
+   * @return {String}
+   */
+  public getJoinEventSignature(): string {
+    const abi = this.poolABI as AbiItem[]
+    const eventdata = abi.find(function (o) {
+      if (o.name === 'LOG_JOIN' && o.type === 'event') return o
+    })
+    const topic = this.web3.eth.abi.encodeEventSignature(eventdata as any)
+    return topic
+  }
+
+  /**
+   * Get LOG_EXIT encoded topic
+   * @return {String}
+   */
+  public getExitEventSignature(): string {
+    const abi = this.poolABI as AbiItem[]
+    const eventdata = abi.find(function (o) {
+      if (o.name === 'LOG_EXIT' && o.type === 'event') return o
+    })
+    const topic = this.web3.eth.abi.encodeEventSignature(eventdata as any)
+    return topic
   }
 }

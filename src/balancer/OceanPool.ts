@@ -1,6 +1,6 @@
 import Web3 from 'web3'
 import { AbiItem } from 'web3-utils/types'
-import { TransactionReceipt } from 'web3-core'
+import { TransactionReceipt, Log } from 'web3-core'
 import { Pool } from './Pool'
 import { EventData, Filter } from 'web3-eth-contract'
 import BigNumber from 'bignumber.js'
@@ -54,6 +54,7 @@ export enum PoolCreateProgressStep {
 export class OceanPool extends Pool {
   public oceanAddress: string = null
   public dtAddress: string = null
+  public startBlock: number
 
   constructor(
     web3: Web3,
@@ -62,12 +63,14 @@ export class OceanPool extends Pool {
     poolABI: AbiItem | AbiItem[] = null,
     factoryAddress: string = null,
     oceanAddress: string = null,
-    gaslimit?: number
+    startBlock?: number
   ) {
-    super(web3, logger, factoryABI, poolABI, factoryAddress, gaslimit)
+    super(web3, logger, factoryABI, poolABI, factoryAddress)
     if (oceanAddress) {
       this.oceanAddress = oceanAddress
     }
+    if (startBlock) this.startBlock = startBlock
+    else this.startBlock = 0
   }
 
   /**
@@ -168,10 +171,11 @@ export class OceanPool extends Pool {
     const tokens = await this.getCurrentTokens(poolAddress)
     let token: string
 
-    for (token of tokens) {
-      // TODO: Potential timing attack, left side: true
-      if (token !== this.oceanAddress) this.dtAddress = token
-    }
+    if (tokens != null)
+      for (token of tokens) {
+        // TODO: Potential timing attack, left side: true
+        if (token !== this.oceanAddress) this.dtAddress = token
+      }
     return this.dtAddress
   }
 
@@ -855,7 +859,7 @@ export class OceanPool extends Pool {
     const factory = new this.web3.eth.Contract(this.factoryABI, this.factoryAddress)
     const events = await factory.getPastEvents('BPoolRegistered', {
       filter: {},
-      fromBlock: BPFACTORY_DEPLOY_BLOCK,
+      fromBlock: this.startBlock,
       toBlock: 'latest'
     })
     events.sort((a, b) => (a.blockNumber > b.blockNumber ? 1 : -1))
@@ -920,7 +924,7 @@ export class OceanPool extends Pool {
 
     const events = await factory.getPastEvents('BPoolRegistered', {
       filter: account ? { registeredBy: account } : {},
-      fromBlock: BPFACTORY_DEPLOY_BLOCK,
+      fromBlock: this.startBlock,
       toBlock: 'latest'
     })
     for (let i = 0; i < events.length; i++) {
@@ -928,6 +932,21 @@ export class OceanPool extends Pool {
         result.push(await this.getPoolDetails(events[i].returnValues[0]))
     }
     return result
+  }
+
+  private async getResult(account: string, event: EventData): Promise<PoolShare> {
+    const shares = await super.sharesBalance(account, event.returnValues[0])
+    if (parseFloat(shares) > 0) {
+      const dtAddress = await this.getDTAddress(event.returnValues[0])
+      if (dtAddress) {
+        const onePool: PoolShare = {
+          shares,
+          poolAddress: event.returnValues[0],
+          did: didPrefixed(didNoZeroX(dtAddress))
+        }
+        return onePool
+      }
+    }
   }
 
   /**
@@ -941,23 +960,20 @@ export class OceanPool extends Pool {
 
     const events = await factory.getPastEvents('BPoolRegistered', {
       filter: {},
-      fromBlock: BPFACTORY_DEPLOY_BLOCK,
+      fromBlock: this.startBlock,
       toBlock: 'latest'
     })
-    for (let i = 0; i < events.length; i++) {
-      const shares = await super.sharesBalance(account, events[i].returnValues[0])
-      if (parseFloat(shares) > 0) {
-        const dtAddress = await this.getDTAddress(events[i].returnValues[0])
-        if (dtAddress) {
-          const onePool: PoolShare = {
-            shares,
-            poolAddress: events[i].returnValues[0],
-            did: didPrefixed(didNoZeroX(dtAddress))
-          }
-          result.push(onePool)
-        }
-      }
-    }
+    let results = await Promise.all(
+      events.map((event) => {
+        return this.getResult(account, event)
+      })
+    )
+    results = results.filter((share) => {
+      return share !== undefined
+    })
+
+    result.push(...results)
+
     return result
   }
 
@@ -984,43 +1000,55 @@ export class OceanPool extends Pool {
     account?: string
   ): Promise<PoolTransaction[]> {
     const results: PoolTransaction[] = []
-    const pool = new this.web3.eth.Contract(this.poolABI, poolAddress)
     const dtAddress = await this.getDTAddress(poolAddress)
-    const filter: Filter = account ? { caller: account } : {}
-    let events: EventData[]
-
-    events = await pool.getPastEvents('LOG_SWAP', {
-      filter,
+    if (startBlock === 0) startBlock = this.startBlock
+    const swapTopic = super.getSwapEventSignature()
+    const joinTopic = super.getJoinEventSignature()
+    const exitTopic = super.getExitEventSignature()
+    let addressTopic
+    if (account)
+      addressTopic = '0x000000000000000000000000' + account.substring(2).toLowerCase()
+    else addressTopic = null
+    const events = await this.web3.eth.getPastLogs({
+      address: poolAddress,
+      topics: [[swapTopic, joinTopic, exitTopic], addressTopic],
       fromBlock: startBlock,
       toBlock: 'latest'
     })
 
-    for (let i = 0; i < events.length; i++) {
-      if (!account || events[i].returnValues[0].toLowerCase() === account.toLowerCase())
-        results.push(await this.getEventData('swap', poolAddress, dtAddress, events[i]))
-    }
-
-    events = await pool.getPastEvents('LOG_JOIN', {
-      filter,
-      fromBlock: startBlock,
-      toBlock: 'latest'
+    let eventResults = await Promise.all(
+      events.map((event) => {
+        switch (event.topics[0]) {
+          case swapTopic:
+            return this.getEventData('swap', poolAddress, dtAddress, event)
+            break
+          case joinTopic:
+            return this.getEventData('join', poolAddress, dtAddress, event)
+            break
+          case exitTopic:
+            return this.getEventData('exit', poolAddress, dtAddress, event)
+            break
+        }
+      })
+    )
+    eventResults = eventResults.filter((share) => {
+      return share !== undefined
     })
+    results.push(...eventResults)
 
-    for (let i = 0; i < events.length; i++) {
-      if (!account || events[i].returnValues[0].toLowerCase() === account.toLowerCase())
-        results.push(await this.getEventData('join', poolAddress, dtAddress, events[i]))
-    }
-
-    events = await pool.getPastEvents('LOG_EXIT', {
-      filter,
-      fromBlock: startBlock,
-      toBlock: 'latest'
-    })
-    for (let i = 0; i < events.length; i++) {
-      if (!account || events[i].returnValues[0].toLowerCase() === account.toLowerCase())
-        results.push(await this.getEventData('exit', poolAddress, dtAddress, events[i]))
-    }
-
+    // for (let i = 0; i < events.length; i++) {
+    //   switch (events[i].topics[0]) {
+    //     case swapTopic:
+    //       results.push(await this.getEventData('swap', poolAddress, dtAddress, events[i]))
+    //       break
+    //     case joinTopic:
+    //       results.push(await this.getEventData('join', poolAddress, dtAddress, events[i]))
+    //       break
+    //     case exitTopic:
+    //       results.push(await this.getEventData('exit', poolAddress, dtAddress, events[i]))
+    //       break
+    //   }
+    // }
     return results
   }
 
@@ -1034,17 +1062,19 @@ export class OceanPool extends Pool {
     const factory = new this.web3.eth.Contract(this.factoryABI, this.factoryAddress)
     const events = await factory.getPastEvents('BPoolRegistered', {
       filter: {},
-      fromBlock: BPFACTORY_DEPLOY_BLOCK,
+      fromBlock: this.startBlock,
       toBlock: 'latest'
     })
-    for (let i = 0; i < events.length; i++) {
-      const logs = await this.getPoolLogs(
-        events[i].returnValues[0],
-        events[i].blockNumber,
-        account
-      )
-      for (let j = 0; j < logs.length; j++) results.push(logs[j])
-    }
+
+    const eventsResults = await Promise.all(
+      events.map((event) => {
+        return this.getPoolLogs(event.returnValues[0], event.blockNumber, account)
+      })
+    )
+
+    const eventResults = eventsResults.reduce((elem1, elem2) => elem1.concat(elem2))
+    results.push(...eventResults)
+
     return results
   }
 
@@ -1052,41 +1082,44 @@ export class OceanPool extends Pool {
     type: PoolTransactionType,
     poolAddress: string,
     dtAddress: string,
-    data: EventData
+    data: Log
   ): Promise<PoolTransaction> {
     const blockDetails = await this.web3.eth.getBlock(data.blockNumber)
     let result: PoolTransaction = {
       poolAddress,
       dtAddress,
-      caller: data.returnValues[0],
+      caller: data.topics[1],
       transactionHash: data.transactionHash,
       blockNumber: data.blockNumber,
       timestamp: parseInt(String(blockDetails.timestamp)),
       type
     }
-
+    let params
     switch (type) {
       case 'swap':
+        params = this.web3.eth.abi.decodeParameters(['uint256', 'uint256'], data.data)
         result = {
           ...result,
-          tokenIn: data.returnValues[1],
-          tokenOut: data.returnValues[2],
-          tokenAmountIn: this.web3.utils.fromWei(data.returnValues[3]),
-          tokenAmountOut: this.web3.utils.fromWei(data.returnValues[4])
+          tokenIn: '0x' + data.topics[2].substring(data.topics[2].length - 40),
+          tokenOut: '0x' + data.topics[2].substring(data.topics[3].length - 40),
+          tokenAmountIn: this.web3.utils.fromWei(params[0]),
+          tokenAmountOut: this.web3.utils.fromWei(params[1])
         }
         break
       case 'join':
+        params = this.web3.eth.abi.decodeParameters(['uint256'], data.data)
         result = {
           ...result,
-          tokenIn: data.returnValues[1],
-          tokenAmountIn: this.web3.utils.fromWei(data.returnValues[2])
+          tokenIn: '0x' + data.topics[2].substring(data.topics[2].length - 40),
+          tokenAmountIn: this.web3.utils.fromWei(params[0])
         }
         break
       case 'exit':
+        params = this.web3.eth.abi.decodeParameters(['uint256'], data.data)
         result = {
           ...result,
-          tokenOut: data.returnValues[1],
-          tokenAmountOut: this.web3.utils.fromWei(data.returnValues[2])
+          tokenOut: '0x' + data.topics[2].substring(data.topics[2].length - 40),
+          tokenAmountOut: this.web3.utils.fromWei(params[0])
         }
         break
     }

@@ -15,8 +15,7 @@ export class PoolFactory {
     web3: Web3,
     logger: Logger,
     factoryABI: AbiItem | AbiItem[] = null,
-    factoryAddress: string = null,
-    gaslimit?: number
+    factoryAddress: string = null
   ) {
     this.web3 = web3
 
@@ -25,7 +24,6 @@ export class PoolFactory {
     if (factoryAddress) {
       this.factoryAddress = factoryAddress
     }
-    if (gaslimit) this.GASLIMIT_DEFAULT = gaslimit
     this.logger = logger
   }
 

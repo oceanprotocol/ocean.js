@@ -97,6 +97,11 @@ export class Config {
    */
   public metadataContractABI?: AbiItem | AbiItem[]
   /**
+   * block number of the deployment
+   * @type {number}
+   */
+  public startBlock?: number
+  /**
    * Log level.
    * @type {boolean | LogLevel}
    */
