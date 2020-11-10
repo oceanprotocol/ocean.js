@@ -171,10 +171,11 @@ export class OceanPool extends Pool {
     const tokens = await this.getCurrentTokens(poolAddress)
     let token: string
 
-    for (token of tokens) {
-      // TODO: Potential timing attack, left side: true
-      if (token !== this.oceanAddress) this.dtAddress = token
-    }
+    if (tokens != null)
+      for (token of tokens) {
+        // TODO: Potential timing attack, left side: true
+        if (token !== this.oceanAddress) this.dtAddress = token
+      }
     return this.dtAddress
   }
 
@@ -886,7 +887,9 @@ export class OceanPool extends Pool {
    * @return {String[]} - amount of ocean tokens received
    */
   public async getOceanReceived(poolAddress: string, dtAmount: string): Promise<string> {
+    console.log('poolAddress', poolAddress)
     const dtAddress = await this.getDTAddress(poolAddress)
+    console.log('dtAddress', dtAddress)
     return this.calcOutGivenIn(poolAddress, dtAddress, this.oceanAddress, dtAmount)
   }
 
@@ -933,6 +936,20 @@ export class OceanPool extends Pool {
     return result
   }
 
+  private async getResult(account: string, event: EventData): Promise<PoolShare> {
+    const shares = await super.sharesBalance(account, event.returnValues[0])
+    if (parseFloat(shares) > 0) {
+      const dtAddress = await this.getDTAddress(event.returnValues[0])
+      if (dtAddress) {
+        const onePool: PoolShare = {
+          shares,
+          poolAddress: event.returnValues[0],
+          did: didPrefixed(didNoZeroX(dtAddress))
+        }
+        return onePool
+      }
+    }
+  }
   /**
    * Search all pools in which a user has shares
    * @param {String} account
@@ -947,20 +964,17 @@ export class OceanPool extends Pool {
       fromBlock: this.startBlock,
       toBlock: 'latest'
     })
-    for (let i = 0; i < events.length; i++) {
-      const shares = await super.sharesBalance(account, events[i].returnValues[0])
-      if (parseFloat(shares) > 0) {
-        const dtAddress = await this.getDTAddress(events[i].returnValues[0])
-        if (dtAddress) {
-          const onePool: PoolShare = {
-            shares,
-            poolAddress: events[i].returnValues[0],
-            did: didPrefixed(didNoZeroX(dtAddress))
-          }
-          result.push(onePool)
-        }
-      }
-    }
+    let results = await Promise.all(
+      events.map((event) => {
+        return this.getResult(account, event)
+      })
+    )
+    results = results.filter((share) => {
+      return share !== undefined
+    })
+
+    result.push(...results)
+
     return result
   }
 
@@ -1002,19 +1016,40 @@ export class OceanPool extends Pool {
       fromBlock: startBlock,
       toBlock: 'latest'
     })
-    for (let i = 0; i < events.length; i++) {
-      switch (events[i].topics[0]) {
-        case swapTopic:
-          results.push(await this.getEventData('swap', poolAddress, dtAddress, events[i]))
-          break
-        case joinTopic:
-          results.push(await this.getEventData('join', poolAddress, dtAddress, events[i]))
-          break
-        case exitTopic:
-          results.push(await this.getEventData('exit', poolAddress, dtAddress, events[i]))
-          break
-      }
-    }
+
+    let eventResults = await Promise.all(
+      events.map((event) => {
+        switch (event.topics[0]) {
+          case swapTopic:
+            return this.getEventData('swap', poolAddress, dtAddress, event)
+            break
+          case joinTopic:
+            return this.getEventData('join', poolAddress, dtAddress, event)
+            break
+          case exitTopic:
+            return this.getEventData('exit', poolAddress, dtAddress, event)
+            break
+        }
+      })
+    )
+    eventResults = eventResults.filter((share) => {
+      return share !== undefined
+    })
+    results.push(...eventResults)
+
+    // for (let i = 0; i < events.length; i++) {
+    //   switch (events[i].topics[0]) {
+    //     case swapTopic:
+    //       results.push(await this.getEventData('swap', poolAddress, dtAddress, events[i]))
+    //       break
+    //     case joinTopic:
+    //       results.push(await this.getEventData('join', poolAddress, dtAddress, events[i]))
+    //       break
+    //     case exitTopic:
+    //       results.push(await this.getEventData('exit', poolAddress, dtAddress, events[i]))
+    //       break
+    //   }
+    // }
     return results
   }
 
@@ -1031,14 +1066,17 @@ export class OceanPool extends Pool {
       fromBlock: this.startBlock,
       toBlock: 'latest'
     })
-    for (let i = 0; i < events.length; i++) {
-      const logs = await this.getPoolLogs(
-        events[i].returnValues[0],
-        events[i].blockNumber,
-        account
-      )
-      for (let j = 0; j < logs.length; j++) results.push(logs[j])
-    }
+
+    let eventsResults = await Promise.all(
+      events.map((event) => {
+        return this.getPoolLogs(event.returnValues[0], event.blockNumber, account)
+      })
+    )
+
+    const eventResults = eventsResults.reduce((elem1, elem2) => elem1.concat(elem2))
+    console.log(eventResults)
+    results.push(...eventResults)
+
     return results
   }
 
