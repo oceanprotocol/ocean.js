@@ -58,7 +58,7 @@ export class DDO {
 
   public isInPurgatory: boolean
 
-  public purgatoryData: PurgatoryData
+  public purgatoryData?: PurgatoryData
 
   public dataTokenInfo?: DataTokenInfo
 
