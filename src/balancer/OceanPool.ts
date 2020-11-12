@@ -11,7 +11,7 @@ declare type PoolTransactionType = 'swap' | 'join' | 'exit'
 const POOL_MAX_AMOUNT_IN_LIMIT = 0.25 // maximum 1/4 of the pool reserve
 const POOL_MAX_AMOUNT_OUT_LIMIT = 0.25 // maximum 1/4 of the pool reserve
 const BPFACTORY_DEPLOY_BLOCK = 0
-const MAX_AWAIT_PROMISES = 8
+const MAX_AWAIT_PROMISES = 10 // infura has a limit of 10 requests/sec
 export interface PoolDetails {
   poolAddress: string
   tokens: string[]
