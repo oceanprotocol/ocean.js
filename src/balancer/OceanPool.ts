@@ -11,6 +11,7 @@ declare type PoolTransactionType = 'swap' | 'join' | 'exit'
 const POOL_MAX_AMOUNT_IN_LIMIT = 0.25 // maximum 1/4 of the pool reserve
 const POOL_MAX_AMOUNT_OUT_LIMIT = 0.25 // maximum 1/4 of the pool reserve
 const BPFACTORY_DEPLOY_BLOCK = 0
+const MAX_AWAIT_PROMISES = 8
 export interface PoolDetails {
   poolAddress: string
   tokens: string[]
@@ -963,17 +964,24 @@ export class OceanPool extends Pool {
       fromBlock: this.startBlock,
       toBlock: 'latest'
     })
-    let results = await Promise.all(
-      events.map((event) => {
-        return this.getResult(account, event)
-      })
-    )
-    results = results.filter((share) => {
-      return share !== undefined
-    })
-
-    result.push(...results)
-
+    let promises = []
+    for (let i = 0; i < events.length; i++) {
+      promises.push(this.getResult(account, events[i]))
+      if (promises.length > MAX_AWAIT_PROMISES) {
+        const results = await Promise.all(promises)
+        for (let j = 0; j < results.length; j++) {
+          result.push(results[j])
+        }
+        promises = []
+      }
+    }
+    if (promises.length > 0) {
+      const results = await Promise.all(promises)
+      for (let j = 0; j < results.length; j++) {
+        result.push(results[j])
+      }
+      promises = []
+    }
     return result
   }
 
@@ -1016,25 +1024,24 @@ export class OceanPool extends Pool {
       toBlock: 'latest'
     })
 
-    let eventResults = await Promise.all(
-      events.map((event) => {
-        switch (event.topics[0]) {
-          case swapTopic:
-            return this.getEventData('swap', poolAddress, dtAddress, event)
-            break
-          case joinTopic:
-            return this.getEventData('join', poolAddress, dtAddress, event)
-            break
-          case exitTopic:
-            return this.getEventData('exit', poolAddress, dtAddress, event)
-            break
+    let promises = []
+    for (let i = 0; i < events.length; i++) {
+      promises.push(this.getEventData(poolAddress, dtAddress, events[i]))
+      if (promises.length > MAX_AWAIT_PROMISES) {
+        const data = await Promise.all(promises)
+        for (let j = 0; j < data.length; j++) {
+          results.push(data[j])
         }
-      })
-    )
-    eventResults = eventResults.filter((share) => {
-      return share !== undefined
-    })
-    results.push(...eventResults)
+        promises = []
+      }
+    }
+    if (promises.length > 0) {
+      const data = await Promise.all(promises)
+      for (let j = 0; j < data.length; j++) {
+        results.push(data[j])
+      }
+      promises = []
+    }
 
     // for (let i = 0; i < events.length; i++) {
     //   switch (events[i].topics[0]) {
@@ -1066,25 +1073,51 @@ export class OceanPool extends Pool {
       toBlock: 'latest'
     })
 
-    const eventsResults = await Promise.all(
-      events.map((event) => {
-        return this.getPoolLogs(event.returnValues[0], event.blockNumber, account)
-      })
-    )
-
-    const eventResults = eventsResults.reduce((elem1, elem2) => elem1.concat(elem2))
-    results.push(...eventResults)
+    let promises = []
+    for (let i = 0; i < events.length; i++) {
+      promises.push(
+        this.getPoolLogs(events[i].returnValues[0], events[i].blockNumber, account)
+      )
+      if (promises.length > MAX_AWAIT_PROMISES) {
+        const data = await Promise.all(promises)
+        for (let j = 0; j < data.length; j++) {
+          results.push(data[j])
+        }
+        promises = []
+      }
+    }
+    if (promises.length > 0) {
+      const data = await Promise.all(promises)
+      for (let j = 0; j < data.length; j++) {
+        results.push(data[j])
+      }
+      promises = []
+    }
 
     return results
   }
 
   private async getEventData(
-    type: PoolTransactionType,
     poolAddress: string,
     dtAddress: string,
     data: Log
   ): Promise<PoolTransaction> {
     const blockDetails = await this.web3.eth.getBlock(data.blockNumber)
+    const swapTopic = super.getSwapEventSignature()
+    const joinTopic = super.getJoinEventSignature()
+    const exitTopic = super.getExitEventSignature()
+    let type: PoolTransactionType
+    switch (data.topics[0]) {
+      case swapTopic:
+        type = 'swap'
+        break
+      case joinTopic:
+        type = 'join'
+        break
+      case exitTopic:
+        type = 'exit'
+        break
+    }
     let result: PoolTransaction = {
       poolAddress,
       dtAddress,
