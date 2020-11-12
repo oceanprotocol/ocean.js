@@ -958,7 +958,6 @@ export class OceanPool extends Pool {
   public async getPoolSharesByAddress(account: string): Promise<PoolShare[]> {
     const result: PoolShare[] = []
     const factory = new this.web3.eth.Contract(this.factoryABI, this.factoryAddress)
-
     const events = await factory.getPastEvents('BPoolRegistered', {
       filter: {},
       fromBlock: this.startBlock,
@@ -982,7 +981,11 @@ export class OceanPool extends Pool {
       }
       promises = []
     }
-    return result
+
+    const filteredResult = result.filter((share) => {
+      return share !== undefined
+    })
+    return filteredResult
   }
 
   /**
@@ -1056,7 +1059,10 @@ export class OceanPool extends Pool {
     //       break
     //   }
     // }
-    return results
+    const eventResults = results.filter((share) => {
+      return share !== undefined
+    })
+    return eventResults
   }
 
   /**
@@ -1065,14 +1071,14 @@ export class OceanPool extends Pool {
    * @return {PoolTransaction[]}
    */
   public async getAllPoolLogs(account: string): Promise<PoolTransaction[]> {
-    const results: PoolTransaction[] = []
+    const results: PoolTransaction[][] = []
     const factory = new this.web3.eth.Contract(this.factoryABI, this.factoryAddress)
     const events = await factory.getPastEvents('BPoolRegistered', {
       filter: {},
       fromBlock: this.startBlock,
       toBlock: 'latest'
     })
-    // since getPoolLogs returns an array we have to push [j][k]
+
     let promises = []
     for (let i = 0; i < events.length; i++) {
       promises.push(
@@ -1081,7 +1087,7 @@ export class OceanPool extends Pool {
       if (promises.length > MAX_AWAIT_PROMISES) {
         const data = await Promise.all(promises)
         for (let j = 0; j < data.length; j++) {
-          for (let k = 0; k < data.length; k++) results.push(data[j][k])
+          results.push(data[j])
         }
         promises = []
       }
@@ -1089,12 +1095,14 @@ export class OceanPool extends Pool {
     if (promises.length > 0) {
       const data = await Promise.all(promises)
       for (let j = 0; j < data.length; j++) {
-        for (let k = 0; k < data.length; k++) results.push(data[j][k])
+        results.push(data[j])
       }
       promises = []
     }
 
-    return results
+    const concatResults = results.reduce((elem1, elem2) => elem1.concat(elem2))
+
+    return concatResults
   }
 
   private async getEventData(
