@@ -1072,7 +1072,7 @@ export class OceanPool extends Pool {
       fromBlock: this.startBlock,
       toBlock: 'latest'
     })
-
+    // since getPoolLogs returns an array we have to push [j][k]
     let promises = []
     for (let i = 0; i < events.length; i++) {
       promises.push(
@@ -1081,7 +1081,7 @@ export class OceanPool extends Pool {
       if (promises.length > MAX_AWAIT_PROMISES) {
         const data = await Promise.all(promises)
         for (let j = 0; j < data.length; j++) {
-          results.push(data[j])
+          for (let k = 0; k < data.length; k++) results.push(data[j][k])
         }
         promises = []
       }
@@ -1089,7 +1089,7 @@ export class OceanPool extends Pool {
     if (promises.length > 0) {
       const data = await Promise.all(promises)
       for (let j = 0; j < data.length; j++) {
-        results.push(data[j])
+        for (let k = 0; k < data.length; k++) results.push(data[j][k])
       }
       promises = []
     }
