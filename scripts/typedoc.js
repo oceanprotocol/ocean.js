@@ -40,7 +40,7 @@ const generateJson = () => {
 
   const jsonFinal = {
     info: {
-      title: 'Lib-js',
+      title: 'Ocean.js',
       description,
       version,
       sourceUrl: 'https://github.com/oceanprotocol/ocean-lib-js/blob/master/'
