@@ -56,7 +56,7 @@ export class DDO {
 
   public price: BestPrice
 
-  public isInPurgatory: boolean
+  public isInPurgatory: 'false' | 'true'
 
   public purgatoryData?: PurgatoryData
 
