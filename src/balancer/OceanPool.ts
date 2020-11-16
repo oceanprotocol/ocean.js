@@ -1250,20 +1250,7 @@ export class OceanPool extends Pool {
       tokenOutWeight,
       swapfee
     )
-    console.log(
-      'In:' +
-        tokenInBalance +
-        ', Out:' +
-        tokenOutBalance +
-        '| NEW In:' +
-        newTokenInBalance +
-        ', Out:' +
-        newTokenOutBalance
-    )
-    console.log('initial Price:' + initialPrice)
-    console.log('new price:' + newPrice)
     const slippage = (parseFloat(newPrice) * 100) / parseFloat(initialPrice) - 100
-    console.log('Slippage:' + slippage)
     return String(slippage)
   }
 
@@ -1303,7 +1290,6 @@ export class OceanPool extends Pool {
       this.web3.utils.fromWei(newDtReserve.toString()),
       swapFee
     )
-    console.log('Buy slippage:' + slippage)
     return slippage
   }
 
@@ -1343,7 +1329,6 @@ export class OceanPool extends Pool {
       this.web3.utils.fromWei(newOceanReserve.toString()),
       swapFee
     )
-    console.log('Sell slippage:' + slippage)
     return slippage
   }
 }
