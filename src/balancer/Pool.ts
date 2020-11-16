@@ -6,9 +6,8 @@ import BigNumber from 'bignumber.js'
 import jsonpoolABI from '@oceanprotocol/contracts/artifacts/BPool.json'
 import { PoolFactory } from './PoolFactory'
 
-const MaxUint256: BigNumber = new BigNumber(
-  '0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff'
-)
+const MaxUint256 =
+  '115792089237316195423570985008687907853269984665640564039457584007913129639934'
 /**
  * Provides an interface to Balancer BPool & BFactory
  */
