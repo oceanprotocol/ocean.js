@@ -574,7 +574,7 @@ export class OceanPool extends Pool {
       this.logger.error('ERROR: OCEAN approve failed')
       return null
     }
-    return this.swapExactAmountOut(
+    const tx = await this.swapExactAmountOut(
       account,
       poolAddress,
       this.oceanAddress,
@@ -583,6 +583,7 @@ export class OceanPool extends Pool {
       dtAmountWanted,
       maxPrice
     )
+    return tx
   }
 
   /**
@@ -630,7 +631,7 @@ export class OceanPool extends Pool {
       this.logger.error('ERROR: OCEAN approve failed')
       return null
     }
-    return this.swapExactAmountIn(
+    const tx = this.swapExactAmountIn(
       account,
       poolAddress,
       this.oceanAddress,
@@ -639,6 +640,7 @@ export class OceanPool extends Pool {
       minimumdtAmountWanted,
       maxPrice
     )
+    return tx
   }
 
   /**
@@ -685,7 +687,7 @@ export class OceanPool extends Pool {
       this.logger.error('ERROR: DT approve failed')
       return null
     }
-    return this.swapExactAmountIn(
+    const tx = this.swapExactAmountIn(
       account,
       poolAddress,
       dtAddress,
@@ -694,6 +696,7 @@ export class OceanPool extends Pool {
       oceanAmountWanted,
       maxPrice
     )
+    return tx
   }
 
   /**
