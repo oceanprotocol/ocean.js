@@ -1222,4 +1222,128 @@ export class OceanPool extends Pool {
     }
     return result
   }
+
+  private async computeSlippage(
+    poolAddress: string,
+    tokenInBalance: string,
+    tokenInWeight: string,
+    tokenOutBalance: string,
+    tokenOutWeight: string,
+    newTokenInBalance: string,
+    newTokenOutBalance: string,
+    swapfee: string
+  ) {
+    const initialPrice = await super.calcSpotPrice(
+      poolAddress,
+      tokenInBalance,
+      tokenInWeight,
+      tokenOutBalance,
+      tokenOutWeight,
+      swapfee
+    )
+
+    const newPrice = await super.calcSpotPrice(
+      poolAddress,
+      newTokenInBalance,
+      tokenInWeight,
+      newTokenOutBalance,
+      tokenOutWeight,
+      swapfee
+    )
+    console.log(
+      'In:' +
+        tokenInBalance +
+        ', Out:' +
+        tokenOutBalance +
+        '| NEW In:' +
+        newTokenInBalance +
+        ', Out:' +
+        newTokenOutBalance
+    )
+    console.log('initial Price:' + initialPrice)
+    console.log('new price:' + newPrice)
+    const slippage = (parseFloat(newPrice) * 100) / parseFloat(initialPrice) - 100
+    console.log('Slippage:' + slippage)
+    return String(slippage)
+  }
+
+  /* Get slippage for buying some datatokens while spending exactly oceanAmount ocean tokens */
+  public async computeBuySlippage(
+    poolAddress: string,
+    oceanAmount: string
+  ): Promise<string> {
+    const dtAddress = await this.getDTAddress(poolAddress)
+    const dtWeight = await super.getDenormalizedWeight(poolAddress, dtAddress)
+    const oceanWeight = await super.getDenormalizedWeight(poolAddress, this.oceanAddress)
+    const dtReserve = await super.getReserve(poolAddress, dtAddress)
+    const oceanReserve = await super.getReserve(poolAddress, dtAddress)
+    const swapFee = await super.getSwapFee(poolAddress)
+    const dtReceived = await super.calcOutGivenIn(
+      poolAddress,
+      oceanReserve,
+      oceanWeight,
+      dtReserve,
+      dtWeight,
+      oceanAmount,
+      swapFee
+    )
+    const newDtReserve = new BigNumber(this.web3.utils.toWei(dtReserve)).minus(
+      this.web3.utils.toWei(dtReceived)
+    )
+    const newOceanReserve = new BigNumber(this.web3.utils.toWei(oceanReserve)).plus(
+      this.web3.utils.toWei(oceanAmount)
+    )
+    const slippage = await this.computeSlippage(
+      poolAddress,
+      oceanReserve,
+      oceanWeight,
+      dtReserve,
+      dtWeight,
+      this.web3.utils.fromWei(newOceanReserve.toString()),
+      this.web3.utils.fromWei(newDtReserve.toString()),
+      swapFee
+    )
+    console.log('Buy slippage:' + slippage)
+    return slippage
+  }
+
+  /* Get slippage for selling an exact amount of datatokens to get some ocean tokens */
+  public async computeSellSlippage(
+    poolAddress: string,
+    dtAmount: string
+  ): Promise<string> {
+    const dtAddress = await this.getDTAddress(poolAddress)
+    const dtWeight = await super.getDenormalizedWeight(poolAddress, dtAddress)
+    const oceanWeight = await super.getDenormalizedWeight(poolAddress, this.oceanAddress)
+    const dtReserve = await super.getReserve(poolAddress, dtAddress)
+    const oceanReserve = await super.getReserve(poolAddress, dtAddress)
+    const swapFee = await super.getSwapFee(poolAddress)
+    const oceanReceived = await super.calcOutGivenIn(
+      poolAddress,
+      dtReserve,
+      dtWeight,
+      oceanReserve,
+      oceanWeight,
+      dtAmount,
+      swapFee
+    )
+    const newDtReserve = new BigNumber(this.web3.utils.toWei(dtReserve)).plus(
+      this.web3.utils.toWei(dtAmount)
+    )
+    const newOceanReserve = new BigNumber(this.web3.utils.toWei(oceanReserve)).minus(
+      this.web3.utils.toWei(oceanReceived)
+    )
+    const slippage = await this.computeSlippage(
+      poolAddress,
+      dtReserve,
+      dtWeight,
+      oceanReserve,
+      oceanWeight,
+      this.web3.utils.fromWei(newDtReserve.toString()),
+      this.web3.utils.fromWei(newOceanReserve.toString()),
+      swapFee
+    )
+    console.log('Sell slippage:' + slippage)
+    return slippage
+  }
 }

@@ -975,6 +975,33 @@ export class Pool extends PoolFactory {
     return price
   }
 
+  public async calcSpotPrice(
+    poolAddress: string,
+    tokenBalanceIn: string,
+    tokenWeightIn: string,
+    tokenBalanceOut: string,
+    tokenWeightOut: string,
+    swapFee: string
+  ): Promise<string> {
+    const pool = new this.web3.eth.Contract(this.poolABI, poolAddress)
+    let amount = '0'
+    try {
+      const result = await pool.methods
+        .calcSpotPrice(
+          this.web3.utils.toWei(tokenBalanceIn),
+          this.web3.utils.toWei(tokenWeightIn),
+          this.web3.utils.toWei(tokenBalanceOut),
+          this.web3.utils.toWei(tokenWeightOut),
+          this.web3.utils.toWei(swapFee)
+        )
+        .call()
+      amount = this.web3.utils.fromWei(result)
+    } catch (e) {
+      this.logger.error('ERROR: Failed to call calcSpotPrice')
+    }
+    return amount
+  }
+
   public async calcInGivenOut(
     poolAddress: string,
     tokenBalanceIn: string,
