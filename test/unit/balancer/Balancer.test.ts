@@ -115,13 +115,13 @@ describe('Balancer flow', () => {
     assert(Pool !== null)
   })
 
-  it('Alice mints 1000 tokens', async () => {
+  it('Alice mints 2000 tokens', async () => {
     await datatoken.mint(tokenAddress, alice, tokenAmount)
   })
-  it('Alice mints 1000 Ocean tokens', async () => {
+  it('Alice mints 2000 Ocean tokens', async () => {
     await oceandatatoken.mint(oceanTokenAddress, alice, tokenAmount)
   })
-  it('Alice transfers 200 ocean token to Bob', async () => {
+  it('Alice transfers 500 ocean token to Bob', async () => {
     await datatoken.transfer(oceanTokenAddress, bob, transferAmount, alice)
   })
   it('Alice creates a new OceanPool pool', async () => {
@@ -212,21 +212,36 @@ describe('Balancer flow', () => {
     assert(pools.length > 0)
     greatPool = pools[0]
   })
-  it('Bob should buy 2 DT ', async () => {
-    const maxPrice = parseFloat(currentDtPrice) * 2
-    await Pool.buyDT(bob, greatPool, '2', '4')
+  it('Bob should buy 1 DT ', async () => {
+    await Pool.buyDT(bob, greatPool, '1', '4')
     const bobDtBalance = await datatoken.balance(tokenAddress, bob)
     const bobOceanBalance = await datatoken.balance(oceanTokenAddress, bob)
     assert(Number(bobDtBalance) > 0)
     assert(Number(bobOceanBalance) > 0)
   })
-  it('Bob should sell 1 DT ', async () => {
-    const maxPrice = parseFloat(currentDtPrice) * 2
-    await Pool.sellDT(bob, greatPool, '1', '1')
+  it('Bob should spend 2 Oceans to buy at least 0.1 DT ', async () => {
+    await Pool.buyDTWithExactOcean(bob, greatPool, '0.1', '2')
     const bobDtBalance = await datatoken.balance(tokenAddress, bob)
     const bobOceanBalance = await datatoken.balance(oceanTokenAddress, bob)
-    assert(Number(bobDtBalance) === 1)
+    assert(Number(bobDtBalance) > 0)
     assert(Number(bobOceanBalance) > 0)
+  })
+  it('Bob should get slippage for buying some DT with 5 Ocean Tokens ', async () => {
+    const slippage = await Pool.computeBuySlippage(greatPool, '5')
+    assert(Number(slippage) > 0)
+  })
+  it('Bob should get slippage for selling 1 DT', async () => {
+    const slippage = await Pool.computeSellSlippage(greatPool, '1')
+    assert(Number(slippage) > 0)
+  })
+  it('Bob should sell 1 DT ', async () => {
+    const bobDtBalance = await datatoken.balance(tokenAddress, bob)
+    const bobOceanBalance = await datatoken.balance(oceanTokenAddress, bob)
+    await Pool.sellDT(bob, greatPool, '1', '0.1')
+    const newbobDtBalance = await datatoken.balance(tokenAddress, bob)
+    const newbobOceanBalance = await datatoken.balance(oceanTokenAddress, bob)
+    assert(Number(newbobDtBalance) < Number(bobDtBalance))
+    assert(Number(newbobOceanBalance) > Number(bobOceanBalance))
   })
   it('Bob should get maximum DT liquidity that he can add to pool ', async () => {
     const maxDT = await Pool.getDTMaxAddLiquidity(greatPool)
@@ -249,7 +264,7 @@ describe('Balancer flow', () => {
     await Pool.addDTLiquidity(
       bob,
       greatPool,
-      String(Math.min(parseFloat(maxDT), parseFloat(bobDtBalance)))
+      String(Math.min(parseFloat(maxDT), parseFloat(bobDtBalance) / 2))
     )
 
     const newbobDtBalance = await datatoken.balance(tokenAddress, bob)
@@ -307,7 +322,7 @@ describe('Balancer flow', () => {
     await Pool.removeDTLiquidity(
       bob,
       greatPool,
-      String(Math.min(parseFloat(maxDT), parseFloat('0.75'))),
+      String(Math.min(parseFloat(maxDT), parseFloat('0.1'))),
       poolShares
     )
 
