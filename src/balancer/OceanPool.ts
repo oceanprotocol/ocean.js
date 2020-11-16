@@ -586,7 +586,63 @@ export class OceanPool extends Pool {
   }
 
   /**
-   * Sell datatoken
+   * Buy at least datatoken from a pool for a fixed Ocean amount
+   * @param {String} account
+   * @param {String} poolAddress
+   * @param {String} amount  datatoken amount
+   * @param {String} oceanAmount  Ocean Token amount payed
+   * @param {String} maxPrice  Maximum price to pay
+   * @return {TransactionReceipt}
+   */
+  public async buyDTWithExactOcean(
+    account: string,
+    poolAddress: string,
+    minimumdtAmountWanted: string,
+    OceanAmount: string,
+    maxPrice?: string
+  ): Promise<TransactionReceipt> {
+    if (this.oceanAddress == null) {
+      this.logger.error('ERROR: undefined ocean token contract address')
+      return null
+    }
+    const dtAddress = await this.getDTAddress(poolAddress)
+    if (
+      parseFloat(minimumdtAmountWanted) >
+      parseFloat(await this.getDTMaxBuyQuantity(poolAddress))
+    ) {
+      this.logger.error('ERROR: Buy quantity exceeds quantity allowed')
+      return null
+    }
+    const calcInGivenOut = await this.getOceanNeeded(poolAddress, minimumdtAmountWanted)
+
+    if (parseFloat(calcInGivenOut) > parseFloat(OceanAmount)) {
+      this.logger.error('ERROR: Not enough Ocean Tokens')
+      return null
+    }
+    // TODO - check balances first
+    const txid = await super.approve(
+      account,
+      this.oceanAddress,
+      poolAddress,
+      this.web3.utils.toWei(OceanAmount)
+    )
+    if (!txid) {
+      this.logger.error('ERROR: OCEAN approve failed')
+      return null
+    }
+    return this.swapExactAmountIn(
+      account,
+      poolAddress,
+      this.oceanAddress,
+      OceanAmount,
+      dtAddress,
+      minimumdtAmountWanted,
+      maxPrice
+    )
+  }
+
+  /**
+   * Sell a specific amount of datatoken to get some ocean tokens
    * @param {String} account
    * @param {String} poolAddress
    * @param {String} amount  datatoken amount to be sold
