@@ -219,7 +219,7 @@ describe('Balancer flow', () => {
     assert(Number(bobDtBalance) > 0)
     assert(Number(bobOceanBalance) > 0)
   })
-  it('Bob should spend 10 Oceans to buy some DT ', async () => {
+  it('Bob should spend 5 Oceans to buy at least 1 DT ', async () => {
     await Pool.buyDTWithExactOcean(bob, greatPool, '1', '5')
     const bobDtBalance = await datatoken.balance(tokenAddress, bob)
     const bobOceanBalance = await datatoken.balance(oceanTokenAddress, bob)
