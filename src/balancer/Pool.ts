@@ -547,6 +547,8 @@ export class Pool extends PoolFactory {
         )
         .estimateGas((err, estGas) => (err ? gasLimitDefault : estGas))
     } catch (e) {
+      this.logger.log('Error estimate gas swapExactAmountIn')
+      this.logger.log(e)
       estGas = gasLimitDefault
     }
     try {
@@ -607,6 +609,8 @@ export class Pool extends PoolFactory {
         .estimateGas((err, estGas) => (err ? gasLimitDefault : estGas))
     } catch (e) {
       estGas = gasLimitDefault
+      this.logger.log('Error estimate gas swapExactAmountIn')
+      this.logger.log(e)
     }
     try {
       result = await pool.methods

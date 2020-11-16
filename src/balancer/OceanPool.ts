@@ -571,7 +571,7 @@ export class OceanPool extends Pool {
       this.web3.utils.toWei(maxOceanAmount)
     )
     if (!txid) {
-      console.error('ERROR: OCEAN approve failed')
+      this.logger.error('ERROR: OCEAN approve failed')
       return null
     }
     const tx = await super.swapExactAmountOut(
@@ -628,7 +628,7 @@ export class OceanPool extends Pool {
       this.web3.utils.toWei(OceanAmount)
     )
     if (!txid) {
-      console.error('ERROR: OCEAN approve failed')
+      this.logger.error('ERROR: OCEAN approve failed')
       return null
     }
     const tx = await super.swapExactAmountIn(
@@ -684,7 +684,7 @@ export class OceanPool extends Pool {
       this.web3.utils.toWei(dtAmount)
     )
     if (!txid) {
-      console.error('ERROR: DT approve failed')
+      this.logger.error('ERROR: DT approve failed')
       return null
     }
     const tx = await super.swapExactAmountIn(
