@@ -8,7 +8,8 @@
     "project": [
       "./tsconfig.json",
       "./test/unit/tsconfig.json",
-      "./test/integration/tsconfig.json"
+      "./test/integration/tsconfig.json",
+      "./example/tsconfig.json"
     ]
   },
   "extends": [
