@@ -1201,7 +1201,7 @@ export class OceanPool extends Pool {
         result = {
           ...result,
           tokenIn: '0x' + data.topics[2].substring(data.topics[2].length - 40),
-          tokenOut: '0x' + data.topics[2].substring(data.topics[3].length - 40),
+          tokenOut: '0x' + data.topics[3].substring(data.topics[3].length - 40),
           tokenAmountIn: this.web3.utils.fromWei(params[0]),
           tokenAmountOut: this.web3.utils.fromWei(params[1])
         }
