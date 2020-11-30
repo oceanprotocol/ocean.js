@@ -49,6 +49,13 @@ export enum PoolCreateProgressStep {
   SetupPool
 }
 
+export interface addLiquidityEstimate {
+  poolShares: string
+  poolPercent: number
+  dtAmount: string
+  oceanAmount: string
+}
+
 /**
  * Ocean Pools submodule exposed under ocean.pool
  */
@@ -1333,5 +1340,49 @@ export class OceanPool extends Pool {
       swapFee
     )
     return slippage
+  }
+
+  /**
+   * Estimate the result of addLiquidity
+   * @param {String} poolAddress
+   * @param {String} tokenInAddress
+   * @param {String} tokenInAmount
+   * @return {addLiquidityEstimate}
+   */
+  public async estimateAddLiquidity(
+    poolAddress: string,
+    tokenInAddress: string,
+    tokenInAmount: string
+  ): Promise<addLiquidityEstimate> {
+    const oceanReserve = await this.getOceanReserve(poolAddress)
+    const dtReserve = await this.getDTReserve(poolAddress)
+    let newOceanReserve
+    let newDtReserve
+    const dtAddress = await this.getDTAddress(poolAddress)
+    const poolSupply = await this.getPoolSharesTotalSupply(poolAddress)
+    const estimate: addLiquidityEstimate = {
+      poolPercent: 0,
+      poolShares: '0',
+      dtAmount: '0',
+      oceanAmount: '0'
+    }
+    estimate.poolShares = await this.calcPoolOutGivenSingleIn(
+      poolAddress,
+      tokenInAddress,
+      tokenInAmount
+    )
+    const newPoolSupply = parseFloat(poolSupply) + parseFloat(estimate.poolShares)
+    const ratio = parseFloat(estimate.poolShares) / newPoolSupply
+    estimate.poolPercent = (parseFloat(estimate.poolShares) * 100) / newPoolSupply
+    if (tokenInAddress === dtAddress) {
+      newOceanReserve = parseFloat(oceanReserve)
+      newDtReserve = parseFloat(dtReserve) + parseFloat(tokenInAmount)
+    } else {
+      newOceanReserve = parseFloat(oceanReserve) + parseFloat(tokenInAmount)
+      newDtReserve = parseFloat(dtReserve)
+    }
+    estimate.dtAmount = String(parseFloat(newDtReserve) * ratio)
+    estimate.oceanAmount = String(parseFloat(newOceanReserve) * ratio)
+    return estimate
   }
 }

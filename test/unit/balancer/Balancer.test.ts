@@ -243,6 +243,20 @@ describe('Balancer flow', () => {
     assert(Number(newbobDtBalance) < Number(bobDtBalance))
     assert(Number(newbobOceanBalance) > Number(bobOceanBalance))
   })
+  it('Bob should estimate the results of add 1 DT liquidity ', async () => {
+    const estimate = await Pool.estimateAddLiquidity(greatPool, tokenAddress, '1')
+    assert(estimate.poolPercent > 0)
+    assert(parseFloat(estimate.poolShares) > 0)
+    assert(parseFloat(estimate.dtAmount) > 0)
+    assert(parseFloat(estimate.oceanAmount) > 0)
+  })
+  it('Bob should estimate the results of add 5 Ocean liquidity ', async () => {
+    const estimate = await Pool.estimateAddLiquidity(greatPool, oceanTokenAddress, '5')
+    assert(estimate.poolPercent > 0)
+    assert(parseFloat(estimate.poolShares) > 0)
+    assert(parseFloat(estimate.dtAmount) > 0)
+    assert(parseFloat(estimate.oceanAmount) > 0)
+  })
   it('Bob should get maximum DT liquidity that he can add to pool ', async () => {
     const maxDT = await Pool.getDTMaxAddLiquidity(greatPool)
     if (consoleDebug) console.error('maxDT:' + maxDT)
