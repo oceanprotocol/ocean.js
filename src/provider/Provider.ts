@@ -73,6 +73,20 @@ export class Provider extends Instantiable {
     }
   }
 
+  public async checkURL(url: string): Promise<string> {
+    const args = {url}
+    try {
+      const response = await this.ocean.utils.fetch.post(
+        this.getCheckURLEndpoint(),
+        decodeURI(JSON.stringify(args))
+      )
+      return (await response.json()).encryptedDocument
+    } catch (e) {
+      this.logger.error(e)
+      throw new Error('HTTP request failed')
+    }
+  }
+
   /** Get nonce from provider
    * @param {String} consumerAddress
    * @return {Promise<string>} string
@@ -277,6 +291,10 @@ export class Provider extends Instantiable {
 
   public getEncryptEndpoint(): string {
     return `${this.url}${apiPath}/encrypt`
+  }
+
+  public getCheckURLEndpoint(): string {
+    return `${this.url}${apiPath}/checkURL`
   }
 
   public getPublishEndpoint(): string {
