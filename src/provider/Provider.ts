@@ -259,6 +259,10 @@ export class Provider extends Instantiable {
     return `${this.url}`
   }
 
+  public getCheckURLEndpoint(): string {
+    return `${this.url}${apiPath}/checkURL`
+  }
+
   public getInitializeEndpoint(): string {
     return `${this.url}${apiPath}/initialize`
   }
