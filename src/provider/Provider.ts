@@ -90,6 +90,16 @@ export class Provider extends Instantiable {
     }
   }
 
+  public async checkURL(url: string): Promise<string> {
+    try {
+      const response = await this.ocean.utils.fetch.get(url)
+      return await response.text()
+    } catch (e) {
+      this.logger.error(e)
+      throw new Error('HTTP request failed')
+    }
+  }
+
   public async initialize(
     did: string,
     serviceIndex: number,
