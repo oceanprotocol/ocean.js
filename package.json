@@ -42,7 +42,7 @@
   },
   "dependencies": {
     "@ethereum-navigator/navigator": "^0.5.0",
-    "@oceanprotocol/contracts": "github:oceanprotocol/contracts",
+    "@oceanprotocol/contracts": "^0.5.8",
     "decimal.js": "^10.2.0",
     "fs": "0.0.1-security",
     "lzma": "^2.3.2",
