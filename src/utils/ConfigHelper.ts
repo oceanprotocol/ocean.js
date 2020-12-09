@@ -45,6 +45,19 @@ const configs: ConfigHelperConfig[] = [
     startBlock: 0
   },
   {
+    networkId: 3,
+    network: 'ropsten',
+    nodeUri: 'https://ropsten.infura.io/v3',
+    metadataCacheUri: 'https://aquarius.ropsten.oceanprotocol.com',
+    providerUri: 'https://provider.ropsten.oceanprotocol.com',
+    oceanTokenAddress: null,
+    factoryAddress: null,
+    poolFactoryAddress: null,
+    fixedRateExchangeAddress: null,
+    metadataContractAddress: null,
+    startBlock: 9227563
+  },
+  {
     networkId: 4,
     network: 'rinkeby',
     nodeUri: 'https://rinkeby.infura.io/v3',
