@@ -3,6 +3,7 @@ import { Logger } from '../lib'
 import fs from 'fs'
 import { homedir } from 'os'
 import * as DefaultContractsAddresses from '@oceanprotocol/contracts/artifacts/address.json'
+
 export declare type ConfigHelperNetworkName =
   | 'mainnet'
   | 'rinkeby'
@@ -14,6 +15,7 @@ export declare type ConfigHelperNetworkId = 1 | 4 | number
 export interface ConfigHelperConfig extends Config {
   networkId: ConfigHelperNetworkId
   network: ConfigHelperNetworkName
+  subgraphUri: string
 }
 
 const configs: ConfigHelperConfig[] = [
@@ -23,6 +25,7 @@ const configs: ConfigHelperConfig[] = [
     nodeUri: 'http://localhost:8545',
     metadataCacheUri: 'http://127.0.0.1:5000',
     providerUri: 'http://127.0.0.1:8030',
+    subgraphUri: null,
     oceanTokenAddress: null,
     factoryAddress: '0x1234',
     poolFactoryAddress: null,
@@ -37,6 +40,7 @@ const configs: ConfigHelperConfig[] = [
     nodeUri: 'http://localhost:8545',
     metadataCacheUri: 'http://127.0.0.1:5000',
     providerUri: 'http://127.0.0.1:8030',
+    subgraphUri: null,
     oceanTokenAddress: null,
     factoryAddress: null,
     poolFactoryAddress: null,
@@ -50,6 +54,7 @@ const configs: ConfigHelperConfig[] = [
     nodeUri: 'https://ropsten.infura.io/v3',
     metadataCacheUri: 'https://aquarius.ropsten.oceanprotocol.com',
     providerUri: 'https://provider.ropsten.oceanprotocol.com',
+    subgraphUri: 'https://subgraph.ropsten.oceanprotocol.com',
     oceanTokenAddress: null,
     factoryAddress: null,
     poolFactoryAddress: null,
@@ -63,6 +68,7 @@ const configs: ConfigHelperConfig[] = [
     nodeUri: 'https://rinkeby.infura.io/v3',
     metadataCacheUri: 'https://aquarius.rinkeby.oceanprotocol.com',
     providerUri: 'https://provider.rinkeby.oceanprotocol.com',
+    subgraphUri: 'https://subgraph.rinkeby.oceanprotocol.com',
     oceanTokenAddress: null,
     factoryAddress: null,
     poolFactoryAddress: null,
@@ -76,6 +82,7 @@ const configs: ConfigHelperConfig[] = [
     nodeUri: 'https://mainnet.infura.io/v3',
     metadataCacheUri: 'https://aquarius.mainnet.oceanprotocol.com',
     providerUri: 'https://provider.mainnet.oceanprotocol.com',
+    subgraphUri: 'https://subgraph.mainnet.oceanprotocol.com',
     oceanTokenAddress: null,
     factoryAddress: null,
     poolFactoryAddress: null,
