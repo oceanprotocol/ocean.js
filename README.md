@@ -174,7 +174,7 @@ For the GitHub releases steps a GitHub personal access token, exported as `GITHU
 ## 🏛 License
 
 ```
-Copyright ((C)) 2020 Ocean Protocol Foundation
+Copyright ((C)) 2021 Ocean Protocol Foundation
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
