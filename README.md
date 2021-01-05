@@ -12,12 +12,14 @@
 
 With it, you can:
 
-- **Publish** data services: downloadable files, streaming data, or compute-to-data.
-  Ocean creates a new [ERC20](https://github.com/ethereum/EIPs/blob/7f4f0377730f5fc266824084188cc17cf246932e/EIPS/eip-20.md)
-  data token for each data service or set of services.
-- **Mint** data tokens for the service
-- **Consume** data tokens, to access the service
-- **Transfer** data tokens to another owner, and **all other ERC20 actions**
+- **Publish** data services: downloadable files or compute-to-data. 
+Ocean creates a new [ERC20](https://github.com/ethereum/EIPs/blob/7f4f0377730f5fc266824084188cc17cf246932e/EIPS/eip-20.md) 
+datatoken for each dataset / data service.
+- **Mint** datatokens for the service
+- **Sell** datatokens via an OCEAN-datatoken Balancer pool (for auto price discovery), or for a fixed price
+- **Stake** OCEAN on datatoken pools
+- **Consume** datatokens, to access the service
+- **Transfer** datatokens to another owner, and **all other ERC20 actions**
   using [web3.js](https://web3js.readthedocs.io/en/v1.2.9/web3-eth-contract.html) etc.
 
 `ocean.js` is part of the [Ocean Protocol](https://oceanprotocol.com) toolset.
