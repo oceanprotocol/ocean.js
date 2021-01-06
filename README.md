@@ -22,7 +22,7 @@ datatoken for each dataset / data service.
 - **Transfer** datatokens to another owner, and **all other ERC20 actions**
   using [web3.js](https://web3js.readthedocs.io/en/v1.2.9/web3-eth-contract.html) etc.
 
-`ocean.js` is part of the [Ocean Protocol](https://oceanprotocol.com) toolset.
+ocean.js is part of the [Ocean Protocol](https://oceanprotocol.com) toolset.
 
 This is in alpha state and you can expect running into problems. If you run into them, please open up a [new issue](/issues).
 
