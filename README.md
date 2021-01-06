@@ -46,7 +46,7 @@ This is in alpha state and you can expect running into problems. If you run into
 npm install @oceanprotocol/lib
 ```
 
-## 🏄 Quick Start
+## 🏄 Quickstart
 
 ```ts
 import { Ocean, Config, ConfigHelper } from '@oceanprotocol/lib'
