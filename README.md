@@ -10,7 +10,7 @@
 [![Test Coverage](https://api.codeclimate.com/v1/badges/3cc01041faac574b155c/test_coverage)](https://codeclimate.com/repos/5f871c2c87b6045061001233/test_coverage)[![code style: prettier](https://img.shields.io/badge/code_style-prettier-7b1173.svg?style=flat-square)](https://github.com/prettier/prettier)
 [![js oceanprotocol](https://img.shields.io/badge/js-oceanprotocol-7b1173.svg)](https://github.com/oceanprotocol/eslint-config-oceanprotocol)
 
-With it, you can:
+With ocean.js, you can:
 
 - **Publish** data services: downloadable files or compute-to-data. 
 Ocean creates a new [ERC20](https://github.com/ethereum/EIPs/blob/7f4f0377730f5fc266824084188cc17cf246932e/EIPS/eip-20.md) 
