@@ -27,7 +27,7 @@ datatoken for each dataset / data service.
 This is in alpha state and you can expect running into problems. If you run into them, please open up a [new issue](/issues).
 
 - [🏗 Installation](#-installation)
-- [🏄 Quick Start](#-quick-start)
+- [🏄 Quickstart](#-quickstart)
   - [Simple Flow](#simple-flow)
   - [Marketplace Flow](#marketplace-flow)
 - [🦑 Development](#-development)
