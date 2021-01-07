@@ -118,28 +118,36 @@ export class OceanPool extends Pool {
       const address = createTxid.events.BPoolRegistered.returnValues[0]
       const oceanWeight = 10 - parseFloat(dtWeight)
       this.dtAddress = dtAddress
-      observer.next(PoolCreateProgressStep.ApprovingDatatoken)
       let txid
-      txid = await this.approve(
-        account,
-        dtAddress,
-        address,
-        this.web3.utils.toWei(String(dtAmount))
-      )
-      if (!txid) {
-        this.logger.error('ERROR: Failed to call approve DT token')
-        return null
+      let dtAllowance
+      dtAllowance = await this.allowance(dtAddress, account, address)
+      if (dtAllowance < dtAmount){
+        observer.next(PoolCreateProgressStep.ApprovingDatatoken)
+        txid = await this.approve(
+          account,
+          dtAddress,
+          address,
+          this.web3.utils.toWei(String(dtAmount))
+        )
+        if (!txid) {
+          this.logger.error('ERROR: Failed to call approve DT token')
+          return null
+        }  
       }
-      observer.next(PoolCreateProgressStep.ApprovingOcean)
-      txid = await this.approve(
-        account,
-        this.oceanAddress,
-        address,
-        this.web3.utils.toWei(String(oceanAmount))
-      )
-      if (!txid) {
-        this.logger.error('ERROR: Failed to call approve OCEAN token')
-        return null
+      let oceanAllowance
+      oceanAllowance = await this.allowance(dtAddress, account, address)
+      if (oceanAllowance < oceanAmount){
+        observer.next(PoolCreateProgressStep.ApprovingOcean)
+        txid = await this.approve(
+          account,
+          this.oceanAddress,
+          address,
+          this.web3.utils.toWei(String(oceanAmount))
+        )
+        if (!txid) {
+          this.logger.error('ERROR: Failed to call approve OCEAN token')
+          return null
+        }
       }
       observer.next(PoolCreateProgressStep.SetupPool)
       txid = await super.setup(
