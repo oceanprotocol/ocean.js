@@ -119,7 +119,7 @@ export class Pool extends PoolFactory {
     owner: string,
     spender: string
   ): Promise<string> {
-    const tokenAbi = (defaultDatatokensABI.abi as AbiItem[])
+    const tokenAbi = defaultDatatokensABI.abi as AbiItem[]
     const datatoken = new this.web3.eth.Contract(tokenAbi, tokenAdress, {
       from: spender
     })

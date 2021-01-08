@@ -119,9 +119,8 @@ export class OceanPool extends Pool {
       const oceanWeight = 10 - parseFloat(dtWeight)
       this.dtAddress = dtAddress
       let txid
-      let dtAllowance
-      dtAllowance = await this.allowance(dtAddress, account, address)
-      if (dtAllowance < dtAmount){
+      const dtAllowance = await this.allowance(dtAddress, account, address)
+      if (dtAllowance < dtAmount) {
         observer.next(PoolCreateProgressStep.ApprovingDatatoken)
         txid = await this.approve(
           account,
@@ -132,11 +131,10 @@ export class OceanPool extends Pool {
         if (!txid) {
           this.logger.error('ERROR: Failed to call approve DT token')
           return null
-        }  
+        }
       }
-      let oceanAllowance
-      oceanAllowance = await this.allowance(dtAddress, account, address)
-      if (oceanAllowance < oceanAmount){
+      const oceanAllowance = await this.allowance(this.oceanAddress, account, address)
+      if (oceanAllowance < oceanAmount) {
         observer.next(PoolCreateProgressStep.ApprovingOcean)
         txid = await this.approve(
           account,
