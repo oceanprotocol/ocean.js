@@ -94,33 +94,33 @@ export class OceanPool extends Pool {
   ): SubscribablePromise<PoolCreateProgressStep, TransactionReceipt> {
     if (this.oceanAddress == null) {
       this.logger.error('ERROR: oceanAddress is not defined')
-      return null
+      throw new Error('ERROR: oceanAddress is not defined')
     }
     if (parseFloat(fee) > 0.1) {
       this.logger.error('ERROR: Swap fee too high. The maximum allowed swapFee is 10%')
-      return null
+      throw new Error('ERROR: Swap fee too high. The maximum allowed swapFee is 10%')
     }
     if (parseFloat(dtAmount) < 2) {
       this.logger.error('ERROR: Amount of DT is too low')
-      return null
+      throw new Error('ERROR: Amount of DT is too low')
     }
     if (parseFloat(dtWeight) > 9 || parseFloat(dtWeight) < 1) {
       this.logger.error('ERROR: Weight out of bounds (min 1, max9)')
-      return null
+      throw new Error('ERROR: Weight out of bounds (min 1, max9)')
     }
     return new SubscribablePromise(async (observer) => {
       observer.next(PoolCreateProgressStep.CreatingPool)
       const createTxid = await super.createPool(account)
       if (!createTxid) {
-        this.logger.error('ERROR: Failed to call approve DT token')
-        return null
+        this.logger.error('ERROR: Failed to call create pool')
+        throw new Error('ERROR: Failed to call create pool')
       }
       const address = createTxid.events.BPoolRegistered.returnValues[0]
       const oceanWeight = 10 - parseFloat(dtWeight)
       this.dtAddress = dtAddress
       let txid
       const dtAllowance = await this.allowance(dtAddress, account, address)
-      if (dtAllowance < dtAmount) {
+      if (parseFloat(dtAllowance) < parseFloat(dtAmount)) {
         observer.next(PoolCreateProgressStep.ApprovingDatatoken)
         txid = await this.approve(
           account,
@@ -130,11 +130,11 @@ export class OceanPool extends Pool {
         )
         if (!txid) {
           this.logger.error('ERROR: Failed to call approve DT token')
-          return null
+          throw new Error('ERROR: Failed to call approve DT token')
         }
       }
       const oceanAllowance = await this.allowance(this.oceanAddress, account, address)
-      if (oceanAllowance < oceanAmount) {
+      if (parseFloat(oceanAllowance) < parseFloat(oceanAmount)) {
         observer.next(PoolCreateProgressStep.ApprovingOcean)
         txid = await this.approve(
           account,
@@ -144,7 +144,7 @@ export class OceanPool extends Pool {
         )
         if (!txid) {
           this.logger.error('ERROR: Failed to call approve OCEAN token')
-          return null
+          throw new Error('ERROR: Failed to call approve OCEAN token')
         }
       }
       observer.next(PoolCreateProgressStep.SetupPool)
@@ -161,7 +161,7 @@ export class OceanPool extends Pool {
       )
       if (!txid) {
         this.logger.error('ERROR: Failed to create a new pool')
-        return null
+        throw new Error('ERROR: Failed to create a new pool')
       }
       return createTxid
     })
