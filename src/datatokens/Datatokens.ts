@@ -176,15 +176,12 @@ export class DataTokens {
     })
     const capAvailble = await this.getCap(dataTokenAddress)
     if (parseFloat(capAvailble) >= parseFloat(amount)) {
-      const gasLimitDefault = this.GASLIMIT_DEFAULT
-      let estGas
-      try {
-        estGas = await datatoken.methods
-          .mint(destAddress, this.web3.utils.toWei(amount))
-          .estimateGas((err, estGas) => (err ? gasLimitDefault : estGas))
-      } catch (e) {
-        estGas = gasLimitDefault
-      }
+      const estGas = await this.estimateMintGas(
+        dataTokenAddress,
+        address,
+        amount,
+        destAddress
+      )
       const trxReceipt = await datatoken.methods
         .mint(destAddress, this.web3.utils.toWei(amount))
         .send({
@@ -494,5 +491,34 @@ export class DataTokens {
     })
     const topic = this.web3.eth.abi.encodeEventSignature(eventdata as any)
     return topic
+  }
+
+  /**
+   * estimateMintGas
+   * @param {String} dataTokenAddress
+   * @param {String} address
+   * @param {String} amount Number of datatokens, as number. Will be converted to wei
+   * @param {String} destAddress
+   * @return {Promise<string>} estimated gas value
+   */
+  public async estimateMintGas(
+    dataTokenAddress: string,
+    address: string,
+    amount: string,
+    destAddress: string
+  ): Promise<string> {
+    const datatoken = new this.web3.eth.Contract(this.datatokensABI, dataTokenAddress, {
+      from: address
+    })
+    const gasLimitDefault = this.GASLIMIT_DEFAULT
+    let estGas
+    try {
+      estGas = await datatoken.methods
+        .mint(destAddress, this.web3.utils.toWei(amount))
+        .estimateGas((err, estGas) => (err ? gasLimitDefault : estGas))
+    } catch (e) {
+      estGas = gasLimitDefault
+    }
+    return estGas
   }
 }
