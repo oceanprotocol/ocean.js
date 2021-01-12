@@ -147,7 +147,9 @@ export class Provider extends Instantiable {
         consumeUrl += `&signature=${signature}`
 
         try {
-          await this.ocean.utils.fetch.downloadFile(consumeUrl, destination, i)
+          !destination
+            ? await this.ocean.utils.fetch.downloadFileBrowser(consumeUrl)
+            : await this.ocean.utils.fetch.downloadFile(consumeUrl, destination, i)
         } catch (e) {
           this.logger.error('Error consuming assets')
           this.logger.error(e)
