@@ -175,11 +175,32 @@ describe('Marketplace flow', () => {
   it('Bob consumes asset 1', async () => {
     await ocean.assets.order(ddo.id, accessService.type, bob.getId()).then(async (tx) => {
       assert(tx != null)
-      await ocean.assets.download(ddo.id, tx, tokenAddress, bob, '')
+      await ocean.assets.download(
+        ddo.id,
+        tx,
+        tokenAddress,
+        bob,
+        './node_modules/my-datasets'
+      )
     })
   })
 
   it('Bob consumes same asset again, without paying', async () => {
+    const balanceBefore = await datatoken.balance(tokenAddress, bob.getId())
+    await ocean.assets.order(ddo.id, accessService.type, bob.getId()).then(async (tx) => {
+      assert(tx != null)
+      await ocean.assets.download(
+        ddo.id,
+        tx,
+        tokenAddress,
+        bob,
+        './node_modules/my-datasets'
+      )
+    })
+    const balanceAfter = await datatoken.balance(tokenAddress, bob.getId())
+    assert(balanceBefore === balanceAfter)
+  })
+  it('Bob consumes same asset again, without paying, in browser', async () => {
     const balanceBefore = await datatoken.balance(tokenAddress, bob.getId())
     await ocean.assets.order(ddo.id, accessService.type, bob.getId()).then(async (tx) => {
       assert(tx != null)
