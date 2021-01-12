@@ -200,15 +200,6 @@ describe('Marketplace flow', () => {
     const balanceAfter = await datatoken.balance(tokenAddress, bob.getId())
     assert(balanceBefore === balanceAfter)
   })
-  it('Bob consumes same asset again, without paying, in browser', async () => {
-    const balanceBefore = await datatoken.balance(tokenAddress, bob.getId())
-    await ocean.assets.order(ddo.id, accessService.type, bob.getId()).then(async (tx) => {
-      assert(tx != null)
-      await ocean.assets.download(ddo.id, tx, tokenAddress, bob, '')
-    })
-    const balanceAfter = await datatoken.balance(tokenAddress, bob.getId())
-    assert(balanceBefore === balanceAfter)
-  })
 
   it('owner can list their assets', async () => {
     const assets = await ocean.assets.ownerAssets(alice.getId())
