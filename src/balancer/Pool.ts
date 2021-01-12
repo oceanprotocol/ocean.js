@@ -4,6 +4,7 @@ import { TransactionReceipt } from 'web3-core'
 import { Logger, getFairGasPrice } from '../utils'
 import BigNumber from 'bignumber.js'
 import jsonpoolABI from '@oceanprotocol/contracts/artifacts/BPool.json'
+import defaultDatatokensABI from '@oceanprotocol/contracts/artifacts/DataTokenTemplate.json'
 import { PoolFactory } from './PoolFactory'
 
 const MaxUint256 =
@@ -105,6 +106,25 @@ export class Pool extends PoolFactory {
       this.logger.error(`ERROR: Failed to setup a pool: ${e.message}`)
     }
     return result
+  }
+
+  /**
+   * Get Alloance for both DataToken and Ocean
+   * @param {String } tokenAdress
+   * @param {String} owner
+   * @param {String} spender
+   */
+  public async allowance(
+    tokenAdress: string,
+    owner: string,
+    spender: string
+  ): Promise<string> {
+    const tokenAbi = defaultDatatokensABI.abi as AbiItem[]
+    const datatoken = new this.web3.eth.Contract(tokenAbi, tokenAdress, {
+      from: spender
+    })
+    const trxReceipt = await datatoken.methods.allowance(owner, spender).call()
+    return this.web3.utils.fromWei(trxReceipt)
   }
 
   /**
