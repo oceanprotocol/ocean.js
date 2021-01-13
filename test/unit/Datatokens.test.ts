@@ -65,6 +65,16 @@ describe('DataTokens', () => {
     assert(balance === tokenAmount)
   })
 
+  it('should fail when mint amount exceeds cap', async () => {
+    const availableCap = await datatoken.getCap(tokenAddress)
+    const amountExceedingCap = availableCap + 1
+    try {
+      await datatoken.mint(tokenAddress, minter, amountExceedingCap)
+    } catch (e) {
+      assert(e !== null)
+    }
+  })
+
   it('should transfer datatokens', async () => {
     await datatoken.transfer(tokenAddress, spender, tokenAmount, minter)
     balance = await datatoken.balance(tokenAddress, spender)
