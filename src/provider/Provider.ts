@@ -11,6 +11,11 @@ import { DDO } from '../ddo/DDO'
 
 const apiPath = '/api/v1/services'
 
+export interface urlDetails {
+  valid: boolean
+  contentLength?: string
+  contentType?: string
+}
 /**
  * Provides an interface for provider service.
  * Provider service is the technical component executed
@@ -73,7 +78,11 @@ export class Provider extends Instantiable {
     }
   }
 
-  public async checkURL(url: string): Promise<Record<string, string>> {
+  /** Get URL details (if possible)
+   * @param {String} url
+   * @return {Promise<urlDetails>} urlDetails
+   */
+  public async checkURL(url: string): Promise<urlDetails> {
     const args = { url }
     try {
       const response = await this.ocean.utils.fetch.post(
@@ -81,9 +90,8 @@ export class Provider extends Instantiable {
         decodeURI(JSON.stringify(args))
       )
 
-      const result = await response.json()
-
-      return result.result
+      const result: urlDetails = await response.json()
+      return result
     } catch (e) {
       this.logger.error(e)
       throw new Error('HTTP request failed')
