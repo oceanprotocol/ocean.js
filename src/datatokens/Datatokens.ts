@@ -170,7 +170,6 @@ export class DataTokens {
     amount: string,
     toAddress?: string
   ): Promise<TransactionReceipt> {
-    const destAddress = toAddress || address
     const datatoken = new this.web3.eth.Contract(this.datatokensABI, dataTokenAddress, {
       from: address
     })
@@ -180,13 +179,13 @@ export class DataTokens {
       let estGas
       try {
         estGas = await datatoken.methods
-          .mint(destAddress, this.web3.utils.toWei(amount))
+          .mint(toAddress || address, this.web3.utils.toWei(amount))
           .estimateGas((err, estGas) => (err ? gasLimitDefault : estGas))
       } catch (e) {
         estGas = gasLimitDefault
       }
       const trxReceipt = await datatoken.methods
-        .mint(destAddress, this.web3.utils.toWei(amount))
+        .mint(toAddress || address, this.web3.utils.toWei(amount))
         .send({
           from: address,
           gas: estGas + 1,
@@ -194,7 +193,6 @@ export class DataTokens {
         })
       return trxReceipt
     } else {
-      this.logger.error('ERROR: Mint amount exceeds cap available')
       throw new Error(`Mint amount exceeds cap available`)
     }
   }
