@@ -93,7 +93,6 @@ export class Provider extends Instantiable {
       const result: urlDetails = await response.json()
       return result
     } catch (e) {
-      this.logger.error(e)
       const result: urlDetails = { valid: false }
       return result
     }
