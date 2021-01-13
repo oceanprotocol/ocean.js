@@ -170,28 +170,31 @@ export class DataTokens {
     amount: string,
     toAddress?: string
   ): Promise<TransactionReceipt> {
-    const destAddress = toAddress || address
     const datatoken = new this.web3.eth.Contract(this.datatokensABI, dataTokenAddress, {
       from: address
     })
-    const gasLimitDefault = this.GASLIMIT_DEFAULT
-    let estGas
-    try {
-      estGas = await datatoken.methods
-        .mint(destAddress, this.web3.utils.toWei(amount))
-        .estimateGas((err, estGas) => (err ? gasLimitDefault : estGas))
-    } catch (e) {
-      estGas = gasLimitDefault
+    const capAvailble = await this.getCap(dataTokenAddress)
+    if (parseFloat(capAvailble) >= parseFloat(amount)) {
+      const gasLimitDefault = this.GASLIMIT_DEFAULT
+      let estGas
+      try {
+        estGas = await datatoken.methods
+          .mint(toAddress || address, this.web3.utils.toWei(amount))
+          .estimateGas((err, estGas) => (err ? gasLimitDefault : estGas))
+      } catch (e) {
+        estGas = gasLimitDefault
+      }
+      const trxReceipt = await datatoken.methods
+        .mint(toAddress || address, this.web3.utils.toWei(amount))
+        .send({
+          from: address,
+          gas: estGas + 1,
+          gasPrice: await getFairGasPrice(this.web3)
+        })
+      return trxReceipt
+    } else {
+      throw new Error(`Mint amount exceeds cap available`)
     }
-    const trxReceipt = await datatoken.methods
-      .mint(destAddress, this.web3.utils.toWei(amount))
-      .send({
-        from: address,
-        gas: estGas + 1,
-        gasPrice: await getFairGasPrice(this.web3)
-      })
-
-    return trxReceipt
   }
 
   /**
