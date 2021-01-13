@@ -94,7 +94,8 @@ export class Provider extends Instantiable {
       return result
     } catch (e) {
       this.logger.error(e)
-      throw new Error('HTTP request failed')
+      const result: urlDetails = { valid: false }
+      return result
     }
   }
 
