@@ -7,6 +7,7 @@ import { Logger, getFairGasPrice } from '../utils'
 import wordListDefault from '../data/words.json'
 import { TransactionReceipt } from 'web3-core'
 import BigNumber from 'bignumber.js'
+import Decimal from 'decimal.js'
 
 /**
  * Provides an interface to DataTokens
@@ -174,7 +175,7 @@ export class DataTokens {
       from: address
     })
     const capAvailble = await this.getCap(dataTokenAddress)
-    if (parseFloat(capAvailble) >= parseFloat(amount)) {
+    if (new Decimal(capAvailble).gte(amount)) {
       const gasLimitDefault = this.GASLIMIT_DEFAULT
       let estGas
       try {

@@ -5,6 +5,7 @@ import { Pool } from './Pool'
 import { EventData, Filter } from 'web3-eth-contract'
 import BigNumber from 'bignumber.js'
 import { SubscribablePromise, Logger, didNoZeroX, didPrefixed } from '../utils'
+import Decimal from 'decimal.js'
 
 declare type PoolTransactionType = 'swap' | 'join' | 'exit'
 
@@ -120,7 +121,7 @@ export class OceanPool extends Pool {
       this.dtAddress = dtAddress
       let txid
       const dtAllowance = await this.allowance(dtAddress, account, address)
-      if (parseFloat(dtAllowance) < parseFloat(dtAmount)) {
+      if (new Decimal(dtAllowance).lt(dtAmount)) {
         observer.next(PoolCreateProgressStep.ApprovingDatatoken)
         txid = await this.approve(
           account,
@@ -134,7 +135,7 @@ export class OceanPool extends Pool {
         }
       }
       const oceanAllowance = await this.allowance(this.oceanAddress, account, address)
-      if (parseFloat(oceanAllowance) < parseFloat(oceanAmount)) {
+      if (new Decimal(oceanAllowance).lt(oceanAmount)) {
         observer.next(PoolCreateProgressStep.ApprovingOcean)
         txid = await this.approve(
           account,

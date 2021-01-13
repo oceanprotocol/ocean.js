@@ -6,6 +6,7 @@ import BigNumber from 'bignumber.js'
 import jsonpoolABI from '@oceanprotocol/contracts/artifacts/BPool.json'
 import defaultDatatokensABI from '@oceanprotocol/contracts/artifacts/DataTokenTemplate.json'
 import { PoolFactory } from './PoolFactory'
+import Decimal from 'decimal.js'
 
 const MaxUint256 =
   '115792089237316195423570985008687907853269984665640564039457584007913129639934'
@@ -1036,7 +1037,7 @@ export class Pool extends PoolFactory {
   ): Promise<string> {
     const pool = new this.web3.eth.Contract(this.poolABI, poolAddress)
     let amount = null
-    if (parseFloat(tokenAmountOut) >= parseFloat(tokenBalanceOut)) return null
+    if (new Decimal(tokenAmountOut).gte(tokenBalanceOut)) return null
     try {
       const result = await pool.methods
         .calcInGivenOut(
