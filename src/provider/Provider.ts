@@ -73,7 +73,7 @@ export class Provider extends Instantiable {
     }
   }
 
-  public async checkURL(url: string): Promise<boolean> {
+  public async checkURL(url: string): Promise<Record<string, string>> {
     const args = { url }
     try {
       const response = await this.ocean.utils.fetch.post(
@@ -81,7 +81,9 @@ export class Provider extends Instantiable {
         decodeURI(JSON.stringify(args))
       )
 
-      return response.status === 200
+      const result = await response.json()
+
+      return result.result
     } catch (e) {
       this.logger.error(e)
       throw new Error('HTTP request failed')

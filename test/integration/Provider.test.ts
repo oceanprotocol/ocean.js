@@ -19,6 +19,7 @@ describe('Provider tests', () => {
   it('Check a valid URL', async () => {
     const url = 'https://s3.amazonaws.com/testfiles.oceanprotocol.com/info.0.json'
     const response = await ocean.provider.checkURL(url)
-    assert(response === true)
+    assert(response.contentLength === '1161')
+    assert(response.contentType === 'application/json')
   })
 })
