@@ -325,7 +325,7 @@ export class Assets extends Instantiable {
     if (!ddo) return null
     if (typeof ddo.service[serviceIndex] === 'undefined') return null
     if (timeout < 0) return null
-    ddo.service[serviceIndex].attributes.main.timeout = timeout.toFixed()
+    ddo.service[serviceIndex].attributes.main.timeout = parseInt(timeout.toFixed())
     return ddo
   }
   /**    End metadata updates   */

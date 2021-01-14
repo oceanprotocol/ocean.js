@@ -242,8 +242,8 @@ describe('Marketplace flow', () => {
     const txid = await ocean.OnChainMetadataCache.update(newDdo.id, newDdo, alice.getId())
     assert(txid !== null)
     await sleep(60000)
-    const metaData = await ocean.assets.getServiceByType(ddo.id, 'metadata')
-    assert.equal(metaData.attributes.main.timeout, newTimeout)
+    const metaData = await ocean.assets.getServiceByType(ddo.id, 'access')
+    assert(parseInt(metaData.attributes.main.timeout) === parseInt(newTimeout.toFixed()))
   })
 
   it('Alice publishes a dataset but passed data token is invalid', async () => {
