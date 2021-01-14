@@ -5,7 +5,7 @@ import spies from 'chai-spies'
 import Web3 from 'web3'
 import { AbiItem } from 'web3-utils/types'
 import { DataTokens } from '../../src/datatokens/Datatokens'
-import { Account, EditableMetadata, Service, ServiceAccess } from '../../src/lib'
+import { Account, EditableMetadata, Service, ServiceAccess, DID } from '../../src/lib'
 import { Ocean } from '../../src/ocean/Ocean'
 import { ConfigHelper } from '../../src/utils/ConfigHelper'
 import { TestContractHandler } from '../TestContractHandler'
@@ -90,8 +90,7 @@ describe('Marketplace flow', () => {
         license: 'MIT',
         files: [
           {
-            url:
-              'https://raw.githubusercontent.com/tbertinmahieux/MSongsDB/master/Tasks_Demos/CoverSongs/shs_dataset_test.txt',
+            url: 'https://s3.amazonaws.com/testfiles.oceanprotocol.com/info.0.json',
             checksum: 'efb2c764274b745f5fc37f97c6b0e761',
             contentLength: '4535431',
             contentType: 'text/csv',
@@ -244,6 +243,14 @@ describe('Marketplace flow', () => {
     await sleep(60000)
     const metaData = await ocean.assets.getServiceByType(ddo.id, 'access')
     assert(parseInt(metaData.attributes.main.timeout) === parseInt(newTimeout.toFixed()))
+  })
+
+  it('Alice should check if her asset has valid url(s)', async () => {
+    const did: DID = DID.generate(ddo.id)
+    const response = await ocean.provider.fileinfo(did)
+    assert(response[0].valid === true)
+    assert(response[0].contentLength === '1161')
+    assert(response[0].contentType === 'application/json')
   })
 
   it('Alice publishes a dataset but passed data token is invalid', async () => {
