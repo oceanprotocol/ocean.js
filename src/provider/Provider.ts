@@ -11,11 +11,6 @@ import { DDO } from '../ddo/DDO'
 
 const apiPath = '/api/v1/services'
 
-export interface urlDetails {
-  valid: boolean
-  contentLength?: string
-  contentType?: string
-}
 /**
  * Provides an interface for provider service.
  * Provider service is the technical component executed
@@ -82,7 +77,7 @@ export class Provider extends Instantiable {
    * @param {String} url
    * @return {Promise<urlDetails>} urlDetails
    */
-  public async checkURL(url: string): Promise<urlDetails> {
+  public async checkURL(url: string): Promise<File> {
     const args = { url }
     try {
       const response = await this.ocean.utils.fetch.post(
@@ -90,11 +85,16 @@ export class Provider extends Instantiable {
         decodeURI(JSON.stringify(args))
       )
 
-      const result: urlDetails = await response.json()
-      return result
+      const { valid, contentLength, contentType } = await response.json()
+      if (valid)
+        return {
+          contentLength,
+          contentType: contentType || '', // need to do that cause lib-js File interface requires contentType
+          url
+        }
+      else return null
     } catch (e) {
-      const result: urlDetails = { valid: false }
-      return result
+      return null
     }
   }
 
