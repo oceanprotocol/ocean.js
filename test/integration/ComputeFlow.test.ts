@@ -470,11 +470,13 @@ describe('Compute flow', () => {
     assert(computeIndex > 0)
     const newDdo = await ocean.assets.updateComputePrivacy(
       ddo.id,
+      null,
       computeIndex,
-      newComputePrivacy,
-      alice
+      newComputePrivacy
     )
     assert(newDdo !== null)
+    const txid = await ocean.OnChainMetadataCache.update(newDdo.id, newDdo, alice.getId())
+    assert(txid !== null)
     await sleep(60000)
     const metaData = await ocean.assets.getServiceByType(ddo.id, 'compute')
     assert.equal(

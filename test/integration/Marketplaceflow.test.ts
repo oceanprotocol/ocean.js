@@ -10,6 +10,7 @@ import { Ocean } from '../../src/ocean/Ocean'
 import { ConfigHelper } from '../../src/utils/ConfigHelper'
 import { TestContractHandler } from '../TestContractHandler'
 import { LoggerInstance } from '../../src/utils'
+import { Network } from '../../src/datatokens/Network'
 
 const web3 = new Web3('http://127.0.0.1:8545')
 
@@ -212,8 +213,10 @@ describe('Marketplace flow', () => {
       title: 'new title',
       links: [{ name: 'link1', type: 'sample', url: 'http://example.net' }]
     }
-    const newDdo = await ocean.assets.editMetadata(ddo.id, newMetaData, alice)
+    const newDdo = await ocean.assets.editMetadata(ddo.id, null, newMetaData)
     assert(newDdo !== null)
+    const txid = await ocean.OnChainMetadataCache.update(newDdo.id, newDdo, alice.getId())
+    assert(txid !== null)
     await sleep(60000)
     const metaData = await ocean.assets.getServiceByType(ddo.id, 'metadata')
     assert.equal(metaData.attributes.main.name, newMetaData.title)
@@ -222,6 +225,23 @@ describe('Marketplace flow', () => {
       newMetaData.description
     )
     assert.deepEqual(metaData.attributes.additionalInformation.links, newMetaData.links)
+  })
+
+  it('Alice updates timeout for the access service', async () => {
+    const serviceIndex = ddo.findServiceByType('access')
+    const newTimeout = 123
+    const newDdo = await ocean.assets.updateServiceTimeout(
+      ddo.id,
+      ddo,
+      serviceIndex,
+      newTimeout
+    )
+    assert(newDdo !== null)
+    const txid = await ocean.OnChainMetadataCache.update(newDdo.id, newDdo, alice.getId())
+    assert(txid !== null)
+    await sleep(60000)
+    const metaData = await ocean.assets.getServiceByType(ddo.id, 'metadata')
+    assert.equal(metaData.attributes.main.timeout, newTimeout)
   })
 
   it('Alice publishes a dataset but passed data token is invalid', async () => {

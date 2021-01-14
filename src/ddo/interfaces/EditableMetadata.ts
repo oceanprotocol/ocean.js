@@ -5,5 +5,4 @@ export interface EditableMetadata {
   description?: string
   title?: string
   links?: EditableMetadataLinks[]
-  servicePrices?: ServicePrices[]
 }
