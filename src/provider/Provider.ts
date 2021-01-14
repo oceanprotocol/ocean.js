@@ -77,7 +77,7 @@ export class Provider extends Instantiable {
    * @param {String} url
    * @return {Promise<urlDetails>} urlDetails
    */
-  public async checkURL(url: string): Promise<File> {
+  public async checkUrl(url: string): Promise<File> {
     const args = { url }
     try {
       const response = await this.ocean.utils.fetch.post(
