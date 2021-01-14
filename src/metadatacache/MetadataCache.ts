@@ -201,60 +201,6 @@ export class MetadataCache {
     return result
   }
 
-  /**
-   * Update Compute Privacy
-   * @param  {DID | string} did DID of the asset to update.
-   * @param  {number } serviceIndex Service index
-   * @param  {boolean} allowRawAlgorithm Allow Raw Algorithms
-   * @param  {boolean} allowNetworkAccess Allow Raw Algorithms
-   * @param  {String[]} trustedAlgorithms Allow Raw Algorithms
-   * @param  {String} updated Updated field of the DDO
-   * @param  {String} signature Signature using updated field to verify that the consumer has rights
-   * @return {Promise<String>} Result.
-   */
-  public async updateComputePrivacy(
-    did: DID | string,
-    serviceIndex: number,
-    allowRawAlgorithm: boolean,
-    allowNetworkAccess: boolean,
-    trustedAlgorithms: string[],
-    updated: string,
-    signature: string
-  ): Promise<string> {
-    did = did && DID.parse(did)
-    const fullUrl = `${this.url}${apiPath}/computePrivacy/update/${did.getDid()}`
-    const result = await this.fetch
-      .put(
-        fullUrl,
-        JSON.stringify({
-          signature: signature,
-          updated: updated,
-          serviceIndex: serviceIndex,
-          allowRawAlgorithm: allowRawAlgorithm,
-          allowNetworkAccess: allowNetworkAccess,
-          trustedAlgorithms: trustedAlgorithms
-        })
-      )
-      .then((response: Response) => {
-        if (response.ok) {
-          return response.text
-        }
-        this.logger.log(
-          'update compute privacy failed:',
-          response.status,
-          response.statusText
-        )
-        return null
-      })
-
-      .catch((error) => {
-        this.logger.error('Error updating compute privacy: ', error)
-        return null
-      })
-
-    return result
-  }
-
   public async getOwnerAssets(owner: string): Promise<QueryResult> {
     const q = {
       offset: 100,
@@ -268,47 +214,6 @@ export class MetadataCache {
     } as SearchQuery
 
     const result = await this.queryMetadata(q)
-    return result
-  }
-
-  /**
-   * Edit Metadata for a DDO.
-   * @param  {did} string DID.
-   * @param  {newMetadata}  EditableMetadata Metadata fields & new values.
-   * @param  {String} updated Updated field of the DDO
-   * @param  {String} signature Signature using updated field to verify that the consumer has rights
-   * @return {Promise<String>} Result.
-   */
-  public async editMetadata(
-    did: DID | string,
-    newMetadata: EditableMetadata,
-    updated: string,
-    signature: string
-  ): Promise<string> {
-    did = did && DID.parse(did)
-    const fullUrl = `${this.url}${apiPath}/metadata/${did.getDid()}`
-    const data = Object()
-    if (newMetadata.description != null) data.description = newMetadata.description
-    if (newMetadata.title != null) data.title = newMetadata.title
-    if (newMetadata.servicePrices != null) data.servicePrices = newMetadata.servicePrices
-    if (newMetadata.links != null) data.links = newMetadata.links
-    data.updated = updated
-    data.signature = signature
-    const result = await this.fetch
-      .put(fullUrl, JSON.stringify(data))
-      .then((response: Response) => {
-        if (response.ok) {
-          return response.text
-        }
-        this.logger.log('editMetaData failed:', response.status, response.statusText)
-        return null
-      })
-
-      .catch((error) => {
-        this.logger.error('Error transfering ownership metadata: ', error)
-        return null
-      })
-
     return result
   }
 
