@@ -6,11 +6,11 @@ import Web3 from 'web3'
 import { AbiItem } from 'web3-utils/types'
 import { DataTokens } from '../../src/datatokens/Datatokens'
 import { Account, EditableMetadata, Service, ServiceAccess, DID } from '../../src/lib'
+import { noDidPrefixed } from '../../src/utils/'
 import { Ocean } from '../../src/ocean/Ocean'
 import { ConfigHelper } from '../../src/utils/ConfigHelper'
 import { TestContractHandler } from '../TestContractHandler'
 import { LoggerInstance } from '../../src/utils'
-import { Network } from '../../src/datatokens/Network'
 
 const web3 = new Web3('http://127.0.0.1:8545')
 
@@ -246,7 +246,7 @@ describe('Marketplace flow', () => {
   })
 
   it('Alice should check if her asset has valid url(s)', async () => {
-    const did: DID = DID.generate(ddo.id)
+    const did: DID = DID.generate(noDidPrefixed(ddo.id))
     const response = await ocean.provider.fileinfo(did)
     assert(response[0].valid === true)
     assert(response[0].contentLength === '1161')
