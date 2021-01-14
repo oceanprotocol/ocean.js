@@ -228,7 +228,9 @@ describe('Marketplace flow', () => {
   })
 
   it('Alice updates timeout for the access service', async () => {
-    const serviceIndex = ddo.findServiceByType('access')
+    const service = ddo.findServiceByType('access')
+    assert(service !== null)
+    const serviceIndex = service.index
     const newTimeout = 123
     const newDdo = await ocean.assets.updateServiceTimeout(
       ddo.id,
