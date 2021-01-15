@@ -212,7 +212,7 @@ describe('Marketplace flow', () => {
       title: 'new title',
       links: [{ name: 'link1', type: 'sample', url: 'http://example.net' }]
     }
-    const newDdo = await ocean.assets.editMetadata(ddo.id, null, newMetaData)
+    const newDdo = await ocean.assets.editMetadata(ddo, newMetaData)
     assert(newDdo !== null)
     const txid = await ocean.OnChainMetadataCache.update(newDdo.id, newDdo, alice.getId())
     assert(txid !== null)
@@ -231,12 +231,7 @@ describe('Marketplace flow', () => {
     assert(service !== null)
     const serviceIndex = service.index
     const newTimeout = 123
-    const newDdo = await ocean.assets.updateServiceTimeout(
-      ddo.id,
-      ddo,
-      serviceIndex,
-      newTimeout
-    )
+    const newDdo = await ocean.assets.editServiceTimeout(ddo, serviceIndex, newTimeout)
     assert(newDdo !== null)
     const txid = await ocean.OnChainMetadataCache.update(newDdo.id, newDdo, alice.getId())
     assert(txid !== null)

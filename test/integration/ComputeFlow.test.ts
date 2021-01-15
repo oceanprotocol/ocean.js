@@ -468,9 +468,8 @@ describe('Compute flow', () => {
       }
     }
     assert(computeIndex > 0)
-    const newDdo = await ocean.assets.updateComputePrivacy(
-      ddo.id,
-      null,
+    const newDdo = await ocean.compute.editComputePrivacy(
+      ddo,
       computeIndex,
       newComputePrivacy
     )

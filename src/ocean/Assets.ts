@@ -246,82 +246,37 @@ export class Assets extends Instantiable {
 
   /**
    * Edit Metadata for a DID.
-   * @param  {did} string DID. You can leave this empty if you already have the DDO
    * @param  {ddo} DDO if empty, will trigger a retrieve
    * @param  {newMetadata}  EditableMetadata Metadata fields & new values.
-   * @param  {Account} account Ethereum account of owner to sign and prove the ownership.
    * @return {Promise<DDO>} the new DDO
    */
-  public async editMetadata(
-    did: string,
-    ddo: DDO,
-    newMetadata: EditableMetadata
-  ): Promise<DDO> {
-    if (!ddo) ddo = await this.ocean.metadatacache.retrieveDDO(did)
+  public async editMetadata(ddo: DDO, newMetadata: EditableMetadata): Promise<DDO> {
     if (!ddo) return null
     for (let i = 0; i < ddo.service.length; i++) {
-      if (ddo.service[i].type === 'metadata') {
-        if (newMetadata.title) ddo.service[i].attributes.main.name = newMetadata.title
-        if (!ddo.service[i].attributes.additionalInformation)
-          ddo.service[i].attributes.additionalInformation = Object()
-        if (newMetadata.description)
-          ddo.service[i].attributes.additionalInformation.description =
-            newMetadata.description
-        if (newMetadata.links)
-          ddo.service[i].attributes.additionalInformation.links = newMetadata.links
-      }
+      if (ddo.service[i].type !== 'metadata') continue
+      if (newMetadata.title) ddo.service[i].attributes.main.name = newMetadata.title
+      if (!ddo.service[i].attributes.additionalInformation)
+        ddo.service[i].attributes.additionalInformation = Object()
+      if (newMetadata.description)
+        ddo.service[i].attributes.additionalInformation.description = newMetadata.description
+      if (newMetadata.links)
+        ddo.service[i].attributes.additionalInformation.links = newMetadata.links
     }
     return ddo
   }
 
   /**
-   * Update Compute Privacy
-   * @param  {did} string DID. You can leave this empty if you already have the DDO
-   * @param  {ddo} DDO if empty, will trigger a retrieve
-   * @param  {number} serviceIndex Index of the compute service in the DDO. If -1, will try to find it
-   * @param  {ServiceComputePrivacy} computePrivacy ComputePrivacy fields & new values.
-   * @param  {Account} account Ethereum account of owner to sign and prove the ownership.
-   * @return {Promise<DDO>}
-   */
-  public async updateComputePrivacy(
-    did: string,
-    ddo: DDO,
-    serviceIndex: number,
-    computePrivacy: ServiceComputePrivacy
-  ): Promise<DDO> {
-    if (!ddo) ddo = await this.ocean.metadatacache.retrieveDDO(did)
-    if (!ddo) return null
-    if (serviceIndex === -1) {
-      const service = ddo.findServiceByType('compute')
-      if (!service) return null
-      serviceIndex = service.index
-    }
-    if (typeof ddo.service[serviceIndex] === 'undefined') return null
-    if (ddo.service[serviceIndex].type !== 'compute') return null
-    ddo.service[serviceIndex].attributes.main.privacy.allowRawAlgorithm =
-      computePrivacy.allowRawAlgorithm
-    ddo.service[serviceIndex].attributes.main.privacy.allowNetworkAccess =
-      computePrivacy.allowNetworkAccess
-    ddo.service[serviceIndex].attributes.main.privacy.trustedAlgorithms =
-      computePrivacy.trustedAlgorithms
-    return ddo
-  }
-
-  /**
-   * Update Service Timeouts
-   * @param  {did} string DID. You can leave this empty if you already have the DDO
+   * Edit Service Timeouts
    * @param  {ddo} DDO if empty, will trigger a retrieve
    * @param  {number} serviceIndex Index of the compute service in the DDO.
    * @param  {number} timeout New timeout setting
    * @return {Promise<DDO>}
    */
-  public async updateServiceTimeout(
-    did: string,
+  public async editServiceTimeout(
     ddo: DDO,
     serviceIndex: number,
     timeout: number
   ): Promise<DDO> {
-    if (!ddo) ddo = await this.ocean.metadatacache.retrieveDDO(did)
     if (!ddo) return null
     if (typeof ddo.service[serviceIndex] === 'undefined') return null
     if (timeout < 0) return null
