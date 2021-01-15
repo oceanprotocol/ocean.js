@@ -2,7 +2,7 @@ dist: xenial
 sudo: required
 language: node_js
 node_js:
- - 14
+  - 14
 
 services:
   - docker
@@ -29,6 +29,7 @@ before_script:
   - export AQUARIUS_URI="http://172.15.0.5:5000"
   - export DEPLOY_CONTRACTS="true"
   - export CONTRACTS_VERSION=v0.5.7
+  - export PROVIDER_VERSION=v0.4.1
   - bash -x start_ocean.sh --no-dashboard 2>&1 > start_ocean.log &
   - cd ..
   - ./scripts/waitforcontracts.sh
