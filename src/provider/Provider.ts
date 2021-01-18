@@ -8,6 +8,7 @@ import { MetadataAlgorithm } from '../ddo/interfaces/MetadataAlgorithm'
 import { Versions } from '../ocean/Versions'
 import { Response } from 'node-fetch'
 import { DDO } from '../ddo/DDO'
+import DID from '../ocean/DID'
 
 const apiPath = '/api/v1/services'
 
@@ -73,20 +74,28 @@ export class Provider extends Instantiable {
     }
   }
 
-  public async checkURL(url: string): Promise<Record<string, string>> {
-    const args = { url }
+  /** Get URL details (if possible)
+   * @param {String | DID} url or did
+   * @return {Promise<File[]>} urlDetails
+   */
+  public async fileinfo(url: string | DID): Promise<File[]> {
+    let args
+    const files: File[] = []
+    if (url instanceof DID) {
+      args = { did: url.getDid() }
+    } else args = { url }
     try {
       const response = await this.ocean.utils.fetch.post(
-        this.getCheckURLEndpoint(),
-        decodeURI(JSON.stringify(args))
+        this.getFileinfoEndpoint(),
+        JSON.stringify(args)
       )
-
-      const result = await response.json()
-
-      return result.result
+      const results: File[] = await response.json()
+      for (const result of results) {
+        files.push(result)
+      }
+      return files
     } catch (e) {
-      this.logger.error(e)
-      throw new Error('HTTP request failed')
+      return null
     }
   }
 
@@ -298,8 +307,8 @@ export class Provider extends Instantiable {
     return `${this.url}${apiPath}/encrypt`
   }
 
-  public getCheckURLEndpoint(): string {
-    return `${this.url}${apiPath}/checkURL`
+  public getFileinfoEndpoint(): string {
+    return `${this.url}${apiPath}/fileinfo`
   }
 
   public getPublishEndpoint(): string {

@@ -433,4 +433,35 @@ export class Compute extends Instantiable {
       return order
     })
   }
+
+  /**
+   * Edit Compute Privacy
+   * @param  {did} string DID. You can leave this empty if you already have the DDO
+   * @param  {ddo} DDO if empty, will trigger a retrieve
+   * @param  {number} serviceIndex Index of the compute service in the DDO. If -1, will try to find it
+   * @param  {ServiceComputePrivacy} computePrivacy ComputePrivacy fields & new values.
+   * @param  {Account} account Ethereum account of owner to sign and prove the ownership.
+   * @return {Promise<DDO>}
+   */
+  public async editComputePrivacy(
+    ddo: DDO,
+    serviceIndex: number,
+    computePrivacy: ServiceComputePrivacy
+  ): Promise<DDO> {
+    if (!ddo) return null
+    if (serviceIndex === -1) {
+      const service = ddo.findServiceByType('compute')
+      if (!service) return null
+      serviceIndex = service.index
+    }
+    if (typeof ddo.service[serviceIndex] === 'undefined') return null
+    if (ddo.service[serviceIndex].type !== 'compute') return null
+    ddo.service[serviceIndex].attributes.main.privacy.allowRawAlgorithm =
+      computePrivacy.allowRawAlgorithm
+    ddo.service[serviceIndex].attributes.main.privacy.allowNetworkAccess =
+      computePrivacy.allowNetworkAccess
+    ddo.service[serviceIndex].attributes.main.privacy.trustedAlgorithms =
+      computePrivacy.trustedAlgorithms
+    return ddo
+  }
 }

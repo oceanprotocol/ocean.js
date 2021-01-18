@@ -9,7 +9,13 @@ export interface File {
    * File URL.
    * @type {string}
    */
-  url: string
+  url?: string
+
+  /**
+   * Is URL accessible.
+   * @type {boolean}
+   */
+  valid?: boolean
 
   /**
    * File index.

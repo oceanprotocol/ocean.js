@@ -239,82 +239,52 @@ export class Assets extends Instantiable {
     return (await this.ocean.metadatacache.queryMetadata(searchQuery)).results
   }
 
-  /**
-   * Edit Metadata for a DDO.
-   * @param  {did} string DID.
-   * @param  {newMetadata}  EditableMetadata Metadata fields & new values.
-   * @param  {Account} account Ethereum account of owner to sign and prove the ownership.
-   * @return {Promise<string>}
+  /**    Metadata updates
+   *  Don't forget to call ocean.OnChainMetadataCache.update after using this functions
+   * ie:  ocean.OnChainMetadataCache.update(ddo.id,ddo,account.getId())
    */
-  public async editMetadata(
-    did: string,
-    newMetadata: EditableMetadata,
-    account: Account
-  ): Promise<DDO> {
-    const oldDdo = await this.ocean.metadatacache.retrieveDDO(did)
-    let i
-    for (i = 0; i < oldDdo.service.length; i++) {
-      if (oldDdo.service[i].type === 'metadata') {
-        if (newMetadata.title) oldDdo.service[i].attributes.main.name = newMetadata.title
-        if (!oldDdo.service[i].attributes.additionalInformation)
-          oldDdo.service[i].attributes.additionalInformation = Object()
-        if (newMetadata.description)
-          oldDdo.service[i].attributes.additionalInformation.description =
-            newMetadata.description
-        if (newMetadata.links)
-          oldDdo.service[i].attributes.additionalInformation.links = newMetadata.links
-      }
+
+  /**
+   * Edit Metadata for a DID.
+   * @param  {ddo} DDO if empty, will trigger a retrieve
+   * @param  {newMetadata}  EditableMetadata Metadata fields & new values.
+   * @return {Promise<DDO>} the new DDO
+   */
+  public async editMetadata(ddo: DDO, newMetadata: EditableMetadata): Promise<DDO> {
+    if (!ddo) return null
+    for (let i = 0; i < ddo.service.length; i++) {
+      if (ddo.service[i].type !== 'metadata') continue
+      if (newMetadata.title) ddo.service[i].attributes.main.name = newMetadata.title
+      if (!ddo.service[i].attributes.additionalInformation)
+        ddo.service[i].attributes.additionalInformation = Object()
+      if (newMetadata.description)
+        ddo.service[i].attributes.additionalInformation.description =
+          newMetadata.description
+      if (newMetadata.links)
+        ddo.service[i].attributes.additionalInformation.links = newMetadata.links
     }
-    if (newMetadata.servicePrices) {
-      for (i = 0; i < newMetadata.servicePrices.length; i++) {
-        if (
-          newMetadata.servicePrices[i].cost &&
-          newMetadata.servicePrices[i].serviceIndex
-        ) {
-          oldDdo.service[newMetadata.servicePrices[i].serviceIndex].attributes.main.cost =
-            newMetadata.servicePrices[i].cost
-        }
-      }
-    }
-    const storeTx = await this.ocean.OnChainMetadataCache.update(
-      oldDdo.id,
-      oldDdo,
-      account.getId()
-    )
-    if (storeTx) return oldDdo
-    else return null
+    return ddo
   }
 
   /**
-   * Update Compute Privacy
-   * @param  {did} string DID.
-   * @param  {number} serviceIndex Index of the compute service in the DDO
-   * @param  {ServiceComputePrivacy} computePrivacy ComputePrivacy fields & new values.
-   * @param  {Account} account Ethereum account of owner to sign and prove the ownership.
-   * @return {Promise<string>}
+   * Edit Service Timeouts
+   * @param  {ddo} DDO if empty, will trigger a retrieve
+   * @param  {number} serviceIndex Index of the compute service in the DDO.
+   * @param  {number} timeout New timeout setting
+   * @return {Promise<DDO>}
    */
-  public async updateComputePrivacy(
-    did: string,
+  public async editServiceTimeout(
+    ddo: DDO,
     serviceIndex: number,
-    computePrivacy: ServiceComputePrivacy,
-    account: Account
+    timeout: number
   ): Promise<DDO> {
-    const oldDdo = await this.ocean.metadatacache.retrieveDDO(did)
-    if (oldDdo.service[serviceIndex].type !== 'compute') return null
-    oldDdo.service[serviceIndex].attributes.main.privacy.allowRawAlgorithm =
-      computePrivacy.allowRawAlgorithm
-    oldDdo.service[serviceIndex].attributes.main.privacy.allowNetworkAccess =
-      computePrivacy.allowNetworkAccess
-    oldDdo.service[serviceIndex].attributes.main.privacy.trustedAlgorithms =
-      computePrivacy.trustedAlgorithms
-    const storeTx = await this.ocean.OnChainMetadataCache.update(
-      oldDdo.id,
-      oldDdo,
-      account.getId()
-    )
-    if (storeTx) return oldDdo
-    else return null
+    if (!ddo) return null
+    if (typeof ddo.service[serviceIndex] === 'undefined') return null
+    if (timeout < 0) return null
+    ddo.service[serviceIndex].attributes.main.timeout = parseInt(timeout.toFixed())
+    return ddo
   }
+  /**    End metadata updates   */
 
   /**
    * Returns the creator of a asset.
