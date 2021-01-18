@@ -51,7 +51,7 @@ export class Versions extends Instantiable {
 
     // MetadataCache
     try {
-      const { software: name, version } = await this.ocean.metadatacache.getVersionInfo()
+      const { software: name, version } = await this.ocean.metadataCache.getVersionInfo()
       versions.metadataCache = {
         name,
         status: OceanPlatformTechStatus.Working,
