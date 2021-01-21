@@ -111,7 +111,9 @@ export class OnChainMetadata {
     try {
       estGas = await this.DDOContract.methods
         .create(didZeroX(did), flags, data)
-        .estimateGas((err, estGas) => (err ? gasLimitDefault : estGas))
+        .estimateGas({ from: consumerAccount }, (err, estGas) =>
+          err ? gasLimitDefault : estGas
+        )
     } catch (e) {
       estGas = gasLimitDefault
     }
@@ -153,7 +155,9 @@ export class OnChainMetadata {
     try {
       estGas = await this.DDOContract.methods
         .update(didZeroX(did), flags, data)
-        .estimateGas((err, estGas) => (err ? gasLimitDefault : estGas))
+        .estimateGas({ from: consumerAccount }, (err, estGas) =>
+          err ? gasLimitDefault : estGas
+        )
     } catch (e) {
       estGas = gasLimitDefault
     }
