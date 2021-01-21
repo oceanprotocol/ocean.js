@@ -96,7 +96,9 @@ export class OceanFixedRateExchange {
       try {
         estGas = await this.contract.methods
           .create(this.oceanAddress, dataToken, this.web3.utils.toWei(rate))
-          .estimateGas((err, estGas) => (err ? gasLimitDefault : estGas))
+          .estimateGas({ from: address }, (err, estGas) =>
+            err ? gasLimitDefault : estGas
+          )
       } catch (e) {
         estGas = gasLimitDefault
       }
@@ -152,7 +154,7 @@ export class OceanFixedRateExchange {
     try {
       estGas = await this.contract.methods
         .swap(exchangeId, this.web3.utils.toWei(String(dataTokenAmount)))
-        .estimateGas((err, estGas) => (err ? gasLimitDefault : estGas))
+        .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
     } catch (e) {
       estGas = gasLimitDefault
     }
@@ -199,7 +201,7 @@ export class OceanFixedRateExchange {
     try {
       estGas = await this.contract.methods
         .setRate(exchangeId, this.web3.utils.toWei(String(newRate)))
-        .estimateGas((err, estGas) => (err ? gasLimitDefault : estGas))
+        .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
     } catch (e) {
       estGas = gasLimitDefault
     }
@@ -231,7 +233,7 @@ export class OceanFixedRateExchange {
     try {
       estGas = await this.contract.methods
         .toggleExchangeState(exchangeId)
-        .estimateGas((err, estGas) => (err ? gasLimitDefault : estGas))
+        .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
     } catch (e) {
       estGas = gasLimitDefault
     }
@@ -261,7 +263,7 @@ export class OceanFixedRateExchange {
     try {
       estGas = await this.contract.methods
         .toggleExchangeState(exchangeId)
-        .estimateGas((err, estGas) => (err ? gasLimitDefault : estGas))
+        .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
     } catch (e) {
       estGas = gasLimitDefault
     }
