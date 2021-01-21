@@ -188,8 +188,7 @@ export class Provider extends Instantiable {
   }
 
   public async getServiceEndpoints() {
-    let fetch: any
-    fetch = this.ocean.utils.fetch.get(this.url)
+    const fetch = this.ocean.utils.fetch.get(this.url)
     if (this.validServiceEndpoints != null) {
       this.validServiceEndpoints = await fetch
         .then((response: Response) => {
@@ -197,7 +196,11 @@ export class Provider extends Instantiable {
             return response.json()
           }
 
-          this.logger.error('Finding the service endpoints failed:', response.status, response.statusText)
+          this.logger.error(
+            'Finding the service endpoints failed:',
+            response.status,
+            response.statusText
+          )
 
           return null
         })
@@ -207,21 +210,17 @@ export class Provider extends Instantiable {
           throw error
         })
     }
-      return this.validServiceEndpoints;
-}
+    return this.validServiceEndpoints
+  }
 
-public getEndpointURL(
-  serviceName : string
-) : string {
-  var method: string
-  var urlEndpoint: string
-  this.validServiceEndpoints = this.getServiceEndpoints()
-  method = this.validServiceEndpoints['serviceEndpoints'][0]
-  urlEndpoint = this.validServiceEndpoints['serviceEndpoints'][1]
-  urlEndpoint = urlEndpoint.replace(`${apiPath}`, '')
-  return `${this.getURI()}${urlEndpoint}`
-
-}
+  public getEndpointURL(serviceName: string): string {
+    let urlEndpoint: string
+    this.validServiceEndpoints = this.getServiceEndpoints()
+    const method = this.validServiceEndpoints.serviceEndpoints[serviceName][0]
+    urlEndpoint = this.validServiceEndpoints.serviceEndpoints[serviceName][1]
+    urlEndpoint = urlEndpoint.replace(`${apiPath}`, '')
+    return `${this.getURI()}${urlEndpoint}`
+  }
 
   public async compute(
     method: string,
@@ -324,12 +323,12 @@ public getEndpointURL(
   }
 
   public getInitializeEndpoint(): string {
-    //return `${this.url}${apiPath}/initialize`
+    //  return `${this.url}${apiPath}/initialize`
     return this.getEndpointURL('initialize')
   }
 
   public getNonceEndpoint(): string {
-    //return `${this.url}${apiPath}/nonce`
+    //  return `${this.url}${apiPath}/nonce`
     return this.getEndpointURL('nonce')
   }
 
@@ -342,12 +341,12 @@ public getEndpointURL(
   }
 
   public getEncryptEndpoint(): string {
-    //return `${this.url}${apiPath}/encrypt`
+    //  return `${this.url}${apiPath}/encrypt`
     return this.getEndpointURL('encrypt')
   }
 
   public getFileinfoEndpoint(): string {
-    //return `${this.url}${apiPath}/fileinfo`
+    //  return `${this.url}${apiPath}/fileinfo`
     return this.getEndpointURL('fileinfo')
   }
 
@@ -355,13 +354,13 @@ public getEndpointURL(
     return `${this.url}${apiPath}/publish`
   }
 
-  // public getComputeEndpointPath(): string {
-  //   return `${apiPath}/compute`
-  // }
+  public getComputeEndpointPath(): string {
+    return `${apiPath}/compute`
+  }
 
-  // public getComputeEndpoint(): string {
-  //   return `${this.url}` + this.getComputeEndpointPath()
-  // }
+  public getComputeEndpoint(): string {
+    return `${this.url}` + this.getComputeEndpointPath()
+  }
 
   public getComputeStatusJob(): string {
     return this.getEndpointURL('computeStatus')
@@ -380,7 +379,7 @@ public getEndpointURL(
   }
 
   public getDownloadEndpoint(): string {
-    //return `${this.url}${apiPath}/download`
+    //  return `${this.url}${apiPath}/download`
     return this.getEndpointURL('download')
   }
 
