@@ -7,6 +7,8 @@ import Web3 from 'web3'
 import { SubscribablePromise, Logger, getFairGasPrice } from '../utils'
 import { DataTokens } from '../datatokens/Datatokens'
 
+const MAX_AWAIT_PROMISES = 10
+
 export interface FixedPriceExchange {
   exchangeID?: string
   exchangeOwner: string
@@ -366,18 +368,26 @@ export class OceanFixedRateExchange {
       fromBlock: this.startBlock,
       toBlock: 'latest'
     })
+    let promises = []
     for (let i = 0; i < events.length; i++) {
-      const constituents = await this.getExchange(events[i].returnValues[0])
-      constituents.exchangeID = events[i].returnValues[0]
-      if (
-        constituents.active === true &&
-        constituents.dataToken.toLowerCase() === dataTokenAddress.toLowerCase()
-      ) {
-        const supply = new BigNumber(constituents.supply)
-        const required = new BigNumber(minSupply)
-        if (supply.gte(required)) {
-          result.push(constituents)
+      promises.push(this.getExchange(events[i].returnValues[0]))
+      if (promises.length > MAX_AWAIT_PROMISES || i === events.length - 1) {
+        const results = await Promise.all(promises)
+        for (let j = 0; j < results.length; j++) {
+          const constituents = results[j]
+          constituents.exchangeID = events[i].returnValues[0]
+          if (
+            constituents.active === true &&
+            constituents.dataToken.toLowerCase() === dataTokenAddress.toLowerCase()
+          ) {
+            const supply = new BigNumber(constituents.supply)
+            const required = new BigNumber(minSupply)
+            if (supply.gte(required)) {
+              result.push(constituents)
+            }
+          }
         }
+        promises = []
       }
     }
     return result
