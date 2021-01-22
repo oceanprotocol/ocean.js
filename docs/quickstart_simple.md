@@ -35,7 +35,8 @@ const datatoken = new DataTokens(
   contracts.factoryAddress,
   factoryABI,
   datatokensABI,
-  web3
+  web3,
+  Logger
 )
 // deploy datatoken
 const tokenAddress = await datatoken.create(blob, alice)
