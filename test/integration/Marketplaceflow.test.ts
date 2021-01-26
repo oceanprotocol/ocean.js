@@ -214,7 +214,7 @@ describe('Marketplace flow', () => {
     }
     const newDdo = await ocean.assets.editMetadata(ddo, newMetaData)
     assert(newDdo !== null)
-    const txid = await ocean.OnChainMetadataCache.update(newDdo.id, newDdo, alice.getId())
+    const txid = await ocean.onChainMetadata.update(newDdo.id, newDdo, alice.getId())
     assert(txid !== null)
     await sleep(60000)
     const metaData = await ocean.assets.getServiceByType(ddo.id, 'metadata')
@@ -233,7 +233,7 @@ describe('Marketplace flow', () => {
     const newTimeout = 123
     const newDdo = await ocean.assets.editServiceTimeout(ddo, serviceIndex, newTimeout)
     assert(newDdo !== null)
-    const txid = await ocean.OnChainMetadataCache.update(newDdo.id, newDdo, alice.getId())
+    const txid = await ocean.onChainMetadata.update(newDdo.id, newDdo, alice.getId())
     assert(txid !== null)
     await sleep(60000)
     const metaData = await ocean.assets.getServiceByType(ddo.id, 'access')

@@ -13,7 +13,7 @@ import { LZMA } from 'lzma/src/lzma-c'
  * Provides an interface with Metadata Cache.
  * Metadata Cache provides an off-chain database store for metadata about data assets.
  */
-export class OnChainMetadataCache {
+export class OnChainMetadata {
   public GASLIMIT_DEFAULT = 1000000
   public DDOContractAddress: string
   public DDOContractABI: AbiItem | AbiItem[]
@@ -111,7 +111,9 @@ export class OnChainMetadataCache {
     try {
       estGas = await this.DDOContract.methods
         .create(didZeroX(did), flags, data)
-        .estimateGas((err, estGas) => (err ? gasLimitDefault : estGas))
+        .estimateGas({ from: consumerAccount }, (err, estGas) =>
+          err ? gasLimitDefault : estGas
+        )
     } catch (e) {
       estGas = gasLimitDefault
     }
@@ -153,7 +155,9 @@ export class OnChainMetadataCache {
     try {
       estGas = await this.DDOContract.methods
         .update(didZeroX(did), flags, data)
-        .estimateGas((err, estGas) => (err ? gasLimitDefault : estGas))
+        .estimateGas({ from: consumerAccount }, (err, estGas) =>
+          err ? gasLimitDefault : estGas
+        )
     } catch (e) {
       estGas = gasLimitDefault
     }

@@ -3,7 +3,7 @@ import { Assets } from './Assets'
 import { Versions } from './Versions'
 import { OceanUtils } from './utils/Utils'
 import { MetadataCache } from '../metadatacache/MetadataCache'
-import { OnChainMetadataCache } from '../metadatacache/OnChainMetaDataCache'
+import { OnChainMetadata } from '../metadatacache/OnChainMetaData'
 import { Provider } from '../provider/Provider'
 import { DataTokens } from '../datatokens/Datatokens'
 import { Network } from '../datatokens/Network'
@@ -71,7 +71,7 @@ export class Ocean extends Instantiable {
       instance.datatokens,
       instanceConfig.config.startBlock
     )
-    instance.OnChainMetadataCache = new OnChainMetadataCache(
+    instance.onChainMetadata = new OnChainMetadata(
       instanceConfig.config.web3Provider,
       instanceConfig.logger,
       instanceConfig.config.metadataContractAddress,
@@ -104,12 +104,12 @@ export class Ocean extends Instantiable {
    * MetadataCache instance.
    * @type {MetadataCache}
    */
-  public metadatacache: MetadataCache
+  public metadataCache: MetadataCache
   /**
    * OnChainMetadataCache instance.
    * @type {OnChainMetadataCache}
    */
-  public OnChainMetadataCache: OnChainMetadataCache
+  public onChainMetadata: OnChainMetadata
   /**
    * Ocean account submodule
    * @type {Accounts}

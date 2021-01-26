@@ -12,9 +12,9 @@
 
 With ocean.js, you can:
 
-- **Publish** data services: downloadable files or compute-to-data. 
-Ocean creates a new [ERC20](https://github.com/ethereum/EIPs/blob/7f4f0377730f5fc266824084188cc17cf246932e/EIPS/eip-20.md) 
-datatoken for each dataset / data service.
+- **Publish** data services: downloadable files or compute-to-data.
+  Ocean creates a new [ERC20](https://github.com/ethereum/EIPs/blob/7f4f0377730f5fc266824084188cc17cf246932e/EIPS/eip-20.md)
+  datatoken for each dataset / data service.
 - **Mint** datatokens for the service
 - **Sell** datatokens via an OCEAN-datatoken Balancer pool (for auto price discovery), or for a fixed price
 - **Stake** OCEAN on datatoken pools
@@ -49,7 +49,7 @@ npm install @oceanprotocol/lib
 ## 🏄 Quickstart
 
 ```ts
-import { Ocean, Config, ConfigHelper } from '@oceanprotocol/lib'
+import { Ocean, Config, ConfigHelper, Logger } from '@oceanprotocol/lib'
 
 const defaultConfig: Config = new ConfigHelper().getConfig(
   'rinkeby',

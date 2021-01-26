@@ -98,7 +98,7 @@ export class DataTokens {
     try {
       estGas = await factory.methods
         .createToken(metadataCacheUri, name, symbol, this.web3.utils.toWei(cap))
-        .estimateGas((err, estGas) => (err ? gasLimitDefault : estGas))
+        .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
     } catch (e) {
       estGas = gasLimitDefault
     }
@@ -143,7 +143,7 @@ export class DataTokens {
     try {
       estGas = await datatoken.methods
         .approve(spender, this.web3.utils.toWei(amount))
-        .estimateGas((err, estGas) => (err ? gasLimitDefault : estGas))
+        .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
     } catch (e) {
       estGas = gasLimitDefault
     }
@@ -181,7 +181,9 @@ export class DataTokens {
       try {
         estGas = await datatoken.methods
           .mint(toAddress || address, this.web3.utils.toWei(amount))
-          .estimateGas((err, estGas) => (err ? gasLimitDefault : estGas))
+          .estimateGas({ from: address }, (err, estGas) =>
+            err ? gasLimitDefault : estGas
+          )
       } catch (e) {
         estGas = gasLimitDefault
       }
@@ -255,7 +257,7 @@ export class DataTokens {
     try {
       estGas = await datatoken.methods
         .transfer(toAddress, amount)
-        .estimateGas((err, estGas) => (err ? gasLimitDefault : estGas))
+        .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
     } catch (e) {
       estGas = gasLimitDefault
     }
@@ -289,7 +291,7 @@ export class DataTokens {
     try {
       estGas = await datatoken.methods
         .transferFrom(fromAddress, address, this.web3.utils.toWei(amount))
-        .estimateGas((err, estGas) => (err ? gasLimitDefault : estGas))
+        .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
     } catch (e) {
       estGas = gasLimitDefault
     }
@@ -423,7 +425,9 @@ export class DataTokens {
             String(serviceId),
             mpFeeAddress
           )
-          .estimateGas((err, estGas) => (err ? gasLimitDefault : estGas))
+          .estimateGas({ from: address }, (err, estGas) =>
+            err ? gasLimitDefault : estGas
+          )
       } catch (e) {
         estGas = gasLimitDefault
       }

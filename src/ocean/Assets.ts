@@ -1,7 +1,7 @@
 import { SearchQuery, QueryResult } from '../metadatacache/MetadataCache'
 import { DDO } from '../ddo/DDO'
 import { Metadata } from '../ddo/interfaces/Metadata'
-import { Service, ServiceAccess, ServiceComputePrivacy } from '../ddo/interfaces/Service'
+import { Service, ServiceAccess } from '../ddo/interfaces/Service'
 import { EditableMetadata } from '../ddo/interfaces/EditableMetadata'
 import Account from './Account'
 import DID from './DID'
@@ -12,7 +12,7 @@ import BigNumber from 'bignumber.js'
 import { Provider } from '../provider/Provider'
 import { isAddress } from 'web3-utils'
 import { MetadataMain } from '../ddo/interfaces'
-import { DataTokens } from '../lib'
+import { TransactionReceipt } from 'web3-core'
 
 export enum CreateProgressStep {
   CreatingDataToken,
@@ -91,7 +91,7 @@ export class Assets extends Instantiable {
       if (!dtAddress) {
         this.logger.log('Creating datatoken')
         observer.next(CreateProgressStep.CreatingDataToken)
-        // const metadataCacheUri = this.ocean.metadatacache.getURI()
+        // const metadataCacheUri = this.ocean.metadataCache.getURI()
         // const jsonBlob = { t: 1, url: metadataCacheUri }
         dtAddress = await datatokens.create('', publisher.getId(), cap, name, symbol)
 
@@ -188,8 +188,8 @@ export class Assets extends Instantiable {
       }
       this.logger.log('Storing DDO')
       observer.next(CreateProgressStep.StoringDdo)
-      // const storedDdo = await this.ocean.metadatacache.storeDDO(ddo)
-      const storeTx = await this.ocean.OnChainMetadataCache.publish(
+      // const storedDdo = await this.ocean.metadataCache.storeDDO(ddo)
+      const storeTx = await this.ocean.onChainMetadata.publish(
         ddo.id,
         ddo,
         publisher.getId()
@@ -207,7 +207,7 @@ export class Assets extends Instantiable {
    * @return {Promise<string[]>} List of DIDs.
    */
   public async ownerAssets(owner: string): Promise<QueryResult> {
-    return this.ocean.metadatacache.getOwnerAssets(owner)
+    return this.ocean.metadataCache.getOwnerAssets(owner)
   }
 
   /**
@@ -216,7 +216,7 @@ export class Assets extends Instantiable {
    * @return {Promise<DDO>}
    */
   public async resolve(did: string): Promise<DDO> {
-    return this.ocean.metadatacache.retrieveDDO(did)
+    return this.ocean.metadataCache.retrieveDDO(did)
   }
 
   public async resolveByDTAddress(
@@ -236,17 +236,17 @@ export class Assets extends Instantiable {
       },
       text: dtAddress
     } as SearchQuery
-    return (await this.ocean.metadatacache.queryMetadata(searchQuery)).results
+    return (await this.ocean.metadataCache.queryMetadata(searchQuery)).results
   }
 
   /**    Metadata updates
-   *  Don't forget to call ocean.OnChainMetadataCache.update after using this functions
-   * ie:  ocean.OnChainMetadataCache.update(ddo.id,ddo,account.getId())
+   *  Don't forget to call ocean.OnChainmetadataCache.update after using this functions
+   * ie:  ocean.OnChainmetadataCache.update(ddo.id,ddo,account.getId())
    */
 
   /**
    * Edit Metadata for a DID.
-   * @param  {ddo} DDO if empty, will trigger a retrieve
+   * @param  {ddo} DDO
    * @param  {newMetadata}  EditableMetadata Metadata fields & new values.
    * @return {Promise<DDO>} the new DDO
    */
@@ -264,6 +264,19 @@ export class Assets extends Instantiable {
         ddo.service[i].attributes.additionalInformation.links = newMetadata.links
     }
     return ddo
+  }
+
+  /**
+   * Update Metadata on chain.
+   * @param  {ddo} DDO
+   * @param {String} consumerAccount
+   * @return {Promise<TransactionReceipt>} exchangeId
+   */
+  public async updateMetadata(
+    ddo: DDO,
+    consumerAccount: string
+  ): Promise<TransactionReceipt> {
+    return await this.ocean.onChainMetadata.update(ddo.id, ddo, consumerAccount)
   }
 
   /**
@@ -312,7 +325,7 @@ export class Assets extends Instantiable {
    * @return {Promise<QueryResult>}
    */
   public async query(query: SearchQuery): Promise<QueryResult> {
-    return this.ocean.metadatacache.queryMetadata(query)
+    return this.ocean.metadataCache.queryMetadata(query)
   }
 
   /**
@@ -321,7 +334,7 @@ export class Assets extends Instantiable {
    * @return {Promise<QueryResult>}
    */
   public async search(text: string): Promise<QueryResult> {
-    return this.ocean.metadatacache.queryMetadata({
+    return this.ocean.metadataCache.queryMetadata({
       text,
       page: 1,
       offset: 100,
