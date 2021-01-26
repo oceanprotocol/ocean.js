@@ -8,6 +8,7 @@ import { MetadataAlgorithm } from '../ddo/interfaces/MetadataAlgorithm'
 import { Versions } from '../ocean/Versions'
 import { Response } from 'node-fetch'
 import { DDO } from '../ddo/DDO'
+import DID from '../ocean/DID'
 
 const apiPath = '/api/v1/services'
 
@@ -70,6 +71,31 @@ export class Provider extends Instantiable {
     } catch (e) {
       this.logger.error(e)
       throw new Error('HTTP request failed')
+    }
+  }
+
+  /** Get URL details (if possible)
+   * @param {String | DID} url or did
+   * @return {Promise<File[]>} urlDetails
+   */
+  public async fileinfo(url: string | DID): Promise<File[]> {
+    let args
+    const files: File[] = []
+    if (url instanceof DID) {
+      args = { did: url.getDid() }
+    } else args = { url }
+    try {
+      const response = await this.ocean.utils.fetch.post(
+        this.getFileinfoEndpoint(),
+        JSON.stringify(args)
+      )
+      const results: File[] = await response.json()
+      for (const result of results) {
+        files.push(result)
+      }
+      return files
+    } catch (e) {
+      return null
     }
   }
 
@@ -147,7 +173,9 @@ export class Provider extends Instantiable {
         consumeUrl += `&signature=${signature}`
 
         try {
-          await this.ocean.utils.fetch.downloadFile(consumeUrl, destination, i)
+          !destination
+            ? await this.ocean.utils.fetch.downloadFileBrowser(consumeUrl)
+            : await this.ocean.utils.fetch.downloadFile(consumeUrl, destination, i)
         } catch (e) {
           this.logger.error('Error consuming assets')
           this.logger.error(e)
@@ -277,6 +305,10 @@ export class Provider extends Instantiable {
 
   public getEncryptEndpoint(): string {
     return `${this.url}${apiPath}/encrypt`
+  }
+
+  public getFileinfoEndpoint(): string {
+    return `${this.url}${apiPath}/fileinfo`
   }
 
   public getPublishEndpoint(): string {

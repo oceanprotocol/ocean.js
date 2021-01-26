@@ -1,14 +1,15 @@
 import Web3 from 'web3'
 import { AbiItem } from 'web3-utils/types'
 import { TransactionReceipt } from 'web3-core'
-import { Logger } from '../utils'
+import { Logger, getFairGasPrice } from '../utils'
 import BigNumber from 'bignumber.js'
 import jsonpoolABI from '@oceanprotocol/contracts/artifacts/BPool.json'
+import defaultDatatokensABI from '@oceanprotocol/contracts/artifacts/DataTokenTemplate.json'
 import { PoolFactory } from './PoolFactory'
+import Decimal from 'decimal.js'
 
-const MaxUint256: BigNumber = new BigNumber(
-  '0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff'
-)
+const MaxUint256 =
+  '115792089237316195423570985008687907853269984665640564039457584007913129639934'
 /**
  * Provides an interface to Balancer BPool & BFactory
  */
@@ -26,10 +27,9 @@ export class Pool extends PoolFactory {
     logger: Logger,
     factoryABI: AbiItem | AbiItem[] = null,
     poolABI: AbiItem | AbiItem[] = null,
-    factoryAddress: string = null,
-    gaslimit?: number
+    factoryAddress: string = null
   ) {
-    super(web3, logger, factoryABI, factoryAddress, gaslimit)
+    super(web3, logger, factoryABI, factoryAddress)
     if (poolABI) this.poolABI = poolABI
     else this.poolABI = jsonpoolABI.abi as AbiItem[]
   }
@@ -70,6 +70,23 @@ export class Pool extends PoolFactory {
       from: account
     })
     let result = null
+    const gasLimitDefault = this.GASLIMIT_DEFAULT
+    let estGas
+    try {
+      estGas = await pool.methods
+        .setup(
+          dataToken,
+          dataTokenAmount,
+          dataTokenWeight,
+          baseToken,
+          baseTokenAmount,
+          baseTokenWeight,
+          swapFee
+        )
+        .estimateGas({ from: account }, (err, estGas) => (err ? gasLimitDefault : estGas))
+    } catch (e) {
+      estGas = gasLimitDefault
+    }
     try {
       result = await pool.methods
         .setup(
@@ -81,11 +98,34 @@ export class Pool extends PoolFactory {
           baseTokenWeight,
           swapFee
         )
-        .send({ from: account, gas: this.GASLIMIT_DEFAULT })
+        .send({
+          from: account,
+          gas: estGas,
+          gasPrice: await getFairGasPrice(this.web3)
+        })
     } catch (e) {
       this.logger.error(`ERROR: Failed to setup a pool: ${e.message}`)
     }
     return result
+  }
+
+  /**
+   * Get Alloance for both DataToken and Ocean
+   * @param {String } tokenAdress
+   * @param {String} owner
+   * @param {String} spender
+   */
+  public async allowance(
+    tokenAdress: string,
+    owner: string,
+    spender: string
+  ): Promise<string> {
+    const tokenAbi = defaultDatatokensABI.abi as AbiItem[]
+    const datatoken = new this.web3.eth.Contract(tokenAbi, tokenAdress, {
+      from: spender
+    })
+    const trxReceipt = await datatoken.methods.allowance(owner, spender).call()
+    return this.web3.utils.fromWei(trxReceipt)
   }
 
   /**
@@ -130,26 +170,22 @@ export class Pool extends PoolFactory {
       from: account
     })
     let result = null
-
+    const gasLimitDefault = this.GASLIMIT_DEFAULT
     let estGas
     try {
       estGas = await token.methods
         .approve(spender, amount)
-        .estimateGas(function (err, estGas) {
-          if (err) {
-            //  console.error('ERROR: OnChainMetadataCacheEstimateGas: ' + err)
-            return this.GASLIMIT_DEFAULT
-          }
-          return estGas
-        })
+        .estimateGas({ from: account }, (err, estGas) => (err ? gasLimitDefault : estGas))
     } catch (e) {
-      estGas = this.GASLIMIT_DEFAULT
+      estGas = gasLimitDefault
     }
 
     try {
-      result = await token.methods
-        .approve(spender, amount)
-        .send({ from: account, gas: estGas + 1 })
+      result = await token.methods.approve(spender, amount).send({
+        from: account,
+        gas: estGas + 1,
+        gasPrice: await getFairGasPrice(this.web3)
+      })
     } catch (e) {
       this.logger.error(`ERRPR: Failed to approve spender to spend tokens : ${e.message}`)
     }
@@ -205,7 +241,11 @@ export class Pool extends PoolFactory {
             this.web3.utils.toWei(token.amount),
             this.web3.utils.toWei(token.weight)
           )
-          .send({ from: account, gas: this.GASLIMIT_DEFAULT })
+          .send({
+            from: account,
+            gas: this.GASLIMIT_DEFAULT,
+            gasPrice: await getFairGasPrice(this.web3)
+          })
       } catch (e) {
         this.logger.error(`ERROR: Failed to add tokens to pool: ${e.message}`)
       }
@@ -228,9 +268,11 @@ export class Pool extends PoolFactory {
     })
     let result = null
     try {
-      result = await pool.methods
-        .setSwapFee(this.web3.utils.toWei(fee))
-        .send({ from: account, gas: this.GASLIMIT_DEFAULT })
+      result = await pool.methods.setSwapFee(this.web3.utils.toWei(fee)).send({
+        from: account,
+        gas: this.GASLIMIT_DEFAULT,
+        gasPrice: await getFairGasPrice(this.web3)
+      })
     } catch (e) {
       this.logger.error(`ERROR: Failed to set pool swap fee: ${e.message}`)
     }
@@ -248,9 +290,11 @@ export class Pool extends PoolFactory {
     })
     let result = null
     try {
-      result = await pool.methods
-        .finalize()
-        .send({ from: account, gas: this.GASLIMIT_DEFAULT })
+      result = await pool.methods.finalize().send({
+        from: account,
+        gas: this.GASLIMIT_DEFAULT,
+        gasPrice: await getFairGasPrice(this.web3)
+      })
     } catch (e) {
       this.logger.error(`ERROR: Failed to finalize pool: ${e.message}`)
     }
@@ -511,6 +555,7 @@ export class Pool extends PoolFactory {
       from: account
     })
     let result = null
+    const gasLimitDefault = this.GASLIMIT_DEFAULT
     let estGas
     try {
       estGas = await pool.methods
@@ -521,15 +566,11 @@ export class Pool extends PoolFactory {
           this.web3.utils.toWei(minAmountOut),
           maxPrice ? this.web3.utils.toWei(maxPrice) : MaxUint256
         )
-        .estimateGas(function (err, estGas) {
-          if (err) {
-            //  console.error('ERROR: OnChainMetadataCacheEstimateGas: ' + err)
-            return this.GASLIMIT_DEFAULT
-          }
-          return estGas
-        })
+        .estimateGas({ from: account }, (err, estGas) => (err ? gasLimitDefault : estGas))
     } catch (e) {
-      estGas = this.GASLIMIT_DEFAULT
+      this.logger.log('Error estimate gas swapExactAmountIn')
+      this.logger.log(e)
+      estGas = gasLimitDefault
     }
     try {
       result = await pool.methods
@@ -540,7 +581,11 @@ export class Pool extends PoolFactory {
           this.web3.utils.toWei(minAmountOut),
           maxPrice ? this.web3.utils.toWei(maxPrice) : MaxUint256
         )
-        .send({ from: account, gas: estGas + 1 })
+        .send({
+          from: account,
+          gas: estGas + 1,
+          gasPrice: await getFairGasPrice(this.web3)
+        })
     } catch (e) {
       this.logger.error(`ERROR: Failed to swap exact amount in : ${e.message}`)
     }
@@ -571,6 +616,7 @@ export class Pool extends PoolFactory {
       from: account
     })
     let result = null
+    const gasLimitDefault = this.GASLIMIT_DEFAULT
     let estGas
     try {
       estGas = await pool.methods
@@ -581,15 +627,11 @@ export class Pool extends PoolFactory {
           this.web3.utils.toWei(minAmountOut),
           maxPrice ? this.web3.utils.toWei(maxPrice) : MaxUint256
         )
-        .estimateGas(function (err, estGas) {
-          if (err) {
-            //  console.error('ERROR: OnChainMetadataCacheEstimateGas: ' + err)
-            return this.GASLIMIT_DEFAULT
-          }
-          return estGas
-        })
+        .estimateGas({ from: account }, (err, estGas) => (err ? gasLimitDefault : estGas))
     } catch (e) {
-      estGas = this.GASLIMIT_DEFAULT
+      estGas = gasLimitDefault
+      this.logger.log('Error estimate gas swapExactAmountIn')
+      this.logger.log(e)
     }
     try {
       result = await pool.methods
@@ -600,7 +642,11 @@ export class Pool extends PoolFactory {
           this.web3.utils.toWei(minAmountOut),
           maxPrice ? this.web3.utils.toWei(maxPrice) : MaxUint256
         )
-        .send({ from: account, gas: estGas + 1 })
+        .send({
+          from: account,
+          gas: estGas + 1,
+          gasPrice: await getFairGasPrice(this.web3)
+        })
     } catch (e) {
       this.logger.error(`ERROR: Failed to swap exact amount out: ${e.message}`)
     }
@@ -633,11 +679,23 @@ export class Pool extends PoolFactory {
     }
 
     let result = null
-
+    const gasLimitDefault = this.GASLIMIT_DEFAULT
+    let estGas
+    try {
+      estGas = await pool.methods
+        .joinPool(this.web3.utils.toWei(poolAmountOut), weiMaxAmountsIn)
+        .estimateGas({ from: account }, (err, estGas) => (err ? gasLimitDefault : estGas))
+    } catch (e) {
+      estGas = gasLimitDefault
+    }
     try {
       result = await pool.methods
         .joinPool(this.web3.utils.toWei(poolAmountOut), weiMaxAmountsIn)
-        .send({ from: account, gas: this.GASLIMIT_DEFAULT })
+        .send({
+          from: account,
+          gas: estGas + 1,
+          gasPrice: await getFairGasPrice(this.web3)
+        })
     } catch (e) {
       this.logger.error(`ERROR: Failed to join pool: ${e.message}`)
     }
@@ -668,10 +726,19 @@ export class Pool extends PoolFactory {
       weiMinAmountsOut.push(this.web3.utils.toWei(amount))
     }
     let result = null
+    const gasLimitDefault = this.GASLIMIT_DEFAULT
+    let estGas
+    try {
+      estGas = await pool.methods
+        .exitPool(this.web3.utils.toWei(poolAmountIn), weiMinAmountsOut)
+        .estimateGas({ from: account }, (err, estGas) => (err ? gasLimitDefault : estGas))
+    } catch (e) {
+      estGas = gasLimitDefault
+    }
     try {
       result = await pool.methods
         .exitPool(this.web3.utils.toWei(poolAmountIn), weiMinAmountsOut)
-        .send({ from: account, gas: this.GASLIMIT_DEFAULT })
+        .send({ from: account, gas: estGas, gasPrice: await getFairGasPrice(this.web3) })
     } catch (e) {
       this.logger.error(`ERROR: Failed to exit pool: ${e.message}`)
     }
@@ -698,23 +765,18 @@ export class Pool extends PoolFactory {
       from: account
     })
     let result = null
+    const gasLimitDefault = this.GASLIMIT_DEFAULT
     let estGas
     try {
-      estGas = await await pool.methods
+      estGas = await pool.methods
         .joinswapExternAmountIn(
           tokenIn,
           this.web3.utils.toWei(tokenAmountIn),
           this.web3.utils.toWei(minPoolAmountOut)
         )
-        .estimateGas(function (err, estGas) {
-          if (err) {
-            //  console.error('ERROR: OnChainMetadataCacheEstimateGas: ' + err)
-            return this.GASLIMIT_DEFAULT
-          }
-          return estGas
-        })
+        .estimateGas({ from: account }, (err, estGas) => (err ? gasLimitDefault : estGas))
     } catch (e) {
-      estGas = this.GASLIMIT_DEFAULT
+      estGas = gasLimitDefault
     }
     try {
       result = await pool.methods
@@ -723,7 +785,11 @@ export class Pool extends PoolFactory {
           this.web3.utils.toWei(tokenAmountIn),
           this.web3.utils.toWei(minPoolAmountOut)
         )
-        .send({ from: account, gas: estGas + 1 })
+        .send({
+          from: account,
+          gas: estGas + 1,
+          gasPrice: await getFairGasPrice(this.web3)
+        })
     } catch (e) {
       this.logger.error(`ERROR: Failed to pay tokens in order to \
       join the pool: ${e.message}`)
@@ -751,6 +817,19 @@ export class Pool extends PoolFactory {
       from: account
     })
     let result = null
+    const gasLimitDefault = this.GASLIMIT_DEFAULT
+    let estGas
+    try {
+      estGas = await pool.methods
+        .joinswapPoolAmountOut(
+          tokenIn,
+          this.web3.utils.toWei(poolAmountOut),
+          this.web3.utils.toWei(maxAmountIn)
+        )
+        .estimateGas({ from: account }, (err, estGas) => (err ? gasLimitDefault : estGas))
+    } catch (e) {
+      estGas = gasLimitDefault
+    }
     try {
       result = await pool.methods
         .joinswapPoolAmountOut(
@@ -758,7 +837,11 @@ export class Pool extends PoolFactory {
           this.web3.utils.toWei(poolAmountOut),
           this.web3.utils.toWei(maxAmountIn)
         )
-        .send({ from: account, gas: this.GASLIMIT_DEFAULT })
+        .send({
+          from: account,
+          gas: estGas + 1,
+          gasPrice: await getFairGasPrice(this.web3)
+        })
     } catch (e) {
       this.logger.error('ERROR: Failed to join swap pool amount out')
     }
@@ -785,6 +868,19 @@ export class Pool extends PoolFactory {
       from: account
     })
     let result = null
+    const gasLimitDefault = this.GASLIMIT_DEFAULT
+    let estGas
+    try {
+      estGas = await pool.methods
+        .exitswapPoolAmountIn(
+          tokenOut,
+          this.web3.utils.toWei(poolAmountIn),
+          this.web3.utils.toWei(minTokenAmountOut)
+        )
+        .estimateGas({ from: account }, (err, estGas) => (err ? gasLimitDefault : estGas))
+    } catch (e) {
+      estGas = gasLimitDefault
+    }
     try {
       result = await pool.methods
         .exitswapPoolAmountIn(
@@ -792,7 +888,11 @@ export class Pool extends PoolFactory {
           this.web3.utils.toWei(poolAmountIn),
           this.web3.utils.toWei(minTokenAmountOut)
         )
-        .send({ from: account, gas: this.GASLIMIT_DEFAULT })
+        .send({
+          from: account,
+          gas: this.GASLIMIT_DEFAULT,
+          gasPrice: await getFairGasPrice(this.web3)
+        })
     } catch (e) {
       this.logger.error(`ERROR: Failed to pay pool shares into the pool: ${e.message}`)
     }
@@ -815,11 +915,14 @@ export class Pool extends PoolFactory {
     tokenAmountOut: string,
     maxPoolAmountIn: string
   ): Promise<TransactionReceipt> {
+    const gasLimitDefault = this.GASLIMIT_DEFAULT
+
     const pool = new this.web3.eth.Contract(this.poolABI, poolAddress, {
       from: account
     })
     let result = null
     let estGas
+
     try {
       estGas = await pool.methods
         .exitswapExternAmountOut(
@@ -827,16 +930,11 @@ export class Pool extends PoolFactory {
           this.web3.utils.toWei(tokenAmountOut),
           this.web3.utils.toWei(maxPoolAmountIn)
         )
-        .estimateGas(function (err, estGas) {
-          if (err) {
-            //  console.error('ERROR: OnChainMetadataCacheEstimateGas: ' + err)
-            return this.GASLIMIT_DEFAULT
-          }
-          return estGas
-        })
+        .estimateGas({ from: account }, (err, estGas) => (err ? gasLimitDefault : estGas))
     } catch (e) {
-      estGas = this.GASLIMIT_DEFAULT
+      estGas = gasLimitDefault
     }
+
     try {
       result = await pool.methods
         .exitswapExternAmountOut(
@@ -844,7 +942,11 @@ export class Pool extends PoolFactory {
           this.web3.utils.toWei(tokenAmountOut),
           this.web3.utils.toWei(maxPoolAmountIn)
         )
-        .send({ from: account, gas: estGas + 1 })
+        .send({
+          from: account,
+          gas: estGas + 1,
+          gasPrice: await getFairGasPrice(this.web3)
+        })
     } catch (e) {
       this.logger.error('ERROR: Failed to exitswapExternAmountOut')
     }
@@ -897,6 +999,33 @@ export class Pool extends PoolFactory {
     return price
   }
 
+  public async calcSpotPrice(
+    poolAddress: string,
+    tokenBalanceIn: string,
+    tokenWeightIn: string,
+    tokenBalanceOut: string,
+    tokenWeightOut: string,
+    swapFee: string
+  ): Promise<string> {
+    const pool = new this.web3.eth.Contract(this.poolABI, poolAddress)
+    let amount = '0'
+    try {
+      const result = await pool.methods
+        .calcSpotPrice(
+          this.web3.utils.toWei(tokenBalanceIn),
+          this.web3.utils.toWei(tokenWeightIn),
+          this.web3.utils.toWei(tokenBalanceOut),
+          this.web3.utils.toWei(tokenWeightOut),
+          this.web3.utils.toWei(swapFee)
+        )
+        .call()
+      amount = this.web3.utils.fromWei(result)
+    } catch (e) {
+      this.logger.error('ERROR: Failed to call calcSpotPrice')
+    }
+    return amount
+  }
+
   public async calcInGivenOut(
     poolAddress: string,
     tokenBalanceIn: string,
@@ -908,7 +1037,7 @@ export class Pool extends PoolFactory {
   ): Promise<string> {
     const pool = new this.web3.eth.Contract(this.poolABI, poolAddress)
     let amount = null
-    if (parseFloat(tokenAmountOut) >= parseFloat(tokenBalanceOut)) return null
+    if (new Decimal(tokenAmountOut).gte(tokenBalanceOut)) return null
     try {
       const result = await pool.methods
         .calcInGivenOut(
@@ -1070,5 +1199,44 @@ export class Pool extends PoolFactory {
       this.logger.error(`ERROR: Failed to calculate PoolInGivenSingleOut : ${e.message}`)
     }
     return amount
+  }
+
+  /**
+   * Get LOG_SWAP encoded topic
+   * @return {String}
+   */
+  public getSwapEventSignature(): string {
+    const abi = this.poolABI as AbiItem[]
+    const eventdata = abi.find(function (o) {
+      if (o.name === 'LOG_SWAP' && o.type === 'event') return o
+    })
+    const topic = this.web3.eth.abi.encodeEventSignature(eventdata as any)
+    return topic
+  }
+
+  /**
+   * Get LOG_JOIN encoded topic
+   * @return {String}
+   */
+  public getJoinEventSignature(): string {
+    const abi = this.poolABI as AbiItem[]
+    const eventdata = abi.find(function (o) {
+      if (o.name === 'LOG_JOIN' && o.type === 'event') return o
+    })
+    const topic = this.web3.eth.abi.encodeEventSignature(eventdata as any)
+    return topic
+  }
+
+  /**
+   * Get LOG_EXIT encoded topic
+   * @return {String}
+   */
+  public getExitEventSignature(): string {
+    const abi = this.poolABI as AbiItem[]
+    const eventdata = abi.find(function (o) {
+      if (o.name === 'LOG_EXIT' && o.type === 'event') return o
+    })
+    const topic = this.web3.eth.abi.encodeEventSignature(eventdata as any)
+    return topic
   }
 }

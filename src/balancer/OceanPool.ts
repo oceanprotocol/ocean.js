@@ -1,19 +1,27 @@
 import Web3 from 'web3'
 import { AbiItem } from 'web3-utils/types'
-import { TransactionReceipt } from 'web3-core'
+import { TransactionReceipt, Log } from 'web3-core'
 import { Pool } from './Pool'
 import { EventData, Filter } from 'web3-eth-contract'
 import BigNumber from 'bignumber.js'
-import { SubscribablePromise, Logger } from '../utils'
+import { SubscribablePromise, Logger, didNoZeroX, didPrefixed } from '../utils'
+import Decimal from 'decimal.js'
 
 declare type PoolTransactionType = 'swap' | 'join' | 'exit'
 
 const POOL_MAX_AMOUNT_IN_LIMIT = 0.25 // maximum 1/4 of the pool reserve
 const POOL_MAX_AMOUNT_OUT_LIMIT = 0.25 // maximum 1/4 of the pool reserve
-
+const BPFACTORY_DEPLOY_BLOCK = 0
+const MAX_AWAIT_PROMISES = 10 // infura has a limit of 10 requests/sec
 export interface PoolDetails {
   poolAddress: string
   tokens: string[]
+}
+
+export interface PoolShare {
+  poolAddress: string
+  shares: string
+  did: string
 }
 
 export interface TokensReceived {
@@ -48,6 +56,7 @@ export enum PoolCreateProgressStep {
 export class OceanPool extends Pool {
   public oceanAddress: string = null
   public dtAddress: string = null
+  public startBlock: number
 
   constructor(
     web3: Web3,
@@ -56,12 +65,14 @@ export class OceanPool extends Pool {
     poolABI: AbiItem | AbiItem[] = null,
     factoryAddress: string = null,
     oceanAddress: string = null,
-    gaslimit?: number
+    startBlock?: number
   ) {
-    super(web3, logger, factoryABI, poolABI, factoryAddress, gaslimit)
+    super(web3, logger, factoryABI, poolABI, factoryAddress)
     if (oceanAddress) {
       this.oceanAddress = oceanAddress
     }
+    if (startBlock) this.startBlock = startBlock
+    else this.startBlock = 0
   }
 
   /**
@@ -84,52 +95,58 @@ export class OceanPool extends Pool {
   ): SubscribablePromise<PoolCreateProgressStep, TransactionReceipt> {
     if (this.oceanAddress == null) {
       this.logger.error('ERROR: oceanAddress is not defined')
-      return null
+      throw new Error('ERROR: oceanAddress is not defined')
     }
     if (parseFloat(fee) > 0.1) {
       this.logger.error('ERROR: Swap fee too high. The maximum allowed swapFee is 10%')
-      return null
+      throw new Error('ERROR: Swap fee too high. The maximum allowed swapFee is 10%')
     }
     if (parseFloat(dtAmount) < 2) {
       this.logger.error('ERROR: Amount of DT is too low')
-      return null
+      throw new Error('ERROR: Amount of DT is too low')
     }
     if (parseFloat(dtWeight) > 9 || parseFloat(dtWeight) < 1) {
       this.logger.error('ERROR: Weight out of bounds (min 1, max9)')
-      return null
+      throw new Error('ERROR: Weight out of bounds (min 1, max9)')
     }
     return new SubscribablePromise(async (observer) => {
       observer.next(PoolCreateProgressStep.CreatingPool)
       const createTxid = await super.createPool(account)
       if (!createTxid) {
-        this.logger.error('ERROR: Failed to call approve DT token')
-        return null
+        this.logger.error('ERROR: Failed to call create pool')
+        throw new Error('ERROR: Failed to call create pool')
       }
       const address = createTxid.events.BPoolRegistered.returnValues[0]
       const oceanWeight = 10 - parseFloat(dtWeight)
       this.dtAddress = dtAddress
-      observer.next(PoolCreateProgressStep.ApprovingDatatoken)
       let txid
-      txid = await this.approve(
-        account,
-        dtAddress,
-        address,
-        this.web3.utils.toWei(String(dtAmount))
-      )
-      if (!txid) {
-        this.logger.error('ERROR: Failed to call approve DT token')
-        return null
+      const dtAllowance = await this.allowance(dtAddress, account, address)
+      if (new Decimal(dtAllowance).lt(dtAmount)) {
+        observer.next(PoolCreateProgressStep.ApprovingDatatoken)
+        txid = await this.approve(
+          account,
+          dtAddress,
+          address,
+          this.web3.utils.toWei(String(dtAmount))
+        )
+        if (!txid) {
+          this.logger.error('ERROR: Failed to call approve DT token')
+          throw new Error('ERROR: Failed to call approve DT token')
+        }
       }
-      observer.next(PoolCreateProgressStep.ApprovingOcean)
-      txid = await this.approve(
-        account,
-        this.oceanAddress,
-        address,
-        this.web3.utils.toWei(String(oceanAmount))
-      )
-      if (!txid) {
-        this.logger.error('ERROR: Failed to call approve OCEAN token')
-        return null
+      const oceanAllowance = await this.allowance(this.oceanAddress, account, address)
+      if (new Decimal(oceanAllowance).lt(oceanAmount)) {
+        observer.next(PoolCreateProgressStep.ApprovingOcean)
+        txid = await this.approve(
+          account,
+          this.oceanAddress,
+          address,
+          this.web3.utils.toWei(String(oceanAmount))
+        )
+        if (!txid) {
+          this.logger.error('ERROR: Failed to call approve OCEAN token')
+          throw new Error('ERROR: Failed to call approve OCEAN token')
+        }
       }
       observer.next(PoolCreateProgressStep.SetupPool)
       txid = await super.setup(
@@ -145,7 +162,7 @@ export class OceanPool extends Pool {
       )
       if (!txid) {
         this.logger.error('ERROR: Failed to create a new pool')
-        return null
+        throw new Error('ERROR: Failed to create a new pool')
       }
       return createTxid
     })
@@ -162,10 +179,11 @@ export class OceanPool extends Pool {
     const tokens = await this.getCurrentTokens(poolAddress)
     let token: string
 
-    for (token of tokens) {
-      // TODO: Potential timing attack, left side: true
-      if (token !== this.oceanAddress) this.dtAddress = token
-    }
+    if (tokens != null)
+      for (token of tokens) {
+        // TODO: Potential timing attack, left side: true
+        if (token !== this.oceanAddress) this.dtAddress = token
+      }
     return this.dtAddress
   }
 
@@ -563,7 +581,7 @@ export class OceanPool extends Pool {
       this.logger.error('ERROR: OCEAN approve failed')
       return null
     }
-    return this.swapExactAmountOut(
+    const tx = await super.swapExactAmountOut(
       account,
       poolAddress,
       this.oceanAddress,
@@ -572,10 +590,68 @@ export class OceanPool extends Pool {
       dtAmountWanted,
       maxPrice
     )
+    return tx
   }
 
   /**
-   * Sell datatoken
+   * Buy at least datatoken from a pool for a fixed Ocean amount
+   * @param {String} account
+   * @param {String} poolAddress
+   * @param {String} amount  datatoken amount
+   * @param {String} oceanAmount  Ocean Token amount payed
+   * @param {String} maxPrice  Maximum price to pay
+   * @return {TransactionReceipt}
+   */
+  public async buyDTWithExactOcean(
+    account: string,
+    poolAddress: string,
+    minimumdtAmountWanted: string,
+    OceanAmount: string,
+    maxPrice?: string
+  ): Promise<TransactionReceipt> {
+    if (this.oceanAddress == null) {
+      this.logger.error('ERROR: undefined ocean token contract address')
+      return null
+    }
+    const dtAddress = await this.getDTAddress(poolAddress)
+    if (
+      parseFloat(minimumdtAmountWanted) >
+      parseFloat(await this.getDTMaxBuyQuantity(poolAddress))
+    ) {
+      this.logger.error('ERROR: Buy quantity exceeds quantity allowed')
+      return null
+    }
+    const calcInGivenOut = await this.getOceanNeeded(poolAddress, minimumdtAmountWanted)
+
+    if (parseFloat(calcInGivenOut) > parseFloat(OceanAmount)) {
+      this.logger.error('ERROR: Not enough Ocean Tokens')
+      return null
+    }
+    // TODO - check balances first
+    const txid = await super.approve(
+      account,
+      this.oceanAddress,
+      poolAddress,
+      this.web3.utils.toWei(OceanAmount)
+    )
+    if (!txid) {
+      this.logger.error('ERROR: OCEAN approve failed')
+      return null
+    }
+    const tx = await super.swapExactAmountIn(
+      account,
+      poolAddress,
+      this.oceanAddress,
+      OceanAmount,
+      dtAddress,
+      minimumdtAmountWanted,
+      maxPrice
+    )
+    return tx
+  }
+
+  /**
+   * Sell a specific amount of datatoken to get some ocean tokens
    * @param {String} account
    * @param {String} poolAddress
    * @param {String} amount  datatoken amount to be sold
@@ -618,7 +694,7 @@ export class OceanPool extends Pool {
       this.logger.error('ERROR: DT approve failed')
       return null
     }
-    return this.swapExactAmountIn(
+    const tx = await super.swapExactAmountIn(
       account,
       poolAddress,
       dtAddress,
@@ -627,6 +703,7 @@ export class OceanPool extends Pool {
       oceanAmountWanted,
       maxPrice
     )
+    return tx
   }
 
   /**
@@ -691,13 +768,15 @@ export class OceanPool extends Pool {
       this.logger.error('ERROR: Not enough poolShares')
       return null
     }
-    if (
-      parseFloat(maximumPoolShares) <
-      parseFloat(await this.getPoolSharesRequiredToRemoveDT(poolAddress, amount))
-    ) {
+    const sharesRequired = await this.getPoolSharesRequiredToRemoveDT(poolAddress, amount)
+    if (parseFloat(maximumPoolShares) < parseFloat(sharesRequired)) {
       this.logger.error('ERROR: Not enough poolShares')
       return null
     }
+    // Balancer bug fix
+    if (parseFloat(maximumPoolShares) < parseFloat(sharesRequired))
+      maximumPoolShares = String(parseFloat(maximumPoolShares) * 0.9999)
+    // Balance bug fix
     return this.exitswapExternAmountOut(
       account,
       poolAddress,
@@ -775,13 +854,18 @@ export class OceanPool extends Pool {
       this.logger.error('ERROR: Not enough poolShares')
       return null
     }
-    if (
-      parseFloat(maximumPoolShares) <
-      parseFloat(await this.getPoolSharesRequiredToRemoveOcean(poolAddress, amount))
-    ) {
+    const sharesRequired = await this.getPoolSharesRequiredToRemoveOcean(
+      poolAddress,
+      amount
+    )
+    if (parseFloat(maximumPoolShares) < parseFloat(sharesRequired)) {
       this.logger.error('ERROR: Not enough poolShares')
       return null
     }
+    // Balancer bug fix
+    if (parseFloat(maximumPoolShares) < parseFloat(sharesRequired))
+      maximumPoolShares = String(parseFloat(maximumPoolShares) * 0.9999)
+    // Balance bug fix
     return super.exitswapExternAmountOut(
       account,
       poolAddress,
@@ -812,7 +896,10 @@ export class OceanPool extends Pool {
       this.logger.error('ERROR: Not enough poolShares')
       return null
     }
-
+    // Balancer bug fix
+    if (parseFloat(usershares) === parseFloat(poolShares))
+      poolShares = String(parseFloat(poolShares) * 0.9999)
+    // Balance bug fix
     return this.exitPool(account, poolAddress, poolShares, [minDT, minOcean])
   }
 
@@ -824,7 +911,7 @@ export class OceanPool extends Pool {
   public async getDTPrice(poolAddress: string): Promise<string> {
     if (this.oceanAddress == null) {
       this.logger.error('ERROR: oceanAddress is not defined')
-      return null
+      return '0'
     }
     return this.getOceanNeeded(poolAddress, '1')
   }
@@ -839,7 +926,7 @@ export class OceanPool extends Pool {
     const factory = new this.web3.eth.Contract(this.factoryABI, this.factoryAddress)
     const events = await factory.getPastEvents('BPoolRegistered', {
       filter: {},
-      fromBlock: 0,
+      fromBlock: this.startBlock,
       toBlock: 'latest'
     })
     events.sort((a, b) => (a.blockNumber > b.blockNumber ? 1 : -1))
@@ -852,16 +939,44 @@ export class OceanPool extends Pool {
 
   public async getOceanNeeded(poolAddress: string, dtRequired: string): Promise<string> {
     const dtAddress = await this.getDTAddress(poolAddress)
+    if (
+      parseFloat(dtRequired) > parseFloat(await this.getDTMaxBuyQuantity(poolAddress))
+    ) {
+      return '0'
+    }
     return this.calcInGivenOut(poolAddress, this.oceanAddress, dtAddress, dtRequired)
   }
 
-  public async getOceanReceived(poolAddress: string, dtSold: string): Promise<string> {
+  /**
+   * Calculate how many Ocean Tokens are you going to receive for selling a specific dtAmount (selling DT)
+   * @param {String} poolAddress
+   * @param {String} dtAmount
+   * @return {String[]} - amount of ocean tokens received
+   */
+  public async getOceanReceived(poolAddress: string, dtAmount: string): Promise<string> {
     const dtAddress = await this.getDTAddress(poolAddress)
-    return this.calcOutGivenIn(poolAddress, dtAddress, this.oceanAddress, dtSold)
+    return this.calcOutGivenIn(poolAddress, dtAddress, this.oceanAddress, dtAmount)
+  }
+
+  /**
+   * Calculate how many data token are you going to receive for selling a specific oceanAmount (buying DT)
+   * @param {String} poolAddress
+   * @param {String} oceanAmount
+   * @return {String[]} - amount of ocean tokens received
+   */
+  public async getDTReceived(poolAddress: string, oceanAmount: string): Promise<string> {
+    const dtAddress = await this.getDTAddress(poolAddress)
+    return this.calcOutGivenIn(poolAddress, this.oceanAddress, dtAddress, oceanAmount)
   }
 
   public async getDTNeeded(poolAddress: string, OceanRequired: string): Promise<string> {
     const dtAddress = await this.getDTAddress(poolAddress)
+    if (
+      parseFloat(OceanRequired) >
+      parseFloat(await this.getOceanMaxBuyQuantity(poolAddress))
+    ) {
+      return '0'
+    }
     return this.calcInGivenOut(poolAddress, dtAddress, this.oceanAddress, OceanRequired)
   }
 
@@ -876,15 +991,67 @@ export class OceanPool extends Pool {
 
     const events = await factory.getPastEvents('BPoolRegistered', {
       filter: account ? { registeredBy: account } : {},
-      fromBlock: 0,
+      fromBlock: this.startBlock,
       toBlock: 'latest'
     })
-
     for (let i = 0; i < events.length; i++) {
       if (!account || events[i].returnValues[1].toLowerCase() === account.toLowerCase())
         result.push(await this.getPoolDetails(events[i].returnValues[0]))
     }
     return result
+  }
+
+  private async getResult(account: string, event: EventData): Promise<PoolShare> {
+    const shares = await super.sharesBalance(account, event.returnValues[0])
+    if (parseFloat(shares) > 0) {
+      const dtAddress = await this.getDTAddress(event.returnValues[0])
+      if (dtAddress) {
+        const onePool: PoolShare = {
+          shares,
+          poolAddress: event.returnValues[0],
+          did: didPrefixed(didNoZeroX(dtAddress))
+        }
+        return onePool
+      }
+    }
+  }
+
+  /**
+   * Search all pools in which a user has shares
+   * @param {String} account
+   * @return {AllPoolsShares[]}
+   */
+  public async getPoolSharesByAddress(account: string): Promise<PoolShare[]> {
+    const result: PoolShare[] = []
+    const factory = new this.web3.eth.Contract(this.factoryABI, this.factoryAddress)
+    const events = await factory.getPastEvents('BPoolRegistered', {
+      filter: {},
+      fromBlock: this.startBlock,
+      toBlock: 'latest'
+    })
+    let promises = []
+    for (let i = 0; i < events.length; i++) {
+      promises.push(this.getResult(account, events[i]))
+      if (promises.length > MAX_AWAIT_PROMISES) {
+        const results = await Promise.all(promises)
+        for (let j = 0; j < results.length; j++) {
+          result.push(results[j])
+        }
+        promises = []
+      }
+    }
+    if (promises.length > 0) {
+      const results = await Promise.all(promises)
+      for (let j = 0; j < results.length; j++) {
+        result.push(results[j])
+      }
+      promises = []
+    }
+
+    const filteredResult = result.filter((share) => {
+      return share !== undefined
+    })
+    return filteredResult
   }
 
   /**
@@ -906,47 +1073,62 @@ export class OceanPool extends Pool {
    */
   public async getPoolLogs(
     poolAddress: string,
+    startBlock = 0,
     account?: string
   ): Promise<PoolTransaction[]> {
     const results: PoolTransaction[] = []
-    const pool = new this.web3.eth.Contract(this.poolABI, poolAddress)
     const dtAddress = await this.getDTAddress(poolAddress)
-    const filter: Filter = account ? { caller: account } : {}
-    let events: EventData[]
-
-    events = await pool.getPastEvents('LOG_SWAP', {
-      filter,
-      fromBlock: 0,
+    if (startBlock === 0) startBlock = this.startBlock
+    const swapTopic = super.getSwapEventSignature()
+    const joinTopic = super.getJoinEventSignature()
+    const exitTopic = super.getExitEventSignature()
+    let addressTopic
+    if (account)
+      addressTopic = '0x000000000000000000000000' + account.substring(2).toLowerCase()
+    else addressTopic = null
+    const events = await this.web3.eth.getPastLogs({
+      address: poolAddress,
+      topics: [[swapTopic, joinTopic, exitTopic], addressTopic],
+      fromBlock: startBlock,
       toBlock: 'latest'
     })
 
+    let promises = []
     for (let i = 0; i < events.length; i++) {
-      if (!account || events[i].returnValues[0].toLowerCase() === account.toLowerCase())
-        results.push(await this.getEventData('swap', poolAddress, dtAddress, events[i]))
+      promises.push(this.getEventData(poolAddress, dtAddress, events[i]))
+      if (promises.length > MAX_AWAIT_PROMISES) {
+        const data = await Promise.all(promises)
+        for (let j = 0; j < data.length; j++) {
+          results.push(data[j])
+        }
+        promises = []
+      }
+    }
+    if (promises.length > 0) {
+      const data = await Promise.all(promises)
+      for (let j = 0; j < data.length; j++) {
+        results.push(data[j])
+      }
+      promises = []
     }
 
-    events = await pool.getPastEvents('LOG_JOIN', {
-      filter,
-      fromBlock: 0,
-      toBlock: 'latest'
+    // for (let i = 0; i < events.length; i++) {
+    //   switch (events[i].topics[0]) {
+    //     case swapTopic:
+    //       results.push(await this.getEventData('swap', poolAddress, dtAddress, events[i]))
+    //       break
+    //     case joinTopic:
+    //       results.push(await this.getEventData('join', poolAddress, dtAddress, events[i]))
+    //       break
+    //     case exitTopic:
+    //       results.push(await this.getEventData('exit', poolAddress, dtAddress, events[i]))
+    //       break
+    //   }
+    // }
+    const eventResults = results.filter((share) => {
+      return share !== undefined
     })
-
-    for (let i = 0; i < events.length; i++) {
-      if (!account || events[i].returnValues[0].toLowerCase() === account.toLowerCase())
-        results.push(await this.getEventData('join', poolAddress, dtAddress, events[i]))
-    }
-
-    events = await pool.getPastEvents('LOG_EXIT', {
-      filter,
-      fromBlock: 0,
-      toBlock: 'latest'
-    })
-    for (let i = 0; i < events.length; i++) {
-      if (!account || events[i].returnValues[0].toLowerCase() === account.toLowerCase())
-        results.push(await this.getEventData('exit', poolAddress, dtAddress, events[i]))
-    }
-
-    return results
+    return eventResults
   }
 
   /**
@@ -955,63 +1137,208 @@ export class OceanPool extends Pool {
    * @return {PoolTransaction[]}
    */
   public async getAllPoolLogs(account: string): Promise<PoolTransaction[]> {
-    const results: PoolTransaction[] = []
+    const results: PoolTransaction[][] = []
     const factory = new this.web3.eth.Contract(this.factoryABI, this.factoryAddress)
     const events = await factory.getPastEvents('BPoolRegistered', {
       filter: {},
-      fromBlock: 0,
+      fromBlock: this.startBlock,
       toBlock: 'latest'
     })
 
+    let promises = []
     for (let i = 0; i < events.length; i++) {
-      const logs = await this.getPoolLogs(events[i].returnValues[0], account)
-      for (let j = 0; j < logs.length; j++) results.push(logs[j])
+      promises.push(
+        this.getPoolLogs(events[i].returnValues[0], events[i].blockNumber, account)
+      )
+      if (promises.length > MAX_AWAIT_PROMISES) {
+        const data = await Promise.all(promises)
+        for (let j = 0; j < data.length; j++) {
+          results.push(data[j])
+        }
+        promises = []
+      }
     }
-    return results
+    if (promises.length > 0) {
+      const data = await Promise.all(promises)
+      for (let j = 0; j < data.length; j++) {
+        results.push(data[j])
+      }
+      promises = []
+    }
+
+    const concatResults = results.reduce((elem1, elem2) => elem1.concat(elem2))
+
+    return concatResults
   }
 
   private async getEventData(
-    type: PoolTransactionType,
     poolAddress: string,
     dtAddress: string,
-    data: EventData
+    data: Log
   ): Promise<PoolTransaction> {
     const blockDetails = await this.web3.eth.getBlock(data.blockNumber)
+    const swapTopic = super.getSwapEventSignature()
+    const joinTopic = super.getJoinEventSignature()
+    const exitTopic = super.getExitEventSignature()
+    let type: PoolTransactionType
+    switch (data.topics[0]) {
+      case swapTopic:
+        type = 'swap'
+        break
+      case joinTopic:
+        type = 'join'
+        break
+      case exitTopic:
+        type = 'exit'
+        break
+    }
     let result: PoolTransaction = {
       poolAddress,
       dtAddress,
-      caller: data.returnValues[0],
+      caller: data.topics[1],
       transactionHash: data.transactionHash,
       blockNumber: data.blockNumber,
       timestamp: parseInt(String(blockDetails.timestamp)),
       type
     }
-
+    let params
     switch (type) {
       case 'swap':
+        params = this.web3.eth.abi.decodeParameters(['uint256', 'uint256'], data.data)
         result = {
           ...result,
-          tokenIn: data.returnValues[1],
-          tokenOut: data.returnValues[2],
-          tokenAmountIn: this.web3.utils.fromWei(data.returnValues[3]),
-          tokenAmountOut: this.web3.utils.fromWei(data.returnValues[4])
+          tokenIn: '0x' + data.topics[2].substring(data.topics[2].length - 40),
+          tokenOut: '0x' + data.topics[3].substring(data.topics[3].length - 40),
+          tokenAmountIn: this.web3.utils.fromWei(params[0]),
+          tokenAmountOut: this.web3.utils.fromWei(params[1])
         }
         break
       case 'join':
+        params = this.web3.eth.abi.decodeParameters(['uint256'], data.data)
         result = {
           ...result,
-          tokenIn: data.returnValues[1],
-          tokenAmountIn: this.web3.utils.fromWei(data.returnValues[2])
+          tokenIn: '0x' + data.topics[2].substring(data.topics[2].length - 40),
+          tokenAmountIn: this.web3.utils.fromWei(params[0])
         }
         break
       case 'exit':
+        params = this.web3.eth.abi.decodeParameters(['uint256'], data.data)
         result = {
           ...result,
-          tokenOut: data.returnValues[1],
-          tokenAmountOut: this.web3.utils.fromWei(data.returnValues[2])
+          tokenOut: '0x' + data.topics[2].substring(data.topics[2].length - 40),
+          tokenAmountOut: this.web3.utils.fromWei(params[0])
         }
         break
     }
     return result
+  }
+
+  private async computeSlippage(
+    poolAddress: string,
+    tokenInBalance: string,
+    tokenInWeight: string,
+    tokenOutBalance: string,
+    tokenOutWeight: string,
+    newTokenInBalance: string,
+    newTokenOutBalance: string,
+    swapfee: string
+  ) {
+    const initialPrice = await super.calcSpotPrice(
+      poolAddress,
+      tokenInBalance,
+      tokenInWeight,
+      tokenOutBalance,
+      tokenOutWeight,
+      swapfee
+    )
+
+    const newPrice = await super.calcSpotPrice(
+      poolAddress,
+      newTokenInBalance,
+      tokenInWeight,
+      newTokenOutBalance,
+      tokenOutWeight,
+      swapfee
+    )
+    const slippage = (parseFloat(newPrice) * 100) / parseFloat(initialPrice) - 100
+    return String(slippage)
+  }
+
+  /* Get slippage for buying some datatokens while spending exactly oceanAmount ocean tokens */
+  public async computeBuySlippage(
+    poolAddress: string,
+    oceanAmount: string
+  ): Promise<string> {
+    const dtAddress = await this.getDTAddress(poolAddress)
+    const dtWeight = await super.getDenormalizedWeight(poolAddress, dtAddress)
+    const oceanWeight = await super.getDenormalizedWeight(poolAddress, this.oceanAddress)
+    const dtReserve = await super.getReserve(poolAddress, dtAddress)
+    const oceanReserve = await super.getReserve(poolAddress, dtAddress)
+    const swapFee = await super.getSwapFee(poolAddress)
+    const dtReceived = await super.calcOutGivenIn(
+      poolAddress,
+      oceanReserve,
+      oceanWeight,
+      dtReserve,
+      dtWeight,
+      oceanAmount,
+      swapFee
+    )
+    const newDtReserve = new BigNumber(this.web3.utils.toWei(dtReserve)).minus(
+      this.web3.utils.toWei(dtReceived)
+    )
+    const newOceanReserve = new BigNumber(this.web3.utils.toWei(oceanReserve)).plus(
+      this.web3.utils.toWei(oceanAmount)
+    )
+    const slippage = await this.computeSlippage(
+      poolAddress,
+      oceanReserve,
+      oceanWeight,
+      dtReserve,
+      dtWeight,
+      this.web3.utils.fromWei(newOceanReserve.toString()),
+      this.web3.utils.fromWei(newDtReserve.toString()),
+      swapFee
+    )
+    return slippage
+  }
+
+  /* Get slippage for selling an exact amount of datatokens to get some ocean tokens */
+  public async computeSellSlippage(
+    poolAddress: string,
+    dtAmount: string
+  ): Promise<string> {
+    const dtAddress = await this.getDTAddress(poolAddress)
+    const dtWeight = await super.getDenormalizedWeight(poolAddress, dtAddress)
+    const oceanWeight = await super.getDenormalizedWeight(poolAddress, this.oceanAddress)
+    const dtReserve = await super.getReserve(poolAddress, dtAddress)
+    const oceanReserve = await super.getReserve(poolAddress, dtAddress)
+    const swapFee = await super.getSwapFee(poolAddress)
+    const oceanReceived = await super.calcOutGivenIn(
+      poolAddress,
+      dtReserve,
+      dtWeight,
+      oceanReserve,
+      oceanWeight,
+      dtAmount,
+      swapFee
+    )
+    const newDtReserve = new BigNumber(this.web3.utils.toWei(dtReserve)).plus(
+      this.web3.utils.toWei(dtAmount)
+    )
+    const newOceanReserve = new BigNumber(this.web3.utils.toWei(oceanReserve)).minus(
+      this.web3.utils.toWei(oceanReceived)
+    )
+    const slippage = await this.computeSlippage(
+      poolAddress,
+      dtReserve,
+      dtWeight,
+      oceanReserve,
+      oceanWeight,
+      this.web3.utils.fromWei(newDtReserve.toString()),
+      this.web3.utils.fromWei(newOceanReserve.toString()),
+      swapFee
+    )
+    return slippage
   }
 }

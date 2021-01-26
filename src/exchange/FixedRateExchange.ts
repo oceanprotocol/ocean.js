@@ -4,8 +4,10 @@ import { TransactionReceipt } from 'web3-core'
 import { Contract, EventData } from 'web3-eth-contract'
 import { AbiItem } from 'web3-utils/types'
 import Web3 from 'web3'
-import { SubscribablePromise, Logger } from '../utils'
+import { SubscribablePromise, Logger, getFairGasPrice } from '../utils'
 import { DataTokens } from '../datatokens/Datatokens'
+
+const MAX_AWAIT_PROMISES = 10
 
 export interface FixedPriceExchange {
   exchangeID?: string
@@ -29,9 +31,8 @@ export enum FixedRateCreateProgressStep {
   ApprovingDatatoken
 }
 
-const DEFAULT_GAS_LIMIT = 1000000
-
 export class OceanFixedRateExchange {
+  public GASLIMIT_DEFAULT = 1000000
   /** Ocean related functions */
   public oceanAddress: string = null
   public fixedRateExchangeAddress: string
@@ -40,6 +41,7 @@ export class OceanFixedRateExchange {
   public contract: Contract = null
   private logger: Logger
   public datatokens: DataTokens
+  public startBlock: number
 
   /**
    * Instantiate FixedRateExchange
@@ -54,10 +56,13 @@ export class OceanFixedRateExchange {
     fixedRateExchangeAddress: string = null,
     fixedRateExchangeABI: AbiItem | AbiItem[] = null,
     oceanAddress: string = null,
-    datatokens: DataTokens
+    datatokens: DataTokens,
+    startBlock?: number
   ) {
     this.web3 = web3
     this.fixedRateExchangeAddress = fixedRateExchangeAddress
+    if (startBlock) this.startBlock = startBlock
+    else this.startBlock = 0
     this.fixedRateExchangeABI =
       fixedRateExchangeABI || (defaultFixedRateExchangeABI.abi as AbiItem[])
     this.oceanAddress = oceanAddress
@@ -87,20 +92,15 @@ export class OceanFixedRateExchange {
     return new SubscribablePromise(async (observer) => {
       observer.next(FixedRateCreateProgressStep.CreatingExchange)
       let estGas
+      const gasLimitDefault = this.GASLIMIT_DEFAULT
       try {
-        /* estGas = await this.contract.methods
-            .create(this.oceanAddress, dataToken, this.web3.utils.toWei(rate))
-            .estimateGas(function (err, g) {
-              if (err) {
-                return DEFAULT_GAS_LIMIT
-              } else {
-                return g
-              }
-            })
-            */
-        estGas = DEFAULT_GAS_LIMIT
+        estGas = await this.contract.methods
+          .create(this.oceanAddress, dataToken, this.web3.utils.toWei(rate))
+          .estimateGas({ from: address }, (err, estGas) =>
+            err ? gasLimitDefault : estGas
+          )
       } catch (e) {
-        estGas = DEFAULT_GAS_LIMIT
+        estGas = gasLimitDefault
       }
       let exchangeId = null
       let trxReceipt = null
@@ -109,7 +109,8 @@ export class OceanFixedRateExchange {
           .create(this.oceanAddress, dataToken, this.web3.utils.toWei(rate))
           .send({
             from: address,
-            gas: estGas + 1
+            gas: estGas + 1,
+            gasPrice: await getFairGasPrice(this.web3)
           })
         exchangeId = trxReceipt.events.ExchangeCreated.returnValues[0]
       } catch (e) {
@@ -148,26 +149,22 @@ export class OceanFixedRateExchange {
     dataTokenAmount: string,
     address: string
   ): Promise<TransactionReceipt> {
+    const gasLimitDefault = this.GASLIMIT_DEFAULT
     let estGas
     try {
       estGas = await this.contract.methods
         .swap(exchangeId, this.web3.utils.toWei(String(dataTokenAmount)))
-        .estimateGas(function (err, g) {
-          if (err) {
-            return DEFAULT_GAS_LIMIT
-          } else {
-            return g
-          }
-        })
+        .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
     } catch (e) {
-      estGas = DEFAULT_GAS_LIMIT
+      estGas = gasLimitDefault
     }
     try {
       const trxReceipt = await this.contract.methods
         .swap(exchangeId, this.web3.utils.toWei(String(dataTokenAmount)))
         .send({
           from: address,
-          gas: estGas + 1
+          gas: estGas + 1,
+          gasPrice: await getFairGasPrice(this.web3)
         })
       return trxReceipt
     } catch (e) {
@@ -199,25 +196,21 @@ export class OceanFixedRateExchange {
     newRate: number,
     address: string
   ): Promise<TransactionReceipt> {
+    const gasLimitDefault = this.GASLIMIT_DEFAULT
     let estGas
     try {
       estGas = await this.contract.methods
         .setRate(exchangeId, this.web3.utils.toWei(String(newRate)))
-        .estimateGas(function (err, estGas) {
-          if (err) {
-            console.error(`ERROR: FixedPriceExchange: ${err.message}`)
-            return DEFAULT_GAS_LIMIT
-          }
-          return estGas
-        })
+        .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
     } catch (e) {
-      estGas = DEFAULT_GAS_LIMIT
+      estGas = gasLimitDefault
     }
     const trxReceipt = await this.contract.methods
       .setRate(exchangeId, this.web3.utils.toWei(String(newRate)))
       .send({
         from: address,
-        gas: estGas + 1
+        gas: estGas + 1,
+        gasPrice: await getFairGasPrice(this.web3)
       })
     return trxReceipt
   }
@@ -235,24 +228,19 @@ export class OceanFixedRateExchange {
     const exchange = await this.getExchange(exchangeId)
     if (!exchange) return null
     if (exchange.active === true) return null
+    const gasLimitDefault = this.GASLIMIT_DEFAULT
     let estGas
     try {
       estGas = await this.contract.methods
         .toggleExchangeState(exchangeId)
-        .estimateGas(function (err, estGas) {
-          if (err) {
-            console.error(`ERROR: FixedPriceExchange: ${err.message}`)
-            estGas = DEFAULT_GAS_LIMIT
-          }
-          return estGas
-        })
+        .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
     } catch (e) {
-      this.logger.error(`ERROR: FixedPriceExchange: ${e.message}`)
-      estGas = DEFAULT_GAS_LIMIT
+      estGas = gasLimitDefault
     }
     const trxReceipt = await this.contract.methods.toggleExchangeState(exchangeId).send({
       from: address,
-      gas: estGas + 1
+      gas: estGas + 1,
+      gasPrice: await getFairGasPrice(this.web3)
     })
     return trxReceipt
   }
@@ -270,24 +258,19 @@ export class OceanFixedRateExchange {
     const exchange = await this.getExchange(exchangeId)
     if (!exchange) return null
     if (exchange.active === false) return null
+    const gasLimitDefault = this.GASLIMIT_DEFAULT
     let estGas
     try {
       estGas = await this.contract.methods
         .toggleExchangeState(exchangeId)
-        .estimateGas(function (err, estGas) {
-          if (err) {
-            console.error(`ERROR: FixedPriceExchange: ${err.message}`)
-            estGas = DEFAULT_GAS_LIMIT
-          }
-          return estGas
-        })
+        .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
     } catch (e) {
-      this.logger.error(`ERROR: FixedPriceExchange: ${e.message}`)
-      estGas = DEFAULT_GAS_LIMIT
+      estGas = gasLimitDefault
     }
     const trxReceipt = await this.contract.methods.toggleExchangeState(exchangeId).send({
       from: address,
-      gas: estGas + 1
+      gas: estGas + 1,
+      gasPrice: await getFairGasPrice(this.web3)
     })
     return trxReceipt
   }
@@ -337,6 +320,8 @@ export class OceanFixedRateExchange {
     const result: FixedPriceExchange = await this.contract.methods
       .getExchange(exchangeId)
       .call()
+    result.fixedRate = this.web3.utils.fromWei(result.fixedRate)
+    result.supply = this.web3.utils.fromWei(result.supply)
     return result
   }
 
@@ -382,21 +367,29 @@ export class OceanFixedRateExchange {
     const result: FixedPriceExchange[] = []
     const events = await this.contract.getPastEvents('ExchangeCreated', {
       filter: { datatoken: dataTokenAddress.toLowerCase() },
-      fromBlock: 0,
+      fromBlock: this.startBlock,
       toBlock: 'latest'
     })
+    let promises = []
     for (let i = 0; i < events.length; i++) {
-      const constituents = await this.getExchange(events[i].returnValues[0])
-      constituents.exchangeID = events[i].returnValues[0]
-      if (
-        constituents.active === true &&
-        constituents.dataToken.toLowerCase() === dataTokenAddress.toLowerCase()
-      ) {
-        const supply = new BigNumber(await this.getSupply(constituents.exchangeID))
-        const required = new BigNumber(minSupply)
-        if (supply.gte(required)) {
-          result.push(constituents)
+      promises.push(this.getExchange(events[i].returnValues[0]))
+      if (promises.length > MAX_AWAIT_PROMISES || i === events.length - 1) {
+        const results = await Promise.all(promises)
+        for (let j = 0; j < results.length; j++) {
+          const constituents = results[j]
+          constituents.exchangeID = events[i].returnValues[0]
+          if (
+            constituents.active === true &&
+            constituents.dataToken.toLowerCase() === dataTokenAddress.toLowerCase()
+          ) {
+            const supply = new BigNumber(constituents.supply)
+            const required = new BigNumber(minSupply)
+            if (supply.gte(required)) {
+              result.push(constituents)
+            }
+          }
         }
+        promises = []
       }
     }
     return result
@@ -411,7 +404,7 @@ export class OceanFixedRateExchange {
     const result: FixedPriceExchange[] = []
     const events = await this.contract.getPastEvents('ExchangeCreated', {
       filter: {},
-      fromBlock: 0,
+      fromBlock: this.startBlock,
       toBlock: 'latest'
     })
     for (let i = 0; i < events.length; i++) {
@@ -434,7 +427,7 @@ export class OceanFixedRateExchange {
     const result: FixedPriceSwap[] = []
     const events = await this.contract.getPastEvents('Swapped', {
       filter: { exchangeId: exchangeId },
-      fromBlock: 0,
+      fromBlock: this.startBlock,
       toBlock: 'latest'
     })
     for (let i = 0; i < events.length; i++) {
@@ -453,7 +446,7 @@ export class OceanFixedRateExchange {
     const result: FixedPriceSwap[] = []
     const events = await this.contract.getPastEvents('ExchangeCreated', {
       filter: {},
-      fromBlock: 0,
+      fromBlock: this.startBlock,
       toBlock: 'latest'
     })
     for (let i = 0; i < events.length; i++) {
@@ -472,8 +465,8 @@ export class OceanFixedRateExchange {
     const result: FixedPriceSwap = {
       exchangeID: data.returnValues[0],
       caller: data.returnValues[1],
-      baseTokenAmount: data.returnValues[2],
-      dataTokenAmount: data.returnValues[3]
+      baseTokenAmount: this.web3.utils.fromWei(data.returnValues[2]),
+      dataTokenAmount: this.web3.utils.fromWei(data.returnValues[3])
     }
     return result
   }

@@ -6,6 +6,7 @@ import { Service, ServiceType } from './interfaces/Service'
 import Web3Provider from '../datatokens/Web3Provider'
 import { BestPrice } from './interfaces/BestPrice'
 import { DataTokenInfo } from './interfaces/DataTokenInfo'
+import { PurgatoryData } from './interfaces/PurgatoryData'
 /**
  * DID Descriptor Object.
  * Contains all the data related to an asset.
@@ -54,6 +55,10 @@ export class DDO {
   public proof: Proof
 
   public price: BestPrice
+
+  public isInPurgatory: 'false' | 'true'
+
+  public purgatoryData?: PurgatoryData
 
   public dataTokenInfo?: DataTokenInfo
 

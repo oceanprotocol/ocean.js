@@ -1,7 +1,7 @@
 import { SearchQuery, QueryResult } from '../metadatacache/MetadataCache'
 import { DDO } from '../ddo/DDO'
 import { Metadata } from '../ddo/interfaces/Metadata'
-import { Service, ServiceAccess, ServiceComputePrivacy } from '../ddo/interfaces/Service'
+import { Service, ServiceAccess } from '../ddo/interfaces/Service'
 import { EditableMetadata } from '../ddo/interfaces/EditableMetadata'
 import Account from './Account'
 import DID from './DID'
@@ -12,7 +12,7 @@ import BigNumber from 'bignumber.js'
 import { Provider } from '../provider/Provider'
 import { isAddress } from 'web3-utils'
 import { MetadataMain } from '../ddo/interfaces'
-import { DataTokens } from '../lib'
+import { TransactionReceipt } from 'web3-core'
 
 export enum CreateProgressStep {
   CreatingDataToken,
@@ -91,7 +91,7 @@ export class Assets extends Instantiable {
       if (!dtAddress) {
         this.logger.log('Creating datatoken')
         observer.next(CreateProgressStep.CreatingDataToken)
-        // const metadataCacheUri = this.ocean.metadatacache.getURI()
+        // const metadataCacheUri = this.ocean.metadataCache.getURI()
         // const jsonBlob = { t: 1, url: metadataCacheUri }
         dtAddress = await datatokens.create('', publisher.getId(), cap, name, symbol)
 
@@ -188,8 +188,8 @@ export class Assets extends Instantiable {
       }
       this.logger.log('Storing DDO')
       observer.next(CreateProgressStep.StoringDdo)
-      // const storedDdo = await this.ocean.metadatacache.storeDDO(ddo)
-      const storeTx = await this.ocean.OnChainMetadataCache.publish(
+      // const storedDdo = await this.ocean.metadataCache.storeDDO(ddo)
+      const storeTx = await this.ocean.onChainMetadata.publish(
         ddo.id,
         ddo,
         publisher.getId()
@@ -207,7 +207,7 @@ export class Assets extends Instantiable {
    * @return {Promise<string[]>} List of DIDs.
    */
   public async ownerAssets(owner: string): Promise<QueryResult> {
-    return this.ocean.metadatacache.getOwnerAssets(owner)
+    return this.ocean.metadataCache.getOwnerAssets(owner)
   }
 
   /**
@@ -216,7 +216,7 @@ export class Assets extends Instantiable {
    * @return {Promise<DDO>}
    */
   public async resolve(did: string): Promise<DDO> {
-    return this.ocean.metadatacache.retrieveDDO(did)
+    return this.ocean.metadataCache.retrieveDDO(did)
   }
 
   public async resolveByDTAddress(
@@ -229,92 +229,75 @@ export class Assets extends Instantiable {
       offset: offset || 100,
       page: page || 1,
       query: {
-        dtAddress: [dtAddress]
+        dataToken: [dtAddress]
       },
       sort: {
         value: sort || 1
       },
       text: dtAddress
     } as SearchQuery
-    return (await this.ocean.metadatacache.queryMetadata(searchQuery)).results
+    return (await this.ocean.metadataCache.queryMetadata(searchQuery)).results
   }
 
+  /**    Metadata updates
+   *  Don't forget to call ocean.OnChainmetadataCache.update after using this functions
+   * ie:  ocean.OnChainmetadataCache.update(ddo.id,ddo,account.getId())
+   */
+
   /**
-   * Edit Metadata for a DDO.
-   * @param  {did} string DID.
+   * Edit Metadata for a DID.
+   * @param  {ddo} DDO
    * @param  {newMetadata}  EditableMetadata Metadata fields & new values.
-   * @param  {Account} account Ethereum account of owner to sign and prove the ownership.
-   * @return {Promise<string>}
+   * @return {Promise<DDO>} the new DDO
    */
-  public async editMetadata(
-    did: string,
-    newMetadata: EditableMetadata,
-    account: Account
-  ): Promise<DDO> {
-    const oldDdo = await this.ocean.metadatacache.retrieveDDO(did)
-    let i
-    for (i = 0; i < oldDdo.service.length; i++) {
-      if (oldDdo.service[i].type === 'metadata') {
-        if (newMetadata.title) oldDdo.service[i].attributes.main.name = newMetadata.title
-        if (!oldDdo.service[i].attributes.additionalInformation)
-          oldDdo.service[i].attributes.additionalInformation = Object()
-        if (newMetadata.description)
-          oldDdo.service[i].attributes.additionalInformation.description =
-            newMetadata.description
-        if (newMetadata.links)
-          oldDdo.service[i].attributes.additionalInformation.links = newMetadata.links
-      }
+  public async editMetadata(ddo: DDO, newMetadata: EditableMetadata): Promise<DDO> {
+    if (!ddo) return null
+    for (let i = 0; i < ddo.service.length; i++) {
+      if (ddo.service[i].type !== 'metadata') continue
+      if (newMetadata.title) ddo.service[i].attributes.main.name = newMetadata.title
+      if (!ddo.service[i].attributes.additionalInformation)
+        ddo.service[i].attributes.additionalInformation = Object()
+      if (newMetadata.description)
+        ddo.service[i].attributes.additionalInformation.description =
+          newMetadata.description
+      if (newMetadata.links)
+        ddo.service[i].attributes.additionalInformation.links = newMetadata.links
     }
-    if (newMetadata.servicePrices) {
-      for (i = 0; i < newMetadata.servicePrices.length; i++) {
-        if (
-          newMetadata.servicePrices[i].cost &&
-          newMetadata.servicePrices[i].serviceIndex
-        ) {
-          oldDdo.service[newMetadata.servicePrices[i].serviceIndex].attributes.main.cost =
-            newMetadata.servicePrices[i].cost
-        }
-      }
-    }
-    const storeTx = await this.ocean.OnChainMetadataCache.update(
-      oldDdo.id,
-      oldDdo,
-      account.getId()
-    )
-    if (storeTx) return oldDdo
-    else return null
+    return ddo
   }
 
   /**
-   * Update Compute Privacy
-   * @param  {did} string DID.
-   * @param  {number} serviceIndex Index of the compute service in the DDO
-   * @param  {ServiceComputePrivacy} computePrivacy ComputePrivacy fields & new values.
-   * @param  {Account} account Ethereum account of owner to sign and prove the ownership.
-   * @return {Promise<string>}
+   * Update Metadata on chain.
+   * @param  {ddo} DDO
+   * @param {String} consumerAccount
+   * @return {Promise<TransactionReceipt>} exchangeId
    */
-  public async updateComputePrivacy(
-    did: string,
-    serviceIndex: number,
-    computePrivacy: ServiceComputePrivacy,
-    account: Account
-  ): Promise<DDO> {
-    const oldDdo = await this.ocean.metadatacache.retrieveDDO(did)
-    if (oldDdo.service[serviceIndex].type !== 'compute') return null
-    oldDdo.service[serviceIndex].attributes.main.privacy.allowRawAlgorithm =
-      computePrivacy.allowRawAlgorithm
-    oldDdo.service[serviceIndex].attributes.main.privacy.allowNetworkAccess =
-      computePrivacy.allowNetworkAccess
-    oldDdo.service[serviceIndex].attributes.main.privacy.trustedAlgorithms =
-      computePrivacy.trustedAlgorithms
-    const storeTx = await this.ocean.OnChainMetadataCache.update(
-      oldDdo.id,
-      oldDdo,
-      account.getId()
-    )
-    if (storeTx) return oldDdo
-    else return null
+  public async updateMetadata(
+    ddo: DDO,
+    consumerAccount: string
+  ): Promise<TransactionReceipt> {
+    return await this.ocean.onChainMetadata.update(ddo.id, ddo, consumerAccount)
   }
+
+  /**
+   * Edit Service Timeouts
+   * @param  {ddo} DDO if empty, will trigger a retrieve
+   * @param  {number} serviceIndex Index of the compute service in the DDO.
+   * @param  {number} timeout New timeout setting
+   * @return {Promise<DDO>}
+   */
+  public async editServiceTimeout(
+    ddo: DDO,
+    serviceIndex: number,
+    timeout: number
+  ): Promise<DDO> {
+    if (!ddo) return null
+    if (typeof ddo.service[serviceIndex] === 'undefined') return null
+    if (timeout < 0) return null
+    ddo.service[serviceIndex].attributes.main.timeout = parseInt(timeout.toFixed())
+    return ddo
+  }
+  /**    End metadata updates   */
 
   /**
    * Returns the creator of a asset.
@@ -342,7 +325,7 @@ export class Assets extends Instantiable {
    * @return {Promise<QueryResult>}
    */
   public async query(query: SearchQuery): Promise<QueryResult> {
-    return this.ocean.metadatacache.queryMetadata(query)
+    return this.ocean.metadataCache.queryMetadata(query)
   }
 
   /**
@@ -351,7 +334,7 @@ export class Assets extends Instantiable {
    * @return {Promise<QueryResult>}
    */
   public async search(text: string): Promise<QueryResult> {
-    return this.ocean.metadatacache.queryMetadata({
+    return this.ocean.metadataCache.queryMetadata({
       text,
       page: 1,
       offset: 100,

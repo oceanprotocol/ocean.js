@@ -16,7 +16,7 @@ describe('MetadataCache', () => {
 
   beforeEach(async () => {
     ocean = await Ocean.getInstance(config)
-    metadataCache = ocean.metadatacache // eslint-disable-line prefer-destructuring
+    metadataCache = ocean.metadataCache // eslint-disable-line prefer-destructuring
   })
 
   afterEach(() => {

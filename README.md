@@ -10,22 +10,24 @@
 [![Test Coverage](https://api.codeclimate.com/v1/badges/3cc01041faac574b155c/test_coverage)](https://codeclimate.com/repos/5f871c2c87b6045061001233/test_coverage)[![code style: prettier](https://img.shields.io/badge/code_style-prettier-7b1173.svg?style=flat-square)](https://github.com/prettier/prettier)
 [![js oceanprotocol](https://img.shields.io/badge/js-oceanprotocol-7b1173.svg)](https://github.com/oceanprotocol/eslint-config-oceanprotocol)
 
-With it, you can:
+With ocean.js, you can:
 
-- **Publish** data services: downloadable files, streaming data, or compute-to-data.
+- **Publish** data services: downloadable files or compute-to-data.
   Ocean creates a new [ERC20](https://github.com/ethereum/EIPs/blob/7f4f0377730f5fc266824084188cc17cf246932e/EIPS/eip-20.md)
-  data token for each data service or set of services.
-- **Mint** data tokens for the service
-- **Consume** data tokens, to access the service
-- **Transfer** data tokens to another owner, and **all other ERC20 actions**
+  datatoken for each dataset / data service.
+- **Mint** datatokens for the service
+- **Sell** datatokens via an OCEAN-datatoken Balancer pool (for auto price discovery), or for a fixed price
+- **Stake** OCEAN on datatoken pools
+- **Consume** datatokens, to access the service
+- **Transfer** datatokens to another owner, and **all other ERC20 actions**
   using [web3.js](https://web3js.readthedocs.io/en/v1.2.9/web3-eth-contract.html) etc.
 
-`ocean.js` is part of the [Ocean Protocol](https://oceanprotocol.com) toolset.
+ocean.js is part of the [Ocean Protocol](https://oceanprotocol.com) toolset.
 
 This is in alpha state and you can expect running into problems. If you run into them, please open up a [new issue](/issues).
 
 - [🏗 Installation](#-installation)
-- [🏄 Quick Start](#-quick-start)
+- [🏄 Quickstart](#-quickstart)
   - [Simple Flow](#simple-flow)
   - [Marketplace Flow](#marketplace-flow)
 - [🦑 Development](#-development)
@@ -44,10 +46,10 @@ This is in alpha state and you can expect running into problems. If you run into
 npm install @oceanprotocol/lib
 ```
 
-## 🏄 Quick Start
+## 🏄 Quickstart
 
 ```ts
-import { Ocean, Config, ConfigHelper } from '@oceanprotocol/lib'
+import { Ocean, Config, ConfigHelper, Logger } from '@oceanprotocol/lib'
 
 const defaultConfig: Config = new ConfigHelper().getConfig(
   'rinkeby',
@@ -174,7 +176,7 @@ For the GitHub releases steps a GitHub personal access token, exported as `GITHU
 ## 🏛 License
 
 ```
-Copyright ((C)) 2020 Ocean Protocol Foundation
+Copyright ((C)) 2021 Ocean Protocol Foundation
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.

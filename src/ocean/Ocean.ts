@@ -3,7 +3,7 @@ import { Assets } from './Assets'
 import { Versions } from './Versions'
 import { OceanUtils } from './utils/Utils'
 import { MetadataCache } from '../metadatacache/MetadataCache'
-import { OnChainMetadataCache } from '../metadatacache/OnChainMetaDataCache'
+import { OnChainMetadata } from '../metadatacache/OnChainMetaData'
 import { Provider } from '../provider/Provider'
 import { DataTokens } from '../datatokens/Datatokens'
 import { Network } from '../datatokens/Network'
@@ -37,7 +37,7 @@ export class Ocean extends Instantiable {
     instance.utils = await OceanUtils.getInstance(instanceConfig)
 
     instance.provider = new Provider(instanceConfig)
-    instance.metadatacache = new MetadataCache(
+    instance.metadataCache = new MetadataCache(
       instanceConfig.config.metadataCacheUri,
       instanceConfig.logger
     )
@@ -59,7 +59,8 @@ export class Ocean extends Instantiable {
       instanceConfig.config.poolFactoryABI,
       instanceConfig.config.poolABI,
       instanceConfig.config.poolFactoryAddress,
-      instanceConfig.config.oceanTokenAddress
+      instanceConfig.config.oceanTokenAddress,
+      instanceConfig.config.startBlock
     )
     instance.fixedRateExchange = new OceanFixedRateExchange(
       instanceConfig.config.web3Provider,
@@ -67,9 +68,10 @@ export class Ocean extends Instantiable {
       instanceConfig.config.fixedRateExchangeAddress,
       instanceConfig.config.fixedRateExchangeAddressABI,
       instanceConfig.config.oceanTokenAddress,
-      instance.datatokens
+      instance.datatokens,
+      instanceConfig.config.startBlock
     )
-    instance.OnChainMetadataCache = new OnChainMetadataCache(
+    instance.onChainMetadata = new OnChainMetadata(
       instanceConfig.config.web3Provider,
       instanceConfig.logger,
       instanceConfig.config.metadataContractAddress,
@@ -102,12 +104,12 @@ export class Ocean extends Instantiable {
    * MetadataCache instance.
    * @type {MetadataCache}
    */
-  public metadatacache: MetadataCache
+  public metadataCache: MetadataCache
   /**
    * OnChainMetadataCache instance.
    * @type {OnChainMetadataCache}
    */
-  public OnChainMetadataCache: OnChainMetadataCache
+  public onChainMetadata: OnChainMetadata
   /**
    * Ocean account submodule
    * @type {Accounts}

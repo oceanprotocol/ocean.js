@@ -109,18 +109,19 @@ describe('Balancer flow', () => {
       OceanPoolFactory.abi as AbiItem[],
       OceanSPool.abi as AbiItem[],
       OceanPoolFactoryAddress,
-      oceanTokenAddress
+      oceanTokenAddress,
+      0
     )
     assert(Pool !== null)
   })
 
-  it('Alice mints 1000 tokens', async () => {
+  it('Alice mints 2000 tokens', async () => {
     await datatoken.mint(tokenAddress, alice, tokenAmount)
   })
-  it('Alice mints 1000 Ocean tokens', async () => {
+  it('Alice mints 2000 Ocean tokens', async () => {
     await oceandatatoken.mint(oceanTokenAddress, alice, tokenAmount)
   })
-  it('Alice transfers 200 ocean token to Bob', async () => {
+  it('Alice transfers 500 ocean token to Bob', async () => {
     await datatoken.transfer(oceanTokenAddress, bob, transferAmount, alice)
   })
   it('Alice creates a new OceanPool pool', async () => {
@@ -195,7 +196,7 @@ describe('Balancer flow', () => {
       alicePoolAddress,
       await Pool.getDTReserve(alicePoolAddress)
     )
-    assert(requiredOcean === null)
+    assert(requiredOcean === '0')
   })
   it('Get amount of Ocean needed to buy 1 dtToken', async () => {
     const requiredOcean = await Pool.getOceanNeeded(alicePoolAddress, '1')
@@ -211,21 +212,36 @@ describe('Balancer flow', () => {
     assert(pools.length > 0)
     greatPool = pools[0]
   })
-  it('Bob should buy 2 DT ', async () => {
-    const maxPrice = parseFloat(currentDtPrice) * 2
-    await Pool.buyDT(bob, greatPool, '2', '4')
+  it('Bob should buy 1 DT ', async () => {
+    await Pool.buyDT(bob, greatPool, '1', '4')
     const bobDtBalance = await datatoken.balance(tokenAddress, bob)
     const bobOceanBalance = await datatoken.balance(oceanTokenAddress, bob)
     assert(Number(bobDtBalance) > 0)
     assert(Number(bobOceanBalance) > 0)
   })
-  it('Bob should sell 1 DT ', async () => {
-    const maxPrice = parseFloat(currentDtPrice) * 2
-    await Pool.sellDT(bob, greatPool, '1', '1')
+  it('Bob should spend 2 Oceans to buy at least 0.1 DT ', async () => {
+    await Pool.buyDTWithExactOcean(bob, greatPool, '0.1', '2')
     const bobDtBalance = await datatoken.balance(tokenAddress, bob)
     const bobOceanBalance = await datatoken.balance(oceanTokenAddress, bob)
-    assert(Number(bobDtBalance) === 1)
+    assert(Number(bobDtBalance) > 0)
     assert(Number(bobOceanBalance) > 0)
+  })
+  it('Bob should get slippage for buying some DT with 5 Ocean Tokens ', async () => {
+    const slippage = await Pool.computeBuySlippage(greatPool, '5')
+    assert(Number(slippage) > 0)
+  })
+  it('Bob should get slippage for selling 1 DT', async () => {
+    const slippage = await Pool.computeSellSlippage(greatPool, '1')
+    assert(Number(slippage) > 0)
+  })
+  it('Bob should sell 1 DT ', async () => {
+    const bobDtBalance = await datatoken.balance(tokenAddress, bob)
+    const bobOceanBalance = await datatoken.balance(oceanTokenAddress, bob)
+    await Pool.sellDT(bob, greatPool, '1', '0.1')
+    const newbobDtBalance = await datatoken.balance(tokenAddress, bob)
+    const newbobOceanBalance = await datatoken.balance(oceanTokenAddress, bob)
+    assert(Number(newbobDtBalance) < Number(bobDtBalance))
+    assert(Number(newbobOceanBalance) > Number(bobOceanBalance))
   })
   it('Bob should get maximum DT liquidity that he can add to pool ', async () => {
     const maxDT = await Pool.getDTMaxAddLiquidity(greatPool)
@@ -248,7 +264,7 @@ describe('Balancer flow', () => {
     await Pool.addDTLiquidity(
       bob,
       greatPool,
-      String(Math.min(parseFloat(maxDT), parseFloat(bobDtBalance)))
+      String(Math.min(parseFloat(maxDT), parseFloat(bobDtBalance) / 2))
     )
 
     const newbobDtBalance = await datatoken.balance(tokenAddress, bob)
@@ -306,7 +322,7 @@ describe('Balancer flow', () => {
     await Pool.removeDTLiquidity(
       bob,
       greatPool,
-      String(Math.min(parseFloat(maxDT), parseFloat('0.75'))),
+      String(Math.min(parseFloat(maxDT), parseFloat('0.1'))),
       poolShares
     )
 
@@ -389,7 +405,6 @@ describe('Balancer flow', () => {
     if (consoleDebug) console.log('poolShares:' + poolShares)
     assert(parseFloat(poolShares) > 0)
   })
-
   it('Bob should remove Ocean liquidity from pool ', async () => {
     const currentDtReserve = await Pool.getOceanReserve(greatPool)
     const bobDtBalance = await datatoken.balance(oceanTokenAddress, bob)
@@ -412,13 +427,18 @@ describe('Balancer flow', () => {
     assert(parseFloat(bobDtBalance) < parseFloat(newbobDtBalance))
     assert(parseFloat(poolShares) > parseFloat(newpoolShares))
   })
-  it('ALice should know how many tokens she will get for removing all liquidity', async () => {
+  it('Alice should know how many tokens she will get for removing all liquidity', async () => {
     const aliceShares = await Pool.sharesBalance(alice, greatPool)
     const amounts = await Pool.getTokensRemovedforPoolShares(greatPool, aliceShares)
     assert(parseFloat(amounts.dtAmount) > 0)
     assert(parseFloat(amounts.oceanAmount) > 0)
   })
-  it('ALice should remove all liquidity', async () => {
+  it('Alice should get all her shares for all the pools', async () => {
+    const aliceShares = await Pool.getPoolSharesByAddress(alice)
+    assert(aliceShares.length > 0)
+  })
+
+  it('Alice should remove all liquidity', async () => {
     const aliceShares = await Pool.sharesBalance(alice, greatPool)
     const aliceDtBalance = await datatoken.balance(tokenAddress, alice)
     const aliceOceanBalance = await datatoken.balance(oceanTokenAddress, alice)
@@ -430,12 +450,12 @@ describe('Balancer flow', () => {
     assert(parseFloat(aliceOceanBalance) < parseFloat(newAliceOceanBalance))
     assert(parseFloat(aliceShares) > parseFloat(newAliceShares))
   })
-  it('ALice should get all the pools that she created', async () => {
+  it('Alice should get all the pools that she created', async () => {
     const alicePools = await Pool.getPoolsbyCreator(alice)
     assert(alicePools.length > 0)
   })
 
-  it('ALice should get the logs for her pool', async () => {
+  it('Alice should get the logs for her pool', async () => {
     const poolLogs = await Pool.getPoolLogs(greatPool, null)
     assert(poolLogs.length > 0)
   })
