@@ -119,7 +119,7 @@
     "github": {
       "release": true,
       "assets": [
-        "dist/lib.json"
+        "dist/ocean.js.json"
       ]
     },
     "npm": {
