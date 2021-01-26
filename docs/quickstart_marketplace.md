@@ -37,6 +37,7 @@ export PROVIDER_VERSION=latest
 import { TestContractHandler } from '../TestContractHandler'
 import { DataTokens } from '../../src/datatokens/Datatokens'
 import { Ocean } from '../../src/ocean/Ocean'
+import { LoggerInstance } from '../../src/utils'
 const Web3 = require('web3')
 const web3 = new Web3('http://127.0.0.1:8545')
 const factory = require('@oceanprotocol/contracts/artifacts/DTFactory.json')
@@ -54,11 +55,12 @@ const config = {
 const ocean = await Ocean.getInstance(config)
 const alice = (await ocean.accounts.list())[0]
 
-datatoken = new DataTokens(
+const datatoken = new DataTokens(
   config.factoryAddress,
   factory.abi,
   datatokensTemplate.abi,
-  web3
+  web3,
+  LoggerInstance
 )
 const data = { t: 1, url: ocean.config.metadataCacheUri }
 const blob = JSON.stringify(data)
