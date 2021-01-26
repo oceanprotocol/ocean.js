@@ -11,7 +11,7 @@ const { description, version } = libJsPackage
 
 // Setup our paths, relative to project root
 const outPath = './dist/ocean.js.json'
-const input = './src/lib.ts'
+const input = './src/index.ts'
 
 const generateJson = async () => {
   const spinnerTypedoc = ora('Generating TypeDoc json...').start()
