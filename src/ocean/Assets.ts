@@ -113,8 +113,8 @@ export class Assets extends Instantiable {
       let provider: Provider
 
       if (providerUri) {
-        provider = new Provider(this.instanceConfig)
-        provider.setBaseUrl(providerUri)
+        provider = await Provider.getInstance(this.instanceConfig)
+        await provider.setBaseUrl(providerUri)
       } else provider = this.ocean.provider
       const encryptedFiles = await provider.encrypt(
         did.getDid(),
@@ -406,8 +406,8 @@ export class Assets extends Instantiable {
     serviceIndex = -1,
     serviceEndpoint: string
   ): Promise<any> {
-    const provider = new Provider(this.instanceConfig)
-    provider.setBaseUrl(serviceEndpoint)
+    const provider = await Provider.getInstance(this.instanceConfig)
+    await provider.setBaseUrl(serviceEndpoint)
     const res = await provider.initialize(did, serviceIndex, serviceType, consumerAddress)
     if (res === null) return null
     const providerData = JSON.parse(res)
@@ -514,8 +514,8 @@ export class Assets extends Instantiable {
     destination = destination
       ? `${destination}/datafile.${ddo.shortId()}.${service.index}/`
       : undefined
-    const provider = new Provider(this.instanceConfig)
-    provider.setBaseUrl(serviceEndpoint)
+    const provider = await Provider.getInstance(this.instanceConfig)
+    await provider.setBaseUrl(serviceEndpoint)
     await provider.download(
       did,
       txId,

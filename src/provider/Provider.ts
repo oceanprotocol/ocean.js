@@ -3,7 +3,6 @@ import { noZeroX } from '../utils'
 import { Instantiable, InstantiableConfig } from '../Instantiable.abstract'
 import { File } from '../ddo/interfaces/File'
 import { ComputeJob } from '../ocean/interfaces/ComputeJob'
-import { EndpointInformation } from '../ocean/interfaces/EndpointInformation'
 import { Output } from '../ocean/interfaces/ComputeOutput'
 import { MetadataAlgorithm } from '../ddo/interfaces/MetadataAlgorithm'
 import { Versions } from '../ocean/Versions'
@@ -11,7 +10,11 @@ import { Response } from 'node-fetch'
 import { DDO } from '../ddo/DDO'
 import DID from '../ocean/DID'
 
-const apiPath = '/api/v1/services'
+export interface EndpointInformation {
+  serviceName: string
+  method: string
+  urlPath: string
+}
 
 /**
  * Provides an interface for provider service.
@@ -23,25 +26,55 @@ export class Provider extends Instantiable {
   public nonce: string
   private baseUrl: string
   public servicesEndpoints: any
+  public providerAddress: string
+  /**
+   * Returns the instance of Provider.
+   * @return {Promise<Assets>}
+   */
+  public static async getInstance(config: InstantiableConfig): Promise<Provider> {
+    const instance = new Provider()
+    instance.setInstanceConfig(config)
+    instance.nonce = '0'
+    await instance.setBaseUrl(config.config.providerUri)
+    return instance
+  }
 
   public get url(): string {
     return this.baseUrl
   }
 
-  constructor(config: InstantiableConfig) {
-    super()
-    this.setInstanceConfig(config)
-    this.baseUrl = this.config.providerUri
-    this.nonce = '0'
-    this.setServiceEndpoints()
-  }
-
-  public setBaseUrl(url: string): void {
+  public async setBaseUrl(url: string): Promise<boolean> {
     this.baseUrl = url
+    this.servicesEndpoints = await this.getServiceEndpoints()
+    return true
   }
 
-  public async setServiceEndpoints(): Promise<void> {
-    this.servicesEndpoints = await this.getServiceEndpoints()
+  public async getServiceEndpoints(): Promise<EndpointInformation[]> {
+    const serviceEndpoints: EndpointInformation[] = []
+    try {
+      const result = await (await this.ocean.utils.fetch.get(this.url)).json()
+      this.providerAddress = result['provider-address']
+      for (const i in result.serviceEndpoints) {
+        const endpoint: EndpointInformation = {
+          serviceName: i,
+          method: result.serviceEndpoints[i][0],
+          urlPath: this.url + result.serviceEndpoints[i][1]
+        }
+        serviceEndpoints.push(endpoint)
+      }
+      return serviceEndpoints
+    } catch (e) {
+      this.logger.error('Finding the service endpoints failed:', e)
+
+      return null
+    }
+  }
+
+  public getEndpointURL(serviceName: string): EndpointInformation {
+    if (!this.servicesEndpoints) return null
+    return this.servicesEndpoints.find(
+      (s) => s.serviceName === serviceName
+    ) as EndpointInformation
   }
 
   public async createSignature(account: Account, agreementId: string): Promise<string> {
@@ -193,53 +226,6 @@ export class Provider extends Instantiable {
     return destination
   }
 
-  public async getServiceEndpoints() {
-    const url = this.getURI()
-    const fetch = this.ocean.utils.fetch.get(url)
-    if (this.servicesEndpoints == null) {
-      this.servicesEndpoints = await fetch
-        .then((response: Response) => {
-          if (response.ok) {
-            return response.json()
-          }
-
-          this.logger.error(
-            'Finding the service endpoints failed:',
-            response.status,
-            response.statusText
-          )
-
-          return null
-        })
-        .catch((error: Error) => {
-          this.logger.error('Error with service endpoints')
-          this.logger.error(error.message)
-          throw error
-        })
-    }
-    console.log('JSON format: ' + JSON.stringify(this.servicesEndpoints))
-    const myJSON = JSON.parse(
-      JSON.stringify(this.servicesEndpoints),
-      function (key, value) {
-        if (key === 'serviceEndpoints') console.log('eeee: ' + JSON.parse(value))
-        return JSON.parse(value)
-      }
-    )
-  }
-
-  public getEndpointURL(serviceName: string): EndpointInformation {
-    const methodEndpoint = this.servicesEndpoints.serviceEndpoints[serviceName][0]
-    console.log('Method is: ' + methodEndpoint)
-    const urlEndpoint = this.servicesEndpoints.serviceEndpoints[serviceName][1]
-    const urlEndpointPath = `${this.getURI()}${urlEndpoint}`
-    console.log('URL: ' + urlEndpointPath)
-    const myVar: EndpointInformation = {
-      method: methodEndpoint,
-      urlPath: urlEndpointPath
-    }
-    return myVar
-  }
-
   public async compute(
     method: string,
     did: string,
@@ -258,7 +244,21 @@ export class Provider extends Instantiable {
   ): Promise<ComputeJob | ComputeJob[]> {
     const address = consumerAccount.getId()
     await this.getNonce(consumerAccount.getId())
-    let url = this.getComputeEndpoint()
+    let url
+    switch (method) {
+      case 'get':
+        url = this.getComputeStatusEndpoint().urlPath
+        break
+      case 'post':
+        url = this.getComputeStartEndpoint().urlPath
+        break
+      case 'put':
+        url = this.getComputeStopEndpoint().urlPath
+        break
+      case 'delete':
+        url = this.getComputeDeleteEndpoint().urlPath
+        break
+    }
     url += `?documentId=${noZeroX(did)}`
     if (sign) {
       let signatureMessage = address
@@ -346,7 +346,6 @@ export class Provider extends Instantiable {
 
   public getNonceEndpoint(): EndpointInformation {
     // Output: NONCE: [Object object]
-    console.log('NONCE: ' + this.getEndpointURL('nonce'))
     return this.getEndpointURL('nonce')
   }
 
@@ -358,27 +357,19 @@ export class Provider extends Instantiable {
     return this.getEndpointURL('fileinfo')
   }
 
-  public getComputeEndpointPath(): string {
-    return `${apiPath}/compute`
-  }
-
-  public getComputeEndpoint(): string {
-    return `${this.url}` + this.getComputeEndpointPath()
-  }
-
-  public getComputeStatusJob(): EndpointInformation {
+  public getComputeStatusEndpoint(): EndpointInformation {
     return this.getEndpointURL('computeStatus')
   }
 
-  public getStartComputeJob(): EndpointInformation {
+  public getComputeStartEndpoint(): EndpointInformation {
     return this.getEndpointURL('computeStart')
   }
 
-  public getStopComputeJob(): EndpointInformation {
+  public getComputeStopEndpoint(): EndpointInformation {
     return this.getEndpointURL('computeStop')
   }
 
-  public getDeleteComputeJob(): EndpointInformation {
+  public getComputeDeleteEndpoint(): EndpointInformation {
     return this.getEndpointURL('computeDelete')
   }
 
