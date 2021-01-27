@@ -1,5 +1,5 @@
 import assert from 'assert'
-import * as lib from '../../src/lib'
+import * as lib from '../../src/'
 
 describe('Lib', () => {
   describe('interface', () => {

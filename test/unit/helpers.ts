@@ -1,4 +1,4 @@
-import { DDO } from '../../src/lib'
+import { DDO } from '../../src'
 
 const responsify = async (data) => ({
   ok: true,
