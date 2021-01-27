@@ -1,5 +1,5 @@
 import Config from '../models/Config'
-import { Logger } from '../lib'
+import { Logger } from '../'
 import fs from 'fs'
 import { homedir } from 'os'
 import * as DefaultContractsAddresses from '@oceanprotocol/contracts/artifacts/address.json'

@@ -1,6 +1,6 @@
 import Web3 from 'web3'
 import { Logger } from '../../utils'
-import { Account } from '../../lib'
+import { Account } from '../..'
 
 export class SignatureUtils {
   private web3: Web3
