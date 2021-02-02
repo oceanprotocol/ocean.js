@@ -1,6 +1,6 @@
 import Web3 from 'web3'
 import Config from './models/Config'
-import { Logger, LoggerInstance, LogLevel } from './utils'
+import { Logger, LoggerInstance } from './utils'
 import { Ocean } from './ocean/Ocean'
 
 export interface InstantiableConfig {
@@ -13,48 +13,37 @@ export interface InstantiableConfig {
 export function generateIntantiableConfigFromConfig(
   config: Config
 ): Partial<InstantiableConfig> {
-  const logLevel =
-    typeof config.verbose !== 'number'
-      ? config.verbose
-        ? LogLevel.Log
-        : LogLevel.None
-      : (config.verbose as LogLevel)
   return {
     config,
     web3: config.web3Provider,
-    logger: new Logger(logLevel)
+    logger: LoggerInstance
   }
 }
 
 export abstract class Instantiable {
   protected get ocean(): Ocean {
     if (!this._ocean) {
-      this.logger.error('Ocean instance is not defined.')
+      LoggerInstance.error('Ocean instance is not defined.')
     }
     return this._ocean
   }
 
   protected get web3(): Web3 {
     if (!this._web3) {
-      this.logger.error('Web3 instance is not defined.')
+      LoggerInstance.error('Web3 instance is not defined.')
     }
     return this._web3
   }
 
   protected get config(): Config {
     if (!this._config) {
-      this.logger.error('Config instance is not defined.')
+      LoggerInstance.error('Config instance is not defined.')
     }
     return this._config
   }
 
   protected get logger(): Logger {
-    if (!this._logger) {
-      LoggerInstance.error('Logger instance is not defined.')
-      LoggerInstance.error('Using default instance.')
-      return LoggerInstance
-    }
-    return this._logger
+    return LoggerInstance
   }
 
   protected get instanceConfig(): InstantiableConfig {
