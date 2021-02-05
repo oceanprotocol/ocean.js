@@ -84,7 +84,6 @@ export class MetadataCache {
    * @return {Promise<QueryResult>}
    */
   public async queryMetadata(query: SearchQuery): Promise<QueryResult> {
-    this.logger.log('--- queryMetadata querry', query)
     const result: QueryResult = await this.fetch
       .post(`${this.url}${apiPath}/query`, JSON.stringify(query))
       .then((response: Response) => {
