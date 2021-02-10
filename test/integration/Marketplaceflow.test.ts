@@ -206,6 +206,20 @@ describe('Marketplace flow', () => {
     assert(assets.results.length > 0)
   })
 
+  it('Alice updates metadata and removes sample links', async () => {
+    const newMetaData: EditableMetadata = {
+      description: 'new description no links',
+      title: 'new title no links'
+    }
+    const newDdo = await ocean.assets.editMetadata(ddo, newMetaData)
+    assert(newDdo !== null)
+    const txid = await ocean.onChainMetadata.update(newDdo.id, newDdo, alice.getId())
+    assert(txid !== null)
+    await sleep(60000)
+    const metaData = await ocean.assets.getServiceByType(ddo.id, 'metadata')
+    assert.deepEqual(metaData.attributes.additionalInformation.links, [])
+  })
+
   it('Alice updates metadata', async () => {
     const newMetaData: EditableMetadata = {
       description: 'new description',
@@ -224,25 +238,6 @@ describe('Marketplace flow', () => {
       newMetaData.description
     )
     assert.deepEqual(metaData.attributes.additionalInformation.links, newMetaData.links)
-  })
-
-  it('Alice updates metadata and removes sample links', async () => {
-    const newMetaData: EditableMetadata = {
-      description: 'new description no links',
-      title: 'new title no links'
-    }
-    const newDdo = await ocean.assets.editMetadata(ddo, newMetaData)
-    assert(newDdo !== null)
-    const txid = await ocean.onChainMetadata.update(newDdo.id, newDdo, alice.getId())
-    assert(txid !== null)
-    await sleep(60000)
-    const metaData = await ocean.assets.getServiceByType(ddo.id, 'metadata')
-    assert.equal(metaData.attributes.main.name, newMetaData.title)
-    assert.equal(
-      metaData.attributes.additionalInformation.description,
-      newMetaData.description
-    )
-    assert.deepEqual(metaData.attributes.additionalInformation.links, [])
   })
 
   it('Alice updates timeout for the access service', async () => {
