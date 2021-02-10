@@ -11,6 +11,7 @@ const web3 = new Web3('http://127.0.0.1:8545')
 
 describe('DataTokens', () => {
   let minter: string
+  let newMinter: string
   let spender: string
   let balance: string
   let contracts: TestContractHandler
@@ -30,6 +31,7 @@ describe('DataTokens', () => {
     await contracts.getAccounts()
     minter = contracts.accounts[0]
     spender = contracts.accounts[1]
+    newMinter = contracts.accounts[2]
     await contracts.deployContracts(minter)
   })
 
@@ -89,5 +91,29 @@ describe('DataTokens', () => {
     await datatoken.transferFrom(tokenAddress, spender, tokenAmount, minter)
     balance = await datatoken.balance(tokenAddress, minter)
     assert(balance === tokenAmount)
+  })
+
+  it('should check if it has the minter role', async () => {
+    const isMinter = await datatoken.isMinter(tokenAddress, minter)
+    assert(isMinter === true)
+  })
+
+  it('should propose a new minter', async () => {
+    const tx = await datatoken.proposeMinter(tokenAddress, newMinter, minter)
+    assert(tx !== null)
+  })
+
+  it('should new minter accept the new role', async () => {
+    const tx = await datatoken.approveMinter(tokenAddress, newMinter)
+    assert(tx !== null)
+  })
+
+  it('should check if it does not have the minter role any more', async () => {
+    const isMinter = await datatoken.isMinter(tokenAddress, minter)
+    assert(isMinter === false)
+  })
+  it('newMinter should check if it has the minter role', async () => {
+    const isMinter = await datatoken.isMinter(tokenAddress, newMinter)
+    assert(isMinter === true)
   })
 })

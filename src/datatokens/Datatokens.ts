@@ -498,4 +498,82 @@ export class DataTokens {
     const topic = this.web3.eth.abi.encodeEventSignature(eventdata as any)
     return topic
   }
+
+  /**
+   * Purpose a new minter
+   * @param {String} dataTokenAddress
+   * @param {String} newMinter
+   * @param {String} address - only current minter can call this
+   * @return {Promise<string>} transactionId
+   */
+  public async proposeMinter(
+    dataTokenAddress: string,
+    newMinterAddress: string,
+    address: string
+  ): Promise<string> {
+    const datatoken = new this.web3.eth.Contract(this.datatokensABI, dataTokenAddress, {
+      from: address
+    })
+    const gasLimitDefault = this.GASLIMIT_DEFAULT
+    let estGas
+    try {
+      estGas = await datatoken.methods
+        .proposeMinter(newMinterAddress)
+        .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
+    } catch (e) {
+      estGas = gasLimitDefault
+    }
+    try {
+      const trxReceipt = await datatoken.methods.proposeMinter(newMinterAddress).send({
+        from: address,
+        gas: estGas + 1,
+        gasPrice: await getFairGasPrice(this.web3)
+      })
+      return trxReceipt
+    } catch (e) {
+      return null
+    }
+  }
+
+  /**
+   * Approve minter role
+   * @param {String} dataTokenAddress
+   * @param {String} address - only proposad minter can call this
+   * @return {Promise<string>} transactionId
+   */
+  public async approveMinter(dataTokenAddress: string, address: string): Promise<string> {
+    const datatoken = new this.web3.eth.Contract(this.datatokensABI, dataTokenAddress, {
+      from: address
+    })
+    const gasLimitDefault = this.GASLIMIT_DEFAULT
+    let estGas
+    try {
+      estGas = await datatoken.methods
+        .approveMinter()
+        .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
+    } catch (e) {
+      estGas = gasLimitDefault
+    }
+    try {
+      const trxReceipt = await datatoken.methods.approveMinter().send({
+        from: address,
+        gas: estGas + 1,
+        gasPrice: await getFairGasPrice(this.web3)
+      })
+      return trxReceipt
+    } catch (e) {
+      return null
+    }
+  }
+
+  /** Check if an address has the minter role
+   * @param {String} dataTokenAddress
+   * * @param {String} address
+   * @return {Promise<string>} string
+   */
+  public async isMinter(dataTokenAddress: string, address: string): Promise<boolean> {
+    const datatoken = new this.web3.eth.Contract(this.datatokensABI, dataTokenAddress)
+    const trxReceipt = await datatoken.methods.isMinter(address).call()
+    return trxReceipt
+  }
 }
