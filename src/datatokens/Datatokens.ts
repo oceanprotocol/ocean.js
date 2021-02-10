@@ -19,6 +19,7 @@ export class DataTokens {
   public datatokensABI: AbiItem | AbiItem[]
   public web3: Web3
   private logger: Logger
+  public startBlock: number
   /**
    * Instantiate DataTokens (independently of Ocean).
    * @param {String} factoryAddress
@@ -31,13 +32,15 @@ export class DataTokens {
     factoryABI: AbiItem | AbiItem[],
     datatokensABI: AbiItem | AbiItem[],
     web3: Web3,
-    logger: Logger
+    logger: Logger,
+    startBlock?: number
   ) {
     this.factoryAddress = factoryAddress
     this.factoryABI = factoryABI || (defaultFactoryABI.abi as AbiItem[])
     this.datatokensABI = datatokensABI || (defaultDatatokensABI.abi as AbiItem[])
     this.web3 = web3
     this.logger = logger
+    this.startBlock = startBlock || 0
   }
 
   /**
@@ -469,9 +472,17 @@ export class DataTokens {
     const datatoken = new this.web3.eth.Contract(this.datatokensABI, dataTokenAddress, {
       from: address
     })
+    let fromBlock
+    if (timeout > 0) {
+      const lastBlock = await this.web3.eth.getBlockNumber()
+      fromBlock = lastBlock - timeout
+      if (fromBlock < this.startBlock) fromBlock = this.startBlock
+    } else {
+      fromBlock = this.startBlock
+    }
     const events = await datatoken.getPastEvents('OrderStarted', {
       filter: { consumer: address },
-      fromBlock: 0,
+      fromBlock,
       toBlock: 'latest'
     })
     for (let i = 0; i < events.length; i++) {
