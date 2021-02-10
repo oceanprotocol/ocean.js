@@ -28,7 +28,6 @@ describe('MetadataCache', () => {
       offset: 100,
       page: 1,
       query: {
-        nativeSearch: 1,
         query_string: {
           query: 'Office'
         }

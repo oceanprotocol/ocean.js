@@ -1,6 +1,5 @@
 import { DDO } from '../ddo/DDO'
 import DID from '../ocean/DID'
-import { EditableMetadata } from '../ddo/interfaces/EditableMetadata'
 import { Logger } from '../utils'
 import { WebServiceConnector } from '../ocean/utils/WebServiceConnector'
 import { Response } from 'node-fetch'
@@ -20,9 +19,20 @@ export interface SearchQuery {
   page?: number
   query: {
     nativeSearch?: number
+    match?: {
+      [property: string]:
+        | string
+        | number
+        | boolean
+        | Record<string, string | number | boolean>
+    }
     // eslint-disable-next-line camelcase
-    query_string: {
-      [property: string]: string | number | string[] | number[]
+    query_string?: {
+      [property: string]: string | number | string[] | number[] | boolean
+    }
+    // eslint-disable-next-line camelcase
+    simple_query_string?: {
+      [property: string]: string | number | string[] | number[] | boolean
     }
   }
   sort?: { [jsonPath: string]: number }
@@ -84,6 +94,7 @@ export class MetadataCache {
    * @return {Promise<QueryResult>}
    */
   public async queryMetadata(query: SearchQuery): Promise<QueryResult> {
+    if (!query.query.nativeSearch) query.query.nativeSearch = 1
     const result: QueryResult = await this.fetch
       .post(`${this.url}${apiPath}/query`, JSON.stringify(query))
       .then((response: Response) => {
