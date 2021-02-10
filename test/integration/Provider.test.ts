@@ -25,6 +25,7 @@ describe('Provider tests', () => {
   it('Check a invalid URL', async () => {
     const url = 'https://s3.amazonaws.com/testfiles.oceanprotocol.com/nosuchfile'
     const response = await ocean.provider.fileinfo(url)
-    assert(response[0].valid === false)
+    assert(response[0].contentLength === undefined)
+    assert(response[0].contentType === undefined)
   })
 })
