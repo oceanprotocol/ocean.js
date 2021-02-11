@@ -10,7 +10,7 @@ import { Response } from 'node-fetch'
 import { DDO } from '../ddo/DDO'
 import DID from '../ocean/DID'
 
-export interface EndpointInformation {
+export interface ServiceEndpoint {
   serviceName: string
   method: string
   urlPath: string
@@ -25,7 +25,7 @@ export interface EndpointInformation {
 export class Provider extends Instantiable {
   public nonce: string
   private baseUrl: string
-  public servicesEndpoints: any
+  public servicesEndpoints: ServiceEndpoint[]
   public providerAddress: string
   /**
    * Returns the instance of Provider.
@@ -49,13 +49,19 @@ export class Provider extends Instantiable {
     return true
   }
 
-  public async getServiceEndpoints(): Promise<EndpointInformation[]> {
-    const serviceEndpoints: EndpointInformation[] = []
+  /**
+   * Returns the service endpoints that exist
+   * in provider.
+   * @return {Promise<ServiceEndpoint[]>}
+   */
+
+  public async getServiceEndpoints(): Promise<ServiceEndpoint[]> {
+    const serviceEndpoints: ServiceEndpoint[] = []
     try {
       const result = await (await this.ocean.utils.fetch.get(this.url)).json()
       this.providerAddress = result['provider-address']
       for (const i in result.serviceEndpoints) {
-        const endpoint: EndpointInformation = {
+        const endpoint: ServiceEndpoint = {
           serviceName: i,
           method: result.serviceEndpoints[i][0],
           urlPath: this.url + result.serviceEndpoints[i][1]
@@ -70,11 +76,11 @@ export class Provider extends Instantiable {
     }
   }
 
-  public getEndpointURL(serviceName: string): EndpointInformation {
+  public getEndpointURL(serviceName: string): ServiceEndpoint {
     if (!this.servicesEndpoints) return null
     return this.servicesEndpoints.find(
       (s) => s.serviceName === serviceName
-    ) as EndpointInformation
+    ) as ServiceEndpoint
   }
 
   public async createSignature(account: Account, agreementId: string): Promise<string> {
@@ -340,40 +346,39 @@ export class Provider extends Instantiable {
     return `${this.url}`
   }
 
-  public getInitializeEndpoint(): EndpointInformation {
+  public getInitializeEndpoint(): ServiceEndpoint {
     return this.getEndpointURL('initialize')
   }
 
-  public getNonceEndpoint(): EndpointInformation {
-    // Output: NONCE: [Object object]
+  public getNonceEndpoint(): ServiceEndpoint {
     return this.getEndpointURL('nonce')
   }
 
-  public getEncryptEndpoint(): EndpointInformation {
+  public getEncryptEndpoint(): ServiceEndpoint {
     return this.getEndpointURL('encrypt')
   }
 
-  public getFileinfoEndpoint(): EndpointInformation {
+  public getFileinfoEndpoint(): ServiceEndpoint {
     return this.getEndpointURL('fileinfo')
   }
 
-  public getComputeStatusEndpoint(): EndpointInformation {
+  public getComputeStatusEndpoint(): ServiceEndpoint {
     return this.getEndpointURL('computeStatus')
   }
 
-  public getComputeStartEndpoint(): EndpointInformation {
+  public getComputeStartEndpoint(): ServiceEndpoint {
     return this.getEndpointURL('computeStart')
   }
 
-  public getComputeStopEndpoint(): EndpointInformation {
+  public getComputeStopEndpoint(): ServiceEndpoint {
     return this.getEndpointURL('computeStop')
   }
 
-  public getComputeDeleteEndpoint(): EndpointInformation {
+  public getComputeDeleteEndpoint(): ServiceEndpoint {
     return this.getEndpointURL('computeDelete')
   }
 
-  public getDownloadEndpoint(): EndpointInformation {
+  public getDownloadEndpoint(): ServiceEndpoint {
     return this.getEndpointURL('download')
   }
 
