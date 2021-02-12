@@ -36,13 +36,22 @@ export class WebServiceConnector {
   }
 
   public put(url: string, payload: BodyInit): Promise<Response> {
-    return this.fetch(url, {
-      method: 'PUT',
-      body: payload,
-      headers: {
-        'Content-type': 'application/json'
-      }
-    })
+    if (payload != null) {
+      return this.fetch(url, {
+        method: 'PUT',
+        body: payload,
+        headers: {
+          'Content-type': 'application/json'
+        }
+      })
+    } else {
+      return this.fetch(url, {
+        method: 'PUT',
+        headers: {
+          'Content-type': 'application/json'
+        }
+      })
+    }
   }
 
   public delete(url: string, payload?: BodyInit): Promise<Response> {
