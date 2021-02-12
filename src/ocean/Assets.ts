@@ -443,7 +443,8 @@ export class Assets extends Instantiable {
     payerAddress: string,
     serviceIndex = -1,
     mpAddress?: string,
-    consumerAddress?: string
+    consumerAddress?: string,
+    searchPreviousOrders = true
   ): Promise<string> {
     let service: Service
 
@@ -455,7 +456,6 @@ export class Assets extends Instantiable {
       service = await this.getServiceByIndex(did, serviceIndex)
       serviceType = service.type
     }
-    const { datatokens } = this.ocean
     try {
       const providerData = await this.initialize(
         did,
@@ -465,17 +465,18 @@ export class Assets extends Instantiable {
         service.serviceEndpoint
       )
       if (!providerData) return null
-      service = await this.getServiceByIndex(did, serviceIndex)
-      const previousOrder = await datatokens.getPreviousValidOrders(
-        providerData.dataToken,
-        providerData.numTokens,
-        serviceIndex,
-        service.attributes.main.timeout,
-        consumerAddress
-      )
-      if (previousOrder) return previousOrder
+      if (searchPreviousOrders) {
+        const previousOrder = await this.ocean.datatokens.getPreviousValidOrders(
+          providerData.dataToken,
+          providerData.numTokens,
+          serviceIndex,
+          service.attributes.main.timeout,
+          consumerAddress
+        )
+        if (previousOrder) return previousOrder
+      }
       const balance = new BigNumber(
-        await datatokens.balance(providerData.dataToken, payerAddress)
+        await this.ocean.datatokens.balance(providerData.dataToken, payerAddress)
       )
       const totalCost = new BigNumber(String(providerData.numTokens))
       if (balance.isLessThan(totalCost)) {
@@ -487,7 +488,7 @@ export class Assets extends Instantiable {
         )
         return null
       }
-      const txid = await datatokens.startOrder(
+      const txid = await this.ocean.datatokens.startOrder(
         providerData.dataToken,
         consumerAddress,
         String(providerData.numTokens),
