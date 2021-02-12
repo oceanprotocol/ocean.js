@@ -11,6 +11,7 @@ import datatokensTemplate from '@oceanprotocol/contracts/artifacts/DataTokenTemp
 import { Account, DDO, Metadata } from '../../src/lib'
 import { Cluster, Container, Server } from '../../src/ocean/Compute'
 import { LoggerInstance } from '../../src/utils'
+import { ComputeInput } from '../../src/ocean/interfaces/ComputeInput'
 const web3 = new Web3('http://127.0.0.1:8545')
 
 function sleep(ms: number) {
@@ -23,6 +24,8 @@ describe('Compute flow', () => {
   let owner: Account
   let bob: Account
   let ddo: DDO
+  let ddoAdditional1: DDO
+  let ddoAdditional2: DDO
   let alice: Account
   let asset: Metadata
   let datasetNoRawAlgo: DDO
@@ -34,9 +37,10 @@ describe('Compute flow', () => {
   let tokenAddressNoRawAlgo: string
   let tokenAddressWithTrustedAlgo: string
   let tokenAddressAlgorithm: string
+  let tokenAddressAdditional1: string
+  let tokenAddressAdditional2: string
   let price: string
   let ocean: Ocean
-  let computeService: Service
   let data: { t: number; url: string }
   let blob: string
   let jobId: string
@@ -49,7 +53,8 @@ describe('Compute flow', () => {
 
   const dateCreated = new Date(Date.now()).toISOString().split('.')[0] + 'Z' // remove milliseconds
 
-  const tokenAmount = '100'
+  const tokenAmount = '1000'
+  const aquaSleep = 10000
 
   const timeout = 86400
   const algorithmMeta = {
@@ -99,7 +104,7 @@ describe('Compute flow', () => {
       'AliceDT',
       'DTA'
     )
-    assert(tokenAddress != null)
+    assert(tokenAddress != null, 'Creation of tokenAddress failed')
     tokenAddressNoRawAlgo = await datatoken.create(
       blob,
       alice.getId(),
@@ -107,7 +112,7 @@ describe('Compute flow', () => {
       'AliceDT',
       'DTA'
     )
-    assert(tokenAddressNoRawAlgo != null)
+    assert(tokenAddressNoRawAlgo != null, 'Creation of tokenAddressNoRawAlgo failed')
 
     tokenAddressWithTrustedAlgo = await datatoken.create(
       blob,
@@ -116,7 +121,10 @@ describe('Compute flow', () => {
       'AliceDT',
       'DTA'
     )
-    assert(tokenAddressWithTrustedAlgo != null)
+    assert(
+      tokenAddressWithTrustedAlgo != null,
+      'Creation of tokenAddressWithTrustedAlgo failed'
+    )
 
     tokenAddressAlgorithm = await datatoken.create(
       blob,
@@ -125,7 +133,25 @@ describe('Compute flow', () => {
       'AliceDT',
       'DTA'
     )
-    assert(tokenAddressAlgorithm != null)
+    assert(tokenAddressAlgorithm != null, 'Creation of tokenAddressAlgorithm failed')
+
+    tokenAddressAdditional1 = await datatoken.create(
+      blob,
+      alice.getId(),
+      '10000000000',
+      'AliceDT',
+      'DTA'
+    )
+    assert(tokenAddressAdditional1 != null, 'Creation of tokenAddressAdditional1 failed')
+
+    tokenAddressAdditional2 = await datatoken.create(
+      blob,
+      alice.getId(),
+      '10000000000',
+      'AliceDT',
+      'DTA'
+    )
+    assert(tokenAddressAdditional2 != null, 'Creation of tokenAddressAdditional2 failed')
   })
 
   it('Generates metadata', async () => {
@@ -193,8 +219,86 @@ describe('Compute flow', () => {
       origComputePrivacy as ServiceComputePrivacy
     )
     ddo = await ocean.assets.create(asset, alice, [computeService], tokenAddress)
-    assert(ddo.dataToken === tokenAddress)
-    await sleep(6000)
+    assert(ddo.dataToken === tokenAddress, 'ddo.dataToken !== tokenAddress')
+    await sleep(aquaSleep)
+  })
+  it('Alice publishes a 2nd dataset with a compute service that allows Raw Algo', async () => {
+    const price2 = '2' // in datatoken
+    const cluster2 = ocean.compute.createClusterAttributes(
+      'Kubernetes',
+      'http://10.0.0.17/xxx'
+    )
+    const servers2 = [
+      ocean.compute.createServerAttributes(
+        '1',
+        'xlsize',
+        '50',
+        '16',
+        '0',
+        '128gb',
+        '160gb',
+        timeout
+      )
+    ]
+    const containers2 = [
+      ocean.compute.createContainerAttributes(
+        'tensorflow/tensorflow',
+        'latest',
+        'sha256:cb57ecfa6ebbefd8ffc7f75c0f00e57a7fa739578a429b6f72a0df19315deadc'
+      )
+    ]
+    const providerAttributes2 = ocean.compute.createProviderAttributes(
+      'Azure',
+      'Compute service with 16gb ram for each node.',
+      cluster2,
+      containers2,
+      servers2
+    )
+    const origComputePrivacy2 = {
+      allowRawAlgorithm: true,
+      allowNetworkAccess: false,
+      trustedAlgorithms: []
+    }
+    const computeService2 = ocean.compute.createComputeService(
+      alice,
+      price2,
+      dateCreated,
+      providerAttributes2,
+      origComputePrivacy2 as ServiceComputePrivacy
+    )
+    ddoAdditional1 = await ocean.assets.create(
+      asset,
+      alice,
+      [computeService2],
+      tokenAddressAdditional1
+    )
+    assert(
+      ddoAdditional1.dataToken === tokenAddressAdditional1,
+      'ddoAdditional1.dataToken !== tokenAddressAdditional1'
+    )
+    await sleep(aquaSleep)
+  })
+
+  it('Alice publishes a 3rd dataset with a access service', async () => {
+    const price3 = '1' // in datatoken
+    const publishedDate3 = new Date(Date.now()).toISOString().split('.')[0] + 'Z'
+    const service3 = await ocean.assets.createAccessServiceAttributes(
+      alice,
+      price3,
+      publishedDate3,
+      0
+    )
+    ddoAdditional2 = await ocean.assets.create(
+      asset,
+      alice,
+      [service3],
+      tokenAddressAdditional2
+    )
+    assert(
+      ddoAdditional2.dataToken === tokenAddressAdditional2,
+      'ddoAdditional2.dataToken !== tokenAddressAdditional2'
+    )
+    await sleep(aquaSleep)
   })
 
   it('should publish a dataset with a compute service object that does not allow rawAlgo', async () => {
@@ -217,8 +321,11 @@ describe('Compute flow', () => {
       [computeService],
       tokenAddressNoRawAlgo
     )
-    assert(datasetNoRawAlgo.dataToken === tokenAddressNoRawAlgo)
-    await sleep(6000)
+    assert(
+      datasetNoRawAlgo.dataToken === tokenAddressNoRawAlgo,
+      'datasetNoRawAlgo.dataToken !== tokenAddressNoRawAlgo'
+    )
+    await sleep(aquaSleep)
   })
 
   it('should publish a dataset with a compute service object that allows only algo with did:op:1234', async () => {
@@ -241,8 +348,11 @@ describe('Compute flow', () => {
       [computeService],
       tokenAddressWithTrustedAlgo
     )
-    assert(datasetWithTrustedAlgo.dataToken === tokenAddressWithTrustedAlgo)
-    await sleep(6000)
+    assert(
+      datasetWithTrustedAlgo.dataToken === tokenAddressWithTrustedAlgo,
+      'datasetWithTrustedAlgo.dataToken !== tokenAddressWithTrustedAlgo'
+    )
+    await sleep(aquaSleep)
   })
 
   it('should publish an algorithm', async () => {
@@ -285,8 +395,11 @@ describe('Compute flow', () => {
       [service1],
       tokenAddressAlgorithm
     )
-    assert(algorithmAsset.dataToken === tokenAddressAlgorithm)
-    await sleep(60000)
+    assert(
+      algorithmAsset.dataToken === tokenAddressAlgorithm,
+      'algorithmAsset.dataToken !== tokenAddressAlgorithm'
+    )
+    await sleep(aquaSleep)
   })
 
   it('Alice mints 100 DTs and tranfers them to the compute marketplace', async () => {
@@ -296,13 +409,8 @@ describe('Compute flow', () => {
     await datatoken.mint(tokenAddressAlgorithm, alice.getId(), tokenAmount)
   })
 
-  it('Marketplace posts compute service for sale', async () => {
-    computeService = await ocean.assets.getServiceByType(ddo.id, 'compute')
-    assert(computeService.attributes.main.cost === price)
-  })
-
   it('Bob gets datatokens from Alice to be able to try the compute service', async () => {
-    const dTamount = '20'
+    const dTamount = '200'
     await datatoken
       .transfer(tokenAddress, bob.getId(), dTamount, alice.getId())
       .then(async () => {
@@ -331,6 +439,7 @@ describe('Compute flow', () => {
 
   it('Bob starts compute job with a raw Algo', async () => {
     const output = {}
+    const computeService = ddo.findServiceByType('compute')
     computeOrderId = await ocean.compute.order(
       bob.getId(),
       ddo.id,
@@ -338,7 +447,7 @@ describe('Compute flow', () => {
       undefined,
       algorithmMeta
     )
-    assert(computeOrderId != null)
+    assert(computeOrderId != null, 'computeOrderId === null')
     const response = await ocean.compute.start(
       ddo.id,
       computeOrderId,
@@ -350,11 +459,13 @@ describe('Compute flow', () => {
       `${computeService.index}`,
       computeService.type
     )
+    assert(response, 'Compute error')
     jobId = response.jobId
-    assert(response.status >= 10)
+    assert(response.status >= 1, "response.status it's not >= 1")
+    assert(response.jobId, 'Invalid response.jobId')
   })
   it('Bob should get status of a compute job with a specific order txId', async () => {
-    assert(jobId != null)
+    assert(jobId != null, 'Jobid is null')
     const response = await ocean.compute.status(
       bob,
       undefined,
@@ -362,12 +473,12 @@ describe('Compute flow', () => {
       computeOrderId,
       true
     )
-    assert(response.length > 0)
+    assert(response.length > 0, "Response.length is's not >0")
   })
   it('Bob should get status of a compute job without signing', async () => {
-    assert(jobId != null)
+    assert(jobId != null, 'Jobid is null')
     const response = await ocean.compute.status(bob, ddo.id, jobId, undefined, false)
-    assert(response[0].jobId === jobId)
+    assert(response[0].jobId === jobId, 'response[0].jobId !== jobId')
   })
 
   it('should get status of all compute jobs for an address without signing', async () => {
@@ -378,24 +489,24 @@ describe('Compute flow', () => {
       undefined,
       false
     )
-    assert(response.length > 0)
+    assert(response.length > 0, 'Invalid response length')
   })
   it('Bob should get status of a compute job', async () => {
-    assert(jobId != null)
+    assert(jobId != null, 'Jobid is null')
     const response = await ocean.compute.status(bob, ddo.id, jobId)
-    assert(response[0].jobId === jobId)
+    assert(response[0].jobId === jobId, 'response[0].jobId !== jobId')
   })
 
   it('should get status of all compute jobs for an address', async () => {
     const response = await ocean.compute.status(bob, undefined, undefined)
-    assert(response.length > 0)
+    assert(response.length > 0, 'Invalid response length')
   })
   it('Bob should stop compute job', async () => {
-    assert(jobId != null)
+    assert(jobId != null, 'Jobid is null')
     await ocean.compute.stop(bob, ddo.id, jobId)
     const response = await ocean.compute.status(bob, ddo.id, jobId)
     // TODO: typings say that `stopreq` does not exist
-    assert((response[0] as any).stopreq === 1)
+    assert((response[0] as any).stopreq === 1, 'Response.stopreq is invalid')
   })
   it('should not allow order the compute service with raw algo for dataset that does not allow raw algo', async () => {
     const service1 = datasetNoRawAlgo.findServiceByType('compute')
@@ -407,7 +518,7 @@ describe('Compute flow', () => {
       undefined,
       algorithmMeta
     )
-    assert(order === null)
+    assert(order === null, 'Order should be null')
   })
   it('should not allow order the compute service with algoDid != "did:op:1234" for dataset that allows only "did:op:1234" as algo', async () => {
     const service1 = datasetWithTrustedAlgo.findServiceByType('compute')
@@ -419,9 +530,10 @@ describe('Compute flow', () => {
       'did:op:77777',
       undefined
     )
-    assert(order === null)
+    assert(order === null, 'Order should be null')
   })
   it('should start a compute job with a published algo', async () => {
+    assert(algorithmAsset != null, 'algorithmAsset should not be null')
     const output = {}
     const serviceAlgo = algorithmAsset.findServiceByType('access')
     const orderalgo = await ocean.assets.order(
@@ -429,7 +541,9 @@ describe('Compute flow', () => {
       serviceAlgo.type,
       bob.getId()
     )
-    assert(orderalgo != null)
+    assert(orderalgo != null, 'Order should not be null')
+    assert(ddo != null, 'ddo should not be null')
+    const computeService = ddo.findServiceByType('compute')
     const order = await ocean.compute.order(
       bob.getId(),
       ddo.id,
@@ -437,7 +551,7 @@ describe('Compute flow', () => {
       algorithmAsset.id,
       undefined
     )
-    assert(order != null)
+    assert(order != null, 'Order should not be null')
     const response = await ocean.compute.start(
       ddo.id,
       order,
@@ -451,8 +565,79 @@ describe('Compute flow', () => {
       orderalgo,
       algorithmAsset.dataToken
     )
+    assert(response, 'Compute error')
     jobId = response.jobId
-    assert(response.status >= 10)
+    assert(response.status >= 1, 'Invalid response status')
+    assert(response.jobId, 'Invalid jobId')
+  })
+  it('should start a compute job with a published algo and additional inputs', async () => {
+    const output = {}
+    assert(algorithmAsset != null, 'algorithmAsset should not be null')
+    const serviceAlgo = algorithmAsset.findServiceByType('access')
+    const orderalgo = await ocean.assets.order(
+      algorithmAsset.id,
+      serviceAlgo.type,
+      bob.getId()
+    )
+    assert(orderalgo != null, 'Order should not be null')
+    assert(ddo != null, 'ddo should not be null')
+    const computeService = ddo.findServiceByType('compute')
+    const order = await ocean.compute.order(
+      bob.getId(),
+      ddo.id,
+      computeService.index,
+      algorithmAsset.id,
+      undefined
+    )
+    assert(order != null, 'Order should not be null')
+    assert(ddoAdditional1 != null, 'ddoAdditional1 should not be null')
+    const inputOrder1Service = ddoAdditional1.findServiceByType('compute')
+    const inputOrder1 = await ocean.compute.order(
+      bob.getId(),
+      ddoAdditional1.id,
+      inputOrder1Service.index,
+      ddoAdditional1.id,
+      undefined
+    )
+    assert(inputOrder1 != null, 'inputOrder1 should not be null')
+    assert(ddoAdditional1 != null, 'ddoAdditional1 should not be null')
+    const inputOrder2Service = ddoAdditional2.findServiceByType('access')
+    const inputOrder2 = await ocean.assets.order(
+      ddoAdditional2.id,
+      inputOrder2Service.type,
+      bob.getId()
+    )
+    assert(inputOrder2 != null, 'inputOrder2 should not be null')
+    const additionalInputs: ComputeInput[] = [
+      {
+        did: ddoAdditional1.id,
+        transferTxId: inputOrder1,
+        serviceId: inputOrder1Service.index
+      },
+      {
+        did: ddoAdditional2.id,
+        transferTxId: inputOrder2,
+        serviceId: inputOrder2Service.index
+      }
+    ]
+
+    const response = await ocean.compute.start(
+      ddo.id,
+      order,
+      tokenAddress,
+      bob,
+      algorithmAsset.id,
+      undefined,
+      output,
+      `${computeService.index}`,
+      computeService.type,
+      orderalgo,
+      algorithmAsset.dataToken,
+      additionalInputs
+    )
+    jobId = response.jobId
+    assert(response.status >= 1, 'Invalid response.status')
+    assert(response.jobId, 'Invalid jobId')
   })
   it('Alice updates Compute Privacy', async () => {
     const newComputePrivacy = {
@@ -467,34 +652,31 @@ describe('Compute flow', () => {
         break
       }
     }
-    assert(computeIndex > 0)
+    assert(computeIndex > 0, 'ComputeIndex should be >0')
     const newDdo = await ocean.compute.editComputePrivacy(
       ddo,
       computeIndex,
       newComputePrivacy
     )
-    assert(newDdo !== null)
-    const txid = await ocean.onChainMetadata.update(newDdo.id, newDdo, alice.getId())
-    assert(txid !== null)
-    await sleep(60000)
+    assert(newDdo !== null, 'newDDO should not be null')
+    const txid = await ocean.onChainMetadata.update(ddo.id, newDdo, alice.getId())
+    assert(txid !== null, 'TxId should not be null')
+    await sleep(aquaSleep)
     const metaData = await ocean.assets.getServiceByType(ddo.id, 'compute')
     assert.equal(
       metaData.attributes.main.privacy.allowRawAlgorithm,
-      newComputePrivacy.allowRawAlgorithm
+      newComputePrivacy.allowRawAlgorithm,
+      'allowRawAlgorithm does not match'
     )
     assert.equal(
       metaData.attributes.main.privacy.allowNetworkAccess,
-      newComputePrivacy.allowNetworkAccess
+      newComputePrivacy.allowNetworkAccess,
+      'allowNetworkAccess does not match'
     )
     assert.deepEqual(
       metaData.attributes.main.privacy.trustedAlgorithms,
-      newComputePrivacy.trustedAlgorithms
+      newComputePrivacy.trustedAlgorithms,
+      'allowNetworkAccess does not match'
     )
   })
-  it('Bob gets his order History', async () => {
-    const history = await ocean.assets.getOrderHistory(bob)
-    assert(history.length > 0)
-  })
-  // it('Bob restarts compute job', async () => {})
-  // it('Bob gets outputs', async () => {})
 })

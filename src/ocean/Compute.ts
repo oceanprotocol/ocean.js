@@ -6,6 +6,7 @@ import { SubscribablePromise } from '../utils'
 import { Instantiable, InstantiableConfig } from '../Instantiable.abstract'
 import { Output } from './interfaces/ComputeOutput'
 import { ComputeJob } from './interfaces/ComputeJob'
+import { ComputeInput } from './interfaces/ComputeInput'
 import { Provider } from '../provider/Provider'
 
 export enum OrderProgressStep {
@@ -35,6 +36,7 @@ export interface Server {
 }
 
 export const ComputeJobStatus = Object.freeze({
+  WarmingUp: 1,
   Started: 10,
   ConfiguringVolumes: 20,
   ProvisioningSuccess: 30,
@@ -85,7 +87,8 @@ export class Compute extends Instantiable {
     serviceIndex?: string,
     serviceType?: string,
     algorithmTransferTxId?: string,
-    algorithmDataToken?: string
+    algorithmDataToken?: string,
+    additionalInputs?: ComputeInput[]
   ): Promise<ComputeJob> {
     output = this.checkOutput(consumerAccount, output)
     const ddo = await this.ocean.assets.resolve(did)
@@ -94,23 +97,23 @@ export class Compute extends Instantiable {
     if (did && txId) {
       const provider = new Provider(this.instanceConfig)
       provider.setBaseUrl(serviceEndpoint)
-      const computeJobsList = await provider.compute(
-        'post',
+      const computeJobsList = await provider.computeStart(
         did,
         consumerAccount,
         algorithmDid,
         algorithmMeta,
-        undefined,
         output,
         txId,
         serviceIndex,
         serviceType,
         tokenAddress,
         algorithmTransferTxId,
-        algorithmDataToken
+        algorithmDataToken,
+        additionalInputs
       )
-      return computeJobsList[0] as ComputeJob
-    } else return null
+      if (computeJobsList) return computeJobsList[0] as ComputeJob
+    }
+    return null
   }
 
   /**
@@ -130,14 +133,7 @@ export class Compute extends Instantiable {
     const { serviceEndpoint } = service
     const provider = new Provider(this.instanceConfig)
     provider.setBaseUrl(serviceEndpoint)
-    const computeJobsList = await provider.compute(
-      'put',
-      did,
-      consumerAccount,
-      undefined,
-      undefined,
-      jobId
-    )
+    const computeJobsList = await provider.computeStop(did, consumerAccount, jobId)
 
     return computeJobsList[0] as ComputeJob
   }
@@ -159,14 +155,7 @@ export class Compute extends Instantiable {
     const { serviceEndpoint } = service
     const provider = new Provider(this.instanceConfig)
     provider.setBaseUrl(serviceEndpoint)
-    const computeJobsList = await provider.compute(
-      'delete',
-      did,
-      consumerAccount,
-      undefined,
-      undefined,
-      jobId
-    )
+    const computeJobsList = await provider.computeDelete(did, consumerAccount, jobId)
 
     return computeJobsList[0] as ComputeJob
   }
@@ -198,20 +187,11 @@ export class Compute extends Instantiable {
     } else {
       provider = this.ocean.provider
     }
-    const computeJobsList = await provider.compute(
-      'get',
+    const computeJobsList = await provider.computeStatus(
       did,
       consumerAccount,
-      undefined,
-      undefined,
       jobId,
-      undefined,
       txId,
-      undefined,
-      undefined,
-      undefined,
-      undefined,
-      undefined,
       sign
     )
 
@@ -235,13 +215,12 @@ export class Compute extends Instantiable {
     const { serviceEndpoint } = service
     const provider = new Provider(this.instanceConfig)
     provider.setBaseUrl(serviceEndpoint)
-    const computeJobsList = await provider.compute(
-      'get',
+    const computeJobsList = await provider.computeStatus(
       did,
       consumerAccount,
+      jobId,
       undefined,
-      undefined,
-      jobId
+      true
     )
 
     return computeJobsList[0] as ComputeJob

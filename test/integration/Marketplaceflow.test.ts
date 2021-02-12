@@ -41,6 +41,7 @@ describe('Marketplace flow', () => {
 
   const marketplaceAllowance = '20'
   const tokenAmount = '100'
+  const aquaSleep = 10000
 
   it('Initialize Ocean contracts v3', async () => {
     contracts = new TestContractHandler(
@@ -114,7 +115,7 @@ describe('Marketplace flow', () => {
     )
     ddo = await ocean.assets.create(asset, alice, [service1], tokenAddress)
     assert(ddo.dataToken === tokenAddress)
-    await sleep(60000)
+    await sleep(aquaSleep)
   })
 
   it('Alice mints 100 tokens', async () => {
@@ -216,7 +217,7 @@ describe('Marketplace flow', () => {
     assert(newDdo !== null)
     const txid = await ocean.onChainMetadata.update(newDdo.id, newDdo, alice.getId())
     assert(txid !== null)
-    await sleep(60000)
+    await sleep(aquaSleep)
     const metaData = await ocean.assets.getServiceByType(ddo.id, 'metadata')
     assert.equal(metaData.attributes.main.name, newMetaData.title)
     assert.equal(
@@ -235,7 +236,7 @@ describe('Marketplace flow', () => {
     assert(newDdo !== null)
     const txid = await ocean.onChainMetadata.update(newDdo.id, newDdo, alice.getId())
     assert(txid !== null)
-    await sleep(60000)
+    await sleep(aquaSleep)
     const metaData = await ocean.assets.getServiceByType(ddo.id, 'access')
     assert(parseInt(metaData.attributes.main.timeout) === parseInt(newTimeout.toFixed()))
   })
