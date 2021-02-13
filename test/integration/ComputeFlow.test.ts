@@ -31,12 +31,14 @@ describe('Compute flow', () => {
   let datasetNoRawAlgo: DDO
   let datasetWithTrustedAlgo: DDO
   let algorithmAsset: DDO
+  let algorithmAssetRemoteProvider: DDO
   let contracts: TestContractHandler
   let datatoken: DataTokens
   let tokenAddress: string
   let tokenAddressNoRawAlgo: string
   let tokenAddressWithTrustedAlgo: string
   let tokenAddressAlgorithm: string
+  let tokenAddressAlgorithmRemoteProvider: string
   let tokenAddressAdditional1: string
   let tokenAddressAdditional2: string
   let price: string
@@ -54,7 +56,7 @@ describe('Compute flow', () => {
   const dateCreated = new Date(Date.now()).toISOString().split('.')[0] + 'Z' // remove milliseconds
 
   const tokenAmount = '1000'
-  const aquaSleep = 10000
+  const aquaSleep = 20000
 
   const timeout = 86400
   const algorithmMeta = {
@@ -109,8 +111,8 @@ describe('Compute flow', () => {
       blob,
       alice.getId(),
       '10000000000',
-      'AliceDT',
-      'DTA'
+      'AssetWithNoRawDT',
+      'AWNRDT'
     )
     assert(tokenAddressNoRawAlgo != null, 'Creation of tokenAddressNoRawAlgo failed')
 
@@ -118,8 +120,8 @@ describe('Compute flow', () => {
       blob,
       alice.getId(),
       '10000000000',
-      'AliceDT',
-      'DTA'
+      'AssetWithTrustedDT',
+      'AWTDT'
     )
     assert(
       tokenAddressWithTrustedAlgo != null,
@@ -130,17 +132,29 @@ describe('Compute flow', () => {
       blob,
       alice.getId(),
       '10000000000',
-      'AliceDT',
-      'DTA'
+      'AlgoDT',
+      'ALGDT'
     )
     assert(tokenAddressAlgorithm != null, 'Creation of tokenAddressAlgorithm failed')
+
+    tokenAddressAlgorithmRemoteProvider = await datatoken.create(
+      blob,
+      alice.getId(),
+      '10000000000',
+      'RemoteAlgoDT',
+      'RALGDT'
+    )
+    assert(
+      tokenAddressAlgorithmRemoteProvider != null,
+      'Creation of tokenAddressAlgorithmRemoteProvider failed'
+    )
 
     tokenAddressAdditional1 = await datatoken.create(
       blob,
       alice.getId(),
       '10000000000',
-      'AliceDT',
-      'DTA'
+      'Additional DT',
+      'Add1'
     )
     assert(tokenAddressAdditional1 != null, 'Creation of tokenAddressAdditional1 failed')
 
@@ -148,8 +162,8 @@ describe('Compute flow', () => {
       blob,
       alice.getId(),
       '10000000000',
-      'AliceDT',
-      'DTA'
+      'Additional DT2',
+      'Add2'
     )
     assert(tokenAddressAdditional2 != null, 'Creation of tokenAddressAdditional2 failed')
   })
@@ -402,11 +416,73 @@ describe('Compute flow', () => {
     await sleep(aquaSleep)
   })
 
+  it('should publish an algorithm using the 2nd provider', async () => {
+    const remoteProviderUri = 'http://127.0.0.1:8031'
+    const algoAssetRemoteProvider: Metadata = {
+      main: {
+        type: 'algorithm',
+        name: 'Remote Algorithm',
+        dateCreated: dateCreated,
+        author: 'DevOps',
+        license: 'CC-BY',
+        files: [
+          {
+            url:
+              'https://raw.githubusercontent.com/oceanprotocol/test-algorithm/master/javascript/algo.js',
+            contentType: 'text/js',
+            encoding: 'UTF-8'
+          }
+        ],
+        algorithm: {
+          language: 'js',
+          format: 'docker-image',
+          version: '0.1',
+          container: {
+            entrypoint: 'node $ALGO',
+            image: 'node',
+            tag: '10'
+          }
+        }
+      }
+    }
+    const service1RemoteProvider = await ocean.assets.createAccessServiceAttributes(
+      alice,
+      price,
+      dateCreated,
+      0,
+      remoteProviderUri
+    )
+    algorithmAssetRemoteProvider = await ocean.assets.create(
+      algoAssetRemoteProvider,
+      alice,
+      [service1RemoteProvider],
+      tokenAddressAlgorithmRemoteProvider,
+      null,
+      null,
+      null,
+      remoteProviderUri // only barge has 2 providers
+    )
+    assert(
+      algorithmAssetRemoteProvider.dataToken === tokenAddressAlgorithmRemoteProvider,
+      'algorithmAssetRemoteProvider.dataToken !== tokenAddressAlgorithmRemoteProvider'
+    )
+    await sleep(aquaSleep)
+    const checkDDO = await ocean.assets.resolve(algorithmAssetRemoteProvider.id)
+    const checkService = checkDDO.findServiceByType('access')
+    assert(
+      checkService.serviceEndpoint === remoteProviderUri,
+      'algorithmAssetRemoteProvider serviceEndpoint is not the remote provider'
+    )
+  })
+
   it('Alice mints 100 DTs and tranfers them to the compute marketplace', async () => {
     await datatoken.mint(tokenAddress, alice.getId(), tokenAmount)
     await datatoken.mint(tokenAddressNoRawAlgo, alice.getId(), tokenAmount)
     await datatoken.mint(tokenAddressWithTrustedAlgo, alice.getId(), tokenAmount)
     await datatoken.mint(tokenAddressAlgorithm, alice.getId(), tokenAmount)
+    await datatoken.mint(tokenAddressAlgorithmRemoteProvider, alice.getId(), tokenAmount)
+    await datatoken.mint(tokenAddressAdditional1, alice.getId(), tokenAmount)
+    await datatoken.mint(tokenAddressAdditional2, alice.getId(), tokenAmount)
   })
 
   it('Bob gets datatokens from Alice to be able to try the compute service', async () => {
@@ -433,6 +509,29 @@ describe('Compute flow', () => {
       .transfer(tokenAddressAlgorithm, bob.getId(), dTamount, alice.getId())
       .then(async () => {
         const balance = await datatoken.balance(tokenAddressAlgorithm, bob.getId())
+        assert(balance.toString() === dTamount.toString())
+      })
+    await datatoken
+      .transfer(tokenAddressAlgorithmRemoteProvider, bob.getId(), dTamount, alice.getId())
+      .then(async () => {
+        const balance = await datatoken.balance(
+          tokenAddressAlgorithmRemoteProvider,
+          bob.getId()
+        )
+        assert(balance.toString() === dTamount.toString())
+      })
+
+    await datatoken
+      .transfer(tokenAddressAdditional1, bob.getId(), dTamount, alice.getId())
+      .then(async () => {
+        const balance = await datatoken.balance(tokenAddressAdditional1, bob.getId())
+        assert(balance.toString() === dTamount.toString())
+      })
+
+    await datatoken
+      .transfer(tokenAddressAdditional2, bob.getId(), dTamount, alice.getId())
+      .then(async () => {
+        const balance = await datatoken.balance(tokenAddressAdditional2, bob.getId())
         assert(balance.toString() === dTamount.toString())
       })
   })
@@ -570,6 +669,48 @@ describe('Compute flow', () => {
     assert(response.status >= 1, 'Invalid response status')
     assert(response.jobId, 'Invalid jobId')
   })
+
+  it('should start a compute job with a dataset on provider1 and published algo on provider2', async () => {
+    assert(
+      algorithmAssetRemoteProvider != null,
+      'algorithmAssetRemoteProvider should not be null'
+    )
+    const output = {}
+    const serviceAlgo = algorithmAssetRemoteProvider.findServiceByType('access')
+    const orderalgo = await ocean.assets.order(
+      algorithmAssetRemoteProvider.id,
+      serviceAlgo.type,
+      bob.getId()
+    )
+    assert(orderalgo != null, 'Order should not be null')
+    assert(ddo != null, 'ddo should not be null')
+    const computeService = ddo.findServiceByType('compute')
+    const order = await ocean.compute.order(
+      bob.getId(),
+      ddo.id,
+      computeService.index,
+      algorithmAssetRemoteProvider.id,
+      undefined
+    )
+    assert(order != null, 'Order should not be null')
+    const response = await ocean.compute.start(
+      ddo.id,
+      order,
+      tokenAddress,
+      bob,
+      algorithmAssetRemoteProvider.id,
+      undefined,
+      output,
+      `${computeService.index}`,
+      computeService.type,
+      orderalgo,
+      algorithmAsset.dataToken
+    )
+    assert(response, 'Compute error')
+    assert(response.status >= 1, 'Invalid response status')
+    assert(response.jobId, 'Invalid jobId')
+  })
+
   it('should start a compute job with a published algo and additional inputs', async () => {
     const output = {}
     assert(algorithmAsset != null, 'algorithmAsset should not be null')
@@ -635,7 +776,6 @@ describe('Compute flow', () => {
       algorithmAsset.dataToken,
       additionalInputs
     )
-    jobId = response.jobId
     assert(response.status >= 1, 'Invalid response.status')
     assert(response.jobId, 'Invalid jobId')
   })

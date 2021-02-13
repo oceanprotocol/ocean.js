@@ -234,22 +234,21 @@ export class Provider extends Instantiable {
 
     if (additionalInputs) payload.additionalInputs = additionalInputs
     try {
-      const response = await fetch(this.getComputeEndpoint(), {
-        method: 'POST',
-        body: JSON.stringify(payload),
-        headers: {
-          'Content-type': 'application/json'
-        }
-      })
+      const response = await this.ocean.utils.fetch.post(
+        this.getComputeEndpoint(),
+        JSON.stringify(payload)
+      )
       if (response?.ok) {
         const params = await response.json()
         return params
       }
-      console.error('Compute job failed:', response.status, response.statusText)
+      console.error('Compute start failed:', response.status, response.statusText)
+      this.logger.error('Payload was:', payload)
       return null
     } catch (e) {
-      this.logger.error('Error with compute job')
+      this.logger.error('Compute start failed:')
       this.logger.error(e)
+      this.logger.error('Payload was:', payload)
       return null
     }
   }
@@ -274,22 +273,21 @@ export class Provider extends Instantiable {
     payload.jobId = jobId
     payload.consumerAddress = address
     try {
-      const response = await fetch(this.getComputeEndpoint(), {
-        method: 'PUT',
-        body: JSON.stringify(payload),
-        headers: {
-          'Content-type': 'application/json'
-        }
-      })
+      const response = await this.ocean.utils.fetch.put(
+        this.getComputeEndpoint(),
+        JSON.stringify(payload)
+      )
       if (response?.ok) {
         const params = await response.json()
         return params
       }
-      console.error('Compute job failed:', response.status, response.statusText)
+      this.logger.error('Compute stop failed:', response.status, response.statusText)
+      this.logger.error('Payload was:', payload)
       return null
     } catch (e) {
-      this.logger.error('Error with compute job')
+      this.logger.error('Compute stop failed:')
       this.logger.error(e)
+      this.logger.error('Payload was:', payload)
       return null
     }
   }
@@ -314,22 +312,25 @@ export class Provider extends Instantiable {
     payload.jobId = jobId
     payload.consumerAddress = address
     try {
-      const response = await fetch(this.getComputeEndpoint(), {
-        method: 'DELETE',
-        body: JSON.stringify(payload),
-        headers: {
-          'Content-type': 'application/json'
-        }
-      })
+      const response = await this.ocean.utils.fetch.delete(
+        this.getComputeEndpoint(),
+        JSON.stringify(payload)
+      )
       if (response?.ok) {
         const params = await response.json()
         return params
       }
-      console.error('Compute job failed:', response.status, response.statusText)
+      this.logger.error(
+        'Delete compute job failed:',
+        response.status,
+        response.statusText
+      )
+      this.logger.error('Payload was:', payload)
       return null
     } catch (e) {
-      this.logger.error('Error with compute job')
+      this.logger.error('Delete compute job failed:')
       this.logger.error(e)
+      this.logger.error('Payload was:', payload)
       return null
     }
   }
@@ -360,17 +361,24 @@ export class Provider extends Instantiable {
 
     let response
     try {
-      response = await fetch(this.getComputeEndpoint() + url, {
-        method: 'GET'
+      const response = await this.ocean.utils.fetch.get(this.getComputeEndpoint() + url)
+      /* response = await fetch(this.getComputeEndpoint() + url, {
+        method: 'GET',
+        timeout: 5000
       })
+      */
       if (response?.ok) {
         const params = await response.json()
         return params
       }
-      console.error('Compute job failed:', response.status, response.statusText)
+      this.logger.error(
+        'Get compute status failed:',
+        response.status,
+        response.statusText
+      )
       return null
     } catch (e) {
-      this.logger.error('Error with compute job')
+      this.logger.error('Get compute status failed')
       this.logger.error(e)
       return null
     }
