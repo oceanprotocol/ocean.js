@@ -31,6 +31,7 @@ export class Provider extends Instantiable {
   public servicesEndpoints: ServiceEndpoint[]
   public computeAddress: string
   public providerAddress: string
+  public providerVersion: string
   /**
    * Returns the instance of Provider.
    * @return {Promise<Assets>}
@@ -65,6 +66,7 @@ export class Provider extends Instantiable {
       const result = await (await this.ocean.utils.fetch.get(this.url)).json()
       this.providerAddress = result.providerAddress
       if ('computeAddress' in result) this.computeAddress = result.computeAddress
+      if ('version' in result) this.providerVersion = result.version
       for (const i in result.serviceEndpoints) {
         const endpoint: ServiceEndpoint = {
           serviceName: i,
