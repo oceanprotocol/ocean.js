@@ -66,6 +66,28 @@ export class Compute extends Instantiable {
   }
 
   /**
+   * Gets the compute address for ordering compute assets
+   * @param  {string} did Decentralized identifer of the primary asset (this will determine where compute happens)
+   * @param  {number} serviceIndex If asset has multiple compute services
+   * @return {Promise<String>} Returns compute address
+   */
+  public async getComputeAddress(did: string, serviceIndex = -1): Promise<string> {
+    let service: Service
+    let serviceType = 'compute'
+    if (serviceIndex === -1) {
+      service = await this.ocean.assets.getServiceByType(did, serviceType)
+      serviceIndex = service.index
+    } else {
+      service = await this.ocean.assets.getServiceByIndex(did, serviceIndex)
+      serviceType = service.type
+    }
+    const { serviceEndpoint } = service
+    const provider = await Provider.getInstance(this.instanceConfig)
+    await provider.setBaseUrl(serviceEndpoint)
+    return provider.computeAddress
+  }
+
+  /**
    * Start the execution of a compute job.
    * @param  {string} did Decentralized identifer for the asset
    * @param  {string} txId
@@ -95,8 +117,8 @@ export class Compute extends Instantiable {
     const service = ddo.findServiceByType('compute')
     const { serviceEndpoint } = service
     if (did && txId) {
-      const provider = new Provider(this.instanceConfig)
-      provider.setBaseUrl(serviceEndpoint)
+      const provider = await Provider.getInstance(this.instanceConfig)
+      await provider.setBaseUrl(serviceEndpoint)
       const computeJobsList = await provider.computeStart(
         did,
         consumerAccount,
@@ -131,8 +153,8 @@ export class Compute extends Instantiable {
     const ddo = await this.ocean.assets.resolve(did)
     const service = ddo.findServiceByType('compute')
     const { serviceEndpoint } = service
-    const provider = new Provider(this.instanceConfig)
-    provider.setBaseUrl(serviceEndpoint)
+    const provider = await Provider.getInstance(this.instanceConfig)
+    await provider.setBaseUrl(serviceEndpoint)
     const computeJobsList = await provider.computeStop(did, consumerAccount, jobId)
 
     return computeJobsList[0] as ComputeJob
@@ -153,8 +175,8 @@ export class Compute extends Instantiable {
     const ddo = await this.ocean.assets.resolve(did)
     const service = ddo.findServiceByType('compute')
     const { serviceEndpoint } = service
-    const provider = new Provider(this.instanceConfig)
-    provider.setBaseUrl(serviceEndpoint)
+    const provider = await Provider.getInstance(this.instanceConfig)
+    await provider.setBaseUrl(serviceEndpoint)
     const computeJobsList = await provider.computeDelete(did, consumerAccount, jobId)
 
     return computeJobsList[0] as ComputeJob
@@ -182,8 +204,8 @@ export class Compute extends Instantiable {
       const ddo = await this.ocean.assets.resolve(did)
       const service = ddo.findServiceByType('compute')
       const { serviceEndpoint } = service
-      provider = new Provider(this.instanceConfig)
-      provider.setBaseUrl(serviceEndpoint)
+      provider = await Provider.getInstance(this.instanceConfig)
+      await provider.setBaseUrl(serviceEndpoint)
     } else {
       provider = this.ocean.provider
     }
@@ -213,8 +235,8 @@ export class Compute extends Instantiable {
     const ddo = await this.ocean.assets.resolve(did)
     const service = ddo.findServiceByType('compute')
     const { serviceEndpoint } = service
-    const provider = new Provider(this.instanceConfig)
-    provider.setBaseUrl(serviceEndpoint)
+    const provider = await Provider.getInstance(this.instanceConfig)
+    await provider.setBaseUrl(serviceEndpoint)
     const computeJobsList = await provider.computeStatus(
       did,
       consumerAccount,
@@ -374,40 +396,45 @@ export class Compute extends Instantiable {
     serviceIndex: number,
     algorithmDid?: string,
     algorithmMeta?: MetadataAlgorithm,
-    mpAddress?: string
+    mpAddress?: string,
+    computeAddress?: string
   ): SubscribablePromise<OrderProgressStep, string> {
     return new SubscribablePromise(async (observer) => {
       const ddo: DDO = await this.ocean.assets.resolve(datasetDid)
       // const service: Service = ddo.findServiceByType('compute')
       const service: Service = ddo.findServiceById(serviceIndex)
       if (!service) return null
-      if (service.type !== 'compute') return null
-      if (algorithmMeta) {
-        // check if raw algo is allowed
-        if (service.attributes.main.privacy)
-          if (!service.attributes.main.privacy.allowRawAlgorithm) {
-            this.logger.error('ERROR: This service does not allow raw algorithm')
-            return null
-          }
-      }
-      if (algorithmDid) {
-        // check if did is in trusted list
-        if (service.attributes.main.privacy)
-          if (service.attributes.main.privacy.trustedAlgorithms)
-            if (service.attributes.main.privacy.trustedAlgorithms.length > 0)
-              if (
-                !service.attributes.main.privacy.trustedAlgorithms.includes(algorithmDid)
-              ) {
-                this.logger.error('ERROR: This service does not allow this algorithm')
-                return null
-              }
+      if (service.type === 'compute') {
+        if (algorithmMeta) {
+          // check if raw algo is allowed
+          if (service.attributes.main.privacy)
+            if (!service.attributes.main.privacy.allowRawAlgorithm) {
+              this.logger.error('ERROR: This service does not allow raw algorithm')
+              return null
+            }
+        }
+        if (algorithmDid) {
+          // check if did is in trusted list
+          if (service.attributes.main.privacy)
+            if (service.attributes.main.privacy.trustedAlgorithms)
+              if (service.attributes.main.privacy.trustedAlgorithms.length > 0)
+                if (
+                  !service.attributes.main.privacy.trustedAlgorithms.includes(
+                    algorithmDid
+                  )
+                ) {
+                  this.logger.error('ERROR: This service does not allow this algorithm')
+                  return null
+                }
+        }
       }
       const order = await this.ocean.assets.order(
         datasetDid,
         service.type,
         consumerAccount,
         -1,
-        mpAddress
+        mpAddress,
+        computeAddress
       )
       return order
     })

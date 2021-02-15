@@ -1,5 +1,5 @@
 export interface ComputeInput {
-  did: string
+  documentId: string
   transferTxId: string
   serviceId: number
 }

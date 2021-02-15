@@ -14,8 +14,11 @@ import DID from '../ocean/DID'
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const fetch = require('node-fetch')
 
-const apiPath = '/api/v1/services'
-
+export interface ServiceEndpoint {
+  serviceName: string
+  method: string
+  urlPath: string
+}
 /**
  * Provides an interface for provider service.
  * Provider service is the technical component executed
@@ -25,20 +28,65 @@ const apiPath = '/api/v1/services'
 export class Provider extends Instantiable {
   public nonce: string
   private baseUrl: string
+  public servicesEndpoints: ServiceEndpoint[]
+  public computeAddress: string
+  public providerAddress: string
+
+  /**
+   * Returns the instance of Provider.
+   * @return {Promise<Assets>}
+   */
+  public static async getInstance(config: InstantiableConfig): Promise<Provider> {
+    const instance = new Provider()
+    instance.setInstanceConfig(config)
+    instance.nonce = '0'
+    await instance.setBaseUrl(config.config.providerUri)
+    return instance
+  }
+
+  public async setBaseUrl(url: string): Promise<boolean> {
+    this.baseUrl = url
+    this.servicesEndpoints = await this.getServiceEndpoints()
+    return true
+  }
 
   public get url(): string {
     return this.baseUrl
   }
 
-  constructor(config: InstantiableConfig) {
-    super()
-    this.setInstanceConfig(config)
-    this.baseUrl = this.config.providerUri
-    this.nonce = '0'
+  /**
+   * Returns the service endpoints that exist
+   * in provider.
+   * @return {Promise<ServiceEndpoint[]>}
+   */
+
+  public async getServiceEndpoints(): Promise<ServiceEndpoint[]> {
+    const serviceEndpoints: ServiceEndpoint[] = []
+    try {
+      const result = await (await this.ocean.utils.fetch.get(this.url)).json()
+      this.providerAddress = result.providerAddress
+      if ('computeAddress' in result) this.computeAddress = result.computeAddress
+      for (const i in result.serviceEndpoints) {
+        const endpoint: ServiceEndpoint = {
+          serviceName: i,
+          method: result.serviceEndpoints[i][0],
+          urlPath: this.url + result.serviceEndpoints[i][1]
+        }
+        serviceEndpoints.push(endpoint)
+      }
+      return serviceEndpoints
+    } catch (e) {
+      this.logger.error('Finding the service endpoints failed:', e)
+
+      return null
+    }
   }
 
-  public setBaseUrl(url: string): void {
-    this.baseUrl = url
+  public getEndpointURL(serviceName: string): ServiceEndpoint {
+    if (!this.servicesEndpoints) return null
+    return this.servicesEndpoints.find(
+      (s) => s.serviceName === serviceName
+    ) as ServiceEndpoint
   }
 
   public async createSignature(account: Account, agreementId: string): Promise<string> {
@@ -68,7 +116,7 @@ export class Provider extends Instantiable {
     }
     try {
       const response = await this.ocean.utils.fetch.post(
-        this.getEncryptEndpoint(),
+        this.getEncryptEndpoint().urlPath,
         decodeURI(JSON.stringify(args))
       )
       return (await response.json()).encryptedDocument
@@ -90,7 +138,7 @@ export class Provider extends Instantiable {
     } else args = { url }
     try {
       const response = await this.ocean.utils.fetch.post(
-        this.getFileinfoEndpoint(),
+        this.getFileinfoEndpoint().urlPath,
         JSON.stringify(args)
       )
       const results: File[] = await response.json()
@@ -108,7 +156,7 @@ export class Provider extends Instantiable {
    * @return {Promise<string>} string
    */
   public async getNonce(consumerAddress: string): Promise<string> {
-    let initializeUrl = this.getNonceEndpoint()
+    let initializeUrl = this.getNonceEndpoint().urlPath
     initializeUrl += `?userAddress=${consumerAddress}`
     try {
       const response = await this.ocean.utils.fetch.get(initializeUrl)
@@ -135,7 +183,7 @@ export class Provider extends Instantiable {
       throw new Error('Failed to resolve DID')
     }
 
-    let initializeUrl = this.getInitializeEndpoint()
+    let initializeUrl = this.getInitializeEndpoint().urlPath
     initializeUrl += `?documentId=${did}`
     initializeUrl += `&serviceId=${serviceIndex}`
     initializeUrl += `&serviceType=${serviceType}`
@@ -166,7 +214,7 @@ export class Provider extends Instantiable {
     const filesPromises = files
       .filter((_, i) => index === -1 || i === index)
       .map(async ({ index: i }) => {
-        let consumeUrl = this.getDownloadEndpoint()
+        let consumeUrl = this.getDownloadEndpoint().urlPath
         consumeUrl += `?fileIndex=${i}`
         consumeUrl += `&documentId=${did}`
         consumeUrl += `&serviceId=${serviceIndex}`
@@ -235,7 +283,7 @@ export class Provider extends Instantiable {
     if (additionalInputs) payload.additionalInputs = additionalInputs
     try {
       const response = await this.ocean.utils.fetch.post(
-        this.getComputeEndpoint(),
+        this.getComputeStartEndpoint().urlPath,
         JSON.stringify(payload)
       )
       if (response?.ok) {
@@ -274,7 +322,7 @@ export class Provider extends Instantiable {
     payload.consumerAddress = address
     try {
       const response = await this.ocean.utils.fetch.put(
-        this.getComputeEndpoint(),
+        this.getComputeStopEndpoint().urlPath,
         JSON.stringify(payload)
       )
       if (response?.ok) {
@@ -313,7 +361,7 @@ export class Provider extends Instantiable {
     payload.consumerAddress = address
     try {
       const response = await this.ocean.utils.fetch.delete(
-        this.getComputeEndpoint(),
+        this.getComputeDeleteEndpoint().urlPath,
         JSON.stringify(payload)
       )
       if (response?.ok) {
@@ -361,7 +409,9 @@ export class Provider extends Instantiable {
 
     let response
     try {
-      const response = await this.ocean.utils.fetch.get(this.getComputeEndpoint() + url)
+      const response = await this.ocean.utils.fetch.get(
+        this.getComputeStatusEndpoint().urlPath + url
+      )
       /* response = await fetch(this.getComputeEndpoint() + url, {
         method: 'GET',
         timeout: 5000
@@ -392,44 +442,48 @@ export class Provider extends Instantiable {
     return `${this.url}`
   }
 
-  public getInitializeEndpoint(): string {
-    return `${this.url}${apiPath}/initialize`
+  public getInitializeEndpoint(): ServiceEndpoint {
+    return this.getEndpointURL('initialize')
   }
 
-  public getNonceEndpoint(): string {
-    return `${this.url}${apiPath}/nonce`
+  public getNonceEndpoint(): ServiceEndpoint {
+    return this.getEndpointURL('nonce')
   }
 
-  public getConsumeEndpointPath(): string {
-    return `${apiPath}/consume`
+  public getConsumeEndpoint(): ServiceEndpoint {
+    return this.getEndpointURL('consume')
   }
 
-  public getConsumeEndpoint(): string {
-    return `${this.url}` + this.getConsumeEndpointPath()
+  public getEncryptEndpoint(): ServiceEndpoint {
+    return this.getEndpointURL('encrypt')
   }
 
-  public getEncryptEndpoint(): string {
-    return `${this.url}${apiPath}/encrypt`
+  public getFileinfoEndpoint(): ServiceEndpoint {
+    return this.getEndpointURL('fileinfo')
   }
 
-  public getFileinfoEndpoint(): string {
-    return `${this.url}${apiPath}/fileinfo`
+  public getPublishEndpoint(): ServiceEndpoint {
+    return this.getEndpointURL('publish')
   }
 
-  public getPublishEndpoint(): string {
-    return `${this.url}${apiPath}/publish`
+  public getComputeStartEndpoint(): ServiceEndpoint {
+    return this.getEndpointURL('computeStart')
   }
 
-  public getComputeEndpointPath(): string {
-    return `${apiPath}/compute`
+  public getComputeStopEndpoint(): ServiceEndpoint {
+    return this.getEndpointURL('computeStop')
   }
 
-  public getComputeEndpoint(): string {
-    return `${this.url}` + this.getComputeEndpointPath()
+  public getComputeStatusEndpoint(): ServiceEndpoint {
+    return this.getEndpointURL('computeStatus')
   }
 
-  public getDownloadEndpoint(): string {
-    return `${this.url}${apiPath}/download`
+  public getComputeDeleteEndpoint(): ServiceEndpoint {
+    return this.getEndpointURL('computeDelete')
+  }
+
+  public getDownloadEndpoint(): ServiceEndpoint {
+    return this.getEndpointURL('download')
   }
 
   /** Check for a valid provider at URL
@@ -441,7 +495,7 @@ export class Provider extends Instantiable {
       const response = await this.ocean.utils.fetch.get(url)
       if (response?.ok) {
         const params = await response.json()
-        if (params && params['provider-address']) return true
+        if (params && params.providerAddress) return true
       }
       return false
     } catch (error) {
