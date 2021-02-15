@@ -31,7 +31,6 @@ export class Provider extends Instantiable {
   public servicesEndpoints: ServiceEndpoint[]
   public computeAddress: string
   public providerAddress: string
-
   /**
    * Returns the instance of Provider.
    * @return {Promise<Assets>}

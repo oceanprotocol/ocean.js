@@ -156,7 +156,6 @@ export class Compute extends Instantiable {
     const provider = await Provider.getInstance(this.instanceConfig)
     await provider.setBaseUrl(serviceEndpoint)
     const computeJobsList = await provider.computeStop(did, consumerAccount, jobId)
-
     return computeJobsList[0] as ComputeJob
   }
 
@@ -178,7 +177,6 @@ export class Compute extends Instantiable {
     const provider = await Provider.getInstance(this.instanceConfig)
     await provider.setBaseUrl(serviceEndpoint)
     const computeJobsList = await provider.computeDelete(did, consumerAccount, jobId)
-
     return computeJobsList[0] as ComputeJob
   }
 
