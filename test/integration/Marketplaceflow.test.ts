@@ -243,7 +243,6 @@ describe('Marketplace flow', () => {
   it('Alice should check if her asset has valid url(s)', async () => {
     const did: DID = DID.generate(noDidPrefixed(ddo.id))
     const response = await ocean.provider.fileinfo(did)
-    assert(response[0].valid === true)
     assert(response[0].contentLength === '1161')
     assert(response[0].contentType === 'application/json')
   })

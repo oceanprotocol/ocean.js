@@ -10,7 +10,11 @@ import { Response } from 'node-fetch'
 import { DDO } from '../ddo/DDO'
 import DID from '../ocean/DID'
 
-const apiPath = '/api/v1/services'
+export interface ServiceEndpoint {
+  serviceName: string
+  method: string
+  urlPath: string
+}
 
 /**
  * Provides an interface for provider service.
@@ -21,20 +25,62 @@ const apiPath = '/api/v1/services'
 export class Provider extends Instantiable {
   public nonce: string
   private baseUrl: string
+  public servicesEndpoints: ServiceEndpoint[]
+  public providerAddress: string
+  /**
+   * Returns the instance of Provider.
+   * @return {Promise<Assets>}
+   */
+  public static async getInstance(config: InstantiableConfig): Promise<Provider> {
+    const instance = new Provider()
+    instance.setInstanceConfig(config)
+    instance.nonce = '0'
+    await instance.setBaseUrl(config.config.providerUri)
+    return instance
+  }
 
   public get url(): string {
     return this.baseUrl
   }
 
-  constructor(config: InstantiableConfig) {
-    super()
-    this.setInstanceConfig(config)
-    this.baseUrl = this.config.providerUri
-    this.nonce = '0'
+  public async setBaseUrl(url: string): Promise<boolean> {
+    this.baseUrl = url
+    this.servicesEndpoints = await this.getServiceEndpoints()
+    return true
   }
 
-  public setBaseUrl(url: string): void {
-    this.baseUrl = url
+  /**
+   * Returns the service endpoints that exist
+   * in provider.
+   * @return {Promise<ServiceEndpoint[]>}
+   */
+
+  public async getServiceEndpoints(): Promise<ServiceEndpoint[]> {
+    const serviceEndpoints: ServiceEndpoint[] = []
+    try {
+      const result = await (await this.ocean.utils.fetch.get(this.url)).json()
+      this.providerAddress = result['provider-address']
+      for (const i in result.serviceEndpoints) {
+        const endpoint: ServiceEndpoint = {
+          serviceName: i,
+          method: result.serviceEndpoints[i][0],
+          urlPath: this.url + result.serviceEndpoints[i][1]
+        }
+        serviceEndpoints.push(endpoint)
+      }
+      return serviceEndpoints
+    } catch (e) {
+      this.logger.error('Finding the service endpoints failed:', e)
+
+      return null
+    }
+  }
+
+  public getEndpointURL(serviceName: string): ServiceEndpoint {
+    if (!this.servicesEndpoints) return null
+    return this.servicesEndpoints.find(
+      (s) => s.serviceName === serviceName
+    ) as ServiceEndpoint
   }
 
   public async createSignature(account: Account, agreementId: string): Promise<string> {
@@ -64,7 +110,7 @@ export class Provider extends Instantiable {
     }
     try {
       const response = await this.ocean.utils.fetch.post(
-        this.getEncryptEndpoint(),
+        this.getEncryptEndpoint().urlPath,
         decodeURI(JSON.stringify(args))
       )
       return (await response.json()).encryptedDocument
@@ -86,7 +132,7 @@ export class Provider extends Instantiable {
     } else args = { url }
     try {
       const response = await this.ocean.utils.fetch.post(
-        this.getFileinfoEndpoint(),
+        this.getFileinfoEndpoint().urlPath,
         JSON.stringify(args)
       )
       const results: File[] = await response.json()
@@ -104,7 +150,7 @@ export class Provider extends Instantiable {
    * @return {Promise<string>} string
    */
   public async getNonce(consumerAddress: string): Promise<string> {
-    let initializeUrl = this.getNonceEndpoint()
+    let initializeUrl = this.getNonceEndpoint().urlPath
     initializeUrl += `?userAddress=${consumerAddress}`
     try {
       const response = await this.ocean.utils.fetch.get(initializeUrl)
@@ -131,7 +177,7 @@ export class Provider extends Instantiable {
       throw new Error('Failed to resolve DID')
     }
 
-    let initializeUrl = this.getInitializeEndpoint()
+    let initializeUrl = this.getInitializeEndpoint().urlPath
     initializeUrl += `?documentId=${did}`
     initializeUrl += `&serviceId=${serviceIndex}`
     initializeUrl += `&serviceType=${serviceType}`
@@ -162,7 +208,7 @@ export class Provider extends Instantiable {
     const filesPromises = files
       .filter((_, i) => index === -1 || i === index)
       .map(async ({ index: i }) => {
-        let consumeUrl = this.getDownloadEndpoint()
+        let consumeUrl = this.getDownloadEndpoint().urlPath
         consumeUrl += `?fileIndex=${i}`
         consumeUrl += `&documentId=${did}`
         consumeUrl += `&serviceId=${serviceIndex}`
@@ -204,7 +250,21 @@ export class Provider extends Instantiable {
   ): Promise<ComputeJob | ComputeJob[]> {
     const address = consumerAccount.getId()
     await this.getNonce(consumerAccount.getId())
-    let url = this.getComputeEndpoint()
+    let url
+    switch (method) {
+      case 'get':
+        url = this.getComputeStatusEndpoint().urlPath
+        break
+      case 'post':
+        url = this.getComputeStartEndpoint().urlPath
+        break
+      case 'put':
+        url = this.getComputeStopEndpoint().urlPath
+        break
+      case 'delete':
+        url = this.getComputeDeleteEndpoint().urlPath
+        break
+    }
     url += `?documentId=${noZeroX(did)}`
     if (sign) {
       let signatureMessage = address
@@ -242,7 +302,6 @@ export class Provider extends Instantiable {
     // 'algorithmDid': alg_ddo.did,
     // 'algorithmMeta': {},
     // 'algorithmDataToken': alg_data_token
-
     // switch fetch method
     let fetch
     switch (method) {
@@ -287,44 +346,40 @@ export class Provider extends Instantiable {
     return `${this.url}`
   }
 
-  public getInitializeEndpoint(): string {
-    return `${this.url}${apiPath}/initialize`
+  public getInitializeEndpoint(): ServiceEndpoint {
+    return this.getEndpointURL('initialize')
   }
 
-  public getNonceEndpoint(): string {
-    return `${this.url}${apiPath}/nonce`
+  public getNonceEndpoint(): ServiceEndpoint {
+    return this.getEndpointURL('nonce')
   }
 
-  public getConsumeEndpointPath(): string {
-    return `${apiPath}/consume`
+  public getEncryptEndpoint(): ServiceEndpoint {
+    return this.getEndpointURL('encrypt')
   }
 
-  public getConsumeEndpoint(): string {
-    return `${this.url}` + this.getConsumeEndpointPath()
+  public getFileinfoEndpoint(): ServiceEndpoint {
+    return this.getEndpointURL('fileinfo')
   }
 
-  public getEncryptEndpoint(): string {
-    return `${this.url}${apiPath}/encrypt`
+  public getComputeStatusEndpoint(): ServiceEndpoint {
+    return this.getEndpointURL('computeStatus')
   }
 
-  public getFileinfoEndpoint(): string {
-    return `${this.url}${apiPath}/fileinfo`
+  public getComputeStartEndpoint(): ServiceEndpoint {
+    return this.getEndpointURL('computeStart')
   }
 
-  public getPublishEndpoint(): string {
-    return `${this.url}${apiPath}/publish`
+  public getComputeStopEndpoint(): ServiceEndpoint {
+    return this.getEndpointURL('computeStop')
   }
 
-  public getComputeEndpointPath(): string {
-    return `${apiPath}/compute`
+  public getComputeDeleteEndpoint(): ServiceEndpoint {
+    return this.getEndpointURL('computeDelete')
   }
 
-  public getComputeEndpoint(): string {
-    return `${this.url}` + this.getComputeEndpointPath()
-  }
-
-  public getDownloadEndpoint(): string {
-    return `${this.url}${apiPath}/download`
+  public getDownloadEndpoint(): ServiceEndpoint {
+    return this.getEndpointURL('download')
   }
 
   /** Check for a valid provider at URL

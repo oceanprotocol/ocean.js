@@ -92,8 +92,8 @@ export class Compute extends Instantiable {
     const service = ddo.findServiceByType('compute')
     const { serviceEndpoint } = service
     if (did && txId) {
-      const provider = new Provider(this.instanceConfig)
-      provider.setBaseUrl(serviceEndpoint)
+      const provider = await Provider.getInstance(this.instanceConfig)
+      await provider.setBaseUrl(serviceEndpoint)
       const computeJobsList = await provider.compute(
         'post',
         did,
@@ -128,8 +128,8 @@ export class Compute extends Instantiable {
     const ddo = await this.ocean.assets.resolve(did)
     const service = ddo.findServiceByType('compute')
     const { serviceEndpoint } = service
-    const provider = new Provider(this.instanceConfig)
-    provider.setBaseUrl(serviceEndpoint)
+    const provider = await Provider.getInstance(this.instanceConfig)
+    await provider.setBaseUrl(serviceEndpoint)
     const computeJobsList = await provider.compute(
       'put',
       did,
@@ -157,8 +157,8 @@ export class Compute extends Instantiable {
     const ddo = await this.ocean.assets.resolve(did)
     const service = ddo.findServiceByType('compute')
     const { serviceEndpoint } = service
-    const provider = new Provider(this.instanceConfig)
-    provider.setBaseUrl(serviceEndpoint)
+    const provider = await Provider.getInstance(this.instanceConfig)
+    await provider.setBaseUrl(serviceEndpoint)
     const computeJobsList = await provider.compute(
       'delete',
       did,
@@ -193,8 +193,8 @@ export class Compute extends Instantiable {
       const ddo = await this.ocean.assets.resolve(did)
       const service = ddo.findServiceByType('compute')
       const { serviceEndpoint } = service
-      provider = new Provider(this.instanceConfig)
-      provider.setBaseUrl(serviceEndpoint)
+      provider = await Provider.getInstance(this.instanceConfig)
+      await provider.setBaseUrl(serviceEndpoint)
     } else {
       provider = this.ocean.provider
     }
@@ -233,8 +233,8 @@ export class Compute extends Instantiable {
     const ddo = await this.ocean.assets.resolve(did)
     const service = ddo.findServiceByType('compute')
     const { serviceEndpoint } = service
-    const provider = new Provider(this.instanceConfig)
-    provider.setBaseUrl(serviceEndpoint)
+    const provider = await Provider.getInstance(this.instanceConfig)
+    await provider.setBaseUrl(serviceEndpoint)
     const computeJobsList = await provider.compute(
       'get',
       did,

@@ -12,12 +12,6 @@ export interface File {
   url?: string
 
   /**
-   * Is URL accessible.
-   * @type {boolean}
-   */
-  valid?: boolean
-
-  /**
    * File index.
    * @type {number}
    */
