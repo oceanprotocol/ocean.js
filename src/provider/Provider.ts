@@ -433,24 +433,12 @@ export class Provider extends Instantiable {
     }
   }
 
-  public async getVersionInfo(): Promise<Versions> {
-    return (await this.ocean.utils.fetch.get(this.url)).json()
-  }
-
-  public getURI(): string {
-    return `${this.url}`
-  }
-
   public getInitializeEndpoint(): ServiceEndpoint {
     return this.getEndpointURL('initialize')
   }
 
   public getNonceEndpoint(): ServiceEndpoint {
     return this.getEndpointURL('nonce')
-  }
-
-  public getConsumeEndpoint(): ServiceEndpoint {
-    return this.getEndpointURL('consume')
   }
 
   public getEncryptEndpoint(): ServiceEndpoint {
