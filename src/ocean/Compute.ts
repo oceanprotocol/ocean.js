@@ -1,6 +1,11 @@
 import { DDO } from '../ddo/DDO'
 import { MetadataAlgorithm } from '../ddo/interfaces/MetadataAlgorithm'
-import { Service, ServiceComputePrivacy, ServiceCompute } from '../ddo/interfaces/Service'
+import {
+  Service,
+  ServiceComputePrivacy,
+  ServiceCompute,
+  publisherTrustedAlgorithm
+} from '../ddo/interfaces/Service'
 import Account from './Account'
 import { SubscribablePromise } from '../utils'
 import { Instantiable, InstantiableConfig } from '../Instantiable.abstract'
@@ -8,6 +13,7 @@ import { Output } from './interfaces/ComputeOutput'
 import { ComputeJob } from './interfaces/ComputeJob'
 import { ComputeInput } from './interfaces/ComputeInput'
 import { Provider } from '../provider/Provider'
+import { SHA256 } from 'crypto-js'
 
 export enum OrderProgressStep {
   TransferDataToken
@@ -376,7 +382,82 @@ export class Compute extends Instantiable {
   }
 
   /**
-   * Starts an order of a compute service that is defined in an asset's services.
+   * Checks if an asset is orderable with a specific algorithm
+   * @param  {string} datasetDid The DID of the asset (of type `dataset`) to run the algorithm on.
+   * @param  {string} serviceIndex The Service index
+   * @param  {string} algorithmDid The DID of the algorithm asset (of type `algorithm`) to run on the asset.
+   * @param  {MetaData} algorithmMeta Metadata about the algorithm being run if `algorithm` is being used. This is ignored when `algorithmDid` is specified.
+   * @return {Promise<boolean>} True is you can order this
+   *
+   * Note:  algorithmDid and algorithmMeta are optional, but if they are not passed,
+   * you can end up in the situation that you are ordering and paying for your compute job,
+   * but provider will not allow the compute, due to privacy settings of the ddo
+   */
+  public async isOrderable(
+    datasetDid: string,
+    serviceIndex: number,
+    algorithmDid?: string,
+    algorithmMeta?: MetadataAlgorithm
+  ): Promise<boolean> {
+    const ddo: DDO = await this.ocean.assets.resolve(datasetDid)
+    const service: Service = ddo.findServiceById(serviceIndex)
+    if (!service) return false
+    if (service.type === 'compute') {
+      if (algorithmMeta) {
+        // check if raw algo is allowed
+        if (service.attributes.main.privacy)
+          if (!service.attributes.main.privacy.allowRawAlgorithm) {
+            this.logger.error('ERROR: This service does not allow raw algorithm')
+            return false
+          }
+      }
+      if (algorithmDid) {
+        // check if did is in trusted list
+        if (service.attributes.main.privacy)
+          if (service.attributes.main.privacy.publisherTrustedAlgorithms)
+            if (service.attributes.main.privacy.publisherTrustedAlgorithms.length > 0) {
+              // loop through all publisherTrustedAlgorithms and see if we have a match
+              let algo: publisherTrustedAlgorithm
+              for (algo of service.attributes.main.privacy.publisherTrustedAlgorithms) {
+                if (algo.did === algorithmDid) {
+                  // compute checkusms and compare them
+                  const trustedAlgorithm = await this.createPublisherTrustedAlgorithmfromDID(
+                    algorithmDid
+                  )
+                  if (
+                    algo.containerSectionChecksum !==
+                    trustedAlgorithm.containerSectionChecksum
+                  ) {
+                    this.logger.error(
+                      'ERROR: Algorithm container section was altered since it was added as trusted by ' +
+                        datasetDid
+                    )
+                    return false
+                  }
+                  if (algo.filesChecksum !== trustedAlgorithm.filesChecksum) {
+                    this.logger.error(
+                      'ERROR: Algorithm files section was altered since it was added as trusted by ' +
+                        datasetDid
+                    )
+                    return false
+                  }
+                  // all conditions are meet
+                  return true
+                }
+              }
+              // algorithmDid was not found
+              this.logger.error(
+                'ERROR: Algorithm ' + algorithmDid + ' is not allowed by ' + datasetDid
+              )
+              return false
+            }
+      }
+    }
+    return true
+  }
+
+  /**
+   * Starts an order of a compute or access service for a compute job
    * @param  {String} consumerAccount The account of the consumer ordering the service.
    * @param  {string} datasetDid The DID of the dataset asset (of type `dataset`) to run the algorithm on.
    * @param  {string} serviceIndex The Service index
@@ -388,7 +469,7 @@ export class Compute extends Instantiable {
    * you can end up in the situation that you are ordering and paying for your compute job,
    * but provider will not allow the compute, due to privacy settings of the ddo
    */
-  public order(
+  public orderAsset(
     consumerAccount: string,
     datasetDid: string,
     serviceIndex: number,
@@ -398,34 +479,18 @@ export class Compute extends Instantiable {
     computeAddress?: string
   ): SubscribablePromise<OrderProgressStep, string> {
     return new SubscribablePromise(async (observer) => {
+      // first check if we can order this
+      const allowed = await this.isOrderable(
+        datasetDid,
+        serviceIndex,
+        algorithmDid,
+        algorithmMeta
+      )
+      if (!allowed) return null
       const ddo: DDO = await this.ocean.assets.resolve(datasetDid)
       // const service: Service = ddo.findServiceByType('compute')
       const service: Service = ddo.findServiceById(serviceIndex)
       if (!service) return null
-      if (service.type === 'compute') {
-        if (algorithmMeta) {
-          // check if raw algo is allowed
-          if (service.attributes.main.privacy)
-            if (!service.attributes.main.privacy.allowRawAlgorithm) {
-              this.logger.error('ERROR: This service does not allow raw algorithm')
-              return null
-            }
-        }
-        if (algorithmDid) {
-          // check if did is in trusted list
-          if (service.attributes.main.privacy)
-            if (service.attributes.main.privacy.trustedAlgorithms)
-              if (service.attributes.main.privacy.trustedAlgorithms.length > 0)
-                if (
-                  !service.attributes.main.privacy.trustedAlgorithms.includes(
-                    algorithmDid
-                  )
-                ) {
-                  this.logger.error('ERROR: This service does not allow this algorithm')
-                  return null
-                }
-        }
-      }
       const order = await this.ocean.assets.order(
         datasetDid,
         service.type,
@@ -439,9 +504,39 @@ export class Compute extends Instantiable {
   }
 
   /**
+   * Orders & pays for a algorithm
+   * @param {String} did
+   * @param {String} serviceType
+   * @param {String} payerAddress
+   * @param {Number} serviceIndex
+   * @param {String} mpAddress Marketplace fee collector address
+   * @param {String} consumerAddress Optionally, if the consumer is another address than payer
+   * @return {Promise<String>} transactionHash of the payment
+   */
+  public async orderAlgorithm(
+    did: string,
+    serviceType: string,
+    payerAddress: string,
+    serviceIndex = -1,
+    mpAddress?: string,
+    consumerAddress?: string,
+    searchPreviousOrders = true
+  ): Promise<string> {
+    // this is only a convienince function, which calls ocean.assets.order
+    return await this.ocean.assets.order(
+      did,
+      serviceType,
+      payerAddress,
+      serviceIndex,
+      mpAddress,
+      consumerAddress,
+      searchPreviousOrders
+    )
+  }
+
+  /**
    * Edit Compute Privacy
-   * @param  {did} string DID. You can leave this empty if you already have the DDO
-   * @param  {ddo} DDO if empty, will trigger a retrieve
+   * @param  {ddo} DDO
    * @param  {number} serviceIndex Index of the compute service in the DDO. If -1, will try to find it
    * @param  {ServiceComputePrivacy} computePrivacy ComputePrivacy fields & new values.
    * @param  {Account} account Ethereum account of owner to sign and prove the ownership.
@@ -464,8 +559,129 @@ export class Compute extends Instantiable {
       computePrivacy.allowRawAlgorithm
     ddo.service[serviceIndex].attributes.main.privacy.allowNetworkAccess =
       computePrivacy.allowNetworkAccess
-    ddo.service[serviceIndex].attributes.main.privacy.trustedAlgorithms =
-      computePrivacy.trustedAlgorithms
+    ddo.service[serviceIndex].attributes.main.privacy.publisherTrustedAlgorithms =
+      computePrivacy.publisherTrustedAlgorithms
+    return ddo
+  }
+
+  /**
+   * Generates a publisherTrustedAlgorithm object from a algorithm did
+   * @param  {did} string DID. You can leave this empty if you already have the DDO
+   * @param  {ddo} DDO if empty, will trigger a retrieve
+   * @return {Promise<publisherTrustedAlgorithm>}
+   */
+  public async createPublisherTrustedAlgorithmfromDID(
+    did: string,
+    ddo?: DDO
+  ): Promise<publisherTrustedAlgorithm> {
+    if (!ddo) {
+      ddo = await this.ocean.assets.resolve(did)
+      if (!ddo) return null
+    }
+    const service = ddo.findServiceByType('metadata')
+    if (!service) return null
+    if (!service.attributes.main.algorithm) return null
+    if (!service.attributes.encryptedFiles) return null
+    if (!service.attributes.main.files) return null
+    return {
+      did,
+      containerSectionChecksum: SHA256(
+        JSON.stringify(service.attributes.main.algorithm)
+      ).toString(),
+      filesChecksum: SHA256(
+        service.attributes.encryptedFiles + JSON.stringify(service.attributes.main.files)
+      ).toString()
+    }
+  }
+
+  /**
+   * Adds a trusted algorithm to an asset
+   * @param  {ddo} DDO
+   * @param  {number} serviceIndex Index of the compute service in the DDO. If -1, will try to find it
+   * @param  {algoDid} string Algorithm DID to be added
+   * @return {Promise<DDDO>} Returns the new DDO
+   */
+  public async addTrustedAlgorithmtoAsset(
+    ddo: DDO,
+    serviceIndex: number,
+    algoDid: string
+  ): Promise<DDO> {
+    if (!ddo) return null
+    if (serviceIndex === -1) {
+      const service = ddo.findServiceByType('compute')
+      if (!service) return null
+      serviceIndex = service.index
+    }
+    if (typeof ddo.service[serviceIndex] === 'undefined') return null
+    if (ddo.service[serviceIndex].type !== 'compute') return null
+    if (!ddo.service[serviceIndex].attributes.main.privacy.publisherTrustedAlgorithms)
+      ddo.service[serviceIndex].attributes.main.privacy.publisherTrustedAlgorithms = []
+    const trustedAlgorithm = await this.createPublisherTrustedAlgorithmfromDID(algoDid)
+    if (trustedAlgorithm)
+      ddo.service[serviceIndex].attributes.main.privacy.publisherTrustedAlgorithms.push(
+        trustedAlgorithm
+      )
+    return ddo
+  }
+
+  /**
+   * Check is an algo is trusted
+   * @param  {ddo} DDO
+   * @param  {number} serviceIndex Index of the compute service in the DDO. If -1, will try to find it
+   * @param  {algoDid} string Algorithm DID to be added
+   * @return {Promise<DDDO>} Returns the new DDO
+   */
+  public async isAlgorithmTrusted(
+    ddo: DDO,
+    serviceIndex: number,
+    algoDid: string
+  ): Promise<boolean> {
+    if (!ddo) return false
+    if (serviceIndex === -1) {
+      const service = ddo.findServiceByType('compute')
+      if (!service) return false
+      serviceIndex = service.index
+    }
+    if (typeof ddo.service[serviceIndex] === 'undefined') return false
+    if (ddo.service[serviceIndex].type !== 'compute') return false
+    if (!ddo.service[serviceIndex].attributes.main.privacy.publisherTrustedAlgorithms)
+      return false
+    let algo: publisherTrustedAlgorithm
+    for (algo of ddo.service[serviceIndex].attributes.main.privacy
+      .publisherTrustedAlgorithms)
+      if (algo.did === algoDid) return true
+    return false
+  }
+
+  /**
+   * Removes a trusted algorithm from an asset
+   * @param  {ddo} DDO
+   * @param  {number} serviceIndex Index of the compute service in the DDO. If -1, will try to find it
+   * @param  {algoDid} string Algorithm DID to be removed
+   * @return {Promise<DDDO>} Returns the new DDO
+   */
+  public async removeTrustedAlgorithmFromAsset(
+    ddo: DDO,
+    serviceIndex: number,
+    algoDid: string
+  ): Promise<DDO> {
+    if (!ddo) return null
+    if (serviceIndex === -1) {
+      const service = ddo.findServiceByType('compute')
+      if (!service) return ddo
+      serviceIndex = service.index
+    }
+    if (typeof ddo.service[serviceIndex] === 'undefined') return ddo
+    if (ddo.service[serviceIndex].type !== 'compute') return ddo
+    if (!ddo.service[serviceIndex].attributes.main.privacy.publisherTrustedAlgorithms)
+      return ddo
+    ddo.service[
+      serviceIndex
+    ].attributes.main.privacy.publisherTrustedAlgorithms = ddo.service[
+      serviceIndex
+    ].attributes.main.privacy.publisherTrustedAlgorithms.filter(function (el) {
+      return el.did !== algoDid
+    })
     return ddo
   }
 }

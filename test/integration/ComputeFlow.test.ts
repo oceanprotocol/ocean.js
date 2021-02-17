@@ -4,7 +4,11 @@ import { DataTokens } from '../../src/datatokens/Datatokens'
 import { Ocean } from '../../src/ocean/Ocean'
 import { ConfigHelper } from '../../src/utils/ConfigHelper'
 import { assert } from 'chai'
-import { Service, ServiceComputePrivacy } from '../../src/ddo/interfaces/Service'
+import {
+  Service,
+  ServiceComputePrivacy,
+  publisherTrustedAlgorithm
+} from '../../src/ddo/interfaces/Service'
 import Web3 from 'web3'
 import factory from '@oceanprotocol/contracts/artifacts/DTFactory.json'
 import datatokensTemplate from '@oceanprotocol/contracts/artifacts/DataTokenTemplate.json'
@@ -19,6 +23,18 @@ function sleep(ms: number) {
     setTimeout(resolve, ms)
   })
 }
+
+/*       How to handle a compute job
+1. find your algorithm
+2. find your primary compute dataset
+3. check with ocean.compute.isOrderable if such a job is possible (that algo is allowed by that compute dataset)
+4. find additional datasets (if wanted)
+5. check each one with ocean.compute.isOrderable if such a job is possible (that algo is allowed by that dataset. An access dataset will allow any algo, but a compute might not)
+6. order algoritm using ocean.compute.orderAlgorithm
+7. order all assets (primary + additional) using ocean.compute.orderAsset
+8. start the job
+9. get the status
+*/
 
 describe('Compute flow', () => {
   let owner: Account
@@ -57,7 +73,7 @@ describe('Compute flow', () => {
   const dateCreated = new Date(Date.now()).toISOString().split('.')[0] + 'Z' // remove milliseconds
 
   const tokenAmount = '1000'
-  const aquaSleep = 20000
+  const aquaSleep = 30000
 
   const timeout = 86400
   const algorithmMeta = {
@@ -224,7 +240,7 @@ describe('Compute flow', () => {
     const origComputePrivacy = {
       allowRawAlgorithm: true,
       allowNetworkAccess: false,
-      trustedAlgorithms: []
+      publisherTrustedAlgorithms: []
     }
     const computeService = ocean.compute.createComputeService(
       alice,
@@ -272,7 +288,7 @@ describe('Compute flow', () => {
     const origComputePrivacy2 = {
       allowRawAlgorithm: true,
       allowNetworkAccess: false,
-      trustedAlgorithms: []
+      publisherTrustedAlgorithms: []
     }
     const computeService2 = ocean.compute.createComputeService(
       alice,
@@ -320,7 +336,7 @@ describe('Compute flow', () => {
     const origComputePrivacy = {
       allowRawAlgorithm: false,
       allowNetworkAccess: false,
-      trustedAlgorithms: []
+      publisherTrustedAlgorithms: []
     }
 
     const computeService = ocean.compute.createComputeService(
@@ -347,7 +363,13 @@ describe('Compute flow', () => {
     const origComputePrivacy = {
       allowRawAlgorithm: false,
       allowNetworkAccess: false,
-      trustedAlgorithms: ['did:op:1234']
+      publisherTrustedAlgorithms: [
+        {
+          did: 'did:op:1234',
+          filesChecksum: '1234',
+          containerSectionChecksum: '1234'
+        }
+      ]
     }
 
     const computeService = ocean.compute.createComputeService(
@@ -542,7 +564,16 @@ describe('Compute flow', () => {
     const computeService = ddo.findServiceByType('compute')
     // get the compute address first
     computeAddress = await ocean.compute.getComputeAddress(ddo.id, computeService.index)
-    computeOrderId = await ocean.compute.order(
+
+    // check if asset is orderable. otherwise, you might pay for it, but it has some algo restrictions
+    const allowed = await ocean.compute.isOrderable(
+      ddo.id,
+      computeService.index,
+      undefined,
+      algorithmMeta
+    )
+    assert(allowed === true)
+    computeOrderId = await ocean.compute.orderAsset(
       bob.getId(),
       ddo.id,
       computeService.index,
@@ -620,7 +651,7 @@ describe('Compute flow', () => {
       datasetNoRawAlgo.id,
       service1.index
     )
-    const order = await ocean.compute.order(
+    const order = await ocean.compute.orderAsset(
       bob.getId(),
       datasetNoRawAlgo.id,
       service1.index,
@@ -640,7 +671,17 @@ describe('Compute flow', () => {
       datasetWithTrustedAlgo.id,
       service1.index
     )
-    const order = await ocean.compute.order(
+    // check if asset is orderable. otherwise, you might pay for it, but it has some algo restrictions
+    const allowed = await ocean.compute.isOrderable(
+      datasetWithTrustedAlgo.id,
+      service1.index,
+      'did:op:77777',
+      undefined
+    )
+    assert(allowed === false)
+
+    // try even futher, since we now this should fail
+    const order = await ocean.compute.orderAsset(
       bob.getId(),
       datasetWithTrustedAlgo.id,
       service1.index,
@@ -657,7 +698,16 @@ describe('Compute flow', () => {
     // get the compute address first
     computeAddress = await ocean.compute.getComputeAddress(ddo.id, computeService.index)
     assert(ddo != null, 'ddo should not be null')
-    const order = await ocean.compute.order(
+
+    // check if asset is orderable. otherwise, you might pay for it, but it has some algo restrictions
+    const allowed = await ocean.compute.isOrderable(
+      ddo.id,
+      computeService.index,
+      algorithmAsset.id,
+      undefined
+    )
+    assert(allowed === true)
+    const order = await ocean.compute.orderAsset(
       bob.getId(),
       ddo.id,
       computeService.index,
@@ -670,7 +720,7 @@ describe('Compute flow', () => {
     // order the algorithm
     assert(algorithmAsset != null, 'algorithmAsset should not be null')
     const serviceAlgo = algorithmAsset.findServiceByType('access')
-    const orderalgo = await ocean.assets.order(
+    const orderalgo = await ocean.compute.orderAlgorithm(
       algorithmAsset.id,
       serviceAlgo.type,
       bob.getId(),
@@ -679,6 +729,7 @@ describe('Compute flow', () => {
       computeAddress // CtD is the consumer of the dataset
     )
     assert(orderalgo != null, 'Order should not be null')
+
     const response = await ocean.compute.start(
       ddo.id,
       order,
@@ -704,7 +755,15 @@ describe('Compute flow', () => {
     const computeService = ddo.findServiceByType('compute')
     // get the compute address first
     computeAddress = await ocean.compute.getComputeAddress(ddo.id, computeService.index)
-    const order = await ocean.compute.order(
+    // check if asset is orderable. otherwise, you might pay for it, but it has some algo restrictions
+    const allowed = await ocean.compute.isOrderable(
+      ddo.id,
+      computeService.index,
+      algorithmAssetRemoteProvider.id,
+      undefined
+    )
+    assert(allowed === true)
+    const order = await ocean.compute.orderAsset(
       bob.getId(),
       ddo.id,
       computeService.index,
@@ -719,7 +778,7 @@ describe('Compute flow', () => {
       'algorithmAssetRemoteProvider should not be null'
     )
     const serviceAlgo = algorithmAssetRemoteProvider.findServiceByType('access')
-    const orderalgo = await ocean.assets.order(
+    const orderalgo = await ocean.compute.orderAlgorithm(
       algorithmAssetRemoteProvider.id,
       serviceAlgo.type,
       bob.getId(),
@@ -752,7 +811,15 @@ describe('Compute flow', () => {
     const computeService = ddo.findServiceByType('compute')
     // get the compute address first
     computeAddress = await ocean.compute.getComputeAddress(ddo.id, computeService.index)
-    const order = await ocean.compute.order(
+    let allowed
+    allowed = await ocean.compute.isOrderable(
+      ddo.id,
+      computeService.index,
+      algorithmAsset.id,
+      undefined
+    )
+    assert(allowed === true)
+    const order = await ocean.compute.orderAsset(
       bob.getId(),
       ddo.id,
       computeService.index,
@@ -765,7 +832,7 @@ describe('Compute flow', () => {
     // order the algo
     assert(algorithmAsset != null, 'algorithmAsset should not be null')
     const serviceAlgo = algorithmAsset.findServiceByType('access')
-    const orderalgo = await ocean.assets.order(
+    const orderalgo = await ocean.compute.orderAlgorithm(
       algorithmAsset.id,
       serviceAlgo.type,
       bob.getId(),
@@ -777,11 +844,18 @@ describe('Compute flow', () => {
     // 1st additional input
     assert(ddoAdditional1 != null, 'ddoAdditional1 should not be null')
     const inputOrder1Service = ddoAdditional1.findServiceByType('compute')
-    const inputOrder1 = await ocean.compute.order(
+    allowed = await ocean.compute.isOrderable(
+      ddoAdditional1.id,
+      inputOrder1Service.index,
+      algorithmAsset.id,
+      undefined
+    )
+    assert(allowed === true)
+    const inputOrder1 = await ocean.compute.orderAsset(
       bob.getId(),
       ddoAdditional1.id,
       inputOrder1Service.index,
-      ddoAdditional1.id,
+      algorithmAsset.id,
       undefined,
       null, // no marketplace fee
       computeAddress // CtD is the consumer of the dataset
@@ -790,11 +864,19 @@ describe('Compute flow', () => {
     assert(ddoAdditional1 != null, 'ddoAdditional1 should not be null')
     // 2nd additional input
     const inputOrder2Service = ddoAdditional2.findServiceByType('access')
-    const inputOrder2 = await ocean.assets.order(
+    allowed = await ocean.compute.isOrderable(
       ddoAdditional2.id,
-      inputOrder2Service.type,
-      bob.getId(),
       inputOrder2Service.index,
+      algorithmAsset.id,
+      undefined
+    )
+    assert(allowed === true)
+    const inputOrder2 = await ocean.compute.orderAsset(
+      bob.getId(),
+      ddoAdditional2.id,
+      inputOrder2Service.index,
+      algorithmAsset.id,
+      undefined,
       null, // no marketplace fee
       computeAddress // CtD is the consumer of the dataset
     )
@@ -833,19 +915,24 @@ describe('Compute flow', () => {
     const newComputePrivacy = {
       allowRawAlgorithm: false,
       allowNetworkAccess: true,
-      trustedAlgorithms: ['did:op:1234', 'did:op:1235']
+      publisherTrustedAlgorithms: [
+        {
+          did: 'did:op:1234',
+          filesChecksum: '1234',
+          containerSectionChecksum: '1234'
+        },
+        {
+          did: 'did:op:12345',
+          filesChecksum: '1234',
+          containerSectionChecksum: '1234'
+        }
+      ]
     }
-    let computeIndex = 0
-    for (let i = 0; i < ddo.service.length; i++) {
-      if (ddo.service[i].type === 'compute') {
-        computeIndex = i
-        break
-      }
-    }
-    assert(computeIndex > 0, 'ComputeIndex should be >0')
+    const computeService = ddo.findServiceByType('compute')
+    assert(computeService, 'ComputeIndex should be >0')
     const newDdo = await ocean.compute.editComputePrivacy(
       ddo,
-      computeIndex,
+      computeService.index,
       newComputePrivacy
     )
     assert(newDdo !== null, 'newDDO should not be null')
@@ -864,9 +951,106 @@ describe('Compute flow', () => {
       'allowNetworkAccess does not match'
     )
     assert.deepEqual(
-      metaData.attributes.main.privacy.trustedAlgorithms,
-      newComputePrivacy.trustedAlgorithms,
+      metaData.attributes.main.privacy.publisherTrustedAlgorithms,
+      newComputePrivacy.publisherTrustedAlgorithms,
       'allowNetworkAccess does not match'
     )
+  })
+  it('Alice updates Compute Privacy, allowing some published algos', async () => {
+    const computeService = ddo.findServiceByType('compute')
+    assert(computeService, 'ComputeIndex should be >0')
+    // allow algorithmAsset
+    let newDdo = await ocean.compute.addTrustedAlgorithmtoAsset(
+      ddo,
+      computeService.index,
+      algorithmAsset.id
+    )
+    assert(newDdo !== null, 'newDDO should not be null')
+    let isAlgoAllowed = await ocean.compute.isAlgorithmTrusted(
+      newDdo,
+      computeService.index,
+      algorithmAsset.id
+    )
+    assert(isAlgoAllowed, 'Algorithm is not allowed')
+    // add algorithmAssetRemoteProvider as trusted as well
+    newDdo = await ocean.compute.addTrustedAlgorithmtoAsset(
+      ddo,
+      computeService.index,
+      algorithmAssetRemoteProvider.id
+    )
+    isAlgoAllowed = await ocean.compute.isAlgorithmTrusted(
+      newDdo,
+      computeService.index,
+      algorithmAssetRemoteProvider.id
+    )
+    assert(isAlgoAllowed, 'Algorithm is not allowed')
+    assert(newDdo !== null, 'newDDO should not be null')
+    const txid = await ocean.onChainMetadata.update(ddo.id, newDdo, alice.getId())
+    assert(txid !== null, 'TxId should not be null')
+    await sleep(aquaSleep)
+  })
+  it('Alice is updating the algoritm, changing the container section.', async () => {
+    const newAlgoDDo = algorithmAsset
+    const serviceMetadata = newAlgoDDo.findServiceByType('metadata')
+    newAlgoDDo.service[serviceMetadata.index].attributes.main.algorithm.container =
+      'dummyimage'
+    const txid = await ocean.onChainMetadata.update(
+      newAlgoDDo.id,
+      newAlgoDDo,
+      alice.getId()
+    )
+    assert(txid !== null, 'TxId should not be null')
+    await sleep(aquaSleep)
+  })
+  it('Bob should not be able to run a compute job, because algo is changed.', async () => {
+    const computeService = ddo.findServiceByType('compute')
+    // get the compute address first
+    computeAddress = await ocean.compute.getComputeAddress(ddo.id, computeService.index)
+    assert(ddo != null, 'ddo should not be null')
+
+    // check if asset is orderable. otherwise, you might pay for it, but it has some algo restrictions
+    const allowed = await ocean.compute.isOrderable(
+      ddo.id,
+      computeService.index,
+      algorithmAsset.id,
+      undefined
+    )
+    assert(allowed === false, 'This should fail, the algo container section was changed!')
+  })
+  it('Alice is updating the 2ndalgoritm, changing the files section.', async () => {
+    it('Alice is updating the algoritm, changing the container section.', async () => {
+      const newAlgoDDo = algorithmAssetRemoteProvider
+      const serviceMetadata = newAlgoDDo.findServiceByType('metadata')
+      const newFile = {
+        checksum: 'efb2c764274b745f5fc37f97c6b0e764',
+        contentLength: '4535431',
+        contentType: 'text/csv',
+        encoding: 'UTF-8',
+        compression: 'zip'
+      }
+      newAlgoDDo.service[serviceMetadata.index].attributes.main.files.push(newFile)
+      const txid = await ocean.onChainMetadata.update(
+        newAlgoDDo.id,
+        newAlgoDDo,
+        alice.getId()
+      )
+      assert(txid !== null, 'TxId should not be null')
+      await sleep(aquaSleep)
+    })
+  })
+  it('Bob should not be able to run a compute job, because algo files section is changed.', async () => {
+    const computeService = ddo.findServiceByType('compute')
+    // get the compute address first
+    computeAddress = await ocean.compute.getComputeAddress(ddo.id, computeService.index)
+    assert(ddo != null, 'ddo should not be null')
+
+    // check if asset is orderable. otherwise, you might pay for it, but it has some algo restrictions
+    const allowed = await ocean.compute.isOrderable(
+      ddo.id,
+      computeService.index,
+      algorithmAssetRemoteProvider.id,
+      undefined
+    )
+    assert(allowed === false, 'This should fail, the algo files section was changed!')
   })
 })

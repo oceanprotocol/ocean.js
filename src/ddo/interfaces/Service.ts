@@ -23,10 +23,17 @@ export interface ServiceAccessAttributes extends ServiceCommonAttributes {
     timeout: number
   }
 }
+
+export interface publisherTrustedAlgorithm {
+  did: string
+  filesChecksum: string
+  containerSectionChecksum: string
+}
+
 export interface ServiceComputePrivacy {
   allowRawAlgorithm: boolean
   allowNetworkAccess: boolean
-  trustedAlgorithms: string[]
+  publisherTrustedAlgorithms?: publisherTrustedAlgorithm[]
 }
 
 export interface ServiceComputeProvider {
