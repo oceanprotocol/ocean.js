@@ -43,6 +43,8 @@
   "dependencies": {
     "@ethereum-navigator/navigator": "^0.5.2",
     "@oceanprotocol/contracts": "^0.5.8",
+    "@types/crypto-js": "^4.0.1",
+    "crypto-js": "^4.0.0",
     "decimal.js": "^10.2.1",
     "fs": "0.0.1-security",
     "lzma": "^2.3.2",

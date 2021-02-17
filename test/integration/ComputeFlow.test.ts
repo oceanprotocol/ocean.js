@@ -989,6 +989,23 @@ describe('Compute flow', () => {
     assert(txid !== null, 'TxId should not be null')
     await sleep(aquaSleep)
   })
+  it('Alice updates Compute Privacy, removing a previously allowed published algo', async () => {
+    const computeService = ddo.findServiceByType('compute')
+    assert(computeService, 'ComputeIndex should be >0')
+    // allow algorithmAsset
+    const newDdo = await ocean.compute.removeTrustedAlgorithmFromAsset(
+      ddo,
+      computeService.index,
+      algorithmAsset.id
+    )
+    assert(newDdo !== null, 'newDDO should not be null')
+    const isAlgoAllowed = await ocean.compute.isAlgorithmTrusted(
+      newDdo,
+      computeService.index,
+      algorithmAsset.id
+    )
+    assert(isAlgoAllowed === false, 'Algorithm is still allowed')
+  })
   it('Alice is updating the algoritm, changing the container section.', async () => {
     const newAlgoDDo = algorithmAsset
     const serviceMetadata = newAlgoDDo.findServiceByType('metadata')
