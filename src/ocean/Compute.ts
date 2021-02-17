@@ -425,7 +425,7 @@ export class Compute extends Instantiable {
                     algorithmDid
                   )
                   if (
-                    trustedAlgorithm.containerSectionChecksum &&
+                    algo.containerSectionChecksum &&
                     algo.containerSectionChecksum !==
                       trustedAlgorithm.containerSectionChecksum
                   ) {
@@ -436,7 +436,7 @@ export class Compute extends Instantiable {
                     return false
                   }
                   if (
-                    trustedAlgorithm.filesChecksum &&
+                    algo.filesChecksum &&
                     algo.filesChecksum !== trustedAlgorithm.filesChecksum
                   ) {
                     this.logger.error(
