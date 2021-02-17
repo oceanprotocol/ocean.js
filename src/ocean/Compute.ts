@@ -425,8 +425,9 @@ export class Compute extends Instantiable {
                     algorithmDid
                   )
                   if (
+                    trustedAlgorithm.containerSectionChecksum &&
                     algo.containerSectionChecksum !==
-                    trustedAlgorithm.containerSectionChecksum
+                      trustedAlgorithm.containerSectionChecksum
                   ) {
                     this.logger.error(
                       'ERROR: Algorithm container section was altered since it was added as trusted by ' +
@@ -434,7 +435,10 @@ export class Compute extends Instantiable {
                     )
                     return false
                   }
-                  if (algo.filesChecksum !== trustedAlgorithm.filesChecksum) {
+                  if (
+                    trustedAlgorithm.filesChecksum &&
+                    algo.filesChecksum !== trustedAlgorithm.filesChecksum
+                  ) {
                     this.logger.error(
                       'ERROR: Algorithm files section was altered since it was added as trusted by ' +
                         datasetDid
