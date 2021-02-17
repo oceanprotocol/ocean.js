@@ -451,10 +451,6 @@ export class Provider extends Instantiable {
     return this.getEndpointURL('fileinfo')
   }
 
-  public getPublishEndpoint(): ServiceEndpoint {
-    return this.getEndpointURL('publish')
-  }
-
   public getComputeStartEndpoint(): ServiceEndpoint {
     return this.getEndpointURL('computeStart')
   }

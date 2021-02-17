@@ -1046,7 +1046,6 @@ describe('Compute flow', () => {
       index: 1
     }
     newAlgoDDo.service[serviceMetadata.index].attributes.main.files.push(newFile)
-    console.log(newAlgoDDo.service[serviceMetadata.index].attributes.main.files)
     const txid = await ocean.onChainMetadata.update(
       newAlgoDDo.id,
       newAlgoDDo,
