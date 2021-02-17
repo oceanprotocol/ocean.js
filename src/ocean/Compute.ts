@@ -586,7 +586,7 @@ export class Compute extends Instantiable {
     return {
       did,
       containerSectionChecksum: SHA256(
-        JSON.stringify(service.attributes.main.algorithm)
+        JSON.stringify(service.attributes.main.algorithm.container)
       ).toString(),
       filesChecksum: SHA256(
         service.attributes.encryptedFiles + JSON.stringify(service.attributes.main.files)

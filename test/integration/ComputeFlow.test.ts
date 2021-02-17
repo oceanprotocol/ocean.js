@@ -1009,7 +1009,7 @@ describe('Compute flow', () => {
   it('Alice is updating the algoritm, changing the container section.', async () => {
     const newAlgoDDo = algorithmAsset
     const serviceMetadata = newAlgoDDo.findServiceByType('metadata')
-    newAlgoDDo.service[serviceMetadata.index].attributes.main.algorithm.container =
+    newAlgoDDo.service[serviceMetadata.index].attributes.main.algorithm.container.image =
       'dummyimage'
     const txid = await ocean.onChainMetadata.update(
       newAlgoDDo.id,
@@ -1035,25 +1035,25 @@ describe('Compute flow', () => {
     assert(allowed === false, 'This should fail, the algo container section was changed!')
   })
   it('Alice is updating the 2ndalgoritm, changing the files section.', async () => {
-    it('Alice is updating the algoritm, changing the container section.', async () => {
-      const newAlgoDDo = algorithmAssetRemoteProvider
-      const serviceMetadata = newAlgoDDo.findServiceByType('metadata')
-      const newFile = {
-        checksum: 'efb2c764274b745f5fc37f97c6b0e764',
-        contentLength: '4535431',
-        contentType: 'text/csv',
-        encoding: 'UTF-8',
-        compression: 'zip'
-      }
-      newAlgoDDo.service[serviceMetadata.index].attributes.main.files.push(newFile)
-      const txid = await ocean.onChainMetadata.update(
-        newAlgoDDo.id,
-        newAlgoDDo,
-        alice.getId()
-      )
-      assert(txid !== null, 'TxId should not be null')
-      await sleep(aquaSleep)
-    })
+    const newAlgoDDo = algorithmAssetRemoteProvider
+    const serviceMetadata = newAlgoDDo.findServiceByType('metadata')
+    const newFile = {
+      checksum: '1',
+      contentLength: '2',
+      contentType: 'text/csv',
+      encoding: 'UTF-8',
+      compression: 'zip',
+      index: 1
+    }
+    newAlgoDDo.service[serviceMetadata.index].attributes.main.files.push(newFile)
+    console.log(newAlgoDDo.service[serviceMetadata.index].attributes.main.files)
+    const txid = await ocean.onChainMetadata.update(
+      newAlgoDDo.id,
+      newAlgoDDo,
+      alice.getId()
+    )
+    assert(txid !== null, 'TxId should not be null')
+    await sleep(aquaSleep)
   })
   it('Bob should not be able to run a compute job, because algo files section is changed.', async () => {
     const computeService = ddo.findServiceByType('compute')
