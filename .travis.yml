@@ -41,7 +41,7 @@ after_script:
   - ./cc-test-reporter format-coverage -t lcov -o coverage/codeclimate.unit.json coverage/unit/lcov.info # Format unit test coverage
   - ./cc-test-reporter format-coverage -t lcov -o coverage/codeclimate.integration.json coverage/integration/lcov.info # Format integration test coverage
   - ./cc-test-reporter sum-coverage coverage/codeclimate.*.json -p 2 # Sum both coverage parts into coverage/codeclimate.json
-  - if [[ "$TRAVIS_TEST_RESULT" == 0 ]]; then ./cc-test-reporter upload-coverage; fi # Upload coverage/codeclimate.json
+  - if [[ -n "CC_TEST_REPORTER_ID" && "$TRAVIS_TEST_RESULT" == 0 ]]; then ./cc-test-reporter upload-coverage; fi # Upload coverage/codeclimate.json
 
 notifications:
   email: false
