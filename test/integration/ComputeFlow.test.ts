@@ -440,7 +440,7 @@ describe('Compute flow', () => {
   })
 
   it('should publish an algorithm using the 2nd provider', async () => {
-    const remoteProviderUri = 'http://127.0.0.1:8031'
+    const remoteProviderUri = 'http://172.15.0.7:8030'
     const algoAssetRemoteProvider: Metadata = {
       main: {
         type: 'algorithm',
