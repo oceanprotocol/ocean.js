@@ -29,7 +29,7 @@ before_script:
   - export AQUARIUS_URI="http://172.15.0.5:5000"
   - export DEPLOY_CONTRACTS="true"
   - if [[ -n "$DOCKERHUB_PASSWORD" && -n "$DOCKERHUB_USERNAME" ]]; then echo "logining in to docker";echo "$DOCKERHUB_PASSWORD" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin;fi
-  - bash -x start_ocean.sh --no-dashboard 2>&1 > start_ocean.log &
+  - bash -x start_ocean.sh --with-provider2 --no-dashboard 2>&1 > start_ocean.log &
   - cd ..
   - ./scripts/waitforcontracts.sh
 
