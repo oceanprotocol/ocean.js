@@ -89,6 +89,20 @@ const configs: ConfigHelperConfig[] = [
     fixedRateExchangeAddress: null,
     metadataContractAddress: null,
     startBlock: 11105522
+  },
+  {
+    networkId: 137,
+    network: 'polygon',
+    nodeUri: 'https://rpc-mainnet.maticvigil.com/',
+    metadataCacheUri: 'https://aquarius.polygon.oceanprotocol.com',
+    providerUri: 'https://provider.polygon.oceanprotocol.com',
+    subgraphUri: 'https://subgraph.polygon.oceanprotocol.com',
+    oceanTokenAddress: null,
+    factoryAddress: null,
+    poolFactoryAddress: null,
+    fixedRateExchangeAddress: null,
+    metadataContractAddress: null,
+    startBlock: 0
   }
 ]
 
