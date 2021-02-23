@@ -73,7 +73,7 @@ describe('Compute flow', () => {
   const dateCreated = new Date(Date.now()).toISOString().split('.')[0] + 'Z' // remove milliseconds
 
   const tokenAmount = '1000'
-  const aquaSleep = 30000
+  const aquaSleep = 50000
 
   const timeout = 86400
   const algorithmMeta = {

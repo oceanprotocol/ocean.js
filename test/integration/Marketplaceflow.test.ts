@@ -41,7 +41,7 @@ describe('Marketplace flow', () => {
 
   const marketplaceAllowance = '20'
   const tokenAmount = '100'
-  const aquaSleep = 10000
+  const aquaSleep = 50000
 
   it('Initialize Ocean contracts v3', async () => {
     contracts = new TestContractHandler(
