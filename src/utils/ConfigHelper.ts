@@ -102,7 +102,7 @@ const configs: ConfigHelperConfig[] = [
     poolFactoryAddress: null,
     fixedRateExchangeAddress: null,
     metadataContractAddress: null,
-    startBlock: 0
+    startBlock: 11005222
   }
 ]
 
