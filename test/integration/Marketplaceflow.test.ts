@@ -26,12 +26,15 @@ describe('Marketplace flow', () => {
   let owner: Account
   let bob: Account
   let ddo
+  let ddoWithBadUrl
   let alice: Account
   let asset
+  let assetWithBadUrl
   let marketplace: Account
   let contracts: TestContractHandler
   let datatoken: DataTokens
   let tokenAddress: string
+  let tokenAddressForBadUrlAsset: string
   let service1: ServiceAccess
   let price: string
   let ocean: Ocean
@@ -41,7 +44,7 @@ describe('Marketplace flow', () => {
 
   const marketplaceAllowance = '20'
   const tokenAmount = '100'
-  const aquaSleep = 10000
+  const aquaSleep = 50000
 
   it('Initialize Ocean contracts v3', async () => {
     contracts = new TestContractHandler(
@@ -79,6 +82,14 @@ describe('Marketplace flow', () => {
       'DTA'
     )
     assert(tokenAddress != null)
+    tokenAddressForBadUrlAsset = await datatoken.create(
+      blob,
+      alice.getId(),
+      '10000000000',
+      'AliceDT',
+      'DTA'
+    )
+    assert(tokenAddressForBadUrlAsset != null)
   })
 
   it('Generates metadata', async () => {
@@ -101,9 +112,28 @@ describe('Marketplace flow', () => {
         ]
       }
     }
+    assetWithBadUrl = {
+      main: {
+        type: 'dataset',
+        name: 'test-dataset',
+        dateCreated: new Date(Date.now()).toISOString().split('.')[0] + 'Z', // remove milliseconds
+        author: 'oceanprotocol-team',
+        license: 'MIT',
+        files: [
+          {
+            url: 'https://s3.amazonaws.com/testfiles.oceanprotocol.com/nosuchfile',
+            checksum: 'efb2c764274b745f5fc37f97c6b0e761',
+            contentLength: '4535431',
+            contentType: 'text/csv',
+            encoding: 'UTF-8',
+            compression: 'zip'
+          }
+        ]
+      }
+    }
   })
 
-  it('Alice publishes a dataset', async () => {
+  it('Alice publishes both datasets', async () => {
     price = '10' // in datatoken
     const publishedDate = new Date(Date.now()).toISOString().split('.')[0] + 'Z'
     const timeout = 0
@@ -115,11 +145,20 @@ describe('Marketplace flow', () => {
     )
     ddo = await ocean.assets.create(asset, alice, [service1], tokenAddress)
     assert(ddo.dataToken === tokenAddress)
+    await sleep(1000)
+    ddoWithBadUrl = await ocean.assets.create(
+      assetWithBadUrl,
+      alice,
+      [service1],
+      tokenAddressForBadUrlAsset
+    )
+    assert(ddoWithBadUrl.dataToken === tokenAddressForBadUrlAsset)
     await sleep(aquaSleep)
   })
 
   it('Alice mints 100 tokens', async () => {
     await datatoken.mint(tokenAddress, alice.getId(), tokenAmount)
+    await datatoken.mint(tokenAddressForBadUrlAsset, alice.getId(), tokenAmount)
   })
 
   it('Alice allows marketplace to sell her datatokens', async () => {
@@ -169,6 +208,12 @@ describe('Marketplace flow', () => {
       .transfer(tokenAddress, bob.getId(), dTamount, alice.getId())
       .then(async () => {
         const balance = await datatoken.balance(tokenAddress, bob.getId())
+        assert(balance.toString() === dTamount.toString())
+      })
+    await datatoken
+      .transfer(tokenAddressForBadUrlAsset, bob.getId(), dTamount, alice.getId())
+      .then(async () => {
+        const balance = await datatoken.balance(tokenAddressForBadUrlAsset, bob.getId())
         assert(balance.toString() === dTamount.toString())
       })
   })
@@ -285,5 +330,19 @@ describe('Marketplace flow', () => {
   it('Alice should not get any order History', async () => {
     const history = await ocean.assets.getOrderHistory(alice)
     assert(history.length === 0)
+  })
+  it('Bob tries to consumes asset with bad URL, but tokens are not deducted', async () => {
+    const balance = await datatoken.balance(tokenAddressForBadUrlAsset, bob.getId())
+    const txid = await ocean.assets.order(
+      ddoWithBadUrl.id,
+      accessService.type,
+      bob.getId()
+    )
+    assert(txid === null)
+    const balanceAfterOrder = await datatoken.balance(
+      tokenAddressForBadUrlAsset,
+      bob.getId()
+    )
+    assert(balance.toString() === balanceAfterOrder.toString())
   })
 })
