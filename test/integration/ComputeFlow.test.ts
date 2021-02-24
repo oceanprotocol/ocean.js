@@ -46,6 +46,7 @@ describe('Compute flow', () => {
   let asset: Metadata
   let datasetNoRawAlgo: DDO
   let datasetWithTrustedAlgo: DDO
+  let datasetWithBogusProvider: DDO
   let algorithmAsset: DDO
   let algorithmAssetRemoteProvider: DDO
   let contracts: TestContractHandler
@@ -53,6 +54,7 @@ describe('Compute flow', () => {
   let tokenAddress: string
   let tokenAddressNoRawAlgo: string
   let tokenAddressWithTrustedAlgo: string
+  let tokenAddressWithBogusProvider: string
   let tokenAddressAlgorithm: string
   let tokenAddressAlgorithmRemoteProvider: string
   let tokenAddressAdditional1: string
@@ -73,7 +75,7 @@ describe('Compute flow', () => {
   const dateCreated = new Date(Date.now()).toISOString().split('.')[0] + 'Z' // remove milliseconds
 
   const tokenAmount = '1000'
-  const aquaSleep = 30000
+  const aquaSleep = 50000
 
   const timeout = 86400
   const algorithmMeta = {
@@ -142,6 +144,17 @@ describe('Compute flow', () => {
     )
     assert(
       tokenAddressWithTrustedAlgo != null,
+      'Creation of tokenAddressWithTrustedAlgo failed'
+    )
+    tokenAddressWithBogusProvider = await datatoken.create(
+      blob,
+      alice.getId(),
+      '10000000000',
+      'AssetWithTrustedDT',
+      'AWTDT'
+    )
+    assert(
+      tokenAddressWithBogusProvider != null,
       'Creation of tokenAddressWithTrustedAlgo failed'
     )
 
@@ -502,6 +515,7 @@ describe('Compute flow', () => {
     await datatoken.mint(tokenAddress, alice.getId(), tokenAmount)
     await datatoken.mint(tokenAddressNoRawAlgo, alice.getId(), tokenAmount)
     await datatoken.mint(tokenAddressWithTrustedAlgo, alice.getId(), tokenAmount)
+    await datatoken.mint(tokenAddressWithBogusProvider, alice.getId(), tokenAmount)
     await datatoken.mint(tokenAddressAlgorithm, alice.getId(), tokenAmount)
     await datatoken.mint(tokenAddressAlgorithmRemoteProvider, alice.getId(), tokenAmount)
     await datatoken.mint(tokenAddressAdditional1, alice.getId(), tokenAmount)
@@ -526,6 +540,16 @@ describe('Compute flow', () => {
       .transfer(tokenAddressWithTrustedAlgo, bob.getId(), dTamount, alice.getId())
       .then(async () => {
         const balance = await datatoken.balance(tokenAddressWithTrustedAlgo, bob.getId())
+        assert(balance.toString() === dTamount.toString())
+      })
+
+    await datatoken
+      .transfer(tokenAddressWithBogusProvider, bob.getId(), dTamount, alice.getId())
+      .then(async () => {
+        const balance = await datatoken.balance(
+          tokenAddressWithBogusProvider,
+          bob.getId()
+        )
         assert(balance.toString() === dTamount.toString())
       })
     await datatoken
@@ -1068,5 +1092,95 @@ describe('Compute flow', () => {
       undefined
     )
     assert(allowed === false, 'This should fail, the algo files section was changed!')
+  })
+
+  it('should force publish a dataset with a compute service served by a non existant provider', async () => {
+    // will create a service with ocean.provider for metadata service, but bogus provider for compute service
+    const bogusRemoteProviderUri = 'http://172.15.0.7:2030'
+    const origComputePrivacy = {
+      allowRawAlgorithm: false,
+      allowNetworkAccess: false,
+      publisherTrustedAlgorithms: []
+    }
+
+    const computeService = ocean.compute.createComputeService(
+      alice,
+      '1000',
+      dateCreated,
+      providerAttributes,
+      origComputePrivacy as ServiceComputePrivacy,
+      3600,
+      bogusRemoteProviderUri
+    )
+    datasetWithBogusProvider = await ocean.assets.create(
+      asset,
+      alice,
+      [computeService],
+      tokenAddressWithBogusProvider
+    )
+    assert(
+      datasetWithBogusProvider.dataToken === tokenAddressWithTrustedAlgo,
+      'datasetWithTrustedAlgo.dataToken !== tokenAddressWithTrustedAlgo'
+    )
+    await sleep(aquaSleep)
+  })
+  it('Bob should fail to start a compute job for a bogus provider with a raw Algo', async () => {
+    const output = {}
+    const computeService = datasetWithBogusProvider.findServiceByType('compute')
+    // get the compute address first
+    computeAddress = await ocean.compute.getComputeAddress(
+      datasetWithBogusProvider.id,
+      computeService.index
+    )
+
+    // check if asset is orderable. otherwise, you might pay for it, but it has some algo restrictions
+    const allowed = await ocean.compute.isOrderable(
+      datasetWithBogusProvider.id,
+      computeService.index,
+      undefined,
+      algorithmMeta
+    )
+    assert(allowed === false)
+    // we know that it is not Orderable, but we are trying to force it
+    computeOrderId = await ocean.compute.orderAsset(
+      bob.getId(),
+      datasetWithBogusProvider.id,
+      computeService.index,
+      undefined,
+      algorithmMeta,
+      null, // no marketplace fee
+      computeAddress // CtD is the consumer of the dataset
+    )
+    assert(computeOrderId === null, 'computeOrderId !== null')
+    // we are forcing a bogus orderId
+    computeOrderId = '1234'
+    const response = await ocean.compute.start(
+      datasetWithBogusProvider.id,
+      computeOrderId,
+      tokenAddress,
+      bob,
+      undefined,
+      algorithmMeta,
+      output,
+      `${computeService.index}`,
+      computeService.type
+    )
+    assert(response, 'Compute error')
+  })
+
+  it('Bob should failed to get status of all compute jobs from a dataset with bogus provider', async () => {
+    const response = await ocean.compute.status(
+      bob,
+      datasetWithBogusProvider.id,
+      undefined,
+      undefined,
+      false
+    )
+    assert(response === undefined, 'Invalid response')
+  })
+  it('Bob should fail to stop a fake compute job on a bogus provider', async () => {
+    const jobid = '1234'
+    const response = await ocean.compute.stop(bob, datasetWithBogusProvider.id, jobid)
+    assert(response === undefined, 'Invalid response')
   })
 })
