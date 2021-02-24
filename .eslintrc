@@ -11,23 +11,23 @@
       "./test/integration/tsconfig.json"
     ]
   },
-  "extends": [
-    "oceanprotocol",
-    "prettier/standard",
-    "plugin:prettier/recommended",
-    "plugin:@typescript-eslint/recommended",
-    "prettier/@typescript-eslint"
-  ],
-  "plugins": ["@typescript-eslint", "prettier"],
+  "extends": ["oceanprotocol", "plugin:prettier/recommended"],
+  "plugins": ["@typescript-eslint"],
   "rules": {
     "no-empty": ["error", { "allowEmptyCatch": true }],
     "prefer-destructuring": ["warn", { "object": true, "array": false }],
     "no-dupe-class-members": ["warn"],
-    "no-useless-constructor": ["warn"]
+    "no-useless-constructor": ["warn"],
+    "no-unused-vars": ["warn"],
+    "constructor-super": ["warn"]
   },
   "env": {
     "es6": true,
     "browser": true,
-    "mocha": true
+    "mocha": true,
+    "node": true
+  },
+  "globals": {
+    "NodeJS": true
   }
 }
