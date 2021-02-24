@@ -155,7 +155,7 @@ describe('Compute flow', () => {
     )
     assert(
       tokenAddressWithBogusProvider != null,
-      'Creation of tokenAddressWithTrustedAlgo failed'
+      'Creation of tokenAddressWithBogusProvider failed'
     )
 
     tokenAddressAlgorithm = await datatoken.create(
