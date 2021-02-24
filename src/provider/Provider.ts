@@ -283,10 +283,10 @@ export class Provider extends Instantiable {
 
     if (additionalInputs) payload.additionalInputs = additionalInputs
     try {
-      const response = await this.ocean.utils.fetch.post(
-        this.getComputeStartEndpoint().urlPath,
-        JSON.stringify(payload)
-      )
+      let path = null
+      if (this.getComputeStartEndpoint().urlPath)
+        path = this.getComputeStartEndpoint().urlPath
+      const response = await this.ocean.utils.fetch.post(path, JSON.stringify(payload))
       if (response?.ok) {
         const params = await response.json()
         return params
@@ -322,10 +322,10 @@ export class Provider extends Instantiable {
     payload.jobId = jobId
     payload.consumerAddress = address
     try {
-      const response = await this.ocean.utils.fetch.put(
-        this.getComputeStopEndpoint().urlPath,
-        JSON.stringify(payload)
-      )
+      let path = null
+      if (this.getComputeStopEndpoint().urlPath)
+        path = this.getComputeStopEndpoint().urlPath
+      const response = await this.ocean.utils.fetch.put(path, JSON.stringify(payload))
       if (response?.ok) {
         const params = await response.json()
         return params
@@ -361,10 +361,10 @@ export class Provider extends Instantiable {
     payload.jobId = jobId
     payload.consumerAddress = address
     try {
-      const response = await this.ocean.utils.fetch.delete(
-        this.getComputeDeleteEndpoint().urlPath,
-        JSON.stringify(payload)
-      )
+      let path = null
+      if (this.getComputeDeleteEndpoint().urlPath)
+        path = this.getComputeDeleteEndpoint().urlPath
+      const response = await this.ocean.utils.fetch.delete(path, JSON.stringify(payload))
       if (response?.ok) {
         const params = await response.json()
         return params
@@ -408,11 +408,11 @@ export class Provider extends Instantiable {
     url += `&consumerAddress=${address}`
     url += (txId && `&transferTxId=${txId}`) || ''
 
-    let response
     try {
-      const response = await this.ocean.utils.fetch.get(
-        this.getComputeStatusEndpoint().urlPath + url
-      )
+      let path = null
+      if (this.getComputeStatusEndpoint().urlPath)
+        path = this.getComputeStatusEndpoint().urlPath
+      const response = await this.ocean.utils.fetch.get(path + url)
       /* response = await fetch(this.getComputeEndpoint() + url, {
         method: 'GET',
         timeout: 5000
