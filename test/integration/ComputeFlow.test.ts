@@ -1119,8 +1119,8 @@ describe('Compute flow', () => {
       tokenAddressWithBogusProvider
     )
     assert(
-      datasetWithBogusProvider.dataToken === tokenAddressWithTrustedAlgo,
-      'datasetWithTrustedAlgo.dataToken !== tokenAddressWithTrustedAlgo'
+      datasetWithBogusProvider.dataToken === tokenAddressWithBogusProvider,
+      'datasetWithBogusProvider.dataToken !== tokenAddressWithBogusProvider'
     )
     await sleep(aquaSleep)
   })
