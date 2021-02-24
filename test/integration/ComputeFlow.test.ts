@@ -1165,7 +1165,7 @@ describe('Compute flow', () => {
       `${computeService.index}`,
       computeService.type
     )
-    assert(response, 'Compute error')
+    assert(response === null || response === undefined, 'Compute error')
   })
 
   it('Bob should failed to get status of all compute jobs from a dataset with bogus provider', async () => {
@@ -1176,11 +1176,11 @@ describe('Compute flow', () => {
       undefined,
       false
     )
-    assert(response === undefined, 'Invalid response')
+    assert(response === null || response === undefined, 'Invalid response')
   })
   it('Bob should fail to stop a fake compute job on a bogus provider', async () => {
     const jobid = '1234'
     const response = await ocean.compute.stop(bob, datasetWithBogusProvider.id, jobid)
-    assert(response === undefined, 'Invalid response')
+    assert(response === null || response === undefined, 'Invalid response')
   })
 })
