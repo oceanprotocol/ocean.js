@@ -140,6 +140,7 @@ export class Compute extends Instantiable {
         additionalInputs
       )
       if (computeJobsList) return computeJobsList[0] as ComputeJob
+      else return null
     }
     return null
   }
@@ -162,7 +163,8 @@ export class Compute extends Instantiable {
     const provider = await Provider.getInstance(this.instanceConfig)
     await provider.setBaseUrl(serviceEndpoint)
     const computeJobsList = await provider.computeStop(did, consumerAccount, jobId)
-    return computeJobsList[0] as ComputeJob
+    if (computeJobsList) return computeJobsList[0] as ComputeJob
+    return null
   }
 
   /**
@@ -183,7 +185,8 @@ export class Compute extends Instantiable {
     const provider = await Provider.getInstance(this.instanceConfig)
     await provider.setBaseUrl(serviceEndpoint)
     const computeJobsList = await provider.computeDelete(did, consumerAccount, jobId)
-    return computeJobsList[0] as ComputeJob
+    if (computeJobsList) return computeJobsList[0] as ComputeJob
+    return null
   }
 
   /**
@@ -220,7 +223,6 @@ export class Compute extends Instantiable {
       txId,
       sign
     )
-
     return computeJobsList as ComputeJob[]
   }
 
