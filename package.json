@@ -1,6 +1,6 @@
 {
   "name": "@oceanprotocol/lib",
-  "version": "0.10.1",
+  "version": "0.11.0",
   "description": "JavaScript client library for Ocean Protocol",
   "main": "./dist/node/lib.js",
   "typings": "./dist/node/lib.d.ts",
@@ -42,7 +42,9 @@
   },
   "dependencies": {
     "@ethereum-navigator/navigator": "^0.5.2",
-    "@oceanprotocol/contracts": "^0.5.8",
+    "@oceanprotocol/contracts": "^0.5.10",
+    "@types/crypto-js": "^4.0.1",
+    "crypto-js": "^4.0.0",
     "decimal.js": "^10.2.1",
     "fs": "0.0.1-security",
     "lzma": "^2.3.2",
@@ -68,7 +70,7 @@
     "cross-env": "^7.0.3",
     "eslint": "^7.17.0",
     "eslint-config-oceanprotocol": "^1.5.0",
-    "eslint-config-prettier": "^7.1.0",
+    "eslint-config-prettier": "^8.0.0",
     "eslint-plugin-prettier": "^3.3.1",
     "lcov-result-merger": "^3.1.0",
     "mocha": "^8.2.1",

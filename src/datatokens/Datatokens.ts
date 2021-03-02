@@ -19,6 +19,7 @@ export class DataTokens {
   public datatokensABI: AbiItem | AbiItem[]
   public web3: Web3
   private logger: Logger
+  public startBlock: number
   /**
    * Instantiate DataTokens (independently of Ocean).
    * @param {String} factoryAddress
@@ -31,13 +32,15 @@ export class DataTokens {
     factoryABI: AbiItem | AbiItem[],
     datatokensABI: AbiItem | AbiItem[],
     web3: Web3,
-    logger: Logger
+    logger: Logger,
+    startBlock?: number
   ) {
     this.factoryAddress = factoryAddress
     this.factoryABI = factoryABI || (defaultFactoryABI.abi as AbiItem[])
     this.datatokensABI = datatokensABI || (defaultDatatokensABI.abi as AbiItem[])
     this.web3 = web3
     this.logger = logger
+    this.startBlock = startBlock || 0
   }
 
   /**
@@ -469,9 +472,17 @@ export class DataTokens {
     const datatoken = new this.web3.eth.Contract(this.datatokensABI, dataTokenAddress, {
       from: address
     })
+    let fromBlock
+    if (timeout > 0) {
+      const lastBlock = await this.web3.eth.getBlockNumber()
+      fromBlock = lastBlock - timeout
+      if (fromBlock < this.startBlock) fromBlock = this.startBlock
+    } else {
+      fromBlock = this.startBlock
+    }
     const events = await datatoken.getPastEvents('OrderStarted', {
       filter: { consumer: address },
-      fromBlock: 0,
+      fromBlock,
       toBlock: 'latest'
     })
     for (let i = 0; i < events.length; i++) {
@@ -497,5 +508,83 @@ export class DataTokens {
     })
     const topic = this.web3.eth.abi.encodeEventSignature(eventdata as any)
     return topic
+  }
+
+  /**
+   * Purpose a new minter
+   * @param {String} dataTokenAddress
+   * @param {String} newMinter
+   * @param {String} address - only current minter can call this
+   * @return {Promise<string>} transactionId
+   */
+  public async proposeMinter(
+    dataTokenAddress: string,
+    newMinterAddress: string,
+    address: string
+  ): Promise<string> {
+    const datatoken = new this.web3.eth.Contract(this.datatokensABI, dataTokenAddress, {
+      from: address
+    })
+    const gasLimitDefault = this.GASLIMIT_DEFAULT
+    let estGas
+    try {
+      estGas = await datatoken.methods
+        .proposeMinter(newMinterAddress)
+        .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
+    } catch (e) {
+      estGas = gasLimitDefault
+    }
+    try {
+      const trxReceipt = await datatoken.methods.proposeMinter(newMinterAddress).send({
+        from: address,
+        gas: estGas + 1,
+        gasPrice: await getFairGasPrice(this.web3)
+      })
+      return trxReceipt
+    } catch (e) {
+      return null
+    }
+  }
+
+  /**
+   * Approve minter role
+   * @param {String} dataTokenAddress
+   * @param {String} address - only proposad minter can call this
+   * @return {Promise<string>} transactionId
+   */
+  public async approveMinter(dataTokenAddress: string, address: string): Promise<string> {
+    const datatoken = new this.web3.eth.Contract(this.datatokensABI, dataTokenAddress, {
+      from: address
+    })
+    const gasLimitDefault = this.GASLIMIT_DEFAULT
+    let estGas
+    try {
+      estGas = await datatoken.methods
+        .approveMinter()
+        .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
+    } catch (e) {
+      estGas = gasLimitDefault
+    }
+    try {
+      const trxReceipt = await datatoken.methods.approveMinter().send({
+        from: address,
+        gas: estGas + 1,
+        gasPrice: await getFairGasPrice(this.web3)
+      })
+      return trxReceipt
+    } catch (e) {
+      return null
+    }
+  }
+
+  /** Check if an address has the minter role
+   * @param {String} dataTokenAddress
+   * * @param {String} address
+   * @return {Promise<string>} string
+   */
+  public async isMinter(dataTokenAddress: string, address: string): Promise<boolean> {
+    const datatoken = new this.web3.eth.Contract(this.datatokensABI, dataTokenAddress)
+    const trxReceipt = await datatoken.methods.isMinter(address).call()
+    return trxReceipt
   }
 }

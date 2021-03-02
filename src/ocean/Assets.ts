@@ -113,8 +113,8 @@ export class Assets extends Instantiable {
       let provider: Provider
 
       if (providerUri) {
-        provider = new Provider(this.instanceConfig)
-        provider.setBaseUrl(providerUri)
+        provider = await Provider.getInstance(this.instanceConfig)
+        await provider.setBaseUrl(providerUri)
       } else provider = this.ocean.provider
       const encryptedFiles = await provider.encrypt(
         did.getDid(),
@@ -422,8 +422,8 @@ export class Assets extends Instantiable {
     serviceIndex = -1,
     serviceEndpoint: string
   ): Promise<any> {
-    const provider = new Provider(this.instanceConfig)
-    provider.setBaseUrl(serviceEndpoint)
+    const provider = await Provider.getInstance(this.instanceConfig)
+    await provider.setBaseUrl(serviceEndpoint)
     const res = await provider.initialize(did, serviceIndex, serviceType, consumerAddress)
     if (res === null) return null
     const providerData = JSON.parse(res)
@@ -446,7 +446,8 @@ export class Assets extends Instantiable {
     payerAddress: string,
     serviceIndex = -1,
     mpAddress?: string,
-    consumerAddress?: string
+    consumerAddress?: string,
+    searchPreviousOrders = true
   ): Promise<string> {
     let service: Service
 
@@ -458,7 +459,6 @@ export class Assets extends Instantiable {
       service = await this.getServiceByIndex(did, serviceIndex)
       serviceType = service.type
     }
-    const { datatokens } = this.ocean
     try {
       const providerData = await this.initialize(
         did,
@@ -468,17 +468,18 @@ export class Assets extends Instantiable {
         service.serviceEndpoint
       )
       if (!providerData) return null
-      service = await this.getServiceByIndex(did, serviceIndex)
-      const previousOrder = await datatokens.getPreviousValidOrders(
-        providerData.dataToken,
-        providerData.numTokens,
-        serviceIndex,
-        service.attributes.main.timeout,
-        consumerAddress
-      )
-      if (previousOrder) return previousOrder
+      if (searchPreviousOrders) {
+        const previousOrder = await this.ocean.datatokens.getPreviousValidOrders(
+          providerData.dataToken,
+          providerData.numTokens,
+          serviceIndex,
+          service.attributes.main.timeout,
+          consumerAddress
+        )
+        if (previousOrder) return previousOrder
+      }
       const balance = new BigNumber(
-        await datatokens.balance(providerData.dataToken, payerAddress)
+        await this.ocean.datatokens.balance(providerData.dataToken, payerAddress)
       )
       const totalCost = new BigNumber(String(providerData.numTokens))
       if (balance.isLessThan(totalCost)) {
@@ -490,7 +491,7 @@ export class Assets extends Instantiable {
         )
         return null
       }
-      const txid = await datatokens.startOrder(
+      const txid = await this.ocean.datatokens.startOrder(
         providerData.dataToken,
         consumerAddress,
         String(providerData.numTokens),
@@ -530,8 +531,8 @@ export class Assets extends Instantiable {
     destination = destination
       ? `${destination}/datafile.${ddo.shortId()}.${service.index}/`
       : undefined
-    const provider = new Provider(this.instanceConfig)
-    provider.setBaseUrl(serviceEndpoint)
+    const provider = await Provider.getInstance(this.instanceConfig)
+    await provider.setBaseUrl(serviceEndpoint)
     await provider.download(
       did,
       txId,

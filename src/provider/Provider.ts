@@ -3,6 +3,7 @@ import { noZeroX } from '../utils'
 import { Instantiable, InstantiableConfig } from '../Instantiable.abstract'
 import { File } from '../ddo/interfaces/File'
 import { ComputeJob } from '../ocean/interfaces/ComputeJob'
+import { ComputeInput } from '../ocean/interfaces/ComputeInput'
 import { Output } from '../ocean/interfaces/ComputeOutput'
 import { MetadataAlgorithm } from '../ddo/interfaces/MetadataAlgorithm'
 import { Versions } from '../ocean/Versions'
@@ -10,8 +11,14 @@ import { Response } from 'node-fetch'
 import { DDO } from '../ddo/DDO'
 import DID from '../ocean/DID'
 
-const apiPath = '/api/v1/services'
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const fetch = require('node-fetch')
 
+export interface ServiceEndpoint {
+  serviceName: string
+  method: string
+  urlPath: string
+}
 /**
  * Provides an interface for provider service.
  * Provider service is the technical component executed
@@ -21,20 +28,66 @@ const apiPath = '/api/v1/services'
 export class Provider extends Instantiable {
   public nonce: string
   private baseUrl: string
+  public servicesEndpoints: ServiceEndpoint[]
+  public computeAddress: string
+  public providerAddress: string
+  public providerVersion: string
+  /**
+   * Returns the instance of Provider.
+   * @return {Promise<Assets>}
+   */
+  public static async getInstance(config: InstantiableConfig): Promise<Provider> {
+    const instance = new Provider()
+    instance.setInstanceConfig(config)
+    instance.nonce = '0'
+    await instance.setBaseUrl(config.config.providerUri)
+    return instance
+  }
+
+  public async setBaseUrl(url: string): Promise<boolean> {
+    this.baseUrl = url
+    this.servicesEndpoints = await this.getServiceEndpoints()
+    return true
+  }
 
   public get url(): string {
     return this.baseUrl
   }
 
-  constructor(config: InstantiableConfig) {
-    super()
-    this.setInstanceConfig(config)
-    this.baseUrl = this.config.providerUri
-    this.nonce = '0'
+  /**
+   * Returns the service endpoints that exist
+   * in provider.
+   * @return {Promise<ServiceEndpoint[]>}
+   */
+
+  public async getServiceEndpoints(): Promise<ServiceEndpoint[]> {
+    const serviceEndpoints: ServiceEndpoint[] = []
+    try {
+      const result = await (await this.ocean.utils.fetch.get(this.url)).json()
+      this.providerAddress = result.providerAddress
+      if ('computeAddress' in result) this.computeAddress = result.computeAddress
+      if ('version' in result) this.providerVersion = result.version
+      for (const i in result.serviceEndpoints) {
+        const endpoint: ServiceEndpoint = {
+          serviceName: i,
+          method: result.serviceEndpoints[i][0],
+          urlPath: this.url + result.serviceEndpoints[i][1]
+        }
+        serviceEndpoints.push(endpoint)
+      }
+      return serviceEndpoints
+    } catch (e) {
+      this.logger.error('Finding the service endpoints failed:', e)
+
+      return null
+    }
   }
 
-  public setBaseUrl(url: string): void {
-    this.baseUrl = url
+  public getEndpointURL(serviceName: string): ServiceEndpoint {
+    if (!this.servicesEndpoints) return null
+    return this.servicesEndpoints.find(
+      (s) => s.serviceName === serviceName
+    ) as ServiceEndpoint
   }
 
   public async createSignature(account: Account, agreementId: string): Promise<string> {
@@ -64,7 +117,7 @@ export class Provider extends Instantiable {
     }
     try {
       const response = await this.ocean.utils.fetch.post(
-        this.getEncryptEndpoint(),
+        this.getEncryptEndpoint().urlPath,
         decodeURI(JSON.stringify(args))
       )
       return (await response.json()).encryptedDocument
@@ -86,7 +139,7 @@ export class Provider extends Instantiable {
     } else args = { url }
     try {
       const response = await this.ocean.utils.fetch.post(
-        this.getFileinfoEndpoint(),
+        this.getFileinfoEndpoint().urlPath,
         JSON.stringify(args)
       )
       const results: File[] = await response.json()
@@ -104,7 +157,7 @@ export class Provider extends Instantiable {
    * @return {Promise<string>} string
    */
   public async getNonce(consumerAddress: string): Promise<string> {
-    let initializeUrl = this.getNonceEndpoint()
+    let initializeUrl = this.getNonceEndpoint().urlPath
     initializeUrl += `?userAddress=${consumerAddress}`
     try {
       const response = await this.ocean.utils.fetch.get(initializeUrl)
@@ -131,7 +184,7 @@ export class Provider extends Instantiable {
       throw new Error('Failed to resolve DID')
     }
 
-    let initializeUrl = this.getInitializeEndpoint()
+    let initializeUrl = this.getInitializeEndpoint().urlPath
     initializeUrl += `?documentId=${did}`
     initializeUrl += `&serviceId=${serviceIndex}`
     initializeUrl += `&serviceType=${serviceType}`
@@ -162,7 +215,7 @@ export class Provider extends Instantiable {
     const filesPromises = files
       .filter((_, i) => index === -1 || i === index)
       .map(async ({ index: i }) => {
-        let consumeUrl = this.getDownloadEndpoint()
+        let consumeUrl = this.getDownloadEndpoint().urlPath
         consumeUrl += `?fileIndex=${i}`
         consumeUrl += `&documentId=${did}`
         consumeUrl += `&serviceId=${serviceIndex}`
@@ -186,13 +239,13 @@ export class Provider extends Instantiable {
     return destination
   }
 
-  public async compute(
-    method: string,
+  /** Instruct the provider to start a compute job
+   */
+  public async computeStart(
     did: string,
     consumerAccount: Account,
     algorithmDid?: string,
     algorithmMeta?: MetadataAlgorithm,
-    jobId?: string,
     output?: Output,
     txId?: string,
     serviceIndex?: string,
@@ -200,12 +253,147 @@ export class Provider extends Instantiable {
     tokenAddress?: string,
     algorithmTransferTxId?: string,
     algorithmDataToken?: string,
+    additionalInputs?: ComputeInput[]
+  ): Promise<ComputeJob | ComputeJob[]> {
+    const address = consumerAccount.getId()
+    await this.getNonce(consumerAccount.getId())
+    const payload = Object()
+    payload.documentId = noZeroX(did)
+
+    let signatureMessage = address
+    signatureMessage += (did && `${noZeroX(did)}`) || ''
+    signatureMessage += this.nonce
+    const signature = await this.createHashSignature(consumerAccount, signatureMessage)
+    payload.signature = signature
+
+    // continue to construct Provider URL
+    if (output) payload.output = output
+    if (algorithmDid) payload.algorithmDid = algorithmDid
+    if (algorithmMeta) payload.algorithmMeta = algorithmMeta
+    payload.consumerAddress = address
+    if (txId) payload.transferTxId = txId
+    if (algorithmTransferTxId) payload.algorithmTransferTxId = algorithmTransferTxId
+    if (algorithmDataToken) payload.algorithmDataToken = algorithmDataToken
+
+    if (serviceIndex) payload.serviceId = serviceIndex
+
+    if (serviceType) payload.serviceType = serviceType
+
+    if (tokenAddress) payload.dataToken = tokenAddress
+
+    if (additionalInputs) payload.additionalInputs = additionalInputs
+    try {
+      const response = await this.ocean.utils.fetch.post(
+        this.getComputeStartEndpoint().urlPath,
+        JSON.stringify(payload)
+      )
+      if (response?.ok) {
+        const params = await response.json()
+        return params
+      }
+      console.error('Compute start failed:', response.status, response.statusText)
+      this.logger.error('Payload was:', payload)
+      return null
+    } catch (e) {
+      this.logger.error('Compute start failed:')
+      this.logger.error(e)
+      this.logger.error('Payload was:', payload)
+      return null
+    }
+  }
+
+  /** Instruct the provider to stop a compute job
+   */
+  public async computeStop(
+    did: string,
+    consumerAccount: Account,
+    jobId: string
+  ): Promise<ComputeJob | ComputeJob[]> {
+    const address = consumerAccount.getId()
+    await this.getNonce(consumerAccount.getId())
+    const payload = Object()
+    payload.documentId = noZeroX(did)
+    let signatureMessage = address
+    signatureMessage += jobId || ''
+    signatureMessage += (did && `${noZeroX(did)}`) || ''
+    signatureMessage += this.nonce
+    const signature = await this.createHashSignature(consumerAccount, signatureMessage)
+    payload.signature = signature
+    payload.jobId = jobId
+    payload.consumerAddress = address
+    try {
+      const response = await this.ocean.utils.fetch.put(
+        this.getComputeStopEndpoint().urlPath,
+        JSON.stringify(payload)
+      )
+      if (response?.ok) {
+        const params = await response.json()
+        return params
+      }
+      this.logger.error('Compute stop failed:', response.status, response.statusText)
+      this.logger.error('Payload was:', payload)
+      return null
+    } catch (e) {
+      this.logger.error('Compute stop failed:')
+      this.logger.error(e)
+      this.logger.error('Payload was:', payload)
+      return null
+    }
+  }
+
+  /** Instruct the provider to stop & delete all resources for a  compute job
+   */
+  public async computeDelete(
+    did: string,
+    consumerAccount: Account,
+    jobId: string
+  ): Promise<ComputeJob | ComputeJob[]> {
+    const address = consumerAccount.getId()
+    await this.getNonce(consumerAccount.getId())
+    const payload = Object()
+    payload.documentId = noZeroX(did)
+    let signatureMessage = address
+    signatureMessage += jobId || ''
+    signatureMessage += (did && `${noZeroX(did)}`) || ''
+    signatureMessage += this.nonce
+    const signature = await this.createHashSignature(consumerAccount, signatureMessage)
+    payload.signature = signature
+    payload.jobId = jobId
+    payload.consumerAddress = address
+    try {
+      const response = await this.ocean.utils.fetch.delete(
+        this.getComputeDeleteEndpoint().urlPath,
+        JSON.stringify(payload)
+      )
+      if (response?.ok) {
+        const params = await response.json()
+        return params
+      }
+      this.logger.error(
+        'Delete compute job failed:',
+        response.status,
+        response.statusText
+      )
+      this.logger.error('Payload was:', payload)
+      return null
+    } catch (e) {
+      this.logger.error('Delete compute job failed:')
+      this.logger.error(e)
+      this.logger.error('Payload was:', payload)
+      return null
+    }
+  }
+
+  public async computeStatus(
+    did: string,
+    consumerAccount: Account,
+    jobId?: string,
+    txId?: string,
     sign = true
   ): Promise<ComputeJob | ComputeJob[]> {
     const address = consumerAccount.getId()
     await this.getNonce(consumerAccount.getId())
-    let url = this.getComputeEndpoint()
-    url += `?documentId=${noZeroX(did)}`
+    let url = '?documentId=${noZeroX(did)'
     if (sign) {
       let signatureMessage = address
       signatureMessage += jobId || ''
@@ -214,117 +402,73 @@ export class Provider extends Instantiable {
       const signature = await this.createHashSignature(consumerAccount, signatureMessage)
       url += `&signature=${signature}`
     }
+
     // continue to construct Provider URL
-    url += (output && `&output=${JSON.stringify(output)}`) || ''
-    url += (algorithmDid && `&algorithmDid=${algorithmDid}`) || ''
-    url +=
-      (algorithmMeta &&
-        `&algorithmMeta=${encodeURIComponent(JSON.stringify(algorithmMeta))}`) ||
-      ''
     url += (jobId && `&jobId=${jobId}`) || ''
     url += `&consumerAddress=${address}`
     url += (txId && `&transferTxId=${txId}`) || ''
-    url +=
-      (algorithmTransferTxId && `&algorithmTransferTxId=${algorithmTransferTxId}`) || ''
-    url += (algorithmDataToken && `&algorithmDataToken=${algorithmDataToken}`) || ''
-    url += `&serviceId=${serviceIndex}` || ''
-    url += `&serviceType=${serviceType}` || ''
-    url += `&dataToken=${tokenAddress}` || ''
-    url += `&consumerAddress=${consumerAccount.getId()}` || ''
-    // 'signature': signature,
-    // 'documentId': did,
-    // 'serviceId': sa.index,
-    // 'serviceType': sa.type,
-    // 'consumerAddress': cons_acc.address,
-    // 'transferTxId': Web3.toHex(tx_id),
-    // 'dataToken': data_token,
-    // 'output': build_stage_output_dict(dict(), dataset_ddo_w_compute_service, cons_acc.address, pub_acc),
-    // 'algorithmDid': alg_ddo.did,
-    // 'algorithmMeta': {},
-    // 'algorithmDataToken': alg_data_token
 
-    // switch fetch method
-    let fetch
-    switch (method) {
-      case 'post':
-        fetch = this.ocean.utils.fetch.post(url, '')
-        break
-      case 'put':
-        fetch = this.ocean.utils.fetch.put(url, '')
-        break
-      case 'delete':
-        fetch = this.ocean.utils.fetch.delete(url)
-        break
-      default:
-        fetch = this.ocean.utils.fetch.get(url)
-        break
+    let response
+    try {
+      const response = await this.ocean.utils.fetch.get(
+        this.getComputeStatusEndpoint().urlPath + url
+      )
+      /* response = await fetch(this.getComputeEndpoint() + url, {
+        method: 'GET',
+        timeout: 5000
+      })
+      */
+      if (response?.ok) {
+        const params = await response.json()
+        return params
+      }
+      this.logger.error(
+        'Get compute status failed:',
+        response.status,
+        response.statusText
+      )
+      return null
+    } catch (e) {
+      this.logger.error('Get compute status failed')
+      this.logger.error(e)
+      return null
     }
-
-    const result = await fetch
-      .then((response: Response) => {
-        if (response.ok) {
-          return response.json()
-        }
-
-        this.logger.error('Compute job failed:', response.status, response.statusText)
-
-        return null
-      })
-      .catch((error: Error) => {
-        this.logger.error('Error with compute job')
-        this.logger.error(error.message)
-        throw error
-      })
-
-    return result
   }
 
-  public async getVersionInfo(): Promise<Versions> {
-    return (await this.ocean.utils.fetch.get(this.url)).json()
+  public getInitializeEndpoint(): ServiceEndpoint {
+    return this.getEndpointURL('initialize')
   }
 
-  public getURI(): string {
-    return `${this.url}`
+  public getNonceEndpoint(): ServiceEndpoint {
+    return this.getEndpointURL('nonce')
   }
 
-  public getInitializeEndpoint(): string {
-    return `${this.url}${apiPath}/initialize`
+  public getEncryptEndpoint(): ServiceEndpoint {
+    return this.getEndpointURL('encrypt')
   }
 
-  public getNonceEndpoint(): string {
-    return `${this.url}${apiPath}/nonce`
+  public getFileinfoEndpoint(): ServiceEndpoint {
+    return this.getEndpointURL('fileinfo')
   }
 
-  public getConsumeEndpointPath(): string {
-    return `${apiPath}/consume`
+  public getComputeStartEndpoint(): ServiceEndpoint {
+    return this.getEndpointURL('computeStart')
   }
 
-  public getConsumeEndpoint(): string {
-    return `${this.url}` + this.getConsumeEndpointPath()
+  public getComputeStopEndpoint(): ServiceEndpoint {
+    return this.getEndpointURL('computeStop')
   }
 
-  public getEncryptEndpoint(): string {
-    return `${this.url}${apiPath}/encrypt`
+  public getComputeStatusEndpoint(): ServiceEndpoint {
+    return this.getEndpointURL('computeStatus')
   }
 
-  public getFileinfoEndpoint(): string {
-    return `${this.url}${apiPath}/fileinfo`
+  public getComputeDeleteEndpoint(): ServiceEndpoint {
+    return this.getEndpointURL('computeDelete')
   }
 
-  public getPublishEndpoint(): string {
-    return `${this.url}${apiPath}/publish`
-  }
-
-  public getComputeEndpointPath(): string {
-    return `${apiPath}/compute`
-  }
-
-  public getComputeEndpoint(): string {
-    return `${this.url}` + this.getComputeEndpointPath()
-  }
-
-  public getDownloadEndpoint(): string {
-    return `${this.url}${apiPath}/download`
+  public getDownloadEndpoint(): ServiceEndpoint {
+    return this.getEndpointURL('download')
   }
 
   /** Check for a valid provider at URL
@@ -336,7 +480,7 @@ export class Provider extends Instantiable {
       const response = await this.ocean.utils.fetch.get(url)
       if (response?.ok) {
         const params = await response.json()
-        if (params && params['provider-address']) return true
+        if (params && params.providerAddress) return true
       }
       return false
     } catch (error) {
