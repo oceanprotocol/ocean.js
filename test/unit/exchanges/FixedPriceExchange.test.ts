@@ -174,6 +174,9 @@ describe('FixedRateExchange flow', () => {
     const trxReceipt = await FixedRateClass.create(tokenAddress, fixedPriceRate, alice)
     aliceExchangeId = trxReceipt.events.ExchangeCreated.returnValues[0]
     if (consoleDebug) console.log('aliceExchangeId:' + aliceExchangeId)
+    const exchangeDetails = await FixedRateClass.getExchange(aliceExchangeId)
+    assert(exchangeDetails.fixedRate === fixedPriceRate)
+    assert(exchangeDetails.exchangeOwner === alice)
   })
   it('Bob should find the exchange', async () => {
     const exchangeDetails = await FixedRateClass.searchforDT(tokenAddress, '0')
@@ -214,6 +217,8 @@ describe('FixedRateExchange flow', () => {
   it('Alice should update the rate', async () => {
     const tx = await FixedRateClass.setRate(aliceExchangeId, updatedPriceRate, alice)
     assert(tx !== null)
+    const exchangeDetails = await FixedRateClass.getExchange(aliceExchangeId)
+    assert(exchangeDetails.fixedRate === updatedPriceRate)
   })
   it('Alice should be able to deactivate the exchange', async () => {
     const tx = await FixedRateClass.deactivate(aliceExchangeId, alice)
