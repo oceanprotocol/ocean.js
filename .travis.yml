@@ -20,7 +20,6 @@ before_script:
   # Barge setup
   - git clone https://github.com/oceanprotocol/barge
   - cd barge
-  - git checkout feature/improve_provider
   - export ADDRESS_FILE="${HOME}/.ocean/ocean-contracts/artifacts/address.json"
   - mkdir "${HOME}/.ocean/"
   - mkdir "${HOME}/.ocean/ocean-contracts/"
