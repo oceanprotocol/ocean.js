@@ -194,7 +194,7 @@ describe('Marketplace flow', () => {
         assert(marketplaceBalance.toString() === marketplaceAllowance.toString())
       })
   })
-  xit('Marketplace should resolve asset using DID', async () => {
+  it('Marketplace should resolve asset using DID', async () => {
     await ocean.assets.resolve(ddo.id).then((newDDO) => {
      console.log(newDDO, 'NEWDDO') // ddo is null
      console.log(ddo, 'DDO')
@@ -252,7 +252,7 @@ describe('Marketplace flow', () => {
     assert(assets.results.length > 0)
   })
 
-  xit('Alice updates metadata', async () => {
+  it('Alice updates metadata', async () => {
     const newMetaData: EditableMetadata = {
       description: 'new description',
       title: 'new title',

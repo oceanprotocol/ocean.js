@@ -278,4 +278,55 @@ export class MetadataCache {
       totalResults
     }
   }
+
+
+ public async validateDDO(metadata) {
+  const result = await this.fetch
+    .post(`${this.url}${apiPath}/validate`, JSON.stringify(metadata))
+    .then((response: Response) => {
+      if (response.ok) {
+        return response.json()
+      }
+      this.logger.error('validate DDO failed:', response.status, response.statusText)
+      return null
+    })
+    .then((response) => {
+      return response
+    })
+    .catch((error) => {
+      this.logger.error('Error validating DDO metadata: ', error)
+      return null
+    })
+
+  return result
+}
+
+
+
+  // public async isValidDDO(
+  //   metadata,
+  //   metadataServiceEndpoint?: string
+  // ){
+  
+  // const fullUrl = metadataServiceEndpoint || `${this.url}${apiPath}/validate`
+  // const result = await this.fetch
+  //  .post(fullUrl, JSON.stringify(metadata))
+  //  .then((response: Response) => {
+  //    if (response.ok) {
+  //      return response.json()
+  //    }
+  //    this.logger.log('validateDDO failed:', response.status, response.statusText)
+  //    return null
+  //  })
+  //  .then((response) => {
+  //    return response
+  //  })
+  //  .catch((error) => {
+  //    this.logger.error('Error validating metadata: ', error)
+  //    return null 
+  //  })
+
+  //   return result
+  // }
+
 }

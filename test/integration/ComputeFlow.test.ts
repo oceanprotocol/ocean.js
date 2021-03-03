@@ -201,7 +201,8 @@ describe('Compute flow', () => {
             contentLength: '4535431',
             contentType: 'text/csv',
             encoding: 'UTF-8',
-            compression: 'zip'
+            compression: 'zip',
+            index:0,
           }
         ]
       }
@@ -405,7 +406,8 @@ describe('Compute flow', () => {
             url:
               'https://raw.githubusercontent.com/oceanprotocol/test-algorithm/master/javascript/algo.js',
             contentType: 'text/js',
-            encoding: 'UTF-8'
+            encoding: 'UTF-8',
+            index:0,
           }
         ],
         algorithm: {
@@ -453,7 +455,8 @@ describe('Compute flow', () => {
             url:
               'https://raw.githubusercontent.com/oceanprotocol/test-algorithm/master/javascript/algo.js',
             contentType: 'text/js',
-            encoding: 'UTF-8'
+            encoding: 'UTF-8',
+            index:0,
           }
         ],
         algorithm: {

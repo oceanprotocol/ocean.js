@@ -96,7 +96,8 @@ describe('Marketplace flow', () => {
             contentLength: '4535431',
             contentType: 'text/csv',
             encoding: 'UTF-8',
-            compression: 'zip'
+            compression: 'zip',
+            index:0,
           }
         ]
       }

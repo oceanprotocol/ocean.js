@@ -88,14 +88,8 @@ export class Assets extends Instantiable {
  
     this.logger.log('Creating asset')
     return new SubscribablePromise(async (observer) => {
+      const isValidDDO = await this.ocean.metadataCache.validateDDO(metadata)
      
-      const isValidDDO = await (await fetch(`${this.instanceConfig.config.metadataCacheUri}/api/v1/aquarius/assets/ddo/validate`, { 
-        method: 'POST', 
-        body: JSON.stringify(metadata), 
-        headers: { 
-        "Content-type": "application/json; charset=UTF-8"
-         }  
-        })).json()
        
       if (isValidDDO != true) {
       this.logger.error(
@@ -297,6 +291,15 @@ export class Assets extends Instantiable {
     ddo: DDO,
     consumerAccount: string
   ): Promise<TransactionReceipt> {
+    const isValidDDO = await this.ocean.metadataCache.validateDDO(ddo)
+     
+       
+    if (isValidDDO != true) {
+    this.logger.error(
+      `Passed Metadata is not valid. Aborting publishing.`
+    )
+    return null;
+    }
     return await this.ocean.onChainMetadata.update(ddo.id, ddo, consumerAccount)
   }
 
