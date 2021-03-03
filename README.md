@@ -122,6 +122,11 @@ Let ocean.js know where to pickup the smartcontract addresses:
 export ADDRESS_FILE="${HOME}/.ocean/ocean-contracts/artifacts/address.json"
 ```
 
+Build metadata:
+```
+npm run build
+```
+
 Executing linting, type checking, unit, and integration tests with coverage reporting all in one go:
 
 ```bash
