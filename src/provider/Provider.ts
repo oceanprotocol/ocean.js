@@ -115,9 +115,11 @@ export class Provider extends Instantiable {
       document: JSON.stringify(document),
       publisherAddress: account.getId()
     }
+    const path = this.getEncryptEndpoint() ? this.getEncryptEndpoint().urlPath : null
+    if (!path) return null
     try {
       const response = await this.ocean.utils.fetch.post(
-        this.getEncryptEndpoint().urlPath,
+        path,
         decodeURI(JSON.stringify(args))
       )
       return (await response.json()).encryptedDocument
@@ -137,11 +139,10 @@ export class Provider extends Instantiable {
     if (url instanceof DID) {
       args = { did: url.getDid() }
     } else args = { url }
+    const path = this.getFileinfoEndpoint() ? this.getFileinfoEndpoint().urlPath : null
+    if (!path) return null
     try {
-      const response = await this.ocean.utils.fetch.post(
-        this.getFileinfoEndpoint().urlPath,
-        JSON.stringify(args)
-      )
+      const response = await this.ocean.utils.fetch.post(path, JSON.stringify(args))
       const results: File[] = await response.json()
       for (const result of results) {
         files.push(result)
@@ -157,10 +158,12 @@ export class Provider extends Instantiable {
    * @return {Promise<string>} string
    */
   public async getNonce(consumerAddress: string): Promise<string> {
-    let initializeUrl = this.getNonceEndpoint().urlPath
-    initializeUrl += `?userAddress=${consumerAddress}`
+    const path = this.getNonceEndpoint() ? this.getNonceEndpoint().urlPath : null
+    if (!path) return null
     try {
-      const response = await this.ocean.utils.fetch.get(initializeUrl)
+      const response = await this.ocean.utils.fetch.get(
+        path + `?userAddress=${consumerAddress}`
+      )
       this.nonce = String((await response.json()).nonce)
       return this.nonce
     } catch (e) {
@@ -183,8 +186,10 @@ export class Provider extends Instantiable {
       this.logger.error(e)
       throw new Error('Failed to resolve DID')
     }
-
-    let initializeUrl = this.getInitializeEndpoint().urlPath
+    let initializeUrl = this.getInitializeEndpoint()
+      ? this.getInitializeEndpoint().urlPath
+      : null
+    if (!initializeUrl) return null
     initializeUrl += `?documentId=${did}`
     initializeUrl += `&serviceId=${serviceIndex}`
     initializeUrl += `&serviceType=${serviceType}`
@@ -212,10 +217,12 @@ export class Provider extends Instantiable {
   ): Promise<any> {
     await this.getNonce(account.getId())
     const signature = await this.createSignature(account, did + this.nonce)
+    const path = this.getDownloadEndpoint() ? this.getDownloadEndpoint().urlPath : null
+    if (!path) return null
     const filesPromises = files
       .filter((_, i) => index === -1 || i === index)
       .map(async ({ index: i }) => {
-        let consumeUrl = this.getDownloadEndpoint().urlPath
+        let consumeUrl = path
         consumeUrl += `?fileIndex=${i}`
         consumeUrl += `&documentId=${did}`
         consumeUrl += `&serviceId=${serviceIndex}`
@@ -282,11 +289,12 @@ export class Provider extends Instantiable {
     if (tokenAddress) payload.dataToken = tokenAddress
 
     if (additionalInputs) payload.additionalInputs = additionalInputs
+    const path = this.getComputeStartEndpoint()
+      ? this.getComputeStartEndpoint().urlPath
+      : null
+    if (!path) return null
     try {
-      const response = await this.ocean.utils.fetch.post(
-        this.getComputeStartEndpoint().urlPath,
-        JSON.stringify(payload)
-      )
+      const response = await this.ocean.utils.fetch.post(path, JSON.stringify(payload))
       if (response?.ok) {
         const params = await response.json()
         return params
@@ -321,11 +329,12 @@ export class Provider extends Instantiable {
     payload.signature = signature
     payload.jobId = jobId
     payload.consumerAddress = address
+    const path = this.getComputeStopEndpoint()
+      ? this.getComputeStopEndpoint().urlPath
+      : null
+    if (!path) return null
     try {
-      const response = await this.ocean.utils.fetch.put(
-        this.getComputeStopEndpoint().urlPath,
-        JSON.stringify(payload)
-      )
+      const response = await this.ocean.utils.fetch.put(path, JSON.stringify(payload))
       if (response?.ok) {
         const params = await response.json()
         return params
@@ -360,11 +369,12 @@ export class Provider extends Instantiable {
     payload.signature = signature
     payload.jobId = jobId
     payload.consumerAddress = address
+    const path = this.getComputeDeleteEndpoint()
+      ? this.getComputeDeleteEndpoint().urlPath
+      : null
+    if (!path) return null
     try {
-      const response = await this.ocean.utils.fetch.delete(
-        this.getComputeDeleteEndpoint().urlPath,
-        JSON.stringify(payload)
-      )
+      const response = await this.ocean.utils.fetch.delete(path, JSON.stringify(payload))
       if (response?.ok) {
         const params = await response.json()
         return params
@@ -407,12 +417,12 @@ export class Provider extends Instantiable {
     url += (jobId && `&jobId=${jobId}`) || ''
     url += `&consumerAddress=${address}`
     url += (txId && `&transferTxId=${txId}`) || ''
-
-    let response
+    const path = this.getComputeStatusEndpoint()
+      ? this.getComputeStatusEndpoint().urlPath
+      : null
+    if (!path) return null
     try {
-      const response = await this.ocean.utils.fetch.get(
-        this.getComputeStatusEndpoint().urlPath + url
-      )
+      const response = await this.ocean.utils.fetch.get(path + url)
       /* response = await fetch(this.getComputeEndpoint() + url, {
         method: 'GET',
         timeout: 5000
