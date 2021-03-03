@@ -111,12 +111,23 @@ Running all tests requires running Ocean Protocol components beforehand with [Ba
 ```bash
 git clone https://github.com/oceanprotocol/barge
 cd barge
-git checkout v3
 
-./start_ocean.sh --no-dashboard
+./start_ocean.sh --with-provider2 --no-dashboard
 ```
 
-You can then proceed to run in another terminal, executing linting, type checking, unit, and integration tests with coverage reporting all in one go:
+You can then proceed to run in another terminal.
+
+Let ocean.js know where to pickup the smartcontract addresses:
+```
+export ADDRESS_FILE="${HOME}/.ocean/ocean-contracts/artifacts/address.json"
+```
+
+Build metadata:
+```
+npm run build
+```
+
+Executing linting, type checking, unit, and integration tests with coverage reporting all in one go:
 
 ```bash
 npm test
