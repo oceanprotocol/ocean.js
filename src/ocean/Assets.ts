@@ -13,7 +13,7 @@ import { Provider } from '../provider/Provider'
 import { isAddress } from 'web3-utils'
 import { MetadataMain } from '../ddo/interfaces'
 import { TransactionReceipt } from 'web3-core'
-const fetch = require("node-fetch");
+
 export enum CreateProgressStep {
   CreatingDataToken,
   DataTokenCreated,
@@ -82,10 +82,7 @@ export class Assets extends Instantiable {
       )
       return null
     }
- 
-    console.log(this.instanceConfig.config.metadataCacheUri, 'Aquarius uri from instanceConfig, works with http://0.0.0.0:5000 too')
-      
- 
+    
     this.logger.log('Creating asset')
     return new SubscribablePromise(async (observer) => {
       const isValidDDO = await this.ocean.metadataCache.validateDDO(metadata)
@@ -266,6 +263,7 @@ export class Assets extends Instantiable {
    * @return {Promise<DDO>} the new DDO
    */
   public async editMetadata(ddo: DDO, newMetadata: EditableMetadata): Promise<DDO> {
+   
     if (!ddo) return null
     for (let i = 0; i < ddo.service.length; i++) {
       if (ddo.service[i].type !== 'metadata') continue
@@ -278,6 +276,7 @@ export class Assets extends Instantiable {
       if (newMetadata.links)
         ddo.service[i].attributes.additionalInformation.links = newMetadata.links
     }
+
     return ddo
   }
 
@@ -291,15 +290,7 @@ export class Assets extends Instantiable {
     ddo: DDO,
     consumerAccount: string
   ): Promise<TransactionReceipt> {
-    const isValidDDO = await this.ocean.metadataCache.validateDDO(ddo)
-     
-       
-    if (isValidDDO != true) {
-    this.logger.error(
-      `Passed Metadata is not valid. Aborting publishing.`
-    )
-    return null;
-    }
+ 
     return await this.ocean.onChainMetadata.update(ddo.id, ddo, consumerAccount)
   }
 

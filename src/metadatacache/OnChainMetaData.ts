@@ -4,10 +4,12 @@ import { Contract } from 'web3-eth-contract'
 import { AbiItem } from 'web3-utils/types'
 import Web3 from 'web3'
 import defaultDDOContractABI from '@oceanprotocol/contracts/artifacts/Metadata.json'
+import { Instantiable, InstantiableConfig } from '../Instantiable.abstract'
 import { didZeroX, Logger, getFairGasPrice } from '../utils'
 // Using limited, compress-only version
 // See https://github.com/LZMA-JS/LZMA-JS#but-i-dont-want-to-use-web-workers
 import { LZMA } from 'lzma/src/lzma-c'
+import { Ocean } from '../lib'
 
 /**
  * Provides an interface with Metadata Cache.
@@ -20,6 +22,7 @@ export class OnChainMetadata {
   public web3: Web3
   public DDOContract: Contract = null
   private logger: Logger
+  
   /**
    * Instantiate OnChainMetadata Store for on-chain interaction.
    */
@@ -27,7 +30,8 @@ export class OnChainMetadata {
     web3: Web3,
     logger: Logger,
     DDOContractAddress: string = null,
-    DDOContractABI: AbiItem | AbiItem[] = null
+    DDOContractABI: AbiItem | AbiItem[] = null,
+    
   ) {
     this.web3 = web3
     this.DDOContractAddress = DDOContractAddress
@@ -38,6 +42,7 @@ export class OnChainMetadata {
         this.DDOContractAddress
       )
     this.logger = logger
+  
   }
 
   /**
@@ -83,6 +88,7 @@ export class OnChainMetadata {
     consumerAccount: string
   ): Promise<TransactionReceipt> {
     let flags = 0
+ 
     const compressed = await this.compressDDO(ddo)
     flags = flags | 1
     return this.updateRaw(didZeroX(did), flags, compressed, consumerAccount)

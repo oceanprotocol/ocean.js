@@ -302,31 +302,4 @@ export class MetadataCache {
 }
 
 
-
-  // public async isValidDDO(
-  //   metadata,
-  //   metadataServiceEndpoint?: string
-  // ){
-  
-  // const fullUrl = metadataServiceEndpoint || `${this.url}${apiPath}/validate`
-  // const result = await this.fetch
-  //  .post(fullUrl, JSON.stringify(metadata))
-  //  .then((response: Response) => {
-  //    if (response.ok) {
-  //      return response.json()
-  //    }
-  //    this.logger.log('validateDDO failed:', response.status, response.statusText)
-  //    return null
-  //  })
-  //  .then((response) => {
-  //    return response
-  //  })
-  //  .catch((error) => {
-  //    this.logger.error('Error validating metadata: ', error)
-  //    return null 
-  //  })
-
-  //   return result
-  // }
-
 }
