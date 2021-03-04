@@ -280,7 +280,7 @@ export class MetadataCache {
   }
 
 
- public async validateDDO(metadata) {
+ public async validateMetadata(metadata) {
   const result = await this.fetch
     .post(`${this.url}${apiPath}/validate`, JSON.stringify(metadata))
     .then((response: Response) => {

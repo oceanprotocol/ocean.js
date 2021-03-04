@@ -85,7 +85,7 @@ export class Assets extends Instantiable {
     
     this.logger.log('Creating asset')
     return new SubscribablePromise(async (observer) => {
-      const isValidDDO = await this.ocean.metadataCache.validateDDO(metadata)
+      const isValidDDO = await this.ocean.metadataCache.validateMetadata(metadata)
      
        
       if (isValidDDO != true) {
@@ -265,6 +265,8 @@ export class Assets extends Instantiable {
   public async editMetadata(ddo: DDO, newMetadata: EditableMetadata): Promise<DDO> {
    
     if (!ddo) return null
+    
+
     for (let i = 0; i < ddo.service.length; i++) {
       if (ddo.service[i].type !== 'metadata') continue
       if (newMetadata.title) ddo.service[i].attributes.main.name = newMetadata.title
@@ -274,8 +276,9 @@ export class Assets extends Instantiable {
         ddo.service[i].attributes.additionalInformation.description =
           newMetadata.description
       if (newMetadata.links)
-        ddo.service[i].attributes.additionalInformation.links = newMetadata.links
+        ddo.service[i].attributes.additionalInformation.links = newMetadata.links       
     }
+    console.log(ddo.service[0].attributes)
 
     return ddo
   }
@@ -290,8 +293,17 @@ export class Assets extends Instantiable {
     ddo: DDO,
     consumerAccount: string
   ): Promise<TransactionReceipt> {
- 
+
     return await this.ocean.onChainMetadata.update(ddo.id, ddo, consumerAccount)
+  }
+  public async updateMetadataTest(
+    ddo : DDO,
+    newMetaData: EditableMetadata,
+    consumerAccount: string
+  ): Promise<TransactionReceipt> {
+
+    const newDdo = await this.editMetadata(ddo,newMetaData)
+    return await this.ocean.onChainMetadata.update(ddo.id, newDdo, consumerAccount)
   }
 
   /**
