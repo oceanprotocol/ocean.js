@@ -87,9 +87,9 @@ export class Assets extends Instantiable {
     return new SubscribablePromise(async (observer) => {
      
       const isValidDDO = await this.ocean.metadataCache.validateMetadata(metadata)
-    console.log(isValidDDO)
+    //console.log(isValidDDO)
       
-     if (isValidDDO != true) {
+     if (isValidDDO !== true) {
      this.logger.error(
        `Passed Metadata is not valid. Aborting publishing.`
      )
@@ -301,9 +301,9 @@ export class Assets extends Instantiable {
     consumerAccount: string
   ): Promise<TransactionReceipt> {
     const isValidDDO = await this.ocean.metadataCache.validateMetadataRemote(ddo)
-    console.log(isValidDDO)
+    //console.log(isValidDDO)
       
-     if (isValidDDO != true) {
+     if (isValidDDO !== true) {
      this.logger.error(
        `Passed Metadata is not valid. Aborting publishing.`
      )
