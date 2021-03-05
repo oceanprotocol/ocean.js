@@ -115,9 +115,12 @@ describe('DDO VALIDATION', () => {
       )
   
       ddo = await ocean.assets.create(asset, alice, [service1], tokenAddress)
-      //console.log(ddo)
+      
       assert(ddo.dataToken === tokenAddress)
       await sleep(aquaSleep)
+      const resolveDDO= await ocean.assets.resolve(ddo.id)
+      assert(resolveDDO.id === ddo.id)
+
     })
   
     it('Alice mints 100 tokens', async () => {
@@ -156,6 +159,7 @@ describe('DDO VALIDATION', () => {
     it('Marketplace should resolve asset using DID', async () => {
       await ocean.assets.resolve(ddo.id).then((newDDO) => {
        assert(newDDO.id === ddo.id)
+      
       })
     })
   
@@ -208,50 +212,21 @@ describe('DDO VALIDATION', () => {
       const assets = await ocean.assets.ownerAssets(alice.getId())
       assert(assets.results.length > 0)
     })
-    it('TESTING new function updateMetadataTest()', async () => {
-      const newMetaData  = {
-        
-          description: 'new description',
-          title: 'new title',
-          links: [{ name: 'link1', type: 'sample', url: 'http://example.net' }],
-          
-     
-      }
-
-      const newMetaData1  = {
-        
-        description: 'new description',
-        title: 'new title',
-        links: [{ name: 'link1', type: 'sample', url: 'http://example.net' }],
-        wrong:'new wrong value',
-        other: 4,
    
-    }
-      // see logs in terminal
-      const test = await ocean.assets.updateMetadataTest(ddo,newMetaData1,alice.getId())
-
-      assert(test !== null)
-     // see logs in terminal
-      const newDdo = await ocean.assets.editMetadata(ddo, newMetaData)
+    it('VALIDATES DDO in updateMetadata() without updating', async () => {
      
-      assert(newDdo !== null)
-
-      const txid = await ocean.assets.updateMetadata(newDdo, alice.getId())
-     // console.log(txid)
+    
+      const oldDdo = await ocean.assets.resolve(ddo.id)
+      
+       
+      const txid = await ocean.assets.updateMetadata(oldDdo, alice.getId())
+      
       assert(txid !== null)
       
       await sleep(aquaSleep)
-      const metaData = await ocean.assets.getServiceByType(newDdo.id, 'metadata')
-      //console.log(metaData)
-      assert.equal(metaData.attributes.main.name, newMetaData.title)
-      assert.equal(
-      metaData.attributes.additionalInformation.description,
-      newMetaData.description
-      )
-      assert.deepEqual(metaData.attributes.additionalInformation.links, newMetaData.links)
-      //console.log(ddo)
+     
     })
-    it('Alice updates metadata', async () => {
+    it('Alice updates metadata , VALIDATES DDO while updating', async () => {
       const newMetaData  = {
         
           description: 'new description',
@@ -260,19 +235,18 @@ describe('DDO VALIDATION', () => {
           
      
       }
-      // const test = await ocean.assets.updateMetadataTest(ddo,newMetaData,alice.getId())
-      // console.log(test)
-      const newDdo = await ocean.assets.editMetadata(ddo, newMetaData)
-     
-      assert(newDdo !== null)
 
+      const oldDdo = await ocean.assets.resolve(ddo.id)
+     
+      const newDdo = await ocean.assets.editMetadata(oldDdo, newMetaData)
+       
       const txid = await ocean.assets.updateMetadata(newDdo, alice.getId())
-      //console.log(txid)
+      
       assert(txid !== null)
       
       await sleep(aquaSleep)
       const metaData = await ocean.assets.getServiceByType(ddo.id, 'metadata')
-     //console.log(ddo)
+    
       assert.equal(metaData.attributes.main.name, newMetaData.title)
       assert.equal(
         metaData.attributes.additionalInformation.description,
@@ -280,6 +254,7 @@ describe('DDO VALIDATION', () => {
       )
       assert.deepEqual(metaData.attributes.additionalInformation.links, newMetaData.links)
     })
+   
 
     it('Alice updates timeout for the access service', async () => {
       const service = ddo.findServiceByType('access')
@@ -386,9 +361,9 @@ describe('DDO VALIDATION', () => {
         publishedDate,
         timeout
       )
-  
+        
       ddo = await ocean.assets.create(asset, alice, [service1], tokenAddress)
-      //console.log(ddo)
+      
       assert(ddo === null)
       await sleep(aquaSleep)
     })
@@ -471,20 +446,23 @@ describe('DDO VALIDATION', () => {
       await sleep(aquaSleep)
     })
 
-    // it('Alice fails to update INVALID metadata )', async () => {
-    //   const newMetaData = {
-    //     description: 'new description',
-    //     title: 'new title',
-    //     wrong:'wrong field',
-    //     links: [{ name: 'link1', type: 'sample', url: 'http://example.net',index: 0, }]
-    //   }
-    //   const newDdo = await ocean.assets.editMetadata(ddo, newMetaData)
-    //   assert(newDdo !== null)
-    //   const txid = await ocean.assets.updateMetadata(newDdo, alice.getId())
-    //   assert(txid !== null)
-    //   await sleep(aquaSleep)
+    it('Alice fails to update INVALID metadata )', async () => {
+      const newMetaData = {
+        description: 'new description',
+        title: 'new title',
+        wrong:'wrong field',
+        links: [{ name: 'link1', type: 'sample', url: 'http://example.net',index: 0, }]
+      }
+      const oldDdo = await ocean.assets.resolve(ddo.id)
      
-    // })
+      const newDdo = await ocean.assets.editMetadata(oldDdo, newMetaData)
+      
+      assert(newDdo !== null)
+      const txid = await ocean.assets.updateMetadata(newDdo, alice.getId())
+      assert(txid !== null)
+      await sleep(aquaSleep)
+     
+    })
 
     it('Alice publishes a dataset but passed data token is invalid', async () => {
       price = '10' // in datatoken

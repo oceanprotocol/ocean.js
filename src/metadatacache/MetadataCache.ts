@@ -301,5 +301,25 @@ export class MetadataCache {
   return result
 }
 
+public async validateMetadataRemote(ddo) {
+  const result = await this.fetch
+    .post(`${this.url}${apiPath}/validate-remote`, JSON.stringify(ddo))
+    .then((response: Response) => {
+      if (response.ok) {
+        return response.json()
+      }
+      this.logger.error('validate DDO failed:', response.status, response.statusText)
+      return null
+    })
+    .then((response) => {
+      return response
+    })
+    .catch((error) => {
+      this.logger.error('Error validating DDO metadata: ', error)
+      return null
+    })
+
+  return result
+}
 
 }
