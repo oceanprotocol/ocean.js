@@ -403,7 +403,7 @@ export class Provider extends Instantiable {
   ): Promise<ComputeJob | ComputeJob[]> {
     const address = consumerAccount.getId()
     await this.getNonce(consumerAccount.getId())
-    let url = '?documentId=${noZeroX(did)'
+    let url = '?documentId=' + noZeroX(did)
     if (sign) {
       let signatureMessage = address
       signatureMessage += jobId || ''
