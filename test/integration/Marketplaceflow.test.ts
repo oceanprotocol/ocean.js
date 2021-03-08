@@ -6,11 +6,10 @@ import Web3 from 'web3'
 import { AbiItem } from 'web3-utils/types'
 import { DataTokens } from '../../src/datatokens/Datatokens'
 import { Account, EditableMetadata, Service, ServiceAccess, DID } from '../../src/lib'
-import { noDidPrefixed } from '../../src/utils/'
+import { noDidPrefixed, LoggerInstance } from '../../src/utils'
 import { Ocean } from '../../src/ocean/Ocean'
 import { ConfigHelper } from '../../src/utils/ConfigHelper'
 import { TestContractHandler } from '../TestContractHandler'
-import { LoggerInstance } from '../../src/utils'
 
 const web3 = new Web3('http://127.0.0.1:8545')
 
@@ -97,7 +96,7 @@ describe('Marketplace flow', () => {
             contentType: 'text/csv',
             encoding: 'UTF-8',
             compression: 'zip',
-            index:0,
+            index: 0
           }
         ]
       }
@@ -227,6 +226,32 @@ describe('Marketplace flow', () => {
     )
     assert.deepEqual(metaData.attributes.additionalInformation.links, newMetaData.links)
   })
+  it('Alice fails to update INVALID metadata )', async () => {
+    const newMetaData = {
+      description: 'new description',
+      title: 'new title',
+      wrong: 'wrong field',
+      links: [{ name: 'link1', type: 'sample', url: 'http://example.net', index: 0 }]
+    }
+    const oldDdo = await ocean.assets.resolve(ddo.id)
+
+    const newDdo = await ocean.assets.editMetadata(oldDdo, newMetaData)
+
+    assert(newDdo !== null)
+    const txid = await ocean.assets.updateMetadata(newDdo, alice.getId())
+    assert(txid !== null)
+    await sleep(aquaSleep)
+    const metaData = await ocean.assets.getServiceByType(ddo.id, 'metadata')
+    assert.equal(metaData.attributes.main.name, newMetaData.title)
+    assert.equal(
+      metaData.attributes.additionalInformation.description,
+      newMetaData.description
+    )
+    assert.deepEqual(metaData.attributes.additionalInformation.links, newMetaData.links)
+    assert.deepEqual(metaData.attributes.main.wrong, undefined)
+    // const updatedDdo = await ocean.assets.resolve(ddo.id)
+    // assert.deepEqual(newDdo,updatedDdo) the only different fields are 'datePublished' and 'updated', showing it works
+  })
 
   it('Alice updates timeout for the access service', async () => {
     const service = ddo.findServiceByType('access')
@@ -279,12 +304,51 @@ describe('Marketplace flow', () => {
     ddo = await ocean.assets.create(asset, alice, [service1])
     assert.equal(ddo, null)
   })
+
   it('Bob should get his order History', async () => {
     const history = await ocean.assets.getOrderHistory(bob)
     assert(history.length > 0)
   })
+
   it('Alice should not get any order History', async () => {
     const history = await ocean.assets.getOrderHistory(alice)
     assert(history.length === 0)
+  })
+
+  it('Generates invalid metadata', async () => {
+    asset = {
+      main: {
+        type: 'dataset',
+        dateCreated: new Date(Date.now()).toISOString().split('.')[0] + 'Z', // remove milliseconds
+        author: 'oceanprotocol-team',
+        license: 'MIT',
+        files: [
+          {
+            url: 'https://s3.amazonaws.com/testfiles.oceanprotocol.com/info.0.json',
+            checksum: 'efb2c764274b745f5fc37f97c6b0e761',
+            contentLength: '4535431',
+            contentType: 'text/csv',
+            encoding: 'UTF-8',
+            compression: 'zip'
+          }
+        ]
+      }
+    }
+  })
+
+  it('Alice fails to publish a dataset with invalid metadata', async () => {
+    price = '10' // in datatoken
+    const publishedDate = new Date(Date.now()).toISOString().split('.')[0] + 'Z'
+    const timeout = 0
+    service1 = await ocean.assets.createAccessServiceAttributes(
+      alice,
+      price,
+      publishedDate,
+      timeout
+    )
+
+    ddo = await ocean.assets.create(asset, alice, [service1], tokenAddress)
+    assert(ddo === null)
+    await sleep(aquaSleep)
   })
 })

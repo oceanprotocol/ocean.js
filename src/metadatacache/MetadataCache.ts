@@ -279,57 +279,60 @@ export class MetadataCache {
       totalResults
     }
   }
- /**
+  /**
    * Validate Initial Metadata before Publishing
    * @param  metadata  Metadata of the asset to publish.
    * @return {Promise<Boolean|Object>}  Result.
    */
 
- public async validateMetadata(metadata) : Promise<Boolean|Object>  {
-  const result = await this.fetch
-    .post(`${this.url}${apiPath}/validate`, JSON.stringify(metadata))
-    .then((response: Response) => {
-      if (response.ok) {
-        return response.json()
-      }
-      this.logger.error('validate Metadata failed:', response.status, response.statusText)
-      return null
-    })
-    .then((response) => {
-      return response
-    })
-    .catch((error) => {
-      this.logger.error('Error validating DDO metadata: ', error)
-      return null
-    })
+  public async validateMetadata(metadata): Promise<Boolean | Object> {
+    const result = await this.fetch
+      .post(`${this.url}${apiPath}/validate`, JSON.stringify(metadata))
+      .then((response: Response) => {
+        if (response.ok) {
+          return response.json()
+        }
+        this.logger.error(
+          'validate Metadata failed:',
+          response.status,
+          response.statusText
+        )
+        return null
+      })
+      .then((response) => {
+        return response
+      })
+      .catch((error) => {
+        this.logger.error('Error validating DDO metadata: ', error)
+        return null
+      })
 
-  return result
-}
+    return result
+  }
 
- /**
+  /**
    * Validate Remote Metadata after publishing it.
    * @param  {DDO} ddo DDO of the asset to update.
    * @return {Promise<Boolean|Object>} Result.
    */
-public async validateMetadataRemote(ddo: DDO) : Promise<Boolean|Object>  {
-  const result = await this.fetch
-    .post(`${this.url}${apiPath}/validate-remote`, JSON.stringify(ddo))
-    .then((response: Response) => {
-      if (response.ok) {
-        return response.json()
-      }
-      this.logger.error('validate DDO failed:', response.status, response.statusText)
-      return null
-    })
-    .then((response) => {
-      return response
-    })
-    .catch((error) => {
-      this.logger.error('Error validating DDO metadata: ', error)
-      return null
-    })
+  public async validateMetadataRemote(ddo: DDO): Promise<Boolean | Object> {
+    const result = await this.fetch
+      .post(`${this.url}${apiPath}/validate-remote`, JSON.stringify(ddo))
+      .then((response: Response) => {
+        if (response.ok) {
+          return response.json()
+        }
+        this.logger.error('validate DDO failed:', response.status, response.statusText)
+        return null
+      })
+      .then((response) => {
+        return response
+      })
+      .catch((error) => {
+        this.logger.error('Error validating DDO metadata: ', error)
+        return null
+      })
 
-  return result
-}
-
+    return result
+  }
 }

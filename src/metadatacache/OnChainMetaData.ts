@@ -22,7 +22,7 @@ export class OnChainMetadata {
   public web3: Web3
   public DDOContract: Contract = null
   private logger: Logger
-  
+
   /**
    * Instantiate OnChainMetadata Store for on-chain interaction.
    */
@@ -30,8 +30,7 @@ export class OnChainMetadata {
     web3: Web3,
     logger: Logger,
     DDOContractAddress: string = null,
-    DDOContractABI: AbiItem | AbiItem[] = null,
-    
+    DDOContractABI: AbiItem | AbiItem[] = null
   ) {
     this.web3 = web3
     this.DDOContractAddress = DDOContractAddress
@@ -42,7 +41,6 @@ export class OnChainMetadata {
         this.DDOContractAddress
       )
     this.logger = logger
-  
   }
 
   /**
@@ -88,7 +86,7 @@ export class OnChainMetadata {
     consumerAccount: string
   ): Promise<TransactionReceipt> {
     let flags = 0
- 
+
     const compressed = await this.compressDDO(ddo)
     flags = flags | 1
     return this.updateRaw(didZeroX(did), flags, compressed, consumerAccount)

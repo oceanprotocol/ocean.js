@@ -202,7 +202,7 @@ describe('Compute flow', () => {
             contentType: 'text/csv',
             encoding: 'UTF-8',
             compression: 'zip',
-            index:0,
+            index:0
           }
         ]
       }
@@ -407,7 +407,7 @@ describe('Compute flow', () => {
               'https://raw.githubusercontent.com/oceanprotocol/test-algorithm/master/javascript/algo.js',
             contentType: 'text/js',
             encoding: 'UTF-8',
-            index:0,
+            index:0
           }
         ],
         algorithm: {
@@ -456,7 +456,7 @@ describe('Compute flow', () => {
               'https://raw.githubusercontent.com/oceanprotocol/test-algorithm/master/javascript/algo.js',
             contentType: 'text/js',
             encoding: 'UTF-8',
-            index:0,
+            index:0
           }
         ],
         algorithm: {
