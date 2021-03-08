@@ -322,6 +322,7 @@ export class OceanFixedRateExchange {
       .call()
     result.fixedRate = this.web3.utils.fromWei(result.fixedRate)
     result.supply = this.web3.utils.fromWei(result.supply)
+    result.exchangeID = exchangeId
     return result
   }
 
@@ -377,7 +378,6 @@ export class OceanFixedRateExchange {
         const results = await Promise.all(promises)
         for (let j = 0; j < results.length; j++) {
           const constituents = results[j]
-          constituents.exchangeID = events[i].returnValues[0]
           if (
             constituents.active === true &&
             constituents.dataToken.toLowerCase() === dataTokenAddress.toLowerCase()
