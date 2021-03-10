@@ -417,7 +417,7 @@ describe('Marketplace flow', () => {
       }
     }
   })
-  
+
   it('Alice fails to publish a dataset with invalid metadata', async () => {
     price = '10' // in datatoken
     const publishedDate = new Date(Date.now()).toISOString().split('.')[0] + 'Z'
