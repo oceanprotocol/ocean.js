@@ -264,8 +264,11 @@ export class Assets extends Instantiable {
       if (newMetadata.description)
         ddo.service[i].attributes.additionalInformation.description =
           newMetadata.description
-      if (newMetadata.links)
+      if (newMetadata.links) {
         ddo.service[i].attributes.additionalInformation.links = newMetadata.links
+      } else {
+        ddo.service[i].attributes.additionalInformation.links = []
+      }
     }
 
     return ddo

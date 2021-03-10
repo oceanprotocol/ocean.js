@@ -16,6 +16,7 @@ export interface ConfigHelperConfig extends Config {
   networkId: ConfigHelperNetworkId
   network: ConfigHelperNetworkName
   subgraphUri: string
+  explorerUri: string
 }
 
 const configs: ConfigHelperConfig[] = [
@@ -26,6 +27,7 @@ const configs: ConfigHelperConfig[] = [
     metadataCacheUri: 'http://127.0.0.1:5000',
     providerUri: 'http://127.0.0.1:8030',
     subgraphUri: null,
+    explorerUri: null,
     oceanTokenAddress: null,
     factoryAddress: '0x1234',
     poolFactoryAddress: null,
@@ -41,6 +43,7 @@ const configs: ConfigHelperConfig[] = [
     metadataCacheUri: 'http://127.0.0.1:5000',
     providerUri: 'http://127.0.0.1:8030',
     subgraphUri: null,
+    explorerUri: null,
     oceanTokenAddress: null,
     factoryAddress: null,
     poolFactoryAddress: null,
@@ -55,6 +58,7 @@ const configs: ConfigHelperConfig[] = [
     metadataCacheUri: 'https://aquarius.ropsten.oceanprotocol.com',
     providerUri: 'https://provider.ropsten.oceanprotocol.com',
     subgraphUri: 'https://subgraph.ropsten.oceanprotocol.com',
+    explorerUri: 'https://ropsten.etherscan.io',
     oceanTokenAddress: null,
     factoryAddress: null,
     poolFactoryAddress: null,
@@ -69,6 +73,7 @@ const configs: ConfigHelperConfig[] = [
     metadataCacheUri: 'https://aquarius.rinkeby.oceanprotocol.com',
     providerUri: 'https://provider.rinkeby.oceanprotocol.com',
     subgraphUri: 'https://subgraph.rinkeby.oceanprotocol.com',
+    explorerUri: 'https://rinkeby.etherscan.io',
     oceanTokenAddress: null,
     factoryAddress: null,
     poolFactoryAddress: null,
@@ -83,6 +88,7 @@ const configs: ConfigHelperConfig[] = [
     metadataCacheUri: 'https://aquarius.mainnet.oceanprotocol.com',
     providerUri: 'https://provider.mainnet.oceanprotocol.com',
     subgraphUri: 'https://subgraph.mainnet.oceanprotocol.com',
+    explorerUri: 'https://etherscan.io',
     oceanTokenAddress: null,
     factoryAddress: null,
     poolFactoryAddress: null,
@@ -97,6 +103,7 @@ const configs: ConfigHelperConfig[] = [
     metadataCacheUri: 'https://aquarius.polygon.oceanprotocol.com',
     providerUri: 'https://provider.polygon.oceanprotocol.com',
     subgraphUri: 'https://subgraph.polygon.oceanprotocol.com',
+    explorerUri: 'https://explorer.matic.network',
     oceanTokenAddress: null,
     factoryAddress: null,
     poolFactoryAddress: null,
