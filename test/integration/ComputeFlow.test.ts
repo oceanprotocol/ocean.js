@@ -1011,7 +1011,7 @@ describe('Compute flow', () => {
     assert(isAlgoAllowed === false, 'Algorithm is still allowed')
   })
   it('Alice is updating the algoritm, changing the container section.', async () => {
-    const newAlgoDDo = algorithmAsset
+    const newAlgoDDo = await ocean.assets.resolve(algorithmAsset.id)
     const serviceMetadata = newAlgoDDo.findServiceByType('metadata')
     newAlgoDDo.service[serviceMetadata.index].attributes.main.algorithm.container.image =
       'dummyimage'
@@ -1039,7 +1039,7 @@ describe('Compute flow', () => {
     assert(allowed === false, 'This should fail, the algo container section was changed!')
   })
   it('Alice is updating the 2ndalgoritm, changing the files section.', async () => {
-    const newAlgoDDo = algorithmAssetRemoteProvider
+    const newAlgoDDo = await ocean.assets.resolve(algorithmAssetRemoteProvider.id)
     const serviceMetadata = newAlgoDDo.findServiceByType('metadata')
     const newFile = {
       checksum: '1',

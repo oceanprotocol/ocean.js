@@ -284,7 +284,7 @@ export class OnChainMetadata {
         return response
       })
       .catch((error) => {
-        this.logger.error('Error validating DDO metadata: ', error)
+        this.logger.error('Error validating metadata: ', error)
         return null
       })
 
