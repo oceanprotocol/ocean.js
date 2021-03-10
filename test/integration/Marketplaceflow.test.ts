@@ -37,6 +37,7 @@ describe('Marketplace flow', () => {
   let accessService: Service
   let data
   let blob
+  let wrongDdo
 
   const marketplaceAllowance = '20'
   const tokenAmount = '100'
@@ -115,6 +116,24 @@ describe('Marketplace flow', () => {
     )
     ddo = await ocean.assets.create(asset, alice, [service1], tokenAddress)
     assert(ddo.dataToken === tokenAddress)
+    await sleep(aquaSleep)
+  })
+
+  it('Alice FAILS to publishes a dataset with INVALID metadata', async () => {
+    price = '10' // in datatoken
+    const publishedDate = new Date(Date.now()).toISOString().split('.')[0] + 'Z'
+    const timeout = 0
+    service1 = await ocean.assets.createAccessServiceAttributes(
+      alice,
+      price,
+      publishedDate,
+      timeout
+    )
+
+    asset.main.files[0].index = null
+    wrongDdo = await ocean.assets.create(asset, alice, [service1], tokenAddress)
+    console.log(wrongDdo)
+    assert(wrongDdo === null)
     await sleep(aquaSleep)
   })
 
@@ -213,7 +232,8 @@ describe('Marketplace flow', () => {
       title: 'new title',
       links: [{ name: 'link1', type: 'sample', url: 'http://example.net' }]
     }
-    const newDdo = await ocean.assets.editMetadata(ddo, newMetaData)
+    const oldDdo = await ocean.assets.resolve(ddo.id)
+    const newDdo = await ocean.assets.editMetadata(oldDdo, newMetaData)
     assert(newDdo !== null)
     const txid = await ocean.onChainMetadata.update(newDdo.id, newDdo, alice.getId())
     assert(txid !== null)
@@ -231,15 +251,17 @@ describe('Marketplace flow', () => {
       description: 'new description',
       title: 'new title',
       wrong: 'wrong field',
-      links: [{ name: 'link1', type: 'sample', url: 'http://example.net', index: 0 }]
+      links: [{ name: 'link1', type: 'sample', url: 'http://example.net' }]
     }
     const oldDdo = await ocean.assets.resolve(ddo.id)
 
-    const newDdo = await ocean.assets.editMetadata(oldDdo, newMetaData)
+    wrongDdo = await ocean.assets.editMetadata(oldDdo, newMetaData)
 
-    assert(newDdo !== null)
-    const txid = await ocean.assets.updateMetadata(newDdo, alice.getId())
-    assert(txid !== null)
+    wrongDdo.service = []
+
+    assert(wrongDdo !== null)
+    const txid = await ocean.assets.updateMetadata(wrongDdo, alice.getId())
+    assert(txid === null)
     await sleep(aquaSleep)
     const metaData = await ocean.assets.getServiceByType(ddo.id, 'metadata')
     assert.equal(metaData.attributes.main.name, newMetaData.title)
@@ -254,6 +276,7 @@ describe('Marketplace flow', () => {
   })
 
   it('Alice updates timeout for the access service', async () => {
+    ddo = await ocean.assets.resolve(ddo.id)
     const service = ddo.findServiceByType('access')
     assert(service !== null)
     const serviceIndex = service.index

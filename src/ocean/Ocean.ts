@@ -76,7 +76,8 @@ export class Ocean extends Instantiable {
       instanceConfig.config.web3Provider,
       instanceConfig.logger,
       instanceConfig.config.metadataContractAddress,
-      instanceConfig.config.metadataContractABI
+      instanceConfig.config.metadataContractABI,
+      instanceConfig.config.metadataCacheUri
     )
     instance.versions = await Versions.getInstance(instanceConfig)
     instance.network = new Network()

@@ -2,6 +2,7 @@ import { DDO } from '../ddo/DDO'
 import { TransactionReceipt } from 'web3-core'
 import { Contract } from 'web3-eth-contract'
 import { AbiItem } from 'web3-utils/types'
+import { WebServiceConnector } from '../ocean/utils/WebServiceConnector'
 import Web3 from 'web3'
 import defaultDDOContractABI from '@oceanprotocol/contracts/artifacts/Metadata.json'
 import { Instantiable, InstantiableConfig } from '../Instantiable.abstract'
@@ -10,7 +11,10 @@ import { didZeroX, Logger, getFairGasPrice } from '../utils'
 // See https://github.com/LZMA-JS/LZMA-JS#but-i-dont-want-to-use-web-workers
 import { LZMA } from 'lzma/src/lzma-c'
 import { Ocean } from '../lib'
+import { Response } from 'node-fetch'
+import { Metadata } from '../ddo/interfaces'
 
+const apiPath = '/api/v1/aquarius/assets/ddo'
 /**
  * Provides an interface with Metadata Cache.
  * Metadata Cache provides an off-chain database store for metadata about data assets.
@@ -22,15 +26,22 @@ export class OnChainMetadata {
   public web3: Web3
   public DDOContract: Contract = null
   private logger: Logger
+  private metadataCacheUri: string
+  public fetch: WebServiceConnector
 
+  private get url() {
+    return this.metadataCacheUri
+  }
   /**
    * Instantiate OnChainMetadata Store for on-chain interaction.
    */
+
   constructor(
     web3: Web3,
     logger: Logger,
     DDOContractAddress: string = null,
-    DDOContractABI: AbiItem | AbiItem[] = null
+    DDOContractABI: AbiItem | AbiItem[] = null,
+    metadataCacheUri: string
   ) {
     this.web3 = web3
     this.DDOContractAddress = DDOContractAddress
@@ -41,6 +52,8 @@ export class OnChainMetadata {
         this.DDOContractAddress
       )
     this.logger = logger
+    this.metadataCacheUri = metadataCacheUri
+    this.fetch = new WebServiceConnector(logger)
   }
 
   /**
@@ -65,8 +78,14 @@ export class OnChainMetadata {
   public async publish(
     did: string,
     ddo: DDO,
-    consumerAccount: string
+    consumerAccount: string,
+    metadata
   ): Promise<TransactionReceipt> {
+    const isValidDDO = await this.validateMetadata(metadata)
+    if (isValidDDO !== true) {
+      this.logger.error(`Passed Metadata is not valid. Aborting publishing.`)
+      return null
+    }
     let flags = 0
     const compressed = await this.compressDDO(ddo)
     flags = flags | 1
@@ -86,7 +105,11 @@ export class OnChainMetadata {
     consumerAccount: string
   ): Promise<TransactionReceipt> {
     let flags = 0
-
+    const isValidDDO = await this.validateMetadataRemote(ddo)
+    if (isValidDDO !== true) {
+      this.logger.error(`Passed Metadata is not valid. Aborting publishing.`)
+      return null
+    }
     const compressed = await this.compressDDO(ddo)
     flags = flags | 1
     return this.updateRaw(didZeroX(did), flags, compressed, consumerAccount)
@@ -235,5 +258,62 @@ export class OnChainMetadata {
     }
     const hexMessage = '0x' + hex
     return hexMessage
+  }
+
+  /**
+   * Validate Initial Metadata before Publishing
+   * @param  {Metadata} metadata  Metadata of the asset to publish.
+   * @return {Promise<Boolean|Object>}  Result.
+   */
+
+  public async validateMetadata(metadata: Metadata): Promise<Boolean | Object> {
+    const result = await this.fetch
+      .post(`${this.url}${apiPath}/validate`, JSON.stringify(metadata))
+      .then((response: Response) => {
+        if (response.ok) {
+          return response.json()
+        }
+        this.logger.error(
+          'validate Metadata failed:',
+          response.status,
+          response.statusText
+        )
+        return null
+      })
+      .then((response) => {
+        return response
+      })
+      .catch((error) => {
+        this.logger.error('Error validating DDO metadata: ', error)
+        return null
+      })
+
+    return result
+  }
+
+  /**
+   * Validate Remote Metadata after publishing it.
+   * @param  {DDO} ddo DDO of the asset to update.
+   * @return {Promise<Boolean|Object>} Result.
+   */
+  public async validateMetadataRemote(ddo: DDO): Promise<Boolean | Object> {
+    const result = await this.fetch
+      .post(`${this.url}${apiPath}/validate-remote`, JSON.stringify(ddo))
+      .then((response: Response) => {
+        if (response.ok) {
+          return response.json()
+        }
+        this.logger.error('validate DDO failed:', response.status, response.statusText)
+        return null
+      })
+      .then((response) => {
+        return response
+      })
+      .catch((error) => {
+        this.logger.error('Error validating DDO metadata: ', error)
+        return null
+      })
+
+    return result
   }
 }

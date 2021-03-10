@@ -84,11 +84,6 @@ export class Assets extends Instantiable {
     }
     this.logger.log('Creating asset')
     return new SubscribablePromise(async (observer) => {
-      const isValidDDO = await this.ocean.metadataCache.validateMetadata(metadata)
-      if (isValidDDO !== true) {
-        this.logger.error(`Passed Metadata is not valid. Aborting publishing.`)
-        return null
-      }
       if (services.length === 0) {
         this.logger.log('You have no services. Are you sure about this?')
       }
@@ -198,7 +193,8 @@ export class Assets extends Instantiable {
       const storeTx = await this.ocean.onChainMetadata.publish(
         ddo.id,
         ddo,
-        publisher.getId()
+        publisher.getId(),
+        metadata
       )
       this.logger.log('DDO stored ' + ddo.id)
       observer.next(CreateProgressStep.DdoStored)
@@ -285,11 +281,6 @@ export class Assets extends Instantiable {
     ddo: DDO,
     consumerAccount: string
   ): Promise<TransactionReceipt> {
-    const isValidDDO = await this.ocean.metadataCache.validateMetadataRemote(ddo)
-    if (isValidDDO !== true) {
-      this.logger.error(`Passed Metadata is not valid. Aborting publishing.`)
-      return null
-    }
     return await this.ocean.onChainMetadata.update(ddo.id, ddo, consumerAccount)
   }
 
