@@ -11,6 +11,10 @@ export class SignatureUtils {
     this.logger = logger
   }
 
+  public async sign(message, publicKey, password) {
+    return await this.web3.eth.personal.sign(message, publicKey, password)
+  }
+
   public async signText(
     text: string,
     publicKey: string,
@@ -21,7 +25,7 @@ export class SignatureUtils {
       this.web3.currentProvider &&
       (this.web3.currentProvider as any).isMetaMask
     try {
-      return await this.web3.eth.personal.sign(text, publicKey, password)
+      return await this.sign(text, publicKey, password)
     } catch (e) {
       if (isMetaMask) {
         throw e
@@ -49,7 +53,7 @@ export class SignatureUtils {
       this.web3.currentProvider &&
       (this.web3.currentProvider as any).isMetaMask
     try {
-      return await this.web3.eth.personal.sign(hash, publicKey, password)
+      return await this.sign(hash, publicKey, password)
     } catch (e) {
       if (isMetaMask) {
         throw e

@@ -11,7 +11,6 @@ import Decimal from 'decimal.js'
 const MaxUint256 =
   '115792089237316195423570985008687907853269984665640564039457584007913129639934'
 
-
 /**
  * Provides an interface to Balancer BPool & BFactory
  */
@@ -36,15 +35,14 @@ export class Pool extends PoolFactory {
     else this.poolABI = jsonpoolABI.abi as AbiItem[]
   }
 
-  public newContract(ABI,address,from?) {
-     return new this.web3.eth.Contract(ABI, address, {
-      from: from? from : null
-    })
+  public newContract(ABI, address) {
+    return new this.web3.eth.Contract(ABI, address)
   }
 
   public toWei(amount) {
     return this.web3.utils.toWei(amount)
- }
+  }
+
   /**
    * Creates a new pool
    */
@@ -130,11 +128,7 @@ export class Pool extends PoolFactory {
     spender: string
   ): Promise<string> {
     const tokenAbi = defaultDatatokensABI.abi as AbiItem[]
-    // const datatoken = new this.web3.eth.Contract(tokenAbi, tokenAdress, {
-    //   from: spender
-    // })
-
-    const datatoken = this.newContract(tokenAbi,tokenAdress,spender)
+    const datatoken = this.newContract(tokenAbi, tokenAdress)
     const trxReceipt = await datatoken.methods.allowance(owner, spender).call()
     return this.web3.utils.fromWei(trxReceipt)
   }
@@ -177,10 +171,7 @@ export class Pool extends PoolFactory {
         type: 'function'
       }
     ] as AbiItem[]
-    // const token = new this.web3.eth.Contract(minABI, tokenAddress, {
-    //   from: account
-    // })
-    const token = this.newContract(minABI, tokenAddress,account)
+    const token = this.newContract(minABI, tokenAddress)
 
     let result = null
     const gasLimitDefault = this.GASLIMIT_DEFAULT
@@ -214,7 +205,6 @@ export class Pool extends PoolFactory {
   async sharesBalance(account: string, poolAddress: string): Promise<string> {
     let result = null
     try {
-      //const token = new this.web3.eth.Contract(this.poolABI, poolAddress)
       const token = this.newContract(this.poolABI, poolAddress)
       const balance = await token.methods.balanceOf(account).call()
       result = this.web3.utils.fromWei(balance)
@@ -248,11 +238,7 @@ export class Pool extends PoolFactory {
           this.web3.utils.toWei(`${token.amount}`)
         )
         await pool.methods
-          .bind(
-            token.address,
-            this.toWei(token.amount),
-            this.toWei(token.weight)
-          )
+          .bind(token.address, this.toWei(token.amount), this.toWei(token.weight))
           .send({
             from: account,
             gas: this.GASLIMIT_DEFAULT,
