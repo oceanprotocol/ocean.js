@@ -93,14 +93,12 @@ export class DataTokens {
     }
 
     // Create factory contract object
-    const factory = new this.web3.eth.Contract(this.factoryABI, this.factoryAddress, {
-      from: address
-    })
+    const factory = this.newContract(this.factoryABI, this.factoryAddress)
     const gasLimitDefault = this.GASLIMIT_DEFAULT
     let estGas
     try {
       estGas = await factory.methods
-        .createToken(metadataCacheUri, name, symbol, this.web3.utils.toWei(cap))
+        .createToken(metadataCacheUri, name, symbol, this.toWei(cap))
         .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
     } catch (e) {
       estGas = gasLimitDefault
@@ -108,7 +106,7 @@ export class DataTokens {
 
     // Invoke createToken function of the contract
     const trxReceipt = await factory.methods
-      .createToken(metadataCacheUri, name, symbol, this.web3.utils.toWei(cap))
+      .createToken(metadataCacheUri, name, symbol, this.toWei(cap))
       .send({
         from: address,
         gas: estGas + 1,
@@ -138,25 +136,21 @@ export class DataTokens {
     amount: string,
     address: string
   ): Promise<TransactionReceipt> {
-    const datatoken = new this.web3.eth.Contract(this.datatokensABI, dataTokenAddress, {
-      from: address
-    })
+    const datatoken = this.newContract(this.datatokensABI, dataTokenAddress)
     const gasLimitDefault = this.GASLIMIT_DEFAULT
     let estGas
     try {
       estGas = await datatoken.methods
-        .approve(spender, this.web3.utils.toWei(amount))
+        .approve(spender, this.toWei(amount))
         .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
     } catch (e) {
       estGas = gasLimitDefault
     }
-    const trxReceipt = await datatoken.methods
-      .approve(spender, this.web3.utils.toWei(amount))
-      .send({
-        from: address,
-        gas: estGas + 1,
-        gasPrice: await getFairGasPrice(this.web3)
-      })
+    const trxReceipt = await datatoken.methods.approve(spender, this.toWei(amount)).send({
+      from: address,
+      gas: estGas + 1,
+      gasPrice: await getFairGasPrice(this.web3)
+    })
     return trxReceipt
   }
 
@@ -174,16 +168,14 @@ export class DataTokens {
     amount: string,
     toAddress?: string
   ): Promise<TransactionReceipt> {
-    const datatoken = new this.web3.eth.Contract(this.datatokensABI, dataTokenAddress, {
-      from: address
-    })
+    const datatoken = this.newContract(this.datatokensABI, dataTokenAddress)
     const capAvailble = await this.getCap(dataTokenAddress)
     if (new Decimal(capAvailble).gte(amount)) {
       const gasLimitDefault = this.GASLIMIT_DEFAULT
       let estGas
       try {
         estGas = await datatoken.methods
-          .mint(toAddress || address, this.web3.utils.toWei(amount))
+          .mint(toAddress || address, this.toWei(amount))
           .estimateGas({ from: address }, (err, estGas) =>
             err ? gasLimitDefault : estGas
           )
@@ -191,7 +183,7 @@ export class DataTokens {
         estGas = gasLimitDefault
       }
       const trxReceipt = await datatoken.methods
-        .mint(toAddress || address, this.web3.utils.toWei(amount))
+        .mint(toAddress || address, this.toWei(amount))
         .send({
           from: address,
           gas: estGas + 1,
@@ -234,7 +226,7 @@ export class DataTokens {
     amount: string,
     address: string
   ): Promise<TransactionReceipt> {
-    const weiAmount = this.web3.utils.toWei(amount)
+    const weiAmount = this.toWei(amount)
     return this.transferWei(dataTokenAddress, toAddress, weiAmount, address)
   }
 
@@ -252,9 +244,7 @@ export class DataTokens {
     amount: string,
     address: string
   ): Promise<TransactionReceipt> {
-    const datatoken = new this.web3.eth.Contract(this.datatokensABI, dataTokenAddress, {
-      from: address
-    })
+    const datatoken = this.newContract(this.datatokensABI, dataTokenAddress)
     const gasLimitDefault = this.GASLIMIT_DEFAULT
     let estGas
     try {
@@ -286,20 +276,18 @@ export class DataTokens {
     amount: string,
     address: string
   ): Promise<string> {
-    const datatoken = new this.web3.eth.Contract(this.datatokensABI, dataTokenAddress, {
-      from: address
-    })
+    const datatoken = this.newContract(this.datatokensABI, dataTokenAddress)
     const gasLimitDefault = this.GASLIMIT_DEFAULT
     let estGas
     try {
       estGas = await datatoken.methods
-        .transferFrom(fromAddress, address, this.web3.utils.toWei(amount))
+        .transferFrom(fromAddress, address, this.toWei(amount))
         .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
     } catch (e) {
       estGas = gasLimitDefault
     }
     const trxReceipt = await datatoken.methods
-      .transferFrom(fromAddress, address, this.web3.utils.toWei(amount))
+      .transferFrom(fromAddress, address, this.toWei(amount))
       .send({
         from: address,
         gas: estGas + 1,
@@ -315,11 +303,9 @@ export class DataTokens {
    * @return {Promise<String>} balance  Number of datatokens. Will be converted from wei
    */
   public async balance(dataTokenAddress: string, address: string): Promise<string> {
-    const datatoken = new this.web3.eth.Contract(this.datatokensABI, dataTokenAddress, {
-      from: address
-    })
+    const datatoken = this.newContract(this.datatokensABI, dataTokenAddress)
     const balance = await datatoken.methods.balanceOf(address).call()
-    return this.web3.utils.fromWei(balance)
+    return this.fromWei(balance)
   }
 
   /**
@@ -333,11 +319,9 @@ export class DataTokens {
     owner: string,
     spender: string
   ): Promise<string> {
-    const datatoken = new this.web3.eth.Contract(this.datatokensABI, dataTokenAddress, {
-      from: spender
-    })
+    const datatoken = this.newContract(this.datatokensABI, dataTokenAddress)
     const trxReceipt = await datatoken.methods.allowance(owner, spender).call()
-    return this.web3.utils.fromWei(trxReceipt)
+    return this.fromWei(trxReceipt)
   }
 
   /** Get Blob
@@ -345,7 +329,7 @@ export class DataTokens {
    * @return {Promise<string>} string
    */
   public async getBlob(dataTokenAddress: string): Promise<string> {
-    const datatoken = new this.web3.eth.Contract(this.datatokensABI, dataTokenAddress)
+    const datatoken = this.newContract(this.datatokensABI, dataTokenAddress)
     const trxReceipt = await datatoken.methods.blob().call()
     return trxReceipt
   }
@@ -355,7 +339,7 @@ export class DataTokens {
    * @return {Promise<string>} string
    */
   public async getName(dataTokenAddress: string): Promise<string> {
-    const datatoken = new this.web3.eth.Contract(this.datatokensABI, dataTokenAddress)
+    const datatoken = this.newContract(this.datatokensABI, dataTokenAddress)
     const trxReceipt = await datatoken.methods.name().call()
     return trxReceipt
   }
@@ -365,7 +349,7 @@ export class DataTokens {
    * @return {Promise<string>} string
    */
   public async getSymbol(dataTokenAddress: string): Promise<string> {
-    const datatoken = new this.web3.eth.Contract(this.datatokensABI, dataTokenAddress)
+    const datatoken = this.newContract(this.datatokensABI, dataTokenAddress)
     const trxReceipt = await datatoken.methods.symbol().call()
     return trxReceipt
   }
@@ -375,9 +359,9 @@ export class DataTokens {
    * @return {Promise<string>} string
    */
   public async getCap(dataTokenAddress: string): Promise<string> {
-    const datatoken = new this.web3.eth.Contract(this.datatokensABI, dataTokenAddress)
+    const datatoken = this.newContract(this.datatokensABI, dataTokenAddress)
     const trxReceipt = await datatoken.methods.cap().call()
-    return this.web3.utils.fromWei(trxReceipt)
+    return this.fromWei(trxReceipt)
   }
 
   /** Convert to wei
@@ -394,6 +378,10 @@ export class DataTokens {
    */
   public fromWei(amount: string): string {
     return this.web3.utils.fromWei(amount)
+  }
+
+  public newContract(ABI, address) {
+    return new this.web3.eth.Contract(ABI, address)
   }
 
   /** Start Order
@@ -413,21 +401,14 @@ export class DataTokens {
     mpFeeAddress: string,
     address: string
   ): Promise<TransactionReceipt> {
-    const datatoken = new this.web3.eth.Contract(this.datatokensABI, dataTokenAddress, {
-      from: address
-    })
+    const datatoken = this.newContract(this.datatokensABI, dataTokenAddress)
     if (!mpFeeAddress) mpFeeAddress = '0x0000000000000000000000000000000000000000'
     try {
       const gasLimitDefault = this.GASLIMIT_DEFAULT
       let estGas
       try {
         estGas = await datatoken.methods
-          .startOrder(
-            consumer,
-            this.web3.utils.toWei(amount),
-            String(serviceId),
-            mpFeeAddress
-          )
+          .startOrder(consumer, this.toWei(amount), String(serviceId), mpFeeAddress)
           .estimateGas({ from: address }, (err, estGas) =>
             err ? gasLimitDefault : estGas
           )
@@ -435,12 +416,7 @@ export class DataTokens {
         estGas = gasLimitDefault
       }
       const trxReceipt = await datatoken.methods
-        .startOrder(
-          consumer,
-          this.web3.utils.toWei(amount),
-          String(serviceId),
-          mpFeeAddress
-        )
+        .startOrder(consumer, this.toWei(amount), String(serviceId), mpFeeAddress)
         .send({
           from: address,
           gas: estGas + 1,
@@ -469,9 +445,7 @@ export class DataTokens {
     timeout: number,
     address: string
   ): Promise<string> {
-    const datatoken = new this.web3.eth.Contract(this.datatokensABI, dataTokenAddress, {
-      from: address
-    })
+    const datatoken = this.newContract(this.datatokensABI, dataTokenAddress)
     let fromBlock
     if (timeout > 0) {
       const lastBlock = await this.web3.eth.getBlockNumber()
@@ -487,7 +461,7 @@ export class DataTokens {
     })
     for (let i = 0; i < events.length; i++) {
       if (
-        String(events[i].returnValues.amount) === this.web3.utils.toWei(String(amount)) &&
+        String(events[i].returnValues.amount) === this.toWei(String(amount)) &&
         String(events[i].returnValues.serviceId) === String(serviceId) &&
         events[i].returnValues.consumer.toLowerCase() === address.toLowerCase()
       ) {
@@ -522,9 +496,7 @@ export class DataTokens {
     newMinterAddress: string,
     address: string
   ): Promise<string> {
-    const datatoken = new this.web3.eth.Contract(this.datatokensABI, dataTokenAddress, {
-      from: address
-    })
+    const datatoken = this.newContract(this.datatokensABI, dataTokenAddress)
     const gasLimitDefault = this.GASLIMIT_DEFAULT
     let estGas
     try {
@@ -553,9 +525,7 @@ export class DataTokens {
    * @return {Promise<string>} transactionId
    */
   public async approveMinter(dataTokenAddress: string, address: string): Promise<string> {
-    const datatoken = new this.web3.eth.Contract(this.datatokensABI, dataTokenAddress, {
-      from: address
-    })
+    const datatoken = this.newContract(this.datatokensABI, dataTokenAddress)
     const gasLimitDefault = this.GASLIMIT_DEFAULT
     let estGas
     try {
@@ -583,7 +553,7 @@ export class DataTokens {
    * @return {Promise<string>} string
    */
   public async isMinter(dataTokenAddress: string, address: string): Promise<boolean> {
-    const datatoken = new this.web3.eth.Contract(this.datatokensABI, dataTokenAddress)
+    const datatoken = this.newContract(this.datatokensABI, dataTokenAddress)
     const trxReceipt = await datatoken.methods.isMinter(address).call()
     return trxReceipt
   }

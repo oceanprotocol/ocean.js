@@ -75,6 +75,14 @@ export class OceanFixedRateExchange {
     this.logger = logger
   }
 
+  /** Convert from wei
+   * @param {String} amount
+   * @return {Promise<string>} string
+   */
+  public fromWei(amount: string): string {
+    return this.web3.utils.fromWei(amount)
+  }
+
   /**
    * Creates new exchange pair between Ocean Token and data token.
    * @param {String} dataToken Data Token Contract Address
@@ -282,7 +290,7 @@ export class OceanFixedRateExchange {
    */
   public async getRate(exchangeId: string): Promise<string> {
     const weiRate = await this.contract.methods.getRate(exchangeId).call()
-    return this.web3.utils.fromWei(weiRate)
+    return this.fromWei(weiRate)
   }
 
   /**
@@ -292,7 +300,7 @@ export class OceanFixedRateExchange {
    */
   public async getSupply(exchangeId: string): Promise<string> {
     const weiRate = await this.contract.methods.getSupply(exchangeId).call()
-    return this.web3.utils.fromWei(weiRate)
+    return this.fromWei(weiRate)
   }
 
   /**
@@ -308,7 +316,7 @@ export class OceanFixedRateExchange {
     const weiRate = await this.contract.methods
       .CalcInGivenOut(exchangeId, this.web3.utils.toWei(dataTokenAmount))
       .call()
-    return this.web3.utils.fromWei(weiRate)
+    return this.fromWei(weiRate)
   }
 
   /**
@@ -320,8 +328,8 @@ export class OceanFixedRateExchange {
     const result: FixedPriceExchange = await this.contract.methods
       .getExchange(exchangeId)
       .call()
-    result.fixedRate = this.web3.utils.fromWei(result.fixedRate)
-    result.supply = this.web3.utils.fromWei(result.supply)
+    result.fixedRate = this.fromWei(result.fixedRate)
+    result.supply = this.fromWei(result.supply)
     result.exchangeID = exchangeId
     return result
   }
@@ -358,7 +366,7 @@ export class OceanFixedRateExchange {
     const result = await this.contract.methods
       .CalcInGivenOut(exchangeId, this.web3.utils.toWei(dataTokenAmount))
       .call()
-    return this.web3.utils.fromWei(result)
+    return this.fromWei(result)
   }
 
   public async searchforDT(
@@ -465,8 +473,8 @@ export class OceanFixedRateExchange {
     const result: FixedPriceSwap = {
       exchangeID: data.returnValues[0],
       caller: data.returnValues[1],
-      baseTokenAmount: this.web3.utils.fromWei(data.returnValues[2]),
-      dataTokenAmount: this.web3.utils.fromWei(data.returnValues[3])
+      baseTokenAmount: this.fromWei(data.returnValues[2]),
+      dataTokenAmount: this.fromWei(data.returnValues[3])
     }
     return result
   }

@@ -39,8 +39,12 @@ export class Pool extends PoolFactory {
     return new this.web3.eth.Contract(ABI, address)
   }
 
-  public toWei(amount) {
+  public toWei(amount: string) {
     return this.web3.utils.toWei(amount)
+  }
+
+  public fromWei(amount) {
+    return this.web3.utils.fromWei(amount)
   }
 
   /**
@@ -130,7 +134,7 @@ export class Pool extends PoolFactory {
     const tokenAbi = defaultDatatokensABI.abi as AbiItem[]
     const datatoken = this.newContract(tokenAbi, tokenAdress)
     const trxReceipt = await datatoken.methods.allowance(owner, spender).call()
-    return this.web3.utils.fromWei(trxReceipt)
+    return this.fromWei(trxReceipt)
   }
 
   /**
@@ -207,7 +211,7 @@ export class Pool extends PoolFactory {
     try {
       const token = this.newContract(this.poolABI, poolAddress)
       const balance = await token.methods.balanceOf(account).call()
-      result = this.web3.utils.fromWei(balance)
+      result = this.fromWei(balance)
     } catch (e) {
       this.logger.error(`ERROR: Failed to get shares of pool : ${e.message}`)
     }
@@ -321,7 +325,7 @@ export class Pool extends PoolFactory {
     let amount = null
     try {
       const result = await pool.methods.totalSupply().call()
-      amount = this.web3.utils.fromWei(result)
+      amount = this.fromWei(result)
     } catch (e) {
       this.logger.error(`ERROR: Failed to get total supply of pool shares: ${e.message}`)
     }
@@ -429,7 +433,7 @@ export class Pool extends PoolFactory {
     try {
       const pool = this.newContract(this.poolABI, poolAddress)
       const result = await pool.methods.getBalance(token).call()
-      amount = this.web3.utils.fromWei(result)
+      amount = this.fromWei(result)
     } catch (e) {
       this.logger.error(`ERROR: Failed to get how many tokens \
       are in the pool: ${e.message}`)
@@ -463,7 +467,7 @@ export class Pool extends PoolFactory {
     let fee = null
     try {
       const result = await pool.methods.getSwapFee().call()
-      fee = this.web3.utils.fromWei(result)
+      fee = this.fromWei(result)
     } catch (e) {
       this.logger.error(`ERROR: Failed to get pool fee: ${e.message}`)
     }
@@ -481,7 +485,7 @@ export class Pool extends PoolFactory {
     let weight = null
     try {
       const result = await pool.methods.getNormalizedWeight(token).call()
-      weight = this.web3.utils.fromWei(result)
+      weight = this.fromWei(result)
     } catch (e) {
       this.logger.error(`ERROR: Failed to get normalized weight of a token: ${e.message}`)
     }
@@ -499,7 +503,7 @@ export class Pool extends PoolFactory {
     let weight = null
     try {
       const result = await pool.methods.getDenormalizedWeight(token).call()
-      weight = this.web3.utils.fromWei(result)
+      weight = this.fromWei(result)
     } catch (e) {
       this.logger.error('ERROR: Failed to get denormalized weight of a token in pool')
     }
@@ -516,7 +520,7 @@ export class Pool extends PoolFactory {
     let weight = null
     try {
       const result = await pool.methods.getTotalDenormalizedWeight().call()
-      weight = this.web3.utils.fromWei(result)
+      weight = this.fromWei(result)
     } catch (e) {
       this.logger.error('ERROR: Failed to get total denormalized weight in pool')
     }
@@ -945,7 +949,7 @@ export class Pool extends PoolFactory {
     let price = null
     try {
       const result = await pool.methods.getSpotPrice(tokenIn, tokenOut).call()
-      price = this.web3.utils.fromWei(result)
+      price = this.fromWei(result)
     } catch (e) {
       this.logger.error('ERROR: Failed to get spot price of swapping tokenIn to tokenOut')
     }
@@ -968,7 +972,7 @@ export class Pool extends PoolFactory {
     let price = null
     try {
       const result = await pool.methods.getSpotPriceSansFee(tokenIn, tokenOut).call()
-      price = this.web3.utils.fromWei(result)
+      price = this.fromWei(result)
     } catch (e) {
       this.logger.error('ERROR: Failed to getSpotPriceSansFee')
     }
@@ -995,7 +999,7 @@ export class Pool extends PoolFactory {
           this.toWei(swapFee)
         )
         .call()
-      amount = this.web3.utils.fromWei(result)
+      amount = this.fromWei(result)
     } catch (e) {
       this.logger.error('ERROR: Failed to call calcSpotPrice')
     }
@@ -1025,7 +1029,7 @@ export class Pool extends PoolFactory {
           this.toWei(swapFee)
         )
         .call()
-      amount = this.web3.utils.fromWei(result)
+      amount = this.fromWei(result)
     } catch (e) {
       this.logger.error('ERROR: Failed to calcInGivenOut')
     }
@@ -1054,7 +1058,7 @@ export class Pool extends PoolFactory {
           this.toWei(swapFee)
         )
         .call()
-      amount = this.web3.utils.fromWei(result)
+      amount = this.fromWei(result)
     } catch (e) {
       this.logger.error('ERROR: Failed to calcOutGivenIn')
     }
@@ -1083,7 +1087,7 @@ export class Pool extends PoolFactory {
           this.toWei(swapFee)
         )
         .call()
-      amount = this.web3.utils.fromWei(result)
+      amount = this.fromWei(result)
     } catch (e) {
       this.logger.error(`ERROR: Failed to calculate PoolOutGivenSingleIn : ${e.message}`)
     }
@@ -1112,7 +1116,7 @@ export class Pool extends PoolFactory {
           this.toWei(swapFee)
         )
         .call()
-      amount = this.web3.utils.fromWei(result)
+      amount = this.fromWei(result)
     } catch (e) {
       this.logger.error(`ERROR: Failed to calculate SingleInGivenPoolOut : ${e.message}`)
     }
@@ -1141,7 +1145,7 @@ export class Pool extends PoolFactory {
           this.toWei(swapFee)
         )
         .call()
-      amount = this.web3.utils.fromWei(result)
+      amount = this.fromWei(result)
     } catch (e) {
       this.logger.error(`ERROR: Failed to calculate SingleOutGivenPoolIn : ${e.message}`)
     }
@@ -1170,7 +1174,7 @@ export class Pool extends PoolFactory {
           this.toWei(swapFee)
         )
         .call()
-      amount = this.web3.utils.fromWei(result)
+      amount = this.fromWei(result)
     } catch (e) {
       this.logger.error(`ERROR: Failed to calculate PoolInGivenSingleOut : ${e.message}`)
     }

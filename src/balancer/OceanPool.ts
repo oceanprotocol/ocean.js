@@ -75,6 +75,14 @@ export class OceanPool extends Pool {
     else this.startBlock = 0
   }
 
+  public toWei(amount: string) {
+    return this.web3.utils.toWei(amount)
+  }
+
+  public fromWei(amount) {
+    return this.web3.utils.fromWei(amount)
+  }
+
   /**
      * Create DataToken pool
      @param {String} account
@@ -127,7 +135,7 @@ export class OceanPool extends Pool {
           account,
           dtAddress,
           address,
-          this.web3.utils.toWei(String(dtAmount))
+          this.toWei(String(dtAmount))
         )
         if (!txid) {
           this.logger.error('ERROR: Failed to call approve DT token')
@@ -141,7 +149,7 @@ export class OceanPool extends Pool {
           account,
           this.oceanAddress,
           address,
-          this.web3.utils.toWei(String(oceanAmount))
+          this.toWei(String(oceanAmount))
         )
         if (!txid) {
           this.logger.error('ERROR: Failed to call approve OCEAN token')
@@ -153,12 +161,12 @@ export class OceanPool extends Pool {
         account,
         address,
         dtAddress,
-        this.web3.utils.toWei(String(dtAmount)),
-        this.web3.utils.toWei(String(dtWeight)),
+        this.toWei(String(dtAmount)),
+        this.toWei(String(dtWeight)),
         this.oceanAddress,
-        this.web3.utils.toWei(String(oceanAmount)),
-        this.web3.utils.toWei(String(oceanWeight)),
-        this.web3.utils.toWei(fee)
+        this.toWei(String(oceanAmount)),
+        this.toWei(String(oceanWeight)),
+        this.toWei(fee)
       )
       if (!txid) {
         this.logger.error('ERROR: Failed to create a new pool')
@@ -491,11 +499,11 @@ export class OceanPool extends Pool {
   ): Promise<string> {
     const balance = await super.getReserve(poolAddress, tokenAddress)
     if (parseFloat(balance) > 0) {
-      const result = new BigNumber(this.web3.utils.toWei(balance))
+      const result = new BigNumber(this.toWei(balance))
         .multipliedBy(POOL_MAX_AMOUNT_IN_LIMIT)
         .integerValue(BigNumber.ROUND_DOWN)
         .minus(1)
-      return this.web3.utils.fromWei(result.toString(10))
+      return this.fromWei(result.toString(10))
     } else return '0'
   }
 
@@ -510,11 +518,11 @@ export class OceanPool extends Pool {
   ): Promise<string> {
     const balance = await super.getReserve(poolAddress, tokenAddress)
     if (parseFloat(balance) > 0) {
-      const result = new BigNumber(this.web3.utils.toWei(balance))
+      const result = new BigNumber(this.toWei(balance))
         .multipliedBy(POOL_MAX_AMOUNT_OUT_LIMIT)
         .integerValue(BigNumber.ROUND_DOWN)
         .minus(1)
-      return this.web3.utils.fromWei(result.toString(10))
+      return this.fromWei(result.toString(10))
     } else return '0'
   }
 
@@ -575,7 +583,7 @@ export class OceanPool extends Pool {
       account,
       this.oceanAddress,
       poolAddress,
-      this.web3.utils.toWei(maxOceanAmount)
+      this.toWei(maxOceanAmount)
     )
     if (!txid) {
       this.logger.error('ERROR: OCEAN approve failed')
@@ -632,7 +640,7 @@ export class OceanPool extends Pool {
       account,
       this.oceanAddress,
       poolAddress,
-      this.web3.utils.toWei(OceanAmount)
+      this.toWei(OceanAmount)
     )
     if (!txid) {
       this.logger.error('ERROR: OCEAN approve failed')
@@ -688,7 +696,7 @@ export class OceanPool extends Pool {
       account,
       dtAddress,
       poolAddress,
-      this.web3.utils.toWei(dtAmount)
+      this.toWei(dtAmount)
     )
     if (!txid) {
       this.logger.error('ERROR: DT approve failed')
@@ -724,12 +732,7 @@ export class OceanPool extends Pool {
       this.logger.error('ERROR: Too much reserve to add')
       return null
     }
-    const txid = await super.approve(
-      account,
-      dtAddress,
-      poolAddress,
-      this.web3.utils.toWei(amount)
-    )
+    const txid = await super.approve(account, dtAddress, poolAddress, this.toWei(amount))
     if (!txid) {
       this.logger.error('ERROR: DT approve failed')
       return null
@@ -811,7 +814,7 @@ export class OceanPool extends Pool {
       account,
       this.oceanAddress,
       poolAddress,
-      this.web3.utils.toWei(amount)
+      this.toWei(amount)
     )
     if (!txid) {
       this.logger.error('ERROR: OCEAN approve failed')
@@ -923,7 +926,7 @@ export class OceanPool extends Pool {
    */
   public async searchPoolforDT(dtAddress: string): Promise<string[]> {
     const result: string[] = []
-    const factory = new this.web3.eth.Contract(this.factoryABI, this.factoryAddress)
+    const factory = this.newContract(this.factoryABI, this.factoryAddress)
     const events = await factory.getPastEvents('BPoolRegistered', {
       filter: {},
       fromBlock: this.startBlock,
@@ -987,7 +990,7 @@ export class OceanPool extends Pool {
    */
   public async getPoolsbyCreator(account?: string): Promise<PoolDetails[]> {
     const result: PoolDetails[] = []
-    const factory = new this.web3.eth.Contract(this.factoryABI, this.factoryAddress)
+    const factory = this.newContract(this.factoryABI, this.factoryAddress)
 
     const events = await factory.getPastEvents('BPoolRegistered', {
       filter: account ? { registeredBy: account } : {},
@@ -1023,7 +1026,7 @@ export class OceanPool extends Pool {
    */
   public async getPoolSharesByAddress(account: string): Promise<PoolShare[]> {
     const result: PoolShare[] = []
-    const factory = new this.web3.eth.Contract(this.factoryABI, this.factoryAddress)
+    const factory = this.newContract(this.factoryABI, this.factoryAddress)
     const events = await factory.getPastEvents('BPoolRegistered', {
       filter: {},
       fromBlock: this.startBlock,
@@ -1138,7 +1141,7 @@ export class OceanPool extends Pool {
    */
   public async getAllPoolLogs(account: string): Promise<PoolTransaction[]> {
     const results: PoolTransaction[][] = []
-    const factory = new this.web3.eth.Contract(this.factoryABI, this.factoryAddress)
+    const factory = this.newContract(this.factoryABI, this.factoryAddress)
     const events = await factory.getPastEvents('BPoolRegistered', {
       filter: {},
       fromBlock: this.startBlock,
@@ -1209,8 +1212,8 @@ export class OceanPool extends Pool {
           ...result,
           tokenIn: '0x' + data.topics[2].substring(data.topics[2].length - 40),
           tokenOut: '0x' + data.topics[3].substring(data.topics[3].length - 40),
-          tokenAmountIn: this.web3.utils.fromWei(params[0]),
-          tokenAmountOut: this.web3.utils.fromWei(params[1])
+          tokenAmountIn: this.fromWei(params[0]),
+          tokenAmountOut: this.fromWei(params[1])
         }
         break
       case 'join':
@@ -1218,7 +1221,7 @@ export class OceanPool extends Pool {
         result = {
           ...result,
           tokenIn: '0x' + data.topics[2].substring(data.topics[2].length - 40),
-          tokenAmountIn: this.web3.utils.fromWei(params[0])
+          tokenAmountIn: this.fromWei(params[0])
         }
         break
       case 'exit':
@@ -1226,7 +1229,7 @@ export class OceanPool extends Pool {
         result = {
           ...result,
           tokenOut: '0x' + data.topics[2].substring(data.topics[2].length - 40),
-          tokenAmountOut: this.web3.utils.fromWei(params[0])
+          tokenAmountOut: this.fromWei(params[0])
         }
         break
     }
@@ -1284,11 +1287,11 @@ export class OceanPool extends Pool {
       oceanAmount,
       swapFee
     )
-    const newDtReserve = new BigNumber(this.web3.utils.toWei(dtReserve)).minus(
-      this.web3.utils.toWei(dtReceived)
+    const newDtReserve = new BigNumber(this.toWei(dtReserve)).minus(
+      this.toWei(dtReceived)
     )
-    const newOceanReserve = new BigNumber(this.web3.utils.toWei(oceanReserve)).plus(
-      this.web3.utils.toWei(oceanAmount)
+    const newOceanReserve = new BigNumber(this.toWei(oceanReserve)).plus(
+      this.toWei(oceanAmount)
     )
     const slippage = await this.computeSlippage(
       poolAddress,
@@ -1296,8 +1299,8 @@ export class OceanPool extends Pool {
       oceanWeight,
       dtReserve,
       dtWeight,
-      this.web3.utils.fromWei(newOceanReserve.toString()),
-      this.web3.utils.fromWei(newDtReserve.toString()),
+      this.fromWei(newOceanReserve.toString()),
+      this.fromWei(newDtReserve.toString()),
       swapFee
     )
     return slippage
@@ -1323,11 +1326,9 @@ export class OceanPool extends Pool {
       dtAmount,
       swapFee
     )
-    const newDtReserve = new BigNumber(this.web3.utils.toWei(dtReserve)).plus(
-      this.web3.utils.toWei(dtAmount)
-    )
-    const newOceanReserve = new BigNumber(this.web3.utils.toWei(oceanReserve)).minus(
-      this.web3.utils.toWei(oceanReceived)
+    const newDtReserve = new BigNumber(this.toWei(dtReserve)).plus(this.toWei(dtAmount))
+    const newOceanReserve = new BigNumber(this.toWei(oceanReserve)).minus(
+      this.toWei(oceanReceived)
     )
     const slippage = await this.computeSlippage(
       poolAddress,
@@ -1335,8 +1336,8 @@ export class OceanPool extends Pool {
       dtWeight,
       oceanReserve,
       oceanWeight,
-      this.web3.utils.fromWei(newDtReserve.toString()),
-      this.web3.utils.fromWei(newOceanReserve.toString()),
+      this.fromWei(newDtReserve.toString()),
+      this.fromWei(newOceanReserve.toString()),
       swapFee
     )
     return slippage
