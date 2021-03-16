@@ -150,7 +150,7 @@ You can execute the integration tests individually with:
 ```bash
 npm run test:integration
 # same thing, but with coverage reporting
-npm run test:integration:coverage
+npm run test:integration:cover
 ```
 
 ## 🛳 Production
