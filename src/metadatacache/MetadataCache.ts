@@ -18,7 +18,24 @@ export interface SearchQuery {
   text?: string
   offset?: number
   page?: number
-  query: { [property: string]: string | number | string[] | number[] }
+  query: {
+    nativeSearch?: number
+    match?: {
+      [property: string]:
+        | string
+        | number
+        | boolean
+        | Record<string, string | number | boolean>
+    }
+    // eslint-disable-next-line camelcase
+    query_string?: {
+      [property: string]: string | number | string[] | number[] | boolean
+    }
+    // eslint-disable-next-line camelcase
+    simple_query_string?: {
+      [property: string]: string | number | string[] | number[] | boolean
+    }
+  }
   sort?: { [jsonPath: string]: number }
 }
 
@@ -78,6 +95,7 @@ export class MetadataCache {
    * @return {Promise<QueryResult>}
    */
   public async queryMetadata(query: SearchQuery): Promise<QueryResult> {
+    if (!query.query.nativeSearch) query.query.nativeSearch = 1
     const result: QueryResult = await this.fetch
       .post(`${this.url}${apiPath}/query`, JSON.stringify(query))
       .then((response: Response) => {
@@ -120,6 +138,30 @@ export class MetadataCache {
       .catch((error) => {
         this.logger.error('Error fetching querying metadata: ', error)
         return null as DDO
+      })
+
+    return result
+  }
+
+  /**
+   * Encrypts a DDO
+   * @param  {any} ddo bytes to be encrypted.
+   * @return {Promise<String>} Hex encoded encrypted DDO.
+   */
+  public async encryptDDO(ddo: any): Promise<any> {
+    const fullUrl = `${this.url}/api/v1/aquarius/assets/ddo/encrypt`
+    const result = await this.fetch
+      .postWithOctet(fullUrl, ddo)
+      .then((response: Response) => {
+        if (response.ok) {
+          return response.buffer()
+        }
+        this.logger.error('encryptDDO failed:', response.status, response.statusText, ddo)
+        return null
+      })
+      .catch((error) => {
+        this.logger.error('Error encryptDDO: ', error)
+        return null
       })
 
     return result
@@ -206,7 +248,10 @@ export class MetadataCache {
       offset: 100,
       page: 1,
       query: {
-        'publicKey.owner': [owner]
+        nativeSearch: 1,
+        query_string: {
+          query: `(publicKey.owner:${owner})`
+        }
       },
       sort: {
         value: 1

@@ -5,9 +5,12 @@ import { AbiItem } from 'web3-utils/types'
 import Web3 from 'web3'
 import defaultDDOContractABI from '@oceanprotocol/contracts/artifacts/Metadata.json'
 import { didZeroX, Logger, getFairGasPrice } from '../utils'
+import { MetadataCache } from '../metadatacache/MetadataCache'
 // Using limited, compress-only version
 // See https://github.com/LZMA-JS/LZMA-JS#but-i-dont-want-to-use-web-workers
 import { LZMA } from 'lzma/src/lzma-c'
+
+export type EncryptType = 'none' | 'may' | 'required'
 
 /**
  * Provides an interface with Metadata Cache.
@@ -20,6 +23,7 @@ export class OnChainMetadata {
   public web3: Web3
   public DDOContract: Contract = null
   private logger: Logger
+  public metadataCache: MetadataCache
   /**
    * Instantiate OnChainMetadata Store for on-chain interaction.
    */
@@ -27,7 +31,8 @@ export class OnChainMetadata {
     web3: Web3,
     logger: Logger,
     DDOContractAddress: string = null,
-    DDOContractABI: AbiItem | AbiItem[] = null
+    DDOContractABI: AbiItem | AbiItem[] = null,
+    metadataCache: MetadataCache
   ) {
     this.web3 = web3
     this.DDOContractAddress = DDOContractAddress
@@ -38,18 +43,19 @@ export class OnChainMetadata {
         this.DDOContractAddress
       )
     this.logger = logger
+    this.metadataCache = metadataCache
   }
 
   /**
    * Compress DDO using xz/lzma2
    */
 
-  public async compressDDO(ddo: DDO): Promise<string> {
-    const data = DDO.serialize(ddo)
+  public async compressDDO(data: any): Promise<string> {
     // see https://github.com/LZMA-JS/LZMA-JS/issues/44
     LZMA.disableEndMark = true
     const compressed = LZMA.compress(data, 9)
-    return this.getHex(compressed)
+    // return this.getHex(compressed)
+    return compressed
   }
 
   /**
@@ -62,12 +68,24 @@ export class OnChainMetadata {
   public async publish(
     did: string,
     ddo: DDO,
-    consumerAccount: string
+    consumerAccount: string,
+    encrypt: boolean = false
   ): Promise<TransactionReceipt> {
     let flags = 0
-    const compressed = await this.compressDDO(ddo)
-    flags = flags | 1
-    return this.publishRaw(didZeroX(did), flags, compressed, consumerAccount)
+    let data = DDO.serialize(ddo)
+    if (encrypt === false) {
+      data = await this.compressDDO(data)
+      flags = flags | 1
+    } else {
+      data = await this.metadataCache.encryptDDO(data)
+      if (!data) return null
+      flags = flags | 2
+    }
+    // const x = this.getHex(data)
+    // console.log(x)
+    // let y = this.web3.utils.hexToBytes(data)
+    // console.log(y)
+    return this.publishRaw(didZeroX(did), flags, this.getHex(data), consumerAccount)
   }
 
   /**
@@ -80,12 +98,20 @@ export class OnChainMetadata {
   public async update(
     did: string,
     ddo: DDO,
-    consumerAccount: string
+    consumerAccount: string,
+    encrypt: boolean = false
   ): Promise<TransactionReceipt> {
     let flags = 0
-    const compressed = await this.compressDDO(ddo)
-    flags = flags | 1
-    return this.updateRaw(didZeroX(did), flags, compressed, consumerAccount)
+    let data = DDO.serialize(ddo)
+    if (encrypt === false) {
+      data = await this.compressDDO(data)
+      flags = flags | 1
+    } else {
+      data = await this.metadataCache.encryptDDO(data)
+      if (!data) return null
+      flags = flags | 2
+    }
+    return this.updateRaw(didZeroX(did), flags, this.getHex(data), consumerAccount)
   }
 
   /**

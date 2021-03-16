@@ -186,9 +186,11 @@ export class Assets extends Instantiable {
         address: dtAddress,
         cap: parseFloat(await datatokens.getCap(dtAddress))
       }
+      return ddo
+      /* Remeber to call ocean.onChainMetadata.publish after creating the DDO.
+      
       this.logger.log('Storing DDO')
       observer.next(CreateProgressStep.StoringDdo)
-      // const storedDdo = await this.ocean.metadataCache.storeDDO(ddo)
       const storeTx = await this.ocean.onChainMetadata.publish(
         ddo.id,
         ddo,
@@ -198,6 +200,7 @@ export class Assets extends Instantiable {
       observer.next(CreateProgressStep.DdoStored)
       if (storeTx) return ddo
       else return null
+      */
     })
   }
 
@@ -229,7 +232,10 @@ export class Assets extends Instantiable {
       offset: offset || 100,
       page: page || 1,
       query: {
-        dataToken: [dtAddress]
+        nativeSearch: 1,
+        query_string: {
+          query: `dataToken:${dtAddress}`
+        }
       },
       sort: {
         value: sort || 1
@@ -338,11 +344,13 @@ export class Assets extends Instantiable {
    */
   public async search(text: string): Promise<QueryResult> {
     return this.ocean.metadataCache.queryMetadata({
-      text,
       page: 1,
       offset: 100,
       query: {
-        value: 1
+        nativeSearch: 1,
+        query_string: {
+          query: text
+        }
       },
       sort: {
         value: 1

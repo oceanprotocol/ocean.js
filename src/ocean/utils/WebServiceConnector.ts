@@ -34,6 +34,24 @@ export class WebServiceConnector {
     }
   }
 
+  public postWithOctet(url: string, payload: BodyInit): Promise<Response> {
+    if (payload != null) {
+      return this.fetch(url, {
+        method: 'POST',
+        body: payload,
+        headers: {
+          'Content-type': 'application/octet-stream'
+        },
+        timeout: 5000
+      })
+    } else {
+      return this.fetch(url, {
+        method: 'POST',
+        timeout: 5000
+      })
+    }
+  }
+
   public get(url: string): Promise<Response> {
     return this.fetch(url, {
       method: 'GET',
