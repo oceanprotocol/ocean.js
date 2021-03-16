@@ -140,7 +140,7 @@ You can execute the unit tests individually with:
 ```bash
 npm run test:unit
 # same thing, but with coverage reporting
-npm run test:unit:coverage
+npm run test:unit:cover
 ```
 
 ### Integration Tests
