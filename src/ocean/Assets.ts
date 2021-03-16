@@ -232,7 +232,6 @@ export class Assets extends Instantiable {
       offset: offset || 100,
       page: page || 1,
       query: {
-        nativeSearch: 1,
         query_string: {
           query: `dataToken:${dtAddress}`
         }
@@ -347,7 +346,6 @@ export class Assets extends Instantiable {
       page: 1,
       offset: 100,
       query: {
-        nativeSearch: 1,
         query_string: {
           query: text
         }

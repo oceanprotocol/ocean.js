@@ -95,7 +95,6 @@ export class MetadataCache {
    * @return {Promise<QueryResult>}
    */
   public async queryMetadata(query: SearchQuery): Promise<QueryResult> {
-    if (!query.query.nativeSearch) query.query.nativeSearch = 1
     const result: QueryResult = await this.fetch
       .post(`${this.url}${apiPath}/query`, JSON.stringify(query))
       .then((response: Response) => {
@@ -245,16 +244,15 @@ export class MetadataCache {
 
   public async getOwnerAssets(owner: string): Promise<QueryResult> {
     const q = {
-      offset: 100,
       page: 1,
+      offset: 100,
       query: {
-        nativeSearch: 1,
         query_string: {
-          query: `(publicKey.owner:${owner})`
+          query: `publicKey.owner:${owner}`
         }
       },
       sort: {
-        value: 1
+        created: 1
       }
     } as SearchQuery
 
