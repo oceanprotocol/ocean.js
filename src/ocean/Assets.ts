@@ -55,7 +55,7 @@ export class Assets extends Instantiable {
   }
 
   /**
-   * Creates a new DDO and publishes it
+   * Creates a new DDO. After this, Call ocean.onChainMetadata.to publish
    * @param  {Metadata} metadata DDO metadata.
    * @param  {Account}  publisher Publisher account.
    * @param  {list} services list of Service description documents
