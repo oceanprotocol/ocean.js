@@ -10,8 +10,10 @@ import { MetadataCache } from '../metadatacache/MetadataCache'
 // See https://github.com/LZMA-JS/LZMA-JS#but-i-dont-want-to-use-web-workers
 import { LZMA } from 'lzma/src/lzma-c'
 
-export type EncryptType = 'none' | 'may' | 'required'
-
+export interface rawMetadata {
+  flags: number
+  data: any
+}
 /**
  * Provides an interface with Metadata Cache.
  * Metadata Cache provides an off-chain database store for metadata about data assets.
@@ -71,21 +73,13 @@ export class OnChainMetadata {
     consumerAccount: string,
     encrypt: boolean = false
   ): Promise<TransactionReceipt> {
-    let flags = 0
-    let data = DDO.serialize(ddo)
-    if (encrypt === false) {
-      data = await this.compressDDO(data)
-      flags = flags | 1
-    } else {
-      data = await this.metadataCache.encryptDDO(data)
-      if (!data) return null
-      flags = flags | 2
-    }
-    // const x = this.getHex(data)
-    // console.log(x)
-    // let y = this.web3.utils.hexToBytes(data)
-    // console.log(y)
-    return this.publishRaw(didZeroX(did), flags, this.getHex(data), consumerAccount)
+    const rawData = await this.prepareRawData(ddo, encrypt)
+    return this.publishRaw(
+      didZeroX(did),
+      rawData.flags,
+      this.getHex(rawData.data),
+      consumerAccount
+    )
   }
 
   /**
@@ -101,6 +95,22 @@ export class OnChainMetadata {
     consumerAccount: string,
     encrypt: boolean = false
   ): Promise<TransactionReceipt> {
+    const rawData = await this.prepareRawData(ddo, encrypt)
+    return this.updateRaw(
+      didZeroX(did),
+      rawData.flags,
+      this.getHex(rawData.data),
+      consumerAccount
+    )
+  }
+
+  /**
+   * Prepare onchain data
+   * @param {Any} ddo
+   * @param {Boolean} encrypt Should encrypt the ddo
+   * @return {Promise<rawMetadata>} Raw metadata bytes
+   */
+  public async prepareRawData(ddo: DDO, encrypt: boolean = false): Promise<rawMetadata> {
     let flags = 0
     let data = DDO.serialize(ddo)
     if (encrypt === false) {
@@ -111,7 +121,7 @@ export class OnChainMetadata {
       if (!data) return null
       flags = flags | 2
     }
-    return this.updateRaw(didZeroX(did), flags, this.getHex(data), consumerAccount)
+    return { flags, data } as rawMetadata
   }
 
   /**
