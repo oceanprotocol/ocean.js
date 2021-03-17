@@ -26,10 +26,12 @@ ocean.js is part of the [Ocean Protocol](https://oceanprotocol.com) toolset.
 
 This is in alpha state and you can expect running into problems. If you run into them, please open up a [new issue](/issues).
 
+- [📚 Prerequisites](#-prerequisites)
 - [🏗 Installation](#-installation)
 - [🏄 Quickstart](#-quickstart)
   - [Simple Flow](#simple-flow)
   - [Marketplace Flow](#marketplace-flow)
+  - [📖 Learn More](#learn-more)
 - [🦑 Development](#-development)
 - [✨ Code Style](#-code-style)
 - [👩‍🔬 Testing](#-testing)
@@ -42,6 +44,7 @@ This is in alpha state and you can expect running into problems. If you run into
 
 ## 📚 Prerequisites
 - node.js
+- Docker
 - A Unix based operating system (Mac or Linux) 
 
 ## 🏗 Installation
@@ -86,11 +89,11 @@ This batteries-included flow includes metadata, multiple services for one datato
 
 ### 📖 Learn more
 
--   [Get test OCEAN](READMEs/get-test-OCEAN.md) - from rinkeby
--   [Understand config parameters](READMEs/parameters.md) - envvars vs files
--   [Learn about off-chain services](READMEs/services.md) - Ocean Provider for data services, Aquarius metadata store
--   [Learn about wallets](READMEs/wallets.md) - on generating, storing, and accessing private keys
--   [Get an overview of ocean.py](READMEs/overview.md) - key modules and functions
+-   [Get test OCEAN](docs/get-test-OCEAN.md) - from rinkeby
+-   [Understand config parameters](docs/parameters.md) - envvars vs files
+-   [Learn about off-chain services](docs/services.md) - Ocean Provider for data services, Aquarius metadata store
+-   [Learn about wallets](docs/wallets.md) - on generating, storing, and accessing private keys
+-   [Get an overview of ocean.js](docs/overview.md) - key modules and functions
 
 ## 🦑 Development
 
