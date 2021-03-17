@@ -13,7 +13,7 @@ Here, let's get some OCEAN for the Rinkeby testnet.
 
 This builds on the setup in the following. Please do it first.
 
--   [Datatokens tutorial](datatokens-flow.md)
+-   [Datatokens tutorial](quickstart_simple.md)
 
 ## Get OCEAN
 
