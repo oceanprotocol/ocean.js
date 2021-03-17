@@ -84,6 +84,14 @@ This batteries-included flow includes metadata, multiple services for one datato
 
 [Go to marketplace flow](docs/quickstart_marketplace.md)
 
+### 📖 Learn more
+
+-   [Get test OCEAN](READMEs/get-test-OCEAN.md) - from rinkeby
+-   [Understand config parameters](READMEs/parameters.md) - envvars vs files
+-   [Learn about off-chain services](READMEs/services.md) - Ocean Provider for data services, Aquarius metadata store
+-   [Learn about wallets](READMEs/wallets.md) - on generating, storing, and accessing private keys
+-   [Get an overview of ocean.py](READMEs/overview.md) - key modules and functions
+
 ## 🦑 Development
 
 The project is authored with TypeScript and compiled with `tsc`.
