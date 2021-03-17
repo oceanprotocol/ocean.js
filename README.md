@@ -40,6 +40,10 @@ This is in alpha state and you can expect running into problems. If you run into
   - [Production](#production)
 - [🏛 License](#-license)
 
+## 📚 Prerequisites
+- node.js
+- A Unix based operating system (Mac or Linux) 
+
 ## 🏗 Installation
 
 ```bash
