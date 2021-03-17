@@ -91,6 +91,7 @@ The project is authored with TypeScript and compiled with `tsc`.
 To start compiler in watch mode:
 
 ```bash
+npm install
 npm start
 ```
 
