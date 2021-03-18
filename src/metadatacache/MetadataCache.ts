@@ -15,7 +15,6 @@ export interface QueryResult {
 }
 
 export interface SearchQuery {
-  text?: string
   offset?: number
   page?: number
   query: {
