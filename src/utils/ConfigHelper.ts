@@ -17,6 +17,7 @@ export interface ConfigHelperConfig extends Config {
   network: ConfigHelperNetworkName
   subgraphUri: string
   explorerUri: string
+  oceanTokenSymbol: string
 }
 
 const configs: ConfigHelperConfig[] = [
@@ -29,6 +30,7 @@ const configs: ConfigHelperConfig[] = [
     subgraphUri: null,
     explorerUri: null,
     oceanTokenAddress: null,
+    oceanTokenSymbol: 'OCEAN',
     factoryAddress: '0x1234',
     poolFactoryAddress: null,
     fixedRateExchangeAddress: null,
@@ -45,6 +47,7 @@ const configs: ConfigHelperConfig[] = [
     subgraphUri: null,
     explorerUri: null,
     oceanTokenAddress: null,
+    oceanTokenSymbol: 'OCEAN',
     factoryAddress: null,
     poolFactoryAddress: null,
     fixedRateExchangeAddress: null,
@@ -60,6 +63,7 @@ const configs: ConfigHelperConfig[] = [
     subgraphUri: 'https://subgraph.ropsten.oceanprotocol.com',
     explorerUri: 'https://ropsten.etherscan.io',
     oceanTokenAddress: null,
+    oceanTokenSymbol: 'OCEAN',
     factoryAddress: null,
     poolFactoryAddress: null,
     fixedRateExchangeAddress: null,
@@ -75,6 +79,7 @@ const configs: ConfigHelperConfig[] = [
     subgraphUri: 'https://subgraph.rinkeby.oceanprotocol.com',
     explorerUri: 'https://rinkeby.etherscan.io',
     oceanTokenAddress: null,
+    oceanTokenSymbol: 'OCEAN',
     factoryAddress: null,
     poolFactoryAddress: null,
     fixedRateExchangeAddress: null,
@@ -90,6 +95,7 @@ const configs: ConfigHelperConfig[] = [
     subgraphUri: 'https://subgraph.mainnet.oceanprotocol.com',
     explorerUri: 'https://etherscan.io',
     oceanTokenAddress: null,
+    oceanTokenSymbol: 'OCEAN',
     factoryAddress: null,
     poolFactoryAddress: null,
     fixedRateExchangeAddress: null,
@@ -105,6 +111,7 @@ const configs: ConfigHelperConfig[] = [
     subgraphUri: 'https://subgraph.polygon.oceanprotocol.com',
     explorerUri: 'https://explorer.matic.network',
     oceanTokenAddress: null,
+    oceanTokenSymbol: 'mOCEAN',
     factoryAddress: null,
     poolFactoryAddress: null,
     fixedRateExchangeAddress: null,
