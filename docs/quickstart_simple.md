@@ -24,6 +24,10 @@ ganache-cli
 Then proceed in with your code:
 
 ```javascript
+import { DataTokens } from '@oceanprotocol/lib' 
+import Web3 from 'web3'
+
+const web3 = new Web3('http://127.0.0.1:8545')
 const tokenAmount = 100
 const transferAmount = 1
 const blob = 'http://localhost:8030/api/v1/provider/services'
