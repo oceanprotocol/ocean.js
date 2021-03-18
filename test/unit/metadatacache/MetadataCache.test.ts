@@ -28,12 +28,13 @@ describe('MetadataCache', () => {
       offset: 100,
       page: 1,
       query: {
-        value: 1
+        query_string: {
+          query: 'Office'
+        }
       },
       sort: {
         value: 1
-      },
-      text: 'Office'
+      }
     } as SearchQuery
 
     it('should query metadata', async () => {

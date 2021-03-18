@@ -55,7 +55,7 @@ export class Assets extends Instantiable {
   }
 
   /**
-   * Creates a new DDO and publishes it
+   * Creates a new DDO. After this, Call ocean.onChainMetadata.to publish
    * @param  {Metadata} metadata DDO metadata.
    * @param  {Account}  publisher Publisher account.
    * @param  {list} services list of Service description documents
@@ -186,9 +186,11 @@ export class Assets extends Instantiable {
         address: dtAddress,
         cap: parseFloat(await datatokens.getCap(dtAddress))
       }
+      return ddo
+      /* Remeber to call ocean.onChainMetadata.publish after creating the DDO.
+      
       this.logger.log('Storing DDO')
       observer.next(CreateProgressStep.StoringDdo)
-      // const storedDdo = await this.ocean.metadataCache.storeDDO(ddo)
       const storeTx = await this.ocean.onChainMetadata.publish(
         ddo.id,
         ddo,
@@ -198,6 +200,7 @@ export class Assets extends Instantiable {
       observer.next(CreateProgressStep.DdoStored)
       if (storeTx) return ddo
       else return null
+      */
     })
   }
 
@@ -229,7 +232,9 @@ export class Assets extends Instantiable {
       offset: offset || 100,
       page: page || 1,
       query: {
-        dataToken: [dtAddress]
+        query_string: {
+          query: `dataToken:${dtAddress}`
+        }
       },
       sort: {
         value: sort || 1
@@ -270,10 +275,25 @@ export class Assets extends Instantiable {
   }
 
   /**
+   * Publish DDO on chain.
+   * @param  {ddo} DDO
+   * @param {String} consumerAccount
+   * @param {boolean} encrypt
+   * @return {Promise<TransactionReceipt>} transaction
+   */
+  public async publishDdo(
+    ddo: DDO,
+    consumerAccount: string,
+    encrypt: boolean = false
+  ): Promise<TransactionReceipt> {
+    return await this.ocean.onChainMetadata.publish(ddo.id, ddo, consumerAccount, encrypt)
+  }
+
+  /**
    * Update Metadata on chain.
    * @param  {ddo} DDO
    * @param {String} consumerAccount
-   * @return {Promise<TransactionReceipt>} exchangeId
+   * @return {Promise<TransactionReceipt>} transaction
    */
   public async updateMetadata(
     ddo: DDO,
@@ -338,14 +358,15 @@ export class Assets extends Instantiable {
    */
   public async search(text: string): Promise<QueryResult> {
     return this.ocean.metadataCache.queryMetadata({
-      text,
       page: 1,
       offset: 100,
       query: {
-        value: 1
+        query_string: {
+          query: text
+        }
       },
       sort: {
-        value: 1
+        created: -1
       }
     } as SearchQuery)
   }

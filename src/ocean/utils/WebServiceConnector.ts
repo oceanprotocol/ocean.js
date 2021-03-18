@@ -17,13 +17,29 @@ export class WebServiceConnector {
   }
 
   public post(url: string, payload: BodyInit): Promise<Response> {
+    const headers = {
+      'Content-type': 'application/json'
+    }
+    return this.postWithHeaders(url, payload, headers)
+  }
+
+  public postWithOctet(url: string, payload: BodyInit): Promise<Response> {
+    const headers = {
+      'Content-type': 'application/octet-stream'
+    }
+    return this.postWithHeaders(url, payload, headers)
+  }
+
+  public postWithHeaders(
+    url: string,
+    payload: BodyInit,
+    headers: any
+  ): Promise<Response> {
     if (payload != null) {
       return this.fetch(url, {
         method: 'POST',
         body: payload,
-        headers: {
-          'Content-type': 'application/json'
-        },
+        headers,
         timeout: 5000
       })
     } else {

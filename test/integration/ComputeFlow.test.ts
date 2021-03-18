@@ -264,6 +264,8 @@ describe('Compute flow', () => {
     )
     ddo = await ocean.assets.create(asset, alice, [computeService], tokenAddress)
     assert(ddo.dataToken === tokenAddress, 'ddo.dataToken !== tokenAddress')
+    const storeTx = await ocean.onChainMetadata.publish(ddo.id, ddo, alice.getId())
+    assert(storeTx)
     await sleep(aquaSleep)
   })
   it('Alice publishes a 2nd dataset with a compute service that allows Raw Algo', async () => {
@@ -320,6 +322,12 @@ describe('Compute flow', () => {
       ddoAdditional1.dataToken === tokenAddressAdditional1,
       'ddoAdditional1.dataToken !== tokenAddressAdditional1'
     )
+    const storeTx = await ocean.onChainMetadata.publish(
+      ddoAdditional1.id,
+      ddoAdditional1,
+      alice.getId()
+    )
+    assert(storeTx)
     await sleep(aquaSleep)
   })
 
@@ -342,6 +350,12 @@ describe('Compute flow', () => {
       ddoAdditional2.dataToken === tokenAddressAdditional2,
       'ddoAdditional2.dataToken !== tokenAddressAdditional2'
     )
+    const storeTx = await ocean.onChainMetadata.publish(
+      ddoAdditional2.id,
+      ddoAdditional2,
+      alice.getId()
+    )
+    assert(storeTx)
     await sleep(aquaSleep)
   })
 
@@ -369,6 +383,12 @@ describe('Compute flow', () => {
       datasetNoRawAlgo.dataToken === tokenAddressNoRawAlgo,
       'datasetNoRawAlgo.dataToken !== tokenAddressNoRawAlgo'
     )
+    const storeTx = await ocean.onChainMetadata.publish(
+      datasetNoRawAlgo.id,
+      datasetNoRawAlgo,
+      alice.getId()
+    )
+    assert(storeTx)
     await sleep(aquaSleep)
   })
 
@@ -402,6 +422,12 @@ describe('Compute flow', () => {
       datasetWithTrustedAlgo.dataToken === tokenAddressWithTrustedAlgo,
       'datasetWithTrustedAlgo.dataToken !== tokenAddressWithTrustedAlgo'
     )
+    const storeTx = await ocean.onChainMetadata.publish(
+      datasetWithTrustedAlgo.id,
+      datasetWithTrustedAlgo,
+      alice.getId()
+    )
+    assert(storeTx)
     await sleep(aquaSleep)
   })
 
@@ -449,6 +475,12 @@ describe('Compute flow', () => {
       algorithmAsset.dataToken === tokenAddressAlgorithm,
       'algorithmAsset.dataToken !== tokenAddressAlgorithm'
     )
+    const storeTx = await ocean.onChainMetadata.publish(
+      algorithmAsset.id,
+      algorithmAsset,
+      alice.getId()
+    )
+    assert(storeTx)
     await sleep(aquaSleep)
   })
 
@@ -502,6 +534,12 @@ describe('Compute flow', () => {
       algorithmAssetRemoteProvider.dataToken === tokenAddressAlgorithmRemoteProvider,
       'algorithmAssetRemoteProvider.dataToken !== tokenAddressAlgorithmRemoteProvider'
     )
+    const storeTx = await ocean.onChainMetadata.publish(
+      algorithmAssetRemoteProvider.id,
+      algorithmAssetRemoteProvider,
+      alice.getId()
+    )
+    assert(storeTx)
     await sleep(aquaSleep)
     const checkDDO = await ocean.assets.resolve(algorithmAssetRemoteProvider.id)
     const checkService = checkDDO.findServiceByType('access')
@@ -1122,6 +1160,12 @@ describe('Compute flow', () => {
       datasetWithBogusProvider.dataToken === tokenAddressWithBogusProvider,
       'datasetWithBogusProvider.dataToken !== tokenAddressWithBogusProvider'
     )
+    const storeTx = await ocean.onChainMetadata.publish(
+      datasetWithBogusProvider.id,
+      datasetWithBogusProvider,
+      alice.getId()
+    )
+    assert(storeTx)
     await sleep(aquaSleep)
   })
   it('Bob should fail to start a compute job for a bogus provider with a raw Algo', async () => {
