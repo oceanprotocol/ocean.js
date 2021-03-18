@@ -275,10 +275,25 @@ export class Assets extends Instantiable {
   }
 
   /**
+   * Publish DDO on chain.
+   * @param  {ddo} DDO
+   * @param {String} consumerAccount
+   * @param {boolean} encrypt
+   * @return {Promise<TransactionReceipt>} transaction
+   */
+  public async publishDdo(
+    ddo: DDO,
+    consumerAccount: string,
+    encrypt: boolean = false
+  ): Promise<TransactionReceipt> {
+    return await this.ocean.onChainMetadata.publish(ddo.id, ddo, consumerAccount, encrypt)
+  }
+
+  /**
    * Update Metadata on chain.
    * @param  {ddo} DDO
    * @param {String} consumerAccount
-   * @return {Promise<TransactionReceipt>} exchangeId
+   * @return {Promise<TransactionReceipt>} transaction
    */
   public async updateMetadata(
     ddo: DDO,
@@ -351,7 +366,7 @@ export class Assets extends Instantiable {
         }
       },
       sort: {
-        value: 1
+        created: -1
       }
     } as SearchQuery)
   }

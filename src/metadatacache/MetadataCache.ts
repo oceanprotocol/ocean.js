@@ -19,7 +19,6 @@ export interface SearchQuery {
   offset?: number
   page?: number
   query: {
-    nativeSearch?: number
     match?: {
       [property: string]:
         | string
