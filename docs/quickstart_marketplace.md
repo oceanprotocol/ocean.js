@@ -19,7 +19,7 @@ Let's go through each step.
 ## 1. Initialize services
 
 This quickstart treats the publisher service, ganache-cli, metadata store, and marketplace as
-externally-run services. For convenience, we run barge locally in default settings.
+externally-run services. For convenience, we run barge locally in default settings. Barge provides Docker compose files for the full Ocean Protocol stack running locally for development.
 
 ```bash
 git clone https://github.com/oceanprotocol/barge.git
@@ -34,9 +34,8 @@ export PROVIDER_VERSION=latest
 1. Create DataToken
 
 ```javascript
+import { Ocean, DataTokens, Logger } from '@oceanprotocol/lib' 
 import { TestContractHandler } from '../TestContractHandler'
-import { DataTokens } from '../../src/datatokens/Datatokens'
-import { Ocean } from '../../src/ocean/Ocean'
 import { LoggerInstance } from '../../src/utils'
 const Web3 = require('web3')
 const web3 = new Web3('http://127.0.0.1:8545')
@@ -52,20 +51,23 @@ const config = {
   web3Provider: web3,
   factoryAddress: '0x123456789...'
 }
-const ocean = await Ocean.getInstance(config)
-const alice = (await ocean.accounts.list())[0]
+async function init(){
+  const ocean = await Ocean.getInstance(config)
+  const alice = (await ocean.accounts.list())[0]
 
-const datatoken = new DataTokens(
-  config.factoryAddress,
-  factory.abi,
-  datatokensTemplate.abi,
-  web3,
-  LoggerInstance
-)
-const data = { t: 1, url: ocean.config.metadataCacheUri }
-const blob = JSON.stringify(data)
+  const datatoken = new DataTokens(
+    config.factoryAddress,
+    factory.abi,
+    datatokensTemplate.abi,
+    web3,
+    LoggerInstance
+  )
+  const data = { t: 1, url: ocean.config.metadataCacheUri }
+  const blob = JSON.stringify(data)
 
-const dataTokenAddress = await datatoken.create(blob, alice.getId())
+  const dataTokenAddress = await datatoken.create(blob, alice.getId())
+}
+init()
 ```
 
 2. Publish asset(s)

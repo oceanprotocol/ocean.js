@@ -76,6 +76,7 @@ async function init(){
 
 init()
 ```
+Congratulations, you've created your first Ocean datatoken! 🐳
 
 ## 2. Alice hosts the dataset
 
