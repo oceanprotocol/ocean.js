@@ -360,42 +360,42 @@ describe('Marketplace flow', () => {
     assert(balance.toString() === balanceAfterOrder.toString())
   })
 
-  it('- Alice should be the owner of the data', async () => {
-    let pubKey
-    await ocean.assets.resolve(ddo.id).then((newDDO) => {
-      pubKey = newDDO.publicKey[0].owner
-      // assert(newDDO.id === ddo.id)
-    })
-    // let result
-    await ocean.metadataCache.getOwnerAssets(pubKey)
-    // console.log(result)
-  })
+  // it('- Alice should be the owner of the data', async () => {
+  //   let pubKey
+  //   await ocean.assets.resolve(ddo.id).then((newDDO) => {
+  //     pubKey = newDDO.publicKey[0].owner
+  //     // assert(newDDO.id === ddo.id)
+  //   })
+  //   // let result
+  //   await ocean.metadataCache.getOwnerAssets(pubKey)
+  //   // console.log(result)
+  // })
 
-  it('- Test getURI and getServiceEndPoint', async () => {
-    let pubKey
-    let id
-    await ocean.assets.resolve(ddo.id).then((newDDO) => {
-      // console.log(newDDO)
-      pubKey = newDDO.publicKey[0].owner
-      id = newDDO.id
-      // assert(newDDO.id === ddo.id)
-    })
-    let result = ocean.metadataCache.getURI()
-    console.log(result)
-    result = ocean.metadataCache.getServiceEndpoint(id)
-    console.log(result)
-  })
+  // it('- Test getURI and getServiceEndPoint', async () => {
+  //   let pubKey
+  //   let id
+  //   await ocean.assets.resolve(ddo.id).then((newDDO) => {
+  //     // console.log(newDDO)
+  //     pubKey = newDDO.publicKey[0].owner
+  //     id = newDDO.id
+  //     // assert(newDDO.id === ddo.id)
+  //   })
+  //   let result = ocean.metadataCache.getURI()
+  //   console.log(result)
+  //   result = ocean.metadataCache.getServiceEndpoint(id)
+  //   console.log(result)
+  // })
 
-  it('tries to retire ddo - fail unauthorized', async () => {
-    await ocean.assets.resolve(ddo.id).then((newDDO) => {
-      ddo = newDDO
-    })
+  // it('tries to retire ddo - fail unauthorized', async () => {
+  //   await ocean.assets.resolve(ddo.id).then((newDDO) => {
+  //     ddo = newDDO
+  //   })
 
-    console.log(ddo.publicKey)
-    const signed = await web3.eth.sign(ddo.updated, owner.getId())
-    console.log(signed)
+  //   console.log(ddo.publicKey)
+  //   const signed = await web3.eth.sign(ddo.updated, owner.getId())
+  //   console.log(signed)
 
-    const result = await ocean.metadataCache.retire(ddo.id, ddo.updated, signed)
-    console.log(result)
-  })
+  //   const result = await ocean.metadataCache.retire(ddo.id, ddo.updated, signed)
+  //   console.log(result)
+  // })
 })
