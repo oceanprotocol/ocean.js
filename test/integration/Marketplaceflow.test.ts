@@ -6,11 +6,10 @@ import Web3 from 'web3'
 import { AbiItem } from 'web3-utils/types'
 import { DataTokens } from '../../src/datatokens/Datatokens'
 import { Account, EditableMetadata, Service, ServiceAccess, DID } from '../../src/lib'
-import { noDidPrefixed } from '../../src/utils/'
+import { noDidPrefixed, LoggerInstance } from '../../src/utils'
 import { Ocean } from '../../src/ocean/Ocean'
 import { ConfigHelper } from '../../src/utils/ConfigHelper'
 import { TestContractHandler } from '../TestContractHandler'
-import { LoggerInstance } from '../../src/utils'
 
 const web3 = new Web3('http://127.0.0.1:8545')
 
@@ -59,6 +58,7 @@ describe('Marketplace flow', () => {
     ocean = await Ocean.getInstance(config)
     owner = (await ocean.accounts.list())[0]
     alice = (await ocean.accounts.list())[1]
+    console.log(alice)
     bob = (await ocean.accounts.list())[2]
     marketplace = (await ocean.accounts.list())[3]
     data = { t: 1, url: config.metadataCacheUri }
@@ -194,6 +194,44 @@ describe('Marketplace flow', () => {
     await ocean.assets.resolve(ddo.id).then((newDDO) => {
       assert(newDDO.id === ddo.id)
     })
+  })
+  it('- Alice should be the owner of the data', async () => {
+    let pubKey
+    await ocean.assets.resolve(ddo.id).then((newDDO) => {
+      pubKey = newDDO.publicKey[0].owner
+      // assert(newDDO.id === ddo.id)
+    })
+    // let result
+    await ocean.metadataCache.getOwnerAssets(pubKey)
+    // console.log(result)
+  })
+
+  it('- Test getURI and getServiceEndPoint', async () => {
+    let pubKey
+    let id
+    await ocean.assets.resolve(ddo.id).then((newDDO) => {
+      // console.log(newDDO)
+      pubKey = newDDO.publicKey[0].owner
+      id = newDDO.id
+      // assert(newDDO.id === ddo.id)
+    })
+    let result = ocean.metadataCache.getURI()
+    console.log(result)
+    result = ocean.metadataCache.getServiceEndpoint(id)
+    console.log(result)
+  })
+
+  it('tries to retire ddo - fail unauthorized', async () => {
+    await ocean.assets.resolve(ddo.id).then((newDDO) => {
+      ddo = newDDO
+    })
+
+    console.log(ddo.publicKey)
+    const signed = await web3.eth.sign(ddo.updated, owner.getId())
+    console.log(signed)
+
+    const result = await ocean.metadataCache.retire(ddo.id, ddo.updated, signed)
+    console.log(result)
   })
 
   it('Marketplace posts asset for sale', async () => {

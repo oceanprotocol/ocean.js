@@ -7,6 +7,7 @@ import DID from '../../../src/ocean/DID'
 import config from '../config'
 import { LoggerInstance } from '../../../src/utils'
 import { responsify, getSearchResults } from '../helpers'
+import Web3 from 'web3'
 
 use(spies)
 
@@ -108,4 +109,6 @@ describe('MetadataCache', () => {
       assert(restrieveResult.id === storageResult.id)
     })
   })
+
+  describe('#transferOwnership()', () => {})
 })

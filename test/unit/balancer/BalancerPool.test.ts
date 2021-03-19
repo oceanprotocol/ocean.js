@@ -13,6 +13,7 @@ import datatokensTemplate from '@oceanprotocol/contracts/artifacts/DataTokenTemp
 import OceanPoolFactory from '@oceanprotocol/contracts/artifacts/BFactory.json'
 import OceanSPool from '@oceanprotocol/contracts/artifacts/BPool.json'
 import { LoggerInstance } from '../../../src/utils'
+import { Assets } from '../../../src/ocean/Assets'
 const web3 = new Web3('http://127.0.0.1:8545')
 
 function sleep(ms: number) {
@@ -21,7 +22,7 @@ function sleep(ms: number) {
   })
 }
 
-describe('Balancer flow', () => {
+describe('Balancer flow Manual Pool', () => {
   let oceanTokenAddress: string
   let OceanPoolFactoryAddress: string
   let Pool: OceanPool
@@ -124,7 +125,7 @@ describe('Balancer flow', () => {
   it('Alice transfers 500 ocean token to Bob', async () => {
     await datatoken.transfer(oceanTokenAddress, bob, transferAmount, alice)
   })
-  it('Alice creates a new OceanPool pool', async () => {
+  xit('Alice creates a new OceanPool pool', async () => {
     /// new pool with total DT = 45 , dt weight=90% with swap fee 2%
     const dtAmount = '45'
     const dtWeight = '9'
@@ -145,6 +146,35 @@ describe('Balancer flow', () => {
     const n = await Pool.getNumTokens(alicePoolAddress)
     assert(String(n) === '2', 'unexpected num tokens: ' + n)
   })
+  it('Alice creates a new OceanPool pool manually', async () => {
+    const createPool = await Pool.createPool(alice)
+    alicePoolAddress = createPool.events.BPoolRegistered.returnValues[0]
+  })
+  it('Alice adds token to her Pool', async () => {
+    /// new pool with total DT = 45 , dt weight=90% with swap fee 2%
+    const dtAmount = '45'
+    const dtWeight = '9'
+    const oceanAmount =
+      (parseFloat(dtAmount) * (10 - parseFloat(dtWeight))) / parseFloat(dtWeight)
+    const oceanWeight = 10 - parseFloat(dtWeight)
+
+    const oceanToken = {
+      address: oceanTokenAddress,
+      amount: String(oceanAmount),
+      weight: String(oceanWeight)
+    }
+    // console.log(oceanToken.amount)
+    const dtToken = {
+      address: tokenAddress,
+      amount: String(dtAmount),
+      weight: String(dtWeight)
+    }
+    const tokens = []
+    tokens.push(oceanToken, dtToken)
+
+    await Pool.addToPool(alice, alicePoolAddress, tokens)
+  })
+
   it('Get pool information', async () => {
     const currentTokens = await Pool.getCurrentTokens(alicePoolAddress)
     assert(currentTokens.length === 2)
@@ -152,11 +182,117 @@ describe('Balancer flow', () => {
     assert(currentTokens.includes(oceanTokenAddress))
   })
 
+  it('Alice sets swap fee', async () => {
+    const fee = '0.02'
+    await Pool.setSwapFee(alice, alicePoolAddress, fee)
+  })
+
   it('Get pool swap fee', async () => {
     const currentSwapFee = await Pool.getSwapFee(alicePoolAddress)
+    // console.log(currentSwapFee.toString())
     assert(currentSwapFee === '0.02')
   })
 
+  it('Alice finalizes her pool', async () => {
+    await Pool.finalize(alice, alicePoolAddress)
+  })
+  it('Verify that alice pool is finalized', async () => {
+    const isFinalized = await Pool.isFinalized(alicePoolAddress)
+    assert.equal(isFinalized, true)
+  })
+
+  it('Get Pool Controller', async () => {
+    const controller = await Pool.getController(alicePoolAddress)
+    assert.equal(controller, alice)
+  })
+  it('Set new Pool Controller and verify', async () => {
+    await Pool.setController(alice, alicePoolAddress, bob)
+    const controller = await Pool.getController(alicePoolAddress)
+
+    assert.equal(controller, bob)
+  })
+  it('Verify OCEAN Token is bound', async () => {
+    const oceanBound = await Pool.isBound(alicePoolAddress, oceanTokenAddress)
+    assert.equal(oceanBound, true)
+  })
+  it('Verify DATA Token is bound', async () => {
+    const dtBound = await Pool.isBound(alicePoolAddress, tokenAddress)
+    assert.equal(dtBound, true)
+  })
+
+  it('Get OCEAN token Normalized Weight', async () => {
+    const oceanNorm = await Pool.getNormalizedWeight(alicePoolAddress, oceanTokenAddress)
+    // console.log(oceanNorm.toString())
+    assert(Number(oceanNorm) > 0)
+  })
+  it('Get DT Normalized Weight', async () => {
+    const dtNorm = await Pool.getNormalizedWeight(alicePoolAddress, tokenAddress)
+    console.log(dtNorm.toString())
+    assert(Number(dtNorm) > 0)
+  })
+  it('Alice calls JoinPool', async () => {
+    const dtMaxAmount = '20'
+
+    const oceanMaxAmount = '20'
+
+    await Pool.approve(
+      alice,
+      tokenAddress,
+      alicePoolAddress,
+      web3.utils.toWei(dtMaxAmount)
+    )
+    await Pool.approve(
+      alice,
+      oceanTokenAddress,
+      alicePoolAddress,
+      web3.utils.toWei(oceanMaxAmount)
+    )
+    await Pool.joinPool(alice, alicePoolAddress, '1', [oceanMaxAmount, dtMaxAmount])
+
+    const dtNorm = await Pool.getNormalizedWeight(alicePoolAddress, tokenAddress)
+    // console.log(dtNorm.toString())
+    assert(Number(dtNorm) === 0.9)
+  })
+
+  it('Alice calls joinswapPoolAmountOut', async () => {
+    const oceanMaxAmount = '20'
+
+    await Pool.approve(
+      alice,
+      oceanTokenAddress,
+      alicePoolAddress,
+      web3.utils.toWei(oceanMaxAmount)
+    )
+    await Pool.joinswapPoolAmountOut(
+      alice,
+      alicePoolAddress,
+      oceanTokenAddress,
+      '1',
+      oceanMaxAmount
+    )
+
+    const dtNorm = await Pool.getNormalizedWeight(alicePoolAddress, tokenAddress)
+    console.log(dtNorm.toString())
+    assert(Number(dtNorm) === 0.9) // NormalizedWeight doesn't change.
+  })
+
+  it('Alice calls exitswapPoolAmountIn', async () => {
+    // const dtMaxAmount = '20'
+
+    const oceanMinAmount = '0.0002'
+
+    await Pool.exitswapPoolAmountIn(
+      alice,
+      alicePoolAddress,
+      oceanTokenAddress,
+      '0.02',
+      oceanMinAmount
+    )
+
+    const dtNorm = await Pool.getNormalizedWeight(alicePoolAddress, tokenAddress)
+    console.log(dtNorm.toString())
+    assert(Number(dtNorm) === 0.9) // NormalizedWeight doesn't change.
+  })
   it('Get spot price for swapping', async () => {
     const spotPrice = await Pool.getSpotPrice(
       alicePoolAddress,
