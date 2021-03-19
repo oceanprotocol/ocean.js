@@ -33,7 +33,7 @@ import Web3 from 'web3'
 import { AbiItem } from 'web3-utils/types'
 const web3 = new Web3('http://127.0.0.1:8545')
 
-const tokenAmount = 100
+const tokenAmount = '100'
 const transferAmount = 1
 const blob = 'http://localhost:8030/api/v1/provider/services'
 
@@ -65,8 +65,8 @@ async function init(){
   // create datatoken class
   const datatoken = new DataTokens(
     contracts.factoryAddress,
-    factoryABI, // This needs to be defined or imported
-    datatokensABI, // This needs to be defined or imported
+    factory.abi as AbiItem[], 
+    datatokensTemplate.abi as AbiItem[], 
     web3,
     Logger
   )
