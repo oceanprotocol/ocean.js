@@ -109,7 +109,67 @@ cat ~/.ocean/ocean-contracts/artifacts/address.json
 Next, update the contract addresses in your config.js file. Replace each of the place holders with the actual addresses that were outputted into your terminal. 
 
 ## 5. Publish a new data token 
+Now open the index.js file in your text editor. Enter the following code and save the file:
+
+```Javascript
+const Web3 = require("web3");
+const { Ocean, DataTokens } = require("@oceanprotocol/lib");
+
+const { factoryABI } = require("@oceanprotocol/contracts/artifacts/DTFactory.json");
+const { datatokensABI } = require("@oceanprotocol/contracts/artifacts/DataTokenTemplate.json");
+const { config, contracts, urls } = require("./config");
+
+
+
+const init = async () => {
+  const ocean = await Ocean.getInstance(config);
+  const blob = `http://localhost:8030/api/v1/services/consume`;
+
+  const accounts = await ocean.accounts.list();
+  const alice = accounts[0].id;
+  console.log('Alice account address:', alice)
+
+  const datatoken = new DataTokens(
+    contracts.DTFactory,
+    factoryABI,
+    datatokensABI,
+    new Web3(urls.networkUrl)
+  );
+  const tokenAddress = await datatoken.create(blob, alice);
+  console.log(`Deployed datatoken address: ${tokenAddress}`);
+};
+
+init();
+```
+
+Now in your terminal, run the following command: 
+
+```bash
+node index.js
+```
+
+Congratulations, you've created your first Ocean datatoken! 🌊🐋
+
 ## 6. Mint 100 tokens
+
+Next, we will edit the code in index.js to mint 100 datatokens. These 100 data tokens are minted and sent to Alice's Address. 
+
+At the end of the `init() { ... }` function (after `console.log('Deployed datatoken address: ${tokenAddress}')`) add the following line of code:
+
+```Javascript
+  await datatoken.mint(tokenAddress, alice, '100', alice)
+  const aliceBalance = await datatoken.balance(tokenAddress, alice)
+  console.log('Alice token balance:', aliceBalance)
+```
+
+Now run the index file again:
+
+```bash
+node index.js
+```
+
+You should now see in the console output that Alice has a token balance of 100. 
+
 ## 7. Transfer tokens between users.
 ## 8. Host a dataset
 ## 9. Consume the dataset
