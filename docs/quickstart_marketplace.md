@@ -7,6 +7,8 @@ It focuses on Alice's experience as a publisher, and Bob's experience as a buyer
 Here's the steps.
 
 1. Initialize services
+2. Create a new node.js project
+3. Install dependancies
 1. Alice publishes assets for data services (= publishes a datatoken contract and metadata)
 1. Alice mints 100 tokens
 1. Alice allows marketplace to sell her datatokens
@@ -18,15 +20,25 @@ Let's go through each step.
 
 ## 1. Initialize services
 
-This quickstart treats the publisher service, ganache-cli, metadata store, and marketplace as
-externally-run services. For convenience, we run barge locally in default settings. Barge provides Docker compose files for the full Ocean Protocol stack running locally for development.
+We start by Initialize services. To do this, we clone the Barge repository and run it. This will run the current default versions of [Aquarius](https://github.com/oceanprotocol/aquarius), [Provider](https://github.com/oceanprotocol/provider-py), and [Ganache](https://github.com/trufflesuite/ganache-cli) with [our contracts](https://github.com/oceanprotocol/ocean-contracts) deployed to it.
 
 ```bash
 git clone https://github.com/oceanprotocol/barge.git
 cd barge/
-git checkout v3
-export PROVIDER_VERSION=latest
-./start_ocean.sh --no-dashboard
+./start_ocean.sh --with-provider2 --no-dashboard
+```
+
+## 2. Create a new node.js project
+
+Start by creating a new Node.js project. Open a new terminal and enter the following commands: 
+
+```bash
+mkdir oceanMarket-quickstart
+cd oceanMarket-quickstart
+npm init
+# Answer the questions in the command line prompt
+cat > index.js
+# On linux press CTRL + D to save
 ```
 
 ## 2. Alice publishes assets for data services (= publishes a datatoken contract)

@@ -2,7 +2,7 @@
 
 This section describes how to create a datatoken, host a dataset and consume the data using the simplest flow.
 
-Here are the the steps.
+Here are the the steps:
 
 1. Initialize services
 2. Create a new node.js project
