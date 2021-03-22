@@ -12,13 +12,10 @@ Here's the steps.
 4. Create a config file and update contract addresses
 5. Publish a new data token
 6. Mint 100 tokens
+7. Publish a dataset
+8. Alice allows marketplace to sell her datatokens
+9. Marketplace withdraws Alice's datatokens from allowance
 
-1. Alice publishes assets for data services (= publishes a datatoken contract and metadata)
-1. Alice mints 100 tokens
-1. Alice allows marketplace to sell her datatokens
-1. Marketplace posts asset for sale
-1. Value swap: Bob buys datatokens from marketplace
-1. Bob uses a service he just purchased (download)
 
 Let's go through each step.
 
@@ -177,7 +174,7 @@ node index.js
 
 You should now see in the console output that Alice has a token balance of 100. 
 
-## 8. Publish a dataset
+## 7. Publish a dataset
 
 Create a new file called data.js. In your terminal enter these commands:
 
@@ -246,7 +243,7 @@ In the terminal output you should now see the Data ID (did) outputed.
 
 Congratulations, you have published your first dataset! 🌊🐠
 
-## 10. Alice allows marketplace to sell her datatokens
+## 8. Alice allows marketplace to sell her datatokens
 
 On the line after `const alice = accounts[0].id` add the following code:
 
@@ -280,9 +277,30 @@ Now save the file and run it:
 node index.js
 ```
 
-You should see in the terminal output that the marketplace has an allowance of 100 datatokens. 
+You should see in the terminal output that the marketplace has an allowance of 100 datatokens.
 
-## 11. Marketplace posts asset for sale
+## 9. Marketplace withdraws Alice's datatokens from allowance
+
+Now, you're the marketplace :) At the end of the `init() { ... }` function (after ` console.log("Marketplace Allowance:", marketplaceAllowance)`) add the following code:
+
+```Javascript
+await datatoken.transferFrom(tokenAddress, alice, '100', marketplace)
+const marketplaceBalance = await datatoken.balance(tokenAddress, marketplace)
+aliceBalance = await datatoken.balance(tokenAddress, alice)
+
+console.log("Marketplace balance:", marketplaceBalance)
+console.log("Alice balance:", aliceBalance)
+```
+
+Now save and run the file:
+
+```Bash
+node index.js
+```
+
+YOu should see in the terminal output that the Markeplace now has a datatoken balance of 100 and Alice has a balance of 0.
+
+## 12. Marketplace posts asset for sale
 
 Now, you're the marketplace :)
 
