@@ -9,6 +9,10 @@ Here's the steps.
 1. Initialize services
 2. Create a new node.js project
 3. Install dependancies
+4. Create a config file and update contract addresses
+5. Publish a new data token
+6. Mint 100 tokens
+
 1. Alice publishes assets for data services (= publishes a datatoken contract and metadata)
 1. Alice mints 100 tokens
 1. Alice allows marketplace to sell her datatokens
@@ -33,111 +37,216 @@ cd barge/
 Start by creating a new Node.js project. Open a new terminal and enter the following commands: 
 
 ```bash
-mkdir oceanMarket-quickstart
-cd oceanMarket-quickstart
+mkdir marketplace-quickstart
+cd marketplace-quickstart
 npm init
 # Answer the questions in the command line prompt
 cat > index.js
 # On linux press CTRL + D to save
 ```
 
-## 2. Alice publishes assets for data services (= publishes a datatoken contract)
+## 3. Install dependancies
 
-1. Create DataToken
+Open the package.json file in a text editor and update the dependancies to include the following: 
 
-```javascript
-import { Ocean, DataTokens, Logger } from '@oceanprotocol/lib' 
-import { TestContractHandler } from '../TestContractHandler'
-import { LoggerInstance } from '../../src/utils'
-const Web3 = require('web3')
-const web3 = new Web3('http://127.0.0.1:8545')
-const factory = require('@oceanprotocol/contracts/artifacts/DTFactory.json')
-const datatokensTemplate = require('@oceanprotocol/contracts/artifacts/DataTokenTemplate.json')
-
-// Alice's config
-const config = {
-  metadataCacheUri: 'http://aquarius:5000',
-  providerUri: 'http://localhost:8030',
-  nodeUri: `http://localhost:${process.env.ETH_PORT || 8545}`,
-  verbose: LogLevel.Error,
-  web3Provider: web3,
-  factoryAddress: '0x123456789...'
-}
-async function init(){
-  const ocean = await Ocean.getInstance(config)
-  const alice = (await ocean.accounts.list())[0]
-
-  const datatoken = new DataTokens(
-    config.factoryAddress,
-    factory.abi,
-    datatokensTemplate.abi,
-    web3,
-    LoggerInstance
-  )
-  const data = { t: 1, url: ocean.config.metadataCacheUri }
-  const blob = JSON.stringify(data)
-
-  const dataTokenAddress = await datatoken.create(blob, alice.getId())
-}
-init()
+```JSON
+  "dependencies": {
+    "@oceanprotocol/contracts": "^0.5.6",
+    "@oceanprotocol/lib": "^0.6.5",
+    "web3": "^1.3.0"
+  }
 ```
 
-2. Publish asset(s)
+Now in your terminal run the following command: 
 
-```javascript
-const asset = {
+```bash
+npm install
+```
+
+## 4. Create a config file and update contract addresses
+
+Create a new config.js file: 
+
+```bash
+cat > config.js
+```
+
+Now open the config.js in your code editor and enter the following:
+
+```Javascript
+const { ConfigHelper } = require("@oceanprotocol/lib");
+const Web3 = require("web3");
+const defaultConfig = new ConfigHelper().getConfig("development");
+
+const urls = {
+  networkUrl: "http://localhost:8545",
+  aquarius: "http://localhost:5000",
+  providerUri: "http://localhost:8030",
+};
+
+const contracts = {
+  "DTFactory": "0x_YOUR_DTFactory_ADDRESS_",
+  "BFactory": "0x_YOUR_DTFactory_ADDRESS_",
+  "FixedRateExchange": "0x_YOUR_DTFactory_ADDRESS_",
+  "Metadata": "0x_YOUR_Metadata_ADDRESS_",
+  "Ocean": "0x_YOUR_Ocean_ADDRESS_"
+};
+
+const config = {
+  ...defaultConfig,
+  metadataCacheUri: urls.aquarius,
+  providerUri: urls.providerUri,
+  web3Provider: new Web3(urls.networkUrl),
+};
+
+module.exports = {
+  config,
+  contracts,
+  urls,
+};
+
+```
+
+Now check what your contract addresses are locally. In your terminal run:
+
+```bash
+cat ~/.ocean/ocean-contracts/artifacts/address.json
+```
+
+Next, update the contract addresses in your config.js file. Replace each of the place holders with the actual addresses that were outputted into your terminal. 
+
+## 5. Publish a new data token 
+Now open the `index.js` file in your text editor. Enter the following code and save the file:
+
+```Javascript
+const Web3 = require("web3");
+const { Ocean, DataTokens } = require("@oceanprotocol/lib");
+
+const { factoryABI } = require("@oceanprotocol/contracts/artifacts/DTFactory.json");
+const { datatokensABI } = require("@oceanprotocol/contracts/artifacts/DataTokenTemplate.json");
+const { config, contracts, urls } = require("./config");
+
+
+
+const init = async () => {
+  const ocean = await Ocean.getInstance(config);
+  const blob = `http://localhost:8030/api/v1/services/consume`;
+
+  const accounts = await ocean.accounts.list();
+  const alice = accounts[0].id;
+  console.log('Alice account address:', alice)
+
+  const datatoken = new DataTokens(
+    contracts.DTFactory,
+    factoryABI,
+    datatokensABI,
+    new Web3(urls.networkUrl)
+  );
+  const tokenAddress = await datatoken.create(blob, alice);
+  console.log(`Deployed datatoken address: ${tokenAddress}`);
+};
+
+init();
+```
+
+Now in your terminal, run the following command: 
+
+```bash
+node index.js
+```
+
+Congratulations, you've created your first Ocean datatoken! 🌊🐋
+
+## 6. Mint 100 tokens
+
+Next, we will edit the code in `index.js` to mint 100 datatokens. These 100 data tokens are minted and sent to Alice's Address. 
+
+At the end of the `init() { ... }` function (after `console.log('Deployed datatoken address: ${tokenAddress}')`) add the following line of code:
+
+```Javascript
+  await datatoken.mint(tokenAddress, alice, '100', alice)
+  let aliceBalance = await datatoken.balance(tokenAddress, alice)
+  console.log('Alice token balance:', aliceBalance)
+```
+
+Now run the `index.js` file again:
+
+```bash
+node index.js
+```
+
+You should now see in the console output that Alice has a token balance of 100. 
+
+## 8. Publish a dataset
+
+Create a new file called data.js. In your terminal enter these commands:
+
+```Bash
+cat > data.js
+```
+
+Open the data.js file in your text editor. Enter the following code and save the file:
+
+```Javascript
+const testData = {
   main: {
-    type: 'dataset',
-    name: 'test-dataset',
-    dateCreated: new Date(Date.now()).toISOString().split('.')[0] + 'Z', // remove milliseconds
-    author: 'oceanprotocol-team',
-    license: 'MIT',
+    type: "dataset",
+    name: "test-dataset",
+    dateCreated: new Date(Date.now()).toISOString().split(".")[0] + "Z",
+    author: "test",
+    license: "MIT",
     files: [
       {
         url:
-          'https://raw.githubusercontent.com/tbertinmahieux/MSongsDB/master/Tasks_Demos/CoverSongs/shs_dataset_test.txt',
-        checksum: 'efb2c764274b745f5fc37f97c6b0e761',
-        contentLength: '4535431',
-        contentType: 'text/csv',
-        encoding: 'UTF-8',
-        compression: 'zip'
-      }
-    ]
-  }
-}
+          "https://file-examples-com.github.io/uploads/2017/02/file_example_XLS_10.xls",
+        contentType: "xlsx",
+      },
+    ],
+  },
+};
 
-// create a service
-service1 = await ocean.assets.createAccessServiceAttributes(
-  alice,
-  10, // set the price in datatoken
-  new Date(Date.now()).toISOString().split('.')[0] + 'Z', // publishedDate
-  0 // timeout
-)
-
-// publish asset
-const ddo = await ocean.assets.create(asset, alice, [downloadService], dataTokenAddress)
-
-const did = ddo.id
+module.exports = { testData };
 ```
 
-## 3. Alice mints 100 tokens
+Now, in your `index.js` file import the test data. Add the following line of code at the top of the file under the other `require()` statements:
 
-```javascript
-await datatoken.mint(tokenAddress, alice.getId(), 100)
+```Javascript
+const { testData } = require("./data");
 ```
 
-## 4. Alice allows marketplace to sell her datatokens
+At the end of the `init() { ... }` function (after `console.log('Bob token balance:', bobBalance)`) add the following code:
 
-```javascript
-await datatoken.approve(
-  dataTokenAddress,
-  '0x068ed00cf0441e4829d9784fcbe7b9e26d4bd8d0', // marketplace address,
-  20, // marketplaceAllowance
-  alice.getId()
-)
+```Javascript
+  dataService = await ocean.assets.createAccessServiceAttributes(
+    accounts[0],
+    10, // set the price in datatoken
+    new Date(Date.now()).toISOString().split(".")[0] + "Z", // publishedDate
+    0 // timeout
+  );
+
+  // publish asset
+  const createData = await ocean.assets.create(
+    testData,
+    accounts[0],
+    [dataService],
+    tokenAddress
+  );
+
+  const dataId = createData.id;
+  console.log('Data ID:', dataId);
 ```
 
-## 5. Marketplace posts asset for sale
+Now save and run the `index.js` file:
+
+```Bash
+node index.js
+```
+
+In the terminal output you should now see the Data ID (did) outputed.  
+
+Congratulations, you have published your first dataset! 🌊🐠
+
+## 10. Marketplace posts asset for sale
 
 Now, you're the marketplace:)
 
@@ -152,13 +261,13 @@ price = 20 // in USD per dataToken
 assert(accessService.attributes.main.cost * price === 200)
 ```
 
-## 6. Value swap: Bob buys datatokens from marketplace
+## 11. Value swap: Bob buys datatokens from marketplace
 
 ```javascript
 // Not shown: in marketplace GUI, Bob uses Stripe to send USD to marketplace (or other methods / currencies).
 ```
 
-## 7. Bob uses a service he just purchased (download)
+## 12. Bob uses a service he just purchased (download)
 
 Now, you're Bob:)
 
