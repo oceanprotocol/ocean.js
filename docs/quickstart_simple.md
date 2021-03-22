@@ -272,4 +272,11 @@ Congratulations, you have published your first dataset! 🌊🐠
 
 ## 9. Consume the dataset
 
-Finally
+Finally, we will show how to consume the dataset. At the end of the `init() { ... }` function (after `console.log('Data ID:', dataId)`) add the following code:
+
+```Javascript
+  const dataDownload = await ocean.assets.simpleDownload(tokenAddress, urls.providerUri, transactionId, bob)
+  console.log('dataDownload', dataDownload)
+```
+
+Congratulations, you have downloaded your first dataset! 🌊🐡
