@@ -4,7 +4,7 @@ This section describes how to create a datatoken, host a dataset and consume the
 
 Here are the the steps.
 
-1. Clone the Ocean Barge repository and run it
+1. Initialize services
 2. Create a new node.js project
 3. Install dependancies
 4. Create a config file and update contract addresses
@@ -16,104 +16,49 @@ Here are the the steps.
 
 Let's go through each of these in detail.
 
-## 1. Alice publishes a dataset (= publishes a datatoken contract)
+## 1. Initialize services
 
-For now, you're Alice:) Let's proceed.
-
-Run `ganache-cli` locally:
+We start by Initialize services. To do this, we clone the Barge repository and run it. This will run the current default versions of [Aquarius](https://github.com/oceanprotocol/aquarius), [Provider](https://github.com/oceanprotocol/provider-py), and [Ganache](https://github.com/trufflesuite/ganache-cli) with [our contracts](https://github.com/oceanprotocol/ocean-contracts) deployed to it.
 
 ```bash
-ganache-cli
+git clone https://github.com/oceanprotocol/barge.git
+cd barge/
+./start_ocean.sh --with-provider2 --no-dashboard
 ```
+## 2. Create a new node.js project
 
-Then proceed in with your code:
-
-```javascript
-import { Ocean, DataTokens, Logger, Config, ConfigHelper } from '@oceanprotocol/lib' 
-import factory from '@oceanprotocol/contracts/artifacts/DTFactory.json'
-import datatokensTemplate from '@oceanprotocol/contracts/artifacts/DataTokenTemplate.json'
-import { TestContractHandler } from '../TestContractHandler' // There is no export of `TestContractHandler` from the @oceanprotocol package
-
-import Web3 from 'web3'
-import { AbiItem } from 'web3-utils/types'
-const web3 = new Web3('http://127.0.0.1:8545')
-
-const tokenAmount = '100'
-const transferAmount = 1
-const blob = 'http://localhost:8030/api/v1/provider/services'
-
-const defaultConfig: Config = new ConfigHelper().getConfig(
-  'rinkeby',
-  'YOUR_INFURA_PROJECT_ID'
-)
-
-const config = {
-  ...defaultConfig,
-  metadataCacheUri: 'https://your-metadata-cache.com',
-  providerUri: 'https://your-provider.com'
-}
-
-async function init(){
-  const ocean = await Ocean.getInstance(config)
-  const alice = await ocean.accounts.list()[0]
-  const bob = await ocean.accounts.list()[0]
-
-  // Initialize Ocean contracts v3
-  const contracts = new TestContractHandler(
-    factory.abi as AbiItem[],
-    datatokensTemplate.abi as AbiItem[],
-    datatokensTemplate.bytecode,
-    factory.bytecode,
-    web3
-  )
-
-  // create datatoken class
-  const datatoken = new DataTokens(
-    contracts.factoryAddress,
-    factory.abi as AbiItem[], 
-    datatokensTemplate.abi as AbiItem[], 
-    web3,
-    Logger
-  )
-  // deploy datatoken
-  const tokenAddress = await datatoken.create(blob, alice)
-}
-
-init()
-```
-Congratulations, you've created your first Ocean datatoken! 🐳
-
-## 2. Alice hosts the dataset
-
-Clone [provider-py](https://github.com/oceanprotocol/provider-py) and update your local environment variables:
+Start by creating a new Node.js project. Open a new terminal and enter the following commands: 
 
 ```bash
-export FLASK_APP=ocean_provider/run.py
-export PROVIDER_ADDRESS=your_provider_address
-export PROVIDER_KEY=your_provider_key
-export CONFIG='{"File": "https://raw.githubusercontent.com/oceanprotocol/barge/master/README.md"}'
+mkdir ocean-quickstart
+cd ocean-quickstart
+npm init
+# Answer the questions in the command line prompt
+cat > index.js
+# On linux press CTRL + D to save
 ```
 
-## 3. Alice mints 100 tokens
+## 3. Install dependancies
 
-```javascript
-datatoken.mint(tokenAddress, alice, tokenAmount)
+Open the package.json file in a text editor and update the dependancies to include the following: 
+
+```JSON
+  "dependencies": {
+    "@oceanprotocol/contracts": "^0.5.6",
+    "@oceanprotocol/lib": "^0.6.5",
+    "web3": "^1.3.0"
+  }
 ```
 
-## 4. Alice transfers 1 token to Bob
+Now in your terminal run the following command: 
 
-```javascript
-const ts = await datatoken.transfer(tokenAddress, bob, transferAmount, alice)
-const transactionId = ts['transactionHash']
+```bash
+npm install
 ```
 
-## 5. Bob consumes dataset
-
-Now, you are Bob :)
-
-```javascript
-const config = new Config()
-const ocean = await Ocean.getInstance()
-
-await ocean.assets.download(tokenAddress, blob, transactionId, bob)
-```
+## 4. Create a config file and update contract addresses
+## 5. Publish a new data token 
+## 6. Mint 100 tokens
+## 7. Transfer tokens between users.
+## 8. Host a dataset
+## 9. Consume the dataset
