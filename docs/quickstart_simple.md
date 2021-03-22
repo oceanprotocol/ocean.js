@@ -57,6 +57,57 @@ npm install
 ```
 
 ## 4. Create a config file and update contract addresses
+
+Create a new config.js file: 
+
+```bash
+cat > config.js
+```
+
+Now open the config.js in your code editor and enter the following:
+
+```Javascript
+const { ConfigHelper } = require("@oceanprotocol/lib");
+const Web3 = require("web3");
+const defaultConfig = new ConfigHelper().getConfig("development");
+
+const urls = {
+  networkUrl: "http://localhost:8545",
+  aquarius: "http://localhost:5000",
+  providerUri: "http://localhost:8030",
+};
+
+const contracts = {
+  "DTFactory": "0x_YOUR_DTFactory_ADDRESS_",
+  "BFactory": "0x_YOUR_DTFactory_ADDRESS_",
+  "FixedRateExchange": "0x_YOUR_DTFactory_ADDRESS_",
+  "Metadata": "0x_YOUR_Metadata_ADDRESS_",
+  "Ocean": "0x_YOUR_Ocean_ADDRESS_"
+};
+
+const config = {
+  ...defaultConfig,
+  metadataCacheUri: urls.aquarius,
+  providerUri: urls.providerUri,
+  web3Provider: new Web3(urls.networkUrl),
+};
+
+module.exports = {
+  config,
+  contracts,
+  urls,
+};
+
+```
+
+Now check what your contract addresses are locally. In your terminal run:
+
+```bash
+cat ~/.ocean/ocean-contracts/artifacts/address.json
+```
+
+Next, update the contract addresses in your config.js file. Replace each of the place holders with the actual addresses that were outputted into your terminal. 
+
 ## 5. Publish a new data token 
 ## 6. Mint 100 tokens
 ## 7. Transfer tokens between users.
