@@ -1,13 +1,18 @@
 # Quickstart: Simple Flow
 
-This section describes a flow with the simplest transfer of value, for static data.
+This section describes how to create a datatoken, host a dataset and consume the data using the simplest flow.
 
-Here's the steps.
+Here are the the steps.
 
-1. Alice publishes a dataset (= publishes a datatoken contract)
-2. Alice mints 100 tokens
-3. Alice transfers 1 token to Bob
-4. Bob consumes dataset
+1. Clone the Ocean Barge repository and run it
+2. Create a new node.js project
+3. Install dependancies
+4. Create a config file and update contract addresses
+5. Publish a new data token 
+6. Mint 100 tokens
+7. Transfer tokens between users.
+8. Host a dataset
+8. Consume the dataset
 
 Let's go through each of these in detail.
 
