@@ -109,7 +109,7 @@ cat ~/.ocean/ocean-contracts/artifacts/address.json
 Next, update the contract addresses in your config.js file. Replace each of the place holders with the actual addresses that were outputted into your terminal. 
 
 ## 5. Publish a new data token 
-Now open the index.js file in your text editor. Enter the following code and save the file:
+Now open the `index.js` file in your text editor. Enter the following code and save the file:
 
 ```Javascript
 const Web3 = require("web3");
@@ -152,7 +152,7 @@ Congratulations, you've created your first Ocean datatoken! 🌊🐋
 
 ## 6. Mint 100 tokens
 
-Next, we will edit the code in index.js to mint 100 datatokens. These 100 data tokens are minted and sent to Alice's Address. 
+Next, we will edit the code in `index.js` to mint 100 datatokens. These 100 data tokens are minted and sent to Alice's Address. 
 
 At the end of the `init() { ... }` function (after `console.log('Deployed datatoken address: ${tokenAddress}')`) add the following line of code:
 
@@ -162,7 +162,7 @@ At the end of the `init() { ... }` function (after `console.log('Deployed datato
   console.log('Alice token balance:', aliceBalance)
 ```
 
-Now run the index file again:
+Now run the `index.js` file again:
 
 ```bash
 node index.js
@@ -190,10 +190,10 @@ Now at the end of the `init() { ... }` function (after `console.log('Alice token
   aliceBalance = await datatoken.balance(tokenAddress, alice)
 
   console.log('Alice token balance:', aliceBalance)
-  console.log('Bob token balance:', aliceBalance)
+  console.log('Bob token balance:', bobBalance)
 ```
 
-Save the index.js file and run it again. In your terminal enter:
+Save the `index.js` file and run it again. In your terminal enter:
 
 ```bash
 node index.js
@@ -201,8 +201,75 @@ node index.js
 
 You should now see in the terminal output that both Alice and Bob have a token balance of 50.
 
+## 8. Publish a dataset
 
-## 8. Host a dataset
+Create a new file called data.js. In your terminal enter these commands:
 
+```Bash
+cat > data.js
+```
+
+Open the data.js file in your text editor. Enter the following code and save the file:
+
+```Javascript
+const testData = {
+  main: {
+    type: "dataset",
+    name: "test-dataset",
+    dateCreated: new Date(Date.now()).toISOString().split(".")[0] + "Z",
+    author: "test",
+    license: "MIT",
+    files: [
+      {
+        url:
+          "https://file-examples-com.github.io/uploads/2017/02/file_example_XLS_10.xls",
+        contentType: "xlsx",
+      },
+    ],
+  },
+};
+
+module.exports = { testData };
+```
+
+Now, in your `index.js` file import the test data. Add the following line of code at the top of the file under the other `require()` statements:
+
+```Javascript
+const { testData } = require("./data");
+```
+
+At the end of the `init() { ... }` function (after `console.log('Bob token balance:', bobBalance)`) add the following code:
+
+```Javascript
+  dataService = await ocean.assets.createAccessServiceAttributes(
+    accounts[0],
+    10, // set the price in datatoken
+    new Date(Date.now()).toISOString().split(".")[0] + "Z", // publishedDate
+    0 // timeout
+  );
+
+  // publish asset
+  const createData = await ocean.assets.create(
+    testData,
+    accounts[0],
+    [dataService],
+    tokenAddress
+  );
+
+  const dataId = createData.id;
+  console.log('Data ID:', dataId);
+```
+
+Now save and run the `index.js` file:
+
+```Bash
+node index.js
+```
+
+In the terminal output you should now see the Data ID (did) outputed.  
+
+Congratulations, you have published your first dataset! 🌊🐠
 
 ## 9. Consume the dataset
+
+Finally
