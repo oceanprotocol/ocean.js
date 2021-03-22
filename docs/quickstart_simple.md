@@ -158,7 +158,7 @@ At the end of the `init() { ... }` function (after `console.log('Deployed datato
 
 ```Javascript
   await datatoken.mint(tokenAddress, alice, '100', alice)
-  const aliceBalance = await datatoken.balance(tokenAddress, alice)
+  let aliceBalance = await datatoken.balance(tokenAddress, alice)
   console.log('Alice token balance:', aliceBalance)
 ```
 
@@ -171,5 +171,38 @@ node index.js
 You should now see in the console output that Alice has a token balance of 100. 
 
 ## 7. Transfer tokens between users.
+
+Next we will transfer tokens from Alice to Bob. First we will edit the `init() { ... }` function to create an address for Bob. On the line after `const alice = accounts[0].id` add the following code:
+
+```Javascript
+  const bob = accounts[1].id;
+  console.log('Bob account address:', bob);
+```
+
+Now at the end of the `init() { ... }` function (after `console.log('Alice token balance:', aliceBalance)`) add the following code:
+
+```Javascript
+  const transaction = await datatoken.transfer(tokenAddress, bob, '50', alice)
+  const transactionId = transaction['transactionHash']
+  console.log('transactionId', transactionId)
+
+  const bobBalance = await datatoken.balance(tokenAddress, bob)
+  aliceBalance = await datatoken.balance(tokenAddress, alice)
+
+  console.log('Alice token balance:', aliceBalance)
+  console.log('Bob token balance:', aliceBalance)
+```
+
+Save the index.js file and run it again. In your terminal enter:
+
+```bash
+node index.js
+```
+
+You should now see in the terminal output that both Alice and Bob have a token balance of 50.
+
+
 ## 8. Host a dataset
+
+
 ## 9. Consume the dataset
