@@ -248,12 +248,19 @@ Congratulations, you have published your first dataset! 🌊🐠
 
 ## 10. Alice allows marketplace to sell her datatokens
 
+On the line after `const alice = accounts[0].id` add the following code:
+
+```Javascript
+  const marketplace = accounts[1].id;
+  console.log('Marketplace account address:', marketplace);
+```
+
 At the end of the `init() { ... }` function (after `console.log('Data ID:', dataId)`) add the following code:
 
 ```Javascript
 await datatoken.approve(
     tokenAddress,
-    '0x068ed00cf0441e4829d9784fcbe7b9e26d4bd8d0', // marketplace address,
+    marketplace, // marketplace address,
     '100', // marketplaceAllowance
     alice
 )
@@ -261,7 +268,7 @@ await datatoken.approve(
  const marketplaceAllowance = await datatoken.allowance(
     tokenAddress,
     alice,
-    '0x068ed00cf0441e4829d9784fcbe7b9e26d4bd8d0', // marketplace address,
+    marketplace, // marketplace address,
  );
 
  console.log("Marketplace Allowance:", marketplaceAllowance);
