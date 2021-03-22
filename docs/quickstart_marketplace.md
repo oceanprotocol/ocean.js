@@ -246,9 +246,38 @@ In the terminal output you should now see the Data ID (did) outputed.
 
 Congratulations, you have published your first dataset! 🌊🐠
 
-## 10. Marketplace posts asset for sale
+## 10. Alice allows marketplace to sell her datatokens
 
-Now, you're the marketplace:)
+At the end of the `init() { ... }` function (after `console.log('Data ID:', dataId)`) add the following code:
+
+```Javascript
+await datatoken.approve(
+    tokenAddress,
+    '0x068ed00cf0441e4829d9784fcbe7b9e26d4bd8d0', // marketplace address,
+    '100', // marketplaceAllowance
+    alice
+)
+
+ const marketplaceAllowance = await datatoken.allowance(
+    tokenAddress,
+    alice,
+    '0x068ed00cf0441e4829d9784fcbe7b9e26d4bd8d0', // marketplace address,
+ );
+
+ console.log("Marketplace Allowance:", marketplaceAllowance);
+```
+
+Now save the file and run it:
+
+```Bash
+node index.js
+```
+
+You should see in the terminal output that the marketplace has an allowance of 100 datatokens. 
+
+## 11. Marketplace posts asset for sale
+
+Now, you're the marketplace :)
 
 ```javascript
 // Market's config
