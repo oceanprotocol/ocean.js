@@ -252,6 +252,7 @@ describe('Compute flow', () => {
     )
     const origComputePrivacy = {
       allowRawAlgorithm: true,
+      allowAllPublishedAlgorithms: false,
       allowNetworkAccess: false,
       publisherTrustedAlgorithms: []
     }
@@ -302,6 +303,7 @@ describe('Compute flow', () => {
     )
     const origComputePrivacy2 = {
       allowRawAlgorithm: true,
+      allowAllPublishedAlgorithms: true,
       allowNetworkAccess: false,
       publisherTrustedAlgorithms: []
     }
@@ -363,6 +365,7 @@ describe('Compute flow', () => {
     const origComputePrivacy = {
       allowRawAlgorithm: false,
       allowNetworkAccess: false,
+      allowAllPublishedAlgorithms: false,
       publisherTrustedAlgorithms: []
     }
 
@@ -396,6 +399,7 @@ describe('Compute flow', () => {
     const origComputePrivacy = {
       allowRawAlgorithm: false,
       allowNetworkAccess: false,
+      allowAllPublishedAlgorithms: false,
       publisherTrustedAlgorithms: [
         {
           did: 'did:op:1234',
@@ -754,6 +758,88 @@ describe('Compute flow', () => {
     )
     assert(order === null, 'Order should be null')
   })
+
+  it('should not allow  a compute job with a published algo because asset does not allow allowAllPublishedAlgorithms', async () => {
+    const output = {}
+    const computeService = ddo.findServiceByType('compute')
+    // get the compute address first
+    computeAddress = await ocean.compute.getComputeAddress(ddo.id, computeService.index)
+    assert(ddo != null, 'ddo should not be null')
+
+    const allowed = await ocean.compute.isOrderable(
+      ddo.id,
+      computeService.index,
+      algorithmAsset.id,
+      undefined
+    )
+    assert(allowed === false)
+    const order = await ocean.compute.orderAsset(
+      bob.getId(),
+      ddo.id,
+      computeService.index,
+      algorithmAsset.id,
+      undefined,
+      null, // no marketplace fee
+      computeAddress // CtD is the consumer of the dataset
+    )
+    assert(order === null, 'Order should be null')
+  })
+  it('Alice updates Compute Privacy', async () => {
+    const newComputePrivacy = {
+      allowRawAlgorithm: false,
+      allowNetworkAccess: true,
+      allowAllPublishedAlgorithms: false, // is false, in order to test enableAllowAllPublishedAlgorithms below
+      publisherTrustedAlgorithms: [
+        {
+          did: 'did:op:1234',
+          filesChecksum: '1234',
+          containerSectionChecksum: '1234'
+        },
+        {
+          did: 'did:op:12345',
+          filesChecksum: '1234',
+          containerSectionChecksum: '1234'
+        }
+      ]
+    }
+    const computeService = ddo.findServiceByType('compute')
+    assert(computeService, 'ComputeIndex should be >0')
+    let newDdo = await ocean.compute.editComputePrivacy(
+      ddo,
+      computeService.index,
+      newComputePrivacy
+    )
+    newDdo = await ocean.compute.toggleAllowAllPublishedAlgorithms(
+      newDdo,
+      computeService.index,
+      true
+    )
+    assert(newDdo !== null, 'newDDO should not be null')
+    const txid = await ocean.onChainMetadata.update(ddo.id, newDdo, alice.getId())
+    assert(txid !== null, 'TxId should not be null')
+    await sleep(aquaSleep)
+    const metaData = await ocean.assets.getServiceByType(ddo.id, 'compute')
+    assert.equal(
+      metaData.attributes.main.privacy.allowRawAlgorithm,
+      newComputePrivacy.allowRawAlgorithm,
+      'allowRawAlgorithm does not match'
+    )
+    assert.equal(
+      metaData.attributes.main.privacy.allowAllPublishedAlgorithms,
+      true,
+      'allowAllPublishedAlgorithms does not match'
+    )
+    assert.equal(
+      metaData.attributes.main.privacy.allowNetworkAccess,
+      newComputePrivacy.allowNetworkAccess,
+      'allowNetworkAccess does not match'
+    )
+    assert.deepEqual(
+      metaData.attributes.main.privacy.publisherTrustedAlgorithms,
+      newComputePrivacy.publisherTrustedAlgorithms,
+      'allowNetworkAccess does not match'
+    )
+  })
   it('should start a compute job with a published algo', async () => {
     const output = {}
     const computeService = ddo.findServiceByType('compute')
@@ -973,61 +1059,23 @@ describe('Compute flow', () => {
     assert(response.status >= 1, 'Invalid response.status')
     assert(response.jobId, 'Invalid jobId')
   })
-  it('Alice updates Compute Privacy', async () => {
-    const newComputePrivacy = {
-      allowRawAlgorithm: false,
-      allowNetworkAccess: true,
-      publisherTrustedAlgorithms: [
-        {
-          did: 'did:op:1234',
-          filesChecksum: '1234',
-          containerSectionChecksum: '1234'
-        },
-        {
-          did: 'did:op:12345',
-          filesChecksum: '1234',
-          containerSectionChecksum: '1234'
-        }
-      ]
-    }
-    const computeService = ddo.findServiceByType('compute')
-    assert(computeService, 'ComputeIndex should be >0')
-    const newDdo = await ocean.compute.editComputePrivacy(
-      ddo,
-      computeService.index,
-      newComputePrivacy
-    )
-    assert(newDdo !== null, 'newDDO should not be null')
-    const txid = await ocean.onChainMetadata.update(ddo.id, newDdo, alice.getId())
-    assert(txid !== null, 'TxId should not be null')
-    await sleep(aquaSleep)
-    const metaData = await ocean.assets.getServiceByType(ddo.id, 'compute')
-    assert.equal(
-      metaData.attributes.main.privacy.allowRawAlgorithm,
-      newComputePrivacy.allowRawAlgorithm,
-      'allowRawAlgorithm does not match'
-    )
-    assert.equal(
-      metaData.attributes.main.privacy.allowNetworkAccess,
-      newComputePrivacy.allowNetworkAccess,
-      'allowNetworkAccess does not match'
-    )
-    assert.deepEqual(
-      metaData.attributes.main.privacy.publisherTrustedAlgorithms,
-      newComputePrivacy.publisherTrustedAlgorithms,
-      'allowNetworkAccess does not match'
-    )
-  })
+
   it('Alice updates Compute Privacy, allowing some published algos', async () => {
     const computeService = ddo.findServiceByType('compute')
     assert(computeService, 'ComputeIndex should be >0')
-    // allow algorithmAsset
-    let newDdo = await ocean.compute.addTrustedAlgorithmtoAsset(
+
+    let newDdo = await ocean.compute.toggleAllowAllPublishedAlgorithms(
       ddo,
+      computeService.index,
+      false
+    )
+    assert(newDdo !== null, 'newDDO should not be null')
+    // allow algorithmAsset
+    newDdo = await ocean.compute.addTrustedAlgorithmtoAsset(
+      newDdo,
       computeService.index,
       algorithmAsset.id
     )
-    assert(newDdo !== null, 'newDDO should not be null')
     let isAlgoAllowed = await ocean.compute.isAlgorithmTrusted(
       newDdo,
       computeService.index,
