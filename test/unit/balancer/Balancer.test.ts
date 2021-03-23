@@ -34,7 +34,7 @@ describe('Balancer flow', () => {
   let contracts: TestContractHandler
   let datatoken: DataTokens
   let tokenAddress: string
-  let consoleDebug: true
+  const consoleDebug = false
   let greatPool: string
   const tokenAmount = '1000'
   const transferAmount = '200'
@@ -405,7 +405,8 @@ describe('Balancer flow', () => {
     if (consoleDebug) console.log('poolShares:' + poolShares)
     assert(parseFloat(poolShares) > 0)
   })
-  it('Bob should remove Ocean liquidity from pool by specifying slippage ', async () => {
+
+  it('Bob should remove Ocean liquidity from pool ', async () => {
     const currentDtReserve = await Pool.getOceanReserve(greatPool)
     const bobDtBalance = await datatoken.balance(oceanTokenAddress, bob)
 
@@ -414,15 +415,7 @@ describe('Balancer flow', () => {
     if (consoleDebug) console.log('bobDtBalance:' + bobDtBalance)
     if (consoleDebug) console.log('poolShares:' + poolShares)
 
-    const oceanAmount = await Pool.getOceanRemovedforPoolShares(greatPool, poolShares)
-    // 10% slippage
-    const oceanAmountWithSlippage = parseFloat(oceanAmount) * 0.9
-    await Pool.removeOceanLiquidityWithMinimum(
-      bob,
-      greatPool,
-      '0.75',
-      oceanAmountWithSlippage.toString()
-    )
+    await Pool.removeOceanLiquidity(bob, greatPool, '0.75', poolShares)
 
     const newDtReserve = await Pool.getOceanReserve(greatPool)
     const newbobDtBalance = await datatoken.balance(oceanTokenAddress, bob)
@@ -436,16 +429,29 @@ describe('Balancer flow', () => {
     assert(parseFloat(poolShares) > parseFloat(newpoolShares))
   })
 
-  it('Bob should remove Ocean liquidity from pool ', async () => {
+  it('Bob should remove Ocean liquidity from pool by specifying slippage ', async () => {
     const currentDtReserve = await Pool.getOceanReserve(greatPool)
     const bobDtBalance = await datatoken.balance(oceanTokenAddress, bob)
 
     const poolShares = await Pool.sharesBalance(bob, greatPool)
+    const poolSharesAmount = '0.75'
+
     if (consoleDebug) console.log('currentDtReserve:' + currentDtReserve)
     if (consoleDebug) console.log('bobDtBalance:' + bobDtBalance)
     if (consoleDebug) console.log('poolShares:' + poolShares)
 
-    await Pool.removeOceanLiquidity(bob, greatPool, '0.75', poolShares)
+    const oceanAmount = await Pool.getOceanRemovedforPoolShares(
+      greatPool,
+      poolSharesAmount
+    )
+    // 10% slippage
+    const oceanAmountWithSlippage = parseFloat(oceanAmount) * 0.9
+    await Pool.removeOceanLiquidityWithMinimum(
+      bob,
+      greatPool,
+      poolSharesAmount,
+      oceanAmountWithSlippage.toString()
+    )
 
     const newDtReserve = await Pool.getOceanReserve(greatPool)
     const newbobDtBalance = await datatoken.balance(oceanTokenAddress, bob)

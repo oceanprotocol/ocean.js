@@ -832,31 +832,22 @@ export class OceanPool extends Pool {
    * Remove Ocean Token amount from pool liquidity based on the minimum allowed of Ocean Tokens received
    * @param {String} account
    * @param {String} poolAddress
-   * @param {String} amount Ocean Token amount in OCEAN
+   * @param {String} poolShares pool shares
    * @param {String} minOcean minimum amount of OCEAN received
    * @return {TransactionReceipt}
    */
   public async removeOceanLiquidityWithMinimum(
     account: string,
     poolAddress: string,
-    amount: string,
+    poolShares: string,
     minOcean: string
   ): Promise<TransactionReceipt> {
     if (this.oceanAddress == null) {
       this.logger.error('ERROR: oceanAddress is not defined')
       return null
     }
-    const maxAmount = await this.getOceanMaxRemoveLiquidity(poolAddress)
-    if (parseFloat(amount) > parseFloat(maxAmount)) {
-      this.logger.error('ERROR: Too much reserve to remove')
-      return null
-    }
-
-    const sharesRequired = await this.getPoolSharesRequiredToRemoveOcean(
-      poolAddress,
-      amount
-    )
-    if (parseFloat(amount) < parseFloat(sharesRequired)) {
+    const usershares = await this.sharesBalance(account, poolAddress)
+    if (parseFloat(usershares) < parseFloat(poolShares)) {
       this.logger.error('ERROR: Not enough poolShares')
       return null
     }
@@ -865,7 +856,7 @@ export class OceanPool extends Pool {
       account,
       poolAddress,
       this.oceanAddress,
-      amount,
+      poolShares,
       minOcean
     )
   }
