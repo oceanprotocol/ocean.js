@@ -809,9 +809,10 @@ describe('Compute flow', () => {
       computeService.index,
       newComputePrivacy
     )
-    newDdo = await ocean.compute.enableAllowAllPublishedAlgorithms(
+    newDdo = await ocean.compute.toggleAllowAllPublishedAlgorithms(
       newDdo,
-      computeService.index
+      computeService.index,
+      true
     )
     assert(newDdo !== null, 'newDDO should not be null')
     const txid = await ocean.onChainMetadata.update(ddo.id, newDdo, alice.getId())
@@ -1063,9 +1064,10 @@ describe('Compute flow', () => {
     const computeService = ddo.findServiceByType('compute')
     assert(computeService, 'ComputeIndex should be >0')
 
-    let newDdo = await ocean.compute.disableAllowAllPublishedAlgorithms(
+    let newDdo = await ocean.compute.toggleAllowAllPublishedAlgorithms(
       ddo,
-      computeService.index
+      computeService.index,
+      false
     )
     assert(newDdo !== null, 'newDDO should not be null')
     // allow algorithmAsset

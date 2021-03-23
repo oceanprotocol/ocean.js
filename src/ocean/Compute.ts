@@ -597,32 +597,6 @@ export class Compute extends Instantiable {
   }
 
   /**
-   * Enable allowAllPublishedAlgorithms
-   * @param  {ddo} DDO
-   * @param  {number} serviceIndex Index of the compute service in the DDO. If -1, will try to find it
-   * @return {Promise<DDDO>} Returns the new DDO
-   */
-  public async enableAllowAllPublishedAlgorithms(
-    ddo: DDO,
-    serviceIndex: number
-  ): Promise<DDO> {
-    return this.toggleAllowAllPublishedAlgorithms(ddo, serviceIndex, true)
-  }
-
-  /**
-   * Disable allowAllPublishedAlgorithms
-   * @param  {ddo} DDO
-   * @param  {number} serviceIndex Index of the compute service in the DDO. If -1, will try to find it
-   * @return {Promise<DDDO>} Returns the new DDO
-   */
-  public async disableAllowAllPublishedAlgorithms(
-    ddo: DDO,
-    serviceIndex: number
-  ): Promise<DDO> {
-    return this.toggleAllowAllPublishedAlgorithms(ddo, serviceIndex, false)
-  }
-
-  /**
    * Generates a publisherTrustedAlgorithm object from a algorithm did
    * @param  {did} string DID. You can leave this empty if you already have the DDO
    * @param  {ddo} DDO if empty, will trigger a retrieve
