@@ -43,8 +43,8 @@ This is in alpha state and you can expect running into problems. If you run into
 - [🏛 License](#-license)
 
 ## 📚 Prerequisites
-- node.js
-- Docker
+- node.js ([Install from here](https://nodejs.org/en/download/))
+- Docker ([Managed as a non-root user](https://docs.docker.com/engine/install/linux-postinstall/)) 
 - A Unix based operating system (Mac or Linux) 
 
 ## 🏗 Installation

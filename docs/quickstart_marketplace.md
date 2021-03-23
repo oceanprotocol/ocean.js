@@ -275,6 +275,8 @@ await datatoken.approve(
  console.log("Marketplace Allowance:", marketplaceAllowance);
 ```
 
+You should see in the terminal output that the marketplace has a datatoken allowance of 100 tokens. 
+
 Now save the file and run it:
 
 ```Bash
@@ -302,7 +304,7 @@ Now save and run the file:
 node marketplace.js
 ```
 
-You should see in the terminal output that the Markeplace now has a datatoken balance of 100 and Alice has a balance of 100.
+You should see in the terminal output that the Markeplace now has a datatoken balance of 100 and Alice now has a balance of 100.
 
 ## 10. Marketplace posts asset for sale
 
@@ -318,6 +320,9 @@ This tells ocean.js the location of the contract addresses.
 At the end of the `init() { ... }` function (after `console.log("Alice balance:", aliceBalance)`) add the following code:
 
 ```javascript
+// Wait for datatoken to be published
+await new Promise(r => setTimeout(r, 15000)); 
+
 const asset = await ocean.assets.resolve(dataId)
 const accessService = await ocean.assets.getServiceByType(asset.id, 'access')
 console.log("accessService", accessService)
@@ -349,7 +354,7 @@ Now at the end of the `init() { ... }` function (after `console.log('transaction
   const transactionId = transaction['transactionHash']
   console.log('transactionId', transactionId)
 
-  const bobBalance = await datatoken.balance(tokenAddress, bob)
+  let bobBalance = await datatoken.balance(tokenAddress, bob)
   aliceBalance = await datatoken.balance(tokenAddress, alice)
 
   console.log('Alice token balance:', aliceBalance)
@@ -361,7 +366,7 @@ Save the `marketplace.js` file and run it again. In your terminal enter:
 ```bash
 node marketplace.js
 ```
-You should see in the terminal output that both Bob and Alice have a balance of 50.
+You should see in the terminal output that both Bob and Alice have a balance of 50 tokens.
 
 ## 12. Bob downloads the dataset
 
@@ -370,11 +375,11 @@ Finally, Bob downloads the dataset. This is is a two part process where he first
 At the end of the `init() { ... }` function (after `console.log("bobTransaction", bobTransaction)`) add the following code:
 
 ```javascript
-const bobTransaction = await ocean.assets.order(ddo.id, accessService.type, bob)
+const bobTransaction = await ocean.assets.order(asset.id, accessService.type, bob)
 console.log("bobTransaction", bobTransaction)
 
 const data = await ocean.assets.download(
-  ddo.id,
+  asset.id,
   bobTransaction,
   tokenAddress,
   accounts[2],
@@ -386,14 +391,10 @@ console.log("Bob token balance:", bobBalance)
 
 Save the `marketplace.js` file and run it again. In your terminal enter:
 
+You should see in the terminal output that Bob's balance has now been reduce to 40 tokens, as he has spent 10 on the dataset. You can confirm in the terminal that the data has been downloaded with the following commands: 
+
 ```bash
 cd datafiles
-```
-
-You should see in the terminal output that Bob's balance has now been reduce to 40, as he has spent 10 on the dataset. You can confirm in the terminal that the data has been downloaded with the following commands: 
-
-```bash
-node marketplace.js
 ls
 ```
 In the terminal output you should see a new directory has been created that contains your data. 
