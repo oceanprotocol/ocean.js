@@ -16,6 +16,7 @@ import { Account, DDO, Metadata } from '../../src/lib'
 import { Cluster, Container, Server } from '../../src/ocean/Compute'
 import { LoggerInstance } from '../../src/utils'
 import { ComputeInput } from '../../src/ocean/interfaces/ComputeInput'
+const fetch = require('node-fetch')
 const web3 = new Web3('http://127.0.0.1:8545')
 
 function sleep(ms: number) {
@@ -24,6 +25,22 @@ function sleep(ms: number) {
   })
 }
 
+async function waitForAqua(ocean, did) {
+  const apiPath = '/api/v1/aquarius/assets/ddo'
+  let tries = 0
+  do {
+    try {
+      const result = await fetch(ocean.metadataCache.url + apiPath + '/' + did)
+      if (result.ok) {
+        break
+      }
+    } catch (e) {
+      // do nothing
+    }
+    await sleep(1500)
+    tries++
+  } while (tries < 100)
+}
 /*       How to handle a compute job
 1. find your algorithm
 2. find your primary compute dataset
@@ -264,7 +281,8 @@ describe('Compute flow', () => {
     )
     ddo = await ocean.assets.create(asset, alice, [computeService], tokenAddress)
     assert(ddo.dataToken === tokenAddress, 'ddo.dataToken !== tokenAddress')
-    await sleep(aquaSleep)
+    await waitForAqua(ocean, ddo.id)
+    // await sleep(aquaSleep)
   })
   it('Alice publishes a 2nd dataset with a compute service that allows Raw Algo', async () => {
     const price2 = '2' // in datatoken
@@ -320,7 +338,8 @@ describe('Compute flow', () => {
       ddoAdditional1.dataToken === tokenAddressAdditional1,
       'ddoAdditional1.dataToken !== tokenAddressAdditional1'
     )
-    await sleep(aquaSleep)
+    await waitForAqua(ocean, ddoAdditional1.id)
+    // await sleep(aquaSleep)
   })
 
   it('Alice publishes a 3rd dataset with a access service', async () => {
@@ -342,7 +361,8 @@ describe('Compute flow', () => {
       ddoAdditional2.dataToken === tokenAddressAdditional2,
       'ddoAdditional2.dataToken !== tokenAddressAdditional2'
     )
-    await sleep(aquaSleep)
+    await waitForAqua(ocean, ddoAdditional2.id)
+    // await sleep(aquaSleep)
   })
 
   it('should publish a dataset with a compute service object that does not allow rawAlgo', async () => {
@@ -369,7 +389,8 @@ describe('Compute flow', () => {
       datasetNoRawAlgo.dataToken === tokenAddressNoRawAlgo,
       'datasetNoRawAlgo.dataToken !== tokenAddressNoRawAlgo'
     )
-    await sleep(aquaSleep)
+    await waitForAqua(ocean, datasetNoRawAlgo.id)
+    // await sleep(aquaSleep)
   })
 
   it('should publish a dataset with a compute service object that allows only algo with did:op:1234', async () => {
@@ -402,7 +423,8 @@ describe('Compute flow', () => {
       datasetWithTrustedAlgo.dataToken === tokenAddressWithTrustedAlgo,
       'datasetWithTrustedAlgo.dataToken !== tokenAddressWithTrustedAlgo'
     )
-    await sleep(aquaSleep)
+    await waitForAqua(ocean, datasetWithTrustedAlgo.id)
+    // await sleep(aquaSleep)
   })
 
   it('should publish an algorithm', async () => {
@@ -449,7 +471,8 @@ describe('Compute flow', () => {
       algorithmAsset.dataToken === tokenAddressAlgorithm,
       'algorithmAsset.dataToken !== tokenAddressAlgorithm'
     )
-    await sleep(aquaSleep)
+    await waitForAqua(ocean, algorithmAsset.id)
+    // await sleep(aquaSleep)
   })
 
   it('should publish an algorithm using the 2nd provider', async () => {
@@ -502,7 +525,8 @@ describe('Compute flow', () => {
       algorithmAssetRemoteProvider.dataToken === tokenAddressAlgorithmRemoteProvider,
       'algorithmAssetRemoteProvider.dataToken !== tokenAddressAlgorithmRemoteProvider'
     )
-    await sleep(aquaSleep)
+    await waitForAqua(ocean, algorithmAssetRemoteProvider.id)
+    // await sleep(aquaSleep)
     const checkDDO = await ocean.assets.resolve(algorithmAssetRemoteProvider.id)
     const checkService = checkDDO.findServiceByType('access')
     assert(
@@ -655,7 +679,6 @@ describe('Compute flow', () => {
     const response = await ocean.compute.status(bob, ddo.id, jobId)
     assert(response[0].jobId === jobId, 'response[0].jobId !== jobId')
   })
-
   it('should get status of all compute jobs for an address', async () => {
     const response = await ocean.compute.status(bob, undefined, undefined)
     assert(response.length > 0, 'Invalid response length')
@@ -772,7 +795,7 @@ describe('Compute flow', () => {
     assert(response.status >= 1, 'Invalid response status')
     assert(response.jobId, 'Invalid jobId')
   })
-
+  
   it('should start a compute job with a dataset on provider1 and published algo on provider2', async () => {
     const output = {}
     assert(ddo != null, 'ddo should not be null')
@@ -1122,7 +1145,7 @@ describe('Compute flow', () => {
       datasetWithBogusProvider.dataToken === tokenAddressWithBogusProvider,
       'datasetWithBogusProvider.dataToken !== tokenAddressWithBogusProvider'
     )
-    await sleep(aquaSleep)
+    await waitForAqua(ocean, datasetWithBogusProvider.id)
   })
   it('Bob should fail to start a compute job for a bogus provider with a raw Algo', async () => {
     const output = {}

@@ -13,13 +13,29 @@ import { TestContractHandler } from '../TestContractHandler'
 import { LoggerInstance } from '../../src/utils'
 
 const web3 = new Web3('http://127.0.0.1:8545')
+const fetch = require('node-fetch')
 
 function sleep(ms: number) {
   return new Promise((resolve) => {
     setTimeout(resolve, ms)
   })
 }
-
+async function waitForAqua(ocean, did) {
+  const apiPath = '/api/v1/aquarius/assets/ddo'
+  let tries = 0
+  do {
+    try {
+      const result = await fetch(ocean.metadataCache.url + apiPath + '/' + did)
+      if (result.ok) {
+        break
+      }
+    } catch (e) {
+      // do nothing
+    }
+    await sleep(1500)
+    tries++
+  } while (tries < 100)
+}
 use(spies)
 
 describe('Marketplace flow', () => {
@@ -153,7 +169,7 @@ describe('Marketplace flow', () => {
       tokenAddressForBadUrlAsset
     )
     assert(ddoWithBadUrl.dataToken === tokenAddressForBadUrlAsset)
-    await sleep(aquaSleep)
+    await waitForAqua(ocean, ddoWithBadUrl.id)
   })
 
   it('Alice mints 100 tokens', async () => {
