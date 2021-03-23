@@ -297,7 +297,6 @@ ocean.compute.createProviderAttributes(type: string, description: string, cluste
 ```
 ```Typescript
 ocean.compute.createComputeService(consumerAccount: Account, cost: string, datePublished: string, providerAttributes: any, computePrivacy?: ServiceComputePrivacy, timeout?: number, providerUri?: string): ServiceCompute;
-    private checkOutput;
 ```
 ```Typescript
 ocean.compute.order(consumerAccount: string, datasetDid: string, serviceIndex: number, algorithmDid?: string, algorithmMeta?: MetadataAlgorithm, mpAddress?: string): SubscribablePromise<OrderProgressStep, string>;

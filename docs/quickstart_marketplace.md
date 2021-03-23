@@ -11,7 +11,7 @@ Here's the steps.
 3. Install dependancies
 4. Create a config file and update contract addresses
 5. Publish a new data token
-6. Mint 100 tokens
+6. Mint 200 tokens
 7. Publish a dataset
 8. Alice allows marketplace to sell her datatokens
 9. Marketplace withdraws Alice's datatokens from allowance
@@ -38,7 +38,7 @@ mkdir marketplace-quickstart
 cd marketplace-quickstart
 npm init
 # Answer the questions in the command line prompt
-cat > index.js
+cat > marketplace.js
 # On linux press CTRL + D to save
 ```
 
@@ -113,7 +113,7 @@ cat ~/.ocean/ocean-contracts/artifacts/address.json
 Next, update the contract addresses in your config.js file. Replace each of the place holders with the actual addresses that were outputted into your terminal. 
 
 ## 5. Publish a new data token 
-Now open the `index.js` file in your text editor. Enter the following code and save the file:
+Now open the `marketplace.js` file in your text editor. Enter the following code and save the file:
 
 ```Javascript
 const Web3 = require("web3");
@@ -149,30 +149,30 @@ init();
 Now in your terminal, run the following command: 
 
 ```bash
-node index.js
+node marketplace.js
 ```
 
 Congratulations, you've created your first Ocean datatoken! 🌊🐋
 
-## 6. Mint 100 tokens
+## 6. Mint 200 tokens
 
-Next, we will edit the code in `index.js` to mint 100 datatokens. These 100 data tokens are minted and sent to Alice's Address. 
+Next, we will edit the code in `marketplace.js` to mint 200 datatokens. These 200 data tokens are minted and sent to Alice's Address. 
 
 At the end of the `init() { ... }` function (after `console.log('Deployed datatoken address: ${tokenAddress}')`) add the following line of code:
 
 ```Javascript
-  await datatoken.mint(tokenAddress, alice, '100', alice)
+  await datatoken.mint(tokenAddress, alice, '200', alice)
   let aliceBalance = await datatoken.balance(tokenAddress, alice)
   console.log('Alice token balance:', aliceBalance)
 ```
 
-Now run the `index.js` file again:
+Now run the `marketplace.js` file again:
 
 ```bash
-node index.js
+node marketplace.js
 ```
 
-You should now see in the console output that Alice has a token balance of 100. 
+You should now see in the console output that Alice has a token balance of 200. 
 
 ## 7. Publish a dataset
 
@@ -205,7 +205,7 @@ const testData = {
 module.exports = { testData };
 ```
 
-Now, in your `index.js` file import the test data. Add the following line of code at the top of the file under the other `require()` statements:
+Now, in your `marketplace.js` file import the test data. Add the following line of code at the top of the file under the other `require()` statements:
 
 ```Javascript
 const { testData } = require("./data");
@@ -233,10 +233,10 @@ At the end of the `init() { ... }` function (after `console.log('Bob token balan
   console.log('Data ID:', dataId);
 ```
 
-Now save and run the `index.js` file:
+Now save and run the `marketplace.js` file:
 
 ```Bash
-node index.js
+node marketplace.js
 ```
 
 In the terminal output you should now see the Data ID (did) outputed.  
@@ -274,14 +274,14 @@ await datatoken.approve(
 Now save the file and run it:
 
 ```Bash
-node index.js
+node marketplace.js
 ```
 
 You should see in the terminal output that the marketplace has an allowance of 100 datatokens.
 
 ## 9. Marketplace withdraws Alice's datatokens from allowance
 
-Now, you're the marketplace :) At the end of the `init() { ... }` function (after ` console.log("Marketplace Allowance:", marketplaceAllowance)`) add the following code:
+Now, you're the marketplace :) At the end of the `init() { ... }` function (after `console.log("Marketplace Allowance:", marketplaceAllowance)`) add the following code:
 
 ```Javascript
 await datatoken.transferFrom(tokenAddress, alice, '100', marketplace)
@@ -295,31 +295,69 @@ console.log("Alice balance:", aliceBalance)
 Now save and run the file:
 
 ```Bash
-node index.js
+node marketplace.js
 ```
 
-You should see in the terminal output that the Markeplace now has a datatoken balance of 100 and Alice has a balance of 0.
+You should see in the terminal output that the Markeplace now has a datatoken balance of 100 and Alice has a balance of 100.
 
 ## 10. Marketplace posts asset for sale
 
-Now, you're the marketplace :)
+In this section we show how the maketplace can post the dataset for sale. 
+
+First, in the same terminal that you are running your files, enter the following command: 
+
+```bash
+export ADDRESS_FILE="${HOME}/.ocean/ocean-contracts/artifacts/address.json"
+```
+This tells ocean.js the location of the contract addresses. 
+
+At the end of the `init() { ... }` function (after `console.log("Alice balance:", aliceBalance)`) add the following code:
 
 ```javascript
-// Market's config
-const marketOcean = await Ocean.getInstance(config)
-const marketplace = (await ocean.accounts.list())[1]
-
-const asset = await ocean.assets.resolve(ddo.id)
+const asset = await ocean.assets.resolve(dataId)
 const accessService = await ocean.assets.getServiceByType(asset.id, 'access')
-price = 20 // in USD per dataToken
-assert(accessService.attributes.main.cost * price === 200)
+console.log("accessService", accessService)
 ```
 
-## 11. Value swap: Bob buys datatokens from marketplace
+Now save and run the file:
 
-```javascript
-// Not shown: in marketplace GUI, Bob uses Stripe to send USD to marketplace (or other methods / currencies).
+```Bash
+node marketplace.js
 ```
+
+In the terminal output you should see the atributes of your dataset, including the cost, creator address and published date. 
+
+## 11. Value swap: Bob acquires datatokens
+
+In production environment, Bob would visit the marketplace website and purchase datatokends with USD via a payment gateway such as Stripe. In this example we demonstrate Alice sending Bob datatokens so that he is able to consume the dataset. 
+
+First we will edit the `init() { ... }` function to create an address for Bob. On the line after `const marketplace = accounts[1].id;` add the following code:
+
+```Javascript
+  const bob = accounts[2].id;
+  console.log('Bob account address:', bob);
+```
+
+Now at the end of the `init() { ... }` function (after `console.log('transactionId', transactionId)`) add the following code:
+
+```Javascript
+  const transaction = await datatoken.transfer(tokenAddress, bob, '50', alice)
+  const transactionId = transaction['transactionHash']
+  console.log('transactionId', transactionId)
+
+  const bobBalance = await datatoken.balance(tokenAddress, bob)
+  aliceBalance = await datatoken.balance(tokenAddress, alice)
+
+  console.log('Alice token balance:', aliceBalance)
+  console.log('Bob token balance:', bobBalance)
+```
+
+Save the `index.js` file and run it again. In your terminal enter:
+
+```bash
+node index.js
+```
+You should see in the terminal output that both Bob and Alice have a balance of 50.
 
 ## 12. Bob uses a service he just purchased (download)
 
