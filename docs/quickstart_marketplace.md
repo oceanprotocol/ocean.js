@@ -15,6 +15,10 @@ Here's the steps.
 7. Publish a dataset
 8. Alice allows marketplace to sell her datatokens
 9. Marketplace withdraws Alice's datatokens from allowance
+10. Marketplace posts asset for sale
+11. Bob acquires datatokens (value swap)
+12. Bob downloads the dataset
+13. Extensions
 
 
 Let's go through each step.
@@ -327,9 +331,9 @@ node marketplace.js
 
 In the terminal output you should see the atributes of your dataset, including the cost, creator address and published date. 
 
-## 11. Value swap: Bob acquires datatokens
+## 11. Bob acquires datatokens (value swap)
 
-In production environment, Bob would visit the marketplace website and purchase datatokends with USD via a payment gateway such as Stripe. In this example we demonstrate Alice sending Bob datatokens so that he is able to consume the dataset. 
+Now, you're Bob :) In production environment, Bob would visit the marketplace website and purchase datatokends with USD via a payment gateway such as Stripe. In this example we demonstrate Alice sending Bob datatokens so that he is able to consume the dataset. 
 
 First we will edit the `init() { ... }` function to create an address for Bob. On the line after `const marketplace = accounts[1].id;` add the following code:
 
@@ -352,38 +356,66 @@ Now at the end of the `init() { ... }` function (after `console.log('transaction
   console.log('Bob token balance:', bobBalance)
 ```
 
-Save the `index.js` file and run it again. In your terminal enter:
+Save the `marketplace.js` file and run it again. In your terminal enter:
 
 ```bash
-node index.js
+node marketplace.js
 ```
 You should see in the terminal output that both Bob and Alice have a balance of 50.
 
-## 12. Bob uses a service he just purchased (download)
+## 12. Bob downloads the dataset
 
-Now, you're Bob:)
+Finally, Bob downloads the dataset. This is is a two part process where he first orders the dataset and then downloads it. 
+
+At the end of the `init() { ... }` function (after `console.log("bobTransaction", bobTransaction)`) add the following code:
 
 ```javascript
-const accessService = await ocean.assets.getServiceByType(asset.id, 'access')
-const bob = (await ocean.accounts.list())[2]
-await ocean.assets
-  .order(ddo.id, accessService.type, bob.getId())
-  .then(async (res: string) => {
-    res = JSON.parse(res)
-    return await datatoken.transfer(
-      res['dataToken'],
-      res['to'],
-      res['numTokens'],
-      res['from']
-    )
-  })
-  .then(async (tx) => {
-    await ocean.assets.download(
-      ddo.id,
-      tx.transactionHash,
-      dataTokenAddress,
-      bob,
-      '~/my-datasets'
-    )
-  })
+const bobTransaction = await ocean.assets.order(ddo.id, accessService.type, bob)
+console.log("bobTransaction", bobTransaction)
+
+const data = await ocean.assets.download(
+  ddo.id,
+  bobTransaction,
+  tokenAddress,
+  accounts[2],
+  './datafiles'
+)
+bobBalance = await datatoken.balance(tokenAddress, bob)
+console.log("Bob token balance:", bobBalance)
 ```
+
+Save the `marketplace.js` file and run it again. In your terminal enter:
+
+```bash
+cd datafiles
+```
+
+You should see in the terminal output that Bob's balance has now been reduce to 40, as he has spent 10 on the dataset. You can confirm in the terminal that the data has been downloaded with the following commands: 
+
+```bash
+node marketplace.js
+ls
+```
+In the terminal output you should see a new directory has been created that contains your data. 
+
+
+To view Bob's previous orders you can enter the following code at the end of the `init() { ... }` function (after `console.log("Bob token balance:", bobBalance)`):
+
+```javascript
+const history = await ocean.assets.getOrderHistory(accounts[2])
+console.log("Bob's history", history)
+```
+
+If you save the file and run it again you should see all of Bob's previous orders. 
+
+## 13. Extensions
+
+Congratulations on completing the Oceon.js Marketplace tutorial 🌊🐋🐠. This has given you a solid foundation upon which you can start using Ocean.js. There is still a lot more you can do with Ocean.js, here are some suggestions for next steps to continue learning: 
+
+1. Check Alice's order history using `ocean.assets.getOrderHistory(accounts[0])`
+2. List all of Alice's assets with `ocean.assets.ownerAssets(alice)`
+3. Update metadata for Alice's dataset using `ocean.assets.editMetadata(ddo, newMetaData)` 
+4. Update the new metadata onchain with `ocean.onChainMetadata.update(newDdo.id, newDdo, alice)`
+5. Check the metadata with `ocean.assets.getServiceByType(ddo.id, 'metadata')`
+6. Update the timeout for the dataset with `ocean.assets.editServiceTimeout(ddo, serviceIndex, newTimeout)`
+
