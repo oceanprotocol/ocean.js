@@ -281,8 +281,10 @@ describe('Compute flow', () => {
     )
     ddo = await ocean.assets.create(asset, alice, [computeService], tokenAddress)
     assert(ddo.dataToken === tokenAddress, 'ddo.dataToken !== tokenAddress')
+    const storeTx = await ocean.onChainMetadata.publish(ddo.id, ddo, alice.getId())
+    assert(storeTx)
     await waitForAqua(ocean, ddo.id)
-    // await sleep(aquaSleep)
+
   })
   it('Alice publishes a 2nd dataset with a compute service that allows Raw Algo', async () => {
     const price2 = '2' // in datatoken
@@ -338,8 +340,14 @@ describe('Compute flow', () => {
       ddoAdditional1.dataToken === tokenAddressAdditional1,
       'ddoAdditional1.dataToken !== tokenAddressAdditional1'
     )
+    const storeTx = await ocean.onChainMetadata.publish(
+      ddoAdditional1.id,
+      ddoAdditional1,
+      alice.getId()
+    )
+    assert(storeTx)
     await waitForAqua(ocean, ddoAdditional1.id)
-    // await sleep(aquaSleep)
+
   })
 
   it('Alice publishes a 3rd dataset with a access service', async () => {
@@ -361,8 +369,14 @@ describe('Compute flow', () => {
       ddoAdditional2.dataToken === tokenAddressAdditional2,
       'ddoAdditional2.dataToken !== tokenAddressAdditional2'
     )
+    const storeTx = await ocean.onChainMetadata.publish(
+      ddoAdditional2.id,
+      ddoAdditional2,
+      alice.getId()
+    )
+    assert(storeTx)
     await waitForAqua(ocean, ddoAdditional2.id)
-    // await sleep(aquaSleep)
+
   })
 
   it('should publish a dataset with a compute service object that does not allow rawAlgo', async () => {
@@ -389,8 +403,14 @@ describe('Compute flow', () => {
       datasetNoRawAlgo.dataToken === tokenAddressNoRawAlgo,
       'datasetNoRawAlgo.dataToken !== tokenAddressNoRawAlgo'
     )
+    const storeTx = await ocean.onChainMetadata.publish(
+      datasetNoRawAlgo.id,
+      datasetNoRawAlgo,
+      alice.getId()
+    )
+    assert(storeTx)
     await waitForAqua(ocean, datasetNoRawAlgo.id)
-    // await sleep(aquaSleep)
+
   })
 
   it('should publish a dataset with a compute service object that allows only algo with did:op:1234', async () => {
@@ -423,8 +443,14 @@ describe('Compute flow', () => {
       datasetWithTrustedAlgo.dataToken === tokenAddressWithTrustedAlgo,
       'datasetWithTrustedAlgo.dataToken !== tokenAddressWithTrustedAlgo'
     )
+    const storeTx = await ocean.onChainMetadata.publish(
+      datasetWithTrustedAlgo.id,
+      datasetWithTrustedAlgo,
+      alice.getId()
+    )
+    assert(storeTx)
     await waitForAqua(ocean, datasetWithTrustedAlgo.id)
-    // await sleep(aquaSleep)
+
   })
 
   it('should publish an algorithm', async () => {
@@ -471,8 +497,14 @@ describe('Compute flow', () => {
       algorithmAsset.dataToken === tokenAddressAlgorithm,
       'algorithmAsset.dataToken !== tokenAddressAlgorithm'
     )
+    const storeTx = await ocean.onChainMetadata.publish(
+      algorithmAsset.id,
+      algorithmAsset,
+      alice.getId()
+    )
+    assert(storeTx)
     await waitForAqua(ocean, algorithmAsset.id)
-    // await sleep(aquaSleep)
+
   })
 
   it('should publish an algorithm using the 2nd provider', async () => {
@@ -525,8 +557,14 @@ describe('Compute flow', () => {
       algorithmAssetRemoteProvider.dataToken === tokenAddressAlgorithmRemoteProvider,
       'algorithmAssetRemoteProvider.dataToken !== tokenAddressAlgorithmRemoteProvider'
     )
+    const storeTx = await ocean.onChainMetadata.publish(
+      algorithmAssetRemoteProvider.id,
+      algorithmAssetRemoteProvider,
+      alice.getId()
+    )
+    assert(storeTx)
     await waitForAqua(ocean, algorithmAssetRemoteProvider.id)
-    // await sleep(aquaSleep)
+
     const checkDDO = await ocean.assets.resolve(algorithmAssetRemoteProvider.id)
     const checkService = checkDDO.findServiceByType('access')
     assert(
@@ -1145,7 +1183,14 @@ describe('Compute flow', () => {
       datasetWithBogusProvider.dataToken === tokenAddressWithBogusProvider,
       'datasetWithBogusProvider.dataToken !== tokenAddressWithBogusProvider'
     )
+    const storeTx = await ocean.onChainMetadata.publish(
+      datasetWithBogusProvider.id,
+      datasetWithBogusProvider,
+      alice.getId()
+    )
+    assert(storeTx)
     await waitForAqua(ocean, datasetWithBogusProvider.id)
+
   })
   it('Bob should fail to start a compute job for a bogus provider with a raw Algo', async () => {
     const output = {}

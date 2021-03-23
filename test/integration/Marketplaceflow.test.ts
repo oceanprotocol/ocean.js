@@ -43,14 +43,17 @@ describe('Marketplace flow', () => {
   let bob: Account
   let ddo
   let ddoWithBadUrl
+  let ddoEncrypted
   let alice: Account
   let asset
   let assetWithBadUrl
+  let assetWithEncrypt
   let marketplace: Account
   let contracts: TestContractHandler
   let datatoken: DataTokens
   let tokenAddress: string
   let tokenAddressForBadUrlAsset: string
+  let tokenAddressEncrypted: string
   let service1: ServiceAccess
   let price: string
   let ocean: Ocean
@@ -106,6 +109,13 @@ describe('Marketplace flow', () => {
       'DTA'
     )
     assert(tokenAddressForBadUrlAsset != null)
+    tokenAddressEncrypted = await datatoken.create(
+      blob,
+      alice.getId(),
+      '10000000000',
+      'AliceDT',
+      'DTA'
+    )
   })
 
   it('Generates metadata', async () => {
@@ -128,10 +138,29 @@ describe('Marketplace flow', () => {
         ]
       }
     }
+    assetWithEncrypt = {
+      main: {
+        type: 'dataset encrypted',
+        name: 'test-dataset-encrypted',
+        dateCreated: new Date(Date.now()).toISOString().split('.')[0] + 'Z', // remove milliseconds
+        author: 'oceanprotocol-team',
+        license: 'MIT',
+        files: [
+          {
+            url: 'https://s3.amazonaws.com/testfiles.oceanprotocol.com/info.0.json',
+            checksum: 'efb2c764274b745f5fc37f97c6b0e761',
+            contentLength: '4535431',
+            contentType: 'text/csv',
+            encoding: 'UTF-8',
+            compression: 'zip'
+          }
+        ]
+      }
+    }
     assetWithBadUrl = {
       main: {
-        type: 'dataset',
-        name: 'test-dataset',
+        type: 'datasetWithBadUrl',
+        name: 'test-dataset-withBadUrl',
         dateCreated: new Date(Date.now()).toISOString().split('.')[0] + 'Z', // remove milliseconds
         author: 'oceanprotocol-team',
         license: 'MIT',
@@ -161,6 +190,8 @@ describe('Marketplace flow', () => {
     )
     ddo = await ocean.assets.create(asset, alice, [service1], tokenAddress)
     assert(ddo.dataToken === tokenAddress)
+    const storeTx = await ocean.onChainMetadata.publish(ddo.id, ddo, alice.getId())
+    assert(storeTx)
     await sleep(1000)
     ddoWithBadUrl = await ocean.assets.create(
       assetWithBadUrl,
@@ -169,12 +200,51 @@ describe('Marketplace flow', () => {
       tokenAddressForBadUrlAsset
     )
     assert(ddoWithBadUrl.dataToken === tokenAddressForBadUrlAsset)
+    const storeTxWithBadUrl = await ocean.onChainMetadata.publish(
+      ddoWithBadUrl.id,
+      ddoWithBadUrl,
+      alice.getId()
+    )
+    assert(storeTxWithBadUrl)
     await waitForAqua(ocean, ddoWithBadUrl.id)
   })
 
+  it('Alice publishes an encrypted dataset', async () => {
+    ddoEncrypted = await ocean.assets.create(
+      assetWithEncrypt,
+      alice,
+      [service1],
+      tokenAddressEncrypted
+    )
+    assert(ddoEncrypted.dataToken === tokenAddressEncrypted)
+    const storeTx = await ocean.onChainMetadata.publish(
+      ddoEncrypted.id,
+      ddoEncrypted,
+      alice.getId(),
+      true
+    )
+    assert(storeTx)
+    await waitForAqua(ocean, ddoEncrypted.id)
+  })
+  it('Marketplace should resolve asset using DID', async () => {
+    await ocean.assets.resolve(ddo.id).then((newDDO) => {
+      assert(newDDO.id === ddo.id)
+    })
+  })
+  it('Marketplace should resolve asset with bad URL using DID', async () => {
+    await ocean.assets.resolve(ddoWithBadUrl.id).then((newDDO) => {
+      assert(newDDO.id === ddoWithBadUrl.id)
+    })
+  })
+  it('Marketplace should resolve the encrypted asset using DID', async () => {
+    await ocean.assets.resolve(ddoEncrypted.id).then((newDDO) => {
+      assert(newDDO.id === ddoEncrypted.id)
+    })
+  })
   it('Alice mints 100 tokens', async () => {
     await datatoken.mint(tokenAddress, alice.getId(), tokenAmount)
     await datatoken.mint(tokenAddressForBadUrlAsset, alice.getId(), tokenAmount)
+    await datatoken.mint(tokenAddressEncrypted, alice.getId(), tokenAmount)
   })
 
   it('Alice allows marketplace to sell her datatokens', async () => {
@@ -205,11 +275,6 @@ describe('Marketplace flow', () => {
         )
         assert(marketplaceBalance.toString() === marketplaceAllowance.toString())
       })
-  })
-  it('Marketplace should resolve asset using DID', async () => {
-    await ocean.assets.resolve(ddo.id).then((newDDO) => {
-      assert(newDDO.id === ddo.id)
-    })
   })
 
   it('Marketplace posts asset for sale', async () => {
@@ -279,6 +344,25 @@ describe('Marketplace flow', () => {
     assert(txid !== null)
     await sleep(60000)
     const metaData = await ocean.assets.getServiceByType(ddo.id, 'metadata')
+    assert.deepEqual(metaData.attributes.additionalInformation.links, [])
+  })
+
+  it('Alice updates metadata and removes sample links with encrypted ddo', async () => {
+    const newMetaData: EditableMetadata = {
+      description: 'new description no links',
+      title: 'new title no links'
+    }
+    const newDdo = await ocean.assets.editMetadata(ddoEncrypted, newMetaData)
+    assert(newDdo !== null)
+    const txid = await ocean.onChainMetadata.update(
+      newDdo.id,
+      newDdo,
+      alice.getId(),
+      true
+    )
+    assert(txid !== null)
+    await sleep(60000)
+    const metaData = await ocean.assets.getServiceByType(ddoEncrypted.id, 'metadata')
     assert.deepEqual(metaData.attributes.additionalInformation.links, [])
   })
 

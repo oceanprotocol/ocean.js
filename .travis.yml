@@ -21,6 +21,7 @@ before_script:
   - git clone https://github.com/oceanprotocol/barge
   - cd barge
   - export ADDRESS_FILE="${HOME}/.ocean/ocean-contracts/artifacts/address.json"
+  - export AQUARIUS_VERSION=v2.2.5
   - mkdir "${HOME}/.ocean/"
   - mkdir "${HOME}/.ocean/ocean-contracts/"
   - mkdir "${HOME}/.ocean/ocean-contracts/artifacts"
