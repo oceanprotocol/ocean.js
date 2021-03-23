@@ -832,6 +832,7 @@ export class OceanPool extends Pool {
    * @param {String} account
    * @param {String} poolAddress
    * @param {String} amount Ocean Token amount in OCEAN
+   * @param {String} minOcean minimum amount of OCEAN received
    * @return {TransactionReceipt}
    */
   public async removeOceanLiquidityWithMinimum(
