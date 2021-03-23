@@ -1,6 +1,6 @@
 # Overview
 
-Here is a quick overview of the main functions and submodules:
+Here is an overview of all ot the main functions and submodules:
 
 ### Ocean instance
 Create/get datatoken, get dtfactory, user orders (history)
@@ -259,6 +259,46 @@ ocean.exchange.getAllExchangesSwaps(account: string): Promise<FixedPriceSwap[]>;
 
 # Compute-to-data
 consume/start, stop, results, status, define-service
+
+```Typescript
+ocean.compute.start(did: string, txId: string, tokenAddress: string, consumerAccount: Account, algorithmDid?: string, algorithmMeta?: MetadataAlgorithm, output?: Output, serviceIndex?: string, serviceType?: string, algorithmTransferTxId?: string, algorithmDataToken?: string): Promise<ComputeJob>;
 ```
-ocean.compute
+```Typescript
+ocean.compute.stop(consumerAccount: Account, did: string, jobId: string): Promise<ComputeJob>;
+```
+```Typescript
+ocean.compute.delete(consumerAccount: Account, did: string, jobId: string): Promise<ComputeJob>;
+```
+```Typescript
+ocean.compute.status(consumerAccount: Account, did?: string, jobId?: string): Promise<ComputeJob[]>;
+```
+```Typescript
+ocean.compute.result(consumerAccount: Account, did: string, jobId: string): Promise<ComputeJob>;
+```
+```Typescript
+ocean.compute.createServerAttributes(serverId: string, serverType: string, cost: string, cpu: string, gpu: string, memory: string, disk: string, maxExecutionTime: number): Server;
+```
+```Typescript
+ocean.compute.createContainerAttributes(image: string, tag: string, checksum: string): Container;
+```
+```Typescript
+ocean.compute.createClusterAttributes(type: string, url: string): Cluster;
+```
+```Typescript
+ocean.compute.createProviderAttributes(type: string, description: string, cluster: Cluster, containers: Container[], servers: Server[]): {
+        type: string;
+        description: string;
+        environment: {
+            cluster: Cluster;
+            supportedServers: Server[];
+            supportedContainers: Container[];
+        };
+    };
+```
+```Typescript
+ocean.compute.createComputeService(consumerAccount: Account, cost: string, datePublished: string, providerAttributes: any, computePrivacy?: ServiceComputePrivacy, timeout?: number, providerUri?: string): ServiceCompute;
+    private checkOutput;
+```
+```Typescript
+ocean.compute.order(consumerAccount: string, datasetDid: string, serviceIndex: number, algorithmDid?: string, algorithmMeta?: MetadataAlgorithm, mpAddress?: string): SubscribablePromise<OrderProgressStep, string>;
 ```
