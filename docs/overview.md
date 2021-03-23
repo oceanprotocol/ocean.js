@@ -201,8 +201,60 @@ ocean.pool.getAllPoolLogs(account: string): Promise<PoolTransaction[]>;
 
 # Fixed rate exchange
 Create, price, buy datatokens  
+
+```Typescript
+ocean.exchange.create(dataToken: string, rate: string, address: string): Promise<string>;
 ```
-ocean.exchange
+```Typescript
+ocean.exchange.generateExchangeId(dataToken: string, owner: string): Promise<string>;
+```
+```Typescript
+ocean.exchange.buyDT(exchangeId: string, dataTokenAmount: string, address: string): Promise<TransactionReceipt>;
+```
+```Typescript
+ocean.exchange.getNumberOfExchanges(): Promise<number>;
+```
+```Typescript
+ocean.exchange.setRate(exchangeId: string, newRate: number, address: string): Promise<TransactionReceipt>;
+```
+```Typescript
+ocean.exchange.activate(exchangeId: string, address: string): Promise<TransactionReceipt>;
+```
+```Typescript
+ocean.exchange.deactivate(exchangeId: string, address: string): Promise<TransactionReceipt>;
+```
+```Typescript
+ocean.exchange.getRate(exchangeId: string): Promise<string>;
+```
+```Typescript
+ocean.exchange.getSupply(exchangeId: string): Promise<string>;
+```
+```Typescript
+ocean.exchange.getOceanNeeded(exchangeId: string, dataTokenAmount: string): Promise<string>;
+```
+```Typescript
+ocean.exchange.getExchange(exchangeId: string): Promise<FixedPriceExchange>;
+```
+```Typescript
+ocean.exchange.getExchanges(): Promise<string[]>;
+```
+```Typescript
+ocean.exchange.isActive(exchangeId: string): Promise<boolean>;
+```
+```Typescript
+ocean.exchange.CalcInGivenOut(exchangeId: string, dataTokenAmount: string): Promise<string>;
+```
+```Typescript
+ocean.exchange.searchforDT(dataTokenAddress: string, minSupply: string): Promise<FixedPriceExchange[]>;
+```
+```Typescript
+ocean.exchange.getExchangesbyCreator(account?: string): Promise<FixedPriceExchange[]>;
+```
+```Typescript
+ocean.exchange.getExchangeSwaps(exchangeId: string, account?: string): Promise<FixedPriceSwap[]>;
+```
+```Typescript
+ocean.exchange.getAllExchangesSwaps(account: string): Promise<FixedPriceSwap[]>;
 ```
 
 # Compute-to-data
