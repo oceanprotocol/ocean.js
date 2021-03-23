@@ -408,58 +408,56 @@ export class Compute extends Instantiable {
       if (algorithmMeta) {
         // check if raw algo is allowed
         if (service.attributes.main.privacy)
-          if (!service.attributes.main.privacy.allowRawAlgorithm) {
-            this.logger.error('ERROR: This service does not allow raw algorithm')
-            return false
-          }
+          if (service.attributes.main.privacy.allowRawAlgorithm) return true
+        this.logger.error('ERROR: This service does not allow raw algorithm')
+        return false
       }
       if (algorithmDid) {
         // check if did is in trusted list
-        if (service.attributes.main.privacy)
-          if (service.attributes.main.privacy.publisherTrustedAlgorithms)
-            if (service.attributes.main.privacy.publisherTrustedAlgorithms.length > 0) {
-              // loop through all publisherTrustedAlgorithms and see if we have a match
-              let algo: publisherTrustedAlgorithm
-              for (algo of service.attributes.main.privacy.publisherTrustedAlgorithms) {
-                if (algo.did === algorithmDid) {
-                  // compute checkusms and compare them
-                  const trustedAlgorithm = await this.createPublisherTrustedAlgorithmfromDID(
-                    algorithmDid
-                  )
-                  if (
-                    algo.containerSectionChecksum &&
-                    algo.containerSectionChecksum !==
-                      trustedAlgorithm.containerSectionChecksum
-                  ) {
-                    this.logger.error(
-                      'ERROR: Algorithm container section was altered since it was added as trusted by ' +
-                        datasetDid
-                    )
-                    return false
-                  }
-                  if (
-                    algo.filesChecksum &&
-                    algo.filesChecksum !== trustedAlgorithm.filesChecksum
-                  ) {
-                    this.logger.error(
-                      'ERROR: Algorithm files section was altered since it was added as trusted by ' +
-                        datasetDid
-                    )
-                    return false
-                  }
-                  // all conditions are meet
-                  return true
-                }
-              }
-              // algorithmDid was not found
-              this.logger.error(
-                'ERROR: Algorithm ' + algorithmDid + ' is not allowed by ' + datasetDid
+        if (service.attributes.main.privacy) {
+          if (service.attributes.main.privacy.allowAllPublishedAlgorithms) return true
+          if (!service.attributes.main.privacy.publisherTrustedAlgorithms) return false
+          let algo: publisherTrustedAlgorithm
+          for (algo of service.attributes.main.privacy.publisherTrustedAlgorithms) {
+            if (algo.did === algorithmDid) {
+              // compute checkusms and compare them
+              const trustedAlgorithm = await this.createPublisherTrustedAlgorithmfromDID(
+                algorithmDid
               )
-              return false
+              if (
+                algo.containerSectionChecksum &&
+                algo.containerSectionChecksum !==
+                  trustedAlgorithm.containerSectionChecksum
+              ) {
+                this.logger.error(
+                  'ERROR: Algorithm container section was altered since it was added as trusted by ' +
+                    datasetDid
+                )
+                return false
+              }
+              if (
+                algo.filesChecksum &&
+                algo.filesChecksum !== trustedAlgorithm.filesChecksum
+              ) {
+                this.logger.error(
+                  'ERROR: Algorithm files section was altered since it was added as trusted by ' +
+                    datasetDid
+                )
+                return false
+              }
+              // all conditions are meet
+              return true
             }
+          }
+          // algorithmDid was not found
+          this.logger.error(
+            'ERROR: Algorithm ' + algorithmDid + ' is not allowed by ' + datasetDid
+          )
+          return false
+        }
       }
     }
-    return true
+    return true // not a compute asset
   }
 
   /**
@@ -563,11 +561,65 @@ export class Compute extends Instantiable {
     if (ddo.service[serviceIndex].type !== 'compute') return null
     ddo.service[serviceIndex].attributes.main.privacy.allowRawAlgorithm =
       computePrivacy.allowRawAlgorithm
+    ddo.service[serviceIndex].attributes.main.privacy.allowAllPublishedAlgorithms =
+      computePrivacy.allowAllPublishedAlgorithms
     ddo.service[serviceIndex].attributes.main.privacy.allowNetworkAccess =
       computePrivacy.allowNetworkAccess
     ddo.service[serviceIndex].attributes.main.privacy.publisherTrustedAlgorithms =
       computePrivacy.publisherTrustedAlgorithms
     return ddo
+  }
+
+  /**
+   * Toogle allowAllPublishedAlgorithms
+   * @param  {ddo} DDO
+   * @param  {number} serviceIndex Index of the compute service in the DDO. If -1, will try to find it
+   * @param  {boolean} newState
+   * @return {Promise<DDDO>} Returns the new DDO
+   */
+  public async toggleAllowAllPublishedAlgorithms(
+    ddo: DDO,
+    serviceIndex: number,
+    newState: boolean
+  ): Promise<DDO> {
+    if (!ddo) return null
+    if (serviceIndex === -1) {
+      const service = ddo.findServiceByType('compute')
+      if (!service) return null
+      serviceIndex = service.index
+    }
+    if (typeof ddo.service[serviceIndex] === 'undefined') return null
+    if (ddo.service[serviceIndex].type !== 'compute') return null
+    ddo.service[
+      serviceIndex
+    ].attributes.main.privacy.allowAllPublishedAlgorithms = newState
+    return ddo
+  }
+
+  /**
+   * Enable allowAllPublishedAlgorithms
+   * @param  {ddo} DDO
+   * @param  {number} serviceIndex Index of the compute service in the DDO. If -1, will try to find it
+   * @return {Promise<DDDO>} Returns the new DDO
+   */
+  public async enableAllowAllPublishedAlgorithms(
+    ddo: DDO,
+    serviceIndex: number
+  ): Promise<DDO> {
+    return this.toggleAllowAllPublishedAlgorithms(ddo, serviceIndex, true)
+  }
+
+  /**
+   * Disable allowAllPublishedAlgorithms
+   * @param  {ddo} DDO
+   * @param  {number} serviceIndex Index of the compute service in the DDO. If -1, will try to find it
+   * @return {Promise<DDDO>} Returns the new DDO
+   */
+  public async disableAllowAllPublishedAlgorithms(
+    ddo: DDO,
+    serviceIndex: number
+  ): Promise<DDO> {
+    return this.toggleAllowAllPublishedAlgorithms(ddo, serviceIndex, false)
   }
 
   /**
@@ -650,8 +702,8 @@ export class Compute extends Instantiable {
     }
     if (typeof ddo.service[serviceIndex] === 'undefined') return false
     if (ddo.service[serviceIndex].type !== 'compute') return false
-    if (!ddo.service[serviceIndex].attributes.main.privacy.publisherTrustedAlgorithms)
-      return false
+    if (ddo.service[serviceIndex].attributes.main.privacy.allowAllPublishedAlgorithms)
+      return true
     let algo: publisherTrustedAlgorithm
     for (algo of ddo.service[serviceIndex].attributes.main.privacy
       .publisherTrustedAlgorithms)
