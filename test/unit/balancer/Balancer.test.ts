@@ -416,7 +416,7 @@ describe('Balancer flow', () => {
 
     const oceanAmount = await Pool.getOceanRemovedforPoolShares(greatPool, poolShares)
     // 10% slippage
-    const oceanAmountWithSlippage = (Number(oceanAmount) * 90) / 100
+    const oceanAmountWithSlippage = parseFloat(oceanAmount) * 0.9
     await Pool.removeOceanLiquidityWithMinimum(
       bob,
       greatPool,
