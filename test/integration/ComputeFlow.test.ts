@@ -284,7 +284,6 @@ describe('Compute flow', () => {
     const storeTx = await ocean.onChainMetadata.publish(ddo.id, ddo, alice.getId())
     assert(storeTx)
     await waitForAqua(ocean, ddo.id)
-
   })
   it('Alice publishes a 2nd dataset with a compute service that allows Raw Algo', async () => {
     const price2 = '2' // in datatoken
@@ -347,7 +346,6 @@ describe('Compute flow', () => {
     )
     assert(storeTx)
     await waitForAqua(ocean, ddoAdditional1.id)
-
   })
 
   it('Alice publishes a 3rd dataset with a access service', async () => {
@@ -376,7 +374,6 @@ describe('Compute flow', () => {
     )
     assert(storeTx)
     await waitForAqua(ocean, ddoAdditional2.id)
-
   })
 
   it('should publish a dataset with a compute service object that does not allow rawAlgo', async () => {
@@ -410,7 +407,6 @@ describe('Compute flow', () => {
     )
     assert(storeTx)
     await waitForAqua(ocean, datasetNoRawAlgo.id)
-
   })
 
   it('should publish a dataset with a compute service object that allows only algo with did:op:1234', async () => {
@@ -450,7 +446,6 @@ describe('Compute flow', () => {
     )
     assert(storeTx)
     await waitForAqua(ocean, datasetWithTrustedAlgo.id)
-
   })
 
   it('should publish an algorithm', async () => {
@@ -504,7 +499,6 @@ describe('Compute flow', () => {
     )
     assert(storeTx)
     await waitForAqua(ocean, algorithmAsset.id)
-
   })
 
   it('should publish an algorithm using the 2nd provider', async () => {
@@ -833,7 +827,7 @@ describe('Compute flow', () => {
     assert(response.status >= 1, 'Invalid response status')
     assert(response.jobId, 'Invalid jobId')
   })
-  
+
   it('should start a compute job with a dataset on provider1 and published algo on provider2', async () => {
     const output = {}
     assert(ddo != null, 'ddo should not be null')
@@ -1190,7 +1184,6 @@ describe('Compute flow', () => {
     )
     assert(storeTx)
     await waitForAqua(ocean, datasetWithBogusProvider.id)
-
   })
   it('Bob should fail to start a compute job for a bogus provider with a raw Algo', async () => {
     const output = {}
