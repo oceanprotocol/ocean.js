@@ -405,6 +405,37 @@ describe('Balancer flow', () => {
     if (consoleDebug) console.log('poolShares:' + poolShares)
     assert(parseFloat(poolShares) > 0)
   })
+  it('Bob should remove Ocean liquidity from pool by specifying slippage ', async () => {
+    const currentDtReserve = await Pool.getOceanReserve(greatPool)
+    const bobDtBalance = await datatoken.balance(oceanTokenAddress, bob)
+
+    const poolShares = await Pool.sharesBalance(bob, greatPool)
+    if (consoleDebug) console.log('currentDtReserve:' + currentDtReserve)
+    if (consoleDebug) console.log('bobDtBalance:' + bobDtBalance)
+    if (consoleDebug) console.log('poolShares:' + poolShares)
+
+    const oceanAmount = await Pool.getOceanRemovedforPoolShares(greatPool, poolShares)
+    // 10% slippage
+    const oceanAmountWithSlippage = (Number(oceanAmount) * 90) / 100
+    await Pool.removeOceanLiquidityWithMinimum(
+      bob,
+      greatPool,
+      '0.75',
+      oceanAmountWithSlippage.toString()
+    )
+
+    const newDtReserve = await Pool.getOceanReserve(greatPool)
+    const newbobDtBalance = await datatoken.balance(oceanTokenAddress, bob)
+    const newpoolShares = await Pool.sharesBalance(bob, greatPool)
+
+    if (consoleDebug) console.log('newDtReserve:' + newDtReserve)
+    if (consoleDebug) console.log('newbobDtBalance:' + newbobDtBalance)
+    if (consoleDebug) console.log('newpoolShares:' + newpoolShares)
+    assert(parseFloat(newDtReserve) < parseFloat(currentDtReserve))
+    assert(parseFloat(bobDtBalance) < parseFloat(newbobDtBalance))
+    assert(parseFloat(poolShares) > parseFloat(newpoolShares))
+  })
+
   it('Bob should remove Ocean liquidity from pool ', async () => {
     const currentDtReserve = await Pool.getOceanReserve(greatPool)
     const bobDtBalance = await datatoken.balance(oceanTokenAddress, bob)
