@@ -74,8 +74,129 @@ ocean.asset.getOrderHistory(account: Account, serviceType?: string, fromBlock?: 
 
 # Datatoken Pool
 Create, add/remove liquidity, check liquidity, price, buy datatokens
+
+```Typescript
+ocean.pool.
 ```
-ocean.pool
+```Typescript
+ocean.pool.createDTPool(account: string, token: string, amount: string, weight: string, fee: string): Promise<string>;
+```
+```Typescript
+ocean.pool.getDTAddress(poolAddress: string): Promise<string>;
+```
+```Typescript
+ocean.pool.getOceanReserve(poolAddress: string): Promise<string>;
+```
+```Typescript
+ocean.pool.getDTReserve(poolAddress: string): Promise<string>;
+```
+```Typescript
+ocean.pool.getMaxBuyQuantity(poolAddress: string, tokenAddress: string): Promise<string>;
+```
+```Typescript
+ocean.pool.getOceanMaxBuyQuantity(poolAddress: string): Promise<string>;
+```
+```Typescript
+ocean.pool.getDTMaxBuyQuantity(poolAddress: string): Promise<string>;
+```
+```Typescript
+ocean.pool.calcInGivenOut(poolAddress: string, tokenInAddress: string, tokenOutAddress: string, tokenOutAmount: string): Promise<string>;
+```
+```Typescript
+ocean.pool.calcOutGivenIn(poolAddress: string, tokenInAddress: string, tokenOutAddress: string, tokenInAmount: string): Promise<string>;
+```
+```Typescript
+ocean.pool.calcPoolOutGivenSingleIn(poolAddress: string, tokenInAddress: string, tokenInAmount: string): Promise<string>;
+```
+```Typescript
+ocean.pool.calcSingleInGivenPoolOut(poolAddress: string, tokenInAddress: string, poolShares: string): Promise<string>;
+```
+```Typescript
+ocean.pool.calcSingleOutGivenPoolIn(poolAddress: string, tokenOutAddress: string, poolShares: string): Promise<string>;
+```
+```Typescript
+ocean.pool.calcPoolInGivenSingleOut(poolAddress: string, tokenOutAddress: string, tokenOutAmount: string): Promise<string>;
+```
+```Typescript
+ocean.pool.getPoolSharesRequiredToRemoveDT(poolAddress: string, dtAmount: string): Promise<string>;
+```
+```Typescript
+ocean.pool.getDTRemovedforPoolShares(poolAddress: string, poolShares: string): Promise<string>;
+```
+```Typescript
+ocean.pool.getPoolSharesRequiredToRemoveOcean(poolAddress: string, oceanAmount: string): Promise<string>;
+```
+```Typescript
+ocean.pool.getOceanRemovedforPoolShares(poolAddress: string, poolShares: string): Promise<string>;
+```
+```Typescript
+ocean.pool.getTokensRemovedforPoolShares(poolAddress: string, poolShares: string): Promise<TokensReceived>;
+```
+```Typescript
+ocean.pool.getDTMaxAddLiquidity(poolAddress: string): Promise<string>;
+```
+```Typescript
+ocean.pool.getOceanMaxAddLiquidity(poolAddress: string): Promise<string>;
+```
+```Typescript
+ocean.pool.getMaxAddLiquidity(poolAddress: string, tokenAddress: string): Promise<string>;
+```
+```Typescript
+ocean.pool.getMaxRemoveLiquidity(poolAddress: string, tokenAddress: string): Promise<string>;
+```
+```Typescript
+ocean.pool.getDTMaxRemoveLiquidity(poolAddress: string): Promise<string>;
+```
+```Typescript
+ocean.pool.getOceanMaxRemoveLiquidity(poolAddress: string): Promise<string>;
+```
+```Typescript
+ocean.pool.buyDT(account: string, poolAddress: string, dtAmountWanted: string, maxOceanAmount: string, maxPrice?: string): Promise<TransactionReceipt>;
+```
+```Typescript
+ocean.pool.sellDT(account: string, poolAddress: string, dtAmount: string, oceanAmountWanted: string, maxPrice?: string): Promise<TransactionReceipt>;
+```
+```Typescript
+ocean.pool.addDTLiquidity(account: string, poolAddress: string, amount: string): Promise<TransactionReceipt>;
+```
+```Typescript
+ocean.pool.removeDTLiquidity(account: string, poolAddress: string, amount: string, maximumPoolShares: string): Promise<TransactionReceipt>;
+```
+```Typescript
+ocean.pool.addOceanLiquidity(account: string, poolAddress: string, amount: string): Promise<TransactionReceipt>;
+```
+```Typescript
+ocean.pool.removeOceanLiquidity(account: string, poolAddress: string, amount: string, maximumPoolShares: string): Promise<TransactionReceipt>;
+```
+```Typescript
+ocean.pool.removePoolLiquidity(account: string, poolAddress: string, poolShares: string, minDT?: string, minOcean?: string): Promise<TransactionReceipt>;
+```
+```Typescript
+ocean.pool.getDTPrice(poolAddress: string): Promise<string>;
+```
+```Typescript
+ocean.pool.searchPoolforDT(dtAddress: string): Promise<string[]>;
+```
+```Typescript
+ocean.pool.getOceanNeeded(poolAddress: string, dtRequired: string): Promise<string>;
+```
+```Typescript
+ocean.pool.getOceanReceived(poolAddress: string, dtSold: string): Promise<string>;
+```
+```Typescript
+ocean.pool.getDTNeeded(poolAddress: string, OceanRequired: string): Promise<string>;
+```
+```Typescript
+ocean.pool.getPoolsbyCreator(account?: string): Promise<PoolDetails[]>;
+```
+```Typescript
+ocean.pool.getPoolDetails(poolAddress: string): Promise<PoolDetails>;
+```
+```Typescript
+ocean.pool.getPoolLogs(poolAddress: string, account?: string): Promise<PoolTransaction[]>;
+```
+```Typescript
+ocean.pool.getAllPoolLogs(account: string): Promise<PoolTransaction[]>;
 ```
 
 # Fixed rate exchange
