@@ -298,9 +298,9 @@ Now save and run the file:
 node index.js
 ```
 
-YOu should see in the terminal output that the Markeplace now has a datatoken balance of 100 and Alice has a balance of 0.
+You should see in the terminal output that the Markeplace now has a datatoken balance of 100 and Alice has a balance of 0.
 
-## 12. Marketplace posts asset for sale
+## 10. Marketplace posts asset for sale
 
 Now, you're the marketplace :)
 
