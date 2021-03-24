@@ -1,5 +1,5 @@
 import { WebServiceConnector } from '../../../src/ocean/utils/WebServiceConnector'
-import { RequestInit } from 'node-fetch'
+import { RequestInit } from 'cross-fetch/lib.fetch'
 
 export default class WebServiceConnectorMock extends (WebServiceConnector as any) {
   constructor(private returnData: any) {

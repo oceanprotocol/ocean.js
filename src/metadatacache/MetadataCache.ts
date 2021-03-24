@@ -3,7 +3,7 @@ import DID from '../ocean/DID'
 import { EditableMetadata } from '../ddo/interfaces/EditableMetadata'
 import { Logger } from '../utils'
 import { WebServiceConnector } from '../ocean/utils/WebServiceConnector'
-import { Response } from 'node-fetch'
+import { Response } from 'cross-fetch'
 
 const apiPath = '/api/v1/aquarius/assets/ddo'
 
