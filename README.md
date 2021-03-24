@@ -95,6 +95,10 @@ This batteries-included flow includes metadata, multiple services for one datato
 -   [Learn about wallets](docs/wallets.md) - on generating, storing, and accessing private keys
 -   [Get an overview of ocean.js](docs/overview.md) - key modules and functions
 
+If you have any difficulties with the quickstarts, or if you have further questions about how to use ocean.js please reach out to us on [Discord](https://discord.gg/TnXjkR5).
+
+If you notice any bugs or issues with Ocean.js please [open an issue on github](https://github.com/oceanprotocol/ocean.js/issues/new?assignees=&labels=bug&template=bug_report.md&title=). 
+
 ## 🦑 Development
 
 The project is authored with TypeScript and compiled with `tsc`.

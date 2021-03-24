@@ -1,6 +1,6 @@
 # Quickstart: Simple Flow
 
-This section describes how to create a datatoken, host a dataset and consume the data using the simplest flow.
+This section describes how to create a datatoken and host a dataset using the simplest flow.
 
 Here are the the steps:
 
@@ -12,7 +12,6 @@ Here are the the steps:
 6. Mint 100 tokens
 7. Transfer tokens between users.
 8. Host a dataset
-8. Consume the dataset
 
 Let's go through each of these in detail.
 
@@ -268,15 +267,4 @@ node index.js
 
 In the terminal output you should now see the Data ID (did) outputed.  
 
-Congratulations, you have published your first dataset! 🌊🐠
-
-## 9. Consume the dataset
-
-Finally, we will show how to consume the dataset. At the end of the `init() { ... }` function (after `console.log('Data ID:', dataId)`) add the following code:
-
-```Javascript
-  const dataDownload = await ocean.assets.simpleDownload(tokenAddress, urls.providerUri, transactionId, bob)
-  console.log('dataDownload', dataDownload)
-```
-
-Congratulations, you have downloaded your first dataset! 🌊🐡
+Congratulations, you have published your first dataset! 🌊🐠🐡
