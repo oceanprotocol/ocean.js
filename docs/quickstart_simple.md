@@ -17,7 +17,7 @@ Let's go through each of these in detail.
 
 ## 1. Initialize services
 
-We start by Initialize services. To do this, we clone the Barge repository and run it. This will run the current default versions of [Aquarius](https://github.com/oceanprotocol/aquarius), [Provider](https://github.com/oceanprotocol/provider-py), and [Ganache](https://github.com/trufflesuite/ganache-cli) with [our contracts](https://github.com/oceanprotocol/ocean-contracts) deployed to it.
+We start by initializing the services. To do this, we clone the Barge repository and run it. This will run the current default versions of [Aquarius](https://github.com/oceanprotocol/aquarius), [Provider](https://github.com/oceanprotocol/provider-py), and [Ganache](https://github.com/trufflesuite/ganache-cli) with [our contracts](https://github.com/oceanprotocol/ocean-contracts) deployed to it.
 
 ```bash
 git clone https://github.com/oceanprotocol/barge.git
@@ -267,4 +267,4 @@ node index.js
 
 In the terminal output you should now see the Data ID (did) outputed.  
 
-Congratulations, you have published your first dataset! 🌊🐠🐡
+Congratulations, you have published your first dataset! 🌊🐠🐡 Now you are ready for the [marketplace flow](docs/quickstart_marketplace.md). 
