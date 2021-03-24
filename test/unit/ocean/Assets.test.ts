@@ -28,7 +28,9 @@ describe('Assets', () => {
         offset: 100,
         page: 1,
         query: {
-          text: 'Office'
+          query_string: {
+            query: 'Office'
+          }
         },
         sort: {
           created: -1

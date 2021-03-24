@@ -33,6 +33,7 @@ export interface publisherTrustedAlgorithm {
 export interface ServiceComputePrivacy {
   allowRawAlgorithm: boolean
   allowNetworkAccess: boolean
+  allowAllPublishedAlgorithms: boolean
   publisherTrustedAlgorithms?: publisherTrustedAlgorithm[]
 }
 

@@ -749,6 +749,7 @@ export class OceanPool extends Pool {
    * @param {String} account
    * @param {String} poolAddress
    * @param {String} amount datatoken amount
+   * @param {String} maximumPoolShares
    * @return {TransactionReceipt}
    */
   public async removeDTLiquidity(
@@ -828,10 +829,44 @@ export class OceanPool extends Pool {
   }
 
   /**
-   * Remove Ocean Token amount from pool liquidity
+   * Remove Ocean Token amount from pool liquidity based on the minimum allowed of Ocean Tokens received
+   * @param {String} account
+   * @param {String} poolAddress
+   * @param {String} poolShares pool shares
+   * @param {String} minOcean minimum amount of OCEAN received
+   * @return {TransactionReceipt}
+   */
+  public async removeOceanLiquidityWithMinimum(
+    account: string,
+    poolAddress: string,
+    poolShares: string,
+    minOcean: string
+  ): Promise<TransactionReceipt> {
+    if (this.oceanAddress == null) {
+      this.logger.error('ERROR: oceanAddress is not defined')
+      return null
+    }
+    const usershares = await this.sharesBalance(account, poolAddress)
+    if (parseFloat(usershares) < parseFloat(poolShares)) {
+      this.logger.error('ERROR: Not enough poolShares')
+      return null
+    }
+
+    return super.exitswapPoolAmountIn(
+      account,
+      poolAddress,
+      this.oceanAddress,
+      poolShares,
+      minOcean
+    )
+  }
+
+  /**
+   * Remove Ocean Token amount from pool liquidity based on the maximum pool shares allowed to be spent
    * @param {String} account
    * @param {String} poolAddress
    * @param {String} amount Ocean Token amount in OCEAN
+   * @param {String} maximumPoolShares maximum pool shares allowed to be spent
    * @return {TransactionReceipt}
    */
   public async removeOceanLiquidity(
