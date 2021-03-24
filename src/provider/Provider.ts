@@ -12,7 +12,7 @@ import { DDO } from '../ddo/DDO'
 import DID from '../ocean/DID'
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-const fetch = require('node-fetch')
+const fetch = require('cross-fetch')
 
 export interface ServiceEndpoint {
   serviceName: string
