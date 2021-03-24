@@ -8,6 +8,7 @@ import { Output } from '../ocean/interfaces/ComputeOutput'
 import { MetadataAlgorithm } from '../ddo/interfaces/MetadataAlgorithm'
 import { Versions } from '../ocean/Versions'
 import { DDO } from '../ddo/DDO'
+import { Response } from 'cross-fetch'
 import DID from '../ocean/DID'
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires

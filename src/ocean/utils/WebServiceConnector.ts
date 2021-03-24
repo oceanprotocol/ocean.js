@@ -1,4 +1,4 @@
-import { BodyInit, RequestInit, Response } from 'cross-fetch'
+import { BodyInit, RequestInit, Response } from 'cross-fetch/lib.fetch'
 import fs from 'fs'
 import { Logger } from '../../utils'
 import save from 'save-file'
