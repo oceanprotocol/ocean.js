@@ -5,7 +5,7 @@ import save from 'save-file'
 // import { createWriteStream } from 'streamsaver'
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-const fetch = require('node-fetch')
+const fetch = require('cross-fetch')
 
 /**
  * Provides a common interface to web services.
