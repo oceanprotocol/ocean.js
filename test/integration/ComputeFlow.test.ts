@@ -16,7 +16,7 @@ import { Account, DDO, Metadata } from '../../src/lib'
 import { Cluster, Container, Server } from '../../src/ocean/Compute'
 import { LoggerInstance } from '../../src/utils'
 import { ComputeInput } from '../../src/ocean/interfaces/ComputeInput'
-const fetch = require('node-fetch')
+import fetch from 'node-fetch'
 const web3 = new Web3('http://127.0.0.1:8545')
 
 function sleep(ms: number) {
