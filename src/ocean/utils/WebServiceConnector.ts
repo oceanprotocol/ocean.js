@@ -6,6 +6,7 @@ import save from 'save-file'
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const fetch = require('cross-fetch')
+const timeoutSignal = require("timeout-signal");
 
 /**
  * Provides a common interface to web services.
@@ -40,12 +41,12 @@ export class WebServiceConnector {
         method: 'POST',
         body: payload,
         headers,
-        timeout: 5000
+        signal: timeoutSignal(5000) 
       })
     } else {
       return this.fetch(url, {
         method: 'POST',
-        timeout: 5000
+        signal: timeoutSignal(5000) 
       })
     }
   }
@@ -56,7 +57,7 @@ export class WebServiceConnector {
       headers: {
         'Content-type': 'application/json'
       },
-      timeout: 5000
+      signal: timeoutSignal(5000) 
     })
   }
 
@@ -68,7 +69,7 @@ export class WebServiceConnector {
         headers: {
           'Content-type': 'application/json'
         },
-        timeout: 5000
+        signal: timeoutSignal(5000) 
       })
     } else {
       return this.fetch(url, {
@@ -76,7 +77,7 @@ export class WebServiceConnector {
         headers: {
           'Content-type': 'application/json'
         },
-        timeout: 5000
+        signal: timeoutSignal(5000) 
       })
     }
   }
@@ -89,7 +90,7 @@ export class WebServiceConnector {
         headers: {
           'Content-type': 'application/json'
         },
-        timeout: 5000
+        signal: timeoutSignal(5000) 
       })
     } else {
       return this.fetch(url, {
@@ -97,7 +98,7 @@ export class WebServiceConnector {
         headers: {
           'Content-type': 'application/json'
         },
-        timeout: 5000
+        signal: timeoutSignal(5000) 
       })
     }
   }
