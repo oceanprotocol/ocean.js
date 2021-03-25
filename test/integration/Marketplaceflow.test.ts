@@ -224,7 +224,7 @@ describe('Marketplace flow', () => {
       true
     )
     assert(storeTx)
-    await sleep(aquaSleep)
+    await waitForAqua(ocean, ddoEncrypted.id)
   })
   it('Marketplace should resolve asset using DID', async () => {
     await ocean.assets.resolve(ddo.id).then((newDDO) => {
