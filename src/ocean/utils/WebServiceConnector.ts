@@ -5,7 +5,7 @@ import save from 'save-file'
 // import { createWriteStream } from 'streamsaver'
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-const fetch = require('cross-fetch')
+import { fetch } from 'cross-fetch'
 const timeoutSignal = require("timeout-signal");
 
 /**
