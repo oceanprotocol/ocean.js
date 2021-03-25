@@ -8,7 +8,6 @@ import timeoutSignal from 'timeout-signal'
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const fetch = require('cross-fetch')
 
-
 /**
  * Provides a common interface to web services.
  */
