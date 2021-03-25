@@ -2,11 +2,12 @@ import { Response } from 'node-fetch'
 import fs from 'fs'
 import { Logger } from '../../utils'
 import save from 'save-file'
+import timeoutSignal from 'timeout-signal'
 // import { createWriteStream } from 'streamsaver'
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-const fetch = require("cross-fetch");
-const timeoutSignal = require("timeout-signal");
+const fetch = require('cross-fetch')
+
 
 /**
  * Provides a common interface to web services.
@@ -41,12 +42,12 @@ export class WebServiceConnector {
         method: 'POST',
         body: payload,
         headers,
-        signal: timeoutSignal(5000) 
+        signal: timeoutSignal(5000)
       })
     } else {
       return this.fetch(url, {
         method: 'POST',
-        signal: timeoutSignal(5000) 
+        signal: timeoutSignal(5000)
       })
     }
   }
@@ -57,7 +58,7 @@ export class WebServiceConnector {
       headers: {
         'Content-type': 'application/json'
       },
-      signal: timeoutSignal(5000) 
+      signal: timeoutSignal(5000)
     })
   }
 
@@ -69,7 +70,7 @@ export class WebServiceConnector {
         headers: {
           'Content-type': 'application/json'
         },
-        signal: timeoutSignal(5000) 
+        signal: timeoutSignal(5000)
       })
     } else {
       return this.fetch(url, {
@@ -77,7 +78,7 @@ export class WebServiceConnector {
         headers: {
           'Content-type': 'application/json'
         },
-        signal: timeoutSignal(5000) 
+        signal: timeoutSignal(5000)
       })
     }
   }
@@ -90,7 +91,7 @@ export class WebServiceConnector {
         headers: {
           'Content-type': 'application/json'
         },
-        signal: timeoutSignal(5000) 
+        signal: timeoutSignal(5000)
       })
     } else {
       return this.fetch(url, {
@@ -98,7 +99,7 @@ export class WebServiceConnector {
         headers: {
           'Content-type': 'application/json'
         },
-        signal: timeoutSignal(5000) 
+        signal: timeoutSignal(5000)
       })
     }
   }
