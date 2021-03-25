@@ -151,7 +151,7 @@ export class MetadataCache {
       .postWithOctet(fullUrl, ddo)
       .then((response: Response) => {
         if (response.ok) {
-          return response.arrayBuffer()
+          return response.buffer()
         }
         this.logger.error('encryptDDO failed:', response.status, response.statusText, ddo)
         return null

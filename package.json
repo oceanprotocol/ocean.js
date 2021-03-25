@@ -38,7 +38,7 @@
   },
   "homepage": "https://github.com/oceanprotocol/ocean.js#readme",
   "peerDependencies": {
-    "web3": "^1.2.3"
+    "web3": "^1.3.4"
   },
   "dependencies": {
     "@ethereum-navigator/navigator": "^0.5.2",
@@ -52,7 +52,7 @@
     "save-file": "^2.3.1",
     "timeout-signal": "^1.1.0",
     "uuid": "^8.3.2",
-    "web3": "^1.2.3",
+    "web3": "^1.3.4",
     "web3-eth-contract": "^1.3.4"
   },
   "devDependencies": {
