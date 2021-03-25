@@ -6,7 +6,8 @@ import timeoutSignal from 'timeout-signal'
 // import { createWriteStream } from 'streamsaver'
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-const fetch = require('cross-fetch')
+const fetch1 = require('cross-fetch')
+import fetch from 'cross-fetch'
 
 /**
  * Provides a common interface to web services.
