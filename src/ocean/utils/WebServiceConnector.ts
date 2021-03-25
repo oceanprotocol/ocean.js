@@ -1,11 +1,11 @@
-import { BodyInit, RequestInit, Response } from 'cross-fetch/lib.fetch'
+import { Response } from 'node-fetch'
 import fs from 'fs'
 import { Logger } from '../../utils'
 import save from 'save-file'
 // import { createWriteStream } from 'streamsaver'
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-import { fetch } from 'cross-fetch'
+const fetch = require("cross-fetch");
 const timeoutSignal = require("timeout-signal");
 
 /**
