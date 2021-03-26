@@ -1,3 +1,5 @@
+import AbortController from 'node-abort-controller'
+
 export default function timeoutSignal(timeout: number) {
   if (!Number.isInteger(timeout)) {
     throw new TypeError(`Expected an integer, got ${typeof timeout}`)
@@ -10,6 +12,6 @@ export default function timeoutSignal(timeout: number) {
   }, timeout)
 
   signalMap.set(controller.signal, timeoutId)
-
-  return controller.signal
+  // any is needed due to some type incompatibility
+  return controller.signal as any
 }
