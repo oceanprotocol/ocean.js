@@ -7,12 +7,8 @@ import { ComputeInput } from '../ocean/interfaces/ComputeInput'
 import { Output } from '../ocean/interfaces/ComputeOutput'
 import { MetadataAlgorithm } from '../ddo/interfaces/MetadataAlgorithm'
 import { Versions } from '../ocean/Versions'
-import { Response } from 'node-fetch'
 import { DDO } from '../ddo/DDO'
 import DID from '../ocean/DID'
-
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const fetch = require('node-fetch')
 
 export interface ServiceEndpoint {
   serviceName: string

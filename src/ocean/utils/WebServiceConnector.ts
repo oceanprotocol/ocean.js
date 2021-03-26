@@ -1,11 +1,9 @@
-import { BodyInit, RequestInit, Response } from 'node-fetch'
+import { Response } from 'node-fetch'
 import fs from 'fs'
 import { Logger } from '../../utils'
 import save from 'save-file'
-// import { createWriteStream } from 'streamsaver'
-
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const fetch = require('node-fetch')
+import timeoutSignal from '../../utils/Timeout'
+const fetch = require('cross-fetch')
 
 /**
  * Provides a common interface to web services.
@@ -40,12 +38,12 @@ export class WebServiceConnector {
         method: 'POST',
         body: payload,
         headers,
-        timeout: 5000
+        signal: timeoutSignal(5000)
       })
     } else {
       return this.fetch(url, {
         method: 'POST',
-        timeout: 5000
+        signal: timeoutSignal(5000)
       })
     }
   }
@@ -56,7 +54,7 @@ export class WebServiceConnector {
       headers: {
         'Content-type': 'application/json'
       },
-      timeout: 5000
+      signal: timeoutSignal(5000)
     })
   }
 
@@ -68,7 +66,7 @@ export class WebServiceConnector {
         headers: {
           'Content-type': 'application/json'
         },
-        timeout: 5000
+        signal: timeoutSignal(5000)
       })
     } else {
       return this.fetch(url, {
@@ -76,7 +74,7 @@ export class WebServiceConnector {
         headers: {
           'Content-type': 'application/json'
         },
-        timeout: 5000
+        signal: timeoutSignal(5000)
       })
     }
   }
@@ -89,7 +87,7 @@ export class WebServiceConnector {
         headers: {
           'Content-type': 'application/json'
         },
-        timeout: 5000
+        signal: timeoutSignal(5000)
       })
     } else {
       return this.fetch(url, {
@@ -97,7 +95,7 @@ export class WebServiceConnector {
         headers: {
           'Content-type': 'application/json'
         },
-        timeout: 5000
+        signal: timeoutSignal(5000)
       })
     }
   }
