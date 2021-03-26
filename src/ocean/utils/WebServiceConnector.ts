@@ -2,10 +2,7 @@ import { Response } from 'node-fetch'
 import fs from 'fs'
 import { Logger } from '../../utils'
 import save from 'save-file'
-import timeoutSignal from 'timeout-signal'
-// import { createWriteStream } from 'streamsaver'
-
-// eslint-disable-next-line @typescript-eslint/no-var-requires
+import timeoutSignal from '../../utils/Timeout'
 const fetch = require('cross-fetch')
 
 /**
