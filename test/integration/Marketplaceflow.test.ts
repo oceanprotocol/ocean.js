@@ -11,7 +11,7 @@ import { Ocean } from '../../src/ocean/Ocean'
 import { ConfigHelper } from '../../src/utils/ConfigHelper'
 import { TestContractHandler } from '../TestContractHandler'
 import { LoggerInstance } from '../../src/utils'
-
+const fetch = require('cross-fetch')
 const web3 = new Web3('http://127.0.0.1:8545')
 
 function sleep(ms: number) {
@@ -19,7 +19,22 @@ function sleep(ms: number) {
     setTimeout(resolve, ms)
   })
 }
-
+async function waitForAqua(ocean, did) {
+  const apiPath = '/api/v1/aquarius/assets/ddo'
+  let tries = 0
+  do {
+    try {
+      const result = await fetch(ocean.metadataCache.url + apiPath + '/' + did)
+      if (result.ok) {
+        break
+      }
+    } catch (e) {
+      // do nothing
+    }
+    await sleep(1500)
+    tries++
+  } while (tries < 100)
+}
 use(spies)
 
 describe('Marketplace flow', () => {
@@ -176,7 +191,7 @@ describe('Marketplace flow', () => {
     assert(ddo.dataToken === tokenAddress)
     const storeTx = await ocean.onChainMetadata.publish(ddo.id, ddo, alice.getId())
     assert(storeTx)
-    await sleep(1000)
+    await waitForAqua(ocean, ddo.id)
     ddoWithBadUrl = await ocean.assets.create(
       assetWithBadUrl,
       alice,
@@ -190,7 +205,7 @@ describe('Marketplace flow', () => {
       alice.getId()
     )
     assert(storeTxWithBadUrl)
-    await sleep(1000)
+    await waitForAqua(ocean, ddoWithBadUrl.id)
   })
 
   it('Alice publishes an encrypted dataset', async () => {
@@ -208,7 +223,7 @@ describe('Marketplace flow', () => {
       true
     )
     assert(storeTx)
-    await sleep(aquaSleep)
+    await waitForAqua(ocean, ddoEncrypted.id)
   })
   it('Marketplace should resolve asset using DID', async () => {
     await ocean.assets.resolve(ddo.id).then((newDDO) => {
