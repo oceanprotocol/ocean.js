@@ -17,11 +17,29 @@ import { Cluster, Container, Server } from '../../src/ocean/Compute'
 import { LoggerInstance } from '../../src/utils'
 import { ComputeInput } from '../../src/ocean/interfaces/ComputeInput'
 const web3 = new Web3('http://127.0.0.1:8545')
+const fetch = require('cross-fetch')
 
 function sleep(ms: number) {
   return new Promise((resolve) => {
     setTimeout(resolve, ms)
   })
+}
+
+async function waitForAqua(ocean, did) {
+  const apiPath = '/api/v1/aquarius/assets/ddo'
+  let tries = 0
+  do {
+    try {
+      const result = await fetch(ocean.metadataCache.url + apiPath + '/' + did)
+      if (result.ok) {
+        break
+      }
+    } catch (e) {
+      // do nothing
+    }
+    await sleep(1500)
+    tries++
+  } while (tries < 100)
 }
 
 /*       How to handle a compute job
@@ -267,7 +285,7 @@ describe('Compute flow', () => {
     assert(ddo.dataToken === tokenAddress, 'ddo.dataToken !== tokenAddress')
     const storeTx = await ocean.onChainMetadata.publish(ddo.id, ddo, alice.getId())
     assert(storeTx)
-    await sleep(aquaSleep)
+    await waitForAqua(ocean, ddo.id)
   })
   it('Alice publishes a 2nd dataset with a compute service that allows Raw Algo', async () => {
     const price2 = '2' // in datatoken
@@ -330,7 +348,7 @@ describe('Compute flow', () => {
       alice.getId()
     )
     assert(storeTx)
-    await sleep(aquaSleep)
+    await waitForAqua(ocean, ddoAdditional1.id)
   })
 
   it('Alice publishes a 3rd dataset with a access service', async () => {
@@ -358,7 +376,7 @@ describe('Compute flow', () => {
       alice.getId()
     )
     assert(storeTx)
-    await sleep(aquaSleep)
+    await waitForAqua(ocean, ddoAdditional2.id)
   })
 
   it('should publish a dataset with a compute service object that does not allow rawAlgo', async () => {
@@ -392,7 +410,7 @@ describe('Compute flow', () => {
       alice.getId()
     )
     assert(storeTx)
-    await sleep(aquaSleep)
+    await waitForAqua(ocean, datasetNoRawAlgo.id)
   })
 
   it('should publish a dataset with a compute service object that allows only algo with did:op:1234', async () => {
@@ -432,7 +450,7 @@ describe('Compute flow', () => {
       alice.getId()
     )
     assert(storeTx)
-    await sleep(aquaSleep)
+    await waitForAqua(ocean, datasetWithTrustedAlgo.id)
   })
 
   it('should publish an algorithm', async () => {
@@ -485,7 +503,7 @@ describe('Compute flow', () => {
       alice.getId()
     )
     assert(storeTx)
-    await sleep(aquaSleep)
+    await waitForAqua(ocean, algorithmAsset.id)
   })
 
   it('should publish an algorithm using the 2nd provider', async () => {
@@ -544,7 +562,7 @@ describe('Compute flow', () => {
       alice.getId()
     )
     assert(storeTx)
-    await sleep(aquaSleep)
+    await waitForAqua(ocean, algorithmAssetRemoteProvider.id)
     const checkDDO = await ocean.assets.resolve(algorithmAssetRemoteProvider.id)
     const checkService = checkDDO.findServiceByType('access')
     assert(
@@ -1214,7 +1232,7 @@ describe('Compute flow', () => {
       alice.getId()
     )
     assert(storeTx)
-    await sleep(aquaSleep)
+    await waitForAqua(ocean, datasetWithBogusProvider.id)
   })
   it('Bob should fail to start a compute job for a bogus provider with a raw Algo', async () => {
     const output = {}
