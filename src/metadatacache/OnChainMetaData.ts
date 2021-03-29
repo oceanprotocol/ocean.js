@@ -117,7 +117,8 @@ export class OnChainMetadata {
       data = await this.compressDDO(data)
       flags = flags | 1
     } else {
-      data = await this.metadataCache.encryptDDO(data)
+      const blob = await this.metadataCache.encryptDDO(data)
+      data = await blob.arrayBuffer()
       if (!data) return null
       flags = flags | 2
     }
