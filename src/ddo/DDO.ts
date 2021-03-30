@@ -58,7 +58,7 @@ export class DDO {
 
   public isInPurgatory: 'false' | 'true'
 
-  public isDatasetConsumable: boolean
+  public isConsumeDisable: boolean
 
   public purgatoryData?: PurgatoryData
 
