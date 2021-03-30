@@ -129,6 +129,7 @@ export class Assets extends Instantiable {
       const ddo: DDO = new DDO({
         id: did.getDid(),
         dataToken: dtAddress,
+        isDatasetConsumable: true,
         authentication: [
           {
             type: 'RsaSignatureAuthentication2018',
