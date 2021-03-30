@@ -129,7 +129,7 @@ export class Assets extends Instantiable {
       const ddo: DDO = new DDO({
         id: did.getDid(),
         dataToken: dtAddress,
-        isDatasetConsumable: true,
+        isConsumeDisable: false,
         authentication: [
           {
             type: 'RsaSignatureAuthentication2018',
@@ -271,6 +271,9 @@ export class Assets extends Instantiable {
       } else {
         ddo.service[i].attributes.additionalInformation.links = []
       }
+
+      if (newMetadata.isConsumeDisable !== undefined)
+        ddo.isConsumeDisable = newMetadata.isConsumeDisable
     }
     return ddo
   }
