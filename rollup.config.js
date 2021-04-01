@@ -1,20 +1,5 @@
 // // rollup.config.js
 
-// import merge from 'deepmerge';
-// import { createBasicConfig } from '@open-wc/building-rollup';
-
-// const baseConfig = createBasicConfig();
-
-// export default merge(baseConfig, {
-//     input: './out-tsc/src/index.js',
-//     output: {
-//         dir: './dist/node',
-//     }
-//   });
-
-// import babel from 'rollup-plugin-babel';
-// import resolve from 'rollup-plugin-node-resolve';
-
 import commonjs from '@rollup/plugin-commonjs';
 import json from '@rollup/plugin-json';
 import nodeResolve from '@rollup/plugin-node-resolve';
