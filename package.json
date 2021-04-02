@@ -11,8 +11,8 @@
   "unpkg": "./dist/browser/lib.cjs2.min.js",
   "scripts": {
     "start": "npm run clean && npm run build:metadata && tsc -w",
-    "build": "npm run clean && npm run build:metadata && microbundle build --format umd,cjs,es --tsconfig tsconfig.json",
-    "build:node": "npm run clean && npm run build:metadata && microbundle build --format umd,cjs,es --target node --tsconfig tsconfig.json",
+    "build": "npm run clean && npm run build:metadata && npm run build:tsc && microbundle build --format umd,cjs,es --tsconfig tsconfig.json",
+    "build:node": "npm run clean && npm run build:metadata && npm run build:tsc && microbundle build --format umd,cjs,es --target node --tsconfig tsconfig.json",
     "build:tsc": "tsc --sourceMap",
     "build:metadata": "./scripts/get-metadata.js > src/metadata.json",
     "clean": "rm -rf ./dist/ ./doc/ ./.nyc_output",
