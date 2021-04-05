@@ -493,16 +493,18 @@ export class Provider extends Instantiable {
     }
   }
 
+  private async getServiceEndpoint(did: string): Promise<string> {
+    const ddo = await this.ocean.assets.resolve(did)
+    const computeService = ddo?.findServiceByType('compute')
+    const acessService = ddo?.findServiceByType('access')
+    return computeService ? computeService.serviceEndpoint : acessService.serviceEndpoint
+  }
+
   private async getPath(url: string | DID): Promise<string> {
     let path
     if (url instanceof DID) {
-      const ddo = await this.ocean.assets.resolve(url.getDid())
-      const computeService = ddo?.findServiceByType('compute')
-      const acessService = ddo?.findServiceByType('access')
-      path = computeService
-        ? computeService.serviceEndpoint
-        : acessService.serviceEndpoint
-      path = path + '/api/v1/services/fileinfo'
+      const serviceEndpoint = await this.getServiceEndpoint(url.getDid())
+      path = serviceEndpoint + '/api/v1/services/fileinfo'
     } else {
       path = this.getFileinfoEndpoint() ? this.getFileinfoEndpoint().urlPath : null
     }
