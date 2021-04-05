@@ -130,22 +130,9 @@ export class Provider extends Instantiable {
    * @return {Promise<File[]>} urlDetails
    */
   public async fileinfo(url: string | DID): Promise<File[]> {
-    let args
-    let path
+    const args = url instanceof DID ? { did: url.getDid() } : { url }
+    const path = await this.getPath(url)
     const files: File[] = []
-    if (url instanceof DID) {
-      const ddo = await this.ocean.assets.resolve(url.getDid())
-      const computeService = ddo?.findServiceByType('compute')
-      const acessService = ddo?.findServiceByType('access')
-      args = { did: url.getDid() }
-      path = computeService
-        ? computeService.serviceEndpoint
-        : acessService.serviceEndpoint
-      path = path + '/api/v1/services/fileinfo'
-    } else {
-      args = { url }
-      path = this.getFileinfoEndpoint() ? this.getFileinfoEndpoint().urlPath : null
-    }
 
     if (!path) return null
     try {
@@ -504,5 +491,21 @@ export class Provider extends Instantiable {
       this.logger.error(`Error validating provider: ${error.message}`)
       return false
     }
+  }
+
+  private async getPath(url: string | DID): Promise<string> {
+    let path
+    if (url instanceof DID) {
+      const ddo = await this.ocean.assets.resolve(url.getDid())
+      const computeService = ddo?.findServiceByType('compute')
+      const acessService = ddo?.findServiceByType('access')
+      path = computeService
+        ? computeService.serviceEndpoint
+        : acessService.serviceEndpoint
+      path = path + '/api/v1/services/fileinfo'
+    } else {
+      path = this.getFileinfoEndpoint() ? this.getFileinfoEndpoint().urlPath : null
+    }
+    return path
   }
 }
