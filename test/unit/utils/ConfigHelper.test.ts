@@ -1,5 +1,5 @@
 import { assert } from 'chai'
-import { ConfigHelper } from '../../../src/lib'
+import { ConfigHelper } from '../../../src'
 
 describe('ConfigHelper', () => {
   it('should get config based on network name', () => {

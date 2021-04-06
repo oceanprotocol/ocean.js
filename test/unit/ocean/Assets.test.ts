@@ -4,7 +4,7 @@ import spies from 'chai-spies'
 import { SearchQuery, MetadataCache } from '../../../src/metadatacache/MetadataCache'
 import { Ocean } from '../../../src/ocean/Ocean'
 import config from '../config'
-import { DDO } from '../../../src/lib'
+import { DDO } from '../../../src'
 import { responsify, getSearchResults } from '../helpers'
 
 use(spies)

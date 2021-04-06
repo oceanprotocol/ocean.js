@@ -12,7 +12,7 @@ import {
 import Web3 from 'web3'
 import factory from '@oceanprotocol/contracts/artifacts/DTFactory.json'
 import datatokensTemplate from '@oceanprotocol/contracts/artifacts/DataTokenTemplate.json'
-import { Account, DDO, Metadata } from '../../src/lib'
+import { Account, DDO, Metadata } from '../../src'
 import { Cluster, Container, Server } from '../../src/ocean/Compute'
 import { LoggerInstance } from '../../src/utils'
 import { ComputeInput } from '../../src/ocean/interfaces/ComputeInput'
