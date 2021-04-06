@@ -193,14 +193,18 @@ export class Compute extends Instantiable {
    * Returns information about the status of all compute jobs, or a single compute job.
    * @param  {Account} consumerAccount The account of the consumer ordering the service.
    * @param  {string} did Decentralized identifier.
-   * @param  {string} jobId The jobId of the compute job
+   * @param  {DDO} ddo If undefined then the ddo will be fetched by did, this is just to optimize network calls
+   * @param  {ServiceCompute} service If undefined then we get the service from the ddo
    * @param  {string} jobId The Order transaction id
+   * @param  {string} txId The transaction id
    * @param  {boolean} sign If the provider request is going to be signed(default) (full status) or not (short status)
    * @return {Promise<ComputeJob[]>} Returns the status
    */
   public async status(
     consumerAccount: Account,
     did?: string,
+    ddo?: DDO,
+    service?: ServiceCompute,
     jobId?: string,
     txId?: string,
     sign = true
@@ -208,14 +212,22 @@ export class Compute extends Instantiable {
     let provider: Provider
 
     if (did) {
-      const ddo = await this.ocean.assets.resolve(did)
-      const service = ddo.findServiceByType('compute')
+      if (!service) {
+        if (!ddo) {
+          ddo = await this.ocean.assets.resolve(did)
+          if (!ddo) return null
+        }
+        service = ddo.findServiceByType('compute')
+        if (!service) return null
+      }
+
       const { serviceEndpoint } = service
       provider = await Provider.getInstance(this.instanceConfig)
       await provider.setBaseUrl(serviceEndpoint)
     } else {
       provider = this.ocean.provider
     }
+
     const computeJobsList = await provider.computeStatus(
       did,
       consumerAccount,
@@ -223,6 +235,7 @@ export class Compute extends Instantiable {
       txId,
       sign
     )
+
     return computeJobsList as ComputeJob[]
   }
 

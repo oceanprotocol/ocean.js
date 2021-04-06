@@ -2,7 +2,7 @@ import DID from '../DID'
 
 export interface ComputeJob {
   owner: string
-  did: string
+  dids: string[]
   jobId: string
   dateCreated: string
   dateFinished: string
