@@ -1,6 +1,7 @@
 import { Ocean } from '../../src/ocean/Ocean'
 import config from './config'
 import { assert } from 'chai'
+import { DID } from '../../src/lib'
 
 describe('Provider tests', () => {
   let ocean: Ocean
@@ -27,5 +28,10 @@ describe('Provider tests', () => {
     const response = await ocean.provider.fileinfo(url)
     assert(response[0].contentLength === undefined)
     assert(response[0].contentType === undefined)
+  })
+  it('Check an invalid DID', async () => {
+    const did = DID.parse('did:op:D4E3ceB4A011Df40b7B202d98CC9C394034aB4dC')
+    const response = await ocean.provider.fileinfo(did)
+    assert(response === null)
   })
 })
