@@ -2,10 +2,15 @@ import Config from './models/Config'
 import Account from './ocean/Account'
 import DID from './ocean/DID'
 import { Ocean } from './ocean/Ocean'
-import { LoggerInstance as Logger } from './utils/Logger'
+import { LoggerInstance as Logger, LogLevel } from './utils/Logger'
 import { MetadataCache } from './metadatacache/MetadataCache'
 import { DataTokens } from './datatokens/Datatokens'
-import { ConfigHelper } from './utils/ConfigHelper'
+import {
+  ConfigHelper,
+  ConfigHelperConfig,
+  ConfigHelperNetworkId,
+  ConfigHelperNetworkName
+} from './utils/ConfigHelper'
 
 import * as utils from './utils'
 
@@ -27,8 +32,12 @@ export {
   Config,
   DID,
   Logger,
+  LogLevel,
   MetadataCache,
   DataTokens,
   utils,
-  ConfigHelper
+  ConfigHelper,
+  ConfigHelperConfig,
+  ConfigHelperNetworkId,
+  ConfigHelperNetworkName
 }
