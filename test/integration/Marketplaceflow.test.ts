@@ -406,6 +406,33 @@ describe('Marketplace flow', () => {
     assert(response[0].contentType === 'application/json')
   })
 
+  it('Alice should create a FRE pricing for her asset', async () => {
+    const trxReceipt = await ocean.fixedRateExchange.create(
+      tokenAddress,
+      '1',
+      alice.getId()
+    )
+    assert(trxReceipt)
+    await sleep(aquaSleep)
+    const resolvedDDO = await ocean.assets.resolve(ddo.id)
+    assert(resolvedDDO.price.type === 'exchange')
+    assert(resolvedDDO.price.value === 1)
+  })
+  it('Alice should update the FRE pricing for her asset', async () => {
+    const exchangeDetails = await ocean.fixedRateExchange.searchforDT(tokenAddress, '0')
+    assert(exchangeDetails)
+    const trxReceipt = await ocean.fixedRateExchange.setRate(
+      exchangeDetails[0].exchangeID,
+      2,
+      alice.getId()
+    )
+    assert(trxReceipt)
+    await sleep(aquaSleep)
+    const resolvedDDO = await ocean.assets.resolve(ddo.id)
+    assert(resolvedDDO.price.type === 'exchange')
+    assert(resolvedDDO.price.value === 2)
+  })
+
   it('Alice publishes a dataset but passed data token is invalid', async () => {
     price = '10' // in datatoken
     const publishedDate = new Date(Date.now()).toISOString().split('.')[0] + 'Z'
