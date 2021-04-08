@@ -380,7 +380,7 @@ describe('Marketplace flow', () => {
     const assets = await ocean.assets.ownerAssets(alice.getId())
     assert(assets.results.length > 0)
   })
-  /*
+
   it('Alice updates metadata and removes sample links', async () => {
     const newMetaData: EditableMetadata = {
       description: 'new description no links',
@@ -454,7 +454,7 @@ describe('Marketplace flow', () => {
     assert(response[0].contentLength === '1161')
     assert(response[0].contentType === 'application/json')
   })
-  */
+  
   it('Alice should create a FRE pricing for her asset', async () => {
     const trxReceipt = await ocean.fixedRateExchange.create(
       tokenAddress,
