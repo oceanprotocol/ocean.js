@@ -462,7 +462,6 @@ describe('Marketplace flow', () => {
       alice.getId()
     )
     assert(trxReceipt)
-    console.error(trxReceipt)
     await sleep(aquaSleep)
     const exchangeDetails = await ocean.fixedRateExchange.searchforDT(tokenAddress, '0')
     const resolvedDDO = await ocean.assets.resolve(ddo.id)
