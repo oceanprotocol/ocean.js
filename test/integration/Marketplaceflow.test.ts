@@ -507,6 +507,7 @@ describe('Marketplace flow', () => {
     assert(resolvedDDO.price.value)
     assert(resolvedDDO.price.pools.includes(alicePoolAddress))
   })
+
   it('Alice should update the POOL pricing for her asset by buying a DT', async () => {
     const poolAddress=await ocean.pool.searchPoolforDT(tokenAddressWithPool)
     const buyTx = await ocean.pool.buyDT(alice.getId(), poolAddress[0], '1', '999')
