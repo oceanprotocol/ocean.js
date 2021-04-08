@@ -24,7 +24,6 @@ externally-run services. For convenience, we run barge locally in default settin
 ```bash
 git clone https://github.com/oceanprotocol/barge.git
 cd barge/
-git checkout v3
 export PROVIDER_VERSION=latest
 ./start_ocean.sh --no-dashboard
 ```
