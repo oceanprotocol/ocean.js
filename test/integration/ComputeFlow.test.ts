@@ -690,8 +690,8 @@ describe('Compute flow', () => {
       undefined,
       undefined,
       undefined,
-      computeOrderId,
       undefined,
+      computeOrderId,
       true
     )
     assert(response.length > 0, "Response.length is's not >0")
