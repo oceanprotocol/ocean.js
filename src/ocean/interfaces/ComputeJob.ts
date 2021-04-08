@@ -10,6 +10,6 @@ export interface ComputeJob {
   algorithmLogUrl: string
   resultsUrl: string[]
   resultsDid?: DID
-  input?: string[]
+  inputDID?: string[]
   algoDID?: string
 }
