@@ -495,6 +495,7 @@ export class Provider extends Instantiable {
 
   private async getServiceEndpoint(did: string): Promise<string> {
     const ddo = await this.ocean.assets.resolve(did)
+    if (!ddo) return
     const computeService = ddo?.findServiceByType('compute')
     const acessService = ddo?.findServiceByType('access')
     return computeService ? computeService.serviceEndpoint : acessService.serviceEndpoint

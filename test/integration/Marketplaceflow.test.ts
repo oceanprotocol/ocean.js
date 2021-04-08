@@ -406,12 +406,6 @@ describe('Marketplace flow', () => {
     assert(response[0].contentType === 'application/json')
   })
 
-  it('Check an invalid DID', async () => {
-    const did = DID.parse('did:op:D4E3ceB4A011Df40b7B202d98CC9C394034aB4dC')
-    const response = await ocean.provider.fileinfo(did)
-    assert(response === null)
-  })
-
   it('Alice publishes a dataset but passed data token is invalid', async () => {
     price = '10' // in datatoken
     const publishedDate = new Date(Date.now()).toISOString().split('.')[0] + 'Z'
