@@ -509,7 +509,7 @@ describe('Marketplace flow', () => {
   })
 
   it('Alice should update the POOL pricing for her asset by buying a DT', async () => {
-    const poolAddress=await ocean.pool.searchPoolforDT(tokenAddressWithPool)
+    const poolAddress = await ocean.pool.searchPoolforDT(tokenAddressWithPool)
     const buyTx = await ocean.pool.buyDT(alice.getId(), poolAddress[0], '1', '999')
     assert(buyTx)
     await sleep(aquaSleep)
