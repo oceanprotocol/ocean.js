@@ -689,14 +689,24 @@ describe('Compute flow', () => {
       bob,
       undefined,
       undefined,
+      undefined,
       computeOrderId,
+      undefined,
       true
     )
     assert(response.length > 0, "Response.length is's not >0")
   })
   it('Bob should get status of a compute job without signing', async () => {
     assert(jobId != null, 'Jobid is null')
-    const response = await ocean.compute.status(bob, ddo.id, jobId, undefined, false)
+    const response = await ocean.compute.status(
+      bob,
+      ddo.id,
+      undefined,
+      undefined,
+      jobId,
+      undefined,
+      false
+    )
     assert(response[0].jobId === jobId, 'response[0].jobId !== jobId')
   })
 
@@ -706,13 +716,15 @@ describe('Compute flow', () => {
       undefined,
       undefined,
       undefined,
+      undefined,
+      undefined,
       false
     )
     assert(response.length > 0, 'Invalid response length')
   })
   it('Bob should get status of a compute job', async () => {
     assert(jobId != null, 'Jobid is null')
-    const response = await ocean.compute.status(bob, ddo.id, jobId)
+    const response = await ocean.compute.status(bob, ddo.id, undefined, undefined, jobId)
     assert(response[0].jobId === jobId, 'response[0].jobId !== jobId')
   })
 
@@ -723,7 +735,7 @@ describe('Compute flow', () => {
   it('Bob should stop compute job', async () => {
     assert(jobId != null, 'Jobid is null')
     await ocean.compute.stop(bob, ddo.id, jobId)
-    const response = await ocean.compute.status(bob, ddo.id, jobId)
+    const response = await ocean.compute.status(bob, ddo.id, undefined, undefined, jobId)
     // TODO: typings say that `stopreq` does not exist
     assert((response[0] as any).stopreq === 1, 'Response.stopreq is invalid')
   })
@@ -1282,6 +1294,8 @@ describe('Compute flow', () => {
     const response = await ocean.compute.status(
       bob,
       datasetWithBogusProvider.id,
+      undefined,
+      undefined,
       undefined,
       undefined,
       false
