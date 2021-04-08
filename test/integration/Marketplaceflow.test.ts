@@ -41,16 +41,19 @@ describe('Marketplace flow', () => {
   let owner: Account
   let bob: Account
   let ddo
+  let ddoWithPool
   let ddoWithBadUrl
   let ddoEncrypted
   let alice: Account
   let asset
+  let assetWithPool
   let assetWithBadUrl
   let assetWithEncrypt
   let marketplace: Account
   let contracts: TestContractHandler
   let datatoken: DataTokens
   let tokenAddress: string
+  let tokenAddressWithPool: string
   let tokenAddressForBadUrlAsset: string
   let tokenAddressEncrypted: string
   let service1: ServiceAccess
@@ -59,9 +62,10 @@ describe('Marketplace flow', () => {
   let accessService: Service
   let data
   let blob
+  let poolLastPrice
 
   const marketplaceAllowance = '20'
-  const tokenAmount = '100'
+  const tokenAmount = '10000'
   const aquaSleep = 50000
 
   it('Initialize Ocean contracts v3', async () => {
@@ -100,6 +104,14 @@ describe('Marketplace flow', () => {
       'DTA'
     )
     assert(tokenAddress != null)
+    tokenAddressWithPool = await datatoken.create(
+      blob,
+      alice.getId(),
+      '10000000000',
+      'AliceDT',
+      'DTA'
+    )
+    assert(tokenAddressWithPool != null)
     tokenAddressForBadUrlAsset = await datatoken.create(
       blob,
       alice.getId(),
@@ -122,6 +134,25 @@ describe('Marketplace flow', () => {
       main: {
         type: 'dataset',
         name: 'test-dataset',
+        dateCreated: new Date(Date.now()).toISOString().split('.')[0] + 'Z', // remove milliseconds
+        author: 'oceanprotocol-team',
+        license: 'MIT',
+        files: [
+          {
+            url: 'https://s3.amazonaws.com/testfiles.oceanprotocol.com/info.0.json',
+            checksum: 'efb2c764274b745f5fc37f97c6b0e761',
+            contentLength: '4535431',
+            contentType: 'text/csv',
+            encoding: 'UTF-8',
+            compression: 'zip'
+          }
+        ]
+      }
+    }
+    assetWithPool = {
+      main: {
+        type: 'dataset',
+        name: 'test-dataset-with-pools',
         dateCreated: new Date(Date.now()).toISOString().split('.')[0] + 'Z', // remove milliseconds
         author: 'oceanprotocol-team',
         license: 'MIT',
@@ -177,7 +208,7 @@ describe('Marketplace flow', () => {
     }
   })
 
-  it('Alice publishes both datasets', async () => {
+  it('Alice publishes all datasets', async () => {
     price = '10' // in datatoken
     const publishedDate = new Date(Date.now()).toISOString().split('.')[0] + 'Z'
     const timeout = 0
@@ -206,6 +237,20 @@ describe('Marketplace flow', () => {
     )
     assert(storeTxWithBadUrl)
     await waitForAqua(ocean, ddoWithBadUrl.id)
+    ddoWithPool = await ocean.assets.create(
+      assetWithPool,
+      alice,
+      [service1],
+      tokenAddressWithPool
+    )
+    assert(ddoWithPool.dataToken === tokenAddressWithPool)
+    const storeTxWithPool = await ocean.onChainMetadata.publish(
+      ddoWithPool.id,
+      ddoWithPool,
+      alice.getId()
+    )
+    assert(storeTxWithPool)
+    await waitForAqua(ocean, ddoWithPool.id)
   })
 
   it('Alice publishes an encrypted dataset', async () => {
@@ -244,6 +289,10 @@ describe('Marketplace flow', () => {
     await datatoken.mint(tokenAddress, alice.getId(), tokenAmount)
     await datatoken.mint(tokenAddressForBadUrlAsset, alice.getId(), tokenAmount)
     await datatoken.mint(tokenAddressEncrypted, alice.getId(), tokenAmount)
+    await datatoken.mint(tokenAddressWithPool, alice.getId(), tokenAmount)
+    // since we are in barge, we can do this
+    await datatoken.mint(ocean.pool.oceanAddress, owner.getId(), tokenAmount)
+    await datatoken.transfer(ocean.pool.oceanAddress, alice.getId(), '200', owner.getId())
   })
 
   it('Alice allows marketplace to sell her datatokens', async () => {
@@ -331,7 +380,7 @@ describe('Marketplace flow', () => {
     const assets = await ocean.assets.ownerAssets(alice.getId())
     assert(assets.results.length > 0)
   })
-
+  /*
   it('Alice updates metadata and removes sample links', async () => {
     const newMetaData: EditableMetadata = {
       description: 'new description no links',
@@ -405,7 +454,7 @@ describe('Marketplace flow', () => {
     assert(response[0].contentLength === '1161')
     assert(response[0].contentType === 'application/json')
   })
-
+  */
   it('Alice should create a FRE pricing for her asset', async () => {
     const trxReceipt = await ocean.fixedRateExchange.create(
       tokenAddress,
@@ -413,10 +462,13 @@ describe('Marketplace flow', () => {
       alice.getId()
     )
     assert(trxReceipt)
+    console.error(trxReceipt)
     await sleep(aquaSleep)
+    const exchangeDetails = await ocean.fixedRateExchange.searchforDT(tokenAddress, '0')
     const resolvedDDO = await ocean.assets.resolve(ddo.id)
     assert(resolvedDDO.price.type === 'exchange')
     assert(resolvedDDO.price.value === 1)
+    assert(resolvedDDO.price.exchange_id === exchangeDetails[0].exchangeID)
   })
   it('Alice should update the FRE pricing for her asset', async () => {
     const exchangeDetails = await ocean.fixedRateExchange.searchforDT(tokenAddress, '0')
@@ -431,6 +483,40 @@ describe('Marketplace flow', () => {
     const resolvedDDO = await ocean.assets.resolve(ddo.id)
     assert(resolvedDDO.price.type === 'exchange')
     assert(resolvedDDO.price.value === 2)
+  })
+  it('Alice should create a Pool pricing for her asset', async () => {
+    const dtAmount = '45'
+    const dtWeight = '9'
+    const oceanAmount =
+      (parseFloat(dtAmount) * (10 - parseFloat(dtWeight))) / parseFloat(dtWeight)
+    const fee = '0.02'
+    const createTx = await ocean.pool.create(
+      alice.getId(),
+      tokenAddressWithPool,
+      dtAmount,
+      dtWeight,
+      String(oceanAmount),
+      fee
+    )
+    assert(createTx)
+    const alicePoolAddress = createTx.events.BPoolRegistered.returnValues[0]
+    assert(alicePoolAddress)
+    await sleep(aquaSleep)
+    const resolvedDDO = await ocean.assets.resolve(ddoWithPool.id)
+    poolLastPrice = resolvedDDO.price.value
+    assert(resolvedDDO.price.type === 'pool')
+    assert(resolvedDDO.price.value)
+    assert(resolvedDDO.price.pools.includes(alicePoolAddress))
+  })
+  it('Alice should update the POOL pricing for her asset by buying a DT', async () => {
+    const poolAddress=await ocean.pool.searchPoolforDT(tokenAddressWithPool)
+    const buyTx = await ocean.pool.buyDT(alice.getId(), poolAddress[0], '1', '999')
+    assert(buyTx)
+    await sleep(aquaSleep)
+    const resolvedDDO = await ocean.assets.resolve(ddoWithPool.id)
+    assert(resolvedDDO.price.type === 'pool')
+    assert(resolvedDDO.price.value !== poolLastPrice)
+    assert(resolvedDDO.price.pools.includes(poolAddress[0]))
   })
 
   it('Alice publishes a dataset but passed data token is invalid', async () => {
