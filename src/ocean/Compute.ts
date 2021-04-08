@@ -196,7 +196,7 @@ export class Compute extends Instantiable {
    * @param  {DDO} ddo If undefined then the ddo will be fetched by did, this is just to optimize network calls
    * @param  {ServiceCompute} service If undefined then we get the service from the ddo
    * @param  {string} jobId The Order transaction id
-   * @param  {string} txId The transaction id
+   * @param  {string} txId The transaction id of ordering the main asset (asset with compute service)
    * @param  {boolean} sign If the provider request is going to be signed(default) (full status) or not (short status)
    * @return {Promise<ComputeJob[]>} Returns the status
    */
