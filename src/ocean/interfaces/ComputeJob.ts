@@ -2,7 +2,6 @@ import DID from '../DID'
 
 export interface ComputeJob {
   owner: string
-  dids: string[]
   jobId: string
   dateCreated: string
   dateFinished: string
@@ -11,4 +10,6 @@ export interface ComputeJob {
   algorithmLogUrl: string
   resultsUrl: string[]
   resultsDid?: DID
+  input?: string[]
+  algoDID?: string
 }
