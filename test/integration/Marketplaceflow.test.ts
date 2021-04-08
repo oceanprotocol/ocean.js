@@ -454,7 +454,7 @@ describe('Marketplace flow', () => {
     assert(response[0].contentLength === '1161')
     assert(response[0].contentType === 'application/json')
   })
-  
+
   it('Alice should create a FRE pricing for her asset', async () => {
     const trxReceipt = await ocean.fixedRateExchange.create(
       tokenAddress,
