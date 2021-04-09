@@ -15,7 +15,7 @@ import {
 import { Compute } from './Compute'
 import { OceanPool } from '../balancer/OceanPool'
 import { OceanFixedRateExchange } from '../exchange/FixedRateExchange'
-
+import { OPFCommunityFeeCollector } from '../opfFeeCollector/OPFCommunityFeeCollector'
 /**
  * Main interface for Ocean Protocol.
  */
@@ -71,6 +71,12 @@ export class Ocean extends Instantiable {
       instanceConfig.config.oceanTokenAddress,
       instance.datatokens,
       instanceConfig.config.startBlock
+    )
+    instance.opfFeeCollector = new OPFCommunityFeeCollector(
+      instanceConfig.config.web3Provider,
+      instanceConfig.logger,
+      instanceConfig.config.feeCollectorAddress,
+      instanceConfig.config.feeCollectorABI
     )
     instance.onChainMetadata = new OnChainMetadata(
       instanceConfig.config.web3Provider,
@@ -153,6 +159,12 @@ export class Ocean extends Instantiable {
    * @type {OceanFixedRateExchange}
    */
   public fixedRateExchange: OceanFixedRateExchange
+
+  /**
+   * Ocean OPFCommuntiyFeeCollector submodule
+   * @type {OPFCommunityFeeCollector}
+   */
+  public opfFeeCollector: OPFCommunityFeeCollector
 
   /**
      * Ocean tokens submodule

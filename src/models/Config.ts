@@ -85,6 +85,19 @@ export class Config {
    * @type {any}
    */
   public fixedRateExchangeAddressABI?: AbiItem | AbiItem[]
+
+  /**
+   * OPFCommunityFeeCollectorAddress
+   * @type {string}
+   */
+  public feeCollectorAddress?: string
+
+  /**
+   * OPFCommunityFeeCollectorAddressABI
+   * @type {any}
+   */
+  public feeCollectorABI?: AbiItem | AbiItem[]
+
   /**
    * DDOContractAddress
    * @type {string}
