@@ -1,47 +1,23 @@
-import defaultFeeCollectorABI from '@oceanprotocol/contracts/artifacts/FixedRateExchange.json'
+import defaultFeeCollectorABI from '@oceanprotocol/contracts/artifacts/OPFCommunityFeeCollector.json'
 import { TransactionReceipt } from 'web3-core'
 import { Contract, EventData } from 'web3-eth-contract'
 import { AbiItem } from 'web3-utils/types'
 import Web3 from 'web3'
 import { SubscribablePromise, Logger, getFairGasPrice } from '../utils'
 
-
-// export interface FixedPriceExchange {
-//   exchangeID?: string
-//   exchangeOwner: string
-//   dataToken: string
-//   baseToken: string
-//   fixedRate: string
-//   active: boolean
-//   supply: string
-// }
-
-// export interface FixedPriceSwap {
-//   exchangeID: string
-//   caller: string
-//   baseTokenAmount: string
-//   dataTokenAmount: string
-// }
-
-// export enum FixedRateCreateProgressStep {
-//   CreatingExchange,
-//   ApprovingDatatoken
-// }
-
 export class OPFCommunityFeeCollector {
   public GASLIMIT_DEFAULT = 1000000
   /** Ocean related functions */
- // public oceanAddress: string = null
+ 
   public feeCollectorAddress: string
   public feeCollectorABI: AbiItem | AbiItem[]
   public web3: Web3
   public contract: Contract = null
   private logger: Logger
- // public datatokens: DataTokens
- // public startBlock: number
+ 
 
   /**
-   * Instantiate FixedRateExchange
+   * Instantiate CommunityFeeCollector
    * @param {any} web3
    * @param {String} feeCollectorAddress
    * @param {any} feeCollectorABI
@@ -51,17 +27,12 @@ export class OPFCommunityFeeCollector {
     web3: Web3,
     logger: Logger,
     feeCollectorAddress: string = null,
-    feeCollectorABI: AbiItem | AbiItem[] = null,
-   // oceanAddress: string = null,
-   // datatokens: DataTokens,
-   // startBlock?: number
+    feeCollectorABI: AbiItem | AbiItem[] = null
   ) {
     this.web3 = web3
     this.feeCollectorAddress = feeCollectorAddress
-    this.feeCollectorABI =
-    feeCollectorABI || (defaultFeeCollectorABI.abi as AbiItem[])
-   // this.oceanAddress = oceanAddress
-  //  this.datatokens = datatokens
+    this.feeCollectorABI = feeCollectorABI || (defaultFeeCollectorABI.abi as AbiItem[])
+   
     if (web3)
       this.contract = new this.web3.eth.Contract(
         this.feeCollectorABI,
@@ -78,19 +49,15 @@ export class OPFCommunityFeeCollector {
     return this.web3.utils.fromWei(amount)
   }
 
-  
   /**
-   * Set new rate
-   * @param {String} exchangeId ExchangeId
-   * @param {Number} newRate New rate
+   * Send token balance from OPFCommunityFeeCollector contract to collector
+   * @param {String} tokenAddress dataToken address
    * @param {String} address User account
    * @return {Promise<TransactionReceipt>} transaction receipt
    */
   public async withdrawToken(
-    // exchangeId: string,
-    // newRate: number,
     tokenAddress: string,
-    address:string
+    address: string
   ): Promise<TransactionReceipt> {
     const gasLimitDefault = this.GASLIMIT_DEFAULT
     let estGas
@@ -101,19 +68,17 @@ export class OPFCommunityFeeCollector {
     } catch (e) {
       estGas = gasLimitDefault
     }
-    const trxReceipt = await this.contract.methods
-      .withdrawToken(tokenAddress)
-      .send({
-        from: address,
-        gas: estGas + 1,
-        gasPrice: await getFairGasPrice(this.web3)
-      })
+    const trxReceipt = await this.contract.methods.withdrawToken(tokenAddress).send({
+      from: address,
+      gas: estGas + 1,
+      gasPrice: await getFairGasPrice(this.web3)
+    })
     return trxReceipt
   }
 
   /**
-   * Activate an exchange
-   * @param {String} exchangeId ExchangeId
+   * Change collector address
+   * @param {String} newCollector new collector address
    * @param {String} address User address
    * @return {Promise<TransactionReceipt>} transaction receipt
    */
@@ -143,9 +108,7 @@ export class OPFCommunityFeeCollector {
    * @param {String} address User address
    * @return {Promise<TransactionReceipt>} transaction receipt
    */
-  public async withdrawETH(
-    address: string
-  ): Promise<TransactionReceipt> {
+  public async withdrawETH(address: string): Promise<TransactionReceipt> {
     const gasLimitDefault = this.GASLIMIT_DEFAULT
     let estGas
     try {
@@ -162,6 +125,4 @@ export class OPFCommunityFeeCollector {
     })
     return trxReceipt
   }
-
- 
 }
