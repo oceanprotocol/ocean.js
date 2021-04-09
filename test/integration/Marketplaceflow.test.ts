@@ -400,10 +400,12 @@ describe('Marketplace flow', () => {
   })
 
   it('Alice should check if her asset has valid url(s)', async () => {
+    const service = ddo.findServiceByType('access')
+    assert(service !== null)
+    const serviceIndex = service.index
     const did: DID = DID.generate(noDidPrefixed(ddo.id))
-    const response = await ocean.provider.fileinfo(did)
-    assert(response[0].contentLength === '1161')
-    assert(response[0].contentType === 'application/json')
+    const response = await ocean.provider.isFileConsumable(did, serviceIndex)
+    assert(response === true)
   })
 
   it('Alice publishes a dataset but passed data token is invalid', async () => {

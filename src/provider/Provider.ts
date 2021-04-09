@@ -9,6 +9,7 @@ import { MetadataAlgorithm } from '../ddo/interfaces/MetadataAlgorithm'
 import { Versions } from '../ocean/Versions'
 import { DDO } from '../ddo/DDO'
 import DID from '../ocean/DID'
+import { Service } from '../ddo/interfaces'
 
 export interface ServiceEndpoint {
   serviceName: string
@@ -129,11 +130,10 @@ export class Provider extends Instantiable {
    * @param {String | DID} url or did
    * @return {Promise<File[]>} urlDetails
    */
-  public async fileinfo(url: string | DID): Promise<File[]> {
-    const args = url instanceof DID ? { did: url.getDid() } : { url }
-    const path = await this.getPath(url)
+  public async fileinfo(url: string): Promise<File[]> {
+    const args = { url }
     const files: File[] = []
-
+    const path = this.getFileinfoEndpoint() ? this.getFileinfoEndpoint().urlPath : null
     if (!path) return null
     try {
       const response = await this.ocean.utils.fetch.post(path, JSON.stringify(args))
@@ -144,6 +144,22 @@ export class Provider extends Instantiable {
       return files
     } catch (e) {
       return null
+    }
+  }
+
+  public async isFileConsumable(did: DID, serviceIndex: number): Promise<boolean> {
+    const args = { did: did.getDid() }
+    const ddo = await this.ocean.metadataCache.retrieveDDO(did)
+    if (!ddo) return false
+    const service: Service = ddo.findServiceById(serviceIndex)
+    if (!service) return false
+    const path = service.serviceEndpoint + '/api/v1/services/fileinfo'
+    try {
+      const response = await this.ocean.utils.fetch.post(path, JSON.stringify(args))
+      const results = await response.json()
+      return results[0].valid
+    } catch (e) {
+      return false
     }
   }
 
@@ -491,24 +507,5 @@ export class Provider extends Instantiable {
       this.logger.error(`Error validating provider: ${error.message}`)
       return false
     }
-  }
-
-  private async getServiceEndpoint(did: string): Promise<string> {
-    const ddo = await this.ocean.assets.resolve(did)
-    if (!ddo) return
-    const computeService = ddo?.findServiceByType('compute')
-    const acessService = ddo?.findServiceByType('access')
-    return computeService ? computeService.serviceEndpoint : acessService.serviceEndpoint
-  }
-
-  private async getPath(url: string | DID): Promise<string> {
-    let path
-    if (url instanceof DID) {
-      const serviceEndpoint = await this.getServiceEndpoint(url.getDid())
-      path = serviceEndpoint + '/api/v1/services/fileinfo'
-    } else {
-      path = this.getFileinfoEndpoint() ? this.getFileinfoEndpoint().urlPath : null
-    }
-    return path
   }
 }
