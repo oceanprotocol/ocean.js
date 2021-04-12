@@ -8,13 +8,12 @@ import { SubscribablePromise, Logger, getFairGasPrice } from '../utils'
 export class OPFCommunityFeeCollector {
   public GASLIMIT_DEFAULT = 1000000
   /** Ocean related functions */
- 
+
   public feeCollectorAddress: string
   public feeCollectorABI: AbiItem | AbiItem[]
   public web3: Web3
   public contract: Contract = null
   private logger: Logger
- 
 
   /**
    * Instantiate CommunityFeeCollector
@@ -32,7 +31,7 @@ export class OPFCommunityFeeCollector {
     this.web3 = web3
     this.feeCollectorAddress = feeCollectorAddress
     this.feeCollectorABI = feeCollectorABI || (defaultFeeCollectorABI.abi as AbiItem[])
-   
+
     if (web3)
       this.contract = new this.web3.eth.Contract(
         this.feeCollectorABI,
