@@ -9,9 +9,12 @@ import {
 import Account from './Account'
 import { SubscribablePromise } from '../utils'
 import { Instantiable, InstantiableConfig } from '../Instantiable.abstract'
-import { Output } from './interfaces/ComputeOutput'
-import { ComputeJob } from './interfaces/ComputeJob'
-import { ComputeInput } from './interfaces/ComputeInput'
+import {
+  ComputeOutput,
+  ComputeJob,
+  ComputeInput,
+  ComputeAlgorithm
+} from './interfaces/Compute'
 import { Provider } from '../provider/Provider'
 import { SHA256 } from 'crypto-js'
 
@@ -109,13 +112,10 @@ export class Compute extends Instantiable {
     txId: string,
     tokenAddress: string,
     consumerAccount: Account,
-    algorithmDid?: string,
-    algorithmMeta?: MetadataAlgorithm,
-    output?: Output,
+    algorithm: ComputeAlgorithm,
+    output?: ComputeOutput,
     serviceIndex?: string,
     serviceType?: string,
-    algorithmTransferTxId?: string,
-    algorithmDataToken?: string,
     additionalInputs?: ComputeInput[]
   ): Promise<ComputeJob> {
     output = this.checkOutput(consumerAccount, output)
@@ -128,15 +128,12 @@ export class Compute extends Instantiable {
       const computeJobsList = await provider.computeStart(
         did,
         consumerAccount,
-        algorithmDid,
-        algorithmMeta,
+        algorithm,
         output,
         txId,
         serviceIndex,
         serviceType,
         tokenAddress,
-        algorithmTransferTxId,
-        algorithmDataToken,
         additionalInputs
       )
       if (computeJobsList) return computeJobsList[0] as ComputeJob
@@ -362,7 +359,7 @@ export class Compute extends Instantiable {
    * @param  {Output} output Output section used for publishing the result.
    * @return {Promise<Output>} Returns output object
    */
-  private checkOutput(consumerAccount: Account, output?: Output): Output {
+  private checkOutput(consumerAccount: Account, output?: ComputeOutput): ComputeOutput {
     const isDefault = !output || (!output.publishAlgorithmLog && !output.publishOutput)
 
     if (isDefault) {
@@ -398,31 +395,48 @@ export class Compute extends Instantiable {
   public async isOrderable(
     datasetDid: string,
     serviceIndex: number,
-    algorithmDid?: string,
-    algorithmMeta?: MetadataAlgorithm
+    algorithm: ComputeAlgorithm
   ): Promise<boolean> {
     const ddo: DDO = await this.ocean.assets.resolve(datasetDid)
     const service: Service = ddo.findServiceById(serviceIndex)
     if (!service) return false
     if (service.type === 'compute') {
-      if (algorithmMeta) {
+      if (algorithm.meta) {
         // check if raw algo is allowed
         if (service.attributes.main.privacy)
           if (service.attributes.main.privacy.allowRawAlgorithm) return true
         this.logger.error('ERROR: This service does not allow raw algorithm')
         return false
       }
-      if (algorithmDid) {
+      if (algorithm.did) {
+        // check if both have compute services and then if they are served by the same provider
+        if (algorithm.serviceIndex) {
+          const algoDDO: DDO = await this.ocean.assets.resolve(algorithm.did)
+          const algoService: Service = algoDDO.findServiceById(algorithm.serviceIndex)
+          if (algoService && algoService.type === 'compute') {
+            // since both dataset & algo services are compute, we need to check if they are served by the same provider
+            const algoProvider = await Provider.getInstance(this.instanceConfig)
+            await algoProvider.setBaseUrl(algoService.serviceEndpoint)
+            const datasetProvider = await Provider.getInstance(this.instanceConfig)
+            await datasetProvider.setBaseUrl(service.serviceEndpoint)
+            if (algoProvider.providerAddress !== datasetProvider.providerAddress) {
+              this.logger.error(
+                'ERROR: Both assets with compute service are not served by the same provider'
+              )
+              return false
+            }
+          }
+        }
         // check if did is in trusted list
         if (service.attributes.main.privacy) {
           if (service.attributes.main.privacy.allowAllPublishedAlgorithms) return true
           if (!service.attributes.main.privacy.publisherTrustedAlgorithms) return false
           let algo: publisherTrustedAlgorithm
           for (algo of service.attributes.main.privacy.publisherTrustedAlgorithms) {
-            if (algo.did === algorithmDid) {
+            if (algo.did === algorithm.did) {
               // compute checkusms and compare them
               const trustedAlgorithm = await this.createPublisherTrustedAlgorithmfromDID(
-                algorithmDid
+                algorithm.did
               )
               if (
                 algo.containerSectionChecksum &&
@@ -451,10 +465,11 @@ export class Compute extends Instantiable {
           }
           // algorithmDid was not found
           this.logger.error(
-            'ERROR: Algorithm ' + algorithmDid + ' is not allowed by ' + datasetDid
+            'ERROR: Algorithm ' + algorithm.did + ' is not allowed by ' + datasetDid
           )
           return false
         }
+        console.error('Algo Index:' + algorithm.serviceIndex)
       }
     }
     return true // not a compute asset
@@ -466,6 +481,7 @@ export class Compute extends Instantiable {
    * @param  {string} datasetDid The DID of the dataset asset (of type `dataset`) to run the algorithm on.
    * @param  {string} serviceIndex The Service index
    * @param  {string} algorithmDid The DID of the algorithm asset (of type `algorithm`) to run on the asset.
+   * @param  {string} algorithmServiceIndex The index of the service in the algorithm
    * @param  {MetaData} algorithmMeta Metadata about the algorithm being run if `algorithm` is being used. This is ignored when `algorithmDid` is specified.
    * @return {Promise<string>} Returns the transaction details
    *
@@ -477,19 +493,13 @@ export class Compute extends Instantiable {
     consumerAccount: string,
     datasetDid: string,
     serviceIndex: number,
-    algorithmDid?: string,
-    algorithmMeta?: MetadataAlgorithm,
+    algorithm: ComputeAlgorithm,
     mpAddress?: string,
     computeAddress?: string
   ): SubscribablePromise<OrderProgressStep, string> {
     return new SubscribablePromise(async (observer) => {
       // first check if we can order this
-      const allowed = await this.isOrderable(
-        datasetDid,
-        serviceIndex,
-        algorithmDid,
-        algorithmMeta
-      )
+      const allowed = await this.isOrderable(datasetDid, serviceIndex, algorithm)
       if (!allowed) return null
       const ddo: DDO = await this.ocean.assets.resolve(datasetDid)
       // const service: Service = ddo.findServiceByType('compute')

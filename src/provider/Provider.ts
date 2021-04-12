@@ -2,9 +2,12 @@ import Account from '../ocean/Account'
 import { noZeroX } from '../utils'
 import { Instantiable, InstantiableConfig } from '../Instantiable.abstract'
 import { File } from '../ddo/interfaces/File'
-import { ComputeJob } from '../ocean/interfaces/ComputeJob'
-import { ComputeInput } from '../ocean/interfaces/ComputeInput'
-import { Output } from '../ocean/interfaces/ComputeOutput'
+import {
+  ComputeJob,
+  ComputeInput,
+  ComputeOutput,
+  ComputeAlgorithm
+} from '../ocean/interfaces/Compute'
 import { MetadataAlgorithm } from '../ddo/interfaces/MetadataAlgorithm'
 import { Versions } from '../ocean/Versions'
 import { DDO } from '../ddo/DDO'
@@ -247,15 +250,12 @@ export class Provider extends Instantiable {
   public async computeStart(
     did: string,
     consumerAccount: Account,
-    algorithmDid?: string,
-    algorithmMeta?: MetadataAlgorithm,
-    output?: Output,
+    algorithm: ComputeAlgorithm,
+    output?: ComputeOutput,
     txId?: string,
     serviceIndex?: string,
     serviceType?: string,
     tokenAddress?: string,
-    algorithmTransferTxId?: string,
-    algorithmDataToken?: string,
     additionalInputs?: ComputeInput[]
   ): Promise<ComputeJob | ComputeJob[]> {
     const address = consumerAccount.getId()
@@ -271,12 +271,12 @@ export class Provider extends Instantiable {
 
     // continue to construct Provider URL
     if (output) payload.output = output
-    if (algorithmDid) payload.algorithmDid = algorithmDid
-    if (algorithmMeta) payload.algorithmMeta = algorithmMeta
+    if (algorithm.did) payload.algorithmDid = algorithm.did
+    if (algorithm.meta) payload.algorithmMeta = algorithm.meta
     payload.consumerAddress = address
     if (txId) payload.transferTxId = txId
-    if (algorithmTransferTxId) payload.algorithmTransferTxId = algorithmTransferTxId
-    if (algorithmDataToken) payload.algorithmDataToken = algorithmDataToken
+    if (algorithm.transferTxId) payload.algorithmTransferTxId = algorithm.transferTxId
+    if (algorithm.dataToken) payload.algorithmDataToken = algorithm.dataToken
 
     if (serviceIndex) payload.serviceId = serviceIndex
 
