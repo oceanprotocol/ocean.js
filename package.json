@@ -1,7 +1,7 @@
 {
   "name": "@oceanprotocol/lib",
   "source": "./src/index.ts",
-  "version": "0.12.2",
+  "version": "0.13.0",
   "description": "JavaScript client library for Ocean Protocol",
   "main": "./dist/node/lib.js",
   "exports": "./dist/lib.modern.js",
@@ -42,7 +42,7 @@
   },
   "homepage": "https://github.com/oceanprotocol/ocean.js#readme",
   "peerDependencies": {
-    "web3": "^1.3.4"
+    "web3": "^1.3.5"
   },
   "dependencies": {
     "@ethereum-navigator/navigator": "^0.5.2",
@@ -56,8 +56,8 @@
     "node-abort-controller": "^1.2.0",
     "save-file": "^2.3.1",
     "uuid": "^8.3.2",
-    "web3": "^1.3.4",
-    "web3-eth-contract": "^1.3.4"
+    "web3-eth-contract": "^1.3.5",
+    "web3": "^1.3.5"
   },
   "devDependencies": {
     "@release-it/bumper": "^2.0.0",

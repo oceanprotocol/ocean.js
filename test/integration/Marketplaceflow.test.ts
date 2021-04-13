@@ -448,11 +448,13 @@ describe('Marketplace flow', () => {
     assert(parseInt(metaData.attributes.main.timeout) === parseInt(newTimeout.toFixed()))
   })
 
-  it('Alice should check if her asset has valid url(s)', async () => {
+  it('Alice should check if her asset is consumable', async () => {
+    const service = ddo.findServiceByType('access')
+    assert(service !== null)
+    const serviceIndex = service.index
     const did: DID = DID.generate(noDidPrefixed(ddo.id))
-    const response = await ocean.provider.fileinfo(did)
-    assert(response[0].contentLength === '1161')
-    assert(response[0].contentType === 'application/json')
+    const response = await ocean.provider.isFileConsumable(did, serviceIndex)
+    assert(response === true)
   })
 
   it('Alice should create a FRE pricing for her asset', async () => {
