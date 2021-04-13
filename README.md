@@ -24,7 +24,7 @@ With ocean.js, you can:
 
 ocean.js is part of the [Ocean Protocol](https://oceanprotocol.com) toolset.
 
-This is in alpha state and you can expect running into problems. If you run into them, please open up a [new issue](/issues).
+This is in alpha state and you can expect running into problems. If you run into them, please open up a [new issue](https://github.com/oceanprotocol/ocean.js/issues/new?assignees=&labels=bug&template=bug_report.md&title=).
 
 - [📚 Prerequisites](#-prerequisites)
 - [🏗 Installation](#-installation)

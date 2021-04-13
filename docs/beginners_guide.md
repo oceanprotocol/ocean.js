@@ -207,9 +207,11 @@ Next, we will edit the code in `index.js` to mint 200 datatokens. These 200 data
 
 At the end of the `init() { ... }` function (after `console.log('Deployed datatoken address: ${tokenAddress}')`) add the following line of code:
  
+```Javascript 
  await datatoken.mint(tokenAddress, alice, '200', alice)
  let aliceBalance = await datatoken.balance(tokenAddress, alice)
  console.log('Alice token balance:', aliceBalance)
+```
 
 Now run the `index.js` file again:
 
@@ -222,7 +224,10 @@ You should now see in the console output that Alice has a token balance of 200.
 ## 7. Publish a dataset
 
 Now we will publish your dataset so that it can be sold over the blockchain. We start by creating a new file called data.js. In your terminal enter these commands:
+
+```Bash
 cat > data.js
+```
 
 Now open the data.js file in your text editor. Enter the following code and save the file:
  
@@ -251,7 +256,9 @@ If you already have a dataset hosted somewhere you can replace the example link 
 
 Now, we need to import the dataset into the index.js file. Open your your `index.js` in your text editor and add the following line of code at the top of the file under the other `require()` statements:
 
+```Javascript
 const { testData } = require("./data");
+```
 
 Next we add the code for publishing the dataset. This includes important information about your dataset such as the price, the publishing date and the timeout. At the end of the `init() { ... }` function (after `console.log('Bob token balance:', bobBalance)`) add the following code:
 
