@@ -399,7 +399,7 @@ describe('Marketplace flow', () => {
     assert(parseInt(metaData.attributes.main.timeout) === parseInt(newTimeout.toFixed()))
   })
 
-  it('Alice should check if her asset has valid url(s)', async () => {
+  it('Alice should check if her asset is consumable', async () => {
     const service = ddo.findServiceByType('access')
     assert(service !== null)
     const serviceIndex = service.index
