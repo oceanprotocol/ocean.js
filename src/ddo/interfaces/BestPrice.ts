@@ -5,5 +5,7 @@ export interface BestPrice {
   isConsumable?: 'true' | 'false' | ''
   ocean?: number
   datatoken?: number
+  // eslint-disable-next-line camelcase
+  exchange_id?: string
   pools: string[]
 }
