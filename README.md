@@ -29,6 +29,7 @@ This is in alpha state and you can expect running into problems. If you run into
 - [📚 Prerequisites](#-prerequisites)
 - [🏗 Installation](#-installation)
 - [🏄 Quickstart](#-quickstart)
+  - [Beginners Guide](#beginners-guide)
   - [Simple Flow](#simple-flow)
   - [Marketplace Flow](#marketplace-flow)
   - [📖 Learn More](#learn-more)
@@ -74,6 +75,11 @@ async function init() {
   return ocean
 }
 ```
+### Beginners Guide
+
+This introduction is aimed at developers who are completely new to blockchain, no coding experience is required. 
+
+[Go to beginners guide](docs/beginners_guide.md)
 
 ### Simple Flow
 
