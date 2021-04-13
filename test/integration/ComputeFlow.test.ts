@@ -17,11 +17,29 @@ import { Cluster, Container, Server } from '../../src/ocean/Compute'
 import { LoggerInstance } from '../../src/utils'
 import { ComputeInput } from '../../src/ocean/interfaces/ComputeInput'
 const web3 = new Web3('http://127.0.0.1:8545')
+const fetch = require('cross-fetch')
 
 function sleep(ms: number) {
   return new Promise((resolve) => {
     setTimeout(resolve, ms)
   })
+}
+
+async function waitForAqua(ocean, did) {
+  const apiPath = '/api/v1/aquarius/assets/ddo'
+  let tries = 0
+  do {
+    try {
+      const result = await fetch(ocean.metadataCache.url + apiPath + '/' + did)
+      if (result.ok) {
+        break
+      }
+    } catch (e) {
+      // do nothing
+    }
+    await sleep(1500)
+    tries++
+  } while (tries < 100)
 }
 
 /*       How to handle a compute job
@@ -48,6 +66,7 @@ describe('Compute flow', () => {
   let datasetWithTrustedAlgo: DDO
   let datasetWithBogusProvider: DDO
   let algorithmAsset: DDO
+  let algorithmAssetwithCompute: DDO
   let algorithmAssetRemoteProvider: DDO
   let contracts: TestContractHandler
   let datatoken: DataTokens
@@ -56,6 +75,7 @@ describe('Compute flow', () => {
   let tokenAddressWithTrustedAlgo: string
   let tokenAddressWithBogusProvider: string
   let tokenAddressAlgorithm: string
+  let tokenAddressAlgorithmwithCompute: string
   let tokenAddressAlgorithmRemoteProvider: string
   let tokenAddressAdditional1: string
   let tokenAddressAdditional2: string
@@ -167,6 +187,15 @@ describe('Compute flow', () => {
     )
     assert(tokenAddressAlgorithm != null, 'Creation of tokenAddressAlgorithm failed')
 
+    tokenAddressAlgorithmwithCompute = await datatoken.create(
+      blob,
+      alice.getId(),
+      '10000000000',
+      'AlgoDTwCompute',
+      'ALGwC'
+    )
+    assert(tokenAddressAlgorithm != null, 'Creation of tokenAddressAlgorithm failed')
+
     tokenAddressAlgorithmRemoteProvider = await datatoken.create(
       blob,
       alice.getId(),
@@ -267,7 +296,7 @@ describe('Compute flow', () => {
     assert(ddo.dataToken === tokenAddress, 'ddo.dataToken !== tokenAddress')
     const storeTx = await ocean.onChainMetadata.publish(ddo.id, ddo, alice.getId())
     assert(storeTx)
-    await sleep(aquaSleep)
+    await waitForAqua(ocean, ddo.id)
   })
   it('Alice publishes a 2nd dataset with a compute service that allows Raw Algo', async () => {
     const price2 = '2' // in datatoken
@@ -330,7 +359,7 @@ describe('Compute flow', () => {
       alice.getId()
     )
     assert(storeTx)
-    await sleep(aquaSleep)
+    await waitForAqua(ocean, ddoAdditional1.id)
   })
 
   it('Alice publishes a 3rd dataset with a access service', async () => {
@@ -358,7 +387,7 @@ describe('Compute flow', () => {
       alice.getId()
     )
     assert(storeTx)
-    await sleep(aquaSleep)
+    await waitForAqua(ocean, ddoAdditional2.id)
   })
 
   it('should publish a dataset with a compute service object that does not allow rawAlgo', async () => {
@@ -392,7 +421,7 @@ describe('Compute flow', () => {
       alice.getId()
     )
     assert(storeTx)
-    await sleep(aquaSleep)
+    await waitForAqua(ocean, datasetNoRawAlgo.id)
   })
 
   it('should publish a dataset with a compute service object that allows only algo with did:op:1234', async () => {
@@ -432,7 +461,7 @@ describe('Compute flow', () => {
       alice.getId()
     )
     assert(storeTx)
-    await sleep(aquaSleep)
+    await waitForAqua(ocean, datasetWithTrustedAlgo.id)
   })
 
   it('should publish an algorithm', async () => {
@@ -485,7 +514,68 @@ describe('Compute flow', () => {
       alice.getId()
     )
     assert(storeTx)
-    await sleep(aquaSleep)
+    await waitForAqua(ocean, algorithmAsset.id)
+  })
+
+  it('should publish an algorithm with a compute service', async () => {
+    const algoAssetwithCompute: Metadata = {
+      main: {
+        type: 'algorithm',
+        name: 'Test Algo with Compute',
+        dateCreated: dateCreated,
+        author: 'DevOps',
+        license: 'CC-BY',
+        files: [
+          {
+            url:
+              'https://raw.githubusercontent.com/oceanprotocol/test-algorithm/master/javascript/algo.js',
+            contentType: 'text/js',
+            encoding: 'UTF-8'
+          }
+        ],
+        algorithm: {
+          language: 'js',
+          format: 'docker-image',
+          version: '0.1',
+          container: {
+            entrypoint: 'node $ALGO',
+            image: 'node',
+            tag: '10'
+          }
+        }
+      }
+    }
+    const origComputePrivacy = {
+      allowRawAlgorithm: false,
+      allowNetworkAccess: false,
+      allowAllPublishedAlgorithms: false,
+      publisherTrustedAlgorithms: []
+    }
+    const service1 = ocean.compute.createComputeService(
+      alice,
+      '1',
+      dateCreated,
+      providerAttributes,
+      origComputePrivacy as ServiceComputePrivacy
+    )
+
+    algorithmAssetwithCompute = await ocean.assets.create(
+      algoAssetwithCompute,
+      alice,
+      [service1],
+      tokenAddressAlgorithmwithCompute
+    )
+    assert(
+      algorithmAssetwithCompute.dataToken === tokenAddressAlgorithmwithCompute,
+      'algorithmAssetwithCompute.dataToken !== tokenAddressAlgorithm'
+    )
+    const storeTx = await ocean.onChainMetadata.publish(
+      algorithmAssetwithCompute.id,
+      algorithmAssetwithCompute,
+      alice.getId()
+    )
+    assert(storeTx)
+    await waitForAqua(ocean, algorithmAssetwithCompute.id)
   })
 
   it('should publish an algorithm using the 2nd provider', async () => {
@@ -544,7 +634,7 @@ describe('Compute flow', () => {
       alice.getId()
     )
     assert(storeTx)
-    await sleep(aquaSleep)
+    await waitForAqua(ocean, algorithmAssetRemoteProvider.id)
     const checkDDO = await ocean.assets.resolve(algorithmAssetRemoteProvider.id)
     const checkService = checkDDO.findServiceByType('access')
     assert(
@@ -559,6 +649,7 @@ describe('Compute flow', () => {
     await datatoken.mint(tokenAddressWithTrustedAlgo, alice.getId(), tokenAmount)
     await datatoken.mint(tokenAddressWithBogusProvider, alice.getId(), tokenAmount)
     await datatoken.mint(tokenAddressAlgorithm, alice.getId(), tokenAmount)
+    await datatoken.mint(tokenAddressAlgorithmwithCompute, alice.getId(), tokenAmount)
     await datatoken.mint(tokenAddressAlgorithmRemoteProvider, alice.getId(), tokenAmount)
     await datatoken.mint(tokenAddressAdditional1, alice.getId(), tokenAmount)
     await datatoken.mint(tokenAddressAdditional2, alice.getId(), tokenAmount)
@@ -598,6 +689,15 @@ describe('Compute flow', () => {
       .transfer(tokenAddressAlgorithm, bob.getId(), dTamount, alice.getId())
       .then(async () => {
         const balance = await datatoken.balance(tokenAddressAlgorithm, bob.getId())
+        assert(balance.toString() === dTamount.toString())
+      })
+    await datatoken
+      .transfer(tokenAddressAlgorithmwithCompute, bob.getId(), dTamount, alice.getId())
+      .then(async () => {
+        const balance = await datatoken.balance(
+          tokenAddressAlgorithmwithCompute,
+          bob.getId()
+        )
         assert(balance.toString() === dTamount.toString())
       })
     await datatoken
@@ -840,6 +940,63 @@ describe('Compute flow', () => {
       'allowNetworkAccess does not match'
     )
   })
+  it('should start a compute job with a published algo that has a compute service', async () => {
+    const output = {}
+    const computeService = ddo.findServiceByType('compute')
+    // get the compute address first
+    computeAddress = await ocean.compute.getComputeAddress(ddo.id, computeService.index)
+    assert(ddo != null, 'ddo should not be null')
+
+    // check if asset is orderable. otherwise, you might pay for it, but it has some algo restrictions
+    const allowed = await ocean.compute.isOrderable(
+      ddo.id,
+      computeService.index,
+      algorithmAssetwithCompute.id,
+      undefined
+    )
+    assert(allowed === true)
+    const order = await ocean.compute.orderAsset(
+      bob.getId(),
+      ddo.id,
+      computeService.index,
+      algorithmAssetwithCompute.id,
+      undefined,
+      null, // no marketplace fee
+      computeAddress // CtD is the consumer of the dataset
+    )
+    assert(order != null, 'Order should not be null')
+    // order the algorithm
+    assert(algorithmAsset != null, 'algorithmAsset should not be null')
+    const serviceAlgo = algorithmAssetwithCompute.findServiceByType('compute')
+    const orderalgo = await ocean.compute.orderAlgorithm(
+      algorithmAssetwithCompute.id,
+      serviceAlgo.type,
+      bob.getId(),
+      serviceAlgo.index,
+      null, // no marketplace fee
+      computeAddress // CtD is the consumer of the dataset
+    )
+    assert(orderalgo != null, 'Order should not be null')
+
+    const response = await ocean.compute.start(
+      ddo.id,
+      order,
+      tokenAddress,
+      bob,
+      algorithmAssetwithCompute.id,
+      undefined,
+      output,
+      `${computeService.index}`,
+      computeService.type,
+      orderalgo,
+      algorithmAssetwithCompute.dataToken
+    )
+    assert(response, 'Compute error')
+    jobId = response.jobId
+    assert(response.status >= 1, 'Invalid response status')
+    assert(response.jobId, 'Invalid jobId')
+  })
+
   it('should start a compute job with a published algo', async () => {
     const output = {}
     const computeService = ddo.findServiceByType('compute')
@@ -1214,7 +1371,7 @@ describe('Compute flow', () => {
       alice.getId()
     )
     assert(storeTx)
-    await sleep(aquaSleep)
+    await waitForAqua(ocean, datasetWithBogusProvider.id)
   })
   it('Bob should fail to start a compute job for a bogus provider with a raw Algo', async () => {
     const output = {}

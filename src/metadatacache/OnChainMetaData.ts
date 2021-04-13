@@ -9,6 +9,7 @@ import { MetadataCache } from '../metadatacache/MetadataCache'
 // Using limited, compress-only version
 // See https://github.com/LZMA-JS/LZMA-JS#but-i-dont-want-to-use-web-workers
 import { LZMA } from 'lzma/src/lzma-c'
+import { Response } from 'node-fetch'
 
 export interface rawMetadata {
   flags: number
@@ -74,12 +75,7 @@ export class OnChainMetadata {
     encrypt: boolean = false
   ): Promise<TransactionReceipt> {
     const rawData = await this.prepareRawData(ddo, encrypt)
-    return this.publishRaw(
-      didZeroX(did),
-      rawData.flags,
-      this.getHex(rawData.data),
-      consumerAccount
-    )
+    return this.publishRaw(didZeroX(did), rawData.flags, rawData.data, consumerAccount)
   }
 
   /**
@@ -96,12 +92,7 @@ export class OnChainMetadata {
     encrypt: boolean = false
   ): Promise<TransactionReceipt> {
     const rawData = await this.prepareRawData(ddo, encrypt)
-    return this.updateRaw(
-      didZeroX(did),
-      rawData.flags,
-      this.getHex(rawData.data),
-      consumerAccount
-    )
+    return this.updateRaw(didZeroX(did), rawData.flags, rawData.data, consumerAccount)
   }
 
   /**
@@ -116,8 +107,19 @@ export class OnChainMetadata {
     if (encrypt === false) {
       data = await this.compressDDO(data)
       flags = flags | 1
+      data = this.getHex(data)
     } else {
-      data = await this.metadataCache.encryptDDO(data)
+      const blob = await this.metadataCache.encryptDDO(data)
+      try {
+        const rawBuffer = (await new Response(blob).arrayBuffer()) as any
+        data =
+          '0x' +
+          Array.prototype.map
+            .call(new Uint8Array(rawBuffer), (x) => ('00' + x.toString(16)).slice(-2))
+            .join('')
+      } catch (e) {
+        console.error(e)
+      }
       if (!data) return null
       flags = flags | 2
     }
