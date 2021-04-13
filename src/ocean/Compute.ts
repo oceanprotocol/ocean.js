@@ -215,10 +215,11 @@ export class Compute extends Instantiable {
       if (!service) {
         if (!ddo) {
           ddo = await this.ocean.assets.resolve(did)
-          if (!ddo) return null
+          if (!ddo) throw new Error(`Couldn't resolve the did ${did}`)
         }
         service = ddo.findServiceByType('compute')
-        if (!service) return null
+        if (!service)
+          throw new Error(`Couldn't find a compute service on the asset with did ${did}`)
       }
 
       const { serviceEndpoint } = service
