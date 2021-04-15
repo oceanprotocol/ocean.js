@@ -272,8 +272,7 @@ export class Assets extends Instantiable {
         ddo.service[i].attributes.additionalInformation.links = []
       }
 
-      if (newMetadata.isDisable !== undefined)
-        ddo.isDisable = newMetadata.isDisable
+      if (newMetadata.isDisable !== undefined) ddo.isDisable = newMetadata.isDisable
     }
     return ddo
   }
