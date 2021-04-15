@@ -4,5 +4,5 @@ export interface EditableMetadata {
   description?: string
   title?: string
   links?: EditableMetadataLinks[]
-  isConsumeDisable?: boolean
+  isDisable?: boolean
 }
