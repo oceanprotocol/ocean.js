@@ -208,7 +208,7 @@ export class Compute extends Instantiable {
   ): Promise<ComputeJob[]> {
     let provider: Provider
 
-    if (did) {
+    if (did || service || ddo) {
       if (!service) {
         if (!ddo) {
           ddo = await this.ocean.assets.resolve(did)
@@ -221,6 +221,7 @@ export class Compute extends Instantiable {
 
       const { serviceEndpoint } = service
       provider = await Provider.getInstance(this.instanceConfig)
+
       await provider.setBaseUrl(serviceEndpoint)
     } else {
       provider = this.ocean.provider
