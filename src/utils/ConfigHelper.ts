@@ -117,6 +117,22 @@ const configs: ConfigHelperConfig[] = [
     fixedRateExchangeAddress: null,
     metadataContractAddress: null,
     startBlock: 11005222
+  },
+  {
+    networkId: 1287,
+    network: 'moonbeamalpha',
+    nodeUri: 'https://rpc.testnet.moonbeam.network/',
+    metadataCacheUri: 'https://aquarius.moonbeamalpha.oceanprotocol.com',
+    providerUri: 'https://provider.moonbeamalpha.oceanprotocol.com',
+    subgraphUri: 'https://subgraph.moonbeamalpha.oceanprotocol.com',
+    explorerUri: 'https://moonbase-blockscout.testnet.moonbeam.network/',
+    oceanTokenAddress: null,
+    oceanTokenSymbol: 'OCEAN',
+    factoryAddress: null,
+    poolFactoryAddress: null,
+    fixedRateExchangeAddress: null,
+    metadataContractAddress: null,
+    startBlock: 90707
   }
 ]
 
