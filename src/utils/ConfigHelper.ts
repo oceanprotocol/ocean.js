@@ -1,8 +1,8 @@
 import Config from '../models/Config'
-import { Logger } from '../lib'
 import fs from 'fs'
 import { homedir } from 'os'
 import * as DefaultContractsAddresses from '@oceanprotocol/contracts/artifacts/address.json'
+import Logger from './Logger'
 
 export declare type ConfigHelperNetworkName =
   | 'mainnet'
