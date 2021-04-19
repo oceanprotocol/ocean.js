@@ -510,7 +510,8 @@ export class Compute extends Instantiable {
     serviceIndex: number,
     algorithm: ComputeAlgorithm,
     mpAddress?: string,
-    computeAddress?: string
+    computeAddress?: string,
+    searchPreviousOrders = true
   ): SubscribablePromise<OrderProgressStep, string> {
     return new SubscribablePromise(async (observer) => {
       // first check if we can order this
@@ -526,7 +527,8 @@ export class Compute extends Instantiable {
         consumerAccount,
         -1,
         mpAddress,
-        computeAddress
+        computeAddress,
+        searchPreviousOrders
       )
       return order
     })
