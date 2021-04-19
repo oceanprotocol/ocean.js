@@ -1,7 +1,7 @@
 {
   "name": "@oceanprotocol/lib",
   "source": "./src/index.ts",
-  "version": "0.14.4",
+  "version": "0.14.5",
   "description": "JavaScript client library for Ocean Protocol",
   "main": "./dist/node/lib.js",
   "exports": "./dist/node/lib.module.js",
