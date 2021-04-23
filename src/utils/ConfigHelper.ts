@@ -142,12 +142,6 @@ export class ConfigHelper {
   public getAddressesFromEnv(network: string): Partial<ConfigHelperConfig> {
     // use the defaults first
     let configAddresses: Partial<ConfigHelperConfig>
-    console.log(
-      'getadd',
-      DefaultContractsAddresses[network],
-      network,
-      DefaultContractsAddresses
-    )
     if (DefaultContractsAddresses[network]) {
       const {
         DTFactory,
