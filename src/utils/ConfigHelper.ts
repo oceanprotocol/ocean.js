@@ -1,7 +1,8 @@
 import Config from '../models/Config'
 import fs from 'fs'
 import { homedir } from 'os'
-import * as DefaultContractsAddresses from '@oceanprotocol/contracts/artifacts/address.json'
+// eslint-disable-next-line import/no-named-default
+import { default as DefaultContractsAddresses } from '@oceanprotocol/contracts/artifacts/address.json'
 import Logger from './Logger'
 
 export declare type ConfigHelperNetworkName =
@@ -141,6 +142,12 @@ export class ConfigHelper {
   public getAddressesFromEnv(network: string): Partial<ConfigHelperConfig> {
     // use the defaults first
     let configAddresses: Partial<ConfigHelperConfig>
+    console.log(
+      'getadd',
+      DefaultContractsAddresses[network],
+      network,
+      DefaultContractsAddresses
+    )
     if (DefaultContractsAddresses[network]) {
       const {
         DTFactory,
