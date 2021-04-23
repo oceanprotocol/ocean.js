@@ -1,7 +1,8 @@
 import Config from '../models/Config'
 import fs from 'fs'
 import { homedir } from 'os'
-import * as DefaultContractsAddresses from '@oceanprotocol/contracts/artifacts/address.json'
+// eslint-disable-next-line import/no-named-default
+import { default as DefaultContractsAddresses } from '@oceanprotocol/contracts/artifacts/address.json'
 import Logger from './Logger'
 
 export declare type ConfigHelperNetworkName =
