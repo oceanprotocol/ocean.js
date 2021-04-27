@@ -134,12 +134,14 @@ export class Pool extends PoolFactory {
    * @param {String} tokenAddress
    * @param {String} spender
    * @param {String} amount  (always expressed as wei)
+   * @param {String} force  if true, will overwrite any previous allowence. Else, will check if allowence is enough and will not send a transaction if it's not needed
    */
   async approve(
     account: string,
     tokenAddress: string,
     spender: string,
-    amount: string
+    amount: string,
+    force = false
   ): Promise<TransactionReceipt> {
     const minABI = [
       {
@@ -169,6 +171,13 @@ export class Pool extends PoolFactory {
     const token = new this.web3.eth.Contract(minABI, tokenAddress, {
       from: account
     })
+    if (!force) {
+      const currentAllowence = await this.allowance(tokenAddress, account, spender)
+      if (new Decimal(currentAllowence).greaterThanOrEqualTo(amount)) {
+        // we have enough
+        return null
+      }
+    }
     let result = null
     const gasLimitDefault = this.GASLIMIT_DEFAULT
     let estGas
@@ -890,7 +899,7 @@ export class Pool extends PoolFactory {
         )
         .send({
           from: account,
-          gas: this.GASLIMIT_DEFAULT,
+          gas: estGas + 1,
           gasPrice: await getFairGasPrice(this.web3)
         })
     } catch (e) {
