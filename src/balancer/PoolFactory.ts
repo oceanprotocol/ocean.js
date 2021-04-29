@@ -45,10 +45,19 @@ export class PoolFactory {
       from: account
     })
     let txid = null
+    const gasLimitDefault = this.GASLIMIT_DEFAULT
+    let estGas
     try {
-      txid = await factory.methods
+      estGas = await factory.methods
         .newBPool()
-        .send({ from: account, gas: this.GASLIMIT_DEFAULT })
+        .estimateGas({ from: account }, (err, estGas) => (err ? gasLimitDefault : estGas))
+    } catch (e) {
+      this.logger.log('Error estimate gas newBPool')
+      this.logger.log(e)
+      estGas = gasLimitDefault
+    }
+    try {
+      txid = await factory.methods.newBPool().send({ from: account, gas: estGas + 1 })
       // pooladdress = transactiondata.events.BPoolRegistered.returnValues[0]
     } catch (e) {
       this.logger.error(`ERROR: Failed to create new pool: ${e.message}`)
