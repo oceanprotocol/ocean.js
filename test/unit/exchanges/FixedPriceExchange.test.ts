@@ -6,10 +6,10 @@ import { DataTokens } from '../../../src/datatokens/Datatokens'
 import { OceanFixedRateExchange } from '../../../src/exchange/FixedRateExchange'
 import { LoggerInstance } from '../../../src/utils'
 import Web3 from 'web3'
-import factory from '@oceanprotocol/contracts/artifacts/DTFactory.json'
-import datatokensTemplate from '@oceanprotocol/contracts/artifacts/DataTokenTemplate.json'
+import factory from '@oceanprotocol/contracts/ocean_abis/DTFactory.json'
+import datatokensTemplate from '@oceanprotocol/contracts/ocean_abis/DataTokenTemplate.json'
 
-import FixedRateExchangeContract = require('@oceanprotocol/contracts/artifacts/FixedRateExchange.json')
+import FixedRateExchangeContract = require('@oceanprotocol/contracts/ocean_abis/FixedRateExchange.json')
 const web3 = new Web3('http://127.0.0.1:8545')
 
 describe('FixedRateExchange flow', () => {

@@ -3,7 +3,7 @@ import { TransactionReceipt } from 'web3-core'
 import { Contract } from 'web3-eth-contract'
 import { AbiItem } from 'web3-utils/types'
 import Web3 from 'web3'
-import defaultDDOContractABI from '@oceanprotocol/contracts/artifacts/Metadata.json'
+import defaultDDOContractABI from '@oceanprotocol/contracts/ocean_abis/Metadata.json'
 import { didZeroX, Logger, getFairGasPrice } from '../utils'
 import { MetadataCache } from '../metadatacache/MetadataCache'
 // Using limited, compress-only version

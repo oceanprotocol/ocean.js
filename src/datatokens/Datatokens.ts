@@ -1,8 +1,8 @@
 import Web3 from 'web3'
 import { AbiItem } from 'web3-utils/types'
 
-import defaultFactoryABI from '@oceanprotocol/contracts/artifacts/DTFactory.json'
-import defaultDatatokensABI from '@oceanprotocol/contracts/artifacts/DataTokenTemplate.json'
+import defaultFactoryABI from '@oceanprotocol/contracts/ocean_abis/DTFactory.json'
+import defaultDatatokensABI from '@oceanprotocol/contracts/ocean_abis/DataTokenTemplate.json'
 import { Logger, getFairGasPrice } from '../utils'
 import wordListDefault from '../data/words.json'
 import { TransactionReceipt } from 'web3-core'

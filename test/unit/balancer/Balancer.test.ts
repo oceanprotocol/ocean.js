@@ -6,12 +6,12 @@ import { DataTokens } from '../../../src/datatokens/Datatokens'
 import { OceanPool } from '../../../src/balancer/OceanPool'
 
 import Web3 from 'web3'
-import factory from '@oceanprotocol/contracts/artifacts/DTFactory.json'
-import datatokensTemplate from '@oceanprotocol/contracts/artifacts/DataTokenTemplate.json'
+import factory from '@oceanprotocol/contracts/ocean_abis/DTFactory.json'
+import datatokensTemplate from '@oceanprotocol/contracts/ocean_abis/DataTokenTemplate.json'
 
 // this will be replaced by our SFactory/SPool
-import OceanPoolFactory from '@oceanprotocol/contracts/artifacts/BFactory.json'
-import OceanSPool from '@oceanprotocol/contracts/artifacts/BPool.json'
+import OceanPoolFactory from '@oceanprotocol/contracts/ocean_abis/BFactory.json'
+import OceanSPool from '@oceanprotocol/contracts/ocean_abis/BPool.json'
 import { LoggerInstance } from '../../../src/utils'
 const web3 = new Web3('http://127.0.0.1:8545')
 

@@ -10,8 +10,8 @@ import {
   publisherTrustedAlgorithm
 } from '../../src/ddo/interfaces/Service'
 import Web3 from 'web3'
-import factory from '@oceanprotocol/contracts/artifacts/DTFactory.json'
-import datatokensTemplate from '@oceanprotocol/contracts/artifacts/DataTokenTemplate.json'
+import factory from '@oceanprotocol/contracts/ocean_abis/DTFactory.json'
+import datatokensTemplate from '@oceanprotocol/contracts/ocean_abis/DataTokenTemplate.json'
 import { Account, DDO, Metadata } from '../../src/lib'
 import { Cluster, Container, Server } from '../../src/ocean/Compute'
 import { LoggerInstance } from '../../src/utils'

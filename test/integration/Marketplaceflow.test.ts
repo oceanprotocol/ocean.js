@@ -1,5 +1,5 @@
-import datatokensTemplate from '@oceanprotocol/contracts/artifacts/DataTokenTemplate.json'
-import factory from '@oceanprotocol/contracts/artifacts/DTFactory.json'
+import datatokensTemplate from '@oceanprotocol/contracts/ocean_abis/DataTokenTemplate.json'
+import factory from '@oceanprotocol/contracts/ocean_abis/DTFactory.json'
 import { assert, spy, use } from 'chai'
 import spies from 'chai-spies'
 import Web3 from 'web3'

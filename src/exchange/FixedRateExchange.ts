@@ -1,4 +1,4 @@
-import defaultFixedRateExchangeABI from '@oceanprotocol/contracts/artifacts/FixedRateExchange.json'
+import defaultFixedRateExchangeABI from '@oceanprotocol/contracts/ocean_abis/FixedRateExchange.json'
 import BigNumber from 'bignumber.js'
 import { TransactionReceipt } from 'web3-core'
 import { Contract, EventData } from 'web3-eth-contract'
