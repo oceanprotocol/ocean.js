@@ -145,7 +145,7 @@ You can then proceed to run in another terminal.
 
 Let ocean.js know where to pickup the smartcontract addresses:
 ```
-export ADDRESS_FILE="${HOME}/.ocean/ocean-contracts/artifacts/address.json"
+export ADDRESS_FILE="${HOME}/.ocean/ocean-contracts/ocean_abis/address.json"
 ```
 
 Build metadata:
