@@ -7,6 +7,7 @@ import Web3Provider from '../datatokens/Web3Provider'
 import { BestPrice } from './interfaces/BestPrice'
 import { DataTokenInfo } from './interfaces/DataTokenInfo'
 import { PurgatoryData } from './interfaces/PurgatoryData'
+import { Credential } from './interfaces/Credential'
 /**
  * DID Descriptor Object.
  * Contains all the data related to an asset.
@@ -61,6 +62,8 @@ export class DDO {
   public purgatoryData?: PurgatoryData
 
   public dataTokenInfo?: DataTokenInfo
+
+  public credential?: Credential
 
   public constructor(ddo: Partial<DDO> = {}) {
     Object.assign(this, ddo, {
