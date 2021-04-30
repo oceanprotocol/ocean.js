@@ -6,8 +6,9 @@
 
 [![npm](https://img.shields.io/npm/v/@oceanprotocol/lib.svg)](https://www.npmjs.com/package/@oceanprotocol/lib)
 [![Build Status](https://travis-ci.com/oceanprotocol/ocean.js.svg?token=soMi2nNfCZq19zS1Rx4i&branch=main)](https://travis-ci.com/oceanprotocol/ocean.js)
-[![Maintainability](https://api.codeclimate.com/v1/badges/3cc01041faac574b155c/maintainability)](https://codeclimate.com/repos/5f871c2c87b6045061001233/maintainability)
-[![Test Coverage](https://api.codeclimate.com/v1/badges/3cc01041faac574b155c/test_coverage)](https://codeclimate.com/repos/5f871c2c87b6045061001233/test_coverage)[![code style: prettier](https://img.shields.io/badge/code_style-prettier-7b1173.svg?style=flat-square)](https://github.com/prettier/prettier)
+[![Maintainability](https://api.codeclimate.com/v1/badges/6381c81b8ac568a53537/maintainability)](https://codeclimate.com/github/oceanprotocol/ocean.js/maintainability)
+[![Test Coverage](https://api.codeclimate.com/v1/badges/6381c81b8ac568a53537/test_coverage)](https://codeclimate.com/github/oceanprotocol/ocean.js/test_coverage)
+[![code style: prettier](https://img.shields.io/badge/code_style-prettier-7b1173.svg?style=flat-square)](https://github.com/prettier/prettier)
 [![js oceanprotocol](https://img.shields.io/badge/js-oceanprotocol-7b1173.svg)](https://github.com/oceanprotocol/eslint-config-oceanprotocol)
 
 With ocean.js, you can:
