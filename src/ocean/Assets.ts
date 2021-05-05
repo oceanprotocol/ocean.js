@@ -644,7 +644,7 @@ export class Assets extends Instantiable {
   /**
    *
    * @param {String} did
-   * @param {String} consumerAddress
+   * @param {String} consumerAddress // Optional, to check allow/deny list
    * @return {Promise<Consumable>}
    */
   public async isConsumable(did: string, consumerAddress?: string): Promise<Consumable> {
@@ -656,13 +656,20 @@ export class Assets extends Instantiable {
         message: 'Asset is disabled'
       }
 
-    // To do: Check if ddo have allow/deny list
-    if (consumerAddress) {
-      // To do: check credentials using consumerAddress
-      // return: 4, Credential missing from allow list
-      // return: 5, Credential found on deny list
+    /*
+    // To do: check credentials using consumerAddress
+    if (ddo.credential.allow.length > 0) {
+      if (consumerAddress) {
+        // call method check consumerAddress with allow list
+        // return: 2, Credential missing from allow list
+      }
+    } else if (ddo.credential.deny.length > 0) {
+      if (consumerAddress) {
+        // call method check consumerAddress with deny list
+        // return: 3, Credential found on deny list
+      }
     }
-
+    */
     return {
       status: '0',
       message: 'All good'
