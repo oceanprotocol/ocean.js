@@ -58,6 +58,8 @@ export class DDO {
 
   public isInPurgatory: 'false' | 'true'
 
+  public isDisable?: boolean
+
   public purgatoryData?: PurgatoryData
 
   public dataTokenInfo?: DataTokenInfo

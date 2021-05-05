@@ -13,6 +13,7 @@ import { Provider } from '../provider/Provider'
 import { isAddress } from 'web3-utils'
 import { MetadataMain } from '../ddo/interfaces'
 import { TransactionReceipt } from 'web3-core'
+import { Consumable } from '../ddo/interfaces/Consumable'
 
 export enum CreateProgressStep {
   CreatingDataToken,
@@ -270,6 +271,7 @@ export class Assets extends Instantiable {
       } else {
         ddo.service[i].attributes.additionalInformation.links = []
       }
+      if (newMetadata.isDisable) ddo.isDisable = newMetadata.isDisable
     }
     return ddo
   }
@@ -637,5 +639,33 @@ export class Assets extends Instantiable {
       } catch (e) {}
     }
     return results
+  }
+
+  /**
+   *
+   * @param {String} did
+   * @param {String} consumerAddress
+   * @return {Promise<Consumable>}
+   */
+  public async isConsumable(did: string, consumerAddress?: string): Promise<Consumable> {
+    const ddo = await this.resolve(did)
+
+    if (ddo.isDisable)
+      return {
+        status: '1',
+        message: 'Asset is disabled'
+      }
+
+    // To do: Check if ddo have allow/deny list
+    if (consumerAddress) {
+      // To do: check credentials using consumerAddress
+      // return: 4, Credential missing from allow list
+      // return: 5, Credential found on deny list
+    }
+
+    return {
+      status: '0',
+      message: 'All good'
+    }
   }
 }
