@@ -474,6 +474,9 @@ export class Assets extends Instantiable {
   ): Promise<string> {
     let service: Service
 
+    const consumable = await this.isConsumable(did)
+    if (consumable.status > 0) return null
+
     if (!consumerAddress) consumerAddress = payerAddress
     if (serviceIndex === -1) {
       service = await this.getServiceByType(did, serviceType)
@@ -651,7 +654,7 @@ export class Assets extends Instantiable {
 
     if (ddo.isDisable)
       return {
-        status: '1',
+        status: 1,
         message: 'Asset is disabled'
       }
 
@@ -661,7 +664,7 @@ export class Assets extends Instantiable {
     // return: 5, Credential found on deny list
     */
     return {
-      status: '0',
+      status: 0,
       message: 'All good'
     }
   }

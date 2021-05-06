@@ -1,4 +1,4 @@
 export interface Consumable {
-  status: string
+  status: number
   message: string
 }
