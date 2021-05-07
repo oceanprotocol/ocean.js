@@ -117,9 +117,9 @@ describe('DDO', () => {
             ]
           },
           curation: {
-            rating: 0.93,
-            numVotes: 123,
-            schema: 'Binary Voting'
+            isListed: true,
+            isRetired: false,
+            isOrderDisabled: false
           },
           additionalInformation: {
             description: 'Weather information of UK including temperature and humidity',

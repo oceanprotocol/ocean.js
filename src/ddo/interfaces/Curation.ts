@@ -4,30 +4,23 @@
  */
 export interface Curation {
   /**
-   * Decimal value between 0 and 1. 0 is the default value.
-   * @type {number}
-   * @example 0.93
-   */
-  rating: number
-
-  /**
-   * Number of votes. 0 is the default value.
-   * @type {number}
-   * @example 123
-   */
-  numVotes: number
-
-  /**
-   * Schema applied to calculate the rating.
-   * @type {string}
-   * @example "Binary Voting"
-   */
-  schema?: string
-
-  /**
-   * Flag unsuitable content.
+   * Use to flag unsuitable content. True by default. If it's false, the content must not be returned.
    * @type {boolean}
    * @example true
    */
   isListed?: boolean
+
+  /**
+   * Flag retired content. False by default. If it's true, the content may either not be returned, or returned with a note about retirement.
+   * @type {boolean}
+   * @example false
+   */
+  isRetired?: boolean
+
+  /**
+   * For temporarily disabling ordering assets, e.g. when file host is in maintenance. False by default. If it's true, no ordering of assets for download or compute should be allowed.
+   * @type {boolean}
+   * @example false
+   */
+  isOrderDisabled?: boolean
 }

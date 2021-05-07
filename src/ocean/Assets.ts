@@ -148,8 +148,9 @@ export class Assets extends Instantiable {
             attributes: {
               // Default values
               curation: {
-                rating: 0,
-                numVotes: 0
+                isListed: true,
+                isRetired: false,
+                isOrderDisabled: false
               },
               // Overwrites defaults
               ...metadata,
