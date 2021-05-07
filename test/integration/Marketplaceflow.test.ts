@@ -457,6 +457,12 @@ describe('Marketplace flow', () => {
     assert(response === true)
   })
 
+  it('Alice should check if her asset is disable', async () => {
+    const response = await ocean.assets.isConsumable(ddo.id)
+    assert(response !== null)
+    assert(response.status === 0)
+  })
+
   it('Alice should create a FRE pricing for her asset', async () => {
     const trxReceipt = await ocean.fixedRateExchange.create(
       tokenAddress,

@@ -649,8 +649,9 @@ export class Assets extends Instantiable {
    * @param {String} did
    * @return {Promise<Consumable>}
    */
-  public async isConsumable(did: string, consumerAddress?: string): Promise<Consumable> {
+  public async isConsumable(did: string): Promise<Consumable> {
     const ddo = await this.resolve(did)
+    if (!ddo) return null
 
     if (ddo.isDisable)
       return {
