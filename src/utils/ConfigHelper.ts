@@ -35,6 +35,7 @@ const configs: ConfigHelperConfig[] = [
     factoryAddress: '0x1234',
     poolFactoryAddress: null,
     fixedRateExchangeAddress: null,
+    dispenserAddress: null,
     metadataContractAddress: null,
     startBlock: 0
   },
@@ -52,6 +53,7 @@ const configs: ConfigHelperConfig[] = [
     factoryAddress: null,
     poolFactoryAddress: null,
     fixedRateExchangeAddress: null,
+    dispenserAddress: null,
     metadataContractAddress: null,
     startBlock: 0
   },
@@ -68,6 +70,7 @@ const configs: ConfigHelperConfig[] = [
     factoryAddress: null,
     poolFactoryAddress: null,
     fixedRateExchangeAddress: null,
+    dispenserAddress: null,
     metadataContractAddress: null,
     startBlock: 9227563
   },
@@ -84,6 +87,7 @@ const configs: ConfigHelperConfig[] = [
     factoryAddress: null,
     poolFactoryAddress: null,
     fixedRateExchangeAddress: null,
+    dispenserAddress: null,
     metadataContractAddress: null,
     startBlock: 7294090
   },
@@ -100,6 +104,7 @@ const configs: ConfigHelperConfig[] = [
     factoryAddress: null,
     poolFactoryAddress: null,
     fixedRateExchangeAddress: null,
+    dispenserAddress: null,
     metadataContractAddress: null,
     startBlock: 11105459
   },
@@ -116,6 +121,7 @@ const configs: ConfigHelperConfig[] = [
     factoryAddress: null,
     poolFactoryAddress: null,
     fixedRateExchangeAddress: null,
+    dispenserAddress: null,
     metadataContractAddress: null,
     startBlock: 11005222
   },
@@ -132,6 +138,7 @@ const configs: ConfigHelperConfig[] = [
     factoryAddress: null,
     poolFactoryAddress: null,
     fixedRateExchangeAddress: null,
+    dispenserAddress: null,
     metadataContractAddress: null,
     startBlock: 90707
   }
@@ -147,6 +154,7 @@ export class ConfigHelper {
         DTFactory,
         BFactory,
         FixedRateExchange,
+        Dispenser,
         Metadata,
         Ocean
       } = DefaultContractsAddresses[network]
@@ -154,6 +162,7 @@ export class ConfigHelper {
         factoryAddress: DTFactory,
         poolFactoryAddress: BFactory,
         fixedRateExchangeAddress: FixedRateExchange,
+        dispenserAddress: Dispenser,
         metadataContractAddress: Metadata,
         oceanTokenAddress: Ocean,
         ...(process.env.AQUARIUS_URI && { metadataCacheUri: process.env.AQUARIUS_URI })
@@ -169,11 +178,19 @@ export class ConfigHelper {
             'utf8'
           )
         )
-        const { DTFactory, BFactory, FixedRateExchange, Metadata, Ocean } = data[network]
+        const {
+          DTFactory,
+          BFactory,
+          FixedRateExchange,
+          Dispenser,
+          Metadata,
+          Ocean
+        } = data[network]
         configAddresses = {
           factoryAddress: DTFactory,
           poolFactoryAddress: BFactory,
           fixedRateExchangeAddress: FixedRateExchange,
+          dispenserAddress: Dispenser,
           metadataContractAddress: Metadata,
           oceanTokenAddress: Ocean,
           ...(process.env.AQUARIUS_URI && { metadataCacheUri: process.env.AQUARIUS_URI })
