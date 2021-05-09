@@ -117,7 +117,7 @@ describe('Dispenser flow', () => {
   })
 
   it('Alice creates a dispenser', async () => {
-    const tx = await DispenserClass.activate(tokenAddress, 1, 1, alice)
+    const tx = await DispenserClass.activate(tokenAddress, '1', '1', alice)
     assert(tx, 'Cannot activate dispenser')
   })
 
@@ -147,17 +147,23 @@ describe('Dispenser flow', () => {
   })
 
   it('Bob requests more datatokens then allowed', async () => {
-    const tx = await DispenserClass.dispense(tokenAddress, 10, bob)
+    const check = await DispenserClass.isDispensable(tokenAddress, bob, '10')
+    assert(check === false, 'isDispensable should return false')
+    const tx = await DispenserClass.dispense(tokenAddress, bob, '10')
     assert(tx === null, 'Request should fail')
   })
 
   it('Bob requests datatokens', async () => {
-    const tx = await DispenserClass.dispense(tokenAddress, 1, bob)
+    const check = await DispenserClass.isDispensable(tokenAddress, bob, '1')
+    assert(check === true, 'isDispensable should return true')
+    const tx = await DispenserClass.dispense(tokenAddress, bob, '1')
     assert(tx, 'Bob failed to get 1DT')
   })
 
   it('Bob requests more datatokens but he exceeds maxBalance', async () => {
-    const tx = await DispenserClass.dispense(tokenAddress, 10, bob)
+    const check = await DispenserClass.isDispensable(tokenAddress, bob, '10')
+    assert(check === false, 'isDispensable should return false')
+    const tx = await DispenserClass.dispense(tokenAddress, bob, '10')
     assert(tx === null, 'Request should fail')
   })
 
@@ -169,7 +175,9 @@ describe('Dispenser flow', () => {
   })
 
   it('Charlie should fail to get datatokens', async () => {
-    const tx = await DispenserClass.dispense(tokenAddress, 1, charlie)
+    const check = await DispenserClass.isDispensable(tokenAddress, charlie, '1')
+    assert(check === false, 'isDispensable should return false')
+    const tx = await DispenserClass.dispense(tokenAddress, charlie, '1')
     assert(tx === null, 'Charlie should fail to get 1DT')
   })
 
@@ -184,16 +192,18 @@ describe('Dispenser flow', () => {
   })
 
   it('Bob should fail to activate a dispenser for a token for he is not a minter', async () => {
-    const tx = await DispenserClass.activate(tokenAddress, 1, 1, bob)
+    const tx = await DispenserClass.activate(tokenAddress, '1', '1', bob)
     assert(tx === null, 'Bob should fail to activate dispenser')
   })
 
   it('Alice creates a dispenser without minter role', async () => {
-    const tx = await DispenserClass.activate(tokenAddress2, 1, 1, alice)
+    const tx = await DispenserClass.activate(tokenAddress2, '1', '1', alice)
     assert(tx, 'Cannot activate dispenser')
   })
   it('Bob requests datatokens but there are none', async () => {
-    const tx = await DispenserClass.dispense(tokenAddress2, 1, bob)
+    const check = await DispenserClass.isDispensable(tokenAddress2, bob, '1')
+    assert(check === false, 'isDispensable should return false')
+    const tx = await DispenserClass.dispense(tokenAddress2, bob, '1')
     assert(tx === null, 'Request should fail')
   })
   it('Alice mints tokens and transfer them to the dispenser.', async () => {
@@ -209,7 +219,9 @@ describe('Dispenser flow', () => {
   })
 
   it('Bob requests datatokens', async () => {
-    const tx = await DispenserClass.dispense(tokenAddress2, 1, bob)
+    const check = await DispenserClass.isDispensable(tokenAddress2, bob, '1')
+    assert(check === true, 'isDispensable should return true')
+    const tx = await DispenserClass.dispense(tokenAddress2, bob, '1')
     assert(tx, 'Bob failed to get 1DT')
   })
 

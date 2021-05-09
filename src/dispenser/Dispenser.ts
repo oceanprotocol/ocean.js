@@ -5,6 +5,7 @@ import { AbiItem } from 'web3-utils/types'
 import Web3 from 'web3'
 import { SubscribablePromise, Logger, getFairGasPrice } from '../utils'
 import { DataTokens } from '../datatokens/Datatokens'
+import Decimal from 'decimal.js'
 
 export interface DispenserToken {
   active: boolean
@@ -96,8 +97,8 @@ export class OceanDispenser {
    */
   public async activate(
     dataToken: string,
-    maxTokens: number,
-    maxBalance: number,
+    maxTokens: string,
+    maxBalance: string,
     address: string
   ): Promise<TransactionReceipt> {
     let estGas
@@ -106,8 +107,8 @@ export class OceanDispenser {
       estGas = await this.contract.methods
         .activate(
           dataToken,
-          this.web3.utils.toWei(String(maxTokens)),
-          this.web3.utils.toWei(String(maxBalance))
+          this.web3.utils.toWei(maxTokens),
+          this.web3.utils.toWei(maxBalance)
         )
         .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
     } catch (e) {
@@ -118,8 +119,8 @@ export class OceanDispenser {
       trxReceipt = await this.contract.methods
         .activate(
           dataToken,
-          this.web3.utils.toWei(String(maxTokens)),
-          this.web3.utils.toWei(String(maxBalance))
+          this.web3.utils.toWei(maxTokens),
+          this.web3.utils.toWei(maxBalance)
         )
         .send({
           from: address,
@@ -255,20 +256,20 @@ export class OceanDispenser {
   /**
    * Request tokens from dispenser
    * @param {String} dataToken
-   * @param {Number} amount
+   * @param {String} amount
    * @param {String} address User address
    * @return {Promise<TransactionReceipt>} TransactionReceipt
    */
   public async dispense(
     dataToken: string,
-    amount: number,
-    address: string
+    address: string,
+    amount: string = '1'
   ): Promise<TransactionReceipt> {
     let estGas
     const gasLimitDefault = this.GASLIMIT_DEFAULT
     try {
       estGas = await this.contract.methods
-        .dispense(dataToken, this.web3.utils.toWei(String(amount)))
+        .dispense(dataToken, this.web3.utils.toWei(amount))
         .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
     } catch (e) {
       estGas = gasLimitDefault
@@ -276,7 +277,7 @@ export class OceanDispenser {
     let trxReceipt = null
     try {
       trxReceipt = await this.contract.methods
-        .dispense(dataToken, this.web3.utils.toWei(String(amount)))
+        .dispense(dataToken, this.web3.utils.toWei(amount))
         .send({
           from: address,
           gas: estGas + 1,
@@ -318,5 +319,32 @@ export class OceanDispenser {
       this.logger.error(`ERROR: Failed to withdraw tokens: ${e.message}`)
     }
     return trxReceipt
+  }
+
+  /**
+   * Check if tokens can be dispensed
+   * @param {String} dataToken
+   * @param {String} address User address that will receive datatokens
+   * @return {Promise<Boolean>}
+   */
+  public async isDispensable(
+    dataToken: string,
+    address: string,
+    amount: string = '1'
+  ): Promise<Boolean> {
+    const status = await this.status(dataToken)
+    if (!status) return false
+    // check active
+    if (status.active === false) return false
+    // check maxBalance
+    const userBalance = new Decimal(await this.datatokens.balance(dataToken, address))
+    if (userBalance.greaterThanOrEqualTo(status.maxBalance)) return false
+    // check maxAmount
+    if (new Decimal(String(amount)).greaterThan(status.maxTokens)) return false
+    // check dispenser balance
+    const contractBalance = new Decimal(status.balance)
+    if (contractBalance.greaterThanOrEqualTo(amount) || status.isTrueMinter === true)
+      return true
+    return false
   }
 }
