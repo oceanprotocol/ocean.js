@@ -521,7 +521,7 @@ export class DataTokens {
     dataTokenAddress: string,
     newMinterAddress: string,
     address: string
-  ): Promise<string> {
+  ): Promise<TransactionReceipt> {
     const datatoken = new this.web3.eth.Contract(this.datatokensABI, dataTokenAddress, {
       from: address
     })
@@ -542,6 +542,7 @@ export class DataTokens {
       })
       return trxReceipt
     } catch (e) {
+      this.logger.error('ERROR: Propose minter failed')
       return null
     }
   }
@@ -552,7 +553,10 @@ export class DataTokens {
    * @param {String} address - only proposad minter can call this
    * @return {Promise<string>} transactionId
    */
-  public async approveMinter(dataTokenAddress: string, address: string): Promise<string> {
+  public async approveMinter(
+    dataTokenAddress: string,
+    address: string
+  ): Promise<TransactionReceipt> {
     const datatoken = new this.web3.eth.Contract(this.datatokensABI, dataTokenAddress, {
       from: address
     })

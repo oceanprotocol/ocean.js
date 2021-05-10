@@ -15,6 +15,7 @@ import {
 import { Compute } from './Compute'
 import { OceanPool } from '../balancer/OceanPool'
 import { OceanFixedRateExchange } from '../exchange/FixedRateExchange'
+import { OceanDispenser } from '../dispenser/Dispenser'
 
 /**
  * Main interface for Ocean Protocol.
@@ -72,6 +73,15 @@ export class Ocean extends Instantiable {
       instance.datatokens,
       instanceConfig.config.startBlock
     )
+    instance.OceanDispenser = new OceanDispenser(
+      instanceConfig.config.web3Provider,
+      instanceConfig.logger,
+      instanceConfig.config.dispenserAddress,
+      instanceConfig.config.dispenserABI,
+      instance.datatokens,
+      instanceConfig.config.startBlock
+    )
+
     instance.onChainMetadata = new OnChainMetadata(
       instanceConfig.config.web3Provider,
       instanceConfig.logger,
@@ -154,6 +164,12 @@ export class Ocean extends Instantiable {
    * @type {OceanFixedRateExchange}
    */
   public fixedRateExchange: OceanFixedRateExchange
+
+  /**
+   * Ocean Dispenser submodule
+   * @type {OceanDispenser}
+   */
+  public OceanDispenser: OceanDispenser
 
   /**
      * Ocean tokens submodule

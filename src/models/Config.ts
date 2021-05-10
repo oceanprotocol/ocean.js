@@ -85,6 +85,19 @@ export class Config {
    * @type {any}
    */
   public fixedRateExchangeAddressABI?: AbiItem | AbiItem[]
+
+  /**
+   * DispenserAddress
+   * @type {string}
+   */
+  public dispenserAddress?: string
+
+  /**
+   * DispenserABI
+   * @type {any}
+   */
+  public dispenserABI?: AbiItem | AbiItem[]
+
   /**
    * DDOContractAddress
    * @type {string}
