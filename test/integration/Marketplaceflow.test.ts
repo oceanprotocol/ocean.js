@@ -458,9 +458,29 @@ describe('Marketplace flow', () => {
   })
 
   it('Alice should check if her asset is disable', async () => {
-    const response = await ocean.assets.isConsumable(ddo.id)
+    const response = await ocean.assets.isConsumable(ddo)
     assert(response !== null)
     assert(response.status === 0)
+  })
+
+  it('Alice should update her asset and set isDisable = true', async () => {
+    const newMetaData: EditableMetadata = {
+      isDisable: true
+    }
+    const newDdo = await ocean.assets.editMetadata(ddo, newMetaData)
+    assert(newDdo !== null)
+    const txid = await ocean.onChainMetadata.update(newDdo.id, newDdo, alice.getId())
+    assert(txid !== null)
+    await sleep(60000)
+    const resolvedDDO = await ocean.assets.resolve(ddo.id)
+    assert(resolvedDDO !== null)
+    asset(resolvedDDO.isDisable === true)
+  })
+
+  it('Bob should not be able to consume Alice dataset after disable', async () => {
+    const response = await ocean.assets.isConsumable(ddo)
+    assert(response !== null)
+    assert(response.status === 1)
   })
 
   it('Alice should create a FRE pricing for her asset', async () => {

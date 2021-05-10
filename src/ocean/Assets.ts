@@ -474,7 +474,8 @@ export class Assets extends Instantiable {
   ): Promise<string> {
     let service: Service
 
-    const consumable = await this.isConsumable(did)
+    const ddo = await this.resolve(did)
+    const consumable = await this.isConsumable(ddo)
     if (consumable.status > 0) return null
 
     if (!consumerAddress) consumerAddress = payerAddress
@@ -646,17 +647,16 @@ export class Assets extends Instantiable {
 
   /**
    *
-   * @param {String} did
+   * @param {DDO} ddo
    * @return {Promise<Consumable>}
    */
-  public async isConsumable(did: string): Promise<Consumable> {
-    const ddo = await this.resolve(did)
+  public async isConsumable(ddo: DDO): Promise<Consumable> {
     if (!ddo) return null
 
     if (ddo.isDisable)
       return {
         status: 1,
-        message: 'Asset is disabled'
+        message: 'Ordering this asset has been temporarily disabled by the publisher.'
       }
 
     /*
