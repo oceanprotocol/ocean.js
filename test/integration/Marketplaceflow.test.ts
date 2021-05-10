@@ -474,7 +474,7 @@ describe('Marketplace flow', () => {
     await sleep(60000)
     const resolvedDDO = await ocean.assets.resolve(ddo.id)
     assert(resolvedDDO !== null)
-    asset(resolvedDDO.isDisable === true)
+    assert(resolvedDDO.isDisable === true)
   })
 
   it('Bob should not be able to consume Alice dataset after disable', async () => {
