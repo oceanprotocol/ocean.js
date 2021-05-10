@@ -220,7 +220,7 @@ export class OceanPool extends Pool {
     tokenAddress: string
   ): Promise<string> {
     const balance = await super.getReserve(poolAddress, tokenAddress)
-    return String(parseFloat(balance) / 3)
+    return new Decimal(balance).div(3).toString()
   }
 
   /**
@@ -449,14 +449,14 @@ export class OceanPool extends Pool {
       const totalPoolTokens = await this.getPoolSharesTotalSupply(poolAddress)
       const dtReserve = await this.getDTReserve(poolAddress)
       const oceanReserve = await this.getOceanReserve(poolAddress)
-
-      const dtAmount = `${
-        (Number(poolShares) / Number(totalPoolTokens)) * Number(dtReserve)
-      }`
-      const oceanAmount = `${
-        (Number(poolShares) / Number(totalPoolTokens)) * Number(oceanReserve)
-      }`
-
+      const dtAmount = new Decimal(poolShares)
+        .div(totalPoolTokens)
+        .mul(dtReserve)
+        .toString()
+      const oceanAmount = new Decimal(poolShares)
+        .div(totalPoolTokens)
+        .mul(oceanReserve)
+        .toString()
       return { dtAmount, oceanAmount }
     } catch (e) {
       this.logger.error(`ERROR: Unable to get token info. ${e.message}`)
@@ -491,11 +491,7 @@ export class OceanPool extends Pool {
   ): Promise<string> {
     const balance = await super.getReserve(poolAddress, tokenAddress)
     if (parseFloat(balance) > 0) {
-      const result = new BigNumber(this.web3.utils.toWei(balance))
-        .multipliedBy(POOL_MAX_AMOUNT_IN_LIMIT)
-        .integerValue(BigNumber.ROUND_DOWN)
-        .minus(1)
-      return this.web3.utils.fromWei(result.toString(10))
+      return new Decimal(balance).mul(POOL_MAX_AMOUNT_IN_LIMIT).toString()
     } else return '0'
   }
 
@@ -510,11 +506,7 @@ export class OceanPool extends Pool {
   ): Promise<string> {
     const balance = await super.getReserve(poolAddress, tokenAddress)
     if (parseFloat(balance) > 0) {
-      const result = new BigNumber(this.web3.utils.toWei(balance))
-        .multipliedBy(POOL_MAX_AMOUNT_OUT_LIMIT)
-        .integerValue(BigNumber.ROUND_DOWN)
-        .minus(1)
-      return this.web3.utils.fromWei(result.toString(10))
+      return new Decimal(balance).mul(POOL_MAX_AMOUNT_OUT_LIMIT).toString()
     } else return '0'
   }
 
@@ -559,14 +551,13 @@ export class OceanPool extends Pool {
     }
     const dtAddress = await this.getDTAddress(poolAddress)
     if (
-      parseFloat(dtAmountWanted) > parseFloat(await this.getDTMaxBuyQuantity(poolAddress))
+      new Decimal(dtAmountWanted).greaterThan(await this.getDTMaxBuyQuantity(poolAddress))
     ) {
       this.logger.error('ERROR: Buy quantity exceeds quantity allowed')
       return null
     }
     const calcInGivenOut = await this.getOceanNeeded(poolAddress, dtAmountWanted)
-
-    if (parseFloat(calcInGivenOut) > parseFloat(maxOceanAmount)) {
+    if (new Decimal(calcInGivenOut).greaterThan(maxOceanAmount)) {
       this.logger.error('ERROR: Not enough Ocean Tokens')
       return null
     }
@@ -615,15 +606,15 @@ export class OceanPool extends Pool {
     }
     const dtAddress = await this.getDTAddress(poolAddress)
     if (
-      parseFloat(minimumdtAmountWanted) >
-      parseFloat(await this.getDTMaxBuyQuantity(poolAddress))
+      new Decimal(minimumdtAmountWanted).greaterThan(
+        await this.getDTMaxBuyQuantity(poolAddress)
+      )
     ) {
       this.logger.error('ERROR: Buy quantity exceeds quantity allowed')
       return null
     }
     const calcInGivenOut = await this.getOceanNeeded(poolAddress, minimumdtAmountWanted)
-
-    if (parseFloat(calcInGivenOut) > parseFloat(OceanAmount)) {
+    if (new Decimal(calcInGivenOut).greaterThan(OceanAmount)) {
       this.logger.error('ERROR: Not enough Ocean Tokens')
       return null
     }
@@ -672,15 +663,15 @@ export class OceanPool extends Pool {
     }
     const dtAddress = await this.getDTAddress(poolAddress)
     if (
-      parseFloat(oceanAmountWanted) >
-      parseFloat(await this.getOceanMaxBuyQuantity(poolAddress))
+      new Decimal(oceanAmountWanted).greaterThan(
+        await this.getOceanMaxBuyQuantity(poolAddress)
+      )
     ) {
       this.logger.error('ERROR: Buy quantity exceeds quantity allowed')
       return null
     }
     const calcOutGivenIn = await this.getOceanReceived(poolAddress, dtAmount)
-
-    if (parseFloat(calcOutGivenIn) < parseFloat(oceanAmountWanted)) {
+    if (new Decimal(calcOutGivenIn).lessThan(oceanAmountWanted)) {
       this.logger.error('ERROR: Not enough datatokens')
       return null
     }
@@ -720,7 +711,7 @@ export class OceanPool extends Pool {
   ): Promise<TransactionReceipt> {
     const dtAddress = await this.getDTAddress(poolAddress)
     const maxAmount = await this.getMaxAddLiquidity(poolAddress, dtAddress)
-    if (parseFloat(amount) > parseFloat(maxAmount)) {
+    if (new Decimal(amount).greaterThan(maxAmount)) {
       this.logger.error('ERROR: Too much reserve to add')
       return null
     }
@@ -760,23 +751,23 @@ export class OceanPool extends Pool {
   ): Promise<TransactionReceipt> {
     const dtAddress = await this.getDTAddress(poolAddress)
     const maxAmount = await this.getDTMaxRemoveLiquidity(poolAddress)
-    if (parseFloat(amount) > parseFloat(maxAmount)) {
+    if (new Decimal(amount).greaterThan(maxAmount)) {
       this.logger.error('ERROR: Too much reserve to remove')
       return null
     }
     const usershares = await this.sharesBalance(account, poolAddress)
-    if (parseFloat(usershares) < parseFloat(maximumPoolShares)) {
+    if (new Decimal(usershares).lessThan(maximumPoolShares)) {
       this.logger.error('ERROR: Not enough poolShares')
       return null
     }
     const sharesRequired = await this.getPoolSharesRequiredToRemoveDT(poolAddress, amount)
-    if (parseFloat(maximumPoolShares) < parseFloat(sharesRequired)) {
+    if (new Decimal(maximumPoolShares).lessThan(sharesRequired)) {
       this.logger.error('ERROR: Not enough poolShares')
       return null
     }
     // Balancer bug fix
-    if (parseFloat(maximumPoolShares) < parseFloat(sharesRequired))
-      maximumPoolShares = String(parseFloat(maximumPoolShares) * 0.9999)
+    if (new Decimal(maximumPoolShares).lessThan(sharesRequired))
+      maximumPoolShares = new Decimal(maximumPoolShares).mul(0.9999).toString()
     // Balance bug fix
     return this.exitswapExternAmountOut(
       account,
@@ -804,7 +795,7 @@ export class OceanPool extends Pool {
       return null
     }
     const maxAmount = await this.getOceanMaxAddLiquidity(poolAddress)
-    if (parseFloat(amount) > parseFloat(maxAmount)) {
+    if (new Decimal(amount).greaterThan(maxAmount)) {
       this.logger.error('ERROR: Too much reserve to add')
       return null
     }
@@ -847,7 +838,7 @@ export class OceanPool extends Pool {
       return null
     }
     const usershares = await this.sharesBalance(account, poolAddress)
-    if (parseFloat(usershares) < parseFloat(poolShares)) {
+    if (new Decimal(usershares).lessThan(poolShares)) {
       this.logger.error('ERROR: Not enough poolShares')
       return null
     }
@@ -880,12 +871,12 @@ export class OceanPool extends Pool {
       return null
     }
     const maxAmount = await this.getOceanMaxRemoveLiquidity(poolAddress)
-    if (parseFloat(amount) > parseFloat(maxAmount)) {
+    if (new Decimal(amount).greaterThan(maxAmount)) {
       this.logger.error('ERROR: Too much reserve to remove')
       return null
     }
     const usershares = await this.sharesBalance(account, poolAddress)
-    if (parseFloat(usershares) < parseFloat(maximumPoolShares)) {
+    if (new Decimal(usershares).lessThan(maximumPoolShares)) {
       this.logger.error('ERROR: Not enough poolShares')
       return null
     }
@@ -893,13 +884,13 @@ export class OceanPool extends Pool {
       poolAddress,
       amount
     )
-    if (parseFloat(maximumPoolShares) < parseFloat(sharesRequired)) {
+    if (new Decimal(maximumPoolShares).lessThan(sharesRequired)) {
       this.logger.error('ERROR: Not enough poolShares')
       return null
     }
     // Balancer bug fix
-    if (parseFloat(maximumPoolShares) < parseFloat(sharesRequired))
-      maximumPoolShares = String(parseFloat(maximumPoolShares) * 0.9999)
+    if (new Decimal(maximumPoolShares).lessThan(sharesRequired))
+      maximumPoolShares = new Decimal(maximumPoolShares).mul(0.9999).toString()
     // Balance bug fix
     return super.exitswapExternAmountOut(
       account,
@@ -927,13 +918,13 @@ export class OceanPool extends Pool {
     minOcean = '0'
   ): Promise<TransactionReceipt> {
     const usershares = await this.sharesBalance(account, poolAddress)
-    if (parseFloat(usershares) < parseFloat(poolShares)) {
+    if (new Decimal(usershares).lessThan(poolShares)) {
       this.logger.error('ERROR: Not enough poolShares')
       return null
     }
     // Balancer bug fix
-    if (parseFloat(usershares) === parseFloat(poolShares))
-      poolShares = String(parseFloat(poolShares) * 0.9999)
+    if (new Decimal(usershares).equals(poolShares))
+      poolShares = new Decimal(poolShares).mul(0.9999).toString()
     // Balance bug fix
     return this.exitPool(account, poolAddress, poolShares, [minDT, minOcean])
   }
@@ -975,7 +966,7 @@ export class OceanPool extends Pool {
   public async getOceanNeeded(poolAddress: string, dtRequired: string): Promise<string> {
     const dtAddress = await this.getDTAddress(poolAddress)
     if (
-      parseFloat(dtRequired) > parseFloat(await this.getDTMaxBuyQuantity(poolAddress))
+      new Decimal(dtRequired).greaterThan(await this.getDTMaxBuyQuantity(poolAddress))
     ) {
       return '0'
     }
@@ -1007,8 +998,9 @@ export class OceanPool extends Pool {
   public async getDTNeeded(poolAddress: string, OceanRequired: string): Promise<string> {
     const dtAddress = await this.getDTAddress(poolAddress)
     if (
-      parseFloat(OceanRequired) >
-      parseFloat(await this.getOceanMaxBuyQuantity(poolAddress))
+      new Decimal(OceanRequired).greaterThan(
+        await this.getOceanMaxBuyQuantity(poolAddress)
+      )
     ) {
       return '0'
     }
@@ -1295,8 +1287,7 @@ export class OceanPool extends Pool {
       tokenOutWeight,
       swapfee
     )
-    const slippage = (parseFloat(newPrice) * 100) / parseFloat(initialPrice) - 100
-    return String(slippage)
+    return new Decimal(newPrice).mul(100).div(initialPrice).minus(100).toString()
   }
 
   /* Get slippage for buying some datatokens while spending exactly oceanAmount ocean tokens */

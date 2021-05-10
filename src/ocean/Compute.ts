@@ -208,7 +208,7 @@ export class Compute extends Instantiable {
   ): Promise<ComputeJob[]> {
     let provider: Provider
 
-    if (did) {
+    if (did || service || ddo) {
       if (!service) {
         if (!ddo) {
           ddo = await this.ocean.assets.resolve(did)
@@ -221,6 +221,7 @@ export class Compute extends Instantiable {
 
       const { serviceEndpoint } = service
       provider = await Provider.getInstance(this.instanceConfig)
+
       await provider.setBaseUrl(serviceEndpoint)
     } else {
       provider = this.ocean.provider
@@ -509,7 +510,8 @@ export class Compute extends Instantiable {
     serviceIndex: number,
     algorithm: ComputeAlgorithm,
     mpAddress?: string,
-    computeAddress?: string
+    computeAddress?: string,
+    searchPreviousOrders = true
   ): SubscribablePromise<OrderProgressStep, string> {
     return new SubscribablePromise(async (observer) => {
       // first check if we can order this
@@ -525,7 +527,8 @@ export class Compute extends Instantiable {
         consumerAccount,
         -1,
         mpAddress,
-        computeAddress
+        computeAddress,
+        searchPreviousOrders
       )
       return order
     })

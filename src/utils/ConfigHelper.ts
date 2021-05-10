@@ -1,8 +1,9 @@
 import Config from '../models/Config'
-import { Logger } from '../lib'
 import fs from 'fs'
 import { homedir } from 'os'
-import * as DefaultContractsAddresses from '@oceanprotocol/contracts/artifacts/address.json'
+// eslint-disable-next-line import/no-named-default
+import { default as DefaultContractsAddresses } from '@oceanprotocol/contracts/artifacts/address.json'
+import Logger from './Logger'
 
 export declare type ConfigHelperNetworkName =
   | 'mainnet'
@@ -117,6 +118,22 @@ const configs: ConfigHelperConfig[] = [
     fixedRateExchangeAddress: null,
     metadataContractAddress: null,
     startBlock: 11005222
+  },
+  {
+    networkId: 1287,
+    network: 'moonbeamalpha',
+    nodeUri: 'https://rpc.testnet.moonbeam.network/',
+    metadataCacheUri: 'https://aquarius.moonbeamalpha.oceanprotocol.com',
+    providerUri: 'https://provider.moonbeamalpha.oceanprotocol.com',
+    subgraphUri: 'https://subgraph.moonbeamalpha.oceanprotocol.com',
+    explorerUri: 'https://moonbase-blockscout.testnet.moonbeam.network/',
+    oceanTokenAddress: null,
+    oceanTokenSymbol: 'OCEAN',
+    factoryAddress: null,
+    poolFactoryAddress: null,
+    fixedRateExchangeAddress: null,
+    metadataContractAddress: null,
+    startBlock: 90707
   }
 ]
 

@@ -13,6 +13,7 @@ import {
 } from './utils/ConfigHelper'
 
 import * as utils from './utils'
+import { Provider } from './provider/Provider'
 
 // Exports
 export * from './ddo/DDO'
@@ -33,6 +34,7 @@ export {
   DID,
   Logger,
   LogLevel,
+  Provider,
   MetadataCache,
   DataTokens,
   utils,
