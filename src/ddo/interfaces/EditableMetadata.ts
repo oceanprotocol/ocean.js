@@ -1,9 +1,9 @@
-import { Curation } from './Curation'
+import { Status } from './Status'
 import { EditableMetadataLinks } from './EditableMetadataLinks'
 
 export interface EditableMetadata {
   description?: string
   title?: string
   links?: EditableMetadataLinks[]
-  curation?: Curation
+  status?: Status
 }

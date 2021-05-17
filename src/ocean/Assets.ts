@@ -147,7 +147,7 @@ export class Assets extends Instantiable {
             type: 'metadata',
             attributes: {
               // Default values
-              curation: {
+              status: {
                 isListed: true,
                 isRetired: false,
                 isOrderDisabled: false

@@ -116,7 +116,7 @@ describe('DDO', () => {
               }
             ]
           },
-          curation: {
+          status: {
             isListed: true,
             isRetired: false,
             isOrderDisabled: false

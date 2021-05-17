@@ -1,8 +1,8 @@
 /**
- * Curation attributes of Assets Metadata.
+ * Status attributes of Assets Metadata.
  * @see https://github.com/oceanprotocol/OEPs/tree/master/8
  */
-export interface Curation {
+export interface Status {
   /**
    * Use to flag unsuitable content. True by default. If it's false, the content must not be returned.
    * @type {boolean}
