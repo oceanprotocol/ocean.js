@@ -148,9 +148,10 @@ export class Assets extends Instantiable {
             type: 'metadata',
             attributes: {
               // Default values
-              curation: {
-                rating: 0,
-                numVotes: 0
+              status: {
+                isListed: true,
+                isRetired: false,
+                isOrderDisabled: false
               },
               // Overwrites defaults
               ...metadata,
@@ -271,7 +272,15 @@ export class Assets extends Instantiable {
       } else {
         ddo.service[i].attributes.additionalInformation.links = []
       }
-      if (newMetadata.isDisable) ddo.isDisable = newMetadata.isDisable
+
+      if (newMetadata.status.isOrderDisabled !== undefined) {
+        !ddo.service[i].attributes.status
+          ? (ddo.service[i].attributes.status = {
+              isOrderDisabled: newMetadata.status.isOrderDisabled
+            })
+          : (ddo.service[i].attributes.status.isOrderDisabled =
+              newMetadata.status.isOrderDisabled)
+      }
     }
     return ddo
   }
@@ -652,8 +661,9 @@ export class Assets extends Instantiable {
    */
   public async isConsumable(ddo: DDO): Promise<Consumable> {
     if (!ddo) return null
+    const metadata = ddo.findServiceByType('metadata')
 
-    if (ddo.isDisable)
+    if (metadata.attributes.status?.isOrderDisabled)
       return {
         status: 1,
         message: 'Ordering this asset has been temporarily disabled by the publisher.'
