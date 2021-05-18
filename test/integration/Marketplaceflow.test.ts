@@ -463,9 +463,11 @@ describe('Marketplace flow', () => {
     assert(response.status === 0)
   })
 
-  it('Alice should update her asset and set isDisable = true', async () => {
+  it('Alice should update her asset and set isOrderDisabled = true', async () => {
     const newMetaData: EditableMetadata = {
-      isDisable: true
+      status: {
+        isOrderDisabled: true
+      }
     }
     const newDdo = await ocean.assets.editMetadata(ddo, newMetaData)
     assert(newDdo !== null)
@@ -474,7 +476,8 @@ describe('Marketplace flow', () => {
     await sleep(60000)
     const resolvedDDO = await ocean.assets.resolve(ddo.id)
     assert(resolvedDDO !== null)
-    assert(resolvedDDO.isDisable === true)
+    const metaData = await ocean.assets.getServiceByType(resolvedDDO.id, 'metadata')
+    assert.deepEqual(metaData.attributes.status.isOrderDisabled, true)
   })
 
   it('Bob should not be able to consume Alice dataset after disable', async () => {
