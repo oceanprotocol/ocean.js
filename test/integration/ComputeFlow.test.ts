@@ -940,15 +940,18 @@ describe('Compute flow', () => {
     const algoDefinition: ComputeAlgorithm = {
       meta: algorithmMeta
     }
-    const order = await ocean.compute.orderAsset(
-      bob.getId(),
-      datasetNoRawAlgo.id,
-      service1.index,
-      algoDefinition,
-      null, // no marketplace fee
-      computeAddress // CtD is the consumer of the dataset
-    )
-    assert(order === null, 'Order should be null')
+    try {
+      await ocean.compute.orderAsset(
+        bob.getId(),
+        datasetNoRawAlgo.id,
+        service1.index,
+        algoDefinition,
+        null, // no marketplace fee
+        computeAddress // CtD is the consumer of the dataset
+      )
+    } catch (error) {
+      assert(error != null, 'Order should be fail.')
+    }
   })
   it('should not allow order the compute service with algoDid != "did:op:1234" for dataset that allows only "did:op:1234" as algo', async () => {
     const service1 = datasetWithTrustedAlgo.findServiceByType('compute')
@@ -971,15 +974,18 @@ describe('Compute flow', () => {
     assert(allowed === false)
 
     // try even futher, since we now this should fail
-    const order = await ocean.compute.orderAsset(
-      bob.getId(),
-      datasetWithTrustedAlgo.id,
-      service1.index,
-      algoDefinition,
-      null, // no marketplace fee
-      computeAddress // CtD is the consumer of the dataset
-    )
-    assert(order === null, 'Order should be null')
+    try {
+      await ocean.compute.orderAsset(
+        bob.getId(),
+        datasetWithTrustedAlgo.id,
+        service1.index,
+        algoDefinition,
+        null, // no marketplace fee
+        computeAddress // CtD is the consumer of the dataset
+      )
+    } catch (error) {
+      assert(error != null, 'Order should be fail.')
+    }
   })
 
   it('should not allow  a compute job with a published algo because asset does not allow allowAllPublishedAlgorithms', async () => {
@@ -996,15 +1002,19 @@ describe('Compute flow', () => {
       algoDefinition
     )
     assert(allowed === false)
-    const order = await ocean.compute.orderAsset(
-      bob.getId(),
-      ddo.id,
-      computeService.index,
-      algoDefinition,
-      null, // no marketplace fee
-      computeAddress // CtD is the consumer of the dataset
-    )
-    assert(order === null, 'Order should be null')
+
+    try {
+      await ocean.compute.orderAsset(
+        bob.getId(),
+        ddo.id,
+        computeService.index,
+        algoDefinition,
+        null, // no marketplace fee
+        computeAddress // CtD is the consumer of the dataset
+      )
+    } catch (error) {
+      assert(error != null, 'Order should be fail.')
+    }
   })
 
   it('Alice updates Compute Privacy', async () => {
@@ -1091,15 +1101,18 @@ describe('Compute flow', () => {
       algoDefinition
     )
     assert(allowed === false)
-    const order = await ocean.compute.orderAsset(
-      bob.getId(),
-      ddo.id,
-      computeService.index,
-      algoDefinition,
-      null, // no marketplace fee
-      computeAddress // CtD is the consumer of the dataset
-    )
-    assert(order === null, 'Order should be null')
+    try {
+      await ocean.compute.orderAsset(
+        bob.getId(),
+        ddo.id,
+        computeService.index,
+        algoDefinition,
+        null, // no marketplace fee
+        computeAddress // CtD is the consumer of the dataset
+      )
+    } catch (error) {
+      assert(error != null, 'Order should be fail.')
+    }
   })
   it('should start a compute job with a published algo that has a compute service', async () => {
     const output = {}
@@ -1550,15 +1563,20 @@ describe('Compute flow', () => {
     )
     assert(allowed === false)
     // we know that it is not Orderable, but we are trying to force it
-    computeOrderId = await ocean.compute.orderAsset(
-      bob.getId(),
-      datasetWithBogusProvider.id,
-      computeService.index,
-      algoDefinition,
-      null, // no marketplace fee
-      computeAddress // CtD is the consumer of the dataset
-    )
-    assert(computeOrderId === null, 'computeOrderId !== null')
+
+    try {
+      await ocean.compute.orderAsset(
+        bob.getId(),
+        datasetWithBogusProvider.id,
+        computeService.index,
+        algoDefinition,
+        null, // no marketplace fee
+        computeAddress // CtD is the consumer of the dataset
+      )
+    } catch (error) {
+      assert(error != null, 'computeOrderId !== null')
+    }
+
     // we are forcing a bogus orderId
     computeOrderId = '1234'
     const response = await ocean.compute.start(

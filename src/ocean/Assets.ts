@@ -488,7 +488,8 @@ export class Assets extends Instantiable {
         serviceIndex,
         service.serviceEndpoint
       )
-      if (!providerData) return null
+      if (!providerData)
+        throw new Error(`Failed to initialize service to compute totalCost for ordering`)
       if (searchPreviousOrders) {
         const previousOrder = await this.ocean.datatokens.getPreviousValidOrders(
           providerData.dataToken,
@@ -510,7 +511,12 @@ export class Assets extends Instantiable {
             ' but balance is ' +
             balance.toString()
         )
-        return null
+        throw new Error(
+          'ERROR: Not enough funds Needed ' +
+            totalCost.toString() +
+            ' but balance is ' +
+            balance.toString()
+        )
       }
       const txid = await this.ocean.datatokens.startOrder(
         providerData.dataToken,
@@ -523,8 +529,8 @@ export class Assets extends Instantiable {
       if (txid) return txid.transactionHash
     } catch (e) {
       this.logger.error(`ERROR: Failed to order: ${e.message}`)
+      throw new Error(`ERROR: Failed to order: ${e.message}`)
     }
-    return null
   }
 
   // marketplace flow
