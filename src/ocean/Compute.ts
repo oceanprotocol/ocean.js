@@ -517,11 +517,14 @@ export class Compute extends Instantiable {
       // first check if we can order this
       const allowed = await this.isOrderable(datasetDid, serviceIndex, algorithm)
       if (!allowed)
-        throw new Error(`ERROR: Asset is orderable with a specific algorithm      `)
+        throw new Error(
+          `Dataset order failed, dataset is not orderable with the specified algorithm`
+        )
       const ddo: DDO = await this.ocean.assets.resolve(datasetDid)
       // const service: Service = ddo.findServiceByType('compute')
       const service: Service = ddo.findServiceById(serviceIndex)
-      if (!service) throw new Error(`ERROR: Could not find service for the DDO`)
+      if (!service)
+        throw new Error(`Dataset order failed, Could not find service for the DDO`)
       try {
         const order = await this.ocean.assets.order(
           datasetDid,
@@ -535,7 +538,7 @@ export class Compute extends Instantiable {
         return order
       } catch (error) {
         this.logger.error(`ERROR: Failed to order: ${error.message}`)
-        throw new Error(`ERROR: Failed to order: ${error.message}`)
+        throw new Error(`Failed to order dataset: ${error.message}`)
       }
     })
   }
@@ -572,7 +575,7 @@ export class Compute extends Instantiable {
       )
     } catch (error) {
       this.logger.error(`ERROR: Failed to orderAlgorithm: ${error.message}`)
-      throw new Error(`ERROR: Failed to orderAlgorithm: ${error.message}`)
+      throw new Error(`Failed to order algorithm: ${error.message}`)
     }
   }
 

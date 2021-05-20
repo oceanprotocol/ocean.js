@@ -489,7 +489,9 @@ export class Assets extends Instantiable {
         service.serviceEndpoint
       )
       if (!providerData)
-        throw new Error(`Failed to initialize service to compute totalCost for ordering`)
+        throw new Error(
+          `Order asset failed, Failed to initialize service to compute totalCost for ordering`
+        )
       if (searchPreviousOrders) {
         const previousOrder = await this.ocean.datatokens.getPreviousValidOrders(
           providerData.dataToken,
@@ -528,8 +530,8 @@ export class Assets extends Instantiable {
       )
       if (txid) return txid.transactionHash
     } catch (e) {
-      this.logger.error(`ERROR: Failed to order: ${e.message}`)
-      throw new Error(`ERROR: Failed to order: ${e.message}`)
+      this.logger.error(`ERROR: Failed to order a service : ${e.message}`)
+      throw new Error(`Failed to order a service: ${e.message}`)
     }
   }
 
