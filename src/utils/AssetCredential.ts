@@ -30,10 +30,7 @@ function checkDenyCredentailTypeExist(
   return isExist
 }
 
-export function removeAllowCredentailDetail(
-  ddo: DDO,
-  cedentialType: CredentialType
-): DDO {
+function removeCredentailDetail(ddo: DDO, cedentialType: CredentialType): DDO {
   const isAllowCredentailTypeExist = checkAllowCredentailTypeExist(
     ddo.credential,
     cedentialType
@@ -48,10 +45,6 @@ export function removeAllowCredentailDetail(
       deny: ddo.credential.deny
     }
   }
-  return ddo
-}
-
-export function removeDenyCredentailDetail(ddo: DDO, cedentialType: CredentialType): DDO {
   const isDenyCredentailTypeExist = checkDenyCredentailTypeExist(
     ddo.credential,
     cedentialType
@@ -69,10 +62,11 @@ export function removeDenyCredentailDetail(ddo: DDO, cedentialType: CredentialTy
   return ddo
 }
 
-export function updateAllowCredentailDetail(
+export function updateCredentailDetail(
   ddo: DDO,
   cedentialType: CredentialType,
-  allowList: string[]
+  allowList: string[],
+  denyList: string[]
 ): DDO {
   const isAllowCredentailTypeExist = checkAllowCredentailTypeExist(
     ddo.credential,
@@ -85,16 +79,15 @@ export function updateAllowCredentailDetail(
       }
     })
   } else {
-    addAllowCredentialDetail(ddo, cedentialType, allowList)
+    if (allowList) {
+      ddo.credential.allow = [
+        {
+          type: cedentialType,
+          value: allowList
+        }
+      ]
+    }
   }
-  return ddo
-}
-
-export function updateDenyCredentailDetail(
-  ddo: DDO,
-  cedentialType: CredentialType,
-  denyList: string[]
-): DDO {
   const isDenyCredentailTypeExist = checkDenyCredentailTypeExist(
     ddo.credential,
     cedentialType
@@ -106,39 +99,14 @@ export function updateDenyCredentailDetail(
       }
     })
   } else {
-    addDenyCredentialDetail(ddo, cedentialType, denyList)
+    if (denyList) {
+      ddo.credential.deny = [
+        {
+          type: cedentialType,
+          value: denyList
+        }
+      ]
+    }
   }
-  return ddo
-}
-
-function addAllowCredentialDetail(
-  ddo: DDO,
-  cedentialType: CredentialType,
-  allowList: string[]
-): DDO {
-  if (allowList) {
-    ddo.credential.allow = [
-      {
-        type: cedentialType,
-        value: allowList
-      }
-    ]
-  }
-  return ddo
-}
-
-function addDenyCredentialDetail(
-  ddo: DDO,
-  cedentialType: CredentialType,
-  denyList: string[]
-): DDO {
-  if (denyList) {
-    ddo.credential.deny = [
-      {
-        type: cedentialType,
-        value: denyList
-      }
-    ]
-  }
-  return ddo
+  return removeCredentailDetail(ddo, cedentialType)
 }
