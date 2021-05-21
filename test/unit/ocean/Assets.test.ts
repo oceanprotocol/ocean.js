@@ -4,9 +4,8 @@ import spies from 'chai-spies'
 import { SearchQuery, MetadataCache } from '../../../src/metadatacache/MetadataCache'
 import { Ocean } from '../../../src/ocean/Ocean'
 import config from '../config'
-import { CredentialType, DDO } from '../../../src/lib'
+import { DDO } from '../../../src/lib'
 import { responsify, getSearchResults } from '../helpers'
-import { updateAllowCredentailDetail } from '../../../src/utils/AssetCredential'
 
 use(spies)
 
@@ -56,21 +55,6 @@ describe('Assets', () => {
       assert.typeOf(assets.results, 'array')
       assert.lengthOf(assets.results, 1)
       assert.isDefined(assets.results[0].findServiceById)
-    })
-  })
-
-  describe('#Credential()', () => {
-    it('should add allow credential', () => {
-      const credentialType = CredentialType.address
-      const walletA = '0x12345'
-      const walletB = '0x23456'
-      const allowWalletAddressList = [walletA, walletB]
-      const ddo = updateAllowCredentailDetail(
-        new DDO(),
-        credentialType,
-        allowWalletAddressList
-      )
-      assert(ddo.credential.allow.length === 1)
     })
   })
 })
