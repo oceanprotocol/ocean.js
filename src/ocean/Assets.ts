@@ -14,7 +14,12 @@ import { isAddress } from 'web3-utils'
 import { MetadataMain } from '../ddo/interfaces'
 import { TransactionReceipt } from 'web3-core'
 import { CredentialType } from '../ddo/interfaces/CredentialDetail'
-import { updateCredentailDetail } from '../utils/AssetCredential'
+import {
+  removeAllowCredentailDetail,
+  removeDenyCredentailDetail,
+  updateAllowCredentailDetail,
+  updateDenyCredentailDetail
+} from '../utils/AssetCredential'
 
 export enum CreateProgressStep {
   CreatingDataToken,
@@ -290,7 +295,18 @@ export class Assets extends Instantiable {
     allowList: string[],
     denyList: string[]
   ): Promise<DDO> {
-    return updateCredentailDetail(ddo, cedentialType, allowList, denyList)
+    if (allowList.length !== 0) {
+      updateAllowCredentailDetail(ddo, cedentialType, allowList)
+    } else {
+      removeAllowCredentailDetail(ddo, cedentialType)
+    }
+
+    if (denyList.length !== 0) {
+      updateDenyCredentailDetail(ddo, cedentialType, denyList)
+    } else {
+      removeDenyCredentailDetail(ddo, cedentialType)
+    }
+    return ddo
   }
 
   /**
