@@ -5,7 +5,14 @@ import spies from 'chai-spies'
 import Web3 from 'web3'
 import { AbiItem } from 'web3-utils/types'
 import { DataTokens } from '../../src/datatokens/Datatokens'
-import { Account, EditableMetadata, Service, ServiceAccess, DID } from '../../src/lib'
+import {
+  Account,
+  EditableMetadata,
+  Service,
+  ServiceAccess,
+  DID,
+  CredentialType
+} from '../../src/lib'
 import { noDidPrefixed } from '../../src/utils/'
 import { Ocean } from '../../src/ocean/Ocean'
 import { ConfigHelper } from '../../src/utils/ConfigHelper'
@@ -446,6 +453,16 @@ describe('Marketplace flow', () => {
     await sleep(aquaSleep)
     const metaData = await ocean.assets.getServiceByType(ddo.id, 'access')
     assert(parseInt(metaData.attributes.main.timeout) === parseInt(newTimeout.toFixed()))
+  })
+
+  it('Alice update credential allow list', async () => {
+    const credentialType = CredentialType.address
+    const allowList = ['0x12345']
+    const newDdo = await ocean.assets.updateCredential(ddo, credentialType, allowList, [])
+    assert(newDdo !== null)
+    const txid = await ocean.onChainMetadata.update(newDdo.id, newDdo, alice.getId())
+    assert(txid !== null)
+    assert(newDdo.credential.allow.length === 1)
   })
 
   it('Alice should check if her asset is consumable', async () => {
