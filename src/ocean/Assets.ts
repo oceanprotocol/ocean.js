@@ -13,6 +13,8 @@ import { Provider } from '../provider/Provider'
 import { isAddress } from 'web3-utils'
 import { MetadataMain } from '../ddo/interfaces'
 import { TransactionReceipt } from 'web3-core'
+import { Credential } from '../ddo/interfaces/Credential'
+import { CredentialType } from '../ddo/interfaces/CredentialDetail'
 
 export enum CreateProgressStep {
   CreatingDataToken,
@@ -270,6 +272,172 @@ export class Assets extends Instantiable {
       } else {
         ddo.service[i].attributes.additionalInformation.links = []
       }
+    }
+    return ddo
+  }
+
+  private checkAllowCredentailTypeExist(
+    credential: Credential,
+    credentialType: CredentialType
+  ): boolean {
+    let isExist = false
+    if (credential && credential.allow) {
+      const allowList = credential.allow.find(
+        (credentail) => credentail.type === credentialType
+      )
+      isExist = allowList.value.length > 0
+    }
+    return isExist
+  }
+
+  private checkDenyCredentailTypeExist(
+    credential: Credential,
+    credentialType: CredentialType
+  ): boolean {
+    let isExist = false
+    if (credential && credential.deny) {
+      const dennyList = credential.deny.find(
+        (credentail) => credentail.type === credentialType
+      )
+      isExist = dennyList.value.length > 0
+    }
+    return isExist
+  }
+
+  private removeAllowCredentailDetail(ddo: DDO, cedentialType: CredentialType): DDO {
+    const isAllowCredentailTypeExist = this.checkAllowCredentailTypeExist(
+      ddo.credential,
+      cedentialType
+    )
+    if (isAllowCredentailTypeExist) {
+      ddo.credential.allow = ddo.credential.allow.filter(
+        (credentail) => credentail.type !== cedentialType
+      )
+    }
+    if (ddo.credential.allow) {
+      ddo.credential = {
+        deny: ddo.credential.deny
+      }
+    }
+    return ddo
+  }
+
+  private removeDenyCredentailDetail(ddo: DDO, cedentialType: CredentialType): DDO {
+    const isDenyCredentailTypeExist = this.checkDenyCredentailTypeExist(
+      ddo.credential,
+      cedentialType
+    )
+    if (isDenyCredentailTypeExist) {
+      ddo.credential.deny = ddo.credential.deny.filter(
+        (credentail) => credentail.type !== cedentialType
+      )
+    }
+    if (ddo.credential.deny) {
+      ddo.credential = {
+        allow: ddo.credential.allow
+      }
+    }
+    return ddo
+  }
+
+  private updateAllowCredentailDetail(
+    ddo: DDO,
+    cedentialType: CredentialType,
+    allowList: string[]
+  ): DDO {
+    const isAllowCredentailTypeExist = this.checkAllowCredentailTypeExist(
+      ddo.credential,
+      cedentialType
+    )
+    if (isAllowCredentailTypeExist) {
+      ddo.credential.allow.find((credentail) => {
+        if (credentail.type === cedentialType) {
+          credentail.value = allowList
+        }
+      })
+    } else {
+      this.addAllowCredentialDetail(ddo, cedentialType, allowList)
+    }
+    return ddo
+  }
+
+  private updateDenyCredentailDetail(
+    ddo: DDO,
+    cedentialType: CredentialType,
+    denyList: string[]
+  ): DDO {
+    const isDenyCredentailTypeExist = this.checkDenyCredentailTypeExist(
+      ddo.credential,
+      cedentialType
+    )
+    if (isDenyCredentailTypeExist) {
+      ddo.credential.deny.find((credentail) => {
+        if (credentail.type === cedentialType) {
+          credentail.value = denyList
+        }
+      })
+    } else {
+      this.addDenyCredentialDetail(ddo, cedentialType, denyList)
+    }
+    return ddo
+  }
+
+  private addAllowCredentialDetail(
+    ddo: DDO,
+    cedentialType: CredentialType,
+    allowList: string[]
+  ): DDO {
+    if (allowList) {
+      ddo.credential.allow = [
+        {
+          type: cedentialType,
+          value: allowList
+        }
+      ]
+    }
+    return ddo
+  }
+
+  private addDenyCredentialDetail(
+    ddo: DDO,
+    cedentialType: CredentialType,
+    denyList: string[]
+  ): DDO {
+    if (denyList) {
+      ddo.credential.deny = [
+        {
+          type: cedentialType,
+          value: denyList
+        }
+      ]
+    }
+    return ddo
+  }
+
+  /**
+   * Update Credentail attribute in DDO
+   * @param  {ddo} DDO
+   * @param {cedentialType} CredentialType e.g. address / credentail3Box
+   * @param {allowList} string[] List of allow credential
+   * @param {denyList} string[] List of deny credential
+   * @return {Promise<DDO>} Updated DDO
+   */
+  public async updateCredentail(
+    ddo: DDO,
+    cedentialType: CredentialType,
+    allowList: string[],
+    denyList: string[]
+  ): Promise<DDO> {
+    if (allowList.length !== 0) {
+      this.updateAllowCredentailDetail(ddo, cedentialType, allowList)
+    } else {
+      this.removeAllowCredentailDetail(ddo, cedentialType)
+    }
+
+    if (denyList.length !== 0) {
+      this.updateDenyCredentailDetail(ddo, cedentialType, denyList)
+    } else {
+      this.removeDenyCredentailDetail(ddo, cedentialType)
     }
     return ddo
   }
