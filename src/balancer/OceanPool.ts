@@ -154,7 +154,7 @@ export class OceanPool extends Pool {
         account,
         address,
         dtAddress,
-        this.web3.utils.toWei(reduceDecimalsString(dtAmount))),
+        this.web3.utils.toWei(reduceDecimals(String(dtAmount))),
         this.web3.utils.toWei(reduceDecimals(String(dtWeight))),
         this.oceanAddress,
         this.web3.utils.toWei(reduceDecimals(String(oceanAmount))),
