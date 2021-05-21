@@ -6,6 +6,7 @@ import { EventData, Filter } from 'web3-eth-contract'
 import BigNumber from 'bignumber.js'
 import { SubscribablePromise, Logger, didNoZeroX, didPrefixed } from '../utils'
 import Decimal from 'decimal.js'
+import reduceDecimals from '../utils/Decimals'
 
 declare type PoolTransactionType = 'swap' | 'join' | 'exit'
 
@@ -127,7 +128,7 @@ export class OceanPool extends Pool {
           account,
           dtAddress,
           address,
-          this.web3.utils.toWei(String(dtAmount))
+          this.web3.utils.toWei(reduceDecimals(String(dtAmount)))
         )
         if (!txid) {
           this.logger.error('ERROR: Failed to call approve DT token')
@@ -141,7 +142,7 @@ export class OceanPool extends Pool {
           account,
           this.oceanAddress,
           address,
-          this.web3.utils.toWei(String(oceanAmount))
+          this.web3.utils.toWei(reduceDecimals(String(oceanAmount)))
         )
         if (!txid) {
           this.logger.error('ERROR: Failed to call approve OCEAN token')
@@ -153,12 +154,12 @@ export class OceanPool extends Pool {
         account,
         address,
         dtAddress,
-        this.web3.utils.toWei(String(dtAmount)),
-        this.web3.utils.toWei(String(dtWeight)),
+        this.web3.utils.toWei(reduceDecimalsString(dtAmount))),
+        this.web3.utils.toWei(reduceDecimals(String(dtWeight))),
         this.oceanAddress,
-        this.web3.utils.toWei(String(oceanAmount)),
-        this.web3.utils.toWei(String(oceanWeight)),
-        this.web3.utils.toWei(fee)
+        this.web3.utils.toWei(reduceDecimals(String(oceanAmount))),
+        this.web3.utils.toWei(reduceDecimals(String(oceanWeight))),
+        this.web3.utils.toWei(reduceDecimals(fee))
       )
       if (!txid) {
         this.logger.error('ERROR: Failed to create a new pool')
@@ -566,7 +567,7 @@ export class OceanPool extends Pool {
       account,
       this.oceanAddress,
       poolAddress,
-      this.web3.utils.toWei(maxOceanAmount)
+      this.web3.utils.toWei(reduceDecimals(maxOceanAmount))
     )
     if (!txid) {
       this.logger.error('ERROR: OCEAN approve failed')
@@ -623,7 +624,7 @@ export class OceanPool extends Pool {
       account,
       this.oceanAddress,
       poolAddress,
-      this.web3.utils.toWei(OceanAmount)
+      this.web3.utils.toWei(reduceDecimals(OceanAmount))
     )
     if (!txid) {
       this.logger.error('ERROR: OCEAN approve failed')
@@ -679,7 +680,7 @@ export class OceanPool extends Pool {
       account,
       dtAddress,
       poolAddress,
-      this.web3.utils.toWei(dtAmount)
+      this.web3.utils.toWei(reduceDecimals(dtAmount))
     )
     if (!txid) {
       this.logger.error('ERROR: DT approve failed')
@@ -719,7 +720,7 @@ export class OceanPool extends Pool {
       account,
       dtAddress,
       poolAddress,
-      this.web3.utils.toWei(amount)
+      this.web3.utils.toWei(reduceDecimals(amount))
     )
     if (!txid) {
       this.logger.error('ERROR: DT approve failed')
@@ -803,7 +804,7 @@ export class OceanPool extends Pool {
       account,
       this.oceanAddress,
       poolAddress,
-      this.web3.utils.toWei(amount)
+      this.web3.utils.toWei(reduceDecimals(amount))
     )
     if (!txid) {
       this.logger.error('ERROR: OCEAN approve failed')
@@ -1310,11 +1311,11 @@ export class OceanPool extends Pool {
       oceanAmount,
       swapFee
     )
-    const newDtReserve = new BigNumber(this.web3.utils.toWei(dtReserve)).minus(
-      this.web3.utils.toWei(dtReceived)
+    const newDtReserve = new BigNumber(this.web3.utils.toWei(reduceDecimals(dtReserve))).minus(
+      this.web3.utils.toWei(reduceDecimals(dtReceived))
     )
-    const newOceanReserve = new BigNumber(this.web3.utils.toWei(oceanReserve)).plus(
-      this.web3.utils.toWei(oceanAmount)
+    const newOceanReserve = new BigNumber(this.web3.utils.toWei(reduceDecimals(oceanReserve))).plus(
+      this.web3.utils.toWei(reduceDecimals(oceanAmount))
     )
     const slippage = await this.computeSlippage(
       poolAddress,
@@ -1349,11 +1350,11 @@ export class OceanPool extends Pool {
       dtAmount,
       swapFee
     )
-    const newDtReserve = new BigNumber(this.web3.utils.toWei(dtReserve)).plus(
-      this.web3.utils.toWei(dtAmount)
+    const newDtReserve = new BigNumber(this.web3.utils.toWei(reduceDecimals(dtReserve))).plus(
+      this.web3.utils.toWei(reduceDecimals(dtAmount))
     )
-    const newOceanReserve = new BigNumber(this.web3.utils.toWei(oceanReserve)).minus(
-      this.web3.utils.toWei(oceanReceived)
+    const newOceanReserve = new BigNumber(this.web3.utils.toWei(reduceDecimals(oceanReserve))).minus(
+      this.web3.utils.toWei(reduceDecimals(oceanReceived))
     )
     const slippage = await this.computeSlippage(
       poolAddress,
