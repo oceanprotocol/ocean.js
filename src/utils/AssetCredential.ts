@@ -1,6 +1,6 @@
 import { DDO } from '../ddo/DDO'
 import { Credential } from '../ddo/interfaces/Credential'
-import { CredentialType } from '../ddo/interfaces/CredentialDetail'
+import { CredentialDetail, CredentialType } from '../ddo/interfaces/CredentialDetail'
 
 function checkAllowCredentailTypeExist(
   credential: Credential,
@@ -11,7 +11,7 @@ function checkAllowCredentailTypeExist(
     const allowList = credential.allow.find(
       (credentail) => credentail.type === credentialType
     )
-    isExist = allowList.value.length > 0
+    isExist = allowList && allowList.value.length > 0
   }
   return isExist
 }
@@ -25,7 +25,7 @@ function checkDenyCredentailTypeExist(
     const dennyList = credential.deny.find(
       (credentail) => credentail.type === credentialType
     )
-    isExist = dennyList.value.length > 0
+    isExist = dennyList && dennyList.value.length > 0
   }
   return isExist
 }
@@ -116,14 +116,18 @@ function addAllowCredentialDetail(
   cedentialType: CredentialType,
   allowList: string[]
 ): DDO {
-  if (allowList) {
-    ddo.credential.allow = []
-    ddo.credential.allow.push(
-      {
-        type: cedentialType,
-        value: allowList
-      }
-    )
+  const newCredentialDetail: CredentialDetail = {
+    type: cedentialType,
+    value: allowList
+  }
+  if (ddo.credential && ddo.credential.allow) {
+    ddo.credential.allow.push(newCredentialDetail)
+  } else {
+    const newCredential: Credential = {
+      allow: [newCredentialDetail],
+      deny: ddo.credential && ddo.credential.deny
+    }
+    ddo.credential = newCredential
   }
   return ddo
 }
@@ -133,13 +137,18 @@ function addDenyCredentialDetail(
   cedentialType: CredentialType,
   denyList: string[]
 ): DDO {
-  if (denyList) {
-    ddo.credential.deny = [
-      {
-        type: cedentialType,
-        value: denyList
-      }
-    ]
+  const newCredentialDetail: CredentialDetail = {
+    type: cedentialType,
+    value: denyList
+  }
+  if (ddo.credential && ddo.credential.deny) {
+    ddo.credential.deny.push(newCredentialDetail)
+  } else {
+    const newCredential: Credential = {
+      allow: ddo.credential && ddo.credential.allow,
+      deny: [newCredentialDetail]
+    }
+    ddo.credential = newCredential
   }
   return ddo
 }

@@ -295,13 +295,13 @@ export class Assets extends Instantiable {
     allowList: string[],
     denyList: string[]
   ): Promise<DDO> {
-    if (allowList.length !== 0) {
+    if (allowList.length) {
       updateAllowCredentailDetail(ddo, cedentialType, allowList)
     } else {
       removeAllowCredentailDetail(ddo, cedentialType)
     }
 
-    if (denyList.length !== 0) {
+    if (denyList.length) {
       updateDenyCredentailDetail(ddo, cedentialType, denyList)
     } else {
       removeDenyCredentailDetail(ddo, cedentialType)
