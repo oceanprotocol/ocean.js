@@ -562,9 +562,14 @@ describe('Marketplace flow', () => {
   it('Bob tries to consumes asset with bad URL, but tokens are not deducted', async () => {
     const balance = await datatoken.balance(tokenAddressForBadUrlAsset, bob.getId())
     try {
-      await ocean.assets.order(ddoWithBadUrl.id, accessService.type, bob.getId())
+      const order = await ocean.assets.order(
+        ddoWithBadUrl.id,
+        accessService.type,
+        bob.getId()
+      )
+      assert(order === null, 'Order should be null')
     } catch (error) {
-      assert(error != null)
+      assert(error != null, 'Order should throw error')
     }
 
     const balanceAfterOrder = await datatoken.balance(
