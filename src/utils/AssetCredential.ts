@@ -43,7 +43,7 @@ export function removeAllowCredentailDetail(
       (credentail) => credentail.type !== cedentialType
     )
   }
-  if (ddo.credential.allow) {
+  if (!ddo.credential.allow) {
     ddo.credential = {
       deny: ddo.credential.deny
     }
@@ -61,7 +61,7 @@ export function removeDenyCredentailDetail(ddo: DDO, cedentialType: CredentialTy
       (credentail) => credentail.type !== cedentialType
     )
   }
-  if (ddo.credential.deny) {
+  if (!ddo.credential.deny) {
     ddo.credential = {
       allow: ddo.credential.allow
     }

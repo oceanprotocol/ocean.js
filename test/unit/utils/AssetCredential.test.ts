@@ -44,17 +44,21 @@ describe('AssetCredential', () => {
     assert(ddo.credential.deny.length === 2)
   })
 
-  it('should remove allow credential', () => {
+  it('should only remove allow credential by credential type', () => {
     const allowWalletAddressList = [walletA, walletB]
+    const allow3BoxList = [threeBoxValue]
     let newDdo = updateAllowCredentailDetail(ddo, addressType, allowWalletAddressList)
-    newDdo = removeAllowCredentailDetail(ddo, addressType)
-    assert(newDdo.credential.allow === undefined)
+    newDdo = updateAllowCredentailDetail(newDdo, threeBoxType, allow3BoxList)
+    newDdo = removeAllowCredentailDetail(newDdo, addressType)
+    assert(newDdo.credential.allow.length === 1)
   })
 
-  it('should remove deny credential', () => {
+  it('should only remove deny credential by credential type', () => {
     const denyWalletAddressList = [walletC]
+    const deny3BoxList = [threeBoxValue]
     let newDdo = updateDenyCredentailDetail(ddo, addressType, denyWalletAddressList)
-    newDdo = removeDenyCredentailDetail(ddo, addressType)
-    assert(newDdo.credential.deny === undefined)
+    newDdo = updateDenyCredentailDetail(ddo, threeBoxType, deny3BoxList)
+    newDdo = removeDenyCredentailDetail(newDdo, threeBoxType)
+    assert(newDdo.credential.deny.length === 1)
   })
 })
