@@ -117,12 +117,13 @@ function addAllowCredentialDetail(
   allowList: string[]
 ): DDO {
   if (allowList) {
-    ddo.credential.allow = [
+    ddo.credential.allow = []
+    ddo.credential.allow.push(
       {
         type: cedentialType,
         value: allowList
       }
-    ]
+    )
   }
   return ddo
 }
