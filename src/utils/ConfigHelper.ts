@@ -150,14 +150,8 @@ export class ConfigHelper {
     // use the defaults first
     let configAddresses: Partial<ConfigHelperConfig>
     if (DefaultContractsAddresses[network]) {
-      const {
-        DTFactory,
-        BFactory,
-        FixedRateExchange,
-        Dispenser,
-        Metadata,
-        Ocean
-      } = DefaultContractsAddresses[network]
+      const { DTFactory, BFactory, FixedRateExchange, Dispenser, Metadata, Ocean } =
+        DefaultContractsAddresses[network]
       configAddresses = {
         factoryAddress: DTFactory,
         poolFactoryAddress: BFactory,
@@ -178,14 +172,8 @@ export class ConfigHelper {
             'utf8'
           )
         )
-        const {
-          DTFactory,
-          BFactory,
-          FixedRateExchange,
-          Dispenser,
-          Metadata,
-          Ocean
-        } = data[network]
+        const { DTFactory, BFactory, FixedRateExchange, Dispenser, Metadata, Ocean } =
+          data[network]
         configAddresses = {
           factoryAddress: DTFactory,
           poolFactoryAddress: BFactory,
