@@ -449,7 +449,7 @@ export class DataTokens {
       return trxReceipt
     } catch (e) {
       this.logger.error(`ERROR: Failed to start order : ${e.message}`)
-      return null
+      throw new Error(`Failed to start order: ${e.message}`)
     }
   }
 
