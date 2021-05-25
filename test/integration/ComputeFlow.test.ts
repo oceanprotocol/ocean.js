@@ -104,8 +104,7 @@ describe('Compute flow', () => {
     language: 'js',
     format: 'docker-image',
     version: '0.1',
-    url:
-      'https://raw.githubusercontent.com/oceanprotocol/test-algorithm/master/javascript/algo.js',
+    url: 'https://raw.githubusercontent.com/oceanprotocol/test-algorithm/master/javascript/algo.js',
     container: {
       entrypoint: 'node $ALGO',
       image: 'node',
@@ -250,8 +249,7 @@ describe('Compute flow', () => {
         license: 'CC-BY',
         files: [
           {
-            url:
-              'https://raw.githubusercontent.com/tbertinmahieux/MSongsDB/master/Tasks_Demos/CoverSongs/shs_dataset_test.txt',
+            url: 'https://raw.githubusercontent.com/tbertinmahieux/MSongsDB/master/Tasks_Demos/CoverSongs/shs_dataset_test.txt',
             checksum: 'efb2c764274b745f5fc37f97c6b0e764',
             contentLength: '4535431',
             contentType: 'text/csv',
@@ -487,8 +485,7 @@ describe('Compute flow', () => {
         license: 'CC-BY',
         files: [
           {
-            url:
-              'https://raw.githubusercontent.com/oceanprotocol/test-algorithm/master/javascript/algo.js',
+            url: 'https://raw.githubusercontent.com/oceanprotocol/test-algorithm/master/javascript/algo.js',
             contentType: 'text/js',
             encoding: 'UTF-8'
           }
@@ -540,8 +537,7 @@ describe('Compute flow', () => {
         license: 'CC-BY',
         files: [
           {
-            url:
-              'https://raw.githubusercontent.com/oceanprotocol/test-algorithm/master/javascript/algo.js',
+            url: 'https://raw.githubusercontent.com/oceanprotocol/test-algorithm/master/javascript/algo.js',
             contentType: 'text/js',
             encoding: 'UTF-8'
           }
@@ -602,8 +598,7 @@ describe('Compute flow', () => {
         license: 'CC-BY',
         files: [
           {
-            url:
-              'https://raw.githubusercontent.com/oceanprotocol/test-algorithm/master/javascript/algo.js',
+            url: 'https://raw.githubusercontent.com/oceanprotocol/test-algorithm/master/javascript/algo.js',
             contentType: 'text/js',
             encoding: 'UTF-8'
           }
@@ -667,8 +662,7 @@ describe('Compute flow', () => {
         license: 'CC-BY',
         files: [
           {
-            url:
-              'https://raw.githubusercontent.com/oceanprotocol/test-algorithm/master/javascript/algo.js',
+            url: 'https://raw.githubusercontent.com/oceanprotocol/test-algorithm/master/javascript/algo.js',
             contentType: 'text/js',
             encoding: 'UTF-8'
           }
@@ -1074,9 +1068,8 @@ describe('Compute flow', () => {
       algorithmAssetRemoteProviderWithCompute != null,
       'algorithmAsset should not be null'
     )
-    const serviceAlgo = algorithmAssetRemoteProviderWithCompute.findServiceByType(
-      'compute'
-    )
+    const serviceAlgo =
+      algorithmAssetRemoteProviderWithCompute.findServiceByType('compute')
     assert(serviceAlgo != null, 'serviceAlgo should not be null')
     // get the compute address first
     computeAddress = await ocean.compute.getComputeAddress(ddo.id, computeService.index)

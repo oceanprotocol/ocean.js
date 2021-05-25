@@ -617,9 +617,8 @@ export class Compute extends Instantiable {
     }
     if (typeof ddo.service[serviceIndex] === 'undefined') return null
     if (ddo.service[serviceIndex].type !== 'compute') return null
-    ddo.service[
-      serviceIndex
-    ].attributes.main.privacy.allowAllPublishedAlgorithms = newState
+    ddo.service[serviceIndex].attributes.main.privacy.allowAllPublishedAlgorithms =
+      newState
     return ddo
   }
 
@@ -734,13 +733,12 @@ export class Compute extends Instantiable {
     if (ddo.service[serviceIndex].type !== 'compute') return ddo
     if (!ddo.service[serviceIndex].attributes.main.privacy.publisherTrustedAlgorithms)
       return ddo
-    ddo.service[
-      serviceIndex
-    ].attributes.main.privacy.publisherTrustedAlgorithms = ddo.service[
-      serviceIndex
-    ].attributes.main.privacy.publisherTrustedAlgorithms.filter(function (el) {
-      return el.did !== algoDid
-    })
+    ddo.service[serviceIndex].attributes.main.privacy.publisherTrustedAlgorithms =
+      ddo.service[serviceIndex].attributes.main.privacy.publisherTrustedAlgorithms.filter(
+        function (el) {
+          return el.did !== algoDid
+        }
+      )
     return ddo
   }
 }
