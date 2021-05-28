@@ -1311,12 +1311,12 @@ export class OceanPool extends Pool {
       oceanAmount,
       swapFee
     )
-    const newDtReserve = new BigNumber(this.web3.utils.toWei(reduceDecimals(dtReserve))).minus(
-      this.web3.utils.toWei(reduceDecimals(dtReceived))
-    )
-    const newOceanReserve = new BigNumber(this.web3.utils.toWei(reduceDecimals(oceanReserve))).plus(
-      this.web3.utils.toWei(reduceDecimals(oceanAmount))
-    )
+    const newDtReserve = new BigNumber(
+      this.web3.utils.toWei(reduceDecimals(dtReserve))
+    ).minus(this.web3.utils.toWei(reduceDecimals(dtReceived)))
+    const newOceanReserve = new BigNumber(
+      this.web3.utils.toWei(reduceDecimals(oceanReserve))
+    ).plus(this.web3.utils.toWei(reduceDecimals(oceanAmount)))
     const slippage = await this.computeSlippage(
       poolAddress,
       oceanReserve,
@@ -1350,12 +1350,12 @@ export class OceanPool extends Pool {
       dtAmount,
       swapFee
     )
-    const newDtReserve = new BigNumber(this.web3.utils.toWei(reduceDecimals(dtReserve))).plus(
-      this.web3.utils.toWei(reduceDecimals(dtAmount))
-    )
-    const newOceanReserve = new BigNumber(this.web3.utils.toWei(reduceDecimals(oceanReserve))).minus(
-      this.web3.utils.toWei(reduceDecimals(oceanReceived))
-    )
+    const newDtReserve = new BigNumber(
+      this.web3.utils.toWei(reduceDecimals(dtReserve))
+    ).plus(this.web3.utils.toWei(reduceDecimals(dtAmount)))
+    const newOceanReserve = new BigNumber(
+      this.web3.utils.toWei(reduceDecimals(oceanReserve))
+    ).minus(this.web3.utils.toWei(reduceDecimals(oceanReceived)))
     const slippage = await this.computeSlippage(
       poolAddress,
       dtReserve,
