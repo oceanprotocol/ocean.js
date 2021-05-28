@@ -8,6 +8,7 @@ import wordListDefault from '../data/words.json'
 import { TransactionReceipt } from 'web3-core'
 import BigNumber from 'bignumber.js'
 import Decimal from 'decimal.js'
+import reduceDecimals from '../utils/Decimals'
 
 /**
  * Provides an interface to DataTokens
@@ -100,7 +101,12 @@ export class DataTokens {
     let estGas
     try {
       estGas = await factory.methods
-        .createToken(metadataCacheUri, name, symbol, this.web3.utils.toWei(cap))
+        .createToken(
+          metadataCacheUri,
+          name,
+          symbol,
+          this.web3.utils.toWei(reduceDecimals(cap))
+        )
         .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
     } catch (e) {
       estGas = gasLimitDefault
@@ -108,7 +114,12 @@ export class DataTokens {
 
     // Invoke createToken function of the contract
     const trxReceipt = await factory.methods
-      .createToken(metadataCacheUri, name, symbol, this.web3.utils.toWei(cap))
+      .createToken(
+        metadataCacheUri,
+        name,
+        symbol,
+        this.web3.utils.toWei(reduceDecimals(cap))
+      )
       .send({
         from: address,
         gas: estGas + 1,
@@ -145,13 +156,13 @@ export class DataTokens {
     let estGas
     try {
       estGas = await datatoken.methods
-        .approve(spender, this.web3.utils.toWei(amount))
+        .approve(spender, this.web3.utils.toWei(reduceDecimals(amount)))
         .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
     } catch (e) {
       estGas = gasLimitDefault
     }
     const trxReceipt = await datatoken.methods
-      .approve(spender, this.web3.utils.toWei(amount))
+      .approve(spender, this.web3.utils.toWei(reduceDecimals(amount)))
       .send({
         from: address,
         gas: estGas + 1,
@@ -183,7 +194,7 @@ export class DataTokens {
       let estGas
       try {
         estGas = await datatoken.methods
-          .mint(toAddress || address, this.web3.utils.toWei(amount))
+          .mint(toAddress || address, this.web3.utils.toWei(reduceDecimals(amount)))
           .estimateGas({ from: address }, (err, estGas) =>
             err ? gasLimitDefault : estGas
           )
@@ -191,7 +202,7 @@ export class DataTokens {
         estGas = gasLimitDefault
       }
       const trxReceipt = await datatoken.methods
-        .mint(toAddress || address, this.web3.utils.toWei(amount))
+        .mint(toAddress || address, this.web3.utils.toWei(reduceDecimals(amount)))
         .send({
           from: address,
           gas: estGas + 1,
@@ -234,7 +245,7 @@ export class DataTokens {
     amount: string,
     address: string
   ): Promise<TransactionReceipt> {
-    const weiAmount = this.web3.utils.toWei(amount)
+    const weiAmount = this.web3.utils.toWei(reduceDecimals(amount))
     return this.transferWei(dataTokenAddress, toAddress, weiAmount, address)
   }
 
@@ -293,13 +304,13 @@ export class DataTokens {
     let estGas
     try {
       estGas = await datatoken.methods
-        .transferFrom(fromAddress, address, this.web3.utils.toWei(amount))
+        .transferFrom(fromAddress, address, this.web3.utils.toWei(reduceDecimals(amount)))
         .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
     } catch (e) {
       estGas = gasLimitDefault
     }
     const trxReceipt = await datatoken.methods
-      .transferFrom(fromAddress, address, this.web3.utils.toWei(amount))
+      .transferFrom(fromAddress, address, this.web3.utils.toWei(reduceDecimals(amount)))
       .send({
         from: address,
         gas: estGas + 1,
@@ -385,7 +396,7 @@ export class DataTokens {
    * @return {Promise<string>} string
    */
   public toWei(amount: string): string {
-    return this.web3.utils.toWei(amount)
+    return this.web3.utils.toWei(reduceDecimals(amount))
   }
 
   /** Convert from wei
@@ -424,7 +435,7 @@ export class DataTokens {
         estGas = await datatoken.methods
           .startOrder(
             consumer,
-            this.web3.utils.toWei(amount),
+            this.web3.utils.toWei(reduceDecimals(amount)),
             String(serviceId),
             mpFeeAddress
           )
@@ -437,7 +448,7 @@ export class DataTokens {
       const trxReceipt = await datatoken.methods
         .startOrder(
           consumer,
-          this.web3.utils.toWei(amount),
+          this.web3.utils.toWei(reduceDecimals(amount)),
           String(serviceId),
           mpFeeAddress
         )
@@ -487,7 +498,8 @@ export class DataTokens {
     })
     for (let i = 0; i < events.length; i++) {
       if (
-        String(events[i].returnValues.amount) === this.web3.utils.toWei(String(amount)) &&
+        String(events[i].returnValues.amount) ===
+          this.web3.utils.toWei(reduceDecimals(String(amount))) &&
         String(events[i].returnValues.serviceId) === String(serviceId) &&
         events[i].returnValues.consumer.toLowerCase() === address.toLowerCase()
       ) {
