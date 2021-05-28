@@ -1,5 +1,5 @@
 export interface BestPrice {
-  type: 'pool' | 'exchange' | ''
+  type: 'pool' | 'exchange' | 'free' | ''
   address: string
   value: number
   isConsumable?: 'true' | 'false' | ''
