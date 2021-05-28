@@ -75,7 +75,10 @@ export class OnChainMetadata {
     encrypt: boolean = false
   ): Promise<TransactionReceipt> {
     const rawData = await this.prepareRawData(ddo, encrypt)
-    return this.publishRaw(didZeroX(did), rawData.flags, rawData.data, consumerAccount)
+    if (!rawData) {
+      throw new Error(`Could now prepare raw data for publish`)
+    } else
+      return this.publishRaw(didZeroX(did), rawData.flags, rawData.data, consumerAccount)
   }
 
   /**
@@ -92,7 +95,10 @@ export class OnChainMetadata {
     encrypt: boolean = false
   ): Promise<TransactionReceipt> {
     const rawData = await this.prepareRawData(ddo, encrypt)
-    return this.updateRaw(didZeroX(did), rawData.flags, rawData.data, consumerAccount)
+    if (!rawData) {
+      throw new Error(`Could now prepare raw data for udate`)
+    } else
+      return this.updateRaw(didZeroX(did), rawData.flags, rawData.data, consumerAccount)
   }
 
   /**
