@@ -6,6 +6,7 @@ import { AbiItem } from 'web3-utils/types'
 import Web3 from 'web3'
 import { SubscribablePromise, Logger, getFairGasPrice } from '../utils'
 import { DataTokens } from '../datatokens/Datatokens'
+import reduceDecimals from '../utils/Decimals'
 
 const MAX_AWAIT_PROMISES = 10
 
@@ -95,7 +96,11 @@ export class OceanFixedRateExchange {
       const gasLimitDefault = this.GASLIMIT_DEFAULT
       try {
         estGas = await this.contract.methods
-          .create(this.oceanAddress, dataToken, this.web3.utils.toWei(rate))
+          .create(
+            this.oceanAddress,
+            dataToken,
+            this.web3.utils.toWei(reduceDecimals(rate))
+          )
           .estimateGas({ from: address }, (err, estGas) =>
             err ? gasLimitDefault : estGas
           )
@@ -106,7 +111,11 @@ export class OceanFixedRateExchange {
       let trxReceipt = null
       try {
         trxReceipt = await this.contract.methods
-          .create(this.oceanAddress, dataToken, this.web3.utils.toWei(rate))
+          .create(
+            this.oceanAddress,
+            dataToken,
+            this.web3.utils.toWei(reduceDecimals(rate))
+          )
           .send({
             from: address,
             gas: estGas + 1,
@@ -153,14 +162,14 @@ export class OceanFixedRateExchange {
     let estGas
     try {
       estGas = await this.contract.methods
-        .swap(exchangeId, this.web3.utils.toWei(String(dataTokenAmount)))
+        .swap(exchangeId, this.web3.utils.toWei(reduceDecimals(String(dataTokenAmount))))
         .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
     } catch (e) {
       estGas = gasLimitDefault
     }
     try {
       const trxReceipt = await this.contract.methods
-        .swap(exchangeId, this.web3.utils.toWei(String(dataTokenAmount)))
+        .swap(exchangeId, this.web3.utils.toWei(reduceDecimals(String(dataTokenAmount))))
         .send({
           from: address,
           gas: estGas + 1,
@@ -200,13 +209,13 @@ export class OceanFixedRateExchange {
     let estGas
     try {
       estGas = await this.contract.methods
-        .setRate(exchangeId, this.web3.utils.toWei(String(newRate)))
+        .setRate(exchangeId, this.web3.utils.toWei(reduceDecimals(String(newRate))))
         .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
     } catch (e) {
       estGas = gasLimitDefault
     }
     const trxReceipt = await this.contract.methods
-      .setRate(exchangeId, this.web3.utils.toWei(String(newRate)))
+      .setRate(exchangeId, this.web3.utils.toWei(reduceDecimals(String(newRate))))
       .send({
         from: address,
         gas: estGas + 1,
@@ -306,7 +315,7 @@ export class OceanFixedRateExchange {
     dataTokenAmount: string
   ): Promise<string> {
     const weiRate = await this.contract.methods
-      .CalcInGivenOut(exchangeId, this.web3.utils.toWei(dataTokenAmount))
+      .CalcInGivenOut(exchangeId, this.web3.utils.toWei(reduceDecimals(dataTokenAmount)))
       .call()
     return this.web3.utils.fromWei(weiRate)
   }
@@ -356,7 +365,7 @@ export class OceanFixedRateExchange {
     dataTokenAmount: string
   ): Promise<string> {
     const result = await this.contract.methods
-      .CalcInGivenOut(exchangeId, this.web3.utils.toWei(dataTokenAmount))
+      .CalcInGivenOut(exchangeId, this.web3.utils.toWei(reduceDecimals(dataTokenAmount)))
       .call()
     return this.web3.utils.fromWei(result)
   }
