@@ -109,17 +109,7 @@ export class OnChainMetadata {
       flags = flags | 1
       data = this.getHex(data)
     } else {
-      const blob = await this.metadataCache.encryptDDO(data)
-      try {
-        const rawBuffer = (await new Response(blob).arrayBuffer()) as any
-        data =
-          '0x' +
-          Array.prototype.map
-            .call(new Uint8Array(rawBuffer), (x) => ('00' + x.toString(16)).slice(-2))
-            .join('')
-      } catch (e) {
-        console.error(e)
-      }
+      data = await this.metadataCache.encryptDDO(data)
       if (!data) return null
       flags = flags | 2
     }

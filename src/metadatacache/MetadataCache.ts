@@ -146,12 +146,12 @@ export class MetadataCache {
    * @return {Promise<String>} Hex encoded encrypted DDO.
    */
   public async encryptDDO(ddo: any): Promise<any> {
-    const fullUrl = `${this.url}/api/v1/aquarius/assets/ddo/encrypt`
+    const fullUrl = `${this.url}/api/v1/aquarius/assets/ddo/encryptashex `
     const result = await this.fetch
       .postWithOctet(fullUrl, ddo)
       .then((response: Response) => {
         if (response.ok) {
-          return response.blob()
+          return response.text()
         }
         this.logger.error('encryptDDO failed:', response.status, response.statusText, ddo)
         return null
