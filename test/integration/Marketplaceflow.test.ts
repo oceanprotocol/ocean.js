@@ -455,16 +455,6 @@ describe('Marketplace flow', () => {
     assert(parseInt(metaData.attributes.main.timeout) === parseInt(newTimeout.toFixed()))
   })
 
-  it('Alice update credential allow list', async () => {
-    const credentialType = CredentialType.address
-    const allowList = ['0x12345']
-    const newDdo = await ocean.assets.updateCredential(ddo, credentialType, allowList, [])
-    assert(newDdo !== null)
-    const txid = await ocean.onChainMetadata.update(newDdo.id, newDdo, alice.getId())
-    assert(txid !== null)
-    assert(newDdo.credential.allow.length === 1)
-  })
-
   it('Alice should check if her asset is consumable', async () => {
     const service = ddo.findServiceByType('access')
     assert(service !== null)
