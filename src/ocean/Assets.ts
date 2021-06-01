@@ -283,7 +283,7 @@ export class Assets extends Instantiable {
   /**
    * Update Credentail attribute in DDO
    * @param  {ddo} DDO
-   * @param {cedentialType} CredentialType e.g. address / credentail3Box
+   * @param {credentialType} CredentialType e.g. address / credentail3Box
    * @param {allowList} string[] List of allow credential
    * @param {denyList} string[] List of deny credential
    * @return {Promise<DDO>} Updated DDO
@@ -308,6 +308,13 @@ export class Assets extends Instantiable {
     return ddo
   }
 
+  /**
+   * check if a credential can consume a dataset
+   * @param  {ddo} DDO
+   * @param {credentialType} CredentialType e.g. address / credentail3Box
+   * @param {value} string credential
+   * @return {boolean} allowed ?
+   */
   public checkCredential(
     ddo: DDO,
     credentialType: CredentialType,
