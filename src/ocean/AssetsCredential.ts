@@ -6,6 +6,13 @@ import {
   CredentialAction
 } from '../ddo/interfaces/Credentials'
 
+/**
+ * checks if a credential list exists for a specific action
+ * @param  {credentials} Credentials list of crentials from ddo
+ * @param {credentialType} CredentialType e.g. address / credentail3Box
+ * @param {credentialAction} CredentialAction allow or deny
+ * @return {boolean}
+ */
 export function checkCredentialExist(
   credentials: Credentials,
   credentialType: CredentialType,
@@ -31,6 +38,13 @@ export function checkCredentialExist(
   }
 }
 
+/**
+ * Removes all credentials of a certain type for a specific action
+ * @param  {ddo} DDO
+ * @param {credentialType} CredentialType e.g. address / credentail3Box
+ * @param {credentialAction} CredentialAction allow or deny
+ * @return {DDO}
+ */
 export function removeCredentialDetail(
   ddo: DDO,
   credentialType: CredentialType,
@@ -67,6 +81,15 @@ export function removeCredentialDetail(
   return ddo
 }
 
+/**
+ * Updates credentials of a certain type for a specific action
+ * @param  {ddo} DDO
+ * @param {credentialType} CredentialType e.g. address / credentail3Box
+ * @param {list} string[] list of values
+ * @param {credentialAction} CredentialAction allow or deny
+ * @return {DDO}
+ */
+
 export function updateCredentialDetail(
   ddo: DDO,
   credentialType: CredentialType,
@@ -101,6 +124,15 @@ export function updateCredentialDetail(
   }
   return ddo
 }
+
+/**
+ * Adds values to credentials of a certain type for a specific action
+ * @param  {ddo} DDO
+ * @param {credentialType} CredentialType e.g. address / credentail3Box
+ * @param {list} string[] list of values
+ * @param {credentialAction} CredentialAction allow or deny
+ * @return {DDO}
+ */
 
 export function addCredentialDetail(
   ddo: DDO,
