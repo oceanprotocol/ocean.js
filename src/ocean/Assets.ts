@@ -281,7 +281,7 @@ export class Assets extends Instantiable {
   }
 
   /**
-   * Update Credentail attribute in DDO
+   * Update Credentials attribute in DDO
    * @param  {ddo} DDO
    * @param {credentialType} CredentialType e.g. address / credentail3Box
    * @param {allowList} string[] List of allow credential
