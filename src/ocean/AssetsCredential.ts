@@ -9,7 +9,7 @@ import {
 /**
  * checks if a credential list exists for a specific action
  * @param  {credentials} Credentials list of crentials from ddo
- * @param {credentialType} CredentialType e.g. address / credentail3Box
+ * @param {credentialType} CredentialType e.g. address / credential3Box
  * @param {credentialAction} CredentialAction allow or deny
  * @return {boolean}
  */
@@ -22,7 +22,7 @@ export function checkCredentialExist(
   if (credentialAction === 'allow') {
     if (credentials && credentials.allow) {
       const allowList = credentials.allow.find(
-        (credentail) => credentail.type === credentialType
+        (credential) => credential.type === credentialType
       )
       isExist = allowList && allowList.value.length > 0
     }
@@ -30,7 +30,7 @@ export function checkCredentialExist(
   } else {
     if (credentials && credentials.deny) {
       const dennyList = credentials.deny.find(
-        (credentail) => credentail.type === credentialType
+        (credential) => credential.type === credentialType
       )
       isExist = dennyList && dennyList.value.length > 0
     }
@@ -41,7 +41,7 @@ export function checkCredentialExist(
 /**
  * Removes all credentials of a certain type for a specific action
  * @param  {ddo} DDO
- * @param {credentialType} CredentialType e.g. address / credentail3Box
+ * @param {credentialType} CredentialType e.g. address / credential3Box
  * @param {credentialAction} CredentialAction allow or deny
  * @return {DDO}
  */
@@ -58,7 +58,7 @@ export function removeCredentialDetail(
   if (credentialAction === 'allow') {
     if (exists) {
       ddo.credentials.allow = ddo.credentials.allow.filter(
-        (credentail) => credentail.type !== credentialType
+        (credential) => credential.type !== credentialType
       )
     }
     if (!ddo.credentials.allow) {
@@ -84,7 +84,7 @@ export function removeCredentialDetail(
 /**
  * Updates credentials of a certain type for a specific action
  * @param  {ddo} DDO
- * @param {credentialType} CredentialType e.g. address / credentail3Box
+ * @param {credentialType} CredentialType e.g. address / credential3Box
  * @param {list} string[] list of values
  * @param {credentialAction} CredentialAction allow or deny
  * @return {DDO}
@@ -103,9 +103,9 @@ export function updateCredentialDetail(
   )
   if (credentialAction === 'allow') {
     if (exists) {
-      ddo.credentials.allow.find((credentail) => {
-        if (credentail.type === credentialType) {
-          credentail.value = list
+      ddo.credentials.allow.find((credential) => {
+        if (credential.type === credentialType) {
+          credential.value = list
         }
       })
     } else {
@@ -113,9 +113,9 @@ export function updateCredentialDetail(
     }
   } else {
     if (exists) {
-      ddo.credentials.deny.find((credentail) => {
-        if (credentail.type === credentialType) {
-          credentail.value = list
+      ddo.credentials.deny.find((credential) => {
+        if (credential.type === credentialType) {
+          credential.value = list
         }
       })
     } else {
@@ -128,7 +128,7 @@ export function updateCredentialDetail(
 /**
  * Adds values to credentials of a certain type for a specific action
  * @param  {ddo} DDO
- * @param {credentialType} CredentialType e.g. address / credentail3Box
+ * @param {credentialType} CredentialType e.g. address / credential3Box
  * @param {list} string[] list of values
  * @param {credentialAction} CredentialAction allow or deny
  * @return {DDO}
