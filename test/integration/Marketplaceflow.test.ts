@@ -5,7 +5,14 @@ import spies from 'chai-spies'
 import Web3 from 'web3'
 import { AbiItem } from 'web3-utils/types'
 import { DataTokens } from '../../src/datatokens/Datatokens'
-import { Account, EditableMetadata, Service, ServiceAccess, DID } from '../../src/lib'
+import {
+  Account,
+  EditableMetadata,
+  Service,
+  ServiceAccess,
+  DID,
+  CredentialType
+} from '../../src/lib'
 import { noDidPrefixed } from '../../src/utils/'
 import { Ocean } from '../../src/ocean/Ocean'
 import { ConfigHelper } from '../../src/utils/ConfigHelper'

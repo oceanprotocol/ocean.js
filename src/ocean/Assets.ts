@@ -13,6 +13,12 @@ import { Provider } from '../provider/Provider'
 import { isAddress } from 'web3-utils'
 import { MetadataMain } from '../ddo/interfaces'
 import { TransactionReceipt } from 'web3-core'
+import {
+  CredentialType,
+  CredentialAction,
+  Credentials
+} from '../ddo/interfaces/Credentials'
+import { updateCredentialDetail, removeCredentialDetail } from './AssetsCredential'
 import { Consumable } from '../ddo/interfaces/Consumable'
 
 export enum CreateProgressStep {
@@ -283,6 +289,63 @@ export class Assets extends Instantiable {
       }
     }
     return ddo
+  }
+
+  /**
+   * Update Credentials attribute in DDO
+   * @param  {ddo} DDO
+   * @param {credentialType} CredentialType e.g. address / credentail3Box
+   * @param {allowList} string[] List of allow credential
+   * @param {denyList} string[] List of deny credential
+   * @return {Promise<DDO>} Updated DDO
+   */
+  public async updateCredentials(
+    ddo: DDO,
+    credentialType: CredentialType,
+    allowList: string[],
+    denyList: string[]
+  ): Promise<DDO> {
+    if (allowList && allowList.length > 0) {
+      ddo = updateCredentialDetail(ddo, credentialType, allowList, 'allow')
+    } else {
+      ddo = removeCredentialDetail(ddo, credentialType, 'allow')
+    }
+
+    if (denyList && denyList.length > 0) {
+      ddo = updateCredentialDetail(ddo, credentialType, denyList, 'deny')
+    } else {
+      ddo = removeCredentialDetail(ddo, credentialType, 'deny')
+    }
+    return ddo
+  }
+
+  /**
+   * check if a credential can consume a dataset
+   * @param  {ddo} DDO
+   * @param {credentialType} CredentialType e.g. address / credentail3Box
+   * @param {value} string credential
+   * @return {boolean} allowed ?
+   */
+  public checkCredential(
+    ddo: DDO,
+    credentialType: CredentialType,
+    value: string
+  ): boolean {
+    let allowed = true
+    if (!ddo.credentials) return allowed
+    if (ddo.credentials.allow && ddo.credentials.allow.length > 0) {
+      const allowList = ddo.credentials.allow.find(
+        (credentail) => credentail.type === credentialType
+      )
+      if (allowList && !allowList.value.includes(value)) allowed = false
+    }
+    if (ddo.credentials.deny && ddo.credentials.deny.length > 0) {
+      const denyList = ddo.credentials.deny.find(
+        (credentail) => credentail.type === credentialType
+      )
+      if (denyList && denyList.value.includes(value)) allowed = false
+    }
+    return allowed
   }
 
   /**
