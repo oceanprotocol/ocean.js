@@ -288,7 +288,7 @@ export class Assets extends Instantiable {
    * @param {denyList} string[] List of deny credential
    * @return {Promise<DDO>} Updated DDO
    */
-  public async updateCredential(
+  public async updateCredentials(
     ddo: DDO,
     credentialType: CredentialType,
     allowList: string[],

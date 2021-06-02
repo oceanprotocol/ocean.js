@@ -118,7 +118,7 @@ describe('Assets', () => {
     assert(ocean.assets.checkCredential(ddo, addressType, walletC) === true)
     const allowWalletAddressList = [walletA, walletB]
     console.error(JSON.stringify(ddo.credentials))
-    const newDdo = await ocean.assets.updateCredential(
+    const newDdo = await ocean.assets.updateCredentials(
       ddo,
       addressType,
       allowWalletAddressList,
@@ -132,13 +132,13 @@ describe('Assets', () => {
   it('should append allow credential', async () => {
     const allowWalletAddressList = [walletA, walletB]
     const allow3BoxList = [threeBoxValue]
-    ddoWithAddressAnd3Box = await ocean.assets.updateCredential(
+    ddoWithAddressAnd3Box = await ocean.assets.updateCredentials(
       ddo,
       addressType,
       allowWalletAddressList,
       []
     )
-    ddoWithAddressAnd3Box = await ocean.assets.updateCredential(
+    ddoWithAddressAnd3Box = await ocean.assets.updateCredentials(
       ddo,
       threeBoxType,
       allow3BoxList,
@@ -149,7 +149,7 @@ describe('Assets', () => {
 
   it('should add deny credential', async () => {
     const denyWalletAddressList = [walletC]
-    const newDdo = await ocean.assets.updateCredential(
+    const newDdo = await ocean.assets.updateCredentials(
       ddo,
       addressType,
       [],
@@ -163,33 +163,33 @@ describe('Assets', () => {
   it('should append deny credential', async () => {
     const denyWalletAddressList = [walletC]
     const deny3BoxList = [threeBoxValue]
-    let newDdo = await ocean.assets.updateCredential(
+    let newDdo = await ocean.assets.updateCredentials(
       ddo,
       addressType,
       [],
       denyWalletAddressList
     )
-    newDdo = await ocean.assets.updateCredential(ddo, threeBoxType, [], deny3BoxList)
+    newDdo = await ocean.assets.updateCredentials(ddo, threeBoxType, [], deny3BoxList)
     assert(newDdo.credentials.deny.length === 2)
   })
 
   it('should only remove allow credential by credential type', async () => {
     const allowWalletAddressList = [walletA, walletB]
     const allow3BoxList = [threeBoxValue]
-    let newDdo = await ocean.assets.updateCredential(
+    let newDdo = await ocean.assets.updateCredentials(
       ddo,
       addressType,
       allowWalletAddressList,
       []
     )
-    newDdo = await ocean.assets.updateCredential(
+    newDdo = await ocean.assets.updateCredentials(
       ddoWithAddressAnd3Box,
       threeBoxType,
       allow3BoxList,
       []
     )
     assert(newDdo.credentials.allow.length === 2)
-    newDdo = await ocean.assets.updateCredential(
+    newDdo = await ocean.assets.updateCredentials(
       ddoWithAddressAnd3Box,
       threeBoxType,
       [],
