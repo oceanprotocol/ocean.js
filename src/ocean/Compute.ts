@@ -516,21 +516,30 @@ export class Compute extends Instantiable {
     return new SubscribablePromise(async (observer) => {
       // first check if we can order this
       const allowed = await this.isOrderable(datasetDid, serviceIndex, algorithm)
-      if (!allowed) return null
+      if (!allowed)
+        throw new Error(
+          `Dataset order failed, dataset is not orderable with the specified algorithm`
+        )
       const ddo: DDO = await this.ocean.assets.resolve(datasetDid)
       // const service: Service = ddo.findServiceByType('compute')
       const service: Service = ddo.findServiceById(serviceIndex)
-      if (!service) return null
-      const order = await this.ocean.assets.order(
-        datasetDid,
-        service.type,
-        consumerAccount,
-        -1,
-        mpAddress,
-        computeAddress,
-        searchPreviousOrders
-      )
-      return order
+      if (!service)
+        throw new Error(`Dataset order failed, Could not find service for the DDO`)
+      try {
+        const order = await this.ocean.assets.order(
+          datasetDid,
+          service.type,
+          consumerAccount,
+          -1,
+          mpAddress,
+          computeAddress,
+          searchPreviousOrders
+        )
+        return order
+      } catch (error) {
+        this.logger.error(`ERROR: Failed to order: ${error.message}`)
+        throw new Error(`Failed to order dataset: ${error.message}`)
+      }
     })
   }
 
@@ -554,15 +563,20 @@ export class Compute extends Instantiable {
     searchPreviousOrders = true
   ): Promise<string> {
     // this is only a convienince function, which calls ocean.assets.order
-    return await this.ocean.assets.order(
-      did,
-      serviceType,
-      payerAddress,
-      serviceIndex,
-      mpAddress,
-      consumerAddress,
-      searchPreviousOrders
-    )
+    try {
+      return await this.ocean.assets.order(
+        did,
+        serviceType,
+        payerAddress,
+        serviceIndex,
+        mpAddress,
+        consumerAddress,
+        searchPreviousOrders
+      )
+    } catch (error) {
+      this.logger.error(`ERROR: Failed to orderAlgorithm: ${error.message}`)
+      throw new Error(`Failed to order algorithm: ${error.message}`)
+    }
   }
 
   /**
@@ -617,9 +631,8 @@ export class Compute extends Instantiable {
     }
     if (typeof ddo.service[serviceIndex] === 'undefined') return null
     if (ddo.service[serviceIndex].type !== 'compute') return null
-    ddo.service[
-      serviceIndex
-    ].attributes.main.privacy.allowAllPublishedAlgorithms = newState
+    ddo.service[serviceIndex].attributes.main.privacy.allowAllPublishedAlgorithms =
+      newState
     return ddo
   }
 
@@ -734,13 +747,12 @@ export class Compute extends Instantiable {
     if (ddo.service[serviceIndex].type !== 'compute') return ddo
     if (!ddo.service[serviceIndex].attributes.main.privacy.publisherTrustedAlgorithms)
       return ddo
-    ddo.service[
-      serviceIndex
-    ].attributes.main.privacy.publisherTrustedAlgorithms = ddo.service[
-      serviceIndex
-    ].attributes.main.privacy.publisherTrustedAlgorithms.filter(function (el) {
-      return el.did !== algoDid
-    })
+    ddo.service[serviceIndex].attributes.main.privacy.publisherTrustedAlgorithms =
+      ddo.service[serviceIndex].attributes.main.privacy.publisherTrustedAlgorithms.filter(
+        function (el) {
+          return el.did !== algoDid
+        }
+      )
     return ddo
   }
 }

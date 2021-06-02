@@ -19,6 +19,7 @@ import {
   Credentials
 } from '../ddo/interfaces/Credentials'
 import { updateCredentialDetail, removeCredentialDetail } from './AssetsCredential'
+import { Consumable } from '../ddo/interfaces/Consumable'
 
 export enum CreateProgressStep {
   CreatingDataToken,
@@ -153,9 +154,10 @@ export class Assets extends Instantiable {
             type: 'metadata',
             attributes: {
               // Default values
-              curation: {
-                rating: 0,
-                numVotes: 0
+              status: {
+                isListed: true,
+                isRetired: false,
+                isOrderDisabled: false
               },
               // Overwrites defaults
               ...metadata,
@@ -275,6 +277,15 @@ export class Assets extends Instantiable {
         ddo.service[i].attributes.additionalInformation.links = newMetadata.links
       } else {
         ddo.service[i].attributes.additionalInformation.links = []
+      }
+
+      if (newMetadata.status?.isOrderDisabled !== undefined) {
+        !ddo.service[i].attributes.status
+          ? (ddo.service[i].attributes.status = {
+              isOrderDisabled: newMetadata.status.isOrderDisabled
+            })
+          : (ddo.service[i].attributes.status.isOrderDisabled =
+              newMetadata.status.isOrderDisabled)
       }
     }
     return ddo
@@ -535,6 +546,10 @@ export class Assets extends Instantiable {
   ): Promise<string> {
     let service: Service
 
+    const ddo = await this.resolve(did)
+    const consumable = await this.isConsumable(ddo)
+    if (consumable.status > 0) return null
+
     if (!consumerAddress) consumerAddress = payerAddress
     if (serviceIndex === -1) {
       service = await this.getServiceByType(did, serviceType)
@@ -551,7 +566,10 @@ export class Assets extends Instantiable {
         serviceIndex,
         service.serviceEndpoint
       )
-      if (!providerData) return null
+      if (!providerData)
+        throw new Error(
+          `Order asset failed, Failed to initialize service to compute totalCost for ordering`
+        )
       if (searchPreviousOrders) {
         const previousOrder = await this.ocean.datatokens.getPreviousValidOrders(
           providerData.dataToken,
@@ -573,7 +591,12 @@ export class Assets extends Instantiable {
             ' but balance is ' +
             balance.toString()
         )
-        return null
+        throw new Error(
+          'ERROR: Not enough funds Needed ' +
+            totalCost.toString() +
+            ' but balance is ' +
+            balance.toString()
+        )
       }
       const txid = await this.ocean.datatokens.startOrder(
         providerData.dataToken,
@@ -585,9 +608,9 @@ export class Assets extends Instantiable {
       )
       if (txid) return txid.transactionHash
     } catch (e) {
-      this.logger.error(`ERROR: Failed to order: ${e.message}`)
+      this.logger.error(`ERROR: Failed to order a service : ${e.message}`)
+      throw new Error(`Failed to order a service: ${e.message}`)
     }
-    return null
   }
 
   // marketplace flow
@@ -700,5 +723,31 @@ export class Assets extends Instantiable {
       } catch (e) {}
     }
     return results
+  }
+
+  /**
+   *
+   * @param {DDO} ddo
+   * @return {Promise<Consumable>}
+   */
+  public async isConsumable(ddo: DDO): Promise<Consumable> {
+    if (!ddo) return null
+    const metadata = ddo.findServiceByType('metadata')
+
+    if (metadata.attributes.status?.isOrderDisabled)
+      return {
+        status: 1,
+        message: 'Ordering this asset has been temporarily disabled by the publisher.'
+      }
+
+    /*
+    // To do: call helper method check credential
+    // return: 4, Credential missing from allow list
+    // return: 5, Credential found on deny list
+    */
+    return {
+      status: 0,
+      message: 'All good'
+    }
   }
 }

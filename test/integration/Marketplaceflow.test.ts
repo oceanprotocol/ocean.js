@@ -464,6 +464,35 @@ describe('Marketplace flow', () => {
     assert(response === true)
   })
 
+  it('Alice should check if her asset is disable', async () => {
+    const response = await ocean.assets.isConsumable(ddo)
+    assert(response !== null)
+    assert(response.status === 0)
+  })
+
+  it('Alice should update her asset and set isOrderDisabled = true', async () => {
+    const newMetaData: EditableMetadata = {
+      status: {
+        isOrderDisabled: true
+      }
+    }
+    const newDdo = await ocean.assets.editMetadata(ddo, newMetaData)
+    assert(newDdo !== null)
+    const txid = await ocean.onChainMetadata.update(newDdo.id, newDdo, alice.getId())
+    assert(txid !== null)
+    await sleep(60000)
+    const resolvedDDO = await ocean.assets.resolve(ddo.id)
+    assert(resolvedDDO !== null)
+    const metaData = await ocean.assets.getServiceByType(resolvedDDO.id, 'metadata')
+    assert.deepEqual(metaData.attributes.status.isOrderDisabled, true)
+  })
+
+  it('Bob should not be able to consume Alice dataset after disable', async () => {
+    const response = await ocean.assets.isConsumable(ddo)
+    assert(response !== null)
+    assert(response.status === 1)
+  })
+
   it('Alice should create a FRE pricing for her asset', async () => {
     const trxReceipt = await ocean.fixedRateExchange.create(
       tokenAddress,
@@ -471,12 +500,6 @@ describe('Marketplace flow', () => {
       alice.getId()
     )
     assert(trxReceipt)
-    await sleep(aquaSleep)
-    const exchangeDetails = await ocean.fixedRateExchange.searchforDT(tokenAddress, '0')
-    const resolvedDDO = await ocean.assets.resolve(ddo.id)
-    assert(resolvedDDO.price.type === 'exchange')
-    assert(resolvedDDO.price.value === 1)
-    assert(resolvedDDO.price.exchange_id === exchangeDetails[0].exchangeID)
   })
   it('Alice should update the FRE pricing for her asset', async () => {
     const exchangeDetails = await ocean.fixedRateExchange.searchforDT(tokenAddress, '0')
@@ -487,10 +510,6 @@ describe('Marketplace flow', () => {
       alice.getId()
     )
     assert(trxReceipt)
-    await sleep(aquaSleep)
-    const resolvedDDO = await ocean.assets.resolve(ddo.id)
-    assert(resolvedDDO.price.type === 'exchange')
-    assert(resolvedDDO.price.value === 2)
   })
   it('Alice should create a Pool pricing for her asset', async () => {
     const dtAmount = '45'
@@ -509,23 +528,12 @@ describe('Marketplace flow', () => {
     assert(createTx)
     const alicePoolAddress = createTx.events.BPoolRegistered.returnValues[0]
     assert(alicePoolAddress)
-    await sleep(aquaSleep)
-    const resolvedDDO = await ocean.assets.resolve(ddoWithPool.id)
-    poolLastPrice = resolvedDDO.price.value
-    assert(resolvedDDO.price.type === 'pool')
-    assert(resolvedDDO.price.value)
-    assert(resolvedDDO.price.pools.includes(alicePoolAddress))
   })
 
   it('Alice should update the POOL pricing for her asset by buying a DT', async () => {
     const poolAddress = await ocean.pool.searchPoolforDT(tokenAddressWithPool)
     const buyTx = await ocean.pool.buyDT(alice.getId(), poolAddress[0], '1', '999')
     assert(buyTx)
-    await sleep(aquaSleep)
-    const resolvedDDO = await ocean.assets.resolve(ddoWithPool.id)
-    assert(resolvedDDO.price.type === 'pool')
-    assert(resolvedDDO.price.value !== poolLastPrice)
-    assert(resolvedDDO.price.pools.includes(poolAddress[0]))
   })
 
   it('Alice publishes a dataset but passed data token is invalid', async () => {
@@ -568,12 +576,17 @@ describe('Marketplace flow', () => {
   })
   it('Bob tries to consumes asset with bad URL, but tokens are not deducted', async () => {
     const balance = await datatoken.balance(tokenAddressForBadUrlAsset, bob.getId())
-    const txid = await ocean.assets.order(
-      ddoWithBadUrl.id,
-      accessService.type,
-      bob.getId()
-    )
-    assert(txid === null)
+    try {
+      const order = await ocean.assets.order(
+        ddoWithBadUrl.id,
+        accessService.type,
+        bob.getId()
+      )
+      assert(order === null, 'Order should be null')
+    } catch (error) {
+      assert(error != null, 'Order should throw error')
+    }
+
     const balanceAfterOrder = await datatoken.balance(
       tokenAddressForBadUrlAsset,
       bob.getId()

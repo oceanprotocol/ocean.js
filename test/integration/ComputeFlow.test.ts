@@ -104,8 +104,7 @@ describe('Compute flow', () => {
     language: 'js',
     format: 'docker-image',
     version: '0.1',
-    url:
-      'https://raw.githubusercontent.com/oceanprotocol/test-algorithm/master/javascript/algo.js',
+    url: 'https://raw.githubusercontent.com/oceanprotocol/test-algorithm/master/javascript/algo.js',
     container: {
       entrypoint: 'node $ALGO',
       image: 'node',
@@ -250,8 +249,7 @@ describe('Compute flow', () => {
         license: 'CC-BY',
         files: [
           {
-            url:
-              'https://raw.githubusercontent.com/tbertinmahieux/MSongsDB/master/Tasks_Demos/CoverSongs/shs_dataset_test.txt',
+            url: 'https://raw.githubusercontent.com/tbertinmahieux/MSongsDB/master/Tasks_Demos/CoverSongs/shs_dataset_test.txt',
             checksum: 'efb2c764274b745f5fc37f97c6b0e764',
             contentLength: '4535431',
             contentType: 'text/csv',
@@ -487,8 +485,7 @@ describe('Compute flow', () => {
         license: 'CC-BY',
         files: [
           {
-            url:
-              'https://raw.githubusercontent.com/oceanprotocol/test-algorithm/master/javascript/algo.js',
+            url: 'https://raw.githubusercontent.com/oceanprotocol/test-algorithm/master/javascript/algo.js',
             contentType: 'text/js',
             encoding: 'UTF-8'
           }
@@ -540,8 +537,7 @@ describe('Compute flow', () => {
         license: 'CC-BY',
         files: [
           {
-            url:
-              'https://raw.githubusercontent.com/oceanprotocol/test-algorithm/master/javascript/algo.js',
+            url: 'https://raw.githubusercontent.com/oceanprotocol/test-algorithm/master/javascript/algo.js',
             contentType: 'text/js',
             encoding: 'UTF-8'
           }
@@ -602,8 +598,7 @@ describe('Compute flow', () => {
         license: 'CC-BY',
         files: [
           {
-            url:
-              'https://raw.githubusercontent.com/oceanprotocol/test-algorithm/master/javascript/algo.js',
+            url: 'https://raw.githubusercontent.com/oceanprotocol/test-algorithm/master/javascript/algo.js',
             contentType: 'text/js',
             encoding: 'UTF-8'
           }
@@ -667,8 +662,7 @@ describe('Compute flow', () => {
         license: 'CC-BY',
         files: [
           {
-            url:
-              'https://raw.githubusercontent.com/oceanprotocol/test-algorithm/master/javascript/algo.js',
+            url: 'https://raw.githubusercontent.com/oceanprotocol/test-algorithm/master/javascript/algo.js',
             contentType: 'text/js',
             encoding: 'UTF-8'
           }
@@ -940,15 +934,19 @@ describe('Compute flow', () => {
     const algoDefinition: ComputeAlgorithm = {
       meta: algorithmMeta
     }
-    const order = await ocean.compute.orderAsset(
-      bob.getId(),
-      datasetNoRawAlgo.id,
-      service1.index,
-      algoDefinition,
-      null, // no marketplace fee
-      computeAddress // CtD is the consumer of the dataset
-    )
-    assert(order === null, 'Order should be null')
+    try {
+      const order = await ocean.compute.orderAsset(
+        bob.getId(),
+        datasetNoRawAlgo.id,
+        service1.index,
+        algoDefinition,
+        null, // no marketplace fee
+        computeAddress // CtD is the consumer of the dataset
+      )
+      assert(order === null, 'Order should be null')
+    } catch (error) {
+      assert(error != null, 'Order should throw error')
+    }
   })
   it('should not allow order the compute service with algoDid != "did:op:1234" for dataset that allows only "did:op:1234" as algo', async () => {
     const service1 = datasetWithTrustedAlgo.findServiceByType('compute')
@@ -971,15 +969,19 @@ describe('Compute flow', () => {
     assert(allowed === false)
 
     // try even futher, since we now this should fail
-    const order = await ocean.compute.orderAsset(
-      bob.getId(),
-      datasetWithTrustedAlgo.id,
-      service1.index,
-      algoDefinition,
-      null, // no marketplace fee
-      computeAddress // CtD is the consumer of the dataset
-    )
-    assert(order === null, 'Order should be null')
+    try {
+      const order = await ocean.compute.orderAsset(
+        bob.getId(),
+        datasetWithTrustedAlgo.id,
+        service1.index,
+        algoDefinition,
+        null, // no marketplace fee
+        computeAddress // CtD is the consumer of the dataset
+      )
+      assert(order === null, 'Order should be null')
+    } catch (error) {
+      assert(error != null, 'Order should throw error')
+    }
   })
 
   it('should not allow  a compute job with a published algo because asset does not allow allowAllPublishedAlgorithms', async () => {
@@ -996,15 +998,20 @@ describe('Compute flow', () => {
       algoDefinition
     )
     assert(allowed === false)
-    const order = await ocean.compute.orderAsset(
-      bob.getId(),
-      ddo.id,
-      computeService.index,
-      algoDefinition,
-      null, // no marketplace fee
-      computeAddress // CtD is the consumer of the dataset
-    )
-    assert(order === null, 'Order should be null')
+
+    try {
+      const order = await ocean.compute.orderAsset(
+        bob.getId(),
+        ddo.id,
+        computeService.index,
+        algoDefinition,
+        null, // no marketplace fee
+        computeAddress // CtD is the consumer of the dataset
+      )
+      assert(order === null, 'Order should be null')
+    } catch (error) {
+      assert(error != null, 'Order should throw error')
+    }
   })
 
   it('Alice updates Compute Privacy', async () => {
@@ -1074,9 +1081,8 @@ describe('Compute flow', () => {
       algorithmAssetRemoteProviderWithCompute != null,
       'algorithmAsset should not be null'
     )
-    const serviceAlgo = algorithmAssetRemoteProviderWithCompute.findServiceByType(
-      'compute'
-    )
+    const serviceAlgo =
+      algorithmAssetRemoteProviderWithCompute.findServiceByType('compute')
     assert(serviceAlgo != null, 'serviceAlgo should not be null')
     // get the compute address first
     computeAddress = await ocean.compute.getComputeAddress(ddo.id, computeService.index)
@@ -1091,15 +1097,19 @@ describe('Compute flow', () => {
       algoDefinition
     )
     assert(allowed === false)
-    const order = await ocean.compute.orderAsset(
-      bob.getId(),
-      ddo.id,
-      computeService.index,
-      algoDefinition,
-      null, // no marketplace fee
-      computeAddress // CtD is the consumer of the dataset
-    )
-    assert(order === null, 'Order should be null')
+    try {
+      const order = await ocean.compute.orderAsset(
+        bob.getId(),
+        ddo.id,
+        computeService.index,
+        algoDefinition,
+        null, // no marketplace fee
+        computeAddress // CtD is the consumer of the dataset
+      )
+      assert(order === null, 'Order should be null')
+    } catch (error) {
+      assert(error != null, 'Order should throw error')
+    }
   })
   it('should start a compute job with a published algo that has a compute service', async () => {
     const output = {}
@@ -1550,15 +1560,21 @@ describe('Compute flow', () => {
     )
     assert(allowed === false)
     // we know that it is not Orderable, but we are trying to force it
-    computeOrderId = await ocean.compute.orderAsset(
-      bob.getId(),
-      datasetWithBogusProvider.id,
-      computeService.index,
-      algoDefinition,
-      null, // no marketplace fee
-      computeAddress // CtD is the consumer of the dataset
-    )
-    assert(computeOrderId === null, 'computeOrderId !== null')
+
+    try {
+      const order = await ocean.compute.orderAsset(
+        bob.getId(),
+        datasetWithBogusProvider.id,
+        computeService.index,
+        algoDefinition,
+        null, // no marketplace fee
+        computeAddress // CtD is the consumer of the dataset
+      )
+      assert(order === null, 'Order should be null')
+    } catch (error) {
+      assert(error != null, 'Order should throw error')
+    }
+
     // we are forcing a bogus orderId
     computeOrderId = '1234'
     const response = await ocean.compute.start(
