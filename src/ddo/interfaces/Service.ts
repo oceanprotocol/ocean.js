@@ -1,10 +1,12 @@
 import { Metadata } from './Metadata'
+import { Status } from './Status'
 
 export type ServiceType = 'authorization' | 'metadata' | 'access' | 'compute'
 
 export interface ServiceCommonAttributes {
   main: { [key: string]: any }
   additionalInformation?: { [key: string]: any }
+  status?: Status
 }
 
 export interface ServiceCommon {

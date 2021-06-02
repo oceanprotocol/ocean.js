@@ -13,6 +13,7 @@ import { Provider } from '../provider/Provider'
 import { isAddress } from 'web3-utils'
 import { MetadataMain } from '../ddo/interfaces'
 import { TransactionReceipt } from 'web3-core'
+import { Consumable } from '../ddo/interfaces/Consumable'
 
 export enum CreateProgressStep {
   CreatingDataToken,
@@ -147,9 +148,10 @@ export class Assets extends Instantiable {
             type: 'metadata',
             attributes: {
               // Default values
-              curation: {
-                rating: 0,
-                numVotes: 0
+              status: {
+                isListed: true,
+                isRetired: false,
+                isOrderDisabled: false
               },
               // Overwrites defaults
               ...metadata,
@@ -269,6 +271,15 @@ export class Assets extends Instantiable {
         ddo.service[i].attributes.additionalInformation.links = newMetadata.links
       } else {
         ddo.service[i].attributes.additionalInformation.links = []
+      }
+
+      if (newMetadata.status?.isOrderDisabled !== undefined) {
+        !ddo.service[i].attributes.status
+          ? (ddo.service[i].attributes.status = {
+              isOrderDisabled: newMetadata.status.isOrderDisabled
+            })
+          : (ddo.service[i].attributes.status.isOrderDisabled =
+              newMetadata.status.isOrderDisabled)
       }
     }
     return ddo
@@ -472,6 +483,10 @@ export class Assets extends Instantiable {
   ): Promise<string> {
     let service: Service
 
+    const ddo = await this.resolve(did)
+    const consumable = await this.isConsumable(ddo)
+    if (consumable.status > 0) return null
+
     if (!consumerAddress) consumerAddress = payerAddress
     if (serviceIndex === -1) {
       service = await this.getServiceByType(did, serviceType)
@@ -645,5 +660,31 @@ export class Assets extends Instantiable {
       } catch (e) {}
     }
     return results
+  }
+
+  /**
+   *
+   * @param {DDO} ddo
+   * @return {Promise<Consumable>}
+   */
+  public async isConsumable(ddo: DDO): Promise<Consumable> {
+    if (!ddo) return null
+    const metadata = ddo.findServiceByType('metadata')
+
+    if (metadata.attributes.status?.isOrderDisabled)
+      return {
+        status: 1,
+        message: 'Ordering this asset has been temporarily disabled by the publisher.'
+      }
+
+    /*
+    // To do: call helper method check credential
+    // return: 4, Credential missing from allow list
+    // return: 5, Credential found on deny list
+    */
+    return {
+      status: 0,
+      message: 'All good'
+    }
   }
 }
