@@ -63,7 +63,7 @@ export interface File {
   compression?: string
 
   /**
-   * File availability (fileinfo connectivity check)
+   * File availability (check fileinfo connectivity)
    * @type {boolean}
    */
   valid?: boolean
