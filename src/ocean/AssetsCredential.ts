@@ -50,20 +50,16 @@ export function removeCredentialDetail(
   credentialType: CredentialType,
   credentialAction: CredentialAction
 ): DDO {
-  const exists = this.checkCredentialExist(
-    ddo.credentials,
-    credentialType,
-    credentialAction
-  )
+  const exists = checkCredentialExist(ddo.credentials, credentialType, credentialAction)
   if (credentialAction === 'allow') {
     if (exists) {
       ddo.credentials.allow = ddo.credentials.allow.filter(
         (credential) => credential.type !== credentialType
       )
     }
-    if (!ddo.credentials.allow) {
+    if (ddo.credentials && !ddo.credentials.allow) {
       ddo.credentials = {
-        deny: ddo.credentials.deny
+        deny: ddo.credentials && ddo.credentials.deny
       }
     }
   } else {
@@ -72,9 +68,9 @@ export function removeCredentialDetail(
         (credential) => credential.type !== credentialType
       )
     }
-    if (!ddo.credentials.deny) {
+    if (ddo.credentials && !ddo.credentials.deny) {
       ddo.credentials = {
-        allow: ddo.credentials.allow
+        allow: ddo.credentials && ddo.credentials.allow
       }
     }
   }
@@ -96,11 +92,7 @@ export function updateCredentialDetail(
   list: string[],
   credentialAction: CredentialAction
 ): DDO {
-  const exists = this.checkCredentialExist(
-    ddo.credentials,
-    credentialType,
-    credentialAction
-  )
+  const exists = checkCredentialExist(ddo.credentials, credentialType, credentialAction)
   if (credentialAction === 'allow') {
     if (exists) {
       ddo.credentials.allow.find((credential) => {
@@ -109,7 +101,7 @@ export function updateCredentialDetail(
         }
       })
     } else {
-      return this.addCredentialDetail(ddo, credentialType, list, credentialAction)
+      ddo = addCredentialDetail(ddo, credentialType, list, credentialAction)
     }
   } else {
     if (exists) {
@@ -119,7 +111,7 @@ export function updateCredentialDetail(
         }
       })
     } else {
-      return this.addCredentialDetail(ddo, credentialType, list, credentialAction)
+      ddo = addCredentialDetail(ddo, credentialType, list, credentialAction)
     }
   }
   return ddo

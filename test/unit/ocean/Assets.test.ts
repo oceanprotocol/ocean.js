@@ -114,8 +114,8 @@ describe('Assets', () => {
   })
 
   it('should add allow credential', async () => {
-    assert(ocean.assets.checkCredential(ddo, addressType, walletA) === true)
-    assert(ocean.assets.checkCredential(ddo, addressType, walletC) === true)
+    assert(ocean.assets.checkCredential(ddo, addressType, walletA).status === 0)
+    assert(ocean.assets.checkCredential(ddo, addressType, walletC).status === 0)
     const allowWalletAddressList = [walletA, walletB]
     console.error(JSON.stringify(ddo.credentials))
     const newDdo = await ocean.assets.updateCredentials(
@@ -125,8 +125,8 @@ describe('Assets', () => {
       []
     )
     assert(newDdo.credentials.allow.length === 1)
-    assert(ocean.assets.checkCredential(ddo, addressType, walletA) === true)
-    assert(ocean.assets.checkCredential(ddo, addressType, walletC) === false)
+    assert(ocean.assets.checkCredential(ddo, addressType, walletA).status === 0)
+    assert(ocean.assets.checkCredential(ddo, addressType, walletC).status === 2)
   })
 
   it('should append allow credential', async () => {
@@ -156,8 +156,8 @@ describe('Assets', () => {
       denyWalletAddressList
     )
     assert(newDdo.credentials.deny.length === 1)
-    assert(ocean.assets.checkCredential(ddo, addressType, walletA) === true)
-    assert(ocean.assets.checkCredential(ddo, addressType, walletC) === false)
+    assert(ocean.assets.checkCredential(ddo, addressType, walletA).status === 0)
+    assert(ocean.assets.checkCredential(ddo, addressType, walletC).status === 3)
   })
 
   it('should append deny credential', async () => {
@@ -196,7 +196,7 @@ describe('Assets', () => {
       []
     )
     assert(newDdo.credentials.allow.length === 1)
-    assert(ocean.assets.checkCredential(ddo, addressType, walletA) === true)
-    assert(ocean.assets.checkCredential(ddo, addressType, walletC) === false)
+    assert(ocean.assets.checkCredential(ddo, addressType, walletA).status === 0)
+    assert(ocean.assets.checkCredential(ddo, addressType, walletC).status === 2)
   })
 })
