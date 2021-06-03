@@ -17,7 +17,9 @@ export class SubscribablePromise<T extends any, P extends any> {
     setTimeout(() => this.init(executor), 1)
   }
 
-  public subscribe(onNext: (next: T) => void): {
+  public subscribe(
+    onNext: (next: T) => void
+  ): {
     unsubscribe: () => boolean
   } {
     return this.observer.subscribe(onNext)

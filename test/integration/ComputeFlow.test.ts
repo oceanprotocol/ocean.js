@@ -104,7 +104,8 @@ describe('Compute flow', () => {
     language: 'js',
     format: 'docker-image',
     version: '0.1',
-    url: 'https://raw.githubusercontent.com/oceanprotocol/test-algorithm/master/javascript/algo.js',
+    url:
+      'https://raw.githubusercontent.com/oceanprotocol/test-algorithm/master/javascript/algo.js',
     container: {
       entrypoint: 'node $ALGO',
       image: 'node',
@@ -249,7 +250,8 @@ describe('Compute flow', () => {
         license: 'CC-BY',
         files: [
           {
-            url: 'https://raw.githubusercontent.com/tbertinmahieux/MSongsDB/master/Tasks_Demos/CoverSongs/shs_dataset_test.txt',
+            url:
+              'https://raw.githubusercontent.com/tbertinmahieux/MSongsDB/master/Tasks_Demos/CoverSongs/shs_dataset_test.txt',
             checksum: 'efb2c764274b745f5fc37f97c6b0e764',
             contentLength: '4535431',
             contentType: 'text/csv',
@@ -485,7 +487,8 @@ describe('Compute flow', () => {
         license: 'CC-BY',
         files: [
           {
-            url: 'https://raw.githubusercontent.com/oceanprotocol/test-algorithm/master/javascript/algo.js',
+            url:
+              'https://raw.githubusercontent.com/oceanprotocol/test-algorithm/master/javascript/algo.js',
             contentType: 'text/js',
             encoding: 'UTF-8'
           }
@@ -537,7 +540,8 @@ describe('Compute flow', () => {
         license: 'CC-BY',
         files: [
           {
-            url: 'https://raw.githubusercontent.com/oceanprotocol/test-algorithm/master/javascript/algo.js',
+            url:
+              'https://raw.githubusercontent.com/oceanprotocol/test-algorithm/master/javascript/algo.js',
             contentType: 'text/js',
             encoding: 'UTF-8'
           }
@@ -598,7 +602,8 @@ describe('Compute flow', () => {
         license: 'CC-BY',
         files: [
           {
-            url: 'https://raw.githubusercontent.com/oceanprotocol/test-algorithm/master/javascript/algo.js',
+            url:
+              'https://raw.githubusercontent.com/oceanprotocol/test-algorithm/master/javascript/algo.js',
             contentType: 'text/js',
             encoding: 'UTF-8'
           }
@@ -662,7 +667,8 @@ describe('Compute flow', () => {
         license: 'CC-BY',
         files: [
           {
-            url: 'https://raw.githubusercontent.com/oceanprotocol/test-algorithm/master/javascript/algo.js',
+            url:
+              'https://raw.githubusercontent.com/oceanprotocol/test-algorithm/master/javascript/algo.js',
             contentType: 'text/js',
             encoding: 'UTF-8'
           }
@@ -840,7 +846,8 @@ describe('Compute flow', () => {
     const allowed = await ocean.compute.isOrderable(
       ddo.id,
       computeService.index,
-      algoDefinition
+      algoDefinition,
+      ddo
     )
     assert(allowed === true)
     computeOrderId = await ocean.compute.orderAsset(
@@ -849,7 +856,8 @@ describe('Compute flow', () => {
       computeService.index,
       algoDefinition,
       null, // no marketplace fee
-      computeAddress // CtD is the consumer of the dataset
+      computeAddress, // CtD is the consumer of the dataset
+      ddo
     )
     assert(computeOrderId != null, 'computeOrderId === null')
     const response = await ocean.compute.start(
@@ -860,7 +868,9 @@ describe('Compute flow', () => {
       algoDefinition,
       output,
       `${computeService.index}`,
-      computeService.type
+      computeService.type,
+      undefined,
+      ddo
     )
     assert(response, 'Compute error')
     jobId = response.jobId
@@ -918,7 +928,7 @@ describe('Compute flow', () => {
   })
   it('Bob should stop compute job', async () => {
     assert(jobId != null, 'Jobid is null')
-    await ocean.compute.stop(bob, ddo.id, jobId)
+    await ocean.compute.stop(bob, ddo.id, jobId, ddo)
     const response = await ocean.compute.status(bob, ddo.id, undefined, undefined, jobId)
     // TODO: typings say that `stopreq` does not exist
     assert((response[0] as any).stopreq === 1, 'Response.stopreq is invalid')
@@ -941,7 +951,8 @@ describe('Compute flow', () => {
         service1.index,
         algoDefinition,
         null, // no marketplace fee
-        computeAddress // CtD is the consumer of the dataset
+        computeAddress, // CtD is the consumer of the dataset
+        datasetNoRawAlgo
       )
       assert(order === null, 'Order should be null')
     } catch (error) {
@@ -964,7 +975,8 @@ describe('Compute flow', () => {
     const allowed = await ocean.compute.isOrderable(
       datasetWithTrustedAlgo.id,
       service1.index,
-      algoDefinition
+      algoDefinition,
+      datasetWithTrustedAlgo
     )
     assert(allowed === false)
 
@@ -976,7 +988,8 @@ describe('Compute flow', () => {
         service1.index,
         algoDefinition,
         null, // no marketplace fee
-        computeAddress // CtD is the consumer of the dataset
+        computeAddress, // CtD is the consumer of the dataset
+        datasetWithTrustedAlgo
       )
       assert(order === null, 'Order should be null')
     } catch (error) {
@@ -995,7 +1008,9 @@ describe('Compute flow', () => {
     const allowed = await ocean.compute.isOrderable(
       ddo.id,
       computeService.index,
-      algoDefinition
+      algoDefinition,
+      ddo,
+      algorithmAsset
     )
     assert(allowed === false)
 
@@ -1006,7 +1021,8 @@ describe('Compute flow', () => {
         computeService.index,
         algoDefinition,
         null, // no marketplace fee
-        computeAddress // CtD is the consumer of the dataset
+        computeAddress, // CtD is the consumer of the dataset
+        ddo
       )
       assert(order === null, 'Order should be null')
     } catch (error) {
@@ -1081,8 +1097,9 @@ describe('Compute flow', () => {
       algorithmAssetRemoteProviderWithCompute != null,
       'algorithmAsset should not be null'
     )
-    const serviceAlgo =
-      algorithmAssetRemoteProviderWithCompute.findServiceByType('compute')
+    const serviceAlgo = algorithmAssetRemoteProviderWithCompute.findServiceByType(
+      'compute'
+    )
     assert(serviceAlgo != null, 'serviceAlgo should not be null')
     // get the compute address first
     computeAddress = await ocean.compute.getComputeAddress(ddo.id, computeService.index)
@@ -1094,7 +1111,9 @@ describe('Compute flow', () => {
     const allowed = await ocean.compute.isOrderable(
       ddo.id,
       computeService.index,
-      algoDefinition
+      algoDefinition,
+      ddo,
+      algorithmAssetRemoteProviderWithCompute
     )
     assert(allowed === false)
     try {
@@ -1104,7 +1123,8 @@ describe('Compute flow', () => {
         computeService.index,
         algoDefinition,
         null, // no marketplace fee
-        computeAddress // CtD is the consumer of the dataset
+        computeAddress, // CtD is the consumer of the dataset
+        ddo
       )
       assert(order === null, 'Order should be null')
     } catch (error) {
@@ -1127,7 +1147,9 @@ describe('Compute flow', () => {
     const allowed = await ocean.compute.isOrderable(
       ddo.id,
       computeService.index,
-      algoDefinition
+      algoDefinition,
+      ddo,
+      algorithmAssetwithCompute
     )
     assert(allowed === true)
     const order = await ocean.compute.orderAsset(
@@ -1136,7 +1158,8 @@ describe('Compute flow', () => {
       computeService.index,
       algoDefinition,
       null, // no marketplace fee
-      computeAddress // CtD is the consumer of the dataset
+      computeAddress, // CtD is the consumer of the dataset
+      ddo
     )
     assert(order != null, 'Order should not be null')
     // order the algorithm
@@ -1159,7 +1182,9 @@ describe('Compute flow', () => {
       algoDefinition,
       output,
       `${computeService.index}`,
-      computeService.type
+      computeService.type,
+      undefined,
+      ddo
     )
     assert(response, 'Compute error')
     jobId = response.jobId
@@ -1183,7 +1208,9 @@ describe('Compute flow', () => {
     const allowed = await ocean.compute.isOrderable(
       ddo.id,
       computeService.index,
-      algoDefinition
+      algoDefinition,
+      ddo,
+      algorithmAsset
     )
     assert(allowed === true)
     const order = await ocean.compute.orderAsset(
@@ -1192,7 +1219,8 @@ describe('Compute flow', () => {
       computeService.index,
       algoDefinition,
       null, // no marketplace fee
-      computeAddress // CtD is the consumer of the dataset
+      computeAddress, // CtD is the consumer of the dataset
+      ddo
     )
     assert(order != null, 'Order should not be null')
     // order the algorithm
@@ -1215,7 +1243,9 @@ describe('Compute flow', () => {
       algoDefinition,
       output,
       `${computeService.index}`,
-      computeService.type
+      computeService.type,
+      undefined,
+      ddo
     )
     assert(response, 'Compute error')
     jobId = response.jobId
@@ -1242,7 +1272,9 @@ describe('Compute flow', () => {
     const allowed = await ocean.compute.isOrderable(
       ddo.id,
       computeService.index,
-      algoDefinition
+      algoDefinition,
+      ddo,
+      algorithmAssetRemoteProvider
     )
     assert(allowed === true)
     const order = await ocean.compute.orderAsset(
@@ -1251,7 +1283,8 @@ describe('Compute flow', () => {
       computeService.index,
       algoDefinition,
       null, // no marketplace fee
-      computeAddress // CtD is the consumer of the dataset
+      computeAddress, // CtD is the consumer of the dataset
+      ddo
     )
     assert(order != null, 'Order should not be null')
     const orderalgo = await ocean.compute.orderAlgorithm(
@@ -1273,7 +1306,9 @@ describe('Compute flow', () => {
       algoDefinition,
       output,
       `${computeService.index}`,
-      computeService.type
+      computeService.type,
+      undefined,
+      ddo
     )
     assert(response, 'Compute error')
     assert(response.status >= 1, 'Invalid response status')
@@ -1296,7 +1331,9 @@ describe('Compute flow', () => {
     allowed = await ocean.compute.isOrderable(
       ddo.id,
       computeService.index,
-      algoDefinition
+      algoDefinition,
+      ddo,
+      algorithmAsset
     )
     assert(allowed === true)
     const order = await ocean.compute.orderAsset(
@@ -1305,7 +1342,8 @@ describe('Compute flow', () => {
       computeService.index,
       algoDefinition,
       null, // no marketplace fee
-      computeAddress // CtD is the consumer of the dataset
+      computeAddress, // CtD is the consumer of the dataset
+      ddo
     )
     assert(order != null, 'Order should not be null')
     // order the algo
@@ -1324,7 +1362,8 @@ describe('Compute flow', () => {
     allowed = await ocean.compute.isOrderable(
       ddoAdditional1.id,
       inputOrder1Service.index,
-      algoDefinition
+      algoDefinition,
+      ddoAdditional1
     )
     assert(allowed === true)
     const inputOrder1 = await ocean.compute.orderAsset(
@@ -1333,7 +1372,8 @@ describe('Compute flow', () => {
       inputOrder1Service.index,
       algoDefinition,
       null, // no marketplace fee
-      computeAddress // CtD is the consumer of the dataset
+      computeAddress, // CtD is the consumer of the dataset
+      ddoAdditional1
     )
     assert(inputOrder1 != null, 'inputOrder1 should not be null')
     assert(ddoAdditional1 != null, 'ddoAdditional1 should not be null')
@@ -1342,7 +1382,8 @@ describe('Compute flow', () => {
     allowed = await ocean.compute.isOrderable(
       ddoAdditional2.id,
       inputOrder2Service.index,
-      algoDefinition
+      algoDefinition,
+      ddoAdditional2
     )
     assert(allowed === true)
     const inputOrder2 = await ocean.compute.orderAsset(
@@ -1351,7 +1392,8 @@ describe('Compute flow', () => {
       inputOrder2Service.index,
       algoDefinition,
       null, // no marketplace fee
-      computeAddress // CtD is the consumer of the dataset
+      computeAddress, // CtD is the consumer of the dataset
+      ddoAdditional2
     )
     assert(inputOrder2 != null, 'inputOrder2 should not be null')
     const additionalInputs: ComputeInput[] = [
@@ -1377,7 +1419,8 @@ describe('Compute flow', () => {
       output,
       `${computeService.index}`,
       computeService.type,
-      additionalInputs
+      additionalInputs,
+      ddo
     )
     assert(response.status >= 1, 'Invalid response.status')
     assert(response.jobId, 'Invalid jobId')
@@ -1464,7 +1507,9 @@ describe('Compute flow', () => {
     const allowed = await ocean.compute.isOrderable(
       ddo.id,
       computeService.index,
-      algoDefinition
+      algoDefinition,
+      ddo,
+      algorithmAsset
     )
     assert(allowed === false, 'This should fail, the algo container section was changed!')
   })
@@ -1500,7 +1545,9 @@ describe('Compute flow', () => {
     const allowed = await ocean.compute.isOrderable(
       ddo.id,
       computeService.index,
-      algoDefinition
+      algoDefinition,
+      ddo,
+      algorithmAssetRemoteProvider
     )
     assert(allowed === false, 'This should fail, the algo files section was changed!')
   })
@@ -1556,7 +1603,8 @@ describe('Compute flow', () => {
     const allowed = await ocean.compute.isOrderable(
       datasetWithBogusProvider.id,
       computeService.index,
-      algoDefinition
+      algoDefinition,
+      datasetWithBogusProvider
     )
     assert(allowed === false)
     // we know that it is not Orderable, but we are trying to force it
@@ -1568,7 +1616,8 @@ describe('Compute flow', () => {
         computeService.index,
         algoDefinition,
         null, // no marketplace fee
-        computeAddress // CtD is the consumer of the dataset
+        computeAddress, // CtD is the consumer of the dataset
+        datasetWithBogusProvider
       )
       assert(order === null, 'Order should be null')
     } catch (error) {
@@ -1585,7 +1634,9 @@ describe('Compute flow', () => {
       algoDefinition,
       output,
       `${computeService.index}`,
-      computeService.type
+      computeService.type,
+      undefined,
+      ddo
     )
     assert(response === null || response === undefined, 'Compute error')
   })
@@ -1604,7 +1655,12 @@ describe('Compute flow', () => {
   })
   it('Bob should fail to stop a fake compute job on a bogus provider', async () => {
     const jobid = '1234'
-    const response = await ocean.compute.stop(bob, datasetWithBogusProvider.id, jobid)
+    const response = await ocean.compute.stop(
+      bob,
+      datasetWithBogusProvider.id,
+      jobid,
+      ddo
+    )
     assert(response === null || response === undefined, 'Invalid response')
   })
 })

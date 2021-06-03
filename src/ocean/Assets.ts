@@ -452,11 +452,18 @@ export class Assets extends Instantiable {
     serviceType: string,
     consumerAddress: string,
     serviceIndex = -1,
-    serviceEndpoint: string
+    serviceEndpoint: string,
+    ddo?: DDO
   ): Promise<any> {
     const provider = await Provider.getInstance(this.instanceConfig)
     await provider.setBaseUrl(serviceEndpoint)
-    const res = await provider.initialize(did, serviceIndex, serviceType, consumerAddress)
+    const res = await provider.initialize(
+      did,
+      serviceIndex,
+      serviceType,
+      consumerAddress,
+      ddo
+    )
     if (res === null) return null
     const providerData = JSON.parse(res)
     return providerData
@@ -501,7 +508,8 @@ export class Assets extends Instantiable {
         serviceType,
         payerAddress,
         serviceIndex,
-        service.serviceEndpoint
+        service.serviceEndpoint,
+        ddo
       )
       if (!providerData)
         throw new Error(

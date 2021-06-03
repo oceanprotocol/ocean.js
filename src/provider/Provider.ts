@@ -189,15 +189,12 @@ export class Provider extends Instantiable {
     did: string,
     serviceIndex: number,
     serviceType: string,
-    consumerAddress: string
+    consumerAddress: string,
+    ddo?: DDO
   ): Promise<string> {
-    let DDO: DDO
-
-    try {
-      DDO = await this.ocean.assets.resolve(did)
-    } catch (e) {
-      this.logger.error(e)
-      throw new Error('Failed to resolve DID')
+    if (!ddo) {
+      ddo = await this.ocean.assets.resolve(did)
+      if (!ddo) throw new Error(`Couldn't resolve the did ${did}`)
     }
     let initializeUrl = this.getInitializeEndpoint()
       ? this.getInitializeEndpoint().urlPath
@@ -206,7 +203,7 @@ export class Provider extends Instantiable {
     initializeUrl += `?documentId=${did}`
     initializeUrl += `&serviceId=${serviceIndex}`
     initializeUrl += `&serviceType=${serviceType}`
-    initializeUrl += `&dataToken=${DDO.dataToken}`
+    initializeUrl += `&dataToken=${ddo.dataToken}`
     initializeUrl += `&consumerAddress=${consumerAddress}`
     try {
       const response = await this.ocean.utils.fetch.get(initializeUrl)
