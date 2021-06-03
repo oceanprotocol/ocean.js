@@ -305,18 +305,18 @@ export class Assets extends Instantiable {
     allowList: string[],
     denyList: string[]
   ): Promise<DDO> {
+    let newDDo
     if (allowList && allowList.length > 0) {
-      ddo = updateCredentialDetail(ddo, credentialType, allowList, 'allow')
+      newDDo = updateCredentialDetail(ddo, credentialType, allowList, 'allow')
     } else {
-      ddo = removeCredentialDetail(ddo, credentialType, 'allow')
+      newDDo = removeCredentialDetail(ddo, credentialType, 'allow')
     }
-
     if (denyList && denyList.length > 0) {
-      ddo = updateCredentialDetail(ddo, credentialType, denyList, 'deny')
+      newDDo = updateCredentialDetail(ddo, credentialType, denyList, 'deny')
     } else {
-      ddo = removeCredentialDetail(ddo, credentialType, 'deny')
+      newDDo = removeCredentialDetail(ddo, credentialType, 'deny')
     }
-    return ddo
+    return newDDo
   }
 
   /**
@@ -324,28 +324,36 @@ export class Assets extends Instantiable {
    * @param  {ddo} DDO
    * @param {credentialType} CredentialType e.g. address / credentail3Box
    * @param {value} string credential
-   * @return {boolean} allowed ?
+   * @return {Consumable} allowed  0 = OK , 2 - Credential not in allow list, 3 - Credential in deny list
    */
   public checkCredential(
     ddo: DDO,
     credentialType: CredentialType,
     value: string
-  ): boolean {
-    let allowed = true
-    if (!ddo.credentials) return allowed
-    if (ddo.credentials.allow && ddo.credentials.allow.length > 0) {
-      const allowList = ddo.credentials.allow.find(
-        (credentail) => credentail.type === credentialType
-      )
-      if (allowList && !allowList.value.includes(value)) allowed = false
+  ): Consumable {
+    let status = 0
+    let message = 'All good'
+    if (ddo.credentials) {
+      if (ddo.credentials.allow && ddo.credentials.allow.length > 0) {
+        const allowList = ddo.credentials.allow.find(
+          (credentail) => credentail.type === credentialType
+        )
+        if (allowList && !allowList.value.includes(value)) {
+          status = 2
+          message = 'Credential missing from allow list'
+        }
+      }
+      if (ddo.credentials.deny && ddo.credentials.deny.length > 0) {
+        const denyList = ddo.credentials.deny.find(
+          (credentail) => credentail.type === credentialType
+        )
+        if (denyList && denyList.value.includes(value)) {
+          status = 3
+          message = 'Credential found on deny list'
+        }
+      }
     }
-    if (ddo.credentials.deny && ddo.credentials.deny.length > 0) {
-      const denyList = ddo.credentials.deny.find(
-        (credentail) => credentail.type === credentialType
-      )
-      if (denyList && denyList.value.includes(value)) allowed = false
-    }
-    return allowed
+    return { status, message }
   }
 
   /**
@@ -547,8 +555,10 @@ export class Assets extends Instantiable {
     let service: Service
 
     const ddo = await this.resolve(did)
-    const consumable = await this.isConsumable(ddo)
-    if (consumable.status > 0) return null
+    const consumable = await this.isConsumable(ddo, consumerAddress)
+    if (consumable.status > 0) {
+      throw new Error(`Order asset failed, ` + consumable.message)
+    }
 
     if (!consumerAddress) consumerAddress = payerAddress
     if (serviceIndex === -1) {
@@ -728,10 +738,13 @@ export class Assets extends Instantiable {
   /**
    *
    * @param {DDO} ddo
+   * @param {consumer} string
    * @return {Promise<Consumable>}
    */
-  public async isConsumable(ddo: DDO): Promise<Consumable> {
-    if (!ddo) return null
+  public async isConsumable(ddo: DDO, consumer?: string): Promise<Consumable> {
+    let status = 0
+    let message = 'All good'
+    if (!ddo) return { status, message }
     const metadata = ddo.findServiceByType('metadata')
 
     if (metadata.attributes.status?.isOrderDisabled)
@@ -739,15 +752,13 @@ export class Assets extends Instantiable {
         status: 1,
         message: 'Ordering this asset has been temporarily disabled by the publisher.'
       }
-
-    /*
-    // To do: call helper method check credential
-    // return: 4, Credential missing from allow list
-    // return: 5, Credential found on deny list
-    */
-    return {
-      status: 0,
-      message: 'All good'
+    if (consumer) {
+      ;({ status, message } = this.checkCredential(ddo, CredentialType.address, consumer))
     }
+    /*
+    // return: 2, Credential missing from allow list
+    // return: 3, Credential found on deny list
+    */
+    return { status, message }
   }
 }
