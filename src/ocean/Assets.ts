@@ -20,7 +20,6 @@ import {
 } from '../ddo/interfaces/Credentials'
 import { updateCredentialDetail, removeCredentialDetail } from './AssetsCredential'
 import { Consumable } from '../ddo/interfaces/Consumable'
-import { resourceLimits } from 'worker_threads'
 
 export enum CreateProgressStep {
   CreatingDataToken,
