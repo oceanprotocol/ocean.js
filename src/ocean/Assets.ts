@@ -40,6 +40,10 @@ export interface Order {
   serviceType?: string
 }
 
+function isDdo(arg: any): arg is DDO {
+  return arg.id !== undefined
+}
+
 /**
  * Assets submodule of Ocean Protocol.
  */
@@ -335,11 +339,11 @@ export class Assets extends Instantiable {
 
   /**
    * Returns the creator of a asset.
-   * @param  {string} did Decentralized ID.
+   * @param  {DDO|string} asset DID Descriptor Object containing all the data related to an asset or a Decentralized identifier.
    * @return {Promise<string>} Returns eth address
    */
-  public async creator(did: string): Promise<string> {
-    const ddo = await this.resolve(did)
+  public async creator(asset: DDO | string): Promise<string> {
+    const ddo = isDdo(asset) ? asset : await this.ocean.assets.resolve(asset)
     const checksum = ddo.getChecksum()
     const { creator, signatureValue } = ddo.proof
     const signer = await this.ocean.utils.signature.verifyText(checksum, signatureValue)
@@ -382,9 +386,13 @@ export class Assets extends Instantiable {
     } as SearchQuery)
   }
 
-  public async getServiceByType(did: string, serviceType: string): Promise<Service> {
+  public async getServiceByType(
+    asset: DDO | string,
+    serviceType: string
+  ): Promise<Service> {
+    const ddo = isDdo(asset) ? asset : await this.ocean.assets.resolve(asset)
     let service: Service
-    const services: Service[] = (await this.resolve(did)).service
+    const services: Service[] = ddo.service
 
     services.forEach((serv) => {
       if (serv.type.toString() === serviceType) {
@@ -394,9 +402,13 @@ export class Assets extends Instantiable {
     return service
   }
 
-  public async getServiceByIndex(did: string, serviceIndex: number): Promise<Service> {
+  public async getServiceByIndex(
+    asset: DDO | string,
+    serviceIndex: number
+  ): Promise<Service> {
+    const ddo = isDdo(asset) ? asset : await this.ocean.assets.resolve(asset)
     let service: Service
-    const services: Service[] = (await this.resolve(did)).service
+    const services: Service[] = ddo.service
 
     services.forEach((serv) => {
       if (serv.index === serviceIndex) {
@@ -440,7 +452,7 @@ export class Assets extends Instantiable {
   /**
    * Initialize a service
    * Can be used to compute totalCost for ordering a service
-   * @param {String} did
+   * @param {DDO|string} asset DID Descriptor Object containing all the data related to an asset or a Decentralized identifier.
    * @param {String} serviceType
    * @param {String} consumerAddress
    * @param {Number} serviceIndex
@@ -448,21 +460,19 @@ export class Assets extends Instantiable {
    * @return {Promise<any>} Order details
    */
   public async initialize(
-    did: string,
+    asset: DDO | string,
     serviceType: string,
     consumerAddress: string,
     serviceIndex = -1,
-    serviceEndpoint: string,
-    ddo?: DDO
+    serviceEndpoint: string
   ): Promise<any> {
     const provider = await Provider.getInstance(this.instanceConfig)
     await provider.setBaseUrl(serviceEndpoint)
     const res = await provider.initialize(
-      did,
+      asset,
       serviceIndex,
       serviceType,
-      consumerAddress,
-      ddo
+      consumerAddress
     )
     if (res === null) return null
     const providerData = JSON.parse(res)
@@ -471,7 +481,7 @@ export class Assets extends Instantiable {
 
   /**
    * Orders & pays for a service
-   * @param {String} did
+   * @param {DDO|string} asset DID Descriptor Object containing all the data related to an asset or a Decentralized identifier.
    * @param {String} serviceType
    * @param {String} payerAddress
    * @param {Number} serviceIndex
@@ -480,7 +490,7 @@ export class Assets extends Instantiable {
    * @return {Promise<String>} transactionHash of the payment
    */
   public async order(
-    did: string,
+    asset: DDO | string,
     serviceType: string,
     payerAddress: string,
     serviceIndex = -1,
@@ -489,27 +499,25 @@ export class Assets extends Instantiable {
     searchPreviousOrders = true
   ): Promise<string> {
     let service: Service
-
-    const ddo = await this.resolve(did)
+    const ddo = isDdo(asset) ? asset : await this.ocean.assets.resolve(asset)
     const consumable = await this.isConsumable(ddo)
     if (consumable.status > 0) return null
 
     if (!consumerAddress) consumerAddress = payerAddress
     if (serviceIndex === -1) {
-      service = await this.getServiceByType(did, serviceType)
+      service = await this.getServiceByType(ddo, serviceType)
       serviceIndex = service.index
     } else {
-      service = await this.getServiceByIndex(did, serviceIndex)
+      service = await this.getServiceByIndex(ddo, serviceIndex)
       serviceType = service.type
     }
     try {
       const providerData = await this.initialize(
-        did,
+        ddo,
         serviceType,
         payerAddress,
         serviceIndex,
-        service.serviceEndpoint,
-        ddo
+        service.serviceEndpoint
       )
       if (!providerData)
         throw new Error(
@@ -560,13 +568,13 @@ export class Assets extends Instantiable {
 
   // marketplace flow
   public async download(
-    did: string,
+    asset: DDO | string,
     txId: string,
     tokenAddress: string,
     consumerAccount: Account,
     destination: string
   ): Promise<string | true> {
-    const ddo = await this.resolve(did)
+    const ddo = isDdo(asset) ? asset : await this.ocean.assets.resolve(asset)
     const { attributes } = ddo.findServiceByType('metadata')
     const service = ddo.findServiceByType('access')
     const { files } = attributes.main
@@ -586,7 +594,7 @@ export class Assets extends Instantiable {
     const provider = await Provider.getInstance(this.instanceConfig)
     await provider.setBaseUrl(serviceEndpoint)
     await provider.download(
-      did,
+      ddo.id,
       txId,
       tokenAddress,
       service.type,

@@ -19,6 +19,9 @@ export interface ServiceEndpoint {
   method: string
   urlPath: string
 }
+function isDdo(arg: any): arg is DDO {
+  return arg.id !== undefined
+}
 /**
  * Provides an interface for provider service.
  * Provider service is the technical component executed
@@ -186,21 +189,17 @@ export class Provider extends Instantiable {
   }
 
   public async initialize(
-    did: string,
+    asset: DDO | string,
     serviceIndex: number,
     serviceType: string,
-    consumerAddress: string,
-    ddo?: DDO
+    consumerAddress: string
   ): Promise<string> {
-    if (!ddo) {
-      ddo = await this.ocean.assets.resolve(did)
-      if (!ddo) throw new Error(`Couldn't resolve the did ${did}`)
-    }
+    const ddo = isDdo(asset) ? asset : await this.ocean.assets.resolve(asset)
     let initializeUrl = this.getInitializeEndpoint()
       ? this.getInitializeEndpoint().urlPath
       : null
     if (!initializeUrl) return null
-    initializeUrl += `?documentId=${did}`
+    initializeUrl += `?documentId=${ddo.id}`
     initializeUrl += `&serviceId=${serviceIndex}`
     initializeUrl += `&serviceType=${serviceType}`
     initializeUrl += `&dataToken=${ddo.dataToken}`
