@@ -61,4 +61,10 @@ export interface File {
    * @example "zip"
    */
   compression?: string
+
+  /**
+   * File availability (check fileinfo connectivity)
+   * @type {boolean}
+   */
+  valid?: boolean
 }

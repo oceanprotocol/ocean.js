@@ -5,7 +5,14 @@ import spies from 'chai-spies'
 import Web3 from 'web3'
 import { AbiItem } from 'web3-utils/types'
 import { DataTokens } from '../../src/datatokens/Datatokens'
-import { Account, EditableMetadata, Service, ServiceAccess, DID } from '../../src/lib'
+import {
+  Account,
+  EditableMetadata,
+  Service,
+  ServiceAccess,
+  DID,
+  CredentialType
+} from '../../src/lib'
 import { noDidPrefixed } from '../../src/utils/'
 import { Ocean } from '../../src/ocean/Ocean'
 import { ConfigHelper } from '../../src/utils/ConfigHelper'
@@ -39,12 +46,16 @@ use(spies)
 
 describe('Marketplace flow', () => {
   let owner: Account
+  let alice: Account
   let bob: Account
+  let charlie: Account
   let ddo
   let ddoWithPool
   let ddoWithBadUrl
   let ddoEncrypted
-  let alice: Account
+  let ddoWithCredentialsAllowList
+  let ddoWithCredentialsDenyList
+  let ddoWithCredentials
   let asset
   let assetWithPool
   let assetWithBadUrl
@@ -63,6 +74,8 @@ describe('Marketplace flow', () => {
   let data
   let blob
   let poolLastPrice
+  let allowList: any
+  let denyList: any
 
   const marketplaceAllowance = '20'
   const tokenAmount = '10000'
@@ -83,9 +96,12 @@ describe('Marketplace flow', () => {
     alice = (await ocean.accounts.list())[1]
     bob = (await ocean.accounts.list())[2]
     marketplace = (await ocean.accounts.list())[3]
+    charlie = (await ocean.accounts.list())[4]
     data = { t: 1, url: config.metadataCacheUri }
     blob = JSON.stringify(data)
     await contracts.deployContracts(owner.getId())
+    allowList = [alice.getId(), bob.getId()]
+    denyList = [charlie.getId()]
   })
 
   it('Alice publishes a datatoken contract', async () => {
@@ -222,7 +238,7 @@ describe('Marketplace flow', () => {
     assert(ddo.dataToken === tokenAddress)
     const storeTx = await ocean.onChainMetadata.publish(ddo.id, ddo, alice.getId())
     assert(storeTx)
-    await waitForAqua(ocean, ddo.id)
+
     ddoWithBadUrl = await ocean.assets.create(
       assetWithBadUrl,
       alice,
@@ -236,7 +252,7 @@ describe('Marketplace flow', () => {
       alice.getId()
     )
     assert(storeTxWithBadUrl)
-    await waitForAqua(ocean, ddoWithBadUrl.id)
+
     ddoWithPool = await ocean.assets.create(
       assetWithPool,
       alice,
@@ -250,10 +266,8 @@ describe('Marketplace flow', () => {
       alice.getId()
     )
     assert(storeTxWithPool)
-    await waitForAqua(ocean, ddoWithPool.id)
-  })
 
-  it('Alice publishes an encrypted dataset', async () => {
+    // publish an encrypted dataset
     ddoEncrypted = await ocean.assets.create(
       assetWithEncrypt,
       alice,
@@ -261,15 +275,62 @@ describe('Marketplace flow', () => {
       tokenAddressEncrypted
     )
     assert(ddoEncrypted.dataToken === tokenAddressEncrypted)
-    const storeTx = await ocean.onChainMetadata.publish(
+    const storeTxEncrypted = await ocean.onChainMetadata.publish(
       ddoEncrypted.id,
       ddoEncrypted,
       alice.getId(),
       true
     )
-    assert(storeTx)
+    assert(storeTxEncrypted)
+
+    // create assets with credentials allow & deny list
+    ddoWithCredentialsAllowList = await ocean.assets.create(
+      asset,
+      alice,
+      [service1],
+      null
+    )
+    const storeTxWithCredentialsAllowList = await ocean.onChainMetadata.publish(
+      ddoWithCredentialsAllowList.id,
+      ddoWithCredentialsAllowList,
+      alice.getId(),
+      false
+    )
+    assert(storeTxWithCredentialsAllowList)
+
+    ddoWithCredentialsDenyList = await ocean.assets.create(asset, alice, [service1], null)
+    const storeTxWithCredentialsDenyList = await ocean.onChainMetadata.publish(
+      ddoWithCredentialsDenyList.id,
+      ddoWithCredentialsDenyList,
+      alice.getId(),
+      false
+    )
+    assert(storeTxWithCredentialsDenyList)
+
+    ddoWithCredentials = await ocean.assets.create(asset, alice, [service1], null)
+    ddoWithCredentials = await ocean.assets.updateCredentials(
+      ddoWithCredentials,
+      CredentialType.address,
+      allowList,
+      denyList
+    )
+    const storeTxWithCredentials = await ocean.onChainMetadata.publish(
+      ddoWithCredentials.id,
+      ddoWithCredentials,
+      alice.getId(),
+      false
+    )
+    assert(storeTxWithCredentials)
+    // wait for all this assets to be published
+    await waitForAqua(ocean, ddo.id)
+    await waitForAqua(ocean, ddoWithBadUrl.id)
+    await waitForAqua(ocean, ddoWithPool.id)
     await waitForAqua(ocean, ddoEncrypted.id)
+    await waitForAqua(ocean, ddoWithCredentialsAllowList.id)
+    await waitForAqua(ocean, ddoWithCredentialsDenyList.id)
+    await waitForAqua(ocean, ddoWithCredentials.id)
   })
+
   it('Marketplace should resolve asset using DID', async () => {
     await ocean.assets.resolve(ddo.id).then((newDDO) => {
       assert(newDDO.id === ddo.id)
@@ -379,6 +440,30 @@ describe('Marketplace flow', () => {
   it('owner can list their assets', async () => {
     const assets = await ocean.assets.ownerAssets(alice.getId())
     assert(assets.results.length > 0)
+  })
+
+  it('Alice adds allow credentials for a dataset and deny credentials for another', async () => {
+    const resolvedDDO = await ocean.assets.resolve(ddoWithCredentialsAllowList.id)
+    const newDdo = await ocean.assets.updateCredentials(
+      resolvedDDO,
+      CredentialType.address,
+      allowList,
+      []
+    )
+    const txid = await ocean.onChainMetadata.update(newDdo.id, newDdo, alice.getId())
+    assert(txid !== null)
+  })
+
+  it('Alice adds deny credentials for a dataset', async () => {
+    const resolvedDDO = await ocean.assets.resolve(ddoWithCredentialsDenyList.id)
+    const newDdo = await ocean.assets.updateCredentials(
+      resolvedDDO,
+      CredentialType.address,
+      [],
+      denyList
+    )
+    const txid = await ocean.onChainMetadata.update(newDdo.id, newDdo, alice.getId())
+    assert(txid !== null)
   })
 
   it('Alice updates metadata and removes sample links', async () => {
@@ -585,5 +670,35 @@ describe('Marketplace flow', () => {
       bob.getId()
     )
     assert(balance.toString() === balanceAfterOrder.toString())
+  })
+
+  it('Bob should be able to consume an asset with allow list, because he is on that list', async () => {
+    const ddoWithAllowList = await ocean.assets.resolve(ddoWithCredentialsAllowList.id)
+    let consumable = await ocean.assets.isConsumable(ddoWithAllowList, bob.getId())
+    assert(consumable.status === 0)
+    consumable = await ocean.assets.isConsumable(ddoWithCredentials, bob.getId())
+    assert(consumable.status === 0)
+  })
+
+  it('Bob should be able to consume an asset with deny list, because he is not on that list', async () => {
+    const ddoWithDenyList = await ocean.assets.resolve(ddoWithCredentialsDenyList.id)
+    let consumable = await ocean.assets.isConsumable(ddoWithDenyList, bob.getId())
+    assert(consumable.status === 0)
+    consumable = await ocean.assets.isConsumable(ddoWithCredentials, bob.getId())
+    assert(consumable.status === 0)
+  })
+  it('Charlie should not be able to consume an asset with allow list, because he is not on that list', async () => {
+    const ddoWithAllowList = await ocean.assets.resolve(ddoWithCredentialsAllowList.id)
+    let consumable = await ocean.assets.isConsumable(ddoWithAllowList, charlie.getId())
+    assert(consumable.status === 2)
+    consumable = await ocean.assets.isConsumable(ddoWithCredentials, charlie.getId())
+    assert(consumable.status === 3)
+  })
+  it('Charlie should not be able to consume an asset with deny list, because he is on that list', async () => {
+    const ddoWithDenyList = await ocean.assets.resolve(ddoWithCredentialsDenyList.id)
+    let consumable = await ocean.assets.isConsumable(ddoWithDenyList, charlie.getId())
+    assert(consumable.status === 3)
+    consumable = await ocean.assets.isConsumable(ddoWithCredentials, charlie.getId())
+    assert(consumable.status === 3)
   })
 })

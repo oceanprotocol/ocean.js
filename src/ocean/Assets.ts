@@ -13,6 +13,12 @@ import { Provider } from '../provider/Provider'
 import { isAddress } from 'web3-utils'
 import { MetadataMain } from '../ddo/interfaces'
 import { TransactionReceipt } from 'web3-core'
+import {
+  CredentialType,
+  CredentialAction,
+  Credentials
+} from '../ddo/interfaces/Credentials'
+import { updateCredentialDetail, removeCredentialDetail } from './AssetsCredential'
 import { Consumable } from '../ddo/interfaces/Consumable'
 
 export enum CreateProgressStep {
@@ -290,6 +296,71 @@ export class Assets extends Instantiable {
   }
 
   /**
+   * Update Credentials attribute in DDO
+   * @param  {ddo} DDO
+   * @param {credentialType} CredentialType e.g. address / credentail3Box
+   * @param {allowList} string[] List of allow credential
+   * @param {denyList} string[] List of deny credential
+   * @return {Promise<DDO>} Updated DDO
+   */
+  public async updateCredentials(
+    ddo: DDO,
+    credentialType: CredentialType,
+    allowList: string[],
+    denyList: string[]
+  ): Promise<DDO> {
+    let newDDo
+    if (allowList && allowList.length > 0) {
+      newDDo = updateCredentialDetail(ddo, credentialType, allowList, 'allow')
+    } else {
+      newDDo = removeCredentialDetail(ddo, credentialType, 'allow')
+    }
+    if (denyList && denyList.length > 0) {
+      newDDo = updateCredentialDetail(ddo, credentialType, denyList, 'deny')
+    } else {
+      newDDo = removeCredentialDetail(ddo, credentialType, 'deny')
+    }
+    return newDDo
+  }
+
+  /**
+   * check if a credential can consume a dataset
+   * @param  {ddo} DDO
+   * @param {credentialType} CredentialType e.g. address / credentail3Box
+   * @param {value} string credential
+   * @return {Consumable} allowed  0 = OK , 2 - Credential not in allow list, 3 - Credential in deny list
+   */
+  public checkCredential(
+    ddo: DDO,
+    credentialType: CredentialType,
+    value: string
+  ): Consumable {
+    let status = 0
+    let message = 'All good'
+    if (ddo.credentials) {
+      if (ddo.credentials.allow && ddo.credentials.allow.length > 0) {
+        const allowList = ddo.credentials.allow.find(
+          (credentail) => credentail.type === credentialType
+        )
+        if (allowList && !allowList.value.includes(value)) {
+          status = 2
+          message = 'Credential missing from allow list'
+        }
+      }
+      if (ddo.credentials.deny && ddo.credentials.deny.length > 0) {
+        const denyList = ddo.credentials.deny.find(
+          (credentail) => credentail.type === credentialType
+        )
+        if (denyList && denyList.value.includes(value)) {
+          status = 3
+          message = 'Credential found on deny list'
+        }
+      }
+    }
+    return { status, message }
+  }
+
+  /**
    * Publish DDO on chain.
    * @param  {ddo} DDO
    * @param {String} consumerAccount
@@ -499,9 +570,18 @@ export class Assets extends Instantiable {
     searchPreviousOrders = true
   ): Promise<string> {
     let service: Service
+<<<<<<< HEAD
     const ddo = isDdo(asset) ? asset : await this.ocean.assets.resolve(asset)
     const consumable = await this.isConsumable(ddo)
     if (consumable.status > 0) return null
+=======
+
+    const ddo = await this.resolve(did)
+    const consumable = await this.isConsumable(ddo, consumerAddress)
+    if (consumable.status > 0) {
+      throw new Error(`Order asset failed, ` + consumable.message)
+    }
+>>>>>>> main
 
     if (!consumerAddress) consumerAddress = payerAddress
     if (serviceIndex === -1) {
@@ -681,10 +761,13 @@ export class Assets extends Instantiable {
   /**
    *
    * @param {DDO} ddo
+   * @param {consumer} string
    * @return {Promise<Consumable>}
    */
-  public async isConsumable(ddo: DDO): Promise<Consumable> {
-    if (!ddo) return null
+  public async isConsumable(ddo: DDO, consumer?: string): Promise<Consumable> {
+    let status = 0
+    let message = 'All good'
+    if (!ddo) return { status, message }
     const metadata = ddo.findServiceByType('metadata')
 
     if (metadata.attributes.status?.isOrderDisabled)
@@ -692,15 +775,13 @@ export class Assets extends Instantiable {
         status: 1,
         message: 'Ordering this asset has been temporarily disabled by the publisher.'
       }
-
-    /*
-    // To do: call helper method check credential
-    // return: 4, Credential missing from allow list
-    // return: 5, Credential found on deny list
-    */
-    return {
-      status: 0,
-      message: 'All good'
+    if (consumer) {
+      ;({ status, message } = this.checkCredential(ddo, CredentialType.address, consumer))
     }
+    /*
+    // return: 2, Credential missing from allow list
+    // return: 3, Credential found on deny list
+    */
+    return { status, message }
   }
 }
