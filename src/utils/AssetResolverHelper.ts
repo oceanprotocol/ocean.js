@@ -10,9 +10,10 @@ function isDdo(arg: any): arg is DDO {
   return arg.id !== undefined
 }
 
-export async function assetResolve(asset: DDO | string): Promise<AssetResolver> {
-  let ocean: Ocean
-
+export async function assetResolve(
+  asset: DDO | string,
+  ocean: Ocean
+): Promise<AssetResolver> {
   if (isDdo(asset)) {
     const did = asset.id
     const ddo = asset

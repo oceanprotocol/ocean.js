@@ -4,11 +4,7 @@ import { DataTokens } from '../../src/datatokens/Datatokens'
 import { Ocean } from '../../src/ocean/Ocean'
 import { ConfigHelper } from '../../src/utils/ConfigHelper'
 import { assert } from 'chai'
-import {
-  Service,
-  ServiceComputePrivacy,
-  publisherTrustedAlgorithm
-} from '../../src/ddo/interfaces/Service'
+import { ServiceComputePrivacy } from '../../src/ddo/interfaces/Service'
 import Web3 from 'web3'
 import factory from '@oceanprotocol/contracts/artifacts/DTFactory.json'
 import datatokensTemplate from '@oceanprotocol/contracts/artifacts/DataTokenTemplate.json'
@@ -860,8 +856,7 @@ describe('Compute flow', () => {
       algoDefinition,
       output,
       `${computeService.index}`,
-      computeService.type,
-      undefined
+      computeService.type
     )
     assert(response, 'Compute error')
     jobId = response.jobId

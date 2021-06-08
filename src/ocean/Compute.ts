@@ -118,7 +118,7 @@ export class Compute extends Instantiable {
     additionalInputs?: ComputeInput[]
   ): Promise<ComputeJob> {
     output = this.checkOutput(consumerAccount, output)
-    const { did, ddo } = await assetResolve(asset)
+    const { did, ddo } = await assetResolve(asset, this.ocean)
     const service = ddo.findServiceByType('compute')
     const { serviceEndpoint } = service
     if (did && txId) {
@@ -153,7 +153,7 @@ export class Compute extends Instantiable {
     asset: DDO | string,
     jobId: string
   ): Promise<ComputeJob> {
-    const { did, ddo } = await assetResolve(asset)
+    const { did, ddo } = await assetResolve(asset, this.ocean)
     const service = ddo.findServiceByType('compute')
     const { serviceEndpoint } = service
     const provider = await Provider.getInstance(this.instanceConfig)
@@ -176,7 +176,7 @@ export class Compute extends Instantiable {
     asset: DDO | string,
     jobId: string
   ): Promise<ComputeJob> {
-    const { did, ddo } = await assetResolve(asset)
+    const { did, ddo } = await assetResolve(asset, this.ocean)
     const service = ddo.findServiceByType('compute')
     const { serviceEndpoint } = service
     const provider = await Provider.getInstance(this.instanceConfig)
@@ -250,7 +250,7 @@ export class Compute extends Instantiable {
     asset: DDO | string,
     jobId: string
   ): Promise<ComputeJob> {
-    const { did, ddo } = await assetResolve(asset)
+    const { did, ddo } = await assetResolve(asset, this.ocean)
     const service = ddo.findServiceByType('compute')
     const { serviceEndpoint } = service
     const provider = await Provider.getInstance(this.instanceConfig)
@@ -413,7 +413,7 @@ export class Compute extends Instantiable {
     algorithm: ComputeAlgorithm,
     algorithmDDO?: DDO
   ): Promise<boolean> {
-    const datasetResolved: AssetResolver = await assetResolve(dataset)
+    const datasetResolved: AssetResolver = await assetResolve(dataset, this.ocean)
     const service: Service = datasetResolved.ddo.findServiceById(serviceIndex)
     if (!service) return false
     if (service.type === 'compute') {
@@ -524,7 +524,7 @@ export class Compute extends Instantiable {
     searchPreviousOrders = true
   ): SubscribablePromise<OrderProgressStep, string> {
     return new SubscribablePromise(async (observer) => {
-      const { ddo } = await assetResolve(dataset)
+      const { ddo } = await assetResolve(dataset, this.ocean)
       // first check if we can order this
       const allowed = await this.isOrderable(ddo, serviceIndex, algorithm)
       if (!allowed)

@@ -410,7 +410,7 @@ export class Assets extends Instantiable {
    * @return {Promise<string>} Returns eth address
    */
   public async creator(asset: DDO | string): Promise<string> {
-    const { did, ddo } = await assetResolve(asset)
+    const { did, ddo } = await assetResolve(asset, this.ocean)
     const checksum = ddo.getChecksum()
     const { creator, signatureValue } = ddo.proof
     const signer = await this.ocean.utils.signature.verifyText(checksum, signatureValue)
@@ -457,7 +457,7 @@ export class Assets extends Instantiable {
     asset: DDO | string,
     serviceType: string
   ): Promise<Service> {
-    const { ddo } = await assetResolve(asset)
+    const { ddo } = await assetResolve(asset, this.ocean)
     let service: Service
     const services: Service[] = ddo.service
 
@@ -473,7 +473,7 @@ export class Assets extends Instantiable {
     asset: DDO | string,
     serviceIndex: number
   ): Promise<Service> {
-    const { ddo } = await assetResolve(asset)
+    const { ddo } = await assetResolve(asset, this.ocean)
     let service: Service
     const services: Service[] = ddo.service
 
@@ -566,7 +566,7 @@ export class Assets extends Instantiable {
     searchPreviousOrders = true
   ): Promise<string> {
     let service: Service
-    const { ddo } = await assetResolve(asset)
+    const { ddo } = await assetResolve(asset, this.ocean)
     const consumable = await this.isConsumable(ddo, consumerAddress)
     if (consumable.status > 0) {
       throw new Error(`Order asset failed, ` + consumable.message)
@@ -643,7 +643,7 @@ export class Assets extends Instantiable {
     consumerAccount: Account,
     destination: string
   ): Promise<string | true> {
-    const { did, ddo } = await assetResolve(asset)
+    const { did, ddo } = await assetResolve(asset, this.ocean)
     const { attributes } = ddo.findServiceByType('metadata')
     const service = ddo.findServiceByType('access')
     const { files } = attributes.main

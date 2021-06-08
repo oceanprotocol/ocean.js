@@ -190,7 +190,7 @@ export class Provider extends Instantiable {
     serviceType: string,
     consumerAddress: string
   ): Promise<string> {
-    const { did, ddo } = await assetResolve(asset)
+    const { did, ddo } = await assetResolve(asset, this.ocean)
     let initializeUrl = this.getInitializeEndpoint()
       ? this.getInitializeEndpoint().urlPath
       : null
