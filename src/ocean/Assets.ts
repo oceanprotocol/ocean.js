@@ -5,7 +5,7 @@ import { Service, ServiceAccess } from '../ddo/interfaces/Service'
 import { EditableMetadata } from '../ddo/interfaces/EditableMetadata'
 import Account from './Account'
 import DID from './DID'
-import { SubscribablePromise, didNoZeroX, didPrefixed } from '../utils'
+import { SubscribablePromise, didNoZeroX, didPrefixed, assetResolve } from '../utils'
 import { Instantiable, InstantiableConfig } from '../Instantiable.abstract'
 import { WebServiceConnector } from './utils/WebServiceConnector'
 import BigNumber from 'bignumber.js'
@@ -44,10 +44,6 @@ export interface Order {
   did?: string
   serviceId?: number
   serviceType?: string
-}
-
-function isDdo(arg: any): arg is DDO {
-  return arg.id !== undefined
 }
 
 /**
@@ -414,14 +410,14 @@ export class Assets extends Instantiable {
    * @return {Promise<string>} Returns eth address
    */
   public async creator(asset: DDO | string): Promise<string> {
-    const ddo = isDdo(asset) ? asset : await this.ocean.assets.resolve(asset)
+    const { did, ddo } = await assetResolve(asset)
     const checksum = ddo.getChecksum()
     const { creator, signatureValue } = ddo.proof
     const signer = await this.ocean.utils.signature.verifyText(checksum, signatureValue)
 
     if (signer.toLowerCase() !== creator.toLowerCase()) {
       this.logger.warn(
-        `Owner of ${ddo.id} doesn't match. Expected ${creator} instead of ${signer}.`
+        `Owner of ${did} doesn't match. Expected ${creator} instead of ${signer}.`
       )
     }
 
@@ -461,7 +457,7 @@ export class Assets extends Instantiable {
     asset: DDO | string,
     serviceType: string
   ): Promise<Service> {
-    const ddo = isDdo(asset) ? asset : await this.ocean.assets.resolve(asset)
+    const { ddo } = await assetResolve(asset)
     let service: Service
     const services: Service[] = ddo.service
 
@@ -477,7 +473,7 @@ export class Assets extends Instantiable {
     asset: DDO | string,
     serviceIndex: number
   ): Promise<Service> {
-    const ddo = isDdo(asset) ? asset : await this.ocean.assets.resolve(asset)
+    const { ddo } = await assetResolve(asset)
     let service: Service
     const services: Service[] = ddo.service
 
@@ -570,18 +566,11 @@ export class Assets extends Instantiable {
     searchPreviousOrders = true
   ): Promise<string> {
     let service: Service
-<<<<<<< HEAD
-    const ddo = isDdo(asset) ? asset : await this.ocean.assets.resolve(asset)
-    const consumable = await this.isConsumable(ddo)
-    if (consumable.status > 0) return null
-=======
-
-    const ddo = await this.resolve(did)
+    const { ddo } = await assetResolve(asset)
     const consumable = await this.isConsumable(ddo, consumerAddress)
     if (consumable.status > 0) {
       throw new Error(`Order asset failed, ` + consumable.message)
     }
->>>>>>> main
 
     if (!consumerAddress) consumerAddress = payerAddress
     if (serviceIndex === -1) {
@@ -654,7 +643,7 @@ export class Assets extends Instantiable {
     consumerAccount: Account,
     destination: string
   ): Promise<string | true> {
-    const ddo = isDdo(asset) ? asset : await this.ocean.assets.resolve(asset)
+    const { did, ddo } = await assetResolve(asset)
     const { attributes } = ddo.findServiceByType('metadata')
     const service = ddo.findServiceByType('access')
     const { files } = attributes.main
@@ -674,7 +663,7 @@ export class Assets extends Instantiable {
     const provider = await Provider.getInstance(this.instanceConfig)
     await provider.setBaseUrl(serviceEndpoint)
     await provider.download(
-      ddo.id,
+      did,
       txId,
       tokenAddress,
       service.type,
