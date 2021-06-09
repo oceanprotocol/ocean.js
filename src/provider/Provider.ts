@@ -1,5 +1,5 @@
 import Account from '../ocean/Account'
-import { noZeroX, assetResolve, AssetResolver } from '../utils'
+import { noZeroX, assetResolve } from '../utils'
 import { Instantiable, InstantiableConfig } from '../Instantiable.abstract'
 import { File } from '../ddo/interfaces/File'
 import {

@@ -1,7 +1,7 @@
 import { DDO } from '../ddo/DDO'
 import { Ocean } from '../ocean/Ocean'
 
-export interface AssetResolver {
+export interface AssetResolved {
   did: string
   ddo: DDO
 }
@@ -13,7 +13,7 @@ function isDdo(arg: any): arg is DDO {
 export async function assetResolve(
   asset: DDO | string,
   ocean: Ocean
-): Promise<AssetResolver> {
+): Promise<AssetResolved> {
   if (isDdo(asset)) {
     const did = asset.id
     const ddo = asset

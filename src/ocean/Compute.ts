@@ -6,7 +6,7 @@ import {
   publisherTrustedAlgorithm
 } from '../ddo/interfaces/Service'
 import Account from './Account'
-import { SubscribablePromise, assetResolve, AssetResolver } from '../utils'
+import { SubscribablePromise, assetResolve, AssetResolved } from '../utils'
 import { Instantiable, InstantiableConfig } from '../Instantiable.abstract'
 import {
   ComputeOutput,
@@ -413,7 +413,7 @@ export class Compute extends Instantiable {
     algorithm: ComputeAlgorithm,
     algorithmDDO?: DDO
   ): Promise<boolean> {
-    const datasetResolved: AssetResolver = await assetResolve(dataset, this.ocean)
+    const datasetResolved: AssetResolved = await assetResolve(dataset, this.ocean)
     const service: Service = datasetResolved.ddo.findServiceById(serviceIndex)
     if (!service) return false
     if (service.type === 'compute') {
