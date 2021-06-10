@@ -141,6 +141,57 @@ const configs: ConfigHelperConfig[] = [
     dispenserAddress: null,
     metadataContractAddress: null,
     startBlock: 90707
+  },
+  {
+    networkId: 2021000,
+    network: 'gaiaxtestnet',
+    nodeUri: 'https://gaia-x.rpc',
+    metadataCacheUri: 'https://aquarius.gaiaxtestnet.oceanprotocol.com',
+    providerUri: 'https://provider.gaiaxtestnet.oceanprotocol.com',
+    subgraphUri: 'https://subgraph.gaiaxtestnet.oceanprotocol.com',
+    explorerUri: 'https://gaiaxtestnet.explorer',
+    oceanTokenAddress: null,
+    oceanTokenSymbol: 'OCEAN',
+    factoryAddress: null,
+    poolFactoryAddress: null,
+    fixedRateExchangeAddress: null,
+    dispenserAddress: null,
+    metadataContractAddress: null,
+    startBlock: 0
+  },
+  {
+    networkId: 80001,
+    network: 'mumbai',
+    nodeUri: 'https://polygon-mumbai.infura.io/v3/',
+    metadataCacheUri: 'https://aquarius.mumbai.oceanprotocol.com',
+    providerUri: 'https://provider.mumbai.oceanprotocol.com',
+    subgraphUri: 'https://subgraph.mumbai.oceanprotocol.com',
+    explorerUri: 'https://explorer-mumbai.maticvigil.com/',
+    oceanTokenAddress: null,
+    oceanTokenSymbol: 'OCEAN',
+    factoryAddress: null,
+    poolFactoryAddress: null,
+    fixedRateExchangeAddress: null,
+    dispenserAddress: null,
+    metadataContractAddress: null,
+    startBlock: 0
+  },
+  {
+    networkId: 56,
+    network: 'bsc',
+    nodeUri: 'https://bsc-dataseed.binance.org/',
+    metadataCacheUri: 'https://aquarius.bsc.oceanprotocol.com',
+    providerUri: 'https://provider.bsc.oceanprotocol.com',
+    subgraphUri: 'https://subgraph.bsc.oceanprotocol.com',
+    explorerUri: 'https://bscscan.com/',
+    oceanTokenAddress: null,
+    oceanTokenSymbol: 'OCEAN',
+    factoryAddress: null,
+    poolFactoryAddress: null,
+    fixedRateExchangeAddress: null,
+    dispenserAddress: null,
+    metadataContractAddress: null,
+    startBlock: 0
   }
 ]
 
@@ -150,8 +201,16 @@ export class ConfigHelper {
     // use the defaults first
     let configAddresses: Partial<ConfigHelperConfig>
     if (DefaultContractsAddresses[network]) {
-      const { DTFactory, BFactory, FixedRateExchange, Dispenser, Metadata, Ocean } =
-        DefaultContractsAddresses[network]
+      const {
+        DTFactory,
+        BFactory,
+        FixedRateExchange,
+        Dispenser,
+        Metadata,
+        Ocean,
+        chainId,
+        startBlock
+      } = DefaultContractsAddresses[network]
       configAddresses = {
         factoryAddress: DTFactory,
         poolFactoryAddress: BFactory,
@@ -159,6 +218,8 @@ export class ConfigHelper {
         dispenserAddress: Dispenser,
         metadataContractAddress: Metadata,
         oceanTokenAddress: Ocean,
+        networkId: chainId,
+        startBlock: startBlock,
         ...(process.env.AQUARIUS_URI && { metadataCacheUri: process.env.AQUARIUS_URI })
       }
     }
@@ -172,8 +233,16 @@ export class ConfigHelper {
             'utf8'
           )
         )
-        const { DTFactory, BFactory, FixedRateExchange, Dispenser, Metadata, Ocean } =
-          data[network]
+        const {
+          DTFactory,
+          BFactory,
+          FixedRateExchange,
+          Dispenser,
+          Metadata,
+          Ocean,
+          chainId,
+          startBlock
+        } = data[network]
         configAddresses = {
           factoryAddress: DTFactory,
           poolFactoryAddress: BFactory,
@@ -181,6 +250,8 @@ export class ConfigHelper {
           dispenserAddress: Dispenser,
           metadataContractAddress: Metadata,
           oceanTokenAddress: Ocean,
+          networkId: chainId,
+          startBlock: startBlock,
           ...(process.env.AQUARIUS_URI && { metadataCacheUri: process.env.AQUARIUS_URI })
         }
       } catch (e) {
