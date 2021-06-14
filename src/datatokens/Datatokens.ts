@@ -473,6 +473,7 @@ export class DataTokens {
    * @param {String} address consumer Address
    * @return {Promise<string>} string
    */
+  // Note that getPreviousValidOrders() only works on Eth (see: https://github.com/oceanprotocol/ocean.js/issues/741)
   public async getPreviousValidOrders(
     dataTokenAddress: string,
     amount: string,

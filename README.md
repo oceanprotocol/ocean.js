@@ -48,6 +48,17 @@ This is in alpha state and you can expect running into problems. If you run into
 - node.js ([Install from here](https://nodejs.org/en/download/))
 - Docker ([Managed as a non-root user](https://docs.docker.com/engine/install/linux-postinstall/)) 
 - A Unix based operating system (Mac or Linux) 
+### Note:
+Any function that uses `getPastEvents()` will only work on Eth (see: https://github.com/oceanprotocol/ocean.js/issues/741). This includes: 
+- searchPoolforDT()
+- getPoolsbyCreator()
+- getPoolSharesByAddress()
+- getAllPoolLogs()
+- getPreviousValidOrders()
+- searchforDT()
+- getExchangesbyCreator()
+- getExchangeSwaps()
+- getAllExchangesSwaps()
 
 ## 🏗 Installation
 
