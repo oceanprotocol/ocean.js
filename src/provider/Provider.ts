@@ -1,5 +1,5 @@
 import Account from '../ocean/Account'
-import { noZeroX } from '../utils'
+import { noZeroX, assetResolve } from '../utils'
 import { Instantiable, InstantiableConfig } from '../Instantiable.abstract'
 import { File } from '../ddo/interfaces/File'
 import {
@@ -8,8 +8,6 @@ import {
   ComputeOutput,
   ComputeAlgorithm
 } from '../ocean/interfaces/Compute'
-import { MetadataAlgorithm } from '../ddo/interfaces/MetadataAlgorithm'
-import { Versions } from '../ocean/Versions'
 import { DDO } from '../ddo/DDO'
 import DID from '../ocean/DID'
 import { Service } from '../ddo/interfaces'
@@ -19,6 +17,7 @@ export interface ServiceEndpoint {
   method: string
   urlPath: string
 }
+
 /**
  * Provides an interface for provider service.
  * Provider service is the technical component executed
@@ -186,19 +185,12 @@ export class Provider extends Instantiable {
   }
 
   public async initialize(
-    did: string,
+    asset: DDO | string,
     serviceIndex: number,
     serviceType: string,
     consumerAddress: string
   ): Promise<string> {
-    let DDO: DDO
-
-    try {
-      DDO = await this.ocean.assets.resolve(did)
-    } catch (e) {
-      this.logger.error(e)
-      throw new Error('Failed to resolve DID')
-    }
+    const { did, ddo } = await assetResolve(asset, this.ocean)
     let initializeUrl = this.getInitializeEndpoint()
       ? this.getInitializeEndpoint().urlPath
       : null
@@ -206,7 +198,7 @@ export class Provider extends Instantiable {
     initializeUrl += `?documentId=${did}`
     initializeUrl += `&serviceId=${serviceIndex}`
     initializeUrl += `&serviceType=${serviceType}`
-    initializeUrl += `&dataToken=${DDO.dataToken}`
+    initializeUrl += `&dataToken=${ddo.dataToken}`
     initializeUrl += `&consumerAddress=${consumerAddress}`
     try {
       const response = await this.ocean.utils.fetch.get(initializeUrl)
