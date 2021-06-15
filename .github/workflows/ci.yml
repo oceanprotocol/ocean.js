@@ -29,26 +29,7 @@ jobs:
       - run: npm ci
       - run: npm run lint
 
-  unit:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2
-        with:
-          node-version: '15'
-      - name: Cache node_modules
-        uses: actions/cache@v2
-        env:
-          cache-name: cache-node-modules
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-unit-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: ${{ runner.os }}-unit-${{ env.cache-name }}-
-      - run: npm ci
-      - run: npm run build:metadata
-      - run: npm run test:unit:cover
-
-  integration:
+  test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -80,7 +61,13 @@ jobs:
           bash -x start_ocean.sh --no-dashboard 2>&1 > start_ocean.log &
           cd .. &
           ./scripts/waitforcontracts.sh
+      - run: npm run build:metadata
+      - run: npm run test:unit:cover
       - run: npm run test:integration:cover
+      - uses: actions/upload-artifact@v1
+        with:
+          name: coverage
+          path: coverage
 
   build:
     runs-on: ${{ matrix.os }}
@@ -107,14 +94,19 @@ jobs:
       - run: npm ci
       - run: npm run build
 
-  # coverage:
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - uses: actions/checkout@v2
-  #     - uses: actions/setup-node@v2
-  #     - run: npm ci
-  #     - uses: paambaati/codeclimate-action@v2.7.5
-  #       env:
-  #         CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_REPORTER_ID }}
-  #       with:
-  #         coverageCommand: npm test
+  coverage:
+    runs-on: ubuntu-latest
+    needs: test
+    if: success()
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v1
+        with:
+          name: coverage
+      - uses: paambaati/codeclimate-action@v2.7.5
+        env:
+          CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_REPORTER_ID }}
+        with:
+          coverageLocations: |
+            ${{github.workspace}}/coverage/unit/lcov.info:lcov
+            ${{github.workspace}}/coverage/integration/lcov.info:lcov
