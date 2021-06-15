@@ -55,8 +55,8 @@ jobs:
       - name: Run Barge
         working-directory: ${{ github.workspace }}/barge
         env:
-          ADDRESS_FILE: '${HOME}/.ocean/ocean-contracts/artifacts/address.json'
-          AQUARIUS_URI: 'http://172.15.0.5:5000'
+          # ADDRESS_FILE: '${HOME}/.ocean/ocean-contracts/artifacts/address.json'
+          # AQUARIUS_URI: 'http://172.15.0.5:5000'
           DEPLOY_CONTRACTS: 'true'
         run: |
           if [[ -n "$DOCKERHUB_PASSWORD" && -n "$DOCKERHUB_USERNAME" ]]; then echo "login to docker";echo "$DOCKERHUB_PASSWORD" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin; fi &
@@ -76,7 +76,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        os: [ubuntu-latest, macos-latest]
         node: ['15', '16']
 
     steps:
