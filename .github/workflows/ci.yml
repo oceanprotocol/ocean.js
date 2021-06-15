@@ -42,9 +42,11 @@ jobs:
           cache-name: cache-node-modules
         with:
           path: ~/.npm
-          key: ${{ runner.os }}-integration-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: ${{ runner.os }}-integration-${{ env.cache-name }}-
+          key: ${{ runner.os }}-test-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: ${{ runner.os }}-test-${{ env.cache-name }}-
       - run: npm ci
+      - run: npm run build:metadata
+
       - name: Checkout Barge
         uses: actions/checkout@v2
         with:
@@ -59,12 +61,11 @@ jobs:
         run: |
           if [[ -n "$DOCKERHUB_PASSWORD" && -n "$DOCKERHUB_USERNAME" ]]; then echo "login to docker";echo "$DOCKERHUB_PASSWORD" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin; fi &
           bash -x start_ocean.sh --no-dashboard 2>&1 > start_ocean.log &
-          cd .. &
-          ./scripts/waitforcontracts.sh
-      - run: npm run build:metadata
+          cd .. && ./scripts/waitforcontracts.sh
+
       - run: npm run test:unit:cover
       - run: npm run test:integration:cover
-      - uses: actions/upload-artifact@v1
+      - uses: actions/upload-artifact@v2
         with:
           name: coverage
           path: coverage
@@ -100,7 +101,7 @@ jobs:
     if: success()
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/download-artifact@v1
+      - uses: actions/download-artifact@v2
         with:
           name: coverage
       - uses: paambaati/codeclimate-action@v2.7.5
