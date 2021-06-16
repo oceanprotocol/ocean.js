@@ -5,7 +5,7 @@
 > JavaScript library to privately & securely publish, exchange, and consume data.
 
 [![npm](https://img.shields.io/npm/v/@oceanprotocol/lib.svg)](https://www.npmjs.com/package/@oceanprotocol/lib)
-[![Build Status](https://travis-ci.com/oceanprotocol/ocean.js.svg?token=soMi2nNfCZq19zS1Rx4i&branch=main)](https://travis-ci.com/oceanprotocol/ocean.js)
+[![Build Status](https://github.com/oceanprotocol/ocean.js/workflows/CI/badge.svg)](https://github.com/oceanprotocol/ocean.js/actions)
 [![Maintainability](https://api.codeclimate.com/v1/badges/6381c81b8ac568a53537/maintainability)](https://codeclimate.com/github/oceanprotocol/ocean.js/maintainability)
 [![Test Coverage](https://api.codeclimate.com/v1/badges/6381c81b8ac568a53537/test_coverage)](https://codeclimate.com/github/oceanprotocol/ocean.js/test_coverage)
 [![code style: prettier](https://img.shields.io/badge/code_style-prettier-7b1173.svg?style=flat-square)](https://github.com/prettier/prettier)
@@ -120,7 +120,7 @@ This batteries-included flow includes metadata, multiple services for one datato
 
 If you have any difficulties with the quickstarts, or if you have further questions about how to use ocean.js please reach out to us on [Discord](https://discord.gg/TnXjkR5).
 
-If you notice any bugs or issues with Ocean.js please [open an issue on github](https://github.com/oceanprotocol/ocean.js/issues/new?assignees=&labels=bug&template=bug_report.md&title=).
+If you notice any bugs or issues with ocean.js please [open an issue on github](https://github.com/oceanprotocol/ocean.js/issues/new?assignees=&labels=bug&template=bug_report.md&title=).
 
 ## 🦑 Development
 
@@ -160,7 +160,7 @@ cd barge
 
 You can then proceed to run in another terminal.
 
-Let ocean.js know where to pickup the smartcontract addresses:
+Let ocean.js know where to pickup the smart contract addresses:
 
 ```
 export ADDRESS_FILE="${HOME}/.ocean/ocean-contracts/artifacts/address.json"
@@ -169,7 +169,7 @@ export ADDRESS_FILE="${HOME}/.ocean/ocean-contracts/artifacts/address.json"
 Build metadata:
 
 ```
-npm run build
+npm run build:metadata
 ```
 
 Executing linting, type checking, unit, and integration tests with coverage reporting all in one go:
