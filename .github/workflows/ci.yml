@@ -31,9 +31,10 @@ jobs:
 
   test:
     runs-on: ubuntu-latest
-    env:
-      ADDRESS_FILE: ${{ github.workspace }}/.ocean/ocean-contracts/artifacts/address.json
-      AQUARIUS_URI: 'http://172.15.0.5:5000'
+    # env:
+    #   ADDRESS_FILE: ${{ github.workspace }}/.ocean/ocean-contracts/artifacts/address.json
+    #   AQUARIUS_URI: 'http://172.15.0.5:5000'
+
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v2
@@ -75,7 +76,8 @@ jobs:
       - name: Run Barge
         working-directory: ${{ github.workspace }}/barge
         env:
-          DEPLOY_CONTRACTS: 'true'
+          # DEPLOY_CONTRACTS: 'true'
+          CONTRACTS_VERSION: v0.6.2
         run: |
           bash -x start_ocean.sh --with-provider2 --no-dashboard 2>&1 > start_ocean.log &
           cd .. && ./scripts/waitforcontracts.sh
