@@ -32,7 +32,7 @@ jobs:
   test:
     runs-on: ubuntu-latest
     env:
-      ADDRESS_FILE: '$HOME/.ocean/ocean-contracts/artifacts/address.json'
+      ADDRESS_FILE: '${HOME}/.ocean/ocean-contracts/artifacts/address.json'
       AQUARIUS_URI: 'http://172.15.0.5:5000'
     steps:
       - uses: actions/checkout@v2
@@ -64,6 +64,8 @@ jobs:
           bash -x start_ocean.sh --with-provider2 --no-dashboard 2>&1 > start_ocean.log &
           cd .. && ./scripts/waitforcontracts.sh
 
+      - name: Check running containers
+        run: docker ps -a
       - run: npm run test:unit:cover
       - run: npm run test:integration:cover
       - uses: actions/upload-artifact@v2
@@ -112,18 +114,3 @@ jobs:
           coverageLocations: |
             ${{github.workspace}}/coverage/unit/lcov.info:lcov
             ${{github.workspace}}/coverage/integration/lcov.info:lcov
-
-  publish:
-    runs-on: ubuntu-latest
-    if: startsWith( github.ref, 'refs/tags/')
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2
-        with:
-          node-version: '16'
-          registry-url: https://registry.npmjs.org/
-      - run: npm ci
-      - run: npm run build
-      - run: npm publish
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
