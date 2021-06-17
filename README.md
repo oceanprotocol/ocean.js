@@ -147,7 +147,7 @@ npm run format
 
 ## 👩‍🔬 Testing
 
-Test suite for unit & integration tests is setup with [Mocha](https://mochajs.org) as test runner, and [nyc](https://github.com/istanbuljs/nyc) for coverage reporting. A combined coverage report is sent to CodeClimate via Travis.
+Test suite for unit & integration tests is setup with [Mocha](https://mochajs.org) as test runner, and [nyc](https://github.com/istanbuljs/nyc) for coverage reporting. A combined coverage report is sent to CodeClimate via the `coverage` GitHub Actions job.
 
 Running all tests requires running Ocean Protocol components beforehand with [Barge](https://github.com/oceanprotocol/barge), which also runs a `ganache-cli` instance:
 
@@ -160,7 +160,7 @@ cd barge
 
 You can then proceed to run in another terminal.
 
-Let ocean.js know where to pickup the smart contract addresses:
+Let ocean.js know where to pickup the smart contract addresses, which has been written out by Barge in this location:
 
 ```
 export ADDRESS_FILE="${HOME}/.ocean/ocean-contracts/artifacts/address.json"
@@ -225,7 +225,7 @@ The task does the following:
 - creates a Git tag
 - commits and pushes everything
 - creates a GitHub release with commit messages as description
-- Git tag push will trigger Travis to do a npm release
+- Git tag push will trigger a GitHub Action workflow to do a npm release
 
 For the GitHub releases steps a GitHub personal access token, exported as `GITHUB_TOKEN` is required. [Setup](https://github.com/release-it/release-it#github-releases)
 
