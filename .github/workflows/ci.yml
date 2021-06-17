@@ -29,7 +29,38 @@ jobs:
       - run: npm ci
       - run: npm run lint
 
-  test:
+  test_unit:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: '16'
+      - name: Cache node_modules
+        uses: actions/cache@v2
+        env:
+          cache-name: cache-node-modules
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-test-unit-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: ${{ runner.os }}-test-unit-${{ env.cache-name }}-
+      - run: npm ci
+      - run: npm run build:metadata
+
+      - name: Run Ganache
+        run: |
+          docker pull trufflesuite/ganache-cli:latest
+          docker run -d -p 8545:8545 trufflesuite/ganache-cli:latest --mnemonic "taxi music thumb unique chat sand crew more leg another off lamp"
+          sleep 5
+
+      - run: npm run test:unit:cover
+      - uses: actions/upload-artifact@v2
+        with:
+          name: coverage
+          path: coverage/unit
+
+  test_integration:
     runs-on: ubuntu-latest
     env:
       ADDRESS_FILE: ${{ github.workspace }}/.ocean/ocean-contracts/artifacts/address.json
@@ -47,8 +78,8 @@ jobs:
           cache-name: cache-node-modules
         with:
           path: ~/.npm
-          key: ${{ runner.os }}-test-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: ${{ runner.os }}-test-${{ env.cache-name }}-
+          key: ${{ runner.os }}-test-integration-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: ${{ runner.os }}-test-integration-${{ env.cache-name }}-
       - run: npm ci
       - run: npm run build:metadata
 
@@ -82,12 +113,11 @@ jobs:
 
       - name: Check running containers
         run: docker ps -a
-      - run: npm run test:unit:cover
       - run: npm run test:integration:cover
       - uses: actions/upload-artifact@v2
         with:
           name: coverage
-          path: coverage
+          path: coverage/integration
 
   build:
     runs-on: ${{ matrix.os }}
@@ -116,7 +146,7 @@ jobs:
 
   coverage:
     runs-on: ubuntu-latest
-    needs: test
+    needs: [test_unit, test_integration]
     if: success()
     steps:
       - uses: actions/checkout@v2
