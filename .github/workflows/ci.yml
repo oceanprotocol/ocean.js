@@ -31,8 +31,8 @@ jobs:
 
   test:
     runs-on: ubuntu-latest
-    # env:
-    #   ADDRESS_FILE: ${{ github.workspace }}/.ocean/ocean-contracts/artifacts/address.json
+    env:
+      ADDRESS_FILE: ${{ github.workspace }}/.ocean/ocean-contracts/artifacts/address.json
     #   AQUARIUS_URI: 'http://172.15.0.5:5000'
 
     steps:
@@ -65,19 +65,11 @@ jobs:
           DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
           DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
 
-      # - name: Prepare ~/.ocean
-      #   run: |
-      #     mkdir "${HOME}/.ocean/" &&
-      #     mkdir "${HOME}/.ocean/ocean-contracts/" &&
-      #     mkdir "${HOME}/.ocean/ocean-contracts/artifacts" &&
-      #     touch "${HOME}/.ocean/ocean-contracts/artifacts/address.json" &&
-      #     echo "{}" >> "${HOME}/.ocean/ocean-contracts/artifacts/address.json"
-
       - name: Run Barge
         working-directory: ${{ github.workspace }}/barge
-        env:
-          # DEPLOY_CONTRACTS: 'true'
-          CONTRACTS_VERSION: v0.6.2
+        # env:
+        #   DEPLOY_CONTRACTS: 'true'
+        #   CONTRACTS_VERSION: v0.6.2
         run: |
           bash -x start_ocean.sh --with-provider2 --no-dashboard 2>&1 > start_ocean.log &
           cd .. && ./scripts/waitforcontracts.sh
