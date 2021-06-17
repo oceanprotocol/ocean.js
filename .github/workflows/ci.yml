@@ -66,6 +66,14 @@ jobs:
           DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
           DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
 
+      - name: Prepare ~/.ocean
+        run: |
+          mkdir ${{ github.workspace }}/.ocean/ &&
+          mkdir ${{ github.workspace }}/.ocean/ocean-contracts/ &&
+          mkdir ${{ github.workspace }}/.ocean/ocean-contracts/artifacts &&
+          touch ${{ github.workspace }}/.ocean/ocean-contracts/artifacts/address.json &&
+          echo "{}" >> ${{ github.workspace }}/.ocean/ocean-contracts/artifacts/address.json
+
       - name: Run Barge
         working-directory: ${{ github.workspace }}/barge
         run: |
