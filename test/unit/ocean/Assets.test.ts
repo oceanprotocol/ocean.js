@@ -23,6 +23,7 @@ describe('Assets', () => {
   let walletB: string
   let walletC: string
   const threeBoxValue = 'did:3:bafyre'
+
   beforeEach(async () => {
     const config = new ConfigHelper().getConfig('development')
     config.web3Provider = web3
@@ -107,6 +108,9 @@ describe('Assets', () => {
       timeout
     )
     ddo = await ocean.assets.create(metadata, alice, [service1])
+    assert.isDefined(ddo)
+    assert.isDefined(ddo.id)
+    assert(ddo !== null)
     console.log(ddo)
   })
 
