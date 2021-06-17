@@ -62,11 +62,14 @@ describe('Assets', () => {
       publishedDate,
       timeout
     )
+
     ddo = await ocean.assets.create(metadata, alice, [service1])
     assert.isDefined(ddo)
     assert.isDefined(ddo.id)
-    assert(ddo !== null)
-    console.log(ddo)
+
+    // const storeTx = await ocean.onChainMetadata.publish(ddo.id, ddo, alice.getId())
+    // assert(storeTx)
+    // await waitForAqua(ocean, ddo.id)
   })
 
   it('should add allow credential', async () => {

@@ -33,7 +33,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       ADDRESS_FILE: ${{ github.workspace }}/.ocean/ocean-contracts/artifacts/address.json
-      # AQUARIUS_URI: http://172.15.0.5:5000
+      AQUARIUS_URI: http://172.15.0.5:5000
       # AQUARIUS_URI: http://127.0.0.1:5000
 
     steps:
