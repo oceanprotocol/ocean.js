@@ -4,7 +4,7 @@ import spies from 'chai-spies'
 import { SearchQuery, MetadataCache } from '../../../src/metadatacache/MetadataCache'
 import { Ocean } from '../../../src/ocean/Ocean'
 import Web3 from 'web3'
-import { Account, DDO, CredentialType, ConfigHelper } from '../../../src/lib'
+import { Account, DDO, CredentialType, ConfigHelper, Metadata } from '../../../src/lib'
 import { responsify, getSearchResults } from '../helpers'
 const web3 = new Web3('http://127.0.0.1:8545')
 use(spies)
@@ -12,8 +12,6 @@ use(spies)
 describe('Assets', () => {
   let ocean: Ocean
   let metadataCache: MetadataCache
-  let asset: any
-  let owner: Account
   let alice: Account
   let bob: Account
   let charlie: Account
@@ -30,7 +28,6 @@ describe('Assets', () => {
     config.web3Provider = web3
     ocean = await Ocean.getInstance(config)
     metadataCache = ocean.metadataCache // eslint-disable-line prefer-destructuring
-    owner = (await ocean.accounts.list())[0]
     alice = (await ocean.accounts.list())[1]
     walletA = alice.getId()
     bob = (await ocean.accounts.list())[2]
@@ -78,8 +75,9 @@ describe('Assets', () => {
       assert.isDefined(assets.results[0].findServiceById)
     })
   })
-  it('Generates metadata', async () => {
-    asset = {
+
+  it('Alice creates a DDO', async () => {
+    const metadata: Metadata = {
       main: {
         type: 'dataset',
         name: 'test-dataset',
@@ -98,9 +96,7 @@ describe('Assets', () => {
         ]
       }
     }
-  })
 
-  it('Alice creates a DDO', async () => {
     const price = '10' // in datatoken
     const publishedDate = new Date(Date.now()).toISOString().split('.')[0] + 'Z'
     const timeout = 0
@@ -110,7 +106,8 @@ describe('Assets', () => {
       publishedDate,
       timeout
     )
-    ddo = await ocean.assets.create(asset, alice, [service1], null)
+    ddo = await ocean.assets.create(metadata, alice, [service1])
+    console.log(ddo)
   })
 
   it('should add allow credential', async () => {
