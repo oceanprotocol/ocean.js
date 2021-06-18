@@ -63,7 +63,6 @@ jobs:
   test_integration:
     runs-on: ubuntu-latest
     env:
-      ADDRESS_FILE: ${{ env.HOME }}/.ocean/ocean-contracts/artifacts/address.json
       AQUARIUS_URI: http://172.15.0.5:5000
       # AQUARIUS_URI: http://127.0.0.1:5000
 
@@ -82,6 +81,11 @@ jobs:
           restore-keys: ${{ runner.os }}-test-integration-${{ env.cache-name }}-
       - run: npm ci
       - run: npm run build:metadata
+
+      # Env var expansion workaround
+      # https://docs.github.com/en/actions/reference/workflow-commands-for-github-actions#setting-an-environment-variable
+      - name: Set ADDRESS_FILE
+        run: echo "ADDRESS_FILE=${HOME}/.ocean/ocean-contracts/artifacts/address.json" >> $GITHUB_ENV
 
       - name: Checkout Barge
         uses: actions/checkout@v2
@@ -116,7 +120,6 @@ jobs:
       - name: Check address.json
         run: |
           echo "via ADDRESS_FILE: " && cat ${{ env.ADDRESS_FILE }}
-          echo "via github.workspace: " && cat ${{ github.workspace }}/.ocean/ocean-contracts/artifacts/address.json
           echo "via HOME: " && cat "${HOME}/.ocean/ocean-contracts/artifacts/address.json"
 
       - run: npm run test:integration:cover
