@@ -62,9 +62,6 @@ jobs:
 
   test_integration:
     runs-on: ubuntu-latest
-    env:
-      AQUARIUS_URI: http://172.15.0.5:5000
-      # AQUARIUS_URI: http://127.0.0.1:5000
 
     steps:
       - uses: actions/checkout@v2
@@ -101,26 +98,11 @@ jobs:
           DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
           DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
 
-      # - name: Prepare ~/.ocean
-      #   run: |
-      #     mkdir ${{ env.HOME }}/.ocean/
-      #     mkdir ${{ env.HOME }}/.ocean/ocean-contracts/
-      #     mkdir ${{ env.HOME }}/.ocean/ocean-contracts/artifacts
-      #     touch ${{ env.HOME }}/.ocean/ocean-contracts/artifacts/address.json
-      #     echo "{}" >> ${{ env.HOME }}/.ocean/ocean-contracts/artifacts/address.json
-
       - name: Run Barge
         working-directory: ${{ github.workspace }}/barge
         run: |
           bash -x start_ocean.sh --with-provider2 --no-dashboard 2>&1 > start_ocean.log &
           cd .. && ./scripts/waitforcontracts.sh
-
-      - name: Check running containers
-        run: docker ps -a
-      - name: Check address.json
-        run: |
-          echo "via ADDRESS_FILE: " && cat ${{ env.ADDRESS_FILE }}
-          echo "via HOME: " && cat "${HOME}/.ocean/ocean-contracts/artifacts/address.json"
 
       - run: npm run test:integration:cover
       - uses: actions/upload-artifact@v2
@@ -162,7 +144,7 @@ jobs:
       - uses: actions/download-artifact@v2
         with:
           name: coverage
-      - uses: paambaati/codeclimate-action@v2.7.5
+      - uses: paambaati/codeclimate-action@v2.7.1
         env:
           CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_REPORTER_ID }}
         with:
