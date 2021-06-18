@@ -63,7 +63,7 @@ jobs:
   test_integration:
     runs-on: ubuntu-latest
     env:
-      ADDRESS_FILE: ${{ github.workspace }}/.ocean/ocean-contracts/artifacts/address.json
+      ADDRESS_FILE: ${{ env.HOME }}/.ocean/ocean-contracts/artifacts/address.json
       AQUARIUS_URI: http://172.15.0.5:5000
       # AQUARIUS_URI: http://127.0.0.1:5000
 
@@ -97,13 +97,13 @@ jobs:
           DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
           DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
 
-      - name: Prepare ~/.ocean
-        run: |
-          mkdir ${{ github.workspace }}/.ocean/
-          mkdir ${{ github.workspace }}/.ocean/ocean-contracts/
-          mkdir ${{ github.workspace }}/.ocean/ocean-contracts/artifacts
-          touch ${{ github.workspace }}/.ocean/ocean-contracts/artifacts/address.json
-          echo "{}" >> ${{ github.workspace }}/.ocean/ocean-contracts/artifacts/address.json
+      # - name: Prepare ~/.ocean
+      #   run: |
+      #     mkdir ${{ env.HOME }}/.ocean/
+      #     mkdir ${{ env.HOME }}/.ocean/ocean-contracts/
+      #     mkdir ${{ env.HOME }}/.ocean/ocean-contracts/artifacts
+      #     touch ${{ env.HOME }}/.ocean/ocean-contracts/artifacts/address.json
+      #     echo "{}" >> ${{ env.HOME }}/.ocean/ocean-contracts/artifacts/address.json
 
       - name: Run Barge
         working-directory: ${{ github.workspace }}/barge
