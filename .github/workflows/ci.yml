@@ -99,20 +99,26 @@ jobs:
 
       - name: Prepare ~/.ocean
         run: |
-          mkdir ${{ github.workspace }}/.ocean/ &&
-          mkdir ${{ github.workspace }}/.ocean/ocean-contracts/ &&
-          mkdir ${{ github.workspace }}/.ocean/ocean-contracts/artifacts &&
-          touch ${{ github.workspace }}/.ocean/ocean-contracts/artifacts/address.json &&
+          mkdir ${{ github.workspace }}/.ocean/
+          mkdir ${{ github.workspace }}/.ocean/ocean-contracts/
+          mkdir ${{ github.workspace }}/.ocean/ocean-contracts/artifacts
+          touch ${{ github.workspace }}/.ocean/ocean-contracts/artifacts/address.json
           echo "{}" >> ${{ github.workspace }}/.ocean/ocean-contracts/artifacts/address.json
 
       - name: Run Barge
         working-directory: ${{ github.workspace }}/barge
         run: |
-          bash -x start_ocean.sh --with-provider2 --no-dashboard 2>&1 > start_ocean.log &
+          bash -x start_ocean.sh --with-provider2 --no-dashboard 2>&1 > start_ocean.log
           cd .. && ./scripts/waitforcontracts.sh
 
       - name: Check running containers
         run: docker ps -a
+      - name: Check address.json
+        run: |
+          echo "via ADDRESS_FILE: " && cat ${{ env.ADDRESS_FILE }}
+          echo "via github.workspace: " && cat ${{ github.workspace }}/.ocean/ocean-contracts/artifacts/address.json
+          echo "via HOME: " && cat "${HOME}/.ocean/ocean-contracts/artifacts/address.json"
+
       - run: npm run test:integration:cover
       - uses: actions/upload-artifact@v2
         with:
