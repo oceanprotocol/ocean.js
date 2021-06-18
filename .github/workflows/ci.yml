@@ -58,7 +58,7 @@ jobs:
       - uses: actions/upload-artifact@v2
         with:
           name: coverage
-          path: coverage/unit
+          path: coverage/
 
   test_integration:
     runs-on: ubuntu-latest
@@ -108,7 +108,7 @@ jobs:
       - uses: actions/upload-artifact@v2
         with:
           name: coverage
-          path: coverage/integration
+          path: coverage/
 
   build:
     runs-on: ${{ matrix.os }}
@@ -144,10 +144,18 @@ jobs:
       - uses: actions/download-artifact@v2
         with:
           name: coverage
+
       - uses: paambaati/codeclimate-action@v2.7.1
         env:
           CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_REPORTER_ID }}
         with:
           coverageLocations: |
-            ${{github.workspace}}/coverage/unit/lcov.info:lcov
-            ${{github.workspace}}/coverage/integration/lcov.info:lcov
+            ${{ github.workspace }}/coverage/unit/lcov.info:lcov
+            ${{ github.workspace }}/coverage/integration/lcov.info:lcov
+
+      - name: Debug coverage output
+        run: |
+          ls -lh ${{ github.workspace }}
+          ls -lh coverage/
+          ls -lh coverage/unit/
+          ls -lh coverage/integration/
