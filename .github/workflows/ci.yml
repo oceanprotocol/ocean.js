@@ -149,13 +149,7 @@ jobs:
         env:
           CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_REPORTER_ID }}
         with:
+          coverageCommand: echo "Fake Command"
           coverageLocations: |
-            ${{ github.workspace }}/coverage/unit/lcov.info:lcov
-            ${{ github.workspace }}/coverage/integration/lcov.info:lcov
-
-      - name: Debug coverage output
-        run: |
-          ls -lh ${{ github.workspace }}
-          ls -lh coverage/
-          ls -lh coverage/unit/
-          ls -lh coverage/integration/
+            ${{ github.workspace }}/unit/lcov.info:lcov
+            ${{ github.workspace }}/integration/lcov.info:lcov
