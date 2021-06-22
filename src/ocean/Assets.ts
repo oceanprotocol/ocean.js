@@ -5,7 +5,7 @@ import { Service, ServiceAccess } from '../ddo/interfaces/Service'
 import { EditableMetadata } from '../ddo/interfaces/EditableMetadata'
 import Account from './Account'
 import DID from './DID'
-import { SubscribablePromise, didNoZeroX, didPrefixed } from '../utils'
+import { SubscribablePromise, didNoZeroX, didPrefixed, assetResolve } from '../utils'
 import { Instantiable, InstantiableConfig } from '../Instantiable.abstract'
 import { WebServiceConnector } from './utils/WebServiceConnector'
 import BigNumber from 'bignumber.js'
@@ -13,6 +13,13 @@ import { Provider } from '../provider/Provider'
 import { isAddress } from 'web3-utils'
 import { MetadataMain } from '../ddo/interfaces'
 import { TransactionReceipt } from 'web3-core'
+import {
+  CredentialType,
+  CredentialAction,
+  Credentials
+} from '../ddo/interfaces/Credentials'
+import { updateCredentialDetail, removeCredentialDetail } from './AssetsCredential'
+import { Consumable } from '../ddo/interfaces/Consumable'
 
 export enum CreateProgressStep {
   CreatingDataToken,
@@ -147,9 +154,10 @@ export class Assets extends Instantiable {
             type: 'metadata',
             attributes: {
               // Default values
-              curation: {
-                rating: 0,
-                numVotes: 0
+              status: {
+                isListed: true,
+                isRetired: false,
+                isOrderDisabled: false
               },
               // Overwrites defaults
               ...metadata,
@@ -270,8 +278,82 @@ export class Assets extends Instantiable {
       } else {
         ddo.service[i].attributes.additionalInformation.links = []
       }
+
+      if (newMetadata.status?.isOrderDisabled !== undefined) {
+        !ddo.service[i].attributes.status
+          ? (ddo.service[i].attributes.status = {
+              isOrderDisabled: newMetadata.status.isOrderDisabled
+            })
+          : (ddo.service[i].attributes.status.isOrderDisabled =
+              newMetadata.status.isOrderDisabled)
+      }
     }
     return ddo
+  }
+
+  /**
+   * Update Credentials attribute in DDO
+   * @param  {ddo} DDO
+   * @param {credentialType} CredentialType e.g. address / credentail3Box
+   * @param {allowList} string[] List of allow credential
+   * @param {denyList} string[] List of deny credential
+   * @return {Promise<DDO>} Updated DDO
+   */
+  public async updateCredentials(
+    ddo: DDO,
+    credentialType: CredentialType,
+    allowList: string[],
+    denyList: string[]
+  ): Promise<DDO> {
+    let newDDo
+    if (allowList && allowList.length > 0) {
+      newDDo = updateCredentialDetail(ddo, credentialType, allowList, 'allow')
+    } else {
+      newDDo = removeCredentialDetail(ddo, credentialType, 'allow')
+    }
+    if (denyList && denyList.length > 0) {
+      newDDo = updateCredentialDetail(ddo, credentialType, denyList, 'deny')
+    } else {
+      newDDo = removeCredentialDetail(ddo, credentialType, 'deny')
+    }
+    return newDDo
+  }
+
+  /**
+   * check if a credential can consume a dataset
+   * @param  {ddo} DDO
+   * @param {credentialType} CredentialType e.g. address / credentail3Box
+   * @param {value} string credential
+   * @return {Consumable} allowed  0 = OK , 2 - Credential not in allow list, 3 - Credential in deny list
+   */
+  public checkCredential(
+    ddo: DDO,
+    credentialType: CredentialType,
+    value: string
+  ): Consumable {
+    let status = 0
+    let message = 'All good'
+    if (ddo.credentials) {
+      if (ddo.credentials.allow && ddo.credentials.allow.length > 0) {
+        const allowList = ddo.credentials.allow.find(
+          (credentail) => credentail.type === credentialType
+        )
+        if (allowList && !allowList.value.includes(value)) {
+          status = 2
+          message = 'Credential missing from allow list'
+        }
+      }
+      if (ddo.credentials.deny && ddo.credentials.deny.length > 0) {
+        const denyList = ddo.credentials.deny.find(
+          (credentail) => credentail.type === credentialType
+        )
+        if (denyList && denyList.value.includes(value)) {
+          status = 3
+          message = 'Credential found on deny list'
+        }
+      }
+    }
+    return { status, message }
   }
 
   /**
@@ -324,18 +406,18 @@ export class Assets extends Instantiable {
 
   /**
    * Returns the creator of a asset.
-   * @param  {string} did Decentralized ID.
+   * @param  {DDO|string} asset DID Descriptor Object containing all the data related to an asset or a Decentralized identifier.
    * @return {Promise<string>} Returns eth address
    */
-  public async creator(did: string): Promise<string> {
-    const ddo = await this.resolve(did)
+  public async creator(asset: DDO | string): Promise<string> {
+    const { did, ddo } = await assetResolve(asset, this.ocean)
     const checksum = ddo.getChecksum()
     const { creator, signatureValue } = ddo.proof
     const signer = await this.ocean.utils.signature.verifyText(checksum, signatureValue)
 
     if (signer.toLowerCase() !== creator.toLowerCase()) {
       this.logger.warn(
-        `Owner of ${ddo.id} doesn't match. Expected ${creator} instead of ${signer}.`
+        `Owner of ${did} doesn't match. Expected ${creator} instead of ${signer}.`
       )
     }
 
@@ -371,9 +453,13 @@ export class Assets extends Instantiable {
     } as SearchQuery)
   }
 
-  public async getServiceByType(did: string, serviceType: string): Promise<Service> {
+  public async getServiceByType(
+    asset: DDO | string,
+    serviceType: string
+  ): Promise<Service> {
+    const { ddo } = await assetResolve(asset, this.ocean)
     let service: Service
-    const services: Service[] = (await this.resolve(did)).service
+    const services: Service[] = ddo.service
 
     services.forEach((serv) => {
       if (serv.type.toString() === serviceType) {
@@ -383,9 +469,13 @@ export class Assets extends Instantiable {
     return service
   }
 
-  public async getServiceByIndex(did: string, serviceIndex: number): Promise<Service> {
+  public async getServiceByIndex(
+    asset: DDO | string,
+    serviceIndex: number
+  ): Promise<Service> {
+    const { ddo } = await assetResolve(asset, this.ocean)
     let service: Service
-    const services: Service[] = (await this.resolve(did)).service
+    const services: Service[] = ddo.service
 
     services.forEach((serv) => {
       if (serv.index === serviceIndex) {
@@ -429,7 +519,7 @@ export class Assets extends Instantiable {
   /**
    * Initialize a service
    * Can be used to compute totalCost for ordering a service
-   * @param {String} did
+   * @param {DDO|string} asset DID Descriptor Object containing all the data related to an asset or a Decentralized identifier.
    * @param {String} serviceType
    * @param {String} consumerAddress
    * @param {Number} serviceIndex
@@ -437,7 +527,7 @@ export class Assets extends Instantiable {
    * @return {Promise<any>} Order details
    */
   public async initialize(
-    did: string,
+    asset: DDO | string,
     serviceType: string,
     consumerAddress: string,
     serviceIndex = -1,
@@ -445,7 +535,12 @@ export class Assets extends Instantiable {
   ): Promise<any> {
     const provider = await Provider.getInstance(this.instanceConfig)
     await provider.setBaseUrl(serviceEndpoint)
-    const res = await provider.initialize(did, serviceIndex, serviceType, consumerAddress)
+    const res = await provider.initialize(
+      asset,
+      serviceIndex,
+      serviceType,
+      consumerAddress
+    )
     if (res === null) return null
     const providerData = JSON.parse(res)
     return providerData
@@ -453,7 +548,7 @@ export class Assets extends Instantiable {
 
   /**
    * Orders & pays for a service
-   * @param {String} did
+   * @param {DDO|string} asset DID Descriptor Object containing all the data related to an asset or a Decentralized identifier.
    * @param {String} serviceType
    * @param {String} payerAddress
    * @param {Number} serviceIndex
@@ -462,7 +557,7 @@ export class Assets extends Instantiable {
    * @return {Promise<String>} transactionHash of the payment
    */
   public async order(
-    did: string,
+    asset: DDO | string,
     serviceType: string,
     payerAddress: string,
     serviceIndex = -1,
@@ -471,24 +566,32 @@ export class Assets extends Instantiable {
     searchPreviousOrders = true
   ): Promise<string> {
     let service: Service
+    const { ddo } = await assetResolve(asset, this.ocean)
+    const consumable = await this.isConsumable(ddo, consumerAddress)
+    if (consumable.status > 0) {
+      throw new Error(`Order asset failed, ` + consumable.message)
+    }
 
     if (!consumerAddress) consumerAddress = payerAddress
     if (serviceIndex === -1) {
-      service = await this.getServiceByType(did, serviceType)
+      service = await this.getServiceByType(ddo, serviceType)
       serviceIndex = service.index
     } else {
-      service = await this.getServiceByIndex(did, serviceIndex)
+      service = await this.getServiceByIndex(ddo, serviceIndex)
       serviceType = service.type
     }
     try {
       const providerData = await this.initialize(
-        did,
+        ddo,
         serviceType,
         payerAddress,
         serviceIndex,
         service.serviceEndpoint
       )
-      if (!providerData) return null
+      if (!providerData)
+        throw new Error(
+          `Order asset failed, Failed to initialize service to compute totalCost for ordering`
+        )
       if (searchPreviousOrders) {
         const previousOrder = await this.ocean.datatokens.getPreviousValidOrders(
           providerData.dataToken,
@@ -510,7 +613,12 @@ export class Assets extends Instantiable {
             ' but balance is ' +
             balance.toString()
         )
-        return null
+        throw new Error(
+          'ERROR: Not enough funds Needed ' +
+            totalCost.toString() +
+            ' but balance is ' +
+            balance.toString()
+        )
       }
       const txid = await this.ocean.datatokens.startOrder(
         providerData.dataToken,
@@ -522,20 +630,20 @@ export class Assets extends Instantiable {
       )
       if (txid) return txid.transactionHash
     } catch (e) {
-      this.logger.error(`ERROR: Failed to order: ${e.message}`)
+      this.logger.error(`ERROR: Failed to order a service : ${e.message}`)
+      throw new Error(`Failed to order a service: ${e.message}`)
     }
-    return null
   }
 
   // marketplace flow
   public async download(
-    did: string,
+    asset: DDO | string,
     txId: string,
     tokenAddress: string,
     consumerAccount: Account,
     destination: string
   ): Promise<string | true> {
-    const ddo = await this.resolve(did)
+    const { did, ddo } = await assetResolve(asset, this.ocean)
     const { attributes } = ddo.findServiceByType('metadata')
     const service = ddo.findServiceByType('access')
     const { files } = attributes.main
@@ -637,5 +745,32 @@ export class Assets extends Instantiable {
       } catch (e) {}
     }
     return results
+  }
+
+  /**
+   *
+   * @param {DDO} ddo
+   * @param {consumer} string
+   * @return {Promise<Consumable>}
+   */
+  public async isConsumable(ddo: DDO, consumer?: string): Promise<Consumable> {
+    let status = 0
+    let message = 'All good'
+    if (!ddo) return { status, message }
+    const metadata = ddo.findServiceByType('metadata')
+
+    if (metadata.attributes.status?.isOrderDisabled)
+      return {
+        status: 1,
+        message: 'Ordering this asset has been temporarily disabled by the publisher.'
+      }
+    if (consumer) {
+      ;({ status, message } = this.checkCredential(ddo, CredentialType.address, consumer))
+    }
+    /*
+    // return: 2, Credential missing from allow list
+    // return: 3, Credential found on deny list
+    */
+    return { status, message }
   }
 }

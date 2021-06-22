@@ -3,8 +3,7 @@ import spies from 'chai-spies'
 
 import { SearchQuery, MetadataCache } from '../../../src/metadatacache/MetadataCache'
 import { Ocean } from '../../../src/ocean/Ocean'
-import config from '../config'
-import { DDO } from '../../../src/lib'
+import { DDO, ConfigHelper } from '../../../src/lib'
 import { responsify, getSearchResults } from '../helpers'
 
 use(spies)
@@ -14,6 +13,7 @@ describe('Assets', () => {
   let metadataCache: MetadataCache
 
   beforeEach(async () => {
+    const config = new ConfigHelper().getConfig('development')
     ocean = await Ocean.getInstance(config)
     metadataCache = ocean.metadataCache // eslint-disable-line prefer-destructuring
   })

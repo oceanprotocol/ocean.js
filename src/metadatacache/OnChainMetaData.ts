@@ -75,7 +75,10 @@ export class OnChainMetadata {
     encrypt: boolean = false
   ): Promise<TransactionReceipt> {
     const rawData = await this.prepareRawData(ddo, encrypt)
-    return this.publishRaw(didZeroX(did), rawData.flags, rawData.data, consumerAccount)
+    if (!rawData) {
+      throw new Error(`Could not prepare raw data for publish`)
+    } else
+      return this.publishRaw(didZeroX(did), rawData.flags, rawData.data, consumerAccount)
   }
 
   /**
@@ -92,7 +95,10 @@ export class OnChainMetadata {
     encrypt: boolean = false
   ): Promise<TransactionReceipt> {
     const rawData = await this.prepareRawData(ddo, encrypt)
-    return this.updateRaw(didZeroX(did), rawData.flags, rawData.data, consumerAccount)
+    if (!rawData) {
+      throw new Error(`Could not prepare raw data for udate`)
+    } else
+      return this.updateRaw(didZeroX(did), rawData.flags, rawData.data, consumerAccount)
   }
 
   /**
@@ -109,17 +115,7 @@ export class OnChainMetadata {
       flags = flags | 1
       data = this.getHex(data)
     } else {
-      const blob = await this.metadataCache.encryptDDO(data)
-      try {
-        const rawBuffer = (await new Response(blob).arrayBuffer()) as any
-        data =
-          '0x' +
-          Array.prototype.map
-            .call(new Uint8Array(rawBuffer), (x) => ('00' + x.toString(16)).slice(-2))
-            .join('')
-      } catch (e) {
-        console.error(e)
-      }
+      data = await this.metadataCache.encryptDDO(data)
       if (!data) return null
       flags = flags | 2
     }

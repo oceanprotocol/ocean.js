@@ -1,5 +1,4 @@
 import { DDO } from '../ddo/DDO'
-import { MetadataAlgorithm } from '../ddo/interfaces/MetadataAlgorithm'
 import {
   Service,
   ServiceComputePrivacy,
@@ -7,7 +6,7 @@ import {
   publisherTrustedAlgorithm
 } from '../ddo/interfaces/Service'
 import Account from './Account'
-import { SubscribablePromise } from '../utils'
+import { SubscribablePromise, assetResolve, AssetResolved } from '../utils'
 import { Instantiable, InstantiableConfig } from '../Instantiable.abstract'
 import {
   ComputeOutput,
@@ -98,7 +97,7 @@ export class Compute extends Instantiable {
 
   /**
    * Start the execution of a compute job.
-   * @param  {string} did Decentralized identifer for the asset
+   * @param  {DDO|string} asset DID Descriptor Object containing all the data related to an asset or a Decentralized identifier.
    * @param  {string} txId
    * @param  {string} tokenAddress
    * @param  {Account} consumerAccount The account of the consumer ordering the service.
@@ -108,7 +107,7 @@ export class Compute extends Instantiable {
    * @return {Promise<ComputeJob>} Returns compute job ID under status.jobId
    */
   public async start(
-    did: string,
+    asset: DDO | string,
     txId: string,
     tokenAddress: string,
     consumerAccount: Account,
@@ -119,7 +118,7 @@ export class Compute extends Instantiable {
     additionalInputs?: ComputeInput[]
   ): Promise<ComputeJob> {
     output = this.checkOutput(consumerAccount, output)
-    const ddo = await this.ocean.assets.resolve(did)
+    const { did, ddo } = await assetResolve(asset, this.ocean)
     const service = ddo.findServiceByType('compute')
     const { serviceEndpoint } = service
     if (did && txId) {
@@ -145,16 +144,16 @@ export class Compute extends Instantiable {
   /**
    * Ends a running compute job.
    * @param  {Account} consumerAccount The account of the consumer ordering the service.
-   * @param  {string} did Decentralized identifier.
+   * @param  {DDO|string} asset DID Descriptor Object containing all the data related to an asset or a Decentralized identifier.
    * @param  {string} jobId The ID of the compute job to be stopped
    * @return {Promise<ComputeJob>} Returns the new status of a job
    */
   public async stop(
     consumerAccount: Account,
-    did: string,
+    asset: DDO | string,
     jobId: string
   ): Promise<ComputeJob> {
-    const ddo = await this.ocean.assets.resolve(did)
+    const { did, ddo } = await assetResolve(asset, this.ocean)
     const service = ddo.findServiceByType('compute')
     const { serviceEndpoint } = service
     const provider = await Provider.getInstance(this.instanceConfig)
@@ -167,16 +166,17 @@ export class Compute extends Instantiable {
   /**
    * Deletes a compute job and all resources associated with the job. If job is running it will be stopped first.
    * @param  {Account} consumerAccount The account of the consumer ordering the service.
-   * @param  {string} did Decentralized identifier.
+   * @param  {DDO|string} asset DID Descriptor Object containing all the data related to an asset or a Decentralized identifier.
    * @param  {string} jobId The ID of the compute job to be stopped
+   * @param  {DDO} ddo If undefined then the ddo will be fetched by did
    * @return {Promise<ComputeJob>} Returns the new status of a job
    */
   public async delete(
     consumerAccount: Account,
-    did: string,
+    asset: DDO | string,
     jobId: string
   ): Promise<ComputeJob> {
-    const ddo = await this.ocean.assets.resolve(did)
+    const { did, ddo } = await assetResolve(asset, this.ocean)
     const service = ddo.findServiceByType('compute')
     const { serviceEndpoint } = service
     const provider = await Provider.getInstance(this.instanceConfig)
@@ -241,16 +241,16 @@ export class Compute extends Instantiable {
   /**
    * Returns the final result of a specific compute job published as an asset.
    * @param  {Account} consumerAccount The account of the consumer ordering the service.
-   * @param  {string} did Decentralized identifier.
+   * @param  {DDO|string} asset DID Descriptor Object containing all the data related to an asset or a Decentralized identifier.
    * @param  {string} jobId The ID of the compute job to be stopped.
    * @return {Promise<ComputeJob>} Returns the DDO of the result asset.
    */
   public async result(
     consumerAccount: Account,
-    did: string,
+    asset: DDO | string,
     jobId: string
   ): Promise<ComputeJob> {
-    const ddo = await this.ocean.assets.resolve(did)
+    const { did, ddo } = await assetResolve(asset, this.ocean)
     const service = ddo.findServiceByType('compute')
     const { serviceEndpoint } = service
     const provider = await Provider.getInstance(this.instanceConfig)
@@ -397,10 +397,10 @@ export class Compute extends Instantiable {
 
   /**
    * Checks if an asset is orderable with a specific algorithm
-   * @param  {string} datasetDid The DID of the asset (of type `dataset`) to run the algorithm on.
+   * @param  {DDO|string} dataset DID Descriptor Object containing all the data related to an asset or a Decentralized identifier of the asset (of type `dataset`) to run the algorithm on.
    * @param  {string} serviceIndex The Service index
-   * @param  {string} algorithmDid The DID of the algorithm asset (of type `algorithm`) to run on the asset.
-   * @param  {MetaData} algorithmMeta Metadata about the algorithm being run if `algorithm` is being used. This is ignored when `algorithmDid` is specified.
+   * @param  {ComputeAlgorithm} algorithm
+   * @param  {DDO} algorithmDDO Algorithm DDO object. If undefined then the ddo will be fetched by did
    * @return {Promise<boolean>} True is you can order this
    *
    * Note:  algorithmDid and algorithmMeta are optional, but if they are not passed,
@@ -408,12 +408,13 @@ export class Compute extends Instantiable {
    * but provider will not allow the compute, due to privacy settings of the ddo
    */
   public async isOrderable(
-    datasetDid: string,
+    dataset: DDO | string,
     serviceIndex: number,
-    algorithm: ComputeAlgorithm
+    algorithm: ComputeAlgorithm,
+    algorithmDDO?: DDO
   ): Promise<boolean> {
-    const ddo: DDO = await this.ocean.assets.resolve(datasetDid)
-    const service: Service = ddo.findServiceById(serviceIndex)
+    const datasetResolved: AssetResolved = await assetResolve(dataset, this.ocean)
+    const service: Service = datasetResolved.ddo.findServiceById(serviceIndex)
     if (!service) return false
     if (service.type === 'compute') {
       if (algorithm.meta) {
@@ -426,8 +427,14 @@ export class Compute extends Instantiable {
       if (algorithm.did) {
         // check if both have compute services and then if they are served by the same provider
         if (algorithm.serviceIndex) {
-          const algoDDO: DDO = await this.ocean.assets.resolve(algorithm.did)
-          const algoService: Service = algoDDO.findServiceById(algorithm.serviceIndex)
+          if (!algorithmDDO) {
+            algorithmDDO = await this.ocean.assets.resolve(algorithm.did)
+            if (!algorithmDDO)
+              throw new Error(`Couldn't resolve the did ${algorithm.did}`)
+          }
+          const algoService: Service = algorithmDDO.findServiceById(
+            algorithm.serviceIndex
+          )
           if (algoService && algoService.type === 'compute') {
             // since both dataset & algo services are compute, we need to check if they are served by the same provider
             const algoProvider = await Provider.getInstance(this.instanceConfig)
@@ -460,7 +467,7 @@ export class Compute extends Instantiable {
               ) {
                 this.logger.error(
                   'ERROR: Algorithm container section was altered since it was added as trusted by ' +
-                    datasetDid
+                    datasetResolved.did
                 )
                 return false
               }
@@ -470,7 +477,7 @@ export class Compute extends Instantiable {
               ) {
                 this.logger.error(
                   'ERROR: Algorithm files section was altered since it was added as trusted by ' +
-                    datasetDid
+                    datasetResolved.ddo
                 )
                 return false
               }
@@ -480,7 +487,10 @@ export class Compute extends Instantiable {
           }
           // algorithmDid was not found
           this.logger.error(
-            'ERROR: Algorithm ' + algorithm.did + ' is not allowed by ' + datasetDid
+            'ERROR: Algorithm ' +
+              algorithm.did +
+              ' is not allowed by ' +
+              datasetResolved.did
           )
           return false
         }
@@ -493,7 +503,7 @@ export class Compute extends Instantiable {
   /**
    * Starts an order of a compute or access service for a compute job
    * @param  {String} consumerAccount The account of the consumer ordering the service.
-   * @param  {string} datasetDid The DID of the dataset asset (of type `dataset`) to run the algorithm on.
+   * @param  {DDO|string} dataset DID Descriptor Object containing all the data related to an asset or a Decentralized identifier of the asset (of type `dataset`) to run the algorithm on.
    * @param  {string} serviceIndex The Service index
    * @param  {string} algorithmDid The DID of the algorithm asset (of type `algorithm`) to run on the asset.
    * @param  {string} algorithmServiceIndex The index of the service in the algorithm
@@ -506,7 +516,7 @@ export class Compute extends Instantiable {
    */
   public orderAsset(
     consumerAccount: string,
-    datasetDid: string,
+    dataset: DDO | string,
     serviceIndex: number,
     algorithm: ComputeAlgorithm,
     mpAddress?: string,
@@ -514,29 +524,38 @@ export class Compute extends Instantiable {
     searchPreviousOrders = true
   ): SubscribablePromise<OrderProgressStep, string> {
     return new SubscribablePromise(async (observer) => {
+      const { ddo } = await assetResolve(dataset, this.ocean)
       // first check if we can order this
-      const allowed = await this.isOrderable(datasetDid, serviceIndex, algorithm)
-      if (!allowed) return null
-      const ddo: DDO = await this.ocean.assets.resolve(datasetDid)
+      const allowed = await this.isOrderable(ddo, serviceIndex, algorithm)
+      if (!allowed)
+        throw new Error(
+          `Dataset order failed, dataset is not orderable with the specified algorithm`
+        )
       // const service: Service = ddo.findServiceByType('compute')
       const service: Service = ddo.findServiceById(serviceIndex)
-      if (!service) return null
-      const order = await this.ocean.assets.order(
-        datasetDid,
-        service.type,
-        consumerAccount,
-        -1,
-        mpAddress,
-        computeAddress,
-        searchPreviousOrders
-      )
-      return order
+      if (!service)
+        throw new Error(`Dataset order failed, Could not find service for the DDO`)
+      try {
+        const order = await this.ocean.assets.order(
+          ddo,
+          service.type,
+          consumerAccount,
+          -1,
+          mpAddress,
+          computeAddress,
+          searchPreviousOrders
+        )
+        return order
+      } catch (error) {
+        this.logger.error(`ERROR: Failed to order: ${error.message}`)
+        throw new Error(`Failed to order dataset: ${error.message}`)
+      }
     })
   }
 
   /**
    * Orders & pays for a algorithm
-   * @param {String} did
+   * @param  {DDO|string} asset DID Descriptor Object containing all the data related to an asset or a Decentralized identifier.
    * @param {String} serviceType
    * @param {String} payerAddress
    * @param {Number} serviceIndex
@@ -545,7 +564,7 @@ export class Compute extends Instantiable {
    * @return {Promise<String>} transactionHash of the payment
    */
   public async orderAlgorithm(
-    did: string,
+    asset: DDO | string,
     serviceType: string,
     payerAddress: string,
     serviceIndex = -1,
@@ -554,15 +573,20 @@ export class Compute extends Instantiable {
     searchPreviousOrders = true
   ): Promise<string> {
     // this is only a convienince function, which calls ocean.assets.order
-    return await this.ocean.assets.order(
-      did,
-      serviceType,
-      payerAddress,
-      serviceIndex,
-      mpAddress,
-      consumerAddress,
-      searchPreviousOrders
-    )
+    try {
+      return await this.ocean.assets.order(
+        asset,
+        serviceType,
+        payerAddress,
+        serviceIndex,
+        mpAddress,
+        consumerAddress,
+        searchPreviousOrders
+      )
+    } catch (error) {
+      this.logger.error(`ERROR: Failed to orderAlgorithm: ${error.message}`)
+      throw new Error(`Failed to order algorithm: ${error.message}`)
+    }
   }
 
   /**
@@ -617,9 +641,8 @@ export class Compute extends Instantiable {
     }
     if (typeof ddo.service[serviceIndex] === 'undefined') return null
     if (ddo.service[serviceIndex].type !== 'compute') return null
-    ddo.service[
-      serviceIndex
-    ].attributes.main.privacy.allowAllPublishedAlgorithms = newState
+    ddo.service[serviceIndex].attributes.main.privacy.allowAllPublishedAlgorithms =
+      newState
     return ddo
   }
 
@@ -734,13 +757,12 @@ export class Compute extends Instantiable {
     if (ddo.service[serviceIndex].type !== 'compute') return ddo
     if (!ddo.service[serviceIndex].attributes.main.privacy.publisherTrustedAlgorithms)
       return ddo
-    ddo.service[
-      serviceIndex
-    ].attributes.main.privacy.publisherTrustedAlgorithms = ddo.service[
-      serviceIndex
-    ].attributes.main.privacy.publisherTrustedAlgorithms.filter(function (el) {
-      return el.did !== algoDid
-    })
+    ddo.service[serviceIndex].attributes.main.privacy.publisherTrustedAlgorithms =
+      ddo.service[serviceIndex].attributes.main.privacy.publisherTrustedAlgorithms.filter(
+        function (el) {
+          return el.did !== algoDid
+        }
+      )
     return ddo
   }
 }
