@@ -5,59 +5,44 @@ import { homedir } from 'os'
 import { default as DefaultContractsAddresses } from '@oceanprotocol/contracts/artifacts/address.json'
 import Logger from './Logger'
 
-export declare type ConfigHelperNetworkName =
-  | 'mainnet'
-  | 'rinkeby'
-  | 'development'
-  | string
-
-export declare type ConfigHelperNetworkId = 1 | 4 | number
-
 export interface ConfigHelperConfig extends Config {
-  networkId: ConfigHelperNetworkId
-  network: ConfigHelperNetworkName
+  networkId: number
+  network: string
   subgraphUri: string
   explorerUri: string
   oceanTokenSymbol: string
 }
 
+const configHelperNetworksBase: ConfigHelperConfig = {
+  networkId: null,
+  network: 'unknown',
+  nodeUri: 'http://localhost:8545',
+  metadataCacheUri: 'http://127.0.0.1:5000',
+  providerUri: 'http://127.0.0.1:8030',
+  subgraphUri: null,
+  explorerUri: null,
+  oceanTokenAddress: null,
+  oceanTokenSymbol: 'OCEAN',
+  factoryAddress: '0x1234',
+  poolFactoryAddress: null,
+  fixedRateExchangeAddress: null,
+  dispenserAddress: null,
+  metadataContractAddress: null,
+  startBlock: 0
+}
+
 export const configHelperNetworks: ConfigHelperConfig[] = [
   {
-    networkId: null,
-    network: 'unknown',
-    nodeUri: 'http://localhost:8545',
-    metadataCacheUri: 'http://127.0.0.1:5000',
-    providerUri: 'http://127.0.0.1:8030',
-    subgraphUri: null,
-    explorerUri: null,
-    oceanTokenAddress: null,
-    oceanTokenSymbol: 'OCEAN',
-    factoryAddress: '0x1234',
-    poolFactoryAddress: null,
-    fixedRateExchangeAddress: null,
-    dispenserAddress: null,
-    metadataContractAddress: null,
-    startBlock: 0
+    ...configHelperNetworksBase
   },
   {
     // barge
+    ...configHelperNetworksBase,
     networkId: 8996,
-    network: 'development',
-    nodeUri: 'http://localhost:8545',
-    metadataCacheUri: 'http://127.0.0.1:5000',
-    providerUri: 'http://127.0.0.1:8030',
-    subgraphUri: null,
-    explorerUri: null,
-    oceanTokenAddress: null,
-    oceanTokenSymbol: 'OCEAN',
-    factoryAddress: null,
-    poolFactoryAddress: null,
-    fixedRateExchangeAddress: null,
-    dispenserAddress: null,
-    metadataContractAddress: null,
-    startBlock: 0
+    network: 'development'
   },
   {
+    ...configHelperNetworksBase,
     networkId: 3,
     network: 'ropsten',
     nodeUri: 'https://ropsten.infura.io/v3',
@@ -65,16 +50,10 @@ export const configHelperNetworks: ConfigHelperConfig[] = [
     providerUri: 'https://provider.ropsten.oceanprotocol.com',
     subgraphUri: 'https://subgraph.ropsten.oceanprotocol.com',
     explorerUri: 'https://ropsten.etherscan.io',
-    oceanTokenAddress: null,
-    oceanTokenSymbol: 'OCEAN',
-    factoryAddress: null,
-    poolFactoryAddress: null,
-    fixedRateExchangeAddress: null,
-    dispenserAddress: null,
-    metadataContractAddress: null,
     startBlock: 9227563
   },
   {
+    ...configHelperNetworksBase,
     networkId: 4,
     network: 'rinkeby',
     nodeUri: 'https://rinkeby.infura.io/v3',
@@ -82,16 +61,10 @@ export const configHelperNetworks: ConfigHelperConfig[] = [
     providerUri: 'https://provider.rinkeby.oceanprotocol.com',
     subgraphUri: 'https://subgraph.rinkeby.oceanprotocol.com',
     explorerUri: 'https://rinkeby.etherscan.io',
-    oceanTokenAddress: null,
-    oceanTokenSymbol: 'OCEAN',
-    factoryAddress: null,
-    poolFactoryAddress: null,
-    fixedRateExchangeAddress: null,
-    dispenserAddress: null,
-    metadataContractAddress: null,
     startBlock: 7294090
   },
   {
+    ...configHelperNetworksBase,
     networkId: 1,
     network: 'mainnet',
     nodeUri: 'https://mainnet.infura.io/v3',
@@ -99,16 +72,10 @@ export const configHelperNetworks: ConfigHelperConfig[] = [
     providerUri: 'https://provider.mainnet.oceanprotocol.com',
     subgraphUri: 'https://subgraph.mainnet.oceanprotocol.com',
     explorerUri: 'https://etherscan.io',
-    oceanTokenAddress: null,
-    oceanTokenSymbol: 'OCEAN',
-    factoryAddress: null,
-    poolFactoryAddress: null,
-    fixedRateExchangeAddress: null,
-    dispenserAddress: null,
-    metadataContractAddress: null,
     startBlock: 11105459
   },
   {
+    ...configHelperNetworksBase,
     networkId: 137,
     network: 'polygon',
     nodeUri: 'https://rpc-mainnet.maticvigil.com/',
@@ -116,16 +83,11 @@ export const configHelperNetworks: ConfigHelperConfig[] = [
     providerUri: 'https://provider.polygon.oceanprotocol.com',
     subgraphUri: 'https://subgraph.polygon.oceanprotocol.com',
     explorerUri: 'https://explorer.matic.network',
-    oceanTokenAddress: null,
     oceanTokenSymbol: 'mOCEAN',
-    factoryAddress: null,
-    poolFactoryAddress: null,
-    fixedRateExchangeAddress: null,
-    dispenserAddress: null,
-    metadataContractAddress: null,
     startBlock: 11005222
   },
   {
+    ...configHelperNetworksBase,
     networkId: 1287,
     network: 'moonbeamalpha',
     nodeUri: 'https://rpc.testnet.moonbeam.network/',
@@ -133,65 +95,37 @@ export const configHelperNetworks: ConfigHelperConfig[] = [
     providerUri: 'https://provider.moonbeamalpha.oceanprotocol.com',
     subgraphUri: 'https://subgraph.moonbeamalpha.oceanprotocol.com',
     explorerUri: 'https://moonbase-blockscout.testnet.moonbeam.network/',
-    oceanTokenAddress: null,
-    oceanTokenSymbol: 'OCEAN',
-    factoryAddress: null,
-    poolFactoryAddress: null,
-    fixedRateExchangeAddress: null,
-    dispenserAddress: null,
-    metadataContractAddress: null,
     startBlock: 90707
   },
   {
+    ...configHelperNetworksBase,
     networkId: 2021000,
     network: 'gaiaxtestnet',
     nodeUri: 'https://gaia-x.rpc',
     metadataCacheUri: 'https://aquarius.gaiaxtestnet.oceanprotocol.com',
     providerUri: 'https://provider.gaiaxtestnet.oceanprotocol.com',
     subgraphUri: 'https://subgraph.gaiaxtestnet.oceanprotocol.com',
-    explorerUri: 'https://gaiaxtestnet.explorer',
-    oceanTokenAddress: null,
-    oceanTokenSymbol: 'OCEAN',
-    factoryAddress: null,
-    poolFactoryAddress: null,
-    fixedRateExchangeAddress: null,
-    dispenserAddress: null,
-    metadataContractAddress: null,
-    startBlock: 0
+    explorerUri: 'https://gaiaxtestnet.explorer'
   },
   {
+    ...configHelperNetworksBase,
     networkId: 80001,
     network: 'mumbai',
     nodeUri: 'https://polygon-mumbai.infura.io/v3/',
     metadataCacheUri: 'https://aquarius.mumbai.oceanprotocol.com',
     providerUri: 'https://provider.mumbai.oceanprotocol.com',
     subgraphUri: 'https://subgraph.mumbai.oceanprotocol.com',
-    explorerUri: 'https://explorer-mumbai.maticvigil.com/',
-    oceanTokenAddress: null,
-    oceanTokenSymbol: 'OCEAN',
-    factoryAddress: null,
-    poolFactoryAddress: null,
-    fixedRateExchangeAddress: null,
-    dispenserAddress: null,
-    metadataContractAddress: null,
-    startBlock: 0
+    explorerUri: 'https://explorer-mumbai.maticvigil.com/'
   },
   {
+    ...configHelperNetworksBase,
     networkId: 56,
     network: 'bsc',
     nodeUri: 'https://bsc-dataseed.binance.org/',
     metadataCacheUri: 'https://aquarius.bsc.oceanprotocol.com',
     providerUri: 'https://provider.bsc.oceanprotocol.com',
     subgraphUri: 'https://subgraph.bsc.oceanprotocol.com',
-    explorerUri: 'https://bscscan.com/',
-    oceanTokenAddress: null,
-    oceanTokenSymbol: 'OCEAN',
-    factoryAddress: null,
-    poolFactoryAddress: null,
-    fixedRateExchangeAddress: null,
-    dispenserAddress: null,
-    metadataContractAddress: null,
-    startBlock: 0
+    explorerUri: 'https://bscscan.com/'
   }
 ]
 
@@ -262,10 +196,7 @@ export class ConfigHelper {
     return configAddresses
   }
 
-  public getConfig(
-    network: ConfigHelperNetworkName | ConfigHelperNetworkId,
-    infuraProjectId?: string
-  ): Config {
+  public getConfig(network: string | number, infuraProjectId?: string): Config {
     const filterBy = typeof network === 'string' ? 'network' : 'networkId'
     let config = configHelperNetworks.find((c) => c[filterBy] === network)
 
