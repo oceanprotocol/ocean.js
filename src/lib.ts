@@ -5,12 +5,7 @@ import { Ocean } from './ocean/Ocean'
 import { LoggerInstance as Logger, LogLevel } from './utils/Logger'
 import { MetadataCache } from './metadatacache/MetadataCache'
 import { DataTokens } from './datatokens/Datatokens'
-import {
-  ConfigHelper,
-  ConfigHelperConfig,
-  ConfigHelperNetworkId,
-  ConfigHelperNetworkName
-} from './utils/ConfigHelper'
+import { ConfigHelper, ConfigHelperConfig } from './utils/ConfigHelper'
 
 import * as utils from './utils'
 import { Provider } from './provider/Provider'
@@ -39,7 +34,5 @@ export {
   DataTokens,
   utils,
   ConfigHelper,
-  ConfigHelperConfig,
-  ConfigHelperNetworkId,
-  ConfigHelperNetworkName
+  ConfigHelperConfig
 }
