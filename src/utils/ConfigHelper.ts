@@ -21,7 +21,7 @@ export interface ConfigHelperConfig extends Config {
   oceanTokenSymbol: string
 }
 
-const configs: ConfigHelperConfig[] = [
+export const configHelperNetworks: ConfigHelperConfig[] = [
   {
     networkId: null,
     network: 'unknown',
@@ -267,7 +267,7 @@ export class ConfigHelper {
     infuraProjectId?: string
   ): Config {
     const filterBy = typeof network === 'string' ? 'network' : 'networkId'
-    let config = configs.find((c) => c[filterBy] === network)
+    let config = configHelperNetworks.find((c) => c[filterBy] === network)
 
     if (!config) {
       Logger.error(`No config found for given network '${network}'`)
