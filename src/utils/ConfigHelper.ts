@@ -78,11 +78,11 @@ export const configHelperNetworks: ConfigHelperConfig[] = [
     ...configHelperNetworksBase,
     networkId: 137,
     network: 'polygon',
-    nodeUri: 'https://rpc-mainnet.maticvigil.com/',
+    nodeUri: 'https://polygon-mainnet.infura.io/v3/',
     metadataCacheUri: 'https://aquarius.polygon.oceanprotocol.com',
     providerUri: 'https://provider.polygon.oceanprotocol.com',
     subgraphUri: 'https://subgraph.polygon.oceanprotocol.com',
-    explorerUri: 'https://explorer.matic.network',
+    explorerUri: 'https://polygonscan.com',
     oceanTokenSymbol: 'mOCEAN',
     startBlock: 11005222
   },
