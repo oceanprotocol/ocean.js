@@ -5,7 +5,7 @@
 > JavaScript library to privately & securely publish, exchange, and consume data.
 
 [![npm](https://img.shields.io/npm/v/@oceanprotocol/lib.svg)](https://www.npmjs.com/package/@oceanprotocol/lib)
-[![Build Status](https://travis-ci.com/oceanprotocol/ocean.js.svg?token=soMi2nNfCZq19zS1Rx4i&branch=main)](https://travis-ci.com/oceanprotocol/ocean.js)
+[![Build Status](https://github.com/oceanprotocol/ocean.js/workflows/CI/badge.svg)](https://github.com/oceanprotocol/ocean.js/actions)
 [![Maintainability](https://api.codeclimate.com/v1/badges/6381c81b8ac568a53537/maintainability)](https://codeclimate.com/github/oceanprotocol/ocean.js/maintainability)
 [![Test Coverage](https://api.codeclimate.com/v1/badges/6381c81b8ac568a53537/test_coverage)](https://codeclimate.com/github/oceanprotocol/ocean.js/test_coverage)
 [![code style: prettier](https://img.shields.io/badge/code_style-prettier-7b1173.svg?style=flat-square)](https://github.com/prettier/prettier)
@@ -45,9 +45,24 @@ This is in alpha state and you can expect running into problems. If you run into
 - [🏛 License](#-license)
 
 ## 📚 Prerequisites
+
 - node.js ([Install from here](https://nodejs.org/en/download/))
-- Docker ([Managed as a non-root user](https://docs.docker.com/engine/install/linux-postinstall/)) 
-- A Unix based operating system (Mac or Linux) 
+- Docker ([Managed as a non-root user](https://docs.docker.com/engine/install/linux-postinstall/))
+- A Unix based operating system (Mac or Linux)
+
+### Note
+
+Any function that uses `getPastEvents()` will only work on Eth (see: <https://github.com/oceanprotocol/ocean.js/issues/741>). This includes:
+
+- searchPoolforDT()
+- getPoolsbyCreator()
+- getPoolSharesByAddress()
+- getAllPoolLogs()
+- getPreviousValidOrders()
+- searchforDT()
+- getExchangesbyCreator()
+- getExchangeSwaps()
+- getAllExchangesSwaps()
 
 ## 🏗 Installation
 
@@ -76,9 +91,10 @@ async function init() {
   return ocean
 }
 ```
+
 ### Beginners Guide
 
-This introduction is aimed at developers who are completely new to blockchain, no coding experience is required. 
+This introduction is aimed at developers who are completely new to blockchain, no coding experience is required.
 
 [Go to beginners guide](docs/beginners_guide.md)
 
@@ -96,15 +112,15 @@ This batteries-included flow includes metadata, multiple services for one datato
 
 ### 📖 Learn more
 
--   [Get test OCEAN](docs/get-test-OCEAN.md) - from rinkeby
--   [Understand config parameters](docs/parameters.md) - envvars vs files
--   [Learn about off-chain services](docs/services.md) - Ocean Provider for data services, Aquarius metadata store
--   [Learn about wallets](docs/wallets.md) - on generating, storing, and accessing private keys
--   [Get an overview of ocean.js](docs/overview.md) - key modules and functions
+- [Get test OCEAN](docs/get-test-OCEAN.md) - from rinkeby
+- [Understand config parameters](docs/parameters.md) - envvars vs files
+- [Learn about off-chain services](docs/services.md) - Ocean Provider for data services, Aquarius metadata store
+- [Learn about wallets](docs/wallets.md) - on generating, storing, and accessing private keys
+- [Get an overview of ocean.js](docs/overview.md) - key modules and functions
 
 If you have any difficulties with the quickstarts, or if you have further questions about how to use ocean.js please reach out to us on [Discord](https://discord.gg/TnXjkR5).
 
-If you notice any bugs or issues with Ocean.js please [open an issue on github](https://github.com/oceanprotocol/ocean.js/issues/new?assignees=&labels=bug&template=bug_report.md&title=). 
+If you notice any bugs or issues with ocean.js please [open an issue on github](https://github.com/oceanprotocol/ocean.js/issues/new?assignees=&labels=bug&template=bug_report.md&title=).
 
 ## 🦑 Development
 
@@ -131,7 +147,7 @@ npm run format
 
 ## 👩‍🔬 Testing
 
-Test suite for unit & integration tests is setup with [Mocha](https://mochajs.org) as test runner, and [nyc](https://github.com/istanbuljs/nyc) for coverage reporting. A combined coverage report is sent to CodeClimate via Travis.
+Test suite for unit & integration tests is setup with [Mocha](https://mochajs.org) as test runner, and [nyc](https://github.com/istanbuljs/nyc) for coverage reporting. A combined coverage report is sent to CodeClimate via the `coverage` GitHub Actions job.
 
 Running all tests requires running Ocean Protocol components beforehand with [Barge](https://github.com/oceanprotocol/barge), which also runs a `ganache-cli` instance:
 
@@ -144,14 +160,16 @@ cd barge
 
 You can then proceed to run in another terminal.
 
-Let ocean.js know where to pickup the smartcontract addresses:
+Let ocean.js know where to pickup the smart contract addresses, which has been written out by Barge in this location:
+
 ```
 export ADDRESS_FILE="${HOME}/.ocean/ocean-contracts/artifacts/address.json"
 ```
 
 Build metadata:
+
 ```
-npm run build
+npm run build:metadata
 ```
 
 Executing linting, type checking, unit, and integration tests with coverage reporting all in one go:
@@ -207,7 +225,7 @@ The task does the following:
 - creates a Git tag
 - commits and pushes everything
 - creates a GitHub release with commit messages as description
-- Git tag push will trigger Travis to do a npm release
+- Git tag push will trigger a GitHub Action workflow to do a npm release
 
 For the GitHub releases steps a GitHub personal access token, exported as `GITHUB_TOKEN` is required. [Setup](https://github.com/release-it/release-it#github-releases)
 
