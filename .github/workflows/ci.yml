@@ -45,15 +45,19 @@ jobs:
           path: ~/.npm
           key: ${{ runner.os }}-test-unit-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
           restore-keys: ${{ runner.os }}-test-unit-${{ env.cache-name }}-
+
+      - name: Checkout Barge
+        uses: actions/checkout@v2
+        with:
+          repository: 'oceanprotocol/barge'
+          path: 'barge'
+
+      - name: Run Ganache with Barge
+        working-directory: ${{ github.workspace }}/barge
+        run: bash -x start_ocean.sh  --no-aquarius --no-elasticsearch --no-provider --no-dashboard --skip-deploy 2>&1 > start_ocean.log
+
       - run: npm ci
       - run: npm run build:metadata
-
-      - name: Run Ganache
-        run: |
-          docker pull trufflesuite/ganache-cli:latest
-          docker run -d -p 8545:8545 trufflesuite/ganache-cli:latest --mnemonic "taxi music thumb unique chat sand crew more leg another off lamp"
-          sleep 5
-
       - run: npm run test:unit:cover
       - uses: actions/upload-artifact@v2
         with:
