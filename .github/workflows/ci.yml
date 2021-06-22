@@ -46,30 +46,15 @@ jobs:
           key: ${{ runner.os }}-test-unit-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
           restore-keys: ${{ runner.os }}-test-unit-${{ env.cache-name }}-
 
-      # Env var expansion workaround
-      # https://docs.github.com/en/actions/reference/workflow-commands-for-github-actions#setting-an-environment-variable
-      - name: Set ADDRESS_FILE
-        run: echo "ADDRESS_FILE=${HOME}/.ocean/ocean-contracts/artifacts/address.json" >> $GITHUB_ENV
-
       - name: Checkout Barge
         uses: actions/checkout@v2
         with:
           repository: 'oceanprotocol/barge'
           path: 'barge'
 
-      - name: Login to Docker Hub
-        if: ${{ env.DOCKERHUB_PASSWORD && env.DOCKERHUB_USERNAME }}
-        run: |
-          echo "Login to Docker Hub";echo "$DOCKERHUB_PASSWORD" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
-        env:
-          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
-          DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
-
-      - name: Run Barge
+      - name: Run Ganache with Barge
         working-directory: ${{ github.workspace }}/barge
-        run: |
-          bash -x start_ocean.sh  --no-aquarius --no-elasticsearch --no-provider --no-dashboard --skip-deploy 2>&1 > start_ocean.log &
-          cd ..
+        run: bash -x start_ocean.sh  --no-aquarius --no-elasticsearch --no-provider --no-dashboard --skip-deploy 2>&1 > start_ocean.log
 
       - run: npm ci
       - run: npm run build:metadata
