@@ -7,6 +7,7 @@ import jsonpoolABI from '@oceanprotocol/contracts/artifacts/BPool.json'
 import defaultDatatokensABI from '@oceanprotocol/contracts/artifacts/DataTokenTemplate.json'
 import { PoolFactory } from './PoolFactory'
 import Decimal from 'decimal.js'
+import reduceDecimals from '../utils/Decimals'
 
 const MaxUint256 =
   '115792089237316195423570985008687907853269984665640564039457584007913129639934'
@@ -242,13 +243,13 @@ export class Pool extends PoolFactory {
           account,
           token.address,
           poolAddress,
-          this.web3.utils.toWei(`${token.amount}`)
+          this.web3.utils.toWei(reduceDecimals(`${token.amount}`))
         )
         await pool.methods
           .bind(
             token.address,
-            this.web3.utils.toWei(token.amount),
-            this.web3.utils.toWei(token.weight)
+            this.web3.utils.toWei(reduceDecimals(token.amount)),
+            this.web3.utils.toWei(reduceDecimals(token.weight))
           )
           .send({
             from: account,
@@ -277,11 +278,13 @@ export class Pool extends PoolFactory {
     })
     let result = null
     try {
-      result = await pool.methods.setSwapFee(this.web3.utils.toWei(fee)).send({
-        from: account,
-        gas: this.GASLIMIT_DEFAULT,
-        gasPrice: await getFairGasPrice(this.web3)
-      })
+      result = await pool.methods
+        .setSwapFee(this.web3.utils.toWei(reduceDecimals(fee)))
+        .send({
+          from: account,
+          gas: this.GASLIMIT_DEFAULT,
+          gasPrice: await getFairGasPrice(this.web3)
+        })
     } catch (e) {
       this.logger.error(`ERROR: Failed to set pool swap fee: ${e.message}`)
     }
@@ -570,10 +573,10 @@ export class Pool extends PoolFactory {
       estGas = await pool.methods
         .swapExactAmountIn(
           tokenIn,
-          this.web3.utils.toWei(tokenAmountIn),
+          this.web3.utils.toWei(reduceDecimals(tokenAmountIn)),
           tokenOut,
-          this.web3.utils.toWei(minAmountOut),
-          maxPrice ? this.web3.utils.toWei(maxPrice) : MaxUint256
+          this.web3.utils.toWei(reduceDecimals(minAmountOut)),
+          maxPrice ? this.web3.utils.toWei(reduceDecimals(maxPrice)) : MaxUint256
         )
         .estimateGas({ from: account }, (err, estGas) => (err ? gasLimitDefault : estGas))
     } catch (e) {
@@ -585,10 +588,10 @@ export class Pool extends PoolFactory {
       result = await pool.methods
         .swapExactAmountIn(
           tokenIn,
-          this.web3.utils.toWei(tokenAmountIn),
+          this.web3.utils.toWei(reduceDecimals(tokenAmountIn)),
           tokenOut,
-          this.web3.utils.toWei(minAmountOut),
-          maxPrice ? this.web3.utils.toWei(maxPrice) : MaxUint256
+          this.web3.utils.toWei(reduceDecimals(minAmountOut)),
+          maxPrice ? this.web3.utils.toWei(reduceDecimals(maxPrice)) : MaxUint256
         )
         .send({
           from: account,
@@ -631,10 +634,10 @@ export class Pool extends PoolFactory {
       estGas = await pool.methods
         .swapExactAmountOut(
           tokenIn,
-          this.web3.utils.toWei(maxAmountIn),
+          this.web3.utils.toWei(reduceDecimals(maxAmountIn)),
           tokenOut,
-          this.web3.utils.toWei(minAmountOut),
-          maxPrice ? this.web3.utils.toWei(maxPrice) : MaxUint256
+          this.web3.utils.toWei(reduceDecimals(minAmountOut)),
+          maxPrice ? this.web3.utils.toWei(reduceDecimals(maxPrice)) : MaxUint256
         )
         .estimateGas({ from: account }, (err, estGas) => (err ? gasLimitDefault : estGas))
     } catch (e) {
@@ -646,10 +649,10 @@ export class Pool extends PoolFactory {
       result = await pool.methods
         .swapExactAmountOut(
           tokenIn,
-          this.web3.utils.toWei(maxAmountIn),
+          this.web3.utils.toWei(reduceDecimals(maxAmountIn)),
           tokenOut,
-          this.web3.utils.toWei(minAmountOut),
-          maxPrice ? this.web3.utils.toWei(maxPrice) : MaxUint256
+          this.web3.utils.toWei(reduceDecimals(minAmountOut)),
+          maxPrice ? this.web3.utils.toWei(reduceDecimals(maxPrice)) : MaxUint256
         )
         .send({
           from: account,
@@ -684,7 +687,7 @@ export class Pool extends PoolFactory {
     let amount: string
 
     for (amount of maxAmountsIn) {
-      weiMaxAmountsIn.push(this.web3.utils.toWei(amount))
+      weiMaxAmountsIn.push(this.web3.utils.toWei(reduceDecimals(amount)))
     }
 
     let result = null
@@ -692,14 +695,14 @@ export class Pool extends PoolFactory {
     let estGas
     try {
       estGas = await pool.methods
-        .joinPool(this.web3.utils.toWei(poolAmountOut), weiMaxAmountsIn)
+        .joinPool(this.web3.utils.toWei(reduceDecimals(poolAmountOut)), weiMaxAmountsIn)
         .estimateGas({ from: account }, (err, estGas) => (err ? gasLimitDefault : estGas))
     } catch (e) {
       estGas = gasLimitDefault
     }
     try {
       result = await pool.methods
-        .joinPool(this.web3.utils.toWei(poolAmountOut), weiMaxAmountsIn)
+        .joinPool(this.web3.utils.toWei(reduceDecimals(poolAmountOut)), weiMaxAmountsIn)
         .send({
           from: account,
           gas: estGas + 1,
@@ -732,21 +735,21 @@ export class Pool extends PoolFactory {
     let amount: string
 
     for (amount of minAmountsOut) {
-      weiMinAmountsOut.push(this.web3.utils.toWei(amount))
+      weiMinAmountsOut.push(this.web3.utils.toWei(reduceDecimals(amount)))
     }
     let result = null
     const gasLimitDefault = this.GASLIMIT_DEFAULT
     let estGas
     try {
       estGas = await pool.methods
-        .exitPool(this.web3.utils.toWei(poolAmountIn), weiMinAmountsOut)
+        .exitPool(this.web3.utils.toWei(reduceDecimals(poolAmountIn)), weiMinAmountsOut)
         .estimateGas({ from: account }, (err, estGas) => (err ? gasLimitDefault : estGas))
     } catch (e) {
       estGas = gasLimitDefault
     }
     try {
       result = await pool.methods
-        .exitPool(this.web3.utils.toWei(poolAmountIn), weiMinAmountsOut)
+        .exitPool(this.web3.utils.toWei(reduceDecimals(poolAmountIn)), weiMinAmountsOut)
         .send({ from: account, gas: estGas, gasPrice: await getFairGasPrice(this.web3) })
     } catch (e) {
       this.logger.error(`ERROR: Failed to exit pool: ${e.message}`)
@@ -780,8 +783,8 @@ export class Pool extends PoolFactory {
       estGas = await pool.methods
         .joinswapExternAmountIn(
           tokenIn,
-          this.web3.utils.toWei(tokenAmountIn),
-          this.web3.utils.toWei(minPoolAmountOut)
+          this.web3.utils.toWei(reduceDecimals(tokenAmountIn)),
+          this.web3.utils.toWei(reduceDecimals(minPoolAmountOut))
         )
         .estimateGas({ from: account }, (err, estGas) => (err ? gasLimitDefault : estGas))
     } catch (e) {
@@ -791,8 +794,8 @@ export class Pool extends PoolFactory {
       result = await pool.methods
         .joinswapExternAmountIn(
           tokenIn,
-          this.web3.utils.toWei(tokenAmountIn),
-          this.web3.utils.toWei(minPoolAmountOut)
+          this.web3.utils.toWei(reduceDecimals(tokenAmountIn)),
+          this.web3.utils.toWei(reduceDecimals(minPoolAmountOut))
         )
         .send({
           from: account,
@@ -832,8 +835,8 @@ export class Pool extends PoolFactory {
       estGas = await pool.methods
         .joinswapPoolAmountOut(
           tokenIn,
-          this.web3.utils.toWei(poolAmountOut),
-          this.web3.utils.toWei(maxAmountIn)
+          this.web3.utils.toWei(reduceDecimals(poolAmountOut)),
+          this.web3.utils.toWei(reduceDecimals(maxAmountIn))
         )
         .estimateGas({ from: account }, (err, estGas) => (err ? gasLimitDefault : estGas))
     } catch (e) {
@@ -843,8 +846,8 @@ export class Pool extends PoolFactory {
       result = await pool.methods
         .joinswapPoolAmountOut(
           tokenIn,
-          this.web3.utils.toWei(poolAmountOut),
-          this.web3.utils.toWei(maxAmountIn)
+          this.web3.utils.toWei(reduceDecimals(poolAmountOut)),
+          this.web3.utils.toWei(reduceDecimals(maxAmountIn))
         )
         .send({
           from: account,
@@ -883,8 +886,8 @@ export class Pool extends PoolFactory {
       estGas = await pool.methods
         .exitswapPoolAmountIn(
           tokenOut,
-          this.web3.utils.toWei(poolAmountIn),
-          this.web3.utils.toWei(minTokenAmountOut)
+          this.web3.utils.toWei(reduceDecimals(poolAmountIn)),
+          this.web3.utils.toWei(reduceDecimals(minTokenAmountOut))
         )
         .estimateGas({ from: account }, (err, estGas) => (err ? gasLimitDefault : estGas))
     } catch (e) {
@@ -894,8 +897,8 @@ export class Pool extends PoolFactory {
       result = await pool.methods
         .exitswapPoolAmountIn(
           tokenOut,
-          this.web3.utils.toWei(poolAmountIn),
-          this.web3.utils.toWei(minTokenAmountOut)
+          this.web3.utils.toWei(reduceDecimals(poolAmountIn)),
+          this.web3.utils.toWei(reduceDecimals(minTokenAmountOut))
         )
         .send({
           from: account,
@@ -936,8 +939,8 @@ export class Pool extends PoolFactory {
       estGas = await pool.methods
         .exitswapExternAmountOut(
           tokenOut,
-          this.web3.utils.toWei(tokenAmountOut),
-          this.web3.utils.toWei(maxPoolAmountIn)
+          this.web3.utils.toWei(reduceDecimals(tokenAmountOut)),
+          this.web3.utils.toWei(reduceDecimals(maxPoolAmountIn))
         )
         .estimateGas({ from: account }, (err, estGas) => (err ? gasLimitDefault : estGas))
     } catch (e) {
@@ -948,8 +951,8 @@ export class Pool extends PoolFactory {
       result = await pool.methods
         .exitswapExternAmountOut(
           tokenOut,
-          this.web3.utils.toWei(tokenAmountOut),
-          this.web3.utils.toWei(maxPoolAmountIn)
+          this.web3.utils.toWei(reduceDecimals(tokenAmountOut)),
+          this.web3.utils.toWei(reduceDecimals(maxPoolAmountIn))
         )
         .send({
           from: account,
@@ -1021,11 +1024,11 @@ export class Pool extends PoolFactory {
     try {
       const result = await pool.methods
         .calcSpotPrice(
-          this.web3.utils.toWei(tokenBalanceIn),
-          this.web3.utils.toWei(tokenWeightIn),
-          this.web3.utils.toWei(tokenBalanceOut),
-          this.web3.utils.toWei(tokenWeightOut),
-          this.web3.utils.toWei(swapFee)
+          this.web3.utils.toWei(reduceDecimals(tokenBalanceIn)),
+          this.web3.utils.toWei(reduceDecimals(tokenWeightIn)),
+          this.web3.utils.toWei(reduceDecimals(tokenBalanceOut)),
+          this.web3.utils.toWei(reduceDecimals(tokenWeightOut)),
+          this.web3.utils.toWei(reduceDecimals(swapFee))
         )
         .call()
       amount = this.web3.utils.fromWei(result)
@@ -1050,12 +1053,12 @@ export class Pool extends PoolFactory {
     try {
       const result = await pool.methods
         .calcInGivenOut(
-          this.web3.utils.toWei(tokenBalanceIn),
-          this.web3.utils.toWei(tokenWeightIn),
-          this.web3.utils.toWei(tokenBalanceOut),
-          this.web3.utils.toWei(tokenWeightOut),
-          this.web3.utils.toWei(tokenAmountOut),
-          this.web3.utils.toWei(swapFee)
+          this.web3.utils.toWei(reduceDecimals(tokenBalanceIn)),
+          this.web3.utils.toWei(reduceDecimals(tokenWeightIn)),
+          this.web3.utils.toWei(reduceDecimals(tokenBalanceOut)),
+          this.web3.utils.toWei(reduceDecimals(tokenWeightOut)),
+          this.web3.utils.toWei(reduceDecimals(tokenAmountOut)),
+          this.web3.utils.toWei(reduceDecimals(swapFee))
         )
         .call()
       amount = this.web3.utils.fromWei(result)
@@ -1079,12 +1082,12 @@ export class Pool extends PoolFactory {
     try {
       const result = await pool.methods
         .calcOutGivenIn(
-          this.web3.utils.toWei(tokenBalanceIn),
-          this.web3.utils.toWei(tokenWeightIn),
-          this.web3.utils.toWei(tokenBalanceOut),
-          this.web3.utils.toWei(tokenWeightOut),
-          this.web3.utils.toWei(tokenAmountIn),
-          this.web3.utils.toWei(swapFee)
+          this.web3.utils.toWei(reduceDecimals(tokenBalanceIn)),
+          this.web3.utils.toWei(reduceDecimals(tokenWeightIn)),
+          this.web3.utils.toWei(reduceDecimals(tokenBalanceOut)),
+          this.web3.utils.toWei(reduceDecimals(tokenWeightOut)),
+          this.web3.utils.toWei(reduceDecimals(tokenAmountIn)),
+          this.web3.utils.toWei(reduceDecimals(swapFee))
         )
         .call()
       amount = this.web3.utils.fromWei(result)
@@ -1108,12 +1111,12 @@ export class Pool extends PoolFactory {
     try {
       const result = await pool.methods
         .calcPoolOutGivenSingleIn(
-          this.web3.utils.toWei(tokenBalanceIn),
-          this.web3.utils.toWei(tokenWeightIn),
-          this.web3.utils.toWei(poolSupply),
-          this.web3.utils.toWei(totalWeight),
-          this.web3.utils.toWei(tokenAmountIn),
-          this.web3.utils.toWei(swapFee)
+          this.web3.utils.toWei(reduceDecimals(tokenBalanceIn)),
+          this.web3.utils.toWei(reduceDecimals(tokenWeightIn)),
+          this.web3.utils.toWei(reduceDecimals(poolSupply)),
+          this.web3.utils.toWei(reduceDecimals(totalWeight)),
+          this.web3.utils.toWei(reduceDecimals(tokenAmountIn)),
+          this.web3.utils.toWei(reduceDecimals(swapFee))
         )
         .call()
       amount = this.web3.utils.fromWei(result)
@@ -1137,12 +1140,12 @@ export class Pool extends PoolFactory {
     try {
       const result = await pool.methods
         .calcSingleInGivenPoolOut(
-          this.web3.utils.toWei(tokenBalanceIn),
-          this.web3.utils.toWei(tokenWeightIn),
-          this.web3.utils.toWei(poolSupply),
-          this.web3.utils.toWei(totalWeight),
-          this.web3.utils.toWei(poolAmountOut),
-          this.web3.utils.toWei(swapFee)
+          this.web3.utils.toWei(reduceDecimals(tokenBalanceIn)),
+          this.web3.utils.toWei(reduceDecimals(tokenWeightIn)),
+          this.web3.utils.toWei(reduceDecimals(poolSupply)),
+          this.web3.utils.toWei(reduceDecimals(totalWeight)),
+          this.web3.utils.toWei(reduceDecimals(poolAmountOut)),
+          this.web3.utils.toWei(reduceDecimals(swapFee))
         )
         .call()
       amount = this.web3.utils.fromWei(result)
@@ -1166,12 +1169,12 @@ export class Pool extends PoolFactory {
     try {
       const result = await pool.methods
         .calcSingleOutGivenPoolIn(
-          this.web3.utils.toWei(tokenBalanceOut),
-          this.web3.utils.toWei(tokenWeightOut),
-          this.web3.utils.toWei(poolSupply),
-          this.web3.utils.toWei(totalWeight),
-          this.web3.utils.toWei(poolAmountIn),
-          this.web3.utils.toWei(swapFee)
+          this.web3.utils.toWei(reduceDecimals(tokenBalanceOut)),
+          this.web3.utils.toWei(reduceDecimals(tokenWeightOut)),
+          this.web3.utils.toWei(reduceDecimals(poolSupply)),
+          this.web3.utils.toWei(reduceDecimals(totalWeight)),
+          this.web3.utils.toWei(reduceDecimals(poolAmountIn)),
+          this.web3.utils.toWei(reduceDecimals(swapFee))
         )
         .call()
       amount = this.web3.utils.fromWei(result)
@@ -1195,12 +1198,12 @@ export class Pool extends PoolFactory {
     try {
       const result = await pool.methods
         .calcPoolInGivenSingleOut(
-          this.web3.utils.toWei(tokenBalanceOut),
-          this.web3.utils.toWei(tokenWeightOut),
-          this.web3.utils.toWei(poolSupply),
-          this.web3.utils.toWei(totalWeight),
-          this.web3.utils.toWei(tokenAmountOut),
-          this.web3.utils.toWei(swapFee)
+          this.web3.utils.toWei(reduceDecimals(tokenBalanceOut)),
+          this.web3.utils.toWei(reduceDecimals(tokenWeightOut)),
+          this.web3.utils.toWei(reduceDecimals(poolSupply)),
+          this.web3.utils.toWei(reduceDecimals(totalWeight)),
+          this.web3.utils.toWei(reduceDecimals(tokenAmountOut)),
+          this.web3.utils.toWei(reduceDecimals(swapFee))
         )
         .call()
       amount = this.web3.utils.fromWei(result)

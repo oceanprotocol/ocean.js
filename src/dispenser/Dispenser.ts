@@ -6,6 +6,7 @@ import Web3 from 'web3'
 import { SubscribablePromise, Logger, getFairGasPrice } from '../utils'
 import { DataTokens } from '../datatokens/Datatokens'
 import Decimal from 'decimal.js'
+import reduceDecimals from '../utils/Decimals'
 
 export interface DispenserToken {
   active: boolean
@@ -107,8 +108,8 @@ export class OceanDispenser {
       estGas = await this.contract.methods
         .activate(
           dataToken,
-          this.web3.utils.toWei(maxTokens),
-          this.web3.utils.toWei(maxBalance)
+          this.web3.utils.toWei(reduceDecimals(maxTokens)),
+          this.web3.utils.toWei(reduceDecimals(maxBalance))
         )
         .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
     } catch (e) {
@@ -119,8 +120,8 @@ export class OceanDispenser {
       trxReceipt = await this.contract.methods
         .activate(
           dataToken,
-          this.web3.utils.toWei(maxTokens),
-          this.web3.utils.toWei(maxBalance)
+          this.web3.utils.toWei(reduceDecimals(maxTokens)),
+          this.web3.utils.toWei(reduceDecimals(maxBalance))
         )
         .send({
           from: address,
@@ -269,7 +270,7 @@ export class OceanDispenser {
     const gasLimitDefault = this.GASLIMIT_DEFAULT
     try {
       estGas = await this.contract.methods
-        .dispense(dataToken, this.web3.utils.toWei(amount))
+        .dispense(dataToken, this.web3.utils.toWei(reduceDecimals(amount)))
         .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
     } catch (e) {
       estGas = gasLimitDefault
@@ -277,7 +278,7 @@ export class OceanDispenser {
     let trxReceipt = null
     try {
       trxReceipt = await this.contract.methods
-        .dispense(dataToken, this.web3.utils.toWei(amount))
+        .dispense(dataToken, this.web3.utils.toWei(reduceDecimals(amount)))
         .send({
           from: address,
           gas: estGas + 1,
