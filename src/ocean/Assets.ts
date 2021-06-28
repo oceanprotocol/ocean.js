@@ -333,6 +333,7 @@ export class Assets extends Instantiable {
   ): Consumable {
     let status = 0
     let message = 'All good'
+    let result = true
     if (ddo.credentials) {
       if (ddo.credentials.allow && ddo.credentials.allow.length > 0) {
         const allowList = ddo.credentials.allow.find(
@@ -340,7 +341,8 @@ export class Assets extends Instantiable {
         )
         if (allowList && !allowList.value.includes(value)) {
           status = 2
-          message = 'Credential missing from allow list'
+          message = 'Access is denied, your wallet address is not found on allow list'
+          result = false
         }
       }
       if (ddo.credentials.deny && ddo.credentials.deny.length > 0) {
@@ -349,11 +351,12 @@ export class Assets extends Instantiable {
         )
         if (denyList && denyList.value.includes(value)) {
           status = 3
-          message = 'Credential found on deny list'
+          message = 'Access is denied, your wallet address is found on deny list'
+          result = false
         }
       }
     }
-    return { status, message }
+    return { status, message, result }
   }
 
   /**
@@ -568,7 +571,7 @@ export class Assets extends Instantiable {
     let service: Service
     const { ddo } = await assetResolve(asset, this.ocean)
     const consumable = await this.isConsumable(ddo, consumerAddress)
-    if (consumable.status > 0) {
+    if (!consumable.result) {
       throw new Error(`Order asset failed, ` + consumable.message)
     }
 
@@ -756,21 +759,27 @@ export class Assets extends Instantiable {
   public async isConsumable(ddo: DDO, consumer?: string): Promise<Consumable> {
     let status = 0
     let message = 'All good'
-    if (!ddo) return { status, message }
+    let result = true
+    if (!ddo) return { status, message, result }
     const metadata = ddo.findServiceByType('metadata')
 
     if (metadata.attributes.status?.isOrderDisabled)
       return {
         status: 1,
-        message: 'Ordering this asset has been temporarily disabled by the publisher.'
+        message: 'Ordering this asset has been temporarily disabled by the publisher.',
+        result: false
       }
     if (consumer) {
-      ;({ status, message } = this.checkCredential(ddo, CredentialType.address, consumer))
+      ;({ status, message, result } = this.checkCredential(
+        ddo,
+        CredentialType.address,
+        consumer
+      ))
     }
     /*
-    // return: 2, Credential missing from allow list
-    // return: 3, Credential found on deny list
+    // return: 2, Access is denied, your wallet address is not found on allow list
+    // return: 3, Access is denied, your wallet address is found on deny list
     */
-    return { status, message }
+    return { status, message, result }
   }
 }

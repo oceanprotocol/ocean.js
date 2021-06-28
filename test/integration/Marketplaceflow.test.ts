@@ -546,6 +546,7 @@ describe('Marketplace flow', () => {
     const response = await ocean.assets.isConsumable(ddo)
     assert(response !== null)
     assert(response.status === 0)
+    assert(response.result === true)
   })
 
   it('Alice should update her asset and set isOrderDisabled = true', async () => {
@@ -569,6 +570,7 @@ describe('Marketplace flow', () => {
     const response = await ocean.assets.isConsumable(ddo)
     assert(response !== null)
     assert(response.status === 1)
+    assert(response.result === false)
   })
 
   it('Alice should create a FRE pricing for her asset', async () => {
@@ -676,29 +678,37 @@ describe('Marketplace flow', () => {
     const ddoWithAllowList = await ocean.assets.resolve(ddoWithCredentialsAllowList.id)
     let consumable = await ocean.assets.isConsumable(ddoWithAllowList, bob.getId())
     assert(consumable.status === 0)
+    assert(consumable.result === true)
     consumable = await ocean.assets.isConsumable(ddoWithCredentials, bob.getId())
     assert(consumable.status === 0)
+    assert(consumable.result === true)
   })
 
   it('Bob should be able to consume an asset with deny list, because he is not on that list', async () => {
     const ddoWithDenyList = await ocean.assets.resolve(ddoWithCredentialsDenyList.id)
     let consumable = await ocean.assets.isConsumable(ddoWithDenyList, bob.getId())
     assert(consumable.status === 0)
+    assert(consumable.result === true)
     consumable = await ocean.assets.isConsumable(ddoWithCredentials, bob.getId())
     assert(consumable.status === 0)
+    assert(consumable.result === true)
   })
   it('Charlie should not be able to consume an asset with allow list, because he is not on that list', async () => {
     const ddoWithAllowList = await ocean.assets.resolve(ddoWithCredentialsAllowList.id)
     let consumable = await ocean.assets.isConsumable(ddoWithAllowList, charlie.getId())
     assert(consumable.status === 2)
+    assert(consumable.result === false)
     consumable = await ocean.assets.isConsumable(ddoWithCredentials, charlie.getId())
     assert(consumable.status === 3)
+    assert(consumable.result === false)
   })
   it('Charlie should not be able to consume an asset with deny list, because he is on that list', async () => {
     const ddoWithDenyList = await ocean.assets.resolve(ddoWithCredentialsDenyList.id)
     let consumable = await ocean.assets.isConsumable(ddoWithDenyList, charlie.getId())
     assert(consumable.status === 3)
+    assert(consumable.result === false)
     consumable = await ocean.assets.isConsumable(ddoWithCredentials, charlie.getId())
     assert(consumable.status === 3)
+    assert(consumable.result === false)
   })
 })
