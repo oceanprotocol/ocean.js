@@ -478,6 +478,7 @@ describe('Compute flow', () => {
         type: 'algorithm',
         name: 'Test Algo',
         dateCreated: dateCreated,
+        datePublished: dateCreated,
         author: 'DevOps',
         license: 'CC-BY',
         files: [
@@ -530,6 +531,7 @@ describe('Compute flow', () => {
         type: 'algorithm',
         name: 'Test Algo with Compute',
         dateCreated: dateCreated,
+        datePublished: dateCreated,
         author: 'DevOps',
         license: 'CC-BY',
         files: [
@@ -591,6 +593,7 @@ describe('Compute flow', () => {
         type: 'algorithm',
         name: 'Remote Algorithm',
         dateCreated: dateCreated,
+        datePublished: dateCreated,
         author: 'DevOps',
         license: 'CC-BY',
         files: [
@@ -655,6 +658,7 @@ describe('Compute flow', () => {
         type: 'algorithm',
         name: 'Remote Algorithm',
         dateCreated: dateCreated,
+        datePublished: dateCreated,
         author: 'DevOps',
         license: 'CC-BY',
         files: [
