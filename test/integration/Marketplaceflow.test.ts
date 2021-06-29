@@ -166,7 +166,7 @@ describe('Marketplace flow', () => {
         license: 'MIT',
         files: [
           {
-            index:0,
+            index: 0,
             url: 'https://s3.amazonaws.com/testfiles.oceanprotocol.com/info.0.json',
             checksum: 'efb2c764274b745f5fc37f97c6b0e761',
             contentLength: '4535431',
