@@ -257,7 +257,10 @@ describe('Marketplace flow', () => {
       }
     }
   })
-
+  it('Should validate local metadata', async () => {
+    const valid = await ocean.metadataCache.validateMetadata(asset)
+    assert(valid.valid, 'This metadata should be valid')
+  })
   it('Should invalidate invalid local metadata', async () => {
     const valid = await ocean.metadataCache.validateMetadata(assetInvalidNoName)
     assert(!valid.valid, 'This metadata should be invalid')
