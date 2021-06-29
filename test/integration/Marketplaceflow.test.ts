@@ -162,11 +162,11 @@ describe('Marketplace flow', () => {
         type: 'dataset',
         name: 'test-dataset',
         dateCreated: new Date(Date.now()).toISOString().split('.')[0] + 'Z', // remove milliseconds
-        datePublished: new Date(Date.now()).toISOString().split('.')[0] + 'Z', // remove milliseconds
         author: 'oceanprotocol-team',
         license: 'MIT',
         files: [
           {
+            index:0,
             url: 'https://s3.amazonaws.com/testfiles.oceanprotocol.com/info.0.json',
             checksum: 'efb2c764274b745f5fc37f97c6b0e761',
             contentLength: '4535431',
@@ -275,6 +275,7 @@ describe('Marketplace flow', () => {
       publishedDate,
       timeout
     )
+    asset.main.datePublished = asset.main.dateCreated
     ddo = await ocean.assets.create(asset, alice, [service1], tokenAddress)
     assert(ddo.dataToken === tokenAddress)
     const storeTx = await ocean.onChainMetadata.publish(ddo.id, ddo, alice.getId())
