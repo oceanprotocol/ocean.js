@@ -10,3 +10,8 @@ export interface Metadata {
   curation?: Curation
   status?: Status
 }
+
+export interface ValidateMetadata {
+  valid: Boolean
+  errors?: Object
+}

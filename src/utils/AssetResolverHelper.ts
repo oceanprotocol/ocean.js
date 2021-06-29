@@ -6,7 +6,7 @@ export interface AssetResolved {
   ddo: DDO
 }
 
-function isDdo(arg: any): arg is DDO {
+export function isDdo(arg: any): arg is DDO {
   return arg.id !== undefined
 }
 
