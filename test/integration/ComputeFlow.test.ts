@@ -241,6 +241,7 @@ describe('Compute flow', () => {
         type: 'dataset',
         name: 'UK Weather information 2011',
         dateCreated: dateCreated,
+        datePublished: dateCreated,
         author: 'Met Office',
         license: 'CC-BY',
         files: [
