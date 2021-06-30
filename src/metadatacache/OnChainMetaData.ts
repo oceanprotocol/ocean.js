@@ -66,14 +66,23 @@ export class OnChainMetadata {
    * @param {String} did
    * @param {DDO} ddo
    * @param {String} consumerAccount
+   * @param {Boolean} encrypt If the DDO should be encrypted
+   * @param {Boolean} validate If the DDO should be validated against Aqua prior to publish
    * @return {Promise<TransactionReceipt>} exchangeId
    */
   public async publish(
     did: string,
     ddo: DDO,
     consumerAccount: string,
-    encrypt: boolean = false
+    encrypt: boolean = false,
+    validate: boolean = true
   ): Promise<TransactionReceipt> {
+    if (validate) {
+      const valid = await this.metadataCache.validateMetadata(ddo)
+      if (!valid.valid) {
+        throw new Error(`DDO has failed validation`)
+      }
+    }
     const rawData = await this.prepareRawData(ddo, encrypt)
     if (!rawData) {
       throw new Error(`Could not prepare raw data for publish`)
@@ -86,14 +95,23 @@ export class OnChainMetadata {
    * @param {String} did
    * @param {DDO} ddo
    * @param {String} consumerAccount
+   * @param {Boolean} encrypt If the DDO should be encrypted
+   * @param {Boolean} validate If the DDO should be validated against Aqua prior to publish
    * @return {Promise<TransactionReceipt>} exchangeId
    */
   public async update(
     did: string,
     ddo: DDO,
     consumerAccount: string,
-    encrypt: boolean = false
+    encrypt: boolean = false,
+    validate: boolean = true
   ): Promise<TransactionReceipt> {
+    if (validate) {
+      const valid = await this.metadataCache.validateMetadata(ddo)
+      if (!valid.valid) {
+        throw new Error(`DDO has failed validation`)
+      }
+    }
     const rawData = await this.prepareRawData(ddo, encrypt)
     if (!rawData) {
       throw new Error(`Could not prepare raw data for udate`)

@@ -60,6 +60,7 @@ describe('Marketplace flow', () => {
   let assetWithPool
   let assetWithBadUrl
   let assetWithEncrypt
+  let assetInvalidNoName
   let marketplace: Account
   let contracts: TestContractHandler
   let datatoken: DataTokens
@@ -67,6 +68,7 @@ describe('Marketplace flow', () => {
   let tokenAddressWithPool: string
   let tokenAddressForBadUrlAsset: string
   let tokenAddressEncrypted: string
+  let tokenAddressInvalidNoName: string
   let service1: ServiceAccess
   let price: string
   let ocean: Ocean
@@ -143,6 +145,15 @@ describe('Marketplace flow', () => {
       'AliceDT',
       'DTA'
     )
+    assert(tokenAddressEncrypted != null)
+    tokenAddressInvalidNoName = await datatoken.create(
+      blob,
+      alice.getId(),
+      '10000000000',
+      'AliceDT',
+      'DTA'
+    )
+    assert(tokenAddressInvalidNoName != null)
   })
 
   it('Generates metadata', async () => {
@@ -155,6 +166,7 @@ describe('Marketplace flow', () => {
         license: 'MIT',
         files: [
           {
+            index: 0,
             url: 'https://s3.amazonaws.com/testfiles.oceanprotocol.com/info.0.json',
             checksum: 'efb2c764274b745f5fc37f97c6b0e761',
             contentLength: '4535431',
@@ -170,6 +182,7 @@ describe('Marketplace flow', () => {
         type: 'dataset',
         name: 'test-dataset-with-pools',
         dateCreated: new Date(Date.now()).toISOString().split('.')[0] + 'Z', // remove milliseconds
+        datePublished: new Date(Date.now()).toISOString().split('.')[0] + 'Z', // remove milliseconds
         author: 'oceanprotocol-team',
         license: 'MIT',
         files: [
@@ -189,6 +202,7 @@ describe('Marketplace flow', () => {
         type: 'dataset encrypted',
         name: 'test-dataset-encrypted',
         dateCreated: new Date(Date.now()).toISOString().split('.')[0] + 'Z', // remove milliseconds
+        datePublished: new Date(Date.now()).toISOString().split('.')[0] + 'Z', // remove milliseconds
         author: 'oceanprotocol-team',
         license: 'MIT',
         files: [
@@ -208,6 +222,26 @@ describe('Marketplace flow', () => {
         type: 'datasetWithBadUrl',
         name: 'test-dataset-withBadUrl',
         dateCreated: new Date(Date.now()).toISOString().split('.')[0] + 'Z', // remove milliseconds
+        datePublished: new Date(Date.now()).toISOString().split('.')[0] + 'Z', // remove milliseconds
+        author: 'oceanprotocol-team',
+        license: 'MIT',
+        files: [
+          {
+            url: 'https://s3.amazonaws.com/testfiles.oceanprotocol.com/nosuchfile',
+            checksum: 'efb2c764274b745f5fc37f97c6b0e761',
+            contentLength: '4535431',
+            contentType: 'text/csv',
+            encoding: 'UTF-8',
+            compression: 'zip'
+          }
+        ]
+      }
+    }
+    assetInvalidNoName = {
+      main: {
+        type: 'datasetInvalid',
+        dateCreated: new Date(Date.now()).toISOString().split('.')[0] + 'Z', // remove milliseconds
+        datePublished: new Date(Date.now()).toISOString().split('.')[0] + 'Z', // remove milliseconds
         author: 'oceanprotocol-team',
         license: 'MIT',
         files: [
@@ -223,7 +257,14 @@ describe('Marketplace flow', () => {
       }
     }
   })
-
+  it('Should validate local metadata', async () => {
+    const valid = await ocean.metadataCache.validateMetadata(asset)
+    assert(valid.valid, 'This metadata should be valid')
+  })
+  it('Should invalidate invalid local metadata', async () => {
+    const valid = await ocean.metadataCache.validateMetadata(assetInvalidNoName)
+    assert(!valid.valid, 'This metadata should be invalid')
+  })
   it('Alice publishes all datasets', async () => {
     price = '10' // in datatoken
     const publishedDate = new Date(Date.now()).toISOString().split('.')[0] + 'Z'
@@ -234,6 +275,7 @@ describe('Marketplace flow', () => {
       publishedDate,
       timeout
     )
+    asset.main.datePublished = asset.main.dateCreated
     ddo = await ocean.assets.create(asset, alice, [service1], tokenAddress)
     assert(ddo.dataToken === tokenAddress)
     const storeTx = await ocean.onChainMetadata.publish(ddo.id, ddo, alice.getId())
@@ -329,6 +371,38 @@ describe('Marketplace flow', () => {
     await waitForAqua(ocean, ddoWithCredentialsAllowList.id)
     await waitForAqua(ocean, ddoWithCredentialsDenyList.id)
     await waitForAqua(ocean, ddoWithCredentials.id)
+  })
+
+  it('Alice should fail to publish invalid dataset', async () => {
+    price = '10' // in datatoken
+    const publishedDate = new Date(Date.now()).toISOString().split('.')[0] + 'Z'
+    const timeout = 0
+    service1 = await ocean.assets.createAccessServiceAttributes(
+      alice,
+      price,
+      publishedDate,
+      timeout
+    )
+    const invalidDdo = await ocean.assets.create(
+      assetInvalidNoName,
+      alice,
+      [service1],
+      tokenAddressInvalidNoName
+    )
+    assert(invalidDdo.dataToken === tokenAddressInvalidNoName)
+    let storeTx
+    try {
+      storeTx = await ocean.onChainMetadata.publish(
+        invalidDdo.id,
+        invalidDdo,
+        alice.getId()
+      )
+    } catch (e) {
+      console.error(e)
+      storeTx = null
+    }
+    console.error(storeTx)
+    assert(!storeTx, 'Alice should not be able to publish invalid datasets')
   })
 
   it('Marketplace should resolve asset using DID', async () => {

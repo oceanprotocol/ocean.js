@@ -1,9 +1,10 @@
 import { DDO } from '../ddo/DDO'
 import DID from '../ocean/DID'
 import { EditableMetadata } from '../ddo/interfaces/EditableMetadata'
-import { Logger } from '../utils'
+import { Logger, isDdo } from '../utils'
 import { WebServiceConnector } from '../ocean/utils/WebServiceConnector'
 import { Response } from 'node-fetch'
+import { Metadata, ValidateMetadata } from '../ddo/interfaces'
 
 const apiPath = '/api/v1/aquarius/assets/ddo'
 
@@ -162,6 +163,39 @@ export class MetadataCache {
       })
 
     return result
+  }
+
+  /**
+   * Validate Metadata
+   * @param  {Metadata} metadata  metadata to be validated. If it's a Metadata, it will be validated agains the local schema. Else, it's validated agains the remote schema
+   * @return {Promise<Boolean|Object>}  Result.
+   */
+
+  public async validateMetadata(metadata: Metadata | DDO): Promise<ValidateMetadata> {
+    const status: ValidateMetadata = {
+      valid: false
+    }
+    const path = isDdo(metadata) ? '/validate-remote' : '/validate'
+    try {
+      const response = await this.fetch.post(
+        `${this.url}${apiPath}${path}`,
+        JSON.stringify(metadata)
+      )
+      if (response.ok) {
+        const errors = await response.json()
+        if (errors === true) status.valid = true
+        else status.errors = errors
+      } else {
+        this.logger.error(
+          'validate Metadata failed:',
+          response.status,
+          response.statusText
+        )
+      }
+    } catch (error) {
+      this.logger.error('Error validating metadata: ', error)
+    }
+    return status
   }
 
   /**

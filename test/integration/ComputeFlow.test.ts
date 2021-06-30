@@ -241,6 +241,7 @@ describe('Compute flow', () => {
         type: 'dataset',
         name: 'UK Weather information 2011',
         dateCreated: dateCreated,
+        datePublished: dateCreated,
         author: 'Met Office',
         license: 'CC-BY',
         files: [
@@ -477,6 +478,7 @@ describe('Compute flow', () => {
         type: 'algorithm',
         name: 'Test Algo',
         dateCreated: dateCreated,
+        datePublished: dateCreated,
         author: 'DevOps',
         license: 'CC-BY',
         files: [
@@ -529,6 +531,7 @@ describe('Compute flow', () => {
         type: 'algorithm',
         name: 'Test Algo with Compute',
         dateCreated: dateCreated,
+        datePublished: dateCreated,
         author: 'DevOps',
         license: 'CC-BY',
         files: [
@@ -590,6 +593,7 @@ describe('Compute flow', () => {
         type: 'algorithm',
         name: 'Remote Algorithm',
         dateCreated: dateCreated,
+        datePublished: dateCreated,
         author: 'DevOps',
         license: 'CC-BY',
         files: [
@@ -654,6 +658,7 @@ describe('Compute flow', () => {
         type: 'algorithm',
         name: 'Remote Algorithm',
         dateCreated: dateCreated,
+        datePublished: dateCreated,
         author: 'DevOps',
         license: 'CC-BY',
         files: [
