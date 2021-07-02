@@ -124,7 +124,7 @@ export class OceanFixedRateExchange {
       let trxReceipt = null
       try {
         trxReceipt = await this.contract.methods
-          .create(this.oceanAddress, dataToken, this.web3.utils.toWei(rate))
+          .create(baseToken, dataToken, this.web3.utils.toWei(rate))
           .send({
             from: address,
             gas: estGas + 1,
