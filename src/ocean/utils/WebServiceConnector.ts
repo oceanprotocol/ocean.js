@@ -49,13 +49,20 @@ export class WebServiceConnector {
   }
 
   public get(url: string): Promise<Response> {
-    return this.fetch(url, {
-      method: 'GET',
-      headers: {
-        'Content-type': 'application/json'
-      },
-      signal: timeoutSignal(5000)
-    })
+    let res
+    try {
+      res = this.fetch(url, {
+        method: 'GET',
+        headers: {
+          'Content-type': 'application/json'
+        },
+        signal: timeoutSignal(5000)
+      })
+    } catch (error) {
+      this.logger.error(`Error B`, error)
+      throw new Error(`Error B ${error}`)
+    }
+    return res
   }
 
   public put(url: string, payload: BodyInit): Promise<Response> {
@@ -146,11 +153,17 @@ export class WebServiceConnector {
   }
 
   private async fetch(url: string, opts: RequestInit): Promise<Response> {
-    const result = await fetch(url, opts)
+    let result
+    try {
+      result = await fetch(url, opts)
+    } catch (error) {
+      this.logger.error(`Response message 2: \n${await result.text()}`)
+      throw new Error(`Final error: ${await result.text()}`)
+    }
     if (!result.ok) {
       this.logger.error(`Error requesting [${opts.method}] ${url}`)
-      this.logger.error(`Response message: \n${await result.text()}`)
-      throw result
+      this.logger.error(`Response message 3: \n${await result.text()}`)
+      throw new Error(`ERROR A: ${await result.text()}`)
     }
     return result
   }

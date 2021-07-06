@@ -533,16 +533,25 @@ export class Assets extends Instantiable {
     serviceIndex = -1,
     serviceEndpoint: string
   ): Promise<any> {
+    this.logger.error('12.2')
     const provider = await Provider.getInstance(this.instanceConfig)
+    this.logger.error('12.3')
     await provider.setBaseUrl(serviceEndpoint)
-    const res = await provider.initialize(
-      asset,
-      serviceIndex,
-      serviceType,
-      consumerAddress
-    )
+    this.logger.error('12.4')
+    let res
+    try {
+      res = await provider.initialize(asset, serviceIndex, serviceType, consumerAddress)
+    } catch (error) {
+      this.logger.error('12.45')
+      this.logger.error(`Error 12`, error)
+      throw new Error(error)
+    }
+
+    this.logger.error('12.5')
     if (res === null) return null
+    this.logger.error('12.6')
     const providerData = JSON.parse(res)
+    this.logger.error('12.7')
     return providerData
   }
 
@@ -566,33 +575,55 @@ export class Assets extends Instantiable {
     searchPreviousOrders = true
   ): Promise<string> {
     let service: Service
+    this.logger.error('1')
     const { ddo } = await assetResolve(asset, this.ocean)
+    this.logger.error('2')
     const consumable = await this.isConsumable(ddo, consumerAddress)
+    this.logger.error('3')
     if (consumable.status > 0) {
+      this.logger.error('4')
       throw new Error(`Order asset failed, ` + consumable.message)
     }
 
     if (!consumerAddress) consumerAddress = payerAddress
+    this.logger.error('5')
     if (serviceIndex === -1) {
+      this.logger.error('6')
       service = await this.getServiceByType(ddo, serviceType)
+      this.logger.error('7')
       serviceIndex = service.index
+      this.logger.error('8')
     } else {
+      this.logger.error('9')
       service = await this.getServiceByIndex(ddo, serviceIndex)
+      this.logger.error('10')
       serviceType = service.type
+      this.logger.error('11')
     }
     try {
-      const providerData = await this.initialize(
-        ddo,
-        serviceType,
-        payerAddress,
-        serviceIndex,
-        service.serviceEndpoint
-      )
+      this.logger.error('12')
+      let providerData;
+      try {
+        providerData = await this.initialize(
+          ddo,
+          serviceType,
+          payerAddress,
+          serviceIndex,
+          service.serviceEndpoint
+        )
+      } catch (error) {
+        this.logger.error('12.1')
+        this.logger.error(error)
+        throw new Error(`Asset URL not found or not available. ERROR: ${error}`)
+      }
+
+      this.logger.error('13')
       if (!providerData)
         throw new Error(
           `Order asset failed, Failed to initialize service to compute totalCost for ordering`
         )
       if (searchPreviousOrders) {
+        this.logger.error('14')
         const previousOrder = await this.ocean.datatokens.getPreviousValidOrders(
           providerData.dataToken,
           providerData.numTokens,
@@ -600,13 +631,18 @@ export class Assets extends Instantiable {
           service.attributes.main.timeout,
           consumerAddress
         )
+        this.logger.error('15')
         if (previousOrder) return previousOrder
       }
+      this.logger.error('16')
       const balance = new BigNumber(
         await this.ocean.datatokens.balance(providerData.dataToken, payerAddress)
       )
+      this.logger.error('17')
       const totalCost = new BigNumber(String(providerData.numTokens))
+      this.logger.error('18')
       if (balance.isLessThan(totalCost)) {
+        this.logger.error('19')
         this.logger.error(
           'ERROR: Not enough funds Needed ' +
             totalCost.toString() +
@@ -620,6 +656,7 @@ export class Assets extends Instantiable {
             balance.toString()
         )
       }
+      this.logger.error('20')
       const txid = await this.ocean.datatokens.startOrder(
         providerData.dataToken,
         consumerAddress,
@@ -628,10 +665,11 @@ export class Assets extends Instantiable {
         mpAddress,
         payerAddress
       )
+      this.logger.error('21')
       if (txid) return txid.transactionHash
     } catch (e) {
       this.logger.error(`ERROR: Failed to order a service : ${e.message}`)
-      throw new Error(`Failed to order a service: ${e.message}`)
+      throw new Error(`${e.message}`)
     }
   }
 
