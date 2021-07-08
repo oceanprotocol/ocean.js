@@ -539,7 +539,6 @@ export class Assets extends Instantiable {
     try {
       res = await provider.initialize(asset, serviceIndex, serviceType, consumerAddress)
     } catch (error) {
-      this.logger.error(`Error 12`, error)
       throw new Error(error)
     }
 

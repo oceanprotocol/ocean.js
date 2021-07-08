@@ -204,8 +204,8 @@ export class Provider extends Instantiable {
       const response = await this.ocean.utils.fetch.get(initializeUrl)
       return await response.text()
     } catch (e) {
-      this.logger.error(`ERROR 13`, e)
-      throw new Error(e)
+      this.logger.error(e)
+      throw new Error('Asset URL not found or not available.')
     }
   }
 
