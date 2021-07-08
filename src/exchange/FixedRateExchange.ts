@@ -89,13 +89,31 @@ export class OceanFixedRateExchange {
     address: string,
     amount?: string
   ): SubscribablePromise<FixedRateCreateProgressStep, TransactionReceipt> {
+    return this.createExchange(this.oceanAddress, dataToken, rate, address, amount)
+  }
+
+  /**
+   * Creates new exchange pair between Ocean Token and data token.
+   * @param {String} dataToken Data Token Contract Address
+   * @param {Number} rate exchange rate
+   * @param {String} address User address
+   * @param {String} amount Optional, amount of datatokens to be approved for the exchange
+   * @return {Promise<TransactionReceipt>} TransactionReceipt
+   */
+  public createExchange(
+    baseToken: string,
+    dataToken: string,
+    rate: string,
+    address: string,
+    amount?: string
+  ): SubscribablePromise<FixedRateCreateProgressStep, TransactionReceipt> {
     return new SubscribablePromise(async (observer) => {
       observer.next(FixedRateCreateProgressStep.CreatingExchange)
       let estGas
       const gasLimitDefault = this.GASLIMIT_DEFAULT
       try {
         estGas = await this.contract.methods
-          .create(this.oceanAddress, dataToken, this.web3.utils.toWei(rate))
+          .create(baseToken, dataToken, this.web3.utils.toWei(rate))
           .estimateGas({ from: address }, (err, estGas) =>
             err ? gasLimitDefault : estGas
           )
@@ -106,7 +124,7 @@ export class OceanFixedRateExchange {
       let trxReceipt = null
       try {
         trxReceipt = await this.contract.methods
-          .create(this.oceanAddress, dataToken, this.web3.utils.toWei(rate))
+          .create(baseToken, dataToken, this.web3.utils.toWei(rate))
           .send({
             from: address,
             gas: estGas + 1,

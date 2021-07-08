@@ -65,6 +65,8 @@ export class DDO {
 
   public credentials?: Credentials
 
+  public chainId?: number
+
   public constructor(ddo: Partial<DDO> = {}) {
     Object.assign(this, ddo, {
       created: (ddo && ddo.created) || new Date().toISOString().replace(/\.[0-9]{3}/, '')

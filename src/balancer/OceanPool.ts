@@ -182,7 +182,8 @@ export class OceanPool extends Pool {
     if (tokens != null)
       for (token of tokens) {
         // TODO: Potential timing attack, left side: true
-        if (token !== this.oceanAddress) this.dtAddress = token
+        if (token.toLowerCase() !== this.oceanAddress.toLowerCase())
+          this.dtAddress = token
       }
     return this.dtAddress
   }
