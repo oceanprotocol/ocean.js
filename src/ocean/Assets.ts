@@ -634,7 +634,7 @@ export class Assets extends Instantiable {
       if (txid) return txid.transactionHash
     } catch (e) {
       this.logger.error(`ERROR: Failed to order a service : ${e.message}`)
-      throw new Error(`Failed to order a service: ${e.message}`)
+      throw new Error(`${e.message}`)
     }
   }
 
