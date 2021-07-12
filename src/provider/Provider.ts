@@ -205,7 +205,7 @@ export class Provider extends Instantiable {
       return await response.text()
     } catch (e) {
       this.logger.error(e)
-      throw new Error('HTTP request failed')
+      throw new Error('Asset URL not found or not available.')
     }
   }
 
