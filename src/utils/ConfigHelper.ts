@@ -105,7 +105,7 @@ export const configHelperNetworks: ConfigHelperConfig[] = [
     metadataCacheUri: 'https://aquarius.gaiaxtestnet.oceanprotocol.com',
     providerUri: 'https://provider.gaiaxtestnet.oceanprotocol.com',
     subgraphUri: 'https://subgraph.gaiaxtestnet.oceanprotocol.com',
-    explorerUri: 'https://gaiaxtestnet.explorer'
+    explorerUri: 'https://blockscout.gaiaxtestnet.oceanprotocol.com'
   },
   {
     ...configHelperNetworksBase,
