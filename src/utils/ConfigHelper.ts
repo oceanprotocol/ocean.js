@@ -115,7 +115,7 @@ export const configHelperNetworks: ConfigHelperConfig[] = [
     metadataCacheUri: 'https://aquarius.mumbai.oceanprotocol.com',
     providerUri: 'https://provider.mumbai.oceanprotocol.com',
     subgraphUri: 'https://subgraph.mumbai.oceanprotocol.com',
-    explorerUri: 'https://explorer-mumbai.maticvigil.com/'
+    explorerUri: 'https://mumbai.polygonscan.com'
   },
   {
     ...configHelperNetworksBase,
