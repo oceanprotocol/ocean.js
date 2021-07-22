@@ -1,6 +1,6 @@
 import { Instantiable, InstantiableConfig } from '../Instantiable.abstract'
 import { AbiItem } from 'web3-utils/types'
-
+import Decimal from 'decimal.js'
 /**
  * Account information.
  */
@@ -110,7 +110,7 @@ export default class Account extends Instantiable {
         from: this.id
       })
       const balance = await token.methods.balanceOf(this.id).call()
-      result = (balance / 10 ** decimals).toString()
+      result = new Decimal(balance).div(10 ** decimals).toString()
     } catch (e) {
       this.logger.error(`ERROR: Failed to get the balance: ${e.message}`)
     }
