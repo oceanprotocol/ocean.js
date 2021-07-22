@@ -110,7 +110,7 @@ export default class Account extends Instantiable {
         from: this.id
       })
       const balance = await token.methods.balanceOf(this.id).call()
-      result = balance / 10 ** decimals
+      result = (balance / 10 ** decimals).toString()
     } catch (e) {
       this.logger.error(`ERROR: Failed to get the balance: ${e.message}`)
     }
