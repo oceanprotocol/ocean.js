@@ -104,16 +104,45 @@ export default class Account extends Instantiable {
     ] as AbiItem[]
 
     let result = null
+    const decimals = await this.getTokenDecimals(TokenAdress)
+    try {
+      const token = new this.web3.eth.Contract(minABI, TokenAdress, {
+        from: this.id
+      })
+      const balance = await token.methods.balanceOf(this.id).call()
+      result = balance.div(10 ** decimals).toString()
+    } catch (e) {
+      this.logger.error(`ERROR: Failed to get the balance: ${e.message}`)
+    }
+    return result
+  }
+
+  /**
+   * Decimals of Any Token
+   * @return {Promise<number>}
+   */
+  public async getTokenDecimals(TokenAdress: string): Promise<number> {
+    let decimals = 18
+    if (TokenAdress === null) return decimals
+    const minABI = [
+      {
+        constant: true,
+        inputs: [],
+        name: 'decimals',
+        outputs: [{ name: '', type: 'uint8' }],
+        type: 'function'
+      }
+    ] as AbiItem[]
 
     try {
       const token = new this.web3.eth.Contract(minABI, TokenAdress, {
         from: this.id
       })
-      result = this.web3.utils.fromWei(await token.methods.balanceOf(this.id).call())
+      decimals = await token.methods.decimals().call()
     } catch (e) {
-      this.logger.error(`ERROR: Failed to get the balance: ${e.message}`)
+      this.logger.error(`ERROR: Failed to get decimals : ${e.message}`)
     }
-    return result
+    return decimals
   }
 
   /**
