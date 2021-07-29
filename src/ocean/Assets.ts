@@ -268,6 +268,7 @@ export class Assets extends Instantiable {
     for (let i = 0; i < ddo.service.length; i++) {
       if (ddo.service[i].type !== 'metadata') continue
       if (newMetadata.title) ddo.service[i].attributes.main.name = newMetadata.title
+      if (newMetadata.author) ddo.service[i].attributes.main.author = newMetadata.author
       if (!ddo.service[i].attributes.additionalInformation)
         ddo.service[i].attributes.additionalInformation = Object()
       if (newMetadata.description)
