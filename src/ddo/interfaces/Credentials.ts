@@ -1,6 +1,7 @@
 export enum CredentialType {
   address = 'address',
-  credential3Box = 'credential3Box'
+  credential3Box = 'credential3Box',
+  domain = 'domain'
 }
 
 export type CredentialAction = 'allow' | 'deny'
