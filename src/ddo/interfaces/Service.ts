@@ -1,12 +1,27 @@
 import { Metadata } from './Metadata'
 import { Status } from './Status'
 
-export type ServiceType = 'authorization' | 'metadata' | 'access' | 'compute'
+export interface CustomData {
+  name: string
+  type: string
+  label: string
+  required: boolean
+  options?: any
+  description: string
+}
 
+export interface RequiredData {
+  userdata?: CustomData[]
+  algodata?: CustomData[]
+}
+
+export type ServiceType = 'authorization' | 'metadata' | 'access' | 'compute'
 export interface ServiceCommonAttributes {
   main: { [key: string]: any }
   additionalInformation?: { [key: string]: any }
   status?: Status
+  userdata?: CustomData[]
+  algodata?: CustomData[]
 }
 
 export interface ServiceCommon {
@@ -33,9 +48,9 @@ export interface publisherTrustedAlgorithm {
 }
 
 export interface ServiceComputePrivacy {
-  allowRawAlgorithm: boolean
-  allowNetworkAccess: boolean
-  allowAllPublishedAlgorithms: boolean
+  allowRawAlgorithm?: boolean
+  allowNetworkAccess?: boolean
+  allowAllPublishedAlgorithms?: boolean
   publisherTrustedAlgorithms?: publisherTrustedAlgorithm[]
 }
 

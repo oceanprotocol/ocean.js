@@ -3,7 +3,8 @@ import {
   Service,
   ServiceComputePrivacy,
   ServiceCompute,
-  publisherTrustedAlgorithm
+  publisherTrustedAlgorithm,
+  RequiredData
 } from '../ddo/interfaces/Service'
 import Account from './Account'
 import { SubscribablePromise, assetResolve, AssetResolved } from '../utils'
@@ -121,6 +122,18 @@ export class Compute extends Instantiable {
     const { did, ddo } = await assetResolve(asset, this.ocean)
     const service = ddo.findServiceByType('compute')
     const { serviceEndpoint } = service
+    if (algorithm.serviceIndex) {
+      const { did, ddo } = await assetResolve(algorithm.did, this.ocean)
+      const algoService: Service = ddo.findServiceById(algorithm.serviceIndex)
+      if (
+        !(await this.ocean.assets.isCustomDataValid(
+          algoService.attributes.algodata,
+          algorithm.algoData
+        ))
+      ) {
+        return null
+      }
+    }
     if (did && txId) {
       const provider = await Provider.getInstance(this.instanceConfig)
       await provider.setBaseUrl(serviceEndpoint)
@@ -343,11 +356,12 @@ export class Compute extends Instantiable {
     providerAttributes: any,
     computePrivacy?: ServiceComputePrivacy,
     timeout?: number,
-    providerUri?: string
+    providerUri?: string,
+    requiredData?: RequiredData
   ): ServiceCompute {
     const name = 'dataAssetComputingService'
     if (!timeout) timeout = 3600
-    const service = {
+    const service: ServiceCompute = {
       type: 'compute',
       index: 3,
       serviceEndpoint: providerUri || this.ocean.provider.url,
@@ -365,6 +379,10 @@ export class Compute extends Instantiable {
     }
 
     if (computePrivacy) service.attributes.main.privacy = computePrivacy
+    if (requiredData && requiredData.userdata)
+      service.attributes.userdata = requiredData.userdata
+    if (requiredData && requiredData.algodata)
+      service.attributes.algodata = requiredData.algodata
     return service as ServiceCompute
   }
 
@@ -521,6 +539,7 @@ export class Compute extends Instantiable {
     algorithm: ComputeAlgorithm,
     mpAddress?: string,
     computeAddress?: string,
+    userData?: { [key: string]: any },
     searchPreviousOrders = true
   ): SubscribablePromise<OrderProgressStep, string> {
     return new SubscribablePromise(async (observer) => {
@@ -543,6 +562,7 @@ export class Compute extends Instantiable {
           -1,
           mpAddress,
           computeAddress,
+          userData,
           searchPreviousOrders
         )
         return order
@@ -570,6 +590,7 @@ export class Compute extends Instantiable {
     serviceIndex = -1,
     mpAddress?: string,
     consumerAddress?: string,
+    userData?: { [key: string]: any },
     searchPreviousOrders = true
   ): Promise<string> {
     // this is only a convienince function, which calls ocean.assets.order
@@ -581,6 +602,7 @@ export class Compute extends Instantiable {
         serviceIndex,
         mpAddress,
         consumerAddress,
+        userData,
         searchPreviousOrders
       )
     } catch (error) {

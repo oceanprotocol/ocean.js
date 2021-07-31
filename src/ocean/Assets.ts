@@ -1,7 +1,12 @@
 import { SearchQuery, QueryResult } from '../metadatacache/MetadataCache'
 import { DDO } from '../ddo/DDO'
 import { Metadata } from '../ddo/interfaces/Metadata'
-import { Service, ServiceAccess } from '../ddo/interfaces/Service'
+import {
+  Service,
+  ServiceAccess,
+  CustomData,
+  RequiredData
+} from '../ddo/interfaces/Service'
 import { EditableMetadata } from '../ddo/interfaces/EditableMetadata'
 import Account from './Account'
 import DID from './DID'
@@ -501,9 +506,10 @@ export class Assets extends Instantiable {
     cost: string,
     datePublished: string,
     timeout = 0,
-    providerUri?: string
+    providerUri?: string,
+    requiredData?: RequiredData
   ): Promise<ServiceAccess> {
-    return {
+    const service: ServiceAccess = {
       type: 'access',
       index: 2,
       serviceEndpoint: providerUri || this.ocean.provider.url,
@@ -517,6 +523,11 @@ export class Assets extends Instantiable {
         }
       }
     }
+    if (requiredData && requiredData.userdata)
+      service.attributes.userdata = requiredData.userdata
+    if (requiredData && requiredData.algodata)
+      service.attributes.algodata = requiredData.algodata
+    return service
   }
 
   /**
@@ -534,7 +545,8 @@ export class Assets extends Instantiable {
     serviceType: string,
     consumerAddress: string,
     serviceIndex = -1,
-    serviceEndpoint: string
+    serviceEndpoint: string,
+    userData?: { [key: string]: any }
   ): Promise<any> {
     const provider = await Provider.getInstance(this.instanceConfig)
     await provider.setBaseUrl(serviceEndpoint)
@@ -542,7 +554,8 @@ export class Assets extends Instantiable {
       asset,
       serviceIndex,
       serviceType,
-      consumerAddress
+      consumerAddress,
+      userData
     )
     if (res === null) return null
     const providerData = JSON.parse(res)
@@ -566,6 +579,7 @@ export class Assets extends Instantiable {
     serviceIndex = -1,
     mpAddress?: string,
     consumerAddress?: string,
+    userData?: { [key: string]: any },
     searchPreviousOrders = true
   ): Promise<string> {
     let service: Service
@@ -583,13 +597,18 @@ export class Assets extends Instantiable {
       service = await this.getServiceByIndex(ddo, serviceIndex)
       serviceType = service.type
     }
+    // TODO validate userData
+    if (!(await this.isCustomDataValid(service.attributes.userdata, userData))) {
+      throw new Error(`Order asset failed, Missing required fiels in userdata`)
+    }
     try {
       const providerData = await this.initialize(
         ddo,
         serviceType,
         payerAddress,
         serviceIndex,
-        service.serviceEndpoint
+        service.serviceEndpoint,
+        userData
       )
       if (!providerData)
         throw new Error(
@@ -781,5 +800,26 @@ export class Assets extends Instantiable {
     // return: 3, Access is denied, your wallet address is found on deny list
     */
     return { status, message, result }
+  }
+
+  /**
+   * Validate custom data (user & algorithms)
+   * @param {DDO} ddo
+   * @param {consumer} string
+   * @return {Promise<Consumable>}
+   */
+  public async isCustomDataValid(
+    customDDOData: CustomData[],
+    userData?: { [key: string]: any }
+  ): Promise<boolean> {
+    if (customDDOData)
+      for (const data of customDDOData) {
+        const keyname = data.name
+        if (!userData || !userData[keyname]) {
+          console.log('Missing key: ' + keyname + ' from customData')
+          return false
+        }
+      }
+    return true
   }
 }

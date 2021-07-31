@@ -188,7 +188,8 @@ export class Provider extends Instantiable {
     asset: DDO | string,
     serviceIndex: number,
     serviceType: string,
-    consumerAddress: string
+    consumerAddress: string,
+    userData?: { [key: string]: any }
   ): Promise<string> {
     const { did, ddo } = await assetResolve(asset, this.ocean)
     let initializeUrl = this.getInitializeEndpoint()
@@ -200,6 +201,7 @@ export class Provider extends Instantiable {
     initializeUrl += `&serviceType=${serviceType}`
     initializeUrl += `&dataToken=${ddo.dataToken}`
     initializeUrl += `&consumerAddress=${consumerAddress}`
+    if (userData) initializeUrl += '&userdata=' + encodeURI(JSON.stringify(userData))
     try {
       const response = await this.ocean.utils.fetch.get(initializeUrl)
       return await response.text()
@@ -218,7 +220,8 @@ export class Provider extends Instantiable {
     destination: string,
     account: Account,
     files: File[],
-    index = -1
+    index = -1,
+    userData?: any
   ): Promise<any> {
     await this.getNonce(account.getId())
     const signature = await this.createSignature(account, did + this.nonce)
@@ -236,7 +239,7 @@ export class Provider extends Instantiable {
         consumeUrl += `&transferTxId=${txId}`
         consumeUrl += `&consumerAddress=${account.getId()}`
         consumeUrl += `&signature=${signature}`
-
+        if (userData) consumeUrl += '&userdata=' + encodeURI(JSON.stringify(userData))
         try {
           !destination
             ? await this.ocean.utils.fetch.downloadFileBrowser(consumeUrl)
@@ -262,7 +265,8 @@ export class Provider extends Instantiable {
     serviceIndex?: string,
     serviceType?: string,
     tokenAddress?: string,
-    additionalInputs?: ComputeInput[]
+    additionalInputs?: ComputeInput[],
+    userData?: { [key: string]: any }
   ): Promise<ComputeJob | ComputeJob[]> {
     const address = consumerAccount.getId()
     await this.getNonce(consumerAccount.getId())
@@ -291,6 +295,8 @@ export class Provider extends Instantiable {
     if (tokenAddress) payload.dataToken = tokenAddress
 
     if (additionalInputs) payload.additionalInputs = additionalInputs
+    if (userData) payload.userData = userData
+    if (algorithm.algoData) payload.algouserdata = algorithm.algoData
     const path = this.getComputeStartEndpoint()
       ? this.getComputeStartEndpoint().urlPath
       : null
