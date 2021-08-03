@@ -97,7 +97,7 @@ export function updateCredentialDetail(
     if (exists) {
       ddo.credentials.allow.find((credential) => {
         if (credential.type === credentialType) {
-          credential.value = list
+          credential.values = list
         }
       })
     } else {
@@ -107,7 +107,7 @@ export function updateCredentialDetail(
     if (exists) {
       ddo.credentials.deny.find((credential) => {
         if (credential.type === credentialType) {
-          credential.value = list
+          credential.values = list
         }
       })
     } else {
