@@ -7,7 +7,7 @@ export type CredentialAction = 'allow' | 'deny'
 
 export interface Credential {
   type: CredentialType
-  value: string[]
+  values: string[]
 }
 
 export interface Credentials {
