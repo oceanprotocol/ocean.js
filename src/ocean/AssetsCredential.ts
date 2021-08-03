@@ -24,7 +24,7 @@ export function checkCredentialExist(
       const allowList = credentials.allow.find(
         (credential) => credential.type === credentialType
       )
-      isExist = allowList && allowList.value.length > 0
+      isExist = allowList && allowList.values.length > 0
     }
     return isExist
   } else {
@@ -32,7 +32,7 @@ export function checkCredentialExist(
       const dennyList = credentials.deny.find(
         (credential) => credential.type === credentialType
       )
-      isExist = dennyList && dennyList.value.length > 0
+      isExist = dennyList && dennyList.values.length > 0
     }
     return isExist
   }
@@ -134,7 +134,7 @@ export function addCredentialDetail(
 ) {
   const newCredentialDetail: Credential = {
     type: credentialType,
-    value: list
+    values: list
   }
   if (credentialAction === 'allow') {
     if (ddo.credentials && ddo.credentials.allow) {

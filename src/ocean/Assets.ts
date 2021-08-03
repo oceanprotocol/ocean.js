@@ -340,7 +340,7 @@ export class Assets extends Instantiable {
         const allowList = ddo.credentials.allow.find(
           (credentail) => credentail.type === credentialType
         )
-        if (allowList && !allowList.value.includes(value)) {
+        if (allowList && !allowList.values.includes(value)) {
           status = 2
           message = 'Access is denied, your wallet address is not found on allow list'
           result = false
@@ -350,7 +350,7 @@ export class Assets extends Instantiable {
         const denyList = ddo.credentials.deny.find(
           (credentail) => credentail.type === credentialType
         )
-        if (denyList && denyList.value.includes(value)) {
+        if (denyList && denyList.values.includes(value)) {
           status = 3
           message = 'Access is denied, your wallet address is found on deny list'
           result = false
