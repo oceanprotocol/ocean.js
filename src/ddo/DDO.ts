@@ -8,6 +8,7 @@ import { BestPrice } from './interfaces/BestPrice'
 import { DataTokenInfo } from './interfaces/DataTokenInfo'
 import { PurgatoryData } from './interfaces/PurgatoryData'
 import { Credentials } from './interfaces/Credentials'
+import { Event } from './interfaces/Event'
 /**
  * DID Descriptor Object.
  * Contains all the data related to an asset.
@@ -66,6 +67,8 @@ export class DDO {
   public credentials?: Credentials
 
   public chainId?: number
+
+  public event?: Event
 
   public constructor(ddo: Partial<DDO> = {}) {
     Object.assign(this, ddo, {
