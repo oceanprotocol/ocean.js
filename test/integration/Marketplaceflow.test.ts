@@ -543,24 +543,28 @@ describe('Marketplace flow', () => {
 
   it('Bob gets datatokens', async () => {
     const dTamount = '20'
-    await datatoken
-      .transfer(tokenAddress, bob.getId(), dTamount, alice.getId())
-      .then(async () => {
-        const balance = await datatoken.balance(tokenAddress, bob.getId())
-        assert(balance.toString() === dTamount.toString())
-      })
-    await datatoken
-      .transfer(tokenAddressForBadUrlAsset, bob.getId(), dTamount, alice.getId())
-      .then(async () => {
-        const balance = await datatoken.balance(tokenAddressForBadUrlAsset, bob.getId())
-        assert(balance.toString() === dTamount.toString())
-      })
-    await datatoken
-      .transfer(tokenAddressWithUserData, bob.getId(), dTamount, alice.getId())
-      .then(async () => {
-        const balance = await datatoken.balance(tokenAddressWithUserData, bob.getId())
-        assert(balance.toString() === dTamount.toString())
-      })
+    let balance
+    await datatoken.transfer(tokenAddress, bob.getId(), dTamount, alice.getId())
+    balance = await datatoken.balance(tokenAddress, bob.getId())
+    assert(balance.toString() === dTamount.toString())
+
+    await datatoken.transfer(
+      tokenAddressForBadUrlAsset,
+      bob.getId(),
+      dTamount,
+      alice.getId()
+    )
+    balance = await datatoken.balance(tokenAddressForBadUrlAsset, bob.getId())
+    assert(balance.toString() === dTamount.toString())
+
+    await datatoken.transfer(
+      tokenAddressWithUserData,
+      bob.getId(),
+      dTamount,
+      alice.getId()
+    )
+    balance = await datatoken.balance(tokenAddressWithUserData, bob.getId())
+    assert(balance.toString() === dTamount.toString())
   })
 
   it('Bob consumes asset 1', async () => {

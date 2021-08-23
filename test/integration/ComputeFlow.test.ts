@@ -849,94 +849,94 @@ describe('Compute flow', () => {
   })
 
   it('Bob gets datatokens from Alice to be able to try the compute service', async () => {
+    let balance
     const dTamount = '200'
-    await datatoken
-      .transfer(tokenAddress, bob.getId(), dTamount, alice.getId())
-      .then(async () => {
-        const balance = await datatoken.balance(tokenAddress, bob.getId())
-        assert(balance.toString() === dTamount.toString())
-      })
-    await datatoken
-      .transfer(tokenAddressNoRawAlgo, bob.getId(), dTamount, alice.getId())
-      .then(async () => {
-        const balance = await datatoken.balance(tokenAddressNoRawAlgo, bob.getId())
-        assert(balance.toString() === dTamount.toString())
-      })
-    await datatoken
-      .transfer(tokenAddressWithTrustedAlgo, bob.getId(), dTamount, alice.getId())
-      .then(async () => {
-        const balance = await datatoken.balance(tokenAddressWithTrustedAlgo, bob.getId())
-        assert(balance.toString() === dTamount.toString())
-      })
+    await datatoken.transfer(tokenAddress, bob.getId(), dTamount, alice.getId())
+    balance = await datatoken.balance(tokenAddress, bob.getId())
+    assert(balance.toString() === dTamount.toString())
 
-    await datatoken
-      .transfer(tokenAddressWithBogusProvider, bob.getId(), dTamount, alice.getId())
-      .then(async () => {
-        const balance = await datatoken.balance(
-          tokenAddressWithBogusProvider,
-          bob.getId()
-        )
-        assert(balance.toString() === dTamount.toString())
-      })
-    await datatoken
-      .transfer(tokenAddressAlgorithm, bob.getId(), dTamount, alice.getId())
-      .then(async () => {
-        const balance = await datatoken.balance(tokenAddressAlgorithm, bob.getId())
-        assert(balance.toString() === dTamount.toString())
-      })
-    await datatoken
-      .transfer(tokenAddressAlgorithmwithCompute, bob.getId(), dTamount, alice.getId())
-      .then(async () => {
-        const balance = await datatoken.balance(
-          tokenAddressAlgorithmwithCompute,
-          bob.getId()
-        )
-        assert(balance.toString() === dTamount.toString())
-      })
-    await datatoken
-      .transfer(tokenAddressAlgorithmRemoteProvider, bob.getId(), dTamount, alice.getId())
-      .then(async () => {
-        const balance = await datatoken.balance(
-          tokenAddressAlgorithmRemoteProvider,
-          bob.getId()
-        )
-        assert(balance.toString() === dTamount.toString())
-      })
-    await datatoken
-      .transfer(
-        tokenAddressAlgorithmRemoteProviderWithCompute,
-        bob.getId(),
-        dTamount,
-        alice.getId()
-      )
-      .then(async () => {
-        const balance = await datatoken.balance(
-          tokenAddressAlgorithmRemoteProviderWithCompute,
-          bob.getId()
-        )
-        assert(balance.toString() === dTamount.toString())
-      })
+    await datatoken.transfer(tokenAddressNoRawAlgo, bob.getId(), dTamount, alice.getId())
+    balance = await datatoken.balance(tokenAddressNoRawAlgo, bob.getId())
+    assert(balance.toString() === dTamount.toString())
 
-    await datatoken
-      .transfer(tokenAddressAdditional1, bob.getId(), dTamount, alice.getId())
-      .then(async () => {
-        const balance = await datatoken.balance(tokenAddressAdditional1, bob.getId())
-        assert(balance.toString() === dTamount.toString())
-      })
+    await datatoken.transfer(
+      tokenAddressWithTrustedAlgo,
+      bob.getId(),
+      dTamount,
+      alice.getId()
+    )
+    balance = await datatoken.balance(tokenAddressWithTrustedAlgo, bob.getId())
+    assert(balance.toString() === dTamount.toString())
 
-    await datatoken
-      .transfer(tokenAddressAdditional2, bob.getId(), dTamount, alice.getId())
-      .then(async () => {
-        const balance = await datatoken.balance(tokenAddressAdditional2, bob.getId())
-        assert(balance.toString() === dTamount.toString())
-      })
+    await datatoken.transfer(
+      tokenAddressWithBogusProvider,
+      bob.getId(),
+      dTamount,
+      alice.getId()
+    )
+    balance = await datatoken.balance(tokenAddressWithBogusProvider, bob.getId())
+    assert(balance.toString() === dTamount.toString())
 
-    await datatoken
-      .transfer(tokenAddressWithCustomData, bob.getId(), dTamount, alice.getId())
-      .then(async () => {
-        const balance = await datatoken.balance(tokenAddressWithCustomData, bob.getId())
-        assert(balance.toString() === dTamount.toString())
-      })
+    await datatoken.transfer(tokenAddressAlgorithm, bob.getId(), dTamount, alice.getId())
+    balance = await datatoken.balance(tokenAddressAlgorithm, bob.getId())
+    assert(balance.toString() === dTamount.toString())
+
+    await datatoken.transfer(
+      tokenAddressAlgorithmwithCompute,
+      bob.getId(),
+      dTamount,
+      alice.getId()
+    )
+    balance = await datatoken.balance(tokenAddressAlgorithmwithCompute, bob.getId())
+    assert(balance.toString() === dTamount.toString())
+
+    await datatoken.transfer(
+      tokenAddressAlgorithmRemoteProvider,
+      bob.getId(),
+      dTamount,
+      alice.getId()
+    )
+    balance = await datatoken.balance(tokenAddressAlgorithmRemoteProvider, bob.getId())
+    assert(balance.toString() === dTamount.toString())
+
+    await datatoken.transfer(
+      tokenAddressAlgorithmRemoteProviderWithCompute,
+      bob.getId(),
+      dTamount,
+      alice.getId()
+    )
+    balance = await datatoken.balance(
+      tokenAddressAlgorithmRemoteProviderWithCompute,
+      bob.getId()
+    )
+    assert(balance.toString() === dTamount.toString())
+
+    await datatoken.transfer(
+      tokenAddressAdditional1,
+      bob.getId(),
+      dTamount,
+      alice.getId()
+    )
+    balance = await datatoken.balance(tokenAddressAdditional1, bob.getId())
+    assert(balance.toString() === dTamount.toString())
+
+    await datatoken.transfer(
+      tokenAddressAdditional2,
+      bob.getId(),
+      dTamount,
+      alice.getId()
+    )
+    balance = await datatoken.balance(tokenAddressAdditional2, bob.getId())
+    assert(balance.toString() === dTamount.toString())
+
+    await datatoken.transfer(
+      tokenAddressWithCustomData,
+      bob.getId(),
+      dTamount,
+      alice.getId()
+    )
+    balance = await datatoken.balance(tokenAddressWithCustomData, bob.getId())
+    assert(balance.toString() === dTamount.toString())
   })
 
   it('Bob starts compute job with a raw Algo', async () => {
