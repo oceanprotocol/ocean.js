@@ -111,7 +111,7 @@ jobs:
           cd .. && ./scripts/waitforcontracts.sh
 
       - run: npm run test:integration:cover
-        post: docker logs ocean_provider_1
+        post: docker logs ocean_provider_1;docker logs ocean_provider2_1
 
       - uses: actions/upload-artifact@v2
         with:
