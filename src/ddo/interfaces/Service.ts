@@ -11,17 +11,15 @@ export interface CustomData {
 }
 
 export interface RequiredData {
-  userdata?: CustomData[]
-  algodata?: CustomData[]
+  userCustomParameters?: CustomData[]
+  algoCustomParameters?: CustomData[]
 }
 
 export type ServiceType = 'authorization' | 'metadata' | 'access' | 'compute'
-export interface ServiceCommonAttributes {
+export interface ServiceCommonAttributes extends RequiredData {
   main: { [key: string]: any }
   additionalInformation?: { [key: string]: any }
   status?: Status
-  userdata?: CustomData[]
-  algodata?: CustomData[]
 }
 
 export interface ServiceCommon {

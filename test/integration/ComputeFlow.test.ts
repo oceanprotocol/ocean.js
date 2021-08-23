@@ -770,7 +770,7 @@ describe('Compute flow', () => {
       }
     }
     const customdata = {
-      userdata: [
+      userCustomParameters: [
         {
           name: 'firstname',
           type: 'text',
@@ -786,7 +786,7 @@ describe('Compute flow', () => {
           description: 'Your last name'
         }
       ],
-      algodata: [
+      algoCustomParameters: [
         {
           name: 'iterations',
           type: 'number',
@@ -1618,7 +1618,7 @@ describe('Compute flow', () => {
     const algoDefinition: ComputeAlgorithm = {
       did: algorithmAssetWithCustomData.id,
       serviceIndex: serviceAlgo.index,
-      algoData: {
+      algoCustomParameters: {
         iterations: 20,
         chunk: 1
       }

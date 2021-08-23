@@ -398,7 +398,7 @@ describe('Marketplace flow', () => {
     assert(storeTxWithCredentials)
 
     const userdata = {
-      userdata: [
+      userCustomParameters: [
         {
           name: 'firstname',
           type: 'text',

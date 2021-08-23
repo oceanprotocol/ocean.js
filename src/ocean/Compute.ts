@@ -127,8 +127,8 @@ export class Compute extends Instantiable {
       const algoService: Service = ddo.findServiceById(algorithm.serviceIndex)
       if (
         !(await this.ocean.assets.isCustomDataValid(
-          algoService.attributes.algodata,
-          algorithm.algoData
+          algoService.attributes.algoCustomParameters,
+          algorithm.algoCustomParameters
         ))
       ) {
         return null
@@ -379,10 +379,10 @@ export class Compute extends Instantiable {
     }
 
     if (computePrivacy) service.attributes.main.privacy = computePrivacy
-    if (requiredData && requiredData.userdata)
-      service.attributes.userdata = requiredData.userdata
-    if (requiredData && requiredData.algodata)
-      service.attributes.algodata = requiredData.algodata
+    if (requiredData?.userCustomParameters)
+      service.attributes.userCustomParameters = requiredData.userCustomParameters
+    if (requiredData?.algoCustomParameters)
+      service.attributes.algoCustomParameters = requiredData.algoCustomParameters
     return service as ServiceCompute
   }
 

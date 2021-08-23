@@ -523,10 +523,10 @@ export class Assets extends Instantiable {
         }
       }
     }
-    if (requiredData && requiredData.userdata)
-      service.attributes.userdata = requiredData.userdata
-    if (requiredData && requiredData.algodata)
-      service.attributes.algodata = requiredData.algodata
+    if (requiredData?.userCustomParameters)
+      service.attributes.userCustomParameters = requiredData.userCustomParameters
+    if (requiredData?.algoCustomParameters)
+      service.attributes.algoCustomParameters = requiredData.algoCustomParameters
     return service
   }
 
@@ -579,7 +579,7 @@ export class Assets extends Instantiable {
     serviceIndex = -1,
     mpAddress?: string,
     consumerAddress?: string,
-    userData?: { [key: string]: any },
+    userCustomParameters?: { [key: string]: any },
     searchPreviousOrders = true
   ): Promise<string> {
     let service: Service
@@ -598,7 +598,12 @@ export class Assets extends Instantiable {
       serviceType = service.type
     }
     // TODO validate userData
-    if (!(await this.isCustomDataValid(service.attributes.userdata, userData))) {
+    if (
+      !(await this.isCustomDataValid(
+        service.attributes.userCustomParameters,
+        userCustomParameters
+      ))
+    ) {
       throw new Error(`Order asset failed, Missing required fiels in userdata`)
     }
     try {
@@ -608,7 +613,7 @@ export class Assets extends Instantiable {
         payerAddress,
         serviceIndex,
         service.serviceEndpoint,
-        userData
+        userCustomParameters
       )
       if (!providerData)
         throw new Error(
@@ -816,7 +821,7 @@ export class Assets extends Instantiable {
       for (const data of customDDOData) {
         const keyname = data.name
         if (!userData || !userData[keyname]) {
-          console.log('Missing key: ' + keyname + ' from customData')
+          this.logger.error('Missing key: ' + keyname + ' from customData')
           return false
         }
       }
