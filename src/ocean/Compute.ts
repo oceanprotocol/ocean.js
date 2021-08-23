@@ -239,6 +239,56 @@ export class Compute extends Instantiable {
   }
 
   /**
+   * Downloads compute job result
+   * @param  {Account} consumerAccount The account of the consumer ordering the service.
+   * @param  {string} jobId JobId
+   * @param  {number} index Compute Result index
+   * @param  {string} destination: destination folder
+   * @param  {string} did Decentralized identifier.
+   * @param  {DDO} ddo If undefined then the ddo will be fetched by did, this is just to optimize network calls
+   * @param  {ServiceCompute} service If undefined then we get the service from the ddo
+   */
+  public async getResult(
+    consumerAccount: Account,
+    jobId: string,
+    index: number,
+    destination: string,
+    did?: string,
+    ddo?: DDO,
+    service?: ServiceCompute
+  ): Promise<any> {
+    let provider: Provider
+
+    if (did || service || ddo) {
+      if (!service) {
+        if (!ddo) {
+          ddo = await this.ocean.assets.resolve(did)
+          if (!ddo) throw new Error(`Couldn't resolve the did ${did}`)
+        }
+        service = ddo.findServiceByType('compute')
+        if (!service)
+          throw new Error(`Couldn't find a compute service on the asset with did ${did}`)
+      }
+
+      const { serviceEndpoint } = service
+      provider = await Provider.getInstance(this.instanceConfig)
+
+      await provider.setBaseUrl(serviceEndpoint)
+    } else {
+      provider = this.ocean.provider
+    }
+
+    const result = await provider.computeResult(
+      jobId,
+      index,
+      destination,
+      consumerAccount
+    )
+
+    return result
+  }
+
+  /**
    * Returns the final result of a specific compute job published as an asset.
    * @param  {Account} consumerAccount The account of the consumer ordering the service.
    * @param  {DDO|string} asset DID Descriptor Object containing all the data related to an asset or a Decentralized identifier.

@@ -106,6 +106,9 @@ jobs:
 
       - name: Run Barge
         working-directory: ${{ github.workspace }}/barge
+        env:
+          OPERATOR_SERVICE_URL: https://c2d-dev.operator.oceanprotocol.com/
+          PROVIDER_VERSION: secure_outputs
         run: |
           bash -x start_ocean.sh --with-provider2 --no-dashboard 2>&1 > start_ocean.log &
           cd .. && ./scripts/waitforcontracts.sh

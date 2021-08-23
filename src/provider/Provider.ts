@@ -447,6 +447,40 @@ export class Provider extends Instantiable {
     }
   }
 
+  public async computeResult(
+    jobId: string,
+    index: number,
+    destination: string,
+    account: Account
+  ): Promise<any> {
+    await this.getNonce(account.getId())
+    let signatureMessage = account.getId()
+    signatureMessage += jobId
+    signatureMessage += String(index)
+    signatureMessage += this.nonce
+    const signature = await this.createHashSignature(account, signatureMessage)
+    const path = this.getComputeResultEndpoint()
+      ? this.getComputeResultEndpoint().urlPath
+      : null
+    if (!path) return null
+    let consumeUrl = path
+    consumeUrl += `?jobId=${jobId}`
+    consumeUrl += `&index=${String(index)}`
+    consumeUrl += `&signature=${signature}`
+    consumeUrl += `&consumerAddress=${account.getId()}`
+
+    try {
+      !destination
+        ? await this.ocean.utils.fetch.downloadFileBrowser(consumeUrl)
+        : await this.ocean.utils.fetch.downloadFile(consumeUrl, destination, index)
+    } catch (e) {
+      this.logger.error('Error getting job result')
+      this.logger.error(e)
+      throw e
+    }
+    return destination
+  }
+
   public getInitializeEndpoint(): ServiceEndpoint {
     return this.getEndpointURL('initialize')
   }
@@ -477,6 +511,10 @@ export class Provider extends Instantiable {
 
   public getComputeDeleteEndpoint(): ServiceEndpoint {
     return this.getEndpointURL('computeDelete')
+  }
+
+  public getComputeResultEndpoint(): ServiceEndpoint {
+    return this.getEndpointURL('computeResult')
   }
 
   public getDownloadEndpoint(): ServiceEndpoint {
