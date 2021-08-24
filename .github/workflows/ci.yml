@@ -111,6 +111,7 @@ jobs:
           cd .. && ./scripts/waitforcontracts.sh
 
       - run: npm run test:integration:cover
+
       - uses: actions/upload-artifact@v2
         with:
           name: coverage
