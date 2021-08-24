@@ -1,4 +1,4 @@
-import AbortController from 'node-abort-controller'
+import { AbortController } from 'node-abort-controller'
 
 export default function timeoutSignal(timeout: number) {
   if (!Number.isInteger(timeout)) {
