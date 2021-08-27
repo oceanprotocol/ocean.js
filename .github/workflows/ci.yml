@@ -106,11 +106,18 @@ jobs:
 
       - name: Run Barge
         working-directory: ${{ github.workspace }}/barge
+        env:
+          OPERATOR_SERVICE_URL: https://c2d-dev.operator.oceanprotocol.com/
+          PROVIDER_VERSION: secure_outputs
         run: |
           bash -x start_ocean.sh --with-provider2 --no-dashboard 2>&1 > start_ocean.log &
           cd .. && ./scripts/waitforcontracts.sh
 
       - run: npm run test:integration:cover
+      - run: docker logs ocean_provider_1
+        if: always()
+      - run: docker logs ocean_provider2_1
+        if: always()
       - uses: actions/upload-artifact@v2
         with:
           name: coverage

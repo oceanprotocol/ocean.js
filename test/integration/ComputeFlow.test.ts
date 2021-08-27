@@ -917,6 +917,33 @@ describe('Compute flow', () => {
     const response = await ocean.compute.status(bob, undefined, undefined)
     assert(response.length > 0, 'Invalid response length')
   })
+  it('should wait until a job is completed', async () => {
+    let tries = 0
+    let response
+    do {
+      response = await ocean.compute.status(bob, ddo.id, undefined, undefined, jobId)
+      assert(response[0].jobId === jobId, 'response[0].jobId !== jobId')
+      if (response[0].status > 60) break
+      await sleep(2500)
+      tries++
+      // eslint-disable-next-line no-self-compare
+    } while (tries < 1500)
+    assert(response[0].status > 60, 'Job is not completed')
+  })
+  it('Bob should get the compute result with index 0', async () => {
+    assert(jobId != null, 'Jobid is null')
+    const response = await ocean.compute.status(bob, ddo.id, undefined, undefined, jobId)
+    assert(response[0].results.length > 0, 'No outputs for this job?')
+    await ocean.compute.getResult(
+      bob,
+      jobId,
+      0,
+      './node_modules/jobs-results/' + jobId + '/',
+      ddo.id,
+      undefined,
+      undefined
+    )
+  })
   it('Bob should stop compute job', async () => {
     assert(jobId != null, 'Jobid is null')
     await ocean.compute.stop(bob, ddo, jobId)
