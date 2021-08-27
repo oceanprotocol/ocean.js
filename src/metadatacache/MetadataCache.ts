@@ -233,47 +233,6 @@ export class MetadataCache {
     return this.retrieveDDO(undefined, metadataServiceEndpoint)
   }
 
-  /**
-   * Transfer ownership of a DDO
-   * @param  {DID | string} did DID of the asset to update.
-   * @param  {String} newOwner New owner of the DDO
-   * @param  {String} updated Updated field of the DDO
-   * @param  {String} signature Signature using updated field to verify that the consumer has rights
-   * @return {Promise<String>} Result.
-   */
-  public async transferOwnership(
-    did: DID | string,
-    newOwner: string,
-    updated: string,
-    signature: string
-  ): Promise<string> {
-    did = did && DID.parse(did)
-    const fullUrl = `${this.url}${apiPath}/owner/update/${did.getDid()}`
-    const result = await this.fetch
-      .put(
-        fullUrl,
-        JSON.stringify({
-          signature: signature,
-          updated: updated,
-          newOwner: newOwner
-        })
-      )
-      .then((response: Response) => {
-        if (response.ok) {
-          return response.text
-        }
-        this.logger.log('transferownership failed:', response.status, response.statusText)
-        return null
-      })
-
-      .catch((error) => {
-        this.logger.error('Error transfering ownership metadata: ', error)
-        return null
-      })
-
-    return result
-  }
-
   public async getOwnerAssets(owner: string): Promise<QueryResult> {
     const q = {
       page: 1,

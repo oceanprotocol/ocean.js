@@ -20,6 +20,26 @@ describe('Assets', () => {
   let walletC: string
   const threeBoxValue = 'did:3:bafyre'
 
+  const metadata: Metadata = {
+    main: {
+      type: 'dataset',
+      name: 'test-dataset',
+      dateCreated: new Date(Date.now()).toISOString().split('.')[0] + 'Z', // remove milliseconds
+      author: 'oceanprotocol-team',
+      license: 'MIT',
+      files: [
+        {
+          url: 'https://s3.amazonaws.com/testfiles.oceanprotocol.com/info.0.json',
+          checksum: 'efb2c764274b745f5fc37f97c6b0e761',
+          contentLength: '4535431',
+          contentType: 'text/csv',
+          encoding: 'UTF-8',
+          compression: 'zip'
+        }
+      ]
+    }
+  }
+
   beforeEach(async () => {
     const config = new ConfigHelper().getConfig('development')
     config.web3Provider = web3
@@ -33,26 +53,6 @@ describe('Assets', () => {
   })
 
   it('Alice creates a DDO', async () => {
-    const metadata: Metadata = {
-      main: {
-        type: 'dataset',
-        name: 'test-dataset',
-        dateCreated: new Date(Date.now()).toISOString().split('.')[0] + 'Z', // remove milliseconds
-        author: 'oceanprotocol-team',
-        license: 'MIT',
-        files: [
-          {
-            url: 'https://s3.amazonaws.com/testfiles.oceanprotocol.com/info.0.json',
-            checksum: 'efb2c764274b745f5fc37f97c6b0e761',
-            contentLength: '4535431',
-            contentType: 'text/csv',
-            encoding: 'UTF-8',
-            compression: 'zip'
-          }
-        ]
-      }
-    }
-
     const price = '10' // in datatoken
     const publishedDate = new Date(Date.now()).toISOString().split('.')[0] + 'Z'
     const timeout = 0
@@ -157,5 +157,24 @@ describe('Assets', () => {
     assert(newDdo.credentials.allow.length === 1)
     assert(ocean.assets.checkCredential(ddo, addressType, walletA).status === 0)
     assert(ocean.assets.checkCredential(ddo, addressType, walletC).status === 2)
+  })
+
+  it('should transfer ownership of a DDO', async () => {
+    // Create and store new DDO on-chain
+    ddo = await ocean.assets.create(metadata, alice)
+    const storeTx = await ocean.assets.publishDdo(ddo, alice.getId())
+    assert(storeTx)
+
+    const existingOwner = alice.getId()
+    const newOwner = bob.getId()
+    assert(ddo.publicKey[0].owner === existingOwner)
+
+    // Update owner on-chain
+    const transferTx = await ocean.assets.transferOwnership(ddo, newOwner, existingOwner)
+    assert(transferTx)
+
+    // Fetch and check against updated DDO
+    ddo = await ocean.assets.resolve(ddo.id)
+    assert(ddo.publicKey[0].owner === newOwner)
   })
 })

@@ -230,23 +230,30 @@ export class OnChainMetadata {
 
   /**
    * Transfer Ownership of a DDO
-   * @param {String} did
+   * @param {String} ddo
    * @param {String} newOwner
-   * @param {String} consumerAccount
-   * @return {Promise<TransactionReceipt>} exchangeId
+   * @param {String} existingOwner
+   * @return {Promise<TransactionReceipt>} TransactionReceipt
    */
   public async transferOwnership(
-    did: string,
+    ddo: DDO,
     newOwner: string,
-    consumerAccount: string
+    existingOwner: string
   ): Promise<TransactionReceipt> {
-    if (!this.DDOContract) return null
+    if (!ddo) return null
+
+    const newDdo = new DDO({
+      ...ddo,
+      publicKey: [
+        {
+          ...ddo.publicKey[0],
+          owner: newOwner
+        }
+      ]
+    })
+
     try {
-      const trxReceipt = await this.DDOContract.methods
-        .transferOwnership(didZeroX(did), newOwner)
-        .send({
-          from: consumerAccount
-        })
+      const trxReceipt = await this.update(ddo.id, newDdo, existingOwner)
       return trxReceipt
     } catch (e) {
       this.logger.error(`ERROR: Failed to transfer DDO ownership : ${e.message}`)

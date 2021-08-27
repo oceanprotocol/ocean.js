@@ -783,4 +783,25 @@ export class Assets extends Instantiable {
     */
     return { status, message, result }
   }
+
+  /**
+   * Transfer Ownership of a DDO
+   * @param {String} ddo
+   * @param {String} newOwner
+   * @param {String} existingOwner
+   * @return {Promise<TransactionReceipt>} TransactionReceipt
+   */
+  public async transferOwnership(
+    ddo: DDO,
+    newOwner: string,
+    existingOwner: string
+  ): Promise<TransactionReceipt> {
+    if (!ddo) return null
+
+    return await this.ocean.onChainMetadata.transferOwnership(
+      ddo,
+      newOwner,
+      existingOwner
+    )
+  }
 }
