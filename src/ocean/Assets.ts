@@ -757,7 +757,7 @@ export class Assets extends Instantiable {
    * @param {consumer} string
    * @return {Promise<Consumable>}
    */
-  public async isConsumable(ddo: DDO, consumer?: string): Promise<Consumable> {
+  public async isConsumable(ddo: DDO, consumer?: string, credentialType: CredentialType = CredentialType.address): Promise<Consumable> {
     let status = 0
     let message = 'All good'
     let result = true
@@ -771,11 +771,11 @@ export class Assets extends Instantiable {
         result: false
       }
     if (consumer) {
-      ;({ status, message, result } = this.checkCredential(
-        ddo,
-        CredentialType.address,
-        consumer
-      ))
+        ;({ status, message, result } = this.checkCredential(
+          ddo,
+          credentialType,
+          consumer
+        ))
     }
     /*
     // return: 2, Access is denied, your wallet address is not found on allow list
