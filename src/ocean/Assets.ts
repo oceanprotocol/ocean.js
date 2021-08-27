@@ -798,10 +798,12 @@ export class Assets extends Instantiable {
   ): Promise<TransactionReceipt> {
     if (!ddo) return null
 
-    return await this.ocean.onChainMetadata.transferOwnership(
+    const tx = await this.ocean.onChainMetadata.transferOwnership(
       ddo,
       newOwner,
       existingOwner
     )
+
+    return tx
   }
 }

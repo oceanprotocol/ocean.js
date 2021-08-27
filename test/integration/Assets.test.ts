@@ -1,8 +1,14 @@
 import { assert } from 'chai'
-
-import { Ocean } from '../../src/ocean/Ocean'
 import Web3 from 'web3'
-import { Account, DDO, CredentialType, ConfigHelper, Metadata } from '../../src/lib'
+import {
+  Ocean,
+  Account,
+  DDO,
+  CredentialType,
+  ConfigHelper,
+  Metadata
+} from '../../src/lib'
+import { sleep, waitForAqua } from './utils'
 
 const web3 = new Web3('http://127.0.0.1:8545')
 
@@ -20,26 +26,6 @@ describe('Assets', () => {
   let walletC: string
   const threeBoxValue = 'did:3:bafyre'
 
-  const metadata: Metadata = {
-    main: {
-      type: 'dataset',
-      name: 'test-dataset',
-      dateCreated: new Date(Date.now()).toISOString().split('.')[0] + 'Z', // remove milliseconds
-      author: 'oceanprotocol-team',
-      license: 'MIT',
-      files: [
-        {
-          url: 'https://s3.amazonaws.com/testfiles.oceanprotocol.com/info.0.json',
-          checksum: 'efb2c764274b745f5fc37f97c6b0e761',
-          contentLength: '4535431',
-          contentType: 'text/csv',
-          encoding: 'UTF-8',
-          compression: 'zip'
-        }
-      ]
-    }
-  }
-
   beforeEach(async () => {
     const config = new ConfigHelper().getConfig('development')
     config.web3Provider = web3
@@ -50,9 +36,27 @@ describe('Assets', () => {
     walletB = bob.getId()
     charlie = (await ocean.accounts.list())[3]
     walletC = charlie.getId()
-  })
 
-  it('Alice creates a DDO', async () => {
+    const metadata: Metadata = {
+      main: {
+        type: 'dataset',
+        name: 'test-dataset',
+        dateCreated: new Date(Date.now()).toISOString().split('.')[0] + 'Z', // remove milliseconds
+        author: 'oceanprotocol-team',
+        license: 'MIT',
+        files: [
+          {
+            url: 'https://s3.amazonaws.com/testfiles.oceanprotocol.com/info.0.json',
+            checksum: 'efb2c764274b745f5fc37f97c6b0e761',
+            contentLength: '4535431',
+            contentType: 'text/csv',
+            encoding: 'UTF-8',
+            compression: 'zip'
+          }
+        ]
+      }
+    }
+
     const price = '10' // in datatoken
     const publishedDate = new Date(Date.now()).toISOString().split('.')[0] + 'Z'
     const timeout = 0
@@ -63,13 +67,18 @@ describe('Assets', () => {
       timeout
     )
 
-    ddo = await ocean.assets.create(metadata, alice, [service1])
-    assert.isDefined(ddo)
-    assert.isDefined(ddo.id)
+    const newDdo = await ocean.assets.create(metadata, alice, [service1])
+    assert.isDefined(newDdo)
+    assert.isDefined(newDdo.id)
 
-    // const storeTx = await ocean.onChainMetadata.publish(ddo.id, ddo, alice.getId())
-    // assert(storeTx)
-    // await waitForAqua(ocean, ddo.id)
+    const storeTx = await ocean.assets.publishDdo(newDdo, alice.getId())
+    assert(storeTx)
+    await waitForAqua(ocean, newDdo.id)
+
+    // Make sure newDdo can be fetched and set it for all other tests
+    const fetchedDdo = await ocean.assets.resolve(newDdo.id)
+    assert.isDefined(fetchedDdo)
+    ddo = fetchedDdo
   })
 
   it('should add allow credential', async () => {
@@ -160,21 +169,17 @@ describe('Assets', () => {
   })
 
   it('should transfer ownership of a DDO', async () => {
-    // Create and store new DDO on-chain
-    ddo = await ocean.assets.create(metadata, alice)
-    const storeTx = await ocean.assets.publishDdo(ddo, alice.getId())
-    assert(storeTx)
-
     const existingOwner = alice.getId()
-    const newOwner = bob.getId()
     assert(ddo.publicKey[0].owner === existingOwner)
 
     // Update owner on-chain
+    const newOwner = bob.getId()
     const transferTx = await ocean.assets.transferOwnership(ddo, newOwner, existingOwner)
     assert(transferTx)
+    await sleep(10000) // Wait until Aqua has picked up changes
 
     // Fetch and check against updated DDO
-    ddo = await ocean.assets.resolve(ddo.id)
-    assert(ddo.publicKey[0].owner === newOwner)
+    const updatedDdo = await ocean.assets.resolve(ddo.id)
+    assert(updatedDdo.publicKey[0].owner === newOwner)
   })
 })
