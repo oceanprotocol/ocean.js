@@ -1,8 +1,14 @@
 import { assert } from 'chai'
-
-import { Ocean } from '../../src/ocean/Ocean'
 import Web3 from 'web3'
-import { Account, DDO, CredentialType, ConfigHelper, Metadata } from '../../src/lib'
+import {
+  Ocean,
+  Account,
+  DDO,
+  CredentialType,
+  ConfigHelper,
+  Metadata
+} from '../../src/lib'
+import { sleep, waitForAqua } from './utils'
 
 const web3 = new Web3('http://127.0.0.1:8545')
 
@@ -30,9 +36,7 @@ describe('Assets', () => {
     walletB = bob.getId()
     charlie = (await ocean.accounts.list())[3]
     walletC = charlie.getId()
-  })
 
-  it('Alice creates a DDO', async () => {
     const metadata: Metadata = {
       main: {
         type: 'dataset',
@@ -63,13 +67,18 @@ describe('Assets', () => {
       timeout
     )
 
-    ddo = await ocean.assets.create(metadata, alice, [service1])
-    assert.isDefined(ddo)
-    assert.isDefined(ddo.id)
+    const newDdo = await ocean.assets.create(metadata, alice, [service1])
+    assert.isDefined(newDdo)
+    assert.isDefined(newDdo.id)
 
-    // const storeTx = await ocean.onChainMetadata.publish(ddo.id, ddo, alice.getId())
-    // assert(storeTx)
-    // await waitForAqua(ocean, ddo.id)
+    const storeTx = await ocean.assets.publishDdo(newDdo, alice.getId())
+    assert(storeTx)
+    await waitForAqua(ocean, newDdo.id)
+
+    // Make sure newDdo can be fetched and set it for all other tests
+    const fetchedDdo = await ocean.assets.resolve(newDdo.id)
+    assert.isDefined(fetchedDdo)
+    ddo = fetchedDdo
   })
 
   it('should add allow credential', async () => {
@@ -157,5 +166,20 @@ describe('Assets', () => {
     assert(newDdo.credentials.allow.length === 1)
     assert(ocean.assets.checkCredential(ddo, addressType, walletA).status === 0)
     assert(ocean.assets.checkCredential(ddo, addressType, walletC).status === 2)
+  })
+
+  it('should transfer ownership of a DDO', async () => {
+    const existingOwner = alice.getId()
+    assert(ddo.publicKey[0].owner === existingOwner)
+
+    // Update owner on-chain
+    const newOwner = bob.getId()
+    const transferTx = await ocean.assets.transferOwnership(ddo, newOwner, existingOwner)
+    assert(transferTx)
+    await sleep(10000) // Wait until Aqua has picked up changes
+
+    // Fetch and check against updated DDO
+    const updatedDdo = await ocean.assets.resolve(ddo.id)
+    assert(updatedDdo.publicKey[0].owner === newOwner)
   })
 })
