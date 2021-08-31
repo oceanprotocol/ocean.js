@@ -97,7 +97,7 @@ export const configHelperNetworks: ConfigHelperConfig[] = [
     ...configHelperNetworksBase,
     networkId: 2021000,
     network: 'gaiaxtestnet',
-    nodeUri: 'https://gaia-x.rpc',
+    nodeUri: 'https://rpc.gaiaxtestnet.oceanprotocol.com',
     providerUri: 'https://provider.gaiaxtestnet.oceanprotocol.com',
     subgraphUri: 'https://subgraph.gaiaxtestnet.oceanprotocol.com',
     explorerUri: 'https://blockscout.gaiaxtestnet.oceanprotocol.com'
