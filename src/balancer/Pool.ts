@@ -173,8 +173,11 @@ export class Pool extends PoolFactory {
     })
     if (!force) {
       const currentAllowence = await this.allowance(tokenAddress, account, spender)
-      if (new Decimal(currentAllowence).greaterThanOrEqualTo(amount)) {
-        // we have enough
+      if (
+        new Decimal(this.web3.utils.toWei(currentAllowence)).greaterThanOrEqualTo(
+          new Decimal(amount)
+        )
+      ) {
         return null
       }
     }

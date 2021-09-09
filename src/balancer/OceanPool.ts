@@ -800,15 +800,22 @@ export class OceanPool extends Pool {
       this.logger.error('ERROR: Too much reserve to add')
       return null
     }
-    const txid = await super.approve(
-      account,
+    const currentAllowence = await super.allowance(
       this.oceanAddress,
-      poolAddress,
-      this.web3.utils.toWei(amount)
+      account,
+      poolAddress
     )
-    if (!txid) {
-      this.logger.error('ERROR: OCEAN approve failed')
-      return null
+    if (new Decimal(amount).greaterThan(new Decimal(currentAllowence))) {
+      const txid = await super.approve(
+        account,
+        this.oceanAddress,
+        poolAddress,
+        this.web3.utils.toWei(amount)
+      )
+      if (!txid) {
+        this.logger.error('ERROR: OCEAN approve failed')
+        return null
+      }
     }
     const result = await super.joinswapExternAmountIn(
       account,
