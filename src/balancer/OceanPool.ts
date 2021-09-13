@@ -562,8 +562,8 @@ export class OceanPool extends Pool {
       this.logger.error('ERROR: Not enough Ocean Tokens')
       return null
     }
-    const dtAllowance = await this.allowance(dtAddress, account, poolAddress)
-    if (new Decimal(dtAllowance).lt(dtAmountWanted)) {
+    const oceanAllowance = await this.allowance(this.oceanAddress, account, poolAddress)
+    if (new Decimal(oceanAllowance).lt(maxOceanAmount)) {
       const txid = await super.approve(
         account,
         this.oceanAddress,
@@ -571,8 +571,8 @@ export class OceanPool extends Pool {
         this.web3.utils.toWei(maxOceanAmount)
       )
       if (!txid) {
-        this.logger.error('ERROR: OCEAN approve failed')
-        return null
+        this.logger.error('ERROR: Failed to call approve OCEAN token')
+        throw new Error('ERROR: Failed to call approve OCEAN token')
       }
     }
     const tx = await super.swapExactAmountOut(
@@ -600,7 +600,7 @@ export class OceanPool extends Pool {
     account: string,
     poolAddress: string,
     minimumdtAmountWanted: string,
-    OceanAmount: string,
+    oceanAmount: string,
     maxPrice?: string
   ): Promise<TransactionReceipt> {
     if (this.oceanAddress == null) {
@@ -617,28 +617,28 @@ export class OceanPool extends Pool {
       return null
     }
     const calcInGivenOut = await this.getOceanNeeded(poolAddress, minimumdtAmountWanted)
-    if (new Decimal(calcInGivenOut).greaterThan(OceanAmount)) {
+    if (new Decimal(calcInGivenOut).greaterThan(oceanAmount)) {
       this.logger.error('ERROR: Not enough Ocean Tokens')
       return null
     }
-    const dtAllowance = await this.allowance(dtAddress, account, poolAddress)
-    if (new Decimal(dtAllowance).lt(minimumdtAmountWanted)) {
+    const oceanAllowance = await this.allowance(this.oceanAddress, account, poolAddress)
+    if (new Decimal(oceanAllowance).lt(oceanAmount)) {
       const txid = await super.approve(
         account,
         this.oceanAddress,
         poolAddress,
-        this.web3.utils.toWei(OceanAmount)
+        this.web3.utils.toWei(oceanAmount)
       )
       if (!txid) {
-        this.logger.error('ERROR: OCEAN approve failed')
-        return null
+        this.logger.error('ERROR: Failed to call approve OCEAN token')
+        throw new Error('ERROR: Failed to call approve OCEAN token')
       }
     }
     const tx = await super.swapExactAmountIn(
       account,
       poolAddress,
       this.oceanAddress,
-      OceanAmount,
+      oceanAmount,
       dtAddress,
       minimumdtAmountWanted,
       maxPrice
@@ -689,8 +689,8 @@ export class OceanPool extends Pool {
         this.web3.utils.toWei(dtAmount)
       )
       if (!txid) {
-        this.logger.error('ERROR: DT approve failed')
-        return null
+        this.logger.error('ERROR: Failed to call approve DT token')
+        throw new Error('ERROR: Failed to call approve DT token')
       }
     }
     const tx = await super.swapExactAmountIn(
@@ -732,8 +732,8 @@ export class OceanPool extends Pool {
         this.web3.utils.toWei(amount)
       )
       if (!txid) {
-        this.logger.error('ERROR: DT approve failed')
-        return null
+        this.logger.error('ERROR: Failed to call approve DT token')
+        throw new Error('ERROR: Failed to call approve DT token')
       }
     }
     const result = await super.joinswapExternAmountIn(
@@ -810,12 +810,8 @@ export class OceanPool extends Pool {
       this.logger.error('ERROR: Too much reserve to add')
       return null
     }
-    const currentAllowence = await super.allowance(
-      this.oceanAddress,
-      account,
-      poolAddress
-    )
-    if (new Decimal(amount).greaterThan(new Decimal(currentAllowence))) {
+    const oceanAllowance = await this.allowance(this.oceanAddress, account, poolAddress)
+    if (new Decimal(oceanAllowance).lt(amount)) {
       const txid = await super.approve(
         account,
         this.oceanAddress,
@@ -823,8 +819,8 @@ export class OceanPool extends Pool {
         this.web3.utils.toWei(amount)
       )
       if (!txid) {
-        this.logger.error('ERROR: OCEAN approve failed')
-        return null
+        this.logger.error('ERROR: Failed to call approve OCEAN token')
+        throw new Error('ERROR: Failed to call approve OCEAN token')
       }
     }
     const result = await super.joinswapExternAmountIn(
