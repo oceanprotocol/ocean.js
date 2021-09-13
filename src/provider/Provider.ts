@@ -400,22 +400,11 @@ export class Provider extends Instantiable {
     did: string,
     consumerAccount: Account,
     jobId?: string,
-    txId?: string,
-    sign = true
+    txId?: string
   ): Promise<ComputeJob | ComputeJob[]> {
     const address = consumerAccount.getId()
     await this.getNonce(consumerAccount.getId())
     let url = '?documentId=' + noZeroX(did)
-    if (sign) {
-      let signatureMessage = address
-      signatureMessage += jobId || ''
-      signatureMessage += (did && `${noZeroX(did)}`) || ''
-      signatureMessage += this.nonce
-      const signature = await this.createHashSignature(consumerAccount, signatureMessage)
-      url += `&signature=${signature}`
-    }
-
-    // continue to construct Provider URL
     url += (jobId && `&jobId=${jobId}`) || ''
     url += `&consumerAddress=${address}`
     url += (txId && `&transferTxId=${txId}`) || ''

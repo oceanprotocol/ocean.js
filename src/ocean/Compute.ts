@@ -203,8 +203,7 @@ export class Compute extends Instantiable {
     ddo?: DDO,
     service?: ServiceCompute,
     jobId?: string,
-    txId?: string,
-    sign = true
+    txId?: string
   ): Promise<ComputeJob[]> {
     let provider: Provider
 
@@ -231,8 +230,7 @@ export class Compute extends Instantiable {
       did,
       consumerAccount,
       jobId,
-      txId,
-      sign
+      txId
     )
 
     return computeJobsList as ComputeJob[]
