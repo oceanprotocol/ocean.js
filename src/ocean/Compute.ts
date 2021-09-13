@@ -286,34 +286,6 @@ export class Compute extends Instantiable {
     return result
   }
 
-  /**
-   * Returns the final result of a specific compute job published as an asset.
-   * @param  {Account} consumerAccount The account of the consumer ordering the service.
-   * @param  {DDO|string} asset DID Descriptor Object containing all the data related to an asset or a Decentralized identifier.
-   * @param  {string} jobId The ID of the compute job to be stopped.
-   * @return {Promise<ComputeJob>} Returns the DDO of the result asset.
-   */
-  public async result(
-    consumerAccount: Account,
-    asset: DDO | string,
-    jobId: string
-  ): Promise<ComputeJob> {
-    const { did, ddo } = await assetResolve(asset, this.ocean)
-    const service = ddo.findServiceByType('compute')
-    const { serviceEndpoint } = service
-    const provider = await Provider.getInstance(this.instanceConfig)
-    await provider.setBaseUrl(serviceEndpoint)
-    const computeJobsList = await provider.computeStatus(
-      did,
-      consumerAccount,
-      jobId,
-      undefined,
-      true
-    )
-
-    return computeJobsList[0] as ComputeJob
-  }
-
   public createServerAttributes(
     serverId: string,
     serverType: string,
