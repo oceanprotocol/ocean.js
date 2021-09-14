@@ -4,7 +4,7 @@ import {
   ServiceComputePrivacy,
   ServiceCompute,
   publisherTrustedAlgorithm,
-  RequiredData
+  ServiceCustomParametersRequired
 } from '../ddo/interfaces/Service'
 import Account from './Account'
 import { SubscribablePromise, assetResolve, AssetResolved } from '../utils'
@@ -15,7 +15,7 @@ import {
   ComputeInput,
   ComputeAlgorithm
 } from './interfaces/Compute'
-import { Provider } from '../provider/Provider'
+import { Provider, UserCustomParameters } from '../provider/Provider'
 import { SHA256 } from 'crypto-js'
 
 export enum OrderProgressStep {
@@ -123,10 +123,10 @@ export class Compute extends Instantiable {
     const service = ddo.findServiceByType('compute')
     const { serviceEndpoint } = service
     if (algorithm.serviceIndex) {
-      const { did, ddo } = await assetResolve(algorithm.did, this.ocean)
+      const { ddo } = await assetResolve(algorithm.did, this.ocean)
       const algoService: Service = ddo.findServiceById(algorithm.serviceIndex)
       if (
-        !(await this.ocean.assets.isCustomDataValid(
+        !(await this.ocean.assets.isUserCustomParametersValid(
           algoService.attributes.algoCustomParameters,
           algorithm.algoCustomParameters
         ))
@@ -357,7 +357,7 @@ export class Compute extends Instantiable {
     computePrivacy?: ServiceComputePrivacy,
     timeout?: number,
     providerUri?: string,
-    requiredData?: RequiredData
+    requiredCustomParameters?: ServiceCustomParametersRequired
   ): ServiceCompute {
     const name = 'dataAssetComputingService'
     if (!timeout) timeout = 3600
@@ -379,10 +379,12 @@ export class Compute extends Instantiable {
     }
 
     if (computePrivacy) service.attributes.main.privacy = computePrivacy
-    if (requiredData?.userCustomParameters)
-      service.attributes.userCustomParameters = requiredData.userCustomParameters
-    if (requiredData?.algoCustomParameters)
-      service.attributes.algoCustomParameters = requiredData.algoCustomParameters
+    if (requiredCustomParameters?.userCustomParameters)
+      service.attributes.userCustomParameters =
+        requiredCustomParameters.userCustomParameters
+    if (requiredCustomParameters?.algoCustomParameters)
+      service.attributes.algoCustomParameters =
+        requiredCustomParameters.algoCustomParameters
     return service as ServiceCompute
   }
 
@@ -526,7 +528,7 @@ export class Compute extends Instantiable {
    * @param  {string} algorithmDid The DID of the algorithm asset (of type `algorithm`) to run on the asset.
    * @param  {string} algorithmServiceIndex The index of the service in the algorithm
    * @param  {MetaData} algorithmMeta Metadata about the algorithm being run if `algorithm` is being used. This is ignored when `algorithmDid` is specified.
-   * @return {Promise<string>} Returns the transaction details
+   * @return {SubscribablePromise<OrderProgressStep, string>} Returns the transaction details
    *
    * Note:  algorithmDid and algorithmMeta are optional, but if they are not passed,
    * you can end up in the situation that you are ordering and paying for your compute job,
@@ -539,7 +541,7 @@ export class Compute extends Instantiable {
     algorithm: ComputeAlgorithm,
     mpAddress?: string,
     computeAddress?: string,
-    userData?: { [key: string]: any },
+    userCustomParameters?: UserCustomParameters,
     searchPreviousOrders = true
   ): SubscribablePromise<OrderProgressStep, string> {
     return new SubscribablePromise(async (observer) => {
@@ -562,7 +564,7 @@ export class Compute extends Instantiable {
           -1,
           mpAddress,
           computeAddress,
-          userData,
+          userCustomParameters,
           searchPreviousOrders
         )
         return order
@@ -590,7 +592,7 @@ export class Compute extends Instantiable {
     serviceIndex = -1,
     mpAddress?: string,
     consumerAddress?: string,
-    userData?: { [key: string]: any },
+    userCustomParameters?: UserCustomParameters,
     searchPreviousOrders = true
   ): Promise<string> {
     // this is only a convienince function, which calls ocean.assets.order
@@ -602,7 +604,7 @@ export class Compute extends Instantiable {
         serviceIndex,
         mpAddress,
         consumerAddress,
-        userData,
+        userCustomParameters,
         searchPreviousOrders
       )
     } catch (error) {

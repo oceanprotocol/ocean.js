@@ -1,7 +1,7 @@
 import { Metadata } from './Metadata'
 import { Status } from './Status'
 
-export interface CustomData {
+export interface ServiceCustomParameter {
   name: string
   type: string
   label: string
@@ -10,13 +10,14 @@ export interface CustomData {
   description: string
 }
 
-export interface RequiredData {
-  userCustomParameters?: CustomData[]
-  algoCustomParameters?: CustomData[]
+export interface ServiceCustomParametersRequired {
+  userCustomParameters?: ServiceCustomParameter[]
+  algoCustomParameters?: ServiceCustomParameter[]
 }
 
 export type ServiceType = 'authorization' | 'metadata' | 'access' | 'compute'
-export interface ServiceCommonAttributes extends RequiredData {
+
+export interface ServiceCommonAttributes extends ServiceCustomParametersRequired {
   main: { [key: string]: any }
   additionalInformation?: { [key: string]: any }
   status?: Status
