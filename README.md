@@ -229,6 +229,14 @@ The task does the following:
 
 For the GitHub releases steps a GitHub personal access token, exported as `GITHUB_TOKEN` is required. [Setup](https://github.com/release-it/release-it#github-releases)
 
+### Pre-Releases
+
+For pre-releases:
+
+```bash
+./node_modules/.bin/release-it major|minor|patch --preRelease=next
+```
+
 ## 🏛 License
 
 ```
