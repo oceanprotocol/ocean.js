@@ -15,6 +15,7 @@ export interface ComputeJob {
   resultsDid?: DID
   inputDID?: string[]
   algoDID?: string
+  agreementId?: string
 }
 
 export interface ComputeOutput {

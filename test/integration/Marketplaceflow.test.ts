@@ -639,6 +639,19 @@ describe('Marketplace flow', () => {
     assert.deepEqual(metaData.attributes.additionalInformation.links, [])
   })
 
+  it('Alice updates the author', async () => {
+    const newMetaData: EditableMetadata = {
+      author: 'SuperAlice'
+    }
+    const newDdo = await ocean.assets.editMetadata(ddo, newMetaData)
+    assert(newDdo !== null)
+    const txid = await ocean.onChainMetadata.update(newDdo.id, newDdo, alice.getId())
+    assert(txid !== null)
+    await sleep(60000)
+    const metaData = await ocean.assets.getServiceByType(ddo.id, 'metadata')
+    assert(metaData.attributes.main.author, newMetaData.author)
+  })
+
   it('Alice updates metadata and removes sample links with encrypted ddo', async () => {
     const newMetaData: EditableMetadata = {
       description: 'new description no links',

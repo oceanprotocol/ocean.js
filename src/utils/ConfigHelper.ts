@@ -16,8 +16,8 @@ export interface ConfigHelperConfig extends Config {
 const configHelperNetworksBase: ConfigHelperConfig = {
   networkId: null,
   network: 'unknown',
+  metadataCacheUri: 'https://aquarius.oceanprotocol.com',
   nodeUri: 'http://localhost:8545',
-  metadataCacheUri: 'http://127.0.0.1:5000',
   providerUri: 'http://127.0.0.1:8030',
   subgraphUri: null,
   explorerUri: null,
@@ -39,14 +39,14 @@ export const configHelperNetworks: ConfigHelperConfig[] = [
     // barge
     ...configHelperNetworksBase,
     networkId: 8996,
-    network: 'development'
+    network: 'development',
+    metadataCacheUri: 'http://127.0.0.1:5000'
   },
   {
     ...configHelperNetworksBase,
     networkId: 3,
     network: 'ropsten',
     nodeUri: 'https://ropsten.infura.io/v3',
-    metadataCacheUri: 'https://aquarius.ropsten.oceanprotocol.com',
     providerUri: 'https://provider.ropsten.oceanprotocol.com',
     subgraphUri: 'https://subgraph.ropsten.oceanprotocol.com',
     explorerUri: 'https://ropsten.etherscan.io',
@@ -57,7 +57,6 @@ export const configHelperNetworks: ConfigHelperConfig[] = [
     networkId: 4,
     network: 'rinkeby',
     nodeUri: 'https://rinkeby.infura.io/v3',
-    metadataCacheUri: 'https://aquarius.rinkeby.oceanprotocol.com',
     providerUri: 'https://provider.rinkeby.oceanprotocol.com',
     subgraphUri: 'https://subgraph.rinkeby.oceanprotocol.com',
     explorerUri: 'https://rinkeby.etherscan.io',
@@ -68,7 +67,6 @@ export const configHelperNetworks: ConfigHelperConfig[] = [
     networkId: 1,
     network: 'mainnet',
     nodeUri: 'https://mainnet.infura.io/v3',
-    metadataCacheUri: 'https://aquarius.mainnet.oceanprotocol.com',
     providerUri: 'https://provider.mainnet.oceanprotocol.com',
     subgraphUri: 'https://subgraph.mainnet.oceanprotocol.com',
     explorerUri: 'https://etherscan.io',
@@ -79,7 +77,6 @@ export const configHelperNetworks: ConfigHelperConfig[] = [
     networkId: 137,
     network: 'polygon',
     nodeUri: 'https://polygon-mainnet.infura.io/v3',
-    metadataCacheUri: 'https://aquarius.polygon.oceanprotocol.com',
     providerUri: 'https://provider.polygon.oceanprotocol.com',
     subgraphUri: 'https://subgraph.polygon.oceanprotocol.com',
     explorerUri: 'https://polygonscan.com',
@@ -91,7 +88,6 @@ export const configHelperNetworks: ConfigHelperConfig[] = [
     networkId: 1287,
     network: 'moonbeamalpha',
     nodeUri: 'https://rpc.testnet.moonbeam.network',
-    metadataCacheUri: 'https://aquarius.moonbeamalpha.oceanprotocol.com',
     providerUri: 'https://provider.moonbeamalpha.oceanprotocol.com',
     subgraphUri: 'https://subgraph.moonbeamalpha.oceanprotocol.com',
     explorerUri: 'https://moonbase-blockscout.testnet.moonbeam.network/',
@@ -101,8 +97,7 @@ export const configHelperNetworks: ConfigHelperConfig[] = [
     ...configHelperNetworksBase,
     networkId: 2021000,
     network: 'gaiaxtestnet',
-    nodeUri: 'https://gaia-x.rpc',
-    metadataCacheUri: 'https://aquarius.gaiaxtestnet.oceanprotocol.com',
+    nodeUri: 'https://rpc.gaiaxtestnet.oceanprotocol.com',
     providerUri: 'https://provider.gaiaxtestnet.oceanprotocol.com',
     subgraphUri: 'https://subgraph.gaiaxtestnet.oceanprotocol.com',
     explorerUri: 'https://blockscout.gaiaxtestnet.oceanprotocol.com'
@@ -112,7 +107,6 @@ export const configHelperNetworks: ConfigHelperConfig[] = [
     networkId: 80001,
     network: 'mumbai',
     nodeUri: 'https://polygon-mumbai.infura.io/v3',
-    metadataCacheUri: 'https://aquarius.mumbai.oceanprotocol.com',
     providerUri: 'https://provider.mumbai.oceanprotocol.com',
     subgraphUri: 'https://subgraph.mumbai.oceanprotocol.com',
     explorerUri: 'https://mumbai.polygonscan.com'
@@ -122,7 +116,6 @@ export const configHelperNetworks: ConfigHelperConfig[] = [
     networkId: 56,
     network: 'bsc',
     nodeUri: 'https://bsc-dataseed.binance.org',
-    metadataCacheUri: 'https://aquarius.bsc.oceanprotocol.com',
     providerUri: 'https://provider.bsc.oceanprotocol.com',
     subgraphUri: 'https://subgraph.bsc.oceanprotocol.com',
     explorerUri: 'https://bscscan.com/'

@@ -6,7 +6,7 @@ Here are the the steps:
 
 1. Initialize services
 2. Create a new node.js project
-3. Install dependancies
+3. Install dependencies
 4. Create a config file and update contract addresses
 5. Publish a new data token 
 6. Mint 100 tokens
@@ -37,9 +37,9 @@ cat > index.js
 # On linux press CTRL + D to save
 ```
 
-## 3. Install dependancies
+## 3. Install dependencies
 
-Open the package.json file in a text editor and update the dependancies to include the following: 
+Open the package.json file in a text editor and update the dependencies to include the following: 
 
 ```JSON
   "dependencies": {
