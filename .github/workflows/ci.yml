@@ -140,6 +140,7 @@ jobs:
           restore-keys: ${{ runner.os }}-${{ matrix.node }}-build-${{ env.cache-name }}-
       - run: npm ci
       - run: npm run build
+      - run: npm run doc:json
 
   coverage:
     runs-on: ubuntu-latest
