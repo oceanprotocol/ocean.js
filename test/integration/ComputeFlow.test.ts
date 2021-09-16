@@ -876,8 +876,7 @@ describe('Compute flow', () => {
       undefined,
       undefined,
       undefined,
-      computeOrderId,
-      true
+      computeOrderId
     )
     assert(response.length > 0, "Response.length is's not >0")
   })
@@ -889,8 +888,7 @@ describe('Compute flow', () => {
       undefined,
       undefined,
       jobId,
-      undefined,
-      false
+      undefined
     )
     assert(response[0].jobId === jobId, 'response[0].jobId !== jobId')
   })
@@ -902,8 +900,7 @@ describe('Compute flow', () => {
       undefined,
       undefined,
       undefined,
-      undefined,
-      false
+      undefined
     )
     assert(response.length > 0, 'Invalid response length')
   })
@@ -1638,8 +1635,7 @@ describe('Compute flow', () => {
       undefined,
       undefined,
       undefined,
-      undefined,
-      false
+      undefined
     )
     assert(response === null || response === undefined, 'Invalid response')
   })
