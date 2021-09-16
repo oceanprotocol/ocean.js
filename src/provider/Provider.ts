@@ -18,6 +18,11 @@ export interface ServiceEndpoint {
   urlPath: string
 }
 
+export interface ComputeLimits {
+  algoTimeLimit?: string
+  storageExpiry?: string
+}
+
 /**
  * Provides an interface for provider service.
  * Provider service is the technical component executed
@@ -31,6 +36,7 @@ export class Provider extends Instantiable {
   public computeAddress: string
   public providerAddress: string
   public providerVersion: string
+  public computeLimits: ComputeLimits
   /**
    * Returns the instance of Provider.
    * @return {Promise<Assets>}
@@ -66,6 +72,7 @@ export class Provider extends Instantiable {
       this.providerAddress = result.providerAddress
       if ('computeAddress' in result) this.computeAddress = result.computeAddress
       if ('version' in result) this.providerVersion = result.version
+      if ('computeLimits' in result) this.computeLimits = result.computeLimits
       for (const i in result.serviceEndpoints) {
         const endpoint: ServiceEndpoint = {
           serviceName: i,
