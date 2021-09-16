@@ -108,7 +108,7 @@ jobs:
         working-directory: ${{ github.workspace }}/barge
         env:
           OPERATOR_SERVICE_URL: https://c2d-dev.operator.oceanprotocol.com/
-          PROVIDER_VERSION: v0.4.15
+          PROVIDER_VERSION: v0.4.16
         run: |
           bash -x start_ocean.sh --with-provider2 --no-dashboard 2>&1 > start_ocean.log &
           cd .. && ./scripts/waitforcontracts.sh
