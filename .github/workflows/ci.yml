@@ -107,7 +107,7 @@ jobs:
       - name: Run Barge
         working-directory: ${{ github.workspace }}/barge
         env:
-          AQUARIUS_VERSION:v3.1.1
+          AQUARIUS_VERSION: v3.1.1
         run: |
           bash -x start_ocean.sh --with-provider2 --no-dashboard 2>&1 > start_ocean.log &
           cd .. && ./scripts/waitforcontracts.sh
