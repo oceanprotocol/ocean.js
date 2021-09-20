@@ -4,6 +4,7 @@ import { Logger, isDdo } from '../utils'
 import { WebServiceConnector } from '../ocean/utils/WebServiceConnector'
 import { Response } from 'node-fetch'
 import { Metadata, ValidateMetadata } from '../ddo/interfaces'
+const fetchLibrary = require('cross-fetch')
 
 const apiPath = '/api/v1/aquarius/assets/ddo'
 
@@ -107,33 +108,6 @@ export class MetadataCache {
   }
 
   /**
-   * Stores a DDO in Metadata Store.
-   * @param  {DDO} ddo DDO to be stored.
-   * @return {Promise<DDO>} Final DDO.
-   */
-  public async storeDDO(ddo: DDO): Promise<DDO> {
-    const fullUrl = `${this.url}${apiPath}`
-    const result: DDO = await this.fetch
-      .post(fullUrl, DDO.serialize(ddo))
-      .then((response: Response) => {
-        if (response.ok) {
-          return response.json()
-        }
-        this.logger.error('storeDDO failed:', response.status, response.statusText, ddo)
-        return null as DDO
-      })
-      .then((response: DDO) => {
-        return new DDO(response) as DDO
-      })
-      .catch((error) => {
-        this.logger.error('Error fetching querying metadata: ', error)
-        return null as DDO
-      })
-
-    return result
-  }
-
-  /**
    * Encrypts a DDO
    * @param  {any} ddo bytes to be encrypted.
    * @return {Promise<String>} Hex encoded encrypted DDO.
@@ -231,5 +205,41 @@ export class MetadataCache {
 
   public getURI(): string {
     return `${this.url}`
+  }
+
+  /**
+   * Simple blocking sleep function
+   */
+  public sleep(ms: number) {
+    return new Promise((resolve) => {
+      setTimeout(resolve, ms)
+    })
+  }
+
+  /**
+   * Blocks until Aqua will cache the did (or the update for that did) or timeouts
+   * @param  {string} did DID of the asset.
+   * @param  {string} txid used when the did exists and we expect an update with that txid
+   * @return {Promise<DDO>} DDO of the asset.
+   */
+  public async waitForAqua(did: string, txid?: string) {
+    const apiPath = '/api/v1/aquarius/assets/ddo'
+    let tries = 0
+    do {
+      try {
+        const result = await fetchLibrary(this.getURI() + apiPath + '/' + did)
+        if (result.ok) {
+          if (txid) {
+            // check tx
+            const ddo = await result.json()
+            if (ddo.event && ddo.event.txid === txid) break
+          } else break
+        }
+      } catch (e) {
+        // do nothing
+      }
+      await this.sleep(1500)
+      tries++
+    } while (tries < 100)
   }
 }
