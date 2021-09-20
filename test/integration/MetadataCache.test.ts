@@ -43,6 +43,7 @@ describe('MetadataCache', () => {
     })
 
     it('should query metadata with a new instance', async () => {
+      const config = new ConfigHelper().getConfig('development')
       const metadatastoreNew = new MetadataCache(config.metadataCacheUri, LoggerInstance)
 
       const result = await metadatastoreNew.queryMetadata(query)
