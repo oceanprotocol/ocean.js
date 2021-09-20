@@ -511,11 +511,6 @@ describe('Marketplace flow', () => {
     assert(balanceBefore === balanceAfter)
   })
 
-  it('owner can list their assets', async () => {
-    const assets = await ocean.assets.ownerAssets(alice.getId())
-    assert(assets.results.length > 0)
-  })
-
   it('Alice adds allow credentials for a dataset and deny credentials for another', async () => {
     const resolvedDDO = await ocean.assets.resolve(ddoWithCredentialsAllowList.id)
     const newDdo = await ocean.assets.updateCredentials(

@@ -8,16 +8,9 @@ import { Metadata, ValidateMetadata } from '../ddo/interfaces'
 
 const apiPath = '/api/v1/aquarius/assets/ddo'
 
-export interface QueryResult {
-  results: DDO[]
-  page: number
-  totalPages: number
-  totalResults: number
-}
-
 export interface SearchQuery {
-  offset?: number
-  page?: number
+  from?: number
+  size?: number
   query: {
     match?: {
       [property: string]:
@@ -35,7 +28,7 @@ export interface SearchQuery {
       [property: string]: string | number | string[] | number[] | boolean
     }
   }
-  sort?: { [jsonPath: string]: number }
+  sort?: { [jsonPath: string]: string }
 }
 
 /**
@@ -93,9 +86,9 @@ export class MetadataCache {
    * @param  {SearchQuery} query Query to filter the DDOs.
    * @return {Promise<QueryResult>}
    */
-  public async queryMetadata(query: SearchQuery): Promise<QueryResult> {
-    const result: QueryResult = await this.fetch
-      .post(`${this.url}${apiPath}/query`, JSON.stringify(query))
+  public async queryMetadata(query: SearchQuery): Promise<any> {
+    const result = await this.fetch
+      .post(`${this.url}/api/v1/aquarius/assets/query`, JSON.stringify(query))
       .then((response: Response) => {
         if (response.ok) {
           return response.json()
@@ -231,103 +224,6 @@ export class MetadataCache {
 
   public async retrieveDDOByUrl(metadataServiceEndpoint?: string): Promise<DDO> {
     return this.retrieveDDO(undefined, metadataServiceEndpoint)
-  }
-
-  /**
-   * Transfer ownership of a DDO
-   * @param  {DID | string} did DID of the asset to update.
-   * @param  {String} newOwner New owner of the DDO
-   * @param  {String} updated Updated field of the DDO
-   * @param  {String} signature Signature using updated field to verify that the consumer has rights
-   * @return {Promise<String>} Result.
-   */
-  public async transferOwnership(
-    did: DID | string,
-    newOwner: string,
-    updated: string,
-    signature: string
-  ): Promise<string> {
-    did = did && DID.parse(did)
-    const fullUrl = `${this.url}${apiPath}/owner/update/${did.getDid()}`
-    const result = await this.fetch
-      .put(
-        fullUrl,
-        JSON.stringify({
-          signature: signature,
-          updated: updated,
-          newOwner: newOwner
-        })
-      )
-      .then((response: Response) => {
-        if (response.ok) {
-          return response.text
-        }
-        this.logger.log('transferownership failed:', response.status, response.statusText)
-        return null
-      })
-
-      .catch((error) => {
-        this.logger.error('Error transfering ownership metadata: ', error)
-        return null
-      })
-
-    return result
-  }
-
-  public async getOwnerAssets(owner: string): Promise<QueryResult> {
-    const q = {
-      page: 1,
-      offset: 100,
-      query: {
-        query_string: {
-          query: `publicKey.owner:${owner}`
-        }
-      },
-      sort: {
-        created: 1
-      }
-    } as SearchQuery
-
-    const result = await this.queryMetadata(q)
-    return result
-  }
-
-  /**
-   * Retire a DDO (Delete)
-   * @param  {DID | string} did DID of the asset to update.
-   * @param  {String} updated Updated field of the DDO
-   * @param  {String} signature Signature using updated field to verify that the consumer has rights
-   * @return {Promise<String>} Result.
-   */
-  public async retire(
-    did: DID | string,
-    updated: string,
-    signature: string
-  ): Promise<string> {
-    did = did && DID.parse(did)
-    const fullUrl = `${this.url}${apiPath}/${did.getDid()}`
-    const result = await this.fetch
-      .delete(
-        fullUrl,
-        JSON.stringify({
-          signature: signature,
-          updated: updated
-        })
-      )
-      .then((response: Response) => {
-        if (response.ok) {
-          return response.text
-        }
-        this.logger.log('retire failed:', response.status, response.statusText)
-        return null
-      })
-
-      .catch((error) => {
-        this.logger.error('Error transfering ownership metadata: ', error)
-        return null
-      })
-
-    return result
   }
 
   public getServiceEndpoint(did: DID): string {
