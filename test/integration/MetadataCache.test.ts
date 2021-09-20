@@ -6,7 +6,6 @@ import { DDO } from '../../../src/ddo/DDO'
 import DID from '../../../src/ocean/DID'
 import config from '../config'
 import { LoggerInstance } from '../../../src/utils'
-import { responsify, getSearchResults } from '../helpers'
 
 use(spies)
 
@@ -39,6 +38,7 @@ describe('MetadataCache', () => {
 
     it('should query metadata', async () => {
       const result = await metadataCache.queryMetadata(query)
+      console.error(result)
       assert.typeOf(result.hits.hits, 'array')
       assert.isAtLeast(result.hits.hits.length, 1)
     })
