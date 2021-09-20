@@ -25,15 +25,15 @@ describe('MetadataCache', () => {
 
   describe('#queryMetadata()', () => {
     const query = {
-      offset: 100,
-      page: 1,
+      from: 0,
+      size: 100,
       query: {
         query_string: {
           query: 'Office'
         }
       },
       sort: {
-        value: 1
+        value: 'asc'
       }
     } as SearchQuery
 
