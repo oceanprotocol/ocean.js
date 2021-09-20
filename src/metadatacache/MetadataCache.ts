@@ -94,14 +94,14 @@ export class MetadataCache {
           return response.json()
         }
         this.logger.error('queryMetadata failed:', response.status, response.statusText)
-        return this.transformResult()
+        return null
       })
       .then((results) => {
-        return this.transformResult(results)
+        return results
       })
       .catch((error) => {
         this.logger.error('Error fetching querying metadata: ', error)
-        return this.transformResult()
+        return null
       })
 
     return result
@@ -232,21 +232,5 @@ export class MetadataCache {
 
   public getURI(): string {
     return `${this.url}`
-  }
-
-  private transformResult(
-    { results, page, total_pages: totalPages, total_results: totalResults }: any = {
-      result: [],
-      page: 0,
-      total_pages: 0,
-      total_results: 0
-    }
-  ): QueryResult {
-    return {
-      results: (results || []).map((ddo: DDO) => new DDO(ddo as DDO)),
-      page,
-      totalPages,
-      totalResults
-    }
   }
 }
