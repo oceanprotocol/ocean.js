@@ -1,6 +1,5 @@
 import { DDO } from '../ddo/DDO'
 import DID from '../ocean/DID'
-import { EditableMetadata } from '../ddo/interfaces/EditableMetadata'
 import { Logger, isDdo } from '../utils'
 import { WebServiceConnector } from '../ocean/utils/WebServiceConnector'
 import { Response } from 'node-fetch'
