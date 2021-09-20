@@ -1,11 +1,10 @@
 import { assert, spy, use } from 'chai'
 import spies from 'chai-spies'
-import { Ocean } from '../../../src/ocean/Ocean'
-import { MetadataCache, SearchQuery } from '../../../src/metadatacache/MetadataCache'
-import { DDO } from '../../../src/ddo/DDO'
-import DID from '../../../src/ocean/DID'
-import config from '../config'
-import { LoggerInstance } from '../../../src/utils'
+import { Ocean } from '../../src/ocean/Ocean'
+import { MetadataCache, SearchQuery } from '../../src/metadatacache/MetadataCache'
+import { DDO } from '../../src/ddo/DDO'
+import { ConfigHelper } from '../../src/utils/ConfigHelper'
+import { LoggerInstance } from '../../src/utils'
 
 use(spies)
 
@@ -14,6 +13,7 @@ describe('MetadataCache', () => {
   let metadataCache: MetadataCache
 
   beforeEach(async () => {
+    const config = new ConfigHelper().getConfig('development')
     ocean = await Ocean.getInstance(config)
     metadataCache = ocean.metadataCache // eslint-disable-line prefer-destructuring
   })
@@ -38,7 +38,6 @@ describe('MetadataCache', () => {
 
     it('should query metadata', async () => {
       const result = await metadataCache.queryMetadata(query)
-      console.error(result)
       assert.typeOf(result.hits.hits, 'array')
       assert.isAtLeast(result.hits.hits.length, 1)
     })
