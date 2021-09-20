@@ -219,7 +219,7 @@ export class MetadataCache {
   /**
    * Blocks until Aqua will cache the did (or the update for that did) or timeouts
    * @param  {string} did DID of the asset.
-   * @param  {string} txid used when the did exists and we expect an update with that txid
+   * @param  {string} txid used when the did exists and we expect an update with that txid.
    * @return {Promise<DDO>} DDO of the asset.
    */
   public async waitForAqua(did: string, txid?: string) {
