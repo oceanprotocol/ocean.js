@@ -1,6 +1,7 @@
 import { DDO } from '../ddo/DDO'
 import { Metadata } from '../ddo/interfaces/Metadata'
 import { Service, ServiceAccess } from '../ddo/interfaces/Service'
+import { SearchQuery } from '../metadatacache/MetadataCache'
 import { EditableMetadata } from '../ddo/interfaces/EditableMetadata'
 import Account from './Account'
 import DID from './DID'
@@ -429,6 +430,14 @@ export class Assets extends Instantiable {
   }
 
   /**
+   * Search over the assets using a query.
+   * @param  {SearchQuery} query Query to filter the assets.
+   * @return {Promise<QueryResult>}
+   */
+  public async query(query: SearchQuery): Promise<any> {
+    return this.ocean.metadataCache.queryMetadata(query)
+  }
+  /**
    * Creates an access service
    * @param {Account} creator
    * @param {String} cost  number of datatokens needed for this service
@@ -436,6 +445,7 @@ export class Assets extends Instantiable {
    * @param {Number} timeout
    * @return {Promise<string>} service
    */
+
   public async createAccessServiceAttributes(
     creator: Account,
     cost: string,
