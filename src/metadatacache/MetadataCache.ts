@@ -4,7 +4,7 @@ import { Logger, isDdo } from '../utils'
 import { WebServiceConnector } from '../ocean/utils/WebServiceConnector'
 import { Response } from 'node-fetch'
 import { Metadata, ValidateMetadata } from '../ddo/interfaces'
-const fetchLibrary = require('cross-fetch')
+import { fetch as fetchLibrary } from 'cross-fetch'
 
 const apiPath = '/api/v1/aquarius/assets/ddo'
 
