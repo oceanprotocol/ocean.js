@@ -1,7 +1,7 @@
-import { SearchQuery, QueryResult } from '../metadatacache/MetadataCache'
 import { DDO } from '../ddo/DDO'
 import { Metadata } from '../ddo/interfaces/Metadata'
 import { Service, ServiceAccess } from '../ddo/interfaces/Service'
+import { SearchQuery } from '../metadatacache/MetadataCache'
 import { EditableMetadata } from '../ddo/interfaces/EditableMetadata'
 import Account from './Account'
 import DID from './DID'
@@ -213,43 +213,12 @@ export class Assets extends Instantiable {
   }
 
   /**
-   * Returns the assets of a owner.
-   * @param  {string} owner Owner address.
-   * @return {Promise<string[]>} List of DIDs.
-   */
-  public async ownerAssets(owner: string): Promise<QueryResult> {
-    return this.ocean.metadataCache.getOwnerAssets(owner)
-  }
-
-  /**
    * Returns a DDO by DID.
    * @param  {string} did Decentralized ID.
    * @return {Promise<DDO>}
    */
   public async resolve(did: string): Promise<DDO> {
     return this.ocean.metadataCache.retrieveDDO(did)
-  }
-
-  public async resolveByDTAddress(
-    dtAddress: string,
-    offset?: number,
-    page?: number,
-    sort?: number
-  ): Promise<DDO[]> {
-    const searchQuery = {
-      offset: offset || 100,
-      page: page || 1,
-      query: {
-        query_string: {
-          query: `dataToken:${dtAddress}`
-        }
-      },
-      sort: {
-        value: sort || 1
-      },
-      text: dtAddress
-    } as SearchQuery
-    return (await this.ocean.metadataCache.queryMetadata(searchQuery)).results
   }
 
   /**    Metadata updates
@@ -428,35 +397,6 @@ export class Assets extends Instantiable {
     return creator
   }
 
-  /**
-   * Search over the assets using a query.
-   * @param  {SearchQuery} query Query to filter the assets.
-   * @return {Promise<QueryResult>}
-   */
-  public async query(query: SearchQuery): Promise<QueryResult> {
-    return this.ocean.metadataCache.queryMetadata(query)
-  }
-
-  /**
-   * Search over the assets using a keyword.
-   * @param  {SearchQuery} text Text to filter the assets.
-   * @return {Promise<QueryResult>}
-   */
-  public async search(text: string): Promise<QueryResult> {
-    return this.ocean.metadataCache.queryMetadata({
-      page: 1,
-      offset: 100,
-      query: {
-        query_string: {
-          query: text
-        }
-      },
-      sort: {
-        created: -1
-      }
-    } as SearchQuery)
-  }
-
   public async getServiceByType(
     asset: DDO | string,
     serviceType: string
@@ -490,6 +430,14 @@ export class Assets extends Instantiable {
   }
 
   /**
+   * Search over the assets using a query.
+   * @param  {SearchQuery} query Query to filter the assets.
+   * @return {Promise<QueryResult>}
+   */
+  public async query(query: SearchQuery): Promise<any> {
+    return this.ocean.metadataCache.queryMetadata(query)
+  }
+  /**
    * Creates an access service
    * @param {Account} creator
    * @param {String} cost  number of datatokens needed for this service
@@ -497,6 +445,7 @@ export class Assets extends Instantiable {
    * @param {Number} timeout
    * @return {Promise<string>} service
    */
+
   public async createAccessServiceAttributes(
     creator: Account,
     cost: string,
