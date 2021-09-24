@@ -142,7 +142,7 @@ export class Pool extends PoolFactory {
     spender: string,
     amount: string,
     force = false
-  ): Promise<TransactionReceipt> {
+  ): Promise<TransactionReceipt | string> {
     const minABI = [
       {
         constant: false,
@@ -173,9 +173,10 @@ export class Pool extends PoolFactory {
     })
     if (!force) {
       const currentAllowence = await this.allowance(tokenAddress, account, spender)
-      if (new Decimal(currentAllowence).greaterThanOrEqualTo(amount)) {
-        // we have enough
-        return null
+      if (
+        new Decimal(this.web3.utils.toWei(currentAllowence)).greaterThanOrEqualTo(amount)
+      ) {
+        return currentAllowence
       }
     }
     let result = null

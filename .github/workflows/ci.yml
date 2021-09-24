@@ -114,10 +114,6 @@ jobs:
           cd .. && ./scripts/waitforcontracts.sh
 
       - run: npm run test:integration:cover
-      - run: docker logs ocean_provider_1
-        if: always()
-      - run: docker logs ocean_provider2_1
-        if: always()
       - uses: actions/upload-artifact@v2
         with:
           name: coverage
@@ -147,6 +143,7 @@ jobs:
           restore-keys: ${{ runner.os }}-${{ matrix.node }}-build-${{ env.cache-name }}-
       - run: npm ci
       - run: npm run build
+      - run: npm run doc:json
 
   coverage:
     runs-on: ubuntu-latest

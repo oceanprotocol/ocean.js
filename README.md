@@ -42,6 +42,7 @@ This is in alpha state and you can expect running into problems. If you run into
 - [🛳 Production](#-production)
 - [⬆️ Releases](#️-releases)
   - [Production](#production)
+  - [Pre-releases](#pre-releases)
 - [🏛 License](#-license)
 
 ## 📚 Prerequisites
@@ -228,6 +229,16 @@ The task does the following:
 - Git tag push will trigger a GitHub Action workflow to do a npm release
 
 For the GitHub releases steps a GitHub personal access token, exported as `GITHUB_TOKEN` is required. [Setup](https://github.com/release-it/release-it#github-releases)
+
+### Pre-Releases
+
+For pre-releases, this is required for the first one like `v0.18.0-next.0`:
+
+```bash
+./node_modules/.bin/release-it major|minor|patch --preRelease=next
+```
+
+Further releases afterwards can be done with `npm run release` again and selecting the appropriate next version, in this case `v0.18.0-next.1` and so on.
 
 ## 🏛 License
 

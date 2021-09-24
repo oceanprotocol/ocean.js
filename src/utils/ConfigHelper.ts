@@ -97,10 +97,20 @@ export const configHelperNetworks: ConfigHelperConfig[] = [
     ...configHelperNetworksBase,
     networkId: 2021000,
     network: 'gaiaxtestnet',
-    nodeUri: 'https://gaia-x.rpc',
+    nodeUri: 'https://rpc.gaiaxtestnet.oceanprotocol.com',
     providerUri: 'https://provider.gaiaxtestnet.oceanprotocol.com',
     subgraphUri: 'https://subgraph.gaiaxtestnet.oceanprotocol.com',
     explorerUri: 'https://blockscout.gaiaxtestnet.oceanprotocol.com'
+  },
+  {
+    ...configHelperNetworksBase,
+    networkId: 2021001,
+    network: 'catenaxtestnet',
+    nodeUri: 'https://rpc.catenaxtestnet.oceanprotocol.com',
+    providerUri: 'https://provider.catenaxtestnet.oceanprotocol.com',
+    subgraphUri: 'https://subgraph.catenaxtestnet.oceanprotocol.com',
+    explorerUri: 'https://blockscout.catenaxtestnet.oceanprotocol.com',
+    metadataCacheUri: 'https://aquarius.catenaxtestnet.oceanprotocol.com'
   },
   {
     ...configHelperNetworksBase,
