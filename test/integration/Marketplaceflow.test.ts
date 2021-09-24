@@ -35,11 +35,13 @@ describe('Marketplace flow', () => {
   let ddoWithCredentialsAllowList
   let ddoWithCredentialsDenyList
   let ddoWithCredentials
+  let ddoWithUserData
   let asset
   let assetWithPool
   let assetWithBadUrl
   let assetWithEncrypt
   let assetInvalidNoName
+  let assetWithUserData
   let marketplace: Account
   let contracts: TestContractHandler
   let datatoken: DataTokens
@@ -48,6 +50,7 @@ describe('Marketplace flow', () => {
   let tokenAddressForBadUrlAsset: string
   let tokenAddressEncrypted: string
   let tokenAddressInvalidNoName: string
+  let tokenAddressWithUserData
   let service1: ServiceAccess
   let price: string
   let ocean: Ocean
@@ -133,6 +136,15 @@ describe('Marketplace flow', () => {
       'DTA'
     )
     assert(tokenAddressInvalidNoName != null)
+
+    tokenAddressWithUserData = await datatoken.create(
+      blob,
+      alice.getId(),
+      '10000000000',
+      'AliceDT',
+      'DTA'
+    )
+    assert(tokenAddressWithUserData != null)
   })
 
   it('Generates metadata', async () => {
@@ -226,6 +238,27 @@ describe('Marketplace flow', () => {
         files: [
           {
             url: 'https://s3.amazonaws.com/testfiles.oceanprotocol.com/nosuchfile',
+            checksum: 'efb2c764274b745f5fc37f97c6b0e761',
+            contentLength: '4535431',
+            contentType: 'text/csv',
+            encoding: 'UTF-8',
+            compression: 'zip'
+          }
+        ]
+      }
+    }
+
+    assetWithUserData = {
+      main: {
+        type: 'dataset',
+        name: 'test-dataset-with-pools',
+        dateCreated: new Date(Date.now()).toISOString().split('.')[0] + 'Z', // remove milliseconds
+        datePublished: new Date(Date.now()).toISOString().split('.')[0] + 'Z', // remove milliseconds
+        author: 'oceanprotocol-team',
+        license: 'MIT',
+        files: [
+          {
+            url: 'https://s3.amazonaws.com/testfiles.oceanprotocol.com/info.0.json',
             checksum: 'efb2c764274b745f5fc37f97c6b0e761',
             contentLength: '4535431',
             contentType: 'text/csv',
@@ -342,6 +375,46 @@ describe('Marketplace flow', () => {
       false
     )
     assert(storeTxWithCredentials)
+
+    const userdata = {
+      userCustomParameters: [
+        {
+          name: 'firstname',
+          type: 'text',
+          label: 'Your first name',
+          required: true,
+          description: 'Your name'
+        },
+        {
+          name: 'lastname',
+          type: 'text',
+          label: 'Your last name',
+          required: false,
+          description: 'Your last name'
+        }
+      ]
+    }
+    const serviceWithUserData = await ocean.assets.createAccessServiceAttributes(
+      alice,
+      price,
+      publishedDate,
+      timeout,
+      null,
+      userdata
+    )
+    ddoWithUserData = await ocean.assets.create(
+      asset,
+      alice,
+      [serviceWithUserData],
+      tokenAddressWithUserData
+    )
+    const storeTxWithUserData = await ocean.onChainMetadata.publish(
+      ddoWithUserData.id,
+      ddoWithUserData,
+      alice.getId(),
+      false
+    )
+    assert(storeTxWithUserData)
     // wait for all this assets to be published
     await ocean.metadataCache.waitForAqua(ddo.id)
     await ocean.metadataCache.waitForAqua(ddoWithBadUrl.id)
@@ -350,6 +423,7 @@ describe('Marketplace flow', () => {
     await ocean.metadataCache.waitForAqua(ddoWithCredentialsAllowList.id)
     await ocean.metadataCache.waitForAqua(ddoWithCredentialsDenyList.id)
     await ocean.metadataCache.waitForAqua(ddoWithCredentials.id)
+    await ocean.metadataCache.waitForAqua(ddoWithUserData.id)
   })
 
   it('Alice should fail to publish invalid dataset', async () => {
@@ -404,6 +478,7 @@ describe('Marketplace flow', () => {
     await datatoken.mint(tokenAddressForBadUrlAsset, alice.getId(), tokenAmount)
     await datatoken.mint(tokenAddressEncrypted, alice.getId(), tokenAmount)
     await datatoken.mint(tokenAddressWithPool, alice.getId(), tokenAmount)
+    await datatoken.mint(tokenAddressWithUserData, alice.getId(), tokenAmount)
     // since we are in barge, we can do this
     await datatoken.mint(ocean.pool.oceanAddress, owner.getId(), tokenAmount)
     await datatoken.transfer(ocean.pool.oceanAddress, alice.getId(), '200', owner.getId())
@@ -447,18 +522,28 @@ describe('Marketplace flow', () => {
 
   it('Bob gets datatokens', async () => {
     const dTamount = '20'
-    await datatoken
-      .transfer(tokenAddress, bob.getId(), dTamount, alice.getId())
-      .then(async () => {
-        const balance = await datatoken.balance(tokenAddress, bob.getId())
-        assert(balance.toString() === dTamount.toString())
-      })
-    await datatoken
-      .transfer(tokenAddressForBadUrlAsset, bob.getId(), dTamount, alice.getId())
-      .then(async () => {
-        const balance = await datatoken.balance(tokenAddressForBadUrlAsset, bob.getId())
-        assert(balance.toString() === dTamount.toString())
-      })
+    let balance
+    await datatoken.transfer(tokenAddress, bob.getId(), dTamount, alice.getId())
+    balance = await datatoken.balance(tokenAddress, bob.getId())
+    assert(balance.toString() === dTamount.toString())
+
+    await datatoken.transfer(
+      tokenAddressForBadUrlAsset,
+      bob.getId(),
+      dTamount,
+      alice.getId()
+    )
+    balance = await datatoken.balance(tokenAddressForBadUrlAsset, bob.getId())
+    assert(balance.toString() === dTamount.toString())
+
+    await datatoken.transfer(
+      tokenAddressWithUserData,
+      bob.getId(),
+      dTamount,
+      alice.getId()
+    )
+    balance = await datatoken.balance(tokenAddressWithUserData, bob.getId())
+    assert(balance.toString() === dTamount.toString())
   })
 
   it('Bob consumes asset 1', async () => {
@@ -771,5 +856,42 @@ describe('Marketplace flow', () => {
     consumable = await ocean.assets.isConsumable(ddoWithCredentials, charlie.getId())
     assert(consumable.status === 3)
     assert(consumable.result === false)
+  })
+
+  it('Bob tries to order asset with Custom Data, but he does not provide all the params', async () => {
+    try {
+      const order = await ocean.assets.order(
+        ddoWithUserData.id,
+        accessService.type,
+        bob.getId()
+      )
+      assert(order === null, 'Order should be null')
+    } catch (error) {
+      assert(error != null, 'Order should throw error')
+    }
+  })
+
+  it('Bob tries to order asset with Custom Data, providing all required user inputs', async () => {
+    const bobUserData = {
+      firstname: 'Bob',
+      lastname: 'Doe'
+    }
+
+    try {
+      const service = ddoWithUserData.findServiceByType('access')
+      const serviceIndex = service.index
+      const order = await ocean.assets.order(
+        ddoWithUserData.id,
+        accessService.type,
+        bob.getId(),
+        serviceIndex,
+        null,
+        null,
+        bobUserData
+      )
+      assert(order != null, 'Order should not be null')
+    } catch (error) {
+      assert(error === null, 'Order should not throw error')
+    }
   })
 })

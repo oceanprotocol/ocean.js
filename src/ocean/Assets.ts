@@ -1,6 +1,11 @@
 import { DDO } from '../ddo/DDO'
 import { Metadata } from '../ddo/interfaces/Metadata'
-import { Service, ServiceAccess } from '../ddo/interfaces/Service'
+import {
+  Service,
+  ServiceAccess,
+  ServiceCustomParameter,
+  ServiceCustomParametersRequired
+} from '../ddo/interfaces/Service'
 import { SearchQuery } from '../metadatacache/MetadataCache'
 import { EditableMetadata } from '../ddo/interfaces/EditableMetadata'
 import Account from './Account'
@@ -9,15 +14,11 @@ import { SubscribablePromise, didNoZeroX, didPrefixed, assetResolve } from '../u
 import { Instantiable, InstantiableConfig } from '../Instantiable.abstract'
 import { WebServiceConnector } from './utils/WebServiceConnector'
 import BigNumber from 'bignumber.js'
-import { Provider } from '../provider/Provider'
+import { Provider, UserCustomParameters } from '../provider/Provider'
 import { isAddress } from 'web3-utils'
 import { MetadataMain } from '../ddo/interfaces'
 import { TransactionReceipt } from 'web3-core'
-import {
-  CredentialType,
-  CredentialAction,
-  Credentials
-} from '../ddo/interfaces/Credentials'
+import { CredentialType } from '../ddo/interfaces/Credentials'
 import { updateCredentialDetail, removeCredentialDetail } from './AssetsCredential'
 import { Consumable } from '../ddo/interfaces/Consumable'
 
@@ -71,7 +72,7 @@ export class Assets extends Instantiable {
    * @param {String} name Token name
    * @param {String} symbol Token symbol
    * @param {String} providerUri
-   * @return {Promise<DDO>}
+   * @return {SubscribablePromise<CreateProgressStep, DDO>}
    */
   public create(
     metadata: Metadata,
@@ -443,17 +444,20 @@ export class Assets extends Instantiable {
    * @param {String} cost  number of datatokens needed for this service
    * @param {String} datePublished
    * @param {Number} timeout
-   * @return {Promise<string>} service
+   * @param {String} providerUri
+   * @param {ServiceCustomParametersRequired} requiredParameters
+   * @return {Promise<ServiceAccess>} service
    */
 
   public async createAccessServiceAttributes(
     creator: Account,
     cost: string,
     datePublished: string,
-    timeout = 0,
-    providerUri?: string
+    timeout: number = 0,
+    providerUri?: string,
+    requiredParameters?: ServiceCustomParametersRequired
   ): Promise<ServiceAccess> {
-    return {
+    const service: ServiceAccess = {
       type: 'access',
       index: 2,
       serviceEndpoint: providerUri || this.ocean.provider.url,
@@ -467,6 +471,11 @@ export class Assets extends Instantiable {
         }
       }
     }
+    if (requiredParameters?.userCustomParameters)
+      service.attributes.userCustomParameters = requiredParameters.userCustomParameters
+    if (requiredParameters?.algoCustomParameters)
+      service.attributes.algoCustomParameters = requiredParameters.algoCustomParameters
+    return service
   }
 
   /**
@@ -477,14 +486,16 @@ export class Assets extends Instantiable {
    * @param {String} consumerAddress
    * @param {Number} serviceIndex
    * @param {String} serviceEndpoint
+   * @param {UserCustomParameters} userCustomParameters
    * @return {Promise<any>} Order details
    */
   public async initialize(
     asset: DDO | string,
     serviceType: string,
     consumerAddress: string,
-    serviceIndex = -1,
-    serviceEndpoint: string
+    serviceIndex: number = -1,
+    serviceEndpoint: string,
+    userCustomParameters?: UserCustomParameters
   ): Promise<any> {
     const provider = await Provider.getInstance(this.instanceConfig)
     await provider.setBaseUrl(serviceEndpoint)
@@ -492,7 +503,8 @@ export class Assets extends Instantiable {
       asset,
       serviceIndex,
       serviceType,
-      consumerAddress
+      consumerAddress,
+      userCustomParameters
     )
     if (res === null) return null
     const providerData = JSON.parse(res)
@@ -507,15 +519,17 @@ export class Assets extends Instantiable {
    * @param {Number} serviceIndex
    * @param {String} mpAddress Marketplace fee collector address
    * @param {String} consumerAddress Optionally, if the consumer is another address than payer
+   * @param {UserCustomParameters} userCustomParameters
    * @return {Promise<String>} transactionHash of the payment
    */
   public async order(
     asset: DDO | string,
     serviceType: string,
     payerAddress: string,
-    serviceIndex = -1,
+    serviceIndex: number = -1,
     mpAddress?: string,
     consumerAddress?: string,
+    userCustomParameters?: UserCustomParameters,
     searchPreviousOrders = true
   ): Promise<string> {
     let service: Service
@@ -533,13 +547,25 @@ export class Assets extends Instantiable {
       service = await this.getServiceByIndex(ddo, serviceIndex)
       serviceType = service.type
     }
+    // TODO validate userCustomParameters
+    if (
+      !(await this.isUserCustomParametersValid(
+        service.attributes.userCustomParameters,
+        userCustomParameters
+      ))
+    ) {
+      throw new Error(
+        `Order asset failed, Missing required fiels in userCustomParameters`
+      )
+    }
     try {
       const providerData = await this.initialize(
         ddo,
         serviceType,
         payerAddress,
         serviceIndex,
-        service.serviceEndpoint
+        service.serviceEndpoint,
+        userCustomParameters
       )
       if (!providerData)
         throw new Error(
@@ -731,5 +757,26 @@ export class Assets extends Instantiable {
     // return: 3, Access is denied, your wallet address is found on deny list
     */
     return { status, message, result }
+  }
+
+  /**
+   * Validate custom user parameters (user & algorithms)
+   * @param {ServiceCustomParameter[]} serviceCustomParameters
+   * @param {UserCustomParameters} userCustomParameters
+   * @return {Promise<Boolean>}
+   */
+  public async isUserCustomParametersValid(
+    serviceCustomParameters: ServiceCustomParameter[],
+    userCustomParameters?: UserCustomParameters
+  ): Promise<boolean> {
+    if (serviceCustomParameters)
+      for (const data of serviceCustomParameters) {
+        const keyname = data.name
+        if (!userCustomParameters || !userCustomParameters[keyname]) {
+          this.logger.error('Missing key: ' + keyname + ' from customData')
+          return false
+        }
+      }
+    return true
   }
 }

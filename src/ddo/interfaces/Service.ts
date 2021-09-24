@@ -1,9 +1,23 @@
 import { Metadata } from './Metadata'
 import { Status } from './Status'
 
+export interface ServiceCustomParameter {
+  name: string
+  type: string
+  label: string
+  required: boolean
+  options?: any
+  description: string
+}
+
+export interface ServiceCustomParametersRequired {
+  userCustomParameters?: ServiceCustomParameter[]
+  algoCustomParameters?: ServiceCustomParameter[]
+}
+
 export type ServiceType = 'authorization' | 'metadata' | 'access' | 'compute'
 
-export interface ServiceCommonAttributes {
+export interface ServiceCommonAttributes extends ServiceCustomParametersRequired {
   main: { [key: string]: any }
   additionalInformation?: { [key: string]: any }
   status?: Status
@@ -33,9 +47,9 @@ export interface publisherTrustedAlgorithm {
 }
 
 export interface ServiceComputePrivacy {
-  allowRawAlgorithm: boolean
-  allowNetworkAccess: boolean
-  allowAllPublishedAlgorithms: boolean
+  allowRawAlgorithm?: boolean
+  allowNetworkAccess?: boolean
+  allowAllPublishedAlgorithms?: boolean
   publisherTrustedAlgorithms?: publisherTrustedAlgorithm[]
 }
 

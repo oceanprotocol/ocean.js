@@ -18,6 +18,10 @@ export interface ServiceEndpoint {
   urlPath: string
 }
 
+export interface UserCustomParameters {
+  [key: string]: any
+}
+
 /**
  * Provides an interface for provider service.
  * Provider service is the technical component executed
@@ -188,7 +192,8 @@ export class Provider extends Instantiable {
     asset: DDO | string,
     serviceIndex: number,
     serviceType: string,
-    consumerAddress: string
+    consumerAddress: string,
+    userCustomParameters?: UserCustomParameters
   ): Promise<string> {
     const { did, ddo } = await assetResolve(asset, this.ocean)
     let initializeUrl = this.getInitializeEndpoint()
@@ -200,6 +205,8 @@ export class Provider extends Instantiable {
     initializeUrl += `&serviceType=${serviceType}`
     initializeUrl += `&dataToken=${ddo.dataToken}`
     initializeUrl += `&consumerAddress=${consumerAddress}`
+    if (userCustomParameters)
+      initializeUrl += '&userdata=' + encodeURI(JSON.stringify(userCustomParameters))
     try {
       const response = await this.ocean.utils.fetch.get(initializeUrl)
       return await response.text()
@@ -218,7 +225,8 @@ export class Provider extends Instantiable {
     destination: string,
     account: Account,
     files: File[],
-    index = -1
+    index = -1,
+    userCustomParameters?: UserCustomParameters
   ): Promise<any> {
     await this.getNonce(account.getId())
     const signature = await this.createSignature(account, did + this.nonce)
@@ -236,7 +244,8 @@ export class Provider extends Instantiable {
         consumeUrl += `&transferTxId=${txId}`
         consumeUrl += `&consumerAddress=${account.getId()}`
         consumeUrl += `&signature=${signature}`
-
+        if (userCustomParameters)
+          consumeUrl += '&userdata=' + encodeURI(JSON.stringify(userCustomParameters))
         try {
           !destination
             ? await this.ocean.utils.fetch.downloadFileBrowser(consumeUrl)
@@ -262,7 +271,8 @@ export class Provider extends Instantiable {
     serviceIndex?: string,
     serviceType?: string,
     tokenAddress?: string,
-    additionalInputs?: ComputeInput[]
+    additionalInputs?: ComputeInput[],
+    userCustomParameters?: UserCustomParameters
   ): Promise<ComputeJob | ComputeJob[]> {
     const address = consumerAccount.getId()
     await this.getNonce(consumerAccount.getId())
@@ -291,6 +301,9 @@ export class Provider extends Instantiable {
     if (tokenAddress) payload.dataToken = tokenAddress
 
     if (additionalInputs) payload.additionalInputs = additionalInputs
+    if (userCustomParameters) payload.userData = userCustomParameters
+    if (algorithm.algoCustomParameters)
+      payload.algouserdata = algorithm.algoCustomParameters
     const path = this.getComputeStartEndpoint()
       ? this.getComputeStartEndpoint().urlPath
       : null
