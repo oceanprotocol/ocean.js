@@ -15,29 +15,6 @@ import { ComputeInput, ComputeAlgorithm } from '../../src/ocean/interfaces/Compu
 const web3 = new Web3('http://127.0.0.1:8545')
 const fetch = require('cross-fetch')
 
-function sleep(ms: number) {
-  return new Promise((resolve) => {
-    setTimeout(resolve, ms)
-  })
-}
-
-async function waitForAqua(ocean, did) {
-  const apiPath = '/api/v1/aquarius/assets/ddo'
-  let tries = 0
-  do {
-    try {
-      const result = await fetch(ocean.metadataCache.url + apiPath + '/' + did)
-      if (result.ok) {
-        break
-      }
-    } catch (e) {
-      // do nothing
-    }
-    await sleep(1500)
-    tries++
-  } while (tries < 100)
-}
-
 /*       How to handle a compute job
 1. find your algorithm
 2. find your primary compute dataset
@@ -95,7 +72,6 @@ describe('Compute flow', () => {
   const dateCreated = new Date(Date.now()).toISOString().split('.')[0] + 'Z' // remove milliseconds
 
   const tokenAmount = '1000'
-  const aquaSleep = 50000
 
   const timeout = 86400
   const algorithmMeta = {
@@ -318,7 +294,6 @@ describe('Compute flow', () => {
     assert(ddo.dataToken === tokenAddress, 'ddo.dataToken !== tokenAddress')
     const storeTx = await ocean.onChainMetadata.publish(ddo.id, ddo, alice.getId())
     assert(storeTx)
-    await waitForAqua(ocean, ddo.id)
   })
   it('Alice publishes a 2nd dataset with a compute service that allows Raw Algo', async () => {
     const price2 = '2' // in datatoken
@@ -381,7 +356,6 @@ describe('Compute flow', () => {
       alice.getId()
     )
     assert(storeTx)
-    await waitForAqua(ocean, ddoAdditional1.id)
   })
 
   it('Alice publishes a 3rd dataset with a access service', async () => {
@@ -409,7 +383,6 @@ describe('Compute flow', () => {
       alice.getId()
     )
     assert(storeTx)
-    await waitForAqua(ocean, ddoAdditional2.id)
   })
 
   it('should publish a dataset with a compute service object that does not allow rawAlgo', async () => {
@@ -443,7 +416,6 @@ describe('Compute flow', () => {
       alice.getId()
     )
     assert(storeTx)
-    await waitForAqua(ocean, datasetNoRawAlgo.id)
   })
 
   it('should publish a dataset with a compute service object that allows only algo with did:op:1234', async () => {
@@ -483,7 +455,6 @@ describe('Compute flow', () => {
       alice.getId()
     )
     assert(storeTx)
-    await waitForAqua(ocean, datasetWithTrustedAlgo.id)
   })
 
   it('should publish an algorithm', async () => {
@@ -536,7 +507,6 @@ describe('Compute flow', () => {
       alice.getId()
     )
     assert(storeTx)
-    await waitForAqua(ocean, algorithmAsset.id)
   })
 
   it('should publish an algorithm with a compute service', async () => {
@@ -597,9 +567,16 @@ describe('Compute flow', () => {
       alice.getId()
     )
     assert(storeTx)
-    await waitForAqua(ocean, algorithmAssetwithCompute.id)
   })
-
+  it('should wait for all assets to be published', async () => {
+    await ocean.metadataCache.waitForAqua(ddo.id)
+    await ocean.metadataCache.waitForAqua(ddoAdditional1.id)
+    await ocean.metadataCache.waitForAqua(ddoAdditional2.id)
+    await ocean.metadataCache.waitForAqua(datasetNoRawAlgo.id)
+    await ocean.metadataCache.waitForAqua(datasetWithTrustedAlgo.id)
+    await ocean.metadataCache.waitForAqua(algorithmAsset.id)
+    await ocean.metadataCache.waitForAqua(algorithmAssetwithCompute.id)
+  })
   it('should publish an algorithm using the 2nd provider', async () => {
     const remoteProviderUri = 'http://172.15.0.7:8030'
     const algoAssetRemoteProvider: Metadata = {
@@ -656,7 +633,7 @@ describe('Compute flow', () => {
       alice.getId()
     )
     assert(storeTx)
-    await waitForAqua(ocean, algorithmAssetRemoteProvider.id)
+    await ocean.metadataCache.waitForAqua(algorithmAssetRemoteProvider.id)
     const checkDDO = await ocean.assets.resolve(algorithmAssetRemoteProvider.id)
     const checkService = checkDDO.findServiceByType('access')
     assert(
@@ -730,7 +707,7 @@ describe('Compute flow', () => {
       alice.getId()
     )
     assert(storeTx)
-    await waitForAqua(ocean, algorithmAssetRemoteProviderWithCompute.id)
+    await ocean.metadataCache.waitForAqua(algorithmAssetRemoteProviderWithCompute.id)
     const checkDDO = await ocean.assets.resolve(
       algorithmAssetRemoteProviderWithCompute.id
     )
@@ -1165,7 +1142,7 @@ describe('Compute flow', () => {
     assert(newDdo !== null, 'newDDO should not be null')
     const txid = await ocean.onChainMetadata.update(ddo.id, newDdo, alice.getId())
     assert(txid !== null, 'TxId should not be null')
-    await sleep(aquaSleep)
+    await ocean.metadataCache.waitForAqua(ddo.id, txid.transactionHash)
     const metaData = await ocean.assets.getServiceByType(ddo.id, 'compute')
     assert.equal(
       metaData.attributes.main.privacy.allowRawAlgorithm,
@@ -1711,7 +1688,7 @@ describe('Compute flow', () => {
     assert(newDdo !== null, 'newDDO should not be null')
     const txid = await ocean.onChainMetadata.update(ddo.id, newDdo, alice.getId())
     assert(txid !== null, 'TxId should not be null')
-    await sleep(aquaSleep)
+    await ocean.metadataCache.waitForAqua(ddo.id, txid.transactionHash)
   })
   it('Alice updates Compute Privacy, removing a previously allowed published algo', async () => {
     const computeService = ddo.findServiceByType('compute')
@@ -1741,7 +1718,7 @@ describe('Compute flow', () => {
       alice.getId()
     )
     assert(txid !== null, 'TxId should not be null')
-    await sleep(aquaSleep)
+    await ocean.metadataCache.waitForAqua(newAlgoDDo.id, txid.transactionHash)
   })
   it('Bob should not be able to run a compute job, because algo is changed.', async () => {
     const computeService = ddo.findServiceByType('compute')
@@ -1778,7 +1755,7 @@ describe('Compute flow', () => {
       alice.getId()
     )
     assert(txid !== null, 'TxId should not be null')
-    await sleep(aquaSleep)
+    await ocean.metadataCache.waitForAqua(newAlgoDDo.id, txid.transactionHash)
   })
   it('Bob should not be able to run a compute job, because algo files section is changed.', async () => {
     const computeService = ddo.findServiceByType('compute')
@@ -1832,7 +1809,7 @@ describe('Compute flow', () => {
       alice.getId()
     )
     assert(storeTx)
-    await waitForAqua(ocean, datasetWithBogusProvider.id)
+    await ocean.metadataCache.waitForAqua(datasetWithBogusProvider.id)
   })
   it('Bob should fail to start a compute job for a bogus provider with a raw Algo', async () => {
     const output = {}

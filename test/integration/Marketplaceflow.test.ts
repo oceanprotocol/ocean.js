@@ -21,27 +21,6 @@ import { LoggerInstance } from '../../src/utils'
 const fetch = require('cross-fetch')
 const web3 = new Web3('http://127.0.0.1:8545')
 
-function sleep(ms: number) {
-  return new Promise((resolve) => {
-    setTimeout(resolve, ms)
-  })
-}
-async function waitForAqua(ocean, did) {
-  const apiPath = '/api/v1/aquarius/assets/ddo'
-  let tries = 0
-  do {
-    try {
-      const result = await fetch(ocean.metadataCache.url + apiPath + '/' + did)
-      if (result.ok) {
-        break
-      }
-    } catch (e) {
-      // do nothing
-    }
-    await sleep(1500)
-    tries++
-  } while (tries < 100)
-}
 use(spies)
 
 describe('Marketplace flow', () => {
@@ -437,14 +416,14 @@ describe('Marketplace flow', () => {
     )
     assert(storeTxWithUserData)
     // wait for all this assets to be published
-    await waitForAqua(ocean, ddo.id)
-    await waitForAqua(ocean, ddoWithBadUrl.id)
-    await waitForAqua(ocean, ddoWithPool.id)
-    await waitForAqua(ocean, ddoEncrypted.id)
-    await waitForAqua(ocean, ddoWithCredentialsAllowList.id)
-    await waitForAqua(ocean, ddoWithCredentialsDenyList.id)
-    await waitForAqua(ocean, ddoWithCredentials.id)
-    await waitForAqua(ocean, ddoWithUserData.id)
+    await ocean.metadataCache.waitForAqua(ddo.id)
+    await ocean.metadataCache.waitForAqua(ddoWithBadUrl.id)
+    await ocean.metadataCache.waitForAqua(ddoWithPool.id)
+    await ocean.metadataCache.waitForAqua(ddoEncrypted.id)
+    await ocean.metadataCache.waitForAqua(ddoWithCredentialsAllowList.id)
+    await ocean.metadataCache.waitForAqua(ddoWithCredentialsDenyList.id)
+    await ocean.metadataCache.waitForAqua(ddoWithCredentials.id)
+    await ocean.metadataCache.waitForAqua(ddoWithUserData.id)
   })
 
   it('Alice should fail to publish invalid dataset', async () => {
@@ -596,11 +575,6 @@ describe('Marketplace flow', () => {
     assert(balanceBefore === balanceAfter)
   })
 
-  it('owner can list their assets', async () => {
-    const assets = await ocean.assets.ownerAssets(alice.getId())
-    assert(assets.results.length > 0)
-  })
-
   it('Alice adds allow credentials for a dataset and deny credentials for another', async () => {
     const resolvedDDO = await ocean.assets.resolve(ddoWithCredentialsAllowList.id)
     const newDdo = await ocean.assets.updateCredentials(
@@ -634,7 +608,7 @@ describe('Marketplace flow', () => {
     assert(newDdo !== null)
     const txid = await ocean.onChainMetadata.update(newDdo.id, newDdo, alice.getId())
     assert(txid !== null)
-    await sleep(60000)
+    await ocean.metadataCache.waitForAqua(newDdo.id, txid.transactionHash)
     const metaData = await ocean.assets.getServiceByType(ddo.id, 'metadata')
     assert.deepEqual(metaData.attributes.additionalInformation.links, [])
   })
@@ -647,7 +621,7 @@ describe('Marketplace flow', () => {
     assert(newDdo !== null)
     const txid = await ocean.onChainMetadata.update(newDdo.id, newDdo, alice.getId())
     assert(txid !== null)
-    await sleep(60000)
+    await ocean.metadataCache.waitForAqua(newDdo.id, txid.transactionHash)
     const metaData = await ocean.assets.getServiceByType(ddo.id, 'metadata')
     assert(metaData.attributes.main.author, newMetaData.author)
   })
@@ -666,7 +640,7 @@ describe('Marketplace flow', () => {
       true
     )
     assert(txid !== null)
-    await sleep(60000)
+    await ocean.metadataCache.waitForAqua(newDdo.id, txid.transactionHash)
     const metaData = await ocean.assets.getServiceByType(ddoEncrypted.id, 'metadata')
     assert.deepEqual(metaData.attributes.additionalInformation.links, [])
   })
@@ -681,7 +655,7 @@ describe('Marketplace flow', () => {
     assert(newDdo !== null)
     const txid = await ocean.onChainMetadata.update(newDdo.id, newDdo, alice.getId())
     assert(txid !== null)
-    await sleep(aquaSleep)
+    await ocean.metadataCache.waitForAqua(newDdo.id, txid.transactionHash)
     const metaData = await ocean.assets.getServiceByType(ddo.id, 'metadata')
     assert.equal(metaData.attributes.main.name, newMetaData.title)
     assert.equal(
@@ -700,7 +674,7 @@ describe('Marketplace flow', () => {
     assert(newDdo !== null)
     const txid = await ocean.onChainMetadata.update(newDdo.id, newDdo, alice.getId())
     assert(txid !== null)
-    await sleep(aquaSleep)
+    await ocean.metadataCache.waitForAqua(newDdo.id, txid.transactionHash)
     const metaData = await ocean.assets.getServiceByType(ddo.id, 'access')
     assert(parseInt(metaData.attributes.main.timeout) === parseInt(newTimeout.toFixed()))
   })
@@ -731,7 +705,7 @@ describe('Marketplace flow', () => {
     assert(newDdo !== null)
     const txid = await ocean.onChainMetadata.update(newDdo.id, newDdo, alice.getId())
     assert(txid !== null)
-    await sleep(60000)
+    await ocean.metadataCache.waitForAqua(newDdo.id, txid.transactionHash)
     const resolvedDDO = await ocean.assets.resolve(ddo.id)
     assert(resolvedDDO !== null)
     const metaData = await ocean.assets.getServiceByType(resolvedDDO.id, 'metadata')
