@@ -804,7 +804,7 @@ describe('Compute flow', () => {
       alice.getId()
     )
     assert(storeTx)
-    await waitForAqua(ocean, algorithmAssetWithCustomData.id)
+    await ocean.metadataCache.waitForAqua(algorithmAssetWithCustomData.id)
   })
 
   it('Alice mints 100 DTs and tranfers them to the compute marketplace', async () => {

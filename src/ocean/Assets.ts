@@ -6,6 +6,7 @@ import {
   ServiceCustomParameter,
   ServiceCustomParametersRequired
 } from '../ddo/interfaces/Service'
+import { SearchQuery } from '../metadatacache/MetadataCache'
 import { EditableMetadata } from '../ddo/interfaces/EditableMetadata'
 import Account from './Account'
 import DID from './DID'
