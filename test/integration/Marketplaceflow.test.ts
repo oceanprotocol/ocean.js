@@ -18,7 +18,7 @@ import { Ocean } from '../../src/ocean/Ocean'
 import { ConfigHelper } from '../../src/utils/ConfigHelper'
 import { TestContractHandler } from '../TestContractHandler'
 import { LoggerInstance } from '../../src/utils'
-const fetch = require('cross-fetch')
+
 const web3 = new Web3('http://127.0.0.1:8545')
 
 use(spies)
@@ -41,7 +41,6 @@ describe('Marketplace flow', () => {
   let assetWithBadUrl
   let assetWithEncrypt
   let assetInvalidNoName
-  let assetWithUserData
   let marketplace: Account
   let contracts: TestContractHandler
   let datatoken: DataTokens
@@ -57,13 +56,11 @@ describe('Marketplace flow', () => {
   let accessService: Service
   let data
   let blob
-  let poolLastPrice
-  let allowList: any
-  let denyList: any
+  let allowList: string[]
+  let denyList: string[]
 
   const marketplaceAllowance = '20'
   const tokenAmount = '10000'
-  const aquaSleep = 50000
 
   it('Initialize Ocean contracts v3', async () => {
     contracts = new TestContractHandler(
@@ -238,27 +235,6 @@ describe('Marketplace flow', () => {
         files: [
           {
             url: 'https://s3.amazonaws.com/testfiles.oceanprotocol.com/nosuchfile',
-            checksum: 'efb2c764274b745f5fc37f97c6b0e761',
-            contentLength: '4535431',
-            contentType: 'text/csv',
-            encoding: 'UTF-8',
-            compression: 'zip'
-          }
-        ]
-      }
-    }
-
-    assetWithUserData = {
-      main: {
-        type: 'dataset',
-        name: 'test-dataset-with-pools',
-        dateCreated: new Date(Date.now()).toISOString().split('.')[0] + 'Z', // remove milliseconds
-        datePublished: new Date(Date.now()).toISOString().split('.')[0] + 'Z', // remove milliseconds
-        author: 'oceanprotocol-team',
-        license: 'MIT',
-        files: [
-          {
-            url: 'https://s3.amazonaws.com/testfiles.oceanprotocol.com/info.0.json',
             checksum: 'efb2c764274b745f5fc37f97c6b0e761',
             contentLength: '4535431',
             contentType: 'text/csv',

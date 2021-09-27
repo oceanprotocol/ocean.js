@@ -13,7 +13,6 @@ import { Cluster, Container, Server } from '../../src/ocean/Compute'
 import { LoggerInstance } from '../../src/utils'
 import { ComputeInput, ComputeAlgorithm } from '../../src/ocean/interfaces/Compute'
 const web3 = new Web3('http://127.0.0.1:8545')
-const fetch = require('cross-fetch')
 
 /*       How to handle a compute job
 1. find your algorithm
@@ -1009,7 +1008,7 @@ describe('Compute flow', () => {
       response = await ocean.compute.status(bob, ddo.id, undefined, undefined, jobId)
       assert(response[0].jobId === jobId, 'response[0].jobId !== jobId')
       if (response[0].status > 60) break
-      await sleep(2500)
+      await ocean.metadataCache.sleep(2500)
       tries++
       // eslint-disable-next-line no-self-compare
     } while (tries < 1500)

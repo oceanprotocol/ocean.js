@@ -1,11 +1,11 @@
 import { TestContractHandler } from '../TestContractHandler'
 import { DataTokens } from '../../src/datatokens/Datatokens'
 import { AbiItem } from 'web3-utils/types'
-
 import Web3 from 'web3'
 import factory from '@oceanprotocol/contracts/artifacts/DTFactory.json'
 import datatokensTemplate from '@oceanprotocol/contracts/artifacts/DataTokenTemplate.json'
 import { LoggerInstance } from '../../src/utils'
+
 const web3 = new Web3('http://127.0.0.1:8545')
 
 describe('Simple flow', () => {
