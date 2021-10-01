@@ -141,7 +141,7 @@ export const configHelperNetworks: ConfigHelperConfig[] = [
   },
   {
     ...configHelperNetworksBase,
-    networkId: 0xf6,
+    networkId: 246,
     network: 'energyweb',
     nodeUri: 'https://rpc.energyweb.org',
     providerUri: 'https://provider.energyweb.oceanprotocol.com',
