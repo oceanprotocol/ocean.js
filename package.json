@@ -55,7 +55,7 @@
     "node-abort-controller": "^2.0.0",
     "save-file": "^2.3.1",
     "uuid": "^8.3.2",
-    "web3": "^1.5.2",
+    "web3": "^1.6.0",
     "web3-core": "^1.5.3",
     "web3-eth-contract": "^1.5.2"
   },
