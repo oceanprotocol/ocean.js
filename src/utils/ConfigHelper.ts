@@ -129,6 +129,33 @@ export const configHelperNetworks: ConfigHelperConfig[] = [
     providerUri: 'https://provider.bsc.oceanprotocol.com',
     subgraphUri: 'https://subgraph.bsc.oceanprotocol.com',
     explorerUri: 'https://bscscan.com/'
+  },
+  {
+    ...configHelperNetworksBase,
+    networkId: 44787,
+    network: 'celoalfajores',
+    nodeUri: 'https://alfajores-forno.celo-testnet.org',
+    providerUri: 'https://provider.celoalfajores.oceanprotocol.com',
+    subgraphUri: 'https://subgraph.celoalfajores.oceanprotocol.com',
+    explorerUri: 'https://alfajores-blockscout.celo-testnet.org'
+  },
+  {
+    ...configHelperNetworksBase,
+    networkId: 246,
+    network: 'energyweb',
+    nodeUri: 'https://rpc.energyweb.org',
+    providerUri: 'https://provider.energyweb.oceanprotocol.com',
+    subgraphUri: 'https://subgraph.energyweb.oceanprotocol.com',
+    explorerUri: 'https://explorer.energyweb.org'
+  },
+  {
+    ...configHelperNetworksBase,
+    networkId: 1285,
+    network: 'moonriver',
+    nodeUri: 'https://moonriver.api.onfinality.io/public',
+    providerUri: 'https://provider.moonriver.oceanprotocol.com',
+    subgraphUri: 'https://subgraph.moonriver.oceanprotocol.com',
+    explorerUri: 'https://blockscout.moonriver.moonbeam.network'
   }
 ]
 
