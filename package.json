@@ -68,7 +68,7 @@
     "@types/node": "^16.10.2",
     "@types/node-fetch": "^3.0.3",
     "@typescript-eslint/eslint-plugin": "^4.32.0",
-    "@typescript-eslint/parser": "^4.32.0",
+    "@typescript-eslint/parser": "^4.33.0",
     "auto-changelog": "^2.3.0",
     "chai": "^4.3.4",
     "chai-spies": "^1.0.0",
