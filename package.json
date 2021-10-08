@@ -60,7 +60,7 @@
     "web3-eth-contract": "^1.5.2"
   },
   "devDependencies": {
-    "@truffle/hdwallet-provider": "^1.4.1",
+    "@truffle/hdwallet-provider": "^1.5.1",
     "@types/chai": "^4.2.19",
     "@types/chai-spies": "^1.0.3",
     "@types/crypto-js": "^4.0.1",
