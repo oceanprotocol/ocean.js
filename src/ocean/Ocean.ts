@@ -16,6 +16,7 @@ import { Compute } from './Compute'
 import { OceanPool } from '../balancer/OceanPool'
 import { OceanFixedRateExchange } from '../exchange/FixedRateExchange'
 import { OceanDispenser } from '../dispenser/Dispenser'
+import { EventAccessControl } from './EventAccessControl'
 
 /**
  * Main interface for Ocean Protocol.
@@ -38,6 +39,9 @@ export class Ocean extends Instantiable {
     instance.utils = await OceanUtils.getInstance(instanceConfig)
 
     instance.provider = await Provider.getInstance(instanceConfig)
+
+    instance.eventAccessControl = await EventAccessControl.getInstance(instanceConfig)
+
     instance.metadataCache = new MetadataCache(
       instanceConfig.config.metadataCacheUri,
       instanceConfig.logger
@@ -105,6 +109,12 @@ export class Ocean extends Instantiable {
    * @type {Provider}
    */
   public provider: Provider
+
+  /**
+   * RBAC instance.
+   * @type {EventAccessControl}
+   */
+  public eventAccessControl: EventAccessControl
 
   /**
    * Web3 provider.

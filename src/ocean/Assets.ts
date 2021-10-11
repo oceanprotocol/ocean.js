@@ -20,6 +20,7 @@ import { MetadataMain } from '../ddo/interfaces'
 import { TransactionReceipt } from 'web3-core'
 import { updateCredentialDetail, removeCredentialDetail } from './AssetsCredential'
 import { Consumable } from '../ddo/interfaces/Consumable'
+import { EventAccessControl } from './EventAccessControl'
 
 export enum CreateProgressStep {
   CreatingDataToken,
@@ -728,9 +729,9 @@ export class Assets extends Instantiable {
    * @return {Promise<Consumable>}
    */
   public async isConsumable(ddo: DDO, consumer?: string): Promise<Consumable> {
-    let status = 0
-    let message = 'All good'
-    let result = true
+    const status = 0
+    const message = 'All good'
+    const result = true
     if (!ddo) return { status, message, result }
     const metadata = ddo.findServiceByType('metadata')
 
@@ -740,14 +741,23 @@ export class Assets extends Instantiable {
         message: 'Ordering this asset has been temporarily disabled by the publisher.',
         result: false
       }
-    // TODO: dicuss the flow: should call RBAC in market or here
     if (consumer) {
-      ;({ status, message, result } = this.checkCredential(ddo, 'address', consumer))
+      const eventAccessControl = await EventAccessControl.getInstance(this.instanceConfig)
+      const isPermit = await eventAccessControl.isPermit(
+        'market',
+        'consume',
+        'address',
+        consumer,
+        ddo.id
+      )
+      if (!isPermit) {
+        return {
+          status: 2,
+          message: 'Consume cccess is denied.',
+          result: false
+        }
+      }
     }
-    /*
-    // return: 2, Access is denied, your wallet address is not found on allow list
-    // return: 3, Access is denied, your wallet address is found on deny list
-    */
     return { status, message, result }
   }
 

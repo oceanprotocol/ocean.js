@@ -27,6 +27,12 @@ export class Config {
   public providerUri?: string
 
   /**
+   * Role-based access control URL.
+   * @type {string}
+   */
+  public rbacUri?: string
+
+  /**
    * Web3 Provider.
    * @type {any}
    */
