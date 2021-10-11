@@ -5,14 +5,7 @@ import spies from 'chai-spies'
 import Web3 from 'web3'
 import { AbiItem } from 'web3-utils/types'
 import { DataTokens } from '../../src/datatokens/Datatokens'
-import {
-  Account,
-  EditableMetadata,
-  Service,
-  ServiceAccess,
-  DID,
-  CredentialType
-} from '../../src/lib'
+import { Account, EditableMetadata, Service, ServiceAccess, DID } from '../../src/lib'
 import { noDidPrefixed } from '../../src/utils/'
 import { Ocean } from '../../src/ocean/Ocean'
 import { ConfigHelper } from '../../src/utils/ConfigHelper'
@@ -364,7 +357,7 @@ describe('Marketplace flow', () => {
     ddoWithCredentials = await ocean.assets.create(asset, alice, [service1], null)
     ddoWithCredentials = await ocean.assets.updateCredentials(
       ddoWithCredentials,
-      CredentialType.address,
+      'address',
       allowList,
       denyList
     )
@@ -579,7 +572,7 @@ describe('Marketplace flow', () => {
     const resolvedDDO = await ocean.assets.resolve(ddoWithCredentialsAllowList.id)
     const newDdo = await ocean.assets.updateCredentials(
       resolvedDDO,
-      CredentialType.address,
+      'address',
       allowList,
       []
     )
@@ -591,7 +584,7 @@ describe('Marketplace flow', () => {
     const resolvedDDO = await ocean.assets.resolve(ddoWithCredentialsDenyList.id)
     const newDdo = await ocean.assets.updateCredentials(
       resolvedDDO,
-      CredentialType.address,
+      'address',
       [],
       denyList
     )

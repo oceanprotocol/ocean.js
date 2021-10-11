@@ -2,7 +2,7 @@ import { assert } from 'chai'
 
 import { Ocean } from '../../src/ocean/Ocean'
 import Web3 from 'web3'
-import { Account, DDO, CredentialType, ConfigHelper, Metadata } from '../../src/lib'
+import { Account, DDO, ConfigHelper, Metadata } from '../../src/lib'
 
 const web3 = new Web3('http://127.0.0.1:8545')
 
@@ -13,8 +13,8 @@ describe('Assets', () => {
   let charlie: Account
   let ddo: DDO
   let ddoWithAddressAnd3Box: DDO
-  const addressType = CredentialType.address
-  const threeBoxType = CredentialType.credential3Box
+  const addressType = 'address'
+  const threeBoxType = 'credential3Box'
   let walletA: string
   let walletB: string
   let walletC: string

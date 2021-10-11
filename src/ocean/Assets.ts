@@ -18,7 +18,6 @@ import { Provider, UserCustomParameters } from '../provider/Provider'
 import { isAddress } from 'web3-utils'
 import { MetadataMain } from '../ddo/interfaces'
 import { TransactionReceipt } from 'web3-core'
-import { CredentialType } from '../ddo/interfaces/Credentials'
 import { updateCredentialDetail, removeCredentialDetail } from './AssetsCredential'
 import { Consumable } from '../ddo/interfaces/Consumable'
 
@@ -265,14 +264,14 @@ export class Assets extends Instantiable {
   /**
    * Update Credentials attribute in DDO
    * @param  {ddo} DDO
-   * @param {credentialType} CredentialType e.g. address / credentail3Box
+   * @param {credentialType} string e.g. address / credentail3Box
    * @param {allowList} string[] List of allow credential
    * @param {denyList} string[] List of deny credential
    * @return {Promise<DDO>} Updated DDO
    */
   public async updateCredentials(
     ddo: DDO,
-    credentialType: CredentialType,
+    credentialType: string,
     allowList: string[],
     denyList: string[]
   ): Promise<DDO> {
@@ -293,15 +292,11 @@ export class Assets extends Instantiable {
   /**
    * check if a credential can consume a dataset
    * @param  {ddo} DDO
-   * @param {credentialType} CredentialType e.g. address / credentail3Box
+   * @param {credentialType} string e.g. address / credentail3Box
    * @param {value} string credential
    * @return {Consumable} allowed  0 = OK , 2 - Credential not in allow list, 3 - Credential in deny list
    */
-  public checkCredential(
-    ddo: DDO,
-    credentialType: CredentialType,
-    value: string
-  ): Consumable {
+  public checkCredential(ddo: DDO, credentialType: string, value: string): Consumable {
     let status = 0
     let message = 'All good'
     let result = true
@@ -745,12 +740,9 @@ export class Assets extends Instantiable {
         message: 'Ordering this asset has been temporarily disabled by the publisher.',
         result: false
       }
+    // TODO: dicuss the flow: should call RBAC in market or here
     if (consumer) {
-      ;({ status, message, result } = this.checkCredential(
-        ddo,
-        CredentialType.address,
-        consumer
-      ))
+      ;({ status, message, result } = this.checkCredential(ddo, 'address', consumer))
     }
     /*
     // return: 2, Access is denied, your wallet address is not found on allow list
