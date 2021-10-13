@@ -1,1 +1,1 @@
-export * from './lib'
+export * from './pools/index'
