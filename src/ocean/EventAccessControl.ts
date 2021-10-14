@@ -33,8 +33,7 @@ export class EventAccessControl extends Instantiable {
     credentials: string,
     did?: string
   ): Promise<boolean> {
-    const path = this.url ? this.url : null
-    if (!path) return true
+    if (!this.url) return true
     const args = {
       component,
       eventType,
@@ -44,7 +43,7 @@ export class EventAccessControl extends Instantiable {
       }
     }
     try {
-      const response = await this.ocean.utils.fetch.post(path, JSON.stringify(args))
+      const response = await this.ocean.utils.fetch.post(this.url, JSON.stringify(args))
       return (await response.text()) === 'true'
     } catch (e) {
       this.logger.error(e)
