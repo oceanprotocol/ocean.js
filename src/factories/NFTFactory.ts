@@ -1,9 +1,14 @@
 import { Contract } from 'web3-eth-contract'
 import Web3 from 'web3'
+import { TransactionReceipt } from 'web3-core'
 import { AbiItem } from 'web3-utils'
 import defaultFactory721ABI from '@oceanprotocol/contracts/artifacts/contracts/ERC721Factory.sol/ERC721Factory.json'
 import { Logger, getFairGasPrice, generateDtName } from '../utils'
 
+interface Template {
+  templateAddress: string
+  isActive: boolean
+}
 /**
  * Provides an interface for NFT DataTokens
  */
@@ -87,5 +92,279 @@ export class NFTFactory {
       this.logger.error(`ERROR: Failed to create datatoken : ${e.message}`)
     }
     return tokenAddress
+  }
+
+  /** Get Current NFT Count (NFT created)
+   * @return {Promise<number>} Number of NFT created from this factory
+   */
+  public async getCurrentNFTCount(): Promise<number> {
+    const trxReceipt = await this.factory721.methods.getCurrentNFTCount().call()
+    return trxReceipt
+  }
+
+  /** Get Current Datatoken Count
+   * @return {Promise<number>} Number of DTs created from this factory
+   */
+  public async getCurrentTokenCount(): Promise<number> {
+    const trxReceipt = await this.factory721.methods.getCurrentTokenCount().call()
+    return trxReceipt
+  }
+
+  /** Get Factory Owner
+   * @return {Promise<string>} Factory Owner address
+   */
+  public async getOwner(): Promise<string> {
+    const trxReceipt = await this.factory721.methods.owner().call()
+    return trxReceipt
+  }
+
+  /** Get Current NFT Template Count
+   * @return {Promise<number>} Number of NFT Template added to this factory
+   */
+  public async getCurrentNFTTemplateCount(): Promise<number> {
+    const count = await this.factory721.methods.getCurrentNFTTemplateCount().call()
+    return count
+  }
+
+  /** Get Current Template  Datatoken (ERC20) Count
+   * @return {Promise<number>} Number of ERC20 Template added to this factory
+   */
+  public async getCurrentTokenTemplateCount(): Promise<number> {
+    const count = await this.factory721.methods.getCurrentTokenTemplateCount().call()
+    return count
+  }
+
+  /** Get NFT Template
+   * @param {Number} index Template index
+   * @return {Promise<Template>} Number of Template added to this factory
+   */
+  public async getNFTTemplate(index: number): Promise<Template> {
+    const template = await this.factory721.methods.getNFTTemplate(index).call()
+    return template
+  }
+
+  /** Get Datatoken(erc20) Template
+   * @param {Number} index Template index
+   * @return {Promise<Template>} DT Template info
+   */
+  public async getTokenTemplate(index: number): Promise<Template> {
+    const template = await this.factory721.methods.getTokenTemplate(index).call()
+    return template
+  }
+
+  /**
+   * Add a new erc721 token template - only factory Owner
+   * @param {String} address
+   * @param {String} templateAddress template address to add
+   * @return {Promise<TransactionReceipt>}
+   */
+  public async addNFTTemplate(
+    address: string,
+    templateAddress: string
+  ): Promise<TransactionReceipt> {
+    if ((await this.getOwner()) != address) {
+      throw new Error(`Caller is not Factory Owner`)
+    }
+
+    const gasLimitDefault = this.GASLIMIT_DEFAULT
+    let estGas
+    try {
+      estGas = await this.factory721.methods
+        .add721TokenTemplate(templateAddress)
+        .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
+    } catch (e) {
+      estGas = gasLimitDefault
+    }
+
+    // Invoke createToken function of the contract
+    const trxReceipt = await this.factory721.methods
+      .add721TokenTemplate(templateAddress)
+      .send({
+        from: address,
+        gas: estGas + 1,
+        gasPrice: await getFairGasPrice(this.web3)
+      })
+
+    return trxReceipt
+  }
+
+  /**
+   * Disable token template - only factory Owner
+   * @param {String} address
+   * @param {Number} templateIndex index of the template we want to disable
+   * @return {Promise<TransactionReceipt>} current token template count
+   */
+  public async disableNFTTemplate(
+    address: string,
+    templateIndex: number
+  ): Promise<TransactionReceipt> {
+    if ((await this.getOwner()) != address) {
+      throw new Error(`Caller is not Factory Owner`)
+    }
+
+    const gasLimitDefault = this.GASLIMIT_DEFAULT
+    let estGas
+    try {
+      estGas = await this.factory721.methods
+        .disable721TokenTemplate(templateIndex)
+        .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
+    } catch (e) {
+      estGas = gasLimitDefault
+    }
+
+    // Invoke createToken function of the contract
+    const trxReceipt = await this.factory721.methods
+      .disable721TokenTemplate(templateIndex)
+      .send({
+        from: address,
+        gas: estGas + 1,
+        gasPrice: await getFairGasPrice(this.web3)
+      })
+
+    return trxReceipt
+  }
+
+  /**
+   * Reactivate a previously disabled token template - only factory Owner
+   * @param {String} address
+   * @param {Number} templateIndex index of the template we want to reactivate
+   * @return {Promise<TransactionReceipt>} current token template count
+   */
+  public async reactivateNFTTemplate(
+    address: string,
+    templateIndex: number
+  ): Promise<TransactionReceipt> {
+    if ((await this.getOwner()) != address) {
+      throw new Error(`Caller is not Factory Owner`)
+    }
+
+    const gasLimitDefault = this.GASLIMIT_DEFAULT
+    let estGas
+    try {
+      estGas = await this.factory721.methods
+        .reactivate721TokenTemplate(templateIndex)
+        .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
+    } catch (e) {
+      estGas = gasLimitDefault
+    }
+
+    // Invoke createToken function of the contract
+    const trxReceipt = await this.factory721.methods
+      .reactivate721TokenTemplate(templateIndex)
+      .send({
+        from: address,
+        gas: estGas + 1,
+        gasPrice: await getFairGasPrice(this.web3)
+      })
+
+    return trxReceipt
+  }
+
+  /**
+   * Add a new erc721 token template - only factory Owner
+   * @param {String} address
+   * @param {String} templateAddress template address to add
+   * @return {Promise<TransactionReceipt>}
+   */
+  public async addTokenTemplate(
+    address: string,
+    templateAddress: string
+  ): Promise<TransactionReceipt> {
+    if ((await this.getOwner()) != address) {
+      throw new Error(`Caller is not Factory Owner`)
+    }
+
+    const gasLimitDefault = this.GASLIMIT_DEFAULT
+    let estGas
+    try {
+      estGas = await this.factory721.methods
+        .addTokenTemplate(templateAddress)
+        .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
+    } catch (e) {
+      estGas = gasLimitDefault
+    }
+
+    // Invoke createToken function of the contract
+    const trxReceipt = await this.factory721.methods
+      .addTokenTemplate(templateAddress)
+      .send({
+        from: address,
+        gas: estGas + 1,
+        gasPrice: await getFairGasPrice(this.web3)
+      })
+
+    return trxReceipt
+  }
+
+  /**
+   * Disable token template - only factory Owner
+   * @param {String} address
+   * @param {Number} templateIndex index of the template we want to disable
+   * @return {Promise<TransactionReceipt>} current token template count
+   */
+  public async disableTokenTemplate(
+    address: string,
+    templateIndex: number
+  ): Promise<TransactionReceipt> {
+    if ((await this.getOwner()) != address) {
+      throw new Error(`Caller is not Factory Owner`)
+    }
+
+    const gasLimitDefault = this.GASLIMIT_DEFAULT
+    let estGas
+    try {
+      estGas = await this.factory721.methods
+        .disableTokenTemplate(templateIndex)
+        .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
+    } catch (e) {
+      estGas = gasLimitDefault
+    }
+
+    // Invoke createToken function of the contract
+    const trxReceipt = await this.factory721.methods
+      .disableTokenTemplate(templateIndex)
+      .send({
+        from: address,
+        gas: estGas + 1,
+        gasPrice: await getFairGasPrice(this.web3)
+      })
+
+    return trxReceipt
+  }
+
+  /**
+   * Reactivate a previously disabled token template - only factory Owner
+   * @param {String} address
+   * @param {Number} templateIndex index of the template we want to reactivate
+   * @return {Promise<TransactionReceipt>} current token template count
+   */
+  public async reactivateTokenTemplate(
+    address: string,
+    templateIndex: number
+  ): Promise<TransactionReceipt> {
+    if ((await this.getOwner()) != address) {
+      throw new Error(`Caller is not Factory Owner`)
+    }
+
+    const gasLimitDefault = this.GASLIMIT_DEFAULT
+    let estGas
+    try {
+      estGas = await this.factory721.methods
+        .reactivateTokenTemplate(templateIndex)
+        .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
+    } catch (e) {
+      estGas = gasLimitDefault
+    }
+
+    // Invoke createToken function of the contract
+    const trxReceipt = await this.factory721.methods
+      .reactivateTokenTemplate(templateIndex)
+      .send({
+        from: address,
+        gas: estGas + 1,
+        gasPrice: await getFairGasPrice(this.web3)
+      })
+
+    return trxReceipt
   }
 }
