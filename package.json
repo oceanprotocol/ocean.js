@@ -24,7 +24,7 @@
     "release": "release-it --non-interactive",
     "changelog": "auto-changelog -p",
     "prepublishOnly": "npm run build",
-    "test": "npm run lint && npm run test:unit:cover && npm run test:integration:cover",
+    "test:pool": "mocha --config=test/unit/.mocharc.json --node-env=test --exit 'test/unit/NFTFactory.test.ts'",
     "test:unit": "mocha --config=test/unit/.mocharc.json --node-env=test --exit 'test/unit/**/*.test.ts'",
     "test:unit:cover": "nyc --report-dir coverage/unit npm run test:unit",
     "test:integration": "mocha --config=test/integration/.mocharc.json --node-env=test --exit 'test/integration/**/*.test.ts'",
@@ -46,7 +46,7 @@
   },
   "dependencies": {
     "@ethereum-navigator/navigator": "^0.5.3",
-    "@oceanprotocol/contracts": "^0.6.9",
+    "@oceanprotocol/contracts": "https://github.com/oceanprotocol/contracts#v4main",
     "cross-fetch": "^3.1.4",
     "crypto-js": "^4.0.0",
     "decimal.js": "^10.2.1",
