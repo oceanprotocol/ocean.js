@@ -130,7 +130,7 @@ export class NFTFactory {
    * @return {Promise<number>} Number of ERC20 Template added to this factory
    */
   public async getCurrentTokenTemplateCount(): Promise<number> {
-    const count = await this.factory721.methods.getCurrentTokenTemplateCount().call()
+    const count = await this.factory721.methods.getCurrentTemplateCount().call()
     return count
   }
 
