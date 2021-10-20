@@ -37,7 +37,7 @@ export class PoolFactory {
   public async deployPool(
     account: string,
     tokens: string[],
-    weights: string[],
+    weightsInWei: string[],
     swapFeePercentage: number,
     swapMarketFee: number,
     owner: string
@@ -53,5 +53,6 @@ export class PoolFactory {
       this.logger.log(e)
       estGas = gasLimitDefault
     }
+    return estGas
   }
 }

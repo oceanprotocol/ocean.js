@@ -162,7 +162,7 @@ export class NFTFactory {
     address: string,
     templateAddress: string
   ): Promise<TransactionReceipt> {
-    if ((await this.getOwner()) != address) {
+    if ((await this.getOwner()) !== address) {
       throw new Error(`Caller is not Factory Owner`)
     }
 
@@ -198,7 +198,7 @@ export class NFTFactory {
     address: string,
     templateIndex: number
   ): Promise<TransactionReceipt> {
-    if ((await this.getOwner()) != address) {
+    if ((await this.getOwner()) !== address) {
       throw new Error(`Caller is not Factory Owner`)
     }
 
@@ -234,7 +234,7 @@ export class NFTFactory {
     address: string,
     templateIndex: number
   ): Promise<TransactionReceipt> {
-    if ((await this.getOwner()) != address) {
+    if ((await this.getOwner()) !== address) {
       throw new Error(`Caller is not Factory Owner`)
     }
 
@@ -270,7 +270,7 @@ export class NFTFactory {
     address: string,
     templateAddress: string
   ): Promise<TransactionReceipt> {
-    if ((await this.getOwner()) != address) {
+    if ((await this.getOwner()) !== address) {
       throw new Error(`Caller is not Factory Owner`)
     }
 
@@ -306,7 +306,7 @@ export class NFTFactory {
     address: string,
     templateIndex: number
   ): Promise<TransactionReceipt> {
-    if ((await this.getOwner()) != address) {
+    if ((await this.getOwner()) !== address) {
       throw new Error(`Caller is not Factory Owner`)
     }
 
@@ -342,7 +342,7 @@ export class NFTFactory {
     address: string,
     templateIndex: number
   ): Promise<TransactionReceipt> {
-    if ((await this.getOwner()) != address) {
+    if ((await this.getOwner()) !== address) {
       throw new Error(`Caller is not Factory Owner`)
     }
 
