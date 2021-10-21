@@ -1,3 +1,3 @@
 export * from './balancer'
-export * from './dispencer'
+export * from './dispenser'
 export * from './fixedRate'

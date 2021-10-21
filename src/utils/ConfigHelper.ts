@@ -2,7 +2,7 @@ import Config from '../models/Config'
 import fs from 'fs'
 import { homedir } from 'os'
 // eslint-disable-next-line import/no-named-default
-import { default as DefaultContractsAddresses } from '@oceanprotocol/contracts/artifacts/address.json'
+import { default as DefaultContractsAddresses } from '../data/address.json' // temporary untill we can get them from the contract arficats
 import Logger from './Logger'
 
 export interface ConfigHelperConfig extends Config {
