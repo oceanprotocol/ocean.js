@@ -6,7 +6,7 @@ import defaultERC20ABI from '@oceanprotocol/contracts/artifacts/contracts/interf
 import { PoolFactory } from './PoolFactory'
 import { Logger } from '../../utils'
 
-export class OceanPoolV4 extends PoolFactory {
+export class OceanPool extends PoolFactory {
   public oceanAddress: string = null
   public dtAddress: string = null
   public startBlock: number
