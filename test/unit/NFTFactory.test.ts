@@ -1,4 +1,4 @@
-import { assert } from 'chai'
+import { assert, expect } from 'chai'
 import { AbiItem } from 'web3-utils/types'
 import { TestContractHandler } from '../TestContractHandler'
 import Web3 from 'web3'
@@ -13,7 +13,6 @@ import PoolTemplate from '@oceanprotocol/contracts/artifacts/contracts/pools/bal
 import { LoggerInstance } from '../../src/utils'
 // import { NFTDataToken } from '../../../src/datatokens/NFTDatatoken'
 import { NFTFactory } from '../../src/factories/NFTFactory'
-// import { DT20Factory } from '../../../src/factories/DT20Factory'
 
 const web3 = new Web3('http://127.0.0.1:8545')
 
@@ -22,6 +21,7 @@ describe('NFT Factory test', () => {
   let nftOwner: string
   let user1: string
   let user2: string
+  let user3: string
   let contracts: TestContractHandler
   let nftFactory: NFTFactory
 
@@ -59,6 +59,8 @@ describe('NFT Factory test', () => {
     factoryOwner = contracts.accounts[0]
     nftOwner = contracts.accounts[1]
     user1 = contracts.accounts[2]
+    user2 = contracts.accounts[3]
+    user3 = contracts.accounts[4]
     console.log(factoryOwner)
     await contracts.deployContracts(factoryOwner, Router.abi as AbiItem[])
 
@@ -71,12 +73,12 @@ describe('NFT Factory test', () => {
 
   it('#getCurrentNFTCount - should return actual nft count (0)', async () => {
     const nftCount = await nftFactory.getCurrentNFTCount()
-    assert(nftCount === 0)
+    expect(nftCount).to.equal('0')
   })
 
   it('#getCurrentTokenCount - should return actual token count (0)', async () => {
     const tokenCount = await nftFactory.getCurrentTokenCount()
-    assert(tokenCount === 0)
+    expect(tokenCount).to.equal('0')
   })
   it('#getOwner - should return actual owner', async () => {
     const owner = await nftFactory.getOwner()
@@ -84,11 +86,11 @@ describe('NFT Factory test', () => {
   })
   it('#getCurrentNFTTemplateCount - should return actual nft template count (1)', async () => {
     const nftTemplateCount = await nftFactory.getCurrentNFTTemplateCount()
-    assert(nftTemplateCount === 1)
+    expect(nftTemplateCount).to.equal('1')
   })
   it('#getCurrentTokenTemplateCount - should return actual token template count (1)', async () => {
     const tokenTemplateCount = await nftFactory.getCurrentTokenTemplateCount()
-    assert(tokenTemplateCount === 1)
+    expect(tokenTemplateCount).to.equal('1')
   })
   it('#getNFTTemplate - should return NFT template struct', async () => {
     const nftTemplate = await nftFactory.getNFTTemplate(1)
@@ -103,7 +105,7 @@ describe('NFT Factory test', () => {
   it('#addNFTTemplate - should add NFT template if factory owner', async () => {
     await nftFactory.addNFTTemplate(contracts.accounts[0], contracts.fixedRateAddress) // contracts.fixedRateAddress it's just a dummy contract in this case
     const nftTemplateCount = await nftFactory.getCurrentNFTTemplateCount()
-    assert(nftTemplateCount === 2)
+    expect(nftTemplateCount).to.equal('2')
     const nftTemplate = await nftFactory.getNFTTemplate(2)
     assert(nftTemplate.isActive === true)
     assert(nftTemplate.templateAddress === contracts.fixedRateAddress)
@@ -127,7 +129,7 @@ describe('NFT Factory test', () => {
   it('#addTokenTemplate - should add Datatoken template if factory owner', async () => {
     await nftFactory.addTokenTemplate(contracts.accounts[0], contracts.fixedRateAddress) // contracts.fixedRateAddress it's just a dummy contract in this case
     const tokenTemplateCount = await nftFactory.getCurrentTokenTemplateCount()
-    assert(tokenTemplateCount === 2)
+    expect(tokenTemplateCount).to.equal('2')
     const nftTemplate = await nftFactory.getTokenTemplate(2)
     assert(nftTemplate.isActive === true)
     assert(nftTemplate.templateAddress === contracts.fixedRateAddress)
@@ -148,5 +150,31 @@ describe('NFT Factory test', () => {
 
     tokenTemplate = await nftFactory.getTokenTemplate(2)
     assert(tokenTemplate.isActive === true)
+  })
+
+  it('#createNFTwithErc - should create an NFT and a Datatoken', async () => {
+    const nftData = {
+      name: '72120Bundle',
+      symbol: '72Bundle',
+      templateIndex: 1,
+      baseURI: 'https://oceanprotocol.com/nft/'
+    }
+    const ercData = {
+      templateIndex: 1,
+      strings: ['ERC20B1', 'ERC20DT1Symbol'],
+      addresses: [user2, user3, user2, '0x0000000000000000000000000000000000000000'],
+      uints: [web3.utils.toWei('10000'), 0],
+      bytess: []
+    }
+
+    const txReceipt = await nftFactory.createNftWithErc(
+      contracts.accounts[0],
+      nftData,
+      ercData
+    )
+    expect(txReceipt.events.NFTCreated.event === 'NFTCreated')
+    expect(txReceipt.events.TokenCreated.event === 'TokenCreated')
+    console.log(txReceipt.events.NFTCreated.returnValues.newTokenAddress)
+    console.log(txReceipt.events.TokenCreated.returnValues.newTokenAddress)
   })
 })
