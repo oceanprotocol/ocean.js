@@ -41,25 +41,25 @@ export class Datatoken {
 
   /**
    * Mint
-   * @param {String} dataTokenAddress
+   * @param {String} dtAddress Datatoken adress
    * @param {String} address
    * @param {String} amount Number of datatokens, as number. Will be converted to wei
    * @param {String} toAddress   - only if toAddress is different from the minter
    * @return {Promise<TransactionReceipt>} transactionId
    */
   public async mint(
-    dataTokenAddress: string,
+    dtAddress: string,
     address: string,
     amount: string,
     toAddress?: string
   ): Promise<TransactionReceipt> {
-    const dtContract = new this.web3.eth.Contract(this.datatokensABI, dataTokenAddress)
+    const dtContract = new this.web3.eth.Contract(this.datatokensABI, dtAddress)
 
-    if ((await this.getDTPermissions(dataTokenAddress, address)).minter != true) {
+    if ((await this.getDTPermissions(dtAddress, address)).minter != true) {
       throw new Error(`Caller is not Minter`)
     }
 
-    const capAvailble = await this.getCap(dataTokenAddress)
+    const capAvailble = await this.getCap(dtAddress)
     if (new Decimal(capAvailble).gte(amount)) {
       // Estimate gas cost for mint method
       const gasLimitDefault = this.GASLIMIT_DEFAULT
