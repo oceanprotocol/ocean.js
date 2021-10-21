@@ -9,6 +9,7 @@ import Router from '@oceanprotocol/contracts/artifacts/contracts/pools/FactoryRo
 import ERC20Template from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC20Template.sol/ERC20Template.json'
 import Dispenser from '@oceanprotocol/contracts/artifacts/contracts/pools/dispenser/Dispenser.sol/Dispenser.json'
 import FixedRate from '@oceanprotocol/contracts/artifacts/contracts/pools/fixedRate/FixedRateExchange.sol/FixedRateExchange.json'
+import MockERC20 from '@oceanprotocol/contracts/artifacts/contracts/utils/mock/MockERC20Decimals.sol/MockERC20Decimals.json'
 import PoolTemplate from '@oceanprotocol/contracts/artifacts/contracts/pools/balancer/BPool.sol/BPool.json'
 import { LoggerInstance } from '../../src/utils'
 // import { NFTDataToken } from '../../../src/datatokens/NFTDatatoken'
@@ -24,16 +25,10 @@ describe('NFT Factory test', () => {
   let user3: string
   let contracts: TestContractHandler
   let nftFactory: NFTFactory
+  let dtAddress: string
+  let dtAddress2: string
+  let nftAddress: string
 
-  const nftName = 'NFT'
-  const nftSymbol = 'NFTSymbol'
-  const nftTemplateIndex = 1
-  const data = web3.utils.asciiToHex('SomeData')
-  const flags = web3.utils.asciiToHex(
-    'f8929916089218bdb4aa78c3ecd16633afd44b8aef89299160'
-  )
-
-  // TODO: complete unit test
   it('should deploy contracts', async () => {
     contracts = new TestContractHandler(
       web3,
@@ -61,10 +56,16 @@ describe('NFT Factory test', () => {
     user1 = contracts.accounts[2]
     user2 = contracts.accounts[3]
     user3 = contracts.accounts[4]
-    console.log(factoryOwner)
+
     await contracts.deployContracts(factoryOwner, Router.abi as AbiItem[])
 
-    console.log('BOOM')
+    const daiContract = new web3.eth.Contract(
+      contracts.MockERC20.options.jsonInterface,
+      contracts.daiAddress
+    )
+    await daiContract.methods
+      .approve(contracts.factory721Address, web3.utils.toWei('10000'))
+      .send({ from: contracts.accounts[0] })
   })
 
   it('should initiate NFTFactory instance', async () => {
@@ -152,7 +153,44 @@ describe('NFT Factory test', () => {
     assert(tokenTemplate.isActive === true)
   })
 
-  it('#createNFTwithErc - should create an NFT and a Datatoken', async () => {
+  it('#createNftwithErc - should create an NFT and a Datatoken ', async () => {
+    // we prepare transaction parameters objects
+    const nftData = {
+      name: '72120Bundle',
+      symbol: '72Bundle',
+      templateIndex: 1,
+      baseURI: 'https://oceanprotocol.com/nft/'
+    }
+    const ercData = {
+      templateIndex: 1,
+      strings: ['ERC20B1', 'ERC20DT1Symbol'],
+      addresses: [
+        contracts.accounts[0],
+        user3,
+        user2,
+        '0x0000000000000000000000000000000000000000'
+      ],
+      uints: [web3.utils.toWei('10000'), 0],
+      bytess: []
+    }
+
+    const txReceipt = await nftFactory.createNftWithErc(
+      contracts.accounts[0],
+      nftData,
+      ercData
+    )
+
+    // EVENTS HAVE BEEN EMITTED
+    expect(txReceipt.events.NFTCreated.event === 'NFTCreated')
+    expect(txReceipt.events.TokenCreated.event === 'TokenCreated')
+
+    // stored for later use in startMultipleTokenOrder test
+    nftAddress = txReceipt.events.NFTCreated.returnValues.newTokenAddress
+    dtAddress = txReceipt.events.TokenCreated.returnValues.newTokenAddress
+  })
+
+  it('#createNftErcWithPool- should create an NFT, a Datatoken and a pool DT/DAI', async () => {
+    // we prepare transaction parameters objects
     const nftData = {
       name: '72120Bundle',
       symbol: '72Bundle',
@@ -163,18 +201,162 @@ describe('NFT Factory test', () => {
       templateIndex: 1,
       strings: ['ERC20B1', 'ERC20DT1Symbol'],
       addresses: [user2, user3, user2, '0x0000000000000000000000000000000000000000'],
-      uints: [web3.utils.toWei('10000'), 0],
+      uints: [web3.utils.toWei('1000000'), 0],
       bytess: []
     }
 
-    const txReceipt = await nftFactory.createNftWithErc(
+    const poolData = {
+      addresses: [
+        contracts.sideStakingAddress,
+        contracts.daiAddress,
+        contracts.factory721Address,
+        contracts.accounts[0],
+        contracts.accounts[0],
+        contracts.poolTemplateAddress
+      ],
+      ssParams: [
+        web3.utils.toWei('1'), // rate
+        18, // basetokenDecimals
+        web3.utils.toWei('10000'),
+        2500000, // vested blocks
+        web3.utils.toWei('2000') // baseToken initial pool liquidity
+      ],
+      swapFees: [
+        1e15, //
+        1e15
+      ]
+    }
+
+    const txReceipt = await nftFactory.createNftErcWithPool(
       contracts.accounts[0],
       nftData,
-      ercData
+      ercData,
+      poolData
     )
+
+    // EVENTS HAVE BEEN EMITTED
     expect(txReceipt.events.NFTCreated.event === 'NFTCreated')
     expect(txReceipt.events.TokenCreated.event === 'TokenCreated')
-    console.log(txReceipt.events.NFTCreated.returnValues.newTokenAddress)
-    console.log(txReceipt.events.TokenCreated.returnValues.newTokenAddress)
+    expect(txReceipt.events.NewPool.event === 'NewPool')
+  })
+
+  it('#createNftErcWithFixedRate- should create an NFT, a datatoken and create a Fixed Rate Exchange', async () => {
+    // we prepare transaction parameters objects
+    const nftData = {
+      name: '72120Bundle',
+      symbol: '72Bundle',
+      templateIndex: 1,
+      baseURI: 'https://oceanprotocol.com/nft/'
+    }
+    const ercData = {
+      templateIndex: 1,
+      strings: ['ERC20B1', 'ERC20DT1Symbol'],
+      addresses: [
+        contracts.accounts[0],
+        user3,
+        user2,
+        '0x0000000000000000000000000000000000000000'
+      ],
+      uints: [web3.utils.toWei('1000000'), 0],
+      bytess: []
+    }
+
+    const fixedData = {
+      fixedPriceAddress: contracts.fixedRateAddress,
+      addresses: [contracts.daiAddress, contracts.accounts[0], contracts.accounts[0]],
+      uints: [18, 18, web3.utils.toWei('1'), 1e15]
+    }
+
+    const txReceipt = await nftFactory.createNftErcWithFixedRate(
+      contracts.accounts[0],
+      nftData,
+      ercData,
+      fixedData
+    )
+
+    // EVENTS HAVE BEEN EMITTED
+    expect(txReceipt.events.NFTCreated.event === 'NFTCreated')
+    expect(txReceipt.events.TokenCreated.event === 'TokenCreated')
+    expect(txReceipt.events.NewFixedRate.event === 'NewFixedRate')
+
+    // stored for later use in startMultipleTokenOrder test
+    dtAddress2 = txReceipt.events.TokenCreated.returnValues.newTokenAddress
+  })
+
+  it('#startMultipleTokenOrder- should succed to start multiple orders', async () => {
+    const consumer = user2 // could be different user
+    const dtAmount = web3.utils.toWei('1')
+    const serviceId = 1 // dummy index
+    const consumeFeeAddress = user3 // marketplace fee Collector
+    const consumeFeeAmount = 0 // fee to be collected on top, requires approval
+    const consumeFeeToken = contracts.daiAddress // token address for the feeAmount, in this case DAI
+
+    // we reuse a DT created in a previous test
+    const dtContract = new web3.eth.Contract(ERC20Template.abi as AbiItem[], dtAddress)
+    expect(await dtContract.methods.balanceOf(user2).call()).to.equal('0')
+
+    // dt owner mint dtAmount to user2
+    await dtContract.methods.mint(user2, dtAmount).send({ from: contracts.accounts[0] })
+
+    // user2 approves NFTFactory to move his dtAmount
+    await dtContract.methods
+      .approve(contracts.factory721Address, dtAmount)
+      .send({ from: user2 })
+
+    // we reuse another DT created in a previous test
+    const dtContract2 = new web3.eth.Contract(ERC20Template.abi as AbiItem[], dtAddress2)
+    expect(await dtContract2.methods.balanceOf(user2).call()).to.equal('0')
+
+    // dt owner mint dtAmount to user2
+    await dtContract2.methods.mint(user2, dtAmount).send({ from: contracts.accounts[0] })
+    // user2 approves NFTFactory to move his dtAmount
+    await dtContract2.methods
+      .approve(contracts.factory721Address, dtAmount)
+      .send({ from: user2 })
+
+    // we check user2 has enought DTs
+    expect(await dtContract.methods.balanceOf(user2).call()).to.equal(dtAmount)
+    expect(await dtContract2.methods.balanceOf(user2).call()).to.equal(dtAmount)
+
+    const orders = [
+      {
+        tokenAddress: dtAddress,
+        consumer: consumer,
+        amount: dtAmount,
+        serviceId: serviceId,
+        consumeFeeAddress: consumeFeeAddress,
+        consumeFeeToken: consumeFeeToken,
+        consumeFeeAmount: consumeFeeAmount
+      },
+      {
+        tokenAddress: dtAddress2,
+        consumer: consumer,
+        amount: dtAmount,
+        serviceId: serviceId,
+        consumeFeeAddress: consumeFeeAddress,
+        consumeFeeToken: consumeFeeToken,
+        consumeFeeAmount: consumeFeeAmount
+      }
+    ]
+
+    await nftFactory.startMultipleTokenOrder(user2, orders)
+
+    // we check user2 has no more DTs
+    expect(await dtContract.methods.balanceOf(user2).call()).to.equal('0')
+    expect(await dtContract2.methods.balanceOf(user2).call()).to.equal('0')
+  })
+  it('#checkDatatoken - should confirm if DT is from the factory', async () => {
+    assert((await nftFactory.checkDatatoken(dtAddress)) === true)
+    assert((await nftFactory.checkDatatoken(dtAddress2)) === true)
+    assert((await nftFactory.checkDatatoken(user2)) === false)
+    assert((await nftFactory.checkDatatoken(nftAddress)) === false)
+  })
+
+  it('#checkNFT - should return nftAddress if from the factory, or address(0) if not', async () => {
+    assert(
+      (await nftFactory.checkNFT(dtAddress)) ===
+        '0x0000000000000000000000000000000000000000'
+    )
+    assert((await nftFactory.checkNFT(nftAddress)) === nftAddress)
   })
 })

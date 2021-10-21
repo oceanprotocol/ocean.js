@@ -5,7 +5,6 @@ import { AbiItem } from 'web3-utils'
 import defaultFactory721ABI from '@oceanprotocol/contracts/artifacts/contracts/ERC721Factory.sol/ERC721Factory.json'
 import { Logger, getFairGasPrice, generateDtName } from '../utils'
 
-
 interface Template {
   templateAddress: string
   isActive: boolean
@@ -14,7 +13,7 @@ interface Template {
 interface TokenOrder {
   tokenAddress: string
   consumer: string
-  amount: number
+  amount: string | number
   serviceId: number
   consumeFeeAddress: string
   consumeFeeToken: string // address of the token marketplace wants to add fee on top
@@ -32,20 +31,20 @@ interface ErcCreateData {
   templateIndex: number
   strings: string[]
   addresses: string[]
-  uints:(string | number)[]
+  uints: (string | number)[]
   bytess: string[]
 }
 
 interface PoolData {
   addresses: string[]
-  ssParams: number[]
+  ssParams: (string | number)[]
   swapFees: number[]
 }
 
 interface FixedData {
   fixedPriceAddress: string
   addresses: string[]
-  uints: number[]
+  uints: (string | number)[]
 }
 /**
  * Provides an interface for NFT DataTokens
@@ -559,7 +558,7 @@ export class NFTFactory {
     let estGas
     try {
       estGas = await this.factory721.methods
-        .createNftErcWithFixedRate(nftCreateData, ercCreateData)
+        .createNftErcWithFixedRate(nftCreateData, ercCreateData, fixedData)
         .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
     } catch (e) {
       estGas = gasLimitDefault
@@ -567,7 +566,7 @@ export class NFTFactory {
 
     // Invoke createToken function of the contract
     const trxReceipt = await this.factory721.methods
-      .createNftErcWithFixedRate(nftCreateData, ercCreateData)
+      .createNftErcWithFixedRate(nftCreateData, ercCreateData, fixedData)
       .send({
         from: address,
         gas: estGas + 1,
