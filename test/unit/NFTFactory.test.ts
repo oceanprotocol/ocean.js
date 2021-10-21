@@ -71,12 +71,12 @@ describe('NFT Factory test', () => {
 
   it('#getCurrentNFTCount - should return actual nft count (0)', async () => {
     const nftCount = await nftFactory.getCurrentNFTCount()
-    assert(nftCount == 0)
+    assert(nftCount === 0)
   })
 
   it('#getCurrentTokenCount - should return actual token count (0)', async () => {
     const tokenCount = await nftFactory.getCurrentTokenCount()
-    assert(tokenCount == 0)
+    assert(tokenCount === 0)
   })
   it('#getOwner - should return actual owner', async () => {
     const owner = await nftFactory.getOwner()
@@ -84,11 +84,11 @@ describe('NFT Factory test', () => {
   })
   it('#getCurrentNFTTemplateCount - should return actual nft template count (1)', async () => {
     const nftTemplateCount = await nftFactory.getCurrentNFTTemplateCount()
-    assert(nftTemplateCount == 1)
+    assert(nftTemplateCount === 1)
   })
   it('#getCurrentTokenTemplateCount - should return actual token template count (1)', async () => {
     const tokenTemplateCount = await nftFactory.getCurrentTokenTemplateCount()
-    assert(tokenTemplateCount == 1)
+    assert(tokenTemplateCount === 1)
   })
   it('#getNFTTemplate - should return NFT template struct', async () => {
     const nftTemplate = await nftFactory.getNFTTemplate(1)
@@ -103,7 +103,7 @@ describe('NFT Factory test', () => {
   it('#addNFTTemplate - should add NFT template if factory owner', async () => {
     await nftFactory.addNFTTemplate(contracts.accounts[0], contracts.fixedRateAddress) // contracts.fixedRateAddress it's just a dummy contract in this case
     const nftTemplateCount = await nftFactory.getCurrentNFTTemplateCount()
-    assert(nftTemplateCount == 2)
+    assert(nftTemplateCount === 2)
     const nftTemplate = await nftFactory.getNFTTemplate(2)
     assert(nftTemplate.isActive === true)
     assert(nftTemplate.templateAddress === contracts.fixedRateAddress)
@@ -127,7 +127,7 @@ describe('NFT Factory test', () => {
   it('#addTokenTemplate - should add Datatoken template if factory owner', async () => {
     await nftFactory.addTokenTemplate(contracts.accounts[0], contracts.fixedRateAddress) // contracts.fixedRateAddress it's just a dummy contract in this case
     const tokenTemplateCount = await nftFactory.getCurrentTokenTemplateCount()
-    assert(tokenTemplateCount == 2)
+    assert(tokenTemplateCount === 2)
     const nftTemplate = await nftFactory.getTokenTemplate(2)
     assert(nftTemplate.isActive === true)
     assert(nftTemplate.templateAddress === contracts.fixedRateAddress)
