@@ -47,7 +47,7 @@ interface FixedData {
   uints: (string | number)[]
 }
 /**
- * Provides an interface for NFT DataTokens
+ * Provides an interface for NFT Factory contract
  */
 export class NFTFactory {
   public GASLIMIT_DEFAULT = 1000000

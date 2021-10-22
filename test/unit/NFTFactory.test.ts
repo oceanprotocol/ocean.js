@@ -114,7 +114,7 @@ describe('NFT Factory test', () => {
   it('#disableNFTTemplate - should disable NFT template if factory owner', async () => {
     let nftTemplate = await nftFactory.getNFTTemplate(2)
     assert(nftTemplate.isActive === true)
-    await nftFactory.disableNFTTemplate(contracts.accounts[0], 2) // owner disable template index = 2
+    await nftFactory.disableNFTTemplate(contracts.accounts[0], 2) // owner disables template index = 2
 
     nftTemplate = await nftFactory.getNFTTemplate(2)
     assert(nftTemplate.isActive === false)
@@ -122,7 +122,7 @@ describe('NFT Factory test', () => {
   it('#reactivateNFTTemplate - should disable NFT template if factory owner', async () => {
     let nftTemplate = await nftFactory.getNFTTemplate(2)
     assert(nftTemplate.isActive === false)
-    await nftFactory.reactivateNFTTemplate(contracts.accounts[0], 2) // owner reactivate template index = 2
+    await nftFactory.reactivateNFTTemplate(contracts.accounts[0], 2) // owner reactivates template index = 2
 
     nftTemplate = await nftFactory.getNFTTemplate(2)
     assert(nftTemplate.isActive === true)
@@ -139,7 +139,7 @@ describe('NFT Factory test', () => {
   it('#disableTokenTemplate - should disable Token template if factory owner', async () => {
     let tokenTemplate = await nftFactory.getTokenTemplate(2)
     assert(tokenTemplate.isActive === true)
-    await nftFactory.disableTokenTemplate(contracts.accounts[0], 2) // owner disable template index = 2
+    await nftFactory.disableTokenTemplate(contracts.accounts[0], 2) // owner disables template index = 2
 
     tokenTemplate = await nftFactory.getTokenTemplate(2)
     assert(tokenTemplate.isActive === false)
@@ -147,7 +147,7 @@ describe('NFT Factory test', () => {
   it('#reactivateTokenTemplate - should disable Token template if factory owner', async () => {
     let tokenTemplate = await nftFactory.getTokenTemplate(2)
     assert(tokenTemplate.isActive === false)
-    await nftFactory.reactivateTokenTemplate(contracts.accounts[0], 2) // owner reactivate template index = 2
+    await nftFactory.reactivateTokenTemplate(contracts.accounts[0], 2) // owner reactivates template index = 2
 
     tokenTemplate = await nftFactory.getTokenTemplate(2)
     assert(tokenTemplate.isActive === true)

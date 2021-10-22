@@ -163,10 +163,39 @@ export class TestContractHandler {
         return contract.options.address
       })
 
+    // DEPLOY OCEAN MOCK
+    // get est gascost
+    estGas = await this.MockERC20.deploy({
+      data: this.MockERC20Bytecode,
+      arguments: ['OCEAN', 'OCEAN', 18]
+    }).estimateGas(function (err, estGas) {
+      if (err) console.log('DeployContracts: ' + err)
+      return estGas
+    })
+    // deploy the contract and get it's address
+    this.oceanAddress = await this.MockERC20.deploy({
+      data: this.MockERC20Bytecode,
+      arguments: ['OCEAN', 'OCEAN', 18]
+    })
+      .send({
+        from: owner,
+        gas: estGas + 1,
+        gasPrice: '3000000000'
+      })
+      .then(function (contract) {
+        return contract.options.address
+      })
+
     // DEPLOY ROUTER
     estGas = await this.Router.deploy({
       data: this.RouterBytecode,
-      arguments: [owner, oceanAddress, this.poolTemplateAddress, communityCollector, []]
+      arguments: [
+        owner,
+        this.oceanAddress,
+        this.poolTemplateAddress,
+        communityCollector,
+        []
+      ]
     }).estimateGas(function (err, estGas) {
       if (err) console.log('DeployContracts: ' + err)
       return estGas
@@ -174,7 +203,13 @@ export class TestContractHandler {
     // deploy the contract and get it's address
     this.routerAddress = await this.Router.deploy({
       data: this.RouterBytecode,
-      arguments: [owner, oceanAddress, this.poolTemplateAddress, communityCollector, []]
+      arguments: [
+        owner,
+        this.oceanAddress,
+        this.poolTemplateAddress,
+        communityCollector,
+        []
+      ]
     })
       .send({
         from: owner,
@@ -283,29 +318,6 @@ export class TestContractHandler {
         return contract.options.address
       })
 
-    // DEPLOY OCEAN MOCK
-    // get est gascost
-    estGas = await this.MockERC20.deploy({
-      data: this.MockERC20Bytecode,
-      arguments: ['OCEAN', 'OCEAN', 18]
-    }).estimateGas(function (err, estGas) {
-      if (err) console.log('DeployContracts: ' + err)
-      return estGas
-    })
-    // deploy the contract and get it's address
-    this.oceanAddress = await this.MockERC20.deploy({
-      data: this.MockERC20Bytecode,
-      arguments: ['OCEAN', 'OCEAN', 18]
-    })
-      .send({
-        from: owner,
-        gas: estGas + 1,
-        gasPrice: '3000000000'
-      })
-      .then(function (contract) {
-        return contract.options.address
-      })
-
     // DEPLOY USDC MOCK
     // get est gascost
     estGas = await this.MockERC20.deploy({
@@ -366,8 +378,8 @@ export class TestContractHandler {
       .send({ from: owner })
     // TODO: add OPF deployment and update argument
     // TODO: how are we going to call those functions with an OPF contract? it should be a multisig the owner
-    await RouterContract.methods
-      .changeRouterOwner(communityCollector)
-      .send({ from: owner })
+    // await RouterContract.methods
+    //   .changeRouterOwner(communityCollector)
+    //   .send({ from: owner })
   }
 }
