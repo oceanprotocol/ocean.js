@@ -9,8 +9,45 @@ interface Template {
   templateAddress: string
   isActive: boolean
 }
+
+interface TokenOrder {
+  tokenAddress: string
+  consumer: string
+  amount: string | number
+  serviceId: number
+  consumeFeeAddress: string
+  consumeFeeToken: string // address of the token marketplace wants to add fee on top
+  consumeFeeAmount: number
+}
+
+interface NFTCreateData {
+  name: string
+  symbol: string
+  templateIndex: number
+  baseURI: string
+}
+
+interface ErcCreateData {
+  templateIndex: number
+  strings: string[]
+  addresses: string[]
+  uints: (string | number)[]
+  bytess: string[]
+}
+
+interface PoolData {
+  addresses: string[]
+  ssParams: (string | number)[]
+  swapFees: number[]
+}
+
+interface FixedData {
+  fixedPriceAddress: string
+  addresses: string[]
+  uints: (string | number)[]
+}
 /**
- * Provides an interface for NFT DataTokens
+ * Provides an interface for NFT Factory contract
  */
 export class NFTFactory {
   public GASLIMIT_DEFAULT = 1000000
@@ -150,6 +187,24 @@ export class NFTFactory {
   public async getTokenTemplate(index: number): Promise<Template> {
     const template = await this.factory721.methods.getTokenTemplate(index).call()
     return template
+  }
+
+  /** Check if ERC20 is deployed from the factory
+   * @param {String} datatoken Datatoken address we want to check
+   * @return {Promise<Boolean>} return true if deployed from this factory
+   */
+  public async checkDatatoken(datatoken: string): Promise<Boolean> {
+    const isDeployed = await this.factory721.methods.erc20List(datatoken).call()
+    return isDeployed
+  }
+
+  /** Check if  NFT is deployed from the factory
+   * @param {String} nftAddress nftAddress address we want to check
+   * @return {Promise<String>} return address(0) if it's not, or the nftAddress if true
+   */
+  public async checkNFT(nftAddress: string): Promise<String> {
+    const confirmAddress = await this.factory721.methods.erc721List(nftAddress).call()
+    return confirmAddress
   }
 
   /**
@@ -359,6 +414,159 @@ export class NFTFactory {
     // Invoke createToken function of the contract
     const trxReceipt = await this.factory721.methods
       .reactivateTokenTemplate(templateIndex)
+      .send({
+        from: address,
+        gas: estGas + 1,
+        gasPrice: await getFairGasPrice(this.web3)
+      })
+
+    return trxReceipt
+  }
+
+  /**
+   * @dev startMultipleTokenOrder
+   *      Used as a proxy to order multiple services
+   *      Users can have inifinite approvals for fees for factory instead of having one approval/ erc20 contract
+   *      Requires previous approval of all :
+   *          - consumeFeeTokens
+   *          - publishMarketFeeTokens
+   *          - erc20 datatokens
+   * @param orders an array of struct tokenOrder
+   *  @return {Promise<TransactionReceipt>} transaction receipt
+   */
+
+  public async startMultipleTokenOrder(
+    address: string,
+    orders: TokenOrder[]
+  ): Promise<TransactionReceipt> {
+    // Get estimated gas value
+    const gasLimitDefault = this.GASLIMIT_DEFAULT
+    let estGas
+    try {
+      estGas = await this.factory721.methods
+        .startMultipleTokenOrder(orders)
+        .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
+    } catch (e) {
+      estGas = gasLimitDefault
+    }
+
+    // Invoke createToken function of the contract
+    const trxReceipt = await this.factory721.methods
+      .startMultipleTokenOrder(orders)
+      .send({
+        from: address,
+        gas: estGas + 1,
+        gasPrice: await getFairGasPrice(this.web3)
+      })
+
+    return trxReceipt
+  }
+
+  /**
+   * @dev createNftWithErc
+   *      Creates a new NFT, then a ERC20,all in one call
+   * @param _NftCreateData input data for nft creation
+   * @param _ErcCreateData input data for erc20 creation
+   *  @return {Promise<TransactionReceipt>} transaction receipt
+   */
+
+  public async createNftWithErc(
+    address: string,
+    nftCreateData: NFTCreateData,
+    ercCreateData: ErcCreateData
+  ): Promise<TransactionReceipt> {
+    // Get estimated gas value
+    const gasLimitDefault = this.GASLIMIT_DEFAULT
+    let estGas
+    try {
+      estGas = await this.factory721.methods
+        .createNftWithErc(nftCreateData, ercCreateData)
+        .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
+    } catch (e) {
+      estGas = gasLimitDefault
+    }
+
+    // Invoke createToken function of the contract
+    const trxReceipt = await this.factory721.methods
+      .createNftWithErc(nftCreateData, ercCreateData)
+      .send({
+        from: address,
+        gas: estGas + 1,
+        gasPrice: await getFairGasPrice(this.web3)
+      })
+
+    return trxReceipt
+  }
+
+  /**
+   * @dev createNftErcWithPool
+   *      Creates a new NFT, then a ERC20, then a Pool, all in one call
+   *      Use this carefully, because if Pool creation fails, you are still going to pay a lot of gas
+   * @param _NftCreateData input data for NFT Creation
+   * @param _ErcCreateData input data for ERC20 Creation
+   * @param _PoolData input data for Pool Creation
+   *  @return {Promise<TransactionReceipt>} transaction receipt
+   */
+
+  public async createNftErcWithPool(
+    address: string,
+    nftCreateData: NFTCreateData,
+    ercCreateData: ErcCreateData,
+    poolData: PoolData
+  ): Promise<TransactionReceipt> {
+    // Get estimated gas value
+    const gasLimitDefault = this.GASLIMIT_DEFAULT
+    let estGas
+    try {
+      estGas = await this.factory721.methods
+        .createNftErcWithPool(nftCreateData, ercCreateData, poolData)
+        .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
+    } catch (e) {
+      estGas = gasLimitDefault
+    }
+
+    // Invoke createToken function of the contract
+    const trxReceipt = await this.factory721.methods
+      .createNftErcWithPool(nftCreateData, ercCreateData, poolData)
+      .send({
+        from: address,
+        gas: estGas + 1,
+        gasPrice: await getFairGasPrice(this.web3)
+      })
+
+    return trxReceipt
+  }
+
+  /**
+   * @dev createNftErcWithFixedRate
+   *      Creates a new NFT, then a ERC20, then a FixedRateExchange, all in one call
+   *      Use this carefully, because if Fixed Rate creation fails, you are still going to pay a lot of gas
+   * @param _NftCreateData input data for NFT Creation
+   * @param _ErcCreateData input data for ERC20 Creation
+   * @param _FixedData input data for FixedRate Creation
+   *  @return {Promise<TransactionReceipt>} transaction receipt
+   */
+
+  public async createNftErcWithFixedRate(
+    address: string,
+    nftCreateData: NFTCreateData,
+    ercCreateData: ErcCreateData,
+    fixedData: FixedData
+  ): Promise<TransactionReceipt> {
+    // Get estimated gas value
+    const gasLimitDefault = this.GASLIMIT_DEFAULT
+    let estGas
+    try {
+      estGas = await this.factory721.methods
+        .createNftErcWithFixedRate(nftCreateData, ercCreateData, fixedData)
+        .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
+    } catch (e) {
+      estGas = gasLimitDefault
+    }
+
+    // Invoke createToken function of the contract
+    const trxReceipt = await this.factory721.methods
+      .createNftErcWithFixedRate(nftCreateData, ercCreateData, fixedData)
       .send({
         from: address,
         gas: estGas + 1,

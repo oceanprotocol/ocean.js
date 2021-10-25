@@ -1,7 +1,7 @@
 import Web3 from 'web3'
 import { Contract } from 'web3-eth-contract'
 import { AbiItem } from 'web3-utils/types'
-
+import MockERC20 from '@oceanprotocol/contracts/artifacts/contracts/utils/mock/MockERC20Decimals.sol/MockERC20Decimals.json'
 // TODO: add OPF deployment
 const communityCollector = '0xeE9300b7961e0a01d9f0adb863C7A227A07AaD75'
 const oceanAddress = '0x967da4048cd07ab37855c090aaf366e4ce1b9f48'
@@ -16,6 +16,8 @@ export class TestContractHandler {
   public Dispenser: Contract
   public OPFCollector: Contract
   public PoolTemplate: Contract
+  public MockERC20: Contract
+  public MockOcean: Contract
 
   public ERC721FactoryBytecode: string
   public ERC20TemplateBytecode: string
@@ -26,6 +28,7 @@ export class TestContractHandler {
   public DispenserBytecode: string
   public PoolTemplateBytecode: string
   public OPFCollectorBytecode: string
+  public MockERC20Bytecode: string
 
   public factory721Address: string
   public template721Address: string
@@ -36,7 +39,9 @@ export class TestContractHandler {
   public dispenserAddress: string
   public poolTemplateAddress: string
   public opfCollectorAddress: string
-
+  public oceanAddress: string
+  public daiAddress: string
+  public usdcAddress: string
   public web3: Web3
 
   constructor(
@@ -68,6 +73,7 @@ export class TestContractHandler {
     this.SideStaking = new this.web3.eth.Contract(SideStakingABI)
     this.FixedRate = new this.web3.eth.Contract(FixedRateABI)
     this.Dispenser = new this.web3.eth.Contract(DispenserABI)
+    this.MockERC20 = new this.web3.eth.Contract(MockERC20.abi as AbiItem[])
 
     this.ERC721FactoryBytecode = factory721Bytecode
     this.ERC20TemplateBytecode = template20Bytecode
@@ -77,6 +83,7 @@ export class TestContractHandler {
     this.SideStakingBytecode = sideStakingBytecode
     this.FixedRateBytecode = fixedRateBytecode
     this.DispenserBytecode = dispenserBytecode
+    this.MockERC20Bytecode = MockERC20.bytecode
   }
 
   public async getAccounts(): Promise<string[]> {
@@ -156,10 +163,39 @@ export class TestContractHandler {
         return contract.options.address
       })
 
+    // DEPLOY OCEAN MOCK
+    // get est gascost
+    estGas = await this.MockERC20.deploy({
+      data: this.MockERC20Bytecode,
+      arguments: ['OCEAN', 'OCEAN', 18]
+    }).estimateGas(function (err, estGas) {
+      if (err) console.log('DeployContracts: ' + err)
+      return estGas
+    })
+    // deploy the contract and get it's address
+    this.oceanAddress = await this.MockERC20.deploy({
+      data: this.MockERC20Bytecode,
+      arguments: ['OCEAN', 'OCEAN', 18]
+    })
+      .send({
+        from: owner,
+        gas: estGas + 1,
+        gasPrice: '3000000000'
+      })
+      .then(function (contract) {
+        return contract.options.address
+      })
+
     // DEPLOY ROUTER
     estGas = await this.Router.deploy({
       data: this.RouterBytecode,
-      arguments: [owner, oceanAddress, this.poolTemplateAddress, communityCollector, []]
+      arguments: [
+        owner,
+        this.oceanAddress,
+        this.poolTemplateAddress,
+        communityCollector,
+        []
+      ]
     }).estimateGas(function (err, estGas) {
       if (err) console.log('DeployContracts: ' + err)
       return estGas
@@ -167,7 +203,13 @@ export class TestContractHandler {
     // deploy the contract and get it's address
     this.routerAddress = await this.Router.deploy({
       data: this.RouterBytecode,
-      arguments: [owner, oceanAddress, this.poolTemplateAddress, communityCollector, []]
+      arguments: [
+        owner,
+        this.oceanAddress,
+        this.poolTemplateAddress,
+        communityCollector,
+        []
+      ]
     })
       .send({
         from: owner,
@@ -276,6 +318,52 @@ export class TestContractHandler {
         return contract.options.address
       })
 
+    // DEPLOY USDC MOCK
+    // get est gascost
+    estGas = await this.MockERC20.deploy({
+      data: this.MockERC20Bytecode,
+      arguments: ['USDC', 'USDC', 6]
+    }).estimateGas(function (err, estGas) {
+      if (err) console.log('DeployContracts: ' + err)
+      return estGas
+    })
+    // deploy the contract and get it's address
+    this.usdcAddress = await this.MockERC20.deploy({
+      data: this.MockERC20Bytecode,
+      arguments: ['USDC', 'USDC', 6]
+    })
+      .send({
+        from: owner,
+        gas: estGas + 1,
+        gasPrice: '3000000000'
+      })
+      .then(function (contract) {
+        return contract.options.address
+      })
+
+    // DEPLOY DAI MOCK
+    // get est gascost
+    estGas = await this.MockERC20.deploy({
+      data: this.MockERC20Bytecode,
+      arguments: ['DAI', 'DAI', 18]
+    }).estimateGas(function (err, estGas) {
+      if (err) console.log('DeployContracts: ' + err)
+      return estGas
+    })
+    // deploy the contract and get it's address
+    this.daiAddress = await this.MockERC20.deploy({
+      data: this.MockERC20Bytecode,
+      arguments: ['DAI', 'DAI', 18]
+    })
+      .send({
+        from: owner,
+        gas: estGas + 1,
+        gasPrice: '3000000000'
+      })
+      .then(function (contract) {
+        return contract.options.address
+      })
+
     const RouterContract = new this.web3.eth.Contract(routerABI, this.routerAddress)
 
     await RouterContract.methods.addFactory(this.factory721Address).send({ from: owner })
@@ -288,9 +376,9 @@ export class TestContractHandler {
     await RouterContract.methods
       .addSSContract(this.sideStakingAddress)
       .send({ from: owner })
-    // TODO: add OPF deployment and update argument
-    await RouterContract.methods
-      .changeRouterOwner(communityCollector)
-      .send({ from: owner })
+    // TODO: add OPF deployment
+    // await RouterContract.methods
+    //   .changeRouterOwner(communityCollector)
+    //   .send({ from: owner })
   }
 }
