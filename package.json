@@ -46,7 +46,7 @@
   },
   "dependencies": {
     "@ethereum-navigator/navigator": "^0.5.3",
-    "@oceanprotocol/contracts": "https://github.com/oceanprotocol/contracts#v4main",
+    "@oceanprotocol/contracts": "github:oceanprotocol/contracts#v4main",
     "cross-fetch": "^3.1.4",
     "crypto-js": "^4.0.0",
     "decimal.js": "^10.2.1",

@@ -2,7 +2,7 @@ import Web3 from 'web3'
 import { AbiItem } from 'web3-utils'
 import { TransactionReceipt } from 'web3-eth'
 import defaultNFTDatatokenABI from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC721Template.sol/ERC721Template.json'
-import { Logger, getFairGasPrice, generateDtName } from '../utils'
+import { LoggerInstance, getFairGasPrice, generateDtName, Logger } from '../utils'
 
 /**
  * ERC721 ROLES
@@ -20,29 +20,26 @@ export class NFTDatatoken {
   public factory721ABI: AbiItem | AbiItem[]
   public nftDatatokenABI: AbiItem | AbiItem[]
   public web3: Web3
-  private logger: Logger
   public startBlock: number
 
-  constructor(
-    web3: Web3,
-    logger: Logger,
-    nftDatatokenABI?: AbiItem | AbiItem[],
-    startBlock?: number
-  ) {
+  constructor(web3: Web3, nftDatatokenABI?: AbiItem | AbiItem[], startBlock?: number) {
     this.nftDatatokenABI = nftDatatokenABI || (defaultNFTDatatokenABI.abi as AbiItem[])
     this.web3 = web3
-    this.logger = logger
     this.startBlock = startBlock || 0
   }
 
   /**
    * Create new ERC20 datatoken - only user with ERC20Deployer permission can succeed
-   * @param {String} address
-   * @param {String} nftAddress
+   * @param {String} nftAddress ERC721 addreess
+   * @param {String} address User address
    * @param {String} minter User set as initial minter for the ERC20
+   * @param {String} feeManager initial feeManager for this DT
+   * @param {String} mpFeeAddress Consume marketplace fee address
+   * @param {String} feeToken address of the token marketplace wants to add fee on top
+   * @param {String} feeAmount amount of feeToken to be transferred to mpFeeAddress on top, will be converted to WEI
+   * @param {String} cap Maximum cap (Number) - will be converted to wei
    * @param {String} name Token name
    * @param {String} symbol Token symbol
-   * @param {String} cap Maximum cap (Number) - will be converted to wei
    * @param {Number} templateIndex NFT template index
    * @return {Promise<string>} ERC20 datatoken address
    */
@@ -50,6 +47,10 @@ export class NFTDatatoken {
     nftAddress: string,
     address: string,
     minter: string,
+    feeManager: string,
+    mpFeeAddress: string,
+    feeToken: string,
+    feeAmount: string,
     cap: string,
     name?: string,
     symbol?: string,
@@ -63,33 +64,33 @@ export class NFTDatatoken {
     }
 
     // Create 721contract object
-    const contract721 = new this.web3.eth.Contract(this.nftDatatokenABI, nftAddress)
+    const nftContract = new this.web3.eth.Contract(this.nftDatatokenABI, nftAddress)
 
     // Estimate gas for ERC20 token creation
     const gasLimitDefault = this.GASLIMIT_DEFAULT
     let estGas
     try {
-      estGas = await contract721.methods
+      estGas = await nftContract.methods
         .createERC20(
           templateIndex,
           [name, symbol],
-          [minter],
-          [this.web3.utils.toWei(cap)],
-          null
+          [minter, feeManager, mpFeeAddress, feeToken],
+          [this.web3.utils.toWei(cap), this.web3.utils.toWei(feeAmount)],
+          []
         )
         .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
     } catch (e) {
       estGas = gasLimitDefault
     }
 
-    // Invoke createERC20 token function of the contract
-    const trxReceipt = await contract721.methods
+    // Call createERC20 token function of the contract
+    const trxReceipt = await nftContract.methods
       .createERC20(
         templateIndex,
         [name, symbol],
-        [minter],
-        [this.web3.utils.toWei(cap)],
-        null
+        [minter, feeManager, mpFeeAddress, feeToken],
+        [this.web3.utils.toWei(cap), this.web3.utils.toWei(feeAmount)],
+        []
       )
       .send({
         from: address,
@@ -101,7 +102,7 @@ export class NFTDatatoken {
     try {
       tokenAddress = trxReceipt.events.ERC20Created.returnValues[0]
     } catch (e) {
-      this.logger.error(`ERROR: Failed to create datatoken : ${e.message}`)
+      LoggerInstance.error(`ERROR: Failed to create datatoken : ${e.message}`)
     }
     return tokenAddress
   }
@@ -235,7 +236,7 @@ export class NFTDatatoken {
       throw new Error(`Caller is not Manager`)
     }
 
-    //Estimate gas for removeFromCreateERC20List method
+    // Estimate gas for removeFromCreateERC20List method
     const gasLimitDefault = this.GASLIMIT_DEFAULT
     let estGas
     try {
@@ -272,11 +273,11 @@ export class NFTDatatoken {
   ): Promise<TransactionReceipt> {
     const nftContract = new this.web3.eth.Contract(this.nftDatatokenABI, nftAddress)
 
-    if ((await this.getNFTPermissions(nftAddress, address)).manager != true) {
+    if ((await this.getNFTPermissions(nftAddress, address)).manager !== true) {
       throw new Error(`Caller is not Manager`)
     }
 
-    //Estimate gas cost for addToMetadataList method
+    // Estimate gas cost for addToMetadataList method
     const gasLimitDefault = this.GASLIMIT_DEFAULT
     let estGas
     try {
@@ -311,11 +312,11 @@ export class NFTDatatoken {
   ): Promise<TransactionReceipt> {
     const nftContract = new this.web3.eth.Contract(this.nftDatatokenABI, nftAddress)
 
-    if ((await this.getNFTPermissions(nftAddress, address)).manager != true) {
+    if ((await this.getNFTPermissions(nftAddress, address)).manager !== true) {
       throw new Error(`Caller is not Manager`)
     }
 
-    //Estimate gas cost for removeFromMetadataList method
+    // Estimate gas cost for removeFromMetadataList method
     const gasLimitDefault = this.GASLIMIT_DEFAULT
     let estGas
     try {
@@ -352,7 +353,7 @@ export class NFTDatatoken {
   ): Promise<TransactionReceipt> {
     const nftContract = new this.web3.eth.Contract(this.nftDatatokenABI, nftAddress)
 
-    if ((await this.getNFTPermissions(nftAddress, address)).manager != true) {
+    if ((await this.getNFTPermissions(nftAddress, address)).manager !== true) {
       throw new Error(`Caller is not Manager`)
     }
 
@@ -391,7 +392,7 @@ export class NFTDatatoken {
   ): Promise<TransactionReceipt> {
     const nftContract = new this.web3.eth.Contract(this.nftDatatokenABI, nftAddress)
 
-    if ((await this.getNFTPermissions(nftAddress, address)).manager != true) {
+    if ((await this.getNFTPermissions(nftAddress, address)).manager !== true) {
       throw new Error(`Caller is not Manager`)
     }
 
@@ -480,7 +481,7 @@ export class NFTDatatoken {
       throw new Error(`Caller is not NFT Owner`)
     }
 
-    let tokenIdentifier = tokenId || 1
+    const tokenIdentifier = tokenId || 1
 
     // Estimate gas cost for transfer NFT method
     const gasLimitDefault = this.GASLIMIT_DEFAULT

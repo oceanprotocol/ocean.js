@@ -3,7 +3,7 @@ import { AbiItem } from 'web3-utils'
 import { TransactionReceipt } from 'web3-eth'
 import defaultDatatokensABI from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC20Template.sol/ERC20Template.json'
 import Decimal from 'decimal.js'
-import { Logger, getFairGasPrice } from '../utils'
+import { LoggerInstance, getFairGasPrice } from '../utils'
 
 /**
  * ERC20 ROLES
@@ -19,7 +19,6 @@ export class Datatoken {
   public factoryABI: AbiItem | AbiItem[]
   public datatokensABI: AbiItem | AbiItem[]
   public web3: Web3
-  private logger: Logger
   public startBlock: number
 
   /**
@@ -27,14 +26,8 @@ export class Datatoken {
    * @param {AbiItem | AbiItem[]} datatokensABI
    * @param {Web3} web3
    */
-  constructor(
-    web3: Web3,
-    logger: Logger,
-    datatokensABI?: AbiItem | AbiItem[],
-    startBlock?: number
-  ) {
+  constructor(web3: Web3, datatokensABI?: AbiItem | AbiItem[], startBlock?: number) {
     this.web3 = web3
-    this.logger = logger
     this.datatokensABI = datatokensABI || (defaultDatatokensABI.abi as AbiItem[])
     this.startBlock = startBlock || 0
   }
@@ -93,7 +86,7 @@ export class Datatoken {
   ): Promise<TransactionReceipt> {
     const dtContract = new this.web3.eth.Contract(this.datatokensABI, dtAddress)
 
-    if ((await this.getDTPermissions(dtAddress, address)).minter != true) {
+    if ((await this.getDTPermissions(dtAddress, address)).minter !== true) {
       throw new Error(`Caller is not Minter`)
     }
 
@@ -333,7 +326,7 @@ export class Datatoken {
       })
       return trxReceipt
     } catch (e) {
-      this.logger.error(`ERROR: Failed to transfer tokens: ${e.message}`)
+      LoggerInstance.error(`ERROR: Failed to transfer tokens: ${e.message}`)
       throw new Error(`Failed Failed to transfer tokens: ${e.message}`)
     }
   }
@@ -398,7 +391,7 @@ export class Datatoken {
         })
       return trxReceipt
     } catch (e) {
-      this.logger.error(`ERROR: Failed to start order : ${e.message}`)
+      LoggerInstance.error(`ERROR: Failed to start order : ${e.message}`)
       throw new Error(`Failed to start order: ${e.message}`)
     }
   }
@@ -472,6 +465,7 @@ export class Datatoken {
 
     return trxReceipt
   }
+
   /** Returns ERC20 user's permissions for a datatoken
    * @param {String} dtAddress Datatoken adress
    * @param {String} address user adress

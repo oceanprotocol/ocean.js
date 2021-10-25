@@ -3,7 +3,7 @@ import Web3 from 'web3'
 import { TransactionReceipt } from 'web3-core'
 import { AbiItem } from 'web3-utils'
 import defaultFactory721ABI from '@oceanprotocol/contracts/artifacts/contracts/ERC721Factory.sol/ERC721Factory.json'
-import { Logger, getFairGasPrice, generateDtName } from '../utils'
+import { LoggerInstance, getFairGasPrice, generateDtName } from '../utils'
 
 interface Template {
   templateAddress: string
@@ -17,7 +17,6 @@ export class NFTFactory {
   public factory721Address: string
   public factory721ABI: AbiItem | AbiItem[]
   public web3: Web3
-  private logger: Logger
   public startBlock: number
   public factory721: Contract
 
@@ -30,14 +29,12 @@ export class NFTFactory {
   constructor(
     factory721Address: string,
     web3: Web3,
-    logger: Logger,
     factory721ABI?: AbiItem | AbiItem[],
     startBlock?: number
   ) {
     this.factory721Address = factory721Address
     this.factory721ABI = factory721ABI || (defaultFactory721ABI.abi as AbiItem[])
     this.web3 = web3
-    this.logger = logger
     this.startBlock = startBlock || 0
     this.factory721 = new this.web3.eth.Contract(
       this.factory721ABI,
@@ -89,7 +86,7 @@ export class NFTFactory {
     try {
       tokenAddress = trxReceipt.events.TokenCreated.returnValues[0]
     } catch (e) {
-      this.logger.error(`ERROR: Failed to create datatoken : ${e.message}`)
+      LoggerInstance.error(`ERROR: Failed to create datatoken : ${e.message}`)
     }
     return tokenAddress
   }

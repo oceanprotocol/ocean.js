@@ -4,7 +4,7 @@ import { Contract } from 'web3-eth-contract'
 import defaultPoolABI from '@oceanprotocol/contracts/artifacts/contracts/interfaces/IPool.sol/IPool.json'
 import defaultERC20ABI from '@oceanprotocol/contracts/artifacts/contracts/interfaces/IERC20.sol/IERC20.json'
 import { PoolFactory } from './PoolFactory'
-import { Logger } from '../../utils'
+import { LoggerInstance } from '../../utils'
 
 export class OceanPool extends PoolFactory {
   public oceanAddress: string = null
@@ -18,20 +18,16 @@ export class OceanPool extends PoolFactory {
 
   constructor(
     web3: Web3,
-    logger: Logger,
     routerAddress: string = null,
     oceanAddress: string = null,
     startBlock?: number
   ) {
-    super(web3, logger, routerAddress)
+    super(web3, routerAddress)
 
     this.poolABI = defaultPoolABI.abi as AbiItem[]
     this.erc20ABI = defaultERC20ABI.abi as AbiItem[]
     this.vault = new this.web3.eth.Contract(this.vaultABI, this.vaultAddress)
 
-    // if (oceanAddress) {
-    //   this.oceanAddress = oceanAddress
-    // }
     if (startBlock) this.startBlock = startBlock
     else this.startBlock = 0
   }

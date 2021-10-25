@@ -66,7 +66,7 @@ describe('NFT Factory test', () => {
   })
 
   it('should initiate NFTFactory instance', async () => {
-    nftFactory = new NFTFactory(contracts.factory721Address, web3, LoggerInstance)
+    nftFactory = new NFTFactory(contracts.factory721Address, web3)
   })
 
   it('#getCurrentNFTCount - should return actual nft count (0)', async () => {

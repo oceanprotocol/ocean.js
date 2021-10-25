@@ -2,7 +2,7 @@ import Web3 from 'web3'
 import { AbiItem } from 'web3-utils'
 import { Contract } from 'web3-eth-contract'
 import defaultRouterABI from '@oceanprotocol/contracts/artifacts/contracts/interfaces/IFactoryRouter.sol/IFactoryRouter.json'
-import { Logger } from '../../utils'
+import { LoggerInstance } from '../../utils'
 import { TransactionReceipt } from 'web3-eth'
 
 export class PoolFactory {
@@ -12,7 +12,6 @@ export class PoolFactory {
 
   public routerAddress: string
 
-  public logger: Logger
   public router: Contract
 
   /**
@@ -21,16 +20,10 @@ export class PoolFactory {
    * @param {AbiItem | AbiItem[]} routerABI
    * @param {Web3} web3
    */
-  constructor(
-    web3: Web3,
-    logger: Logger,
-    routerAddress: string,
-    routerABI?: AbiItem | AbiItem[]
-  ) {
+  constructor(web3: Web3, routerAddress: string, routerABI?: AbiItem | AbiItem[]) {
     this.web3 = web3
     this.routerAddress = routerAddress
     this.routerABI = routerABI || (defaultRouterABI.abi as AbiItem[])
-    this.logger = logger
     this.router = new this.web3.eth.Contract(this.routerABI, this.routerAddress)
   }
 
@@ -49,8 +42,8 @@ export class PoolFactory {
         .deployPool(tokens, weightsInWei, swapFeePercentage, swapMarketFee, owner)
         .estimateGas({ from: account }, (err, estGas) => (err ? gasLimitDefault : estGas))
     } catch (e) {
-      this.logger.log('Error estimate gas deployPool')
-      this.logger.log(e)
+      LoggerInstance.log('Error estimate gas deployPool')
+      LoggerInstance.log(e)
       estGas = gasLimitDefault
     }
     return estGas

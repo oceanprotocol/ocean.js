@@ -2,8 +2,8 @@ import Config from '../models/Config'
 import fs from 'fs'
 import { homedir } from 'os'
 // eslint-disable-next-line import/no-named-default
-import { default as DefaultContractsAddresses } from '../data/address.json' // temporary untill we can get them from the contract arficats
-import Logger from './Logger'
+import { default as DefaultContractsAddresses } from '@oceanprotocol/contracts/addresses/address.json'
+import LoggerInstance from './Logger'
 
 export interface ConfigHelperConfig extends Config {
   networkId: number
@@ -231,7 +231,7 @@ export class ConfigHelper {
     let config = configHelperNetworks.find((c) => c[filterBy] === network)
 
     if (!config) {
-      Logger.error(`No config found for given network '${network}'`)
+      LoggerInstance.error(`No config found for given network '${network}'`)
       return null
     }
 
