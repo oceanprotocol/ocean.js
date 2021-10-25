@@ -376,8 +376,7 @@ export class TestContractHandler {
     await RouterContract.methods
       .addSSContract(this.sideStakingAddress)
       .send({ from: owner })
-    // TODO: add OPF deployment and update argument
-    // TODO: how are we going to call those functions with an OPF contract? it should be a multisig the owner
+    // TODO: add OPF deployment
     // await RouterContract.methods
     //   .changeRouterOwner(communityCollector)
     //   .send({ from: owner })
