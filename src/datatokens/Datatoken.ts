@@ -272,6 +272,55 @@ export class Datatoken {
   }
 
   /**
+   * Set a new fee Collector, if feeCollector is address(0), feeCollector is NFT Owner
+   * only NFT owner can call
+   * @param dtAddress datatoken address where we want to clean permissions address
+   * @param address Caller address
+   * @param feeCollector User to be set as new fee collector
+   * @return {Promise<TransactionReceipt>} trxReceipt
+   */
+  public async setFeeCollector(
+    dtAddress: string,
+    address: string,
+    feeCollector: string
+  ): Promise<TransactionReceipt> {
+    const dtContract = new this.web3.eth.Contract(this.datatokensABI, dtAddress)
+    if ((await this.getDTPermissions(dtAddress, address)).feeManager !== true) {
+      throw new Error(`Caller is not Fee Manager`)
+    }
+
+    // Estimate gas for setFeeCollector method
+    const gasLimitDefault = this.GASLIMIT_DEFAULT
+    let estGas
+    try {
+      estGas = await dtContract.methods
+        .setFeeCollector(feeCollector)
+        .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
+    } catch (e) {
+      estGas = gasLimitDefault
+    }
+
+    // Call setFeeCollector method of the contract
+    const trxReceipt = await dtContract.methods.setFeeCollector(feeCollector).send({
+      from: address,
+      gas: estGas + 1,
+      gasPrice: await getFairGasPrice(this.web3)
+    })
+
+    return trxReceipt
+  }
+
+  /** Get Fee Collector
+   * @param dtAddress datatoken address
+   * @return {Promise<string>}
+   */
+  public async getFeeCollector(dtAddress: string): Promise<string> {
+    const dtContract = new this.web3.eth.Contract(this.datatokensABI, dtAddress)
+    const feeCollector = await dtContract.methods.getFeeCollector().call()
+    return feeCollector
+  }
+
+  /**
    * Transfer as number from address to toAddress
    * @param {String} dtAddress Datatoken address
    * @param {String} toAddress Receiver address
@@ -482,8 +531,22 @@ export class Datatoken {
    * @return {Promise<string>}
    */
   public async getCap(dtAddress: string): Promise<string> {
-    const datatoken = new this.web3.eth.Contract(this.datatokensABI, dtAddress)
-    const cap = await datatoken.methods.cap().call()
+    const dtContract = new this.web3.eth.Contract(this.datatokensABI, dtAddress)
+    const cap = await dtContract.methods.cap().call()
     return this.web3.utils.fromWei(cap)
+  }
+
+  /**
+   * Get Address Balance for datatoken
+   * @param {String} dtAddress Datatoken adress
+   * @param {String} address user adress
+   * @return {Promise<String>} balance  Number of datatokens. Will be converted from wei
+   */
+  public async balance(dataTokenAddress: string, address: string): Promise<string> {
+    const dtContract = new this.web3.eth.Contract(this.datatokensABI, dataTokenAddress, {
+      from: address
+    })
+    const balance = await dtContract.methods.balanceOf(address).call()
+    return this.web3.utils.fromWei(balance)
   }
 }

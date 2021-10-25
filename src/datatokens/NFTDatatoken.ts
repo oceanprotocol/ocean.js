@@ -528,4 +528,15 @@ export class NFTDatatoken {
     const roles = await nftContract.methods._getPermissions(address).call()
     return roles
   }
+
+  /** Gets data at a given `key`
+   * @param {String} nftAddress erc721 contract adress
+   * @param {String} key the key which value to retrieve
+   * @return {Promise<string>} The data stored at the key
+   */
+  public async getData(nftAddress: string, key: string): Promise<string> {
+    const nftContract = new this.web3.eth.Contract(this.nftDatatokenABI, nftAddress)
+    const data = await nftContract.methods.getData(key).call()
+    return data
+  }
 }
