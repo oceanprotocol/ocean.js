@@ -2,7 +2,7 @@ import Web3 from 'web3'
 import { AbiItem } from 'web3-utils'
 import { TransactionReceipt } from 'web3-eth'
 import defaultNFTDatatokenABI from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC721Template.sol/ERC721Template.json'
-import { LoggerInstance, getFairGasPrice, generateDtName, Logger } from '../utils'
+import { LoggerInstance, getFairGasPrice, generateDtName } from '../utils'
 import { Contract } from 'web3-eth-contract'
 
 /**
