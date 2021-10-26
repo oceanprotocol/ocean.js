@@ -1,6 +1,7 @@
 import { assert, expect } from 'chai'
 import { AbiItem } from 'web3-utils/types'
 import { TestContractHandler } from '../../../TestContractHandler'
+import { Contract } from 'web3-eth-contract'
 import Web3 from 'web3'
 import ERC721Factory from '@oceanprotocol/contracts/artifacts/contracts/ERC721Factory.sol/ERC721Factory.json'
 import ERC721Template from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC721Template.sol/ERC721Template.json'
@@ -30,6 +31,8 @@ describe('Pool unit test', () => {
   let dtAddress2: string
   let poolAddress: string
   let erc20Token: string
+  let erc20Contract: Contract
+  let daiContract: Contract
 
   it('should deploy contracts', async () => {
     contracts = new TestContractHandler(
@@ -61,7 +64,7 @@ describe('Pool unit test', () => {
 
     await contracts.deployContracts(factoryOwner, FactoryRouter.abi as AbiItem[])
 
-    const daiContract = new web3.eth.Contract(
+    daiContract = new web3.eth.Contract(
       contracts.MockERC20.options.jsonInterface,
       contracts.daiAddress
     )
@@ -138,7 +141,7 @@ describe('Pool unit test', () => {
     
     
 
-    const erc20Contract = new web3.eth.Contract(
+    erc20Contract = new web3.eth.Contract(
       ERC20Template.abi as AbiItem[],
       erc20Token
     )
@@ -155,6 +158,22 @@ describe('Pool unit test', () => {
       expect(currentTokens[1]).to.equal(contracts.daiAddress)
     
   })
+
+  it('#swapExactAmountIn - should swap', async () => {
+    await daiContract.methods.transfer(user2,web3.utils.toWei('100')).send({from:contracts.accounts[0]})
+    expect(await daiContract.methods.balanceOf(user2).call()).to.equal(web3.utils.toWei('100'))
+    expect(await erc20Contract.methods.balanceOf(user2).call()).to.equal('0')
+    await pool.approve(user2,contracts.daiAddress,poolAddress,web3.utils.toWei('100'))
+    const tx = await pool.swapExactAmountIn(user2,poolAddress,contracts.daiAddress,'10',erc20Token,'1')
+    expect(await erc20Contract.methods.balanceOf(user2).call()).to.equal(tx.events.LOG_SWAP.returnValues.tokenAmountOut)
+  })
+
+  it('#swapExactAmountOut - should swap', async () => {
+   // await pool.approve(contracts.accounts[0],contracts.daiAddress,poolAddress,web3.utils.toWei('100'))
+    expect(await daiContract.methods.balanceOf(user2).call()).to.equal(web3.utils.toWei('90'))
+    await pool.swapExactAmountOut(user2,poolAddress,contracts.daiAddress,'10',erc20Token,'1')
+    
+})
 
 
 })
