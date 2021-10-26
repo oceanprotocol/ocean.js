@@ -123,9 +123,35 @@ export class Router {
   }
 
   /**
+   * Estimate gas cost for addOceanToken
+   * @param {String} address 
+   * @param {String} tokenAddress token address we want to add
+   * @param {Contract} routerContract optional contract instance
+   * @return {Promise<any>}
+   */
+   public async estGasAddOceanToken(
+    address: string,
+    tokenAddress: string,
+    contractInstance?: Contract
+  ) {
+    const routerContract =
+      contractInstance || this.router
+
+    const gasLimitDefault = this.GASLIMIT_DEFAULT
+    let estGas
+    try {
+      estGas = await routerContract.methods
+        .addOceanToken(tokenAddress)
+        .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
+    } catch (e) {
+      estGas = gasLimitDefault
+    }
+    return estGas
+  }
+  /**
    * Add a new token to oceanTokens list, pools with basetoken in this list have NO opf Fee
-   * @param {String} address
-   * @param {String} tokenAddress template address to add
+   * @param {String} address caller address
+   * @param {String} tokenAddress token address to add
    * @return {Promise<TransactionReceipt>}
    */
   public async addOceanToken(
@@ -136,15 +162,9 @@ export class Router {
       throw new Error(`Caller is not Router Owner`)
     }
 
-    const gasLimitDefault = this.GASLIMIT_DEFAULT
-    let estGas
-    try {
-      estGas = await this.router.methods
-        .addOceanToken(tokenAddress)
-        .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
-    } catch (e) {
-      estGas = gasLimitDefault
-    }
+    
+    const estGas = await this.estGasAddOceanToken(address,tokenAddress)
+    
 
     // Invoke createToken function of the contract
     const trxReceipt = await this.router.methods.addOceanToken(tokenAddress).send({
@@ -155,6 +175,33 @@ export class Router {
 
     return trxReceipt
   }
+
+   /**
+   * Estimate gas cost for removeOceanToken
+   * @param {String} address caller address
+   * @param {String} tokenAddress token address we want to add
+   * @param {Contract} routerContract optional contract instance
+   * @return {Promise<any>}
+   */
+    public async estGasRemoveOceanToken(
+      address: string,
+      tokenAddress: string,
+      contractInstance?: Contract
+    ) {
+      const routerContract =
+        contractInstance || this.router
+  
+      const gasLimitDefault = this.GASLIMIT_DEFAULT
+      let estGas
+      try {
+        estGas = await routerContract.methods
+          .removeOceanToken(tokenAddress)
+          .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
+      } catch (e) {
+        estGas = gasLimitDefault
+      }
+      return estGas
+    }
 
   /**
    * Remove a token from oceanTokens list, pools without basetoken in this list have a opf Fee
@@ -170,15 +217,8 @@ export class Router {
       throw new Error(`Caller is not Router Owner`)
     }
 
-    const gasLimitDefault = this.GASLIMIT_DEFAULT
-    let estGas
-    try {
-      estGas = await this.router.methods
-        .removeOceanToken(tokenAddress)
-        .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
-    } catch (e) {
-      estGas = gasLimitDefault
-    }
+    const estGas = await this.estGasRemoveOceanToken(address,tokenAddress)
+    
 
     // Invoke createToken function of the contract
     const trxReceipt = await this.router.methods.removeOceanToken(tokenAddress).send({
