@@ -74,7 +74,7 @@ describe('Router unit test', () => {
   })
 
   it('should initiate Router instance', async () => {
-    router = new Router(contracts.routerAddress, web3, LoggerInstance)
+    router = new Router(contracts.routerAddress, web3)
   })
 
   it('#getOwner - should return actual owner', async () => {
