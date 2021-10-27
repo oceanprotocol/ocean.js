@@ -78,11 +78,9 @@ describe('Pool unit test', () => {
   })
 
   it('should initiate Pool instance', async () => {
-    pool = new Pool(web3, LoggerInstance,PoolTemplate.abi as AbiItem[])
-    
+    pool = new Pool(web3, LoggerInstance, PoolTemplate.abi as AbiItem[])
   })
 
- 
   it('#create a pool', async () => {
     // CREATE A POOL
     // we prepare transaction parameters objects
@@ -138,42 +136,239 @@ describe('Pool unit test', () => {
 
     erc20Token = txReceipt.events.TokenCreated.returnValues.newTokenAddress
     poolAddress = txReceipt.events.NewPool.returnValues.poolAddress
-    
-    
 
-    erc20Contract = new web3.eth.Contract(
-      ERC20Template.abi as AbiItem[],
-      erc20Token
-    )
+    erc20Contract = new web3.eth.Contract(ERC20Template.abi as AbiItem[], erc20Token)
     // user2 has no dt1
     expect(await erc20Contract.methods.balanceOf(user2).call()).to.equal('0')
-
-
-    
   })
 
+  it('#sharesBalance - should return user shares balance (datatoken balance, LPT balance, etc) ', async () => {
+    expect(await daiContract.methods.balanceOf(user2).call()).to.equal(
+      await pool.sharesBalance(user2, contracts.daiAddress)
+    )
+  })
+
+  it('#getNumTokens - should return num of tokens in pool (2)', async () => {
+    expect(await pool.getNumTokens(poolAddress)).to.equal('2')
+  })
+
+  it('#getPoolSharesTotalSupply - should return totalSupply of LPT', async () => {
+    // dt owner which added liquidity has half of pool shares (the rest is in the sidestaking contracta)
+    const dtOwnerLPTBalance = await pool.sharesBalance(contracts.accounts[0], poolAddress)
+    expect(await pool.sharesBalance(contracts.accounts[0], poolAddress)).to.equal(
+      await pool.sharesBalance(contracts.sideStakingAddress, poolAddress)
+    )
+    // total supply is twice the dtOwner balance
+    expect(await pool.getPoolSharesTotalSupply(poolAddress)).to.equal(
+      (2 * Number(dtOwnerLPTBalance)).toString()
+    )
+  })
   it('#getCurrentTokens - should return current pool tokens', async () => {
-      const currentTokens = await pool.getCurrentTokens(poolAddress)
-      expect(currentTokens[0]).to.equal(erc20Token)
-      expect(currentTokens[1]).to.equal(contracts.daiAddress)
-    
+    const currentTokens = await pool.getCurrentTokens(poolAddress)
+    expect(currentTokens[0]).to.equal(erc20Token)
+    expect(currentTokens[1]).to.equal(contracts.daiAddress)
+  })
+
+  it('#getFinalTokens - should return final pool tokens', async () => {
+    const finalTokens = await pool.getFinalTokens(poolAddress)
+    expect(finalTokens[0]).to.equal(erc20Token)
+    expect(finalTokens[1]).to.equal(contracts.daiAddress)
+  })
+
+  it('#getController - should return the pool controller (sideStaking address)', async () => {
+    expect(await pool.getController(poolAddress)).to.equal(contracts.sideStakingAddress)
+  })
+
+  it('#isBound - should return true if token is bound into the pool', async () => {
+    expect(await pool.isBound(poolAddress, contracts.daiAddress)).to.equal(true)
+    expect(await pool.isBound(poolAddress, contracts.oceanAddress)).to.equal(false)
+  })
+
+  it('#getReserve - should return final pool tokens', async () => {
+    expect(await pool.getReserve(poolAddress, contracts.daiAddress)).to.equal('2000') // base token initial liquidity
+    // rate is 1 so we have the same amount of DTs
+    expect(await pool.getReserve(poolAddress, erc20Token)).to.equal('2000')
+  })
+
+  it('#isFinalized - should return true if pool is finalized', async () => {
+    expect(await pool.isFinalized(poolAddress)).to.equal(true)
+    expect(await pool.isFinalized(contracts.oceanAddress)).to.equal(null)
+  })
+
+  it('#getSwapFee - should return the swap fee', async () => {
+    expect(await pool.getSwapFee(poolAddress)).to.equal('0.001')
+  })
+
+  it('#getNormalizedWeight - should return the normalized weight', async () => {
+    expect(await pool.getNormalizedWeight(poolAddress, contracts.daiAddress)).to.equal(
+      '0.5'
+    )
+    expect(await pool.getNormalizedWeight(poolAddress, erc20Token)).to.equal('0.5')
+  })
+
+  it('#getDenormalizedWeight - should return the swap fee', async () => {
+    expect(await pool.getDenormalizedWeight(poolAddress, contracts.daiAddress)).to.equal(
+      '5'
+    )
+    expect(await pool.getDenormalizedWeight(poolAddress, erc20Token)).to.equal('5')
   })
 
   it('#swapExactAmountIn - should swap', async () => {
-    await daiContract.methods.transfer(user2,web3.utils.toWei('100')).send({from:contracts.accounts[0]})
-    expect(await daiContract.methods.balanceOf(user2).call()).to.equal(web3.utils.toWei('100'))
+    await daiContract.methods
+      .transfer(user2, web3.utils.toWei('1000'))
+      .send({ from: contracts.accounts[0] })
+    expect(await daiContract.methods.balanceOf(user2).call()).to.equal(
+      web3.utils.toWei('1000')
+    )
     expect(await erc20Contract.methods.balanceOf(user2).call()).to.equal('0')
-    await pool.approve(user2,contracts.daiAddress,poolAddress,web3.utils.toWei('100'))
-    const tx = await pool.swapExactAmountIn(user2,poolAddress,contracts.daiAddress,'10',erc20Token,'1')
-    expect(await erc20Contract.methods.balanceOf(user2).call()).to.equal(tx.events.LOG_SWAP.returnValues.tokenAmountOut)
+    await pool.approve(user2, contracts.daiAddress, poolAddress, web3.utils.toWei('100'))
+    const tx = await pool.swapExactAmountIn(
+      user2,
+      poolAddress,
+      contracts.daiAddress,
+      '10',
+      erc20Token,
+      '1'
+    )
+    expect(await erc20Contract.methods.balanceOf(user2).call()).to.equal(
+      tx.events.LOG_SWAP.returnValues.tokenAmountOut
+    )
   })
 
   it('#swapExactAmountOut - should swap', async () => {
-   // await pool.approve(contracts.accounts[0],contracts.daiAddress,poolAddress,web3.utils.toWei('100'))
-    expect(await daiContract.methods.balanceOf(user2).call()).to.equal(web3.utils.toWei('90'))
-    await pool.swapExactAmountOut(user2,poolAddress,contracts.daiAddress,'10',erc20Token,'1')
-    
-})
+    // await pool.approve(contracts.accounts[0],contracts.daiAddress,poolAddress,web3.utils.toWei('100'))
+    expect(await daiContract.methods.balanceOf(user2).call()).to.equal(
+      web3.utils.toWei('990')
+    )
+    const tx = await pool.swapExactAmountOut(
+      user2,
+      poolAddress,
+      contracts.daiAddress,
+      '100',
+      erc20Token,
+      '50'
+    )
+    assert(tx != null)
+  })
 
+  it('#joinPool- user2 should add liquidity, receiving LP tokens', async () => {
+    const BPTAmountOut = '0.01'
+    const maxAmountsIn = [
+      '50', // Amounts IN
+      '50' // Amounts IN
+    ]
 
+    await pool.approve(user2, erc20Token, poolAddress, web3.utils.toWei('1000'))
+    await pool.approve(user2, contracts.daiAddress, poolAddress, '1000')
+    const tx = await pool.joinPool(user2, poolAddress, BPTAmountOut, maxAmountsIn)
+    assert(tx != null)
+    expect(await pool.sharesBalance(user2, poolAddress)).to.equal(BPTAmountOut)
+    expect(tx.events.LOG_JOIN.event === 'LOG_JOIN')
+    expect(tx.events.LOG_BPT.event === 'LOG_BPT')
+
+    //console.log(tx)
+    // console.log(tx.events.LOG_JOIN)
+    // console.log(tx.events.LOG_BPT)
+  })
+  it('#joinswapExternAmountIn- user2 should add liquidity, receiving LP tokens', async () => {
+    const daiAmountIn = '100'
+    const minBPTOut = '0.1'
+    await pool.approve(user2, contracts.daiAddress, poolAddress, web3.utils.toWei('1000'))
+
+    const tx = await pool.joinswapExternAmountIn(
+      user2,
+      poolAddress,
+      contracts.daiAddress,
+      daiAmountIn,
+      minBPTOut
+    )
+
+    assert(tx != null)
+
+    expect(tx.events.LOG_JOIN[0].event === 'LOG_JOIN')
+    expect(tx.events.LOG_BPT.event === 'LOG_BPT')
+    // 2 JOIN EVENTS BECAUSE SIDE STAKING ALSO STAKED DTs, TODO: we should add to whom has been sent in the LOG_BPT event
+    expect(tx.events.LOG_JOIN[0].returnValues.bptAmount).to.equal(
+      tx.events.LOG_JOIN[0].returnValues.bptAmount
+    )
+  })
+
+  it('#joinswapPoolAmountOut- user2 should add liquidity, receiving LP tokens', async () => {
+    const BPTAmountOut = '0.1'
+    const maxDAIIn = '100'
+
+    await pool.approve(user2, contracts.daiAddress, poolAddress, web3.utils.toWei('1000'))
+
+    const tx = await pool.joinswapPoolAmountOut(
+      user2,
+      poolAddress,
+      contracts.daiAddress,
+      BPTAmountOut,
+      maxDAIIn
+    )
+
+    assert(tx != null)
+
+    expect(tx.events.LOG_JOIN[0].event === 'LOG_JOIN')
+    expect(tx.events.LOG_BPT.event === 'LOG_BPT')
+    // 2 JOIN EVENTS BECAUSE SIDE STAKING ALSO STAKED DTs, TODO: we should add to whom has been sent in the LOG_BPT event
+    expect(tx.events.LOG_JOIN[0].returnValues.bptAmount).to.equal(
+      tx.events.LOG_JOIN[0].returnValues.bptAmount
+    )
+  })
+
+  it('#exitPool- user2 exit the pool receiving both tokens, burning LP', async () => {
+    const BPTAmountIn = '0.5'
+    const minAmountOut = [
+      '1', // min amount out for OCEAN AND DT
+      '1'
+    ]
+
+    const tx = await pool.exitPool(user2, poolAddress, BPTAmountIn, minAmountOut)
+
+    assert(tx != null)
+
+    expect(tx.events.LOG_EXIT[0].returnValues.tokenOut).to.equal(erc20Token)
+    expect(tx.events.LOG_EXIT[1].returnValues.tokenOut).to.equal(contracts.daiAddress)
+  })
+
+  it('#exitswapPoolAmountIn- user2 exit the pool receiving only DAI', async () => {
+    const BPTAmountIn = '0.5'
+    const minDAIOut = '0.5'
+
+    const tx = await pool.exitswapPoolAmountIn(
+      user2,
+      poolAddress,
+      contracts.daiAddress,
+      BPTAmountIn,
+      minDAIOut
+    )
+
+    assert(tx != null)
+
+    expect(tx.events.LOG_EXIT[0].returnValues.tokenOut).to.equal(contracts.daiAddress)
+
+    // DTs were also unstaked in the same transaction (went to the staking contract)
+    expect(tx.events.LOG_EXIT[1].returnValues.tokenOut).to.equal(erc20Token)
+  })
+
+  it('#exitswapExternAmountOut- user2 exit the pool receiving only DAI', async () => {
+    const maxBTPIn = "0.5"
+    const exactDAIOut = "1"
+
+    const tx = await pool.exitswapPoolAmountIn(
+      user2,
+      poolAddress,
+      contracts.daiAddress,
+      maxBTPIn,
+      exactDAIOut
+    )
+
+    assert(tx != null)
+
+    expect(tx.events.LOG_EXIT[0].returnValues.tokenOut).to.equal(contracts.daiAddress)
+
+    // DTs were also unstaked in the same transaction (went to the staking contract)
+    expect(tx.events.LOG_EXIT[1].returnValues.tokenOut).to.equal(erc20Token)
+  })
 })

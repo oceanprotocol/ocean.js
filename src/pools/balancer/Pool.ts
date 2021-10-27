@@ -14,7 +14,7 @@ const MaxUint256 =
 /**
  * Provides an interface to Ocean friendly fork from Balancer BPool
  */
-
+// TODO: Add decimals handling
 export class Pool {
   public poolABI: AbiItem | AbiItem[]
   public web3: Web3
@@ -35,12 +35,12 @@ export class Pool {
    * @param {String} spender
    */
   public async allowance(
-    tokenAdress: string,
+    tokenAddress: string,
     owner: string,
     spender: string
   ): Promise<string> {
     const tokenAbi = defaultERC20ABI.abi as AbiItem[]
-    const datatoken = new this.web3.eth.Contract(tokenAbi, tokenAdress, {
+    const datatoken = new this.web3.eth.Contract(tokenAbi, tokenAddress, {
       from: spender
     })
     const trxReceipt = await datatoken.methods.allowance(owner, spender).call()
@@ -391,7 +391,7 @@ export class Pool {
     minAmountOut: string,
     maxPrice: string,
     contractInstance?: Contract
-  ) {
+  ) :Promise<number>{
     const poolContract =
       contractInstance ||
       new this.web3.eth.Contract(this.poolABI as AbiItem[], poolAddress)
@@ -488,7 +488,7 @@ export class Pool {
     amountOut: string,
     maxPrice?: string,
     contractInstance?: Contract
-  ) {
+  ) :Promise<number>{
     const poolContract =
       contractInstance ||
       new this.web3.eth.Contract(this.poolABI as AbiItem[], poolAddress)
@@ -579,7 +579,7 @@ export class Pool {
     poolAmountOut: string,
     maxAmountsIn: string[],
     contractInstance?: Contract
-  ) {
+  ) :Promise<number>{
     const poolContract =
       contractInstance ||
       new this.web3.eth.Contract(this.poolABI as AbiItem[], poolAddress)
@@ -657,7 +657,7 @@ export class Pool {
     poolAmountIn: string,
     minAmountsOut: string[],
     contractInstance?: Contract
-  ) {
+  ) :Promise<number>{
     const poolContract =
       contractInstance ||
       new this.web3.eth.Contract(this.poolABI as AbiItem[], poolAddress)
@@ -696,13 +696,12 @@ export class Pool {
       weiMinAmountsOut.push(this.web3.utils.toWei(amount))
     }
     let result = null
-    const estGas = this.estExitPool(
+    const estGas = await this.estExitPool(
       account,
       poolAddress,
       this.web3.utils.toWei(poolAmountIn),
       weiMinAmountsOut
     )
-
     try {
       result = await pool.methods
         .exitPool(this.web3.utils.toWei(poolAmountIn), weiMinAmountsOut)
@@ -730,7 +729,7 @@ export class Pool {
     tokenAmountIn: string,
     minPoolAmountOut: string,
     contractInstance?: Contract
-  ) {
+  ) :Promise<number>{
     const poolContract =
       contractInstance ||
       new this.web3.eth.Contract(this.poolABI as AbiItem[], poolAddress)
@@ -794,7 +793,7 @@ export class Pool {
   }
 
   /**
-   * Estimate gas cost for joinswapExternAmountOut
+   * Estimate gas cost for joinswapPoolAmountOut
    * @param {String} address
    * @param {String} poolAddress
    * @param {String} tokenIn
@@ -803,14 +802,14 @@ export class Pool {
    * @param {Contract} contractInstance optional contract instance
    * @return {Promise<number>}
    */
-  public async estJoinswapExternAmountOut(
+  public async estJoinswapPoolAmountOut(
     address: string,
     poolAddress: string,
     tokenIn: string,
     poolAmountOut: string,
     maxAmountIn: string,
     contractInstance?: Contract
-  ) {
+  ) :Promise<number>{
     const poolContract =
       contractInstance ||
       new this.web3.eth.Contract(this.poolABI as AbiItem[], poolAddress)
@@ -819,13 +818,16 @@ export class Pool {
     let estGas
     try {
       estGas = await poolContract.methods
-        .joinswapExternAmountOut(tokenIn, poolAmountOut, maxAmountIn)
+        .joinswapPoolAmountOut(tokenIn, poolAmountOut, maxAmountIn)
         .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
     } catch (e) {
       estGas = gasLimitDefault
     }
     return estGas
   }
+
+  
+
   /**
    * Specify poolAmountOut pool shares that you want to get, and a token tokenIn to pay with. This costs tokenAmountIn tokens (these went into the pool).
    * @param {String} account
@@ -845,7 +847,7 @@ export class Pool {
     const pool = new this.web3.eth.Contract(this.poolABI, poolAddress)
     let result = null
 
-    const estGas = await this.estJoinswapExternAmountOut(
+    const estGas = await this.estJoinswapPoolAmountOut(
       account,
       poolAddress,
       tokenIn,
@@ -887,7 +889,7 @@ export class Pool {
     poolAmountIn: string,
     minTokenAmountOut: string,
     contractInstance?: Contract
-  ) {
+  ) :Promise<number>{
     const poolContract =
       contractInstance ||
       new this.web3.eth.Contract(this.poolABI as AbiItem[], poolAddress)
@@ -965,7 +967,7 @@ export class Pool {
     tokenAmountOut: string,
     maxPoolAmountIn: string,
     contractInstance?: Contract
-  ) {
+  ) :Promise<number>{
     const poolContract =
       contractInstance ||
       new this.web3.eth.Contract(this.poolABI as AbiItem[], poolAddress)
@@ -1086,10 +1088,10 @@ export class Pool {
     let amount = null
     // if (new Decimal(tokenAmountOut).gte(tokenBalanceOut)) return null
     try {
-      const result = await pool.methods
+     const result = await pool.methods
         .getAmountInExactOut(tokenIn, tokenOut, tokenAmountOut)
         .call()
-      // amount = this.web3.utils.fromWei(result)
+      amount = this.web3.utils.fromWei(result)
     } catch (e) {
       this.logger.error('ERROR: Failed to calcInGivenOut')
     }
@@ -1102,17 +1104,18 @@ export class Pool {
     tokenOut: string,
     tokenAmountIn: string
   ): Promise<string> {
+      // TODO: solve decimals issue FIRST
     const pool = new this.web3.eth.Contract(this.poolABI, poolAddress)
     const tokenInContract = new this.web3.eth.Contract(
       defaultERC20ABI.abi as AbiItem[],
       tokenIn
     )
     let amountInFormatted
-    let tokenInDecimals
+    let tokenInDecimals = 18
     try {
       tokenInDecimals = await tokenInContract.methods.decimals().call()
     } catch (e) {
-      this.logger.error('ERROR: FAILED TO CALL DECIMALS()')
+      this.logger.error('ERROR: FAILED TO CALL DECIMALS(), USING 18')
     }
     //const tokenInDecimals = await tokenInContract.methods.decimals().call()
     if (tokenInDecimals == 18) {
@@ -1125,7 +1128,12 @@ export class Pool {
       const result = await pool.methods
         .getAmountOutExactIn(tokenIn, tokenOut, amountInFormatted)
         .call()
-      amount = this.web3.utils.fromWei(result)
+    if (tokenInDecimals == 18){
+        amount = this.web3.utils.fromWei(result)
+    }
+     else{
+        amount = parseInt(result) / (10**tokenInDecimals) 
+     }
     } catch (e) {
       this.logger.error('ERROR: Failed to calcOutGivenIn')
     }
