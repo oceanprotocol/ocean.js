@@ -801,6 +801,184 @@ export class NFTDatatoken {
     return trxReceipt
   }
 
+  /**
+   * Estimate gas cost for safeTransfer NFT method
+   * @param {String} nftAddress erc721 contract adress
+   * @param {String} nftOwner Current NFT Owner adress
+   * @param {String} nftReceiver User which will receive the NFT, will also be set as Manager
+   * @param {Number} tokenId The id of the token to be transfered
+   * @param {Contract} nftContract optional contract instance
+   * @return {Promise<any>}
+   */
+  public async estGasSafeTransferNFT(
+    nftAddress: string,
+    nftOwner: string,
+    nftReceiver: string,
+    tokenId: number,
+    contractInstance?: Contract
+  ): Promise<any> {
+    const nftContract =
+      contractInstance || new this.web3.eth.Contract(this.nftDatatokenABI, nftAddress)
+
+    const gasLimitDefault = this.GASLIMIT_DEFAULT
+    let estGas
+    try {
+      estGas = await nftContract.methods
+        .safeTransferFrom(nftOwner, nftReceiver, tokenId)
+        .estimateGas({ from: nftOwner }, (err, estGas) =>
+          err ? gasLimitDefault : estGas
+        )
+    } catch (e) {
+      estGas = gasLimitDefault
+    }
+
+    return estGas
+  }
+
+  /**
+   * safeTransferNFT Used for transferring the NFT, can be used by an approved relayer
+   * will clean all permissions both on erc721 and erc20 level.
+   * @param {String} nftAddress erc721 contract adress
+   * @param {String} nftOwner Current NFT Owner adress
+   * @param {String} nftReceiver User which will receive the NFT, will also be set as Manager
+   * @param {Number} tokenId The id of the token to be transfered
+   * @return {Promise<TransactionReceipt>} trxReceipt
+   */
+  public async safeTransferNFT(
+    nftAddress: string,
+    nftOwner: string,
+    nftReceiver: string,
+    tokenId?: number
+  ): Promise<TransactionReceipt> {
+    const nftContract = new this.web3.eth.Contract(this.nftDatatokenABI, nftAddress)
+
+    if ((await this.getNFTOwner(nftAddress)) !== nftOwner) {
+      throw new Error(`Caller is not NFT Owner`)
+    }
+
+    const tokenIdentifier = tokenId || 1
+
+    const estGas = await this.estGasSafeTransferNFT(
+      nftAddress,
+      nftOwner,
+      nftReceiver,
+      tokenIdentifier,
+      nftContract
+    )
+
+    // Call transferFrom function of the contract
+    const trxReceipt = await nftContract.methods
+      .safeTransferFrom(nftOwner, nftReceiver, tokenIdentifier)
+      .send({
+        from: nftOwner,
+        gas: estGas + 1,
+        gasPrice: await getFairGasPrice(this.web3)
+      })
+
+    return trxReceipt
+  }
+
+  /**
+   * Estimate gas cost for setMetadata  method
+   * @param {String} nftAddress erc721 contract adress
+   * @param {String} nftOwner Current NFT Owner adress
+   * @param {String} nftReceiver User which will receive the NFT, will also be set as Manager
+   * @param {Number} tokenId The id of the token to be transfered
+   * @param {Contract} nftContract optional contract instance
+   * @return {Promise<any>}
+   */
+  public async estGasSetMetadata(
+    nftAddress: string,
+    nftOwner: string,
+    metadataState: number,
+    metaDataDecryptorUrl: string,
+    metaDataDecryptorAddress: string,
+    flags: string,
+    data: string,
+    metadataHash: string,
+    contractInstance?: Contract
+  ): Promise<any> {
+    const nftContract =
+      contractInstance || new this.web3.eth.Contract(this.nftDatatokenABI, nftAddress)
+
+    const gasLimitDefault = this.GASLIMIT_DEFAULT
+    let estGas
+    try {
+      estGas = await nftContract.methods
+        .setMetaData(
+          metadataState,
+          metaDataDecryptorUrl,
+          metaDataDecryptorAddress,
+          flags,
+          data,
+          metadataHash
+        )
+        .estimateGas({ from: nftOwner }, (err, estGas) =>
+          err ? gasLimitDefault : estGas
+        )
+    } catch (e) {
+      estGas = gasLimitDefault
+    }
+
+    return estGas
+  }
+
+  /**
+   * safeTransferNFT Used for transferring the NFT, can be used by an approved relayer
+   * will clean all permissions both on erc721 and erc20 level.
+   * @param {String} nftAddress erc721 contract adress
+   * @param {String} address Caller address NFT Owner adress
+   * @param {String} nftReceiver User which will receive the NFT, will also be set as Manager
+   * @param {Number} tokenId The id of the token to be transfered
+   * @return {Promise<TransactionReceipt>} trxReceipt
+   */
+  public async setMetadata(
+    nftAddress: string,
+    address: string,
+    metadataState: number,
+    metaDataDecryptorUrl: string,
+    metaDataDecryptorAddress: string,
+    flags: string,
+    data: string,
+    metadataHash: string
+  ): Promise<TransactionReceipt> {
+    const nftContract = new this.web3.eth.Contract(this.nftDatatokenABI, nftAddress)
+
+    if (!(await this.getNFTPermissions(nftAddress, address)).updateMetadata) {
+      throw new Error(`Caller is not NFT Owner`)
+    }
+
+    const estGas = await this.estGasSetMetadata(
+      nftAddress,
+      address,
+      metadataState,
+      metaDataDecryptorUrl,
+      metaDataDecryptorAddress,
+      flags,
+      data,
+      metadataHash,
+      nftContract
+    )
+
+    // Call transferFrom function of the contract
+    const trxReceipt = await nftContract.methods
+      .setMetaData(
+        metadataState,
+        metaDataDecryptorUrl,
+        metaDataDecryptorAddress,
+        flags,
+        data,
+        metadataHash
+      )
+      .send({
+        from: address,
+        gas: estGas + 1,
+        gasPrice: await getFairGasPrice(this.web3)
+      })
+
+    return trxReceipt
+  }
+
   /** Get Owner
    * @param {String} nftAddress erc721 contract adress
    * @return {Promise<string>} string

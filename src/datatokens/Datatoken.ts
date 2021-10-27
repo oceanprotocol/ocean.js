@@ -133,6 +133,197 @@ export class Datatoken {
   }
 
   /**
+   * Estimate gas cost for createFixedRate method
+   * @param {String} dtAddress Datatoken address
+   * @param {String} address Caller address
+   * @param {String} fixedPriceAddress
+   * @param {String} baseTokenAddress
+   * @param {String} marketFeeCollector
+   * @param {String} baseTokenDecimals
+   * @param {String} dataTokenDecimals
+   * @param {String} fixedRate
+   * @param {String} marketFee
+   * @param {String} withMint
+   * @param {Contract} contractInstance optional contract instance
+   * @return {Promise<any>}
+   */
+  public async estGasCreateFixedRate(
+    dtAddress: string,
+    address: string,
+    fixedPriceAddress: string,
+    baseTokenAddress: string,
+    marketFeeCollector: string,
+    baseTokenDecimals: number,
+    dataTokenDecimals: number,
+    fixedRate: number,
+    marketFee: number,
+    withMint: number,
+    contractInstance?: Contract
+  ): Promise<any> {
+    const dtContract =
+      contractInstance || new this.web3.eth.Contract(this.datatokensABI, dtAddress)
+
+    const gasLimitDefault = this.GASLIMIT_DEFAULT
+    let estGas
+    try {
+      estGas = await dtContract.methods
+        .createFixedRate(
+          fixedPriceAddress,
+          [baseTokenAddress, address, marketFeeCollector],
+          [baseTokenDecimals, dataTokenDecimals, fixedRate, marketFee, withMint]
+        )
+        .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
+    } catch (e) {
+      estGas = gasLimitDefault
+    }
+
+    return estGas
+  }
+
+  /**
+   * Creates a new FixedRateExchange setup.
+   * @param {String} dtAddress Datatoken address
+   * @param {String} address Caller address
+   * @param {String} fixedPriceAddress
+   * @param {String} baseTokenAddress
+   * @param {String} marketFeeCollector
+   * @param {String} baseTokenDecimals
+   * @param {String} dataTokenDecimals
+   * @param {String} fixedRate
+   * @param {String} marketFee
+   * @param {String} withMint
+   * @return {Promise<TransactionReceipt>} transactionId
+   */
+  public async createFixedRate(
+    dtAddress: string,
+    address: string,
+    fixedPriceAddress: string,
+    baseTokenAddress: string,
+    marketFeeCollector: string,
+    baseTokenDecimals: number,
+    dataTokenDecimals: number,
+    fixedRate: number,
+    marketFee: number,
+    withMint: number
+  ): Promise<TransactionReceipt> {
+    const dtContract = new this.web3.eth.Contract(this.datatokensABI, dtAddress)
+
+    // should check ERC20Deployer role using erc721 level ..
+
+    const estGas = await this.estGasCreateFixedRate(
+      dtAddress,
+      address,
+      fixedPriceAddress,
+      baseTokenAddress,
+      marketFeeCollector,
+      baseTokenDecimals,
+      dataTokenDecimals,
+      fixedRate,
+      marketFee,
+      withMint,
+      dtContract
+    )
+
+    // Call createFixedRate contract method
+    const trxReceipt = await dtContract.methods
+      .createFixedRate(
+        fixedPriceAddress,
+        [baseTokenAddress, address, marketFeeCollector],
+        [baseTokenDecimals, dataTokenDecimals, fixedRate, marketFee, withMint]
+      )
+      .send({
+        from: address,
+        gas: estGas + 1,
+        gasPrice: await getFairGasPrice(this.web3)
+      })
+    return trxReceipt
+  }
+
+  /**
+   * Estimate gas cost for createDispenser method
+   * @param {String} dtAddress Datatoken address
+   * @param {String} address Caller address
+   * @param {String} dispenser ispenser contract address
+   * @param {String} maxTokens max tokens to dispense
+   * @param {String} maxBalance max balance of requester
+   * @param {Boolean} withMint true if we want to allow the dispenser to be a minter
+   * @param {String} allowedSwapper  only account that can ask tokens. set address(0) if not required
+   * @param {Contract} contractInstance optional contract instance
+   * @return {Promise<any>}
+   */
+  public async estGasCreateDispenser(
+    dtAddress: string,
+    address: string,
+    dispenser: string,
+    maxTokens: string,
+    maxBalance: string,
+    withMint: Boolean,
+    allowedSwapper: string,
+    contractInstance?: Contract
+  ): Promise<any> {
+    const dtContract =
+      contractInstance || new this.web3.eth.Contract(this.datatokensABI, dtAddress)
+
+    const gasLimitDefault = this.GASLIMIT_DEFAULT
+    let estGas
+    try {
+      estGas = await dtContract.methods
+        .createDispenser(dispenser, maxTokens, maxBalance, withMint, allowedSwapper)
+        .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
+    } catch (e) {
+      estGas = gasLimitDefault
+    }
+
+    return estGas
+  }
+
+  /**
+   * Creates a new Dispenser
+   * @param {String} dtAddress Datatoken address
+   * @param {String} address Caller address
+   * @param {String} dispenser ispenser contract address
+   * @param {String} maxTokens max tokens to dispense
+   * @param {String} maxBalance max balance of requester
+   * @param {Boolean} withMint true if we want to allow the dispenser to be a minter
+   * @param {String} allowedSwapper  only account that can ask tokens. set address(0) if not required
+   * @return {Promise<TransactionReceipt>} transactionId
+   */
+  public async createDispenser(
+    dtAddress: string,
+    address: string,
+    dispenser: string,
+    maxTokens: string,
+    maxBalance: string,
+    withMint: Boolean,
+    allowedSwapper: string
+  ): Promise<TransactionReceipt> {
+    const dtContract = new this.web3.eth.Contract(this.datatokensABI, dtAddress)
+
+    // should check ERC20Deployer role using erc721 level ..
+
+    const estGas = await this.estGasCreateDispenser(
+      dtAddress,
+      address,
+      dispenser,
+      maxTokens,
+      maxBalance,
+      withMint,
+      allowedSwapper,
+      dtContract
+    )
+
+    // Call createFixedRate contract method
+    const trxReceipt = await dtContract.methods
+      .createDispenser(dispenser, maxTokens, maxBalance, withMint, allowedSwapper)
+      .send({
+        from: address,
+        gas: estGas + 1,
+        gasPrice: await getFairGasPrice(this.web3)
+      })
+    return trxReceipt
+  }
+
+  /**
    * Mint
    * @param {String} dtAddress Datatoken address
    * @param {String} address Minter address
@@ -814,6 +1005,16 @@ export class Datatoken {
     const dtContract = new this.web3.eth.Contract(this.datatokensABI, dtAddress)
     const cap = await dtContract.methods.cap().call()
     return this.web3.utils.fromWei(cap)
+  }
+
+  /** It returns the token decimals, how many supported decimal points
+   * @param {String} dtAddress Datatoken adress
+   * @return {Promise<number>}
+   */
+  public async getDecimals(dtAddress: string): Promise<string> {
+    const dtContract = new this.web3.eth.Contract(this.datatokensABI, dtAddress)
+    const decimals = await dtContract.methods.decimals().call()
+    return decimals
   }
 
   /**
