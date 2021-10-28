@@ -2,8 +2,8 @@ import Web3 from 'web3'
 import { Contract } from 'web3-eth-contract'
 import { AbiItem } from 'web3-utils/types'
 import MockERC20 from '@oceanprotocol/contracts/artifacts/contracts/utils/mock/MockERC20Decimals.sol/MockERC20Decimals.json'
-// TODO: add OPF deployment
-const communityCollector = '0xeE9300b7961e0a01d9f0adb863C7A227A07AaD75'
+
+
 const oceanAddress = '0x967da4048cd07ab37855c090aaf366e4ce1b9f48'
 export class TestContractHandler {
   public accounts: string[]
@@ -29,6 +29,8 @@ export class TestContractHandler {
   public PoolTemplateBytecode: string
   public OPFCollectorBytecode: string
   public MockERC20Bytecode: string
+  public OPFBytecode: string
+  
 
   public factory721Address: string
   public template721Address: string
@@ -54,6 +56,7 @@ export class TestContractHandler {
     SideStakingABI?: AbiItem | AbiItem[],
     FixedRateABI?: AbiItem | AbiItem[],
     DispenserABI?: AbiItem | AbiItem[],
+    OPFABI?: AbiItem | AbiItem[], 
 
     template721Bytecode?: string,
     template20Bytecode?: string,
@@ -62,7 +65,8 @@ export class TestContractHandler {
     routerBytecode?: string,
     sideStakingBytecode?: string,
     fixedRateBytecode?: string,
-    dispenserBytecode?: string
+    dispenserBytecode?: string,
+    opfBytecode?:string
   ) {
     this.web3 = web3
     this.ERC721Template = new this.web3.eth.Contract(ERC721TemplateABI)
@@ -74,6 +78,7 @@ export class TestContractHandler {
     this.FixedRate = new this.web3.eth.Contract(FixedRateABI)
     this.Dispenser = new this.web3.eth.Contract(DispenserABI)
     this.MockERC20 = new this.web3.eth.Contract(MockERC20.abi as AbiItem[])
+    this.OPFCollector = new this.web3.eth.Contract(OPFABI)
 
     this.ERC721FactoryBytecode = factory721Bytecode
     this.ERC20TemplateBytecode = template20Bytecode
@@ -84,6 +89,7 @@ export class TestContractHandler {
     this.FixedRateBytecode = fixedRateBytecode
     this.DispenserBytecode = dispenserBytecode
     this.MockERC20Bytecode = MockERC20.bytecode
+    this.OPFBytecode = opfBytecode
   }
 
   public async getAccounts(): Promise<string[]> {
@@ -93,6 +99,30 @@ export class TestContractHandler {
 
   public async deployContracts(owner: string, routerABI?: AbiItem | AbiItem[]) {
     let estGas
+
+    // DEPLOY OPF Fee Collector
+    // get est gascost
+    estGas = await this.OPFCollector.deploy({
+      data: this.OPFBytecode,
+      arguments: [owner,owner]
+    }).estimateGas(function (err, estGas) {
+      if (err) console.log('DeployContracts: ' + err)
+      return estGas
+    })
+    // deploy the contract and get it's address
+    this.opfCollectorAddress = await this.OPFCollector.deploy({
+      data: this.OPFBytecode,
+      arguments: [owner,owner]
+    })
+      .send({
+        from: owner,
+        gas: estGas + 1,
+        gasPrice: '3000000000'
+      })
+      .then(function (contract) {
+        return contract.options.address
+      })
+
 
     // DEPLOY POOL TEMPLATE
     // get est gascost
@@ -193,7 +223,7 @@ export class TestContractHandler {
         owner,
         this.oceanAddress,
         this.poolTemplateAddress,
-        communityCollector,
+        this.opfCollectorAddress,
         []
       ]
     }).estimateGas(function (err, estGas) {
@@ -207,7 +237,7 @@ export class TestContractHandler {
         owner,
         this.oceanAddress,
         this.poolTemplateAddress,
-        communityCollector,
+        this.opfCollectorAddress,
         []
       ]
     })
@@ -245,7 +275,7 @@ export class TestContractHandler {
     // DEPLOY FIXED RATE
     estGas = await this.FixedRate.deploy({
       data: this.FixedRateBytecode,
-      arguments: [this.routerAddress, communityCollector]
+      arguments: [this.routerAddress, this.opfCollectorAddress]
     }).estimateGas(function (err, estGas) {
       if (err) console.log('DeployContracts: ' + err)
       return estGas
@@ -253,7 +283,7 @@ export class TestContractHandler {
     // deploy the contract and get it's address
     this.fixedRateAddress = await this.FixedRate.deploy({
       data: this.FixedRateBytecode,
-      arguments: [this.routerAddress, communityCollector]
+      arguments: [this.routerAddress, this.opfCollectorAddress]
     })
       .send({
         from: owner,
@@ -292,7 +322,7 @@ export class TestContractHandler {
       arguments: [
         this.template721Address,
         this.template20Address,
-        communityCollector,
+        this.opfCollectorAddress,
         this.routerAddress
       ]
     }).estimateGas(function (err, estGas) {
@@ -305,7 +335,7 @@ export class TestContractHandler {
       arguments: [
         this.template721Address,
         this.template20Address,
-        communityCollector,
+        this.opfCollectorAddress,
         this.routerAddress
       ]
     })
@@ -378,7 +408,7 @@ export class TestContractHandler {
       .send({ from: owner })
     // TODO: add OPF deployment
     // await RouterContract.methods
-    //   .changeRouterOwner(communityCollector)
+    //   .changeRouterOwner(this.opfCollectorAddress)
     //   .send({ from: owner })
   }
 }

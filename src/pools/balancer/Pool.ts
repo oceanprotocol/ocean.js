@@ -247,6 +247,38 @@ export class Pool {
     return result
   }
 
+   /**
+   * Get marketFeeCollector of this pool
+   * @param {String} poolAddress
+   * @return {String}
+   */
+    async getMarketFeeCollector(poolAddress: string): Promise<string> {
+      const pool = new this.web3.eth.Contract(this.poolABI, poolAddress)
+      let result = null
+      try {
+        result = await pool.methods._marketCollector().call()
+      } catch (e) {
+        this.logger.error(`ERROR: Failed to get marketFeeCollector address: ${e.message}`)
+      }
+      return result
+    }
+
+    
+  /**
+   * Get OPF Collector of this pool
+   * @param {String} poolAddress
+   * @return {String}
+   */
+   async getOPFCollector(poolAddress: string): Promise<string> {
+    const pool = new this.web3.eth.Contract(this.poolABI, poolAddress)
+    let result = null
+    try {
+      result = await pool.methods._opfCollector().call()
+    } catch (e) {
+      this.logger.error(`ERROR: Failed to get OPF Collector address: ${e.message}`)
+    }
+    return result
+  }
   /**
    * Get if a token is bounded to a pool
    * @param {String} poolAddress
@@ -369,6 +401,167 @@ export class Pool {
     }
     return weight
   }
+
+    /**
+   * Get Market Fees available to be collected for a specific token
+   * @param {String} poolAddress
+   * @param {String} token token we want to check fees
+   * @return {String}
+   */
+     async getMarketFees(poolAddress: string, token: string): Promise<string> {
+      const pool = new this.web3.eth.Contract(this.poolABI, poolAddress)
+      let weight = null
+      try {
+        const result = await pool.methods.marketFees(token).call()
+        weight = this.web3.utils.fromWei(result)
+      } catch (e) {
+        this.logger.error(`ERROR: Failed to get market fees for a token: ${e.message}`)
+      }
+      return weight
+    }
+
+     /**
+   * Get Community Fees available to be collected for a specific token
+   * @param {String} poolAddress
+   * @param {String} token token we want to check fees
+   * @return {String}
+   */
+      async getCommunityFees(poolAddress: string, token: string): Promise<string> {
+        const pool = new this.web3.eth.Contract(this.poolABI, poolAddress)
+        let weight = null
+        try {
+          const result = await pool.methods.communityFees(token).call()
+          weight = this.web3.utils.fromWei(result)
+        } catch (e) {
+          this.logger.error(`ERROR: Failed to get community fees for a token: ${e.message}`)
+        }
+        return weight
+      }
+
+    /**
+   * Estimate gas cost for collectOPF
+   * @param {String} address
+   * @param {String} poolAddress
+   * @param {Contract} contractInstance optional contract instance
+   * @return {Promise<number>}
+   */
+     public async estCollectOPF(
+      address: string,
+      poolAddress: string,
+      contractInstance?: Contract
+    ) :Promise<number>{
+      const poolContract =
+        contractInstance ||
+        new this.web3.eth.Contract(this.poolABI as AbiItem[], poolAddress)
+  
+      const gasLimitDefault = this.GASLIMIT_DEFAULT
+      let estGas
+      try {
+        estGas = await poolContract.methods
+          .collectOPF()
+          .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
+      } catch (e) {
+        estGas = gasLimitDefault
+      }
+      return estGas
+    }
+
+
+    /**
+   * collectOPF - collect opf fee - can be called by anyone
+   * @param {String} address
+   * @param {String} poolAddress
+   * @return {TransactionReceipt}
+   */
+     async collectOPF(
+      address: string,
+      poolAddress: string
+    ): Promise<TransactionReceipt> {
+      const pool = new this.web3.eth.Contract(this.poolABI, poolAddress)
+      let result = null
+      const estGas = await this.estCollectOPF(
+        address,
+        poolAddress
+      )
+  
+      try {
+        result = await pool.methods
+          .collectOPF()
+          .send({
+            from: address,
+            gas: estGas + 1,
+            gasPrice: await getFairGasPrice(this.web3)
+          })
+      } catch (e) {
+        this.logger.error(`ERROR: Failed to swap exact amount in : ${e.message}`)
+      }
+      return result
+    }
+
+    /**
+   * Estimate gas cost for collectMarketFee
+   * @param {String} address
+   * @param {String} poolAddress
+   * @param {String} to address that will receive fees
+   * @param {Contract} contractInstance optional contract instance
+   * @return {Promise<number>}
+   */
+     public async estCollectMarketFee(
+      address: string,
+      poolAddress: string,
+      to:string,
+      contractInstance?: Contract
+    ) :Promise<number>{
+      const poolContract =
+        contractInstance ||
+        new this.web3.eth.Contract(this.poolABI as AbiItem[], poolAddress)
+  
+      const gasLimitDefault = this.GASLIMIT_DEFAULT
+      let estGas
+      try {
+        estGas = await poolContract.methods
+          .collectMarketFee(to)
+          .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
+      } catch (e) {
+        estGas = gasLimitDefault
+      }
+      return estGas
+    }
+
+
+    /**
+   * collectOPF - collect market fees - can be called by the marketFeeCollector
+   * @param {String} address
+   * @param {String} poolAddress
+   * @param {String} to address that will receive fees
+   * @return {TransactionReceipt}
+   */
+     async collectMarketFee(
+      address: string,
+      poolAddress: string,
+      to: string
+    ): Promise<TransactionReceipt> {
+      const pool = new this.web3.eth.Contract(this.poolABI, poolAddress)
+      let result = null
+      const estGas = await this.estCollectMarketFee(
+        address,
+        poolAddress,
+        to
+      )
+  
+      try {
+        result = await pool.methods
+          .collectMarketFee(to)
+          .send({
+            from: address,
+            gas: estGas + 1,
+            gasPrice: await getFairGasPrice(this.web3)
+          })
+      } catch (e) {
+        this.logger.error(`ERROR: Failed to swap exact amount in : ${e.message}`)
+      }
+      return result
+    }
 
   /**
    * Estimate gas cost for swapExactAmountIn
@@ -1089,7 +1282,7 @@ export class Pool {
     // if (new Decimal(tokenAmountOut).gte(tokenBalanceOut)) return null
     try {
      const result = await pool.methods
-        .getAmountInExactOut(tokenIn, tokenOut, tokenAmountOut)
+        .getAmountInExactOut(tokenIn, tokenOut,this.web3.utils.toWei(tokenAmountOut))
         .call()
       amount = this.web3.utils.fromWei(result)
     } catch (e) {
@@ -1124,10 +1317,12 @@ export class Pool {
       amountInFormatted = parseInt(tokenAmountIn) * 10 ** tokenInDecimals
     }
     let amount = null
+    console.log(amountInFormatted)
     try {
       const result = await pool.methods
         .getAmountOutExactIn(tokenIn, tokenOut, amountInFormatted)
         .call()
+        console.log(result)
     if (tokenInDecimals == 18){
         amount = this.web3.utils.fromWei(result)
     }

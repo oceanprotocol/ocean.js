@@ -12,9 +12,11 @@ import Dispenser from '@oceanprotocol/contracts/artifacts/contracts/pools/dispen
 import FixedRate from '@oceanprotocol/contracts/artifacts/contracts/pools/fixedRate/FixedRateExchange.sol/FixedRateExchange.json'
 import MockERC20 from '@oceanprotocol/contracts/artifacts/contracts/utils/mock/MockERC20Decimals.sol/MockERC20Decimals.json'
 import PoolTemplate from '@oceanprotocol/contracts/artifacts/contracts/pools/balancer/BPool.sol/BPool.json'
+import OPFCollector from '@oceanprotocol/contracts/artifacts/contracts/communityFee/OPFCommunityFeeCollector.sol/OPFCommunityFeeCollector.json'
 import { LoggerInstance } from '../../../../src/utils'
 import { NFTFactory } from '../../../../src/factories/NFTFactory'
 import { Pool } from '../../../../src/pools/balancer/Pool'
+import { CONNREFUSED } from 'dns'
 const { keccak256 } = require('@ethersproject/keccak256')
 const web3 = new Web3('http://127.0.0.1:8545')
 const communityCollector = '0xeE9300b7961e0a01d9f0adb863C7A227A07AaD75'
@@ -45,6 +47,7 @@ describe('Pool unit test', () => {
       SideStaking.abi as AbiItem[],
       FixedRate.abi as AbiItem[],
       Dispenser.abi as AbiItem[],
+      OPFCollector.abi as AbiItem[],
 
       ERC721Template.bytecode,
       ERC20Template.bytecode,
@@ -53,7 +56,8 @@ describe('Pool unit test', () => {
       FactoryRouter.bytecode,
       SideStaking.bytecode,
       FixedRate.bytecode,
-      Dispenser.bytecode
+      Dispenser.bytecode,
+      OPFCollector.bytecode
     )
     await contracts.getAccounts()
     factoryOwner = contracts.accounts[0]
@@ -79,6 +83,7 @@ describe('Pool unit test', () => {
 
   it('should initiate Pool instance', async () => {
     pool = new Pool(web3, LoggerInstance, PoolTemplate.abi as AbiItem[])
+    
   })
 
   it('#create a pool', async () => {
@@ -370,5 +375,117 @@ describe('Pool unit test', () => {
 
     // DTs were also unstaked in the same transaction (went to the staking contract)
     expect(tx.events.LOG_EXIT[1].returnValues.tokenOut).to.equal(erc20Token)
+  })
+
+  it('#getAmountInExactOut- should get the amount in for exact out', async () => {
+    const maxBTPIn = "0.5"
+    const exactDAIOut = "1"
+
+    const tx = await pool.getAmountInExactOut(
+      poolAddress,
+      erc20Token,
+      contracts.daiAddress,
+      exactDAIOut
+    )
+
+    assert(tx != null)
+
+    console.log(tx)
+
+    const tx2 = await pool.getSpotPrice(poolAddress,erc20Token,contracts.daiAddress)
+    console.log(tx2)
+  })
+
+  it('#getAmountOutExactIn- should get the amount out for exact In', async () => {
+    const maxBTPIn = "0.5"
+    const exactDTIn= "1"
+
+    const tx = await pool.getAmountOutExactIn(
+      poolAddress,
+      erc20Token,
+      contracts.daiAddress,
+      exactDTIn
+    )
+
+    assert(tx != null)
+
+    console.log(tx)
+
+    const tx2 = await pool.getSpotPrice(poolAddress,erc20Token,contracts.daiAddress)
+    console.log(tx2)
+  })
+
+  it('#getSpotPrice- should get the sport price', async () => {
+    
+
+    assert(await pool.getSpotPrice(poolAddress,erc20Token,contracts.daiAddress) != null)
+    assert(await pool.getSpotPrice(poolAddress,contracts.daiAddress,erc20Token) != null)
+   
+  })
+
+  it('#getMarketFees- should get market fees for each token', async () => {
+    
+    // we haven't performed any swap DT => DAI so there's no fee in erc20Token
+    // but there's a fee in DAI
+    assert(await pool.getMarketFees(poolAddress,erc20Token) == '0')
+    assert(await pool.getMarketFees(poolAddress,contracts.daiAddress) > '0')
+   
+  })
+
+  it('#getCommunityFees- should get community fees for each token', async () => {
+     // we haven't performed any swap DT => DAI so there's no fee in erc20Token
+    // but there's a fee in DAI
+
+    assert(await pool.getCommunityFees(poolAddress,erc20Token) == '0')
+    assert(await pool.getCommunityFees(poolAddress,contracts.daiAddress) > '0')
+   
+  })
+  
+  it('#collectMarketFee- should get market fees for each token', async () => {
+    
+    // contracts.accounts[0] is the marketFeeCollector
+    assert(await pool.getMarketFeeCollector(poolAddress) == contracts.accounts[0])
+     // user3 has no DAI (we are going to send DAI fee to him)
+    assert(await daiContract.methods.balanceOf(user3).call() == '0')
+    // only marketFeeCollector can call this, set user3 as receiver
+    await pool.collectMarketFee(contracts.accounts[0],poolAddress,user3)
+    // DAI fees have been collected
+    assert(await pool.getMarketFees(poolAddress,contracts.daiAddress) == '0')
+    // user3 got DAI
+    assert(await daiContract.methods.balanceOf(user3).call() > '0')
+  })
+
+    
+  it('#getMarketFeeCollector- should get market fees for each token', async () => {
+    
+    // contracts.accounts[0] is the marketFeeCollector
+    assert(await pool.getMarketFeeCollector(poolAddress) == contracts.accounts[0])
+   
+   
+  })
+
+    
+  it('#getOPFCollector- should get market fees for each token', async () => {
+    
+   // contracts.accounts[0] is the opfCollectorCollector
+  
+    assert(await pool.getOPFCollector(poolAddress) == contracts.opfCollectorAddress)
+   
+   
+  })
+
+  it('#collectCommunityFee- should get community fees for each token', async () => {
+    
+    // contracts.accounts[0] is the marketFeeCollector
+    // some fee are available in DAI 
+    assert(await pool.getCommunityFees(poolAddress,contracts.daiAddress) > '0')
+    // opf collector has no DAI
+    assert(await daiContract.methods.balanceOf(contracts.opfCollectorAddress).call() == '0')
+    // anyone can call callectOPF
+    await pool.collectOPF(contracts.accounts[0],poolAddress)
+    // DAI fees have been collected
+    assert(await pool.getCommunityFees(poolAddress,contracts.daiAddress) == '0')
+    // OPF collector got DAI
+    assert(await daiContract.methods.balanceOf(contracts.opfCollectorAddress).call() > '0')
   })
 })
