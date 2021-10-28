@@ -248,6 +248,39 @@ export class Pool {
   }
 
    /**
+   * Get basetoken address of this pool
+   * @param {String} poolAddress
+   * @return {String}
+   */
+    async getBasetoken(poolAddress: string): Promise<string> {
+      const pool = new this.web3.eth.Contract(this.poolABI, poolAddress)
+      let result = null
+      try {
+        result = await pool.methods.getBaseTokenAddress().call()
+      } catch (e) {
+        this.logger.error(`ERROR: Failed to get basetoken address: ${e.message}`)
+      }
+      return result
+    }
+
+     /**
+   * Get datatoken address of this pool
+   * @param {String} poolAddress
+   * @return {String}
+   */
+      async getDatatoken(poolAddress: string): Promise<string> {
+        const pool = new this.web3.eth.Contract(this.poolABI, poolAddress)
+        let result = null
+        try {
+          result = await pool.methods.getDataTokenAddress().call()
+        } catch (e) {
+          this.logger.error(`ERROR: Failed to get datatoken address: ${e.message}`)
+        }
+        return result
+      }
+  
+
+   /**
    * Get marketFeeCollector of this pool
    * @param {String} poolAddress
    * @return {String}
@@ -541,6 +574,9 @@ export class Pool {
       poolAddress: string,
       to: string
     ): Promise<TransactionReceipt> {
+      if ((await this.getMarketFeeCollector(poolAddress)) !== address) {
+        throw new Error(`Caller is not MarketFeeCollector`)
+      }
       const pool = new this.web3.eth.Contract(this.poolABI, poolAddress)
       let result = null
       const estGas = await this.estCollectMarketFee(
@@ -563,6 +599,75 @@ export class Pool {
       return result
     }
 
+      /**
+   * Estimate gas cost for collectMarketFee
+   * @param {String} address
+   * @param {String} poolAddress
+   * @param {String} newCollector new market fee collector address
+   * @param {Contract} contractInstance optional contract instance
+   * @return {Promise<number>}
+   */
+       public async estUpdateMarketFeeCollector(
+        address: string,
+        poolAddress: string,
+        newCollector:string,
+        contractInstance?: Contract
+      ) :Promise<number>{
+        const poolContract =
+          contractInstance ||
+          new this.web3.eth.Contract(this.poolABI as AbiItem[], poolAddress)
+    
+        const gasLimitDefault = this.GASLIMIT_DEFAULT
+        let estGas
+        try {
+          estGas = await poolContract.methods
+            .updateMarketFeeCollector(newCollector)
+            .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
+        } catch (e) {
+          estGas = gasLimitDefault
+        }
+        return estGas
+      }
+  
+  
+      /**
+     * updateMarketFeeCollector - updates marketFeeCollector - can be called only by the marketFeeCollector
+     * @param {String} address
+     * @param {String} poolAddress
+     * @param {String} newCollector new market fee collector address
+     * @return {TransactionReceipt}
+     */
+       async updateMarketFeeCollector(
+        address: string,
+        poolAddress: string,
+        newCollector: string
+      ): Promise<TransactionReceipt> {
+         if ((await this.getMarketFeeCollector(poolAddress)) !== address) {
+          throw new Error(`Caller is not MarketFeeCollector`)
+        }
+        const pool = new this.web3.eth.Contract(this.poolABI, poolAddress)
+        let result = null
+        const estGas = await this.estUpdateMarketFeeCollector(
+          address,
+          poolAddress,
+          newCollector
+        )
+    
+        try {
+          result = await pool.methods
+            .updateMarketFeeCollector(newCollector)
+            .send({
+              from: address,
+              gas: estGas + 1,
+              gasPrice: await getFairGasPrice(this.web3)
+            })
+        } catch (e) {
+          this.logger.error(`ERROR: Failed to swap exact amount in : ${e.message}`)
+        }
+        return result
+      }
+
+      
   /**
    * Estimate gas cost for swapExactAmountIn
    * @param {String} address

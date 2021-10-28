@@ -201,7 +201,7 @@ describe('Pool unit test', () => {
   })
 
   it('#getSwapFee - should return the swap fee', async () => {
-    expect(await pool.getSwapFee(poolAddress)).to.equal('0.001')
+    expect(await pool.getSwapFee(poolAddress)).to.equal('0.001') //0.1%
   })
 
   it('#getNormalizedWeight - should return the normalized weight', async () => {
@@ -211,11 +211,24 @@ describe('Pool unit test', () => {
     expect(await pool.getNormalizedWeight(poolAddress, erc20Token)).to.equal('0.5')
   })
 
-  it('#getDenormalizedWeight - should return the swap fee', async () => {
+  it('#getDenormalizedWeight - should return the denormalized weight', async () => {
     expect(await pool.getDenormalizedWeight(poolAddress, contracts.daiAddress)).to.equal(
       '5'
     )
     expect(await pool.getDenormalizedWeight(poolAddress, erc20Token)).to.equal('5')
+  })
+
+  it('#getBasetoken - should return the basetoken address', async () => {
+    expect(await pool.getBasetoken(poolAddress)).to.equal(
+      contracts.daiAddress
+    )
+    
+  })
+
+  it('#getDatatoken - should return the datatoken address', async () => {
+    expect(await pool.getDatatoken(poolAddress)).to.equal(
+      erc20Token
+    )
   })
 
   it('#swapExactAmountIn - should swap', async () => {
@@ -380,42 +393,45 @@ describe('Pool unit test', () => {
   it('#getAmountInExactOut- should get the amount in for exact out', async () => {
     const maxBTPIn = "0.5"
     const exactDAIOut = "1"
-
-    const tx = await pool.getAmountInExactOut(
+    
+    const amountIn = await pool.getAmountInExactOut(
       poolAddress,
       erc20Token,
       contracts.daiAddress,
       exactDAIOut
     )
 
-    assert(tx != null)
+    assert(amountIn != null)
 
-    console.log(tx)
+   // console.log(tx)
 
-    const tx2 = await pool.getSpotPrice(poolAddress,erc20Token,contracts.daiAddress)
-    console.log(tx2)
+    const spotPrice = await pool.getSpotPrice(poolAddress,erc20Token,contracts.daiAddress)
+
+   // amount of DAI In will be slightly bigger than spotPrice
+    assert(amountIn >spotPrice)
   })
 
   it('#getAmountOutExactIn- should get the amount out for exact In', async () => {
-    const maxBTPIn = "0.5"
     const exactDTIn= "1"
 
-    const tx = await pool.getAmountOutExactIn(
+    const amountOut = await pool.getAmountOutExactIn(
       poolAddress,
       erc20Token,
       contracts.daiAddress,
       exactDTIn
     )
 
-    assert(tx != null)
+    assert(amountOut != null)
 
-    console.log(tx)
+    console.log(amountOut)
 
-    const tx2 = await pool.getSpotPrice(poolAddress,erc20Token,contracts.daiAddress)
-    console.log(tx2)
+    const spotPrice = await pool.getSpotPrice(poolAddress,contracts.daiAddress,erc20Token)
+    console.log(spotPrice)
+    // amount of DAI received will be slightly less than spotPrice
+    assert(amountOut< spotPrice)
   })
 
-  it('#getSpotPrice- should get the sport price', async () => {
+  it('#getSpotPrice- should get the spot price', async () => {
     
 
     assert(await pool.getSpotPrice(poolAddress,erc20Token,contracts.daiAddress) != null)
@@ -441,8 +457,8 @@ describe('Pool unit test', () => {
    
   })
   
-  it('#collectMarketFee- should get market fees for each token', async () => {
-    
+  it('#collectMarketFee- should collect market fees for each token', async () => {
+    const spotPriceBefore = await pool.getSpotPrice(poolAddress,erc20Token,contracts.daiAddress)
     // contracts.accounts[0] is the marketFeeCollector
     assert(await pool.getMarketFeeCollector(poolAddress) == contracts.accounts[0])
      // user3 has no DAI (we are going to send DAI fee to him)
@@ -453,6 +469,8 @@ describe('Pool unit test', () => {
     assert(await pool.getMarketFees(poolAddress,contracts.daiAddress) == '0')
     // user3 got DAI
     assert(await daiContract.methods.balanceOf(user3).call() > '0')
+    // Spot price hasn't changed after fee collection
+    assert(await pool.getSpotPrice(poolAddress,erc20Token,contracts.daiAddress)== spotPriceBefore)
   })
 
     
@@ -466,8 +484,7 @@ describe('Pool unit test', () => {
 
     
   it('#getOPFCollector- should get market fees for each token', async () => {
-    
-   // contracts.accounts[0] is the opfCollectorCollector
+
   
     assert(await pool.getOPFCollector(poolAddress) == contracts.opfCollectorAddress)
    
@@ -475,8 +492,7 @@ describe('Pool unit test', () => {
   })
 
   it('#collectCommunityFee- should get community fees for each token', async () => {
-    
-    // contracts.accounts[0] is the marketFeeCollector
+    const spotPriceBefore = await pool.getSpotPrice(poolAddress,erc20Token,contracts.daiAddress)
     // some fee are available in DAI 
     assert(await pool.getCommunityFees(poolAddress,contracts.daiAddress) > '0')
     // opf collector has no DAI
@@ -487,5 +503,18 @@ describe('Pool unit test', () => {
     assert(await pool.getCommunityFees(poolAddress,contracts.daiAddress) == '0')
     // OPF collector got DAI
     assert(await daiContract.methods.balanceOf(contracts.opfCollectorAddress).call() > '0')
+    // Spot price hasn't changed after fee collection
+    assert(await pool.getSpotPrice(poolAddress,erc20Token,contracts.daiAddress)== spotPriceBefore)
+  })
+
+  it('#updateMarketFeeCollector- should update market fee collector', async () => {
+    
+    // contracts.accounts[0] is the marketFeeCollector
+    assert(await pool.getMarketFeeCollector(poolAddress) == contracts.accounts[0])
+
+    await pool.updateMarketFeeCollector(contracts.accounts[0],poolAddress,user3)
+
+    assert(await pool.getMarketFeeCollector(poolAddress) == user3)  
+   
   })
 })
