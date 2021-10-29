@@ -2,8 +2,10 @@ import Web3 from 'web3'
 import { AbiItem } from 'web3-utils'
 import { Contract } from 'web3-eth-contract'
 import { TransactionReceipt } from 'web3-eth'
+import Decimal from 'decimal.js'
 import defaultDispenserABI from '@oceanprotocol/contracts/pools/dispenser/Dispenser.json'
 import { LoggerInstance as logger, getFairGasPrice } from '../../utils/'
+import { Datatoken } from '.../../../src/datatokens/'
 
 export interface DispenserToken {
   active: boolean
@@ -119,7 +121,7 @@ export class Dispenser {
     maxBalance: string,
     allowedSwapper: string
   ): Promise<TransactionReceipt> {
-    const estGas = await this.estGasCreateDispenser(
+    const estGas = await this.estGasCreate(
       dtAddress,
       address,
       maxTokens,
@@ -408,5 +410,34 @@ export class Dispenser {
       logger.error(`ERROR: Failed to withdraw tokens: ${e.message}`)
     }
     return null
+  }
+
+  /**
+   * Check if tokens can be dispensed
+   * @param {String} dtAddress
+   * @param {String} address User address that will receive datatokens
+   * @param {String} amount amount of datatokens required.
+   * @return {Promise<Boolean>}
+   */
+  public async isDispensable(
+    dtAddress: string,
+    dataToken: Datatoken,
+    address: string,
+    amount: string = '1'
+  ): Promise<Boolean> {
+    const status = await this.status(dtAddress)
+    if (!status) return false
+    // check active
+    if (status.active === false) return false
+    // check maxBalance
+    const userBalance = new Decimal(await dataToken.balance(dataToken, address))
+    if (userBalance.greaterThanOrEqualTo(status.maxBalance)) return false
+    // check maxAmount
+    if (new Decimal(String(amount)).greaterThan(status.maxTokens)) return false
+    // check dispenser balance
+    const contractBalance = new Decimal(status.balance)
+    if (contractBalance.greaterThanOrEqualTo(amount) || status.isTrueMinter === true)
+      return true
+    return false
   }
 }

@@ -126,4 +126,30 @@ describe('Dispenser flow', () => {
     const status = await DispenserClass.status(dtAddress)
     assert(status.active === false, 'Dispenser is still active')
   })
+
+  it('user2 sets user3 as an AllowedSwapper for the dispenser', async () => {
+    const tx = await DispenserClass.setAllowedSwapper(dtAddress, user2, user3)
+    assert(tx, 'Cannot deactivate dispenser')
+    const status = await DispenserClass.status(dtAddress)
+    assert(status.allowedSwapper === user3, 'Dispenser is still active')
+  })
+
+  it('User3 requests datatokens', async () => {
+    const check = await DispenserClass.isDispensable(dtAddress, datatoken, user3, '1')
+    assert(check === true, 'isDispensable should return true')
+    const tx = await DispenserClass.dispense(dtAddress, user3, '1', user3)
+    assert(tx, 'user3 failed to get 1DT')
+  })
+
+  it('tries to withdraw all datatokens', async () => {
+    const tx = await DispenserClass.ownerWithdraw(dtAddress, user3)
+    assert(tx === null, 'Request should fail')
+  })
+
+  it('user2 withdraws all datatokens', async () => {
+    const tx = await DispenserClass.ownerWithdraw(dtAddress, user2)
+    assert(tx, 'user2 failed to withdraw all her tokens')
+    const status = await DispenserClass.status(dtAddress)
+    assert(status.balance === '0', 'Balance > 0')
+  })
 })
