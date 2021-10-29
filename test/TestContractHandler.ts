@@ -3,7 +3,6 @@ import { Contract } from 'web3-eth-contract'
 import { AbiItem } from 'web3-utils/types'
 import MockERC20 from '@oceanprotocol/contracts/artifacts/contracts/utils/mock/MockERC20Decimals.sol/MockERC20Decimals.json'
 
-
 const oceanAddress = '0x967da4048cd07ab37855c090aaf366e4ce1b9f48'
 export class TestContractHandler {
   public accounts: string[]
@@ -30,7 +29,6 @@ export class TestContractHandler {
   public OPFCollectorBytecode: string
   public MockERC20Bytecode: string
   public OPFBytecode: string
-  
 
   public factory721Address: string
   public template721Address: string
@@ -56,7 +54,7 @@ export class TestContractHandler {
     SideStakingABI?: AbiItem | AbiItem[],
     FixedRateABI?: AbiItem | AbiItem[],
     DispenserABI?: AbiItem | AbiItem[],
-    OPFABI?: AbiItem | AbiItem[], 
+    OPFABI?: AbiItem | AbiItem[],
 
     template721Bytecode?: string,
     template20Bytecode?: string,
@@ -66,7 +64,7 @@ export class TestContractHandler {
     sideStakingBytecode?: string,
     fixedRateBytecode?: string,
     dispenserBytecode?: string,
-    opfBytecode?:string
+    opfBytecode?: string
   ) {
     this.web3 = web3
     this.ERC721Template = new this.web3.eth.Contract(ERC721TemplateABI)
@@ -104,7 +102,7 @@ export class TestContractHandler {
     // get est gascost
     estGas = await this.OPFCollector.deploy({
       data: this.OPFBytecode,
-      arguments: [owner,owner]
+      arguments: [owner, owner]
     }).estimateGas(function (err, estGas) {
       if (err) console.log('DeployContracts: ' + err)
       return estGas
@@ -112,7 +110,7 @@ export class TestContractHandler {
     // deploy the contract and get it's address
     this.opfCollectorAddress = await this.OPFCollector.deploy({
       data: this.OPFBytecode,
-      arguments: [owner,owner]
+      arguments: [owner, owner]
     })
       .send({
         from: owner,
@@ -122,7 +120,6 @@ export class TestContractHandler {
       .then(function (contract) {
         return contract.options.address
       })
-
 
     // DEPLOY POOL TEMPLATE
     // get est gascost
