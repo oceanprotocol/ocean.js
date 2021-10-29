@@ -17,8 +17,6 @@ import OPFCollector from '@oceanprotocol/contracts/artifacts/contracts/community
 import { LoggerInstance } from '../../../../src/utils'
 import { NFTFactory } from '../../../../src/factories/NFTFactory'
 import { Pool } from '../../../../src/pools/balancer/Pool'
-import { CONNREFUSED } from 'dns'
-import exp from 'constants'
 const { keccak256 } = require('@ethersproject/keccak256')
 const web3 = new Web3('http://127.0.0.1:8545')
 const communityCollector = '0xeE9300b7961e0a01d9f0adb863C7A227A07AaD75'
@@ -96,7 +94,13 @@ describe('Pool unit test', () => {
       contracts.factory721Address,
       '10000'
     )
-
+    console.log(
+      await pool.allowance(
+        contracts.daiAddress,
+        contracts.accounts[0],
+        contracts.factory721Address
+      )
+    )
     expect(
       await pool.allowance(
         contracts.daiAddress,

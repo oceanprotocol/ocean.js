@@ -29,6 +29,39 @@ export class Pool {
   }
 
   /**
+   * Estimate gas cost for collectMarketFee
+   * @param {String} account
+   * @param {String} tokenAddress
+   * @param {String} spender
+   * @param {String} amount
+   * @param {String} force
+   * @param {Contract} contractInstance optional contract instance
+   * @return {Promise<number>}
+   */
+  public async estApprove(
+    account: string,
+    tokenAddress: string,
+    spender: string,
+    amount: string,
+    contractInstance?: Contract
+  ): Promise<number> {
+    const tokenContract =
+      contractInstance ||
+      new this.web3.eth.Contract(defaultERC20ABI.abi as AbiItem[], tokenAddress)
+
+    const gasLimitDefault = this.GASLIMIT_DEFAULT
+    let estGas
+    try {
+      estGas = await tokenContract.methods
+        .approve(spender, amount)
+        .estimateGas({ from: account }, (err, estGas) => (err ? gasLimitDefault : estGas))
+    } catch (e) {
+      estGas = gasLimitDefault
+    }
+    return estGas
+  }
+
+  /**
    * Get Alloance for both DataToken and Ocean
    * @param {String } tokenAdress
    * @param {String} owner
@@ -42,7 +75,8 @@ export class Pool {
     const tokenAbi = defaultERC20ABI.abi as AbiItem[]
     const datatoken = new this.web3.eth.Contract(tokenAbi, tokenAddress)
     const trxReceipt = await datatoken.methods.allowance(owner, spender).call()
-    return (await this.unitsToAmount(tokenAddress, trxReceipt)).toString()
+
+    return await this.unitsToAmount(tokenAddress, trxReceipt)
   }
 
   /**
@@ -85,31 +119,20 @@ export class Pool {
         type: 'function'
       }
     ] as AbiItem[]
-    const token = new this.web3.eth.Contract(minABI, tokenAddress, {
-      from: account
-    })
+    const token = new this.web3.eth.Contract(minABI, tokenAddress)
     if (!force) {
       const currentAllowence = await this.allowance(tokenAddress, account, spender)
-      if (
-        new Decimal(this.web3.utils.toWei(currentAllowence)).greaterThanOrEqualTo(amount)
-      ) {
+      if (new Decimal(currentAllowence).greaterThanOrEqualTo(amount)) {
         return currentAllowence
       }
     }
     let result = null
-    const gasLimitDefault = this.GASLIMIT_DEFAULT
-    let estGas
-    try {
-      estGas = await token.methods
-        .approve(spender, await this.amountToUnits(tokenAddress, amount))
-        .estimateGas({ from: account }, (err, estGas) => (err ? gasLimitDefault : estGas))
-    } catch (e) {
-      estGas = gasLimitDefault
-    }
+    const amountFormatted = await this.amountToUnits(tokenAddress, amount)
+    const estGas = await this.estApprove(account, tokenAddress, spender, amountFormatted)
 
     try {
       result = await token.methods
-        .approve(spender, await this.amountToUnits(tokenAddress, amount))
+        .approve(spender, new BigNumber(await this.amountToUnits(tokenAddress, amount)))
         .send({
           from: account,
           gas: estGas + 1,
@@ -445,7 +468,7 @@ export class Pool {
     let weight = null
     try {
       const result = await pool.methods.marketFees(token).call()
-      weight = this.web3.utils.fromWei(result)
+      weight = await this.unitsToAmount(token, result)
     } catch (e) {
       this.logger.error(`ERROR: Failed to get market fees for a token: ${e.message}`)
     }
@@ -463,7 +486,7 @@ export class Pool {
     let weight = null
     try {
       const result = await pool.methods.communityFees(token).call()
-      weight = this.web3.utils.fromWei(result)
+      weight = await this.unitsToAmount(token, result)
     } catch (e) {
       this.logger.error(`ERROR: Failed to get community fees for a token: ${e.message}`)
     }
@@ -691,9 +714,8 @@ export class Pool {
     return estGas
   }
 
-  async amountToUnits(token: string, amount: string): Promise<number> {
+  async amountToUnits(token: string, amount: string): Promise<string> {
     let decimals = 18
-    let amountFormatted
     const tokenContract = new this.web3.eth.Contract(
       defaultERC20ABI.abi as AbiItem[],
       token
@@ -704,14 +726,13 @@ export class Pool {
       this.logger.error('ERROR: FAILED TO CALL DECIMALS(), USING 18')
     }
 
-    amountFormatted = new BigNumber(parseInt(amount) * 10 ** decimals)
+    const amountFormatted = new BigNumber(parseInt(amount) * 10 ** decimals)
 
-    return amountFormatted
+    return amountFormatted.toString()
   }
 
-  async unitsToAmount(token: string, amount: string): Promise<number> {
+  async unitsToAmount(token: string, amount: string): Promise<string> {
     let decimals = 18
-    let amountFormatted
     const tokenContract = new this.web3.eth.Contract(
       defaultERC20ABI.abi as AbiItem[],
       token
@@ -722,9 +743,9 @@ export class Pool {
       this.logger.error('ERROR: FAILED TO CALL DECIMALS(), USING 18')
     }
 
-    amountFormatted = new BigNumber(parseInt(amount) / 10 ** decimals)
+    const amountFormatted = new BigNumber(parseInt(amount) / 10 ** decimals)
 
-    return amountFormatted
+    return amountFormatted.toString()
   }
 
   /**
@@ -748,17 +769,10 @@ export class Pool {
     maxPrice?: string
   ): Promise<TransactionReceipt> {
     const pool = new this.web3.eth.Contract(this.poolABI, poolAddress)
-    const tokenInContract = new this.web3.eth.Contract(
-      defaultERC20ABI.abi as AbiItem[],
-      tokenIn
-    )
 
-    let amountInFormatted
-    let minAmountOutFormatted
+    const amountInFormatted = await this.amountToUnits(tokenIn, tokenAmountIn)
 
-    amountInFormatted = await this.amountToUnits(tokenIn, tokenAmountIn)
-
-    minAmountOutFormatted = await this.amountToUnits(tokenOut, minAmountOut)
+    const minAmountOutFormatted = await this.amountToUnits(tokenOut, minAmountOut)
 
     let result = null
 
@@ -768,7 +782,7 @@ export class Pool {
       tokenIn,
       amountInFormatted,
       tokenOut,
-      minAmountOutFormatted,
+      minAmountOutFormatted.toString(),
       maxPrice ? this.web3.utils.toWei(maxPrice) : MaxUint256
     )
     console.log(minAmountOutFormatted, 'minamoutnoutformatted')
@@ -825,9 +839,9 @@ export class Pool {
       estGas = await poolContract.methods
         .swapExactAmountOut(
           tokenIn,
-          this.web3.utils.toWei(maxAmountIn),
+          maxAmountIn,
           tokenOut,
-          this.web3.utils.toWei(amountOut),
+          amountOut,
           maxPrice ? this.web3.utils.toWei(maxPrice) : MaxUint256
         )
         .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
@@ -859,10 +873,9 @@ export class Pool {
   ): Promise<TransactionReceipt> {
     const pool = new this.web3.eth.Contract(this.poolABI, poolAddress)
     let result = null
-    let maxAmountInFormatted
-    let amountOutFormatted
-    maxAmountInFormatted = await this.amountToUnits(tokenIn, maxAmountIn)
-    amountOutFormatted = await this.amountToUnits(tokenOut, amountOut)
+
+    const maxAmountInFormatted = await this.amountToUnits(tokenIn, maxAmountIn)
+    const amountOutFormatted = await this.amountToUnits(tokenOut, amountOut)
     const estGas = await this.estSwapExactAmountOut(
       account,
       poolAddress,
@@ -1095,8 +1108,8 @@ export class Pool {
   ): Promise<TransactionReceipt> {
     const pool = new this.web3.eth.Contract(this.poolABI, poolAddress)
     let result = null
-    let amountInFormatted
-    amountInFormatted = await this.amountToUnits(tokenIn, tokenAmountIn)
+
+    const amountInFormatted = await this.amountToUnits(tokenIn, tokenAmountIn)
     const estGas = await this.estJoinswapExternAmountIn(
       account,
       poolAddress,
@@ -1176,8 +1189,8 @@ export class Pool {
   ): Promise<TransactionReceipt> {
     const pool = new this.web3.eth.Contract(this.poolABI, poolAddress)
     let result = null
-    let maxAmountInFormatted
-    maxAmountInFormatted = await this.amountToUnits(tokenIn, maxAmountIn)
+
+    const maxAmountInFormatted = await this.amountToUnits(tokenIn, maxAmountIn)
     const estGas = await this.estJoinswapPoolAmountOut(
       account,
       poolAddress,
@@ -1255,8 +1268,8 @@ export class Pool {
   ): Promise<TransactionReceipt> {
     const pool = new this.web3.eth.Contract(this.poolABI, poolAddress)
     let result = null
-    let minTokenOutFormatted
-    minTokenOutFormatted = await this.amountToUnits(tokenOut, minTokenAmountOut)
+
+    const minTokenOutFormatted = await this.amountToUnits(tokenOut, minTokenAmountOut)
     const estGas = await this.estExitswapPoolAmountIn(
       account,
       poolAddress,
@@ -1427,8 +1440,8 @@ export class Pool {
     tokenAmountOut: string
   ): Promise<string> {
     const pool = new this.web3.eth.Contract(this.poolABI, poolAddress)
-    let amountOutFormatted
-    amountOutFormatted = await this.amountToUnits(tokenOut, tokenAmountOut)
+
+    const amountOutFormatted = await this.amountToUnits(tokenOut, tokenAmountOut)
 
     let amount = null
 
@@ -1451,11 +1464,10 @@ export class Pool {
   ): Promise<string> {
     const pool = new this.web3.eth.Contract(this.poolABI, poolAddress)
 
-    let amountInFormatted
-    amountInFormatted = await this.amountToUnits(tokenIn, tokenAmountIn)
+    const amountInFormatted = await this.amountToUnits(tokenIn, tokenAmountIn)
 
     let amount = null
-    // console.log(amountInFormatted)
+
     try {
       const result = await pool.methods
         .getAmountOutExactIn(tokenIn, tokenOut, amountInFormatted)
