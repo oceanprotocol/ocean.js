@@ -15,7 +15,7 @@ interface Roles {
   feeManager: boolean
 }
 
-interface OrderParams {
+export interface OrderParams {
   consumer: string
   amount: string
   serviceId: number
@@ -24,7 +24,7 @@ interface OrderParams {
   consumeFeeAmount: string
 }
 
-interface FreParams {
+export interface FreParams {
   exchangeContract: string
   exchangeId: string
   maxBaseTokenAmount: string

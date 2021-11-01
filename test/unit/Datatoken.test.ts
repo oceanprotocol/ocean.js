@@ -3,10 +3,11 @@ import Web3 from 'web3'
 import ERC721Factory from '@oceanprotocol/contracts/artifacts/contracts/ERC721Factory.sol/ERC721Factory.json'
 import ERC721Template from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC721Template.sol/ERC721Template.json'
 import ERC20Template from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC20Template.sol/ERC20Template.json'
+import ERC20TemplateEnterprise from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC20TemplateEnterprise.sol/ERC20TemplateEnterprise.json'
 import PoolTemplate from '@oceanprotocol/contracts/artifacts/contracts/pools/balancer/BPool.sol/BPool.json'
 import { TestContractHandler } from '../TestContractHandler'
 import { NFTFactory } from '../../src/factories/NFTFactory'
-import { Datatoken, NFTDatatoken } from '../../src/datatokens'
+import { Datatoken, NFTDatatoken, OrderParams, FreParams } from '../../src/datatokens'
 import { AbiItem } from 'web3-utils'
 import { LoggerInstance } from '../../src/utils'
 
@@ -72,7 +73,11 @@ describe('Datatoken', () => {
   })
 
   it('should initialize DT20 Instance', async () => {
-    datatoken = new Datatoken(web3, ERC20Template.abi as AbiItem)
+    datatoken = new Datatoken(
+      web3,
+      ERC20Template.abi as AbiItem,
+      ERC20TemplateEnterprise.abi as AbiItem
+    )
   })
 
   it('#mint - should fail to mint DT20, if NOT Minter', async () => {
@@ -205,5 +210,49 @@ describe('Datatoken', () => {
 
     const key = web3.utils.keccak256(datatokenAddress)
     assert((await nftDatatoken.getData(nftAddress, key)) === data)
+  })
+
+  it('#startOrder- should create an order for DT ', async () => {
+
+    
+    //MINT SOME DT20 to USER2 so he can start order
+    await erc20Token.connect(user3).mint(user2.address, web3.utils.toWei('10'))
+    assert((await erc20Token.balanceOf(user2.address)) == web3.utils.toWei('10'))
+    const consumer = user2.address // could be different user
+    const dtAmount = web3.utils.toWei('1')
+    const serviceId = 1 // dummy index
+    const consumeFeeAddress = user3.address // marketplace fee Collector
+    const consumeFeeAmount = 1 // fee to be collected on top, requires approval
+    const consumeFeeToken = addressZero // token address for the feeAmount, in this case DAI
+
+    await erc20Token
+      .connect(user2)
+      .startOrder(
+        consumer,
+        dtAmount,
+        serviceId,
+        consumeFeeAddress,
+        consumeFeeToken,
+        consumeFeeAmount
+      )
+
+    assert(
+      (await erc20Token.balanceOf(user2.address)) == web3.utils.toWei('9'),
+      'Invalid user balance, DT was not substracted'
+    )
+
+    assert(
+      (await erc20Token.balanceOf(opfCollector.address)) == web3.utils.toWei('0'),
+      'Invalid OPF balance, we should not get any DTs'
+    )
+    assert(
+      (await erc20Token.balanceOf(user3.address)) == web3.utils.toWei('0'),
+      'Invalid consumeFee, we should have DT as fee'
+    )
+    assert(
+      (await erc20Token.balanceOf(await erc20Token.getFeeCollector())) ==
+        web3.utils.toWei('1'),
+      'Invalid publisher reward, we should have 1 DT'
+    )
   })
 })
