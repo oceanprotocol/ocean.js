@@ -785,7 +785,7 @@ export class Pool {
       minAmountOutFormatted.toString(),
       maxPrice ? this.web3.utils.toWei(maxPrice) : MaxUint256
     )
-    console.log(minAmountOutFormatted, 'minamoutnoutformatted')
+    //console.log(minAmountOutFormatted, 'minamoutnoutformatted')
     try {
       result = await pool.methods
         .swapExactAmountIn(

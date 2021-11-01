@@ -123,6 +123,8 @@ describe('Pool unit test', () => {
       await usdcContract.methods.decimals().call(),
       'USDC DECIMALS IN THIS TEST'
     )
+
+    await pool.amountToUnits(contracts.usdcAddress, '20')
   })
 
   describe('Test a pool with DAI (18 Decimals)', () => {
