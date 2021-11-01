@@ -2,6 +2,7 @@ import Web3 from 'web3'
 import { AbiItem } from 'web3-utils'
 import { TransactionReceipt } from 'web3-eth'
 import defaultDatatokensABI from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC20Template.sol/ERC20Template.json'
+import defaultDatatokensEnterpriseABI from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC20TemplateEnterpise.sol/ERC20TemplateEnterpise.json'
 import Decimal from 'decimal.js'
 import { LoggerInstance, getFairGasPrice } from '../utils'
 import { Contract } from 'web3-eth-contract'
@@ -14,22 +15,45 @@ interface Roles {
   feeManager: boolean
 }
 
+interface OrderParams {
+  consumer: string
+  amount: string
+  serviceId: number
+  consumeFeeAddress: string
+  consumeFeeToken: string
+  consumeFeeAmount: string
+}
+
+interface FreParams {
+  exchangeContract: string
+  exchangeId: string
+  maxBaseTokenAmount: string
+}
+
 export class Datatoken {
   public GASLIMIT_DEFAULT = 1000000
   public factoryAddress: string
   public factoryABI: AbiItem | AbiItem[]
   public datatokensABI: AbiItem | AbiItem[]
+  public datatokensEnterpriseABI: AbiItem | AbiItem[]
   public web3: Web3
   public startBlock: number
 
   /**
-   * Instantiate ERC20 DataTokens (independently of Ocean).
+   * Instantiate ERC20 DataTokens
    * @param {AbiItem | AbiItem[]} datatokensABI
    * @param {Web3} web3
    */
-  constructor(web3: Web3, datatokensABI?: AbiItem | AbiItem[], startBlock?: number) {
+  constructor(
+    web3: Web3,
+    datatokensABI?: AbiItem | AbiItem[],
+    datatokensEnterpriseABI?: AbiItem | AbiItem[],
+    startBlock?: number
+  ) {
     this.web3 = web3
     this.datatokensABI = datatokensABI || (defaultDatatokensABI.abi as AbiItem[])
+    this.datatokensEnterpriseABI =
+      datatokensEnterpriseABI || (defaultDatatokensEnterpriseABI.abi as AbiItem[])
     this.startBlock = startBlock || 0
   }
 
@@ -876,6 +900,144 @@ export class Datatoken {
     } catch (e) {
       LoggerInstance.error(`ERROR: Failed to start order : ${e.message}`)
       throw new Error(`Failed to start order: ${e.message}`)
+    }
+  }
+
+  /** Estimate gas cost for buyFromFreAndOrder method
+   * @param {String} dtAddress Datatoken address
+   * @param {String} address User address which calls
+   * @param {OrderParams} orderParams Consumer Address
+   * @param {FreParams} freParams Amount of tokens that is going to be transfered
+   * @param {Contract} contractInstance optional contract instance
+   * @return {Promise<any>}
+   */
+  public async estGasBuyFromFreAndOrder(
+    dtAddress: string,
+    address: string,
+    orderParams: OrderParams,
+    freParams: FreParams,
+    contractInstance?: Contract
+  ): Promise<any> {
+    const dtContract =
+      contractInstance ||
+      new this.web3.eth.Contract(this.datatokensEnterpriseABI, dtAddress)
+
+    // Estimate gas for startOrder method
+    const gasLimitDefault = this.GASLIMIT_DEFAULT
+    let estGas
+    try {
+      estGas = await dtContract.methods
+        .buyFromFreAndOrder(orderParams, freParams)
+        .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
+    } catch (e) {
+      estGas = gasLimitDefault
+    }
+    return estGas
+  }
+
+  /** Buys 1 DT from the FRE and then startsOrder, while burning that DT
+   * @param {String} dtAddress Datatoken address
+   * @param {String} address User address which calls
+   * @param {OrderParams} orderParams Consumer Address
+   * @param {FreParams} freParams Amount of tokens that is going to be transfered
+   * @return {Promise<TransactionReceipt>}
+   */
+  public async buyFromFreAndOrder(
+    dtAddress: string,
+    address: string,
+    orderParams: OrderParams,
+    freParams: FreParams
+  ): Promise<TransactionReceipt> {
+    const dtContract = new this.web3.eth.Contract(this.datatokensEnterpriseABI, dtAddress)
+    try {
+      const estGas = await this.estGasBuyFromFreAndOrder(
+        dtAddress,
+        address,
+        orderParams,
+        freParams,
+        dtContract
+      )
+
+      const trxReceipt = await dtContract.methods
+        .buyFromFreAndOrder(orderParams, freParams)
+        .send({
+          from: address,
+          gas: estGas + 1,
+          gasPrice: await getFairGasPrice(this.web3)
+        })
+      return trxReceipt
+    } catch (e) {
+      LoggerInstance.error(`ERROR: Failed to buy DT From Fre And Order : ${e.message}`)
+      throw new Error(`Failed to buy DT From Fre And Order: ${e.message}`)
+    }
+  }
+
+  /** Estimate gas cost for buyFromFreAndOrder method
+   * @param {String} dtAddress Datatoken address
+   * @param {String} address User address which calls
+   * @param {OrderParams} orderParams
+   * @param {String} dispenserContract
+   * @param {Contract} contractInstance optional contract instance
+   * @return {Promise<any>}
+   */
+  public async estGasBuyFromDispenserAndOrder(
+    dtAddress: string,
+    address: string,
+    orderParams: OrderParams,
+    dispenserContract: string,
+    contractInstance?: Contract
+  ): Promise<any> {
+    const dtContract =
+      contractInstance ||
+      new this.web3.eth.Contract(this.datatokensEnterpriseABI, dtAddress)
+
+    // Estimate gas for startOrder method
+    const gasLimitDefault = this.GASLIMIT_DEFAULT
+    let estGas
+    try {
+      estGas = await dtContract.methods
+        .buyFromDispenserAndOrder(orderParams, dispenserContract)
+        .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
+    } catch (e) {
+      estGas = gasLimitDefault
+    }
+    return estGas
+  }
+
+  /** Gets DT from dispenser and then startsOrder, while burning that DT
+   * @param {String} dtAddress Datatoken address
+   * @param {String} address User address which calls
+   * @param {OrderParams} orderParams
+   * @param {String} dispenserContract
+   * @return {Promise<TransactionReceipt>}
+   */
+  public async buyFromDispenserAndOrder(
+    dtAddress: string,
+    address: string,
+    orderParams: OrderParams,
+    dispenserContract: string
+  ): Promise<TransactionReceipt> {
+    const dtContract = new this.web3.eth.Contract(this.datatokensEnterpriseABI, dtAddress)
+    try {
+      const estGas = await this.estGasBuyFromDispenserAndOrder(
+        dtAddress,
+        address,
+        orderParams,
+        dispenserContract,
+        dtContract
+      )
+
+      const trxReceipt = await dtContract.methods
+        .buyFromDispenserAndOrder(orderParams, dispenserContract)
+        .send({
+          from: address,
+          gas: estGas + 1,
+          gasPrice: await getFairGasPrice(this.web3)
+        })
+      return trxReceipt
+    } catch (e) {
+      LoggerInstance.error(`ERROR: Failed to buy DT From Fre And Order : ${e.message}`)
+      throw new Error(`Failed to buy DT From Fre And Order: ${e.message}`)
     }
   }
 
