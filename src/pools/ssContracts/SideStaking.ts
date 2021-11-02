@@ -14,7 +14,7 @@ const MaxUint256 =
 /**
  * Provides an interface to Ocean friendly fork from Balancer BPool
  */
-// TODO: Add decimals handling
+
 export class SideStaking {
   public ssABI: AbiItem | AbiItem[]
   public web3: Web3
@@ -63,124 +63,9 @@ export class SideStaking {
   }
 
   /**
-   * Estimate gas cost for collectMarketFee
-   * @param {String} account
-   * @param {String} tokenAddress
-   * @param {String} spender
-   * @param {String} amount
-   * @param {String} force
-   * @param {Contract} contractInstance optional contract instance
-   * @return {Promise<number>}
-   */
-  public async estApprove(
-    account: string,
-    tokenAddress: string,
-    spender: string,
-    amount: string,
-    contractInstance?: Contract
-  ): Promise<number> {
-    const tokenContract =
-      contractInstance ||
-      new this.web3.eth.Contract(defaultERC20ABI.abi as AbiItem[], tokenAddress)
-
-    const gasLimitDefault = this.GASLIMIT_DEFAULT
-    let estGas
-    try {
-      estGas = await tokenContract.methods
-        .approve(spender, amount)
-        .estimateGas({ from: account }, (err, estGas) => (err ? gasLimitDefault : estGas))
-    } catch (e) {
-      estGas = gasLimitDefault
-    }
-    return estGas
-  }
-
-  /**
-   * Get Alloance for both DataToken and Ocean
-   * @param {String } tokenAdress
-   * @param {String} owner
-   * @param {String} spender
-   */
-  public async allowance(
-    tokenAddress: string,
-    owner: string,
-    spender: string
-  ): Promise<string> {
-    const tokenAbi = defaultERC20ABI.abi as AbiItem[]
-    const datatoken = new this.web3.eth.Contract(tokenAbi, tokenAddress)
-    const trxReceipt = await datatoken.methods.allowance(owner, spender).call()
-
-    return await this.unitsToAmount(tokenAddress, trxReceipt)
-  }
-
-  /**
-   * Approve spender to spent amount tokens
-   * @param {String} account
-   * @param {String} tokenAddress
-   * @param {String} spender
-   * @param {String} amount  (always expressed as wei)
-   * @param {String} force  if true, will overwrite any previous allowence. Else, will check if allowence is enough and will not send a transaction if it's not needed
-   */
-  async approve(
-    account: string,
-    tokenAddress: string,
-    spender: string,
-    amount: string,
-    force = false
-  ): Promise<TransactionReceipt | string> {
-    const minABI = [
-      {
-        constant: false,
-        inputs: [
-          {
-            name: '_spender',
-            type: 'address'
-          },
-          {
-            name: '_value',
-            type: 'uint256'
-          }
-        ],
-        name: 'approve',
-        outputs: [
-          {
-            name: '',
-            type: 'bool'
-          }
-        ],
-        payable: false,
-        stateMutability: 'nonpayable',
-        type: 'function'
-      }
-    ] as AbiItem[]
-    const token = new this.web3.eth.Contract(minABI, tokenAddress)
-    if (!force) {
-      const currentAllowence = await this.allowance(tokenAddress, account, spender)
-      if (new Decimal(currentAllowence).greaterThanOrEqualTo(amount)) {
-        return currentAllowence
-      }
-    }
-    let result = null
-    const amountFormatted = await this.amountToUnits(tokenAddress, amount)
-    const estGas = await this.estApprove(account, tokenAddress, spender, amountFormatted)
-
-    try {
-      result = await token.methods
-        .approve(spender, new BigNumber(await this.amountToUnits(tokenAddress, amount)))
-        .send({
-          from: account,
-          gas: estGas + 1,
-          gasPrice: await getFairGasPrice(this.web3)
-        })
-    } catch (e) {
-      this.logger.error(`ERRPR: Failed to approve spender to spend tokens : ${e.message}`)
-    }
-    return result
-  }
-
-  /**
-   * Get
+   * Get DTs in circulation (amount vested not accounted)
    * @param {String} ssAddress side staking contract address
+   * @param {String} datatokenAddress datatoken address 
    * @return {String}
    */
   async getDataTokenCirculatingSupply(
@@ -200,8 +85,9 @@ export class SideStaking {
   }
 
   /**
-   * Get
+   * Get Publisher address
    * @param {String} ssAddress side staking contract address
+   * @param {String} datatokenAddress datatoken address 
    * @return {String}
    */
   async getPublisherAddress(
@@ -236,7 +122,7 @@ export class SideStaking {
   }
 
   /**
-   * Get
+   * Get Pool Address
    * @param {String} ssAddress side staking contract address
    * @param {String} datatokenAddress datatokenAddress
    * @return {String}
@@ -253,7 +139,7 @@ export class SideStaking {
   }
 
   /**
-   * Get
+   * Get basetoken balance in the contract
    * @param {String} ssAddress side staking contract address
    * @param {String} datatokenAddress datatokenAddress
    * @return {String}
@@ -273,7 +159,7 @@ export class SideStaking {
   }
 
   /**
-   * Get
+   * Get dt balance in the staking contract available for being added as liquidity 
    * @param {String} ssAddress side staking contract address
    * @param {String} datatokenAddress datatokenAddress
    * @return {String}
@@ -294,10 +180,10 @@ export class SideStaking {
   }
 
   /**
-   * Get
+   * Get block when vesting ends
    * @param {String} ssAddress side staking contract address
    * @param {String} datatokenAddress datatokenAddress
-   * @return {String}
+   * @return {String} end block for vesting amount
    */
   async getvestingEndBlock(ssAddress: string, datatokenAddress: string): Promise<string> {
     const sideStaking = new this.web3.eth.Contract(this.ssABI, ssAddress)
@@ -311,10 +197,10 @@ export class SideStaking {
   }
 
   /**
-   * Get
+   * Get total amount vesting
    * @param {String} ssAddress side staking contract address
    * @param {String} datatokenAddress datatokenAddress
-   * @return {String}
+   * @return {String} 
    */
   async getvestingAmount(ssAddress: string, datatokenAddress: string): Promise<string> {
     const sideStaking = new this.web3.eth.Contract(this.ssABI, ssAddress)
@@ -329,7 +215,7 @@ export class SideStaking {
   }
 
   /**
-   * Get
+   * Get last block publisher got some vested tokens
    * @param {String} ssAddress side staking contract address
    * @param {String} datatokenAddress datatokenAddress
    * @return {String}
@@ -349,7 +235,7 @@ export class SideStaking {
   }
 
   /**
-   * Get
+   * Get how much has been taken from the vesting amount
    * @param {String} ssAddress side staking contract address
    * @param {String} datatokenAddress datatokenAddress
    * @return {String}
@@ -370,7 +256,7 @@ export class SideStaking {
   }
 
   /**
-   * Estimate gas cost for collectMarketFee
+   * Estimate gas cost for getVesting
    * @param {String} account
    * @param {String} ssAddress side staking contract address
    * @param {String} datatokenAddress datatokenAddress
@@ -398,7 +284,7 @@ export class SideStaking {
     return estGas
   }
 
-  /**
+  /**Send vested tokens available to the publisher address, can be called by anyone
    *
    * @param {String} account
    * @param {String} ssAddress side staking contract address
@@ -419,7 +305,6 @@ export class SideStaking {
       datatokenAddress,
       sideStaking
     )
-
     try {
       result = await sideStaking.methods.getVesting(datatokenAddress).send({
         from: account,

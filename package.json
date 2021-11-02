@@ -25,6 +25,7 @@
     "changelog": "auto-changelog -p",
     "prepublishOnly": "npm run build",
     "test:ss": "mocha --config=test/unit/.mocharc.json --node-env=test --exit 'test/unit/pools/ssContracts/SideStaking.test.ts'",
+    "test:pool": "mocha --config=test/unit/.mocharc.json --node-env=test --exit 'test/unit/pools/balancer/Pool.test.ts'",
     "test:router": "mocha --config=test/unit/.mocharc.json --node-env=test --exit 'test/unit/pools/Router.test.ts'",
     "test:unit": "mocha --config=test/unit/.mocharc.json --node-env=test --exit 'test/unit/**/*.test.ts'",
     "test:unit:cover": "nyc --report-dir coverage/unit npm run test:unit",
