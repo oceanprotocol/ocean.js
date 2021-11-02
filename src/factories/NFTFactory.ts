@@ -82,22 +82,21 @@ export class NFTFactory {
   /**
    * Get estimated gas cost for deployERC721Contract value
    * @param {String} address
-   * @param {String} name Token name
-   * @param {String} symbol Token symbol
-   * @param {Number} templateIndex NFT template index
+   * @param {String} nftData
    * @return {Promise<string>} NFT datatoken address
    */
-  public async estGasCreateNFT(
-    address: string,
-    name: string,
-    symbol: string,
-    templateIndex: number
-  ): Promise<string> {
+  public async estGasCreateNFT(address: string, nftData: NFTCreateData): Promise<string> {
     const gasLimitDefault = this.GASLIMIT_DEFAULT
     let estGas
     try {
       estGas = await this.factory721.methods
-        .deployERC721Contract(name, symbol, templateIndex, null)
+        .deployERC721Contract(
+          nftData.name,
+          nftData.symbol,
+          nftData.templateIndex,
+          '0x0000000000000000000000000000000000000000',
+          nftData.baseURI
+        )
         .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
     } catch (e) {
       estGas = gasLimitDefault
@@ -108,28 +107,29 @@ export class NFTFactory {
   /**
    * Create new NFT
    * @param {String} address
-   * @param {String} name Token name
-   * @param {String} symbol Token symbol
-   * @param {Number} templateIndex NFT template index
+   * @param {NFTCreateData} nftData
    * @return {Promise<string>} NFT datatoken address
    */
-  public async createNFT(
-    address: string,
-    name?: string,
-    symbol?: string,
-    templateIndex?: number
-  ): Promise<string> {
-    if (!templateIndex) templateIndex = 1
-    // Generate name & symbol if not present
-    if (!name || !symbol) {
-      ;({ name, symbol } = generateDtName())
+  public async createNFT(address: string, nftData: NFTCreateData): Promise<string> {
+    if (!nftData.templateIndex) nftData.templateIndex = 1
+
+    if (!nftData.name || !nftData.symbol) {
+      const { name, symbol } = generateDtName()
+      nftData.name = name
+      nftData.symbol = symbol
     }
 
-    const estGas = await this.estGasCreateNFT(address, name, symbol, templateIndex)
+    const estGas = await this.estGasCreateNFT(address, nftData)
 
     // Invoke createToken function of the contract
     const trxReceipt = await this.factory721.methods
-      .deployERC721Contract(name, symbol, templateIndex, null)
+      .deployERC721Contract(
+        nftData.name,
+        nftData.symbol,
+        nftData.templateIndex,
+        '0x0000000000000000000000000000000000000000',
+        nftData.baseURI
+      )
       .send({
         from: address,
         gas: estGas + 1,
@@ -138,7 +138,7 @@ export class NFTFactory {
 
     let tokenAddress = null
     try {
-      tokenAddress = trxReceipt.events.TokenCreated.returnValues[0]
+      tokenAddress = trxReceipt.events.NFTCreated.returnValues[0]
     } catch (e) {
       LoggerInstance.error(`ERROR: Failed to create datatoken : ${e.message}`)
     }
