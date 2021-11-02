@@ -228,7 +228,7 @@ export class SideStaking {
     const sideStaking = new this.web3.eth.Contract(this.ssABI, ssAddress)
     let result = null
     try {
-      result = await sideStaking.methods.getBaseToken(datatokenAddress).call()
+      result = await sideStaking.methods.getBaseTokenAddress(datatokenAddress).call()
     } catch (e) {
       this.logger.error(`ERROR: Failed to get: ${e.message}`)
     }
@@ -265,7 +265,7 @@ export class SideStaking {
     const sideStaking = new this.web3.eth.Contract(this.ssABI, ssAddress)
     let result = null
     try {
-      result = await sideStaking.methods.getBasetokenBalance(datatokenAddress).call()
+      result = await sideStaking.methods.getBaseTokenBalance(datatokenAddress).call()
     } catch (e) {
       this.logger.error(`ERROR: Failed to get: ${e.message}`)
     }
@@ -285,10 +285,11 @@ export class SideStaking {
     const sideStaking = new this.web3.eth.Contract(this.ssABI, ssAddress)
     let result = null
     try {
-      result = await sideStaking.methods.getDatatokenBalance(datatokenAddress).call()
+      result = await sideStaking.methods.getDataTokenBalance(datatokenAddress).call()
     } catch (e) {
       this.logger.error(`ERROR: Failed to get: ${e.message}`)
     }
+    result = await this.unitsToAmount(datatokenAddress,result)
     return result
   }
 
@@ -323,6 +324,7 @@ export class SideStaking {
     } catch (e) {
       this.logger.error(`ERROR: Failed to get: ${e.message}`)
     }
+    result = await this.unitsToAmount(datatokenAddress,result)
     return result
   }
 
@@ -363,65 +365,7 @@ export class SideStaking {
     } catch (e) {
       this.logger.error(`ERROR: Failed to get: ${e.message}`)
     }
-    return result
-  }
-
-  /**
-   * Get
-   * @param {String} ssAddress side staking contract address
-   * @param {String} datatokenAddress datatokenAddress
-   * @param {String} amount amount of DTs we want to Side Staking to stake
-   * @return {String}
-   */
-  async canStake(
-    ssAddress: string,
-    datatokenAddress: string,
-    amount: string
-  ): Promise<boolean> {
-    const sideStaking = new this.web3.eth.Contract(this.ssABI, ssAddress)
-    let result = null
-    try {
-      result = await sideStaking.methods
-        .canStake(
-          datatokenAddress,
-          await this.getBasetoken(ssAddress, datatokenAddress),
-          this.amountToUnits(datatokenAddress, amount)
-        )
-        .call()
-    } catch (e) {
-      this.logger.error(`ERROR: Failed to get if can stake DT: ${e.message}`)
-    }
-    return result
-  }
-
-  /**
-   * Get
-   * @param {String} ssAddress side staking contract address
-   * @param {String} datatokenAddress datatokenAddress
-   * @param {String} amount amount of LPT we want to Side Staking to unstake
-   * @return {String}
-   */
-  async canUnStake(
-    ssAddress: string,
-    datatokenAddress: string,
-    amount: string
-  ): Promise<boolean> {
-    const sideStaking = new this.web3.eth.Contract(this.ssABI, ssAddress)
-    let result = null
-    try {
-      result = await sideStaking.methods
-        .canUnStake(
-          datatokenAddress,
-          await this.getBasetoken(ssAddress, datatokenAddress),
-          this.amountToUnits(
-            await this.getPoolAddress(ssAddress, datatokenAddress),
-            amount
-          )
-        )
-        .call()
-    } catch (e) {
-      this.logger.error(`ERROR: Failed to get if can stake DT: ${e.message}`)
-    }
+    result = await this.unitsToAmount(datatokenAddress,result)
     return result
   }
 

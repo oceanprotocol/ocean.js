@@ -28,6 +28,8 @@ describe('SideStaking unit test', () => {
   let user1: string
   let user2: string
   let user3: string
+  let initialBlock: number
+  let sideStakingAddress: string
   let contracts: TestContractHandler
   let pool: Pool
   let sideStaking: SideStaking
@@ -38,6 +40,7 @@ describe('SideStaking unit test', () => {
   let erc20Contract: Contract
   let daiContract: Contract
   let usdcContract: Contract
+  const vestedBlocks = 2500000
 
   it('should deploy contracts', async () => {
     contracts = new TestContractHandler(
@@ -68,7 +71,7 @@ describe('SideStaking unit test', () => {
     user1 = contracts.accounts[2]
     user2 = contracts.accounts[3]
     user3 = contracts.accounts[4]
-
+    sideStakingAddress = contracts.sideStakingAddress
     await contracts.deployContracts(factoryOwner, FactoryRouter.abi as AbiItem[])
 
     // initialize Pool instance
@@ -99,7 +102,7 @@ describe('SideStaking unit test', () => {
       contracts.factory721Address,
       '10000'
     )
-    
+
     expect(
       await pool.allowance(
         contracts.daiAddress,
@@ -164,7 +167,7 @@ describe('SideStaking unit test', () => {
           web3.utils.toWei('1'), // rate
           18, // basetokenDecimals
           web3.utils.toWei('10000'),
-          2500000, // vested blocks
+          vestedBlocks, // vested blocks
           web3.utils.toWei('2000') // baseToken initial pool liquidity
         ],
         swapFees: [
@@ -181,13 +184,91 @@ describe('SideStaking unit test', () => {
         ercData,
         poolData
       )
-
+      initialBlock = await web3.eth.getBlockNumber()
       erc20Token = txReceipt.events.TokenCreated.returnValues.newTokenAddress
       poolAddress = txReceipt.events.NewPool.returnValues.poolAddress
 
       erc20Contract = new web3.eth.Contract(ERC20Template.abi as AbiItem[], erc20Token)
       // user2 has no dt1
       expect(await erc20Contract.methods.balanceOf(user2).call()).to.equal('0')
+
+      sideStakingAddress = contracts.sideStakingAddress
+    })
+    it('#getDataTokenCirculatingSupply - should get datatoken supply in circulation (vesting amount excluded)', async () => {
+      console.log(
+        await sideStaking.getDataTokenCirculatingSupply(
+          contracts.sideStakingAddress,
+          erc20Token
+        )
+      )
+    })
+    it('#getBasetoken - should get basetoken address', async () => {
+      expect(await sideStaking.getBasetoken(sideStakingAddress, erc20Token)).to.equal(
+        contracts.daiAddress
+      )
+    })
+    it('#getPoolAddress - should get pool address', async () => {
+      expect(await sideStaking.getPoolAddress(sideStakingAddress, erc20Token)).to.equal(
+        poolAddress
+      )
+    })
+    it('#getPublisherAddress - should get publisher address', async () => {
+      expect(
+        await sideStaking.getPublisherAddress(sideStakingAddress, erc20Token)
+      ).to.equal(contracts.accounts[0])
+    })
+    it('#getBasetokenBalance ', async () => {
+      expect(
+        await sideStaking.getBasetokenBalance(sideStakingAddress, erc20Token)
+      ).to.equal('0')
+    })
+    it('#getDatatokenBalance ', async () => {
+      expect(
+        await sideStaking.getDatatokenBalance(sideStakingAddress, erc20Token)
+      ).to.equal('988000')
+    })
+
+    it('#getvestingAmount ', async () => {
+      expect(await sideStaking.getvestingAmount(sideStakingAddress, erc20Token)).to.equal(
+        '10000'
+      )
+    })
+    it('#getvestingLastBlock ', async () => {
+      expect(
+        await sideStaking.getvestingLastBlock(sideStakingAddress, erc20Token)
+      ).to.equal(initialBlock.toString())
+    })
+
+    it('#getvestingEndBlock ', async () => {
+      expect(
+        await sideStaking.getvestingEndBlock(sideStakingAddress, erc20Token)
+      ).to.equal((initialBlock + vestedBlocks).toString())
+    })
+    it('#getvestingAmountSoFar ', async () => {
+      expect(
+        await sideStaking.getvestingAmountSoFar(sideStakingAddress, erc20Token)
+      ).to.equal('0')
+    })
+
+    it('#getVesting ', async () => {
+      expect(
+        await erc20Contract.methods.balanceOf(contracts.accounts[0]).call()
+      ).to.equal('0')
+
+      const tx = await sideStaking.getVesting(
+        contracts.accounts[0],
+        sideStakingAddress,
+        erc20Token
+      )
+      
+      expect(
+       await sideStaking.unitsToAmount(erc20Token,await erc20Contract.methods.balanceOf(contracts.accounts[0]).call() )
+      ).to.equal(await sideStaking.getvestingAmountSoFar(sideStakingAddress, erc20Token))
+      
+      expect(
+        await sideStaking.getvestingLastBlock(sideStakingAddress, erc20Token)
+      ).to.equal((await web3.eth.getBlockNumber()).toString())
+     
     })
 
     it('#swapExactAmountIn - should swap', async () => {
@@ -277,7 +358,6 @@ describe('SideStaking unit test', () => {
       )
     })
 
-
     it('#exitswapPoolAmountIn- user2 exit the pool receiving only DAI', async () => {
       const BPTAmountIn = '0.5'
       const minDAIOut = '0.5'
@@ -317,8 +397,6 @@ describe('SideStaking unit test', () => {
       // DTs were also unstaked in the same transaction (went to the staking contract)
       expect(tx.events.LOG_EXIT[1].returnValues.tokenOut).to.equal(erc20Token)
     })
-
-    
   })
 
   describe('Test a pool with USDC (6 Decimals)', () => {
@@ -346,7 +424,7 @@ describe('SideStaking unit test', () => {
       const basetokenInitialLiq = Number(
         await pool.amountToUnits(contracts.usdcAddress, '2000')
       )
-      
+
       const poolData = {
         addresses: [
           contracts.sideStakingAddress,
@@ -427,7 +505,6 @@ describe('SideStaking unit test', () => {
       // console.log(tx.events)
     })
 
-  
     it('#joinswapExternAmountIn- user2 should add liquidity, receiving LP tokens', async () => {
       const usdcAmountIn = '100'
       const minBPTOut = '0.1'
@@ -514,7 +591,5 @@ describe('SideStaking unit test', () => {
       // DTs were also unstaked in the same transaction (went to the staking contract)
       expect(tx.events.LOG_EXIT[1].returnValues.tokenOut).to.equal(erc20Token)
     })
-
-  
   })
 })
