@@ -33,8 +33,6 @@ describe('Datatoken', () => {
 
   const nftName = 'NFTName'
   const nftSymbol = 'NFTSymbol'
-  const publishMarketFeeAdress = '0xeE9300b7961e0a01d9f0adb863C7A227A07AaD75'
-  const oceanAddress = '0x967da4048cd07ab37855c090aaf366e4ce1b9f48'
 
   it('should deploy contracts', async () => {
     contractHandler = new TestContractHandler(
