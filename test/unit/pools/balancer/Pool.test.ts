@@ -244,7 +244,6 @@ describe('Pool unit test', () => {
 
     it('#isFinalized - should return true if pool is finalized', async () => {
       expect(await pool.isFinalized(poolAddress)).to.equal(true)
-      expect(await pool.isFinalized(contracts.oceanAddress)).to.equal(null)
     })
 
     it('#getSwapFee - should return the swap fee', async () => {
@@ -691,7 +690,6 @@ describe('Pool unit test', () => {
 
     it('#isFinalized - should return true if pool is finalized', async () => {
       expect(await pool.isFinalized(poolAddress)).to.equal(true)
-      expect(await pool.isFinalized(contracts.oceanAddress)).to.equal(null)
     })
 
     it('#getSwapFee - should return the swap fee', async () => {

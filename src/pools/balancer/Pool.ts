@@ -30,7 +30,7 @@ export class Pool {
   }
 
   /**
-   * Estimate gas cost for collectMarketFee
+   * Estimate gas cost for approval function
    * @param {String} account
    * @param {String} tokenAddress
    * @param {String} spender
@@ -132,6 +132,7 @@ export class Pool {
     const amountFormatted = await this.amountToUnits(tokenAddress, amount)
     const estGas = await this.estApprove(account, tokenAddress, spender, amountFormatted)
     
+  
     try {
       result = await token.methods
         .approve(spender,new BigNumber(await this.amountToUnits(tokenAddress, amount)))
@@ -164,6 +165,42 @@ export class Pool {
     return result
   }
 
+
+    /**
+   * Estimate gas cost for setSwapFee
+   * @param {String} account
+   * @param {String} tokenAddress
+   * @param {String} spender
+   * @param {String} amount
+   * @param {String} force
+   * @param {Contract} contractInstance optional contract instance
+   * @return {Promise<number>}
+   */
+     public async estSetSwapFee(
+      account: string,
+      poolAddress: string,
+      fee: string,
+      contractInstance?: Contract
+    ): Promise<number> {
+      const poolContract =
+        contractInstance ||
+        new this.web3.eth.Contract(defaultERC20ABI.abi as AbiItem[], poolAddress)
+  
+      const gasLimitDefault = this.GASLIMIT_DEFAULT
+      let estGas
+      try {
+        estGas = await poolContract.methods
+          .setSwapFee(fee)
+          .estimateGas({ from: account }, (err, estGas) => (err ? gasLimitDefault : estGas))
+      } catch (e) {
+        estGas = gasLimitDefault
+        
+      }
+      return estGas
+    }
+
+
+
   /**
    * Set pool fee
    * @param {String} account
@@ -179,10 +216,12 @@ export class Pool {
       from: account
     })
     let result = null
+    const estGas = await this.estSetSwapFee(account,poolAddress,fee)
+  
     try {
       result = await pool.methods.setSwapFee(this.web3.utils.toWei(fee)).send({
         from: account,
-        gas: this.GASLIMIT_DEFAULT,
+        gas: estGas,
         gasPrice: await getFairGasPrice(this.web3)
       })
     } catch (e) {
