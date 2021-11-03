@@ -1,2 +1,1 @@
-export * from './PoolFactory'
-export * from './OceanPool'
+export * from './Pool'
