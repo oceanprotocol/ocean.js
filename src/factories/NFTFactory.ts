@@ -1,5 +1,6 @@
 import { Contract } from 'web3-eth-contract'
 import Web3 from 'web3'
+import BigNumber from 'bignumber.js'
 import { TransactionReceipt } from 'web3-core'
 import { AbiItem } from 'web3-utils'
 import defaultFactory721ABI from '@oceanprotocol/contracts/artifacts/contracts/ERC721Factory.sol/ERC721Factory.json'
@@ -37,7 +38,7 @@ interface ErcCreateData {
 
 interface PoolData {
   addresses: string[]
-  ssParams: (string | number)[]
+  ssParams: (string | number | BigNumber)[]
   swapFees: number[]
 }
 

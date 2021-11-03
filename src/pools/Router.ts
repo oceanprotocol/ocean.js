@@ -130,16 +130,23 @@ export class Router {
   }
 
   /**
-   * Estimate gas cost for addOceanToken method
+   * Estimate gas cost for addOceanToken
    * @param {String} address
-   * @param {String} tokenAddress template address to add
-   * @return {Promise<TransactionReceipt>}
+   * @param {String} tokenAddress token address we want to add
+   * @param {Contract} routerContract optional contract instance
+   * @return {Promise<any>}
    */
-  public async estGasAddOceanToken(address: string, tokenAddress: string): Promise<any> {
+  public async estGasAddOceanToken(
+    address: string,
+    tokenAddress: string,
+    contractInstance?: Contract
+  ) {
+    const routerContract = contractInstance || this.router
+
     const gasLimitDefault = this.GASLIMIT_DEFAULT
     let estGas
     try {
-      estGas = await this.router.methods
+      estGas = await routerContract.methods
         .addOceanToken(tokenAddress)
         .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
     } catch (e) {
@@ -150,8 +157,8 @@ export class Router {
 
   /**
    * Add a new token to oceanTokens list, pools with basetoken in this list have NO opf Fee
-   * @param {String} address
-   * @param {String} tokenAddress template address to add
+   * @param {String} address caller address
+   * @param {String} tokenAddress token address to add
    * @return {Promise<TransactionReceipt>}
    */
   public async addOceanToken(
@@ -175,25 +182,28 @@ export class Router {
   }
 
   /**
-   * Estimate gas cost for removeOceanToken method
-   * @param {String} address
-   * @param {String} tokenAddress address to remove
-   * @return {Promise<TransactionReceipt>}
+   * Estimate gas cost for removeOceanToken
+   * @param {String} address caller address
+   * @param {String} tokenAddress token address we want to add
+   * @param {Contract} routerContract optional contract instance
+   * @return {Promise<any>}
    */
   public async estGasRemoveOceanToken(
     address: string,
-    tokenAddress: string
-  ): Promise<any> {
+    tokenAddress: string,
+    contractInstance?: Contract
+  ) {
+    const routerContract = contractInstance || this.router
+
     const gasLimitDefault = this.GASLIMIT_DEFAULT
     let estGas
     try {
-      estGas = await this.router.methods
+      estGas = await routerContract.methods
         .removeOceanToken(tokenAddress)
         .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
     } catch (e) {
       estGas = gasLimitDefault
     }
-
     return estGas
   }
 
