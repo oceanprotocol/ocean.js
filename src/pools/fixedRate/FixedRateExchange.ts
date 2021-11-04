@@ -81,6 +81,7 @@ export class FixedRateExchange {
       defaultERC20ABI.abi as AbiItem[],
       token
     )
+    console.log('1')
     try {
       decimals = await tokenContract.methods.decimals().call()
     } catch (e) {
@@ -123,31 +124,55 @@ export class FixedRateExchange {
       .call()
     return exchangeId
   }
-
+  /**
+   * Estimate gas cost for buyDT
+   * @param {String} account
+   * @param {String} dtAmount datatoken amount we want to buy
+   * @param {String} datatokenAddress datatokenAddress
+   * @param {Contract} contractInstance optional contract instance
+   * @return {Promise<number>}
+   */
+   public async estBuyDT(
+    account: string,
+    datatokenAddress: string,
+    dtAmount:string,
+    maxBasetokenAmount: string,
+    contractInstance?: Contract
+  ): Promise<number> {
+    const fixedRate =
+      contractInstance || this.fixedRateContract
+    const gasLimitDefault = this.GASLIMIT_DEFAULT
+    let estGas
+    try {
+      estGas = await fixedRate.methods
+        .buyDT(datatokenAddress,dtAmount.toString(),maxBasetokenAmount.toString())
+        .estimateGas({ from: account }, (err, estGas) => (err ? gasLimitDefault : estGas))
+    } catch (e) {
+      estGas = gasLimitDefault
+    }
+    return estGas
+  }
   /**
    * Atomic swap
    * @param {String} exchangeId ExchangeId
-   * @param {Number} dataTokenAmount Amount of Data Tokens
+   * @param {String} datatokenAmount Amount of Data Tokens
+   * @param {String} maxBasetokenAmount max amount of basetoken we want to pay for dataTokenAmount
    * @param {String} address User address
    * @return {Promise<TransactionReceipt>} transaction receipt
    */
   public async buyDT(
+    address: string,
     exchangeId: string,
-    dataTokenAmount: string,
-    address: string
+    datatokenAmount: string,
+    maxBasetokenAmount:string
   ): Promise<TransactionReceipt> {
-    const gasLimitDefault = this.GASLIMIT_DEFAULT
-    let estGas
-    try {
-      estGas = await this.contract.methods
-        .swap(exchangeId, this.web3.utils.toWei(String(dataTokenAmount)))
-        .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
-    } catch (e) {
-      estGas = gasLimitDefault
-    }
+    const dtAmountFormatted = await this.amountToUnits(((await this.getExchange(exchangeId)).dataToken),datatokenAmount)
+    const maxBtFormatted = await this.amountToUnits(((await this.getExchange(exchangeId)).baseToken),maxBasetokenAmount)
+  
+    const estGas = await this.estBuyDT(address,exchangeId,dtAmountFormatted,maxBtFormatted)
     try {
       const trxReceipt = await this.contract.methods
-        .swap(exchangeId, this.web3.utils.toWei(String(dataTokenAmount)))
+        .buyDT(exchangeId, dtAmountFormatted,maxBtFormatted)
         .send({
           from: address,
           gas: estGas + 1,
@@ -156,6 +181,67 @@ export class FixedRateExchange {
       return trxReceipt
     } catch (e) {
       this.logger.error(`ERROR: Failed to buy datatokens: ${e.message}`)
+      return null
+    }
+  }
+
+  /**
+   * Estimate gas cost for sellDT
+   * @param {String} account
+   * @param {String} dtAmount datatoken amount we want to sell
+   * @param {String} datatokenAddress datatokenAddress
+   * @param {Contract} contractInstance optional contract instance
+   * @return {Promise<number>}
+   */
+   public async estSellDT(
+    account: string,
+    datatokenAddress: string,
+    dtAmount:string,
+    maxBasetokenAmount: string,
+    contractInstance?: Contract
+  ): Promise<number> {
+    const fixedRate =
+      contractInstance || this.fixedRateContract
+    const gasLimitDefault = this.GASLIMIT_DEFAULT
+    let estGas
+    try {
+      estGas = await fixedRate.methods
+        .sellDT(datatokenAddress,dtAmount,maxBasetokenAmount)
+        .estimateGas({ from: account }, (err, estGas) => (err ? gasLimitDefault : estGas))
+    } catch (e) {
+      estGas = gasLimitDefault
+    }
+    return estGas
+  }
+  /**
+   * Atomic swap
+   * @param {String} exchangeId ExchangeId
+   * @param {String} datatokenAmount Amount of Data Tokens
+   * @param {String} minBasetokenAmount min amount of basetoken we want to receive back
+   * @param {String} address User address
+   * @return {Promise<TransactionReceipt>} transaction receipt
+   */
+  public async sellDT(
+    address: string,
+    exchangeId: string,
+    datatokenAmount: string,
+    minBasetokenAmount:string
+  ): Promise<TransactionReceipt> {
+    
+    const dtAmountFormatted = await this.amountToUnits((await this.getExchange(exchangeId)).dataToken,datatokenAmount)
+    const minBtFormatted = await this.amountToUnits((await this.getExchange(exchangeId)).baseToken,minBasetokenAmount)
+    const estGas = await this.estBuyDT(address,exchangeId,dtAmountFormatted,minBtFormatted)
+    try {
+      const trxReceipt = await this.contract.methods
+        .sellDT(exchangeId, dtAmountFormatted,minBtFormatted)
+        .send({
+          from: address,
+          gas: estGas + 1,
+          gasPrice: await getFairGasPrice(this.web3)
+        })
+      return trxReceipt
+    } catch (e) {
+      this.logger.error(`ERROR: Failed to sell datatokens: ${e.message}`)
       return null
     }
   }
@@ -172,6 +258,34 @@ export class FixedRateExchange {
   }
 
   /**
+   * Estimate gas cost for setRate
+   * @param {String} account
+   * @param {String} exchangeId ExchangeId
+   * @param {Number} newRate New rate
+   * @param {Contract} contractInstance optional contract instance
+   * @return {Promise<number>}
+   */
+   public async estSetRate(
+    account: string,
+    exchangeId: string,
+    newRate:string,
+    contractInstance?: Contract
+  ): Promise<number> {
+    const fixedRate =
+      contractInstance || this.fixedRateContract
+    const gasLimitDefault = this.GASLIMIT_DEFAULT
+    let estGas
+    try {
+      estGas = await fixedRate.methods
+        .setRate(exchangeId,newRate)
+        .estimateGas({ from: account }, (err, estGas) => (err ? gasLimitDefault : estGas))
+    } catch (e) {
+      estGas = gasLimitDefault
+    }
+    return estGas
+  }
+
+  /**
    * Set new rate
    * @param {String} exchangeId ExchangeId
    * @param {Number} newRate New rate
@@ -179,19 +293,13 @@ export class FixedRateExchange {
    * @return {Promise<TransactionReceipt>} transaction receipt
    */
   public async setRate(
+    address: string,
     exchangeId: string,
     newRate: number,
-    address: string
+    
   ): Promise<TransactionReceipt> {
-    const gasLimitDefault = this.GASLIMIT_DEFAULT
-    let estGas
-    try {
-      estGas = await this.contract.methods
-        .setRate(exchangeId, this.web3.utils.toWei(String(newRate)))
-        .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
-    } catch (e) {
-      estGas = gasLimitDefault
-    }
+ 
+    const estGas = await this.estSetRate(address,exchangeId,this.web3.utils.toWei(String(newRate)))
     const trxReceipt = await this.contract.methods
       .setRate(exchangeId, this.web3.utils.toWei(String(newRate)))
       .send({
@@ -202,6 +310,32 @@ export class FixedRateExchange {
     return trxReceipt
   }
 
+    /**
+   * Estimate gas cost for activate
+   * @param {String} account
+   * @param {String} exchangeId ExchangeId
+   * @param {Contract} contractInstance optional contract instance
+   * @return {Promise<number>}
+   */
+     public async estActivate(
+      account: string,
+      exchangeId: string,
+      contractInstance?: Contract
+    ): Promise<number> {
+      const fixedRate =
+        contractInstance || this.fixedRateContract
+      const gasLimitDefault = this.GASLIMIT_DEFAULT
+      let estGas
+      try {
+        estGas = await fixedRate.methods
+        .toggleExchangeState(exchangeId)
+          .estimateGas({ from: account }, (err, estGas) => (err ? gasLimitDefault : estGas))
+      } catch (e) {
+        estGas = gasLimitDefault
+      }
+      return estGas
+    }
+
   /**
    * Activate an exchange
    * @param {String} exchangeId ExchangeId
@@ -209,21 +343,15 @@ export class FixedRateExchange {
    * @return {Promise<TransactionReceipt>} transaction receipt
    */
   public async activate(
-    exchangeId: string,
-    address: string
+    address: string,
+    exchangeId: string
   ): Promise<TransactionReceipt> {
     const exchange = await this.getExchange(exchangeId)
     if (!exchange) return null
     if (exchange.active === true) return null
     const gasLimitDefault = this.GASLIMIT_DEFAULT
-    let estGas
-    try {
-      estGas = await this.contract.methods
-        .toggleExchangeState(exchangeId)
-        .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
-    } catch (e) {
-      estGas = gasLimitDefault
-    }
+    
+    const estGas = await this.estActivate(address,exchangeId)
     const trxReceipt = await this.contract.methods.toggleExchangeState(exchangeId).send({
       from: address,
       gas: estGas + 1,
@@ -232,6 +360,34 @@ export class FixedRateExchange {
     return trxReceipt
   }
 
+      /**
+   * Estimate gas cost for deactivate
+   * @param {String} account
+   * @param {String} exchangeId ExchangeId
+   * @param {Contract} contractInstance optional contract instance
+   * @return {Promise<number>}
+   */
+       public async estDeactivate(
+        account: string,
+        exchangeId: string,
+        contractInstance?: Contract
+      ): Promise<number> {
+        const fixedRate =
+          contractInstance || this.fixedRateContract
+        const gasLimitDefault = this.GASLIMIT_DEFAULT
+        let estGas
+        try {
+          estGas = await fixedRate.methods
+          .toggleExchangeState(exchangeId)
+            .estimateGas({ from: account }, (err, estGas) => (err ? gasLimitDefault : estGas))
+        } catch (e) {
+          estGas = gasLimitDefault
+        }
+        return estGas
+      }
+
+      
+
   /**
    * Deactivate an exchange
    * @param {String} exchangeId ExchangeId
@@ -239,21 +395,15 @@ export class FixedRateExchange {
    * @return {Promise<TransactionReceipt>} transaction receipt
    */
   public async deactivate(
-    exchangeId: string,
-    address: string
+    address: string,
+    exchangeId: string
+    
   ): Promise<TransactionReceipt> {
     const exchange = await this.getExchange(exchangeId)
     if (!exchange) return null
     if (exchange.active === false) return null
-    const gasLimitDefault = this.GASLIMIT_DEFAULT
-    let estGas
-    try {
-      estGas = await this.contract.methods
-        .toggleExchangeState(exchangeId)
-        .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
-    } catch (e) {
-      estGas = gasLimitDefault
-    }
+   
+    const estGas = await this.estDeactivate(address,exchangeId)
     const trxReceipt = await this.contract.methods.toggleExchangeState(exchangeId).send({
       from: address,
       gas: estGas + 1,
@@ -293,7 +443,7 @@ export class FixedRateExchange {
     dataTokenAmount: string
   ): Promise<string> {
     const weiRate = await this.contract.methods
-      .CalcInGivenOut(exchangeId, this.web3.utils.toWei(dataTokenAmount))
+      .calcBaseInGivenOutDT(exchangeId, this.web3.utils.toWei(dataTokenAmount))
       .call()
     return this.web3.utils.fromWei(weiRate)
   }
@@ -307,9 +457,9 @@ export class FixedRateExchange {
     const result: FixedPriceExchange = await this.contract.methods
       .getExchange(exchangeId)
       .call()
-    result.fixedRate = this.web3.utils.fromWei(result.fixedRate)
-    result.supply = this.web3.utils.fromWei(result.supply)
-    result.exchangeID = exchangeId
+  //  result.fixedRate = this.web3.utils.fromWei(result.fixedRate)
+  //  result.supply = this.web3.utils.fromWei(result.supply)
+   // result.exchangeID = exchangeId
     return result
   }
 

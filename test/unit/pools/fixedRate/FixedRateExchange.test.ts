@@ -18,6 +18,7 @@ import { LoggerInstance } from '../../../../src/utils'
 import { NFTFactory } from '../../../../src/factories/NFTFactory'
 import { Pool } from '../../../../src/pools/balancer/Pool'
 import { FixedRateExchange } from '../../../../src/pools/fixedRate/FixedRateExchange'
+import { BADFAMILY } from 'dns'
 const { keccak256 } = require('@ethersproject/keccak256')
 const web3 = new Web3('http://127.0.0.1:8545')
 const communityCollector = '0xeE9300b7961e0a01d9f0adb863C7A227A07AaD75'
@@ -155,6 +156,35 @@ describe('Fixed Rate unit test', () => {
       expect(await fixedRate.isActive('0x00')).to.equal(
         false
       )
+    })
+
+    it('#buyDT - user2 should buy some dt', async () => {
+      await dtContract.methods.mint(exchangeOwner,web3.utils.toWei('1000')).send({from:exchangeOwner})
+      await dtContract.methods.approve(fixedRateAddress,web3.utils.toWei('1000')).send({from:exchangeOwner})
+      await daiContract.methods.transfer(user2,web3.utils.toWei('100')).send({from:exchangeOwner})
+      await daiContract.methods.approve(fixedRateAddress,web3.utils.toWei('100')).send({from:user2})
+      const tx = await fixedRate.buyDT(user2,exchangeId,'10','11')
+    //  console.log(tx.events.Swapped.returnValues)
+      assert(tx.events.Swapped != null)
+      const args = tx.events.Swapped.returnValues
+      expect(args.exchangeId).to.equal(exchangeId)
+      expect(args.by).to.equal(user2)
+      expect(args.dataTokenSwappedAmount).to.equal(web3.utils.toWei('10'))
+      expect(args.tokenOutAddress).to.equal(dtAddress)
+
+    })
+
+    it('#sellDT - user2 should sell some dt', async () => {
+ 
+      await dtContract.methods.approve(fixedRateAddress,web3.utils.toWei('10')).send({from:user2})
+      const tx = await fixedRate.sellDT(user2,exchangeId,'10','9')
+     // console.log(tx.events.Swapped.returnValues)
+      assert(tx.events.Swapped != null)
+      const args = tx.events.Swapped.returnValues
+      expect(args.exchangeId).to.equal(exchangeId)
+      expect(args.by).to.equal(user2)
+      expect(args.dataTokenSwappedAmount).to.equal(web3.utils.toWei('10'))
+      expect(args.tokenOutAddress).to.equal(contracts.daiAddress)
     })
 
   })
