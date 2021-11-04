@@ -277,8 +277,13 @@ describe('NFT Factory test', () => {
 
     const fixedData = {
       fixedPriceAddress: contracts.fixedRateAddress,
-      addresses: [contracts.daiAddress, contracts.accounts[0], contracts.accounts[0]],
-      uints: [18, 18, web3.utils.toWei('1'), 1e15]
+      addresses: [
+        contracts.daiAddress,
+        contracts.accounts[0],
+        contracts.accounts[0],
+        contracts.accounts[0]
+      ],
+      uints: [18, 18, web3.utils.toWei('1'), 1e15, 0]
     }
 
     const txReceipt = await nftFactory.createNftErcWithFixedRate(
