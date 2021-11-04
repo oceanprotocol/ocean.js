@@ -179,7 +179,7 @@ export class Datatoken {
     marketFeeCollector: string,
     baseTokenDecimals: number,
     dataTokenDecimals: number,
-    fixedRate: number,
+    fixedRate: String,
     marketFee: number,
     withMint: number,
     contractInstance?: Contract
@@ -226,7 +226,7 @@ export class Datatoken {
     marketFeeCollector: string,
     baseTokenDecimals: number,
     dataTokenDecimals: number,
-    fixedRate: number,
+    fixedRate: String,
     marketFee: number,
     withMint: number
   ): Promise<TransactionReceipt> {
@@ -252,7 +252,12 @@ export class Datatoken {
     const trxReceipt = await dtContract.methods
       .createFixedRate(
         fixedPriceAddress,
-        [baseTokenAddress, address, marketFeeCollector],
+        [
+          baseTokenAddress,
+          address,
+          marketFeeCollector,
+          '0x0000000000000000000000000000000000000000'
+        ],
         [baseTokenDecimals, dataTokenDecimals, fixedRate, marketFee, withMint]
       )
       .send({

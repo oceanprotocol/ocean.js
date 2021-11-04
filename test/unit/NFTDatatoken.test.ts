@@ -9,6 +9,7 @@ import Router from '@oceanprotocol/contracts/artifacts/contracts/pools/FactoryRo
 import ERC20Template from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC20Template.sol/ERC20Template.json'
 import Dispenser from '@oceanprotocol/contracts/artifacts/contracts/pools/dispenser/Dispenser.sol/Dispenser.json'
 import FixedRate from '@oceanprotocol/contracts/artifacts/contracts/pools/fixedRate/FixedRateExchange.sol/FixedRateExchange.json'
+import OPFCollector from '@oceanprotocol/contracts/artifacts/contracts/communityFee/OPFCommunityFeeCollector.sol/OPFCommunityFeeCollector.json'
 import MockERC20 from '@oceanprotocol/contracts/artifacts/contracts/utils/mock/MockERC20Decimals.sol/MockERC20Decimals.json'
 
 import { TestContractHandler } from '../TestContractHandler'
@@ -45,6 +46,7 @@ describe('NFTDatatoken', () => {
       SideStaking.abi as AbiItem[],
       FixedRate.abi as AbiItem[],
       Dispenser.abi as AbiItem[],
+      OPFCollector.abi as AbiItem[],
 
       ERC721Template.bytecode,
       ERC20Template.bytecode,
@@ -53,7 +55,8 @@ describe('NFTDatatoken', () => {
       Router.bytecode,
       SideStaking.bytecode,
       FixedRate.bytecode,
-      Dispenser.bytecode
+      Dispenser.bytecode,
+      OPFCollector.bytecode
     )
     await contractHandler.getAccounts()
     nftOwner = contractHandler.accounts[0]
@@ -99,11 +102,11 @@ describe('NFTDatatoken', () => {
 
   // Manager
   it('#addManager - should add a new Manager', async () => {
-    // assert((await nftDatatoken.getNFTPermissions(nftAddress, user1)).manager === false)
+    assert((await nftDatatoken.getNFTPermissions(nftAddress, user1)).manager === false)
 
     await nftDatatoken.addManager(nftAddress, nftOwner, user1)
 
-    // assert((await nftDatatoken.getNFTPermissions(nftAddress, user1)).manager === true)
+    assert((await nftDatatoken.getNFTPermissions(nftAddress, user1)).manager === true)
   })
 
   it('#addManager - should fail to add a new Manager, if NOT NFT Owner', async () => {
@@ -115,11 +118,11 @@ describe('NFTDatatoken', () => {
   })
 
   it('#removeManager - should remove a Manager', async () => {
-    // assert((await nftDatatoken.getNFTPermissions(nftAddress, user1)).manager === true)
+    assert((await nftDatatoken.getNFTPermissions(nftAddress, user1)).manager === true)
 
     await nftDatatoken.removeManager(nftAddress, nftOwner, user1)
 
-    // assert((await nftDatatoken.getNFTPermissions(nftAddress, user1)).manager === false)
+    assert((await nftDatatoken.getNFTPermissions(nftAddress, user1)).manager === false)
   })
 
   it('#removeManager - should fail to remove a new Manager, if NOT NFT Owner', async () => {
@@ -171,15 +174,15 @@ describe('NFTDatatoken', () => {
 
   //  MetadataUpdate
   it('#addMetadataUpdate - should add to remove Metadata Updater if Manager', async () => {
-    // assert(
-    //   (await nftDatatoken.getNFTPermissions(nftAddress, user1)).updateMetadata === false
-    // )
+    assert(
+      (await nftDatatoken.getNFTPermissions(nftAddress, user1)).updateMetadata === false
+    )
 
     await nftDatatoken.addMetadataUpdater(nftAddress, nftOwner, user1)
 
-    // assert(
-    //   (await nftDatatoken.getNFTPermissions(nftAddress, user1)).updateMetadata === true
-    // )
+    assert(
+      (await nftDatatoken.getNFTPermissions(nftAddress, user1)).updateMetadata === true
+    )
   })
 
   it('#addMetadataUpdate - should fail to add Metadata Updater if NOT Manager', async () => {
@@ -194,15 +197,15 @@ describe('NFTDatatoken', () => {
   })
 
   it('#removeMetadataUpdate - remove Metadata Updater if Manager', async () => {
-    // assert(
-    //   (await nftDatatoken.getNFTPermissions(nftAddress, user1)).updateMetadata === false
-    // )
+    assert(
+      (await nftDatatoken.getNFTPermissions(nftAddress, user1)).updateMetadata === true
+    )
 
     await nftDatatoken.removeMetadataUpdater(nftAddress, nftOwner, user1)
 
-    // assert(
-    //   (await nftDatatoken.getNFTPermissions(nftAddress, user1)).updateMetadata === true
-    // )
+    assert(
+      (await nftDatatoken.getNFTPermissions(nftAddress, user1)).updateMetadata === false
+    )
   })
 
   it('#removeMetadataUpdate - should fail to remove Metadata Updater if NOT Manager', async () => {
@@ -218,11 +221,11 @@ describe('NFTDatatoken', () => {
 
   // StoreUpdater
   it('#addStoreUpdater - should add to remove Store Updater if Manager', async () => {
-    // assert((await nftDatatoken.getNFTPermissions(nftAddress, user1)).store === false)
+    assert((await nftDatatoken.getNFTPermissions(nftAddress, user1)).store === false)
 
     await nftDatatoken.addStoreUpdater(nftAddress, nftOwner, user1)
 
-    // assert((await nftDatatoken.getNFTPermissions(nftAddress, user1)).store === true)
+    assert((await nftDatatoken.getNFTPermissions(nftAddress, user1)).store === true)
   })
 
   it('#addStoreUpdater - should fail to add Store Updater if NOT Manager', async () => {
@@ -237,11 +240,11 @@ describe('NFTDatatoken', () => {
   })
 
   it('#removeStoreUpdater - remove Metadata Updater if Manager', async () => {
-    // assert((await nftDatatoken.getNFTPermissions(nftAddress, user1)).store === false)
+    assert((await nftDatatoken.getNFTPermissions(nftAddress, user1)).store === true)
 
     await nftDatatoken.removeStoreUpdater(nftAddress, nftOwner, user1)
 
-    // assert((await nftDatatoken.getNFTPermissions(nftAddress, user1)).store === true)
+    assert((await nftDatatoken.getNFTPermissions(nftAddress, user1)).store === false)
   })
 
   it('#removeStoreUpdater - should fail to remove Metadata Updater if NOT Manager', async () => {
@@ -296,6 +299,6 @@ describe('NFTDatatoken', () => {
     await nftDatatoken.cleanPermissions(nftAddress, user1)
 
     assert((await nftDatatoken.isErc20Deployer(nftAddress, user2)) === false)
-    // assert((await nftDatatoken.getNFTPermissions(nftAddress, nftOwner)).manager === false)
+    assert((await nftDatatoken.getNFTPermissions(nftAddress, nftOwner)).manager === false)
   })
 })

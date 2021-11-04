@@ -996,7 +996,7 @@ export class NFTDatatoken {
    */
   public async getNFTPermissions(nftAddress: string, address: string): Promise<Roles> {
     const nftContract = new this.web3.eth.Contract(this.nftDatatokenABI, nftAddress)
-    const roles = await nftContract.methods.permissions(address).call()
+    const roles = await nftContract.methods.getPermissions(address).call()
     return roles
   }
 

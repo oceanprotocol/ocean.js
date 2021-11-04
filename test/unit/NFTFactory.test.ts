@@ -10,6 +10,7 @@ import ERC20Template from '@oceanprotocol/contracts/artifacts/contracts/template
 import Dispenser from '@oceanprotocol/contracts/artifacts/contracts/pools/dispenser/Dispenser.sol/Dispenser.json'
 import FixedRate from '@oceanprotocol/contracts/artifacts/contracts/pools/fixedRate/FixedRateExchange.sol/FixedRateExchange.json'
 import MockERC20 from '@oceanprotocol/contracts/artifacts/contracts/utils/mock/MockERC20Decimals.sol/MockERC20Decimals.json'
+import OPFCollector from '@oceanprotocol/contracts/artifacts/contracts/communityFee/OPFCommunityFeeCollector.sol/OPFCommunityFeeCollector.json'
 import PoolTemplate from '@oceanprotocol/contracts/artifacts/contracts/pools/balancer/BPool.sol/BPool.json'
 import { LoggerInstance } from '../../src/utils'
 // import { NFTDataToken } from '../../../src/datatokens/NFTDatatoken'
@@ -40,6 +41,7 @@ describe('NFT Factory test', () => {
       SideStaking.abi as AbiItem[],
       FixedRate.abi as AbiItem[],
       Dispenser.abi as AbiItem[],
+      OPFCollector.abi as AbiItem[],
 
       ERC721Template.bytecode,
       ERC20Template.bytecode,
@@ -48,7 +50,8 @@ describe('NFT Factory test', () => {
       Router.bytecode,
       SideStaking.bytecode,
       FixedRate.bytecode,
-      Dispenser.bytecode
+      Dispenser.bytecode,
+      OPFCollector.bytecode
     )
     await contracts.getAccounts()
     factoryOwner = contracts.accounts[0]

@@ -9,6 +9,7 @@ import Router from '@oceanprotocol/contracts/artifacts/contracts/pools/FactoryRo
 import ERC20Template from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC20Template.sol/ERC20Template.json'
 import Dispenser from '@oceanprotocol/contracts/artifacts/contracts/pools/dispenser/Dispenser.sol/Dispenser.json'
 import FixedRate from '@oceanprotocol/contracts/artifacts/contracts/pools/fixedRate/FixedRateExchange.sol/FixedRateExchange.json'
+import OPFCollector from '@oceanprotocol/contracts/artifacts/contracts/communityFee/OPFCommunityFeeCollector.sol/OPFCommunityFeeCollector.json'
 import MockERC20 from '@oceanprotocol/contracts/artifacts/contracts/utils/mock/MockERC20Decimals.sol/MockERC20Decimals.json'
 
 import { TestContractHandler } from '../TestContractHandler'
@@ -30,6 +31,8 @@ describe('Datatoken', () => {
   let nftFactory: NFTFactory
   let nftAddress: string
   let datatokenAddress: string
+  let fixedRateAddress: string
+  let exchangeId: string
 
   const nftName = 'NFTName'
   const nftSymbol = 'NFTSymbol'
@@ -45,6 +48,7 @@ describe('Datatoken', () => {
       SideStaking.abi as AbiItem[],
       FixedRate.abi as AbiItem[],
       Dispenser.abi as AbiItem[],
+      OPFCollector.abi as AbiItem[],
 
       ERC721Template.bytecode,
       ERC20Template.bytecode,
@@ -53,7 +57,8 @@ describe('Datatoken', () => {
       Router.bytecode,
       SideStaking.bytecode,
       FixedRate.bytecode,
-      Dispenser.bytecode
+      Dispenser.bytecode,
+      OPFCollector.bytecode
     )
     await contractHandler.getAccounts()
     nftOwner = contractHandler.accounts[0]
@@ -61,6 +66,14 @@ describe('Datatoken', () => {
     user2 = contractHandler.accounts[2]
     user3 = contractHandler.accounts[3]
     await contractHandler.deployContracts(nftOwner, Router.abi as AbiItem[])
+
+    const daiContract = new web3.eth.Contract(
+      contractHandler.MockERC20.options.jsonInterface,
+      contractHandler.daiAddress
+    )
+    await daiContract.methods
+      .approve(contractHandler.factory721Address, web3.utils.toWei('10000'))
+      .send({ from: contractHandler.accounts[0] })
   })
 
   it('should initialize NFTFactory instance and create a new NFT', async () => {
@@ -131,6 +144,40 @@ describe('Datatoken', () => {
     assert((await datatoken.balance(datatokenAddress, user1)) === '10')
   })
 
+  it('#createFixedRate - should create FRE for the erc20 dt', async () => {
+    const fre = await datatoken.createFixedRate(
+      datatokenAddress,
+      nftOwner,
+      contractHandler.fixedRateAddress,
+      contractHandler.daiAddress,
+      nftOwner,
+      18,
+      18,
+      web3.utils.toWei('1'),
+      1e15,
+      1
+    )
+    assert(fre !== null)
+    fixedRateAddress = fre.events.NewFixedRate.address
+    exchangeId = fre.events.NewFixedRate.returnValues[0]
+  })
+
+  it('#createDispenser - Enterprise method', async () => {
+    // console.log('dispenser address', contractHandler.dispenserAddress)
+    // // create dispenser
+    // const dispenser = await datatoken.createDispenser(
+    //   datatokenAddress,
+    //   nftOwner,
+    //   contractHandler.dispenserAddress,
+    //   '10',
+    //   '100',
+    //   true,
+    //   user1
+    // )
+    // console.log('dispenser', dispenser)
+    // // assert(dispenser !== null)
+  })
+
   it('#removeMinter - should remove user1 as minter, if nftDatatoken has ERC20Deployer permission', async () => {
     assert((await nftDatatoken.isErc20Deployer(nftAddress, nftOwner)) === true)
     assert((await datatoken.getDTPermissions(datatokenAddress, user1)).minter === true)
@@ -190,6 +237,92 @@ describe('Datatoken', () => {
     assert((await datatoken.getFeeCollector(datatokenAddress)) === user3)
   })
 
+  it('#startOrder- user2 should create an order for DT ', async () => {
+    assert(
+      (await datatoken.balance(datatokenAddress, user1)) === '10',
+      'User1 does not hold 10 datatokens'
+    )
+    assert(
+      (await datatoken.balance(datatokenAddress, user2)) === '0',
+      'User2 does not hold 0 datatokens'
+    )
+
+    const order = await datatoken.startOrder(
+      datatokenAddress,
+      user1,
+      user2,
+      '1',
+      1,
+      user3,
+      '0x0000000000000000000000000000000000000000',
+      '0'
+    )
+    assert(order !== null)
+
+    assert(
+      (await datatoken.balance(datatokenAddress, user1)) === '9',
+      'Invalid user balance, DT was not substracted'
+    )
+    assert(
+      (await datatoken.balance(
+        datatokenAddress,
+        await datatoken.getFeeCollector(datatokenAddress)
+      )) === '1',
+      'Invalid publisher reward, we should have 1 DT'
+    )
+  })
+
+  it('#buyFromDispenserAndOrder- Enterprise method', async () => {
+    // await nftDatatoken.addERC20Deployer(nftAddress, nftOwner, user1)
+    // // create dt
+    // const erc20Dt = await nftDatatoken.createERC20(
+    //   nftAddress,
+    //   nftOwner,
+    //   nftOwner,
+    //   user1,
+    //   user2,
+    //   '0x0000000000000000000000000000000000000000',
+    //   '0',
+    //   '10000',
+    //   nftName,
+    //   nftSymbol,
+    //   1
+    // )
+    // assert(erc20Dt !== null)
+    // console.log('dispenser address', contractHandler.dispenserAddress)
+    // // create dispenser
+    // const dispenser = await datatoken.createDispenser(
+    //   erc20Dt,
+    //   user1,
+    //   contractHandler.dispenserAddress,
+    //   '10',
+    //   '100',
+    //   true,
+    //   user1
+    // )
+    // console.log('dispenser', dispenser)
+    // assert(dispenser !== null)
+  })
+
+  it('#buyFromFreAndOrder - Enterprise method ', async () => {
+    const order: OrderParams = {
+      consumer: user1,
+      amount: '1',
+      serviceId: 1,
+      consumeFeeAddress: user1,
+      consumeFeeToken: '0x0000000000000000000000000000000000000000',
+      consumeFeeAmount: '0'
+    }
+    const fre: FreParams = {
+      exchangeContract: fixedRateAddress,
+      exchangeId: exchangeId,
+      maxBaseTokenAmount: '1'
+    }
+
+    const buyTx = await datatoken.buyFromFreAndOrder(datatokenAddress, user1, order, fre)
+    assert(buyTx !== null)
+  })
+
   it('#cleanPermissions - should clean permissions at ERC20 level', async () => {
     assert((await datatoken.getDTPermissions(datatokenAddress, nftOwner)).minter === true)
 
@@ -221,44 +354,5 @@ describe('Datatoken', () => {
 
     const key = web3.utils.keccak256(datatokenAddress)
     assert((await nftDatatoken.getData(nftAddress, key)) === data)
-  })
-
-  it('#startOrder- should create an order for DT ', async () => {
-    // //MINT SOME DT20 to USER2 so he can start order
-    // await erc20Token.connect(user3).mint(user2.address, web3.utils.toWei('10'))
-    // assert((await erc20Token.balanceOf(user2.address)) == web3.utils.toWei('10'))
-    // const consumer = user2.address // could be different user
-    // const dtAmount = web3.utils.toWei('1')
-    // const serviceId = 1 // dummy index
-    // const consumeFeeAddress = user3.address // marketplace fee Collector
-    // const consumeFeeAmount = 1 // fee to be collected on top, requires approval
-    // const consumeFeeToken = addressZero // token address for the feeAmount, in this case DAI
-    // await erc20Token
-    //   .connect(user2)
-    //   .startOrder(
-    //     consumer,
-    //     dtAmount,
-    //     serviceId,
-    //     consumeFeeAddress,
-    //     consumeFeeToken,
-    //     consumeFeeAmount
-    //   )
-    // assert(
-    //   (await erc20Token.balanceOf(user2.address)) == web3.utils.toWei('9'),
-    //   'Invalid user balance, DT was not substracted'
-    // )
-    // assert(
-    //   (await erc20Token.balanceOf(opfCollector.address)) == web3.utils.toWei('0'),
-    //   'Invalid OPF balance, we should not get any DTs'
-    // )
-    // assert(
-    //   (await erc20Token.balanceOf(user3.address)) == web3.utils.toWei('0'),
-    //   'Invalid consumeFee, we should have DT as fee'
-    // )
-    // assert(
-    //   (await erc20Token.balanceOf(await erc20Token.getFeeCollector())) ==
-    //     web3.utils.toWei('1'),
-    //   'Invalid publisher reward, we should have 1 DT'
-    // )
   })
 })
