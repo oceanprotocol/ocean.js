@@ -9,8 +9,8 @@ import Router from '@oceanprotocol/contracts/artifacts/contracts/pools/FactoryRo
 import ERC20Template from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC20Template.sol/ERC20Template.json'
 import Dispenser from '@oceanprotocol/contracts/artifacts/contracts/pools/dispenser/Dispenser.sol/Dispenser.json'
 import FixedRate from '@oceanprotocol/contracts/artifacts/contracts/pools/fixedRate/FixedRateExchange.sol/FixedRateExchange.json'
+import OPFCommunityFeeCollector from '@oceanprotocol/contracts/artifacts/contracts/communityFee/OPFCommunityFeeCollector.sol/OPFCommunityFeeCollector.json'
 import MockERC20 from '@oceanprotocol/contracts/artifacts/contracts/utils/mock/MockERC20Decimals.sol/MockERC20Decimals.json'
-import OPFCollector from '@oceanprotocol/contracts/artifacts/contracts/communityFee/OPFCommunityFeeCollector.sol/OPFCommunityFeeCollector.json'
 import PoolTemplate from '@oceanprotocol/contracts/artifacts/contracts/pools/balancer/BPool.sol/BPool.json'
 import { LoggerInstance } from '../../src/utils'
 // import { NFTDataToken } from '../../../src/datatokens/NFTDatatoken'
@@ -41,7 +41,7 @@ describe('NFT Factory test', () => {
       SideStaking.abi as AbiItem[],
       FixedRate.abi as AbiItem[],
       Dispenser.abi as AbiItem[],
-      OPFCollector.abi as AbiItem[],
+      OPFCommunityFeeCollector.abi as AbiItem[],
 
       ERC721Template.bytecode,
       ERC20Template.bytecode,
@@ -51,7 +51,7 @@ describe('NFT Factory test', () => {
       SideStaking.bytecode,
       FixedRate.bytecode,
       Dispenser.bytecode,
-      OPFCollector.bytecode
+      OPFCommunityFeeCollector.bytecode
     )
     await contracts.getAccounts()
     factoryOwner = contracts.accounts[0]
@@ -62,6 +62,17 @@ describe('NFT Factory test', () => {
 
     await contracts.deployContracts(factoryOwner, Router.abi as AbiItem[])
 
+    console.log(
+      'address',
+      contracts.factory721Address,
+      contracts.poolTemplateAddress,
+      contracts.routerAddress,
+      contracts.fixedRateAddress,
+      contracts.dispenserAddress,
+      contracts.sideStakingAddress,
+      contracts.template721Address,
+      contracts.template20Address
+    )
     const daiContract = new web3.eth.Contract(
       contracts.MockERC20.options.jsonInterface,
       contracts.daiAddress
@@ -266,8 +277,13 @@ describe('NFT Factory test', () => {
 
     const fixedData = {
       fixedPriceAddress: contracts.fixedRateAddress,
-      addresses: [contracts.daiAddress, contracts.accounts[0], contracts.accounts[0]],
-      uints: [18, 18, web3.utils.toWei('1'), 1e15]
+      addresses: [
+        contracts.daiAddress,
+        contracts.accounts[0],
+        contracts.accounts[0],
+        contracts.accounts[0]
+      ],
+      uints: [18, 18, web3.utils.toWei('1'), 1e15, 0]
     }
 
     const txReceipt = await nftFactory.createNftErcWithFixedRate(
