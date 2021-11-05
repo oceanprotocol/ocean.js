@@ -34,17 +34,34 @@ export class EventAccessControl extends Instantiable {
     did?: string
   ): Promise<boolean> {
     if (!this.url) return true
-    const args = {
-      component,
-      eventType,
-      authService,
-      credentials: {
-        address: credentials
+    let args
+    if (eventType === 'consume') {
+      args = {
+        component,
+        eventType,
+        authService,
+        did,
+        credentials: {
+          type: authService,
+          value: credentials
+        }
+      }
+    } else {
+      args = {
+        component,
+        eventType,
+        authService,
+        credentials: {
+          type: authService,
+          value: credentials
+        }
       }
     }
+
     try {
       const response = await this.ocean.utils.fetch.post(this.url, JSON.stringify(args))
-      return (await response.text()) === 'true'
+      const results = await response.json()
+      return results === 'true'
     } catch (e) {
       this.logger.error(e)
       throw new Error('Asset URL not found or not available.')
