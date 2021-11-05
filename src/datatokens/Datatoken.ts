@@ -30,6 +30,25 @@ export interface FreParams {
   maxBaseTokenAmount: string
 }
 
+export interface FixedRateParams {
+  baseTokenAddress: string
+  owner: string
+  marketFeeCollector: string
+  baseTokenDecimals: number
+  dataTokenDecimals: number
+  fixedRate: string
+  marketFee: number
+  withMint?: boolean // add FixedPriced contract as minter if withMint == true
+  allowedConsumer?: string //  only account that consume the exhchange
+}
+
+export interface DispenserParams {
+  maxTokens: string
+  maxBalance: string
+  withMint?: boolean // true if we want to allow the dispenser to be a minter
+  allowedSwapper?: string // only account that can ask tokens. set address(0) if not required
+}
+
 export class Datatoken {
   public GASLIMIT_DEFAULT = 1000000
   public factoryAddress: string
@@ -161,13 +180,7 @@ export class Datatoken {
    * @param {String} dtAddress Datatoken address
    * @param {String} address Caller address
    * @param {String} fixedPriceAddress
-   * @param {String} baseTokenAddress
-   * @param {String} marketFeeCollector
-   * @param {String} baseTokenDecimals
-   * @param {String} dataTokenDecimals
-   * @param {String} fixedRate
-   * @param {String} marketFee
-   * @param {String} withMint
+   * @param {FixedRateParams} fixedRateParams
    * @param {Contract} contractInstance optional contract instance
    * @return {Promise<any>}
    */
@@ -175,26 +188,36 @@ export class Datatoken {
     dtAddress: string,
     address: string,
     fixedPriceAddress: string,
-    baseTokenAddress: string,
-    marketFeeCollector: string,
-    baseTokenDecimals: number,
-    dataTokenDecimals: number,
-    fixedRate: String,
-    marketFee: number,
-    withMint: number,
+    fixedRateParams: FixedRateParams,
     contractInstance?: Contract
   ): Promise<any> {
     const dtContract =
       contractInstance || new this.web3.eth.Contract(this.datatokensABI, dtAddress)
 
     const gasLimitDefault = this.GASLIMIT_DEFAULT
+
+    if (!fixedRateParams.allowedConsumer)
+      fixedRateParams.allowedConsumer = '0x0000000000000000000000000000000000000000'
+    const withMint = fixedRateParams.withMint ? 1 : 0
+
     let estGas
     try {
       estGas = await dtContract.methods
         .createFixedRate(
           fixedPriceAddress,
-          [baseTokenAddress, address, marketFeeCollector],
-          [baseTokenDecimals, dataTokenDecimals, fixedRate, marketFee, withMint]
+          [
+            fixedRateParams.baseTokenAddress,
+            address,
+            fixedRateParams.marketFeeCollector,
+            fixedRateParams.allowedConsumer
+          ],
+          [
+            fixedRateParams.baseTokenDecimals,
+            fixedRateParams.dataTokenDecimals,
+            fixedRateParams.fixedRate,
+            fixedRateParams.marketFee,
+            withMint
+          ]
         )
         .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
     } catch (e) {
@@ -209,28 +232,21 @@ export class Datatoken {
    * @param {String} dtAddress Datatoken address
    * @param {String} address Caller address
    * @param {String} fixedPriceAddress
-   * @param {String} baseTokenAddress
-   * @param {String} marketFeeCollector
-   * @param {String} baseTokenDecimals
-   * @param {String} dataTokenDecimals
-   * @param {String} fixedRate
-   * @param {String} marketFee
-   * @param {String} withMint
+   * @param {FixedRateParams} fixedRateParams
    * @return {Promise<TransactionReceipt>} transactionId
    */
   public async createFixedRate(
     dtAddress: string,
     address: string,
     fixedPriceAddress: string,
-    baseTokenAddress: string,
-    marketFeeCollector: string,
-    baseTokenDecimals: number,
-    dataTokenDecimals: number,
-    fixedRate: String,
-    marketFee: number,
-    withMint: number
+    fixedRateParams: FixedRateParams
   ): Promise<TransactionReceipt> {
     const dtContract = new this.web3.eth.Contract(this.datatokensABI, dtAddress)
+
+    if (!fixedRateParams.allowedConsumer)
+      fixedRateParams.allowedConsumer = '0x0000000000000000000000000000000000000000'
+
+    const withMint = fixedRateParams.withMint ? 1 : 0
 
     // should check ERC20Deployer role using erc721 level ..
 
@@ -238,13 +254,7 @@ export class Datatoken {
       dtAddress,
       address,
       fixedPriceAddress,
-      baseTokenAddress,
-      marketFeeCollector,
-      baseTokenDecimals,
-      dataTokenDecimals,
-      fixedRate,
-      marketFee,
-      withMint,
+      fixedRateParams,
       dtContract
     )
 
@@ -253,12 +263,18 @@ export class Datatoken {
       .createFixedRate(
         fixedPriceAddress,
         [
-          baseTokenAddress,
-          address,
-          marketFeeCollector,
-          '0x0000000000000000000000000000000000000000'
+          fixedRateParams.baseTokenAddress,
+          fixedRateParams.owner,
+          fixedRateParams.marketFeeCollector,
+          fixedRateParams.allowedConsumer
         ],
-        [baseTokenDecimals, dataTokenDecimals, fixedRate, marketFee, withMint]
+        [
+          fixedRateParams.baseTokenDecimals,
+          fixedRateParams.dataTokenDecimals,
+          fixedRateParams.fixedRate,
+          fixedRateParams.marketFee,
+          withMint
+        ]
       )
       .send({
         from: address,
@@ -272,32 +288,37 @@ export class Datatoken {
    * Estimate gas cost for createDispenser method
    * @param {String} dtAddress Datatoken address
    * @param {String} address Caller address
-   * @param {String} dispenser ispenser contract address
-   * @param {String} maxTokens max tokens to dispense
-   * @param {String} maxBalance max balance of requester
-   * @param {Boolean} withMint true if we want to allow the dispenser to be a minter
-   * @param {String} allowedSwapper  only account that can ask tokens. set address(0) if not required
+   * @param {String} dispenserAddress ispenser contract address
+   * @param {String} dispenserParams
    * @param {Contract} contractInstance optional contract instance
    * @return {Promise<any>}
    */
   public async estGasCreateDispenser(
     dtAddress: string,
     address: string,
-    dispenser: string,
-    maxTokens: string,
-    maxBalance: string,
-    withMint: Boolean,
-    allowedSwapper: string,
+    dispenserAddress: string,
+    dispenserParams: DispenserParams,
     contractInstance?: Contract
   ): Promise<any> {
     const dtContract =
       contractInstance || new this.web3.eth.Contract(this.datatokensABI, dtAddress)
 
+    if (!dispenserParams.allowedSwapper)
+      dispenserParams.allowedSwapper = '0x0000000000000000000000000000000000000000'
+
+    if (!dispenserParams.withMint) dispenserParams.withMint = false
+
     const gasLimitDefault = this.GASLIMIT_DEFAULT
     let estGas
     try {
       estGas = await dtContract.methods
-        .createDispenser(dispenser, maxTokens, maxBalance, withMint, allowedSwapper)
+        .createDispenser(
+          dispenserAddress,
+          dispenserParams.maxTokens,
+          dispenserParams.maxBalance,
+          dispenserParams.withMint,
+          dispenserParams.allowedSwapper
+        )
         .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
     } catch (e) {
       estGas = gasLimitDefault
@@ -310,40 +331,42 @@ export class Datatoken {
    * Creates a new Dispenser
    * @param {String} dtAddress Datatoken address
    * @param {String} address Caller address
-   * @param {String} dispenser ispenser contract address
-   * @param {String} maxTokens max tokens to dispense
-   * @param {String} maxBalance max balance of requester
-   * @param {Boolean} withMint true if we want to allow the dispenser to be a minter
-   * @param {String} allowedSwapper  only account that can ask tokens. set address(0) if not required
+   * @param {String} dispenserAddress ispenser contract address
+   * @param {String} dispenserParams
    * @return {Promise<TransactionReceipt>} transactionId
    */
   public async createDispenser(
     dtAddress: string,
     address: string,
-    dispenser: string,
-    maxTokens: string,
-    maxBalance: string,
-    withMint: Boolean,
-    allowedSwapper: string
+    dispenserAddress: string,
+    dispenserParams: DispenserParams
   ): Promise<TransactionReceipt> {
     const dtContract = new this.web3.eth.Contract(this.datatokensABI, dtAddress)
+
+    if (!dispenserParams.allowedSwapper)
+      dispenserParams.allowedSwapper = '0x0000000000000000000000000000000000000000'
+
+    if (!dispenserParams.withMint) dispenserParams.withMint = false
 
     // should check ERC20Deployer role using erc721 level ..
 
     const estGas = await this.estGasCreateDispenser(
       dtAddress,
       address,
-      dispenser,
-      maxTokens,
-      maxBalance,
-      withMint,
-      allowedSwapper,
+      dispenserAddress,
+      dispenserParams,
       dtContract
     )
 
     // Call createFixedRate contract method
     const trxReceipt = await dtContract.methods
-      .createDispenser(dispenser, maxTokens, maxBalance, withMint, allowedSwapper)
+      .createDispenser(
+        dispenserAddress,
+        dispenserParams.maxTokens,
+        dispenserParams.maxBalance,
+        dispenserParams.withMint,
+        dispenserParams.allowedSwapper
+      )
       .send({
         from: address,
         gas: estGas + 1,

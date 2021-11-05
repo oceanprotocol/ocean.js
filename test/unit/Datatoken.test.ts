@@ -14,7 +14,14 @@ import MockERC20 from '@oceanprotocol/contracts/artifacts/contracts/utils/mock/M
 
 import { TestContractHandler } from '../TestContractHandler'
 import { NFTFactory } from '../../src/factories/NFTFactory'
-import { Datatoken, NFTDatatoken, OrderParams, FreParams } from '../../src/datatokens'
+import {
+  Datatoken,
+  NFTDatatoken,
+  OrderParams,
+  FreParams,
+  FixedRateParams,
+  DispenserParams
+} from '../../src/datatokens'
 import { AbiItem } from 'web3-utils'
 import { LoggerInstance } from '../../src/utils'
 
@@ -145,17 +152,20 @@ describe('Datatoken', () => {
   })
 
   it('#createFixedRate - should create FRE for the erc20 dt', async () => {
+    const freParams: FixedRateParams = {
+      baseTokenAddress: contractHandler.daiAddress,
+      owner: nftOwner,
+      marketFeeCollector: nftOwner,
+      baseTokenDecimals: 18,
+      dataTokenDecimals: 18,
+      fixedRate: web3.utils.toWei('1'),
+      marketFee: 1e15
+    }
     const fre = await datatoken.createFixedRate(
       datatokenAddress,
       nftOwner,
       contractHandler.fixedRateAddress,
-      contractHandler.daiAddress,
-      nftOwner,
-      18,
-      18,
-      web3.utils.toWei('1'),
-      1e15,
-      1
+      freParams
     )
     assert(fre !== null)
     fixedRateAddress = fre.events.NewFixedRate.address
@@ -163,14 +173,16 @@ describe('Datatoken', () => {
   })
 
   it('#createDispenser - method creates a dispenser for the erc20DT', async () => {
+    const dispenserParams: DispenserParams = {
+      maxTokens: '10',
+      maxBalance: '100'
+    }
+
     const dispenser = await datatoken.createDispenser(
       datatokenAddress,
       nftOwner,
       contractHandler.dispenserAddress,
-      '10',
-      '100',
-      true,
-      user1
+      dispenserParams
     )
     assert(dispenser !== null)
   })

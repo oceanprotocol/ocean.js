@@ -215,7 +215,11 @@ describe('Router unit test', () => {
       ]
     }
 
-    const nftFactory = new NFTFactory(contracts.factory721Address, web3, LoggerInstance)
+    const nftFactory = new NFTFactory(
+      contracts.factory721Address,
+      web3,
+      ERC721Factory.abi as AbiItem[]
+    )
 
     const txReceipt = await nftFactory.createNftErcWithPool(
       contracts.accounts[0],
