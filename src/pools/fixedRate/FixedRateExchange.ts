@@ -576,6 +576,7 @@ export class FixedRateExchange {
         )
       )
       .call()
+
     return await this.unitsToAmount(
       (
         await this.getExchange(exchangeId)
@@ -641,18 +642,9 @@ export class FixedRateExchange {
    */
   public async getFeesInfo(exchangeId: string): Promise<FeesInfo> {
     const result: FeesInfo = await this.contract.methods.getFeesInfo(exchangeId).call()
-    result.opfFee = await this.unitsToAmount(
-      (
-        await this.getExchange(exchangeId)
-      ).baseToken,
-      result.opfFee
-    )
-    result.marketFee = await this.unitsToAmount(
-      (
-        await this.getExchange(exchangeId)
-      ).baseToken,
-      result.marketFee
-    )
+    result.opfFee = this.web3.utils.fromWei(result.opfFee.toString())
+    result.marketFee = this.web3.utils.fromWei(result.marketFee.toString())
+
     result.marketFeeAvailable = await this.unitsToAmount(
       (
         await this.getExchange(exchangeId)
@@ -994,19 +986,19 @@ export class FixedRateExchange {
     return result
   }
 
-   /**
+  /**
    * Get Router address set in fixed rate contract
    * @return {String}
    */
-    async getRouter(): Promise<string> {
-      let result = null
-      try {
-        result = await this.contract.methods.router().call()
-      } catch (e) {
-        this.logger.error(`ERROR: Failed to get Router address: ${e.message}`)
-      }
-      return result
+  async getRouter(): Promise<string> {
+    let result = null
+    try {
+      result = await this.contract.methods.router().call()
+    } catch (e) {
+      this.logger.error(`ERROR: Failed to get Router address: ${e.message}`)
     }
+    return result
+  }
 
   /**
    * Get Exchange Owner given an exchangeId
@@ -1062,7 +1054,6 @@ export class FixedRateExchange {
     exchangeId: string,
     newMarketFee: string
   ): Promise<TransactionReceipt> {
-
     const estGas = await this.estSetRate(
       address,
       exchangeId,
@@ -1078,58 +1069,57 @@ export class FixedRateExchange {
     return trxReceipt
   }
 
-   /**
+  /**
    * Estimate gas cost for updateMarketFeeCollector
    * @param {String} account
-   * @param {String} exchangeId ExchangeId 
+   * @param {String} exchangeId ExchangeId
    * @param {String} newMarketFee New market fee collector
    * @param {Contract} contractInstance optional contract instance
    * @return {Promise<number>}
    */
-    public async estUpdateMarketFeeCollector(
-      account: string,
-      exchangeId: string,
-      newMarketFeeCollector: string,
-      contractInstance?: Contract
-    ): Promise<number> {
-      const fixedRate = contractInstance || this.fixedRateContract
-      const gasLimitDefault = this.GASLIMIT_DEFAULT
-      let estGas
-      try {
-        estGas = await fixedRate.methods
-          .updateMarketFeeCollector(exchangeId, newMarketFeeCollector)
-          .estimateGas({ from: account }, (err, estGas) => (err ? gasLimitDefault : estGas))
-      } catch (e) {
-        estGas = gasLimitDefault
-      }
-      return estGas
-    }
-  
-    /**
-     * Set new market fee collector, only market fee collector can update it
-     * @param {String} address user address
-     * @param {String} exchangeId ExchangeId
-     * @param {String} newMarketFeeCollector New market fee collector
-     * @return {Promise<TransactionReceipt>} transaction receipt
-     */
-    public async updateMarketFeeCollector(
-      address: string,
-      exchangeId: string,
-      newMarketFeeCollector: string
-    ): Promise<TransactionReceipt> {
-  
-      const estGas = await this.estUpdateMarketFeeCollector(
-        address,
-        exchangeId,
-        newMarketFeeCollector
-      )
-      const trxReceipt = await this.contract.methods
+  public async estUpdateMarketFeeCollector(
+    account: string,
+    exchangeId: string,
+    newMarketFeeCollector: string,
+    contractInstance?: Contract
+  ): Promise<number> {
+    const fixedRate = contractInstance || this.fixedRateContract
+    const gasLimitDefault = this.GASLIMIT_DEFAULT
+    let estGas
+    try {
+      estGas = await fixedRate.methods
         .updateMarketFeeCollector(exchangeId, newMarketFeeCollector)
-        .send({
-          from: address,
-          gas: estGas + 1,
-          gasPrice: await getFairGasPrice(this.web3)
-        })
-      return trxReceipt
+        .estimateGas({ from: account }, (err, estGas) => (err ? gasLimitDefault : estGas))
+    } catch (e) {
+      estGas = gasLimitDefault
     }
+    return estGas
+  }
+
+  /**
+   * Set new market fee collector, only market fee collector can update it
+   * @param {String} address user address
+   * @param {String} exchangeId ExchangeId
+   * @param {String} newMarketFeeCollector New market fee collector
+   * @return {Promise<TransactionReceipt>} transaction receipt
+   */
+  public async updateMarketFeeCollector(
+    address: string,
+    exchangeId: string,
+    newMarketFeeCollector: string
+  ): Promise<TransactionReceipt> {
+    const estGas = await this.estUpdateMarketFeeCollector(
+      address,
+      exchangeId,
+      newMarketFeeCollector
+    )
+    const trxReceipt = await this.contract.methods
+      .updateMarketFeeCollector(exchangeId, newMarketFeeCollector)
+      .send({
+        from: address,
+        gas: estGas + 1,
+        gasPrice: await getFairGasPrice(this.web3)
+      })
+    return trxReceipt
+  }
 }

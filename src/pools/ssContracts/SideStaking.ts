@@ -63,7 +63,7 @@ export class SideStaking {
   }
 
   /**
-   * Get DTs in circulation (amount vested not accounted)
+   * Get (total vesting amount + token released from the contract when adding liquidity)
    * @param {String} ssAddress side staking contract address
    * @param {String} datatokenAddress datatoken address
    * @return {String}
@@ -81,7 +81,30 @@ export class SideStaking {
     } catch (e) {
       this.logger.error(`ERROR: Failed to get: ${e.message}`)
     }
-    return result
+    return result.toString()
+  }
+
+  /**
+   * Get actual dts in circulation (vested token withdrawn from the contract +
+         token released from the contract when adding liquidity)
+   * @param {String} ssAddress side staking contract address
+   * @param {String} datatokenAddress datatoken address
+   * @return {String}
+   */
+  async getDataTokenCurrentCirculatingSupply(
+    ssAddress: string,
+    datatokenAddress: string
+  ): Promise<string> {
+    const sideStaking = new this.web3.eth.Contract(this.ssABI, ssAddress)
+    let result = null
+    try {
+      result = await sideStaking.methods
+        .getDataTokenCurrentCirculatingSupply(datatokenAddress)
+        .call()
+    } catch (e) {
+      this.logger.error(`ERROR: Failed to get: ${e.message}`)
+    }
+    return result.toString()
   }
 
   /**
@@ -313,6 +336,22 @@ export class SideStaking {
       })
     } catch (e) {
       this.logger.error('ERROR: Failed to join swap pool amount out')
+    }
+    return result
+  }
+
+  /**
+   * Get Router address set in side staking contract
+   * @param {String} ssAddress side staking contract address
+   * @return {String}
+   */
+  async getRouter(ssAddress: string): Promise<string> {
+    const sideStaking = new this.web3.eth.Contract(this.ssABI, ssAddress)
+    let result = null
+    try {
+      result = await sideStaking.methods.router().call()
+    } catch (e) {
+      this.logger.error(`ERROR: Failed to get Router address: ${e.message}`)
     }
     return result
   }

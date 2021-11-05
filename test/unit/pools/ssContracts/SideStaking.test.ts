@@ -4,6 +4,7 @@ import { TestContractHandler } from '../../../TestContractHandler'
 import { Contract } from 'web3-eth-contract'
 import Web3 from 'web3'
 import BigNumber from 'bignumber.js'
+import BN from 'bn.js'
 import ERC721Factory from '@oceanprotocol/contracts/artifacts/contracts/ERC721Factory.sol/ERC721Factory.json'
 import ERC721Template from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC721Template.sol/ERC721Template.json'
 import SSContract from '@oceanprotocol/contracts/artifacts/contracts/pools/ssContracts/SideStaking.sol/SideStaking.json'
@@ -194,13 +195,27 @@ describe('SideStaking unit test', () => {
 
       sideStakingAddress = contracts.sideStakingAddress
     })
+    it('#getRouter - should get Router address', async () => {
+      expect(await sideStaking.getRouter(sideStakingAddress)).to.equal(
+        contracts.routerAddress
+      )
+    })
+
     it('#getDataTokenCirculatingSupply - should get datatoken supply in circulation (vesting amount excluded)', async () => {
-      console.log(
+      expect(
         await sideStaking.getDataTokenCirculatingSupply(
           contracts.sideStakingAddress,
           erc20Token
         )
-      )
+      ).to.equal(web3.utils.toWei('12000'))
+    })
+    it('#getDataTokenCurrentCirculatingSupply - should get datatoken supply in circulation ', async () => {
+      expect(
+        await sideStaking.getDataTokenCurrentCirculatingSupply(
+          contracts.sideStakingAddress,
+          erc20Token
+        )
+      ).to.equal(web3.utils.toWei('2000'))
     })
     it('#getBasetoken - should get basetoken address', async () => {
       expect(await sideStaking.getBasetoken(sideStakingAddress, erc20Token)).to.equal(
@@ -457,13 +472,69 @@ describe('SideStaking unit test', () => {
         ercData,
         poolData
       )
-
+      initialBlock = await web3.eth.getBlockNumber()
       erc20Token = txReceipt.events.TokenCreated.returnValues.newTokenAddress
       poolAddress = txReceipt.events.NewPool.returnValues.poolAddress
 
       erc20Contract = new web3.eth.Contract(ERC20Template.abi as AbiItem[], erc20Token)
       // user2 has no dt1
       expect(await erc20Contract.methods.balanceOf(user2).call()).to.equal('0')
+    })
+
+    it('#getBasetokenBalance ', async () => {
+      expect(
+        await sideStaking.getBasetokenBalance(sideStakingAddress, erc20Token)
+      ).to.equal('0')
+    })
+    it('#getDatatokenBalance ', async () => {
+      expect(
+        await sideStaking.getDatatokenBalance(sideStakingAddress, erc20Token)
+      ).to.equal('988000')
+    })
+
+    it('#getvestingAmount ', async () => {
+      expect(await sideStaking.getvestingAmount(sideStakingAddress, erc20Token)).to.equal(
+        '10000'
+      )
+    })
+    it('#getvestingLastBlock ', async () => {
+      expect(
+        await sideStaking.getvestingLastBlock(sideStakingAddress, erc20Token)
+      ).to.equal(initialBlock.toString())
+    })
+
+    it('#getvestingEndBlock ', async () => {
+      expect(
+        await sideStaking.getvestingEndBlock(sideStakingAddress, erc20Token)
+      ).to.equal((initialBlock + vestedBlocks).toString())
+    })
+    it('#getvestingAmountSoFar ', async () => {
+      expect(
+        await sideStaking.getvestingAmountSoFar(sideStakingAddress, erc20Token)
+      ).to.equal('0')
+    })
+
+    it('#getVesting ', async () => {
+      expect(
+        await erc20Contract.methods.balanceOf(contracts.accounts[0]).call()
+      ).to.equal('0')
+
+      const tx = await sideStaking.getVesting(
+        contracts.accounts[0],
+        sideStakingAddress,
+        erc20Token
+      )
+
+      expect(
+        await sideStaking.unitsToAmount(
+          erc20Token,
+          await erc20Contract.methods.balanceOf(contracts.accounts[0]).call()
+        )
+      ).to.equal(await sideStaking.getvestingAmountSoFar(sideStakingAddress, erc20Token))
+
+      expect(
+        await sideStaking.getvestingLastBlock(sideStakingAddress, erc20Token)
+      ).to.equal((await web3.eth.getBlockNumber()).toString())
     })
 
     it('#swapExactAmountIn - should swap', async () => {
