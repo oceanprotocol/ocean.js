@@ -101,8 +101,6 @@ describe('Router unit test', () => {
   it('#isFixedPrice - should return true if in fixedPrice list', async () => {
     expect(await router.isFixedPrice(contracts.fixedRateAddress)).to.equal(true)
     expect(await router.isFixedPrice(contracts.daiAddress)).to.equal(false)
-    // Dispenser contract is also a fixed price contract
-    expect(await router.isFixedPrice(contracts.dispenserAddress)).to.equal(true)
   })
   it('#isPoolTemplate - should return true if in poolTemplates list', async () => {
     expect(await router.isPoolTemplate(contracts.poolTemplateAddress)).to.equal(true)
