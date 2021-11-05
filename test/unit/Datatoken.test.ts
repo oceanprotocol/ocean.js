@@ -162,20 +162,17 @@ describe('Datatoken', () => {
     exchangeId = fre.events.NewFixedRate.returnValues[0]
   })
 
-  it('#createDispenser - Enterprise method', async () => {
-    // console.log('dispenser address', contractHandler.dispenserAddress)
-    // // create dispenser
-    // const dispenser = await datatoken.createDispenser(
-    //   datatokenAddress,
-    //   nftOwner,
-    //   contractHandler.dispenserAddress,
-    //   '10',
-    //   '100',
-    //   true,
-    //   user1
-    // )
-    // console.log('dispenser', dispenser)
-    // // assert(dispenser !== null)
+  it('#createDispenser - method creates a dispenser for the erc20DT', async () => {
+    const dispenser = await datatoken.createDispenser(
+      datatokenAddress,
+      nftOwner,
+      contractHandler.dispenserAddress,
+      '10',
+      '100',
+      true,
+      user1
+    )
+    assert(dispenser !== null)
   })
 
   it('#removeMinter - should remove user1 as minter, if nftDatatoken has ERC20Deployer permission', async () => {
@@ -273,35 +270,22 @@ describe('Datatoken', () => {
   })
 
   it('#buyFromDispenserAndOrder- Enterprise method', async () => {
-    // await nftDatatoken.addERC20Deployer(nftAddress, nftOwner, user1)
-    // // create dt
-    // const erc20Dt = await nftDatatoken.createERC20(
-    //   nftAddress,
-    //   nftOwner,
-    //   nftOwner,
-    //   user1,
-    //   user2,
-    //   '0x0000000000000000000000000000000000000000',
-    //   '0',
-    //   '10000',
-    //   nftName,
-    //   nftSymbol,
-    //   1
-    // )
-    // assert(erc20Dt !== null)
-    // console.log('dispenser address', contractHandler.dispenserAddress)
-    // // create dispenser
-    // const dispenser = await datatoken.createDispenser(
-    //   erc20Dt,
-    //   user1,
-    //   contractHandler.dispenserAddress,
-    //   '10',
-    //   '100',
-    //   true,
-    //   user1
-    // )
-    // console.log('dispenser', dispenser)
-    // assert(dispenser !== null)
+    const order: OrderParams = {
+      consumer: user1,
+      amount: '1',
+      serviceId: 1,
+      consumeFeeAddress: user1,
+      consumeFeeToken: '0x0000000000000000000000000000000000000000',
+      consumeFeeAmount: '0'
+    }
+
+    const buyFromDispenseTx = await datatoken.buyFromDispenserAndOrder(
+      datatokenAddress,
+      nftOwner,
+      order,
+      contractHandler.dispenserAddress
+    )
+    assert(buyFromDispenseTx !== null)
   })
 
   it('#buyFromFreAndOrder - Enterprise method ', async () => {

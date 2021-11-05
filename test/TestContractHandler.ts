@@ -398,7 +398,7 @@ export class TestContractHandler {
       .addFixedRateContract(this.fixedRateAddress)
       .send({ from: owner })
     await RouterContract.methods
-      .addFixedRateContract(this.dispenserAddress)
+      .addDispenserContract(this.dispenserAddress)
       .send({ from: owner })
     await RouterContract.methods
       .addSSContract(this.sideStakingAddress)
