@@ -31,6 +31,7 @@ describe('Fixed Rate unit test', () => {
   let user1: string
   let user2: string
   let user3: string
+  let user4: string
   let initialBlock: number
   let fixedRateAddress: string
   let daiAddress: string
@@ -74,6 +75,7 @@ describe('Fixed Rate unit test', () => {
     user1 = contracts.accounts[2]
     user2 = contracts.accounts[3]
     user3 = contracts.accounts[4]
+    user4 = contracts.accounts[5]
     exchangeOwner = contracts.accounts[0]
 
     await contracts.deployContracts(factoryOwner, FactoryRouter.abi as AbiItem[])
@@ -154,6 +156,15 @@ describe('Fixed Rate unit test', () => {
       expect(await fixedRate.isActive(exchangeId)).to.equal(true)
       expect(await fixedRate.isActive('0x00')).to.equal(false)
     })
+    it('#getOwner - should get exchange owner given an id', async () => {
+      expect(await fixedRate.getExchangeOwner(exchangeId)).to.equal(exchangeOwner)
+    })
+    it('#getOPFCollector - should get OPF collector', async () => {
+      expect(await fixedRate.getOPFCollector()).to.equal(contracts.opfCollectorAddress)
+    })
+    it('#getRouter - should get Router address', async () => {
+      expect(await fixedRate.getRouter()).to.equal(contracts.routerAddress)
+    })
 
     it('#deactivate - should deactivate an exchange if exchangeOwner', async () => {
       expect(await fixedRate.isActive(exchangeId)).to.equal(true)
@@ -207,34 +218,44 @@ describe('Fixed Rate unit test', () => {
     })
 
     it('#getDTSupply - should get the dt supply in the exchange', async () => {
+      // exchange owner hasn't approved any DT for sell
       expect(await fixedRate.getDTSupply(exchangeId)).to.equal('0')
     })
     it('#getBTSupply - should get the bt supply in the exchange', async () => {
+      // no basetoken at the beginning
       expect(await fixedRate.getBTSupply(exchangeId)).to.equal('0')
     })
-    it('#getBTNeeded - should get bt amount for a specific dt amount', async () => {
-      console.log(await fixedRate.getAmountBTIn(exchangeId, '100'))
+    it('#getAmountBTIn - should get bt amount in for a specific dt amount', async () => {
+      // 100.2 DAI for 100 DT (0.1% market fee and 0.1% ocean fee)
+      expect(await fixedRate.getAmountBTIn(exchangeId, '100')).to.equal('100.2')
     })
-    it('#getBTNeeded - should get bt amount for a specific dt amount', async () => {
-      console.log(await fixedRate.getAmountBTOut(exchangeId, '100'))
+    it('#getAmountBTOut - should get bt amount out for a specific dt amount', async () => {
+      // 99.8 DAI for 100 DT (0.1% market fee and 0.1% ocean fee)
+      expect(await fixedRate.getAmountBTOut(exchangeId, '100')).to.equal('99.8')
     })
 
     it('#buyDT - user2 should buy some dt', async () => {
+      // total supply is ZERO right now so dt owner mints 1000 DT and approves the fixed rate contract
       await dtContract.methods
         .mint(exchangeOwner, web3.utils.toWei('1000'))
         .send({ from: exchangeOwner })
       await dtContract.methods
         .approve(fixedRateAddress, web3.utils.toWei('1000'))
         .send({ from: exchangeOwner })
+      // user2 gets 100 DAI so he can buy DTs
       await daiContract.methods
         .transfer(user2, web3.utils.toWei('100'))
         .send({ from: exchangeOwner })
       await daiContract.methods
         .approve(fixedRateAddress, web3.utils.toWei('100'))
         .send({ from: user2 })
+
+      // user2 has no dts but has 100 DAI
       expect(await dtContract.methods.balanceOf(user2).call()).to.equal('0')
       const daiBalanceBefore = new BN(await daiContract.methods.balanceOf(user2).call())
       expect(daiBalanceBefore.toString()).to.equal(web3.utils.toWei('100'))
+
+      // user2 buys 10 DT
       const tx = await fixedRate.buyDT(user2, exchangeId, '10', '11')
       //  console.log(tx.events.Swapped.returnValues)
       assert(tx.events.Swapped != null)
@@ -249,6 +270,10 @@ describe('Fixed Rate unit test', () => {
       expect(
         daiBalanceBefore.sub(new BN(args.baseTokenSwappedAmount)).toString()
       ).to.equal(await daiContract.methods.balanceOf(user2).call())
+      // basetoken stays in the contract
+      expect((await fixedRate.getExchange(exchangeId)).btBalance).to.equal('10')
+      // no dt in the contract
+      expect((await fixedRate.getExchange(exchangeId)).dtBalance).to.equal('0')
     })
 
     it('#sellDT - user2 should sell some dt', async () => {
@@ -268,6 +293,12 @@ describe('Fixed Rate unit test', () => {
       expect(
         daiBalanceBefore.add(new BN(args.baseTokenSwappedAmount)).toString()
       ).to.equal(await daiContract.methods.balanceOf(user2).call())
+      // DTs stay in the contract
+      expect((await fixedRate.getExchange(exchangeId)).dtBalance).to.equal('10')
+      // no BTs in the contract (except for the fees, but not accounted here)
+      expect((await fixedRate.getExchange(exchangeId)).btBalance).to.equal('0')
+      // DT supply is back at 1000 (exchange Owner allowance + dt balance in the fixed rate)
+      expect(await fixedRate.getDTSupply(exchangeId)).to.equal('1000')
     })
 
     it('#getExchange - should return exchange details', async () => {
@@ -279,10 +310,10 @@ describe('Fixed Rate unit test', () => {
       expect(result.dataToken).to.equal(dtAddress)
       expect(result.exchangeOwner).to.equal(exchangeOwner)
       expect(result.withMint).to.equal(false)
-      expect(result.dtBalance).to.equal('10')
-      expect(result.btBalance).to.equal('0')
-      expect(result.dtSupply).to.equal('1000')
-      expect(result.btSupply).to.equal('0')
+      expect(result.dtBalance).to.equal('10') // balance in the fixedRate
+      expect(result.btBalance).to.equal('0') // balance in the fixedRate
+      expect(result.dtSupply).to.equal('1000') // total supply available (owner allowance + dtBalance)
+      expect(result.btSupply).to.equal('0') // total supply available of basetoken in the contract
       expect(result.fixedRate).to.equal('1')
     })
 
@@ -300,9 +331,89 @@ describe('Fixed Rate unit test', () => {
     it('#getAllowedSwapper- should return address(0) if not set, if exchangeOwner', async () => {
       expect(await fixedRate.getAllowedSwapper(exchangeId)).to.equal(ADDRESS_ZERO)
     })
-    it('#setAllowedSwapper- should return address(0) if not set, if exchangeOwner', async () => {
+    it('#setAllowedSwapper- should set an allowed swapper, if exchangeOwner', async () => {
       await fixedRate.setAllowedSwapper(exchangeOwner, exchangeId, user2)
       expect(await fixedRate.getAllowedSwapper(exchangeId)).to.equal(user2)
+    })
+    it('#setAllowedSwapper- should disable allowed swapper(return address(0)), if exchangeOwner', async () => {
+      await fixedRate.setAllowedSwapper(exchangeOwner, exchangeId, ADDRESS_ZERO)
+      expect(await fixedRate.getAllowedSwapper(exchangeId)).to.equal(ADDRESS_ZERO)
+    })
+    it('#collectBT- should collect BT in the contract, if exchangeOwner', async () => {
+      // there are no bt in the contract
+      expect((await fixedRate.getExchange(exchangeId)).btBalance).to.equal('0')
+      // user2 buys 1 DT
+      await fixedRate.buyDT(user2, exchangeId, '1', '2')
+      // 1 DAI in the contract
+      expect((await fixedRate.getExchange(exchangeId)).btBalance).to.equal('1')
+      // owner collects BTs
+      await fixedRate.collectBT(exchangeOwner, exchangeId)
+      // btBalance is zero
+      expect((await fixedRate.getExchange(exchangeId)).btBalance).to.equal('0')
+    })
+    it('#collectDT- should collect DT in the contract, if exchangeOwner', async () => {
+      const result = await fixedRate.getExchange(exchangeId)
+      // 9 dts left
+      expect(result.dtBalance).to.equal('9')
+      // owner collects DTs
+      await fixedRate.collectDT(exchangeOwner, exchangeId)
+      // no more dts in the contract
+      const result2 = await fixedRate.getExchange(exchangeId)
+      expect(result2.dtBalance).to.equal('0')
+      // Only allowance left since dt is ZERO
+      expect(result2.dtSupply).to.equal('990')
+    })
+    it('#collectMarketFee- should collect marketFee and send it to marketFeeCollector, anyone can call it', async () => {
+      let result = await fixedRate.getFeesInfo(exchangeId)
+      // we made 2 swaps for 10 DT at rate 1, the fee is 0.1% for market and always in basetoken so it's 0.01 DAI
+      // plus another swap for 1 DT
+      expect(result.marketFeeAvailable).to.equal('0.021') // formatted for basetoken decimals
+      // same for ocean fee
+      expect(result.oceanFeeAvailable).to.equal('0.021') // formatted for basetoken decimals
+      expect(result.marketFeeCollector).to.equal(user3)
+
+      // user4 calls collectMarketFee
+      await fixedRate.collectMarketFee(user4, exchangeId)
+      result = await fixedRate.getFeesInfo(exchangeId)
+      expect(result.marketFeeAvailable).to.equal('0')
+      // ocean fee still available
+      expect(result.oceanFeeAvailable).to.equal('0.021')
+      // user3 is the marketFeeCollector
+      expect(await daiContract.methods.balanceOf(user3).call()).to.equal(
+        web3.utils.toWei('0.021')
+      )
+    })
+    it('#collectOceanFee- should collect oceanFee and send it to OPF Collector, anyone can call it', async () => {
+      let result = await fixedRate.getFeesInfo(exchangeId)
+      // we made 2 swaps for 10 DT at rate 1, the fee is 0.1% for market and always in basetoken so it's 0.01 DAI
+      // plus another swap for 1 DT
+      expect(result.oceanFeeAvailable).to.equal('0.021') // formatted for basetoken decimals
+
+      // user4 calls collectOceanFee
+      await fixedRate.collectOceanFee(user4, exchangeId)
+      result = await fixedRate.getFeesInfo(exchangeId)
+      // fee has been reset
+      expect(result.oceanFeeAvailable).to.equal('0')
+      // OPF collector got the fee
+      expect(
+        await daiContract.methods.balanceOf(await fixedRate.getOPFCollector()).call()
+      ).to.equal(web3.utils.toWei('0.021'))
+    })
+
+    it('#updateMarketFee- should update Market fee if market fee collector', async () => {
+      expect((await fixedRate.getFeesInfo(exchangeId)).marketFee).to.equal('0.001')
+      // user3 is marketFeeCollector
+      await fixedRate.updateMarketFee(user3, exchangeId, '0.01')
+
+      expect((await fixedRate.getFeesInfo(exchangeId)).marketFee).to.equal('0.01')
+    })
+
+    it('#updateMarketFeeCollector - should update Market fee collector if market fee collector', async () => {
+      expect((await fixedRate.getFeesInfo(exchangeId)).marketFeeCollector).to.equal(user3)
+
+      await fixedRate.updateMarketFeeCollector(user3, exchangeId, user2)
+
+      expect((await fixedRate.getFeesInfo(exchangeId)).marketFeeCollector).to.equal(user2)
     })
   })
 })
