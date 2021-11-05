@@ -260,15 +260,17 @@ describe('SideStaking unit test', () => {
         sideStakingAddress,
         erc20Token
       )
-      
+
       expect(
-       await sideStaking.unitsToAmount(erc20Token,await erc20Contract.methods.balanceOf(contracts.accounts[0]).call() )
+        await sideStaking.unitsToAmount(
+          erc20Token,
+          await erc20Contract.methods.balanceOf(contracts.accounts[0]).call()
+        )
       ).to.equal(await sideStaking.getvestingAmountSoFar(sideStakingAddress, erc20Token))
-      
+
       expect(
         await sideStaking.getvestingLastBlock(sideStakingAddress, erc20Token)
       ).to.equal((await web3.eth.getBlockNumber()).toString())
-     
     })
 
     it('#swapExactAmountIn - should swap', async () => {

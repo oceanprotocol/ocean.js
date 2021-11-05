@@ -65,7 +65,7 @@ export class SideStaking {
   /**
    * Get DTs in circulation (amount vested not accounted)
    * @param {String} ssAddress side staking contract address
-   * @param {String} datatokenAddress datatoken address 
+   * @param {String} datatokenAddress datatoken address
    * @return {String}
    */
   async getDataTokenCirculatingSupply(
@@ -87,7 +87,7 @@ export class SideStaking {
   /**
    * Get Publisher address
    * @param {String} ssAddress side staking contract address
-   * @param {String} datatokenAddress datatoken address 
+   * @param {String} datatokenAddress datatoken address
    * @return {String}
    */
   async getPublisherAddress(
@@ -159,7 +159,7 @@ export class SideStaking {
   }
 
   /**
-   * Get dt balance in the staking contract available for being added as liquidity 
+   * Get dt balance in the staking contract available for being added as liquidity
    * @param {String} ssAddress side staking contract address
    * @param {String} datatokenAddress datatokenAddress
    * @return {String}
@@ -175,7 +175,7 @@ export class SideStaking {
     } catch (e) {
       this.logger.error(`ERROR: Failed to get: ${e.message}`)
     }
-    result = await this.unitsToAmount(datatokenAddress,result)
+    result = await this.unitsToAmount(datatokenAddress, result)
     return result
   }
 
@@ -200,7 +200,7 @@ export class SideStaking {
    * Get total amount vesting
    * @param {String} ssAddress side staking contract address
    * @param {String} datatokenAddress datatokenAddress
-   * @return {String} 
+   * @return {String}
    */
   async getvestingAmount(ssAddress: string, datatokenAddress: string): Promise<string> {
     const sideStaking = new this.web3.eth.Contract(this.ssABI, ssAddress)
@@ -210,7 +210,7 @@ export class SideStaking {
     } catch (e) {
       this.logger.error(`ERROR: Failed to get: ${e.message}`)
     }
-    result = await this.unitsToAmount(datatokenAddress,result)
+    result = await this.unitsToAmount(datatokenAddress, result)
     return result
   }
 
@@ -251,7 +251,7 @@ export class SideStaking {
     } catch (e) {
       this.logger.error(`ERROR: Failed to get: ${e.message}`)
     }
-    result = await this.unitsToAmount(datatokenAddress,result)
+    result = await this.unitsToAmount(datatokenAddress, result)
     return result
   }
 
@@ -284,7 +284,7 @@ export class SideStaking {
     return estGas
   }
 
-  /**Send vested tokens available to the publisher address, can be called by anyone
+  /** Send vested tokens available to the publisher address, can be called by anyone
    *
    * @param {String} account
    * @param {String} ssAddress side staking contract address
