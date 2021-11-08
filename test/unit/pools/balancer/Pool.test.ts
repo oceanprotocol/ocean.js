@@ -15,7 +15,12 @@ import MockERC20 from '@oceanprotocol/contracts/artifacts/contracts/utils/mock/M
 import PoolTemplate from '@oceanprotocol/contracts/artifacts/contracts/pools/balancer/BPool.sol/BPool.json'
 import OPFCollector from '@oceanprotocol/contracts/artifacts/contracts/communityFee/OPFCommunityFeeCollector.sol/OPFCommunityFeeCollector.json'
 import { LoggerInstance } from '../../../../src/utils'
-import { NFTFactory } from '../../../../src/factories/NFTFactory'
+import {
+  NFTFactory,
+  NFTCreateData,
+  ErcCreateParams,
+  PoolParams
+} from '../../../../src/factories/NFTFactory'
 import { Pool } from '../../../../src/pools/balancer/Pool'
 const { keccak256 } = require('@ethersproject/keccak256')
 const web3 = new Web3('http://127.0.0.1:8545')
@@ -129,47 +134,41 @@ describe('Pool unit test', () => {
     it('#create a pool', async () => {
       // CREATE A POOL
       // we prepare transaction parameters objects
-      const nftData = {
+      const nftData: NFTCreateData = {
         name: '72120Bundle',
         symbol: '72Bundle',
         templateIndex: 1,
         baseURI: 'https://oceanprotocol.com/nft/'
       }
-      const ercData = {
+
+      const ercParams: ErcCreateParams = {
         templateIndex: 1,
-        strings: ['ERC20B1', 'ERC20DT1Symbol'],
-        addresses: [
-          contracts.accounts[0],
-          user3,
-          contracts.accounts[0],
-          '0x0000000000000000000000000000000000000000'
-        ],
-        uints: [web3.utils.toWei('1000000'), 0],
-        bytess: []
+        minter: contracts.accounts[0],
+        feeManager: user3,
+        mpFeeAddress: contracts.accounts[0],
+        feeToken: '0x0000000000000000000000000000000000000000',
+        cap: '1000000',
+        feeAmount: '0',
+        name: 'ERC20B1',
+        symbol: 'ERC20DT1Symbol'
       }
 
       const basetokenInitialLiq = await pool.amountToUnits(contracts.daiAddress, '2000')
 
-      const poolData = {
-        addresses: [
-          contracts.sideStakingAddress,
-          contracts.daiAddress,
-          contracts.factory721Address,
-          contracts.accounts[0],
-          contracts.accounts[0],
-          contracts.poolTemplateAddress
-        ],
-        ssParams: [
-          web3.utils.toWei('1'), // rate
-          18, // basetokenDecimals
-          web3.utils.toWei('10000'),
-          2500000, // vested blocks
-          web3.utils.toWei('2000') // baseToken initial pool liquidity
-        ],
-        swapFees: [
-          1e15, //
-          1e15
-        ]
+      const poolParams: PoolParams = {
+        ssContract: contracts.sideStakingAddress,
+        basetokenAddress: contracts.daiAddress,
+        basetokenSender: contracts.factory721Address,
+        publisherAddress: contracts.accounts[0],
+        marketFeeCollector: contracts.accounts[0],
+        poolTemplateAddress: contracts.poolTemplateAddress,
+        rate: '1',
+        basetokenDecimals: 18,
+        vestingAmount: '10000',
+        vestedBlocks: 2500000,
+        initialBasetokenLiquidity: '2000',
+        swapFeeLiquidityProvider: 1e15,
+        swapFeeMarketPlaceRunner: 1e15
       }
 
       const nftFactory = new NFTFactory(
@@ -181,8 +180,8 @@ describe('Pool unit test', () => {
       const txReceipt = await nftFactory.createNftErcWithPool(
         contracts.accounts[0],
         nftData,
-        ercData,
-        poolData
+        ercParams,
+        poolParams
       )
 
       erc20Token = txReceipt.events.TokenCreated.returnValues.newTokenAddress
@@ -579,48 +578,44 @@ describe('Pool unit test', () => {
     it('#create a pool', async () => {
       // CREATE A POOL
       // we prepare transaction parameters objects
-      const nftData = {
+      const nftData: NFTCreateData = {
         name: '72120Bundle',
         symbol: '72Bundle',
         templateIndex: 1,
         baseURI: 'https://oceanprotocol.com/nft/'
       }
-      const ercData = {
+
+      const ercParams: ErcCreateParams = {
         templateIndex: 1,
-        strings: ['ERC20B1', 'ERC20DT1Symbol'],
-        addresses: [
-          contracts.accounts[0],
-          user3,
-          contracts.accounts[0],
-          '0x0000000000000000000000000000000000000000'
-        ],
-        uints: [web3.utils.toWei('1000000'), 0],
-        bytess: []
+        minter: contracts.accounts[0],
+        feeManager: user3,
+        mpFeeAddress: contracts.accounts[0],
+        feeToken: '0x0000000000000000000000000000000000000000',
+        cap: '1000000',
+        feeAmount: '0',
+        name: 'ERC20B1',
+        symbol: 'ERC20DT1Symbol'
       }
+
       const basetokenInitialLiq = Number(
         await pool.amountToUnits(contracts.usdcAddress, '2000')
       )
       console.log(basetokenInitialLiq.toString())
-      const poolData = {
-        addresses: [
-          contracts.sideStakingAddress,
-          contracts.usdcAddress,
-          contracts.factory721Address,
-          contracts.accounts[0],
-          contracts.accounts[0],
-          contracts.poolTemplateAddress
-        ],
-        ssParams: [
-          web3.utils.toWei('1'), // rate
-          await usdcContract.methods.decimals().call(), // basetokenDecimals
-          web3.utils.toWei('10000'),
-          2500000, // vested blocks
-          basetokenInitialLiq // baseToken initial pool liquidity
-        ],
-        swapFees: [
-          1e15, //
-          1e15
-        ]
+
+      const poolParams: PoolParams = {
+        ssContract: contracts.sideStakingAddress,
+        basetokenAddress: contracts.usdcAddress,
+        basetokenSender: contracts.factory721Address,
+        publisherAddress: contracts.accounts[0],
+        marketFeeCollector: contracts.accounts[0],
+        poolTemplateAddress: contracts.poolTemplateAddress,
+        rate: '1',
+        basetokenDecimals: await usdcContract.methods.decimals().call(),
+        vestingAmount: '10000',
+        vestedBlocks: 2500000,
+        initialBasetokenLiquidity: basetokenInitialLiq.toString(),
+        swapFeeLiquidityProvider: 1e15,
+        swapFeeMarketPlaceRunner: 1e15
       }
 
       const nftFactory = new NFTFactory(
@@ -632,8 +627,8 @@ describe('Pool unit test', () => {
       const txReceipt = await nftFactory.createNftErcWithPool(
         contracts.accounts[0],
         nftData,
-        ercData,
-        poolData
+        ercParams,
+        poolParams
       )
 
       erc20Token = txReceipt.events.TokenCreated.returnValues.newTokenAddress

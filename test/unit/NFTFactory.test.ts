@@ -261,7 +261,7 @@ describe('NFT Factory test', () => {
 
   it('#createNftErcWithFixedRate- should create an NFT, a datatoken and create a Fixed Rate Exchange', async () => {
     // we prepare transaction parameters objects
-    const nftData:NFTCreateData = {
+    const nftData: NFTCreateData = {
       name: '72120Bundle',
       symbol: '72Bundle',
       templateIndex: 1,
@@ -270,7 +270,7 @@ describe('NFT Factory test', () => {
 
     const ercParams: ErcCreateParams = {
       templateIndex: 1,
-      minter: contracts.accounts[0],,
+      minter: contracts.accounts[0],
       feeManager: user3,
       mpFeeAddress: user2,
       feeToken: '0x0000000000000000000000000000000000000000',
@@ -280,9 +280,8 @@ describe('NFT Factory test', () => {
       symbol: 'ERC20DT1Symbol'
     }
 
-
     const freParams: FixedRateParams = {
-      fixedRateAddress:contracts.fixedRateAddress,
+      fixedRateAddress: contracts.fixedRateAddress,
       baseTokenAddress: contracts.daiAddress,
       owner: contracts.accounts[0],
       marketFeeCollector: contracts.accounts[0],
@@ -372,6 +371,7 @@ describe('NFT Factory test', () => {
     expect(await dtContract.methods.balanceOf(user2).call()).to.equal('0')
     expect(await dtContract2.methods.balanceOf(user2).call()).to.equal('0')
   })
+
   it('#checkDatatoken - should confirm if DT is from the factory', async () => {
     assert((await nftFactory.checkDatatoken(dtAddress)) === true)
     assert((await nftFactory.checkDatatoken(dtAddress2)) === true)

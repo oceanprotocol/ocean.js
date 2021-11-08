@@ -660,9 +660,9 @@ export class NFTFactory {
   /**
    * Estimate gas cost for createNftErcWithPool method
    * @param address Caller address
-   * @param _NftCreateData input data for NFT Creation
+   * @param nftCreateData input data for NFT Creation
    * @param ercParams input data for ERC20 Creation
-   * @param _PoolData input data for Pool Creation
+   * @param poolParams input data for Pool Creation
    * @return {Promise<TransactionReceipt>} transaction receipt
    */
   public async estGasCreateNftErcWithPool(
@@ -690,9 +690,9 @@ export class NFTFactory {
    *      Creates a new NFT, then a ERC20, then a Pool, all in one call
    *      Use this carefully, because if Pool creation fails, you are still going to pay a lot of gas
    * @param address Caller address
-   * @param _NftCreateData input data for NFT Creation
-   * @param _ErcCreateData input data for ERC20 Creation
-   * @param _PoolData input data for Pool Creation
+   * @param nftCreateData input data for NFT Creation
+   * @param ercParams input data for ERC20 Creation
+   * @param poolParams input data for Pool Creation
    * @return {Promise<TransactionReceipt>} transaction receipt
    */
   public async createNftErcWithPool(
@@ -709,6 +709,10 @@ export class NFTFactory {
       ercCreateData,
       poolData
     )
+
+    console.log('estGas', estGas)
+    console.log('ercCreateData', ercCreateData)
+    console.log('poolData', poolData)
 
     // Invoke createToken function of the contract
     const trxReceipt = await this.factory721.methods
@@ -810,7 +814,7 @@ export class NFTFactory {
         this.web3.utils.toWei(ercParams.cap),
         this.web3.utils.toWei(ercParams.feeAmount)
       ],
-      bytes: []
+      bytess: []
     }
   }
 
@@ -821,7 +825,7 @@ export class NFTFactory {
 
     return {
       fixedPriceAddress: freParams.fixedRateAddress,
-      address: [
+      addresses: [
         freParams.baseTokenAddress,
         freParams.owner,
         freParams.marketFeeCollector,
@@ -839,17 +843,6 @@ export class NFTFactory {
 
   getPoolCreationParams(poolParams: PoolParams): any {
     return {
-      ssParams: [
-        this.web3.utils.toWei(poolParams.rate),
-        poolParams.basetokenDecimals,
-        this.web3.utils.toWei(poolParams.vestingAmount),
-        poolParams.vestedBlocks,
-        this.web3.utils.toWei(poolParams.initialBasetokenLiquidity)
-      ],
-      swapFees: [
-        poolParams.swapFeeLiquidityProvider,
-        poolParams.swapFeeMarketPlaceRunner
-      ],
       addresses: [
         poolParams.ssContract,
         poolParams.basetokenAddress,
@@ -857,7 +850,15 @@ export class NFTFactory {
         poolParams.publisherAddress,
         poolParams.marketFeeCollector,
         poolParams.poolTemplateAddress
-      ]
+      ],
+      ssParams: [
+        this.web3.utils.toWei(poolParams.rate),
+        poolParams.basetokenDecimals,
+        this.web3.utils.toWei(poolParams.vestingAmount),
+        poolParams.vestedBlocks,
+        this.web3.utils.toWei(poolParams.initialBasetokenLiquidity)
+      ],
+      swapFees: [poolParams.swapFeeLiquidityProvider, poolParams.swapFeeMarketPlaceRunner]
     }
   }
 }
