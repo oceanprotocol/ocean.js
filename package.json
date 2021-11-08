@@ -24,7 +24,7 @@
     "release": "release-it --non-interactive",
     "changelog": "auto-changelog -p",
     "prepublishOnly": "npm run build",
-    "test:pool": "mocha --config=test/unit/.mocharc.json --node-env=test --exit 'test/unit/pools/Pool.test.ts'",
+    "test:pool": "mocha --config=test/unit/.mocharc.json --node-env=test --exit 'test/unit/pools/balancer/Pool.test.ts'",
     "test:dt": "mocha --config=test/unit/.mocharc.json --node-env=test --exit 'test/unit/Datatoken.test.ts'",
     "test:nftDt": "mocha --config=test/unit/.mocharc.json --node-env=test --exit 'test/unit/NFTDatatoken.test.ts'",
     "test:router": "mocha --config=test/unit/.mocharc.json --node-env=test --exit 'test/unit/pools/Router.test.ts'",

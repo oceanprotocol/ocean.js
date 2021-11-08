@@ -597,11 +597,6 @@ describe('Pool unit test', () => {
         symbol: 'ERC20DT1Symbol'
       }
 
-      const basetokenInitialLiq = Number(
-        await pool.amountToUnits(contracts.usdcAddress, '2000')
-      )
-      console.log(basetokenInitialLiq.toString())
-
       const poolParams: PoolParams = {
         ssContract: contracts.sideStakingAddress,
         basetokenAddress: contracts.usdcAddress,
@@ -613,7 +608,9 @@ describe('Pool unit test', () => {
         basetokenDecimals: await usdcContract.methods.decimals().call(),
         vestingAmount: '10000',
         vestedBlocks: 2500000,
-        initialBasetokenLiquidity: basetokenInitialLiq.toString(),
+        initialBasetokenLiquidity: web3.utils.fromWei(
+          await pool.amountToUnits(contracts.usdcAddress, '2000')
+        ),
         swapFeeLiquidityProvider: 1e15,
         swapFeeMarketPlaceRunner: 1e15
       }

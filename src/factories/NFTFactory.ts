@@ -701,18 +701,14 @@ export class NFTFactory {
     ercParams: ErcCreateParams,
     poolParams: PoolParams
   ): Promise<TransactionReceipt> {
-    const ercCreateData = this.getErcCreationParams(ercParams)
-    const poolData = this.getPoolCreationParams(poolParams)
     const estGas = await this.estGasCreateNftErcWithPool(
       address,
       nftCreateData,
-      ercCreateData,
-      poolData
+      ercParams,
+      poolParams
     )
-
-    console.log('estGas', estGas)
-    console.log('ercCreateData', ercCreateData)
-    console.log('poolData', poolData)
+    const ercCreateData = this.getErcCreationParams(ercParams)
+    const poolData = this.getPoolCreationParams(poolParams)
 
     // Invoke createToken function of the contract
     const trxReceipt = await this.factory721.methods
