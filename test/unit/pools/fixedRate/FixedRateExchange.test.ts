@@ -16,10 +16,11 @@ import MockERC20 from '@oceanprotocol/contracts/artifacts/contracts/utils/mock/M
 import PoolTemplate from '@oceanprotocol/contracts/artifacts/contracts/pools/balancer/BPool.sol/BPool.json'
 import OPFCollector from '@oceanprotocol/contracts/artifacts/contracts/communityFee/OPFCommunityFeeCollector.sol/OPFCommunityFeeCollector.json'
 import { LoggerInstance } from '../../../../src/utils'
-import { NFTFactory } from '../../../../src/factories/NFTFactory'
+import { NFTFactory, NFTCreateData } from '../../../../src/factories/NFTFactory'
 import { Pool } from '../../../../src/pools/balancer/Pool'
 import { FixedRateExchange } from '../../../../src/pools/fixedRate/FixedRateExchange'
 import { BADFAMILY } from 'dns'
+import { FreCreationParams, Erc20CreateParams } from '../../../../src/interfaces'
 const { keccak256 } = require('@ethersproject/keccak256')
 const web3 = new Web3('http://127.0.0.1:8545')
 const communityCollector = '0xeE9300b7961e0a01d9f0adb863C7A227A07AaD75'
@@ -103,34 +104,46 @@ describe('Fixed Rate unit test', () => {
     it('#create an exchange', async () => {
       // CREATE AN Exchange
       // we prepare transaction parameters objects
-      const nftData = {
+
+      const nftFactory = new NFTFactory(contracts.factory721Address, web3)
+
+      const nftData: NFTCreateData = {
         name: '72120Bundle',
         symbol: '72Bundle',
         templateIndex: 1,
         baseURI: 'https://oceanprotocol.com/nft/'
       }
-      const ercData = {
+
+      const ercParams: Erc20CreateParams = {
         templateIndex: 1,
-        strings: ['ERC20B1', 'ERC20DT1Symbol'],
-        addresses: [contracts.accounts[0], user3, contracts.accounts[0], ADDRESS_ZERO],
-        uints: [web3.utils.toWei('1000000'), 0],
-        bytess: []
+        minter: contracts.accounts[0],
+        feeManager: user3,
+        mpFeeAddress: contracts.accounts[0],
+        feeToken: ADDRESS_ZERO,
+        cap: '1000000',
+        feeAmount: '0',
+        name: 'ERC20B1',
+        symbol: 'ERC20DT1Symbol'
       }
 
-      // [baseToken,owner,marketFeeCollector,allowedSwapper]
-      const fixedRateData = {
-        fixedPriceAddress: contracts.fixedRateAddress,
-        addresses: [contracts.daiAddress, exchangeOwner, user3, ADDRESS_ZERO],
-        uints: [18, 18, web3.utils.toWei('1'), 1e15, 0]
+      const freParams: FreCreationParams = {
+        fixedRateAddress: contracts.fixedRateAddress,
+        baseTokenAddress: contracts.daiAddress,
+        owner: exchangeOwner,
+        marketFeeCollector: user3,
+        baseTokenDecimals: 18,
+        dataTokenDecimals: 18,
+        fixedRate: '1',
+        marketFee: 1e15,
+        allowedConsumer: ADDRESS_ZERO,
+        withMint: false
       }
-
-      const nftFactory = new NFTFactory(contracts.factory721Address, web3, LoggerInstance)
 
       const txReceipt = await nftFactory.createNftErcWithFixedRate(
         exchangeOwner,
         nftData,
-        ercData,
-        fixedRateData
+        ercParams,
+        freParams
       )
 
       initialBlock = await web3.eth.getBlockNumber()
@@ -144,7 +157,6 @@ describe('Fixed Rate unit test', () => {
       fixedRateAddress = contracts.fixedRateAddress
       fixedRate = new FixedRateExchange(
         web3,
-        LoggerInstance,
         fixedRateAddress,
         FixedRate.abi as AbiItem[],
         contracts.oceanAddress
@@ -420,34 +432,46 @@ describe('Fixed Rate unit test', () => {
     it('#create an exchange', async () => {
       // CREATE AN Exchange
       // we prepare transaction parameters objects
-      const nftData = {
+
+      const nftFactory = new NFTFactory(contracts.factory721Address, web3)
+
+      const nftData: NFTCreateData = {
         name: '72120Bundle',
         symbol: '72Bundle',
         templateIndex: 1,
         baseURI: 'https://oceanprotocol.com/nft/'
       }
-      const ercData = {
+
+      const ercParams: Erc20CreateParams = {
         templateIndex: 1,
-        strings: ['ERC20B1', 'ERC20DT1Symbol'],
-        addresses: [contracts.accounts[0], user3, contracts.accounts[0], ADDRESS_ZERO],
-        uints: [web3.utils.toWei('1000000'), 0],
-        bytess: []
+        minter: contracts.accounts[0],
+        feeManager: user3,
+        mpFeeAddress: contracts.accounts[0],
+        feeToken: ADDRESS_ZERO,
+        cap: '1000000',
+        feeAmount: '0',
+        name: 'ERC20B1',
+        symbol: 'ERC20DT1Symbol'
       }
 
-      // [baseToken,owner,marketFeeCollector,allowedSwapper]
-      const fixedRateData = {
-        fixedPriceAddress: contracts.fixedRateAddress,
-        addresses: [contracts.usdcAddress, exchangeOwner, user3, ADDRESS_ZERO],
-        uints: [6, 18, web3.utils.toWei('1'), 1e15, 0]
+      const freParams: FreCreationParams = {
+        fixedRateAddress: contracts.fixedRateAddress,
+        baseTokenAddress: contracts.usdcAddress,
+        owner: exchangeOwner,
+        marketFeeCollector: user3,
+        baseTokenDecimals: 6,
+        dataTokenDecimals: 18,
+        fixedRate: '1',
+        marketFee: 1e15,
+        allowedConsumer: ADDRESS_ZERO,
+        withMint: false
       }
-
-      const nftFactory = new NFTFactory(contracts.factory721Address, web3, LoggerInstance)
 
       const txReceipt = await nftFactory.createNftErcWithFixedRate(
         exchangeOwner,
         nftData,
-        ercData,
-        fixedRateData
+        ercParams,
+        freParams
       )
 
       initialBlock = await web3.eth.getBlockNumber()
@@ -461,7 +485,6 @@ describe('Fixed Rate unit test', () => {
       fixedRateAddress = contracts.fixedRateAddress
       fixedRate = new FixedRateExchange(
         web3,
-        LoggerInstance,
         fixedRateAddress,
         FixedRate.abi as AbiItem[],
         contracts.oceanAddress

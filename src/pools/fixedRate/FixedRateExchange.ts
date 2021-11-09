@@ -5,7 +5,7 @@ import { TransactionReceipt } from 'web3-core'
 import { Contract, EventData } from 'web3-eth-contract'
 import { AbiItem } from 'web3-utils/types'
 import Web3 from 'web3'
-import { Logger, getFairGasPrice } from '../../utils'
+import { LoggerInstance, getFairGasPrice } from '../../utils'
 
 const MAX_AWAIT_PROMISES = 10
 
@@ -55,7 +55,6 @@ export class FixedRateExchange {
   public fixedRateContract: Contract
   public web3: Web3
   public contract: Contract = null
-  private logger: Logger
 
   public startBlock: number
   public ssABI: AbiItem | AbiItem[]
@@ -67,7 +66,6 @@ export class FixedRateExchange {
    */
   constructor(
     web3: Web3,
-    logger: Logger,
     fixedRateAddress: string,
     fixedRateExchangeABI: AbiItem | AbiItem[] = null,
     oceanAddress: string = null,
@@ -85,8 +83,6 @@ export class FixedRateExchange {
       this.fixedRateExchangeABI,
       this.fixedRateAddress
     )
-
-    this.logger = logger
   }
 
   async amountToUnits(token: string, amount: string): Promise<string> {
@@ -99,7 +95,7 @@ export class FixedRateExchange {
     try {
       decimals = await tokenContract.methods.decimals().call()
     } catch (e) {
-      this.logger.error('ERROR: FAILED TO CALL DECIMALS(), USING 18')
+      LoggerInstance.error('ERROR: FAILED TO CALL DECIMALS(), USING 18')
     }
 
     const amountFormatted = new BigNumber(parseInt(amount) * 10 ** decimals)
@@ -116,7 +112,7 @@ export class FixedRateExchange {
     try {
       decimals = await tokenContract.methods.decimals().call()
     } catch (e) {
-      this.logger.error('ERROR: FAILED TO CALL DECIMALS(), USING 18')
+      LoggerInstance.error('ERROR: FAILED TO CALL DECIMALS(), USING 18')
     }
 
     const amountFormatted = new BigNumber(parseInt(amount) / 10 ** decimals)
@@ -212,7 +208,7 @@ export class FixedRateExchange {
         })
       return trxReceipt
     } catch (e) {
-      this.logger.error(`ERROR: Failed to buy datatokens: ${e.message}`)
+      LoggerInstance.error(`ERROR: Failed to buy datatokens: ${e.message}`)
       return null
     }
   }
@@ -287,7 +283,7 @@ export class FixedRateExchange {
         })
       return trxReceipt
     } catch (e) {
-      this.logger.error(`ERROR: Failed to sell datatokens: ${e.message}`)
+      LoggerInstance.error(`ERROR: Failed to sell datatokens: ${e.message}`)
       return null
     }
   }
@@ -981,7 +977,7 @@ export class FixedRateExchange {
     try {
       result = await this.contract.methods.opfCollector().call()
     } catch (e) {
-      this.logger.error(`ERROR: Failed to get OPF Collector address: ${e.message}`)
+      LoggerInstance.error(`ERROR: Failed to get OPF Collector address: ${e.message}`)
     }
     return result
   }
@@ -995,7 +991,7 @@ export class FixedRateExchange {
     try {
       result = await this.contract.methods.router().call()
     } catch (e) {
-      this.logger.error(`ERROR: Failed to get Router address: ${e.message}`)
+      LoggerInstance.error(`ERROR: Failed to get Router address: ${e.message}`)
     }
     return result
   }
@@ -1010,7 +1006,7 @@ export class FixedRateExchange {
     try {
       result = await (await this.getExchange(exchangeId)).exchangeOwner
     } catch (e) {
-      this.logger.error(`ERROR: Failed to get OPF Collector address: ${e.message}`)
+      LoggerInstance.error(`ERROR: Failed to get OPF Collector address: ${e.message}`)
     }
     return result
   }

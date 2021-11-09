@@ -2,7 +2,7 @@ import Web3 from 'web3'
 import { AbiItem } from 'web3-utils/types'
 import { TransactionReceipt } from 'web3-core'
 import { Contract } from 'web3-eth-contract'
-import { Logger, getFairGasPrice } from '../../utils'
+import { Logger, getFairGasPrice, LoggerInstance } from '../../utils'
 import BigNumber from 'bignumber.js'
 import PoolTemplate from '@oceanprotocol/contracts/artifacts/contracts/pools/balancer/BPool.sol/BPool.json'
 import defaultPool from '@oceanprotocol/contracts/artifacts/contracts/pools/FactoryRouter.sol/FactoryRouter.json'
@@ -58,7 +58,7 @@ export class Pool {
         .estimateGas({ from: account }, (err, estGas) => (err ? gasLimitDefault : estGas))
     } catch (e) {
       estGas = gasLimitDefault
-      console.log(e)
+      LoggerInstance.error('estimage gas failed for approve!', e)
     }
     return estGas
   }
@@ -751,44 +751,38 @@ export class Pool {
   }
 
   async amountToUnits(token: string, amount: string): Promise<string> {
-    let decimals = 18
-    const tokenContract = new this.web3.eth.Contract(
-      defaultERC20ABI.abi as AbiItem[],
-      token
-    )
-
     try {
-      decimals = await tokenContract.methods.decimals().call()
-      if (decimals === 0) {
+      const tokenContract = new this.web3.eth.Contract(
+        defaultERC20ABI.abi as AbiItem[],
+        token
+      )
+      let decimals = await tokenContract.methods.decimals().call()
+      if (decimals == 0) {
         decimals = 18
       }
+      const amountFormatted = new BigNumber(parseInt(amount) * 10 ** decimals)
+      return amountFormatted.toString()
     } catch (e) {
       this.logger.error('ERROR: FAILED TO CALL DECIMALS(), USING 18')
     }
-
-    const amountFormatted = new BigNumber(parseInt(amount) * 10 ** decimals)
-
-    return amountFormatted.toString()
   }
 
   async unitsToAmount(token: string, amount: string): Promise<string> {
-    let decimals = 18
-    const tokenContract = new this.web3.eth.Contract(
-      defaultERC20ABI.abi as AbiItem[],
-      token
-    )
     try {
-      decimals = await tokenContract.methods.decimals().call()
-      if (decimals === 0) {
+      const tokenContract = new this.web3.eth.Contract(
+        defaultERC20ABI.abi as AbiItem[],
+        token
+      )
+      let decimals = await tokenContract.methods.decimals().call()
+      if (decimals == 0) {
         decimals = 18
       }
+      const amountFormatted = new BigNumber(parseInt(amount) / 10 ** decimals)
+
+      return amountFormatted.toString()
     } catch (e) {
       this.logger.error('ERROR: FAILED TO CALL DECIMALS(), USING 18')
     }
-
-    const amountFormatted = new BigNumber(parseInt(amount) / 10 ** decimals)
-
-    return amountFormatted.toString()
   }
 
   /**
@@ -1534,6 +1528,7 @@ export class Pool {
     tokenAmountIn: string
   ): Promise<string> {
     const pool = new this.web3.eth.Contract(this.poolABI, poolAddress)
+    console.log('pool ', pool.methods)
     let amount = null
     try {
       const result = await pool.methods
@@ -1553,7 +1548,6 @@ export class Pool {
   ): Promise<string> {
     const pool = new this.web3.eth.Contract(this.poolABI, poolAddress)
     let amount = null
-
     const amountFormatted = await this.amountToUnits(poolAddress, poolAmountOut)
 
     try {
@@ -1561,7 +1555,6 @@ export class Pool {
         .calcSingleInPoolOut(tokenIn, amountFormatted)
 
         .call()
-
       amount = await this.unitsToAmount(tokenIn, result)
     } catch (e) {
       this.logger.error(`ERROR: Failed to calculate SingleInGivenPoolOut : ${e.message}`)

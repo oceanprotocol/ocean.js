@@ -2,12 +2,11 @@ import Web3 from 'web3'
 import { AbiItem } from 'web3-utils/types'
 import { TransactionReceipt } from 'web3-core'
 import { Contract } from 'web3-eth-contract'
-import { Logger, getFairGasPrice } from '../../utils'
+import { LoggerInstance, getFairGasPrice } from '../../utils'
 import BigNumber from 'bignumber.js'
 import SideStakingTemplate from '@oceanprotocol/contracts/artifacts/contracts/pools/ssContracts/SideStaking.sol/SideStaking.json'
 import defaultPool from '@oceanprotocol/contracts/artifacts/contracts/pools/FactoryRouter.sol/FactoryRouter.json'
 import defaultERC20ABI from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC20Template.sol/ERC20Template.json'
-import Decimal from 'decimal.js'
 
 const MaxUint256 =
   '115792089237316195423570985008687907853269984665640564039457584007913129639934'
@@ -19,13 +18,11 @@ export class SideStaking {
   public ssABI: AbiItem | AbiItem[]
   public web3: Web3
   public GASLIMIT_DEFAULT = 1000000
-  private logger: Logger
 
-  constructor(web3: Web3, logger: Logger, ssABI: AbiItem | AbiItem[] = null) {
+  constructor(web3: Web3, ssABI: AbiItem | AbiItem[] = null) {
     if (ssABI) this.ssABI = ssABI
     else this.ssABI = SideStakingTemplate.abi as AbiItem[]
     this.web3 = web3
-    this.logger = logger
   }
 
   async amountToUnits(token: string, amount: string): Promise<string> {
@@ -37,7 +34,7 @@ export class SideStaking {
     try {
       decimals = await tokenContract.methods.decimals().call()
     } catch (e) {
-      this.logger.error('ERROR: FAILED TO CALL DECIMALS(), USING 18')
+      LoggerInstance.error('ERROR: FAILED TO CALL DECIMALS(), USING 18')
     }
 
     const amountFormatted = new BigNumber(parseInt(amount) * 10 ** decimals)
@@ -54,7 +51,7 @@ export class SideStaking {
     try {
       decimals = await tokenContract.methods.decimals().call()
     } catch (e) {
-      this.logger.error('ERROR: FAILED TO CALL DECIMALS(), USING 18')
+      LoggerInstance.error('ERROR: FAILED TO CALL DECIMALS(), USING 18')
     }
 
     const amountFormatted = new BigNumber(parseInt(amount) / 10 ** decimals)
@@ -79,7 +76,7 @@ export class SideStaking {
         .getDataTokenCirculatingSupply(datatokenAddress)
         .call()
     } catch (e) {
-      this.logger.error(`ERROR: Failed to get: ${e.message}`)
+      LoggerInstance.error(`ERROR: Failed to get: ${e.message}`)
     }
     return result.toString()
   }
@@ -102,7 +99,7 @@ export class SideStaking {
         .getDataTokenCurrentCirculatingSupply(datatokenAddress)
         .call()
     } catch (e) {
-      this.logger.error(`ERROR: Failed to get: ${e.message}`)
+      LoggerInstance.error(`ERROR: Failed to get: ${e.message}`)
     }
     return result.toString()
   }
@@ -122,7 +119,7 @@ export class SideStaking {
     try {
       result = await sideStaking.methods.getPublisherAddress(datatokenAddress).call()
     } catch (e) {
-      this.logger.error(`ERROR: Failed to get: ${e.message}`)
+      LoggerInstance.error(`ERROR: Failed to get: ${e.message}`)
     }
     return result
   }
@@ -139,7 +136,7 @@ export class SideStaking {
     try {
       result = await sideStaking.methods.getBaseTokenAddress(datatokenAddress).call()
     } catch (e) {
-      this.logger.error(`ERROR: Failed to get: ${e.message}`)
+      LoggerInstance.error(`ERROR: Failed to get: ${e.message}`)
     }
     return result
   }
@@ -156,7 +153,7 @@ export class SideStaking {
     try {
       result = await sideStaking.methods.getPoolAddress(datatokenAddress).call()
     } catch (e) {
-      this.logger.error(`ERROR: Failed to get: ${e.message}`)
+      LoggerInstance.error(`ERROR: Failed to get: ${e.message}`)
     }
     return result
   }
@@ -176,7 +173,7 @@ export class SideStaking {
     try {
       result = await sideStaking.methods.getBaseTokenBalance(datatokenAddress).call()
     } catch (e) {
-      this.logger.error(`ERROR: Failed to get: ${e.message}`)
+      LoggerInstance.error(`ERROR: Failed to get: ${e.message}`)
     }
     return result
   }
@@ -196,7 +193,7 @@ export class SideStaking {
     try {
       result = await sideStaking.methods.getDataTokenBalance(datatokenAddress).call()
     } catch (e) {
-      this.logger.error(`ERROR: Failed to get: ${e.message}`)
+      LoggerInstance.error(`ERROR: Failed to get: ${e.message}`)
     }
     result = await this.unitsToAmount(datatokenAddress, result)
     return result
@@ -214,7 +211,7 @@ export class SideStaking {
     try {
       result = await sideStaking.methods.getvestingEndBlock(datatokenAddress).call()
     } catch (e) {
-      this.logger.error(`ERROR: Failed to get: ${e.message}`)
+      LoggerInstance.error(`ERROR: Failed to get: ${e.message}`)
     }
     return result
   }
@@ -231,7 +228,7 @@ export class SideStaking {
     try {
       result = await sideStaking.methods.getvestingAmount(datatokenAddress).call()
     } catch (e) {
-      this.logger.error(`ERROR: Failed to get: ${e.message}`)
+      LoggerInstance.error(`ERROR: Failed to get: ${e.message}`)
     }
     result = await this.unitsToAmount(datatokenAddress, result)
     return result
@@ -252,7 +249,7 @@ export class SideStaking {
     try {
       result = await sideStaking.methods.getvestingLastBlock(datatokenAddress).call()
     } catch (e) {
-      this.logger.error(`ERROR: Failed to get: ${e.message}`)
+      LoggerInstance.error(`ERROR: Failed to get: ${e.message}`)
     }
     return result
   }
@@ -272,7 +269,7 @@ export class SideStaking {
     try {
       result = await sideStaking.methods.getvestingAmountSoFar(datatokenAddress).call()
     } catch (e) {
-      this.logger.error(`ERROR: Failed to get: ${e.message}`)
+      LoggerInstance.error(`ERROR: Failed to get: ${e.message}`)
     }
     result = await this.unitsToAmount(datatokenAddress, result)
     return result
@@ -335,7 +332,7 @@ export class SideStaking {
         gasPrice: await getFairGasPrice(this.web3)
       })
     } catch (e) {
-      this.logger.error('ERROR: Failed to join swap pool amount out')
+      LoggerInstance.error('ERROR: Failed to join swap pool amount out')
     }
     return result
   }
@@ -351,7 +348,7 @@ export class SideStaking {
     try {
       result = await sideStaking.methods.router().call()
     } catch (e) {
-      this.logger.error(`ERROR: Failed to get Router address: ${e.message}`)
+      LoggerInstance.error(`ERROR: Failed to get Router address: ${e.message}`)
     }
     return result
   }
