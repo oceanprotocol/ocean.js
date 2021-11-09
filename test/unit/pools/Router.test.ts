@@ -10,10 +10,13 @@ import ERC20Template from '@oceanprotocol/contracts/artifacts/contracts/template
 import Dispenser from '@oceanprotocol/contracts/artifacts/contracts/pools/dispenser/Dispenser.sol/Dispenser.json'
 import FixedRate from '@oceanprotocol/contracts/artifacts/contracts/pools/fixedRate/FixedRateExchange.sol/FixedRateExchange.json'
 import MockERC20 from '@oceanprotocol/contracts/artifacts/contracts/utils/mock/MockERC20Decimals.sol/MockERC20Decimals.json'
+import OPFCommunityFeeCollector from '@oceanprotocol/contracts/artifacts/contracts/communityFee/OPFCommunityFeeCollector.sol/OPFCommunityFeeCollector.json'
 import PoolTemplate from '@oceanprotocol/contracts/artifacts/contracts/pools/balancer/BPool.sol/BPool.json'
 import { LoggerInstance } from '../../../src/utils'
-import { NFTFactory } from '../../../src/factories/NFTFactory'
+import { NFTFactory, NFTCreateData } from '../../../src/factories/NFTFactory'
 import { Router } from '../../../src/pools/Router'
+import { BigNumber } from 'bignumber.js'
+import { Erc20CreateParams, PoolCreationParams } from '../../../src/interfaces'
 const { keccak256 } = require('@ethersproject/keccak256')
 const web3 = new Web3('http://127.0.0.1:8545')
 const communityCollector = '0xeE9300b7961e0a01d9f0adb863C7A227A07AaD75'
@@ -41,6 +44,7 @@ describe('Router unit test', () => {
       SideStaking.abi as AbiItem[],
       FixedRate.abi as AbiItem[],
       Dispenser.abi as AbiItem[],
+      OPFCommunityFeeCollector.abi as AbiItem[],
 
       ERC721Template.bytecode,
       ERC20Template.bytecode,
@@ -49,7 +53,8 @@ describe('Router unit test', () => {
       FactoryRouter.bytecode,
       SideStaking.bytecode,
       FixedRate.bytecode,
-      Dispenser.bytecode
+      Dispenser.bytecode,
+      OPFCommunityFeeCollector.bytecode
     )
     await contracts.getAccounts()
     factoryOwner = contracts.accounts[0]
@@ -74,7 +79,7 @@ describe('Router unit test', () => {
   })
 
   it('should initiate Router instance', async () => {
-    router = new Router(contracts.routerAddress, web3, LoggerInstance)
+    router = new Router(contracts.routerAddress, web3)
   })
 
   it('#getOwner - should return actual owner', async () => {
@@ -98,8 +103,6 @@ describe('Router unit test', () => {
   it('#isFixedPrice - should return true if in fixedPrice list', async () => {
     expect(await router.isFixedPrice(contracts.fixedRateAddress)).to.equal(true)
     expect(await router.isFixedPrice(contracts.daiAddress)).to.equal(false)
-    // Dispenser contract is also a fixed price contract
-    expect(await router.isFixedPrice(contracts.dispenserAddress)).to.equal(true)
   })
   it('#isPoolTemplate - should return true if in poolTemplates list', async () => {
     expect(await router.isPoolTemplate(contracts.poolTemplateAddress)).to.equal(true)
@@ -171,54 +174,52 @@ describe('Router unit test', () => {
 
     // CREATE A FIRST POOL
     // we prepare transaction parameters objects
-    const nftData = {
+    const nftData: NFTCreateData = {
       name: '72120Bundle',
       symbol: '72Bundle',
       templateIndex: 1,
       baseURI: 'https://oceanprotocol.com/nft/'
     }
-    const ercData = {
+
+    const ercParams: Erc20CreateParams = {
       templateIndex: 1,
-      strings: ['ERC20B1', 'ERC20DT1Symbol'],
-      addresses: [
-        contracts.accounts[0],
-        user3,
-        contracts.accounts[0],
-        '0x0000000000000000000000000000000000000000'
-      ],
-      uints: [web3.utils.toWei('1000000'), 0],
-      bytess: []
+      minter: contracts.accounts[0],
+      feeManager: user3,
+      mpFeeAddress: contracts.accounts[0],
+      feeToken: '0x0000000000000000000000000000000000000000',
+      cap: '1000000',
+      feeAmount: '0',
+      name: 'ERC20B1',
+      symbol: 'ERC20DT1Symbol'
     }
 
-    const poolData = {
-      addresses: [
-        contracts.sideStakingAddress,
-        contracts.daiAddress,
-        contracts.factory721Address,
-        contracts.accounts[0],
-        contracts.accounts[0],
-        contracts.poolTemplateAddress
-      ],
-      ssParams: [
-        web3.utils.toWei('1'), // rate
-        18, // basetokenDecimals
-        web3.utils.toWei('10000'),
-        2500000, // vested blocks
-        web3.utils.toWei('2000') // baseToken initial pool liquidity
-      ],
-      swapFees: [
-        1e15, //
-        1e15
-      ]
+    const poolParams: PoolCreationParams = {
+      ssContract: contracts.sideStakingAddress,
+      basetokenAddress: contracts.daiAddress,
+      basetokenSender: contracts.factory721Address,
+      publisherAddress: contracts.accounts[0],
+      marketFeeCollector: contracts.accounts[0],
+      poolTemplateAddress: contracts.poolTemplateAddress,
+      rate: '1',
+      basetokenDecimals: 18,
+      vestingAmount: '10000',
+      vestedBlocks: 2500000,
+      initialBasetokenLiquidity: '2000',
+      swapFeeLiquidityProvider: 1e15,
+      swapFeeMarketPlaceRunner: 1e15
     }
 
-    const nftFactory = new NFTFactory(contracts.factory721Address, web3, LoggerInstance)
+    const nftFactory = new NFTFactory(
+      contracts.factory721Address,
+      web3,
+      ERC721Factory.abi as AbiItem[]
+    )
 
     const txReceipt = await nftFactory.createNftErcWithPool(
       contracts.accounts[0],
       nftData,
-      ercData,
-      poolData
+      ercParams,
+      poolParams
     )
 
     const erc20Token = txReceipt.events.TokenCreated.returnValues.newTokenAddress
@@ -226,52 +227,46 @@ describe('Router unit test', () => {
 
     // CREATE A SECOND POOL
 
-    const nftData2 = {
+    const nftData2: NFTCreateData = {
       name: '72120Bundle2',
       symbol: '72Bundle2',
       templateIndex: 1,
       baseURI: 'https://oceanprotocol.com/nft2/'
     }
-    const ercData2 = {
+
+    const ercParams2: Erc20CreateParams = {
       templateIndex: 1,
-      strings: ['ERC20B12', 'ERC20DT1Symbol2'],
-      addresses: [
-        contracts.accounts[0],
-        user3,
-        contracts.accounts[0],
-        '0x0000000000000000000000000000000000000000'
-      ],
-      uints: [web3.utils.toWei('1000000'), 0],
-      bytess: []
+      minter: contracts.accounts[0],
+      feeManager: user3,
+      mpFeeAddress: contracts.accounts[0],
+      feeToken: '0x0000000000000000000000000000000000000000',
+      cap: '1000000',
+      feeAmount: '0',
+      name: 'ERC20B12',
+      symbol: 'ERC20DT1Symbol2'
     }
 
-    const poolData2 = {
-      addresses: [
-        contracts.sideStakingAddress,
-        contracts.daiAddress,
-        contracts.factory721Address,
-        contracts.accounts[0],
-        contracts.accounts[0],
-        contracts.poolTemplateAddress
-      ],
-      ssParams: [
-        web3.utils.toWei('1'), // rate
-        18, // basetokenDecimals
-        web3.utils.toWei('10000'),
-        2500000, // vested blocks
-        web3.utils.toWei('2000') // baseToken initial pool liquidity
-      ],
-      swapFees: [
-        1e15, //
-        1e15
-      ]
+    const poolParams2: PoolCreationParams = {
+      ssContract: contracts.sideStakingAddress,
+      basetokenAddress: contracts.daiAddress,
+      basetokenSender: contracts.factory721Address,
+      publisherAddress: contracts.accounts[0],
+      marketFeeCollector: contracts.accounts[0],
+      poolTemplateAddress: contracts.poolTemplateAddress,
+      rate: '1',
+      basetokenDecimals: 18,
+      vestingAmount: '10000',
+      vestedBlocks: 2500000,
+      initialBasetokenLiquidity: '2000',
+      swapFeeLiquidityProvider: 1e15,
+      swapFeeMarketPlaceRunner: 1e15
     }
 
     const txReceipt2 = await nftFactory.createNftErcWithPool(
       contracts.accounts[0],
       nftData2,
-      ercData2,
-      poolData2
+      ercParams2,
+      poolParams2
     )
 
     const erc20Token2 = txReceipt2.events.TokenCreated.returnValues.newTokenAddress
