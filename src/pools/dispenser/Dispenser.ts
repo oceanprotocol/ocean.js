@@ -3,7 +3,7 @@ import { AbiItem } from 'web3-utils'
 import { Contract } from 'web3-eth-contract'
 import { TransactionReceipt } from 'web3-eth'
 import Decimal from 'decimal.js'
-import defaultDispenserABI from '@oceanprotocol/contracts/pools/dispenser/Dispenser.json'
+import defaultDispenserABI from '@oceanprotocol/contracts/artifacts/contracts/pools/dispenser/Dispenser.sol/Dispenser.json'
 import { LoggerInstance as logger, getFairGasPrice } from '../../utils/'
 import { Datatoken } from '.../../../src/datatokens/'
 
@@ -430,7 +430,7 @@ export class Dispenser {
     // check active
     if (status.active === false) return false
     // check maxBalance
-    const userBalance = new Decimal(await dataToken.balance(dataToken, address))
+    const userBalance = new Decimal(await dataToken.balance(dtAddress, address))
     if (userBalance.greaterThanOrEqualTo(status.maxBalance)) return false
     // check maxAmount
     if (new Decimal(String(amount)).greaterThan(status.maxTokens)) return false
