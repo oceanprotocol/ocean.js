@@ -6,6 +6,7 @@ import defaultDatatokensEnterpriseABI from '@oceanprotocol/contracts/artifacts/c
 import Decimal from 'decimal.js'
 import { LoggerInstance, getFairGasPrice } from '../utils'
 import { Contract } from 'web3-eth-contract'
+import { FreOrderParams, FreCreationParams } from '../interfaces'
 
 /**
  * ERC20 ROLES
@@ -22,24 +23,6 @@ export interface OrderParams {
   consumeFeeAddress: string
   consumeFeeToken: string
   consumeFeeAmount: string
-}
-
-export interface FreParams {
-  exchangeContract: string
-  exchangeId: string
-  maxBaseTokenAmount: string
-}
-
-export interface FixedRateParams {
-  baseTokenAddress: string
-  owner: string
-  marketFeeCollector: string
-  baseTokenDecimals: number
-  dataTokenDecimals: number
-  fixedRate: string
-  marketFee: number
-  withMint?: boolean // add FixedPriced contract as minter if withMint == true
-  allowedConsumer?: string //  only account that consume the exhchange
 }
 
 export interface DispenserParams {
@@ -187,8 +170,7 @@ export class Datatoken {
   public async estGasCreateFixedRate(
     dtAddress: string,
     address: string,
-    fixedPriceAddress: string,
-    fixedRateParams: FixedRateParams,
+    fixedRateParams: FreCreationParams,
     contractInstance?: Contract
   ): Promise<any> {
     const dtContract =
@@ -204,7 +186,7 @@ export class Datatoken {
     try {
       estGas = await dtContract.methods
         .createFixedRate(
-          fixedPriceAddress,
+          fixedRateParams.fixedRateAddress,
           [
             fixedRateParams.baseTokenAddress,
             address,
@@ -238,8 +220,7 @@ export class Datatoken {
   public async createFixedRate(
     dtAddress: string,
     address: string,
-    fixedPriceAddress: string,
-    fixedRateParams: FixedRateParams
+    fixedRateParams: FreCreationParams
   ): Promise<TransactionReceipt> {
     const dtContract = new this.web3.eth.Contract(this.datatokensABI, dtAddress)
 
@@ -253,7 +234,6 @@ export class Datatoken {
     const estGas = await this.estGasCreateFixedRate(
       dtAddress,
       address,
-      fixedPriceAddress,
       fixedRateParams,
       dtContract
     )
@@ -261,7 +241,7 @@ export class Datatoken {
     // Call createFixedRate contract method
     const trxReceipt = await dtContract.methods
       .createFixedRate(
-        fixedPriceAddress,
+        fixedRateParams.fixedRateAddress,
         [
           fixedRateParams.baseTokenAddress,
           fixedRateParams.owner,
@@ -943,7 +923,7 @@ export class Datatoken {
     dtAddress: string,
     address: string,
     orderParams: OrderParams,
-    freParams: FreParams,
+    freParams: FreOrderParams,
     contractInstance?: Contract
   ): Promise<any> {
     const dtContract =
@@ -974,7 +954,7 @@ export class Datatoken {
     dtAddress: string,
     address: string,
     orderParams: OrderParams,
-    freParams: FreParams
+    freParams: FreOrderParams
   ): Promise<TransactionReceipt> {
     const dtContract = new this.web3.eth.Contract(this.datatokensEnterpriseABI, dtAddress)
     try {

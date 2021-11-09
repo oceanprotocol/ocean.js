@@ -13,14 +13,10 @@ import MockERC20 from '@oceanprotocol/contracts/artifacts/contracts/utils/mock/M
 import OPFCommunityFeeCollector from '@oceanprotocol/contracts/artifacts/contracts/communityFee/OPFCommunityFeeCollector.sol/OPFCommunityFeeCollector.json'
 import PoolTemplate from '@oceanprotocol/contracts/artifacts/contracts/pools/balancer/BPool.sol/BPool.json'
 import { LoggerInstance } from '../../../src/utils'
-import {
-  NFTFactory,
-  NFTCreateData,
-  ErcCreateParams,
-  PoolParams
-} from '../../../src/factories/NFTFactory'
+import { NFTFactory, NFTCreateData } from '../../../src/factories/NFTFactory'
 import { Router } from '../../../src/pools/Router'
 import { BigNumber } from 'bignumber.js'
+import { Erc20CreateParams, PoolCreationParams } from '../../../src/interfaces'
 const { keccak256 } = require('@ethersproject/keccak256')
 const web3 = new Web3('http://127.0.0.1:8545')
 const communityCollector = '0xeE9300b7961e0a01d9f0adb863C7A227A07AaD75'
@@ -185,7 +181,7 @@ describe('Router unit test', () => {
       baseURI: 'https://oceanprotocol.com/nft/'
     }
 
-    const ercParams: ErcCreateParams = {
+    const ercParams: Erc20CreateParams = {
       templateIndex: 1,
       minter: contracts.accounts[0],
       feeManager: user3,
@@ -197,7 +193,7 @@ describe('Router unit test', () => {
       symbol: 'ERC20DT1Symbol'
     }
 
-    const poolParams: PoolParams = {
+    const poolParams: PoolCreationParams = {
       ssContract: contracts.sideStakingAddress,
       basetokenAddress: contracts.daiAddress,
       basetokenSender: contracts.factory721Address,
@@ -238,7 +234,7 @@ describe('Router unit test', () => {
       baseURI: 'https://oceanprotocol.com/nft2/'
     }
 
-    const ercParams2: ErcCreateParams = {
+    const ercParams2: Erc20CreateParams = {
       templateIndex: 1,
       minter: contracts.accounts[0],
       feeManager: user3,
@@ -250,7 +246,7 @@ describe('Router unit test', () => {
       symbol: 'ERC20DT1Symbol2'
     }
 
-    const poolParams2: PoolParams = {
+    const poolParams2: PoolCreationParams = {
       ssContract: contracts.sideStakingAddress,
       basetokenAddress: contracts.daiAddress,
       basetokenSender: contracts.factory721Address,

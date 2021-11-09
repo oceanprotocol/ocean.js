@@ -14,13 +14,12 @@ import MockERC20 from '@oceanprotocol/contracts/artifacts/contracts/utils/mock/M
 import PoolTemplate from '@oceanprotocol/contracts/artifacts/contracts/pools/balancer/BPool.sol/BPool.json'
 import { LoggerInstance } from '../../src/utils'
 // import { NFTDataToken } from '../../../src/datatokens/NFTDatatoken'
+import { NFTFactory, NFTCreateData } from '../../src/factories/NFTFactory'
 import {
-  NFTFactory,
-  NFTCreateData,
-  ErcCreateParams,
-  PoolParams,
-  FixedRateParams
-} from '../../src/factories/NFTFactory'
+  FreCreationParams,
+  Erc20CreateParams,
+  PoolCreationParams
+} from '../../src/interfaces'
 
 const web3 = new Web3('http://127.0.0.1:8545')
 
@@ -182,7 +181,7 @@ describe('NFT Factory test', () => {
       baseURI: 'https://oceanprotocol.com/nft/'
     }
 
-    const ercParams: ErcCreateParams = {
+    const ercParams: Erc20CreateParams = {
       templateIndex: 1,
       minter: contracts.accounts[0],
       feeManager: user3,
@@ -218,7 +217,7 @@ describe('NFT Factory test', () => {
       baseURI: 'https://oceanprotocol.com/nft/'
     }
 
-    const ercParams: ErcCreateParams = {
+    const ercParams: Erc20CreateParams = {
       templateIndex: 1,
       minter: user2,
       feeManager: user3,
@@ -230,7 +229,7 @@ describe('NFT Factory test', () => {
       symbol: 'ERC20DT1Symbol'
     }
 
-    const poolParams: PoolParams = {
+    const poolParams: PoolCreationParams = {
       ssContract: contracts.sideStakingAddress,
       basetokenAddress: contracts.daiAddress,
       basetokenSender: contracts.factory721Address,
@@ -268,7 +267,7 @@ describe('NFT Factory test', () => {
       baseURI: 'https://oceanprotocol.com/nft/'
     }
 
-    const ercParams: ErcCreateParams = {
+    const ercParams: Erc20CreateParams = {
       templateIndex: 1,
       minter: contracts.accounts[0],
       feeManager: user3,
@@ -280,7 +279,7 @@ describe('NFT Factory test', () => {
       symbol: 'ERC20DT1Symbol'
     }
 
-    const freParams: FixedRateParams = {
+    const freParams: FreCreationParams = {
       fixedRateAddress: contracts.fixedRateAddress,
       baseTokenAddress: contracts.daiAddress,
       owner: contracts.accounts[0],

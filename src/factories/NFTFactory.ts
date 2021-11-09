@@ -1,10 +1,17 @@
 import { Contract } from 'web3-eth-contract'
 import Web3 from 'web3'
-import BigNumber from 'bignumber.js'
 import { TransactionReceipt } from 'web3-core'
 import { AbiItem } from 'web3-utils'
 import defaultFactory721ABI from '@oceanprotocol/contracts/artifacts/contracts/ERC721Factory.sol/ERC721Factory.json'
-import { LoggerInstance, getFairGasPrice, generateDtName } from '../utils'
+import {
+  LoggerInstance,
+  getFairGasPrice,
+  generateDtName,
+  getFreCreationParams,
+  getErcCreationParams,
+  getPoolCreationParams
+} from '../utils'
+import { FreCreationParams, Erc20CreateParams, PoolCreationParams } from '../interfaces'
 
 interface Template {
   templateAddress: string
@@ -26,47 +33,6 @@ export interface NFTCreateData {
   symbol: string
   templateIndex: number
   baseURI: string
-}
-
-export interface ErcCreateParams {
-  templateIndex: number
-  minter: string
-  feeManager: string
-  mpFeeAddress: string
-  feeToken: string
-  feeAmount: string
-  cap: string
-  name?: string
-  symbol?: string
-}
-
-export interface PoolParams {
-  ssContract: string
-  basetokenAddress: string
-  basetokenSender: string
-  publisherAddress: string
-  marketFeeCollector: string
-  poolTemplateAddress: string
-  rate: string
-  basetokenDecimals: number
-  vestingAmount: string
-  vestedBlocks: number
-  initialBasetokenLiquidity: string
-  swapFeeLiquidityProvider: number
-  swapFeeMarketPlaceRunner: number
-}
-
-export interface FixedRateParams {
-  fixedRateAddress: string
-  baseTokenAddress: string
-  owner: string
-  marketFeeCollector: string
-  baseTokenDecimals: number
-  dataTokenDecimals: number
-  fixedRate: string
-  marketFee: number
-  withMint?: boolean // add FixedPriced contract as minter if withMint == true
-  allowedConsumer?: string //  only account that consume the exhchange
 }
 
 /**
@@ -607,13 +573,13 @@ export class NFTFactory {
   public async estGasCreateNftWithErc(
     address: string,
     nftCreateData: NFTCreateData,
-    ercParams: ErcCreateParams
+    ercParams: Erc20CreateParams
   ): Promise<any> {
     // Get estimated gas value
     const gasLimitDefault = this.GASLIMIT_DEFAULT
     let estGas
     try {
-      const ercCreateData = this.getErcCreationParams(ercParams)
+      const ercCreateData = getErcCreationParams(ercParams, this.web3)
       estGas = await this.factory721.methods
         .createNftWithErc(nftCreateData, ercCreateData)
         .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
@@ -635,9 +601,9 @@ export class NFTFactory {
   public async createNftWithErc(
     address: string,
     nftCreateData: NFTCreateData,
-    ercParams: ErcCreateParams
+    ercParams: Erc20CreateParams
   ): Promise<TransactionReceipt> {
-    const ercCreateData = this.getErcCreationParams(ercParams)
+    const ercCreateData = getErcCreationParams(ercParams, this.web3)
 
     const estGas = await this.estGasCreateNftWithErc(
       address,
@@ -668,14 +634,14 @@ export class NFTFactory {
   public async estGasCreateNftErcWithPool(
     address: string,
     nftCreateData: NFTCreateData,
-    ercParams: ErcCreateParams,
-    poolParams: PoolParams
+    ercParams: Erc20CreateParams,
+    poolParams: PoolCreationParams
   ): Promise<any> {
     const gasLimitDefault = this.GASLIMIT_DEFAULT
     let estGas
     try {
-      const ercCreateData = this.getErcCreationParams(ercParams)
-      const poolData = this.getPoolCreationParams(poolParams)
+      const ercCreateData = getErcCreationParams(ercParams, this.web3)
+      const poolData = getPoolCreationParams(poolParams, this.web3)
       estGas = await this.factory721.methods
         .createNftErcWithPool(nftCreateData, ercCreateData, poolData)
         .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
@@ -698,8 +664,8 @@ export class NFTFactory {
   public async createNftErcWithPool(
     address: string,
     nftCreateData: NFTCreateData,
-    ercParams: ErcCreateParams,
-    poolParams: PoolParams
+    ercParams: Erc20CreateParams,
+    poolParams: PoolCreationParams
   ): Promise<TransactionReceipt> {
     const estGas = await this.estGasCreateNftErcWithPool(
       address,
@@ -707,8 +673,8 @@ export class NFTFactory {
       ercParams,
       poolParams
     )
-    const ercCreateData = this.getErcCreationParams(ercParams)
-    const poolData = this.getPoolCreationParams(poolParams)
+    const ercCreateData = getErcCreationParams(ercParams, this.web3)
+    const poolData = getPoolCreationParams(poolParams, this.web3)
 
     // Invoke createToken function of the contract
     const trxReceipt = await this.factory721.methods
@@ -732,15 +698,15 @@ export class NFTFactory {
   public async estGasCreateNftErcWithFixedRate(
     address: string,
     nftCreateData: NFTCreateData,
-    ercParams: ErcCreateParams,
-    freParams: FixedRateParams
+    ercParams: Erc20CreateParams,
+    freParams: FreCreationParams
   ): Promise<any> {
     const gasLimitDefault = this.GASLIMIT_DEFAULT
     let estGas
 
-    const ercCreateData = this.getErcCreationParams(ercParams)
+    const ercCreateData = getErcCreationParams(ercParams, this.web3)
 
-    const fixedData = this.getFreCreationParams(freParams)
+    const fixedData = getFreCreationParams(freParams, this.web3)
 
     try {
       estGas = await this.factory721.methods
@@ -765,11 +731,11 @@ export class NFTFactory {
   public async createNftErcWithFixedRate(
     address: string,
     nftCreateData: NFTCreateData,
-    ercParams: ErcCreateParams,
-    freParams: FixedRateParams
+    ercParams: Erc20CreateParams,
+    freParams: FreCreationParams
   ): Promise<TransactionReceipt> {
-    const ercCreateData = this.getErcCreationParams(ercParams)
-    const fixedData = this.getFreCreationParams(freParams)
+    const ercCreateData = getErcCreationParams(ercParams, this.web3)
+    const fixedData = getFreCreationParams(freParams, this.web3)
 
     const estGas = await this.estGasCreateNftErcWithFixedRate(
       address,
@@ -788,73 +754,5 @@ export class NFTFactory {
       })
 
     return trxReceipt
-  }
-
-  getErcCreationParams(ercParams: ErcCreateParams): any {
-    let name, symbol
-    // Generate name & symbol if not present
-    if (!ercParams.name || !ercParams.symbol) {
-      ;({ name, symbol } = generateDtName())
-    }
-
-    return {
-      templateIndex: ercParams.templateIndex,
-      strings: [ercParams.name || name, ercParams.symbol || symbol],
-      addresses: [
-        ercParams.minter,
-        ercParams.feeManager,
-        ercParams.mpFeeAddress,
-        ercParams.feeToken
-      ],
-      uints: [
-        this.web3.utils.toWei(ercParams.cap),
-        this.web3.utils.toWei(ercParams.feeAmount)
-      ],
-      bytess: []
-    }
-  }
-
-  getFreCreationParams(freParams: FixedRateParams): any {
-    if (!freParams.allowedConsumer)
-      freParams.allowedConsumer = '0x0000000000000000000000000000000000000000'
-    const withMint = freParams.withMint ? 1 : 0
-
-    return {
-      fixedPriceAddress: freParams.fixedRateAddress,
-      addresses: [
-        freParams.baseTokenAddress,
-        freParams.owner,
-        freParams.marketFeeCollector,
-        freParams.allowedConsumer
-      ],
-      uints: [
-        freParams.baseTokenDecimals,
-        freParams.dataTokenDecimals,
-        freParams.fixedRate,
-        freParams.marketFee,
-        withMint
-      ]
-    }
-  }
-
-  getPoolCreationParams(poolParams: PoolParams): any {
-    return {
-      addresses: [
-        poolParams.ssContract,
-        poolParams.basetokenAddress,
-        poolParams.basetokenSender,
-        poolParams.publisherAddress,
-        poolParams.marketFeeCollector,
-        poolParams.poolTemplateAddress
-      ],
-      ssParams: [
-        this.web3.utils.toWei(poolParams.rate),
-        poolParams.basetokenDecimals,
-        this.web3.utils.toWei(poolParams.vestingAmount),
-        poolParams.vestedBlocks,
-        this.web3.utils.toWei(poolParams.initialBasetokenLiquidity)
-      ],
-      swapFees: [poolParams.swapFeeLiquidityProvider, poolParams.swapFeeMarketPlaceRunner]
-    }
   }
 }

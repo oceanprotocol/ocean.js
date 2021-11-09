@@ -18,12 +18,11 @@ import {
   Datatoken,
   NFTDatatoken,
   OrderParams,
-  FreParams,
-  FixedRateParams,
   DispenserParams
 } from '../../src/datatokens'
 import { AbiItem } from 'web3-utils'
 import { LoggerInstance } from '../../src/utils'
+import { FreCreationParams, FreOrderParams } from '../../src/interfaces'
 
 const web3 = new Web3('http://127.0.0.1:8545')
 
@@ -152,7 +151,8 @@ describe('Datatoken', () => {
   })
 
   it('#createFixedRate - should create FRE for the erc20 dt', async () => {
-    const freParams: FixedRateParams = {
+    const freParams: FreCreationParams = {
+      fixedRateAddress: contractHandler.fixedRateAddress,
       baseTokenAddress: contractHandler.daiAddress,
       owner: nftOwner,
       marketFeeCollector: nftOwner,
@@ -161,12 +161,7 @@ describe('Datatoken', () => {
       fixedRate: web3.utils.toWei('1'),
       marketFee: 1e15
     }
-    const fre = await datatoken.createFixedRate(
-      datatokenAddress,
-      nftOwner,
-      contractHandler.fixedRateAddress,
-      freParams
-    )
+    const fre = await datatoken.createFixedRate(datatokenAddress, nftOwner, freParams)
     assert(fre !== null)
     fixedRateAddress = fre.events.NewFixedRate.address
     exchangeId = fre.events.NewFixedRate.returnValues[0]
@@ -309,7 +304,7 @@ describe('Datatoken', () => {
       consumeFeeToken: '0x0000000000000000000000000000000000000000',
       consumeFeeAmount: '0'
     }
-    const fre: FreParams = {
+    const fre: FreOrderParams = {
       exchangeContract: fixedRateAddress,
       exchangeId: exchangeId,
       maxBaseTokenAmount: '1'
