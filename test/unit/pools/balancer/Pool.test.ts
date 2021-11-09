@@ -638,42 +638,73 @@ describe('Pool unit test', () => {
     })
 
     it('#calcPoolOutGivenSingleIn - should get the amount of pool OUT for exact token IN', async () => {
-      // since rate is 1 and the pool is just created 
-      // amount of pool out received for same amount of different token In is equal 
+      // since rate is 1 and the pool is just created
+      // amount of pool out received for same amount of different token In is equal
       const tokenInAmount = '10' // 10 USDC or 10 DTs
-      expect(await pool.calcPoolOutGivenSingleIn(poolAddress, erc20Token, tokenInAmount)).to.equal(
-        await pool.calcPoolOutGivenSingleIn(poolAddress, contracts.usdcAddress, tokenInAmount) 
+      expect(
+        await pool.calcPoolOutGivenSingleIn(poolAddress, erc20Token, tokenInAmount)
+      ).to.equal(
+        await pool.calcPoolOutGivenSingleIn(
+          poolAddress,
+          contracts.usdcAddress,
+          tokenInAmount
+        )
       )
-      //console.log(await pool.calcPoolOutGivenSingleIn(poolAddress, erc20Token, tokenInAmount))
+      // console.log(await pool.calcPoolOutGivenSingleIn(poolAddress, erc20Token, tokenInAmount))
     })
-    
 
     it('#calcSingleInGivenPoolOut - should get the amount of token IN for exact pool token OUT', async () => {
-      // since rate is 1 and the pool is just created 
-      // amount of different token In for getting same pool amount out is equal 
+      // since rate is 1 and the pool is just created
+      // amount of different token In for getting same pool amount out is equal
       const poolAmountOut = '1'
-      expect(parseInt(await pool.calcSingleInGivenPoolOut(poolAddress, erc20Token, poolAmountOut))).to.be.closeTo(
-        parseInt(await pool.calcSingleInGivenPoolOut(poolAddress, contracts.usdcAddress, poolAmountOut)),1e9
+      expect(
+        parseInt(
+          await pool.calcSingleInGivenPoolOut(poolAddress, erc20Token, poolAmountOut)
+        )
+      ).to.be.closeTo(
+        parseInt(
+          await pool.calcSingleInGivenPoolOut(
+            poolAddress,
+            contracts.usdcAddress,
+            poolAmountOut
+          )
+        ),
+        1e9
       )
-     
     })
 
     it('#calcSingleOutGivenPoolIn - should get the amount of token OUT for exact pool token IN', async () => {
-      // since rate is 1 and the pool is just created 
-       //amount amount of different token Out for rediming the same pool In is equal 
+      // since rate is 1 and the pool is just created
+      // amount amount of different token Out for rediming the same pool In is equal
       const poolAmountIn = '10'
-      expect(await pool.calcSingleOutGivenPoolIn(poolAddress, erc20Token, poolAmountIn)).to.equal(
-        await pool.calcSingleOutGivenPoolIn(poolAddress, contracts.usdcAddress, poolAmountIn)
+      expect(
+        await pool.calcSingleOutGivenPoolIn(poolAddress, erc20Token, poolAmountIn)
+      ).to.equal(
+        await pool.calcSingleOutGivenPoolIn(
+          poolAddress,
+          contracts.usdcAddress,
+          poolAmountIn
+        )
       )
-    
     })
 
     it('#calcPoolInGivenSingleOut - should get the amount of pool IN for exact token OUT', async () => {
-      // since rate is 1 and the pool is just created 
-       //amount of pool In for getting the same amount of different token Out is equal
+      // since rate is 1 and the pool is just created
+      // amount of pool In for getting the same amount of different token Out is equal
       const tokenAmountOut = '10'
-      expect(parseInt(await pool.calcPoolInGivenSingleOut(poolAddress, erc20Token,tokenAmountOut))).to.be.closeTo(
-        parseInt(await pool.calcPoolInGivenSingleOut(poolAddress, contracts.usdcAddress, tokenAmountOut)),1e9
+      expect(
+        parseInt(
+          await pool.calcPoolInGivenSingleOut(poolAddress, erc20Token, tokenAmountOut)
+        )
+      ).to.be.closeTo(
+        parseInt(
+          await pool.calcPoolInGivenSingleOut(
+            poolAddress,
+            contracts.usdcAddress,
+            tokenAmountOut
+          )
+        ),
+        1e11
       )
     })
 

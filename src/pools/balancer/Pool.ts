@@ -756,18 +756,18 @@ export class Pool {
       defaultERC20ABI.abi as AbiItem[],
       token
     )
-    
+
     try {
       decimals = await tokenContract.methods.decimals().call()
-      if (decimals == 0){
+      if (decimals === 0) {
         decimals = 18
       }
     } catch (e) {
       this.logger.error('ERROR: FAILED TO CALL DECIMALS(), USING 18')
     }
-   
+
     const amountFormatted = new BigNumber(parseInt(amount) * 10 ** decimals)
-   
+
     return amountFormatted.toString()
   }
 
@@ -779,13 +779,13 @@ export class Pool {
     )
     try {
       decimals = await tokenContract.methods.decimals().call()
-      if (decimals == 0){
+      if (decimals === 0) {
         decimals = 18
       }
     } catch (e) {
       this.logger.error('ERROR: FAILED TO CALL DECIMALS(), USING 18')
     }
-    
+
     const amountFormatted = new BigNumber(parseInt(amount) / 10 ** decimals)
 
     return amountFormatted.toString()
@@ -1520,9 +1520,8 @@ export class Pool {
       const result = await pool.methods
         .getAmountOutExactIn(tokenIn, tokenOut, amountInFormatted)
         .call()
-      
+
       amount = await this.unitsToAmount(tokenOut, result)
-      
     } catch (e) {
       this.logger.error('ERROR: Failed to calcOutGivenIn')
     }
@@ -1538,39 +1537,32 @@ export class Pool {
     let amount = null
     try {
       const result = await pool.methods
-        .calcPoolOutSingleIn(
-          tokenIn,
-          await this.amountToUnits(tokenIn,tokenAmountIn)
-        )
+        .calcPoolOutSingleIn(tokenIn, await this.amountToUnits(tokenIn, tokenAmountIn))
         .call()
-      amount = await this.unitsToAmount(poolAddress,result)
+      amount = await this.unitsToAmount(poolAddress, result)
     } catch (e) {
       this.logger.error(`ERROR: Failed to calculate PoolOutGivenSingleIn : ${e.message}`)
     }
     return amount
   }
-  
+
   public async calcSingleInGivenPoolOut(
     poolAddress: string,
-    tokenIn:string,
-    poolAmountOut: string,
+    tokenIn: string,
+    poolAmountOut: string
   ): Promise<string> {
     const pool = new this.web3.eth.Contract(this.poolABI, poolAddress)
     let amount = null
-    
-    const amountFormatted = await this.amountToUnits(poolAddress,poolAmountOut)
-    
+
+    const amountFormatted = await this.amountToUnits(poolAddress, poolAmountOut)
+
     try {
       const result = await pool.methods
-        .calcSingleInPoolOut(
-         tokenIn,
-         amountFormatted
-        )
-      
+        .calcSingleInPoolOut(tokenIn, amountFormatted)
+
         .call()
-  
-      amount = await this.unitsToAmount(tokenIn,result)
-     
+
+      amount = await this.unitsToAmount(tokenIn, result)
     } catch (e) {
       this.logger.error(`ERROR: Failed to calculate SingleInGivenPoolOut : ${e.message}`)
     }
@@ -1579,7 +1571,7 @@ export class Pool {
 
   public async calcSingleOutGivenPoolIn(
     poolAddress: string,
-    tokenOut:string,
+    tokenOut: string,
     poolAmountIn: string
   ): Promise<string> {
     const pool = new this.web3.eth.Contract(this.poolABI, poolAddress)
@@ -1587,11 +1579,11 @@ export class Pool {
     try {
       const result = await pool.methods
         .calcSingleOutPoolIn(
-        tokenOut,
-        await this.amountToUnits(poolAddress,poolAmountIn)
+          tokenOut,
+          await this.amountToUnits(poolAddress, poolAmountIn)
         )
         .call()
-      amount = await this.unitsToAmount(tokenOut,result)
+      amount = await this.unitsToAmount(tokenOut, result)
     } catch (e) {
       this.logger.error(`ERROR: Failed to calculate SingleOutGivenPoolIn : ${e.message}`)
     }
@@ -1599,21 +1591,18 @@ export class Pool {
   }
 
   public async calcPoolInGivenSingleOut(
-      poolAddress:string,
-      tokenOut:string,
-      tokenAmountOut: string
+    poolAddress: string,
+    tokenOut: string,
+    tokenAmountOut: string
   ): Promise<string> {
     const pool = new this.web3.eth.Contract(this.poolABI, poolAddress)
     let amount = null
     try {
       const result = await pool.methods
-        .calcPoolInSingleOut(
-          tokenOut,
-          await this.amountToUnits(tokenOut,tokenAmountOut)
-        )
+        .calcPoolInSingleOut(tokenOut, await this.amountToUnits(tokenOut, tokenAmountOut))
         .call()
-       
-      amount = await this.unitsToAmount(poolAddress,result)
+
+      amount = await this.unitsToAmount(poolAddress, result)
     } catch (e) {
       this.logger.error(`ERROR: Failed to calculate PoolInGivenSingleOut : ${e.message}`)
     }
