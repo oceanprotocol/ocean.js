@@ -203,14 +203,14 @@ describe('SideStaking unit test', () => {
         )
       ).to.equal(web3.utils.toWei('12000'))
     })
-    // it('#getDataTokenCurrentCirculatingSupply - should get datatoken supply in circulation ', async () => {
-    //   expect(
-    //     await sideStaking.getDataTokenCurrentCirculatingSupply(
-    //       contracts.sideStakingAddress,
-    //       erc20Token
-    //     )
-    //   ).to.equal(web3.utils.toWei('2000'))
-    // })
+    it('#getDataTokenCurrentCirculatingSupply - should get datatoken supply in circulation ', async () => {
+      expect(
+        await sideStaking.getDataTokenCurrentCirculatingSupply(
+          contracts.sideStakingAddress,
+          erc20Token
+        )
+      ).to.equal(web3.utils.toWei('2000'))
+    })
     it('#getBasetoken - should get basetoken address', async () => {
       expect(await sideStaking.getBasetoken(sideStakingAddress, erc20Token)).to.equal(
         contracts.daiAddress
