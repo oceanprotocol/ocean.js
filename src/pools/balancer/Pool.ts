@@ -757,7 +757,7 @@ export class Pool {
         token
       )
       let decimals = await tokenContract.methods.decimals().call()
-      if (decimals == 0) {
+      if (decimals === '0') {
         decimals = 18
       }
       const amountFormatted = new BigNumber(parseInt(amount) * 10 ** decimals)
@@ -774,7 +774,7 @@ export class Pool {
         token
       )
       let decimals = await tokenContract.methods.decimals().call()
-      if (decimals == 0) {
+      if (decimals === '0') {
         decimals = 18
       }
       const amountFormatted = new BigNumber(parseInt(amount) / 10 ** decimals)
@@ -1528,12 +1528,13 @@ export class Pool {
     tokenAmountIn: string
   ): Promise<string> {
     const pool = new this.web3.eth.Contract(this.poolABI, poolAddress)
-    console.log('pool ', pool.methods)
     let amount = null
+
     try {
       const result = await pool.methods
         .calcPoolOutSingleIn(tokenIn, await this.amountToUnits(tokenIn, tokenAmountIn))
         .call()
+
       amount = await this.unitsToAmount(poolAddress, result)
     } catch (e) {
       this.logger.error(`ERROR: Failed to calculate PoolOutGivenSingleIn : ${e.message}`)
@@ -1549,12 +1550,12 @@ export class Pool {
     const pool = new this.web3.eth.Contract(this.poolABI, poolAddress)
     let amount = null
     const amountFormatted = await this.amountToUnits(poolAddress, poolAmountOut)
-
     try {
       const result = await pool.methods
         .calcSingleInPoolOut(tokenIn, amountFormatted)
 
         .call()
+
       amount = await this.unitsToAmount(tokenIn, result)
     } catch (e) {
       this.logger.error(`ERROR: Failed to calculate SingleInGivenPoolOut : ${e.message}`)
@@ -1569,6 +1570,7 @@ export class Pool {
   ): Promise<string> {
     const pool = new this.web3.eth.Contract(this.poolABI, poolAddress)
     let amount = null
+
     try {
       const result = await pool.methods
         .calcSingleOutPoolIn(
@@ -1578,7 +1580,7 @@ export class Pool {
         .call()
       amount = await this.unitsToAmount(tokenOut, result)
     } catch (e) {
-      this.logger.error(`ERROR: Failed to calculate SingleOutGivenPoolIn : ${e.message}`)
+      this.logger.error(`ERROR: Failed to calculate SingleOutGivenPoolIn : ${e}`)
     }
     return amount
   }
@@ -1590,6 +1592,7 @@ export class Pool {
   ): Promise<string> {
     const pool = new this.web3.eth.Contract(this.poolABI, poolAddress)
     let amount = null
+
     try {
       const result = await pool.methods
         .calcPoolInSingleOut(tokenOut, await this.amountToUnits(tokenOut, tokenAmountOut))

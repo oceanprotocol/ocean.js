@@ -92,16 +92,16 @@ export class SideStaking {
     ssAddress: string,
     datatokenAddress: string
   ): Promise<string> {
-    const sideStaking = new this.web3.eth.Contract(this.ssABI, ssAddress)
-    let result = null
     try {
+      const sideStaking = new this.web3.eth.Contract(this.ssABI, ssAddress)
+      let result = null
       result = await sideStaking.methods
         .getDataTokenCurrentCirculatingSupply(datatokenAddress)
         .call()
+      return result.toString()
     } catch (e) {
       LoggerInstance.error(`ERROR: Failed to get: ${e.message}`)
     }
-    return result.toString()
   }
 
   /**
