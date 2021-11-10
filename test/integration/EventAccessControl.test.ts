@@ -4,7 +4,7 @@ import { assert } from 'chai'
 
 describe('Event Access Control tests', () => {
   let ocean: Ocean
-  const aliceWallet = '0xbcE5A3468386C64507D30136685A99cFD5603135'
+  const aliceWallet = '0xBE5449a6A97aD46c8558A3356267Ee5D2731ab5e'
 
   it('Initialize Ocean with Event Access Control', async () => {
     const rbacUri = 'http://localhost:3000'
