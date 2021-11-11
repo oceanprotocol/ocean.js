@@ -124,6 +124,8 @@ describe('Pool unit test', () => {
       await usdcContract.methods.decimals().call(),
       'USDC DECIMALS IN THIS TEST'
     )
+
+    await pool.amountToUnits(contracts.usdcAddress, '20')
   })
 
   describe('Test a pool with DAI (18 Decimals)', () => {
@@ -241,7 +243,6 @@ describe('Pool unit test', () => {
 
     it('#isFinalized - should return true if pool is finalized', async () => {
       expect(await pool.isFinalized(poolAddress)).to.equal(true)
-      expect(await pool.isFinalized(contracts.oceanAddress)).to.equal(null)
     })
 
     it('#getSwapFee - should return the swap fee', async () => {
@@ -632,6 +633,77 @@ describe('Pool unit test', () => {
       expect(await erc20Contract.methods.balanceOf(user2).call()).to.equal('0')
     })
 
+    it('#calcPoolOutGivenSingleIn - should get the amount of pool OUT for exact token IN', async () => {
+      // since rate is 1 and the pool is just created
+      // amount of pool out received for same amount of different token In is equal
+      const tokenInAmount = '10' // 10 USDC or 10 DTs
+      expect(
+        await pool.calcPoolOutGivenSingleIn(poolAddress, erc20Token, tokenInAmount)
+      ).to.equal(
+        await pool.calcPoolOutGivenSingleIn(
+          poolAddress,
+          contracts.usdcAddress,
+          tokenInAmount
+        )
+      )
+      // console.log(await pool.calcPoolOutGivenSingleIn(poolAddress, erc20Token, tokenInAmount))
+    })
+
+    it('#calcSingleInGivenPoolOut - should get the amount of token IN for exact pool token OUT', async () => {
+      // since rate is 1 and the pool is just created
+      // amount of different token In for getting same pool amount out is equal
+      const poolAmountOut = '1'
+      expect(
+        parseInt(
+          await pool.calcSingleInGivenPoolOut(poolAddress, erc20Token, poolAmountOut)
+        )
+      ).to.be.closeTo(
+        parseInt(
+          await pool.calcSingleInGivenPoolOut(
+            poolAddress,
+            contracts.usdcAddress,
+            poolAmountOut
+          )
+        ),
+        1e9
+      )
+    })
+
+    it('#calcSingleOutGivenPoolIn - should get the amount of token OUT for exact pool token IN', async () => {
+      // since rate is 1 and the pool is just created
+      // amount amount of different token Out for rediming the same pool In is equal
+      const poolAmountIn = '10'
+      expect(
+        await pool.calcSingleOutGivenPoolIn(poolAddress, erc20Token, poolAmountIn)
+      ).to.equal(
+        await pool.calcSingleOutGivenPoolIn(
+          poolAddress,
+          contracts.usdcAddress,
+          poolAmountIn
+        )
+      )
+    })
+
+    it('#calcPoolInGivenSingleOut - should get the amount of pool IN for exact token OUT', async () => {
+      // since rate is 1 and the pool is just created
+      // amount of pool In for getting the same amount of different token Out is equal
+      const tokenAmountOut = '10'
+      expect(
+        parseInt(
+          await pool.calcPoolInGivenSingleOut(poolAddress, erc20Token, tokenAmountOut)
+        )
+      ).to.be.closeTo(
+        parseInt(
+          await pool.calcPoolInGivenSingleOut(
+            poolAddress,
+            contracts.usdcAddress,
+            tokenAmountOut
+          )
+        ),
+        1e11
+      )
+    })
+
     it('#sharesBalance - should return user shares balance (datatoken balance, LPT balance, etc) ', async () => {
       expect(await usdcContract.methods.balanceOf(user2).call()).to.equal(
         await pool.sharesBalance(user2, contracts.usdcAddress)
@@ -685,7 +757,6 @@ describe('Pool unit test', () => {
 
     it('#isFinalized - should return true if pool is finalized', async () => {
       expect(await pool.isFinalized(poolAddress)).to.equal(true)
-      expect(await pool.isFinalized(contracts.oceanAddress)).to.equal(null)
     })
 
     it('#getSwapFee - should return the swap fee', async () => {
