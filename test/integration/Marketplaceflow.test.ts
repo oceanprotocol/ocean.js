@@ -68,6 +68,7 @@ describe('Marketplace flow', () => {
     )
     const config = new ConfigHelper().getConfig('development')
     config.web3Provider = web3
+    config.rbacUri = 'http://localhost:3000'
     ocean = await Ocean.getInstance(config)
     owner = (await ocean.accounts.list())[0]
     alice = (await ocean.accounts.list())[1]
