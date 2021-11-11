@@ -12,7 +12,7 @@ describe('Event Access Control tests', () => {
     await ocean.eventAccessControl.setBaseUrl(rbacUri)
     assert(ocean.eventAccessControl.url === rbacUri)
   })
-  
+
   it('Alice should not allow to publish an asset from the market', async () => {
     const isAllow = await ocean.eventAccessControl.isPermit(
       'market',
