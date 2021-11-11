@@ -68,7 +68,6 @@ describe('Marketplace flow', () => {
     )
     const config = new ConfigHelper().getConfig('development')
     config.web3Provider = web3
-    config.rbacUri = 'http://172.15.0.8:3000'
     ocean = await Ocean.getInstance(config)
     owner = (await ocean.accounts.list())[0]
     alice = (await ocean.accounts.list())[1]
@@ -815,6 +814,8 @@ describe('Marketplace flow', () => {
   })
 
   it('Bob should be able to consume an asset with allow list, because he is on that list', async () => {
+    const rbacUri = 'http://localhost:3000'
+    await ocean.eventAccessControl.setBaseUrl(rbacUri)
     const ddoWithAllowList = await ocean.assets.resolve(ddoWithCredentialsAllowList.id)
     let consumable = await ocean.assets.isConsumable(ddoWithAllowList, bob.getId())
     assert(consumable.status === 0)
