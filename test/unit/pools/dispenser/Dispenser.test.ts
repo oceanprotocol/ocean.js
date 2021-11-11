@@ -3,14 +3,19 @@ import { AbiItem, AbiInput } from 'web3-utils'
 import { assert, expect } from 'chai'
 import ERC721Factory from '@oceanprotocol/contracts/artifacts/contracts/ERC721Factory.sol/ERC721Factory.json'
 import ERC721Template from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC721Template.sol/ERC721Template.json'
-import ERC20Template from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC20Template.sol/ERC20Template.json'
+import SideStaking from '@oceanprotocol/contracts/artifacts/contracts/pools/ssContracts/SideStaking.sol/SideStaking.json'
 import FactoryRouter from '@oceanprotocol/contracts/artifacts/contracts/pools/FactoryRouter.sol/FactoryRouter.json'
+import ERC20Template from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC20Template.sol/ERC20Template.json'
 import DispenserTemplate from '@oceanprotocol/contracts/artifacts/contracts/pools/dispenser/Dispenser.sol/Dispenser.json'
-import { LoggerInstance } from '.../../../src/utils'
-import { Dispenser } from '.../../../src/pools/dispenser/'
-import { NFTFactory } from '.../../../src/factories/'
-import { Datatoken } from '.../../../src/datatokens/'
-import { TestContractHandler } from '../../TestContractHandler'
+import FixedRate from '@oceanprotocol/contracts/artifacts/contracts/pools/fixedRate/FixedRateExchange.sol/FixedRateExchange.json'
+import MockERC20 from '@oceanprotocol/contracts/artifacts/contracts/utils/mock/MockERC20Decimals.sol/MockERC20Decimals.json'
+import PoolTemplate from '@oceanprotocol/contracts/artifacts/contracts/pools/balancer/BPool.sol/BPool.json'
+import OPFCollector from '@oceanprotocol/contracts/artifacts/contracts/communityFee/OPFCommunityFeeCollector.sol/OPFCommunityFeeCollector.json'
+import { NFTFactory, NFTCreateData } from '../../../../src/factories/'
+import { Datatoken } from '../../../../src/datatokens/'
+import { Dispenser } from '../../../../src/pools/dispenser/'
+import { TestContractHandler } from '../../../TestContractHandler'
+import { Erc20CreateParams } from '../../../../src/interfaces'
 
 const web3 = new Web3('http://127.0.0.1:8545')
 
@@ -31,22 +36,25 @@ describe('Dispenser flow', () => {
   it('should deploy contracts', async () => {
     contracts = new TestContractHandler(
       web3,
-      ERC721Template.abi as AbiItem,
-      ERC20Template.abi as AbiItem,
-      null,
-      ERC721Factory.abi as AbiItem,
-      null,
-      null,
-      null,
-      DispenserTemplate.abi as AbiItem,
+      ERC721Template.abi as AbiItem[],
+      ERC20Template.abi as AbiItem[],
+      PoolTemplate.abi as AbiItem[],
+      ERC721Factory.abi as AbiItem[],
+      FactoryRouter.abi as AbiItem[],
+      SideStaking.abi as AbiItem[],
+      FixedRate.abi as AbiItem[],
+      DispenserTemplate.abi as AbiItem[],
+      OPFCollector.abi as AbiItem[],
+
       ERC721Template.bytecode,
       ERC20Template.bytecode,
-      null,
+      PoolTemplate.bytecode,
       ERC721Factory.bytecode,
       FactoryRouter.bytecode,
-      null,
-      null,
-      DispenserTemplate.bytecode
+      SideStaking.bytecode,
+      FixedRate.bytecode,
+      DispenserTemplate.bytecode,
+      OPFCollector.bytecode
     )
     await contracts.getAccounts()
     factoryOwner = contracts.accounts[0]
@@ -61,38 +69,38 @@ describe('Dispenser flow', () => {
   it('should initialize Dispenser class', async () => {
     DispenserClass = new Dispenser(
       web3,
-      DispenserAddress,
+      contracts.dispenserAddress,
       DispenserTemplate.abi as AbiItem[]
     )
     assert(DispenserClass !== null)
   })
 
   it('#createNftwithErc - should create an NFT and a Datatoken ', async () => {
-    nftFactory = new NFTFactory(contracts.factory721Address, web3, LoggerInstance)
+    nftFactory = new NFTFactory(contracts.factory721Address, web3)
 
-    const nftData = {
+    const nftData: NFTCreateData = {
       name: '72120Bundle',
       symbol: '72Bundle',
       templateIndex: 1,
       baseURI: 'https://oceanprotocol.com/nft/'
     }
-    const ercData = {
+
+    const ercParams: Erc20CreateParams = {
       templateIndex: 1,
-      strings: ['ERC20B1', 'ERC20DT1Symbol'],
-      addresses: [
-        contracts.accounts[0],
-        user3,
-        user2,
-        '0x0000000000000000000000000000000000000000'
-      ],
-      uints: [web3.utils.toWei('10000'), 0],
-      bytess: []
+      minter: contracts.accounts[0],
+      feeManager: user3,
+      mpFeeAddress: user2,
+      feeToken: '0x0000000000000000000000000000000000000000',
+      cap: '10000',
+      feeAmount: '0',
+      name: 'ERC20B1',
+      symbol: 'ERC20DT1Symbol'
     }
 
     const txReceipt = await nftFactory.createNftWithErc(
       contracts.accounts[0],
       nftData,
-      ercData
+      ercParams
     )
 
     expect(txReceipt.events.NFTCreated.event === 'NFTCreated')
@@ -103,13 +111,24 @@ describe('Dispenser flow', () => {
   })
 
   it('Make user2 minter', async () => {
-    datatoken = new Datatoken(web3, ERC20Template.abi as AbiItem)
-    await datatoken.addMinter(dtAddress, nftOwner, user2)
+    datatoken = new Datatoken(web3, ERC20Template.abi as AbiItem[])
+    await datatoken.addMinter(dtAddress, contracts.accounts[0], user2)
     assert((await datatoken.getDTPermissions(dtAddress, user2)).minter === true)
   })
 
-  it('user2 creates a dispenser', async () => {
-    const tx = await DispenserClass.activate(dtAddress, '1', '1', user2)
+  it('Create dispenser', async () => {
+    const tx = await DispenserClass.create(
+      dtAddress,
+      contracts.accounts[0],
+      '1',
+      '1',
+      '0x0000000000000000000000000000000000000000'
+    )
+    assert(tx, 'Cannot create dispenser')
+  })
+
+  it('Activate dispenser', async () => {
+    const tx = await DispenserClass.activate(dtAddress, '1', '1', contracts.accounts[0])
     assert(tx, 'Cannot activate dispenser')
   })
 
