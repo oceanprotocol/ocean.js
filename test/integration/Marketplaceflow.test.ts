@@ -814,8 +814,6 @@ describe('Marketplace flow', () => {
   })
 
   it('Bob should be able to consume an asset with allow list, because he is on that list', async () => {
-    const rbacUri = 'http://localhost:3000'
-    await ocean.eventAccessControl.setBaseUrl(rbacUri)
     const ddoWithAllowList = await ocean.assets.resolve(ddoWithCredentialsAllowList.id)
     let consumable = await ocean.assets.isConsumable(ddoWithAllowList, bob.getId())
     assert(consumable.status === 0)

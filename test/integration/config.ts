@@ -11,6 +11,5 @@ export default {
   providerUri: 'http://localhost:8030',
   nodeUri: `http://localhost:${process.env.ETH_PORT || 8545}`,
   verbose: LogLevel.Error,
-  web3Provider: web3,
-  rbacUri: 'http://localhost:3000'
+  web3Provider: web3
 } as Config
