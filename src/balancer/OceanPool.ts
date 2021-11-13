@@ -4,8 +4,15 @@ import { TransactionReceipt, Log } from 'web3-core'
 import { Pool } from './Pool'
 import { EventData, Filter } from 'web3-eth-contract'
 import BigNumber from 'bignumber.js'
-import { SubscribablePromise, Logger, didNoZeroX, didPrefixed } from '../utils'
+import {
+  SubscribablePromise,
+  Logger,
+  didNoZeroX,
+  didPrefixed,
+  setContractDefaults
+} from '../utils'
 import Decimal from 'decimal.js'
+import { ConfigHelperConfig } from '../utils/ConfigHelper'
 
 declare type PoolTransactionType = 'swap' | 'join' | 'exit'
 
@@ -65,14 +72,13 @@ export class OceanPool extends Pool {
     poolABI: AbiItem | AbiItem[] = null,
     factoryAddress: string = null,
     oceanAddress: string = null,
-    startBlock?: number
+    config?: ConfigHelperConfig
   ) {
-    super(web3, logger, factoryABI, poolABI, factoryAddress)
+    super(web3, logger, factoryABI, poolABI, factoryAddress, config)
     if (oceanAddress) {
       this.oceanAddress = oceanAddress
     }
-    if (startBlock) this.startBlock = startBlock
-    else this.startBlock = 0
+    this.startBlock = (config && config.startBlock) || 0
   }
 
   /**
@@ -955,7 +961,10 @@ export class OceanPool extends Pool {
    */
   public async searchPoolforDT(dtAddress: string): Promise<string[]> {
     const result: string[] = []
-    const factory = new this.web3.eth.Contract(this.factoryABI, this.factoryAddress)
+    const factory = setContractDefaults(
+      new this.web3.eth.Contract(this.factoryABI, this.factoryAddress),
+      this.config
+    )
     const events = await factory.getPastEvents('BPoolRegistered', {
       filter: {},
       fromBlock: this.startBlock,
@@ -1020,7 +1029,10 @@ export class OceanPool extends Pool {
    */
   public async getPoolsbyCreator(account?: string): Promise<PoolDetails[]> {
     const result: PoolDetails[] = []
-    const factory = new this.web3.eth.Contract(this.factoryABI, this.factoryAddress)
+    const factory = setContractDefaults(
+      new this.web3.eth.Contract(this.factoryABI, this.factoryAddress),
+      this.config
+    )
 
     const events = await factory.getPastEvents('BPoolRegistered', {
       filter: account ? { registeredBy: account } : {},
@@ -1056,7 +1068,10 @@ export class OceanPool extends Pool {
    */
   public async getPoolSharesByAddress(account: string): Promise<PoolShare[]> {
     const result: PoolShare[] = []
-    const factory = new this.web3.eth.Contract(this.factoryABI, this.factoryAddress)
+    const factory = setContractDefaults(
+      new this.web3.eth.Contract(this.factoryABI, this.factoryAddress),
+      this.config
+    )
     const events = await factory.getPastEvents('BPoolRegistered', {
       filter: {},
       fromBlock: this.startBlock,
@@ -1171,7 +1186,10 @@ export class OceanPool extends Pool {
    */
   public async getAllPoolLogs(account: string): Promise<PoolTransaction[]> {
     const results: PoolTransaction[][] = []
-    const factory = new this.web3.eth.Contract(this.factoryABI, this.factoryAddress)
+    const factory = setContractDefaults(
+      new this.web3.eth.Contract(this.factoryABI, this.factoryAddress),
+      this.config
+    )
     const events = await factory.getPastEvents('BPoolRegistered', {
       filter: {},
       fromBlock: this.startBlock,

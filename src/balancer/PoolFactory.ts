@@ -1,8 +1,9 @@
 import Web3 from 'web3'
 import { AbiItem } from 'web3-utils/types'
-import { Logger } from '../utils'
+import { Logger, setContractDefaults, getFairGasPrice } from '../utils'
 import jsonFactoryABI from '@oceanprotocol/contracts/artifacts/BFactory.json'
 import { TransactionReceipt } from 'web3-core'
+import { ConfigHelperConfig } from '../utils/ConfigHelper'
 
 export class PoolFactory {
   public GASLIMIT_DEFAULT = 1000000
@@ -10,12 +11,14 @@ export class PoolFactory {
   public factoryABI: AbiItem | AbiItem[]
   public factoryAddress: string
   public logger: Logger
+  public config: ConfigHelperConfig
 
   constructor(
     web3: Web3,
     logger: Logger,
     factoryABI: AbiItem | AbiItem[] = null,
-    factoryAddress: string = null
+    factoryAddress: string = null,
+    config?: ConfigHelperConfig
   ) {
     this.web3 = web3
 
@@ -25,6 +28,7 @@ export class PoolFactory {
       this.factoryAddress = factoryAddress
     }
     this.logger = logger
+    this.config = config
   }
 
   /**
@@ -41,9 +45,12 @@ export class PoolFactory {
       return null
     }
 
-    const factory = new this.web3.eth.Contract(this.factoryABI, this.factoryAddress, {
-      from: account
-    })
+    const factory = setContractDefaults(
+      new this.web3.eth.Contract(this.factoryABI, this.factoryAddress, {
+        from: account
+      }),
+      this.config
+    )
     let txid = null
     const gasLimitDefault = this.GASLIMIT_DEFAULT
     let estGas
@@ -57,7 +64,11 @@ export class PoolFactory {
       estGas = gasLimitDefault
     }
     try {
-      txid = await factory.methods.newBPool().send({ from: account, gas: estGas + 1 })
+      txid = await factory.methods.newBPool().send({
+        from: account,
+        gas: estGas + 1,
+        gasPrice: await getFairGasPrice(this.web3, this.config)
+      })
       // pooladdress = transactiondata.events.BPoolRegistered.returnValues[0]
     } catch (e) {
       this.logger.error(`ERROR: Failed to create new pool: ${e.message}`)
