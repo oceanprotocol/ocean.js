@@ -8,7 +8,7 @@ import { Credentials } from './Credentials'
  */
 export class DDO {
   /**
-   * Contexts used for validation..
+   * Contexts used for validation.
    * @type {string[]}
    */
   public '@context': string[]

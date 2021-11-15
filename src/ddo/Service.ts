@@ -90,6 +90,12 @@ export interface ServiceComputeOptions {
 
 export interface Service {
   /**
+   * Unique ID
+   * @type {string}
+   */
+  id: string
+
+  /**
    * Type of service (access, compute, wss.
    * @type {string}
    */
@@ -133,7 +139,7 @@ export interface Service {
 
   /**
    * If service is of typecompute, holds information about the compute-related privacy settings & resources.
-   * @type {string}
+   * @type {ServiceComputeOptions}
    */
   compute?: ServiceComputeOptions
 }

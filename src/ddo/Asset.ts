@@ -35,9 +35,21 @@ export interface AssetNft {
    * @type {number}
    */
   state: 0 | 1 | 2 | 3 | 4
+
+  /**
+   * Contains the date of NFT creation.
+   * @type {string}
+   */
+  created: string
 }
 
 export interface AssetDatatoken {
+  /**
+   * Contract address of the deployed ERC20 contract.
+   * @type {string}
+   */
+  address: string
+
   /**
    * Name of NFT set in contract.
    * @type {string}
@@ -51,12 +63,6 @@ export interface AssetDatatoken {
   symbol: string
 
   /**
-   * Contract address of the deployed ERC20 contract.
-   * @type {string}
-   */
-  address: string
-
-  /**
    * ID of the service the datatoken is attached to.
    * @type {string}
    */
@@ -68,6 +74,7 @@ export interface AssetLastEvent {
   block: number
   from: string
   contract: string
+  datetime: string
 }
 
 export class Asset extends DDO {
@@ -93,17 +100,17 @@ export class Asset extends DDO {
    * The stats section contains different statistics fields.
    * @type {string}
    */
-  stats: { consume: number }
+  stats: {
+    /**
+     * How often an asset was consumed, meaning how often it was either downloaded or used as part of a compute job.
+     * @type {string}
+     */
+    consume: number
 
-  /**
-   * If asset is listed in purgatory and reason.
-   * @type {string}
-   */
-  isInPurgatory: string
-
-  /**
-   * Name of NFT set in contract.
-   * @type {AssetDatatoken}
-   */
-  dataTokenInfo: AssetDatatoken // To be removed
+    /**
+     * If asset is listed in purgatory and reason.
+     * @type {string}
+     */
+    isInPurgatory: string
+  }
 }
