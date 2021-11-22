@@ -1,6 +1,6 @@
 import { Config } from '../models'
 import { LoggerInstance } from '../utils'
-import { DDO } from '../ddo'
+import { Asset } from '../ddo/Asset'
 import { FileMetadata } from '../interfaces/FileMetadata'
 
 export interface ServiceEndpoint {
@@ -178,13 +178,13 @@ export class Provider {
    * @return {Promise<File[]>} urlDetails
    */
   public async initialize(
-    asset: DDO | string,
+    asset: Asset,
     serviceIndex: number,
     serviceType: string,
     consumerAddress: string,
-    userCustomParameters?: UserCustomParameters,
     providerUri: string,
-    fetchMethod: any
+    fetchMethod: any,
+    userCustomParameters?: UserCustomParameters
   ): Promise<string> {
     const providerEndpoints = await this.getEndpoints(providerUri, fetchMethod)
     const serviceEndpoints = await this.getServiceEndpoints(
@@ -196,10 +196,10 @@ export class Provider {
       : null
 
     if (!initializeUrl) return null
-    initializeUrl += `?documentId=${asset.did}`
+    initializeUrl += `?documentId=${asset.id}`
     initializeUrl += `&serviceId=${serviceIndex}`
     initializeUrl += `&serviceType=${serviceType}`
-    initializeUrl += `&dataToken=${asset.dataToken}`
+    initializeUrl += `&dataToken=${asset.datatokens[0]}` // to check later
     initializeUrl += `&consumerAddress=${consumerAddress}`
     if (userCustomParameters)
       initializeUrl += '&userdata=' + encodeURI(JSON.stringify(userCustomParameters))
