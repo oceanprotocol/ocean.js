@@ -523,7 +523,7 @@ export class Datatoken {
   }
 
   /**
-   * Estimate gas for addFeeManager method
+   * Estimate gas for addPaymentManager method
    * @param {String} dtAddress Datatoken address
    * @param {String} address User address
    * @param {String} paymentManager User which is going to be a Minter
@@ -544,7 +544,7 @@ export class Datatoken {
     let estGas
     try {
       estGas = await dtContract.methods
-        .addFeeManager(paymentManager)
+        .addPaymentManager(paymentManager)
         .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
     } catch (e) {
       estGas = gasLimitDefault
@@ -554,7 +554,7 @@ export class Datatoken {
   }
 
   /**
-   * Add addPaymentManager for an ERC20 datatoken
+   * Add addPaymentManager (can set who's going to collect fee when consuming orders)
    * only ERC20Deployer can succeed
    * @param {String} dtAddress Datatoken address
    * @param {String} address User address
@@ -588,17 +588,17 @@ export class Datatoken {
   }
 
   /**
-   * Estimate gas for removeFeeManager method
+   * Estimate gas for removePaymentManager method
    * @param {String} dtAddress Datatoken address
    * @param {String} address User address
-   * @param {String} feeManager User which will be removed from FeeManager permission
+   * @param {String} paymentManager User which will be removed from paymentManager permission
    * @param {Contract} contractInstance optional contract instance
    * @return {Promise<any>}
    */
-  public async estGasRemoveFeeManager(
+  public async estGasRemovePaymentManager(
     dtAddress: string,
     address: string,
-    feeManager: string,
+    paymentManager: string,
     contractInstance?: Contract
   ): Promise<any> {
     const dtContract =
@@ -608,7 +608,7 @@ export class Datatoken {
     let estGas
     try {
       estGas = await dtContract.methods
-        .removeFeeManager(feeManager)
+        .removePaymentManager(paymentManager)
         .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
     } catch (e) {
       estGas = gasLimitDefault
@@ -617,50 +617,52 @@ export class Datatoken {
   }
 
   /**
-   * Revoke FeeManager permission for an ERC20 datatoken
+   * Revoke paymentManager permission for an ERC20 datatoken
    * only ERC20Deployer can succeed
    * @param {String} dtAddress Datatoken address
    * @param {String} address User address
-   * @param {String} feeManager User which will be removed from FeeManager permission
+   * @param {String} paymentManager User which will be removed from paymentManager permission
    * @return {Promise<TransactionReceipt>} trxReceipt
    */
-  public async removeFeeManager(
+  public async removePaymentManager(
     dtAddress: string,
     address: string,
-    feeManager: string
+    paymentManager: string
   ): Promise<TransactionReceipt> {
     const dtContract = new this.web3.eth.Contract(this.datatokensABI, dtAddress)
 
     // should check ERC20Deployer role using erc721 level ..
-    const estGas = await this.estGasRemoveFeeManager(
+    const estGas = await this.estGasRemovePaymentManager(
       dtAddress,
       address,
-      feeManager,
+      paymentManager,
       dtContract
     )
 
     // Call removeFeeManager function of the contract
-    const trxReceipt = await dtContract.methods.removeFeeManager(feeManager).send({
-      from: address,
-      gas: estGas + 1,
-      gasPrice: await getFairGasPrice(this.web3)
-    })
+    const trxReceipt = await dtContract.methods
+      .removePaymentManager(paymentManager)
+      .send({
+        from: address,
+        gas: estGas + 1,
+        gasPrice: await getFairGasPrice(this.web3)
+      })
 
     return trxReceipt
   }
 
   /**
-   * Estimate gas for setFeeCollector method
-   * @param dtAddress datatoken address where we want to clean permissions address
+   * Estimate gas for setPaymentCollector method
+   * @param dtAddress datatoken address
    * @param address Caller address
-   * @param feeCollector User to be set as new fee collector
+   * @param paymentCollector User to be set as new payment collector
    * @param {Contract} contractInstance optional contract instance
    * @return {Promise<any>}
    */
-  public async estGasSetFeeCollector(
+  public async estGasSetPaymentCollector(
     dtAddress: string,
     address: string,
-    feeCollector: string,
+    paymentCollector: string,
     contractInstance?: Contract
   ): Promise<any> {
     const dtContract =
@@ -670,7 +672,7 @@ export class Datatoken {
     let estGas
     try {
       estGas = await dtContract.methods
-        .setFeeCollector(feeCollector)
+        .setPaymentCollector(paymentCollector)
         .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
     } catch (e) {
       estGas = gasLimitDefault
@@ -679,48 +681,51 @@ export class Datatoken {
   }
 
   /**
-   * Set a new fee Collector, if feeCollector is address(0), feeCollector is NFT Owner
+   * This function allows to set a new PaymentCollector (receives DT when consuming)
+   * If not set the paymentCollector is the NFT Owner
    * only NFT owner can call
-   * @param dtAddress datatoken address where we want to clean permissions address
+   * @param dtAddress datatoken address
    * @param address Caller address
-   * @param feeCollector User to be set as new fee collector
+   * @param paymentCollector User to be set as new payment collector
    * @return {Promise<TransactionReceipt>} trxReceipt
    */
-  public async setFeeCollector(
+  public async setPaymentCollector(
     dtAddress: string,
     address: string,
-    feeCollector: string
+    paymentCollector: string
   ): Promise<TransactionReceipt> {
     const dtContract = new this.web3.eth.Contract(this.datatokensABI, dtAddress)
     if ((await this.getDTPermissions(dtAddress, address)).paymentManager !== true) {
       throw new Error(`Caller is not Fee Manager`)
     }
 
-    const estGas = await this.estGasSetFeeCollector(
+    const estGas = await this.estGasSetPaymentCollector(
       dtAddress,
       address,
-      feeCollector,
+      paymentCollector,
       dtContract
     )
 
     // Call setFeeCollector method of the contract
-    const trxReceipt = await dtContract.methods.setFeeCollector(feeCollector).send({
-      from: address,
-      gas: estGas + 1,
-      gasPrice: await getFairGasPrice(this.web3)
-    })
+    const trxReceipt = await dtContract.methods
+      .setPaymentCollector(paymentCollector)
+      .send({
+        from: address,
+        gas: estGas + 1,
+        gasPrice: await getFairGasPrice(this.web3)
+      })
 
     return trxReceipt
   }
 
-  /** Get Fee Collector
+  /** getPaymentCollector - It returns the current paymentCollector
    * @param dtAddress datatoken address
    * @return {Promise<string>}
    */
-  public async getFeeCollector(dtAddress: string): Promise<string> {
+  public async getPaymentCollector(dtAddress: string): Promise<string> {
     const dtContract = new this.web3.eth.Contract(this.datatokensABI, dtAddress)
-    const feeCollector = await dtContract.methods.getFeeCollector().call()
-    return feeCollector
+    const paymentCollector = await dtContract.methods.getPaymentCollector().call()
+    return paymentCollector
   }
 
   /**
@@ -1132,7 +1137,7 @@ export class Datatoken {
   }
 
   /**
-   * Clean erc20level Permissions (minters, feeManagers and reset the feeCollector) for an ERC20 datatoken
+   * Clean erc20level Permissions (minters, paymentManager and reset the paymentCollector) for an ERC20 datatoken
    * Only NFT Owner (at 721 level) can call it.
    * @param dtAddress Datatoken address where we want to clean permissions
    * @param address User adress
