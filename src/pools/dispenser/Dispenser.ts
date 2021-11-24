@@ -13,8 +13,7 @@ export interface DispenserToken {
   maxTokens: string
   maxBalance: string
   balance: string
-  minterApproved: boolean
-  isTrueMinter: boolean
+  isMinter: boolean
   allowedSwapper: string
 }
 
@@ -436,7 +435,7 @@ export class Dispenser {
     if (new Decimal(String(amount)).greaterThan(status.maxTokens)) return false
     // check dispenser balance
     const contractBalance = new Decimal(status.balance)
-    if (contractBalance.greaterThanOrEqualTo(amount) || status.isTrueMinter === true)
+    if (contractBalance.greaterThanOrEqualTo(amount) || status.isMinter === true)
       return true
     return false
   }

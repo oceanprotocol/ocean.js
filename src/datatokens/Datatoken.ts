@@ -338,8 +338,6 @@ export class Datatoken {
       dtContract
     )
 
-    console.log('dispenserParams', dispenserParams)
-
     // Call createFixedRate contract method
     const trxReceipt = await dtContract.methods
       .createDispenser(
