@@ -8,6 +8,7 @@ import PoolTemplate from '@oceanprotocol/contracts/artifacts/contracts/pools/bal
 import defaultPool from '@oceanprotocol/contracts/artifacts/contracts/pools/FactoryRouter.sol/FactoryRouter.json'
 import defaultERC20ABI from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC20Template.sol/ERC20Template.json'
 import Decimal from 'decimal.js'
+import { CurrentFees } from '../../interfaces'
 const BN = require('bn.js')
 
 const MaxUint256 =
@@ -509,6 +510,34 @@ export class Pool {
       this.logger.error(`ERROR: Failed to get market fees for a token: ${e.message}`)
     }
     return weight
+  }
+
+  /**
+   * Get Community  Get the current amount of fees which can be withdrawned by the Market
+   * @return {CurrentFees}
+   */
+  async getCurrentMarketFees(poolAddress: string): Promise<CurrentFees> {
+    const pool = new this.web3.eth.Contract(this.poolABI, poolAddress)
+    try {
+      const currentMarketFees = await pool.methods.getCurrentOPFFees().call()
+      return currentMarketFees
+    } catch (e) {
+      this.logger.error(`ERROR: Failed to get community fees for a token: ${e.message}`)
+    }
+  }
+
+  /**
+   * Get getCurrentOPFFees  Get the current amount of fees which can be withdrawned by OPF
+   * @return {CurrentFees}
+   */
+  async getCurrentOPFFees(poolAddress: string): Promise<CurrentFees> {
+    const pool = new this.web3.eth.Contract(this.poolABI, poolAddress)
+    try {
+      const currentMarketFees = await pool.methods.getCurrentOPFFees().call()
+      return currentMarketFees
+    } catch (e) {
+      this.logger.error(`ERROR: Failed to get community fees for a token: ${e.message}`)
+    }
   }
 
   /**

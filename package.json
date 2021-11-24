@@ -30,6 +30,7 @@
     "test:dispenser": "mocha --config=test/unit/.mocharc.json --node-env=test --exit 'test/unit/pools/dispenser/Dispenser.test.ts'",
     "test:dt": "mocha --config=test/unit/.mocharc.json --node-env=test --exit 'test/unit/Datatoken.test.ts'",
     "test:nftDt": "mocha --config=test/unit/.mocharc.json --node-env=test --exit 'test/unit/NFTDatatoken.test.ts'",
+    "test:factory": "mocha --config=test/unit/.mocharc.json --node-env=test --exit 'test/unit/NFTFactory.test.ts'",
     "test:router": "mocha --config=test/unit/.mocharc.json --node-env=test --exit 'test/unit/pools/Router.test.ts'",
     "test:unit": "mocha --config=test/unit/.mocharc.json --node-env=test --exit 'test/unit/**/*.test.ts'",
     "test:unit:cover": "nyc --report-dir coverage/unit npm run test:unit",
@@ -52,7 +53,7 @@
   },
   "dependencies": {
     "@ethereum-navigator/navigator": "^0.5.3",
-    "@oceanprotocol/contracts": "github:oceanprotocol/contracts#v4main",
+    "@oceanprotocol/contracts": "github:oceanprotocol/contracts#v4main_postaudit",
     "cross-fetch": "^3.1.4",
     "crypto-js": "^4.0.0",
     "decimal.js": "^10.2.1",

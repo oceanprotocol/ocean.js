@@ -13,7 +13,7 @@ import { FreOrderParams, FreCreationParams } from '../interfaces'
  */
 interface Roles {
   minter: boolean
-  feeManager: boolean
+  paymentManager: boolean
 }
 
 export interface OrderParams {
@@ -338,6 +338,8 @@ export class Datatoken {
       dtContract
     )
 
+    console.log('dispenserParams', dispenserParams)
+
     // Call createFixedRate contract method
     const trxReceipt = await dtContract.methods
       .createDispenser(
@@ -526,14 +528,14 @@ export class Datatoken {
    * Estimate gas for addFeeManager method
    * @param {String} dtAddress Datatoken address
    * @param {String} address User address
-   * @param {String} feeManager User which is going to be a Minter
+   * @param {String} paymentManager User which is going to be a Minter
    * @param {Contract} contractInstance optional contract instance
    * @return {Promise<any>}
    */
-  public async estGasAddFeeManager(
+  public async estGasAddPaymentManager(
     dtAddress: string,
     address: string,
-    feeManager: string,
+    paymentManager: string,
     contractInstance?: Contract
   ): Promise<any> {
     const dtContract =
@@ -544,7 +546,7 @@ export class Datatoken {
     let estGas
     try {
       estGas = await dtContract.methods
-        .addFeeManager(feeManager)
+        .addFeeManager(paymentManager)
         .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
     } catch (e) {
       estGas = gasLimitDefault
@@ -554,31 +556,31 @@ export class Datatoken {
   }
 
   /**
-   * Add FeeManager for an ERC20 datatoken
+   * Add addPaymentManager for an ERC20 datatoken
    * only ERC20Deployer can succeed
    * @param {String} dtAddress Datatoken address
    * @param {String} address User address
-   * @param {String} feeManager User which is going to be a Minter
+   * @param {String} paymentManager User which is going to be a Minter
    * @return {Promise<TransactionReceipt>} transactionId
    */
-  public async addFeeManager(
+  public async addPaymentManager(
     dtAddress: string,
     address: string,
-    feeManager: string
+    paymentManager: string
   ): Promise<TransactionReceipt> {
     const dtContract = new this.web3.eth.Contract(this.datatokensABI, dtAddress)
 
     // should check ERC20Deployer role using erc721 level ..
 
-    const estGas = await this.estGasAddFeeManager(
+    const estGas = await this.estGasAddPaymentManager(
       dtAddress,
       address,
-      feeManager,
+      paymentManager,
       dtContract
     )
 
-    // Call addFeeManager function of the contract
-    const trxReceipt = await dtContract.methods.addFeeManager(feeManager).send({
+    // Call addPaymentManager function of the contract
+    const trxReceipt = await dtContract.methods.addPaymentManager(paymentManager).send({
       from: address,
       gas: estGas + 1,
       gasPrice: await getFairGasPrice(this.web3)
@@ -692,7 +694,7 @@ export class Datatoken {
     feeCollector: string
   ): Promise<TransactionReceipt> {
     const dtContract = new this.web3.eth.Contract(this.datatokensABI, dtAddress)
-    if ((await this.getDTPermissions(dtAddress, address)).feeManager !== true) {
+    if ((await this.getDTPermissions(dtAddress, address)).paymentManager !== true) {
       throw new Error(`Caller is not Fee Manager`)
     }
 
@@ -1185,6 +1187,16 @@ export class Datatoken {
     const dtContract = new this.web3.eth.Contract(this.datatokensABI, dtAddress)
     const decimals = await dtContract.methods.decimals().call()
     return decimals
+  }
+
+  /** It returns the token decimals, how many supported decimal points
+   * @param {String} dtAddress Datatoken adress
+   * @return {Promise<number>}
+   */
+  public async getNFTAddress(dtAddress: string): Promise<string> {
+    const dtContract = new this.web3.eth.Contract(this.datatokensABI, dtAddress)
+    const nftAddress = await dtContract.methods.getERC721Address().call()
+    return nftAddress
   }
 
   /**

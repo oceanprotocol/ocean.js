@@ -17,7 +17,11 @@ import OPFCollector from '@oceanprotocol/contracts/artifacts/contracts/community
 import { LoggerInstance } from '../../../../src/utils'
 import { NFTFactory, NFTCreateData } from '../../../../src/factories/NFTFactory'
 import { Pool } from '../../../../src/pools/balancer/Pool'
-import { PoolCreationParams, Erc20CreateParams } from '../../../../src/interfaces'
+import {
+  PoolCreationParams,
+  Erc20CreateParams,
+  CurrentFees
+} from '../../../../src/interfaces'
 const { keccak256 } = require('@ethersproject/keccak256')
 const web3 = new Web3('http://127.0.0.1:8545')
 const communityCollector = '0xeE9300b7961e0a01d9f0adb863C7A227A07AaD75'
@@ -136,7 +140,7 @@ describe('Pool unit test', () => {
         name: '72120Bundle',
         symbol: '72Bundle',
         templateIndex: 1,
-        baseURI: 'https://oceanprotocol.com/nft/'
+        tokenURI: 'https://oceanprotocol.com/nft/'
       }
 
       const ercParams: Erc20CreateParams = {
@@ -579,7 +583,7 @@ describe('Pool unit test', () => {
         name: '72120Bundle',
         symbol: '72Bundle',
         templateIndex: 1,
-        baseURI: 'https://oceanprotocol.com/nft/'
+        tokenURI: 'https://oceanprotocol.com/nft/'
       }
 
       const ercParams: Erc20CreateParams = {
@@ -1050,6 +1054,18 @@ describe('Pool unit test', () => {
 
     it('#getOPFCollector- should get market fees for each token', async () => {
       assert((await pool.getOPFCollector(poolAddress)) === contracts.opfCollectorAddress)
+    })
+
+    it('#getCurrentMarketFees- should get curent market fees for each token', async () => {
+      const currentMarketFees: CurrentFees = await pool.getCurrentMarketFees(poolAddress)
+      console.log('currentMarketFees == ', currentMarketFees)
+      assert(currentMarketFees !== null)
+    })
+
+    it('#getCurrentOPFFees- should get curent market fees for each token', async () => {
+      const curentOPFFees: CurrentFees = await pool.getCurrentOPFFees(poolAddress)
+      console.log('curentOPFFees == ', curentOPFFees)
+      assert(curentOPFFees !== null)
     })
 
     it('#collectCommunityFee- should get community fees for each token', async () => {

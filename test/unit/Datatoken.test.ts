@@ -13,7 +13,7 @@ import OPFCollector from '@oceanprotocol/contracts/artifacts/contracts/community
 import MockERC20 from '@oceanprotocol/contracts/artifacts/contracts/utils/mock/MockERC20Decimals.sol/MockERC20Decimals.json'
 
 import { TestContractHandler } from '../TestContractHandler'
-import { NFTFactory } from '../../src/factories/NFTFactory'
+import { NFTFactory, NFTCreateData } from '../../src/factories/NFTFactory'
 import {
   Datatoken,
   NFTDatatoken,
@@ -88,11 +88,11 @@ describe('Datatoken', () => {
       web3,
       ERC721Factory.abi as AbiItem[]
     )
-    const nftData = {
+    const nftData: NFTCreateData = {
       name: nftName,
       symbol: nftSymbol,
       templateIndex: 1,
-      baseURI: 'https://oceanprotocol.com/nft/'
+      tokenURI: 'https://oceanprotocol.com/nft/'
     }
 
     nftAddress = await nftFactory.createNFT(nftOwner, nftData)
@@ -334,6 +334,11 @@ describe('Datatoken', () => {
     assert(
       (await datatoken.getDTPermissions(datatokenAddress, user1)).feeManager === false
     )
+  })
+
+  it('#getERC721Address - should succeed to get the parent ERC721 address', async () => {
+    const address = await datatoken.getNFTAddress(datatokenAddress)
+    assert(address, 'Not able to get the parent ERC721 address')
   })
 
   it('#setData - should set a value into 725Y standard, if nftDatatoken has ERC20Deployer permission', async () => {

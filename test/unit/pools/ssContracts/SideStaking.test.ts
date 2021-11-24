@@ -141,7 +141,7 @@ describe('SideStaking unit test', () => {
         name: '72120Bundle',
         symbol: '72Bundle',
         templateIndex: 1,
-        baseURI: 'https://oceanprotocol.com/nft/'
+        tokenURI: 'https://oceanprotocol.com/nft/'
       }
 
       const ercParams: Erc20CreateParams = {
@@ -420,7 +420,7 @@ describe('SideStaking unit test', () => {
         name: '72120Bundle',
         symbol: '72Bundle',
         templateIndex: 1,
-        baseURI: 'https://oceanprotocol.com/nft/'
+        tokenURI: 'https://oceanprotocol.com/nft/'
       }
 
       const ercParams: Erc20CreateParams = {
