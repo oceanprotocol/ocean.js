@@ -13,7 +13,7 @@ import OPFCollector from '@oceanprotocol/contracts/artifacts/contracts/community
 import MockERC20 from '@oceanprotocol/contracts/artifacts/contracts/utils/mock/MockERC20Decimals.sol/MockERC20Decimals.json'
 
 import { TestContractHandler } from '../TestContractHandler'
-import { NFTFactory } from '../../src/factories/NFTFactory'
+import { NFTFactory, NFTCreateData } from '../../src/factories/NFTFactory'
 import {
   Datatoken,
   NFTDatatoken,
@@ -88,11 +88,11 @@ describe('Datatoken', () => {
       web3,
       ERC721Factory.abi as AbiItem[]
     )
-    const nftData = {
+    const nftData: NFTCreateData = {
       name: nftName,
       symbol: nftSymbol,
       templateIndex: 1,
-      baseURI: 'https://oceanprotocol.com/nft/'
+      tokenURI: 'https://oceanprotocol.com/nft/'
     }
 
     nftAddress = await nftFactory.createNFT(nftOwner, nftData)
@@ -191,54 +191,56 @@ describe('Datatoken', () => {
     assert((await datatoken.getDTPermissions(datatokenAddress, user1)).minter === false)
   })
 
-  it('#addFeeManager - should add user2 as feeManager, if nftDatatoken has ERC20Deployer permission', async () => {
+  it('#addPaymentManager - should add user2 as paymentManager, if nftDatatoken has ERC20Deployer permission', async () => {
     assert((await nftDatatoken.isErc20Deployer(nftAddress, nftOwner)) === true)
     assert(
-      (await datatoken.getDTPermissions(datatokenAddress, user2)).feeManager === false
+      (await datatoken.getDTPermissions(datatokenAddress, user2)).paymentManager === false
     )
 
-    await datatoken.addFeeManager(datatokenAddress, nftOwner, user2)
+    await datatoken.addPaymentManager(datatokenAddress, nftOwner, user2)
 
     assert(
-      (await datatoken.getDTPermissions(datatokenAddress, user2)).feeManager === true
+      (await datatoken.getDTPermissions(datatokenAddress, user2)).paymentManager === true
     )
   })
 
-  it('#removeFeeManager - should remove user2 as feeManager, if nftDatatoken has ERC20Deployer permission', async () => {
+  it('#removePaymentManager - should remove user2 as paymentManager, if nftDatatoken has ERC20Deployer permission', async () => {
     assert((await nftDatatoken.isErc20Deployer(nftAddress, nftOwner)) === true)
     assert(
-      (await datatoken.getDTPermissions(datatokenAddress, user2)).feeManager === true
+      (await datatoken.getDTPermissions(datatokenAddress, user2)).paymentManager === true
     )
 
-    await datatoken.removeFeeManager(datatokenAddress, nftOwner, user2)
+    await datatoken.removePaymentManager(datatokenAddress, nftOwner, user2)
 
     assert(
-      (await datatoken.getDTPermissions(datatokenAddress, user2)).feeManager === false
+      (await datatoken.getDTPermissions(datatokenAddress, user2)).paymentManager === false
     )
   })
 
-  it('#setFeeCollector - should fail to set a new feeCollector, if NOT Fee Manager', async () => {
-    await datatoken.removeFeeManager(datatokenAddress, nftOwner, user2)
+  it('#setPaymentCollector - should fail to set a new paymentCollector, if NOT PAYMENT Manager', async () => {
     assert(
-      (await datatoken.getDTPermissions(datatokenAddress, user2)).feeManager === false
+      (await datatoken.getDTPermissions(datatokenAddress, user2)).paymentManager === false
     )
 
     try {
-      await datatoken.setFeeCollector(datatokenAddress, user1, user2)
+      await datatoken.setPaymentCollector(datatokenAddress, user1, user2)
     } catch (e) {
       assert(e.message === 'Caller is not Fee Manager')
     }
   })
 
-  it('#setFeeCollector - should set a new feeCollector, if FEE MANAGER', async () => {
-    assert((await datatoken.getFeeCollector(datatokenAddress)) === user2)
+  it('#setPaymentCollector - should set a new paymentCollector, if PAYMENT MANAGER', async () => {
+    assert((await datatoken.getPaymentCollector(datatokenAddress)) === user1)
+
+    await datatoken.addPaymentManager(datatokenAddress, nftOwner, user1)
 
     assert(
-      (await datatoken.getDTPermissions(datatokenAddress, user1)).feeManager === true
+      (await datatoken.getDTPermissions(datatokenAddress, user1)).paymentManager === true
     )
 
-    await datatoken.setFeeCollector(datatokenAddress, user1, user3)
-    assert((await datatoken.getFeeCollector(datatokenAddress)) === user3)
+    await datatoken.setPaymentCollector(datatokenAddress, user1, user3)
+
+    assert((await datatoken.getPaymentCollector(datatokenAddress)) === user3)
   })
 
   it('#startOrder- user2 should create an order for DT ', async () => {
@@ -270,7 +272,7 @@ describe('Datatoken', () => {
     assert(
       (await datatoken.balance(
         datatokenAddress,
-        await datatoken.getFeeCollector(datatokenAddress)
+        await datatoken.getPaymentCollector(datatokenAddress)
       )) === '1',
       'Invalid publisher reward, we should have 1 DT'
     )
@@ -317,23 +319,28 @@ describe('Datatoken', () => {
   it('#cleanPermissions - should clean permissions at ERC20 level', async () => {
     assert((await datatoken.getDTPermissions(datatokenAddress, nftOwner)).minter === true)
 
-    assert((await datatoken.getFeeCollector(datatokenAddress)) === user3)
+    assert((await datatoken.getPaymentCollector(datatokenAddress)) === user3)
 
     assert(
-      (await datatoken.getDTPermissions(datatokenAddress, user1)).feeManager === true
+      (await datatoken.getDTPermissions(datatokenAddress, user1)).paymentManager === true
     )
 
     await datatoken.cleanPermissions(datatokenAddress, nftOwner)
 
-    assert((await datatoken.getFeeCollector(datatokenAddress)) === nftOwner)
+    assert((await datatoken.getPaymentCollector(datatokenAddress)) === nftOwner)
 
     assert(
       (await datatoken.getDTPermissions(datatokenAddress, nftOwner)).minter === false
     )
 
     assert(
-      (await datatoken.getDTPermissions(datatokenAddress, user1)).feeManager === false
+      (await datatoken.getDTPermissions(datatokenAddress, user1)).paymentManager === false
     )
+  })
+
+  it('#getERC721Address - should succeed to get the parent ERC721 address', async () => {
+    const address = await datatoken.getNFTAddress(datatokenAddress)
+    assert(address, 'Not able to get the parent ERC721 address')
   })
 
   it('#setData - should set a value into 725Y standard, if nftDatatoken has ERC20Deployer permission', async () => {

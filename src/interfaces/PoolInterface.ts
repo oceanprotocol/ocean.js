@@ -13,3 +13,8 @@ export interface PoolCreationParams {
   swapFeeLiquidityProvider: number
   swapFeeMarketPlaceRunner: number
 }
+
+export interface CurrentFees {
+  tokens: string[]
+  amounts: string[]
+}

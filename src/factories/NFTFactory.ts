@@ -32,7 +32,7 @@ export interface NFTCreateData {
   name: string
   symbol: string
   templateIndex: number
-  baseURI: string
+  tokenURI: string
 }
 
 /**
@@ -84,7 +84,7 @@ export class NFTFactory {
           nftData.symbol,
           nftData.templateIndex,
           '0x0000000000000000000000000000000000000000',
-          nftData.baseURI
+          nftData.tokenURI
         )
         .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
     } catch (e) {
@@ -117,7 +117,7 @@ export class NFTFactory {
         nftData.symbol,
         nftData.templateIndex,
         '0x0000000000000000000000000000000000000000',
-        nftData.baseURI
+        nftData.tokenURI
       )
       .send({
         from: address,

@@ -13,7 +13,7 @@ import OPFCollector from '@oceanprotocol/contracts/artifacts/contracts/community
 import MockERC20 from '@oceanprotocol/contracts/artifacts/contracts/utils/mock/MockERC20Decimals.sol/MockERC20Decimals.json'
 
 import { TestContractHandler } from '../TestContractHandler'
-import { NFTFactory } from '../../src/factories/NFTFactory'
+import { NFTFactory, NFTCreateData } from '../../src/factories/NFTFactory'
 import { NFTDatatoken } from '../../src/datatokens/NFTDatatoken'
 import { AbiItem } from 'web3-utils'
 import { LoggerInstance } from '../../src/utils'
@@ -72,11 +72,11 @@ describe('NFTDatatoken', () => {
       web3,
       ERC721Factory.abi as AbiItem[]
     )
-    const nftData = {
+    const nftData: NFTCreateData = {
       name: nftName,
       symbol: nftSymbol,
       templateIndex: 1,
-      baseURI: 'https://oceanprotocol.com/nft/'
+      tokenURI: 'https://oceanprotocol.com/nft/'
     }
 
     nftAddress = await nftFactory.createNFT(nftOwner, nftData)
