@@ -526,11 +526,17 @@ export class Assets extends Instantiable {
     mpAddress?: string,
     consumerAddress?: string,
     userCustomParameters?: UserCustomParameters,
+    authService = 'json',
     searchPreviousOrders = true
   ): Promise<string> {
     let service: Service
     const { ddo } = await assetResolve(asset, this.ocean)
-    const consumable = await this.isConsumable(ddo, consumerAddress)
+    const consumable = await this.isConsumable(
+      ddo,
+      consumerAddress,
+      'address',
+      authService
+    )
     if (!consumable.result) {
       throw new Error(`Order asset failed, ` + consumable.message)
     }
@@ -731,7 +737,8 @@ export class Assets extends Instantiable {
   public async isConsumable(
     ddo: DDO,
     consumer?: string,
-    authService = 'json'
+    credentialsType?: string,
+    authService?: string
   ): Promise<Consumable> {
     let status = 0
     let message = 'All good'
@@ -754,6 +761,7 @@ export class Assets extends Instantiable {
         'consume',
         authService,
         consumer,
+        credentialsType,
         ddo.id
       )
       if (!isPermit) {

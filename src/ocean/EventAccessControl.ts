@@ -31,6 +31,7 @@ export class EventAccessControl extends Instantiable {
     eventType: string,
     authService: string,
     credentials: string,
+    credentialsType: string,
     did?: string
   ): Promise<boolean> {
     if (!this.url) return true
@@ -42,7 +43,7 @@ export class EventAccessControl extends Instantiable {
         authService,
         did,
         credentials: {
-          type: authService,
+          type: credentialsType,
           value: credentials
         }
       }
@@ -52,7 +53,7 @@ export class EventAccessControl extends Instantiable {
         eventType,
         authService,
         credentials: {
-          type: authService,
+          type: credentialsType,
           value: credentials
         }
       }
@@ -60,7 +61,8 @@ export class EventAccessControl extends Instantiable {
 
     try {
       const response = await this.ocean.utils.fetch.post(this.url, JSON.stringify(args))
-      const results = await response.json()
+      let results = await response.json()
+      results = JSON.stringify(results)
       return results === 'true'
     } catch (e) {
       this.logger.error(e)

@@ -17,9 +17,10 @@ describe('Event Access Control tests', () => {
     const isAllow = await ocean.eventAccessControl.isPermit(
       'market',
       'publish',
-      'address',
-      aliceWallet
+      'json',
+      aliceWallet,
+      'address'
     )
-    assert(isAllow === false)
+    assert(isAllow === true)
   })
 })
