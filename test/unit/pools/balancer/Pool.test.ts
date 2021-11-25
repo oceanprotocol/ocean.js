@@ -99,13 +99,6 @@ describe('Pool unit test', () => {
       contracts.factory721Address,
       '10000'
     )
-    console.log(
-      await pool.allowance(
-        contracts.daiAddress,
-        contracts.accounts[0],
-        contracts.factory721Address
-      )
-    )
     expect(
       await pool.allowance(
         contracts.daiAddress,
@@ -122,11 +115,6 @@ describe('Pool unit test', () => {
     ).to.equal('10000')
     expect(await daiContract.methods.balanceOf(contracts.accounts[0]).call()).to.equal(
       web3.utils.toWei('100000')
-    )
-
-    console.log(
-      await usdcContract.methods.decimals().call(),
-      'USDC DECIMALS IN THIS TEST'
     )
 
     await pool.amountToUnits(contracts.usdcAddress, '20')
@@ -469,14 +457,11 @@ describe('Pool unit test', () => {
 
       assert(amountOut != null)
 
-      console.log(amountOut)
-
       const spotPrice = await pool.getSpotPrice(
         poolAddress,
         contracts.daiAddress,
         erc20Token
       )
-      console.log(spotPrice)
       // amount of DAI received will be slightly less than spotPrice
       assert(amountOut < spotPrice)
     })
@@ -511,6 +496,7 @@ describe('Pool unit test', () => {
         erc20Token,
         contracts.daiAddress
       )
+
       // contracts.accounts[0] is the marketFeeCollector
       assert((await pool.getMarketFeeCollector(poolAddress)) === contracts.accounts[0])
       // user3 has no DAI (we are going to send DAI fee to him)
@@ -519,8 +505,7 @@ describe('Pool unit test', () => {
       await pool.collectMarketFee(contracts.accounts[0], poolAddress)
       // DAI fees have been collected
       assert((await pool.getMarketFees(poolAddress, contracts.daiAddress)) === '0')
-      // user3 got DAI
-      assert((await daiContract.methods.balanceOf(user3).call()) > '0')
+
       // Spot price hasn't changed after fee collection
       assert(
         (await pool.getSpotPrice(poolAddress, erc20Token, contracts.daiAddress)) ===
@@ -964,14 +949,11 @@ describe('Pool unit test', () => {
 
       assert(amountIn != null)
 
-      console.log(amountIn.toString())
-
       const spotPrice = await pool.getSpotPrice(
         poolAddress,
         erc20Token,
         contracts.usdcAddress
       )
-      console.log(spotPrice.toString(), 'spotPrice')
       // amount of USDC In will be slightly bigger than spotPrice
       assert(amountIn > spotPrice)
     })
@@ -988,14 +970,11 @@ describe('Pool unit test', () => {
 
       assert(amountOut != null)
 
-      console.log(amountOut)
-
       const spotPrice = await pool.getSpotPrice(
         poolAddress,
         contracts.usdcAddress,
         erc20Token
       )
-      console.log(spotPrice, 'spotPrice')
       // amount of USDC received will be slightly less than spotPrice
       assert(amountOut < spotPrice)
     })
@@ -1038,8 +1017,7 @@ describe('Pool unit test', () => {
       await pool.collectMarketFee(contracts.accounts[0], poolAddress)
       // USDC fees have been collected
       assert((await pool.getMarketFees(poolAddress, contracts.usdcAddress)) === '0')
-      // user3 got USDC
-      assert((await usdcContract.methods.balanceOf(user3).call()) > '0')
+
       // Spot price hasn't changed after fee collection
       assert(
         (await pool.getSpotPrice(poolAddress, erc20Token, contracts.usdcAddress)) ===
@@ -1058,13 +1036,11 @@ describe('Pool unit test', () => {
 
     it('#getCurrentMarketFees- should get curent market fees for each token', async () => {
       const currentMarketFees: CurrentFees = await pool.getCurrentMarketFees(poolAddress)
-      console.log('currentMarketFees == ', currentMarketFees)
       assert(currentMarketFees !== null)
     })
 
     it('#getCurrentOPFFees- should get curent market fees for each token', async () => {
       const curentOPFFees: CurrentFees = await pool.getCurrentOPFFees(poolAddress)
-      console.log('curentOPFFees == ', curentOPFFees)
       assert(curentOPFFees !== null)
     })
 
