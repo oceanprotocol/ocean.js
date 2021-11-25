@@ -531,12 +531,7 @@ export class Assets extends Instantiable {
   ): Promise<string> {
     let service: Service
     const { ddo } = await assetResolve(asset, this.ocean)
-    const consumable = await this.isConsumable(
-      ddo,
-      consumerAddress,
-      'address',
-      authService
-    )
+    const consumable = await this.isConsumable(ddo, payerAddress, 'address', authService)
     if (!consumable.result) {
       throw new Error(`Order asset failed, ` + consumable.message)
     }
