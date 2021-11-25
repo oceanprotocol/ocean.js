@@ -728,11 +728,16 @@ export class Assets extends Instantiable {
    * @param {consumer} string
    * @return {Promise<Consumable>}
    */
-  public async isConsumable(ddo: DDO, consumer?: string): Promise<Consumable> {
+  public async isConsumable(
+    ddo: DDO,
+    consumer?: string,
+    authService = 'json'
+  ): Promise<Consumable> {
     let status = 0
     let message = 'All good'
     let result = true
-    if (!ddo) return { status, message, result }
+    const allowedConsume = { status, message, result }
+    if (!ddo) return allowedConsume
     const metadata = ddo.findServiceByType('metadata')
 
     if (metadata.attributes.status?.isOrderDisabled) {
@@ -740,18 +745,20 @@ export class Assets extends Instantiable {
       message = 'Ordering this asset has been temporarily disabled by the publisher.'
       result = false
     }
+    const config = this.instanceConfig
+    if (!config?.config?.rbacUri) return allowedConsume
     if (consumer) {
       const eventAccessControl = await EventAccessControl.getInstance(this.instanceConfig)
       const isPermit = await eventAccessControl.isPermit(
         'market',
         'consume',
-        'address',
+        authService,
         consumer,
         ddo.id
       )
       if (!isPermit) {
         status = 2
-        message = 'Consume cccess is denied.'
+        message = 'Consume access is denied.'
         result = false
       }
     }
