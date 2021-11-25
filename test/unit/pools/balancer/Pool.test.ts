@@ -516,7 +516,7 @@ describe('Pool unit test', () => {
       // user3 has no DAI (we are going to send DAI fee to him)
       assert((await daiContract.methods.balanceOf(user3).call()) === '0')
       // only marketFeeCollector can call this, set user3 as receiver
-      await pool.collectMarketFee(contracts.accounts[0], poolAddress, user3)
+      await pool.collectMarketFee(contracts.accounts[0], poolAddress)
       // DAI fees have been collected
       assert((await pool.getMarketFees(poolAddress, contracts.daiAddress)) === '0')
       // user3 got DAI
@@ -1035,7 +1035,7 @@ describe('Pool unit test', () => {
       // user3 has no USDC (we are going to send USDC fee to him)
       assert((await usdcContract.methods.balanceOf(user3).call()) === '0')
       // only marketFeeCollector can call this, set user3 as receiver
-      await pool.collectMarketFee(contracts.accounts[0], poolAddress, user3)
+      await pool.collectMarketFee(contracts.accounts[0], poolAddress)
       // USDC fees have been collected
       assert((await pool.getMarketFees(poolAddress, contracts.usdcAddress)) === '0')
       // user3 got USDC

@@ -620,7 +620,6 @@ export class Pool {
   public async estCollectMarketFee(
     address: string,
     poolAddress: string,
-    to: string,
     contractInstance?: Contract
   ): Promise<number> {
     const poolContract =
@@ -631,7 +630,7 @@ export class Pool {
     let estGas
     try {
       estGas = await poolContract.methods
-        .collectMarketFee(to)
+        .collectMarketFee()
         .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
     } catch (e) {
       estGas = gasLimitDefault
@@ -648,18 +647,17 @@ export class Pool {
    */
   async collectMarketFee(
     address: string,
-    poolAddress: string,
-    to: string
+    poolAddress: string
   ): Promise<TransactionReceipt> {
     if ((await this.getMarketFeeCollector(poolAddress)) !== address) {
       throw new Error(`Caller is not MarketFeeCollector`)
     }
     const pool = new this.web3.eth.Contract(this.poolABI, poolAddress)
     let result = null
-    const estGas = await this.estCollectMarketFee(address, poolAddress, to)
+    const estGas = await this.estCollectMarketFee(address, poolAddress)
 
     try {
-      result = await pool.methods.collectMarketFee(to).send({
+      result = await pool.methods.collectMarketFee().send({
         from: address,
         gas: estGas + 1,
         gasPrice: await getFairGasPrice(this.web3)
@@ -671,7 +669,7 @@ export class Pool {
   }
 
   /**
-   * Estimate gas cost for collectMarketFee
+   * Estimate gas cost for updateMarketFeeCollector
    * @param {String} address
    * @param {String} poolAddress
    * @param {String} newCollector new market fee collector address

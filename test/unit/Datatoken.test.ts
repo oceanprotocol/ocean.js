@@ -217,8 +217,7 @@ describe('Datatoken', () => {
     )
   })
 
-  it('#setPaymentCollector - should fail to set a new feeCollector, if NOT Fee Manager', async () => {
-    await datatoken.removePaymentManager(datatokenAddress, nftOwner, user2)
+  it('#setPaymentCollector - should fail to set a new paymentCollector, if NOT PAYMENT Manager', async () => {
     assert(
       (await datatoken.getDTPermissions(datatokenAddress, user2)).paymentManager === false
     )
@@ -230,14 +229,17 @@ describe('Datatoken', () => {
     }
   })
 
-  it('#setPaymentCollector - should set a new feeCollector, if FEE MANAGER', async () => {
-    assert((await datatoken.getPaymentCollector(datatokenAddress)) === user2)
+  it('#setPaymentCollector - should set a new paymentCollector, if PAYMENT MANAGER', async () => {
+    assert((await datatoken.getPaymentCollector(datatokenAddress)) === user1)
+
+    await datatoken.addPaymentManager(datatokenAddress, nftOwner, user1)
 
     assert(
       (await datatoken.getDTPermissions(datatokenAddress, user1)).paymentManager === true
     )
 
     await datatoken.setPaymentCollector(datatokenAddress, user1, user3)
+
     assert((await datatoken.getPaymentCollector(datatokenAddress)) === user3)
   })
 
