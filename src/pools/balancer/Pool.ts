@@ -8,6 +8,7 @@ import PoolTemplate from '@oceanprotocol/contracts/artifacts/contracts/pools/bal
 import defaultPool from '@oceanprotocol/contracts/artifacts/contracts/pools/FactoryRouter.sol/FactoryRouter.json'
 import defaultERC20ABI from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC20Template.sol/ERC20Template.json'
 import Decimal from 'decimal.js'
+import { CurrentFees } from '../../interfaces'
 const BN = require('bn.js')
 
 const MaxUint256 =
@@ -512,6 +513,34 @@ export class Pool {
   }
 
   /**
+   * Get Community  Get the current amount of fees which can be withdrawned by the Market
+   * @return {CurrentFees}
+   */
+  async getCurrentMarketFees(poolAddress: string): Promise<CurrentFees> {
+    const pool = new this.web3.eth.Contract(this.poolABI, poolAddress)
+    try {
+      const currentMarketFees = await pool.methods.getCurrentOPFFees().call()
+      return currentMarketFees
+    } catch (e) {
+      this.logger.error(`ERROR: Failed to get community fees for a token: ${e.message}`)
+    }
+  }
+
+  /**
+   * Get getCurrentOPFFees  Get the current amount of fees which can be withdrawned by OPF
+   * @return {CurrentFees}
+   */
+  async getCurrentOPFFees(poolAddress: string): Promise<CurrentFees> {
+    const pool = new this.web3.eth.Contract(this.poolABI, poolAddress)
+    try {
+      const currentMarketFees = await pool.methods.getCurrentOPFFees().call()
+      return currentMarketFees
+    } catch (e) {
+      this.logger.error(`ERROR: Failed to get community fees for a token: ${e.message}`)
+    }
+  }
+
+  /**
    * Get Community Fees available to be collected for a specific token
    * @param {String} poolAddress
    * @param {String} token token we want to check fees
@@ -591,7 +620,6 @@ export class Pool {
   public async estCollectMarketFee(
     address: string,
     poolAddress: string,
-    to: string,
     contractInstance?: Contract
   ): Promise<number> {
     const poolContract =
@@ -602,7 +630,7 @@ export class Pool {
     let estGas
     try {
       estGas = await poolContract.methods
-        .collectMarketFee(to)
+        .collectMarketFee()
         .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
     } catch (e) {
       estGas = gasLimitDefault
@@ -619,18 +647,17 @@ export class Pool {
    */
   async collectMarketFee(
     address: string,
-    poolAddress: string,
-    to: string
+    poolAddress: string
   ): Promise<TransactionReceipt> {
     if ((await this.getMarketFeeCollector(poolAddress)) !== address) {
       throw new Error(`Caller is not MarketFeeCollector`)
     }
     const pool = new this.web3.eth.Contract(this.poolABI, poolAddress)
     let result = null
-    const estGas = await this.estCollectMarketFee(address, poolAddress, to)
+    const estGas = await this.estCollectMarketFee(address, poolAddress)
 
     try {
-      result = await pool.methods.collectMarketFee(to).send({
+      result = await pool.methods.collectMarketFee().send({
         from: address,
         gas: estGas + 1,
         gasPrice: await getFairGasPrice(this.web3)
@@ -642,7 +669,7 @@ export class Pool {
   }
 
   /**
-   * Estimate gas cost for collectMarketFee
+   * Estimate gas cost for updateMarketFeeCollector
    * @param {String} address
    * @param {String} poolAddress
    * @param {String} newCollector new market fee collector address

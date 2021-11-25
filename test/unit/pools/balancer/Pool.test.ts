@@ -17,7 +17,11 @@ import OPFCollector from '@oceanprotocol/contracts/artifacts/contracts/community
 import { LoggerInstance } from '../../../../src/utils'
 import { NFTFactory, NFTCreateData } from '../../../../src/factories/NFTFactory'
 import { Pool } from '../../../../src/pools/balancer/Pool'
-import { PoolCreationParams, Erc20CreateParams } from '../../../../src/interfaces'
+import {
+  PoolCreationParams,
+  Erc20CreateParams,
+  CurrentFees
+} from '../../../../src/interfaces'
 const { keccak256 } = require('@ethersproject/keccak256')
 const web3 = new Web3('http://127.0.0.1:8545')
 const communityCollector = '0xeE9300b7961e0a01d9f0adb863C7A227A07AaD75'
@@ -95,13 +99,6 @@ describe('Pool unit test', () => {
       contracts.factory721Address,
       '10000'
     )
-    console.log(
-      await pool.allowance(
-        contracts.daiAddress,
-        contracts.accounts[0],
-        contracts.factory721Address
-      )
-    )
     expect(
       await pool.allowance(
         contracts.daiAddress,
@@ -120,11 +117,6 @@ describe('Pool unit test', () => {
       web3.utils.toWei('100000')
     )
 
-    console.log(
-      await usdcContract.methods.decimals().call(),
-      'USDC DECIMALS IN THIS TEST'
-    )
-
     await pool.amountToUnits(contracts.usdcAddress, '20')
   })
 
@@ -136,7 +128,7 @@ describe('Pool unit test', () => {
         name: '72120Bundle',
         symbol: '72Bundle',
         templateIndex: 1,
-        baseURI: 'https://oceanprotocol.com/nft/'
+        tokenURI: 'https://oceanprotocol.com/nft/'
       }
 
       const ercParams: Erc20CreateParams = {
@@ -465,14 +457,11 @@ describe('Pool unit test', () => {
 
       assert(amountOut != null)
 
-      console.log(amountOut)
-
       const spotPrice = await pool.getSpotPrice(
         poolAddress,
         contracts.daiAddress,
         erc20Token
       )
-      console.log(spotPrice)
       // amount of DAI received will be slightly less than spotPrice
       assert(amountOut < spotPrice)
     })
@@ -507,16 +496,16 @@ describe('Pool unit test', () => {
         erc20Token,
         contracts.daiAddress
       )
+
       // contracts.accounts[0] is the marketFeeCollector
       assert((await pool.getMarketFeeCollector(poolAddress)) === contracts.accounts[0])
       // user3 has no DAI (we are going to send DAI fee to him)
       assert((await daiContract.methods.balanceOf(user3).call()) === '0')
       // only marketFeeCollector can call this, set user3 as receiver
-      await pool.collectMarketFee(contracts.accounts[0], poolAddress, user3)
+      await pool.collectMarketFee(contracts.accounts[0], poolAddress)
       // DAI fees have been collected
       assert((await pool.getMarketFees(poolAddress, contracts.daiAddress)) === '0')
-      // user3 got DAI
-      assert((await daiContract.methods.balanceOf(user3).call()) > '0')
+
       // Spot price hasn't changed after fee collection
       assert(
         (await pool.getSpotPrice(poolAddress, erc20Token, contracts.daiAddress)) ===
@@ -579,7 +568,7 @@ describe('Pool unit test', () => {
         name: '72120Bundle',
         symbol: '72Bundle',
         templateIndex: 1,
-        baseURI: 'https://oceanprotocol.com/nft/'
+        tokenURI: 'https://oceanprotocol.com/nft/'
       }
 
       const ercParams: Erc20CreateParams = {
@@ -960,14 +949,11 @@ describe('Pool unit test', () => {
 
       assert(amountIn != null)
 
-      console.log(amountIn.toString())
-
       const spotPrice = await pool.getSpotPrice(
         poolAddress,
         erc20Token,
         contracts.usdcAddress
       )
-      console.log(spotPrice.toString(), 'spotPrice')
       // amount of USDC In will be slightly bigger than spotPrice
       assert(amountIn > spotPrice)
     })
@@ -984,14 +970,11 @@ describe('Pool unit test', () => {
 
       assert(amountOut != null)
 
-      console.log(amountOut)
-
       const spotPrice = await pool.getSpotPrice(
         poolAddress,
         contracts.usdcAddress,
         erc20Token
       )
-      console.log(spotPrice, 'spotPrice')
       // amount of USDC received will be slightly less than spotPrice
       assert(amountOut < spotPrice)
     })
@@ -1031,11 +1014,10 @@ describe('Pool unit test', () => {
       // user3 has no USDC (we are going to send USDC fee to him)
       assert((await usdcContract.methods.balanceOf(user3).call()) === '0')
       // only marketFeeCollector can call this, set user3 as receiver
-      await pool.collectMarketFee(contracts.accounts[0], poolAddress, user3)
+      await pool.collectMarketFee(contracts.accounts[0], poolAddress)
       // USDC fees have been collected
       assert((await pool.getMarketFees(poolAddress, contracts.usdcAddress)) === '0')
-      // user3 got USDC
-      assert((await usdcContract.methods.balanceOf(user3).call()) > '0')
+
       // Spot price hasn't changed after fee collection
       assert(
         (await pool.getSpotPrice(poolAddress, erc20Token, contracts.usdcAddress)) ===
@@ -1050,6 +1032,16 @@ describe('Pool unit test', () => {
 
     it('#getOPFCollector- should get market fees for each token', async () => {
       assert((await pool.getOPFCollector(poolAddress)) === contracts.opfCollectorAddress)
+    })
+
+    it('#getCurrentMarketFees- should get curent market fees for each token', async () => {
+      const currentMarketFees: CurrentFees = await pool.getCurrentMarketFees(poolAddress)
+      assert(currentMarketFees !== null)
+    })
+
+    it('#getCurrentOPFFees- should get curent market fees for each token', async () => {
+      const curentOPFFees: CurrentFees = await pool.getCurrentOPFFees(poolAddress)
+      assert(curentOPFFees !== null)
     })
 
     it('#collectCommunityFee- should get community fees for each token', async () => {
