@@ -542,6 +542,7 @@ export class Compute extends Instantiable {
     mpAddress?: string,
     computeAddress?: string,
     userCustomParameters?: UserCustomParameters,
+    authService = 'json',
     searchPreviousOrders = true
   ): SubscribablePromise<OrderProgressStep, string> {
     return new SubscribablePromise(async (observer) => {
@@ -565,6 +566,7 @@ export class Compute extends Instantiable {
           mpAddress,
           computeAddress,
           userCustomParameters,
+          authService,
           searchPreviousOrders
         )
         return order
@@ -593,6 +595,7 @@ export class Compute extends Instantiable {
     mpAddress?: string,
     consumerAddress?: string,
     userCustomParameters?: UserCustomParameters,
+    authService = 'json',
     searchPreviousOrders = true
   ): Promise<string> {
     // this is only a convienince function, which calls ocean.assets.order
@@ -605,6 +608,7 @@ export class Compute extends Instantiable {
         mpAddress,
         consumerAddress,
         userCustomParameters,
+        authService,
         searchPreviousOrders
       )
     } catch (error) {

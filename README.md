@@ -156,7 +156,7 @@ Running all tests requires running Ocean Protocol components beforehand with [Ba
 git clone https://github.com/oceanprotocol/barge
 cd barge
 
-./start_ocean.sh --with-provider2 --no-dashboard
+./start_ocean.sh --with-provider2 --no-dashboard --with-rbac
 ```
 
 You can then proceed to run in another terminal.
