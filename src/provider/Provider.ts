@@ -20,7 +20,7 @@ export class Provider {
    */
   async getEndpoints(providerUri: string, fetchMethod: any): Promise<any> {
     try {
-      const endpoints = await await fetchMethod.get(providerUri).json()
+      const endpoints = await await fetchMethod(providerUri).json()
       return endpoints
     } catch (e) {
       LoggerInstance.error('Finding the service endpoints failed:', e)
@@ -80,7 +80,7 @@ export class Provider {
       : null
     if (!path) return null
     try {
-      const response = await fetchMethod.get(path + `?userAddress=${consumerAddress}`)
+      const response = await fetchMethod(path + `?userAddress=${consumerAddress}`)
       return String((await response.json()).nonce)
     } catch (e) {
       LoggerInstance.error(e)
@@ -108,13 +108,6 @@ export class Provider {
       providerUri,
       providerEndpoints
     )
-    // await this.getNonce(
-    //   providerUri,
-    //   accountId,
-    //   fetchMethod,
-    //   providerEndpoints,
-    //   serviceEndpoints
-    // )
     const args = {
       documentId: did,
       document: JSON.stringify(document),
@@ -125,7 +118,7 @@ export class Provider {
       : null
     if (!path) return null
     try {
-      const response = await fetchMethod.post(path, decodeURI(JSON.stringify(args)))
+      const response = await fetchMethod(path, decodeURI(JSON.stringify(args)))
       return (await response.json()).encryptedDocument
     } catch (e) {
       LoggerInstance.error(e)
@@ -156,7 +149,7 @@ export class Provider {
       : null
     if (!path) return null
     try {
-      const response = await fetchMethod.post(path, JSON.stringify(args))
+      const response = await fetchMethod(path, JSON.stringify(args))
       const results: FileMetadata[] = await response.json()
       for (const result of results) {
         files.push(result)
@@ -204,7 +197,7 @@ export class Provider {
     if (userCustomParameters)
       initializeUrl += '&userdata=' + encodeURI(JSON.stringify(userCustomParameters))
     try {
-      const response = await fetchMethod.get(initializeUrl)
+      const response = await fetchMethod(initializeUrl)
       return await response.text()
     } catch (e) {
       LoggerInstance.error(e)
@@ -219,7 +212,7 @@ export class Provider {
    */
   public async isValidProvider(url: string, fetchMethod: any): Promise<boolean> {
     try {
-      const response = await fetchMethod.get(url)
+      const response = await fetchMethod(url)
       if (response?.ok) {
         const params = await response.json()
         if (params && params.providerAddress) return true
