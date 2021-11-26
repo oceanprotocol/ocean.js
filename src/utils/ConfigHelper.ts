@@ -41,7 +41,7 @@ export const configHelperNetworks: ConfigHelperConfig[] = [
     networkId: 8996,
     network: 'development',
     metadataCacheUri: 'http://127.0.0.1:5000',
-    rbacUri: 'http://localhost:3000'
+    rbacUri: 'http://127.0.0.1:3000'
   },
   {
     ...configHelperNetworksBase,

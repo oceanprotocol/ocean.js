@@ -7,7 +7,7 @@ describe('Event Access Control tests', () => {
   const aliceWallet = '0xBE5449a6A97aD46c8558A3356267Ee5D2731ab5e'
 
   it('Initialize Ocean with Event Access Control', async () => {
-    const rbacUri = 'http://localhost:3000'
+    const rbacUri = 'http://127.0.0.1:3000'
     ocean = await Ocean.getInstance(config)
     await ocean.eventAccessControl.setBaseUrl(rbacUri)
     assert(ocean.eventAccessControl.url === rbacUri)
