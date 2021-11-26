@@ -26,18 +26,16 @@ export class EventAccessControl extends Instantiable {
     return this.baseUrl
   }
 
-  public async isPermit(
+  private getIsPermitArgs(
     component: string,
     eventType: string,
     authService: string,
     credentials: string,
     credentialsType: string,
     did?: string
-  ): Promise<boolean> {
-    if (!this.url) return true
-    let args
+  ) {
     if (eventType === 'consume') {
-      args = {
+      return {
         component,
         eventType,
         authService,
@@ -47,17 +45,35 @@ export class EventAccessControl extends Instantiable {
           value: credentials
         }
       }
-    } else {
-      args = {
-        component,
-        eventType,
-        authService,
-        credentials: {
-          type: credentialsType,
-          value: credentials
-        }
+    }
+    return {
+      component,
+      eventType,
+      authService,
+      credentials: {
+        type: credentialsType,
+        value: credentials
       }
     }
+  }
+
+  public async isPermit(
+    component: string,
+    eventType: string,
+    authService: string,
+    credentials: string,
+    credentialsType: string,
+    did?: string
+  ): Promise<boolean> {
+    if (!this.url) return true
+    const args = this.getIsPermitArgs(
+      component,
+      eventType,
+      authService,
+      credentials,
+      credentialsType,
+      did
+    )
 
     try {
       const response = await this.ocean.utils.fetch.post(this.url, JSON.stringify(args))
@@ -66,7 +82,7 @@ export class EventAccessControl extends Instantiable {
       return results === 'true'
     } catch (e) {
       this.logger.error(e)
-      throw new Error('Asset URL not found or not available.')
+      throw new Error('ERROR: Asset URL not found or not available.')
     }
   }
 }

@@ -735,21 +735,24 @@ export class Assets extends Instantiable {
     credentialsType?: string,
     authService?: string
   ): Promise<Consumable> {
-    let status = 0
-    let message = 'All good'
-    let result = true
-    const allowedConsume = { status, message, result }
-    if (!ddo) return allowedConsume
-    const metadata = ddo.findServiceByType('metadata')
-
-    if (metadata.attributes.status?.isOrderDisabled) {
-      status = 1
-      message = 'Ordering this asset has been temporarily disabled by the publisher.'
-      result = false
+    if (!ddo) throw new Error('ERROR: DDO does not exist')
+    const allowedConsume = { status: 0, message: 'All good', result: true }
+    const orderDisabled = {
+      status: 1,
+      message: 'Ordering this asset has been temporarily disabled by the publisher.',
+      result: false
     }
+    const denyConsume = {
+      status: 2,
+      message: 'Consume access is denied.',
+      result: false
+    }
+
+    const metadata = ddo.findServiceByType('metadata')
+    if (metadata.attributes.status?.isOrderDisabled) return orderDisabled
+
     const config = this.instanceConfig
-    if (!config?.config?.rbacUri) return allowedConsume
-    if (consumer) {
+    if (consumer && config?.config?.rbacUri) {
       const eventAccessControl = await EventAccessControl.getInstance(this.instanceConfig)
       const isPermit = await eventAccessControl.isPermit(
         'market',
@@ -759,13 +762,9 @@ export class Assets extends Instantiable {
         credentialsType,
         ddo.id
       )
-      if (!isPermit) {
-        status = 2
-        message = 'Consume access is denied.'
-        result = false
-      }
+      if (!isPermit) return denyConsume
     }
-    return { status, message, result }
+    return allowedConsume
   }
 
   /**
