@@ -13,7 +13,6 @@ import { Cluster, Container, Server } from '../../src/ocean/Compute'
 import { LoggerInstance } from '../../src/utils'
 import { ComputeInput, ComputeAlgorithm } from '../../src/ocean/interfaces/Compute'
 const web3 = new Web3('http://127.0.0.1:8545')
-const fetch = require('cross-fetch')
 
 /*       How to handle a compute job
 1. find your algorithm
@@ -964,8 +963,7 @@ describe('Compute flow', () => {
       undefined,
       undefined,
       undefined,
-      computeOrderId,
-      true
+      computeOrderId
     )
     assert(response.length > 0, "Response.length is's not >0")
   })
@@ -977,8 +975,7 @@ describe('Compute flow', () => {
       undefined,
       undefined,
       jobId,
-      undefined,
-      false
+      undefined
     )
     assert(response[0].jobId === jobId, 'response[0].jobId !== jobId')
   })
@@ -990,8 +987,7 @@ describe('Compute flow', () => {
       undefined,
       undefined,
       undefined,
-      undefined,
-      false
+      undefined
     )
     assert(response.length > 0, 'Invalid response length')
   })
@@ -1004,6 +1000,33 @@ describe('Compute flow', () => {
   it('should get status of all compute jobs for an address', async () => {
     const response = await ocean.compute.status(bob, undefined, undefined)
     assert(response.length > 0, 'Invalid response length')
+  })
+  it('should wait until a job is completed', async () => {
+    let tries = 0
+    let response
+    do {
+      response = await ocean.compute.status(bob, ddo.id, undefined, undefined, jobId)
+      assert(response[0].jobId === jobId, 'response[0].jobId !== jobId')
+      if (response[0].status > 60) break
+      await ocean.metadataCache.sleep(2500)
+      tries++
+      // eslint-disable-next-line no-self-compare
+    } while (tries < 1500)
+    assert(response[0].status > 60, 'Job is not completed')
+  })
+  it('Bob should get the compute result with index 0', async () => {
+    assert(jobId != null, 'Jobid is null')
+    const response = await ocean.compute.status(bob, ddo.id, undefined, undefined, jobId)
+    assert(response[0].results.length > 0, 'No outputs for this job?')
+    await ocean.compute.getResult(
+      bob,
+      jobId,
+      0,
+      './node_modules/jobs-results/' + jobId + '/',
+      ddo.id,
+      undefined,
+      undefined
+    )
   })
   it('Bob should stop compute job', async () => {
     assert(jobId != null, 'Jobid is null')
@@ -1868,8 +1891,7 @@ describe('Compute flow', () => {
       undefined,
       undefined,
       undefined,
-      undefined,
-      false
+      undefined
     )
     assert(response === null || response === undefined, 'Invalid response')
   })

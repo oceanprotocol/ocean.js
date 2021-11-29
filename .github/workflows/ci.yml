@@ -106,12 +106,14 @@ jobs:
 
       - name: Run Barge
         working-directory: ${{ github.workspace }}/barge
+        env:
+          OPERATOR_SERVICE_URL: https://c2d-dev.operator.oceanprotocol.com/
+          PROVIDER_VERSION: v0.4.16
         run: |
           bash -x start_ocean.sh --with-provider2 --no-dashboard --with-rbac 2>&1 > start_ocean.log &
           cd .. && ./scripts/waitforcontracts.sh
 
       - run: npm run test:integration:cover
-
       - uses: actions/upload-artifact@v2
         with:
           name: coverage

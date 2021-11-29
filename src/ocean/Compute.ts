@@ -216,8 +216,7 @@ export class Compute extends Instantiable {
     ddo?: DDO,
     service?: ServiceCompute,
     jobId?: string,
-    txId?: string,
-    sign = true
+    txId?: string
   ): Promise<ComputeJob[]> {
     let provider: Provider
 
@@ -244,39 +243,60 @@ export class Compute extends Instantiable {
       did,
       consumerAccount,
       jobId,
-      txId,
-      sign
+      txId
     )
 
     return computeJobsList as ComputeJob[]
   }
 
   /**
-   * Returns the final result of a specific compute job published as an asset.
+   * Downloads compute job result
    * @param  {Account} consumerAccount The account of the consumer ordering the service.
-   * @param  {DDO|string} asset DID Descriptor Object containing all the data related to an asset or a Decentralized identifier.
-   * @param  {string} jobId The ID of the compute job to be stopped.
-   * @return {Promise<ComputeJob>} Returns the DDO of the result asset.
+   * @param  {string} jobId JobId
+   * @param  {number} index Compute Result index
+   * @param  {string} destination: destination folder
+   * @param  {string} did Decentralized identifier.
+   * @param  {DDO} ddo If undefined then the ddo will be fetched by did, this is just to optimize network calls
+   * @param  {ServiceCompute} service If undefined then we get the service from the ddo
    */
-  public async result(
+  public async getResult(
     consumerAccount: Account,
-    asset: DDO | string,
-    jobId: string
-  ): Promise<ComputeJob> {
-    const { did, ddo } = await assetResolve(asset, this.ocean)
-    const service = ddo.findServiceByType('compute')
-    const { serviceEndpoint } = service
-    const provider = await Provider.getInstance(this.instanceConfig)
-    await provider.setBaseUrl(serviceEndpoint)
-    const computeJobsList = await provider.computeStatus(
-      did,
-      consumerAccount,
+    jobId: string,
+    index: number,
+    destination: string,
+    did?: string,
+    ddo?: DDO,
+    service?: ServiceCompute
+  ): Promise<any> {
+    let provider: Provider
+
+    if (did || service || ddo) {
+      if (!service) {
+        if (!ddo) {
+          ddo = await this.ocean.assets.resolve(did)
+          if (!ddo) throw new Error(`Couldn't resolve the did ${did}`)
+        }
+        service = ddo.findServiceByType('compute')
+        if (!service)
+          throw new Error(`Couldn't find a compute service on the asset with did ${did}`)
+      }
+
+      const { serviceEndpoint } = service
+      provider = await Provider.getInstance(this.instanceConfig)
+
+      await provider.setBaseUrl(serviceEndpoint)
+    } else {
+      provider = this.ocean.provider
+    }
+
+    const result = await provider.computeResult(
       jobId,
-      undefined,
-      true
+      index,
+      destination,
+      consumerAccount
     )
 
-    return computeJobsList[0] as ComputeJob
+    return result
   }
 
   public createServerAttributes(

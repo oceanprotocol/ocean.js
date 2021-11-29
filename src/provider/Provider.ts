@@ -18,6 +18,11 @@ export interface ServiceEndpoint {
   urlPath: string
 }
 
+export interface ComputeLimits {
+  algoTimeLimit?: string
+  storageExpiry?: string
+}
+
 export interface UserCustomParameters {
   [key: string]: any
 }
@@ -35,6 +40,7 @@ export class Provider extends Instantiable {
   public computeAddress: string
   public providerAddress: string
   public providerVersion: string
+  public computeLimits: ComputeLimits
   /**
    * Returns the instance of Provider.
    * @return {Promise<Assets>}
@@ -70,6 +76,7 @@ export class Provider extends Instantiable {
       this.providerAddress = result.providerAddress
       if ('computeAddress' in result) this.computeAddress = result.computeAddress
       if ('version' in result) this.providerVersion = result.version
+      if ('computeLimits' in result) this.computeLimits = result.computeLimits
       for (const i in result.serviceEndpoints) {
         const endpoint: ServiceEndpoint = {
           serviceName: i,
@@ -413,22 +420,11 @@ export class Provider extends Instantiable {
     did: string,
     consumerAccount: Account,
     jobId?: string,
-    txId?: string,
-    sign = true
+    txId?: string
   ): Promise<ComputeJob | ComputeJob[]> {
     const address = consumerAccount.getId()
     await this.getNonce(consumerAccount.getId())
     let url = '?documentId=' + noZeroX(did)
-    if (sign) {
-      let signatureMessage = address
-      signatureMessage += jobId || ''
-      signatureMessage += (did && `${noZeroX(did)}`) || ''
-      signatureMessage += this.nonce
-      const signature = await this.createHashSignature(consumerAccount, signatureMessage)
-      url += `&signature=${signature}`
-    }
-
-    // continue to construct Provider URL
     url += (jobId && `&jobId=${jobId}`) || ''
     url += `&consumerAddress=${address}`
     url += (txId && `&transferTxId=${txId}`) || ''
@@ -458,6 +454,40 @@ export class Provider extends Instantiable {
       this.logger.error(e)
       return null
     }
+  }
+
+  public async computeResult(
+    jobId: string,
+    index: number,
+    destination: string,
+    account: Account
+  ): Promise<any> {
+    await this.getNonce(account.getId())
+    let signatureMessage = account.getId()
+    signatureMessage += jobId
+    signatureMessage += String(index)
+    signatureMessage += this.nonce
+    const signature = await this.createHashSignature(account, signatureMessage)
+    const path = this.getComputeResultEndpoint()
+      ? this.getComputeResultEndpoint().urlPath
+      : null
+    if (!path) return null
+    let consumeUrl = path
+    consumeUrl += `?jobId=${jobId}`
+    consumeUrl += `&index=${String(index)}`
+    consumeUrl += `&signature=${signature}`
+    consumeUrl += `&consumerAddress=${account.getId()}`
+
+    try {
+      !destination
+        ? await this.ocean.utils.fetch.downloadFileBrowser(consumeUrl)
+        : await this.ocean.utils.fetch.downloadFile(consumeUrl, destination, index)
+    } catch (e) {
+      this.logger.error('Error getting job result')
+      this.logger.error(e)
+      throw e
+    }
+    return destination
   }
 
   public getInitializeEndpoint(): ServiceEndpoint {
@@ -490,6 +520,10 @@ export class Provider extends Instantiable {
 
   public getComputeDeleteEndpoint(): ServiceEndpoint {
     return this.getEndpointURL('computeDelete')
+  }
+
+  public getComputeResultEndpoint(): ServiceEndpoint {
+    return this.getEndpointURL('computeResult')
   }
 
   public getDownloadEndpoint(): ServiceEndpoint {
