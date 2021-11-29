@@ -5,14 +5,7 @@ import spies from 'chai-spies'
 import Web3 from 'web3'
 import { AbiItem } from 'web3-utils/types'
 import { DataTokens } from '../../src/datatokens/Datatokens'
-import {
-  Account,
-  EditableMetadata,
-  Service,
-  ServiceAccess,
-  DID,
-  CredentialType
-} from '../../src/lib'
+import { Account, EditableMetadata, Service, ServiceAccess, DID } from '../../src/lib'
 import { noDidPrefixed } from '../../src/utils/'
 import { Ocean } from '../../src/ocean/Ocean'
 import { ConfigHelper } from '../../src/utils/ConfigHelper'
@@ -364,7 +357,7 @@ describe('Marketplace flow', () => {
     ddoWithCredentials = await ocean.assets.create(asset, alice, [service1], null)
     ddoWithCredentials = await ocean.assets.updateCredentials(
       ddoWithCredentials,
-      CredentialType.address,
+      'address',
       allowList,
       denyList
     )
@@ -579,7 +572,7 @@ describe('Marketplace flow', () => {
     const resolvedDDO = await ocean.assets.resolve(ddoWithCredentialsAllowList.id)
     const newDdo = await ocean.assets.updateCredentials(
       resolvedDDO,
-      CredentialType.address,
+      'address',
       allowList,
       []
     )
@@ -591,7 +584,7 @@ describe('Marketplace flow', () => {
     const resolvedDDO = await ocean.assets.resolve(ddoWithCredentialsDenyList.id)
     const newDdo = await ocean.assets.updateCredentials(
       resolvedDDO,
-      CredentialType.address,
+      'address',
       [],
       denyList
     )
@@ -822,39 +815,79 @@ describe('Marketplace flow', () => {
 
   it('Bob should be able to consume an asset with allow list, because he is on that list', async () => {
     const ddoWithAllowList = await ocean.assets.resolve(ddoWithCredentialsAllowList.id)
-    let consumable = await ocean.assets.isConsumable(ddoWithAllowList, bob.getId())
+    let consumable = await ocean.assets.isConsumable(
+      ddoWithAllowList,
+      bob.getId(),
+      'address',
+      'json'
+    )
     assert(consumable.status === 0)
     assert(consumable.result === true)
-    consumable = await ocean.assets.isConsumable(ddoWithCredentials, bob.getId())
+    consumable = await ocean.assets.isConsumable(
+      ddoWithCredentials,
+      bob.getId(),
+      'address',
+      'json'
+    )
     assert(consumable.status === 0)
     assert(consumable.result === true)
   })
 
   it('Bob should be able to consume an asset with deny list, because he is not on that list', async () => {
     const ddoWithDenyList = await ocean.assets.resolve(ddoWithCredentialsDenyList.id)
-    let consumable = await ocean.assets.isConsumable(ddoWithDenyList, bob.getId())
+    let consumable = await ocean.assets.isConsumable(
+      ddoWithDenyList,
+      bob.getId(),
+      'address',
+      'json'
+    )
     assert(consumable.status === 0)
     assert(consumable.result === true)
-    consumable = await ocean.assets.isConsumable(ddoWithCredentials, bob.getId())
+    consumable = await ocean.assets.isConsumable(
+      ddoWithCredentials,
+      bob.getId(),
+      'address',
+      'json'
+    )
     assert(consumable.status === 0)
     assert(consumable.result === true)
   })
   it('Charlie should not be able to consume an asset with allow list, because he is not on that list', async () => {
     const ddoWithAllowList = await ocean.assets.resolve(ddoWithCredentialsAllowList.id)
-    let consumable = await ocean.assets.isConsumable(ddoWithAllowList, charlie.getId())
+    let consumable = await ocean.assets.isConsumable(
+      ddoWithAllowList,
+      charlie.getId(),
+      'address',
+      'json'
+    )
     assert(consumable.status === 2)
     assert(consumable.result === false)
-    consumable = await ocean.assets.isConsumable(ddoWithCredentials, charlie.getId())
-    assert(consumable.status === 3)
+    consumable = await ocean.assets.isConsumable(
+      ddoWithCredentials,
+      charlie.getId(),
+      'address',
+      'json'
+    )
+    assert(consumable.status === 2)
     assert(consumable.result === false)
   })
   it('Charlie should not be able to consume an asset with deny list, because he is on that list', async () => {
     const ddoWithDenyList = await ocean.assets.resolve(ddoWithCredentialsDenyList.id)
-    let consumable = await ocean.assets.isConsumable(ddoWithDenyList, charlie.getId())
-    assert(consumable.status === 3)
+    let consumable = await ocean.assets.isConsumable(
+      ddoWithDenyList,
+      charlie.getId(),
+      'address',
+      'json'
+    )
+    assert(consumable.status === 2)
     assert(consumable.result === false)
-    consumable = await ocean.assets.isConsumable(ddoWithCredentials, charlie.getId())
-    assert(consumable.status === 3)
+    consumable = await ocean.assets.isConsumable(
+      ddoWithCredentials,
+      charlie.getId(),
+      'address',
+      'json'
+    )
+    assert(consumable.status === 2)
     assert(consumable.result === false)
   })
 

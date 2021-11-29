@@ -18,9 +18,9 @@ import { Provider, UserCustomParameters } from '../provider/Provider'
 import { isAddress } from 'web3-utils'
 import { MetadataMain } from '../ddo/interfaces'
 import { TransactionReceipt } from 'web3-core'
-import { CredentialType } from '../ddo/interfaces/Credentials'
 import { updateCredentialDetail, removeCredentialDetail } from './AssetsCredential'
 import { Consumable } from '../ddo/interfaces/Consumable'
+import { EventAccessControl } from './EventAccessControl'
 
 export enum CreateProgressStep {
   CreatingDataToken,
@@ -265,14 +265,14 @@ export class Assets extends Instantiable {
   /**
    * Update Credentials attribute in DDO
    * @param  {ddo} DDO
-   * @param {credentialType} CredentialType e.g. address / credentail3Box
+   * @param {credentialType} string e.g. address / credentail3Box
    * @param {allowList} string[] List of allow credential
    * @param {denyList} string[] List of deny credential
    * @return {Promise<DDO>} Updated DDO
    */
   public async updateCredentials(
     ddo: DDO,
-    credentialType: CredentialType,
+    credentialType: string,
     allowList: string[],
     denyList: string[]
   ): Promise<DDO> {
@@ -293,15 +293,11 @@ export class Assets extends Instantiable {
   /**
    * check if a credential can consume a dataset
    * @param  {ddo} DDO
-   * @param {credentialType} CredentialType e.g. address / credentail3Box
+   * @param {credentialType} string e.g. address / credentail3Box
    * @param {value} string credential
    * @return {Consumable} allowed  0 = OK , 2 - Credential not in allow list, 3 - Credential in deny list
    */
-  public checkCredential(
-    ddo: DDO,
-    credentialType: CredentialType,
-    value: string
-  ): Consumable {
+  public checkCredential(ddo: DDO, credentialType: string, value: string): Consumable {
     let status = 0
     let message = 'All good'
     let result = true
@@ -530,11 +526,12 @@ export class Assets extends Instantiable {
     mpAddress?: string,
     consumerAddress?: string,
     userCustomParameters?: UserCustomParameters,
+    authService = 'json',
     searchPreviousOrders = true
   ): Promise<string> {
     let service: Service
     const { ddo } = await assetResolve(asset, this.ocean)
-    const consumable = await this.isConsumable(ddo, consumerAddress)
+    const consumable = await this.isConsumable(ddo, payerAddress, 'address', authService)
     if (!consumable.result) {
       throw new Error(`Order asset failed, ` + consumable.message)
     }
@@ -732,31 +729,42 @@ export class Assets extends Instantiable {
    * @param {consumer} string
    * @return {Promise<Consumable>}
    */
-  public async isConsumable(ddo: DDO, consumer?: string): Promise<Consumable> {
-    let status = 0
-    let message = 'All good'
-    let result = true
-    if (!ddo) return { status, message, result }
-    const metadata = ddo.findServiceByType('metadata')
-
-    if (metadata.attributes.status?.isOrderDisabled)
-      return {
-        status: 1,
-        message: 'Ordering this asset has been temporarily disabled by the publisher.',
-        result: false
-      }
-    if (consumer) {
-      ;({ status, message, result } = this.checkCredential(
-        ddo,
-        CredentialType.address,
-        consumer
-      ))
+  public async isConsumable(
+    ddo: DDO,
+    consumer?: string,
+    credentialsType?: string,
+    authService?: string
+  ): Promise<Consumable> {
+    if (!ddo) throw new Error('ERROR: DDO does not exist')
+    const allowedConsume = { status: 0, message: 'All good', result: true }
+    const orderDisabled = {
+      status: 1,
+      message: 'Ordering this asset has been temporarily disabled by the publisher.',
+      result: false
     }
-    /*
-    // return: 2, Access is denied, your wallet address is not found on allow list
-    // return: 3, Access is denied, your wallet address is found on deny list
-    */
-    return { status, message, result }
+    const denyConsume = {
+      status: 2,
+      message: 'Consume access is denied.',
+      result: false
+    }
+
+    const metadata = ddo.findServiceByType('metadata')
+    if (metadata.attributes.status?.isOrderDisabled) return orderDisabled
+
+    const config = this.instanceConfig
+    if (consumer && config?.config?.rbacUri) {
+      const eventAccessControl = await EventAccessControl.getInstance(this.instanceConfig)
+      const isPermit = await eventAccessControl.isPermit(
+        'market',
+        'consume',
+        authService,
+        consumer,
+        credentialsType,
+        ddo.id
+      )
+      if (!isPermit) return denyConsume
+    }
+    return allowedConsume
   }
 
   /**

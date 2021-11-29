@@ -107,7 +107,7 @@ jobs:
       - name: Run Barge
         working-directory: ${{ github.workspace }}/barge
         run: |
-          bash -x start_ocean.sh --with-provider2 --no-dashboard 2>&1 > start_ocean.log &
+          bash -x start_ocean.sh --with-provider2 --no-dashboard --with-rbac 2>&1 > start_ocean.log &
           cd .. && ./scripts/waitforcontracts.sh
 
       - run: npm run test:integration:cover
