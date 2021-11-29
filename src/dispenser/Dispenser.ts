@@ -3,9 +3,15 @@ import { TransactionReceipt } from 'web3-core'
 import { Contract } from 'web3-eth-contract'
 import { AbiItem } from 'web3-utils/types'
 import Web3 from 'web3'
-import { SubscribablePromise, Logger, getFairGasPrice } from '../utils'
+import {
+  SubscribablePromise,
+  Logger,
+  getFairGasPrice,
+  setContractDefaults
+} from '../utils'
 import { DataTokens } from '../datatokens/Datatokens'
 import Decimal from 'decimal.js'
+import { ConfigHelperConfig } from '../utils/ConfigHelper'
 
 export interface DispenserToken {
   active: boolean
@@ -41,6 +47,7 @@ export class OceanDispenser {
   private logger: Logger
   public datatokens: DataTokens
   public startBlock: number
+  private config: ConfigHelperConfig
 
   /**
    * Instantiate Dispenser
@@ -54,16 +61,19 @@ export class OceanDispenser {
     dispenserAddress: string = null,
     dispenserABI: AbiItem | AbiItem[] = null,
     datatokens: DataTokens,
-    startBlock?: number
+    config?: ConfigHelperConfig
   ) {
     this.web3 = web3
+    this.config = config
     this.dispenserAddress = dispenserAddress
-    if (startBlock) this.startBlock = startBlock
-    else this.startBlock = 0
+    this.startBlock = (config && config.startBlock) || 0
     this.dispenserABI = dispenserABI || (defaultDispenserABI.abi as AbiItem[])
     this.datatokens = datatokens
     if (web3)
-      this.contract = new this.web3.eth.Contract(this.dispenserABI, this.dispenserAddress)
+      this.contract = setContractDefaults(
+        new this.web3.eth.Contract(this.dispenserABI, this.dispenserAddress),
+        this.config
+      )
     this.logger = logger
   }
 
@@ -125,7 +135,7 @@ export class OceanDispenser {
         .send({
           from: address,
           gas: estGas + 1,
-          gasPrice: await getFairGasPrice(this.web3)
+          gasPrice: await getFairGasPrice(this.web3, this.config)
         })
     } catch (e) {
       this.logger.error(`ERROR: Failed to activate dispenser: ${e.message}`)
@@ -157,7 +167,7 @@ export class OceanDispenser {
       trxReceipt = await this.contract.methods.deactivate(dataToken).send({
         from: address,
         gas: estGas + 1,
-        gasPrice: await getFairGasPrice(this.web3)
+        gasPrice: await getFairGasPrice(this.web3, this.config)
       })
     } catch (e) {
       this.logger.error(`ERROR: Failed to deactivate dispenser: ${e.message}`)
@@ -202,7 +212,7 @@ export class OceanDispenser {
         trxReceipt = await this.contract.methods.acceptMinter(dataToken).send({
           from: address,
           gas: estGas + 1,
-          gasPrice: await getFairGasPrice(this.web3)
+          gasPrice: await getFairGasPrice(this.web3, this.config)
         })
       } catch (e) {
         this.logger.error(`ERROR: Failed to accept minter role: ${e.message}`)
@@ -239,7 +249,7 @@ export class OceanDispenser {
         trxReceipt = await this.contract.methods.removeMinter(dataToken).send({
           from: address,
           gas: estGas + 1,
-          gasPrice: await getFairGasPrice(this.web3)
+          gasPrice: await getFairGasPrice(this.web3, this.config)
         })
       } catch (e) {
         this.logger.error(`ERROR: Failed to remove minter role: ${e.message}`)
@@ -281,7 +291,7 @@ export class OceanDispenser {
         .send({
           from: address,
           gas: estGas + 1,
-          gasPrice: await getFairGasPrice(this.web3)
+          gasPrice: await getFairGasPrice(this.web3, this.config)
         })
     } catch (e) {
       this.logger.error(`ERROR: Failed to dispense tokens: ${e.message}`)
@@ -313,7 +323,7 @@ export class OceanDispenser {
       trxReceipt = await this.contract.methods.ownerWithdraw(dataToken).send({
         from: address,
         gas: estGas + 1,
-        gasPrice: await getFairGasPrice(this.web3)
+        gasPrice: await getFairGasPrice(this.web3, this.config)
       })
     } catch (e) {
       this.logger.error(`ERROR: Failed to withdraw tokens: ${e.message}`)

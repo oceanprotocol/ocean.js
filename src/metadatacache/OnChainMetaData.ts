@@ -4,7 +4,8 @@ import { Contract } from 'web3-eth-contract'
 import { AbiItem } from 'web3-utils/types'
 import Web3 from 'web3'
 import defaultDDOContractABI from '@oceanprotocol/contracts/artifacts/Metadata.json'
-import { didZeroX, Logger, getFairGasPrice } from '../utils'
+import { didZeroX, Logger, getFairGasPrice, setContractDefaults } from '../utils'
+import { ConfigHelperConfig } from '../utils/ConfigHelper'
 import { MetadataCache } from '../metadatacache/MetadataCache'
 // Using limited, compress-only version
 // See https://github.com/LZMA-JS/LZMA-JS#but-i-dont-want-to-use-web-workers
@@ -27,6 +28,7 @@ export class OnChainMetadata {
   public DDOContract: Contract = null
   private logger: Logger
   public metadataCache: MetadataCache
+  private config: ConfigHelperConfig
   /**
    * Instantiate OnChainMetadata Store for on-chain interaction.
    */
@@ -35,15 +37,17 @@ export class OnChainMetadata {
     logger: Logger,
     DDOContractAddress: string = null,
     DDOContractABI: AbiItem | AbiItem[] = null,
-    metadataCache: MetadataCache
+    metadataCache: MetadataCache,
+    config?: ConfigHelperConfig
   ) {
     this.web3 = web3
+    this.config = config
     this.DDOContractAddress = DDOContractAddress
     this.DDOContractABI = DDOContractABI || (defaultDDOContractABI.abi as AbiItem[])
     if (web3)
-      this.DDOContract = new this.web3.eth.Contract(
-        this.DDOContractABI,
-        this.DDOContractAddress
+      this.DDOContract = setContractDefaults(
+        new this.web3.eth.Contract(this.DDOContractABI, this.DDOContractAddress),
+        this.config
       )
     this.logger = logger
     this.metadataCache = metadataCache
@@ -175,7 +179,7 @@ export class OnChainMetadata {
         .send({
           from: consumerAccount,
           gas: estGas + 1,
-          gasPrice: await getFairGasPrice(this.web3)
+          gasPrice: await getFairGasPrice(this.web3, this.config)
         })
       return trxReceipt
     } catch (e) {
@@ -219,7 +223,7 @@ export class OnChainMetadata {
         .send({
           from: consumerAccount,
           gas: estGas + 1,
-          gasPrice: await getFairGasPrice(this.web3)
+          gasPrice: await getFairGasPrice(this.web3, this.config)
         })
       return trxReceipt
     } catch (e) {

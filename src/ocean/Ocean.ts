@@ -16,6 +16,7 @@ import { Compute } from './Compute'
 import { OceanPool } from '../balancer/OceanPool'
 import { OceanFixedRateExchange } from '../exchange/FixedRateExchange'
 import { OceanDispenser } from '../dispenser/Dispenser'
+import { ConfigHelperConfig } from '..'
 import { EventAccessControl } from './EventAccessControl'
 
 /**
@@ -57,7 +58,7 @@ export class Ocean extends Instantiable {
       instanceConfig.config.datatokensABI,
       instanceConfig.config.web3Provider,
       instanceConfig.logger,
-      instanceConfig.config.startBlock
+      instanceConfig.config as ConfigHelperConfig
     )
     instance.pool = new OceanPool(
       instanceConfig.config.web3Provider,
@@ -66,7 +67,7 @@ export class Ocean extends Instantiable {
       instanceConfig.config.poolABI,
       instanceConfig.config.poolFactoryAddress,
       instanceConfig.config.oceanTokenAddress,
-      instanceConfig.config.startBlock
+      instanceConfig.config as ConfigHelperConfig
     )
     instance.fixedRateExchange = new OceanFixedRateExchange(
       instanceConfig.config.web3Provider,
@@ -75,7 +76,7 @@ export class Ocean extends Instantiable {
       instanceConfig.config.fixedRateExchangeAddressABI,
       instanceConfig.config.oceanTokenAddress,
       instance.datatokens,
-      instanceConfig.config.startBlock
+      instanceConfig.config as ConfigHelperConfig
     )
     instance.OceanDispenser = new OceanDispenser(
       instanceConfig.config.web3Provider,
@@ -83,7 +84,7 @@ export class Ocean extends Instantiable {
       instanceConfig.config.dispenserAddress,
       instanceConfig.config.dispenserABI,
       instance.datatokens,
-      instanceConfig.config.startBlock
+      instanceConfig.config as ConfigHelperConfig
     )
 
     instance.onChainMetadata = new OnChainMetadata(
@@ -91,7 +92,8 @@ export class Ocean extends Instantiable {
       instanceConfig.logger,
       instanceConfig.config.metadataContractAddress,
       instanceConfig.config.metadataContractABI,
-      instance.metadataCache
+      instance.metadataCache,
+      instanceConfig.config as ConfigHelperConfig
     )
     instance.versions = await Versions.getInstance(instanceConfig)
     instance.network = new Network()

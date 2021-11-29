@@ -11,6 +11,10 @@ export interface ConfigHelperConfig extends Config {
   subgraphUri: string
   explorerUri: string
   oceanTokenSymbol: string
+  transactionBlockTimeout: number
+  transactionConfirmationBlocks: number
+  transactionPollingTimeout: number
+  gasFeeMultiplier: number
 }
 
 const configHelperNetworksBase: ConfigHelperConfig = {
@@ -28,7 +32,11 @@ const configHelperNetworksBase: ConfigHelperConfig = {
   fixedRateExchangeAddress: null,
   dispenserAddress: null,
   metadataContractAddress: null,
-  startBlock: 0
+  startBlock: 0,
+  transactionBlockTimeout: 50,
+  transactionConfirmationBlocks: 1,
+  transactionPollingTimeout: 750,
+  gasFeeMultiplier: 1
 }
 
 export const configHelperNetworks: ConfigHelperConfig[] = [
@@ -71,7 +79,11 @@ export const configHelperNetworks: ConfigHelperConfig[] = [
     providerUri: 'https://provider.mainnet.oceanprotocol.com',
     subgraphUri: 'https://subgraph.mainnet.oceanprotocol.com',
     explorerUri: 'https://etherscan.io',
-    startBlock: 11105459
+    startBlock: 11105459,
+    transactionBlockTimeout: 150,
+    transactionConfirmationBlocks: 5,
+    transactionPollingTimeout: 1750,
+    gasFeeMultiplier: 1.05
   },
   {
     ...configHelperNetworksBase,
@@ -82,7 +94,8 @@ export const configHelperNetworks: ConfigHelperConfig[] = [
     subgraphUri: 'https://subgraph.polygon.oceanprotocol.com',
     explorerUri: 'https://polygonscan.com',
     oceanTokenSymbol: 'mOCEAN',
-    startBlock: 11005222
+    startBlock: 11005222,
+    gasFeeMultiplier: 1.05
   },
   {
     ...configHelperNetworksBase,
@@ -129,7 +142,8 @@ export const configHelperNetworks: ConfigHelperConfig[] = [
     nodeUri: 'https://bsc-dataseed.binance.org',
     providerUri: 'https://provider.bsc.oceanprotocol.com',
     subgraphUri: 'https://subgraph.bsc.oceanprotocol.com',
-    explorerUri: 'https://bscscan.com/'
+    explorerUri: 'https://bscscan.com/',
+    gasFeeMultiplier: 1.05
   },
   {
     ...configHelperNetworksBase,
@@ -147,7 +161,8 @@ export const configHelperNetworks: ConfigHelperConfig[] = [
     nodeUri: 'https://rpc.energyweb.org',
     providerUri: 'https://provider.energyweb.oceanprotocol.com',
     subgraphUri: 'https://subgraph.energyweb.oceanprotocol.com',
-    explorerUri: 'https://explorer.energyweb.org'
+    explorerUri: 'https://explorer.energyweb.org',
+    gasFeeMultiplier: 1.05
   },
   {
     ...configHelperNetworksBase,
@@ -156,7 +171,8 @@ export const configHelperNetworks: ConfigHelperConfig[] = [
     nodeUri: 'https://moonriver.api.onfinality.io/public',
     providerUri: 'https://provider.moonriver.oceanprotocol.com',
     subgraphUri: 'https://subgraph.moonriver.oceanprotocol.com',
-    explorerUri: 'https://blockscout.moonriver.moonbeam.network'
+    explorerUri: 'https://blockscout.moonriver.moonbeam.network',
+    gasFeeMultiplier: 1.05
   }
 ]
 

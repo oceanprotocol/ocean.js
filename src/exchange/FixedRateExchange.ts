@@ -4,8 +4,14 @@ import { TransactionReceipt } from 'web3-core'
 import { Contract, EventData } from 'web3-eth-contract'
 import { AbiItem } from 'web3-utils/types'
 import Web3 from 'web3'
-import { SubscribablePromise, Logger, getFairGasPrice } from '../utils'
+import {
+  SubscribablePromise,
+  Logger,
+  getFairGasPrice,
+  setContractDefaults
+} from '../utils'
 import { DataTokens } from '../datatokens/Datatokens'
+import { ConfigHelperConfig } from '../utils/ConfigHelper'
 
 const MAX_AWAIT_PROMISES = 10
 
@@ -42,6 +48,7 @@ export class OceanFixedRateExchange {
   private logger: Logger
   public datatokens: DataTokens
   public startBlock: number
+  private config: ConfigHelperConfig
 
   /**
    * Instantiate FixedRateExchange
@@ -57,20 +64,23 @@ export class OceanFixedRateExchange {
     fixedRateExchangeABI: AbiItem | AbiItem[] = null,
     oceanAddress: string = null,
     datatokens: DataTokens,
-    startBlock?: number
+    config?: ConfigHelperConfig
   ) {
     this.web3 = web3
     this.fixedRateExchangeAddress = fixedRateExchangeAddress
-    if (startBlock) this.startBlock = startBlock
-    else this.startBlock = 0
+    this.config = config
+    this.startBlock = (config && config.startBlock) || 0
     this.fixedRateExchangeABI =
       fixedRateExchangeABI || (defaultFixedRateExchangeABI.abi as AbiItem[])
     this.oceanAddress = oceanAddress
     this.datatokens = datatokens
     if (web3)
-      this.contract = new this.web3.eth.Contract(
-        this.fixedRateExchangeABI,
-        this.fixedRateExchangeAddress
+      this.contract = setContractDefaults(
+        new this.web3.eth.Contract(
+          this.fixedRateExchangeABI,
+          this.fixedRateExchangeAddress
+        ),
+        this.config
       )
     this.logger = logger
   }
@@ -128,7 +138,7 @@ export class OceanFixedRateExchange {
           .send({
             from: address,
             gas: estGas + 1,
-            gasPrice: await getFairGasPrice(this.web3)
+            gasPrice: await getFairGasPrice(this.web3, this.config)
           })
         exchangeId = trxReceipt.events.ExchangeCreated.returnValues[0]
       } catch (e) {
@@ -182,7 +192,7 @@ export class OceanFixedRateExchange {
         .send({
           from: address,
           gas: estGas + 1,
-          gasPrice: await getFairGasPrice(this.web3)
+          gasPrice: await getFairGasPrice(this.web3, this.config)
         })
       return trxReceipt
     } catch (e) {
@@ -228,7 +238,7 @@ export class OceanFixedRateExchange {
       .send({
         from: address,
         gas: estGas + 1,
-        gasPrice: await getFairGasPrice(this.web3)
+        gasPrice: await getFairGasPrice(this.web3, this.config)
       })
     return trxReceipt
   }
@@ -258,7 +268,7 @@ export class OceanFixedRateExchange {
     const trxReceipt = await this.contract.methods.toggleExchangeState(exchangeId).send({
       from: address,
       gas: estGas + 1,
-      gasPrice: await getFairGasPrice(this.web3)
+      gasPrice: await getFairGasPrice(this.web3, this.config)
     })
     return trxReceipt
   }
@@ -288,7 +298,7 @@ export class OceanFixedRateExchange {
     const trxReceipt = await this.contract.methods.toggleExchangeState(exchangeId).send({
       from: address,
       gas: estGas + 1,
-      gasPrice: await getFairGasPrice(this.web3)
+      gasPrice: await getFairGasPrice(this.web3, this.config)
     })
     return trxReceipt
   }
