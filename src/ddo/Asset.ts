@@ -43,6 +43,20 @@ export interface AssetNft {
   created: string
 }
 
+export interface Purgatory {
+  /**
+   * If `true`, asset is in purgatory.
+   * @type {boolean}
+   */
+  state: boolean
+
+  /**
+   *
+   * @type {boolean}
+   */
+  reason: string
+}
+
 export interface AssetDatatoken {
   /**
    * Contract address of the deployed ERC20 contract.
@@ -106,11 +120,13 @@ export class Asset extends DDO {
      * @type {string}
      */
     consume: number
-
-    /**
-     * If asset is listed in purgatory and reason.
-     * @type {string}
-     */
-    isInPurgatory: string
   }
+
+  /**
+   * Contains information about an asset's purgatory status defined in
+   * [`list-purgatory`](https://github.com/oceanprotocol/list-purgatory).
+   * Marketplace interfaces are encouraged to prevent certain user actions like adding liquidity on assets in purgatory.
+   * @type {Purgatory}
+   */
+  purgatory: Purgatory
 }
