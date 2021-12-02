@@ -311,7 +311,7 @@ describe('NFT Factory test', () => {
   it('#startMultipleTokenOrder- should succed to start multiple orders', async () => {
     const consumer = user2 // could be different user
     const dtAmount = web3.utils.toWei('1')
-    const serviceId = 1 // dummy index
+    const serviceIndex = 1 // dummy index
     const consumeFeeAddress = user3 // marketplace fee Collector
     const consumeFeeAmount = 0 // fee to be collected on top, requires approval
     const consumeFeeToken = contracts.daiAddress // token address for the feeAmount, in this case DAI
@@ -348,7 +348,7 @@ describe('NFT Factory test', () => {
         tokenAddress: dtAddress,
         consumer: consumer,
         amount: dtAmount,
-        serviceId: serviceId,
+        serviceIndex: serviceIndex,
         consumeFeeAddress: consumeFeeAddress,
         consumeFeeToken: consumeFeeToken,
         consumeFeeAmount: consumeFeeAmount
@@ -357,7 +357,7 @@ describe('NFT Factory test', () => {
         tokenAddress: dtAddress2,
         consumer: consumer,
         amount: dtAmount,
-        serviceId: serviceId,
+        serviceIndex: serviceIndex,
         consumeFeeAddress: consumeFeeAddress,
         consumeFeeToken: consumeFeeToken,
         consumeFeeAmount: consumeFeeAmount

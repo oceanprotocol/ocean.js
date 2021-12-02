@@ -22,7 +22,7 @@ export interface TokenOrder {
   tokenAddress: string
   consumer: string
   amount: string | number
-  serviceId: number
+  serviceIndex: number
   consumeFeeAddress: string
   consumeFeeToken: string // address of the token marketplace wants to add fee on top
   consumeFeeAmount: number

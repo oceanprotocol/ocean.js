@@ -282,7 +282,7 @@ describe('Datatoken', () => {
     const order: OrderParams = {
       consumer: user1,
       amount: '1',
-      serviceId: 1,
+      serviceIndex: 1,
       consumeFeeAddress: user1,
       consumeFeeToken: '0x0000000000000000000000000000000000000000',
       consumeFeeAmount: '0'
@@ -301,7 +301,7 @@ describe('Datatoken', () => {
     const order: OrderParams = {
       consumer: user1,
       amount: '1',
-      serviceId: 1,
+      serviceIndex: 1,
       consumeFeeAddress: user1,
       consumeFeeToken: '0x0000000000000000000000000000000000000000',
       consumeFeeAmount: '0'

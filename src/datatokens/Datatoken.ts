@@ -19,7 +19,7 @@ interface Roles {
 export interface OrderParams {
   consumer: string
   amount: string
-  serviceId: number
+  serviceIndex: number
   consumeFeeAddress: string
   consumeFeeToken: string
   consumeFeeAmount: string
@@ -818,7 +818,7 @@ export class Datatoken {
    * @param {String} address User address which calls
    * @param {String} consumer Consumer Address
    * @param {String} amount Amount of tokens that is going to be transfered
-   * @param {Number} serviceId  Service index in the metadata
+   * @param {Number} serviceIndex  Service index in the metadata
    * @param {String} mpFeeAddress Consume marketplace fee address
    * @param {String} feeToken address of the token marketplace wants to add fee on top
    * @param {String} feeAmount amount of feeToken to be transferred to mpFeeAddress on top, will be converted to WEI
@@ -830,7 +830,7 @@ export class Datatoken {
     address: string,
     consumer: string,
     amount: string,
-    serviceId: number,
+    serviceIndex: number,
     mpFeeAddress: string,
     feeToken: string,
     feeAmount: string,
@@ -847,7 +847,7 @@ export class Datatoken {
         .startOrder(
           consumer,
           this.web3.utils.toWei(amount),
-          serviceId,
+          serviceIndex,
           mpFeeAddress,
           feeToken,
           this.web3.utils.toWei(feeAmount)
@@ -864,7 +864,7 @@ export class Datatoken {
    * @param {String} address User address which calls
    * @param {String} consumer Consumer Address
    * @param {String} amount Amount of tokens that is going to be transfered
-   * @param {Number} serviceId  Service index in the metadata
+   * @param {Number} serviceIndex  Service index in the metadata
    * @param {String} mpFeeAddress Consume marketplace fee address
    * @param {String} feeToken address of the token marketplace wants to add fee on top
    * @param {String} feeAmount amount of feeToken to be transferred to mpFeeAddress on top, will be converted to WEI
@@ -875,7 +875,7 @@ export class Datatoken {
     address: string,
     consumer: string,
     amount: string,
-    serviceId: number,
+    serviceIndex: number,
     mpFeeAddress: string,
     feeToken: string,
     feeAmount: string
@@ -888,7 +888,7 @@ export class Datatoken {
         address,
         consumer,
         amount,
-        serviceId,
+        serviceIndex,
         mpFeeAddress,
         feeToken,
         feeAmount,
@@ -899,7 +899,7 @@ export class Datatoken {
         .startOrder(
           consumer,
           this.web3.utils.toWei(amount),
-          serviceId,
+          serviceIndex,
           mpFeeAddress,
           feeToken,
           this.web3.utils.toWei(feeAmount)
