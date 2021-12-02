@@ -41,6 +41,12 @@ export interface AssetNft {
    * @type {string}
    */
   created: string
+
+  /**
+   * NFT token URI.
+   * @type {string}
+   */
+  tokenURI: string
 }
 
 export interface Purgatory {
@@ -51,8 +57,8 @@ export interface Purgatory {
   state: boolean
 
   /**
-   *
-   * @type {boolean}
+   * If asset is in purgatory, contains the reason for being there as defined in `list-purgatory`.
+   * @type {string}
    */
   reason: string
 }
