@@ -20,9 +20,6 @@ export interface OrderParams {
   consumer: string
   amount: string
   serviceIndex: number
-  consumeFeeAddress: string
-  consumeFeeToken: string
-  consumeFeeAmount: string
 }
 
 export interface DispenserParams {
@@ -831,9 +828,6 @@ export class Datatoken {
     consumer: string,
     amount: string,
     serviceIndex: number,
-    mpFeeAddress: string,
-    feeToken: string,
-    feeAmount: string,
     contractInstance?: Contract
   ): Promise<any> {
     const dtContract =
@@ -844,14 +838,7 @@ export class Datatoken {
     let estGas
     try {
       estGas = await dtContract.methods
-        .startOrder(
-          consumer,
-          this.web3.utils.toWei(amount),
-          serviceIndex,
-          mpFeeAddress,
-          feeToken,
-          this.web3.utils.toWei(feeAmount)
-        )
+        .startOrder(consumer, this.web3.utils.toWei(amount), serviceIndex)
         .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
     } catch (e) {
       estGas = gasLimitDefault
@@ -875,13 +862,9 @@ export class Datatoken {
     address: string,
     consumer: string,
     amount: string,
-    serviceIndex: number,
-    mpFeeAddress: string,
-    feeToken: string,
-    feeAmount: string
+    serviceIndex: number
   ): Promise<TransactionReceipt> {
     const dtContract = new this.web3.eth.Contract(this.datatokensABI, dtAddress)
-    if (!mpFeeAddress) mpFeeAddress = '0x0000000000000000000000000000000000000000'
     try {
       const estGas = await this.estGasStartOrder(
         dtAddress,
@@ -889,21 +872,11 @@ export class Datatoken {
         consumer,
         amount,
         serviceIndex,
-        mpFeeAddress,
-        feeToken,
-        feeAmount,
         dtContract
       )
 
       const trxReceipt = await dtContract.methods
-        .startOrder(
-          consumer,
-          this.web3.utils.toWei(amount),
-          serviceIndex,
-          mpFeeAddress,
-          feeToken,
-          this.web3.utils.toWei(feeAmount)
-        )
+        .startOrder(consumer, this.web3.utils.toWei(amount), serviceIndex)
         .send({
           from: address,
           gas: estGas + 1,

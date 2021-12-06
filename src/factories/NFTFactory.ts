@@ -23,9 +23,6 @@ export interface TokenOrder {
   consumer: string
   amount: string | number
   serviceIndex: number
-  consumeFeeAddress: string
-  consumeFeeToken: string // address of the token marketplace wants to add fee on top
-  consumeFeeAmount: number
 }
 
 export interface NFTCreateData {

@@ -8,7 +8,13 @@ import PoolTemplate from '@oceanprotocol/contracts/artifacts/contracts/pools/bal
 import defaultPool from '@oceanprotocol/contracts/artifacts/contracts/pools/FactoryRouter.sol/FactoryRouter.json'
 import defaultERC20ABI from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC20Template.sol/ERC20Template.json'
 import Decimal from 'decimal.js'
-import { CurrentFees } from '../../interfaces'
+import {
+  CurrentFees,
+  TokenInOutMarket,
+  AmountsInOutMaxFee,
+  AmountsInMaxFee,
+  AmountsOutMaxFee
+} from '../../interfaces'
 const BN = require('bn.js')
 
 const MaxUint256 =
@@ -639,7 +645,7 @@ export class Pool {
   }
 
   /**
-   * collectOPF - collect market fees - can be called by the marketFeeCollector
+   * collectOPF - collect market fees - can be called by the publishMarketCollector
    * @param {String} address
    * @param {String} poolAddress
    * @param {String} to address that will receive fees
@@ -733,50 +739,6 @@ export class Pool {
     return result
   }
 
-  /**
-   * Estimate gas cost for swapExactAmountIn
-   * @param {String} address
-   * @param {String} poolAddress
-   * @param {String} tokenIn
-   * @param {String} tokenAmountIn  will be converted to wei
-   * @param {String} tokenOut
-   * @param {String} minAmountOut will be converted to wei
-   * @param {String} maxPrice will be converted to wei
-   * @param {Contract} contractInstance optional contract instance
-   * @return {Promise<number>}
-   */
-  public async estSwapExactAmountIn(
-    address: string,
-    poolAddress: string,
-    tokenIn: string,
-    tokenAmountIn: string,
-    tokenOut: string,
-    minAmountOut: string,
-    maxPrice: string,
-    contractInstance?: Contract
-  ): Promise<number> {
-    const poolContract =
-      contractInstance ||
-      new this.web3.eth.Contract(this.poolABI as AbiItem[], poolAddress)
-
-    const gasLimitDefault = this.GASLIMIT_DEFAULT
-    let estGas
-    try {
-      estGas = await poolContract.methods
-        .swapExactAmountIn(
-          tokenIn,
-          tokenAmountIn,
-          tokenOut,
-          minAmountOut,
-          maxPrice || MaxUint256
-        )
-        .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
-    } catch (e) {
-      estGas = gasLimitDefault
-    }
-    return estGas
-  }
-
   async amountToUnits(token: string, amount: string): Promise<string> {
     try {
       const tokenContract = new this.web3.eth.Contract(
@@ -813,6 +775,53 @@ export class Pool {
   }
 
   /**
+   * Estimate gas cost for swapExactAmountIn
+   * @param {String} address
+   * @param {String} poolAddress
+   * @param {String} tokenIn
+   * @param {String} tokenAmountIn  will be converted to wei
+   * @param {String} tokenOut
+   * @param {String} minAmountOut will be converted to wei
+   * @param {String} maxPrice will be converted to wei
+   * @param {Contract} contractInstance optional contract instance
+   * @return {Promise<number>}
+   */
+  public async estSwapExactAmountIn(
+    address: string,
+    poolAddress: string,
+    tokenInOutMarket: TokenInOutMarket,
+    amountsInOutMaxFee: AmountsInMaxFee,
+    contractInstance?: Contract
+  ): Promise<number> {
+    const poolContract =
+      contractInstance ||
+      new this.web3.eth.Contract(this.poolABI as AbiItem[], poolAddress)
+
+    const gasLimitDefault = this.GASLIMIT_DEFAULT
+    let estGas
+    try {
+      estGas = await poolContract.methods
+        .swapExactAmountIn(
+          [
+            tokenInOutMarket.tokenIn,
+            tokenInOutMarket.tokenOut,
+            tokenInOutMarket.marketFeeAddress
+          ],
+          [
+            amountsInOutMaxFee.tokenAmountIn,
+            amountsInOutMaxFee.minAmountOut,
+            this.web3.utils.toWei(amountsInOutMaxFee.maxPrice),
+            amountsInOutMaxFee.swapMarketFee
+          ]
+        )
+        .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
+    } catch (e) {
+      estGas = gasLimitDefault
+    }
+    return estGas
+  }
+
+  /**
    * swapExactAmountIn - Trades an exact tokenAmountIn of tokenIn taken from the caller by the pool, in exchange for at least minAmountOut of tokenOut given to the caller from the pool, with a maximum marginal price of maxPrice.         Returns (tokenAmountOut, spotPriceAfter), where tokenAmountOut is the amount of token that came out of the pool, and spotPriceAfter is the new marginal spot price, ie, the result of getSpotPrice after the call. (These values are what are limited by the arguments; you are guaranteed tokenAmountOut >= minAmountOut and spotPriceAfter <= maxPrice).
    * @param {String} address
    * @param {String} poolAddress
@@ -826,39 +835,44 @@ export class Pool {
   async swapExactAmountIn(
     address: string,
     poolAddress: string,
-    tokenIn: string,
-    tokenAmountIn: string,
-    tokenOut: string,
-    minAmountOut: string,
-    maxPrice?: string
+    tokenInOutMarket: TokenInOutMarket,
+    amountsInOutMaxFee: AmountsInOutMaxFee
   ): Promise<TransactionReceipt> {
     const pool = new this.web3.eth.Contract(this.poolABI, poolAddress)
 
-    const amountInFormatted = await this.amountToUnits(tokenIn, tokenAmountIn)
+    amountsInOutMaxFee.tokenAmountIn = await this.amountToUnits(
+      tokenInOutMarket.tokenIn,
+      amountsInOutMaxFee.tokenAmountIn
+    )
 
-    const minAmountOutFormatted = await this.amountToUnits(tokenOut, minAmountOut)
+    amountsInOutMaxFee.minAmountOut = await this.amountToUnits(
+      tokenInOutMarket.tokenOut,
+      amountsInOutMaxFee.minAmountOut
+    )
 
     let result = null
 
     const estGas = await this.estSwapExactAmountIn(
       address,
       poolAddress,
-      tokenIn,
-      amountInFormatted,
-      tokenOut,
-      minAmountOutFormatted.toString(),
-      maxPrice ? this.web3.utils.toWei(maxPrice) : MaxUint256
+      tokenInOutMarket,
+      amountsInOutMaxFee
     )
 
-    // console.log(minAmountOutFormatted, 'minamoutnoutformatted')
     try {
       result = await pool.methods
         .swapExactAmountIn(
-          tokenIn,
-          amountInFormatted,
-          tokenOut,
-          minAmountOutFormatted,
-          maxPrice ? this.web3.utils.toWei(maxPrice) : MaxUint256
+          [
+            tokenInOutMarket.tokenIn,
+            tokenInOutMarket.tokenOut,
+            tokenInOutMarket.marketFeeAddress
+          ],
+          [
+            amountsInOutMaxFee.tokenAmountIn,
+            amountsInOutMaxFee.minAmountOut,
+            this.web3.utils.toWei(amountsInOutMaxFee.maxPrice),
+            amountsInOutMaxFee.swapMarketFee
+          ]
         )
         .send({
           from: address,
@@ -887,11 +901,8 @@ export class Pool {
   public async estSwapExactAmountOut(
     address: string,
     poolAddress: string,
-    tokenIn: string,
-    maxAmountIn: string,
-    tokenOut: string,
-    amountOut: string,
-    maxPrice?: string,
+    tokenInOutMarket: TokenInOutMarket,
+    amountsInOutMaxFee: AmountsOutMaxFee,
     contractInstance?: Contract
   ): Promise<number> {
     const poolContract =
@@ -903,11 +914,17 @@ export class Pool {
     try {
       estGas = await poolContract.methods
         .swapExactAmountOut(
-          tokenIn,
-          maxAmountIn,
-          tokenOut,
-          amountOut,
-          maxPrice || MaxUint256
+          [
+            tokenInOutMarket.tokenIn,
+            tokenInOutMarket.tokenOut,
+            tokenInOutMarket.marketFeeAddress
+          ],
+          [
+            amountsInOutMaxFee.maxAmountIn,
+            amountsInOutMaxFee.tokenAmountOut,
+            this.web3.utils.toWei(amountsInOutMaxFee.maxPrice),
+            amountsInOutMaxFee.swapMarketFee
+          ]
         )
         .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
     } catch (e) {
@@ -930,35 +947,41 @@ export class Pool {
   async swapExactAmountOut(
     account: string,
     poolAddress: string,
-    tokenIn: string,
-    maxAmountIn: string,
-    tokenOut: string,
-    amountOut: string,
-    maxPrice?: string
+    tokenInOutMarket: TokenInOutMarket,
+    amountsInOutMaxFee: AmountsOutMaxFee
   ): Promise<TransactionReceipt> {
     const pool = new this.web3.eth.Contract(this.poolABI, poolAddress)
     let result = null
 
-    const maxAmountInFormatted = await this.amountToUnits(tokenIn, maxAmountIn)
-    const amountOutFormatted = await this.amountToUnits(tokenOut, amountOut)
+    amountsInOutMaxFee.maxAmountIn = await this.amountToUnits(
+      tokenInOutMarket.tokenIn,
+      amountsInOutMaxFee.maxAmountIn
+    )
+    amountsInOutMaxFee.tokenAmountOut = await this.amountToUnits(
+      tokenInOutMarket.tokenOut,
+      amountsInOutMaxFee.tokenAmountOut
+    )
     const estGas = await this.estSwapExactAmountOut(
       account,
       poolAddress,
-      tokenIn,
-      maxAmountInFormatted,
-      tokenOut,
-      amountOutFormatted,
-      maxPrice ? this.web3.utils.toWei(maxPrice) : MaxUint256
+      tokenInOutMarket,
+      amountsInOutMaxFee
     )
 
     try {
       result = await pool.methods
         .swapExactAmountOut(
-          tokenIn,
-          maxAmountInFormatted,
-          tokenOut,
-          amountOutFormatted,
-          maxPrice ? this.web3.utils.toWei(maxPrice) : MaxUint256
+          [
+            tokenInOutMarket.tokenIn,
+            tokenInOutMarket.tokenOut,
+            tokenInOutMarket.marketFeeAddress
+          ],
+          [
+            amountsInOutMaxFee.maxAmountIn,
+            amountsInOutMaxFee.tokenAmountOut,
+            this.web3.utils.toWei(amountsInOutMaxFee.maxPrice),
+            amountsInOutMaxFee.swapMarketFee
+          ]
         )
         .send({
           from: account,
@@ -1452,7 +1475,8 @@ export class Pool {
   async getSpotPrice(
     poolAddress: string,
     tokenIn: string,
-    tokenOut: string
+    tokenOut: string,
+    swapMarketFe: number
   ): Promise<string> {
     const pool = new this.web3.eth.Contract(this.poolABI, poolAddress)
     let decimalsTokenIn = 18
@@ -1479,7 +1503,7 @@ export class Pool {
 
     let price = null
     try {
-      price = await pool.methods.getSpotPrice(tokenIn, tokenOut).call()
+      price = await pool.methods.getSpotPrice(tokenIn, tokenOut, swapMarketFe).call()
       price = new BigNumber(price.toString())
     } catch (e) {
       this.logger.error('ERROR: Failed to get spot price of swapping tokenIn to tokenOut')
@@ -1506,7 +1530,8 @@ export class Pool {
     poolAddress: string,
     tokenIn: string,
     tokenOut: string,
-    tokenAmountOut: string
+    tokenAmountOut: string,
+    swapMarketFee: string
   ): Promise<string> {
     const pool = new this.web3.eth.Contract(this.poolABI, poolAddress)
 
@@ -1516,7 +1541,7 @@ export class Pool {
 
     try {
       const result = await pool.methods
-        .getAmountInExactOut(tokenIn, tokenOut, amountOutFormatted)
+        .getAmountInExactOut(tokenIn, tokenOut, amountOutFormatted, swapMarketFee)
         .call()
       amount = await this.unitsToAmount(tokenIn, result)
     } catch (e) {
@@ -1529,7 +1554,8 @@ export class Pool {
     poolAddress: string,
     tokenIn: string,
     tokenOut: string,
-    tokenAmountIn: string
+    tokenAmountIn: string,
+    swapMarketFee: string
   ): Promise<string> {
     const pool = new this.web3.eth.Contract(this.poolABI, poolAddress)
 
@@ -1539,7 +1565,7 @@ export class Pool {
 
     try {
       const result = await pool.methods
-        .getAmountOutExactIn(tokenIn, tokenOut, amountInFormatted)
+        .getAmountOutExactIn(tokenIn, tokenOut, amountInFormatted, swapMarketFee)
         .call()
 
       amount = await this.unitsToAmount(tokenOut, result)
