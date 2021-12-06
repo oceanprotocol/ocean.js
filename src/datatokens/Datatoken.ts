@@ -1202,6 +1202,17 @@ export class Datatoken {
     return nftAddress
   }
 
+  /**  Returns true if address has deployERC20 role
+   * @param {String} dtAddress Datatoken adress
+   * @param {String} dtAddress Datatoken adress
+   * @return {Promise<number>}
+   */
+  public async isERC20Deployer(dtAddress: string, adddress: string): Promise<string> {
+    const dtContract = new this.web3.eth.Contract(this.datatokensABI, dtAddress)
+    const isERC20Deployer = await dtContract.methods.isERC20Deployer(adddress).call()
+    return isERC20Deployer
+  }
+
   /**
    * Get Address Balance for datatoken
    * @param {String} dtAddress Datatoken adress
