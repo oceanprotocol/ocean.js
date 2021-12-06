@@ -253,16 +253,7 @@ describe('Datatoken', () => {
       'User2 does not hold 0 datatokens'
     )
 
-    const order = await datatoken.startOrder(
-      datatokenAddress,
-      user1,
-      user2,
-      '1',
-      1,
-      user3,
-      '0x0000000000000000000000000000000000000000',
-      '0'
-    )
+    const order = await datatoken.startOrder(datatokenAddress, user1, user2, '1', 1)
     assert(order !== null)
 
     assert(
@@ -282,10 +273,7 @@ describe('Datatoken', () => {
     const order: OrderParams = {
       consumer: user1,
       amount: '1',
-      serviceIndex: 1,
-      consumeFeeAddress: user1,
-      consumeFeeToken: '0x0000000000000000000000000000000000000000',
-      consumeFeeAmount: '0'
+      serviceIndex: 1
     }
 
     const buyFromDispenseTx = await datatoken.buyFromDispenserAndOrder(
@@ -301,15 +289,15 @@ describe('Datatoken', () => {
     const order: OrderParams = {
       consumer: user1,
       amount: '1',
-      serviceIndex: 1,
-      consumeFeeAddress: user1,
-      consumeFeeToken: '0x0000000000000000000000000000000000000000',
-      consumeFeeAmount: '0'
+      serviceIndex: 1
     }
+
     const fre: FreOrderParams = {
       exchangeContract: fixedRateAddress,
       exchangeId: exchangeId,
-      maxBaseTokenAmount: '1'
+      maxBaseTokenAmount: '1',
+      swapMarketFee: this.web3.utils.toWei('0.1'),
+      marketFeeAddress: '0x0000000000000000000000000000000000000000'
     }
 
     const buyTx = await datatoken.buyFromFreAndOrder(datatokenAddress, user1, order, fre)

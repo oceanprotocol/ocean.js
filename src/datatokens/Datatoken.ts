@@ -816,9 +816,6 @@ export class Datatoken {
    * @param {String} consumer Consumer Address
    * @param {String} amount Amount of tokens that is going to be transfered
    * @param {Number} serviceIndex  Service index in the metadata
-   * @param {String} mpFeeAddress Consume marketplace fee address
-   * @param {String} feeToken address of the token marketplace wants to add fee on top
-   * @param {String} feeAmount amount of feeToken to be transferred to mpFeeAddress on top, will be converted to WEI
    * @param {Contract} contractInstance optional contract instance
    * @return {Promise<any>}
    */
@@ -852,9 +849,6 @@ export class Datatoken {
    * @param {String} consumer Consumer Address
    * @param {String} amount Amount of tokens that is going to be transfered
    * @param {Number} serviceIndex  Service index in the metadata
-   * @param {String} mpFeeAddress Consume marketplace fee address
-   * @param {String} feeToken address of the token marketplace wants to add fee on top
-   * @param {String} feeAmount amount of feeToken to be transferred to mpFeeAddress on top, will be converted to WEI
    * @return {Promise<TransactionReceipt>} string
    */
   public async startOrder(
