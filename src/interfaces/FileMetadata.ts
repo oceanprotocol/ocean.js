@@ -11,4 +11,16 @@ export interface FileMetadata {
    * @type {[type]}
    */
   contentLength?: string
+
+  /**
+   * File index.
+   * @type {number}
+   */
+  index?: number
+
+  /**
+   * File URL.
+   * @type {string}
+   */
+  url?: string
 }

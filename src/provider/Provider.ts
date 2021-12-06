@@ -1,7 +1,10 @@
+import Web3 from 'web3'
 import { Config } from '../models'
 import { LoggerInstance } from '../utils'
 import { Asset } from '../ddo/Asset'
 import { FileMetadata } from '../interfaces/FileMetadata'
+import { noZeroX } from '../utils/ConversionTypeHelper'
+import { signText } from '../utils/SignatureUtils'
 
 export interface ServiceEndpoint {
   serviceName: string
@@ -130,7 +133,7 @@ export class Provider {
    * @param {string | DID} url or did
    * @param {string} providerUri Identifier of the asset to be registered in ocean
    * @param {string} fetchMethod fetch client instance
-   * @return {Promise<File[]>} urlDetails
+   * @return {Promise<FileMetadata[]>} urlDetails
    */
   public async fileinfo(
     url: string,
@@ -168,7 +171,7 @@ export class Provider {
    * @param {UserCustomParameters} userCustomParameters
    * @param {string} providerUri Identifier of the asset to be registered in ocean
    * @param {string} fetchMethod fetch client instance
-   * @return {Promise<File[]>} urlDetails
+   * @return {Promise<FileMetadata[]>} urlDetails
    */
   public async initialize(
     asset: Asset,
@@ -203,6 +206,69 @@ export class Provider {
       LoggerInstance.error(e)
       throw new Error('Asset URL not found or not available.')
     }
+  }
+
+  public async download(
+    did: string,
+    destination: string,
+    accountId: string,
+    files: FileMetadata[],
+    index = -1,
+    providerUri: string,
+    web3: Web3,
+    fetchMethod: any,
+    userCustomParameters?: UserCustomParameters
+  ): Promise<any> {
+    const providerEndpoints = await this.getEndpoints(providerUri, fetchMethod)
+    const serviceEndpoints = await this.getServiceEndpoints(
+      providerUri,
+      providerEndpoints
+    )
+    let downloadUrl = this.getEndpointURL(serviceEndpoints, 'download')
+      ? this.getEndpointURL(serviceEndpoints, 'download').urlPath
+      : null
+
+    const nonce = await this.getNonce(
+      providerUri,
+      accountId,
+      fetchMethod,
+      providerEndpoints,
+      serviceEndpoints
+    )
+    const signature = await this.createSignature(web3, accountId, did + nonce)
+
+    if (!downloadUrl) return null
+    const filesPromises = files
+      .filter((_, i) => index === -1 || i === index)
+      .map(async ({ index: i, url: fileUrl }) => {
+        let consumeUrl = downloadUrl
+        consumeUrl += `?index=${i}`
+        consumeUrl += `&documentId=${did}`
+        consumeUrl += `&consumerAddress=${accountId}`
+        consumeUrl += `&url=${fileUrl}`
+        consumeUrl += `&signature=${signature}`
+        if (userCustomParameters)
+          consumeUrl += '&userdata=' + encodeURI(JSON.stringify(userCustomParameters))
+        try {
+          !destination
+            ? await fetchMethod.downloadFileBrowser(consumeUrl)
+            : await fetchMethod.downloadFile(consumeUrl, destination, i)
+        } catch (e) {
+          LoggerInstance.error('Error consuming assets', e)
+          throw e
+        }
+      })
+    await Promise.all(filesPromises)
+    return destination
+  }
+
+  public async createSignature(
+    web3: Web3,
+    accountId: string,
+    agreementId: string
+  ): Promise<string> {
+    const signature = await signText(web3, noZeroX(agreementId), accountId)
+    return signature
   }
 
   /** Check for a valid provider at URL
