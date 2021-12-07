@@ -14,7 +14,7 @@ import MockERC20 from '@oceanprotocol/contracts/artifacts/contracts/utils/mock/M
 import PoolTemplate from '@oceanprotocol/contracts/artifacts/contracts/pools/balancer/BPool.sol/BPool.json'
 import { LoggerInstance } from '../../src/utils'
 // import { NFTDataToken } from '../../../src/datatokens/NFTDatatoken'
-import { NFTFactory, NFTCreateData } from '../../src/factories/NFTFactory'
+import { NFTFactory, NFTCreateData, TokenOrder } from '../../src/factories/NFTFactory'
 import {
   FreCreationParams,
   Erc20CreateParams,
@@ -311,9 +311,9 @@ describe('NFT Factory test', () => {
   it('#startMultipleTokenOrder- should succed to start multiple orders', async () => {
     const consumer = user2 // could be different user
     const dtAmount = web3.utils.toWei('1')
-    const serviceId = 1 // dummy index
+    const serviceIndex = 1 // dummy index
     const consumeFeeAddress = user3 // marketplace fee Collector
-    const consumeFeeAmount = 0 // fee to be collected on top, requires approval
+    const consumeFeeAmount = '0' // fee to be collected on top, requires approval
     const consumeFeeToken = contracts.daiAddress // token address for the feeAmount, in this case DAI
 
     // we reuse a DT created in a previous test
@@ -343,24 +343,24 @@ describe('NFT Factory test', () => {
     expect(await dtContract.methods.balanceOf(user2).call()).to.equal(dtAmount)
     expect(await dtContract2.methods.balanceOf(user2).call()).to.equal(dtAmount)
 
-    const orders = [
+    const orders: TokenOrder[] = [
       {
         tokenAddress: dtAddress,
         consumer: consumer,
         amount: dtAmount,
-        serviceId: serviceId,
-        consumeFeeAddress: consumeFeeAddress,
-        consumeFeeToken: consumeFeeToken,
-        consumeFeeAmount: consumeFeeAmount
+        serviceIndex: serviceIndex,
+        providerFeeAddress: consumeFeeAddress,
+        providerFeeToken: consumeFeeToken,
+        providerFeeAmount: consumeFeeAmount
       },
       {
         tokenAddress: dtAddress2,
         consumer: consumer,
         amount: dtAmount,
-        serviceId: serviceId,
-        consumeFeeAddress: consumeFeeAddress,
-        consumeFeeToken: consumeFeeToken,
-        consumeFeeAmount: consumeFeeAmount
+        serviceIndex: serviceIndex,
+        providerFeeAddress: consumeFeeAddress,
+        providerFeeToken: consumeFeeToken,
+        providerFeeAmount: consumeFeeAmount
       }
     ]
 

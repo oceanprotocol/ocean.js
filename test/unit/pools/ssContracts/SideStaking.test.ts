@@ -19,7 +19,13 @@ import { LoggerInstance } from '../../../../src/utils'
 import { NFTFactory, NFTCreateData } from '../../../../src/factories/NFTFactory'
 import { Pool } from '../../../../src/pools/balancer/Pool'
 import { SideStaking } from '../../../../src/pools/ssContracts/SideStaking'
-import { Erc20CreateParams, PoolCreationParams } from '../../../../src/interfaces'
+import {
+  Erc20CreateParams,
+  PoolCreationParams,
+  TokenInOutMarket,
+  AmountsInMaxFee,
+  AmountsOutMaxFee
+} from '../../../../src/interfaces'
 const { keccak256 } = require('@ethersproject/keccak256')
 const web3 = new Web3('http://127.0.0.1:8545')
 const communityCollector = '0xeE9300b7961e0a01d9f0adb863C7A227A07AaD75'
@@ -291,13 +297,22 @@ describe('SideStaking unit test', () => {
       )
       expect(await erc20Contract.methods.balanceOf(user2).call()).to.equal('0')
       await pool.approve(user2, contracts.daiAddress, poolAddress, '10')
+      const tokenInOutMarket: TokenInOutMarket = {
+        tokenIn: contracts.daiAddress,
+        tokenOut: erc20Token,
+        marketFeeAddress: contracts.accounts[0]
+      }
+      const amountsInOutMaxFee: AmountsInMaxFee = {
+        tokenAmountIn: '10',
+        minAmountOut: '1',
+        swapMarketFee: '0.1'
+      }
+
       const tx = await pool.swapExactAmountIn(
         user2,
         poolAddress,
-        contracts.daiAddress,
-        '10',
-        erc20Token,
-        '1'
+        tokenInOutMarket,
+        amountsInOutMaxFee
       )
       expect(await erc20Contract.methods.balanceOf(user2).call()).to.equal(
         tx.events.LOG_SWAP.returnValues.tokenAmountOut
@@ -309,13 +324,21 @@ describe('SideStaking unit test', () => {
       expect(await daiContract.methods.balanceOf(user2).call()).to.equal(
         web3.utils.toWei('990')
       )
+      const tokenInOutMarket: TokenInOutMarket = {
+        tokenIn: contracts.daiAddress,
+        tokenOut: erc20Token,
+        marketFeeAddress: contracts.accounts[0]
+      }
+      const amountsInOutMaxFee: AmountsOutMaxFee = {
+        maxAmountIn: '100',
+        tokenAmountOut: '50',
+        swapMarketFee: '0.1'
+      }
       const tx = await pool.swapExactAmountOut(
         user2,
         poolAddress,
-        contracts.daiAddress,
-        '100',
-        erc20Token,
-        '50'
+        tokenInOutMarket,
+        amountsInOutMaxFee
       )
       assert(tx != null)
     })
@@ -536,13 +559,21 @@ describe('SideStaking unit test', () => {
 
       expect(await erc20Contract.methods.balanceOf(user2).call()).to.equal('0')
       await pool.approve(user2, contracts.usdcAddress, poolAddress, '10')
+      const tokenInOutMarket: TokenInOutMarket = {
+        tokenIn: contracts.usdcAddress,
+        tokenOut: erc20Token,
+        marketFeeAddress: contracts.accounts[0]
+      }
+      const amountsInOutMaxFee: AmountsInMaxFee = {
+        tokenAmountIn: '10',
+        minAmountOut: '1',
+        swapMarketFee: '0.1'
+      }
       const tx = await pool.swapExactAmountIn(
         user2,
         poolAddress,
-        contracts.usdcAddress,
-        '10',
-        erc20Token,
-        '1'
+        tokenInOutMarket,
+        amountsInOutMaxFee
       )
       expect(await erc20Contract.methods.balanceOf(user2).call()).to.equal(
         tx.events.LOG_SWAP.returnValues.tokenAmountOut
@@ -554,13 +585,21 @@ describe('SideStaking unit test', () => {
         (await pool.amountToUnits(contracts.usdcAddress, '990')).toString()
       )
       await pool.approve(user2, contracts.usdcAddress, poolAddress, '100')
+      const tokenInOutMarket: TokenInOutMarket = {
+        tokenIn: contracts.usdcAddress,
+        tokenOut: erc20Token,
+        marketFeeAddress: contracts.accounts[0]
+      }
+      const amountsInOutMaxFee: AmountsOutMaxFee = {
+        maxAmountIn: '100',
+        tokenAmountOut: '50',
+        swapMarketFee: '0.1'
+      }
       const tx = await pool.swapExactAmountOut(
         user2,
         poolAddress,
-        contracts.usdcAddress,
-        '100',
-        erc20Token,
-        '50'
+        tokenInOutMarket,
+        amountsInOutMaxFee
       )
       assert(tx != null)
       // console.log(tx.events)

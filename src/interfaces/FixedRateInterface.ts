@@ -15,4 +15,6 @@ export interface FreOrderParams {
   exchangeContract: string
   exchangeId: string
   maxBaseTokenAmount: string
+  swapMarketFee: string
+  marketFeeAddress: string
 }
