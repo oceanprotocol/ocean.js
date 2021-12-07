@@ -338,6 +338,76 @@ export class SideStaking {
   }
 
   /**
+   * Estimate gas cost for getVesting
+   * @param {String} account
+   * @param {String} ssAddress side staking contract address
+   * @param {String} datatokenAddress datatokenAddress
+   * @param {Contract} contractInstance optional contract instance
+   * @return {Promise<number>}
+   */
+  public async estSetPoolSwapFee(
+    account: string,
+    ssAddress: string,
+    datatokenAddress: string,
+    poolAddress: string,
+    swapFee: number,
+    contractInstance?: Contract
+  ): Promise<number> {
+    const sideStaking =
+      contractInstance || new this.web3.eth.Contract(this.ssABI as AbiItem[], ssAddress)
+
+    const gasLimitDefault = this.GASLIMIT_DEFAULT
+    let estGas
+    try {
+      estGas = await sideStaking.methods
+        .setPoolSwapFee(datatokenAddress, poolAddress, swapFee)
+        .estimateGas({ from: account }, (err, estGas) => (err ? gasLimitDefault : estGas))
+    } catch (e) {
+      estGas = gasLimitDefault
+    }
+    return estGas
+  }
+
+  /** Send vested tokens available to the publisher address, can be called by anyone
+   *
+   * @param {String} account
+   * @param {String} ssAddress side staking contract address
+   * @param {String} datatokenAddress datatokenAddress
+   * @return {TransactionReceipt}
+   */
+  async setPoolSwapFee(
+    account: string,
+    ssAddress: string,
+    datatokenAddress: string,
+    poolAddress: string,
+    swapFee: number
+  ): Promise<TransactionReceipt> {
+    const sideStaking = new this.web3.eth.Contract(this.ssABI, ssAddress)
+    let result = null
+
+    const estGas = await this.estSetPoolSwapFee(
+      account,
+      ssAddress,
+      datatokenAddress,
+      poolAddress,
+      swapFee,
+      sideStaking
+    )
+    try {
+      result = await sideStaking.methods
+        .setPoolSwapFee(datatokenAddress, poolAddress, swapFee)
+        .send({
+          from: account,
+          gas: estGas + 1,
+          gasPrice: await getFairGasPrice(this.web3)
+        })
+    } catch (e) {
+      LoggerInstance.error('ERROR: Failed to join swap pool amount out')
+    }
+    return result
+  }
+
+  /**
    * Get Router address set in side staking contract
    * @param {String} ssAddress side staking contract address
    * @return {String}

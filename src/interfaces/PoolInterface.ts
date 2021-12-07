@@ -18,3 +18,23 @@ export interface CurrentFees {
   tokens: string[]
   amounts: string[]
 }
+
+export interface TokenInOutMarket {
+  tokenIn: string
+  tokenOut: string
+  marketFeeAddress: string
+}
+
+export interface AmountsInMaxFee {
+  tokenAmountIn: string
+  minAmountOut: string
+  swapMarketFee: string
+  maxPrice?: string
+}
+
+export interface AmountsOutMaxFee {
+  tokenAmountOut: string
+  maxAmountIn: string
+  swapMarketFee: string
+  maxPrice?: string
+}

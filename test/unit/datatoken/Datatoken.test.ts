@@ -282,10 +282,10 @@ describe('Datatoken', () => {
     const order: OrderParams = {
       consumer: user1,
       amount: '1',
-      serviceId: 1,
-      consumeFeeAddress: user1,
-      consumeFeeToken: '0x0000000000000000000000000000000000000000',
-      consumeFeeAmount: '0'
+      serviceIndex: 1,
+      providerFeeAddress: user1,
+      providerFeeToken: '0x0000000000000000000000000000000000000000',
+      providerFeeAmount: '0'
     }
 
     const buyFromDispenseTx = await datatoken.buyFromDispenserAndOrder(
@@ -301,15 +301,18 @@ describe('Datatoken', () => {
     const order: OrderParams = {
       consumer: user1,
       amount: '1',
-      serviceId: 1,
-      consumeFeeAddress: user1,
-      consumeFeeToken: '0x0000000000000000000000000000000000000000',
-      consumeFeeAmount: '0'
+      serviceIndex: 1,
+      providerFeeAddress: user1,
+      providerFeeToken: '0x0000000000000000000000000000000000000000',
+      providerFeeAmount: '0'
     }
+
     const fre: FreOrderParams = {
       exchangeContract: fixedRateAddress,
       exchangeId: exchangeId,
-      maxBaseTokenAmount: '1'
+      maxBaseTokenAmount: '1',
+      swapMarketFee: web3.utils.toWei('0.1'),
+      marketFeeAddress: '0x0000000000000000000000000000000000000000'
     }
 
     const buyTx = await datatoken.buyFromFreAndOrder(datatokenAddress, user1, order, fre)
