@@ -3,18 +3,8 @@ import Web3 from 'web3'
 import { TransactionReceipt } from 'web3-core'
 import { AbiItem } from 'web3-utils'
 import defaultRouter from '@oceanprotocol/contracts/artifacts/contracts/pools/FactoryRouter.sol/FactoryRouter.json'
-import { LoggerInstance, getFairGasPrice } from '../utils'
-
-interface Operations {
-  exchangeIds: string
-  source: string
-  operation: number
-  tokenIn: string
-  amountsIn: string | number
-  tokenOut: string
-  amountsOut: string | number
-  maxPrice: string | number
-}
+import { getFairGasPrice } from '../utils'
+import { Operation } from '../interfaces/RouterInterface'
 
 /**
  * Provides an interface for FactoryRouter contract
@@ -49,10 +39,10 @@ export class Router {
   /**
    * Estimate gas cost for buyDTBatch method
    * @param {String} address
-   * @param {Operations} operations Operations objects array
+   * @param {Operation} operations Operations objects array
    * @return {Promise<TransactionReceipt>} Transaction receipt
    */
-  public async estGasBuyDTBatch(address: string, operations: Operations[]): Promise<any> {
+  public async estGasBuyDTBatch(address: string, operations: Operation[]): Promise<any> {
     const gasLimitDefault = this.GASLIMIT_DEFAULT
     let estGas
     try {
@@ -68,12 +58,12 @@ export class Router {
   /**
    * BuyDTBatch
    * @param {String} address
-   * @param {Operations} operations Operations objects array
+   * @param {Operation} operations Operations objects array
    * @return {Promise<TransactionReceipt>} Transaction receipt
    */
   public async buyDTBatch(
     address: string,
-    operations: Operations[]
+    operations: Operation[]
   ): Promise<TransactionReceipt> {
     const estGas = await this.estGasBuyDTBatch(address, operations)
 

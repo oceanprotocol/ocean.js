@@ -353,7 +353,7 @@ export class Pool {
     const pool = new this.web3.eth.Contract(this.poolABI, poolAddress)
     let result = null
     try {
-      result = await pool.methods._marketCollector().call()
+      result = await pool.methods._publishMarketCollector().call()
     } catch (e) {
       this.logger.error(`ERROR: Failed to get marketFeeCollector address: ${e.message}`)
     }
@@ -509,7 +509,7 @@ export class Pool {
     const pool = new this.web3.eth.Contract(this.poolABI, poolAddress)
     let weight = null
     try {
-      const result = await pool.methods.publishMarketFee(token).call()
+      const result = await pool.methods.publishMarketFees(token).call()
       weight = await this.unitsToAmount(token, result)
     } catch (e) {
       this.logger.error(`ERROR: Failed to get market fees for a token: ${e.message}`)

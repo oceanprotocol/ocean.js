@@ -16,7 +16,7 @@ import { LoggerInstance } from '../../../src/utils'
 import { NFTFactory, NFTCreateData } from '../../../src/factories/NFTFactory'
 import { Router } from '../../../src/pools/Router'
 import { BigNumber } from 'bignumber.js'
-import { Erc20CreateParams, PoolCreationParams } from '../../../src/interfaces'
+import { Erc20CreateParams, PoolCreationParams, Operation } from '../../../src/interfaces'
 const { keccak256 } = require('@ethersproject/keccak256')
 const web3 = new Web3('http://127.0.0.1:8545')
 const communityCollector = '0xeE9300b7961e0a01d9f0adb863C7A227A07AaD75'
@@ -292,7 +292,7 @@ describe('Router unit test', () => {
     // 1 - swapExactAmountOut
     // 2 - FixedRateExchange
     // 3 - Dispenser
-    const operations1 = {
+    const operations1: Operation = {
       exchangeIds: keccak256('0x00'), // used only for FixedRate or Dispenser, but needs to be filled even for pool
       source: pool1, // pool Address
       operation: 0, // swapExactAmountIn
@@ -300,10 +300,12 @@ describe('Router unit test', () => {
       amountsIn: web3.utils.toWei('1'), // when swapExactAmountIn is EXACT amount IN
       tokenOut: erc20Token,
       amountsOut: web3.utils.toWei('0.1'), // when swapExactAmountIn is MIN amount OUT
-      maxPrice: web3.utils.toWei('10') // max price (only for pools)
+      maxPrice: web3.utils.toWei('10'), // max price (only for pools),
+      swapMarketFee: web3.utils.toWei('0.1'),
+      marketFeeAddress: contracts.accounts[0]
     }
 
-    const operations2 = {
+    const operations2: Operation = {
       exchangeIds: keccak256('0x00'), // used only for FixedRate or Dispenser, but needs to be filled even for pool
       source: pool2, // pool Address
       operation: 0, // swapExactAmountIn
@@ -311,7 +313,9 @@ describe('Router unit test', () => {
       amountsIn: web3.utils.toWei('1'), // when swapExactAmountIn is EXACT amount IN
       tokenOut: erc20Token2,
       amountsOut: web3.utils.toWei('0.1'), // when swapExactAmountIn is MIN amount OUT
-      maxPrice: web3.utils.toWei('10') // max price (only for pools)
+      maxPrice: web3.utils.toWei('10'), // max price (only for pools)
+      swapMarketFee: web3.utils.toWei('0.1'),
+      marketFeeAddress: contracts.accounts[0]
     }
 
     await router.buyDTBatch(user2, [operations1, operations2])
