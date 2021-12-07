@@ -590,13 +590,22 @@ describe('SideStaking unit test', () => {
         (await pool.amountToUnits(contracts.usdcAddress, '990')).toString()
       )
       await pool.approve(user2, contracts.usdcAddress, poolAddress, '100')
+      const tokenInOutMarket: TokenInOutMarket = {
+        tokenIn: contracts.usdcAddress,
+        tokenOut: erc20Token,
+        marketFeeAddress: '0x0000000000000000000000000000000000000000'
+      }
+      const amountsInOutMaxFee: AmountsOutMaxFee = {
+        maxAmountIn: '100',
+        tokenAmountOut: '50',
+        maxPrice: MaxUint256,
+        swapMarketFee: '0.1'
+      }
       const tx = await pool.swapExactAmountOut(
         user2,
         poolAddress,
-        contracts.usdcAddress,
-        '100',
-        erc20Token,
-        '50'
+        tokenInOutMarket,
+        amountsInOutMaxFee
       )
       assert(tx != null)
       // console.log(tx.events)

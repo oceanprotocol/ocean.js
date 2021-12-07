@@ -23,6 +23,9 @@ export interface TokenOrder {
   consumer: string
   amount: string | number
   serviceIndex: number
+  providerFeeAddress: string
+  providerFeeToken: string
+  providerFeeAmount: string
 }
 
 export interface NFTCreateData {

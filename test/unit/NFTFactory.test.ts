@@ -313,7 +313,7 @@ describe('NFT Factory test', () => {
     const dtAmount = web3.utils.toWei('1')
     const serviceIndex = 1 // dummy index
     const consumeFeeAddress = user3 // marketplace fee Collector
-    const consumeFeeAmount = 0 // fee to be collected on top, requires approval
+    const consumeFeeAmount = '0' // fee to be collected on top, requires approval
     const consumeFeeToken = contracts.daiAddress // token address for the feeAmount, in this case DAI
 
     // we reuse a DT created in a previous test
@@ -348,13 +348,19 @@ describe('NFT Factory test', () => {
         tokenAddress: dtAddress,
         consumer: consumer,
         amount: dtAmount,
-        serviceIndex: serviceIndex
+        serviceIndex: serviceIndex,
+        providerFeeAddress: consumeFeeAddress,
+        providerFeeToken: consumeFeeToken,
+        providerFeeAmount: consumeFeeAmount
       },
       {
         tokenAddress: dtAddress2,
         consumer: consumer,
         amount: dtAmount,
-        serviceIndex: serviceIndex
+        serviceIndex: serviceIndex,
+        providerFeeAddress: consumeFeeAddress,
+        providerFeeToken: consumeFeeToken,
+        providerFeeAmount: consumeFeeAmount
       }
     ]
 

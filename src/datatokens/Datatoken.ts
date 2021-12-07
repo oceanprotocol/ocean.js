@@ -20,6 +20,9 @@ export interface OrderParams {
   consumer: string
   amount: string
   serviceIndex: number
+  providerFeeAddress: string
+  providerFeeToken: string
+  providerFeeAmount: string
 }
 
 export interface DispenserParams {
@@ -816,6 +819,9 @@ export class Datatoken {
    * @param {String} consumer Consumer Address
    * @param {String} amount Amount of tokens that is going to be transfered
    * @param {Number} serviceIndex  Service index in the metadata
+   * @param {String} providerFeeAddress Consume marketplace fee address
+   * @param {String} providerFeeToken address of the token marketplace wants to add fee on top
+   * @param {String} providerFeeAmount amount of feeToken to be transferred to mpFeeAddress on top, will be converted to WEI
    * @param {Contract} contractInstance optional contract instance
    * @return {Promise<any>}
    */
@@ -825,6 +831,9 @@ export class Datatoken {
     consumer: string,
     amount: string,
     serviceIndex: number,
+    providerFeeAddress: string,
+    providerFeeToken: string,
+    providerFeeAmount: string,
     contractInstance?: Contract
   ): Promise<any> {
     const dtContract =
@@ -835,7 +844,14 @@ export class Datatoken {
     let estGas
     try {
       estGas = await dtContract.methods
-        .startOrder(consumer, this.web3.utils.toWei(amount), serviceIndex)
+        .startOrder(
+          consumer,
+          this.web3.utils.toWei(amount),
+          serviceIndex,
+          providerFeeAddress,
+          providerFeeToken,
+          this.web3.utils.toWei(providerFeeAmount)
+        )
         .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
     } catch (e) {
       estGas = gasLimitDefault
@@ -849,6 +865,10 @@ export class Datatoken {
    * @param {String} consumer Consumer Address
    * @param {String} amount Amount of tokens that is going to be transfered
    * @param {Number} serviceIndex  Service index in the metadata
+   * @param {String} providerFeeAddress Consume marketplace fee address
+   * @param {String} providerFeeToken address of the token marketplace wants to add fee on top
+   * @param {String} providerFeeAmount amount of feeToken to be transferred to mpFeeAddress on top, will be converted to WEI
+
    * @return {Promise<TransactionReceipt>} string
    */
   public async startOrder(
@@ -856,9 +876,15 @@ export class Datatoken {
     address: string,
     consumer: string,
     amount: string,
-    serviceIndex: number
+    serviceIndex: number,
+    providerFeeAddress: string,
+    providerFeeToken: string,
+    providerFeeAmount: string
   ): Promise<TransactionReceipt> {
     const dtContract = new this.web3.eth.Contract(this.datatokensABI, dtAddress)
+    if (!providerFeeAddress)
+      providerFeeAddress = '0x0000000000000000000000000000000000000000'
+
     try {
       const estGas = await this.estGasStartOrder(
         dtAddress,
@@ -866,11 +892,21 @@ export class Datatoken {
         consumer,
         amount,
         serviceIndex,
+        providerFeeAddress,
+        providerFeeToken,
+        providerFeeAmount,
         dtContract
       )
 
       const trxReceipt = await dtContract.methods
-        .startOrder(consumer, this.web3.utils.toWei(amount), serviceIndex)
+        .startOrder(
+          consumer,
+          this.web3.utils.toWei(amount),
+          serviceIndex,
+          providerFeeAddress,
+          providerFeeToken,
+          this.web3.utils.toWei(providerFeeAmount)
+        )
         .send({
           from: address,
           gas: estGas + 1,
