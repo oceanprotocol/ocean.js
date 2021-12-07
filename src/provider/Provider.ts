@@ -224,7 +224,7 @@ export class Provider {
       providerUri,
       providerEndpoints
     )
-    let downloadUrl = this.getEndpointURL(serviceEndpoints, 'download')
+    const downloadUrl = this.getEndpointURL(serviceEndpoints, 'download')
       ? this.getEndpointURL(serviceEndpoints, 'download').urlPath
       : null
 
