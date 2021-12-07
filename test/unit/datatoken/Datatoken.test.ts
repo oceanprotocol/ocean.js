@@ -12,17 +12,17 @@ import FixedRate from '@oceanprotocol/contracts/artifacts/contracts/pools/fixedR
 import OPFCollector from '@oceanprotocol/contracts/artifacts/contracts/communityFee/OPFCommunityFeeCollector.sol/OPFCommunityFeeCollector.json'
 import MockERC20 from '@oceanprotocol/contracts/artifacts/contracts/utils/mock/MockERC20Decimals.sol/MockERC20Decimals.json'
 
-import { TestContractHandler } from '../TestContractHandler'
-import { NFTFactory, NFTCreateData } from '../../src/factories/NFTFactory'
+import { TestContractHandler } from '../../TestContractHandler'
+import { NFTFactory, NFTCreateData } from '../../../src/factories/NFTFactory'
 import {
   Datatoken,
   NFTDatatoken,
   OrderParams,
   DispenserParams
-} from '../../src/datatokens'
+} from '../../../src/datatokens'
 import { AbiItem } from 'web3-utils'
-import { LoggerInstance } from '../../src/utils'
-import { FreCreationParams, FreOrderParams } from '../../src/interfaces'
+import { LoggerInstance } from '../../../src/utils'
+import { FreCreationParams, FreOrderParams } from '../../../src/interfaces'
 
 const web3 = new Web3('http://127.0.0.1:8545')
 
