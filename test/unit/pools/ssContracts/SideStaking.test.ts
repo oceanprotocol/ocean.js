@@ -29,8 +29,6 @@ import {
 const { keccak256 } = require('@ethersproject/keccak256')
 const web3 = new Web3('http://127.0.0.1:8545')
 const communityCollector = '0xeE9300b7961e0a01d9f0adb863C7A227A07AaD75'
-const MaxUint256 =
-  '115792089237316195423570985008687907853269984665640564039457584007913129639934'
 
 describe('SideStaking unit test', () => {
   let factoryOwner: string
@@ -302,12 +300,11 @@ describe('SideStaking unit test', () => {
       const tokenInOutMarket: TokenInOutMarket = {
         tokenIn: contracts.daiAddress,
         tokenOut: erc20Token,
-        marketFeeAddress: '0x0000000000000000000000000000000000000000'
+        marketFeeAddress: contracts.accounts[0]
       }
       const amountsInOutMaxFee: AmountsInMaxFee = {
         tokenAmountIn: '10',
         minAmountOut: '1',
-        maxPrice: MaxUint256,
         swapMarketFee: '0.1'
       }
 
@@ -330,12 +327,11 @@ describe('SideStaking unit test', () => {
       const tokenInOutMarket: TokenInOutMarket = {
         tokenIn: contracts.daiAddress,
         tokenOut: erc20Token,
-        marketFeeAddress: '0x0000000000000000000000000000000000000000'
+        marketFeeAddress: contracts.accounts[0]
       }
       const amountsInOutMaxFee: AmountsOutMaxFee = {
         maxAmountIn: '100',
         tokenAmountOut: '50',
-        maxPrice: MaxUint256,
         swapMarketFee: '0.1'
       }
       const tx = await pool.swapExactAmountOut(
@@ -566,12 +562,11 @@ describe('SideStaking unit test', () => {
       const tokenInOutMarket: TokenInOutMarket = {
         tokenIn: contracts.usdcAddress,
         tokenOut: erc20Token,
-        marketFeeAddress: '0x0000000000000000000000000000000000000000'
+        marketFeeAddress: contracts.accounts[0]
       }
       const amountsInOutMaxFee: AmountsInMaxFee = {
         tokenAmountIn: '10',
         minAmountOut: '1',
-        maxPrice: MaxUint256,
         swapMarketFee: '0.1'
       }
       const tx = await pool.swapExactAmountIn(
@@ -593,12 +588,11 @@ describe('SideStaking unit test', () => {
       const tokenInOutMarket: TokenInOutMarket = {
         tokenIn: contracts.usdcAddress,
         tokenOut: erc20Token,
-        marketFeeAddress: '0x0000000000000000000000000000000000000000'
+        marketFeeAddress: contracts.accounts[0]
       }
       const amountsInOutMaxFee: AmountsOutMaxFee = {
         maxAmountIn: '100',
         tokenAmountOut: '50',
-        maxPrice: MaxUint256,
         swapMarketFee: '0.1'
       }
       const tx = await pool.swapExactAmountOut(

@@ -28,13 +28,13 @@ export interface TokenInOutMarket {
 export interface AmountsInMaxFee {
   tokenAmountIn: string
   minAmountOut: string
-  maxPrice: string
   swapMarketFee: string
+  maxPrice?: string
 }
 
 export interface AmountsOutMaxFee {
   tokenAmountOut: string
   maxAmountIn: string
-  maxPrice: string
   swapMarketFee: string
+  maxPrice?: string
 }

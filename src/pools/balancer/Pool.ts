@@ -509,7 +509,7 @@ export class Pool {
     const pool = new this.web3.eth.Contract(this.poolABI, poolAddress)
     let weight = null
     try {
-      const result = await pool.methods.marketFees(token).call()
+      const result = await pool.methods.publishMarketFee(token).call()
       weight = await this.unitsToAmount(token, result)
     } catch (e) {
       this.logger.error(`ERROR: Failed to get market fees for a token: ${e.message}`)
@@ -793,6 +793,10 @@ export class Pool {
       contractInstance ||
       new this.web3.eth.Contract(this.poolABI as AbiItem[], poolAddress)
 
+    const maxPrice = amountsInOutMaxFee.maxPrice
+      ? this.web3.utils.toWei(amountsInOutMaxFee.maxPrice)
+      : MaxUint256
+
     const gasLimitDefault = this.GASLIMIT_DEFAULT
     let estGas
     try {
@@ -806,7 +810,7 @@ export class Pool {
           [
             amountsInOutMaxFee.tokenAmountIn,
             amountsInOutMaxFee.minAmountOut,
-            this.web3.utils.toWei(amountsInOutMaxFee.maxPrice),
+            maxPrice,
             this.web3.utils.toWei(amountsInOutMaxFee.swapMarketFee)
           ]
         )
@@ -856,6 +860,10 @@ export class Pool {
       amountsInOutMaxFee
     )
 
+    const maxPrice = amountsInOutMaxFee.maxPrice
+      ? this.web3.utils.toWei(amountsInOutMaxFee.maxPrice)
+      : MaxUint256
+
     try {
       result = await pool.methods
         .swapExactAmountIn(
@@ -867,7 +875,7 @@ export class Pool {
           [
             amountsInOutMaxFee.tokenAmountIn,
             amountsInOutMaxFee.minAmountOut,
-            this.web3.utils.toWei(amountsInOutMaxFee.maxPrice),
+            maxPrice,
             this.web3.utils.toWei(amountsInOutMaxFee.swapMarketFee)
           ]
         )
@@ -904,6 +912,11 @@ export class Pool {
       new this.web3.eth.Contract(this.poolABI as AbiItem[], poolAddress)
 
     const gasLimitDefault = this.GASLIMIT_DEFAULT
+
+    const maxPrice = amountsInOutMaxFee.maxPrice
+      ? this.web3.utils.toWei(amountsInOutMaxFee.maxPrice)
+      : MaxUint256
+
     let estGas
     try {
       estGas = await poolContract.methods
@@ -916,7 +929,7 @@ export class Pool {
           [
             amountsInOutMaxFee.maxAmountIn,
             amountsInOutMaxFee.tokenAmountOut,
-            this.web3.utils.toWei(amountsInOutMaxFee.maxPrice),
+            maxPrice,
             this.web3.utils.toWei(amountsInOutMaxFee.swapMarketFee)
           ]
         )
@@ -948,16 +961,22 @@ export class Pool {
       tokenInOutMarket.tokenIn,
       amountsInOutMaxFee.maxAmountIn
     )
+
     amountsInOutMaxFee.tokenAmountOut = await this.amountToUnits(
       tokenInOutMarket.tokenOut,
       amountsInOutMaxFee.tokenAmountOut
     )
+
     const estGas = await this.estSwapExactAmountOut(
       account,
       poolAddress,
       tokenInOutMarket,
       amountsInOutMaxFee
     )
+
+    const maxPrice = amountsInOutMaxFee.maxPrice
+      ? this.web3.utils.toWei(amountsInOutMaxFee.maxPrice)
+      : MaxUint256
 
     try {
       result = await pool.methods
@@ -970,7 +989,7 @@ export class Pool {
           [
             amountsInOutMaxFee.maxAmountIn,
             amountsInOutMaxFee.tokenAmountOut,
-            this.web3.utils.toWei(amountsInOutMaxFee.maxPrice),
+            maxPrice,
             this.web3.utils.toWei(amountsInOutMaxFee.swapMarketFee)
           ]
         )
