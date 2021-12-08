@@ -12,7 +12,7 @@ import MockERC20 from '@oceanprotocol/contracts/artifacts/contracts/utils/mock/M
 import PoolTemplate from '@oceanprotocol/contracts/artifacts/contracts/pools/balancer/BPool.sol/BPool.json'
 import OPFCollector from '@oceanprotocol/contracts/artifacts/contracts/communityFee/OPFCommunityFeeCollector.sol/OPFCommunityFeeCollector.json'
 import { NFTFactory, NFTCreateData } from '../../../../src/factories/'
-import { Datatoken, DispenserParams } from '../../../../src/datatokens/'
+import { Datatoken, DispenserParams } from '../../../../src/tokens/'
 import { Dispenser } from '../../../../src/pools/dispenser/'
 import { TestContractHandler } from '../../../TestContractHandler'
 import { Erc20CreateParams } from '../../../../src/interfaces'

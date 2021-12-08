@@ -1,8 +1,7 @@
 import Web3 from 'web3'
 import { Config } from '../models'
 import { LoggerInstance } from '../utils'
-import { Asset } from '../ddo/Asset'
-import { FileMetadata } from '../interfaces/FileMetadata'
+import { Asset, FileMetadata } from '../@types/'
 import { noZeroX } from '../utils/ConversionTypeHelper'
 import { signText } from '../utils/SignatureUtils'
 

@@ -5,7 +5,7 @@ import { TransactionReceipt } from 'web3-eth'
 import Decimal from 'decimal.js'
 import defaultDispenserABI from '@oceanprotocol/contracts/artifacts/contracts/pools/dispenser/Dispenser.sol/Dispenser.json'
 import { LoggerInstance as logger, getFairGasPrice } from '../../utils/'
-import { Datatoken } from '.../../../src/datatokens/'
+import { Datatoken } from '../../tokens'
 
 export interface DispenserToken {
   active: boolean

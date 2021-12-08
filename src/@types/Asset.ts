@@ -97,7 +97,7 @@ export interface AssetLastEvent {
   datetime: string
 }
 
-export class Asset extends DDO {
+export interface Asset extends DDO {
   /**
    * Contains information about the ERC721 NFT contract which represents the intellectual property of the publisher.
    * @type {string}

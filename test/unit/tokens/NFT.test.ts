@@ -10,23 +10,20 @@ import ERC20Template from '@oceanprotocol/contracts/artifacts/contracts/template
 import Dispenser from '@oceanprotocol/contracts/artifacts/contracts/pools/dispenser/Dispenser.sol/Dispenser.json'
 import FixedRate from '@oceanprotocol/contracts/artifacts/contracts/pools/fixedRate/FixedRateExchange.sol/FixedRateExchange.json'
 import OPFCollector from '@oceanprotocol/contracts/artifacts/contracts/communityFee/OPFCommunityFeeCollector.sol/OPFCommunityFeeCollector.json'
-import MockERC20 from '@oceanprotocol/contracts/artifacts/contracts/utils/mock/MockERC20Decimals.sol/MockERC20Decimals.json'
-
 import { TestContractHandler } from '../../TestContractHandler'
 import { NFTFactory, NFTCreateData } from '../../../src/factories/NFTFactory'
-import { NFTDatatoken } from '../../../src/datatokens/NFTDatatoken'
+import { NFT } from '../../../src/tokens/NFT'
 import { AbiItem } from 'web3-utils'
-import { LoggerInstance } from '../../../src/utils'
 
 const web3 = new Web3('http://127.0.0.1:8545')
 
-describe('NFTDatatoken', () => {
+describe('NFT', () => {
   let nftOwner: string
   let user1: string
   let user2: string
   let user3: string
   let contractHandler: TestContractHandler
-  let nftDatatoken: NFTDatatoken
+  let nftDatatoken: NFT
   let nftFactory: NFTFactory
   let nftAddress: string
 
@@ -80,7 +77,7 @@ describe('NFTDatatoken', () => {
     }
 
     nftAddress = await nftFactory.createNFT(nftOwner, nftData)
-    nftDatatoken = new NFTDatatoken(web3, ERC721Template.abi as AbiItem[])
+    nftDatatoken = new NFT(web3, ERC721Template.abi as AbiItem[])
   })
 
   it('#createERC20 - should create a new ERC20 DT from NFT contract', async () => {

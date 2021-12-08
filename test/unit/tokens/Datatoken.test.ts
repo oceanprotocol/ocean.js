@@ -14,12 +14,7 @@ import MockERC20 from '@oceanprotocol/contracts/artifacts/contracts/utils/mock/M
 
 import { TestContractHandler } from '../../TestContractHandler'
 import { NFTFactory, NFTCreateData } from '../../../src/factories/NFTFactory'
-import {
-  Datatoken,
-  NFTDatatoken,
-  OrderParams,
-  DispenserParams
-} from '../../../src/datatokens'
+import { Datatoken, NFT, OrderParams, DispenserParams } from '../../../src/tokens'
 import { AbiItem } from 'web3-utils'
 import { LoggerInstance } from '../../../src/utils'
 import { FreCreationParams, FreOrderParams } from '../../../src/interfaces'
@@ -32,7 +27,7 @@ describe('Datatoken', () => {
   let user2: string
   let user3: string
   let contractHandler: TestContractHandler
-  let nftDatatoken: NFTDatatoken
+  let nftDatatoken: NFT
   let datatoken: Datatoken
   let nftFactory: NFTFactory
   let nftAddress: string
@@ -96,7 +91,7 @@ describe('Datatoken', () => {
     }
 
     nftAddress = await nftFactory.createNFT(nftOwner, nftData)
-    nftDatatoken = new NFTDatatoken(web3, ERC721Template.abi as AbiItem[])
+    nftDatatoken = new NFT(web3, ERC721Template.abi as AbiItem[])
   })
 
   it('#createERC20 - should create a new ERC20 DT from NFT contract', async () => {

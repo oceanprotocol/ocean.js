@@ -1,10 +1,16 @@
 export interface FileMetadata {
   /**
+   * File URL.
+   * @type {string}
+   */
+  type: string
+
+  /**
    * File format, if applicable.
    * @type {string}
    * @example "text/csv"
    */
-  contentType: string
+  contentType?: string
 
   /**
    * File content length.
@@ -23,4 +29,10 @@ export interface FileMetadata {
    * @type {string}
    */
   url?: string
+
+  /**
+   * HTTP method used
+   * @type {string}
+   */
+  method?: string
 }
