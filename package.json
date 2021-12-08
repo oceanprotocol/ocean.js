@@ -3,10 +3,10 @@
   "source": "./src/index.ts",
   "version": "0.19.2",
   "description": "JavaScript client library for Ocean Protocol",
-  "main": "./dist/node/lib.js",
+  "main": "./dist/node/lib",
   "exports": "./dist/node/lib.js",
   "module": "./dist/node/lib.module.js",
-  "typings": "./dist/node/lib.d.ts",
+  "typings": "./dist/node/index.d.ts",
   "umd:main": "dist/node/lib.umd.js",
   "unpkg": "./dist/node/lib.cjs2.min.js",
   "scripts": {

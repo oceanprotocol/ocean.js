@@ -1,6 +1,6 @@
 import { Erc20CreateParams, FreCreationParams, PoolCreationParams } from '../interfaces'
-import { generateDtName } from '.'
 import Web3 from 'web3'
+import { generateDtName } from './DatatokenName'
 
 export function getErcCreationParams(ercParams: Erc20CreateParams, web3: Web3): any {
   let name: string, symbol: string
