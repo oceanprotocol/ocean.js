@@ -132,10 +132,43 @@ export class Config {
    */
   public authTokenExpiration?: number
 
-  // Parity config
+  /**
+   * Parity config
+   * @type {string}
+   */
   public parityUri?: string
 
   public threshold?: number
+
+  /**
+   * Chain ID
+   * @type {number}
+   */
+  chainId: number
+
+  /**
+   * Network name ex: mainnet, rinkeby, polygon
+   * @type {string}
+   */
+  network: string
+
+  /**
+   * Url of the relevant subgraph instance ex: https://subgraph.mainnet.oceanprotocol.com
+   * @type {string}
+   */
+  subgraphUri: string
+
+  /**
+   * Url of the  blockchain exporer ex: https://etherscan.io
+   * @type {string}
+   */
+  explorerUri: string
+
+  /**
+   * Ocean toke symbol on the chain, it's used just for convenience to reduce number of calls
+   * @type {string}
+   */
+  oceanTokenSymbol: string
 }
 
 export default Config
