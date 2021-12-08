@@ -19,10 +19,10 @@ interface Roles {
 export interface OrderParams {
   consumer: string
   amount: string
-  serviceId: number
-  consumeFeeAddress: string
-  consumeFeeToken: string
-  consumeFeeAmount: string
+  serviceIndex: number
+  providerFeeAddress: string
+  providerFeeToken: string
+  providerFeeAmount: string
 }
 
 export interface DispenserParams {
@@ -818,10 +818,10 @@ export class Datatoken {
    * @param {String} address User address which calls
    * @param {String} consumer Consumer Address
    * @param {String} amount Amount of tokens that is going to be transfered
-   * @param {Number} serviceId  Service index in the metadata
-   * @param {String} mpFeeAddress Consume marketplace fee address
-   * @param {String} feeToken address of the token marketplace wants to add fee on top
-   * @param {String} feeAmount amount of feeToken to be transferred to mpFeeAddress on top, will be converted to WEI
+   * @param {Number} serviceIndex  Service index in the metadata
+   * @param {String} providerFeeAddress Consume marketplace fee address
+   * @param {String} providerFeeToken address of the token marketplace wants to add fee on top
+   * @param {String} providerFeeAmount amount of feeToken to be transferred to mpFeeAddress on top, will be converted to WEI
    * @param {Contract} contractInstance optional contract instance
    * @return {Promise<any>}
    */
@@ -830,10 +830,10 @@ export class Datatoken {
     address: string,
     consumer: string,
     amount: string,
-    serviceId: number,
-    mpFeeAddress: string,
-    feeToken: string,
-    feeAmount: string,
+    serviceIndex: number,
+    providerFeeAddress: string,
+    providerFeeToken: string,
+    providerFeeAmount: string,
     contractInstance?: Contract
   ): Promise<any> {
     const dtContract =
@@ -847,10 +847,10 @@ export class Datatoken {
         .startOrder(
           consumer,
           this.web3.utils.toWei(amount),
-          serviceId,
-          mpFeeAddress,
-          feeToken,
-          this.web3.utils.toWei(feeAmount)
+          serviceIndex,
+          providerFeeAddress,
+          providerFeeToken,
+          this.web3.utils.toWei(providerFeeAmount)
         )
         .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
     } catch (e) {
@@ -864,10 +864,11 @@ export class Datatoken {
    * @param {String} address User address which calls
    * @param {String} consumer Consumer Address
    * @param {String} amount Amount of tokens that is going to be transfered
-   * @param {Number} serviceId  Service index in the metadata
-   * @param {String} mpFeeAddress Consume marketplace fee address
-   * @param {String} feeToken address of the token marketplace wants to add fee on top
-   * @param {String} feeAmount amount of feeToken to be transferred to mpFeeAddress on top, will be converted to WEI
+   * @param {Number} serviceIndex  Service index in the metadata
+   * @param {String} providerFeeAddress Consume marketplace fee address
+   * @param {String} providerFeeToken address of the token marketplace wants to add fee on top
+   * @param {String} providerFeeAmount amount of feeToken to be transferred to mpFeeAddress on top, will be converted to WEI
+
    * @return {Promise<TransactionReceipt>} string
    */
   public async startOrder(
@@ -875,23 +876,25 @@ export class Datatoken {
     address: string,
     consumer: string,
     amount: string,
-    serviceId: number,
-    mpFeeAddress: string,
-    feeToken: string,
-    feeAmount: string
+    serviceIndex: number,
+    providerFeeAddress: string,
+    providerFeeToken: string,
+    providerFeeAmount: string
   ): Promise<TransactionReceipt> {
     const dtContract = new this.web3.eth.Contract(this.datatokensABI, dtAddress)
-    if (!mpFeeAddress) mpFeeAddress = '0x0000000000000000000000000000000000000000'
+    if (!providerFeeAddress)
+      providerFeeAddress = '0x0000000000000000000000000000000000000000'
+
     try {
       const estGas = await this.estGasStartOrder(
         dtAddress,
         address,
         consumer,
         amount,
-        serviceId,
-        mpFeeAddress,
-        feeToken,
-        feeAmount,
+        serviceIndex,
+        providerFeeAddress,
+        providerFeeToken,
+        providerFeeAmount,
         dtContract
       )
 
@@ -899,10 +902,10 @@ export class Datatoken {
         .startOrder(
           consumer,
           this.web3.utils.toWei(amount),
-          serviceId,
-          mpFeeAddress,
-          feeToken,
-          this.web3.utils.toWei(feeAmount)
+          serviceIndex,
+          providerFeeAddress,
+          providerFeeToken,
+          this.web3.utils.toWei(providerFeeAmount)
         )
         .send({
           from: address,
@@ -1200,6 +1203,17 @@ export class Datatoken {
     const dtContract = new this.web3.eth.Contract(this.datatokensABI, dtAddress)
     const nftAddress = await dtContract.methods.getERC721Address().call()
     return nftAddress
+  }
+
+  /**  Returns true if address has deployERC20 role
+   * @param {String} dtAddress Datatoken adress
+   * @param {String} dtAddress Datatoken adress
+   * @return {Promise<number>}
+   */
+  public async isERC20Deployer(dtAddress: string, adddress: string): Promise<string> {
+    const dtContract = new this.web3.eth.Contract(this.datatokensABI, dtAddress)
+    const isERC20Deployer = await dtContract.methods.isERC20Deployer(adddress).call()
+    return isERC20Deployer
   }
 
   /**

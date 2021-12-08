@@ -20,7 +20,10 @@ import { Pool } from '../../../../src/pools/balancer/Pool'
 import {
   PoolCreationParams,
   Erc20CreateParams,
-  CurrentFees
+  CurrentFees,
+  TokenInOutMarket,
+  AmountsInMaxFee,
+  AmountsOutMaxFee
 } from '../../../../src/interfaces'
 const { keccak256 } = require('@ethersproject/keccak256')
 const web3 = new Web3('http://127.0.0.1:8545')
@@ -272,13 +275,22 @@ describe('Pool unit test', () => {
       )
       expect(await erc20Contract.methods.balanceOf(user2).call()).to.equal('0')
       await pool.approve(user2, contracts.daiAddress, poolAddress, '10')
+
+      const tokenInOutMarket: TokenInOutMarket = {
+        tokenIn: contracts.daiAddress,
+        tokenOut: erc20Token,
+        marketFeeAddress: contracts.accounts[0]
+      }
+      const amountsInOutMaxFee: AmountsInMaxFee = {
+        tokenAmountIn: '10',
+        minAmountOut: '1',
+        swapMarketFee: '0.1'
+      }
       const tx = await pool.swapExactAmountIn(
         user2,
         poolAddress,
-        contracts.daiAddress,
-        '10',
-        erc20Token,
-        '1'
+        tokenInOutMarket,
+        amountsInOutMaxFee
       )
       expect(await erc20Contract.methods.balanceOf(user2).call()).to.equal(
         tx.events.LOG_SWAP.returnValues.tokenAmountOut
@@ -290,13 +302,21 @@ describe('Pool unit test', () => {
       expect(await daiContract.methods.balanceOf(user2).call()).to.equal(
         web3.utils.toWei('990')
       )
+      const tokenInOutMarket: TokenInOutMarket = {
+        tokenIn: contracts.daiAddress,
+        tokenOut: erc20Token,
+        marketFeeAddress: contracts.accounts[0]
+      }
+      const amountsInOutMaxFee: AmountsOutMaxFee = {
+        maxAmountIn: '100',
+        tokenAmountOut: '50',
+        swapMarketFee: '0.1'
+      }
       const tx = await pool.swapExactAmountOut(
         user2,
         poolAddress,
-        contracts.daiAddress,
-        '100',
-        erc20Token,
-        '50'
+        tokenInOutMarket,
+        amountsInOutMaxFee
       )
       assert(tx != null)
     })
@@ -428,7 +448,8 @@ describe('Pool unit test', () => {
         poolAddress,
         erc20Token,
         contracts.daiAddress,
-        exactDAIOut
+        exactDAIOut,
+        '0.1'
       )
 
       assert(amountIn != null)
@@ -438,7 +459,8 @@ describe('Pool unit test', () => {
       const spotPrice = await pool.getSpotPrice(
         poolAddress,
         erc20Token,
-        contracts.daiAddress
+        contracts.daiAddress,
+        '0.1'
       )
 
       // amount of DAI In will be slightly bigger than spotPrice
@@ -452,7 +474,8 @@ describe('Pool unit test', () => {
         poolAddress,
         erc20Token,
         contracts.daiAddress,
-        exactDTIn
+        exactDTIn,
+        '0.1'
       )
 
       assert(amountOut != null)
@@ -460,7 +483,8 @@ describe('Pool unit test', () => {
       const spotPrice = await pool.getSpotPrice(
         poolAddress,
         contracts.daiAddress,
-        erc20Token
+        erc20Token,
+        '0.1'
       )
       // amount of DAI received will be slightly less than spotPrice
       assert(amountOut < spotPrice)
@@ -468,10 +492,12 @@ describe('Pool unit test', () => {
 
     it('#getSpotPrice- should get the spot price', async () => {
       assert(
-        (await pool.getSpotPrice(poolAddress, erc20Token, contracts.daiAddress)) != null
+        (await pool.getSpotPrice(poolAddress, erc20Token, contracts.daiAddress, '0.1')) !=
+          null
       )
       assert(
-        (await pool.getSpotPrice(poolAddress, contracts.daiAddress, erc20Token)) != null
+        (await pool.getSpotPrice(poolAddress, contracts.daiAddress, erc20Token, '0.1')) !=
+          null
       )
     })
 
@@ -494,7 +520,8 @@ describe('Pool unit test', () => {
       const spotPriceBefore = await pool.getSpotPrice(
         poolAddress,
         erc20Token,
-        contracts.daiAddress
+        contracts.daiAddress,
+        '0.1'
       )
 
       // contracts.accounts[0] is the marketFeeCollector
@@ -508,8 +535,12 @@ describe('Pool unit test', () => {
 
       // Spot price hasn't changed after fee collection
       assert(
-        (await pool.getSpotPrice(poolAddress, erc20Token, contracts.daiAddress)) ===
-          spotPriceBefore
+        (await pool.getSpotPrice(
+          poolAddress,
+          erc20Token,
+          contracts.daiAddress,
+          '0.1'
+        )) === spotPriceBefore
       )
     })
 
@@ -526,7 +557,8 @@ describe('Pool unit test', () => {
       const spotPriceBefore = await pool.getSpotPrice(
         poolAddress,
         erc20Token,
-        contracts.daiAddress
+        contracts.daiAddress,
+        '0.1'
       )
       // some fee are available in DAI
       assert((await pool.getCommunityFees(poolAddress, contracts.daiAddress)) > '0')
@@ -545,8 +577,12 @@ describe('Pool unit test', () => {
       )
       // Spot price hasn't changed after fee collection
       assert(
-        (await pool.getSpotPrice(poolAddress, erc20Token, contracts.daiAddress)) ===
-          spotPriceBefore
+        (await pool.getSpotPrice(
+          poolAddress,
+          erc20Token,
+          contracts.daiAddress,
+          '0.1'
+        )) === spotPriceBefore
       )
     })
 
@@ -785,13 +821,21 @@ describe('Pool unit test', () => {
 
       expect(await erc20Contract.methods.balanceOf(user2).call()).to.equal('0')
       await pool.approve(user2, contracts.usdcAddress, poolAddress, '10')
+      const tokenInOutMarket: TokenInOutMarket = {
+        tokenIn: contracts.usdcAddress,
+        tokenOut: erc20Token,
+        marketFeeAddress: contracts.accounts[0]
+      }
+      const amountsInOutMaxFee: AmountsInMaxFee = {
+        tokenAmountIn: '10',
+        minAmountOut: '1',
+        swapMarketFee: '0.1'
+      }
       const tx = await pool.swapExactAmountIn(
         user2,
         poolAddress,
-        contracts.usdcAddress,
-        '10',
-        erc20Token,
-        '1'
+        tokenInOutMarket,
+        amountsInOutMaxFee
       )
       expect(await erc20Contract.methods.balanceOf(user2).call()).to.equal(
         tx.events.LOG_SWAP.returnValues.tokenAmountOut
@@ -803,13 +847,21 @@ describe('Pool unit test', () => {
         (await pool.amountToUnits(contracts.usdcAddress, '990')).toString()
       )
       await pool.approve(user2, contracts.usdcAddress, poolAddress, '100')
+      const tokenInOutMarket: TokenInOutMarket = {
+        tokenIn: contracts.usdcAddress,
+        tokenOut: erc20Token,
+        marketFeeAddress: contracts.accounts[0]
+      }
+      const amountsInOutMaxFee: AmountsOutMaxFee = {
+        maxAmountIn: '100',
+        tokenAmountOut: '50',
+        swapMarketFee: '0.1'
+      }
       const tx = await pool.swapExactAmountOut(
         user2,
         poolAddress,
-        contracts.usdcAddress,
-        '100',
-        erc20Token,
-        '50'
+        tokenInOutMarket,
+        amountsInOutMaxFee
       )
       assert(tx != null)
       // console.log(tx.events)
@@ -944,7 +996,8 @@ describe('Pool unit test', () => {
         poolAddress,
         erc20Token,
         contracts.usdcAddress,
-        exactUSDCOut
+        exactUSDCOut,
+        '0.1'
       )
 
       assert(amountIn != null)
@@ -952,7 +1005,8 @@ describe('Pool unit test', () => {
       const spotPrice = await pool.getSpotPrice(
         poolAddress,
         erc20Token,
-        contracts.usdcAddress
+        contracts.usdcAddress,
+        '0.1'
       )
       // amount of USDC In will be slightly bigger than spotPrice
       assert(amountIn > spotPrice)
@@ -965,7 +1019,8 @@ describe('Pool unit test', () => {
         poolAddress,
         erc20Token,
         contracts.usdcAddress,
-        exactDTIn
+        exactDTIn,
+        '0.1'
       )
 
       assert(amountOut != null)
@@ -973,7 +1028,8 @@ describe('Pool unit test', () => {
       const spotPrice = await pool.getSpotPrice(
         poolAddress,
         contracts.usdcAddress,
-        erc20Token
+        erc20Token,
+        '0.1'
       )
       // amount of USDC received will be slightly less than spotPrice
       assert(amountOut < spotPrice)
@@ -981,10 +1037,20 @@ describe('Pool unit test', () => {
 
     it('#getSpotPrice- should get the spot price', async () => {
       assert(
-        (await pool.getSpotPrice(poolAddress, erc20Token, contracts.usdcAddress)) != null
+        (await pool.getSpotPrice(
+          poolAddress,
+          erc20Token,
+          contracts.usdcAddress,
+          '0.1'
+        )) != null
       )
       assert(
-        (await pool.getSpotPrice(poolAddress, contracts.usdcAddress, erc20Token)) != null
+        (await pool.getSpotPrice(
+          poolAddress,
+          contracts.usdcAddress,
+          erc20Token,
+          '0.1'
+        )) != null
       )
     })
 
@@ -1007,7 +1073,8 @@ describe('Pool unit test', () => {
       const spotPriceBefore = await pool.getSpotPrice(
         poolAddress,
         erc20Token,
-        contracts.usdcAddress
+        contracts.usdcAddress,
+        '0.1'
       )
       // contracts.accounts[0] is the marketFeeCollector
       assert((await pool.getMarketFeeCollector(poolAddress)) === contracts.accounts[0])
@@ -1020,8 +1087,12 @@ describe('Pool unit test', () => {
 
       // Spot price hasn't changed after fee collection
       assert(
-        (await pool.getSpotPrice(poolAddress, erc20Token, contracts.usdcAddress)) ===
-          spotPriceBefore
+        (await pool.getSpotPrice(
+          poolAddress,
+          erc20Token,
+          contracts.usdcAddress,
+          '0.1'
+        )) === spotPriceBefore
       )
     })
 
@@ -1048,7 +1119,8 @@ describe('Pool unit test', () => {
       const spotPriceBefore = await pool.getSpotPrice(
         poolAddress,
         erc20Token,
-        contracts.usdcAddress
+        contracts.usdcAddress,
+        '0.1'
       )
       // some fee are available in USDC
       assert((await pool.getCommunityFees(poolAddress, contracts.usdcAddress)) > '0')
@@ -1067,8 +1139,12 @@ describe('Pool unit test', () => {
       )
       // Spot price hasn't changed after fee collection
       assert(
-        (await pool.getSpotPrice(poolAddress, erc20Token, contracts.usdcAddress)) ===
-          spotPriceBefore
+        (await pool.getSpotPrice(
+          poolAddress,
+          erc20Token,
+          contracts.usdcAddress,
+          '0.1'
+        )) === spotPriceBefore
       )
     })
 

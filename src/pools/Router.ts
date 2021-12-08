@@ -3,18 +3,8 @@ import Web3 from 'web3'
 import { TransactionReceipt } from 'web3-core'
 import { AbiItem } from 'web3-utils'
 import defaultRouter from '@oceanprotocol/contracts/artifacts/contracts/pools/FactoryRouter.sol/FactoryRouter.json'
-import { LoggerInstance, getFairGasPrice } from '../utils'
-
-interface Operations {
-  exchangeIds: string
-  source: string
-  operation: number
-  tokenIn: string
-  amountsIn: string | number
-  tokenOut: string
-  amountsOut: string | number
-  maxPrice: string | number
-}
+import { getFairGasPrice } from '../utils'
+import { Operation } from '../interfaces/RouterInterface'
 
 /**
  * Provides an interface for FactoryRouter contract
@@ -49,10 +39,10 @@ export class Router {
   /**
    * Estimate gas cost for buyDTBatch method
    * @param {String} address
-   * @param {Operations} operations Operations objects array
+   * @param {Operation} operations Operations objects array
    * @return {Promise<TransactionReceipt>} Transaction receipt
    */
-  public async estGasBuyDTBatch(address: string, operations: Operations[]): Promise<any> {
+  public async estGasBuyDTBatch(address: string, operations: Operation[]): Promise<any> {
     const gasLimitDefault = this.GASLIMIT_DEFAULT
     let estGas
     try {
@@ -68,12 +58,12 @@ export class Router {
   /**
    * BuyDTBatch
    * @param {String} address
-   * @param {Operations} operations Operations objects array
+   * @param {Operation} operations Operations objects array
    * @return {Promise<TransactionReceipt>} Transaction receipt
    */
   public async buyDTBatch(
     address: string,
-    operations: Operations[]
+    operations: Operation[]
   ): Promise<TransactionReceipt> {
     const estGas = await this.estGasBuyDTBatch(address, operations)
 
@@ -279,6 +269,54 @@ export class Router {
   }
 
   /**
+   * Estimate gas cost for removeSSContract method
+   * @param {String} address caller address
+   * @param {String} tokenAddress contract address to add
+   * @return {Promise<TransactionReceipt>}
+   */
+  public async estGasRemoveSSContract(
+    address: string,
+    tokenAddress: string
+  ): Promise<any> {
+    const gasLimitDefault = this.GASLIMIT_DEFAULT
+    let estGas
+    try {
+      estGas = await this.router.methods
+        .removeSSContract(tokenAddress)
+        .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
+    } catch (e) {
+      estGas = gasLimitDefault
+    }
+
+    return estGas
+  }
+
+  /**
+   * Removes a new contract from ssContract list
+   * @param {String} address caller address
+   * @param {String} tokenAddress contract address to removed
+   * @return {Promise<TransactionReceipt>}
+   */
+  public async removeSSContract(
+    address: string,
+    tokenAddress: string
+  ): Promise<TransactionReceipt> {
+    if ((await this.getOwner()) !== address) {
+      throw new Error(`Caller is not Router Owner`)
+    }
+
+    const estGas = await this.estGasRemoveSSContract(address, tokenAddress)
+    // Invoke createToken function of the contract
+    const trxReceipt = await this.router.methods.removeSSContract(tokenAddress).send({
+      from: address,
+      gas: estGas + 1,
+      gasPrice: await getFairGasPrice(this.web3)
+    })
+
+    return trxReceipt
+  }
+
+  /**
    * Estimate gas cost for addFixedRateContract method
    * @param {String} address
    * @param {String} tokenAddress contract address to add
@@ -323,6 +361,157 @@ export class Router {
       gas: estGas + 1,
       gasPrice: await getFairGasPrice(this.web3)
     })
+
+    return trxReceipt
+  }
+
+  /**
+   * Estimate gas cost for addFixedRateContract method
+   * @param {String} address
+   * @param {String} tokenAddress contract address to add
+   * @return {Promise<TransactionReceipt>}
+   */
+  public async estGasRemoveFixedRateContract(
+    address: string,
+    tokenAddress: string
+  ): Promise<any> {
+    const gasLimitDefault = this.GASLIMIT_DEFAULT
+    let estGas
+    try {
+      estGas = await this.router.methods
+        .removeFixedRateContract(tokenAddress)
+        .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
+    } catch (e) {
+      estGas = gasLimitDefault
+    }
+
+    return estGas
+  }
+
+  /**
+   * Removes a contract from fixedRate list
+   * @param {String} address
+   * @param {String} tokenAddress contract address to add
+   * @return {Promise<TransactionReceipt>}
+   */
+  public async removeFixedRateContract(
+    address: string,
+    tokenAddress: string
+  ): Promise<TransactionReceipt> {
+    if ((await this.getOwner()) !== address) {
+      throw new Error(`Caller is not Router Owner`)
+    }
+
+    const estGas = await this.estGasRemoveFixedRateContract(address, tokenAddress)
+
+    // Invoke removeFixedRateContract function of the contract
+    const trxReceipt = await this.router.methods
+      .removeFixedRateContract(tokenAddress)
+      .send({
+        from: address,
+        gas: estGas + 1,
+        gasPrice: await getFairGasPrice(this.web3)
+      })
+
+    return trxReceipt
+  }
+
+  /**
+   * Estimate gas cost for addDispenserContract method
+   * @param {String} address
+   * @param {String} tokenAddress contract address to add
+   * @return {Promise<TransactionReceipt>}
+   */
+  public async estGasAddDispenserContract(
+    address: string,
+    tokenAddress: string
+  ): Promise<any> {
+    const gasLimitDefault = this.GASLIMIT_DEFAULT
+    let estGas
+    try {
+      estGas = await this.router.methods
+        .addDispenserContract(tokenAddress)
+        .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
+    } catch (e) {
+      estGas = gasLimitDefault
+    }
+
+    return estGas
+  }
+
+  /**
+   * Add a new contract to dispenser list, after is added, can be used when deploying a new pool
+   * @param {String} address
+   * @param {String} tokenAddress contract address to add
+   * @return {Promise<TransactionReceipt>}
+   */
+  public async addDispenserContract(
+    address: string,
+    tokenAddress: string
+  ): Promise<TransactionReceipt> {
+    if ((await this.getOwner()) !== address) {
+      throw new Error(`Caller is not Router Owner`)
+    }
+
+    const estGas = await this.estGasAddDispenserContract(address, tokenAddress)
+
+    // Invoke createToken function of the contract
+    const trxReceipt = await this.router.methods.addDispenserContract(tokenAddress).send({
+      from: address,
+      gas: estGas + 1,
+      gasPrice: await getFairGasPrice(this.web3)
+    })
+
+    return trxReceipt
+  }
+
+  /**
+   * Estimate gas cost for addDispenserContract method
+   * @param {String} address
+   * @param {String} tokenAddress contract address to add
+   * @return {Promise<TransactionReceipt>}
+   */
+  public async estGasRemoveDispenserContract(
+    address: string,
+    tokenAddress: string
+  ): Promise<any> {
+    const gasLimitDefault = this.GASLIMIT_DEFAULT
+    let estGas
+    try {
+      estGas = await this.router.methods
+        .removeDispenserContract(tokenAddress)
+        .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
+    } catch (e) {
+      estGas = gasLimitDefault
+    }
+
+    return estGas
+  }
+
+  /**
+   * Add a new contract to dispenser list, after is added, can be used when deploying a new pool
+   * @param {String} address
+   * @param {String} tokenAddress contract address to add
+   * @return {Promise<TransactionReceipt>}
+   */
+  public async removeDispenserContract(
+    address: string,
+    tokenAddress: string
+  ): Promise<TransactionReceipt> {
+    if ((await this.getOwner()) !== address) {
+      throw new Error(`Caller is not Router Owner`)
+    }
+
+    const estGas = await this.estGasRemoveDispenserContract(address, tokenAddress)
+
+    // Invoke createToken function of the contract
+    const trxReceipt = await this.router.methods
+      .removeDispenserContract(tokenAddress)
+      .send({
+        from: address,
+        gas: estGas + 1,
+        gasPrice: await getFairGasPrice(this.web3)
+      })
 
     return trxReceipt
   }
