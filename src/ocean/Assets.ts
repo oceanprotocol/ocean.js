@@ -190,10 +190,10 @@ export class Assets extends Instantiable {
       })
       await ddo.addProof(this.ocean, publisher.getId())
       ddo.dataTokenInfo = {
-        name: await datatokens.getName(dtAddress),
-        symbol: await datatokens.getSymbol(dtAddress),
+        name: name,
+        symbol: symbol,
         address: dtAddress,
-        cap: parseFloat(await datatokens.getCap(dtAddress))
+        cap: parseFloat(cap)
       }
       return ddo
       /* Remeber to call ocean.onChainMetadata.publish after creating the DDO.
