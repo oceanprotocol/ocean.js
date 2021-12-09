@@ -12,7 +12,7 @@ import FixedRate from '@oceanprotocol/contracts/artifacts/contracts/pools/fixedR
 import OPFCollector from '@oceanprotocol/contracts/artifacts/contracts/communityFee/OPFCommunityFeeCollector.sol/OPFCommunityFeeCollector.json'
 
 import { TestContractHandler } from '../../TestContractHandler'
-import { NftFactory, NftCreateData } from '../../../src/factories/NftFactory'
+import { NftFactory, NftCreateData } from '../../../src/factories/NFTFactory'
 import { Datatoken, Nft, OrderParams, DispenserParams } from '../../../src/tokens'
 import { AbiItem } from 'web3-utils'
 import { FreCreationParams, FreOrderParams } from '../../../src/interfaces'

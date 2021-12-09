@@ -13,7 +13,7 @@ import FixedRate from '@oceanprotocol/contracts/artifacts/contracts/pools/fixedR
 import PoolTemplate from '@oceanprotocol/contracts/artifacts/contracts/pools/balancer/BPool.sol/BPool.json'
 import OPFCollector from '@oceanprotocol/contracts/artifacts/contracts/communityFee/OPFCommunityFeeCollector.sol/OPFCommunityFeeCollector.json'
 import { LoggerInstance } from '../../../../src/utils'
-import { NftFactory, NftCreateData } from '../../../../src/factories/NftFactory'
+import { NftFactory, NftCreateData } from '../../../../src/factories/NFTFactory'
 import { Pool } from '../../../../src/pools/balancer/Pool'
 import {
   PoolCreationParams,

@@ -1,1 +1,1 @@
-export * from './NftFactory'
+export * from './NFTFactory'

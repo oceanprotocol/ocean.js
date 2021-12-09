@@ -10,7 +10,7 @@ import Dispenser from '@oceanprotocol/contracts/artifacts/contracts/pools/dispen
 import FixedRate from '@oceanprotocol/contracts/artifacts/contracts/pools/fixedRate/FixedRateExchange.sol/FixedRateExchange.json'
 import OPFCollector from '@oceanprotocol/contracts/artifacts/contracts/communityFee/OPFCommunityFeeCollector.sol/OPFCommunityFeeCollector.json'
 import { TestContractHandler } from '../../TestContractHandler'
-import { NftFactory, NftCreateData } from '../../../src/factories/NftFactory'
+import { NftFactory, NftCreateData } from '../../../src/factories/NFTFactory'
 import { Nft } from '../../../src/tokens/NFT'
 import { AbiItem } from 'web3-utils'
 

@@ -11,7 +11,7 @@ import Dispenser from '@oceanprotocol/contracts/artifacts/contracts/pools/dispen
 import FixedRate from '@oceanprotocol/contracts/artifacts/contracts/pools/fixedRate/FixedRateExchange.sol/FixedRateExchange.json'
 import OPFCommunityFeeCollector from '@oceanprotocol/contracts/artifacts/contracts/communityFee/OPFCommunityFeeCollector.sol/OPFCommunityFeeCollector.json'
 import PoolTemplate from '@oceanprotocol/contracts/artifacts/contracts/pools/balancer/BPool.sol/BPool.json'
-import { NftFactory, NftCreateData, TokenOrder } from '../../src/factories/NftFactory'
+import { NftFactory, NftCreateData, TokenOrder } from '../../src/factories/NFTFactory'
 import {
   FreCreationParams,
   Erc20CreateParams,
