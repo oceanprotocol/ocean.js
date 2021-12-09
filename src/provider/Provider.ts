@@ -1,8 +1,14 @@
 import Web3 from 'web3'
 import { LoggerInstance } from '../utils'
-import { Asset, FileMetadata } from '../@types/'
+import {
+  Asset,
+  FileMetadata,
+  ComputeJob,
+  ComputeOutput,
+  ComputeAlgorithm
+} from '../@types/'
 import { noZeroX } from '../utils/ConversionTypeHelper'
-import { signText } from '../utils/SignatureUtils'
+import { signText, signWithHash } from '../utils/SignatureUtils'
 
 export interface ServiceEndpoint {
   serviceName: string
@@ -87,6 +93,24 @@ export class Provider {
       LoggerInstance.error(e)
       throw new Error('HTTP request failed')
     }
+  }
+
+  public async createSignature(
+    web3: Web3,
+    accountId: string,
+    agreementId: string
+  ): Promise<string> {
+    const signature = await signText(web3, noZeroX(agreementId), accountId)
+    return signature
+  }
+
+  public async createHashSignature(
+    web3: Web3,
+    accountId: string,
+    message: string
+  ): Promise<string> {
+    const signature = await signWithHash(web3, message, accountId)
+    return signature
   }
 
   /** Encrypt DDO using the Provider's own symmetric key
@@ -260,13 +284,239 @@ export class Provider {
     return destination
   }
 
-  public async createSignature(
+  /** Instruct the provider to start a compute job
+   */
+  public async computeStart(
+    did: string,
+    consumerAddress: string,
+    algorithm: ComputeAlgorithm,
+    output?: ComputeOutput,
+    providerUri: string,
     web3: Web3,
+    fetchMethod: any
+  ): Promise<ComputeJob | ComputeJob[]> {
+    const providerEndpoints = await this.getEndpoints(providerUri, fetchMethod)
+    const serviceEndpoints = await this.getServiceEndpoints(
+      providerUri,
+      providerEndpoints
+    )
+    const computeStartUrl = this.getEndpointURL(serviceEndpoints, 'computeStart')
+      ? this.getEndpointURL(serviceEndpoints, 'computeStart').urlPath
+      : null
+
+    const nonce = await this.getNonce(
+      providerUri,
+      consumerAddress,
+      fetchMethod,
+      providerEndpoints,
+      serviceEndpoints
+    )
+
+    let signatureMessage = consumerAddress
+    signatureMessage += (did && `${noZeroX(did)}`) || ''
+    signatureMessage += nonce
+    const signature = await this.createHashSignature(
+      web3,
+      consumerAddress,
+      signatureMessage
+    )
+
+    const payload = Object()
+    payload.consumerAddress = consumerAddress
+    payload.signature = signature
+    payload.algorithmDid = algorithm.did
+    payload.algorithmMeta = algorithm.meta
+    payload.algorithmServiceId = algorithm.serviceIndex
+    if (output) payload.output = output
+
+    if (!computeStartUrl) return null
+    try {
+      const response = await fetchMethod(computeStartUrl, JSON.stringify(payload))
+      if (response?.ok) {
+        const params = await response.json()
+        return params
+      }
+      console.error('Compute start failed:', response.status, response.statusText)
+      LoggerInstance.error('Payload was:', payload)
+      return null
+    } catch (e) {
+      LoggerInstance.error('Compute start failed:')
+      LoggerInstance.error(e)
+      LoggerInstance.error('Payload was:', payload)
+      return null
+    }
+  }
+
+  /** Instruct the provider to stop a compute job
+   */
+  public async computeStop(
+    did: string,
+    consumerAddress: string,
+    jobId: string,
+    providerUri: string,
+    web3: Web3,
+    fetchMethod: any
+  ): Promise<ComputeJob | ComputeJob[]> {
+    const providerEndpoints = await this.getEndpoints(providerUri, fetchMethod)
+    const serviceEndpoints = await this.getServiceEndpoints(
+      providerUri,
+      providerEndpoints
+    )
+    const computeStopUrl = this.getEndpointURL(serviceEndpoints, 'computeStop')
+      ? this.getEndpointURL(serviceEndpoints, 'computeStop').urlPath
+      : null
+
+    const nonce = await this.getNonce(
+      providerUri,
+      consumerAddress,
+      fetchMethod,
+      providerEndpoints,
+      serviceEndpoints
+    )
+
+    let signatureMessage = consumerAddress
+    signatureMessage += jobId || ''
+    signatureMessage += (did && `${noZeroX(did)}`) || ''
+    signatureMessage += nonce
+    const signature = await this.createHashSignature(
+      web3,
+      consumerAddress,
+      signatureMessage
+    )
+
+    const payload = Object()
+    payload.signature = signature
+    payload.documentId = noZeroX(did)
+    payload.consumerAddress = consumerAddress
+    if (jobId) payload.jobId = jobId
+
+    if (!computeStopUrl) return null
+    try {
+      const response = await fetchMethod(computeStopUrl, JSON.stringify(payload))
+      if (response?.ok) {
+        const params = await response.json()
+        return params
+      }
+      LoggerInstance.error('Compute stop failed:', response.status, response.statusText)
+      LoggerInstance.error('Payload was:', payload)
+      return null
+    } catch (e) {
+      LoggerInstance.error('Compute stop failed:')
+      LoggerInstance.error(e)
+      LoggerInstance.error('Payload was:', payload)
+      return null
+    }
+  }
+
+  public async computeStatus(
+    did: string,
+    consumerAddress: string,
+    jobId?: string,
+    providerUri: string,
+    web3: Web3,
+    fetchMethod: any
+  ): Promise<ComputeJob | ComputeJob[]> {
+    const providerEndpoints = await this.getEndpoints(providerUri, fetchMethod)
+    const serviceEndpoints = await this.getServiceEndpoints(
+      providerUri,
+      providerEndpoints
+    )
+    const computeStatusUrl = this.getEndpointURL(serviceEndpoints, 'computeStatus')
+      ? this.getEndpointURL(serviceEndpoints, 'computeStatus').urlPath
+      : null
+
+    const nonce = await this.getNonce(
+      providerUri,
+      consumerAddress,
+      fetchMethod,
+      providerEndpoints,
+      serviceEndpoints
+    )
+
+    let signatureMessage = consumerAddress
+    signatureMessage += jobId || ''
+    signatureMessage += (did && `${noZeroX(did)}`) || ''
+    signatureMessage += nonce
+    const signature = await this.createHashSignature(
+      web3,
+      consumerAddress,
+      signatureMessage
+    )
+
+    let url = '?documentId=' + noZeroX(did)
+    url += `&consumerAddress=${consumerAddress}`
+    url += (signature && `&signature=${signature}`) || ''
+    url += (jobId && `&jobId=${jobId}`) || ''
+
+    if (!computeStatusUrl) return null
+    try {
+      const response = await fetchMethod(computeStatusUrl + url)
+      if (response?.ok) {
+        const params = await response.json()
+        return params
+      }
+      LoggerInstance.error(
+        'Get compute status failed:',
+        response.status,
+        response.statusText
+      )
+      return null
+    } catch (e) {
+      LoggerInstance.error('Get compute status failed')
+      LoggerInstance.error(e)
+      return null
+    }
+  }
+
+  public async computeResult(
+    jobId: string,
+    index: number,
+    destination: string,
     accountId: string,
-    agreementId: string
-  ): Promise<string> {
-    const signature = await signText(web3, noZeroX(agreementId), accountId)
-    return signature
+    providerUri: string,
+    web3: Web3,
+    fetchMethod: any
+  ): Promise<any> {
+    const providerEndpoints = await this.getEndpoints(providerUri, fetchMethod)
+    const serviceEndpoints = await this.getServiceEndpoints(
+      providerUri,
+      providerEndpoints
+    )
+    const computeResultUrl = this.getEndpointURL(serviceEndpoints, 'computeResult')
+      ? this.getEndpointURL(serviceEndpoints, 'computeResult').urlPath
+      : null
+
+    const nonce = await this.getNonce(
+      providerUri,
+      accountId,
+      fetchMethod,
+      providerEndpoints,
+      serviceEndpoints
+    )
+
+    let signatureMessage = accountId
+    signatureMessage += jobId
+    signatureMessage += String(index)
+    signatureMessage += nonce
+    const signature = await this.createHashSignature(web3, accountId, signatureMessage)
+
+    if (!computeResultUrl) return null
+    let consumeUrl = computeResultUrl
+    consumeUrl += `?consumerAddress=${accountId}`
+    consumeUrl += `&jobId=${jobId}`
+    consumeUrl += `&index=${String(index)}`
+    consumeUrl += (signature && `&signature=${signature}`) || ''
+
+    try {
+      !destination
+        ? await fetchMethod.downloadFileBrowser(consumeUrl)
+        : await fetchMethod.downloadFile(consumeUrl, destination, index)
+    } catch (e) {
+      LoggerInstance.error('Error getting job result')
+      LoggerInstance.error(e)
+      throw e
+    }
+    return destination
   }
 
   /** Check for a valid provider at URL
