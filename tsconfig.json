@@ -14,7 +14,8 @@
     "outDir": "./dist/node/",
     "rootDir": "./src/",
     "sourceMap": true,
-    "typeRoots": ["node_modules/@types"]
+    "typeRoots": ["node_modules/@types"],
+    "forceConsistentCasingInFileNames": false
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "**/*.test.ts"]
