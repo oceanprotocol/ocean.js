@@ -1,11 +1,11 @@
 import Web3 from 'web3'
 import { AbiItem } from 'web3-utils'
 import { TransactionReceipt } from 'web3-eth'
-import defaultDatatokensABI from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC20Template.sol/ERC20Template.json'
-import defaultDatatokensEnterpriseABI from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC20TemplateEnterprise.sol/ERC20TemplateEnterprise.json'
-import Decimal from 'decimal.js'
-import { LoggerInstance, getFairGasPrice } from '../utils'
 import { Contract } from 'web3-eth-contract'
+import Decimal from 'decimal.js'
+import defaultDatatokensAbi from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC20Template.sol/ERC20Template.json'
+import defaultDatatokensEnterpriseAbi from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC20TemplateEnterprise.sol/ERC20TemplateEnterprise.json'
+import { LoggerInstance, getFairGasPrice } from '../utils'
 import { FreOrderParams, FreCreationParams } from '../interfaces'
 
 /**
@@ -36,26 +36,26 @@ export class Datatoken {
   public GASLIMIT_DEFAULT = 1000000
   public factoryAddress: string
   public factoryABI: AbiItem | AbiItem[]
-  public datatokensABI: AbiItem | AbiItem[]
-  public datatokensEnterpriseABI: AbiItem | AbiItem[]
+  public datatokensAbi: AbiItem | AbiItem[]
+  public datatokensEnterpriseAbi: AbiItem | AbiItem[]
   public web3: Web3
   public startBlock: number
 
   /**
    * Instantiate ERC20 DataTokens
-   * @param {AbiItem | AbiItem[]} datatokensABI
+   * @param {AbiItem | AbiItem[]} datatokensAbi
    * @param {Web3} web3
    */
   constructor(
     web3: Web3,
-    datatokensABI?: AbiItem | AbiItem[],
-    datatokensEnterpriseABI?: AbiItem | AbiItem[],
+    datatokensAbi?: AbiItem | AbiItem[],
+    datatokensEnterpriseAbi?: AbiItem | AbiItem[],
     startBlock?: number
   ) {
     this.web3 = web3
-    this.datatokensABI = datatokensABI || (defaultDatatokensABI.abi as AbiItem[])
-    this.datatokensEnterpriseABI =
-      datatokensEnterpriseABI || (defaultDatatokensEnterpriseABI.abi as AbiItem[])
+    this.datatokensAbi = datatokensAbi || (defaultDatatokensAbi.abi as AbiItem[])
+    this.datatokensEnterpriseAbi =
+      datatokensEnterpriseAbi || (defaultDatatokensEnterpriseAbi.abi as AbiItem[])
     this.startBlock = startBlock || 0
   }
 
@@ -76,7 +76,7 @@ export class Datatoken {
     contractInstance?: Contract
   ): Promise<any> {
     const dtContract =
-      contractInstance || new this.web3.eth.Contract(this.datatokensABI, dtAddress)
+      contractInstance || new this.web3.eth.Contract(this.datatokensAbi, dtAddress)
 
     // Estimate gas cost for mint method
     const gasLimitDefault = this.GASLIMIT_DEFAULT
@@ -105,7 +105,7 @@ export class Datatoken {
     amount: string,
     address: string
   ): Promise<TransactionReceipt> {
-    const dtContract = new this.web3.eth.Contract(this.datatokensABI, dtAddress)
+    const dtContract = new this.web3.eth.Contract(this.datatokensAbi, dtAddress)
 
     const estGas = await this.estGasApprove(
       dtAddress,
@@ -143,7 +143,7 @@ export class Datatoken {
     contractInstance?: Contract
   ): Promise<any> {
     const dtContract =
-      contractInstance || new this.web3.eth.Contract(this.datatokensABI, dtAddress)
+      contractInstance || new this.web3.eth.Contract(this.datatokensAbi, dtAddress)
 
     const gasLimitDefault = this.GASLIMIT_DEFAULT
     let estGas
@@ -174,7 +174,7 @@ export class Datatoken {
     contractInstance?: Contract
   ): Promise<any> {
     const dtContract =
-      contractInstance || new this.web3.eth.Contract(this.datatokensABI, dtAddress)
+      contractInstance || new this.web3.eth.Contract(this.datatokensAbi, dtAddress)
 
     const gasLimitDefault = this.GASLIMIT_DEFAULT
 
@@ -222,7 +222,7 @@ export class Datatoken {
     address: string,
     fixedRateParams: FreCreationParams
   ): Promise<TransactionReceipt> {
-    const dtContract = new this.web3.eth.Contract(this.datatokensABI, dtAddress)
+    const dtContract = new this.web3.eth.Contract(this.datatokensAbi, dtAddress)
 
     if (!fixedRateParams.allowedConsumer)
       fixedRateParams.allowedConsumer = '0x0000000000000000000000000000000000000000'
@@ -281,7 +281,7 @@ export class Datatoken {
     contractInstance?: Contract
   ): Promise<any> {
     const dtContract =
-      contractInstance || new this.web3.eth.Contract(this.datatokensABI, dtAddress)
+      contractInstance || new this.web3.eth.Contract(this.datatokensAbi, dtAddress)
 
     if (!dispenserParams.allowedSwapper)
       dispenserParams.allowedSwapper = '0x0000000000000000000000000000000000000000'
@@ -321,7 +321,7 @@ export class Datatoken {
     dispenserAddress: string,
     dispenserParams: DispenserParams
   ): Promise<TransactionReceipt> {
-    const dtContract = new this.web3.eth.Contract(this.datatokensABI, dtAddress)
+    const dtContract = new this.web3.eth.Contract(this.datatokensAbi, dtAddress)
 
     if (!dispenserParams.allowedSwapper)
       dispenserParams.allowedSwapper = '0x0000000000000000000000000000000000000000'
@@ -369,7 +369,7 @@ export class Datatoken {
     amount: string,
     toAddress?: string
   ): Promise<TransactionReceipt> {
-    const dtContract = new this.web3.eth.Contract(this.datatokensABI, dtAddress)
+    const dtContract = new this.web3.eth.Contract(this.datatokensAbi, dtAddress)
 
     if ((await this.getDTPermissions(dtAddress, address)).minter !== true) {
       throw new Error(`Caller is not Minter`)
@@ -414,7 +414,7 @@ export class Datatoken {
     contractInstance?: Contract
   ): Promise<any> {
     const dtContract =
-      contractInstance || new this.web3.eth.Contract(this.datatokensABI, dtAddress)
+      contractInstance || new this.web3.eth.Contract(this.datatokensAbi, dtAddress)
 
     // Estimate gas cost for addMinter method
     const gasLimitDefault = this.GASLIMIT_DEFAULT
@@ -442,7 +442,7 @@ export class Datatoken {
     address: string,
     minter: string
   ): Promise<TransactionReceipt> {
-    const dtContract = new this.web3.eth.Contract(this.datatokensABI, dtAddress)
+    const dtContract = new this.web3.eth.Contract(this.datatokensAbi, dtAddress)
 
     // should check ERC20Deployer role using erc721 level ..
 
@@ -474,7 +474,7 @@ export class Datatoken {
     contractInstance?: Contract
   ): Promise<any> {
     const dtContract =
-      contractInstance || new this.web3.eth.Contract(this.datatokensABI, dtAddress)
+      contractInstance || new this.web3.eth.Contract(this.datatokensAbi, dtAddress)
 
     // should check ERC20Deployer role using erc721 level ..
 
@@ -506,7 +506,7 @@ export class Datatoken {
     address: string,
     minter: string
   ): Promise<TransactionReceipt> {
-    const dtContract = new this.web3.eth.Contract(this.datatokensABI, dtAddress)
+    const dtContract = new this.web3.eth.Contract(this.datatokensAbi, dtAddress)
 
     // should check ERC20Deployer role using erc721 level ..
 
@@ -537,7 +537,7 @@ export class Datatoken {
     contractInstance?: Contract
   ): Promise<any> {
     const dtContract =
-      contractInstance || new this.web3.eth.Contract(this.datatokensABI, dtAddress)
+      contractInstance || new this.web3.eth.Contract(this.datatokensAbi, dtAddress)
 
     // Estimate gas for addFeeManager method
     const gasLimitDefault = this.GASLIMIT_DEFAULT
@@ -566,7 +566,7 @@ export class Datatoken {
     address: string,
     paymentManager: string
   ): Promise<TransactionReceipt> {
-    const dtContract = new this.web3.eth.Contract(this.datatokensABI, dtAddress)
+    const dtContract = new this.web3.eth.Contract(this.datatokensAbi, dtAddress)
 
     // should check ERC20Deployer role using erc721 level ..
 
@@ -602,7 +602,7 @@ export class Datatoken {
     contractInstance?: Contract
   ): Promise<any> {
     const dtContract =
-      contractInstance || new this.web3.eth.Contract(this.datatokensABI, dtAddress)
+      contractInstance || new this.web3.eth.Contract(this.datatokensAbi, dtAddress)
 
     const gasLimitDefault = this.GASLIMIT_DEFAULT
     let estGas
@@ -629,7 +629,7 @@ export class Datatoken {
     address: string,
     paymentManager: string
   ): Promise<TransactionReceipt> {
-    const dtContract = new this.web3.eth.Contract(this.datatokensABI, dtAddress)
+    const dtContract = new this.web3.eth.Contract(this.datatokensAbi, dtAddress)
 
     // should check ERC20Deployer role using erc721 level ..
     const estGas = await this.estGasRemovePaymentManager(
@@ -666,7 +666,7 @@ export class Datatoken {
     contractInstance?: Contract
   ): Promise<any> {
     const dtContract =
-      contractInstance || new this.web3.eth.Contract(this.datatokensABI, dtAddress)
+      contractInstance || new this.web3.eth.Contract(this.datatokensAbi, dtAddress)
 
     const gasLimitDefault = this.GASLIMIT_DEFAULT
     let estGas
@@ -694,7 +694,7 @@ export class Datatoken {
     address: string,
     paymentCollector: string
   ): Promise<TransactionReceipt> {
-    const dtContract = new this.web3.eth.Contract(this.datatokensABI, dtAddress)
+    const dtContract = new this.web3.eth.Contract(this.datatokensAbi, dtAddress)
     if ((await this.getDTPermissions(dtAddress, address)).paymentManager !== true) {
       throw new Error(`Caller is not Fee Manager`)
     }
@@ -723,7 +723,7 @@ export class Datatoken {
    * @return {Promise<string>}
    */
   public async getPaymentCollector(dtAddress: string): Promise<string> {
-    const dtContract = new this.web3.eth.Contract(this.datatokensABI, dtAddress)
+    const dtContract = new this.web3.eth.Contract(this.datatokensAbi, dtAddress)
     const paymentCollector = await dtContract.methods.getPaymentCollector().call()
     return paymentCollector
   }
@@ -763,7 +763,7 @@ export class Datatoken {
     contractInstance?: Contract
   ): Promise<any> {
     const dtContract =
-      contractInstance || new this.web3.eth.Contract(this.datatokensABI, dtAddress)
+      contractInstance || new this.web3.eth.Contract(this.datatokensAbi, dtAddress)
 
     const gasLimitDefault = this.GASLIMIT_DEFAULT
     let estGas
@@ -791,7 +791,7 @@ export class Datatoken {
     amount: string,
     address: string
   ): Promise<TransactionReceipt> {
-    const dtContract = new this.web3.eth.Contract(this.datatokensABI, dtAddress)
+    const dtContract = new this.web3.eth.Contract(this.datatokensAbi, dtAddress)
     try {
       const estGas = await this.estGasTransfer(
         dtAddress,
@@ -837,7 +837,7 @@ export class Datatoken {
     contractInstance?: Contract
   ): Promise<any> {
     const dtContract =
-      contractInstance || new this.web3.eth.Contract(this.datatokensABI, dtAddress)
+      contractInstance || new this.web3.eth.Contract(this.datatokensAbi, dtAddress)
 
     // Estimate gas for startOrder method
     const gasLimitDefault = this.GASLIMIT_DEFAULT
@@ -881,7 +881,7 @@ export class Datatoken {
     providerFeeToken: string,
     providerFeeAmount: string
   ): Promise<TransactionReceipt> {
-    const dtContract = new this.web3.eth.Contract(this.datatokensABI, dtAddress)
+    const dtContract = new this.web3.eth.Contract(this.datatokensAbi, dtAddress)
     if (!providerFeeAddress)
       providerFeeAddress = '0x0000000000000000000000000000000000000000'
 
@@ -936,7 +936,7 @@ export class Datatoken {
   ): Promise<any> {
     const dtContract =
       contractInstance ||
-      new this.web3.eth.Contract(this.datatokensEnterpriseABI, dtAddress)
+      new this.web3.eth.Contract(this.datatokensEnterpriseAbi, dtAddress)
 
     // Estimate gas for startOrder method
     const gasLimitDefault = this.GASLIMIT_DEFAULT
@@ -964,7 +964,7 @@ export class Datatoken {
     orderParams: OrderParams,
     freParams: FreOrderParams
   ): Promise<TransactionReceipt> {
-    const dtContract = new this.web3.eth.Contract(this.datatokensEnterpriseABI, dtAddress)
+    const dtContract = new this.web3.eth.Contract(this.datatokensEnterpriseAbi, dtAddress)
     try {
       const estGas = await this.estGasBuyFromFreAndOrder(
         dtAddress,
@@ -1005,7 +1005,7 @@ export class Datatoken {
   ): Promise<any> {
     const dtContract =
       contractInstance ||
-      new this.web3.eth.Contract(this.datatokensEnterpriseABI, dtAddress)
+      new this.web3.eth.Contract(this.datatokensEnterpriseAbi, dtAddress)
 
     // Estimate gas for startOrder method
     const gasLimitDefault = this.GASLIMIT_DEFAULT
@@ -1033,7 +1033,7 @@ export class Datatoken {
     orderParams: OrderParams,
     dispenserContract: string
   ): Promise<TransactionReceipt> {
-    const dtContract = new this.web3.eth.Contract(this.datatokensEnterpriseABI, dtAddress)
+    const dtContract = new this.web3.eth.Contract(this.datatokensEnterpriseAbi, dtAddress)
     try {
       const estGas = await this.estGasBuyFromDispenserAndOrder(
         dtAddress,
@@ -1071,7 +1071,7 @@ export class Datatoken {
     contractInstance?: Contract
   ): Promise<any> {
     const dtContract =
-      contractInstance || new this.web3.eth.Contract(this.datatokensABI, dtAddress)
+      contractInstance || new this.web3.eth.Contract(this.datatokensAbi, dtAddress)
 
     const gasLimitDefault = this.GASLIMIT_DEFAULT
     let estGas
@@ -1098,7 +1098,7 @@ export class Datatoken {
     address: string,
     value: string
   ): Promise<TransactionReceipt> {
-    const dtContract = new this.web3.eth.Contract(this.datatokensABI, dtAddress)
+    const dtContract = new this.web3.eth.Contract(this.datatokensAbi, dtAddress)
 
     const estGas = await this.estGasSetData(dtAddress, address, value, dtContract)
 
@@ -1124,7 +1124,7 @@ export class Datatoken {
     contractInstance?: Contract
   ): Promise<any> {
     const dtContract =
-      contractInstance || new this.web3.eth.Contract(this.datatokensABI, dtAddress)
+      contractInstance || new this.web3.eth.Contract(this.datatokensAbi, dtAddress)
 
     const gasLimitDefault = this.GASLIMIT_DEFAULT
     let estGas
@@ -1150,7 +1150,7 @@ export class Datatoken {
     dtAddress: string,
     address: string
   ): Promise<TransactionReceipt> {
-    const dtContract = new this.web3.eth.Contract(this.datatokensABI, dtAddress)
+    const dtContract = new this.web3.eth.Contract(this.datatokensAbi, dtAddress)
 
     const estGas = await this.estGasCleanPermissions(dtAddress, address, dtContract)
 
@@ -1170,7 +1170,7 @@ export class Datatoken {
    * @return {Promise<Roles>}
    */
   public async getDTPermissions(dtAddress: string, address: string): Promise<Roles> {
-    const dtContract = new this.web3.eth.Contract(this.datatokensABI, dtAddress)
+    const dtContract = new this.web3.eth.Contract(this.datatokensAbi, dtAddress)
     const roles = await dtContract.methods.permissions(address).call()
     return roles
   }
@@ -1180,7 +1180,7 @@ export class Datatoken {
    * @return {Promise<string>}
    */
   public async getCap(dtAddress: string): Promise<string> {
-    const dtContract = new this.web3.eth.Contract(this.datatokensABI, dtAddress)
+    const dtContract = new this.web3.eth.Contract(this.datatokensAbi, dtAddress)
     const cap = await dtContract.methods.cap().call()
     return this.web3.utils.fromWei(cap)
   }
@@ -1190,7 +1190,7 @@ export class Datatoken {
    * @return {Promise<number>}
    */
   public async getDecimals(dtAddress: string): Promise<string> {
-    const dtContract = new this.web3.eth.Contract(this.datatokensABI, dtAddress)
+    const dtContract = new this.web3.eth.Contract(this.datatokensAbi, dtAddress)
     const decimals = await dtContract.methods.decimals().call()
     return decimals
   }
@@ -1200,7 +1200,7 @@ export class Datatoken {
    * @return {Promise<number>}
    */
   public async getNFTAddress(dtAddress: string): Promise<string> {
-    const dtContract = new this.web3.eth.Contract(this.datatokensABI, dtAddress)
+    const dtContract = new this.web3.eth.Contract(this.datatokensAbi, dtAddress)
     const nftAddress = await dtContract.methods.getERC721Address().call()
     return nftAddress
   }
@@ -1211,7 +1211,7 @@ export class Datatoken {
    * @return {Promise<number>}
    */
   public async isERC20Deployer(dtAddress: string, adddress: string): Promise<string> {
-    const dtContract = new this.web3.eth.Contract(this.datatokensABI, dtAddress)
+    const dtContract = new this.web3.eth.Contract(this.datatokensAbi, dtAddress)
     const isERC20Deployer = await dtContract.methods.isERC20Deployer(adddress).call()
     return isERC20Deployer
   }
@@ -1223,7 +1223,7 @@ export class Datatoken {
    * @return {Promise<String>} balance  Number of datatokens. Will be converted from wei
    */
   public async balance(dataTokenAddress: string, address: string): Promise<string> {
-    const dtContract = new this.web3.eth.Contract(this.datatokensABI, dataTokenAddress, {
+    const dtContract = new this.web3.eth.Contract(this.datatokensAbi, dataTokenAddress, {
       from: address
     })
     const balance = await dtContract.methods.balanceOf(address).call()

@@ -1,13 +1,11 @@
-import defaultFixedRateExchangeABI from '@oceanprotocol/contracts/artifacts/contracts/pools/fixedRate/FixedRateExchange.sol/FixedRateExchange.json'
-import defaultERC20ABI from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC20Template.sol/ERC20Template.json'
+import defaultFixedRateExchangeAbi from '@oceanprotocol/contracts/artifacts/contracts/pools/fixedRate/FixedRateExchange.sol/FixedRateExchange.json'
+import defaultErc20Abi from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC20Template.sol/ERC20Template.json'
 import BigNumber from 'bignumber.js'
 import { TransactionReceipt } from 'web3-core'
-import { Contract, EventData } from 'web3-eth-contract'
+import { Contract } from 'web3-eth-contract'
 import { AbiItem } from 'web3-utils/types'
 import Web3 from 'web3'
 import { LoggerInstance, getFairGasPrice } from '../../utils'
-
-const MAX_AWAIT_PROMISES = 10
 
 export interface FixedPriceExchange {
   active: boolean
@@ -23,7 +21,7 @@ export interface FixedPriceExchange {
   btSupply: string
   withMint: boolean
   allowedSwapper: string
-  exchangeID?: string
+  exchangeId?: string
 }
 
 export interface FeesInfo {
@@ -32,10 +30,10 @@ export interface FeesInfo {
   marketFeeCollector: string
   marketFeeAvailable: string
   oceanFeeAvailable: string
-  exchangeID: string
+  exchangeId: string
 }
 export interface FixedPriceSwap {
-  exchangeID: string
+  exchangeId: string
   caller: string
   baseTokenAmount: string
   dataTokenAmount: string
@@ -51,23 +49,23 @@ export class FixedRateExchange {
   /** Ocean related functions */
   public oceanAddress: string = null
   public fixedRateAddress: string
-  public fixedRateExchangeABI: AbiItem | AbiItem[]
+  public fixedRateExchangeAbi: AbiItem | AbiItem[]
   public fixedRateContract: Contract
   public web3: Web3
   public contract: Contract = null
 
   public startBlock: number
-  public ssABI: AbiItem | AbiItem[]
+  public ssAbi: AbiItem | AbiItem[]
 
   /**
    * Instantiate FixedRateExchange
    * @param {any} web3
-   * @param {any} fixedRateExchangeABI
+   * @param {any} fixedRateExchangeAbi
    */
   constructor(
     web3: Web3,
     fixedRateAddress: string,
-    fixedRateExchangeABI: AbiItem | AbiItem[] = null,
+    fixedRateExchangeAbi: AbiItem | AbiItem[] = null,
     oceanAddress: string = null,
     startBlock?: number
   ) {
@@ -75,12 +73,12 @@ export class FixedRateExchange {
 
     if (startBlock) this.startBlock = startBlock
     else this.startBlock = 0
-    this.fixedRateExchangeABI =
-      fixedRateExchangeABI || (defaultFixedRateExchangeABI.abi as AbiItem[])
+    this.fixedRateExchangeAbi =
+      fixedRateExchangeAbi || (defaultFixedRateExchangeAbi.abi as AbiItem[])
     this.oceanAddress = oceanAddress
     this.fixedRateAddress = fixedRateAddress
     this.contract = new this.web3.eth.Contract(
-      this.fixedRateExchangeABI,
+      this.fixedRateExchangeAbi,
       this.fixedRateAddress
     )
   }
@@ -88,7 +86,7 @@ export class FixedRateExchange {
   async amountToUnits(token: string, amount: string): Promise<string> {
     let decimals = 18
     const tokenContract = new this.web3.eth.Contract(
-      defaultERC20ABI.abi as AbiItem[],
+      defaultErc20Abi.abi as AbiItem[],
       token
     )
 
@@ -106,7 +104,7 @@ export class FixedRateExchange {
   async unitsToAmount(token: string, amount: string): Promise<string> {
     let decimals = 18
     const tokenContract = new this.web3.eth.Contract(
-      defaultERC20ABI.abi as AbiItem[],
+      defaultErc20Abi.abi as AbiItem[],
       token
     )
     try {
@@ -627,7 +625,7 @@ export class FixedRateExchange {
     result.dtSupply = await this.unitsToAmount(result.dataToken, result.dtSupply)
     result.btSupply = await this.unitsToAmount(result.baseToken, result.btSupply)
     result.fixedRate = this.web3.utils.fromWei(result.fixedRate)
-    result.exchangeID = exchangeId
+    result.exchangeId = exchangeId
     return result
   }
 
@@ -654,7 +652,7 @@ export class FixedRateExchange {
       result.oceanFeeAvailable
     )
 
-    result.exchangeID = exchangeId
+    result.exchangeId = exchangeId
     return result
   }
 

@@ -12,7 +12,7 @@ import { Operation } from '../interfaces/RouterInterface'
 export class Router {
   public GASLIMIT_DEFAULT = 1000000
   public routerAddress: string
-  public RouterABI: AbiItem | AbiItem[]
+  public RouterAbi: AbiItem | AbiItem[]
   public web3: Web3
   public startBlock: number
   public router: Contract
@@ -26,14 +26,14 @@ export class Router {
   constructor(
     routerAddress: string,
     web3: Web3,
-    RouterABI?: AbiItem | AbiItem[],
+    RouterAbi?: AbiItem | AbiItem[],
     startBlock?: number
   ) {
     this.routerAddress = routerAddress
-    this.RouterABI = RouterABI || (defaultRouter.abi as AbiItem[])
+    this.RouterAbi = RouterAbi || (defaultRouter.abi as AbiItem[])
     this.web3 = web3
     this.startBlock = startBlock || 0
-    this.router = new this.web3.eth.Contract(this.RouterABI, this.routerAddress)
+    this.router = new this.web3.eth.Contract(this.RouterAbi, this.routerAddress)
   }
 
   /**

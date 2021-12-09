@@ -2,7 +2,7 @@ import { Contract } from 'web3-eth-contract'
 import Web3 from 'web3'
 import { TransactionReceipt } from 'web3-core'
 import { AbiItem } from 'web3-utils'
-import defaultFactory721ABI from '@oceanprotocol/contracts/artifacts/contracts/ERC721Factory.sol/ERC721Factory.json'
+import defaultFactory721Abi from '@oceanprotocol/contracts/artifacts/contracts/ERC721Factory.sol/ERC721Factory.json'
 import {
   LoggerInstance,
   getFairGasPrice,
@@ -28,7 +28,7 @@ export interface TokenOrder {
   providerFeeAmount: string
 }
 
-export interface NFTCreateData {
+export interface NftCreateData {
   name: string
   symbol: string
   templateIndex: number
@@ -38,10 +38,10 @@ export interface NFTCreateData {
 /**
  * Provides an interface for NFT Factory contract
  */
-export class NFTFactory {
+export class NftFactory {
   public GASLIMIT_DEFAULT = 1000000
   public factory721Address: string
-  public factory721ABI: AbiItem | AbiItem[]
+  public factory721Abi: AbiItem | AbiItem[]
   public web3: Web3
   public startBlock: number
   public factory721: Contract
@@ -55,15 +55,15 @@ export class NFTFactory {
   constructor(
     factory721Address: string,
     web3: Web3,
-    factory721ABI?: AbiItem | AbiItem[],
+    factory721Abi?: AbiItem | AbiItem[],
     startBlock?: number
   ) {
     this.factory721Address = factory721Address
-    this.factory721ABI = factory721ABI || (defaultFactory721ABI.abi as AbiItem[])
+    this.factory721Abi = factory721Abi || (defaultFactory721Abi.abi as AbiItem[])
     this.web3 = web3
     this.startBlock = startBlock || 0
     this.factory721 = new this.web3.eth.Contract(
-      this.factory721ABI,
+      this.factory721Abi,
       this.factory721Address
     )
   }
@@ -74,7 +74,7 @@ export class NFTFactory {
    * @param {String} nftData
    * @return {Promise<string>} NFT datatoken address
    */
-  public async estGasCreateNFT(address: string, nftData: NFTCreateData): Promise<string> {
+  public async estGasCreateNFT(address: string, nftData: NftCreateData): Promise<string> {
     const gasLimitDefault = this.GASLIMIT_DEFAULT
     let estGas
     try {
@@ -99,7 +99,7 @@ export class NFTFactory {
    * @param {NFTCreateData} nftData
    * @return {Promise<string>} NFT datatoken address
    */
-  public async createNFT(address: string, nftData: NFTCreateData): Promise<string> {
+  public async createNFT(address: string, nftData: NftCreateData): Promise<string> {
     if (!nftData.templateIndex) nftData.templateIndex = 1
 
     if (!nftData.name || !nftData.symbol) {
@@ -572,7 +572,7 @@ export class NFTFactory {
 
   public async estGasCreateNftWithErc(
     address: string,
-    nftCreateData: NFTCreateData,
+    nftCreateData: NftCreateData,
     ercParams: Erc20CreateParams
   ): Promise<any> {
     // Get estimated gas value
@@ -600,7 +600,7 @@ export class NFTFactory {
 
   public async createNftWithErc(
     address: string,
-    nftCreateData: NFTCreateData,
+    nftCreateData: NftCreateData,
     ercParams: Erc20CreateParams
   ): Promise<TransactionReceipt> {
     const ercCreateData = getErcCreationParams(ercParams, this.web3)
@@ -633,7 +633,7 @@ export class NFTFactory {
    */
   public async estGasCreateNftErcWithPool(
     address: string,
-    nftCreateData: NFTCreateData,
+    nftCreateData: NftCreateData,
     ercParams: Erc20CreateParams,
     poolParams: PoolCreationParams
   ): Promise<any> {
@@ -663,7 +663,7 @@ export class NFTFactory {
    */
   public async createNftErcWithPool(
     address: string,
-    nftCreateData: NFTCreateData,
+    nftCreateData: NftCreateData,
     ercParams: Erc20CreateParams,
     poolParams: PoolCreationParams
   ): Promise<TransactionReceipt> {
@@ -697,7 +697,7 @@ export class NFTFactory {
    */
   public async estGasCreateNftErcWithFixedRate(
     address: string,
-    nftCreateData: NFTCreateData,
+    nftCreateData: NftCreateData,
     ercParams: Erc20CreateParams,
     freParams: FreCreationParams
   ): Promise<any> {
@@ -730,7 +730,7 @@ export class NFTFactory {
    */
   public async createNftErcWithFixedRate(
     address: string,
-    nftCreateData: NFTCreateData,
+    nftCreateData: NftCreateData,
     ercParams: Erc20CreateParams,
     freParams: FreCreationParams
   ): Promise<TransactionReceipt> {

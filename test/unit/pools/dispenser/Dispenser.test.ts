@@ -1,5 +1,5 @@
 import Web3 from 'web3'
-import { AbiItem, AbiInput } from 'web3-utils'
+import { AbiItem } from 'web3-utils'
 import { assert, expect } from 'chai'
 import ERC721Factory from '@oceanprotocol/contracts/artifacts/contracts/ERC721Factory.sol/ERC721Factory.json'
 import ERC721Template from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC721Template.sol/ERC721Template.json'
@@ -11,8 +11,8 @@ import FixedRate from '@oceanprotocol/contracts/artifacts/contracts/pools/fixedR
 import MockERC20 from '@oceanprotocol/contracts/artifacts/contracts/utils/mock/MockERC20Decimals.sol/MockERC20Decimals.json'
 import PoolTemplate from '@oceanprotocol/contracts/artifacts/contracts/pools/balancer/BPool.sol/BPool.json'
 import OPFCollector from '@oceanprotocol/contracts/artifacts/contracts/communityFee/OPFCommunityFeeCollector.sol/OPFCommunityFeeCollector.json'
-import { NFTFactory, NFTCreateData } from '../../../../src/factories/'
-import { Datatoken, DispenserParams } from '../../../../src/datatokens/'
+import { NftFactory, NftCreateData } from '../../../../src/factories/'
+import { Datatoken, DispenserParams } from '../../../../src/tokens/'
 import { Dispenser } from '../../../../src/pools/dispenser/'
 import { TestContractHandler } from '../../../TestContractHandler'
 import { Erc20CreateParams } from '../../../../src/interfaces'
@@ -28,7 +28,7 @@ describe('Dispenser flow', () => {
   let contracts: TestContractHandler
   let DispenserAddress: string
   let DispenserClass: Dispenser
-  let nftFactory: NFTFactory
+  let nftFactory: NftFactory
   let datatoken: Datatoken
   let nftAddress: string
   let dtAddress: string
@@ -76,9 +76,9 @@ describe('Dispenser flow', () => {
   })
 
   it('#createNftwithErc - should create an NFT and a Datatoken ', async () => {
-    nftFactory = new NFTFactory(contracts.factory721Address, web3)
+    nftFactory = new NftFactory(contracts.factory721Address, web3)
 
-    const nftData: NFTCreateData = {
+    const nftData: NftCreateData = {
       name: '72120Bundle',
       symbol: '72Bundle',
       templateIndex: 1,

@@ -1,5 +1,5 @@
 export * from './pools'
-export * from './datatokens'
+export * from './tokens'
 export * from './factories'
 export * from './models'
 export * from './utils'
