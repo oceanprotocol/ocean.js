@@ -290,10 +290,10 @@ export class Provider {
     did: string,
     consumerAddress: string,
     algorithm: ComputeAlgorithm,
-    output?: ComputeOutput,
     providerUri: string,
     web3: Web3,
-    fetchMethod: any
+    fetchMethod: any,
+    output?: ComputeOutput
   ): Promise<ComputeJob | ComputeJob[]> {
     const providerEndpoints = await this.getEndpoints(providerUri, fetchMethod)
     const serviceEndpoints = await this.getServiceEndpoints(
@@ -411,10 +411,10 @@ export class Provider {
   public async computeStatus(
     did: string,
     consumerAddress: string,
-    jobId?: string,
     providerUri: string,
     web3: Web3,
-    fetchMethod: any
+    fetchMethod: any,
+    jobId?: string
   ): Promise<ComputeJob | ComputeJob[]> {
     const providerEndpoints = await this.getEndpoints(providerUri, fetchMethod)
     const serviceEndpoints = await this.getServiceEndpoints(
