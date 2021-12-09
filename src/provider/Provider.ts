@@ -1,5 +1,4 @@
 import Web3 from 'web3'
-import { Config } from '../models'
 import { LoggerInstance } from '../utils'
 import { Asset, FileMetadata } from '../@types/'
 import { noZeroX } from '../utils/ConversionTypeHelper'

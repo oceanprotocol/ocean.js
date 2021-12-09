@@ -10,11 +10,8 @@ import ERC20Template from '@oceanprotocol/contracts/artifacts/contracts/template
 import Dispenser from '@oceanprotocol/contracts/artifacts/contracts/pools/dispenser/Dispenser.sol/Dispenser.json'
 import FixedRate from '@oceanprotocol/contracts/artifacts/contracts/pools/fixedRate/FixedRateExchange.sol/FixedRateExchange.json'
 import OPFCommunityFeeCollector from '@oceanprotocol/contracts/artifacts/contracts/communityFee/OPFCommunityFeeCollector.sol/OPFCommunityFeeCollector.json'
-import MockERC20 from '@oceanprotocol/contracts/artifacts/contracts/utils/mock/MockERC20Decimals.sol/MockERC20Decimals.json'
 import PoolTemplate from '@oceanprotocol/contracts/artifacts/contracts/pools/balancer/BPool.sol/BPool.json'
-import { LoggerInstance } from '../../src/utils'
-// import { NFTDataToken } from '../../../src/datatokens/NFTDatatoken'
-import { NFTFactory, NFTCreateData, TokenOrder } from '../../src/factories/NFTFactory'
+import { NftFactory, NftCreateData, TokenOrder } from '../../src/factories/NftFactory'
 import {
   FreCreationParams,
   Erc20CreateParams,
@@ -23,14 +20,14 @@ import {
 
 const web3 = new Web3('http://127.0.0.1:8545')
 
-describe('NFT Factory test', () => {
+describe('Nft Factory test', () => {
   let factoryOwner: string
   let nftOwner: string
   let user1: string
   let user2: string
   let user3: string
   let contracts: TestContractHandler
-  let nftFactory: NFTFactory
+  let nftFactory: NftFactory
   let dtAddress: string
   let dtAddress2: string
   let nftAddress: string
@@ -88,7 +85,7 @@ describe('NFT Factory test', () => {
   })
 
   it('should initiate NFTFactory instance', async () => {
-    nftFactory = new NFTFactory(contracts.factory721Address, web3)
+    nftFactory = new NftFactory(contracts.factory721Address, web3)
   })
 
   it('#getCurrentNFTCount - should return actual nft count (0)', async () => {
@@ -174,7 +171,7 @@ describe('NFT Factory test', () => {
 
   it('#createNftwithErc - should create an NFT and a Datatoken ', async () => {
     // we prepare transaction parameters objects
-    const nftData: NFTCreateData = {
+    const nftData: NftCreateData = {
       name: '72120Bundle',
       symbol: '72Bundle',
       templateIndex: 1,
@@ -210,7 +207,7 @@ describe('NFT Factory test', () => {
 
   it('#createNftErcWithPool- should create an NFT, a Datatoken and a pool DT/DAI', async () => {
     // we prepare transaction parameters objects
-    const nftData: NFTCreateData = {
+    const nftData: NftCreateData = {
       name: '72120Bundle',
       symbol: '72Bundle',
       templateIndex: 1,
@@ -260,7 +257,7 @@ describe('NFT Factory test', () => {
 
   it('#createNftErcWithFixedRate- should create an NFT, a datatoken and create a Fixed Rate Exchange', async () => {
     // we prepare transaction parameters objects
-    const nftData: NFTCreateData = {
+    const nftData: NftCreateData = {
       name: '72120Bundle',
       symbol: '72Bundle',
       templateIndex: 1,

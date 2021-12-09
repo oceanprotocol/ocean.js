@@ -1,7 +1,7 @@
 import { assert, expect } from 'chai'
 import { AbiItem } from 'web3-utils/types'
-import { TestContractHandler } from '../../TestContractHandler'
 import Web3 from 'web3'
+import { TestContractHandler } from '../../TestContractHandler'
 import ERC721Factory from '@oceanprotocol/contracts/artifacts/contracts/ERC721Factory.sol/ERC721Factory.json'
 import ERC721Template from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC721Template.sol/ERC721Template.json'
 import SideStaking from '@oceanprotocol/contracts/artifacts/contracts/pools/ssContracts/SideStaking.sol/SideStaking.json'
@@ -9,17 +9,14 @@ import FactoryRouter from '@oceanprotocol/contracts/artifacts/contracts/pools/Fa
 import ERC20Template from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC20Template.sol/ERC20Template.json'
 import Dispenser from '@oceanprotocol/contracts/artifacts/contracts/pools/dispenser/Dispenser.sol/Dispenser.json'
 import FixedRate from '@oceanprotocol/contracts/artifacts/contracts/pools/fixedRate/FixedRateExchange.sol/FixedRateExchange.json'
-import MockERC20 from '@oceanprotocol/contracts/artifacts/contracts/utils/mock/MockERC20Decimals.sol/MockERC20Decimals.json'
 import OPFCommunityFeeCollector from '@oceanprotocol/contracts/artifacts/contracts/communityFee/OPFCommunityFeeCollector.sol/OPFCommunityFeeCollector.json'
 import PoolTemplate from '@oceanprotocol/contracts/artifacts/contracts/pools/balancer/BPool.sol/BPool.json'
-import { LoggerInstance } from '../../../src/utils'
-import { NFTFactory, NFTCreateData } from '../../../src/factories/NFTFactory'
+import { NftFactory, NftCreateData } from '../../../src/factories/NftFactory'
 import { Router } from '../../../src/pools/Router'
-import { BigNumber } from 'bignumber.js'
 import { Erc20CreateParams, PoolCreationParams, Operation } from '../../../src/interfaces'
+
 const { keccak256 } = require('@ethersproject/keccak256')
 const web3 = new Web3('http://127.0.0.1:8545')
-const communityCollector = '0xeE9300b7961e0a01d9f0adb863C7A227A07AaD75'
 
 describe('Router unit test', () => {
   let factoryOwner: string
@@ -174,7 +171,7 @@ describe('Router unit test', () => {
 
     // CREATE A FIRST POOL
     // we prepare transaction parameters objects
-    const nftData: NFTCreateData = {
+    const nftData: NftCreateData = {
       name: '72120Bundle',
       symbol: '72Bundle',
       templateIndex: 1,
@@ -209,7 +206,7 @@ describe('Router unit test', () => {
       swapFeeMarketPlaceRunner: 1e15
     }
 
-    const nftFactory = new NFTFactory(
+    const nftFactory = new NftFactory(
       contracts.factory721Address,
       web3,
       ERC721Factory.abi as AbiItem[]
@@ -227,7 +224,7 @@ describe('Router unit test', () => {
 
     // CREATE A SECOND POOL
 
-    const nftData2: NFTCreateData = {
+    const nftData2: NftCreateData = {
       name: '72120Bundle2',
       symbol: '72Bundle2',
       templateIndex: 1,

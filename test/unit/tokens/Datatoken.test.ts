@@ -10,13 +10,11 @@ import ERC20Template from '@oceanprotocol/contracts/artifacts/contracts/template
 import Dispenser from '@oceanprotocol/contracts/artifacts/contracts/pools/dispenser/Dispenser.sol/Dispenser.json'
 import FixedRate from '@oceanprotocol/contracts/artifacts/contracts/pools/fixedRate/FixedRateExchange.sol/FixedRateExchange.json'
 import OPFCollector from '@oceanprotocol/contracts/artifacts/contracts/communityFee/OPFCommunityFeeCollector.sol/OPFCommunityFeeCollector.json'
-import MockERC20 from '@oceanprotocol/contracts/artifacts/contracts/utils/mock/MockERC20Decimals.sol/MockERC20Decimals.json'
 
 import { TestContractHandler } from '../../TestContractHandler'
-import { NFTFactory, NFTCreateData } from '../../../src/factories/NFTFactory'
-import { Datatoken, NFT, OrderParams, DispenserParams } from '../../../src/tokens'
+import { NftFactory, NftCreateData } from '../../../src/factories/NftFactory'
+import { Datatoken, Nft, OrderParams, DispenserParams } from '../../../src/tokens'
 import { AbiItem } from 'web3-utils'
-import { LoggerInstance } from '../../../src/utils'
 import { FreCreationParams, FreOrderParams } from '../../../src/interfaces'
 
 const web3 = new Web3('http://127.0.0.1:8545')
@@ -27,9 +25,9 @@ describe('Datatoken', () => {
   let user2: string
   let user3: string
   let contractHandler: TestContractHandler
-  let nftDatatoken: NFT
+  let nftDatatoken: Nft
   let datatoken: Datatoken
-  let nftFactory: NFTFactory
+  let nftFactory: NftFactory
   let nftAddress: string
   let datatokenAddress: string
   let fixedRateAddress: string
@@ -78,12 +76,12 @@ describe('Datatoken', () => {
   })
 
   it('should initialize NFTFactory instance and create a new NFT', async () => {
-    nftFactory = new NFTFactory(
+    nftFactory = new NftFactory(
       contractHandler.factory721Address,
       web3,
       ERC721Factory.abi as AbiItem[]
     )
-    const nftData: NFTCreateData = {
+    const nftData: NftCreateData = {
       name: nftName,
       symbol: nftSymbol,
       templateIndex: 1,
@@ -91,12 +89,12 @@ describe('Datatoken', () => {
     }
 
     nftAddress = await nftFactory.createNFT(nftOwner, nftData)
-    nftDatatoken = new NFT(web3, ERC721Template.abi as AbiItem[])
+    nftDatatoken = new Nft(web3, ERC721Template.abi as AbiItem[])
   })
 
   it('#createERC20 - should create a new ERC20 DT from NFT contract', async () => {
     // await nftDatatoken.addERC20Deployer(nftAddress, nftOwner, nftOwner)
-    datatokenAddress = await nftDatatoken.createERC20(
+    datatokenAddress = await nftDatatoken.createErc20(
       nftAddress,
       nftOwner,
       nftOwner,

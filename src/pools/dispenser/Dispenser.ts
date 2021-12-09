@@ -3,7 +3,7 @@ import { AbiItem } from 'web3-utils'
 import { Contract } from 'web3-eth-contract'
 import { TransactionReceipt } from 'web3-eth'
 import Decimal from 'decimal.js'
-import defaultDispenserABI from '@oceanprotocol/contracts/artifacts/contracts/pools/dispenser/Dispenser.sol/Dispenser.json'
+import defaultDispenserAbi from '@oceanprotocol/contracts/artifacts/contracts/pools/dispenser/Dispenser.sol/Dispenser.json'
 import { LoggerInstance as logger, getFairGasPrice } from '../../utils/'
 import { Datatoken } from '../../tokens'
 
@@ -22,7 +22,7 @@ export class Dispenser {
   public web3: Web3 = null
   public dispenserAddress: string
   public startBlock: number
-  public dispenserABI: AbiItem | AbiItem[]
+  public dispenserAbi: AbiItem | AbiItem[]
   public dispenserContract: Contract
 
   /**
@@ -34,17 +34,17 @@ export class Dispenser {
   constructor(
     web3: Web3,
     dispenserAddress: string = null,
-    dispenserABI: AbiItem | AbiItem[] = null,
+    dispenserAbi: AbiItem | AbiItem[] = null,
     startBlock?: number
   ) {
     this.web3 = web3
     this.dispenserAddress = dispenserAddress
     if (startBlock) this.startBlock = startBlock
     else this.startBlock = 0
-    this.dispenserABI = dispenserABI || (defaultDispenserABI.abi as AbiItem[])
+    this.dispenserAbi = dispenserAbi || (defaultDispenserAbi.abi as AbiItem[])
     if (web3)
       this.dispenserContract = new this.web3.eth.Contract(
-        this.dispenserABI,
+        this.dispenserAbi,
         this.dispenserAddress
       )
   }

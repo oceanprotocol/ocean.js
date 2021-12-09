@@ -1,2 +1,2 @@
 export * from './Datatoken'
-export * from './NFT'
+export * from './Nft'
