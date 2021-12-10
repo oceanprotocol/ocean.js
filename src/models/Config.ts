@@ -142,6 +142,12 @@ export class Config {
   public parityUri?: string
 
   public threshold?: number
+
+  /**
+   * HTTP request timeout
+   * @type {number}
+   */
+  public requestTimeout?: number
 }
 
 export default Config

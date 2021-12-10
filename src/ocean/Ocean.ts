@@ -45,7 +45,8 @@ export class Ocean extends Instantiable {
 
     instance.metadataCache = new MetadataCache(
       instanceConfig.config.metadataCacheUri,
-      instanceConfig.logger
+      instanceConfig.logger,
+      instanceConfig.config?.requestTimeout
     )
 
     instance.accounts = await Accounts.getInstance(instanceConfig)
