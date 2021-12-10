@@ -10,8 +10,10 @@ const fetch = require('cross-fetch')
  */
 export class WebServiceConnector {
   public logger: Logger
-  constructor(logger: Logger) {
+  public requestTimeout: number = 5000
+  constructor(logger: Logger, requestTimeout?: number) {
     this.logger = logger
+    this.requestTimeout = requestTimeout || this.requestTimeout
   }
 
   public post(url: string, payload: BodyInit): Promise<Response> {
@@ -38,12 +40,12 @@ export class WebServiceConnector {
         method: 'POST',
         body: payload,
         headers,
-        signal: timeoutSignal(5000)
+        signal: timeoutSignal(this.requestTimeout)
       })
     } else {
       return this.fetch(url, {
         method: 'POST',
-        signal: timeoutSignal(5000)
+        signal: timeoutSignal(this.requestTimeout)
       })
     }
   }
@@ -54,7 +56,7 @@ export class WebServiceConnector {
       headers: {
         'Content-type': 'application/json'
       },
-      signal: timeoutSignal(5000)
+      signal: timeoutSignal(this.requestTimeout)
     })
   }
 
@@ -66,7 +68,7 @@ export class WebServiceConnector {
         headers: {
           'Content-type': 'application/json'
         },
-        signal: timeoutSignal(5000)
+        signal: timeoutSignal(this.requestTimeout)
       })
     } else {
       return this.fetch(url, {
@@ -74,7 +76,7 @@ export class WebServiceConnector {
         headers: {
           'Content-type': 'application/json'
         },
-        signal: timeoutSignal(5000)
+        signal: timeoutSignal(this.requestTimeout)
       })
     }
   }
@@ -87,7 +89,7 @@ export class WebServiceConnector {
         headers: {
           'Content-type': 'application/json'
         },
-        signal: timeoutSignal(5000)
+        signal: timeoutSignal(this.requestTimeout)
       })
     } else {
       return this.fetch(url, {
@@ -95,7 +97,7 @@ export class WebServiceConnector {
         headers: {
           'Content-type': 'application/json'
         },
-        signal: timeoutSignal(5000)
+        signal: timeoutSignal(this.requestTimeout)
       })
     }
   }

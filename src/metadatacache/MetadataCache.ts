@@ -49,8 +49,8 @@ export class MetadataCache {
    * @param {String} metadataCacheUri
    * @param {Logger} logger
    */
-  constructor(metadataCacheUri: string, logger: Logger) {
-    this.fetch = new WebServiceConnector(logger)
+  constructor(metadataCacheUri: string, logger: Logger, requestTimeout?: number) {
+    this.fetch = new WebServiceConnector(logger, requestTimeout)
     this.logger = logger
     this.metadataCacheUri = metadataCacheUri
   }

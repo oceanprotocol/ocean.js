@@ -662,7 +662,10 @@ export class Assets extends Instantiable {
     consumeUrl += `?consumerAddress=${account}`
     consumeUrl += `&tokenAddress=${dtAddress}`
     consumeUrl += `&transferTxId=${txId}`
-    const serviceConnector = new WebServiceConnector(this.logger)
+    const serviceConnector = new WebServiceConnector(
+      this.logger,
+      this.instanceConfig?.config?.requestTimeout
+    )
     try {
       await serviceConnector.downloadFile(consumeUrl)
     } catch (e) {

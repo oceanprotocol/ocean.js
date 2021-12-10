@@ -44,7 +44,11 @@ describe('MetadataCache', () => {
 
     it('should query metadata with a new instance', async () => {
       const config = new ConfigHelper().getConfig('development')
-      const metadatastoreNew = new MetadataCache(config.metadataCacheUri, LoggerInstance)
+      const metadatastoreNew = new MetadataCache(
+        config.metadataCacheUri,
+        LoggerInstance,
+        config?.requestTimeout
+      )
 
       const result = await metadatastoreNew.queryMetadata(query)
       assert.typeOf(result.hits.hits, 'array')
