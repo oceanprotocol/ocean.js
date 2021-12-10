@@ -3,7 +3,7 @@
   "source": "./src/index.ts",
   "version": "1.0.0-alpha",
   "description": "JavaScript client library for Ocean Protocol",
-  "main": "./dist/node/lib",
+  "main": "./dist/node/lib.js",
   "exports": "./dist/node/lib.js",
   "module": "./dist/node/lib.module.js",
   "typings": "./dist/node/index.d.ts",
