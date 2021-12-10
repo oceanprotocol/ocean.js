@@ -500,13 +500,13 @@ export class Provider {
     signatureMessage += nonce
     const signature = await this.createHashSignature(web3, accountId, signatureMessage)
 
-    if (!computeResultUrl) return null
     let consumeUrl = computeResultUrl
     consumeUrl += `?consumerAddress=${accountId}`
     consumeUrl += `&jobId=${jobId}`
     consumeUrl += `&index=${String(index)}`
     consumeUrl += (signature && `&signature=${signature}`) || ''
 
+    if (!computeResultUrl) return null
     try {
       !destination
         ? await fetchMethod.downloadFileBrowser(consumeUrl)
@@ -517,6 +517,71 @@ export class Provider {
       throw e
     }
     return destination
+  }
+
+  /** Instruct the provider to stop & delete all resources for a  compute job
+   */
+  public async computeDelete(
+    did: string,
+    consumerAddress: string,
+    jobId: string,
+    providerUri: string,
+    web3: Web3,
+    fetchMethod: any
+  ): Promise<ComputeJob | ComputeJob[]> {
+    const providerEndpoints = await this.getEndpoints(providerUri, fetchMethod)
+    const serviceEndpoints = await this.getServiceEndpoints(
+      providerUri,
+      providerEndpoints
+    )
+    const computeDeleteUrl = this.getEndpointURL(serviceEndpoints, 'computeDelete')
+      ? this.getEndpointURL(serviceEndpoints, 'computeDelete').urlPath
+      : null
+
+    const nonce = await this.getNonce(
+      providerUri,
+      consumerAddress,
+      fetchMethod,
+      providerEndpoints,
+      serviceEndpoints
+    )
+
+    let signatureMessage = consumerAddress
+    signatureMessage += jobId || ''
+    signatureMessage += (did && `${noZeroX(did)}`) || ''
+    signatureMessage += nonce
+    const signature = await this.createHashSignature(
+      web3,
+      consumerAddress,
+      signatureMessage
+    )
+
+    const payload = Object()
+    payload.documentId = noZeroX(did)
+    payload.consumerAddress = consumerAddress
+    payload.jobId = jobId
+    if (signature) payload.signature = signature
+
+    if (!computeDeleteUrl) return null
+    try {
+      const response = await fetchMethod(computeDeleteUrl, JSON.stringify(payload))
+      if (response?.ok) {
+        const params = await response.json()
+        return params
+      }
+      LoggerInstance.error(
+        'Delete compute job failed:',
+        response.status,
+        response.statusText
+      )
+      LoggerInstance.error('Payload was:', payload)
+      return null
+    } catch (e) {
+      LoggerInstance.error('Delete compute job failed:')
+      LoggerInstance.error(e)
+      LoggerInstance.error('Payload was:', payload)
+      return null
+    }
   }
 
   /** Check for a valid provider at URL
