@@ -783,7 +783,7 @@ export class Assets extends Instantiable {
     if (serviceCustomParameters)
       for (const data of serviceCustomParameters) {
         const keyname = data.name
-        if (!userCustomParameters || !userCustomParameters[keyname]) {
+        if (data.required && (!userCustomParameters || !userCustomParameters[keyname])) {
           this.logger.error('Missing key: ' + keyname + ' from customData')
           return false
         }
