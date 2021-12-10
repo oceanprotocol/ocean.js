@@ -1,6 +1,5 @@
 export * from './Logger'
 export * from './GasUtils'
-export * from './Logger'
 export * from './DatatokenName'
 export * from './ContractParams'
 export * from './FetchHelper'
