@@ -6,7 +6,7 @@ export interface ComputeResult {
   filename: string
   filesize: number
   type: ComputeResultType
-  index: number
+  index?: number
 }
 
 export interface ComputeJob {
