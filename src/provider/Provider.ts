@@ -230,6 +230,18 @@ export class Provider {
     }
   }
 
+  /** Allows download of asset data file.
+   * @param {string} did
+   * @param {string} destination
+   * @param {string} accountId
+   * @param {FileMetadata[]} files
+   * @param {-1} index
+   * @param {string} providerUri
+   * @param {Web3} web3
+   * @param {any} fetchMethod
+   * @param {UserCustomParameters} userCustomParameters
+   * @return {Promise<any>}
+   */
   public async download(
     did: string,
     destination: string,
@@ -285,6 +297,14 @@ export class Provider {
   }
 
   /** Instruct the provider to start a compute job
+   * @param {string} did
+   * @param {string} consumerAddress
+   * @param {ComputeAlgorithm} algorithm
+   * @param {string} providerUri
+   * @param {Web3} web3
+   * @param {any} fetchMethod
+   * @param {ComputeOutput} output
+   * @return {Promise<ComputeJob | ComputeJob[]>}
    */
   public async computeStart(
     did: string,
@@ -347,7 +367,14 @@ export class Provider {
     }
   }
 
-  /** Instruct the provider to stop a compute job
+  /** Instruct the provider to Stop the execution of a to stop a compute job.
+   * @param {string} did
+   * @param {string} consumerAddress
+   * @param {string} jobId
+   * @param {string} providerUri
+   * @param {Web3} web3
+   * @param {any} fetchMethod
+   * @return {Promise<ComputeJob | ComputeJob[]>}
    */
   public async computeStop(
     did: string,
@@ -408,6 +435,15 @@ export class Provider {
     }
   }
 
+  /** Get status for a specific jobId/documentId/owner.
+   * @param {string} did
+   * @param {string} consumerAddress
+   * @param {string} providerUri
+   * @param {Web3} web3
+   * @param {any} fetchMethod
+   * @param {string} jobId
+   * @return {Promise<ComputeJob | ComputeJob[]>}
+   */
   public async computeStatus(
     did: string,
     consumerAddress: string,
@@ -468,6 +504,15 @@ export class Provider {
     }
   }
 
+  /** Get status for a specific jobId/documentId/owner.
+   * @param {string} jobId
+   * @param {number} index
+   * @param {string} providerUri
+   * @param {string} destination
+   * @param {Web3} web3
+   * @param {any} fetchMethod
+   * @return {Promise<ComputeJob | ComputeJob[]>}
+   */
   public async computeResult(
     jobId: string,
     index: number,
@@ -519,7 +564,14 @@ export class Provider {
     return destination
   }
 
-  /** Instruct the provider to stop & delete all resources for a  compute job
+  /** Deletes a compute job.
+   * @param {string} did
+   * @param {string} consumerAddress
+   * @param {string} jobId
+   * @param {string} providerUri
+   * @param {Web3} web3
+   * @param {any} fetchMethod
+   * @return {Promise<ComputeJob | ComputeJob[]>}
    */
   public async computeDelete(
     did: string,
