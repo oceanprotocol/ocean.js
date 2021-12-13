@@ -168,8 +168,8 @@ The process of creating and deploying the ERC20 datatokens has been automated by
 const Web3 = require("web3");
 const { Ocean, DataTokens } = require("@oceanprotocol/lib");
  
-const { factoryABI } = require("@oceanprotocol/contracts/artifacts/DTFactory.json");
-const { datatokensABI } = require("@oceanprotocol/contracts/artifacts/DataTokenTemplate.json");
+const factoryABI = require("@oceanprotocol/contracts/artifacts/DTFactory.json");
+const datatokensABI = require("@oceanprotocol/contracts/artifacts/DataTokenTemplate.json");
 const { config, contracts, urls } = require("./config");
  
 const init = async () => {
