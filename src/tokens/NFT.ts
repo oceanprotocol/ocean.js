@@ -1022,6 +1022,12 @@ export class Nft {
     return data
   }
 
+  /** Estimate gas cost for setTokenURI method
+   * @param nftAddress erc721 contract adress
+   * @param address user adress
+   * @param data input data for TokenURI
+   * @return {Promise<TransactionReceipt>} transaction receipt
+   */
   public async estSetTokenURI(
     nftAddress: string,
     address: string,
@@ -1043,6 +1049,12 @@ export class Nft {
     return estGas
   }
 
+  /** set TokenURI on an nft
+   * @param nftAddress erc721 contract adress
+   * @param address user adress
+   * @param data input data for TokenURI
+   * @return {Promise<TransactionReceipt>} transaction receipt
+   */
   public async setTokenURI(
     nftAddress: string,
     address: string,
