@@ -1021,4 +1021,41 @@ export class Nft {
     const data = await nftContract.methods.getData(key).call()
     return data
   }
+
+  public async estSetTokenURI(
+    nftAddress: string,
+    address: string,
+    data: string
+  ): Promise<any> {
+    const nftContract = new this.web3.eth.Contract(this.nftAbi, nftAddress)
+
+    const gasLimitDefault = this.GASLIMIT_DEFAULT
+    let estGas
+    try {
+      estGas = await nftContract.methods
+        .setTokenURI('1', data)
+        .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
+    } catch (e) {
+      estGas = gasLimitDefault
+      console.log('eerr', e)
+    }
+
+    return estGas
+  }
+
+  public async setTokenURI(
+    nftAddress: string,
+    address: string,
+    data: string
+  ): Promise<any> {
+    const nftContract = new this.web3.eth.Contract(this.nftAbi, nftAddress)
+
+    const estGas = await this.estSetTokenURI(nftAddress, address, data)
+    const trxReceipt = await nftContract.methods.setTokenURI('1', data).send({
+      from: address,
+      gas: estGas + 1,
+      gasPrice: await getFairGasPrice(this.web3)
+    })
+    return trxReceipt
+  }
 }
