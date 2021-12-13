@@ -35,6 +35,7 @@ export interface NftCreateData {
   tokenURI: string
 }
 
+const addressZERO = '0x0000000000000000000000000000000000000000'
 /**
  * Provides an interface for NFT Factory contract
  */
@@ -83,7 +84,7 @@ export class NftFactory {
           nftData.name,
           nftData.symbol,
           nftData.templateIndex,
-          '0x0000000000000000000000000000000000000000',
+          addressZERO,
           nftData.tokenURI
         )
         .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
@@ -107,7 +108,16 @@ export class NftFactory {
       nftData.name = name
       nftData.symbol = symbol
     }
+    if ( nftData.templateIndex > await this.getCurrentNFTTemplateCount()) {
+      throw new Error(`Template index doesnt exist`)
+    }
 
+    if ( nftData.templateIndex === 0) {
+      throw new Error(`Template index cannot be ZERO`)
+    }
+    if((await this.getNFTTemplate(nftData.templateIndex)).isActive === false) {
+      throw new Error(`Template is not active`)
+    }
     const estGas = await this.estGasCreateNFT(address, nftData)
 
     // Invoke createToken function of the contract
@@ -116,7 +126,7 @@ export class NftFactory {
         nftData.name,
         nftData.symbol,
         nftData.templateIndex,
-        '0x0000000000000000000000000000000000000000',
+        addressZERO,
         nftData.tokenURI
       )
       .send({
@@ -179,6 +189,13 @@ export class NftFactory {
    * @return {Promise<Template>} Number of Template added to this factory
    */
   public async getNFTTemplate(index: number): Promise<Template> {
+    if ( index > await this.getCurrentNFTTemplateCount()) {
+      throw new Error(`Template index doesnt exist`)
+    }
+
+    if ( index === 0) {
+      throw new Error(`Template index cannot be ZERO`)
+    }
     const template = await this.factory721.methods.getNFTTemplate(index).call()
     return template
   }
@@ -245,6 +262,9 @@ export class NftFactory {
     if ((await this.getOwner()) !== address) {
       throw new Error(`Caller is not Factory Owner`)
     }
+    if ( templateAddress === addressZERO) {
+      throw new Error(`Template cannot be ZERO address`)
+    }
 
     const estGas = await this.estGasAddNFTTemplate(address, templateAddress)
 
@@ -295,7 +315,13 @@ export class NftFactory {
     if ((await this.getOwner()) !== address) {
       throw new Error(`Caller is not Factory Owner`)
     }
+    if ( templateIndex > await this.getCurrentNFTTemplateCount()) {
+      throw new Error(`Template index doesnt exist`)
+    }
 
+    if ( templateIndex === 0) {
+      throw new Error(`Template index cannot be ZERO`)
+    }
     const estGas = await this.estGasDisableNFTTemplate(address, templateIndex)
 
     // Invoke createToken function of the contract
@@ -344,6 +370,13 @@ export class NftFactory {
   ): Promise<TransactionReceipt> {
     if ((await this.getOwner()) !== address) {
       throw new Error(`Caller is not Factory Owner`)
+    }
+    if ( templateIndex > await this.getCurrentNFTTemplateCount()) {
+      throw new Error(`Template index doesnt exist`)
+    }
+
+    if ( templateIndex === 0) {
+      throw new Error(`Template index cannot be ZERO`)
     }
 
     const estGas = await this.estGasReactivateNFTTemplate(address, templateIndex)
@@ -396,6 +429,9 @@ export class NftFactory {
     if ((await this.getOwner()) !== address) {
       throw new Error(`Caller is not Factory Owner`)
     }
+    if ( templateAddress === addressZERO) {
+      throw new Error(`Template cannot be address ZERO`)
+    }
 
     const estGas = await this.estGasAddTokenTemplate(address, templateAddress)
 
@@ -446,7 +482,16 @@ export class NftFactory {
     if ((await this.getOwner()) !== address) {
       throw new Error(`Caller is not Factory Owner`)
     }
+    if ( templateIndex > await this.getCurrentNFTTemplateCount()) {
+      throw new Error(`Template index doesnt exist`)
+    }
 
+    if ( templateIndex === 0) {
+      throw new Error(`Template index cannot be ZERO`)
+    }
+    if((await this.getNFTTemplate(templateIndex)).isActive === false) {
+      throw new Error(`Template is already disabled`)
+    }
     const estGas = await this.estGasDisableTokenTemplate(address, templateIndex)
 
     // Invoke createToken function of the contract
@@ -496,6 +541,16 @@ export class NftFactory {
     if ((await this.getOwner()) !== address) {
       throw new Error(`Caller is not Factory Owner`)
     }
+    if ( templateIndex > await this.getCurrentNFTTemplateCount()) {
+      throw new Error(`Template index doesnt exist`)
+    }
+
+    if ( templateIndex === 0) {
+      throw new Error(`Template index cannot be ZERO`)
+    }
+    if((await this.getNFTTemplate(templateIndex)).isActive === true) {
+      throw new Error(`Template is already active`)
+    }
 
     const estGas = await this.estGasReactivateTokenTemplate(address, templateIndex)
 
@@ -520,6 +575,9 @@ export class NftFactory {
     address: string,
     orders: TokenOrder[]
   ): Promise<any> {
+   
+
+    
     const gasLimitDefault = this.GASLIMIT_DEFAULT
     let estGas
     try {
@@ -548,6 +606,10 @@ export class NftFactory {
     address: string,
     orders: TokenOrder[]
   ): Promise<TransactionReceipt> {
+    if ( orders.length > 50) {
+      throw new Error(`Too many orders`)
+    }
+
     const estGas = await this.estGasStartMultipleTokenOrder(address, orders)
 
     // Invoke createToken function of the contract
