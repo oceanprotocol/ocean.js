@@ -8,7 +8,6 @@ export function getErcCreationParams(ercParams: Erc20CreateParams, web3: Web3): 
   if (!ercParams.name || !ercParams.symbol) {
     ;({ name, symbol } = generateDtName())
   }
-
   return {
     templateIndex: ercParams.templateIndex,
     strings: [ercParams.name || name, ercParams.symbol || symbol],

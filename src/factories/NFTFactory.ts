@@ -605,12 +605,7 @@ export class NftFactory {
   ): Promise<TransactionReceipt> {
     const ercCreateData = getErcCreationParams(ercParams, this.web3)
 
-    const estGas = await this.estGasCreateNftWithErc(
-      address,
-      nftCreateData,
-      ercCreateData
-    )
-
+    const estGas = await this.estGasCreateNftWithErc(address, nftCreateData, ercParams)
     // Invoke createToken function of the contract
     const trxReceipt = await this.factory721.methods
       .createNftWithErc(nftCreateData, ercCreateData)
