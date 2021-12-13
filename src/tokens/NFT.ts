@@ -881,15 +881,13 @@ export class Nft {
   /**
    * Estimate gas cost for setMetadata  method
    * @param {String} nftAddress erc721 contract adress
-   * @param {String} nftOwner Current NFT Owner adress
-   * @param {String} nftReceiver User which will receive the NFT, will also be set as Manager
-   * @param {Number} tokenId The id of the token to be transfered
+   * @param {String} metadataUpdater metadataUpdater address
    * @param {Contract} nftContract optional contract instance
    * @return {Promise<any>}
    */
   public async estGasSetMetadata(
     nftAddress: string,
-    nftOwner: string,
+    metadataUpdater: string,
     metadataState: number,
     metaDataDecryptorUrl: string,
     metaDataDecryptorAddress: string,
@@ -913,7 +911,7 @@ export class Nft {
           data,
           metadataHash
         )
-        .estimateGas({ from: nftOwner }, (err, estGas) =>
+        .estimateGas({ from: metadataUpdater}, (err, estGas) =>
           err ? gasLimitDefault : estGas
         )
     } catch (e) {
@@ -928,8 +926,6 @@ export class Nft {
    * will clean all permissions both on erc721 and erc20 level.
    * @param {String} nftAddress erc721 contract adress
    * @param {String} address Caller address NFT Owner adress
-   * @param {String} nftReceiver User which will receive the NFT, will also be set as Manager
-   * @param {Number} tokenId The id of the token to be transfered
    * @return {Promise<TransactionReceipt>} trxReceipt
    */
   public async setMetadata(
@@ -944,9 +940,9 @@ export class Nft {
   ): Promise<TransactionReceipt> {
     const nftContract = new this.web3.eth.Contract(this.nftAbi, nftAddress)
 
-    // if (!(await this.getNFTPermissions(nftAddress, address)).updateMetadata) {
-    //   throw new Error(`Caller is not NFT Owner`)
-    // }
+    if (!(await this.getNftPermissions(nftAddress, address)).updateMetadata) {
+      throw new Error(`Caller is not Metadata updater`)
+    }
 
     const estGas = await this.estGasSetMetadata(
       nftAddress,
@@ -978,6 +974,139 @@ export class Nft {
 
     return trxReceipt
   }
+
+    /**
+   * Estimate gas cost for setMetadataState  method
+   * @param {String} nftAddress erc721 contract adress
+   * @param {String} nftOwner Current NFT Owner adress
+   * @param {Number} metadataState new metadata state
+   * @param {Contract} nftContract optional contract instance
+   * @return {Promise<any>}
+   */
+     public async estGasSetMetadataState(
+      nftAddress: string,
+      metadataUpdater: string,
+      metadataState: number,
+      contractInstance?: Contract
+    ): Promise<any> {
+      const nftContract =
+        contractInstance || new this.web3.eth.Contract(this.nftAbi, nftAddress)
+  
+      const gasLimitDefault = this.GASLIMIT_DEFAULT
+      let estGas
+      try {
+        estGas = await nftContract.methods
+          .setMetaDataState(
+            metadataState
+          )
+          .estimateGas({ from: metadataUpdater }, (err, estGas) =>
+            err ? gasLimitDefault : estGas
+          )
+      } catch (e) {
+        estGas = gasLimitDefault
+      }
+  
+      return estGas
+    }
+  
+    /**
+     * setMetadataState Used for updating the metadata State
+     * @param {String} nftAddress erc721 contract adress
+     * @param {String} address Caller address => metadata updater
+     * @param {Number} metadataState new metadata state
+     * @return {Promise<TransactionReceipt>} trxReceipt
+     */
+    public async setMetadataState(
+      nftAddress: string,
+      address: string,
+      metadataState: number
+    ): Promise<TransactionReceipt> {
+      const nftContract = new this.web3.eth.Contract(this.nftAbi, nftAddress)
+  
+      if (!(await this.getNftPermissions(nftAddress, address)).updateMetadata) {
+        throw new Error(`Caller is not Metadata updater`)
+      }
+  
+      const estGas = await this.estGasSetMetadataState(
+        nftAddress,
+        address,
+        metadataState
+      )
+  
+      // Call transferFrom function of the contract
+      const trxReceipt = await nftContract.methods
+        .setMetaDataState(
+          metadataState
+        )
+        .send({
+          from: address,
+          gas: estGas + 1,
+          gasPrice: await getFairGasPrice(this.web3)
+        })
+  
+      return trxReceipt
+    }
+
+       /** Estimate gas for setTokenURI method
+   * @param {String} dtAddress Datatoken address
+   * @param {String} address User address
+   * @param {String} value Data to be stored into 725Y standard
+   * @param {Contract} contractInstance optional contract instance
+   * @return {Promise<any>}
+   */
+        public async estGasSetTokenURI(
+          nftAddress: string,
+          address: string,
+          tokenId: number,
+          tokenURI: string,
+          contractInstance?: Contract
+        ): Promise<any> {
+          const dtContract =
+            contractInstance || new this.web3.eth.Contract(this.nftAbi, nftAddress)
+      
+          const gasLimitDefault = this.GASLIMIT_DEFAULT
+          let estGas
+          try {
+            estGas = await dtContract.methods
+              .setTokenURI(tokenId,tokenURI)
+              .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
+          } catch (e) {
+            estGas = gasLimitDefault
+          }
+          return estGas
+        }
+      
+        /** setTokenURI
+         * This function allows to update the token URI
+         * only NFT Owner can succeed
+         * @param {String} nftAddress Datatoken address
+         * @param {String} address User address
+         * @return {Promise<TransactionReceipt>} transactionId
+         */
+        public async setTokenURI(
+          nftAddress: string,
+          address: string,
+          tokenURI: string
+        ): Promise<TransactionReceipt> {
+          if (await this.getNftOwner(nftAddress) !== address) {
+            throw new Error(`Caller is not NFT Owner`)
+          }
+          const tokenId = 1;
+        
+          const nftContract = new this.web3.eth.Contract(this.nftAbi, nftAddress)
+          const estGas = await this.estGasSetTokenURI(nftAddress, address, tokenId,tokenURI, nftContract)
+      
+          // Call setData function of the contract
+          const trxReceipt = await nftContract.methods.setTokenURI(tokenId,tokenURI).send({
+            from: address,
+            gas: estGas + 1,
+            gasPrice: await getFairGasPrice(this.web3)
+          })
+      
+          return trxReceipt
+        }
+
+        
 
   /** Get Owner
    * @param {String} nftAddress erc721 contract adress

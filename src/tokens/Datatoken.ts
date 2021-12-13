@@ -1112,6 +1112,7 @@ export class Datatoken {
     return trxReceipt
   }
 
+
   /** Estimate gas for cleanPermissions method
    * @param dtAddress Datatoken address where we want to clean permissions
    * @param address User adress
