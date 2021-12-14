@@ -313,9 +313,9 @@ export class Nft {
   ): Promise<TransactionReceipt> {
     const nftContract = new this.web3.eth.Contract(this.nftAbi, nftAddress)
 
-    // if ((await this.getNFTPermissions(nftAddress, address)).manager !== true) {
-    //   throw new Error(`Caller is not Manager`)
-    // }
+    if ((await this.getNftPermissions(nftAddress, address)).manager !== true) {
+      throw new Error(`Caller is not Manager`)
+    }
 
     // Estimate gas for addToCreateERC20List method
     const estGas = await this.estGasAddErc20Deployer(
@@ -381,10 +381,9 @@ export class Nft {
   ): Promise<TransactionReceipt> {
     const nftContract = new this.web3.eth.Contract(this.nftAbi, nftAddress)
 
-    // if ((await this.getNFTPermissions(nftAddress, address)).manager !== true) {
-    //   throw new Error(`Caller is not Manager`)
-    // }
-
+    if ((await this.getNftPermissions(nftAddress, address)).manager !== true) {
+      throw new Error(`Caller is not Manager`)
+    }
     const estGas = await this.estGasRemoveErc20Deployer(
       nftAddress,
       address,
@@ -447,9 +446,9 @@ export class Nft {
   ): Promise<TransactionReceipt> {
     const nftContract = new this.web3.eth.Contract(this.nftAbi, nftAddress)
 
-    // if ((await this.getNFTPermissions(nftAddress, address)).manager !== true) {
-    //   throw new Error(`Caller is not Manager`)
-    // }
+    if ((await this.getNftPermissions(nftAddress, address)).manager !== true) {
+      throw new Error(`Caller is not Manager`)
+    }
 
     const estGas = await this.estGasAddMetadataUpdater(
       nftAddress,
@@ -512,9 +511,10 @@ export class Nft {
   ): Promise<TransactionReceipt> {
     const nftContract = new this.web3.eth.Contract(this.nftAbi, nftAddress)
 
-    // if ((await this.getNFTPermissions(nftAddress, address)).manager !== true) {
-    //   throw new Error(`Caller is not Manager`)
-    // }
+    
+    if ((await this.getNftPermissions(nftAddress, address)).manager !== true) {
+      throw new Error(`Caller is not Manager`)
+    }
 
     const estGas = await this.esGasRemoveMetadataUpdater(
       nftAddress,
@@ -549,6 +549,10 @@ export class Nft {
     storeUpdater: string,
     contractInstance?: Contract
   ): Promise<any> {
+    if ((await this.getNftPermissions(nftAddress, address)).manager !== true) {
+      throw new Error(`Caller is not Manager`)
+    }
+
     const nftContract =
       contractInstance || new this.web3.eth.Contract(this.nftAbi, nftAddress)
 
@@ -578,9 +582,10 @@ export class Nft {
   ): Promise<TransactionReceipt> {
     const nftContract = new this.web3.eth.Contract(this.nftAbi, nftAddress)
 
-    // if ((await this.getNFTPermissions(nftAddress, address)).manager !== true) {
-    //   throw new Error(`Caller is not Manager`)
-    // }
+   
+    if ((await this.getNftPermissions(nftAddress, address)).manager !== true) {
+      throw new Error(`Caller is not Manager`)
+    }
 
     const estGas = await this.estGasAddStoreUpdater(
       nftAddress,
@@ -642,9 +647,10 @@ export class Nft {
   ): Promise<TransactionReceipt> {
     const nftContract = new this.web3.eth.Contract(this.nftAbi, nftAddress)
 
-    // if ((await this.getNFTPermissions(nftAddress, address)).manager !== true) {
-    //   throw new Error(`Caller is not Manager`)
-    // }
+  
+    if ((await this.getNftPermissions(nftAddress, address)).manager !== true) {
+      throw new Error(`Caller is not Manager`)
+    }
 
     const estGas = await this.estGasRemoveStoreUpdater(
       nftAddress,
@@ -898,7 +904,7 @@ export class Nft {
   ): Promise<any> {
     const nftContract =
       contractInstance || new this.web3.eth.Contract(this.nftAbi, nftAddress)
-
+    
     const gasLimitDefault = this.GASLIMIT_DEFAULT
     let estGas
     try {
@@ -1050,7 +1056,6 @@ export class Nft {
        /** Estimate gas for setTokenURI method
    * @param {String} dtAddress Datatoken address
    * @param {String} address User address
-   * @param {String} value Data to be stored into 725Y standard
    * @param {Contract} contractInstance optional contract instance
    * @return {Promise<any>}
    */
