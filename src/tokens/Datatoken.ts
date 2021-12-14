@@ -7,7 +7,7 @@ import defaultDatatokensAbi from '@oceanprotocol/contracts/artifacts/contracts/t
 import defaultDatatokensEnterpriseAbi from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC20TemplateEnterprise.sol/ERC20TemplateEnterprise.json'
 import { LoggerInstance, getFairGasPrice } from '../utils'
 import { FreOrderParams, FreCreationParams } from '../interfaces'
-
+import { Nft } from "./NFT"
 /**
  * ERC20 ROLES
  */
@@ -40,6 +40,7 @@ export class Datatoken {
   public datatokensEnterpriseAbi: AbiItem | AbiItem[]
   public web3: Web3
   public startBlock: number
+  public nft: Nft
 
   /**
    * Instantiate ERC20 DataTokens
@@ -57,6 +58,7 @@ export class Datatoken {
     this.datatokensEnterpriseAbi =
       datatokensEnterpriseAbi || (defaultDatatokensEnterpriseAbi.abi as AbiItem[])
     this.startBlock = startBlock || 0
+    this.nft = new Nft(this.web3) 
   }
 
   /**
@@ -444,8 +446,9 @@ export class Datatoken {
   ): Promise<TransactionReceipt> {
     const dtContract = new this.web3.eth.Contract(this.datatokensAbi, dtAddress)
 
-    // should check ERC20Deployer role using erc721 level ..
-
+    if (await this.isERC20Deployer(dtAddress,address) !== true) {
+      throw new Error(`Caller is not ERC20Deployer`)
+    }
     // Estimate gas cost for addMinter method
     const estGas = await this.estGasAddMinter(dtAddress, address, minter, dtContract)
 
@@ -508,7 +511,9 @@ export class Datatoken {
   ): Promise<TransactionReceipt> {
     const dtContract = new this.web3.eth.Contract(this.datatokensAbi, dtAddress)
 
-    // should check ERC20Deployer role using erc721 level ..
+    if (await this.isERC20Deployer(dtAddress,address) !== true) {
+      throw new Error(`Caller is not ERC20Deployer`)
+    }
 
     const estGas = await this.estGasRemoveMinter(dtAddress, address, minter, dtContract)
 
@@ -568,7 +573,9 @@ export class Datatoken {
   ): Promise<TransactionReceipt> {
     const dtContract = new this.web3.eth.Contract(this.datatokensAbi, dtAddress)
 
-    // should check ERC20Deployer role using erc721 level ..
+    if (await this.isERC20Deployer(dtAddress,address) !== true) {
+      throw new Error(`Caller is not ERC20Deployer`)
+    }
 
     const estGas = await this.estGasAddPaymentManager(
       dtAddress,
@@ -631,7 +638,10 @@ export class Datatoken {
   ): Promise<TransactionReceipt> {
     const dtContract = new this.web3.eth.Contract(this.datatokensAbi, dtAddress)
 
-    // should check ERC20Deployer role using erc721 level ..
+    if (await this.isERC20Deployer(dtAddress,address) !== true) {
+      throw new Error(`Caller is not ERC20Deployer`)
+    }
+    
     const estGas = await this.estGasRemovePaymentManager(
       dtAddress,
       address,
@@ -1209,9 +1219,9 @@ export class Datatoken {
   /**  Returns true if address has deployERC20 role
    * @param {String} dtAddress Datatoken adress
    * @param {String} dtAddress Datatoken adress
-   * @return {Promise<number>}
+   * @return {Promise<boolean>}
    */
-  public async isERC20Deployer(dtAddress: string, adddress: string): Promise<string> {
+  public async isERC20Deployer(dtAddress: string, adddress: string): Promise<boolean> {
     const dtContract = new this.web3.eth.Contract(this.datatokensAbi, dtAddress)
     const isERC20Deployer = await dtContract.methods.isERC20Deployer(adddress).call()
     return isERC20Deployer

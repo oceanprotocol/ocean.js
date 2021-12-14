@@ -22,7 +22,7 @@ export class Nft {
   public nftAbi: AbiItem | AbiItem[]
   public web3: Web3
   public startBlock: number
-
+ 
   constructor(web3: Web3, nftAbi?: AbiItem | AbiItem[], startBlock?: number) {
     this.nftAbi = nftAbi || (defaultNftAbi.abi as AbiItem[])
     this.web3 = web3
