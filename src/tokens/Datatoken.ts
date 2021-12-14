@@ -7,7 +7,7 @@ import defaultDatatokensAbi from '@oceanprotocol/contracts/artifacts/contracts/t
 import defaultDatatokensEnterpriseAbi from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC20TemplateEnterprise.sol/ERC20TemplateEnterprise.json'
 import { LoggerInstance, getFairGasPrice } from '../utils'
 import { FreOrderParams, FreCreationParams } from '../interfaces'
-import { Nft } from "./NFT"
+//import { Nft } from "./NFT"
 /**
  * ERC20 ROLES
  */
@@ -40,7 +40,7 @@ export class Datatoken {
   public datatokensEnterpriseAbi: AbiItem | AbiItem[]
   public web3: Web3
   public startBlock: number
-  public nft: Nft
+ // public nft: Nft
 
   /**
    * Instantiate ERC20 DataTokens
@@ -58,7 +58,7 @@ export class Datatoken {
     this.datatokensEnterpriseAbi =
       datatokensEnterpriseAbi || (defaultDatatokensEnterpriseAbi.abi as AbiItem[])
     this.startBlock = startBlock || 0
-    this.nft = new Nft(this.web3) 
+   // this.nft = new Nft(this.web3) 
   }
 
   /**
@@ -641,7 +641,7 @@ export class Datatoken {
     if (await this.isERC20Deployer(dtAddress,address) !== true) {
       throw new Error(`Caller is not ERC20Deployer`)
     }
-    
+
     const estGas = await this.estGasRemovePaymentManager(
       dtAddress,
       address,
