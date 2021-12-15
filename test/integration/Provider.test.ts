@@ -1,4 +1,3 @@
-import config from './config'
 import { Provider } from '../../src/provider/Provider'
 import { assert } from 'chai'
 import { fetchData } from '../../src/utils'
