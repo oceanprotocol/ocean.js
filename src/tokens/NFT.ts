@@ -1045,7 +1045,6 @@ export class Nft {
         .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
     } catch (e) {
       estGas = gasLimitDefault
-      console.log('eerr', e)
     }
 
     return estGas

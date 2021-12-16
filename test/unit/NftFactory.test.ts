@@ -64,17 +64,6 @@ describe('Nft Factory test', () => {
 
     await contracts.deployContracts(factoryOwner, Router.abi as AbiItem[])
 
-    console.log(
-      'address',
-      contracts.factory721Address,
-      contracts.poolTemplateAddress,
-      contracts.routerAddress,
-      contracts.fixedRateAddress,
-      contracts.dispenserAddress,
-      contracts.sideStakingAddress,
-      contracts.template721Address,
-      contracts.template20Address
-    )
     const daiContract = new web3.eth.Contract(
       contracts.MockERC20.options.jsonInterface,
       contracts.daiAddress

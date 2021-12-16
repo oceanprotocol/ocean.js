@@ -129,12 +129,12 @@ export class Provider {
     fetchMethod: any
   ): Promise<string> {
     const providerEndpoints = await this.getEndpoints(providerUri, fetchMethod)
-    console.log('provider endpoint', providerEndpoints)
+
     const serviceEndpoints = await this.getServiceEndpoints(
       providerUri,
       providerEndpoints
     )
-    console.log('service endpoints', serviceEndpoints)
+
     const args = {
       documentId: did,
       document: JSON.stringify(document),
