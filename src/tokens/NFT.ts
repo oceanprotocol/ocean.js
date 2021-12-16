@@ -878,7 +878,7 @@ export class Nft {
     return trxReceipt
   }
 
-   // TODO: Finish this description
+  // TODO: Finish this description
   /**
    * Estimate gas cost for setMetadata  method
    * @param {String} nftAddress erc721 contract adress
