@@ -27,7 +27,7 @@ export class Provider {
    */
   async getEndpoints(providerUri: string, fetchMethod: any): Promise<any> {
     try {
-      const endpoints = await await fetchMethod(providerUri).json()
+      const endpoints = await fetchMethod(providerUri)
       return endpoints
     } catch (e) {
       LoggerInstance.error('Finding the service endpoints failed:', e)
@@ -129,10 +129,12 @@ export class Provider {
     fetchMethod: any
   ): Promise<string> {
     const providerEndpoints = await this.getEndpoints(providerUri, fetchMethod)
+    console.log('provider endpoint', providerEndpoints)
     const serviceEndpoints = await this.getServiceEndpoints(
       providerUri,
       providerEndpoints
     )
+    console.log('service endpoints', serviceEndpoints)
     const args = {
       documentId: did,
       document: JSON.stringify(document),
