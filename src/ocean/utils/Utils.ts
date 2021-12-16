@@ -15,7 +15,7 @@ export class OceanUtils extends Instantiable {
     instance.setInstanceConfig(config)
 
     instance.signature = new SignatureUtils(config.web3, config.logger)
-    instance.fetch = new WebServiceConnector(config.logger)
+    instance.fetch = new WebServiceConnector(config.logger, config.config?.requestTimeout)
 
     return instance
   }

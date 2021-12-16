@@ -662,7 +662,10 @@ export class Assets extends Instantiable {
     consumeUrl += `?consumerAddress=${account}`
     consumeUrl += `&tokenAddress=${dtAddress}`
     consumeUrl += `&transferTxId=${txId}`
-    const serviceConnector = new WebServiceConnector(this.logger)
+    const serviceConnector = new WebServiceConnector(
+      this.logger,
+      this.instanceConfig?.config?.requestTimeout
+    )
     try {
       await serviceConnector.downloadFile(consumeUrl)
     } catch (e) {
@@ -780,7 +783,7 @@ export class Assets extends Instantiable {
     if (serviceCustomParameters)
       for (const data of serviceCustomParameters) {
         const keyname = data.name
-        if (!userCustomParameters || !userCustomParameters[keyname]) {
+        if (data.required && (!userCustomParameters || !userCustomParameters[keyname])) {
           this.logger.error('Missing key: ' + keyname + ' from customData')
           return false
         }

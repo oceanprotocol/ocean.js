@@ -5,15 +5,15 @@ import save from 'save-file'
 import timeoutSignal from '../../utils/Timeout'
 const fetch = require('cross-fetch')
 
-const requestTimeout = 10000
-
 /**
  * Provides a common interface to web services.
  */
 export class WebServiceConnector {
   public logger: Logger
-  constructor(logger: Logger) {
+  public requestTimeout: number = 5000
+  constructor(logger: Logger, requestTimeout?: number) {
     this.logger = logger
+    this.requestTimeout = requestTimeout || this.requestTimeout
   }
 
   public post(url: string, payload: BodyInit): Promise<Response> {
@@ -40,12 +40,12 @@ export class WebServiceConnector {
         method: 'POST',
         body: payload,
         headers,
-        signal: timeoutSignal(requestTimeout)
+        signal: timeoutSignal(this.requestTimeout)
       })
     } else {
       return this.fetch(url, {
         method: 'POST',
-        signal: timeoutSignal(requestTimeout)
+        signal: timeoutSignal(this.requestTimeout)
       })
     }
   }
@@ -56,7 +56,7 @@ export class WebServiceConnector {
       headers: {
         'Content-type': 'application/json'
       },
-      signal: timeoutSignal(requestTimeout)
+      signal: timeoutSignal(this.requestTimeout)
     })
   }
 
@@ -68,7 +68,7 @@ export class WebServiceConnector {
         headers: {
           'Content-type': 'application/json'
         },
-        signal: timeoutSignal(requestTimeout)
+        signal: timeoutSignal(this.requestTimeout)
       })
     } else {
       return this.fetch(url, {
@@ -76,7 +76,7 @@ export class WebServiceConnector {
         headers: {
           'Content-type': 'application/json'
         },
-        signal: timeoutSignal(requestTimeout)
+        signal: timeoutSignal(this.requestTimeout)
       })
     }
   }
@@ -89,7 +89,7 @@ export class WebServiceConnector {
         headers: {
           'Content-type': 'application/json'
         },
-        signal: timeoutSignal(requestTimeout)
+        signal: timeoutSignal(this.requestTimeout)
       })
     } else {
       return this.fetch(url, {
@@ -97,7 +97,7 @@ export class WebServiceConnector {
         headers: {
           'Content-type': 'application/json'
         },
-        signal: timeoutSignal(requestTimeout)
+        signal: timeoutSignal(this.requestTimeout)
       })
     }
   }
