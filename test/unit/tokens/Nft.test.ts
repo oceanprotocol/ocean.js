@@ -96,6 +96,27 @@ describe('NFT', () => {
     assert(erc20Address !== null)
   })
 
+  it('#createERC20 - should fail to create a new ERC20 DT if not ERC20Deployer', async () => {
+    try{( await nftDatatoken.createErc20(
+      nftAddress,
+      user1,
+      nftOwner,
+      user1,
+      user2,
+      '0x0000000000000000000000000000000000000000',
+      '0',
+      '10000',
+      nftName,
+      nftSymbol,
+      1
+    )) }catch(e) {
+      assert(e.message === 'Caller is not ERC20Deployer')
+    }
+    
+  })
+
+  
+
   // Manager
   it('#addManager - should add a new Manager', async () => {
     assert((await nftDatatoken.getNftPermissions(nftAddress, user1)).manager === false)
@@ -138,14 +159,19 @@ describe('NFT', () => {
     assert((await nftDatatoken.isErc20Deployer(nftAddress, user1)) === true)
   })
 
+  it('#addManager - should fail to add a new Manager, if NOT NFT Owner', async () => {
+    try {
+      await nftDatatoken.addManager(nftAddress, user1, user1)
+    } catch (e) {
+      assert(e.message === 'Caller is not NFT Owner')
+    }
+  })
+
   it('#addERC20Deployer - should fail to add ERC20deployer if NOT Manager', async () => {
     try {
       await nftDatatoken.addErc20Deployer(nftAddress, user1, user1)
     } catch (e) {
-      assert(
-        e.message ===
-          'Returned error: VM Exception while processing transaction: revert ERC721RolesAddress: NOT MANAGER'
-      )
+      assert(e.message === 'Caller is not Manager')
     }
   })
 
@@ -157,15 +183,25 @@ describe('NFT', () => {
     assert((await nftDatatoken.isErc20Deployer(nftAddress, user1)) === false)
   })
 
-  it('#removeERC20Deployer - should fail and remove ERC20deployer if NOT Manager', async () => {
+  it('#removeERC20Deployer - should fail and remove ERC20deployer if NOT Manager nor himself an ERC20Deployer', async () => {
+    await nftDatatoken.addErc20Deployer(nftAddress, nftOwner, user1)
+    assert((await nftDatatoken.isErc20Deployer(nftAddress, user1)) === true)
     try {
       await nftDatatoken.removeErc20Deployer(nftAddress, user1, user1)
     } catch (e) {
-      assert(
-        e.message ===
-          'Returned error: VM Exception while processing transaction: revert ERC721RolesAddress: Not enough permissions to remove from ERC20List'
-      )
+      assert(e.message === 'Caller is not Manager nor ERC20Deployer')
     }
+    assert((await nftDatatoken.isErc20Deployer(nftAddress, user1)) === true)
+  })
+
+  it('#removeERC20Deployer - should fail to remove himself an ERC20Deployer', async () => {
+    assert((await nftDatatoken.isErc20Deployer(nftAddress, user1)) === true)
+    try {
+      await nftDatatoken.removeErc20Deployer(nftAddress, user1, user1)
+    } catch (e) {
+      assert(e.message === 'Caller is not Manager nor ERC20Deployer')
+    }
+    assert((await nftDatatoken.isErc20Deployer(nftAddress, user1)) === true)
   })
 
   //  MetadataUpdate
@@ -185,10 +221,7 @@ describe('NFT', () => {
     try {
       await nftDatatoken.addMetadataUpdater(nftAddress, user1, user1)
     } catch (e) {
-      assert(
-        e.message ===
-          'Returned error: VM Exception while processing transaction: revert ERC721RolesAddress: NOT MANAGER'
-      )
+      assert(e.message === 'Caller is not Manager')
     }
   })
 
@@ -210,7 +243,7 @@ describe('NFT', () => {
     } catch (e) {
       assert(
         e.message ===
-          'Returned error: VM Exception while processing transaction: revert ERC721RolesAddress: Not enough permissions to remove from metadata list'
+        'Caller is not Manager nor Metadata Updater'
       )
     }
   })
@@ -228,10 +261,7 @@ describe('NFT', () => {
     try {
       await nftDatatoken.addStoreUpdater(nftAddress, user1, user1)
     } catch (e) {
-      assert(
-        e.message ===
-          'Returned error: VM Exception while processing transaction: revert ERC721RolesAddress: NOT MANAGER'
-      )
+      assert(e.message === 'Caller is not Manager')
     }
   })
 
@@ -249,7 +279,7 @@ describe('NFT', () => {
     } catch (e) {
       assert(
         e.message ===
-          'Returned error: VM Exception while processing transaction: revert ERC721RolesAddress: Not enough permissions to remove from 725StoreList'
+        `Caller is not Manager nor storeUpdater`
       )
     }
   })

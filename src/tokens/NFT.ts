@@ -10,7 +10,7 @@ import { Contract } from 'web3-eth-contract'
  */
 interface Roles {
   manager: boolean
-  deployErc20: boolean
+  deployERC20: boolean
   updateMetadata: boolean
   store: boolean
 }
@@ -107,12 +107,16 @@ export class Nft {
     symbol?: string,
     templateIndex?: number
   ): Promise<string> {
+    if ((await this.getNftPermissions(nftAddress, address)).deployERC20 !== true) {
+      throw new Error(`Caller is not ERC20Deployer`)
+    }
     if (!templateIndex) templateIndex = 1
 
     // Generate name & symbol if not present
     if (!name || !symbol) {
       ;({ name, symbol } = generateDtName())
     }
+
 
     // Create 721contract object
     const nftContract = new this.web3.eth.Contract(this.nftAbi, nftAddress)
@@ -380,9 +384,10 @@ export class Nft {
     erc20Deployer: string
   ): Promise<TransactionReceipt> {
     const nftContract = new this.web3.eth.Contract(this.nftAbi, nftAddress)
-
-    if ((await this.getNftPermissions(nftAddress, address)).manager !== true) {
-      throw new Error(`Caller is not Manager`)
+    
+   
+    if ((await this.getNftPermissions(nftAddress, address)).manager !== true || address === erc20Deployer && (await this.getNftPermissions(nftAddress, address)).deployERC20 !== true) {
+      throw new Error(`Caller is not Manager nor ERC20Deployer`)
     }
     const estGas = await this.estGasRemoveErc20Deployer(
       nftAddress,
@@ -512,8 +517,8 @@ export class Nft {
     const nftContract = new this.web3.eth.Contract(this.nftAbi, nftAddress)
 
     
-    if ((await this.getNftPermissions(nftAddress, address)).manager !== true) {
-      throw new Error(`Caller is not Manager`)
+    if ((await this.getNftPermissions(nftAddress, address)).manager !== true || address !== metadataUpdater && (await this.getNftPermissions(nftAddress, address)).updateMetadata !== true) {
+      throw new Error(`Caller is not Manager nor Metadata Updater`)
     }
 
     const estGas = await this.esGasRemoveMetadataUpdater(
@@ -583,7 +588,7 @@ export class Nft {
     const nftContract = new this.web3.eth.Contract(this.nftAbi, nftAddress)
 
    
-    if ((await this.getNftPermissions(nftAddress, address)).manager !== true) {
+    if ((await this.getNftPermissions(nftAddress, address)).manager !== true ) {
       throw new Error(`Caller is not Manager`)
     }
 
@@ -648,8 +653,8 @@ export class Nft {
     const nftContract = new this.web3.eth.Contract(this.nftAbi, nftAddress)
 
   
-    if ((await this.getNftPermissions(nftAddress, address)).manager !== true) {
-      throw new Error(`Caller is not Manager`)
+    if ((await this.getNftPermissions(nftAddress, address)).manager !== true || address !== storeUpdater && (await this.getNftPermissions(nftAddress, address)).store !== true) {
+      throw new Error(`Caller is not Manager nor storeUpdater`)
     }
 
     const estGas = await this.estGasRemoveStoreUpdater(
