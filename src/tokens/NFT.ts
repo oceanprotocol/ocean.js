@@ -5,6 +5,7 @@ import defaultNftAbi from '@oceanprotocol/contracts/artifacts/contracts/template
 import { LoggerInstance, getFairGasPrice, generateDtName } from '../utils'
 import { Contract } from 'web3-eth-contract'
 
+
 /**
  * ERC721 ROLES
  */
@@ -554,9 +555,7 @@ export class Nft {
     storeUpdater: string,
     contractInstance?: Contract
   ): Promise<any> {
-    if ((await this.getNftPermissions(nftAddress, address)).manager !== true) {
-      throw new Error(`Caller is not Manager`)
-    }
+   
 
     const nftContract =
       contractInstance || new this.web3.eth.Contract(this.nftAbi, nftAddress)
@@ -1138,6 +1137,18 @@ export class Nft {
     const roles = await nftContract.methods.getPermissions(address).call()
     return roles
   }
+
+  
+    /** Get users Metadata, return Metadata details
+   * @param {String} nftAddress erc721 contract adress
+   * @return {Promise<Objecta>}
+   */
+     public async getMetadata(nftAddress: string): Promise<Object> {
+      const nftContract = new this.web3.eth.Contract(this.nftAbi, nftAddress)
+      return await nftContract.methods.getMetaData().call()
+    }
+
+
 
   /** Get users ERC20Deployer role
    * @param {String} nftAddress erc721 contract adress
