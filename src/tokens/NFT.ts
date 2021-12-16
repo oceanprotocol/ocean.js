@@ -878,11 +878,13 @@ export class Nft {
     return trxReceipt
   }
 
+  // TODO: Finish this description
   /**
    * Estimate gas cost for setMetadata  method
    * @param {String} nftAddress erc721 contract adress
    * @param {String} nftOwner Current NFT Owner adress
-   * @param {String} nftReceiver User which will receive the NFT, will also be set as Manager
+   * @param {Number} metadataState User which will receive the NFT, will also be set as Manager
+   * @param {String} metaDataDecryptorUrl
    * @param {Number} tokenId The id of the token to be transfered
    * @param {Contract} nftContract optional contract instance
    * @return {Promise<any>}
@@ -1043,7 +1045,6 @@ export class Nft {
         .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
     } catch (e) {
       estGas = gasLimitDefault
-      console.log('eerr', e)
     }
 
     return estGas

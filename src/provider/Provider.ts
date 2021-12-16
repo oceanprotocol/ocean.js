@@ -1,5 +1,5 @@
 import Web3 from 'web3'
-import { LoggerInstance, fetchData, getData } from '../utils'
+import { LoggerInstance, getData } from '../utils'
 import {
   Asset,
   FileMetadata,
@@ -27,7 +27,7 @@ export class Provider {
    */
   async getEndpoints(providerUri: string): Promise<any> {
     try {
-      const endpoints = await (await getData(providerUri)).json()
+      const endpoints = await getData(providerUri)
       return endpoints
     } catch (e) {
       LoggerInstance.error('Finding the service endpoints failed:', e)
@@ -133,6 +133,7 @@ export class Provider {
       providerUri,
       providerEndpoints
     )
+
     const args = {
       documentId: did,
       document: JSON.stringify(document),

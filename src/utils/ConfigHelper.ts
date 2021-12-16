@@ -49,7 +49,7 @@ export const configHelperNetworks: Config[] = [
     chainId: 4,
     network: 'rinkeby',
     nodeUri: 'https://rinkeby.infura.io/v3',
-    providerUri: 'https://providerv4.rinkeby.oceanprotocol.com ',
+    providerUri: 'https://providerv4.rinkeby.oceanprotocol.com',
     subgraphUri: 'https://subgraphv4.rinkeby.oceanprotocol.com',
     explorerUri: 'https://rinkeby.etherscan.io',
     startBlock: 7294090
