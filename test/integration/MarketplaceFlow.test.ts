@@ -15,8 +15,9 @@ import { Erc20CreateParams } from '../../src/interfaces/Erc20Interface'
 import { TestContractHandler } from '../TestContractHandler'
 import { Nft, Datatoken } from '../../src/tokens'
 import { NftFactory, NftCreateData } from '../../src/factories'
-import { LoggerInstance } from '../../src/utils'
+import { LoggerInstance, fetchData, postData } from '../../src/utils'
 import { ProviderInstance } from '../../src/provider'
+import { utils } from 'mocha'
 
 const web3 = new Web3('http://127.0.0.1:8545')
 
@@ -32,6 +33,7 @@ describe('Marketplace flow', () => {
   let marketplaceFeeCollector: string
   let nftAddress: string
   let dtAddress: string
+  let assetDid: string
   let asset
   const marketplaceAllowance = '20'
   const tokenAmount = '10000'
@@ -70,6 +72,8 @@ describe('Marketplace flow', () => {
   })
 
   it('#Alice publishes an NFT and a Datatoken contract ', async () => {
+    nftFactory = new NftFactory(contracts.factory721Address, web3)
+
     const nftData: NftCreateData = {
       name: 'AliceNFT',
       symbol: 'NFTA',
@@ -103,21 +107,36 @@ describe('Marketplace flow', () => {
 
     dtAddress = txReceipt.events.TokenCreated.returnValues.newTokenAddress
     assert(dtAddress != null)
+
+    assetDid = sha256(`${nftAddress}${web3.eth.getChainId()}`)
   })
 
   it('encrypt files', async () => {
-    const files = {}
+    const files = [
+      {
+        type: 'url',
+        url: 'https://url.com/file1.csv',
+        method: 'GET'
+      }
+    ]
+    const encryptedFiles = await ProviderInstance.encrypt(
+      assetDid,
+      alice,
+      files,
+      'http://127.0.0.1:8030',
+      postData
+    )
+    console.log('encryptedFiles ', encryptedFiles)
+    assert(encryptedFiles != null)
   })
 
   it('Generates metadata', async () => {
-    const chainId = 8996
-    const did = sha256(`${nftAddress}${chainId}`)
     asset = {
       '@context': ['https://w3id.org/did/v1'],
       name: 'test-dataset',
-      id: did,
+      id: assetDid,
       version: '1.0.0',
-      chainId: chainId,
+      chainId: web3.eth.getChainId(),
       metadata: {
         created: new Date(Date.now()).toISOString().split('.')[0] + 'Z', // remove milliseconds,
         updated: new Date(Date.now()).toISOString().split('.')[0] + 'Z', // remove milliseconds,
