@@ -35,45 +35,26 @@ export class EventAccessControl extends Instantiable {
     did?: string
   ) {
     if (eventType === 'consume') {
-      // TODO temporary to work with old rbac
       return {
         component,
         eventType,
         authService,
         did,
         credentials: {
-          address: credentials
+          type: credentialsType,
+          value: credentials
         }
       }
-      // return {
-      //   component,
-      //   eventType,
-      //   authService,
-      //   did,
-      //   credentials: {
-      //     type: credentialsType,
-      //     value: credentials
-      //   }
-      // }
     }
-    // TODO temporary to work with old rbac
     return {
       component,
       eventType,
       authService,
       credentials: {
-        address: credentials
+        type: credentialsType,
+        value: credentials
       }
     }
-    // return {
-    //   component,
-    //   eventType,
-    //   authService,
-    //   credentials: {
-    //     type: credentialsType,
-    //     value: credentials
-    //   }
-    // }
   }
 
   public async isPermit(
