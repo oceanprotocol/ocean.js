@@ -1,5 +1,5 @@
 import Web3 from 'web3'
-import { LoggerInstance } from '../utils'
+import { LoggerInstance, fetchData, getData } from '../utils'
 import {
   Asset,
   FileMetadata,
@@ -25,9 +25,9 @@ export class Provider {
    * @param {any} fetchMethod
    * @return {Promise<ServiceEndpoint[]>}
    */
-  async getEndpoints(providerUri: string, fetchMethod: any): Promise<any> {
+  async getEndpoints(providerUri: string): Promise<any> {
     try {
-      const endpoints = await await fetchMethod(providerUri).json()
+      const endpoints = await (await getData(providerUri)).json()
       return endpoints
     } catch (e) {
       LoggerInstance.error('Finding the service endpoints failed:', e)
@@ -77,7 +77,7 @@ export class Provider {
     serviceEndpoints?: ServiceEndpoint[]
   ): Promise<string> {
     if (!providerEndpoints) {
-      providerEndpoints = await this.getEndpoints(providerUri, fetchMethod)
+      providerEndpoints = await this.getEndpoints(providerUri)
     }
     if (!serviceEndpoints) {
       serviceEndpoints = await this.getServiceEndpoints(providerUri, providerEndpoints)
@@ -128,7 +128,7 @@ export class Provider {
     providerUri: string,
     fetchMethod: any
   ): Promise<string> {
-    const providerEndpoints = await this.getEndpoints(providerUri, fetchMethod)
+    const providerEndpoints = await this.getEndpoints(providerUri)
     const serviceEndpoints = await this.getServiceEndpoints(
       providerUri,
       providerEndpoints
@@ -162,7 +162,7 @@ export class Provider {
     providerUri: string,
     fetchMethod: any
   ): Promise<FileMetadata[]> {
-    const providerEndpoints = await this.getEndpoints(providerUri, fetchMethod)
+    const providerEndpoints = await this.getEndpoints(providerUri)
     const serviceEndpoints = await this.getServiceEndpoints(
       providerUri,
       providerEndpoints
@@ -204,7 +204,7 @@ export class Provider {
     fetchMethod: any,
     userCustomParameters?: UserCustomParameters
   ): Promise<string> {
-    const providerEndpoints = await this.getEndpoints(providerUri, fetchMethod)
+    const providerEndpoints = await this.getEndpoints(providerUri)
     const serviceEndpoints = await this.getServiceEndpoints(
       providerUri,
       providerEndpoints
@@ -253,7 +253,7 @@ export class Provider {
     fetchMethod: any,
     userCustomParameters?: UserCustomParameters
   ): Promise<any> {
-    const providerEndpoints = await this.getEndpoints(providerUri, fetchMethod)
+    const providerEndpoints = await this.getEndpoints(providerUri)
     const serviceEndpoints = await this.getServiceEndpoints(
       providerUri,
       providerEndpoints
@@ -315,7 +315,7 @@ export class Provider {
     fetchMethod: any,
     output?: ComputeOutput
   ): Promise<ComputeJob | ComputeJob[]> {
-    const providerEndpoints = await this.getEndpoints(providerUri, fetchMethod)
+    const providerEndpoints = await this.getEndpoints(providerUri)
     const serviceEndpoints = await this.getServiceEndpoints(
       providerUri,
       providerEndpoints
@@ -384,7 +384,7 @@ export class Provider {
     web3: Web3,
     fetchMethod: any
   ): Promise<ComputeJob | ComputeJob[]> {
-    const providerEndpoints = await this.getEndpoints(providerUri, fetchMethod)
+    const providerEndpoints = await this.getEndpoints(providerUri)
     const serviceEndpoints = await this.getServiceEndpoints(
       providerUri,
       providerEndpoints
@@ -452,7 +452,7 @@ export class Provider {
     fetchMethod: any,
     jobId?: string
   ): Promise<ComputeJob | ComputeJob[]> {
-    const providerEndpoints = await this.getEndpoints(providerUri, fetchMethod)
+    const providerEndpoints = await this.getEndpoints(providerUri)
     const serviceEndpoints = await this.getServiceEndpoints(
       providerUri,
       providerEndpoints
@@ -522,7 +522,7 @@ export class Provider {
     web3: Web3,
     fetchMethod: any
   ): Promise<any> {
-    const providerEndpoints = await this.getEndpoints(providerUri, fetchMethod)
+    const providerEndpoints = await this.getEndpoints(providerUri)
     const serviceEndpoints = await this.getServiceEndpoints(
       providerUri,
       providerEndpoints
@@ -581,7 +581,7 @@ export class Provider {
     web3: Web3,
     fetchMethod: any
   ): Promise<ComputeJob | ComputeJob[]> {
-    const providerEndpoints = await this.getEndpoints(providerUri, fetchMethod)
+    const providerEndpoints = await this.getEndpoints(providerUri)
     const serviceEndpoints = await this.getServiceEndpoints(
       providerUri,
       providerEndpoints
