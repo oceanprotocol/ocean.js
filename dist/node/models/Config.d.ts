@@ -26,5 +26,6 @@ export declare class Config {
     authTokenExpiration?: number;
     parityUri?: string;
     threshold?: number;
+    requestTimeout?: number;
 }
 export default Config;

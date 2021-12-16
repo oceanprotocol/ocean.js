@@ -26,7 +26,7 @@ export declare class MetadataCache {
     private logger;
     private metadataCacheUri;
     private get url();
-    constructor(metadataCacheUri: string, logger: Logger);
+    constructor(metadataCacheUri: string, logger: Logger, requestTimeout?: number);
     getVersionInfo(): Promise<any>;
     getAccessUrl(accessToken: any, payload: any): Promise<string>;
     queryMetadata(query: SearchQuery): Promise<any>;

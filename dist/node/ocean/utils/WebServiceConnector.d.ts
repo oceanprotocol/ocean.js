@@ -2,7 +2,8 @@ import { Response } from 'node-fetch';
 import { Logger } from '../../utils';
 export declare class WebServiceConnector {
     logger: Logger;
-    constructor(logger: Logger);
+    requestTimeout: number;
+    constructor(logger: Logger, requestTimeout?: number);
     post(url: string, payload: BodyInit): Promise<Response>;
     postWithOctet(url: string, payload: BodyInit): Promise<Response>;
     postWithHeaders(url: string, payload: BodyInit, headers: any): Promise<Response>;
