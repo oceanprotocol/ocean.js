@@ -13,7 +13,7 @@ import { TestContractHandler } from '../../TestContractHandler'
 import { NftFactory, NftCreateData } from '../../../src/factories/NFTFactory'
 import { Nft } from '../../../src/tokens/NFT'
 import { AbiItem } from 'web3-utils'
-const constants = require("../../helpers/constants");
+const constants = require('../../helpers/constants')
 
 const web3 = new Web3('http://127.0.0.1:8545')
 
@@ -98,25 +98,24 @@ describe('NFT', () => {
   })
 
   it('#createERC20 - should fail to create a new ERC20 DT if not ERC20Deployer', async () => {
-    try{( await nftDatatoken.createErc20(
-      nftAddress,
-      user1,
-      nftOwner,
-      user1,
-      user2,
-      '0x0000000000000000000000000000000000000000',
-      '0',
-      '10000',
-      nftName,
-      nftSymbol,
-      1
-    )) }catch(e) {
+    try {
+      await nftDatatoken.createErc20(
+        nftAddress,
+        user1,
+        nftOwner,
+        user1,
+        user2,
+        '0x0000000000000000000000000000000000000000',
+        '0',
+        '10000',
+        nftName,
+        nftSymbol,
+        1
+      )
+    } catch (e) {
       assert(e.message === 'Caller is not ERC20Deployer')
     }
-    
   })
-
-  
 
   // Manager
   it('#addManager - should add a new Manager', async () => {
@@ -242,10 +241,7 @@ describe('NFT', () => {
     try {
       await nftDatatoken.removeMetadataUpdater(nftAddress, user1, user1)
     } catch (e) {
-      assert(
-        e.message ===
-        'Caller is not Manager nor Metadata Updater'
-      )
+      assert(e.message === 'Caller is not Manager nor Metadata Updater')
     }
   })
 
@@ -278,10 +274,7 @@ describe('NFT', () => {
     try {
       await nftDatatoken.removeStoreUpdater(nftAddress, user1, user1)
     } catch (e) {
-      assert(
-        e.message ===
-        `Caller is not Manager nor storeUpdater`
-      )
+      assert(e.message === `Caller is not Manager nor storeUpdater`)
     }
   })
 
@@ -332,64 +325,87 @@ describe('NFT', () => {
   it('#setMetaData - should succeed to update metadata if metadataUpdater', async () => {
     await nftDatatoken.addManager(nftAddress, user1, user1)
     await nftDatatoken.addMetadataUpdater(nftAddress, user1, user1)
-    const metaDataDecryptorUrl = 'http://myprovider:8030';
-    const metaDataDecryptorAddress = "0x123";
-    const metaDataState = 1;
-    const data = web3.utils.asciiToHex(constants.blob[0]);
-    const dataHash = web3.utils.asciiToHex(constants.blob[0]);
-    const flags = web3.utils.asciiToHex(constants.blob[0]);
-    assert((await nftDatatoken.getNftPermissions(nftAddress,user1)).updateMetadata === true)
-    await nftDatatoken.setMetadata(nftAddress, user1, metaDataState, metaDataDecryptorUrl, metaDataDecryptorAddress, flags, data, dataHash)
-    // console.log((await nftDatatoken.getMetadata(nftAddress)),metaDataDecryptorUrl)
-    // console.log((await nftDatatoken.getMetadata(nftAddress)).metaDataDecryptorAddress,metaDataDecryptorAddress)
+    const metaDataDecryptorUrl = 'http://myprovider:8030'
+    const metaDataDecryptorAddress = '0x123'
+    const metaDataState = 1
+    const data = web3.utils.asciiToHex(constants.blob[0])
+    const dataHash = web3.utils.asciiToHex(constants.blob[0])
+    const flags = web3.utils.asciiToHex(constants.blob[0])
+    assert(
+      (await nftDatatoken.getNftPermissions(nftAddress, user1)).updateMetadata === true
+    )
+    await nftDatatoken.setMetadata(
+      nftAddress,
+      user1,
+      metaDataState,
+      metaDataDecryptorUrl,
+      metaDataDecryptorAddress,
+      flags,
+      data,
+      dataHash
+    )
+
     const metadata = await nftDatatoken.getMetadata(nftAddress)
-    assert(metadata[0] ===  metaDataDecryptorUrl)
+    assert(metadata[0] === metaDataDecryptorUrl)
     assert(metadata[1] === metaDataDecryptorAddress)
-  //  assert((await nftDatatoken.getMetadata(nftAddress)).metaDataDecryptorAddress ===  metaDataDecryptorAddress)
-     
+    //  assert((await nftDatatoken.getMetadata(nftAddress)).metaDataDecryptorAddress ===  metaDataDecryptorAddress)
   })
   it('#setMetaData - should fail to update metadata if NOT metadataUpdater', async () => {
-    const metaDataDecryptorUrl = 'http://myprovider:8030';
-    const metaDataDecryptorAddress = "0x123";
-    const metaDataState = 1;
-    const data = web3.utils.asciiToHex(constants.blob[0]);
-    const dataHash = web3.utils.asciiToHex(constants.blob[0]);
-    const flags = web3.utils.asciiToHex(constants.blob[0]);
-    assert((await nftDatatoken.getNftPermissions(nftAddress,user3)).updateMetadata == false)
-     try {
-      await nftDatatoken.setMetadata(nftAddress, user3, metaDataState, metaDataDecryptorUrl, metaDataDecryptorAddress, flags, data, dataHash)
-     } catch(e) {
-       assert(e.message === 'Caller is not Metadata updater')
-     }
-     assert((await nftDatatoken.getNftPermissions(nftAddress,user3)).updateMetadata == false)
+    const metaDataDecryptorUrl = 'http://myprovider:8030'
+    const metaDataDecryptorAddress = '0x123'
+    const metaDataState = 1
+    const data = web3.utils.asciiToHex(constants.blob[0])
+    const dataHash = web3.utils.asciiToHex(constants.blob[0])
+    const flags = web3.utils.asciiToHex(constants.blob[0])
+    assert(
+      (await nftDatatoken.getNftPermissions(nftAddress, user3)).updateMetadata === false
+    )
+    try {
+      await nftDatatoken.setMetadata(
+        nftAddress,
+        user3,
+        metaDataState,
+        metaDataDecryptorUrl,
+        metaDataDecryptorAddress,
+        flags,
+        data,
+        dataHash
+      )
+    } catch (e) {
+      assert(e.message === 'Caller is not Metadata updater')
+    }
+    assert(
+      (await nftDatatoken.getNftPermissions(nftAddress, user3)).updateMetadata === false
+    )
   })
   it('#setMetaDataState - should succeed to update MetadataState if metadataUpdater', async () => {
     await nftDatatoken.addManager(nftAddress, user1, user1)
     await nftDatatoken.addMetadataUpdater(nftAddress, user1, user1)
     let metadata = await nftDatatoken.getMetadata(nftAddress)
-    
-    assert(metadata[2] ===  '1')
-    assert((await nftDatatoken.getNftPermissions(nftAddress,user1)).updateMetadata === true)
-    
-    await nftDatatoken.setMetadataState(nftAddress, user1,2)
+
+    assert(metadata[2] === '1')
+    assert(
+      (await nftDatatoken.getNftPermissions(nftAddress, user1)).updateMetadata === true
+    )
+
+    await nftDatatoken.setMetadataState(nftAddress, user1, 2)
 
     metadata = await nftDatatoken.getMetadata(nftAddress)
-    assert(metadata[2] ===  '2')
- 
-
+    assert(metadata[2] === '2')
   })
 
   it('#setMetaDataState - should fail to update MetadataState if NOT metadataUpdater', async () => {
     let metadata = await nftDatatoken.getMetadata(nftAddress)
-    assert(metadata[2] ===  '2')
-    assert((await nftDatatoken.getNftPermissions(nftAddress,user3)).updateMetadata === false)
+    assert(metadata[2] === '2')
+    assert(
+      (await nftDatatoken.getNftPermissions(nftAddress, user3)).updateMetadata === false
+    )
     try {
-    await nftDatatoken.setMetadataState(nftAddress, user3,1)
-  } catch(e) {
-    assert(e.message === 'Caller is not Metadata updater')
-  }
+      await nftDatatoken.setMetadataState(nftAddress, user3, 1)
+    } catch (e) {
+      assert(e.message === 'Caller is not Metadata updater')
+    }
     metadata = await nftDatatoken.getMetadata(nftAddress)
-    assert(metadata[2] ===  '2')
-     
+    assert(metadata[2] === '2')
   })
 })

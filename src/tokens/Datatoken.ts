@@ -7,7 +7,7 @@ import defaultDatatokensAbi from '@oceanprotocol/contracts/artifacts/contracts/t
 import defaultDatatokensEnterpriseAbi from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC20TemplateEnterprise.sol/ERC20TemplateEnterprise.json'
 import { LoggerInstance, getFairGasPrice } from '../utils'
 import { FreOrderParams, FreCreationParams } from '../interfaces'
-//import { Nft } from "./NFT"
+import { Nft } from "./NFT"
 /**
  * ERC20 ROLES
  */
@@ -40,7 +40,7 @@ export class Datatoken {
   public datatokensEnterpriseAbi: AbiItem | AbiItem[]
   public web3: Web3
   public startBlock: number
- // public nft: Nft
+  // public nft: Nft
 
   /**
    * Instantiate ERC20 DataTokens
@@ -58,7 +58,7 @@ export class Datatoken {
     this.datatokensEnterpriseAbi =
       datatokensEnterpriseAbi || (defaultDatatokensEnterpriseAbi.abi as AbiItem[])
     this.startBlock = startBlock || 0
-   // this.nft = new Nft(this.web3) 
+    // this.nft = new Nft(this.web3)
   }
 
   /**
@@ -225,7 +225,9 @@ export class Datatoken {
     fixedRateParams: FreCreationParams
   ): Promise<TransactionReceipt> {
     const dtContract = new this.web3.eth.Contract(this.datatokensAbi, dtAddress)
-
+    if (!await this.isERC20Deployer(dtAddress,address)) {
+      throw new Error(`User is not ERC20 Deployer`)
+    }
     if (!fixedRateParams.allowedConsumer)
       fixedRateParams.allowedConsumer = '0x0000000000000000000000000000000000000000'
 
@@ -323,8 +325,12 @@ export class Datatoken {
     dispenserAddress: string,
     dispenserParams: DispenserParams
   ): Promise<TransactionReceipt> {
-    const dtContract = new this.web3.eth.Contract(this.datatokensAbi, dtAddress)
+    if (!await this.isERC20Deployer(dtAddress,address)) {
+      throw new Error(`User is not ERC20 Deployer`)
+    }
 
+    const dtContract = new this.web3.eth.Contract(this.datatokensAbi, dtAddress)
+    
     if (!dispenserParams.allowedSwapper)
       dispenserParams.allowedSwapper = '0x0000000000000000000000000000000000000000'
 
@@ -446,7 +452,7 @@ export class Datatoken {
   ): Promise<TransactionReceipt> {
     const dtContract = new this.web3.eth.Contract(this.datatokensAbi, dtAddress)
 
-    if (await this.isERC20Deployer(dtAddress,address) !== true) {
+    if ((await this.isERC20Deployer(dtAddress, address)) !== true) {
       throw new Error(`Caller is not ERC20Deployer`)
     }
     // Estimate gas cost for addMinter method
@@ -511,7 +517,7 @@ export class Datatoken {
   ): Promise<TransactionReceipt> {
     const dtContract = new this.web3.eth.Contract(this.datatokensAbi, dtAddress)
 
-    if (await this.isERC20Deployer(dtAddress,address) !== true) {
+    if ((await this.isERC20Deployer(dtAddress, address)) !== true) {
       throw new Error(`Caller is not ERC20Deployer`)
     }
 
@@ -573,7 +579,7 @@ export class Datatoken {
   ): Promise<TransactionReceipt> {
     const dtContract = new this.web3.eth.Contract(this.datatokensAbi, dtAddress)
 
-    if (await this.isERC20Deployer(dtAddress,address) !== true) {
+    if ((await this.isERC20Deployer(dtAddress, address)) !== true) {
       throw new Error(`Caller is not ERC20Deployer`)
     }
 
@@ -638,7 +644,7 @@ export class Datatoken {
   ): Promise<TransactionReceipt> {
     const dtContract = new this.web3.eth.Contract(this.datatokensAbi, dtAddress)
 
-    if (await this.isERC20Deployer(dtAddress,address) !== true) {
+    if ((await this.isERC20Deployer(dtAddress, address)) !== true) {
       throw new Error(`Caller is not ERC20Deployer`)
     }
 
@@ -1108,6 +1114,10 @@ export class Datatoken {
     address: string,
     value: string
   ): Promise<TransactionReceipt> {
+    if (!await this.isERC20Deployer(dtAddress,address)) {
+      throw new Error(`User is not ERC20 Deployer`)
+    }
+
     const dtContract = new this.web3.eth.Contract(this.datatokensAbi, dtAddress)
 
     const estGas = await this.estGasSetData(dtAddress, address, value, dtContract)
@@ -1121,7 +1131,6 @@ export class Datatoken {
 
     return trxReceipt
   }
-
 
   /** Estimate gas for cleanPermissions method
    * @param dtAddress Datatoken address where we want to clean permissions
@@ -1162,7 +1171,7 @@ export class Datatoken {
     address: string
   ): Promise<TransactionReceipt> {
     const dtContract = new this.web3.eth.Contract(this.datatokensAbi, dtAddress)
-
+    
     const estGas = await this.estGasCleanPermissions(dtAddress, address, dtContract)
 
     // Call cleanPermissions function of the contract
@@ -1221,9 +1230,9 @@ export class Datatoken {
    * @param {String} dtAddress Datatoken adress
    * @return {Promise<boolean>}
    */
-  public async isERC20Deployer(dtAddress: string, adddress: string): Promise<boolean> {
+  public async isERC20Deployer(dtAddress: string, address: string): Promise<boolean> {
     const dtContract = new this.web3.eth.Contract(this.datatokensAbi, dtAddress)
-    const isERC20Deployer = await dtContract.methods.isERC20Deployer(adddress).call()
+    const isERC20Deployer = await dtContract.methods.isERC20Deployer(address).call()
     return isERC20Deployer
   }
 
