@@ -407,29 +407,29 @@ describe('Datatoken', () => {
     assert(buyTx !== null)
   })
 
-  // it('#cleanPermissions - should FAIL to clean permissions at ERC20 level, if NOT NFT Owner', async () => {
-  //   assert((await datatoken.getDTPermissions(datatokenAddress, nftOwner)).minter === true)
+  it('#cleanPermissions - should FAIL to clean permissions at ERC20 level, if NOT NFT Owner', async () => {
+    assert((await datatoken.getDTPermissions(datatokenAddress, nftOwner)).minter === true)
 
-  //   assert((await datatoken.getPaymentCollector(datatokenAddress)) === user3)
+    assert((await datatoken.getPaymentCollector(datatokenAddress)) === user3)
 
-  //   assert(
-  //     (await datatoken.getDTPermissions(datatokenAddress, user1)).paymentManager === true
-  //   )
+    assert(
+      (await datatoken.getDTPermissions(datatokenAddress, user1)).paymentManager === true
+    )
 
-  //   try {await datatoken.cleanPermissions(datatokenAddress, nftOwner)} catch(e){
-  //     assert(e.message === 'Caller is not NFTOwner')
-  //   }
+    try {await datatoken.cleanPermissions(datatokenAddress, user2)} catch(e){
+      assert(e.message === 'Caller is NOT Nft Owner')
+    }
 
-  //   assert((await datatoken.getPaymentCollector(datatokenAddress)) === nftOwner)
+    assert((await datatoken.getPaymentCollector(datatokenAddress)) === user3)
 
-  //   assert(
-  //     (await datatoken.getDTPermissions(datatokenAddress, nftOwner)).minter === false
-  //   )
+    assert(
+      (await datatoken.getDTPermissions(datatokenAddress, nftOwner)).minter === true
+    )
 
-  //   assert(
-  //     (await datatoken.getDTPermissions(datatokenAddress, user1)).paymentManager === false
-  //   )
-  // })
+    assert(
+      (await datatoken.getDTPermissions(datatokenAddress, user1)).paymentManager === true
+    )
+  })
 
 
   it('#cleanPermissions - should clean permissions at ERC20 level', async () => {

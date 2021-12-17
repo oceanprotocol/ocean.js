@@ -40,7 +40,7 @@ export class Datatoken {
   public datatokensEnterpriseAbi: AbiItem | AbiItem[]
   public web3: Web3
   public startBlock: number
-  // public nft: Nft
+  public nft: Nft
 
   /**
    * Instantiate ERC20 DataTokens
@@ -58,7 +58,7 @@ export class Datatoken {
     this.datatokensEnterpriseAbi =
       datatokensEnterpriseAbi || (defaultDatatokensEnterpriseAbi.abi as AbiItem[])
     this.startBlock = startBlock || 0
-    // this.nft = new Nft(this.web3)
+    this.nft = new Nft(this.web3)
   }
 
   /**
@@ -1170,6 +1170,9 @@ export class Datatoken {
     dtAddress: string,
     address: string
   ): Promise<TransactionReceipt> {
+    if(await this.nft.getNftOwner(await this.getNFTAddress(dtAddress)) != address) {
+      throw new Error('Caller is NOT Nft Owner')
+    }
     const dtContract = new this.web3.eth.Contract(this.datatokensAbi, dtAddress)
     
     const estGas = await this.estGasCleanPermissions(dtAddress, address, dtContract)
