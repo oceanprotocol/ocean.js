@@ -1166,4 +1166,15 @@ export class Nft {
     const data = await nftContract.methods.getData(key).call()
     return data
   }
+
+    /** Gets data at a given `key`
+   * @param {String} nftAddress erc721 contract adress
+   * @param {String} id 
+   * @return {Promise<string>} The data stored at the key
+   */
+     public async getTokenURI(nftAddress: string, id: number): Promise<string> {
+      const nftContract = new this.web3.eth.Contract(this.nftAbi, nftAddress)
+      const data = await nftContract.methods.tokenURI(id).call()
+      return data
+    }
 }

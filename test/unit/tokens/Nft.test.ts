@@ -78,6 +78,13 @@ describe('NFT', () => {
 
     nftAddress = await nftFactory.createNFT(nftOwner, nftData)
     nftDatatoken = new Nft(web3, ERC721Template.abi as AbiItem[])
+   
+  })
+  it('#getTokenURI', async ()=> {
+    const tokenURI = await nftDatatoken.getTokenURI(nftAddress,1)
+    assert(tokenURI === 'https://oceanprotocol.com/nft/'
+      )
+    console.log(tokenURI)
   })
 
   it('#createERC20 - should create a new ERC20 DT from NFT contract', async () => {
