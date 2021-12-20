@@ -93,16 +93,18 @@ describe('Simple flow', () => {
   })
 
   it('Alice mints 100 tokens', async () => {
+    await nft.addManager(nftAddress, owner, alice)
+    await nft.addMetadataUpdater(nftAddress, owner, alice)
     datatoken = new Datatoken(
       web3,
       ERC20Template.abi as AbiItem[],
       ERC20TemplateEnterprise.abi as AbiItem[]
     )
-    await datatoken.mint(dtAddress, alice, tokenAmount)
+    await datatoken.mint(dtAddress, owner, tokenAmount)
   })
 
   it('Alice transfers 1 token to Bob', async () => {
-    const ts = await datatoken.transfer(dtAddress, bob, transferAmount, alice)
+    const ts = await datatoken.transfer(dtAddress, bob, '1', owner)
     LoggerInstance.log('Transfer tx', ts)
   })
 })
