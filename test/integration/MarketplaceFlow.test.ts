@@ -15,7 +15,13 @@ import { Erc20CreateParams } from '../../src/interfaces/Erc20Interface'
 import { TestContractHandler } from '../TestContractHandler'
 import { Nft, Datatoken } from '../../src/tokens'
 import { NftFactory, NftCreateData } from '../../src/factories'
-import { LoggerInstance, fetchData, postData } from '../../src/utils'
+import {
+  LoggerInstance,
+  fetchData,
+  postData,
+  generateDid,
+  getHash
+} from '../../src/utils'
 import { ProviderInstance } from '../../src/provider'
 import { utils } from 'mocha'
 
@@ -31,6 +37,7 @@ describe('Marketplace flow', () => {
   let bob: string
   let charlie: string
   let marketplaceFeeCollector: string
+  let chainId: number
   let nftAddress: string
   let dtAddress: string
   let assetDid: string
@@ -108,14 +115,16 @@ describe('Marketplace flow', () => {
     dtAddress = txReceipt.events.TokenCreated.returnValues.newTokenAddress
     assert(dtAddress != null)
 
-    assetDid = sha256(`${nftAddress}${web3.eth.getChainId()}`)
+    chainId = await web3.eth.getChainId()
+    assetDid = generateDid(nftAddress, chainId)
+    LoggerInstance.log('assetDid: ', assetDid)
   })
 
   it('Encrypt files', async () => {
     const files = [
       {
         type: 'url',
-        url: 'https://url.com/file1.csv',
+        url: 'https://dumps.wikimedia.org/enwiki/latest/enwiki-latest-abstract.xml.gz-rss.xml',
         method: 'GET'
       }
     ]
@@ -185,8 +194,8 @@ describe('Marketplace flow', () => {
     const metaDataDecryptorUrl = 'http://127.0.0.1:8030'
     const metaDataDecryptorAddress = '0x123'
     const metaDataState = 1
-    const data = web3.utils.asciiToHex(encryptedDdo)
-    const dataHash = web3.utils.asciiToHex(encryptedDdo)
+    const data = encryptedDdo
+    const dataHash = getHash(encryptedDdo)
     const flags = web3.utils.asciiToHex(encryptedDdo)
 
     assert((await nft.getNftPermissions(nftAddress, alice)).updateMetadata === true)
@@ -206,9 +215,12 @@ describe('Marketplace flow', () => {
     // assert(metadata[1] === metaDataDecryptorAddress)
   })
 
-  it('Bob gets datatokens', async () => {
+  it('Alice mints datatokens', async () => {
     datatoken = new Datatoken(web3)
     await datatoken.mint(dtAddress, owner, '1000', alice)
+  })
+
+  it('Bob gets datatokens', async () => {
     const dTamount = '20'
     let balance
     await datatoken.transfer(dtAddress, bob, dTamount, alice)
