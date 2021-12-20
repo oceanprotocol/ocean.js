@@ -34,9 +34,9 @@ describe('Marketplace flow', () => {
   let nftAddress: string
   let dtAddress: string
   let assetDid: string
+  let encryptedFiles: string
+  let encryptedDdo: string
   let asset
-  const marketplaceAllowance = '20'
-  const tokenAmount = '10000'
 
   it('Initialize Ocean v4 contracts', async () => {
     contracts = new TestContractHandler(
@@ -111,7 +111,7 @@ describe('Marketplace flow', () => {
     assetDid = sha256(`${nftAddress}${web3.eth.getChainId()}`)
   })
 
-  it('encrypt files', async () => {
+  it('Encrypt files', async () => {
     const files = [
       {
         type: 'url',
@@ -119,14 +119,13 @@ describe('Marketplace flow', () => {
         method: 'GET'
       }
     ]
-    const encryptedFiles = await ProviderInstance.encrypt(
+    encryptedFiles = await ProviderInstance.encrypt(
       assetDid,
       alice,
       files,
       'http://127.0.0.1:8030',
       postData
     )
-    console.log('encryptedFiles ', encryptedFiles)
     assert(encryptedFiles != null)
   })
 
@@ -162,10 +161,72 @@ describe('Marketplace flow', () => {
           description: 'Download service',
           serviceEndpoint: 'http://localhost:8030/',
           timeout: 0,
-          files:
-            '0x04f0dddf93c186c38bfea243e06889b490a491141585669cfbe7521a5c7acb3bfea5a5527f17eb75ae1f66501e1f70f73df757490c8df479a618b0dd23b2bf3c62d07c372f64c6ad94209947471a898c71f1b2f0ab2a965024fa8e454644661d538b6aa025e517197ac87a3767820f018358999afda760225053df20ff14f499fcf4e7e036beb843ad95587c138e1f972e370d4c68c99ab2602b988c837f6f76658a23e99da369f6898ce1426d49c199cf8ffa33b79002765325c12781a2202239381866c6a06b07754024ee9a6e4aabc8'
+          files: encryptedFiles
         }
       ]
     }
+  })
+
+  it('Encrypt DDO', async () => {
+    encryptedDdo = await ProviderInstance.encrypt(
+      assetDid,
+      alice,
+      asset,
+      'http://127.0.0.1:8030',
+      postData
+    )
+    assert(encryptedDdo != null)
+  })
+
+  it('set metadata on the nft', async () => {
+    nft = new Nft(web3)
+    await nft.addManager(nftAddress, owner, alice)
+    await nft.addMetadataUpdater(nftAddress, owner, alice)
+    const metaDataDecryptorUrl = 'http://127.0.0.1:8030'
+    const metaDataDecryptorAddress = '0x123'
+    const metaDataState = 1
+    const data = web3.utils.asciiToHex(encryptedDdo)
+    const dataHash = web3.utils.asciiToHex(encryptedDdo)
+    const flags = web3.utils.asciiToHex(encryptedDdo)
+
+    assert((await nft.getNftPermissions(nftAddress, alice)).updateMetadata === true)
+    await nft.setMetadata(
+      nftAddress,
+      alice,
+      metaDataState,
+      metaDataDecryptorUrl,
+      metaDataDecryptorAddress,
+      flags,
+      data,
+      dataHash
+    )
+
+    // const metadata = await nft.getMetadata(nftAddress)
+    // assert(metadata[0] === metaDataDecryptorUrl)
+    // assert(metadata[1] === metaDataDecryptorAddress)
+  })
+
+  it('Bob gets datatokens', async () => {
+    datatoken = new Datatoken(web3)
+    await datatoken.mint(dtAddress, owner, '1000', alice)
+    const dTamount = '20'
+    let balance
+    await datatoken.transfer(dtAddress, bob, dTamount, alice)
+    balance = await datatoken.balance(dtAddress, bob)
+    assert(balance.toString() === dTamount.toString())
+  })
+
+  it('Bob consumes asset 1', async () => {
+    const ordertx = datatoken.startOrder(
+      dtAddress,
+      owner,
+      bob,
+      '1',
+      1,
+      marketplaceFeeCollector,
+      contracts.oceanAddress,
+      '1'
+    )
+    assert(ordertx != null)
   })
 })
