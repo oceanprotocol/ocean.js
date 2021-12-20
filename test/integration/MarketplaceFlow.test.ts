@@ -135,6 +135,7 @@ describe('Marketplace flow', () => {
       'http://127.0.0.1:8030',
       postData
     )
+    LoggerInstance.log('encryptedFiles: ', encryptedFiles)
     assert(encryptedFiles != null)
   })
 
@@ -144,7 +145,7 @@ describe('Marketplace flow', () => {
       name: 'test-dataset',
       id: assetDid,
       version: '1.0.0',
-      chainId: web3.eth.getChainId(),
+      chainId: chainId,
       metadata: {
         created: new Date(Date.now()).toISOString().split('.')[0] + 'Z', // remove milliseconds,
         updated: new Date(Date.now()).toISOString().split('.')[0] + 'Z', // remove milliseconds,
@@ -184,6 +185,7 @@ describe('Marketplace flow', () => {
       'http://127.0.0.1:8030',
       postData
     )
+    LoggerInstance.log('encryptedDdo: ', encryptedDdo)
     assert(encryptedDdo != null)
   })
 
@@ -194,8 +196,8 @@ describe('Marketplace flow', () => {
     const metaDataDecryptorUrl = 'http://127.0.0.1:8030'
     const metaDataDecryptorAddress = '0x123'
     const metaDataState = 1
-    const data = encryptedDdo
-    const dataHash = getHash(encryptedDdo)
+    const data = web3.utils.asciiToHex(encryptedDdo)
+    const dataHash = web3.utils.asciiToHex(getHash(encryptedDdo))
     const flags = web3.utils.asciiToHex(encryptedDdo)
 
     assert((await nft.getNftPermissions(nftAddress, alice)).updateMetadata === true)
@@ -210,6 +212,7 @@ describe('Marketplace flow', () => {
       dataHash
     )
 
+    // TODO: add getMetadata function from #1159 PR and following checks
     // const metadata = await nft.getMetadata(nftAddress)
     // assert(metadata[0] === metaDataDecryptorUrl)
     // assert(metadata[1] === metaDataDecryptorAddress)
@@ -218,6 +221,11 @@ describe('Marketplace flow', () => {
   it('Alice mints datatokens', async () => {
     datatoken = new Datatoken(web3)
     await datatoken.mint(dtAddress, owner, '1000', alice)
+  })
+
+  it('Alice allows marketplace to sell her datatokens', async () => {
+    const approveTx = datatoken.approve(dtAddress, marketplaceFeeCollector, '20', alice)
+    LoggerInstance.log('approveTx', approveTx)
   })
 
   it('Bob gets datatokens', async () => {
@@ -240,5 +248,7 @@ describe('Marketplace flow', () => {
       '1'
     )
     assert(ordertx != null)
+
+    // TODO: INMPLEMENT DOWNLOAD LOGIC
   })
 })
