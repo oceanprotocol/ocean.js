@@ -136,7 +136,7 @@ export class Provider {
 
     const args = {
       documentId: did,
-      document: JSON.stringify(document),
+      document: document,
       publisherAddress: accountId
     }
     const path = this.getEndpointURL(serviceEndpoints, 'encrypt')
