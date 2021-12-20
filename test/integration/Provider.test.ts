@@ -1,6 +1,6 @@
 import { Provider } from '../../src/provider/Provider'
 import { assert } from 'chai'
-import { fetchData } from '../../src/utils'
+import { fetchData, postData } from '../../src/utils'
 
 describe('Provider tests', () => {
   let providerInstance: Provider
@@ -20,5 +20,17 @@ describe('Provider tests', () => {
       fetchData
     )
     assert(valid === true)
+  })
+
+  it('Alice tests valid provider', async () => {
+    const fileInfo = await providerInstance.fileinfo(
+      'https://dumps.wikimedia.org/enwiki/latest/enwiki-latest-abstract.xml.gz-rss.xml',
+      'url',
+      // 'http://127.0.0.1:8030',
+      'https://providerv4.rinkeby.oceanprotocol.com/',
+      postData
+    )
+    console.log('file info', fileInfo)
+    assert(fileInfo !== null)
   })
 })

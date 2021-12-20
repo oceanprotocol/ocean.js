@@ -161,6 +161,7 @@ export class Provider {
    */
   public async fileinfo(
     url: string,
+    storageType: string,
     providerUri: string,
     fetchMethod: any
   ): Promise<FileMetadata[]> {
@@ -169,7 +170,7 @@ export class Provider {
       providerUri,
       providerEndpoints
     )
-    const args = { url }
+    const args = { url: url, type: storageType }
     const files: FileMetadata[] = []
     const path = this.getEndpointURL(serviceEndpoints, 'fileinfo')
       ? this.getEndpointURL(serviceEndpoints, 'fileinfo').urlPath
