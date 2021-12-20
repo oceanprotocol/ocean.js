@@ -230,9 +230,8 @@ describe('Marketplace flow', () => {
 
   it('Bob gets datatokens', async () => {
     const dTamount = '20'
-    let balance
     await datatoken.transfer(dtAddress, bob, dTamount, alice)
-    balance = await datatoken.balance(dtAddress, bob)
+    const balance = await datatoken.balance(dtAddress, bob)
     assert(balance.toString() === dTamount.toString())
   })
 
