@@ -1,5 +1,5 @@
 import Web3 from 'web3'
-import { LoggerInstance, fetchData, getData } from '../utils'
+import { LoggerInstance, getData } from '../utils'
 import {
   Asset,
   FileMetadata,
@@ -27,8 +27,8 @@ export class Provider {
    */
   async getEndpoints(providerUri: string): Promise<any> {
     try {
-      const endpoints = await (await getData(providerUri)).json()
-      return endpoints
+      const endpoints = await getData(providerUri)
+      return await endpoints.json()
     } catch (e) {
       LoggerInstance.error('Finding the service endpoints failed:', e)
       return null
@@ -127,12 +127,13 @@ export class Provider {
     document: any,
     providerUri: string,
     fetchMethod: any
-  ): Promise<string> {
+  ): Promise<any> {
     const providerEndpoints = await this.getEndpoints(providerUri)
     const serviceEndpoints = await this.getServiceEndpoints(
       providerUri,
       providerEndpoints
     )
+
     const args = {
       documentId: did,
       document: JSON.stringify(document),
@@ -141,10 +142,11 @@ export class Provider {
     const path = this.getEndpointURL(serviceEndpoints, 'encrypt')
       ? this.getEndpointURL(serviceEndpoints, 'encrypt').urlPath
       : null
+
     if (!path) return null
     try {
       const response = await fetchMethod(path, decodeURI(JSON.stringify(args)))
-      return (await response.json()).encryptedDocument
+      return response
     } catch (e) {
       LoggerInstance.error(e)
       throw new Error('HTTP request failed')

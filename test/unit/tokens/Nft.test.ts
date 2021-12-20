@@ -297,4 +297,9 @@ describe('NFT', () => {
     assert((await nftDatatoken.isErc20Deployer(nftAddress, user2)) === false)
     assert((await nftDatatoken.getNftPermissions(nftAddress, nftOwner)).manager === false)
   })
+
+  it('#setTokenURI - should update TokenURI', async () => {
+    const tx = await nftDatatoken.setTokenURI(nftAddress, user1, 'test')
+    assert(tx.events.TokenURIUpdate)
+  })
 })

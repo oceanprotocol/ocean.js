@@ -878,11 +878,13 @@ export class Nft {
     return trxReceipt
   }
 
+  // TODO: Finish this description
   /**
    * Estimate gas cost for setMetadata  method
    * @param {String} nftAddress erc721 contract adress
    * @param {String} nftOwner Current NFT Owner adress
-   * @param {String} nftReceiver User which will receive the NFT, will also be set as Manager
+   * @param {Number} metadataState User which will receive the NFT, will also be set as Manager
+   * @param {String} metaDataDecryptorUrl
    * @param {Number} tokenId The id of the token to be transfered
    * @param {Contract} nftContract optional contract instance
    * @return {Promise<any>}
@@ -1020,5 +1022,53 @@ export class Nft {
     const nftContract = new this.web3.eth.Contract(this.nftAbi, nftAddress)
     const data = await nftContract.methods.getData(key).call()
     return data
+  }
+
+  /** Estimate gas cost for setTokenURI method
+   * @param nftAddress erc721 contract adress
+   * @param address user adress
+   * @param data input data for TokenURI
+   * @return {Promise<TransactionReceipt>} transaction receipt
+   */
+  public async estSetTokenURI(
+    nftAddress: string,
+    address: string,
+    data: string
+  ): Promise<any> {
+    const nftContract = new this.web3.eth.Contract(this.nftAbi, nftAddress)
+
+    const gasLimitDefault = this.GASLIMIT_DEFAULT
+    let estGas
+    try {
+      estGas = await nftContract.methods
+        .setTokenURI('1', data)
+        .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
+    } catch (e) {
+      estGas = gasLimitDefault
+    }
+
+    return estGas
+  }
+
+  /** set TokenURI on an nft
+   * @param nftAddress erc721 contract adress
+   * @param address user adress
+   * @param data input data for TokenURI
+   * @return {Promise<TransactionReceipt>} transaction receipt
+   */
+  public async setTokenURI(
+    nftAddress: string,
+    address: string,
+    data: string
+  ): Promise<any> {
+    const nftContract = new this.web3.eth.Contract(this.nftAbi, nftAddress)
+
+    const estGas = await this.estSetTokenURI(nftAddress, address, data)
+    const trxReceipt = await nftContract.methods.setTokenURI('1', data).send({
+      from: address,
+      gas: estGas + 1,
+      gasPrice: await getFairGasPrice(this.web3)
+    })
+    return trxReceipt
   }
 }
