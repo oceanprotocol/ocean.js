@@ -15,11 +15,9 @@ const configHelperNetworksBase: Config = {
   explorerUri: null,
   oceanTokenAddress: null,
   oceanTokenSymbol: 'OCEAN',
-  factoryAddress: '0x1234',
-  poolFactoryAddress: null,
+  poolTemplateAddress: null,
   fixedRateExchangeAddress: null,
   dispenserAddress: null,
-  metadataContractAddress: null,
   startBlock: 0
 }
 
@@ -158,21 +156,23 @@ export class ConfigHelper {
     let configAddresses: Partial<Config>
     if (DefaultContractsAddresses[network]) {
       const {
-        DTFactory,
-        BFactory,
         FixedRateExchange,
         Dispenser,
-        Metadata,
+        Staking,
+        poolTemplate,
+        OPFCommunityFeeCollector,
+        ERC721Factory,
         Ocean,
         chainId,
         startBlock
       } = DefaultContractsAddresses[network]
       configAddresses = {
-        factoryAddress: DTFactory,
-        poolFactoryAddress: BFactory,
+        erc721FactoryAddress: ERC721Factory,
+        sideStakingAddress: Staking,
+        opfCommunityFeeCollector: OPFCommunityFeeCollector,
+        poolTemplateAddress: poolTemplate,
         fixedRateExchangeAddress: FixedRateExchange,
         dispenserAddress: Dispenser,
-        metadataContractAddress: Metadata,
         oceanTokenAddress: Ocean,
         chainId: chainId,
         startBlock: startBlock,
@@ -190,21 +190,23 @@ export class ConfigHelper {
           )
         )
         const {
-          DTFactory,
-          BFactory,
           FixedRateExchange,
           Dispenser,
-          Metadata,
+          Staking,
+          poolTemplate,
+          ERC721Factory,
+          OPFCommunityFeeCollector,
           Ocean,
           chainId,
           startBlock
         } = data[network]
         configAddresses = {
-          factoryAddress: DTFactory,
-          poolFactoryAddress: BFactory,
+          erc721FactoryAddress: ERC721Factory,
+          sideStakingAddress: Staking,
+          opfCommunityFeeCollector: OPFCommunityFeeCollector,
+          poolTemplateAddress: poolTemplate,
           fixedRateExchangeAddress: FixedRateExchange,
           dispenserAddress: Dispenser,
-          metadataContractAddress: Metadata,
           oceanTokenAddress: Ocean,
           chainId: chainId,
           startBlock: startBlock,

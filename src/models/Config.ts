@@ -42,13 +42,13 @@ export class Config {
    * Factory address
    * @type {string}
    */
-  public factoryAddress?: string
+  public erc721FactoryAddress?: string
 
   /**
    * Factory ABI
    * @type {string}
    */
-  public factoryABI?: AbiItem | AbiItem[]
+  public erc721FFactoryABI?: AbiItem | AbiItem[]
 
   /**
    * datatokens ABI
@@ -57,10 +57,10 @@ export class Config {
   public datatokensABI?: AbiItem | AbiItem[]
 
   /**
-   * Pool Factory address
+   * Pool Template address
    * @type {string}
    */
-  public poolFactoryAddress?: string
+  public poolTemplateAddress?: string
 
   /**
    * Pool Factory ABI
@@ -99,16 +99,17 @@ export class Config {
   public dispenserABI?: AbiItem | AbiItem[]
 
   /**
-   * DDOContractAddress
+   * OPFCommunityFeeCollector
    * @type {string}
    */
-  public metadataContractAddress?: string
+  public opfCommunityFeeCollector?: string
 
   /**
-   * DDOContractABI
-   * @type {any}
+   * SideStaking address
+   * @type {string}
    */
-  public metadataContractABI?: AbiItem | AbiItem[]
+  public sideStakingAddress?: string
+
   /**
    * block number of the deployment
    * @type {number}

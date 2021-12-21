@@ -113,39 +113,25 @@ export class Provider {
     return signature
   }
 
-  /** Encrypt DDO using the Provider's own symmetric key
-   * @param {string} did Identifier of the asset to be registered in ocean
-   * @param {string} accountId Publisher address
-   * @param {string} document document description object (DDO)
+  /** Encrypt data using the Provider's own symmetric key
+   * @param {string} data data in json format that needs to be sent , it can either be a DDO or a File array
    * @param {string} providerUri provider uri address
-   * @param {string} fetchMethod fetch client instance
+   * @param {string} postMethod http client instance
    * @return {Promise<string>} urlDetails
    */
-  public async encrypt(
-    did: string,
-    accountId: string,
-    document: any,
-    providerUri: string,
-    fetchMethod: any
-  ): Promise<any> {
+  public async encrypt(data: any, providerUri: string, postMethod: any): Promise<any> {
     const providerEndpoints = await this.getEndpoints(providerUri)
     const serviceEndpoints = await this.getServiceEndpoints(
       providerUri,
       providerEndpoints
     )
-
-    const args = {
-      documentId: did,
-      document: JSON.stringify(document),
-      publisherAddress: accountId
-    }
     const path = this.getEndpointURL(serviceEndpoints, 'encrypt')
       ? this.getEndpointURL(serviceEndpoints, 'encrypt').urlPath
       : null
 
     if (!path) return null
     try {
-      const response = await fetchMethod(path, decodeURI(JSON.stringify(args)))
+      const response = await postMethod(path, decodeURI(JSON.stringify(data)))
       return response
     } catch (e) {
       LoggerInstance.error(e)
