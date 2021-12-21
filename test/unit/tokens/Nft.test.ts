@@ -78,12 +78,10 @@ describe('NFT', () => {
 
     nftAddress = await nftFactory.createNFT(nftOwner, nftData)
     nftDatatoken = new Nft(web3, ERC721Template.abi as AbiItem[])
-   
   })
-  it('#getTokenURI', async ()=> {
-    const tokenURI = await nftDatatoken.getTokenURI(nftAddress,1)
-    assert(tokenURI === 'https://oceanprotocol.com/nft/'
-      )
+  it('#getTokenURI', async () => {
+    const tokenURI = await nftDatatoken.getTokenURI(nftAddress, 1)
+    assert(tokenURI === 'https://oceanprotocol.com/nft/')
     console.log(tokenURI)
   })
 
@@ -414,5 +412,10 @@ describe('NFT', () => {
     }
     metadata = await nftDatatoken.getMetadata(nftAddress)
     assert(metadata[2] === '2')
+  })
+
+  it('#setTokenURI - should update TokenURI', async () => {
+    const tx = await nftDatatoken.setTokenURI(nftAddress, user1, 'test')
+    assert(tx.events.TokenURIUpdate)
   })
 })

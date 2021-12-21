@@ -2,7 +2,7 @@ import Config from '../models/Config'
 import fs from 'fs'
 import { homedir } from 'os'
 // eslint-disable-next-line import/no-named-default
-import { default as DefaultContractsAddresses } from '@oceanprotocol/contracts/addresses/address.json'
+import { default as DefaultContractsAddresses } from '@oceanprotocol/contracts/address.json'
 import LoggerInstance from './Logger'
 
 const configHelperNetworksBase: Config = {
@@ -49,7 +49,7 @@ export const configHelperNetworks: Config[] = [
     chainId: 4,
     network: 'rinkeby',
     nodeUri: 'https://rinkeby.infura.io/v3',
-    providerUri: 'https://providerv4.rinkeby.oceanprotocol.com ',
+    providerUri: 'https://providerv4.rinkeby.oceanprotocol.com',
     subgraphUri: 'https://subgraphv4.rinkeby.oceanprotocol.com',
     explorerUri: 'https://rinkeby.etherscan.io',
     startBlock: 7294090

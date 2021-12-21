@@ -7,7 +7,7 @@ import defaultDatatokensAbi from '@oceanprotocol/contracts/artifacts/contracts/t
 import defaultDatatokensEnterpriseAbi from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC20TemplateEnterprise.sol/ERC20TemplateEnterprise.json'
 import { LoggerInstance, getFairGasPrice } from '../utils'
 import { FreOrderParams, FreCreationParams } from '../interfaces'
-import { Nft } from "./NFT"
+import { Nft } from './NFT'
 /**
  * ERC20 ROLES
  */
@@ -225,7 +225,7 @@ export class Datatoken {
     fixedRateParams: FreCreationParams
   ): Promise<TransactionReceipt> {
     const dtContract = new this.web3.eth.Contract(this.datatokensAbi, dtAddress)
-    if (!await this.isERC20Deployer(dtAddress,address)) {
+    if (!(await this.isERC20Deployer(dtAddress, address))) {
       throw new Error(`User is not ERC20 Deployer`)
     }
     if (!fixedRateParams.allowedConsumer)
@@ -325,12 +325,12 @@ export class Datatoken {
     dispenserAddress: string,
     dispenserParams: DispenserParams
   ): Promise<TransactionReceipt> {
-    if (!await this.isERC20Deployer(dtAddress,address)) {
+    if (!(await this.isERC20Deployer(dtAddress, address))) {
       throw new Error(`User is not ERC20 Deployer`)
     }
 
     const dtContract = new this.web3.eth.Contract(this.datatokensAbi, dtAddress)
-    
+
     if (!dispenserParams.allowedSwapper)
       dispenserParams.allowedSwapper = '0x0000000000000000000000000000000000000000'
 
@@ -1114,7 +1114,7 @@ export class Datatoken {
     address: string,
     value: string
   ): Promise<TransactionReceipt> {
-    if (!await this.isERC20Deployer(dtAddress,address)) {
+    if (!(await this.isERC20Deployer(dtAddress, address))) {
       throw new Error(`User is not ERC20 Deployer`)
     }
 
@@ -1170,11 +1170,11 @@ export class Datatoken {
     dtAddress: string,
     address: string
   ): Promise<TransactionReceipt> {
-    if(await this.nft.getNftOwner(await this.getNFTAddress(dtAddress)) != address) {
+    if ((await this.nft.getNftOwner(await this.getNFTAddress(dtAddress))) !== address) {
       throw new Error('Caller is NOT Nft Owner')
     }
     const dtContract = new this.web3.eth.Contract(this.datatokensAbi, dtAddress)
-    
+
     const estGas = await this.estGasCleanPermissions(dtAddress, address, dtContract)
 
     // Call cleanPermissions function of the contract

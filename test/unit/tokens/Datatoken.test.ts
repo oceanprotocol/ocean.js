@@ -136,16 +136,15 @@ describe('Datatoken', () => {
     assert((await datatoken.getDTPermissions(datatokenAddress, user1)).minter === true)
   })
 
-
   it('#addMinter - should FAIL TO add user1 as minter, if user has ERC20Deployer permission', async () => {
-    assert((await nftDatatoken.isErc20Deployer(nftAddress,user3)) === false)
+    assert((await nftDatatoken.isErc20Deployer(nftAddress, user3)) === false)
     assert((await datatoken.getDTPermissions(datatokenAddress, user2)).minter === false)
 
-   try {
-    await datatoken.addMinter(datatokenAddress, user3, user2)
-   } catch(e) {
-     assert(e.message === 'Caller is not ERC20Deployer')
-   }
+    try {
+      await datatoken.addMinter(datatokenAddress, user3, user2)
+    } catch (e) {
+      assert(e.message === 'Caller is not ERC20Deployer')
+    }
 
     assert((await datatoken.getDTPermissions(datatokenAddress, user2)).minter === false)
   })
@@ -175,7 +174,7 @@ describe('Datatoken', () => {
   })
 
   it('#createFixedRate - should FAIL create FRE if NOT ERC20Deployer', async () => {
-    assert((await nftDatatoken.isErc20Deployer(nftAddress,user3)) === false)
+    assert((await nftDatatoken.isErc20Deployer(nftAddress, user3)) === false)
     const freParams: FreCreationParams = {
       fixedRateAddress: contractHandler.fixedRateAddress,
       baseTokenAddress: contractHandler.daiAddress,
@@ -186,11 +185,11 @@ describe('Datatoken', () => {
       fixedRate: web3.utils.toWei('1'),
       marketFee: 1e15
     }
-    try {await datatoken.createFixedRate(datatokenAddress, user3, freParams)}
-    catch(e) {
+    try {
+      await datatoken.createFixedRate(datatokenAddress, user3, freParams)
+    } catch (e) {
       assert(e.message === 'User is not ERC20 Deployer')
     }
-  
   })
 
   it('#createDispenser - method creates a dispenser for the erc20DT', async () => {
@@ -213,26 +212,26 @@ describe('Datatoken', () => {
       maxTokens: '10',
       maxBalance: '100'
     }
-    assert((await nftDatatoken.isErc20Deployer(nftAddress,user3)) === false)
-    try {await datatoken.createDispenser(
-      datatokenAddress,
-      user2,
-      contractHandler.dispenserAddress,
-      dispenserParams
-    )} catch(e){
+    assert((await nftDatatoken.isErc20Deployer(nftAddress, user3)) === false)
+    try {
+      await datatoken.createDispenser(
+        datatokenAddress,
+        user2,
+        contractHandler.dispenserAddress,
+        dispenserParams
+      )
+    } catch (e) {
       assert(e.message === 'User is not ERC20 Deployer')
     }
-    
   })
 
   it('#removeMinter - should FAIL to remove user1 as minter, if caller is NOT ERC20Deployer', async () => {
     assert((await nftDatatoken.isErc20Deployer(nftAddress, user2)) === false)
     assert((await datatoken.getDTPermissions(datatokenAddress, user1)).minter === true)
 
-    try{
+    try {
       await datatoken.removeMinter(datatokenAddress, user2, user1)
-
-    } catch(e) {
+    } catch (e) {
       assert(e.message === 'Caller is not ERC20Deployer')
     }
     assert((await datatoken.getDTPermissions(datatokenAddress, user1)).minter === true)
@@ -253,15 +252,15 @@ describe('Datatoken', () => {
       (await datatoken.getDTPermissions(datatokenAddress, user2)).paymentManager === false
     )
 
-    try {await datatoken.addPaymentManager(datatokenAddress, user1, user2)}
-    catch(e){
+    try {
+      await datatoken.addPaymentManager(datatokenAddress, user1, user2)
+    } catch (e) {
       assert(e.message === 'Caller is not ERC20Deployer')
     }
     assert(
       (await datatoken.getDTPermissions(datatokenAddress, user2)).paymentManager === false
     )
   })
-
 
   it('#addPaymentManager - should add user2 as paymentManager, if caller has ERC20Deployer permission', async () => {
     assert((await nftDatatoken.isErc20Deployer(nftAddress, nftOwner)) === true)
@@ -281,16 +280,16 @@ describe('Datatoken', () => {
     assert(
       (await datatoken.getDTPermissions(datatokenAddress, user2)).paymentManager === true
     )
-    try {await datatoken.removePaymentManager(datatokenAddress, user1, user2)} catch(e){
+    try {
+      await datatoken.removePaymentManager(datatokenAddress, user1, user2)
+    } catch (e) {
       assert(e.message === 'Caller is not ERC20Deployer')
     }
-   
 
     assert(
       (await datatoken.getDTPermissions(datatokenAddress, user2)).paymentManager === true
     )
   })
-
 
   it('#removePaymentManager - should remove user2 as paymentManager, if Caller has ERC20Deployer permission', async () => {
     assert((await nftDatatoken.isErc20Deployer(nftAddress, nftOwner)) === true)
@@ -416,21 +415,20 @@ describe('Datatoken', () => {
       (await datatoken.getDTPermissions(datatokenAddress, user1)).paymentManager === true
     )
 
-    try {await datatoken.cleanPermissions(datatokenAddress, user2)} catch(e){
+    try {
+      await datatoken.cleanPermissions(datatokenAddress, user2)
+    } catch (e) {
       assert(e.message === 'Caller is NOT Nft Owner')
     }
 
     assert((await datatoken.getPaymentCollector(datatokenAddress)) === user3)
 
-    assert(
-      (await datatoken.getDTPermissions(datatokenAddress, nftOwner)).minter === true
-    )
+    assert((await datatoken.getDTPermissions(datatokenAddress, nftOwner)).minter === true)
 
     assert(
       (await datatoken.getDTPermissions(datatokenAddress, user1)).paymentManager === true
     )
   })
-
 
   it('#cleanPermissions - should clean permissions at ERC20 level', async () => {
     assert((await datatoken.getDTPermissions(datatokenAddress, nftOwner)).minter === true)
@@ -458,7 +456,6 @@ describe('Datatoken', () => {
     const address = await datatoken.getNFTAddress(datatokenAddress)
     assert(address, 'Not able to get the parent ERC721 address')
   })
- 
 
   it('#setData - should set a value into 725Y standard, if Caller has ERC20Deployer permission', async () => {
     const data = web3.utils.asciiToHex('SomeData')
@@ -476,11 +473,12 @@ describe('Datatoken', () => {
     const OldData = web3.utils.asciiToHex('SomeData')
     assert((await nftDatatoken.isErc20Deployer(nftAddress, user1)) === false)
 
-    try { await datatoken.setData(datatokenAddress, user1, data)} catch(e){
-     assert(e.message === 'User is not ERC20 Deployer')
+    try {
+      await datatoken.setData(datatokenAddress, user1, data)
+    } catch (e) {
+      assert(e.message === 'User is not ERC20 Deployer')
     }
     const key = web3.utils.keccak256(datatokenAddress)
     assert((await nftDatatoken.getData(nftAddress, key)) === OldData)
-
   })
 })
