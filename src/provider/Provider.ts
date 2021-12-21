@@ -116,7 +116,7 @@ export class Provider {
   /** Encrypt data using the Provider's own symmetric key
    * @param {string} data data in json format that needs to be sent , it can either be a DDO or a File array
    * @param {string} providerUri provider uri address
-   * @param {string} postMethod http client instance
+   * @param {string} postMethod http post method
    * @return {Promise<string>} urlDetails
    */
   public async encrypt(data: any, providerUri: string, postMethod: any): Promise<any> {
