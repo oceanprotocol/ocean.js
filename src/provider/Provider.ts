@@ -122,8 +122,6 @@ export class Provider {
    * @return {Promise<string>} urlDetails
    */
   public async encrypt(
-    did: string,
-    accountId: string,
     document: any,
     providerUri: string,
     fetchMethod: any
@@ -134,18 +132,13 @@ export class Provider {
       providerEndpoints
     )
 
-    const args = {
-      documentId: did,
-      document: document,
-      publisherAddress: accountId
-    }
     const path = this.getEndpointURL(serviceEndpoints, 'encrypt')
       ? this.getEndpointURL(serviceEndpoints, 'encrypt').urlPath
       : null
 
     if (!path) return null
     try {
-      const response = await fetchMethod(path, decodeURI(JSON.stringify(args)))
+      const response = await fetchMethod(path, decodeURI(JSON.stringify(document)))
       return response
     } catch (e) {
       LoggerInstance.error(e)

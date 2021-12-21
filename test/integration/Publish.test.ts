@@ -1,11 +1,27 @@
 import config from './config'
 import ProviderInstance, { Provider } from '../../src/provider/Provider'
 import { assert } from 'chai'
+import { NftFactory, NftCreateData } from '../../src/factories/index'
+import { Erc20CreateParams } from '../../src/interfaces'
 import { getHash } from '../../src/utils'
 import { Nft } from '../../src/tokens/NFT'
 import Web3 from 'web3'
 import fetch from 'cross-fetch'
+import { SHA256 } from 'crypto-js'
+import { homedir } from 'os'
+import fs from 'fs'
+import console from 'console'
 
+const data = JSON.parse(
+  fs.readFileSync(
+    process.env.ADDRESS_FILE ||
+      `${homedir}/.ocean/ocean-contracts/artifacts/address.json`,
+    'utf8'
+  )
+)
+
+const addresses = data.development
+console.log(addresses)
 const web3 = new Web3('http://127.0.0.1:8545')
 const ddo = {
   '@context': ['https://w3id.org/did/v1'],
@@ -41,28 +57,43 @@ const ddo = {
 describe('Publish tests', async () => {
   it('should deploy contracts', async () => {
     const nft = new Nft(web3)
+    const Factory = new NftFactory(addresses['ERC721Factory'], web3)
+    const accounts = await web3.eth.getAccounts()
+    const accountId = accounts[0]
+    const nftParams:NftCreateData = {name: "testNFT", symbol: "TST", templateIndex:1, tokenURI: ""}
+    const erc20Params:Erc20CreateParams= {templateIndex: 1, cap:"100000", feeAmount:"0",
+    feeManager : "0x0000000000000000000000000000000000000000",feeToken: "0x0000000000000000000000000000000000000000",
+     minter: accountId, mpFeeAddress: "0x0000000000000000000000000000000000000000" }
+    const result = await Factory.createNftWithErc(accountId,nftParams, erc20Params)
+    const erc721Address = result.events.NFTCreated.returnValues[0]
+    const datatokenAddress = result.events.TokenCreated.returnValues[0]
+    
+    //update ddo and set the right did
+    const chain = await web3.eth.getChainId()
+    ddo.id = "did:op:"+SHA256(web3.utils.toChecksumAddress(erc721Address)+chain.toString(10))
 
-    const erc721Address = ''
-    const accountId = ''
-    const encryptedResponse = await ProviderInstance.encrypt(
-      'did:op:efba17455c127a885ec7830d687a8f6e64f5ba559f8506f8723c1f10f05c049c',
-      accountId,
+    console.log(ddo)
+    const providerResponse = await ProviderInstance.encrypt(
       ddo,
-      'https://providerv4.rinkeby.oceanprotocol.com/',
+      'http://172.15.0.4:8030',
       (url: string, body: string) => {
         //replace with fetch
-        return axios.post(url, body, {
-          headers: { 'Content-Type': 'application/octet-stream' },
-          cancelToken: newCancelToken()
+        return fetch(url, {
+          method: 'POST',
+          body: body,
+          headers: { 'Content-Type': 'application/octet-stream' }
         })
       }
     )
-    const metadataHash = getHash(ddo)
+    const encryptedResponse = await providerResponse.text()
+    console.log(encryptedResponse)
+    const metadataHash = getHash(JSON.stringify(ddo))
+    console.log(metadataHash)
     const res = await nft.setMetadata(
       erc721Address,
       accountId,
       0,
-      'https://providerv4.rinkeby.oceanprotocol.com/',
+      'http://172.15.0.4:8030',
       '',
       '0x2',
       encryptedResponse,
