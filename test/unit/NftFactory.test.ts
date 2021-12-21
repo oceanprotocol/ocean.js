@@ -17,6 +17,7 @@ import {
   Erc20CreateParams,
   PoolCreationParams
 } from '../../src/interfaces'
+import { ZERO_ADDRESS } from '../../src/utils'
 
 const web3 = new Web3('http://127.0.0.1:8545')
 
@@ -289,6 +290,51 @@ describe('Nft Factory test', () => {
     expect(txReceipt.events.NFTCreated.event === 'NFTCreated')
     expect(txReceipt.events.TokenCreated.event === 'TokenCreated')
     expect(txReceipt.events.NewFixedRate.event === 'NewFixedRate')
+
+    // stored for later use in startMultipleTokenOrder test
+    dtAddress2 = txReceipt.events.TokenCreated.returnValues.newTokenAddress
+  })
+
+  it('#createNftErcWithDispenser- should create an NFT, a datatoken and create a Dispenser', async () => {
+    // we prepare transaction parameters objects
+    const nftData: NftCreateData = {
+      name: '72120Bundle',
+      symbol: '72Bundle',
+      templateIndex: 1,
+      tokenURI: 'https://oceanprotocol.com/nft/'
+    }
+
+    const ercParams: Erc20CreateParams = {
+      templateIndex: 1,
+      minter: contracts.accounts[0],
+      feeManager: user3,
+      mpFeeAddress: user2,
+      feeToken: '0x0000000000000000000000000000000000000000',
+      cap: '1000000',
+      feeAmount: '0',
+      name: 'ERC20B1',
+      symbol: 'ERC20DT1Symbol'
+    }
+
+    const dispenserParams = {
+      dispenserAddress: contracts.dispenserAddress,
+      maxTokens: web3.utils.toWei('1'),
+      maxBalance: web3.utils.toWei('1'),
+      withMint: true,
+      allowedSwapper: ZERO_ADDRESS
+    }
+
+    const txReceipt = await nftFactory.createNftErcWithDispenser(
+      contracts.accounts[0],
+      nftData,
+      ercParams,
+      dispenserParams
+    )
+
+    // EVENTS HAVE BEEN EMITTED
+    expect(txReceipt.events.NFTCreated.event === 'NFTCreated')
+    expect(txReceipt.events.TokenCreated.event === 'TokenCreated')
+    expect(txReceipt.events.DispenserCreated.event === 'DispenserCreated')
 
     // stored for later use in startMultipleTokenOrder test
     dtAddress2 = txReceipt.events.TokenCreated.returnValues.newTokenAddress
