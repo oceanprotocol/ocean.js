@@ -11,7 +11,7 @@ export interface PoolCreationParams {
   vestedBlocks: number
   initialBasetokenLiquidity: string
   swapFeeLiquidityProvider: number
-  swapFeeMarketPlaceRunner: number
+  swapFeeMarketRunner: number
 }
 
 export interface CurrentFees {
