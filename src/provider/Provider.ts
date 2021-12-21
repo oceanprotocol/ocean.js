@@ -145,7 +145,7 @@ export class Provider {
    * @param {string} fetchMethod fetch client instance
    * @return {Promise<FileMetadata[]>} urlDetails
    */
-  public async fileinfo(
+  public async fileInfo(
     url: string,
     providerUri: string,
     fetchMethod: any
@@ -155,7 +155,7 @@ export class Provider {
       providerUri,
       providerEndpoints
     )
-    const args = { url }
+    const args = { url: url, type: 'url' }
     const files: FileMetadata[] = []
     const path = this.getEndpointURL(serviceEndpoints, 'fileinfo')
       ? this.getEndpointURL(serviceEndpoints, 'fileinfo').urlPath
