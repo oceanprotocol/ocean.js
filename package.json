@@ -30,7 +30,7 @@
     "test:dispenser": "mocha --config=test/unit/.mocharc.json --node-env=test --exit 'test/unit/pools/dispenser/Dispenser.test.ts'",
     "test:dt": "mocha --config=test/unit/.mocharc.json --node-env=test --exit 'test/unit/Datatoken.test.ts'",
     "test:nftDt": "mocha --config=test/unit/.mocharc.json --node-env=test --exit 'test/unit/NFT.test.ts'",
-    "test:factory": "mocha --config=test/unit/.mocharc.json --node-env=test --exit 'test/unit/NFTFactory.test.ts'",
+    "test:factory": "mocha --config=test/unit/.mocharc.json --node-env=test --exit 'test/unit/NftFactory.test.ts'",
     "test:router": "mocha --config=test/unit/.mocharc.json --node-env=test --exit 'test/unit/pools/Router.test.ts'",
     "test:unit": "mocha --config=test/unit/.mocharc.json --node-env=test --exit 'test/unit/**/*.test.ts'",
     "test:unit:cover": "nyc --report-dir coverage/unit npm run test:unit",
