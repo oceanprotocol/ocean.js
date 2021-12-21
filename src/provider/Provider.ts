@@ -140,7 +140,7 @@ export class Provider {
   }
 
   /** Get URL details (if possible)
-   * @param {string | DID} url or did
+   * @param {string} url or did
    * @param {string} providerUri Identifier of the asset to be registered in ocean
    * @param {string} fetchMethod fetch client instance
    * @return {Promise<FileMetadata[]>} urlDetails
