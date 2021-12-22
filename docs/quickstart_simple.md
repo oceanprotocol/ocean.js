@@ -114,8 +114,8 @@ Now open the `index.js` file in your text editor. Enter the following code and s
 const Web3 = require("web3");
 const { Ocean, DataTokens } = require("@oceanprotocol/lib");
 
-const { factoryABI } = require("@oceanprotocol/contracts/artifacts/DTFactory.json");
-const { datatokensABI } = require("@oceanprotocol/contracts/artifacts/DataTokenTemplate.json");
+const factoryABI = require("@oceanprotocol/contracts/artifacts/DTFactory.json").abi;
+const datatokensABI = require("@oceanprotocol/contracts/artifacts/DataTokenTemplate.json").abi;
 const { config, contracts, urls } = require("./config");
 
 
