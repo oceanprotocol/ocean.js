@@ -78,6 +78,11 @@ describe('NFT', () => {
     nftAddress = await nftFactory.createNFT(nftOwner, nftData)
     nftDatatoken = new Nft(web3, ERC721Template.abi as AbiItem[])
   })
+  it('#getTokenURI', async () => {
+    const tokenURI = await nftDatatoken.getTokenURI(nftAddress, 1)
+    assert(tokenURI === 'https://oceanprotocol.com/nft/')
+    console.log(tokenURI)
+  })
 
   it('#createERC20 - should create a new ERC20 DT from NFT contract', async () => {
     const erc20Address = await nftDatatoken.createErc20(
@@ -94,6 +99,26 @@ describe('NFT', () => {
       1
     )
     assert(erc20Address !== null)
+  })
+
+  it('#createERC20 - should fail to create a new ERC20 DT if not ERC20Deployer', async () => {
+    try {
+      await nftDatatoken.createErc20(
+        nftAddress,
+        user1,
+        nftOwner,
+        user1,
+        user2,
+        '0x0000000000000000000000000000000000000000',
+        '0',
+        '10000',
+        nftName,
+        nftSymbol,
+        1
+      )
+    } catch (e) {
+      assert(e.message === 'Caller is not ERC20Deployer')
+    }
   })
 
   // Manager
@@ -138,14 +163,19 @@ describe('NFT', () => {
     assert((await nftDatatoken.isErc20Deployer(nftAddress, user1)) === true)
   })
 
+  it('#addManager - should fail to add a new Manager, if NOT NFT Owner', async () => {
+    try {
+      await nftDatatoken.addManager(nftAddress, user1, user1)
+    } catch (e) {
+      assert(e.message === 'Caller is not NFT Owner')
+    }
+  })
+
   it('#addERC20Deployer - should fail to add ERC20deployer if NOT Manager', async () => {
     try {
       await nftDatatoken.addErc20Deployer(nftAddress, user1, user1)
     } catch (e) {
-      assert(
-        e.message ===
-          'Returned error: VM Exception while processing transaction: revert ERC721RolesAddress: NOT MANAGER'
-      )
+      assert(e.message === 'Caller is not Manager')
     }
   })
 
@@ -157,15 +187,25 @@ describe('NFT', () => {
     assert((await nftDatatoken.isErc20Deployer(nftAddress, user1)) === false)
   })
 
-  it('#removeERC20Deployer - should fail and remove ERC20deployer if NOT Manager', async () => {
+  it('#removeERC20Deployer - should fail and remove ERC20deployer if NOT Manager nor himself an ERC20Deployer', async () => {
+    await nftDatatoken.addErc20Deployer(nftAddress, nftOwner, user1)
+    assert((await nftDatatoken.isErc20Deployer(nftAddress, user1)) === true)
     try {
       await nftDatatoken.removeErc20Deployer(nftAddress, user1, user1)
     } catch (e) {
-      assert(
-        e.message ===
-          'Returned error: VM Exception while processing transaction: revert ERC721RolesAddress: Not enough permissions to remove from ERC20List'
-      )
+      assert(e.message === 'Caller is not Manager nor ERC20Deployer')
     }
+    assert((await nftDatatoken.isErc20Deployer(nftAddress, user1)) === true)
+  })
+
+  it('#removeERC20Deployer - should fail to remove himself an ERC20Deployer', async () => {
+    assert((await nftDatatoken.isErc20Deployer(nftAddress, user1)) === true)
+    try {
+      await nftDatatoken.removeErc20Deployer(nftAddress, user1, user1)
+    } catch (e) {
+      assert(e.message === 'Caller is not Manager nor ERC20Deployer')
+    }
+    assert((await nftDatatoken.isErc20Deployer(nftAddress, user1)) === true)
   })
 
   //  MetadataUpdate
@@ -185,10 +225,7 @@ describe('NFT', () => {
     try {
       await nftDatatoken.addMetadataUpdater(nftAddress, user1, user1)
     } catch (e) {
-      assert(
-        e.message ===
-          'Returned error: VM Exception while processing transaction: revert ERC721RolesAddress: NOT MANAGER'
-      )
+      assert(e.message === 'Caller is not Manager')
     }
   })
 
@@ -208,10 +245,7 @@ describe('NFT', () => {
     try {
       await nftDatatoken.removeMetadataUpdater(nftAddress, user1, user1)
     } catch (e) {
-      assert(
-        e.message ===
-          'Returned error: VM Exception while processing transaction: revert ERC721RolesAddress: Not enough permissions to remove from metadata list'
-      )
+      assert(e.message === 'Caller is not Manager nor Metadata Updater')
     }
   })
 
@@ -228,10 +262,7 @@ describe('NFT', () => {
     try {
       await nftDatatoken.addStoreUpdater(nftAddress, user1, user1)
     } catch (e) {
-      assert(
-        e.message ===
-          'Returned error: VM Exception while processing transaction: revert ERC721RolesAddress: NOT MANAGER'
-      )
+      assert(e.message === 'Caller is not Manager')
     }
   })
 
@@ -247,10 +278,7 @@ describe('NFT', () => {
     try {
       await nftDatatoken.removeStoreUpdater(nftAddress, user1, user1)
     } catch (e) {
-      assert(
-        e.message ===
-          'Returned error: VM Exception while processing transaction: revert ERC721RolesAddress: Not enough permissions to remove from 725StoreList'
-      )
+      assert(e.message === `Caller is not Manager nor storeUpdater`)
     }
   })
 
@@ -296,6 +324,93 @@ describe('NFT', () => {
 
     assert((await nftDatatoken.isErc20Deployer(nftAddress, user2)) === false)
     assert((await nftDatatoken.getNftPermissions(nftAddress, nftOwner)).manager === false)
+  })
+
+  it('#setMetaData - should succeed to update metadata if metadataUpdater', async () => {
+    await nftDatatoken.addManager(nftAddress, user1, user1)
+    await nftDatatoken.addMetadataUpdater(nftAddress, user1, user1)
+    const metaDataDecryptorUrl = 'http://myprovider:8030'
+    const metaDataDecryptorAddress = '0x123'
+    const metaDataState = 1
+    const data = web3.utils.asciiToHex(user2)
+    const dataHash = web3.utils.asciiToHex(user2)
+    const flags = web3.utils.asciiToHex(user2)
+    assert(
+      (await nftDatatoken.getNftPermissions(nftAddress, user1)).updateMetadata === true
+    )
+    await nftDatatoken.setMetadata(
+      nftAddress,
+      user1,
+      metaDataState,
+      metaDataDecryptorUrl,
+      metaDataDecryptorAddress,
+      flags,
+      data,
+      dataHash
+    )
+
+    const metadata = await nftDatatoken.getMetadata(nftAddress)
+    assert(metadata[0] === metaDataDecryptorUrl)
+    assert(metadata[1] === metaDataDecryptorAddress)
+    //  assert((await nftDatatoken.getMetadata(nftAddress)).metaDataDecryptorAddress ===  metaDataDecryptorAddress)
+  })
+  it('#setMetaData - should fail to update metadata if NOT metadataUpdater', async () => {
+    const metaDataDecryptorUrl = 'http://myprovider:8030'
+    const metaDataDecryptorAddress = '0x123'
+    const metaDataState = 1
+    const data = web3.utils.asciiToHex(user2)
+    const dataHash = web3.utils.asciiToHex(user2)
+    const flags = web3.utils.asciiToHex(user2)
+    assert(
+      (await nftDatatoken.getNftPermissions(nftAddress, user3)).updateMetadata === false
+    )
+    try {
+      await nftDatatoken.setMetadata(
+        nftAddress,
+        user3,
+        metaDataState,
+        metaDataDecryptorUrl,
+        metaDataDecryptorAddress,
+        flags,
+        data,
+        dataHash
+      )
+    } catch (e) {
+      assert(e.message === 'Caller is not Metadata updater')
+    }
+    assert(
+      (await nftDatatoken.getNftPermissions(nftAddress, user3)).updateMetadata === false
+    )
+  })
+  it('#setMetaDataState - should succeed to update MetadataState if metadataUpdater', async () => {
+    await nftDatatoken.addManager(nftAddress, user1, user1)
+    await nftDatatoken.addMetadataUpdater(nftAddress, user1, user1)
+    let metadata = await nftDatatoken.getMetadata(nftAddress)
+
+    assert(metadata[2] === '1')
+    assert(
+      (await nftDatatoken.getNftPermissions(nftAddress, user1)).updateMetadata === true
+    )
+
+    await nftDatatoken.setMetadataState(nftAddress, user1, 2)
+
+    metadata = await nftDatatoken.getMetadata(nftAddress)
+    assert(metadata[2] === '2')
+  })
+
+  it('#setMetaDataState - should fail to update MetadataState if NOT metadataUpdater', async () => {
+    let metadata = await nftDatatoken.getMetadata(nftAddress)
+    assert(metadata[2] === '2')
+    assert(
+      (await nftDatatoken.getNftPermissions(nftAddress, user3)).updateMetadata === false
+    )
+    try {
+      await nftDatatoken.setMetadataState(nftAddress, user3, 1)
+    } catch (e) {
+      assert(e.message === 'Caller is not Metadata updater')
+    }
+    metadata = await nftDatatoken.getMetadata(nftAddress)
+    assert(metadata[2] === '2')
   })
 
   it('#setTokenURI - should update TokenURI', async () => {

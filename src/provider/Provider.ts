@@ -203,7 +203,7 @@ export class Provider {
     serviceType: string,
     consumerAddress: string,
     providerUri: string,
-    fetchMethod: any,
+    getMethod: any,
     userCustomParameters?: UserCustomParameters
   ): Promise<string> {
     const providerEndpoints = await this.getEndpoints(providerUri)
@@ -224,8 +224,8 @@ export class Provider {
     if (userCustomParameters)
       initializeUrl += '&userdata=' + encodeURI(JSON.stringify(userCustomParameters))
     try {
-      const response = await fetchMethod(initializeUrl)
-      return await response.text()
+      const response = await getMethod(initializeUrl)
+      return await response
     } catch (e) {
       LoggerInstance.error(e)
       throw new Error('Asset URL not found or not available.')
