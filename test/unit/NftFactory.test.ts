@@ -2,6 +2,7 @@ import { assert, expect } from 'chai'
 import { AbiItem } from 'web3-utils/types'
 import { TestContractHandler } from '../TestContractHandler'
 import Web3 from 'web3'
+import { ecsign } from 'ethereumjs-util'
 import ERC721Factory from '@oceanprotocol/contracts/artifacts/contracts/ERC721Factory.sol/ERC721Factory.json'
 import ERC721Template from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC721Template.sol/ERC721Template.json'
 import SideStaking from '@oceanprotocol/contracts/artifacts/contracts/pools/ssContracts/SideStaking.sol/SideStaking.json'
@@ -20,6 +21,13 @@ import {
 import { ZERO_ADDRESS } from '../../src/utils'
 
 const web3 = new Web3('http://127.0.0.1:8545')
+function signMessage(message, privateKey) {
+  const { v, r, s } = ecsign(
+    Buffer.from(message.slice(2), 'hex'),
+    Buffer.from(privateKey, 'hex')
+  )
+  return { v, r, s }
+}
 
 describe('Nft Factory test', () => {
   let factoryOwner: string
@@ -375,24 +383,42 @@ describe('Nft Factory test', () => {
     expect(await dtContract.methods.balanceOf(user2).call()).to.equal(dtAmount)
     expect(await dtContract2.methods.balanceOf(user2).call()).to.equal(dtAmount)
 
+    const providerData = JSON.stringify({ timeout: 0 })
+    const message = web3.utils.soliditySha3(
+      { t: 'bytes', v: web3.utils.toHex(web3.utils.asciiToHex(providerData)) },
+      { t: 'address', v: user3 },
+      { t: 'address', v: '0x0000000000000000000000000000000000000000' },
+      { t: 'uint256', v: '1' }
+    )
+    const signedMessage = signMessage(
+      message,
+      '7c852118294e51e653712a81e05800f419141751be58f605c371e15141b007a6'
+    )
+    console.log('signedMessage', signedMessage)
     const orders: TokenOrder[] = [
       {
         tokenAddress: dtAddress,
         consumer: consumer,
-        amount: dtAmount,
         serviceIndex: serviceIndex,
         providerFeeAddress: consumeFeeAddress,
         providerFeeToken: consumeFeeToken,
-        providerFeeAmount: consumeFeeAmount
+        providerFeeAmount: consumeFeeAmount,
+        v: signedMessage.v,
+        r: signedMessage.r.toString(),
+        s: signedMessage.s.toString(),
+        providerDatas: web3.utils.toHex(web3.utils.asciiToHex(providerData))
       },
       {
         tokenAddress: dtAddress2,
         consumer: consumer,
-        amount: dtAmount,
         serviceIndex: serviceIndex,
         providerFeeAddress: consumeFeeAddress,
         providerFeeToken: consumeFeeToken,
-        providerFeeAmount: consumeFeeAmount
+        providerFeeAmount: consumeFeeAmount,
+        v: signedMessage.v,
+        r: signedMessage.r.toString(),
+        s: signedMessage.s.toString(),
+        providerDatas: web3.utils.toHex(web3.utils.asciiToHex(providerData))
       }
     ]
 

@@ -1,5 +1,6 @@
 import { assert } from 'chai'
 import Web3 from 'web3'
+import { ecsign } from 'ethereumjs-util'
 import ERC20TemplateEnterprise from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC20TemplateEnterprise.sol/ERC20TemplateEnterprise.json'
 import PoolTemplate from '@oceanprotocol/contracts/artifacts/contracts/pools/balancer/BPool.sol/BPool.json'
 import ERC721Factory from '@oceanprotocol/contracts/artifacts/contracts/ERC721Factory.sol/ERC721Factory.json'
@@ -18,6 +19,14 @@ import { AbiItem } from 'web3-utils'
 import { FreCreationParams, FreOrderParams } from '../../../src/interfaces'
 
 const web3 = new Web3('http://127.0.0.1:8545')
+
+function signMessage(message, privateKey) {
+  const { v, r, s } = ecsign(
+    Buffer.from(message.slice(2), 'hex'),
+    Buffer.from(privateKey, 'hex')
+  )
+  return { v, r, s }
+}
 
 describe('Datatoken', () => {
   let nftOwner: string
@@ -340,15 +349,30 @@ describe('Datatoken', () => {
       'User2 does not hold 0 datatokens'
     )
 
+    const providerData = JSON.stringify({ timeout: 0 })
+    const message = web3.utils.soliditySha3(
+      { t: 'bytes', v: web3.utils.toHex(web3.utils.asciiToHex(providerData)) },
+      { t: 'address', v: user3 },
+      { t: 'address', v: '0x0000000000000000000000000000000000000000' },
+      { t: 'uint256', v: '1' }
+    )
+    const signedMessage = signMessage(
+      message,
+      '7c852118294e51e653712a81e05800f419141751be58f605c371e15141b007a6'
+    )
+
     const order = await datatoken.startOrder(
       datatokenAddress,
       user1,
       user2,
-      '1',
       1,
       user3,
       '0x0000000000000000000000000000000000000000',
-      '0'
+      '0',
+      signedMessage.v,
+      signedMessage.r.toString(),
+      signedMessage.s.toString(),
+      web3.utils.toHex(web3.utils.asciiToHex(providerData))
     )
     assert(order !== null)
 
@@ -366,13 +390,28 @@ describe('Datatoken', () => {
   })
 
   it('#buyFromDispenserAndOrder- Enterprise method', async () => {
+    const providerData = JSON.stringify({ timeout: 0 })
+    const message = web3.utils.soliditySha3(
+      { t: 'bytes', v: web3.utils.toHex(web3.utils.asciiToHex(providerData)) },
+      { t: 'address', v: user3 },
+      { t: 'address', v: '0x0000000000000000000000000000000000000000' },
+      { t: 'uint256', v: '1' }
+    )
+    const signedMessage = signMessage(
+      message,
+      '7c852118294e51e653712a81e05800f419141751be58f605c371e15141b007a6'
+    )
+
     const order: OrderParams = {
       consumer: user1,
-      amount: '1',
       serviceIndex: 1,
       providerFeeAddress: user1,
       providerFeeToken: '0x0000000000000000000000000000000000000000',
-      providerFeeAmount: '0'
+      providerFeeAmount: '0',
+      v: signedMessage.v,
+      r: signedMessage.r.toString(),
+      s: signedMessage.s.toString(),
+      providerDatas: web3.utils.toHex(web3.utils.asciiToHex(providerData))
     }
 
     const buyFromDispenseTx = await datatoken.buyFromDispenserAndOrder(
@@ -385,13 +424,28 @@ describe('Datatoken', () => {
   })
 
   it('#buyFromFreAndOrder - Enterprise method ', async () => {
+    const providerData = JSON.stringify({ timeout: 0 })
+    const message = web3.utils.soliditySha3(
+      { t: 'bytes', v: web3.utils.toHex(web3.utils.asciiToHex(providerData)) },
+      { t: 'address', v: user3 },
+      { t: 'address', v: '0x0000000000000000000000000000000000000000' },
+      { t: 'uint256', v: '1' }
+    )
+    const signedMessage = signMessage(
+      message,
+      '7c852118294e51e653712a81e05800f419141751be58f605c371e15141b007a6'
+    )
+
     const order: OrderParams = {
       consumer: user1,
-      amount: '1',
       serviceIndex: 1,
       providerFeeAddress: user1,
       providerFeeToken: '0x0000000000000000000000000000000000000000',
-      providerFeeAmount: '0'
+      providerFeeAmount: '0',
+      v: signedMessage.v,
+      r: signedMessage.r.toString(),
+      s: signedMessage.s.toString(),
+      providerDatas: web3.utils.toHex(web3.utils.asciiToHex(providerData))
     }
 
     const fre: FreOrderParams = {

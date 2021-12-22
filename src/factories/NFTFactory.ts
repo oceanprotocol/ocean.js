@@ -26,11 +26,14 @@ interface Template {
 export interface TokenOrder {
   tokenAddress: string
   consumer: string
-  amount: string | number
   serviceIndex: number
   providerFeeAddress: string
   providerFeeToken: string
   providerFeeAmount: string
+  v: number // v of provider signed message
+  r: string // r of provider signed message
+  s: string // s of provider signed message
+  providerDatas: string // data encoded by provider
 }
 
 export interface NftCreateData {
@@ -553,7 +556,7 @@ export class NftFactory {
     if (templateIndex === 0) {
       throw new Error(`Template index cannot be ZERO`)
     }
-    if ((await this.getNFTTemplate(templateIndex)).isActive === true) {
+    if ((await this.getTokenTemplate(templateIndex)).isActive === true) {
       throw new Error(`Template is already active`)
     }
 
