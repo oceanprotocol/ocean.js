@@ -370,8 +370,8 @@ describe('Datatoken', () => {
       '0x0000000000000000000000000000000000000000',
       '0',
       signedMessage.v,
-      signedMessage.r.toString(),
-      signedMessage.s.toString(),
+      web3.utils.asciiToHex(signedMessage.r.toString('ascii')),
+      web3.utils.asciiToHex(signedMessage.s.toString('ascii')),
       web3.utils.toHex(web3.utils.asciiToHex(providerData))
     )
     assert(order !== null)
@@ -409,8 +409,8 @@ describe('Datatoken', () => {
       providerFeeToken: '0x0000000000000000000000000000000000000000',
       providerFeeAmount: '0',
       v: signedMessage.v,
-      r: signedMessage.r.toString(),
-      s: signedMessage.s.toString(),
+      r: web3.utils.asciiToHex(signedMessage.r.toString('ascii')),
+      s: web3.utils.asciiToHex(signedMessage.s.toString('ascii')),
       providerDatas: web3.utils.toHex(web3.utils.asciiToHex(providerData))
     }
 
@@ -443,8 +443,8 @@ describe('Datatoken', () => {
       providerFeeToken: '0x0000000000000000000000000000000000000000',
       providerFeeAmount: '0',
       v: signedMessage.v,
-      r: signedMessage.r.toString(),
-      s: signedMessage.s.toString(),
+      r: web3.utils.asciiToHex(signedMessage.r.toString('ascii')),
+      s: web3.utils.asciiToHex(signedMessage.s.toString('ascii')),
       providerDatas: web3.utils.toHex(web3.utils.asciiToHex(providerData))
     }
 

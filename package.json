@@ -28,7 +28,7 @@
     "test:fixed": "mocha --config=test/unit/.mocharc.json --node-env=test --exit 'test/unit/pools/fixedRate/FixedRateExchange.test.ts'",
     "test:pool": "mocha --config=test/unit/.mocharc.json --node-env=test --exit 'test/unit/pools/balancer/Pool.test.ts'",
     "test:dispenser": "mocha --config=test/unit/.mocharc.json --node-env=test --exit 'test/unit/pools/dispenser/Dispenser.test.ts'",
-    "test:dt": "mocha --config=test/unit/.mocharc.json --node-env=test --exit 'test/unit/Datatoken.test.ts'",
+    "test:dt": "mocha --config=test/unit/.mocharc.json --node-env=test --exit 'test/unit/tokens/Datatoken.test.ts'",
     "test:nftDt": "mocha --config=test/unit/.mocharc.json --node-env=test --exit 'test/unit/Nft.test.ts'",
     "test:factory": "mocha --config=test/unit/.mocharc.json --node-env=test --exit 'test/unit/NftFactory.test.ts'",
     "test:router": "mocha --config=test/unit/.mocharc.json --node-env=test --exit 'test/unit/pools/Router.test.ts'",

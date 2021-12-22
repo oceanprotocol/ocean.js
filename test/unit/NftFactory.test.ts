@@ -394,7 +394,7 @@ describe('Nft Factory test', () => {
       message,
       '7c852118294e51e653712a81e05800f419141751be58f605c371e15141b007a6'
     )
-    console.log('signedMessage', signedMessage)
+
     const orders: TokenOrder[] = [
       {
         tokenAddress: dtAddress,
@@ -404,8 +404,8 @@ describe('Nft Factory test', () => {
         providerFeeToken: consumeFeeToken,
         providerFeeAmount: consumeFeeAmount,
         v: signedMessage.v,
-        r: signedMessage.r.toString(),
-        s: signedMessage.s.toString(),
+        r: web3.utils.asciiToHex(signedMessage.r.toString('ascii')),
+        s: web3.utils.asciiToHex(signedMessage.s.toString('ascii')),
         providerDatas: web3.utils.toHex(web3.utils.asciiToHex(providerData))
       },
       {
@@ -416,12 +416,12 @@ describe('Nft Factory test', () => {
         providerFeeToken: consumeFeeToken,
         providerFeeAmount: consumeFeeAmount,
         v: signedMessage.v,
-        r: signedMessage.r.toString(),
-        s: signedMessage.s.toString(),
+        r: web3.utils.asciiToHex(signedMessage.r.toString('ascii')),
+        s: web3.utils.asciiToHex(signedMessage.s.toString('ascii')),
         providerDatas: web3.utils.toHex(web3.utils.asciiToHex(providerData))
       }
     ]
-
+    console.log('orders', orders)
     await nftFactory.startMultipleTokenOrder(user2, orders)
 
     // we check user2 has no more DTs
