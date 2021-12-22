@@ -33,7 +33,7 @@ export interface TokenOrder {
   v: number // v of provider signed message
   r: string // r of provider signed message
   s: string // s of provider signed message
-  providerDatas: string // data encoded by provider
+  providerData: string // data encoded by provider
 }
 
 export interface NftCreateData {

@@ -406,7 +406,7 @@ describe('Nft Factory test', () => {
         v: signedMessage.v,
         r: web3.utils.asciiToHex(signedMessage.r.toString('ascii')),
         s: web3.utils.asciiToHex(signedMessage.s.toString('ascii')),
-        providerDatas: web3.utils.toHex(web3.utils.asciiToHex(providerData))
+        providerData: web3.utils.toHex(web3.utils.asciiToHex(providerData))
       },
       {
         tokenAddress: dtAddress2,
@@ -418,7 +418,7 @@ describe('Nft Factory test', () => {
         v: signedMessage.v,
         r: web3.utils.asciiToHex(signedMessage.r.toString('ascii')),
         s: web3.utils.asciiToHex(signedMessage.s.toString('ascii')),
-        providerDatas: web3.utils.toHex(web3.utils.asciiToHex(providerData))
+        providerData: web3.utils.toHex(web3.utils.asciiToHex(providerData))
       }
     ]
     console.log('orders', orders)

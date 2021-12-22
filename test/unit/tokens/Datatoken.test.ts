@@ -405,15 +405,15 @@ describe('Datatoken', () => {
     const order: OrderParams = {
       consumer: user1,
       serviceIndex: 1,
-      providerFeeAddress: user1,
+      providerFeeAddress: user3,
       providerFeeToken: '0x0000000000000000000000000000000000000000',
       providerFeeAmount: '0',
       v: signedMessage.v,
       r: web3.utils.asciiToHex(signedMessage.r.toString('ascii')),
       s: web3.utils.asciiToHex(signedMessage.s.toString('ascii')),
-      providerDatas: web3.utils.toHex(web3.utils.asciiToHex(providerData))
+      providerData: web3.utils.toHex(web3.utils.asciiToHex(providerData))
     }
-
+    console.log('order', order)
     const buyFromDispenseTx = await datatoken.buyFromDispenserAndOrder(
       datatokenAddress,
       nftOwner,
@@ -445,7 +445,7 @@ describe('Datatoken', () => {
       v: signedMessage.v,
       r: web3.utils.asciiToHex(signedMessage.r.toString('ascii')),
       s: web3.utils.asciiToHex(signedMessage.s.toString('ascii')),
-      providerDatas: web3.utils.toHex(web3.utils.asciiToHex(providerData))
+      providerData: web3.utils.toHex(web3.utils.asciiToHex(providerData))
     }
 
     const fre: FreOrderParams = {
