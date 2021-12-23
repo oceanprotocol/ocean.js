@@ -2,7 +2,7 @@ import Config from '../models/Config'
 import fs from 'fs'
 import { homedir } from 'os'
 // eslint-disable-next-line import/no-named-default
-import { default as DefaultContractsAddresses } from '@oceanprotocol/contracts/address.json'
+import { default as DefaultContractsAddresses } from '@oceanprotocol/contracts/addresses/address.json'
 import LoggerInstance from './Logger'
 
 const configHelperNetworksBase: Config = {
@@ -156,7 +156,7 @@ export class ConfigHelper {
     let configAddresses: Partial<Config>
     if (DefaultContractsAddresses[network]) {
       const {
-        FixedRateExchange,
+        FixedPrice,
         Dispenser,
         Staking,
         poolTemplate,
@@ -171,7 +171,7 @@ export class ConfigHelper {
         sideStakingAddress: Staking,
         opfCommunityFeeCollector: OPFCommunityFeeCollector,
         poolTemplateAddress: poolTemplate,
-        fixedRateExchangeAddress: FixedRateExchange,
+        fixedRateExchangeAddress: FixedPrice,
         dispenserAddress: Dispenser,
         oceanTokenAddress: Ocean,
         chainId: chainId,
@@ -190,7 +190,7 @@ export class ConfigHelper {
           )
         )
         const {
-          FixedRateExchange,
+          FixedPrice,
           Dispenser,
           Staking,
           poolTemplate,
@@ -205,7 +205,7 @@ export class ConfigHelper {
           sideStakingAddress: Staking,
           opfCommunityFeeCollector: OPFCommunityFeeCollector,
           poolTemplateAddress: poolTemplate,
-          fixedRateExchangeAddress: FixedRateExchange,
+          fixedRateExchangeAddress: FixedPrice,
           dispenserAddress: Dispenser,
           oceanTokenAddress: Ocean,
           chainId: chainId,
