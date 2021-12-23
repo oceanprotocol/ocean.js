@@ -156,7 +156,7 @@ export class ConfigHelper {
     let configAddresses: Partial<Config>
     if (DefaultContractsAddresses[network]) {
       const {
-        FixedRate,
+        FixedPrice,
         Dispenser,
         Staking,
         poolTemplate,
@@ -171,7 +171,7 @@ export class ConfigHelper {
         sideStakingAddress: Staking,
         opfCommunityFeeCollector: OPFCommunityFeeCollector,
         poolTemplateAddress: poolTemplate,
-        fixedRateExchangeAddress: FixedRate,
+        fixedRateExchangeAddress: FixedPrice,
         dispenserAddress: Dispenser,
         oceanTokenAddress: Ocean,
         chainId: chainId,
@@ -190,7 +190,7 @@ export class ConfigHelper {
           )
         )
         const {
-          FixedRate,
+          FixedPrice,
           Dispenser,
           Staking,
           poolTemplate,
@@ -205,7 +205,7 @@ export class ConfigHelper {
           sideStakingAddress: Staking,
           opfCommunityFeeCollector: OPFCommunityFeeCollector,
           poolTemplateAddress: poolTemplate,
-          fixedRateExchangeAddress: FixedRate,
+          fixedRateExchangeAddress: FixedPrice,
           dispenserAddress: Dispenser,
           oceanTokenAddress: Ocean,
           chainId: chainId,
