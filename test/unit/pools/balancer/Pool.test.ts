@@ -157,7 +157,7 @@ describe('Pool unit test', () => {
         vestedBlocks: 2500000,
         initialBasetokenLiquidity: '2000',
         swapFeeLiquidityProvider: 1e15,
-        swapFeeMarketPlaceRunner: 1e15
+        swapFeeMarketRunner: 1e15
       }
 
       const nftFactory = new NftFactory(
@@ -630,7 +630,7 @@ describe('Pool unit test', () => {
           await pool.amountToUnits(contracts.usdcAddress, '2000')
         ),
         swapFeeLiquidityProvider: 1e15,
-        swapFeeMarketPlaceRunner: 1e15
+        swapFeeMarketRunner: 1e15
       }
 
       const nftFactory = new NftFactory(

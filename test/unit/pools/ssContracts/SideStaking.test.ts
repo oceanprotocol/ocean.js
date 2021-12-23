@@ -170,7 +170,7 @@ describe('SideStaking unit test', () => {
         vestedBlocks: vestedBlocks,
         initialBasetokenLiquidity: '2000',
         swapFeeLiquidityProvider: 1e15,
-        swapFeeMarketPlaceRunner: 1e15
+        swapFeeMarketRunner: 1e15
       }
 
       const txReceipt = await nftFactory.createNftErcWithPool(
@@ -468,7 +468,7 @@ describe('SideStaking unit test', () => {
           await pool.amountToUnits(contracts.usdcAddress, '2000')
         ),
         swapFeeLiquidityProvider: 1e15,
-        swapFeeMarketPlaceRunner: 1e15
+        swapFeeMarketRunner: 1e15
       }
 
       const txReceipt = await nftFactory.createNftErcWithPool(

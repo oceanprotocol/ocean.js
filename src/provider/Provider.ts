@@ -113,39 +113,25 @@ export class Provider {
     return signature
   }
 
-  /** Encrypt DDO using the Provider's own symmetric key
-   * @param {string} did Identifier of the asset to be registered in ocean
-   * @param {string} accountId Publisher address
-   * @param {string} document document description object (DDO)
+  /** Encrypt data using the Provider's own symmetric key
+   * @param {string} data data in json format that needs to be sent , it can either be a DDO or a File array
    * @param {string} providerUri provider uri address
-   * @param {string} fetchMethod fetch client instance
+   * @param {string} postMethod http post method
    * @return {Promise<string>} urlDetails
    */
-  public async encrypt(
-    did: string,
-    accountId: string,
-    document: any,
-    providerUri: string,
-    fetchMethod: any
-  ): Promise<any> {
+  public async encrypt(data: any, providerUri: string, postMethod: any): Promise<any> {
     const providerEndpoints = await this.getEndpoints(providerUri)
     const serviceEndpoints = await this.getServiceEndpoints(
       providerUri,
       providerEndpoints
     )
-
-    const args = {
-      documentId: did,
-      document: JSON.stringify(document),
-      publisherAddress: accountId
-    }
     const path = this.getEndpointURL(serviceEndpoints, 'encrypt')
       ? this.getEndpointURL(serviceEndpoints, 'encrypt').urlPath
       : null
 
     if (!path) return null
     try {
-      const response = await fetchMethod(path, decodeURI(JSON.stringify(args)))
+      const response = await postMethod(path, decodeURI(JSON.stringify(data)))
       return response
     } catch (e) {
       LoggerInstance.error(e)
@@ -153,13 +139,49 @@ export class Provider {
     }
   }
 
-  /** Get URL details (if possible)
-   * @param {string | DID} url or did
-   * @param {string} providerUri Identifier of the asset to be registered in ocean
+  /** Get DDO File details (if possible)
+   * @param {string} did did
+   * @param {number} serviceId the id of the service for which to check the files
+   * @param {string} providerUri uri of the provider that will be used to check the file
    * @param {string} fetchMethod fetch client instance
    * @return {Promise<FileMetadata[]>} urlDetails
    */
-  public async fileinfo(
+  public async checkDidFiles(
+    did: string,
+    serviceId: number,
+    providerUri: string,
+    fetchMethod: any
+  ): Promise<FileMetadata[]> {
+    const providerEndpoints = await this.getEndpoints(providerUri)
+    const serviceEndpoints = await this.getServiceEndpoints(
+      providerUri,
+      providerEndpoints
+    )
+    const args = { did: did, serviceId: serviceId }
+    const files: FileMetadata[] = []
+    const path = this.getEndpointURL(serviceEndpoints, 'fileinfo')
+      ? this.getEndpointURL(serviceEndpoints, 'fileinfo').urlPath
+      : null
+    if (!path) return null
+    try {
+      const response = await fetchMethod(path, JSON.stringify(args))
+      const results: FileMetadata[] = await response.json()
+      for (const result of results) {
+        files.push(result)
+      }
+      return files
+    } catch (e) {
+      return null
+    }
+  }
+
+  /** Get URL details (if possible)
+   * @param {string} url or did
+   * @param {string} providerUri uri of the provider that will be used to check the file
+   * @param {string} fetchMethod fetch client instance
+   * @return {Promise<FileMetadata[]>} urlDetails
+   */
+  public async checkFileUrl(
     url: string,
     providerUri: string,
     fetchMethod: any
@@ -169,7 +191,7 @@ export class Provider {
       providerUri,
       providerEndpoints
     )
-    const args = { url }
+    const args = { url: url, type: 'url' }
     const files: FileMetadata[] = []
     const path = this.getEndpointURL(serviceEndpoints, 'fileinfo')
       ? this.getEndpointURL(serviceEndpoints, 'fileinfo').urlPath
