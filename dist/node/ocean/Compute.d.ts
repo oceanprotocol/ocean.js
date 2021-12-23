@@ -44,7 +44,7 @@ export declare const ComputeJobStatus: Readonly<{
 export declare class Compute extends Instantiable {
     static getInstance(config: InstantiableConfig): Promise<Compute>;
     getComputeAddress(did: string, serviceIndex?: number): Promise<string>;
-    start(asset: DDO | string, txId: string, tokenAddress: string, consumerAccount: Account, algorithm: ComputeAlgorithm, output?: ComputeOutput, serviceIndex?: string, serviceType?: string, additionalInputs?: ComputeInput[]): Promise<ComputeJob>;
+    start(asset: DDO | string, txId: string, tokenAddress: string, consumerAccount: Account, algorithm: ComputeAlgorithm, output?: ComputeOutput, serviceIndex?: string, serviceType?: string, additionalInputs?: ComputeInput[], userCustomParameters?: UserCustomParameters): Promise<ComputeJob>;
     stop(consumerAccount: Account, asset: DDO | string, jobId: string): Promise<ComputeJob>;
     delete(consumerAccount: Account, asset: DDO | string, jobId: string): Promise<ComputeJob>;
     status(consumerAccount: Account, did?: string, ddo?: DDO, service?: ServiceCompute, jobId?: string, txId?: string): Promise<ComputeJob[]>;
