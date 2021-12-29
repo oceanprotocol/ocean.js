@@ -617,7 +617,8 @@ export class Assets extends Instantiable {
     txId: string,
     tokenAddress: string,
     consumerAccount: Account,
-    destination: string
+    destination: string,
+    userCustomParameters?: UserCustomParameters
   ): Promise<string | true> {
     const { did, ddo } = await assetResolve(asset, this.ocean)
     const { attributes } = ddo.findServiceByType('metadata')
@@ -646,7 +647,9 @@ export class Assets extends Instantiable {
       service.index.toString(),
       destination,
       consumerAccount,
-      files
+      files,
+      -1,
+      userCustomParameters
     )
     return true
   }
