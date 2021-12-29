@@ -281,6 +281,7 @@ export class Provider extends Instantiable {
     additionalInputs?: ComputeInput[],
     userCustomParameters?: UserCustomParameters
   ): Promise<ComputeJob | ComputeJob[]> {
+    console.log('computeStart')
     const address = consumerAccount.getId()
     await this.getNonce(consumerAccount.getId())
     const payload = Object()
@@ -308,6 +309,8 @@ export class Provider extends Instantiable {
     if (tokenAddress) payload.dataToken = tokenAddress
 
     if (additionalInputs) payload.additionalInputs = additionalInputs
+    console.log('userCustomParameters')
+    console.log(userCustomParameters)
     if (userCustomParameters) payload.userData = userCustomParameters
     if (algorithm.algoCustomParameters)
       payload.algouserdata = algorithm.algoCustomParameters
@@ -316,7 +319,11 @@ export class Provider extends Instantiable {
       : null
     if (!path) return null
     try {
+      console.log('payload')
+      console.log(payload)
       const response = await this.ocean.utils.fetch.post(path, JSON.stringify(payload))
+      console.log('response')
+      console.log(response)
       if (response?.ok) {
         const params = await response.json()
         return params

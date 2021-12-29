@@ -121,6 +121,8 @@ export class Compute extends Instantiable {
   ): Promise<ComputeJob> {
     output = this.checkOutput(consumerAccount, output)
     const { did, ddo } = await assetResolve(asset, this.ocean)
+    console.log('assset resolve')
+    console.log(ddo)
     const service = ddo.findServiceByType('compute')
     const { serviceEndpoint } = service
     if (algorithm.serviceIndex) {
@@ -132,12 +134,15 @@ export class Compute extends Instantiable {
           algorithm.algoCustomParameters
         ))
       ) {
+        console.log('userCustomParameters valid false')
         return null
       }
     }
     if (did && txId) {
       const provider = await Provider.getInstance(this.instanceConfig)
       await provider.setBaseUrl(serviceEndpoint)
+      console.log('start userCustomParameters')
+      console.log(userCustomParameters)
       const computeJobsList = await provider.computeStart(
         did,
         consumerAccount,
