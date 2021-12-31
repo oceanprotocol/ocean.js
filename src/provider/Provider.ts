@@ -308,7 +308,7 @@ export class Provider extends Instantiable {
     if (tokenAddress) payload.dataToken = tokenAddress
 
     if (additionalInputs) payload.additionalInputs = additionalInputs
-    if (userCustomParameters) payload.userData = userCustomParameters
+    if (userCustomParameters) payload.userdata = userCustomParameters
     if (algorithm.algoCustomParameters)
       payload.algocustomdata = algorithm.algoCustomParameters
     if (algorithm.userCustomParameters)
