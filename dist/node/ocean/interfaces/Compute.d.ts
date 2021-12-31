@@ -1,11 +1,13 @@
 import { Metadata } from '../../ddo/interfaces/Metadata';
 import { MetadataAlgorithm } from '../../ddo/interfaces/MetadataAlgorithm';
+import { UserCustomParameters } from '../../provider/Provider';
 export declare type ComputeResultType = 'algorithmLog' | 'output';
 export interface ComputeResult {
     filename: string;
     filesize: number;
     type: ComputeResultType;
     index: number;
+    userCustomParameters?: UserCustomParameters;
 }
 export interface ComputeJob {
     owner: string;
@@ -47,4 +49,5 @@ export interface ComputeAlgorithm {
     algoCustomParameters?: {
         [key: string]: any;
     };
+    userCustomParameters?: UserCustomParameters;
 }

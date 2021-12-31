@@ -48,7 +48,7 @@ export declare class Assets extends Instantiable {
     createAccessServiceAttributes(creator: Account, cost: string, datePublished: string, timeout?: number, providerUri?: string, requiredParameters?: ServiceCustomParametersRequired): Promise<ServiceAccess>;
     initialize(asset: DDO | string, serviceType: string, consumerAddress: string, serviceIndex: number, serviceEndpoint: string, userCustomParameters?: UserCustomParameters): Promise<any>;
     order(asset: DDO | string, serviceType: string, payerAddress: string, serviceIndex?: number, mpAddress?: string, consumerAddress?: string, userCustomParameters?: UserCustomParameters, authService?: string, searchPreviousOrders?: boolean): Promise<string>;
-    download(asset: DDO | string, txId: string, tokenAddress: string, consumerAccount: Account, destination: string, userCustomParameters?: UserCustomParameters): Promise<string | true>;
+    download(asset: DDO | string, txId: string, tokenAddress: string, consumerAccount: Account, destination: string, index?: number, userCustomParameters?: UserCustomParameters): Promise<string | true>;
     simpleDownload(dtAddress: string, serviceEndpoint: string, txId: string, account: string): Promise<string>;
     getOrderHistory(account: Account, serviceType?: string, fromBlock?: number): Promise<Order[]>;
     isConsumable(ddo: DDO, consumer?: string, credentialsType?: string, authService?: string): Promise<Consumable>;

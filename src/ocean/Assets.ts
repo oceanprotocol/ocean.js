@@ -618,6 +618,7 @@ export class Assets extends Instantiable {
     tokenAddress: string,
     consumerAccount: Account,
     destination: string,
+    index = -1,
     userCustomParameters?: UserCustomParameters
   ): Promise<string | true> {
     const { did, ddo } = await assetResolve(asset, this.ocean)
@@ -649,7 +650,7 @@ export class Assets extends Instantiable {
       destination,
       consumerAccount,
       files,
-      -1,
+      index,
       userCustomParameters
     )
     return true
