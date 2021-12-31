@@ -61,9 +61,9 @@
   },
   "devDependencies": {
     "@truffle/hdwallet-provider": "^1.7.0",
-    "@types/chai": "^4.2.19",
+    "@types/chai": "^4.3.0",
     "@types/chai-spies": "^1.0.3",
-    "@types/crypto-js": "^4.0.1",
+    "@types/crypto-js": "^4.1.0",
     "@types/mocha": "^9.0.0",
     "@types/node": "^16.11.7",
     "@types/node-fetch": "^3.0.3",
