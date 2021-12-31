@@ -116,7 +116,8 @@ export class Compute extends Instantiable {
     output?: ComputeOutput,
     serviceIndex?: string,
     serviceType?: string,
-    additionalInputs?: ComputeInput[]
+    additionalInputs?: ComputeInput[],
+    userCustomParameters?: UserCustomParameters
   ): Promise<ComputeJob> {
     output = this.checkOutput(consumerAccount, output)
     const { did, ddo } = await assetResolve(asset, this.ocean)
@@ -146,7 +147,8 @@ export class Compute extends Instantiable {
         serviceIndex,
         serviceType,
         tokenAddress,
-        additionalInputs
+        additionalInputs,
+        userCustomParameters
       )
       if (computeJobsList) return computeJobsList[0] as ComputeJob
       else return null

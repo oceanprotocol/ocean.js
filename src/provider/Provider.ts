@@ -310,6 +310,8 @@ export class Provider extends Instantiable {
     if (additionalInputs) payload.additionalInputs = additionalInputs
     if (userCustomParameters) payload.userData = userCustomParameters
     if (algorithm.algoCustomParameters)
+      payload.algocustomdata = algorithm.algoCustomParameters
+    if (algorithm.userCustomParameters)
       payload.algouserdata = algorithm.algoCustomParameters
     const path = this.getComputeStartEndpoint()
       ? this.getComputeStartEndpoint().urlPath
