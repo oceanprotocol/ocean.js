@@ -64,6 +64,7 @@ jobs:
       - run: npm i --verbose --force @oceanprotocol/contracts@"github:oceanprotocol/contracts#v4main_postaudit"
       - run: npm run build:metadata
       - run: npm run test:unit:cover
+      - run: docker logs ocean_aquarius_1
       - uses: actions/upload-artifact@v2
         with:
           name: coverage
