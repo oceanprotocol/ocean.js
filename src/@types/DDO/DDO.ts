@@ -1,6 +1,7 @@
 import { Service } from './Service'
 import { Metadata } from './Metadata'
 import { Credentials } from './Credentials'
+import { Event } from './Event'
 
 /**
  * DID Descriptor Object.
@@ -51,4 +52,10 @@ export interface DDO {
    * @type {Credentials}
    */
   credentials?: Credentials
+
+  /**
+   * Describes the event of last metadata event
+   * @type {Event}
+   */
+  event?: Event
 }

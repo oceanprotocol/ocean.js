@@ -1,4 +1,4 @@
-import { Metadata, MetadataAlgorithm } from './Metadata'
+import { Metadata, MetadataAlgorithm } from './DDO/Metadata'
 
 export type ComputeResultType = 'algorithmLog' | 'output'
 
