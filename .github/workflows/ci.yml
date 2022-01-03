@@ -64,7 +64,6 @@ jobs:
       - run: npm i --verbose --force @oceanprotocol/contracts@"github:oceanprotocol/contracts#v4main_postaudit"
       - run: npm run build:metadata
       - run: npm run test:unit:cover
-      - run: docker logs ocean_aquarius_1
       - uses: actions/upload-artifact@v2
         with:
           name: coverage
@@ -116,9 +115,13 @@ jobs:
           bash -x start_ocean.sh --with-provider2 --no-dashboard 2>&1 > start_ocean.log &
           cd .. && ./scripts/waitforcontracts.sh
 
-      - run: npm run test:integration:cover
-
-      - uses: actions/upload-artifact@v2
+      - name: integration
+        run: npm run test:integration:cover
+      - name:  docker logs
+        run: docker logs ocean_aquarius_1
+        if: ${{ always() && (steps.integration.outcome == 'failure') }}
+      - name: Upload coverage
+        uses: actions/upload-artifact@v2
         with:
           name: coverage
           path: coverage/
