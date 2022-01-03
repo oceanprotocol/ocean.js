@@ -37,14 +37,15 @@ jobs:
       - uses: actions/setup-node@v2
         with:
           node-version: '16'
-      - name: Cache node_modules
-        uses: actions/cache@v2
-        env:
-          cache-name: cache-node-modules
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-test-unit-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: ${{ runner.os }}-test-unit-${{ env.cache-name }}-
+#  Since contracts is a github repo, for the moment, disable cache                    
+#      - name: Cache node_modules
+#        uses: actions/cache@v2
+#        env:
+#          cache-name: cache-node-modules
+#        with:
+#          path: ~/.npm
+#          key: ${{ runner.os }}-test-unit-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
+#          restore-keys: ${{ runner.os }}-test-unit-${{ env.cache-name }}-
 
       - name: Checkout Barge
         uses: actions/checkout@v2
