@@ -82,7 +82,7 @@
     "mock-local-storage": "^1.1.18",
     "nyc": "^15.1.0",
     "ora": "5.4.1",
-    "prettier": "^2.3.1",
+    "prettier": "^2.5.1",
     "release-it": "^14.11.8",
     "source-map-support": "^0.5.19",
     "ts-node": "^10.4.0",
