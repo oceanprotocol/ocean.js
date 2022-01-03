@@ -21,7 +21,6 @@ import { ZERO_ADDRESS, signHash } from '../../../src/utils'
 
 const web3 = new Web3('http://127.0.0.1:8545')
 
-
 describe('Datatoken', () => {
   let nftOwner: string
   let user1: string
