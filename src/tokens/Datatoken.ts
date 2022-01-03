@@ -21,8 +21,8 @@ export interface OrderParams {
   serviceIndex: number
   providerFeeAddress: string
   providerFeeToken: string
-  providerFeeAmount: string
-  v: number // v of provider signed message
+  providerFeeAmount: string // this is in WEI
+  v: string // v of provider signed message
   r: string // r of provider signed message
   s: string // s of provider signed message
   providerData: string // data encoded by provider
@@ -855,7 +855,7 @@ export class Datatoken {
     providerFeeAddress: string,
     providerFeeToken: string,
     providerFeeAmount: string,
-    v: number,
+    v: string,
     r: string,
     s: string,
     providerDatas: string,
@@ -874,7 +874,7 @@ export class Datatoken {
           serviceIndex,
           providerFeeAddress,
           providerFeeToken,
-          this.web3.utils.toWei(providerFeeAmount),
+          providerFeeAmount,
           v,
           r,
           s,
@@ -894,7 +894,7 @@ export class Datatoken {
    * @param {Number} serviceIndex  Service index in the metadata
    * @param {String} providerFeeAddress Consume marketplace fee address
    * @param {String} providerFeeToken address of the token marketplace wants to add fee on top
-   * @param {String} providerFeeAmount amount of feeToken to be transferred to mpFeeAddress on top, will be converted to WEI
+   * @param {String} providerFeeAmount amount of feeToken to be transferred to mpFeeAddress on top, expressed in Wei
    * @param {String} v // v of provider signed message
    * @param {String} r // r of provider signed message
    * @param {String} s // s of provider signed message
@@ -909,7 +909,7 @@ export class Datatoken {
     providerFeeAddress: string,
     providerFeeToken: string,
     providerFeeAmount: string,
-    v: number,
+    v: string,
     r: string,
     s: string,
     providerDatas: string
@@ -940,7 +940,7 @@ export class Datatoken {
           serviceIndex,
           providerFeeAddress,
           providerFeeToken,
-          this.web3.utils.toWei(providerFeeAmount),
+          providerFeeAmount,
           v,
           r,
           s,

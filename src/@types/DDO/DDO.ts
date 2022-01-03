@@ -1,6 +1,7 @@
 import { Service } from './Service'
 import { Metadata } from './Metadata'
 import { Credentials } from './Credentials'
+import { Event } from './Event'
 
 /**
  * DID Descriptor Object.
@@ -28,6 +29,12 @@ export interface DDO {
   version: string
 
   /**
+   * NFT contract address
+   * @type {string}
+   */
+  nftAddress: string
+
+  /**
    * ChainId of the network the DDO was published to.
    * @type {number}
    */
@@ -51,4 +58,10 @@ export interface DDO {
    * @type {Credentials}
    */
   credentials?: Credentials
+
+  /**
+   * Describes the event of last metadata event
+   * @type {Event}
+   */
+  event?: Event
 }

@@ -17,16 +17,9 @@ import { NftFactory, NftCreateData } from '../../../src/factories/NFTFactory'
 import { Datatoken, Nft, OrderParams, DispenserParams } from '../../../src/tokens'
 import { AbiItem } from 'web3-utils'
 import { FreCreationParams, FreOrderParams } from '../../../src/interfaces'
+import { ZERO_ADDRESS, signHash } from '../../../src/utils'
 
 const web3 = new Web3('http://127.0.0.1:8545')
-
-function signMessage(message, privateKey) {
-  const { v, r, s } = ecsign(
-    Buffer.from(message.slice(2), 'hex'),
-    Buffer.from(privateKey, 'hex')
-  )
-  return { v, r, s }
-}
 
 describe('Datatoken', () => {
   let nftOwner: string
@@ -350,28 +343,26 @@ describe('Datatoken', () => {
     )
 
     const providerData = JSON.stringify({ timeout: 0 })
+    const providerFeeToken = ZERO_ADDRESS
+    const providerFeeAmount = '0'
     const message = web3.utils.soliditySha3(
       { t: 'bytes', v: web3.utils.toHex(web3.utils.asciiToHex(providerData)) },
       { t: 'address', v: user3 },
-      { t: 'address', v: '0x0000000000000000000000000000000000000000' },
-      { t: 'uint256', v: '1' }
+      { t: 'address', v: providerFeeToken },
+      { t: 'uint256', v: providerFeeAmount }
     )
-    const signedMessage = signMessage(
-      message,
-      '7c852118294e51e653712a81e05800f419141751be58f605c371e15141b007a6'
-    )
-
+    const { v, r, s } = await signHash(web3, message, user3)
     const order = await datatoken.startOrder(
       datatokenAddress,
       user1,
       user2,
       1,
       user3,
-      '0x0000000000000000000000000000000000000000',
-      '0',
-      signedMessage.v,
-      web3.utils.asciiToHex(signedMessage.r.toString('ascii')),
-      web3.utils.asciiToHex(signedMessage.s.toString('ascii')),
+      providerFeeToken,
+      providerFeeAmount,
+      v,
+      r,
+      s,
       web3.utils.toHex(web3.utils.asciiToHex(providerData))
     )
     assert(order !== null)
@@ -391,26 +382,24 @@ describe('Datatoken', () => {
 
   it('#buyFromDispenserAndOrder- Enterprise method', async () => {
     const providerData = JSON.stringify({ timeout: 0 })
+    const providerFeeToken = ZERO_ADDRESS
+    const providerFeeAmount = '0'
     const message = web3.utils.soliditySha3(
       { t: 'bytes', v: web3.utils.toHex(web3.utils.asciiToHex(providerData)) },
       { t: 'address', v: user3 },
-      { t: 'address', v: '0x0000000000000000000000000000000000000000' },
-      { t: 'uint256', v: '1' }
+      { t: 'address', v: providerFeeToken },
+      { t: 'uint256', v: providerFeeAmount }
     )
-    const signedMessage = signMessage(
-      message,
-      '7c852118294e51e653712a81e05800f419141751be58f605c371e15141b007a6'
-    )
-
+    const { v, r, s } = await signHash(web3, message, user3)
     const order: OrderParams = {
       consumer: user1,
       serviceIndex: 1,
       providerFeeAddress: user3,
-      providerFeeToken: '0x0000000000000000000000000000000000000000',
-      providerFeeAmount: '0',
-      v: signedMessage.v,
-      r: web3.utils.asciiToHex(signedMessage.r.toString('ascii')),
-      s: web3.utils.asciiToHex(signedMessage.s.toString('ascii')),
+      providerFeeToken,
+      providerFeeAmount,
+      v,
+      r,
+      s,
       providerData: web3.utils.toHex(web3.utils.asciiToHex(providerData))
     }
     console.log('order', order)
@@ -425,26 +414,24 @@ describe('Datatoken', () => {
 
   it('#buyFromFreAndOrder - Enterprise method ', async () => {
     const providerData = JSON.stringify({ timeout: 0 })
+    const providerFeeToken = ZERO_ADDRESS
+    const providerFeeAmount = '0'
     const message = web3.utils.soliditySha3(
       { t: 'bytes', v: web3.utils.toHex(web3.utils.asciiToHex(providerData)) },
       { t: 'address', v: user3 },
-      { t: 'address', v: '0x0000000000000000000000000000000000000000' },
-      { t: 'uint256', v: '1' }
+      { t: 'address', v: providerFeeToken },
+      { t: 'uint256', v: providerFeeAmount }
     )
-    const signedMessage = signMessage(
-      message,
-      '7c852118294e51e653712a81e05800f419141751be58f605c371e15141b007a6'
-    )
-
+    const { v, r, s } = await signHash(web3, message, user3)
     const order: OrderParams = {
       consumer: user1,
       serviceIndex: 1,
       providerFeeAddress: user1,
-      providerFeeToken: '0x0000000000000000000000000000000000000000',
-      providerFeeAmount: '0',
-      v: signedMessage.v,
-      r: web3.utils.asciiToHex(signedMessage.r.toString('ascii')),
-      s: web3.utils.asciiToHex(signedMessage.s.toString('ascii')),
+      providerFeeToken,
+      providerFeeAmount,
+      v,
+      r,
+      s,
       providerData: web3.utils.toHex(web3.utils.asciiToHex(providerData))
     }
 

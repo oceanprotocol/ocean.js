@@ -13,6 +13,7 @@ import { TestContractHandler } from '../../TestContractHandler'
 import { NftFactory, NftCreateData } from '../../../src/factories/NFTFactory'
 import { Nft } from '../../../src/tokens/NFT'
 import { AbiItem } from 'web3-utils'
+import sha256 from 'crypto-js/sha256'
 
 const web3 = new Web3('http://127.0.0.1:8545')
 
@@ -333,7 +334,7 @@ describe('NFT', () => {
     const metaDataDecryptorAddress = '0x123'
     const metaDataState = 1
     const data = web3.utils.asciiToHex(user2)
-    const dataHash = web3.utils.asciiToHex(user2)
+    const dataHash = '0x' + sha256(data).toString()
     const flags = web3.utils.asciiToHex(user2)
     assert(
       (await nftDatatoken.getNftPermissions(nftAddress, user1)).updateMetadata === true
@@ -359,7 +360,7 @@ describe('NFT', () => {
     const metaDataDecryptorAddress = '0x123'
     const metaDataState = 1
     const data = web3.utils.asciiToHex(user2)
-    const dataHash = web3.utils.asciiToHex(user2)
+    const dataHash = '0x' + sha256(data).toString()
     const flags = web3.utils.asciiToHex(user2)
     assert(
       (await nftDatatoken.getNftPermissions(nftAddress, user3)).updateMetadata === false

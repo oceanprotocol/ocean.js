@@ -927,7 +927,8 @@ export class Nft {
           metaDataDecryptorAddress,
           flags,
           data,
-          metadataHash
+          metadataHash,
+          []
         )
         .estimateGas({ from: metadataUpdater }, (err, estGas) =>
           err ? gasLimitDefault : estGas
@@ -973,8 +974,6 @@ export class Nft {
       metadataHash,
       nftContract
     )
-
-    // Call transferFrom function of the contract
     const trxReceipt = await nftContract.methods
       .setMetaData(
         metadataState,
@@ -982,7 +981,8 @@ export class Nft {
         metaDataDecryptorAddress,
         flags,
         data,
-        metadataHash
+        metadataHash,
+        []
       )
       .send({
         from: address,

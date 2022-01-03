@@ -1,4 +1,4 @@
-import { DDO } from './DDO'
+import { DDO } from './DDO/DDO'
 
 export interface AssetNft {
   /**

@@ -27,6 +27,7 @@ jobs:
           key: ${{ runner.os }}-lint-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
           restore-keys: ${{ runner.os }}-lint-${{ env.cache-name }}-
       - run: npm ci
+      - run: npm i --verbose --force @oceanprotocol/contracts@"github:oceanprotocol/contracts#v4main_postaudit"
       - run: npm run lint
 
   test_unit:
@@ -51,6 +52,7 @@ jobs:
         with:
           repository: 'oceanprotocol/barge'
           path: 'barge'
+          ref: v4
 
       - name: Run Ganache with Barge
         working-directory: ${{ github.workspace }}/barge
@@ -59,6 +61,7 @@ jobs:
           cd ..
 
       - run: npm ci
+      - run: npm i --verbose --force @oceanprotocol/contracts@"github:oceanprotocol/contracts#v4main_postaudit"
       - run: npm run build:metadata
       - run: npm run test:unit:cover
       - uses: actions/upload-artifact@v2
@@ -83,6 +86,7 @@ jobs:
           key: ${{ runner.os }}-test-integration-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
           restore-keys: ${{ runner.os }}-test-integration-${{ env.cache-name }}-
       - run: npm ci
+      - run: npm i --verbose --force @oceanprotocol/contracts@"github:oceanprotocol/contracts#v4main_postaudit"
       - run: npm run build:metadata
 
       # Env var expansion workaround
@@ -95,6 +99,7 @@ jobs:
         with:
           repository: 'oceanprotocol/barge'
           path: 'barge'
+          ref: v4
 
       - name: Login to Docker Hub
         if: ${{ env.DOCKERHUB_PASSWORD && env.DOCKERHUB_USERNAME }}
@@ -110,9 +115,13 @@ jobs:
           bash -x start_ocean.sh --with-provider2 --no-dashboard 2>&1 > start_ocean.log &
           cd .. && ./scripts/waitforcontracts.sh
 
-      - run: npm run test:integration:cover
-
-      - uses: actions/upload-artifact@v2
+      - name: integration
+        run: npm run test:integration:cover
+      - name:  docker logs
+        run: docker logs ocean_aquarius_1
+        if: ${{ failure() }}
+      - name: Upload coverage
+        uses: actions/upload-artifact@v2
         with:
           name: coverage
           path: coverage/
@@ -140,6 +149,7 @@ jobs:
           key: ${{ runner.os }}-${{ matrix.node }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
           restore-keys: ${{ runner.os }}-${{ matrix.node }}-build-${{ env.cache-name }}-
       - run: npm ci
+      - run: npm i --verbose --force @oceanprotocol/contracts@"github:oceanprotocol/contracts#v4main_postaudit"
       - run: npm run build
       - run: npm run doc:json
 
