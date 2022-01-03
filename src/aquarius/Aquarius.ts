@@ -69,7 +69,7 @@ export class Aquarius {
       await this.sleep(1500)
       tries++
     } while (tries < 100)
-    throw new Error('HTTP request failed')
+    return null
   }
 }
 

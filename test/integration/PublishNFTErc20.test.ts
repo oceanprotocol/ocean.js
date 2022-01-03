@@ -110,14 +110,13 @@ describe('Publish tests', async () => {
       encryptedResponse,
       '0x' + metadataHash
     )
-    assert.isOk(
-      await aquarius.waitForAqua((url: string, body: string) => {
-        // replace with fetch
-        return fetch(url, {
-          method: 'GET',
-          body: body
-        })
-      }, ddo.id)
-    )
+    const resolvedDDO = await aquarius.waitForAqua((url: string, body: string) => {
+      // replace with fetch
+      return fetch(url, {
+        method: 'GET',
+        body: body
+      })
+    }, ddo.id)
+    assert(resolvedDDO, 'Cannot fetch DDO from Aquarius')
   })
 })
