@@ -82,6 +82,7 @@ describe('Publish tests', async () => {
     const datatokenAddress = result.events.TokenCreated.returnValues[0]
 
     // update ddo and set the right did
+    ddo.nftAddress = erc721Address
     const chain = await web3.eth.getChainId()
     ddo.id =
       'did:op:' + SHA256(web3.utils.toChecksumAddress(erc721Address) + chain.toString(10))

@@ -29,6 +29,12 @@ export interface DDO {
   version: string
 
   /**
+   * NFT contract address
+   * @type {string}
+   */
+  nftAddress: string
+
+  /**
    * ChainId of the network the DDO was published to.
    * @type {number}
    */
