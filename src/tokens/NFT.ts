@@ -974,8 +974,6 @@ export class Nft {
       metadataHash,
       nftContract
     )
-
-    // Call transferFrom function of the contract
     const trxReceipt = await nftContract.methods
       .setMetaData(
         metadataState,

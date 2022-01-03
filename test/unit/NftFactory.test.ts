@@ -18,16 +18,10 @@ import {
   Erc20CreateParams,
   PoolCreationParams
 } from '../../src/interfaces'
-import { ZERO_ADDRESS } from '../../src/utils'
+import { ZERO_ADDRESS, signHash } from '../../src/utils'
+
 
 const web3 = new Web3('http://127.0.0.1:8545')
-function signMessage(message, privateKey) {
-  const { v, r, s } = ecsign(
-    Buffer.from(message.slice(2), 'hex'),
-    Buffer.from(privateKey, 'hex')
-  )
-  return { v, r, s }
-}
 
 describe('Nft Factory test', () => {
   let factoryOwner: string
@@ -386,15 +380,11 @@ describe('Nft Factory test', () => {
     const providerData = JSON.stringify({ timeout: 0 })
     const message = web3.utils.soliditySha3(
       { t: 'bytes', v: web3.utils.toHex(web3.utils.asciiToHex(providerData)) },
-      { t: 'address', v: user3 },
-      { t: 'address', v: '0x0000000000000000000000000000000000000000' },
-      { t: 'uint256', v: '1' }
+      { t: 'address', v: consumeFeeAddress },
+      { t: 'address', v: consumeFeeToken },
+      { t: 'uint256', v: web3.utils.toWei(consumeFeeAmount) }
     )
-    const signedMessage = signMessage(
-      message,
-      '7c852118294e51e653712a81e05800f419141751be58f605c371e15141b007a6'
-    )
-
+    const { v, r, s } = await signHash(web3, message, consumeFeeAddress)
     const orders: TokenOrder[] = [
       {
         tokenAddress: dtAddress,
@@ -403,9 +393,9 @@ describe('Nft Factory test', () => {
         providerFeeAddress: consumeFeeAddress,
         providerFeeToken: consumeFeeToken,
         providerFeeAmount: consumeFeeAmount,
-        v: signedMessage.v,
-        r: web3.utils.asciiToHex(signedMessage.r.toString('ascii')),
-        s: web3.utils.asciiToHex(signedMessage.s.toString('ascii')),
+        v,
+        r,
+        s,
         providerData: web3.utils.toHex(web3.utils.asciiToHex(providerData))
       },
       {
@@ -415,15 +405,13 @@ describe('Nft Factory test', () => {
         providerFeeAddress: consumeFeeAddress,
         providerFeeToken: consumeFeeToken,
         providerFeeAmount: consumeFeeAmount,
-        v: signedMessage.v,
-        r: web3.utils.asciiToHex(signedMessage.r.toString('ascii')),
-        s: web3.utils.asciiToHex(signedMessage.s.toString('ascii')),
+        v,
+        r,
+        s,
         providerData: web3.utils.toHex(web3.utils.asciiToHex(providerData))
       }
     ]
-    console.log('orders', orders)
     await nftFactory.startMultipleTokenOrder(user2, orders)
-
     // we check user2 has no more DTs
     expect(await dtContract.methods.balanceOf(user2).call()).to.equal('0')
     expect(await dtContract2.methods.balanceOf(user2).call()).to.equal('0')

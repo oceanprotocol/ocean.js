@@ -30,7 +30,7 @@ export interface TokenOrder {
   providerFeeAddress: string
   providerFeeToken: string
   providerFeeAmount: string
-  v: number // v of provider signed message
+  v: string // v of provider signed message
   r: string // r of provider signed message
   s: string // s of provider signed message
   providerData: string // data encoded by provider
