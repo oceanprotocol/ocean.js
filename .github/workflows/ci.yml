@@ -119,7 +119,7 @@ jobs:
         run: npm run test:integration:cover
       - name:  docker logs
         run: docker logs ocean_aquarius_1
-        if: ${{ always() && (steps.integration.outcome == 'failure') }}
+        if: ${{ failure() }}
       - name: Upload coverage
         uses: actions/upload-artifact@v2
         with:
