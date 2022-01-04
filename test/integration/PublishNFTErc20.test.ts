@@ -25,6 +25,14 @@ const addresses = data.development
 console.log(addresses)
 const aquarius = new Aquarius('http://127.0.0.1:5000')
 const web3 = new Web3('http://127.0.0.1:8545')
+const providerUrl = 'http://172.15.0.4:8030'
+const assetUrl = [
+  {
+    type: 'url',
+    url: 'https://raw.githubusercontent.com/oceanprotocol/testdatasets/main/shs_dataset_test.txt',
+    method: 'GET'
+  }
+]
 const ddo = {
   '@context': ['https://w3id.org/did/v1'],
   id: 'did:op:efba17455c127a885ec7830d687a8f6e64f5ba559f8506f8723c1f10f05c049c',
@@ -48,8 +56,7 @@ const ddo = {
     {
       id: 'notAnId',
       type: 'download',
-      files:
-        '0x04b69c2363b360cad8bffe1c681910598757d9ed8b7a79d1caff5efcfbb656cb9862b9068fa24462b20c5740d0c24db69c93657d261edf1123ed2300b34f8f652f53cf2862cdc2b0b201c5881f39151bfaabbd39c69f51fafc2965987be2bbe90dae10dbdd30f262404896feb7a8043bb62b72c0bc5d1525f07067ed42af7020ce96de634c6e23fd28947932b8adb6fc34c97eee2c0d441ad5eced00bed84633de5bcf6812dcd7f865bebdd5f9ae32efcf22aaca53c6ee3bb46c1566835d26a4263e5e82c65f29d701e37f47f1102b0afb48d07dea3dcdfaa37bca7d471b8833bfc20c25ee681e3f2670a451b635decf1550003339e32cf9bd75d4f331b35ae3362fead77e30594723dd8c6dbf4141fbd681a18e72786bfeb2216dd137a0cfe0ec8519760843e2114b3a3ed46d9319e2e9f9c58c78a916328324f77d62abac6719f3b88d2da4e60699bb159a8deabd53d003',
+      files: '',
       datatokenAddress: '0xa15024b732A8f2146423D14209eFd074e61964F3',
       serviceEndpoint: 'https://providerv4.rinkeby.oceanprotocol.com',
       timeout: 0
@@ -82,21 +89,36 @@ describe('Publish tests', async () => {
     const erc721Address = result.events.NFTCreated.returnValues[0]
     const datatokenAddress = result.events.TokenCreated.returnValues[0]
 
+    // create the files encrypted string
+    let providerResponse = await ProviderInstance.encrypt(
+      ddo,
+      providerUrl,
+      (url: string, body: string, headers: any) => {
+        // replace with fetch
+        return fetch(url, {
+          method: 'POST',
+          body: body,
+          headers: headers
+        })
+      }
+    )
+    ddo.services[0].files = await providerResponse.text()
+    ddo.services[0].datatokenAddress = datatokenAddress
     // update ddo and set the right did
     ddo.nftAddress = erc721Address
     const chain = await web3.eth.getChainId()
     ddo.id =
       'did:op:' + SHA256(web3.utils.toChecksumAddress(erc721Address) + chain.toString(10))
 
-    const providerResponse = await ProviderInstance.encrypt(
+    providerResponse = await ProviderInstance.encrypt(
       ddo,
-      'http://172.15.0.4:8030',
-      (url: string, body: string) => {
+      providerUrl,
+      (url: string, body: string, headers: any) => {
         // replace with fetch
         return fetch(url, {
           method: 'POST',
           body: body,
-          headers: { 'Content-Type': 'application/octet-stream' }
+          headers: headers
         })
       }
     )
@@ -106,7 +128,7 @@ describe('Publish tests', async () => {
       erc721Address,
       accountId,
       0,
-      'http://172.15.0.4:8030',
+      providerUrl,
       '',
       '0x2',
       encryptedResponse,
