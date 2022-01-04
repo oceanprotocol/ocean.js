@@ -12,7 +12,7 @@ import fetch from 'cross-fetch'
 import { SHA256 } from 'crypto-js'
 import { homedir } from 'os'
 import fs from 'fs'
-import { downloadFile } from '../../src/utils/FetchHelper'
+import { downloadFile, crossFetchGeneric } from '../../src/utils/FetchHelper'
 import console from 'console'
 
 const data = JSON.parse(
@@ -101,14 +101,7 @@ describe('Publish tests', async () => {
     let providerResponse = await ProviderInstance.encrypt(
       assetUrl,
       providerUrl,
-      (method: string, url: string, body: string, headers: any) => {
-        // replace with fetch
-        return fetch(url, {
-          method: method,
-          body: body,
-          headers: headers
-        })
-      }
+      crossFetchGeneric
     )
     ddo.services[0].files = await providerResponse.text()
     ddo.services[0].datatokenAddress = datatokenAddress
@@ -118,18 +111,7 @@ describe('Publish tests', async () => {
     ddo.id =
       'did:op:' + SHA256(web3.utils.toChecksumAddress(erc721Address) + chain.toString(10))
 
-    providerResponse = await ProviderInstance.encrypt(
-      ddo,
-      providerUrl,
-      (method: string, url: string, body: string, headers: any) => {
-        // replace with fetch
-        return fetch(url, {
-          method: method,
-          body: body,
-          headers: headers
-        })
-      }
-    )
+    providerResponse = await ProviderInstance.encrypt(ddo, providerUrl, crossFetchGeneric)
     const encryptedResponse = await providerResponse.text()
     const metadataHash = getHash(JSON.stringify(ddo))
     const res = await nft.setMetadata(
@@ -159,14 +141,7 @@ describe('Publish tests', async () => {
       0,
       consumerAccount,
       providerUrl,
-      (method: string, url: string, body: string, headers: any) => {
-        // replace with fetch
-        return fetch(url, {
-          method: method,
-          body: body,
-          headers: headers
-        })
-      }
+      crossFetchGeneric
     )
     // make the payment
     const txid = await datatoken.startOrder(

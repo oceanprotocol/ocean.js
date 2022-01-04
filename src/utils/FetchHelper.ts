@@ -78,3 +78,17 @@ export async function postData(url: string, payload: BodyInit): Promise<Response
   }
   return postWithHeaders(url, payload, headers)
 }
+
+// simple fetch function used in tests
+export async function crossFetchGeneric(
+  method: string,
+  url: string,
+  body: string,
+  headers: any
+) {
+  return fetch(url, {
+    method: method,
+    body: body,
+    headers: headers
+  })
+}
