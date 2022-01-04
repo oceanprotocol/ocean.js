@@ -38,14 +38,14 @@ let nft: Nft
 let factory: NftFactory
 let accounts: string[]
 
-const assetUrl = [
+const files = [
   {
     type: 'url',
     url: 'https://raw.githubusercontent.com/oceanprotocol/testdatasets/main/shs_dataset_test.txt',
     method: 'GET'
   }
 ]
-const ddo = {
+const genericAsset = {
   '@context': ['https://w3id.org/did/v1'],
   id: 'testFakeDid',
   version: '4.0.0',
@@ -54,7 +54,7 @@ const ddo = {
   metadata: {
     created: '2021-12-20T14:35:20Z',
     updated: '2021-12-20T14:35:20Z',
-    name: 'test-dataset-pool',
+    name: 'dataset-name',
     type: 'dataset',
     description: 'Ocean protocol test dataset description',
     author: 'oceanprotocol-team',
@@ -133,27 +133,28 @@ describe('Publish tests', async () => {
     const poolAdress = bundleNFT.events.NewPool.returnValues[0]
 
     const encryptedFiles = await ProviderInstance.encrypt(
-      assetUrl,
+      files,
       providerUrl,
       crossFetchGeneric
     )
     console.log('encryptedDdo ', encryptedFiles)
-    ddo.services[0].files = await encryptedFiles.text()
-    ddo.services[0].datatokenAddress = datatokenAddress
+    genericAsset.metadata.name = 'test-dataset-pool'
+    genericAsset.services[0].files = await encryptedFiles.text()
+    genericAsset.services[0].datatokenAddress = datatokenAddress
 
-    ddo.nftAddress = nftAddress
+    genericAsset.nftAddress = nftAddress
     const chain = await web3.eth.getChainId()
-    ddo.id =
+    genericAsset.id =
       'did:op:' + SHA256(web3.utils.toChecksumAddress(nftAddress) + chain.toString(10))
 
     const encryptedDdo = await ProviderInstance.encrypt(
-      ddo,
+      genericAsset,
       providerUrl,
       crossFetchGeneric
     )
     console.log('encryptedDdo ', encryptedDdo)
     const encryptedResponse = await encryptedDdo.text()
-    const metadataHash = getHash(JSON.stringify(ddo))
+    const metadataHash = getHash(JSON.stringify(genericAsset))
 
     const tx = await nft.setMetadata(
       nftAddress,
@@ -218,27 +219,28 @@ describe('Publish tests', async () => {
     const fixedPrice = bundleNFT.events.NewFixedRate.returnValues[0]
 
     const encryptedFiles = await ProviderInstance.encrypt(
-      assetUrl,
+      files,
       providerUrl,
       crossFetchGeneric
     )
     console.log('encryptedDdo ', encryptedFiles)
-    ddo.services[0].files = await encryptedFiles.text()
-    ddo.services[0].datatokenAddress = datatokenAddress
+    genericAsset.metadata.name = 'test-dataset-fixedPrice'
+    genericAsset.services[0].files = await encryptedFiles.text()
+    genericAsset.services[0].datatokenAddress = datatokenAddress
 
-    ddo.nftAddress = nftAddress
+    genericAsset.nftAddress = nftAddress
     const chain = await web3.eth.getChainId()
-    ddo.id =
+    genericAsset.id =
       'did:op:' + SHA256(web3.utils.toChecksumAddress(nftAddress) + chain.toString(10))
 
     const encryptedDdo = await ProviderInstance.encrypt(
-      ddo,
+      genericAsset,
       providerUrl,
       crossFetchGeneric
     )
     console.log('encryptedDdo ', encryptedDdo)
     const encryptedResponse = await encryptedDdo.text()
-    const metadataHash = getHash(JSON.stringify(ddo))
+    const metadataHash = getHash(JSON.stringify(genericAsset))
 
     const res = await nft.setMetadata(
       nftAddress,
@@ -297,27 +299,28 @@ describe('Publish tests', async () => {
     const dispenserAddress = bundleNFT.events.DispenserCreated.returnValues[0]
 
     const encryptedFiles = await ProviderInstance.encrypt(
-      assetUrl,
+      files,
       providerUrl,
       crossFetchGeneric
     )
     console.log('encryptedDdo ', encryptedFiles)
-    ddo.services[0].files = await encryptedFiles.text()
-    ddo.services[0].datatokenAddress = datatokenAddress
+    genericAsset.metadata.name = 'test-dataset-dispenser'
+    genericAsset.services[0].files = await encryptedFiles.text()
+    genericAsset.services[0].datatokenAddress = datatokenAddress
 
-    ddo.nftAddress = nftAddress
+    genericAsset.nftAddress = nftAddress
     const chain = await web3.eth.getChainId()
-    ddo.id =
+    genericAsset.id =
       'did:op:' + SHA256(web3.utils.toChecksumAddress(nftAddress) + chain.toString(10))
 
     const encryptedDdo = await ProviderInstance.encrypt(
-      ddo,
+      genericAsset,
       providerUrl,
       crossFetchGeneric
     )
     console.log('encryptedDdo ', encryptedDdo)
     const encryptedResponse = await encryptedDdo.text()
-    const metadataHash = getHash(JSON.stringify(ddo))
+    const metadataHash = getHash(JSON.stringify(genericAsset))
 
     const res = await nft.setMetadata(
       nftAddress,
@@ -329,7 +332,7 @@ describe('Publish tests', async () => {
       encryptedResponse,
       '0x' + metadataHash
     )
-    const resolvedDDO = await aquarius.waitForAqua(crossFetchGeneric, ddo.id)
+    const resolvedDDO = await aquarius.waitForAqua(crossFetchGeneric, genericAsset.id)
     console.log('resolvedDDO ', resolvedDDO)
     const isAssetValid: ValidateMetadata = await aquarius.validate(
       crossFetchGeneric,
