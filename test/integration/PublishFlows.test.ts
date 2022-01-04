@@ -9,7 +9,7 @@ import {
   FreCreationParams,
   DispenserCreationParams
 } from '../../src/interfaces'
-import { getHash } from '../../src/utils'
+import { getHash, crossFetchGeneric } from '../../src/utils'
 import { Nft } from '../../src/tokens/NFT'
 import Web3 from 'web3'
 import fetch from 'cross-fetch'
@@ -19,6 +19,7 @@ import fs from 'fs'
 import console from 'console'
 import { ZERO_ADDRESS } from '../../src/utils'
 import { AbiItem } from 'web3-utils'
+import { ValidateMetadata } from '../../src/@types'
 
 const data = JSON.parse(
   fs.readFileSync(
@@ -46,27 +47,27 @@ const assetUrl = [
 ]
 const ddo = {
   '@context': ['https://w3id.org/did/v1'],
-  id: 'did:op:efba17455c127a885ec7830d687a8f6e64f5ba559f8506f8723c1f10f05c049c',
+  id: 'testFakeDid',
   version: '4.0.0',
   chainId: 4,
   nftAddress: '0x0',
   metadata: {
     created: '2021-12-20T14:35:20Z',
     updated: '2021-12-20T14:35:20Z',
+    name: 'test-dataset-pool',
     type: 'dataset',
-    name: 'pool dataset',
-    description: 'description',
-    tags: [''],
-    author: 'dd',
-    license: 'https://market.oceanprotocol.com/terms',
-    additionalInformation: {
-      termsAndConditions: true
-    }
+    description: 'Ocean protocol test dataset description',
+    author: 'oceanprotocol-team',
+    license: 'MIT',
+    tags: ['white-papers'],
+    additionalInformation: { 'test-key': 'test-value' },
+    links: ['http://data.ceda.ac.uk/badc/ukcp09/']
   },
   services: [
     {
-      id: 'notAnId',
-      type: 'download',
+      id: 'testFakeId',
+      type: 'access',
+      description: 'Download service',
       files: '',
       datatokenAddress: '0xa15024b732A8f2146423D14209eFd074e61964F3',
       serviceEndpoint: 'https://providerv4.rinkeby.oceanprotocol.com',
@@ -131,29 +132,30 @@ describe('Publish tests', async () => {
     const datatokenAddress = bundleNFT.events.TokenCreated.returnValues[0]
     const poolAdress = bundleNFT.events.NewPool.returnValues[0]
 
-    let providerResponse = await ProviderInstance.encrypt(
+    const encryptedFiles = await ProviderInstance.encrypt(
       assetUrl,
       providerUrl,
-      (url: string, body: string, headers: any) => {
-        return fetch(url, {
-          method: 'POST',
-          body: body,
-          headers: headers
-        })
-      }
+      crossFetchGeneric
     )
-
-    ddo.services[0].files = await providerResponse.text()
+    console.log('encryptedDdo ', encryptedFiles)
+    ddo.services[0].files = await encryptedFiles.text()
     ddo.services[0].datatokenAddress = datatokenAddress
-    // update ddo and set the right did
+
     ddo.nftAddress = nftAddress
     const chain = await web3.eth.getChainId()
     ddo.id =
       'did:op:' + SHA256(web3.utils.toChecksumAddress(nftAddress) + chain.toString(10))
 
-    const encryptedResponse = await providerResponse.text()
+    const encryptedDdo = await ProviderInstance.encrypt(
+      ddo,
+      providerUrl,
+      crossFetchGeneric
+    )
+    console.log('encryptedDdo ', encryptedDdo)
+    const encryptedResponse = await encryptedDdo.text()
     const metadataHash = getHash(JSON.stringify(ddo))
-    const res = await nft.setMetadata(
+
+    const tx = await nft.setMetadata(
       nftAddress,
       accounts[0],
       0,
@@ -163,13 +165,14 @@ describe('Publish tests', async () => {
       encryptedResponse,
       '0x' + metadataHash
     )
-    const resolvedDDO = await aquarius.waitForAqua((url: string, body: string) => {
-      // replace with fetch
-      return fetch(url, {
-        method: 'GET',
-        body: body
-      })
-    }, ddo.id)
+
+    const resolvedDDO = await aquarius.waitForAqua(crossFetchGeneric, ddo.id)
+    console.log('resolvedDDO ', resolvedDDO)
+    const isAssetValid: ValidateMetadata = await aquarius.validate(
+      crossFetchGeneric,
+      resolvedDDO
+    )
+    console.log('isAssetValid', isAssetValid)
     assert(resolvedDDO, 'Cannot fetch DDO from Aquarius')
   })
 
@@ -214,28 +217,29 @@ describe('Publish tests', async () => {
     const datatokenAddress = bundleNFT.events.TokenCreated.returnValues[0]
     const fixedPrice = bundleNFT.events.NewFixedRate.returnValues[0]
 
-    let providerResponse = await ProviderInstance.encrypt(
-      ddo,
+    const encryptedFiles = await ProviderInstance.encrypt(
+      assetUrl,
       providerUrl,
-      (url: string, body: string, headers: any) => {
-        return fetch(url, {
-          method: 'POST',
-          body: body,
-          headers: headers
-        })
-      }
+      crossFetchGeneric
     )
-
-    ddo.services[0].files = await providerResponse.text()
+    console.log('encryptedDdo ', encryptedFiles)
+    ddo.services[0].files = await encryptedFiles.text()
     ddo.services[0].datatokenAddress = datatokenAddress
-    // update ddo and set the right did
+
     ddo.nftAddress = nftAddress
     const chain = await web3.eth.getChainId()
     ddo.id =
       'did:op:' + SHA256(web3.utils.toChecksumAddress(nftAddress) + chain.toString(10))
 
-    const encryptedResponse = await providerResponse.text()
+    const encryptedDdo = await ProviderInstance.encrypt(
+      ddo,
+      providerUrl,
+      crossFetchGeneric
+    )
+    console.log('encryptedDdo ', encryptedDdo)
+    const encryptedResponse = await encryptedDdo.text()
     const metadataHash = getHash(JSON.stringify(ddo))
+
     const res = await nft.setMetadata(
       nftAddress,
       accounts[0],
@@ -246,12 +250,13 @@ describe('Publish tests', async () => {
       encryptedResponse,
       '0x' + metadataHash
     )
-    const resolvedDDO = await aquarius.waitForAqua((url: string, body: string) => {
-      return fetch(url, {
-        method: 'GET',
-        body: body
-      })
-    }, ddo.id)
+    const resolvedDDO = await aquarius.waitForAqua(crossFetchGeneric, ddo.id)
+    console.log('resolvedDDO ', resolvedDDO)
+    const isAssetValid: ValidateMetadata = await aquarius.validate(
+      crossFetchGeneric,
+      resolvedDDO
+    )
+    console.log('isAssetValid', isAssetValid)
     assert(resolvedDDO, 'Cannot fetch DDO from Aquarius')
   })
 
@@ -289,30 +294,31 @@ describe('Publish tests', async () => {
 
     const nftAddress = bundleNFT.events.NFTCreated.returnValues[0]
     const datatokenAddress = bundleNFT.events.TokenCreated.returnValues[0]
-    const fixedRate = bundleNFT.events.NewFixedRate.returnValues[0]
+    const dispenserAddress = bundleNFT.events.DispenserCreated.returnValues[0]
 
-    let providerResponse = await ProviderInstance.encrypt(
-      ddo,
+    const encryptedFiles = await ProviderInstance.encrypt(
+      assetUrl,
       providerUrl,
-      (url: string, body: string, headers: any) => {
-        return fetch(url, {
-          method: 'POST',
-          body: body,
-          headers: headers
-        })
-      }
+      crossFetchGeneric
     )
-
-    ddo.services[0].files = await providerResponse.text()
+    console.log('encryptedDdo ', encryptedFiles)
+    ddo.services[0].files = await encryptedFiles.text()
     ddo.services[0].datatokenAddress = datatokenAddress
-    // update ddo and set the right did
+
     ddo.nftAddress = nftAddress
     const chain = await web3.eth.getChainId()
     ddo.id =
       'did:op:' + SHA256(web3.utils.toChecksumAddress(nftAddress) + chain.toString(10))
 
-    const encryptedResponse = await providerResponse.text()
+    const encryptedDdo = await ProviderInstance.encrypt(
+      ddo,
+      providerUrl,
+      crossFetchGeneric
+    )
+    console.log('encryptedDdo ', encryptedDdo)
+    const encryptedResponse = await encryptedDdo.text()
     const metadataHash = getHash(JSON.stringify(ddo))
+
     const res = await nft.setMetadata(
       nftAddress,
       accounts[0],
@@ -323,12 +329,13 @@ describe('Publish tests', async () => {
       encryptedResponse,
       '0x' + metadataHash
     )
-    const resolvedDDO = await aquarius.waitForAqua((url: string, body: string) => {
-      return fetch(url, {
-        method: 'GET',
-        body: body
-      })
-    }, ddo.id)
+    const resolvedDDO = await aquarius.waitForAqua(crossFetchGeneric, ddo.id)
+    console.log('resolvedDDO ', resolvedDDO)
+    const isAssetValid: ValidateMetadata = await aquarius.validate(
+      crossFetchGeneric,
+      resolvedDDO
+    )
+    console.log('isAssetValid', isAssetValid)
     assert(resolvedDDO, 'Cannot fetch DDO from Aquarius')
   })
 })

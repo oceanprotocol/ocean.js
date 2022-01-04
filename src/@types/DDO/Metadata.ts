@@ -125,3 +125,8 @@ export interface Metadata {
    */
   additionalInformation?: any
 }
+
+export interface ValidateMetadata {
+  valid: Boolean
+  errors?: Object
+}

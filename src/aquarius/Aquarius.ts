@@ -1,5 +1,5 @@
 import { LoggerInstance } from '../utils'
-import { Asset, DDO } from '../@types/'
+import { Asset, DDO, Metadata, ValidateMetadata } from '../@types/'
 
 export class Aquarius {
   public aquariusURL
@@ -43,9 +43,9 @@ export class Aquarius {
 
   /**
    * Blocks until Aqua will cache the did (or the update for that did) or timeouts
+   * @param {string} fetchMethod fetch client instance
    * @param  {string} did DID of the asset.
    * @param  {string} txid used when the did exists and we expect an update with that txid.
-   * @param {string} fetchMethod fetch client instance
    * @return {Promise<DDO>} DDO of the asset.
    */
   public async waitForAqua(fetchMethod: any, did: string, txid?: string): Promise<Asset> {
@@ -68,6 +68,38 @@ export class Aquarius {
       tries++
     } while (tries < 100)
     return null
+  }
+
+  public async validate(
+    fetchMethod: any,
+    metadata: Metadata | Asset
+  ): Promise<ValidateMetadata> {
+    let status: ValidateMetadata
+    const validateUrl = this.isAsset(metadata) ? '/validate-remote' : '/validate'
+    try {
+      const path = this.aquariusURL + '/api/aquarius/assets/ddo/' + validateUrl
+      const response = await fetchMethod('POST', path, JSON.stringify(metadata))
+      if (response.ok) {
+        const errors = await response.json()
+        if (errors === true) status.valid = true
+        else status.errors = errors
+      } else {
+        status.valid = false
+        LoggerInstance.error(
+          'validate Metadata failed:',
+          response.status,
+          response.statusText
+        )
+      }
+    } catch (error) {
+      status.valid = false
+      LoggerInstance.error('Error validating metadata: ', error)
+    }
+    return status
+  }
+
+  private isAsset(arg: any): Boolean {
+    return arg.id !== undefined
   }
 }
 
