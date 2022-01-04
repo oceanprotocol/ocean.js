@@ -19,7 +19,7 @@ import fs from 'fs'
 import console from 'console'
 import { ZERO_ADDRESS } from '../../src/utils'
 import { AbiItem } from 'web3-utils'
-import { ValidateMetadata } from '../../src/@types'
+import { ValidateMetadata, DDO } from '../../src/@types'
 
 const data = JSON.parse(
   fs.readFileSync(
@@ -45,7 +45,7 @@ const files = [
     method: 'GET'
   }
 ]
-const genericAsset = {
+const genericAsset: DDO = {
   '@context': ['https://w3id.org/did/v1'],
   id: 'testFakeDid',
   version: '4.0.0',
@@ -71,7 +71,7 @@ const genericAsset = {
       files: '',
       datatokenAddress: '0xa15024b732A8f2146423D14209eFd074e61964F3',
       serviceEndpoint: 'https://providerv4.rinkeby.oceanprotocol.com',
-      timeout: 0
+      timeout: '0'
     }
   ]
 }
@@ -147,6 +147,13 @@ describe('Publish tests', async () => {
     genericAsset.id =
       'did:op:' + SHA256(web3.utils.toChecksumAddress(nftAddress) + chain.toString(10))
 
+    const isAssetValid: ValidateMetadata = await aquarius.validate(
+      crossFetchGeneric,
+      genericAsset
+    )
+    console.log('isAssetValid', isAssetValid)
+    assert(isAssetValid.valid === true, 'Published asset is not valid')
+
     const encryptedDdo = await ProviderInstance.encrypt(
       genericAsset,
       providerUrl,
@@ -167,13 +174,8 @@ describe('Publish tests', async () => {
       '0x' + metadataHash
     )
 
-    const resolvedDDO = await aquarius.waitForAqua(crossFetchGeneric, ddo.id)
+    const resolvedDDO = await aquarius.waitForAqua(crossFetchGeneric, genericAsset.id)
     console.log('resolvedDDO ', resolvedDDO)
-    const isAssetValid: ValidateMetadata = await aquarius.validate(
-      crossFetchGeneric,
-      resolvedDDO
-    )
-    console.log('isAssetValid', isAssetValid)
     assert(resolvedDDO, 'Cannot fetch DDO from Aquarius')
   })
 
@@ -233,6 +235,13 @@ describe('Publish tests', async () => {
     genericAsset.id =
       'did:op:' + SHA256(web3.utils.toChecksumAddress(nftAddress) + chain.toString(10))
 
+    const isAssetValid: ValidateMetadata = await aquarius.validate(
+      crossFetchGeneric,
+      genericAsset
+    )
+    console.log('isAssetValid', isAssetValid)
+    assert(isAssetValid.valid === true, 'Published asset is not valid')
+
     const encryptedDdo = await ProviderInstance.encrypt(
       genericAsset,
       providerUrl,
@@ -252,13 +261,8 @@ describe('Publish tests', async () => {
       encryptedResponse,
       '0x' + metadataHash
     )
-    const resolvedDDO = await aquarius.waitForAqua(crossFetchGeneric, ddo.id)
+    const resolvedDDO = await aquarius.waitForAqua(crossFetchGeneric, genericAsset.id)
     console.log('resolvedDDO ', resolvedDDO)
-    const isAssetValid: ValidateMetadata = await aquarius.validate(
-      crossFetchGeneric,
-      resolvedDDO
-    )
-    console.log('isAssetValid', isAssetValid)
     assert(resolvedDDO, 'Cannot fetch DDO from Aquarius')
   })
 
@@ -313,6 +317,13 @@ describe('Publish tests', async () => {
     genericAsset.id =
       'did:op:' + SHA256(web3.utils.toChecksumAddress(nftAddress) + chain.toString(10))
 
+    const isAssetValid: ValidateMetadata = await aquarius.validate(
+      crossFetchGeneric,
+      genericAsset
+    )
+    console.log('isAssetValid', isAssetValid)
+    assert(isAssetValid.valid === true, 'Published asset is not valid')
+
     const encryptedDdo = await ProviderInstance.encrypt(
       genericAsset,
       providerUrl,
@@ -334,11 +345,6 @@ describe('Publish tests', async () => {
     )
     const resolvedDDO = await aquarius.waitForAqua(crossFetchGeneric, genericAsset.id)
     console.log('resolvedDDO ', resolvedDDO)
-    const isAssetValid: ValidateMetadata = await aquarius.validate(
-      crossFetchGeneric,
-      resolvedDDO
-    )
-    console.log('isAssetValid', isAssetValid)
     assert(resolvedDDO, 'Cannot fetch DDO from Aquarius')
   })
 })

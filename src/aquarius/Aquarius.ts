@@ -72,7 +72,7 @@ export class Aquarius {
 
   public async validate(
     fetchMethod: any,
-    metadata: Metadata | Asset
+    metadata: Metadata | DDO
   ): Promise<ValidateMetadata> {
     let status: ValidateMetadata
     const validateUrl = this.isAsset(metadata) ? '/validate-remote' : '/validate'
