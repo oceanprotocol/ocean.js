@@ -161,11 +161,11 @@ describe('Publish tests', async () => {
       providerUrl,
       web3
     )
-    assert(downloadURL)
+    assert(downloadURL, 'Provider getDownloadUrl failed')
     try {
       await downloadFile(downloadURL, './tmpfile')
     } catch (e) {
-      console.error('Download failed')
+      assert.fail('Download failed')
     }
   })
 })
