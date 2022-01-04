@@ -74,17 +74,21 @@ export class Aquarius {
     fetchMethod: any,
     metadata: Metadata | DDO
   ): Promise<ValidateMetadata> {
-    let status: ValidateMetadata
+    const status: ValidateMetadata = {
+      valid: false
+    }
     const validateUrl = this.isAsset(metadata) ? '/validate-remote' : '/validate'
     try {
-      const path = this.aquariusURL + '/api/aquarius/assets/ddo/' + validateUrl
-      const response = await fetchMethod('POST', path, JSON.stringify(metadata))
+      const path = this.aquariusURL + '/api/aquarius/assets/ddo' + validateUrl
+      const response = await fetchMethod('POST', path, JSON.stringify(metadata), {
+        'Content-Type': 'application/octet-stream'
+      })
+      console.log(' response == ', response)
       if (response.ok) {
         const errors = await response.json()
         if (errors === true) status.valid = true
         else status.errors = errors
       } else {
-        status.valid = false
         LoggerInstance.error(
           'validate Metadata failed:',
           response.status,
@@ -92,7 +96,6 @@ export class Aquarius {
         )
       }
     } catch (error) {
-      status.valid = false
       LoggerInstance.error('Error validating metadata: ', error)
     }
     return status
