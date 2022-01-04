@@ -3,6 +3,7 @@ import ProviderInstance, { Provider } from '../../src/provider/Provider'
 import Aquarius from '../../src/aquarius/Aquarius'
 import { assert } from 'chai'
 import { NftFactory, NftCreateData } from '../../src/factories/index'
+import { Datatoken } from '../../src/tokens/Datatoken'
 import { Erc20CreateParams } from '../../src/interfaces'
 import { getHash } from '../../src/utils'
 import { Nft } from '../../src/tokens/NFT'
@@ -11,6 +12,7 @@ import fetch from 'cross-fetch'
 import { SHA256 } from 'crypto-js'
 import { homedir } from 'os'
 import fs from 'fs'
+import { downloadFile } from '../../src/utils/FetchHelper'
 import console from 'console'
 
 const data = JSON.parse(
@@ -55,7 +57,7 @@ const ddo = {
   services: [
     {
       id: 'notAnId',
-      type: 'download',
+      type: 'access',
       files: '',
       datatokenAddress: '0xa15024b732A8f2146423D14209eFd074e61964F3',
       serviceEndpoint: 'https://providerv4.rinkeby.oceanprotocol.com',
@@ -67,9 +69,11 @@ const ddo = {
 describe('Publish tests', async () => {
   it('should publish a dataset (create NFT + ERC20)', async () => {
     const nft = new Nft(web3)
+    const datatoken = new Datatoken(web3)
     const Factory = new NftFactory(addresses.ERC721Factory, web3)
     const accounts = await web3.eth.getAccounts()
-    const accountId = accounts[0]
+    const publisherAccount = accounts[0]
+    const consumerAccount = accounts[1]
     const nftParams: NftCreateData = {
       name: 'testNFT',
       symbol: 'TST',
@@ -82,21 +86,25 @@ describe('Publish tests', async () => {
       feeAmount: '0',
       feeManager: '0x0000000000000000000000000000000000000000',
       feeToken: '0x0000000000000000000000000000000000000000',
-      minter: accountId,
+      minter: publisherAccount,
       mpFeeAddress: '0x0000000000000000000000000000000000000000'
     }
-    const result = await Factory.createNftWithErc(accountId, nftParams, erc20Params)
+    const result = await Factory.createNftWithErc(
+      publisherAccount,
+      nftParams,
+      erc20Params
+    )
     const erc721Address = result.events.NFTCreated.returnValues[0]
     const datatokenAddress = result.events.TokenCreated.returnValues[0]
 
     // create the files encrypted string
     let providerResponse = await ProviderInstance.encrypt(
-      ddo,
+      assetUrl,
       providerUrl,
-      (url: string, body: string, headers: any) => {
+      (method: string, url: string, body: string, headers: any) => {
         // replace with fetch
         return fetch(url, {
-          method: 'POST',
+          method: method,
           body: body,
           headers: headers
         })
@@ -113,10 +121,10 @@ describe('Publish tests', async () => {
     providerResponse = await ProviderInstance.encrypt(
       ddo,
       providerUrl,
-      (url: string, body: string, headers: any) => {
+      (method: string, url: string, body: string, headers: any) => {
         // replace with fetch
         return fetch(url, {
-          method: 'POST',
+          method: method,
           body: body,
           headers: headers
         })
@@ -126,7 +134,7 @@ describe('Publish tests', async () => {
     const metadataHash = getHash(JSON.stringify(ddo))
     const res = await nft.setMetadata(
       erc721Address,
-      accountId,
+      publisherAccount,
       0,
       providerUrl,
       '',
@@ -142,5 +150,53 @@ describe('Publish tests', async () => {
       })
     }, ddo.id)
     assert(resolvedDDO, 'Cannot fetch DDO from Aquarius')
+    // mint 1 ERC20 and send it to the consumer
+    await datatoken.mint(datatokenAddress, publisherAccount, '1', consumerAccount)
+    // initialize provider
+    const initializeData = await ProviderInstance.initialize(
+      resolvedDDO.id,
+      resolvedDDO.services[0].id,
+      0,
+      consumerAccount,
+      providerUrl,
+      (method: string, url: string, body: string, headers: any) => {
+        // replace with fetch
+        return fetch(url, {
+          method: method,
+          body: body,
+          headers: headers
+        })
+      }
+    )
+    // make the payment
+    const txid = await datatoken.startOrder(
+      datatokenAddress,
+      consumerAccount,
+      consumerAccount,
+      0,
+      initializeData.providerFee.providerFeeAddress,
+      initializeData.providerFee.providerFeeToken,
+      initializeData.providerFee.providerFeeAmount,
+      initializeData.providerFee.v,
+      initializeData.providerFee.r,
+      initializeData.providerFee.s,
+      initializeData.providerFee.providerData
+    )
+    // get the url
+    const downloadURL = await ProviderInstance.getDownloadUrl(
+      ddo.id,
+      consumerAccount,
+      ddo.services[0].id,
+      0,
+      txid.transactionHash,
+      providerUrl,
+      web3
+    )
+    assert(downloadURL)
+    try {
+      await downloadFile(downloadURL, './tmpfile')
+    } catch (e) {
+      console.error('Download failed')
+    }
   })
 })

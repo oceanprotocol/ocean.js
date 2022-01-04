@@ -1,5 +1,5 @@
 import { LoggerInstance } from '../utils'
-import { DDO } from '../@types/'
+import { Asset, DDO } from '../@types/'
 
 export class Aquarius {
   public aquariusURL
@@ -50,7 +50,7 @@ export class Aquarius {
    * @param {string} fetchMethod fetch client instance
    * @return {Promise<DDO>} DDO of the asset.
    */
-  public async waitForAqua(fetchMethod: any, did: string, txid?: string): Promise<DDO> {
+  public async waitForAqua(fetchMethod: any, did: string, txid?: string): Promise<Asset> {
     let tries = 0
     do {
       try {
@@ -60,8 +60,8 @@ export class Aquarius {
           const ddo = await response.json()
           if (txid) {
             // check tx
-            if (ddo.event && ddo.event.txid === txid) return ddo as DDO
-          } else return ddo as DDO
+            if (ddo.event && ddo.event.txid === txid) return ddo as Asset
+          } else return ddo as Asset
         }
       } catch (e) {
         // do nothing
