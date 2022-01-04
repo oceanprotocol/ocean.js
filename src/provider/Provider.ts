@@ -132,7 +132,7 @@ export class Provider {
 
     if (!path) return null
     try {
-      const response = await postMethod(path, decodeURI(JSON.stringify(data)), {
+      const response = await postMethod('POST', path, decodeURI(JSON.stringify(data)), {
         'Content-Type': 'application/octet-stream'
       })
       return response
@@ -201,7 +201,7 @@ export class Provider {
       : null
     if (!path) return null
     try {
-      const response = await fetchMethod(path, JSON.stringify(args))
+      const response = await fetchMethod('POST', path, JSON.stringify(args))
       const results: FileMetadata[] = await response.json()
       for (const result of results) {
         files.push(result)
@@ -223,9 +223,9 @@ export class Provider {
    * @return {Promise<ProviderInitialize>} ProviderInitialize data
    */
   public async initialize(
-    asset: Asset,
-    serviceIndex: number,
-    serviceType: string,
+    did: string,
+    serviceId: string,
+    fileIndex: number,
     consumerAddress: string,
     providerUri: string,
     getMethod: any,
@@ -241,43 +241,41 @@ export class Provider {
       : null
 
     if (!initializeUrl) return null
-    initializeUrl += `?documentId=${asset.id}`
-    initializeUrl += `&serviceId=${serviceIndex}`
-    initializeUrl += `&serviceType=${serviceType}`
-    initializeUrl += `&dataToken=${asset.datatokens[0]}` // to check later
+    initializeUrl += `?documentId=${did}`
+    initializeUrl += `&serviceId=${serviceId}`
+    initializeUrl += `&fileIndex=${fileIndex}`
     initializeUrl += `&consumerAddress=${consumerAddress}`
     if (userCustomParameters)
       initializeUrl += '&userdata=' + encodeURI(JSON.stringify(userCustomParameters))
     try {
-      const response = await getMethod(initializeUrl)
-      return (await response.json()) as ProviderInitialize
+      const response = await getMethod('GET', initializeUrl)
+      const results: ProviderInitialize = await response.json()
+      return results
     } catch (e) {
       LoggerInstance.error(e)
       throw new Error('Asset URL not found or not available.')
     }
   }
 
-  /** Allows download of asset data file.
+  /** Gets fully signed URL for download
    * @param {string} did
-   * @param {string} destination
    * @param {string} accountId
-   * @param {FileMetadata[]} files
-   * @param {-1} index
+   * @param {string} serviceId
+   * @param {number} fileIndex
    * @param {string} providerUri
    * @param {Web3} web3
    * @param {any} fetchMethod
    * @param {UserCustomParameters} userCustomParameters
-   * @return {Promise<any>}
+   * @return {Promise<string>}
    */
-  public async download(
+  public async getDownloadUrl(
     did: string,
-    destination: string,
     accountId: string,
-    files: FileMetadata[],
-    index = -1,
+    serviceId: string,
+    fileIndex: number,
+    transferTxId: string,
     providerUri: string,
     web3: Web3,
-    fetchMethod: any,
     userCustomParameters?: UserCustomParameters
   ): Promise<any> {
     const providerEndpoints = await this.getEndpoints(providerUri)
@@ -288,39 +286,21 @@ export class Provider {
     const downloadUrl = this.getEndpointURL(serviceEndpoints, 'download')
       ? this.getEndpointURL(serviceEndpoints, 'download').urlPath
       : null
-
-    const nonce = await this.getNonce(
-      providerUri,
-      accountId,
-      fetchMethod,
-      providerEndpoints,
-      serviceEndpoints
-    )
+    if (!downloadUrl) return null
+    const nonce = Date.now()
     const signature = await this.createSignature(web3, accountId, did + nonce)
 
-    if (!downloadUrl) return null
-    const filesPromises = files
-      .filter((_, i) => index === -1 || i === index)
-      .map(async ({ index: i, url: fileUrl }) => {
-        let consumeUrl = downloadUrl
-        consumeUrl += `?index=${i}`
-        consumeUrl += `&documentId=${did}`
-        consumeUrl += `&consumerAddress=${accountId}`
-        consumeUrl += `&url=${fileUrl}`
-        consumeUrl += `&signature=${signature}`
-        if (userCustomParameters)
-          consumeUrl += '&userdata=' + encodeURI(JSON.stringify(userCustomParameters))
-        try {
-          !destination
-            ? await fetchMethod.downloadFileBrowser(consumeUrl)
-            : await fetchMethod.downloadFile(consumeUrl, destination, i)
-        } catch (e) {
-          LoggerInstance.error('Error consuming assets', e)
-          throw e
-        }
-      })
-    await Promise.all(filesPromises)
-    return destination
+    let consumeUrl = downloadUrl
+    consumeUrl += `?fileIndex=${fileIndex}`
+    consumeUrl += `&documentId=${did}`
+    consumeUrl += `&transferTxId=${transferTxId}`
+    consumeUrl += `&serviceId=${serviceId}`
+    consumeUrl += `&consumerAddress=${accountId}`
+    consumeUrl += `&nonce=${nonce}`
+    consumeUrl += `&signature=${signature}`
+    if (userCustomParameters)
+      consumeUrl += '&userdata=' + encodeURI(JSON.stringify(userCustomParameters))
+    return consumeUrl
   }
 
   /** Instruct the provider to start a compute job
