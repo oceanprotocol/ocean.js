@@ -19,11 +19,9 @@ export class Aquarius {
   public async resolve(did: string, fetchMethod: any): Promise<DDO> {
     const path = this.aquariusURL + '/api/aquarius/assets/ddo/' + did
     try {
-      console.log(path)
-      const response = await fetchMethod(path)
+      const response = await fetchMethod('GET', path)
       if (response.ok) {
         const raw = await response.json()
-        console.log(raw)
         return raw as DDO
       } else {
         throw new Error('HTTP request failed with status ' + response.status)
@@ -55,7 +53,7 @@ export class Aquarius {
     do {
       try {
         const path = this.aquariusURL + '/api/aquarius/assets/ddo/' + did
-        const response = await fetchMethod(path)
+        const response = await fetchMethod('GET', path)
         if (response.ok) {
           const ddo = await response.json()
           if (txid) {
