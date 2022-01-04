@@ -5,7 +5,8 @@ import {
   FileMetadata,
   ComputeJob,
   ComputeOutput,
-  ComputeAlgorithm
+  ComputeAlgorithm,
+  ProviderInitialize
 } from '../@types/'
 import { noZeroX } from '../utils/ConversionTypeHelper'
 import { signText, signWithHash } from '../utils/SignatureUtils'
@@ -131,7 +132,9 @@ export class Provider {
 
     if (!path) return null
     try {
-      const response = await postMethod(path, decodeURI(JSON.stringify(data)))
+      const response = await postMethod(path, decodeURI(JSON.stringify(data)), {
+        'Content-Type': 'application/octet-stream'
+      })
       return response
     } catch (e) {
       LoggerInstance.error(e)
@@ -217,7 +220,7 @@ export class Provider {
    * @param {UserCustomParameters} userCustomParameters
    * @param {string} providerUri Identifier of the asset to be registered in ocean
    * @param {string} fetchMethod fetch client instance
-   * @return {Promise<FileMetadata[]>} urlDetails
+   * @return {Promise<ProviderInitialize>} ProviderInitialize data
    */
   public async initialize(
     asset: Asset,
@@ -227,7 +230,7 @@ export class Provider {
     providerUri: string,
     getMethod: any,
     userCustomParameters?: UserCustomParameters
-  ): Promise<string> {
+  ): Promise<ProviderInitialize> {
     const providerEndpoints = await this.getEndpoints(providerUri)
     const serviceEndpoints = await this.getServiceEndpoints(
       providerUri,
@@ -247,7 +250,7 @@ export class Provider {
       initializeUrl += '&userdata=' + encodeURI(JSON.stringify(userCustomParameters))
     try {
       const response = await getMethod(initializeUrl)
-      return await response
+      return (await response.json()) as ProviderInitialize
     } catch (e) {
       LoggerInstance.error(e)
       throw new Error('Asset URL not found or not available.')
