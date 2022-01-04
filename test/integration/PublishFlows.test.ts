@@ -9,15 +9,13 @@ import {
   FreCreationParams,
   DispenserCreationParams
 } from '../../src/interfaces'
-import { getHash, crossFetchGeneric } from '../../src/utils'
+import { getHash, crossFetchGeneric, ZERO_ADDRESS } from '../../src/utils'
 import { Nft } from '../../src/tokens/NFT'
 import Web3 from 'web3'
-import fetch from 'cross-fetch'
 import { SHA256 } from 'crypto-js'
 import { homedir } from 'os'
 import fs from 'fs'
 import console from 'console'
-import { ZERO_ADDRESS } from '../../src/utils'
 import { AbiItem } from 'web3-utils'
 import { ValidateMetadata, DDO } from '../../src/@types'
 
