@@ -82,10 +82,8 @@ export class Aquarius {
       const response = await fetchMethod('POST', path, JSON.stringify(metadata), {
         'Content-Type': 'application/octet-stream'
       })
-      if (response.ok) {
-        const errors = await response.json()
-        if (errors === true) status.valid = true
-        else status.errors = errors
+      if (response.status === 200 && response.statusText === 'OK') {
+        status.valid = true
       } else {
         const errors = await response.json()
         status.errors = errors

@@ -88,6 +88,7 @@ describe('Publish tests', async () => {
   })
 
   it('should publish a dataset with pool (create NFT + ERC20 + pool)', async () => {
+    const poolDdo: DDO = { ...genericAsset }
     const nftParams: NftCreateData = {
       name: 'testNftPool',
       symbol: 'TSTP',
@@ -135,32 +136,29 @@ describe('Publish tests', async () => {
       crossFetchGeneric
     )
 
-    genericAsset.metadata.name = 'test-dataset-pool'
-    genericAsset.services[0].files = await encryptedFiles.text()
-    genericAsset.services[0].datatokenAddress = datatokenAddress
+    poolDdo.metadata.name = 'test-dataset-pool'
+    poolDdo.services[0].files = await encryptedFiles.text()
+    poolDdo.services[0].datatokenAddress = datatokenAddress
 
-    genericAsset.nftAddress = nftAddress
+    poolDdo.nftAddress = nftAddress
     const chain = await web3.eth.getChainId()
-    genericAsset.chainId = chain
-    genericAsset.id =
+    poolDdo.chainId = chain
+    poolDdo.id =
       'did:op:' + SHA256(web3.utils.toChecksumAddress(nftAddress) + chain.toString(10))
-
-    console.log('genericAsset ', genericAsset)
 
     const isAssetValid: ValidateMetadata = await aquarius.validate(
       crossFetchGeneric,
-      genericAsset
+      poolDdo
     )
-    console.log('isAssetValid', isAssetValid)
     assert(isAssetValid.valid === true, 'Published asset is not valid')
 
     const encryptedDdo = await ProviderInstance.encrypt(
-      genericAsset,
+      poolDdo,
       providerUrl,
       crossFetchGeneric
     )
     const encryptedResponse = await encryptedDdo.text()
-    const metadataHash = getHash(JSON.stringify(genericAsset))
+    const metadataHash = getHash(JSON.stringify(poolDdo))
 
     const tx = await nft.setMetadata(
       nftAddress,
@@ -173,12 +171,12 @@ describe('Publish tests', async () => {
       '0x' + metadataHash
     )
 
-    const resolvedDDO = await aquarius.waitForAqua(crossFetchGeneric, genericAsset.id)
-    console.log('resolvedDDO ', resolvedDDO)
+    const resolvedDDO = await aquarius.waitForAqua(crossFetchGeneric, poolDdo.id)
     assert(resolvedDDO, 'Cannot fetch DDO from Aquarius')
   })
 
   it('should publish a dataset with fixed price (create NFT + ERC20 + fixed price)', async () => {
+    const fixedPriceDdo: DDO = { ...genericAsset }
     const nftParams: NftCreateData = {
       name: 'testNftFre',
       symbol: 'TSTF',
@@ -224,29 +222,30 @@ describe('Publish tests', async () => {
       providerUrl,
       crossFetchGeneric
     )
-    genericAsset.metadata.name = 'test-dataset-fixedPrice'
-    genericAsset.services[0].files = await encryptedFiles.text()
-    genericAsset.services[0].datatokenAddress = datatokenAddress
 
-    genericAsset.nftAddress = nftAddress
+    fixedPriceDdo.metadata.name = 'test-dataset-fixedPrice'
+    fixedPriceDdo.services[0].files = await encryptedFiles.text()
+    fixedPriceDdo.services[0].datatokenAddress = datatokenAddress
+
+    fixedPriceDdo.nftAddress = nftAddress
     const chain = await web3.eth.getChainId()
-    genericAsset.id =
+    fixedPriceDdo.chainId = chain
+    fixedPriceDdo.id =
       'did:op:' + SHA256(web3.utils.toChecksumAddress(nftAddress) + chain.toString(10))
 
     const isAssetValid: ValidateMetadata = await aquarius.validate(
       crossFetchGeneric,
-      genericAsset
+      fixedPriceDdo
     )
-    console.log('isAssetValid', isAssetValid)
     assert(isAssetValid.valid === true, 'Published asset is not valid')
 
     const encryptedDdo = await ProviderInstance.encrypt(
-      genericAsset,
+      fixedPriceDdo,
       providerUrl,
       crossFetchGeneric
     )
     const encryptedResponse = await encryptedDdo.text()
-    const metadataHash = getHash(JSON.stringify(genericAsset))
+    const metadataHash = getHash(JSON.stringify(fixedPriceDdo))
 
     const res = await nft.setMetadata(
       nftAddress,
@@ -258,11 +257,12 @@ describe('Publish tests', async () => {
       encryptedResponse,
       '0x' + metadataHash
     )
-    const resolvedDDO = await aquarius.waitForAqua(crossFetchGeneric, genericAsset.id)
+    const resolvedDDO = await aquarius.waitForAqua(crossFetchGeneric, fixedPriceDdo.id)
     assert(resolvedDDO, 'Cannot fetch DDO from Aquarius')
   })
 
   it('should publish a dataset with dispenser (create NFT + ERC20 + dispenser)', async () => {
+    const dispenserDdo: DDO = { ...genericAsset }
     const nftParams: NftCreateData = {
       name: 'testNftDispenser',
       symbol: 'TSTD',
@@ -303,29 +303,29 @@ describe('Publish tests', async () => {
       providerUrl,
       crossFetchGeneric
     )
-    genericAsset.metadata.name = 'test-dataset-dispenser'
-    genericAsset.services[0].files = await encryptedFiles.text()
-    genericAsset.services[0].datatokenAddress = datatokenAddress
+    dispenserDdo.metadata.name = 'test-dataset-dispenser'
+    dispenserDdo.services[0].files = await encryptedFiles.text()
+    dispenserDdo.services[0].datatokenAddress = datatokenAddress
 
-    genericAsset.nftAddress = nftAddress
+    dispenserDdo.nftAddress = nftAddress
     const chain = await web3.eth.getChainId()
-    genericAsset.id =
+    dispenserDdo.chainId = chain
+    dispenserDdo.id =
       'did:op:' + SHA256(web3.utils.toChecksumAddress(nftAddress) + chain.toString(10))
 
     const isAssetValid: ValidateMetadata = await aquarius.validate(
       crossFetchGeneric,
-      genericAsset
+      dispenserDdo
     )
-    console.log('isAssetValid', isAssetValid)
     assert(isAssetValid.valid === true, 'Published asset is not valid')
 
     const encryptedDdo = await ProviderInstance.encrypt(
-      genericAsset,
+      dispenserDdo,
       providerUrl,
       crossFetchGeneric
     )
     const encryptedResponse = await encryptedDdo.text()
-    const metadataHash = getHash(JSON.stringify(genericAsset))
+    const metadataHash = getHash(JSON.stringify(dispenserDdo))
 
     const res = await nft.setMetadata(
       nftAddress,
@@ -337,8 +337,7 @@ describe('Publish tests', async () => {
       encryptedResponse,
       '0x' + metadataHash
     )
-    const resolvedDDO = await aquarius.waitForAqua(crossFetchGeneric, genericAsset.id)
-    console.log('resolvedDDO ', resolvedDDO)
+    const resolvedDDO = await aquarius.waitForAqua(crossFetchGeneric, dispenserDdo.id)
     assert(resolvedDDO, 'Cannot fetch DDO from Aquarius')
   })
 })
