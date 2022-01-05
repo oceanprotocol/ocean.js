@@ -121,7 +121,7 @@ export interface Service {
 
   /**
    * Describing how long the service can be used after consumption is initiated.
-   * @type {string}
+   * @type {number}
    */
   timeout: number
 

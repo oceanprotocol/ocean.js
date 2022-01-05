@@ -70,16 +70,19 @@ export class Aquarius {
     return null
   }
 
-  public async validate(
-    fetchMethod: any,
-    metadata: Metadata | DDO
-  ): Promise<ValidateMetadata> {
+  /**
+   * Validate DDO content
+   * @param {string} fetchMethod fetch client instance
+   * @param  {DDO} ddo DID Descriptor Object content.
+   * @return {Promise<ValidateMetadata>}.
+   */
+  public async validate(fetchMethod: any, ddo: DDO): Promise<ValidateMetadata> {
     const status: ValidateMetadata = {
       valid: false
     }
     try {
       const path = this.aquariusURL + '/api/aquarius/assets/ddo/validate'
-      const response = await fetchMethod('POST', path, JSON.stringify(metadata), {
+      const response = await fetchMethod('POST', path, JSON.stringify(ddo), {
         'Content-Type': 'application/octet-stream'
       })
       if (response.status === 200 && response.statusText === 'OK') {
