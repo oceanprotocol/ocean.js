@@ -2,7 +2,6 @@ import DID from '../DID'
 import { Metadata } from '../../ddo/interfaces/Metadata'
 import { MetadataAlgorithm } from '../../ddo/interfaces/MetadataAlgorithm'
 import { UserCustomParameters } from '../../provider/Provider'
-
 export type ComputeResultType = 'algorithmLog' | 'output'
 
 export interface ComputeResult {
@@ -45,6 +44,7 @@ export interface ComputeInput {
   documentId: string
   serviceId: number
   transferTxId?: string
+  userCustomParameters?: UserCustomParameters
 }
 
 export interface ComputeAlgorithm {
