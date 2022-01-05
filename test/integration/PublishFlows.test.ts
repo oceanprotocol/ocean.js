@@ -135,7 +135,7 @@ describe('Publish tests', async () => {
       providerUrl,
       crossFetchGeneric
     )
-    console.log('encryptedDdo ', encryptedFiles)
+
     genericAsset.metadata.name = 'test-dataset-pool'
     genericAsset.services[0].files = await encryptedFiles.text()
     genericAsset.services[0].datatokenAddress = datatokenAddress
@@ -157,7 +157,6 @@ describe('Publish tests', async () => {
       providerUrl,
       crossFetchGeneric
     )
-    console.log('encryptedDdo ', encryptedDdo)
     const encryptedResponse = await encryptedDdo.text()
     const metadataHash = getHash(JSON.stringify(genericAsset))
 
@@ -229,7 +228,6 @@ describe('Publish tests', async () => {
       providerUrl,
       crossFetchGeneric
     )
-    console.log('encryptedDdo ', encryptedFiles)
     genericAsset.metadata.name = 'test-dataset-fixedPrice'
     genericAsset.services[0].files = await encryptedFiles.text()
     genericAsset.services[0].datatokenAddress = datatokenAddress
@@ -266,7 +264,6 @@ describe('Publish tests', async () => {
       '0x' + metadataHash
     )
     const resolvedDDO = await aquarius.waitForAqua(crossFetchGeneric, genericAsset.id)
-    console.log('resolvedDDO ', resolvedDDO)
     assert(resolvedDDO, 'Cannot fetch DDO from Aquarius')
     const isAssetValid: ValidateMetadata = await aquarius.validate(
       crossFetchGeneric,
@@ -317,7 +314,6 @@ describe('Publish tests', async () => {
       providerUrl,
       crossFetchGeneric
     )
-    console.log('encryptedDdo ', encryptedFiles)
     genericAsset.metadata.name = 'test-dataset-dispenser'
     genericAsset.services[0].files = await encryptedFiles.text()
     genericAsset.services[0].datatokenAddress = datatokenAddress
@@ -339,7 +335,6 @@ describe('Publish tests', async () => {
       providerUrl,
       crossFetchGeneric
     )
-    console.log('encryptedDdo ', encryptedDdo)
     const encryptedResponse = await encryptedDdo.text()
     const metadataHash = getHash(JSON.stringify(genericAsset))
 

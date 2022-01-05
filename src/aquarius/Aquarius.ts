@@ -80,12 +80,12 @@ export class Aquarius {
     const validateUrl = this.isAsset(metadata) ? '/validate-remote' : '/validate'
     try {
       const path = this.aquariusURL + '/api/aquarius/assets/ddo' + validateUrl
-      const response = await fetchMethod('POST', path, JSON.stringify(metadata), {
+      const response = await fetchMethod('POST', path, metadata, {
         'Content-Type': 'application/octet-stream'
       })
-      console.log(' response == ', response)
       if (response.ok) {
         const errors = await response.json()
+        console.log(' response error == ', errors)
         if (errors === true) status.valid = true
         else status.errors = errors
       } else {
