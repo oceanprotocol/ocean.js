@@ -15,7 +15,6 @@ import Web3 from 'web3'
 import { SHA256 } from 'crypto-js'
 import { homedir } from 'os'
 import fs from 'fs'
-import console from 'console'
 import { AbiItem } from 'web3-utils'
 import { ValidateMetadata, DDO } from '../../src/@types'
 
@@ -69,7 +68,7 @@ const genericAsset: DDO = {
       files: '',
       datatokenAddress: '0xa15024b732A8f2146423D14209eFd074e61964F3',
       serviceEndpoint: 'https://providerv4.rinkeby.oceanprotocol.com',
-      timeout: '0'
+      timeout: 0
     }
   ]
 }
@@ -142,15 +141,18 @@ describe('Publish tests', async () => {
 
     genericAsset.nftAddress = nftAddress
     const chain = await web3.eth.getChainId()
+    genericAsset.chainId = chain
     genericAsset.id =
       'did:op:' + SHA256(web3.utils.toChecksumAddress(nftAddress) + chain.toString(10))
 
-    const isMetadataValid: ValidateMetadata = await aquarius.validate(
+    console.log('genericAsset ', genericAsset)
+
+    const isAssetValid: ValidateMetadata = await aquarius.validate(
       crossFetchGeneric,
-      genericAsset.metadata
+      genericAsset
     )
-    console.log('isMetadataValid', isMetadataValid)
-    assert(isMetadataValid.valid === true, 'Published asset is not valid')
+    console.log('isAssetValid', isAssetValid)
+    assert(isAssetValid.valid === true, 'Published asset is not valid')
 
     const encryptedDdo = await ProviderInstance.encrypt(
       genericAsset,
@@ -174,12 +176,6 @@ describe('Publish tests', async () => {
     const resolvedDDO = await aquarius.waitForAqua(crossFetchGeneric, genericAsset.id)
     console.log('resolvedDDO ', resolvedDDO)
     assert(resolvedDDO, 'Cannot fetch DDO from Aquarius')
-    const isAssetValid: ValidateMetadata = await aquarius.validate(
-      crossFetchGeneric,
-      resolvedDDO
-    )
-    console.log('isAssetValid', isAssetValid)
-    assert(isAssetValid.valid === true, 'Published asset is not valid')
   })
 
   it('should publish a dataset with fixed price (create NFT + ERC20 + fixed price)', async () => {
@@ -237,19 +233,18 @@ describe('Publish tests', async () => {
     genericAsset.id =
       'did:op:' + SHA256(web3.utils.toChecksumAddress(nftAddress) + chain.toString(10))
 
-    const isMetadataValid: ValidateMetadata = await aquarius.validate(
+    const isAssetValid: ValidateMetadata = await aquarius.validate(
       crossFetchGeneric,
-      genericAsset.metadata
+      genericAsset
     )
-    console.log('isMetadataValid', isMetadataValid)
-    assert(isMetadataValid.valid === true, 'Metadata is not valid')
+    console.log('isAssetValid', isAssetValid)
+    assert(isAssetValid.valid === true, 'Published asset is not valid')
 
     const encryptedDdo = await ProviderInstance.encrypt(
       genericAsset,
       providerUrl,
       crossFetchGeneric
     )
-    console.log('encryptedDdo ', encryptedDdo)
     const encryptedResponse = await encryptedDdo.text()
     const metadataHash = getHash(JSON.stringify(genericAsset))
 
@@ -265,12 +260,6 @@ describe('Publish tests', async () => {
     )
     const resolvedDDO = await aquarius.waitForAqua(crossFetchGeneric, genericAsset.id)
     assert(resolvedDDO, 'Cannot fetch DDO from Aquarius')
-    const isAssetValid: ValidateMetadata = await aquarius.validate(
-      crossFetchGeneric,
-      resolvedDDO
-    )
-    console.log('isAssetValid', isAssetValid)
-    assert(isAssetValid.valid === true, 'Published asset is not valid')
   })
 
   it('should publish a dataset with dispenser (create NFT + ERC20 + dispenser)', async () => {
@@ -323,12 +312,12 @@ describe('Publish tests', async () => {
     genericAsset.id =
       'did:op:' + SHA256(web3.utils.toChecksumAddress(nftAddress) + chain.toString(10))
 
-    const isMetadataValid: ValidateMetadata = await aquarius.validate(
+    const isAssetValid: ValidateMetadata = await aquarius.validate(
       crossFetchGeneric,
-      genericAsset.metadata
+      genericAsset
     )
-    console.log('isMetadataValid', isMetadataValid)
-    assert(isMetadataValid.valid === true, 'Metadata is not valid')
+    console.log('isAssetValid', isAssetValid)
+    assert(isAssetValid.valid === true, 'Published asset is not valid')
 
     const encryptedDdo = await ProviderInstance.encrypt(
       genericAsset,
@@ -351,11 +340,5 @@ describe('Publish tests', async () => {
     const resolvedDDO = await aquarius.waitForAqua(crossFetchGeneric, genericAsset.id)
     console.log('resolvedDDO ', resolvedDDO)
     assert(resolvedDDO, 'Cannot fetch DDO from Aquarius')
-    const isAssetValid: ValidateMetadata = await aquarius.validate(
-      crossFetchGeneric,
-      resolvedDDO
-    )
-    console.log('isAssetValid', isAssetValid)
-    assert(isAssetValid.valid === true, 'Published asset is not valid')
   })
 })

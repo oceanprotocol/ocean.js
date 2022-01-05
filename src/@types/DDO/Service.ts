@@ -123,7 +123,7 @@ export interface Service {
    * Describing how long the service can be used after consumption is initiated.
    * @type {string}
    */
-  timeout: string
+  timeout: number
 
   /**
    * Service friendly name
