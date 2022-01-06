@@ -212,6 +212,55 @@ export class Provider {
     }
   }
 
+  /** Lists files from an asset
+   * @param {String} url provider uri address
+   * @param {String} fetchMethod fetch client instance
+   * @return {Promise<boolean>} string
+   */
+  public async getAssetUrls(
+    documentId: string,
+    serviceId: string,
+    publisherAddress: string,
+    web3: Web3,
+    providerUri: string,
+    getMethod: any
+  ): Promise<FileMetadata[]> {
+    const providerEndpoints = await this.getEndpoints(providerUri)
+    const serviceEndpoints = await this.getServiceEndpoints(
+      providerUri,
+      providerEndpoints
+    )
+    const files: FileMetadata[] = []
+    const path = this.getEndpointURL(serviceEndpoints, 'assetUrls')
+      ? this.getEndpointURL(serviceEndpoints, 'assetUrls').urlPath
+      : null
+    const nonce = Date.now()
+    const signature = await this.createSignature(
+      web3,
+      publisherAddress,
+      documentId + nonce
+    )
+
+    let paramsPath = path
+    paramsPath += `?documentId=${documentId}`
+    paramsPath += `&signature=${signature}`
+    paramsPath += `&serviceId=${serviceId}`
+    paramsPath += `&nonce=${nonce}`
+    paramsPath += `&publisherAddress=${publisherAddress}`
+    if (!path) return null
+    try {
+      const response = await getMethod('GET', paramsPath)
+      console.log('response', response)
+      const results: FileMetadata[] = await response.json()
+      for (const result of results) {
+        files.push(result)
+      }
+      return files
+    } catch (e) {
+      return null
+    }
+  }
+
   /** Initialize a service request.
    * @param {DDO | string} asset
    * @param {number} serviceIndex
