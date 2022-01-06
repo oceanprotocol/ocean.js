@@ -146,7 +146,7 @@ export class Provider {
    * @param {string} did did
    * @param {number} serviceId the id of the service for which to check the files
    * @param {string} providerUri uri of the provider that will be used to check the file
-   * @param {string} fetchMethod fetch client instance
+   * @param {any} fetchMethod fetch client instance
    * @return {Promise<FileMetadata[]>} urlDetails
    */
   public async checkDidFiles(
@@ -181,7 +181,7 @@ export class Provider {
   /** Get URL details (if possible)
    * @param {string} url or did
    * @param {string} providerUri uri of the provider that will be used to check the file
-   * @param {string} fetchMethod fetch client instance
+   * @param {any} fetchMethod fetch client instance
    * @return {Promise<FileMetadata[]>} urlDetails
    */
   public async checkFileUrl(
@@ -213,13 +213,17 @@ export class Provider {
   }
 
   /** Lists files from an asset
-   * @param {String} url provider uri address
-   * @param {String} fetchMethod fetch client instance
-   * @return {Promise<boolean>} string
+   * @param {String} documentId The ID of the asset/document (the DID)
+   * @param {number} serviceId ServiceId for the asset access service.
+   * @param {String} publisherAddress The publisher address
+   * @param {Web3} web3 web3 instance
+   * @param {String} providerUri uri of the provider that will be used
+   * @param {any} getMethod get method client wants to use instance
+   * @return {Promise<FileMetadata[]>} returns the list of files for a documentId
    */
   public async getAssetUrls(
     documentId: string,
-    serviceId: string,
+    serviceId: number,
     publisherAddress: string,
     web3: Web3,
     providerUri: string,
