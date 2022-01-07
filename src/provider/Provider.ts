@@ -59,7 +59,6 @@ export class Provider {
       }
       serviceEndpoints.push(endpoint)
     }
-    console.log('provider endpoints', endpoints)
     return serviceEndpoints
   }
 
