@@ -214,7 +214,7 @@ export class Provider {
 
   /** Lists files from an asset
    * @param {String} documentId The ID of the asset/document (the DID)
-   * @param {number} serviceId ServiceId for the asset access service.
+   * @param {string} serviceId ServiceId for the asset access service.
    * @param {String} publisherAddress The publisher address
    * @param {Web3} web3 web3 instance
    * @param {String} providerUri uri of the provider that will be used
@@ -223,7 +223,7 @@ export class Provider {
    */
   public async getAssetUrls(
     documentId: string,
-    serviceId: number,
+    serviceId: string,
     publisherAddress: string,
     web3: Web3,
     providerUri: string,

@@ -167,5 +167,17 @@ describe('Publish tests', async () => {
     } catch (e) {
       assert.fail('Download failed')
     }
+
+    // TODO: Remove later on
+    //get assets urls
+    const assetUrls = await ProviderInstance.getAssetUrls(
+      ddo.id,
+      ddo.services[0].id,
+      publisherAccount,
+      web3,
+      providerUrl,
+      crossFetchGeneric
+    )
+    console.log('assetUrls', assetUrls)
   })
 })
