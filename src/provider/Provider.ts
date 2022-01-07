@@ -571,7 +571,7 @@ export class Provider extends Instantiable {
   }
 
   public getAssetsUrlsEndpoint(): ServiceEndpoint {
-    return this.getEndpointURL('assetUrls')
+    return this.getEndpointURL('asset_urls')
   }
 
   /** Check for a valid provider at URL
