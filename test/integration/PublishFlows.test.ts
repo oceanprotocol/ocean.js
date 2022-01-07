@@ -272,6 +272,8 @@ describe('Publish tests', async () => {
       providerUrl,
       crossFetchGeneric
     )
+    console.log('publishedAssetUrls == ', publishedAssetUrls)
+    console.log('files == ', files)
     assert(publishedAssetUrls === files, 'Provider get assetUrls failed')
   })
 
@@ -353,5 +355,18 @@ describe('Publish tests', async () => {
     )
     const resolvedDDO = await aquarius.waitForAqua(crossFetchGeneric, dispenserDdo.id)
     assert(resolvedDDO, 'Cannot fetch DDO from Aquarius')
+
+    // list file urls
+    const publishedAssetUrls = await ProviderInstance.getAssetUrls(
+      dispenserDdo.id,
+      dispenserDdo.services[0].id,
+      accounts[0],
+      web3,
+      providerUrl,
+      crossFetchGeneric
+    )
+    console.log('publishedAssetUrls dispenser == ', publishedAssetUrls)
+    console.log('files == ', files)
+    assert(publishedAssetUrls === files, 'Provider get assetUrls failed')
   })
 })
