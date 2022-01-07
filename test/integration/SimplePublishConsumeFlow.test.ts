@@ -170,7 +170,7 @@ describe('Publish tests', async () => {
 
     // TODO: Remove later on
     // get assets urls
-    const assetUrls = await ProviderInstance.getAssetUrls(
+    const publishedAssetUrls = await ProviderInstance.getAssetUrls(
       ddo.id,
       ddo.services[0].id,
       publisherAccount,
@@ -178,6 +178,6 @@ describe('Publish tests', async () => {
       providerUrl,
       crossFetchGeneric
     )
-    console.log('assetUrls == ', assetUrls)
+    assert(publishedAssetUrls === assetUrl, 'Provider getDownloadUrl failed')
   })
 })

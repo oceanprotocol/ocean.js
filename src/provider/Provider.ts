@@ -251,18 +251,16 @@ export class Provider {
     paramsPath += `&serviceId=${serviceId}`
     paramsPath += `&nonce=${nonce}`
     paramsPath += `&publisherAddress=${publisherAddress}`
-    console.log('path', path)
     if (!paramsPath) return null
     try {
       const response = await getMethod('GET', paramsPath)
-      console.log('response ', response)
       const results: FileMetadata[] = await response.json()
-      console.log('results ', results)
       for (const result of results) {
         files.push(result)
       }
       return files
     } catch (e) {
+      LoggerInstance.error('getAssetUrls failed ', e)
       return null
     }
   }
