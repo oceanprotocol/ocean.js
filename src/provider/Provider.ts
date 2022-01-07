@@ -458,13 +458,15 @@ export class Provider {
    * @return {Promise<ComputeJob | ComputeJob[]>}
    */
   public async computeStatus(
-    did: string,
-    consumerAddress: string,
     providerUri: string,
-    web3: Web3,
     fetchMethod: any,
-    jobId?: string
+    jobId?: string,
+    did?: string,
+    consumerAddress?: string
   ): Promise<ComputeJob | ComputeJob[]> {
+    if (!jobId && !did && !consumerAddress) {
+      throw new Error('You need at least one of jobId, did, consumerAddress')
+    }
     const providerEndpoints = await this.getEndpoints(providerUri)
     const serviceEndpoints = await this.getServiceEndpoints(
       providerUri,
@@ -474,32 +476,13 @@ export class Provider {
       ? this.getEndpointURL(serviceEndpoints, 'computeStatus').urlPath
       : null
 
-    const nonce = await this.getNonce(
-      providerUri,
-      consumerAddress,
-      fetchMethod,
-      providerEndpoints,
-      serviceEndpoints
-    )
-
-    let signatureMessage = consumerAddress
-    signatureMessage += jobId || ''
-    signatureMessage += (did && `${noZeroX(did)}`) || ''
-    signatureMessage += nonce
-    const signature = await this.createHashSignature(
-      web3,
-      consumerAddress,
-      signatureMessage
-    )
-
     let url = '?documentId=' + noZeroX(did)
     url += `&consumerAddress=${consumerAddress}`
-    url += (signature && `&signature=${signature}`) || ''
     url += (jobId && `&jobId=${jobId}`) || ''
 
     if (!computeStatusUrl) return null
     try {
-      const response = await fetchMethod(computeStatusUrl + url)
+      const response = await fetchMethod('GET', computeStatusUrl + url)
       if (response?.ok) {
         const params = await response.json()
         return params

@@ -300,7 +300,7 @@ describe('Simple compute tests', async () => {
     )
     assert(txidAsset, 'Failed to order algo')
     // start the compute job
-    const job = await ProviderInstance.computeStart(
+    const computeJobs = await ProviderInstance.computeStart(
       providerUrl,
       web3,
       crossFetchGeneric,
@@ -317,6 +317,12 @@ describe('Simple compute tests', async () => {
         transferTxId: txidAlgo.transactionHash
       }
     )
-    assert(job, 'Cannot start compute job')
+    assert(computeJobs, 'Cannot start compute job')
+    const jobStatus = await ProviderInstance.computeStatus(
+      providerUrl,
+      crossFetchGeneric,
+      computeJobs[0].jobId
+    )
+    assert(jobStatus)
   })
 })
