@@ -236,10 +236,9 @@ export class Provider {
       providerEndpoints
     )
     const files: FileMetadata[] = []
-    const path = this.getEndpointURL(serviceEndpoints, 'assetUrls')
-      ? this.getEndpointURL(serviceEndpoints, 'assetUrls').urlPath
+    const path = this.getEndpointURL(serviceEndpoints, 'asset_urls')
+      ? this.getEndpointURL(serviceEndpoints, 'asset_urls').urlPath
       : null
-    console.log('path', path)
     const nonce = Date.now()
     const signature = await this.createSignature(
       web3,
@@ -259,6 +258,7 @@ export class Provider {
       const response = await getMethod('GET', paramsPath)
       console.log('response ', response)
       const results: FileMetadata[] = await response.json()
+      console.log('results ', results)
       for (const result of results) {
         files.push(result)
       }
