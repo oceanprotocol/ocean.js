@@ -126,7 +126,15 @@ export interface Metadata {
   additionalInformation?: any
 }
 
+export interface MetadataProof {
+  validatorAddress?: string
+  r?: string
+  s?: string
+  v?: number
+}
 export interface ValidateMetadata {
   valid: Boolean
   errors?: Object
+  hash?: string
+  proof?: MetadataProof
 }

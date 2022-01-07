@@ -87,7 +87,7 @@ describe('Publish tests', async () => {
       .send({ from: accounts[0] })
   })
 
-  it('should publish a dataset with pool (create NFT + ERC20 + pool)', async () => {
+  it('should publish a dataset with pool (create NFT + ERC20 + pool) and with Metdata proof', async () => {
     const poolDdo: DDO = { ...genericAsset }
     const nftParams: NftCreateData = {
       name: 'testNftPool',
@@ -146,11 +146,11 @@ describe('Publish tests', async () => {
     poolDdo.id =
       'did:op:' + SHA256(web3.utils.toChecksumAddress(nftAddress) + chain.toString(10))
 
-    const isAssetValid: ValidateMetadata = await aquarius.validate(
+    const AssetValidation: ValidateMetadata = await aquarius.validate(
       crossFetchGeneric,
       poolDdo
     )
-    assert(isAssetValid.valid === true, 'Published asset is not valid')
+    assert(AssetValidation.valid === true, 'Published asset is not valid')
 
     const encryptedDdo = await ProviderInstance.encrypt(
       poolDdo,
@@ -159,7 +159,8 @@ describe('Publish tests', async () => {
     )
     const encryptedResponse = await encryptedDdo.text()
     const metadataHash = getHash(JSON.stringify(poolDdo))
-
+    // just to make sure that our hash matches one computed by aquarius
+    assert(AssetValidation.hash === '0x' + metadataHash, 'Metadata hash is a missmatch')
     const tx = await nft.setMetadata(
       nftAddress,
       accounts[0],
@@ -168,14 +169,15 @@ describe('Publish tests', async () => {
       '',
       '0x2',
       encryptedResponse,
-      '0x' + metadataHash
+      '0x' + metadataHash,
+      [AssetValidation.proof]
     )
 
     const resolvedDDO = await aquarius.waitForAqua(crossFetchGeneric, poolDdo.id)
     assert(resolvedDDO, 'Cannot fetch DDO from Aquarius')
   })
 
-  it('should publish a dataset with fixed price (create NFT + ERC20 + fixed price)', async () => {
+  it('should publish a dataset with fixed price (create NFT + ERC20 + fixed price) with an explicit empty Metadata Proof', async () => {
     const fixedPriceDdo: DDO = { ...genericAsset }
     const nftParams: NftCreateData = {
       name: 'testNftFre',
@@ -246,7 +248,7 @@ describe('Publish tests', async () => {
     )
     const encryptedResponse = await encryptedDdo.text()
     const metadataHash = getHash(JSON.stringify(fixedPriceDdo))
-
+    // this is publishing with an explicit empty metadataProofs
     const res = await nft.setMetadata(
       nftAddress,
       accounts[0],
@@ -255,13 +257,14 @@ describe('Publish tests', async () => {
       '',
       '0x2',
       encryptedResponse,
-      '0x' + metadataHash
+      '0x' + metadataHash,
+      []
     )
     const resolvedDDO = await aquarius.waitForAqua(crossFetchGeneric, fixedPriceDdo.id)
     assert(resolvedDDO, 'Cannot fetch DDO from Aquarius')
   })
 
-  it('should publish a dataset with dispenser (create NFT + ERC20 + dispenser)', async () => {
+  it('should publish a dataset with dispenser (create NFT + ERC20 + dispenser) with no defined MetadataProof', async () => {
     const dispenserDdo: DDO = { ...genericAsset }
     const nftParams: NftCreateData = {
       name: 'testNftDispenser',
@@ -326,7 +329,7 @@ describe('Publish tests', async () => {
     )
     const encryptedResponse = await encryptedDdo.text()
     const metadataHash = getHash(JSON.stringify(dispenserDdo))
-
+    // this is publishing with any explicit metadataProofs
     const res = await nft.setMetadata(
       nftAddress,
       accounts[0],

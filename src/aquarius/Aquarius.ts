@@ -1,5 +1,6 @@
 import { LoggerInstance } from '../utils'
 import { Asset, DDO, Metadata, ValidateMetadata } from '../@types/'
+import { json } from 'stream/consumers'
 
 export class Aquarius {
   public aquariusURL
@@ -80,22 +81,25 @@ export class Aquarius {
     const status: ValidateMetadata = {
       valid: false
     }
+    let jsonResponse
     try {
       const path = this.aquariusURL + '/api/aquarius/assets/ddo/validate'
       const response = await fetchMethod('POST', path, JSON.stringify(ddo), {
         'Content-Type': 'application/octet-stream'
       })
-      if (response.status === 200 && response.statusText === 'OK') {
+      jsonResponse = await response.json()
+      if (response.status === 200) {
         status.valid = true
+        status.hash = jsonResponse.hash
+        status.proof = {
+          validatorAddress: jsonResponse.publicKey,
+          r: jsonResponse.r[0],
+          s: jsonResponse.s[0],
+          v: jsonResponse.v
+        }
       } else {
-        const errors = await response.json()
-        status.errors = errors
-        LoggerInstance.error(
-          'validate Metadata failed:',
-          response.status,
-          response.statusText,
-          errors.errors
-        )
+        status.errors = jsonResponse
+        LoggerInstance.error('validate Metadata failed:', response.status, status.errors)
       }
     } catch (error) {
       LoggerInstance.error('Error validating metadata: ', error)

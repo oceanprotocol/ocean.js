@@ -4,6 +4,7 @@ import { TransactionReceipt } from 'web3-eth'
 import defaultNftAbi from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC721Template.sol/ERC721Template.json'
 import { LoggerInstance, getFairGasPrice, generateDtName } from '../utils'
 import { Contract } from 'web3-eth-contract'
+import { MetadataProof } from '../../src/@types'
 
 /**
  * ERC721 ROLES
@@ -912,6 +913,7 @@ export class Nft {
     flags: string,
     data: string,
     metadataHash: string,
+    metadataProofs?: MetadataProof[],
     contractInstance?: Contract
   ): Promise<any> {
     const nftContract =
@@ -928,7 +930,7 @@ export class Nft {
           flags,
           data,
           metadataHash,
-          []
+          metadataProofs
         )
         .estimateGas({ from: metadataUpdater }, (err, estGas) =>
           err ? gasLimitDefault : estGas
@@ -955,14 +957,14 @@ export class Nft {
     metaDataDecryptorAddress: string,
     flags: string,
     data: string,
-    metadataHash: string
+    metadataHash: string,
+    metadataProofs?: MetadataProof[]
   ): Promise<TransactionReceipt> {
     const nftContract = new this.web3.eth.Contract(this.nftAbi, nftAddress)
-
+    if (!metadataProofs) metadataProofs = []
     if (!(await this.getNftPermissions(nftAddress, address)).updateMetadata) {
       throw new Error(`Caller is not Metadata updater`)
     }
-
     const estGas = await this.estGasSetMetadata(
       nftAddress,
       address,
@@ -972,6 +974,7 @@ export class Nft {
       flags,
       data,
       metadataHash,
+      metadataProofs,
       nftContract
     )
     const trxReceipt = await nftContract.methods
@@ -982,7 +985,7 @@ export class Nft {
         flags,
         data,
         metadataHash,
-        []
+        metadataProofs
       )
       .send({
         from: address,
