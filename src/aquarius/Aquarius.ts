@@ -1,5 +1,6 @@
 import { LoggerInstance } from '../utils'
-import { Asset, DDO } from '../@types/'
+import { Asset, DDO, Metadata, ValidateMetadata } from '../@types/'
+import { json } from 'stream/consumers'
 
 export class Aquarius {
   public aquariusURL
@@ -43,9 +44,9 @@ export class Aquarius {
 
   /**
    * Blocks until Aqua will cache the did (or the update for that did) or timeouts
+   * @param {string} fetchMethod fetch client instance
    * @param  {string} did DID of the asset.
    * @param  {string} txid used when the did exists and we expect an update with that txid.
-   * @param {string} fetchMethod fetch client instance
    * @return {Promise<DDO>} DDO of the asset.
    */
   public async waitForAqua(fetchMethod: any, did: string, txid?: string): Promise<Asset> {
@@ -68,6 +69,42 @@ export class Aquarius {
       tries++
     } while (tries < 100)
     return null
+  }
+
+  /**
+   * Validate DDO content
+   * @param {string} fetchMethod fetch client instance
+   * @param  {DDO} ddo DID Descriptor Object content.
+   * @return {Promise<ValidateMetadata>}.
+   */
+  public async validate(fetchMethod: any, ddo: DDO): Promise<ValidateMetadata> {
+    const status: ValidateMetadata = {
+      valid: false
+    }
+    let jsonResponse
+    try {
+      const path = this.aquariusURL + '/api/aquarius/assets/ddo/validate'
+      const response = await fetchMethod('POST', path, JSON.stringify(ddo), {
+        'Content-Type': 'application/octet-stream'
+      })
+      jsonResponse = await response.json()
+      if (response.status === 200) {
+        status.valid = true
+        status.hash = jsonResponse.hash
+        status.proof = {
+          validatorAddress: jsonResponse.publicKey,
+          r: jsonResponse.r[0],
+          s: jsonResponse.s[0],
+          v: jsonResponse.v
+        }
+      } else {
+        status.errors = jsonResponse
+        LoggerInstance.error('validate Metadata failed:', response.status, status.errors)
+      }
+    } catch (error) {
+      LoggerInstance.error('Error validating metadata: ', error)
+    }
+    return status
   }
 }
 

@@ -37,17 +37,18 @@ export interface ComputeOutput {
   whitelist?: string[]
 }
 
-export interface ComputeInput {
+export interface ComputeAsset {
   documentId: string
-  serviceId: number
+  serviceId: string
   transferTxId?: string
+  userdata?: { [key: string]: any }
 }
 
 export interface ComputeAlgorithm {
-  did?: string
-  serviceIndex?: number
+  documentId?: string
+  serviceId?: string
   meta?: MetadataAlgorithm
   transferTxId?: string
-  dataToken?: string
-  algoCustomParameters?: { [key: string]: any }
+  algocustomdata?: { [key: string]: any }
+  userdata?: { [key: string]: any }
 }

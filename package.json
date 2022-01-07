@@ -32,6 +32,7 @@
     "test:nftDt": "mocha --config=test/unit/.mocharc.json --node-env=test --exit 'test/unit/Nft.test.ts'",
     "test:factory": "mocha --config=test/unit/.mocharc.json --node-env=test --exit 'test/unit/NftFactory.test.ts'",
     "test:router": "mocha --config=test/unit/.mocharc.json --node-env=test --exit 'test/unit/pools/Router.test.ts'",
+    "test:publishAll": "mocha --config=test/integration/.mocharc.json --node-env=test --exit 'test/integration/PublishFlows.test.ts'",
     "test:unit": "mocha --config=test/unit/.mocharc.json --node-env=test --exit 'test/unit/**/*.test.ts'",
     "test:unit:cover": "nyc --report-dir coverage/unit npm run test:unit",
     "test:integration": "mocha --config=test/integration/.mocharc.json --node-env=test --exit 'test/integration/**/*.test.ts'",

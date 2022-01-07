@@ -8,7 +8,6 @@ import { Erc20CreateParams } from '../../src/interfaces'
 import { getHash } from '../../src/utils'
 import { Nft } from '../../src/tokens/NFT'
 import Web3 from 'web3'
-import fetch from 'cross-fetch'
 import { SHA256 } from 'crypto-js'
 import { homedir } from 'os'
 import fs from 'fs'
@@ -66,7 +65,7 @@ const ddo = {
   ]
 }
 
-describe('Publish tests', async () => {
+describe('Simple Publish & consume test', async () => {
   it('should publish a dataset (create NFT + ERC20)', async () => {
     const nft = new Nft(web3)
     const datatoken = new Datatoken(web3)
@@ -167,17 +166,5 @@ describe('Publish tests', async () => {
     } catch (e) {
       assert.fail('Download failed')
     }
-
-    // TODO: Remove later on
-    // get assets urls
-    const publishedAssetUrls = await ProviderInstance.getAssetUrls(
-      ddo.id,
-      ddo.services[0].id,
-      publisherAccount,
-      web3,
-      providerUrl,
-      crossFetchGeneric
-    )
-    assert(publishedAssetUrls === assetUrl, 'Provider getDownloadUrl failed')
   })
 })

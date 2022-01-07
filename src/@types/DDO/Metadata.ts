@@ -12,6 +12,12 @@ export interface MetadataAlgorithm {
   version?: string
 
   /**
+   * Rawcode
+   * @type {string}
+   */
+  rawcode?: string
+
+  /**
    * Object describing the Docker container image.
    * @type {Object}
    */
@@ -124,4 +130,17 @@ export interface Metadata {
    * @type {any}
    */
   additionalInformation?: any
+}
+
+export interface MetadataProof {
+  validatorAddress?: string
+  r?: string
+  s?: string
+  v?: number
+}
+export interface ValidateMetadata {
+  valid: Boolean
+  errors?: Object
+  hash?: string
+  proof?: MetadataProof
 }
