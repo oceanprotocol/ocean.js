@@ -272,7 +272,10 @@ describe('Publish tests', async () => {
       providerUrl,
       crossFetchGeneric
     )
-    assert(publishedAssetUrls === files, 'Provider get assetUrls failed')
+    assert(
+      publishedAssetUrls[0].url === files[0].url,
+      'Provider assetUrls returned  do not match'
+    )
   })
 
   it('should publish a dataset with dispenser (create NFT + ERC20 + dispenser) with no defined MetadataProof', async () => {
@@ -363,6 +366,9 @@ describe('Publish tests', async () => {
       providerUrl,
       crossFetchGeneric
     )
-    assert(publishedAssetUrls === files, 'Provider get assetUrls failed')
+    assert(
+      publishedAssetUrls[0].url === files[0].url,
+      'Provider assetUrls returned  do not match'
+    )
   })
 })
