@@ -16,7 +16,7 @@ import { SHA256 } from 'crypto-js'
 import { homedir } from 'os'
 import fs from 'fs'
 import { AbiItem } from 'web3-utils'
-import { ValidateMetadata, DDO } from '../../src/@types'
+import { ValidateMetadata, DDO, FileMetadata } from '../../src/@types'
 
 const data = JSON.parse(
   fs.readFileSync(
@@ -35,7 +35,7 @@ let nft: Nft
 let factory: NftFactory
 let accounts: string[]
 
-const files = [
+const files: FileMetadata[] = [
   {
     type: 'url',
     url: 'https://raw.githubusercontent.com/oceanprotocol/testdatasets/main/shs_dataset_test.txt',
@@ -272,8 +272,6 @@ describe('Publish tests', async () => {
       providerUrl,
       crossFetchGeneric
     )
-    console.log('publishedAssetUrls == ', publishedAssetUrls)
-    console.log('files == ', files)
     assert(publishedAssetUrls === files, 'Provider get assetUrls failed')
   })
 
@@ -365,8 +363,6 @@ describe('Publish tests', async () => {
       providerUrl,
       crossFetchGeneric
     )
-    console.log('publishedAssetUrls dispenser == ', publishedAssetUrls)
-    console.log('files == ', files)
     assert(publishedAssetUrls === files, 'Provider get assetUrls failed')
   })
 })
