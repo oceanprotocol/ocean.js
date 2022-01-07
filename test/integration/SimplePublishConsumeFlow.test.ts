@@ -65,7 +65,7 @@ const ddo = {
   ]
 }
 
-describe('Publish tests', async () => {
+describe('Simple Publish & consume test', async () => {
   it('should publish a dataset (create NFT + ERC20)', async () => {
     const nft = new Nft(web3)
     const datatoken = new Datatoken(web3)
