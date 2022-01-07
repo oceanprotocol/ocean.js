@@ -223,6 +223,44 @@ export class Provider extends Instantiable {
     }
   }
 
+  /** Lists files from an asset
+   * @param {String} did The ID of the asset/document (the DID)
+   * @param {string} serviceIndex Service index for the asset access service.
+   * @param {Account} account The publisher account
+   * @return {Promise<File[]>} returns the list of files for a documentId
+   */
+  public async getAssetUrls(
+    did: string,
+    serviceIndex: string,
+    account: Account
+  ): Promise<File[]> {
+    const files: File[] = []
+    const signature = await this.createSignature(account, did + this.nonce)
+    const path = this.getAssetsUrlsEndpoint()
+      ? this.getAssetsUrlsEndpoint().urlPath
+      : null
+
+    if (!path) return null
+    let paramsPath = path
+    paramsPath += `?documentId=${did}`
+    paramsPath += `&signature=${signature}`
+    paramsPath += `&serviceId=${serviceIndex}`
+    paramsPath += `&nonce=${this.nonce}`
+    paramsPath += `&publisherAddress=${account.getId()}`
+    try {
+      const response = await this.ocean.utils.fetch.get(paramsPath)
+      const results: File[] = await response.json()
+      for (const result of results) {
+        files.push(result)
+      }
+      return files
+    } catch (e) {
+      this.logger.error('Error listing assets urls')
+      this.logger.error(e)
+      return null
+    }
+  }
+
   public async download(
     did: string,
     txId: string,
@@ -530,6 +568,10 @@ export class Provider extends Instantiable {
 
   public getDownloadEndpoint(): ServiceEndpoint {
     return this.getEndpointURL('download')
+  }
+
+  public getAssetsUrlsEndpoint(): ServiceEndpoint {
+    return this.getEndpointURL('assetUrls')
   }
 
   /** Check for a valid provider at URL
