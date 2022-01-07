@@ -169,7 +169,7 @@ describe('Publish tests', async () => {
     }
 
     // TODO: Remove later on
-    //get assets urls
+    // get assets urls
     const assetUrls = await ProviderInstance.getAssetUrls(
       ddo.id,
       ddo.services[0].id,
@@ -178,6 +178,6 @@ describe('Publish tests', async () => {
       providerUrl,
       crossFetchGeneric
     )
-    console.log('assetUrls', assetUrls)
+    console.log('assetUrls == ', assetUrls)
   })
 })

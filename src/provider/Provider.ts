@@ -59,6 +59,7 @@ export class Provider {
       }
       serviceEndpoints.push(endpoint)
     }
+    console.log('provider endpoints', endpoints)
     return serviceEndpoints
   }
 
@@ -238,6 +239,7 @@ export class Provider {
     const path = this.getEndpointURL(serviceEndpoints, 'assetUrls')
       ? this.getEndpointURL(serviceEndpoints, 'assetUrls').urlPath
       : null
+    console.log('path', path)
     const nonce = Date.now()
     const signature = await this.createSignature(
       web3,
@@ -251,10 +253,11 @@ export class Provider {
     paramsPath += `&serviceId=${serviceId}`
     paramsPath += `&nonce=${nonce}`
     paramsPath += `&publisherAddress=${publisherAddress}`
-    if (!path) return null
+    console.log('path', path)
+    if (!paramsPath) return null
     try {
       const response = await getMethod('GET', paramsPath)
-      console.log('response', response)
+      console.log('response ', response)
       const results: FileMetadata[] = await response.json()
       for (const result of results) {
         files.push(result)
