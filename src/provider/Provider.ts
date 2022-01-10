@@ -1,7 +1,6 @@
 import Web3 from 'web3'
-import { LoggerInstance, getData } from '../utils'
+import { LoggerInstance, getData, crossFetchGeneric } from '../utils'
 import {
-  Asset,
   FileMetadata,
   ComputeJob,
   ComputeOutput,
@@ -89,7 +88,14 @@ export class Provider {
       : null
     if (!path) return null
     try {
-      const response = await fetchMethod(path + `?userAddress=${consumerAddress}`)
+      const response = await fetchMethod(
+        'GET',
+        path + `?userAddress=${consumerAddress}`,
+        null,
+        {
+          'Content-Type': 'application/json'
+        }
+      )
       return String((await response.json()).nonce)
     } catch (e) {
       LoggerInstance.error(e)
@@ -154,8 +160,9 @@ export class Provider {
     did: string,
     serviceId: number,
     providerUri: string,
-    fetchMethod: any
+    fetchMethod?: any
   ): Promise<FileMetadata[]> {
+    const preferedFetch = fetchMethod || crossFetchGeneric
     const providerEndpoints = await this.getEndpoints(providerUri)
     const serviceEndpoints = await this.getServiceEndpoints(
       providerUri,
@@ -168,8 +175,12 @@ export class Provider {
       : null
     if (!path) return null
     try {
-      const response = await fetchMethod(path, JSON.stringify(args))
-      const results: FileMetadata[] = await response.json()
+      const response = await preferedFetch('POST', path, JSON.stringify(args), {
+        'Content-Type': 'application/json'
+      })
+      const results: FileMetadata[] = response.data
+        ? response.data
+        : await response.json()
       for (const result of results) {
         files.push(result)
       }
@@ -188,8 +199,9 @@ export class Provider {
   public async checkFileUrl(
     url: string,
     providerUri: string,
-    fetchMethod: any
+    fetchMethod?: any
   ): Promise<FileMetadata[]> {
+    const preferedFetch = fetchMethod || crossFetchGeneric
     const providerEndpoints = await this.getEndpoints(providerUri)
     const serviceEndpoints = await this.getServiceEndpoints(
       providerUri,
@@ -202,8 +214,12 @@ export class Provider {
       : null
     if (!path) return null
     try {
-      const response = await fetchMethod('POST', path, JSON.stringify(args))
-      const results: FileMetadata[] = await response.json()
+      const response = await preferedFetch('POST', path, JSON.stringify(args), {
+        'Content-Type': 'application/json'
+      })
+      const results: FileMetadata[] = response.data
+        ? response.data
+        : await response.json()
       for (const result of results) {
         files.push(result)
       }
@@ -229,10 +245,11 @@ export class Provider {
     fileIndex: number,
     consumerAddress: string,
     providerUri: string,
-    getMethod: any,
+    fetchMethod?: any,
     userCustomParameters?: UserCustomParameters,
     computeEnv?: string
   ): Promise<ProviderInitialize> {
+    const preferedFetch = fetchMethod || crossFetchGeneric
     const providerEndpoints = await this.getEndpoints(providerUri)
     const serviceEndpoints = await this.getServiceEndpoints(
       providerUri,
@@ -251,8 +268,12 @@ export class Provider {
       initializeUrl += '&userdata=' + encodeURI(JSON.stringify(userCustomParameters))
     if (computeEnv) initializeUrl += '&computeEnv=' + encodeURI(computeEnv)
     try {
-      const response = await getMethod('GET', initializeUrl)
-      const results: ProviderInitialize = await response.json()
+      const response = await preferedFetch('GET', initializeUrl, null, {
+        'Content-Type': 'application/json'
+      })
+      const results: ProviderInitialize = response.data
+        ? response.data
+        : await response.json()
       return results
     } catch (e) {
       LoggerInstance.error(e)
@@ -319,7 +340,7 @@ export class Provider {
   public async computeStart(
     providerUri: string,
     web3: Web3,
-    fetchMethod: any,
+    fetchMethod?: any,
     consumerAddress: string,
     computeEnv: string,
     dataset: ComputeAsset,
@@ -327,6 +348,7 @@ export class Provider {
     additionalDatasets?: ComputeAsset[],
     output?: ComputeOutput
   ): Promise<ComputeJob | ComputeJob[]> {
+    const preferedFetch = fetchMethod || crossFetchGeneric
     const providerEndpoints = await this.getEndpoints(providerUri)
     const serviceEndpoints = await this.getServiceEndpoints(
       providerUri,
@@ -357,7 +379,7 @@ export class Provider {
     if (output) payload.output = output
     if (!computeStartUrl) return null
     try {
-      const response = await fetchMethod(
+      const response = await preferedFetch(
         'POST',
         computeStartUrl,
         JSON.stringify(payload),
@@ -366,7 +388,7 @@ export class Provider {
         }
       )
       if (response?.ok) {
-        const params = await response.json()
+        const params = response.data ? response.data : await response.json()
         return params
       }
       console.error('Compute start failed:', response.status, response.statusText)
@@ -395,8 +417,9 @@ export class Provider {
     jobId: string,
     providerUri: string,
     web3: Web3,
-    fetchMethod: any
+    fetchMethod?: any
   ): Promise<ComputeJob | ComputeJob[]> {
+    const preferedFetch = fetchMethod || crossFetchGeneric
     const providerEndpoints = await this.getEndpoints(providerUri)
     const serviceEndpoints = await this.getServiceEndpoints(
       providerUri,
@@ -432,9 +455,16 @@ export class Provider {
 
     if (!computeStopUrl) return null
     try {
-      const response = await fetchMethod(computeStopUrl, JSON.stringify(payload))
+      const response = await preferedFetch(
+        'PUT',
+        computeStopUrl,
+        JSON.stringify(payload),
+        {
+          'Content-Type': 'application/json'
+        }
+      )
       if (response?.ok) {
-        const params = await response.json()
+        const params = response.data ? response.data : await response.json()
         return params
       }
       LoggerInstance.error('Compute stop failed:', response.status, response.statusText)
@@ -459,7 +489,7 @@ export class Provider {
    */
   public async computeStatus(
     providerUri: string,
-    fetchMethod: any,
+    fetchMethod?: any,
     jobId?: string,
     did?: string,
     consumerAddress?: string
@@ -467,6 +497,8 @@ export class Provider {
     if (!jobId && !did && !consumerAddress) {
       throw new Error('You need at least one of jobId, did, consumerAddress')
     }
+    const preferedFetch = fetchMethod || crossFetchGeneric
+
     const providerEndpoints = await this.getEndpoints(providerUri)
     const serviceEndpoints = await this.getServiceEndpoints(
       providerUri,
@@ -482,9 +514,11 @@ export class Provider {
 
     if (!computeStatusUrl) return null
     try {
-      const response = await fetchMethod('GET', computeStatusUrl + url)
+      const response = await preferedFetch('GET', computeStatusUrl + url, null, {
+        'Content-Type': 'application/json'
+      })
       if (response?.ok) {
-        const params = await response.json()
+        const params = response.data ? response.data : await response.json()
         return params
       }
       LoggerInstance.error(
@@ -577,6 +611,7 @@ export class Provider {
     web3: Web3,
     fetchMethod: any
   ): Promise<ComputeJob | ComputeJob[]> {
+    const preferedFetch = fetchMethod || crossFetchGeneric
     const providerEndpoints = await this.getEndpoints(providerUri)
     const serviceEndpoints = await this.getServiceEndpoints(
       providerUri,
@@ -612,9 +647,16 @@ export class Provider {
 
     if (!computeDeleteUrl) return null
     try {
-      const response = await fetchMethod(computeDeleteUrl, JSON.stringify(payload))
+      const response = await preferedFetch(
+        'DELETE',
+        computeDeleteUrl,
+        JSON.stringify(payload),
+        {
+          'Content-Type': 'application/json'
+        }
+      )
       if (response?.ok) {
-        const params = await response.json()
+        const params = response.data ? response.data : await response.json()
         return params
       }
       LoggerInstance.error(
@@ -637,11 +679,14 @@ export class Provider {
    * @param {String} fetchMethod fetch client instance
    * @return {Promise<boolean>} string
    */
-  public async isValidProvider(url: string, fetchMethod: any): Promise<boolean> {
+  public async isValidProvider(url: string, fetchMethod?: any): Promise<boolean> {
     try {
-      const response = await fetchMethod(url)
+      const preferedFetch = fetchMethod || crossFetchGeneric
+      const response = await preferedFetch('GET', url, null, {
+        'Content-Type': 'application/json'
+      })
       if (response?.ok) {
-        const params = await response.json()
+        const params = response.data ? response.data : await response.json()
         if (params && params.providerAddress) return true
       }
       return false
