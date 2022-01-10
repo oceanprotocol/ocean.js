@@ -58,7 +58,7 @@ export class Pool {
     let estGas
     try {
       estGas = await tokenContract.methods
-        .approve(spender, new BigNumber(amount))
+        .approve(spender, Web3.utils.toWei(amount))
         .estimateGas({ from: account }, (err, estGas) => (err ? gasLimitDefault : estGas))
     } catch (e) {
       estGas = gasLimitDefault
@@ -138,7 +138,7 @@ export class Pool {
 
     try {
       result = await token.methods
-        .approve(spender, new BigNumber(await this.amountToUnits(tokenAddress, amount)))
+        .approve(spender, Web3.utils.toWei(amountFormatted))
         .send({
           from: account,
           gas: estGas + 1,
