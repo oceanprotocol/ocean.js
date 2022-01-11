@@ -1,7 +1,7 @@
 {
   "rinkeby": {
     "chainId": 4,
-    "Ocean": "0x5e8DCB2AfA23844bcc311B00Ad1A0C30025aADE9",
+    "Ocean": "0x8967bcf84170c91b0d24d4302c2376283b0b3a07",
     "OPFCommunityFeeCollector": "0x600ED0935FDA70F2d0b7Cf740723a8b89FCD68A1",
     "startBlock": 9928186,
     "poolTemplate": "0xdF0a5F729ad9aa090B1Bcf5F9188639DB0237101",
