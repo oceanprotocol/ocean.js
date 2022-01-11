@@ -4,8 +4,8 @@ import { TransactionReceipt } from 'web3-core'
 import { Contract } from 'web3-eth-contract'
 import { Logger, getFairGasPrice, LoggerInstance } from '../../utils'
 import BigNumber from 'bignumber.js'
-import PoolTemplate from '../../artifacts/pools/balancer/BPool.sol/BPool.json'
-import defaultErc20Abi from '../../artifacts/templates/ERC20Template.sol/ERC20Template.json'
+import PoolTemplate from '../../../artifacts/pools/balancer/BPool.sol/BPool.json'
+import defaultErc20Abi from '../../../artifacts/templates/ERC20Template.sol/ERC20Template.json'
 import Decimal from 'decimal.js'
 import {
   CurrentFees,

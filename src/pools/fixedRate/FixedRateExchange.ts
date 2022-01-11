@@ -1,5 +1,5 @@
-import defaultFixedRateExchangeAbi from '../../artifacts/pools/fixedRate/FixedRateExchange.sol/FixedRateExchange.json'
-import defaultErc20Abi from '../../artifacts/templates/ERC20Template.sol/ERC20Template.json'
+import defaultFixedRateExchangeAbi from '../../../artifacts/pools/fixedRate/FixedRateExchange.sol/FixedRateExchange.json'
+import defaultErc20Abi from '../../../artifacts/templates/ERC20Template.sol/ERC20Template.json'
 import BigNumber from 'bignumber.js'
 import { TransactionReceipt } from 'web3-core'
 import { Contract } from 'web3-eth-contract'
