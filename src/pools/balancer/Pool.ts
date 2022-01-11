@@ -58,11 +58,11 @@ export class Pool {
     let estGas
     try {
       estGas = await tokenContract.methods
-        .approve(spender, Web3.utils.toWei(amount))
+        .approve(spender, amount)
         .estimateGas({ from: account }, (err, estGas) => (err ? gasLimitDefault : estGas))
     } catch (e) {
       estGas = gasLimitDefault
-      LoggerInstance.error('estimage gas failed for approve!', e)
+      LoggerInstance.error('estimate gas failed for approve!', e)
     }
     return estGas
   }
@@ -134,21 +134,14 @@ export class Pool {
     }
     let result = null
     const amountFormatted = await this.amountToUnits(tokenAddress, amount)
-    const estGas = await this.estApprove(
-      account,
-      tokenAddress,
-      spender,
-      Web3.utils.toWei(amountFormatted)
-    )
+    const estGas = await this.estApprove(account, tokenAddress, spender, amountFormatted)
 
     try {
-      result = await token.methods
-        .approve(spender, Web3.utils.toWei(amountFormatted))
-        .send({
-          from: account,
-          gas: estGas + 1,
-          gasPrice: await getFairGasPrice(this.web3)
-        })
+      result = await token.methods.approve(spender, amountFormatted).send({
+        from: account,
+        gas: estGas + 1,
+        gasPrice: await getFairGasPrice(this.web3)
+      })
     } catch (e) {
       this.logger.error(`ERRPR: Failed to approve spender to spend tokens : ${e.message}`)
     }
