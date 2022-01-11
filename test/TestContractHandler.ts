@@ -1,7 +1,7 @@
 import Web3 from 'web3'
 import { Contract } from 'web3-eth-contract'
 import { AbiItem } from 'web3-utils/types'
-import MockERC20 from '../artifacts/utils/mock/MockERC20Decimals.sol/MockERC20Decimals.json'
+import MockERC20 from '../src/artifacts/utils/mock/MockERC20Decimals.sol/MockERC20Decimals.json'
 
 const oceanAddress = '0x967da4048cd07ab37855c090aaf366e4ce1b9f48'
 export class TestContractHandler {
