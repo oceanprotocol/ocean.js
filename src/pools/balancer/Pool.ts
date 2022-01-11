@@ -128,7 +128,7 @@ export class Pool {
     const token = new this.web3.eth.Contract(minABI, tokenAddress)
     if (!force) {
       const currentAllowence = await this.allowance(tokenAddress, account, spender)
-      if (new Decimal(currentAllowence).greaterThanOrEqualTo(amount)) {
+      if (new Decimal(currentAllowence).greaterThanOrEqualTo(new Decimal(amount))) {
         return currentAllowence
       }
     }
