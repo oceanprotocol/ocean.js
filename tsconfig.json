@@ -12,11 +12,10 @@
     "experimentalDecorators": true,
     "preserveConstEnums": true,
     "outDir": "./dist/node/",
-    // "rootDir": "./src/",
-    "rootDirs": ["./src/", "./artifacts/"],
+    "rootDir": "./src/",
     "sourceMap": true,
     "typeRoots": ["node_modules/@types"]
   },
-  "include": ["src/**/*", "artifacts/**/*"],
+  "include": ["src/**/*"],
   "exclude": ["node_modules", "**/*.test.ts"]
 }

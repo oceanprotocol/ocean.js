@@ -2,7 +2,7 @@ import Config from '../models/Config'
 import fs from 'fs'
 import { homedir } from 'os'
 // eslint-disable-next-line import/no-named-default
-import { default as DefaultContractsAddresses } from '../../artifacts/addresses/address.json'
+import { default as DefaultContractsAddresses } from '../artifacts/addresses/address.json'
 import LoggerInstance from './Logger'
 
 const configHelperNetworksBase: Config = {
