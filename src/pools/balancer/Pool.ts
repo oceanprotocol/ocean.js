@@ -134,7 +134,12 @@ export class Pool {
     }
     let result = null
     const amountFormatted = await this.amountToUnits(tokenAddress, amount)
-    const estGas = await this.estApprove(account, tokenAddress, spender, amountFormatted)
+    const estGas = await this.estApprove(
+      account,
+      tokenAddress,
+      spender,
+      Web3.utils.toWei(amountFormatted)
+    )
 
     try {
       result = await token.methods
