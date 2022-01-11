@@ -1,4 +1,4 @@
-import MockERC20 from '@oceanprotocol/contracts/artifacts/contracts/utils/mock/MockERC20Decimals.sol/MockERC20Decimals.json'
+import MockERC20 from '../../artifacts/utils/mock/MockERC20Decimals.sol/MockERC20Decimals.json'
 import ProviderInstance from '../../src/provider/Provider'
 import Aquarius from '../../src/aquarius/Aquarius'
 import { assert } from 'chai'
