@@ -4,8 +4,8 @@ import { TransactionReceipt } from 'web3-core'
 import { Contract } from 'web3-eth-contract'
 import { LoggerInstance, getFairGasPrice } from '../../utils'
 import BigNumber from 'bignumber.js'
-import SideStakingTemplate from '../../../artifacts/pools/ssContracts/SideStaking.sol/SideStaking.json'
-import defaultErc20Abi from '../../../artifacts/templates/ERC20Template.sol/ERC20Template.json'
+import SideStakingTemplate from '../../artifacts/pools/ssContracts/SideStaking.sol/SideStaking.json'
+import defaultErc20Abi from '../../artifacts/templates/ERC20Template.sol/ERC20Template.json'
 
 export class SideStaking {
   public ssAbi: AbiItem | AbiItem[]
