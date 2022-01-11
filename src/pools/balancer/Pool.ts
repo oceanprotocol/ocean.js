@@ -134,21 +134,14 @@ export class Pool {
     }
     let result = null
     const amountFormatted = await this.amountToUnits(tokenAddress, amount)
-    const estGas = await this.estApprove(
-      account,
-      tokenAddress,
-      spender,
-      Web3.utils.toWei(amountFormatted)
-    )
+    const estGas = await this.estApprove(account, tokenAddress, spender, amountFormatted)
 
     try {
-      result = await token.methods
-        .approve(spender, Web3.utils.toWei(amountFormatted))
-        .send({
-          from: account,
-          gas: estGas + 1,
-          gasPrice: await getFairGasPrice(this.web3)
-        })
+      result = await token.methods.approve(spender, amountFormatted).send({
+        from: account,
+        gas: estGas + 1,
+        gasPrice: await getFairGasPrice(this.web3)
+      })
     } catch (e) {
       this.logger.error(`ERRPR: Failed to approve spender to spend tokens : ${e.message}`)
     }
@@ -752,6 +745,7 @@ export class Pool {
         decimals = 18
       }
       const amountFormatted = new BigNumber(parseInt(amount) * 10 ** decimals)
+      BigNumber.config({ EXPONENTIAL_AT: 50 })
       return amountFormatted.toString()
     } catch (e) {
       this.logger.error('ERROR: FAILED TO CALL DECIMALS(), USING 18')
@@ -1061,7 +1055,6 @@ export class Pool {
       const amount = await this.amountToUnits(tokens[i], maxAmountsIn[i])
       weiMaxAmountsIn.push(amount)
     }
-    // console.log(weiMaxAmountsIn)
 
     let result = null
 
@@ -1529,14 +1522,11 @@ export class Pool {
     if (decimalsTokenIn > decimalsTokenOut) {
       decimalsDiff = decimalsTokenIn - decimalsTokenOut
       price = new BigNumber(price / 10 ** decimalsDiff)
-      // console.log(price.toString())
       price = price / 10 ** decimalsTokenOut
-      //   console.log('dtIn')
     } else {
       decimalsDiff = decimalsTokenOut - decimalsTokenIn
       price = new BigNumber(price * 10 ** (2 * decimalsDiff))
       price = price / 10 ** decimalsTokenOut
-      //   console.log('usdcIn')
     }
 
     return price.toString()
