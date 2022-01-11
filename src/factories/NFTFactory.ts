@@ -2,7 +2,7 @@ import { Contract } from 'web3-eth-contract'
 import Web3 from 'web3'
 import { TransactionReceipt } from 'web3-core'
 import { AbiItem } from 'web3-utils'
-import defaultFactory721Abi from '../../artifacts/ERC721Factory.sol/ERC721Factory.json'
+import defaultFactory721Abi from '../artifacts/ERC721Factory.sol/ERC721Factory.json'
 import {
   LoggerInstance,
   getFairGasPrice,
