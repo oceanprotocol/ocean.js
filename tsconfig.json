@@ -12,7 +12,8 @@
     "experimentalDecorators": true,
     "preserveConstEnums": true,
     "outDir": "./dist/",
-    "sourceMap": true
+    "sourceMap": true,
+    "declarationDir": "./dist/"
   },
   "include": ["src/**/*", "test/**/*"]
 }

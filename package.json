@@ -10,7 +10,7 @@
     "require": "./dist/lib.js",
     "default": "./dist/lib.modern.js"
   },
-  "typings": "./dist/src/index.d.ts",
+  "types": "./dist/src/index.d.ts",
   "scripts": {
     "start": "npm run clean && npm run build:metadata && tsc -w",
     "build": "npm run clean && npm run build:metadata && microbundle build --format modern,esm,cjs,umd --compress --tsconfig tsconfig.json",
