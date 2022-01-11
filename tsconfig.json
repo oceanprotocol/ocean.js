@@ -4,18 +4,15 @@
     "moduleResolution": "node",
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
-    "lib": ["es2017", "es6", "es7", "dom"],
+    "lib": ["ESNext", "dom"],
     "declaration": true,
-    "module": "commonjs",
-    "target": "es5",
+    "module": "ESNext",
+    "target": "ESNext",
     "removeComments": true,
     "experimentalDecorators": true,
     "preserveConstEnums": true,
-    "outDir": "./dist/node/",
-    "rootDir": ".",
-    "sourceMap": true,
-    "typeRoots": ["node_modules/@types"]
+    "outDir": "./dist/",
+    "sourceMap": true
   },
-  "include": ["src/**/*", "artifacts/**/*"],
-  "exclude": ["node_modules", "**/*.test.ts"]
+  "include": ["src/**/*"]
 }
