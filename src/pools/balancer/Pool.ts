@@ -58,11 +58,11 @@ export class Pool {
     let estGas
     try {
       estGas = await tokenContract.methods
-        .approve(spender, new BigNumber(amount))
+        .approve(spender, amount)
         .estimateGas({ from: account }, (err, estGas) => (err ? gasLimitDefault : estGas))
     } catch (e) {
       estGas = gasLimitDefault
-      LoggerInstance.error('estimage gas failed for approve!', e)
+      LoggerInstance.error('estimate gas failed for approve!', e)
     }
     return estGas
   }
@@ -128,7 +128,7 @@ export class Pool {
     const token = new this.web3.eth.Contract(minABI, tokenAddress)
     if (!force) {
       const currentAllowence = await this.allowance(tokenAddress, account, spender)
-      if (new Decimal(currentAllowence).greaterThanOrEqualTo(amount)) {
+      if (new Decimal(currentAllowence).greaterThanOrEqualTo(new Decimal(amount))) {
         return currentAllowence
       }
     }
@@ -137,13 +137,11 @@ export class Pool {
     const estGas = await this.estApprove(account, tokenAddress, spender, amountFormatted)
 
     try {
-      result = await token.methods
-        .approve(spender, new BigNumber(await this.amountToUnits(tokenAddress, amount)))
-        .send({
-          from: account,
-          gas: estGas + 1,
-          gasPrice: await getFairGasPrice(this.web3)
-        })
+      result = await token.methods.approve(spender, amountFormatted).send({
+        from: account,
+        gas: estGas + 1,
+        gasPrice: await getFairGasPrice(this.web3)
+      })
     } catch (e) {
       this.logger.error(`ERRPR: Failed to approve spender to spend tokens : ${e.message}`)
     }
@@ -747,6 +745,7 @@ export class Pool {
         decimals = 18
       }
       const amountFormatted = new BigNumber(parseInt(amount) * 10 ** decimals)
+      BigNumber.config({ EXPONENTIAL_AT: 50 })
       return amountFormatted.toString()
     } catch (e) {
       this.logger.error('ERROR: FAILED TO CALL DECIMALS(), USING 18')
@@ -1056,7 +1055,6 @@ export class Pool {
       const amount = await this.amountToUnits(tokens[i], maxAmountsIn[i])
       weiMaxAmountsIn.push(amount)
     }
-    // console.log(weiMaxAmountsIn)
 
     let result = null
 
@@ -1524,14 +1522,11 @@ export class Pool {
     if (decimalsTokenIn > decimalsTokenOut) {
       decimalsDiff = decimalsTokenIn - decimalsTokenOut
       price = new BigNumber(price / 10 ** decimalsDiff)
-      // console.log(price.toString())
       price = price / 10 ** decimalsTokenOut
-      //   console.log('dtIn')
     } else {
       decimalsDiff = decimalsTokenOut - decimalsTokenIn
       price = new BigNumber(price * 10 ** (2 * decimalsDiff))
       price = price / 10 ** decimalsTokenOut
-      //   console.log('usdcIn')
     }
 
     return price.toString()
