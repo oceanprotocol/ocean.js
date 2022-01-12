@@ -2,7 +2,7 @@ import { Contract } from 'web3-eth-contract'
 import Web3 from 'web3'
 import { TransactionReceipt } from 'web3-core'
 import { AbiItem } from 'web3-utils'
-import defaultRouter from '@oceanprotocol/contracts/artifacts/contracts/pools/FactoryRouter.sol/FactoryRouter.json'
+import defaultRouter from '../artifacts/pools/FactoryRouter.sol/FactoryRouter.json'
 import { getFairGasPrice } from '../utils'
 import { Operation } from '../interfaces/RouterInterface'
 

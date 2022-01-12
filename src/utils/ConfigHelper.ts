@@ -1,8 +1,7 @@
 import Config from '../models/Config'
 import fs from 'fs'
-import { homedir } from 'os'
 // eslint-disable-next-line import/no-named-default
-import { default as DefaultContractsAddresses } from '@oceanprotocol/contracts/addresses/address.json'
+import { default as DefaultContractsAddresses } from '../artifacts/addresses/address.json'
 import LoggerInstance from './Logger'
 
 const configHelperNetworksBase: Config = {
@@ -182,13 +181,7 @@ export class ConfigHelper {
     // try ADDRESS_FILE env
     if (fs && process.env.ADDRESS_FILE) {
       try {
-        const data = JSON.parse(
-          fs.readFileSync(
-            process.env.ADDRESS_FILE ||
-              `${homedir}/.ocean/ocean-contracts/artifacts/address.json`,
-            'utf8'
-          )
-        )
+        const data = JSON.parse(fs.readFileSync(process.env.ADDRESS_FILE, 'utf8'))
         const {
           FixedPrice,
           Dispenser,
