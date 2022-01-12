@@ -2,20 +2,28 @@ import Web3 from 'web3'
 import { AbiItem } from 'web3-utils/types'
 import { TransactionReceipt } from 'web3-core'
 import { Contract } from 'web3-eth-contract'
-import { LoggerInstance, getFairGasPrice } from '../../utils'
+import {
+  LoggerInstance,
+  getFairGasPrice,
+  ConfigHelper,
+  configHelperNetworks
+} from '../../utils'
 import BigNumber from 'bignumber.js'
 import SideStakingTemplate from '../../artifacts/pools/ssContracts/SideStaking.sol/SideStaking.json'
 import defaultErc20Abi from '../../artifacts/templates/ERC20Template.sol/ERC20Template.json'
+import { Config } from '../../models'
 
 export class SideStaking {
   public ssAbi: AbiItem | AbiItem[]
   public web3: Web3
   public GASLIMIT_DEFAULT = 1000000
+  public config: Config
 
-  constructor(web3: Web3, ssAbi: AbiItem | AbiItem[] = null) {
+  constructor(web3: Web3, ssAbi: AbiItem | AbiItem[] = null, config?: Config) {
     if (ssAbi) this.ssAbi = ssAbi
     else this.ssAbi = SideStakingTemplate.abi as AbiItem[]
     this.web3 = web3
+    this.config = config || configHelperNetworks[0]
   }
 
   async amountToUnits(token: string, amount: string): Promise<string> {
@@ -322,7 +330,7 @@ export class SideStaking {
       result = await sideStaking.methods.getVesting(datatokenAddress).send({
         from: account,
         gas: estGas + 1,
-        gasPrice: await getFairGasPrice(this.web3)
+        gasPrice: await getFairGasPrice(this.web3, this.config)
       })
     } catch (e) {
       LoggerInstance.error('ERROR: Failed to join swap pool amount out')
@@ -392,7 +400,7 @@ export class SideStaking {
         .send({
           from: account,
           gas: estGas + 1,
-          gasPrice: await getFairGasPrice(this.web3)
+          gasPrice: await getFairGasPrice(this.web3, this.config)
         })
     } catch (e) {
       LoggerInstance.error('ERROR: Failed to join swap pool amount out')

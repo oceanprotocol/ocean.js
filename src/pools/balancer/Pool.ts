@@ -2,7 +2,13 @@ import Web3 from 'web3'
 import { AbiItem } from 'web3-utils/types'
 import { TransactionReceipt } from 'web3-core'
 import { Contract } from 'web3-eth-contract'
-import { Logger, getFairGasPrice, LoggerInstance } from '../../utils'
+import {
+  Logger,
+  getFairGasPrice,
+  LoggerInstance,
+  configHelperNetworks,
+  setContractDefaults
+} from '../../utils'
 import BigNumber from 'bignumber.js'
 import PoolTemplate from '../../artifacts/pools/balancer/BPool.sol/BPool.json'
 import defaultErc20Abi from '../../artifacts/templates/ERC20Template.sol/ERC20Template.json'
@@ -13,24 +19,31 @@ import {
   AmountsInMaxFee,
   AmountsOutMaxFee
 } from '../../interfaces'
+import { Config } from '../../models'
 const MaxUint256 =
   '115792089237316195423570985008687907853269984665640564039457584007913129639934'
 
 /**
  * Provides an interface to Ocean friendly fork from Balancer BPool
  */
-// TODO: Add decimals handling
 export class Pool {
   public poolAbi: AbiItem | AbiItem[]
   public web3: Web3
   public GASLIMIT_DEFAULT = 1000000
   private logger: Logger
+  private config: Config
 
-  constructor(web3: Web3, logger: Logger, poolAbi: AbiItem | AbiItem[] = null) {
+  constructor(
+    web3: Web3,
+    logger: Logger,
+    poolAbi: AbiItem | AbiItem[] = null,
+    config?: Config
+  ) {
     if (poolAbi) this.poolAbi = poolAbi
     else this.poolAbi = PoolTemplate.abi as AbiItem[]
     this.web3 = web3
     this.logger = logger
+    this.config = config || configHelperNetworks[0]
   }
 
   /**
@@ -52,7 +65,10 @@ export class Pool {
   ): Promise<number> {
     const tokenContract =
       contractInstance ||
-      new this.web3.eth.Contract(defaultErc20Abi.abi as AbiItem[], tokenAddress)
+      setContractDefaults(
+        new this.web3.eth.Contract(defaultErc20Abi.abi as AbiItem[], tokenAddress),
+        this.config
+      )
 
     const gasLimitDefault = this.GASLIMIT_DEFAULT
     let estGas
@@ -79,7 +95,10 @@ export class Pool {
     spender: string
   ): Promise<string> {
     const tokenAbi = defaultErc20Abi.abi as AbiItem[]
-    const datatoken = new this.web3.eth.Contract(tokenAbi, tokenAddress)
+    const datatoken = setContractDefaults(
+      new this.web3.eth.Contract(tokenAbi, tokenAddress),
+      this.config
+    )
     const trxReceipt = await datatoken.methods.allowance(owner, spender).call()
 
     return await this.unitsToAmount(tokenAddress, trxReceipt)
@@ -125,7 +144,10 @@ export class Pool {
         type: 'function'
       }
     ] as AbiItem[]
-    const token = new this.web3.eth.Contract(minABI, tokenAddress)
+    const token = setContractDefaults(
+      new this.web3.eth.Contract(minABI, tokenAddress),
+      this.config
+    )
     if (!force) {
       const currentAllowence = await this.allowance(tokenAddress, account, spender)
       if (new Decimal(currentAllowence).greaterThanOrEqualTo(new Decimal(amount))) {
@@ -140,7 +162,7 @@ export class Pool {
       result = await token.methods.approve(spender, amountFormatted).send({
         from: account,
         gas: estGas + 1,
-        gasPrice: await getFairGasPrice(this.web3)
+        gasPrice: await getFairGasPrice(this.web3, this.config)
       })
     } catch (e) {
       this.logger.error(`ERRPR: Failed to approve spender to spend tokens : ${e.message}`)
@@ -157,7 +179,10 @@ export class Pool {
   async sharesBalance(account: string, poolAddress: string): Promise<string> {
     let result = null
     try {
-      const token = new this.web3.eth.Contract(this.poolAbi, poolAddress)
+      const token = setContractDefaults(
+        new this.web3.eth.Contract(this.poolAbi, poolAddress),
+        this.config
+      )
       const balance = await token.methods.balanceOf(account).call()
       result = this.web3.utils.fromWei(balance)
     } catch (e) {
@@ -184,7 +209,10 @@ export class Pool {
   ): Promise<number> {
     const poolContract =
       contractInstance ||
-      new this.web3.eth.Contract(defaultErc20Abi.abi as AbiItem[], poolAddress)
+      setContractDefaults(
+        new this.web3.eth.Contract(defaultErc20Abi.abi as AbiItem[], poolAddress),
+        this.config
+      )
 
     const gasLimitDefault = this.GASLIMIT_DEFAULT
     let estGas
@@ -209,9 +237,12 @@ export class Pool {
     poolAddress: string,
     fee: string
   ): Promise<TransactionReceipt> {
-    const pool = new this.web3.eth.Contract(this.poolAbi, poolAddress, {
-      from: account
-    })
+    const pool = setContractDefaults(
+      new this.web3.eth.Contract(this.poolAbi, poolAddress, {
+        from: account
+      }),
+      this.config
+    )
     let result = null
     const estGas = await this.estSetSwapFee(account, poolAddress, fee)
 
@@ -219,7 +250,7 @@ export class Pool {
       result = await pool.methods.setSwapFee(this.web3.utils.toWei(fee)).send({
         from: account,
         gas: estGas,
-        gasPrice: await getFairGasPrice(this.web3)
+        gasPrice: await getFairGasPrice(this.web3, this.config)
       })
     } catch (e) {
       this.logger.error(`ERROR: Failed to set pool swap fee: ${e.message}`)
@@ -233,7 +264,10 @@ export class Pool {
    * @return {String}
    */
   async getNumTokens(poolAddress: string): Promise<string> {
-    const pool = new this.web3.eth.Contract(this.poolAbi, poolAddress)
+    const pool = setContractDefaults(
+      new this.web3.eth.Contract(this.poolAbi, poolAddress),
+      this.config
+    )
     let result = null
     try {
       result = await pool.methods.getNumTokens().call()
@@ -249,7 +283,10 @@ export class Pool {
    * @return {String}
    */
   async getPoolSharesTotalSupply(poolAddress: string): Promise<string> {
-    const pool = new this.web3.eth.Contract(this.poolAbi, poolAddress)
+    const pool = setContractDefaults(
+      new this.web3.eth.Contract(this.poolAbi, poolAddress),
+      this.config
+    )
     let amount = null
     try {
       const result = await pool.methods.totalSupply().call()
@@ -266,7 +303,10 @@ export class Pool {
    * @return {String[]}
    */
   async getCurrentTokens(poolAddress: string): Promise<string[]> {
-    const pool = new this.web3.eth.Contract(this.poolAbi, poolAddress)
+    const pool = setContractDefaults(
+      new this.web3.eth.Contract(this.poolAbi, poolAddress),
+      this.config
+    )
     let result = null
     try {
       result = await pool.methods.getCurrentTokens().call()
@@ -282,7 +322,10 @@ export class Pool {
    * @return {String[]}
    */
   async getFinalTokens(poolAddress: string): Promise<string[]> {
-    const pool = new this.web3.eth.Contract(this.poolAbi, poolAddress)
+    const pool = setContractDefaults(
+      new this.web3.eth.Contract(this.poolAbi, poolAddress),
+      this.config
+    )
     let result = null
     try {
       result = await pool.methods.getFinalTokens().call()
@@ -298,7 +341,10 @@ export class Pool {
    * @return {String}
    */
   async getController(poolAddress: string): Promise<string> {
-    const pool = new this.web3.eth.Contract(this.poolAbi, poolAddress)
+    const pool = setContractDefaults(
+      new this.web3.eth.Contract(this.poolAbi, poolAddress),
+      this.config
+    )
     let result = null
     try {
       result = await pool.methods.getController().call()
@@ -314,7 +360,10 @@ export class Pool {
    * @return {String}
    */
   async getBasetoken(poolAddress: string): Promise<string> {
-    const pool = new this.web3.eth.Contract(this.poolAbi, poolAddress)
+    const pool = setContractDefaults(
+      new this.web3.eth.Contract(this.poolAbi, poolAddress),
+      this.config
+    )
     let result = null
     try {
       result = await pool.methods.getBaseTokenAddress().call()
@@ -330,7 +379,10 @@ export class Pool {
    * @return {String}
    */
   async getDatatoken(poolAddress: string): Promise<string> {
-    const pool = new this.web3.eth.Contract(this.poolAbi, poolAddress)
+    const pool = setContractDefaults(
+      new this.web3.eth.Contract(this.poolAbi, poolAddress),
+      this.config
+    )
     let result = null
     try {
       result = await pool.methods.getDataTokenAddress().call()
@@ -346,7 +398,10 @@ export class Pool {
    * @return {String}
    */
   async getMarketFeeCollector(poolAddress: string): Promise<string> {
-    const pool = new this.web3.eth.Contract(this.poolAbi, poolAddress)
+    const pool = setContractDefaults(
+      new this.web3.eth.Contract(this.poolAbi, poolAddress),
+      this.config
+    )
     let result = null
     try {
       result = await pool.methods._publishMarketCollector().call()
@@ -362,7 +417,10 @@ export class Pool {
    * @return {String}
    */
   async getOPFCollector(poolAddress: string): Promise<string> {
-    const pool = new this.web3.eth.Contract(this.poolAbi, poolAddress)
+    const pool = setContractDefaults(
+      new this.web3.eth.Contract(this.poolAbi, poolAddress),
+      this.config
+    )
     let result = null
     try {
       result = await pool.methods._opfCollector().call()
@@ -379,7 +437,10 @@ export class Pool {
    * @return {Boolean}
    */
   async isBound(poolAddress: string, token: string): Promise<boolean> {
-    const pool = new this.web3.eth.Contract(this.poolAbi, poolAddress)
+    const pool = setContractDefaults(
+      new this.web3.eth.Contract(this.poolAbi, poolAddress),
+      this.config
+    )
     let result = null
     try {
       result = await pool.methods.isBound(token).call()
@@ -399,7 +460,10 @@ export class Pool {
   async getReserve(poolAddress: string, token: string): Promise<string> {
     let amount = null
     try {
-      const pool = new this.web3.eth.Contract(this.poolAbi, poolAddress)
+      const pool = setContractDefaults(
+        new this.web3.eth.Contract(this.poolAbi, poolAddress),
+        this.config
+      )
       const result = await pool.methods.getBalance(token).call()
       amount = await this.unitsToAmount(token, result)
     } catch (e) {
@@ -415,7 +479,10 @@ export class Pool {
    * @return {Boolean}
    */
   async isFinalized(poolAddress: string): Promise<boolean> {
-    const pool = new this.web3.eth.Contract(this.poolAbi, poolAddress)
+    const pool = setContractDefaults(
+      new this.web3.eth.Contract(this.poolAbi, poolAddress),
+      this.config
+    )
     let result = null
     try {
       result = await pool.methods.isFinalized().call()
@@ -431,7 +498,10 @@ export class Pool {
    * @return {String} Swap fee. To get the percentage value, substract by 100. E.g. `0.1` represents a 10% swap fee.
    */
   async getSwapFee(poolAddress: string): Promise<string> {
-    const pool = new this.web3.eth.Contract(this.poolAbi, poolAddress)
+    const pool = setContractDefaults(
+      new this.web3.eth.Contract(this.poolAbi, poolAddress),
+      this.config
+    )
     let fee = null
     try {
       const result = await pool.methods.getSwapFee().call()
@@ -449,7 +519,10 @@ export class Pool {
    * @return {String}
    */
   async getNormalizedWeight(poolAddress: string, token: string): Promise<string> {
-    const pool = new this.web3.eth.Contract(this.poolAbi, poolAddress)
+    const pool = setContractDefaults(
+      new this.web3.eth.Contract(this.poolAbi, poolAddress),
+      this.config
+    )
     let weight = null
     try {
       const result = await pool.methods.getNormalizedWeight(token).call()
@@ -467,7 +540,10 @@ export class Pool {
    * @return {String}
    */
   async getDenormalizedWeight(poolAddress: string, token: string): Promise<string> {
-    const pool = new this.web3.eth.Contract(this.poolAbi, poolAddress)
+    const pool = setContractDefaults(
+      new this.web3.eth.Contract(this.poolAbi, poolAddress),
+      this.config
+    )
     let weight = null
     try {
       const result = await pool.methods.getDenormalizedWeight(token).call()
@@ -484,7 +560,10 @@ export class Pool {
    * @return {String}
    */
   async getTotalDenormalizedWeight(poolAddress: string): Promise<string> {
-    const pool = new this.web3.eth.Contract(this.poolAbi, poolAddress)
+    const pool = setContractDefaults(
+      new this.web3.eth.Contract(this.poolAbi, poolAddress),
+      this.config
+    )
     let weight = null
     try {
       const result = await pool.methods.getTotalDenormalizedWeight().call()
@@ -502,7 +581,10 @@ export class Pool {
    * @return {String}
    */
   async getMarketFees(poolAddress: string, token: string): Promise<string> {
-    const pool = new this.web3.eth.Contract(this.poolAbi, poolAddress)
+    const pool = setContractDefaults(
+      new this.web3.eth.Contract(this.poolAbi, poolAddress),
+      this.config
+    )
     let weight = null
     try {
       const result = await pool.methods.publishMarketFees(token).call()
@@ -518,7 +600,10 @@ export class Pool {
    * @return {CurrentFees}
    */
   async getCurrentMarketFees(poolAddress: string): Promise<CurrentFees> {
-    const pool = new this.web3.eth.Contract(this.poolAbi, poolAddress)
+    const pool = setContractDefaults(
+      new this.web3.eth.Contract(this.poolAbi, poolAddress),
+      this.config
+    )
     try {
       const currentMarketFees = await pool.methods.getCurrentOPFFees().call()
       return currentMarketFees
@@ -532,7 +617,10 @@ export class Pool {
    * @return {CurrentFees}
    */
   async getCurrentOPFFees(poolAddress: string): Promise<CurrentFees> {
-    const pool = new this.web3.eth.Contract(this.poolAbi, poolAddress)
+    const pool = setContractDefaults(
+      new this.web3.eth.Contract(this.poolAbi, poolAddress),
+      this.config
+    )
     try {
       const currentMarketFees = await pool.methods.getCurrentOPFFees().call()
       return currentMarketFees
@@ -548,7 +636,10 @@ export class Pool {
    * @return {String}
    */
   async getCommunityFees(poolAddress: string, token: string): Promise<string> {
-    const pool = new this.web3.eth.Contract(this.poolAbi, poolAddress)
+    const pool = setContractDefaults(
+      new this.web3.eth.Contract(this.poolAbi, poolAddress),
+      this.config
+    )
     let weight = null
     try {
       const result = await pool.methods.communityFees(token).call()
@@ -573,7 +664,10 @@ export class Pool {
   ): Promise<number> {
     const poolContract =
       contractInstance ||
-      new this.web3.eth.Contract(this.poolAbi as AbiItem[], poolAddress)
+      setContractDefaults(
+        new this.web3.eth.Contract(this.poolAbi as AbiItem[], poolAddress),
+        this.config
+      )
 
     const gasLimitDefault = this.GASLIMIT_DEFAULT
     let estGas
@@ -594,7 +688,10 @@ export class Pool {
    * @return {TransactionReceipt}
    */
   async collectOPF(address: string, poolAddress: string): Promise<TransactionReceipt> {
-    const pool = new this.web3.eth.Contract(this.poolAbi, poolAddress)
+    const pool = setContractDefaults(
+      new this.web3.eth.Contract(this.poolAbi, poolAddress),
+      this.config
+    )
     let result = null
     const estGas = await this.estCollectOPF(address, poolAddress)
 
@@ -602,7 +699,7 @@ export class Pool {
       result = await pool.methods.collectOPF().send({
         from: address,
         gas: estGas + 1,
-        gasPrice: await getFairGasPrice(this.web3)
+        gasPrice: await getFairGasPrice(this.web3, this.config)
       })
     } catch (e) {
       this.logger.error(`ERROR: Failed to swap exact amount in : ${e.message}`)
@@ -625,7 +722,10 @@ export class Pool {
   ): Promise<number> {
     const poolContract =
       contractInstance ||
-      new this.web3.eth.Contract(this.poolAbi as AbiItem[], poolAddress)
+      setContractDefaults(
+        new this.web3.eth.Contract(this.poolAbi as AbiItem[], poolAddress),
+        this.config
+      )
 
     const gasLimitDefault = this.GASLIMIT_DEFAULT
     let estGas
@@ -653,7 +753,10 @@ export class Pool {
     if ((await this.getMarketFeeCollector(poolAddress)) !== address) {
       throw new Error(`Caller is not MarketFeeCollector`)
     }
-    const pool = new this.web3.eth.Contract(this.poolAbi, poolAddress)
+    const pool = setContractDefaults(
+      new this.web3.eth.Contract(this.poolAbi, poolAddress),
+      this.config
+    )
     let result = null
     const estGas = await this.estCollectMarketFee(address, poolAddress)
 
@@ -661,7 +764,7 @@ export class Pool {
       result = await pool.methods.collectMarketFee().send({
         from: address,
         gas: estGas + 1,
-        gasPrice: await getFairGasPrice(this.web3)
+        gasPrice: await getFairGasPrice(this.web3, this.config)
       })
     } catch (e) {
       this.logger.error(`ERROR: Failed to swap exact amount in : ${e.message}`)
@@ -685,7 +788,10 @@ export class Pool {
   ): Promise<number> {
     const poolContract =
       contractInstance ||
-      new this.web3.eth.Contract(this.poolAbi as AbiItem[], poolAddress)
+      setContractDefaults(
+        new this.web3.eth.Contract(this.poolAbi as AbiItem[], poolAddress),
+        this.config
+      )
 
     const gasLimitDefault = this.GASLIMIT_DEFAULT
     let estGas
@@ -714,7 +820,10 @@ export class Pool {
     if ((await this.getMarketFeeCollector(poolAddress)) !== address) {
       throw new Error(`Caller is not MarketFeeCollector`)
     }
-    const pool = new this.web3.eth.Contract(this.poolAbi, poolAddress)
+    const pool = setContractDefaults(
+      new this.web3.eth.Contract(this.poolAbi, poolAddress),
+      this.config
+    )
     let result = null
     const estGas = await this.estUpdateMarketFeeCollector(
       address,
@@ -726,7 +835,7 @@ export class Pool {
       result = await pool.methods.updateMarketFeeCollector(newCollector).send({
         from: address,
         gas: estGas + 1,
-        gasPrice: await getFairGasPrice(this.web3)
+        gasPrice: await getFairGasPrice(this.web3, this.config)
       })
     } catch (e) {
       this.logger.error(`ERROR: Failed to swap exact amount in : ${e.message}`)
@@ -736,9 +845,9 @@ export class Pool {
 
   async amountToUnits(token: string, amount: string): Promise<string> {
     try {
-      const tokenContract = new this.web3.eth.Contract(
-        defaultErc20Abi.abi as AbiItem[],
-        token
+      const tokenContract = setContractDefaults(
+        new this.web3.eth.Contract(defaultErc20Abi.abi as AbiItem[], token),
+        this.config
       )
       let decimals = await tokenContract.methods.decimals().call()
       if (decimals === '0') {
@@ -754,9 +863,9 @@ export class Pool {
 
   async unitsToAmount(token: string, amount: string): Promise<string> {
     try {
-      const tokenContract = new this.web3.eth.Contract(
-        defaultErc20Abi.abi as AbiItem[],
-        token
+      const tokenContract = setContractDefaults(
+        new this.web3.eth.Contract(defaultErc20Abi.abi as AbiItem[], token),
+        this.config
       )
       let decimals = await tokenContract.methods.decimals().call()
       if (decimals === '0') {
@@ -788,7 +897,10 @@ export class Pool {
   ): Promise<number> {
     const poolContract =
       contractInstance ||
-      new this.web3.eth.Contract(this.poolAbi as AbiItem[], poolAddress)
+      setContractDefaults(
+        new this.web3.eth.Contract(this.poolAbi as AbiItem[], poolAddress),
+        this.config
+      )
 
     const maxPrice = amountsInOutMaxFee.maxPrice
       ? this.web3.utils.toWei(amountsInOutMaxFee.maxPrice)
@@ -836,7 +948,10 @@ export class Pool {
     tokenInOutMarket: TokenInOutMarket,
     amountsInOutMaxFee: AmountsInMaxFee
   ): Promise<TransactionReceipt> {
-    const pool = new this.web3.eth.Contract(this.poolAbi, poolAddress)
+    const pool = setContractDefaults(
+      new this.web3.eth.Contract(this.poolAbi, poolAddress),
+      this.config
+    )
 
     amountsInOutMaxFee.tokenAmountIn = await this.amountToUnits(
       tokenInOutMarket.tokenIn,
@@ -879,7 +994,7 @@ export class Pool {
         .send({
           from: address,
           gas: estGas + 1,
-          gasPrice: await getFairGasPrice(this.web3)
+          gasPrice: await getFairGasPrice(this.web3, this.config)
         })
     } catch (e) {
       this.logger.error(`ERROR: Failed to swap exact amount in : ${e.message}`)
@@ -906,7 +1021,10 @@ export class Pool {
   ): Promise<number> {
     const poolContract =
       contractInstance ||
-      new this.web3.eth.Contract(this.poolAbi as AbiItem[], poolAddress)
+      setContractDefaults(
+        new this.web3.eth.Contract(this.poolAbi as AbiItem[], poolAddress),
+        this.config
+      )
 
     const gasLimitDefault = this.GASLIMIT_DEFAULT
 
@@ -951,7 +1069,10 @@ export class Pool {
     tokenInOutMarket: TokenInOutMarket,
     amountsInOutMaxFee: AmountsOutMaxFee
   ): Promise<TransactionReceipt> {
-    const pool = new this.web3.eth.Contract(this.poolAbi, poolAddress)
+    const pool = setContractDefaults(
+      new this.web3.eth.Contract(this.poolAbi, poolAddress),
+      this.config
+    )
     let result = null
 
     amountsInOutMaxFee.maxAmountIn = await this.amountToUnits(
@@ -993,7 +1114,7 @@ export class Pool {
         .send({
           from: account,
           gas: estGas + 1,
-          gasPrice: await getFairGasPrice(this.web3)
+          gasPrice: await getFairGasPrice(this.web3, this.config)
         })
     } catch (e) {
       this.logger.error(`ERROR: Failed to swap exact amount out: ${e.message}`)
@@ -1019,7 +1140,10 @@ export class Pool {
   ): Promise<number> {
     const poolContract =
       contractInstance ||
-      new this.web3.eth.Contract(this.poolAbi as AbiItem[], poolAddress)
+      setContractDefaults(
+        new this.web3.eth.Contract(this.poolAbi as AbiItem[], poolAddress),
+        this.config
+      )
 
     const gasLimitDefault = this.GASLIMIT_DEFAULT
     let estGas
@@ -1047,7 +1171,10 @@ export class Pool {
     poolAmountOut: string,
     maxAmountsIn: string[]
   ): Promise<TransactionReceipt> {
-    const pool = new this.web3.eth.Contract(this.poolAbi, poolAddress)
+    const pool = setContractDefaults(
+      new this.web3.eth.Contract(this.poolAbi, poolAddress),
+      this.config
+    )
     const weiMaxAmountsIn = []
     const tokens = await this.getFinalTokens(poolAddress)
 
@@ -1071,7 +1198,7 @@ export class Pool {
         .send({
           from: address,
           gas: estGas + 1,
-          gasPrice: await getFairGasPrice(this.web3)
+          gasPrice: await getFairGasPrice(this.web3, this.config)
         })
     } catch (e) {
       this.logger.error(`ERROR: Failed to join pool: ${e.message}`)
@@ -1097,7 +1224,10 @@ export class Pool {
   ): Promise<number> {
     const poolContract =
       contractInstance ||
-      new this.web3.eth.Contract(this.poolAbi as AbiItem[], poolAddress)
+      setContractDefaults(
+        new this.web3.eth.Contract(this.poolAbi as AbiItem[], poolAddress),
+        this.config
+      )
 
     const gasLimitDefault = this.GASLIMIT_DEFAULT
     let estGas
@@ -1125,7 +1255,10 @@ export class Pool {
     poolAmountIn: string,
     minAmountsOut: string[]
   ): Promise<TransactionReceipt> {
-    const pool = new this.web3.eth.Contract(this.poolAbi, poolAddress)
+    const pool = setContractDefaults(
+      new this.web3.eth.Contract(this.poolAbi, poolAddress),
+      this.config
+    )
     const weiMinAmountsOut = []
     const tokens = await this.getFinalTokens(poolAddress)
 
@@ -1144,7 +1277,11 @@ export class Pool {
     try {
       result = await pool.methods
         .exitPool(this.web3.utils.toWei(poolAmountIn), weiMinAmountsOut)
-        .send({ from: account, gas: estGas, gasPrice: await getFairGasPrice(this.web3) })
+        .send({
+          from: account,
+          gas: estGas,
+          gasPrice: await getFairGasPrice(this.web3, this.config)
+        })
     } catch (e) {
       this.logger.error(`ERROR: Failed to exit pool: ${e.message}`)
     }
@@ -1171,7 +1308,10 @@ export class Pool {
   ): Promise<number> {
     const poolContract =
       contractInstance ||
-      new this.web3.eth.Contract(this.poolAbi as AbiItem[], poolAddress)
+      setContractDefaults(
+        new this.web3.eth.Contract(this.poolAbi as AbiItem[], poolAddress),
+        this.config
+      )
 
     const gasLimitDefault = this.GASLIMIT_DEFAULT
     let estGas
@@ -1201,7 +1341,10 @@ export class Pool {
     tokenAmountIn: string,
     minPoolAmountOut: string
   ): Promise<TransactionReceipt> {
-    const pool = new this.web3.eth.Contract(this.poolAbi, poolAddress)
+    const pool = setContractDefaults(
+      new this.web3.eth.Contract(this.poolAbi, poolAddress),
+      this.config
+    )
     let result = null
 
     const amountInFormatted = await this.amountToUnits(tokenIn, tokenAmountIn)
@@ -1223,7 +1366,7 @@ export class Pool {
         .send({
           from: account,
           gas: estGas + 1,
-          gasPrice: await getFairGasPrice(this.web3)
+          gasPrice: await getFairGasPrice(this.web3, this.config)
         })
     } catch (e) {
       this.logger.error(`ERROR: Failed to pay tokens in order to \
@@ -1252,7 +1395,10 @@ export class Pool {
   ): Promise<number> {
     const poolContract =
       contractInstance ||
-      new this.web3.eth.Contract(this.poolAbi as AbiItem[], poolAddress)
+      setContractDefaults(
+        new this.web3.eth.Contract(this.poolAbi as AbiItem[], poolAddress),
+        this.config
+      )
 
     const gasLimitDefault = this.GASLIMIT_DEFAULT
     let estGas
@@ -1282,7 +1428,10 @@ export class Pool {
     poolAmountOut: string,
     maxAmountIn: string
   ): Promise<TransactionReceipt> {
-    const pool = new this.web3.eth.Contract(this.poolAbi, poolAddress)
+    const pool = setContractDefaults(
+      new this.web3.eth.Contract(this.poolAbi, poolAddress),
+      this.config
+    )
     let result = null
 
     const maxAmountInFormatted = await this.amountToUnits(tokenIn, maxAmountIn)
@@ -1304,7 +1453,7 @@ export class Pool {
         .send({
           from: account,
           gas: estGas + 1,
-          gasPrice: await getFairGasPrice(this.web3)
+          gasPrice: await getFairGasPrice(this.web3, this.config)
         })
     } catch (e) {
       this.logger.error('ERROR: Failed to join swap pool amount out')
@@ -1332,7 +1481,10 @@ export class Pool {
   ): Promise<number> {
     const poolContract =
       contractInstance ||
-      new this.web3.eth.Contract(this.poolAbi as AbiItem[], poolAddress)
+      setContractDefaults(
+        new this.web3.eth.Contract(this.poolAbi as AbiItem[], poolAddress),
+        this.config
+      )
 
     const gasLimitDefault = this.GASLIMIT_DEFAULT
     let estGas
@@ -1362,7 +1514,10 @@ export class Pool {
     poolAmountIn: string,
     minTokenAmountOut: string
   ): Promise<TransactionReceipt> {
-    const pool = new this.web3.eth.Contract(this.poolAbi, poolAddress)
+    const pool = setContractDefaults(
+      new this.web3.eth.Contract(this.poolAbi, poolAddress),
+      this.config
+    )
     let result = null
 
     const minTokenOutFormatted = await this.amountToUnits(tokenOut, minTokenAmountOut)
@@ -1384,7 +1539,7 @@ export class Pool {
         .send({
           from: account,
           gas: estGas + 1,
-          gasPrice: await getFairGasPrice(this.web3)
+          gasPrice: await getFairGasPrice(this.web3, this.config)
         })
     } catch (e) {
       this.logger.error(`ERROR: Failed to pay pool shares into the pool: ${e.message}`)
@@ -1412,7 +1567,10 @@ export class Pool {
   ): Promise<number> {
     const poolContract =
       contractInstance ||
-      new this.web3.eth.Contract(this.poolAbi as AbiItem[], poolAddress)
+      setContractDefaults(
+        new this.web3.eth.Contract(this.poolAbi as AbiItem[], poolAddress),
+        this.config
+      )
 
     const gasLimitDefault = this.GASLIMIT_DEFAULT
     let estGas
@@ -1442,7 +1600,10 @@ export class Pool {
     tokenAmountOut: string,
     maxPoolAmountIn: string
   ): Promise<TransactionReceipt> {
-    const pool = new this.web3.eth.Contract(this.poolAbi, poolAddress)
+    const pool = setContractDefaults(
+      new this.web3.eth.Contract(this.poolAbi, poolAddress),
+      this.config
+    )
     let result = null
 
     const estGas = await this.estExitswapExternAmountOut(
@@ -1463,7 +1624,7 @@ export class Pool {
         .send({
           from: account,
           gas: estGas + 1,
-          gasPrice: await getFairGasPrice(this.web3)
+          gasPrice: await getFairGasPrice(this.web3, this.config)
         })
     } catch (e) {
       this.logger.error('ERROR: Failed to exitswapExternAmountOut')
@@ -1485,17 +1646,20 @@ export class Pool {
     tokenOut: string,
     swapMarketFee: string
   ): Promise<string> {
-    const pool = new this.web3.eth.Contract(this.poolAbi, poolAddress)
+    const pool = setContractDefaults(
+      new this.web3.eth.Contract(this.poolAbi, poolAddress),
+      this.config
+    )
     let decimalsTokenIn = 18
     let decimalsTokenOut = 18
 
-    const tokenInContract = new this.web3.eth.Contract(
-      defaultErc20Abi.abi as AbiItem[],
-      tokenIn
+    const tokenInContract = setContractDefaults(
+      new this.web3.eth.Contract(defaultErc20Abi.abi as AbiItem[], tokenIn),
+      this.config
     )
-    const tokenOutContract = new this.web3.eth.Contract(
-      defaultErc20Abi.abi as AbiItem[],
-      tokenOut
+    const tokenOutContract = setContractDefaults(
+      new this.web3.eth.Contract(defaultErc20Abi.abi as AbiItem[], tokenOut),
+      this.config
     )
     try {
       decimalsTokenIn = await tokenInContract.methods.decimals().call()
@@ -1539,7 +1703,10 @@ export class Pool {
     tokenAmountOut: string,
     swapMarketFee: string
   ): Promise<string> {
-    const pool = new this.web3.eth.Contract(this.poolAbi, poolAddress)
+    const pool = setContractDefaults(
+      new this.web3.eth.Contract(this.poolAbi, poolAddress),
+      this.config
+    )
 
     const amountOutFormatted = await this.amountToUnits(tokenOut, tokenAmountOut)
 
@@ -1568,7 +1735,10 @@ export class Pool {
     tokenAmountIn: string,
     swapMarketFee: string
   ): Promise<string> {
-    const pool = new this.web3.eth.Contract(this.poolAbi, poolAddress)
+    const pool = setContractDefaults(
+      new this.web3.eth.Contract(this.poolAbi, poolAddress),
+      this.config
+    )
 
     const amountInFormatted = await this.amountToUnits(tokenIn, tokenAmountIn)
 
@@ -1596,7 +1766,10 @@ export class Pool {
     tokenIn: string,
     tokenAmountIn: string
   ): Promise<string> {
-    const pool = new this.web3.eth.Contract(this.poolAbi, poolAddress)
+    const pool = setContractDefaults(
+      new this.web3.eth.Contract(this.poolAbi, poolAddress),
+      this.config
+    )
     let amount = null
 
     try {
@@ -1616,7 +1789,10 @@ export class Pool {
     tokenIn: string,
     poolAmountOut: string
   ): Promise<string> {
-    const pool = new this.web3.eth.Contract(this.poolAbi, poolAddress)
+    const pool = setContractDefaults(
+      new this.web3.eth.Contract(this.poolAbi, poolAddress),
+      this.config
+    )
     let amount = null
     const amountFormatted = await this.amountToUnits(poolAddress, poolAmountOut)
     try {
@@ -1637,7 +1813,10 @@ export class Pool {
     tokenOut: string,
     poolAmountIn: string
   ): Promise<string> {
-    const pool = new this.web3.eth.Contract(this.poolAbi, poolAddress)
+    const pool = setContractDefaults(
+      new this.web3.eth.Contract(this.poolAbi, poolAddress),
+      this.config
+    )
     let amount = null
 
     try {
@@ -1659,7 +1838,10 @@ export class Pool {
     tokenOut: string,
     tokenAmountOut: string
   ): Promise<string> {
-    const pool = new this.web3.eth.Contract(this.poolAbi, poolAddress)
+    const pool = setContractDefaults(
+      new this.web3.eth.Contract(this.poolAbi, poolAddress),
+      this.config
+    )
     let amount = null
 
     try {

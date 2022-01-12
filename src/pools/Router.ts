@@ -3,8 +3,9 @@ import Web3 from 'web3'
 import { TransactionReceipt } from 'web3-core'
 import { AbiItem } from 'web3-utils'
 import defaultRouter from '../artifacts/pools/FactoryRouter.sol/FactoryRouter.json'
-import { getFairGasPrice } from '../utils'
+import { getFairGasPrice, setContractDefaults, configHelperNetworks } from '../utils'
 import { Operation } from '../interfaces/RouterInterface'
+import { Config } from '../models/index.js'
 
 /**
  * Provides an interface for FactoryRouter contract
@@ -14,7 +15,7 @@ export class Router {
   public routerAddress: string
   public RouterAbi: AbiItem | AbiItem[]
   public web3: Web3
-  public startBlock: number
+  public config: Config
   public router: Contract
 
   /**
@@ -27,13 +28,16 @@ export class Router {
     routerAddress: string,
     web3: Web3,
     RouterAbi?: AbiItem | AbiItem[],
-    startBlock?: number
+    config?: Config
   ) {
     this.routerAddress = routerAddress
     this.RouterAbi = RouterAbi || (defaultRouter.abi as AbiItem[])
     this.web3 = web3
-    this.startBlock = startBlock || 0
-    this.router = new this.web3.eth.Contract(this.RouterAbi, this.routerAddress)
+    this.config = config || configHelperNetworks[0]
+    this.router = setContractDefaults(
+      new this.web3.eth.Contract(this.RouterAbi, this.routerAddress),
+      this.config
+    )
   }
 
   /**
@@ -71,7 +75,7 @@ export class Router {
     const trxReceipt = await this.router.methods.buyDTBatch(operations).send({
       from: address,
       gas: estGas + 1,
-      gasPrice: await getFairGasPrice(this.web3)
+      gasPrice: await getFairGasPrice(this.web3, this.config)
     })
 
     return trxReceipt
@@ -165,7 +169,7 @@ export class Router {
     const trxReceipt = await this.router.methods.addOceanToken(tokenAddress).send({
       from: address,
       gas: estGas + 1,
-      gasPrice: await getFairGasPrice(this.web3)
+      gasPrice: await getFairGasPrice(this.web3, this.config)
     })
 
     return trxReceipt
@@ -217,7 +221,7 @@ export class Router {
     const trxReceipt = await this.router.methods.removeOceanToken(tokenAddress).send({
       from: address,
       gas: estGas + 1,
-      gasPrice: await getFairGasPrice(this.web3)
+      gasPrice: await getFairGasPrice(this.web3, this.config)
     })
 
     return trxReceipt
@@ -262,7 +266,7 @@ export class Router {
     const trxReceipt = await this.router.methods.addSSContract(tokenAddress).send({
       from: address,
       gas: estGas + 1,
-      gasPrice: await getFairGasPrice(this.web3)
+      gasPrice: await getFairGasPrice(this.web3, this.config)
     })
 
     return trxReceipt
@@ -310,7 +314,7 @@ export class Router {
     const trxReceipt = await this.router.methods.removeSSContract(tokenAddress).send({
       from: address,
       gas: estGas + 1,
-      gasPrice: await getFairGasPrice(this.web3)
+      gasPrice: await getFairGasPrice(this.web3, this.config)
     })
 
     return trxReceipt
@@ -359,7 +363,7 @@ export class Router {
     const trxReceipt = await this.router.methods.addFixedRateContract(tokenAddress).send({
       from: address,
       gas: estGas + 1,
-      gasPrice: await getFairGasPrice(this.web3)
+      gasPrice: await getFairGasPrice(this.web3, this.config)
     })
 
     return trxReceipt
@@ -410,7 +414,7 @@ export class Router {
       .send({
         from: address,
         gas: estGas + 1,
-        gasPrice: await getFairGasPrice(this.web3)
+        gasPrice: await getFairGasPrice(this.web3, this.config)
       })
 
     return trxReceipt
@@ -459,7 +463,7 @@ export class Router {
     const trxReceipt = await this.router.methods.addDispenserContract(tokenAddress).send({
       from: address,
       gas: estGas + 1,
-      gasPrice: await getFairGasPrice(this.web3)
+      gasPrice: await getFairGasPrice(this.web3, this.config)
     })
 
     return trxReceipt
@@ -510,7 +514,7 @@ export class Router {
       .send({
         from: address,
         gas: estGas + 1,
-        gasPrice: await getFairGasPrice(this.web3)
+        gasPrice: await getFairGasPrice(this.web3, this.config)
       })
 
     return trxReceipt
@@ -571,7 +575,7 @@ export class Router {
     const trxReceipt = await this.router.methods.updateOPFFee(newFee).send({
       from: address,
       gas: estGas + 1,
-      gasPrice: await getFairGasPrice(this.web3)
+      gasPrice: await getFairGasPrice(this.web3, this.config)
     })
 
     return trxReceipt
@@ -620,7 +624,7 @@ export class Router {
     const trxReceipt = await this.router.methods.addPoolTemplate(templateAddress).send({
       from: address,
       gas: estGas + 1,
-      gasPrice: await getFairGasPrice(this.web3)
+      gasPrice: await getFairGasPrice(this.web3, this.config)
     })
 
     return trxReceipt
@@ -670,7 +674,7 @@ export class Router {
       .send({
         from: address,
         gas: estGas + 1,
-        gasPrice: await getFairGasPrice(this.web3)
+        gasPrice: await getFairGasPrice(this.web3, this.config)
       })
 
     return trxReceipt

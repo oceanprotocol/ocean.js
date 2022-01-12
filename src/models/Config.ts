@@ -170,6 +170,30 @@ export class Config {
    * @type {string}
    */
   oceanTokenSymbol: string
+
+  /**
+   * Specify the transaction Block Timeout
+   * @type {number}
+   */
+  transactionBlockTimeout: number
+
+  /**
+   * Specify the transaction Confirmation Blocks
+   * @type {number}
+   */
+  transactionConfirmationBlocks: number
+
+  /**
+   * Specify the transaction Polling Blocks Timeout
+   * @type {number}
+   */
+  transactionPollingTimeout: number
+
+  /**
+   * Specify the multiplaier for the gas fee
+   * @type {number}
+   */
+  gasFeeMultiplier: number
 }
 
 export default Config
