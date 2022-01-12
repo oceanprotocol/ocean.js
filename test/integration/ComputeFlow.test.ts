@@ -303,7 +303,6 @@ describe('Simple compute tests', async () => {
     const computeJobs = await ProviderInstance.computeStart(
       providerUrl,
       web3,
-      crossFetchGeneric,
       consumerAccount,
       'env1',
       {
@@ -315,7 +314,8 @@ describe('Simple compute tests', async () => {
         documentId: resolvedDDOAlgo.id,
         serviceId: resolvedDDOAlgo.services[0].id,
         transferTxId: txidAlgo.transactionHash
-      }
+      },
+      crossFetchGeneric
     )
     assert(computeJobs, 'Cannot start compute job')
     const jobStatus = await ProviderInstance.computeStatus(

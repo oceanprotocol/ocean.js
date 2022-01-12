@@ -73,10 +73,11 @@ export class Provider {
   public async getNonce(
     providerUri: string,
     consumerAddress: string,
-    fetchMethod: any,
+    fetchMethod?: any,
     providerEndpoints?: any,
     serviceEndpoints?: ServiceEndpoint[]
   ): Promise<string> {
+    const preferedFetch = fetchMethod || crossFetchGeneric
     if (!providerEndpoints) {
       providerEndpoints = await this.getEndpoints(providerUri)
     }
@@ -88,7 +89,7 @@ export class Provider {
       : null
     if (!path) return null
     try {
-      const response = await fetchMethod(
+      const response = await preferedFetch(
         'GET',
         path + `?userAddress=${consumerAddress}`,
         null,
@@ -127,7 +128,8 @@ export class Provider {
    * @param {string} postMethod http post method
    * @return {Promise<string>} urlDetails
    */
-  public async encrypt(data: any, providerUri: string, postMethod: any): Promise<any> {
+  public async encrypt(data: any, providerUri: string, postMethod?: any): Promise<any> {
+    const preferedFetch = postMethod || crossFetchGeneric
     const providerEndpoints = await this.getEndpoints(providerUri)
     const serviceEndpoints = await this.getServiceEndpoints(
       providerUri,
@@ -139,9 +141,14 @@ export class Provider {
 
     if (!path) return null
     try {
-      const response = await postMethod('POST', path, decodeURI(JSON.stringify(data)), {
-        'Content-Type': 'application/octet-stream'
-      })
+      const response = await preferedFetch(
+        'POST',
+        path,
+        decodeURI(JSON.stringify(data)),
+        {
+          'Content-Type': 'application/octet-stream'
+        }
+      )
       return response
     } catch (e) {
       LoggerInstance.error(e)
@@ -340,11 +347,11 @@ export class Provider {
   public async computeStart(
     providerUri: string,
     web3: Web3,
-    fetchMethod?: any,
     consumerAddress: string,
     computeEnv: string,
     dataset: ComputeAsset,
     algorithm: ComputeAlgorithm,
+    fetchMethod?: any,
     additionalDatasets?: ComputeAsset[],
     output?: ComputeOutput
   ): Promise<ComputeJob | ComputeJob[]> {
@@ -609,7 +616,7 @@ export class Provider {
     jobId: string,
     providerUri: string,
     web3: Web3,
-    fetchMethod: any
+    fetchMethod?: any
   ): Promise<ComputeJob | ComputeJob[]> {
     const preferedFetch = fetchMethod || crossFetchGeneric
     const providerEndpoints = await this.getEndpoints(providerUri)
