@@ -39,6 +39,7 @@
     "test:unit": "npm run mocha -- 'test/unit/**/*.test.ts'",
     "test:unit:cover": "nyc --report-dir coverage/unit npm run test:unit",
     "test:integration": "npm run mocha -- 'test/integration/**/*.test.ts'",
+    "test:provider": "npm run mocha -- 'test/integration/Provider.test.ts'",
     "test:integration:cover": "nyc --report-dir coverage/integration --no-clean npm run test:integration"
   },
   "repository": {

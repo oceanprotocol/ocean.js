@@ -11,14 +11,17 @@ describe('Provider tests', () => {
   })
 
   it('Alice tests invalid provider', async () => {
-    const valid = await providerInstance.isValidProvider('http://example.net', fetchData)
+    const valid = await providerInstance.isValidProvider(
+      'http://example.net',
+      crossFetchGeneric
+    )
     assert(valid === false)
   })
 
   it('Alice tests valid provider', async () => {
     const valid = await providerInstance.isValidProvider(
       'http://127.0.0.1:8030',
-      fetchData
+      crossFetchGeneric
     )
     assert(valid === true)
   })
