@@ -1,4 +1,4 @@
-import { LoggerInstance } from '../utils'
+import { LoggerInstance, crossFetchGeneric } from '../utils'
 import { Asset, DDO, Metadata, ValidateMetadata } from '../@types/'
 import { json } from 'stream/consumers'
 
@@ -17,12 +17,15 @@ export class Aquarius {
    * @param {string} fetchMethod fetch client instance
    * @return {Promise<DDO>} DDO
    */
-  public async resolve(did: string, fetchMethod: any): Promise<DDO> {
+  public async resolve(did: string, fetchMethod?: any): Promise<DDO> {
+    const preferedFetch = fetchMethod || crossFetchGeneric
     const path = this.aquariusURL + '/api/aquarius/assets/ddo/' + did
     try {
-      const response = await fetchMethod('GET', path)
+      const response = await preferedFetch('GET', path, null, {
+        'Content-Type': 'application/json'
+      })
       if (response.ok) {
-        const raw = await response.json()
+        const raw = response.data ? response.data : await response.json()
         return raw as DDO
       } else {
         throw new Error('HTTP request failed with status ' + response.status)
@@ -44,19 +47,27 @@ export class Aquarius {
 
   /**
    * Blocks until Aqua will cache the did (or the update for that did) or timeouts
+   
+   * @param {string} did DID of the asset.
+   * @param {string} txid used when the did exists and we expect an update with that txid.
    * @param {string} fetchMethod fetch client instance
-   * @param  {string} did DID of the asset.
-   * @param  {string} txid used when the did exists and we expect an update with that txid.
    * @return {Promise<DDO>} DDO of the asset.
    */
-  public async waitForAqua(fetchMethod: any, did: string, txid?: string): Promise<Asset> {
+  public async waitForAqua(
+    did: string,
+    txid?: string,
+    fetchMethod?: any
+  ): Promise<Asset> {
     let tries = 0
     do {
       try {
+        const preferedFetch = fetchMethod || crossFetchGeneric
         const path = this.aquariusURL + '/api/aquarius/assets/ddo/' + did
-        const response = await fetchMethod('GET', path)
+        const response = await preferedFetch('GET', path, null, {
+          'Content-Type': 'application/json'
+        })
         if (response.ok) {
-          const ddo = await response.json()
+          const ddo = response.data ? response.data : await response.json()
           if (txid) {
             // check tx
             if (ddo.event && ddo.event.txid === txid) return ddo as Asset
@@ -73,21 +84,22 @@ export class Aquarius {
 
   /**
    * Validate DDO content
+   * @param {DDO} ddo DID Descriptor Object content.
    * @param {string} fetchMethod fetch client instance
-   * @param  {DDO} ddo DID Descriptor Object content.
    * @return {Promise<ValidateMetadata>}.
    */
-  public async validate(fetchMethod: any, ddo: DDO): Promise<ValidateMetadata> {
+  public async validate(ddo: DDO, fetchMethod: any): Promise<ValidateMetadata> {
+    const preferedFetch = fetchMethod || crossFetchGeneric
     const status: ValidateMetadata = {
       valid: false
     }
     let jsonResponse
     try {
       const path = this.aquariusURL + '/api/aquarius/assets/ddo/validate'
-      const response = await fetchMethod('POST', path, JSON.stringify(ddo), {
+      const response = await preferedFetch('POST', path, JSON.stringify(ddo), {
         'Content-Type': 'application/octet-stream'
       })
-      jsonResponse = await response.json()
+      jsonResponse = response.data ? response.data : await response.json()
       if (response.status === 200) {
         status.valid = true
         status.hash = jsonResponse.hash

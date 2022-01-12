@@ -241,9 +241,13 @@ describe('Simple compute tests', async () => {
       '0x' + metadataHash
     )
     // let's wait
-    const resolvedDDOAsset = await aquarius.waitForAqua(crossFetchGeneric, ddo.id)
+    const resolvedDDOAsset = await aquarius.waitForAqua(ddo.id, null, crossFetchGeneric)
     assert(resolvedDDOAsset, 'Cannot fetch DDO from Aquarius')
-    const resolvedDDOAlgo = await aquarius.waitForAqua(crossFetchGeneric, algoDdo.id)
+    const resolvedDDOAlgo = await aquarius.waitForAqua(
+      algoDdo.id,
+      null,
+      crossFetchGeneric
+    )
     assert(resolvedDDOAlgo, 'Cannot fetch DDO from Aquarius')
     // mint 1 ERC20 and send it to the consumer
     await datatoken.mint(datatokenAddressAsset, publisherAccount, '1', consumerAccount)
