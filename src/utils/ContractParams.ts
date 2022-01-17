@@ -30,14 +30,14 @@ export function getFreCreationParams(freParams: FreCreationParams): any {
   return {
     fixedPriceAddress: freParams.fixedRateAddress,
     addresses: [
-      freParams.baseTokenAddress,
+      freParams.basetokenAddress,
       freParams.owner,
       freParams.marketFeeCollector,
       freParams.allowedConsumer
     ],
     uints: [
-      freParams.baseTokenDecimals,
-      freParams.dataTokenDecimals,
+      freParams.basetokenDecimals,
+      freParams.datatokenDecimals,
       freParams.fixedRate,
       freParams.marketFee,
       withMint

@@ -10,7 +10,7 @@ Here's the steps.
 2. Create a new node.js project
 3. Install dependancies
 4. Create a config file and update contract addresses
-5. Publish a new data token
+5. Publish a new datatoken
 6. Mint 200 tokens
 7. Publish a dataset
 8. Alice allows marketplace to sell her datatokens
@@ -19,7 +19,6 @@ Here's the steps.
 11. Bob acquires datatokens (value swap)
 12. Bob downloads the dataset
 13. Extensions
-
 
 Let's go through each step.
 
@@ -35,7 +34,7 @@ cd barge/
 
 ## 2. Create a new node.js project
 
-Start by creating a new Node.js project. Open a new terminal and enter the following commands: 
+Start by creating a new Node.js project. Open a new terminal and enter the following commands:
 
 ```bash
 mkdir marketplace-quickstart
@@ -48,7 +47,7 @@ cat > marketplace.js
 
 ## 3. Install dependancies
 
-Open the package.json file in a text editor and update the dependancies to include the following: 
+Open the package.json file in a text editor and update the dependancies to include the following:
 
 ```JSON
   "dependencies": {
@@ -58,7 +57,7 @@ Open the package.json file in a text editor and update the dependancies to inclu
   }
 ```
 
-Now in your terminal run the following command: 
+Now in your terminal run the following command:
 
 ```bash
 npm install
@@ -66,7 +65,7 @@ npm install
 
 ## 4. Create a config file and update contract addresses
 
-Create a new config.js file: 
+Create a new config.js file:
 
 ```bash
 cat > config.js
@@ -114,9 +113,10 @@ Now check what your contract addresses are locally. In your terminal run:
 cat ~/.ocean/ocean-contracts/artifacts/address.json
 ```
 
-Next, update the contract addresses in your config.js file. Replace each of the place holders with the actual addresses that were outputted into your terminal. 
+Next, update the contract addresses in your config.js file. Replace each of the place holders with the actual addresses that were outputted into your terminal.
 
-## 5. Publish a new data token 
+## 5. Publish a new datatoken
+
 Now open the `marketplace.js` file in your text editor. Enter the following code and save the file:
 
 ```Javascript
@@ -150,7 +150,7 @@ const init = async () => {
 init();
 ```
 
-Now in your terminal, run the following command: 
+Now in your terminal, run the following command:
 
 ```bash
 node marketplace.js
@@ -160,7 +160,7 @@ Congratulations, you've created your first Ocean datatoken! 🌊🐋
 
 ## 6. Mint 200 tokens
 
-Next, we will edit the code in `marketplace.js` to mint 200 datatokens. These 200 data tokens are minted and sent to Alice's Address. 
+Next, we will edit the code in `marketplace.js` to mint 200 datatokens. These 200 datatokens are minted and sent to Alice's Address.
 
 At the end of the `init() { ... }` function (after `console.log('Deployed datatoken address: ${tokenAddress}')`) add the following line of code:
 
@@ -176,7 +176,7 @@ Now run the `marketplace.js` file again:
 node marketplace.js
 ```
 
-You should now see in the console output that Alice has a token balance of 200. 
+You should now see in the console output that Alice has a token balance of 200.
 
 ## 7. Publish a dataset
 
@@ -243,7 +243,7 @@ Now save and run the `marketplace.js` file:
 node marketplace.js
 ```
 
-In the terminal output you should now see the Data ID (did) outputed.  
+In the terminal output you should now see the Data ID (did) outputed.
 
 Congratulations, you have published your first dataset! 🌊🐠
 
@@ -275,7 +275,7 @@ await datatoken.approve(
  console.log("Marketplace Allowance:", marketplaceAllowance);
 ```
 
-You should see in the terminal output that the marketplace has a datatoken allowance of 100 tokens. 
+You should see in the terminal output that the marketplace has a datatoken allowance of 100 tokens.
 
 Now save the file and run it:
 
@@ -308,24 +308,25 @@ You should see in the terminal output that the Markeplace now has a datatoken ba
 
 ## 10. Marketplace posts asset for sale
 
-In this section we show how the maketplace can post the dataset for sale. 
+In this section we show how the maketplace can post the dataset for sale.
 
-First, in the same terminal that you are running your files, enter the following command: 
+First, in the same terminal that you are running your files, enter the following command:
 
 ```bash
 export ADDRESS_FILE="${HOME}/.ocean/ocean-contracts/artifacts/address.json"
 ```
-This tells ocean.js the location of the contract addresses. 
+
+This tells ocean.js the location of the contract addresses.
 
 At the end of the `init() { ... }` function (after `console.log("Alice balance:", aliceBalance)`) add the following code:
 
 ```javascript
 // Wait for datatoken to be published
-await new Promise(r => setTimeout(r, 15000)); 
+await new Promise((r) => setTimeout(r, 15000))
 
 const asset = await ocean.assets.resolve(dataId)
 const accessService = await ocean.assets.getServiceByType(asset.id, 'access')
-console.log("accessService", accessService)
+console.log('accessService', accessService)
 ```
 
 Now save and run the file:
@@ -334,11 +335,11 @@ Now save and run the file:
 node marketplace.js
 ```
 
-In the terminal output you should see the atributes of your dataset, including the cost, creator address and published date. 
+In the terminal output you should see the atributes of your dataset, including the cost, creator address and published date.
 
 ## 11. Bob acquires datatokens (value swap)
 
-Now, you're Bob :) In production environment, Bob would visit the marketplace website and purchase datatokends with USD via a payment gateway such as Stripe. In this example we demonstrate Alice sending Bob datatokens so that he is able to consume the dataset. 
+Now, you're Bob :) In production environment, Bob would visit the marketplace website and purchase datatokends with USD via a payment gateway such as Stripe. In this example we demonstrate Alice sending Bob datatokens so that he is able to consume the dataset.
 
 First we will edit the `init() { ... }` function to create an address for Bob. On the line after `const marketplace = accounts[1].id;` add the following code:
 
@@ -366,17 +367,18 @@ Save the `marketplace.js` file and run it again. In your terminal enter:
 ```bash
 node marketplace.js
 ```
+
 You should see in the terminal output that both Bob and Alice have a balance of 50 tokens.
 
 ## 12. Bob downloads the dataset
 
-Finally, Bob downloads the dataset. This is is a two part process where he first orders the dataset and then downloads it. 
+Finally, Bob downloads the dataset. This is is a two part process where he first orders the dataset and then downloads it.
 
 At the end of the `init() { ... }` function (after `console.log("bobTransaction", bobTransaction)`) add the following code:
 
 ```javascript
 const bobTransaction = await ocean.assets.order(asset.id, accessService.type, bob)
-console.log("bobTransaction", bobTransaction)
+console.log('bobTransaction', bobTransaction)
 
 const data = await ocean.assets.download(
   asset.id,
@@ -386,19 +388,19 @@ const data = await ocean.assets.download(
   './datafiles'
 )
 bobBalance = await datatoken.balance(tokenAddress, bob)
-console.log("Bob token balance:", bobBalance)
+console.log('Bob token balance:', bobBalance)
 ```
 
 Save the `marketplace.js` file and run it again. In your terminal enter:
 
-You should see in the terminal output that Bob's balance has now been reduce to 40 tokens, as he has spent 10 on the dataset. You can confirm in the terminal that the data has been downloaded with the following commands: 
+You should see in the terminal output that Bob's balance has now been reduce to 40 tokens, as he has spent 10 on the dataset. You can confirm in the terminal that the data has been downloaded with the following commands:
 
 ```bash
 cd datafiles
 ls
 ```
-In the terminal output you should see a new directory has been created that contains your data. 
 
+In the terminal output you should see a new directory has been created that contains your data.
 
 To view Bob's previous orders you can enter the following code at the end of the `init() { ... }` function (after `console.log("Bob token balance:", bobBalance)`):
 
@@ -407,16 +409,15 @@ const history = await ocean.assets.getOrderHistory(accounts[2])
 console.log("Bob's history", history)
 ```
 
-If you save the file and run it again you should see all of Bob's previous orders. 
+If you save the file and run it again you should see all of Bob's previous orders.
 
 ## 13. Extensions
 
-Congratulations on completing the Oceon.js Marketplace tutorial 🌊🐋🐠. This has given you a solid foundation upon which you can start using Ocean.js. There is still a lot more you can do with Ocean.js, here are some suggestions for next steps to continue learning: 
+Congratulations on completing the Oceon.js Marketplace tutorial 🌊🐋🐠. This has given you a solid foundation upon which you can start using Ocean.js. There is still a lot more you can do with Ocean.js, here are some suggestions for next steps to continue learning:
 
 1. Check Alice's order history using `ocean.assets.getOrderHistory(accounts[0])`
 2. List all of Alice's assets with `ocean.assets.ownerAssets(alice)`
-3. Update metadata for Alice's dataset using `ocean.assets.editMetadata(ddo, newMetaData)` 
+3. Update metadata for Alice's dataset using `ocean.assets.editMetadata(ddo, newMetaData)`
 4. Update the new metadata onchain with `ocean.onChainMetadata.update(newDdo.id, newDdo, alice)`
 5. Check the metadata with `ocean.assets.getServiceByType(ddo.id, 'metadata')`
 6. Update the timeout for the dataset with `ocean.assets.editServiceTimeout(ddo, serviceIndex, newTimeout)`
-

@@ -121,11 +121,11 @@ describe('Fixed Rate unit test', () => {
 
       const freParams: FreCreationParams = {
         fixedRateAddress: contracts.fixedRateAddress,
-        baseTokenAddress: contracts.daiAddress,
+        basetokenAddress: contracts.daiAddress,
         owner: exchangeOwner,
         marketFeeCollector: user3,
-        baseTokenDecimals: 18,
-        dataTokenDecimals: 18,
+        basetokenDecimals: 18,
+        datatokenDecimals: 18,
         fixedRate: web3.utils.toWei('1'),
         marketFee: 1e15,
         allowedConsumer: ADDRESS_ZERO,
@@ -267,13 +267,13 @@ describe('Fixed Rate unit test', () => {
       const args = tx.events.Swapped.returnValues
       expect(args.exchangeId).to.equal(exchangeId)
       expect(args.by).to.equal(user2)
-      expect(args.dataTokenSwappedAmount).to.equal(web3.utils.toWei('10'))
+      expect(args.datatokenSwappedAmount).to.equal(web3.utils.toWei('10'))
       expect(args.tokenOutAddress).to.equal(dtAddress)
       expect(await dtContract.methods.balanceOf(user2).call()).to.equal(
-        args.dataTokenSwappedAmount
+        args.datatokenSwappedAmount
       )
       expect(
-        daiBalanceBefore.sub(new BN(args.baseTokenSwappedAmount)).toString()
+        daiBalanceBefore.sub(new BN(args.basetokenSwappedAmount)).toString()
       ).to.equal(await daiContract.methods.balanceOf(user2).call())
       // basetoken stays in the contract
       expect((await fixedRate.getExchange(exchangeId)).btBalance).to.equal('10')
@@ -292,11 +292,11 @@ describe('Fixed Rate unit test', () => {
       const args = tx.events.Swapped.returnValues
       expect(args.exchangeId).to.equal(exchangeId)
       expect(args.by).to.equal(user2)
-      expect(args.dataTokenSwappedAmount).to.equal(web3.utils.toWei('10'))
+      expect(args.datatokenSwappedAmount).to.equal(web3.utils.toWei('10'))
       expect(args.tokenOutAddress).to.equal(contracts.daiAddress)
       expect(await dtContract.methods.balanceOf(user2).call()).to.equal('0')
       expect(
-        daiBalanceBefore.add(new BN(args.baseTokenSwappedAmount)).toString()
+        daiBalanceBefore.add(new BN(args.basetokenSwappedAmount)).toString()
       ).to.equal(await daiContract.methods.balanceOf(user2).call())
       // DTs stay in the contract
       expect((await fixedRate.getExchange(exchangeId)).dtBalance).to.equal('10')
@@ -311,8 +311,8 @@ describe('Fixed Rate unit test', () => {
       expect(result.active).to.equal(true)
       expect(result.btDecimals).to.equal('18')
       expect(result.dtDecimals).to.equal('18')
-      expect(result.baseToken).to.equal(contracts.daiAddress)
-      expect(result.dataToken).to.equal(dtAddress)
+      expect(result.basetoken).to.equal(contracts.daiAddress)
+      expect(result.datatoken).to.equal(dtAddress)
       expect(result.exchangeOwner).to.equal(exchangeOwner)
       expect(result.withMint).to.equal(false)
       expect(result.dtBalance).to.equal('10') // balance in the fixedRate
@@ -449,11 +449,11 @@ describe('Fixed Rate unit test', () => {
 
       const freParams: FreCreationParams = {
         fixedRateAddress: contracts.fixedRateAddress,
-        baseTokenAddress: contracts.usdcAddress,
+        basetokenAddress: contracts.usdcAddress,
         owner: exchangeOwner,
         marketFeeCollector: user3,
-        baseTokenDecimals: 6,
-        dataTokenDecimals: 18,
+        basetokenDecimals: 6,
+        datatokenDecimals: 18,
         fixedRate: web3.utils.toWei('1'),
         marketFee: 1e15,
         allowedConsumer: ADDRESS_ZERO,
@@ -597,13 +597,13 @@ describe('Fixed Rate unit test', () => {
       const args = tx.events.Swapped.returnValues
       expect(args.exchangeId).to.equal(exchangeId)
       expect(args.by).to.equal(user2)
-      expect(args.dataTokenSwappedAmount).to.equal(web3.utils.toWei('10'))
+      expect(args.datatokenSwappedAmount).to.equal(web3.utils.toWei('10'))
       expect(args.tokenOutAddress).to.equal(dtAddress)
       expect(await dtContract.methods.balanceOf(user2).call()).to.equal(
-        args.dataTokenSwappedAmount
+        args.datatokenSwappedAmount
       )
       expect(
-        usdcBalanceBefore.sub(new BN(args.baseTokenSwappedAmount)).toString()
+        usdcBalanceBefore.sub(new BN(args.basetokenSwappedAmount)).toString()
       ).to.equal(await usdcContract.methods.balanceOf(user2).call())
       // basetoken stays in the contract
       expect((await fixedRate.getExchange(exchangeId)).btBalance).to.equal('10')
@@ -622,11 +622,11 @@ describe('Fixed Rate unit test', () => {
       const args = tx.events.Swapped.returnValues
       expect(args.exchangeId).to.equal(exchangeId)
       expect(args.by).to.equal(user2)
-      expect(args.dataTokenSwappedAmount).to.equal(web3.utils.toWei('10'))
+      expect(args.datatokenSwappedAmount).to.equal(web3.utils.toWei('10'))
       expect(args.tokenOutAddress).to.equal(contracts.usdcAddress)
       expect(await dtContract.methods.balanceOf(user2).call()).to.equal('0')
       expect(
-        usdcBalanceBefore.add(new BN(args.baseTokenSwappedAmount)).toString()
+        usdcBalanceBefore.add(new BN(args.basetokenSwappedAmount)).toString()
       ).to.equal(await usdcContract.methods.balanceOf(user2).call())
       // DTs stay in the contract
       expect((await fixedRate.getExchange(exchangeId)).dtBalance).to.equal('10')
@@ -641,8 +641,8 @@ describe('Fixed Rate unit test', () => {
       expect(result.active).to.equal(true)
       expect(result.btDecimals).to.equal('6')
       expect(result.dtDecimals).to.equal('18')
-      expect(result.baseToken).to.equal(contracts.usdcAddress)
-      expect(result.dataToken).to.equal(dtAddress)
+      expect(result.basetoken).to.equal(contracts.usdcAddress)
+      expect(result.datatoken).to.equal(dtAddress)
       expect(result.exchangeOwner).to.equal(exchangeOwner)
       expect(result.withMint).to.equal(false)
       expect(result.dtBalance).to.equal('10') // balance in the fixedRate

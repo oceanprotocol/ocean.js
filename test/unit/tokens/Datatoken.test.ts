@@ -160,11 +160,11 @@ describe('Datatoken', () => {
   it('#createFixedRate - should create FRE for the erc20 dt', async () => {
     const freParams: FreCreationParams = {
       fixedRateAddress: contractHandler.fixedRateAddress,
-      baseTokenAddress: contractHandler.daiAddress,
+      basetokenAddress: contractHandler.daiAddress,
       owner: nftOwner,
       marketFeeCollector: nftOwner,
-      baseTokenDecimals: 18,
-      dataTokenDecimals: 18,
+      basetokenDecimals: 18,
+      datatokenDecimals: 18,
       fixedRate: web3.utils.toWei('1'),
       marketFee: 1e15
     }
@@ -178,11 +178,11 @@ describe('Datatoken', () => {
     assert((await nftDatatoken.isErc20Deployer(nftAddress, user3)) === false)
     const freParams: FreCreationParams = {
       fixedRateAddress: contractHandler.fixedRateAddress,
-      baseTokenAddress: contractHandler.daiAddress,
+      basetokenAddress: contractHandler.daiAddress,
       owner: nftOwner,
       marketFeeCollector: nftOwner,
-      baseTokenDecimals: 18,
-      dataTokenDecimals: 18,
+      basetokenDecimals: 18,
+      datatokenDecimals: 18,
       fixedRate: web3.utils.toWei('1'),
       marketFee: 1e15
     }

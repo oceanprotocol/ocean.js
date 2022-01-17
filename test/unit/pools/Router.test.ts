@@ -122,7 +122,7 @@ describe('Router unit test', () => {
     expect(await router.isFixedPrice(contracts.daiAddress)).to.equal(true)
   })
 
-  it('#getOPFFee - should return actual OPF fee for a given baseToken', async () => {
+  it('#getOPFFee - should return actual OPF fee for a given basetoken', async () => {
     const opfFee = 1e15
     expect(await router.getOPFFee(contracts.oceanAddress)).to.equal('0')
     expect(await router.getOPFFee(contracts.daiAddress)).to.equal(opfFee.toString())

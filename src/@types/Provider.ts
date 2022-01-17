@@ -9,7 +9,7 @@ export interface ProviderFees {
 }
 
 export interface ProviderInitialize {
-  dataToken: string
+  datatoken: string
   nonce: string
   computeAddress: string
   providerFee: ProviderFees

@@ -1,10 +1,10 @@
 export interface FreCreationParams {
   fixedRateAddress: string
-  baseTokenAddress: string
+  basetokenAddress: string
   owner: string
   marketFeeCollector: string
-  baseTokenDecimals: number
-  dataTokenDecimals: number
+  basetokenDecimals: number
+  datatokenDecimals: number
   fixedRate: string
   marketFee: number
   withMint?: boolean // add FixedPriced contract as minter if withMint == true
@@ -14,7 +14,7 @@ export interface FreCreationParams {
 export interface FreOrderParams {
   exchangeContract: string
   exchangeId: string
-  maxBaseTokenAmount: string
+  maxBasetokenAmount: string
   swapMarketFee: string
   marketFeeAddress: string
 }

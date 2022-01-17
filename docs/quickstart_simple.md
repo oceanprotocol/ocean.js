@@ -8,7 +8,7 @@ Here are the the steps:
 2. Create a new node.js project
 3. Install dependencies
 4. Create a config file and update contract addresses
-5. Publish a new data token 
+5. Publish a new datatoken
 6. Mint 100 tokens
 7. Transfer tokens between users.
 8. Host a dataset
@@ -24,9 +24,10 @@ git clone https://github.com/oceanprotocol/barge.git
 cd barge/
 ./start_ocean.sh --with-provider2 --no-dashboard
 ```
+
 ## 2. Create a new node.js project
 
-Start by creating a new Node.js project. Open a new terminal and enter the following commands: 
+Start by creating a new Node.js project. Open a new terminal and enter the following commands:
 
 ```bash
 mkdir ocean-quickstart
@@ -39,7 +40,7 @@ cat > index.js
 
 ## 3. Install dependencies
 
-Open the package.json file in a text editor and update the dependencies to include the following: 
+Open the package.json file in a text editor and update the dependencies to include the following:
 
 ```JSON
   "dependencies": {
@@ -49,7 +50,7 @@ Open the package.json file in a text editor and update the dependencies to inclu
   }
 ```
 
-Now in your terminal run the following command: 
+Now in your terminal run the following command:
 
 ```bash
 npm install
@@ -57,7 +58,7 @@ npm install
 
 ## 4. Create a config file and update contract addresses
 
-Create a new config.js file: 
+Create a new config.js file:
 
 ```bash
 cat > config.js
@@ -105,9 +106,10 @@ Now check what your contract addresses are locally. In your terminal run:
 cat ~/.ocean/ocean-contracts/artifacts/address.json
 ```
 
-Next, update the contract addresses in your config.js file. Replace each of the place holders with the actual addresses that were outputted into your terminal. 
+Next, update the contract addresses in your config.js file. Replace each of the place holders with the actual addresses that were outputted into your terminal.
 
-## 5. Publish a new data token 
+## 5. Publish a new datatoken
+
 Now open the `index.js` file in your text editor. Enter the following code and save the file:
 
 ```Javascript
@@ -141,7 +143,7 @@ const init = async () => {
 init();
 ```
 
-Now in your terminal, run the following command: 
+Now in your terminal, run the following command:
 
 ```bash
 node index.js
@@ -151,7 +153,7 @@ Congratulations, you've created your first Ocean datatoken! 🌊🐋
 
 ## 6. Mint 100 tokens
 
-Next, we will edit the code in `index.js` to mint 100 datatokens. These 100 data tokens are minted and sent to Alice's Address. 
+Next, we will edit the code in `index.js` to mint 100 datatokens. These 100 datatokens are minted and sent to Alice's Address.
 
 At the end of the `init() { ... }` function (after `console.log('Deployed datatoken address: ${tokenAddress}')`) add the following line of code:
 
@@ -167,7 +169,7 @@ Now run the `index.js` file again:
 node index.js
 ```
 
-You should now see in the console output that Alice has a token balance of 100. 
+You should now see in the console output that Alice has a token balance of 100.
 
 ## 7. Transfer tokens between users.
 
@@ -265,6 +267,6 @@ Now save and run the `index.js` file:
 node index.js
 ```
 
-In the terminal output you should now see the Data ID (did) outputed.  
+In the terminal output you should now see the Data ID (did) outputed.
 
-Congratulations, you have published your first dataset! 🌊🐠🐡 Now you are ready for the [marketplace flow](docs/quickstart_marketplace.md). 
+Congratulations, you have published your first dataset! 🌊🐠🐡 Now you are ready for the [marketplace flow](docs/quickstart_marketplace.md).

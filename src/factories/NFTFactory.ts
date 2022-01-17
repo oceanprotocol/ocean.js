@@ -56,7 +56,7 @@ export class NftFactory {
   public factory721: Contract
 
   /**
-   * Instantiate DataTokens.
+   * Instantiate Datatokens.
    * @param {String} factory721Address
    * @param {AbiItem | AbiItem[]} factory721ABI
    * @param {Web3} web3

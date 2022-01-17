@@ -517,10 +517,10 @@ export class Router {
   }
 
   /** Get OPF Fee per token
-   * @return {Promise<number>} OPF fee for a specific baseToken
+   * @return {Promise<number>} OPF fee for a specific basetoken
    */
-  public async getOPFFee(baseToken: string): Promise<number> {
-    return await this.router.methods.getOPFFee(baseToken).call()
+  public async getOPFFee(basetoken: string): Promise<number> {
+    return await this.router.methods.getOPFFee(basetoken).call()
   }
 
   /** Get Current OPF Fee

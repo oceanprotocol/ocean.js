@@ -197,11 +197,11 @@ describe('Publish tests', async () => {
 
     const fixedPriceParams: FreCreationParams = {
       fixedRateAddress: addresses.FixedPrice,
-      baseTokenAddress: addresses.MockDAI,
+      basetokenAddress: addresses.MockDAI,
       owner: accounts[0],
       marketFeeCollector: accounts[0],
-      baseTokenDecimals: 18,
-      dataTokenDecimals: 18,
+      basetokenDecimals: 18,
+      datatokenDecimals: 18,
       fixedRate: '1',
       marketFee: 1e15,
       allowedConsumer: accounts[0],

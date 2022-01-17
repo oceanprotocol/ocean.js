@@ -193,14 +193,14 @@ export class Datatoken {
         .createFixedRate(
           fixedRateParams.fixedRateAddress,
           [
-            fixedRateParams.baseTokenAddress,
+            fixedRateParams.basetokenAddress,
             address,
             fixedRateParams.marketFeeCollector,
             fixedRateParams.allowedConsumer
           ],
           [
-            fixedRateParams.baseTokenDecimals,
-            fixedRateParams.dataTokenDecimals,
+            fixedRateParams.basetokenDecimals,
+            fixedRateParams.datatokenDecimals,
             fixedRateParams.fixedRate,
             fixedRateParams.marketFee,
             withMint
@@ -250,14 +250,14 @@ export class Datatoken {
       .createFixedRate(
         fixedRateParams.fixedRateAddress,
         [
-          fixedRateParams.baseTokenAddress,
+          fixedRateParams.basetokenAddress,
           fixedRateParams.owner,
           fixedRateParams.marketFeeCollector,
           fixedRateParams.allowedConsumer
         ],
         [
-          fixedRateParams.baseTokenDecimals,
-          fixedRateParams.dataTokenDecimals,
+          fixedRateParams.basetokenDecimals,
+          fixedRateParams.datatokenDecimals,
           fixedRateParams.fixedRate,
           fixedRateParams.marketFee,
           withMint
@@ -1268,8 +1268,8 @@ export class Datatoken {
    * @param {String} address user adress
    * @return {Promise<String>} balance  Number of datatokens. Will be converted from wei
    */
-  public async balance(dataTokenAddress: string, address: string): Promise<string> {
-    const dtContract = new this.web3.eth.Contract(this.datatokensAbi, dataTokenAddress, {
+  public async balance(datatokenAddress: string, address: string): Promise<string> {
+    const dtContract = new this.web3.eth.Contract(this.datatokensAbi, datatokenAddress, {
       from: address
     })
     const balance = await dtContract.methods.balanceOf(address).call()

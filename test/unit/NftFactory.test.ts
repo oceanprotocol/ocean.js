@@ -268,11 +268,11 @@ describe('Nft Factory test', () => {
 
     const freParams: FreCreationParams = {
       fixedRateAddress: contracts.fixedRateAddress,
-      baseTokenAddress: contracts.daiAddress,
+      basetokenAddress: contracts.daiAddress,
       owner: contracts.accounts[0],
       marketFeeCollector: contracts.accounts[0],
-      baseTokenDecimals: 18,
-      dataTokenDecimals: 18,
+      basetokenDecimals: 18,
+      datatokenDecimals: 18,
       fixedRate: '1',
       marketFee: 1e15,
       allowedConsumer: contracts.accounts[0],

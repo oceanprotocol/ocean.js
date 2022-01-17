@@ -317,7 +317,7 @@ export class Pool {
     const pool = new this.web3.eth.Contract(this.poolAbi, poolAddress)
     let result = null
     try {
-      result = await pool.methods.getBaseTokenAddress().call()
+      result = await pool.methods.getBasetokenAddress().call()
     } catch (e) {
       this.logger.error(`ERROR: Failed to get basetoken address: ${e.message}`)
     }
@@ -333,7 +333,7 @@ export class Pool {
     const pool = new this.web3.eth.Contract(this.poolAbi, poolAddress)
     let result = null
     try {
-      result = await pool.methods.getDataTokenAddress().call()
+      result = await pool.methods.getDatatokenAddress().call()
     } catch (e) {
       this.logger.error(`ERROR: Failed to get datatoken address: ${e.message}`)
     }

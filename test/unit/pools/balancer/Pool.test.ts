@@ -227,7 +227,7 @@ describe('Pool unit test', () => {
     })
 
     it('#getReserve - should return final pool tokens', async () => {
-      expect(await pool.getReserve(poolAddress, contracts.daiAddress)).to.equal('2000') // base token initial liquidity
+      expect(await pool.getReserve(poolAddress, contracts.daiAddress)).to.equal('2000') // basetoken initial liquidity
       // rate is 1 so we have the same amount of DTs
       expect(await pool.getReserve(poolAddress, erc20Token)).to.equal('2000')
     })
@@ -771,7 +771,7 @@ describe('Pool unit test', () => {
     })
 
     it('#getReserve - should return final pool tokens Reserve', async () => {
-      expect(await pool.getReserve(poolAddress, contracts.usdcAddress)).to.equal('2000') // base token initial liquidity
+      expect(await pool.getReserve(poolAddress, contracts.usdcAddress)).to.equal('2000') // basetoken initial liquidity
       // rate is 1 so we have the same amount of DTs
       expect(await pool.getReserve(poolAddress, erc20Token)).to.equal('2000')
     })
