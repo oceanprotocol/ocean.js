@@ -279,6 +279,10 @@ describe('Simple compute tests', async () => {
       providerAlgoFees
     )
     assert(txidAlgo, 'Failed to order algo')
+
+    const providerValidUntil = new Date()
+    providerValidUntil.setHours(providerValidUntil.getHours() + 1)
+
     // initialize provider orders for asset
     const initializeData = await ProviderInstance.initialize(
       resolvedDDOAsset.id,
@@ -288,7 +292,8 @@ describe('Simple compute tests', async () => {
       providerUrl,
       crossFetchGeneric,
       null,
-      'env1'
+      'env1',
+      providerValidUntil.toString()
     )
     const providerDatasetFees: ProviderFees = {
       providerFeeAddress: initializeData.providerFee.providerFeeAddress,

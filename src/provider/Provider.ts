@@ -231,7 +231,8 @@ export class Provider {
     providerUri: string,
     getMethod: any,
     userCustomParameters?: UserCustomParameters,
-    computeEnv?: string
+    computeEnv?: string,
+    validUntil?: string
   ): Promise<ProviderInitialize> {
     const providerEndpoints = await this.getEndpoints(providerUri)
     const serviceEndpoints = await this.getServiceEndpoints(
@@ -250,6 +251,7 @@ export class Provider {
     if (userCustomParameters)
       initializeUrl += '&userdata=' + encodeURI(JSON.stringify(userCustomParameters))
     if (computeEnv) initializeUrl += '&computeEnv=' + encodeURI(computeEnv)
+    if (validUntil) initializeUrl += '&validUntil=' + validUntil
     try {
       const response = await getMethod('GET', initializeUrl)
       const results: ProviderInitialize = await response.json()
