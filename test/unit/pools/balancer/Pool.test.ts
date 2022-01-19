@@ -155,7 +155,7 @@ describe('Pool unit test', () => {
         baseTokenDecimals: 18,
         vestingAmount: '10000',
         vestedBlocks: 2500000,
-        initialBasetokenLiquidity: '2000',
+        initialBaseTokenLiquidity: '2000',
         swapFeeLiquidityProvider: 1e15,
         swapFeeMarketRunner: 1e15
       }
@@ -254,8 +254,8 @@ describe('Pool unit test', () => {
       expect(await pool.getDenormalizedWeight(poolAddress, erc20Token)).to.equal('5')
     })
 
-    it('#getBasetoken - should return the baseToken address', async () => {
-      expect(await pool.getBasetoken(poolAddress)).to.equal(contracts.daiAddress)
+    it('#getBaseToken - should return the baseToken address', async () => {
+      expect(await pool.getBaseToken(poolAddress)).to.equal(contracts.daiAddress)
     })
 
     it('#getDatatoken - should return the datatoken address', async () => {
@@ -626,7 +626,7 @@ describe('Pool unit test', () => {
         baseTokenDecimals: await usdcContract.methods.decimals().call(),
         vestingAmount: '10000',
         vestedBlocks: 2500000,
-        initialBasetokenLiquidity: web3.utils.fromWei(
+        initialBaseTokenLiquidity: web3.utils.fromWei(
           await pool.amountToUnits(contracts.usdcAddress, '2000')
         ),
         swapFeeLiquidityProvider: 1e15,
@@ -798,8 +798,8 @@ describe('Pool unit test', () => {
       expect(await pool.getDenormalizedWeight(poolAddress, erc20Token)).to.equal('5')
     })
 
-    it('#getBasetoken - should return the baseToken address', async () => {
-      expect(await pool.getBasetoken(poolAddress)).to.equal(contracts.usdcAddress)
+    it('#getBaseToken - should return the baseToken address', async () => {
+      expect(await pool.getBaseToken(poolAddress)).to.equal(contracts.usdcAddress)
     })
 
     it('#getDatatoken - should return the datatoken address', async () => {

@@ -313,11 +313,11 @@ export class Pool {
    * @param {String} poolAddress
    * @return {String}
    */
-  async getBasetoken(poolAddress: string): Promise<string> {
+  async getBaseToken(poolAddress: string): Promise<string> {
     const pool = new this.web3.eth.Contract(this.poolAbi, poolAddress)
     let result = null
     try {
-      result = await pool.methods.getBasetokenAddress().call()
+      result = await pool.methods.getBaseTokenAddress().call()
     } catch (e) {
       this.logger.error(`ERROR: Failed to get baseToken address: ${e.message}`)
     }

@@ -437,7 +437,7 @@ describe('Datatoken', () => {
     const fre: FreOrderParams = {
       exchangeContract: fixedRateAddress,
       exchangeId: exchangeId,
-      maxBasetokenAmount: '1',
+      maxBaseTokenAmount: '1',
       swapMarketFee: web3.utils.toWei('0.1'),
       marketFeeAddress: '0x0000000000000000000000000000000000000000'
     }

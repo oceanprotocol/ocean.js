@@ -9,7 +9,7 @@ export interface PoolCreationParams {
   baseTokenDecimals: number
   vestingAmount: string
   vestedBlocks: number
-  initialBasetokenLiquidity: string
+  initialBaseTokenLiquidity: string
   swapFeeLiquidityProvider: number
   swapFeeMarketRunner: number
 }

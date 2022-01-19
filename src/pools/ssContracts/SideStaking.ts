@@ -123,7 +123,7 @@ export class SideStaking {
    * @param {String} datatokenAddress datatokenAddress
    * @return {String}
    */
-  async getBasetoken(ssAddress: string, datatokenAddress: string): Promise<string> {
+  async getBaseToken(ssAddress: string, datatokenAddress: string): Promise<string> {
     const sideStaking = new this.web3.eth.Contract(this.ssAbi, ssAddress)
     let result = null
     try {
@@ -157,7 +157,7 @@ export class SideStaking {
    * @param {String} datatokenAddress datatokenAddress
    * @return {String}
    */
-  async getBasetokenBalance(
+  async getBaseTokenBalance(
     ssAddress: string,
     datatokenAddress: string
   ): Promise<string> {

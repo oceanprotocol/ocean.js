@@ -168,7 +168,7 @@ describe('SideStaking unit test', () => {
         baseTokenDecimals: 18,
         vestingAmount: '10000',
         vestedBlocks: vestedBlocks,
-        initialBasetokenLiquidity: '2000',
+        initialBaseTokenLiquidity: '2000',
         swapFeeLiquidityProvider: 1e15,
         swapFeeMarketRunner: 1e15
       }
@@ -212,8 +212,8 @@ describe('SideStaking unit test', () => {
         )
       ).to.equal(web3.utils.toWei('2000'))
     })
-    it('#getBasetoken - should get baseToken address', async () => {
-      expect(await sideStaking.getBasetoken(sideStakingAddress, erc20Token)).to.equal(
+    it('#getBaseToken - should get baseToken address', async () => {
+      expect(await sideStaking.getBaseToken(sideStakingAddress, erc20Token)).to.equal(
         contracts.daiAddress
       )
     })
@@ -227,9 +227,9 @@ describe('SideStaking unit test', () => {
         await sideStaking.getPublisherAddress(sideStakingAddress, erc20Token)
       ).to.equal(contracts.accounts[0])
     })
-    it('#getBasetokenBalance ', async () => {
+    it('#getBaseTokenBalance ', async () => {
       expect(
-        await sideStaking.getBasetokenBalance(sideStakingAddress, erc20Token)
+        await sideStaking.getBaseTokenBalance(sideStakingAddress, erc20Token)
       ).to.equal('0')
     })
     it('#getDatatokenBalance ', async () => {
@@ -464,7 +464,7 @@ describe('SideStaking unit test', () => {
         baseTokenDecimals: await usdcContract.methods.decimals().call(),
         vestingAmount: '10000',
         vestedBlocks: 2500000,
-        initialBasetokenLiquidity: web3.utils.fromWei(
+        initialBaseTokenLiquidity: web3.utils.fromWei(
           await pool.amountToUnits(contracts.usdcAddress, '2000')
         ),
         swapFeeLiquidityProvider: 1e15,
@@ -487,9 +487,9 @@ describe('SideStaking unit test', () => {
       expect(await erc20Contract.methods.balanceOf(user2).call()).to.equal('0')
     })
 
-    it('#getBasetokenBalance ', async () => {
+    it('#getBaseTokenBalance ', async () => {
       expect(
-        await sideStaking.getBasetokenBalance(sideStakingAddress, erc20Token)
+        await sideStaking.getBaseTokenBalance(sideStakingAddress, erc20Token)
       ).to.equal('0')
     })
     it('#getDatatokenBalance ', async () => {
