@@ -202,7 +202,7 @@ describe('SideStaking unit test', () => {
           contracts.sideStakingAddress,
           erc20Token
         )
-      ).to.equal(web3.utils.toWei('12000'))
+      ).to.equal(web3.utils.toWei('2000'))
     })
     it('#getDatatokenCurrentCirculatingSupply - should get datatoken supply in circulation ', async () => {
       expect(
@@ -235,7 +235,7 @@ describe('SideStaking unit test', () => {
     it('#getDatatokenBalance ', async () => {
       expect(
         await sideStaking.getDatatokenBalance(sideStakingAddress, erc20Token)
-      ).to.equal('988000')
+      ).to.equal('997999.9999999999')
     })
 
     it('#getvestingAmount ', async () => {
@@ -495,7 +495,7 @@ describe('SideStaking unit test', () => {
     it('#getDatatokenBalance ', async () => {
       expect(
         await sideStaking.getDatatokenBalance(sideStakingAddress, erc20Token)
-      ).to.equal('988000')
+      ).to.equal('997999.9999999999')
     })
 
     it('#getvestingAmount ', async () => {

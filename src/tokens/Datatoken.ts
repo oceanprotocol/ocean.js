@@ -847,13 +847,7 @@ export class Datatoken {
     address: string,
     consumer: string,
     serviceIndex: number,
-    providerFeeAddress: string,
-    providerFeeToken: string,
-    providerFeeAmount: string,
-    v: string,
-    r: string,
-    s: string,
-    providerDatas: string,
+    providerFees: ProviderFees,
     contractInstance?: Contract
   ): Promise<any> {
     const dtContract =
@@ -864,17 +858,7 @@ export class Datatoken {
     let estGas
     try {
       estGas = await dtContract.methods
-        .startOrder(
-          consumer,
-          serviceIndex,
-          providerFeeAddress,
-          providerFeeToken,
-          providerFeeAmount,
-          v,
-          r,
-          s,
-          providerDatas
-        )
+        .startOrder(consumer, serviceIndex, providerFees)
         .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
     } catch (e) {
       estGas = gasLimitDefault
@@ -901,17 +885,9 @@ export class Datatoken {
     address: string,
     consumer: string,
     serviceIndex: number,
-    providerFeeAddress: string,
-    providerFeeToken: string,
-    providerFeeAmount: string,
-    v: string,
-    r: string,
-    s: string,
-    providerDatas: string
+    providerFees: ProviderFees
   ): Promise<TransactionReceipt> {
     const dtContract = new this.web3.eth.Contract(this.datatokensAbi, dtAddress)
-    if (!providerFeeAddress)
-      providerFeeAddress = '0x0000000000000000000000000000000000000000'
 
     try {
       const estGas = await this.estGasStartOrder(
@@ -919,28 +895,12 @@ export class Datatoken {
         address,
         consumer,
         serviceIndex,
-        providerFeeAddress,
-        providerFeeToken,
-        providerFeeAmount,
-        v,
-        r,
-        s,
-        providerDatas,
+        providerFees,
         dtContract
       )
 
       const trxReceipt = await dtContract.methods
-        .startOrder(
-          consumer,
-          serviceIndex,
-          providerFeeAddress,
-          providerFeeToken,
-          providerFeeAmount,
-          v,
-          r,
-          s,
-          providerDatas
-        )
+        .startOrder(consumer, serviceIndex, providerFees)
         .send({
           from: address,
           gas: estGas + 1,

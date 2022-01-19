@@ -377,15 +377,16 @@ describe('Nft Factory test', () => {
     expect(await dtContract2.methods.balanceOf(user2).call()).to.equal(dtAmount)
 
     const providerData = JSON.stringify({ timeout: 0 })
+    const providerValidUntil = '0'
     const message = web3.utils.soliditySha3(
       { t: 'bytes', v: web3.utils.toHex(web3.utils.asciiToHex(providerData)) },
       { t: 'address', v: consumeFeeAddress },
       { t: 'address', v: consumeFeeToken },
-      { t: 'uint256', v: web3.utils.toWei(consumeFeeAmount) }
+      { t: 'uint256', v: web3.utils.toWei(consumeFeeAmount) },
+      { t: 'uint256', v: providerValidUntil }
     )
 
     const { v, r, s } = await signHash(web3, message, consumeFeeAddress)
-    const providerValidUntil = '0'
     const providerFees: ProviderFees = {
       providerFeeAddress: consumeFeeAddress,
       providerFeeToken: consumeFeeToken,
@@ -410,11 +411,11 @@ describe('Nft Factory test', () => {
         _providerFees: providerFees
       }
     ]
-    // console.log('orders', orders)
-    // await nftFactory.startMultipleTokenOrder(user2, orders)
-    // // we check user2 has no more DTs
-    // expect(await dtContract.methods.balanceOf(user2).call()).to.equal('0')
-    // expect(await dtContract2.methods.balanceOf(user2).call()).to.equal('0')
+    console.log('orders', orders)
+    await nftFactory.startMultipleTokenOrder(user2, orders)
+    // we check user2 has no more DTs
+    expect(await dtContract.methods.balanceOf(user2).call()).to.equal('0')
+    expect(await dtContract2.methods.balanceOf(user2).call()).to.equal('0')
   })
 
   it('#checkDatatoken - should confirm if DT is from the factory', async () => {
