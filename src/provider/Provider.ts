@@ -254,7 +254,6 @@ export class Provider {
     if (validUntil) initializeUrl += '&validUntil=' + validUntil
     try {
       const response = await getMethod('GET', initializeUrl)
-      console.log('initialize response', response)
       const results: ProviderInitialize = await response.json()
       return results
     } catch (e) {

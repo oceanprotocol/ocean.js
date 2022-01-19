@@ -413,7 +413,6 @@ describe('Datatoken', () => {
       serviceIndex: 1,
       _providerFees: providerFees
     }
-    console.log('order', order)
     const buyFromDispenseTx = await datatoken.buyFromDispenserAndOrder(
       datatokenAddress,
       nftOwner,
