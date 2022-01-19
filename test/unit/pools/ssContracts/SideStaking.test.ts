@@ -159,13 +159,13 @@ describe('SideStaking unit test', () => {
 
       const poolParams: PoolCreationParams = {
         ssContract: contracts.sideStakingAddress,
-        basetokenAddress: contracts.daiAddress,
-        basetokenSender: contracts.factory721Address,
+        baseTokenAddress: contracts.daiAddress,
+        baseTokenSender: contracts.factory721Address,
         publisherAddress: contracts.accounts[0],
         marketFeeCollector: contracts.accounts[0],
         poolTemplateAddress: contracts.poolTemplateAddress,
         rate: '1',
-        basetokenDecimals: 18,
+        baseTokenDecimals: 18,
         vestingAmount: '10000',
         vestedBlocks: vestedBlocks,
         initialBasetokenLiquidity: '2000',
@@ -212,7 +212,7 @@ describe('SideStaking unit test', () => {
         )
       ).to.equal(web3.utils.toWei('2000'))
     })
-    it('#getBasetoken - should get basetoken address', async () => {
+    it('#getBasetoken - should get baseToken address', async () => {
       expect(await sideStaking.getBasetoken(sideStakingAddress, erc20Token)).to.equal(
         contracts.daiAddress
       )
@@ -455,13 +455,13 @@ describe('SideStaking unit test', () => {
 
       const poolParams: PoolCreationParams = {
         ssContract: contracts.sideStakingAddress,
-        basetokenAddress: contracts.usdcAddress,
-        basetokenSender: contracts.factory721Address,
+        baseTokenAddress: contracts.usdcAddress,
+        baseTokenSender: contracts.factory721Address,
         publisherAddress: contracts.accounts[0],
         marketFeeCollector: contracts.accounts[0],
         poolTemplateAddress: contracts.poolTemplateAddress,
         rate: '1',
-        basetokenDecimals: await usdcContract.methods.decimals().call(),
+        baseTokenDecimals: await usdcContract.methods.decimals().call(),
         vestingAmount: '10000',
         vestedBlocks: 2500000,
         initialBasetokenLiquidity: web3.utils.fromWei(

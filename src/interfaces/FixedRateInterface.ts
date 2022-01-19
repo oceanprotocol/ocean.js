@@ -1,9 +1,9 @@
 export interface FreCreationParams {
   fixedRateAddress: string
-  basetokenAddress: string
+  baseTokenAddress: string
   owner: string
   marketFeeCollector: string
-  basetokenDecimals: number
+  baseTokenDecimals: number
   datatokenDecimals: number
   fixedRate: string
   marketFee: number

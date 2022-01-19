@@ -106,13 +106,13 @@ describe('Publish tests', async () => {
     }
     const poolParams: PoolCreationParams = {
       ssContract: addresses.Staking,
-      basetokenAddress: addresses.MockDAI,
-      basetokenSender: addresses.ERC721Factory,
+      baseTokenAddress: addresses.MockDAI,
+      baseTokenSender: addresses.ERC721Factory,
       publisherAddress: accounts[0],
       marketFeeCollector: accounts[0],
       poolTemplateAddress: addresses.poolTemplate,
       rate: '1',
-      basetokenDecimals: 18,
+      baseTokenDecimals: 18,
       vestingAmount: '10000',
       vestedBlocks: 2500000,
       initialBasetokenLiquidity: '2000',
@@ -197,10 +197,10 @@ describe('Publish tests', async () => {
 
     const fixedPriceParams: FreCreationParams = {
       fixedRateAddress: addresses.FixedPrice,
-      basetokenAddress: addresses.MockDAI,
+      baseTokenAddress: addresses.MockDAI,
       owner: accounts[0],
       marketFeeCollector: accounts[0],
-      basetokenDecimals: 18,
+      baseTokenDecimals: 18,
       datatokenDecimals: 18,
       fixedRate: '1',
       marketFee: 1e15,

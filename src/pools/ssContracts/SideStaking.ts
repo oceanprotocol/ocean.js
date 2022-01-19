@@ -152,7 +152,7 @@ export class SideStaking {
   }
 
   /**
-   * Get basetoken balance in the contract
+   * Get baseToken balance in the contract
    * @param {String} ssAddress side staking contract address
    * @param {String} datatokenAddress datatokenAddress
    * @return {String}

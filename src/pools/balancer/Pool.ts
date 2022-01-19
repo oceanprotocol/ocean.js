@@ -309,7 +309,7 @@ export class Pool {
   }
 
   /**
-   * Get basetoken address of this pool
+   * Get baseToken address of this pool
    * @param {String} poolAddress
    * @return {String}
    */
@@ -319,7 +319,7 @@ export class Pool {
     try {
       result = await pool.methods.getBasetokenAddress().call()
     } catch (e) {
-      this.logger.error(`ERROR: Failed to get basetoken address: ${e.message}`)
+      this.logger.error(`ERROR: Failed to get baseToken address: ${e.message}`)
     }
     return result
   }

@@ -122,7 +122,7 @@ describe('Router unit test', () => {
     expect(await router.isFixedPrice(contracts.daiAddress)).to.equal(true)
   })
 
-  it('#getOPFFee - should return actual OPF fee for a given basetoken', async () => {
+  it('#getOPFFee - should return actual OPF fee for a given baseToken', async () => {
     const opfFee = 1e15
     expect(await router.getOPFFee(contracts.oceanAddress)).to.equal('0')
     expect(await router.getOPFFee(contracts.daiAddress)).to.equal(opfFee.toString())
@@ -192,13 +192,13 @@ describe('Router unit test', () => {
 
     const poolParams: PoolCreationParams = {
       ssContract: contracts.sideStakingAddress,
-      basetokenAddress: contracts.daiAddress,
-      basetokenSender: contracts.factory721Address,
+      baseTokenAddress: contracts.daiAddress,
+      baseTokenSender: contracts.factory721Address,
       publisherAddress: contracts.accounts[0],
       marketFeeCollector: contracts.accounts[0],
       poolTemplateAddress: contracts.poolTemplateAddress,
       rate: '1',
-      basetokenDecimals: 18,
+      baseTokenDecimals: 18,
       vestingAmount: '10000',
       vestedBlocks: 2500000,
       initialBasetokenLiquidity: '2000',
@@ -245,13 +245,13 @@ describe('Router unit test', () => {
 
     const poolParams2: PoolCreationParams = {
       ssContract: contracts.sideStakingAddress,
-      basetokenAddress: contracts.daiAddress,
-      basetokenSender: contracts.factory721Address,
+      baseTokenAddress: contracts.daiAddress,
+      baseTokenSender: contracts.factory721Address,
       publisherAddress: contracts.accounts[0],
       marketFeeCollector: contracts.accounts[0],
       poolTemplateAddress: contracts.poolTemplateAddress,
       rate: '1',
-      basetokenDecimals: 18,
+      baseTokenDecimals: 18,
       vestingAmount: '10000',
       vestedBlocks: 2500000,
       initialBasetokenLiquidity: '2000',

@@ -193,13 +193,13 @@ export class Datatoken {
         .createFixedRate(
           fixedRateParams.fixedRateAddress,
           [
-            fixedRateParams.basetokenAddress,
+            fixedRateParams.baseTokenAddress,
             address,
             fixedRateParams.marketFeeCollector,
             fixedRateParams.allowedConsumer
           ],
           [
-            fixedRateParams.basetokenDecimals,
+            fixedRateParams.baseTokenDecimals,
             fixedRateParams.datatokenDecimals,
             fixedRateParams.fixedRate,
             fixedRateParams.marketFee,
@@ -250,13 +250,13 @@ export class Datatoken {
       .createFixedRate(
         fixedRateParams.fixedRateAddress,
         [
-          fixedRateParams.basetokenAddress,
+          fixedRateParams.baseTokenAddress,
           fixedRateParams.owner,
           fixedRateParams.marketFeeCollector,
           fixedRateParams.allowedConsumer
         ],
         [
-          fixedRateParams.basetokenDecimals,
+          fixedRateParams.baseTokenDecimals,
           fixedRateParams.datatokenDecimals,
           fixedRateParams.fixedRate,
           fixedRateParams.marketFee,

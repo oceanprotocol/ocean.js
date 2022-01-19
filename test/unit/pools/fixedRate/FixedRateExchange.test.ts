@@ -121,10 +121,10 @@ describe('Fixed Rate unit test', () => {
 
       const freParams: FreCreationParams = {
         fixedRateAddress: contracts.fixedRateAddress,
-        basetokenAddress: contracts.daiAddress,
+        baseTokenAddress: contracts.daiAddress,
         owner: exchangeOwner,
         marketFeeCollector: user3,
-        basetokenDecimals: 18,
+        baseTokenDecimals: 18,
         datatokenDecimals: 18,
         fixedRate: web3.utils.toWei('1'),
         marketFee: 1e15,
@@ -227,7 +227,7 @@ describe('Fixed Rate unit test', () => {
       expect(await fixedRate.getDTSupply(exchangeId)).to.equal('0')
     })
     it('#getBTSupply - should get the bt supply in the exchange', async () => {
-      // no basetoken at the beginning
+      // no baseToken at the beginning
       expect(await fixedRate.getBTSupply(exchangeId)).to.equal('0')
     })
     it('#getAmountBTIn - should get bt amount in for a specific dt amount', async () => {
@@ -273,9 +273,9 @@ describe('Fixed Rate unit test', () => {
         args.datatokenSwappedAmount
       )
       expect(
-        daiBalanceBefore.sub(new BN(args.basetokenSwappedAmount)).toString()
+        daiBalanceBefore.sub(new BN(args.baseTokenSwappedAmount)).toString()
       ).to.equal(await daiContract.methods.balanceOf(user2).call())
-      // basetoken stays in the contract
+      // baseToken stays in the contract
       expect((await fixedRate.getExchange(exchangeId)).btBalance).to.equal('10')
       // no dt in the contract
       expect((await fixedRate.getExchange(exchangeId)).dtBalance).to.equal('0')
@@ -296,7 +296,7 @@ describe('Fixed Rate unit test', () => {
       expect(args.tokenOutAddress).to.equal(contracts.daiAddress)
       expect(await dtContract.methods.balanceOf(user2).call()).to.equal('0')
       expect(
-        daiBalanceBefore.add(new BN(args.basetokenSwappedAmount)).toString()
+        daiBalanceBefore.add(new BN(args.baseTokenSwappedAmount)).toString()
       ).to.equal(await daiContract.methods.balanceOf(user2).call())
       // DTs stay in the contract
       expect((await fixedRate.getExchange(exchangeId)).dtBalance).to.equal('10')
@@ -311,24 +311,24 @@ describe('Fixed Rate unit test', () => {
       expect(result.active).to.equal(true)
       expect(result.btDecimals).to.equal('18')
       expect(result.dtDecimals).to.equal('18')
-      expect(result.basetoken).to.equal(contracts.daiAddress)
+      expect(result.baseToken).to.equal(contracts.daiAddress)
       expect(result.datatoken).to.equal(dtAddress)
       expect(result.exchangeOwner).to.equal(exchangeOwner)
       expect(result.withMint).to.equal(false)
       expect(result.dtBalance).to.equal('10') // balance in the fixedRate
       expect(result.btBalance).to.equal('0') // balance in the fixedRate
       expect(result.dtSupply).to.equal('1000') // total supply available (owner allowance + dtBalance)
-      expect(result.btSupply).to.equal('0') // total supply available of basetoken in the contract
+      expect(result.btSupply).to.equal('0') // total supply available of baseToken in the contract
       expect(result.fixedRate).to.equal('1')
     })
 
     it('#getFeesInfo - should return exchange fee details', async () => {
       const result = await fixedRate.getFeesInfo(exchangeId)
       expect(result.marketFee).to.equal('0.001')
-      // we made 2 swaps for 10 DT at rate 1, the fee is 0.1% for market and always in basetoken so it's 0.01 DAI
-      // we made 2 swaps for 10 DT at rate 1, the fee is 0.1% for ocean community and always in basetoken so it's 0.01 DAI
-      expect(result.marketFeeAvailable).to.equal('0.02') // formatted for basetoken decimals
-      expect(result.oceanFeeAvailable).to.equal('0.02') // formatted for basetoken decimals
+      // we made 2 swaps for 10 DT at rate 1, the fee is 0.1% for market and always in baseToken so it's 0.01 DAI
+      // we made 2 swaps for 10 DT at rate 1, the fee is 0.1% for ocean community and always in baseToken so it's 0.01 DAI
+      expect(result.marketFeeAvailable).to.equal('0.02') // formatted for baseToken decimals
+      expect(result.oceanFeeAvailable).to.equal('0.02') // formatted for baseToken decimals
       expect(result.marketFeeCollector).to.equal(user3)
       expect(result.opfFee).to.equal('0.001')
     })
@@ -370,11 +370,11 @@ describe('Fixed Rate unit test', () => {
     })
     it('#collectMarketFee- should collect marketFee and send it to marketFeeCollector, anyone can call it', async () => {
       let result = await fixedRate.getFeesInfo(exchangeId)
-      // we made 2 swaps for 10 DT at rate 1, the fee is 0.1% for market and always in basetoken so it's 0.01 DAI
+      // we made 2 swaps for 10 DT at rate 1, the fee is 0.1% for market and always in baseToken so it's 0.01 DAI
       // plus another swap for 1 DT
-      expect(result.marketFeeAvailable).to.equal('0.021') // formatted for basetoken decimals
+      expect(result.marketFeeAvailable).to.equal('0.021') // formatted for baseToken decimals
       // same for ocean fee
-      expect(result.oceanFeeAvailable).to.equal('0.021') // formatted for basetoken decimals
+      expect(result.oceanFeeAvailable).to.equal('0.021') // formatted for baseToken decimals
       expect(result.marketFeeCollector).to.equal(user3)
 
       // user4 calls collectMarketFee
@@ -390,9 +390,9 @@ describe('Fixed Rate unit test', () => {
     })
     it('#collectOceanFee- should collect oceanFee and send it to OPF Collector, anyone can call it', async () => {
       let result = await fixedRate.getFeesInfo(exchangeId)
-      // we made 2 swaps for 10 DT at rate 1, the fee is 0.1% for market and always in basetoken so it's 0.01 DAI
+      // we made 2 swaps for 10 DT at rate 1, the fee is 0.1% for market and always in baseToken so it's 0.01 DAI
       // plus another swap for 1 DT
-      expect(result.oceanFeeAvailable).to.equal('0.021') // formatted for basetoken decimals
+      expect(result.oceanFeeAvailable).to.equal('0.021') // formatted for baseToken decimals
 
       // user4 calls collectOceanFee
       await fixedRate.collectOceanFee(user4, exchangeId)
@@ -449,10 +449,10 @@ describe('Fixed Rate unit test', () => {
 
       const freParams: FreCreationParams = {
         fixedRateAddress: contracts.fixedRateAddress,
-        basetokenAddress: contracts.usdcAddress,
+        baseTokenAddress: contracts.usdcAddress,
         owner: exchangeOwner,
         marketFeeCollector: user3,
-        basetokenDecimals: 6,
+        baseTokenDecimals: 6,
         datatokenDecimals: 18,
         fixedRate: web3.utils.toWei('1'),
         marketFee: 1e15,
@@ -559,7 +559,7 @@ describe('Fixed Rate unit test', () => {
       expect(await fixedRate.getDTSupply(exchangeId)).to.equal('0')
     })
     it('#getBTSupply - should get the bt supply in the exchange', async () => {
-      // no basetoken at the beginning
+      // no baseToken at the beginning
       expect(await fixedRate.getBTSupply(exchangeId)).to.equal('0')
     })
     it('#getAmountBTIn - should get bt amount in for a specific dt amount', async () => {
@@ -603,9 +603,9 @@ describe('Fixed Rate unit test', () => {
         args.datatokenSwappedAmount
       )
       expect(
-        usdcBalanceBefore.sub(new BN(args.basetokenSwappedAmount)).toString()
+        usdcBalanceBefore.sub(new BN(args.baseTokenSwappedAmount)).toString()
       ).to.equal(await usdcContract.methods.balanceOf(user2).call())
-      // basetoken stays in the contract
+      // baseToken stays in the contract
       expect((await fixedRate.getExchange(exchangeId)).btBalance).to.equal('10')
       // no dt in the contract
       expect((await fixedRate.getExchange(exchangeId)).dtBalance).to.equal('0')
@@ -626,7 +626,7 @@ describe('Fixed Rate unit test', () => {
       expect(args.tokenOutAddress).to.equal(contracts.usdcAddress)
       expect(await dtContract.methods.balanceOf(user2).call()).to.equal('0')
       expect(
-        usdcBalanceBefore.add(new BN(args.basetokenSwappedAmount)).toString()
+        usdcBalanceBefore.add(new BN(args.baseTokenSwappedAmount)).toString()
       ).to.equal(await usdcContract.methods.balanceOf(user2).call())
       // DTs stay in the contract
       expect((await fixedRate.getExchange(exchangeId)).dtBalance).to.equal('10')
@@ -641,24 +641,24 @@ describe('Fixed Rate unit test', () => {
       expect(result.active).to.equal(true)
       expect(result.btDecimals).to.equal('6')
       expect(result.dtDecimals).to.equal('18')
-      expect(result.basetoken).to.equal(contracts.usdcAddress)
+      expect(result.baseToken).to.equal(contracts.usdcAddress)
       expect(result.datatoken).to.equal(dtAddress)
       expect(result.exchangeOwner).to.equal(exchangeOwner)
       expect(result.withMint).to.equal(false)
       expect(result.dtBalance).to.equal('10') // balance in the fixedRate
       expect(result.btBalance).to.equal('0') // balance in the fixedRate
       expect(result.dtSupply).to.equal('1000') // total supply available (owner allowance + dtBalance)
-      expect(result.btSupply).to.equal('0') // total supply available of basetoken in the contract
+      expect(result.btSupply).to.equal('0') // total supply available of baseToken in the contract
       expect(result.fixedRate).to.equal('1')
     })
 
     it('#getFeesInfo - should return exchange fee details', async () => {
       const result = await fixedRate.getFeesInfo(exchangeId)
       expect(result.marketFee).to.equal('0.001')
-      // we made 2 swaps for 10 DT at rate 1, the fee is 0.1% for market and always in basetoken so it's 0.01 USDC
-      // we made 2 swaps for 10 DT at rate 1, the fee is 0.1% for ocean community and always in basetoken so it's 0.01 USDC
-      expect(result.marketFeeAvailable).to.equal('0.02') // formatted for basetoken decimals
-      expect(result.oceanFeeAvailable).to.equal('0.02') // formatted for basetoken decimals
+      // we made 2 swaps for 10 DT at rate 1, the fee is 0.1% for market and always in baseToken so it's 0.01 USDC
+      // we made 2 swaps for 10 DT at rate 1, the fee is 0.1% for ocean community and always in baseToken so it's 0.01 USDC
+      expect(result.marketFeeAvailable).to.equal('0.02') // formatted for baseToken decimals
+      expect(result.oceanFeeAvailable).to.equal('0.02') // formatted for baseToken decimals
       expect(result.marketFeeCollector).to.equal(user3)
       expect(result.opfFee).to.equal('0.001')
     })
@@ -700,11 +700,11 @@ describe('Fixed Rate unit test', () => {
     })
     it('#collectMarketFee- should collect marketFee and send it to marketFeeCollector, anyone can call it', async () => {
       let result = await fixedRate.getFeesInfo(exchangeId)
-      // we made 2 swaps for 10 DT at rate 1, the fee is 0.1% for market and always in basetoken so it's 0.01 USDC
+      // we made 2 swaps for 10 DT at rate 1, the fee is 0.1% for market and always in baseToken so it's 0.01 USDC
       // plus another swap for 1 DT
-      expect(result.marketFeeAvailable).to.equal('0.021') // formatted for basetoken decimals
+      expect(result.marketFeeAvailable).to.equal('0.021') // formatted for baseToken decimals
       // same for ocean fee
-      expect(result.oceanFeeAvailable).to.equal('0.021') // formatted for basetoken decimals
+      expect(result.oceanFeeAvailable).to.equal('0.021') // formatted for baseToken decimals
       expect(result.marketFeeCollector).to.equal(user3)
 
       // user4 calls collectMarketFee
@@ -720,9 +720,9 @@ describe('Fixed Rate unit test', () => {
     })
     it('#collectOceanFee- should collect oceanFee and send it to OPF Collector, anyone can call it', async () => {
       let result = await fixedRate.getFeesInfo(exchangeId)
-      // we made 2 swaps for 10 DT at rate 1, the fee is 0.1% for market and always in basetoken so it's 0.01 DAI
+      // we made 2 swaps for 10 DT at rate 1, the fee is 0.1% for market and always in baseToken so it's 0.01 DAI
       // plus another swap for 1 DT
-      expect(result.oceanFeeAvailable).to.equal('0.021') // formatted for basetoken decimals
+      expect(result.oceanFeeAvailable).to.equal('0.021') // formatted for baseToken decimals
 
       // user4 calls collectOceanFee
       await fixedRate.collectOceanFee(user4, exchangeId)

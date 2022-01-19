@@ -218,13 +218,13 @@ describe('Nft Factory test', () => {
 
     const poolParams: PoolCreationParams = {
       ssContract: contracts.sideStakingAddress,
-      basetokenAddress: contracts.daiAddress,
-      basetokenSender: contracts.factory721Address,
+      baseTokenAddress: contracts.daiAddress,
+      baseTokenSender: contracts.factory721Address,
       publisherAddress: contracts.accounts[0],
       marketFeeCollector: contracts.accounts[0],
       poolTemplateAddress: contracts.poolTemplateAddress,
       rate: '1',
-      basetokenDecimals: 18,
+      baseTokenDecimals: 18,
       vestingAmount: '10000',
       vestedBlocks: 2500000,
       initialBasetokenLiquidity: '2000',
@@ -268,10 +268,10 @@ describe('Nft Factory test', () => {
 
     const freParams: FreCreationParams = {
       fixedRateAddress: contracts.fixedRateAddress,
-      basetokenAddress: contracts.daiAddress,
+      baseTokenAddress: contracts.daiAddress,
       owner: contracts.accounts[0],
       marketFeeCollector: contracts.accounts[0],
-      basetokenDecimals: 18,
+      baseTokenDecimals: 18,
       datatokenDecimals: 18,
       fixedRate: '1',
       marketFee: 1e15,

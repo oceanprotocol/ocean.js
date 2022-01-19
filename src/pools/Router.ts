@@ -146,7 +146,7 @@ export class Router {
   }
 
   /**
-   * Add a new token to oceanTokens list, pools with basetoken in this list have NO opf Fee
+   * Add a new token to oceanTokens list, pools with baseToken in this list have NO opf Fee
    * @param {String} address caller address
    * @param {String} tokenAddress token address to add
    * @return {Promise<TransactionReceipt>}
@@ -198,7 +198,7 @@ export class Router {
   }
 
   /**
-   * Remove a token from oceanTokens list, pools without basetoken in this list have a opf Fee
+   * Remove a token from oceanTokens list, pools without baseToken in this list have a opf Fee
    * @param {String} address
    * @param {String} tokenAddress address to remove
    * @return {Promise<TransactionReceipt>}
@@ -517,10 +517,10 @@ export class Router {
   }
 
   /** Get OPF Fee per token
-   * @return {Promise<number>} OPF fee for a specific basetoken
+   * @return {Promise<number>} OPF fee for a specific baseToken
    */
-  public async getOPFFee(basetoken: string): Promise<number> {
-    return await this.router.methods.getOPFFee(basetoken).call()
+  public async getOPFFee(baseToken: string): Promise<number> {
+    return await this.router.methods.getOPFFee(baseToken).call()
   }
 
   /** Get Current OPF Fee
