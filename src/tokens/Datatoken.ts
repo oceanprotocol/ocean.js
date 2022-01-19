@@ -832,13 +832,7 @@ export class Datatoken {
    * @param {String} address User address which calls
    * @param {String} consumer Consumer Address
    * @param {Number} serviceIndex  Service index in the metadata
-   * @param {String} providerFeeAddress Consume marketplace fee address
-   * @param {String} providerFeeToken address of the token marketplace wants to add fee on top
-   * @param {String} providerFeeAmount amount of feeToken to be transferred to mpFeeAddress on top, will be converted to WEI
-   * @param {String} v // v of provider signed message
-   * @param {String} r // r of provider signed message
-   * @param {String} s // s of provider signed message
-   * @param {String} providerData // data encoded by provider
+   * @param {providerFees} providerFees provider fees
    * @param {Contract} contractInstance optional contract instance
    * @return {Promise<any>}
    */
@@ -871,13 +865,7 @@ export class Datatoken {
    * @param {String} address User address which calls
    * @param {String} consumer Consumer Address
    * @param {Number} serviceIndex  Service index in the metadata
-   * @param {String} providerFeeAddress Consume marketplace fee address
-   * @param {String} providerFeeToken address of the token marketplace wants to add fee on top
-   * @param {String} providerFeeAmount amount of feeToken to be transferred to mpFeeAddress on top, expressed in Wei
-   * @param {String} v // v of provider signed message
-   * @param {String} r // r of provider signed message
-   * @param {String} s // s of provider signed message
-   * @param {String} providerData // data encoded by provider
+   * @param {providerFees} providerFees provider fees
    * @return {Promise<TransactionReceipt>} string
    */
   public async startOrder(
