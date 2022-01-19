@@ -81,21 +81,21 @@ export class Router {
    * @return {Promise<boolean>} true if is on the list.
    */
   public async isOceanTokens(address: string): Promise<boolean> {
-    return await this.router.methods.oceanTokens(address).call()
+    return await this.router.methods.isOceanToken(address).call()
   }
 
   /** Check if an address is a side staking contract.
    * @return {Promise<boolean>} true if is a SS contract
    */
   public async isSideStaking(address: string): Promise<boolean> {
-    return await this.router.methods.ssContracts(address).call()
+    return await this.router.methods.isSSContract(address).call()
   }
 
   /** Check if an address is a Fixed Rate contract.
    * @return {Promise<boolean>} true if is a Fixed Rate contract
    */
   public async isFixedPrice(address: string): Promise<boolean> {
-    return await this.router.methods.fixedPrice(address).call()
+    return await this.router.methods.isFixedRateContract(address).call()
   }
 
   /** Get Router Owner
