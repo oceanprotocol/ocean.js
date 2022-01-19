@@ -18,6 +18,7 @@ import {
   PoolCreationParams
 } from '../../src/interfaces'
 import { ZERO_ADDRESS, signHash } from '../../src/utils'
+import { ProviderFees } from '../../src/@types'
 
 const web3 = new Web3('http://127.0.0.1:8545')
 
@@ -286,11 +287,10 @@ describe('Nft Factory test', () => {
       freParams
     )
 
-    console.log('txReceipt.events', txReceipt.events)
     // EVENTS HAVE BEEN EMITTED
     expect(txReceipt.events.NFTCreated.event === 'NFTCreated')
     expect(txReceipt.events.TokenCreated.event === 'TokenCreated')
-    // expect(txReceipt.events.NewFixedRate.event === 'NewFixedRate')
+    expect(txReceipt.events.NewFixedRate.event === 'NewFixedRate')
 
     // stored for later use in startMultipleTokenOrder test
     dtAddress2 = txReceipt.events.TokenCreated.returnValues.newTokenAddress
@@ -383,33 +383,34 @@ describe('Nft Factory test', () => {
       { t: 'address', v: consumeFeeToken },
       { t: 'uint256', v: web3.utils.toWei(consumeFeeAmount) }
     )
+
     const { v, r, s } = await signHash(web3, message, consumeFeeAddress)
+    const providerValidUntil = '0'
+    const providerFees: ProviderFees = {
+      providerFeeAddress: consumeFeeAddress,
+      providerFeeToken: consumeFeeToken,
+      providerFeeAmount: consumeFeeAmount,
+      v: v,
+      r: r,
+      s: s,
+      providerData: web3.utils.toHex(web3.utils.asciiToHex(providerData)),
+      validUntil: providerValidUntil
+    }
     const orders: TokenOrder[] = [
       {
         tokenAddress: dtAddress,
         consumer: consumer,
         serviceIndex: serviceIndex,
-        providerFeeAddress: consumeFeeAddress,
-        providerFeeToken: consumeFeeToken,
-        providerFeeAmount: consumeFeeAmount,
-        v,
-        r,
-        s,
-        providerData: web3.utils.toHex(web3.utils.asciiToHex(providerData))
+        _providerFees: providerFees
       },
       {
         tokenAddress: dtAddress2,
         consumer: consumer,
         serviceIndex: serviceIndex,
-        providerFeeAddress: consumeFeeAddress,
-        providerFeeToken: consumeFeeToken,
-        providerFeeAmount: consumeFeeAmount,
-        v,
-        r,
-        s,
-        providerData: web3.utils.toHex(web3.utils.asciiToHex(providerData))
+        _providerFees: providerFees
       }
     ]
+    console.log('orders', orders)
     await nftFactory.startMultipleTokenOrder(user2, orders)
     // we check user2 has no more DTs
     expect(await dtContract.methods.balanceOf(user2).call()).to.equal('0')

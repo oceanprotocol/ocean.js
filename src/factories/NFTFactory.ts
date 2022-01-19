@@ -17,6 +17,7 @@ import {
   PoolCreationParams,
   DispenserCreationParams
 } from '../interfaces'
+import { ProviderFees } from '../@types/index.js'
 
 interface Template {
   templateAddress: string
@@ -27,13 +28,7 @@ export interface TokenOrder {
   tokenAddress: string
   consumer: string
   serviceIndex: number
-  providerFeeAddress: string
-  providerFeeToken: string
-  providerFeeAmount: string
-  v: string // v of provider signed message
-  r: string // r of provider signed message
-  s: string // s of provider signed message
-  providerData: string // data encoded by provider
+  _providerFees: ProviderFees
 }
 
 export interface NftCreateData {
