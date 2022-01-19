@@ -17,6 +17,7 @@ import { Datatoken, Nft, OrderParams, DispenserParams } from '../../../src/token
 import { AbiItem } from 'web3-utils'
 import { FreCreationParams, FreOrderParams } from '../../../src/interfaces'
 import { ZERO_ADDRESS, signHash } from '../../../src/utils'
+import { ProviderFees } from '../../../src/@types/Provider.js'
 
 const web3 = new Web3('http://127.0.0.1:8545')
 
@@ -390,16 +391,21 @@ describe('Datatoken', () => {
       { t: 'uint256', v: providerFeeAmount }
     )
     const { v, r, s } = await signHash(web3, message, user3)
+    const providerValidUntil = '0'
+    const providerFees: ProviderFees = {
+      providerFeeAddress: user3,
+      providerFeeToken: providerFeeToken,
+      providerFeeAmount: providerFeeAmount,
+      v: v,
+      r: r,
+      s: s,
+      providerData: web3.utils.toHex(web3.utils.asciiToHex(providerData)),
+      validUntil: providerValidUntil
+    }
     const order: OrderParams = {
       consumer: user1,
       serviceIndex: 1,
-      providerFeeAddress: user3,
-      providerFeeToken,
-      providerFeeAmount,
-      v,
-      r,
-      s,
-      providerData: web3.utils.toHex(web3.utils.asciiToHex(providerData))
+      _providerFees: providerFees
     }
     console.log('order', order)
     const buyFromDispenseTx = await datatoken.buyFromDispenserAndOrder(
@@ -422,16 +428,21 @@ describe('Datatoken', () => {
       { t: 'uint256', v: providerFeeAmount }
     )
     const { v, r, s } = await signHash(web3, message, user3)
+    const providerValidUntil = '0'
+    const providerFees: ProviderFees = {
+      providerFeeAddress: user1,
+      providerFeeToken: providerFeeToken,
+      providerFeeAmount: providerFeeAmount,
+      v: v,
+      r: r,
+      s: s,
+      providerData: web3.utils.toHex(web3.utils.asciiToHex(providerData)),
+      validUntil: providerValidUntil
+    }
     const order: OrderParams = {
       consumer: user1,
       serviceIndex: 1,
-      providerFeeAddress: user1,
-      providerFeeToken,
-      providerFeeAmount,
-      v,
-      r,
-      s,
-      providerData: web3.utils.toHex(web3.utils.asciiToHex(providerData))
+      _providerFees: providerFees
     }
 
     const fre: FreOrderParams = {

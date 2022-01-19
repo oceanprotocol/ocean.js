@@ -8,6 +8,7 @@ import defaultDatatokensEnterpriseAbi from '../artifacts/templates/ERC20Template
 import { LoggerInstance, getFairGasPrice } from '../utils'
 import { FreOrderParams, FreCreationParams } from '../interfaces'
 import { Nft } from './NFT'
+import { ProviderFees } from '../@types/Provider.js'
 /**
  * ERC20 ROLES
  */
@@ -19,13 +20,7 @@ interface Roles {
 export interface OrderParams {
   consumer: string
   serviceIndex: number
-  providerFeeAddress: string
-  providerFeeToken: string
-  providerFeeAmount: string // this is in WEI
-  v: string // v of provider signed message
-  r: string // r of provider signed message
-  s: string // s of provider signed message
-  providerData: string // data encoded by provider
+  _providerFees: ProviderFees
 }
 
 export interface DispenserParams {
