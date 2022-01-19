@@ -58,7 +58,7 @@ export class SideStaking {
    * @param {String} datatokenAddress datatoken address
    * @return {String}
    */
-  async getDataTokenCirculatingSupply(
+  async getDatatokenCirculatingSupply(
     ssAddress: string,
     datatokenAddress: string
   ): Promise<string> {
@@ -66,7 +66,7 @@ export class SideStaking {
     let result = null
     try {
       result = await sideStaking.methods
-        .getDataTokenCirculatingSupply(datatokenAddress)
+        .getDatatokenCirculatingSupply(datatokenAddress)
         .call()
     } catch (e) {
       LoggerInstance.error(`ERROR: Failed to get: ${e.message}`)
@@ -81,7 +81,7 @@ export class SideStaking {
    * @param {String} datatokenAddress datatoken address
    * @return {String}
    */
-  async getDataTokenCurrentCirculatingSupply(
+  async getDatatokenCurrentCirculatingSupply(
     ssAddress: string,
     datatokenAddress: string
   ): Promise<string> {
@@ -89,7 +89,7 @@ export class SideStaking {
       const sideStaking = new this.web3.eth.Contract(this.ssAbi, ssAddress)
       let result = null
       result = await sideStaking.methods
-        .getDataTokenCurrentCirculatingSupply(datatokenAddress)
+        .getDatatokenCurrentCirculatingSupply(datatokenAddress)
         .call()
       return result.toString()
     } catch (e) {
@@ -184,7 +184,7 @@ export class SideStaking {
     const sideStaking = new this.web3.eth.Contract(this.ssAbi, ssAddress)
     let result = null
     try {
-      result = await sideStaking.methods.getDataTokenBalance(datatokenAddress).call()
+      result = await sideStaking.methods.getDatatokenBalance(datatokenAddress).call()
     } catch (e) {
       LoggerInstance.error(`ERROR: Failed to get: ${e.message}`)
     }

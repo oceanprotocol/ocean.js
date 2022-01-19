@@ -68,7 +68,7 @@ export class Pool {
   }
 
   /**
-   * Get Alloance for both DataToken and Ocean
+   * Get Alloance for both Datatoken and Ocean
    * @param {String } tokenAdress
    * @param {String} owner
    * @param {String} spender

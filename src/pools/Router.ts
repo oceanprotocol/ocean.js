@@ -568,7 +568,7 @@ export class Router {
     const estGas = await this.estGasUpdateOPFFee(address, newFee)
 
     // Invoke createToken function of the contract
-    const trxReceipt = await this.router.methods.updateOPFFee(newFee).send({
+    const trxReceipt = await this.router.methods.updateOPFFee(newFee, newFee).send({
       from: address,
       gas: estGas + 1,
       gasPrice: await getFairGasPrice(this.web3)

@@ -342,7 +342,7 @@ ocean.exchange.getAllExchangesSwaps(account: string): Promise<FixedPriceSwap[]>;
 consume/start, stop, results, status, define-service
 
 ```Typescript
-ocean.compute.start(did: string, txId: string, tokenAddress: string, consumerAccount: Account, algorithmDid?: string, algorithmMeta?: MetadataAlgorithm, output?: Output, serviceIndex?: string, serviceType?: string, algorithmTransferTxId?: string, algorithmDataToken?: string): Promise<ComputeJob>;
+ocean.compute.start(did: string, txId: string, tokenAddress: string, consumerAccount: Account, algorithmDid?: string, algorithmMeta?: MetadataAlgorithm, output?: Output, serviceIndex?: string, serviceType?: string, algorithmTransferTxId?: string, algorithmDatatoken?: string): Promise<ComputeJob>;
 ```
 
 ```Typescript

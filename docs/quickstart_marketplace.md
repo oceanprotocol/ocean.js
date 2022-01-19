@@ -121,10 +121,10 @@ Now open the `marketplace.js` file in your text editor. Enter the following code
 
 ```Javascript
 const Web3 = require("web3");
-const { Ocean, DataTokens } = require("@oceanprotocol/lib");
+const { Ocean, Datatokens } = require("@oceanprotocol/lib");
 
 const { factoryABI } = require("@oceanprotocol/contracts/artifacts/DTFactory.json");
-const { datatokensABI } = require("@oceanprotocol/contracts/artifacts/DataTokenTemplate.json");
+const { datatokensABI } = require("@oceanprotocol/contracts/artifacts/DatatokenTemplate.json");
 const { config, contracts, urls } = require("./config");
 
 
@@ -137,7 +137,7 @@ const init = async () => {
   const alice = accounts[0].id;
   console.log('Alice account address:', alice)
 
-  const datatoken = new DataTokens(
+  const datatoken = new Datatokens(
     contracts.DTFactory,
     factoryABI,
     datatokensABI,

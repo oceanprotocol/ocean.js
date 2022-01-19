@@ -41,7 +41,7 @@ export class Datatoken {
   public nft: Nft
 
   /**
-   * Instantiate ERC20 DataTokens
+   * Instantiate ERC20 Datatokens
    * @param {AbiItem | AbiItem[]} datatokensAbi
    * @param {Web3} web3
    */
@@ -1216,7 +1216,7 @@ export class Datatoken {
     return roles
   }
 
-  /** Returns the DataToken capital
+  /** Returns the Datatoken capital
    * @param {String} dtAddress Datatoken adress
    * @return {Promise<string>}
    */

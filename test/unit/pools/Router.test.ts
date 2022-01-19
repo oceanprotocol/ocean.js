@@ -129,12 +129,12 @@ describe('Router unit test', () => {
   })
 
   it('#getCurrentOPFFee - should return actual OPF Fee', async () => {
-    const opfFee = 1e15
+    const opfFee = 0
     expect(await router.getCurrentOPFFee()).to.equal(opfFee.toString())
   })
 
   it('#updateOPFFee - should update opf fee if Router Owner', async () => {
-    const opfFee = 1e15
+    const opfFee = 0
     expect(await router.getCurrentOPFFee()).to.equal(opfFee.toString())
     const newOPFFee = 1e14
     await router.updateOPFFee(contracts.accounts[0], 1e14)

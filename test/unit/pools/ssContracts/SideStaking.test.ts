@@ -196,17 +196,17 @@ describe('SideStaking unit test', () => {
       )
     })
 
-    it('#getDataTokenCirculatingSupply - should get datatoken supply in circulation (vesting amount excluded)', async () => {
+    it('#getDatatokenCirculatingSupply - should get datatoken supply in circulation (vesting amount excluded)', async () => {
       expect(
-        await sideStaking.getDataTokenCirculatingSupply(
+        await sideStaking.getDatatokenCirculatingSupply(
           contracts.sideStakingAddress,
           erc20Token
         )
       ).to.equal(web3.utils.toWei('12000'))
     })
-    it('#getDataTokenCurrentCirculatingSupply - should get datatoken supply in circulation ', async () => {
+    it('#getDatatokenCurrentCirculatingSupply - should get datatoken supply in circulation ', async () => {
       expect(
-        await sideStaking.getDataTokenCurrentCirculatingSupply(
+        await sideStaking.getDatatokenCurrentCirculatingSupply(
           contracts.sideStakingAddress,
           erc20Token
         )
