@@ -232,7 +232,7 @@ export class Provider {
     getMethod: any,
     userCustomParameters?: UserCustomParameters,
     computeEnv?: string,
-    validUntil?: string
+    validUntil?: number
   ): Promise<ProviderInitialize> {
     const providerEndpoints = await this.getEndpoints(providerUri)
     const serviceEndpoints = await this.getServiceEndpoints(

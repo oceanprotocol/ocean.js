@@ -293,7 +293,7 @@ describe('Simple compute tests', async () => {
       crossFetchGeneric,
       null,
       'env1',
-      providerValidUntil.toString()
+      providerValidUntil.getTime()
     )
     console.log('initializeData', initializeData)
     const providerDatasetFees: ProviderFees = {
