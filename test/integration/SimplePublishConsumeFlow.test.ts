@@ -12,6 +12,7 @@ import { homedir } from 'os'
 import fs from 'fs'
 import { downloadFile, crossFetchGeneric } from '../../src/utils/FetchHelper'
 import console from 'console'
+import { ProviderFees } from '../../src/@types/Provider'
 
 const data = JSON.parse(
   fs.readFileSync(
@@ -135,19 +136,23 @@ describe('Simple Publish & consume test', async () => {
       providerUrl,
       crossFetchGeneric
     )
+    const providerFees: ProviderFees = {
+      providerFeeAddress: initializeData.providerFee.providerFeeAddress,
+      providerFeeToken: initializeData.providerFee.providerFeeToken,
+      providerFeeAmount: initializeData.providerFee.providerFeeAmount,
+      v: initializeData.providerFee.v,
+      r: initializeData.providerFee.r,
+      s: initializeData.providerFee.s,
+      providerData: initializeData.providerFee.providerData,
+      validUntil: initializeData.providerFee.validUntil
+    }
     // make the payment
     const txid = await datatoken.startOrder(
       datatokenAddress,
       consumerAccount,
       consumerAccount,
       0,
-      initializeData.providerFee.providerFeeAddress,
-      initializeData.providerFee.providerFeeToken,
-      initializeData.providerFee.providerFeeAmount,
-      initializeData.providerFee.v,
-      initializeData.providerFee.r,
-      initializeData.providerFee.s,
-      initializeData.providerFee.providerData
+      providerFees
     )
     // get the url
     const downloadURL = await ProviderInstance.getDownloadUrl(
