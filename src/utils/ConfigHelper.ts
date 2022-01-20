@@ -1,7 +1,7 @@
 import Config from '../models/Config'
 import fs from 'fs'
 // eslint-disable-next-line import/no-named-default
-import { default as DefaultContractsAddresses } from '../artifacts/addresses/address.json'
+import { default as DefaultContractsAddresses } from '@oceanprotocol/contracts/addresses/address.json'
 import LoggerInstance from './Logger'
 
 const configHelperNetworksBase: Config = {

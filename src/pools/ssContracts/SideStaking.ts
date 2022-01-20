@@ -9,8 +9,8 @@ import {
   configHelperNetworks
 } from '../../utils'
 import BigNumber from 'bignumber.js'
-import SideStakingTemplate from '../../artifacts/pools/ssContracts/SideStaking.sol/SideStaking.json'
-import defaultErc20Abi from '../../artifacts/templates/ERC20Template.sol/ERC20Template.json'
+import SideStakingTemplate from '@oceanprotocol/contracts/artifacts/contracts/pools/ssContracts/SideStaking.sol/SideStaking.json'
+import defaultErc20Abi from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC20Template.sol/ERC20Template.json'
 import { Config } from '../../models'
 
 export class SideStaking {

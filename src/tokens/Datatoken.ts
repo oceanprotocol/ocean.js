@@ -3,8 +3,8 @@ import { AbiItem } from 'web3-utils'
 import { TransactionReceipt } from 'web3-eth'
 import { Contract } from 'web3-eth-contract'
 import Decimal from 'decimal.js'
-import defaultDatatokensAbi from '../artifacts/templates/ERC20Template.sol/ERC20Template.json'
-import defaultDatatokensEnterpriseAbi from '../artifacts/templates/ERC20TemplateEnterprise.sol/ERC20TemplateEnterprise.json'
+import defaultDatatokensAbi from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC20Template.sol/ERC20Template.json'
+import defaultDatatokensEnterpriseAbi from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC20TemplateEnterprise.sol/ERC20TemplateEnterprise.json'
 import {
   LoggerInstance,
   getFairGasPrice,
@@ -962,7 +962,6 @@ export class Datatoken {
       new this.web3.eth.Contract(this.datatokensAbi, dtAddress),
       this.config
     )
-    
     try {
       const estGas = await this.estGasStartOrder(
         dtAddress,

@@ -123,8 +123,8 @@ Now open the `marketplace.js` file in your text editor. Enter the following code
 const Web3 = require("web3");
 const { Ocean, Datatokens } = require("@oceanprotocol/lib");
 
-const { factoryABI } = require("@oceanprotocol/contracts/artifacts/DTFactory.json");
-const { datatokensABI } = require("@oceanprotocol/contracts/artifacts/DatatokenTemplate.json");
+const { factoryABI } = require("@oceanprotocol/contracts/artifacts/contracts/DTFactory.json");
+const { datatokensABI } = require("@oceanprotocol/contracts/artifacts/contracts/DatatokenTemplate.json");
 const { config, contracts, urls } = require("./config");
 
 
