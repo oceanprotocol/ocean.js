@@ -7,9 +7,12 @@ import { Config } from '../models'
 
 export function setContractDefaults(contract: Contract, config: Config): Contract {
   if (config) {
-    contract.transactionBlockTimeout = config.transactionBlockTimeout
-    contract.transactionConfirmationBlocks = config.transactionConfirmationBlocks
-    contract.transactionPollingTimeout = config.transactionPollingTimeout
+    if (config.transactionBlockTimeout)
+      contract.transactionBlockTimeout = config.transactionBlockTimeout
+    if (config.transactionConfirmationBlocks)
+      contract.transactionConfirmationBlocks = config.transactionConfirmationBlocks
+    if (config.transactionPollingTimeout)
+      contract.transactionPollingTimeout = config.transactionPollingTimeout
   }
   return contract
 }
