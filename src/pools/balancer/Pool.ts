@@ -10,8 +10,8 @@ import {
   setContractDefaults
 } from '../../utils'
 import BigNumber from 'bignumber.js'
-import PoolTemplate from '../../artifacts/pools/balancer/BPool.sol/BPool.json'
-import defaultErc20Abi from '../../artifacts/templates/ERC20Template.sol/ERC20Template.json'
+import PoolTemplate from '@oceanprotocol/contracts/artifacts/contracts/pools/balancer/BPool.sol/BPool.json'
+import defaultErc20Abi from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC20Template.sol/ERC20Template.json'
 import Decimal from 'decimal.js'
 import {
   CurrentFees,
