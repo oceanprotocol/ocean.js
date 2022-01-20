@@ -12,6 +12,7 @@ import {
 import { Contract } from 'web3-eth-contract'
 import { MetadataProof } from '../../src/@types'
 import { Config } from '../models/index.js'
+import { MetaDataAndTokenURI } from '../interfaces/Erc721Interface'
 
 /**
  * ERC721 ROLES
@@ -1088,6 +1089,77 @@ export class Nft {
       )
       .send({
         from: address,
+        gas: estGas + 1,
+        gasPrice: await getFairGasPrice(this.web3, this.config)
+      })
+
+    return trxReceipt
+  }
+
+  /**
+   * Estimate gas cost for setMetadata  method
+   * @param {String} nftAddress erc721 contract adress
+   * @param {String} metadataUpdater metadataUpdater address
+   * @param {MetaDataAndTokenURI} metaDataAndTokenURI metaDataAndTokenURI object
+   * @param {Contract} nftContract optional contract instance
+   * @return {Promise<any>}
+   */
+  public async estGasSetMetaDataAndTokenURI(
+    nftAddress: string,
+    metadataUpdater: string,
+    metaDataAndTokenURI: MetaDataAndTokenURI,
+    contractInstance?: Contract
+  ): Promise<any> {
+    const nftContract =
+      contractInstance ||
+      setContractDefaults(
+        new this.web3.eth.Contract(this.nftAbi, nftAddress),
+        this.config
+      )
+    const gasLimitDefault = this.GASLIMIT_DEFAULT
+    let estGas
+    try {
+      estGas = await nftContract.methods
+        .setMetaDataAndTokenURI(metaDataAndTokenURI)
+        .estimateGas({ from: metadataUpdater }, (err, estGas) =>
+          err ? gasLimitDefault : estGas
+        )
+    } catch (e) {
+      estGas = gasLimitDefault
+    }
+
+    return estGas
+  }
+
+  /**
+   *  Helper function to improve UX sets both MetaData & TokenURI in one tx
+   * @param {String} nftAddress erc721 contract adress
+   * @param {String} address Caller address
+   * @param {MetaDataAndTokenURI} metaDataAndTokenURI metaDataAndTokenURI object
+   * @return {Promise<TransactionReceipt>} trxReceipt
+   */
+  public async setMetaDataAndTokenURI(
+    nftAddress: string,
+    metadataUpdater: string,
+    metaDataAndTokenURI: MetaDataAndTokenURI
+  ): Promise<TransactionReceipt> {
+    const nftContract = setContractDefaults(
+      new this.web3.eth.Contract(this.nftAbi, nftAddress),
+      this.config
+    )
+    if (!(await this.getNftPermissions(nftAddress, metadataUpdater)).updateMetadata) {
+      throw new Error(`Caller is not Metadata updater`)
+    }
+    const estGas = await this.estGasSetMetaDataAndTokenURI(
+      nftAddress,
+      metadataUpdater,
+      metaDataAndTokenURI,
+      nftContract
+    )
+    const trxReceipt = await nftContract.methods
+      .setMetaDataAndTokenURI(metaDataAndTokenURI)
+      .send({
+        from: metadataUpdater,
         gas: estGas + 1,
         gasPrice: await getFairGasPrice(this.web3, this.config)
       })

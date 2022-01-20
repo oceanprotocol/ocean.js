@@ -14,6 +14,7 @@ import { NftFactory, NftCreateData } from '../../../src/factories/NFTFactory'
 import { Nft } from '../../../src/tokens/NFT'
 import { AbiItem } from 'web3-utils'
 import sha256 from 'crypto-js/sha256'
+import { MetaDataAndTokenURI } from '../../../src/interfaces/Erc721Interface'
 
 const web3 = new Web3('http://127.0.0.1:8545')
 
@@ -417,5 +418,37 @@ describe('NFT', () => {
   it('#setTokenURI - should update TokenURI', async () => {
     const tx = await nftDatatoken.setTokenURI(nftAddress, user1, 'test')
     assert(tx.events.TokenURIUpdate)
+  })
+
+  it('#setMetaDataAndTokenURI - should update tokenURI and set metadata', async () => {
+    const data = web3.utils.asciiToHex(user2)
+    const metaDataAndTokenURI: MetaDataAndTokenURI = {
+      metaDataState: 1,
+      metaDataDecryptorUrl: 'http://myprovider:8030',
+      metaDataDecryptorAddress: '0x123',
+      flags: web3.utils.asciiToHex(user1),
+      data: web3.utils.asciiToHex(user1),
+      metaDataHash: '0x' + sha256(data).toString(),
+      tokenId: 1,
+      tokenURI: 'https://anothernewurl.com/nft/',
+      metadataProofs: []
+    }
+    assert(
+      (await nftDatatoken.getNftPermissions(nftAddress, user1)).updateMetadata === true
+    )
+
+    const tx = await nftDatatoken.setMetaDataAndTokenURI(
+      nftAddress,
+      user1,
+      metaDataAndTokenURI
+    )
+    console.log('tx', tx)
+    assert(tx.events.TokenURIUpdate)
+    assert(tx.events.MetadataUpdated)
+
+    const metadata = await nftDatatoken.getMetadata(nftAddress)
+    console.log('metadata', metadata)
+    assert(metadata[0] === 'http://myprovider:8030')
+    assert(metadata[1] === '0x123')
   })
 })
