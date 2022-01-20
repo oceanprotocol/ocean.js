@@ -37,7 +37,7 @@ export function getFreCreationParams(freParams: FreCreationParams): any {
     ],
     uints: [
       freParams.baseTokenDecimals,
-      freParams.dataTokenDecimals,
+      freParams.datatokenDecimals,
       freParams.fixedRate,
       freParams.marketFee,
       withMint
@@ -49,18 +49,18 @@ export function getPoolCreationParams(poolParams: PoolCreationParams): any {
   return {
     addresses: [
       poolParams.ssContract,
-      poolParams.basetokenAddress,
-      poolParams.basetokenSender,
+      poolParams.baseTokenAddress,
+      poolParams.baseTokenSender,
       poolParams.publisherAddress,
       poolParams.marketFeeCollector,
       poolParams.poolTemplateAddress
     ],
     ssParams: [
       Web3.utils.toWei(poolParams.rate),
-      poolParams.basetokenDecimals,
+      poolParams.baseTokenDecimals,
       Web3.utils.toWei(poolParams.vestingAmount),
       poolParams.vestedBlocks,
-      Web3.utils.toWei(poolParams.initialBasetokenLiquidity)
+      Web3.utils.toWei(poolParams.initialBaseTokenLiquidity)
     ],
     swapFees: [poolParams.swapFeeLiquidityProvider, poolParams.swapFeeMarketRunner]
   }

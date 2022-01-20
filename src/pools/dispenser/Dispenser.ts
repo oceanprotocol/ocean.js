@@ -64,7 +64,7 @@ export class Dispenser {
       result.balance = this.web3.utils.fromWei(result.balance)
       return result
     } catch (e) {
-      logger.warn(`No dispenser available for data token: ${dtAdress}`)
+      logger.warn(`No dispenser available for datatoken: ${dtAdress}`)
     }
     return null
   }
@@ -150,7 +150,7 @@ export class Dispenser {
    * @param {String} dtAddress
    * @param {Number} maxTokens max amount of tokens to dispense
    * @param {Number} maxBalance max balance of user. If user balance is >, then dispense will be rejected
-   * @param {String} address User address (must be owner of the dataToken)
+   * @param {String} address User address (must be owner of the datatoken)
    * @return {Promise<any>}
    */
   public async estGasActivate(
@@ -180,7 +180,7 @@ export class Dispenser {
    * @param {String} dtAddress refers to datatoken address.
    * @param {Number} maxTokens max amount of tokens to dispense
    * @param {Number} maxBalance max balance of user. If user balance is >, then dispense will be rejected
-   * @param {String} address User address (must be owner of the dataToken)
+   * @param {String} address User address (must be owner of the datatoken)
    * @return {Promise<TransactionReceipt>} TransactionReceipt
    */
   public async activate(
@@ -212,7 +212,7 @@ export class Dispenser {
   /**
    * Estimate gas for deactivate method
    * @param {String} dtAddress
-   * @param {String} address User address (must be owner of the dataToken)
+   * @param {String} address User address (must be owner of the datatoken)
    * @return {Promise<any>}
    */
   public async estGasDeactivate(dtAddress: string, address: string): Promise<any> {
@@ -231,7 +231,7 @@ export class Dispenser {
   /**
    * Deactivate an existing dispenser.
    * @param {String} dtAddress refers to datatoken address.
-   * @param {String} address User address (must be owner of the dataToken)
+   * @param {String} address User address (must be owner of the datatoken)
    * @return {Promise<TransactionReceipt>} TransactionReceipt
    */
   public async deactivate(
@@ -255,7 +255,7 @@ export class Dispenser {
   /**
    * Estimate gas for setAllowedSwapper method
    * @param {String} dtAddress refers to datatoken address.
-   * @param {String} address User address (must be owner of the dataToken)
+   * @param {String} address User address (must be owner of the datatoken)
    * @param {String} newAllowedSwapper refers to the new allowedSwapper
    * @return {Promise<any>}
    */
@@ -279,7 +279,7 @@ export class Dispenser {
   /**
    * Sets a new allowedSwapper.
    * @param {String} dtAddress refers to datatoken address.
-   * @param {String} address User address (must be owner of the dataToken)
+   * @param {String} address User address (must be owner of the datatoken)
    * @param {String} newAllowedSwapper refers to the new allowedSwapper
    * @return {Promise<TransactionReceipt>} TransactionReceipt
    */
@@ -311,7 +311,7 @@ export class Dispenser {
   /**
    * Estimate gas for dispense method
    * @param {String} dtAddress refers to datatoken address.
-   * @param {String} address User address (must be owner of the dataToken)
+   * @param {String} address User address (must be owner of the datatoken)
    * @param {String} newAllowedSwapper refers to the new allowedSwapper
    * @return {Promise<any>}
    */
@@ -368,7 +368,7 @@ export class Dispenser {
   /**
    * Estimate gas for ownerWithdraw method
    * @param {String} dtAddress refers to datatoken address.
-   * @param {String} address User address (must be owner of the dataToken)
+   * @param {String} address User address (must be owner of the datatoken)
    * @param {String} newAllowedSwapper refers to the new allowedSwapper
    * @return {Promise<any>}
    */
@@ -420,7 +420,7 @@ export class Dispenser {
    */
   public async isDispensable(
     dtAddress: string,
-    dataToken: Datatoken,
+    datatoken: Datatoken,
     address: string,
     amount: string = '1'
   ): Promise<Boolean> {
@@ -429,7 +429,7 @@ export class Dispenser {
     // check active
     if (status.active === false) return false
     // check maxBalance
-    const userBalance = new Decimal(await dataToken.balance(dtAddress, address))
+    const userBalance = new Decimal(await datatoken.balance(dtAddress, address))
     if (userBalance.greaterThanOrEqualTo(status.maxBalance)) return false
     // check maxAmount
     if (new Decimal(String(amount)).greaterThan(status.maxTokens)) return false

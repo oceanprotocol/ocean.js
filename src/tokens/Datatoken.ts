@@ -8,6 +8,7 @@ import defaultDatatokensEnterpriseAbi from '../artifacts/templates/ERC20Template
 import { LoggerInstance, getFairGasPrice } from '../utils'
 import { FreOrderParams, FreCreationParams } from '../interfaces'
 import { Nft } from './NFT'
+import { ProviderFees } from '../@types/Provider.js'
 /**
  * ERC20 ROLES
  */
@@ -19,13 +20,7 @@ interface Roles {
 export interface OrderParams {
   consumer: string
   serviceIndex: number
-  providerFeeAddress: string
-  providerFeeToken: string
-  providerFeeAmount: string // this is in WEI
-  v: string // v of provider signed message
-  r: string // r of provider signed message
-  s: string // s of provider signed message
-  providerData: string // data encoded by provider
+  _providerFees: ProviderFees
 }
 
 export interface DispenserParams {
@@ -46,7 +41,7 @@ export class Datatoken {
   public nft: Nft
 
   /**
-   * Instantiate ERC20 DataTokens
+   * Instantiate ERC20 Datatokens
    * @param {AbiItem | AbiItem[]} datatokensAbi
    * @param {Web3} web3
    */
@@ -200,7 +195,7 @@ export class Datatoken {
           ],
           [
             fixedRateParams.baseTokenDecimals,
-            fixedRateParams.dataTokenDecimals,
+            fixedRateParams.datatokenDecimals,
             fixedRateParams.fixedRate,
             fixedRateParams.marketFee,
             withMint
@@ -257,7 +252,7 @@ export class Datatoken {
         ],
         [
           fixedRateParams.baseTokenDecimals,
-          fixedRateParams.dataTokenDecimals,
+          fixedRateParams.datatokenDecimals,
           fixedRateParams.fixedRate,
           fixedRateParams.marketFee,
           withMint
@@ -837,13 +832,7 @@ export class Datatoken {
    * @param {String} address User address which calls
    * @param {String} consumer Consumer Address
    * @param {Number} serviceIndex  Service index in the metadata
-   * @param {String} providerFeeAddress Consume marketplace fee address
-   * @param {String} providerFeeToken address of the token marketplace wants to add fee on top
-   * @param {String} providerFeeAmount amount of feeToken to be transferred to mpFeeAddress on top, will be converted to WEI
-   * @param {String} v // v of provider signed message
-   * @param {String} r // r of provider signed message
-   * @param {String} s // s of provider signed message
-   * @param {String} providerData // data encoded by provider
+   * @param {providerFees} providerFees provider fees
    * @param {Contract} contractInstance optional contract instance
    * @return {Promise<any>}
    */
@@ -852,13 +841,7 @@ export class Datatoken {
     address: string,
     consumer: string,
     serviceIndex: number,
-    providerFeeAddress: string,
-    providerFeeToken: string,
-    providerFeeAmount: string,
-    v: string,
-    r: string,
-    s: string,
-    providerDatas: string,
+    providerFees: ProviderFees,
     contractInstance?: Contract
   ): Promise<any> {
     const dtContract =
@@ -869,17 +852,7 @@ export class Datatoken {
     let estGas
     try {
       estGas = await dtContract.methods
-        .startOrder(
-          consumer,
-          serviceIndex,
-          providerFeeAddress,
-          providerFeeToken,
-          providerFeeAmount,
-          v,
-          r,
-          s,
-          providerDatas
-        )
+        .startOrder(consumer, serviceIndex, providerFees)
         .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
     } catch (e) {
       estGas = gasLimitDefault
@@ -892,13 +865,7 @@ export class Datatoken {
    * @param {String} address User address which calls
    * @param {String} consumer Consumer Address
    * @param {Number} serviceIndex  Service index in the metadata
-   * @param {String} providerFeeAddress Consume marketplace fee address
-   * @param {String} providerFeeToken address of the token marketplace wants to add fee on top
-   * @param {String} providerFeeAmount amount of feeToken to be transferred to mpFeeAddress on top, expressed in Wei
-   * @param {String} v // v of provider signed message
-   * @param {String} r // r of provider signed message
-   * @param {String} s // s of provider signed message
-   * @param {String} providerData // data encoded by provider
+   * @param {providerFees} providerFees provider fees
    * @return {Promise<TransactionReceipt>} string
    */
   public async startOrder(
@@ -906,17 +873,9 @@ export class Datatoken {
     address: string,
     consumer: string,
     serviceIndex: number,
-    providerFeeAddress: string,
-    providerFeeToken: string,
-    providerFeeAmount: string,
-    v: string,
-    r: string,
-    s: string,
-    providerDatas: string
+    providerFees: ProviderFees
   ): Promise<TransactionReceipt> {
     const dtContract = new this.web3.eth.Contract(this.datatokensAbi, dtAddress)
-    if (!providerFeeAddress)
-      providerFeeAddress = '0x0000000000000000000000000000000000000000'
 
     try {
       const estGas = await this.estGasStartOrder(
@@ -924,28 +883,12 @@ export class Datatoken {
         address,
         consumer,
         serviceIndex,
-        providerFeeAddress,
-        providerFeeToken,
-        providerFeeAmount,
-        v,
-        r,
-        s,
-        providerDatas,
+        providerFees,
         dtContract
       )
 
       const trxReceipt = await dtContract.methods
-        .startOrder(
-          consumer,
-          serviceIndex,
-          providerFeeAddress,
-          providerFeeToken,
-          providerFeeAmount,
-          v,
-          r,
-          s,
-          providerDatas
-        )
+        .startOrder(consumer, serviceIndex, providerFees)
         .send({
           from: address,
           gas: estGas + 1,
@@ -1221,7 +1164,7 @@ export class Datatoken {
     return roles
   }
 
-  /** Returns the DataToken capital
+  /** Returns the Datatoken capital
    * @param {String} dtAddress Datatoken adress
    * @return {Promise<string>}
    */
@@ -1268,8 +1211,8 @@ export class Datatoken {
    * @param {String} address user adress
    * @return {Promise<String>} balance  Number of datatokens. Will be converted from wei
    */
-  public async balance(dataTokenAddress: string, address: string): Promise<string> {
-    const dtContract = new this.web3.eth.Contract(this.datatokensAbi, dataTokenAddress, {
+  public async balance(datatokenAddress: string, address: string): Promise<string> {
+    const dtContract = new this.web3.eth.Contract(this.datatokensAbi, datatokenAddress, {
       from: address
     })
     const balance = await dtContract.methods.balanceOf(address).call()

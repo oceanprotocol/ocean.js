@@ -129,12 +129,12 @@ describe('Router unit test', () => {
   })
 
   it('#getCurrentOPFFee - should return actual OPF Fee', async () => {
-    const opfFee = 1e15
+    const opfFee = 0
     expect(await router.getCurrentOPFFee()).to.equal(opfFee.toString())
   })
 
   it('#updateOPFFee - should update opf fee if Router Owner', async () => {
-    const opfFee = 1e15
+    const opfFee = 0
     expect(await router.getCurrentOPFFee()).to.equal(opfFee.toString())
     const newOPFFee = 1e14
     await router.updateOPFFee(contracts.accounts[0], 1e14)
@@ -192,16 +192,16 @@ describe('Router unit test', () => {
 
     const poolParams: PoolCreationParams = {
       ssContract: contracts.sideStakingAddress,
-      basetokenAddress: contracts.daiAddress,
-      basetokenSender: contracts.factory721Address,
+      baseTokenAddress: contracts.daiAddress,
+      baseTokenSender: contracts.factory721Address,
       publisherAddress: contracts.accounts[0],
       marketFeeCollector: contracts.accounts[0],
       poolTemplateAddress: contracts.poolTemplateAddress,
       rate: '1',
-      basetokenDecimals: 18,
+      baseTokenDecimals: 18,
       vestingAmount: '10000',
       vestedBlocks: 2500000,
-      initialBasetokenLiquidity: '2000',
+      initialBaseTokenLiquidity: '2000',
       swapFeeLiquidityProvider: 1e15,
       swapFeeMarketRunner: 1e15
     }
@@ -245,16 +245,16 @@ describe('Router unit test', () => {
 
     const poolParams2: PoolCreationParams = {
       ssContract: contracts.sideStakingAddress,
-      basetokenAddress: contracts.daiAddress,
-      basetokenSender: contracts.factory721Address,
+      baseTokenAddress: contracts.daiAddress,
+      baseTokenSender: contracts.factory721Address,
       publisherAddress: contracts.accounts[0],
       marketFeeCollector: contracts.accounts[0],
       poolTemplateAddress: contracts.poolTemplateAddress,
       rate: '1',
-      basetokenDecimals: 18,
+      baseTokenDecimals: 18,
       vestingAmount: '10000',
       vestedBlocks: 2500000,
-      initialBasetokenLiquidity: '2000',
+      initialBaseTokenLiquidity: '2000',
       swapFeeLiquidityProvider: 1e15,
       swapFeeMarketRunner: 1e15
     }

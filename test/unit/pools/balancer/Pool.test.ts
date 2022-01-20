@@ -142,20 +142,20 @@ describe('Pool unit test', () => {
         symbol: 'ERC20DT1Symbol'
       }
 
-      const basetokenInitialLiq = await pool.amountToUnits(contracts.daiAddress, '2000')
+      const baseTokenInitialLiq = await pool.amountToUnits(contracts.daiAddress, '2000')
 
       const poolParams: PoolCreationParams = {
         ssContract: contracts.sideStakingAddress,
-        basetokenAddress: contracts.daiAddress,
-        basetokenSender: contracts.factory721Address,
+        baseTokenAddress: contracts.daiAddress,
+        baseTokenSender: contracts.factory721Address,
         publisherAddress: contracts.accounts[0],
         marketFeeCollector: contracts.accounts[0],
         poolTemplateAddress: contracts.poolTemplateAddress,
         rate: '1',
-        basetokenDecimals: 18,
+        baseTokenDecimals: 18,
         vestingAmount: '10000',
         vestedBlocks: 2500000,
-        initialBasetokenLiquidity: '2000',
+        initialBaseTokenLiquidity: '2000',
         swapFeeLiquidityProvider: 1e15,
         swapFeeMarketRunner: 1e15
       }
@@ -227,7 +227,7 @@ describe('Pool unit test', () => {
     })
 
     it('#getReserve - should return final pool tokens', async () => {
-      expect(await pool.getReserve(poolAddress, contracts.daiAddress)).to.equal('2000') // base token initial liquidity
+      expect(await pool.getReserve(poolAddress, contracts.daiAddress)).to.equal('2000') // baseToken initial liquidity
       // rate is 1 so we have the same amount of DTs
       expect(await pool.getReserve(poolAddress, erc20Token)).to.equal('2000')
     })
@@ -254,8 +254,8 @@ describe('Pool unit test', () => {
       expect(await pool.getDenormalizedWeight(poolAddress, erc20Token)).to.equal('5')
     })
 
-    it('#getBasetoken - should return the basetoken address', async () => {
-      expect(await pool.getBasetoken(poolAddress)).to.equal(contracts.daiAddress)
+    it('#getBaseToken - should return the baseToken address', async () => {
+      expect(await pool.getBaseToken(poolAddress)).to.equal(contracts.daiAddress)
     })
 
     it('#getDatatoken - should return the datatoken address', async () => {
@@ -617,16 +617,16 @@ describe('Pool unit test', () => {
 
       const poolParams: PoolCreationParams = {
         ssContract: contracts.sideStakingAddress,
-        basetokenAddress: contracts.usdcAddress,
-        basetokenSender: contracts.factory721Address,
+        baseTokenAddress: contracts.usdcAddress,
+        baseTokenSender: contracts.factory721Address,
         publisherAddress: contracts.accounts[0],
         marketFeeCollector: contracts.accounts[0],
         poolTemplateAddress: contracts.poolTemplateAddress,
         rate: '1',
-        basetokenDecimals: await usdcContract.methods.decimals().call(),
+        baseTokenDecimals: await usdcContract.methods.decimals().call(),
         vestingAmount: '10000',
         vestedBlocks: 2500000,
-        initialBasetokenLiquidity: web3.utils.fromWei(
+        initialBaseTokenLiquidity: web3.utils.fromWei(
           await pool.amountToUnits(contracts.usdcAddress, '2000')
         ),
         swapFeeLiquidityProvider: 1e15,
@@ -771,7 +771,7 @@ describe('Pool unit test', () => {
     })
 
     it('#getReserve - should return final pool tokens Reserve', async () => {
-      expect(await pool.getReserve(poolAddress, contracts.usdcAddress)).to.equal('2000') // base token initial liquidity
+      expect(await pool.getReserve(poolAddress, contracts.usdcAddress)).to.equal('2000') // baseToken initial liquidity
       // rate is 1 so we have the same amount of DTs
       expect(await pool.getReserve(poolAddress, erc20Token)).to.equal('2000')
     })
@@ -798,8 +798,8 @@ describe('Pool unit test', () => {
       expect(await pool.getDenormalizedWeight(poolAddress, erc20Token)).to.equal('5')
     })
 
-    it('#getBasetoken - should return the basetoken address', async () => {
-      expect(await pool.getBasetoken(poolAddress)).to.equal(contracts.usdcAddress)
+    it('#getBaseToken - should return the baseToken address', async () => {
+      expect(await pool.getBaseToken(poolAddress)).to.equal(contracts.usdcAddress)
     })
 
     it('#getDatatoken - should return the datatoken address', async () => {

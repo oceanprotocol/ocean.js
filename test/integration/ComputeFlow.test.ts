@@ -13,6 +13,7 @@ import { homedir } from 'os'
 import fs from 'fs'
 import { downloadFile, crossFetchGeneric } from '../../src/utils/FetchHelper'
 import console from 'console'
+import { ProviderFees } from '../../src/@types'
 
 const data = JSON.parse(
   fs.readFileSync(
@@ -258,21 +259,30 @@ describe('Simple compute tests', async () => {
       providerUrl,
       crossFetchGeneric
     )
+    const providerAlgoFees: ProviderFees = {
+      providerFeeAddress: initializeDataAlgo.providerFee.providerFeeAddress,
+      providerFeeToken: initializeDataAlgo.providerFee.providerFeeToken,
+      providerFeeAmount: initializeDataAlgo.providerFee.providerFeeAmount,
+      v: initializeDataAlgo.providerFee.v,
+      r: initializeDataAlgo.providerFee.r,
+      s: initializeDataAlgo.providerFee.s,
+      providerData: initializeDataAlgo.providerFee.providerData,
+      validUntil: initializeDataAlgo.providerFee.validUntil
+    }
+
     // make the payment
     const txidAlgo = await datatoken.startOrder(
       datatokenAddressAlgo,
       consumerAccount,
       initializeDataAlgo.computeAddress,
       0,
-      initializeDataAlgo.providerFee.providerFeeAddress,
-      initializeDataAlgo.providerFee.providerFeeToken,
-      initializeDataAlgo.providerFee.providerFeeAmount,
-      initializeDataAlgo.providerFee.v,
-      initializeDataAlgo.providerFee.r,
-      initializeDataAlgo.providerFee.s,
-      initializeDataAlgo.providerFee.providerData
+      providerAlgoFees
     )
     assert(txidAlgo, 'Failed to order algo')
+
+    const providerValidUntil = new Date()
+    providerValidUntil.setHours(providerValidUntil.getHours() + 1)
+
     // initialize provider orders for asset
     const initializeData = await ProviderInstance.initialize(
       resolvedDDOAsset.id,
@@ -282,21 +292,26 @@ describe('Simple compute tests', async () => {
       providerUrl,
       crossFetchGeneric,
       null,
-      'env1'
+      'env1',
+      providerValidUntil.getTime()
     )
+    const providerDatasetFees: ProviderFees = {
+      providerFeeAddress: initializeData.providerFee.providerFeeAddress,
+      providerFeeToken: initializeData.providerFee.providerFeeToken,
+      providerFeeAmount: initializeData.providerFee.providerFeeAmount,
+      v: initializeData.providerFee.v,
+      r: initializeData.providerFee.r,
+      s: initializeData.providerFee.s,
+      providerData: initializeData.providerFee.providerData,
+      validUntil: initializeData.providerFee.validUntil
+    }
     // make the payment
     const txidAsset = await datatoken.startOrder(
       datatokenAddressAsset,
       consumerAccount,
       initializeDataAlgo.computeAddress,
       0,
-      initializeData.providerFee.providerFeeAddress,
-      initializeData.providerFee.providerFeeToken,
-      initializeData.providerFee.providerFeeAmount,
-      initializeData.providerFee.v,
-      initializeData.providerFee.r,
-      initializeData.providerFee.s,
-      initializeData.providerFee.providerData
+      providerDatasetFees
     )
     assert(txidAsset, 'Failed to order algo')
     // start the compute job

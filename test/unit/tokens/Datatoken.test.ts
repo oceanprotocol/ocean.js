@@ -17,6 +17,7 @@ import { Datatoken, Nft, OrderParams, DispenserParams } from '../../../src/token
 import { AbiItem } from 'web3-utils'
 import { FreCreationParams, FreOrderParams } from '../../../src/interfaces'
 import { ZERO_ADDRESS, signHash } from '../../../src/utils'
+import { ProviderFees } from '../../../src/@types/Provider.js'
 
 const web3 = new Web3('http://127.0.0.1:8545')
 
@@ -164,7 +165,7 @@ describe('Datatoken', () => {
       owner: nftOwner,
       marketFeeCollector: nftOwner,
       baseTokenDecimals: 18,
-      dataTokenDecimals: 18,
+      datatokenDecimals: 18,
       fixedRate: web3.utils.toWei('1'),
       marketFee: 1e15
     }
@@ -182,7 +183,7 @@ describe('Datatoken', () => {
       owner: nftOwner,
       marketFeeCollector: nftOwner,
       baseTokenDecimals: 18,
-      dataTokenDecimals: 18,
+      datatokenDecimals: 18,
       fixedRate: web3.utils.toWei('1'),
       marketFee: 1e15
     }
@@ -344,25 +345,31 @@ describe('Datatoken', () => {
     const providerData = JSON.stringify({ timeout: 0 })
     const providerFeeToken = ZERO_ADDRESS
     const providerFeeAmount = '0'
+    const providerValidUntil = '0'
     const message = web3.utils.soliditySha3(
       { t: 'bytes', v: web3.utils.toHex(web3.utils.asciiToHex(providerData)) },
       { t: 'address', v: user3 },
       { t: 'address', v: providerFeeToken },
-      { t: 'uint256', v: providerFeeAmount }
+      { t: 'uint256', v: providerFeeAmount },
+      { t: 'uint256', v: providerValidUntil }
     )
     const { v, r, s } = await signHash(web3, message, user3)
+    const providerFees: ProviderFees = {
+      providerFeeAddress: user3,
+      providerFeeToken: providerFeeToken,
+      providerFeeAmount: providerFeeAmount,
+      v: v,
+      r: r,
+      s: s,
+      providerData: web3.utils.toHex(web3.utils.asciiToHex(providerData)),
+      validUntil: providerValidUntil
+    }
     const order = await datatoken.startOrder(
       datatokenAddress,
       user1,
       user2,
       1,
-      user3,
-      providerFeeToken,
-      providerFeeAmount,
-      v,
-      r,
-      s,
-      web3.utils.toHex(web3.utils.asciiToHex(providerData))
+      providerFees
     )
     assert(order !== null)
 
@@ -390,18 +397,22 @@ describe('Datatoken', () => {
       { t: 'uint256', v: providerFeeAmount }
     )
     const { v, r, s } = await signHash(web3, message, user3)
+    const providerValidUntil = '0'
+    const providerFees: ProviderFees = {
+      providerFeeAddress: user3,
+      providerFeeToken: providerFeeToken,
+      providerFeeAmount: providerFeeAmount,
+      v: v,
+      r: r,
+      s: s,
+      providerData: web3.utils.toHex(web3.utils.asciiToHex(providerData)),
+      validUntil: providerValidUntil
+    }
     const order: OrderParams = {
       consumer: user1,
       serviceIndex: 1,
-      providerFeeAddress: user3,
-      providerFeeToken,
-      providerFeeAmount,
-      v,
-      r,
-      s,
-      providerData: web3.utils.toHex(web3.utils.asciiToHex(providerData))
+      _providerFees: providerFees
     }
-    console.log('order', order)
     const buyFromDispenseTx = await datatoken.buyFromDispenserAndOrder(
       datatokenAddress,
       nftOwner,
@@ -422,16 +433,21 @@ describe('Datatoken', () => {
       { t: 'uint256', v: providerFeeAmount }
     )
     const { v, r, s } = await signHash(web3, message, user3)
+    const providerValidUntil = '0'
+    const providerFees: ProviderFees = {
+      providerFeeAddress: user1,
+      providerFeeToken: providerFeeToken,
+      providerFeeAmount: providerFeeAmount,
+      v: v,
+      r: r,
+      s: s,
+      providerData: web3.utils.toHex(web3.utils.asciiToHex(providerData)),
+      validUntil: providerValidUntil
+    }
     const order: OrderParams = {
       consumer: user1,
       serviceIndex: 1,
-      providerFeeAddress: user1,
-      providerFeeToken,
-      providerFeeAmount,
-      v,
-      r,
-      s,
-      providerData: web3.utils.toHex(web3.utils.asciiToHex(providerData))
+      _providerFees: providerFees
     }
 
     const fre: FreOrderParams = {
