@@ -9,7 +9,9 @@ import {
   generateDtName,
   getFreCreationParams,
   getErcCreationParams,
-  getPoolCreationParams
+  getPoolCreationParams,
+  configHelperNetworks,
+  setContractDefaults
 } from '../utils'
 import {
   FreCreationParams,
@@ -17,6 +19,7 @@ import {
   PoolCreationParams,
   DispenserCreationParams
 } from '../interfaces'
+import { Config } from '../models/index.js'
 import { ProviderFees } from '../@types/index.js'
 
 interface Template {
@@ -47,7 +50,7 @@ export class NftFactory {
   public factory721Address: string
   public factory721Abi: AbiItem | AbiItem[]
   public web3: Web3
-  public startBlock: number
+  public config: Config
   public factory721: Contract
 
   /**
@@ -60,15 +63,15 @@ export class NftFactory {
     factory721Address: string,
     web3: Web3,
     factory721Abi?: AbiItem | AbiItem[],
-    startBlock?: number
+    config?: Config
   ) {
     this.factory721Address = factory721Address
     this.factory721Abi = factory721Abi || (defaultFactory721Abi.abi as AbiItem[])
     this.web3 = web3
-    this.startBlock = startBlock || 0
-    this.factory721 = new this.web3.eth.Contract(
-      this.factory721Abi,
-      this.factory721Address
+    this.config = config || configHelperNetworks[0]
+    this.factory721 = setContractDefaults(
+      new this.web3.eth.Contract(this.factory721Abi, this.factory721Address),
+      this.config
     )
   }
 
@@ -135,7 +138,7 @@ export class NftFactory {
       .send({
         from: address,
         gas: estGas + 1,
-        gasPrice: await getFairGasPrice(this.web3)
+        gasPrice: await getFairGasPrice(this.web3, this.config)
       })
 
     let tokenAddress = null
@@ -277,7 +280,7 @@ export class NftFactory {
       .send({
         from: address,
         gas: estGas + 1,
-        gasPrice: await getFairGasPrice(this.web3)
+        gasPrice: await getFairGasPrice(this.web3, this.config)
       })
 
     return trxReceipt
@@ -333,7 +336,7 @@ export class NftFactory {
       .send({
         from: address,
         gas: estGas + 1,
-        gasPrice: await getFairGasPrice(this.web3)
+        gasPrice: await getFairGasPrice(this.web3, this.config)
       })
 
     return trxReceipt
@@ -390,7 +393,7 @@ export class NftFactory {
       .send({
         from: address,
         gas: estGas + 1,
-        gasPrice: await getFairGasPrice(this.web3)
+        gasPrice: await getFairGasPrice(this.web3, this.config)
       })
 
     return trxReceipt
@@ -444,7 +447,7 @@ export class NftFactory {
       .send({
         from: address,
         gas: estGas + 1,
-        gasPrice: await getFairGasPrice(this.web3)
+        gasPrice: await getFairGasPrice(this.web3, this.config)
       })
 
     return trxReceipt
@@ -503,7 +506,7 @@ export class NftFactory {
       .send({
         from: address,
         gas: estGas + 1,
-        gasPrice: await getFairGasPrice(this.web3)
+        gasPrice: await getFairGasPrice(this.web3, this.config)
       })
 
     return trxReceipt
@@ -563,7 +566,7 @@ export class NftFactory {
       .send({
         from: address,
         gas: estGas + 1,
-        gasPrice: await getFairGasPrice(this.web3)
+        gasPrice: await getFairGasPrice(this.web3, this.config)
       })
 
     return trxReceipt
@@ -618,7 +621,7 @@ export class NftFactory {
       .send({
         from: address,
         gas: estGas + 1,
-        gasPrice: await getFairGasPrice(this.web3)
+        gasPrice: await getFairGasPrice(this.web3, this.config)
       })
 
     return trxReceipt
@@ -674,7 +677,7 @@ export class NftFactory {
       .send({
         from: address,
         gas: estGas + 1,
-        gasPrice: await getFairGasPrice(this.web3)
+        gasPrice: await getFairGasPrice(this.web3, this.config)
       })
 
     return trxReceipt
@@ -739,7 +742,7 @@ export class NftFactory {
       .send({
         from: address,
         gas: estGas + 1,
-        gasPrice: await getFairGasPrice(this.web3)
+        gasPrice: await getFairGasPrice(this.web3, this.config)
       })
 
     return trxReceipt
@@ -807,7 +810,7 @@ export class NftFactory {
       .send({
         from: address,
         gas: estGas + 1,
-        gasPrice: await getFairGasPrice(this.web3)
+        gasPrice: await getFairGasPrice(this.web3, this.config)
       })
 
     return trxReceipt
@@ -873,7 +876,7 @@ export class NftFactory {
       .send({
         from: address,
         gas: estGas + 1,
-        gasPrice: await getFairGasPrice(this.web3)
+        gasPrice: await getFairGasPrice(this.web3, this.config)
       })
 
     return trxReceipt

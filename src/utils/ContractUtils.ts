@@ -1,6 +1,31 @@
-import { Erc20CreateParams, FreCreationParams, PoolCreationParams } from '../interfaces'
 import Web3 from 'web3'
+import BigNumber from 'bignumber.js'
+import { Contract } from 'web3-eth-contract'
 import { generateDtName } from './DatatokenName'
+import { Erc20CreateParams, FreCreationParams, PoolCreationParams } from '../interfaces'
+import { Config } from '../models'
+
+export function setContractDefaults(contract: Contract, config: Config): Contract {
+  if (config) {
+    if (config.transactionBlockTimeout)
+      contract.transactionBlockTimeout = config.transactionBlockTimeout
+    if (config.transactionConfirmationBlocks)
+      contract.transactionConfirmationBlocks = config.transactionConfirmationBlocks
+    if (config.transactionPollingTimeout)
+      contract.transactionPollingTimeout = config.transactionPollingTimeout
+  }
+  return contract
+}
+
+export async function getFairGasPrice(web3: Web3, config: Config): Promise<string> {
+  const x = new BigNumber(await web3.eth.getGasPrice())
+  if (config && config.gasFeeMultiplier)
+    return x
+      .multipliedBy(config.gasFeeMultiplier)
+      .integerValue(BigNumber.ROUND_DOWN)
+      .toString(10)
+  else return x.toString(10)
+}
 
 export function getErcCreationParams(ercParams: Erc20CreateParams): any {
   let name: string, symbol: string

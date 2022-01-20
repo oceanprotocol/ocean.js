@@ -17,7 +17,11 @@ const configHelperNetworksBase: Config = {
   poolTemplateAddress: null,
   fixedRateExchangeAddress: null,
   dispenserAddress: null,
-  startBlock: 0
+  startBlock: 0,
+  transactionBlockTimeout: 50,
+  transactionConfirmationBlocks: 1,
+  transactionPollingTimeout: 750,
+  gasFeeMultiplier: 1
 }
 
 export const configHelperNetworks: Config[] = [
@@ -59,7 +63,11 @@ export const configHelperNetworks: Config[] = [
     providerUri: 'https://provider.mainnet.oceanprotocol.com',
     subgraphUri: 'https://subgraph.mainnet.oceanprotocol.com',
     explorerUri: 'https://etherscan.io',
-    startBlock: 11105459
+    startBlock: 11105459,
+    transactionBlockTimeout: 150,
+    transactionConfirmationBlocks: 5,
+    transactionPollingTimeout: 1750,
+    gasFeeMultiplier: 1.05
   },
   {
     ...configHelperNetworksBase,
@@ -117,7 +125,8 @@ export const configHelperNetworks: Config[] = [
     nodeUri: 'https://bsc-dataseed.binance.org',
     providerUri: 'https://provider.bsc.oceanprotocol.com',
     subgraphUri: 'https://subgraph.bsc.oceanprotocol.com',
-    explorerUri: 'https://bscscan.com/'
+    explorerUri: 'https://bscscan.com/',
+    gasFeeMultiplier: 1.05
   },
   {
     ...configHelperNetworksBase,
@@ -135,7 +144,8 @@ export const configHelperNetworks: Config[] = [
     nodeUri: 'https://rpc.energyweb.org',
     providerUri: 'https://provider.energyweb.oceanprotocol.com',
     subgraphUri: 'https://subgraph.energyweb.oceanprotocol.com',
-    explorerUri: 'https://explorer.energyweb.org'
+    explorerUri: 'https://explorer.energyweb.org',
+    gasFeeMultiplier: 1.05
   },
   {
     ...configHelperNetworksBase,
@@ -144,7 +154,8 @@ export const configHelperNetworks: Config[] = [
     nodeUri: 'https://moonriver.api.onfinality.io/public',
     providerUri: 'https://provider.moonriver.oceanprotocol.com',
     subgraphUri: 'https://subgraph.moonriver.oceanprotocol.com',
-    explorerUri: 'https://blockscout.moonriver.moonbeam.network'
+    explorerUri: 'https://blockscout.moonriver.moonbeam.network',
+    gasFeeMultiplier: 1.05
   }
 ]
 

@@ -4,8 +4,14 @@ import { Contract } from 'web3-eth-contract'
 import { TransactionReceipt } from 'web3-eth'
 import Decimal from 'decimal.js'
 import defaultDispenserAbi from '../../artifacts/pools/dispenser/Dispenser.sol/Dispenser.json'
-import { LoggerInstance as logger, getFairGasPrice } from '../../utils/'
+import {
+  LoggerInstance as logger,
+  getFairGasPrice,
+  configHelperNetworks,
+  setContractDefaults
+} from '../../utils/'
 import { Datatoken } from '../../tokens'
+import { Config } from '../../models/index.js'
 
 export interface DispenserToken {
   active: boolean
@@ -21,7 +27,7 @@ export class Dispenser {
   public GASLIMIT_DEFAULT = 1000000
   public web3: Web3 = null
   public dispenserAddress: string
-  public startBlock: number
+  public config: Config
   public dispenserAbi: AbiItem | AbiItem[]
   public dispenserContract: Contract
 
@@ -35,17 +41,16 @@ export class Dispenser {
     web3: Web3,
     dispenserAddress: string = null,
     dispenserAbi: AbiItem | AbiItem[] = null,
-    startBlock?: number
+    config?: Config
   ) {
     this.web3 = web3
     this.dispenserAddress = dispenserAddress
-    if (startBlock) this.startBlock = startBlock
-    else this.startBlock = 0
     this.dispenserAbi = dispenserAbi || (defaultDispenserAbi.abi as AbiItem[])
+    this.config = config || configHelperNetworks[0]
     if (web3)
-      this.dispenserContract = new this.web3.eth.Contract(
-        this.dispenserAbi,
-        this.dispenserAddress
+      this.dispenserContract = setContractDefaults(
+        new this.web3.eth.Contract(this.dispenserAbi, this.dispenserAddress),
+        this.config
       )
   }
 
@@ -140,7 +145,7 @@ export class Dispenser {
       .send({
         from: address,
         gas: estGas + 1,
-        gasPrice: await getFairGasPrice(this.web3)
+        gasPrice: await getFairGasPrice(this.web3, this.config)
       })
     return trxReceipt
   }
@@ -200,7 +205,7 @@ export class Dispenser {
         .send({
           from: address,
           gas: estGas + 1,
-          gasPrice: await getFairGasPrice(this.web3)
+          gasPrice: await getFairGasPrice(this.web3, this.config)
         })
       return trxReceipt
     } catch (e) {
@@ -243,7 +248,7 @@ export class Dispenser {
       const trxReceipt = await this.dispenserContract.methods.deactivate(dtAddress).send({
         from: address,
         gas: estGas + 1,
-        gasPrice: await getFairGasPrice(this.web3)
+        gasPrice: await getFairGasPrice(this.web3, this.config)
       })
       return trxReceipt
     } catch (e) {
@@ -299,7 +304,7 @@ export class Dispenser {
         .send({
           from: address,
           gas: estGas + 1,
-          gasPrice: await getFairGasPrice(this.web3)
+          gasPrice: await getFairGasPrice(this.web3, this.config)
         })
       return trxReceipt
     } catch (e) {
@@ -356,7 +361,7 @@ export class Dispenser {
         .send({
           from: address,
           gas: estGas + 1,
-          gasPrice: await getFairGasPrice(this.web3)
+          gasPrice: await getFairGasPrice(this.web3, this.config)
         })
       return trxReceipt
     } catch (e) {
@@ -402,7 +407,7 @@ export class Dispenser {
         .send({
           from: address,
           gas: estGas + 1,
-          gasPrice: await getFairGasPrice(this.web3)
+          gasPrice: await getFairGasPrice(this.web3, this.config)
         })
       return trxReceipt
     } catch (e) {

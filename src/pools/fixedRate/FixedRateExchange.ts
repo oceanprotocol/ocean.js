@@ -5,7 +5,13 @@ import { TransactionReceipt } from 'web3-core'
 import { Contract } from 'web3-eth-contract'
 import { AbiItem } from 'web3-utils/types'
 import Web3 from 'web3'
-import { LoggerInstance, getFairGasPrice } from '../../utils'
+import {
+  LoggerInstance,
+  getFairGasPrice,
+  configHelperNetworks,
+  setContractDefaults
+} from '../../utils'
+import { Config } from '../../models/index.js'
 
 export interface FixedPriceExchange {
   active: boolean
@@ -54,7 +60,7 @@ export class FixedRateExchange {
   public web3: Web3
   public contract: Contract = null
 
-  public startBlock: number
+  public config: Config
   public ssAbi: AbiItem | AbiItem[]
 
   /**
@@ -67,27 +73,25 @@ export class FixedRateExchange {
     fixedRateAddress: string,
     fixedRateExchangeAbi: AbiItem | AbiItem[] = null,
     oceanAddress: string = null,
-    startBlock?: number
+    config?: Config
   ) {
     this.web3 = web3
-
-    if (startBlock) this.startBlock = startBlock
-    else this.startBlock = 0
+    this.config = config || configHelperNetworks[0]
     this.fixedRateExchangeAbi =
       fixedRateExchangeAbi || (defaultFixedRateExchangeAbi.abi as AbiItem[])
     this.oceanAddress = oceanAddress
     this.fixedRateAddress = fixedRateAddress
-    this.contract = new this.web3.eth.Contract(
-      this.fixedRateExchangeAbi,
-      this.fixedRateAddress
+    this.contract = setContractDefaults(
+      new this.web3.eth.Contract(this.fixedRateExchangeAbi, this.fixedRateAddress),
+      this.config
     )
   }
 
   async amountToUnits(token: string, amount: string): Promise<string> {
     let decimals = 18
-    const tokenContract = new this.web3.eth.Contract(
-      defaultErc20Abi.abi as AbiItem[],
-      token
+    const tokenContract = setContractDefaults(
+      new this.web3.eth.Contract(defaultErc20Abi.abi as AbiItem[], token),
+      this.config
     )
 
     try {
@@ -103,9 +107,9 @@ export class FixedRateExchange {
 
   async unitsToAmount(token: string, amount: string): Promise<string> {
     let decimals = 18
-    const tokenContract = new this.web3.eth.Contract(
-      defaultErc20Abi.abi as AbiItem[],
-      token
+    const tokenContract = setContractDefaults(
+      new this.web3.eth.Contract(defaultErc20Abi.abi as AbiItem[], token),
+      this.config
     )
     try {
       decimals = await tokenContract.methods.decimals().call()
@@ -202,7 +206,7 @@ export class FixedRateExchange {
         .send({
           from: address,
           gas: estGas + 1,
-          gasPrice: await getFairGasPrice(this.web3)
+          gasPrice: await getFairGasPrice(this.web3, this.config)
         })
       return trxReceipt
     } catch (e) {
@@ -277,7 +281,7 @@ export class FixedRateExchange {
         .send({
           from: address,
           gas: estGas + 1,
-          gasPrice: await getFairGasPrice(this.web3)
+          gasPrice: await getFairGasPrice(this.web3, this.config)
         })
       return trxReceipt
     } catch (e) {
@@ -346,7 +350,7 @@ export class FixedRateExchange {
       .send({
         from: address,
         gas: estGas + 1,
-        gasPrice: await getFairGasPrice(this.web3)
+        gasPrice: await getFairGasPrice(this.web3, this.config)
       })
     return trxReceipt
   }
@@ -396,7 +400,7 @@ export class FixedRateExchange {
       .send({
         from: address,
         gas: estGas + 1,
-        gasPrice: await getFairGasPrice(this.web3)
+        gasPrice: await getFairGasPrice(this.web3, this.config)
       })
     return trxReceipt
   }
@@ -445,7 +449,7 @@ export class FixedRateExchange {
     const trxReceipt = await this.contract.methods.toggleExchangeState(exchangeId).send({
       from: address,
       gas: estGas + 1,
-      gasPrice: await getFairGasPrice(this.web3)
+      gasPrice: await getFairGasPrice(this.web3, this.config)
     })
     return trxReceipt
   }
@@ -494,7 +498,7 @@ export class FixedRateExchange {
     const trxReceipt = await this.contract.methods.toggleExchangeState(exchangeId).send({
       from: address,
       gas: estGas + 1,
-      gasPrice: await getFairGasPrice(this.web3)
+      gasPrice: await getFairGasPrice(this.web3, this.config)
     })
 
     return trxReceipt
@@ -721,7 +725,7 @@ export class FixedRateExchange {
       .send({
         from: address,
         gas: estGas + 1,
-        gasPrice: await getFairGasPrice(this.web3)
+        gasPrice: await getFairGasPrice(this.web3, this.config)
       })
     return trxReceipt
   }
@@ -772,7 +776,7 @@ export class FixedRateExchange {
       .send({
         from: address,
         gas: estGas + 1,
-        gasPrice: await getFairGasPrice(this.web3)
+        gasPrice: await getFairGasPrice(this.web3, this.config)
       })
 
     return trxReceipt
@@ -820,7 +824,7 @@ export class FixedRateExchange {
     const trxReceipt = await this.contract.methods.collectBT(exchangeId).send({
       from: address,
       gas: estGas + 1,
-      gasPrice: await getFairGasPrice(this.web3)
+      gasPrice: await getFairGasPrice(this.web3, this.config)
     })
     return trxReceipt
   }
@@ -867,7 +871,7 @@ export class FixedRateExchange {
     const trxReceipt = await this.contract.methods.collectDT(exchangeId).send({
       from: address,
       gas: estGas + 1,
-      gasPrice: await getFairGasPrice(this.web3)
+      gasPrice: await getFairGasPrice(this.web3, this.config)
     })
     return trxReceipt
   }
@@ -914,7 +918,7 @@ export class FixedRateExchange {
     const trxReceipt = await this.contract.methods.collectMarketFee(exchangeId).send({
       from: address,
       gas: estGas + 1,
-      gasPrice: await getFairGasPrice(this.web3)
+      gasPrice: await getFairGasPrice(this.web3, this.config)
     })
     return trxReceipt
   }
@@ -961,7 +965,7 @@ export class FixedRateExchange {
     const trxReceipt = await this.contract.methods.collectOceanFee(exchangeId).send({
       from: address,
       gas: estGas + 1,
-      gasPrice: await getFairGasPrice(this.web3)
+      gasPrice: await getFairGasPrice(this.web3, this.config)
     })
     return trxReceipt
   }
@@ -1058,7 +1062,7 @@ export class FixedRateExchange {
       .send({
         from: address,
         gas: estGas + 1,
-        gasPrice: await getFairGasPrice(this.web3)
+        gasPrice: await getFairGasPrice(this.web3, this.config)
       })
     return trxReceipt
   }
@@ -1112,7 +1116,7 @@ export class FixedRateExchange {
       .send({
         from: address,
         gas: estGas + 1,
-        gasPrice: await getFairGasPrice(this.web3)
+        gasPrice: await getFairGasPrice(this.web3, this.config)
       })
     return trxReceipt
   }
