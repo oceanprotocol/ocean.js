@@ -190,7 +190,7 @@ export class Config {
   transactionPollingTimeout: number
 
   /**
-   * Specify the multiplaier for the gas fee
+   * Specify the multiplier for the gas fee
    * @type {number}
    */
   gasFeeMultiplier: number
