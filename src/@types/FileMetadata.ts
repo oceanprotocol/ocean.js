@@ -35,4 +35,10 @@ export interface FileMetadata {
    * @type {string}
    */
   method?: string
+
+  /**
+   * check if file exists
+   * @type {boolean}
+   */
+  valid?: boolean
 }

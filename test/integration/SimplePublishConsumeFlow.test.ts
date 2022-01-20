@@ -123,7 +123,7 @@ describe('Simple Publish & consume test', async () => {
       encryptedResponse,
       '0x' + metadataHash
     )
-    const resolvedDDO = await aquarius.waitForAqua(crossFetchGeneric, ddo.id)
+    const resolvedDDO = await aquarius.waitForAqua(ddo.id, null, crossFetchGeneric)
     assert(resolvedDDO, 'Cannot fetch DDO from Aquarius')
     // mint 1 ERC20 and send it to the consumer
     await datatoken.mint(datatokenAddress, publisherAccount, '1', consumerAccount)
