@@ -85,21 +85,21 @@ export class Router {
    * @return {Promise<boolean>} true if is on the list.
    */
   public async isOceanTokens(address: string): Promise<boolean> {
-    return await this.router.methods.oceanTokens(address).call()
+    return await this.router.methods.isOceanToken(address).call()
   }
 
   /** Check if an address is a side staking contract.
    * @return {Promise<boolean>} true if is a SS contract
    */
   public async isSideStaking(address: string): Promise<boolean> {
-    return await this.router.methods.ssContracts(address).call()
+    return await this.router.methods.isSSContract(address).call()
   }
 
   /** Check if an address is a Fixed Rate contract.
    * @return {Promise<boolean>} true if is a Fixed Rate contract
    */
   public async isFixedPrice(address: string): Promise<boolean> {
-    return await this.router.methods.fixedPrice(address).call()
+    return await this.router.methods.isFixedRateContract(address).call()
   }
 
   /** Get Router Owner
@@ -150,7 +150,7 @@ export class Router {
   }
 
   /**
-   * Add a new token to oceanTokens list, pools with basetoken in this list have NO opf Fee
+   * Add a new token to oceanTokens list, pools with baseToken in this list have NO opf Fee
    * @param {String} address caller address
    * @param {String} tokenAddress token address to add
    * @return {Promise<TransactionReceipt>}
@@ -202,7 +202,7 @@ export class Router {
   }
 
   /**
-   * Remove a token from oceanTokens list, pools without basetoken in this list have a opf Fee
+   * Remove a token from oceanTokens list, pools without baseToken in this list have a opf Fee
    * @param {String} address
    * @param {String} tokenAddress address to remove
    * @return {Promise<TransactionReceipt>}
@@ -572,7 +572,7 @@ export class Router {
     const estGas = await this.estGasUpdateOPFFee(address, newFee)
 
     // Invoke createToken function of the contract
-    const trxReceipt = await this.router.methods.updateOPFFee(newFee).send({
+    const trxReceipt = await this.router.methods.updateOPFFee(newFee, newFee).send({
       from: address,
       gas: estGas + 1,
       gasPrice: await getFairGasPrice(this.web3, this.config)

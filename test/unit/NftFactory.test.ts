@@ -18,6 +18,7 @@ import {
   PoolCreationParams
 } from '../../src/interfaces'
 import { ZERO_ADDRESS, signHash } from '../../src/utils'
+import { ProviderFees } from '../../src/@types'
 
 const web3 = new Web3('http://127.0.0.1:8545')
 
@@ -218,16 +219,16 @@ describe('Nft Factory test', () => {
 
     const poolParams: PoolCreationParams = {
       ssContract: contracts.sideStakingAddress,
-      basetokenAddress: contracts.daiAddress,
-      basetokenSender: contracts.factory721Address,
+      baseTokenAddress: contracts.daiAddress,
+      baseTokenSender: contracts.factory721Address,
       publisherAddress: contracts.accounts[0],
       marketFeeCollector: contracts.accounts[0],
       poolTemplateAddress: contracts.poolTemplateAddress,
       rate: '1',
-      basetokenDecimals: 18,
+      baseTokenDecimals: 18,
       vestingAmount: '10000',
       vestedBlocks: 2500000,
-      initialBasetokenLiquidity: '2000',
+      initialBaseTokenLiquidity: '2000',
       swapFeeLiquidityProvider: 1e15,
       swapFeeMarketRunner: 1e15
     }
@@ -272,7 +273,7 @@ describe('Nft Factory test', () => {
       owner: contracts.accounts[0],
       marketFeeCollector: contracts.accounts[0],
       baseTokenDecimals: 18,
-      dataTokenDecimals: 18,
+      datatokenDecimals: 18,
       fixedRate: '1',
       marketFee: 1e15,
       allowedConsumer: contracts.accounts[0],
@@ -376,39 +377,41 @@ describe('Nft Factory test', () => {
     expect(await dtContract2.methods.balanceOf(user2).call()).to.equal(dtAmount)
 
     const providerData = JSON.stringify({ timeout: 0 })
+    const providerValidUntil = '0'
     const message = web3.utils.soliditySha3(
       { t: 'bytes', v: web3.utils.toHex(web3.utils.asciiToHex(providerData)) },
       { t: 'address', v: consumeFeeAddress },
       { t: 'address', v: consumeFeeToken },
-      { t: 'uint256', v: web3.utils.toWei(consumeFeeAmount) }
+      { t: 'uint256', v: web3.utils.toWei(consumeFeeAmount) },
+      { t: 'uint256', v: providerValidUntil }
     )
+
     const { v, r, s } = await signHash(web3, message, consumeFeeAddress)
+    const providerFees: ProviderFees = {
+      providerFeeAddress: consumeFeeAddress,
+      providerFeeToken: consumeFeeToken,
+      providerFeeAmount: consumeFeeAmount,
+      v: v,
+      r: r,
+      s: s,
+      providerData: web3.utils.toHex(web3.utils.asciiToHex(providerData)),
+      validUntil: providerValidUntil
+    }
     const orders: TokenOrder[] = [
       {
         tokenAddress: dtAddress,
         consumer: consumer,
         serviceIndex: serviceIndex,
-        providerFeeAddress: consumeFeeAddress,
-        providerFeeToken: consumeFeeToken,
-        providerFeeAmount: consumeFeeAmount,
-        v,
-        r,
-        s,
-        providerData: web3.utils.toHex(web3.utils.asciiToHex(providerData))
+        _providerFees: providerFees
       },
       {
         tokenAddress: dtAddress2,
         consumer: consumer,
         serviceIndex: serviceIndex,
-        providerFeeAddress: consumeFeeAddress,
-        providerFeeToken: consumeFeeToken,
-        providerFeeAmount: consumeFeeAmount,
-        v,
-        r,
-        s,
-        providerData: web3.utils.toHex(web3.utils.asciiToHex(providerData))
+        _providerFees: providerFees
       }
     ]
+    console.log('orders', orders)
     await nftFactory.startMultipleTokenOrder(user2, orders)
     // we check user2 has no more DTs
     expect(await dtContract.methods.balanceOf(user2).call()).to.equal('0')

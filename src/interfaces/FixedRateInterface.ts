@@ -4,7 +4,7 @@ export interface FreCreationParams {
   owner: string
   marketFeeCollector: string
   baseTokenDecimals: number
-  dataTokenDecimals: number
+  datatokenDecimals: number
   fixedRate: string
   marketFee: number
   withMint?: boolean // add FixedPriced contract as minter if withMint == true

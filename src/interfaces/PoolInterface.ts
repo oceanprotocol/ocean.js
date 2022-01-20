@@ -1,15 +1,15 @@
 export interface PoolCreationParams {
   ssContract: string
-  basetokenAddress: string
-  basetokenSender: string
+  baseTokenAddress: string
+  baseTokenSender: string
   publisherAddress: string
   marketFeeCollector: string
   poolTemplateAddress: string
   rate: string
-  basetokenDecimals: number
+  baseTokenDecimals: number
   vestingAmount: string
   vestedBlocks: number
-  initialBasetokenLiquidity: string
+  initialBaseTokenLiquidity: string
   swapFeeLiquidityProvider: number
   swapFeeMarketRunner: number
 }

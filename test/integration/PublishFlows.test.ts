@@ -106,16 +106,16 @@ describe('Publish tests', async () => {
     }
     const poolParams: PoolCreationParams = {
       ssContract: addresses.Staking,
-      basetokenAddress: addresses.MockDAI,
-      basetokenSender: addresses.ERC721Factory,
+      baseTokenAddress: addresses.MockDAI,
+      baseTokenSender: addresses.ERC721Factory,
       publisherAddress: accounts[0],
       marketFeeCollector: accounts[0],
       poolTemplateAddress: addresses.poolTemplate,
       rate: '1',
-      basetokenDecimals: 18,
+      baseTokenDecimals: 18,
       vestingAmount: '10000',
       vestedBlocks: 2500000,
-      initialBasetokenLiquidity: '2000',
+      initialBaseTokenLiquidity: '2000',
       swapFeeLiquidityProvider: 1e15,
       swapFeeMarketRunner: 1e15
     }
@@ -147,8 +147,8 @@ describe('Publish tests', async () => {
       'did:op:' + SHA256(web3.utils.toChecksumAddress(nftAddress) + chain.toString(10))
 
     const AssetValidation: ValidateMetadata = await aquarius.validate(
-      crossFetchGeneric,
-      poolDdo
+      poolDdo,
+      crossFetchGeneric
     )
     assert(AssetValidation.valid === true, 'Published asset is not valid')
 
@@ -173,7 +173,7 @@ describe('Publish tests', async () => {
       [AssetValidation.proof]
     )
 
-    const resolvedDDO = await aquarius.waitForAqua(crossFetchGeneric, poolDdo.id)
+    const resolvedDDO = await aquarius.waitForAqua(poolDdo.id, null, crossFetchGeneric)
     assert(resolvedDDO, 'Cannot fetch DDO from Aquarius')
   })
 
@@ -201,7 +201,7 @@ describe('Publish tests', async () => {
       owner: accounts[0],
       marketFeeCollector: accounts[0],
       baseTokenDecimals: 18,
-      dataTokenDecimals: 18,
+      datatokenDecimals: 18,
       fixedRate: '1',
       marketFee: 1e15,
       allowedConsumer: accounts[0],
@@ -236,8 +236,8 @@ describe('Publish tests', async () => {
       'did:op:' + SHA256(web3.utils.toChecksumAddress(nftAddress) + chain.toString(10))
 
     const isAssetValid: ValidateMetadata = await aquarius.validate(
-      crossFetchGeneric,
-      fixedPriceDdo
+      fixedPriceDdo,
+      crossFetchGeneric
     )
     assert(isAssetValid.valid === true, 'Published asset is not valid')
 
@@ -260,7 +260,11 @@ describe('Publish tests', async () => {
       '0x' + metadataHash,
       []
     )
-    const resolvedDDO = await aquarius.waitForAqua(crossFetchGeneric, fixedPriceDdo.id)
+    const resolvedDDO = await aquarius.waitForAqua(
+      fixedPriceDdo.id,
+      null,
+      crossFetchGeneric
+    )
     assert(resolvedDDO, 'Cannot fetch DDO from Aquarius')
   })
 
@@ -317,8 +321,8 @@ describe('Publish tests', async () => {
       'did:op:' + SHA256(web3.utils.toChecksumAddress(nftAddress) + chain.toString(10))
 
     const isAssetValid: ValidateMetadata = await aquarius.validate(
-      crossFetchGeneric,
-      dispenserDdo
+      dispenserDdo,
+      crossFetchGeneric
     )
     assert(isAssetValid.valid === true, 'Published asset is not valid')
 
@@ -340,7 +344,11 @@ describe('Publish tests', async () => {
       encryptedResponse,
       '0x' + metadataHash
     )
-    const resolvedDDO = await aquarius.waitForAqua(crossFetchGeneric, dispenserDdo.id)
+    const resolvedDDO = await aquarius.waitForAqua(
+      dispenserDdo.id,
+      null,
+      crossFetchGeneric
+    )
     assert(resolvedDDO, 'Cannot fetch DDO from Aquarius')
   })
 })

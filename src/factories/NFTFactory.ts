@@ -20,6 +20,7 @@ import {
   DispenserCreationParams
 } from '../interfaces'
 import { Config } from '../models/index.js'
+import { ProviderFees } from '../@types/index.js'
 
 interface Template {
   templateAddress: string
@@ -30,13 +31,7 @@ export interface TokenOrder {
   tokenAddress: string
   consumer: string
   serviceIndex: number
-  providerFeeAddress: string
-  providerFeeToken: string
-  providerFeeAmount: string
-  v: string // v of provider signed message
-  r: string // r of provider signed message
-  s: string // s of provider signed message
-  providerData: string // data encoded by provider
+  _providerFees: ProviderFees
 }
 
 export interface NftCreateData {
@@ -59,7 +54,7 @@ export class NftFactory {
   public factory721: Contract
 
   /**
-   * Instantiate DataTokens.
+   * Instantiate Datatokens.
    * @param {String} factory721Address
    * @param {AbiItem | AbiItem[]} factory721ABI
    * @param {Web3} web3

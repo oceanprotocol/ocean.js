@@ -1,7 +1,7 @@
 {
   "name": "@oceanprotocol/lib",
   "source": "./src/index.ts",
-  "version": "1.0.0-next.3",
+  "version": "1.0.0-next.6",
   "description": "JavaScript client library for Ocean Protocol",
   "main": "./dist/lib.js",
   "umd:main": "dist/lib.umd.js",
@@ -39,6 +39,7 @@
     "test:unit": "npm run mocha -- 'test/unit/**/*.test.ts'",
     "test:unit:cover": "nyc --report-dir coverage/unit npm run test:unit",
     "test:integration": "npm run mocha -- 'test/integration/**/*.test.ts'",
+    "test:provider": "npm run mocha -- 'test/integration/Provider.test.ts'",
     "test:integration:cover": "nyc --report-dir coverage/integration --no-clean npm run test:integration"
   },
   "repository": {

@@ -159,16 +159,16 @@ describe('SideStaking unit test', () => {
 
       const poolParams: PoolCreationParams = {
         ssContract: contracts.sideStakingAddress,
-        basetokenAddress: contracts.daiAddress,
-        basetokenSender: contracts.factory721Address,
+        baseTokenAddress: contracts.daiAddress,
+        baseTokenSender: contracts.factory721Address,
         publisherAddress: contracts.accounts[0],
         marketFeeCollector: contracts.accounts[0],
         poolTemplateAddress: contracts.poolTemplateAddress,
         rate: '1',
-        basetokenDecimals: 18,
+        baseTokenDecimals: 18,
         vestingAmount: '10000',
         vestedBlocks: vestedBlocks,
-        initialBasetokenLiquidity: '2000',
+        initialBaseTokenLiquidity: '2000',
         swapFeeLiquidityProvider: 1e15,
         swapFeeMarketRunner: 1e15
       }
@@ -196,24 +196,24 @@ describe('SideStaking unit test', () => {
       )
     })
 
-    it('#getDataTokenCirculatingSupply - should get datatoken supply in circulation (vesting amount excluded)', async () => {
+    it('#getDatatokenCirculatingSupply - should get datatoken supply in circulation (vesting amount excluded)', async () => {
       expect(
-        await sideStaking.getDataTokenCirculatingSupply(
-          contracts.sideStakingAddress,
-          erc20Token
-        )
-      ).to.equal(web3.utils.toWei('12000'))
-    })
-    it('#getDataTokenCurrentCirculatingSupply - should get datatoken supply in circulation ', async () => {
-      expect(
-        await sideStaking.getDataTokenCurrentCirculatingSupply(
+        await sideStaking.getDatatokenCirculatingSupply(
           contracts.sideStakingAddress,
           erc20Token
         )
       ).to.equal(web3.utils.toWei('2000'))
     })
-    it('#getBasetoken - should get basetoken address', async () => {
-      expect(await sideStaking.getBasetoken(sideStakingAddress, erc20Token)).to.equal(
+    it('#getDatatokenCurrentCirculatingSupply - should get datatoken supply in circulation ', async () => {
+      expect(
+        await sideStaking.getDatatokenCurrentCirculatingSupply(
+          contracts.sideStakingAddress,
+          erc20Token
+        )
+      ).to.equal(web3.utils.toWei('2000'))
+    })
+    it('#getBaseToken - should get baseToken address', async () => {
+      expect(await sideStaking.getBaseToken(sideStakingAddress, erc20Token)).to.equal(
         contracts.daiAddress
       )
     })
@@ -227,15 +227,15 @@ describe('SideStaking unit test', () => {
         await sideStaking.getPublisherAddress(sideStakingAddress, erc20Token)
       ).to.equal(contracts.accounts[0])
     })
-    it('#getBasetokenBalance ', async () => {
+    it('#getBaseTokenBalance ', async () => {
       expect(
-        await sideStaking.getBasetokenBalance(sideStakingAddress, erc20Token)
+        await sideStaking.getBaseTokenBalance(sideStakingAddress, erc20Token)
       ).to.equal('0')
     })
     it('#getDatatokenBalance ', async () => {
       expect(
         await sideStaking.getDatatokenBalance(sideStakingAddress, erc20Token)
-      ).to.equal('988000')
+      ).to.equal('997999.9999999999')
     })
 
     it('#getvestingAmount ', async () => {
@@ -455,16 +455,16 @@ describe('SideStaking unit test', () => {
 
       const poolParams: PoolCreationParams = {
         ssContract: contracts.sideStakingAddress,
-        basetokenAddress: contracts.usdcAddress,
-        basetokenSender: contracts.factory721Address,
+        baseTokenAddress: contracts.usdcAddress,
+        baseTokenSender: contracts.factory721Address,
         publisherAddress: contracts.accounts[0],
         marketFeeCollector: contracts.accounts[0],
         poolTemplateAddress: contracts.poolTemplateAddress,
         rate: '1',
-        basetokenDecimals: await usdcContract.methods.decimals().call(),
+        baseTokenDecimals: await usdcContract.methods.decimals().call(),
         vestingAmount: '10000',
         vestedBlocks: 2500000,
-        initialBasetokenLiquidity: web3.utils.fromWei(
+        initialBaseTokenLiquidity: web3.utils.fromWei(
           await pool.amountToUnits(contracts.usdcAddress, '2000')
         ),
         swapFeeLiquidityProvider: 1e15,
@@ -487,15 +487,15 @@ describe('SideStaking unit test', () => {
       expect(await erc20Contract.methods.balanceOf(user2).call()).to.equal('0')
     })
 
-    it('#getBasetokenBalance ', async () => {
+    it('#getBaseTokenBalance ', async () => {
       expect(
-        await sideStaking.getBasetokenBalance(sideStakingAddress, erc20Token)
+        await sideStaking.getBaseTokenBalance(sideStakingAddress, erc20Token)
       ).to.equal('0')
     })
     it('#getDatatokenBalance ', async () => {
       expect(
         await sideStaking.getDatatokenBalance(sideStakingAddress, erc20Token)
-      ).to.equal('988000')
+      ).to.equal('997999.9999999999')
     })
 
     it('#getvestingAmount ', async () => {

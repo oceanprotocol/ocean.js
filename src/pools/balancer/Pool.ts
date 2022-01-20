@@ -84,7 +84,7 @@ export class Pool {
   }
 
   /**
-   * Get Alloance for both DataToken and Ocean
+   * Get Alloance for both Datatoken and Ocean
    * @param {String } tokenAdress
    * @param {String} owner
    * @param {String} spender
@@ -355,11 +355,11 @@ export class Pool {
   }
 
   /**
-   * Get basetoken address of this pool
+   * Get baseToken address of this pool
    * @param {String} poolAddress
    * @return {String}
    */
-  async getBasetoken(poolAddress: string): Promise<string> {
+  async getBaseToken(poolAddress: string): Promise<string> {
     const pool = setContractDefaults(
       new this.web3.eth.Contract(this.poolAbi, poolAddress),
       this.config
@@ -368,7 +368,7 @@ export class Pool {
     try {
       result = await pool.methods.getBaseTokenAddress().call()
     } catch (e) {
-      this.logger.error(`ERROR: Failed to get basetoken address: ${e.message}`)
+      this.logger.error(`ERROR: Failed to get baseToken address: ${e.message}`)
     }
     return result
   }
@@ -385,7 +385,7 @@ export class Pool {
     )
     let result = null
     try {
-      result = await pool.methods.getDataTokenAddress().call()
+      result = await pool.methods.getDatatokenAddress().call()
     } catch (e) {
       this.logger.error(`ERROR: Failed to get datatoken address: ${e.message}`)
     }

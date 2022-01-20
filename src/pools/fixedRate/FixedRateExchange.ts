@@ -16,7 +16,7 @@ import { Config } from '../../models/index.js'
 export interface FixedPriceExchange {
   active: boolean
   exchangeOwner: string
-  dataToken: string
+  datatoken: string
   baseToken: string
   fixedRate: string
   dtDecimals: string
@@ -42,7 +42,7 @@ export interface FixedPriceSwap {
   exchangeId: string
   caller: string
   baseTokenAmount: string
-  dataTokenAmount: string
+  datatokenAmount: string
 }
 
 export enum FixedRateCreateProgressStep {
@@ -124,17 +124,17 @@ export class FixedRateExchange {
 
   /**
    * Creates unique exchange identifier.
-   * @param {String} dataToken Data Token Contract Address
+   * @param {String} datatoken Datatoken contract address
    * @param {String} owner Owner of the exchange
    * @return {Promise<string>} exchangeId
    */
   public async generateExchangeId(
-    basetoken: string,
-    dataToken: string,
+    baseToken: string,
+    datatoken: string,
     owner: string
   ): Promise<string> {
     const exchangeId = await this.contract.methods
-      .generateExchangeId(basetoken, dataToken, owner)
+      .generateExchangeId(baseToken, datatoken, owner)
       .call()
     return exchangeId
   }
@@ -151,7 +151,7 @@ export class FixedRateExchange {
     account: string,
     datatokenAddress: string,
     dtAmount: string,
-    maxBasetokenAmount: string,
+    maxBaseTokenAmount: string,
     contractInstance?: Contract
   ): Promise<number> {
     const fixedRate = contractInstance || this.fixedRateContract
@@ -159,7 +159,7 @@ export class FixedRateExchange {
     let estGas
     try {
       estGas = await fixedRate.methods
-        .buyDT(datatokenAddress, dtAmount.toString(), maxBasetokenAmount.toString())
+        .buyDT(datatokenAddress, dtAmount.toString(), maxBaseTokenAmount.toString())
         .estimateGas({ from: account }, (err, estGas) => (err ? gasLimitDefault : estGas))
     } catch (e) {
       estGas = gasLimitDefault
@@ -170,8 +170,8 @@ export class FixedRateExchange {
   /**
    * Atomic swap
    * @param {String} exchangeId ExchangeId
-   * @param {String} datatokenAmount Amount of Data Tokens
-   * @param {String} maxBasetokenAmount max amount of basetoken we want to pay for dataTokenAmount
+   * @param {String} datatokenAmount Amount of datatokens
+   * @param {String} maxBaseTokenAmount max amount of baseToken we want to pay for datatokenAmount
    * @param {String} address User address
    * @return {Promise<TransactionReceipt>} transaction receipt
    */
@@ -179,19 +179,19 @@ export class FixedRateExchange {
     address: string,
     exchangeId: string,
     datatokenAmount: string,
-    maxBasetokenAmount: string
+    maxBaseTokenAmount: string
   ): Promise<TransactionReceipt> {
     const dtAmountFormatted = await this.amountToUnits(
       (
         await this.getExchange(exchangeId)
-      ).dataToken,
+      ).datatoken,
       datatokenAmount
     )
     const maxBtFormatted = await this.amountToUnits(
       (
         await this.getExchange(exchangeId)
       ).baseToken,
-      maxBasetokenAmount
+      maxBaseTokenAmount
     )
 
     const estGas = await this.estBuyDT(
@@ -227,7 +227,7 @@ export class FixedRateExchange {
     account: string,
     datatokenAddress: string,
     dtAmount: string,
-    maxBasetokenAmount: string,
+    maxBaseTokenAmount: string,
     contractInstance?: Contract
   ): Promise<number> {
     const fixedRate = contractInstance || this.fixedRateContract
@@ -235,7 +235,7 @@ export class FixedRateExchange {
     let estGas
     try {
       estGas = await fixedRate.methods
-        .sellDT(datatokenAddress, dtAmount, maxBasetokenAmount)
+        .sellDT(datatokenAddress, dtAmount, maxBaseTokenAmount)
         .estimateGas({ from: account }, (err, estGas) => (err ? gasLimitDefault : estGas))
     } catch (e) {
       estGas = gasLimitDefault
@@ -246,8 +246,8 @@ export class FixedRateExchange {
   /**
    * Atomic swap
    * @param {String} exchangeId ExchangeId
-   * @param {String} datatokenAmount Amount of Data Tokens
-   * @param {String} minBasetokenAmount min amount of basetoken we want to receive back
+   * @param {String} datatokenAmount Amount of datatokens
+   * @param {String} minBaseTokenAmount min amount of baseToken we want to receive back
    * @param {String} address User address
    * @return {Promise<TransactionReceipt>} transaction receipt
    */
@@ -255,19 +255,19 @@ export class FixedRateExchange {
     address: string,
     exchangeId: string,
     datatokenAmount: string,
-    minBasetokenAmount: string
+    minBaseTokenAmount: string
   ): Promise<TransactionReceipt> {
     const dtAmountFormatted = await this.amountToUnits(
       (
         await this.getExchange(exchangeId)
-      ).dataToken,
+      ).datatoken,
       datatokenAmount
     )
     const minBtFormatted = await this.amountToUnits(
       (
         await this.getExchange(exchangeId)
       ).baseToken,
-      minBasetokenAmount
+      minBaseTokenAmount
     )
     const estGas = await this.estBuyDT(
       address,
@@ -293,7 +293,7 @@ export class FixedRateExchange {
   /**
    * Gets total number of exchanges
    * @param {String} exchangeId ExchangeId
-   * @param {Number} dataTokenAmount Amount of Data Tokens
+   * @param {Number} datatokenAmount Amount of datatokens
    * @return {Promise<Number>} no of available exchanges
    */
   public async getNumberOfExchanges(): Promise<number> {
@@ -524,13 +524,13 @@ export class FixedRateExchange {
     return await this.unitsToAmount(
       (
         await this.getExchange(exchangeId)
-      ).dataToken,
+      ).datatoken,
       dtSupply
     )
   }
 
   /**
-   * Get Basetoken Supply in the exchange
+   * Get BaseToken Supply in the exchange
    * @param {String} exchangeId ExchangeId
    * @return {Promise<string>} dt supply formatted
    */
@@ -554,14 +554,14 @@ export class FixedRateExchange {
   }
 
   /**
-   * getBTNeeded - returns amount in basetoken that user will pay for dataTokenAmount
+   * getBTNeeded - returns amount in baseToken that user will pay for datatokenAmount
    * @param {String} exchangeId ExchangeId
-   * @param {Number} dataTokenAmount Amount of Data Tokens user wants to buy
-   * @return {Promise<string>} Amount of basetoken needed for buying
+   * @param {Number} datatokenAmount Amount of datatokens user wants to buy
+   * @return {Promise<string>} Amount of baseToken needed for buying
    */
   public async getAmountBTIn(
     exchangeId: string,
-    dataTokenAmount: string
+    datatokenAmount: string
   ): Promise<string> {
     const result = await this.contract.methods
       .calcBaseInGivenOutDT(
@@ -569,8 +569,8 @@ export class FixedRateExchange {
         await this.amountToUnits(
           (
             await this.getExchange(exchangeId)
-          ).dataToken,
-          dataTokenAmount
+          ).datatoken,
+          datatokenAmount
         )
       )
       .call()
@@ -584,14 +584,14 @@ export class FixedRateExchange {
   }
 
   /**
-   * getBTOut - returns amount in basetoken that user will receive for dataTokenAmount sold
+   * getBTOut - returns amount in baseToken that user will receive for datatokenAmount sold
    * @param {String} exchangeId ExchangeId
-   * @param {Number} dataTokenAmount Amount of Data Tokens
-   * @return {Promise<string>} Amount of basetokens user will receive
+   * @param {Number} datatokenAmount Amount of datatokens
+   * @return {Promise<string>} Amount of baseTokens user will receive
    */
   public async getAmountBTOut(
     exchangeId: string,
-    dataTokenAmount: string
+    datatokenAmount: string
   ): Promise<string> {
     const result = await this.contract.methods
       .calcBaseOutGivenInDT(
@@ -599,8 +599,8 @@ export class FixedRateExchange {
         await this.amountToUnits(
           (
             await this.getExchange(exchangeId)
-          ).dataToken,
-          dataTokenAmount
+          ).datatoken,
+          datatokenAmount
         )
       )
       .call()
@@ -624,9 +624,9 @@ export class FixedRateExchange {
       .call()
     result.dtDecimals = result.dtDecimals.toString()
     result.btDecimals = result.btDecimals.toString()
-    result.dtBalance = await this.unitsToAmount(result.dataToken, result.dtBalance)
+    result.dtBalance = await this.unitsToAmount(result.datatoken, result.dtBalance)
     result.btBalance = await this.unitsToAmount(result.baseToken, result.btBalance)
-    result.dtSupply = await this.unitsToAmount(result.dataToken, result.dtSupply)
+    result.dtSupply = await this.unitsToAmount(result.datatoken, result.dtSupply)
     result.btSupply = await this.unitsToAmount(result.baseToken, result.btSupply)
     result.fixedRate = this.web3.utils.fromWei(result.fixedRate)
     result.exchangeId = exchangeId
@@ -808,7 +808,7 @@ export class FixedRateExchange {
   }
 
   /**
-   * Collect Basetokens in the contract (only exchange owner)
+   * Collect BaseTokens in the contract (only exchange owner)
    * @param {String} exchangeId ExchangeId
    * @param {String} address User address
    * @return {Promise<TransactionReceipt>} transaction receipt
