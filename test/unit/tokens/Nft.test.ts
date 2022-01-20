@@ -442,12 +442,10 @@ describe('NFT', () => {
       user1,
       metaDataAndTokenURI
     )
-    console.log('tx', tx)
     assert(tx.events.TokenURIUpdate)
     assert(tx.events.MetadataUpdated)
 
     const metadata = await nftDatatoken.getMetadata(nftAddress)
-    console.log('metadata', metadata)
     assert(metadata[0] === 'http://myprovider:8030')
     assert(metadata[1] === '0x123')
   })
