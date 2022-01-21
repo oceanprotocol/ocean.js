@@ -1,6 +1,6 @@
 import { LoggerInstance } from '../utils'
 import { Asset, DDO, ValidateMetadata } from '../@types/'
-
+import fetch from 'cross-fetch'
 export class Aquarius {
   public aquariusURL
   /**

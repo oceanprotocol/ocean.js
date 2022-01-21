@@ -26,7 +26,7 @@ const data = JSON.parse(
 const addresses = data.development
 const aquarius = new Aquarius('http://127.0.0.1:5000')
 const web3 = new Web3('http://127.0.0.1:8545')
-const providerUrl = 'http://172.15.0.4:8030'
+const providerUrl = 'http://127.0.0.1:8030'
 const assetUrl = [
   {
     type: 'url',
