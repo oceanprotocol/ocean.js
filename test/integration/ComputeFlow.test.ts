@@ -179,6 +179,7 @@ describe('Simple compute tests', async () => {
       encryptedResponse,
       '0x' + metadataHash
     )
+    console.log('setMetadata tx', res)
     // let's publish the algorithm as well
     const nftParamsAlgo: NftCreateData = {
       name: 'testNFT',
