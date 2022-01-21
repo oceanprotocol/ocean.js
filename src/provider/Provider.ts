@@ -27,7 +27,6 @@ export interface UserCustomParameters {
 export class Provider {
   /**
    * Returns the provider endpoints
-   * @param {HttpCallback} fetchMethod
    * @return {Promise<ServiceEndpoint[]>}
    */
   async getEndpoints(providerUri: string): Promise<any> {
@@ -150,7 +149,7 @@ export class Provider {
         method: 'POST',
         body: decodeURI(JSON.stringify(data)),
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/octet-stream'
         },
         signal: signal
       })
