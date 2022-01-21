@@ -10,7 +10,7 @@ import {
 } from '../@types/'
 import { noZeroX } from '../utils/ConversionTypeHelper'
 import { signText, signWithHash } from '../utils/SignatureUtils'
-
+import fetch from 'cross-fetch'
 export interface HttpCallback {
   (httpMethod: string, url: string, body: string, header: any): Promise<any>
 }

@@ -133,7 +133,7 @@ describe('Publish tests', async () => {
     const encryptedFiles = await ProviderInstance.encrypt(files, providerUrl)
 
     poolDdo.metadata.name = 'test-dataset-pool'
-    poolDdo.services[0].files = await encryptedFiles.text()
+    poolDdo.services[0].files = await encryptedFiles
     poolDdo.services[0].datatokenAddress = datatokenAddress
 
     poolDdo.nftAddress = nftAddress
@@ -146,7 +146,7 @@ describe('Publish tests', async () => {
     assert(AssetValidation.valid === true, 'Published asset is not valid')
 
     const encryptedDdo = await ProviderInstance.encrypt(poolDdo, providerUrl)
-    const encryptedResponse = await encryptedDdo.text()
+    const encryptedResponse = await encryptedDdo
     const metadataHash = getHash(JSON.stringify(poolDdo))
     // just to make sure that our hash matches one computed by aquarius
     assert(AssetValidation.hash === '0x' + metadataHash, 'Metadata hash is a missmatch')
@@ -211,7 +211,7 @@ describe('Publish tests', async () => {
     const encryptedFiles = await ProviderInstance.encrypt(files, providerUrl)
 
     fixedPriceDdo.metadata.name = 'test-dataset-fixedPrice'
-    fixedPriceDdo.services[0].files = await encryptedFiles.text()
+    fixedPriceDdo.services[0].files = await encryptedFiles
     fixedPriceDdo.services[0].datatokenAddress = datatokenAddress
 
     fixedPriceDdo.nftAddress = nftAddress
@@ -224,7 +224,7 @@ describe('Publish tests', async () => {
     assert(isAssetValid.valid === true, 'Published asset is not valid')
 
     const encryptedDdo = await ProviderInstance.encrypt(fixedPriceDdo, providerUrl)
-    const encryptedResponse = await encryptedDdo.text()
+    const encryptedResponse = await encryptedDdo
     const metadataHash = getHash(JSON.stringify(fixedPriceDdo))
     // this is publishing with an explicit empty metadataProofs
     const res = await nft.setMetadata(
@@ -281,7 +281,7 @@ describe('Publish tests', async () => {
 
     const encryptedFiles = await ProviderInstance.encrypt(files, providerUrl)
     dispenserDdo.metadata.name = 'test-dataset-dispenser'
-    dispenserDdo.services[0].files = await encryptedFiles.text()
+    dispenserDdo.services[0].files = await encryptedFiles
     dispenserDdo.services[0].datatokenAddress = datatokenAddress
 
     dispenserDdo.nftAddress = nftAddress
@@ -294,7 +294,7 @@ describe('Publish tests', async () => {
     assert(isAssetValid.valid === true, 'Published asset is not valid')
 
     const encryptedDdo = await ProviderInstance.encrypt(dispenserDdo, providerUrl)
-    const encryptedResponse = await encryptedDdo.text()
+    const encryptedResponse = await encryptedDdo
     const metadataHash = getHash(JSON.stringify(dispenserDdo))
     // this is publishing with any explicit metadataProofs
     const res = await nft.setMetadata(
