@@ -1,5 +1,5 @@
 import Web3 from 'web3'
-import { LoggerInstance, getData, crossFetchGeneric } from '../utils'
+import { LoggerInstance, getData, downloadFile, downloadFileBrowser } from '../utils'
 import {
   FileMetadata,
   ComputeJob,
@@ -10,6 +10,10 @@ import {
 } from '../@types/'
 import { noZeroX } from '../utils/ConversionTypeHelper'
 import { signText, signWithHash } from '../utils/SignatureUtils'
+
+export interface HttpCallback {
+  (httpMethod: string, url: string, body: string, header: any): Promise<any>
+}
 
 export interface ServiceEndpoint {
   serviceName: string
@@ -23,7 +27,7 @@ export interface UserCustomParameters {
 export class Provider {
   /**
    * Returns the provider endpoints
-   * @param {any} fetchMethod
+   * @param {HttpCallback} fetchMethod
    * @return {Promise<ServiceEndpoint[]>}
    */
   async getEndpoints(providerUri: string): Promise<any> {
@@ -65,7 +69,7 @@ export class Provider {
   /** Encrypt DDO using the Provider's own symmetric key
    * @param {string} providerUri provider uri address
    * @param {string} consumerAddress Publisher address
-   * @param {string} fetchMethod fetch client instance
+   * @param {AbortSignal} signal abort signal
    * @param {string} providerEndpoints Identifier of the asset to be registered in ocean
    * @param {string} serviceEndpoints document description object (DDO)=
    * @return {Promise<string>} urlDetails
@@ -73,11 +77,10 @@ export class Provider {
   public async getNonce(
     providerUri: string,
     consumerAddress: string,
-    fetchMethod?: any,
+    signal?: AbortSignal,
     providerEndpoints?: any,
     serviceEndpoints?: ServiceEndpoint[]
   ): Promise<string> {
-    const preferedFetch = fetchMethod || crossFetchGeneric
     if (!providerEndpoints) {
       providerEndpoints = await this.getEndpoints(providerUri)
     }
@@ -89,14 +92,13 @@ export class Provider {
       : null
     if (!path) return null
     try {
-      const response = await preferedFetch(
-        'GET',
-        path + `?userAddress=${consumerAddress}`,
-        null,
-        {
+      const response = await fetch(path + `?userAddress=${consumerAddress}`, {
+        method: 'GET',
+        headers: {
           'Content-Type': 'application/json'
-        }
-      )
+        },
+        signal: signal
+      })
       return String((await response.json()).nonce)
     } catch (e) {
       LoggerInstance.error(e)
@@ -125,11 +127,14 @@ export class Provider {
   /** Encrypt data using the Provider's own symmetric key
    * @param {string} data data in json format that needs to be sent , it can either be a DDO or a File array
    * @param {string} providerUri provider uri address
-   * @param {string} postMethod http post method
+   * @param {AbortSignal} signal abort signal
    * @return {Promise<string>} urlDetails
    */
-  public async encrypt(data: any, providerUri: string, postMethod?: any): Promise<any> {
-    const preferedFetch = postMethod || crossFetchGeneric
+  public async encrypt(
+    data: any,
+    providerUri: string,
+    signal?: AbortSignal
+  ): Promise<any> {
     const providerEndpoints = await this.getEndpoints(providerUri)
     const serviceEndpoints = await this.getServiceEndpoints(
       providerUri,
@@ -141,15 +146,15 @@ export class Provider {
 
     if (!path) return null
     try {
-      const response = await preferedFetch(
-        'POST',
-        path,
-        decodeURI(JSON.stringify(data)),
-        {
-          'Content-Type': 'application/octet-stream'
-        }
-      )
-      return response
+      const response = await fetch(path, {
+        method: 'POST',
+        body: decodeURI(JSON.stringify(data)),
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        signal: signal
+      })
+      return await response.json()
     } catch (e) {
       LoggerInstance.error(e)
       throw new Error('HTTP request failed')
@@ -160,16 +165,15 @@ export class Provider {
    * @param {string} did did
    * @param {number} serviceId the id of the service for which to check the files
    * @param {string} providerUri uri of the provider that will be used to check the file
-   * @param {string} fetchMethod fetch client instance
+   * @param {AbortSignal} signal abort signal
    * @return {Promise<FileMetadata[]>} urlDetails
    */
   public async checkDidFiles(
     did: string,
     serviceId: number,
     providerUri: string,
-    fetchMethod?: any
+    signal?: AbortSignal
   ): Promise<FileMetadata[]> {
-    const preferedFetch = fetchMethod || crossFetchGeneric
     const providerEndpoints = await this.getEndpoints(providerUri)
     const serviceEndpoints = await this.getServiceEndpoints(
       providerUri,
@@ -182,12 +186,15 @@ export class Provider {
       : null
     if (!path) return null
     try {
-      const response = await preferedFetch('POST', path, JSON.stringify(args), {
-        'Content-Type': 'application/json'
+      const response = await fetch(path, {
+        method: 'POST',
+        body: JSON.stringify(args),
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        signal: signal
       })
-      const results: FileMetadata[] = response.data
-        ? response.data
-        : await response.json()
+      const results: FileMetadata[] = await response.json()
       for (const result of results) {
         files.push(result)
       }
@@ -200,15 +207,14 @@ export class Provider {
   /** Get URL details (if possible)
    * @param {string} url or did
    * @param {string} providerUri uri of the provider that will be used to check the file
-   * @param {string} fetchMethod fetch client instance
+   * @param {AbortSignal} signal abort signal
    * @return {Promise<FileMetadata[]>} urlDetails
    */
   public async checkFileUrl(
     url: string,
     providerUri: string,
-    fetchMethod?: any
+    signal?: AbortSignal
   ): Promise<FileMetadata[]> {
-    const preferedFetch = fetchMethod || crossFetchGeneric
     const providerEndpoints = await this.getEndpoints(providerUri)
     const serviceEndpoints = await this.getServiceEndpoints(
       providerUri,
@@ -221,12 +227,15 @@ export class Provider {
       : null
     if (!path) return null
     try {
-      const response = await preferedFetch('POST', path, JSON.stringify(args), {
-        'Content-Type': 'application/json'
+      const response = await fetch(path, {
+        method: 'POST',
+        body: JSON.stringify(args),
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        signal: signal
       })
-      const results: FileMetadata[] = response.data
-        ? response.data
-        : await response.json()
+      const results: FileMetadata[] = await response.json()
       for (const result of results) {
         files.push(result)
       }
@@ -243,7 +252,7 @@ export class Provider {
    * @param {string} consumerAddress
    * @param {UserCustomParameters} userCustomParameters
    * @param {string} providerUri Identifier of the asset to be registered in ocean
-   * @param {string} fetchMethod fetch client instance
+   * @param {AbortSignal} signal abort signal
    * @return {Promise<ProviderInitialize>} ProviderInitialize data
    */
   public async initialize(
@@ -252,12 +261,11 @@ export class Provider {
     fileIndex: number,
     consumerAddress: string,
     providerUri: string,
-    fetchMethod?: any,
+    signal?: AbortSignal,
     userCustomParameters?: UserCustomParameters,
     computeEnv?: string,
     validUntil?: number
   ): Promise<ProviderInitialize> {
-    const preferedFetch = fetchMethod || crossFetchGeneric
     const providerEndpoints = await this.getEndpoints(providerUri)
     const serviceEndpoints = await this.getServiceEndpoints(
       providerUri,
@@ -277,12 +285,14 @@ export class Provider {
     if (computeEnv) initializeUrl += '&computeEnv=' + encodeURI(computeEnv)
     if (validUntil) initializeUrl += '&validUntil=' + validUntil
     try {
-      const response = await preferedFetch('GET', initializeUrl, null, {
-        'Content-Type': 'application/json'
+      const response = await fetch(initializeUrl, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        signal: signal
       })
-      const results: ProviderInitialize = response.data
-        ? response.data
-        : await response.json()
+      const results: ProviderInitialize = await response.json()
       return results
     } catch (e) {
       LoggerInstance.error(e)
@@ -297,7 +307,6 @@ export class Provider {
    * @param {number} fileIndex
    * @param {string} providerUri
    * @param {Web3} web3
-   * @param {any} fetchMethod
    * @param {UserCustomParameters} userCustomParameters
    * @return {Promise<string>}
    */
@@ -342,7 +351,7 @@ export class Provider {
    * @param {ComputeAlgorithm} algorithm
    * @param {string} providerUri
    * @param {Web3} web3
-   * @param {any} fetchMethod
+   * @param {AbortSignal} signal abort signal
    * @param {ComputeOutput} output
    * @return {Promise<ComputeJob | ComputeJob[]>}
    */
@@ -353,11 +362,10 @@ export class Provider {
     computeEnv: string,
     dataset: ComputeAsset,
     algorithm: ComputeAlgorithm,
-    fetchMethod?: any,
+    signal?: AbortSignal,
     additionalDatasets?: ComputeAsset[],
     output?: ComputeOutput
   ): Promise<ComputeJob | ComputeJob[]> {
-    const preferedFetch = fetchMethod || crossFetchGeneric
     const providerEndpoints = await this.getEndpoints(providerUri)
     const serviceEndpoints = await this.getServiceEndpoints(
       providerUri,
@@ -388,16 +396,17 @@ export class Provider {
     if (output) payload.output = output
     if (!computeStartUrl) return null
     try {
-      const response = await preferedFetch(
-        'POST',
-        computeStartUrl,
-        JSON.stringify(payload),
-        {
+      const response = await fetch(computeStartUrl, {
+        method: 'POST',
+        body: JSON.stringify(payload),
+        headers: {
           'Content-Type': 'application/json'
-        }
-      )
+        },
+        signal: signal
+      })
+
       if (response?.ok) {
-        const params = response.data ? response.data : await response.json()
+        const params = await response.json()
         return params
       }
       console.error('Compute start failed:', response.status, response.statusText)
@@ -417,7 +426,7 @@ export class Provider {
    * @param {string} jobId
    * @param {string} providerUri
    * @param {Web3} web3
-   * @param {any} fetchMethod
+   * @param {AbortSignal} signal abort signal
    * @return {Promise<ComputeJob | ComputeJob[]>}
    */
   public async computeStop(
@@ -426,9 +435,8 @@ export class Provider {
     jobId: string,
     providerUri: string,
     web3: Web3,
-    fetchMethod?: any
+    signal?: AbortSignal
   ): Promise<ComputeJob | ComputeJob[]> {
-    const preferedFetch = fetchMethod || crossFetchGeneric
     const providerEndpoints = await this.getEndpoints(providerUri)
     const serviceEndpoints = await this.getServiceEndpoints(
       providerUri,
@@ -441,7 +449,7 @@ export class Provider {
     const nonce = await this.getNonce(
       providerUri,
       consumerAddress,
-      fetchMethod,
+      signal,
       providerEndpoints,
       serviceEndpoints
     )
@@ -464,16 +472,17 @@ export class Provider {
 
     if (!computeStopUrl) return null
     try {
-      const response = await preferedFetch(
-        'PUT',
-        computeStopUrl,
-        JSON.stringify(payload),
-        {
+      const response = await fetch(computeStopUrl, {
+        method: 'PUT',
+        body: JSON.stringify(payload),
+        headers: {
           'Content-Type': 'application/json'
-        }
-      )
+        },
+        signal: signal
+      })
+
       if (response?.ok) {
-        const params = response.data ? response.data : await response.json()
+        const params = await response.json()
         return params
       }
       LoggerInstance.error('Compute stop failed:', response.status, response.statusText)
@@ -492,13 +501,13 @@ export class Provider {
    * @param {string} consumerAddress
    * @param {string} providerUri
    * @param {Web3} web3
-   * @param {any} fetchMethod
+   * @param {AbortSignal} signal abort signal
    * @param {string} jobId
    * @return {Promise<ComputeJob | ComputeJob[]>}
    */
   public async computeStatus(
     providerUri: string,
-    fetchMethod?: any,
+    signal?: AbortSignal,
     jobId?: string,
     did?: string,
     consumerAddress?: string
@@ -506,7 +515,6 @@ export class Provider {
     if (!jobId && !did && !consumerAddress) {
       throw new Error('You need at least one of jobId, did, consumerAddress')
     }
-    const preferedFetch = fetchMethod || crossFetchGeneric
 
     const providerEndpoints = await this.getEndpoints(providerUri)
     const serviceEndpoints = await this.getServiceEndpoints(
@@ -523,11 +531,16 @@ export class Provider {
 
     if (!computeStatusUrl) return null
     try {
-      const response = await preferedFetch('GET', computeStatusUrl + url, null, {
-        'Content-Type': 'application/json'
+      const response = await fetch(computeStatusUrl + url, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        signal: signal
       })
+
       if (response?.ok) {
-        const params = response.data ? response.data : await response.json()
+        const params = await response.json()
         return params
       }
       LoggerInstance.error(
@@ -549,7 +562,7 @@ export class Provider {
    * @param {string} providerUri
    * @param {string} destination
    * @param {Web3} web3
-   * @param {any} fetchMethod
+   * @param {AbortSignal} signal abort signal
    * @return {Promise<ComputeJob | ComputeJob[]>}
    */
   public async computeResult(
@@ -559,7 +572,7 @@ export class Provider {
     accountId: string,
     providerUri: string,
     web3: Web3,
-    fetchMethod: any
+    signal?: AbortSignal
   ): Promise<any> {
     const providerEndpoints = await this.getEndpoints(providerUri)
     const serviceEndpoints = await this.getServiceEndpoints(
@@ -573,7 +586,7 @@ export class Provider {
     const nonce = await this.getNonce(
       providerUri,
       accountId,
-      fetchMethod,
+      signal,
       providerEndpoints,
       serviceEndpoints
     )
@@ -593,8 +606,8 @@ export class Provider {
     if (!computeResultUrl) return null
     try {
       !destination
-        ? await fetchMethod.downloadFileBrowser(consumeUrl)
-        : await fetchMethod.downloadFile(consumeUrl, destination, index)
+        ? await downloadFileBrowser(consumeUrl)
+        : await downloadFile(consumeUrl, destination, index)
     } catch (e) {
       LoggerInstance.error('Error getting job result')
       LoggerInstance.error(e)
@@ -609,7 +622,7 @@ export class Provider {
    * @param {string} jobId
    * @param {string} providerUri
    * @param {Web3} web3
-   * @param {any} fetchMethod
+   * @param {AbortSignal} signal abort signal
    * @return {Promise<ComputeJob | ComputeJob[]>}
    */
   public async computeDelete(
@@ -618,9 +631,8 @@ export class Provider {
     jobId: string,
     providerUri: string,
     web3: Web3,
-    fetchMethod?: any
+    signal?: AbortSignal
   ): Promise<ComputeJob | ComputeJob[]> {
-    const preferedFetch = fetchMethod || crossFetchGeneric
     const providerEndpoints = await this.getEndpoints(providerUri)
     const serviceEndpoints = await this.getServiceEndpoints(
       providerUri,
@@ -633,7 +645,7 @@ export class Provider {
     const nonce = await this.getNonce(
       providerUri,
       consumerAddress,
-      fetchMethod,
+      signal,
       providerEndpoints,
       serviceEndpoints
     )
@@ -656,16 +668,17 @@ export class Provider {
 
     if (!computeDeleteUrl) return null
     try {
-      const response = await preferedFetch(
-        'DELETE',
-        computeDeleteUrl,
-        JSON.stringify(payload),
-        {
+      const response = await fetch(computeDeleteUrl, {
+        method: 'DELETE',
+        body: JSON.stringify(payload),
+        headers: {
           'Content-Type': 'application/json'
-        }
-      )
+        },
+        signal: signal
+      })
+
       if (response?.ok) {
-        const params = response.data ? response.data : await response.json()
+        const params = await response.json()
         return params
       }
       LoggerInstance.error(
@@ -685,17 +698,20 @@ export class Provider {
 
   /** Check for a valid provider at URL
    * @param {String} url provider uri address
-   * @param {String} fetchMethod fetch client instance
+   * @param {AbortSignal} signal abort signal
    * @return {Promise<boolean>} string
    */
-  public async isValidProvider(url: string, fetchMethod?: any): Promise<boolean> {
+  public async isValidProvider(url: string, signal?: AbortSignal): Promise<boolean> {
     try {
-      const preferedFetch = fetchMethod || crossFetchGeneric
-      const response = await preferedFetch('GET', url, null, {
-        'Content-Type': 'application/json'
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        signal: signal
       })
       if (response?.ok) {
-        const params = response.data ? response.data : await response.json()
+        const params = await response.json()
         if (params && params.providerAddress) return true
       }
       return false

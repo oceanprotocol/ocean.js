@@ -1,4 +1,4 @@
-import ProviderInstance, { Provider } from '../../src/provider/Provider'
+import ProviderInstance from '../../src/provider/Provider'
 import Aquarius from '../../src/aquarius/Aquarius'
 import { assert } from 'chai'
 import { NftFactory, NftCreateData } from '../../src/factories/index'
@@ -10,7 +10,7 @@ import Web3 from 'web3'
 import { SHA256 } from 'crypto-js'
 import { homedir } from 'os'
 import fs from 'fs'
-import { downloadFile, crossFetchGeneric } from '../../src/utils/FetchHelper'
+import { downloadFile } from '../../src/utils/FetchHelper'
 import console from 'console'
 import { ProviderFees } from '../../src/@types/Provider'
 
@@ -97,11 +97,7 @@ describe('Simple Publish & consume test', async () => {
     const datatokenAddress = result.events.TokenCreated.returnValues[0]
 
     // create the files encrypted string
-    let providerResponse = await ProviderInstance.encrypt(
-      assetUrl,
-      providerUrl,
-      crossFetchGeneric
-    )
+    let providerResponse = await ProviderInstance.encrypt(assetUrl, providerUrl)
     ddo.services[0].files = await providerResponse.text()
     ddo.services[0].datatokenAddress = datatokenAddress
     // update ddo and set the right did
@@ -110,7 +106,7 @@ describe('Simple Publish & consume test', async () => {
     ddo.id =
       'did:op:' + SHA256(web3.utils.toChecksumAddress(erc721Address) + chain.toString(10))
 
-    providerResponse = await ProviderInstance.encrypt(ddo, providerUrl, crossFetchGeneric)
+    providerResponse = await ProviderInstance.encrypt(ddo, providerUrl)
     const encryptedResponse = await providerResponse.text()
     const metadataHash = getHash(JSON.stringify(ddo))
     const res = await nft.setMetadata(
@@ -123,7 +119,7 @@ describe('Simple Publish & consume test', async () => {
       encryptedResponse,
       '0x' + metadataHash
     )
-    const resolvedDDO = await aquarius.waitForAqua(ddo.id, null, crossFetchGeneric)
+    const resolvedDDO = await aquarius.waitForAqua(ddo.id)
     assert(resolvedDDO, 'Cannot fetch DDO from Aquarius')
     // mint 1 ERC20 and send it to the consumer
     await datatoken.mint(datatokenAddress, publisherAccount, '1', consumerAccount)
@@ -133,8 +129,7 @@ describe('Simple Publish & consume test', async () => {
       resolvedDDO.services[0].id,
       0,
       consumerAccount,
-      providerUrl,
-      crossFetchGeneric
+      providerUrl
     )
     const providerFees: ProviderFees = {
       providerFeeAddress: initializeData.providerFee.providerFeeAddress,

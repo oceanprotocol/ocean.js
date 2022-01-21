@@ -9,7 +9,7 @@ import {
   FreCreationParams,
   DispenserCreationParams
 } from '../../src/interfaces'
-import { getHash, crossFetchGeneric, ZERO_ADDRESS } from '../../src/utils'
+import { getHash, ZERO_ADDRESS } from '../../src/utils'
 import { Nft } from '../../src/tokens/NFT'
 import Web3 from 'web3'
 import { SHA256 } from 'crypto-js'
@@ -130,11 +130,7 @@ describe('Publish tests', async () => {
     const datatokenAddress = bundleNFT.events.TokenCreated.returnValues[0]
     const poolAdress = bundleNFT.events.NewPool.returnValues[0]
 
-    const encryptedFiles = await ProviderInstance.encrypt(
-      files,
-      providerUrl,
-      crossFetchGeneric
-    )
+    const encryptedFiles = await ProviderInstance.encrypt(files, providerUrl)
 
     poolDdo.metadata.name = 'test-dataset-pool'
     poolDdo.services[0].files = await encryptedFiles.text()
@@ -146,17 +142,10 @@ describe('Publish tests', async () => {
     poolDdo.id =
       'did:op:' + SHA256(web3.utils.toChecksumAddress(nftAddress) + chain.toString(10))
 
-    const AssetValidation: ValidateMetadata = await aquarius.validate(
-      poolDdo,
-      crossFetchGeneric
-    )
+    const AssetValidation: ValidateMetadata = await aquarius.validate(poolDdo)
     assert(AssetValidation.valid === true, 'Published asset is not valid')
 
-    const encryptedDdo = await ProviderInstance.encrypt(
-      poolDdo,
-      providerUrl,
-      crossFetchGeneric
-    )
+    const encryptedDdo = await ProviderInstance.encrypt(poolDdo, providerUrl)
     const encryptedResponse = await encryptedDdo.text()
     const metadataHash = getHash(JSON.stringify(poolDdo))
     // just to make sure that our hash matches one computed by aquarius
@@ -173,7 +162,7 @@ describe('Publish tests', async () => {
       [AssetValidation.proof]
     )
 
-    const resolvedDDO = await aquarius.waitForAqua(poolDdo.id, null, crossFetchGeneric)
+    const resolvedDDO = await aquarius.waitForAqua(poolDdo.id)
     assert(resolvedDDO, 'Cannot fetch DDO from Aquarius')
   })
 
@@ -219,11 +208,7 @@ describe('Publish tests', async () => {
     const datatokenAddress = bundleNFT.events.TokenCreated.returnValues[0]
     const fixedPrice = bundleNFT.events.NewFixedRate.returnValues[0]
 
-    const encryptedFiles = await ProviderInstance.encrypt(
-      files,
-      providerUrl,
-      crossFetchGeneric
-    )
+    const encryptedFiles = await ProviderInstance.encrypt(files, providerUrl)
 
     fixedPriceDdo.metadata.name = 'test-dataset-fixedPrice'
     fixedPriceDdo.services[0].files = await encryptedFiles.text()
@@ -235,17 +220,10 @@ describe('Publish tests', async () => {
     fixedPriceDdo.id =
       'did:op:' + SHA256(web3.utils.toChecksumAddress(nftAddress) + chain.toString(10))
 
-    const isAssetValid: ValidateMetadata = await aquarius.validate(
-      fixedPriceDdo,
-      crossFetchGeneric
-    )
+    const isAssetValid: ValidateMetadata = await aquarius.validate(fixedPriceDdo)
     assert(isAssetValid.valid === true, 'Published asset is not valid')
 
-    const encryptedDdo = await ProviderInstance.encrypt(
-      fixedPriceDdo,
-      providerUrl,
-      crossFetchGeneric
-    )
+    const encryptedDdo = await ProviderInstance.encrypt(fixedPriceDdo, providerUrl)
     const encryptedResponse = await encryptedDdo.text()
     const metadataHash = getHash(JSON.stringify(fixedPriceDdo))
     // this is publishing with an explicit empty metadataProofs
@@ -260,11 +238,7 @@ describe('Publish tests', async () => {
       '0x' + metadataHash,
       []
     )
-    const resolvedDDO = await aquarius.waitForAqua(
-      fixedPriceDdo.id,
-      null,
-      crossFetchGeneric
-    )
+    const resolvedDDO = await aquarius.waitForAqua(fixedPriceDdo.id)
     assert(resolvedDDO, 'Cannot fetch DDO from Aquarius')
   })
 
@@ -305,11 +279,7 @@ describe('Publish tests', async () => {
     const datatokenAddress = bundleNFT.events.TokenCreated.returnValues[0]
     const dispenserAddress = bundleNFT.events.DispenserCreated.returnValues[0]
 
-    const encryptedFiles = await ProviderInstance.encrypt(
-      files,
-      providerUrl,
-      crossFetchGeneric
-    )
+    const encryptedFiles = await ProviderInstance.encrypt(files, providerUrl)
     dispenserDdo.metadata.name = 'test-dataset-dispenser'
     dispenserDdo.services[0].files = await encryptedFiles.text()
     dispenserDdo.services[0].datatokenAddress = datatokenAddress
@@ -320,17 +290,10 @@ describe('Publish tests', async () => {
     dispenserDdo.id =
       'did:op:' + SHA256(web3.utils.toChecksumAddress(nftAddress) + chain.toString(10))
 
-    const isAssetValid: ValidateMetadata = await aquarius.validate(
-      dispenserDdo,
-      crossFetchGeneric
-    )
+    const isAssetValid: ValidateMetadata = await aquarius.validate(dispenserDdo)
     assert(isAssetValid.valid === true, 'Published asset is not valid')
 
-    const encryptedDdo = await ProviderInstance.encrypt(
-      dispenserDdo,
-      providerUrl,
-      crossFetchGeneric
-    )
+    const encryptedDdo = await ProviderInstance.encrypt(dispenserDdo, providerUrl)
     const encryptedResponse = await encryptedDdo.text()
     const metadataHash = getHash(JSON.stringify(dispenserDdo))
     // this is publishing with any explicit metadataProofs
@@ -344,11 +307,7 @@ describe('Publish tests', async () => {
       encryptedResponse,
       '0x' + metadataHash
     )
-    const resolvedDDO = await aquarius.waitForAqua(
-      dispenserDdo.id,
-      null,
-      crossFetchGeneric
-    )
+    const resolvedDDO = await aquarius.waitForAqua(dispenserDdo.id)
     assert(resolvedDDO, 'Cannot fetch DDO from Aquarius')
   })
 })

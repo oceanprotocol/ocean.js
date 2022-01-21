@@ -13,6 +13,13 @@ export async function fetchData(url: string, opts: RequestInit): Promise<Respons
   return result
 }
 
+export async function downloadFileBrowser(url: string): Promise<void> {
+  const anchor = document.createElement('a')
+  anchor.download = ''
+  anchor.href = url
+  anchor.click()
+}
+
 export async function downloadFile(
   url: string,
   destination?: string,
@@ -76,18 +83,4 @@ export async function postData(url: string, payload: BodyInit): Promise<Response
     'Content-type': 'application/json'
   }
   return postWithHeaders(url, payload, headers)
-}
-
-// simple fetch function used in tests
-export async function crossFetchGeneric(
-  method: string,
-  url: string,
-  body: string,
-  headers: any
-) {
-  return fetch(url, {
-    method: method,
-    body: body,
-    headers: headers
-  })
 }
