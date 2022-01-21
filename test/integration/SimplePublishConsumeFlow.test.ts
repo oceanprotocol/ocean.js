@@ -98,7 +98,7 @@ describe('Simple Publish & consume test', async () => {
 
     // create the files encrypted string
     let providerResponse = await ProviderInstance.encrypt(assetUrl, providerUrl)
-    ddo.services[0].files = await providerResponse.text()
+    ddo.services[0].files = await providerResponse
     ddo.services[0].datatokenAddress = datatokenAddress
     // update ddo and set the right did
     ddo.nftAddress = erc721Address
@@ -107,7 +107,7 @@ describe('Simple Publish & consume test', async () => {
       'did:op:' + SHA256(web3.utils.toChecksumAddress(erc721Address) + chain.toString(10))
 
     providerResponse = await ProviderInstance.encrypt(ddo, providerUrl)
-    const encryptedResponse = await providerResponse.text()
+    const encryptedResponse = await providerResponse
     const metadataHash = getHash(JSON.stringify(ddo))
     const res = await nft.setMetadata(
       erc721Address,

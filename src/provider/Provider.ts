@@ -133,7 +133,7 @@ export class Provider {
     data: any,
     providerUri: string,
     signal?: AbortSignal
-  ): Promise<any> {
+  ): Promise<string> {
     const providerEndpoints = await this.getEndpoints(providerUri)
     const serviceEndpoints = await this.getServiceEndpoints(
       providerUri,
@@ -153,7 +153,7 @@ export class Provider {
         },
         signal: signal
       })
-      return await response.json()
+      return await response.text()
     } catch (e) {
       LoggerInstance.error(e)
       throw new Error('HTTP request failed')

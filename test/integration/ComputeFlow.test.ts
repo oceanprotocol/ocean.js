@@ -159,7 +159,7 @@ describe('Simple compute tests', async () => {
 
     // create the files encrypted string
     let providerResponse = await ProviderInstance.encrypt(assetUrl, providerUrl)
-    ddo.services[0].files = await providerResponse.text()
+    ddo.services[0].files = await providerResponse
     ddo.services[0].datatokenAddress = datatokenAddressAsset
     // update ddo and set the right did
     ddo.nftAddress = erc721AddressAsset
@@ -168,7 +168,7 @@ describe('Simple compute tests', async () => {
       SHA256(web3.utils.toChecksumAddress(erc721AddressAsset) + chain.toString(10))
 
     providerResponse = await ProviderInstance.encrypt(ddo, providerUrl)
-    let encryptedResponse = await providerResponse.text()
+    let encryptedResponse = await providerResponse
     let metadataHash = getHash(JSON.stringify(ddo))
     let res = await nft.setMetadata(
       erc721AddressAsset,
@@ -207,7 +207,7 @@ describe('Simple compute tests', async () => {
 
     // create the files encrypted string
     providerResponse = await ProviderInstance.encrypt(algoAssetUrl, providerUrl)
-    algoDdo.services[0].files = await providerResponse.text()
+    algoDdo.services[0].files = await providerResponse
     algoDdo.services[0].datatokenAddress = datatokenAddressAlgo
     // update ddo and set the right did
     algoDdo.nftAddress = erc721AddressAlgo
@@ -217,7 +217,7 @@ describe('Simple compute tests', async () => {
       SHA256(web3.utils.toChecksumAddress(erc721AddressAlgo) + chain.toString(10))
 
     providerResponse = await ProviderInstance.encrypt(algoDdo, providerUrl)
-    encryptedResponse = await providerResponse.text()
+    encryptedResponse = await providerResponse
     metadataHash = getHash(JSON.stringify(algoDdo))
     res = await nft.setMetadata(
       erc721AddressAlgo,
