@@ -134,6 +134,7 @@ export class Provider {
     providerUri: string,
     signal?: AbortSignal
   ): Promise<string> {
+    console.log('try encrpy ', providerUri)
     const providerEndpoints = await this.getEndpoints(providerUri)
     const serviceEndpoints = await this.getServiceEndpoints(
       providerUri,

@@ -24,10 +24,9 @@ const data = JSON.parse(
 )
 
 const addresses = data.development
-console.log(addresses)
-const aquarius = new Aquarius('http://127.0.0.1:5000')
+const aquarius = new Aquarius('http://localhost:5000')
 const web3 = new Web3('http://127.0.0.1:8545')
-const providerUrl = 'http://172.15.0.4:8030'
+const providerUrl = 'http://localhost:8030'
 const assetUrl = [
   {
     type: 'url',
@@ -127,6 +126,7 @@ const algoDdo = {
 
 describe('Simple compute tests', async () => {
   it('should publish a dataset, algorithm and start a compute job', async () => {
+    console.log('starting')
     const nft = new Nft(web3)
     const datatoken = new Datatoken(web3)
     const Factory = new NftFactory(addresses.ERC721Factory, web3)
@@ -156,9 +156,9 @@ describe('Simple compute tests', async () => {
     )
     const erc721AddressAsset = result.events.NFTCreated.returnValues[0]
     const datatokenAddressAsset = result.events.TokenCreated.returnValues[0]
-
     // create the files encrypted string
     let providerResponse = await ProviderInstance.encrypt(assetUrl, providerUrl)
+    console.log('first ecnryp', providerResponse)
     ddo.services[0].files = await providerResponse
     ddo.services[0].datatokenAddress = datatokenAddressAsset
     // update ddo and set the right did
@@ -168,6 +168,7 @@ describe('Simple compute tests', async () => {
       SHA256(web3.utils.toChecksumAddress(erc721AddressAsset) + chain.toString(10))
 
     providerResponse = await ProviderInstance.encrypt(ddo, providerUrl)
+
     let encryptedResponse = await providerResponse
     let metadataHash = getHash(JSON.stringify(ddo))
     let res = await nft.setMetadata(
@@ -180,7 +181,7 @@ describe('Simple compute tests', async () => {
       encryptedResponse,
       '0x' + metadataHash
     )
-
+    console.log('finished publish asset')
     // let's publish the algorithm as well
     const nftParamsAlgo: NftCreateData = {
       name: 'testNFT',
@@ -229,6 +230,8 @@ describe('Simple compute tests', async () => {
       encryptedResponse,
       '0x' + metadataHash
     )
+
+    console.log('starting to wait for aqua')
     // let's wait
     const resolvedDDOAsset = await aquarius.waitForAqua(ddo.id)
     assert(resolvedDDOAsset, 'Cannot fetch DDO from Aquarius')
