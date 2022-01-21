@@ -14,9 +14,9 @@ export class Aquarius {
   /** Resolves a DID
    * @param {string} did
    * @param {AbortSignal} signal abort signal
-   * @return {Promise<DDO>} DDO
+   * @return {Promise<Asset>} Asset
    */
-  public async resolve(did: string, signal?: AbortSignal): Promise<DDO> {
+  public async resolve(did: string, signal?: AbortSignal): Promise<Asset> {
     const path = this.aquariusURL + '/api/aquarius/assets/ddo/' + did
     try {
       const response = await fetch(path, {
@@ -29,7 +29,7 @@ export class Aquarius {
 
       if (response.ok) {
         const raw = await response.json()
-        return raw as DDO
+        return raw as Asset
       } else {
         throw new Error('HTTP request failed with status ' + response.status)
       }

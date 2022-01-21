@@ -126,7 +126,6 @@ const algoDdo = {
 
 describe('Simple compute tests', async () => {
   it('should publish a dataset, algorithm and start a compute job', async () => {
-    console.log('starting')
     const nft = new Nft(web3)
     const datatoken = new Datatoken(web3)
     const Factory = new NftFactory(addresses.ERC721Factory, web3)
@@ -158,7 +157,6 @@ describe('Simple compute tests', async () => {
     const datatokenAddressAsset = result.events.TokenCreated.returnValues[0]
     // create the files encrypted string
     let providerResponse = await ProviderInstance.encrypt(assetUrl, providerUrl)
-    console.log('first ecnryp', providerResponse)
     ddo.services[0].files = await providerResponse
     ddo.services[0].datatokenAddress = datatokenAddressAsset
     // update ddo and set the right did
@@ -181,7 +179,6 @@ describe('Simple compute tests', async () => {
       encryptedResponse,
       '0x' + metadataHash
     )
-    console.log('finished publish asset')
     // let's publish the algorithm as well
     const nftParamsAlgo: NftCreateData = {
       name: 'testNFT',
