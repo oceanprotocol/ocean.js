@@ -1699,7 +1699,10 @@ export class Pool {
 
     try {
       const result = await pool.methods
-        .calcPoolInSingleOut(tokenOut, amountToUnits(this.web3, tokenOut, tokenAmountOut))
+        .calcPoolInSingleOut(
+          tokenOut,
+          await amountToUnits(this.web3, tokenOut, tokenAmountOut)
+        )
         .call()
 
       amount = await unitsToAmount(this.web3, poolAddress, result)

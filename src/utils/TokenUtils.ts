@@ -65,7 +65,6 @@ export async function approve(
   }
   let result = null
   const amountFormatted = await amountToUnits(web3, tokenAddress, amount)
-  console.log('approve ammountformate', amountFormatted)
   const estGas = await estApprove(
     web3,
     account,
