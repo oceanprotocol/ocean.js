@@ -178,7 +178,6 @@ describe('Simple compute tests', async () => {
       encryptedResponse,
       '0x' + metadataHash
     )
-    console.log('setMetadata tx', res)
     // let's publish the algorithm as well
     const nftParamsAlgo: NftCreateData = {
       name: 'testNFT',
@@ -228,7 +227,6 @@ describe('Simple compute tests', async () => {
       '0x' + metadataHash
     )
 
-    console.log('starting to wait for aqua')
     // let's wait
     const resolvedDDOAsset = await aquarius.waitForAqua(ddo.id)
     assert(resolvedDDOAsset, 'Cannot fetch DDO from Aquarius')
