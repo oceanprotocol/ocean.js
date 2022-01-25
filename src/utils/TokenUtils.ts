@@ -1,8 +1,7 @@
 import Decimal from 'decimal.js'
 import { Contract } from 'web3-eth-contract'
-import { getFairGasPrice, setContractDefaults, unitsToAmount } from './ContractUtils'
+import { getFairGasPrice, unitsToAmount } from './ContractUtils'
 import { minAbi } from './minAbi'
-import { AbiItem } from 'web3-utils/types'
 import LoggerInstance from './Logger'
 import { TransactionReceipt } from 'web3-core'
 import Web3 from 'web3'
@@ -18,15 +17,14 @@ import Web3 from 'web3'
  * @return {Promise<number>}
  */
 export async function estApprove(
+  web3: Web3,
   account: string,
   tokenAddress: string,
   spender: string,
   amount: string,
   contractInstance?: Contract
 ): Promise<number> {
-  const tokenContract =
-    contractInstance ||
-    setContractDefaults(new this.web3.eth.Contract(minAbi, tokenAddress), this.config)
+  const tokenContract = contractInstance || new web3.eth.Contract(minAbi, tokenAddress)
 
   const gasLimitDefault = this.GASLIMIT_DEFAULT
   let estGas
@@ -50,28 +48,33 @@ export async function estApprove(
  * @param {String} force  if true, will overwrite any previous allowence. Else, will check if allowence is enough and will not send a transaction if it's not needed
  */
 export async function approve(
+  web3: Web3,
   account: string,
   tokenAddress: string,
   spender: string,
   amount: string,
   force = false
 ): Promise<TransactionReceipt | string> {
-  const token = setContractDefaults(
-    new this.web3.eth.Contract(minAbi, tokenAddress),
-    this.config
-  )
+  const tokenContract = new web3.eth.Contract(minAbi, tokenAddress)
   if (!force) {
-    const currentAllowence = await this.allowance(tokenAddress, account, spender)
+    const currentAllowence = await allowance(web3, tokenAddress, account, spender)
     if (new Decimal(currentAllowence).greaterThanOrEqualTo(new Decimal(amount))) {
       return currentAllowence
     }
   }
   let result = null
-  const amountFormatted = await this.amountToUnits(tokenAddress, amount)
-  const estGas = await this.estApprove(account, tokenAddress, spender, amountFormatted)
+  const amountFormatted = await unitsToAmount(web3, tokenAddress, amount)
+  const estGas = await estApprove(
+    web3,
+    account,
+    tokenAddress,
+    spender,
+    amountFormatted,
+    tokenContract
+  )
 
   try {
-    result = await token.methods.approve(spender, amountFormatted).send({
+    result = await tokenContract.methods.approve(spender, amountFormatted).send({
       from: account,
       gas: estGas + 1,
       gasPrice: await getFairGasPrice(this.web3, this.config)
@@ -95,9 +98,8 @@ export async function allowance(
   account: string,
   spender: string
 ): Promise<string> {
-  const tokenAbi = minAbi as AbiItem[]
-  const datatoken = new web3.eth.Contract(tokenAbi, tokenAddress)
-  const trxReceipt = await datatoken.methods.allowance(account, spender).call()
+  const tokenContract = new web3.eth.Contract(minAbi, tokenAddress)
+  const trxReceipt = await tokenContract.methods.allowance(account, spender).call()
 
   return await unitsToAmount(web3, tokenAddress, trxReceipt)
 }
@@ -114,9 +116,8 @@ export async function balance(
   tokenAddress: string,
   account: string
 ): Promise<string> {
-  const tokenAbi = minAbi as AbiItem[]
-  const datatoken = new web3.eth.Contract(tokenAbi, tokenAddress)
-  const trxReceipt = await datatoken.methods.balanceOf(account).call()
+  const tokenContract = new web3.eth.Contract(minAbi, tokenAddress)
+  const trxReceipt = await tokenContract.methods.balanceOf(account).call()
 
   return await unitsToAmount(web3, tokenAddress, trxReceipt)
 }

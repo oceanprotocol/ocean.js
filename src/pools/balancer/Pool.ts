@@ -7,7 +7,8 @@ import {
   getFairGasPrice,
   configHelperNetworks,
   setContractDefaults,
-  unitsToAmount
+  unitsToAmount,
+  amountToUnits
 } from '../../utils'
 import BigNumber from 'bignumber.js'
 import PoolTemplate from '@oceanprotocol/contracts/artifacts/contracts/pools/balancer/BPool.sol/BPool.json'
@@ -720,24 +721,6 @@ export class Pool {
     return result
   }
 
-  async amountToUnits(token: string, amount: string): Promise<string> {
-    try {
-      const tokenContract = setContractDefaults(
-        new this.web3.eth.Contract(defaultErc20Abi.abi as AbiItem[], token),
-        this.config
-      )
-      let decimals = await tokenContract.methods.decimals().call()
-      if (decimals === '0') {
-        decimals = 18
-      }
-      const amountFormatted = new BigNumber(parseInt(amount) * 10 ** decimals)
-      BigNumber.config({ EXPONENTIAL_AT: 50 })
-      return amountFormatted.toString()
-    } catch (e) {
-      this.logger.error('ERROR: FAILED TO CALL DECIMALS(), USING 18')
-    }
-  }
-
   /**
    * Estimate gas cost for swapExactAmountIn
    * @param {String} address
@@ -812,12 +795,14 @@ export class Pool {
       this.config
     )
 
-    amountsInOutMaxFee.tokenAmountIn = await this.amountToUnits(
+    amountsInOutMaxFee.tokenAmountIn = await amountToUnits(
+      this.web3,
       tokenInOutMarket.tokenIn,
       amountsInOutMaxFee.tokenAmountIn
     )
 
-    amountsInOutMaxFee.minAmountOut = await this.amountToUnits(
+    amountsInOutMaxFee.minAmountOut = await amountToUnits(
+      this.web3,
       tokenInOutMarket.tokenOut,
       amountsInOutMaxFee.minAmountOut
     )
@@ -934,12 +919,14 @@ export class Pool {
     )
     let result = null
 
-    amountsInOutMaxFee.maxAmountIn = await this.amountToUnits(
+    amountsInOutMaxFee.maxAmountIn = await amountToUnits(
+      this.web3,
       tokenInOutMarket.tokenIn,
       amountsInOutMaxFee.maxAmountIn
     )
 
-    amountsInOutMaxFee.tokenAmountOut = await this.amountToUnits(
+    amountsInOutMaxFee.tokenAmountOut = await amountToUnits(
+      this.web3,
       tokenInOutMarket.tokenOut,
       amountsInOutMaxFee.tokenAmountOut
     )
@@ -1038,7 +1025,7 @@ export class Pool {
     const tokens = await this.getFinalTokens(poolAddress)
 
     for (let i = 0; i < 2; i++) {
-      const amount = await this.amountToUnits(tokens[i], maxAmountsIn[i])
+      const amount = await amountToUnits(this.web3, tokens[i], maxAmountsIn[i])
       weiMaxAmountsIn.push(amount)
     }
 
@@ -1122,7 +1109,7 @@ export class Pool {
     const tokens = await this.getFinalTokens(poolAddress)
 
     for (let i = 0; i < 2; i++) {
-      const amount = await this.amountToUnits(tokens[i], minAmountsOut[i])
+      const amount = await amountToUnits(this.web3, tokens[i], minAmountsOut[i])
       weiMinAmountsOut.push(amount)
     }
     let result = null
@@ -1206,7 +1193,7 @@ export class Pool {
     )
     let result = null
 
-    const amountInFormatted = await this.amountToUnits(tokenIn, tokenAmountIn)
+    const amountInFormatted = await amountToUnits(this.web3, tokenIn, tokenAmountIn)
     const estGas = await this.estJoinswapExternAmountIn(
       account,
       poolAddress,
@@ -1293,7 +1280,7 @@ export class Pool {
     )
     let result = null
 
-    const maxAmountInFormatted = await this.amountToUnits(tokenIn, maxAmountIn)
+    const maxAmountInFormatted = await amountToUnits(this.web3, tokenIn, maxAmountIn)
     const estGas = await this.estJoinswapPoolAmountOut(
       account,
       poolAddress,
@@ -1379,7 +1366,11 @@ export class Pool {
     )
     let result = null
 
-    const minTokenOutFormatted = await this.amountToUnits(tokenOut, minTokenAmountOut)
+    const minTokenOutFormatted = await amountToUnits(
+      this.web3,
+      tokenOut,
+      minTokenAmountOut
+    )
     const estGas = await this.estExitswapPoolAmountIn(
       account,
       poolAddress,
@@ -1567,7 +1558,7 @@ export class Pool {
       this.config
     )
 
-    const amountOutFormatted = await this.amountToUnits(tokenOut, tokenAmountOut)
+    const amountOutFormatted = await amountToUnits(this.web3, tokenOut, tokenAmountOut)
 
     let amount = null
 
@@ -1599,7 +1590,7 @@ export class Pool {
       this.config
     )
 
-    const amountInFormatted = await this.amountToUnits(tokenIn, tokenAmountIn)
+    const amountInFormatted = await amountToUnits(this.web3, tokenIn, tokenAmountIn)
 
     let amount = null
 
@@ -1633,7 +1624,10 @@ export class Pool {
 
     try {
       const result = await pool.methods
-        .calcPoolOutSingleIn(tokenIn, await this.amountToUnits(tokenIn, tokenAmountIn))
+        .calcPoolOutSingleIn(
+          tokenIn,
+          await amountToUnits(this.web3, tokenIn, tokenAmountIn)
+        )
         .call()
 
       amount = await unitsToAmount(this.web3, poolAddress, result)
@@ -1653,7 +1647,7 @@ export class Pool {
       this.config
     )
     let amount = null
-    const amountFormatted = await this.amountToUnits(poolAddress, poolAmountOut)
+    const amountFormatted = await amountToUnits(this.web3, poolAddress, poolAmountOut)
     try {
       const result = await pool.methods
         .calcSingleInPoolOut(tokenIn, amountFormatted)
@@ -1682,7 +1676,7 @@ export class Pool {
       const result = await pool.methods
         .calcSingleOutPoolIn(
           tokenOut,
-          await this.amountToUnits(poolAddress, poolAmountIn)
+          await amountToUnits(this.web3, poolAddress, poolAmountIn)
         )
         .call()
       amount = await unitsToAmount(this.web3, tokenOut, result)
@@ -1705,7 +1699,7 @@ export class Pool {
 
     try {
       const result = await pool.methods
-        .calcPoolInSingleOut(tokenOut, await this.amountToUnits(tokenOut, tokenAmountOut))
+        .calcPoolInSingleOut(tokenOut, amountToUnits(this.web3, tokenOut, tokenAmountOut))
         .call()
 
       amount = await unitsToAmount(this.web3, poolAddress, result)

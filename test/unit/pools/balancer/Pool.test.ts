@@ -12,7 +12,7 @@ import Dispenser from '@oceanprotocol/contracts/artifacts/contracts/pools/dispen
 import FixedRate from '@oceanprotocol/contracts/artifacts/contracts/pools/fixedRate/FixedRateExchange.sol/FixedRateExchange.json'
 import PoolTemplate from '@oceanprotocol/contracts/artifacts/contracts/pools/balancer/BPool.sol/BPool.json'
 import OPFCollector from '@oceanprotocol/contracts/artifacts/contracts/communityFee/OPFCommunityFeeCollector.sol/OPFCommunityFeeCollector.json'
-import { LoggerInstance } from '../../../../src/utils'
+import { allowance, amountToUnits, approve, LoggerInstance } from '../../../../src/utils'
 import { NftFactory, NftCreateData } from '../../../../src/factories/NFTFactory'
 import { Pool } from '../../../../src/pools/balancer/Pool'
 import {
@@ -86,27 +86,31 @@ describe('Pool unit test', () => {
       contracts.MockERC20.options.jsonInterface,
       contracts.usdcAddress
     )
-    await pool.approve(
+    await approve(
+      web3,
       contracts.accounts[0],
       contracts.daiAddress,
       contracts.factory721Address,
       '2000'
     )
-    await pool.approve(
+    await approve(
+      web3,
       contracts.accounts[0],
       contracts.usdcAddress,
       contracts.factory721Address,
       '10000'
     )
     expect(
-      await pool.allowance(
+      await allowance(
+        web3,
         contracts.daiAddress,
         contracts.accounts[0],
         contracts.factory721Address
       )
     ).to.equal('2000')
     expect(
-      await pool.allowance(
+      await allowance(
+        web3,
         contracts.usdcAddress,
         contracts.accounts[0],
         contracts.factory721Address
@@ -116,7 +120,7 @@ describe('Pool unit test', () => {
       web3.utils.toWei('100000')
     )
 
-    await pool.amountToUnits(contracts.usdcAddress, '20')
+    await amountToUnits(web3, contracts.usdcAddress, '20')
   })
 
   describe('Test a pool with DAI (18 Decimals)', () => {
@@ -142,7 +146,7 @@ describe('Pool unit test', () => {
         symbol: 'ERC20DT1Symbol'
       }
 
-      const baseTokenInitialLiq = await pool.amountToUnits(contracts.daiAddress, '2000')
+      const baseTokenInitialLiq = await amountToUnits(web3, contracts.daiAddress, '2000')
 
       const poolParams: PoolCreationParams = {
         ssContract: contracts.sideStakingAddress,
@@ -270,7 +274,7 @@ describe('Pool unit test', () => {
         web3.utils.toWei('1000')
       )
       expect(await erc20Contract.methods.balanceOf(user2).call()).to.equal('0')
-      await pool.approve(user2, contracts.daiAddress, poolAddress, '10')
+      await approve(web3, user2, contracts.daiAddress, poolAddress, '10')
 
       const tokenInOutMarket: TokenInOutMarket = {
         tokenIn: contracts.daiAddress,
@@ -294,7 +298,7 @@ describe('Pool unit test', () => {
     })
 
     it('#swapExactAmountOut - should swap', async () => {
-      await pool.approve(user2, contracts.daiAddress, poolAddress, '100')
+      await approve(web3, user2, contracts.daiAddress, poolAddress, '100')
       expect(await daiContract.methods.balanceOf(user2).call()).to.equal(
         web3.utils.toWei('990')
       )
@@ -324,8 +328,8 @@ describe('Pool unit test', () => {
         '50' // Amounts IN
       ]
 
-      await pool.approve(user2, erc20Token, poolAddress, '50')
-      await pool.approve(user2, contracts.daiAddress, poolAddress, '50')
+      await approve(web3, user2, erc20Token, poolAddress, '50')
+      await approve(web3, user2, contracts.daiAddress, poolAddress, '50')
       const tx = await pool.joinPool(user2, poolAddress, BPTAmountOut, maxAmountsIn)
       assert(tx != null)
       expect(await pool.sharesBalance(user2, poolAddress)).to.equal(BPTAmountOut)
@@ -335,8 +339,8 @@ describe('Pool unit test', () => {
     it('#joinswapExternAmountIn- user2 should add liquidity, receiving LP tokens', async () => {
       const daiAmountIn = '100'
       const minBPTOut = '0.1'
-      await pool.approve(user2, contracts.daiAddress, poolAddress, '100', true)
-      expect(await pool.allowance(contracts.daiAddress, user2, poolAddress)).to.equal(
+      await approve(web3, user2, contracts.daiAddress, poolAddress, '100', true)
+      expect(await allowance(web3, contracts.daiAddress, user2, poolAddress)).to.equal(
         '100'
       )
       const tx = await pool.joinswapExternAmountIn(
@@ -361,7 +365,7 @@ describe('Pool unit test', () => {
       const BPTAmountOut = '0.1'
       const maxDAIIn = '100'
 
-      await pool.approve(user2, contracts.daiAddress, poolAddress, '100')
+      await approve(web3, user2, contracts.daiAddress, poolAddress, '100')
 
       const tx = await pool.joinswapPoolAmountOut(
         user2,
@@ -627,7 +631,7 @@ describe('Pool unit test', () => {
         vestingAmount: '10000',
         vestedBlocks: 2500000,
         initialBaseTokenLiquidity: web3.utils.fromWei(
-          await pool.amountToUnits(contracts.usdcAddress, '2000')
+          await amountToUnits(web3, contracts.usdcAddress, '2000')
         ),
         swapFeeLiquidityProvider: 1e15,
         swapFeeMarketRunner: 1e15
@@ -807,7 +811,7 @@ describe('Pool unit test', () => {
     })
 
     it('#swapExactAmountIn - should swap', async () => {
-      const transferAmount = await pool.amountToUnits(contracts.usdcAddress, '1000') // 1000 USDC
+      const transferAmount = await amountToUnits(web3, contracts.usdcAddress, '1000') // 1000 USDC
       await usdcContract.methods
         .transfer(user2, transferAmount)
         .send({ from: contracts.accounts[0] })
@@ -816,7 +820,7 @@ describe('Pool unit test', () => {
       )
 
       expect(await erc20Contract.methods.balanceOf(user2).call()).to.equal('0')
-      await pool.approve(user2, contracts.usdcAddress, poolAddress, '10')
+      await approve(web3, user2, contracts.usdcAddress, poolAddress, '10')
       const tokenInOutMarket: TokenInOutMarket = {
         tokenIn: contracts.usdcAddress,
         tokenOut: erc20Token,
@@ -840,9 +844,9 @@ describe('Pool unit test', () => {
 
     it('#swapExactAmountOut - should swap', async () => {
       expect(await usdcContract.methods.balanceOf(user2).call()).to.equal(
-        (await pool.amountToUnits(contracts.usdcAddress, '990')).toString()
+        (await amountToUnits(web3, contracts.usdcAddress, '990')).toString()
       )
-      await pool.approve(user2, contracts.usdcAddress, poolAddress, '100')
+      await approve(web3, user2, contracts.usdcAddress, poolAddress, '100')
       const tokenInOutMarket: TokenInOutMarket = {
         tokenIn: contracts.usdcAddress,
         tokenOut: erc20Token,
@@ -870,8 +874,8 @@ describe('Pool unit test', () => {
         '50' // Amounts IN
       ]
 
-      await pool.approve(user2, erc20Token, poolAddress, '50')
-      await pool.approve(user2, contracts.usdcAddress, poolAddress, '50')
+      await approve(web3, user2, erc20Token, poolAddress, '50')
+      await approve(web3, user2, contracts.usdcAddress, poolAddress, '50')
       const tx = await pool.joinPool(user2, poolAddress, BPTAmountOut, maxAmountsIn)
       assert(tx != null)
       expect(await pool.sharesBalance(user2, poolAddress)).to.equal(BPTAmountOut)
@@ -885,7 +889,7 @@ describe('Pool unit test', () => {
     it('#joinswapExternAmountIn- user2 should add liquidity, receiving LP tokens', async () => {
       const usdcAmountIn = '100'
       const minBPTOut = '0.1'
-      await pool.approve(user2, contracts.usdcAddress, poolAddress, '100', true)
+      await approve(web3, user2, contracts.usdcAddress, poolAddress, '100', true)
 
       const tx = await pool.joinswapExternAmountIn(
         user2,
@@ -909,7 +913,7 @@ describe('Pool unit test', () => {
       const BPTAmountOut = '0.1'
       const maxUSDCIn = '100'
 
-      await pool.approve(user2, contracts.usdcAddress, poolAddress, '100')
+      await approve(web3, user2, contracts.usdcAddress, poolAddress, '100')
 
       const tx = await pool.joinswapPoolAmountOut(
         user2,

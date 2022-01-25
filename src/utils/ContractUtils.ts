@@ -110,3 +110,22 @@ export async function unitsToAmount(
     this.logger.error('ERROR: FAILED TO CALL DECIMALS(), USING 18')
   }
 }
+
+export async function amountToUnits(
+  web3: Web3,
+  token: string,
+  amount: string
+): Promise<string> {
+  try {
+    const tokenContract = new web3.eth.Contract(minAbi, token)
+    let decimals = await tokenContract.methods.decimals().call()
+    if (decimals === '0') {
+      decimals = 18
+    }
+    const amountFormatted = new BigNumber(parseInt(amount) * 10 ** decimals)
+    BigNumber.config({ EXPONENTIAL_AT: 50 })
+    return amountFormatted.toString()
+  } catch (e) {
+    this.logger.error('ERROR: FAILED TO CALL DECIMALS(), USING 18')
+  }
+}
