@@ -11,7 +11,7 @@ import Web3 from 'web3'
 import { algo, SHA256 } from 'crypto-js'
 import { homedir } from 'os'
 import fs from 'fs'
-import { downloadFile, crossFetchGeneric } from '../../src/utils/FetchHelper'
+import { downloadFile } from '../../src/utils/FetchHelper'
 import console from 'console'
 import { ProviderFees } from '../../src/@types'
 
@@ -24,7 +24,6 @@ const data = JSON.parse(
 )
 
 const addresses = data.development
-console.log(addresses)
 const aquarius = new Aquarius('http://127.0.0.1:5000')
 const web3 = new Web3('http://127.0.0.1:8545')
 const providerUrl = 'http://172.15.0.4:8030'
@@ -156,14 +155,9 @@ describe('Simple compute tests', async () => {
     )
     const erc721AddressAsset = result.events.NFTCreated.returnValues[0]
     const datatokenAddressAsset = result.events.TokenCreated.returnValues[0]
-
     // create the files encrypted string
-    let providerResponse = await ProviderInstance.encrypt(
-      assetUrl,
-      providerUrl,
-      crossFetchGeneric
-    )
-    ddo.services[0].files = await providerResponse.text()
+    let providerResponse = await ProviderInstance.encrypt(assetUrl, providerUrl)
+    ddo.services[0].files = await providerResponse
     ddo.services[0].datatokenAddress = datatokenAddressAsset
     // update ddo and set the right did
     ddo.nftAddress = erc721AddressAsset
@@ -171,8 +165,9 @@ describe('Simple compute tests', async () => {
       'did:op:' +
       SHA256(web3.utils.toChecksumAddress(erc721AddressAsset) + chain.toString(10))
 
-    providerResponse = await ProviderInstance.encrypt(ddo, providerUrl, crossFetchGeneric)
-    let encryptedResponse = await providerResponse.text()
+    providerResponse = await ProviderInstance.encrypt(ddo, providerUrl)
+
+    let encryptedResponse = await providerResponse
     let metadataHash = getHash(JSON.stringify(ddo))
     let res = await nft.setMetadata(
       erc721AddressAsset,
@@ -184,7 +179,7 @@ describe('Simple compute tests', async () => {
       encryptedResponse,
       '0x' + metadataHash
     )
-
+    console.log('setMetadata tx', res)
     // let's publish the algorithm as well
     const nftParamsAlgo: NftCreateData = {
       name: 'testNFT',
@@ -210,12 +205,8 @@ describe('Simple compute tests', async () => {
     const datatokenAddressAlgo = resultAlgo.events.TokenCreated.returnValues[0]
 
     // create the files encrypted string
-    providerResponse = await ProviderInstance.encrypt(
-      algoAssetUrl,
-      providerUrl,
-      crossFetchGeneric
-    )
-    algoDdo.services[0].files = await providerResponse.text()
+    providerResponse = await ProviderInstance.encrypt(algoAssetUrl, providerUrl)
+    algoDdo.services[0].files = await providerResponse
     algoDdo.services[0].datatokenAddress = datatokenAddressAlgo
     // update ddo and set the right did
     algoDdo.nftAddress = erc721AddressAlgo
@@ -224,12 +215,8 @@ describe('Simple compute tests', async () => {
       'did:op:' +
       SHA256(web3.utils.toChecksumAddress(erc721AddressAlgo) + chain.toString(10))
 
-    providerResponse = await ProviderInstance.encrypt(
-      algoDdo,
-      providerUrl,
-      crossFetchGeneric
-    )
-    encryptedResponse = await providerResponse.text()
+    providerResponse = await ProviderInstance.encrypt(algoDdo, providerUrl)
+    encryptedResponse = await providerResponse
     metadataHash = getHash(JSON.stringify(algoDdo))
     res = await nft.setMetadata(
       erc721AddressAlgo,
@@ -241,14 +228,12 @@ describe('Simple compute tests', async () => {
       encryptedResponse,
       '0x' + metadataHash
     )
+
+    console.log('starting to wait for aqua')
     // let's wait
-    const resolvedDDOAsset = await aquarius.waitForAqua(ddo.id, null, crossFetchGeneric)
+    const resolvedDDOAsset = await aquarius.waitForAqua(ddo.id)
     assert(resolvedDDOAsset, 'Cannot fetch DDO from Aquarius')
-    const resolvedDDOAlgo = await aquarius.waitForAqua(
-      algoDdo.id,
-      null,
-      crossFetchGeneric
-    )
+    const resolvedDDOAlgo = await aquarius.waitForAqua(algoDdo.id)
     assert(resolvedDDOAlgo, 'Cannot fetch DDO from Aquarius')
     // mint 1 ERC20 and send it to the consumer
     await datatoken.mint(datatokenAddressAsset, publisherAccount, '1', consumerAccount)
@@ -260,8 +245,7 @@ describe('Simple compute tests', async () => {
       resolvedDDOAlgo.services[0].id,
       0,
       consumerAccount,
-      providerUrl,
-      crossFetchGeneric
+      providerUrl
     )
     const providerAlgoFees: ProviderFees = {
       providerFeeAddress: initializeDataAlgo.providerFee.providerFeeAddress,
@@ -294,7 +278,7 @@ describe('Simple compute tests', async () => {
       0,
       consumerAccount,
       providerUrl,
-      crossFetchGeneric,
+      null,
       null,
       'env1',
       providerValidUntil.getTime()
@@ -333,13 +317,12 @@ describe('Simple compute tests', async () => {
         documentId: resolvedDDOAlgo.id,
         serviceId: resolvedDDOAlgo.services[0].id,
         transferTxId: txidAlgo.transactionHash
-      },
-      crossFetchGeneric
+      }
     )
     assert(computeJobs, 'Cannot start compute job')
     const jobStatus = await ProviderInstance.computeStatus(
       providerUrl,
-      crossFetchGeneric,
+      null,
       computeJobs[0].jobId
     )
     assert(jobStatus)
