@@ -104,7 +104,7 @@ export async function unitsToAmount(
       decimals = 18
     }
     const amountFormatted = new BigNumber(parseInt(amount) / 10 ** decimals)
-
+    BigNumber.config({ EXPONENTIAL_AT: 50 })
     return amountFormatted.toString()
   } catch (e) {
     this.logger.error('ERROR: FAILED TO CALL DECIMALS(), USING 18')

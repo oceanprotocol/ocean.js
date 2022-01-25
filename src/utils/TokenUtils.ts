@@ -1,6 +1,6 @@
 import Decimal from 'decimal.js'
 import { Contract } from 'web3-eth-contract'
-import { getFairGasPrice, unitsToAmount } from './ContractUtils'
+import { amountToUnits, getFairGasPrice, unitsToAmount } from './ContractUtils'
 import { minAbi } from './minAbi'
 import LoggerInstance from './Logger'
 import { TransactionReceipt } from 'web3-core'
@@ -64,7 +64,8 @@ export async function approve(
     }
   }
   let result = null
-  const amountFormatted = await unitsToAmount(web3, tokenAddress, amount)
+  const amountFormatted = await amountToUnits(web3, tokenAddress, amount)
+  console.log('approve ammountformate', amountFormatted)
   const estGas = await estApprove(
     web3,
     account,
@@ -78,10 +79,12 @@ export async function approve(
     result = await tokenContract.methods.approve(spender, amountFormatted).send({
       from: account,
       gas: estGas + 1,
-      gasPrice: await getFairGasPrice(this.web3, this.config)
+      gasPrice: await getFairGasPrice(web3, null)
     })
   } catch (e) {
-    this.logger.error(`ERRPR: Failed to approve spender to spend tokens : ${e.message}`)
+    LoggerInstance.error(
+      `ERRPR: Failed to approve spender to spend tokens : ${e.message}`
+    )
   }
   return result
 }
