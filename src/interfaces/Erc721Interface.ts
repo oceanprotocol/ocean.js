@@ -1,6 +1,6 @@
 import { MetadataProof } from '../@types'
 
-export interface MetaDataAndTokenURI {
+export interface MetadataAndTokenURI {
   metaDataState: number
   metaDataDecryptorUrl: string
   metaDataDecryptorAddress: string

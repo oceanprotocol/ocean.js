@@ -12,7 +12,7 @@ import {
 import { Contract } from 'web3-eth-contract'
 import { MetadataProof } from '../../src/@types'
 import { Config } from '../models/index.js'
-import { MetaDataAndTokenURI } from '../interfaces/Erc721Interface'
+import { MetadataAndTokenURI } from '../interfaces/Erc721Interface'
 
 /**
  * ERC721 ROLES
@@ -992,7 +992,7 @@ export class Nft {
    * @param {String} nftAddress erc721 contract adress
    * @param {String} metadataUpdater metadataUpdater address
    * @param {Number} metadataState User which will receive the NFT, will also be set as Manager
-   * @param {String} metaDataDecryptorUrl
+   * @param {String} metadataDecryptorUrl
    * @param {Number} tokenId The id of the token to be transfered
    * @param {Contract} nftContract optional contract instance
    * @return {Promise<any>}
@@ -1001,8 +1001,8 @@ export class Nft {
     nftAddress: string,
     metadataUpdater: string,
     metadataState: number,
-    metaDataDecryptorUrl: string,
-    metaDataDecryptorAddress: string,
+    metadataDecryptorUrl: string,
+    metadataDecryptorAddress: string,
     flags: string,
     data: string,
     metadataHash: string,
@@ -1022,8 +1022,8 @@ export class Nft {
       estGas = await nftContract.methods
         .setMetaData(
           metadataState,
-          metaDataDecryptorUrl,
-          metaDataDecryptorAddress,
+          metadataDecryptorUrl,
+          metadataDecryptorAddress,
           flags,
           data,
           metadataHash,
@@ -1050,8 +1050,8 @@ export class Nft {
     nftAddress: string,
     address: string,
     metadataState: number,
-    metaDataDecryptorUrl: string,
-    metaDataDecryptorAddress: string,
+    metadataDecryptorUrl: string,
+    metadataDecryptorAddress: string,
     flags: string,
     data: string,
     metadataHash: string,
@@ -1069,8 +1069,8 @@ export class Nft {
       nftAddress,
       address,
       metadataState,
-      metaDataDecryptorUrl,
-      metaDataDecryptorAddress,
+      metadataDecryptorUrl,
+      metadataDecryptorAddress,
       flags,
       data,
       metadataHash,
@@ -1080,8 +1080,8 @@ export class Nft {
     const trxReceipt = await nftContract.methods
       .setMetaData(
         metadataState,
-        metaDataDecryptorUrl,
-        metaDataDecryptorAddress,
+        metadataDecryptorUrl,
+        metadataDecryptorAddress,
         flags,
         data,
         metadataHash,
@@ -1100,14 +1100,14 @@ export class Nft {
    * Estimate gas cost for setMetadata  method
    * @param {String} nftAddress erc721 contract adress
    * @param {String} metadataUpdater metadataUpdater address
-   * @param {MetaDataAndTokenURI} metaDataAndTokenURI metaDataAndTokenURI object
+   * @param {MetaDataAndTokenURI} metadataAndTokenURI metaDataAndTokenURI object
    * @param {Contract} nftContract optional contract instance
    * @return {Promise<any>}
    */
-  public async estGasSetMetaDataAndTokenURI(
+  public async estGasSetMetadataAndTokenURI(
     nftAddress: string,
     metadataUpdater: string,
-    metaDataAndTokenURI: MetaDataAndTokenURI,
+    metadataAndTokenURI: MetadataAndTokenURI,
     contractInstance?: Contract
   ): Promise<any> {
     const nftContract =
@@ -1120,7 +1120,7 @@ export class Nft {
     let estGas
     try {
       estGas = await nftContract.methods
-        .setMetaDataAndTokenURI(metaDataAndTokenURI)
+        .setMetaDataAndTokenURI(metadataAndTokenURI)
         .estimateGas({ from: metadataUpdater }, (err, estGas) =>
           err ? gasLimitDefault : estGas
         )
@@ -1135,13 +1135,13 @@ export class Nft {
    *  Helper function to improve UX sets both MetaData & TokenURI in one tx
    * @param {String} nftAddress erc721 contract adress
    * @param {String} address Caller address
-   * @param {MetaDataAndTokenURI} metaDataAndTokenURI metaDataAndTokenURI object
+   * @param {MetadataAndTokenURI} metadataAndTokenURI metaDataAndTokenURI object
    * @return {Promise<TransactionReceipt>} trxReceipt
    */
-  public async setMetaDataAndTokenURI(
+  public async setMetadataAndTokenURI(
     nftAddress: string,
     metadataUpdater: string,
-    metaDataAndTokenURI: MetaDataAndTokenURI
+    metadataAndTokenURI: MetadataAndTokenURI
   ): Promise<TransactionReceipt> {
     const nftContract = setContractDefaults(
       new this.web3.eth.Contract(this.nftAbi, nftAddress),
@@ -1150,14 +1150,14 @@ export class Nft {
     if (!(await this.getNftPermissions(nftAddress, metadataUpdater)).updateMetadata) {
       throw new Error(`Caller is not Metadata updater`)
     }
-    const estGas = await this.estGasSetMetaDataAndTokenURI(
+    const estGas = await this.estGasSetMetadataAndTokenURI(
       nftAddress,
       metadataUpdater,
-      metaDataAndTokenURI,
+      metadataAndTokenURI,
       nftContract
     )
     const trxReceipt = await nftContract.methods
-      .setMetaDataAndTokenURI(metaDataAndTokenURI)
+      .setMetaDataAndTokenURI(metadataAndTokenURI)
       .send({
         from: metadataUpdater,
         gas: estGas + 1,
