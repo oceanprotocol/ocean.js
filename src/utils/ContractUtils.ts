@@ -4,6 +4,8 @@ import { Contract } from 'web3-eth-contract'
 import { generateDtName } from './DatatokenName'
 import { Erc20CreateParams, FreCreationParams, PoolCreationParams } from '../interfaces'
 import { Config } from '../models'
+import { AbiItem } from 'web3-utils/types'
+import { minAbi } from './minAbi'
 
 export function setContractDefaults(contract: Contract, config: Config): Contract {
   if (config) {
@@ -88,5 +90,23 @@ export function getPoolCreationParams(poolParams: PoolCreationParams): any {
       Web3.utils.toWei(poolParams.initialBaseTokenLiquidity)
     ],
     swapFees: [poolParams.swapFeeLiquidityProvider, poolParams.swapFeeMarketRunner]
+  }
+}
+export async function unitsToAmount(
+  web3: Web3,
+  token: string,
+  amount: string
+): Promise<string> {
+  try {
+    const tokenContract = new web3.eth.Contract(minAbi, token)
+    let decimals = await tokenContract.methods.decimals().call()
+    if (decimals === '0') {
+      decimals = 18
+    }
+    const amountFormatted = new BigNumber(parseInt(amount) / 10 ** decimals)
+
+    return amountFormatted.toString()
+  } catch (e) {
+    this.logger.error('ERROR: FAILED TO CALL DECIMALS(), USING 18')
   }
 }

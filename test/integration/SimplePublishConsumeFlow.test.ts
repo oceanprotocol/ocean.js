@@ -161,7 +161,7 @@ describe('Simple Publish & consume test', async () => {
     )
     assert(downloadURL, 'Provider getDownloadUrl failed')
     try {
-      await downloadFile(downloadURL, './tmpfile')
+      const fileData = await downloadFile(downloadURL)
     } catch (e) {
       assert.fail('Download failed')
     }

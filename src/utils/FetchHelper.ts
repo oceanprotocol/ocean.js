@@ -1,7 +1,6 @@
 import fetch from 'cross-fetch'
 import LoggerInstance from './Logger'
-import fs from 'fs'
-import save from 'save-file'
+import { DownloadResponse } from '../@types/DownloadResponse'
 
 export async function fetchData(url: string, opts: RequestInit): Promise<Response> {
   const result = await fetch(url, opts)
@@ -22,9 +21,8 @@ export async function downloadFileBrowser(url: string): Promise<void> {
 
 export async function downloadFile(
   url: string,
-  destination?: string,
   index?: number
-): Promise<string> {
+): Promise<DownloadResponse> {
   const response = await fetch(url)
   if (!response.ok) {
     throw new Error('Response error.')
@@ -41,14 +39,8 @@ export async function downloadFile(
       filename = `file${index}`
     }
   }
-  if (destination) {
-    // eslint-disable-next-line no-async-promise-executor
-    fs.mkdirSync(destination, { recursive: true })
-    fs.writeFileSync(`${destination}/${filename}`, await response.text())
-    return destination
-  } else {
-    save(await response.arrayBuffer(), filename)
-  }
+
+  return { data: await response.arrayBuffer(), filename }
 }
 
 export async function getData(url: string): Promise<Response> {
