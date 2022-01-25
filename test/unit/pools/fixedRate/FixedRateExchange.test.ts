@@ -86,11 +86,6 @@ describe('Fixed Rate unit test', () => {
       contracts.MockERC20.options.jsonInterface,
       contracts.usdcAddress
     )
-
-    console.log(
-      await usdcContract.methods.decimals().call(),
-      'USDC DECIMALS IN THIS TEST'
-    )
   })
 
   describe('Test a Fixed Rate Exchange with DAI (18 Decimals)', () => {

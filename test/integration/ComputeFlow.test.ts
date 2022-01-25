@@ -8,10 +8,9 @@ import { Erc20CreateParams } from '../../src/interfaces'
 import { getHash } from '../../src/utils'
 import { Nft } from '../../src/tokens/NFT'
 import Web3 from 'web3'
-import { algo, SHA256 } from 'crypto-js'
+import { SHA256 } from 'crypto-js'
 import { homedir } from 'os'
 import fs from 'fs'
-import { downloadFile } from '../../src/utils/FetchHelper'
 import console from 'console'
 import { ProviderFees } from '../../src/@types'
 
@@ -179,7 +178,6 @@ describe('Simple compute tests', async () => {
       encryptedResponse,
       '0x' + metadataHash
     )
-    console.log('setMetadata tx', res)
     // let's publish the algorithm as well
     const nftParamsAlgo: NftCreateData = {
       name: 'testNFT',
@@ -229,7 +227,6 @@ describe('Simple compute tests', async () => {
       '0x' + metadataHash
     )
 
-    console.log('starting to wait for aqua')
     // let's wait
     const resolvedDDOAsset = await aquarius.waitForAqua(ddo.id)
     assert(resolvedDDOAsset, 'Cannot fetch DDO from Aquarius')

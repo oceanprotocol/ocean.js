@@ -11,6 +11,7 @@ import {
 import { noZeroX } from '../utils/ConversionTypeHelper'
 import { signText, signWithHash } from '../utils/SignatureUtils'
 import fetch from 'cross-fetch'
+import { DownloadResponse } from '../@types/DownloadResponse'
 export interface HttpCallback {
   (httpMethod: string, url: string, body: string, header: any): Promise<any>
 }
@@ -567,12 +568,11 @@ export class Provider {
   public async computeResult(
     jobId: string,
     index: number,
-    destination: string,
     accountId: string,
     providerUri: string,
     web3: Web3,
     signal?: AbortSignal
-  ): Promise<any> {
+  ): Promise<DownloadResponse | void> {
     const providerEndpoints = await this.getEndpoints(providerUri)
     const serviceEndpoints = await this.getServiceEndpoints(
       providerUri,
@@ -604,15 +604,16 @@ export class Provider {
 
     if (!computeResultUrl) return null
     try {
-      !destination
-        ? await downloadFileBrowser(consumeUrl)
-        : await downloadFile(consumeUrl, destination, index)
+      if (document) {
+        await downloadFileBrowser(consumeUrl)
+      } else {
+        return await downloadFile(consumeUrl, index)
+      }
     } catch (e) {
       LoggerInstance.error('Error getting job result')
       LoggerInstance.error(e)
       throw e
     }
-    return destination
   }
 
   /** Deletes a compute job.

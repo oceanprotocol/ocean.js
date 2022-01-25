@@ -11,7 +11,6 @@ import { SHA256 } from 'crypto-js'
 import { homedir } from 'os'
 import fs from 'fs'
 import { downloadFile } from '../../src/utils/FetchHelper'
-import console from 'console'
 import { ProviderFees } from '../../src/@types/Provider'
 
 const data = JSON.parse(
@@ -23,7 +22,6 @@ const data = JSON.parse(
 )
 
 const addresses = data.development
-console.log(addresses)
 const aquarius = new Aquarius('http://127.0.0.1:5000')
 const web3 = new Web3('http://127.0.0.1:8545')
 const providerUrl = 'http://172.15.0.4:8030'
@@ -161,7 +159,7 @@ describe('Simple Publish & consume test', async () => {
     )
     assert(downloadURL, 'Provider getDownloadUrl failed')
     try {
-      await downloadFile(downloadURL, './tmpfile')
+      const fileData = await downloadFile(downloadURL)
     } catch (e) {
       assert.fail('Download failed')
     }

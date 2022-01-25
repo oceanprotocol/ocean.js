@@ -411,7 +411,6 @@ describe('Nft Factory test', () => {
         _providerFees: providerFees
       }
     ]
-    console.log('orders', orders)
     await nftFactory.startMultipleTokenOrder(user2, orders)
     // we check user2 has no more DTs
     expect(await dtContract.methods.balanceOf(user2).call()).to.equal('0')
