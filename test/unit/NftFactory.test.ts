@@ -378,6 +378,7 @@ describe('Nft Factory test', () => {
 
     const providerData = JSON.stringify({ timeout: 0 })
     const providerValidUntil = '0'
+
     const message = web3.utils.soliditySha3(
       { t: 'bytes', v: web3.utils.toHex(web3.utils.asciiToHex(providerData)) },
       { t: 'address', v: consumeFeeAddress },
@@ -402,13 +403,15 @@ describe('Nft Factory test', () => {
         tokenAddress: dtAddress,
         consumer: consumer,
         serviceIndex: serviceIndex,
-        _providerFees: providerFees
+        _providerFees: providerFees,
+        ammount: dtAmount
       },
       {
         tokenAddress: dtAddress2,
         consumer: consumer,
         serviceIndex: serviceIndex,
-        _providerFees: providerFees
+        _providerFees: providerFees,
+        ammount: dtAmount
       }
     ]
     await nftFactory.startMultipleTokenOrder(user2, orders)

@@ -30,6 +30,7 @@ interface Template {
 export interface TokenOrder {
   tokenAddress: string
   consumer: string
+  ammount: string
   serviceIndex: number
   _providerFees: ProviderFees
 }

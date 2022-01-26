@@ -390,6 +390,7 @@ describe('Datatoken', () => {
     const providerData = JSON.stringify({ timeout: 0 })
     const providerFeeToken = ZERO_ADDRESS
     const providerFeeAmount = '0'
+    const dtAmount = web3.utils.toWei('1')
     const message = web3.utils.soliditySha3(
       { t: 'bytes', v: web3.utils.toHex(web3.utils.asciiToHex(providerData)) },
       { t: 'address', v: user3 },
@@ -411,7 +412,8 @@ describe('Datatoken', () => {
     const order: OrderParams = {
       consumer: user1,
       serviceIndex: 1,
-      _providerFees: providerFees
+      _providerFees: providerFees,
+      ammount: dtAmount
     }
     const buyFromDispenseTx = await datatoken.buyFromDispenserAndOrder(
       datatokenAddress,
@@ -426,6 +428,7 @@ describe('Datatoken', () => {
     const providerData = JSON.stringify({ timeout: 0 })
     const providerFeeToken = ZERO_ADDRESS
     const providerFeeAmount = '0'
+    const dtAmount = web3.utils.toWei('1')
     const message = web3.utils.soliditySha3(
       { t: 'bytes', v: web3.utils.toHex(web3.utils.asciiToHex(providerData)) },
       { t: 'address', v: user3 },
@@ -447,6 +450,7 @@ describe('Datatoken', () => {
     const order: OrderParams = {
       consumer: user1,
       serviceIndex: 1,
+      ammount: dtAmount,
       _providerFees: providerFees
     }
 

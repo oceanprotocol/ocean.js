@@ -31,7 +31,7 @@ export interface FixedPriceExchange {
 }
 
 export interface FeesInfo {
-  opfFee: string
+  opcFee: string
   marketFee: string
   marketFeeCollector: string
   marketFeeAvailable: string
@@ -640,7 +640,7 @@ export class FixedRateExchange {
    */
   public async getFeesInfo(exchangeId: string): Promise<FeesInfo> {
     const result: FeesInfo = await this.contract.methods.getFeesInfo(exchangeId).call()
-    result.opfFee = this.web3.utils.fromWei(result.opfFee.toString())
+    result.opcFee = this.web3.utils.fromWei(result.opcFee.toString())
     result.marketFee = this.web3.utils.fromWei(result.marketFee.toString())
 
     result.marketFeeAvailable = await this.unitsToAmount(
@@ -974,12 +974,12 @@ export class FixedRateExchange {
    * Get OPF Collector of fixed rate contract
    * @return {String}
    */
-  async getOPFCollector(): Promise<string> {
+  async getOPCCollector(): Promise<string> {
     let result = null
     try {
-      result = await this.contract.methods.opfCollector().call()
+      result = await this.contract.methods.opcCollector().call()
     } catch (e) {
-      LoggerInstance.error(`ERROR: Failed to get OPF Collector address: ${e.message}`)
+      LoggerInstance.error(`ERROR: Failed to get OPC Collector address: ${e.message}`)
     }
     return result
   }
