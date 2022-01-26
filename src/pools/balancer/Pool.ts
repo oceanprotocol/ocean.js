@@ -290,18 +290,18 @@ export class Pool {
   }
 
   /**
-   * Get OPF Collector of this pool
+   * Get OPC Collector of this pool
    * @param {String} poolAddress
    * @return {String}
    */
-  async getOPFCollector(poolAddress: string): Promise<string> {
+  async getOPCCollector(poolAddress: string): Promise<string> {
     const pool = setContractDefaults(
       new this.web3.eth.Contract(this.poolAbi, poolAddress),
       this.config
     )
     let result = null
     try {
-      result = await pool.methods._opfCollector().call()
+      result = await pool.methods._opcCollector().call()
     } catch (e) {
       this.logger.error(`ERROR: Failed to get OPF Collector address: ${e.message}`)
     }
@@ -483,7 +483,7 @@ export class Pool {
       this.config
     )
     try {
-      const currentMarketFees = await pool.methods.getCurrentOPFFees().call()
+      const currentMarketFees = await pool.methods.getCurrentOPCFees().call()
       return currentMarketFees
     } catch (e) {
       this.logger.error(`ERROR: Failed to get community fees for a token: ${e.message}`)
@@ -494,13 +494,13 @@ export class Pool {
    * Get getCurrentOPFFees  Get the current amount of fees which can be withdrawned by OPF
    * @return {CurrentFees}
    */
-  async getCurrentOPFFees(poolAddress: string): Promise<CurrentFees> {
+  async getCurrentOPCFees(poolAddress: string): Promise<CurrentFees> {
     const pool = setContractDefaults(
       new this.web3.eth.Contract(this.poolAbi, poolAddress),
       this.config
     )
     try {
-      const currentMarketFees = await pool.methods.getCurrentOPFFees().call()
+      const currentMarketFees = await pool.methods.getCurrentOPCFees().call()
       return currentMarketFees
     } catch (e) {
       this.logger.error(`ERROR: Failed to get community fees for a token: ${e.message}`)
@@ -535,7 +535,7 @@ export class Pool {
    * @param {Contract} contractInstance optional contract instance
    * @return {Promise<number>}
    */
-  public async estCollectOPF(
+  public async estCollectOPC(
     address: string,
     poolAddress: string,
     contractInstance?: Contract
@@ -551,7 +551,7 @@ export class Pool {
     let estGas
     try {
       estGas = await poolContract.methods
-        .collectOPF()
+        .collectOPC()
         .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
     } catch (e) {
       estGas = gasLimitDefault
@@ -565,16 +565,16 @@ export class Pool {
    * @param {String} poolAddress
    * @return {TransactionReceipt}
    */
-  async collectOPF(address: string, poolAddress: string): Promise<TransactionReceipt> {
+  async collectOPC(address: string, poolAddress: string): Promise<TransactionReceipt> {
     const pool = setContractDefaults(
       new this.web3.eth.Contract(this.poolAbi, poolAddress),
       this.config
     )
     let result = null
-    const estGas = await this.estCollectOPF(address, poolAddress)
+    const estGas = await this.estCollectOPC(address, poolAddress)
 
     try {
-      result = await pool.methods.collectOPF().send({
+      result = await pool.methods.collectOPC().send({
         from: address,
         gas: estGas + 1,
         gasPrice: await getFairGasPrice(this.web3, this.config)

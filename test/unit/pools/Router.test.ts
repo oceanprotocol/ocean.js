@@ -122,23 +122,29 @@ describe('Router unit test', () => {
     expect(await router.isFixedPrice(contracts.daiAddress)).to.equal(true)
   })
 
-  it('#getOPFFee - should return actual OPF fee for a given baseToken', async () => {
-    const opfFee = 1e15
-    expect(await router.getOPFFee(contracts.oceanAddress)).to.equal('0')
-    expect(await router.getOPFFee(contracts.daiAddress)).to.equal(opfFee.toString())
+  it('#getOPCFee - should return actual OPF fee for a given baseToken', async () => {
+    const opcFee = 1e15
+    expect(await router.getOPCFee(contracts.oceanAddress)).to.equal('0')
+    expect(await router.getOPCFee(contracts.daiAddress)).to.equal(opcFee.toString())
   })
 
   it('#getCurrentOPFFee - should return actual OPF Fee', async () => {
     const opfFee = 0
-    expect(await router.getCurrentOPFFee()).to.equal(opfFee.toString())
+    expect(await router.getCurrentOPCFee()).to.equal(opfFee.toString())
   })
 
-  it('#updateOPFFee - should update opf fee if Router Owner', async () => {
+  it('#updateOPCFee - should update opf fee if Router Owner', async () => {
     const opfFee = 0
-    expect(await router.getCurrentOPFFee()).to.equal(opfFee.toString())
+    expect(await router.getCurrentOPCFee()).to.equal(opfFee.toString())
     const newOPFFee = 1e14
-    await router.updateOPFFee(contracts.accounts[0], 1e14)
-    expect(await router.getCurrentOPFFee()).to.equal(newOPFFee.toString())
+    await router.updateOPCFee(
+      contracts.accounts[0],
+      newOPFFee,
+      newOPFFee,
+      newOPFFee,
+      newOPFFee
+    )
+    expect(await router.getCurrentOPCFee()).to.equal(newOPFFee.toString())
   })
 
   it('#addPoolTemplate - should add a new token into poolTemplates mapping if Router Owner', async () => {

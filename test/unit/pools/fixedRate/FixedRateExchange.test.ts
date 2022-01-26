@@ -160,7 +160,7 @@ describe('Fixed Rate unit test', () => {
       expect(await fixedRate.getExchangeOwner(exchangeId)).to.equal(exchangeOwner)
     })
     it('#getOPFCollector - should get OPF collector', async () => {
-      expect(await fixedRate.getOPFCollector()).to.equal(contracts.opfCollectorAddress)
+      expect(await fixedRate.getOPCCollector()).to.equal(contracts.opfCollectorAddress)
     })
     it('#getRouter - should get Router address', async () => {
       expect(await fixedRate.getRouter()).to.equal(contracts.routerAddress)
@@ -325,7 +325,7 @@ describe('Fixed Rate unit test', () => {
       expect(result.marketFeeAvailable).to.equal('0.02') // formatted for baseToken decimals
       expect(result.oceanFeeAvailable).to.equal('0.02') // formatted for baseToken decimals
       expect(result.marketFeeCollector).to.equal(user3)
-      expect(result.opfFee).to.equal('0.001')
+      expect(result.opcFee).to.equal('0.001')
     })
 
     it('#getAllowedSwapper- should return address(0) if not set, if exchangeOwner', async () => {
@@ -396,7 +396,7 @@ describe('Fixed Rate unit test', () => {
       expect(result.oceanFeeAvailable).to.equal('0')
       // OPF collector got the fee
       expect(
-        await daiContract.methods.balanceOf(await fixedRate.getOPFCollector()).call()
+        await daiContract.methods.balanceOf(await fixedRate.getOPCCollector()).call()
       ).to.equal(web3.utils.toWei('0.021'))
     })
 
@@ -488,7 +488,7 @@ describe('Fixed Rate unit test', () => {
       expect(await fixedRate.getExchangeOwner(exchangeId)).to.equal(exchangeOwner)
     })
     it('#getOPFCollector - should get OPF collector', async () => {
-      expect(await fixedRate.getOPFCollector()).to.equal(contracts.opfCollectorAddress)
+      expect(await fixedRate.getOPCCollector()).to.equal(contracts.opfCollectorAddress)
     })
     it('#getRouter - should get Router address', async () => {
       expect(await fixedRate.getRouter()).to.equal(contracts.routerAddress)
@@ -655,7 +655,7 @@ describe('Fixed Rate unit test', () => {
       expect(result.marketFeeAvailable).to.equal('0.02') // formatted for baseToken decimals
       expect(result.oceanFeeAvailable).to.equal('0.02') // formatted for baseToken decimals
       expect(result.marketFeeCollector).to.equal(user3)
-      expect(result.opfFee).to.equal('0.001')
+      expect(result.opcFee).to.equal('0.001')
     })
 
     it('#getAllowedSwapper- should return address(0) if not set, if exchangeOwner', async () => {
@@ -726,7 +726,7 @@ describe('Fixed Rate unit test', () => {
       expect(result.oceanFeeAvailable).to.equal('0')
       // OPF collector got the fee
       expect(
-        await usdcContract.methods.balanceOf(await fixedRate.getOPFCollector()).call()
+        await usdcContract.methods.balanceOf(await fixedRate.getOPCCollector()).call()
       ).to.equal((0.021 * 1e6).toString())
     })
 

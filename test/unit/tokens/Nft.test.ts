@@ -83,7 +83,6 @@ describe('NFT', () => {
   it('#getTokenURI', async () => {
     const tokenURI = await nftDatatoken.getTokenURI(nftAddress, 1)
     assert(tokenURI === 'https://oceanprotocol.com/nft/')
-    console.log(tokenURI)
   })
 
   it('#createERC20 - should create a new ERC20 DT from NFT contract', async () => {

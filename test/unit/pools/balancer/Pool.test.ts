@@ -549,8 +549,8 @@ describe('Pool unit test', () => {
       assert((await pool.getMarketFeeCollector(poolAddress)) === contracts.accounts[0])
     })
 
-    it('#getOPFCollector- should get market fees for each token', async () => {
-      assert((await pool.getOPFCollector(poolAddress)) === contracts.opfCollectorAddress)
+    it('#getOPCCollector- should get market fees for each token', async () => {
+      assert((await pool.getOPCCollector(poolAddress)) === contracts.opfCollectorAddress)
     })
 
     it('#collectCommunityFee- should get community fees for each token', async () => {
@@ -568,7 +568,7 @@ describe('Pool unit test', () => {
           '0'
       )
       // anyone can call callectOPF
-      await pool.collectOPF(contracts.accounts[0], poolAddress)
+      await pool.collectOPC(contracts.accounts[0], poolAddress)
       // DAI fees have been collected
       assert((await pool.getCommunityFees(poolAddress, contracts.daiAddress)) === '0')
       // OPF collector got DAI
@@ -1101,8 +1101,8 @@ describe('Pool unit test', () => {
       assert((await pool.getMarketFeeCollector(poolAddress)) === contracts.accounts[0])
     })
 
-    it('#getOPFCollector- should get market fees for each token', async () => {
-      assert((await pool.getOPFCollector(poolAddress)) === contracts.opfCollectorAddress)
+    it('#getOPCCollector- should get market fees for each token', async () => {
+      assert((await pool.getOPCCollector(poolAddress)) === contracts.opfCollectorAddress)
     })
 
     it('#getCurrentMarketFees- should get curent market fees for each token', async () => {
@@ -1111,7 +1111,7 @@ describe('Pool unit test', () => {
     })
 
     it('#getCurrentOPFFees- should get curent market fees for each token', async () => {
-      const curentOPFFees: CurrentFees = await pool.getCurrentOPFFees(poolAddress)
+      const curentOPFFees: CurrentFees = await pool.getCurrentOPCFees(poolAddress)
       assert(curentOPFFees !== null)
     })
 
@@ -1130,7 +1130,7 @@ describe('Pool unit test', () => {
           '0'
       )
       // anyone can call callectOPF
-      await pool.collectOPF(contracts.accounts[0], poolAddress)
+      await pool.collectOPC(contracts.accounts[0], poolAddress)
       // USDC fees have been collected
       assert((await pool.getCommunityFees(poolAddress, contracts.usdcAddress)) === '0')
       // OPF collector got USDC

@@ -27,7 +27,6 @@ jobs:
           key: ${{ runner.os }}-lint-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
           restore-keys: ${{ runner.os }}-lint-${{ env.cache-name }}-
       - run: npm ci
-      - run: npm i --verbose --force @oceanprotocol/contracts@"github:oceanprotocol/contracts#v4main_postaudit"
       - run: npm run lint
 
   test_unit:
@@ -61,7 +60,6 @@ jobs:
           cd ..
 
       - run: npm ci
-      - run: npm i --verbose --force @oceanprotocol/contracts@"github:oceanprotocol/contracts#v4main_postaudit"
       - run: npm run build:metadata
       - run: npm run test:unit:cover
       - uses: actions/upload-artifact@v2
@@ -86,7 +84,6 @@ jobs:
           key: ${{ runner.os }}-test-integration-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
           restore-keys: ${{ runner.os }}-test-integration-${{ env.cache-name }}-
       - run: npm ci
-      - run: npm i --verbose --force @oceanprotocol/contracts@"github:oceanprotocol/contracts#v4main_postaudit"
       - run: npm run build:metadata
 
       # Env var expansion workaround
@@ -149,7 +146,6 @@ jobs:
           key: ${{ runner.os }}-${{ matrix.node }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
           restore-keys: ${{ runner.os }}-${{ matrix.node }}-build-${{ env.cache-name }}-
       - run: npm ci
-      - run: npm i --verbose --force @oceanprotocol/contracts@"github:oceanprotocol/contracts#v4main_postaudit"
       - run: npm run build
       - run: npm run doc:json
 

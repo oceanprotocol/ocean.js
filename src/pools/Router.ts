@@ -521,16 +521,16 @@ export class Router {
   }
 
   /** Get OPF Fee per token
-   * @return {Promise<number>} OPF fee for a specific baseToken
+   * @return {Promise<number>} OPC fee for a specific baseToken
    */
-  public async getOPFFee(baseToken: string): Promise<number> {
-    return await this.router.methods.getOPFFee(baseToken).call()
+  public async getOPCFee(baseToken: string): Promise<number> {
+    return await this.router.methods.getOPCFee(baseToken).call()
   }
 
   /** Get Current OPF Fee
    * @return {Promise<number>} OPF fee
    */
-  public async getCurrentOPFFee(): Promise<number> {
+  public async getCurrentOPCFee(): Promise<number> {
     return await this.router.methods.swapOceanFee().call()
   }
 
@@ -540,12 +540,18 @@ export class Router {
    * @param {String} newFee new OPF Fee
    * @return {Promise<TransactionReceipt>}
    */
-  public async estGasUpdateOPFFee(address: string, newFee: number): Promise<any> {
+  public async estGasUpdateOPCFee(
+    address: string,
+    newSwapOceanFee: number,
+    newSwapNonOceanFee: number,
+    newConsumeFee: number,
+    newProviderFee: number
+  ): Promise<any> {
     const gasLimitDefault = this.GASLIMIT_DEFAULT
     let estGas
     try {
       estGas = await this.router.methods
-        .updateOPFFee(newFee)
+        .updateOPCFee(newSwapOceanFee, newSwapNonOceanFee, newConsumeFee, newProviderFee)
         .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
     } catch (e) {
       estGas = gasLimitDefault
@@ -557,26 +563,39 @@ export class Router {
   /**
    * Add a new contract to fixedRate list, after is added, can be used when deploying a new pool
    * @param {String} address
-   * @param {String} newFee new OPF Fee
+   * @param {number} newSwapOceanFee Amount charged for swapping with ocean approved tokens
+   * @param {number} newSwapNonOceanFee Amount charged for swapping with non ocean approved tokens
+   * @param {number} newConsumeFee Amount charged from consumeFees
+   * @param {number} newProviderFee Amount charged for providerFees
    * @return {Promise<TransactionReceipt>}
    */
-  public async updateOPFFee(
+  public async updateOPCFee(
     address: string,
-    newFee: number
+    newSwapOceanFee: number,
+    newSwapNonOceanFee: number,
+    newConsumeFee: number,
+    newProviderFee: number
   ): Promise<TransactionReceipt> {
     if ((await this.getOwner()) !== address) {
       throw new Error(`Caller is not Router Owner`)
     }
 
-    const gasLimitDefault = this.GASLIMIT_DEFAULT
-    const estGas = await this.estGasUpdateOPFFee(address, newFee)
+    const estGas = await this.estGasUpdateOPCFee(
+      address,
+      newSwapOceanFee,
+      newSwapNonOceanFee,
+      newConsumeFee,
+      newProviderFee
+    )
 
     // Invoke createToken function of the contract
-    const trxReceipt = await this.router.methods.updateOPFFee(newFee, newFee).send({
-      from: address,
-      gas: estGas + 1,
-      gasPrice: await getFairGasPrice(this.web3, this.config)
-    })
+    const trxReceipt = await this.router.methods
+      .updateOPCFee(newSwapOceanFee, newSwapNonOceanFee, newConsumeFee, newProviderFee)
+      .send({
+        from: address,
+        gas: estGas + 1,
+        gasPrice: await getFairGasPrice(this.web3, this.config)
+      })
 
     return trxReceipt
   }
