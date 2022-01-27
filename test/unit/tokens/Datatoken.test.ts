@@ -412,8 +412,7 @@ describe('Datatoken', () => {
     const order: OrderParams = {
       consumer: user1,
       serviceIndex: 1,
-      _providerFees: providerFees,
-      ammount: dtAmount
+      _providerFees: providerFees
     }
     const buyFromDispenseTx = await datatoken.buyFromDispenserAndOrder(
       datatokenAddress,
@@ -450,7 +449,6 @@ describe('Datatoken', () => {
     const order: OrderParams = {
       consumer: user1,
       serviceIndex: 1,
-      ammount: dtAmount,
       _providerFees: providerFees
     }
 
