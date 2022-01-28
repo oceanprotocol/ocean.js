@@ -403,15 +403,13 @@ describe('Nft Factory test', () => {
         tokenAddress: dtAddress,
         consumer: consumer,
         serviceIndex: serviceIndex,
-        _providerFees: providerFees,
-        ammount: dtAmount
+        _providerFees: providerFees
       },
       {
         tokenAddress: dtAddress2,
         consumer: consumer,
         serviceIndex: serviceIndex,
-        _providerFees: providerFees,
-        ammount: dtAmount
+        _providerFees: providerFees
       }
     ]
     await nftFactory.startMultipleTokenOrder(user2, orders)

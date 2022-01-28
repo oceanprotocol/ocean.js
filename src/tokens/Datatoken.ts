@@ -26,7 +26,6 @@ interface Roles {
 export interface OrderParams {
   consumer: string
   serviceIndex: number
-  ammount: string
   _providerFees: ProviderFees
 }
 
