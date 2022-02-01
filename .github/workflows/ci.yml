@@ -96,7 +96,7 @@ jobs:
         with:
           repository: 'oceanprotocol/barge'
           path: 'barge'
-          ref: v4
+          ref: feature/v4_c2d
 
       - name: Login to Docker Hub
         if: ${{ env.DOCKERHUB_PASSWORD && env.DOCKERHUB_USERNAME }}
@@ -109,7 +109,7 @@ jobs:
       - name: Run Barge
         working-directory: ${{ github.workspace }}/barge
         run: |
-          bash -x start_ocean.sh --with-provider2 --no-dashboard 2>&1 > start_ocean.log &
+          bash -x start_ocean.sh --with-provider2 --no-dashboard --with-c2d 2>&1 > start_ocean.log &
           cd .. && ./scripts/waitforcontracts.sh
 
       - name: integration
