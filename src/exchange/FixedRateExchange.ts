@@ -146,7 +146,7 @@ export class OceanFixedRateExchange {
       }
       if (amount && exchangeId) {
         observer.next(FixedRateCreateProgressStep.ApprovingDatatoken)
-        this.datatokens.approve(dataToken, this.fixedRateExchangeAddress, amount, address)
+        await this.datatokens.approve(dataToken, this.fixedRateExchangeAddress, amount, address)
       }
       return trxReceipt
     })
