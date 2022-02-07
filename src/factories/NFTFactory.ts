@@ -13,14 +13,14 @@ import {
   configHelperNetworks,
   setContractDefaults
 } from '../utils'
+import { Config } from '../models/index.js'
 import {
+  ProviderFees,
   FreCreationParams,
   Erc20CreateParams,
   PoolCreationParams,
   DispenserCreationParams
-} from '../interfaces'
-import { Config } from '../models/index.js'
-import { ProviderFees } from '../@types/index.js'
+} from '../@types/index.js'
 
 interface Template {
   templateAddress: string

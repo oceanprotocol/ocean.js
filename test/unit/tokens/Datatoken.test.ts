@@ -15,9 +15,8 @@ import { TestContractHandler } from '../../TestContractHandler'
 import { NftFactory, NftCreateData } from '../../../src/factories/NFTFactory'
 import { Datatoken, Nft, OrderParams, DispenserParams } from '../../../src/tokens'
 import { AbiItem } from 'web3-utils'
-import { FreCreationParams, FreOrderParams } from '../../../src/interfaces'
 import { ZERO_ADDRESS, signHash } from '../../../src/utils'
-import { ProviderFees } from '../../../src/@types/Provider.js'
+import { ProviderFees, FreCreationParams, FreOrderParams } from '../../../src/@types/'
 
 const web3 = new Web3('http://127.0.0.1:8545')
 
