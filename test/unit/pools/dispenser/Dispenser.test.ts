@@ -14,7 +14,7 @@ import { NftFactory, NftCreateData } from '../../../../src/factories/'
 import { Datatoken, DispenserParams } from '../../../../src/tokens/'
 import { Dispenser } from '../../../../src/pools/dispenser/'
 import { TestContractHandler } from '../../../TestContractHandler'
-import { Erc20CreateParams } from '../../../../src/interfaces'
+import { Erc20CreateParams } from '../../../../src/@types'
 
 const web3 = new Web3('http://127.0.0.1:8545')
 

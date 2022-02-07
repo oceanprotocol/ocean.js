@@ -11,10 +11,10 @@ import {
   setContractDefaults,
   configHelperNetworks
 } from '../utils'
-import { FreOrderParams, FreCreationParams } from '../interfaces'
+import { FreOrderParams, FreCreationParams, ProviderFees } from '../@types'
 import { Nft } from './NFT'
 import { Config } from '../models/index.js'
-import { ProviderFees } from '../@types/Provider.js'
+
 /**
  * ERC20 ROLES
  */

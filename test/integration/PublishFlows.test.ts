@@ -3,12 +3,6 @@ import ProviderInstance from '../../src/provider/Provider'
 import Aquarius from '../../src/aquarius/Aquarius'
 import { assert } from 'chai'
 import { NftFactory, NftCreateData } from '../../src/factories/index'
-import {
-  Erc20CreateParams,
-  PoolCreationParams,
-  FreCreationParams,
-  DispenserCreationParams
-} from '../../src/interfaces'
 import { getHash, ZERO_ADDRESS } from '../../src/utils'
 import { Nft } from '../../src/tokens/NFT'
 import Web3 from 'web3'
@@ -16,7 +10,14 @@ import { SHA256 } from 'crypto-js'
 import { homedir } from 'os'
 import fs from 'fs'
 import { AbiItem } from 'web3-utils'
-import { ValidateMetadata, DDO } from '../../src/@types'
+import {
+  ValidateMetadata,
+  DDO,
+  Erc20CreateParams,
+  PoolCreationParams,
+  FreCreationParams,
+  DispenserCreationParams
+} from '../../src/@types'
 
 const data = JSON.parse(
   fs.readFileSync(

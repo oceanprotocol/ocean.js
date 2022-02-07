@@ -14,7 +14,7 @@ import { NftFactory, NftCreateData } from '../../../src/factories/NFTFactory'
 import { Nft } from '../../../src/tokens/NFT'
 import { AbiItem } from 'web3-utils'
 import sha256 from 'crypto-js/sha256'
-import { MetadataAndTokenURI } from '../../../src/interfaces/Erc721Interface'
+import { MetadataAndTokenURI } from '../../../src/@types/Erc721'
 
 const web3 = new Web3('http://127.0.0.1:8545')
 

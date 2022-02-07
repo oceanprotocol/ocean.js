@@ -4,15 +4,13 @@ import Aquarius from '../../src/aquarius/Aquarius'
 import { assert } from 'chai'
 import { NftFactory, NftCreateData } from '../../src/factories/index'
 import { Datatoken } from '../../src/tokens/Datatoken'
-import { Erc20CreateParams } from '../../src/interfaces'
 import { getHash } from '../../src/utils'
 import { Nft } from '../../src/tokens/NFT'
 import Web3 from 'web3'
 import { SHA256 } from 'crypto-js'
 import { homedir } from 'os'
 import fs from 'fs'
-import console from 'console'
-import { ProviderFees } from '../../src/@types'
+import { ProviderFees, Erc20CreateParams } from '../../src/@types'
 
 const data = JSON.parse(
   fs.readFileSync(

@@ -3,25 +3,23 @@ import { AbiItem } from 'web3-utils/types'
 import { TransactionReceipt } from 'web3-core'
 import { Contract } from 'web3-eth-contract'
 import {
-  Logger,
   getFairGasPrice,
   configHelperNetworks,
   setContractDefaults,
   unitsToAmount,
-  amountToUnits
+  amountToUnits,
+  LoggerInstance
 } from '../../utils'
 import BigNumber from 'bignumber.js'
 import PoolTemplate from '@oceanprotocol/contracts/artifacts/contracts/pools/balancer/BPool.sol/BPool.json'
 import defaultErc20Abi from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC20Template.sol/ERC20Template.json'
-
 import {
   CurrentFees,
   TokenInOutMarket,
   AmountsInMaxFee,
   AmountsOutMaxFee
-} from '../../interfaces'
+} from '../../@types'
 import { Config } from '../../models'
-import { minAbi } from '../../utils/minAbi'
 const MaxUint256 =
   '115792089237316195423570985008687907853269984665640564039457584007913129639934'
 
@@ -32,19 +30,12 @@ export class Pool {
   public poolAbi: AbiItem | AbiItem[]
   public web3: Web3
   public GASLIMIT_DEFAULT = 1000000
-  private logger: Logger
   private config: Config
 
-  constructor(
-    web3: Web3,
-    logger: Logger,
-    poolAbi: AbiItem | AbiItem[] = null,
-    config?: Config
-  ) {
+  constructor(web3: Web3, poolAbi: AbiItem | AbiItem[] = null, config?: Config) {
     if (poolAbi) this.poolAbi = poolAbi
     else this.poolAbi = PoolTemplate.abi as AbiItem[]
     this.web3 = web3
-    this.logger = logger
     this.config = config || configHelperNetworks[0]
   }
 
@@ -64,7 +55,7 @@ export class Pool {
       const balance = await token.methods.balanceOf(account).call()
       result = this.web3.utils.fromWei(balance)
     } catch (e) {
-      this.logger.error(`ERROR: Failed to get shares of pool : ${e.message}`)
+      LoggerInstance.error(`ERROR: Failed to get shares of pool : ${e.message}`)
     }
     return result
   }
@@ -131,7 +122,7 @@ export class Pool {
         gasPrice: await getFairGasPrice(this.web3, this.config)
       })
     } catch (e) {
-      this.logger.error(`ERROR: Failed to set pool swap fee: ${e.message}`)
+      LoggerInstance.error(`ERROR: Failed to set pool swap fee: ${e.message}`)
     }
     return result
   }
@@ -150,7 +141,7 @@ export class Pool {
     try {
       result = await pool.methods.getNumTokens().call()
     } catch (e) {
-      this.logger.error(`ERROR: Failed to get number of tokens: ${e.message}`)
+      LoggerInstance.error(`ERROR: Failed to get number of tokens: ${e.message}`)
     }
     return result
   }
@@ -170,7 +161,9 @@ export class Pool {
       const result = await pool.methods.totalSupply().call()
       amount = this.web3.utils.fromWei(result)
     } catch (e) {
-      this.logger.error(`ERROR: Failed to get total supply of pool shares: ${e.message}`)
+      LoggerInstance.error(
+        `ERROR: Failed to get total supply of pool shares: ${e.message}`
+      )
     }
     return amount
   }
@@ -189,7 +182,9 @@ export class Pool {
     try {
       result = await pool.methods.getCurrentTokens().call()
     } catch (e) {
-      this.logger.error(`ERROR: Failed to get tokens composing this pool: ${e.message}`)
+      LoggerInstance.error(
+        `ERROR: Failed to get tokens composing this pool: ${e.message}`
+      )
     }
     return result
   }
@@ -208,7 +203,9 @@ export class Pool {
     try {
       result = await pool.methods.getFinalTokens().call()
     } catch (e) {
-      this.logger.error(`ERROR: Failed to get the final tokens composing this pool`)
+      LoggerInstance.error(
+        `ERROR: Failed to get the final tokens composing this pool ${e.message}`
+      )
     }
     return result
   }
@@ -227,7 +224,7 @@ export class Pool {
     try {
       result = await pool.methods.getController().call()
     } catch (e) {
-      this.logger.error(`ERROR: Failed to get pool controller address: ${e.message}`)
+      LoggerInstance.error(`ERROR: Failed to get pool controller address: ${e.message}`)
     }
     return result
   }
@@ -246,7 +243,7 @@ export class Pool {
     try {
       result = await pool.methods.getBaseTokenAddress().call()
     } catch (e) {
-      this.logger.error(`ERROR: Failed to get baseToken address: ${e.message}`)
+      LoggerInstance.error(`ERROR: Failed to get baseToken address: ${e.message}`)
     }
     return result
   }
@@ -265,7 +262,7 @@ export class Pool {
     try {
       result = await pool.methods.getDatatokenAddress().call()
     } catch (e) {
-      this.logger.error(`ERROR: Failed to get datatoken address: ${e.message}`)
+      LoggerInstance.error(`ERROR: Failed to get datatoken address: ${e.message}`)
     }
     return result
   }
@@ -284,7 +281,9 @@ export class Pool {
     try {
       result = await pool.methods._publishMarketCollector().call()
     } catch (e) {
-      this.logger.error(`ERROR: Failed to get marketFeeCollector address: ${e.message}`)
+      LoggerInstance.error(
+        `ERROR: Failed to get marketFeeCollector address: ${e.message}`
+      )
     }
     return result
   }
@@ -303,7 +302,7 @@ export class Pool {
     try {
       result = await pool.methods._opcCollector().call()
     } catch (e) {
-      this.logger.error(`ERROR: Failed to get OPF Collector address: ${e.message}`)
+      LoggerInstance.error(`ERROR: Failed to get OPF Collector address: ${e.message}`)
     }
     return result
   }
@@ -323,7 +322,7 @@ export class Pool {
     try {
       result = await pool.methods.isBound(token).call()
     } catch (e) {
-      this.logger.error(`ERROR: Failed to check whether a token \
+      LoggerInstance.error(`ERROR: Failed to check whether a token \
       bounded to a pool. ${e.message}`)
     }
     return result
@@ -345,7 +344,7 @@ export class Pool {
       const result = await pool.methods.getBalance(token).call()
       amount = await unitsToAmount(this.web3, token, result)
     } catch (e) {
-      this.logger.error(`ERROR: Failed to get how many tokens \
+      LoggerInstance.error(`ERROR: Failed to get how many tokens \
       are in the pool: ${e.message}`)
     }
     return amount.toString()
@@ -365,7 +364,9 @@ export class Pool {
     try {
       result = await pool.methods.isFinalized().call()
     } catch (e) {
-      this.logger.error(`ERROR: Failed to check whether pool is finalized: ${e.message}`)
+      LoggerInstance.error(
+        `ERROR: Failed to check whether pool is finalized: ${e.message}`
+      )
     }
     return result
   }
@@ -385,7 +386,7 @@ export class Pool {
       const result = await pool.methods.getSwapFee().call()
       fee = this.web3.utils.fromWei(result)
     } catch (e) {
-      this.logger.error(`ERROR: Failed to get pool fee: ${e.message}`)
+      LoggerInstance.error(`ERROR: Failed to get pool fee: ${e.message}`)
     }
     return fee
   }
@@ -406,7 +407,9 @@ export class Pool {
       const result = await pool.methods.getNormalizedWeight(token).call()
       weight = this.web3.utils.fromWei(result)
     } catch (e) {
-      this.logger.error(`ERROR: Failed to get normalized weight of a token: ${e.message}`)
+      LoggerInstance.error(
+        `ERROR: Failed to get normalized weight of a token: ${e.message}`
+      )
     }
     return weight
   }
@@ -427,7 +430,9 @@ export class Pool {
       const result = await pool.methods.getDenormalizedWeight(token).call()
       weight = this.web3.utils.fromWei(result)
     } catch (e) {
-      this.logger.error('ERROR: Failed to get denormalized weight of a token in pool')
+      LoggerInstance.error(
+        `ERROR: Failed to get denormalized weight of a token in pool ${e.message}`
+      )
     }
     return weight
   }
@@ -447,7 +452,9 @@ export class Pool {
       const result = await pool.methods.getTotalDenormalizedWeight().call()
       weight = this.web3.utils.fromWei(result)
     } catch (e) {
-      this.logger.error('ERROR: Failed to get total denormalized weight in pool')
+      LoggerInstance.error(
+        `ERROR: Failed to get total denormalized weight in pool ${e.message}`
+      )
     }
     return weight
   }
@@ -468,7 +475,7 @@ export class Pool {
       const result = await pool.methods.publishMarketFees(token).call()
       weight = await unitsToAmount(this.web3, token, result)
     } catch (e) {
-      this.logger.error(`ERROR: Failed to get market fees for a token: ${e.message}`)
+      LoggerInstance.error(`ERROR: Failed to get market fees for a token: ${e.message}`)
     }
     return weight
   }
@@ -486,7 +493,9 @@ export class Pool {
       const currentMarketFees = await pool.methods.getCurrentOPCFees().call()
       return currentMarketFees
     } catch (e) {
-      this.logger.error(`ERROR: Failed to get community fees for a token: ${e.message}`)
+      LoggerInstance.error(
+        `ERROR: Failed to get community fees for a token: ${e.message}`
+      )
     }
   }
 
@@ -503,7 +512,9 @@ export class Pool {
       const currentMarketFees = await pool.methods.getCurrentOPCFees().call()
       return currentMarketFees
     } catch (e) {
-      this.logger.error(`ERROR: Failed to get community fees for a token: ${e.message}`)
+      LoggerInstance.error(
+        `ERROR: Failed to get community fees for a token: ${e.message}`
+      )
     }
   }
 
@@ -523,7 +534,9 @@ export class Pool {
       const result = await pool.methods.communityFees(token).call()
       weight = await unitsToAmount(this.web3, token, result)
     } catch (e) {
-      this.logger.error(`ERROR: Failed to get community fees for a token: ${e.message}`)
+      LoggerInstance.error(
+        `ERROR: Failed to get community fees for a token: ${e.message}`
+      )
     }
     return weight
   }
@@ -580,7 +593,7 @@ export class Pool {
         gasPrice: await getFairGasPrice(this.web3, this.config)
       })
     } catch (e) {
-      this.logger.error(`ERROR: Failed to swap exact amount in : ${e.message}`)
+      LoggerInstance.error(`ERROR: Failed to swap exact amount in : ${e.message}`)
     }
     return result
   }
@@ -645,7 +658,7 @@ export class Pool {
         gasPrice: await getFairGasPrice(this.web3, this.config)
       })
     } catch (e) {
-      this.logger.error(`ERROR: Failed to swap exact amount in : ${e.message}`)
+      LoggerInstance.error(`ERROR: Failed to swap exact amount in : ${e.message}`)
     }
     return result
   }
@@ -716,7 +729,7 @@ export class Pool {
         gasPrice: await getFairGasPrice(this.web3, this.config)
       })
     } catch (e) {
-      this.logger.error(`ERROR: Failed to swap exact amount in : ${e.message}`)
+      LoggerInstance.error(`ERROR: Failed to swap exact amount in : ${e.message}`)
     }
     return result
   }
@@ -841,7 +854,7 @@ export class Pool {
           gasPrice: await getFairGasPrice(this.web3, this.config)
         })
     } catch (e) {
-      this.logger.error(`ERROR: Failed to swap exact amount in : ${e.message}`)
+      LoggerInstance.error(`ERROR: Failed to swap exact amount in : ${e.message}`)
     }
 
     return result
@@ -963,7 +976,7 @@ export class Pool {
           gasPrice: await getFairGasPrice(this.web3, this.config)
         })
     } catch (e) {
-      this.logger.error(`ERROR: Failed to swap exact amount out: ${e.message}`)
+      LoggerInstance.error(`ERROR: Failed to swap exact amount out: ${e.message}`)
     }
     return result
   }
@@ -1047,7 +1060,7 @@ export class Pool {
           gasPrice: await getFairGasPrice(this.web3, this.config)
         })
     } catch (e) {
-      this.logger.error(`ERROR: Failed to join pool: ${e.message}`)
+      LoggerInstance.error(`ERROR: Failed to join pool: ${e.message}`)
     }
     return result
   }
@@ -1129,7 +1142,7 @@ export class Pool {
           gasPrice: await getFairGasPrice(this.web3, this.config)
         })
     } catch (e) {
-      this.logger.error(`ERROR: Failed to exit pool: ${e.message}`)
+      LoggerInstance.error(`ERROR: Failed to exit pool: ${e.message}`)
     }
     return result
   }
@@ -1215,7 +1228,7 @@ export class Pool {
           gasPrice: await getFairGasPrice(this.web3, this.config)
         })
     } catch (e) {
-      this.logger.error(`ERROR: Failed to pay tokens in order to \
+      LoggerInstance.error(`ERROR: Failed to pay tokens in order to \
       join the pool: ${e.message}`)
     }
     return result
@@ -1302,7 +1315,7 @@ export class Pool {
           gasPrice: await getFairGasPrice(this.web3, this.config)
         })
     } catch (e) {
-      this.logger.error('ERROR: Failed to join swap pool amount out')
+      LoggerInstance.error(`ERROR: Failed to join swap pool amount out ${e.message}`)
     }
     return result
   }
@@ -1392,7 +1405,7 @@ export class Pool {
           gasPrice: await getFairGasPrice(this.web3, this.config)
         })
     } catch (e) {
-      this.logger.error(`ERROR: Failed to pay pool shares into the pool: ${e.message}`)
+      LoggerInstance.error(`ERROR: Failed to pay pool shares into the pool: ${e.message}`)
     }
     return result
   }
@@ -1477,7 +1490,7 @@ export class Pool {
           gasPrice: await getFairGasPrice(this.web3, this.config)
         })
     } catch (e) {
-      this.logger.error('ERROR: Failed to exitswapExternAmountOut')
+      LoggerInstance.error(`ERROR: Failed to exitswapExternAmountOut ${e.message}`)
     }
     return result
   }
@@ -1514,12 +1527,12 @@ export class Pool {
     try {
       decimalsTokenIn = await tokenInContract.methods.decimals().call()
     } catch (e) {
-      this.logger.error('ERROR: FAILED TO CALL DECIMALS(), USING 18')
+      LoggerInstance.error(`ERROR: FAILED TO CALL DECIMALS(), USING 18 ${e.message}`)
     }
     try {
       decimalsTokenOut = await tokenOutContract.methods.decimals().call()
     } catch (e) {
-      this.logger.error('ERROR: FAILED TO CALL DECIMALS(), USING 18')
+      LoggerInstance.error(`ERROR: FAILED TO CALL DECIMALS(), USING 18 ${e.message}`)
     }
 
     let price = null
@@ -1529,7 +1542,9 @@ export class Pool {
         .call()
       price = new BigNumber(price.toString())
     } catch (e) {
-      this.logger.error('ERROR: Failed to get spot price of swapping tokenIn to tokenOut')
+      LoggerInstance.error(
+        'ERROR: Failed to get spot price of swapping tokenIn to tokenOut'
+      )
     }
 
     let decimalsDiff
@@ -1573,7 +1588,7 @@ export class Pool {
         .call()
       amount = await unitsToAmount(this.web3, tokenIn, result)
     } catch (e) {
-      this.logger.error('ERROR: Failed to calcInGivenOut')
+      LoggerInstance.error(`ERROR: Failed to calcInGivenOut ${e.message}`)
     }
     return amount
   }
@@ -1606,7 +1621,7 @@ export class Pool {
 
       amount = await unitsToAmount(this.web3, tokenOut, result)
     } catch (e) {
-      this.logger.error('ERROR: Failed to calcOutGivenIn')
+      LoggerInstance.error(`ERROR: Failed to calcOutGivenIn ${e.message}`)
     }
     return amount
   }
@@ -1632,7 +1647,9 @@ export class Pool {
 
       amount = await unitsToAmount(this.web3, poolAddress, result)
     } catch (e) {
-      this.logger.error(`ERROR: Failed to calculate PoolOutGivenSingleIn : ${e.message}`)
+      LoggerInstance.error(
+        `ERROR: Failed to calculate PoolOutGivenSingleIn : ${e.message}`
+      )
     }
     return amount
   }
@@ -1656,7 +1673,9 @@ export class Pool {
 
       amount = await unitsToAmount(this.web3, tokenIn, result)
     } catch (e) {
-      this.logger.error(`ERROR: Failed to calculate SingleInGivenPoolOut : ${e.message}`)
+      LoggerInstance.error(
+        `ERROR: Failed to calculate SingleInGivenPoolOut : ${e.message}`
+      )
     }
     return amount
   }
@@ -1681,7 +1700,7 @@ export class Pool {
         .call()
       amount = await unitsToAmount(this.web3, tokenOut, result)
     } catch (e) {
-      this.logger.error(`ERROR: Failed to calculate SingleOutGivenPoolIn : ${e}`)
+      LoggerInstance.error(`ERROR: Failed to calculate SingleOutGivenPoolIn : ${e}`)
     }
     return amount
   }
@@ -1707,7 +1726,9 @@ export class Pool {
 
       amount = await unitsToAmount(this.web3, poolAddress, result)
     } catch (e) {
-      this.logger.error(`ERROR: Failed to calculate PoolInGivenSingleOut : ${e.message}`)
+      LoggerInstance.error(
+        `ERROR: Failed to calculate PoolInGivenSingleOut : ${e.message}`
+      )
     }
     return amount
   }
