@@ -203,7 +203,9 @@ export class Pool {
     try {
       result = await pool.methods.getFinalTokens().call()
     } catch (e) {
-      LoggerInstance.error(`ERROR: Failed to get the final tokens composing this pool`)
+      LoggerInstance.error(
+        `ERROR: Failed to get the final tokens composing this pool ${e.message}`
+      )
     }
     return result
   }
@@ -428,7 +430,9 @@ export class Pool {
       const result = await pool.methods.getDenormalizedWeight(token).call()
       weight = this.web3.utils.fromWei(result)
     } catch (e) {
-      LoggerInstance.error('ERROR: Failed to get denormalized weight of a token in pool')
+      LoggerInstance.error(
+        `ERROR: Failed to get denormalized weight of a token in pool ${e.message}`
+      )
     }
     return weight
   }
@@ -448,7 +452,9 @@ export class Pool {
       const result = await pool.methods.getTotalDenormalizedWeight().call()
       weight = this.web3.utils.fromWei(result)
     } catch (e) {
-      LoggerInstance.error('ERROR: Failed to get total denormalized weight in pool')
+      LoggerInstance.error(
+        `ERROR: Failed to get total denormalized weight in pool ${e.message}`
+      )
     }
     return weight
   }
@@ -1309,7 +1315,7 @@ export class Pool {
           gasPrice: await getFairGasPrice(this.web3, this.config)
         })
     } catch (e) {
-      LoggerInstance.error('ERROR: Failed to join swap pool amount out')
+      LoggerInstance.error(`ERROR: Failed to join swap pool amount out ${e.message}`)
     }
     return result
   }
@@ -1484,7 +1490,7 @@ export class Pool {
           gasPrice: await getFairGasPrice(this.web3, this.config)
         })
     } catch (e) {
-      LoggerInstance.error('ERROR: Failed to exitswapExternAmountOut')
+      LoggerInstance.error(`ERROR: Failed to exitswapExternAmountOut ${e.message}`)
     }
     return result
   }
@@ -1521,12 +1527,12 @@ export class Pool {
     try {
       decimalsTokenIn = await tokenInContract.methods.decimals().call()
     } catch (e) {
-      LoggerInstance.error('ERROR: FAILED TO CALL DECIMALS(), USING 18')
+      LoggerInstance.error(`ERROR: FAILED TO CALL DECIMALS(), USING 18 ${e.message}`)
     }
     try {
       decimalsTokenOut = await tokenOutContract.methods.decimals().call()
     } catch (e) {
-      LoggerInstance.error('ERROR: FAILED TO CALL DECIMALS(), USING 18')
+      LoggerInstance.error(`ERROR: FAILED TO CALL DECIMALS(), USING 18 ${e.message}`)
     }
 
     let price = null
@@ -1582,7 +1588,7 @@ export class Pool {
         .call()
       amount = await unitsToAmount(this.web3, tokenIn, result)
     } catch (e) {
-      LoggerInstance.error('ERROR: Failed to calcInGivenOut')
+      LoggerInstance.error(`ERROR: Failed to calcInGivenOut ${e.message}`)
     }
     return amount
   }
@@ -1615,7 +1621,7 @@ export class Pool {
 
       amount = await unitsToAmount(this.web3, tokenOut, result)
     } catch (e) {
-      LoggerInstance.error('ERROR: Failed to calcOutGivenIn')
+      LoggerInstance.error(`ERROR: Failed to calcOutGivenIn ${e.message}`)
     }
     return amount
   }
