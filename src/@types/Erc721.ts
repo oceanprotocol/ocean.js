@@ -1,4 +1,4 @@
-import { MetadataProof } from '../@types'
+import { MetadataProof } from '.'
 
 export interface MetadataAndTokenURI {
   metaDataState: number

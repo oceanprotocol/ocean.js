@@ -12,13 +12,13 @@ import FixedRate from '@oceanprotocol/contracts/artifacts/contracts/pools/fixedR
 import OPFCommunityFeeCollector from '@oceanprotocol/contracts/artifacts/contracts/communityFee/OPFCommunityFeeCollector.sol/OPFCommunityFeeCollector.json'
 import PoolTemplate from '@oceanprotocol/contracts/artifacts/contracts/pools//balancer/BPool.sol/BPool.json'
 import { NftFactory, NftCreateData, TokenOrder } from '../../src/factories/NFTFactory'
+import { ZERO_ADDRESS, signHash } from '../../src/utils'
 import {
+  ProviderFees,
   FreCreationParams,
   Erc20CreateParams,
   PoolCreationParams
-} from '../../src/interfaces'
-import { ZERO_ADDRESS, signHash } from '../../src/utils'
-import { ProviderFees } from '../../src/@types'
+} from '../../src/@types'
 
 const web3 = new Web3('http://127.0.0.1:8545')
 

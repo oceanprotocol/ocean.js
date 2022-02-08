@@ -13,7 +13,7 @@ import OPFCommunityFeeCollector from '@oceanprotocol/contracts/artifacts/contrac
 import PoolTemplate from '@oceanprotocol/contracts/artifacts/contracts/pools/balancer/BPool.sol/BPool.json'
 import { NftFactory, NftCreateData } from '../../../src/factories/NFTFactory'
 import { Router } from '../../../src/pools/Router'
-import { Erc20CreateParams, PoolCreationParams, Operation } from '../../../src/interfaces'
+import { Erc20CreateParams, PoolCreationParams, Operation } from '../../../src/@types'
 
 const { keccak256 } = require('@ethersproject/keccak256')
 const web3 = new Web3('http://127.0.0.1:8545')

@@ -15,7 +15,7 @@ import PoolTemplate from '@oceanprotocol/contracts/artifacts/contracts/pools/bal
 import OPFCollector from '@oceanprotocol/contracts/artifacts/contracts/communityFee/OPFCommunityFeeCollector.sol/OPFCommunityFeeCollector.json'
 import { NftFactory, NftCreateData } from '../../../../src/factories/NFTFactory'
 import { FixedRateExchange } from '../../../../src/pools/fixedRate/FixedRateExchange'
-import { FreCreationParams, Erc20CreateParams } from '../../../../src/interfaces'
+import { FreCreationParams, Erc20CreateParams } from '../../../../src/@types'
 const web3 = new Web3('http://127.0.0.1:8545')
 
 describe('Fixed Rate unit test', () => {

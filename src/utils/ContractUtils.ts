@@ -2,10 +2,10 @@ import Web3 from 'web3'
 import BigNumber from 'bignumber.js'
 import { Contract } from 'web3-eth-contract'
 import { generateDtName } from './DatatokenName'
-import { Erc20CreateParams, FreCreationParams, PoolCreationParams } from '../interfaces'
+import { Erc20CreateParams, FreCreationParams, PoolCreationParams } from '../@types'
 import { Config } from '../models'
-import { AbiItem } from 'web3-utils/types'
 import { minAbi } from './minAbi'
+import LoggerInstance from './Logger'
 
 export function setContractDefaults(contract: Contract, config: Config): Contract {
   if (config) {
@@ -107,7 +107,7 @@ export async function unitsToAmount(
     BigNumber.config({ EXPONENTIAL_AT: 50 })
     return amountFormatted.toString()
   } catch (e) {
-    this.logger.error('ERROR: FAILED TO CALL DECIMALS(), USING 18')
+    LoggerInstance.error(`ERROR: FAILED TO CALL DECIMALS(), USING 18' : ${e.message}`)
   }
 }
 
@@ -126,6 +126,6 @@ export async function amountToUnits(
     BigNumber.config({ EXPONENTIAL_AT: 50 })
     return amountFormatted.toString()
   } catch (e) {
-    this.logger.error('ERROR: FAILED TO CALL DECIMALS(), USING 18')
+    LoggerInstance.error(`ERROR: FAILED TO CALL DECIMALS(), USING 18', ${e.message}`)
   }
 }

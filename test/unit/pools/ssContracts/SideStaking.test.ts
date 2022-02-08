@@ -22,7 +22,7 @@ import {
   TokenInOutMarket,
   AmountsInMaxFee,
   AmountsOutMaxFee
-} from '../../../../src/interfaces'
+} from '../../../../src/@types'
 const web3 = new Web3('http://127.0.0.1:8545')
 
 describe('SideStaking unit test', () => {
@@ -78,7 +78,7 @@ describe('SideStaking unit test', () => {
     await contracts.deployContracts(factoryOwner, FactoryRouter.abi as AbiItem[])
 
     // initialize Pool instance
-    pool = new Pool(web3, LoggerInstance, PoolTemplate.abi as AbiItem[])
+    pool = new Pool(web3, PoolTemplate.abi as AbiItem[])
     assert(pool != null)
     //
     sideStaking = new SideStaking(web3, SSContract.abi as AbiItem[])

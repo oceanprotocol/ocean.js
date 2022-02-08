@@ -12,7 +12,7 @@ import {
 import { Contract } from 'web3-eth-contract'
 import { MetadataProof } from '../../src/@types'
 import { Config } from '../models/index.js'
-import { MetadataAndTokenURI } from '../interfaces/Erc721Interface'
+import { MetadataAndTokenURI } from '../@types'
 
 /**
  * ERC721 ROLES
