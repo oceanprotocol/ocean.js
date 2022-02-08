@@ -92,7 +92,7 @@ describe('Simple Publish & consume test', async () => {
     )
     const erc721Address = result.events.NFTCreated.returnValues[0]
     const datatokenAddress = result.events.TokenCreated.returnValues[0]
-      
+
     // create the files encrypted string
     let providerResponse = await ProviderInstance.encrypt(assetUrl, providerUrl)
     ddo.services[0].files = await providerResponse

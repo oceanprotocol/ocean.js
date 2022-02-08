@@ -366,8 +366,6 @@ describe('SideStaking unit test', () => {
       )
     })
 
-    
-
     it('#exitswapPoolAmountIn- user2 exit the pool receiving only DAI', async () => {
       const BPTAmountIn = '0.5'
       const minDAIOut = '0.5'
@@ -386,8 +384,6 @@ describe('SideStaking unit test', () => {
       // DTs were also unstaked in the same transaction (went to the staking contract)
       expect(tx.events.LOG_EXIT[1].returnValues.tokenOut).to.equal(erc20Token)
     })
-
-    
   })
 
   describe('Test a pool with USDC (6 Decimals)', () => {
@@ -584,7 +580,6 @@ describe('SideStaking unit test', () => {
       )
     })
 
-    
     it('#exitswapPoolAmountIn- user2 exit the pool receiving only USDC', async () => {
       const BPTAmountIn = '0.5'
       const minUSDCOut = '0.5'
@@ -603,7 +598,5 @@ describe('SideStaking unit test', () => {
       // DTs were also unstaked in the same transaction (went to the staking contract)
       expect(tx.events.LOG_EXIT[1].returnValues.tokenOut).to.equal(erc20Token)
     })
-
-    
   })
 })

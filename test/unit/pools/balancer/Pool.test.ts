@@ -360,8 +360,6 @@ describe('Pool unit test', () => {
       )
     })
 
-    
-
     it('#exitPool- user2 exit the pool receiving both tokens, burning LP', async () => {
       const BPTAmountIn = '0.5'
       const minAmountOut = [
@@ -883,8 +881,6 @@ describe('Pool unit test', () => {
       )
     })
 
-    
-
     it('#exitPool- user2 exit the pool receiving both tokens, burning LP', async () => {
       const BPTAmountIn = '0.5'
       const minAmountOut = [
@@ -918,8 +914,6 @@ describe('Pool unit test', () => {
       // DTs were also unstaked in the same transaction (went to the staking contract)
       expect(tx.events.LOG_EXIT[1].returnValues.tokenOut).to.equal(erc20Token)
     })
-
-    
 
     it('#getAmountInExactOut- should get the amount in for exact out', async () => {
       const maxBTPIn = '0.5'

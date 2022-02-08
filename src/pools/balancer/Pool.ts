@@ -1204,7 +1204,11 @@ export class Pool {
     )
     let result = null
 
-    const amountInFormatted = await amountToUnits(this.web3, await this.getBaseToken(poolAddress), tokenAmountIn)
+    const amountInFormatted = await amountToUnits(
+      this.web3,
+      await this.getBaseToken(poolAddress),
+      tokenAmountIn
+    )
     const estGas = await this.estJoinswapExternAmountIn(
       account,
       poolAddress,
@@ -1229,7 +1233,6 @@ export class Pool {
     }
     return result
   }
-
 
   /**
   * Estimate gas cost for joinswapExternAmountIn
@@ -1301,10 +1304,7 @@ export class Pool {
 
     try {
       result = await pool.methods
-        .exitswapPoolAmountIn(
-          this.web3.utils.toWei(poolAmountIn),
-          minTokenOutFormatted
-        )
+        .exitswapPoolAmountIn(this.web3.utils.toWei(poolAmountIn), minTokenOutFormatted)
         .send({
           from: account,
           gas: estGas + 1,
@@ -1315,7 +1315,6 @@ export class Pool {
     }
     return result
   }
-
 
   /**
    * Get Spot Price of swaping tokenIn to tokenOut

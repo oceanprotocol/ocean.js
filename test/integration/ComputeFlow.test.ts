@@ -145,15 +145,13 @@ describe('Simple compute tests', async () => {
       minter: publisherAccount,
       mpFeeAddress: '0x0000000000000000000000000000000000000000'
     }
-    
-    
+
     const result = await Factory.createNftWithErc20(
       publisherAccount,
       nftParamsAsset,
       erc20ParamsAsset
     )
-    
-    
+
     const erc721AddressAsset = result.events.NFTCreated.returnValues[0]
     const datatokenAddressAsset = result.events.TokenCreated.returnValues[0]
     // create the files encrypted string
