@@ -218,7 +218,7 @@ describe('Router unit test', () => {
       ERC721Factory.abi as AbiItem[]
     )
 
-    const txReceipt = await nftFactory.createNftErcWithPool(
+    const txReceipt = await nftFactory.createNftErc20WithPool(
       contracts.accounts[0],
       nftData,
       ercParams,
@@ -265,7 +265,7 @@ describe('Router unit test', () => {
       swapFeeMarketRunner: 1e15
     }
 
-    const txReceipt2 = await nftFactory.createNftErcWithPool(
+    const txReceipt2 = await nftFactory.createNftErc20WithPool(
       contracts.accounts[0],
       nftData2,
       ercParams2,

@@ -1147,7 +1147,6 @@ export class Pool {
   public async estJoinswapExternAmountIn(
     address: string,
     poolAddress: string,
-    tokenIn: string,
     tokenAmountIn: string,
     minPoolAmountOut: string,
     contractInstance?: Contract
@@ -1163,7 +1162,7 @@ export class Pool {
     let estGas
     try {
       estGas = await poolContract.methods
-        .joinswapExternAmountIn(tokenIn, tokenAmountIn, minPoolAmountOut)
+        .joinswapExternAmountIn(tokenAmountIn, minPoolAmountOut)
         .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
     } catch (e) {
       estGas = gasLimitDefault
@@ -1172,7 +1171,7 @@ export class Pool {
   }
 
   /**
-   * Pay tokenAmountIn of token tokenIn to join the pool, getting poolAmountOut of the pool shares.
+   * Pay tokenAmountIn of baseToken to join the pool, getting poolAmountOut of the pool shares.
    * @param {String} account
    * @param {String} poolAddress
    * @param {String} tokenIn
@@ -1183,7 +1182,6 @@ export class Pool {
   async joinswapExternAmountIn(
     account: string,
     poolAddress: string,
-    tokenIn: string,
     tokenAmountIn: string,
     minPoolAmountOut: string
   ): Promise<TransactionReceipt> {
@@ -1193,11 +1191,10 @@ export class Pool {
     )
     let result = null
 
-    const amountInFormatted = await amountToUnits(this.web3, tokenIn, tokenAmountIn)
+    const amountInFormatted = await amountToUnits(this.web3, await this.getBaseToken(poolAddress), tokenAmountIn)
     const estGas = await this.estJoinswapExternAmountIn(
       account,
       poolAddress,
-      tokenIn,
       amountInFormatted,
       this.web3.utils.toWei(minPoolAmountOut)
     )
@@ -1205,7 +1202,6 @@ export class Pool {
     try {
       result = await pool.methods
         .joinswapExternAmountIn(
-          tokenIn,
           amountInFormatted,
           this.web3.utils.toWei(minPoolAmountOut)
         )
@@ -1221,97 +1217,12 @@ export class Pool {
     return result
   }
 
-  /**
-   * Estimate gas cost for joinswapPoolAmountOut
-   * @param {String} address
-   * @param {String} poolAddress
-   * @param {String} tokenIn
-   * @param {String} poolAmountOut will be converted to wei
-   * @param {String} maxAmountIn  will be converted to wei
-   * @param {Contract} contractInstance optional contract instance
-   * @return {Promise<number>}
-   */
-  public async estJoinswapPoolAmountOut(
-    address: string,
-    poolAddress: string,
-    tokenIn: string,
-    poolAmountOut: string,
-    maxAmountIn: string,
-    contractInstance?: Contract
-  ): Promise<number> {
-    const poolContract =
-      contractInstance ||
-      setContractDefaults(
-        new this.web3.eth.Contract(this.poolAbi as AbiItem[], poolAddress),
-        this.config
-      )
-
-    const gasLimitDefault = this.GASLIMIT_DEFAULT
-    let estGas
-    try {
-      estGas = await poolContract.methods
-        .joinswapPoolAmountOut(tokenIn, poolAmountOut, maxAmountIn)
-        .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
-    } catch (e) {
-      estGas = gasLimitDefault
-    }
-    return estGas
-  }
-
-  /**
-   * Specify poolAmountOut pool shares that you want to get, and a token tokenIn to pay with. This costs tokenAmountIn tokens (these went into the pool).
-   * @param {String} account
-   * @param {String} poolAddress
-   * @param {String} tokenIn
-   * @param {String} poolAmountOut will be converted to wei
-   * @param {String} maxAmountIn  will be converted to wei
-   * @return {TransactionReceipt}
-   */
-  async joinswapPoolAmountOut(
-    account: string,
-    poolAddress: string,
-    tokenIn: string,
-    poolAmountOut: string,
-    maxAmountIn: string
-  ): Promise<TransactionReceipt> {
-    const pool = setContractDefaults(
-      new this.web3.eth.Contract(this.poolAbi, poolAddress),
-      this.config
-    )
-    let result = null
-
-    const maxAmountInFormatted = await amountToUnits(this.web3, tokenIn, maxAmountIn)
-    const estGas = await this.estJoinswapPoolAmountOut(
-      account,
-      poolAddress,
-      tokenIn,
-      this.web3.utils.toWei(poolAmountOut),
-      maxAmountInFormatted
-    )
-
-    try {
-      result = await pool.methods
-        .joinswapPoolAmountOut(
-          tokenIn,
-          this.web3.utils.toWei(poolAmountOut),
-          maxAmountInFormatted
-        )
-        .send({
-          from: account,
-          gas: estGas + 1,
-          gasPrice: await getFairGasPrice(this.web3, this.config)
-        })
-    } catch (e) {
-      this.logger.error('ERROR: Failed to join swap pool amount out')
-    }
-    return result
-  }
+  
 
   /**
   * Estimate gas cost for joinswapExternAmountIn
   * @param {String} address
      @param {String} poolAddress
-   * @param {String} tokenOut
    * @param {String} poolAmountIn will be converted to wei
    * @param {String} minTokenAmountOut  will be converted to wei
      * @param {Contract} contractInstance optional contract instance
@@ -1320,7 +1231,6 @@ export class Pool {
   public async estExitswapPoolAmountIn(
     address: string,
     poolAddress: string,
-    tokenOut: string,
     poolAmountIn: string,
     minTokenAmountOut: string,
     contractInstance?: Contract
@@ -1336,7 +1246,7 @@ export class Pool {
     let estGas
     try {
       estGas = await poolContract.methods
-        .exitswapPoolAmountIn(tokenOut, poolAmountIn, minTokenAmountOut)
+        .exitswapPoolAmountIn(poolAmountIn, minTokenAmountOut)
         .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
     } catch (e) {
       estGas = gasLimitDefault
@@ -1345,7 +1255,7 @@ export class Pool {
   }
 
   /**
-   * Pay poolAmountIn pool shares into the pool, getting minTokenAmountOut of the given token tokenOut out of the pool.
+   * Pay poolAmountIn pool shares into the pool, getting minTokenAmountOut of the baseToken
    * @param {String} account
    * @param {String} poolAddress
    * @param {String} tokenOut
@@ -1356,7 +1266,6 @@ export class Pool {
   async exitswapPoolAmountIn(
     account: string,
     poolAddress: string,
-    tokenOut: string,
     poolAmountIn: string,
     minTokenAmountOut: string
   ): Promise<TransactionReceipt> {
@@ -1368,13 +1277,12 @@ export class Pool {
 
     const minTokenOutFormatted = await amountToUnits(
       this.web3,
-      tokenOut,
+      await this.getBaseToken(poolAddress),
       minTokenAmountOut
     )
     const estGas = await this.estExitswapPoolAmountIn(
       account,
       poolAddress,
-      tokenOut,
       this.web3.utils.toWei(poolAmountIn),
       minTokenOutFormatted
     )
@@ -1382,7 +1290,6 @@ export class Pool {
     try {
       result = await pool.methods
         .exitswapPoolAmountIn(
-          tokenOut,
           this.web3.utils.toWei(poolAmountIn),
           minTokenOutFormatted
         )
@@ -1397,91 +1304,7 @@ export class Pool {
     return result
   }
 
-  /**
-   * Estimate gas cost for joinswapExternAmountIn
-   * @param {String} address
-   * @param {String} poolAddress
-   * @param {String} tokenOut
-   * @param {String} tokenAmountOut will be converted to wei
-   * @param {String} maxPoolAmountIn  will be converted to wei
-   * @param {Contract} contractInstance optional contract instance
-   * @return {Promise<number>}
-   */
-  public async estExitswapExternAmountOut(
-    address: string,
-    poolAddress: string,
-    tokenOut: string,
-    tokenAmountOut: string,
-    maxPoolAmountIn: string,
-    contractInstance?: Contract
-  ): Promise<number> {
-    const poolContract =
-      contractInstance ||
-      setContractDefaults(
-        new this.web3.eth.Contract(this.poolAbi as AbiItem[], poolAddress),
-        this.config
-      )
-
-    const gasLimitDefault = this.GASLIMIT_DEFAULT
-    let estGas
-    try {
-      estGas = await poolContract.methods
-        .exitswapExternAmountOut(tokenOut, tokenAmountOut, maxPoolAmountIn)
-        .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
-    } catch (e) {
-      estGas = gasLimitDefault
-    }
-    return estGas
-  }
-
-  /**
-   * Specify tokenAmountOut of token tokenOut that you want to get out of the pool. This costs poolAmountIn pool shares (these went into the pool).
-   * @param {String} account
-   * @param {String} poolAddress
-   * @param {String} tokenOut
-   * @param {String} tokenAmountOut will be converted to wei
-   * @param {String} maxPoolAmountIn  will be converted to wei
-   * @return {TransactionReceipt}
-   */
-  async exitswapExternAmountOut(
-    account: string,
-    poolAddress: string,
-    tokenOut: string,
-    tokenAmountOut: string,
-    maxPoolAmountIn: string
-  ): Promise<TransactionReceipt> {
-    const pool = setContractDefaults(
-      new this.web3.eth.Contract(this.poolAbi, poolAddress),
-      this.config
-    )
-    let result = null
-
-    const estGas = await this.estExitswapExternAmountOut(
-      account,
-      poolAddress,
-      tokenOut,
-      this.web3.utils.toWei(tokenAmountOut),
-      this.web3.utils.toWei(maxPoolAmountIn)
-    )
-
-    try {
-      result = await pool.methods
-        .exitswapExternAmountOut(
-          tokenOut,
-          this.web3.utils.toWei(tokenAmountOut),
-          this.web3.utils.toWei(maxPoolAmountIn)
-        )
-        .send({
-          from: account,
-          gas: estGas + 1,
-          gasPrice: await getFairGasPrice(this.web3, this.config)
-        })
-    } catch (e) {
-      this.logger.error('ERROR: Failed to exitswapExternAmountOut')
-    }
-    return result
-  }
-
+  
   /**
    * Get Spot Price of swaping tokenIn to tokenOut
    * @param {String} poolAddress

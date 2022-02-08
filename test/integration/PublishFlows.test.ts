@@ -118,7 +118,7 @@ describe('Publish tests', async () => {
       swapFeeLiquidityProvider: 1e15,
       swapFeeMarketRunner: 1e15
     }
-    const bundleNFT = await factory.createNftErcWithPool(
+    const bundleNFT = await factory.createNftErc20WithPool(
       accounts[0],
       nftParams,
       erc20Params,
@@ -196,7 +196,7 @@ describe('Publish tests', async () => {
       withMint: false
     }
 
-    const bundleNFT = await factory.createNftErcWithFixedRate(
+    const bundleNFT = await factory.createNftErc20WithFixedRate(
       accounts[0],
       nftParams,
       erc20Params,
@@ -267,7 +267,7 @@ describe('Publish tests', async () => {
       allowedSwapper: ZERO_ADDRESS
     }
 
-    const bundleNFT = await factory.createNftErcWithDispenser(
+    const bundleNFT = await factory.createNftErc20WithDispenser(
       accounts[0],
       nftParams,
       erc20Params,

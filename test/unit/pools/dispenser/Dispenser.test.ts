@@ -96,7 +96,7 @@ describe('Dispenser flow', () => {
       symbol: 'ERC20DT1Symbol'
     }
 
-    const txReceipt = await nftFactory.createNftWithErc(
+    const txReceipt = await nftFactory.createNftWithErc20(
       contracts.accounts[0],
       nftData,
       ercParams

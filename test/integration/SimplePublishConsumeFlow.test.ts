@@ -86,14 +86,14 @@ describe('Simple Publish & consume test', async () => {
       minter: publisherAccount,
       mpFeeAddress: '0x0000000000000000000000000000000000000000'
     }
-    const result = await Factory.createNftWithErc(
+    const result = await Factory.createNftWithErc20(
       publisherAccount,
       nftParams,
       erc20Params
     )
     const erc721Address = result.events.NFTCreated.returnValues[0]
     const datatokenAddress = result.events.TokenCreated.returnValues[0]
-
+      
     // create the files encrypted string
     let providerResponse = await ProviderInstance.encrypt(assetUrl, providerUrl)
     ddo.services[0].files = await providerResponse
