@@ -65,6 +65,8 @@ jobs:
           for i in $(seq 1 250); do
             sleep 5
             [ -f "$HOME/.ocean/ocean-contracts/artifacts/ready" ] && break
+            ls -la "$HOME/.ocean/"
+            ls -la "$HOME/.ocean/ocean-contracts/"
             ls -la "$HOME/.ocean/ocean-contracts/artifacts/"
             echo "Not ready"
             done
