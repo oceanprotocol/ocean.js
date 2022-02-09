@@ -55,6 +55,10 @@ jobs:
 
       - name: Run Ganache with Barge
         working-directory: ${{ github.workspace }}/barge
+        env:
+          OPERATOR_SERVICE_VERSION: compute_envs
+          OPERATOR_ENGINE_VERSION: compute_envs
+          PROVIDER_VERSION: compute_envs
         run: |
           bash -x start_ocean.sh  --no-aquarius --no-elasticsearch --no-provider --no-dashboard --skip-deploy 2>&1 > start_ocean.log & 
           for i in $(seq 1 50); do
