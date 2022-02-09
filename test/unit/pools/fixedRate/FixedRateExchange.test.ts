@@ -127,7 +127,7 @@ describe('Fixed Rate unit test', () => {
         withMint: false
       }
 
-      const txReceipt = await nftFactory.createNftErcWithFixedRate(
+      const txReceipt = await nftFactory.createNftErc20WithFixedRate(
         exchangeOwner,
         nftData,
         ercParams,
@@ -455,7 +455,7 @@ describe('Fixed Rate unit test', () => {
         withMint: false
       }
 
-      const txReceipt = await nftFactory.createNftErcWithFixedRate(
+      const txReceipt = await nftFactory.createNftErc20WithFixedRate(
         exchangeOwner,
         nftData,
         ercParams,

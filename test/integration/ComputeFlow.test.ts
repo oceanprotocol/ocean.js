@@ -134,7 +134,7 @@ describe('Simple compute tests', async () => {
       name: 'testNFT',
       symbol: 'TST',
       templateIndex: 1,
-      tokenURI: ''
+      tokenURI: 'aaa'
     }
     const erc20ParamsAsset: Erc20CreateParams = {
       templateIndex: 1,
@@ -145,11 +145,13 @@ describe('Simple compute tests', async () => {
       minter: publisherAccount,
       mpFeeAddress: '0x0000000000000000000000000000000000000000'
     }
-    const result = await Factory.createNftWithErc(
+
+    const result = await Factory.createNftWithErc20(
       publisherAccount,
       nftParamsAsset,
       erc20ParamsAsset
     )
+
     const erc721AddressAsset = result.events.NFTCreated.returnValues[0]
     const datatokenAddressAsset = result.events.TokenCreated.returnValues[0]
     // create the files encrypted string
@@ -192,7 +194,7 @@ describe('Simple compute tests', async () => {
       minter: publisherAccount,
       mpFeeAddress: '0x0000000000000000000000000000000000000000'
     }
-    const resultAlgo = await Factory.createNftWithErc(
+    const resultAlgo = await Factory.createNftWithErc20(
       publisherAccount,
       nftParamsAlgo,
       erc20ParamsAlgo

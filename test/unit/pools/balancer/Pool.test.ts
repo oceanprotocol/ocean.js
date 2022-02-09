@@ -170,7 +170,7 @@ describe('Pool unit test', () => {
         ERC721Factory.abi as AbiItem[]
       )
 
-      const txReceipt = await nftFactory.createNftErcWithPool(
+      const txReceipt = await nftFactory.createNftErc20WithPool(
         contracts.accounts[0],
         nftData,
         ercParams,
@@ -346,33 +346,8 @@ describe('Pool unit test', () => {
       const tx = await pool.joinswapExternAmountIn(
         user2,
         poolAddress,
-        contracts.daiAddress,
         daiAmountIn,
         minBPTOut
-      )
-
-      assert(tx != null)
-
-      expect(tx.events.LOG_JOIN[0].event === 'LOG_JOIN')
-      expect(tx.events.LOG_BPT.event === 'LOG_BPT')
-      // 2 JOIN EVENTS BECAUSE SIDE STAKING ALSO STAKED DTs, TODO: we should add to whom has been sent in the LOG_BPT event
-      expect(tx.events.LOG_JOIN[0].returnValues.bptAmount).to.equal(
-        tx.events.LOG_JOIN[1].returnValues.bptAmount
-      )
-    })
-
-    it('#joinswapPoolAmountOut- user2 should add liquidity, receiving LP tokens', async () => {
-      const BPTAmountOut = '0.1'
-      const maxDAIIn = '100'
-
-      await approve(web3, user2, contracts.daiAddress, poolAddress, '100')
-
-      const tx = await pool.joinswapPoolAmountOut(
-        user2,
-        poolAddress,
-        contracts.daiAddress,
-        BPTAmountOut,
-        maxDAIIn
       )
 
       assert(tx != null)
@@ -407,7 +382,6 @@ describe('Pool unit test', () => {
       const tx = await pool.exitswapPoolAmountIn(
         user2,
         poolAddress,
-        contracts.daiAddress,
         BPTAmountIn,
         minDAIOut
       )
@@ -427,7 +401,6 @@ describe('Pool unit test', () => {
       const tx = await pool.exitswapPoolAmountIn(
         user2,
         poolAddress,
-        contracts.daiAddress,
         maxBTPIn,
         exactDAIOut
       )
@@ -643,7 +616,7 @@ describe('Pool unit test', () => {
         ERC721Factory.abi as AbiItem[]
       )
 
-      const txReceipt = await nftFactory.createNftErcWithPool(
+      const txReceipt = await nftFactory.createNftErc20WithPool(
         contracts.accounts[0],
         nftData,
         ercParams,
@@ -894,33 +867,8 @@ describe('Pool unit test', () => {
       const tx = await pool.joinswapExternAmountIn(
         user2,
         poolAddress,
-        contracts.usdcAddress,
         usdcAmountIn,
         minBPTOut
-      )
-
-      assert(tx != null)
-
-      expect(tx.events.LOG_JOIN[0].event === 'LOG_JOIN')
-      expect(tx.events.LOG_BPT.event === 'LOG_BPT')
-      // 2 JOIN EVENTS BECAUSE SIDE STAKING ALSO STAKED DTs, TODO: we should add to whom has been sent in the LOG_BPT event
-      expect(tx.events.LOG_JOIN[0].returnValues.bptAmount).to.equal(
-        tx.events.LOG_JOIN[1].returnValues.bptAmount
-      )
-    })
-
-    it('#joinswapPoolAmountOut- user2 should add liquidity, receiving LP tokens', async () => {
-      const BPTAmountOut = '0.1'
-      const maxUSDCIn = '100'
-
-      await approve(web3, user2, contracts.usdcAddress, poolAddress, '100')
-
-      const tx = await pool.joinswapPoolAmountOut(
-        user2,
-        poolAddress,
-        contracts.usdcAddress,
-        BPTAmountOut,
-        maxUSDCIn
       )
 
       assert(tx != null)
@@ -955,29 +903,8 @@ describe('Pool unit test', () => {
       const tx = await pool.exitswapPoolAmountIn(
         user2,
         poolAddress,
-        contracts.usdcAddress,
         BPTAmountIn,
         minUSDCOut
-      )
-
-      assert(tx != null)
-
-      expect(tx.events.LOG_EXIT[0].returnValues.tokenOut).to.equal(contracts.usdcAddress)
-
-      // DTs were also unstaked in the same transaction (went to the staking contract)
-      expect(tx.events.LOG_EXIT[1].returnValues.tokenOut).to.equal(erc20Token)
-    })
-
-    it('#exitswapExternAmountOut- user2 exit the pool receiving only USDC', async () => {
-      const maxBTPIn = '0.5'
-      const exactUSDCOut = '1'
-
-      const tx = await pool.exitswapPoolAmountIn(
-        user2,
-        poolAddress,
-        contracts.usdcAddress,
-        maxBTPIn,
-        exactUSDCOut
       )
 
       assert(tx != null)

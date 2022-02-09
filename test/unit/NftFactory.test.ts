@@ -181,7 +181,7 @@ describe('Nft Factory test', () => {
       symbol: 'ERC20DT1Symbol'
     }
 
-    const txReceipt = await nftFactory.createNftWithErc(
+    const txReceipt = await nftFactory.createNftWithErc20(
       contracts.accounts[0],
       nftData,
       ercParams
@@ -233,7 +233,7 @@ describe('Nft Factory test', () => {
       swapFeeMarketRunner: 1e15
     }
 
-    const txReceipt = await nftFactory.createNftErcWithPool(
+    const txReceipt = await nftFactory.createNftErc20WithPool(
       contracts.accounts[0],
       nftData,
       ercParams,
@@ -280,7 +280,7 @@ describe('Nft Factory test', () => {
       withMint: false
     }
 
-    const txReceipt = await nftFactory.createNftErcWithFixedRate(
+    const txReceipt = await nftFactory.createNftErc20WithFixedRate(
       contracts.accounts[0],
       nftData,
       ercParams,
@@ -325,7 +325,7 @@ describe('Nft Factory test', () => {
       allowedSwapper: ZERO_ADDRESS
     }
 
-    const txReceipt = await nftFactory.createNftErcWithDispenser(
+    const txReceipt = await nftFactory.createNftErc20WithDispenser(
       contracts.accounts[0],
       nftData,
       ercParams,

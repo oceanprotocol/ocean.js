@@ -85,7 +85,7 @@ describe('Simple Publish & consume test', async () => {
       minter: publisherAccount,
       mpFeeAddress: '0x0000000000000000000000000000000000000000'
     }
-    const result = await Factory.createNftWithErc(
+    const result = await Factory.createNftWithErc20(
       publisherAccount,
       nftParams,
       erc20Params
