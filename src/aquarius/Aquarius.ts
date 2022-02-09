@@ -39,7 +39,6 @@ export class Aquarius {
     }
   }
 
-  
   /**
    * Blocks until Aqua will cache the did (or the update for that did) or timeouts
    

@@ -12,7 +12,6 @@ import { homedir } from 'os'
 import fs from 'fs'
 import { ProviderFees, Erc20CreateParams } from '../../src/@types'
 
-
 const data = JSON.parse(
   fs.readFileSync(
     process.env.ADDRESS_FILE ||
