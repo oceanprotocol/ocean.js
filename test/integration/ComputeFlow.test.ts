@@ -12,6 +12,15 @@ import { homedir } from 'os'
 import fs from 'fs'
 import { ProviderFees, Erc20CreateParams } from '../../src/@types'
 
+/**
+ * Simple blocking sleep function
+ */
+async function sleep(ms: number) {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms)
+  })
+}
+
 const data = JSON.parse(
   fs.readFileSync(
     process.env.ADDRESS_FILE ||
@@ -236,13 +245,26 @@ describe('Simple compute tests', async () => {
     await datatoken.mint(datatokenAddressAsset, publisherAccount, '1', consumerAccount)
     await datatoken.mint(datatokenAddressAlgo, publisherAccount, '1', consumerAccount)
 
+    // get compute environments
+    const computeEnvs = await ProviderInstance.getComputeEnvironments(providerUrl)
+    // we choose the first env
+    const computeEnv = computeEnvs[0].id
+    const computeConsumerAddress = computeEnvs[0].consumerAddress
+    // let's have 60 seconds of compute access
+    const mytime = new Date()
+    mytime.setMinutes(mytime.getMinutes() + 1)
+    const computeValidUntil = mytime.getTime()
     // initialize provider orders for algo
     const initializeDataAlgo = await ProviderInstance.initialize(
       resolvedDDOAlgo.id,
       resolvedDDOAlgo.services[0].id,
       0,
       consumerAccount,
-      providerUrl
+      providerUrl,
+      null,
+      null,
+      computeEnv,
+      computeValidUntil
     )
     const providerAlgoFees: ProviderFees = {
       providerFeeAddress: initializeDataAlgo.providerFee.providerFeeAddress,
@@ -259,7 +281,7 @@ describe('Simple compute tests', async () => {
     const txidAlgo = await datatoken.startOrder(
       datatokenAddressAlgo,
       consumerAccount,
-      initializeDataAlgo.computeAddress,
+      computeConsumerAddress, // this is important
       0,
       providerAlgoFees
     )
@@ -277,8 +299,8 @@ describe('Simple compute tests', async () => {
       providerUrl,
       null,
       null,
-      'env1',
-      providerValidUntil.getTime()
+      computeEnv,
+      computeValidUntil
     )
     const providerDatasetFees: ProviderFees = {
       providerFeeAddress: initializeData.providerFee.providerFeeAddress,
@@ -294,7 +316,7 @@ describe('Simple compute tests', async () => {
     const txidAsset = await datatoken.startOrder(
       datatokenAddressAsset,
       consumerAccount,
-      initializeDataAlgo.computeAddress,
+      computeConsumerAddress,
       0,
       providerDatasetFees
     )
@@ -304,7 +326,7 @@ describe('Simple compute tests', async () => {
       providerUrl,
       web3,
       consumerAccount,
-      'env1',
+      computeEnv,
       {
         documentId: resolvedDDOAsset.id,
         serviceId: resolvedDDOAsset.services[0].id,
@@ -320,7 +342,9 @@ describe('Simple compute tests', async () => {
     const jobStatus = await ProviderInstance.computeStatus(
       providerUrl,
       null,
-      computeJobs[0].jobId
+      computeJobs[0].jobId,
+      resolvedDDOAsset.id,
+      consumerAccount
     )
     assert(jobStatus)
   })

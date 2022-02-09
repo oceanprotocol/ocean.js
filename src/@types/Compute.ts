@@ -2,6 +2,24 @@ import { Metadata, MetadataAlgorithm } from './DDO/Metadata'
 
 export type ComputeResultType = 'algorithmLog' | 'output'
 
+export interface ComputeEnvironment {
+  id: string
+  nCPU: number
+  cpuType: string
+  nGPU: number
+  gpuType: string
+  ramGB: number
+  diskGB: number
+  priceMin: number
+  desc: string
+  currentJobs: number
+  maxJobs: number
+  consumerAddress: string
+  storageExpiry: number
+  maxJobDuration: number
+  lastSeen: number
+}
+
 export interface ComputeResult {
   filename: string
   filesize: number
