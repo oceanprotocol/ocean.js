@@ -247,6 +247,8 @@ describe('Simple compute tests', async () => {
 
     // get compute environments
     const computeEnvs = await ProviderInstance.getComputeEnvironments(providerUrl)
+    console.log(computeEnvs)
+    assert(computeEnvs && computeEnvs.length>0)
     // we choose the first env
     const computeEnv = computeEnvs[0].id
     const computeConsumerAddress = computeEnvs[0].consumerAddress
