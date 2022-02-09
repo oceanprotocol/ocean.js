@@ -238,7 +238,6 @@ describe('Simple compute tests', async () => {
 
     // get compute environments
     const computeEnvs = await ProviderInstance.getComputeEnvironments(providerUrl)
-    console.log(computeEnvs)
     assert(computeEnvs, 'No Compute environments found')
     // we choose the first env
     const computeEnv = computeEnvs[0].id

@@ -59,16 +59,12 @@ jobs:
           bash -x start_ocean.sh  --no-aquarius --no-elasticsearch --no-provider --no-dashboard 2>&1 > start_ocean.log & 
 
       - run: npm ci
-      - name: Wait for Barge
+      - name: Wait for contracts deployment
         working-directory: ${{ github.workspace }}/barge
         run: |
           for i in $(seq 1 250); do
             sleep 5
             [ -f "$HOME/.ocean/ocean-contracts/artifacts/ready" ] && break
-            ls -la "$HOME/.ocean/"
-            ls -la "$HOME/.ocean/ocean-contracts/"
-            ls -la "$HOME/.ocean/ocean-contracts/artifacts/"
-            echo "Not ready"
             done
           ls -la "$HOME/.ocean/ocean-contracts/artifacts/"
       - run: npm run build:metadata
@@ -127,15 +123,12 @@ jobs:
       - run: npm ci
       - run: npm run build:metadata
 
-      - name: Wait for barge
+      - name: Wait for contracts deployment and C2D cluster to be ready
         working-directory: ${{ github.workspace }}/barge
         run: |
           for i in $(seq 1 250); do
             sleep 10
             [ -f "$HOME/.ocean/ocean-contracts/artifacts/ready" -a -f "$HOME/.ocean/ocean-c2d/ready" ] && break
-            ls -la "$HOME/.ocean/ocean-contracts/artifacts/"
-            ls -l "$HOME/.ocean/ocean-c2d/"
-            echo "Not ready"
             done
           
 
