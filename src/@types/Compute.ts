@@ -4,9 +4,9 @@ export type ComputeResultType = 'algorithmLog' | 'output'
 
 export interface ComputeEnvironment {
   id: string
-  nCPU: number
+  cpuNumber: number
   cpuType: string
-  nGPU: number
+  gpuNumber: number
   gpuType: string
   ramGB: number
   diskGB: number
