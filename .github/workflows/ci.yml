@@ -127,7 +127,7 @@ jobs:
       - name: integration
         run: npm run test:integration:cover
       - name:  docker logs
-        run: docker logs ocean_aquarius_1 && docker logs ocean_provider_1 && docker logs ocean_provider2_1
+        run: docker logs ocean_aquarius_1 && docker logs ocean_provider_1 && docker logs ocean_provider2_1 && docker logs ocean_computetodata_1
         if: ${{ failure() }}
       - name: Upload coverage
         uses: actions/upload-artifact@v2
