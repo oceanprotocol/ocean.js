@@ -1,4 +1,4 @@
-import { LoggerInstance } from '../utils'
+import { LoggerInstance, sleep } from '../utils'
 import { Asset, DDO, ValidateMetadata } from '../@types/'
 import fetch from 'cross-fetch'
 export class Aquarius {
@@ -40,15 +40,6 @@ export class Aquarius {
   }
 
   /**
-   * Simple blocking sleep function
-   */
-  public sleep(ms: number) {
-    return new Promise((resolve) => {
-      setTimeout(resolve, ms)
-    })
-  }
-
-  /**
    * Blocks until Aqua will cache the did (or the update for that did) or timeouts
    
    * @param {string} did DID of the asset.
@@ -82,7 +73,7 @@ export class Aquarius {
       } catch (e) {
         // do nothing
       }
-      await this.sleep(1500)
+      await sleep(1500)
       tries++
     } while (tries < 100)
     return null

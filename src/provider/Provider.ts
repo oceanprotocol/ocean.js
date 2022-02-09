@@ -6,6 +6,7 @@ import {
   ComputeOutput,
   ComputeAlgorithm,
   ComputeAsset,
+  ComputeEnvironment,
   ProviderInitialize
 } from '../@types/'
 import { noZeroX } from '../utils/ConversionTypeHelper'
@@ -245,6 +246,36 @@ export class Provider {
     }
   }
 
+  /** Get Compute Environments
+   * @return {Promise<ComputeEnvironment[]>} urlDetails
+   */
+  public async getComputeEnvironments(
+    providerUri: string,
+    signal?: AbortSignal
+  ): Promise<ComputeEnvironment[]> {
+    const providerEndpoints = await this.getEndpoints(providerUri)
+    const serviceEndpoints = await this.getServiceEndpoints(
+      providerUri,
+      providerEndpoints
+    )
+    const path = this.getEndpointURL(serviceEndpoints, 'computeEnvironments')?.urlPath
+    if (!path) return null
+    try {
+      const response = await fetch(path, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        signal: signal
+      })
+      const envs: ComputeEnvironment[] = await response.json()
+      return envs
+    } catch (e) {
+      LoggerInstance.error(e.message)
+      return null
+    }
+  }
+
   /** Initialize a service request.
    * @param {DDO | string} asset
    * @param {number} serviceIndex
@@ -282,7 +313,7 @@ export class Provider {
     initializeUrl += `&consumerAddress=${consumerAddress}`
     if (userCustomParameters)
       initializeUrl += '&userdata=' + encodeURI(JSON.stringify(userCustomParameters))
-    if (computeEnv) initializeUrl += '&computeEnv=' + encodeURI(computeEnv)
+    if (computeEnv) initializeUrl += '&environment=' + encodeURI(computeEnv)
     if (validUntil) initializeUrl += '&validUntil=' + validUntil
     try {
       const response = await fetch(initializeUrl, {
@@ -348,6 +379,7 @@ export class Provider {
   /** Instruct the provider to start a compute job
    * @param {string} did
    * @param {string} consumerAddress
+   * @param {string} computeEnv
    * @param {ComputeAlgorithm} algorithm
    * @param {string} providerUri
    * @param {Web3} web3
@@ -389,7 +421,7 @@ export class Provider {
     payload.consumerAddress = consumerAddress
     payload.signature = signature
     payload.nonce = nonce
-    payload.computeEnv = computeEnv
+    payload.environment = computeEnv
     payload.dataset = dataset
     payload.algorithm = algorithm
     if (payload.additionalDatasets) payload.additionalDatasets = additionalDatasets
@@ -526,7 +558,7 @@ export class Provider {
       : null
 
     let url = '?documentId=' + noZeroX(did)
-    url += `&consumerAddress=${consumerAddress}`
+    url += (consumerAddress && `&consumerAddress=${consumerAddress}`) || ''
     url += (jobId && `&jobId=${jobId}`) || ''
 
     if (!computeStatusUrl) return null
@@ -538,7 +570,6 @@ export class Provider {
         },
         signal: signal
       })
-
       if (response?.ok) {
         const params = await response.json()
         return params

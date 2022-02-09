@@ -4,7 +4,7 @@ import Aquarius from '../../src/aquarius/Aquarius'
 import { assert } from 'chai'
 import { NftFactory, NftCreateData } from '../../src/factories/index'
 import { Datatoken } from '../../src/tokens/Datatoken'
-import { getHash } from '../../src/utils'
+import { getHash, sleep } from '../../src/utils'
 import { Nft } from '../../src/tokens/NFT'
 import Web3 from 'web3'
 import { SHA256 } from 'crypto-js'
@@ -236,13 +236,27 @@ describe('Simple compute tests', async () => {
     await datatoken.mint(datatokenAddressAsset, publisherAccount, '1', consumerAccount)
     await datatoken.mint(datatokenAddressAlgo, publisherAccount, '1', consumerAccount)
 
+    // get compute environments
+    const computeEnvs = await ProviderInstance.getComputeEnvironments(providerUrl)
+    assert(computeEnvs, 'No Compute environments found')
+    // we choose the first env
+    const computeEnv = computeEnvs[0].id
+    const computeConsumerAddress = computeEnvs[0].consumerAddress
+    // let's have 60 seconds of compute access
+    const mytime = new Date()
+    mytime.setMinutes(mytime.getMinutes() + 1)
+    const computeValidUntil = mytime.getTime()
     // initialize provider orders for algo
     const initializeDataAlgo = await ProviderInstance.initialize(
       resolvedDDOAlgo.id,
       resolvedDDOAlgo.services[0].id,
       0,
       consumerAccount,
-      providerUrl
+      providerUrl,
+      null,
+      null,
+      computeEnv,
+      computeValidUntil
     )
     const providerAlgoFees: ProviderFees = {
       providerFeeAddress: initializeDataAlgo.providerFee.providerFeeAddress,
@@ -259,7 +273,7 @@ describe('Simple compute tests', async () => {
     const txidAlgo = await datatoken.startOrder(
       datatokenAddressAlgo,
       consumerAccount,
-      initializeDataAlgo.computeAddress,
+      computeConsumerAddress, // this is important because the c2d is the consumer, and user is the payer. Otherwise, c2d will have no access to the asset
       0,
       providerAlgoFees
     )
@@ -277,8 +291,8 @@ describe('Simple compute tests', async () => {
       providerUrl,
       null,
       null,
-      'env1',
-      providerValidUntil.getTime()
+      computeEnv,
+      computeValidUntil
     )
     const providerDatasetFees: ProviderFees = {
       providerFeeAddress: initializeData.providerFee.providerFeeAddress,
@@ -294,7 +308,7 @@ describe('Simple compute tests', async () => {
     const txidAsset = await datatoken.startOrder(
       datatokenAddressAsset,
       consumerAccount,
-      initializeDataAlgo.computeAddress,
+      computeConsumerAddress, // this is important because the c2d is the consumer, and user is the payer. Otherwise, c2d will have no access to the asset
       0,
       providerDatasetFees
     )
@@ -304,7 +318,7 @@ describe('Simple compute tests', async () => {
       providerUrl,
       web3,
       consumerAccount,
-      'env1',
+      computeEnv,
       {
         documentId: resolvedDDOAsset.id,
         serviceId: resolvedDDOAsset.services[0].id,
@@ -320,7 +334,9 @@ describe('Simple compute tests', async () => {
     const jobStatus = await ProviderInstance.computeStatus(
       providerUrl,
       null,
-      computeJobs[0].jobId
+      computeJobs[0].jobId,
+      resolvedDDOAsset.id,
+      consumerAccount
     )
     assert(jobStatus)
   })
