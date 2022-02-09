@@ -4,7 +4,7 @@ import Aquarius from '../../src/aquarius/Aquarius'
 import { assert } from 'chai'
 import { NftFactory, NftCreateData } from '../../src/factories/index'
 import { Datatoken } from '../../src/tokens/Datatoken'
-import { getHash } from '../../src/utils'
+import { getHash, sleep } from '../../src/utils'
 import { Nft } from '../../src/tokens/NFT'
 import Web3 from 'web3'
 import { SHA256 } from 'crypto-js'
@@ -12,14 +12,6 @@ import { homedir } from 'os'
 import fs from 'fs'
 import { ProviderFees, Erc20CreateParams } from '../../src/@types'
 
-/**
- * Simple blocking sleep function
- */
-async function sleep(ms: number) {
-  return new Promise((resolve) => {
-    setTimeout(resolve, ms)
-  })
-}
 
 const data = JSON.parse(
   fs.readFileSync(
@@ -283,7 +275,7 @@ describe('Simple compute tests', async () => {
     const txidAlgo = await datatoken.startOrder(
       datatokenAddressAlgo,
       consumerAccount,
-      computeConsumerAddress, // this is important
+      computeConsumerAddress, // this is important because the c2d is the consumer, and user is the payer. Otherwise, c2d will have no access to the asset
       0,
       providerAlgoFees
     )
@@ -318,7 +310,7 @@ describe('Simple compute tests', async () => {
     const txidAsset = await datatoken.startOrder(
       datatokenAddressAsset,
       consumerAccount,
-      computeConsumerAddress,
+      computeConsumerAddress, // this is important because the c2d is the consumer, and user is the payer. Otherwise, c2d will have no access to the asset
       0,
       providerDatasetFees
     )

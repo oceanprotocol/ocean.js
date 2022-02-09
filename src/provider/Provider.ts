@@ -258,10 +258,7 @@ export class Provider {
       providerUri,
       providerEndpoints
     )
-    const envs: ComputeEnvironment[] = []
-    const path = this.getEndpointURL(serviceEndpoints, 'computeEnvironments')
-      ? this.getEndpointURL(serviceEndpoints, 'computeEnvironments').urlPath
-      : null
+    const path = this.getEndpointURL(serviceEndpoints, 'computeEnvironments')?.urlPath
     if (!path) return null
     try {
       const response = await fetch(path, {
@@ -274,6 +271,7 @@ export class Provider {
       const envs: ComputeEnvironment[] = await response.json()
       return envs
     } catch (e) {
+      LoggerInstance.error(e.message)
       return null
     }
   }
