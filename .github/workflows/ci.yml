@@ -60,6 +60,9 @@ jobs:
           for i in $(seq 1 250); do
             sleep 5
             [ -f "$HOME/.ocean/ocean-contracts/artifacts/ready" ] && break
+            ls -la "$HOME/.ocean/ocean-contracts/artifacts/"
+            ls -l "$HOME/.ocean/ocean/c2d/ready"
+            echo "Not ready"
             done
           ls -la "$HOME/.ocean/ocean-contracts/artifacts/"
 
@@ -123,10 +126,13 @@ jobs:
       - name: Wait for barge
         run: |
           for i in $(seq 1 250); do
-            sleep 5
+            sleep 10
             [ -f "$HOME/.ocean/ocean-contracts/artifacts/ready" -a -f "$HOME/.ocean/ocean/c2d/ready" ] && break
+            ls -la "$HOME/.ocean/ocean-contracts/artifacts/"
+            ls -l "$HOME/.ocean/ocean/c2d/ready"
+            echo "Not ready"
             done
-          ls -la "$HOME/.ocean/ocean-contracts/artifacts/"
+          
 
       - name: integration
         run: npm run test:integration:cover
