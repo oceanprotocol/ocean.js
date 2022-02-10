@@ -59,7 +59,7 @@
   "dependencies": {
     "@oceanprotocol/contracts": "1.0.0-alpha.18",
     "bignumber.js": "^9.0.2",
-    "cross-fetch": "^3.1.4",
+    "cross-fetch": "^3.1.5",
     "crypto-js": "^4.0.0",
     "decimal.js": "^10.2.1",
     "web3": "^1.7.0",
