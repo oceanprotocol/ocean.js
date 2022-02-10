@@ -71,7 +71,7 @@
     "@types/chai": "^4.2.19",
     "@types/chai-spies": "^1.0.3",
     "@types/crypto-js": "^4.0.1",
-    "@types/mocha": "^9.0.0",
+    "@types/mocha": "^9.1.0",
     "@types/node": "^17.0.16",
     "@types/node-fetch": "^3.0.3",
     "@typescript-eslint/eslint-plugin": "^4.33.0",
