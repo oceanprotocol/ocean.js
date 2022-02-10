@@ -227,7 +227,11 @@ describe('Fixed Rate unit test', () => {
     })
     it('#calcBaseInGivenOutDT - should get bt amount in for a specific dt amount', async () => {
       // 100.2 DAI for 100 DT (0.1% market fee and 0.1% ocean fee)
-      expect(await fixedRate.calcBaseInGivenOutDT(exchangeId, '100')).to.equal('100.2')
+      expect(
+        await (
+          await fixedRate.calcBaseInGivenOutDT(exchangeId, '100')
+        ).baseTokenAmount
+      ).to.equal('100.2')
     })
     it('#getAmountBTOut - should get bt amount out for a specific dt amount', async () => {
       // 99.8 DAI for 100 DT (0.1% market fee and 0.1% ocean fee)
@@ -559,7 +563,11 @@ describe('Fixed Rate unit test', () => {
     })
     it('#getAmountBTIn - should get bt amount in for a specific dt amount', async () => {
       // 100.2 USDC for 100 DT (0.1% market fee and 0.1% ocean fee)
-      expect(await fixedRate.calcBaseInGivenOutDT(exchangeId, '100')).to.equal('100.2')
+      expect(
+        await (
+          await fixedRate.calcBaseInGivenOutDT(exchangeId, '100')
+        ).baseTokenAmount
+      ).to.equal('100.2')
     })
     it('#getAmountBTOut - should get bt amount out for a specific dt amount', async () => {
       // 99.8 USDC for 100 DT (0.1% market fee and 0.1% ocean fee)
