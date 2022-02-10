@@ -241,7 +241,7 @@ describe('Pool unit test', () => {
     })
 
     it('#getSwapFee - should return the swap fee', async () => {
-      expect(await pool.getSwapFee(poolAddress)).to.equal('0.001') // 0.1%
+      expect(await pool.getSwapFee(poolAddress)).to.equal('0.1') // 0.1%
     })
 
     it('#getNormalizedWeight - should return the normalized weight', async () => {
@@ -758,7 +758,7 @@ describe('Pool unit test', () => {
     })
 
     it('#getSwapFee - should return the swap fee', async () => {
-      expect(await pool.getSwapFee(poolAddress)).to.equal('0.001') // 0.1%
+      expect(await pool.getSwapFee(poolAddress)).to.equal('0.1') // 0.1%
     })
 
     it('#getNormalizedWeight - should return the normalized weight', async () => {
