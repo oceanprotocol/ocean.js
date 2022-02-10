@@ -166,7 +166,7 @@ describe('Datatoken', () => {
       baseTokenDecimals: 18,
       datatokenDecimals: 18,
       fixedRate: web3.utils.toWei('1'),
-      marketFee: 1e15
+      marketFee: '0'
     }
     const fre = await datatoken.createFixedRate(datatokenAddress, nftOwner, freParams)
     assert(fre !== null)
@@ -184,7 +184,7 @@ describe('Datatoken', () => {
       baseTokenDecimals: 18,
       datatokenDecimals: 18,
       fixedRate: web3.utils.toWei('1'),
-      marketFee: 1e15
+      marketFee: '0'
     }
     try {
       await datatoken.createFixedRate(datatokenAddress, user3, freParams)
@@ -426,7 +426,6 @@ describe('Datatoken', () => {
     const providerData = JSON.stringify({ timeout: 0 })
     const providerFeeToken = ZERO_ADDRESS
     const providerFeeAmount = '0'
-    const dtAmount = web3.utils.toWei('1')
     const message = web3.utils.soliditySha3(
       { t: 'bytes', v: web3.utils.toHex(web3.utils.asciiToHex(providerData)) },
       { t: 'address', v: user3 },
@@ -455,7 +454,7 @@ describe('Datatoken', () => {
       exchangeContract: fixedRateAddress,
       exchangeId: exchangeId,
       maxBaseTokenAmount: '1',
-      swapMarketFee: web3.utils.toWei('0.1'),
+      swapMarketFee: '0.1',
       marketFeeAddress: '0x0000000000000000000000000000000000000000'
     }
 

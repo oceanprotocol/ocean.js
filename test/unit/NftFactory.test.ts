@@ -229,8 +229,8 @@ describe('Nft Factory test', () => {
       vestingAmount: '10000',
       vestedBlocks: 2500000,
       initialBaseTokenLiquidity: '2000',
-      swapFeeLiquidityProvider: 1e15,
-      swapFeeMarketRunner: 1e15
+      swapFeeLiquidityProvider: '0.001',
+      swapFeeMarketRunner: '0.001'
     }
 
     const txReceipt = await nftFactory.createNftErc20WithPool(
@@ -275,7 +275,7 @@ describe('Nft Factory test', () => {
       baseTokenDecimals: 18,
       datatokenDecimals: 18,
       fixedRate: '1',
-      marketFee: 1e15,
+      marketFee: '0.001',
       allowedConsumer: contracts.accounts[0],
       withMint: false
     }

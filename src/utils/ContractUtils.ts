@@ -2,7 +2,12 @@ import Web3 from 'web3'
 import BigNumber from 'bignumber.js'
 import { Contract } from 'web3-eth-contract'
 import { generateDtName } from './DatatokenName'
-import { Erc20CreateParams, FreCreationParams, PoolCreationParams } from '../@types'
+import {
+  Erc20CreateParams,
+  FreCreationParams,
+  FreOrderParams,
+  PoolCreationParams
+} from '../@types'
 import { Config } from '../models'
 import { minAbi } from './minAbi'
 import LoggerInstance from './Logger'
@@ -49,6 +54,16 @@ export function getErcCreationParams(ercParams: Erc20CreateParams): any {
   }
 }
 
+export function getFreOrderParams(freParams: FreOrderParams): any {
+  return {
+    exchangeContract: freParams.exchangeContract,
+    exchangeId: freParams.exchangeId,
+    maxBaseTokenAmount: freParams.maxBaseTokenAmount,
+    swapMarketFee: Web3.utils.toWei(freParams.swapMarketFee),
+    marketFeeAddress: freParams.marketFeeAddress
+  }
+}
+
 export function getFreCreationParams(freParams: FreCreationParams): any {
   if (!freParams.allowedConsumer)
     freParams.allowedConsumer = '0x0000000000000000000000000000000000000000'
@@ -66,7 +81,7 @@ export function getFreCreationParams(freParams: FreCreationParams): any {
       freParams.baseTokenDecimals,
       freParams.datatokenDecimals,
       freParams.fixedRate,
-      freParams.marketFee,
+      Web3.utils.toWei(freParams.marketFee),
       withMint
     ]
   }
@@ -89,7 +104,10 @@ export function getPoolCreationParams(poolParams: PoolCreationParams): any {
       poolParams.vestedBlocks,
       Web3.utils.toWei(poolParams.initialBaseTokenLiquidity)
     ],
-    swapFees: [poolParams.swapFeeLiquidityProvider, poolParams.swapFeeMarketRunner]
+    swapFees: [
+      Web3.utils.toWei(poolParams.swapFeeLiquidityProvider),
+      Web3.utils.toWei(poolParams.swapFeeMarketRunner)
+    ]
   }
 }
 export async function unitsToAmount(

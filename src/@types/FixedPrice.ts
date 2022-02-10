@@ -6,7 +6,7 @@ export interface FreCreationParams {
   baseTokenDecimals: number
   datatokenDecimals: number
   fixedRate: string
-  marketFee: number
+  marketFee: string
   withMint?: boolean // add FixedPriced contract as minter if withMint == true
   allowedConsumer?: string //  only account that consume the exhchange
 }
@@ -17,4 +17,11 @@ export interface FreOrderParams {
   maxBaseTokenAmount: string
   swapMarketFee: string
   marketFeeAddress: string
+}
+
+export interface PriceAndFees {
+  baseTokenAmount: string
+  baseTokenAmountBeforeFee: string
+  oceanFeeAmount: string
+  marketFeeAmount: string
 }

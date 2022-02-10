@@ -12,6 +12,7 @@ import {
   setContractDefaults
 } from '../../utils'
 import { Config } from '../../models/index.js'
+import { PriceAndFees } from '../..'
 
 export interface FixedPriceExchange {
   active: boolean
@@ -554,15 +555,15 @@ export class FixedRateExchange {
   }
 
   /**
-   * getBTNeeded - returns amount in baseToken that user will pay for datatokenAmount
+   * calcBaseInGivenOutDT - Calculates how many base tokens are needed to get specified amount of datatokens
    * @param {String} exchangeId ExchangeId
-   * @param {Number} datatokenAmount Amount of datatokens user wants to buy
-   * @return {Promise<string>} Amount of baseToken needed for buying
+   * @param {string} datatokenAmount Amount of datatokens user wants to buy
+   * @return {Promise<PriceAndFees>} how many base tokens are needed and fees
    */
-  public async getAmountBTIn(
+  public async calcBaseInGivenOutDT(
     exchangeId: string,
     datatokenAmount: string
-  ): Promise<string> {
+  ): Promise<PriceAndFees> {
     const result = await this.contract.methods
       .calcBaseInGivenOutDT(
         exchangeId,
@@ -575,12 +576,33 @@ export class FixedRateExchange {
       )
       .call()
 
-    return await this.unitsToAmount(
-      (
-        await this.getExchange(exchangeId)
-      ).baseToken,
-      result.baseTokenAmount
-    )
+    const priceAndFees = {
+      baseTokenAmount: await this.unitsToAmount(
+        (
+          await this.getExchange(exchangeId)
+        ).baseToken,
+        result.baseTokenAmount
+      ),
+      baseTokenAmountBeforeFee: await this.unitsToAmount(
+        (
+          await this.getExchange(exchangeId)
+        ).baseToken,
+        result.baseTokenAmountBeforeFee
+      ),
+      marketFeeAmount: await this.unitsToAmount(
+        (
+          await this.getExchange(exchangeId)
+        ).baseToken,
+        result.marketFeeAmount
+      ),
+      oceanFeeAmount: await this.unitsToAmount(
+        (
+          await this.getExchange(exchangeId)
+        ).baseToken,
+        result.oceanFeeAmount
+      )
+    } as PriceAndFees
+    return priceAndFees
   }
 
   /**
