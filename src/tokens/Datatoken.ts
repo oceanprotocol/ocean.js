@@ -9,7 +9,8 @@ import {
   LoggerInstance,
   getFairGasPrice,
   setContractDefaults,
-  configHelperNetworks
+  configHelperNetworks,
+  getFreOrderParams
 } from '../utils'
 import { FreOrderParams, FreCreationParams, ProviderFees } from '../@types'
 import { Nft } from './NFT'
@@ -1033,16 +1034,18 @@ export class Datatoken {
   ): Promise<TransactionReceipt> {
     const dtContract = new this.web3.eth.Contract(this.datatokensEnterpriseAbi, dtAddress)
     try {
+      const freContractParams = getFreOrderParams(freParams)
+
       const estGas = await this.estGasBuyFromFreAndOrder(
         dtAddress,
         address,
         orderParams,
-        freParams,
+        freContractParams,
         dtContract
       )
 
       const trxReceipt = await dtContract.methods
-        .buyFromFreAndOrder(orderParams, freParams)
+        .buyFromFreAndOrder(orderParams, freContractParams)
         .send({
           from: address,
           gas: estGas + 1,

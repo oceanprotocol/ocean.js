@@ -426,7 +426,6 @@ describe('Datatoken', () => {
     const providerData = JSON.stringify({ timeout: 0 })
     const providerFeeToken = ZERO_ADDRESS
     const providerFeeAmount = '0'
-    const dtAmount = web3.utils.toWei('1')
     const message = web3.utils.soliditySha3(
       { t: 'bytes', v: web3.utils.toHex(web3.utils.asciiToHex(providerData)) },
       { t: 'address', v: user3 },
