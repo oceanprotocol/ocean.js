@@ -478,7 +478,7 @@ describe('Pool unit test', () => {
       // we haven't performed any swap DT => DAI so there's no fee in erc20Token
       // but there's a fee in DAI
       assert((await pool.getMarketFees(poolAddress, erc20Token)) === '0')
-      assert((await pool.getMarketFees(poolAddress, contracts.daiAddress)) > '0')
+      assert((await pool.getMarketFees(poolAddress, contracts.daiAddress)) === '0')
     })
 
     it('#getCommunityFees- should get community fees for each token', async () => {
@@ -985,7 +985,7 @@ describe('Pool unit test', () => {
       // we haven't performed any swap DT => USDC so there's no fee in erc20Token
       // but there's a fee in USDC
       assert((await pool.getMarketFees(poolAddress, erc20Token)) === '0')
-      assert((await pool.getMarketFees(poolAddress, contracts.usdcAddress)) > '0')
+      assert((await pool.getMarketFees(poolAddress, contracts.usdcAddress)) === '0')
     })
 
     it('#getCommunityFees- should get community fees for each token', async () => {
