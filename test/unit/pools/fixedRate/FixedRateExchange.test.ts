@@ -122,7 +122,7 @@ describe('Fixed Rate unit test', () => {
         baseTokenDecimals: 18,
         datatokenDecimals: 18,
         fixedRate: web3.utils.toWei('1'),
-        marketFee: '0',
+        marketFee: '0.001',
         allowedConsumer: ADDRESS_ZERO,
         withMint: false
       }
@@ -226,12 +226,12 @@ describe('Fixed Rate unit test', () => {
       expect(await fixedRate.getBTSupply(exchangeId)).to.equal('0')
     })
     it('#calcBaseInGivenOutDT - should get bt amount in for a specific dt amount', async () => {
-      // 100.1 DAI for 100 DT (0% market fee and 0.1% ocean fee)
+      // 100.2 DAI for 100 DT (0.1% market fee and 0.1% ocean fee)
       expect(
         await (
           await fixedRate.calcBaseInGivenOutDT(exchangeId, '100')
         ).baseTokenAmount
-      ).to.equal('100.1')
+      ).to.equal('100.2')
     })
     it('#getAmountBTOut - should get bt amount out for a specific dt amount', async () => {
       // 99.8 DAI for 100 DT (0.1% market fee and 0.1% ocean fee)
@@ -454,7 +454,7 @@ describe('Fixed Rate unit test', () => {
         baseTokenDecimals: 6,
         datatokenDecimals: 18,
         fixedRate: web3.utils.toWei('1'),
-        marketFee: '0',
+        marketFee: '0.001',
         allowedConsumer: ADDRESS_ZERO,
         withMint: false
       }
@@ -561,7 +561,7 @@ describe('Fixed Rate unit test', () => {
       // no baseToken at the beginning
       expect(await fixedRate.getBTSupply(exchangeId)).to.equal('0')
     })
-    it('#getAmountBTIn - should get bt amount in for a specific dt amount', async () => {
+    it('#calcBaseInGivenOutDT - should get bt amount in for a specific dt amount', async () => {
       // 100.2 USDC for 100 DT (0.1% market fee and 0.1% ocean fee)
       expect(
         await (

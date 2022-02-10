@@ -160,8 +160,8 @@ describe('Pool unit test', () => {
         vestingAmount: '10000',
         vestedBlocks: 2500000,
         initialBaseTokenLiquidity: '2000',
-        swapFeeLiquidityProvider: '0.1',
-        swapFeeMarketRunner: '0'
+        swapFeeLiquidityProvider: '0.001',
+        swapFeeMarketRunner: '0.001'
       }
 
       const nftFactory = new NftFactory(
@@ -241,7 +241,7 @@ describe('Pool unit test', () => {
     })
 
     it('#getSwapFee - should return the swap fee', async () => {
-      expect(await pool.getSwapFee(poolAddress)).to.equal('0.1') // 0.1%
+      expect(await pool.getSwapFee(poolAddress)).to.equal('0.001') // 0.1%
     })
 
     it('#getNormalizedWeight - should return the normalized weight', async () => {
@@ -478,7 +478,7 @@ describe('Pool unit test', () => {
       // we haven't performed any swap DT => DAI so there's no fee in erc20Token
       // but there's a fee in DAI
       assert((await pool.getMarketFees(poolAddress, erc20Token)) === '0')
-      assert((await pool.getMarketFees(poolAddress, contracts.daiAddress)) === '0')
+      assert((await pool.getMarketFees(poolAddress, contracts.daiAddress)) > '0')
     })
 
     it('#getCommunityFees- should get community fees for each token', async () => {
@@ -606,8 +606,8 @@ describe('Pool unit test', () => {
         initialBaseTokenLiquidity: web3.utils.fromWei(
           await amountToUnits(web3, contracts.usdcAddress, '2000')
         ),
-        swapFeeLiquidityProvider: '0.1',
-        swapFeeMarketRunner: '0'
+        swapFeeLiquidityProvider: '0.001',
+        swapFeeMarketRunner: '0.001'
       }
 
       const nftFactory = new NftFactory(
@@ -758,7 +758,7 @@ describe('Pool unit test', () => {
     })
 
     it('#getSwapFee - should return the swap fee', async () => {
-      expect(await pool.getSwapFee(poolAddress)).to.equal('0.1') // 0.1%
+      expect(await pool.getSwapFee(poolAddress)).to.equal('0.001') // 0.1%
     })
 
     it('#getNormalizedWeight - should return the normalized weight', async () => {
@@ -985,7 +985,7 @@ describe('Pool unit test', () => {
       // we haven't performed any swap DT => USDC so there's no fee in erc20Token
       // but there's a fee in USDC
       assert((await pool.getMarketFees(poolAddress, erc20Token)) === '0')
-      assert((await pool.getMarketFees(poolAddress, contracts.usdcAddress)) === '0')
+      assert((await pool.getMarketFees(poolAddress, contracts.usdcAddress)) > '0')
     })
 
     it('#getCommunityFees- should get community fees for each token', async () => {

@@ -208,8 +208,8 @@ describe('Router unit test', () => {
       vestingAmount: '10000',
       vestedBlocks: 2500000,
       initialBaseTokenLiquidity: '2000',
-      swapFeeLiquidityProvider: '0.1',
-      swapFeeMarketRunner: '0'
+      swapFeeLiquidityProvider: '0.001',
+      swapFeeMarketRunner: '0.001'
     }
 
     const nftFactory = new NftFactory(
@@ -261,8 +261,8 @@ describe('Router unit test', () => {
       vestingAmount: '10000',
       vestedBlocks: 2500000,
       initialBaseTokenLiquidity: '2000',
-      swapFeeLiquidityProvider: '0.1',
-      swapFeeMarketRunner: '0'
+      swapFeeLiquidityProvider: '0.001',
+      swapFeeMarketRunner: '0.001'
     }
 
     const txReceipt2 = await nftFactory.createNftErc20WithPool(

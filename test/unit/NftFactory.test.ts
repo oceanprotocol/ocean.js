@@ -196,7 +196,7 @@ describe('Nft Factory test', () => {
     dtAddress = txReceipt.events.TokenCreated.returnValues.newTokenAddress
   })
 
-  it('#createNftErc20WithPool- should create an NFT, a Datatoken and a pool DT/DAI', async () => {
+  it('#createNftErcWithPool- should create an NFT, a Datatoken and a pool DT/DAI', async () => {
     // we prepare transaction parameters objects
     const nftData: NftCreateData = {
       name: '72120Bundle',
@@ -229,8 +229,8 @@ describe('Nft Factory test', () => {
       vestingAmount: '10000',
       vestedBlocks: 2500000,
       initialBaseTokenLiquidity: '2000',
-      swapFeeLiquidityProvider: '0.1',
-      swapFeeMarketRunner: '0'
+      swapFeeLiquidityProvider: '0.001',
+      swapFeeMarketRunner: '0.001'
     }
 
     const txReceipt = await nftFactory.createNftErc20WithPool(
@@ -275,7 +275,7 @@ describe('Nft Factory test', () => {
       baseTokenDecimals: 18,
       datatokenDecimals: 18,
       fixedRate: '1',
-      marketFee: '0',
+      marketFee: '0.001',
       allowedConsumer: contracts.accounts[0],
       withMint: false
     }

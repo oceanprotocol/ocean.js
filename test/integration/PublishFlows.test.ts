@@ -116,8 +116,8 @@ describe('Publish tests', async () => {
       vestingAmount: '10000',
       vestedBlocks: 2500000,
       initialBaseTokenLiquidity: '2000',
-      swapFeeLiquidityProvider: '0.1',
-      swapFeeMarketRunner: '0'
+      swapFeeLiquidityProvider: '0.001',
+      swapFeeMarketRunner: '0.001'
     }
     const bundleNFT = await factory.createNftErc20WithPool(
       accounts[0],
