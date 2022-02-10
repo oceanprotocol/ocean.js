@@ -89,7 +89,10 @@ export function getPoolCreationParams(poolParams: PoolCreationParams): any {
       poolParams.vestedBlocks,
       Web3.utils.toWei(poolParams.initialBaseTokenLiquidity)
     ],
-    swapFees: [poolParams.swapFeeLiquidityProvider, poolParams.swapFeeMarketRunner]
+    swapFees: [
+      Web3.utils.toWei(poolParams.swapFeeLiquidityProvider),
+      Web3.utils.toWei(poolParams.swapFeeMarketRunner)
+    ]
   }
 }
 export async function unitsToAmount(

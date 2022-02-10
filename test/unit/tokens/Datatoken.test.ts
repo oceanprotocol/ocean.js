@@ -166,7 +166,7 @@ describe('Datatoken', () => {
       baseTokenDecimals: 18,
       datatokenDecimals: 18,
       fixedRate: web3.utils.toWei('1'),
-      marketFee: 1e15
+      marketFee: '0'
     }
     const fre = await datatoken.createFixedRate(datatokenAddress, nftOwner, freParams)
     assert(fre !== null)
@@ -184,7 +184,7 @@ describe('Datatoken', () => {
       baseTokenDecimals: 18,
       datatokenDecimals: 18,
       fixedRate: web3.utils.toWei('1'),
-      marketFee: 1e15
+      marketFee: '0'
     }
     try {
       await datatoken.createFixedRate(datatokenAddress, user3, freParams)
