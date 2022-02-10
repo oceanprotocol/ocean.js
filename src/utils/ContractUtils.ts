@@ -2,7 +2,12 @@ import Web3 from 'web3'
 import BigNumber from 'bignumber.js'
 import { Contract } from 'web3-eth-contract'
 import { generateDtName } from './DatatokenName'
-import { Erc20CreateParams, FreCreationParams, PoolCreationParams } from '../@types'
+import {
+  Erc20CreateParams,
+  FreCreationParams,
+  FreOrderParams,
+  PoolCreationParams
+} from '../@types'
 import { Config } from '../models'
 import { minAbi } from './minAbi'
 import LoggerInstance from './Logger'
@@ -46,6 +51,16 @@ export function getErcCreationParams(ercParams: Erc20CreateParams): any {
     ],
     uints: [Web3.utils.toWei(ercParams.cap), Web3.utils.toWei(ercParams.feeAmount)],
     bytess: []
+  }
+}
+
+export function getFreOrderParams(freParams: FreOrderParams): any {
+  return {
+    exchangeContract: freParams.exchangeContract,
+    exchangeId: freParams.exchangeId,
+    maxBaseTokenAmount: freParams.maxBaseTokenAmount,
+    swapMarketFee: Web3.utils.toWei(freParams.swapMarketFee),
+    marketFeeAddress: freParams.marketFeeAddress
   }
 }
 

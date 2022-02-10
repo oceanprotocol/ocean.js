@@ -455,7 +455,7 @@ describe('Datatoken', () => {
       exchangeContract: fixedRateAddress,
       exchangeId: exchangeId,
       maxBaseTokenAmount: '1',
-      swapMarketFee: web3.utils.toWei('0.1'),
+      swapMarketFee: '0.1',
       marketFeeAddress: '0x0000000000000000000000000000000000000000'
     }
 
