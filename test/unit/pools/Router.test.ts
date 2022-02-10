@@ -208,7 +208,7 @@ describe('Router unit test', () => {
       vestingAmount: '10000',
       vestedBlocks: 2500000,
       initialBaseTokenLiquidity: '2000',
-      swapFeeLiquidityProvider: '0',
+      swapFeeLiquidityProvider: '0.1',
       swapFeeMarketRunner: '0'
     }
 
@@ -261,7 +261,7 @@ describe('Router unit test', () => {
       vestingAmount: '10000',
       vestedBlocks: 2500000,
       initialBaseTokenLiquidity: '2000',
-      swapFeeLiquidityProvider: '0',
+      swapFeeLiquidityProvider: '0.1',
       swapFeeMarketRunner: '0'
     }
 
