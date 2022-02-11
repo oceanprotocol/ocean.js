@@ -77,7 +77,7 @@
     "@typescript-eslint/eslint-plugin": "^4.33.0",
     "@typescript-eslint/parser": "^4.33.0",
     "auto-changelog": "^2.4.0",
-    "chai": "^4.3.4",
+    "chai": "^4.3.6",
     "chai-spies": "^1.0.0",
     "cross-env": "^7.0.3",
     "eslint": "^7.17.0",
