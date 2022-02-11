@@ -9,7 +9,9 @@ import {
   LoggerInstance,
   getFairGasPrice,
   configHelperNetworks,
-  setContractDefaults
+  setContractDefaults,
+  amountToUnits,
+  unitsToAmount
 } from '../../utils'
 import { Config } from '../../models/index.js'
 import { PriceAndFees } from '../..'
@@ -89,38 +91,11 @@ export class FixedRateExchange {
   }
 
   async amountToUnits(token: string, amount: string): Promise<string> {
-    let decimals = 18
-    const tokenContract = setContractDefaults(
-      new this.web3.eth.Contract(defaultErc20Abi.abi as AbiItem[], token),
-      this.config
-    )
-
-    try {
-      decimals = await tokenContract.methods.decimals().call()
-    } catch (e) {
-      LoggerInstance.error('ERROR: FAILED TO CALL DECIMALS(), USING 18')
-    }
-
-    const amountFormatted = new BigNumber(parseInt(amount) * 10 ** decimals)
-
-    return amountFormatted.toString()
+    return amountToUnits(this.web3, token, amount)
   }
 
   async unitsToAmount(token: string, amount: string): Promise<string> {
-    let decimals = 18
-    const tokenContract = setContractDefaults(
-      new this.web3.eth.Contract(defaultErc20Abi.abi as AbiItem[], token),
-      this.config
-    )
-    try {
-      decimals = await tokenContract.methods.decimals().call()
-    } catch (e) {
-      LoggerInstance.error('ERROR: FAILED TO CALL DECIMALS(), USING 18')
-    }
-
-    const amountFormatted = new BigNumber(parseInt(amount) / 10 ** decimals)
-
-    return amountFormatted.toString()
+    return unitsToAmount(this.web3, token, amount)
   }
 
   /**

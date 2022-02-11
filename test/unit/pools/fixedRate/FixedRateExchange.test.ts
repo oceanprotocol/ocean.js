@@ -121,7 +121,7 @@ describe('Fixed Rate unit test', () => {
         marketFeeCollector: user3,
         baseTokenDecimals: 18,
         datatokenDecimals: 18,
-        fixedRate: web3.utils.toWei('1'),
+        fixedRate: '1',
         marketFee: '0.001',
         allowedConsumer: ADDRESS_ZERO,
         withMint: false
@@ -453,7 +453,7 @@ describe('Fixed Rate unit test', () => {
         marketFeeCollector: user3,
         baseTokenDecimals: 6,
         datatokenDecimals: 18,
-        fixedRate: web3.utils.toWei('1'),
+        fixedRate: '1',
         marketFee: '0.001',
         allowedConsumer: ADDRESS_ZERO,
         withMint: false

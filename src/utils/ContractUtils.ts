@@ -80,7 +80,7 @@ export function getFreCreationParams(freParams: FreCreationParams): any {
     uints: [
       freParams.baseTokenDecimals,
       freParams.datatokenDecimals,
-      freParams.fixedRate,
+      Web3.utils.toWei(freParams.fixedRate),
       Web3.utils.toWei(freParams.marketFee),
       withMint
     ]
