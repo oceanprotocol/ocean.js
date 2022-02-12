@@ -282,7 +282,7 @@ describe('Simple compute tests', async () => {
 
     const providerValidUntil = new Date()
     providerValidUntil.setHours(providerValidUntil.getHours() + 1)
-    
+
     // initialize provider orders for asset
     const initializeData = await ProviderInstance.initialize(
       resolvedDDOAsset.id,
