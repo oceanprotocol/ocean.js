@@ -245,7 +245,7 @@ describe('Simple compute tests', async () => {
     // let's have 60 seconds of compute access
     const mytime = new Date()
     mytime.setMinutes(mytime.getMinutes() + 1)
-    const computeValidUntil = mytime.getTime()
+    const computeValidUntil = Math.floor(mytime.getTime() / 1000)
     // initialize provider orders for algo
     const initializeDataAlgo = await ProviderInstance.initialize(
       resolvedDDOAlgo.id,
@@ -258,6 +258,7 @@ describe('Simple compute tests', async () => {
       computeEnv,
       computeValidUntil
     )
+    console.log(initializeDataAlgo)
     const providerAlgoFees: ProviderFees = {
       providerFeeAddress: initializeDataAlgo.providerFee.providerFeeAddress,
       providerFeeToken: initializeDataAlgo.providerFee.providerFeeToken,

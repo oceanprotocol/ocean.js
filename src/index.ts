@@ -1,3 +1,4 @@
+export * from './aquarius'
 export * from './pools'
 export * from './tokens'
 export * from './factories'
