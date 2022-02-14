@@ -121,7 +121,7 @@ export async function unitsToAmount(
     if (decimals === '0') {
       decimals = 18
     }
-    const amountFormatted = new BigNumber(parseInt(amount) / 10 ** decimals)
+    const amountFormatted = new BigNumber(amount).div(10).toExponential(decimals)
     BigNumber.config({ EXPONENTIAL_AT: 50 })
     return amountFormatted.toString()
   } catch (e) {
@@ -140,7 +140,7 @@ export async function amountToUnits(
     if (decimals === '0') {
       decimals = 18
     }
-    const amountFormatted = new BigNumber(parseInt(amount) * 10 ** decimals)
+    const amountFormatted = new BigNumber(amount).times(10).toExponential(decimals)
     BigNumber.config({ EXPONENTIAL_AT: 50 })
     return amountFormatted.toString()
   } catch (e) {
