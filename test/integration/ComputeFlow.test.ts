@@ -11,6 +11,7 @@ import { SHA256 } from 'crypto-js'
 import { homedir } from 'os'
 import fs from 'fs'
 import { ProviderFees, Erc20CreateParams } from '../../src/@types'
+import console from 'console'
 
 const data = JSON.parse(
   fs.readFileSync(
@@ -240,6 +241,7 @@ describe('Simple compute tests', async () => {
     const computeEnvs = await ProviderInstance.getComputeEnvironments(providerUrl)
     assert(computeEnvs, 'No Compute environments found')
     // we choose the first env
+    console.log(computeEnvs)
     const computeEnv = computeEnvs[0].id
     const computeConsumerAddress = computeEnvs[0].consumerAddress
     // let's have 60 seconds of compute access
