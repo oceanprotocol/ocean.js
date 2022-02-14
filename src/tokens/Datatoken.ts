@@ -12,7 +12,12 @@ import {
   configHelperNetworks,
   getFreOrderParams
 } from '../utils'
-import { ConsumeMarketFee, FreOrderParams, FreCreationParams, ProviderFees } from '../@types'
+import {
+  ConsumeMarketFee,
+  FreOrderParams,
+  FreCreationParams,
+  ProviderFees
+} from '../@types'
 import { Nft } from './NFT'
 import { Config } from '../models/index.js'
 
@@ -961,17 +966,17 @@ export class Datatoken {
     consumer: string,
     serviceIndex: number,
     providerFees: ProviderFees,
-    consumeMarketFee?: ConsumeMarketFee,
+    consumeMarketFee?: ConsumeMarketFee
   ): Promise<TransactionReceipt> {
     const dtContract = setContractDefaults(
       new this.web3.eth.Contract(this.datatokensAbi, dtAddress),
       this.config
     )
-    if(!consumeMarketFee){
-      consumeMarketFee = { 
+    if (!consumeMarketFee) {
+      consumeMarketFee = {
         consumeMarketFeeAddress: '0x0000000000000000000000000000000000000000',
         consumeMarketFeeToken: '0x0000000000000000000000000000000000000000',
-        consumeMarketFeeAmount: '0',
+        consumeMarketFeeAmount: '0'
       }
     }
     try {
