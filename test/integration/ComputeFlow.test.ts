@@ -244,9 +244,9 @@ describe('Simple compute tests', async () => {
     console.log(computeEnvs)
     const computeEnv = computeEnvs[0].id
     const computeConsumerAddress = computeEnvs[0].consumerAddress
-    // let's have 60 seconds of compute access
+    // let's have 10 minutesof compute access
     const mytime = new Date()
-    mytime.setMinutes(mytime.getMinutes() + 1)
+    mytime.setMinutes(mytime.getMinutes() + 19)
     const computeValidUntil = Math.floor(mytime.getTime() / 1000)
     // initialize provider orders for algo
     const initializeDataAlgo = await ProviderInstance.initialize(
