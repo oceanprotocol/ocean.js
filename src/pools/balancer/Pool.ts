@@ -18,7 +18,7 @@ import {
   TokenInOutMarket,
   AmountsInMaxFee,
   AmountsOutMaxFee,
-  getAmount
+  PoolPriceAndFees
 } from '../../@types'
 import { Config } from '../../models'
 const MaxUint256 =
@@ -1389,7 +1389,7 @@ export class Pool {
     tokenOut: string,
     tokenAmountOut: string,
     swapMarketFee: string
-  ): Promise<getAmount> {
+  ): Promise<PoolPriceAndFees> {
     const pool = setContractDefaults(
       new this.web3.eth.Contract(this.poolAbi, poolAddress),
       this.config
@@ -1410,7 +1410,11 @@ export class Pool {
         .call()
       amount = {
         tokenAmount: await unitsToAmount(this.web3, tokenOut, result.tokenAmountIn),
-        lpFeeAmount: await unitsToAmount(this.web3, tokenIn, result.lpFeeAmount),
+        liquidityProviderSwapFeeAmount: await unitsToAmount(
+          this.web3,
+          tokenIn,
+          result.lpFeeAmount
+        ),
         oceanFeeAmount: await unitsToAmount(this.web3, tokenIn, result.oceanFeeAmount),
         publishMarketSwapFeeAmount: await unitsToAmount(
           this.web3,
@@ -1435,7 +1439,7 @@ export class Pool {
     tokenOut: string,
     tokenAmountIn: string,
     swapMarketFee: string
-  ): Promise<getAmount> {
+  ): Promise<PoolPriceAndFees> {
     const pool = setContractDefaults(
       new this.web3.eth.Contract(this.poolAbi, poolAddress),
       this.config
@@ -1457,7 +1461,11 @@ export class Pool {
 
       amount = {
         tokenAmount: await unitsToAmount(this.web3, tokenOut, result.tokenAmountOut),
-        lpFeeAmount: await unitsToAmount(this.web3, tokenIn, result.lpFeeAmount),
+        liquidityProviderSwapFeeAmount: await unitsToAmount(
+          this.web3,
+          tokenIn,
+          result.lpFeeAmount
+        ),
         oceanFeeAmount: await unitsToAmount(this.web3, tokenIn, result.oceanFeeAmount),
         publishMarketSwapFeeAmount: await unitsToAmount(
           this.web3,
