@@ -12,7 +12,7 @@ import {
   configHelperNetworks,
   getFreOrderParams
 } from '../utils'
-import { FreOrderParams, FreCreationParams, ProviderFees } from '../@types'
+import { ConsumeMarketFee, FreOrderParams, FreCreationParams, ProviderFees } from '../@types'
 import { Nft } from './NFT'
 import { Config } from '../models/index.js'
 
@@ -913,6 +913,7 @@ export class Datatoken {
    * @param {String} consumer Consumer Address
    * @param {Number} serviceIndex  Service index in the metadata
    * @param {providerFees} providerFees provider fees
+   * @param {consumeMarketFee} ConsumeMarketFee consume market fees
    * @param {Contract} contractInstance optional contract instance
    * @return {Promise<any>}
    */
@@ -922,6 +923,7 @@ export class Datatoken {
     consumer: string,
     serviceIndex: number,
     providerFees: ProviderFees,
+    consumeMarketFee?: ConsumeMarketFee,
     contractInstance?: Contract
   ): Promise<any> {
     const dtContract =
@@ -936,7 +938,7 @@ export class Datatoken {
     let estGas
     try {
       estGas = await dtContract.methods
-        .startOrder(consumer, serviceIndex, providerFees)
+        .startOrder(consumer, serviceIndex, providerFees, consumeMarketFee)
         .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
     } catch (e) {
       estGas = gasLimitDefault
@@ -950,6 +952,7 @@ export class Datatoken {
    * @param {String} consumer Consumer Address
    * @param {Number} serviceIndex  Service index in the metadata
    * @param {providerFees} providerFees provider fees
+   * @param {consumeMarketFee} ConsumeMarketFee consume market fees
    * @return {Promise<TransactionReceipt>} string
    */
   public async startOrder(
@@ -957,12 +960,20 @@ export class Datatoken {
     address: string,
     consumer: string,
     serviceIndex: number,
-    providerFees: ProviderFees
+    providerFees: ProviderFees,
+    consumeMarketFee?: ConsumeMarketFee,
   ): Promise<TransactionReceipt> {
     const dtContract = setContractDefaults(
       new this.web3.eth.Contract(this.datatokensAbi, dtAddress),
       this.config
     )
+    if(!consumeMarketFee){
+      consumeMarketFee = { 
+        consumeMarketFeeAddress: '0x0000000000000000000000000000000000000000',
+        consumeMarketFeeToken: '0x0000000000000000000000000000000000000000',
+        consumeMarketFeeAmount: '0',
+      }
+    }
     try {
       const estGas = await this.estGasStartOrder(
         dtAddress,
@@ -970,11 +981,12 @@ export class Datatoken {
         consumer,
         serviceIndex,
         providerFees,
+        consumeMarketFee,
         dtContract
       )
 
       const trxReceipt = await dtContract.methods
-        .startOrder(consumer, serviceIndex, providerFees)
+        .startOrder(consumer, serviceIndex, providerFees, consumeMarketFee)
         .send({
           from: address,
           gas: estGas + 1,
