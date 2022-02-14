@@ -19,7 +19,8 @@ import {
   FreCreationParams,
   Erc20CreateParams,
   PoolCreationParams,
-  DispenserCreationParams
+  DispenserCreationParams,
+  ConsumeMarketFee
 } from '../@types/index.js'
 
 interface Template {
@@ -32,6 +33,7 @@ export interface TokenOrder {
   consumer: string
   serviceIndex: number
   _providerFees: ProviderFees
+  _consumeMarketFee: ConsumeMarketFee
 }
 
 export interface NftCreateData {
