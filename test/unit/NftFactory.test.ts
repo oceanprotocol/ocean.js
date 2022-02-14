@@ -398,18 +398,25 @@ describe('Nft Factory test', () => {
       providerData: web3.utils.toHex(web3.utils.asciiToHex(providerData)),
       validUntil: providerValidUntil
     }
+    const consumeMarketFee = {
+      consumeMarketFeeAddress: '0x0000000000000000000000000000000000000000',
+      consumeMarketFeeToken: '0x0000000000000000000000000000000000000000',
+      consumeMarketFeeAmount: '0'
+    }
     const orders: TokenOrder[] = [
       {
         tokenAddress: dtAddress,
         consumer: consumer,
         serviceIndex: serviceIndex,
-        _providerFees: providerFees
+        _providerFee: providerFees,
+        _consumeMarketFee: consumeMarketFee
       },
       {
         tokenAddress: dtAddress2,
         consumer: consumer,
         serviceIndex: serviceIndex,
-        _providerFees: providerFees
+        _providerFee: providerFees,
+        _consumeMarketFee: consumeMarketFee
       }
     ]
     await nftFactory.startMultipleTokenOrder(user2, orders)

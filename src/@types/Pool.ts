@@ -38,3 +38,11 @@ export interface AmountsOutMaxFee {
   swapMarketFee: string
   maxPrice?: string
 }
+
+export interface PoolPriceAndFees {
+  tokenAmount: string
+  liquidityProviderSwapFeeAmount: string
+  oceanFeeAmount: string
+  publishMarketSwapFeeAmount: string
+  consumeMarketSwapFeeAmount: string
+}

@@ -19,7 +19,8 @@ import {
   FreCreationParams,
   Erc20CreateParams,
   PoolCreationParams,
-  DispenserCreationParams
+  DispenserCreationParams,
+  ConsumeMarketFee
 } from '../@types/index.js'
 
 interface Template {
@@ -31,7 +32,8 @@ export interface TokenOrder {
   tokenAddress: string
   consumer: string
   serviceIndex: number
-  _providerFees: ProviderFees
+  _providerFee: ProviderFees
+  _consumeMarketFee: ConsumeMarketFee
 }
 
 export interface NftCreateData {
@@ -91,6 +93,7 @@ export class NftFactory {
           nftData.symbol,
           nftData.templateIndex,
           addressZERO,
+          addressZERO,
           nftData.tokenURI
         )
         .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
@@ -132,6 +135,7 @@ export class NftFactory {
         nftData.name,
         nftData.symbol,
         nftData.templateIndex,
+        addressZERO,
         addressZERO,
         nftData.tokenURI
       )

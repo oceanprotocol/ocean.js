@@ -17,7 +17,8 @@ import {
   CurrentFees,
   TokenInOutMarket,
   AmountsInMaxFee,
-  AmountsOutMaxFee
+  AmountsOutMaxFee,
+  PoolPriceAndFees
 } from '../../@types'
 import { Config } from '../../models'
 const MaxUint256 =
@@ -1415,7 +1416,7 @@ export class Pool {
     tokenOut: string,
     tokenAmountOut: string,
     swapMarketFee: string
-  ): Promise<string> {
+  ): Promise<PoolPriceAndFees> {
     const pool = setContractDefaults(
       new this.web3.eth.Contract(this.poolAbi, poolAddress),
       this.config
@@ -1434,7 +1435,25 @@ export class Pool {
           this.web3.utils.toWei(swapMarketFee)
         )
         .call()
-      amount = await unitsToAmount(this.web3, tokenIn, result)
+      amount = {
+        tokenAmount: await unitsToAmount(this.web3, tokenOut, result.tokenAmountIn),
+        liquidityProviderSwapFeeAmount: await unitsToAmount(
+          this.web3,
+          tokenIn,
+          result.lpFeeAmount
+        ),
+        oceanFeeAmount: await unitsToAmount(this.web3, tokenIn, result.oceanFeeAmount),
+        publishMarketSwapFeeAmount: await unitsToAmount(
+          this.web3,
+          tokenIn,
+          result.publishMarketSwapFeeAmount
+        ),
+        consumeMarketSwapFeeAmount: await unitsToAmount(
+          this.web3,
+          tokenIn,
+          result.consumeMarketSwapFeeAmount
+        )
+      }
     } catch (e) {
       LoggerInstance.error(`ERROR: Failed to calcInGivenOut ${e.message}`)
     }
@@ -1455,7 +1474,7 @@ export class Pool {
     tokenOut: string,
     tokenAmountIn: string,
     swapMarketFee: string
-  ): Promise<string> {
+  ): Promise<PoolPriceAndFees> {
     const pool = setContractDefaults(
       new this.web3.eth.Contract(this.poolAbi, poolAddress),
       this.config
@@ -1475,7 +1494,25 @@ export class Pool {
         )
         .call()
 
-      amount = await unitsToAmount(this.web3, tokenOut, result)
+      amount = {
+        tokenAmount: await unitsToAmount(this.web3, tokenOut, result.tokenAmountOut),
+        liquidityProviderSwapFeeAmount: await unitsToAmount(
+          this.web3,
+          tokenIn,
+          result.lpFeeAmount
+        ),
+        oceanFeeAmount: await unitsToAmount(this.web3, tokenIn, result.oceanFeeAmount),
+        publishMarketSwapFeeAmount: await unitsToAmount(
+          this.web3,
+          tokenIn,
+          result.publishMarketSwapFeeAmount
+        ),
+        consumeMarketSwapFeeAmount: await unitsToAmount(
+          this.web3,
+          tokenIn,
+          result.consumeMarketSwapFeeAmount
+        )
+      }
     } catch (e) {
       LoggerInstance.error(`ERROR: Failed to calcOutGivenIn ${e.message}`)
     }

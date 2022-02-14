@@ -39,8 +39,8 @@ export const configHelperNetworks: Config[] = [
     chainId: 3,
     network: 'ropsten',
     nodeUri: 'https://ropsten.infura.io/v3',
-    providerUri: 'https://provider.ropsten.oceanprotocol.com',
-    subgraphUri: 'https://subgraph.ropsten.oceanprotocol.com',
+    providerUri: 'https://providerv4.ropsten.oceanprotocol.com',
+    subgraphUri: 'https://subgraphv4.ropsten.oceanprotocol.com',
     explorerUri: 'https://ropsten.etherscan.io',
     startBlock: 9227563
   },
@@ -82,10 +82,10 @@ export const configHelperNetworks: Config[] = [
   {
     ...configHelperNetworksBase,
     chainId: 1287,
-    network: 'moonbeamalpha',
+    network: 'moonbase',
     nodeUri: 'https://rpc.testnet.moonbeam.network',
-    providerUri: 'https://provider.moonbeamalpha.oceanprotocol.com',
-    subgraphUri: 'https://subgraph.moonbeamalpha.oceanprotocol.com',
+    providerUri: 'https://providerv4.moonbase.oceanprotocol.com',
+    subgraphUri: 'https://subgraphv4.moonbase.oceanprotocol.com',
     explorerUri: 'https://moonbase-blockscout.testnet.moonbeam.network/',
     startBlock: 90707
   },
@@ -113,8 +113,8 @@ export const configHelperNetworks: Config[] = [
     chainId: 80001,
     network: 'mumbai',
     nodeUri: 'https://polygon-mumbai.infura.io/v3',
-    providerUri: 'https://provider.mumbai.oceanprotocol.com',
-    subgraphUri: 'https://subgraph.mumbai.oceanprotocol.com',
+    providerUri: 'https://providerv4.mumbai.oceanprotocol.com',
+    subgraphUri: 'https://subgraphv4.mumbai.oceanprotocol.com',
     explorerUri: 'https://mumbai.polygonscan.com'
   },
   {

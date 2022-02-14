@@ -11,6 +11,7 @@ import { SHA256 } from 'crypto-js'
 import { homedir } from 'os'
 import fs from 'fs'
 import { ProviderFees, Erc20CreateParams } from '../../src/@types'
+import console from 'console'
 
 const data = JSON.parse(
   fs.readFileSync(
@@ -240,11 +241,12 @@ describe('Simple compute tests', async () => {
     const computeEnvs = await ProviderInstance.getComputeEnvironments(providerUrl)
     assert(computeEnvs, 'No Compute environments found')
     // we choose the first env
+    console.log(computeEnvs)
     const computeEnv = computeEnvs[0].id
     const computeConsumerAddress = computeEnvs[0].consumerAddress
-    // let's have 60 seconds of compute access
+    // let's have 10 minutesof compute access
     const mytime = new Date()
-    mytime.setMinutes(mytime.getMinutes() + 1)
+    mytime.setMinutes(mytime.getMinutes() + 19)
     const computeValidUntil = Math.floor(mytime.getTime() / 1000)
     // initialize provider orders for algo
     const initializeDataAlgo = await ProviderInstance.initialize(
@@ -295,6 +297,7 @@ describe('Simple compute tests', async () => {
       computeEnv,
       computeValidUntil
     )
+    console.log(initializeData)
     const providerDatasetFees: ProviderFees = {
       providerFeeAddress: initializeData.providerFee.providerFeeAddress,
       providerFeeToken: initializeData.providerFee.providerFeeToken,

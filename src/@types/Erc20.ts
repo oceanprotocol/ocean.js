@@ -9,3 +9,9 @@ export interface Erc20CreateParams {
   name?: string
   symbol?: string
 }
+
+export interface ConsumeMarketFee {
+  consumeMarketFeeAddress: string
+  consumeMarketFeeToken: string // address of the token marketplace wants to add fee on top
+  consumeMarketFeeAmount: string
+}
