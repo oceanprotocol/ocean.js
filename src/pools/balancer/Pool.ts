@@ -96,10 +96,10 @@ export class Pool {
   }
 
   /**
-   * Set pool fee
+   * Allows controller to change the swapFee
    * @param {String} account
    * @param {String} poolAddress
-   * @param {String} fee 0.1=10% fee(max allowed)
+   * @param {String} fee swap fee (1e17 = 10 % , 1e16 = 1% , 1e15 = 0.1%, 1e14 = 0.01%)
    */
   async setSwapFee(
     account: string,
@@ -128,7 +128,7 @@ export class Pool {
   }
 
   /**
-   * Get number of tokens composing this pool
+   * Returns number of tokens bounded to pool
    * @param {String} poolAddress
    * @return {String}
    */
@@ -169,7 +169,8 @@ export class Pool {
   }
 
   /**
-   * Get tokens composing this pool
+   * Get tokens composing this poo
+   * Returns tokens bounded to pool, before the pool is finalizedl
    * @param {String} poolAddress
    * @return {String[]}
    */
@@ -191,6 +192,7 @@ export class Pool {
 
   /**
    * Get the final tokens composing this pool
+   * Returns tokens bounded to pool, after the pool was finalized
    * @param {String} poolAddress
    * @return {String[]}
    */
@@ -211,7 +213,7 @@ export class Pool {
   }
 
   /**
-   * Get controller address of this pool
+   * Returns the current controller address (ssBot)
    * @param {String} poolAddress
    * @return {String}
    */
@@ -230,7 +232,7 @@ export class Pool {
   }
 
   /**
-   * Get baseToken address of this pool
+   * Returns the current baseToken address of the pool
    * @param {String} poolAddress
    * @return {String}
    */
@@ -249,7 +251,7 @@ export class Pool {
   }
 
   /**
-   * Get datatoken address of this pool
+   * Returns the current datatoken address
    * @param {String} poolAddress
    * @return {String}
    */
@@ -309,8 +311,9 @@ export class Pool {
 
   /**
    * Get if a token is bounded to a pool
+   *  Returns true if token is bound
    * @param {String} poolAddress
-   * @param {String} token  Address of the token
+   * @param {String} token  Address of the token to be checked
    * @return {Boolean}
    */
   async isBound(poolAddress: string, token: string): Promise<boolean> {
@@ -329,9 +332,9 @@ export class Pool {
   }
 
   /**
-   * Get how many tokens are in the pool
+   * Returns the current token reserve amount
    * @param {String} poolAddress
-   * @param {String} token  Address of the token
+   * @param {String} token  Address of the token to be checked
    * @return {String}
    */
   async getReserve(poolAddress: string, token: string): Promise<string> {
@@ -352,6 +355,7 @@ export class Pool {
 
   /**
    * Get if a pool is finalized
+   * Returns true if pool is finalized
    * @param {String} poolAddress
    * @return {Boolean}
    */
@@ -372,7 +376,7 @@ export class Pool {
   }
 
   /**
-   * Get pool fee
+   *  Returns the current Liquidity Providers swap fee
    * @param {String} poolAddress
    * @return {String} Swap fee. To get the percentage value, substract by 100. E.g. `0.1` represents a 10% swap fee.
    */
@@ -392,9 +396,11 @@ export class Pool {
   }
 
   /**
-   * The normalized weight of a token. The combined normalized weights of all tokens will sum up to 1. (Note: the actual sum may be 1 plus or minus a few wei due to division precision loss)
+   * Returns normalized weight of a token.
+   * The combined normalized weights of all tokens will sum up to 1.
+   * (Note: the actual sum may be 1 plus or minus a few wei due to division precision loss)
    * @param {String} poolAddress
-   * @param {String} token
+   * @param {String} token token to be checked
    * @return {String}
    */
   async getNormalizedWeight(poolAddress: string, token: string): Promise<string> {
@@ -415,9 +421,9 @@ export class Pool {
   }
 
   /**
-   * getDenormalizedWeight of a token in pool
+   *  Returns denormalized weight of a token
    * @param {String} poolAddress
-   * @param {String} token
+   * @param {String} token token to be checked
    * @return {String}
    */
   async getDenormalizedWeight(poolAddress: string, token: string): Promise<string> {
@@ -438,7 +444,8 @@ export class Pool {
   }
 
   /**
-   * getTotalDenormalizedWeight in pool
+   * getTotalDenormalizedWeight
+   * Returns total denormalized weught of the pool
    * @param {String} poolAddress
    * @return {String}
    */
@@ -460,6 +467,7 @@ export class Pool {
   }
 
   /**
+   * Returns the current fee of publishingMarket
    * Get Market Fees available to be collected for a specific token
    * @param {String} poolAddress
    * @param {String} token token we want to check fees
@@ -738,8 +746,8 @@ export class Pool {
    * Estimate gas cost for swapExactAmountIn
    * @param {String} address
    * @param {String} poolAddress
-   * @param {TokenInOutMarket} tokenInOutMarket
-   * @param {AmountsInMaxFee} amountsInOutMaxFee
+   * @param {TokenInOutMarket} tokenInOutMarket object contianing addresses like tokenIn, tokenOut, consumeMarketFeeAddress
+   * @param {AmountsInMaxFee} amountsInOutMaxFee object contianing tokenAmountIn, minAmountOut, maxPrice, consumeMarketSwapFee
    * @param {Contract} contractInstance optional contract instance
    * @return {Promise<number>}
    */
@@ -786,15 +794,16 @@ export class Pool {
   }
 
   /**
-   * swapExactAmountIn - Trades an exact tokenAmountIn of tokenIn taken from the caller by the pool,
-   *  in exchange for at least minAmountOut of tokenOut given to the caller from the pool, with a maximum marginal price of maxPrice.
-   *  Returns (tokenAmountOut, spotPriceAfter), where tokenAmountOut is the amount of token that came out of the pool,
-   *  and spotPriceAfter is the new marginal spot price, ie, the result of getSpotPrice after the call.
+   * Swaps an exact amount of tokensIn to get a mimum amount of tokenOut
+   * Trades an exact tokenAmountIn of tokenIn taken from the caller by the pool,
+   * in exchange for at least minAmountOut of tokenOut given to the caller from the pool, with a maximum marginal price of maxPrice.
+   * Returns (tokenAmountOut, spotPriceAfter), where tokenAmountOut is the amount of token that came out of the pool,
+   * and spotPriceAfter is the new marginal spot price, ie, the result of getSpotPrice after the call.
    * (These values are what are limited by the arguments; you are guaranteed tokenAmountOut >= minAmountOut and spotPriceAfter <= maxPrice).
    * @param {String} address
    * @param {String} poolAddress
-   * @param {TokenInOutMarket} tokenInOutMarket
-   * @param {AmountsInMaxFee} amountsInOutMaxFee
+   * @param {TokenInOutMarket} tokenInOutMarket object contianing addresses like tokenIn, tokenOut, consumeMarketFeeAddress
+   * @param {AmountsInMaxFee} amountsInOutMaxFee object contianing tokenAmountIn, minAmountOut, maxPrice, consumeMarketSwapFee
    * @return {TransactionReceipt}
    */
   async swapExactAmountIn(
@@ -913,11 +922,11 @@ export class Pool {
   }
 
   /**
-   * swapExactAmountOut
+   * Swaps a maximum  maxAmountIn of tokensIn to get an exact amount of tokenOut
    * @param {String} account
    * @param {String} poolAddress
-   * @param {TokenInOutMarket} tokenInOutMarket
-   * @param {AmountsOutMaxFee} amountsInOutMaxFee
+   * @param {TokenInOutMarket} tokenInOutMarket Object containing addresses like tokenIn, tokenOut, consumeMarketFeeAddress
+   * @param {AmountsOutMaxFee} amountsInOutMaxFee Object containging maxAmountIn,tokenAmountOut,maxPrice, consumeMarketSwapFee]
    * @return {TransactionReceipt}
    */
   async swapExactAmountOut(
@@ -982,11 +991,11 @@ export class Pool {
   }
 
   /**
-   * Estimate gas cost for swapExactAmountOut
+   * Estimate gas cost for joinPool method
    * @param {String} address
    * @param {String} poolAddress
-   * @param {String} poolAmountOut will be converted to wei
-   * @param {String[]} maxAmountsIn  array holding maxAmount per each token, will be converted to wei
+   * @param {String} poolAmountOut expected number of pool shares that you will get
+   * @param {String[]} maxAmountsIn array with maxium amounts spent
    * @param {Contract} contractInstance optional contract instance
    * @return {Promise<number>}
    */
@@ -1017,11 +1026,14 @@ export class Pool {
   }
 
   /**
-   * Join the pool, getting poolAmountOut pool tokens. This will pull some of each of the currently trading tokens in the pool, meaning you must have called approve for each token for this pool. These values are limited by the array of maxAmountsIn in the order of the pool tokens.
+   * Adds dual side liquidity to the pool (both datatoken and basetoken)
+   * This will pull some of each of the currently trading tokens in the pool,
+   * meaning you must have called approve for each token for this pool.
+   * These values are limited by the array of maxAmountsIn in the order of the pool tokens.
    * @param {String} address
    * @param {String} poolAddress
-   * @param {String} poolAmountOut will be converted to wei
-   * @param {String[]} maxAmountsIn  array holding maxAmount per each token, will be converted to wei
+   * @param {String} poolAmountOut expected number of pool shares that you will get
+   * @param {String[]} maxAmountsIn array with maxium amounts spent
    * @return {TransactionReceipt}
    */
   async joinPool(
@@ -1067,10 +1079,10 @@ export class Pool {
 
   /**
    * Estimate gas cost for exitPool
-* @param {String} address
+   * @param {String} address
    * @param {String} poolAddress
- ``* @param {String} poolAmountIn will be converted to wei
-   * @param {String[]} minAmountsOut  array holding minAmount per each token, will be converted to wei
+ ``* @param {String} poolAmountIn amount of pool shares spent
+   * @param {String[]} minAmountsOut  aarray with minimum amount of tokens expected
    * @param {Contract} contractInstance optional contract instance
    * @return {Promise<number>}
    */
@@ -1101,11 +1113,13 @@ export class Pool {
   }
 
   /**
-   * Exit the pool, paying poolAmountIn pool tokens and getting some of each of the currently trading tokens in return. These values are limited by the array of minAmountsOut in the order of the pool tokens.
+   * Removes dual side liquidity from the pool (both datatoken and basetoken)
+   * Exit the pool, paying poolAmountIn pool tokens and getting some of each of the currently trading tokens in return.
+   * These values are limited by the array of minAmountsOut in the order of the pool tokens.
    * @param {String} account
    * @param {String} poolAddress
-   * @param {String} poolAmountIn will be converted to wei
-   * @param {String[]} minAmountsOut  array holding minAmount per each token, will be converted to wei
+   * @param {String} poolAmountIn amount of pool shares spent
+   * @param {String[]} minAmountsOut array with minimum amount of tokens expected
    * @return {TransactionReceipt}
    */
   async exitPool(
@@ -1152,8 +1166,8 @@ export class Pool {
    * @param {String} address
    * @param {String} poolAddress
    * @param {String} tokenIn
-   * @param {String} tokenAmountIn will be converted to wei
-   * @param {String} minPoolAmountOut  will be converted to wei
+   * @param {String} tokenAmountIn exact number of base tokens to spend
+   * @param {String} minPoolAmountOut minimum of pool shares expectex
    * @param {Contract} contractInstance optional contract instance
    * @return {Promise<number>}
    */
@@ -1184,12 +1198,14 @@ export class Pool {
   }
 
   /**
+   * Single side add liquidity to the pool,
+   * expecting a minPoolAmountOut of shares for spending tokenAmountIn basetokens.
    * Pay tokenAmountIn of baseToken to join the pool, getting poolAmountOut of the pool shares.
    * @param {String} account
    * @param {String} poolAddress
    * @param {String} tokenIn
-   * @param {String} tokenAmountIn will be converted to wei
-   * @param {String} minPoolAmountOut  will be converted to wei
+   * @param {String} tokenAmountIn exact number of base tokens to spend
+   * @param {String} minPoolAmountOut minimum of pool shares expectex
    * @return {TransactionReceipt}
    */
   async joinswapExternAmountIn(
@@ -1235,14 +1251,14 @@ export class Pool {
   }
 
   /**
-  * Estimate gas cost for joinswapExternAmountIn
-  * @param {String} address
-     @param {String} poolAddress
-   * @param {String} poolAmountIn will be converted to wei
-   * @param {String} minTokenAmountOut  will be converted to wei
-     * @param {Contract} contractInstance optional contract instance
-     * @return {Promise<number>}
-     */
+   * Estimate gas cost for exitswapPoolAmountIn
+   * @param {String} address
+   *  @param {String} poolAddress
+   * @param {String} poolAmountIn exact number of pool shares to spend
+   * @param {String} minTokenAmountOut minimum amount of basetokens expected
+   * @param {Contract} contractInstance optional contract instance
+   * @return {Promise<number>}
+   */
   public async estExitswapPoolAmountIn(
     address: string,
     poolAddress: string,
@@ -1270,12 +1286,14 @@ export class Pool {
   }
 
   /**
+   * Single side remove liquidity from the pool,
+   * expecting a minAmountOut of basetokens for spending poolAmountIn pool shares
    * Pay poolAmountIn pool shares into the pool, getting minTokenAmountOut of the baseToken
    * @param {String} account
    * @param {String} poolAddress
    * @param {String} tokenOut
-   * @param {String} poolAmountIn will be converted to wei
-   * @param {String} minTokenAmountOut  will be converted to wei
+   * @param {String} poolAmountIn exact number of pool shares to spend
+   * @param {String} minTokenAmountOut minimum amount of basetokens expected
    * @return {TransactionReceipt}
    */
   async exitswapPoolAmountIn(
@@ -1317,11 +1335,11 @@ export class Pool {
   }
 
   /**
-   * Get Spot Price of swaping tokenIn to tokenOut
+   * Return the spot price of swapping tokenIn to tokenOut
    * @param {String} poolAddress
-   * @param {String} tokenIn
-   * @param {String} tokenOut
-   * @param {String} swapMarketFe
+   * @param {String} tokenIn in token
+   * @param {String} tokenOut out token
+   * @param {String} swapMarketFe consume market swap fee
    * @return {String}
    */
   async getSpotPrice(
@@ -1382,6 +1400,15 @@ export class Pool {
     return price.toString()
   }
 
+  /**
+   * How many tokensIn do you need in order to get exact tokenAmountOut.
+   * Returns: tokenAmountIn, swapFee, opcFee , consumeMarketSwapFee, publishMarketSwapFee
+   * Returns: tokenAmountIn, LPFee, opcFee , publishMarketSwapFee, consumeMarketSwapFee
+   * @param tokenIn token to be swaped
+   * @param tokenOut token to get
+   * @param tokenAmountOut exact amount of tokenOut
+   * @param swapMarketFee consume market swap fee
+   */
   public async getAmountInExactOut(
     poolAddress: string,
     tokenIn: string,
@@ -1414,6 +1441,14 @@ export class Pool {
     return amount
   }
 
+  /**
+   *  How many tokensOut you will get for a exact tokenAmountIn
+   *  Returns: tokenAmountOut, LPFee, opcFee ,  publishMarketSwapFee, consumeMarketSwapFee
+   * @param tokenIn token to be swaped
+   * @param tokenOut token to get
+   * @param tokenAmountOut exact amount of tokenOut
+   * @param _consumeMarketSwapFee consume market swap fee
+   */
   public async getAmountOutExactIn(
     poolAddress: string,
     tokenIn: string,
@@ -1447,6 +1482,11 @@ export class Pool {
     return amount
   }
 
+  /**
+   * Returns number of poolshares obtain by staking exact tokenAmountIn tokens
+   * @param tokenIn tokenIn
+   * @param tokenAmountIn exact number of tokens staked
+   */
   public async calcPoolOutGivenSingleIn(
     poolAddress: string,
     tokenIn: string,
@@ -1475,6 +1515,11 @@ export class Pool {
     return amount
   }
 
+  /**
+   * Returns number of tokens to be staked to the pool in order to get an exact number of poolshares
+   * @param tokenIn tokenIn
+   * @param poolAmountOut expected amount of pool shares
+   */
   public async calcSingleInGivenPoolOut(
     poolAddress: string,
     tokenIn: string,
@@ -1501,6 +1546,11 @@ export class Pool {
     return amount
   }
 
+  /**
+   * Returns expected amount of tokenOut for removing exact poolAmountIn pool shares from the pool
+   * @param tokenOut tokenOut
+   * @param poolAmountIn amount of shares spent
+   */
   public async calcSingleOutGivenPoolIn(
     poolAddress: string,
     tokenOut: string,
@@ -1526,6 +1576,11 @@ export class Pool {
     return amount
   }
 
+  /**
+   * Returns number of poolshares needed to withdraw exact tokenAmountOut tokens
+   * @param tokenOut tokenOut
+   * @param tokenAmountOut expected amount of tokensOut
+   */
   public async calcPoolInGivenSingleOut(
     poolAddress: string,
     tokenOut: string,
