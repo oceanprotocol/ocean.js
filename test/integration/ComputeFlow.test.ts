@@ -295,6 +295,7 @@ describe('Simple compute tests', async () => {
       computeEnv,
       computeValidUntil
     )
+    console.log(initializeData)
     const providerDatasetFees: ProviderFees = {
       providerFeeAddress: initializeData.providerFee.providerFeeAddress,
       providerFeeToken: initializeData.providerFee.providerFeeToken,
