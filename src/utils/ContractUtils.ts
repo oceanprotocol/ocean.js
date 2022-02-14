@@ -121,7 +121,11 @@ export async function unitsToAmount(
     if (decimals === '0') {
       decimals = 18
     }
-    const amountFormatted = new BigNumber(parseInt(amount) / 10 ** decimals)
+
+    const amountFormatted = new BigNumber(amount).div(
+      new BigNumber(10).exponentiatedBy(decimals)
+    )
+
     BigNumber.config({ EXPONENTIAL_AT: 50 })
     return amountFormatted.toString()
   } catch (e) {
@@ -140,8 +144,12 @@ export async function amountToUnits(
     if (decimals === '0') {
       decimals = 18
     }
-    const amountFormatted = new BigNumber(parseInt(amount) * 10 ** decimals)
     BigNumber.config({ EXPONENTIAL_AT: 50 })
+
+    const amountFormatted = new BigNumber(amount).times(
+      new BigNumber(10).exponentiatedBy(decimals)
+    )
+
     return amountFormatted.toString()
   } catch (e) {
     LoggerInstance.error(`ERROR: FAILED TO CALL DECIMALS(), USING 18', ${e.message}`)

@@ -539,41 +539,29 @@ export class FixedRateExchange {
     exchangeId: string,
     datatokenAmount: string
   ): Promise<PriceAndFees> {
+    const fixedRateExchange = await this.getExchange(exchangeId)
     const result = await this.contract.methods
       .calcBaseInGivenOutDT(
         exchangeId,
-        await this.amountToUnits(
-          (
-            await this.getExchange(exchangeId)
-          ).datatoken,
-          datatokenAmount
-        )
+        await this.amountToUnits(fixedRateExchange.datatoken, datatokenAmount)
       )
       .call()
 
     const priceAndFees = {
       baseTokenAmount: await this.unitsToAmount(
-        (
-          await this.getExchange(exchangeId)
-        ).baseToken,
+        fixedRateExchange.baseToken,
         result.baseTokenAmount
       ),
       baseTokenAmountBeforeFee: await this.unitsToAmount(
-        (
-          await this.getExchange(exchangeId)
-        ).baseToken,
+        fixedRateExchange.baseToken,
         result.baseTokenAmountBeforeFee
       ),
       marketFeeAmount: await this.unitsToAmount(
-        (
-          await this.getExchange(exchangeId)
-        ).baseToken,
+        fixedRateExchange.baseToken,
         result.marketFeeAmount
       ),
       oceanFeeAmount: await this.unitsToAmount(
-        (
-          await this.getExchange(exchangeId)
-        ).baseToken,
+        fixedRateExchange.baseToken,
         result.oceanFeeAmount
       )
     } as PriceAndFees
