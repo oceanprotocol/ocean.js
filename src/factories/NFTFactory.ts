@@ -32,7 +32,7 @@ export interface TokenOrder {
   tokenAddress: string
   consumer: string
   serviceIndex: number
-  _providerFees: ProviderFees
+  _providerFee: ProviderFees
   _consumeMarketFee: ConsumeMarketFee
 }
 

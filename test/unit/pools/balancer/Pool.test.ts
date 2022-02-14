@@ -417,13 +417,14 @@ describe('Pool unit test', () => {
       const maxBTPIn = '0.5'
       const exactDAIOut = '1'
 
-      const amountIn = await pool.getAmountInExactOut(
+      const result = await pool.getAmountInExactOut(
         poolAddress,
         erc20Token,
         contracts.daiAddress,
         exactDAIOut,
         '0.1'
       )
+      const amountIn = result.tokenAmount
 
       assert(amountIn != null)
 
@@ -443,13 +444,14 @@ describe('Pool unit test', () => {
     it('#getAmountOutExactIn- should get the amount out for exact In', async () => {
       const exactDTIn = '1'
 
-      const amountOut = await pool.getAmountOutExactIn(
+      const result = await pool.getAmountOutExactIn(
         poolAddress,
         erc20Token,
         contracts.daiAddress,
         exactDTIn,
         '0.1'
       )
+      const amountOut = result.tokenAmount
 
       assert(amountOut != null)
 
@@ -919,14 +921,14 @@ describe('Pool unit test', () => {
       const maxBTPIn = '0.5'
       const exactUSDCOut = '1'
 
-      const amountIn = await pool.getAmountInExactOut(
+      const result = await pool.getAmountInExactOut(
         poolAddress,
         erc20Token,
         contracts.usdcAddress,
         exactUSDCOut,
         '0.1'
       )
-
+      const amountIn = result.tokenAmount
       assert(amountIn != null)
 
       const spotPrice = await pool.getSpotPrice(
@@ -942,13 +944,14 @@ describe('Pool unit test', () => {
     it('#getAmountOutExactIn- should get the amount out for exact In', async () => {
       const exactDTIn = '1'
 
-      const amountOut = await pool.getAmountOutExactIn(
+      const result = await pool.getAmountOutExactIn(
         poolAddress,
         erc20Token,
         contracts.usdcAddress,
         exactDTIn,
         '0.1'
       )
+      const amountOut = result.tokenAmount
 
       assert(amountOut != null)
 

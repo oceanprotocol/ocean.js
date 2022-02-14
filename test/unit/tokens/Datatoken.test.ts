@@ -408,10 +408,16 @@ describe('Datatoken', () => {
       providerData: web3.utils.toHex(web3.utils.asciiToHex(providerData)),
       validUntil: providerValidUntil
     }
+    const consumeMarketFee = {
+      consumeMarketFeeAddress: '0x0000000000000000000000000000000000000000',
+      consumeMarketFeeToken: '0x0000000000000000000000000000000000000000',
+      consumeMarketFeeAmount: '0'
+    }
     const order: OrderParams = {
       consumer: user1,
       serviceIndex: 1,
-      _providerFees: providerFees
+      _providerFee: providerFees,
+      _consumeMarketFee: consumeMarketFee
     }
     const buyFromDispenseTx = await datatoken.buyFromDispenserAndOrder(
       datatokenAddress,
@@ -444,10 +450,16 @@ describe('Datatoken', () => {
       providerData: web3.utils.toHex(web3.utils.asciiToHex(providerData)),
       validUntil: providerValidUntil
     }
+    const consumeMarketFee = {
+      consumeMarketFeeAddress: '0x0000000000000000000000000000000000000000',
+      consumeMarketFeeToken: '0x0000000000000000000000000000000000000000',
+      consumeMarketFeeAmount: '0'
+    }
     const order: OrderParams = {
       consumer: user1,
       serviceIndex: 1,
-      _providerFees: providerFees
+      _providerFee: providerFees,
+      _consumeMarketFee: consumeMarketFee
     }
 
     const fre: FreOrderParams = {

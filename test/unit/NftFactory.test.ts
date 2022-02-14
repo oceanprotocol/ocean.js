@@ -408,14 +408,14 @@ describe('Nft Factory test', () => {
         tokenAddress: dtAddress,
         consumer: consumer,
         serviceIndex: serviceIndex,
-        _providerFees: providerFees,
+        _providerFee: providerFees,
         _consumeMarketFee: consumeMarketFee
       },
       {
         tokenAddress: dtAddress2,
         consumer: consumer,
         serviceIndex: serviceIndex,
-        _providerFees: providerFees,
+        _providerFee: providerFees,
         _consumeMarketFee: consumeMarketFee
       }
     ]
