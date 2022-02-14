@@ -58,7 +58,7 @@ export function getFreOrderParams(freParams: FreOrderParams): any {
   return {
     exchangeContract: freParams.exchangeContract,
     exchangeId: freParams.exchangeId,
-    maxBaseTokenAmount: freParams.maxBaseTokenAmount,
+    maxBaseTokenAmount: Web3.utils.toWei(freParams.maxBaseTokenAmount),
     swapMarketFee: Web3.utils.toWei(freParams.swapMarketFee),
     marketFeeAddress: freParams.marketFeeAddress
   }
