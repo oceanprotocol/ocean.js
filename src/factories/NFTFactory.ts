@@ -91,6 +91,7 @@ export class NftFactory {
           nftData.symbol,
           nftData.templateIndex,
           addressZERO,
+          addressZERO,
           nftData.tokenURI
         )
         .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
@@ -132,6 +133,7 @@ export class NftFactory {
         nftData.name,
         nftData.symbol,
         nftData.templateIndex,
+        addressZERO,
         addressZERO,
         nftData.tokenURI
       )
