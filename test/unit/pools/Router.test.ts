@@ -69,10 +69,6 @@ describe('Router unit test', () => {
     await daiContract.methods
       .approve(contracts.factory721Address, web3.utils.toWei('10000'))
       .send({ from: contracts.accounts[0] })
-
-    expect(await daiContract.methods.balanceOf(contracts.accounts[0]).call()).to.equal(
-      web3.utils.toWei('100000')
-    )
   })
 
   it('should initiate Router instance', async () => {
@@ -105,57 +101,6 @@ describe('Router unit test', () => {
     expect(await router.isPoolTemplate(contracts.poolTemplateAddress)).to.equal(true)
     expect(await router.isPoolTemplate(contracts.fixedRateAddress)).to.equal(false)
   })
-  it('#addOceanToken - should add a new token into oceanTokens list(NO OPF FEE)', async () => {
-    await router.addOceanToken(contracts.accounts[0], contracts.daiAddress)
-    expect(await router.isOceanTokens(contracts.daiAddress)).to.equal(true)
-  })
-  it('#removeOceanToken - should remove a token from oceanTokens list', async () => {
-    await router.removeOceanToken(contracts.accounts[0], contracts.daiAddress)
-    expect(await router.isOceanTokens(contracts.daiAddress)).to.equal(false)
-  })
-  it('#addSSContract - should add a new token into SSContracts list', async () => {
-    await router.addSSContract(contracts.accounts[0], contracts.daiAddress)
-    expect(await router.isSideStaking(contracts.daiAddress)).to.equal(true)
-  })
-  it('#addFixedRate - should add a new token into fixedPrice list', async () => {
-    await router.addFixedRateContract(contracts.accounts[0], contracts.daiAddress)
-    expect(await router.isFixedPrice(contracts.daiAddress)).to.equal(true)
-  })
-
-  it('#getOPCFee - should return actual OPF fee for a given baseToken', async () => {
-    const opcFee = 1e15
-    expect(await router.getOPCFee(contracts.oceanAddress)).to.equal('0')
-    expect(await router.getOPCFee(contracts.daiAddress)).to.equal(opcFee.toString())
-  })
-
-  it('#getCurrentOPFFee - should return actual OPF Fee', async () => {
-    const opfFee = 0
-    expect(await router.getCurrentOPCFee()).to.equal(opfFee.toString())
-  })
-
-  it('#updateOPCFee - should update opf fee if Router Owner', async () => {
-    const opfFee = 0
-    expect(await router.getCurrentOPCFee()).to.equal(opfFee.toString())
-    const newOPFFee = 1e14
-    await router.updateOPCFee(
-      contracts.accounts[0],
-      newOPFFee,
-      newOPFFee,
-      newOPFFee,
-      newOPFFee
-    )
-    expect(await router.getCurrentOPCFee()).to.equal(newOPFFee.toString())
-  })
-
-  it('#addPoolTemplate - should add a new token into poolTemplates mapping if Router Owner', async () => {
-    await router.addPoolTemplate(contracts.accounts[0], contracts.daiAddress)
-    expect(await router.isPoolTemplate(contracts.daiAddress)).to.equal(true)
-  })
-
-  it('#removePoolTemplate - should add a new token into poolTemplates mapping if Router Owner', async () => {
-    await router.removePoolTemplate(contracts.accounts[0], contracts.daiAddress)
-    expect(await router.isPoolTemplate(contracts.daiAddress)).to.equal(false)
-  })
 
   it('#buyDTBatch - should buy multiple DT in one call', async () => {
     // APPROVE DAI
@@ -164,13 +109,9 @@ describe('Router unit test', () => {
       contracts.daiAddress
     )
 
-    expect(await daiContract.methods.balanceOf(user2).call()).to.equal('0')
     await daiContract.methods
       .transfer(user2, web3.utils.toWei('2'))
       .send({ from: contracts.accounts[0] })
-    expect(await daiContract.methods.balanceOf(user2).call()).to.equal(
-      web3.utils.toWei('2')
-    )
     await daiContract.methods
       .approve(contracts.routerAddress, web3.utils.toWei('2'))
       .send({ from: user2 })
@@ -322,9 +263,6 @@ describe('Router unit test', () => {
     }
 
     await router.buyDTBatch(user2, [operations1, operations2])
-
-    // user2 had 2 dai and now has zero
-    expect(await daiContract.methods.balanceOf(user2).call()).to.equal('0')
 
     // user2 got his dts
     expect(parseInt(await erc20Contract.methods.balanceOf(user2).call())).gt(0)
