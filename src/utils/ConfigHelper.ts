@@ -153,7 +153,7 @@ export const configHelperNetworks: Config[] = [
     nodeUri: 'https://moonriver.api.onfinality.io/public',
     providerUri: 'https://v4.provider.moonriver.oceanprotocol.com',
     subgraphUri: 'https://v4.subgraph.moonriver.oceanprotocol.com',
-    explorerUri: 'https://blockscout.moonriver.moonbeam.network',
+    explorerUri: 'https://moonriver.moonscan.io/',
     gasFeeMultiplier: 1.05
   }
 ]
