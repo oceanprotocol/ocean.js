@@ -100,16 +100,6 @@ export const configHelperNetworks: Config[] = [
   },
   {
     ...configHelperNetworksBase,
-    chainId: 2021001,
-    network: 'catenaxtestnet',
-    nodeUri: 'https://rpc.catenaxtestnet.oceanprotocol.com',
-    providerUri: 'https://v4.provider.catenaxtestnet.oceanprotocol.com',
-    subgraphUri: 'https://v4.subgraph.catenaxtestnet.oceanprotocol.com',
-    explorerUri: 'https://blockscout.catenaxtestnet.oceanprotocol.com',
-    metadataCacheUri: 'https://aquarius.catenaxtestnet.oceanprotocol.com'
-  },
-  {
-    ...configHelperNetworksBase,
     chainId: 80001,
     network: 'mumbai',
     nodeUri: 'https://polygon-mumbai.infura.io/v3',
