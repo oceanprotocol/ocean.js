@@ -108,25 +108,20 @@ describe('SideStaking unit test', () => {
       '10000'
     )
 
-    expect(
-      await allowance(
-        web3,
-        contracts.daiAddress,
-        contracts.accounts[0],
-        contracts.factory721Address
-      )
-    ).to.equal('2000')
-    expect(
-      await allowance(
-        web3,
-        contracts.usdcAddress,
-        contracts.accounts[0],
-        contracts.factory721Address
-      )
-    ).to.equal('10000')
-    expect(await daiContract.methods.balanceOf(contracts.accounts[0]).call()).to.equal(
-      web3.utils.toWei('100000')
+    let allowCheck = await allowance(
+      web3,
+      contracts.daiAddress,
+      contracts.accounts[0],
+      contracts.factory721Address
     )
+    assert(parseInt(allowCheck) >= 2000)
+    allowCheck = await allowance(
+      web3,
+      contracts.usdcAddress,
+      contracts.accounts[0],
+      contracts.factory721Address
+    )
+    assert(parseInt(allowCheck) >= 10000)
 
     console.log(
       await usdcContract.methods.decimals().call(),
@@ -291,10 +286,6 @@ describe('SideStaking unit test', () => {
       await daiContract.methods
         .transfer(user2, web3.utils.toWei('1000'))
         .send({ from: contracts.accounts[0] })
-      expect(await daiContract.methods.balanceOf(user2).call()).to.equal(
-        web3.utils.toWei('1000')
-      )
-      expect(await erc20Contract.methods.balanceOf(user2).call()).to.equal('0')
       await approve(web3, user2, contracts.daiAddress, poolAddress, '10')
       const tokenInOutMarket: TokenInOutMarket = {
         tokenIn: contracts.daiAddress,
@@ -320,9 +311,6 @@ describe('SideStaking unit test', () => {
 
     it('#swapExactAmountOut - should swap', async () => {
       await approve(web3, user2, contracts.daiAddress, poolAddress, '100')
-      expect(await daiContract.methods.balanceOf(user2).call()).to.equal(
-        web3.utils.toWei('990')
-      )
       const tokenInOutMarket: TokenInOutMarket = {
         tokenIn: contracts.daiAddress,
         tokenOut: erc20Token,
@@ -506,11 +494,7 @@ describe('SideStaking unit test', () => {
       await usdcContract.methods
         .transfer(user2, transferAmount)
         .send({ from: contracts.accounts[0] })
-      expect(await usdcContract.methods.balanceOf(user2).call()).to.equal(
-        transferAmount.toString()
-      )
 
-      expect(await erc20Contract.methods.balanceOf(user2).call()).to.equal('0')
       await approve(web3, user2, contracts.usdcAddress, poolAddress, '10')
       const tokenInOutMarket: TokenInOutMarket = {
         tokenIn: contracts.usdcAddress,
@@ -534,9 +518,6 @@ describe('SideStaking unit test', () => {
     })
 
     it('#swapExactAmountOut - should swap', async () => {
-      expect(await usdcContract.methods.balanceOf(user2).call()).to.equal(
-        (await amountToUnits(web3, contracts.usdcAddress, '990')).toString()
-      )
       await approve(web3, user2, contracts.usdcAddress, poolAddress, '100')
       const tokenInOutMarket: TokenInOutMarket = {
         tokenIn: contracts.usdcAddress,

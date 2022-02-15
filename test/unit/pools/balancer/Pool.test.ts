@@ -100,25 +100,22 @@ describe('Pool unit test', () => {
       contracts.factory721Address,
       '10000'
     )
-    expect(
-      await allowance(
-        web3,
-        contracts.daiAddress,
-        contracts.accounts[0],
-        contracts.factory721Address
-      )
-    ).to.equal('2000')
-    expect(
-      await allowance(
-        web3,
-        contracts.usdcAddress,
-        contracts.accounts[0],
-        contracts.factory721Address
-      )
-    ).to.equal('10000')
-    expect(await daiContract.methods.balanceOf(contracts.accounts[0]).call()).to.equal(
-      web3.utils.toWei('100000')
+
+    let allowCheck = await allowance(
+      web3,
+      contracts.daiAddress,
+      contracts.accounts[0],
+      contracts.factory721Address
     )
+
+    assert(parseInt(allowCheck) >= 8000)
+    allowCheck = await allowance(
+      web3,
+      contracts.usdcAddress,
+      contracts.accounts[0],
+      contracts.factory721Address
+    )
+    assert(parseInt(allowCheck) >= 10000)
 
     await amountToUnits(web3, contracts.usdcAddress, '20')
   })
