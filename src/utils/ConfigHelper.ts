@@ -129,15 +129,6 @@ export const configHelperNetworks: Config[] = [
   },
   {
     ...configHelperNetworksBase,
-    chainId: 44787,
-    network: 'celoalfajores',
-    nodeUri: 'https://alfajores-forno.celo-testnet.org',
-    providerUri: 'https://v4.provider.celoalfajores.oceanprotocol.com',
-    subgraphUri: 'https://v4.subgraph.celoalfajores.oceanprotocol.com',
-    explorerUri: 'https://alfajores-blockscout.celo-testnet.org'
-  },
-  {
-    ...configHelperNetworksBase,
     chainId: 246,
     network: 'energyweb',
     nodeUri: 'https://rpc.energyweb.org',
