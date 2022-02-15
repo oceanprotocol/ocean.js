@@ -86,7 +86,7 @@ export const configHelperNetworks: Config[] = [
     nodeUri: 'https://rpc.testnet.moonbeam.network',
     providerUri: 'https://v4.provider.moonbase.oceanprotocol.com',
     subgraphUri: 'https://v4.subgraph.moonbase.oceanprotocol.com',
-    explorerUri: 'https://moonbase-blockscout.testnet.moonbeam.network/',
+    explorerUri: 'https://moonbase.moonscan.io/',
     startBlock: 90707
   },
   {
