@@ -560,10 +560,14 @@ describe('Pool unit test', () => {
 
     it('#updateMarketFeeCollector- should update market fee collector', async () => {
       // contracts.accounts[0] is the marketFeeCollector
+
       assert((await pool.getMarketFeeCollector(poolAddress)) === contracts.accounts[0])
-
-      await pool.updateMarketFeeCollector(contracts.accounts[0], poolAddress, user3)
-
+      await pool.updatePublishMarketFee(
+        contracts.accounts[0],
+        poolAddress,
+        user3,
+        await pool.getMarketFee(poolAddress)
+      )
       assert((await pool.getMarketFeeCollector(poolAddress)) === user3)
     })
   })
@@ -1079,7 +1083,12 @@ describe('Pool unit test', () => {
       // contracts.accounts[0] is the marketFeeCollector
       assert((await pool.getMarketFeeCollector(poolAddress)) === contracts.accounts[0])
 
-      await pool.updateMarketFeeCollector(contracts.accounts[0], poolAddress, user3)
+      await pool.updatePublishMarketFee(
+        contracts.accounts[0],
+        poolAddress,
+        user3,
+        await pool.getMarketFee(poolAddress)
+      )
 
       assert((await pool.getMarketFeeCollector(poolAddress)) === user3)
     })

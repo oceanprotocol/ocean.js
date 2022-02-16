@@ -271,6 +271,25 @@ export class Pool {
   }
 
   /**
+   * Get getMarketFee
+   * @param {String} poolAddress
+   * @return {String}
+   */
+  async getMarketFee(poolAddress: string): Promise<string> {
+    const pool = setContractDefaults(
+      new this.web3.eth.Contract(this.poolAbi, poolAddress),
+      this.config
+    )
+    let result = null
+    try {
+      result = await pool.methods.getMarketFee().call()
+    } catch (e) {
+      LoggerInstance.error(`ERROR: Failed to get getMarketFee: ${e.message}`)
+    }
+    return this.web3.utils.fromWei(result).toString()
+  }
+
+  /**
    * Get marketFeeCollector of this pool
    * @param {String} poolAddress
    * @return {String}
@@ -673,17 +692,19 @@ export class Pool {
   }
 
   /**
-   * Estimate gas cost for updateMarketFeeCollector
+   * Estimate gas cost for updatePublishMarketFee
    * @param {String} address
    * @param {String} poolAddress
-   * @param {String} newCollector new market fee collector address
+   * @param {String} newPublishMarketAddress new market address
+   * @param {String} newPublishMarketSwapFee new market swap fee
    * @param {Contract} contractInstance optional contract instance
    * @return {Promise<number>}
    */
-  public async estUpdateMarketFeeCollector(
+  public async estUpdatePublishMarketFee(
     address: string,
     poolAddress: string,
-    newCollector: string,
+    newPublishMarketAddress: string,
+    newPublishMarketSwapFee: string,
     contractInstance?: Contract
   ): Promise<number> {
     const poolContract =
@@ -697,7 +718,7 @@ export class Pool {
     let estGas
     try {
       estGas = await poolContract.methods
-        .updateMarketFeeCollector(newCollector)
+        .updatePublishMarketFee(newPublishMarketAddress, newPublishMarketSwapFee)
         .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
     } catch (e) {
       estGas = gasLimitDefault
@@ -706,16 +727,18 @@ export class Pool {
   }
 
   /**
-   * updateMarketFeeCollector - updates marketFeeCollector - can be called only by the marketFeeCollector
+   * updatePublishMarketFee - sets a new  newPublishMarketAddress and new newPublishMarketSwapFee- can be called only by the marketFeeCollector
    * @param {String} address
    * @param {String} poolAddress
-   * @param {String} newCollector new market fee collector address
+   * @param {String} newPublishMarketAddress new market fee collector address
+   * @param {String} newPublishMarketSwapFee fee recieved by the publisher market when a dt is swaped from a pool, percent
    * @return {TransactionReceipt}
    */
-  async updateMarketFeeCollector(
+  async updatePublishMarketFee(
     address: string,
     poolAddress: string,
-    newCollector: string
+    newPublishMarketAddress: string,
+    newPublishMarketSwapFee: string
   ): Promise<TransactionReceipt> {
     if ((await this.getMarketFeeCollector(poolAddress)) !== address) {
       throw new Error(`Caller is not MarketFeeCollector`)
@@ -725,20 +748,26 @@ export class Pool {
       this.config
     )
     let result = null
-    const estGas = await this.estUpdateMarketFeeCollector(
+
+    const estGas = await this.estUpdatePublishMarketFee(
       address,
       poolAddress,
-      newCollector
+      newPublishMarketAddress,
+      this.web3.utils.toWei(newPublishMarketSwapFee)
     )
-
     try {
-      result = await pool.methods.updateMarketFeeCollector(newCollector).send({
-        from: address,
-        gas: estGas + 1,
-        gasPrice: await getFairGasPrice(this.web3, this.config)
-      })
+      result = await pool.methods
+        .updatePublishMarketFee(
+          newPublishMarketAddress,
+          this.web3.utils.toWei(newPublishMarketSwapFee)
+        )
+        .send({
+          from: address,
+          gas: estGas + 1,
+          gasPrice: await getFairGasPrice(this.web3, this.config)
+        })
     } catch (e) {
-      LoggerInstance.error(`ERROR: Failed to swap exact amount in : ${e.message}`)
+      LoggerInstance.error(`ERROR: Failed to updatePublishMarketFee : ${e.message}`)
     }
     return result
   }
