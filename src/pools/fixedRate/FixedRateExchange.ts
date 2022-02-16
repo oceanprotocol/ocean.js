@@ -120,6 +120,8 @@ export class FixedRateExchange {
    * @param {String} account
    * @param {String} dtAmount datatoken amount we want to buy
    * @param {String} datatokenAddress datatokenAddress
+   * @param {String} consumeMarketAddress consumeMarketAddress
+   * @param {String} consumeMarketFee consumeMarketFee
    * @param {Contract} contractInstance optional contract instance
    * @return {Promise<number>}
    */
@@ -128,6 +130,8 @@ export class FixedRateExchange {
     datatokenAddress: string,
     dtAmount: string,
     maxBaseTokenAmount: string,
+    consumeMarketAddress: string,
+    consumeMarketFee: string,
     contractInstance?: Contract
   ): Promise<number> {
     const fixedRate = contractInstance || this.fixedRateContract
@@ -135,7 +139,13 @@ export class FixedRateExchange {
     let estGas
     try {
       estGas = await fixedRate.methods
-        .buyDT(datatokenAddress, dtAmount.toString(), maxBaseTokenAmount.toString())
+        .buyDT(
+          datatokenAddress,
+          dtAmount.toString(),
+          maxBaseTokenAmount.toString(),
+          consumeMarketAddress,
+          consumeMarketFee
+        )
         .estimateGas({ from: account }, (err, estGas) => (err ? gasLimitDefault : estGas))
     } catch (e) {
       estGas = gasLimitDefault
@@ -149,14 +159,23 @@ export class FixedRateExchange {
    * @param {String} datatokenAmount Amount of datatokens
    * @param {String} maxBaseTokenAmount max amount of baseToken we want to pay for datatokenAmount
    * @param {String} address User address
+   * @param {String} consumeMarketAddress consumeMarketAddress
+   * @param {String} consumeMarketFee consumeMarketFee
    * @return {Promise<TransactionReceipt>} transaction receipt
    */
   public async buyDT(
     address: string,
     exchangeId: string,
     datatokenAmount: string,
-    maxBaseTokenAmount: string
+    maxBaseTokenAmount: string,
+    consumeMarketAddress?: string,
+    consumeMarketFee?: string
   ): Promise<TransactionReceipt> {
+    if (!consumeMarketAddress)
+      consumeMarketAddress = '0x0000000000000000000000000000000000000000'
+    if (!consumeMarketFee) consumeMarketFee = '0'
+
+    const consumeMarketFeeFormatted = await this.web3.utils.toWei(consumeMarketFee)
     const dtAmountFormatted = await this.amountToUnits(
       (
         await this.getExchange(exchangeId)
@@ -174,11 +193,19 @@ export class FixedRateExchange {
       address,
       exchangeId,
       dtAmountFormatted,
-      maxBtFormatted
+      maxBtFormatted,
+      consumeMarketAddress,
+      consumeMarketFeeFormatted
     )
     try {
       const trxReceipt = await this.contract.methods
-        .buyDT(exchangeId, dtAmountFormatted, maxBtFormatted)
+        .buyDT(
+          exchangeId,
+          dtAmountFormatted,
+          maxBtFormatted,
+          consumeMarketAddress,
+          consumeMarketFeeFormatted
+        )
         .send({
           from: address,
           gas: estGas + 1,
@@ -196,6 +223,8 @@ export class FixedRateExchange {
    * @param {String} account
    * @param {String} dtAmount datatoken amount we want to sell
    * @param {String} datatokenAddress datatokenAddress
+   * @param {String} consumeMarketAddress consumeMarketAddress
+   * @param {String} consumeMarketFee consumeMarketFee
    * @param {Contract} contractInstance optional contract instance
    * @return {Promise<number>}
    */
@@ -204,6 +233,8 @@ export class FixedRateExchange {
     datatokenAddress: string,
     dtAmount: string,
     maxBaseTokenAmount: string,
+    consumeMarketAddress: string,
+    consumeMarketFee: string,
     contractInstance?: Contract
   ): Promise<number> {
     const fixedRate = contractInstance || this.fixedRateContract
@@ -211,7 +242,13 @@ export class FixedRateExchange {
     let estGas
     try {
       estGas = await fixedRate.methods
-        .sellDT(datatokenAddress, dtAmount, maxBaseTokenAmount)
+        .sellDT(
+          datatokenAddress,
+          dtAmount,
+          maxBaseTokenAmount,
+          consumeMarketAddress,
+          consumeMarketFee
+        )
         .estimateGas({ from: account }, (err, estGas) => (err ? gasLimitDefault : estGas))
     } catch (e) {
       estGas = gasLimitDefault
@@ -225,14 +262,23 @@ export class FixedRateExchange {
    * @param {String} datatokenAmount Amount of datatokens
    * @param {String} minBaseTokenAmount min amount of baseToken we want to receive back
    * @param {String} address User address
+   * @param {String} consumeMarketAddress consumeMarketAddress
+   * @param {String} consumeMarketFee consumeMarketFee
    * @return {Promise<TransactionReceipt>} transaction receipt
    */
   public async sellDT(
     address: string,
     exchangeId: string,
     datatokenAmount: string,
-    minBaseTokenAmount: string
+    minBaseTokenAmount: string,
+    consumeMarketAddress?: string,
+    consumeMarketFee?: string
   ): Promise<TransactionReceipt> {
+    if (!consumeMarketAddress)
+      consumeMarketAddress = '0x0000000000000000000000000000000000000000'
+    if (!consumeMarketFee) consumeMarketFee = '0'
+
+    const consumeMarketFeeFormatted = await this.web3.utils.toWei(consumeMarketFee)
     const dtAmountFormatted = await this.amountToUnits(
       (
         await this.getExchange(exchangeId)
@@ -249,11 +295,19 @@ export class FixedRateExchange {
       address,
       exchangeId,
       dtAmountFormatted,
-      minBtFormatted
+      minBtFormatted,
+      consumeMarketAddress,
+      consumeMarketFeeFormatted
     )
     try {
       const trxReceipt = await this.contract.methods
-        .sellDT(exchangeId, dtAmountFormatted, minBtFormatted)
+        .sellDT(
+          exchangeId,
+          dtAmountFormatted,
+          minBtFormatted,
+          consumeMarketAddress,
+          consumeMarketFeeFormatted
+        )
         .send({
           from: address,
           gas: estGas + 1,
@@ -533,17 +587,21 @@ export class FixedRateExchange {
    * calcBaseInGivenOutDT - Calculates how many base tokens are needed to get specified amount of datatokens
    * @param {String} exchangeId ExchangeId
    * @param {string} datatokenAmount Amount of datatokens user wants to buy
+   * @param {String} consumeMarketFee consumeMarketFee
    * @return {Promise<PriceAndFees>} how many base tokens are needed and fees
    */
   public async calcBaseInGivenOutDT(
     exchangeId: string,
-    datatokenAmount: string
+    datatokenAmount: string,
+    consumeMarketFee?: string
   ): Promise<PriceAndFees> {
+    if (!consumeMarketFee) consumeMarketFee = '0'
     const fixedRateExchange = await this.getExchange(exchangeId)
     const result = await this.contract.methods
       .calcBaseInGivenOutDT(
         exchangeId,
-        await this.amountToUnits(fixedRateExchange.datatoken, datatokenAmount)
+        await this.amountToUnits(fixedRateExchange.datatoken, datatokenAmount),
+        this.web3.utils.toWei(consumeMarketFee)
       )
       .call()
 
@@ -552,10 +610,6 @@ export class FixedRateExchange {
         fixedRateExchange.baseToken,
         result.baseTokenAmount
       ),
-      baseTokenAmountBeforeFee: await this.unitsToAmount(
-        fixedRateExchange.baseToken,
-        result.baseTokenAmountBeforeFee
-      ),
       marketFeeAmount: await this.unitsToAmount(
         fixedRateExchange.baseToken,
         result.marketFeeAmount
@@ -563,6 +617,10 @@ export class FixedRateExchange {
       oceanFeeAmount: await this.unitsToAmount(
         fixedRateExchange.baseToken,
         result.oceanFeeAmount
+      ),
+      consumeMarketFeeAmount: await this.unitsToAmount(
+        fixedRateExchange.baseToken,
+        result.consumeMarketFeeAmount
       )
     } as PriceAndFees
     return priceAndFees
@@ -572,12 +630,15 @@ export class FixedRateExchange {
    * getBTOut - returns amount in baseToken that user will receive for datatokenAmount sold
    * @param {String} exchangeId ExchangeId
    * @param {Number} datatokenAmount Amount of datatokens
+   * @param {String} consumeMarketFee consumeMarketFee
    * @return {Promise<string>} Amount of baseTokens user will receive
    */
   public async getAmountBTOut(
     exchangeId: string,
-    datatokenAmount: string
+    datatokenAmount: string,
+    consumeMarketFee?: string
   ): Promise<string> {
+    if (!consumeMarketFee) consumeMarketFee = '0'
     const result = await this.contract.methods
       .calcBaseOutGivenInDT(
         exchangeId,
@@ -586,7 +647,8 @@ export class FixedRateExchange {
             await this.getExchange(exchangeId)
           ).datatoken,
           datatokenAmount
-        )
+        ),
+        this.web3.utils.toWei(consumeMarketFee)
       )
       .call()
 

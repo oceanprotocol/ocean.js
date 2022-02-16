@@ -21,7 +21,7 @@ export interface FreOrderParams {
 
 export interface PriceAndFees {
   baseTokenAmount: string
-  baseTokenAmountBeforeFee: string
   oceanFeeAmount: string
   marketFeeAmount: string
+  consumeMarketFeeAmount: string
 }
