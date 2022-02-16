@@ -673,17 +673,19 @@ export class Pool {
   }
 
   /**
-   * Estimate gas cost for updateMarketFeeCollector
+   * Estimate gas cost for updatePublishMarketFee
    * @param {String} address
    * @param {String} poolAddress
    * @param {String} newCollector new market fee collector address
+   * @param {String} newPublishMarketSwapFee new market swap fee
    * @param {Contract} contractInstance optional contract instance
    * @return {Promise<number>}
    */
-  public async estUpdateMarketFeeCollector(
+  public async estupdatePublishMarketFee(
     address: string,
     poolAddress: string,
     newCollector: string,
+    newPublishMarketSwapFee: string,
     contractInstance?: Contract
   ): Promise<number> {
     const poolContract =
@@ -697,7 +699,7 @@ export class Pool {
     let estGas
     try {
       estGas = await poolContract.methods
-        .updateMarketFeeCollector(newCollector)
+        .updatePublishMarketFee(newCollector, newPublishMarketSwapFee)
         .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
     } catch (e) {
       estGas = gasLimitDefault
@@ -706,16 +708,18 @@ export class Pool {
   }
 
   /**
-   * updateMarketFeeCollector - updates marketFeeCollector - can be called only by the marketFeeCollector
+   * updatePublishMarketFee - updates marketFeeCollector - can be called only by the marketFeeCollector
    * @param {String} address
    * @param {String} poolAddress
    * @param {String} newCollector new market fee collector address
+   * @param {String} newPublishMarketSwapFee new market swap fee
    * @return {TransactionReceipt}
    */
-  async updateMarketFeeCollector(
+  async updatePublishMarketFee(
     address: string,
     poolAddress: string,
-    newCollector: string
+    newCollector: string,
+    newPublishMarketSwapFee?: string
   ): Promise<TransactionReceipt> {
     if ((await this.getMarketFeeCollector(poolAddress)) !== address) {
       throw new Error(`Caller is not MarketFeeCollector`)
@@ -724,19 +728,27 @@ export class Pool {
       new this.web3.eth.Contract(this.poolAbi, poolAddress),
       this.config
     )
+    if (!newPublishMarketSwapFee) {
+      newPublishMarketSwapFee = await pool.methods.getMarketFee().call()
+    } else {
+      newPublishMarketSwapFee = this.web3.utils.toWei(newPublishMarketSwapFee)
+    }
     let result = null
-    const estGas = await this.estUpdateMarketFeeCollector(
+
+    const estGas = await this.estupdatePublishMarketFee(
       address,
       poolAddress,
-      newCollector
+      newCollector,
+      newPublishMarketSwapFee
     )
-
     try {
-      result = await pool.methods.updateMarketFeeCollector(newCollector).send({
-        from: address,
-        gas: estGas + 1,
-        gasPrice: await getFairGasPrice(this.web3, this.config)
-      })
+      result = await pool.methods
+        .updatePublishMarketFee(newCollector, newPublishMarketSwapFee)
+        .send({
+          from: address,
+          gas: estGas + 1,
+          gasPrice: await getFairGasPrice(this.web3, this.config)
+        })
     } catch (e) {
       LoggerInstance.error(`ERROR: Failed to swap exact amount in : ${e.message}`)
     }

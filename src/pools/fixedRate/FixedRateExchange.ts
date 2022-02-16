@@ -656,7 +656,7 @@ export class FixedRateExchange {
       (
         await this.getExchange(exchangeId)
       ).baseToken,
-      result.baseTokenAmount
+      result[0]
     )
   }
 
