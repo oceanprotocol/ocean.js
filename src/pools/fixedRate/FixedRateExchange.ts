@@ -141,8 +141,8 @@ export class FixedRateExchange {
       estGas = await fixedRate.methods
         .buyDT(
           datatokenAddress,
-          dtAmount.toString(),
-          maxBaseTokenAmount.toString(),
+          dtAmount,
+          maxBaseTokenAmount,
           consumeMarketAddress,
           consumeMarketFee
         )
