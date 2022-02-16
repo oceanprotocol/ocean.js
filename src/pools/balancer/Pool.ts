@@ -735,7 +735,7 @@ export class Pool {
     }
     let result = null
 
-    const estGas = await this.estupdatePublishMarketFee(
+    const estGas = await this.estUpdatePublishMarketFee(
       address,
       poolAddress,
       newCollector,
