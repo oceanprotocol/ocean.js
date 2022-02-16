@@ -168,13 +168,9 @@ export class FixedRateExchange {
     exchangeId: string,
     datatokenAmount: string,
     maxBaseTokenAmount: string,
-    consumeMarketAddress?: string,
-    consumeMarketFee?: string
+    consumeMarketAddress: string = '0x0000000000000000000000000000000000000000',
+    consumeMarketFee: string = '0'
   ): Promise<TransactionReceipt> {
-    if (!consumeMarketAddress)
-      consumeMarketAddress = '0x0000000000000000000000000000000000000000'
-    if (!consumeMarketFee) consumeMarketFee = '0'
-
     const consumeMarketFeeFormatted = await this.web3.utils.toWei(consumeMarketFee)
     const dtAmountFormatted = await this.amountToUnits(
       (
@@ -271,13 +267,9 @@ export class FixedRateExchange {
     exchangeId: string,
     datatokenAmount: string,
     minBaseTokenAmount: string,
-    consumeMarketAddress?: string,
-    consumeMarketFee?: string
+    consumeMarketAddress: string = '0x0000000000000000000000000000000000000000',
+    consumeMarketFee: string = '0'
   ): Promise<TransactionReceipt> {
-    if (!consumeMarketAddress)
-      consumeMarketAddress = '0x0000000000000000000000000000000000000000'
-    if (!consumeMarketFee) consumeMarketFee = '0'
-
     const consumeMarketFeeFormatted = await this.web3.utils.toWei(consumeMarketFee)
     const dtAmountFormatted = await this.amountToUnits(
       (
@@ -593,9 +585,8 @@ export class FixedRateExchange {
   public async calcBaseInGivenOutDT(
     exchangeId: string,
     datatokenAmount: string,
-    consumeMarketFee?: string
+    consumeMarketFee: string = '0'
   ): Promise<PriceAndFees> {
-    if (!consumeMarketFee) consumeMarketFee = '0'
     const fixedRateExchange = await this.getExchange(exchangeId)
     const result = await this.contract.methods
       .calcBaseInGivenOutDT(
@@ -636,9 +627,8 @@ export class FixedRateExchange {
   public async getAmountBTOut(
     exchangeId: string,
     datatokenAmount: string,
-    consumeMarketFee?: string
+    consumeMarketFee: string = '0'
   ): Promise<string> {
-    if (!consumeMarketFee) consumeMarketFee = '0'
     const result = await this.contract.methods
       .calcBaseOutGivenInDT(
         exchangeId,
