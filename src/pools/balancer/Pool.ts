@@ -731,7 +731,7 @@ export class Pool {
    * @param {String} address
    * @param {String} poolAddress
    * @param {String} newPublishMarketAddress new market fee collector address
-   * @param {String} newPublishMarketSwapFee new market swap fee
+   * @param {String} newPublishMarketSwapFee fee recieved by the publisher market when a dt is swaped from a pool, percent
    * @return {TransactionReceipt}
    */
   async updatePublishMarketFee(

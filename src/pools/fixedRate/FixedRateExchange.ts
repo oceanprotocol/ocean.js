@@ -121,7 +121,7 @@ export class FixedRateExchange {
    * @param {String} dtAmount datatoken amount we want to buy
    * @param {String} datatokenAddress datatokenAddress
    * @param {String} consumeMarketAddress consumeMarketAddress
-   * @param {String} consumeMarketFee consumeMarketFee
+   * @param {String} consumeMarketFee fee recieved by the consume market when a dt is bought from a fixed rate exchange, percent
    * @param {Contract} contractInstance optional contract instance
    * @return {Promise<number>}
    */
