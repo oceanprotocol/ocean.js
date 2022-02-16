@@ -681,7 +681,7 @@ export class Pool {
    * @param {Contract} contractInstance optional contract instance
    * @return {Promise<number>}
    */
-  public async estupdatePublishMarketFee(
+  public async estUpdatePublishMarketFee(
     address: string,
     poolAddress: string,
     newCollector: string,
