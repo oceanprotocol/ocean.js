@@ -31,6 +31,7 @@ git clone https://github.com/oceanprotocol/barge.git
 cd barge/
 ./start_ocean.sh --with-provider2 --no-dashboard
 ```
+**Note**: If your docker services exited with code 137. Try increasing docker memory limits by: Docker Desktop app > Preferences > Resources > Advanced and increase the MEMORY - best to double it.
 
 ## 2. Create a new node.js project
 
@@ -121,7 +122,7 @@ Now open the `marketplace.js` file in your text editor. Enter the following code
 
 ```Javascript
 const Web3 = require("web3");
-const { Ocean, Datatokens } = require("@oceanprotocol/lib");
+const { Ocean, DataTokens } = require("@oceanprotocol/lib");
 
 const { factoryABI } = require("@oceanprotocol/contracts/artifacts/contracts/DTFactory.json");
 const { datatokensABI } = require("@oceanprotocol/contracts/artifacts/contracts/DatatokenTemplate.json");
@@ -137,7 +138,7 @@ const init = async () => {
   const alice = accounts[0].id;
   console.log('Alice account address:', alice)
 
-  const datatoken = new Datatokens(
+  const datatoken = new DataTokens(
     contracts.DTFactory,
     factoryABI,
     datatokensABI,
@@ -155,6 +156,11 @@ Now in your terminal, run the following command:
 ```bash
 node marketplace.js
 ```
+
+**Note**:
+- If you get the error: `Cannot find module '@oceanprotocol/contracts/artifacts/Metadata.json'`
+  Try copying artifacts from ocean_abis folder to contracts/artifcats folder using command:
+  ```cp -R node_modules/@oceanprotocol/contracts/ocean_abis/ node_modules/@oceanprotocol/contracts/artifacts/```
 
 Congratulations, you've created your first Ocean datatoken! 🌊🐋
 
@@ -215,7 +221,7 @@ Now, in your `marketplace.js` file import the test data. Add the following line 
 const { testData } = require("./data");
 ```
 
-At the end of the `init() { ... }` function (after `console.log('Bob token balance:', bobBalance)`) add the following code:
+At the end of the `init() { ... }` function (after `console.log('Alice token balance:', aliceBalance)`) add the following code:
 
 ```Javascript
   dataService = await ocean.assets.createAccessServiceAttributes(

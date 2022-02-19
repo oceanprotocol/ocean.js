@@ -52,7 +52,9 @@ You can read more about each of the services that barge runs via these links:
 - Ocean Protocol **smart contracts**: https://github.com/oceanprotocol/ocean-contracts 
 - **Provider**: https://github.com/oceanprotocol/provider-py
 
-You need to leave the Barge services running throughout the rest of the tutorial so make sure you keep this terminal window open. All of the remaining terminal commands will be done in a new terminal window. 
+You need to leave the Barge services running throughout the rest of the tutorial so make sure you keep this terminal window open. All of the remaining terminal commands will be done in a new terminal window.
+
+**Note**: If your docker services exited with code 137. Try increasing docker memory limits by: Docker Desktop app > Preferences > Resources > Advanced and increase the MEMORY - best to double it.
 
 ## 2. Create a new node.js project
 
@@ -166,7 +168,7 @@ The process of creating and deploying the ERC20 datatokens has been automated by
 
 ```Javascript
 const Web3 = require("web3");
-const { Ocean, Datatokens } = require("@oceanprotocol/lib");
+const { Ocean, DataTokens } = require("@oceanprotocol/lib");
  
 const { factoryABI } = require("@oceanprotocol/contracts/artifacts/contracts/DTFactory.json");
 const { datatokensABI } = require("@oceanprotocol/contracts/artifacts/contracts/DatatokenTemplate.json");
@@ -180,7 +182,7 @@ const init = async () => {
  const alice = accounts[0].id;
  console.log('Alice account address:', alice)
  
- const datatoken = new Datatokens(
+ const datatoken = new DataTokens(
    contracts.DTFactory,
    factoryABI,
    datatokensABI,
@@ -192,6 +194,11 @@ const init = async () => {
  
 init();
 ```
+
+**Note**:
+- If you get the error: `Cannot find module '@oceanprotocol/contracts/artifacts/Metadata.json'`
+  Try copying artifacts from ocean_abis folder to contracts/artifcats folder using command:
+  ```cp -R node_modules/@oceanprotocol/contracts/ocean_abis/ node_modules/@oceanprotocol/contracts/artifacts/```
 
 This is all the code you need to deploy your first datatoken. Now save the file and run it. In your terminal, run the following command:
 
@@ -260,7 +267,7 @@ Now, we need to import the dataset into the index.js file. Open your your `index
 const { testData } = require("./data");
 ```
 
-Next we add the code for publishing the dataset. This includes important information about your dataset such as the price, the publishing date and the timeout. At the end of the `init() { ... }` function (after `console.log('Bob token balance:', bobBalance)`) add the following code:
+Next we add the code for publishing the dataset. This includes important information about your dataset such as the price, the publishing date and the timeout. At the end of the `init() { ... }` function (after `console.log('Alice token balance:', aliceBalance)`) add the following code:
 
  ```Javascript
  dataService = await ocean.assets.createAccessServiceAttributes(
