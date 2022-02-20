@@ -157,11 +157,6 @@ Now in your terminal, run the following command:
 node marketplace.js
 ```
 
-**Note**:
-- If you get the error: `Cannot find module '@oceanprotocol/contracts/artifacts/Metadata.json'`
-  Try copying artifacts from ocean_abis folder to contracts/artifcats folder using command:
-  ```cp -R node_modules/@oceanprotocol/contracts/ocean_abis/ node_modules/@oceanprotocol/contracts/artifacts/```
-
 Congratulations, you've created your first Ocean datatoken! 🌊🐋
 
 ## 6. Mint 200 tokens

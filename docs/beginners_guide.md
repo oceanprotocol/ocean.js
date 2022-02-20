@@ -195,11 +195,6 @@ const init = async () => {
 init();
 ```
 
-**Note**:
-- If you get the error: `Cannot find module '@oceanprotocol/contracts/artifacts/Metadata.json'`
-  Try copying artifacts from ocean_abis folder to contracts/artifcats folder using command:
-  ```cp -R node_modules/@oceanprotocol/contracts/ocean_abis/ node_modules/@oceanprotocol/contracts/artifacts/```
-
 This is all the code you need to deploy your first datatoken. Now save the file and run it. In your terminal, run the following command:
 
 ```Bash
