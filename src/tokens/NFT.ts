@@ -1015,7 +1015,7 @@ export class Nft {
         new this.web3.eth.Contract(this.nftAbi, nftAddress),
         this.config
       )
-
+    if (!metadataProofs) metadataProofs = []
     const gasLimitDefault = this.GASLIMIT_DEFAULT
     let estGas
     try {
@@ -1033,6 +1033,7 @@ export class Nft {
           err ? gasLimitDefault : estGas
         )
     } catch (e) {
+      LoggerInstance.error('estGasSetMetadata error: ', e.message)
       estGas = gasLimitDefault
     }
 
