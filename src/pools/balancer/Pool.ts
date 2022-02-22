@@ -21,6 +21,13 @@ import {
   PoolPriceAndFees
 } from '../../@types'
 import { Config } from '../../models'
+import {
+  getMaxAddLiquidity,
+  getMaxRemoveLiquidity,
+  getMaxSwapExactIn,
+  getMaxSwapExactOut
+} from '../../utils/PoolHelpers'
+import Decimal from 'decimal.js'
 const MaxUint256 =
   '115792089237316195423570985008687907853269984665640564039457584007913129639934'
 
@@ -847,6 +854,11 @@ export class Pool {
       this.config
     )
 
+    const maxSwap = await getMaxSwapExactIn(this, poolAddress, tokenInOutMarket.tokenIn)
+    if (new Decimal(amountsInOutMaxFee.tokenAmountIn).greaterThan(maxSwap)) {
+      throw new Error(`tokenAmountIn is greater than ${maxSwap.toString()}`)
+    }
+
     amountsInOutMaxFee.tokenAmountIn = await amountToUnits(
       this.web3,
       tokenInOutMarket.tokenIn,
@@ -970,6 +982,11 @@ export class Pool {
       this.config
     )
     let result = null
+
+    const maxSwap = await getMaxSwapExactOut(this, poolAddress, tokenInOutMarket.tokenIn)
+    if (new Decimal(amountsInOutMaxFee.tokenAmountOut).greaterThan(maxSwap)) {
+      throw new Error(`tokenAmountOut is greater than ${maxSwap.toString()}`)
+    }
 
     amountsInOutMaxFee.maxAmountIn = await amountToUnits(
       this.web3,
@@ -1233,7 +1250,6 @@ export class Pool {
    * Pay tokenAmountIn of baseToken to join the pool, getting poolAmountOut of the pool shares.
    * @param {String} account
    * @param {String} poolAddress
-   * @param {String} tokenIn
    * @param {String} tokenAmountIn exact number of base tokens to spend
    * @param {String} minPoolAmountOut minimum of pool shares expectex
    * @return {TransactionReceipt}
@@ -1249,12 +1265,13 @@ export class Pool {
       this.config
     )
     let result = null
+    const tokenIn = await this.getBaseToken(poolAddress)
+    const maxSwap = await getMaxAddLiquidity(this, poolAddress, tokenIn)
+    if (new Decimal(tokenAmountIn).greaterThan(maxSwap)) {
+      throw new Error(`tokenAmountOut is greater than ${maxSwap.toString()}`)
+    }
 
-    const amountInFormatted = await amountToUnits(
-      this.web3,
-      await this.getBaseToken(poolAddress),
-      tokenAmountIn
-    )
+    const amountInFormatted = await amountToUnits(this.web3, tokenIn, tokenAmountIn)
     const estGas = await this.estJoinswapExternAmountIn(
       account,
       poolAddress,
@@ -1321,7 +1338,6 @@ export class Pool {
    * Pay poolAmountIn pool shares into the pool, getting minTokenAmountOut of the baseToken
    * @param {String} account
    * @param {String} poolAddress
-   * @param {String} tokenOut
    * @param {String} poolAmountIn exact number of pool shares to spend
    * @param {String} minTokenAmountOut minimum amount of basetokens expected
    * @return {TransactionReceipt}
@@ -1337,6 +1353,18 @@ export class Pool {
       this.config
     )
     let result = null
+    const tokenOut = await this.getBaseToken(poolAddress)
+
+    const tokenAmountOut = await this.calcSingleOutGivenPoolIn(
+      poolAddress,
+      tokenOut,
+      poolAmountIn
+    )
+
+    const maxSwap = await getMaxRemoveLiquidity(this, poolAddress, tokenOut)
+    if (new Decimal(tokenAmountOut).greaterThan(maxSwap)) {
+      throw new Error(`tokenAmountOut is greater than ${maxSwap.toString()}`)
+    }
 
     const minTokenOutFormatted = await amountToUnits(
       this.web3,
@@ -1451,6 +1479,12 @@ export class Pool {
       this.config
     )
 
+    const maxSwap = await getMaxSwapExactOut(this, poolAddress, tokenIn)
+
+    if (new Decimal(tokenAmountOut).greaterThan(maxSwap)) {
+      throw new Error(`tokenAmountOut is greater than ${maxSwap.toString()}`)
+    }
+
     const amountOutFormatted = await amountToUnits(this.web3, tokenOut, tokenAmountOut)
 
     let amount = null
@@ -1508,6 +1542,11 @@ export class Pool {
       new this.web3.eth.Contract(this.poolAbi, poolAddress),
       this.config
     )
+
+    const maxSwap = await getMaxSwapExactIn(this, poolAddress, tokenIn)
+    if (new Decimal(tokenAmountIn).greaterThan(maxSwap)) {
+      throw new Error(`tokenAmountIn is greater than ${maxSwap.toString()}`)
+    }
 
     const amountInFormatted = await amountToUnits(this.web3, tokenIn, tokenAmountIn)
 
