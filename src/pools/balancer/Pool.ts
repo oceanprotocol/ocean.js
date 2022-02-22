@@ -21,6 +21,8 @@ import {
   PoolPriceAndFees
 } from '../../@types'
 import { Config } from '../../models'
+import { getMaxSwapExactIn, getMaxSwapExactOut } from '../../utils/PoolHelpers'
+import Decimal from 'decimal.js'
 const MaxUint256 =
   '115792089237316195423570985008687907853269984665640564039457584007913129639934'
 
@@ -1451,6 +1453,12 @@ export class Pool {
       this.config
     )
 
+    const maxSwap = await getMaxSwapExactOut(this, poolAddress, tokenIn)
+
+    if (new Decimal(tokenAmountOut).greaterThan(maxSwap)) {
+      throw new Error(`tokenAmountOut is greater than ${maxSwap.toString()}`)
+    }
+
     const amountOutFormatted = await amountToUnits(this.web3, tokenOut, tokenAmountOut)
 
     let amount = null
@@ -1508,6 +1516,11 @@ export class Pool {
       new this.web3.eth.Contract(this.poolAbi, poolAddress),
       this.config
     )
+
+    const maxSwap = await getMaxSwapExactIn(this, poolAddress, tokenIn)
+    if (new Decimal(tokenAmountIn).greaterThan(maxSwap)) {
+      throw new Error(`tokenAmountIn is greater than ${maxSwap.toString()}`)
+    }
 
     const amountInFormatted = await amountToUnits(this.web3, tokenIn, tokenAmountIn)
 
