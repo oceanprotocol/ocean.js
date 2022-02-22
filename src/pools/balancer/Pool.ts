@@ -1338,7 +1338,6 @@ export class Pool {
    * Pay poolAmountIn pool shares into the pool, getting minTokenAmountOut of the baseToken
    * @param {String} account
    * @param {String} poolAddress
-   * @param {String} tokenOut
    * @param {String} poolAmountIn exact number of pool shares to spend
    * @param {String} minTokenAmountOut minimum amount of basetokens expected
    * @return {TransactionReceipt}
