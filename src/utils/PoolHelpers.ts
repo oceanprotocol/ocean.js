@@ -1,11 +1,11 @@
 import Decimal from 'decimal.js'
 import { Pool } from '..'
 
-export function calcMaxSwapExactOut(balance: string): Decimal {
+export function calcMaxExactOut(balance: string): Decimal {
   return new Decimal(balance).div(3.01)
 }
 
-export function calcMaxSwapExactIn(balance: string): Decimal {
+export function calcMaxExactIn(balance: string): Decimal {
   return new Decimal(balance).div(2.01)
 }
 export async function getMaxSwapExactOut(
@@ -14,7 +14,7 @@ export async function getMaxSwapExactOut(
   tokenAddress: string
 ): Promise<Decimal> {
   const reserve = await poolInstance.getReserve(poolAddress, tokenAddress)
-  return calcMaxSwapExactOut(reserve)
+  return calcMaxExactOut(reserve)
 }
 
 export async function getMaxSwapExactIn(
@@ -23,7 +23,7 @@ export async function getMaxSwapExactIn(
   tokenAddress: string
 ): Promise<Decimal> {
   const reserve = await poolInstance.getReserve(poolAddress, tokenAddress)
-  return calcMaxSwapExactIn(reserve)
+  return calcMaxExactIn(reserve)
 }
 
 export async function getMaxAddLiquidity(
@@ -33,7 +33,7 @@ export async function getMaxAddLiquidity(
 ): Promise<Decimal> {
   const reserve = await poolInstance.getReserve(poolAddress, tokenAddress)
 
-  return calcMaxSwapExactIn(reserve)
+  return calcMaxExactIn(reserve)
 }
 
 export async function getMaxRemoveLiquidity(
@@ -43,5 +43,5 @@ export async function getMaxRemoveLiquidity(
 ): Promise<Decimal> {
   const reserve = await poolInstance.getReserve(poolAddress, tokenAddress)
 
-  return calcMaxSwapExactIn(reserve)
+  return calcMaxExactIn(reserve)
 }
