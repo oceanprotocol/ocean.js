@@ -13,27 +13,18 @@
 
 With ocean.js, you can:
 
-- **Publish** data services: downloadable files or compute-to-data.
-  Ocean creates a new [ERC20](https://github.com/ethereum/EIPs/blob/7f4f0377730f5fc266824084188cc17cf246932e/EIPS/eip-20.md)
-  datatoken for each dataset / data service.
-- **Mint** datatokens for the service
-- **Sell** datatokens via an OCEAN-datatoken Balancer pool (for auto price discovery), or for a fixed price
-- **Stake** OCEAN on datatoken pools
-- **Consume** datatokens, to access the service
-- **Transfer** datatokens to another owner, and **all other ERC20 actions**
-  using [web3.js](https://web3js.readthedocs.io/en/v1.2.9/web3-eth-contract.html) etc.
+- **Publish** data services: downloadable files or compute-to-data. Create an ERC721 **data NFT** for each service, and ERC20 **datatoken** for access (1.0 datatokens to access).
+- **Sell** datatokens via an OCEAN-datatoken Balancer pool (for auto price discovery), or for a fixed price. Sell data NFTs.
+- **Stake OCEAN** on datatoken pools
+- **Transfer** data NFTs & datatokens to another owner, and **all other ERC721 & ERC20 actions** using [web3.js](https://web3js.readthedocs.io/en/v1.2.9/web3-eth-contract.html) etc.
 
 ocean.js is part of the [Ocean Protocol](https://oceanprotocol.com) toolset.
 
-This is in alpha state and you can expect running into problems. If you run into them, please open up a [new issue](https://github.com/oceanprotocol/ocean.js/issues/new?assignees=&labels=bug&template=bug_report.md&title=).
+This is in alpha state. If you run into problems, please open up a [new issue](https://github.com/oceanprotocol/ocean.js/issues/new?assignees=&labels=bug&template=bug_report.md&title=).
 
 - [📚 Prerequisites](#-prerequisites)
 - [🏗 Installation](#-installation)
-- [🏄 Quickstart](#-quickstart)
-  - [Beginners Guide](#beginners-guide)
-  - [Simple Flow](#simple-flow)
-  - [Marketplace Flow](#marketplace-flow)
-  - [📖 Learn More](#learn-more)
+- [🏄 Quickstart](#-quickstart): simple flow, marketplace, compute-to-data, more
 - [🦑 Development](#-development)
 - [✨ Code Style](#-code-style)
 - [👩‍🔬 Testing](#-testing)
@@ -93,23 +84,12 @@ async function init() {
 }
 ```
 
-### Beginners Guide
+Here are flows to try out, from beginners to advanced.
 
-This introduction is aimed at developers who are completely new to blockchain, no coding experience is required.
+- **[Beginners guide](docs/beginners_guide.md)** - for developers who are completely new to blockchain, no coding experience is required.
+- **[Simple flow](docs/quickstart_simple.md)** - the essence of Ocean - creating a data NFT & datatoken.
+- **[Marketplace flow](docs/quickstart_marketplace.md)** - a data asset is posted for sale in a datatoken pool, then purchased. Includes metadata and Compute-to-Data.
 
-[Go to beginners guide](docs/beginners_guide.md)
-
-### Simple Flow
-
-This stripped-down flow shows the essence of Ocean. Just downloading, no metadata.
-
-[Go to simple flow](docs/quickstart_simple.md)
-
-### Marketplace Flow
-
-This batteries-included flow includes metadata, multiple services for one datatoken, and compute-to-data.
-
-[Go to marketplace flow](docs/quickstart_marketplace.md)
 
 ### 📖 Learn more
 
