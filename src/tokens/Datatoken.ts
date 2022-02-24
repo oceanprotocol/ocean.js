@@ -10,7 +10,8 @@ import {
   getFairGasPrice,
   setContractDefaults,
   configHelperNetworks,
-  getFreOrderParams
+  getFreOrderParams,
+  amountToUnits
 } from '../utils'
 import {
   ConsumeMarketFee,
@@ -95,12 +96,14 @@ export class Datatoken {
         this.config
       )
 
+    const amountInWei = await amountToUnits(this.web3, dtAddress, amount)
+
     // Estimate gas cost for mint method
     const gasLimitDefault = this.GASLIMIT_DEFAULT
     let estGas
     try {
       estGas = await dtContract.methods
-        .approve(spender, this.web3.utils.toWei(amount))
+        .approve(spender, amountInWei)
         .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
     } catch (e) {
       estGas = gasLimitDefault
@@ -135,14 +138,14 @@ export class Datatoken {
       dtContract
     )
 
+    const amountInWei = await amountToUnits(this.web3, dtAddress, amount)
+
     // Call mint contract method
-    const trxReceipt = await dtContract.methods
-      .approve(spender, this.web3.utils.toWei(amount))
-      .send({
-        from: address,
-        gas: estGas + 1,
-        gasPrice: await getFairGasPrice(this.web3, this.config)
-      })
+    const trxReceipt = await dtContract.methods.approve(spender, amountInWei).send({
+      from: address,
+      gas: estGas + 1,
+      gasPrice: await getFairGasPrice(this.web3, this.config)
+    })
     return trxReceipt
   }
 
@@ -169,11 +172,13 @@ export class Datatoken {
         this.config
       )
 
+    const amountInWei = await amountToUnits(this.web3, dtAddress, amount)
+
     const gasLimitDefault = this.GASLIMIT_DEFAULT
     let estGas
     try {
       estGas = await dtContract.methods
-        .mint(toAddress || address, this.web3.utils.toWei(amount))
+        .mint(toAddress || address, amountInWei)
         .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
     } catch (e) {
       estGas = gasLimitDefault
@@ -431,10 +436,11 @@ export class Datatoken {
         toAddress,
         dtContract
       )
+      const amountInWei = await amountToUnits(this.web3, dtAddress, amount)
 
       // Call mint contract method
       const trxReceipt = await dtContract.methods
-        .mint(toAddress || address, this.web3.utils.toWei(amount))
+        .mint(toAddress || address, amountInWei)
         .send({
           from: address,
           gas: estGas + 1,
@@ -835,7 +841,7 @@ export class Datatoken {
     amount: string,
     address: string
   ): Promise<TransactionReceipt> {
-    const weiAmount = this.web3.utils.toWei(amount)
+    const weiAmount = await amountToUnits(this.web3, dtAddress, amount)
     return this.transferWei(dtAddress, toAddress, weiAmount, address)
   }
 
