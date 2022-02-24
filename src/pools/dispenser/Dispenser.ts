@@ -8,7 +8,8 @@ import {
   LoggerInstance as logger,
   getFairGasPrice,
   configHelperNetworks,
-  setContractDefaults
+  setContractDefaults,
+  amountToUnits
 } from '../../utils/'
 import { Datatoken } from '../../tokens'
 import { Config } from '../../models/index.js'
@@ -90,17 +91,13 @@ export class Dispenser {
     maxBalance: string,
     allowedSwapper: string
   ): Promise<any> {
+    const maxTokensInWei = await amountToUnits(this.web3, dtAddress, maxTokens)
+    const maxBalanceInWei = await amountToUnits(this.web3, dtAddress, maxBalance)
     const gasLimitDefault = this.GASLIMIT_DEFAULT
     let estGas
     try {
       estGas = await this.dispenserContract.methods
-        .create(
-          dtAddress,
-          this.web3.utils.toWei(maxTokens),
-          this.web3.utils.toWei(maxBalance),
-          address,
-          allowedSwapper
-        )
+        .create(dtAddress, maxTokensInWei, maxBalanceInWei, address, allowedSwapper)
         .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
     } catch (e) {
       estGas = gasLimitDefault
@@ -132,16 +129,12 @@ export class Dispenser {
       maxBalance,
       allowedSwapper
     )
+    const maxTokensInWei = await amountToUnits(this.web3, dtAddress, maxTokens)
+    const maxBalanceInWei = await amountToUnits(this.web3, dtAddress, maxBalance)
 
     // Call createFixedRate contract method
     const trxReceipt = await this.dispenserContract.methods
-      .create(
-        dtAddress,
-        this.web3.utils.toWei(maxTokens),
-        this.web3.utils.toWei(maxBalance),
-        address,
-        allowedSwapper
-      )
+      .create(dtAddress, maxTokensInWei, maxBalanceInWei, address, allowedSwapper)
       .send({
         from: address,
         gas: estGas + 1,
@@ -164,15 +157,13 @@ export class Dispenser {
     maxBalance: string,
     address: string
   ): Promise<any> {
+    const maxTokensInWei = await amountToUnits(this.web3, dtAddress, maxTokens)
+    const maxBalanceInWei = await amountToUnits(this.web3, dtAddress, maxBalance)
     let estGas
     const gasLimitDefault = this.GASLIMIT_DEFAULT
     try {
       estGas = await this.dispenserContract.methods
-        .activate(
-          dtAddress,
-          this.web3.utils.toWei(maxTokens),
-          this.web3.utils.toWei(maxBalance)
-        )
+        .activate(dtAddress, maxTokensInWei, maxBalanceInWei)
         .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
     } catch (e) {
       estGas = gasLimitDefault
@@ -195,13 +186,11 @@ export class Dispenser {
     address: string
   ): Promise<TransactionReceipt> {
     try {
+      const maxTokensInWei = await amountToUnits(this.web3, dtAddress, maxTokens)
+      const maxBalanceInWei = await amountToUnits(this.web3, dtAddress, maxBalance)
       const estGas = await this.estGasActivate(dtAddress, maxTokens, maxBalance, address)
       const trxReceipt = await this.dispenserContract.methods
-        .activate(
-          dtAddress,
-          this.web3.utils.toWei(maxTokens),
-          this.web3.utils.toWei(maxBalance)
-        )
+        .activate(dtAddress, maxTokensInWei, maxBalanceInWei)
         .send({
           from: address,
           gas: estGas + 1,
@@ -328,9 +317,10 @@ export class Dispenser {
   ): Promise<any> {
     let estGas
     const gasLimitDefault = this.GASLIMIT_DEFAULT
+    const amountInWei = await amountToUnits(this.web3, dtAddress, amount)
     try {
       estGas = await this.dispenserContract.methods
-        .dispense(dtAddress, this.web3.utils.toWei(amount), destination)
+        .dispense(dtAddress, amountInWei, destination)
         .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
     } catch (e) {
       estGas = gasLimitDefault
@@ -355,9 +345,10 @@ export class Dispenser {
     destination: string
   ): Promise<TransactionReceipt> {
     const estGas = await this.estGasDispense(dtAddress, address, amount, destination)
+    const amountInWei = await amountToUnits(this.web3, dtAddress, amount)
     try {
       const trxReceipt = await this.dispenserContract.methods
-        .dispense(dtAddress, this.web3.utils.toWei(amount), destination)
+        .dispense(dtAddress, amountInWei, destination)
         .send({
           from: address,
           gas: estGas + 1,
