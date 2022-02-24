@@ -142,4 +142,10 @@ export interface Service {
    * @type {ServiceComputeOptions}
    */
   compute?: ServiceComputeOptions
+
+  /**
+   * Stores service specific additional information, this is customizable by publisher
+   * @type {any}
+   */
+  additionalInformation?: any
 }
