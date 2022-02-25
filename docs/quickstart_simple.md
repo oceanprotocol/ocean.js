@@ -7,8 +7,8 @@ Here are the the steps:
 1. Initialize services
 2. Create a new node.js project
 3. Install dependencies
-4. Create a config file and update contract addresses
-5. Publish a new datatoken
+4. Create a .env and config file
+5. Publish a new dataNFT and datatoken
 6. Mint 100 tokens
 7. Transfer tokens between users.
 8. Host a dataset
@@ -44,9 +44,9 @@ Open the package.json file in a text editor and update the dependencies to inclu
 
 ```JSON
   "dependencies": {
-    "@oceanprotocol/contracts": "^0.5.6",
-    "@oceanprotocol/lib": "^0.6.5",
-    "web3": "^1.3.0"
+    "@oceanprotocol/contracts": "^0.5.6", // TODO: replace version
+    "@oceanprotocol/lib": "^0.6.5", // TODO: replace version
+    "web3": "^1.7.0"
   }
 ```
 
@@ -58,7 +58,21 @@ npm install
 
 ## 4. Create a config file and update contract addresses
 
-Create a new config.js file:
+### Create a .env file
+
+```bash
+NETWORK_URL=http://172.15.0.3:8545
+AQUARIUS_URL=http://172.15.0.5:5000
+PROVIDER_URL=http://172.15.0.4:8030
+# Replace <12 words>
+# If using barge locally, the mnemonic is "taxi music thumb unique chat sand crew more leg another off lamp"
+MNEMONIC=<12 words>
+OCEAN_NETWORK=development
+# Replace <path-to-home>
+ADDRESS_FILE="<path-to-home>/.ocean/ocean-contracts/artifacts/address.json"
+```
+
+### Create a new config.js file:
 
 ```bash
 cat > config.js
@@ -67,37 +81,49 @@ cat > config.js
 Now open the config.js in your code editor and enter the following:
 
 ```Javascript
+require('dotenv').config()
+const HDWalletProvider = require("@truffle/hdwallet-provider");
+const fs = require("fs");
+const { homedir } = require('os');
 const { ConfigHelper } = require("@oceanprotocol/lib");
-const Web3 = require("web3");
-const defaultConfig = new ConfigHelper().getConfig("development");
 
-const urls = {
-  networkUrl: "http://localhost:8545",
-  aquarius: "http://localhost:5000",
-  providerUri: "http://localhost:8030",
-};
+var oceanConfig = new ConfigHelper().getConfig(process.env.OCEAN_NETWORK);
 
-const contracts = {
-  "DTFactory": "0x_YOUR_DTFactory_ADDRESS_",
-  "BFactory": "0x_YOUR_DTFactory_ADDRESS_",
-  "FixedRateExchange": "0x_YOUR_DTFactory_ADDRESS_",
-  "Metadata": "0x_YOUR_Metadata_ADDRESS_",
-  "Ocean": "0x_YOUR_Ocean_ADDRESS_"
-};
+if (process.env.OCEAN_NETWORK === 'development') {
+  const addressData = JSON.parse(
+    fs.readFileSync(
+      process.env.ADDRESS_FILE ||
+      `${homedir}/.ocean/ocean-contracts/artifacts/address.json`,
+      'utf8'
+    )
+  )
+  addresses = addressData[process.env.OCEAN_NETWORK]
 
-const config = {
-  ...defaultConfig,
-  metadataCacheUri: urls.aquarius,
-  providerUri: urls.providerUri,
-  web3Provider: new Web3(urls.networkUrl),
-};
+  oceanConfig = {
+    ...oceanConfig,
+    oceanTokenAddress: addresses['Ocean'],
+    poolTemplateAddress: addresses['poolTemplate'],
+    fixedRateExchangeAddress: addresses['FixedPrice'],
+    dispenserAddress: addresses['Dispenser'],
+    erc721FactoryAddress: addresses['ERC721Factory'],
+    sideStakingAddress: addresses['Staking'],
+    opfCommunityFeeCollector: addresses['OPFCommunityFeeCollector']
+  }
+}
+
+oceanConfig = {
+  ...oceanConfig,
+  metadataCacheUri: process.env.AQUARIUS_URL,
+  nodeUri: process.env.NETWORK_URL,
+  providerUri: process.env.PROVIDER_URL
+}
+
+const provider = new HDWalletProvider(process.env.MNEMONIC, oceanConfig.nodeUri);
 
 module.exports = {
-  config,
-  contracts,
-  urls,
+  provider,
+  oceanConfig
 };
-
 ```
 
 Now check what your contract addresses are locally. In your terminal run:
@@ -106,41 +132,66 @@ Now check what your contract addresses are locally. In your terminal run:
 cat ~/.ocean/ocean-contracts/artifacts/address.json
 ```
 
-Next, update the contract addresses in your config.js file. Replace each of the place holders with the actual addresses that were outputted into your terminal.
+You should get an non-empty output.
 
 ## 5. Publish a new datatoken
 
 Now open the `index.js` file in your text editor. Enter the following code and save the file:
 
 ```Javascript
+const { NftFactory } = require("@oceanprotocol/lib");
+const { provider, oceanConfig } = require('./config');
 const Web3 = require("web3");
-const { Ocean, Datatokens } = require("@oceanprotocol/lib");
 
-const { factoryABI } = require("@oceanprotocol/contracts/artifacts/contracts/DTFactory.json");
-const { datatokensABI } = require("@oceanprotocol/contracts/artifacts/contracts/DatatokenTemplate.json");
-const { config, contracts, urls } = require("./config");
+const web3 = new Web3(provider);
 
+const createDataNFT = async (web3) => {
+    const Factory = new NftFactory(oceanConfig.erc721FactoryAddress, web3);
 
+    const accounts = await web3.eth.getAccounts();
+    const publisherAccount = accounts[0];
 
-const init = async () => {
-  const ocean = await Ocean.getInstance(config);
-  const blob = `http://localhost:8030/api/v1/services/consume`;
+    const nftParams = {
+        name: 'testNFT',
+        symbol: 'TST',
+        templateIndex: 1,
+        tokenURI: ''
+    };
 
-  const accounts = await ocean.accounts.list();
-  const alice = accounts[0].id;
-  console.log('Alice account address:', alice)
+    const erc20Params = {
+        templateIndex: 1,
+        cap: '100000',
+        feeAmount: '0',
+        feeManager: '0x0000000000000000000000000000000000000000',
+        feeToken: '0x0000000000000000000000000000000000000000',
+        minter: publisherAccount,
+        mpFeeAddress: '0x0000000000000000000000000000000000000000'
+    };
 
-  const datatoken = new Datatokens(
-    contracts.DTFactory,
-    factoryABI,
-    datatokensABI,
-    new Web3(urls.networkUrl)
-  );
-  const tokenAddress = await datatoken.create(blob, alice);
-  console.log(`Deployed datatoken address: ${tokenAddress}`);
-};
+    const result = await Factory.createNftWithErc20(
+        publisherAccount,
+        nftParams,
+        erc20Params
+    );
 
-init();
+    const erc721Address = result.events.NFTCreated.returnValues[0];
+    const datatokenAddress = result.events.TokenCreated.returnValues[0];
+
+    return {
+        erc721Address,
+        datatokenAddress
+    }
+}
+
+createDataNFT(web3).then(({ erc721Address, datatokenAddress }) => {
+    console.log(`DataNft address ${erc721Address}`);
+    console.log(`Datatoken address ${datatokenAddress}`);
+    process.exit();
+}).catch(err => {
+    console.error(err);
+    process.exit(1);
+})
+
 ```
 
 Now in your terminal, run the following command:
@@ -153,14 +204,38 @@ Congratulations, you've created your first Ocean datatoken! 🌊🐋
 
 ## 6. Mint 100 tokens
 
-Next, we will edit the code in `index.js` to mint 100 datatokens. These 100 datatokens are minted and sent to Alice's Address.
+Next, we will edit the code in `index.js` to mint 100 datatokens. These 100 datatokens are minted and sent to ppublisher's address.
 
-At the end of the `init() { ... }` function (after `console.log('Deployed datatoken address: ${tokenAddress}')`) add the following line of code:
+At the end of the file add the `mintDatatoken` function and replace the call to `createDataNFT` function and as follows:
 
 ```Javascript
-  await datatoken.mint(tokenAddress, alice, '100', alice)
-  let aliceBalance = await datatoken.balance(tokenAddress, alice)
-  console.log('Alice token balance:', aliceBalance)
+
+const mintDatatoken = async (datatokenAddress, web3) => {
+
+    const accounts = await web3.eth.getAccounts();
+    const publisherAccount = accounts[0];
+
+    const datatoken = new Datatoken(web3);
+
+    await datatoken.mint(datatokenAddress, publisherAccount, '1', publisherAccount)
+    const publisherBalance = await datatoken.balance(datatokenAddress, publisherAccount)
+    console.log(`Publsiher balance ${publisherBalance}`)
+}
+
+createDataNFT(web3).then(({ erc721Address,
+    datatokenAddress }) => {
+
+    mintDatatoken(datatokenAddress, web3).then(() => {
+        console.log("Done");
+        process.exit(err => {
+            console.error(err);
+            process.exit(1);
+        });
+    }).catch()
+}).catch(err => {
+    console.error(err);
+    process.exit(1);
+})
 ```
 
 Now run the `index.js` file again:
