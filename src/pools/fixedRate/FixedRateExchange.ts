@@ -171,17 +171,17 @@ export class FixedRateExchange {
     consumeMarketAddress: string = '0x0000000000000000000000000000000000000000',
     consumeMarketFee: string = '0'
   ): Promise<TransactionReceipt> {
-    const consumeMarketFeeFormatted = await this.web3.utils.toWei(consumeMarketFee)
+    const exchange = await this.getExchange(exchangeId)
+    const consumeMarketFeeFormatted = await this.amountToUnits(
+      exchange.baseToken,
+      consumeMarketFee
+    )
     const dtAmountFormatted = await this.amountToUnits(
-      (
-        await this.getExchange(exchangeId)
-      ).datatoken,
+      exchange.datatoken,
       datatokenAmount
     )
     const maxBtFormatted = await this.amountToUnits(
-      (
-        await this.getExchange(exchangeId)
-      ).baseToken,
+      exchange.baseToken,
       maxBaseTokenAmount
     )
 
@@ -270,17 +270,17 @@ export class FixedRateExchange {
     consumeMarketAddress: string = '0x0000000000000000000000000000000000000000',
     consumeMarketFee: string = '0'
   ): Promise<TransactionReceipt> {
-    const consumeMarketFeeFormatted = await this.web3.utils.toWei(consumeMarketFee)
+    const exchange = await this.getExchange(exchangeId)
+    const consumeMarketFeeFormatted = await this.amountToUnits(
+      exchange.baseToken,
+      consumeMarketFee
+    )
     const dtAmountFormatted = await this.amountToUnits(
-      (
-        await this.getExchange(exchangeId)
-      ).datatoken,
+      exchange.datatoken,
       datatokenAmount
     )
     const minBtFormatted = await this.amountToUnits(
-      (
-        await this.getExchange(exchangeId)
-      ).baseToken,
+      exchange.baseToken,
       minBaseTokenAmount
     )
     const estGas = await this.estBuyDT(
@@ -362,13 +362,14 @@ export class FixedRateExchange {
     exchangeId: string,
     newRate: string
   ): Promise<TransactionReceipt> {
+    const exchange = await this.getExchange(exchangeId)
     const estGas = await this.estSetRate(
       address,
       exchangeId,
-      this.web3.utils.toWei(String(newRate))
+      await this.unitsToAmount(exchange.baseToken, String(newRate))
     )
     const trxReceipt = await this.contract.methods
-      .setRate(exchangeId, this.web3.utils.toWei(newRate))
+      .setRate(exchangeId, this.unitsToAmount(exchange.baseToken, newRate))
       .send({
         from: address,
         gas: estGas + 1,
@@ -592,7 +593,7 @@ export class FixedRateExchange {
       .calcBaseInGivenOutDT(
         exchangeId,
         await this.amountToUnits(fixedRateExchange.datatoken, datatokenAmount),
-        this.web3.utils.toWei(consumeMarketFee)
+        await this.amountToUnits(fixedRateExchange.baseToken, consumeMarketFee)
       )
       .call()
 
@@ -629,16 +630,12 @@ export class FixedRateExchange {
     datatokenAmount: string,
     consumeMarketFee: string = '0'
   ): Promise<string> {
+    const exchange = await this.getExchange(exchangeId)
     const result = await this.contract.methods
       .calcBaseOutGivenInDT(
         exchangeId,
-        await this.amountToUnits(
-          (
-            await this.getExchange(exchangeId)
-          ).datatoken,
-          datatokenAmount
-        ),
-        this.web3.utils.toWei(consumeMarketFee)
+        await this.amountToUnits(exchange.datatoken, datatokenAmount),
+        this.unitsToAmount(exchange.baseToken, consumeMarketFee)
       )
       .call()
 
@@ -1089,13 +1086,14 @@ export class FixedRateExchange {
     exchangeId: string,
     newMarketFee: string
   ): Promise<TransactionReceipt> {
+    const exchange = await this.getExchange(exchangeId)
     const estGas = await this.estSetRate(
       address,
       exchangeId,
-      this.web3.utils.toWei(newMarketFee)
+      await this.unitsToAmount(exchange.baseToken, newMarketFee)
     )
     const trxReceipt = await this.contract.methods
-      .updateMarketFee(exchangeId, this.web3.utils.toWei(newMarketFee))
+      .updateMarketFee(exchangeId, this.unitsToAmount(exchange.baseToken, newMarketFee))
       .send({
         from: address,
         gas: estGas + 1,
