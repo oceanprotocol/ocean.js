@@ -248,25 +248,32 @@ You should now see in the console output that Alice has a token balance of 100.
 
 ## 7. Transfer tokens between users.
 
-Next we will transfer tokens from Alice to Bob. First we will edit the `init() { ... }` function to create an address for Bob. On the line after `const alice = accounts[0].id` add the following code:
+Next we will transfer tokens from Alice to Bob. First we will edit the callback of `createDataNFT` function to create an address for Bob. Change the callback function as follows:
 
 ```Javascript
-  const bob = accounts[1].id;
-  console.log('Bob account address:', bob);
-```
+createDataNFT(web3).then(async ({ erc721Address,
+    datatokenAddress }) => {
 
-Now at the end of the `init() { ... }` function (after `console.log('Alice token balance:', aliceBalance)`) add the following code:
+    const accounts = await web3.eth.getAccounts();
+    const alice = accounts[0];
+    const bob = accounts[1];
 
-```Javascript
-  const transaction = await datatoken.transfer(tokenAddress, bob, '50', alice)
-  const transactionId = transaction['transactionHash']
-  console.log('transactionId', transactionId)
+    const datatoken = new Datatoken(web3);
 
-  const bobBalance = await datatoken.balance(tokenAddress, bob)
-  aliceBalance = await datatoken.balance(tokenAddress, alice)
+    await datatoken.mint(datatokenAddress, alice, '1', alice)
 
-  console.log('Alice token balance:', aliceBalance)
-  console.log('Bob token balance:', bobBalance)
+    // Send 1 datatoken fro alice to bob 
+    await datatoken.transfer(datatokenAddress, bob, '1', alice)
+
+    const bobBalance = await datatoken.balance(datatokenAddress, bob)
+    console.log(`Bob balance ${bobBalance}`)
+
+    process.exit();
+
+}).catch(err => {
+    console.error(err);
+    process.exit(1);
+})
 ```
 
 Save the `index.js` file and run it again. In your terminal enter:
@@ -288,52 +295,105 @@ cat > data.js
 Open the data.js file in your text editor. Enter the following code and save the file:
 
 ```Javascript
-const testData = {
-  main: {
-    type: "dataset",
-    name: "test-dataset",
-    dateCreated: new Date(Date.now()).toISOString().split(".")[0] + "Z",
-    author: "test",
-    license: "MIT",
-    files: [
-      {
-        url:
-          "https://file-examples-com.github.io/uploads/2017/02/file_example_XLS_10.xls",
-        contentType: "xlsx",
-      },
-    ],
+const ddo = {
+  '@context': ['https://w3id.org/did/v1'],
+  id: 'did:op:efba17455c127a885ec7830d687a8f6e64f5ba559f8506f8723c1f10f05c049c',
+  version: '4.0.0',
+  chainId: 4,
+  nftAddress: '0x0',
+  metadata: {
+    created: '2021-12-20T14:35:20Z',
+    updated: '2021-12-20T14:35:20Z',
+    type: 'dataset',
+    name: 'dfgdfgdg',
+    description: 'd dfgd fgd dfg dfgdfgd dfgdf',
+    tags: [''],
+    author: 'dd',
+    license: 'https://market.oceanprotocol.com/terms',
+    additionalInformation: {
+      termsAndConditions: true
+    }
   },
-};
+  services: [
+    {
+      id: 'notAnId',
+      type: 'access',
+      files: '',
+      datatokenAddress: '0xa15024b732A8f2146423D14209eFd074e61964F3',
+      serviceEndpoint: 'https://providerv4.rinkeby.oceanprotocol.com',
+      timeout: 0
+    }
+  ]
+}
 
-module.exports = { testData };
+const files = [
+  {
+    type: 'url',
+    url: 'https://raw.githubusercontent.com/oceanprotocol/testdatasets/main/shs_dataset_test.txt',
+    method: 'GET'
+  }
+]
 ```
 
 Now, in your `index.js` file import the test data. Add the following line of code at the top of the file under the other `require()` statements:
 
 ```Javascript
-const { testData } = require("./data");
+const { ddo, files } = require("./data");
 ```
 
-At the end of the `init() { ... }` function (after `console.log('Bob token balance:', bobBalance)`) add the following code:
+At the end of add remove the call to function `createDataNFT` add the following code:
 
 ```Javascript
-  dataService = await ocean.assets.createAccessServiceAttributes(
-    accounts[0],
-    10, // set the price in datatoken
-    new Date(Date.now()).toISOString().split(".")[0] + "Z", // publishedDate
-    0 // timeout
-  );
 
-  // publish asset
-  const createData = await ocean.assets.create(
-    testData,
-    accounts[0],
-    [dataService],
-    tokenAddress
-  );
+const setMetadata = async (erc721Address, datatokenAddress) => {
+    const accounts = await web3.eth.getAccounts();
+    const publisherAccount = accounts[0];
 
-  const dataId = createData.id;
-  console.log('Data ID:', dataId);
+    // create the files encrypted string
+    let providerResponse = await ProviderInstance.encrypt(files, providerUrl)
+    ddo.services[0].files = await providerResponse;
+    ddo.services[0].datatokenAddress = datatokenAddress
+    // update ddo and set the right did
+    ddo.nftAddress = erc721Address
+    const chain = await web3.eth.getChainId()
+    ddo.id =
+        'did:op:' + SHA256(web3.utils.toChecksumAddress(erc721Address) + chain.toString(10))
+
+    providerResponse = await ProviderInstance.encrypt(ddo, providerUrl);
+    const encryptedResponse = await providerResponse
+    const metadataHash = getHash(JSON.stringify(ddo))
+
+    const res = await nft.setMetadata(
+        erc721Address,
+        publisherAccount,
+        0,
+        providerUrl,
+        '',
+        '0x2',
+        encryptedResponse,
+        '0x' + metadataHash
+    )
+
+    const resolvedDDO = await aquarius.waitForAqua(ddo.id)
+
+    console.log(`Resolved asset did [${ddo.id}]from aquarius.`)
+}
+
+createDataNFT().then(({ erc721Address,
+    datatokenAddress }) => {
+
+    console.log(`DataNft address ${erc721Address}`);
+    console.log(`Datatoken address ${datatokenAddress}`);
+
+    setMetadata(erc721Address, datatokenAddress).then(() => {
+        console.log("Metadata set.")
+        process.exit();
+    })
+
+}).catch(err => {
+    console.error(err);
+    process.exit(1);
+})
 ```
 
 Now save and run the `index.js` file:
