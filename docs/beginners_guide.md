@@ -1,6 +1,6 @@
 # A beginners guide to selling data over the blockchain
 
-This is a beginners guide to selling a dataset over the blockchain. The process involves creating a datatoken, which will be used to purchase the dataset, and listing it on a marketplace. This guide provides all the code you need and no prior knowledge is required. It is helpful if you have some experience with javascript but it is not necessary. 
+This is a beginners guide to selling a dataset over the blockchain. The process involves creating a dataNFT and a datatoken. Datatoken will be used to purchase the dataset, and listing it on a marketplace. This guide provides all the code you need and no prior knowledge is required. It is helpful if you have some experience with javascript but it is not necessary. 
 
 Selling your data over the blockchain puts you in charge of how it is used and can be a great source of passive income. There are many AI startups that have deep expertise in machine learning but need more data to improve their models. Selling your data via the blockchain gives you a level of security that you would be unable to achieve if you were selling via a centralised marketplace. 
 
@@ -74,9 +74,11 @@ Next we need to set up the Node.js project so that it installs the necessary dep
 Open the package.json file in a text editor and update the dependencies to include the following:
 ```JSON
  "dependencies": {
-   "@oceanprotocol/contracts": "^0.5.6",
-   "@oceanprotocol/lib": "^0.6.5",
-   "web3": "^1.3.0"
+   "@oceanprotocol/contracts": "^0.5.6", // TODO: eplace version
+   "@oceanprotocol/lib": "^0.6.5", // TODO: replace version
+   "web3": "^1.7.0",
+   "dotenv": "^16.0.0",
+   "crypto-js": "^4.1.1"
  }
 ```
 
@@ -88,10 +90,26 @@ npm install
 
 At this point you may get some warning messages but there shouldn’t be any errors. As long as you don’t have any errors, you are ready to proceed. 
 
-## 4. Create a config file and update contract addresses
+## 4. Create a .env and config file
 Now we need to set up a configuration file that will determine where your datatoken and dataset are published to. We will enter the local addresses where the Ocean Protocol services are running. When you are ready to deploy your datatoken on the Ethereum mainnet you will need to update these addresses, the process of live deploying your dataset and datatokens will be covered in a later blog post.  
 
-Start by creating a new config.js file. In your terminal, enter the following command. 
+Start by creating a new `.env` file place the content as below:
+
+```bash
+NETWORK_URL=http://localhost:8545
+AQUARIUS_URI=http://localhost:5000
+providerUrl=http://localhost:8030
+
+# Replace <12 words>
+# If using barge locally, the mnemonic is "taxi music thumb unique chat sand crew more leg another off lamp"
+MNEMONIC=<12 words>
+OCEAN_NETWORK=development
+
+# Replace <path-to-home>
+ADDRESS_FILE="<path-to-home>/.ocean/ocean-contracts/artifacts/address.json"
+```
+
+In your terminal, enter the following command. 
 
 ```bash 
 cat > config.js
@@ -100,117 +118,167 @@ cat > config.js
 Make sure that this config.js file has been created inside your quickstart directory. Now open the config.js in your code editor and enter the following code:
 
 ```Javascript
+require('dotenv').config()
+const HDWalletProvider = require("@truffle/hdwallet-provider");
+const fs = require("fs");
+const { homedir } = require('os');
 const { ConfigHelper } = require("@oceanprotocol/lib");
-const Web3 = require("web3");
-const defaultConfig = new ConfigHelper().getConfig("development");
- 
-const urls = {
- networkUrl: "http://localhost:8545",
- aquarius: "http://localhost:5000",
- providerUri: "http://localhost:8030",
-};
- 
-const contracts = {
- "DTFactory": "0x_YOUR_DTFactory_ADDRESS_",
- "BFactory": "0x_YOUR_DTFactory_ADDRESS_",
- "FixedRateExchange": "0x_YOUR_DTFactory_ADDRESS_",
- "Metadata": "0x_YOUR_Metadata_ADDRESS_",
- "Ocean": "0x_YOUR_Ocean_ADDRESS_"
-};
- 
-const config = {
- ...defaultConfig,
- metadataCacheUri: urls.aquarius,
- providerUri: urls.providerUri,
- web3Provider: new Web3(urls.networkUrl),
-};
- 
+
+var oceanConfig = new ConfigHelper().getConfig(process.env.OCEAN_NETWORK);
+
+if (process.env.OCEAN_NETWORK === 'development') {
+  const addressData = JSON.parse(
+    fs.readFileSync(
+      process.env.ADDRESS_FILE ||
+      `${homedir}/.ocean/ocean-contracts/artifacts/address.json`,
+      'utf8'
+    )
+  )
+  addresses = addressData[process.env.OCEAN_NETWORK]
+
+  oceanConfig = {
+    ...oceanConfig,
+    oceanTokenAddress: addresses['Ocean'],
+    poolTemplateAddress: addresses['poolTemplate'],
+    fixedRateExchangeAddress: addresses['FixedPrice'],
+    dispenserAddress: addresses['Dispenser'],
+    erc721FactoryAddress: addresses['ERC721Factory'],
+    sideStakingAddress: addresses['Staking'],
+    opfCommunityFeeCollector: addresses['OPFCommunityFeeCollector']
+  }
+}
+
+oceanConfig = {
+  ...oceanConfig,
+  metadataCacheUri: process.env.AQUARIUS_URL,
+  nodeUri: process.env.NETWORK_URL,
+  providerUri: process.env.PROVIDER_URL
+}
+
+const provider = new HDWalletProvider(process.env.MNEMONIC, oceanConfig.nodeUri);
+
 module.exports = {
- config,
- contracts,
- urls,
+  provider,
+  oceanConfig
 };
 ```
-
-You will notice that the code currently contains placeholders for the contract addresses (e.g. `“0x_YOUR_DTFactory_ADDRESS_"`). This is because we need to update these addresses with the addresses of the Ocean Protocol smart contracts on your local blockchain. 
 
 When the Barge service started running it automatically saved contract addresses in a JSON file in a hidden folder under your home directory. We can check what these contract addresses are by running the following command into your terminal: 
 
 ```bash
 cat ~/.ocean/ocean-contracts/artifacts/address.json
 ```
-You should get an output that looks like this:
+You should get an non-empty output.
 
-```JSON
-{
- "development": {
-   "DTFactory": "0x27F7b0C827596C7355ee39EdFd3235F8b47C2862",
-   "BFactory": "0xCe7c408C56f8BFF8EF616F5CE3E7868486de3748",
-   "FixedRateExchange": "0xf4C7B100cECA95Badc583bdBd10F6CA8D9123B09",
-   "Metadata": "0x2c11A9763AaCb838fDFD6Ee01fD1179196ee20f5",
-   "Ocean": "0x11570aE63B4fDe21d213Bc1A9BF61eEA51d13D56"
- }
-}
-```
+## 5. Publish a new dataNFT and datatoken
+Now you are ready to publish your first dataNFT and datatoken! 
 
-Now we need to remove the placeholder contract addresses from the config.js file and replace them with the contract addresses that were outputted to your terminal. When you have done this, save the file. 
-
-## 5. Publish a new datatoken
-Now you are ready to publish your first datatoken! 
-
-The datatoken that we will be deploying is an ERC20 token. ERC20 is standard for fungible tokens (meaning each token is identical and interchangeable), the standard contains a list of required and optional functions that form the smart contract which manages the token balances and transfers. ERC20 is the most popular standard for tokens deployed on the Ethereum Blockchain and many of the popular tokens that you will have heard of (Tether, USDC, Dai, Binance token) all follow the ERC20 standard. You can read more about the ERC20 token standard here: https://ethereum.org/en/developers/docs/standards/tokens/erc-20/ 
+The dataNFT is complant with ERC721 standart and datatoken that we will be deploying is an ERC20 token. ERC20 is standard for fungible tokens (meaning each token is identical and interchangeable), the standard contains a list of required and optional functions that form the smart contract which manages the token balances and transfers. ERC20 is the most popular standard for tokens deployed on the Ethereum Blockchain and many of the popular tokens that you will have heard of (Tether, USDC, Dai, Binance token) all follow the ERC20 standard. You can read more about the ERC20 token standard here: https://ethereum.org/en/developers/docs/standards/tokens/erc-20/ 
 
 Security is incredibly important for any blockchain token (as they are a potential target for attacks) and for this reason it is not best practice to write an ERC20 from scratch. This would introduce unnecessary complexity and would require an in depth security audit. In general, complexity is the enemy of security. Instead of writing our own ERC20 token, the code we deploy will inherit from the OpenZepplin ERC20 library. This library has been thoroughly battle tested in live environments and is used to underpin millions of dollars. You can read more about the OpenZepplin ERC20 contract libraries here: https://docs.openzeppelin.com/contracts/2.x/api/token/erc20 
 
-The process of creating and deploying the ERC20 datatokens has been automated by Ocean Protocol. All we need to do is open the `index.js` file in your text editor and enter the following code:
+The process of creating and deploying the ERC721 dataNFT and ERC20 datatokens has been automated by Ocean Protocol. All we need to do is open the `index.js` file in your text editor and enter the following code:
 
 ```Javascript
+const { NftFactory } = require("@oceanprotocol/lib");
+const { provider, oceanConfig } = require('./config');
 const Web3 = require("web3");
-const { Ocean, Datatokens } = require("@oceanprotocol/lib");
- 
-const { factoryABI } = require("@oceanprotocol/contracts/artifacts/contracts/DTFactory.json");
-const { datatokensABI } = require("@oceanprotocol/contracts/artifacts/contracts/DatatokenTemplate.json");
-const { config, contracts, urls } = require("./config");
- 
-const init = async () => {
- const ocean = await Ocean.getInstance(config);
- const blob = `http://localhost:8030/api/v1/services/consume`;
- 
- const accounts = await ocean.accounts.list();
- const alice = accounts[0].id;
- console.log('Alice account address:', alice)
- 
- const datatoken = new Datatokens(
-   contracts.DTFactory,
-   factoryABI,
-   datatokensABI,
-   new Web3(urls.networkUrl)
- );
- const tokenAddress = await datatoken.create(blob, alice);
- console.log(`Deployed datatoken address: ${tokenAddress}`);
-};
- 
-init();
+
+const web3 = new Web3(provider);
+
+const createDataNFT = async (web3) => {
+    const Factory = new NftFactory(oceanConfig.erc721FactoryAddress, web3);
+
+    const accounts = await web3.eth.getAccounts();
+    const publisherAccount = accounts[0];
+
+    const nftParams = {
+        name: 'testNFT',
+        symbol: 'TST',
+        templateIndex: 1,
+        tokenURI: ''
+    };
+
+    const erc20Params = {
+        templateIndex: 1,
+        cap: '100000',
+        feeAmount: '0',
+        feeManager: '0x0000000000000000000000000000000000000000',
+        feeToken: '0x0000000000000000000000000000000000000000',
+        minter: publisherAccount,
+        mpFeeAddress: '0x0000000000000000000000000000000000000000'
+    };
+
+    const result = await Factory.createNftWithErc20(
+        publisherAccount,
+        nftParams,
+        erc20Params
+    );
+
+    const erc721Address = result.events.NFTCreated.returnValues[0];
+    const datatokenAddress = result.events.TokenCreated.returnValues[0];
+
+    return {
+        erc721Address,
+        datatokenAddress
+    }
+}
+
+createDataNFT(web3).then(({ erc721Address,
+    datatokenAddress }) => {
+
+    console.log(`DataNft address ${erc721Address}`);
+    console.log(`Datatoken address ${datatokenAddress}`);
+
+    process.exit();
+}).catch(err => {
+    console.error(err);
+    process.exit(1);
+})
 ```
 
-This is all the code you need to deploy your first datatoken. Now save the file and run it. In your terminal, run the following command:
+This is all the code you need to deploy your first dataNFT. Now save the file and run it. In your terminal, run the following command:
 
 ```Bash
 node index.js
 ```
 
-You should see the console log message stating the address of your datatoken. Congratulations, you've created your first Ocean datatoken! 🌊🐋
+You should see the console log message stating the address of your dataNFT and datatoken. Congratulations, you've created your first Ocean dataNFT and a datatoken! 🌊🐋
 
 ## 6. Mint 200 tokens
 
 Next, we will edit the code in `index.js` to mint 200 datatokens. These 200 datatokens are minted and sent to Alice's Address.
 
-At the end of the `init() { ... }` function (after `console.log('Deployed datatoken address: ${tokenAddress}')`) add the following line of code:
+Replace the `createDataNFT` function with the following line of code:
  
 ```Javascript 
- await datatoken.mint(tokenAddress, alice, '200', alice)
- let aliceBalance = await datatoken.balance(tokenAddress, alice)
- console.log('Alice token balance:', aliceBalance)
+const mintDatatoken = async (datatokenAddress, web3) => {
+
+    const accounts = await web3.eth.getAccounts();
+    const publisherAccount = accounts[0];
+    const consumerAccount = accounts[1];
+
+    const datatoken = new Datatoken(web3);
+
+    await datatoken.mint(datatokenAddress, publisherAccount, '1', consumerAccount)
+    const consumerBalance = await datatoken.balance(datatokenAddress, consumerAccount)
+    console.log(`Consumer balance ${consumerBalance}`)
+}
+
+createDataNFT(web3).then(({ erc721Address,
+    datatokenAddress }) => {
+
+    mintDatatoken(datatokenAddress, web3).then(() => {
+        console.log("Done");
+        process.exit(err => {
+            console.error(err);
+            process.exit(1);
+        });
+    }).catch()
+}).catch(err => {
+    console.error(err);
+    process.exit(1);
+})
 ```
 
 Now run the `index.js` file again:
@@ -219,7 +287,7 @@ Now run the `index.js` file again:
 node index.js
 ```
 
-You should now see in the console output that Alice has a token balance of 200.
+You should now see in the console output that consumer address has a token balance of 1.
 
 ## 7. Publish a dataset
 
@@ -232,54 +300,146 @@ cat > data.js
 Now open the data.js file in your text editor. Enter the following code and save the file:
  
 ```Javascript
-const testData = {
- main: {
-   type: "dataset",
-   name: "test-dataset",
-   dateCreated: new Date(Date.now()).toISOString().split(".")[0] + "Z",
-   author: "test",
-   license: "MIT",
-   files: [
-     {
-       url:
-         "https://file-examples-com.github.io/uploads/2017/02/file_example_XLS_10.xls",
-       contentType: "xlsx",
-     },
-   ],
- },
-};
- 
-module.exports = { testData };
+const ddo = {
+  '@context': ['https://w3id.org/did/v1'],
+  id: 'did:op:efba17455c127a885ec7830d687a8f6e64f5ba559f8506f8723c1f10f05c049c',
+  version: '4.0.0',
+  chainId: 4,
+  nftAddress: '0x0',
+  metadata: {
+    created: '2021-12-20T14:35:20Z',
+    updated: '2021-12-20T14:35:20Z',
+    type: 'dataset',
+    name: 'dfgdfgdg',
+    description: 'd dfgd fgd dfg dfgdfgd dfgdf',
+    tags: [''],
+    author: 'dd',
+    license: 'https://market.oceanprotocol.com/terms',
+    additionalInformation: {
+      termsAndConditions: true
+    }
+  },
+  services: [{
+      id: 'notAnId',
+      type: 'access',
+      files: '',
+      datatokenAddress: '0xa15024b732A8f2146423D14209eFd074e61964F3',
+      serviceEndpoint: 'https://providerv4.rinkeby.oceanprotocol.com',
+      timeout: 0
+    }]
+}
+
+const files = [{
+    type: 'url',
+    url: 'https://raw.githubusercontent.com/oceanprotocol/testdatasets/main/shs_dataset_test.txt',
+    method: 'GET'
+  }]
+
+module.exports = { ddo, files };
 ```
 
-If you already have a dataset hosted somewhere you can replace the example link url to the address where your dataset is hosted. You should also update the contentType field with the file extension of your dataset. If you haven’t yet hosted your dataset, you can continue with the example link in place.
+If you already have a dataset hosted somewhere you can replace the example link url to the address where your dataset is hosted. You should also update the `type` field with the file extension of your dataset. If you haven’t yet hosted your dataset, you can continue with the example link in place.
 
-Now, we need to import the dataset into the index.js file. Open your your `index.js` in your text editor and add the following line of code at the top of the file under the other `require()` statements:
+Now, we need to import the dataset into the index.js file. Open your your `index.js` in your text editor and replace the content as below:
 
 ```Javascript
-const { testData } = require("./data");
-```
+const { NftFactory, Nft, ProviderInstance, Datatoken, getHash, Aquarius } = require("@oceanprotocol/lib");
+const { SHA256 } = require('crypto-js');
+const Web3 = require("web3");
+const { provider, oceanConfig } = require('./config');
+const { ddo, files } = require('./data');
 
-Next we add the code for publishing the dataset. This includes important information about your dataset such as the price, the publishing date and the timeout. At the end of the `init() { ... }` function (after `console.log('Bob token balance:', bobBalance)`) add the following code:
+const web3 = new Web3(provider);
+const aquarius = new Aquarius(oceanConfig.metadataCacheUri);
+const nft = new Nft(web3);
+const providerUrl = oceanConfig.providerUri;
+const Factory = new NftFactory(oceanConfig.erc721FactoryAddress, web3);
 
- ```Javascript
- dataService = await ocean.assets.createAccessServiceAttributes(
-   accounts[0],
-   10, // set the price in datatoken
-   new Date(Date.now()).toISOString().split(".")[0] + "Z", // publishedDate
-   0 // timeout
- );
- 
- // publish asset
- const createData = await ocean.assets.create(
-   testData,
-   accounts[0],
-   [dataService],
-   tokenAddress
- );
- 
- const dataId = createData.id;
- console.log('Data ID:', dataId);
+const createDataNFT = async () => {
+    const accounts = await web3.eth.getAccounts();
+    const publisherAccount = accounts[0];
+
+    const nftParams = {
+        name: 'testNFT',
+        symbol: 'TST',
+        templateIndex: 1,
+        tokenURI: ''
+    };
+
+    const erc20Params = {
+        templateIndex: 1,
+        cap: '100000',
+        feeAmount: '0',
+        feeManager: '0x0000000000000000000000000000000000000000',
+        feeToken: '0x0000000000000000000000000000000000000000',
+        minter: publisherAccount,
+        mpFeeAddress: '0x0000000000000000000000000000000000000000'
+    };
+
+    const result = await Factory.createNftWithErc20(
+        publisherAccount,
+        nftParams,
+        erc20Params
+    );
+
+    const erc721Address = result.events.NFTCreated.returnValues[0];
+    const datatokenAddress = result.events.TokenCreated.returnValues[0];
+
+    return {
+        erc721Address,
+        datatokenAddress
+    }
+}
+
+const setMetadata = async (erc721Address, datatokenAddress) => {
+    const accounts = await web3.eth.getAccounts();
+    const publisherAccount = accounts[0];
+
+    // create the files encrypted string
+    let providerResponse = await ProviderInstance.encrypt(files, providerUrl)
+    ddo.services[0].files = await providerResponse;
+    ddo.services[0].datatokenAddress = datatokenAddress
+    // update ddo and set the right did
+    ddo.nftAddress = erc721Address
+    const chain = await web3.eth.getChainId()
+    ddo.id =
+        'did:op:' + SHA256(web3.utils.toChecksumAddress(erc721Address) + chain.toString(10))
+
+    providerResponse = await ProviderInstance.encrypt(ddo, providerUrl);
+    const encryptedResponse = await providerResponse
+    const metadataHash = getHash(JSON.stringify(ddo))
+
+    const res = await nft.setMetadata(
+        erc721Address,
+        publisherAccount,
+        0,
+        providerUrl,
+        '',
+        '0x2',
+        encryptedResponse,
+        '0x' + metadataHash
+    )
+
+    const resolvedDDO = await aquarius.waitForAqua(ddo.id)
+
+    console.log(`Resolved asset did [${ddo.id}]from aquarius.`)
+}
+
+createDataNFT().then(({ erc721Address,
+    datatokenAddress }) => {
+
+    console.log(`DataNft address ${erc721Address}`);
+    console.log(`Datatoken address ${datatokenAddress}`);
+
+    setMetadata(erc721Address, datatokenAddress).then(() => {
+        console.log("Metadata set.")
+        process.exit();
+    })
+
+}).catch(err => {
+    console.error(err);
+    process.exit(1);
+})
 ```
 
 Now save and run the `index.js` file:
@@ -303,25 +463,39 @@ We start by saving the address of the marketplace. On the line after `const alic
  console.log('Marketplace account address:', marketplace);
 ```
 
-Next we will initiate a transaction that approves the marketplace to send your tokens (to buyers) on your behalf. We then make a call on the datatoken contract to check the allowance that the marketplace now has. 
+Next we will initiate a transaction that approves the marketplace to send your tokens (to buyers) on your behalf.
 
-At the end of the `init() { ... }` function (after `console.log('Data ID:', dataId)`) add the following code:
+Add the following code in `index.js` and call `createDataNFT` as follows:
 
 ```Javascript
-await datatoken.approve(
-   tokenAddress,
-   marketplace, // marketplace address,
-   '100', // marketplaceAllowance
-   alice
-)
- 
-const marketplaceAllowance = await datatoken.allowance(
-   tokenAddress,
-   alice,
-   marketplace, // marketplace address,
-);
- 
-console.log("Marketplace Allowance:", marketplaceAllowance);
+const approveDatatoken = async (datatokenAddress, web3) => {
+
+    const accounts = await web3.eth.getAccounts();
+    const publisherAccount = accounts[0];
+    const marketplaceAddress = accounts[1];
+
+    const datatoken = new Datatoken(web3);
+
+    await datatoken.approve(
+        datatokenAddress,
+        marketplaceAddress, // marketplace address,
+        '100', // marketplaceAllowance
+        publisherAccount
+    )
+}
+
+
+createDataNFT(web3).then(({ erc721Address,
+    datatokenAddress }) => {
+
+    approveDatatoken(datatokenAddress, web3).then(() => {
+        process.exit();
+    }).catch(err => console.log(err));
+
+}).catch(err => {
+    console.error(err);
+    process.exit(1);
+})
 ```
 
 Now save the file and run it:
@@ -329,8 +503,6 @@ Now save the file and run it:
 ```Bash
 node index.js
 ```
-
-You should see in the terminal output that the marketplace has an allowance of 100 datatokens.
 
 Well done, you have now completed the tutorial! 
 
