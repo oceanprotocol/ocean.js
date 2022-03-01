@@ -705,7 +705,7 @@ export class NftFactory {
     let estGas
     try {
       const ercCreateData = getErcCreationParams(ercParams)
-      const poolData = getPoolCreationParams(poolParams)
+      const poolData = await getPoolCreationParams(poolParams)
       estGas = await this.factory721.methods
         .createNftWithErc20WithPool(nftCreateData, ercCreateData, poolData)
         .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
@@ -738,7 +738,7 @@ export class NftFactory {
       poolParams
     )
     const ercCreateData = getErcCreationParams(ercParams)
-    const poolData = getPoolCreationParams(poolParams)
+    const poolData = await getPoolCreationParams(poolParams)
 
     // Invoke createToken function of the contract
     const trxReceipt = await this.factory721.methods
