@@ -802,13 +802,13 @@ export class Pool {
         this.config
       )
 
-    amountsInOutMaxFee.tokenAmountIn = await amountToUnits(
+    const tokenAmountIn = await amountToUnits(
       this.web3,
       tokenInOutMarket.tokenIn,
       amountsInOutMaxFee.tokenAmountIn
     )
 
-    amountsInOutMaxFee.minAmountOut = await amountToUnits(
+    const minAmountOut = await amountToUnits(
       this.web3,
       tokenInOutMarket.tokenOut,
       amountsInOutMaxFee.minAmountOut
@@ -833,8 +833,8 @@ export class Pool {
             tokenInOutMarket.marketFeeAddress
           ],
           [
-            amountsInOutMaxFee.tokenAmountIn,
-            amountsInOutMaxFee.minAmountOut,
+            tokenAmountIn,
+            minAmountOut,
             maxPrice,
             this.web3.utils.toWei(amountsInOutMaxFee.swapMarketFee)
           ]
@@ -882,13 +882,13 @@ export class Pool {
       amountsInOutMaxFee
     )
 
-    amountsInOutMaxFee.tokenAmountIn = await amountToUnits(
+    const tokenAmountIn = await amountToUnits(
       this.web3,
       tokenInOutMarket.tokenIn,
       amountsInOutMaxFee.tokenAmountIn
     )
 
-    amountsInOutMaxFee.minAmountOut = await amountToUnits(
+    const minAmountOut = await amountToUnits(
       this.web3,
       tokenInOutMarket.tokenOut,
       amountsInOutMaxFee.minAmountOut
@@ -913,8 +913,8 @@ export class Pool {
             tokenInOutMarket.marketFeeAddress
           ],
           [
-            amountsInOutMaxFee.tokenAmountIn,
-            amountsInOutMaxFee.minAmountOut,
+            tokenAmountIn,
+            minAmountOut,
             maxPrice,
             this.web3.utils.toWei(amountsInOutMaxFee.swapMarketFee)
           ]
@@ -956,13 +956,13 @@ export class Pool {
 
     const gasLimitDefault = this.GASLIMIT_DEFAULT
 
-    amountsInOutMaxFee.maxAmountIn = await amountToUnits(
+    const maxAmountIn = await amountToUnits(
       this.web3,
       tokenInOutMarket.tokenIn,
       amountsInOutMaxFee.maxAmountIn
     )
 
-    amountsInOutMaxFee.tokenAmountOut = await amountToUnits(
+    const tokenAmountOut = await amountToUnits(
       this.web3,
       tokenInOutMarket.tokenOut,
       amountsInOutMaxFee.tokenAmountOut
@@ -986,8 +986,8 @@ export class Pool {
             tokenInOutMarket.marketFeeAddress
           ],
           [
-            amountsInOutMaxFee.maxAmountIn,
-            amountsInOutMaxFee.tokenAmountOut,
+            maxAmountIn,
+            tokenAmountOut,
             maxPrice,
             this.web3.utils.toWei(amountsInOutMaxFee.swapMarketFee)
           ]
@@ -1031,13 +1031,13 @@ export class Pool {
       amountsInOutMaxFee
     )
 
-    amountsInOutMaxFee.maxAmountIn = await amountToUnits(
+    const maxAmountIn = await amountToUnits(
       this.web3,
       tokenInOutMarket.tokenIn,
       amountsInOutMaxFee.maxAmountIn
     )
 
-    amountsInOutMaxFee.tokenAmountOut = await amountToUnits(
+    const tokenAmountOut = await amountToUnits(
       this.web3,
       tokenInOutMarket.tokenOut,
       amountsInOutMaxFee.tokenAmountOut
@@ -1060,8 +1060,8 @@ export class Pool {
             tokenInOutMarket.marketFeeAddress
           ],
           [
-            amountsInOutMaxFee.maxAmountIn,
-            amountsInOutMaxFee.tokenAmountOut,
+            maxAmountIn,
+            tokenAmountOut,
             maxPrice,
             this.web3.utils.toWei(amountsInOutMaxFee.swapMarketFee)
           ]
