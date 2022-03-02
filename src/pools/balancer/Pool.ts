@@ -897,7 +897,7 @@ export class Pool {
     let result = null
 
     const maxPrice = amountsInOutMaxFee.maxPrice
-      ? amountToUnits(
+      ? await amountToUnits(
           this.web3,
           await this.getBaseToken(poolAddress),
           amountsInOutMaxFee.maxPrice
@@ -969,7 +969,7 @@ export class Pool {
     )
 
     const maxPrice = amountsInOutMaxFee.maxPrice
-      ? amountToUnits(
+      ? await amountToUnits(
           this.web3,
           await this.getBaseToken(poolAddress),
           amountsInOutMaxFee.maxPrice
