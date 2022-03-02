@@ -369,7 +369,7 @@ export class FixedRateExchange {
       await this.unitsToAmount(exchange.baseToken, String(newRate))
     )
     const trxReceipt = await this.contract.methods
-      .setRate(exchangeId, this.unitsToAmount(exchange.baseToken, newRate))
+      .setRate(exchangeId, await this.unitsToAmount(exchange.baseToken, newRate))
       .send({
         from: address,
         gas: estGas + 1,
