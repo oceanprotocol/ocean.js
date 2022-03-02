@@ -88,6 +88,7 @@ export function getFreCreationParams(freParams: FreCreationParams): any {
 }
 
 export async function getPoolCreationParams(
+  web3: Web3,
   poolParams: PoolCreationParams
 ): Promise<any> {
   return {
@@ -105,7 +106,7 @@ export async function getPoolCreationParams(
       Web3.utils.toWei(poolParams.vestingAmount),
       poolParams.vestedBlocks,
       await amountToUnits(
-        this.web3,
+        web3,
         poolParams.baseTokenAddress,
         poolParams.initialBaseTokenLiquidity
       )
