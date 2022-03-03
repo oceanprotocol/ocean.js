@@ -41,8 +41,7 @@ export const configHelperNetworks: Config[] = [
     nodeUri: 'https://ropsten.infura.io/v3',
     providerUri: 'https://v4.provider.ropsten.oceanprotocol.com',
     subgraphUri: 'https://v4.subgraph.ropsten.oceanprotocol.com',
-    explorerUri: 'https://ropsten.etherscan.io',
-    startBlock: 9227563
+    explorerUri: 'https://ropsten.etherscan.io'
   },
   {
     ...configHelperNetworksBase,
@@ -51,8 +50,7 @@ export const configHelperNetworks: Config[] = [
     nodeUri: 'https://rinkeby.infura.io/v3',
     providerUri: 'https://v4.provider.rinkeby.oceanprotocol.com',
     subgraphUri: 'https://v4.subgraph.rinkeby.oceanprotocol.com',
-    explorerUri: 'https://rinkeby.etherscan.io',
-    startBlock: 7294090
+    explorerUri: 'https://rinkeby.etherscan.io'
   },
   {
     ...configHelperNetworksBase,
@@ -76,18 +74,16 @@ export const configHelperNetworks: Config[] = [
     providerUri: 'https://v4.provider.polygon.oceanprotocol.com',
     subgraphUri: 'https://v4.subgraph.polygon.oceanprotocol.com',
     explorerUri: 'https://polygonscan.com',
-    oceanTokenSymbol: 'mOCEAN',
-    startBlock: 11005222
+    oceanTokenSymbol: 'mOCEAN'
   },
   {
     ...configHelperNetworksBase,
     chainId: 1287,
     network: 'moonbase',
-    nodeUri: 'https://rpc.testnet.moonbeam.network',
-    providerUri: 'https://v4.provider.moonbase.oceanprotocol.com',
-    subgraphUri: 'https://v4.subgraph.moonbase.oceanprotocol.com',
-    explorerUri: 'https://moonbase.moonscan.io/',
-    startBlock: 90707
+    nodeUri: 'https://rpc.api.moonbase.moonbeam.network',
+    providerUri: 'https://v4.provider.moonbeamalpha.oceanprotocol.com',
+    subgraphUri: 'https://v4.subgraph.moonbeamalpha.oceanprotocol.com',
+    explorerUri: 'https://moonbase.moonscan.io/'
   },
   {
     ...configHelperNetworksBase,
