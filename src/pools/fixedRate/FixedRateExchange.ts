@@ -635,7 +635,7 @@ export class FixedRateExchange {
       .calcBaseOutGivenInDT(
         exchangeId,
         await this.amountToUnits(exchange.datatoken, datatokenAmount),
-        this.amountToUnits(exchange.baseToken, consumeMarketFee)
+        await this.amountToUnits(exchange.baseToken, consumeMarketFee)
       )
       .call()
 
@@ -1093,7 +1093,10 @@ export class FixedRateExchange {
       await this.amountToUnits(exchange.baseToken, newMarketFee)
     )
     const trxReceipt = await this.contract.methods
-      .updateMarketFee(exchangeId, this.amountToUnits(exchange.baseToken, newMarketFee))
+      .updateMarketFee(
+        exchangeId,
+        await this.amountToUnits(exchange.baseToken, newMarketFee)
+      )
       .send({
         from: address,
         gas: estGas + 1,
