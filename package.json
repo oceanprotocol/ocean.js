@@ -54,7 +54,7 @@
   },
   "homepage": "https://github.com/oceanprotocol/ocean.js#readme",
   "peerDependencies": {
-    "web3": "^1.7.0"
+    "web3": "^1.7.1"
   },
   "dependencies": {
     "@oceanprotocol/contracts": "1.0.0-alpha.21",
@@ -62,9 +62,9 @@
     "cross-fetch": "^3.1.5",
     "crypto-js": "^4.1.1",
     "decimal.js": "^10.3.1",
-    "web3": "^1.7.0",
-    "web3-core": "^1.7.0",
-    "web3-eth-contract": "^1.7.0"
+    "web3": "^1.7.1",
+    "web3-core": "^1.7.1",
+    "web3-eth-contract": "^1.7.1"
   },
   "devDependencies": {
     "@truffle/hdwallet-provider": "^2.0.3",
