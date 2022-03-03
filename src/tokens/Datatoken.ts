@@ -10,7 +10,8 @@ import {
   getFairGasPrice,
   setContractDefaults,
   configHelperNetworks,
-  getFreOrderParams
+  getFreOrderParams,
+  allowance
 } from '../utils'
 import {
   ConsumeMarketFee,
@@ -990,6 +991,12 @@ export class Datatoken {
         consumeMarketFee,
         dtContract
       )
+
+      const currentAllowance = await allowance(this.web3, dtAddress, address, consumer)
+      if (new Decimal(currentAllowance).greaterThanOrEqualTo(new Decimal(estGas + 1))) {
+        LoggerInstance.error(`ERROR - check allowance: Failed to start order`)
+        throw new Error(`Failed to check allowance`)
+      }
 
       const trxReceipt = await dtContract.methods
         .startOrder(consumer, serviceIndex, providerFees, consumeMarketFee)
