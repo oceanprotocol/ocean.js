@@ -100,7 +100,7 @@ export class Provider {
         },
         signal: signal
       })
-      return String((await response.json()).nonce)
+      return (await response.json()).nonce.toString()
     } catch (e) {
       LoggerInstance.error(e)
       throw new Error('HTTP request failed')
@@ -623,7 +623,7 @@ export class Provider {
 
     let signatureMessage = accountId
     signatureMessage += jobId
-    signatureMessage += String(index)
+    signatureMessage += index.toString()
     signatureMessage += nonce
     const signature = await this.createHashSignature(web3, accountId, signatureMessage)
 
