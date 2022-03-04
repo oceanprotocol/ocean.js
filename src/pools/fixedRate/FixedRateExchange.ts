@@ -337,12 +337,16 @@ export class FixedRateExchange {
     newRate: string,
     contractInstance?: Contract
   ): Promise<number> {
+    const exchange = await this.getExchange(exchangeId)
     const fixedRate = contractInstance || this.fixedRateContract
     const gasLimitDefault = this.GASLIMIT_DEFAULT
     let estGas
     try {
       estGas = await fixedRate.methods
-        .setRate(exchangeId, newRate)
+        .setRate(
+          exchangeId,
+          await this.amountToUnits(exchange.baseToken, newRate.toString())
+        )
         .estimateGas({ from: account }, (err, estGas) => (err ? gasLimitDefault : estGas))
     } catch (e) {
       estGas = gasLimitDefault
@@ -363,11 +367,7 @@ export class FixedRateExchange {
     newRate: string
   ): Promise<TransactionReceipt> {
     const exchange = await this.getExchange(exchangeId)
-    const estGas = await this.estSetRate(
-      address,
-      exchangeId,
-      await this.amountToUnits(exchange.baseToken, newRate.toString())
-    )
+    const estGas = await this.estSetRate(address, exchangeId, newRate)
     const trxReceipt = await this.contract.methods
       .setRate(
         exchangeId,
@@ -537,6 +537,8 @@ export class FixedRateExchange {
    */
   public async getRate(exchangeId: string): Promise<string> {
     const weiRate = await this.contract.methods.getRate(exchangeId).call()
+    console.log(weiRate)
+    console.log((await this.getExchange(exchangeId)).baseToken)
     const rate = await unitsToAmount(
       this.web3,
       (
@@ -544,6 +546,7 @@ export class FixedRateExchange {
       ).baseToken,
       weiRate
     )
+    console.log(rate)
     return rate
   }
 
