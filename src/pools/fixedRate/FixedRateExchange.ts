@@ -327,7 +327,7 @@ export class FixedRateExchange {
    * Estimate gas cost for setRate
    * @param {String} account
    * @param {String} exchangeId ExchangeId
-   * @param {Number} newRate New rate
+   * @param {String} newRate New rate
    * @param {Contract} contractInstance optional contract instance
    * @return {Promise<number>}
    */
@@ -357,7 +357,7 @@ export class FixedRateExchange {
   /**
    * Set new rate
    * @param {String} exchangeId ExchangeId
-   * @param {Number} newRate New rate
+   * @param {String} newRate New rate
    * @param {String} address User account
    * @return {Promise<TransactionReceipt>} transaction receipt
    */
@@ -369,10 +369,7 @@ export class FixedRateExchange {
     const exchange = await this.getExchange(exchangeId)
     const estGas = await this.estSetRate(address, exchangeId, newRate)
     const trxReceipt = await this.contract.methods
-      .setRate(
-        exchangeId,
-        await this.amountToUnits(exchange.baseToken, newRate.toString())
-      )
+      .setRate(exchangeId, await this.amountToUnits(exchange.baseToken, newRate))
       .send({
         from: address,
         gas: estGas + 1,
