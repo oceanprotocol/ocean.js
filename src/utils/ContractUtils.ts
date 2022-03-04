@@ -64,7 +64,7 @@ export function getFreOrderParams(freParams: FreOrderParams): any {
   }
 }
 
-export function getFreCreationParams(freParams: FreCreationParams): any {
+export async function getFreCreationParams(freParams: FreCreationParams): Promise<any> {
   if (!freParams.allowedConsumer)
     freParams.allowedConsumer = '0x0000000000000000000000000000000000000000'
   const withMint = freParams.withMint ? 1 : 0
@@ -80,7 +80,7 @@ export function getFreCreationParams(freParams: FreCreationParams): any {
     uints: [
       freParams.baseTokenDecimals,
       freParams.datatokenDecimals,
-      Web3.utils.toWei(freParams.fixedRate),
+      await amountToUnits(this.web, freParams.baseTokenAddress, freParams.fixedRate),
       Web3.utils.toWei(freParams.marketFee),
       withMint
     ]
