@@ -366,10 +366,13 @@ export class FixedRateExchange {
     const estGas = await this.estSetRate(
       address,
       exchangeId,
-      await this.amountToUnits(exchange.baseToken, String(newRate))
+      await this.amountToUnits(exchange.baseToken, newRate.toString())
     )
     const trxReceipt = await this.contract.methods
-      .setRate(exchangeId, await this.amountToUnits(exchange.baseToken, String(newRate)))
+      .setRate(
+        exchangeId,
+        await this.amountToUnits(exchange.baseToken, newRate.toString())
+      )
       .send({
         from: address,
         gas: estGas + 1,
@@ -534,7 +537,14 @@ export class FixedRateExchange {
    */
   public async getRate(exchangeId: string): Promise<string> {
     const weiRate = await this.contract.methods.getRate(exchangeId).call()
-    return this.web3.utils.fromWei(weiRate)
+    const rate = await unitsToAmount(
+      this.web3,
+      (
+        await this.getExchange(exchangeId)
+      ).baseToken,
+      weiRate
+    )
+    return rate
   }
 
   /**
