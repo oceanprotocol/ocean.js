@@ -992,7 +992,7 @@ export class Datatoken {
         consumeMarketFee,
         dtContract
       )
-
+ 
       /**
        * provider {object}
           providerData: "0x7b22656e7669726f6e6d656e74223a6e756c6c7d"
@@ -1014,30 +1014,61 @@ export class Datatoken {
 
       const publishMarketFee = await dtContract.methods.getPublishingMarketFee().call()
       const tokenAddresses = [
-        providerFees.providerFeeToken,
-        consumeMarketFee.consumeMarketFeeToken,
-        publishMarketFee[1]
+        {
+          token: providerFees.providerFeeToken,
+          feeAmount: providerFees.providerFeeAmount
+        },
+        {
+          token: consumeMarketFee.consumeMarketFeeToken,
+          feeAmount: parseFloat(consumeMarketFee.consumeMarketFeeAmount)
+        },
+        {
+          token: publishMarketFee[1],
+          feeAmount: parseFloat(publishMarketFee[2])
+        }
       ]
-      const uniqueAddresses = [...new Set(tokenAddresses)]
+      const uniqueAddresses = []
+      tokenAddresses.map((address) => {
+        if (uniqueAddresses.length > 0){
+          uniqueAddresses.map((uAddress) => {
+            if (uAddress.token === address.token){
+              uAddress.feeAmount += address.feeAmount
+            } else {
+              uniqueAddresses.push({
+                token: address.token,
+                feeAmount: address.feeAmount
+              })
+            }
+          })
+        } else {
+          uniqueAddresses.push({
+            token: address.token,
+            feeAmount: address.feeAmount
+          })
+        }
+      })
+      
       const totalAmount =
       providerFees.providerFeeAmount +
       parseFloat(consumeMarketFee.consumeMarketFeeAmount) +
       parseFloat(publishMarketFee[2])
     
       uniqueAddresses.map(async (tokenAddress) => {
-        if (tokenAddress === '0x0000000000000000000000000000000000000000') return
+        if (tokenAddress.token === '0x0000000000000000000000000000000000000000') return
         
         const currentAllowence = await allowance(
           this.web3,
-          tokenAddress,
+          tokenAddress.token,
           address,
           consumer
         )
 
-        console.log(currentAllowence, publishMarketFee, providerFees, consumeMarketFee)
+        console.log(currentAllowence, tokenAddress)
 
         if (
-          new Decimal(currentAllowence).greaterThanOrEqualTo(new Decimal(totalAmount))
+          new Decimal(currentAllowence).greaterThanOrEqualTo(
+            new Decimal(tokenAddress.feeAmount)
+          )
         ) {
           LoggerInstance.error(`ERROR - check allowance: Failed to start order`)
           throw new Error(`Failed to check allowance`)
