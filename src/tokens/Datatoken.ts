@@ -1013,7 +1013,7 @@ export class Datatoken {
        */
 
       const publishMarketFee = await dtContract.methods.getPublishingMarketFee().call()
-      const tokenAddresses = [
+      const tokens = [
         {
           token: providerFees.providerFeeToken,
           feeAmount: providerFees.providerFeeAmount
@@ -1027,59 +1027,53 @@ export class Datatoken {
           feeAmount: parseFloat(publishMarketFee[2])
         }
       ]
-      const uniqueAddresses = []
-      tokenAddresses.map((address) => {
-        if (uniqueAddresses.length > 0){
-          uniqueAddresses.map((uAddress) => {
+      const uniqueTokens = []
+      tokens.map((address) => {
+        if (uniqueTokens.length > 0){
+          uniqueTokens.map((uAddress) => {
             if (uAddress.token === address.token){
               uAddress.feeAmount += address.feeAmount
             } else {
-              uniqueAddresses.push({
+              uniqueTokens.push({
                 token: address.token,
                 feeAmount: address.feeAmount
               })
             }
           })
         } else {
-          uniqueAddresses.push({
+          uniqueTokens.push({
             token: address.token,
             feeAmount: address.feeAmount
           })
         }
       })
-      
-      const totalAmount =
-      providerFees.providerFeeAmount +
-      parseFloat(consumeMarketFee.consumeMarketFeeAmount) +
-      parseFloat(publishMarketFee[2])
     
-      uniqueAddresses.map(async (tokenAddress) => {
+      uniqueTokens.map(async (tokenAddress) => {
         if (tokenAddress.token === '0x0000000000000000000000000000000000000000') return
         
-        const currentAllowence = await allowance(
+        const currentAllowance = await allowance(
           this.web3,
           tokenAddress.token,
           address,
           consumer
         )
 
-        console.log(currentAllowence, tokenAddress)
+        console.log(currentAllowance, tokenAddress.feeAmount)
 
         if (
-          new Decimal(currentAllowence).greaterThanOrEqualTo(
+          new Decimal(currentAllowance).greaterThanOrEqualTo(
             new Decimal(tokenAddress.feeAmount)
           )
         ) {
-          LoggerInstance.error(`ERROR - check allowance: Failed to start order`)
-          throw new Error(`Failed to check allowance`)
+          console.log(currentAllowance)
+          return currentAllowance
         }
 
       })
 
-      // TODO: remove after testing, this is here to stop execution
+      // TODO: remove after testing, this is here to stop this tx execution
       return {
-        totalAmount,
-        uniqueAddresses
+        uniqueTokens
       }
 
       const trxReceipt = await dtContract.methods
