@@ -770,7 +770,11 @@ export class NftFactory {
 
     const ercCreateData = getErcCreationParams(ercParams)
 
+    console.log(freParams)
+
     const fixedData = await getFreCreationParams(freParams, this.web3)
+
+    console.log(fixedData)
 
     try {
       estGas = await this.factory721.methods
@@ -798,8 +802,11 @@ export class NftFactory {
     ercParams: Erc20CreateParams,
     freParams: FreCreationParams
   ): Promise<TransactionReceipt> {
+    console.log(freParams)
     const ercCreateData = await getErcCreationParams(ercParams)
     const fixedData = await getFreCreationParams(freParams, this.web3)
+
+    console.log(fixedData)
 
     const estGas = await this.estGasCreateNftErc20WithFixedRate(
       address,
