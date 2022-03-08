@@ -1,12 +1,12 @@
 # A beginners guide to selling data over the blockchain
 
-This is a beginners guide to selling a dataset over the blockchain. The process involves creating a dataNFT and a datatoken. Datatoken will be used to purchase the dataset, and listing it on a marketplace. This guide provides all the code you need and no prior knowledge is required. It is helpful if you have some experience with javascript but it is not necessary. 
+This is a beginners guide to selling a dataset over the blockchain. The process involves creating a Data NFT and a datatoken. Datatoken will be used to purchase the dataset, and listing it on a marketplace. This guide provides all the code you need and no prior knowledge is required. It is helpful if you have some experience with javascript but it is not necessary.
 
-Selling your data over the blockchain puts you in charge of how it is used and can be a great source of passive income. There are many AI startups that have deep expertise in machine learning but need more data to improve their models. Selling your data via the blockchain gives you a level of security that you would be unable to achieve if you were selling via a centralised marketplace. 
+Selling your data over the blockchain puts you in charge of how it is used and can be a great source of passive income. There are many AI startups that have deep expertise in machine learning but need more data to improve their models. Selling your data via the blockchain gives you a level of security that you would be unable to achieve if you were selling via a centralised marketplace.
 
 In this guide we'll be making use of the Ocean.js library. Ocean Protocol provides you with everything you need to quickly get setup and start selling data over the blockchain.
 
-If you have any questions or issues at any point while following along to this article please reach out to us on [discord](https://discord.gg/TnXjkR5). 
+If you have any questions or issues at any point while following along to this article please reach out to us on [discord](https://discord.gg/TnXjkR5).
 
 Here are the steps we will be following throughout the article:
 
@@ -23,16 +23,17 @@ Here are the steps we will be following throughout the article:
 Let's go through each step:
 
 ## 0. Prerequisites
-Before we start it is important that you have all of the necessary prerequisites installed on your computer. 
-- **A Unix based operating system (Linux or Mac)**. If you are a Windows user you can try to run linux inside a virtual machine but this is outside of the scope of this article. 
-- **Git**. Instructions for installing Git can be found here: https://git-scm.com/book/en/v2/Getting-Started-Installing-Git 
-- **Node.js** can be downloaded from here: https://nodejs.org/en/download/ 
-- **Docker** can be installed from here: https://docs.docker.com/get-docker/. Please note that Docker must run as a non-root user, you can set this up by following these instructions: https://docs.docker.com/engine/install/linux-postinstall/ 
 
+Before we start it is important that you have all of the necessary prerequisites installed on your computer.
 
+- **A Unix based operating system (Linux or Mac)**. If you are a Windows user you can try to run linux inside a virtual machine but this is outside of the scope of this article.
+- **Git**. Instructions for installing Git can be found here: https://git-scm.com/book/en/v2/Getting-Started-Installing-Git
+- **Node.js** can be downloaded from here: https://nodejs.org/en/download/
+- **Docker** can be installed from here: https://docs.docker.com/get-docker/. Please note that Docker must run as a non-root user, you can set this up by following these instructions: https://docs.docker.com/engine/install/linux-postinstall/
 
 ## 1. Initialize services
-For this tutorial we will be setting up and running a local blockchain and then the datatokens will be published to your local blockchain. This isn’t as difficult as it sounds, fortunately Ocean Protocol provides the services to start your local blockchain with a couple of commands. Deploying your datatoken to a locally run blockchain is a great way to start as it is quick and avoids any costs. 
+
+For this tutorial we will be setting up and running a local blockchain and then the datatokens will be published to your local blockchain. This isn’t as difficult as it sounds, fortunately Ocean Protocol provides the services to start your local blockchain with a couple of commands. Deploying your Datatoken to a locally run blockchain is a great way to start as it is quick and avoids any costs.
 
 Simply copy the following commands into your terminal and your own local blockchain will start running:
 
@@ -42,22 +43,23 @@ cd barge/
 ./start_ocean.sh --with-provider2 --no-dashboard
 ```
 
-These commands clone the Ocean Protocol Barge service and start running it. This does more than just start a local blockchain, it also deploys the Ocean Protocol smart contracts to your local blockchain and starts a local off-chain database for saving the metadata. 
+These commands clone the Ocean Protocol Barge service and start running it. This does more than just start a local blockchain, it also deploys the Ocean Protocol smart contracts to your local blockchain and starts a local off-chain database for saving the metadata.
 
-A smart contract is a self executing piece of code that is stored on the blockchain. They essentially provide the backend logic for managing your datasets and datatokens. They are not contracts in the legal sense. 
+A smart contract is a self executing piece of code that is stored on the blockchain. They essentially provide the backend logic for managing your datasets and datatokens. They are not contracts in the legal sense.
 
 You can read more about each of the services that barge runs via these links:
+
 - **Aquarius** provides the off-chain database: https://github.com/oceanprotocol/aquarius
 - **Ganache** is part of the Truffle Suite of blockchain tools and it sets up and runs the local blockchain: https://github.com/trufflesuite/ganache-cli
-- Ocean Protocol **smart contracts**: https://github.com/oceanprotocol/ocean-contracts 
+- Ocean Protocol **smart contracts**: https://github.com/oceanprotocol/ocean-contracts
 - **Provider**: https://github.com/oceanprotocol/provider-py
 
-You need to leave the Barge services running throughout the rest of the tutorial so make sure you keep this terminal window open. All of the remaining terminal commands will be done in a new terminal window. 
+You need to leave the Barge services running throughout the rest of the tutorial so make sure you keep this terminal window open. All of the remaining terminal commands will be done in a new terminal window.
 
 ## 2. Create a new node.js project
 
 You are now ready to start your project. We start by creating a new folder and initiating a new Node.js project. Open a new terminal and enter the following commands:
- 
+
 ```bash
 mkdir quickstart
 cd quickstart
@@ -69,9 +71,10 @@ cat > index.js
 
 ## 3. Install dependencies
 
-Next we need to set up the Node.js project so that it installs the necessary dependencies. These include the Ocean Protocol libaries and contracts, as well as web3.js which is a javascript library for interacting with the Blockchain. If you would like to learn more about web3.js, you can read the documentation here: https://web3js.readthedocs.io/en/v1.3.4/ 
+Next we need to set up the Node.js project so that it installs the necessary dependencies. These include the Ocean Protocol libaries and contracts, as well as web3.js which is a javascript library for interacting with the Blockchain. If you would like to learn more about web3.js, you can read the documentation here: https://web3js.readthedocs.io/en/v1.3.4/
 
 Open the package.json file in a text editor and update the dependencies to include the following:
+
 ```JSON
  "dependencies": {
    "@oceanprotocol/contracts": "^0.5.6", // TODO: eplace version
@@ -88,10 +91,11 @@ Now in your terminal run the following command:
 npm install
 ```
 
-At this point you may get some warning messages but there shouldn’t be any errors. As long as you don’t have any errors, you are ready to proceed. 
+At this point you may get some warning messages but there shouldn’t be any errors. As long as you don’t have any errors, you are ready to proceed.
 
 ## 4. Create a .env and config file
-Now we need to set up a configuration file that will determine where your datatoken and dataset are published to. We will enter the local addresses where the Ocean Protocol services are running. When you are ready to deploy your datatoken on the Ethereum mainnet you will need to update these addresses, the process of live deploying your dataset and datatokens will be covered in a later blog post.  
+
+Now we need to set up a configuration file that will determine where your Datatoken and dataset are published to. We will enter the local addresses where the Ocean Protocol services are running. When you are ready to deploy your Datatoken on the Ethereum mainnet you will need to update these addresses, the process of live deploying your dataset and datatokens will be covered in a later blog post.
 
 Start by creating a new `.env` file place the content as below:
 
@@ -109,9 +113,9 @@ OCEAN_NETWORK=development
 ADDRESS_FILE="<path-to-home>/.ocean/ocean-contracts/artifacts/address.json"
 ```
 
-In your terminal, enter the following command. 
+In your terminal, enter the following command.
 
-```bash 
+```bash
 cat > config.js
 ```
 
@@ -163,21 +167,23 @@ module.exports = {
 };
 ```
 
-When the Barge service started running it automatically saved contract addresses in a JSON file in a hidden folder under your home directory. We can check what these contract addresses are by running the following command into your terminal: 
+When the Barge service started running it automatically saved contract addresses in a JSON file in a hidden folder under your home directory. We can check what these contract addresses are by running the following command into your terminal:
 
 ```bash
 cat ~/.ocean/ocean-contracts/artifacts/address.json
 ```
+
 You should get an non-empty output.
 
-## 5. Publish a new dataNFT and datatoken
-Now you are ready to publish your first dataNFT and datatoken! 
+## 5. Publish a new Data NFT and datatoken
 
-The dataNFT is complant with ERC721 standart and datatoken that we will be deploying is an ERC20 token. ERC20 is standard for fungible tokens (meaning each token is identical and interchangeable), the standard contains a list of required and optional functions that form the smart contract which manages the token balances and transfers. ERC20 is the most popular standard for tokens deployed on the Ethereum Blockchain and many of the popular tokens that you will have heard of (Tether, USDC, Dai, Binance token) all follow the ERC20 standard. You can read more about the ERC20 token standard here: https://ethereum.org/en/developers/docs/standards/tokens/erc-20/ 
+Now you are ready to publish your first Data NFT and Datatoken!
 
-Security is incredibly important for any blockchain token (as they are a potential target for attacks) and for this reason it is not best practice to write an ERC20 from scratch. This would introduce unnecessary complexity and would require an in depth security audit. In general, complexity is the enemy of security. Instead of writing our own ERC20 token, the code we deploy will inherit from the OpenZepplin ERC20 library. This library has been thoroughly battle tested in live environments and is used to underpin millions of dollars. You can read more about the OpenZepplin ERC20 contract libraries here: https://docs.openzeppelin.com/contracts/2.x/api/token/erc20 
+The Data NFT is compliant with ERC721 standard and Datatoken that we will be deploying is an ERC20 token. ERC20 is standard for fungible tokens (meaning each token is identical and interchangeable), the standard contains a list of required and optional functions that form the smart contract which manages the token balances and transfers. ERC20 is the most popular standard for tokens deployed on the Ethereum Blockchain and many of the popular tokens that you will have heard of (Tether, USDC, Dai, Binance token) all follow the ERC20 standard. You can read more about the ERC20 token standard here: https://ethereum.org/en/developers/docs/standards/tokens/erc-20/
 
-The process of creating and deploying the ERC721 dataNFT and ERC20 datatokens has been automated by Ocean Protocol. All we need to do is open the `index.js` file in your text editor and enter the following code:
+Security is incredibly important for any blockchain token (as they are a potential target for attacks) and for this reason it is not best practice to write an ERC20 from scratch. This would introduce unnecessary complexity and would require an in depth security audit. In general, complexity is the enemy of security. Instead of writing our own ERC20 token, the code we deploy will inherit from the OpenZepplin ERC20 library. This library has been thoroughly battle tested in live environments and is used to underpin millions of dollars. You can read more about the OpenZepplin ERC20 contract libraries here: https://docs.openzeppelin.com/contracts/2.x/api/token/erc20
+
+The process of creating and deploying the ERC721 Data NFT and ERC20 datatokens has been automated by Ocean Protocol. All we need to do is open the `index.js` file in your text editor and enter the following code:
 
 ```Javascript
 const { NftFactory } = require("@oceanprotocol/lib");
@@ -237,21 +243,21 @@ createDataNFT(web3).then(({ erc721Address,
 })
 ```
 
-This is all the code you need to deploy your first dataNFT. Now save the file and run it. In your terminal, run the following command:
+This is all the code you need to deploy your first Data NFT. Now save the file and run it. In your terminal, run the following command:
 
 ```Bash
 node index.js
 ```
 
-You should see the console log message stating the address of your dataNFT and datatoken. Congratulations, you've created your first Ocean dataNFT and a datatoken! 🌊🐋
+You should see the console log message stating the address of your Data NFT and datatoken. Congratulations, you've created your first Ocean Data NFT and a datatoken! 🌊🐋
 
 ## 6. Mint 200 tokens
 
 Next, we will edit the code in `index.js` to mint 200 datatokens. These 200 datatokens are minted and sent to Alice's Address.
 
 Replace the `createDataNFT` function with the following line of code:
- 
-```Javascript 
+
+```Javascript
 const mintDatatoken = async (datatokenAddress, web3) => {
 
     const accounts = await web3.eth.getAccounts();
@@ -298,7 +304,7 @@ cat > data.js
 ```
 
 Now open the data.js file in your text editor. Enter the following code and save the file:
- 
+
 ```Javascript
 const ddo = {
   '@context': ['https://w3id.org/did/v1'],
@@ -448,13 +454,13 @@ Now save and run the `index.js` file:
 node index.js
 ```
 
-In the terminal output you should now see the Data ID (did) output. 
+In the terminal output you should now see the Data ID (did) output.
 
 Congratulations, you have published your first dataset! 🌊🐠
 
 ## 8. Allow the marketplace to sell you datatokens
 
-Finally we will go through the steps for allowing a marketplace to sell your dataset. For this demonstration we will use the address of a marketplace on your local blockchain but in a live environment you would need to use the address of the actual marketplace that will be selling your data. It is important to double check that this address is correct because if it isn’t you could permanently lose your datatokens. 
+Finally we will go through the steps for allowing a marketplace to sell your dataset. For this demonstration we will use the address of a marketplace on your local blockchain but in a live environment you would need to use the address of the actual marketplace that will be selling your data. It is important to double check that this address is correct because if it isn’t you could permanently lose your datatokens.
 
 We start by saving the address of the marketplace. On the line after `const alice = accounts[0].id` add the following code:
 
@@ -504,7 +510,6 @@ Now save the file and run it:
 node index.js
 ```
 
-Well done, you have now completed the tutorial! 
+Well done, you have now completed the tutorial!
 
-There are many more things that you can do with Ocean.js which will be the subject of future blog posts. If you have any questions or if you would like you learn more about Ocean Protocol, please reach out to us on [Discord](https://discord.gg/TnXjkR5) or if you have found any issues with Ocean.js please raise them on [GitHub](https://github.com/oceanprotocol/ocean.js/issues/new?assignees=&labels=bug&template=bug_report.md&title=). 
-
+There are many more things that you can do with Ocean.js which will be the subject of future blog posts. If you have any questions or if you would like you learn more about Ocean Protocol, please reach out to us on [Discord](https://discord.gg/TnXjkR5) or if you have found any issues with Ocean.js please raise them on [GitHub](https://github.com/oceanprotocol/ocean.js/issues/new?assignees=&labels=bug&template=bug_report.md&title=).
