@@ -529,10 +529,7 @@ export class FixedRateExchange {
    */
   public async getRate(exchangeId: string): Promise<string> {
     const weiRate = await this.contract.methods.getRate(exchangeId).call()
-    console.log(weiRate)
-    console.log((await this.getExchange(exchangeId)).baseToken)
     const rate = await this.web3.utils.fromWei(weiRate)
-    console.log(rate)
     return rate
   }
 
