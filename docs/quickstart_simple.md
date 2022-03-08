@@ -127,64 +127,66 @@ cat ~/.ocean/ocean-contracts/artifacts/address.json
 
 You should get an non-empty output.
 
-## 5. Publish a new datatoken
+## 5. Publish a new data NFT and datatoken
 
 Now open the `index.js` file in your text editor. Enter the following code and save the file:
 
 ```Javascript
-const { NftFactory } = require("@oceanprotocol/lib");
+const { NftFactory } = require('@oceanprotocol/lib');
+const Web3 = require('web3');
 const { provider, oceanConfig } = require('./config');
-const Web3 = require("web3");
 
 const web3 = new Web3(provider);
 
-const createDataNFT = async (web3) => {
-    const Factory = new NftFactory(oceanConfig.erc721FactoryAddress, web3);
+const createDataNFT = async () => {
+  const Factory = new NftFactory(oceanConfig.erc721FactoryAddress, web3);
 
-    const accounts = await web3.eth.getAccounts();
-    const publisherAccount = accounts[0];
+  const accounts = await web3.eth.getAccounts();
+  const publisherAccount = accounts[0];
 
-    const nftParams = {
-        name: 'testNFT',
-        symbol: 'TST',
-        templateIndex: 1,
-        tokenURI: ''
-    };
+  const nftParams = {
+    name: 'testNFT',
+    symbol: 'TST',
+    templateIndex: 1,
+    tokenURI: ''
+  };
 
-    const erc20Params = {
-        templateIndex: 1,
-        cap: '100000',
-        feeAmount: '0',
-        feeManager: '0x0000000000000000000000000000000000000000',
-        feeToken: '0x0000000000000000000000000000000000000000',
-        minter: publisherAccount,
-        mpFeeAddress: '0x0000000000000000000000000000000000000000'
-    };
+  const erc20Params = {
+    templateIndex: 1,
+    cap: '100000',
+    feeAmount: '0',
+    feeManager: '0x0000000000000000000000000000000000000000',
+    feeToken: '0x0000000000000000000000000000000000000000',
+    minter: publisherAccount,
+    mpFeeAddress: '0x0000000000000000000000000000000000000000'
+  };
 
-    const result = await Factory.createNftWithErc20(
-        publisherAccount,
-        nftParams,
-        erc20Params
-    );
+  const result = await Factory.createNftWithErc20(
+    publisherAccount,
+    nftParams,
+    erc20Params
+  );
 
-    const erc721Address = result.events.NFTCreated.returnValues[0];
-    const datatokenAddress = result.events.TokenCreated.returnValues[0];
+  const erc721Address = result.events.NFTCreated.returnValues[0];
+  const datatokenAddress = result.events.TokenCreated.returnValues[0];
 
-    return {
-        erc721Address,
-        datatokenAddress
-    }
-}
+  return {
+    erc721Address,
+    datatokenAddress
+  };
+};
 
-createDataNFT(web3).then(({ erc721Address, datatokenAddress }) => {
+createDataNFT()
+  .then(({ erc721Address, datatokenAddress }) => {
     console.log(`DataNft address ${erc721Address}`);
     console.log(`Datatoken address ${datatokenAddress}`);
+
     process.exit();
-}).catch(err => {
+  })
+  .catch((err) => {
     console.error(err);
     process.exit(1);
-})
-
+  });
 ```
 
 Now in your terminal, run the following command:
@@ -202,33 +204,45 @@ Next, we will edit the code in `index.js` to mint 100 datatokens. These 100 data
 At the end of the file add the `mintDatatoken` function and replace the call to `createDataNFT` function and as follows:
 
 ```Javascript
+const mintDatatoken = async (datatokenAddress) => {
+  const accounts = await web3.eth.getAccounts();
+  const publisherAccount = accounts[0];
+  const consumerAccount = accounts[1];
 
-const mintDatatoken = async (datatokenAddress, web3) => {
+  const datatoken = new Datatoken(web3);
 
-    const accounts = await web3.eth.getAccounts();
-    const publisherAccount = accounts[0];
+  await datatoken.mint(
+    datatokenAddress,
+    publisherAccount,
+    '1',
+    consumerAccount
+  );
+  const consumerBalance = await datatoken.balance(
+    datatokenAddress,
+    consumerAccount
+  );
+  console.log(`Consumer balance ${consumerBalance}`);
+};
 
-    const datatoken = new Datatoken(web3);
+createDataNFT()
+  .then(({ erc721Address, datatokenAddress }) => {
+    console.log(`DataNft address ${erc721Address}`);
+    console.log(`Datatoken address ${datatokenAddress}`);
 
-    await datatoken.mint(datatokenAddress, publisherAccount, '1', publisherAccount)
-    const publisherBalance = await datatoken.balance(datatokenAddress, publisherAccount)
-    console.log(`Publsiher balance ${publisherBalance}`)
-}
-
-createDataNFT(web3).then(({ erc721Address,
-    datatokenAddress }) => {
-
-    mintDatatoken(datatokenAddress, web3).then(() => {
-        console.log("Done");
-        process.exit(err => {
-            console.error(err);
-            process.exit(1);
+    mintDatatoken(datatokenAddress)
+      .then(() => {
+        console.log('Done');
+        process.exit((err) => {
+          console.error(err);
+          process.exit(1);
         });
-    }).catch()
-}).catch(err => {
+      })
+      .catch();
+  })
+  .catch((err) => {
     console.error(err);
     process.exit(1);
-})
+  });
 ```
 
 Now run the `index.js` file again:
@@ -244,8 +258,10 @@ You should now see in the console output that Alice has a token balance of 100.
 Next we will transfer tokens from Alice to Bob. First we will edit the callback of `createDataNFT` function to create an address for Bob. Change the callback function as follows:
 
 ```Javascript
-createDataNFT(web3).then(async ({ erc721Address,
-    datatokenAddress }) => {
+createDataNFT()
+  .then(async ({ erc721Address, datatokenAddress }) => {
+    console.log(`DataNft address ${erc721Address}`);
+    console.log(`Datatoken address ${datatokenAddress}`);
 
     const accounts = await web3.eth.getAccounts();
     const alice = accounts[0];
@@ -253,20 +269,18 @@ createDataNFT(web3).then(async ({ erc721Address,
 
     const datatoken = new Datatoken(web3);
 
-    await datatoken.mint(datatokenAddress, alice, '1', alice)
+    await datatoken.mint(datatokenAddress, alice, '1', alice);
+    await datatoken.transfer(datatokenAddress, bob, '1', alice);
 
-    // Send 1 datatoken fro alice to bob
-    await datatoken.transfer(datatokenAddress, bob, '1', alice)
-
-    const bobBalance = await datatoken.balance(datatokenAddress, bob)
-    console.log(`Bob balance ${bobBalance}`)
+    const bobBalance = await datatoken.balance(datatokenAddress, bob);
+    console.log(`Bob balance ${bobBalance}`);
 
     process.exit();
-
-}).catch(err => {
+  })
+  .catch((err) => {
     console.error(err);
     process.exit(1);
-})
+  });
 ```
 
 Save the `index.js` file and run it again. In your terminal enter:
@@ -317,7 +331,7 @@ const ddo = {
       timeout: 0
     }
   ]
-}
+};
 
 const files = [
   {
@@ -325,68 +339,68 @@ const files = [
     url: 'https://raw.githubusercontent.com/oceanprotocol/testdatasets/main/shs_dataset_test.txt',
     method: 'GET'
   }
-]
+];
+
+module.exports = { ddo, files };
 ```
 
 Now, in your `index.js` file import the test data. Add the following line of code at the top of the file under the other `require()` statements:
 
 ```Javascript
-const { ddo, files } = require("./data");
+const { ddo, files } = require('./data');
 ```
 
 At the end of add remove the call to function `createDataNFT` add the following code:
 
 ```Javascript
-
 const setMetadata = async (erc721Address, datatokenAddress) => {
-    const accounts = await web3.eth.getAccounts();
-    const publisherAccount = accounts[0];
+  const accounts = await web3.eth.getAccounts();
+  const publisherAccount = accounts[0];
 
-    // create the files encrypted string
-    let providerResponse = await ProviderInstance.encrypt(files, providerUrl)
-    ddo.services[0].files = await providerResponse;
-    ddo.services[0].datatokenAddress = datatokenAddress
-    // update ddo and set the right did
-    ddo.nftAddress = erc721Address
-    const chain = await web3.eth.getChainId()
-    ddo.id =
-        'did:op:' + SHA256(web3.utils.toChecksumAddress(erc721Address) + chain.toString(10))
+  // create the files encrypted string
+  let providerResponse = await ProviderInstance.encrypt(files, providerUrl);
+  ddo.services[0].files = await providerResponse;
+  ddo.services[0].datatokenAddress = datatokenAddress;
+  // update ddo and set the right did
+  ddo.nftAddress = erc721Address;
+  const chain = await web3.eth.getChainId();
+  ddo.id = `did:op:${
+    SHA256(web3.utils.toChecksumAddress(erc721Address) + chain.toString(10))}`;
 
-    providerResponse = await ProviderInstance.encrypt(ddo, providerUrl);
-    const encryptedResponse = await providerResponse
-    const metadataHash = getHash(JSON.stringify(ddo))
+  providerResponse = await ProviderInstance.encrypt(ddo, providerUrl);
+  const encryptedResponse = await providerResponse;
+  const metadataHash = getHash(JSON.stringify(ddo));
 
-    const res = await nft.setMetadata(
-        erc721Address,
-        publisherAccount,
-        0,
-        providerUrl,
-        '',
-        '0x2',
-        encryptedResponse,
-        '0x' + metadataHash
-    )
+  await nft.setMetadata(
+    erc721Address,
+    publisherAccount,
+    0,
+    providerUrl,
+    '',
+    '0x2',
+    encryptedResponse,
+    `0x${metadataHash}`
+  );
 
-    const resolvedDDO = await aquarius.waitForAqua(ddo.id)
+  await aquarius.waitForAqua(ddo.id);
 
-    console.log(`Resolved asset did [${ddo.id}]from aquarius.`)
-}
+  console.log(`Resolved asset did [${ddo.id}]from aquarius.`);
+};
 
-createDataNFT().then(({ erc721Address,
-    datatokenAddress }) => {
-
+createDataNFT()
+  .then(({ erc721Address, datatokenAddress }) => {
     console.log(`DataNft address ${erc721Address}`);
     console.log(`Datatoken address ${datatokenAddress}`);
 
     setMetadata(erc721Address, datatokenAddress).then(() => {
-        console.log("Metadata set.")
-        process.exit();
-    })
-
-}).catch(err => {
+      console.log('Metadata set.');
+      process.exit();
+    });
+  })
+  .catch((err) => {
     console.error(err);
     process.exit(1);
-})
+  });
 ```
 
 Now save and run the `index.js` file:
