@@ -8,7 +8,7 @@ Here are the the steps:
 2. Create a new node.js project
 3. Install dependencies
 4. Create a .env and config file
-5. Publish a new dataNFT and datatoken
+5. Publish a new Data NFT and Datatoken
 6. Mint 100 tokens
 7. Transfer tokens between users.
 8. Host a dataset
