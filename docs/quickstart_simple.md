@@ -40,20 +40,10 @@ cat > index.js
 
 ## 3. Install dependencies
 
-Open the package.json file in a text editor and update the dependencies to include the following:
-
-```JSON
-  "dependencies": {
-    "@oceanprotocol/contracts": "^0.5.6", // TODO: replace version
-    "@oceanprotocol/lib": "^0.6.5", // TODO: replace version
-    "web3": "^1.7.0"
-  }
-```
-
 Now in your terminal run the following command:
 
 ```bash
-npm install
+npm install @oceanprotocol/lib web3 dotenv
 ```
 
 ## 4. Create a config file and update contract addresses
@@ -81,34 +71,34 @@ cat > config.js
 Now open the config.js in your code editor and enter the following:
 
 ```Javascript
-require('dotenv').config()
-const HDWalletProvider = require("@truffle/hdwallet-provider");
-const fs = require("fs");
+require('dotenv').config();
+const HDWalletProvider = require('@truffle/hdwallet-provider');
+const fs = require('fs');
 const { homedir } = require('os');
-const { ConfigHelper } = require("@oceanprotocol/lib");
+const { ConfigHelper } = require('@oceanprotocol/lib');
 
-var oceanConfig = new ConfigHelper().getConfig(process.env.OCEAN_NETWORK);
+let oceanConfig = new ConfigHelper().getConfig(process.env.OCEAN_NETWORK);
 
 if (process.env.OCEAN_NETWORK === 'development') {
   const addressData = JSON.parse(
     fs.readFileSync(
-      process.env.ADDRESS_FILE ||
-      `${homedir}/.ocean/ocean-contracts/artifacts/address.json`,
+      process.env.ADDRESS_FILE
+        || `${homedir}/.ocean/ocean-contracts/artifacts/address.json`,
       'utf8'
     )
-  )
-  addresses = addressData[process.env.OCEAN_NETWORK]
+  );
+  const addresses = addressData[process.env.OCEAN_NETWORK];
 
   oceanConfig = {
     ...oceanConfig,
-    oceanTokenAddress: addresses['Ocean'],
-    poolTemplateAddress: addresses['poolTemplate'],
-    fixedRateExchangeAddress: addresses['FixedPrice'],
-    dispenserAddress: addresses['Dispenser'],
-    erc721FactoryAddress: addresses['ERC721Factory'],
-    sideStakingAddress: addresses['Staking'],
-    opfCommunityFeeCollector: addresses['OPFCommunityFeeCollector']
-  }
+    oceanTokenAddress: addresses.Ocean,
+    poolTemplateAddress: addresses.poolTemplate,
+    fixedRateExchangeAddress: addresses.FixedPrice,
+    dispenserAddress: addresses.Dispenser,
+    erc721FactoryAddress: addresses.ERC721Factory,
+    sideStakingAddress: addresses.Staking,
+    opfCommunityFeeCollector: addresses.OPFCommunityFeeCollector
+  };
 }
 
 oceanConfig = {
@@ -116,9 +106,12 @@ oceanConfig = {
   metadataCacheUri: process.env.AQUARIUS_URL,
   nodeUri: process.env.NETWORK_URL,
   providerUri: process.env.PROVIDER_URL
-}
+};
 
-const provider = new HDWalletProvider(process.env.MNEMONIC, oceanConfig.nodeUri);
+const provider = new HDWalletProvider(
+  process.env.MNEMONIC,
+  oceanConfig.nodeUri
+);
 
 module.exports = {
   provider,
@@ -262,7 +255,7 @@ createDataNFT(web3).then(async ({ erc721Address,
 
     await datatoken.mint(datatokenAddress, alice, '1', alice)
 
-    // Send 1 datatoken fro alice to bob 
+    // Send 1 datatoken fro alice to bob
     await datatoken.transfer(datatokenAddress, bob, '1', alice)
 
     const bobBalance = await datatoken.balance(datatokenAddress, bob)
