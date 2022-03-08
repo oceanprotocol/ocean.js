@@ -1085,17 +1085,13 @@ export class FixedRateExchange {
     exchangeId: string,
     newMarketFee: string
   ): Promise<TransactionReceipt> {
-    const exchange = await this.getExchange(exchangeId)
     const estGas = await this.estSetRate(
       address,
       exchangeId,
-      await this.amountToUnits(exchange.baseToken, newMarketFee)
+      this.web3.utils.toWei(newMarketFee)
     )
     const trxReceipt = await this.contract.methods
-      .updateMarketFee(
-        exchangeId,
-        await this.amountToUnits(exchange.baseToken, newMarketFee)
-      )
+      .updateMarketFee(exchangeId, this.web3.utils.toWei(newMarketFee))
       .send({
         from: address,
         gas: estGas + 1,
