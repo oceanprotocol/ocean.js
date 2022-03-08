@@ -772,7 +772,7 @@ export class NftFactory {
 
     console.log(freParams)
 
-    const fixedData = await getFreCreationParams(freParams, this.web3)
+    const fixedData = await getFreCreationParams(freParams)
 
     console.log(fixedData)
 
@@ -802,9 +802,8 @@ export class NftFactory {
     ercParams: Erc20CreateParams,
     freParams: FreCreationParams
   ): Promise<TransactionReceipt> {
-    console.log(freParams)
-    const ercCreateData = await getErcCreationParams(ercParams)
-    const fixedData = await getFreCreationParams(freParams, this.web3)
+    const ercCreateData = getErcCreationParams(ercParams)
+    const fixedData = getFreCreationParams(freParams)
 
     console.log(fixedData)
 

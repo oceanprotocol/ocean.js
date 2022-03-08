@@ -54,27 +54,17 @@ export function getErcCreationParams(ercParams: Erc20CreateParams): any {
   }
 }
 
-export async function getFreOrderParams(
-  freParams: FreOrderParams,
-  web3: Web3
-): Promise<any> {
+export function getFreOrderParams(freParams: FreOrderParams): any {
   return {
     exchangeContract: freParams.exchangeContract,
     exchangeId: freParams.exchangeId,
-    maxBaseTokenAmount: await amountToUnits(
-      web3,
-      await this.getBaseToken(freParams.exchangeId),
-      freParams.maxBaseTokenAmount
-    ),
+    maxBaseTokenAmount: Web3.utils.toWei(freParams.maxBaseTokenAmount),
     swapMarketFee: Web3.utils.toWei(freParams.swapMarketFee),
     marketFeeAddress: freParams.marketFeeAddress
   }
 }
 
-export async function getFreCreationParams(
-  freParams: FreCreationParams,
-  web3: Web3
-): Promise<any> {
+export function getFreCreationParams(freParams: FreCreationParams): any {
   if (!freParams.allowedConsumer)
     freParams.allowedConsumer = '0x0000000000000000000000000000000000000000'
   const withMint = freParams.withMint ? 1 : 0
@@ -90,7 +80,7 @@ export async function getFreCreationParams(
     uints: [
       freParams.baseTokenDecimals,
       freParams.datatokenDecimals,
-      await amountToUnits(web3, freParams.baseTokenAddress, freParams.fixedRate),
+      Web3.utils.toWei(freParams.fixedRate),
       Web3.utils.toWei(freParams.marketFee),
       withMint
     ]

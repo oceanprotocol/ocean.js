@@ -1052,7 +1052,7 @@ export class Datatoken {
   ): Promise<TransactionReceipt> {
     const dtContract = new this.web3.eth.Contract(this.datatokensEnterpriseAbi, dtAddress)
     try {
-      const freContractParams = await getFreOrderParams(freParams, this.web3)
+      const freContractParams = getFreOrderParams(freParams)
 
       const estGas = await this.estGasBuyFromFreAndOrder(
         dtAddress,
