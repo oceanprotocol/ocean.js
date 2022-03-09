@@ -262,8 +262,8 @@ describe('Publish tests', async () => {
 
     const dispenserParams: DispenserCreationParams = {
       dispenserAddress: addresses.Dispenser,
-      maxTokens: web3.utils.toWei('1'),
-      maxBalance: web3.utils.toWei('1'),
+      maxTokens: '1',
+      maxBalance: '1',
       withMint: true,
       allowedSwapper: ZERO_ADDRESS
     }
