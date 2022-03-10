@@ -992,25 +992,6 @@ export class Datatoken {
         consumeMarketFee,
         dtContract
       )
- 
-      /**
-       * provider {object}
-          providerData: "0x7b22656e7669726f6e6d656e74223a6e756c6c7d"
-          providerFeeAddress: "0x00c6A0BC5cD0078d6Cd0b659E8061B404cfa5704"
-          providerFeeAmount: 0
-          providerFeeToken: "0x0000000000000000000000000000000000000000"
-
-        * consumer {object}
-          consumeMarketFeeAddress: "0x0000000000000000000000000000000000000000"
-          consumeMarketFeeAmount: "0"
-          consumeMarketFeeToken: "0x0000000000000000000000000000000000000000"
-
-        * publish [array]
-          0: "0x9984b2453eC7D99a73A5B3a46Da81f197B753C8d"
-          1: "0x8967BCF84170c91B0d24D4302C2376283b0B3a07"
-          2: "0"
-
-       */
 
       const publishMarketFee = await dtContract.methods.getPublishingMarketFee().call()
       const tokens = [
@@ -1058,23 +1039,15 @@ export class Datatoken {
           consumer
         )
 
-        console.log(currentAllowance, tokenAddress.feeAmount)
-
         if (
           new Decimal(currentAllowance).greaterThanOrEqualTo(
             new Decimal(tokenAddress.feeAmount)
           )
         ) {
-          console.log(currentAllowance)
           return currentAllowance
         }
 
       })
-
-      // TODO: remove after testing, this is here to stop this tx execution
-      return {
-        uniqueTokens
-      }
 
       const trxReceipt = await dtContract.methods
         .startOrder(consumer, serviceIndex, providerFees, consumeMarketFee)
