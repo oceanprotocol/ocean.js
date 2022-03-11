@@ -15,7 +15,7 @@ import { ProviderFees, Erc20CreateParams } from '../../src/@types'
 const data = JSON.parse(
   fs.readFileSync(
     process.env.ADDRESS_FILE ||
-    `${homedir}/.ocean/ocean-contracts/artifacts/address.json`,
+      `${homedir}/.ocean/ocean-contracts/artifacts/address.json`,
     'utf8'
   )
 )
