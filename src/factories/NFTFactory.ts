@@ -867,6 +867,9 @@ export class NftFactory {
   ): Promise<TransactionReceipt> {
     const ercCreateData = getErcCreationParams(ercParams)
 
+    dispenserParams.maxBalance = Web3.utils.toWei(dispenserParams.maxBalance)
+    dispenserParams.maxTokens = Web3.utils.toWei(dispenserParams.maxTokens)
+
     const estGas = await this.estGasCreateNftErc20WithDispenser(
       address,
       nftCreateData,
