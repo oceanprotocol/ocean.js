@@ -11,7 +11,8 @@ import {
   setContractDefaults,
   configHelperNetworks,
   getFreOrderParams,
-  allowance
+  allowance,
+  ZERO_ADDRESS
 } from '../utils'
 import {
   ConsumeMarketFee,
@@ -969,8 +970,7 @@ export class Datatoken {
     serviceIndex: number,
     providerFees: ProviderFees,
     consumeMarketFee?: ConsumeMarketFee
-  ): Promise<any> {
-    // TODO: restore after fixing alloance `Promise<TransactionReceipt>`
+  ): Promise<TransactionReceipt> {
     const dtContract = setContractDefaults(
       new this.web3.eth.Contract(this.datatokensAbi, dtAddress),
       this.config
@@ -1010,9 +1010,9 @@ export class Datatoken {
       ]
       const uniqueTokens = []
       tokens.map((address) => {
-        if (uniqueTokens.length > 0){
+        if (uniqueTokens.length > 0) {
           uniqueTokens.map((uAddress) => {
-            if (uAddress.token === address.token){
+            if (uAddress.token === address.token) {
               uAddress.feeAmount += address.feeAmount
             } else {
               uniqueTokens.push({
@@ -1028,10 +1028,10 @@ export class Datatoken {
           })
         }
       })
-    
+
       uniqueTokens.map(async (tokenAddress) => {
-        if (tokenAddress.token === '0x0000000000000000000000000000000000000000') return
-        
+        if (tokenAddress.token === ZERO_ADDRESS) return
+
         const currentAllowance = await allowance(
           this.web3,
           tokenAddress.token,
@@ -1046,7 +1046,6 @@ export class Datatoken {
         ) {
           return currentAllowance
         }
-
       })
 
       const trxReceipt = await dtContract.methods
