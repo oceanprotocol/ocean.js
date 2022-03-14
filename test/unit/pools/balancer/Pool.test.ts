@@ -184,7 +184,7 @@ describe('Pool unit test', () => {
 
     it('#sharesBalance - should return user shares balance (datatoken balance, LPT balance, etc) ', async () => {
       expect(await daiContract.methods.balanceOf(user2).call()).to.equal(
-        await pool.sharesBalance(user2, contracts.daiAddress)
+        web3.utils.toWei(await pool.sharesBalance(user2, contracts.daiAddress))
       )
     })
 
