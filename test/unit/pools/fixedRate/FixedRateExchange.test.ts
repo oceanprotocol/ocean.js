@@ -13,10 +13,14 @@ import Dispenser from '@oceanprotocol/contracts/artifacts/contracts/pools/dispen
 import FixedRate from '@oceanprotocol/contracts/artifacts/contracts/pools/fixedRate/FixedRateExchange.sol/FixedRateExchange.json'
 import PoolTemplate from '@oceanprotocol/contracts/artifacts/contracts/pools/balancer/BPool.sol/BPool.json'
 import OPFCollector from '@oceanprotocol/contracts/artifacts/contracts/communityFee/OPFCommunityFeeCollector.sol/OPFCommunityFeeCollector.json'
+import { configHelperNetworks } from '../../../../src/utils/'
 import { NftFactory, NftCreateData } from '../../../../src/factories/NFTFactory'
 import { FixedRateExchange } from '../../../../src/pools/fixedRate/FixedRateExchange'
 import { FreCreationParams, Erc20CreateParams } from '../../../../src/@types'
-const web3 = new Web3('http://127.0.0.1:8545')
+
+const config = configHelperNetworks[1]
+
+const web3 = new Web3(config.nodeUri)
 
 describe('Fixed Rate unit test', () => {
   let factoryOwner: string

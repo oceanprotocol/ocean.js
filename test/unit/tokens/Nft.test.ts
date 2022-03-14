@@ -10,13 +10,16 @@ import Dispenser from '@oceanprotocol/contracts/artifacts/contracts/pools/dispen
 import FixedRate from '@oceanprotocol/contracts/artifacts/contracts/pools/fixedRate/FixedRateExchange.sol/FixedRateExchange.json'
 import OPFCollector from '@oceanprotocol/contracts/artifacts/contracts/communityFee/OPFCommunityFeeCollector.sol/OPFCommunityFeeCollector.json'
 import { TestContractHandler } from '../../TestContractHandler'
+import { configHelperNetworks } from '../../../src/utils/'
 import { NftFactory, NftCreateData } from '../../../src/factories/NFTFactory'
 import { Nft } from '../../../src/tokens/NFT'
 import { AbiItem } from 'web3-utils'
 import sha256 from 'crypto-js/sha256'
 import { MetadataAndTokenURI } from '../../../src/@types/Erc721'
 
-const web3 = new Web3('http://127.0.0.1:8545')
+const config = configHelperNetworks[1]
+
+const web3 = new Web3(config.nodeUri)
 
 describe('NFT', () => {
   let nftOwner: string
