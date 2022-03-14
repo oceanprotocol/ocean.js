@@ -81,8 +81,8 @@ export const configHelperNetworks: Config[] = [
     chainId: 1287,
     network: 'moonbase',
     nodeUri: 'https://rpc.api.moonbase.moonbeam.network',
-    providerUri: 'https://v4.provider.moonbeamalpha.oceanprotocol.com',
-    subgraphUri: 'https://v4.subgraph.moonbeamalpha.oceanprotocol.com',
+    providerUri: 'https://v4.provider.moonbase.oceanprotocol.com',
+    subgraphUri: 'https://v4.subgraph.moonbase.oceanprotocol.com',
     explorerUri: 'https://moonbase.moonscan.io/'
   },
   {
