@@ -25,7 +25,7 @@ const config = configHelperNetworks[1]
 const addresses = data.development
 const aquarius = new Aquarius(config.metadataCacheUri)
 const web3 = new Web3(config.nodeUri)
-const providerUrl = /* process.env.PROVIDER_URL || */ config.providerUri
+const providerUrl = process.env.PROVIDER_URL || config.providerUri
 const assetUrl = [
   {
     type: 'url',
