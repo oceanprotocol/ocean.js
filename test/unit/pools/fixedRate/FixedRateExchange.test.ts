@@ -231,11 +231,11 @@ describe('Fixed Rate unit test', () => {
         await (
           await fixedRate.calcBaseInGivenOutDT(exchangeId, '100')
         ).baseTokenAmount
-      ).to.equal('100.2')
+      ).to.equal('100.3')
     })
     it('#getAmountBTOut - should get bt amount out for a specific dt amount', async () => {
       // 99.8 DAI for 100 DT (0.1% market fee and 0.1% ocean fee)
-      expect(await fixedRate.getAmountBTOut(exchangeId, '100')).to.equal('99.8')
+      expect(await fixedRate.getAmountBTOut(exchangeId, '100')).to.equal('99.7')
     })
 
     it('#buyDT - user2 should buy some dt', async () => {
@@ -326,9 +326,9 @@ describe('Fixed Rate unit test', () => {
       // we made 2 swaps for 10 DT at rate 1, the fee is 0.1% for market and always in baseToken so it's 0.01 DAI
       // we made 2 swaps for 10 DT at rate 1, the fee is 0.1% for ocean community and always in baseToken so it's 0.01 DAI
       expect(result.marketFeeAvailable).to.equal('0.02') // formatted for baseToken decimals
-      expect(result.oceanFeeAvailable).to.equal('0.02') // formatted for baseToken decimals
+      expect(result.oceanFeeAvailable).to.equal('0.04') // formatted for baseToken decimals
       expect(result.marketFeeCollector).to.equal(user3)
-      expect(result.opcFee).to.equal('0.001')
+      expect(result.opcFee).to.equal('0.002')
     })
 
     it('#getAllowedSwapper- should return address(0) if not set, if exchangeOwner', async () => {
@@ -372,7 +372,7 @@ describe('Fixed Rate unit test', () => {
       // plus another swap for 1 DT
       expect(result.marketFeeAvailable).to.equal('0.021') // formatted for baseToken decimals
       // same for ocean fee
-      expect(result.oceanFeeAvailable).to.equal('0.021') // formatted for baseToken decimals
+      expect(result.oceanFeeAvailable).to.equal('0.042') // formatted for baseToken decimals
       expect(result.marketFeeCollector).to.equal(user3)
 
       // user4 calls collectMarketFee
@@ -380,7 +380,7 @@ describe('Fixed Rate unit test', () => {
       result = await fixedRate.getFeesInfo(exchangeId)
       expect(result.marketFeeAvailable).to.equal('0')
       // ocean fee still available
-      expect(result.oceanFeeAvailable).to.equal('0.021')
+      expect(result.oceanFeeAvailable).to.equal('0.042')
       // user3 is the marketFeeCollector
       expect(await daiContract.methods.balanceOf(user3).call()).to.equal(
         web3.utils.toWei('0.021')
@@ -546,11 +546,11 @@ describe('Fixed Rate unit test', () => {
         await (
           await fixedRate.calcBaseInGivenOutDT(exchangeId, '100')
         ).baseTokenAmount
-      ).to.equal('100.2')
+      ).to.equal('100.3')
     })
     it('#getAmountBTOut - should get bt amount out for a specific dt amount', async () => {
       // 99.8 USDC for 100 DT (0.1% market fee and 0.1% ocean fee)
-      expect(await fixedRate.getAmountBTOut(exchangeId, '100')).to.equal('99.8')
+      expect(await fixedRate.getAmountBTOut(exchangeId, '100')).to.equal('99.7')
     })
 
     it('#buyDT - user2 should buy some dt', async () => {
@@ -639,9 +639,9 @@ describe('Fixed Rate unit test', () => {
       // we made 2 swaps for 10 DT at rate 1, the fee is 0.1% for market and always in baseToken so it's 0.01 USDC
       // we made 2 swaps for 10 DT at rate 1, the fee is 0.1% for ocean community and always in baseToken so it's 0.01 USDC
       expect(result.marketFeeAvailable).to.equal('0.02') // formatted for baseToken decimals
-      expect(result.oceanFeeAvailable).to.equal('0.02') // formatted for baseToken decimals
+      expect(result.oceanFeeAvailable).to.equal('0.04') // formatted for baseToken decimals
       expect(result.marketFeeCollector).to.equal(user3)
-      expect(result.opcFee).to.equal('0.001')
+      expect(result.opcFee).to.equal('0.002')
     })
 
     it('#getAllowedSwapper- should return address(0) if not set, if exchangeOwner', async () => {

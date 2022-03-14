@@ -380,7 +380,7 @@ describe('Datatoken', () => {
       (await datatoken.balance(
         datatokenAddress,
         await datatoken.getPaymentCollector(datatokenAddress)
-      )) === '1',
+      )) === '0.97',
       'Invalid publisher reward, we should have 1 DT'
     )
   })
