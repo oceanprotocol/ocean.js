@@ -1030,7 +1030,7 @@ export class Datatoken {
       })
 
       uniqueTokens.map(async (tokenAddress) => {
-        if (tokenAddress.token === ZERO_ADDRESS) return
+        if (tokenAddress.token === ZERO_ADDRESS || tokenAddress.feeAmount === 0) return
 
         const currentAllowance = await allowance(
           this.web3,
@@ -1044,7 +1044,8 @@ export class Datatoken {
             new Decimal(tokenAddress.feeAmount)
           )
         ) {
-          return currentAllowance
+          LoggerInstance.error(`ERROR: Failed to check allowance : ${currentAllowance}`)
+          throw new Error(`Failed to check allowance: ${currentAllowance}`)
         }
       })
 
