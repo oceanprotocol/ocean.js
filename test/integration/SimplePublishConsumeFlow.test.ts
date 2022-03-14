@@ -1,3 +1,4 @@
+import { configHelperNetworks } from '../../src/utils/'
 import ProviderInstance from '../../src/provider/Provider'
 import Aquarius from '../../src/aquarius/Aquarius'
 import { assert } from 'chai'
@@ -20,10 +21,12 @@ const data = JSON.parse(
   )
 )
 
+const config = configHelperNetworks[1]
+
 const addresses = data.development
-const aquarius = new Aquarius('http://127.0.0.1:5000')
-const web3 = new Web3('http://127.0.0.1:8545')
-const providerUrl = process.env.PROVIDER_URL || 'http://127.0.0.1:8030'
+const aquarius = new Aquarius(config.metadataCacheUri)
+const web3 = new Web3(config.nodeUri)
+const providerUrl = process.env.PROVIDER_URL || config.providerUri
 const assetUrl = [
   {
     type: 'url',

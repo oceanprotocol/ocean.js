@@ -1,4 +1,4 @@
-import config from './config'
+import { configHelperNetworks } from '../../src/utils/'
 import ProviderInstance, { Provider } from '../../src/provider/Provider'
 import Aquarius from '../../src/aquarius/Aquarius'
 import { assert } from 'chai'
@@ -21,7 +21,16 @@ const data = JSON.parse(
   )
 )
 
+const config = configHelperNetworks[1]
+
+console.log(config.metadataCacheUri)
+console.log(config.nodeUri)
+console.log(process.env.PROVIDER_URL || config.providerUri)
+
 const addresses = data.development
+/* const aquarius = new Aquarius(config.metadataCacheUri)
+const web3 = new Web3(config.nodeUri)
+const providerUrl = process.env.PROVIDER_URL || config.providerUri */
 const aquarius = new Aquarius('http://127.0.0.1:5000')
 const web3 = new Web3('http://127.0.0.1:8545')
 const providerUrl = process.env.PROVIDER_URL || 'http://127.0.0.1:8030'
@@ -228,7 +237,14 @@ describe('Simple compute tests', async () => {
       '0x' + metadataHash
     )
 
+    const computeEnvs1 = await ProviderInstance.getComputeEnvironments(providerUrl)
+    assert(computeEnvs1, 'No Compute environments found')
+    console.log('aa')
+    // we choose the first env
+    console.log(computeEnvs1)
+
     // let's wait
+    console.log(ddo.id)
     const resolvedDDOAsset = await aquarius.waitForAqua(ddo.id)
     assert(resolvedDDOAsset, 'Cannot fetch DDO from Aquarius')
     const resolvedDDOAlgo = await aquarius.waitForAqua(algoDdo.id)
