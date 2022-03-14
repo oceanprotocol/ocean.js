@@ -81,11 +81,11 @@ export class Router {
     return trxReceipt
   }
 
-  /** Check if a token is on ocean tokens list, if true opfFee is ZERO in pools with that token/DT
+  /** Check if a token is on approved tokens list, if true opfFee is lower in pools with that token/DT
    * @return {Promise<boolean>} true if is on the list.
    */
-  public async isOceanTokens(address: string): Promise<boolean> {
-    return await this.router.methods.isOceanToken(address).call()
+  public async isApprovedToken(address: string): Promise<boolean> {
+    return await this.router.methods.isApprovedToken(address).call()
   }
 
   /** Check if an address is a side staking contract.
@@ -124,13 +124,13 @@ export class Router {
   }
 
   /**
-   * Estimate gas cost for addOceanToken
+   * Estimate gas cost for addApprovedToken
    * @param {String} address
    * @param {String} tokenAddress token address we want to add
    * @param {Contract} routerContract optional contract instance
    * @return {Promise<any>}
    */
-  public async estGasAddOceanToken(
+  public async estGasAddApprovedToken(
     address: string,
     tokenAddress: string,
     contractInstance?: Contract
@@ -141,7 +141,7 @@ export class Router {
     let estGas
     try {
       estGas = await routerContract.methods
-        .addOceanToken(tokenAddress)
+        .addApprovedToken(tokenAddress)
         .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
     } catch (e) {
       estGas = gasLimitDefault
@@ -155,7 +155,7 @@ export class Router {
    * @param {String} tokenAddress token address to add
    * @return {Promise<TransactionReceipt>}
    */
-  public async addOceanToken(
+  public async addApprovedToken(
     address: string,
     tokenAddress: string
   ): Promise<TransactionReceipt> {
@@ -163,10 +163,10 @@ export class Router {
       throw new Error(`Caller is not Router Owner`)
     }
 
-    const estGas = await this.estGasAddOceanToken(address, tokenAddress)
+    const estGas = await this.estGasAddApprovedToken(address, tokenAddress)
 
     // Invoke createToken function of the contract
-    const trxReceipt = await this.router.methods.addOceanToken(tokenAddress).send({
+    const trxReceipt = await this.router.methods.addApprovedToken(tokenAddress).send({
       from: address,
       gas: estGas + 1,
       gasPrice: await getFairGasPrice(this.web3, this.config)
@@ -176,13 +176,13 @@ export class Router {
   }
 
   /**
-   * Estimate gas cost for removeOceanToken
+   * Estimate gas cost for removeApprovedToken
    * @param {String} address caller address
    * @param {String} tokenAddress token address we want to add
    * @param {Contract} routerContract optional contract instance
    * @return {Promise<any>}
    */
-  public async estGasRemoveOceanToken(
+  public async estGasRemoveApprovedToken(
     address: string,
     tokenAddress: string,
     contractInstance?: Contract
@@ -193,7 +193,7 @@ export class Router {
     let estGas
     try {
       estGas = await routerContract.methods
-        .removeOceanToken(tokenAddress)
+        .removeApprovedToken(tokenAddress)
         .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
     } catch (e) {
       estGas = gasLimitDefault
@@ -207,7 +207,7 @@ export class Router {
    * @param {String} tokenAddress address to remove
    * @return {Promise<TransactionReceipt>}
    */
-  public async removeOceanToken(
+  public async removeApprovedToken(
     address: string,
     tokenAddress: string
   ): Promise<TransactionReceipt> {
@@ -215,10 +215,10 @@ export class Router {
       throw new Error(`Caller is not Router Owner`)
     }
 
-    const estGas = await this.estGasRemoveOceanToken(address, tokenAddress)
+    const estGas = await this.estGasRemoveApprovedToken(address, tokenAddress)
 
     // Invoke createToken function of the contract
-    const trxReceipt = await this.router.methods.removeOceanToken(tokenAddress).send({
+    const trxReceipt = await this.router.methods.removeApprovedToken(tokenAddress).send({
       from: address,
       gas: estGas + 1,
       gasPrice: await getFairGasPrice(this.web3, this.config)

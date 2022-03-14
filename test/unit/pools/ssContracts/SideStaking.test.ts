@@ -269,11 +269,11 @@ describe('SideStaking unit test', () => {
         sideStakingAddress,
         erc20Token
       )
-
+      const collector = await erc20Contract.methods.getPaymentCollector().call()
       expect(
         await sideStaking.unitsToAmount(
           erc20Token,
-          await erc20Contract.methods.balanceOf(contracts.accounts[0]).call()
+          await erc20Contract.methods.balanceOf(collector).call()
         )
       ).to.equal(await sideStaking.getvestingAmountSoFar(sideStakingAddress, erc20Token))
 
@@ -476,11 +476,11 @@ describe('SideStaking unit test', () => {
         sideStakingAddress,
         erc20Token
       )
-
+      const collector = await erc20Contract.methods.getPaymentCollector().call()
       expect(
         await sideStaking.unitsToAmount(
           erc20Token,
-          await erc20Contract.methods.balanceOf(contracts.accounts[0]).call()
+          await erc20Contract.methods.balanceOf(collector).call()
         )
       ).to.equal(await sideStaking.getvestingAmountSoFar(sideStakingAddress, erc20Token))
 

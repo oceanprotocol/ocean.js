@@ -86,8 +86,8 @@ describe('Router unit test', () => {
   })
 
   it('#isOceanTokens - should return true if in oceanTokens list', async () => {
-    expect(await router.isOceanTokens(contracts.oceanAddress)).to.equal(true)
-    expect(await router.isOceanTokens(contracts.daiAddress)).to.equal(false)
+    expect(await router.isApprovedToken(contracts.oceanAddress)).to.equal(true)
+    expect(await router.isApprovedToken(contracts.daiAddress)).to.equal(false)
   })
   it('#isSideStaking - should return true if in ssContracts list', async () => {
     expect(await router.isSideStaking(contracts.sideStakingAddress)).to.equal(true)
