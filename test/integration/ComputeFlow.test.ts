@@ -1,4 +1,3 @@
-import config from './config'
 import ProviderInstance, { Provider } from '../../src/provider/Provider'
 import Aquarius from '../../src/aquarius/Aquarius'
 import { assert } from 'chai'
