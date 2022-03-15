@@ -3,7 +3,7 @@ import ProviderInstance from '../../src/provider/Provider'
 import Aquarius from '../../src/aquarius/Aquarius'
 import { assert } from 'chai'
 import { NftFactory, NftCreateData } from '../../src/factories/index'
-import { getHash, ZERO_ADDRESS } from '../../src/utils'
+import { configHelperNetworks, getHash, ZERO_ADDRESS } from '../../src/utils'
 import { Nft } from '../../src/tokens/NFT'
 import Web3 from 'web3'
 import { SHA256 } from 'crypto-js'
@@ -27,10 +27,12 @@ const data = JSON.parse(
   )
 )
 
+const config = configHelperNetworks[1]
+
 const addresses = data.development
-const aquarius = new Aquarius('http://127.0.0.1:5000')
-const web3 = new Web3('http://127.0.0.1:8545')
-const providerUrl = 'http://172.15.0.4:8030'
+const aquarius = new Aquarius(config.metadataCacheUri)
+const web3 = new Web3(config.nodeUri)
+const providerUrl = config.providerUri
 let nft: Nft
 let factory: NftFactory
 let accounts: string[]

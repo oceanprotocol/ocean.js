@@ -12,7 +12,7 @@ import FixedRate from '@oceanprotocol/contracts/artifacts/contracts/pools/fixedR
 import OPFCommunityFeeCollector from '@oceanprotocol/contracts/artifacts/contracts/communityFee/OPFCommunityFeeCollector.sol/OPFCommunityFeeCollector.json'
 import PoolTemplate from '@oceanprotocol/contracts/artifacts/contracts/pools//balancer/BPool.sol/BPool.json'
 import { NftFactory, NftCreateData, TokenOrder } from '../../src/factories/NFTFactory'
-import { ZERO_ADDRESS, signHash } from '../../src/utils'
+import { configHelperNetworks, ZERO_ADDRESS, signHash } from '../../src/utils'
 import {
   ProviderFees,
   FreCreationParams,
@@ -20,7 +20,9 @@ import {
   PoolCreationParams
 } from '../../src/@types'
 
-const web3 = new Web3('http://127.0.0.1:8545')
+const config = configHelperNetworks[1]
+
+const web3 = new Web3(config.nodeUri)
 
 describe('Nft Factory test', () => {
   let factoryOwner: string

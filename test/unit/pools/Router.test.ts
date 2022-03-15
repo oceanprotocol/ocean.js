@@ -11,12 +11,16 @@ import Dispenser from '@oceanprotocol/contracts/artifacts/contracts/pools/dispen
 import FixedRate from '@oceanprotocol/contracts/artifacts/contracts/pools/fixedRate/FixedRateExchange.sol/FixedRateExchange.json'
 import OPFCommunityFeeCollector from '@oceanprotocol/contracts/artifacts/contracts/communityFee/OPFCommunityFeeCollector.sol/OPFCommunityFeeCollector.json'
 import PoolTemplate from '@oceanprotocol/contracts/artifacts/contracts/pools/balancer/BPool.sol/BPool.json'
+import { configHelperNetworks } from '../../../src/utils/'
 import { NftFactory, NftCreateData } from '../../../src/factories/NFTFactory'
 import { Router } from '../../../src/pools/Router'
 import { Erc20CreateParams, PoolCreationParams, Operation } from '../../../src/@types'
 
 const { keccak256 } = require('@ethersproject/keccak256')
-const web3 = new Web3('http://127.0.0.1:8545')
+
+const config = configHelperNetworks[1]
+
+const web3 = new Web3(config.nodeUri)
 
 describe('Router unit test', () => {
   let factoryOwner: string
