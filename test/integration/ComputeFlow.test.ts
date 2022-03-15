@@ -229,14 +229,7 @@ describe('Simple compute tests', async () => {
       '0x' + metadataHash
     )
 
-    const computeEnvs1 = await ProviderInstance.getComputeEnvironments(providerUrl)
-    assert(computeEnvs1, 'No Compute environments found')
-    console.log('aa')
-    // we choose the first env
-    console.log(computeEnvs1)
-
     // let's wait
-    console.log(ddo.id)
     const resolvedDDOAsset = await aquarius.waitForAqua(ddo.id)
     assert(resolvedDDOAsset, 'Cannot fetch DDO from Aquarius')
     const resolvedDDOAlgo = await aquarius.waitForAqua(algoDdo.id)
