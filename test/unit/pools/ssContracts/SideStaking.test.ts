@@ -12,7 +12,13 @@ import Dispenser from '@oceanprotocol/contracts/artifacts/contracts/pools/dispen
 import FixedRate from '@oceanprotocol/contracts/artifacts/contracts/pools/fixedRate/FixedRateExchange.sol/FixedRateExchange.json'
 import PoolTemplate from '@oceanprotocol/contracts/artifacts/contracts/pools/balancer/BPool.sol/BPool.json'
 import OPFCollector from '@oceanprotocol/contracts/artifacts/contracts/communityFee/OPFCommunityFeeCollector.sol/OPFCommunityFeeCollector.json'
-import { allowance, amountToUnits, approve, LoggerInstance } from '../../../../src/utils'
+import {
+  allowance,
+  amountToUnits,
+  approve,
+  LoggerInstance,
+  unitsToAmount
+} from '../../../../src/utils'
 import { NftFactory, NftCreateData } from '../../../../src/factories/NFTFactory'
 import { Pool } from '../../../../src/pools/balancer/Pool'
 import { SideStaking } from '../../../../src/pools/ssContracts/SideStaking'
@@ -410,7 +416,9 @@ describe('SideStaking unit test', () => {
         baseTokenDecimals: await usdcContract.methods.decimals().call(),
         vestingAmount: '10000',
         vestedBlocks: 2500000,
-        initialBaseTokenLiquidity: web3.utils.fromWei(
+        initialBaseTokenLiquidity: await unitsToAmount(
+          web3,
+          contracts.usdcAddress,
           await amountToUnits(web3, contracts.usdcAddress, '2000')
         ),
         swapFeeLiquidityProvider: '0.001',
