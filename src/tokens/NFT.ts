@@ -1119,9 +1119,13 @@ export class Nft {
       )
     const gasLimitDefault = this.GASLIMIT_DEFAULT
     let estGas
+    const sanitizedMetadataAndTokenURI = {
+      ...metadataAndTokenURI,
+      metadataProofs: metadataAndTokenURI.metadataProofs || []
+    }
     try {
       estGas = await nftContract.methods
-        .setMetaDataAndTokenURI(metadataAndTokenURI)
+        .setMetaDataAndTokenURI(sanitizedMetadataAndTokenURI)
         .estimateGas({ from: metadataUpdater }, (err, estGas) =>
           err ? gasLimitDefault : estGas
         )
@@ -1157,8 +1161,12 @@ export class Nft {
       metadataAndTokenURI,
       nftContract
     )
+    const sanitizedMetadataAndTokenURI = {
+      ...metadataAndTokenURI,
+      metadataProofs: metadataAndTokenURI.metadataProofs || []
+    }
     const trxReceipt = await nftContract.methods
-      .setMetaDataAndTokenURI(metadataAndTokenURI)
+      .setMetaDataAndTokenURI(sanitizedMetadataAndTokenURI)
       .send({
         from: metadataUpdater,
         gas: estGas + 1,

@@ -414,7 +414,9 @@ describe('SideStaking unit test', () => {
         baseTokenDecimals: await usdcContract.methods.decimals().call(),
         vestingAmount: '10000',
         vestedBlocks: 2500000,
-        initialBaseTokenLiquidity: web3.utils.fromWei(
+        initialBaseTokenLiquidity: await unitsToAmount(
+          web3,
+          contracts.usdcAddress,
           await amountToUnits(web3, contracts.usdcAddress, '2000')
         ),
         swapFeeLiquidityProvider: '0.001',

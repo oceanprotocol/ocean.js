@@ -802,8 +802,24 @@ export class Pool {
         this.config
       )
 
+    const tokenAmountIn = await amountToUnits(
+      this.web3,
+      tokenInOutMarket.tokenIn,
+      amountsInOutMaxFee.tokenAmountIn
+    )
+
+    const minAmountOut = await amountToUnits(
+      this.web3,
+      tokenInOutMarket.tokenOut,
+      amountsInOutMaxFee.minAmountOut
+    )
+
     const maxPrice = amountsInOutMaxFee.maxPrice
-      ? this.web3.utils.toWei(amountsInOutMaxFee.maxPrice)
+      ? amountToUnits(
+          this.web3,
+          await this.getBaseToken(poolAddress),
+          amountsInOutMaxFee.maxPrice
+        )
       : MaxUint256
 
     const gasLimitDefault = this.GASLIMIT_DEFAULT
@@ -817,8 +833,8 @@ export class Pool {
             tokenInOutMarket.marketFeeAddress
           ],
           [
-            amountsInOutMaxFee.tokenAmountIn,
-            amountsInOutMaxFee.minAmountOut,
+            tokenAmountIn,
+            minAmountOut,
             maxPrice,
             this.web3.utils.toWei(amountsInOutMaxFee.swapMarketFee)
           ]
@@ -859,20 +875,6 @@ export class Pool {
       throw new Error(`tokenAmountIn is greater than ${maxSwap.toString()}`)
     }
 
-    amountsInOutMaxFee.tokenAmountIn = await amountToUnits(
-      this.web3,
-      tokenInOutMarket.tokenIn,
-      amountsInOutMaxFee.tokenAmountIn
-    )
-
-    amountsInOutMaxFee.minAmountOut = await amountToUnits(
-      this.web3,
-      tokenInOutMarket.tokenOut,
-      amountsInOutMaxFee.minAmountOut
-    )
-
-    let result = null
-
     const estGas = await this.estSwapExactAmountIn(
       address,
       poolAddress,
@@ -880,8 +882,26 @@ export class Pool {
       amountsInOutMaxFee
     )
 
+    const tokenAmountIn = await amountToUnits(
+      this.web3,
+      tokenInOutMarket.tokenIn,
+      amountsInOutMaxFee.tokenAmountIn
+    )
+
+    const minAmountOut = await amountToUnits(
+      this.web3,
+      tokenInOutMarket.tokenOut,
+      amountsInOutMaxFee.minAmountOut
+    )
+
+    let result = null
+
     const maxPrice = amountsInOutMaxFee.maxPrice
-      ? this.web3.utils.toWei(amountsInOutMaxFee.maxPrice)
+      ? await amountToUnits(
+          this.web3,
+          await this.getBaseToken(poolAddress),
+          amountsInOutMaxFee.maxPrice
+        )
       : MaxUint256
 
     try {
@@ -893,8 +913,8 @@ export class Pool {
             tokenInOutMarket.marketFeeAddress
           ],
           [
-            amountsInOutMaxFee.tokenAmountIn,
-            amountsInOutMaxFee.minAmountOut,
+            tokenAmountIn,
+            minAmountOut,
             maxPrice,
             this.web3.utils.toWei(amountsInOutMaxFee.swapMarketFee)
           ]
@@ -936,8 +956,24 @@ export class Pool {
 
     const gasLimitDefault = this.GASLIMIT_DEFAULT
 
+    const maxAmountIn = await amountToUnits(
+      this.web3,
+      tokenInOutMarket.tokenIn,
+      amountsInOutMaxFee.maxAmountIn
+    )
+
+    const tokenAmountOut = await amountToUnits(
+      this.web3,
+      tokenInOutMarket.tokenOut,
+      amountsInOutMaxFee.tokenAmountOut
+    )
+
     const maxPrice = amountsInOutMaxFee.maxPrice
-      ? this.web3.utils.toWei(amountsInOutMaxFee.maxPrice)
+      ? await amountToUnits(
+          this.web3,
+          await this.getBaseToken(poolAddress),
+          amountsInOutMaxFee.maxPrice
+        )
       : MaxUint256
 
     let estGas
@@ -950,8 +986,8 @@ export class Pool {
             tokenInOutMarket.marketFeeAddress
           ],
           [
-            amountsInOutMaxFee.maxAmountIn,
-            amountsInOutMaxFee.tokenAmountOut,
+            maxAmountIn,
+            tokenAmountOut,
             maxPrice,
             this.web3.utils.toWei(amountsInOutMaxFee.swapMarketFee)
           ]
@@ -988,18 +1024,6 @@ export class Pool {
       throw new Error(`tokenAmountOut is greater than ${maxSwap.toString()}`)
     }
 
-    amountsInOutMaxFee.maxAmountIn = await amountToUnits(
-      this.web3,
-      tokenInOutMarket.tokenIn,
-      amountsInOutMaxFee.maxAmountIn
-    )
-
-    amountsInOutMaxFee.tokenAmountOut = await amountToUnits(
-      this.web3,
-      tokenInOutMarket.tokenOut,
-      amountsInOutMaxFee.tokenAmountOut
-    )
-
     const estGas = await this.estSwapExactAmountOut(
       account,
       poolAddress,
@@ -1007,8 +1031,24 @@ export class Pool {
       amountsInOutMaxFee
     )
 
+    const maxAmountIn = await amountToUnits(
+      this.web3,
+      tokenInOutMarket.tokenIn,
+      amountsInOutMaxFee.maxAmountIn
+    )
+
+    const tokenAmountOut = await amountToUnits(
+      this.web3,
+      tokenInOutMarket.tokenOut,
+      amountsInOutMaxFee.tokenAmountOut
+    )
+
     const maxPrice = amountsInOutMaxFee.maxPrice
-      ? this.web3.utils.toWei(amountsInOutMaxFee.maxPrice)
+      ? amountToUnits(
+          this.web3,
+          await this.getBaseToken(poolAddress),
+          amountsInOutMaxFee.maxPrice
+        )
       : MaxUint256
 
     try {
@@ -1020,8 +1060,8 @@ export class Pool {
             tokenInOutMarket.marketFeeAddress
           ],
           [
-            amountsInOutMaxFee.maxAmountIn,
-            amountsInOutMaxFee.tokenAmountOut,
+            maxAmountIn,
+            tokenAmountOut,
             maxPrice,
             this.web3.utils.toWei(amountsInOutMaxFee.swapMarketFee)
           ]
