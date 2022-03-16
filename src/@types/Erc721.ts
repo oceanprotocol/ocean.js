@@ -9,5 +9,5 @@ export interface MetadataAndTokenURI {
   metaDataHash: string
   tokenId: number
   tokenURI: string
-  metadataProofs: MetadataProof[]
+  metadataProofs?: MetadataProof[]
 }
