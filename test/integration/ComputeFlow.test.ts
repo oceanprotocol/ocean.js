@@ -3,29 +3,13 @@ import Aquarius from '../../src/aquarius/Aquarius'
 import { assert } from 'chai'
 import { NftFactory, NftCreateData } from '../../src/factories/index'
 import { Datatoken } from '../../src/tokens/Datatoken'
-import { configHelperNetworks, getHash } from '../../src/utils'
+import { getHash } from '../../src/utils'
 import { Nft } from '../../src/tokens/NFT'
-import Web3 from 'web3'
 import { SHA256 } from 'crypto-js'
-import { homedir } from 'os'
-import fs from 'fs'
 import { ProviderFees, Erc20CreateParams } from '../../src/@types'
 import console from 'console'
+import { web3, getTestConfig, getAddresses } from '../config'
 
-const data = JSON.parse(
-  fs.readFileSync(
-    process.env.ADDRESS_FILE ||
-      `${homedir}/.ocean/ocean-contracts/artifacts/address.json`,
-    'utf8'
-  )
-)
-
-const config = configHelperNetworks[1]
-
-const addresses = data.development
-const aquarius = new Aquarius(config.metadataCacheUri)
-const web3 = new Web3(config.nodeUri)
-const providerUrl = config.providerUri
 const assetUrl = [
   {
     type: 'url',
@@ -124,6 +108,11 @@ const algoDdo = {
 }
 
 describe('Simple compute tests', async () => {
+  const config = await getTestConfig(web3)
+  const addresses = getAddresses()
+  const aquarius = new Aquarius(config.metadataCacheUri)
+  const providerUrl = config.providerUri
+
   it('should publish a dataset, algorithm and start a compute job', async () => {
     const nft = new Nft(web3)
     const datatoken = new Datatoken(web3)

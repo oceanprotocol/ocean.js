@@ -1,5 +1,4 @@
 import { assert } from 'chai'
-import Web3 from 'web3'
 import ERC20TemplateEnterprise from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC20TemplateEnterprise.sol/ERC20TemplateEnterprise.json'
 import PoolTemplate from '@oceanprotocol/contracts/artifacts/contracts/pools/balancer/BPool.sol/BPool.json'
 import ERC721Factory from '@oceanprotocol/contracts/artifacts/contracts/ERC721Factory.sol/ERC721Factory.json'
@@ -15,12 +14,9 @@ import { TestContractHandler } from '../../TestContractHandler'
 import { NftFactory, NftCreateData } from '../../../src/factories/NFTFactory'
 import { Datatoken, Nft, OrderParams, DispenserParams } from '../../../src/tokens'
 import { AbiItem } from 'web3-utils'
-import { configHelperNetworks, ZERO_ADDRESS, signHash } from '../../../src/utils'
+import { ZERO_ADDRESS, signHash } from '../../../src/utils'
 import { ProviderFees, FreCreationParams, FreOrderParams } from '../../../src/@types/'
-
-const config = configHelperNetworks[1]
-
-const web3 = new Web3(config.nodeUri)
+import { web3 } from '../../config'
 
 describe('Datatoken', () => {
   let nftOwner: string

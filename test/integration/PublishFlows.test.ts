@@ -3,12 +3,9 @@ import ProviderInstance from '../../src/provider/Provider'
 import Aquarius from '../../src/aquarius/Aquarius'
 import { assert } from 'chai'
 import { NftFactory, NftCreateData } from '../../src/factories/index'
-import { configHelperNetworks, getHash, ZERO_ADDRESS } from '../../src/utils'
+import { getHash, ZERO_ADDRESS } from '../../src/utils'
 import { Nft } from '../../src/tokens/NFT'
-import Web3 from 'web3'
 import { SHA256 } from 'crypto-js'
-import { homedir } from 'os'
-import fs from 'fs'
 import { AbiItem } from 'web3-utils'
 import {
   ValidateMetadata,
@@ -18,21 +15,8 @@ import {
   FreCreationParams,
   DispenserCreationParams
 } from '../../src/@types'
+import { web3, getTestConfig, getAddresses } from '../config'
 
-const data = JSON.parse(
-  fs.readFileSync(
-    process.env.ADDRESS_FILE ||
-      `${homedir}/.ocean/ocean-contracts/artifacts/address.json`,
-    'utf8'
-  )
-)
-
-const config = configHelperNetworks[1]
-
-const addresses = data.development
-const aquarius = new Aquarius(config.metadataCacheUri)
-const web3 = new Web3(config.nodeUri)
-const providerUrl = config.providerUri
 let nft: Nft
 let factory: NftFactory
 let accounts: string[]
@@ -76,6 +60,11 @@ const genericAsset: DDO = {
 }
 
 describe('Publish tests', async () => {
+  const config = await getTestConfig(web3)
+  const addresses = getAddresses()
+  const aquarius = new Aquarius(config.metadataCacheUri)
+  const providerUrl = config.providerUri
+
   it('initialise testes classes', async () => {
     nft = new Nft(web3)
     factory = new NftFactory(addresses.ERC721Factory, web3)

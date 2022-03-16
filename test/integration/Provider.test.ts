@@ -1,11 +1,10 @@
-import { configHelperNetworks } from '../../src/utils/'
 import { Provider } from '../../src/provider/Provider'
 import { assert } from 'chai'
 import { FileMetadata } from '../../src/@types'
+import { web3, getTestConfig } from '../config'
 
-const config = configHelperNetworks[1]
-
-describe('Provider tests', () => {
+describe('Provider tests', async () => {
+  const config = await getTestConfig(web3)
   let providerInstance: Provider
 
   it('Initialize Ocean', async () => {
@@ -25,7 +24,7 @@ describe('Provider tests', () => {
   it('Alice checks fileinfo', async () => {
     const fileinfo: FileMetadata[] = await providerInstance.checkFileUrl(
       'https://dumps.wikimedia.org/enwiki/latest/enwiki-latest-abstract.xml.gz-rss.xml',
-      'config.providerUri'
+      config.providerUri
     )
     assert(fileinfo[0].valid === true, 'Sent file is not valid')
   })

@@ -1,7 +1,6 @@
 import { assert, expect } from 'chai'
 import { AbiItem } from 'web3-utils/types'
 import { TestContractHandler } from '../TestContractHandler'
-import Web3 from 'web3'
 import ERC721Factory from '@oceanprotocol/contracts/artifacts/contracts/ERC721Factory.sol/ERC721Factory.json'
 import ERC721Template from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC721Template.sol/ERC721Template.json'
 import SideStaking from '@oceanprotocol/contracts/artifacts/contracts/pools/ssContracts/SideStaking.sol/SideStaking.json'
@@ -12,17 +11,14 @@ import FixedRate from '@oceanprotocol/contracts/artifacts/contracts/pools/fixedR
 import OPFCommunityFeeCollector from '@oceanprotocol/contracts/artifacts/contracts/communityFee/OPFCommunityFeeCollector.sol/OPFCommunityFeeCollector.json'
 import PoolTemplate from '@oceanprotocol/contracts/artifacts/contracts/pools//balancer/BPool.sol/BPool.json'
 import { NftFactory, NftCreateData, TokenOrder } from '../../src/factories/NFTFactory'
-import { configHelperNetworks, ZERO_ADDRESS, signHash } from '../../src/utils'
+import { ZERO_ADDRESS, signHash } from '../../src/utils'
 import {
   ProviderFees,
   FreCreationParams,
   Erc20CreateParams,
   PoolCreationParams
 } from '../../src/@types'
-
-const config = configHelperNetworks[1]
-
-const web3 = new Web3(config.nodeUri)
+import { web3 } from '../config'
 
 describe('Nft Factory test', () => {
   let factoryOwner: string
