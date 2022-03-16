@@ -18,7 +18,8 @@ import {
   approve,
   NftFactory,
   NftCreateData,
-  Pool
+  Pool,
+  unitsToAmount
 } from '../../../../src'
 import { SideStaking } from '../../../../src/pools/ssContracts/SideStaking'
 import {

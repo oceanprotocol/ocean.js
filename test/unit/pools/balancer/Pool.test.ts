@@ -18,7 +18,8 @@ import {
   approve,
   NftFactory,
   NftCreateData,
-  Pool
+  Pool,
+  unitsToAmount
 } from '../../../../src'
 import {
   PoolCreationParams,
