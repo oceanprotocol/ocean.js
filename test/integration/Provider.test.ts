@@ -1,8 +1,7 @@
-import { Provider } from '../../src/provider/Provider'
 import { assert } from 'chai'
-import { FileMetadata } from '../../src/@types'
 import { web3, getTestConfig } from '../config'
-import { Config } from '../../src'
+import { Config, Provider } from '../../src'
+import { FileMetadata } from '../../src/@types'
 
 describe('Provider tests', async () => {
   let config: Config

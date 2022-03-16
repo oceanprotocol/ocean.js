@@ -1,6 +1,5 @@
 import { assert, expect } from 'chai'
 import { AbiItem } from 'web3-utils/types'
-import { TestContractHandler } from '../../../TestContractHandler'
 import { Contract } from 'web3-eth-contract'
 import ERC721Factory from '@oceanprotocol/contracts/artifacts/contracts/ERC721Factory.sol/ERC721Factory.json'
 import ERC721Template from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC721Template.sol/ERC721Template.json'
@@ -11,9 +10,16 @@ import Dispenser from '@oceanprotocol/contracts/artifacts/contracts/pools/dispen
 import FixedRate from '@oceanprotocol/contracts/artifacts/contracts/pools/fixedRate/FixedRateExchange.sol/FixedRateExchange.json'
 import PoolTemplate from '@oceanprotocol/contracts/artifacts/contracts/pools/balancer/BPool.sol/BPool.json'
 import OPFCollector from '@oceanprotocol/contracts/artifacts/contracts/communityFee/OPFCommunityFeeCollector.sol/OPFCommunityFeeCollector.json'
-import { allowance, amountToUnits, approve } from '../../../../src/utils'
-import { NftFactory, NftCreateData } from '../../../../src/factories/NFTFactory'
-import { Pool } from '../../../../src/pools/balancer/Pool'
+import { TestContractHandler } from '../../../TestContractHandler'
+import { web3 } from '../../../config'
+import {
+  allowance,
+  amountToUnits,
+  approve,
+  NftFactory,
+  NftCreateData,
+  Pool
+} from '../../../../src'
 import {
   PoolCreationParams,
   Erc20CreateParams,
@@ -22,7 +28,6 @@ import {
   AmountsInMaxFee,
   AmountsOutMaxFee
 } from '../../../../src/@types'
-import { web3 } from '../../../config'
 
 describe('Pool unit test', () => {
   let factoryOwner: string

@@ -1,15 +1,18 @@
-import ProviderInstance from '../../src/provider/Provider'
-import Aquarius from '../../src/aquarius/Aquarius'
 import { assert } from 'chai'
-import { NftFactory, NftCreateData } from '../../src/factories/index'
-import { Datatoken } from '../../src/tokens/Datatoken'
-import { getHash } from '../../src/utils'
-import { Nft } from '../../src/tokens/NFT'
 import { SHA256 } from 'crypto-js'
-import { ProviderFees, Erc20CreateParams } from '../../src/@types'
 import console from 'console'
 import { web3, getTestConfig, getAddresses } from '../config'
-import { Config } from '../../src'
+import {
+  Config,
+  ProviderInstance,
+  Aquarius,
+  NftFactory,
+  NftCreateData,
+  Datatoken,
+  getHash,
+  Nft
+} from '../../src'
+import { ProviderFees, Erc20CreateParams } from '../../src/@types'
 
 const assetUrl = [
   {

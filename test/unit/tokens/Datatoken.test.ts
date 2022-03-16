@@ -9,14 +9,20 @@ import ERC20Template from '@oceanprotocol/contracts/artifacts/contracts/template
 import Dispenser from '@oceanprotocol/contracts/artifacts/contracts/pools/dispenser/Dispenser.sol/Dispenser.json'
 import FixedRate from '@oceanprotocol/contracts/artifacts/contracts/pools/fixedRate/FixedRateExchange.sol/FixedRateExchange.json'
 import OPFCollector from '@oceanprotocol/contracts/artifacts/contracts/communityFee/OPFCommunityFeeCollector.sol/OPFCommunityFeeCollector.json'
-
 import { TestContractHandler } from '../../TestContractHandler'
-import { NftFactory, NftCreateData } from '../../../src/factories/NFTFactory'
-import { Datatoken, Nft, OrderParams, DispenserParams } from '../../../src/tokens'
 import { AbiItem } from 'web3-utils'
-import { ZERO_ADDRESS, signHash } from '../../../src/utils'
-import { ProviderFees, FreCreationParams, FreOrderParams } from '../../../src/@types/'
 import { web3 } from '../../config'
+import {
+  NftFactory,
+  NftCreateData,
+  Datatoken,
+  Nft,
+  OrderParams,
+  DispenserParams,
+  ZERO_ADDRESS,
+  signHash
+} from '../../../src'
+import { ProviderFees, FreCreationParams, FreOrderParams } from '../../../src/@types/'
 
 describe('Datatoken', () => {
   let nftOwner: string

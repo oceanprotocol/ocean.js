@@ -1,10 +1,5 @@
 import MockERC20 from '@oceanprotocol/contracts/artifacts/contracts/utils/mock/MockERC20Decimals.sol/MockERC20Decimals.json'
-import ProviderInstance from '../../src/provider/Provider'
-import Aquarius from '../../src/aquarius/Aquarius'
 import { assert } from 'chai'
-import { NftFactory, NftCreateData } from '../../src/factories/index'
-import { getHash, ZERO_ADDRESS } from '../../src/utils'
-import { Nft } from '../../src/tokens/NFT'
 import { SHA256 } from 'crypto-js'
 import { AbiItem } from 'web3-utils'
 import {
@@ -16,7 +11,16 @@ import {
   DispenserCreationParams
 } from '../../src/@types'
 import { web3, getTestConfig, getAddresses } from '../config'
-import { Config } from '../../src'
+import {
+  Config,
+  ProviderInstance,
+  Aquarius,
+  NftFactory,
+  NftCreateData,
+  getHash,
+  ZERO_ADDRESS,
+  Nft
+} from '../../src'
 
 let nft: Nft
 let factory: NftFactory

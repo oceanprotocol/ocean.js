@@ -9,12 +9,16 @@ import DispenserTemplate from '@oceanprotocol/contracts/artifacts/contracts/pool
 import FixedRate from '@oceanprotocol/contracts/artifacts/contracts/pools/fixedRate/FixedRateExchange.sol/FixedRateExchange.json'
 import PoolTemplate from '@oceanprotocol/contracts/artifacts/contracts/pools/balancer/BPool.sol/BPool.json'
 import OPFCollector from '@oceanprotocol/contracts/artifacts/contracts/communityFee/OPFCommunityFeeCollector.sol/OPFCommunityFeeCollector.json'
-import { NftFactory, NftCreateData } from '../../../../src/factories/'
-import { Datatoken, DispenserParams } from '../../../../src/tokens/'
-import { Dispenser } from '../../../../src/pools/dispenser/'
 import { TestContractHandler } from '../../../TestContractHandler'
-import { Erc20CreateParams } from '../../../../src/@types'
 import { web3 } from '../../../config'
+import {
+  NftFactory,
+  NftCreateData,
+  Datatoken,
+  DispenserParams,
+  Dispenser
+} from '../../../../src/'
+import { Erc20CreateParams } from '../../../../src/@types'
 
 describe('Dispenser flow', () => {
   let factoryOwner: string

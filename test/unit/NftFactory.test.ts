@@ -10,15 +10,14 @@ import Dispenser from '@oceanprotocol/contracts/artifacts/contracts/pools/dispen
 import FixedRate from '@oceanprotocol/contracts/artifacts/contracts/pools/fixedRate/FixedRateExchange.sol/FixedRateExchange.json'
 import OPFCommunityFeeCollector from '@oceanprotocol/contracts/artifacts/contracts/communityFee/OPFCommunityFeeCollector.sol/OPFCommunityFeeCollector.json'
 import PoolTemplate from '@oceanprotocol/contracts/artifacts/contracts/pools//balancer/BPool.sol/BPool.json'
-import { NftFactory, NftCreateData, TokenOrder } from '../../src/factories/NFTFactory'
-import { ZERO_ADDRESS, signHash } from '../../src/utils'
+import { web3 } from '../config'
+import { NftFactory, NftCreateData, TokenOrder, ZERO_ADDRESS, signHash } from '../../src'
 import {
   ProviderFees,
   FreCreationParams,
   Erc20CreateParams,
   PoolCreationParams
 } from '../../src/@types'
-import { web3 } from '../config'
 
 describe('Nft Factory test', () => {
   let factoryOwner: string
