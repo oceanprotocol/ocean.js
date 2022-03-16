@@ -2,10 +2,15 @@ import { Provider } from '../../src/provider/Provider'
 import { assert } from 'chai'
 import { FileMetadata } from '../../src/@types'
 import { web3, getTestConfig } from '../config'
+import { Config } from '../../src'
 
 describe('Provider tests', async () => {
-  const config = await getTestConfig(web3)
+  let config: Config
   let providerInstance: Provider
+
+  before(async () => {
+    config = await getTestConfig(web3)
+  })
 
   it('Initialize Ocean', async () => {
     providerInstance = new Provider()

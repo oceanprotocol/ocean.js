@@ -9,6 +9,7 @@ import { SHA256 } from 'crypto-js'
 import { downloadFile } from '../../src/utils/FetchHelper'
 import { ProviderFees, Erc20CreateParams } from '../../src/@types'
 import { web3, getTestConfig, getAddresses } from '../config'
+import { Config } from '../../src'
 
 const assetUrl = [
   {
@@ -49,10 +50,17 @@ const ddo = {
 }
 
 describe('Simple Publish & consume test', async () => {
-  const config = await getTestConfig(web3)
-  const addresses = getAddresses()
-  const aquarius = new Aquarius(config.metadataCacheUri)
-  const providerUrl = config.providerUri
+  let config: Config
+  let addresses: any
+  let aquarius: Aquarius
+  let providerUrl: any
+
+  before(async () => {
+    config = await getTestConfig(web3)
+    addresses = getAddresses()
+    aquarius = new Aquarius(config.metadataCacheUri)
+    providerUrl = config.providerUri
+  })
 
   it('should publish a dataset (create NFT + ERC20)', async () => {
     const nft = new Nft(web3)

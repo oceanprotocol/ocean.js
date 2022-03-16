@@ -16,6 +16,7 @@ import {
   DispenserCreationParams
 } from '../../src/@types'
 import { web3, getTestConfig, getAddresses } from '../config'
+import { Config } from '../../src'
 
 let nft: Nft
 let factory: NftFactory
@@ -60,10 +61,17 @@ const genericAsset: DDO = {
 }
 
 describe('Publish tests', async () => {
-  const config = await getTestConfig(web3)
-  const addresses = getAddresses()
-  const aquarius = new Aquarius(config.metadataCacheUri)
-  const providerUrl = config.providerUri
+  let config: Config
+  let addresses: any
+  let aquarius: Aquarius
+  let providerUrl: any
+
+  before(async () => {
+    config = await getTestConfig(web3)
+    addresses = getAddresses()
+    aquarius = new Aquarius(config.metadataCacheUri)
+    providerUrl = config.providerUri
+  })
 
   it('initialise testes classes', async () => {
     nft = new Nft(web3)

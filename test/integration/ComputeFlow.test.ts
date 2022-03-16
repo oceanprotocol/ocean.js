@@ -9,6 +9,7 @@ import { SHA256 } from 'crypto-js'
 import { ProviderFees, Erc20CreateParams } from '../../src/@types'
 import console from 'console'
 import { web3, getTestConfig, getAddresses } from '../config'
+import { Config } from '../../src'
 
 const assetUrl = [
   {
@@ -108,10 +109,17 @@ const algoDdo = {
 }
 
 describe('Simple compute tests', async () => {
-  const config = await getTestConfig(web3)
-  const addresses = getAddresses()
-  const aquarius = new Aquarius(config.metadataCacheUri)
-  const providerUrl = config.providerUri
+  let config: Config
+  let addresses: any
+  let aquarius: Aquarius
+  let providerUrl: any
+
+  before(async () => {
+    config = await getTestConfig(web3)
+    addresses = getAddresses()
+    aquarius = new Aquarius(config.metadataCacheUri)
+    providerUrl = config.providerUri
+  })
 
   it('should publish a dataset, algorithm and start a compute job', async () => {
     const nft = new Nft(web3)
