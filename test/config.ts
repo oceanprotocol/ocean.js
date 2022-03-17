@@ -14,7 +14,9 @@ LoggerInstance.setLevel(LogLevel.Error)
 export const web3 = new Web3(process.env.NODE_URI || configHelperNetworks[1].nodeUri)
 
 export const getTestConfig = async (web3: Web3) => {
-  return new ConfigHelper().getConfig(await web3.eth.getChainId())
+  const config = new ConfigHelper().getConfig(await web3.eth.getChainId())
+  config.providerUri = process.env.PROVIDER_URL || config.providerUri
+  return config
 }
 
 export const getAddresses = () => {
