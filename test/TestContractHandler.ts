@@ -4,6 +4,40 @@ import { AbiItem } from 'web3-utils/types'
 import MockERC20 from '@oceanprotocol/contracts/artifacts/contracts/utils/mock/MockERC20Decimals.sol/MockERC20Decimals.json'
 import { getAddresses } from './config'
 
+const GAS_PRICE = '3000000000'
+
+const deployContract = async (
+  contract: Contract,
+  bytecode: string,
+  argumentsArray: any[],
+  owner: string
+) => {
+  // get est gascost
+  const estimatedGas = await contract
+    .deploy({
+      data: bytecode,
+      arguments: argumentsArray
+    })
+    .estimateGas(function (err, estimatedGas) {
+      if (err) console.log('DeployContracts: ' + err)
+      return estimatedGas
+    })
+  // deploy the contract and get it's address
+  return await contract
+    .deploy({
+      data: bytecode,
+      arguments: argumentsArray
+    })
+    .send({
+      from: owner,
+      gas: estimatedGas + 1,
+      gasPrice: GAS_PRICE
+    })
+    .then(function (contract) {
+      return contract.options.address
+    })
+}
+
 export class TestContractHandler {
   public accounts: string[]
   public ERC721Factory: Contract
@@ -98,351 +132,116 @@ export class TestContractHandler {
   public async deployContracts(owner: string, routerABI?: AbiItem | AbiItem[]) {
     const addresses = getAddresses()
 
-    let estGas
-    if (addresses.OPFCommunityFeeCollector) {
-      this.opfCollectorAddress = addresses.OPFCommunityFeeCollector
-    } else {
-      // DEPLOY OPF Fee Collector
-      // get est gascost
-      estGas = await this.OPFCollector.deploy({
-        data: this.OPFBytecode,
-        arguments: [owner, owner]
-      }).estimateGas(function (err, estGas) {
-        if (err) console.log('DeployContracts: ' + err)
-        return estGas
-      })
-      // deploy the contract and get it's address
-      this.opfCollectorAddress = await this.OPFCollector.deploy({
-        data: this.OPFBytecode,
-        arguments: [owner, owner]
-      })
-        .send({
-          from: owner,
-          gas: estGas + 1,
-          gasPrice: '3000000000'
-        })
-        .then(function (contract) {
-          return contract.options.address
-        })
-    }
+    // DEPLOY OPF Fee Collector
+    this.opfCollectorAddress =
+      addresses.OPFCommunityFeeCollector ||
+      (await deployContract(this.OPFCollector, this.OPFBytecode, [owner, owner], owner))
 
-    if (addresses.poolTemplate) {
-      this.poolTemplateAddress = addresses.poolTemplate
-    } else {
-      // DEPLOY POOL TEMPLATE
-      // get est gascost
-      estGas = await this.PoolTemplate.deploy({
-        data: this.PoolTemplateBytecode,
-        arguments: []
-      }).estimateGas(function (err, estGas) {
-        if (err) console.log('DeployContracts: ' + err)
-        return estGas
-      })
-      // deploy the contract and get it's address
-      this.poolTemplateAddress = await this.PoolTemplate.deploy({
-        data: this.PoolTemplateBytecode,
-        arguments: []
-      })
-        .send({
-          from: owner,
-          gas: estGas + 1,
-          gasPrice: '3000000000'
-        })
-        .then(function (contract) {
-          return contract.options.address
-        })
-    }
-    if (addresses.ERC20Template['1']) {
-      this.template20Address = addresses.ERC20Template['1']
-    } else {
-      // DEPLOY ERC20 TEMPLATE
-      // get est gascost
-      estGas = await this.ERC20Template.deploy({
-        data: this.ERC20TemplateBytecode,
-        arguments: []
-      }).estimateGas(function (err, estGas) {
-        if (err) console.log('DeployContracts: ' + err)
-        return estGas
-      })
-      // deploy the contract and get it's address
-      this.template20Address = await this.ERC20Template.deploy({
-        data: this.ERC20TemplateBytecode,
-        arguments: []
-      })
-        .send({
-          from: owner,
-          gas: estGas + 1,
-          gasPrice: '3000000000'
-        })
-        .then(function (contract) {
-          return contract.options.address
-        })
-    }
-    if (addresses.ERC721Template['1']) {
-      this.template721Address = addresses.ERC721Template['1']
-    } else {
-      // DEPLOY ERC721 TEMPLATE
-      // get est gascost
-      estGas = await this.ERC721Template.deploy({
-        data: this.ERC721TemplateBytecode,
-        arguments: []
-      }).estimateGas(function (err, estGas) {
-        if (err) console.log('DeployContracts: ' + err)
-        return estGas
-      })
-      // deploy the contract and get it's address
-      this.template721Address = await this.ERC721Template.deploy({
-        data: this.ERC721TemplateBytecode,
-        arguments: []
-      })
-        .send({
-          from: owner,
-          gas: estGas + 1,
-          gasPrice: '3000000000'
-        })
-        .then(function (contract) {
-          return contract.options.address
-        })
-    }
+    // DEPLOY POOL TEMPLATE
+    this.poolTemplateAddress =
+      addresses.poolTemplate ||
+      (await deployContract(this.PoolTemplate, this.PoolTemplateBytecode, [], owner))
 
-    if (addresses.Ocean) {
-      this.oceanAddress = addresses.Ocean
-    } else {
-      // DEPLOY OCEAN MOCK
-      // get est gascost
-      estGas = await this.MockERC20.deploy({
-        data: this.MockERC20Bytecode,
-        arguments: ['OCEAN', 'OCEAN', 18]
-      }).estimateGas(function (err, estGas) {
-        if (err) console.log('DeployContracts: ' + err)
-        return estGas
-      })
-      // deploy the contract and get it's address
-      this.oceanAddress = await this.MockERC20.deploy({
-        data: this.MockERC20Bytecode,
-        arguments: ['OCEAN', 'OCEAN', 18]
-      })
-        .send({
-          from: owner,
-          gas: estGas + 1,
-          gasPrice: '3000000000'
-        })
-        .then(function (contract) {
-          return contract.options.address
-        })
-    }
+    // DEPLOY ERC20 TEMPLATE
+    this.template20Address =
+      addresses.ERC20Template['1'] ||
+      (await deployContract(this.ERC20Template, this.ERC20TemplateBytecode, [], owner))
 
-    if (addresses.Router) {
-      this.routerAddress = addresses.Router
-    } else {
-      // DEPLOY ROUTER
-      estGas = await this.Router.deploy({
-        data: this.RouterBytecode,
-        arguments: [
+    // DEPLOY ERC721 TEMPLATE
+    this.template721Address =
+      addresses.ERC721Template['1'] ||
+      (await deployContract(this.ERC721Template, this.ERC721TemplateBytecode, [], owner))
+
+    // DEPLOY OCEAN MOCK
+    this.oceanAddress =
+      addresses.Ocean ||
+      (await deployContract(
+        this.MockERC20,
+        this.MockERC20Bytecode,
+        ['OCEAN', 'OCEAN', 18],
+        owner
+      ))
+
+    // DEPLOY ROUTER
+    this.routerAddress =
+      addresses.Router ||
+      (await deployContract(
+        this.Router,
+        this.RouterBytecode,
+        [
           owner,
           this.oceanAddress,
           this.poolTemplateAddress,
           this.opfCollectorAddress,
           []
-        ]
-      }).estimateGas(function (err, estGas) {
-        if (err) console.log('DeployContracts: ' + err)
-        return estGas
-      })
-      // deploy the contract and get it's address
-      this.routerAddress = await this.Router.deploy({
-        data: this.RouterBytecode,
-        arguments: [
-          owner,
-          this.oceanAddress,
-          this.poolTemplateAddress,
-          this.opfCollectorAddress,
-          []
-        ]
-      })
-        .send({
-          from: owner,
-          gas: estGas + 1,
-          gasPrice: '3000000000'
-        })
-        .then(function (contract) {
-          return contract.options.address
-        })
-    }
+        ],
+        owner
+      ))
 
-    if (addresses.Staking) {
-      this.sideStakingAddress = addresses.Staking
-    } else {
-      // DEPLOY SIDE STAKING
-      estGas = await this.SideStaking.deploy({
-        data: this.SideStakingBytecode,
-        arguments: [this.routerAddress]
-      }).estimateGas(function (err, estGas) {
-        if (err) console.log('DeployContracts: ' + err)
-        return estGas
-      })
-      // deploy the contract and get it's address
-      this.sideStakingAddress = await this.SideStaking.deploy({
-        data: this.SideStakingBytecode,
-        arguments: [this.routerAddress]
-      })
-        .send({
-          from: owner,
-          gas: estGas + 1,
-          gasPrice: '3000000000'
-        })
-        .then(function (contract) {
-          return contract.options.address
-        })
-    }
+    // DEPLOY SIDE STAKING
+    this.sideStakingAddress =
+      addresses.Staking ||
+      (await deployContract(
+        this.SideStaking,
+        this.SideStakingBytecode,
+        [this.routerAddress],
+        owner
+      ))
 
     // DEPLOY FIXED RATE
-
-    if (addresses.FixedPrice) {
-      this.fixedRateAddress = addresses.FixedPrice
-    } else {
-      estGas = await this.FixedRate.deploy({
-        data: this.FixedRateBytecode,
-        arguments: [this.routerAddress, this.opfCollectorAddress]
-      }).estimateGas(function (err, estGas) {
-        if (err) console.log('DeployContracts: ' + err)
-        return estGas
-      })
-      // deploy the contract and get it's address
-      this.fixedRateAddress = await this.FixedRate.deploy({
-        data: this.FixedRateBytecode,
-        arguments: [this.routerAddress, this.opfCollectorAddress]
-      })
-        .send({
-          from: owner,
-          gas: estGas + 1,
-          gasPrice: '3000000000'
-        })
-        .then(function (contract) {
-          return contract.options.address
-        })
-    }
+    this.fixedRateAddress =
+      addresses.FixedPrice ||
+      (await deployContract(
+        this.FixedRate,
+        this.FixedRateBytecode,
+        [this.routerAddress, this.opfCollectorAddress],
+        owner
+      ))
 
     // DEPLOY Dispenser
-
-    if (addresses.Dispenser) {
-      this.dispenserAddress = addresses.Dispenser
-    } else {
-      estGas = await this.Dispenser.deploy({
-        data: this.DispenserBytecode,
-        arguments: [this.routerAddress]
-      }).estimateGas(function (err, estGas) {
-        if (err) console.log('DeployContracts: ' + err)
-        return estGas
-      })
-      // deploy the contract and get it's address
-      this.dispenserAddress = await this.Dispenser.deploy({
-        data: this.DispenserBytecode,
-        arguments: [this.routerAddress]
-      })
-        .send({
-          from: owner,
-          gas: estGas + 1,
-          gasPrice: '3000000000'
-        })
-        .then(function (contract) {
-          return contract.options.address
-        })
-    }
+    this.dispenserAddress =
+      addresses.Dispenser ||
+      (await deployContract(
+        this.Dispenser,
+        this.DispenserBytecode,
+        [this.routerAddress],
+        owner
+      ))
 
     // DEPLOY ERC721 FACTORY
-
-    if (addresses.ERC721Factory) {
-      this.factory721Address = addresses.ERC721Factory
-    } else {
-      estGas = await this.ERC721Factory.deploy({
-        data: this.ERC721FactoryBytecode,
-        arguments: [
+    this.factory721Address =
+      addresses.ERC721Factory ||
+      (await deployContract(
+        this.ERC721Factory,
+        this.ERC721FactoryBytecode,
+        [
           this.template721Address,
           this.template20Address,
           this.opfCollectorAddress,
           this.routerAddress
-        ]
-      }).estimateGas(function (err, estGas) {
-        if (err) console.log('DeployContracts: ' + err)
-        return estGas
-      })
-
-      // deploy the contract and get it's address
-      this.factory721Address = await this.ERC721Factory.deploy({
-        data: this.ERC721FactoryBytecode,
-        arguments: [
-          this.template721Address,
-          this.template20Address,
-          this.opfCollectorAddress,
-          this.routerAddress
-        ]
-      })
-        .send({
-          from: owner,
-          gas: estGas + 1,
-          gasPrice: '3000000000'
-        })
-        .then(function (contract) {
-          return contract.options.address
-        })
-    }
+        ],
+        owner
+      ))
 
     // DEPLOY USDC MOCK
-
-    if (addresses.MockUSDC) {
-      this.usdcAddress = addresses.MockUSDC
-    } else {
-      // get est gascost
-      estGas = await this.MockERC20.deploy({
-        data: this.MockERC20Bytecode,
-        arguments: ['USDC', 'USDC', 6]
-      }).estimateGas(function (err, estGas) {
-        if (err) console.log('DeployContracts: ' + err)
-        return estGas
-      })
-      // deploy the contract and get it's address
-      this.usdcAddress = await this.MockERC20.deploy({
-        data: this.MockERC20Bytecode,
-        arguments: ['USDC', 'USDC', 6]
-      })
-        .send({
-          from: owner,
-          gas: estGas + 1,
-          gasPrice: '3000000000'
-        })
-        .then(function (contract) {
-          return contract.options.address
-        })
-    }
+    this.usdcAddress =
+      addresses.MockUSDC ||
+      (await deployContract(
+        this.MockERC20,
+        this.MockERC20Bytecode,
+        ['USDC', 'USDC', 6],
+        owner
+      ))
 
     // DEPLOY DAI MOCK
-
-    if (addresses.MockDAI) {
-      this.daiAddress = addresses.MockDAI
-    } else {
-      // get est gascost
-      estGas = await this.MockERC20.deploy({
-        data: this.MockERC20Bytecode,
-        arguments: ['DAI', 'DAI', 18]
-      }).estimateGas(function (err, estGas) {
-        if (err) console.log('DeployContracts: ' + err)
-        return estGas
-      })
-      // deploy the contract and get it's address
-      this.daiAddress = await this.MockERC20.deploy({
-        data: this.MockERC20Bytecode,
-        arguments: ['DAI', 'DAI', 18]
-      })
-        .send({
-          from: owner,
-          gas: estGas + 1,
-          gasPrice: '3000000000'
-        })
-        .then(function (contract) {
-          return contract.options.address
-        })
-    }
+    this.daiAddress =
+      addresses.MockDAI ||
+      (await deployContract(
+        this.MockERC20,
+        this.MockERC20Bytecode,
+        ['DAI', 'DAI', 18],
+        owner
+      ))
 
     if (!addresses.Router) {
       const RouterContract = new this.web3.eth.Contract(routerABI, this.routerAddress)
