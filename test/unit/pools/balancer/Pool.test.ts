@@ -2,14 +2,8 @@ import { assert, expect } from 'chai'
 import { AbiItem } from 'web3-utils/types'
 import { Contract } from 'web3-eth-contract'
 import ERC721Factory from '@oceanprotocol/contracts/artifacts/contracts/ERC721Factory.sol/ERC721Factory.json'
-import ERC721Template from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC721Template.sol/ERC721Template.json'
-import SideStaking from '@oceanprotocol/contracts/artifacts/contracts/pools/ssContracts/SideStaking.sol/SideStaking.json'
-import FactoryRouter from '@oceanprotocol/contracts/artifacts/contracts/pools/FactoryRouter.sol/FactoryRouter.json'
 import ERC20Template from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC20Template.sol/ERC20Template.json'
-import Dispenser from '@oceanprotocol/contracts/artifacts/contracts/pools/dispenser/Dispenser.sol/Dispenser.json'
-import FixedRate from '@oceanprotocol/contracts/artifacts/contracts/pools/fixedRate/FixedRateExchange.sol/FixedRateExchange.json'
 import PoolTemplate from '@oceanprotocol/contracts/artifacts/contracts/pools/balancer/BPool.sol/BPool.json'
-import OPFCollector from '@oceanprotocol/contracts/artifacts/contracts/communityFee/OPFCommunityFeeCollector.sol/OPFCommunityFeeCollector.json'
 import { TestContractHandler } from '../../../TestContractHandler'
 import { web3 } from '../../../config'
 import {
@@ -47,28 +41,7 @@ describe('Pool unit test', () => {
   let usdcContract: Contract
 
   it('should deploy contracts', async () => {
-    contracts = new TestContractHandler(
-      web3,
-      ERC721Template.abi as AbiItem[],
-      ERC20Template.abi as AbiItem[],
-      PoolTemplate.abi as AbiItem[],
-      ERC721Factory.abi as AbiItem[],
-      FactoryRouter.abi as AbiItem[],
-      SideStaking.abi as AbiItem[],
-      FixedRate.abi as AbiItem[],
-      Dispenser.abi as AbiItem[],
-      OPFCollector.abi as AbiItem[],
-
-      ERC721Template.bytecode,
-      ERC20Template.bytecode,
-      PoolTemplate.bytecode,
-      ERC721Factory.bytecode,
-      FactoryRouter.bytecode,
-      SideStaking.bytecode,
-      FixedRate.bytecode,
-      Dispenser.bytecode,
-      OPFCollector.bytecode
-    )
+    contracts = new TestContractHandler(web3)
     await contracts.getAccounts()
     factoryOwner = contracts.accounts[0]
     nftOwner = contracts.accounts[1]
@@ -76,7 +49,7 @@ describe('Pool unit test', () => {
     user2 = contracts.accounts[3]
     user3 = contracts.accounts[4]
 
-    await contracts.deployContracts(factoryOwner, FactoryRouter.abi as AbiItem[])
+    await contracts.deployContracts(factoryOwner)
 
     // initialize Pool instance
     pool = new Pool(web3, PoolTemplate.abi as AbiItem[])

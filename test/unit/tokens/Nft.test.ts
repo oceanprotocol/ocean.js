@@ -1,13 +1,6 @@
 import { assert } from 'chai'
-import PoolTemplate from '@oceanprotocol/contracts/artifacts/contracts/pools/balancer/BPool.sol/BPool.json'
 import ERC721Factory from '@oceanprotocol/contracts/artifacts/contracts/ERC721Factory.sol/ERC721Factory.json'
 import ERC721Template from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC721Template.sol/ERC721Template.json'
-import SideStaking from '@oceanprotocol/contracts/artifacts/contracts/pools/ssContracts/SideStaking.sol/SideStaking.json'
-import Router from '@oceanprotocol/contracts/artifacts/contracts/pools/FactoryRouter.sol/FactoryRouter.json'
-import ERC20Template from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC20Template.sol/ERC20Template.json'
-import Dispenser from '@oceanprotocol/contracts/artifacts/contracts/pools/dispenser/Dispenser.sol/Dispenser.json'
-import FixedRate from '@oceanprotocol/contracts/artifacts/contracts/pools/fixedRate/FixedRateExchange.sol/FixedRateExchange.json'
-import OPFCollector from '@oceanprotocol/contracts/artifacts/contracts/communityFee/OPFCommunityFeeCollector.sol/OPFCommunityFeeCollector.json'
 import { TestContractHandler } from '../../TestContractHandler'
 import { AbiItem } from 'web3-utils'
 import sha256 from 'crypto-js/sha256'
@@ -31,34 +24,13 @@ describe('NFT', () => {
   const oceanAddress = '0x967da4048cd07ab37855c090aaf366e4ce1b9f48'
 
   it('should deploy contracts', async () => {
-    contractHandler = new TestContractHandler(
-      web3,
-      ERC721Template.abi as AbiItem[],
-      ERC20Template.abi as AbiItem[],
-      PoolTemplate.abi as AbiItem[],
-      ERC721Factory.abi as AbiItem[],
-      Router.abi as AbiItem[],
-      SideStaking.abi as AbiItem[],
-      FixedRate.abi as AbiItem[],
-      Dispenser.abi as AbiItem[],
-      OPFCollector.abi as AbiItem[],
-
-      ERC721Template.bytecode,
-      ERC20Template.bytecode,
-      PoolTemplate.bytecode,
-      ERC721Factory.bytecode,
-      Router.bytecode,
-      SideStaking.bytecode,
-      FixedRate.bytecode,
-      Dispenser.bytecode,
-      OPFCollector.bytecode
-    )
+    contractHandler = new TestContractHandler(web3)
     await contractHandler.getAccounts()
     nftOwner = contractHandler.accounts[0]
     user1 = contractHandler.accounts[1]
     user2 = contractHandler.accounts[2]
     user3 = contractHandler.accounts[3]
-    await contractHandler.deployContracts(nftOwner, Router.abi as AbiItem[])
+    await contractHandler.deployContracts(nftOwner)
   })
 
   it('should initialize NFTFactory instance and create a new NFT', async () => {
