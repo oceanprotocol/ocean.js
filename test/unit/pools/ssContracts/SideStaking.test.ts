@@ -44,14 +44,17 @@ describe('SideStaking unit test', () => {
   let usdcContract: Contract
   const vestedBlocks = 2500000
 
+  before(async () => {
+    const accounts = await web3.eth.getAccounts()
+    factoryOwner = accounts[0]
+    nftOwner = accounts[1]
+    user1 = accounts[2]
+    user2 = accounts[3]
+    user3 = accounts[4]
+  })
+
   it('should deploy contracts', async () => {
     contracts = new TestContractHandler(web3)
-    await contracts.getAccounts()
-    factoryOwner = contracts.accounts[0]
-    nftOwner = contracts.accounts[1]
-    user1 = contracts.accounts[2]
-    user2 = contracts.accounts[3]
-    user3 = contracts.accounts[4]
     sideStakingAddress = contracts.sideStakingAddress
     await contracts.deployContracts(factoryOwner)
 
@@ -73,14 +76,14 @@ describe('SideStaking unit test', () => {
     )
     await approve(
       web3,
-      contracts.accounts[0],
+      factoryOwner,
       contracts.daiAddress,
       contracts.factory721Address,
       '2000'
     )
     await approve(
       web3,
-      contracts.accounts[0],
+      factoryOwner,
       contracts.usdcAddress,
       contracts.factory721Address,
       '10000'
@@ -89,14 +92,14 @@ describe('SideStaking unit test', () => {
     let allowCheck = await allowance(
       web3,
       contracts.daiAddress,
-      contracts.accounts[0],
+      factoryOwner,
       contracts.factory721Address
     )
     assert(parseInt(allowCheck) >= 2000)
     allowCheck = await allowance(
       web3,
       contracts.usdcAddress,
-      contracts.accounts[0],
+      factoryOwner,
       contracts.factory721Address
     )
     assert(parseInt(allowCheck) >= 10000)
@@ -124,9 +127,9 @@ describe('SideStaking unit test', () => {
 
       const ercParams: Erc20CreateParams = {
         templateIndex: 1,
-        minter: contracts.accounts[0],
+        minter: factoryOwner,
         feeManager: user3,
-        mpFeeAddress: contracts.accounts[0],
+        mpFeeAddress: factoryOwner,
         feeToken: '0x0000000000000000000000000000000000000000',
         cap: '1000000',
         feeAmount: '0',
@@ -138,8 +141,8 @@ describe('SideStaking unit test', () => {
         ssContract: contracts.sideStakingAddress,
         baseTokenAddress: contracts.daiAddress,
         baseTokenSender: contracts.factory721Address,
-        publisherAddress: contracts.accounts[0],
-        marketFeeCollector: contracts.accounts[0],
+        publisherAddress: factoryOwner,
+        marketFeeCollector: factoryOwner,
         poolTemplateAddress: contracts.poolTemplateAddress,
         rate: '1',
         baseTokenDecimals: 18,
@@ -151,7 +154,7 @@ describe('SideStaking unit test', () => {
       }
 
       const txReceipt = await nftFactory.createNftErc20WithPool(
-        contracts.accounts[0],
+        factoryOwner,
         nftData,
         ercParams,
         poolParams
@@ -202,7 +205,7 @@ describe('SideStaking unit test', () => {
     it('#getPublisherAddress - should get publisher address', async () => {
       expect(
         await sideStaking.getPublisherAddress(sideStakingAddress, erc20Token)
-      ).to.equal(contracts.accounts[0])
+      ).to.equal(factoryOwner)
     })
     it('#getBaseTokenBalance ', async () => {
       expect(
@@ -238,12 +241,10 @@ describe('SideStaking unit test', () => {
     })
 
     it('#getVesting ', async () => {
-      expect(
-        await erc20Contract.methods.balanceOf(contracts.accounts[0]).call()
-      ).to.equal('0')
+      expect(await erc20Contract.methods.balanceOf(factoryOwner).call()).to.equal('0')
 
       const tx = await sideStaking.getVesting(
-        contracts.accounts[0],
+        factoryOwner,
         sideStakingAddress,
         erc20Token
       )
@@ -263,12 +264,12 @@ describe('SideStaking unit test', () => {
     it('#swapExactAmountIn - should swap', async () => {
       await daiContract.methods
         .transfer(user2, web3.utils.toWei('1000'))
-        .send({ from: contracts.accounts[0] })
+        .send({ from: factoryOwner })
       await approve(web3, user2, contracts.daiAddress, poolAddress, '10')
       const tokenInOutMarket: TokenInOutMarket = {
         tokenIn: contracts.daiAddress,
         tokenOut: erc20Token,
-        marketFeeAddress: contracts.accounts[0]
+        marketFeeAddress: factoryOwner
       }
       const amountsInOutMaxFee: AmountsInMaxFee = {
         tokenAmountIn: '10',
@@ -292,7 +293,7 @@ describe('SideStaking unit test', () => {
       const tokenInOutMarket: TokenInOutMarket = {
         tokenIn: contracts.daiAddress,
         tokenOut: erc20Token,
-        marketFeeAddress: contracts.accounts[0]
+        marketFeeAddress: factoryOwner
       }
       const amountsInOutMaxFee: AmountsOutMaxFee = {
         maxAmountIn: '100',
@@ -367,9 +368,9 @@ describe('SideStaking unit test', () => {
 
       const ercParams: Erc20CreateParams = {
         templateIndex: 1,
-        minter: contracts.accounts[0],
+        minter: factoryOwner,
         feeManager: user3,
-        mpFeeAddress: contracts.accounts[0],
+        mpFeeAddress: factoryOwner,
         feeToken: '0x0000000000000000000000000000000000000000',
         cap: '1000000',
         feeAmount: '0',
@@ -381,8 +382,8 @@ describe('SideStaking unit test', () => {
         ssContract: contracts.sideStakingAddress,
         baseTokenAddress: contracts.usdcAddress,
         baseTokenSender: contracts.factory721Address,
-        publisherAddress: contracts.accounts[0],
-        marketFeeCollector: contracts.accounts[0],
+        publisherAddress: factoryOwner,
+        marketFeeCollector: factoryOwner,
         poolTemplateAddress: contracts.poolTemplateAddress,
         rate: '1',
         baseTokenDecimals: await usdcContract.methods.decimals().call(),
@@ -398,7 +399,7 @@ describe('SideStaking unit test', () => {
       }
 
       const txReceipt = await nftFactory.createNftErc20WithPool(
-        contracts.accounts[0],
+        factoryOwner,
         nftData,
         ercParams,
         poolParams
@@ -447,12 +448,10 @@ describe('SideStaking unit test', () => {
     })
 
     it('#getVesting ', async () => {
-      expect(
-        await erc20Contract.methods.balanceOf(contracts.accounts[0]).call()
-      ).to.equal('0')
+      expect(await erc20Contract.methods.balanceOf(factoryOwner).call()).to.equal('0')
 
       const tx = await sideStaking.getVesting(
-        contracts.accounts[0],
+        factoryOwner,
         sideStakingAddress,
         erc20Token
       )
@@ -473,13 +472,13 @@ describe('SideStaking unit test', () => {
       const transferAmount = await amountToUnits(web3, contracts.usdcAddress, '1000') // 1000 USDC
       await usdcContract.methods
         .transfer(user2, transferAmount)
-        .send({ from: contracts.accounts[0] })
+        .send({ from: factoryOwner })
 
       await approve(web3, user2, contracts.usdcAddress, poolAddress, '10')
       const tokenInOutMarket: TokenInOutMarket = {
         tokenIn: contracts.usdcAddress,
         tokenOut: erc20Token,
-        marketFeeAddress: contracts.accounts[0]
+        marketFeeAddress: factoryOwner
       }
       const amountsInOutMaxFee: AmountsInMaxFee = {
         tokenAmountIn: '10',
@@ -502,7 +501,7 @@ describe('SideStaking unit test', () => {
       const tokenInOutMarket: TokenInOutMarket = {
         tokenIn: contracts.usdcAddress,
         tokenOut: erc20Token,
-        marketFeeAddress: contracts.accounts[0]
+        marketFeeAddress: factoryOwner
       }
       const amountsInOutMaxFee: AmountsOutMaxFee = {
         maxAmountIn: '100',

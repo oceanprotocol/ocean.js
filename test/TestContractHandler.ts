@@ -46,8 +46,6 @@ const deployContract = async (
 }
 
 export class TestContractHandler {
-  public accounts: string[]
-
   public ERC721Factory: Contract
   public ERC20Template: Contract
   public ERC721Template: Contract
@@ -89,11 +87,6 @@ export class TestContractHandler {
     this.OPFCollector = new this.web3.eth.Contract(
       OPFCommunityFeeCollector.abi as AbiItem[]
     )
-  }
-
-  public async getAccounts(): Promise<string[]> {
-    this.accounts = await this.web3.eth.getAccounts()
-    return this.accounts
   }
 
   public async deployContracts(owner: string) {

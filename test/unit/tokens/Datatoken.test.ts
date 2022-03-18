@@ -35,13 +35,16 @@ describe('Datatoken', () => {
   const nftName = 'NFTName'
   const nftSymbol = 'NFTSymbol'
 
+  before(async () => {
+    const accounts = await web3.eth.getAccounts()
+    nftOwner = accounts[0]
+    user1 = accounts[1]
+    user2 = accounts[2]
+    user3 = accounts[3]
+  })
+
   it('should deploy contracts', async () => {
     contractHandler = new TestContractHandler(web3)
-    await contractHandler.getAccounts()
-    nftOwner = contractHandler.accounts[0]
-    user1 = contractHandler.accounts[1]
-    user2 = contractHandler.accounts[2]
-    user3 = contractHandler.accounts[3]
     await contractHandler.deployContracts(nftOwner)
 
     const daiContract = new web3.eth.Contract(
@@ -50,7 +53,7 @@ describe('Datatoken', () => {
     )
     await daiContract.methods
       .approve(contractHandler.factory721Address, web3.utils.toWei('10000'))
-      .send({ from: contractHandler.accounts[0] })
+      .send({ from: nftOwner })
   })
 
   it('should initialize NFTFactory instance and create a new NFT', async () => {

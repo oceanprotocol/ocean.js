@@ -31,17 +31,20 @@ describe('Fixed Rate unit test', () => {
   let usdcContract: Contract
   const vestedBlocks = 2500000
   const ADDRESS_ZERO = '0x0000000000000000000000000000000000000000'
+
+  before(async () => {
+    const accounts = await web3.eth.getAccounts()
+    factoryOwner = accounts[0]
+    nftOwner = accounts[1]
+    user1 = accounts[2]
+    user2 = accounts[3]
+    user3 = accounts[4]
+    user4 = accounts[5]
+    exchangeOwner = accounts[0]
+  })
+
   it('should deploy contracts', async () => {
     contracts = new TestContractHandler(web3)
-    await contracts.getAccounts()
-    factoryOwner = contracts.accounts[0]
-    nftOwner = contracts.accounts[1]
-    user1 = contracts.accounts[2]
-    user2 = contracts.accounts[3]
-    user3 = contracts.accounts[4]
-    user4 = contracts.accounts[5]
-    exchangeOwner = contracts.accounts[0]
-
     await contracts.deployContracts(factoryOwner)
 
     // initialize fixed rate
@@ -74,9 +77,9 @@ describe('Fixed Rate unit test', () => {
 
       const ercParams: Erc20CreateParams = {
         templateIndex: 1,
-        minter: contracts.accounts[0],
+        minter: factoryOwner,
         feeManager: user3,
-        mpFeeAddress: contracts.accounts[0],
+        mpFeeAddress: factoryOwner,
         feeToken: ADDRESS_ZERO,
         cap: '1000000',
         feeAmount: '0',
@@ -389,9 +392,9 @@ describe('Fixed Rate unit test', () => {
 
       const ercParams: Erc20CreateParams = {
         templateIndex: 1,
-        minter: contracts.accounts[0],
+        minter: factoryOwner,
         feeManager: user3,
-        mpFeeAddress: contracts.accounts[0],
+        mpFeeAddress: factoryOwner,
         feeToken: ADDRESS_ZERO,
         cap: '1000000',
         feeAmount: '0',

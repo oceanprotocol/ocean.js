@@ -23,13 +23,16 @@ describe('NFT', () => {
   const publishMarketFeeAdress = '0xeE9300b7961e0a01d9f0adb863C7A227A07AaD75'
   const oceanAddress = '0x967da4048cd07ab37855c090aaf366e4ce1b9f48'
 
+  before(async () => {
+    const accounts = await web3.eth.getAccounts()
+    nftOwner = accounts[0]
+    user1 = accounts[1]
+    user2 = accounts[2]
+    user3 = accounts[3]
+  })
+
   it('should deploy contracts', async () => {
     contractHandler = new TestContractHandler(web3)
-    await contractHandler.getAccounts()
-    nftOwner = contractHandler.accounts[0]
-    user1 = contractHandler.accounts[1]
-    user2 = contractHandler.accounts[2]
-    user3 = contractHandler.accounts[3]
     await contractHandler.deployContracts(nftOwner)
   })
 

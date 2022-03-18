@@ -40,15 +40,17 @@ describe('Pool unit test', () => {
   let daiContract: Contract
   let usdcContract: Contract
 
+  before(async () => {
+    const accounts = await web3.eth.getAccounts()
+    factoryOwner = accounts[0]
+    nftOwner = accounts[1]
+    user1 = accounts[2]
+    user2 = accounts[3]
+    user3 = accounts[4]
+  })
+
   it('should deploy contracts', async () => {
     contracts = new TestContractHandler(web3)
-    await contracts.getAccounts()
-    factoryOwner = contracts.accounts[0]
-    nftOwner = contracts.accounts[1]
-    user1 = contracts.accounts[2]
-    user2 = contracts.accounts[3]
-    user3 = contracts.accounts[4]
-
     await contracts.deployContracts(factoryOwner)
 
     // initialize Pool instance
@@ -66,14 +68,14 @@ describe('Pool unit test', () => {
     )
     await approve(
       web3,
-      contracts.accounts[0],
+      factoryOwner,
       contracts.daiAddress,
       contracts.factory721Address,
       '2000'
     )
     await approve(
       web3,
-      contracts.accounts[0],
+      factoryOwner,
       contracts.usdcAddress,
       contracts.factory721Address,
       '10000'
@@ -82,7 +84,7 @@ describe('Pool unit test', () => {
     let allowCheck = await allowance(
       web3,
       contracts.daiAddress,
-      contracts.accounts[0],
+      factoryOwner,
       contracts.factory721Address
     )
 
@@ -90,7 +92,7 @@ describe('Pool unit test', () => {
     allowCheck = await allowance(
       web3,
       contracts.usdcAddress,
-      contracts.accounts[0],
+      factoryOwner,
       contracts.factory721Address
     )
     assert(parseInt(allowCheck) >= 10000)
@@ -111,9 +113,9 @@ describe('Pool unit test', () => {
 
       const ercParams: Erc20CreateParams = {
         templateIndex: 1,
-        minter: contracts.accounts[0],
+        minter: factoryOwner,
         feeManager: user3,
-        mpFeeAddress: contracts.accounts[0],
+        mpFeeAddress: factoryOwner,
         feeToken: '0x0000000000000000000000000000000000000000',
         cap: '1000000',
         feeAmount: '0',
@@ -127,8 +129,8 @@ describe('Pool unit test', () => {
         ssContract: contracts.sideStakingAddress,
         baseTokenAddress: contracts.daiAddress,
         baseTokenSender: contracts.factory721Address,
-        publisherAddress: contracts.accounts[0],
-        marketFeeCollector: contracts.accounts[0],
+        publisherAddress: factoryOwner,
+        marketFeeCollector: factoryOwner,
         poolTemplateAddress: contracts.poolTemplateAddress,
         rate: '1',
         baseTokenDecimals: 18,
@@ -146,7 +148,7 @@ describe('Pool unit test', () => {
       )
 
       const txReceipt = await nftFactory.createNftErc20WithPool(
-        contracts.accounts[0],
+        factoryOwner,
         nftData,
         ercParams,
         poolParams
@@ -172,11 +174,8 @@ describe('Pool unit test', () => {
 
     it('#getPoolSharesTotalSupply - should return totalSupply of LPT', async () => {
       // dt owner which added liquidity has half of pool shares (the rest is in the sidestaking contracta)
-      const dtOwnerLPTBalance = await pool.sharesBalance(
-        contracts.accounts[0],
-        poolAddress
-      )
-      expect(await pool.sharesBalance(contracts.accounts[0], poolAddress)).to.equal(
+      const dtOwnerLPTBalance = await pool.sharesBalance(factoryOwner, poolAddress)
+      expect(await pool.sharesBalance(factoryOwner, poolAddress)).to.equal(
         await pool.sharesBalance(contracts.sideStakingAddress, poolAddress)
       )
       // total supply is twice the dtOwner balance
@@ -244,7 +243,7 @@ describe('Pool unit test', () => {
     it('#swapExactAmountIn - should swap', async () => {
       await daiContract.methods
         .transfer(user2, web3.utils.toWei('1000'))
-        .send({ from: contracts.accounts[0] })
+        .send({ from: factoryOwner })
       expect(await daiContract.methods.balanceOf(user2).call()).to.equal(
         web3.utils.toWei('1000')
       )
@@ -254,7 +253,7 @@ describe('Pool unit test', () => {
       const tokenInOutMarket: TokenInOutMarket = {
         tokenIn: contracts.daiAddress,
         tokenOut: erc20Token,
-        marketFeeAddress: contracts.accounts[0]
+        marketFeeAddress: factoryOwner
       }
       const amountsInOutMaxFee: AmountsInMaxFee = {
         tokenAmountIn: '10',
@@ -280,7 +279,7 @@ describe('Pool unit test', () => {
       const tokenInOutMarket: TokenInOutMarket = {
         tokenIn: contracts.daiAddress,
         tokenOut: erc20Token,
-        marketFeeAddress: contracts.accounts[0]
+        marketFeeAddress: factoryOwner
       }
       const amountsInOutMaxFee: AmountsOutMaxFee = {
         maxAmountIn: '100',
@@ -474,12 +473,12 @@ describe('Pool unit test', () => {
         '0.1'
       )
 
-      // contracts.accounts[0] is the marketFeeCollector
-      assert((await pool.getMarketFeeCollector(poolAddress)) === contracts.accounts[0])
+      // factoryOwner is the marketFeeCollector
+      assert((await pool.getMarketFeeCollector(poolAddress)) === factoryOwner)
       // user3 has no DAI (we are going to send DAI fee to him)
       assert((await daiContract.methods.balanceOf(user3).call()) === '0')
       // only marketFeeCollector can call this, set user3 as receiver
-      await pool.collectMarketFee(contracts.accounts[0], poolAddress)
+      await pool.collectMarketFee(factoryOwner, poolAddress)
       // DAI fees have been collected
       assert((await pool.getMarketFees(poolAddress, contracts.daiAddress)) === '0')
 
@@ -495,8 +494,8 @@ describe('Pool unit test', () => {
     })
 
     it('#getMarketFeeCollector- should get market fees for each token', async () => {
-      // contracts.accounts[0] is the marketFeeCollector
-      assert((await pool.getMarketFeeCollector(poolAddress)) === contracts.accounts[0])
+      // factoryOwner is the marketFeeCollector
+      assert((await pool.getMarketFeeCollector(poolAddress)) === factoryOwner)
     })
 
     it('#getOPCCollector- should get market fees for each token', async () => {
@@ -518,7 +517,7 @@ describe('Pool unit test', () => {
           '0'
       )
       // anyone can call callectOPF
-      await pool.collectOPC(contracts.accounts[0], poolAddress)
+      await pool.collectOPC(factoryOwner, poolAddress)
       // DAI fees have been collected
       assert((await pool.getCommunityFees(poolAddress, contracts.daiAddress)) === '0')
       // OPF collector got DAI
@@ -537,11 +536,11 @@ describe('Pool unit test', () => {
     })
 
     it('#updateMarketFeeCollector- should update market fee collector', async () => {
-      // contracts.accounts[0] is the marketFeeCollector
+      // factoryOwner is the marketFeeCollector
 
-      assert((await pool.getMarketFeeCollector(poolAddress)) === contracts.accounts[0])
+      assert((await pool.getMarketFeeCollector(poolAddress)) === factoryOwner)
       await pool.updatePublishMarketFee(
-        contracts.accounts[0],
+        factoryOwner,
         poolAddress,
         user3,
         await pool.getMarketFee(poolAddress)
@@ -563,9 +562,9 @@ describe('Pool unit test', () => {
 
       const ercParams: Erc20CreateParams = {
         templateIndex: 1,
-        minter: contracts.accounts[0],
+        minter: factoryOwner,
         feeManager: user3,
-        mpFeeAddress: contracts.accounts[0],
+        mpFeeAddress: factoryOwner,
         feeToken: '0x0000000000000000000000000000000000000000',
         cap: '1000000',
         feeAmount: '0',
@@ -577,8 +576,8 @@ describe('Pool unit test', () => {
         ssContract: contracts.sideStakingAddress,
         baseTokenAddress: contracts.usdcAddress,
         baseTokenSender: contracts.factory721Address,
-        publisherAddress: contracts.accounts[0],
-        marketFeeCollector: contracts.accounts[0],
+        publisherAddress: factoryOwner,
+        marketFeeCollector: factoryOwner,
         poolTemplateAddress: contracts.poolTemplateAddress,
         rate: '1',
         baseTokenDecimals: await usdcContract.methods.decimals().call(),
@@ -600,7 +599,7 @@ describe('Pool unit test', () => {
       )
 
       const txReceipt = await nftFactory.createNftErc20WithPool(
-        contracts.accounts[0],
+        factoryOwner,
         nftData,
         ercParams,
         poolParams
@@ -697,11 +696,8 @@ describe('Pool unit test', () => {
 
     it('#getPoolSharesTotalSupply - should return totalSupply of LPT', async () => {
       // dt owner which added liquidity has half of pool shares (the rest is in the sidestaking contracta)
-      const dtOwnerLPTBalance = await pool.sharesBalance(
-        contracts.accounts[0],
-        poolAddress
-      )
-      expect(await pool.sharesBalance(contracts.accounts[0], poolAddress)).to.equal(
+      const dtOwnerLPTBalance = await pool.sharesBalance(factoryOwner, poolAddress)
+      expect(await pool.sharesBalance(factoryOwner, poolAddress)).to.equal(
         await pool.sharesBalance(contracts.sideStakingAddress, poolAddress)
       )
       // total supply is twice the dtOwner balance
@@ -770,7 +766,7 @@ describe('Pool unit test', () => {
       const transferAmount = await amountToUnits(web3, contracts.usdcAddress, '1000') // 1000 USDC
       await usdcContract.methods
         .transfer(user2, transferAmount)
-        .send({ from: contracts.accounts[0] })
+        .send({ from: factoryOwner })
       expect(await usdcContract.methods.balanceOf(user2).call()).to.equal(
         transferAmount.toString()
       )
@@ -780,7 +776,7 @@ describe('Pool unit test', () => {
       const tokenInOutMarket: TokenInOutMarket = {
         tokenIn: contracts.usdcAddress,
         tokenOut: erc20Token,
-        marketFeeAddress: contracts.accounts[0]
+        marketFeeAddress: factoryOwner
       }
       const amountsInOutMaxFee: AmountsInMaxFee = {
         tokenAmountIn: '10',
@@ -806,7 +802,7 @@ describe('Pool unit test', () => {
       const tokenInOutMarket: TokenInOutMarket = {
         tokenIn: contracts.usdcAddress,
         tokenOut: erc20Token,
-        marketFeeAddress: contracts.accounts[0]
+        marketFeeAddress: factoryOwner
       }
       const amountsInOutMaxFee: AmountsOutMaxFee = {
         maxAmountIn: '100',
@@ -987,12 +983,12 @@ describe('Pool unit test', () => {
         contracts.usdcAddress,
         '0.1'
       )
-      // contracts.accounts[0] is the marketFeeCollector
-      assert((await pool.getMarketFeeCollector(poolAddress)) === contracts.accounts[0])
+      // factoryOwner is the marketFeeCollector
+      assert((await pool.getMarketFeeCollector(poolAddress)) === factoryOwner)
       // user3 has no USDC (we are going to send USDC fee to him)
       assert((await usdcContract.methods.balanceOf(user3).call()) === '0')
       // only marketFeeCollector can call this, set user3 as receiver
-      await pool.collectMarketFee(contracts.accounts[0], poolAddress)
+      await pool.collectMarketFee(factoryOwner, poolAddress)
       // USDC fees have been collected
       assert((await pool.getMarketFees(poolAddress, contracts.usdcAddress)) === '0')
 
@@ -1008,8 +1004,8 @@ describe('Pool unit test', () => {
     })
 
     it('#getMarketFeeCollector- should get market fees for each token', async () => {
-      // contracts.accounts[0] is the marketFeeCollector
-      assert((await pool.getMarketFeeCollector(poolAddress)) === contracts.accounts[0])
+      // factoryOwner is the marketFeeCollector
+      assert((await pool.getMarketFeeCollector(poolAddress)) === factoryOwner)
     })
 
     it('#getOPCCollector- should get market fees for each token', async () => {
@@ -1041,7 +1037,7 @@ describe('Pool unit test', () => {
           '0'
       )
       // anyone can call callectOPF
-      await pool.collectOPC(contracts.accounts[0], poolAddress)
+      await pool.collectOPC(factoryOwner, poolAddress)
       // USDC fees have been collected
       assert((await pool.getCommunityFees(poolAddress, contracts.usdcAddress)) === '0')
       // OPF collector got USDC
@@ -1060,11 +1056,11 @@ describe('Pool unit test', () => {
     })
 
     it('#updateMarketFeeCollector- should update market fee collector', async () => {
-      // contracts.accounts[0] is the marketFeeCollector
-      assert((await pool.getMarketFeeCollector(poolAddress)) === contracts.accounts[0])
+      // factoryOwner is the marketFeeCollector
+      assert((await pool.getMarketFeeCollector(poolAddress)) === factoryOwner)
 
       await pool.updatePublishMarketFee(
-        contracts.accounts[0],
+        factoryOwner,
         poolAddress,
         user3,
         await pool.getMarketFee(poolAddress)

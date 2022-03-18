@@ -22,15 +22,17 @@ describe('Router unit test', () => {
   let dtAddress2: string
   let nftAddress: string
 
+  before(async () => {
+    const accounts = await web3.eth.getAccounts()
+    factoryOwner = accounts[0]
+    nftOwner = accounts[1]
+    user1 = accounts[2]
+    user2 = accounts[3]
+    user3 = accounts[4]
+  })
+
   it('should deploy contracts', async () => {
     contracts = new TestContractHandler(web3)
-    await contracts.getAccounts()
-    factoryOwner = contracts.accounts[0]
-    nftOwner = contracts.accounts[1]
-    user1 = contracts.accounts[2]
-    user2 = contracts.accounts[3]
-    user3 = contracts.accounts[4]
-
     await contracts.deployContracts(factoryOwner)
 
     const daiContract = new web3.eth.Contract(
@@ -39,7 +41,7 @@ describe('Router unit test', () => {
     )
     await daiContract.methods
       .approve(contracts.factory721Address, web3.utils.toWei('10000'))
-      .send({ from: contracts.accounts[0] })
+      .send({ from: factoryOwner })
   })
 
   it('should initiate Router instance', async () => {
@@ -48,7 +50,7 @@ describe('Router unit test', () => {
 
   it('#getOwner - should return actual owner', async () => {
     const owner = await router.getOwner()
-    assert(owner === contracts.accounts[0])
+    assert(owner === factoryOwner)
   })
 
   it('#getNFTFactory - should return NFT Factory address', async () => {
@@ -82,7 +84,7 @@ describe('Router unit test', () => {
 
     await daiContract.methods
       .transfer(user2, web3.utils.toWei('2'))
-      .send({ from: contracts.accounts[0] })
+      .send({ from: factoryOwner })
     await daiContract.methods
       .approve(contracts.routerAddress, web3.utils.toWei('2'))
       .send({ from: user2 })
@@ -98,9 +100,9 @@ describe('Router unit test', () => {
 
     const ercParams: Erc20CreateParams = {
       templateIndex: 1,
-      minter: contracts.accounts[0],
+      minter: factoryOwner,
       feeManager: user3,
-      mpFeeAddress: contracts.accounts[0],
+      mpFeeAddress: factoryOwner,
       feeToken: '0x0000000000000000000000000000000000000000',
       cap: '1000000',
       feeAmount: '0',
@@ -112,8 +114,8 @@ describe('Router unit test', () => {
       ssContract: contracts.sideStakingAddress,
       baseTokenAddress: contracts.daiAddress,
       baseTokenSender: contracts.factory721Address,
-      publisherAddress: contracts.accounts[0],
-      marketFeeCollector: contracts.accounts[0],
+      publisherAddress: factoryOwner,
+      marketFeeCollector: factoryOwner,
       poolTemplateAddress: contracts.poolTemplateAddress,
       rate: '1',
       baseTokenDecimals: 18,
@@ -131,7 +133,7 @@ describe('Router unit test', () => {
     )
 
     const txReceipt = await nftFactory.createNftErc20WithPool(
-      contracts.accounts[0],
+      factoryOwner,
       nftData,
       ercParams,
       poolParams
@@ -151,9 +153,9 @@ describe('Router unit test', () => {
 
     const ercParams2: Erc20CreateParams = {
       templateIndex: 1,
-      minter: contracts.accounts[0],
+      minter: factoryOwner,
       feeManager: user3,
-      mpFeeAddress: contracts.accounts[0],
+      mpFeeAddress: factoryOwner,
       feeToken: '0x0000000000000000000000000000000000000000',
       cap: '1000000',
       feeAmount: '0',
@@ -165,8 +167,8 @@ describe('Router unit test', () => {
       ssContract: contracts.sideStakingAddress,
       baseTokenAddress: contracts.daiAddress,
       baseTokenSender: contracts.factory721Address,
-      publisherAddress: contracts.accounts[0],
-      marketFeeCollector: contracts.accounts[0],
+      publisherAddress: factoryOwner,
+      marketFeeCollector: factoryOwner,
       poolTemplateAddress: contracts.poolTemplateAddress,
       rate: '1',
       baseTokenDecimals: 18,
@@ -178,7 +180,7 @@ describe('Router unit test', () => {
     }
 
     const txReceipt2 = await nftFactory.createNftErc20WithPool(
-      contracts.accounts[0],
+      factoryOwner,
       nftData2,
       ercParams2,
       poolParams2
@@ -217,7 +219,7 @@ describe('Router unit test', () => {
       amountsOut: web3.utils.toWei('0.1'), // when swapExactAmountIn is MIN amount OUT
       maxPrice: web3.utils.toWei('10'), // max price (only for pools),
       swapMarketFee: web3.utils.toWei('0.1'),
-      marketFeeAddress: contracts.accounts[0]
+      marketFeeAddress: factoryOwner
     }
 
     const operations2: Operation = {
@@ -230,7 +232,7 @@ describe('Router unit test', () => {
       amountsOut: web3.utils.toWei('0.1'), // when swapExactAmountIn is MIN amount OUT
       maxPrice: web3.utils.toWei('10'), // max price (only for pools)
       swapMarketFee: web3.utils.toWei('0.1'),
-      marketFeeAddress: contracts.accounts[0]
+      marketFeeAddress: factoryOwner
     }
 
     await router.buyDTBatch(user2, [operations1, operations2])

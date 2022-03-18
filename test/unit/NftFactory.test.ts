@@ -23,15 +23,17 @@ describe('Nft Factory test', () => {
   let dtAddress2: string
   let nftAddress: string
 
+  before(async () => {
+    const accounts = await web3.eth.getAccounts()
+    factoryOwner = accounts[0]
+    nftOwner = accounts[1]
+    user1 = accounts[2]
+    user2 = accounts[3]
+    user3 = accounts[4]
+  })
+
   it('should deploy contracts', async () => {
     contracts = new TestContractHandler(web3)
-    await contracts.getAccounts()
-    factoryOwner = contracts.accounts[0]
-    nftOwner = contracts.accounts[1]
-    user1 = contracts.accounts[2]
-    user2 = contracts.accounts[3]
-    user3 = contracts.accounts[4]
-
     await contracts.deployContracts(factoryOwner)
 
     const daiContract = new web3.eth.Contract(
@@ -40,7 +42,7 @@ describe('Nft Factory test', () => {
     )
     await daiContract.methods
       .approve(contracts.factory721Address, web3.utils.toWei('10000'))
-      .send({ from: contracts.accounts[0] })
+      .send({ from: factoryOwner })
   })
 
   it('should initiate NFTFactory instance', async () => {
@@ -49,7 +51,7 @@ describe('Nft Factory test', () => {
 
   it('#getOwner - should return actual owner', async () => {
     const owner = await nftFactory.getOwner()
-    assert(owner === contracts.accounts[0])
+    assert(owner === factoryOwner)
   })
 
   it('#getNFTTemplate - should return NFT template struct', async () => {
@@ -74,7 +76,7 @@ describe('Nft Factory test', () => {
 
     const ercParams: Erc20CreateParams = {
       templateIndex: 1,
-      minter: contracts.accounts[0],
+      minter: factoryOwner,
       feeManager: user3,
       mpFeeAddress: user2,
       feeToken: '0x0000000000000000000000000000000000000000',
@@ -85,7 +87,7 @@ describe('Nft Factory test', () => {
     }
 
     const txReceipt = await nftFactory.createNftWithErc20(
-      contracts.accounts[0],
+      factoryOwner,
       nftData,
       ercParams
     )
@@ -124,8 +126,8 @@ describe('Nft Factory test', () => {
       ssContract: contracts.sideStakingAddress,
       baseTokenAddress: contracts.daiAddress,
       baseTokenSender: contracts.factory721Address,
-      publisherAddress: contracts.accounts[0],
-      marketFeeCollector: contracts.accounts[0],
+      publisherAddress: factoryOwner,
+      marketFeeCollector: factoryOwner,
       poolTemplateAddress: contracts.poolTemplateAddress,
       rate: '1',
       baseTokenDecimals: 18,
@@ -137,7 +139,7 @@ describe('Nft Factory test', () => {
     }
 
     const txReceipt = await nftFactory.createNftErc20WithPool(
-      contracts.accounts[0],
+      factoryOwner,
       nftData,
       ercParams,
       poolParams
@@ -160,7 +162,7 @@ describe('Nft Factory test', () => {
 
     const ercParams: Erc20CreateParams = {
       templateIndex: 1,
-      minter: contracts.accounts[0],
+      minter: factoryOwner,
       feeManager: user3,
       mpFeeAddress: user2,
       feeToken: '0x0000000000000000000000000000000000000000',
@@ -173,18 +175,18 @@ describe('Nft Factory test', () => {
     const freParams: FreCreationParams = {
       fixedRateAddress: contracts.fixedRateAddress,
       baseTokenAddress: contracts.daiAddress,
-      owner: contracts.accounts[0],
-      marketFeeCollector: contracts.accounts[0],
+      owner: factoryOwner,
+      marketFeeCollector: factoryOwner,
       baseTokenDecimals: 18,
       datatokenDecimals: 18,
       fixedRate: '1',
       marketFee: '0.001',
-      allowedConsumer: contracts.accounts[0],
+      allowedConsumer: factoryOwner,
       withMint: false
     }
 
     const txReceipt = await nftFactory.createNftErc20WithFixedRate(
-      contracts.accounts[0],
+      factoryOwner,
       nftData,
       ercParams,
       freParams
@@ -210,7 +212,7 @@ describe('Nft Factory test', () => {
 
     const ercParams: Erc20CreateParams = {
       templateIndex: 1,
-      minter: contracts.accounts[0],
+      minter: factoryOwner,
       feeManager: user3,
       mpFeeAddress: user2,
       feeToken: '0x0000000000000000000000000000000000000000',
@@ -229,7 +231,7 @@ describe('Nft Factory test', () => {
     }
 
     const txReceipt = await nftFactory.createNftErc20WithDispenser(
-      contracts.accounts[0],
+      factoryOwner,
       nftData,
       ercParams,
       dispenserParams
@@ -257,7 +259,7 @@ describe('Nft Factory test', () => {
     expect(await dtContract.methods.balanceOf(user2).call()).to.equal('0')
 
     // dt owner mint dtAmount to user2
-    await dtContract.methods.mint(user2, dtAmount).send({ from: contracts.accounts[0] })
+    await dtContract.methods.mint(user2, dtAmount).send({ from: factoryOwner })
 
     // user2 approves NFTFactory to move his dtAmount
     await dtContract.methods
@@ -269,7 +271,7 @@ describe('Nft Factory test', () => {
     expect(await dtContract2.methods.balanceOf(user2).call()).to.equal('0')
 
     // dt owner mint dtAmount to user2
-    await dtContract2.methods.mint(user2, dtAmount).send({ from: contracts.accounts[0] })
+    await dtContract2.methods.mint(user2, dtAmount).send({ from: factoryOwner })
     // user2 approves NFTFactory to move his dtAmount
     await dtContract2.methods
       .approve(contracts.factory721Address, dtAmount)
