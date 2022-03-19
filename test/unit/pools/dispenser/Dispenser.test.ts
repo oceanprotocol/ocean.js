@@ -2,7 +2,7 @@ import { AbiItem } from 'web3-utils'
 import { assert, expect } from 'chai'
 import ERC20Template from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC20Template.sol/ERC20Template.json'
 import DispenserTemplate from '@oceanprotocol/contracts/artifacts/contracts/pools/dispenser/Dispenser.sol/Dispenser.json'
-import { TestContractHandler } from '../../../TestContractHandler'
+import { deployContracts, Addresses } from '../../../TestContractHandler'
 import { web3 } from '../../../config'
 import {
   NftFactory,
@@ -19,7 +19,7 @@ describe('Dispenser flow', () => {
   let user1: string
   let user2: string
   let user3: string
-  let contracts: TestContractHandler
+  let contracts: Addresses
   let DispenserAddress: string
   let DispenserClass: Dispenser
   let nftFactory: NftFactory
@@ -37,8 +37,7 @@ describe('Dispenser flow', () => {
   })
 
   it('should deploy contracts', async () => {
-    contracts = new TestContractHandler(web3)
-    await contracts.deployContracts(factoryOwner)
+    contracts = await deployContracts(factoryOwner)
   })
 
   it('should initialize Dispenser class', async () => {

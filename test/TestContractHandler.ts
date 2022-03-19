@@ -1,5 +1,4 @@
 import Web3 from 'web3'
-import { Contract } from 'web3-eth-contract'
 import { AbiItem } from 'web3-utils/types'
 import ERC721Template from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC721Template.sol/ERC721Template.json'
 import ERC20Template from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC20Template.sol/ERC20Template.json'
@@ -11,14 +10,15 @@ import FixedRate from '@oceanprotocol/contracts/artifacts/contracts/pools/fixedR
 import Dispenser from '@oceanprotocol/contracts/artifacts/contracts/pools/dispenser/Dispenser.sol/Dispenser.json'
 import MockERC20 from '@oceanprotocol/contracts/artifacts/contracts/utils/mock/MockERC20Decimals.sol/MockERC20Decimals.json'
 import OPFCommunityFeeCollector from '@oceanprotocol/contracts/artifacts/contracts/communityFee/OPFCommunityFeeCollector.sol/OPFCommunityFeeCollector.json'
-import { getAddresses, GAS_PRICE } from './config'
+import { web3, getAddresses, GAS_PRICE } from './config'
 
-const deployContract = async (
-  contract: Contract,
+const estimateGasAndDeployContract = async (
+  abi: AbiItem | AbiItem[],
   bytecode: string,
   argumentsArray: any[],
   owner: string
 ) => {
+  const contract = new web3.eth.Contract(abi)
   // get est gascost
   const estimatedGas = await contract
     .deploy({
@@ -45,191 +45,177 @@ const deployContract = async (
     })
 }
 
-export class TestContractHandler {
-  public ERC721Factory: Contract
-  public ERC20Template: Contract
-  public ERC721Template: Contract
-  public Router: Contract
-  public SideStaking: Contract
-  public FixedRate: Contract
-  public Dispenser: Contract
-  public OPFCollector: Contract
-  public PoolTemplate: Contract
-  public MockERC20: Contract
-  public MockOcean: Contract
+export interface Addresses {
+  factory721Address: string
+  template721Address: string
+  template20Address: string
+  routerAddress: string
+  sideStakingAddress: string
+  fixedRateAddress: string
+  dispenserAddress: string
+  poolTemplateAddress: string
+  opfCollectorAddress: string
+  oceanAddress: string
+  daiAddress: string
+  usdcAddress: string
+}
 
-  public factory721Address: string
-  public template721Address: string
-  public template20Address: string
-  public routerAddress: string
-  public sideStakingAddress: string
-  public fixedRateAddress: string
-  public dispenserAddress: string
-  public poolTemplateAddress: string
-  public opfCollectorAddress: string
-  public oceanAddress: string
-  public daiAddress: string
-  public usdcAddress: string
-  public web3: Web3
+export const deployContracts = async (owner: string): Promise<Addresses> => {
+  const addresses = getAddresses()
 
-  constructor(web3: Web3) {
-    this.web3 = web3
+  // DEPLOY OPF Fee Collector
+  addresses.opfCollectorAddress =
+    addresses.OPFCommunityFeeCollector ||
+    (await estimateGasAndDeployContract(
+      OPFCommunityFeeCollector.abi as AbiItem[],
+      OPFCommunityFeeCollector.bytecode,
+      [owner, owner],
+      owner
+    ))
 
-    this.ERC721Template = new this.web3.eth.Contract(ERC721Template.abi as AbiItem[])
-    this.ERC20Template = new this.web3.eth.Contract(ERC20Template.abi as AbiItem[])
-    this.PoolTemplate = new this.web3.eth.Contract(PoolTemplate.abi as AbiItem[])
-    this.ERC721Factory = new this.web3.eth.Contract(ERC721Factory.abi as AbiItem[])
-    this.Router = new this.web3.eth.Contract(Router.abi as AbiItem[])
-    this.SideStaking = new this.web3.eth.Contract(SideStaking.abi as AbiItem[])
-    this.FixedRate = new this.web3.eth.Contract(FixedRate.abi as AbiItem[])
-    this.Dispenser = new this.web3.eth.Contract(Dispenser.abi as AbiItem[])
-    this.MockERC20 = new this.web3.eth.Contract(MockERC20.abi as AbiItem[])
-    this.OPFCollector = new this.web3.eth.Contract(
-      OPFCommunityFeeCollector.abi as AbiItem[]
+  // DEPLOY POOL TEMPLATE
+  addresses.poolTemplateAddress =
+    addresses.poolTemplate ||
+    (await estimateGasAndDeployContract(
+      PoolTemplate.abi as AbiItem[],
+      PoolTemplate.bytecode,
+      [],
+      owner
+    ))
+
+  // DEPLOY ERC20 TEMPLATE
+  addresses.template20Address =
+    addresses.ERC20Template['1'] ||
+    (await estimateGasAndDeployContract(
+      ERC20Template.abi as AbiItem[],
+      ERC20Template.bytecode,
+      [],
+      owner
+    ))
+
+  // DEPLOY ERC721 TEMPLATE
+  addresses.template721Address =
+    addresses.ERC721Template['1'] ||
+    (await estimateGasAndDeployContract(
+      ERC721Template.abi as AbiItem[],
+      ERC721Template.bytecode,
+      [],
+      owner
+    ))
+
+  // DEPLOY OCEAN MOCK
+  addresses.oceanAddress =
+    addresses.Ocean ||
+    (await estimateGasAndDeployContract(
+      MockERC20.abi as AbiItem[],
+      MockERC20.bytecode,
+      ['OCEAN', 'OCEAN', 18],
+      owner
+    ))
+
+  // DEPLOY ROUTER
+  addresses.routerAddress =
+    addresses.Router ||
+    (await estimateGasAndDeployContract(
+      Router.abi as AbiItem[],
+      Router.bytecode,
+      [
+        owner,
+        addresses.oceanAddress,
+        addresses.poolTemplateAddress,
+        addresses.opfCollectorAddress,
+        []
+      ],
+      owner
+    ))
+
+  // DEPLOY SIDE STAKING
+  addresses.sideStakingAddress =
+    addresses.Staking ||
+    (await estimateGasAndDeployContract(
+      SideStaking.abi as AbiItem[],
+      SideStaking.bytecode,
+      [addresses.routerAddress],
+      owner
+    ))
+
+  // DEPLOY FIXED RATE
+  addresses.fixedRateAddress =
+    addresses.FixedPrice ||
+    (await estimateGasAndDeployContract(
+      FixedRate.abi as AbiItem[],
+      FixedRate.bytecode,
+      [addresses.routerAddress, addresses.opfCollectorAddress],
+      owner
+    ))
+
+  // DEPLOY Dispenser
+  addresses.dispenserAddress =
+    addresses.Dispenser ||
+    (await estimateGasAndDeployContract(
+      Dispenser.abi as AbiItem[],
+      Dispenser.bytecode,
+      [addresses.routerAddress],
+      owner
+    ))
+
+  // DEPLOY ERC721 FACTORY
+  addresses.factory721Address =
+    addresses.ERC721Factory ||
+    (await estimateGasAndDeployContract(
+      ERC721Factory.abi as AbiItem[],
+      ERC721Factory.bytecode,
+      [
+        addresses.template721Address,
+        addresses.template20Address,
+        addresses.opfCollectorAddress,
+        addresses.routerAddress
+      ],
+      owner
+    ))
+
+  // DEPLOY USDC MOCK
+  addresses.usdcAddress =
+    addresses.MockUSDC ||
+    (await estimateGasAndDeployContract(
+      MockERC20.abi as AbiItem[],
+      MockERC20.bytecode,
+      ['USDC', 'USDC', 6],
+      owner
+    ))
+
+  // DEPLOY DAI MOCK
+  addresses.daiAddress =
+    addresses.MockDAI ||
+    (await estimateGasAndDeployContract(
+      MockERC20.abi as AbiItem[],
+      MockERC20.bytecode,
+      ['DAI', 'DAI', 18],
+      owner
+    ))
+
+  if (!addresses.Router) {
+    const RouterContract = new web3.eth.Contract(
+      Router.abi as AbiItem[],
+      addresses.routerAddress
     )
+
+    await RouterContract.methods
+      .addFactory(addresses.factory721Address)
+      .send({ from: owner })
+    await RouterContract.methods
+      .addFixedRateContract(addresses.fixedRateAddress)
+      .send({ from: owner })
+    await RouterContract.methods
+      .addDispenserContract(addresses.dispenserAddress)
+      .send({ from: owner })
+    await RouterContract.methods
+      .addSSContract(addresses.sideStakingAddress)
+      .send({ from: owner })
+    // TODO: add OPF deployment
+    // await RouterContract.methods
+    //   .changeRouterOwner(this.opfCollectorAddress)
+    //   .send({ from: owner })
   }
-
-  public async deployContracts(owner: string) {
-    const addresses = getAddresses()
-
-    // DEPLOY OPF Fee Collector
-    this.opfCollectorAddress =
-      addresses.OPFCommunityFeeCollector ||
-      (await deployContract(
-        this.OPFCollector,
-        OPFCommunityFeeCollector.bytecode,
-        [owner, owner],
-        owner
-      ))
-
-    // DEPLOY POOL TEMPLATE
-    this.poolTemplateAddress =
-      addresses.poolTemplate ||
-      (await deployContract(this.PoolTemplate, PoolTemplate.bytecode, [], owner))
-
-    // DEPLOY ERC20 TEMPLATE
-    this.template20Address =
-      addresses.ERC20Template['1'] ||
-      (await deployContract(this.ERC20Template, ERC20Template.bytecode, [], owner))
-
-    // DEPLOY ERC721 TEMPLATE
-    this.template721Address =
-      addresses.ERC721Template['1'] ||
-      (await deployContract(this.ERC721Template, ERC721Template.bytecode, [], owner))
-
-    // DEPLOY OCEAN MOCK
-    this.oceanAddress =
-      addresses.Ocean ||
-      (await deployContract(
-        this.MockERC20,
-        MockERC20.bytecode,
-        ['OCEAN', 'OCEAN', 18],
-        owner
-      ))
-
-    // DEPLOY ROUTER
-    this.routerAddress =
-      addresses.Router ||
-      (await deployContract(
-        this.Router,
-        Router.bytecode,
-        [
-          owner,
-          this.oceanAddress,
-          this.poolTemplateAddress,
-          this.opfCollectorAddress,
-          []
-        ],
-        owner
-      ))
-
-    // DEPLOY SIDE STAKING
-    this.sideStakingAddress =
-      addresses.Staking ||
-      (await deployContract(
-        this.SideStaking,
-        SideStaking.bytecode,
-        [this.routerAddress],
-        owner
-      ))
-
-    // DEPLOY FIXED RATE
-    this.fixedRateAddress =
-      addresses.FixedPrice ||
-      (await deployContract(
-        this.FixedRate,
-        FixedRate.bytecode,
-        [this.routerAddress, this.opfCollectorAddress],
-        owner
-      ))
-
-    // DEPLOY Dispenser
-    this.dispenserAddress =
-      addresses.Dispenser ||
-      (await deployContract(
-        this.Dispenser,
-        Dispenser.bytecode,
-        [this.routerAddress],
-        owner
-      ))
-
-    // DEPLOY ERC721 FACTORY
-    this.factory721Address =
-      addresses.ERC721Factory ||
-      (await deployContract(
-        this.ERC721Factory,
-        ERC721Factory.bytecode,
-        [
-          this.template721Address,
-          this.template20Address,
-          this.opfCollectorAddress,
-          this.routerAddress
-        ],
-        owner
-      ))
-
-    // DEPLOY USDC MOCK
-    this.usdcAddress =
-      addresses.MockUSDC ||
-      (await deployContract(
-        this.MockERC20,
-        MockERC20.bytecode,
-        ['USDC', 'USDC', 6],
-        owner
-      ))
-
-    // DEPLOY DAI MOCK
-    this.daiAddress =
-      addresses.MockDAI ||
-      (await deployContract(
-        this.MockERC20,
-        MockERC20.bytecode,
-        ['DAI', 'DAI', 18],
-        owner
-      ))
-
-    if (!addresses.Router) {
-      const RouterContract = new this.web3.eth.Contract(
-        Router.abi as AbiItem[],
-        this.routerAddress
-      )
-
-      await RouterContract.methods
-        .addFactory(this.factory721Address)
-        .send({ from: owner })
-      await RouterContract.methods
-        .addFixedRateContract(this.fixedRateAddress)
-        .send({ from: owner })
-      await RouterContract.methods
-        .addDispenserContract(this.dispenserAddress)
-        .send({ from: owner })
-      await RouterContract.methods
-        .addSSContract(this.sideStakingAddress)
-        .send({ from: owner })
-      // TODO: add OPF deployment
-      // await RouterContract.methods
-      //   .changeRouterOwner(this.opfCollectorAddress)
-      //   .send({ from: owner })
-    }
-  }
+  return addresses
 }

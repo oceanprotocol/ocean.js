@@ -4,7 +4,8 @@ import { Contract } from 'web3-eth-contract'
 import BN from 'bn.js'
 import ERC20Template from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC20Template.sol/ERC20Template.json'
 import FixedRate from '@oceanprotocol/contracts/artifacts/contracts/pools/fixedRate/FixedRateExchange.sol/FixedRateExchange.json'
-import { TestContractHandler } from '../../../TestContractHandler'
+import MockERC20 from '@oceanprotocol/contracts/artifacts/contracts/utils/mock/MockERC20Decimals.sol/MockERC20Decimals.json'
+import { deployContracts, Addresses } from '../../../TestContractHandler'
 import { web3 } from '../../../config'
 import { NftFactory, NftCreateData, FixedRateExchange } from '../../../../src'
 import { FreCreationParams, Erc20CreateParams } from '../../../../src/@types'
@@ -22,7 +23,7 @@ describe('Fixed Rate unit test', () => {
   let daiAddress: string
   let usdcAddress: string
   let exchangeId: string
-  let contracts: TestContractHandler
+  let contracts: Addresses
   let fixedRate: FixedRateExchange
   let dtAddress: string
   let dtAddress2: string
@@ -44,19 +45,15 @@ describe('Fixed Rate unit test', () => {
   })
 
   it('should deploy contracts', async () => {
-    contracts = new TestContractHandler(web3)
-    await contracts.deployContracts(factoryOwner)
+    contracts = await deployContracts(factoryOwner)
 
     // initialize fixed rate
     //
 
-    daiContract = new web3.eth.Contract(
-      contracts.MockERC20.options.jsonInterface,
-      contracts.daiAddress
-    )
+    daiContract = new web3.eth.Contract(MockERC20.abi as AbiItem[], contracts.daiAddress)
 
     usdcContract = new web3.eth.Contract(
-      contracts.MockERC20.options.jsonInterface,
+      MockERC20.abi as AbiItem[],
       contracts.usdcAddress
     )
   })

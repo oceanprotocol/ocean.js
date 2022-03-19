@@ -1,8 +1,9 @@
 import { assert, expect } from 'chai'
 import { AbiItem } from 'web3-utils/types'
-import { TestContractHandler } from '../../TestContractHandler'
+import { deployContracts, Addresses } from '../../TestContractHandler'
 import ERC721Factory from '@oceanprotocol/contracts/artifacts/contracts/ERC721Factory.sol/ERC721Factory.json'
 import ERC20Template from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC20Template.sol/ERC20Template.json'
+import MockERC20 from '@oceanprotocol/contracts/artifacts/contracts/utils/mock/MockERC20Decimals.sol/MockERC20Decimals.json'
 import { web3 } from '../../config'
 import { NftFactory, NftCreateData } from '../../../src'
 import { Router } from '../../../src/pools/Router'
@@ -16,7 +17,7 @@ describe('Router unit test', () => {
   let user1: string
   let user2: string
   let user3: string
-  let contracts: TestContractHandler
+  let contracts: Addresses
   let router: Router
   let dtAddress: string
   let dtAddress2: string
@@ -32,11 +33,10 @@ describe('Router unit test', () => {
   })
 
   it('should deploy contracts', async () => {
-    contracts = new TestContractHandler(web3)
-    await contracts.deployContracts(factoryOwner)
+    contracts = await deployContracts(factoryOwner)
 
     const daiContract = new web3.eth.Contract(
-      contracts.MockERC20.options.jsonInterface,
+      MockERC20.abi as AbiItem[],
       contracts.daiAddress
     )
     await daiContract.methods
@@ -78,7 +78,7 @@ describe('Router unit test', () => {
   it('#buyDTBatch - should buy multiple DT in one call', async () => {
     // APPROVE DAI
     const daiContract = new web3.eth.Contract(
-      contracts.MockERC20.options.jsonInterface,
+      MockERC20.abi as AbiItem[],
       contracts.daiAddress
     )
 

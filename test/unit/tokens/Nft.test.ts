@@ -1,7 +1,7 @@
 import { assert } from 'chai'
 import ERC721Factory from '@oceanprotocol/contracts/artifacts/contracts/ERC721Factory.sol/ERC721Factory.json'
 import ERC721Template from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC721Template.sol/ERC721Template.json'
-import { TestContractHandler } from '../../TestContractHandler'
+import { deployContracts, Addresses } from '../../TestContractHandler'
 import { AbiItem } from 'web3-utils'
 import sha256 from 'crypto-js/sha256'
 import { web3 } from '../../config'
@@ -13,7 +13,7 @@ describe('NFT', () => {
   let user1: string
   let user2: string
   let user3: string
-  let contractHandler: TestContractHandler
+  let contracts: Addresses
   let nftDatatoken: Nft
   let nftFactory: NftFactory
   let nftAddress: string
@@ -32,13 +32,12 @@ describe('NFT', () => {
   })
 
   it('should deploy contracts', async () => {
-    contractHandler = new TestContractHandler(web3)
-    await contractHandler.deployContracts(nftOwner)
+    contracts = await deployContracts(nftOwner)
   })
 
   it('should initialize NFTFactory instance and create a new NFT', async () => {
     nftFactory = new NftFactory(
-      contractHandler.factory721Address,
+      contracts.factory721Address,
       web3,
       ERC721Factory.abi as AbiItem[]
     )

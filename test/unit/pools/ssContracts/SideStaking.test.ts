@@ -4,7 +4,8 @@ import { Contract } from 'web3-eth-contract'
 import SSContract from '@oceanprotocol/contracts/artifacts/contracts/pools/ssContracts/SideStaking.sol/SideStaking.json'
 import ERC20Template from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC20Template.sol/ERC20Template.json'
 import PoolTemplate from '@oceanprotocol/contracts/artifacts/contracts/pools/balancer/BPool.sol/BPool.json'
-import { TestContractHandler } from '../../../TestContractHandler'
+import MockERC20 from '@oceanprotocol/contracts/artifacts/contracts/utils/mock/MockERC20Decimals.sol/MockERC20Decimals.json'
+import { deployContracts, Addresses } from '../../../TestContractHandler'
 import { web3 } from '../../../config'
 import {
   allowance,
@@ -32,7 +33,7 @@ describe('SideStaking unit test', () => {
   let user3: string
   let initialBlock: number
   let sideStakingAddress: string
-  let contracts: TestContractHandler
+  let contracts: Addresses
   let pool: Pool
   let sideStaking: SideStaking
   let dtAddress: string
@@ -54,9 +55,8 @@ describe('SideStaking unit test', () => {
   })
 
   it('should deploy contracts', async () => {
-    contracts = new TestContractHandler(web3)
     sideStakingAddress = contracts.sideStakingAddress
-    await contracts.deployContracts(factoryOwner)
+    contracts = await deployContracts(factoryOwner)
 
     // initialize Pool instance
     pool = new Pool(web3, PoolTemplate.abi as AbiItem[])
@@ -65,13 +65,10 @@ describe('SideStaking unit test', () => {
     sideStaking = new SideStaking(web3, SSContract.abi as AbiItem[])
     assert(sideStaking != null)
 
-    daiContract = new web3.eth.Contract(
-      contracts.MockERC20.options.jsonInterface,
-      contracts.daiAddress
-    )
+    daiContract = new web3.eth.Contract(MockERC20.abi as AbiItem[], contracts.daiAddress)
 
     usdcContract = new web3.eth.Contract(
-      contracts.MockERC20.options.jsonInterface,
+      MockERC20.abi as AbiItem[],
       contracts.usdcAddress
     )
     await approve(
