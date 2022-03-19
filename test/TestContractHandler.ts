@@ -1,4 +1,3 @@
-import Web3 from 'web3'
 import { AbiItem } from 'web3-utils/types'
 import ERC721Template from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC721Template.sol/ERC721Template.json'
 import ERC20Template from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC20Template.sol/ERC20Template.json'
@@ -29,7 +28,7 @@ const estimateGasAndDeployContract = async (
       if (err) console.log('DeployContracts: ' + err)
       return estimatedGas
     })
-  // deploy the contract and get it's address
+  // deploy the contract and get its address
   return await contract
     .deploy({
       data: bytecode,
@@ -61,11 +60,12 @@ export interface Addresses {
 }
 
 export const deployContracts = async (owner: string): Promise<Addresses> => {
-  const addresses = getAddresses()
+  const addresses: Addresses = {} as Addresses
+  const configAddresses = getAddresses()
 
-  // DEPLOY OPF Fee Collector
+  // deploy OPF free collector
   addresses.opfCollectorAddress =
-    addresses.OPFCommunityFeeCollector ||
+    configAddresses.OPFCommunityFeeCollector ||
     (await estimateGasAndDeployContract(
       OPFCommunityFeeCollector.abi as AbiItem[],
       OPFCommunityFeeCollector.bytecode,
@@ -73,9 +73,9 @@ export const deployContracts = async (owner: string): Promise<Addresses> => {
       owner
     ))
 
-  // DEPLOY POOL TEMPLATE
+  // deploy pool template
   addresses.poolTemplateAddress =
-    addresses.poolTemplate ||
+    configAddresses.poolTemplate ||
     (await estimateGasAndDeployContract(
       PoolTemplate.abi as AbiItem[],
       PoolTemplate.bytecode,
@@ -83,9 +83,9 @@ export const deployContracts = async (owner: string): Promise<Addresses> => {
       owner
     ))
 
-  // DEPLOY ERC20 TEMPLATE
+  // deploy ERC20 template
   addresses.template20Address =
-    addresses.ERC20Template['1'] ||
+    configAddresses.ERC20Template['1'] ||
     (await estimateGasAndDeployContract(
       ERC20Template.abi as AbiItem[],
       ERC20Template.bytecode,
@@ -93,9 +93,9 @@ export const deployContracts = async (owner: string): Promise<Addresses> => {
       owner
     ))
 
-  // DEPLOY ERC721 TEMPLATE
+  // deploy ERC721 template
   addresses.template721Address =
-    addresses.ERC721Template['1'] ||
+    configAddresses.ERC721Template['1'] ||
     (await estimateGasAndDeployContract(
       ERC721Template.abi as AbiItem[],
       ERC721Template.bytecode,
@@ -103,9 +103,9 @@ export const deployContracts = async (owner: string): Promise<Addresses> => {
       owner
     ))
 
-  // DEPLOY OCEAN MOCK
+  // deploy OCEAN mock tocken
   addresses.oceanAddress =
-    addresses.Ocean ||
+    configAddresses.Ocean ||
     (await estimateGasAndDeployContract(
       MockERC20.abi as AbiItem[],
       MockERC20.bytecode,
@@ -113,9 +113,9 @@ export const deployContracts = async (owner: string): Promise<Addresses> => {
       owner
     ))
 
-  // DEPLOY ROUTER
+  // deploy router
   addresses.routerAddress =
-    addresses.Router ||
+    configAddresses.Router ||
     (await estimateGasAndDeployContract(
       Router.abi as AbiItem[],
       Router.bytecode,
@@ -129,9 +129,9 @@ export const deployContracts = async (owner: string): Promise<Addresses> => {
       owner
     ))
 
-  // DEPLOY SIDE STAKING
+  // deploy side stacking
   addresses.sideStakingAddress =
-    addresses.Staking ||
+    configAddresses.Staking ||
     (await estimateGasAndDeployContract(
       SideStaking.abi as AbiItem[],
       SideStaking.bytecode,
@@ -139,9 +139,9 @@ export const deployContracts = async (owner: string): Promise<Addresses> => {
       owner
     ))
 
-  // DEPLOY FIXED RATE
+  // deploy fixed rate
   addresses.fixedRateAddress =
-    addresses.FixedPrice ||
+    configAddresses.FixedPrice ||
     (await estimateGasAndDeployContract(
       FixedRate.abi as AbiItem[],
       FixedRate.bytecode,
@@ -149,9 +149,9 @@ export const deployContracts = async (owner: string): Promise<Addresses> => {
       owner
     ))
 
-  // DEPLOY Dispenser
+  // deploy dispenser
   addresses.dispenserAddress =
-    addresses.Dispenser ||
+    configAddresses.Dispenser ||
     (await estimateGasAndDeployContract(
       Dispenser.abi as AbiItem[],
       Dispenser.bytecode,
@@ -159,9 +159,9 @@ export const deployContracts = async (owner: string): Promise<Addresses> => {
       owner
     ))
 
-  // DEPLOY ERC721 FACTORY
+  // deploy ERC721 factory
   addresses.factory721Address =
-    addresses.ERC721Factory ||
+    configAddresses.ERC721Factory ||
     (await estimateGasAndDeployContract(
       ERC721Factory.abi as AbiItem[],
       ERC721Factory.bytecode,
@@ -174,9 +174,9 @@ export const deployContracts = async (owner: string): Promise<Addresses> => {
       owner
     ))
 
-  // DEPLOY USDC MOCK
+  // deploy USDC mock tocken
   addresses.usdcAddress =
-    addresses.MockUSDC ||
+    configAddresses.MockUSDC ||
     (await estimateGasAndDeployContract(
       MockERC20.abi as AbiItem[],
       MockERC20.bytecode,
@@ -184,9 +184,9 @@ export const deployContracts = async (owner: string): Promise<Addresses> => {
       owner
     ))
 
-  // DEPLOY DAI MOCK
+  // deploy DAI mock tocken
   addresses.daiAddress =
-    addresses.MockDAI ||
+    configAddresses.MockDAI ||
     (await estimateGasAndDeployContract(
       MockERC20.abi as AbiItem[],
       MockERC20.bytecode,
@@ -194,7 +194,7 @@ export const deployContracts = async (owner: string): Promise<Addresses> => {
       owner
     ))
 
-  if (!addresses.Router) {
+  if (!configAddresses.Router) {
     const RouterContract = new web3.eth.Contract(
       Router.abi as AbiItem[],
       addresses.routerAddress
@@ -217,5 +217,6 @@ export const deployContracts = async (owner: string): Promise<Addresses> => {
     //   .changeRouterOwner(this.opfCollectorAddress)
     //   .send({ from: owner })
   }
+
   return addresses
 }
