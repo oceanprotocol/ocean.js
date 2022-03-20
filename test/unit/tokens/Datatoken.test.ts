@@ -52,13 +52,13 @@ describe('Datatoken', () => {
       contracts.daiAddress
     )
     await daiContract.methods
-      .approve(contracts.factory721Address, web3.utils.toWei('10000'))
+      .approve(contracts.erc721FactoryAddress, web3.utils.toWei('10000'))
       .send({ from: nftOwner })
   })
 
   it('should initialize NFTFactory instance and create a new NFT', async () => {
     nftFactory = new NftFactory(
-      contracts.factory721Address,
+      contracts.erc721FactoryAddress,
       web3,
       ERC721Factory.abi as AbiItem[]
     )

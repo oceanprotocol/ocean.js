@@ -1,14 +1,14 @@
 import { AbiItem } from 'web3-utils/types'
-import ERC721Template from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC721Template.sol/ERC721Template.json'
-import ERC20Template from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC20Template.sol/ERC20Template.json'
+import OPFCommunityFeeCollector from '@oceanprotocol/contracts/artifacts/contracts/communityFee/OPFCommunityFeeCollector.sol/OPFCommunityFeeCollector.json'
 import PoolTemplate from '@oceanprotocol/contracts/artifacts/contracts/pools/balancer/BPool.sol/BPool.json'
-import ERC721Factory from '@oceanprotocol/contracts/artifacts/contracts/ERC721Factory.sol/ERC721Factory.json'
+import ERC20Template from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC20Template.sol/ERC20Template.json'
+import ERC721Template from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC721Template.sol/ERC721Template.json'
+import MockERC20 from '@oceanprotocol/contracts/artifacts/contracts/utils/mock/MockERC20Decimals.sol/MockERC20Decimals.json'
 import Router from '@oceanprotocol/contracts/artifacts/contracts/pools/FactoryRouter.sol/FactoryRouter.json'
 import SideStaking from '@oceanprotocol/contracts/artifacts/contracts/pools/ssContracts/SideStaking.sol/SideStaking.json'
 import FixedRate from '@oceanprotocol/contracts/artifacts/contracts/pools/fixedRate/FixedRateExchange.sol/FixedRateExchange.json'
 import Dispenser from '@oceanprotocol/contracts/artifacts/contracts/pools/dispenser/Dispenser.sol/Dispenser.json'
-import MockERC20 from '@oceanprotocol/contracts/artifacts/contracts/utils/mock/MockERC20Decimals.sol/MockERC20Decimals.json'
-import OPFCommunityFeeCollector from '@oceanprotocol/contracts/artifacts/contracts/communityFee/OPFCommunityFeeCollector.sol/OPFCommunityFeeCollector.json'
+import ERC721Factory from '@oceanprotocol/contracts/artifacts/contracts/ERC721Factory.sol/ERC721Factory.json'
 import { web3, getAddresses, GAS_PRICE } from './config'
 
 const estimateGasAndDeployContract = async (
@@ -45,16 +45,16 @@ const estimateGasAndDeployContract = async (
 }
 
 export interface Addresses {
-  factory721Address: string
-  template721Address: string
-  template20Address: string
+  opfCommunityFeeCollectorAddress: string
+  poolTemplateAddress: string
+  erc20TemplateAddress: string
+  erc721TemplateAddress: string
+  oceanAddress: string
   routerAddress: string
   sideStakingAddress: string
   fixedRateAddress: string
   dispenserAddress: string
-  poolTemplateAddress: string
-  opfCollectorAddress: string
-  oceanAddress: string
+  erc721FactoryAddress: string
   daiAddress: string
   usdcAddress: string
 }
@@ -64,7 +64,7 @@ export const deployContracts = async (owner: string): Promise<Addresses> => {
   const configAddresses = getAddresses()
 
   // deploy OPF free collector
-  addresses.opfCollectorAddress =
+  addresses.opfCommunityFeeCollectorAddress =
     configAddresses.OPFCommunityFeeCollector ||
     (await estimateGasAndDeployContract(
       OPFCommunityFeeCollector.abi as AbiItem[],
@@ -84,7 +84,7 @@ export const deployContracts = async (owner: string): Promise<Addresses> => {
     ))
 
   // deploy ERC20 template
-  addresses.template20Address =
+  addresses.erc20TemplateAddress =
     configAddresses.ERC20Template['1'] ||
     (await estimateGasAndDeployContract(
       ERC20Template.abi as AbiItem[],
@@ -94,7 +94,7 @@ export const deployContracts = async (owner: string): Promise<Addresses> => {
     ))
 
   // deploy ERC721 template
-  addresses.template721Address =
+  addresses.erc721TemplateAddress =
     configAddresses.ERC721Template['1'] ||
     (await estimateGasAndDeployContract(
       ERC721Template.abi as AbiItem[],
@@ -123,7 +123,7 @@ export const deployContracts = async (owner: string): Promise<Addresses> => {
         owner,
         addresses.oceanAddress,
         addresses.poolTemplateAddress,
-        addresses.opfCollectorAddress,
+        addresses.opfCommunityFeeCollectorAddress,
         []
       ],
       owner
@@ -145,7 +145,7 @@ export const deployContracts = async (owner: string): Promise<Addresses> => {
     (await estimateGasAndDeployContract(
       FixedRate.abi as AbiItem[],
       FixedRate.bytecode,
-      [addresses.routerAddress, addresses.opfCollectorAddress],
+      [addresses.routerAddress, addresses.opfCommunityFeeCollectorAddress],
       owner
     ))
 
@@ -160,15 +160,15 @@ export const deployContracts = async (owner: string): Promise<Addresses> => {
     ))
 
   // deploy ERC721 factory
-  addresses.factory721Address =
+  addresses.erc721FactoryAddress =
     configAddresses.ERC721Factory ||
     (await estimateGasAndDeployContract(
       ERC721Factory.abi as AbiItem[],
       ERC721Factory.bytecode,
       [
-        addresses.template721Address,
-        addresses.template20Address,
-        addresses.opfCollectorAddress,
+        addresses.erc721TemplateAddress,
+        addresses.erc20TemplateAddress,
+        addresses.opfCommunityFeeCollectorAddress,
         addresses.routerAddress
       ],
       owner
@@ -201,7 +201,7 @@ export const deployContracts = async (owner: string): Promise<Addresses> => {
     )
 
     await RouterContract.methods
-      .addFactory(addresses.factory721Address)
+      .addFactory(addresses.erc721FactoryAddress)
       .send({ from: owner })
     await RouterContract.methods
       .addFixedRateContract(addresses.fixedRateAddress)
@@ -214,7 +214,7 @@ export const deployContracts = async (owner: string): Promise<Addresses> => {
       .send({ from: owner })
     // TODO: add OPF deployment
     // await RouterContract.methods
-    //   .changeRouterOwner(this.opfCollectorAddress)
+    //   .changeRouterOwner(this.opfCommunityFeeCollectorAddress)
     //   .send({ from: owner })
   }
 

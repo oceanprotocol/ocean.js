@@ -37,7 +37,7 @@ describe('NFT', () => {
 
   it('should initialize NFTFactory instance and create a new NFT', async () => {
     nftFactory = new NftFactory(
-      contracts.factory721Address,
+      contracts.erc721FactoryAddress,
       web3,
       ERC721Factory.abi as AbiItem[]
     )

@@ -40,7 +40,7 @@ describe('Router unit test', () => {
       contracts.daiAddress
     )
     await daiContract.methods
-      .approve(contracts.factory721Address, web3.utils.toWei('10000'))
+      .approve(contracts.erc721FactoryAddress, web3.utils.toWei('10000'))
       .send({ from: factoryOwner })
   })
 
@@ -55,7 +55,7 @@ describe('Router unit test', () => {
 
   it('#getNFTFactory - should return NFT Factory address', async () => {
     const factory = await router.getNFTFactory()
-    assert(factory === contracts.factory721Address)
+    assert(factory === contracts.erc721FactoryAddress)
   })
 
   it('#isOceanTokens - should return true if in oceanTokens list', async () => {
@@ -113,7 +113,7 @@ describe('Router unit test', () => {
     const poolParams: PoolCreationParams = {
       ssContract: contracts.sideStakingAddress,
       baseTokenAddress: contracts.daiAddress,
-      baseTokenSender: contracts.factory721Address,
+      baseTokenSender: contracts.erc721FactoryAddress,
       publisherAddress: factoryOwner,
       marketFeeCollector: factoryOwner,
       poolTemplateAddress: contracts.poolTemplateAddress,
@@ -127,7 +127,7 @@ describe('Router unit test', () => {
     }
 
     const nftFactory = new NftFactory(
-      contracts.factory721Address,
+      contracts.erc721FactoryAddress,
       web3,
       ERC721Factory.abi as AbiItem[]
     )
@@ -166,7 +166,7 @@ describe('Router unit test', () => {
     const poolParams2: PoolCreationParams = {
       ssContract: contracts.sideStakingAddress,
       baseTokenAddress: contracts.daiAddress,
-      baseTokenSender: contracts.factory721Address,
+      baseTokenSender: contracts.erc721FactoryAddress,
       publisherAddress: factoryOwner,
       marketFeeCollector: factoryOwner,
       poolTemplateAddress: contracts.poolTemplateAddress,

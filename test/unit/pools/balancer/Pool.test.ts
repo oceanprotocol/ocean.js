@@ -67,14 +67,14 @@ describe('Pool unit test', () => {
       web3,
       factoryOwner,
       contracts.daiAddress,
-      contracts.factory721Address,
+      contracts.erc721FactoryAddress,
       '2000'
     )
     await approve(
       web3,
       factoryOwner,
       contracts.usdcAddress,
-      contracts.factory721Address,
+      contracts.erc721FactoryAddress,
       '10000'
     )
 
@@ -82,7 +82,7 @@ describe('Pool unit test', () => {
       web3,
       contracts.daiAddress,
       factoryOwner,
-      contracts.factory721Address
+      contracts.erc721FactoryAddress
     )
 
     assert(parseInt(allowCheck) >= 8000)
@@ -90,7 +90,7 @@ describe('Pool unit test', () => {
       web3,
       contracts.usdcAddress,
       factoryOwner,
-      contracts.factory721Address
+      contracts.erc721FactoryAddress
     )
     assert(parseInt(allowCheck) >= 10000)
 
@@ -125,7 +125,7 @@ describe('Pool unit test', () => {
       const poolParams: PoolCreationParams = {
         ssContract: contracts.sideStakingAddress,
         baseTokenAddress: contracts.daiAddress,
-        baseTokenSender: contracts.factory721Address,
+        baseTokenSender: contracts.erc721FactoryAddress,
         publisherAddress: factoryOwner,
         marketFeeCollector: factoryOwner,
         poolTemplateAddress: contracts.poolTemplateAddress,
@@ -139,7 +139,7 @@ describe('Pool unit test', () => {
       }
 
       const nftFactory = new NftFactory(
-        contracts.factory721Address,
+        contracts.erc721FactoryAddress,
         web3,
         ERC721Factory.abi as AbiItem[]
       )
@@ -496,7 +496,10 @@ describe('Pool unit test', () => {
     })
 
     it('#getOPCCollector- should get market fees for each token', async () => {
-      assert((await pool.getOPCCollector(poolAddress)) === contracts.opfCollectorAddress)
+      assert(
+        (await pool.getOPCCollector(poolAddress)) ===
+          contracts.opfCommunityFeeCollectorAddress
+      )
     })
 
     it('#collectCommunityFee- should get community fees for each token', async () => {
@@ -510,8 +513,9 @@ describe('Pool unit test', () => {
       assert((await pool.getCommunityFees(poolAddress, contracts.daiAddress)) > '0')
       // opf collector has no DAI
       assert(
-        (await daiContract.methods.balanceOf(contracts.opfCollectorAddress).call()) ===
-          '0'
+        (await daiContract.methods
+          .balanceOf(contracts.opfCommunityFeeCollectorAddress)
+          .call()) === '0'
       )
       // anyone can call callectOPF
       await pool.collectOPC(factoryOwner, poolAddress)
@@ -519,7 +523,9 @@ describe('Pool unit test', () => {
       assert((await pool.getCommunityFees(poolAddress, contracts.daiAddress)) === '0')
       // OPF collector got DAI
       assert(
-        (await daiContract.methods.balanceOf(contracts.opfCollectorAddress).call()) > '0'
+        (await daiContract.methods
+          .balanceOf(contracts.opfCommunityFeeCollectorAddress)
+          .call()) > '0'
       )
       // Spot price hasn't changed after fee collection
       assert(
@@ -572,7 +578,7 @@ describe('Pool unit test', () => {
       const poolParams: PoolCreationParams = {
         ssContract: contracts.sideStakingAddress,
         baseTokenAddress: contracts.usdcAddress,
-        baseTokenSender: contracts.factory721Address,
+        baseTokenSender: contracts.erc721FactoryAddress,
         publisherAddress: factoryOwner,
         marketFeeCollector: factoryOwner,
         poolTemplateAddress: contracts.poolTemplateAddress,
@@ -590,7 +596,7 @@ describe('Pool unit test', () => {
       }
 
       const nftFactory = new NftFactory(
-        contracts.factory721Address,
+        contracts.erc721FactoryAddress,
         web3,
         ERC721Factory.abi as AbiItem[]
       )
@@ -1006,7 +1012,10 @@ describe('Pool unit test', () => {
     })
 
     it('#getOPCCollector- should get market fees for each token', async () => {
-      assert((await pool.getOPCCollector(poolAddress)) === contracts.opfCollectorAddress)
+      assert(
+        (await pool.getOPCCollector(poolAddress)) ===
+          contracts.opfCommunityFeeCollectorAddress
+      )
     })
 
     it('#getCurrentMarketFees- should get curent market fees for each token', async () => {
@@ -1030,8 +1039,9 @@ describe('Pool unit test', () => {
       assert((await pool.getCommunityFees(poolAddress, contracts.usdcAddress)) > '0')
       // opf collector has no USDC
       assert(
-        (await usdcContract.methods.balanceOf(contracts.opfCollectorAddress).call()) ===
-          '0'
+        (await usdcContract.methods
+          .balanceOf(contracts.opfCommunityFeeCollectorAddress)
+          .call()) === '0'
       )
       // anyone can call callectOPF
       await pool.collectOPC(factoryOwner, poolAddress)
@@ -1039,7 +1049,9 @@ describe('Pool unit test', () => {
       assert((await pool.getCommunityFees(poolAddress, contracts.usdcAddress)) === '0')
       // OPF collector got USDC
       assert(
-        (await usdcContract.methods.balanceOf(contracts.opfCollectorAddress).call()) > '0'
+        (await usdcContract.methods
+          .balanceOf(contracts.opfCommunityFeeCollectorAddress)
+          .call()) > '0'
       )
       // Spot price hasn't changed after fee collection
       assert(

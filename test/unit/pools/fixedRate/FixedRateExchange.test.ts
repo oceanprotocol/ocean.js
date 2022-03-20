@@ -63,7 +63,7 @@ describe('Fixed Rate unit test', () => {
       // CREATE AN Exchange
       // we prepare transaction parameters objects
 
-      const nftFactory = new NftFactory(contracts.factory721Address, web3)
+      const nftFactory = new NftFactory(contracts.erc721FactoryAddress, web3)
 
       const nftData: NftCreateData = {
         name: '72120Bundle',
@@ -130,7 +130,9 @@ describe('Fixed Rate unit test', () => {
       expect(await fixedRate.getExchangeOwner(exchangeId)).to.equal(exchangeOwner)
     })
     it('#getOPFCollector - should get OPF collector', async () => {
-      expect(await fixedRate.getOPCCollector()).to.equal(contracts.opfCollectorAddress)
+      expect(await fixedRate.getOPCCollector()).to.equal(
+        contracts.opfCommunityFeeCollectorAddress
+      )
     })
     it('#getRouter - should get Router address', async () => {
       expect(await fixedRate.getRouter()).to.equal(contracts.routerAddress)
@@ -378,7 +380,7 @@ describe('Fixed Rate unit test', () => {
       // CREATE AN Exchange
       // we prepare transaction parameters objects
 
-      const nftFactory = new NftFactory(contracts.factory721Address, web3)
+      const nftFactory = new NftFactory(contracts.erc721FactoryAddress, web3)
 
       const nftData: NftCreateData = {
         name: '72120Bundle',
@@ -445,7 +447,9 @@ describe('Fixed Rate unit test', () => {
       expect(await fixedRate.getExchangeOwner(exchangeId)).to.equal(exchangeOwner)
     })
     it('#getOPFCollector - should get OPF collector', async () => {
-      expect(await fixedRate.getOPCCollector()).to.equal(contracts.opfCollectorAddress)
+      expect(await fixedRate.getOPCCollector()).to.equal(
+        contracts.opfCommunityFeeCollectorAddress
+      )
     })
     it('#getRouter - should get Router address', async () => {
       expect(await fixedRate.getRouter()).to.equal(contracts.routerAddress)

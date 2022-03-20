@@ -75,14 +75,14 @@ describe('SideStaking unit test', () => {
       web3,
       factoryOwner,
       contracts.daiAddress,
-      contracts.factory721Address,
+      contracts.erc721FactoryAddress,
       '2000'
     )
     await approve(
       web3,
       factoryOwner,
       contracts.usdcAddress,
-      contracts.factory721Address,
+      contracts.erc721FactoryAddress,
       '10000'
     )
 
@@ -90,14 +90,14 @@ describe('SideStaking unit test', () => {
       web3,
       contracts.daiAddress,
       factoryOwner,
-      contracts.factory721Address
+      contracts.erc721FactoryAddress
     )
     assert(parseInt(allowCheck) >= 2000)
     allowCheck = await allowance(
       web3,
       contracts.usdcAddress,
       factoryOwner,
-      contracts.factory721Address
+      contracts.erc721FactoryAddress
     )
     assert(parseInt(allowCheck) >= 10000)
 
@@ -113,7 +113,7 @@ describe('SideStaking unit test', () => {
     it('#create a pool', async () => {
       // CREATE A POOL
       // we prepare transaction parameters objects
-      const nftFactory = new NftFactory(contracts.factory721Address, web3)
+      const nftFactory = new NftFactory(contracts.erc721FactoryAddress, web3)
 
       const nftData: NftCreateData = {
         name: '72120Bundle',
@@ -137,7 +137,7 @@ describe('SideStaking unit test', () => {
       const poolParams: PoolCreationParams = {
         ssContract: contracts.sideStakingAddress,
         baseTokenAddress: contracts.daiAddress,
-        baseTokenSender: contracts.factory721Address,
+        baseTokenSender: contracts.erc721FactoryAddress,
         publisherAddress: factoryOwner,
         marketFeeCollector: factoryOwner,
         poolTemplateAddress: contracts.poolTemplateAddress,
@@ -354,7 +354,7 @@ describe('SideStaking unit test', () => {
     it('#create a pool', async () => {
       // CREATE A POOL
       // we prepare transaction parameters objects
-      const nftFactory = new NftFactory(contracts.factory721Address, web3)
+      const nftFactory = new NftFactory(contracts.erc721FactoryAddress, web3)
 
       const nftData: NftCreateData = {
         name: '72120Bundle',
@@ -378,7 +378,7 @@ describe('SideStaking unit test', () => {
       const poolParams: PoolCreationParams = {
         ssContract: contracts.sideStakingAddress,
         baseTokenAddress: contracts.usdcAddress,
-        baseTokenSender: contracts.factory721Address,
+        baseTokenSender: contracts.erc721FactoryAddress,
         publisherAddress: factoryOwner,
         marketFeeCollector: factoryOwner,
         poolTemplateAddress: contracts.poolTemplateAddress,
