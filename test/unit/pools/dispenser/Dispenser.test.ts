@@ -37,7 +37,7 @@ describe('Dispenser flow', () => {
   })
 
   it('should deploy contracts', async () => {
-    contracts = await deployContracts(factoryOwner)
+    contracts = await deployContracts(web3, factoryOwner)
   })
 
   it('should initialize Dispenser class', async () => {

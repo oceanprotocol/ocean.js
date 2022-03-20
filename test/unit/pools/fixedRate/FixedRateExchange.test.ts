@@ -45,7 +45,7 @@ describe('Fixed Rate unit test', () => {
   })
 
   it('should deploy contracts', async () => {
-    contracts = await deployContracts(factoryOwner)
+    contracts = await deployContracts(web3, factoryOwner)
 
     // initialize fixed rate
     //

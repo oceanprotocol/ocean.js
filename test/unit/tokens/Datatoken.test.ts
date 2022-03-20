@@ -45,7 +45,7 @@ describe('Datatoken', () => {
   })
 
   it('should deploy contracts', async () => {
-    contracts = await deployContracts(nftOwner)
+    contracts = await deployContracts(web3, nftOwner)
 
     const daiContract = new web3.eth.Contract(
       MockERC20.abi as AbiItem[],

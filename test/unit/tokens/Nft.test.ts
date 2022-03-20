@@ -32,7 +32,7 @@ describe('NFT', () => {
   })
 
   it('should deploy contracts', async () => {
-    contracts = await deployContracts(nftOwner)
+    contracts = await deployContracts(web3, nftOwner)
   })
 
   it('should initialize NFTFactory instance and create a new NFT', async () => {

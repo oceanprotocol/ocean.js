@@ -1,3 +1,4 @@
+import Web3 from 'web3'
 import { AbiItem } from 'web3-utils/types'
 import OPFCommunityFeeCollector from '@oceanprotocol/contracts/artifacts/contracts/communityFee/OPFCommunityFeeCollector.sol/OPFCommunityFeeCollector.json'
 import PoolTemplate from '@oceanprotocol/contracts/artifacts/contracts/pools/balancer/BPool.sol/BPool.json'
@@ -9,9 +10,10 @@ import SideStaking from '@oceanprotocol/contracts/artifacts/contracts/pools/ssCo
 import FixedRate from '@oceanprotocol/contracts/artifacts/contracts/pools/fixedRate/FixedRateExchange.sol/FixedRateExchange.json'
 import Dispenser from '@oceanprotocol/contracts/artifacts/contracts/pools/dispenser/Dispenser.sol/Dispenser.json'
 import ERC721Factory from '@oceanprotocol/contracts/artifacts/contracts/ERC721Factory.sol/ERC721Factory.json'
-import { web3, getAddresses, GAS_PRICE } from './config'
+import { getAddresses, GAS_PRICE } from './config'
 
 const estimateGasAndDeployContract = async (
+  web3: Web3,
   abi: AbiItem | AbiItem[],
   bytecode: string,
   argumentsArray: any[],
@@ -59,7 +61,7 @@ export interface Addresses {
   usdcAddress: string
 }
 
-export const deployContracts = async (owner: string): Promise<Addresses> => {
+export const deployContracts = async (web3: Web3, owner: string): Promise<Addresses> => {
   const addresses: Addresses = {} as Addresses
   const configAddresses = getAddresses()
 
@@ -67,6 +69,7 @@ export const deployContracts = async (owner: string): Promise<Addresses> => {
   addresses.opfCommunityFeeCollectorAddress =
     configAddresses.OPFCommunityFeeCollector ||
     (await estimateGasAndDeployContract(
+      web3,
       OPFCommunityFeeCollector.abi as AbiItem[],
       OPFCommunityFeeCollector.bytecode,
       [owner, owner],
@@ -77,6 +80,7 @@ export const deployContracts = async (owner: string): Promise<Addresses> => {
   addresses.poolTemplateAddress =
     configAddresses.poolTemplate ||
     (await estimateGasAndDeployContract(
+      web3,
       PoolTemplate.abi as AbiItem[],
       PoolTemplate.bytecode,
       [],
@@ -87,6 +91,7 @@ export const deployContracts = async (owner: string): Promise<Addresses> => {
   addresses.erc20TemplateAddress =
     configAddresses.ERC20Template['1'] ||
     (await estimateGasAndDeployContract(
+      web3,
       ERC20Template.abi as AbiItem[],
       ERC20Template.bytecode,
       [],
@@ -97,6 +102,7 @@ export const deployContracts = async (owner: string): Promise<Addresses> => {
   addresses.erc721TemplateAddress =
     configAddresses.ERC721Template['1'] ||
     (await estimateGasAndDeployContract(
+      web3,
       ERC721Template.abi as AbiItem[],
       ERC721Template.bytecode,
       [],
@@ -107,6 +113,7 @@ export const deployContracts = async (owner: string): Promise<Addresses> => {
   addresses.oceanAddress =
     configAddresses.Ocean ||
     (await estimateGasAndDeployContract(
+      web3,
       MockERC20.abi as AbiItem[],
       MockERC20.bytecode,
       ['OCEAN', 'OCEAN', 18],
@@ -117,6 +124,7 @@ export const deployContracts = async (owner: string): Promise<Addresses> => {
   addresses.routerAddress =
     configAddresses.Router ||
     (await estimateGasAndDeployContract(
+      web3,
       Router.abi as AbiItem[],
       Router.bytecode,
       [
@@ -133,6 +141,7 @@ export const deployContracts = async (owner: string): Promise<Addresses> => {
   addresses.sideStakingAddress =
     configAddresses.Staking ||
     (await estimateGasAndDeployContract(
+      web3,
       SideStaking.abi as AbiItem[],
       SideStaking.bytecode,
       [addresses.routerAddress],
@@ -143,6 +152,7 @@ export const deployContracts = async (owner: string): Promise<Addresses> => {
   addresses.fixedRateAddress =
     configAddresses.FixedPrice ||
     (await estimateGasAndDeployContract(
+      web3,
       FixedRate.abi as AbiItem[],
       FixedRate.bytecode,
       [addresses.routerAddress, addresses.opfCommunityFeeCollectorAddress],
@@ -153,6 +163,7 @@ export const deployContracts = async (owner: string): Promise<Addresses> => {
   addresses.dispenserAddress =
     configAddresses.Dispenser ||
     (await estimateGasAndDeployContract(
+      web3,
       Dispenser.abi as AbiItem[],
       Dispenser.bytecode,
       [addresses.routerAddress],
@@ -163,6 +174,7 @@ export const deployContracts = async (owner: string): Promise<Addresses> => {
   addresses.erc721FactoryAddress =
     configAddresses.ERC721Factory ||
     (await estimateGasAndDeployContract(
+      web3,
       ERC721Factory.abi as AbiItem[],
       ERC721Factory.bytecode,
       [
@@ -178,6 +190,7 @@ export const deployContracts = async (owner: string): Promise<Addresses> => {
   addresses.usdcAddress =
     configAddresses.MockUSDC ||
     (await estimateGasAndDeployContract(
+      web3,
       MockERC20.abi as AbiItem[],
       MockERC20.bytecode,
       ['USDC', 'USDC', 6],
@@ -188,6 +201,7 @@ export const deployContracts = async (owner: string): Promise<Addresses> => {
   addresses.daiAddress =
     configAddresses.MockDAI ||
     (await estimateGasAndDeployContract(
+      web3,
       MockERC20.abi as AbiItem[],
       MockERC20.bytecode,
       ['DAI', 'DAI', 18],

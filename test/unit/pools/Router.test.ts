@@ -33,7 +33,7 @@ describe('Router unit test', () => {
   })
 
   it('should deploy contracts', async () => {
-    contracts = await deployContracts(factoryOwner)
+    contracts = await deployContracts(web3, factoryOwner)
 
     const daiContract = new web3.eth.Contract(
       MockERC20.abi as AbiItem[],
