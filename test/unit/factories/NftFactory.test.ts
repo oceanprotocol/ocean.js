@@ -1,16 +1,22 @@
 import { assert, expect } from 'chai'
 import { AbiItem } from 'web3-utils/types'
-import { deployContracts, Addresses } from '../TestContractHandler'
+import { deployContracts, Addresses } from '../../TestContractHandler'
 import ERC20Template from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC20Template.sol/ERC20Template.json'
 import MockERC20 from '@oceanprotocol/contracts/artifacts/contracts/utils/mock/MockERC20Decimals.sol/MockERC20Decimals.json'
-import { web3 } from '../config'
-import { NftFactory, NftCreateData, TokenOrder, ZERO_ADDRESS, signHash } from '../../src'
+import { web3 } from '../../config'
+import {
+  NftFactory,
+  NftCreateData,
+  TokenOrder,
+  ZERO_ADDRESS,
+  signHash
+} from '../../../src'
 import {
   ProviderFees,
   FreCreationParams,
   Erc20CreateParams,
   PoolCreationParams
-} from '../../src/@types'
+} from '../../../src/@types'
 
 describe('Nft Factory test', () => {
   let factoryOwner: string
