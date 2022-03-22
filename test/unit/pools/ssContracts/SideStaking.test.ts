@@ -55,8 +55,8 @@ describe('SideStaking unit test', () => {
   })
 
   it('should deploy contracts', async () => {
-    sideStakingAddress = contracts.sideStakingAddress
     contracts = await deployContracts(web3, factoryOwner)
+    sideStakingAddress = contracts.sideStakingAddress
 
     // initialize Pool instance
     pool = new Pool(web3, PoolTemplate.abi as AbiItem[])

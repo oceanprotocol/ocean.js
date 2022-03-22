@@ -139,11 +139,6 @@ describe('Dispenser flow', () => {
     assert(tx, 'user3 failed to get 1DT')
   })
 
-  it('tries to withdraw all datatokens', async () => {
-    const tx = await DispenserClass.ownerWithdraw(dtAddress, user3)
-    assert(tx === null, 'Request should fail')
-  })
-
   it('user2 withdraws all datatokens', async () => {
     const tx = await DispenserClass.ownerWithdraw(dtAddress, factoryOwner)
     assert(tx, 'user2 failed to withdraw all her tokens')
