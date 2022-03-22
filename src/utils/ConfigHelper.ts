@@ -41,7 +41,8 @@ export const configHelperNetworks: Config[] = [
     nodeUri: 'https://ropsten.infura.io/v3',
     providerUri: 'https://v4.provider.ropsten.oceanprotocol.com',
     subgraphUri: 'https://v4.subgraph.ropsten.oceanprotocol.com',
-    explorerUri: 'https://ropsten.etherscan.io'
+    explorerUri: 'https://ropsten.etherscan.io',
+    gasFeeMultiplier: 1.1
   },
   {
     ...configHelperNetworksBase,
@@ -50,7 +51,8 @@ export const configHelperNetworks: Config[] = [
     nodeUri: 'https://rinkeby.infura.io/v3',
     providerUri: 'https://v4.provider.rinkeby.oceanprotocol.com',
     subgraphUri: 'https://v4.subgraph.rinkeby.oceanprotocol.com',
-    explorerUri: 'https://rinkeby.etherscan.io'
+    explorerUri: 'https://rinkeby.etherscan.io',
+    gasFeeMultiplier: 1.1
   },
   {
     ...configHelperNetworksBase,
@@ -83,7 +85,8 @@ export const configHelperNetworks: Config[] = [
     nodeUri: 'https://rpc.api.moonbase.moonbeam.network',
     providerUri: 'https://v4.provider.moonbase.oceanprotocol.com',
     subgraphUri: 'https://v4.subgraph.moonbase.oceanprotocol.com',
-    explorerUri: 'https://moonbase.moonscan.io/'
+    explorerUri: 'https://moonbase.moonscan.io/',
+    gasFeeMultiplier: 1.1
   },
   {
     ...configHelperNetworksBase,
@@ -101,7 +104,8 @@ export const configHelperNetworks: Config[] = [
     nodeUri: 'https://polygon-mumbai.infura.io/v3',
     providerUri: 'https://v4.provider.mumbai.oceanprotocol.com',
     subgraphUri: 'https://v4.subgraph.mumbai.oceanprotocol.com',
-    explorerUri: 'https://mumbai.polygonscan.com'
+    explorerUri: 'https://mumbai.polygonscan.com',
+    gasFeeMultiplier: 1.1
   },
   {
     ...configHelperNetworksBase,
