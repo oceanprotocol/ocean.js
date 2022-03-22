@@ -100,17 +100,13 @@ export class FixedRateExchange {
 
   /**
    * Creates unique exchange identifier.
+   * @param {String} baseToken baseToken contract address
    * @param {String} datatoken Datatoken contract address
-   * @param {String} owner Owner of the exchange
    * @return {Promise<string>} exchangeId
    */
-  public async generateExchangeId(
-    baseToken: string,
-    datatoken: string,
-    owner: string
-  ): Promise<string> {
+  public async generateExchangeId(baseToken: string, datatoken: string): Promise<string> {
     const exchangeId = await this.contract.methods
-      .generateExchangeId(baseToken, datatoken, owner)
+      .generateExchangeId(baseToken, datatoken)
       .call()
     return exchangeId
   }
@@ -816,20 +812,26 @@ export class FixedRateExchange {
    * Estimate gas cost for collectBT
    * @param {String} account
    * @param {String} exchangeId ExchangeId
+   * @param {String} amount amount to be collected
    * @param {Contract} contractInstance optional contract instance
    * @return {Promise<number>}
    */
   public async estCollectBT(
     account: string,
     exchangeId: string,
+    amount: string,
     contractInstance?: Contract
   ): Promise<number> {
     const fixedRate = contractInstance || this.fixedRateContract
     const gasLimitDefault = this.GASLIMIT_DEFAULT
     let estGas
+    const fixedrate: FixedPriceExchange = await this.contract.methods
+      .getExchange(exchangeId)
+      .call()
+    const amountWei = await this.amountToUnits(fixedrate.baseToken, amount)
     try {
       estGas = await fixedRate.methods
-        .collectBT(exchangeId)
+        .collectBT(exchangeId, amountWei)
         .estimateGas({ from: account }, (err, estGas) => (err ? gasLimitDefault : estGas))
     } catch (e) {
       estGas = gasLimitDefault
@@ -838,20 +840,26 @@ export class FixedRateExchange {
   }
 
   /**
-   * Collect BaseTokens in the contract (only exchange owner)
-   * @param {String} exchangeId ExchangeId
+   * Collect BaseTokens in the contract (anyone can call this, funds are sent to erc20.paymentCollector)
    * @param {String} address User address
+   * @param {String} exchangeId ExchangeId
+   * @param {String} amount amount to be collected
    * @return {Promise<TransactionReceipt>} transaction receipt
    */
   public async collectBT(
     address: string,
-    exchangeId: string
+    exchangeId: string,
+    amount: string
   ): Promise<TransactionReceipt> {
     const exchange = await this.getExchange(exchangeId)
     if (!exchange) return null
 
-    const estGas = await this.estCollectBT(address, exchangeId)
-    const trxReceipt = await this.contract.methods.collectBT(exchangeId).send({
+    const estGas = await this.estCollectBT(address, exchangeId, amount)
+    const fixedrate: FixedPriceExchange = await this.contract.methods
+      .getExchange(exchangeId)
+      .call()
+    const amountWei = await this.amountToUnits(fixedrate.baseToken, amount)
+    const trxReceipt = await this.contract.methods.collectBT(exchangeId, amountWei).send({
       from: address,
       gas: estGas + 1,
       gasPrice: await getFairGasPrice(this.web3, this.config)
@@ -863,20 +871,26 @@ export class FixedRateExchange {
    * Estimate gas cost for collecDT
    * @param {String} account
    * @param {String} exchangeId ExchangeId
+   * @param {String} amount amount to be collected
    * @param {Contract} contractInstance optional contract instance
    * @return {Promise<number>}
    */
   public async estCollectDT(
     account: string,
     exchangeId: string,
+    amount: string,
     contractInstance?: Contract
   ): Promise<number> {
     const fixedRate = contractInstance || this.fixedRateContract
     const gasLimitDefault = this.GASLIMIT_DEFAULT
     let estGas
+    const fixedrate: FixedPriceExchange = await this.contract.methods
+      .getExchange(exchangeId)
+      .call()
+    const amountWei = await this.amountToUnits(fixedrate.datatoken, amount)
     try {
       estGas = await fixedRate.methods
-        .collectDT(exchangeId)
+        .collectDT(exchangeId, amountWei)
         .estimateGas({ from: account }, (err, estGas) => (err ? gasLimitDefault : estGas))
     } catch (e) {
       estGas = gasLimitDefault
@@ -885,20 +899,26 @@ export class FixedRateExchange {
   }
 
   /**
-   * Collect datatokens in the contract (only exchange owner)
-   * @param {String} exchangeId ExchangeId
+   * Collect datatokens in the contract (anyone can call this, funds are sent to erc20.paymentCollector)
    * @param {String} address User address
+   * @param {String} exchangeId ExchangeId
+   * @param {String} amount amount to be collected
    * @return {Promise<TransactionReceipt>} transaction receipt
    */
   public async collectDT(
     address: string,
-    exchangeId: string
+    exchangeId: string,
+    amount: string
   ): Promise<TransactionReceipt> {
     const exchange = await this.getExchange(exchangeId)
     if (!exchange) return null
 
-    const estGas = await this.estCollectDT(address, exchangeId)
-    const trxReceipt = await this.contract.methods.collectDT(exchangeId).send({
+    const estGas = await this.estCollectDT(address, exchangeId, amount)
+    const fixedrate: FixedPriceExchange = await this.contract.methods
+      .getExchange(exchangeId)
+      .call()
+    const amountWei = await this.amountToUnits(fixedrate.datatoken, amount)
+    const trxReceipt = await this.contract.methods.collectDT(exchangeId, amountWei).send({
       from: address,
       gas: estGas + 1,
       gasPrice: await getFairGasPrice(this.web3, this.config)

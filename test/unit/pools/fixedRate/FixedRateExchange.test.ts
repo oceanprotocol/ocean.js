@@ -191,7 +191,7 @@ describe('Fixed Rate unit test', () => {
 
     it('#generate exchangeId - should generate a specific exchangeId', async () => {
       expect(
-        await fixedRate.generateExchangeId(contracts.daiAddress, dtAddress, exchangeOwner)
+        await fixedRate.generateExchangeId(contracts.daiAddress, dtAddress)
       ).to.equal(exchangeId)
     })
 
@@ -346,9 +346,10 @@ describe('Fixed Rate unit test', () => {
       // user2 buys 1 DT
       await fixedRate.buyDT(user2, exchangeId, '1', '2')
       // 1 DAI in the contract
-      expect((await fixedRate.getExchange(exchangeId)).btBalance).to.equal('1')
+      const fixedRateDetails = await fixedRate.getExchange(exchangeId)
+      expect(fixedRateDetails.btBalance).to.equal('1')
       // owner collects BTs
-      await fixedRate.collectBT(exchangeOwner, exchangeId)
+      await fixedRate.collectBT(exchangeOwner, exchangeId, fixedRateDetails.btBalance)
       // btBalance is zero
       expect((await fixedRate.getExchange(exchangeId)).btBalance).to.equal('0')
     })
@@ -357,7 +358,7 @@ describe('Fixed Rate unit test', () => {
       // 9 dts left
       expect(result.dtBalance).to.equal('9')
       // owner collects DTs
-      await fixedRate.collectDT(exchangeOwner, exchangeId)
+      await fixedRate.collectDT(exchangeOwner, exchangeId, result.dtBalance)
       // no more dts in the contract
       const result2 = await fixedRate.getExchange(exchangeId)
       expect(result2.dtBalance).to.equal('0')
@@ -381,7 +382,7 @@ describe('Fixed Rate unit test', () => {
       expect(result.oceanFeeAvailable).to.equal('0.042')
       // user3 is the marketFeeCollector
       expect(await daiContract.methods.balanceOf(user3).call()).to.equal(
-        web3.utils.toWei('0.021')
+        web3.utils.toWei('1.021')
       )
     })
 
@@ -506,11 +507,7 @@ describe('Fixed Rate unit test', () => {
 
     it('#generate exchangeId - should generate a specific exchangeId', async () => {
       expect(
-        await fixedRate.generateExchangeId(
-          contracts.usdcAddress,
-          dtAddress,
-          exchangeOwner
-        )
+        await fixedRate.generateExchangeId(contracts.usdcAddress, dtAddress)
       ).to.equal(exchangeId)
     })
 
@@ -659,9 +656,10 @@ describe('Fixed Rate unit test', () => {
       // user2 buys 1 DT
       await fixedRate.buyDT(user2, exchangeId, '1', '2')
       // 1 DAI in the contract
-      expect((await fixedRate.getExchange(exchangeId)).btBalance).to.equal('1')
+      const exchangeDetails = await fixedRate.getExchange(exchangeId)
+      expect(exchangeDetails.btBalance).to.equal('1')
       // owner collects BTs
-      await fixedRate.collectBT(exchangeOwner, exchangeId)
+      await fixedRate.collectBT(exchangeOwner, exchangeId, exchangeDetails.btBalance)
       // btBalance is zero
       expect((await fixedRate.getExchange(exchangeId)).btBalance).to.equal('0')
     })
@@ -670,7 +668,7 @@ describe('Fixed Rate unit test', () => {
       // 9 dts left
       expect(result.dtBalance).to.equal('9')
       // owner collects DTs
-      await fixedRate.collectDT(exchangeOwner, exchangeId)
+      await fixedRate.collectDT(exchangeOwner, exchangeId, result.dtBalance)
       // no more dts in the contract
       const result2 = await fixedRate.getExchange(exchangeId)
       expect(result2.dtBalance).to.equal('0')
