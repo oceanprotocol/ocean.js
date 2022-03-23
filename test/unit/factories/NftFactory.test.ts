@@ -20,10 +20,8 @@ import {
 
 describe('Nft Factory test', () => {
   let factoryOwner: string
-  let nftOwner: string
   let user1: string
   let user2: string
-  let user3: string
   let contracts: Addresses
   let nftFactory: NftFactory
   let dtAddress: string
@@ -33,10 +31,8 @@ describe('Nft Factory test', () => {
   before(async () => {
     const accounts = await web3.eth.getAccounts()
     factoryOwner = accounts[0]
-    nftOwner = accounts[1]
-    user1 = accounts[2]
-    user2 = accounts[3]
-    user3 = accounts[4]
+    user1 = accounts[1]
+    user2 = accounts[2]
   })
 
   it('should deploy contracts', async () => {
@@ -83,8 +79,8 @@ describe('Nft Factory test', () => {
     const ercParams: Erc20CreateParams = {
       templateIndex: 1,
       minter: factoryOwner,
-      feeManager: user3,
-      mpFeeAddress: user2,
+      feeManager: user2,
+      mpFeeAddress: user1,
       feeToken: '0x0000000000000000000000000000000000000000',
       cap: '10000',
       feeAmount: '0',
@@ -118,9 +114,9 @@ describe('Nft Factory test', () => {
 
     const ercParams: Erc20CreateParams = {
       templateIndex: 1,
-      minter: user2,
-      feeManager: user3,
-      mpFeeAddress: user2,
+      minter: user1,
+      feeManager: user2,
+      mpFeeAddress: user1,
       feeToken: '0x0000000000000000000000000000000000000000',
       cap: '1000000',
       feeAmount: '0',
@@ -169,8 +165,8 @@ describe('Nft Factory test', () => {
     const ercParams: Erc20CreateParams = {
       templateIndex: 1,
       minter: factoryOwner,
-      feeManager: user3,
-      mpFeeAddress: user2,
+      feeManager: user2,
+      mpFeeAddress: user1,
       feeToken: '0x0000000000000000000000000000000000000000',
       cap: '1000000',
       feeAmount: '0',
@@ -219,8 +215,8 @@ describe('Nft Factory test', () => {
     const ercParams: Erc20CreateParams = {
       templateIndex: 1,
       minter: factoryOwner,
-      feeManager: user3,
-      mpFeeAddress: user2,
+      feeManager: user2,
+      mpFeeAddress: user1,
       feeToken: '0x0000000000000000000000000000000000000000',
       cap: '1000000',
       feeAmount: '0',
@@ -253,39 +249,39 @@ describe('Nft Factory test', () => {
   })
 
   it('#startMultipleTokenOrder- should succed to start multiple orders', async () => {
-    const consumer = user2 // could be different user
+    const consumer = user1 // could be different user
     const dtAmount = web3.utils.toWei('1')
     const serviceIndex = 1 // dummy index
-    const consumeFeeAddress = user3 // marketplace fee Collector
+    const consumeFeeAddress = user2 // marketplace fee Collector
     const consumeFeeAmount = '0' // fee to be collected on top, requires approval
     const consumeFeeToken = contracts.daiAddress // token address for the feeAmount, in this case DAI
 
     // we reuse a DT created in a previous test
     const dtContract = new web3.eth.Contract(ERC20Template.abi as AbiItem[], dtAddress)
-    expect(await dtContract.methods.balanceOf(user2).call()).to.equal('0')
+    expect(await dtContract.methods.balanceOf(user1).call()).to.equal('0')
 
-    // dt owner mint dtAmount to user2
-    await dtContract.methods.mint(user2, dtAmount).send({ from: factoryOwner })
+    // dt owner mint dtAmount to user1
+    await dtContract.methods.mint(user1, dtAmount).send({ from: factoryOwner })
 
-    // user2 approves NFTFactory to move his dtAmount
+    // user1 approves NFTFactory to move his dtAmount
     await dtContract.methods
       .approve(contracts.erc721FactoryAddress, dtAmount)
-      .send({ from: user2 })
+      .send({ from: user1 })
 
     // we reuse another DT created in a previous test
     const dtContract2 = new web3.eth.Contract(ERC20Template.abi as AbiItem[], dtAddress2)
-    expect(await dtContract2.methods.balanceOf(user2).call()).to.equal('0')
+    expect(await dtContract2.methods.balanceOf(user1).call()).to.equal('0')
 
-    // dt owner mint dtAmount to user2
-    await dtContract2.methods.mint(user2, dtAmount).send({ from: factoryOwner })
-    // user2 approves NFTFactory to move his dtAmount
+    // dt owner mint dtAmount to user1
+    await dtContract2.methods.mint(user1, dtAmount).send({ from: factoryOwner })
+    // user1 approves NFTFactory to move his dtAmount
     await dtContract2.methods
       .approve(contracts.erc721FactoryAddress, dtAmount)
-      .send({ from: user2 })
+      .send({ from: user1 })
 
-    // we check user2 has enought DTs
-    expect(await dtContract.methods.balanceOf(user2).call()).to.equal(dtAmount)
-    expect(await dtContract2.methods.balanceOf(user2).call()).to.equal(dtAmount)
+    // we check user1 has enought DTs
+    expect(await dtContract.methods.balanceOf(user1).call()).to.equal(dtAmount)
+    expect(await dtContract2.methods.balanceOf(user1).call()).to.equal(dtAmount)
 
     const providerData = JSON.stringify({ timeout: 0 })
     const providerValidUntil = '0'
@@ -330,16 +326,16 @@ describe('Nft Factory test', () => {
         _consumeMarketFee: consumeMarketFee
       }
     ]
-    await nftFactory.startMultipleTokenOrder(user2, orders)
-    // we check user2 has no more DTs
-    expect(await dtContract.methods.balanceOf(user2).call()).to.equal('0')
-    expect(await dtContract2.methods.balanceOf(user2).call()).to.equal('0')
+    await nftFactory.startMultipleTokenOrder(user1, orders)
+    // we check user1 has no more DTs
+    expect(await dtContract.methods.balanceOf(user1).call()).to.equal('0')
+    expect(await dtContract2.methods.balanceOf(user1).call()).to.equal('0')
   })
 
   it('#checkDatatoken - should confirm if DT is from the factory', async () => {
     assert((await nftFactory.checkDatatoken(dtAddress)) === true)
     assert((await nftFactory.checkDatatoken(dtAddress2)) === true)
-    assert((await nftFactory.checkDatatoken(user2)) === false)
+    assert((await nftFactory.checkDatatoken(user1)) === false)
     assert((await nftFactory.checkDatatoken(nftAddress)) === false)
   })
 
