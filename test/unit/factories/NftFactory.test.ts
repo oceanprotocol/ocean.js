@@ -20,9 +20,10 @@ import {
 
 const VESTING_AMOUNT = '10000'
 const CAP_AMOUNT = '1000000'
+const DATA_TOKEN_AMOUNT = web3.utils.toWei('1')
 const NFT_NAME = '72120Bundle'
 const NFT_SYMBOL = '72Bundle'
-const TOKEN_URI = 'https://oceanprotocol.com/nft/'
+const NFT_TOKEN_URI = 'https://oceanprotocol.com/nft/'
 const ERC20_NAME = 'ERC20B1'
 const ERC20_SYMBOL = 'ERC20DT1Symbol'
 const RATE = '1'
@@ -77,7 +78,7 @@ describe('Nft Factory test', () => {
       name: NFT_NAME,
       symbol: NFT_SYMBOL,
       templateIndex: 1,
-      tokenURI: TOKEN_URI
+      tokenURI: NFT_TOKEN_URI
     }
 
     const ercParams: Erc20CreateParams = {
@@ -113,7 +114,7 @@ describe('Nft Factory test', () => {
       name: NFT_NAME,
       symbol: NFT_SYMBOL,
       templateIndex: 1,
-      tokenURI: TOKEN_URI
+      tokenURI: NFT_TOKEN_URI
     }
 
     const ercParams: Erc20CreateParams = {
@@ -173,7 +174,7 @@ describe('Nft Factory test', () => {
       name: NFT_NAME,
       symbol: NFT_SYMBOL,
       templateIndex: 1,
-      tokenURI: TOKEN_URI
+      tokenURI: NFT_TOKEN_URI
     }
 
     const ercParams: Erc20CreateParams = {
@@ -223,7 +224,7 @@ describe('Nft Factory test', () => {
       name: NFT_NAME,
       symbol: NFT_SYMBOL,
       templateIndex: 1,
-      tokenURI: TOKEN_URI
+      tokenURI: NFT_TOKEN_URI
     }
 
     const ercParams: Erc20CreateParams = {
@@ -264,38 +265,37 @@ describe('Nft Factory test', () => {
 
   it('#startMultipleTokenOrder- should succed to start multiple orders', async () => {
     const consumer = user1 // could be different user
-    const dtAmount = web3.utils.toWei('1')
     const serviceIndex = 1 // dummy index
     const consumeFeeAddress = user2 // marketplace fee Collector
-    const consumeFeeAmount = '0' // fee to be collected on top, requires approval
+    const consumeFeeAmount = FEE_ZERO // fee to be collected on top, requires approval
     const consumeFeeToken = contracts.daiAddress // token address for the feeAmount, in this case DAI
 
     // we reuse a DT created in a previous test
     const dtContract = new web3.eth.Contract(ERC20Template.abi as AbiItem[], dtAddress)
     expect(await dtContract.methods.balanceOf(user1).call()).to.equal('0')
 
-    // dt owner mint dtAmount to user1
-    await dtContract.methods.mint(user1, dtAmount).send({ from: factoryOwner })
+    // dt owner mint DATA_TOKEN_AMOUNT to user1
+    await dtContract.methods.mint(user1, DATA_TOKEN_AMOUNT).send({ from: factoryOwner })
 
-    // user1 approves NFTFactory to move his dtAmount
+    // user1 approves NFTFactory to move his DATA_TOKEN_AMOUNT
     await dtContract.methods
-      .approve(contracts.erc721FactoryAddress, dtAmount)
+      .approve(contracts.erc721FactoryAddress, DATA_TOKEN_AMOUNT)
       .send({ from: user1 })
 
     // we reuse another DT created in a previous test
     const dtContract2 = new web3.eth.Contract(ERC20Template.abi as AbiItem[], dtAddress2)
     expect(await dtContract2.methods.balanceOf(user1).call()).to.equal('0')
 
-    // dt owner mint dtAmount to user1
-    await dtContract2.methods.mint(user1, dtAmount).send({ from: factoryOwner })
-    // user1 approves NFTFactory to move his dtAmount
+    // dt owner mint DATA_TOKEN_AMOUNT to user1
+    await dtContract2.methods.mint(user1, DATA_TOKEN_AMOUNT).send({ from: factoryOwner })
+    // user1 approves NFTFactory to move his DATA_TOKEN_AMOUNT
     await dtContract2.methods
-      .approve(contracts.erc721FactoryAddress, dtAmount)
+      .approve(contracts.erc721FactoryAddress, DATA_TOKEN_AMOUNT)
       .send({ from: user1 })
 
     // we check user1 has enought DTs
-    expect(await dtContract.methods.balanceOf(user1).call()).to.equal(dtAmount)
-    expect(await dtContract2.methods.balanceOf(user1).call()).to.equal(dtAmount)
+    expect(await dtContract.methods.balanceOf(user1).call()).to.equal(DATA_TOKEN_AMOUNT)
+    expect(await dtContract2.methods.balanceOf(user1).call()).to.equal(DATA_TOKEN_AMOUNT)
 
     const providerData = JSON.stringify({ timeout: 0 })
     const providerValidUntil = '0'
