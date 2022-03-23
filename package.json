@@ -34,6 +34,7 @@
     "test:dt": "npm run mocha -- 'test/unit/tokens/Datatoken.test.ts'",
     "test:nftDt": "npm run mocha -- 'test/unit/tokens/Nft.test.ts'",
     "test:factory": "npm run mocha -- 'test/unit/NftFactory.test.ts'",
+    "test:helpers": "npm run mocha -- 'test/unit/DdoHelpers.test.ts'",
     "test:router": "npm run mocha -- 'test/unit/pools/Router.test.ts'",
     "test:publishAll": "npm run mocha -- 'test/integration/PublishFlows.test.ts'",
     "test:unit": "npm run mocha -- 'test/unit/**/*.test.ts'",
