@@ -18,6 +18,17 @@ import {
   PoolCreationParams
 } from '../../../src/@types'
 
+const VESTING_AMOUNT = '10000'
+const CAP_AMOUNT = '1000000'
+const NFT_NAME = '72120Bundle'
+const NFT_SYMBOL = '72Bundle'
+const TOKEN_URI = 'https://oceanprotocol.com/nft/'
+const ERC20_NAME = 'ERC20B1'
+const ERC20_SYMBOL = 'ERC20DT1Symbol'
+const RATE = '1'
+const FEE = '0.001'
+const FEE_ZERO = '0'
+
 describe('Nft Factory test', () => {
   let factoryOwner: string
   let user1: string
@@ -37,14 +48,6 @@ describe('Nft Factory test', () => {
 
   it('should deploy contracts', async () => {
     contracts = await deployContracts(web3, factoryOwner)
-
-    const daiContract = new web3.eth.Contract(
-      MockERC20.abi as AbiItem[],
-      contracts.daiAddress
-    )
-    await daiContract.methods
-      .approve(contracts.erc721FactoryAddress, web3.utils.toWei('10000'))
-      .send({ from: factoryOwner })
   })
 
   it('should initiate NFTFactory instance', async () => {
@@ -61,6 +64,7 @@ describe('Nft Factory test', () => {
     assert(nftTemplate.isActive === true)
     assert(nftTemplate.templateAddress === contracts.erc721TemplateAddress)
   })
+
   it('#getTokenTemplate - should return Token template struct', async () => {
     const tokenTemplate = await nftFactory.getTokenTemplate(1)
     assert(tokenTemplate.isActive === true)
@@ -70,10 +74,10 @@ describe('Nft Factory test', () => {
   it('#createNftwithErc - should create an NFT and a Datatoken ', async () => {
     // we prepare transaction parameters objects
     const nftData: NftCreateData = {
-      name: '72120Bundle',
-      symbol: '72Bundle',
+      name: NFT_NAME,
+      symbol: NFT_SYMBOL,
       templateIndex: 1,
-      tokenURI: 'https://oceanprotocol.com/nft/'
+      tokenURI: TOKEN_URI
     }
 
     const ercParams: Erc20CreateParams = {
@@ -81,11 +85,11 @@ describe('Nft Factory test', () => {
       minter: factoryOwner,
       feeManager: user2,
       mpFeeAddress: user1,
-      feeToken: '0x0000000000000000000000000000000000000000',
-      cap: '10000',
-      feeAmount: '0',
-      name: 'ERC20B1',
-      symbol: 'ERC20DT1Symbol'
+      feeToken: ZERO_ADDRESS,
+      cap: CAP_AMOUNT,
+      feeAmount: FEE_ZERO,
+      name: ERC20_NAME,
+      symbol: ERC20_SYMBOL
     }
 
     const txReceipt = await nftFactory.createNftWithErc20(
@@ -106,10 +110,10 @@ describe('Nft Factory test', () => {
   it('#createNftErcWithPool- should create an NFT, a Datatoken and a pool DT/DAI', async () => {
     // we prepare transaction parameters objects
     const nftData: NftCreateData = {
-      name: '72120Bundle',
-      symbol: '72Bundle',
+      name: NFT_NAME,
+      symbol: NFT_SYMBOL,
       templateIndex: 1,
-      tokenURI: 'https://oceanprotocol.com/nft/'
+      tokenURI: TOKEN_URI
     }
 
     const ercParams: Erc20CreateParams = {
@@ -117,11 +121,11 @@ describe('Nft Factory test', () => {
       minter: user1,
       feeManager: user2,
       mpFeeAddress: user1,
-      feeToken: '0x0000000000000000000000000000000000000000',
-      cap: '1000000',
-      feeAmount: '0',
-      name: 'ERC20B1',
-      symbol: 'ERC20DT1Symbol'
+      feeToken: ZERO_ADDRESS,
+      cap: CAP_AMOUNT,
+      feeAmount: FEE_ZERO,
+      name: ERC20_NAME,
+      symbol: ERC20_SYMBOL
     }
 
     const poolParams: PoolCreationParams = {
@@ -131,14 +135,24 @@ describe('Nft Factory test', () => {
       publisherAddress: factoryOwner,
       marketFeeCollector: factoryOwner,
       poolTemplateAddress: contracts.poolTemplateAddress,
-      rate: '1',
+      rate: RATE,
       baseTokenDecimals: 18,
-      vestingAmount: '10000',
+      vestingAmount: VESTING_AMOUNT,
       vestedBlocks: 2500000,
       initialBaseTokenLiquidity: '2000',
-      swapFeeLiquidityProvider: '0.001',
-      swapFeeMarketRunner: '0.001'
+      swapFeeLiquidityProvider: FEE,
+      swapFeeMarketRunner: FEE
     }
+
+    // approve VESTING_AMOUNT DAI to nftFactory
+    const daiContract = new web3.eth.Contract(
+      MockERC20.abi as AbiItem[],
+      contracts.daiAddress
+    )
+
+    await daiContract.methods
+      .approve(contracts.erc721FactoryAddress, web3.utils.toWei(VESTING_AMOUNT))
+      .send({ from: factoryOwner })
 
     const txReceipt = await nftFactory.createNftErc20WithPool(
       factoryOwner,
@@ -156,10 +170,10 @@ describe('Nft Factory test', () => {
   it('#createNftErcWithFixedRate- should create an NFT, a datatoken and create a Fixed Rate Exchange', async () => {
     // we prepare transaction parameters objects
     const nftData: NftCreateData = {
-      name: '72120Bundle',
-      symbol: '72Bundle',
+      name: NFT_NAME,
+      symbol: NFT_SYMBOL,
       templateIndex: 1,
-      tokenURI: 'https://oceanprotocol.com/nft/'
+      tokenURI: TOKEN_URI
     }
 
     const ercParams: Erc20CreateParams = {
@@ -167,11 +181,11 @@ describe('Nft Factory test', () => {
       minter: factoryOwner,
       feeManager: user2,
       mpFeeAddress: user1,
-      feeToken: '0x0000000000000000000000000000000000000000',
-      cap: '1000000',
-      feeAmount: '0',
-      name: 'ERC20B1',
-      symbol: 'ERC20DT1Symbol'
+      feeToken: ZERO_ADDRESS,
+      cap: CAP_AMOUNT,
+      feeAmount: FEE_ZERO,
+      name: ERC20_NAME,
+      symbol: ERC20_SYMBOL
     }
 
     const freParams: FreCreationParams = {
@@ -181,8 +195,8 @@ describe('Nft Factory test', () => {
       marketFeeCollector: factoryOwner,
       baseTokenDecimals: 18,
       datatokenDecimals: 18,
-      fixedRate: '1',
-      marketFee: '0.001',
+      fixedRate: RATE,
+      marketFee: FEE,
       allowedConsumer: factoryOwner,
       withMint: false
     }
@@ -206,10 +220,10 @@ describe('Nft Factory test', () => {
   it('#createNftErcWithDispenser- should create an NFT, a datatoken and create a Dispenser', async () => {
     // we prepare transaction parameters objects
     const nftData: NftCreateData = {
-      name: '72120Bundle',
-      symbol: '72Bundle',
+      name: NFT_NAME,
+      symbol: NFT_SYMBOL,
       templateIndex: 1,
-      tokenURI: 'https://oceanprotocol.com/nft/'
+      tokenURI: TOKEN_URI
     }
 
     const ercParams: Erc20CreateParams = {
@@ -217,11 +231,11 @@ describe('Nft Factory test', () => {
       minter: factoryOwner,
       feeManager: user2,
       mpFeeAddress: user1,
-      feeToken: '0x0000000000000000000000000000000000000000',
-      cap: '1000000',
-      feeAmount: '0',
-      name: 'ERC20B1',
-      symbol: 'ERC20DT1Symbol'
+      feeToken: ZERO_ADDRESS,
+      cap: CAP_AMOUNT,
+      feeAmount: FEE_ZERO,
+      name: ERC20_NAME,
+      symbol: ERC20_SYMBOL
     }
 
     const dispenserParams = {
@@ -306,9 +320,9 @@ describe('Nft Factory test', () => {
       validUntil: providerValidUntil
     }
     const consumeMarketFee = {
-      consumeMarketFeeAddress: '0x0000000000000000000000000000000000000000',
-      consumeMarketFeeToken: '0x0000000000000000000000000000000000000000',
-      consumeMarketFeeAmount: '0'
+      consumeMarketFeeAddress: ZERO_ADDRESS,
+      consumeMarketFeeToken: ZERO_ADDRESS,
+      consumeMarketFeeAmount: FEE_ZERO
     }
     const orders: TokenOrder[] = [
       {
@@ -340,10 +354,7 @@ describe('Nft Factory test', () => {
   })
 
   it('#checkNFT - should return nftAddress if from the factory, or address(0) if not', async () => {
-    assert(
-      (await nftFactory.checkNFT(dtAddress)) ===
-        '0x0000000000000000000000000000000000000000'
-    )
+    assert((await nftFactory.checkNFT(dtAddress)) === ZERO_ADDRESS)
     assert((await nftFactory.checkNFT(nftAddress)) === nftAddress)
   })
 })
