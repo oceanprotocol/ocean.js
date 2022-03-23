@@ -110,7 +110,7 @@ describe('Nft Factory test', () => {
     // we prepare transaction parameters objects
     const txReceipt = await nftFactory.createNftWithErc20(nftOwner, NFT_DATA, ercParams)
 
-    // EVENTS HAVE BEEN EMITTED
+    // events have been emitted
     expect(txReceipt.events.NFTCreated.event === 'NFTCreated')
     expect(txReceipt.events.TokenCreated.event === 'TokenCreated')
 
@@ -168,7 +168,7 @@ describe('Nft Factory test', () => {
       poolParams
     )
 
-    // EVENTS HAVE BEEN EMITTED
+    // events have been emitted
     expect(txReceipt.events.NFTCreated.event === 'NFTCreated')
     expect(txReceipt.events.TokenCreated.event === 'TokenCreated')
     expect(txReceipt.events.NewPool.event === 'NewPool')
@@ -196,7 +196,7 @@ describe('Nft Factory test', () => {
       freParams
     )
 
-    // EVENTS HAVE BEEN EMITTED
+    // events have been emitted
     expect(txReceipt.events.NFTCreated.event === 'NFTCreated')
     expect(txReceipt.events.TokenCreated.event === 'TokenCreated')
     expect(txReceipt.events.NewFixedRate.event === 'NewFixedRate')
@@ -222,7 +222,7 @@ describe('Nft Factory test', () => {
       dispenserParams
     )
 
-    // EVENTS HAVE BEEN EMITTED
+    // events have been emitted
     expect(txReceipt.events.NFTCreated.event === 'NFTCreated')
     expect(txReceipt.events.TokenCreated.event === 'TokenCreated')
     expect(txReceipt.events.DispenserCreated.event === 'DispenserCreated')
