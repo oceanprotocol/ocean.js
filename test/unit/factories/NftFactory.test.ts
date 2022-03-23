@@ -2,6 +2,7 @@ import { assert, expect } from 'chai'
 import { AbiItem } from 'web3-utils/types'
 import { deployContracts, Addresses } from '../../TestContractHandler'
 import ERC20Template from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC20Template.sol/ERC20Template.json'
+import ERC721Template from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC721Template.sol/ERC721Template.json'
 import MockERC20 from '@oceanprotocol/contracts/artifacts/contracts/utils/mock/MockERC20Decimals.sol/MockERC20Decimals.json'
 import { web3 } from '../../config'
 import {
@@ -9,7 +10,8 @@ import {
   NftCreateData,
   TokenOrder,
   ZERO_ADDRESS,
-  signHash
+  signHash,
+  Nft
 } from '../../../src'
 import {
   ProviderFees,
@@ -30,8 +32,16 @@ const RATE = '1'
 const FEE = '0.001'
 const FEE_ZERO = '0'
 
+const NFT_DATA: NftCreateData = {
+  name: NFT_NAME,
+  symbol: NFT_SYMBOL,
+  templateIndex: 1,
+  tokenURI: NFT_TOKEN_URI
+}
+
 describe('Nft Factory test', () => {
   let factoryOwner: string
+  let nftOwner: string
   let user1: string
   let user2: string
   let contracts: Addresses
@@ -39,12 +49,26 @@ describe('Nft Factory test', () => {
   let dtAddress: string
   let dtAddress2: string
   let nftAddress: string
+  let ercParams: Erc20CreateParams
 
   before(async () => {
     const accounts = await web3.eth.getAccounts()
     factoryOwner = accounts[0]
-    user1 = accounts[1]
-    user2 = accounts[2]
+    nftOwner = accounts[1]
+    user1 = accounts[2]
+    user2 = accounts[3]
+
+    ercParams = {
+      templateIndex: 1,
+      minter: nftOwner,
+      feeManager: user2,
+      mpFeeAddress: user1,
+      feeToken: ZERO_ADDRESS,
+      cap: CAP_AMOUNT,
+      feeAmount: FEE_ZERO,
+      name: ERC20_NAME,
+      symbol: ERC20_SYMBOL
+    }
   })
 
   it('should deploy contracts', async () => {
@@ -72,32 +96,19 @@ describe('Nft Factory test', () => {
     assert(tokenTemplate.templateAddress === contracts.erc20TemplateAddress)
   })
 
+  it('#createNft - should create an NFT', async () => {
+    // we prepare transaction parameters objects
+    const nftAddress = await nftFactory.createNFT(nftOwner, NFT_DATA)
+
+    // we check the created nft
+    const nftDatatoken = new Nft(web3, ERC721Template.abi as AbiItem[])
+    const tokenURI = await nftDatatoken.getTokenURI(nftAddress, 1)
+    assert(tokenURI === NFT_TOKEN_URI)
+  })
+
   it('#createNftwithErc - should create an NFT and a Datatoken ', async () => {
     // we prepare transaction parameters objects
-    const nftData: NftCreateData = {
-      name: NFT_NAME,
-      symbol: NFT_SYMBOL,
-      templateIndex: 1,
-      tokenURI: NFT_TOKEN_URI
-    }
-
-    const ercParams: Erc20CreateParams = {
-      templateIndex: 1,
-      minter: factoryOwner,
-      feeManager: user2,
-      mpFeeAddress: user1,
-      feeToken: ZERO_ADDRESS,
-      cap: CAP_AMOUNT,
-      feeAmount: FEE_ZERO,
-      name: ERC20_NAME,
-      symbol: ERC20_SYMBOL
-    }
-
-    const txReceipt = await nftFactory.createNftWithErc20(
-      factoryOwner,
-      nftData,
-      ercParams
-    )
+    const txReceipt = await nftFactory.createNftWithErc20(nftOwner, NFT_DATA, ercParams)
 
     // EVENTS HAVE BEEN EMITTED
     expect(txReceipt.events.NFTCreated.event === 'NFTCreated')
@@ -110,31 +121,12 @@ describe('Nft Factory test', () => {
 
   it('#createNftErcWithPool- should create an NFT, a Datatoken and a pool DT/DAI', async () => {
     // we prepare transaction parameters objects
-    const nftData: NftCreateData = {
-      name: NFT_NAME,
-      symbol: NFT_SYMBOL,
-      templateIndex: 1,
-      tokenURI: NFT_TOKEN_URI
-    }
-
-    const ercParams: Erc20CreateParams = {
-      templateIndex: 1,
-      minter: user1,
-      feeManager: user2,
-      mpFeeAddress: user1,
-      feeToken: ZERO_ADDRESS,
-      cap: CAP_AMOUNT,
-      feeAmount: FEE_ZERO,
-      name: ERC20_NAME,
-      symbol: ERC20_SYMBOL
-    }
-
     const poolParams: PoolCreationParams = {
       ssContract: contracts.sideStakingAddress,
       baseTokenAddress: contracts.daiAddress,
       baseTokenSender: contracts.erc721FactoryAddress,
-      publisherAddress: factoryOwner,
-      marketFeeCollector: factoryOwner,
+      publisherAddress: nftOwner,
+      marketFeeCollector: nftOwner,
       poolTemplateAddress: contracts.poolTemplateAddress,
       rate: RATE,
       baseTokenDecimals: 18,
@@ -152,12 +144,16 @@ describe('Nft Factory test', () => {
     )
 
     await daiContract.methods
-      .approve(contracts.erc721FactoryAddress, web3.utils.toWei(VESTING_AMOUNT))
+      .transfer(nftOwner, web3.utils.toWei(VESTING_AMOUNT))
       .send({ from: factoryOwner })
 
+    await daiContract.methods
+      .approve(contracts.erc721FactoryAddress, web3.utils.toWei(VESTING_AMOUNT))
+      .send({ from: nftOwner })
+
     const txReceipt = await nftFactory.createNftErc20WithPool(
-      factoryOwner,
-      nftData,
+      nftOwner,
+      NFT_DATA,
       ercParams,
       poolParams
     )
@@ -170,41 +166,22 @@ describe('Nft Factory test', () => {
 
   it('#createNftErcWithFixedRate- should create an NFT, a datatoken and create a Fixed Rate Exchange', async () => {
     // we prepare transaction parameters objects
-    const nftData: NftCreateData = {
-      name: NFT_NAME,
-      symbol: NFT_SYMBOL,
-      templateIndex: 1,
-      tokenURI: NFT_TOKEN_URI
-    }
-
-    const ercParams: Erc20CreateParams = {
-      templateIndex: 1,
-      minter: factoryOwner,
-      feeManager: user2,
-      mpFeeAddress: user1,
-      feeToken: ZERO_ADDRESS,
-      cap: CAP_AMOUNT,
-      feeAmount: FEE_ZERO,
-      name: ERC20_NAME,
-      symbol: ERC20_SYMBOL
-    }
-
     const freParams: FreCreationParams = {
       fixedRateAddress: contracts.fixedRateAddress,
       baseTokenAddress: contracts.daiAddress,
-      owner: factoryOwner,
-      marketFeeCollector: factoryOwner,
+      owner: nftOwner,
+      marketFeeCollector: nftOwner,
       baseTokenDecimals: 18,
       datatokenDecimals: 18,
       fixedRate: RATE,
       marketFee: FEE,
-      allowedConsumer: factoryOwner,
+      allowedConsumer: user1,
       withMint: false
     }
 
     const txReceipt = await nftFactory.createNftErc20WithFixedRate(
-      factoryOwner,
-      nftData,
+      nftOwner,
+      NFT_DATA,
       ercParams,
       freParams
     )
@@ -220,25 +197,6 @@ describe('Nft Factory test', () => {
 
   it('#createNftErcWithDispenser- should create an NFT, a datatoken and create a Dispenser', async () => {
     // we prepare transaction parameters objects
-    const nftData: NftCreateData = {
-      name: NFT_NAME,
-      symbol: NFT_SYMBOL,
-      templateIndex: 1,
-      tokenURI: NFT_TOKEN_URI
-    }
-
-    const ercParams: Erc20CreateParams = {
-      templateIndex: 1,
-      minter: factoryOwner,
-      feeManager: user2,
-      mpFeeAddress: user1,
-      feeToken: ZERO_ADDRESS,
-      cap: CAP_AMOUNT,
-      feeAmount: FEE_ZERO,
-      name: ERC20_NAME,
-      symbol: ERC20_SYMBOL
-    }
-
     const dispenserParams = {
       dispenserAddress: contracts.dispenserAddress,
       maxTokens: '1',
@@ -248,8 +206,8 @@ describe('Nft Factory test', () => {
     }
 
     const txReceipt = await nftFactory.createNftErc20WithDispenser(
-      factoryOwner,
-      nftData,
+      nftOwner,
+      NFT_DATA,
       ercParams,
       dispenserParams
     )
@@ -275,7 +233,7 @@ describe('Nft Factory test', () => {
     expect(await dtContract.methods.balanceOf(user1).call()).to.equal('0')
 
     // dt owner mint DATA_TOKEN_AMOUNT to user1
-    await dtContract.methods.mint(user1, DATA_TOKEN_AMOUNT).send({ from: factoryOwner })
+    await dtContract.methods.mint(user1, DATA_TOKEN_AMOUNT).send({ from: nftOwner })
 
     // user1 approves NFTFactory to move his DATA_TOKEN_AMOUNT
     await dtContract.methods
@@ -287,7 +245,7 @@ describe('Nft Factory test', () => {
     expect(await dtContract2.methods.balanceOf(user1).call()).to.equal('0')
 
     // dt owner mint DATA_TOKEN_AMOUNT to user1
-    await dtContract2.methods.mint(user1, DATA_TOKEN_AMOUNT).send({ from: factoryOwner })
+    await dtContract2.methods.mint(user1, DATA_TOKEN_AMOUNT).send({ from: nftOwner })
     // user1 approves NFTFactory to move his DATA_TOKEN_AMOUNT
     await dtContract2.methods
       .approve(contracts.erc721FactoryAddress, DATA_TOKEN_AMOUNT)
