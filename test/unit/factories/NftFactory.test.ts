@@ -106,7 +106,7 @@ describe('Nft Factory test', () => {
     assert(tokenURI === NFT_TOKEN_URI)
   })
 
-  it('#createNftwithErc - should create an NFT and a Datatoken ', async () => {
+  it('#createNftwithErc - should create an NFT and a Datatoken', async () => {
     // we prepare transaction parameters objects
     const txReceipt = await nftFactory.createNftWithErc20(nftOwner, NFT_DATA, ercParams)
 
@@ -117,6 +117,16 @@ describe('Nft Factory test', () => {
     // stored for later use in startMultipleTokenOrder test
     nftAddress = txReceipt.events.NFTCreated.returnValues.newTokenAddress
     dtAddress = txReceipt.events.TokenCreated.returnValues.newTokenAddress
+  })
+
+  it('#createNftwithErc - should increment nft and token count', async () => {
+    const currentNFTCount = await nftFactory.getCurrentNFTCount()
+    const currentTokenCount = await nftFactory.getCurrentTokenCount()
+
+    await nftFactory.createNftWithErc20(nftOwner, NFT_DATA, ercParams)
+
+    expect((await nftFactory.getCurrentNFTCount()) === currentNFTCount + 1)
+    expect((await nftFactory.getCurrentTokenCount()) === currentTokenCount + 1)
   })
 
   it('#createNftErcWithPool- should create an NFT, a Datatoken and a pool DT/DAI', async () => {
