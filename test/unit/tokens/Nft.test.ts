@@ -4,7 +4,7 @@ import { deployContracts, Addresses } from '../../TestContractHandler'
 import { AbiItem } from 'web3-utils'
 import sha256 from 'crypto-js/sha256'
 import { web3 } from '../../config'
-import { NftFactory, NftCreateData, Nft } from '../../../src'
+import { NftFactory, NftCreateData, Nft, ZERO_ADDRESS } from '../../../src'
 import { MetadataAndTokenURI } from '../../../src/@types/Erc721'
 
 describe('NFT', () => {
@@ -20,6 +20,10 @@ describe('NFT', () => {
   const NFT_NAME = 'NFTName'
   const NFT_SYMBOL = 'NFTSymbol'
   const NFT_TOKEN_URI = 'https://oceanprotocol.com/nft/'
+  const DECRYPTO_URL = 'http://myprovider:8030'
+  const DECRYPTOR_ADDRESS = '0x123'
+  const FEE_ZERO = '0'
+  const CAP_AMOUNT = '10000'
 
   before(async () => {
     const accounts = await web3.eth.getAccounts()
@@ -58,9 +62,9 @@ describe('NFT', () => {
       nftOwner,
       user1,
       user2,
-      '0x0000000000000000000000000000000000000000',
-      '0',
-      '10000',
+      ZERO_ADDRESS,
+      FEE_ZERO,
+      CAP_AMOUNT,
       NFT_NAME,
       NFT_SYMBOL,
       1
@@ -76,9 +80,9 @@ describe('NFT', () => {
         nftOwner,
         user1,
         user2,
-        '0x0000000000000000000000000000000000000000',
-        '0',
-        '10000',
+        ZERO_ADDRESS,
+        FEE_ZERO,
+        CAP_AMOUNT,
         NFT_NAME,
         NFT_SYMBOL,
         1
@@ -268,9 +272,6 @@ describe('NFT', () => {
     assert((await nftDatatoken.getNftOwner(nftAddress)) === nftOwner)
     await nftDatatoken.transferNft(nftAddress, nftOwner, user1, 1)
     assert((await nftDatatoken.getNftOwner(nftAddress)) === user1)
-
-    // console.log(await nftDatatoken.isErc20Deployer(nftAddress, user1))
-    // assert((await nftDatatoken.isErc20Deployer(nftAddress, user1)) === false)
   })
 
   // Clear permisions
@@ -296,8 +297,8 @@ describe('NFT', () => {
   it('#setMetaData - should succeed to update metadata if metadataUpdater', async () => {
     await nftDatatoken.addManager(nftAddress, user1, user1)
     await nftDatatoken.addMetadataUpdater(nftAddress, user1, user1)
-    const metaDataDecryptorUrl = 'http://myprovider:8030'
-    const metaDataDecryptorAddress = '0x123'
+    const metaDataDecryptorUrl = DECRYPTO_URL
+    const metaDataDecryptorAddress = DECRYPTOR_ADDRESS
     const metaDataState = 1
     const data = web3.utils.asciiToHex(user2)
     const dataHash = '0x' + sha256(data).toString()
@@ -319,11 +320,11 @@ describe('NFT', () => {
     const metadata = await nftDatatoken.getMetadata(nftAddress)
     assert(metadata[0] === metaDataDecryptorUrl)
     assert(metadata[1] === metaDataDecryptorAddress)
-    //  assert((await nftDatatoken.getMetadata(nftAddress)).metaDataDecryptorAddress ===  metaDataDecryptorAddress)
   })
+
   it('#setMetaData - should fail to update metadata if NOT metadataUpdater', async () => {
-    const metaDataDecryptorUrl = 'http://myprovider:8030'
-    const metaDataDecryptorAddress = '0x123'
+    const metaDataDecryptorUrl = DECRYPTO_URL
+    const metaDataDecryptorAddress = DECRYPTOR_ADDRESS
     const metaDataState = 1
     const data = web3.utils.asciiToHex(user2)
     const dataHash = '0x' + sha256(data).toString()
@@ -349,6 +350,7 @@ describe('NFT', () => {
       (await nftDatatoken.getNftPermissions(nftAddress, user3)).updateMetadata === false
     )
   })
+
   it('#setMetaDataState - should succeed to update MetadataState if metadataUpdater', async () => {
     await nftDatatoken.addManager(nftAddress, user1, user1)
     await nftDatatoken.addMetadataUpdater(nftAddress, user1, user1)
@@ -389,8 +391,8 @@ describe('NFT', () => {
     const data = web3.utils.asciiToHex(user2)
     const metadataAndTokenURI: MetadataAndTokenURI = {
       metaDataState: 1,
-      metaDataDecryptorUrl: 'http://myprovider:8030',
-      metaDataDecryptorAddress: '0x123',
+      metaDataDecryptorUrl: DECRYPTO_URL,
+      metaDataDecryptorAddress: DECRYPTOR_ADDRESS,
       flags: web3.utils.asciiToHex(user1),
       data: web3.utils.asciiToHex(user1),
       metaDataHash: '0x' + sha256(data).toString(),
@@ -411,7 +413,7 @@ describe('NFT', () => {
     assert(tx.events.MetadataUpdated)
 
     const metadata = await nftDatatoken.getMetadata(nftAddress)
-    assert(metadata[0] === 'http://myprovider:8030')
-    assert(metadata[1] === '0x123')
+    assert(metadata[0] === DECRYPTO_URL)
+    assert(metadata[1] === DECRYPTOR_ADDRESS)
   })
 })
