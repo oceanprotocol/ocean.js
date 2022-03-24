@@ -7,7 +7,7 @@ const configHelperNetworksBase: Config = {
   chainId: null,
   network: 'unknown',
   metadataCacheUri: 'https://v4.aquarius.oceanprotocol.com',
-  nodeUri: 'http://localhost:8545',
+  nodeUri: 'http://127.0.0.1:8545',
   providerUri: 'http://127.0.0.1:8030',
   subgraphUri: null,
   explorerUri: null,
