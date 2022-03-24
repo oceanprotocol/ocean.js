@@ -24,6 +24,7 @@ describe('NFT', () => {
   const DECRYPTOR_ADDRESS = '0x123'
   const FEE_ZERO = '0'
   const CAP_AMOUNT = '10000'
+  const META_DATA_STATE = 1
 
   const NFT_DATA: NftCreateData = {
     name: NFT_NAME,
@@ -311,35 +312,26 @@ describe('NFT', () => {
   it('#setMetaData - should succeed to update metadata if metadataUpdater', async () => {
     await nftDatatoken.addManager(nftAddress, user1, user1)
     await nftDatatoken.addMetadataUpdater(nftAddress, user1, user1)
-    const metaDataDecryptorUrl = DECRYPTO_URL
-    const metaDataDecryptorAddress = DECRYPTOR_ADDRESS
-    const metaDataState = 1
-    const data = web3.utils.asciiToHex(user2)
-    const dataHash = '0x' + sha256(data).toString()
-    const flags = web3.utils.asciiToHex(user2)
     assert(
       (await nftDatatoken.getNftPermissions(nftAddress, user1)).updateMetadata === true
     )
     await nftDatatoken.setMetadata(
       nftAddress,
       user1,
-      metaDataState,
-      metaDataDecryptorUrl,
-      metaDataDecryptorAddress,
-      flags,
-      data,
-      dataHash
+      META_DATA_STATE,
+      DECRYPTO_URL,
+      DECRYPTOR_ADDRESS,
+      web3.utils.asciiToHex(user2),
+      web3.utils.asciiToHex(user2),
+      '0x' + sha256(web3.utils.asciiToHex(user2)).toString()
     )
 
     const metadata = await nftDatatoken.getMetadata(nftAddress)
-    assert(metadata[0] === metaDataDecryptorUrl)
-    assert(metadata[1] === metaDataDecryptorAddress)
+    assert(metadata[0] === DECRYPTO_URL)
+    assert(metadata[1] === DECRYPTOR_ADDRESS)
   })
 
   it('#setMetaData - should fail to update metadata if NOT metadataUpdater', async () => {
-    const metaDataDecryptorUrl = DECRYPTO_URL
-    const metaDataDecryptorAddress = DECRYPTOR_ADDRESS
-    const metaDataState = 1
     const data = web3.utils.asciiToHex(user2)
     const dataHash = '0x' + sha256(data).toString()
     const flags = web3.utils.asciiToHex(user2)
@@ -350,12 +342,12 @@ describe('NFT', () => {
       await nftDatatoken.setMetadata(
         nftAddress,
         user3,
-        metaDataState,
-        metaDataDecryptorUrl,
-        metaDataDecryptorAddress,
-        flags,
-        data,
-        dataHash
+        META_DATA_STATE,
+        DECRYPTO_URL,
+        DECRYPTOR_ADDRESS,
+        web3.utils.asciiToHex(user2),
+        web3.utils.asciiToHex(user2),
+        '0x' + sha256(web3.utils.asciiToHex(user2)).toString()
       )
       assert(false)
     } catch (e) {
@@ -406,7 +398,7 @@ describe('NFT', () => {
   it('#setMetaDataAndTokenURI - should update tokenURI and set metadata', async () => {
     const data = web3.utils.asciiToHex(user2)
     const metadataAndTokenURI: MetadataAndTokenURI = {
-      metaDataState: 1,
+      metaDataState: META_DATA_STATE,
       metaDataDecryptorUrl: DECRYPTO_URL,
       metaDataDecryptorAddress: DECRYPTOR_ADDRESS,
       flags: web3.utils.asciiToHex(user1),
