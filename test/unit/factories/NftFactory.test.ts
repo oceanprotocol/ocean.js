@@ -20,25 +20,6 @@ import {
   PoolCreationParams
 } from '../../../src/@types'
 
-const VESTING_AMOUNT = '10000'
-const CAP_AMOUNT = '1000000'
-const DATA_TOKEN_AMOUNT = web3.utils.toWei('1')
-const NFT_NAME = '72120Bundle'
-const NFT_SYMBOL = '72Bundle'
-const NFT_TOKEN_URI = 'https://oceanprotocol.com/nft/'
-const ERC20_NAME = 'ERC20B1'
-const ERC20_SYMBOL = 'ERC20DT1Symbol'
-const RATE = '1'
-const FEE = '0.001'
-const FEE_ZERO = '0'
-
-const NFT_DATA: NftCreateData = {
-  name: NFT_NAME,
-  symbol: NFT_SYMBOL,
-  templateIndex: 1,
-  tokenURI: NFT_TOKEN_URI
-}
-
 describe('Nft Factory test', () => {
   let factoryOwner: string
   let nftOwner: string
@@ -50,6 +31,25 @@ describe('Nft Factory test', () => {
   let dtAddress2: string
   let nftAddress: string
   let ercParams: Erc20CreateParams
+
+  const VESTING_AMOUNT = '10000'
+  const CAP_AMOUNT = '1000000'
+  const DATA_TOKEN_AMOUNT = web3.utils.toWei('1')
+  const NFT_NAME = '72120Bundle'
+  const NFT_SYMBOL = '72Bundle'
+  const NFT_TOKEN_URI = 'https://oceanprotocol.com/nft/'
+  const ERC20_NAME = 'ERC20B1'
+  const ERC20_SYMBOL = 'ERC20DT1Symbol'
+  const RATE = '1'
+  const FEE = '0.001'
+  const FEE_ZERO = '0'
+
+  const NFT_DATA: NftCreateData = {
+    name: NFT_NAME,
+    symbol: NFT_SYMBOL,
+    templateIndex: 1,
+    tokenURI: NFT_TOKEN_URI
+  }
 
   before(async () => {
     const accounts = await web3.eth.getAccounts()
