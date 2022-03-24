@@ -288,6 +288,31 @@ describe('NFT', () => {
     assert((await nftDatatoken.getNftOwner(nftAddress)) === user1)
   })
 
+  // Safe transfer test
+  it('#safeTransferNft - should fail to transfer the NFT and clean all permissions, if NOT NFT Owner', async () => {
+    // return the nft to nftOwner to repeat transfer tests
+    await nftDatatoken.transferNft(nftAddress, user1, nftOwner, 1)
+
+    assert((await nftDatatoken.getNftOwner(nftAddress)) !== user1)
+
+    try {
+      await nftDatatoken.safeTransferNft(nftAddress, user1, user1, 1)
+      assert(false)
+    } catch (e) {
+      assert(e.message === 'Caller is not NFT Owner')
+    }
+  })
+
+  it('#safeTransferNft - should transfer the NFT and clean all permissions, set new owner as manager', async () => {
+    await nftDatatoken.addManager(nftAddress, nftOwner, user2)
+    await nftDatatoken.addErc20Deployer(nftAddress, user2, user1)
+    assert((await nftDatatoken.isErc20Deployer(nftAddress, user1)) === true)
+
+    assert((await nftDatatoken.getNftOwner(nftAddress)) === nftOwner)
+    await nftDatatoken.safeTransferNft(nftAddress, nftOwner, user1, 1)
+    assert((await nftDatatoken.getNftOwner(nftAddress)) === user1)
+  })
+
   // Clear permisions
   it('#cleanPermissions - should fail to cleanPermissions if NOT NFTOwner', async () => {
     try {
