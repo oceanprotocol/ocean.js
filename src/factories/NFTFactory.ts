@@ -492,14 +492,14 @@ export class NftFactory {
     if ((await this.getOwner()) !== address) {
       throw new Error(`Caller is not Factory Owner`)
     }
-    if (templateIndex > (await this.getCurrentNFTTemplateCount())) {
+    if (templateIndex > (await this.getCurrentTokenTemplateCount())) {
       throw new Error(`Template index doesnt exist`)
     }
 
     if (templateIndex === 0) {
       throw new Error(`Template index cannot be ZERO`)
     }
-    if ((await this.getNFTTemplate(templateIndex)).isActive === false) {
+    if ((await this.getTokenTemplate(templateIndex)).isActive === false) {
       throw new Error(`Template is already disabled`)
     }
     const estGas = await this.estGasDisableTokenTemplate(address, templateIndex)
@@ -551,7 +551,7 @@ export class NftFactory {
     if ((await this.getOwner()) !== address) {
       throw new Error(`Caller is not Factory Owner`)
     }
-    if (templateIndex > (await this.getCurrentNFTTemplateCount())) {
+    if (templateIndex > (await this.getCurrentTokenTemplateCount())) {
       throw new Error(`Template index doesnt exist`)
     }
 
