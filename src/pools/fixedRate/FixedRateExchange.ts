@@ -1,6 +1,4 @@
 import defaultFixedRateExchangeAbi from '@oceanprotocol/contracts/artifacts/contracts/pools/fixedRate/FixedRateExchange.sol/FixedRateExchange.json'
-import defaultErc20Abi from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC20Template.sol/ERC20Template.json'
-import BigNumber from 'bignumber.js'
 import { TransactionReceipt } from 'web3-core'
 import { Contract } from 'web3-eth-contract'
 import { AbiItem } from 'web3-utils/types'
@@ -48,10 +46,12 @@ export interface FixedPriceSwap {
   datatokenAmount: string
 }
 
+/* eslint-disable no-unused-vars */
 export enum FixedRateCreateProgressStep {
   CreatingExchange,
   ApprovingDatatoken
 }
+/* eslint-enable no-unused-vars */
 
 export class FixedRateExchange {
   public GASLIMIT_DEFAULT = 1000000
@@ -457,7 +457,6 @@ export class FixedRateExchange {
     const exchange = await this.getExchange(exchangeId)
     if (!exchange) return null
     if (exchange.active === true) return null
-    const gasLimitDefault = this.GASLIMIT_DEFAULT
 
     const estGas = await this.estActivate(address, exchangeId)
     const trxReceipt = await this.contract.methods.toggleExchangeState(exchangeId).send({
@@ -743,7 +742,6 @@ export class FixedRateExchange {
     const exchange = await this.getExchange(exchangeId)
     if (!exchange) return null
     if (exchange.withMint === true) return null
-    const gasLimitDefault = this.GASLIMIT_DEFAULT
 
     const estGas = await this.estActivateMint(address, exchangeId)
     const trxReceipt = await this.contract.methods
