@@ -1,5 +1,4 @@
 import { assert } from 'chai'
-import ERC721Factory from '@oceanprotocol/contracts/artifacts/contracts/ERC721Factory.sol/ERC721Factory.json'
 import ERC721Template from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC721Template.sol/ERC721Template.json'
 import { deployContracts, Addresses } from '../../TestContractHandler'
 import { AbiItem } from 'web3-utils'
@@ -18,10 +17,9 @@ describe('NFT', () => {
   let nftFactory: NftFactory
   let nftAddress: string
 
-  const nftName = 'NFTName'
-  const nftSymbol = 'NFTSymbol'
-  const publishMarketFeeAdress = '0xeE9300b7961e0a01d9f0adb863C7A227A07AaD75'
-  const oceanAddress = '0x967da4048cd07ab37855c090aaf366e4ce1b9f48'
+  const NFT_NAME = 'NFTName'
+  const NFT_SYMBOL = 'NFTSymbol'
+  const NFT_TOKEN_URI = 'https://oceanprotocol.com/nft/'
 
   before(async () => {
     const accounts = await web3.eth.getAccounts()
@@ -36,24 +34,21 @@ describe('NFT', () => {
   })
 
   it('should initialize NFTFactory instance and create a new NFT', async () => {
-    nftFactory = new NftFactory(
-      contracts.erc721FactoryAddress,
-      web3,
-      ERC721Factory.abi as AbiItem[]
-    )
+    nftFactory = new NftFactory(contracts.erc721FactoryAddress, web3)
     const nftData: NftCreateData = {
-      name: nftName,
-      symbol: nftSymbol,
+      name: NFT_NAME,
+      symbol: NFT_SYMBOL,
       templateIndex: 1,
-      tokenURI: 'https://oceanprotocol.com/nft/'
+      tokenURI: NFT_TOKEN_URI
     }
 
     nftAddress = await nftFactory.createNFT(nftOwner, nftData)
     nftDatatoken = new Nft(web3, ERC721Template.abi as AbiItem[])
   })
+
   it('#getTokenURI', async () => {
     const tokenURI = await nftDatatoken.getTokenURI(nftAddress, 1)
-    assert(tokenURI === 'https://oceanprotocol.com/nft/')
+    assert(tokenURI === NFT_TOKEN_URI)
   })
 
   it('#createERC20 - should create a new ERC20 DT from NFT contract', async () => {
@@ -66,8 +61,8 @@ describe('NFT', () => {
       '0x0000000000000000000000000000000000000000',
       '0',
       '10000',
-      nftName,
-      nftSymbol,
+      NFT_NAME,
+      NFT_SYMBOL,
       1
     )
     assert(erc20Address !== null)
@@ -84,8 +79,8 @@ describe('NFT', () => {
         '0x0000000000000000000000000000000000000000',
         '0',
         '10000',
-        nftName,
-        nftSymbol,
+        NFT_NAME,
+        NFT_SYMBOL,
         1
       )
     } catch (e) {
