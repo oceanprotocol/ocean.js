@@ -87,6 +87,7 @@ describe('NFT', () => {
         NFT_SYMBOL,
         1
       )
+      assert(false)
     } catch (e) {
       assert(e.message === 'Caller is not ERC20Deployer')
     }
@@ -104,6 +105,7 @@ describe('NFT', () => {
   it('#addManager - should fail to add a new Manager, if NOT NFT Owner', async () => {
     try {
       await nftDatatoken.addManager(nftAddress, user1, user1)
+      assert(false)
     } catch (e) {
       assert(e.message === 'Caller is not NFT Owner')
     }
@@ -120,6 +122,7 @@ describe('NFT', () => {
   it('#removeManager - should fail to remove a new Manager, if NOT NFT Owner', async () => {
     try {
       await nftDatatoken.removeManager(nftAddress, user1, nftOwner)
+      assert(false)
     } catch (e) {
       assert(e.message === 'Caller is not NFT Owner')
     }
@@ -137,6 +140,7 @@ describe('NFT', () => {
   it('#addManager - should fail to add a new Manager, if NOT NFT Owner', async () => {
     try {
       await nftDatatoken.addManager(nftAddress, user1, user1)
+      assert(false)
     } catch (e) {
       assert(e.message === 'Caller is not NFT Owner')
     }
@@ -145,6 +149,7 @@ describe('NFT', () => {
   it('#addERC20Deployer - should fail to add ERC20deployer if NOT Manager', async () => {
     try {
       await nftDatatoken.addErc20Deployer(nftAddress, user1, user1)
+      assert(false)
     } catch (e) {
       assert(e.message === 'Caller is not Manager')
     }
@@ -163,6 +168,7 @@ describe('NFT', () => {
     assert((await nftDatatoken.isErc20Deployer(nftAddress, user1)) === true)
     try {
       await nftDatatoken.removeErc20Deployer(nftAddress, user1, user1)
+      assert(false)
     } catch (e) {
       assert(e.message === 'Caller is not Manager nor ERC20Deployer')
     }
@@ -173,6 +179,7 @@ describe('NFT', () => {
     assert((await nftDatatoken.isErc20Deployer(nftAddress, user1)) === true)
     try {
       await nftDatatoken.removeErc20Deployer(nftAddress, user1, user1)
+      assert(false)
     } catch (e) {
       assert(e.message === 'Caller is not Manager nor ERC20Deployer')
     }
@@ -195,6 +202,7 @@ describe('NFT', () => {
   it('#addMetadataUpdate - should fail to add Metadata Updater if NOT Manager', async () => {
     try {
       await nftDatatoken.addMetadataUpdater(nftAddress, user1, user1)
+      assert(false)
     } catch (e) {
       assert(e.message === 'Caller is not Manager')
     }
@@ -215,6 +223,7 @@ describe('NFT', () => {
   it('#removeMetadataUpdate - should fail to remove Metadata Updater if NOT Manager', async () => {
     try {
       await nftDatatoken.removeMetadataUpdater(nftAddress, user1, user1)
+      assert(false)
     } catch (e) {
       assert(e.message === 'Caller is not Manager nor Metadata Updater')
     }
@@ -232,6 +241,7 @@ describe('NFT', () => {
   it('#addStoreUpdater - should fail to add Store Updater if NOT Manager', async () => {
     try {
       await nftDatatoken.addStoreUpdater(nftAddress, user1, user1)
+      assert(false)
     } catch (e) {
       assert(e.message === 'Caller is not Manager')
     }
@@ -248,6 +258,7 @@ describe('NFT', () => {
   it('#removeStoreUpdater - should fail to remove Metadata Updater if NOT Manager', async () => {
     try {
       await nftDatatoken.removeStoreUpdater(nftAddress, user1, user1)
+      assert(false)
     } catch (e) {
       assert(e.message === `Caller is not Manager nor storeUpdater`)
     }
@@ -259,6 +270,7 @@ describe('NFT', () => {
 
     try {
       await nftDatatoken.transferNft(nftAddress, user1, user1, 1)
+      assert(false)
     } catch (e) {
       assert(e.message === 'Caller is not NFT Owner')
     }
@@ -277,7 +289,8 @@ describe('NFT', () => {
   // Clear permisions
   it('#cleanPermissions - should fail to cleanPermissions if NOT NFTOwner', async () => {
     try {
-      await nftDatatoken.cleanPermissions(nftAddress, user1)
+      await nftDatatoken.cleanPermissions(nftAddress, user2)
+      assert(false)
     } catch (e) {
       assert(e.message === 'Caller is not NFT Owner')
     }
@@ -343,6 +356,7 @@ describe('NFT', () => {
         data,
         dataHash
       )
+      assert(false)
     } catch (e) {
       assert(e.message === 'Caller is not Metadata updater')
     }
@@ -375,6 +389,7 @@ describe('NFT', () => {
     )
     try {
       await nftDatatoken.setMetadataState(nftAddress, user3, 1)
+      assert(false)
     } catch (e) {
       assert(e.message === 'Caller is not Metadata updater')
     }
