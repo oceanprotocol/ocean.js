@@ -25,6 +25,13 @@ describe('NFT', () => {
   const FEE_ZERO = '0'
   const CAP_AMOUNT = '10000'
 
+  const NFT_DATA: NftCreateData = {
+    name: NFT_NAME,
+    symbol: NFT_SYMBOL,
+    templateIndex: 1,
+    tokenURI: NFT_TOKEN_URI
+  }
+
   before(async () => {
     const accounts = await web3.eth.getAccounts()
     nftOwner = accounts[0]
@@ -39,14 +46,8 @@ describe('NFT', () => {
 
   it('should initialize NFTFactory instance and create a new NFT', async () => {
     nftFactory = new NftFactory(contracts.erc721FactoryAddress, web3)
-    const nftData: NftCreateData = {
-      name: NFT_NAME,
-      symbol: NFT_SYMBOL,
-      templateIndex: 1,
-      tokenURI: NFT_TOKEN_URI
-    }
 
-    nftAddress = await nftFactory.createNFT(nftOwner, nftData)
+    nftAddress = await nftFactory.createNFT(nftOwner, NFT_DATA)
     nftDatatoken = new Nft(web3, ERC721Template.abi as AbiItem[])
   })
 
