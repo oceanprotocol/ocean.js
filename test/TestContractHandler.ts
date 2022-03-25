@@ -2,10 +2,8 @@ import Web3 from 'web3'
 import { Contract } from 'web3-eth-contract'
 import { AbiItem } from 'web3-utils/types'
 import MockERC20 from '@oceanprotocol/contracts/artifacts/contracts/utils/mock/MockERC20Decimals.sol/MockERC20Decimals.json'
-import fs from 'fs'
-import { homedir } from 'os'
+import { getAddresses } from './config'
 
-const oceanAddress = '0x967da4048cd07ab37855c090aaf366e4ce1b9f48'
 export class TestContractHandler {
   public accounts: string[]
   public ERC721Factory: Contract
@@ -98,17 +96,11 @@ export class TestContractHandler {
   }
 
   public async deployContracts(owner: string, routerABI?: AbiItem | AbiItem[]) {
-    const data = JSON.parse(
-      fs.readFileSync(
-        process.env.ADDRESS_FILE ||
-          `${homedir}/.ocean/ocean-contracts/artifacts/address.json`,
-        'utf8'
-      )
-    )
+    const addresses = getAddresses()
 
     let estGas
-    if (data.development.OPFCommunityFeeCollector) {
-      this.opfCollectorAddress = data.development.OPFCommunityFeeCollector
+    if (addresses.OPFCommunityFeeCollector) {
+      this.opfCollectorAddress = addresses.OPFCommunityFeeCollector
     } else {
       // DEPLOY OPF Fee Collector
       // get est gascost
@@ -134,8 +126,8 @@ export class TestContractHandler {
         })
     }
 
-    if (data.development.poolTemplate) {
-      this.poolTemplateAddress = data.development.poolTemplate
+    if (addresses.poolTemplate) {
+      this.poolTemplateAddress = addresses.poolTemplate
     } else {
       // DEPLOY POOL TEMPLATE
       // get est gascost
@@ -160,8 +152,8 @@ export class TestContractHandler {
           return contract.options.address
         })
     }
-    if (data.development.ERC20Template['1']) {
-      this.template20Address = data.development.ERC20Template['1']
+    if (addresses.ERC20Template['1']) {
+      this.template20Address = addresses.ERC20Template['1']
     } else {
       // DEPLOY ERC20 TEMPLATE
       // get est gascost
@@ -186,8 +178,8 @@ export class TestContractHandler {
           return contract.options.address
         })
     }
-    if (data.development.ERC721Template['1']) {
-      this.template721Address = data.development.ERC721Template['1']
+    if (addresses.ERC721Template['1']) {
+      this.template721Address = addresses.ERC721Template['1']
     } else {
       // DEPLOY ERC721 TEMPLATE
       // get est gascost
@@ -213,8 +205,8 @@ export class TestContractHandler {
         })
     }
 
-    if (data.development.Ocean) {
-      this.oceanAddress = data.development.Ocean
+    if (addresses.Ocean) {
+      this.oceanAddress = addresses.Ocean
     } else {
       // DEPLOY OCEAN MOCK
       // get est gascost
@@ -240,8 +232,8 @@ export class TestContractHandler {
         })
     }
 
-    if (data.development.Router) {
-      this.routerAddress = data.development.Router
+    if (addresses.Router) {
+      this.routerAddress = addresses.Router
     } else {
       // DEPLOY ROUTER
       estGas = await this.Router.deploy({
@@ -278,8 +270,8 @@ export class TestContractHandler {
         })
     }
 
-    if (data.development.Staking) {
-      this.sideStakingAddress = data.development.Staking
+    if (addresses.Staking) {
+      this.sideStakingAddress = addresses.Staking
     } else {
       // DEPLOY SIDE STAKING
       estGas = await this.SideStaking.deploy({
@@ -306,8 +298,8 @@ export class TestContractHandler {
 
     // DEPLOY FIXED RATE
 
-    if (data.development.FixedPrice) {
-      this.fixedRateAddress = data.development.FixedPrice
+    if (addresses.FixedPrice) {
+      this.fixedRateAddress = addresses.FixedPrice
     } else {
       estGas = await this.FixedRate.deploy({
         data: this.FixedRateBytecode,
@@ -333,8 +325,8 @@ export class TestContractHandler {
 
     // DEPLOY Dispenser
 
-    if (data.development.Dispenser) {
-      this.dispenserAddress = data.development.Dispenser
+    if (addresses.Dispenser) {
+      this.dispenserAddress = addresses.Dispenser
     } else {
       estGas = await this.Dispenser.deploy({
         data: this.DispenserBytecode,
@@ -360,8 +352,8 @@ export class TestContractHandler {
 
     // DEPLOY ERC721 FACTORY
 
-    if (data.development.ERC721Factory) {
-      this.factory721Address = data.development.ERC721Factory
+    if (addresses.ERC721Factory) {
+      this.factory721Address = addresses.ERC721Factory
     } else {
       estGas = await this.ERC721Factory.deploy({
         data: this.ERC721FactoryBytecode,
@@ -398,8 +390,8 @@ export class TestContractHandler {
 
     // DEPLOY USDC MOCK
 
-    if (data.development.MockUSDC) {
-      this.usdcAddress = data.development.MockUSDC
+    if (addresses.MockUSDC) {
+      this.usdcAddress = addresses.MockUSDC
     } else {
       // get est gascost
       estGas = await this.MockERC20.deploy({
@@ -426,8 +418,8 @@ export class TestContractHandler {
 
     // DEPLOY DAI MOCK
 
-    if (data.development.MockDAI) {
-      this.daiAddress = data.development.MockDAI
+    if (addresses.MockDAI) {
+      this.daiAddress = addresses.MockDAI
     } else {
       // get est gascost
       estGas = await this.MockERC20.deploy({
@@ -452,7 +444,7 @@ export class TestContractHandler {
         })
     }
 
-    if (!data.development.Router) {
+    if (!addresses.Router) {
       const RouterContract = new this.web3.eth.Contract(routerABI, this.routerAddress)
 
       await RouterContract.methods
