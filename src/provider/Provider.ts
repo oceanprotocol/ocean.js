@@ -144,17 +144,13 @@ export class Provider {
     const path = this.getEndpointURL(serviceEndpoints, 'encrypt')
       ? this.getEndpointURL(serviceEndpoints, 'encrypt').urlPath
       : null
-
-    const bodyData = Buffer.from(JSON.stringify(data), 'utf-8').toString()
     if (!path) return null
     try {
       const response = await fetch(path, {
         method: 'POST',
-        //  body: JSON.stringify(data),
-        body: bodyData,
+        body: JSON.stringify(data),
         headers: {
           'Content-Type': 'application/octet-stream'
-          // not working  'Content-Type': 'application/octet-stream; charset:utf-8',
         },
         signal: signal
       })
