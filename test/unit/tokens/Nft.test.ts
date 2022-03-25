@@ -1,5 +1,4 @@
 import { assert } from 'chai'
-import Web3 from 'web3'
 import PoolTemplate from '@oceanprotocol/contracts/artifacts/contracts/pools/balancer/BPool.sol/BPool.json'
 import ERC721Factory from '@oceanprotocol/contracts/artifacts/contracts/ERC721Factory.sol/ERC721Factory.json'
 import ERC721Template from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC721Template.sol/ERC721Template.json'
@@ -10,13 +9,11 @@ import Dispenser from '@oceanprotocol/contracts/artifacts/contracts/pools/dispen
 import FixedRate from '@oceanprotocol/contracts/artifacts/contracts/pools/fixedRate/FixedRateExchange.sol/FixedRateExchange.json'
 import OPFCollector from '@oceanprotocol/contracts/artifacts/contracts/communityFee/OPFCommunityFeeCollector.sol/OPFCommunityFeeCollector.json'
 import { TestContractHandler } from '../../TestContractHandler'
-import { NftFactory, NftCreateData } from '../../../src/factories/NFTFactory'
-import { Nft } from '../../../src/tokens/NFT'
 import { AbiItem } from 'web3-utils'
 import sha256 from 'crypto-js/sha256'
+import { web3 } from '../../config'
+import { NftFactory, NftCreateData, Nft } from '../../../src'
 import { MetadataAndTokenURI } from '../../../src/@types/Erc721'
-
-const web3 = new Web3('http://127.0.0.1:8545')
 
 describe('NFT', () => {
   let nftOwner: string
