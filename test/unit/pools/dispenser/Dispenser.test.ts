@@ -89,7 +89,7 @@ describe('Dispenser flow', () => {
     const ercParams: Erc20CreateParams = {
       templateIndex: 1,
       minter: contracts.accounts[0],
-      feeManager: user3,
+      paymentCollector: user3,
       mpFeeAddress: user2,
       feeToken: '0x0000000000000000000000000000000000000000',
       cap: '10000',
