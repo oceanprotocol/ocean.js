@@ -146,8 +146,8 @@ export async function amountToUnits(
   amount: string
 ): Promise<string> {
   try {
-    const tokenContract = token && new web3.eth.Contract(minAbi, token)
-    let decimals = token ? await tokenContract.methods.decimals().call() : '0'
+    const tokenContract = new web3.eth.Contract(minAbi, token)
+    let decimals = await tokenContract.methods.decimals().call()
     if (decimals === '0') {
       decimals = 18
     }
