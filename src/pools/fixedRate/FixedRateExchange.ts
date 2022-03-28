@@ -584,7 +584,7 @@ export class FixedRateExchange {
       .calcBaseInGivenOutDT(
         exchangeId,
         await this.amountToUnits(fixedRateExchange.datatoken, datatokenAmount),
-        await this.amountToUnits(fixedRateExchange.baseToken, consumeMarketFee)
+        await this.amountToUnits('', consumeMarketFee)
       )
       .call()
 
