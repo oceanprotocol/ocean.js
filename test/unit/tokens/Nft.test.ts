@@ -5,7 +5,7 @@ import { AbiItem } from 'web3-utils'
 import sha256 from 'crypto-js/sha256'
 import { web3 } from '../../config'
 import { NftFactory, NftCreateData, Nft, ZERO_ADDRESS } from '../../../src'
-import { MetadataAndTokenURI } from '../../../src/@types/Erc721'
+import { MetadataAndTokenURI } from '../../../src/@types'
 
 describe('NFT', () => {
   let nftOwner: string
