@@ -357,9 +357,6 @@ describe('NFT', () => {
   })
 
   it('#setMetaData - should fail to update metadata if NOT metadataUpdater', async () => {
-    const data = web3.utils.asciiToHex(user2)
-    const dataHash = '0x' + sha256(data).toString()
-    const flags = web3.utils.asciiToHex(user2)
     assert(
       (await nftDatatoken.getNftPermissions(nftAddress, user3)).updateMetadata === false
     )
