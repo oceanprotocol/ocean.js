@@ -1,8 +1,4 @@
 import { assert } from 'chai'
-import ERC20TemplateEnterprise from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC20TemplateEnterprise.sol/ERC20TemplateEnterprise.json'
-import ERC721Factory from '@oceanprotocol/contracts/artifacts/contracts/ERC721Factory.sol/ERC721Factory.json'
-import ERC721Template from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC721Template.sol/ERC721Template.json'
-import ERC20Template from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC20Template.sol/ERC20Template.json'
 import MockERC20 from '@oceanprotocol/contracts/artifacts/contracts/utils/mock/MockERC20Decimals.sol/MockERC20Decimals.json'
 import { deployContracts, Addresses } from '../../TestContractHandler'
 import { AbiItem } from 'web3-utils'
@@ -69,14 +65,10 @@ describe('Datatoken', () => {
   })
 
   it('should initialize NFTFactory instance and create a new NFT', async () => {
-    nftFactory = new NftFactory(
-      contracts.erc721FactoryAddress,
-      web3,
-      ERC721Factory.abi as AbiItem[]
-    )
+    nftFactory = new NftFactory(contracts.erc721FactoryAddress, web3)
 
     nftAddress = await nftFactory.createNFT(nftOwner, nftData)
-    nftDatatoken = new Nft(web3, ERC721Template.abi as AbiItem[])
+    nftDatatoken = new Nft(web3)
   })
 
   it('#createERC20 - should create a new ERC20 DT from NFT contract', async () => {
@@ -98,11 +90,7 @@ describe('Datatoken', () => {
   })
 
   it('should initialize DT20 Instance', async () => {
-    datatoken = new Datatoken(
-      web3,
-      ERC20Template.abi as AbiItem[],
-      ERC20TemplateEnterprise.abi as AbiItem[]
-    )
+    datatoken = new Datatoken(web3)
   })
 
   it('#mint - should fail to mint DT20, if NOT Minter', async () => {
