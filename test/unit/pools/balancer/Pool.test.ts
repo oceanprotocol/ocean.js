@@ -363,58 +363,58 @@ describe('Pool unit test', () => {
     //   )
     // })
 
-    it('#exitPool- user2 exit the pool receiving both tokens, burning LP', async () => {
-      const BPTAmountIn = '0.5'
-      const minAmountOut = [
-        '1', // min amount out for OCEAN AND DT
-        '1'
-      ]
+    // it('#exitPool- user2 exit the pool receiving both tokens, burning LP', async () => {
+    //   const BPTAmountIn = '0.5'
+    //   const minAmountOut = [
+    //     '1', // min amount out for OCEAN AND DT
+    //     '1'
+    //   ]
 
-      const tx = await pool.exitPool(user2, poolAddress, BPTAmountIn, minAmountOut)
+    //   const tx = await pool.exitPool(user2, poolAddress, BPTAmountIn, minAmountOut)
 
-      assert(tx != null)
+    //   assert(tx != null)
 
-      expect(tx.events.LOG_EXIT[0].returnValues.tokenOut).to.equal(erc20Token)
-      expect(tx.events.LOG_EXIT[1].returnValues.tokenOut).to.equal(contracts.daiAddress)
-    })
+    //   expect(tx.events.LOG_EXIT[0].returnValues.tokenOut).to.equal(erc20Token)
+    //   expect(tx.events.LOG_EXIT[1].returnValues.tokenOut).to.equal(contracts.daiAddress)
+    // })
 
-    it('#exitswapPoolAmountIn- user2 exit the pool receiving only DAI', async () => {
-      const BPTAmountIn = '0.5'
-      const minDAIOut = '0.5'
+    // it('#exitswapPoolAmountIn- user2 exit the pool receiving only DAI', async () => {
+    //   const BPTAmountIn = '0.5'
+    //   const minDAIOut = '0.5'
 
-      const tx = await pool.exitswapPoolAmountIn(
-        user2,
-        poolAddress,
-        BPTAmountIn,
-        minDAIOut
-      )
+    //   const tx = await pool.exitswapPoolAmountIn(
+    //     user2,
+    //     poolAddress,
+    //     BPTAmountIn,
+    //     minDAIOut
+    //   )
 
-      assert(tx != null)
+    //   assert(tx != null)
 
-      expect(tx.events.LOG_EXIT[0].returnValues.tokenOut).to.equal(contracts.daiAddress)
+    //   expect(tx.events.LOG_EXIT[0].returnValues.tokenOut).to.equal(contracts.daiAddress)
 
-      // DTs were also unstaked in the same transaction (went to the staking contract)
-      expect(tx.events.LOG_EXIT[1].returnValues.tokenOut).to.equal(erc20Token)
-    })
+    //   // DTs were also unstaked in the same transaction (went to the staking contract)
+    //   expect(tx.events.LOG_EXIT[1].returnValues.tokenOut).to.equal(erc20Token)
+    // })
 
-    it('#exitswapExternAmountOut- user2 exit the pool receiving only DAI', async () => {
-      const maxBTPIn = '0.5'
-      const exactDAIOut = '1'
+    // it('#exitswapExternAmountOut- user2 exit the pool receiving only DAI', async () => {
+    //   const maxBTPIn = '0.5'
+    //   const exactDAIOut = '1'
 
-      const tx = await pool.exitswapPoolAmountIn(
-        user2,
-        poolAddress,
-        maxBTPIn,
-        exactDAIOut
-      )
+    //   const tx = await pool.exitswapPoolAmountIn(
+    //     user2,
+    //     poolAddress,
+    //     maxBTPIn,
+    //     exactDAIOut
+    //   )
 
-      assert(tx != null)
+    //   assert(tx != null)
 
-      expect(tx.events.LOG_EXIT[0].returnValues.tokenOut).to.equal(contracts.daiAddress)
+    //   expect(tx.events.LOG_EXIT[0].returnValues.tokenOut).to.equal(contracts.daiAddress)
 
-      // DTs were also unstaked in the same transaction (went to the staking contract)
-      expect(tx.events.LOG_EXIT[1].returnValues.tokenOut).to.equal(erc20Token)
-    })
+    //   // DTs were also unstaked in the same transaction (went to the staking contract)
+    //   expect(tx.events.LOG_EXIT[1].returnValues.tokenOut).to.equal(erc20Token)
+    // })
 
     it('#getAmountInExactOut- should get the amount in for exact out', async () => {
       const maxBTPIn = '0.5'
@@ -888,39 +888,39 @@ describe('Pool unit test', () => {
     //   )
     // })
 
-    it('#exitPool- user2 exit the pool receiving both tokens, burning LP', async () => {
-      const BPTAmountIn = '0.5'
-      const minAmountOut = [
-        '1', // min amount out for USDC AND DT
-        '1'
-      ]
+    // it('#exitPool- user2 exit the pool receiving both tokens, burning LP', async () => {
+    //   const BPTAmountIn = '0.5'
+    //   const minAmountOut = [
+    //     '1', // min amount out for USDC AND DT
+    //     '1'
+    //   ]
 
-      const tx = await pool.exitPool(user2, poolAddress, BPTAmountIn, minAmountOut)
+    //   const tx = await pool.exitPool(user2, poolAddress, BPTAmountIn, minAmountOut)
 
-      assert(tx != null)
+    //   assert(tx != null)
 
-      expect(tx.events.LOG_EXIT[0].returnValues.tokenOut).to.equal(erc20Token)
-      expect(tx.events.LOG_EXIT[1].returnValues.tokenOut).to.equal(contracts.usdcAddress)
-    })
+    //   expect(tx.events.LOG_EXIT[0].returnValues.tokenOut).to.equal(erc20Token)
+    //   expect(tx.events.LOG_EXIT[1].returnValues.tokenOut).to.equal(contracts.usdcAddress)
+    // })
 
-    it('#exitswapPoolAmountIn- user2 exit the pool receiving only USDC', async () => {
-      const BPTAmountIn = '0.5'
-      const minUSDCOut = '0.5'
+    // it('#exitswapPoolAmountIn- user2 exit the pool receiving only USDC', async () => {
+    //   const BPTAmountIn = '0.5'
+    //   const minUSDCOut = '0.5'
 
-      const tx = await pool.exitswapPoolAmountIn(
-        user2,
-        poolAddress,
-        BPTAmountIn,
-        minUSDCOut
-      )
+    //   const tx = await pool.exitswapPoolAmountIn(
+    //     user2,
+    //     poolAddress,
+    //     BPTAmountIn,
+    //     minUSDCOut
+    //   )
 
-      assert(tx != null)
+    //   assert(tx != null)
 
-      expect(tx.events.LOG_EXIT[0].returnValues.tokenOut).to.equal(contracts.usdcAddress)
+    //   expect(tx.events.LOG_EXIT[0].returnValues.tokenOut).to.equal(contracts.usdcAddress)
 
-      // DTs were also unstaked in the same transaction (went to the staking contract)
-      expect(tx.events.LOG_EXIT[1].returnValues.tokenOut).to.equal(erc20Token)
-    })
+    //   // DTs were also unstaked in the same transaction (went to the staking contract)
+    //   expect(tx.events.LOG_EXIT[1].returnValues.tokenOut).to.equal(erc20Token)
+    // })
 
     it('#getAmountInExactOut- should get the amount in for exact out', async () => {
       const maxBTPIn = '0.5'
