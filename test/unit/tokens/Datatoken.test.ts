@@ -35,6 +35,18 @@ describe('Datatoken', () => {
 
   const NFT_NAME = 'NFTName'
   const NFT_SYMBOL = 'NFTSymbol'
+  const NFT_TOKEN_URI = 'https://oceanprotocol.com/nft/'
+  const FEE_ZERO = '0'
+  const CAP_AMOUNT = '10000'
+  const DECIMALS = 18
+  const FIXED_RATE = web3.utils.toWei('1')
+
+  const nftData: NftCreateData = {
+    name: NFT_NAME,
+    symbol: NFT_SYMBOL,
+    templateIndex: 1,
+    tokenURI: NFT_TOKEN_URI
+  }
 
   before(async () => {
     const accounts = await web3.eth.getAccounts()
@@ -62,12 +74,6 @@ describe('Datatoken', () => {
       web3,
       ERC721Factory.abi as AbiItem[]
     )
-    const nftData: NftCreateData = {
-      name: NFT_NAME,
-      symbol: NFT_SYMBOL,
-      templateIndex: 1,
-      tokenURI: 'https://oceanprotocol.com/nft/'
-    }
 
     nftAddress = await nftFactory.createNFT(nftOwner, nftData)
     nftDatatoken = new Nft(web3, ERC721Template.abi as AbiItem[])
@@ -81,9 +87,9 @@ describe('Datatoken', () => {
       nftOwner,
       user1,
       user2,
-      '0x0000000000000000000000000000000000000000',
-      '0',
-      '10000',
+      ZERO_ADDRESS,
+      FEE_ZERO,
+      CAP_AMOUNT,
       NFT_NAME,
       NFT_SYMBOL,
       1
@@ -143,10 +149,10 @@ describe('Datatoken', () => {
       baseTokenAddress: contracts.daiAddress,
       owner: nftOwner,
       marketFeeCollector: nftOwner,
-      baseTokenDecimals: 18,
-      datatokenDecimals: 18,
-      fixedRate: web3.utils.toWei('1'),
-      marketFee: '0'
+      baseTokenDecimals: DECIMALS,
+      datatokenDecimals: DECIMALS,
+      fixedRate: FIXED_RATE,
+      marketFee: FEE_ZERO
     }
     const fre = await datatoken.createFixedRate(datatokenAddress, nftOwner, freParams)
     assert(fre !== null)
@@ -161,10 +167,10 @@ describe('Datatoken', () => {
       baseTokenAddress: contracts.daiAddress,
       owner: nftOwner,
       marketFeeCollector: nftOwner,
-      baseTokenDecimals: 18,
-      datatokenDecimals: 18,
-      fixedRate: web3.utils.toWei('1'),
-      marketFee: '0'
+      baseTokenDecimals: DECIMALS,
+      datatokenDecimals: DECIMALS,
+      fixedRate: FIXED_RATE,
+      marketFee: FEE_ZERO
     }
     try {
       await datatoken.createFixedRate(datatokenAddress, user3, freParams)
@@ -323,7 +329,7 @@ describe('Datatoken', () => {
 
     const providerData = JSON.stringify({ timeout: 0 })
     const providerFeeToken = ZERO_ADDRESS
-    const providerFeeAmount = '0'
+    const providerFeeAmount = FEE_ZERO
     const providerValidUntil = '0'
     const message = web3.utils.soliditySha3(
       { t: 'bytes', v: web3.utils.toHex(web3.utils.asciiToHex(providerData)) },
@@ -368,8 +374,7 @@ describe('Datatoken', () => {
   it('#buyFromDispenserAndOrder- Enterprise method', async () => {
     const providerData = JSON.stringify({ timeout: 0 })
     const providerFeeToken = ZERO_ADDRESS
-    const providerFeeAmount = '0'
-    const dtAmount = web3.utils.toWei('1')
+    const providerFeeAmount = FEE_ZERO
     const message = web3.utils.soliditySha3(
       { t: 'bytes', v: web3.utils.toHex(web3.utils.asciiToHex(providerData)) },
       { t: 'address', v: user3 },
@@ -389,9 +394,9 @@ describe('Datatoken', () => {
       validUntil: providerValidUntil
     }
     const consumeMarketFee = {
-      consumeMarketFeeAddress: '0x0000000000000000000000000000000000000000',
-      consumeMarketFeeToken: '0x0000000000000000000000000000000000000000',
-      consumeMarketFeeAmount: '0'
+      consumeMarketFeeAddress: ZERO_ADDRESS,
+      consumeMarketFeeToken: ZERO_ADDRESS,
+      consumeMarketFeeAmount: FEE_ZERO
     }
     const order: OrderParams = {
       consumer: user1,
@@ -411,7 +416,7 @@ describe('Datatoken', () => {
   it('#buyFromFreAndOrder - Enterprise method ', async () => {
     const providerData = JSON.stringify({ timeout: 0 })
     const providerFeeToken = ZERO_ADDRESS
-    const providerFeeAmount = '0'
+    const providerFeeAmount = FEE_ZERO
     const message = web3.utils.soliditySha3(
       { t: 'bytes', v: web3.utils.toHex(web3.utils.asciiToHex(providerData)) },
       { t: 'address', v: user3 },
@@ -431,9 +436,9 @@ describe('Datatoken', () => {
       validUntil: providerValidUntil
     }
     const consumeMarketFee = {
-      consumeMarketFeeAddress: '0x0000000000000000000000000000000000000000',
-      consumeMarketFeeToken: '0x0000000000000000000000000000000000000000',
-      consumeMarketFeeAmount: '0'
+      consumeMarketFeeAddress: ZERO_ADDRESS,
+      consumeMarketFeeToken: ZERO_ADDRESS,
+      consumeMarketFeeAmount: FEE_ZERO
     }
     const order: OrderParams = {
       consumer: user1,
@@ -447,7 +452,7 @@ describe('Datatoken', () => {
       exchangeId: exchangeId,
       maxBaseTokenAmount: '1',
       swapMarketFee: '0.1',
-      marketFeeAddress: '0x0000000000000000000000000000000000000000'
+      marketFeeAddress: ZERO_ADDRESS
     }
 
     const buyTx = await datatoken.buyFromFreAndOrder(datatokenAddress, user1, order, fre)
