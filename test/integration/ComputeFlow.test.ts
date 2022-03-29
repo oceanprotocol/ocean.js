@@ -142,7 +142,7 @@ describe('Simple compute tests', async () => {
       templateIndex: 1,
       cap: '100000',
       feeAmount: '0',
-      feeManager: '0x0000000000000000000000000000000000000000',
+      paymentCollector: '0x0000000000000000000000000000000000000000',
       feeToken: '0x0000000000000000000000000000000000000000',
       minter: publisherAccount,
       mpFeeAddress: '0x0000000000000000000000000000000000000000'
@@ -191,7 +191,7 @@ describe('Simple compute tests', async () => {
       templateIndex: 1,
       cap: '100000',
       feeAmount: '0',
-      feeManager: '0x0000000000000000000000000000000000000000',
+      paymentCollector: '0x0000000000000000000000000000000000000000',
       feeToken: '0x0000000000000000000000000000000000000000',
       minter: publisherAccount,
       mpFeeAddress: '0x0000000000000000000000000000000000000000'
@@ -338,10 +338,9 @@ describe('Simple compute tests', async () => {
     assert(computeJobs, 'Cannot start compute job')
     const jobStatus = await ProviderInstance.computeStatus(
       providerUrl,
-      null,
+      consumerAccount,
       computeJobs[0].jobId,
-      resolvedDDOAsset.id,
-      consumerAccount
+      resolvedDDOAsset.id
     )
     assert(jobStatus)
   })

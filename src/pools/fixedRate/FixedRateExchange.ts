@@ -156,7 +156,7 @@ export class FixedRateExchange {
    * @param {String} maxBaseTokenAmount max amount of baseToken we want to pay for datatokenAmount
    * @param {String} address User address
    * @param {String} consumeMarketAddress consumeMarketAddress
-   * @param {String} consumeMarketFee consumeMarketFee
+   * @param {String} consumeMarketFee consumeMarketFee in fraction
    * @return {Promise<TransactionReceipt>} transaction receipt
    */
   public async buyDT(
@@ -168,10 +168,7 @@ export class FixedRateExchange {
     consumeMarketFee: string = '0'
   ): Promise<TransactionReceipt> {
     const exchange = await this.getExchange(exchangeId)
-    const consumeMarketFeeFormatted = await this.amountToUnits(
-      exchange.baseToken,
-      consumeMarketFee
-    )
+    const consumeMarketFeeFormatted = this.web3.utils.toWei(consumeMarketFee)
     const dtAmountFormatted = await this.amountToUnits(
       exchange.datatoken,
       datatokenAmount
@@ -255,7 +252,7 @@ export class FixedRateExchange {
    * @param {String} minBaseTokenAmount min amount of baseToken we want to receive back
    * @param {String} address User address
    * @param {String} consumeMarketAddress consumeMarketAddress
-   * @param {String} consumeMarketFee consumeMarketFee
+   * @param {String} consumeMarketFee consumeMarketFee in fraction
    * @return {Promise<TransactionReceipt>} transaction receipt
    */
   public async sellDT(
@@ -267,10 +264,7 @@ export class FixedRateExchange {
     consumeMarketFee: string = '0'
   ): Promise<TransactionReceipt> {
     const exchange = await this.getExchange(exchangeId)
-    const consumeMarketFeeFormatted = await this.amountToUnits(
-      exchange.baseToken,
-      consumeMarketFee
-    )
+    const consumeMarketFeeFormatted = this.web3.utils.toWei(consumeMarketFee)
     const dtAmountFormatted = await this.amountToUnits(
       exchange.datatoken,
       datatokenAmount
@@ -571,7 +565,7 @@ export class FixedRateExchange {
    * calcBaseInGivenOutDT - Calculates how many base tokens are needed to get specified amount of datatokens
    * @param {String} exchangeId ExchangeId
    * @param {string} datatokenAmount Amount of datatokens user wants to buy
-   * @param {String} consumeMarketFee consumeMarketFee
+   * @param {String} consumeMarketFee consumeMarketFee in fraction
    * @return {Promise<PriceAndFees>} how many base tokens are needed and fees
    */
   public async calcBaseInGivenOutDT(
@@ -584,7 +578,7 @@ export class FixedRateExchange {
       .calcBaseInGivenOutDT(
         exchangeId,
         await this.amountToUnits(fixedRateExchange.datatoken, datatokenAmount),
-        await this.amountToUnits(fixedRateExchange.baseToken, consumeMarketFee)
+        this.web3.utils.toWei(consumeMarketFee)
       )
       .call()
 
@@ -613,7 +607,7 @@ export class FixedRateExchange {
    * getBTOut - returns amount in baseToken that user will receive for datatokenAmount sold
    * @param {String} exchangeId ExchangeId
    * @param {Number} datatokenAmount Amount of datatokens
-   * @param {String} consumeMarketFee consumeMarketFee
+   * @param {String} consumeMarketFee consumeMarketFee in fraction
    * @return {Promise<string>} Amount of baseTokens user will receive
    */
   public async getAmountBTOut(
@@ -626,7 +620,7 @@ export class FixedRateExchange {
       .calcBaseOutGivenInDT(
         exchangeId,
         await this.amountToUnits(exchange.datatoken, datatokenAmount),
-        await this.amountToUnits(exchange.baseToken, consumeMarketFee)
+        this.web3.utils.toWei(consumeMarketFee)
       )
       .call()
 

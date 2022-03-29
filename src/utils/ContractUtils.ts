@@ -45,7 +45,7 @@ export function getErcCreationParams(ercParams: Erc20CreateParams): any {
     strings: [ercParams.name || name, ercParams.symbol || symbol],
     addresses: [
       ercParams.minter,
-      ercParams.feeManager,
+      ercParams.paymentCollector,
       ercParams.mpFeeAddress,
       ercParams.feeToken
     ],

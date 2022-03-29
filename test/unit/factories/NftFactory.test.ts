@@ -61,7 +61,7 @@ describe('Nft Factory test', () => {
     ercParams = {
       templateIndex: 1,
       minter: nftOwner,
-      feeManager: user2,
+      paymentCollector: user2,
       mpFeeAddress: user1,
       feeToken: ZERO_ADDRESS,
       cap: CAP_AMOUNT,
