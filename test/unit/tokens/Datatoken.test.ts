@@ -1,7 +1,5 @@
 import { assert } from 'chai'
-import MockERC20 from '@oceanprotocol/contracts/artifacts/contracts/utils/mock/MockERC20Decimals.sol/MockERC20Decimals.json'
 import { deployContracts, Addresses } from '../../TestContractHandler'
-import { AbiItem } from 'web3-utils'
 import { web3 } from '../../config'
 import {
   NftFactory,
@@ -54,14 +52,6 @@ describe('Datatoken', () => {
 
   it('should deploy contracts', async () => {
     contracts = await deployContracts(web3, nftOwner)
-
-    const daiContract = new web3.eth.Contract(
-      MockERC20.abi as AbiItem[],
-      contracts.daiAddress
-    )
-    await daiContract.methods
-      .approve(contracts.erc721FactoryAddress, web3.utils.toWei('10000'))
-      .send({ from: nftOwner })
   })
 
   it('should initialize NFTFactory instance and create a new NFT', async () => {
