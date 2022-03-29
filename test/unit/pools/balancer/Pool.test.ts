@@ -339,29 +339,29 @@ describe('Pool unit test', () => {
     //   expect(tx.events.LOG_JOIN.event === 'LOG_JOIN')
     //   expect(tx.events.LOG_BPT.event === 'LOG_BPT')
     // })
-    it('#joinswapExternAmountIn- user2 should add liquidity, receiving LP tokens', async () => {
-      const daiAmountIn = '100'
-      const minBPTOut = '0.1'
-      await approve(web3, user2, contracts.daiAddress, poolAddress, '100', true)
-      expect(await allowance(web3, contracts.daiAddress, user2, poolAddress)).to.equal(
-        '100'
-      )
-      const tx = await pool.joinswapExternAmountIn(
-        user2,
-        poolAddress,
-        daiAmountIn,
-        minBPTOut
-      )
+    // it('#joinswapExternAmountIn- user2 should add liquidity, receiving LP tokens', async () => {
+    //   const daiAmountIn = '100'
+    //   const minBPTOut = '0.1'
+    //   await approve(web3, user2, contracts.daiAddress, poolAddress, '100', true)
+    //   expect(await allowance(web3, contracts.daiAddress, user2, poolAddress)).to.equal(
+    //     '100'
+    //   )
+    //   const tx = await pool.joinswapExternAmountIn(
+    //     user2,
+    //     poolAddress,
+    //     daiAmountIn,
+    //     minBPTOut
+    //   )
 
-      assert(tx != null)
+    //   assert(tx != null)
 
-      expect(tx.events.LOG_JOIN[0].event === 'LOG_JOIN')
-      expect(tx.events.LOG_BPT.event === 'LOG_BPT')
-      // 2 JOIN EVENTS BECAUSE SIDE STAKING ALSO STAKED DTs, TODO: we should add to whom has been sent in the LOG_BPT event
-      expect(tx.events.LOG_JOIN[0].returnValues.bptAmount).to.equal(
-        tx.events.LOG_JOIN[1].returnValues.bptAmount
-      )
-    })
+    //   expect(tx.events.LOG_JOIN[0].event === 'LOG_JOIN')
+    //   expect(tx.events.LOG_BPT.event === 'LOG_BPT')
+    //   // 2 JOIN EVENTS BECAUSE SIDE STAKING ALSO STAKED DTs, TODO: we should add to whom has been sent in the LOG_BPT event
+    //   expect(tx.events.LOG_JOIN[0].returnValues.bptAmount).to.equal(
+    //     tx.events.LOG_JOIN[1].returnValues.bptAmount
+    //   )
+    // })
 
     it('#exitPool- user2 exit the pool receiving both tokens, burning LP', async () => {
       const BPTAmountIn = '0.5'
@@ -866,27 +866,27 @@ describe('Pool unit test', () => {
     //   expect(tx.events.LOG_JOIN.event === 'LOG_JOIN')
     //   expect(tx.events.LOG_BPT.event === 'LOG_BPT')
     // })
-    it('#joinswapExternAmountIn- user2 should add liquidity, receiving LP tokens', async () => {
-      const usdcAmountIn = '100'
-      const minBPTOut = '0.1'
-      await approve(web3, user2, contracts.usdcAddress, poolAddress, '100', true)
+    // it('#joinswapExternAmountIn- user2 should add liquidity, receiving LP tokens', async () => {
+    //   const usdcAmountIn = '100'
+    //   const minBPTOut = '0.1'
+    //   await approve(web3, user2, contracts.usdcAddress, poolAddress, '100', true)
 
-      const tx = await pool.joinswapExternAmountIn(
-        user2,
-        poolAddress,
-        usdcAmountIn,
-        minBPTOut
-      )
+    //   const tx = await pool.joinswapExternAmountIn(
+    //     user2,
+    //     poolAddress,
+    //     usdcAmountIn,
+    //     minBPTOut
+    //   )
 
-      assert(tx != null)
+    //   assert(tx != null)
 
-      expect(tx.events.LOG_JOIN[0].event === 'LOG_JOIN')
-      expect(tx.events.LOG_BPT.event === 'LOG_BPT')
-      // 2 JOIN EVENTS BECAUSE SIDE STAKING ALSO STAKED DTs, TODO: we should add to whom has been sent in the LOG_BPT event
-      expect(tx.events.LOG_JOIN[0].returnValues.bptAmount).to.equal(
-        tx.events.LOG_JOIN[1].returnValues.bptAmount
-      )
-    })
+    //   expect(tx.events.LOG_JOIN[0].event === 'LOG_JOIN')
+    //   expect(tx.events.LOG_BPT.event === 'LOG_BPT')
+    //   // 2 JOIN EVENTS BECAUSE SIDE STAKING ALSO STAKED DTs, TODO: we should add to whom has been sent in the LOG_BPT event
+    //   expect(tx.events.LOG_JOIN[0].returnValues.bptAmount).to.equal(
+    //     tx.events.LOG_JOIN[1].returnValues.bptAmount
+    //   )
+    // })
 
     it('#exitPool- user2 exit the pool receiving both tokens, burning LP', async () => {
       const BPTAmountIn = '0.5'
