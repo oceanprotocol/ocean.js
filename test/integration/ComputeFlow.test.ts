@@ -338,10 +338,9 @@ describe('Simple compute tests', async () => {
     assert(computeJobs, 'Cannot start compute job')
     const jobStatus = await ProviderInstance.computeStatus(
       providerUrl,
-      null,
+      consumerAccount,
       computeJobs[0].jobId,
-      resolvedDDOAsset.id,
-      consumerAccount
+      resolvedDDOAsset.id
     )
     assert(jobStatus)
   })
