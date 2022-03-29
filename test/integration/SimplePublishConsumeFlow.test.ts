@@ -82,7 +82,7 @@ describe('Simple Publish & consume test', async () => {
       templateIndex: 1,
       cap: '100000',
       feeAmount: '0',
-      feeManager: '0x0000000000000000000000000000000000000000',
+      paymentCollector: '0x0000000000000000000000000000000000000000',
       feeToken: '0x0000000000000000000000000000000000000000',
       minter: publisherAccount,
       mpFeeAddress: '0x0000000000000000000000000000000000000000'
