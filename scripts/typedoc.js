@@ -12,7 +12,7 @@ const { description, version } = libJsPackage
 
 // Setup our paths, relative to project root
 const outPath = './dist/lib.json'
-const files = ['./src/lib.ts']
+const files = ['./src/index.ts']
 
 // specifically point to tsconfig, otherwise TypeDoc fails
 const config = typescript.findConfigFile('./tsconfig.js', typescript.sys.fileExists)
@@ -30,8 +30,8 @@ const generateJson = async () => {
     entryPoints: files
   })
 
-  const src = app.expandInputFiles(files)
-  const project = app.convert(src)
+  const src = app.getEntryPoints()
+  const project = app.converter.convert(src)
 
   // Generate the JSON file
   await app.generateJson(project, outPath)
