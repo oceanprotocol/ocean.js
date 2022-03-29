@@ -103,7 +103,7 @@ describe('Fixed Rate unit test', () => {
       const ercParams: Erc20CreateParams = {
         templateIndex: 1,
         minter: contracts.accounts[0],
-        feeManager: user3,
+        paymentCollector: user3,
         mpFeeAddress: contracts.accounts[0],
         feeToken: ADDRESS_ZERO,
         cap: '1000000',
@@ -419,7 +419,7 @@ describe('Fixed Rate unit test', () => {
       const ercParams: Erc20CreateParams = {
         templateIndex: 1,
         minter: contracts.accounts[0],
-        feeManager: user3,
+        paymentCollector: user3,
         mpFeeAddress: contracts.accounts[0],
         feeToken: ADDRESS_ZERO,
         cap: '1000000',
