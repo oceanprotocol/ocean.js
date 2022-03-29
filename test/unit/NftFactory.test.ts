@@ -348,7 +348,7 @@ describe('Nft Factory test', () => {
   it('#addNFTTemplate - should add a new erc721 token template', async () => {
     const currentNFTTemplateCount = await nftFactory.getCurrentNFTTemplateCount()
 
-    await nftFactory.addNFTTemplate(factoryOwner, contracts.template721Address)
+    await nftFactory.addNFTTemplate(factoryOwner, contracts.erc721TemplateAddress)
 
     expect(
       (await nftFactory.getCurrentNFTTemplateCount()) === currentNFTTemplateCount + 1
@@ -382,7 +382,7 @@ describe('Nft Factory test', () => {
   it('#addTokenTemplate - should add a new erc20 token template', async () => {
     const currentTokenTemplateCount = await nftFactory.getCurrentTokenTemplateCount()
 
-    await nftFactory.addTokenTemplate(factoryOwner, contracts.template20Address)
+    await nftFactory.addTokenTemplate(factoryOwner, contracts.erc20TemplateAddress)
 
     expect(
       (await nftFactory.getCurrentTokenTemplateCount()) === currentTokenTemplateCount + 1
