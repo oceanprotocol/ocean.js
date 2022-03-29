@@ -1,7 +1,7 @@
 export interface Erc20CreateParams {
   templateIndex: number
   minter: string
-  feeManager: string
+  paymentCollector: string
   mpFeeAddress: string
   feeToken: string
   feeAmount: string

@@ -101,7 +101,7 @@ describe('Router unit test', () => {
     const ercParams: Erc20CreateParams = {
       templateIndex: 1,
       minter: factoryOwner,
-      feeManager: user3,
+      paymentCollector: user3,
       mpFeeAddress: factoryOwner,
       feeToken: '0x0000000000000000000000000000000000000000',
       cap: '1000000',
@@ -154,7 +154,7 @@ describe('Router unit test', () => {
     const ercParams2: Erc20CreateParams = {
       templateIndex: 1,
       minter: factoryOwner,
-      feeManager: user3,
+      paymentCollector: user3,
       mpFeeAddress: factoryOwner,
       feeToken: '0x0000000000000000000000000000000000000000',
       cap: '1000000',
