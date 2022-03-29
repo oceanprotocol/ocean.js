@@ -17,7 +17,7 @@ import {
   ZERO_ADDRESS,
   signHash
 } from '../../../src'
-import { ProviderFees, FreCreationParams, FreOrderParams } from '../../../src/@types/'
+import { ProviderFees, FreCreationParams, FreOrderParams } from '../../../src/@types'
 
 describe('Datatoken', () => {
   let nftOwner: string
@@ -33,8 +33,8 @@ describe('Datatoken', () => {
   let fixedRateAddress: string
   let exchangeId: string
 
-  const nftName = 'NFTName'
-  const nftSymbol = 'NFTSymbol'
+  const NFT_NAME = 'NFTName'
+  const NFT_SYMBOL = 'NFTSymbol'
 
   before(async () => {
     const accounts = await web3.eth.getAccounts()
@@ -63,8 +63,8 @@ describe('Datatoken', () => {
       ERC721Factory.abi as AbiItem[]
     )
     const nftData: NftCreateData = {
-      name: nftName,
-      symbol: nftSymbol,
+      name: NFT_NAME,
+      symbol: NFT_SYMBOL,
       templateIndex: 1,
       tokenURI: 'https://oceanprotocol.com/nft/'
     }
@@ -84,8 +84,8 @@ describe('Datatoken', () => {
       '0x0000000000000000000000000000000000000000',
       '0',
       '10000',
-      nftName,
-      nftSymbol,
+      NFT_NAME,
+      NFT_SYMBOL,
       1
     )
     assert(datatokenAddress !== null)
