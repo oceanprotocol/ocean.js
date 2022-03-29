@@ -102,7 +102,7 @@ describe('Publish tests', async () => {
       templateIndex: 1,
       cap: '100000',
       feeAmount: '0',
-      feeManager: ZERO_ADDRESS,
+      paymentCollector: ZERO_ADDRESS,
       feeToken: ZERO_ADDRESS,
       minter: accounts[0],
       mpFeeAddress: ZERO_ADDRESS
@@ -181,7 +181,7 @@ describe('Publish tests', async () => {
       templateIndex: 1,
       cap: '100000',
       feeAmount: '0',
-      feeManager: ZERO_ADDRESS,
+      paymentCollector: ZERO_ADDRESS,
       feeToken: ZERO_ADDRESS,
       minter: accounts[0],
       mpFeeAddress: ZERO_ADDRESS
@@ -257,7 +257,7 @@ describe('Publish tests', async () => {
       templateIndex: 1,
       cap: '100000',
       feeAmount: '0',
-      feeManager: ZERO_ADDRESS,
+      paymentCollector: ZERO_ADDRESS,
       feeToken: ZERO_ADDRESS,
       minter: accounts[0],
       mpFeeAddress: ZERO_ADDRESS
