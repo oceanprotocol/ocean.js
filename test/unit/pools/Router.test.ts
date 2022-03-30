@@ -13,23 +13,16 @@ const { keccak256 } = require('@ethersproject/keccak256')
 
 describe('Router unit test', () => {
   let factoryOwner: string
-  let nftOwner: string
   let user1: string
   let user2: string
-  let user3: string
   let contracts: Addresses
   let router: Router
-  let dtAddress: string
-  let dtAddress2: string
-  let nftAddress: string
 
   before(async () => {
     const accounts = await web3.eth.getAccounts()
     factoryOwner = accounts[0]
-    nftOwner = accounts[1]
-    user1 = accounts[2]
-    user2 = accounts[3]
-    user3 = accounts[4]
+    user1 = accounts[1]
+    user2 = accounts[2]
   })
 
   it('should deploy contracts', async () => {
@@ -83,11 +76,11 @@ describe('Router unit test', () => {
     )
 
     await daiContract.methods
-      .transfer(user2, web3.utils.toWei('2'))
+      .transfer(user1, web3.utils.toWei('2'))
       .send({ from: factoryOwner })
     await daiContract.methods
       .approve(contracts.routerAddress, web3.utils.toWei('2'))
-      .send({ from: user2 })
+      .send({ from: user1 })
 
     // CREATE A FIRST POOL
     // we prepare transaction parameters objects
@@ -101,7 +94,7 @@ describe('Router unit test', () => {
     const ercParams: Erc20CreateParams = {
       templateIndex: 1,
       minter: factoryOwner,
-      paymentCollector: user3,
+      paymentCollector: user2,
       mpFeeAddress: factoryOwner,
       feeToken: '0x0000000000000000000000000000000000000000',
       cap: '1000000',
@@ -154,7 +147,7 @@ describe('Router unit test', () => {
     const ercParams2: Erc20CreateParams = {
       templateIndex: 1,
       minter: factoryOwner,
-      paymentCollector: user3,
+      paymentCollector: user2,
       mpFeeAddress: factoryOwner,
       feeToken: '0x0000000000000000000000000000000000000000',
       cap: '1000000',
@@ -193,15 +186,15 @@ describe('Router unit test', () => {
       ERC20Template.abi as AbiItem[],
       erc20Token
     )
-    // user2 has no dt1
-    expect(await erc20Contract.methods.balanceOf(user2).call()).to.equal('0')
+    // user1 has no dt1
+    expect(await erc20Contract.methods.balanceOf(user1).call()).to.equal('0')
 
     const erc20Contract2 = new web3.eth.Contract(
       ERC20Template.abi as AbiItem[],
       erc20Token2
     )
-    // user2 has no dt2
-    expect(await erc20Contract2.methods.balanceOf(user2).call()).to.equal('0')
+    // user1 has no dt2
+    expect(await erc20Contract2.methods.balanceOf(user1).call()).to.equal('0')
 
     // we now can prepare the Operations objects
 
@@ -235,10 +228,10 @@ describe('Router unit test', () => {
       marketFeeAddress: factoryOwner
     }
 
-    await router.buyDTBatch(user2, [operations1, operations2])
+    await router.buyDTBatch(user1, [operations1, operations2])
 
-    // user2 got his dts
-    expect(parseInt(await erc20Contract.methods.balanceOf(user2).call())).gt(0)
-    expect(parseInt(await erc20Contract2.methods.balanceOf(user2).call())).gt(0)
+    // user1 got his dts
+    expect(parseInt(await erc20Contract.methods.balanceOf(user1).call())).gt(0)
+    expect(parseInt(await erc20Contract2.methods.balanceOf(user1).call())).gt(0)
   })
 })
