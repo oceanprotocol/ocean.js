@@ -35,6 +35,8 @@ describe('Datatoken', () => {
   const DECIMALS = 18
   const FIXED_RATE = web3.utils.toWei('1')
   const DATATOKENS_AMOUNT = '10'
+  const ERC20_NAME = 'ERC20B1'
+  const ERC20_SYMBOL = 'ERC20DT1Symbol'
 
   const nftData: NftCreateData = {
     name: NFT_NAME,
@@ -74,9 +76,8 @@ describe('Datatoken', () => {
       ZERO_ADDRESS,
       FEE_ZERO,
       CAP_AMOUNT,
-      NFT_NAME,
-      NFT_SYMBOL,
-      1
+      ERC20_NAME,
+      ERC20_SYMBOL
     )
     assert(datatokenAddress !== null)
   })
