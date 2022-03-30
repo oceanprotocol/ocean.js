@@ -54,11 +54,12 @@ describe('Datatoken', () => {
     contracts = await deployContracts(web3, nftOwner)
   })
 
-  it('should initialize NFTFactory instance and create a new NFT', async () => {
+  it('should initialize NFTFactory, nftDT and DT instances and create a new NFT', async () => {
     nftFactory = new NftFactory(contracts.erc721FactoryAddress, web3)
+    nftDatatoken = new Nft(web3)
+    datatoken = new Datatoken(web3)
 
     nftAddress = await nftFactory.createNFT(nftOwner, nftData)
-    nftDatatoken = new Nft(web3)
   })
 
   it('#createERC20 - should create a new ERC20 DT from NFT contract', async () => {
@@ -79,14 +80,11 @@ describe('Datatoken', () => {
     assert(datatokenAddress !== null)
   })
 
-  it('should initialize DT20 Instance', async () => {
-    datatoken = new Datatoken(web3)
-  })
-
   it('#mint - should fail to mint DT20, if NOT Minter', async () => {
     // assert((await datatoken.getDTPermissions(datatokenAddress, user1)).minter === false)
     try {
       await datatoken.mint(datatokenAddress, user1, '10', user1)
+      assert(false)
     } catch (e) {
       assert(e.message === 'Caller is not Minter')
     }
@@ -107,6 +105,7 @@ describe('Datatoken', () => {
 
     try {
       await datatoken.addMinter(datatokenAddress, user3, user2)
+      assert(false)
     } catch (e) {
       assert(e.message === 'Caller is not ERC20Deployer')
     }
@@ -152,6 +151,7 @@ describe('Datatoken', () => {
     }
     try {
       await datatoken.createFixedRate(datatokenAddress, user3, freParams)
+      assert(false)
     } catch (e) {
       assert(e.message === 'User is not ERC20 Deployer')
     }
@@ -185,6 +185,7 @@ describe('Datatoken', () => {
         contracts.dispenserAddress,
         dispenserParams
       )
+      assert(false)
     } catch (e) {
       assert(e.message === 'User is not ERC20 Deployer')
     }
@@ -196,6 +197,7 @@ describe('Datatoken', () => {
 
     try {
       await datatoken.removeMinter(datatokenAddress, user2, user1)
+      assert(false)
     } catch (e) {
       assert(e.message === 'Caller is not ERC20Deployer')
     }
@@ -219,6 +221,7 @@ describe('Datatoken', () => {
 
     try {
       await datatoken.addPaymentManager(datatokenAddress, user1, user2)
+      assert(false)
     } catch (e) {
       assert(e.message === 'Caller is not ERC20Deployer')
     }
@@ -247,6 +250,7 @@ describe('Datatoken', () => {
     )
     try {
       await datatoken.removePaymentManager(datatokenAddress, user1, user2)
+      assert(false)
     } catch (e) {
       assert(e.message === 'Caller is not ERC20Deployer')
     }
@@ -276,6 +280,7 @@ describe('Datatoken', () => {
 
     try {
       await datatoken.setPaymentCollector(datatokenAddress, user1, user2)
+      assert(false)
     } catch (e) {
       assert(e.message === 'Caller is not Fee Manager')
     }
@@ -448,6 +453,7 @@ describe('Datatoken', () => {
 
     try {
       await datatoken.cleanPermissions(datatokenAddress, user2)
+      assert(false)
     } catch (e) {
       assert(e.message === 'Caller is NOT Nft Owner')
     }
@@ -506,6 +512,7 @@ describe('Datatoken', () => {
 
     try {
       await datatoken.setData(datatokenAddress, user1, data)
+      assert(false)
     } catch (e) {
       assert(e.message === 'User is not ERC20 Deployer')
     }
