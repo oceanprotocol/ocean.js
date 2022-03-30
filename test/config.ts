@@ -10,6 +10,8 @@ import {
 
 LoggerInstance.setLevel(LogLevel.Error)
 
+export const GAS_PRICE = '3000000000'
+
 // by default, we connect with development network
 export const web3 = new Web3(process.env.NODE_URI || configHelperNetworks[1].nodeUri)
 

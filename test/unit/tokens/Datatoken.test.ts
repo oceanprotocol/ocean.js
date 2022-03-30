@@ -1,15 +1,10 @@
 import { assert } from 'chai'
 import ERC20TemplateEnterprise from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC20TemplateEnterprise.sol/ERC20TemplateEnterprise.json'
-import PoolTemplate from '@oceanprotocol/contracts/artifacts/contracts/pools/balancer/BPool.sol/BPool.json'
 import ERC721Factory from '@oceanprotocol/contracts/artifacts/contracts/ERC721Factory.sol/ERC721Factory.json'
 import ERC721Template from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC721Template.sol/ERC721Template.json'
-import SideStaking from '@oceanprotocol/contracts/artifacts/contracts/pools/ssContracts/SideStaking.sol/SideStaking.json'
-import Router from '@oceanprotocol/contracts/artifacts/contracts/pools/FactoryRouter.sol/FactoryRouter.json'
 import ERC20Template from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC20Template.sol/ERC20Template.json'
-import Dispenser from '@oceanprotocol/contracts/artifacts/contracts/pools/dispenser/Dispenser.sol/Dispenser.json'
-import FixedRate from '@oceanprotocol/contracts/artifacts/contracts/pools/fixedRate/FixedRateExchange.sol/FixedRateExchange.json'
-import OPFCollector from '@oceanprotocol/contracts/artifacts/contracts/communityFee/OPFCommunityFeeCollector.sol/OPFCommunityFeeCollector.json'
-import { TestContractHandler } from '../../TestContractHandler'
+import MockERC20 from '@oceanprotocol/contracts/artifacts/contracts/utils/mock/MockERC20Decimals.sol/MockERC20Decimals.json'
+import { deployContracts, Addresses } from '../../TestContractHandler'
 import { AbiItem } from 'web3-utils'
 import { web3 } from '../../config'
 import {
@@ -29,7 +24,7 @@ describe('Datatoken', () => {
   let user1: string
   let user2: string
   let user3: string
-  let contractHandler: TestContractHandler
+  let contracts: Addresses
   let nftDatatoken: Nft
   let datatoken: Datatoken
   let nftFactory: NftFactory
@@ -41,48 +36,29 @@ describe('Datatoken', () => {
   const nftName = 'NFTName'
   const nftSymbol = 'NFTSymbol'
 
-  it('should deploy contracts', async () => {
-    contractHandler = new TestContractHandler(
-      web3,
-      ERC721Template.abi as AbiItem[],
-      ERC20Template.abi as AbiItem[],
-      PoolTemplate.abi as AbiItem[],
-      ERC721Factory.abi as AbiItem[],
-      Router.abi as AbiItem[],
-      SideStaking.abi as AbiItem[],
-      FixedRate.abi as AbiItem[],
-      Dispenser.abi as AbiItem[],
-      OPFCollector.abi as AbiItem[],
+  before(async () => {
+    const accounts = await web3.eth.getAccounts()
+    nftOwner = accounts[0]
+    user1 = accounts[1]
+    user2 = accounts[2]
+    user3 = accounts[3]
+  })
 
-      ERC721Template.bytecode,
-      ERC20Template.bytecode,
-      PoolTemplate.bytecode,
-      ERC721Factory.bytecode,
-      Router.bytecode,
-      SideStaking.bytecode,
-      FixedRate.bytecode,
-      Dispenser.bytecode,
-      OPFCollector.bytecode
-    )
-    await contractHandler.getAccounts()
-    nftOwner = contractHandler.accounts[0]
-    user1 = contractHandler.accounts[1]
-    user2 = contractHandler.accounts[2]
-    user3 = contractHandler.accounts[3]
-    await contractHandler.deployContracts(nftOwner, Router.abi as AbiItem[])
+  it('should deploy contracts', async () => {
+    contracts = await deployContracts(web3, nftOwner)
 
     const daiContract = new web3.eth.Contract(
-      contractHandler.MockERC20.options.jsonInterface,
-      contractHandler.daiAddress
+      MockERC20.abi as AbiItem[],
+      contracts.daiAddress
     )
     await daiContract.methods
-      .approve(contractHandler.factory721Address, web3.utils.toWei('10000'))
-      .send({ from: contractHandler.accounts[0] })
+      .approve(contracts.erc721FactoryAddress, web3.utils.toWei('10000'))
+      .send({ from: nftOwner })
   })
 
   it('should initialize NFTFactory instance and create a new NFT', async () => {
     nftFactory = new NftFactory(
-      contractHandler.factory721Address,
+      contracts.erc721FactoryAddress,
       web3,
       ERC721Factory.abi as AbiItem[]
     )
@@ -163,8 +139,8 @@ describe('Datatoken', () => {
 
   it('#createFixedRate - should create FRE for the erc20 dt', async () => {
     const freParams: FreCreationParams = {
-      fixedRateAddress: contractHandler.fixedRateAddress,
-      baseTokenAddress: contractHandler.daiAddress,
+      fixedRateAddress: contracts.fixedRateAddress,
+      baseTokenAddress: contracts.daiAddress,
       owner: nftOwner,
       marketFeeCollector: nftOwner,
       baseTokenDecimals: 18,
@@ -181,8 +157,8 @@ describe('Datatoken', () => {
   it('#createFixedRate - should FAIL create FRE if NOT ERC20Deployer', async () => {
     assert((await nftDatatoken.isErc20Deployer(nftAddress, user3)) === false)
     const freParams: FreCreationParams = {
-      fixedRateAddress: contractHandler.fixedRateAddress,
-      baseTokenAddress: contractHandler.daiAddress,
+      fixedRateAddress: contracts.fixedRateAddress,
+      baseTokenAddress: contracts.daiAddress,
       owner: nftOwner,
       marketFeeCollector: nftOwner,
       baseTokenDecimals: 18,
@@ -206,7 +182,7 @@ describe('Datatoken', () => {
     const dispenser = await datatoken.createDispenser(
       datatokenAddress,
       nftOwner,
-      contractHandler.dispenserAddress,
+      contracts.dispenserAddress,
       dispenserParams
     )
     assert(dispenser !== null)
@@ -222,7 +198,7 @@ describe('Datatoken', () => {
       await datatoken.createDispenser(
         datatokenAddress,
         user2,
-        contractHandler.dispenserAddress,
+        contracts.dispenserAddress,
         dispenserParams
       )
     } catch (e) {
@@ -427,7 +403,7 @@ describe('Datatoken', () => {
       datatokenAddress,
       nftOwner,
       order,
-      contractHandler.dispenserAddress
+      contracts.dispenserAddress
     )
     assert(buyFromDispenseTx !== null)
   })
