@@ -34,6 +34,7 @@ describe('Datatoken', () => {
   const CAP_AMOUNT = '10000'
   const DECIMALS = 18
   const FIXED_RATE = web3.utils.toWei('1')
+  const DATATOKENS_AMOUNT = '10'
 
   const nftData: NftCreateData = {
     name: NFT_NAME,
@@ -83,7 +84,7 @@ describe('Datatoken', () => {
   it('#mint - should fail to mint DT20, if NOT Minter', async () => {
     // assert((await datatoken.getDTPermissions(datatokenAddress, user1)).minter === false)
     try {
-      await datatoken.mint(datatokenAddress, user1, '10', user1)
+      await datatoken.mint(datatokenAddress, user1, DATATOKENS_AMOUNT, user1)
       assert(false)
     } catch (e) {
       assert(e.message === 'Caller is not Minter')
@@ -115,9 +116,9 @@ describe('Datatoken', () => {
 
   it('#mint - should mint ERC20 datatoken to user1, if Minter', async () => {
     assert((await datatoken.getDTPermissions(datatokenAddress, nftOwner)).minter === true)
-    await datatoken.mint(datatokenAddress, nftOwner, '10', user1)
+    await datatoken.mint(datatokenAddress, nftOwner, DATATOKENS_AMOUNT, user1)
 
-    assert((await datatoken.balance(datatokenAddress, user1)) === '10')
+    assert((await datatoken.balance(datatokenAddress, user1)) === DATATOKENS_AMOUNT)
   })
 
   it('#createFixedRate - should create FRE for the erc20 dt', async () => {
@@ -302,7 +303,7 @@ describe('Datatoken', () => {
 
   it('#startOrder- user2 should create an order for DT ', async () => {
     assert(
-      (await datatoken.balance(datatokenAddress, user1)) === '10',
+      (await datatoken.balance(datatokenAddress, user1)) === DATATOKENS_AMOUNT,
       'User1 does not hold 10 datatokens'
     )
     assert(
