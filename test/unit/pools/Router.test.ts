@@ -1,11 +1,9 @@
 import { assert, expect } from 'chai'
 import { AbiItem } from 'web3-utils/types'
 import { deployContracts, Addresses } from '../../TestContractHandler'
-import ERC721Factory from '@oceanprotocol/contracts/artifacts/contracts/ERC721Factory.sol/ERC721Factory.json'
-import ERC20Template from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC20Template.sol/ERC20Template.json'
 import MockERC20 from '@oceanprotocol/contracts/artifacts/contracts/utils/mock/MockERC20Decimals.sol/MockERC20Decimals.json'
 import { web3 } from '../../config'
-import { NftFactory, NftCreateData } from '../../../src'
+import { NftFactory, NftCreateData, balance } from '../../../src'
 import { Router } from '../../../src/pools/Router'
 import { Erc20CreateParams, PoolCreationParams, Operation } from '../../../src/@types'
 
@@ -114,11 +112,7 @@ describe('Router unit test', () => {
       swapFeeMarketRunner: '0.001'
     }
 
-    const nftFactory = new NftFactory(
-      contracts.erc721FactoryAddress,
-      web3,
-      ERC721Factory.abi as AbiItem[]
-    )
+    const nftFactory = new NftFactory(contracts.erc721FactoryAddress, web3)
 
     const txReceipt = await nftFactory.createNftErc20WithPool(
       factoryOwner,
@@ -127,7 +121,7 @@ describe('Router unit test', () => {
       poolParams
     )
 
-    const erc20Token = txReceipt.events.TokenCreated.returnValues.newTokenAddress
+    const erc20TokenAddress = txReceipt.events.TokenCreated.returnValues.newTokenAddress
     const pool1 = txReceipt.events.NewPool.returnValues.poolAddress
 
     // CREATE A SECOND POOL
@@ -174,22 +168,13 @@ describe('Router unit test', () => {
       poolParams2
     )
 
-    const erc20Token2 = txReceipt2.events.TokenCreated.returnValues.newTokenAddress
+    const erc20Token2Address = txReceipt2.events.TokenCreated.returnValues.newTokenAddress
     const pool2 = txReceipt2.events.NewPool.returnValues.poolAddress
 
-    const erc20Contract = new web3.eth.Contract(
-      ERC20Template.abi as AbiItem[],
-      erc20Token
-    )
     // user1 has no dt1
-    expect(await erc20Contract.methods.balanceOf(user1).call()).to.equal('0')
-
-    const erc20Contract2 = new web3.eth.Contract(
-      ERC20Template.abi as AbiItem[],
-      erc20Token2
-    )
+    expect(await balance(web3, erc20TokenAddress, user1)).to.equal('0')
     // user1 has no dt2
-    expect(await erc20Contract2.methods.balanceOf(user1).call()).to.equal('0')
+    expect(await balance(web3, erc20Token2Address, user1)).to.equal('0')
 
     // we now can prepare the Operations objects
 
@@ -203,7 +188,7 @@ describe('Router unit test', () => {
       operation: 0, // swapExactAmountIn
       tokenIn: contracts.daiAddress,
       amountsIn: web3.utils.toWei('1'), // when swapExactAmountIn is EXACT amount IN
-      tokenOut: erc20Token,
+      tokenOut: erc20TokenAddress,
       amountsOut: web3.utils.toWei('0.1'), // when swapExactAmountIn is MIN amount OUT
       maxPrice: web3.utils.toWei('10'), // max price (only for pools),
       swapMarketFee: web3.utils.toWei('0.1'),
@@ -216,7 +201,7 @@ describe('Router unit test', () => {
       operation: 0, // swapExactAmountIn
       tokenIn: contracts.daiAddress,
       amountsIn: web3.utils.toWei('1'), // when swapExactAmountIn is EXACT amount IN
-      tokenOut: erc20Token2,
+      tokenOut: erc20Token2Address,
       amountsOut: web3.utils.toWei('0.1'), // when swapExactAmountIn is MIN amount OUT
       maxPrice: web3.utils.toWei('10'), // max price (only for pools)
       swapMarketFee: web3.utils.toWei('0.1'),
@@ -226,7 +211,7 @@ describe('Router unit test', () => {
     await router.buyDTBatch(user1, [operations1, operations2])
 
     // user1 got his dts
-    expect(parseInt(await erc20Contract.methods.balanceOf(user1).call())).gt(0)
-    expect(parseInt(await erc20Contract2.methods.balanceOf(user1).call())).gt(0)
+    expect(await balance(web3, erc20TokenAddress, user1)).gt(0)
+    expect(await balance(web3, erc20Token2Address, user1)).gt(0)
   })
 })
