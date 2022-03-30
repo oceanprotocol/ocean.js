@@ -2,7 +2,6 @@ import { assert, expect } from 'chai'
 import { AbiItem } from 'web3-utils/types'
 import { deployContracts, Addresses } from '../../TestContractHandler'
 import ERC20Template from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC20Template.sol/ERC20Template.json'
-import ERC721Template from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC721Template.sol/ERC721Template.json'
 import MockERC20 from '@oceanprotocol/contracts/artifacts/contracts/utils/mock/MockERC20Decimals.sol/MockERC20Decimals.json'
 import { web3 } from '../../config'
 import {
@@ -101,7 +100,7 @@ describe('Nft Factory test', () => {
     const nftAddress = await nftFactory.createNFT(nftOwner, NFT_DATA)
 
     // we check the created nft
-    const nftDatatoken = new Nft(web3, ERC721Template.abi as AbiItem[])
+    const nftDatatoken = new Nft(web3)
     const tokenURI = await nftDatatoken.getTokenURI(nftAddress, 1)
     assert(tokenURI === NFT_TOKEN_URI)
   })
