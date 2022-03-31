@@ -24,6 +24,7 @@ describe('Router unit test', () => {
   const RATE = '1'
   const FEE = '0.001'
   const FEE_ZERO = '0'
+  const DAI_AMOUNT = web3.utils.toWei('2')
 
   const NFT_DATA: NftCreateData = {
     name: NFT_NAME,
@@ -92,17 +93,9 @@ describe('Router unit test', () => {
       contracts.daiAddress
     )
 
-    await daiContract.methods
-      .transfer(user1, web3.utils.toWei('2'))
-      .send({ from: factoryOwner })
+    await daiContract.methods.transfer(user1, DAI_AMOUNT).send({ from: factoryOwner })
 
-    await approve(
-      web3,
-      user1,
-      contracts.daiAddress,
-      contracts.routerAddress,
-      web3.utils.toWei('2')
-    )
+    await approve(web3, user1, contracts.daiAddress, contracts.routerAddress, DAI_AMOUNT)
 
     // CREATE A FIRST POOL
     const ercParams: Erc20CreateParams = {
@@ -143,48 +136,13 @@ describe('Router unit test', () => {
 
     const erc20TokenAddress = txReceipt.events.TokenCreated.returnValues.newTokenAddress
     const pool1 = txReceipt.events.NewPool.returnValues.poolAddress
+
     // CREATE A SECOND POOL
-
-    const nftData2: NftCreateData = {
-      name: '72120Bundle2',
-      symbol: '72Bundle2',
-      templateIndex: 1,
-      tokenURI: 'https://oceanprotocol.com/nft2/'
-    }
-
-    const ercParams2: Erc20CreateParams = {
-      templateIndex: 1,
-      minter: factoryOwner,
-      paymentCollector: user2,
-      mpFeeAddress: factoryOwner,
-      feeToken: ZERO_ADDRESS,
-      cap: '1000000',
-      feeAmount: FEE_ZERO,
-      name: 'ERC20B12',
-      symbol: 'ERC20DT1Symbol2'
-    }
-
-    const poolParams2: PoolCreationParams = {
-      ssContract: contracts.sideStakingAddress,
-      baseTokenAddress: contracts.daiAddress,
-      baseTokenSender: contracts.erc721FactoryAddress,
-      publisherAddress: factoryOwner,
-      marketFeeCollector: factoryOwner,
-      poolTemplateAddress: contracts.poolTemplateAddress,
-      rate: RATE,
-      baseTokenDecimals: 18,
-      vestingAmount: '10000',
-      vestedBlocks: 2500000,
-      initialBaseTokenLiquidity: '2000',
-      swapFeeLiquidityProvider: FEE,
-      swapFeeMarketRunner: FEE
-    }
-
     const txReceipt2 = await nftFactory.createNftErc20WithPool(
       factoryOwner,
-      nftData2,
-      ercParams2,
-      poolParams2
+      NFT_DATA,
+      ercParams,
+      poolParams
     )
 
     const erc20Token2Address = txReceipt2.events.TokenCreated.returnValues.newTokenAddress
