@@ -36,7 +36,6 @@ describe('Router unit test', () => {
   const MAX_PRICE = web3.utils.toWei('10')
   const SWAP_MARKET_FEE = web3.utils.toWei('0.1')
 
-
   const NFT_DATA: NftCreateData = {
     name: NFT_NAME,
     symbol: NFT_SYMBOL,
