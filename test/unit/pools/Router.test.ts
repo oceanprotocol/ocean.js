@@ -3,7 +3,7 @@ import { AbiItem } from 'web3-utils/types'
 import { deployContracts, Addresses } from '../../TestContractHandler'
 import MockERC20 from '@oceanprotocol/contracts/artifacts/contracts/utils/mock/MockERC20Decimals.sol/MockERC20Decimals.json'
 import { web3 } from '../../config'
-import { NftFactory, NftCreateData, balance, ZERO_ADDRESS } from '../../../src'
+import { NftFactory, NftCreateData, balance, approve, ZERO_ADDRESS } from '../../../src'
 import { Router } from '../../../src/pools/Router'
 import { Erc20CreateParams, PoolCreationParams, Operation } from '../../../src/@types'
 
@@ -42,13 +42,13 @@ describe('Router unit test', () => {
   it('should deploy contracts', async () => {
     contracts = await deployContracts(web3, factoryOwner)
 
-    const daiContract = new web3.eth.Contract(
-      MockERC20.abi as AbiItem[],
-      contracts.daiAddress
+    await approve(
+      web3,
+      factoryOwner,
+      contracts.daiAddress,
+      contracts.erc721FactoryAddress,
+      web3.utils.toWei('10000')
     )
-    await daiContract.methods
-      .approve(contracts.erc721FactoryAddress, web3.utils.toWei('10000'))
-      .send({ from: factoryOwner })
   })
 
   it('should initiate Router instance', async () => {
@@ -95,9 +95,14 @@ describe('Router unit test', () => {
     await daiContract.methods
       .transfer(user1, web3.utils.toWei('2'))
       .send({ from: factoryOwner })
-    await daiContract.methods
-      .approve(contracts.routerAddress, web3.utils.toWei('2'))
-      .send({ from: user1 })
+
+    await approve(
+      web3,
+      user1,
+      contracts.daiAddress,
+      contracts.routerAddress,
+      web3.utils.toWei('2')
+    )
 
     // CREATE A FIRST POOL
     const ercParams: Erc20CreateParams = {
