@@ -3,7 +3,7 @@ import { AbiItem } from 'web3-utils/types'
 import { deployContracts, Addresses } from '../../TestContractHandler'
 import MockERC20 from '@oceanprotocol/contracts/artifacts/contracts/utils/mock/MockERC20Decimals.sol/MockERC20Decimals.json'
 import { web3 } from '../../config'
-import { NftFactory, NftCreateData, balance } from '../../../src'
+import { NftFactory, NftCreateData, balance, ZERO_ADDRESS } from '../../../src'
 import { Router } from '../../../src/pools/Router'
 import { Erc20CreateParams, PoolCreationParams, Operation } from '../../../src/@types'
 
@@ -15,6 +15,22 @@ describe('Router unit test', () => {
   let user2: string
   let contracts: Addresses
   let router: Router
+
+  const NFT_NAME = '72120Bundle'
+  const NFT_SYMBOL = '72Bundle'
+  const NFT_TOKEN_URI = 'https://oceanprotocol.com/nft/'
+  const ERC20_NAME = 'ERC20B1'
+  const ERC20_SYMBOL = 'ERC20DT1Symbol'
+  const RATE = '1'
+  const FEE = '0.001'
+  const FEE_ZERO = '0'
+
+  const NFT_DATA: NftCreateData = {
+    name: NFT_NAME,
+    symbol: NFT_SYMBOL,
+    templateIndex: 1,
+    tokenURI: NFT_TOKEN_URI
+  }
 
   before(async () => {
     const accounts = await web3.eth.getAccounts()
@@ -84,24 +100,16 @@ describe('Router unit test', () => {
       .send({ from: user1 })
 
     // CREATE A FIRST POOL
-    // we prepare transaction parameters objects
-    const nftData: NftCreateData = {
-      name: '72120Bundle',
-      symbol: '72Bundle',
-      templateIndex: 1,
-      tokenURI: 'https://oceanprotocol.com/nft/'
-    }
-
     const ercParams: Erc20CreateParams = {
       templateIndex: 1,
       minter: factoryOwner,
       paymentCollector: user2,
       mpFeeAddress: factoryOwner,
-      feeToken: '0x0000000000000000000000000000000000000000',
-      cap: '1000000',
-      feeAmount: '0',
-      name: 'ERC20B1',
-      symbol: 'ERC20DT1Symbol'
+      feeToken: ZERO_ADDRESS,
+      cap: '0',
+      feeAmount: FEE_ZERO,
+      name: ERC20_NAME,
+      symbol: ERC20_SYMBOL
     }
 
     const poolParams: PoolCreationParams = {
@@ -111,27 +119,25 @@ describe('Router unit test', () => {
       publisherAddress: factoryOwner,
       marketFeeCollector: factoryOwner,
       poolTemplateAddress: contracts.poolTemplateAddress,
-      rate: '1',
+      rate: RATE,
       baseTokenDecimals: 18,
       vestingAmount: '10000',
       vestedBlocks: 2500000,
       initialBaseTokenLiquidity: '2000',
-      swapFeeLiquidityProvider: '0.001',
-      swapFeeMarketRunner: '0.001'
+      swapFeeLiquidityProvider: FEE,
+      swapFeeMarketRunner: FEE
     }
 
     const nftFactory = new NftFactory(contracts.erc721FactoryAddress, web3)
-
     const txReceipt = await nftFactory.createNftErc20WithPool(
       factoryOwner,
-      nftData,
+      NFT_DATA,
       ercParams,
       poolParams
     )
 
     const erc20TokenAddress = txReceipt.events.TokenCreated.returnValues.newTokenAddress
     const pool1 = txReceipt.events.NewPool.returnValues.poolAddress
-
     // CREATE A SECOND POOL
 
     const nftData2: NftCreateData = {
@@ -146,9 +152,9 @@ describe('Router unit test', () => {
       minter: factoryOwner,
       paymentCollector: user2,
       mpFeeAddress: factoryOwner,
-      feeToken: '0x0000000000000000000000000000000000000000',
+      feeToken: ZERO_ADDRESS,
       cap: '1000000',
-      feeAmount: '0',
+      feeAmount: FEE_ZERO,
       name: 'ERC20B12',
       symbol: 'ERC20DT1Symbol2'
     }
@@ -160,13 +166,13 @@ describe('Router unit test', () => {
       publisherAddress: factoryOwner,
       marketFeeCollector: factoryOwner,
       poolTemplateAddress: contracts.poolTemplateAddress,
-      rate: '1',
+      rate: RATE,
       baseTokenDecimals: 18,
       vestingAmount: '10000',
       vestedBlocks: 2500000,
       initialBaseTokenLiquidity: '2000',
-      swapFeeLiquidityProvider: '0.001',
-      swapFeeMarketRunner: '0.001'
+      swapFeeLiquidityProvider: FEE,
+      swapFeeMarketRunner: FEE
     }
 
     const txReceipt2 = await nftFactory.createNftErc20WithPool(
@@ -178,7 +184,7 @@ describe('Router unit test', () => {
 
     const erc20Token2Address = txReceipt2.events.TokenCreated.returnValues.newTokenAddress
     const pool2 = txReceipt2.events.NewPool.returnValues.poolAddress
-
+    
     // user1 has no dt1
     expect(await balance(web3, erc20TokenAddress, user1)).to.equal('0')
     // user1 has no dt2
