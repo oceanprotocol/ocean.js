@@ -184,7 +184,7 @@ describe('Router unit test', () => {
 
     const erc20Token2Address = txReceipt2.events.TokenCreated.returnValues.newTokenAddress
     const pool2 = txReceipt2.events.NewPool.returnValues.poolAddress
-    
+
     // user1 has no dt1
     expect(await balance(web3, erc20TokenAddress, user1)).to.equal('0')
     // user1 has no dt2
