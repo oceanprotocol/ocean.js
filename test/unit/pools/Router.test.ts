@@ -27,6 +27,14 @@ describe('Router unit test', () => {
 
   it('should deploy contracts', async () => {
     contracts = await deployContracts(web3, factoryOwner)
+
+    const daiContract = new web3.eth.Contract(
+      MockERC20.abi as AbiItem[],
+      contracts.daiAddress
+    )
+    await daiContract.methods
+      .approve(contracts.erc721FactoryAddress, web3.utils.toWei('10000'))
+      .send({ from: factoryOwner })
   })
 
   it('should initiate Router instance', async () => {
@@ -47,17 +55,14 @@ describe('Router unit test', () => {
     expect(await router.isApprovedToken(contracts.oceanAddress)).to.equal(true)
     expect(await router.isApprovedToken(contracts.daiAddress)).to.equal(false)
   })
-
   it('#isSideStaking - should return true if in ssContracts list', async () => {
     expect(await router.isSideStaking(contracts.sideStakingAddress)).to.equal(true)
     expect(await router.isSideStaking(contracts.fixedRateAddress)).to.equal(false)
   })
-
   it('#isFixedPrice - should return true if in fixedPrice list', async () => {
     expect(await router.isFixedPrice(contracts.fixedRateAddress)).to.equal(true)
     expect(await router.isFixedPrice(contracts.daiAddress)).to.equal(false)
   })
-
   it('#isPoolTemplate - should return true if in poolTemplates list', async () => {
     expect(await router.isPoolTemplate(contracts.poolTemplateAddress)).to.equal(true)
     expect(await router.isPoolTemplate(contracts.fixedRateAddress)).to.equal(false)
