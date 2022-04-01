@@ -82,8 +82,82 @@ export async function approve(
     })
   } catch (e) {
     LoggerInstance.error(
-      `ERRPR: Failed to approve spender to spend tokens : ${e.message}`
+      `ERROR: Failed to approve spender to spend tokens : ${e.message}`
     )
+  }
+  return result
+}
+
+/**
+ * Estimate gas cost for transfer function
+ * @param {String} account
+ * @param {String} tokenAddress
+ * @param {String} recipient
+ * @param {String} amount
+ * @param {String} force
+ * @param {Contract} contractInstance optional contract instance
+ * @return {Promise<number>}
+ */
+export async function estTransfer(
+  web3: Web3,
+  account: string,
+  tokenAddress: string,
+  recipient: string,
+  amount: string,
+  contractInstance?: Contract
+): Promise<number> {
+  const tokenContract = contractInstance || new web3.eth.Contract(minAbi, tokenAddress)
+
+  const gasLimitDefault = GASLIMIT_DEFAULT
+  let estGas
+  try {
+    estGas = await tokenContract.methods
+      .transfer(recipient, amount)
+      .estimateGas({ from: account }, (err, estGas) => (err ? gasLimitDefault : estGas))
+  } catch (e) {
+    estGas = gasLimitDefault
+    LoggerInstance.error('estimate gas failed for approve!', e)
+  }
+  return estGas
+}
+
+/**
+ * Moves amount tokens from the caller’s account to recipient.
+ * @param {String} account
+ * @param {String} tokenAddress
+ * @param {String} recipient
+ * @param {String} amount  (always expressed as wei)
+ * @param {String} force  if true, will overwrite any previous allowence. Else, will check if allowence is enough and will not send a transaction if it's not needed
+ */
+export async function transfer(
+  web3: Web3,
+  account: string,
+  tokenAddress: string,
+  recipient: string,
+  amount: string,
+  force = false
+): Promise<TransactionReceipt | string> {
+  const tokenContract = new web3.eth.Contract(minAbi, tokenAddress)
+
+  let result = null
+  const amountFormatted = await amountToUnits(web3, tokenAddress, amount)
+  const estGas = await estTransfer(
+    web3,
+    account,
+    tokenAddress,
+    recipient,
+    amountFormatted,
+    tokenContract
+  )
+
+  try {
+    result = await tokenContract.methods.transfer(recipient, amountFormatted).send({
+      from: account,
+      gas: estGas + 1,
+      gasPrice: await getFairGasPrice(web3, null)
+    })
+  } catch (e) {
+    LoggerInstance.error(`ERROR: Failed to transfer tokens : ${e.message}`)
   }
   return result
 }
