@@ -134,8 +134,7 @@ export async function transfer(
   account: string,
   tokenAddress: string,
   recipient: string,
-  amount: string,
-  force = false
+  amount: string
 ): Promise<TransactionReceipt | string> {
   const tokenContract = new web3.eth.Contract(minAbi, tokenAddress)
 
