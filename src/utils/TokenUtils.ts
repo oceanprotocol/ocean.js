@@ -45,7 +45,7 @@ export async function estApprove(
  * @param {String} account
  * @param {String} tokenAddress
  * @param {String} spender
- * @param {String} amount  (always expressed as wei)
+ * @param {String} amount amount of ERC20 tokens, expressed without decimals (not as wei)
  * @param {String} force  if true, will overwrite any previous allowence. Else, will check if allowence is enough and will not send a transaction if it's not needed
  */
 export async function approve(
@@ -126,7 +126,7 @@ export async function estTransfer(
  * @param {String} account
  * @param {String} tokenAddress
  * @param {String} recipient
- * @param {String} amount  (always expressed as wei)
+ * @param {String} amount amount of ERC20 tokens, expressed without decimals (not as wei)
  * @param {String} force  if true, will overwrite any previous allowence. Else, will check if allowence is enough and will not send a transaction if it's not needed
  */
 export async function transfer(
