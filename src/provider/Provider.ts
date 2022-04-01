@@ -67,7 +67,7 @@ export class Provider {
     return serviceEndpoints
   }
 
-  /** Encrypt DDO using the Provider's own symmetric key
+  /** Gets current nonce
    * @param {string} providerUri provider uri address
    * @param {string} consumerAddress Publisher address
    * @param {AbortSignal} signal abort signal
@@ -144,12 +144,11 @@ export class Provider {
     const path = this.getEndpointURL(serviceEndpoints, 'encrypt')
       ? this.getEndpointURL(serviceEndpoints, 'encrypt').urlPath
       : null
-
     if (!path) return null
     try {
       const response = await fetch(path, {
         method: 'POST',
-        body: decodeURI(JSON.stringify(data)),
+        body: JSON.stringify(data),
         headers: {
           'Content-Type': 'application/octet-stream'
         },
