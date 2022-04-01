@@ -582,64 +582,55 @@ export class Provider {
     }
   }
 
-  /** Get status for a specific jobId/documentId/owner.
-   * @param {string} jobId
-   * @param {number} index
-   * @param {string} providerUri
-   * @param {string} destination
-   * @param {Web3} web3
-   * @param {AbortSignal} signal abort signal
+  /** Get compute result url
+   * @param {string} providerUri The URI of the provider we want to query
+   * @param {Web3} web3 Web3 instance
+   * @param {string} consumerAddress The consumer ethereum address
+   * @param {string} jobId The ID of a compute job.
+   * @param {number} index Result index
+   * @param {AbortSignal} signal Abort signal
    * @return {Promise<ComputeJob | ComputeJob[]>}
    */
-  public async computeResult(
-    jobId: string,
-    index: number,
-    accountId: string,
+  public async getComputeResultUrl(
     providerUri: string,
     web3: Web3,
-    signal?: AbortSignal
-  ): Promise<DownloadResponse | void> {
+    consumerAddress: string,
+    jobId: string,
+    index: number
+  ): Promise<string> {
     const providerEndpoints = await this.getEndpoints(providerUri)
+    console.log('computeResult providerEndpoints: ', providerEndpoints)
     const serviceEndpoints = await this.getServiceEndpoints(
       providerUri,
       providerEndpoints
     )
+    console.log('computeResult serviceEndpoints: ', serviceEndpoints)
     const computeResultUrl = this.getEndpointURL(serviceEndpoints, 'computeResult')
       ? this.getEndpointURL(serviceEndpoints, 'computeResult').urlPath
       : null
 
-    const nonce = await this.getNonce(
-      providerUri,
-      accountId,
-      signal,
-      providerEndpoints,
-      serviceEndpoints
-    )
-
-    let signatureMessage = accountId
+    console.log('computeResult computeResultUrl: ', computeResultUrl)
+    const nonce = Date.now()
+    let signatureMessage = consumerAddress
     signatureMessage += jobId
     signatureMessage += index.toString()
     signatureMessage += nonce
-    const signature = await this.createHashSignature(web3, accountId, signatureMessage)
+    const signature = await this.createHashSignature(
+      web3,
+      consumerAddress,
+      signatureMessage
+    )
 
-    let consumeUrl = computeResultUrl
-    consumeUrl += `?consumerAddress=${accountId}`
-    consumeUrl += `&jobId=${jobId}`
-    consumeUrl += `&index=${String(index)}`
-    consumeUrl += (signature && `&signature=${signature}`) || ''
+    let resultUrl = computeResultUrl
+    resultUrl += `?consumerAddress=${consumerAddress}`
+    resultUrl += `&jobId=${jobId}`
+    resultUrl += `&index=${index.toString()}`
+    resultUrl += `&nonce=${nonce}`
+    resultUrl += (signature && `&signature=${signature}`) || ''
 
-    if (!computeResultUrl) return null
-    try {
-      if (document) {
-        await downloadFileBrowser(consumeUrl)
-      } else {
-        return await downloadFile(consumeUrl, index)
-      }
-    } catch (e) {
-      LoggerInstance.error('Error getting job result')
-      LoggerInstance.error(e)
-      throw e
-    }
+    console.log('computeResult resultUrl: ', resultUrl)
+    if (!resultUrl) return null
+    return resultUrl
   }
 
   /** Deletes a compute job.
