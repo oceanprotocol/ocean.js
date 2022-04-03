@@ -24,7 +24,7 @@ describe('Router unit test', () => {
   const RATE = '1'
   const FEE = '0.001'
   const FEE_ZERO = '0'
-  const DAI_AMOUNT = web3.utils.toWei('2')
+  const DAI_AMOUNT = '2' // 2 DAI
   const CAP_AMOUNT = '1000000'
   const VESTING_AMOUNT = '10000'
   const TOKEN_DECIMALS = 18
@@ -103,7 +103,9 @@ describe('Router unit test', () => {
       contracts.daiAddress
     )
 
-    await daiContract.methods.transfer(user1, DAI_AMOUNT).send({ from: factoryOwner })
+    await daiContract.methods
+      .transfer(user1, web3.utils.toWei(DAI_AMOUNT))
+      .send({ from: factoryOwner })
 
     await approve(web3, user1, contracts.daiAddress, contracts.routerAddress, DAI_AMOUNT)
 
