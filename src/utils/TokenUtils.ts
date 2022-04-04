@@ -42,7 +42,7 @@ export async function estimateGas(
  * @param {String} account
  * @param {String} tokenAddress
  * @param {String} spender
- * @param {String} amount amount of ERC20 tokens, expressed without decimals (not as wei)
+ * @param {String} amount amount of ERC20 tokens (not as wei)
  * @param {String} force  if true, will overwrite any previous allowence. Else, will check if allowence is enough and will not send a transaction if it's not needed
  */
 export async function approve(
@@ -89,7 +89,7 @@ export async function approve(
  * @param {String} account
  * @param {String} tokenAddress
  * @param {String} recipient
- * @param {String} amount amount of ERC20 tokens, expressed without decimals (not as wei)
+ * @param {String} amount amount of ERC20 tokens (not as wei)
  * @param {String} force  if true, will overwrite any previous allowence. Else, will check if allowence is enough and will not send a transaction if it's not needed
  */
 export async function transfer(
