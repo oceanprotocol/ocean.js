@@ -7,7 +7,12 @@ import FixedRate from '@oceanprotocol/contracts/artifacts/contracts/pools/fixedR
 import MockERC20 from '@oceanprotocol/contracts/artifacts/contracts/utils/mock/MockERC20Decimals.sol/MockERC20Decimals.json'
 import { deployContracts, Addresses } from '../../../TestContractHandler'
 import { web3 } from '../../../config'
-import { NftFactory, NftCreateData, FixedRateExchange } from '../../../../src'
+import {
+  NftFactory,
+  NftCreateData,
+  FixedRateExchange,
+  ZERO_ADDRESS
+} from '../../../../src'
 import { FreCreationParams, Erc20CreateParams } from '../../../../src/@types'
 
 describe('Fixed Rate unit test', () => {
@@ -23,7 +28,6 @@ describe('Fixed Rate unit test', () => {
   let dtContract: Contract
   let daiContract: Contract
   let usdcContract: Contract
-  const ADDRESS_ZERO = '0x0000000000000000000000000000000000000000'
 
   before(async () => {
     const accounts = await web3.eth.getAccounts()
@@ -68,7 +72,7 @@ describe('Fixed Rate unit test', () => {
         minter: factoryOwner,
         paymentCollector: user2,
         mpFeeAddress: factoryOwner,
-        feeToken: ADDRESS_ZERO,
+        feeToken: ZERO_ADDRESS,
         cap: '1000000',
         feeAmount: '0',
         name: 'ERC20B1',
@@ -84,7 +88,7 @@ describe('Fixed Rate unit test', () => {
         datatokenDecimals: 18,
         fixedRate: '1',
         marketFee: '0.001',
-        allowedConsumer: ADDRESS_ZERO,
+        allowedConsumer: ZERO_ADDRESS,
         withMint: false
       }
 
@@ -95,7 +99,6 @@ describe('Fixed Rate unit test', () => {
         freParams
       )
 
-      initialBlock = await web3.eth.getBlockNumber()
       dtAddress = txReceipt.events.TokenCreated.returnValues.newTokenAddress
       exchangeId = txReceipt.events.NewFixedRate.returnValues.exchangeId
 
@@ -295,15 +298,15 @@ describe('Fixed Rate unit test', () => {
     })
 
     it('#getAllowedSwapper- should return address(0) if not set, if exchangeOwner', async () => {
-      expect(await fixedRate.getAllowedSwapper(exchangeId)).to.equal(ADDRESS_ZERO)
+      expect(await fixedRate.getAllowedSwapper(exchangeId)).to.equal(ZERO_ADDRESS)
     })
     it('#setAllowedSwapper- should set an allowed swapper, if exchangeOwner', async () => {
       await fixedRate.setAllowedSwapper(exchangeOwner, exchangeId, user1)
       expect(await fixedRate.getAllowedSwapper(exchangeId)).to.equal(user1)
     })
     it('#setAllowedSwapper- should disable allowed swapper(return address(0)), if exchangeOwner', async () => {
-      await fixedRate.setAllowedSwapper(exchangeOwner, exchangeId, ADDRESS_ZERO)
-      expect(await fixedRate.getAllowedSwapper(exchangeId)).to.equal(ADDRESS_ZERO)
+      await fixedRate.setAllowedSwapper(exchangeOwner, exchangeId, ZERO_ADDRESS)
+      expect(await fixedRate.getAllowedSwapper(exchangeId)).to.equal(ZERO_ADDRESS)
     })
     it('#collectBT- should collect BT in the contract, if exchangeOwner', async () => {
       // there are no bt in the contract
@@ -388,7 +391,7 @@ describe('Fixed Rate unit test', () => {
         minter: factoryOwner,
         paymentCollector: user2,
         mpFeeAddress: factoryOwner,
-        feeToken: ADDRESS_ZERO,
+        feeToken: ZERO_ADDRESS,
         cap: '1000000',
         feeAmount: '0',
         name: 'ERC20B1',
@@ -404,7 +407,7 @@ describe('Fixed Rate unit test', () => {
         datatokenDecimals: 18,
         fixedRate: '1',
         marketFee: '0.001',
-        allowedConsumer: ADDRESS_ZERO,
+        allowedConsumer: ZERO_ADDRESS,
         withMint: false
       }
 
@@ -415,7 +418,6 @@ describe('Fixed Rate unit test', () => {
         freParams
       )
 
-      initialBlock = await web3.eth.getBlockNumber()
       dtAddress = txReceipt.events.TokenCreated.returnValues.newTokenAddress
       exchangeId = txReceipt.events.NewFixedRate.returnValues.exchangeId
 
@@ -609,15 +611,15 @@ describe('Fixed Rate unit test', () => {
     })
 
     it('#getAllowedSwapper- should return address(0) if not set, if exchangeOwner', async () => {
-      expect(await fixedRate.getAllowedSwapper(exchangeId)).to.equal(ADDRESS_ZERO)
+      expect(await fixedRate.getAllowedSwapper(exchangeId)).to.equal(ZERO_ADDRESS)
     })
     it('#setAllowedSwapper- should set an allowed swapper, if exchangeOwner', async () => {
       await fixedRate.setAllowedSwapper(exchangeOwner, exchangeId, user1)
       expect(await fixedRate.getAllowedSwapper(exchangeId)).to.equal(user1)
     })
     it('#setAllowedSwapper- should disable allowed swapper(return address(0)), if exchangeOwner', async () => {
-      await fixedRate.setAllowedSwapper(exchangeOwner, exchangeId, ADDRESS_ZERO)
-      expect(await fixedRate.getAllowedSwapper(exchangeId)).to.equal(ADDRESS_ZERO)
+      await fixedRate.setAllowedSwapper(exchangeOwner, exchangeId, ZERO_ADDRESS)
+      expect(await fixedRate.getAllowedSwapper(exchangeId)).to.equal(ZERO_ADDRESS)
     })
     it('#collectBT- should collect BT in the contract, if exchangeOwner', async () => {
       // there are no bt in the contract
