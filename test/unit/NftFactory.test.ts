@@ -71,7 +71,9 @@ describe('Nft Factory test', () => {
       name: '72120Bundle',
       symbol: '72Bundle',
       templateIndex: 1,
-      tokenURI: 'https://oceanprotocol.com/nft/'
+      tokenURI: 'https://oceanprotocol.com/nft/',
+      transferable: true,
+      owner: factoryOwner
     }
 
     const ercParams: Erc20CreateParams = {
@@ -107,7 +109,9 @@ describe('Nft Factory test', () => {
       name: '72120Bundle',
       symbol: '72Bundle',
       templateIndex: 1,
-      tokenURI: 'https://oceanprotocol.com/nft/'
+      tokenURI: 'https://oceanprotocol.com/nft/',
+      transferable: true,
+      owner: factoryOwner
     }
 
     const ercParams: Erc20CreateParams = {
@@ -157,7 +161,9 @@ describe('Nft Factory test', () => {
       name: '72120Bundle',
       symbol: '72Bundle',
       templateIndex: 1,
-      tokenURI: 'https://oceanprotocol.com/nft/'
+      tokenURI: 'https://oceanprotocol.com/nft/',
+      transferable: true,
+      owner: factoryOwner
     }
 
     const ercParams: Erc20CreateParams = {
@@ -207,7 +213,9 @@ describe('Nft Factory test', () => {
       name: '72120Bundle',
       symbol: '72Bundle',
       templateIndex: 1,
-      tokenURI: 'https://oceanprotocol.com/nft/'
+      tokenURI: 'https://oceanprotocol.com/nft/',
+      transferable: true,
+      owner: factoryOwner
     }
 
     const ercParams: Erc20CreateParams = {
