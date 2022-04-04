@@ -41,6 +41,8 @@ export interface NftCreateData {
   symbol: string
   templateIndex: number
   tokenURI: string
+  transferable: boolean
+  owner: string
 }
 
 const addressZERO = '0x0000000000000000000000000000000000000000'
@@ -94,7 +96,9 @@ export class NftFactory {
           nftData.templateIndex,
           addressZERO,
           addressZERO,
-          nftData.tokenURI
+          nftData.tokenURI,
+          nftData.transferable,
+          nftData.owner
         )
         .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
     } catch (e) {
@@ -137,7 +141,9 @@ export class NftFactory {
         nftData.templateIndex,
         addressZERO,
         addressZERO,
-        nftData.tokenURI
+        nftData.tokenURI,
+        nftData.transferable,
+        nftData.owner
       )
       .send({
         from: address,
