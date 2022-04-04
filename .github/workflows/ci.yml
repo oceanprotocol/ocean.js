@@ -59,7 +59,7 @@ jobs:
         run: |
           bash -x start_ocean.sh  --no-aquarius --no-elasticsearch --no-provider --no-dashboard 2>&1 > start_ocean.log & 
         env:
-          CONTRACTS_VERSION: v4_rc1
+          CONTRACTS_VERSION: v1.0.0-alpha.28
       - run: npm ci
       - name: Wait for contracts deployment
         working-directory: ${{ github.workspace }}/barge
@@ -118,7 +118,7 @@ jobs:
         run: |
           bash -x start_ocean.sh --with-provider2 --no-dashboard --with-c2d 2>&1 > start_ocean.log &
         env:
-          CONTRACTS_VERSION: v4_rc1
+          CONTRACTS_VERSION: v1.0.0-alpha.28
       - run: npm ci
       - run: npm run build:metadata
 

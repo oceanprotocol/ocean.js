@@ -136,7 +136,9 @@ describe('Simple compute tests', async () => {
       name: 'testNFT',
       symbol: 'TST',
       templateIndex: 1,
-      tokenURI: 'aaa'
+      tokenURI: 'aaa',
+      transferable: true,
+      owner: publisherAccount
     }
     const erc20ParamsAsset: Erc20CreateParams = {
       templateIndex: 1,
@@ -185,7 +187,9 @@ describe('Simple compute tests', async () => {
       name: 'testNFT',
       symbol: 'TST',
       templateIndex: 1,
-      tokenURI: ''
+      tokenURI: '',
+      transferable: true,
+      owner: publisherAccount
     }
     const erc20ParamsAlgo: Erc20CreateParams = {
       templateIndex: 1,
