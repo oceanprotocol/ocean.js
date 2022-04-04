@@ -3,7 +3,6 @@ import { AbiItem } from 'web3-utils/types'
 import { Contract } from 'web3-eth-contract'
 import BN from 'bn.js'
 import ERC20Template from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC20Template.sol/ERC20Template.json'
-import FixedRate from '@oceanprotocol/contracts/artifacts/contracts/pools/fixedRate/FixedRateExchange.sol/FixedRateExchange.json'
 import MockERC20 from '@oceanprotocol/contracts/artifacts/contracts/utils/mock/MockERC20Decimals.sol/MockERC20Decimals.json'
 import { deployContracts, Addresses } from '../../../TestContractHandler'
 import { web3 } from '../../../config'
@@ -110,7 +109,7 @@ describe('Fixed Rate unit test', () => {
       fixedRate = new FixedRateExchange(
         web3,
         fixedRateAddress,
-        FixedRate.abi as AbiItem[],
+        null,
         contracts.oceanAddress
       )
       assert(fixedRate != null)
