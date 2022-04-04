@@ -100,7 +100,8 @@ export class Provider {
         },
         signal: signal
       })
-      return (await response.json()).nonce.toString()
+      const nonce = (await response.json()).nonce || Date.now()
+      return nonce.toString()
     } catch (e) {
       LoggerInstance.error(e)
       throw new Error('HTTP request failed')
@@ -626,6 +627,7 @@ export class Provider {
     consumeUrl += `?consumerAddress=${accountId}`
     consumeUrl += `&jobId=${jobId}`
     consumeUrl += `&index=${String(index)}`
+    consumeUrl += `&nonce=${nonce}`
     consumeUrl += (signature && `&signature=${signature}`) || ''
 
     if (!computeResultUrl) return null
