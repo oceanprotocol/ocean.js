@@ -8,34 +8,31 @@ import Web3 from 'web3'
 import { GASLIMIT_DEFAULT } from '.'
 
 /**
- * Estimate gas cost for approval function
- * @param {String} account
- * @param {String} tokenAddress
- * @param {String} spender
- * @param {String} amount
- * @param {String} force
- * @param {Contract} contractInstance optional contract instance
- * @return {Promise<number>}
+ * Estimates the gas used when a function would be executed on chain
+ * @param {Contract} tokenContract token contract instance
+ * @param {string} from account that calls the function
+ * @param {string} functionSignature signature of the function
+ * @param {...any[]} args arguments of the function
+ * @return {Promise<number>} gas cost of the function
  */
-export async function estApprove(
-  web3: Web3,
-  account: string,
-  tokenAddress: string,
-  spender: string,
-  amount: string,
-  contractInstance?: Contract
+export async function estimateGas(
+  tokenContract: Contract,
+  from: string,
+  functionSignature: string,
+  ...args: any[]
 ): Promise<number> {
-  const tokenContract = contractInstance || new web3.eth.Contract(minAbi, tokenAddress)
-
   const gasLimitDefault = GASLIMIT_DEFAULT
   let estGas
   try {
-    estGas = await tokenContract.methods
-      .approve(spender, amount)
-      .estimateGas({ from: account }, (err, estGas) => (err ? gasLimitDefault : estGas))
+    estGas = await tokenContract.methods[functionSignature].apply(null, args).estimateGas(
+      {
+        from: from
+      },
+      (err, estGas) => (err ? gasLimitDefault : estGas)
+    )
   } catch (e) {
     estGas = gasLimitDefault
-    LoggerInstance.error('estimate gas failed for approve!', e)
+    LoggerInstance.error(`ERROR: Estimate gas failed for ${functionSignature}!`, e)
   }
   return estGas
 }
@@ -65,13 +62,12 @@ export async function approve(
   }
   let result = null
   const amountFormatted = await amountToUnits(web3, tokenAddress, amount)
-  const estGas = await estApprove(
-    web3,
+  const estGas = await estimateGas(
+    tokenContract,
     account,
-    tokenAddress,
+    'approve(address,uint256)',
     spender,
-    amountFormatted,
-    tokenContract
+    amountFormatted
   )
 
   try {
@@ -86,39 +82,6 @@ export async function approve(
     )
   }
   return result
-}
-
-/**
- * Estimate gas cost for transfer function
- * @param {String} account
- * @param {String} tokenAddress
- * @param {String} recipient
- * @param {String} amount
- * @param {String} force
- * @param {Contract} contractInstance optional contract instance
- * @return {Promise<number>}
- */
-export async function estTransfer(
-  web3: Web3,
-  account: string,
-  tokenAddress: string,
-  recipient: string,
-  amount: string,
-  contractInstance?: Contract
-): Promise<number> {
-  const tokenContract = contractInstance || new web3.eth.Contract(minAbi, tokenAddress)
-
-  const gasLimitDefault = GASLIMIT_DEFAULT
-  let estGas
-  try {
-    estGas = await tokenContract.methods
-      .transfer(recipient, amount)
-      .estimateGas({ from: account }, (err, estGas) => (err ? gasLimitDefault : estGas))
-  } catch (e) {
-    estGas = gasLimitDefault
-    LoggerInstance.error('estimate gas failed for approve!', e)
-  }
-  return estGas
 }
 
 /**
@@ -140,13 +103,12 @@ export async function transfer(
 
   let result = null
   const amountFormatted = await amountToUnits(web3, tokenAddress, amount)
-  const estGas = await estTransfer(
-    web3,
+  const estGas = await estimateGas(
+    tokenContract,
     account,
-    tokenAddress,
+    'transfer(address,uint256)',
     recipient,
-    amountFormatted,
-    tokenContract
+    amountFormatted
   )
 
   try {
