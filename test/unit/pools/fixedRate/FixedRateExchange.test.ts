@@ -19,7 +19,6 @@ describe('Fixed Rate unit test', () => {
   let exchangeOwner: string
   let user1: string
   let user2: string
-  let fixedRateAddress: string
   let exchangeId: string
   let contracts: Addresses
   let fixedRate: FixedRateExchange
@@ -105,10 +104,9 @@ describe('Fixed Rate unit test', () => {
       // user1 has no dt1
       expect(await dtContract.methods.balanceOf(user1).call()).to.equal('0')
 
-      fixedRateAddress = contracts.fixedRateAddress
       fixedRate = new FixedRateExchange(
         web3,
-        fixedRateAddress,
+        contracts.fixedRateAddress,
         null,
         contracts.oceanAddress
       )
@@ -209,14 +207,14 @@ describe('Fixed Rate unit test', () => {
         .mint(exchangeOwner, web3.utils.toWei('1000'))
         .send({ from: exchangeOwner })
       await dtContract.methods
-        .approve(fixedRateAddress, web3.utils.toWei('1000'))
+        .approve(contracts.fixedRateAddress, web3.utils.toWei('1000'))
         .send({ from: exchangeOwner })
       // user1 gets 100 DAI so he can buy DTs
       await daiContract.methods
         .transfer(user1, web3.utils.toWei('100'))
         .send({ from: exchangeOwner })
       await daiContract.methods
-        .approve(fixedRateAddress, web3.utils.toWei('100'))
+        .approve(contracts.fixedRateAddress, web3.utils.toWei('100'))
         .send({ from: user1 })
 
       // user1 has no dts but has 100 DAI
@@ -246,7 +244,7 @@ describe('Fixed Rate unit test', () => {
 
     it('#sellDT - user1 should sell some dt', async () => {
       await dtContract.methods
-        .approve(fixedRateAddress, web3.utils.toWei('10'))
+        .approve(contracts.fixedRateAddress, web3.utils.toWei('10'))
         .send({ from: user1 })
       const daiBalanceBefore = new BN(await daiContract.methods.balanceOf(user1).call())
       const tx = await fixedRate.sellDT(user1, exchangeId, '10', '9')
@@ -424,11 +422,10 @@ describe('Fixed Rate unit test', () => {
       // user1 has no dt1
       expect(await dtContract.methods.balanceOf(user1).call()).to.equal('0')
 
-      fixedRateAddress = contracts.fixedRateAddress
       fixedRate = new FixedRateExchange(
         web3,
-        fixedRateAddress,
-        FixedRate.abi as AbiItem[],
+        contracts.fixedRateAddress,
+        null,
         contracts.oceanAddress
       )
       assert(fixedRate != null)
@@ -524,12 +521,12 @@ describe('Fixed Rate unit test', () => {
         .mint(exchangeOwner, web3.utils.toWei('1000'))
         .send({ from: exchangeOwner })
       await dtContract.methods
-        .approve(fixedRateAddress, web3.utils.toWei('1000'))
+        .approve(contracts.fixedRateAddress, web3.utils.toWei('1000'))
         .send({ from: exchangeOwner })
       // user1 gets 100 USDC so he can buy DTs
       await usdcContract.methods.transfer(user1, 100 * 1e6).send({ from: exchangeOwner })
       await usdcContract.methods
-        .approve(fixedRateAddress, 100 * 1e6)
+        .approve(contracts.fixedRateAddress, 100 * 1e6)
         .send({ from: user1 })
 
       // user1 has no dts but has 100 USDC
@@ -559,7 +556,7 @@ describe('Fixed Rate unit test', () => {
 
     it('#sellDT - user1 should sell some dt', async () => {
       await dtContract.methods
-        .approve(fixedRateAddress, web3.utils.toWei('10'))
+        .approve(contracts.fixedRateAddress, web3.utils.toWei('10'))
         .send({ from: user1 })
       const usdcBalanceBefore = new BN(await usdcContract.methods.balanceOf(user1).call())
       const tx = await fixedRate.sellDT(user1, exchangeId, '10', '9')
