@@ -76,7 +76,9 @@ describe('Simple Publish & consume test', async () => {
       name: 'testNFT',
       symbol: 'TST',
       templateIndex: 1,
-      tokenURI: ''
+      tokenURI: '',
+      transferable: true,
+      owner: publisherAccount
     }
     const erc20Params: Erc20CreateParams = {
       templateIndex: 1,
