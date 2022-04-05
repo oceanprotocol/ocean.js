@@ -2,7 +2,12 @@ import Web3 from 'web3'
 import { AbiItem } from 'web3-utils/types'
 import { TransactionReceipt } from 'web3-core'
 import { Contract } from 'web3-eth-contract'
-import { LoggerInstance, getFairGasPrice, configHelperNetworks } from '../../utils'
+import {
+  LoggerInstance,
+  getFairGasPrice,
+  configHelperNetworks,
+  estimateGas
+} from '../../utils'
 import BigNumber from 'bignumber.js'
 import SideStakingTemplate from '@oceanprotocol/contracts/artifacts/contracts/pools/ssContracts/SideStaking.sol/SideStaking.json'
 import defaultErc20Abi from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC20Template.sol/ERC20Template.json'
@@ -288,16 +293,7 @@ export class SideStaking {
     const sideStaking =
       contractInstance || new this.web3.eth.Contract(this.ssAbi as AbiItem[], ssAddress)
 
-    const gasLimitDefault = this.GASLIMIT_DEFAULT
-    let estGas
-    try {
-      estGas = await sideStaking.methods
-        .getVesting(datatokenAddress)
-        .estimateGas({ from: account }, (err, estGas) => (err ? gasLimitDefault : estGas))
-    } catch (e) {
-      estGas = gasLimitDefault
-    }
-    return estGas
+    return estimateGas(account, sideStaking.methods.getVesting, datatokenAddress)
   }
 
   /** Send vested tokens available to the publisher address, can be called by anyone
@@ -315,12 +311,12 @@ export class SideStaking {
     const sideStaking = new this.web3.eth.Contract(this.ssAbi, ssAddress)
     let result = null
 
-    const estGas = await this.estGetVesting(
+    const estGas = await estimateGas(
       account,
-      ssAddress,
-      datatokenAddress,
-      sideStaking
+      sideStaking.methods.getVesting,
+      datatokenAddress
     )
+
     try {
       result = await sideStaking.methods.getVesting(datatokenAddress).send({
         from: account,
@@ -352,16 +348,13 @@ export class SideStaking {
     const sideStaking =
       contractInstance || new this.web3.eth.Contract(this.ssAbi as AbiItem[], ssAddress)
 
-    const gasLimitDefault = this.GASLIMIT_DEFAULT
-    let estGas
-    try {
-      estGas = await sideStaking.methods
-        .setPoolSwapFee(datatokenAddress, poolAddress, swapFee)
-        .estimateGas({ from: account }, (err, estGas) => (err ? gasLimitDefault : estGas))
-    } catch (e) {
-      estGas = gasLimitDefault
-    }
-    return estGas
+    return estimateGas(
+      account,
+      sideStaking.methods.setPoolSwapFee,
+      datatokenAddress,
+      poolAddress,
+      swapFee
+    )
   }
 
   /** Send vested tokens available to the publisher address, can be called by anyone
@@ -381,14 +374,14 @@ export class SideStaking {
     const sideStaking = new this.web3.eth.Contract(this.ssAbi, ssAddress)
     let result = null
 
-    const estGas = await this.estSetPoolSwapFee(
+    const estGas = await estimateGas(
       account,
-      ssAddress,
+      sideStaking.methods.setPoolSwapFee,
       datatokenAddress,
       poolAddress,
-      swapFee,
-      sideStaking
+      swapFee
     )
+
     try {
       result = await sideStaking.methods
         .setPoolSwapFee(datatokenAddress, poolAddress, swapFee)
