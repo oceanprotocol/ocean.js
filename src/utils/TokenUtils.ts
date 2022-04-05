@@ -1,5 +1,4 @@
 import Decimal from 'decimal.js'
-import { Contract } from 'web3-eth-contract'
 import { amountToUnits, getFairGasPrice, unitsToAmount } from './ContractUtils'
 import { minAbi } from './minAbi'
 import LoggerInstance from './Logger'
@@ -9,32 +8,28 @@ import { GASLIMIT_DEFAULT } from '.'
 
 /**
  * Estimates the gas used when a function would be executed on chain
- * @param {Contract} tokenContract token contract instance
  * @param {string} from account that calls the function
- * @param {string} functionSignature signature of the function
+ * @param {Function} functionToEstimateGas function that we need to estimate the gas
  * @param {...any[]} args arguments of the function
  * @return {Promise<number>} gas cost of the function
  */
 export async function estimateGas(
-  tokenContract: Contract,
   from: string,
-  functionSignature: string,
+  functionToEstimateGas: Function,
   ...args: any[]
 ): Promise<number> {
-  const gasLimitDefault = GASLIMIT_DEFAULT
-  let estGas
+  let estimatedGas = GASLIMIT_DEFAULT
   try {
-    estGas = await tokenContract.methods[functionSignature].apply(null, args).estimateGas(
+    estimatedGas = await functionToEstimateGas.apply(null, args).estimateGas(
       {
         from: from
       },
-      (err, estGas) => (err ? gasLimitDefault : estGas)
+      (err, estGas) => (err ? GASLIMIT_DEFAULT : estGas)
     )
   } catch (e) {
-    estGas = gasLimitDefault
-    LoggerInstance.error(`ERROR: Estimate gas failed for ${functionSignature}!`, e)
+    LoggerInstance.error(`ERROR: Estimate gas failed!`, e)
   }
-  return estGas
+  return estimatedGas
 }
 
 /**
@@ -63,9 +58,8 @@ export async function approve(
   let result = null
   const amountFormatted = await amountToUnits(web3, tokenAddress, amount)
   const estGas = await estimateGas(
-    tokenContract,
     account,
-    'approve(address,uint256)',
+    tokenContract.methods.approve,
     spender,
     amountFormatted
   )
@@ -104,9 +98,8 @@ export async function transfer(
   let result = null
   const amountFormatted = await amountToUnits(web3, tokenAddress, amount)
   const estGas = await estimateGas(
-    tokenContract,
     account,
-    'transfer(address,uint256)',
+    tokenContract.methods.transfer,
     recipient,
     amountFormatted
   )
