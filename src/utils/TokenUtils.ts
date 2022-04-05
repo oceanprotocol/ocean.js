@@ -1,6 +1,6 @@
 import Decimal from 'decimal.js'
 import { Contract } from 'web3-eth-contract'
-import { amountToUnits, getFairGasPrice, unitsToAmount } from './ContractUtils'
+import { amountToUnits, estimateGas, getFairGasPrice, unitsToAmount } from './ContractUtils'
 import { minAbi } from './minAbi'
 import LoggerInstance from './Logger'
 import { TransactionReceipt } from 'web3-core'
@@ -27,17 +27,7 @@ export async function estApprove(
 ): Promise<number> {
   const tokenContract = contractInstance || new web3.eth.Contract(minAbi, tokenAddress)
 
-  const gasLimitDefault = GASLIMIT_DEFAULT
-  let estGas
-  try {
-    estGas = await tokenContract.methods
-      .approve(spender, amount)
-      .estimateGas({ from: account }, (err, estGas) => (err ? gasLimitDefault : estGas))
-  } catch (e) {
-    estGas = gasLimitDefault
-    LoggerInstance.error('estimate gas failed for approve!', e)
-  }
-  return estGas
+  return estimateGas(account, tokenContract.methods.approve, spender, amount)
 }
 
 /**
@@ -65,13 +55,11 @@ export async function approve(
   }
   let result = null
   const amountFormatted = await amountToUnits(web3, tokenAddress, amount)
-  const estGas = await estApprove(
-    web3,
+  const estGas = await estimateGas(
     account,
-    tokenAddress,
+    tokenContract.methods.approve,
     spender,
-    amountFormatted,
-    tokenContract
+    amountFormatted
   )
 
   try {
