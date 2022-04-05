@@ -8,7 +8,8 @@ import {
   setContractDefaults,
   unitsToAmount,
   amountToUnits,
-  LoggerInstance
+  LoggerInstance,
+  estimateGas
 } from '../../utils'
 import BigNumber from 'bignumber.js'
 import PoolTemplate from '@oceanprotocol/contracts/artifacts/contracts/pools/balancer/BPool.sol/BPool.json'
@@ -91,16 +92,7 @@ export class Pool {
         this.config
       )
 
-    const gasLimitDefault = this.GASLIMIT_DEFAULT
-    let estGas
-    try {
-      estGas = await poolContract.methods
-        .setSwapFee(fee)
-        .estimateGas({ from: account }, (err, estGas) => (err ? gasLimitDefault : estGas))
-    } catch (e) {
-      estGas = gasLimitDefault
-    }
-    return estGas
+    return estimateGas(account, poolContract.methods.setSwapFee, fee)
   }
 
   /**
@@ -121,7 +113,7 @@ export class Pool {
       this.config
     )
     let result = null
-    const estGas = await this.estSetSwapFee(account, poolAddress, fee)
+    const estGas = await estimateGas(account, pool.methods.setSwapFee, fee)
 
     try {
       result = await pool.methods.setSwapFee(this.web3.utils.toWei(fee)).send({
@@ -595,16 +587,7 @@ export class Pool {
         this.config
       )
 
-    const gasLimitDefault = this.GASLIMIT_DEFAULT
-    let estGas
-    try {
-      estGas = await poolContract.methods
-        .collectOPC()
-        .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
-    } catch (e) {
-      estGas = gasLimitDefault
-    }
-    return estGas
+    return estimateGas(address, poolContract.methods.collectOPC)
   }
 
   /**
@@ -619,7 +602,7 @@ export class Pool {
       this.config
     )
     let result = null
-    const estGas = await this.estCollectOPC(address, poolAddress)
+    const estGas = await estimateGas(address, pool.methods.collectOPC)
 
     try {
       result = await pool.methods.collectOPC().send({
@@ -653,16 +636,7 @@ export class Pool {
         this.config
       )
 
-    const gasLimitDefault = this.GASLIMIT_DEFAULT
-    let estGas
-    try {
-      estGas = await poolContract.methods
-        .collectMarketFee()
-        .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
-    } catch (e) {
-      estGas = gasLimitDefault
-    }
-    return estGas
+    return estimateGas(address, poolContract.methods.collectMarketFee)
   }
 
   /**
@@ -684,7 +658,7 @@ export class Pool {
       this.config
     )
     let result = null
-    const estGas = await this.estCollectMarketFee(address, poolAddress)
+    const estGas = await estimateGas(address, pool.methods.collectMarketFee)
 
     try {
       result = await pool.methods.collectMarketFee().send({
@@ -721,16 +695,12 @@ export class Pool {
         this.config
       )
 
-    const gasLimitDefault = this.GASLIMIT_DEFAULT
-    let estGas
-    try {
-      estGas = await poolContract.methods
-        .updatePublishMarketFee(newPublishMarketAddress, newPublishMarketSwapFee)
-        .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
-    } catch (e) {
-      estGas = gasLimitDefault
-    }
-    return estGas
+    return estimateGas(
+      address,
+      poolContract.methods.updatePublishMarketFee,
+      newPublishMarketAddress,
+      this.web3.utils.toWei(newPublishMarketSwapFee)
+    )
   }
 
   /**
@@ -756,9 +726,9 @@ export class Pool {
     )
     let result = null
 
-    const estGas = await this.estUpdatePublishMarketFee(
+    const estGas = await estimateGas(
       address,
-      poolAddress,
+      pool.methods.updatePublishMarketFee,
       newPublishMarketAddress,
       this.web3.utils.toWei(newPublishMarketSwapFee)
     )
@@ -822,28 +792,21 @@ export class Pool {
         )
       : MaxUint256
 
-    const gasLimitDefault = this.GASLIMIT_DEFAULT
-    let estGas
-    try {
-      estGas = await poolContract.methods
-        .swapExactAmountIn(
-          [
-            tokenInOutMarket.tokenIn,
-            tokenInOutMarket.tokenOut,
-            tokenInOutMarket.marketFeeAddress
-          ],
-          [
-            tokenAmountIn,
-            minAmountOut,
-            maxPrice,
-            this.web3.utils.toWei(amountsInOutMaxFee.swapMarketFee)
-          ]
-        )
-        .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
-    } catch (e) {
-      estGas = gasLimitDefault
-    }
-    return estGas
+    return estimateGas(
+      address,
+      poolContract.methods.swapExactAmountIn,
+      [
+        tokenInOutMarket.tokenIn,
+        tokenInOutMarket.tokenOut,
+        tokenInOutMarket.marketFeeAddress
+      ],
+      [
+        tokenAmountIn,
+        minAmountOut,
+        maxPrice,
+        this.web3.utils.toWei(amountsInOutMaxFee.swapMarketFee)
+      ]
+    )
   }
 
   /**
@@ -875,13 +838,6 @@ export class Pool {
       throw new Error(`tokenAmountIn is greater than ${maxSwap.toString()}`)
     }
 
-    const estGas = await this.estSwapExactAmountIn(
-      address,
-      poolAddress,
-      tokenInOutMarket,
-      amountsInOutMaxFee
-    )
-
     const tokenAmountIn = await amountToUnits(
       this.web3,
       tokenInOutMarket.tokenIn,
@@ -894,8 +850,6 @@ export class Pool {
       amountsInOutMaxFee.minAmountOut
     )
 
-    let result = null
-
     const maxPrice = amountsInOutMaxFee.maxPrice
       ? await amountToUnits(
           this.web3,
@@ -904,6 +858,23 @@ export class Pool {
         )
       : MaxUint256
 
+    const estGas = await estimateGas(
+      address,
+      pool.methods.swapExactAmountIn,
+      [
+        tokenInOutMarket.tokenIn,
+        tokenInOutMarket.tokenOut,
+        tokenInOutMarket.marketFeeAddress
+      ],
+      [
+        tokenAmountIn,
+        minAmountOut,
+        maxPrice,
+        this.web3.utils.toWei(amountsInOutMaxFee.swapMarketFee)
+      ]
+    )
+
+    let result = null
     try {
       result = await pool.methods
         .swapExactAmountIn(
@@ -954,8 +925,6 @@ export class Pool {
         this.config
       )
 
-    const gasLimitDefault = this.GASLIMIT_DEFAULT
-
     const maxAmountIn = await amountToUnits(
       this.web3,
       tokenInOutMarket.tokenIn,
@@ -976,27 +945,21 @@ export class Pool {
         )
       : MaxUint256
 
-    let estGas
-    try {
-      estGas = await poolContract.methods
-        .swapExactAmountOut(
-          [
-            tokenInOutMarket.tokenIn,
-            tokenInOutMarket.tokenOut,
-            tokenInOutMarket.marketFeeAddress
-          ],
-          [
-            maxAmountIn,
-            tokenAmountOut,
-            maxPrice,
-            this.web3.utils.toWei(amountsInOutMaxFee.swapMarketFee)
-          ]
-        )
-        .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
-    } catch (e) {
-      estGas = gasLimitDefault
-    }
-    return estGas
+    return estimateGas(
+      address,
+      poolContract.methods.swapExactAmountOut,
+      [
+        tokenInOutMarket.tokenIn,
+        tokenInOutMarket.tokenOut,
+        tokenInOutMarket.marketFeeAddress
+      ],
+      [
+        maxAmountIn,
+        tokenAmountOut,
+        maxPrice,
+        this.web3.utils.toWei(amountsInOutMaxFee.swapMarketFee)
+      ]
+    )
   }
 
   /**
@@ -1024,13 +987,6 @@ export class Pool {
       throw new Error(`tokenAmountOut is greater than ${maxSwap.toString()}`)
     }
 
-    const estGas = await this.estSwapExactAmountOut(
-      account,
-      poolAddress,
-      tokenInOutMarket,
-      amountsInOutMaxFee
-    )
-
     const maxAmountIn = await amountToUnits(
       this.web3,
       tokenInOutMarket.tokenIn,
@@ -1050,6 +1006,22 @@ export class Pool {
           amountsInOutMaxFee.maxPrice
         )
       : MaxUint256
+
+    const estGas = await estimateGas(
+      account,
+      pool.methods.swapExactAmountOut,
+      [
+        tokenInOutMarket.tokenIn,
+        tokenInOutMarket.tokenOut,
+        tokenInOutMarket.marketFeeAddress
+      ],
+      [
+        maxAmountIn,
+        tokenAmountOut,
+        maxPrice,
+        this.web3.utils.toWei(amountsInOutMaxFee.swapMarketFee)
+      ]
+    )
 
     try {
       result = await pool.methods
@@ -1100,16 +1072,12 @@ export class Pool {
         this.config
       )
 
-    const gasLimitDefault = this.GASLIMIT_DEFAULT
-    let estGas
-    try {
-      estGas = await poolContract.methods
-        .joinPool(poolAmountOut, maxAmountsIn)
-        .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
-    } catch (e) {
-      estGas = gasLimitDefault
-    }
-    return estGas
+    return estimateGas(
+      address,
+      poolContract.methods.joinPool,
+      poolAmountOut,
+      maxAmountsIn
+    )
   }
 
   /**
@@ -1143,9 +1111,9 @@ export class Pool {
 
     let result = null
 
-    const estGas = await this.estJoinPool(
+    const estGas = await estimateGas(
       address,
-      poolAddress,
+      pool.methods.joinPool,
       this.web3.utils.toWei(poolAmountOut),
       weiMaxAmountsIn
     )
@@ -1187,16 +1155,12 @@ export class Pool {
         this.config
       )
 
-    const gasLimitDefault = this.GASLIMIT_DEFAULT
-    let estGas
-    try {
-      estGas = await poolContract.methods
-        .exitPool(poolAmountIn, minAmountsOut)
-        .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
-    } catch (e) {
-      estGas = gasLimitDefault
-    }
-    return estGas
+    return estimateGas(
+      address,
+      poolContract.methods.exitPool,
+      poolAmountIn,
+      minAmountsOut
+    )
   }
 
   /**
@@ -1226,14 +1190,15 @@ export class Pool {
       const amount = await amountToUnits(this.web3, tokens[i], minAmountsOut[i])
       weiMinAmountsOut.push(amount)
     }
-    let result = null
-    const estGas = await this.estExitPool(
+
+    const estGas = await estimateGas(
       account,
-      poolAddress,
+      pool.methods.exitPool,
       this.web3.utils.toWei(poolAmountIn),
       weiMinAmountsOut
     )
 
+    let result = null
     try {
       result = await pool.methods
         .exitPool(this.web3.utils.toWei(poolAmountIn), weiMinAmountsOut)
@@ -1272,16 +1237,12 @@ export class Pool {
         this.config
       )
 
-    const gasLimitDefault = this.GASLIMIT_DEFAULT
-    let estGas
-    try {
-      estGas = await poolContract.methods
-        .joinswapExternAmountIn(tokenAmountIn, minPoolAmountOut)
-        .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
-    } catch (e) {
-      estGas = gasLimitDefault
-    }
-    return estGas
+    return estimateGas(
+      address,
+      poolContract.methods.joinswapExternAmountIn,
+      tokenAmountIn,
+      minPoolAmountOut
+    )
   }
 
   /**
@@ -1312,9 +1273,9 @@ export class Pool {
     }
 
     const amountInFormatted = await amountToUnits(this.web3, tokenIn, tokenAmountIn)
-    const estGas = await this.estJoinswapExternAmountIn(
+    const estGas = await estimateGas(
       account,
-      poolAddress,
+      pool.methods.joinswapExternAmountIn,
       amountInFormatted,
       this.web3.utils.toWei(minPoolAmountOut)
     )
@@ -1360,16 +1321,12 @@ export class Pool {
         this.config
       )
 
-    const gasLimitDefault = this.GASLIMIT_DEFAULT
-    let estGas
-    try {
-      estGas = await poolContract.methods
-        .exitswapPoolAmountIn(poolAmountIn, minTokenAmountOut)
-        .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
-    } catch (e) {
-      estGas = gasLimitDefault
-    }
-    return estGas
+    return estimateGas(
+      address,
+      poolContract.methods.exitswapPoolAmountIn,
+      poolAmountIn,
+      minTokenAmountOut
+    )
   }
 
   /**
@@ -1411,9 +1368,9 @@ export class Pool {
       await this.getBaseToken(poolAddress),
       minTokenAmountOut
     )
-    const estGas = await this.estExitswapPoolAmountIn(
+    const estGas = await estimateGas(
       account,
-      poolAddress,
+      pool.methods.exitswapPoolAmountIn,
       this.web3.utils.toWei(poolAmountIn),
       minTokenOutFormatted
     )
