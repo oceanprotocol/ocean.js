@@ -8,7 +8,8 @@ import {
   LoggerInstance as logger,
   getFairGasPrice,
   configHelperNetworks,
-  setContractDefaults
+  setContractDefaults,
+  estimateGas
 } from '../../utils/'
 import { Datatoken } from '../../tokens'
 import { Config } from '../../models/index.js'
@@ -90,23 +91,15 @@ export class Dispenser {
     maxBalance: string,
     allowedSwapper: string
   ): Promise<any> {
-    const gasLimitDefault = this.GASLIMIT_DEFAULT
-    let estGas
-    try {
-      estGas = await this.dispenserContract.methods
-        .create(
-          dtAddress,
-          this.web3.utils.toWei(maxTokens),
-          this.web3.utils.toWei(maxBalance),
-          address,
-          allowedSwapper
-        )
-        .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
-    } catch (e) {
-      estGas = gasLimitDefault
-    }
-
-    return estGas
+    return estimateGas(
+      address,
+      this.dispenserContract.methods.create,
+      dtAddress,
+      this.web3.utils.toWei(maxTokens),
+      this.web3.utils.toWei(maxBalance),
+      address,
+      allowedSwapper
+    )
   }
 
   /**
@@ -125,11 +118,13 @@ export class Dispenser {
     maxBalance: string,
     allowedSwapper: string
   ): Promise<TransactionReceipt> {
-    const estGas = await this.estGasCreate(
-      dtAddress,
+    const estGas = await estimateGas(
       address,
-      maxTokens,
-      maxBalance,
+      this.dispenserContract.methods.create,
+      dtAddress,
+      this.web3.utils.toWei(maxTokens),
+      this.web3.utils.toWei(maxBalance),
+      address,
       allowedSwapper
     )
 
@@ -164,20 +159,13 @@ export class Dispenser {
     maxBalance: string,
     address: string
   ): Promise<any> {
-    let estGas
-    const gasLimitDefault = this.GASLIMIT_DEFAULT
-    try {
-      estGas = await this.dispenserContract.methods
-        .activate(
-          dtAddress,
-          this.web3.utils.toWei(maxTokens),
-          this.web3.utils.toWei(maxBalance)
-        )
-        .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
-    } catch (e) {
-      estGas = gasLimitDefault
-    }
-    return estGas
+    return estimateGas(
+      address,
+      this.dispenserContract.methods.activate,
+      dtAddress,
+      this.web3.utils.toWei(maxTokens),
+      this.web3.utils.toWei(maxBalance)
+    )
   }
 
   /**
@@ -195,7 +183,14 @@ export class Dispenser {
     address: string
   ): Promise<TransactionReceipt> {
     try {
-      const estGas = await this.estGasActivate(dtAddress, maxTokens, maxBalance, address)
+      const estGas = await estimateGas(
+        address,
+        this.dispenserContract.methods.activate,
+        dtAddress,
+        this.web3.utils.toWei(maxTokens),
+        this.web3.utils.toWei(maxBalance)
+      )
+
       const trxReceipt = await this.dispenserContract.methods
         .activate(
           dtAddress,
@@ -221,16 +216,7 @@ export class Dispenser {
    * @return {Promise<any>}
    */
   public async estGasDeactivate(dtAddress: string, address: string): Promise<any> {
-    let estGas
-    const gasLimitDefault = this.GASLIMIT_DEFAULT
-    try {
-      estGas = await this.dispenserContract.methods
-        .deactivate(dtAddress)
-        .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
-    } catch (e) {
-      estGas = gasLimitDefault
-    }
-    return estGas
+    return estimateGas(address, this.dispenserContract.methods.deactivate, dtAddress)
   }
 
   /**
@@ -244,7 +230,12 @@ export class Dispenser {
     address: string
   ): Promise<TransactionReceipt> {
     try {
-      const estGas = await this.estGasDeactivate(dtAddress, address)
+      const estGas = await estimateGas(
+        address,
+        this.dispenserContract.methods.deactivate,
+        dtAddress
+      )
+
       const trxReceipt = await this.dispenserContract.methods.deactivate(dtAddress).send({
         from: address,
         gas: estGas + 1,
@@ -269,16 +260,12 @@ export class Dispenser {
     address: string,
     newAllowedSwapper: string
   ): Promise<any> {
-    let estGas
-    const gasLimitDefault = this.GASLIMIT_DEFAULT
-    try {
-      estGas = await this.dispenserContract.methods
-        .setAllowedSwapper(dtAddress, newAllowedSwapper)
-        .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
-    } catch (e) {
-      estGas = gasLimitDefault
-    }
-    return estGas
+    return estimateGas(
+      address,
+      this.dispenserContract.methods.setAllowedSwapper,
+      dtAddress,
+      newAllowedSwapper
+    )
   }
 
   /**
@@ -294,11 +281,13 @@ export class Dispenser {
     newAllowedSwapper: string
   ): Promise<TransactionReceipt> {
     try {
-      const estGas = await this.estGasSetAllowedSwapper(
-        dtAddress,
+      const estGas = await estimateGas(
         address,
+        this.dispenserContract.methods.setAllowedSwapper,
+        dtAddress,
         newAllowedSwapper
       )
+
       const trxReceipt = await this.dispenserContract.methods
         .setAllowedSwapper(dtAddress, newAllowedSwapper)
         .send({
@@ -326,16 +315,13 @@ export class Dispenser {
     amount: string = '1',
     destination: string
   ): Promise<any> {
-    let estGas
-    const gasLimitDefault = this.GASLIMIT_DEFAULT
-    try {
-      estGas = await this.dispenserContract.methods
-        .dispense(dtAddress, this.web3.utils.toWei(amount), destination)
-        .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
-    } catch (e) {
-      estGas = gasLimitDefault
-    }
-    return estGas
+    return estimateGas(
+      address,
+      this.dispenserContract.methods.dispense,
+      dtAddress,
+      this.web3.utils.toWei(amount),
+      destination
+    )
   }
 
   /**
@@ -354,7 +340,14 @@ export class Dispenser {
     amount: string = '1',
     destination: string
   ): Promise<TransactionReceipt> {
-    const estGas = await this.estGasDispense(dtAddress, address, amount, destination)
+    const estGas = await estimateGas(
+      address,
+      this.dispenserContract.methods.dispense,
+      dtAddress,
+      this.web3.utils.toWei(amount),
+      destination
+    )
+
     try {
       const trxReceipt = await this.dispenserContract.methods
         .dispense(dtAddress, this.web3.utils.toWei(amount), destination)
@@ -378,16 +371,7 @@ export class Dispenser {
    * @return {Promise<any>}
    */
   public async estGasOwnerWithdraw(dtAddress: string, address: string): Promise<any> {
-    let estGas
-    const gasLimitDefault = this.GASLIMIT_DEFAULT
-    try {
-      estGas = await this.dispenserContract.methods
-        .ownerWithdraw(dtAddress)
-        .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
-    } catch (e) {
-      estGas = gasLimitDefault
-    }
-    return estGas
+    return estimateGas(address, this.dispenserContract.methods.ownerWithdraw, dtAddress)
   }
 
   /**
@@ -400,7 +384,12 @@ export class Dispenser {
     dtAddress: string,
     address: string
   ): Promise<TransactionReceipt> {
-    const estGas = await this.estGasOwnerWithdraw(dtAddress, address)
+    const estGas = await estimateGas(
+      address,
+      this.dispenserContract.methods.ownerWithdraw,
+      dtAddress
+    )
+
     try {
       const trxReceipt = await this.dispenserContract.methods
         .ownerWithdraw(dtAddress)
