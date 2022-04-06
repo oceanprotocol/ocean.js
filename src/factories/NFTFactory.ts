@@ -41,6 +41,8 @@ export interface NftCreateData {
   symbol: string
   templateIndex: number
   tokenURI: string
+  transferable: boolean
+  owner: string
 }
 
 const addressZERO = '0x0000000000000000000000000000000000000000'
@@ -94,7 +96,9 @@ export class NftFactory {
           nftData.templateIndex,
           addressZERO,
           addressZERO,
-          nftData.tokenURI
+          nftData.tokenURI,
+          nftData.transferable,
+          nftData.owner
         )
         .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
     } catch (e) {
@@ -137,7 +141,9 @@ export class NftFactory {
         nftData.templateIndex,
         addressZERO,
         addressZERO,
-        nftData.tokenURI
+        nftData.tokenURI,
+        nftData.transferable,
+        nftData.owner
       )
       .send({
         from: address,
@@ -492,14 +498,14 @@ export class NftFactory {
     if ((await this.getOwner()) !== address) {
       throw new Error(`Caller is not Factory Owner`)
     }
-    if (templateIndex > (await this.getCurrentNFTTemplateCount())) {
+    if (templateIndex > (await this.getCurrentTokenTemplateCount())) {
       throw new Error(`Template index doesnt exist`)
     }
 
     if (templateIndex === 0) {
       throw new Error(`Template index cannot be ZERO`)
     }
-    if ((await this.getNFTTemplate(templateIndex)).isActive === false) {
+    if ((await this.getTokenTemplate(templateIndex)).isActive === false) {
       throw new Error(`Template is already disabled`)
     }
     const estGas = await this.estGasDisableTokenTemplate(address, templateIndex)
@@ -551,7 +557,7 @@ export class NftFactory {
     if ((await this.getOwner()) !== address) {
       throw new Error(`Caller is not Factory Owner`)
     }
-    if (templateIndex > (await this.getCurrentNFTTemplateCount())) {
+    if (templateIndex > (await this.getCurrentTokenTemplateCount())) {
       throw new Error(`Template index doesnt exist`)
     }
 
@@ -705,7 +711,7 @@ export class NftFactory {
     let estGas
     try {
       const ercCreateData = getErcCreationParams(ercParams)
-      const poolData = getPoolCreationParams(poolParams)
+      const poolData = await getPoolCreationParams(this.web3, poolParams)
       estGas = await this.factory721.methods
         .createNftWithErc20WithPool(nftCreateData, ercCreateData, poolData)
         .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
@@ -738,7 +744,7 @@ export class NftFactory {
       poolParams
     )
     const ercCreateData = getErcCreationParams(ercParams)
-    const poolData = getPoolCreationParams(poolParams)
+    const poolData = await getPoolCreationParams(this.web3, poolParams)
 
     // Invoke createToken function of the contract
     const trxReceipt = await this.factory721.methods
@@ -769,8 +775,7 @@ export class NftFactory {
     let estGas
 
     const ercCreateData = getErcCreationParams(ercParams)
-
-    const fixedData = getFreCreationParams(freParams)
+    const fixedData = await getFreCreationParams(freParams)
 
     try {
       estGas = await this.factory721.methods
@@ -866,6 +871,9 @@ export class NftFactory {
     dispenserParams: DispenserCreationParams
   ): Promise<TransactionReceipt> {
     const ercCreateData = getErcCreationParams(ercParams)
+
+    dispenserParams.maxBalance = Web3.utils.toWei(dispenserParams.maxBalance)
+    dispenserParams.maxTokens = Web3.utils.toWei(dispenserParams.maxTokens)
 
     const estGas = await this.estGasCreateNftErc20WithDispenser(
       address,

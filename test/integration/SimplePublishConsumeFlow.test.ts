@@ -1,29 +1,19 @@
-import ProviderInstance from '../../src/provider/Provider'
-import Aquarius from '../../src/aquarius/Aquarius'
 import { assert } from 'chai'
-import { NftFactory, NftCreateData } from '../../src/factories/index'
-import { Datatoken } from '../../src/tokens/Datatoken'
-import { getHash } from '../../src/utils'
-import { Nft } from '../../src/tokens/NFT'
-import Web3 from 'web3'
 import { SHA256 } from 'crypto-js'
-import { homedir } from 'os'
-import fs from 'fs'
-import { downloadFile } from '../../src/utils/FetchHelper'
+import { web3, getTestConfig, getAddresses } from '../config'
+import {
+  Config,
+  ProviderInstance,
+  Aquarius,
+  NftFactory,
+  NftCreateData,
+  Datatoken,
+  getHash,
+  Nft,
+  downloadFile
+} from '../../src'
 import { ProviderFees, Erc20CreateParams } from '../../src/@types'
 
-const data = JSON.parse(
-  fs.readFileSync(
-    process.env.ADDRESS_FILE ||
-      `${homedir}/.ocean/ocean-contracts/artifacts/address.json`,
-    'utf8'
-  )
-)
-
-const addresses = data.development
-const aquarius = new Aquarius('http://127.0.0.1:5000')
-const web3 = new Web3('http://127.0.0.1:8545')
-const providerUrl = 'http://172.15.0.4:8030'
 const assetUrl = [
   {
     type: 'url',
@@ -63,6 +53,18 @@ const ddo = {
 }
 
 describe('Simple Publish & consume test', async () => {
+  let config: Config
+  let addresses: any
+  let aquarius: Aquarius
+  let providerUrl: any
+
+  before(async () => {
+    config = await getTestConfig(web3)
+    addresses = getAddresses()
+    aquarius = new Aquarius(config.metadataCacheUri)
+    providerUrl = config.providerUri
+  })
+
   it('should publish a dataset (create NFT + ERC20)', async () => {
     const nft = new Nft(web3)
     const datatoken = new Datatoken(web3)
@@ -74,13 +76,15 @@ describe('Simple Publish & consume test', async () => {
       name: 'testNFT',
       symbol: 'TST',
       templateIndex: 1,
-      tokenURI: ''
+      tokenURI: '',
+      transferable: true,
+      owner: publisherAccount
     }
     const erc20Params: Erc20CreateParams = {
       templateIndex: 1,
       cap: '100000',
       feeAmount: '0',
-      feeManager: '0x0000000000000000000000000000000000000000',
+      paymentCollector: '0x0000000000000000000000000000000000000000',
       feeToken: '0x0000000000000000000000000000000000000000',
       minter: publisherAccount,
       mpFeeAddress: '0x0000000000000000000000000000000000000000'

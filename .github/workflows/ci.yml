@@ -58,7 +58,8 @@ jobs:
         working-directory: ${{ github.workspace }}/barge
         run: |
           bash -x start_ocean.sh  --no-aquarius --no-elasticsearch --no-provider --no-dashboard 2>&1 > start_ocean.log & 
-
+        env:
+          CONTRACTS_VERSION: v1.0.0-alpha.28
       - run: npm ci
       - name: Wait for contracts deployment
         working-directory: ${{ github.workspace }}/barge
@@ -116,7 +117,8 @@ jobs:
         working-directory: ${{ github.workspace }}/barge
         run: |
           bash -x start_ocean.sh --with-provider2 --no-dashboard --with-c2d 2>&1 > start_ocean.log &
- 
+        env:
+          CONTRACTS_VERSION: v1.0.0-alpha.28
       - run: npm ci
       - run: npm run build:metadata
 
@@ -131,6 +133,8 @@ jobs:
 
       - name: integration
         run: npm run test:integration:cover
+        env:
+          PROVIDER_URL: 'http://172.15.0.4:8030'
       - name:  docker logs
         run: docker logs ocean_aquarius_1 && docker logs ocean_provider_1 && docker logs ocean_provider2_1 && docker logs ocean_computetodata_1
         if: ${{ failure() }}

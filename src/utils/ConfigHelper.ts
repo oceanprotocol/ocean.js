@@ -7,7 +7,7 @@ const configHelperNetworksBase: Config = {
   chainId: null,
   network: 'unknown',
   metadataCacheUri: 'https://v4.aquarius.oceanprotocol.com',
-  nodeUri: 'http://localhost:8545',
+  nodeUri: 'http://127.0.0.1:8545',
   providerUri: 'http://127.0.0.1:8030',
   subgraphUri: null,
   explorerUri: null,
@@ -42,7 +42,7 @@ export const configHelperNetworks: Config[] = [
     providerUri: 'https://v4.provider.ropsten.oceanprotocol.com',
     subgraphUri: 'https://v4.subgraph.ropsten.oceanprotocol.com',
     explorerUri: 'https://ropsten.etherscan.io',
-    startBlock: 9227563
+    gasFeeMultiplier: 1.1
   },
   {
     ...configHelperNetworksBase,
@@ -52,7 +52,7 @@ export const configHelperNetworks: Config[] = [
     providerUri: 'https://v4.provider.rinkeby.oceanprotocol.com',
     subgraphUri: 'https://v4.subgraph.rinkeby.oceanprotocol.com',
     explorerUri: 'https://rinkeby.etherscan.io',
-    startBlock: 7294090
+    gasFeeMultiplier: 1.1
   },
   {
     ...configHelperNetworksBase,
@@ -76,18 +76,17 @@ export const configHelperNetworks: Config[] = [
     providerUri: 'https://v4.provider.polygon.oceanprotocol.com',
     subgraphUri: 'https://v4.subgraph.polygon.oceanprotocol.com',
     explorerUri: 'https://polygonscan.com',
-    oceanTokenSymbol: 'mOCEAN',
-    startBlock: 11005222
+    oceanTokenSymbol: 'mOCEAN'
   },
   {
     ...configHelperNetworksBase,
     chainId: 1287,
     network: 'moonbase',
-    nodeUri: 'https://rpc.testnet.moonbeam.network',
+    nodeUri: 'https://rpc.api.moonbase.moonbeam.network',
     providerUri: 'https://v4.provider.moonbase.oceanprotocol.com',
     subgraphUri: 'https://v4.subgraph.moonbase.oceanprotocol.com',
     explorerUri: 'https://moonbase.moonscan.io/',
-    startBlock: 90707
+    gasFeeMultiplier: 1.1
   },
   {
     ...configHelperNetworksBase,
@@ -105,7 +104,8 @@ export const configHelperNetworks: Config[] = [
     nodeUri: 'https://polygon-mumbai.infura.io/v3',
     providerUri: 'https://v4.provider.mumbai.oceanprotocol.com',
     subgraphUri: 'https://v4.subgraph.mumbai.oceanprotocol.com',
-    explorerUri: 'https://mumbai.polygonscan.com'
+    explorerUri: 'https://mumbai.polygonscan.com',
+    gasFeeMultiplier: 1.1
   },
   {
     ...configHelperNetworksBase,

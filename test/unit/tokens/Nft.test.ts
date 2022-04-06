@@ -1,29 +1,19 @@
 import { assert } from 'chai'
-import Web3 from 'web3'
-import PoolTemplate from '@oceanprotocol/contracts/artifacts/contracts/pools/balancer/BPool.sol/BPool.json'
 import ERC721Factory from '@oceanprotocol/contracts/artifacts/contracts/ERC721Factory.sol/ERC721Factory.json'
 import ERC721Template from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC721Template.sol/ERC721Template.json'
-import SideStaking from '@oceanprotocol/contracts/artifacts/contracts/pools/ssContracts/SideStaking.sol/SideStaking.json'
-import Router from '@oceanprotocol/contracts/artifacts/contracts/pools/FactoryRouter.sol/FactoryRouter.json'
-import ERC20Template from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC20Template.sol/ERC20Template.json'
-import Dispenser from '@oceanprotocol/contracts/artifacts/contracts/pools/dispenser/Dispenser.sol/Dispenser.json'
-import FixedRate from '@oceanprotocol/contracts/artifacts/contracts/pools/fixedRate/FixedRateExchange.sol/FixedRateExchange.json'
-import OPFCollector from '@oceanprotocol/contracts/artifacts/contracts/communityFee/OPFCommunityFeeCollector.sol/OPFCommunityFeeCollector.json'
-import { TestContractHandler } from '../../TestContractHandler'
-import { NftFactory, NftCreateData } from '../../../src/factories/NFTFactory'
-import { Nft } from '../../../src/tokens/NFT'
+import { deployContracts, Addresses } from '../../TestContractHandler'
 import { AbiItem } from 'web3-utils'
 import sha256 from 'crypto-js/sha256'
+import { web3 } from '../../config'
+import { NftFactory, NftCreateData, Nft } from '../../../src'
 import { MetadataAndTokenURI } from '../../../src/@types/Erc721'
-
-const web3 = new Web3('http://127.0.0.1:8545')
 
 describe('NFT', () => {
   let nftOwner: string
   let user1: string
   let user2: string
   let user3: string
-  let contractHandler: TestContractHandler
+  let contracts: Addresses
   let nftDatatoken: Nft
   let nftFactory: NftFactory
   let nftAddress: string
@@ -33,40 +23,21 @@ describe('NFT', () => {
   const publishMarketFeeAdress = '0xeE9300b7961e0a01d9f0adb863C7A227A07AaD75'
   const oceanAddress = '0x967da4048cd07ab37855c090aaf366e4ce1b9f48'
 
-  it('should deploy contracts', async () => {
-    contractHandler = new TestContractHandler(
-      web3,
-      ERC721Template.abi as AbiItem[],
-      ERC20Template.abi as AbiItem[],
-      PoolTemplate.abi as AbiItem[],
-      ERC721Factory.abi as AbiItem[],
-      Router.abi as AbiItem[],
-      SideStaking.abi as AbiItem[],
-      FixedRate.abi as AbiItem[],
-      Dispenser.abi as AbiItem[],
-      OPFCollector.abi as AbiItem[],
+  before(async () => {
+    const accounts = await web3.eth.getAccounts()
+    nftOwner = accounts[0]
+    user1 = accounts[1]
+    user2 = accounts[2]
+    user3 = accounts[3]
+  })
 
-      ERC721Template.bytecode,
-      ERC20Template.bytecode,
-      PoolTemplate.bytecode,
-      ERC721Factory.bytecode,
-      Router.bytecode,
-      SideStaking.bytecode,
-      FixedRate.bytecode,
-      Dispenser.bytecode,
-      OPFCollector.bytecode
-    )
-    await contractHandler.getAccounts()
-    nftOwner = contractHandler.accounts[0]
-    user1 = contractHandler.accounts[1]
-    user2 = contractHandler.accounts[2]
-    user3 = contractHandler.accounts[3]
-    await contractHandler.deployContracts(nftOwner, Router.abi as AbiItem[])
+  it('should deploy contracts', async () => {
+    contracts = await deployContracts(web3, nftOwner)
   })
 
   it('should initialize NFTFactory instance and create a new NFT', async () => {
     nftFactory = new NftFactory(
-      contractHandler.factory721Address,
+      contracts.erc721FactoryAddress,
       web3,
       ERC721Factory.abi as AbiItem[]
     )
@@ -74,7 +45,9 @@ describe('NFT', () => {
       name: nftName,
       symbol: nftSymbol,
       templateIndex: 1,
-      tokenURI: 'https://oceanprotocol.com/nft/'
+      tokenURI: 'https://oceanprotocol.com/nft/',
+      transferable: true,
+      owner: nftOwner
     }
 
     nftAddress = await nftFactory.createNFT(nftOwner, nftData)

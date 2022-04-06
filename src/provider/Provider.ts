@@ -100,7 +100,7 @@ export class Provider {
         },
         signal: signal
       })
-      return String((await response.json()).nonce)
+      return (await response.json()).nonce.toString()
     } catch (e) {
       LoggerInstance.error(e)
       throw new Error('HTTP request failed')
@@ -528,26 +528,21 @@ export class Provider {
     }
   }
 
-  /** Get status for a specific jobId/documentId/owner.
-   * @param {string} did
-   * @param {string} consumerAddress
-   * @param {string} providerUri
-   * @param {Web3} web3
+  /** Get compute status for a specific jobId/documentId/owner.
+   * @param {string} providerUri The URI of the provider we want to query
+   * @param {string} consumerAddress The consumer ethereum address
+   * @param {string} jobId The ID of a compute job.
+   * @param {string} did The ID of the asset
    * @param {AbortSignal} signal abort signal
-   * @param {string} jobId
    * @return {Promise<ComputeJob | ComputeJob[]>}
    */
   public async computeStatus(
     providerUri: string,
-    signal?: AbortSignal,
+    consumerAddress: string,
     jobId?: string,
     did?: string,
-    consumerAddress?: string
+    signal?: AbortSignal
   ): Promise<ComputeJob | ComputeJob[]> {
-    if (!jobId && !did && !consumerAddress) {
-      throw new Error('You need at least one of jobId, did, consumerAddress')
-    }
-
     const providerEndpoints = await this.getEndpoints(providerUri)
     const serviceEndpoints = await this.getServiceEndpoints(
       providerUri,
@@ -557,8 +552,8 @@ export class Provider {
       ? this.getEndpointURL(serviceEndpoints, 'computeStatus').urlPath
       : null
 
-    let url = '?documentId=' + noZeroX(did)
-    url += (consumerAddress && `&consumerAddress=${consumerAddress}`) || ''
+    let url = `?consumerAddress=${consumerAddress}`
+    url += (did && `&documentId=${noZeroX(did)}`) || ''
     url += (jobId && `&jobId=${jobId}`) || ''
 
     if (!computeStatusUrl) return null
@@ -623,7 +618,7 @@ export class Provider {
 
     let signatureMessage = accountId
     signatureMessage += jobId
-    signatureMessage += String(index)
+    signatureMessage += index.toString()
     signatureMessage += nonce
     const signature = await this.createHashSignature(web3, accountId, signatureMessage)
 

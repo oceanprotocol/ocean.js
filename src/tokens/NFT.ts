@@ -44,7 +44,7 @@ export class Nft {
    * @param {String} nftAddress ERC721 addreess
    * @param {String} address User address
    * @param {String} minter User set as initial minter for the ERC20
-   * @param {String} feeManager initial feeManager for this DT
+   * @param {String} paymentCollector initial paymentCollector for this DT
    * @param {String} mpFeeAddress Consume marketplace fee address
    * @param {String} feeToken address of the token marketplace wants to add fee on top
    * @param {String} feeAmount amount of feeToken to be transferred to mpFeeAddress on top, will be converted to WEI
@@ -59,7 +59,7 @@ export class Nft {
     nftAddress: string,
     address: string,
     minter: string,
-    feeManager: string,
+    paymentCollector: string,
     mpFeeAddress: string,
     feeToken: string,
     feeAmount: string,
@@ -82,7 +82,7 @@ export class Nft {
         .createERC20(
           templateIndex,
           [name, symbol],
-          [minter, feeManager, mpFeeAddress, feeToken],
+          [minter, paymentCollector, mpFeeAddress, feeToken],
           [this.web3.utils.toWei(cap), this.web3.utils.toWei(feeAmount)],
           []
         )
@@ -98,7 +98,7 @@ export class Nft {
    * @param {String} nftAddress ERC721 addreess
    * @param {String} address User address
    * @param {String} minter User set as initial minter for the ERC20
-   * @param {String} feeManager initial feeManager for this DT
+   * @param {String} paymentCollector initial paymentCollector for this DT
    * @param {String} mpFeeAddress Consume marketplace fee address
    * @param {String} feeToken address of the token marketplace wants to add fee on top
    * @param {String} feeAmount amount of feeToken to be transferred to mpFeeAddress on top, will be converted to WEI
@@ -112,7 +112,7 @@ export class Nft {
     nftAddress: string,
     address: string,
     minter: string,
-    feeManager: string,
+    paymentCollector: string,
     mpFeeAddress: string,
     feeToken: string,
     feeAmount: string,
@@ -141,7 +141,7 @@ export class Nft {
       nftAddress,
       address,
       minter,
-      feeManager,
+      paymentCollector,
       mpFeeAddress,
       feeToken,
       feeAmount,
@@ -157,7 +157,7 @@ export class Nft {
       .createERC20(
         templateIndex,
         [name, symbol],
-        [minter, feeManager, mpFeeAddress, feeToken],
+        [minter, paymentCollector, mpFeeAddress, feeToken],
         [this.web3.utils.toWei(cap), this.web3.utils.toWei(feeAmount)],
         []
       )
@@ -1119,9 +1119,13 @@ export class Nft {
       )
     const gasLimitDefault = this.GASLIMIT_DEFAULT
     let estGas
+    const sanitizedMetadataAndTokenURI = {
+      ...metadataAndTokenURI,
+      metadataProofs: metadataAndTokenURI.metadataProofs || []
+    }
     try {
       estGas = await nftContract.methods
-        .setMetaDataAndTokenURI(metadataAndTokenURI)
+        .setMetaDataAndTokenURI(sanitizedMetadataAndTokenURI)
         .estimateGas({ from: metadataUpdater }, (err, estGas) =>
           err ? gasLimitDefault : estGas
         )
@@ -1157,8 +1161,12 @@ export class Nft {
       metadataAndTokenURI,
       nftContract
     )
+    const sanitizedMetadataAndTokenURI = {
+      ...metadataAndTokenURI,
+      metadataProofs: metadataAndTokenURI.metadataProofs || []
+    }
     const trxReceipt = await nftContract.methods
-      .setMetaDataAndTokenURI(metadataAndTokenURI)
+      .setMetaDataAndTokenURI(sanitizedMetadataAndTokenURI)
       .send({
         from: metadataUpdater,
         gas: estGas + 1,

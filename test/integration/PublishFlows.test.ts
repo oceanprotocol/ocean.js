@@ -1,14 +1,6 @@
 import MockERC20 from '@oceanprotocol/contracts/artifacts/contracts/utils/mock/MockERC20Decimals.sol/MockERC20Decimals.json'
-import ProviderInstance from '../../src/provider/Provider'
-import Aquarius from '../../src/aquarius/Aquarius'
 import { assert } from 'chai'
-import { NftFactory, NftCreateData } from '../../src/factories/index'
-import { getHash, ZERO_ADDRESS } from '../../src/utils'
-import { Nft } from '../../src/tokens/NFT'
-import Web3 from 'web3'
 import { SHA256 } from 'crypto-js'
-import { homedir } from 'os'
-import fs from 'fs'
 import { AbiItem } from 'web3-utils'
 import {
   ValidateMetadata,
@@ -18,19 +10,18 @@ import {
   FreCreationParams,
   DispenserCreationParams
 } from '../../src/@types'
+import { web3, getTestConfig, getAddresses } from '../config'
+import {
+  Config,
+  ProviderInstance,
+  Aquarius,
+  NftFactory,
+  NftCreateData,
+  getHash,
+  ZERO_ADDRESS,
+  Nft
+} from '../../src'
 
-const data = JSON.parse(
-  fs.readFileSync(
-    process.env.ADDRESS_FILE ||
-      `${homedir}/.ocean/ocean-contracts/artifacts/address.json`,
-    'utf8'
-  )
-)
-
-const addresses = data.development
-const aquarius = new Aquarius('http://127.0.0.1:5000')
-const web3 = new Web3('http://127.0.0.1:8545')
-const providerUrl = 'http://172.15.0.4:8030'
 let nft: Nft
 let factory: NftFactory
 let accounts: string[]
@@ -74,6 +65,18 @@ const genericAsset: DDO = {
 }
 
 describe('Publish tests', async () => {
+  let config: Config
+  let addresses: any
+  let aquarius: Aquarius
+  let providerUrl: any
+
+  before(async () => {
+    config = await getTestConfig(web3)
+    addresses = getAddresses()
+    aquarius = new Aquarius(config.metadataCacheUri)
+    providerUrl = config.providerUri
+  })
+
   it('initialise testes classes', async () => {
     nft = new Nft(web3)
     factory = new NftFactory(addresses.ERC721Factory, web3)
@@ -93,13 +96,15 @@ describe('Publish tests', async () => {
       name: 'testNftPool',
       symbol: 'TSTP',
       templateIndex: 1,
-      tokenURI: ''
+      tokenURI: '',
+      transferable: true,
+      owner: accounts[0]
     }
     const erc20Params: Erc20CreateParams = {
       templateIndex: 1,
       cap: '100000',
       feeAmount: '0',
-      feeManager: ZERO_ADDRESS,
+      paymentCollector: ZERO_ADDRESS,
       feeToken: ZERO_ADDRESS,
       minter: accounts[0],
       mpFeeAddress: ZERO_ADDRESS
@@ -172,13 +177,15 @@ describe('Publish tests', async () => {
       name: 'testNftFre',
       symbol: 'TSTF',
       templateIndex: 1,
-      tokenURI: ''
+      tokenURI: '',
+      transferable: true,
+      owner: accounts[0]
     }
     const erc20Params: Erc20CreateParams = {
       templateIndex: 1,
       cap: '100000',
       feeAmount: '0',
-      feeManager: ZERO_ADDRESS,
+      paymentCollector: ZERO_ADDRESS,
       feeToken: ZERO_ADDRESS,
       minter: accounts[0],
       mpFeeAddress: ZERO_ADDRESS
@@ -248,13 +255,15 @@ describe('Publish tests', async () => {
       name: 'testNftDispenser',
       symbol: 'TSTD',
       templateIndex: 1,
-      tokenURI: ''
+      tokenURI: '',
+      transferable: true,
+      owner: accounts[0]
     }
     const erc20Params: Erc20CreateParams = {
       templateIndex: 1,
       cap: '100000',
       feeAmount: '0',
-      feeManager: ZERO_ADDRESS,
+      paymentCollector: ZERO_ADDRESS,
       feeToken: ZERO_ADDRESS,
       minter: accounts[0],
       mpFeeAddress: ZERO_ADDRESS
@@ -262,8 +271,8 @@ describe('Publish tests', async () => {
 
     const dispenserParams: DispenserCreationParams = {
       dispenserAddress: addresses.Dispenser,
-      maxTokens: web3.utils.toWei('1'),
-      maxBalance: web3.utils.toWei('1'),
+      maxTokens: '1',
+      maxBalance: '1',
       withMint: true,
       allowedSwapper: ZERO_ADDRESS
     }
