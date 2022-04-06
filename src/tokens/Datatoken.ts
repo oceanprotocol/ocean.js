@@ -11,7 +11,8 @@ import {
   setContractDefaults,
   configHelperNetworks,
   getFreOrderParams,
-  estimateGas
+  estimateGas,
+  ZERO_ADDRESS
 } from '../utils'
 import {
   ConsumeMarketFee,
@@ -193,8 +194,7 @@ export class Datatoken {
         this.config
       )
 
-    if (!fixedRateParams.allowedConsumer)
-      fixedRateParams.allowedConsumer = '0x0000000000000000000000000000000000000000'
+    if (!fixedRateParams.allowedConsumer) fixedRateParams.allowedConsumer = ZERO_ADDRESS
     const withMint = fixedRateParams.withMint ? 1 : 0
 
     return estimateGas(
@@ -237,8 +237,7 @@ export class Datatoken {
     if (!(await this.isERC20Deployer(dtAddress, address))) {
       throw new Error(`User is not ERC20 Deployer`)
     }
-    if (!fixedRateParams.allowedConsumer)
-      fixedRateParams.allowedConsumer = '0x0000000000000000000000000000000000000000'
+    if (!fixedRateParams.allowedConsumer) fixedRateParams.allowedConsumer = ZERO_ADDRESS
 
     const withMint = fixedRateParams.withMint ? 1 : 0
 
@@ -312,8 +311,7 @@ export class Datatoken {
         this.config
       )
 
-    if (!dispenserParams.allowedSwapper)
-      dispenserParams.allowedSwapper = '0x0000000000000000000000000000000000000000'
+    if (!dispenserParams.allowedSwapper) dispenserParams.allowedSwapper = ZERO_ADDRESS
 
     if (!dispenserParams.withMint) dispenserParams.withMint = false
 
@@ -351,8 +349,7 @@ export class Datatoken {
       this.config
     )
 
-    if (!dispenserParams.allowedSwapper)
-      dispenserParams.allowedSwapper = '0x0000000000000000000000000000000000000000'
+    if (!dispenserParams.allowedSwapper) dispenserParams.allowedSwapper = ZERO_ADDRESS
 
     if (!dispenserParams.withMint) dispenserParams.withMint = false
 
@@ -894,8 +891,8 @@ export class Datatoken {
     )
     if (!consumeMarketFee) {
       consumeMarketFee = {
-        consumeMarketFeeAddress: '0x0000000000000000000000000000000000000000',
-        consumeMarketFeeToken: '0x0000000000000000000000000000000000000000',
+        consumeMarketFeeAddress: ZERO_ADDRESS,
+        consumeMarketFeeToken: ZERO_ADDRESS,
         consumeMarketFeeAmount: '0'
       }
     }
