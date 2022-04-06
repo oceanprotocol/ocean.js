@@ -95,9 +95,7 @@ export class NftFactory {
       nftData.templateIndex,
       addressZERO,
       addressZERO,
-      nftData.tokenURI,
-      nftData.transferable,
-      nftData.owner
+      nftData.tokenURI
     )
   }
 
@@ -133,9 +131,7 @@ export class NftFactory {
       nftData.templateIndex,
       addressZERO,
       addressZERO,
-      nftData.tokenURI,
-      nftData.transferable,
-      nftData.owner
+      nftData.tokenURI
     )
 
     // Invoke createToken function of the contract
@@ -146,9 +142,7 @@ export class NftFactory {
         nftData.templateIndex,
         addressZERO,
         addressZERO,
-        nftData.tokenURI,
-        nftData.transferable,
-        nftData.owner
+        nftData.tokenURI
       )
       .send({
         from: address,
