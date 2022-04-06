@@ -56,7 +56,9 @@ describe('Dispenser flow', () => {
       name: '72120Bundle',
       symbol: '72Bundle',
       templateIndex: 1,
-      tokenURI: 'https://oceanprotocol.com/nft/'
+      tokenURI: 'https://oceanprotocol.com/nft/',
+      transferable: true,
+      owner: factoryOwner
     }
 
     const ercParams: Erc20CreateParams = {

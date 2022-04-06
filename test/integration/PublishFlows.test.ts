@@ -96,7 +96,9 @@ describe('Publish tests', async () => {
       name: 'testNftPool',
       symbol: 'TSTP',
       templateIndex: 1,
-      tokenURI: ''
+      tokenURI: '',
+      transferable: true,
+      owner: accounts[0]
     }
     const erc20Params: Erc20CreateParams = {
       templateIndex: 1,
@@ -175,7 +177,9 @@ describe('Publish tests', async () => {
       name: 'testNftFre',
       symbol: 'TSTF',
       templateIndex: 1,
-      tokenURI: ''
+      tokenURI: '',
+      transferable: true,
+      owner: accounts[0]
     }
     const erc20Params: Erc20CreateParams = {
       templateIndex: 1,
@@ -251,7 +255,9 @@ describe('Publish tests', async () => {
       name: 'testNftDispenser',
       symbol: 'TSTD',
       templateIndex: 1,
-      tokenURI: ''
+      tokenURI: '',
+      transferable: true,
+      owner: accounts[0]
     }
     const erc20Params: Erc20CreateParams = {
       templateIndex: 1,
