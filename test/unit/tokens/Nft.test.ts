@@ -28,7 +28,9 @@ describe('NFT', () => {
     name: NFT_NAME,
     symbol: NFT_SYMBOL,
     templateIndex: 1,
-    tokenURI: NFT_TOKEN_URI
+    tokenURI: NFT_TOKEN_URI,
+    transferable: true,
+    owner: nftOwner
   }
 
   before(async () => {
@@ -37,6 +39,8 @@ describe('NFT', () => {
     user1 = accounts[1]
     user2 = accounts[2]
     user3 = accounts[3]
+
+    NFT_DATA.owner = nftOwner
   })
 
   it('should deploy contracts', async () => {
