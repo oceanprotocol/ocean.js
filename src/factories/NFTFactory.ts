@@ -51,7 +51,6 @@ const addressZERO = '0x0000000000000000000000000000000000000000'
  * Provides an interface for NFT Factory contract
  */
 export class NftFactory {
-  public GASLIMIT_DEFAULT = 1000000
   public factory721Address: string
   public factory721Abi: AbiItem | AbiItem[]
   public web3: Web3

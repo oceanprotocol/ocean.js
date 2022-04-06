@@ -16,7 +16,6 @@ import { Config } from '../../models'
 export class SideStaking {
   public ssAbi: AbiItem | AbiItem[]
   public web3: Web3
-  public GASLIMIT_DEFAULT = 1000000
   public config: Config
 
   constructor(web3: Web3, ssAbi: AbiItem | AbiItem[] = null, config?: Config) {

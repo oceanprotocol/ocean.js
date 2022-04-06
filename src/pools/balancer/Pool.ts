@@ -38,7 +38,6 @@ const MaxUint256 =
 export class Pool {
   public poolAbi: AbiItem | AbiItem[]
   public web3: Web3
-  public GASLIMIT_DEFAULT = 1000000
   private config: Config
 
   constructor(web3: Web3, poolAbi: AbiItem | AbiItem[] = null, config?: Config) {

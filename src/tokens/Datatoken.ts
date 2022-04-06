@@ -45,7 +45,6 @@ export interface DispenserParams {
 }
 
 export class Datatoken {
-  public GASLIMIT_DEFAULT = 1000000
   public factoryAddress: string
   public factoryABI: AbiItem | AbiItem[]
   public datatokensAbi: AbiItem | AbiItem[]

@@ -16,7 +16,6 @@ import { Config } from '../models/index.js'
  * Provides an interface for FactoryRouter contract
  */
 export class Router {
-  public GASLIMIT_DEFAULT = 1000000
   public routerAddress: string
   public RouterAbi: AbiItem | AbiItem[]
   public web3: Web3

@@ -26,7 +26,6 @@ interface Roles {
 }
 
 export class Nft {
-  public GASLIMIT_DEFAULT = 1000000
   public factory721Address: string
   public factory721Abi: AbiItem | AbiItem[]
   public nftAbi: AbiItem | AbiItem[]

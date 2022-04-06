@@ -55,7 +55,6 @@ export enum FixedRateCreateProgressStep {
 /* eslint-enable no-unused-vars */
 
 export class FixedRateExchange {
-  public GASLIMIT_DEFAULT = 1000000
   /** Ocean related functions */
   public oceanAddress: string = null
   public fixedRateAddress: string
