@@ -95,7 +95,9 @@ describe('Router unit test', () => {
       name: '72120Bundle',
       symbol: '72Bundle',
       templateIndex: 1,
-      tokenURI: 'https://oceanprotocol.com/nft/'
+      tokenURI: 'https://oceanprotocol.com/nft/',
+      transferable: true,
+      owner: factoryOwner
     }
 
     const ercParams: Erc20CreateParams = {
@@ -148,7 +150,9 @@ describe('Router unit test', () => {
       name: '72120Bundle2',
       symbol: '72Bundle2',
       templateIndex: 1,
-      tokenURI: 'https://oceanprotocol.com/nft2/'
+      tokenURI: 'https://oceanprotocol.com/nft2/',
+      transferable: true,
+      owner: factoryOwner
     }
 
     const ercParams2: Erc20CreateParams = {

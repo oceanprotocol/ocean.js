@@ -38,11 +38,13 @@ describe('Datatoken', () => {
   const ERC20_NAME = 'ERC20B1'
   const ERC20_SYMBOL = 'ERC20DT1Symbol'
 
-  const nftData: NftCreateData = {
+  const NFT_DATA: NftCreateData = {
     name: NFT_NAME,
     symbol: NFT_SYMBOL,
     templateIndex: 1,
-    tokenURI: NFT_TOKEN_URI
+    tokenURI: NFT_TOKEN_URI,
+    transferable: true,
+    owner: nftOwner
   }
 
   before(async () => {
@@ -51,6 +53,8 @@ describe('Datatoken', () => {
     user1 = accounts[1]
     user2 = accounts[2]
     user3 = accounts[3]
+
+    NFT_DATA.owner = nftOwner
   })
 
   it('should deploy contracts', async () => {
@@ -62,7 +66,7 @@ describe('Datatoken', () => {
     nftDatatoken = new Nft(web3)
     datatoken = new Datatoken(web3)
 
-    nftAddress = await nftFactory.createNFT(nftOwner, nftData)
+    nftAddress = await nftFactory.createNFT(nftOwner, NFT_DATA)
   })
 
   it('#createERC20 - should create a new ERC20 DT from NFT contract', async () => {
