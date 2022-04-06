@@ -12,8 +12,7 @@ import {
   getPoolCreationParams,
   configHelperNetworks,
   setContractDefaults,
-  estimateGas,
-  ZERO_ADDRESS
+  estimateGas
 } from '../utils'
 import { Config } from '../models/index.js'
 import {
@@ -47,10 +46,12 @@ export interface NftCreateData {
   owner: string
 }
 
+const addressZERO = '0x0000000000000000000000000000000000000000'
 /**
  * Provides an interface for NFT Factory contract
  */
 export class NftFactory {
+  public GASLIMIT_DEFAULT = 1000000
   public factory721Address: string
   public factory721Abi: AbiItem | AbiItem[]
   public web3: Web3
@@ -92,9 +93,11 @@ export class NftFactory {
       nftData.name,
       nftData.symbol,
       nftData.templateIndex,
-      ZERO_ADDRESS,
-      ZERO_ADDRESS,
-      nftData.tokenURI
+      addressZERO,
+      addressZERO,
+      nftData.tokenURI,
+      nftData.transferable,
+      nftData.owner
     )
   }
 
@@ -128,9 +131,11 @@ export class NftFactory {
       nftData.name,
       nftData.symbol,
       nftData.templateIndex,
-      ZERO_ADDRESS,
-      ZERO_ADDRESS,
-      nftData.tokenURI
+      addressZERO,
+      addressZERO,
+      nftData.tokenURI,
+      nftData.transferable,
+      nftData.owner
     )
 
     // Invoke createToken function of the contract
@@ -139,9 +144,11 @@ export class NftFactory {
         nftData.name,
         nftData.symbol,
         nftData.templateIndex,
-        ZERO_ADDRESS,
-        ZERO_ADDRESS,
-        nftData.tokenURI
+        addressZERO,
+        addressZERO,
+        nftData.tokenURI,
+        nftData.transferable,
+        nftData.owner
       )
       .send({
         from: address,
@@ -271,7 +278,7 @@ export class NftFactory {
     if ((await this.getOwner()) !== address) {
       throw new Error(`Caller is not Factory Owner`)
     }
-    if (templateAddress === ZERO_ADDRESS) {
+    if (templateAddress === addressZERO) {
       throw new Error(`Template cannot be ZERO address`)
     }
 
@@ -430,7 +437,7 @@ export class NftFactory {
     if ((await this.getOwner()) !== address) {
       throw new Error(`Caller is not Factory Owner`)
     }
-    if (templateAddress === ZERO_ADDRESS) {
+    if (templateAddress === addressZERO) {
       throw new Error(`Template cannot be address ZERO`)
     }
 
