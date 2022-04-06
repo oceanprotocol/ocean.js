@@ -47,7 +47,9 @@ describe('Nft Factory test', () => {
     name: NFT_NAME,
     symbol: NFT_SYMBOL,
     templateIndex: 1,
-    tokenURI: NFT_TOKEN_URI
+    tokenURI: NFT_TOKEN_URI,
+    transferable: true,
+    owner: factoryOwner
   }
 
   before(async () => {
@@ -56,6 +58,8 @@ describe('Nft Factory test', () => {
     nftOwner = accounts[1]
     user1 = accounts[2]
     user2 = accounts[3]
+
+    NFT_DATA.owner = factoryOwner
 
     ercParams = {
       templateIndex: 1,
