@@ -66,7 +66,9 @@ describe('Datatoken', () => {
       name: nftName,
       symbol: nftSymbol,
       templateIndex: 1,
-      tokenURI: 'https://oceanprotocol.com/nft/'
+      tokenURI: 'https://oceanprotocol.com/nft/',
+      transferable: true,
+      owner: nftOwner
     }
 
     nftAddress = await nftFactory.createNFT(nftOwner, nftData)

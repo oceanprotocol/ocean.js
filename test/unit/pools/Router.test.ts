@@ -40,7 +40,9 @@ describe('Router unit test', () => {
     name: NFT_NAME,
     symbol: NFT_SYMBOL,
     templateIndex: 1,
-    tokenURI: NFT_TOKEN_URI
+    tokenURI: NFT_TOKEN_URI,
+    transferable: true,
+    owner: factoryOwner
   }
 
   before(async () => {
@@ -48,6 +50,8 @@ describe('Router unit test', () => {
     factoryOwner = accounts[0]
     user1 = accounts[1]
     user2 = accounts[2]
+
+    NFT_DATA.owner = factoryOwner
   })
 
   it('should deploy contracts', async () => {
