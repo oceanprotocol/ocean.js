@@ -117,14 +117,17 @@ describe('Fixed Rate unit test', () => {
       expect(await fixedRate.isActive(exchangeId)).to.equal(true)
       expect(await fixedRate.isActive('0x00')).to.equal(false)
     })
+
     it('#getOwner - should get exchange owner given an id', async () => {
       expect(await fixedRate.getExchangeOwner(exchangeId)).to.equal(exchangeOwner)
     })
+
     it('#getOPFCollector - should get OPF collector', async () => {
       expect(await fixedRate.getOPCCollector()).to.equal(
         contracts.opfCommunityFeeCollectorAddress
       )
     })
+
     it('#getRouter - should get Router address', async () => {
       expect(await fixedRate.getRouter()).to.equal(contracts.routerAddress)
     })
@@ -184,10 +187,12 @@ describe('Fixed Rate unit test', () => {
       // exchange owner hasn't approved any DT for sell
       expect(await fixedRate.getDTSupply(exchangeId)).to.equal('0')
     })
+
     it('#getBTSupply - should get the bt supply in the exchange', async () => {
       // no baseToken at the beginning
       expect(await fixedRate.getBTSupply(exchangeId)).to.equal('0')
     })
+
     it('#calcBaseInGivenOutDT - should get bt amount in for a specific dt amount', async () => {
       // 100.2 DAI for 100 DT (0.1% market fee and 0.1% ocean fee)
       expect(
@@ -196,6 +201,7 @@ describe('Fixed Rate unit test', () => {
         ).baseTokenAmount
       ).to.equal('100.3')
     })
+
     it('#getAmountBTOut - should get bt amount out for a specific dt amount', async () => {
       // 99.8 DAI for 100 DT (0.1% market fee and 0.1% ocean fee)
       expect(await fixedRate.getAmountBTOut(exchangeId, '100')).to.equal('99.7')
@@ -297,14 +303,17 @@ describe('Fixed Rate unit test', () => {
     it('#getAllowedSwapper- should return address(0) if not set, if exchangeOwner', async () => {
       expect(await fixedRate.getAllowedSwapper(exchangeId)).to.equal(ZERO_ADDRESS)
     })
+
     it('#setAllowedSwapper- should set an allowed swapper, if exchangeOwner', async () => {
       await fixedRate.setAllowedSwapper(exchangeOwner, exchangeId, user1)
       expect(await fixedRate.getAllowedSwapper(exchangeId)).to.equal(user1)
     })
+
     it('#setAllowedSwapper- should disable allowed swapper(return address(0)), if exchangeOwner', async () => {
       await fixedRate.setAllowedSwapper(exchangeOwner, exchangeId, ZERO_ADDRESS)
       expect(await fixedRate.getAllowedSwapper(exchangeId)).to.equal(ZERO_ADDRESS)
     })
+
     it('#collectBT- should collect BT in the contract, if exchangeOwner', async () => {
       // there are no bt in the contract
       expect((await fixedRate.getExchange(exchangeId)).btBalance).to.equal('0')
@@ -318,6 +327,7 @@ describe('Fixed Rate unit test', () => {
       // btBalance is zero
       expect((await fixedRate.getExchange(exchangeId)).btBalance).to.equal('0')
     })
+
     it('#collectDT- should collect DT in the contract, if exchangeOwner', async () => {
       const result = await fixedRate.getExchange(exchangeId)
       // 9 dts left
@@ -435,14 +445,17 @@ describe('Fixed Rate unit test', () => {
       expect(await fixedRate.isActive(exchangeId)).to.equal(true)
       expect(await fixedRate.isActive('0x00')).to.equal(false)
     })
+
     it('#getOwner - should get exchange owner given an id', async () => {
       expect(await fixedRate.getExchangeOwner(exchangeId)).to.equal(exchangeOwner)
     })
+
     it('#getOPFCollector - should get OPF collector', async () => {
       expect(await fixedRate.getOPCCollector()).to.equal(
         contracts.opfCommunityFeeCollectorAddress
       )
     })
+
     it('#getRouter - should get Router address', async () => {
       expect(await fixedRate.getRouter()).to.equal(contracts.routerAddress)
     })
@@ -498,10 +511,12 @@ describe('Fixed Rate unit test', () => {
       // exchange owner hasn't approved any DT for sell
       expect(await fixedRate.getDTSupply(exchangeId)).to.equal('0')
     })
+
     it('#getBTSupply - should get the bt supply in the exchange', async () => {
       // no baseToken at the beginning
       expect(await fixedRate.getBTSupply(exchangeId)).to.equal('0')
     })
+
     it('#calcBaseInGivenOutDT - should get bt amount in for a specific dt amount', async () => {
       // 100.2 USDC for 100 DT (0.1% market fee and 0.1% ocean fee)
       expect(
@@ -510,6 +525,7 @@ describe('Fixed Rate unit test', () => {
         ).baseTokenAmount
       ).to.equal('100.3')
     })
+
     it('#getAmountBTOut - should get bt amount out for a specific dt amount', async () => {
       // 99.8 USDC for 100 DT (0.1% market fee and 0.1% ocean fee)
       expect(await fixedRate.getAmountBTOut(exchangeId, '100')).to.equal('99.7')
@@ -609,14 +625,17 @@ describe('Fixed Rate unit test', () => {
     it('#getAllowedSwapper- should return address(0) if not set, if exchangeOwner', async () => {
       expect(await fixedRate.getAllowedSwapper(exchangeId)).to.equal(ZERO_ADDRESS)
     })
+
     it('#setAllowedSwapper- should set an allowed swapper, if exchangeOwner', async () => {
       await fixedRate.setAllowedSwapper(exchangeOwner, exchangeId, user1)
       expect(await fixedRate.getAllowedSwapper(exchangeId)).to.equal(user1)
     })
+
     it('#setAllowedSwapper- should disable allowed swapper(return address(0)), if exchangeOwner', async () => {
       await fixedRate.setAllowedSwapper(exchangeOwner, exchangeId, ZERO_ADDRESS)
       expect(await fixedRate.getAllowedSwapper(exchangeId)).to.equal(ZERO_ADDRESS)
     })
+
     it('#collectBT- should collect BT in the contract, if exchangeOwner', async () => {
       // there are no bt in the contract
       expect((await fixedRate.getExchange(exchangeId)).btBalance).to.equal('0')
@@ -630,6 +649,7 @@ describe('Fixed Rate unit test', () => {
       // btBalance is zero
       expect((await fixedRate.getExchange(exchangeId)).btBalance).to.equal('0')
     })
+
     it('#collectDT- should collect DT in the contract, if exchangeOwner', async () => {
       const result = await fixedRate.getExchange(exchangeId)
       // 9 dts left
