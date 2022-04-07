@@ -29,7 +29,6 @@ describe('Nft Factory test', () => {
   let dtAddress: string
   let dtAddress2: string
   let nftAddress: string
-  let ercParams: Erc20CreateParams
 
   const VESTING_AMOUNT = '10000'
   const CAP_AMOUNT = '1000000'
@@ -52,6 +51,18 @@ describe('Nft Factory test', () => {
     owner: factoryOwner
   }
 
+  const ERC_PARAMS: Erc20CreateParams = {
+    templateIndex: 1,
+    minter: nftOwner,
+    paymentCollector: user2,
+    mpFeeAddress: user1,
+    feeToken: ZERO_ADDRESS,
+    cap: CAP_AMOUNT,
+    feeAmount: FEE_ZERO,
+    name: ERC20_NAME,
+    symbol: ERC20_SYMBOL
+  }
+
   before(async () => {
     const accounts = await web3.eth.getAccounts()
     factoryOwner = accounts[0]
@@ -60,18 +71,9 @@ describe('Nft Factory test', () => {
     user2 = accounts[3]
 
     NFT_DATA.owner = factoryOwner
-
-    ercParams = {
-      templateIndex: 1,
-      minter: nftOwner,
-      paymentCollector: user2,
-      mpFeeAddress: user1,
-      feeToken: ZERO_ADDRESS,
-      cap: CAP_AMOUNT,
-      feeAmount: FEE_ZERO,
-      name: ERC20_NAME,
-      symbol: ERC20_SYMBOL
-    }
+    ERC_PARAMS.minter = nftOwner
+    ERC_PARAMS.paymentCollector = user2
+    ERC_PARAMS.mpFeeAddress = user1
   })
 
   it('should deploy contracts', async () => {
@@ -111,7 +113,7 @@ describe('Nft Factory test', () => {
 
   it('#createNftwithErc - should create an NFT and a Datatoken', async () => {
     // we prepare transaction parameters objects
-    const txReceipt = await nftFactory.createNftWithErc20(nftOwner, NFT_DATA, ercParams)
+    const txReceipt = await nftFactory.createNftWithErc20(nftOwner, NFT_DATA, ERC_PARAMS)
 
     // events have been emitted
     expect(txReceipt.events.NFTCreated.event === 'NFTCreated')
@@ -126,7 +128,7 @@ describe('Nft Factory test', () => {
     const currentNFTCount = await nftFactory.getCurrentNFTCount()
     const currentTokenCount = await nftFactory.getCurrentTokenCount()
 
-    await nftFactory.createNftWithErc20(nftOwner, NFT_DATA, ercParams)
+    await nftFactory.createNftWithErc20(nftOwner, NFT_DATA, ERC_PARAMS)
 
     expect((await nftFactory.getCurrentNFTCount()) === currentNFTCount + 1)
     expect((await nftFactory.getCurrentTokenCount()) === currentTokenCount + 1)
@@ -167,7 +169,7 @@ describe('Nft Factory test', () => {
     const txReceipt = await nftFactory.createNftErc20WithPool(
       nftOwner,
       NFT_DATA,
-      ercParams,
+      ERC_PARAMS,
       poolParams
     )
 
@@ -195,7 +197,7 @@ describe('Nft Factory test', () => {
     const txReceipt = await nftFactory.createNftErc20WithFixedRate(
       nftOwner,
       NFT_DATA,
-      ercParams,
+      ERC_PARAMS,
       freParams
     )
 
@@ -221,7 +223,7 @@ describe('Nft Factory test', () => {
     const txReceipt = await nftFactory.createNftErc20WithDispenser(
       nftOwner,
       NFT_DATA,
-      ercParams,
+      ERC_PARAMS,
       dispenserParams
     )
 
