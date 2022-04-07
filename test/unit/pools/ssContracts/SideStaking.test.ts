@@ -12,7 +12,8 @@ import {
   NftFactory,
   NftCreateData,
   Pool,
-  unitsToAmount
+  unitsToAmount,
+  ZERO_ADDRESS
 } from '../../../../src'
 import { SideStaking } from '../../../../src/pools/ssContracts/SideStaking'
 import {
@@ -36,13 +37,50 @@ describe('SideStaking unit test', () => {
   let erc20Contract: Contract
   let daiContract: Contract
   let usdcContract: Contract
-  const vestedBlocks = 2500000
+
+  const DAI_AMOUNT = 2000
+  const USDC_AMOUNT = 10000
+  const VESTED_BLOCKS = 2500000
+  const VESTING_AMOUNT = '10000'
+  const CAP_AMOUNT = '1000000'
+  const NFT_NAME = '72120Bundle'
+  const NFT_SYMBOL = '72Bundle'
+  const NFT_TOKEN_URI = 'https://oceanprotocol.com/nft/'
+  const ERC20_NAME = 'ERC20B1'
+  const ERC20_SYMBOL = 'ERC20DT1Symbol'
+  const FEE_ZERO = '0'
+
+  const NFT_DATA: NftCreateData = {
+    name: NFT_NAME,
+    symbol: NFT_SYMBOL,
+    templateIndex: 1,
+    tokenURI: NFT_TOKEN_URI,
+    transferable: true,
+    owner: factoryOwner
+  }
+
+  const ERC_PARAMS: Erc20CreateParams = {
+    templateIndex: 1,
+    minter: factoryOwner,
+    paymentCollector: user2,
+    mpFeeAddress: factoryOwner,
+    feeToken: ZERO_ADDRESS,
+    cap: CAP_AMOUNT,
+    feeAmount: FEE_ZERO,
+    name: ERC20_NAME,
+    symbol: ERC20_SYMBOL
+  }
 
   before(async () => {
     const accounts = await web3.eth.getAccounts()
     factoryOwner = accounts[0]
     user1 = accounts[1]
     user2 = accounts[2]
+
+    NFT_DATA.owner = factoryOwner
+    ERC_PARAMS.minter = factoryOwner
+    ERC_PARAMS.paymentCollector = user2
+    ERC_PARAMS.mpFeeAddress = factoryOwner
   })
 
   it('should deploy contracts', async () => {
@@ -64,7 +102,7 @@ describe('SideStaking unit test', () => {
       factoryOwner,
       contracts.daiAddress,
       contracts.erc721FactoryAddress,
-      '2000'
+      DAI_AMOUNT.toString()
     )
 
     assert(
@@ -75,7 +113,7 @@ describe('SideStaking unit test', () => {
           factoryOwner,
           contracts.erc721FactoryAddress
         )
-      ) >= 2000
+      ) >= DAI_AMOUNT
     )
 
     await approve(
@@ -83,7 +121,7 @@ describe('SideStaking unit test', () => {
       factoryOwner,
       contracts.usdcAddress,
       contracts.erc721FactoryAddress,
-      '10000'
+      USDC_AMOUNT.toString()
     )
 
     assert(
@@ -94,7 +132,7 @@ describe('SideStaking unit test', () => {
           factoryOwner,
           contracts.erc721FactoryAddress
         )
-      ) >= 10000
+      ) >= USDC_AMOUNT
     )
   })
 
@@ -103,27 +141,6 @@ describe('SideStaking unit test', () => {
       // CREATE A POOL
       // we prepare transaction parameters objects
       const nftFactory = new NftFactory(contracts.erc721FactoryAddress, web3)
-
-      const nftData: NftCreateData = {
-        name: '72120Bundle',
-        symbol: '72Bundle',
-        templateIndex: 1,
-        tokenURI: 'https://oceanprotocol.com/nft/',
-        transferable: true,
-        owner: factoryOwner
-      }
-
-      const ercParams: Erc20CreateParams = {
-        templateIndex: 1,
-        minter: factoryOwner,
-        paymentCollector: user2,
-        mpFeeAddress: factoryOwner,
-        feeToken: '0x0000000000000000000000000000000000000000',
-        cap: '1000000',
-        feeAmount: '0',
-        name: 'ERC20B1',
-        symbol: 'ERC20DT1Symbol'
-      }
 
       const poolParams: PoolCreationParams = {
         ssContract: contracts.sideStakingAddress,
@@ -134,8 +151,8 @@ describe('SideStaking unit test', () => {
         poolTemplateAddress: contracts.poolTemplateAddress,
         rate: '1',
         baseTokenDecimals: 18,
-        vestingAmount: '10000',
-        vestedBlocks: vestedBlocks,
+        vestingAmount: VESTING_AMOUNT,
+        vestedBlocks: VESTED_BLOCKS,
         initialBaseTokenLiquidity: '2000',
         swapFeeLiquidityProvider: '0.001',
         swapFeeMarketRunner: '0.001'
@@ -143,8 +160,8 @@ describe('SideStaking unit test', () => {
 
       const txReceipt = await nftFactory.createNftErc20WithPool(
         factoryOwner,
-        nftData,
-        ercParams,
+        NFT_DATA,
+        ERC_PARAMS,
         poolParams
       )
 
@@ -208,7 +225,7 @@ describe('SideStaking unit test', () => {
     it('#getvestingAmount ', async () => {
       expect(
         await sideStaking.getvestingAmount(contracts.sideStakingAddress, erc20Token)
-      ).to.equal('10000')
+      ).to.equal(VESTING_AMOUNT)
     })
 
     it('#getvestingLastBlock ', async () => {
@@ -220,7 +237,7 @@ describe('SideStaking unit test', () => {
     it('#getvestingEndBlock ', async () => {
       expect(
         await sideStaking.getvestingEndBlock(contracts.sideStakingAddress, erc20Token)
-      ).to.equal((initialBlock + vestedBlocks).toString())
+      ).to.equal((initialBlock + VESTED_BLOCKS).toString())
     })
 
     it('#getvestingAmountSoFar ', async () => {
@@ -257,11 +274,13 @@ describe('SideStaking unit test', () => {
         .transfer(user1, web3.utils.toWei('1000'))
         .send({ from: factoryOwner })
       await approve(web3, user1, contracts.daiAddress, poolAddress, '10')
+
       const tokenInOutMarket: TokenInOutMarket = {
         tokenIn: contracts.daiAddress,
         tokenOut: erc20Token,
         marketFeeAddress: factoryOwner
       }
+
       const amountsInOutMaxFee: AmountsInMaxFee = {
         tokenAmountIn: '10',
         minAmountOut: '1',
@@ -274,6 +293,7 @@ describe('SideStaking unit test', () => {
         tokenInOutMarket,
         amountsInOutMaxFee
       )
+
       expect(await erc20Contract.methods.balanceOf(user1).call()).to.equal(
         tx.events.LOG_SWAP.returnValues.tokenAmountOut
       )
@@ -350,27 +370,6 @@ describe('SideStaking unit test', () => {
       // we prepare transaction parameters objects
       const nftFactory = new NftFactory(contracts.erc721FactoryAddress, web3)
 
-      const nftData: NftCreateData = {
-        name: '72120Bundle',
-        symbol: '72Bundle',
-        templateIndex: 1,
-        tokenURI: 'https://oceanprotocol.com/nft/',
-        transferable: true,
-        owner: factoryOwner
-      }
-
-      const ercParams: Erc20CreateParams = {
-        templateIndex: 1,
-        minter: factoryOwner,
-        paymentCollector: user2,
-        mpFeeAddress: factoryOwner,
-        feeToken: '0x0000000000000000000000000000000000000000',
-        cap: '1000000',
-        feeAmount: '0',
-        name: 'ERC20B1',
-        symbol: 'ERC20DT1Symbol'
-      }
-
       const poolParams: PoolCreationParams = {
         ssContract: contracts.sideStakingAddress,
         baseTokenAddress: contracts.usdcAddress,
@@ -380,8 +379,8 @@ describe('SideStaking unit test', () => {
         poolTemplateAddress: contracts.poolTemplateAddress,
         rate: '1',
         baseTokenDecimals: await usdcContract.methods.decimals().call(),
-        vestingAmount: '10000',
-        vestedBlocks: 2500000,
+        vestingAmount: VESTING_AMOUNT,
+        vestedBlocks: VESTED_BLOCKS,
         initialBaseTokenLiquidity: await unitsToAmount(
           web3,
           contracts.usdcAddress,
@@ -393,8 +392,8 @@ describe('SideStaking unit test', () => {
 
       const txReceipt = await nftFactory.createNftErc20WithPool(
         factoryOwner,
-        nftData,
-        ercParams,
+        NFT_DATA,
+        ERC_PARAMS,
         poolParams
       )
 
@@ -416,7 +415,7 @@ describe('SideStaking unit test', () => {
     it('#getvestingAmount ', async () => {
       expect(
         await sideStaking.getvestingAmount(contracts.sideStakingAddress, erc20Token)
-      ).to.equal('10000')
+      ).to.equal(VESTING_AMOUNT)
     })
 
     it('#getvestingLastBlock ', async () => {
@@ -428,7 +427,7 @@ describe('SideStaking unit test', () => {
     it('#getvestingEndBlock ', async () => {
       expect(
         await sideStaking.getvestingEndBlock(contracts.sideStakingAddress, erc20Token)
-      ).to.equal((initialBlock + vestedBlocks).toString())
+      ).to.equal((initialBlock + VESTED_BLOCKS).toString())
     })
 
     it('#getvestingAmountSoFar ', async () => {
