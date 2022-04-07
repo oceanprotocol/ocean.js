@@ -47,6 +47,17 @@ describe('Datatoken', () => {
     owner: nftOwner
   }
 
+  const FRE_PARAMS: FreCreationParams = {
+    fixedRateAddress: contracts.fixedRateAddress,
+    baseTokenAddress: contracts.daiAddress,
+    owner: nftOwner,
+    marketFeeCollector: nftOwner,
+    baseTokenDecimals: DECIMALS,
+    datatokenDecimals: DECIMALS,
+    fixedRate: FIXED_RATE,
+    marketFee: FEE_ZERO
+  }
+
   before(async () => {
     const accounts = await web3.eth.getAccounts()
     nftOwner = accounts[0]
@@ -55,6 +66,8 @@ describe('Datatoken', () => {
     user3 = accounts[3]
 
     NFT_DATA.owner = nftOwner
+    FRE_PARAMS.owner = nftOwner
+    FRE_PARAMS.marketFeeCollector = nftOwner
   })
 
   it('should deploy contracts', async () => {
@@ -127,17 +140,7 @@ describe('Datatoken', () => {
   })
 
   it('#createFixedRate - should create FRE for the erc20 dt', async () => {
-    const freParams: FreCreationParams = {
-      fixedRateAddress: contracts.fixedRateAddress,
-      baseTokenAddress: contracts.daiAddress,
-      owner: nftOwner,
-      marketFeeCollector: nftOwner,
-      baseTokenDecimals: DECIMALS,
-      datatokenDecimals: DECIMALS,
-      fixedRate: FIXED_RATE,
-      marketFee: FEE_ZERO
-    }
-    const fre = await datatoken.createFixedRate(datatokenAddress, nftOwner, freParams)
+    const fre = await datatoken.createFixedRate(datatokenAddress, nftOwner, FRE_PARAMS)
     assert(fre !== null)
     fixedRateAddress = fre.events.NewFixedRate.address
     exchangeId = fre.events.NewFixedRate.returnValues[0]
@@ -145,18 +148,8 @@ describe('Datatoken', () => {
 
   it('#createFixedRate - should FAIL create FRE if NOT ERC20Deployer', async () => {
     assert((await nftDatatoken.isErc20Deployer(nftAddress, user3)) === false)
-    const freParams: FreCreationParams = {
-      fixedRateAddress: contracts.fixedRateAddress,
-      baseTokenAddress: contracts.daiAddress,
-      owner: nftOwner,
-      marketFeeCollector: nftOwner,
-      baseTokenDecimals: DECIMALS,
-      datatokenDecimals: DECIMALS,
-      fixedRate: FIXED_RATE,
-      marketFee: FEE_ZERO
-    }
     try {
-      await datatoken.createFixedRate(datatokenAddress, user3, freParams)
+      await datatoken.createFixedRate(datatokenAddress, user3, FRE_PARAMS)
       assert(false)
     } catch (e) {
       assert(e.message === 'User is not ERC20 Deployer')
