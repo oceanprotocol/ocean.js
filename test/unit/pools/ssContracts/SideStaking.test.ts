@@ -28,7 +28,6 @@ describe('SideStaking unit test', () => {
   let user1: string
   let user2: string
   let initialBlock: number
-  let sideStakingAddress: string
   let contracts: Addresses
   let pool: Pool
   let sideStaking: SideStaking
@@ -48,7 +47,6 @@ describe('SideStaking unit test', () => {
 
   it('should deploy contracts', async () => {
     contracts = await deployContracts(web3, factoryOwner)
-    sideStakingAddress = contracts.sideStakingAddress
 
     // initialize Pool instance
     pool = new Pool(web3)
@@ -56,11 +54,11 @@ describe('SideStaking unit test', () => {
     sideStaking = new SideStaking(web3)
 
     daiContract = new web3.eth.Contract(MockERC20.abi as AbiItem[], contracts.daiAddress)
-
     usdcContract = new web3.eth.Contract(
       MockERC20.abi as AbiItem[],
       contracts.usdcAddress
     )
+
     await approve(
       web3,
       factoryOwner,
@@ -68,6 +66,18 @@ describe('SideStaking unit test', () => {
       contracts.erc721FactoryAddress,
       '2000'
     )
+
+    assert(
+      parseInt(
+        await allowance(
+          web3,
+          contracts.daiAddress,
+          factoryOwner,
+          contracts.erc721FactoryAddress
+        )
+      ) >= 2000
+    )
+
     await approve(
       web3,
       factoryOwner,
@@ -76,22 +86,16 @@ describe('SideStaking unit test', () => {
       '10000'
     )
 
-    let allowCheck = await allowance(
-      web3,
-      contracts.daiAddress,
-      factoryOwner,
-      contracts.erc721FactoryAddress
+    assert(
+      parseInt(
+        await allowance(
+          web3,
+          contracts.usdcAddress,
+          factoryOwner,
+          contracts.erc721FactoryAddress
+        )
+      ) >= 10000
     )
-    assert(parseInt(allowCheck) >= 2000)
-    allowCheck = await allowance(
-      web3,
-      contracts.usdcAddress,
-      factoryOwner,
-      contracts.erc721FactoryAddress
-    )
-    assert(parseInt(allowCheck) >= 10000)
-
-    await amountToUnits(web3, contracts.usdcAddress, '20')
   })
 
   describe('Test a pool with DAI (18 Decimals)', () => {
@@ -151,12 +155,10 @@ describe('SideStaking unit test', () => {
       erc20Contract = new web3.eth.Contract(ERC20Template.abi as AbiItem[], erc20Token)
       // user1 has no dt1
       expect(await erc20Contract.methods.balanceOf(user1).call()).to.equal('0')
-
-      sideStakingAddress = contracts.sideStakingAddress
     })
 
     it('#getRouter - should get Router address', async () => {
-      expect(await sideStaking.getRouter(sideStakingAddress)).to.equal(
+      expect(await sideStaking.getRouter(contracts.sideStakingAddress)).to.equal(
         contracts.routerAddress
       )
     })
@@ -180,55 +182,50 @@ describe('SideStaking unit test', () => {
     })
 
     it('#getBaseToken - should get baseToken address', async () => {
-      expect(await sideStaking.getBaseToken(sideStakingAddress, erc20Token)).to.equal(
-        contracts.daiAddress
-      )
+      expect(
+        await sideStaking.getBaseToken(contracts.sideStakingAddress, erc20Token)
+      ).to.equal(contracts.daiAddress)
     })
 
     it('#getPoolAddress - should get pool address', async () => {
-      expect(await sideStaking.getPoolAddress(sideStakingAddress, erc20Token)).to.equal(
-        poolAddress
-      )
+      expect(
+        await sideStaking.getPoolAddress(contracts.sideStakingAddress, erc20Token)
+      ).to.equal(poolAddress)
     })
 
     it('#getPublisherAddress - should get publisher address', async () => {
       expect(
-        await sideStaking.getPublisherAddress(sideStakingAddress, erc20Token)
+        await sideStaking.getPublisherAddress(contracts.sideStakingAddress, erc20Token)
       ).to.equal(factoryOwner)
     })
 
     it('#getBaseTokenBalance ', async () => {
       expect(
-        await sideStaking.getBaseTokenBalance(sideStakingAddress, erc20Token)
+        await sideStaking.getBaseTokenBalance(contracts.sideStakingAddress, erc20Token)
       ).to.equal('0')
     })
-    // it('#getDatatokenBalance ', async () => {
-    //   expect(
-    //     await sideStaking.getDatatokenBalance(sideStakingAddress, erc20Token)
-    //   ).to.equal('997999.9999999999')
-    // })
 
     it('#getvestingAmount ', async () => {
-      expect(await sideStaking.getvestingAmount(sideStakingAddress, erc20Token)).to.equal(
-        '10000'
-      )
+      expect(
+        await sideStaking.getvestingAmount(contracts.sideStakingAddress, erc20Token)
+      ).to.equal('10000')
     })
 
     it('#getvestingLastBlock ', async () => {
       expect(
-        await sideStaking.getvestingLastBlock(sideStakingAddress, erc20Token)
+        await sideStaking.getvestingLastBlock(contracts.sideStakingAddress, erc20Token)
       ).to.equal(initialBlock.toString())
     })
 
     it('#getvestingEndBlock ', async () => {
       expect(
-        await sideStaking.getvestingEndBlock(sideStakingAddress, erc20Token)
+        await sideStaking.getvestingEndBlock(contracts.sideStakingAddress, erc20Token)
       ).to.equal((initialBlock + vestedBlocks).toString())
     })
 
     it('#getvestingAmountSoFar ', async () => {
       expect(
-        await sideStaking.getvestingAmountSoFar(sideStakingAddress, erc20Token)
+        await sideStaking.getvestingAmountSoFar(contracts.sideStakingAddress, erc20Token)
       ).to.equal('0')
     })
 
@@ -237,7 +234,7 @@ describe('SideStaking unit test', () => {
 
       const tx = await sideStaking.getVesting(
         factoryOwner,
-        sideStakingAddress,
+        contracts.sideStakingAddress,
         erc20Token
       )
       const collector = await erc20Contract.methods.getPaymentCollector().call()
@@ -246,10 +243,12 @@ describe('SideStaking unit test', () => {
           erc20Token,
           await erc20Contract.methods.balanceOf(collector).call()
         )
-      ).to.equal(await sideStaking.getvestingAmountSoFar(sideStakingAddress, erc20Token))
+      ).to.equal(
+        await sideStaking.getvestingAmountSoFar(contracts.sideStakingAddress, erc20Token)
+      )
 
       expect(
-        await sideStaking.getvestingLastBlock(sideStakingAddress, erc20Token)
+        await sideStaking.getvestingLastBlock(contracts.sideStakingAddress, erc20Token)
       ).to.equal((await web3.eth.getBlockNumber()).toString())
     })
 
@@ -410,36 +409,31 @@ describe('SideStaking unit test', () => {
 
     it('#getBaseTokenBalance ', async () => {
       expect(
-        await sideStaking.getBaseTokenBalance(sideStakingAddress, erc20Token)
+        await sideStaking.getBaseTokenBalance(contracts.sideStakingAddress, erc20Token)
       ).to.equal('0')
     })
-    // it('#getDatatokenBalance ', async () => {
-    //   expect(
-    //     await sideStaking.getDatatokenBalance(sideStakingAddress, erc20Token)
-    //   ).to.equal('997999.9999999999')
-    // })
 
     it('#getvestingAmount ', async () => {
-      expect(await sideStaking.getvestingAmount(sideStakingAddress, erc20Token)).to.equal(
-        '10000'
-      )
+      expect(
+        await sideStaking.getvestingAmount(contracts.sideStakingAddress, erc20Token)
+      ).to.equal('10000')
     })
 
     it('#getvestingLastBlock ', async () => {
       expect(
-        await sideStaking.getvestingLastBlock(sideStakingAddress, erc20Token)
+        await sideStaking.getvestingLastBlock(contracts.sideStakingAddress, erc20Token)
       ).to.equal(initialBlock.toString())
     })
 
     it('#getvestingEndBlock ', async () => {
       expect(
-        await sideStaking.getvestingEndBlock(sideStakingAddress, erc20Token)
+        await sideStaking.getvestingEndBlock(contracts.sideStakingAddress, erc20Token)
       ).to.equal((initialBlock + vestedBlocks).toString())
     })
 
     it('#getvestingAmountSoFar ', async () => {
       expect(
-        await sideStaking.getvestingAmountSoFar(sideStakingAddress, erc20Token)
+        await sideStaking.getvestingAmountSoFar(contracts.sideStakingAddress, erc20Token)
       ).to.equal('0')
     })
 
@@ -448,7 +442,7 @@ describe('SideStaking unit test', () => {
 
       const tx = await sideStaking.getVesting(
         factoryOwner,
-        sideStakingAddress,
+        contracts.sideStakingAddress,
         erc20Token
       )
       const collector = await erc20Contract.methods.getPaymentCollector().call()
@@ -457,10 +451,12 @@ describe('SideStaking unit test', () => {
           erc20Token,
           await erc20Contract.methods.balanceOf(collector).call()
         )
-      ).to.equal(await sideStaking.getvestingAmountSoFar(sideStakingAddress, erc20Token))
+      ).to.equal(
+        await sideStaking.getvestingAmountSoFar(contracts.sideStakingAddress, erc20Token)
+      )
 
       expect(
-        await sideStaking.getvestingLastBlock(sideStakingAddress, erc20Token)
+        await sideStaking.getvestingLastBlock(contracts.sideStakingAddress, erc20Token)
       ).to.equal((await web3.eth.getBlockNumber()).toString())
     })
 
