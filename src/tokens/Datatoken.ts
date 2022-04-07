@@ -790,7 +790,7 @@ export class Datatoken {
     const nftAddress = !isPaymentManager && (await this.getNFTAddress(dtAddress))
     const isNftOwner = nftAddress && (await this.nft.getNftOwner(nftAddress)) === address
     const nftPermissions =
-      !isNftOwner && (await this.nft.getNftPermissions(nftAddress, address))
+      nftAddress && !isNftOwner && (await this.nft.getNftPermissions(nftAddress, address))
     const isErc20Deployer = nftPermissions?.deployERC20
     if (!isPaymentManager && !isNftOwner && !isErc20Deployer) {
       throw new Error(`Caller is not Fee Manager, owner or erc20 Deployer`)
