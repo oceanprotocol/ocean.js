@@ -975,6 +975,7 @@ export class Datatoken {
       new this.web3.eth.Contract(this.datatokensAbi, dtAddress),
       this.config
     )
+
     if (!consumeMarketFee) {
       consumeMarketFee = {
         consumeMarketFeeAddress: '0x0000000000000000000000000000000000000000',
@@ -982,6 +983,65 @@ export class Datatoken {
         consumeMarketFeeAmount: '0'
       }
     }
+
+    const publishMarketFee = await dtContract.methods.getPublishingMarketFee().call()
+    const tokens = [
+      {
+        token: providerFees.providerFeeToken,
+        feeAmount: providerFees.providerFeeAmount
+      },
+      {
+        token: consumeMarketFee.consumeMarketFeeToken,
+        feeAmount: parseFloat(consumeMarketFee.consumeMarketFeeAmount)
+      },
+      {
+        token: publishMarketFee[1],
+        feeAmount: parseFloat(publishMarketFee[2])
+      }
+    ]
+
+    const uniqueTokens = []
+    tokens.map((address) => {
+      if (uniqueTokens.length > 0) {
+        uniqueTokens.map((uAddress) => {
+          if (uAddress.token === address.token) {
+            uAddress.feeAmount += address.feeAmount
+          } else {
+            uniqueTokens.push({
+              token: address.token,
+              feeAmount: address.feeAmount
+            })
+          }
+        })
+      } else {
+        uniqueTokens.push({
+          token: address.token,
+          feeAmount: address.feeAmount
+        })
+      }
+    })
+
+    const getCurrentAllownceTokens = uniqueTokens.map(async (token) => {
+      if (token.token === ZERO_ADDRESS || token.feeAmount === 0) return token
+      const currentAllowance = await allowance(this.web3, token.token, address, consumer)
+      if (
+        new Decimal(currentAllowance).greaterThanOrEqualTo(new Decimal(token.feeAmount))
+      ) {
+        LoggerInstance.error(`ERROR: Failed checking allowance: ${token.token}`)
+        throw new Error(`allowance (${currentAllowance}) is too low`)
+      } else {
+        token.currentAllowance = currentAllowance
+        return token
+      }
+    })
+
+    try {
+      const allownceTokens = await Promise.all(getCurrentAllownceTokens)
+    } catch (e) {
+      LoggerInstance.error(`ERROR: Failed checking allowance : ${e}`)
+      throw new Error(`Failed checking allowance: ${e}`)
+    }
+
     try {
       const estGas = await this.estGasStartOrder(
         dtAddress,
@@ -992,62 +1052,6 @@ export class Datatoken {
         consumeMarketFee,
         dtContract
       )
-
-      const publishMarketFee = await dtContract.methods.getPublishingMarketFee().call()
-      const tokens = [
-        {
-          token: providerFees.providerFeeToken,
-          feeAmount: providerFees.providerFeeAmount
-        },
-        {
-          token: consumeMarketFee.consumeMarketFeeToken,
-          feeAmount: parseFloat(consumeMarketFee.consumeMarketFeeAmount)
-        },
-        {
-          token: publishMarketFee[1],
-          feeAmount: parseFloat(publishMarketFee[2])
-        }
-      ]
-      const uniqueTokens = []
-      tokens.map((address) => {
-        if (uniqueTokens.length > 0) {
-          uniqueTokens.map((uAddress) => {
-            if (uAddress.token === address.token) {
-              uAddress.feeAmount += address.feeAmount
-            } else {
-              uniqueTokens.push({
-                token: address.token,
-                feeAmount: address.feeAmount
-              })
-            }
-          })
-        } else {
-          uniqueTokens.push({
-            token: address.token,
-            feeAmount: address.feeAmount
-          })
-        }
-      })
-
-      uniqueTokens.map(async (tokenAddress) => {
-        if (tokenAddress.token === ZERO_ADDRESS || tokenAddress.feeAmount === 0) return
-
-        const currentAllowance = await allowance(
-          this.web3,
-          tokenAddress.token,
-          address,
-          consumer
-        )
-
-        if (
-          new Decimal(currentAllowance).greaterThanOrEqualTo(
-            new Decimal(tokenAddress.feeAmount)
-          )
-        ) {
-          LoggerInstance.error(`ERROR: Failed to check allowance : ${currentAllowance}`)
-          throw new Error(`Failed to check allowance: ${currentAllowance}`)
-        }
-      })
 
       const trxReceipt = await dtContract.methods
         .startOrder(consumer, serviceIndex, providerFees, consumeMarketFee)
