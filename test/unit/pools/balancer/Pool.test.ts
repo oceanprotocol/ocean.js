@@ -12,7 +12,8 @@ import {
   NftFactory,
   NftCreateData,
   Pool,
-  unitsToAmount
+  unitsToAmount,
+  ZERO_ADDRESS
 } from '../../../../src'
 import {
   PoolCreationParams,
@@ -35,6 +36,9 @@ describe('Pool unit test', () => {
   let daiContract: Contract
   let usdcContract: Contract
 
+  const DAI_AMOUNT = 2000
+  const USDC_AMOUNT = 10000
+
   before(async () => {
     const accounts = await web3.eth.getAccounts()
     factoryOwner = accounts[0]
@@ -47,46 +51,50 @@ describe('Pool unit test', () => {
 
     // initialize Pool instance
     pool = new Pool(web3)
-    assert(pool != null)
 
     daiContract = new web3.eth.Contract(MockERC20.abi as AbiItem[], contracts.daiAddress)
-
     usdcContract = new web3.eth.Contract(
       MockERC20.abi as AbiItem[],
       contracts.usdcAddress
     )
+
     await approve(
       web3,
       factoryOwner,
       contracts.daiAddress,
       contracts.erc721FactoryAddress,
-      '2000'
+      DAI_AMOUNT.toString()
     )
+
+    assert(
+      parseInt(
+        await allowance(
+          web3,
+          contracts.daiAddress,
+          factoryOwner,
+          contracts.erc721FactoryAddress
+        )
+      ) >= DAI_AMOUNT
+    )
+
     await approve(
       web3,
       factoryOwner,
       contracts.usdcAddress,
       contracts.erc721FactoryAddress,
-      '10000'
+      USDC_AMOUNT.toString()
     )
 
-    let allowCheck = await allowance(
-      web3,
-      contracts.daiAddress,
-      factoryOwner,
-      contracts.erc721FactoryAddress
+    assert(
+      parseInt(
+        await allowance(
+          web3,
+          contracts.usdcAddress,
+          factoryOwner,
+          contracts.erc721FactoryAddress
+        )
+      ) >= USDC_AMOUNT
     )
-
-    assert(parseInt(allowCheck) >= 2000)
-    allowCheck = await allowance(
-      web3,
-      contracts.usdcAddress,
-      factoryOwner,
-      contracts.erc721FactoryAddress
-    )
-    assert(parseInt(allowCheck) >= 10000)
-
-    await amountToUnits(web3, contracts.usdcAddress, '20')
   })
 
   describe('Test a pool with DAI (18 Decimals)', () => {
@@ -107,7 +115,7 @@ describe('Pool unit test', () => {
         minter: factoryOwner,
         paymentCollector: user2,
         mpFeeAddress: factoryOwner,
-        feeToken: '0x0000000000000000000000000000000000000000',
+        feeToken: ZERO_ADDRESS,
         cap: '1000000',
         feeAmount: '0',
         name: 'ERC20B1',
@@ -557,7 +565,7 @@ describe('Pool unit test', () => {
         minter: factoryOwner,
         paymentCollector: user2,
         mpFeeAddress: factoryOwner,
-        feeToken: '0x0000000000000000000000000000000000000000',
+        feeToken: ZERO_ADDRESS,
         cap: '1000000',
         feeAmount: '0',
         name: 'ERC20B1',
