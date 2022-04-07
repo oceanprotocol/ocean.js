@@ -35,15 +35,51 @@ describe('Pool unit test', () => {
   let erc20Contract: Contract
   let daiContract: Contract
   let usdcContract: Contract
+  let ercParams: Erc20CreateParams
 
+  const VESTING_AMOUNT = '10000'
+  const CAP_AMOUNT = '1000000'
+  const NFT_NAME = '72120Bundle'
+  const NFT_SYMBOL = '72Bundle'
+  const NFT_TOKEN_URI = 'https://oceanprotocol.com/nft/'
+  const ERC20_NAME = 'ERC20B1'
+  const ERC20_SYMBOL = 'ERC20DT1Symbol'
+  const FEE_ZERO = '0'
   const DAI_AMOUNT = 2000
   const USDC_AMOUNT = 10000
+  const RATE = '1'
+  const VESTED_BLOCKS = 2500000
+  const FEE_LIQUIDITY_PROVIDER = '0.001'
+  const FEE_MARKET = '0.001'
+
+  const NFT_DATA: NftCreateData = {
+    name: NFT_NAME,
+    symbol: NFT_SYMBOL,
+    templateIndex: 1,
+    tokenURI: NFT_TOKEN_URI,
+    transferable: true,
+    owner: factoryOwner
+  }
 
   before(async () => {
     const accounts = await web3.eth.getAccounts()
     factoryOwner = accounts[0]
     user1 = accounts[3]
     user2 = accounts[4]
+
+    NFT_DATA.owner = factoryOwner
+
+    ercParams = {
+      templateIndex: 1,
+      minter: factoryOwner,
+      paymentCollector: user2,
+      mpFeeAddress: factoryOwner,
+      feeToken: ZERO_ADDRESS,
+      cap: CAP_AMOUNT,
+      feeAmount: FEE_ZERO,
+      name: ERC20_NAME,
+      symbol: ERC20_SYMBOL
+    }
   })
 
   it('should deploy contracts', async () => {
@@ -101,27 +137,6 @@ describe('Pool unit test', () => {
     it('#create a pool', async () => {
       // CREATE A POOL
       // we prepare transaction parameters objects
-      const nftData: NftCreateData = {
-        name: '72120Bundle',
-        symbol: '72Bundle',
-        templateIndex: 1,
-        tokenURI: 'https://oceanprotocol.com/nft/',
-        transferable: true,
-        owner: factoryOwner
-      }
-
-      const ercParams: Erc20CreateParams = {
-        templateIndex: 1,
-        minter: factoryOwner,
-        paymentCollector: user2,
-        mpFeeAddress: factoryOwner,
-        feeToken: ZERO_ADDRESS,
-        cap: '1000000',
-        feeAmount: '0',
-        name: 'ERC20B1',
-        symbol: 'ERC20DT1Symbol'
-      }
-
       const poolParams: PoolCreationParams = {
         ssContract: contracts.sideStakingAddress,
         baseTokenAddress: contracts.daiAddress,
@@ -129,20 +144,20 @@ describe('Pool unit test', () => {
         publisherAddress: factoryOwner,
         marketFeeCollector: factoryOwner,
         poolTemplateAddress: contracts.poolTemplateAddress,
-        rate: '1',
+        rate: RATE,
         baseTokenDecimals: 18,
-        vestingAmount: '10000',
-        vestedBlocks: 2500000,
+        vestingAmount: VESTING_AMOUNT,
+        vestedBlocks: VESTED_BLOCKS,
         initialBaseTokenLiquidity: '2000',
-        swapFeeLiquidityProvider: '0.001',
-        swapFeeMarketRunner: '0.001'
+        swapFeeLiquidityProvider: FEE_LIQUIDITY_PROVIDER,
+        swapFeeMarketRunner: FEE_MARKET
       }
 
       const nftFactory = new NftFactory(contracts.erc721FactoryAddress, web3)
 
       const txReceipt = await nftFactory.createNftErc20WithPool(
         factoryOwner,
-        nftData,
+        NFT_DATA,
         ercParams,
         poolParams
       )
@@ -176,6 +191,7 @@ describe('Pool unit test', () => {
         (2 * Number(dtOwnerLPTBalance)).toString()
       )
     })
+
     it('#getCurrentTokens - should return current pool tokens', async () => {
       const currentTokens = await pool.getCurrentTokens(poolAddress)
       expect(currentTokens[0]).to.equal(erc20Token)
@@ -303,6 +319,7 @@ describe('Pool unit test', () => {
       expect(tx.events.LOG_JOIN.event === 'LOG_JOIN')
       expect(tx.events.LOG_BPT.event === 'LOG_BPT')
     })
+
     it('#joinswapExternAmountIn- user1 should add liquidity, receiving LP tokens', async () => {
       const daiAmountIn = '100'
       const minBPTOut = '0.1'
@@ -551,27 +568,6 @@ describe('Pool unit test', () => {
     it('#create a pool', async () => {
       // CREATE A POOL
       // we prepare transaction parameters objects
-      const nftData: NftCreateData = {
-        name: '72120Bundle',
-        symbol: '72Bundle',
-        templateIndex: 1,
-        tokenURI: 'https://oceanprotocol.com/nft/',
-        transferable: true,
-        owner: factoryOwner
-      }
-
-      const ercParams: Erc20CreateParams = {
-        templateIndex: 1,
-        minter: factoryOwner,
-        paymentCollector: user2,
-        mpFeeAddress: factoryOwner,
-        feeToken: ZERO_ADDRESS,
-        cap: '1000000',
-        feeAmount: '0',
-        name: 'ERC20B1',
-        symbol: 'ERC20DT1Symbol'
-      }
-
       const poolParams: PoolCreationParams = {
         ssContract: contracts.sideStakingAddress,
         baseTokenAddress: contracts.usdcAddress,
@@ -579,24 +575,24 @@ describe('Pool unit test', () => {
         publisherAddress: factoryOwner,
         marketFeeCollector: factoryOwner,
         poolTemplateAddress: contracts.poolTemplateAddress,
-        rate: '1',
+        rate: RATE,
         baseTokenDecimals: await usdcContract.methods.decimals().call(),
-        vestingAmount: '10000',
-        vestedBlocks: 2500000,
+        vestingAmount: VESTING_AMOUNT,
+        vestedBlocks: VESTED_BLOCKS,
         initialBaseTokenLiquidity: await unitsToAmount(
           web3,
           contracts.usdcAddress,
           await amountToUnits(web3, contracts.usdcAddress, '2000')
         ),
-        swapFeeLiquidityProvider: '0.001',
-        swapFeeMarketRunner: '0.001'
+        swapFeeLiquidityProvider: FEE_LIQUIDITY_PROVIDER,
+        swapFeeMarketRunner: FEE_MARKET
       }
 
       const nftFactory = new NftFactory(contracts.erc721FactoryAddress, web3)
 
       const txReceipt = await nftFactory.createNftErc20WithPool(
         factoryOwner,
-        nftData,
+        NFT_DATA,
         ercParams,
         poolParams
       )
@@ -701,6 +697,7 @@ describe('Pool unit test', () => {
         (2 * Number(dtOwnerLPTBalance)).toString()
       )
     })
+
     it('#getCurrentTokens - should return current pool tokens', async () => {
       const currentTokens = await pool.getCurrentTokens(poolAddress)
       expect(currentTokens[0]).to.equal(erc20Token)
@@ -834,6 +831,7 @@ describe('Pool unit test', () => {
       // console.log(tx.events.LOG_JOIN)
       // console.log(tx.events.LOG_BPT)
     })
+
     it('#joinswapExternAmountIn- user1 should add liquidity, receiving LP tokens', async () => {
       const usdcAmountIn = '100'
       const minBPTOut = '0.1'
@@ -891,7 +889,6 @@ describe('Pool unit test', () => {
     })
 
     it('#getAmountInExactOut- should get the amount in for exact out', async () => {
-      const maxBTPIn = '0.5'
       const exactUSDCOut = '1'
 
       const result = await pool.getAmountInExactOut(
