@@ -785,8 +785,8 @@ export class Datatoken {
       new this.web3.eth.Contract(this.datatokensAbi, dtAddress),
       this.config
     )
-    const isPaymentManager =
-      (await this.getDTPermissions(dtAddress, address)).paymentManager === true
+    const isPaymentManager = (await this.getDTPermissions(dtAddress, address))
+      .paymentManager
     const nftAddress = !isPaymentManager && (await this.getNFTAddress(dtAddress))
     const isNftOwner = nftAddress && (await this.nft.getNftOwner(nftAddress)) === address
     const nftPermissions =
