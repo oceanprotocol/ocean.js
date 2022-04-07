@@ -1,9 +1,7 @@
 import { assert, expect } from 'chai'
 import { AbiItem } from 'web3-utils/types'
 import { Contract } from 'web3-eth-contract'
-import ERC721Factory from '@oceanprotocol/contracts/artifacts/contracts/ERC721Factory.sol/ERC721Factory.json'
 import ERC20Template from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC20Template.sol/ERC20Template.json'
-import PoolTemplate from '@oceanprotocol/contracts/artifacts/contracts/pools/balancer/BPool.sol/BPool.json'
 import MockERC20 from '@oceanprotocol/contracts/artifacts/contracts/utils/mock/MockERC20Decimals.sol/MockERC20Decimals.json'
 import { deployContracts, Addresses } from '../../../TestContractHandler'
 import { web3 } from '../../../config'
@@ -48,7 +46,7 @@ describe('Pool unit test', () => {
     contracts = await deployContracts(web3, factoryOwner)
 
     // initialize Pool instance
-    pool = new Pool(web3, PoolTemplate.abi as AbiItem[])
+    pool = new Pool(web3)
     assert(pool != null)
 
     daiContract = new web3.eth.Contract(MockERC20.abi as AbiItem[], contracts.daiAddress)
@@ -132,11 +130,7 @@ describe('Pool unit test', () => {
         swapFeeMarketRunner: '0.001'
       }
 
-      const nftFactory = new NftFactory(
-        contracts.erc721FactoryAddress,
-        web3,
-        ERC721Factory.abi as AbiItem[]
-      )
+      const nftFactory = new NftFactory(contracts.erc721FactoryAddress, web3)
 
       const txReceipt = await nftFactory.createNftErc20WithPool(
         factoryOwner,
@@ -590,11 +584,7 @@ describe('Pool unit test', () => {
         swapFeeMarketRunner: '0.001'
       }
 
-      const nftFactory = new NftFactory(
-        contracts.erc721FactoryAddress,
-        web3,
-        ERC721Factory.abi as AbiItem[]
-      )
+      const nftFactory = new NftFactory(contracts.erc721FactoryAddress, web3)
 
       const txReceipt = await nftFactory.createNftErc20WithPool(
         factoryOwner,
