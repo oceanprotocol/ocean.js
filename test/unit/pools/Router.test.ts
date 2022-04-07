@@ -45,6 +45,18 @@ describe('Router unit test', () => {
     owner: factoryOwner
   }
 
+  const ERC_PARAMS: Erc20CreateParams = {
+    templateIndex: 1,
+    minter: factoryOwner,
+    paymentCollector: user2,
+    mpFeeAddress: factoryOwner,
+    feeToken: ZERO_ADDRESS,
+    cap: CAP_AMOUNT,
+    feeAmount: FEE_ZERO,
+    name: ERC20_NAME,
+    symbol: ERC20_SYMBOL
+  }
+
   before(async () => {
     const accounts = await web3.eth.getAccounts()
     factoryOwner = accounts[0]
@@ -52,6 +64,9 @@ describe('Router unit test', () => {
     user2 = accounts[2]
 
     NFT_DATA.owner = factoryOwner
+    ERC_PARAMS.minter = factoryOwner
+    ERC_PARAMS.paymentCollector = user2
+    ERC_PARAMS.mpFeeAddress = factoryOwner
   })
 
   it('should deploy contracts', async () => {
@@ -114,18 +129,6 @@ describe('Router unit test', () => {
     await approve(web3, user1, contracts.daiAddress, contracts.routerAddress, DAI_AMOUNT)
 
     // CREATE A FIRST POOL
-    const ercParams: Erc20CreateParams = {
-      templateIndex: 1,
-      minter: factoryOwner,
-      paymentCollector: user2,
-      mpFeeAddress: factoryOwner,
-      feeToken: ZERO_ADDRESS,
-      cap: CAP_AMOUNT,
-      feeAmount: FEE_ZERO,
-      name: ERC20_NAME,
-      symbol: ERC20_SYMBOL
-    }
-
     const poolParams: PoolCreationParams = {
       ssContract: contracts.sideStakingAddress,
       baseTokenAddress: contracts.daiAddress,
@@ -146,7 +149,7 @@ describe('Router unit test', () => {
     const txReceipt = await nftFactory.createNftErc20WithPool(
       factoryOwner,
       NFT_DATA,
-      ercParams,
+      ERC_PARAMS,
       poolParams
     )
 
@@ -157,7 +160,7 @@ describe('Router unit test', () => {
     const txReceipt2 = await nftFactory.createNftErc20WithPool(
       factoryOwner,
       NFT_DATA,
-      ercParams,
+      ERC_PARAMS,
       poolParams
     )
 
