@@ -107,6 +107,19 @@ export class Provider {
     }
   }
 
+  public async signProviderRequest(
+    web3: Web3,
+    accountId: string,
+    message: string
+  ): Promise<string> {
+    const consumerMessage = web3.utils.soliditySha3({
+      t: 'bytes',
+      v: web3.utils.utf8ToHex(message)
+    })
+    const consumerSignature = await web3.eth.sign(consumerMessage, accountId)
+    return consumerSignature
+  }
+
   public async createSignature(
     web3: Web3,
     accountId: string,
@@ -361,8 +374,8 @@ export class Provider {
       : null
     if (!downloadUrl) return null
     const nonce = Date.now()
-    const signature = await this.createSignature(web3, accountId, did + nonce)
-
+    // const signature = await this.createSignature(web3, accountId, did + nonce)
+    const signature = await this.signProviderRequest(web3, accountId, did + nonce)
     let consumeUrl = downloadUrl
     consumeUrl += `?fileIndex=${fileIndex}`
     consumeUrl += `&documentId=${did}`
@@ -411,12 +424,16 @@ export class Provider {
     let signatureMessage = consumerAddress
     signatureMessage += dataset.documentId
     signatureMessage += nonce
-    const signature = await this.createHashSignature(
+    // const signature = await this.createHashSignature(
+    //  web3,
+    //  consumerAddress,
+    //  signatureMessage
+    // )
+    const signature = await this.signProviderRequest(
       web3,
       consumerAddress,
       signatureMessage
     )
-
     const payload = Object()
     payload.consumerAddress = consumerAddress
     payload.signature = signature
@@ -490,12 +507,17 @@ export class Provider {
     signatureMessage += jobId || ''
     signatureMessage += (did && `${noZeroX(did)}`) || ''
     signatureMessage += nonce
-    const signature = await this.createHashSignature(
+    /* const signature = await this.createHashSignature(
       web3,
       consumerAddress,
       signatureMessage
     )
-
+    */
+    const signature = await this.signProviderRequest(
+      web3,
+      consumerAddress,
+      signatureMessage
+    )
     const payload = Object()
     payload.signature = signature
     payload.documentId = noZeroX(did)
@@ -620,7 +642,8 @@ export class Provider {
     signatureMessage += jobId
     signatureMessage += index.toString()
     signatureMessage += nonce
-    const signature = await this.createHashSignature(web3, accountId, signatureMessage)
+    // const signature = await this.createHashSignature(web3, accountId, signatureMessage)
+    const signature = await this.signProviderRequest(web3, accountId, signatureMessage)
 
     let consumeUrl = computeResultUrl
     consumeUrl += `?consumerAddress=${accountId}`
@@ -680,12 +703,17 @@ export class Provider {
     signatureMessage += jobId || ''
     signatureMessage += (did && `${noZeroX(did)}`) || ''
     signatureMessage += nonce
-    const signature = await this.createHashSignature(
+    /* const signature = await this.createHashSignature(
       web3,
       consumerAddress,
       signatureMessage
     )
-
+    */
+    const signature = await this.signProviderRequest(
+      web3,
+      consumerAddress,
+      signatureMessage
+    )
     const payload = Object()
     payload.documentId = noZeroX(did)
     payload.consumerAddress = consumerAddress
