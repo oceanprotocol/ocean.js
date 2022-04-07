@@ -1,9 +1,7 @@
 import { assert, expect } from 'chai'
 import { AbiItem } from 'web3-utils/types'
 import { Contract } from 'web3-eth-contract'
-import SSContract from '@oceanprotocol/contracts/artifacts/contracts/pools/ssContracts/SideStaking.sol/SideStaking.json'
 import ERC20Template from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC20Template.sol/ERC20Template.json'
-import PoolTemplate from '@oceanprotocol/contracts/artifacts/contracts/pools/balancer/BPool.sol/BPool.json'
 import MockERC20 from '@oceanprotocol/contracts/artifacts/contracts/utils/mock/MockERC20Decimals.sol/MockERC20Decimals.json'
 import { deployContracts, Addresses } from '../../../TestContractHandler'
 import { web3 } from '../../../config'
@@ -53,11 +51,9 @@ describe('SideStaking unit test', () => {
     sideStakingAddress = contracts.sideStakingAddress
 
     // initialize Pool instance
-    pool = new Pool(web3, PoolTemplate.abi as AbiItem[])
-    assert(pool != null)
-    //
-    sideStaking = new SideStaking(web3, SSContract.abi as AbiItem[])
-    assert(sideStaking != null)
+    pool = new Pool(web3)
+
+    sideStaking = new SideStaking(web3)
 
     daiContract = new web3.eth.Contract(MockERC20.abi as AbiItem[], contracts.daiAddress)
 
@@ -94,11 +90,6 @@ describe('SideStaking unit test', () => {
       contracts.erc721FactoryAddress
     )
     assert(parseInt(allowCheck) >= 10000)
-
-    console.log(
-      await usdcContract.methods.decimals().call(),
-      'USDC DECIMALS IN THIS TEST'
-    )
 
     await amountToUnits(web3, contracts.usdcAddress, '20')
   })
@@ -520,7 +511,6 @@ describe('SideStaking unit test', () => {
         amountsInOutMaxFee
       )
       assert(tx != null)
-      // console.log(tx.events)
     })
 
     it('#joinswapExternAmountIn- user1 should add liquidity, receiving LP tokens', async () => {
