@@ -56,6 +56,10 @@ describe('Datatoken', () => {
     user3 = accounts[3]
 
     NFT_DATA.owner = nftOwner
+  })
+
+  it('should deploy contracts', async () => {
+    contracts = await deployContracts(web3, nftOwner)
 
     freParams = {
       fixedRateAddress: contracts.fixedRateAddress,
@@ -67,10 +71,6 @@ describe('Datatoken', () => {
       fixedRate: FIXED_RATE,
       marketFee: FEE_ZERO
     }
-  })
-
-  it('should deploy contracts', async () => {
-    contracts = await deployContracts(web3, nftOwner)
   })
 
   it('should initialize NFTFactory, nftDT and DT instances and create a new NFT', async () => {
