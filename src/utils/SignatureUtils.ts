@@ -1,6 +1,7 @@
 import Web3 from 'web3'
 import { LoggerInstance } from './Logger'
 
+/*
 export async function signText(
   web3: Web3,
   text: string,
@@ -26,6 +27,7 @@ export async function signText(
     }
   }
 }
+*/
 
 export async function signHash(web3: Web3, message: string, address: string) {
   let signedMessage = await web3.eth.sign(message, address)
@@ -39,6 +41,7 @@ export async function signHash(web3: Web3, message: string, address: string) {
   return { v, r, s }
 }
 
+/* 
 export async function signWithHash(
   web3: Web3,
   text: string,
@@ -65,3 +68,4 @@ export async function signWithHash(
     }
   }
 }
+*/

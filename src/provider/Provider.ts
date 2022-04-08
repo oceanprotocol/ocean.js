@@ -10,7 +10,7 @@ import {
   ProviderInitialize
 } from '../@types/'
 import { noZeroX } from '../utils/ConversionTypeHelper'
-import { signText, signWithHash } from '../utils/SignatureUtils'
+// import { signText, signWithHash } from '../utils/SignatureUtils'
 import fetch from 'cross-fetch'
 import { DownloadResponse } from '../@types/DownloadResponse'
 export interface HttpCallback {
@@ -120,6 +120,7 @@ export class Provider {
     return consumerSignature
   }
 
+  /*
   public async createSignature(
     web3: Web3,
     accountId: string,
@@ -137,6 +138,7 @@ export class Provider {
     const signature = await signWithHash(web3, message, accountId)
     return signature
   }
+  */
 
   /** Encrypt data using the Provider's own symmetric key
    * @param {string} data data in json format that needs to be sent , it can either be a DDO or a File array
