@@ -1,5 +1,6 @@
 export * from './Logger'
 export * from './DatatokenName'
+export * from './OrderAllowance'
 export * from './ContractUtils'
 export * from './FetchHelper'
 export * from './ConfigHelper'

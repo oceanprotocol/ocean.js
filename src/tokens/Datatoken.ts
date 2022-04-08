@@ -11,8 +11,7 @@ import {
   setContractDefaults,
   configHelperNetworks,
   getFreOrderParams,
-  allowance,
-  ZERO_ADDRESS
+  getCurrentAllowanceTokens
 } from '../utils'
 import {
   ConsumeMarketFee,
@@ -1000,43 +999,8 @@ export class Datatoken {
       }
     ]
 
-    const uniqueTokens = []
-    tokens.map((address) => {
-      if (uniqueTokens.length > 0) {
-        uniqueTokens.map((uAddress) => {
-          if (uAddress.token === address.token) {
-            uAddress.feeAmount += address.feeAmount
-          } else {
-            uniqueTokens.push({
-              token: address.token,
-              feeAmount: address.feeAmount
-            })
-          }
-        })
-      } else {
-        uniqueTokens.push({
-          token: address.token,
-          feeAmount: address.feeAmount
-        })
-      }
-    })
-
-    const getCurrentAllownceTokens = uniqueTokens.map(async (token) => {
-      if (token.token === ZERO_ADDRESS || token.feeAmount === 0) return token
-      const currentAllowance = await allowance(this.web3, token.token, address, consumer)
-      if (
-        new Decimal(currentAllowance).greaterThanOrEqualTo(new Decimal(token.feeAmount))
-      ) {
-        LoggerInstance.error(`ERROR: Failed checking allowance: ${token.token}`)
-        throw new Error(`allowance (${currentAllowance}) is too low`)
-      } else {
-        token.currentAllowance = currentAllowance
-        return token
-      }
-    })
-
     try {
-      const allownceTokens = await Promise.all(getCurrentAllownceTokens)
+      await getCurrentAllowanceTokens(this.web3, tokens, address, consumer)
     } catch (e) {
       LoggerInstance.error(`ERROR: Failed checking allowance : ${e}`)
       throw new Error(`Failed checking allowance: ${e}`)
