@@ -1,6 +1,10 @@
 import { Metadata, MetadataAlgorithm } from './DDO/Metadata'
 
-export type ComputeResultType = 'algorithmLog' | 'output'
+export type ComputeResultType =
+  | 'algorithmLog'
+  | 'output'
+  | 'configrationLog'
+  | 'publishLog'
 
 export interface ComputeEnvironment {
   id: string

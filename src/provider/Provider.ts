@@ -12,7 +12,6 @@ import {
 import { noZeroX } from '../utils/ConversionTypeHelper'
 import { signText, signWithHash } from '../utils/SignatureUtils'
 import fetch from 'cross-fetch'
-import { DownloadResponse } from '../@types/DownloadResponse'
 export interface HttpCallback {
   (httpMethod: string, url: string, body: string, header: any): Promise<any>
 }
@@ -440,7 +439,7 @@ export class Provider {
         const params = await response.json()
         return params
       }
-      console.error('Compute start failed:', response.status, response.statusText)
+      LoggerInstance.error('Compute start failed: ', response.status, response.statusText)
       LoggerInstance.error('Payload was:', payload)
       return null
     } catch (e) {
@@ -598,17 +597,14 @@ export class Provider {
     index: number
   ): Promise<string> {
     const providerEndpoints = await this.getEndpoints(providerUri)
-    console.log('computeResult providerEndpoints: ', providerEndpoints)
     const serviceEndpoints = await this.getServiceEndpoints(
       providerUri,
       providerEndpoints
     )
-    console.log('computeResult serviceEndpoints: ', serviceEndpoints)
     const computeResultUrl = this.getEndpointURL(serviceEndpoints, 'computeResult')
       ? this.getEndpointURL(serviceEndpoints, 'computeResult').urlPath
       : null
 
-    console.log('computeResult computeResultUrl: ', computeResultUrl)
     const nonce = Date.now()
     let signatureMessage = consumerAddress
     signatureMessage += jobId
@@ -627,7 +623,6 @@ export class Provider {
     resultUrl += `&nonce=${nonce}`
     resultUrl += (signature && `&signature=${signature}`) || ''
 
-    console.log('computeResult resultUrl: ', resultUrl)
     if (!resultUrl) return null
     return resultUrl
   }
