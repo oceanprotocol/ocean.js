@@ -6,7 +6,8 @@ import {
   NftCreateData,
   Datatoken,
   DispenserParams,
-  Dispenser
+  Dispenser,
+  ZERO_ADDRESS
 } from '../../../../src/'
 import { Erc20CreateParams } from '../../../../src/@types'
 
@@ -20,11 +21,45 @@ describe('Dispenser flow', () => {
   let datatoken: Datatoken
   let dtAddress: string
 
+  const CAP_AMOUNT = '1000000'
+  const NFT_NAME = '72120Bundle'
+  const NFT_SYMBOL = '72Bundle'
+  const NFT_TOKEN_URI = 'https://oceanprotocol.com/nft/'
+  const ERC20_NAME = 'ERC20B1'
+  const ERC20_SYMBOL = 'ERC20DT1Symbol'
+  const FEE_ZERO = '0'
+
+  const NFT_DATA: NftCreateData = {
+    name: NFT_NAME,
+    symbol: NFT_SYMBOL,
+    templateIndex: 1,
+    tokenURI: NFT_TOKEN_URI,
+    transferable: true,
+    owner: factoryOwner
+  }
+
+  const ERC_PARAMS: Erc20CreateParams = {
+    templateIndex: 1,
+    minter: factoryOwner,
+    paymentCollector: user2,
+    mpFeeAddress: user1,
+    feeToken: ZERO_ADDRESS,
+    cap: CAP_AMOUNT,
+    feeAmount: FEE_ZERO,
+    name: ERC20_NAME,
+    symbol: ERC20_SYMBOL
+  }
+
   before(async () => {
     const accounts = await web3.eth.getAccounts()
     factoryOwner = accounts[0]
     user1 = accounts[3]
     user2 = accounts[4]
+
+    NFT_DATA.owner = factoryOwner
+    ERC_PARAMS.minter = factoryOwner
+    ERC_PARAMS.paymentCollector = user2
+    ERC_PARAMS.mpFeeAddress = user1
   })
 
   it('should deploy contracts', async () => {
@@ -39,31 +74,10 @@ describe('Dispenser flow', () => {
   it('#createNftwithErc - should create an NFT and a Datatoken ', async () => {
     nftFactory = new NftFactory(contracts.erc721FactoryAddress, web3)
 
-    const nftData: NftCreateData = {
-      name: '72120Bundle',
-      symbol: '72Bundle',
-      templateIndex: 1,
-      tokenURI: 'https://oceanprotocol.com/nft/',
-      transferable: true,
-      owner: factoryOwner
-    }
-
-    const ercParams: Erc20CreateParams = {
-      templateIndex: 1,
-      minter: factoryOwner,
-      paymentCollector: user2,
-      mpFeeAddress: user1,
-      feeToken: '0x0000000000000000000000000000000000000000',
-      cap: '10000',
-      feeAmount: '0',
-      name: 'ERC20B1',
-      symbol: 'ERC20DT1Symbol'
-    }
-
     const txReceipt = await nftFactory.createNftWithErc20(
       factoryOwner,
-      nftData,
-      ercParams
+      NFT_DATA,
+      ERC_PARAMS
     )
 
     expect(txReceipt.events.NFTCreated.event === 'NFTCreated')
