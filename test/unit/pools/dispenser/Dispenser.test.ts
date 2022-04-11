@@ -1,7 +1,4 @@
-import { AbiItem } from 'web3-utils'
 import { assert, expect } from 'chai'
-import ERC20Template from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC20Template.sol/ERC20Template.json'
-import DispenserTemplate from '@oceanprotocol/contracts/artifacts/contracts/pools/dispenser/Dispenser.sol/Dispenser.json'
 import { deployContracts, Addresses } from '../../../TestContractHandler'
 import { web3 } from '../../../config'
 import {
@@ -35,11 +32,7 @@ describe('Dispenser flow', () => {
   })
 
   it('should initialize Dispenser class', async () => {
-    DispenserClass = new Dispenser(
-      web3,
-      contracts.dispenserAddress,
-      DispenserTemplate.abi as AbiItem[]
-    )
+    DispenserClass = new Dispenser(web3, contracts.dispenserAddress)
     assert(DispenserClass !== null)
   })
 
@@ -80,7 +73,7 @@ describe('Dispenser flow', () => {
   })
 
   it('Make user1 minter', async () => {
-    datatoken = new Datatoken(web3, ERC20Template.abi as AbiItem[])
+    datatoken = new Datatoken(web3)
     await datatoken.addMinter(dtAddress, factoryOwner, user1)
     assert((await datatoken.getDTPermissions(dtAddress, user1)).minter === true)
   })
