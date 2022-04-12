@@ -11,7 +11,8 @@ import {
   getErcCreationParams,
   getPoolCreationParams,
   configHelperNetworks,
-  setContractDefaults
+  setContractDefaults,
+  ZERO_ADDRESS
 } from '../utils'
 import { Config } from '../models/index.js'
 import {
@@ -41,9 +42,10 @@ export interface NftCreateData {
   symbol: string
   templateIndex: number
   tokenURI: string
+  transferable: boolean
+  owner: string
 }
 
-const addressZERO = '0x0000000000000000000000000000000000000000'
 /**
  * Provides an interface for NFT Factory contract
  */
@@ -92,9 +94,11 @@ export class NftFactory {
           nftData.name,
           nftData.symbol,
           nftData.templateIndex,
-          addressZERO,
-          addressZERO,
-          nftData.tokenURI
+          ZERO_ADDRESS,
+          ZERO_ADDRESS,
+          nftData.tokenURI,
+          nftData.transferable,
+          nftData.owner
         )
         .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
     } catch (e) {
@@ -135,9 +139,11 @@ export class NftFactory {
         nftData.name,
         nftData.symbol,
         nftData.templateIndex,
-        addressZERO,
-        addressZERO,
-        nftData.tokenURI
+        ZERO_ADDRESS,
+        ZERO_ADDRESS,
+        nftData.tokenURI,
+        nftData.transferable,
+        nftData.owner
       )
       .send({
         from: address,
@@ -272,7 +278,7 @@ export class NftFactory {
     if ((await this.getOwner()) !== address) {
       throw new Error(`Caller is not Factory Owner`)
     }
-    if (templateAddress === addressZERO) {
+    if (templateAddress === ZERO_ADDRESS) {
       throw new Error(`Template cannot be ZERO address`)
     }
 
@@ -439,7 +445,7 @@ export class NftFactory {
     if ((await this.getOwner()) !== address) {
       throw new Error(`Caller is not Factory Owner`)
     }
-    if (templateAddress === addressZERO) {
+    if (templateAddress === ZERO_ADDRESS) {
       throw new Error(`Template cannot be address ZERO`)
     }
 

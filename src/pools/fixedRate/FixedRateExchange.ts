@@ -9,7 +9,8 @@ import {
   configHelperNetworks,
   setContractDefaults,
   amountToUnits,
-  unitsToAmount
+  unitsToAmount,
+  ZERO_ADDRESS
 } from '../../utils'
 import { Config } from '../../models/index.js'
 import { PriceAndFees } from '../..'
@@ -164,7 +165,7 @@ export class FixedRateExchange {
     exchangeId: string,
     datatokenAmount: string,
     maxBaseTokenAmount: string,
-    consumeMarketAddress: string = '0x0000000000000000000000000000000000000000',
+    consumeMarketAddress: string = ZERO_ADDRESS,
     consumeMarketFee: string = '0'
   ): Promise<TransactionReceipt> {
     const exchange = await this.getExchange(exchangeId)
@@ -260,7 +261,7 @@ export class FixedRateExchange {
     exchangeId: string,
     datatokenAmount: string,
     minBaseTokenAmount: string,
-    consumeMarketAddress: string = '0x0000000000000000000000000000000000000000',
+    consumeMarketAddress: string = ZERO_ADDRESS,
     consumeMarketFee: string = '0'
   ): Promise<TransactionReceipt> {
     const exchange = await this.getExchange(exchangeId)

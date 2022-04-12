@@ -85,7 +85,7 @@ describe('Pool unit test', () => {
       contracts.erc721FactoryAddress
     )
 
-    assert(parseInt(allowCheck) >= 8000)
+    assert(parseInt(allowCheck) >= 2000)
     allowCheck = await allowance(
       web3,
       contracts.usdcAddress,
@@ -105,7 +105,9 @@ describe('Pool unit test', () => {
         name: '72120Bundle',
         symbol: '72Bundle',
         templateIndex: 1,
-        tokenURI: 'https://oceanprotocol.com/nft/'
+        tokenURI: 'https://oceanprotocol.com/nft/',
+        transferable: true,
+        owner: factoryOwner
       }
 
       const ercParams: Erc20CreateParams = {
@@ -560,7 +562,9 @@ describe('Pool unit test', () => {
         name: '72120Bundle',
         symbol: '72Bundle',
         templateIndex: 1,
-        tokenURI: 'https://oceanprotocol.com/nft/'
+        tokenURI: 'https://oceanprotocol.com/nft/',
+        transferable: true,
+        owner: factoryOwner
       }
 
       const ercParams: Erc20CreateParams = {
