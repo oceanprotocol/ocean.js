@@ -85,7 +85,7 @@ describe('Pool unit test', () => {
       contracts.erc721FactoryAddress
     )
 
-    assert(parseInt(allowCheck) >= 8000)
+    assert(parseInt(allowCheck) >= 2000)
     allowCheck = await allowance(
       web3,
       contracts.usdcAddress,
