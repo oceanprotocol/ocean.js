@@ -11,6 +11,7 @@ import {
 import { Config } from '../models'
 import { minAbi } from './minAbi'
 import LoggerInstance from './Logger'
+import { ZERO_ADDRESS } from './Constants'
 
 export function setContractDefaults(contract: Contract, config: Config): Contract {
   if (config) {
@@ -65,8 +66,7 @@ export function getFreOrderParams(freParams: FreOrderParams): any {
 }
 
 export function getFreCreationParams(freParams: FreCreationParams): any {
-  if (!freParams.allowedConsumer)
-    freParams.allowedConsumer = '0x0000000000000000000000000000000000000000'
+  if (!freParams.allowedConsumer) freParams.allowedConsumer = ZERO_ADDRESS
   const withMint = freParams.withMint ? 1 : 0
 
   return {
