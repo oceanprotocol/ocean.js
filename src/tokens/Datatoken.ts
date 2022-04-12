@@ -194,6 +194,8 @@ export class Datatoken {
         this.config
       )
 
+    const gasLimitDefault = this.GASLIMIT_DEFAULT
+
     if (!fixedRateParams.allowedConsumer) fixedRateParams.allowedConsumer = ZERO_ADDRESS
     const withMint = fixedRateParams.withMint ? 1 : 0
 
