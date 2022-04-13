@@ -358,7 +358,7 @@ describe('Simple compute tests', async () => {
     console.log('job status', jobStatus)
   })
 
-  it('Download compute results', async () => {
+  it('Get download compute results url', async () => {
     sleep(10000)
     const downloadURL = await ProviderInstance.getComputeResultUrl(
       providerUrl,
@@ -369,12 +369,5 @@ describe('Simple compute tests', async () => {
     )
     console.log('downloadURL', downloadURL)
     assert(downloadURL, 'Provider getComputeResultUrl failed!')
-    try {
-      const fileData = await fetchData(downloadURL, {})
-      console.log('fileData', fileData)
-    } catch (e) {
-      console.log('downloadFile error:', e)
-      assert.fail('Download compute result failed')
-    }
   })
 })
