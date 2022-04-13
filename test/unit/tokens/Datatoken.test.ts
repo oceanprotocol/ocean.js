@@ -99,7 +99,7 @@ describe('Datatoken', () => {
   })
 
   it('#mint - should fail to mint DT20, if NOT Minter', async () => {
-    // assert((await datatoken.getDTPermissions(datatokenAddress, user1)).minter === false)
+    assert((await datatoken.getDTPermissions(datatokenAddress, user1)).minter === false)
     try {
       await datatoken.mint(datatokenAddress, user1, DATATOKENS_AMOUNT, user1)
       assert(false)
