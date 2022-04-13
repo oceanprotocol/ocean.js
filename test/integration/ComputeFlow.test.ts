@@ -342,12 +342,10 @@ describe('Simple compute tests', async () => {
       }
     )
     assert(computeJobs, 'Cannot start compute job')
-    console.log('compute jobs', computeJobs[0])
     computeJobId = computeJobs[0].jobId
   })
 
   it('Check compute status', async () => {
-    sleep(10000)
     const jobStatus = (await ProviderInstance.computeStatus(
       providerUrl,
       consumerAccount,
@@ -355,7 +353,6 @@ describe('Simple compute tests', async () => {
       resolvedDDOAsset.id
     )) as ComputeJob
     assert(jobStatus, 'Cannot retrieve compute status!')
-    console.log('job status', jobStatus)
   })
 
   it('Get download compute results url', async () => {
@@ -367,7 +364,6 @@ describe('Simple compute tests', async () => {
       computeJobId,
       0
     )
-    console.log('downloadURL', downloadURL)
     assert(downloadURL, 'Provider getComputeResultUrl failed!')
   })
 })
