@@ -170,11 +170,11 @@ describe('Pool unit test', () => {
       expect(await erc20Contract.methods.balanceOf(user1).call()).to.equal('0')
     })
 
-    // it('#sharesBalance - should return user shares balance (datatoken balance, LPT balance, etc) ', async () => {
-    //   expect(await daiContract.methods.balanceOf(user1).call()).to.equal(
-    //     web3.utils.toWei(await pool.sharesBalance(user1, contracts.daiAddress))
-    //   )
-    // })
+    it('#sharesBalance - should return user shares balance (datatoken balance, LPT balance, etc) ', async () => {
+      expect(await daiContract.methods.balanceOf(user1).call()).to.equal(
+        web3.utils.toWei(await pool.sharesBalance(user1, contracts.daiAddress))
+      )
+    })
 
     it('#getNumTokens - should return num of tokens in pool (2)', async () => {
       expect(await pool.getNumTokens(poolAddress)).to.equal('2')
@@ -320,7 +320,7 @@ describe('Pool unit test', () => {
       expect(tx.events.LOG_BPT.event === 'LOG_BPT')
     })
 
-    it('#joinswapExternAmountIn- user1 should add liquidity, receiving LP tokens', async () => {
+    it('#joinswapExternAmountIn - user1 should add liquidity, receiving LP tokens', async () => {
       const daiAmountIn = '100'
       const minBPTOut = '0.1'
       await approve(web3, user1, contracts.daiAddress, poolAddress, '100', true)
@@ -359,7 +359,7 @@ describe('Pool unit test', () => {
       expect(tx.events.LOG_EXIT[1].returnValues.tokenOut).to.equal(contracts.daiAddress)
     })
 
-    it('#exitswapPoolAmountIn- user1 exit the pool receiving only DAI', async () => {
+    it('#exitswapPoolAmountIn - user1 exit the pool receiving only DAI', async () => {
       const BPTAmountIn = '0.5'
       const minDAIOut = '0.5'
 
@@ -424,7 +424,7 @@ describe('Pool unit test', () => {
       assert(amountIn > spotPrice)
     })
 
-    it('#getAmountOutExactIn- should get the amount out for exact In', async () => {
+    it('#getAmountOutExactIn - should get the amount out for exact In', async () => {
       const exactDTIn = '1'
 
       const result = await pool.getAmountOutExactIn(
@@ -451,11 +451,11 @@ describe('Pool unit test', () => {
     it('#getSpotPrice- should get the spot price', async () => {
       assert(
         (await pool.getSpotPrice(poolAddress, erc20Token, contracts.daiAddress, '0.1')) !=
-          null
+        null
       )
       assert(
         (await pool.getSpotPrice(poolAddress, contracts.daiAddress, erc20Token, '0.1')) !=
-          null
+        null
       )
     })
 
@@ -510,7 +510,7 @@ describe('Pool unit test', () => {
     it('#getOPCCollector- should get market fees for each token', async () => {
       assert(
         (await pool.getOPCCollector(poolAddress)) ===
-          contracts.opfCommunityFeeCollectorAddress
+        contracts.opfCommunityFeeCollectorAddress
       )
     })
 
@@ -676,11 +676,11 @@ describe('Pool unit test', () => {
       )
     })
 
-    // it('#sharesBalance - should return user shares balance (datatoken balance, LPT balance, etc) ', async () => {
-    //   expect(await usdcContract.methods.balanceOf(user1).call()).to.equal(
-    //     await pool.sharesBalance(user1, contracts.usdcAddress)
-    //   )
-    // })
+    it('#sharesBalance - should return user shares balance (datatoken balance, LPT balance, etc) ', async () => {
+      expect(await usdcContract.methods.balanceOf(user1).call()).to.equal(
+        await pool.sharesBalance(user1, contracts.usdcAddress)
+      )
+    })
 
     it('#getNumTokens - should return num of tokens in pool (2)', async () => {
       expect(await pool.getNumTokens(poolAddress)).to.equal('2')
@@ -832,7 +832,7 @@ describe('Pool unit test', () => {
       // console.log(tx.events.LOG_BPT)
     })
 
-    it('#joinswapExternAmountIn- user1 should add liquidity, receiving LP tokens', async () => {
+    it('#joinswapExternAmountIn - user1 should add liquidity, receiving LP tokens', async () => {
       const usdcAmountIn = '100'
       const minBPTOut = '0.1'
       await approve(web3, user1, contracts.usdcAddress, poolAddress, '100', true)
@@ -869,7 +869,7 @@ describe('Pool unit test', () => {
       expect(tx.events.LOG_EXIT[1].returnValues.tokenOut).to.equal(contracts.usdcAddress)
     })
 
-    it('#exitswapPoolAmountIn- user1 exit the pool receiving only USDC', async () => {
+    it('#exitswapPoolAmountIn - user1 exit the pool receiving only USDC', async () => {
       const BPTAmountIn = '0.5'
       const minUSDCOut = '0.5'
 
@@ -911,7 +911,7 @@ describe('Pool unit test', () => {
       assert(amountIn > spotPrice)
     })
 
-    it('#getAmountOutExactIn- should get the amount out for exact In', async () => {
+    it('#getAmountOutExactIn - should get the amount out for exact In', async () => {
       const exactDTIn = '1'
 
       const result = await pool.getAmountOutExactIn(
@@ -1004,7 +1004,7 @@ describe('Pool unit test', () => {
     it('#getOPCCollector- should get market fees for each token', async () => {
       assert(
         (await pool.getOPCCollector(poolAddress)) ===
-          contracts.opfCommunityFeeCollectorAddress
+        contracts.opfCommunityFeeCollectorAddress
       )
     })
 
