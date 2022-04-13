@@ -1,6 +1,5 @@
 import { assert } from 'chai'
 import { SHA256 } from 'crypto-js'
-import console from 'console'
 import { web3, getTestConfig, getAddresses } from '../config'
 import {
   Config,
@@ -10,9 +9,11 @@ import {
   NftCreateData,
   Datatoken,
   getHash,
-  Nft
+  Nft,
+  downloadFile,
+  sleep
 } from '../../src'
-import { ProviderFees, Erc20CreateParams } from '../../src/@types'
+import { ProviderFees, Erc20CreateParams, ComputeJob, Asset } from '../../src/@types'
 
 const assetUrl = [
   {
@@ -110,12 +111,15 @@ const algoDdo = {
     }
   ]
 }
+let providerUrl: string
+let consumerAccount: string
+let computeJobId: string
+let resolvedDDOAsset: Asset
 
 describe('Simple compute tests', async () => {
   let config: Config
   let addresses: any
   let aquarius: Aquarius
-  let providerUrl: any
 
   before(async () => {
     config = await getTestConfig(web3)
@@ -130,7 +134,7 @@ describe('Simple compute tests', async () => {
     const Factory = new NftFactory(addresses.ERC721Factory, web3)
     const accounts = await web3.eth.getAccounts()
     const publisherAccount = accounts[0]
-    const consumerAccount = accounts[1]
+    consumerAccount = accounts[1]
     const chain = await web3.eth.getChainId()
     const nftParamsAsset: NftCreateData = {
       name: 'testNFT',
@@ -233,8 +237,10 @@ describe('Simple compute tests', async () => {
       '0x' + metadataHash
     )
 
+    console.log('set metadata before resolved asset', res)
     // let's wait
-    const resolvedDDOAsset = await aquarius.waitForAqua(ddo.id)
+    resolvedDDOAsset = await aquarius.waitForAqua(ddo.id)
+    console.log('resolvedDDOAssetl', resolvedDDOAsset)
     assert(resolvedDDOAsset, 'Cannot fetch DDO from Aquarius')
     const resolvedDDOAlgo = await aquarius.waitForAqua(algoDdo.id)
     assert(resolvedDDOAlgo, 'Cannot fetch DDO from Aquarius')
@@ -265,7 +271,6 @@ describe('Simple compute tests', async () => {
       computeEnv,
       computeValidUntil
     )
-    console.log(initializeDataAlgo)
     const providerAlgoFees: ProviderFees = {
       providerFeeAddress: initializeDataAlgo.providerFee.providerFeeAddress,
       providerFeeToken: initializeDataAlgo.providerFee.providerFeeToken,
@@ -302,7 +307,6 @@ describe('Simple compute tests', async () => {
       computeEnv,
       computeValidUntil
     )
-    console.log(initializeData)
     const providerDatasetFees: ProviderFees = {
       providerFeeAddress: initializeData.providerFee.providerFeeAddress,
       providerFeeToken: initializeData.providerFee.providerFeeToken,
@@ -340,12 +344,35 @@ describe('Simple compute tests', async () => {
       }
     )
     assert(computeJobs, 'Cannot start compute job')
-    const jobStatus = await ProviderInstance.computeStatus(
+    console.log('compute jobs', computeJobs[0])
+    computeJobId = computeJobs[0].jobId
+  })
+
+  it('Check compute status', async () => {
+    sleep(10000)
+    const jobStatus = (await ProviderInstance.computeStatus(
       providerUrl,
       consumerAccount,
-      computeJobs[0].jobId,
+      computeJobId,
       resolvedDDOAsset.id
+    )) as ComputeJob
+    assert(jobStatus, 'Cannot retrieve compute status!')
+    console.log('job status', jobStatus)
+  })
+
+  it('Download compute results', async () => {
+    const downloadURL = await ProviderInstance.getComputeResultUrl(
+      providerUrl,
+      web3,
+      consumerAccount,
+      computeJobId,
+      0
     )
-    assert(jobStatus)
+    assert(downloadURL, 'Provider getComputeResultUrl failed!')
+    try {
+      const fileData = await downloadFile(downloadURL)
+    } catch (e) {
+      assert.fail('Download compute result failed')
+    }
   })
 })
