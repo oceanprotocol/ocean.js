@@ -11,7 +11,8 @@ import {
   getHash,
   Nft,
   downloadFile,
-  sleep
+  sleep,
+  fetchData
 } from '../../src'
 import { ProviderFees, Erc20CreateParams, ComputeJob, Asset } from '../../src/@types'
 
@@ -369,7 +370,7 @@ describe('Simple compute tests', async () => {
     console.log('downloadURL', downloadURL)
     assert(downloadURL, 'Provider getComputeResultUrl failed!')
     try {
-      const fileData = await fetch(downloadURL)
+      const fileData = await fetchData(downloadURL, {})
       console.log('fileData', fileData)
     } catch (e) {
       console.log('downloadFile error:', e)
