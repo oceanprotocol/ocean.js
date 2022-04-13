@@ -237,10 +237,8 @@ describe('Simple compute tests', async () => {
       '0x' + metadataHash
     )
 
-    console.log('set metadata before resolved asset', res)
     // let's wait
     resolvedDDOAsset = await aquarius.waitForAqua(ddo.id)
-    console.log('resolvedDDOAssetl', resolvedDDOAsset)
     assert(resolvedDDOAsset, 'Cannot fetch DDO from Aquarius')
     const resolvedDDOAlgo = await aquarius.waitForAqua(algoDdo.id)
     assert(resolvedDDOAlgo, 'Cannot fetch DDO from Aquarius')
@@ -252,7 +250,6 @@ describe('Simple compute tests', async () => {
     const computeEnvs = await ProviderInstance.getComputeEnvironments(providerUrl)
     assert(computeEnvs, 'No Compute environments found')
     // we choose the first env
-    console.log(computeEnvs)
     const computeEnv = computeEnvs[0].id
     const computeConsumerAddress = computeEnvs[0].consumerAddress
     // let's have 10 minutesof compute access
@@ -361,6 +358,7 @@ describe('Simple compute tests', async () => {
   })
 
   it('Download compute results', async () => {
+    sleep(10000)
     const downloadURL = await ProviderInstance.getComputeResultUrl(
       providerUrl,
       web3,
@@ -368,6 +366,7 @@ describe('Simple compute tests', async () => {
       computeJobId,
       0
     )
+    console.log('downloadURL', downloadURL)
     assert(downloadURL, 'Provider getComputeResultUrl failed!')
     try {
       const fileData = await downloadFile(downloadURL)
