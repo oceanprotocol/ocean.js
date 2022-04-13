@@ -288,6 +288,9 @@ describe('NFT', () => {
     assert((await nftDatatoken.getNftOwner(nftAddress)) === nftOwner)
     await nftDatatoken.transferNft(nftAddress, nftOwner, user1, 1)
     assert((await nftDatatoken.getNftOwner(nftAddress)) === user1)
+
+    assert((await nftDatatoken.isErc20Deployer(nftAddress, nftOwner)) === false)
+    assert((await nftDatatoken.isErc20Deployer(nftAddress, user2)) === false)
   })
 
   // Safe transfer test
