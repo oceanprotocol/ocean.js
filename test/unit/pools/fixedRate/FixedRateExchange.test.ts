@@ -352,26 +352,31 @@ describe('Fixed Rate unit test', () => {
       // Only allowance left since dt is ZERO
       expect(result2.dtSupply).to.equal('990')
     })
-    // it('#collectMarketFee- should collect marketFee and send it to marketFeeCollector, anyone can call it', async () => {
-    //   let result = await fixedRate.getFeesInfo(exchangeId)
-    //   // we made 2 swaps for 10 DT at rate 1, the fee is 0.1% for market and always in baseToken so it's 0.01 DAI
-    //   // plus another swap for 1 DT
-    //   expect(result.marketFeeAvailable).to.equal('0.021') // formatted for baseToken decimals
-    //   // same for ocean fee
-    //   expect(result.oceanFeeAvailable).to.equal('0.042') // formatted for baseToken decimals
-    //   expect(result.marketFeeCollector).to.equal(user2)
 
-    //   // user4 calls collectMarketFee
-    //   await fixedRate.collectMarketFee(user4, exchangeId)
-    //   result = await fixedRate.getFeesInfo(exchangeId)
-    //   expect(result.marketFeeAvailable).to.equal('0')
-    //   // ocean fee still available
-    //   expect(result.oceanFeeAvailable).to.equal('0.042')
-    //   // user2 is the marketFeeCollector
-    //   expect(await daiContract.methods.balanceOf(user2).call()).to.equal(
-    //     web3.utils.toWei('1.021')
-    //   )
-    // })
+    it('#collectMarketFee- should collect marketFee and send it to marketFeeCollector, anyone can call it', async () => {
+      let result = await fixedRate.getFeesInfo(exchangeId)
+      // we made 2 swaps for 10 DT at rate 1, the fee is 0.1% for market and always in baseToken so it's 0.01 DAI
+      // plus another swap for 1 DT
+      expect(result.marketFeeAvailable).to.equal('0.021') // formatted for baseToken decimals
+      // same for ocean fee
+      expect(result.oceanFeeAvailable).to.equal('0.042') // formatted for baseToken decimals
+      expect(result.marketFeeCollector).to.equal(user2)
+
+      const daiBalanceBeforeCollect = new BN(
+        await daiContract.methods.balanceOf(user2).call()
+      )
+
+      // user4 calls collectMarketFee
+      await fixedRate.collectMarketFee(user2, exchangeId)
+      result = await fixedRate.getFeesInfo(exchangeId)
+      expect(result.marketFeeAvailable).to.equal('0')
+      // ocean fee still available
+      expect(result.oceanFeeAvailable).to.equal('0.042')
+      // user2 is the marketFeeCollector
+      expect(await daiContract.methods.balanceOf(user2).call()).to.equal(
+        daiBalanceBeforeCollect.add(new BN(web3.utils.toWei('0.021'))).toString()
+      )
+    })
 
     it('#updateMarketFee- should update Market fee if market fee collector', async () => {
       expect((await fixedRate.getFeesInfo(exchangeId)).marketFee).to.equal('0.001')
