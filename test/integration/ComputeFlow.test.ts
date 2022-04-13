@@ -369,8 +369,10 @@ describe('Simple compute tests', async () => {
     console.log('downloadURL', downloadURL)
     assert(downloadURL, 'Provider getComputeResultUrl failed!')
     try {
-      const fileData = await downloadFile(downloadURL)
+      const fileData = await downloadFile(downloadURL, 0)
+      console.log('fileData', fileData)
     } catch (e) {
+      console.log('downloadFile error:', e)
       assert.fail('Download compute result failed')
     }
   })
