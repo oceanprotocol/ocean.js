@@ -451,11 +451,11 @@ describe('Pool unit test', () => {
     it('#getSpotPrice- should get the spot price', async () => {
       assert(
         (await pool.getSpotPrice(poolAddress, erc20Token, contracts.daiAddress, '0.1')) !=
-        null
+          null
       )
       assert(
         (await pool.getSpotPrice(poolAddress, contracts.daiAddress, erc20Token, '0.1')) !=
-        null
+          null
       )
     })
 
@@ -510,7 +510,7 @@ describe('Pool unit test', () => {
     it('#getOPCCollector- should get market fees for each token', async () => {
       assert(
         (await pool.getOPCCollector(poolAddress)) ===
-        contracts.opfCommunityFeeCollectorAddress
+          contracts.opfCommunityFeeCollectorAddress
       )
     })
 
@@ -1004,7 +1004,7 @@ describe('Pool unit test', () => {
     it('#getOPCCollector- should get market fees for each token', async () => {
       assert(
         (await pool.getOPCCollector(poolAddress)) ===
-        contracts.opfCommunityFeeCollectorAddress
+          contracts.opfCommunityFeeCollectorAddress
       )
     })
 
