@@ -10,7 +10,6 @@ import {
   ProviderInitialize
 } from '../@types/'
 import { noZeroX } from '../utils/ConversionTypeHelper'
-import { signText, signWithHash } from '../utils/SignatureUtils'
 import fetch from 'cross-fetch'
 export interface HttpCallback {
   (httpMethod: string, url: string, body: string, header: any): Promise<any>
@@ -106,22 +105,17 @@ export class Provider {
     }
   }
 
-  public async createSignature(
-    web3: Web3,
-    accountId: string,
-    agreementId: string
-  ): Promise<string> {
-    const signature = await signText(web3, noZeroX(agreementId), accountId)
-    return signature
-  }
-
-  public async createHashSignature(
+  public async signProviderRequest(
     web3: Web3,
     accountId: string,
     message: string
   ): Promise<string> {
-    const signature = await signWithHash(web3, message, accountId)
-    return signature
+    const consumerMessage = web3.utils.soliditySha3({
+      t: 'bytes',
+      v: web3.utils.utf8ToHex(message)
+    })
+    const consumerSignature = await web3.eth.sign(consumerMessage, accountId)
+    return consumerSignature
   }
 
   /** Encrypt data using the Provider's own symmetric key
@@ -359,8 +353,7 @@ export class Provider {
       : null
     if (!downloadUrl) return null
     const nonce = Date.now()
-    const signature = await this.createSignature(web3, accountId, did + nonce)
-
+    const signature = await this.signProviderRequest(web3, accountId, did + nonce)
     let consumeUrl = downloadUrl
     consumeUrl += `?fileIndex=${fileIndex}`
     consumeUrl += `&documentId=${did}`
@@ -409,12 +402,11 @@ export class Provider {
     let signatureMessage = consumerAddress
     signatureMessage += dataset.documentId
     signatureMessage += nonce
-    const signature = await this.createHashSignature(
+    const signature = await this.signProviderRequest(
       web3,
       consumerAddress,
       signatureMessage
     )
-
     const payload = Object()
     payload.consumerAddress = consumerAddress
     payload.signature = signature
@@ -488,12 +480,11 @@ export class Provider {
     signatureMessage += jobId || ''
     signatureMessage += (did && `${noZeroX(did)}`) || ''
     signatureMessage += nonce
-    const signature = await this.createHashSignature(
+    const signature = await this.signProviderRequest(
       web3,
       consumerAddress,
       signatureMessage
     )
-
     const payload = Object()
     payload.signature = signature
     payload.documentId = noZeroX(did)
@@ -610,7 +601,7 @@ export class Provider {
     signatureMessage += jobId
     signatureMessage += index.toString()
     signatureMessage += nonce
-    const signature = await this.createHashSignature(
+    const signature = await this.signProviderRequest(
       web3,
       consumerAddress,
       signatureMessage
@@ -665,12 +656,11 @@ export class Provider {
     signatureMessage += jobId || ''
     signatureMessage += (did && `${noZeroX(did)}`) || ''
     signatureMessage += nonce
-    const signature = await this.createHashSignature(
+    const signature = await this.signProviderRequest(
       web3,
       consumerAddress,
       signatureMessage
     )
-
     const payload = Object()
     payload.documentId = noZeroX(did)
     payload.consumerAddress = consumerAddress

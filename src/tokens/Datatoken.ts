@@ -10,7 +10,8 @@ import {
   getFairGasPrice,
   setContractDefaults,
   configHelperNetworks,
-  getFreOrderParams
+  getFreOrderParams,
+  ZERO_ADDRESS
 } from '../utils'
 import {
   ConsumeMarketFee,
@@ -206,8 +207,7 @@ export class Datatoken {
 
     const gasLimitDefault = this.GASLIMIT_DEFAULT
 
-    if (!fixedRateParams.allowedConsumer)
-      fixedRateParams.allowedConsumer = '0x0000000000000000000000000000000000000000'
+    if (!fixedRateParams.allowedConsumer) fixedRateParams.allowedConsumer = ZERO_ADDRESS
     const withMint = fixedRateParams.withMint ? 1 : 0
 
     let estGas
@@ -257,8 +257,7 @@ export class Datatoken {
     if (!(await this.isERC20Deployer(dtAddress, address))) {
       throw new Error(`User is not ERC20 Deployer`)
     }
-    if (!fixedRateParams.allowedConsumer)
-      fixedRateParams.allowedConsumer = '0x0000000000000000000000000000000000000000'
+    if (!fixedRateParams.allowedConsumer) fixedRateParams.allowedConsumer = ZERO_ADDRESS
 
     const withMint = fixedRateParams.withMint ? 1 : 0
 
@@ -320,8 +319,7 @@ export class Datatoken {
         this.config
       )
 
-    if (!dispenserParams.allowedSwapper)
-      dispenserParams.allowedSwapper = '0x0000000000000000000000000000000000000000'
+    if (!dispenserParams.allowedSwapper) dispenserParams.allowedSwapper = ZERO_ADDRESS
 
     if (!dispenserParams.withMint) dispenserParams.withMint = false
 
@@ -367,8 +365,7 @@ export class Datatoken {
       this.config
     )
 
-    if (!dispenserParams.allowedSwapper)
-      dispenserParams.allowedSwapper = '0x0000000000000000000000000000000000000000'
+    if (!dispenserParams.allowedSwapper) dispenserParams.allowedSwapper = ZERO_ADDRESS
 
     if (!dispenserParams.withMint) dispenserParams.withMint = false
 
@@ -785,8 +782,15 @@ export class Datatoken {
       new this.web3.eth.Contract(this.datatokensAbi, dtAddress),
       this.config
     )
-    if ((await this.getDTPermissions(dtAddress, address)).paymentManager !== true) {
-      throw new Error(`Caller is not Fee Manager`)
+    const isPaymentManager = (await this.getDTPermissions(dtAddress, address))
+      .paymentManager
+    const nftAddress = !isPaymentManager && (await this.getNFTAddress(dtAddress))
+    const isNftOwner = nftAddress && (await this.nft.getNftOwner(nftAddress)) === address
+    const nftPermissions =
+      nftAddress && !isNftOwner && (await this.nft.getNftPermissions(nftAddress, address))
+    const isErc20Deployer = nftPermissions?.deployERC20
+    if (!isPaymentManager && !isNftOwner && !isErc20Deployer) {
+      throw new Error(`Caller is not Fee Manager, owner or erc20 Deployer`)
     }
 
     const estGas = await this.estGasSetPaymentCollector(
@@ -975,8 +979,8 @@ export class Datatoken {
     )
     if (!consumeMarketFee) {
       consumeMarketFee = {
-        consumeMarketFeeAddress: '0x0000000000000000000000000000000000000000',
-        consumeMarketFeeToken: '0x0000000000000000000000000000000000000000',
+        consumeMarketFeeAddress: ZERO_ADDRESS,
+        consumeMarketFeeToken: ZERO_ADDRESS,
         consumeMarketFeeAmount: '0'
       }
     }
