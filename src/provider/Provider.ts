@@ -109,14 +109,31 @@ export class Provider {
   public async signProviderRequest(
     web3: Web3,
     accountId: string,
-    message: string
+    message: string,
+    password?: string
   ): Promise<string> {
     const consumerMessage = web3.utils.soliditySha3({
       t: 'bytes',
       v: web3.utils.utf8ToHex(message)
     })
-    const consumerSignature = await web3.eth.sign(consumerMessage, accountId)
-    return consumerSignature
+    const isMetaMask =
+      web3 && web3.currentProvider && (web3.currentProvider as any).isMetaMask
+    try {
+      return await web3.eth.personal.sign(consumerMessage, accountId, password)
+    } catch (e) {
+      if (isMetaMask) {
+        throw e
+      }
+      LoggerInstance.warn('Error on personal sign.')
+      LoggerInstance.warn(e)
+      try {
+        return await web3.eth.sign(consumerMessage, accountId)
+      } catch (e2) {
+        LoggerInstance.error('Error on sign.')
+        LoggerInstance.error(e2)
+        throw new Error('Error executing personal sign')
+      }
+    }
   }
 
   /** Encrypt data using the Provider's own symmetric key
