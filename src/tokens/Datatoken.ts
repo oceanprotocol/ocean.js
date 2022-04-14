@@ -782,8 +782,15 @@ export class Datatoken {
       new this.web3.eth.Contract(this.datatokensAbi, dtAddress),
       this.config
     )
-    if ((await this.getDTPermissions(dtAddress, address)).paymentManager !== true) {
-      throw new Error(`Caller is not Fee Manager`)
+    const isPaymentManager = (await this.getDTPermissions(dtAddress, address))
+      .paymentManager
+    const nftAddress = !isPaymentManager && (await this.getNFTAddress(dtAddress))
+    const isNftOwner = nftAddress && (await this.nft.getNftOwner(nftAddress)) === address
+    const nftPermissions =
+      nftAddress && !isNftOwner && (await this.nft.getNftPermissions(nftAddress, address))
+    const isErc20Deployer = nftPermissions?.deployERC20
+    if (!isPaymentManager && !isNftOwner && !isErc20Deployer) {
+      throw new Error(`Caller is not Fee Manager, owner or erc20 Deployer`)
     }
 
     const estGas = await this.estGasSetPaymentCollector(
