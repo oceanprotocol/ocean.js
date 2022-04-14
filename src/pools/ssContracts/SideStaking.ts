@@ -26,6 +26,13 @@ export class SideStaking {
     this.config = config || configHelperNetworks[0]
   }
 
+  private sideStakingContract(ssAddress: string) {
+    return setContractDefaults(
+      new this.web3.eth.Contract(this.ssAbi, ssAddress),
+      this.config
+    )
+  }
+
   async amountToUnits(token: string, amount: string): Promise<string> {
     let decimals = 18
     const tokenContract = setContractDefaults(
@@ -70,10 +77,7 @@ export class SideStaking {
     ssAddress: string,
     datatokenAddress: string
   ): Promise<string> {
-    const sideStaking = setContractDefaults(
-      new this.web3.eth.Contract(this.ssAbi, ssAddress),
-      this.config
-    )
+    const sideStaking = this.sideStakingContract(ssAddress)
     let result = null
     try {
       result = await sideStaking.methods
@@ -121,10 +125,7 @@ export class SideStaking {
     ssAddress: string,
     datatokenAddress: string
   ): Promise<string> {
-    const sideStaking = setContractDefaults(
-      new this.web3.eth.Contract(this.ssAbi, ssAddress),
-      this.config
-    )
+    const sideStaking = this.sideStakingContract(ssAddress)
     let result = null
     try {
       result = await sideStaking.methods.getPublisherAddress(datatokenAddress).call()
@@ -141,10 +142,7 @@ export class SideStaking {
    * @return {String}
    */
   async getBaseToken(ssAddress: string, datatokenAddress: string): Promise<string> {
-    const sideStaking = setContractDefaults(
-      new this.web3.eth.Contract(this.ssAbi, ssAddress),
-      this.config
-    )
+    const sideStaking = this.sideStakingContract(ssAddress)
     let result = null
     try {
       result = await sideStaking.methods.getBaseTokenAddress(datatokenAddress).call()
@@ -161,10 +159,7 @@ export class SideStaking {
    * @return {String}
    */
   async getPoolAddress(ssAddress: string, datatokenAddress: string): Promise<string> {
-    const sideStaking = setContractDefaults(
-      new this.web3.eth.Contract(this.ssAbi, ssAddress),
-      this.config
-    )
+    const sideStaking = this.sideStakingContract(ssAddress)
     let result = null
     try {
       result = await sideStaking.methods.getPoolAddress(datatokenAddress).call()
@@ -184,10 +179,7 @@ export class SideStaking {
     ssAddress: string,
     datatokenAddress: string
   ): Promise<string> {
-    const sideStaking = setContractDefaults(
-      new this.web3.eth.Contract(this.ssAbi, ssAddress),
-      this.config
-    )
+    const sideStaking = this.sideStakingContract(ssAddress)
     let result = null
     try {
       result = await sideStaking.methods.getBaseTokenBalance(datatokenAddress).call()
@@ -207,10 +199,7 @@ export class SideStaking {
     ssAddress: string,
     datatokenAddress: string
   ): Promise<string> {
-    const sideStaking = setContractDefaults(
-      new this.web3.eth.Contract(this.ssAbi, ssAddress),
-      this.config
-    )
+    const sideStaking = this.sideStakingContract(ssAddress)
     let result = null
     try {
       result = await sideStaking.methods.getDatatokenBalance(datatokenAddress).call()
@@ -228,10 +217,7 @@ export class SideStaking {
    * @return {String} end block for vesting amount
    */
   async getvestingEndBlock(ssAddress: string, datatokenAddress: string): Promise<string> {
-    const sideStaking = setContractDefaults(
-      new this.web3.eth.Contract(this.ssAbi, ssAddress),
-      this.config
-    )
+    const sideStaking = this.sideStakingContract(ssAddress)
     let result = null
     try {
       result = await sideStaking.methods.getvestingEndBlock(datatokenAddress).call()
@@ -269,10 +255,7 @@ export class SideStaking {
     ssAddress: string,
     datatokenAddress: string
   ): Promise<string> {
-    const sideStaking = setContractDefaults(
-      new this.web3.eth.Contract(this.ssAbi, ssAddress),
-      this.config
-    )
+    const sideStaking = this.sideStakingContract(ssAddress)
     let result = null
     try {
       result = await sideStaking.methods.getvestingLastBlock(datatokenAddress).call()
@@ -292,10 +275,7 @@ export class SideStaking {
     ssAddress: string,
     datatokenAddress: string
   ): Promise<string> {
-    const sideStaking = setContractDefaults(
-      new this.web3.eth.Contract(this.ssAbi, ssAddress),
-      this.config
-    )
+    const sideStaking = this.sideStakingContract(ssAddress)
     let result = null
     try {
       result = await sideStaking.methods.getvestingAmountSoFar(datatokenAddress).call()
@@ -351,10 +331,7 @@ export class SideStaking {
     ssAddress: string,
     datatokenAddress: string
   ): Promise<TransactionReceipt> {
-    const sideStaking = setContractDefaults(
-      new this.web3.eth.Contract(this.ssAbi, ssAddress),
-      this.config
-    )
+    const sideStaking = this.sideStakingContract(ssAddress)
     let result = null
 
     const estGas = await this.estGetVesting(
@@ -424,10 +401,7 @@ export class SideStaking {
     poolAddress: string,
     swapFee: number
   ): Promise<TransactionReceipt> {
-    const sideStaking = setContractDefaults(
-      new this.web3.eth.Contract(this.ssAbi, ssAddress),
-      this.config
-    )
+    const sideStaking = this.sideStakingContract(ssAddress)
     let result = null
 
     const estGas = await this.estSetPoolSwapFee(
@@ -458,10 +432,7 @@ export class SideStaking {
    * @return {String}
    */
   async getRouter(ssAddress: string): Promise<string> {
-    const sideStaking = setContractDefaults(
-      new this.web3.eth.Contract(this.ssAbi, ssAddress),
-      this.config
-    )
+    const sideStaking = this.sideStakingContract(ssAddress)
     let result = null
     try {
       result = await sideStaking.methods.router().call()
