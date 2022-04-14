@@ -222,6 +222,12 @@ describe('SideStaking unit test', () => {
       ).to.equal('0')
     })
 
+    it('#getDatatokenBalance ', async () => {
+      expect(
+        await sideStaking.getDatatokenBalance(contracts.sideStakingAddress, erc20Token)
+      ).to.equal(((Math.pow(2, 256) - 1) / Math.pow(10, 18)).toString())
+    })
+
     it('#getvestingAmount ', async () => {
       expect(
         await sideStaking.getvestingAmount(contracts.sideStakingAddress, erc20Token)
@@ -410,6 +416,12 @@ describe('SideStaking unit test', () => {
       expect(
         await sideStaking.getBaseTokenBalance(contracts.sideStakingAddress, erc20Token)
       ).to.equal('0')
+    })
+
+    it('#getDatatokenBalance ', async () => {
+      expect(
+        await sideStaking.getDatatokenBalance(contracts.sideStakingAddress, erc20Token)
+      ).to.equal(((Math.pow(2, 256) - 1) / Math.pow(10, 18)).toString())
     })
 
     it('#getvestingAmount ', async () => {
