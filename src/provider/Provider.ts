@@ -1,5 +1,5 @@
 import Web3 from 'web3'
-import { LoggerInstance, getData, downloadFile, downloadFileBrowser } from '../utils'
+import { LoggerInstance, getData } from '../utils'
 import {
   FileMetadata,
   ComputeJob,
@@ -577,7 +577,7 @@ export class Provider {
    * @param {string} consumerAddress The consumer ethereum address
    * @param {string} jobId The ID of a compute job.
    * @param {number} index Result index
-   * @return {Promise<ComputeJob | ComputeJob[]>}
+   * @return {Promise<string>}
    */
   public async getComputeResultUrl(
     providerUri: string,
