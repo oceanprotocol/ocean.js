@@ -1,11 +1,17 @@
 import Decimal from 'decimal.js'
 import { Contract } from 'web3-eth-contract'
-import { amountToUnits, getFairGasPrice, unitsToAmount } from './ContractUtils'
+import {
+  amountToUnits,
+  getFairGasPrice,
+  setContractDefaults,
+  unitsToAmount
+} from './ContractUtils'
 import { minAbi } from './minAbi'
 import LoggerInstance from './Logger'
 import { TransactionReceipt } from 'web3-core'
 import Web3 from 'web3'
 import { GASLIMIT_DEFAULT } from '.'
+import { Config } from '../models'
 
 /**
  * Estimate gas cost for approval function
@@ -47,6 +53,7 @@ export async function estApprove(
  * @param {String} spender
  * @param {String} amount  (always expressed as wei)
  * @param {String} force  if true, will overwrite any previous allowence. Else, will check if allowence is enough and will not send a transaction if it's not needed
+ * @param {Config} config  configuration that provide values for web3 transaction gasFeeMultiplier, transactionBlockTimeout, transactionConfirmationBlocks, transactionPollingTimeout
  */
 export async function approve(
   web3: Web3,
@@ -54,11 +61,15 @@ export async function approve(
   tokenAddress: string,
   spender: string,
   amount: string,
-  force = false
+  force = false,
+  config?: Config
 ): Promise<TransactionReceipt | string> {
-  const tokenContract = new web3.eth.Contract(minAbi, tokenAddress)
+  const tokenContract = setContractDefaults(
+    new web3.eth.Contract(minAbi, tokenAddress),
+    config
+  )
   if (!force) {
-    const currentAllowence = await allowance(web3, tokenAddress, account, spender)
+    const currentAllowence = await allowance(web3, tokenAddress, account, spender, config)
     if (new Decimal(currentAllowence).greaterThanOrEqualTo(new Decimal(amount))) {
       return currentAllowence
     }
@@ -78,7 +89,7 @@ export async function approve(
     result = await tokenContract.methods.approve(spender, amountFormatted).send({
       from: account,
       gas: estGas + 1,
-      gasPrice: await getFairGasPrice(web3, null)
+      gasPrice: await getFairGasPrice(web3, config)
     })
   } catch (e) {
     LoggerInstance.error(
@@ -99,9 +110,13 @@ export async function allowance(
   web3: Web3,
   tokenAddress: string,
   account: string,
-  spender: string
+  spender: string,
+  config?: Config
 ): Promise<string> {
-  const tokenContract = new web3.eth.Contract(minAbi, tokenAddress)
+  const tokenContract = setContractDefaults(
+    new web3.eth.Contract(minAbi, tokenAddress),
+    config
+  )
   const trxReceipt = await tokenContract.methods.allowance(account, spender).call()
 
   return await unitsToAmount(web3, tokenAddress, trxReceipt)
@@ -117,9 +132,13 @@ export async function allowance(
 export async function balance(
   web3: Web3,
   tokenAddress: string,
-  account: string
+  account: string,
+  config?: Config
 ): Promise<string> {
-  const tokenContract = new web3.eth.Contract(minAbi, tokenAddress)
+  const tokenContract = setContractDefaults(
+    new web3.eth.Contract(minAbi, tokenAddress),
+    config
+  )
   const trxReceipt = await tokenContract.methods.balanceOf(account).call()
 
   return await unitsToAmount(web3, tokenAddress, trxReceipt)

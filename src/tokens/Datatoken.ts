@@ -1047,7 +1047,10 @@ export class Datatoken {
     orderParams: OrderParams,
     freParams: FreOrderParams
   ): Promise<TransactionReceipt> {
-    const dtContract = new this.web3.eth.Contract(this.datatokensEnterpriseAbi, dtAddress)
+    const dtContract = setContractDefaults(
+      new this.web3.eth.Contract(this.datatokensEnterpriseAbi, dtAddress),
+      this.config
+    )
     try {
       const freContractParams = getFreOrderParams(freParams)
 
@@ -1118,7 +1121,10 @@ export class Datatoken {
     orderParams: OrderParams,
     dispenserContract: string
   ): Promise<TransactionReceipt> {
-    const dtContract = new this.web3.eth.Contract(this.datatokensEnterpriseAbi, dtAddress)
+    const dtContract = setContractDefaults(
+      new this.web3.eth.Contract(this.datatokensEnterpriseAbi, dtAddress),
+      this.config
+    )
     try {
       const estGas = await this.estGasBuyFromDispenserAndOrder(
         dtAddress,
@@ -1344,9 +1350,12 @@ export class Datatoken {
    * @return {Promise<String>} balance  Number of datatokens. Will be converted from wei
    */
   public async balance(datatokenAddress: string, address: string): Promise<string> {
-    const dtContract = new this.web3.eth.Contract(this.datatokensAbi, datatokenAddress, {
-      from: address
-    })
+    const dtContract = setContractDefaults(
+      new this.web3.eth.Contract(this.datatokensAbi, datatokenAddress, {
+        from: address
+      }),
+      this.config
+    )
     const balance = await dtContract.methods.balanceOf(address).call()
     return this.web3.utils.fromWei(balance)
   }
