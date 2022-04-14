@@ -10,9 +10,7 @@ import {
   Datatoken,
   getHash,
   Nft,
-  downloadFile,
-  sleep,
-  fetchData
+  sleep
 } from '../../src'
 import { ProviderFees, Erc20CreateParams, ComputeJob, Asset } from '../../src/@types'
 

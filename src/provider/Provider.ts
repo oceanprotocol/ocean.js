@@ -577,7 +577,6 @@ export class Provider {
    * @param {string} consumerAddress The consumer ethereum address
    * @param {string} jobId The ID of a compute job.
    * @param {number} index Result index
-   * @param {AbortSignal} signal Abort signal
    * @return {Promise<ComputeJob | ComputeJob[]>}
    */
   public async getComputeResultUrl(
@@ -606,15 +605,13 @@ export class Provider {
       consumerAddress,
       signatureMessage
     )
-
+    if (!computeResultUrl) return null
     let resultUrl = computeResultUrl
     resultUrl += `?consumerAddress=${consumerAddress}`
     resultUrl += `&jobId=${jobId}`
     resultUrl += `&index=${index.toString()}`
     resultUrl += `&nonce=${nonce}`
     resultUrl += (signature && `&signature=${signature}`) || ''
-
-    if (!resultUrl) return null
     return resultUrl
   }
 
