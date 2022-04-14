@@ -118,22 +118,9 @@ export class Provider {
     })
     const isMetaMask =
       web3 && web3.currentProvider && (web3.currentProvider as any).isMetaMask
-    try {
+    if (isMetaMask)
       return await web3.eth.personal.sign(consumerMessage, accountId, password)
-    } catch (e) {
-      if (isMetaMask) {
-        throw e
-      }
-      LoggerInstance.warn('Error on personal sign.')
-      LoggerInstance.warn(e)
-      try {
-        return await web3.eth.sign(consumerMessage, accountId)
-      } catch (e2) {
-        LoggerInstance.error('Error on sign.')
-        LoggerInstance.error(e2)
-        throw new Error('Error executing personal sign')
-      }
-    }
+    else return await web3.eth.sign(consumerMessage, accountId)
   }
 
   /** Encrypt data using the Provider's own symmetric key
