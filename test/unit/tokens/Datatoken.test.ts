@@ -425,8 +425,8 @@ describe('Datatoken', () => {
       order.transactionHash,
       providerFees
     )
-    console.log('reuseOrder', reusedOrder)
     assert(reusedOrder.events.OrderReused.event === 'OrderReused')
+    assert(reusedOrder.events.ProviderFee.event === 'ProviderFee')
   })
 
   it('#buyFromDispenserAndOrder- Enterprise method', async () => {
