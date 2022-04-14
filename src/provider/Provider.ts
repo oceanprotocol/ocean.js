@@ -1,5 +1,5 @@
 import Web3 from 'web3'
-import { LoggerInstance, getData, downloadFile, downloadFileBrowser } from '../utils'
+import { LoggerInstance, getData } from '../utils'
 import {
   FileMetadata,
   ComputeJob,
@@ -11,7 +11,6 @@ import {
 } from '../@types/'
 import { noZeroX } from '../utils/ConversionTypeHelper'
 import fetch from 'cross-fetch'
-import { DownloadResponse } from '../@types/DownloadResponse'
 export interface HttpCallback {
   (httpMethod: string, url: string, body: string, header: any): Promise<any>
 }
@@ -66,7 +65,7 @@ export class Provider {
     return serviceEndpoints
   }
 
-  /** Encrypt DDO using the Provider's own symmetric key
+  /** Gets current nonce
    * @param {string} providerUri provider uri address
    * @param {string} consumerAddress Publisher address
    * @param {AbortSignal} signal abort signal
@@ -142,12 +141,11 @@ export class Provider {
     const path = this.getEndpointURL(serviceEndpoints, 'encrypt')
       ? this.getEndpointURL(serviceEndpoints, 'encrypt').urlPath
       : null
-
     if (!path) return null
     try {
       const response = await fetch(path, {
         method: 'POST',
-        body: decodeURI(JSON.stringify(data)),
+        body: JSON.stringify(data),
         headers: {
           'Content-Type': 'application/octet-stream'
         },
@@ -437,7 +435,7 @@ export class Provider {
         const params = await response.json()
         return params
       }
-      console.error('Compute start failed:', response.status, response.statusText)
+      LoggerInstance.error('Compute start failed: ', response.status, response.statusText)
       LoggerInstance.error('Payload was:', payload)
       return null
     } catch (e) {
@@ -577,23 +575,21 @@ export class Provider {
     }
   }
 
-  /** Get status for a specific jobId/documentId/owner.
-   * @param {string} jobId
-   * @param {number} index
-   * @param {string} providerUri
-   * @param {string} destination
-   * @param {Web3} web3
-   * @param {AbortSignal} signal abort signal
-   * @return {Promise<ComputeJob | ComputeJob[]>}
+  /** Get compute result url
+   * @param {string} providerUri The URI of the provider we want to query
+   * @param {Web3} web3 Web3 instance
+   * @param {string} consumerAddress The consumer ethereum address
+   * @param {string} jobId The ID of a compute job.
+   * @param {number} index Result index
+   * @return {Promise<string>}
    */
-  public async computeResult(
-    jobId: string,
-    index: number,
-    accountId: string,
+  public async getComputeResultUrl(
     providerUri: string,
     web3: Web3,
-    signal?: AbortSignal
-  ): Promise<DownloadResponse | void> {
+    consumerAddress: string,
+    jobId: string,
+    index: number
+  ): Promise<string> {
     const providerEndpoints = await this.getEndpoints(providerUri)
     const serviceEndpoints = await this.getServiceEndpoints(
       providerUri,
@@ -603,38 +599,24 @@ export class Provider {
       ? this.getEndpointURL(serviceEndpoints, 'computeResult').urlPath
       : null
 
-    const nonce = await this.getNonce(
-      providerUri,
-      accountId,
-      signal,
-      providerEndpoints,
-      serviceEndpoints
-    )
-
-    let signatureMessage = accountId
+    const nonce = Date.now()
+    let signatureMessage = consumerAddress
     signatureMessage += jobId
     signatureMessage += index.toString()
     signatureMessage += nonce
-    const signature = await this.signProviderRequest(web3, accountId, signatureMessage)
-
-    let consumeUrl = computeResultUrl
-    consumeUrl += `?consumerAddress=${accountId}`
-    consumeUrl += `&jobId=${jobId}`
-    consumeUrl += `&index=${String(index)}`
-    consumeUrl += (signature && `&signature=${signature}`) || ''
-
+    const signature = await this.signProviderRequest(
+      web3,
+      consumerAddress,
+      signatureMessage
+    )
     if (!computeResultUrl) return null
-    try {
-      if (document) {
-        await downloadFileBrowser(consumeUrl)
-      } else {
-        return await downloadFile(consumeUrl, index)
-      }
-    } catch (e) {
-      LoggerInstance.error('Error getting job result')
-      LoggerInstance.error(e)
-      throw e
-    }
+    let resultUrl = computeResultUrl
+    resultUrl += `?consumerAddress=${consumerAddress}`
+    resultUrl += `&jobId=${jobId}`
+    resultUrl += `&index=${index.toString()}`
+    resultUrl += `&nonce=${nonce}`
+    resultUrl += (signature && `&signature=${signature}`) || ''
+    return resultUrl
   }
 
   /** Deletes a compute job.

@@ -1,5 +1,6 @@
 import sha256 from 'crypto-js/sha256'
 import Web3 from 'web3'
+import LoggerInstance from './Logger'
 
 export function generateDid(erc721Address: string, chainId: number): string {
   erc721Address = Web3.utils.toChecksumAddress(erc721Address)
@@ -8,5 +9,9 @@ export function generateDid(erc721Address: string, chainId: number): string {
 }
 
 export function getHash(data: any): string {
-  return sha256(data).toString()
+  try {
+    return sha256(data).toString()
+  } catch (e) {
+    LoggerInstance.error('getHash error: ', e.message)
+  }
 }
