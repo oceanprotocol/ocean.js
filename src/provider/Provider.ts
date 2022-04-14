@@ -404,11 +404,6 @@ export class Provider {
     let signatureMessage = consumerAddress
     signatureMessage += dataset.documentId
     signatureMessage += nonce
-    // const signature = await this.createHashSignature(
-    //  web3,
-    //  consumerAddress,
-    //  signatureMessage
-    // )
     const signature = await this.signProviderRequest(
       web3,
       consumerAddress,
@@ -487,12 +482,6 @@ export class Provider {
     signatureMessage += jobId || ''
     signatureMessage += (did && `${noZeroX(did)}`) || ''
     signatureMessage += nonce
-    /* const signature = await this.createHashSignature(
-      web3,
-      consumerAddress,
-      signatureMessage
-    )
-    */
     const signature = await this.signProviderRequest(
       web3,
       consumerAddress,
@@ -622,7 +611,6 @@ export class Provider {
     signatureMessage += jobId
     signatureMessage += index.toString()
     signatureMessage += nonce
-    // const signature = await this.createHashSignature(web3, accountId, signatureMessage)
     const signature = await this.signProviderRequest(web3, accountId, signatureMessage)
 
     let consumeUrl = computeResultUrl
@@ -683,12 +671,6 @@ export class Provider {
     signatureMessage += jobId || ''
     signatureMessage += (did && `${noZeroX(did)}`) || ''
     signatureMessage += nonce
-    /* const signature = await this.createHashSignature(
-      web3,
-      consumerAddress,
-      signatureMessage
-    )
-    */
     const signature = await this.signProviderRequest(
       web3,
       consumerAddress,
