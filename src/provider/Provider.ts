@@ -109,14 +109,18 @@ export class Provider {
   public async signProviderRequest(
     web3: Web3,
     accountId: string,
-    message: string
+    message: string,
+    password?: string
   ): Promise<string> {
     const consumerMessage = web3.utils.soliditySha3({
       t: 'bytes',
       v: web3.utils.utf8ToHex(message)
     })
-    const consumerSignature = await web3.eth.sign(consumerMessage, accountId)
-    return consumerSignature
+    const isMetaMask =
+      web3 && web3.currentProvider && (web3.currentProvider as any).isMetaMask
+    if (isMetaMask)
+      return await web3.eth.personal.sign(consumerMessage, accountId, password)
+    else return await web3.eth.sign(consumerMessage, accountId)
   }
 
   /** Encrypt data using the Provider's own symmetric key
