@@ -25,9 +25,9 @@ export class SideStaking {
     this.config = config || configHelperNetworks[0]
   }
 
-  private sideStakingContract(ssAddress: string, abi?: AbiItem[]) {
+  private sideStakingContract(ssAddress: string) {
     return setContractDefaults(
-      new this.web3.eth.Contract(abi || this.ssAbi, ssAddress),
+      new this.web3.eth.Contract(this.ssAbi, ssAddress),
       this.config
     )
   }
@@ -265,12 +265,7 @@ export class SideStaking {
     datatokenAddress: string,
     contractInstance?: Contract
   ): Promise<number> {
-    const sideStaking =
-      contractInstance ||
-      setContractDefaults(
-        new this.web3.eth.Contract(this.ssAbi as AbiItem[], ssAddress),
-        this.config
-      )
+    const sideStaking = contractInstance || this.sideStakingContract(ssAddress)
 
     const gasLimitDefault = this.GASLIMIT_DEFAULT
     let estGas
@@ -333,12 +328,7 @@ export class SideStaking {
     swapFee: number,
     contractInstance?: Contract
   ): Promise<number> {
-    const sideStaking =
-      contractInstance ||
-      setContractDefaults(
-        new this.web3.eth.Contract(this.ssAbi as AbiItem[], ssAddress),
-        this.config
-      )
+    const sideStaking = contractInstance || this.sideStakingContract(ssAddress)
 
     const gasLimitDefault = this.GASLIMIT_DEFAULT
     let estGas
