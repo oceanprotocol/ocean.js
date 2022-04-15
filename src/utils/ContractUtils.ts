@@ -8,12 +8,15 @@ import {
   FreOrderParams,
   PoolCreationParams
 } from '../@types'
-import { Config } from '../models'
+import { ContractConfig } from '../models'
 import { minAbi } from './minAbi'
 import LoggerInstance from './Logger'
 import { ZERO_ADDRESS } from './Constants'
 
-export function setContractDefaults(contract: Contract, config: Config): Contract {
+export function setContractDefaults(
+  contract: Contract,
+  config: ContractConfig
+): Contract {
   if (config) {
     if (config.transactionBlockTimeout)
       contract.transactionBlockTimeout = config.transactionBlockTimeout
@@ -25,7 +28,10 @@ export function setContractDefaults(contract: Contract, config: Config): Contrac
   return contract
 }
 
-export async function getFairGasPrice(web3: Web3, config: Config): Promise<string> {
+export async function getFairGasPrice(
+  web3: Web3,
+  config: ContractConfig
+): Promise<string> {
   const x = new BigNumber(await web3.eth.getGasPrice())
   if (config && config.gasFeeMultiplier)
     return x

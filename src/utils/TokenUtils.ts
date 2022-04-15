@@ -11,7 +11,7 @@ import LoggerInstance from './Logger'
 import { TransactionReceipt } from 'web3-core'
 import Web3 from 'web3'
 import { GASLIMIT_DEFAULT } from '.'
-import { Config } from '../models'
+import { Config, ContractConfig } from '../models'
 
 /**
  * Estimate gas cost for approval function
@@ -62,16 +62,16 @@ export async function approve(
   spender: string,
   amount: string,
   force = false,
-  config?: Config
+  config?: ContractConfig
 ): Promise<TransactionReceipt | string> {
   const tokenContract = setContractDefaults(
     new web3.eth.Contract(minAbi, tokenAddress),
     config
   )
   if (!force) {
-    const currentAllowence = await allowance(web3, tokenAddress, account, spender, config)
-    if (new Decimal(currentAllowence).greaterThanOrEqualTo(new Decimal(amount))) {
-      return currentAllowence
+    const currentAllowance = await allowance(web3, tokenAddress, account, spender, config)
+    if (new Decimal(currentAllowance).greaterThanOrEqualTo(new Decimal(amount))) {
+      return currentAllowance
     }
   }
   let result = null
@@ -111,7 +111,7 @@ export async function allowance(
   tokenAddress: string,
   account: string,
   spender: string,
-  config?: Config
+  config?: ContractConfig
 ): Promise<string> {
   const tokenContract = setContractDefaults(
     new web3.eth.Contract(minAbi, tokenAddress),

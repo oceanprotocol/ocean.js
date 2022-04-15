@@ -26,18 +26,18 @@ export class SideStaking {
     this.config = config || configHelperNetworks[0]
   }
 
-  private sideStakingContract(ssAddress: string) {
+  private sideStakingContract(ssAddress: string, abi?: AbiItem[]) {
     return setContractDefaults(
-      new this.web3.eth.Contract(this.ssAbi, ssAddress),
+      new this.web3.eth.Contract(abi || this.ssAbi, ssAddress),
       this.config
     )
   }
 
   async amountToUnits(token: string, amount: string): Promise<string> {
     let decimals = 18
-    const tokenContract = setContractDefaults(
-      new this.web3.eth.Contract(defaultErc20Abi.abi as AbiItem[], token),
-      this.config
+    const tokenContract = this.sideStakingContract(
+      token,
+      defaultErc20Abi.abi as AbiItem[]
     )
     try {
       decimals = await tokenContract.methods.decimals().call()
@@ -52,9 +52,9 @@ export class SideStaking {
 
   async unitsToAmount(token: string, amount: string): Promise<string> {
     let decimals = 18
-    const tokenContract = setContractDefaults(
-      new this.web3.eth.Contract(defaultErc20Abi.abi as AbiItem[], token),
-      this.config
+    const tokenContract = this.sideStakingContract(
+      token,
+      defaultErc20Abi.abi as AbiItem[]
     )
     try {
       decimals = await tokenContract.methods.decimals().call()
