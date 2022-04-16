@@ -141,15 +141,6 @@ describe('NFT', () => {
     assert((await nftDatatoken.isErc20Deployer(nftAddress, user1)) === true)
   })
 
-  it('#addManager - should fail to add a new Manager, if NOT NFT Owner', async () => {
-    try {
-      await nftDatatoken.addManager(nftAddress, user1, user1)
-      assert(false)
-    } catch (e) {
-      assert(e.message === 'Caller is not NFT Owner')
-    }
-  })
-
   it('#addERC20Deployer - should fail to add ERC20deployer if NOT Manager', async () => {
     try {
       await nftDatatoken.addErc20Deployer(nftAddress, user1, user1)
@@ -179,7 +170,7 @@ describe('NFT', () => {
     assert((await nftDatatoken.isErc20Deployer(nftAddress, user1)) === true)
   })
 
-  it('#removeERC20Deployer - should fail to remove himself an ERC20Deployer', async () => {
+  it('#removeERC20Deployer - should fail to remove himself as an ERC20Deployer', async () => {
     assert((await nftDatatoken.isErc20Deployer(nftAddress, user1)) === true)
     try {
       await nftDatatoken.removeErc20Deployer(nftAddress, user1, user1)
