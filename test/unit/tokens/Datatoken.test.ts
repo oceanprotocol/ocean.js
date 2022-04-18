@@ -517,4 +517,9 @@ describe('Datatoken', () => {
     const key = web3.utils.keccak256(datatokenAddress)
     assert((await nftDatatoken.getData(nftAddress, key)) === OldData)
   })
+
+  it('#getDecimals - should return the number of decimals of the datatoken', async () => {
+    const decimals = await datatoken.getDecimals(datatokenAddress)
+    assert(decimals === DECIMALS.toString())
+  })
 })
