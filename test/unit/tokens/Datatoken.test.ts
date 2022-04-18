@@ -522,4 +522,17 @@ describe('Datatoken', () => {
     const decimals = await datatoken.getDecimals(datatokenAddress)
     assert(decimals === DECIMALS.toString())
   })
+
+  it('#transfer - we can transfer the datatoken', async () => {
+    const balance1before = await datatoken.balance(datatokenAddress, user1)
+    const balance2before = await datatoken.balance(datatokenAddress, user2)
+
+    await datatoken.transfer(datatokenAddress, user2, '1', user1)
+
+    const balance1after = await datatoken.balance(datatokenAddress, user1)
+    const balance2after = await datatoken.balance(datatokenAddress, user2)
+
+    assert(+balance1after === +balance1before - 1)
+    assert(+balance2after === +balance2before + 1)
+  })
 })
