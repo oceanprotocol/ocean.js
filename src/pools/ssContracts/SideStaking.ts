@@ -6,8 +6,7 @@ import {
   LoggerInstance,
   getFairGasPrice,
   configHelperNetworks,
-  unitsToAmount,
-  amountToUnits
+  unitsToAmount
 } from '../../utils'
 import SideStakingTemplate from '@oceanprotocol/contracts/artifacts/contracts/pools/ssContracts/SideStaking.sol/SideStaking.json'
 import { Config } from '../../models'
@@ -23,14 +22,6 @@ export class SideStaking {
     else this.ssAbi = SideStakingTemplate.abi as AbiItem[]
     this.web3 = web3
     this.config = config || configHelperNetworks[0]
-  }
-
-  async amountToUnits(
-    token: string,
-    amount: string,
-    tokenDecimals?: number
-  ): Promise<string> {
-    return amountToUnits(this.web3, token, amount, tokenDecimals)
   }
 
   async unitsToAmount(
