@@ -164,6 +164,7 @@ export class SideStaking {
    * Get dt balance in the staking contract available for being added as liquidity
    * @param {String} ssAddress side staking contract address
    * @param {String} datatokenAddress datatokenAddress
+   * @param {number} tokenDecimals optional number of decimals of the token
    * @return {String}
    */
   async getDatatokenBalance(
@@ -203,6 +204,7 @@ export class SideStaking {
    * Get total amount vesting
    * @param {String} ssAddress side staking contract address
    * @param {String} datatokenAddress datatokenAddress
+   * @param {number} tokenDecimals optional number of decimals of the token
    * @return {String}
    */
   async getvestingAmount(
@@ -245,6 +247,7 @@ export class SideStaking {
    * Get how much has been taken from the vesting amount
    * @param {String} ssAddress side staking contract address
    * @param {String} datatokenAddress datatokenAddress
+   * @param {number} tokenDecimals optional number of decimals of the token
    * @return {String}
    */
   async getvestingAmountSoFar(
