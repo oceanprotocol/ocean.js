@@ -274,7 +274,7 @@ export class FixedRateExchange {
       exchange.baseToken,
       minBaseTokenAmount
     )
-    const estGas = await this.estBuyDT(
+    const estGas = await this.estSellDT(
       address,
       exchangeId,
       dtAmountFormatted,
