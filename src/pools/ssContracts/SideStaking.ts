@@ -25,12 +25,20 @@ export class SideStaking {
     this.config = config || configHelperNetworks[0]
   }
 
-  async amountToUnits(token: string, amount: string): Promise<string> {
-    return amountToUnits(this.web3, token, amount)
+  async amountToUnits(
+    token: string,
+    amount: string,
+    tokenDecimals?: number
+  ): Promise<string> {
+    return amountToUnits(this.web3, token, amount, tokenDecimals)
   }
 
-  async unitsToAmount(token: string, amount: string): Promise<string> {
-    return unitsToAmount(this.web3, token, amount)
+  async unitsToAmount(
+    token: string,
+    amount: string,
+    tokenDecimals?: number
+  ): Promise<string> {
+    return unitsToAmount(this.web3, token, amount, tokenDecimals)
   }
 
   /**
@@ -160,7 +168,8 @@ export class SideStaking {
    */
   async getDatatokenBalance(
     ssAddress: string,
-    datatokenAddress: string
+    datatokenAddress: string,
+    tokenDecimals?: number
   ): Promise<string> {
     const sideStaking = new this.web3.eth.Contract(this.ssAbi, ssAddress)
     let result = null
@@ -169,7 +178,7 @@ export class SideStaking {
     } catch (e) {
       LoggerInstance.error(`ERROR: Failed to get: ${e.message}`)
     }
-    result = await this.unitsToAmount(datatokenAddress, result)
+    result = await this.unitsToAmount(datatokenAddress, result, tokenDecimals)
     return result
   }
 
@@ -196,7 +205,11 @@ export class SideStaking {
    * @param {String} datatokenAddress datatokenAddress
    * @return {String}
    */
-  async getvestingAmount(ssAddress: string, datatokenAddress: string): Promise<string> {
+  async getvestingAmount(
+    ssAddress: string,
+    datatokenAddress: string,
+    tokenDecimals?: number
+  ): Promise<string> {
     const sideStaking = new this.web3.eth.Contract(this.ssAbi, ssAddress)
     let result = null
     try {
@@ -204,7 +217,7 @@ export class SideStaking {
     } catch (e) {
       LoggerInstance.error(`ERROR: Failed to get: ${e.message}`)
     }
-    result = await this.unitsToAmount(datatokenAddress, result)
+    result = await this.unitsToAmount(datatokenAddress, result, tokenDecimals)
     return result
   }
 
@@ -236,7 +249,8 @@ export class SideStaking {
    */
   async getvestingAmountSoFar(
     ssAddress: string,
-    datatokenAddress: string
+    datatokenAddress: string,
+    tokenDecimals?: number
   ): Promise<string> {
     const sideStaking = new this.web3.eth.Contract(this.ssAbi, ssAddress)
     let result = null
@@ -245,7 +259,7 @@ export class SideStaking {
     } catch (e) {
       LoggerInstance.error(`ERROR: Failed to get: ${e.message}`)
     }
-    result = await this.unitsToAmount(datatokenAddress, result)
+    result = await this.unitsToAmount(datatokenAddress, result, tokenDecimals)
     return result
   }
 
