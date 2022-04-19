@@ -18,6 +18,7 @@ describe('Datatoken', () => {
   let user1: string
   let user2: string
   let user3: string
+  let erc20DeployerUser: string
   let contracts: Addresses
   let nftDatatoken: Nft
   let datatoken: Datatoken
@@ -56,6 +57,7 @@ describe('Datatoken', () => {
     user3 = accounts[3]
 
     NFT_DATA.owner = nftOwner
+    erc20DeployerUser = accounts[4]
   })
 
   it('should deploy contracts', async () => {
@@ -82,7 +84,8 @@ describe('Datatoken', () => {
   })
 
   it('#createERC20 - should create a new ERC20 DT from NFT contract', async () => {
-    // await nftDatatoken.addERC20Deployer(nftAddress, nftOwner, nftOwner)
+    await nftDatatoken.addErc20Deployer(nftAddress, nftOwner, 
+                                       )
     datatokenAddress = await nftDatatoken.createErc20(
       nftAddress,
       nftOwner,
@@ -271,7 +274,7 @@ describe('Datatoken', () => {
     )
   })
 
-  it('#setPaymentCollector - should fail to set a new paymentCollector, if NOT PAYMENT Manager', async () => {
+  it('#setPaymentCollector - should fail to set a new paymentCollector, if NOT PAYMENT Manager, NFT OWNER OR ERC 20 DEPLOYER', async () => {
     assert(
       (await datatoken.getDTPermissions(datatokenAddress, user2)).paymentManager === false
     )
@@ -280,7 +283,7 @@ describe('Datatoken', () => {
       await datatoken.setPaymentCollector(datatokenAddress, user1, user2)
       assert(false)
     } catch (e) {
-      assert(e.message === 'Caller is not Fee Manager')
+      assert(e.message === 'Caller is not Fee Manager, owner or erc20 Deployer')
     }
   })
 
@@ -294,6 +297,25 @@ describe('Datatoken', () => {
     )
 
     await datatoken.setPaymentCollector(datatokenAddress, user1, user3)
+
+    assert((await datatoken.getPaymentCollector(datatokenAddress)) === user3)
+  })
+
+  it('#setPaymentCollector - should set a new paymentCollector, if NFT OWNER', async () => {
+    assert((await nftDatatoken.getNftOwner(nftAddress)) === nftOwner)
+
+    await datatoken.setPaymentCollector(datatokenAddress, nftOwner, user2)
+
+    assert((await datatoken.getPaymentCollector(datatokenAddress)) === user2)
+  })
+
+  it('#setPaymentCollector - should set a new paymentCollector, if ERC 20 DEPLOYER', async () => {
+    assert(
+      (await nftDatatoken.getNftPermissions(nftAddress, erc20DeployerUser))
+        .deployERC20 === true
+    )
+
+    await datatoken.setPaymentCollector(datatokenAddress, erc20DeployerUser, user3)
 
     assert((await datatoken.getPaymentCollector(datatokenAddress)) === user3)
   })
