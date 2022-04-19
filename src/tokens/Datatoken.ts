@@ -1357,4 +1357,24 @@ export class Datatoken {
     const balance = await dtContract.methods.balanceOf(address).call()
     return this.web3.utils.fromWei(balance)
   }
+
+  /**
+   * @dev setPublishingMarketFee
+   *      Only publishMarketFeeAddress can call it
+   *      This function allows to set the fee required by the publisherMarket
+   * @param _publishMarketFeeAddress  new _publishMarketFeeAddress
+   * @param _publishMarketFeeToken new _publishMarketFeeToken
+   * @param _publishMarketFeeAmount new fee amount
+   */
+  public async setPublishingMarketFee(
+    publishMarketFeeAddress: string,
+        publishMarketFeeToken: string,
+        publishMarketFeeAmount: number
+  ): Promise<string> {
+    const dtContract = new this.web3.eth.Contract(this.datatokensAbi, datatokenAddress, {
+      from: address
+    })
+    const balance = await dtContract.methods.setPublishingMarketFee(address).call()
+    return this.web3.utils.fromWei(balance)
+  }
 }
