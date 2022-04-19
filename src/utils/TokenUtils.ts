@@ -46,7 +46,8 @@ export async function estApprove(
  * @param {String} tokenAddress
  * @param {String} spender
  * @param {String} amount  (always expressed as wei)
- * @param {String} force  if true, will overwrite any previous allowence. Else, will check if allowence is enough and will not send a transaction if it's not needed
+ * @param {boolean} force  if true, will overwrite any previous allowence. Else, will check if allowence is enough and will not send a transaction if it's not needed
+ * @param {number} tokenDecimals optional number of decimals of the token
  */
 export async function approve(
   web3: Web3,
@@ -54,7 +55,8 @@ export async function approve(
   tokenAddress: string,
   spender: string,
   amount: string,
-  force = false
+  force = false,
+  tokenDecimals?: number
 ): Promise<TransactionReceipt | string> {
   const tokenContract = new web3.eth.Contract(minAbi, tokenAddress)
   if (!force) {
@@ -64,7 +66,7 @@ export async function approve(
     }
   }
   let result = null
-  const amountFormatted = await amountToUnits(web3, tokenAddress, amount)
+  const amountFormatted = await amountToUnits(web3, tokenAddress, amount, tokenDecimals)
   const estGas = await estApprove(
     web3,
     account,
@@ -94,17 +96,19 @@ export async function approve(
  * @param {String } tokenAdress
  * @param {String} account
  * @param {String} spender
+ * @param {number} tokenDecimals optional number of decimals of the token
  */
 export async function allowance(
   web3: Web3,
   tokenAddress: string,
   account: string,
-  spender: string
+  spender: string,
+  tokenDecimals?: number
 ): Promise<string> {
   const tokenContract = new web3.eth.Contract(minAbi, tokenAddress)
   const trxReceipt = await tokenContract.methods.allowance(account, spender).call()
 
-  return await unitsToAmount(web3, tokenAddress, trxReceipt)
+  return await unitsToAmount(web3, tokenAddress, trxReceipt, tokenDecimals)
 }
 
 /**
@@ -113,14 +117,16 @@ export async function allowance(
  * @param {String} tokenAdress
  * @param {String} owner
  * @param {String} spender
+ * @param {number} tokenDecimals optional number of decimals of the token
  */
 export async function balance(
   web3: Web3,
   tokenAddress: string,
-  account: string
+  account: string,
+  tokenDecimals?: number
 ): Promise<string> {
   const tokenContract = new web3.eth.Contract(minAbi, tokenAddress)
   const trxReceipt = await tokenContract.methods.balanceOf(account).call()
 
-  return await unitsToAmount(web3, tokenAddress, trxReceipt)
+  return await unitsToAmount(web3, tokenAddress, trxReceipt, tokenDecimals)
 }
