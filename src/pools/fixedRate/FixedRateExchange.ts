@@ -788,7 +788,7 @@ export class FixedRateExchange {
     if (!exchange) return null
     if (exchange.withMint === false) return null
 
-    const estGas = await this.estDeactivate(address, exchangeId)
+    const estGas = await this.estDeactivateMint(address, exchangeId)
 
     const trxReceipt = await this.contract.methods
       .toggleMintState(exchangeId, false)
@@ -1095,7 +1095,7 @@ export class FixedRateExchange {
     exchangeId: string,
     newMarketFee: string
   ): Promise<TransactionReceipt> {
-    const estGas = await this.estSetRate(
+    const estGas = await this.estUpdateMarketFee(
       address,
       exchangeId,
       this.web3.utils.toWei(newMarketFee)
