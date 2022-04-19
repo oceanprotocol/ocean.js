@@ -2,10 +2,14 @@ import Web3 from 'web3'
 import { AbiItem } from 'web3-utils/types'
 import { TransactionReceipt } from 'web3-core'
 import { Contract } from 'web3-eth-contract'
-import { LoggerInstance, getFairGasPrice, configHelperNetworks } from '../../utils'
-import BigNumber from 'bignumber.js'
+import {
+  LoggerInstance,
+  getFairGasPrice,
+  configHelperNetworks,
+  unitsToAmount,
+  amountToUnits
+} from '../../utils'
 import SideStakingTemplate from '@oceanprotocol/contracts/artifacts/contracts/pools/ssContracts/SideStaking.sol/SideStaking.json'
-import defaultErc20Abi from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC20Template.sol/ERC20Template.json'
 import { Config } from '../../models'
 
 export class SideStaking {
@@ -22,37 +26,11 @@ export class SideStaking {
   }
 
   async amountToUnits(token: string, amount: string): Promise<string> {
-    let decimals = 18
-    const tokenContract = new this.web3.eth.Contract(
-      defaultErc20Abi.abi as AbiItem[],
-      token
-    )
-    try {
-      decimals = await tokenContract.methods.decimals().call()
-    } catch (e) {
-      LoggerInstance.error('ERROR: FAILED TO CALL DECIMALS(), USING 18')
-    }
-
-    const amountFormatted = new BigNumber(parseInt(amount) * 10 ** decimals)
-
-    return amountFormatted.toString()
+    return amountToUnits(this.web3, token, amount)
   }
 
   async unitsToAmount(token: string, amount: string): Promise<string> {
-    let decimals = 18
-    const tokenContract = new this.web3.eth.Contract(
-      defaultErc20Abi.abi as AbiItem[],
-      token
-    )
-    try {
-      decimals = await tokenContract.methods.decimals().call()
-    } catch (e) {
-      LoggerInstance.error('ERROR: FAILED TO CALL DECIMALS(), USING 18')
-    }
-
-    const amountFormatted = new BigNumber(parseInt(amount) / 10 ** decimals)
-
-    return amountFormatted.toString()
+    return unitsToAmount(this.web3, token, amount)
   }
 
   /**

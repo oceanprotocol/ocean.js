@@ -47,6 +47,14 @@ export class Pool {
     this.config = config || configHelperNetworks[0]
   }
 
+  async amountToUnits(token: string, amount: string): Promise<string> {
+    return amountToUnits(this.web3, token, amount)
+  }
+
+  async unitsToAmount(token: string, amount: string): Promise<string> {
+    return unitsToAmount(this.web3, token, amount)
+  }
+
   /**
    * Get user shares of pool tokens
    * @param {String} account
@@ -372,7 +380,7 @@ export class Pool {
         this.config
       )
       const result = await pool.methods.getBalance(token).call()
-      amount = await unitsToAmount(this.web3, token, result)
+      amount = await this.unitsToAmount(token, result)
     } catch (e) {
       LoggerInstance.error(`ERROR: Failed to get how many tokens \
       are in the pool: ${e.message}`)
@@ -508,7 +516,7 @@ export class Pool {
     let weight = null
     try {
       const result = await pool.methods.publishMarketFees(token).call()
-      weight = await unitsToAmount(this.web3, token, result)
+      weight = await this.unitsToAmount(token, result)
     } catch (e) {
       LoggerInstance.error(`ERROR: Failed to get market fees for a token: ${e.message}`)
     }
@@ -567,7 +575,7 @@ export class Pool {
     let weight = null
     try {
       const result = await pool.methods.communityFees(token).call()
-      weight = await unitsToAmount(this.web3, token, result)
+      weight = await this.unitsToAmount(token, result)
     } catch (e) {
       LoggerInstance.error(
         `ERROR: Failed to get community fees for a token: ${e.message}`
@@ -802,21 +810,18 @@ export class Pool {
         this.config
       )
 
-    const tokenAmountIn = await amountToUnits(
-      this.web3,
+    const tokenAmountIn = await this.amountToUnits(
       tokenInOutMarket.tokenIn,
       amountsInOutMaxFee.tokenAmountIn
     )
 
-    const minAmountOut = await amountToUnits(
-      this.web3,
+    const minAmountOut = await this.amountToUnits(
       tokenInOutMarket.tokenOut,
       amountsInOutMaxFee.minAmountOut
     )
 
     const maxPrice = amountsInOutMaxFee.maxPrice
-      ? amountToUnits(
-          this.web3,
+      ? this.amountToUnits(
           await this.getBaseToken(poolAddress),
           amountsInOutMaxFee.maxPrice
         )
@@ -882,14 +887,12 @@ export class Pool {
       amountsInOutMaxFee
     )
 
-    const tokenAmountIn = await amountToUnits(
-      this.web3,
+    const tokenAmountIn = await this.amountToUnits(
       tokenInOutMarket.tokenIn,
       amountsInOutMaxFee.tokenAmountIn
     )
 
-    const minAmountOut = await amountToUnits(
-      this.web3,
+    const minAmountOut = await this.amountToUnits(
       tokenInOutMarket.tokenOut,
       amountsInOutMaxFee.minAmountOut
     )
@@ -897,8 +900,7 @@ export class Pool {
     let result = null
 
     const maxPrice = amountsInOutMaxFee.maxPrice
-      ? await amountToUnits(
-          this.web3,
+      ? await this.amountToUnits(
           await this.getBaseToken(poolAddress),
           amountsInOutMaxFee.maxPrice
         )
@@ -956,21 +958,18 @@ export class Pool {
 
     const gasLimitDefault = this.GASLIMIT_DEFAULT
 
-    const maxAmountIn = await amountToUnits(
-      this.web3,
+    const maxAmountIn = await this.amountToUnits(
       tokenInOutMarket.tokenIn,
       amountsInOutMaxFee.maxAmountIn
     )
 
-    const tokenAmountOut = await amountToUnits(
-      this.web3,
+    const tokenAmountOut = await this.amountToUnits(
       tokenInOutMarket.tokenOut,
       amountsInOutMaxFee.tokenAmountOut
     )
 
     const maxPrice = amountsInOutMaxFee.maxPrice
-      ? await amountToUnits(
-          this.web3,
+      ? await this.amountToUnits(
           await this.getBaseToken(poolAddress),
           amountsInOutMaxFee.maxPrice
         )
@@ -1031,21 +1030,18 @@ export class Pool {
       amountsInOutMaxFee
     )
 
-    const maxAmountIn = await amountToUnits(
-      this.web3,
+    const maxAmountIn = await this.amountToUnits(
       tokenInOutMarket.tokenIn,
       amountsInOutMaxFee.maxAmountIn
     )
 
-    const tokenAmountOut = await amountToUnits(
-      this.web3,
+    const tokenAmountOut = await this.amountToUnits(
       tokenInOutMarket.tokenOut,
       amountsInOutMaxFee.tokenAmountOut
     )
 
     const maxPrice = amountsInOutMaxFee.maxPrice
-      ? amountToUnits(
-          this.web3,
+      ? this.amountToUnits(
           await this.getBaseToken(poolAddress),
           amountsInOutMaxFee.maxPrice
         )
@@ -1137,7 +1133,7 @@ export class Pool {
     const tokens = await this.getFinalTokens(poolAddress)
 
     for (let i = 0; i < 2; i++) {
-      const amount = await amountToUnits(this.web3, tokens[i], maxAmountsIn[i])
+      const amount = await this.amountToUnits(tokens[i], maxAmountsIn[i])
       weiMaxAmountsIn.push(amount)
     }
 
@@ -1223,7 +1219,7 @@ export class Pool {
     const tokens = await this.getFinalTokens(poolAddress)
 
     for (let i = 0; i < 2; i++) {
-      const amount = await amountToUnits(this.web3, tokens[i], minAmountsOut[i])
+      const amount = await this.amountToUnits(tokens[i], minAmountsOut[i])
       weiMinAmountsOut.push(amount)
     }
     let result = null
@@ -1311,7 +1307,7 @@ export class Pool {
       throw new Error(`tokenAmountOut is greater than ${maxSwap.toString()}`)
     }
 
-    const amountInFormatted = await amountToUnits(this.web3, tokenIn, tokenAmountIn)
+    const amountInFormatted = await this.amountToUnits(tokenIn, tokenAmountIn)
     const estGas = await this.estJoinswapExternAmountIn(
       account,
       poolAddress,
@@ -1406,8 +1402,7 @@ export class Pool {
       throw new Error(`tokenAmountOut is greater than ${maxSwap.toString()}`)
     }
 
-    const minTokenOutFormatted = await amountToUnits(
-      this.web3,
+    const minTokenOutFormatted = await this.amountToUnits(
       await this.getBaseToken(poolAddress),
       minTokenAmountOut
     )
@@ -1525,7 +1520,7 @@ export class Pool {
       throw new Error(`tokenAmountOut is greater than ${maxSwap.toString()}`)
     }
 
-    const amountOutFormatted = await amountToUnits(this.web3, tokenOut, tokenAmountOut)
+    const amountOutFormatted = await this.amountToUnits(tokenOut, tokenAmountOut)
 
     let amount = null
 
@@ -1539,20 +1534,17 @@ export class Pool {
         )
         .call()
       amount = {
-        tokenAmount: await unitsToAmount(this.web3, tokenOut, result.tokenAmountIn),
-        liquidityProviderSwapFeeAmount: await unitsToAmount(
-          this.web3,
+        tokenAmount: await this.unitsToAmount(tokenOut, result.tokenAmountIn),
+        liquidityProviderSwapFeeAmount: await this.unitsToAmount(
           tokenIn,
           result.lpFeeAmount
         ),
-        oceanFeeAmount: await unitsToAmount(this.web3, tokenIn, result.oceanFeeAmount),
-        publishMarketSwapFeeAmount: await unitsToAmount(
-          this.web3,
+        oceanFeeAmount: await this.unitsToAmount(tokenIn, result.oceanFeeAmount),
+        publishMarketSwapFeeAmount: await this.unitsToAmount(
           tokenIn,
           result.publishMarketSwapFeeAmount
         ),
-        consumeMarketSwapFeeAmount: await unitsToAmount(
-          this.web3,
+        consumeMarketSwapFeeAmount: await this.unitsToAmount(
           tokenIn,
           result.consumeMarketSwapFeeAmount
         )
@@ -1588,7 +1580,7 @@ export class Pool {
       throw new Error(`tokenAmountIn is greater than ${maxSwap.toString()}`)
     }
 
-    const amountInFormatted = await amountToUnits(this.web3, tokenIn, tokenAmountIn)
+    const amountInFormatted = await this.amountToUnits(tokenIn, tokenAmountIn)
 
     let amount = null
 
@@ -1603,20 +1595,17 @@ export class Pool {
         .call()
 
       amount = {
-        tokenAmount: await unitsToAmount(this.web3, tokenOut, result.tokenAmountOut),
-        liquidityProviderSwapFeeAmount: await unitsToAmount(
-          this.web3,
+        tokenAmount: await this.unitsToAmount(tokenOut, result.tokenAmountOut),
+        liquidityProviderSwapFeeAmount: await this.unitsToAmount(
           tokenIn,
           result.lpFeeAmount
         ),
-        oceanFeeAmount: await unitsToAmount(this.web3, tokenIn, result.oceanFeeAmount),
-        publishMarketSwapFeeAmount: await unitsToAmount(
-          this.web3,
+        oceanFeeAmount: await this.unitsToAmount(tokenIn, result.oceanFeeAmount),
+        publishMarketSwapFeeAmount: await this.unitsToAmount(
           tokenIn,
           result.publishMarketSwapFeeAmount
         ),
-        consumeMarketSwapFeeAmount: await unitsToAmount(
-          this.web3,
+        consumeMarketSwapFeeAmount: await this.unitsToAmount(
           tokenIn,
           result.consumeMarketSwapFeeAmount
         )
@@ -1645,13 +1634,10 @@ export class Pool {
 
     try {
       const result = await pool.methods
-        .calcPoolOutSingleIn(
-          tokenIn,
-          await amountToUnits(this.web3, tokenIn, tokenAmountIn)
-        )
+        .calcPoolOutSingleIn(tokenIn, await this.amountToUnits(tokenIn, tokenAmountIn))
         .call()
 
-      amount = await unitsToAmount(this.web3, poolAddress, result)
+      amount = await this.unitsToAmount(poolAddress, result)
     } catch (e) {
       LoggerInstance.error(
         `ERROR: Failed to calculate PoolOutGivenSingleIn : ${e.message}`
@@ -1675,14 +1661,14 @@ export class Pool {
       this.config
     )
     let amount = null
-    const amountFormatted = await amountToUnits(this.web3, poolAddress, poolAmountOut)
+    const amountFormatted = await this.amountToUnits(poolAddress, poolAmountOut)
     try {
       const result = await pool.methods
         .calcSingleInPoolOut(tokenIn, amountFormatted)
 
         .call()
 
-      amount = await unitsToAmount(this.web3, tokenIn, result)
+      amount = await this.unitsToAmount(tokenIn, result)
     } catch (e) {
       LoggerInstance.error(
         `ERROR: Failed to calculate SingleInGivenPoolOut : ${e.message}`
@@ -1711,10 +1697,10 @@ export class Pool {
       const result = await pool.methods
         .calcSingleOutPoolIn(
           tokenOut,
-          await amountToUnits(this.web3, poolAddress, poolAmountIn)
+          await this.amountToUnits(poolAddress, poolAmountIn)
         )
         .call()
-      amount = await unitsToAmount(this.web3, tokenOut, result)
+      amount = await this.unitsToAmount(tokenOut, result)
     } catch (e) {
       LoggerInstance.error(`ERROR: Failed to calculate SingleOutGivenPoolIn : ${e}`)
     }
@@ -1739,13 +1725,10 @@ export class Pool {
 
     try {
       const result = await pool.methods
-        .calcPoolInSingleOut(
-          tokenOut,
-          await amountToUnits(this.web3, tokenOut, tokenAmountOut)
-        )
+        .calcPoolInSingleOut(tokenOut, await this.amountToUnits(tokenOut, tokenAmountOut))
         .call()
 
-      amount = await unitsToAmount(this.web3, poolAddress, result)
+      amount = await this.unitsToAmount(poolAddress, result)
     } catch (e) {
       LoggerInstance.error(
         `ERROR: Failed to calculate PoolInGivenSingleOut : ${e.message}`
