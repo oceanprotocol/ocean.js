@@ -55,9 +55,9 @@ describe('Datatoken', () => {
     user1 = accounts[1]
     user2 = accounts[2]
     user3 = accounts[3]
+    erc20DeployerUser = accounts[4]
 
     NFT_DATA.owner = nftOwner
-    erc20DeployerUser = accounts[4]
   })
 
   it('should deploy contracts', async () => {
@@ -84,8 +84,7 @@ describe('Datatoken', () => {
   })
 
   it('#createERC20 - should create a new ERC20 DT from NFT contract', async () => {
-    await nftDatatoken.addErc20Deployer(nftAddress, nftOwner, 
-                                       )
+    await nftDatatoken.addErc20Deployer(nftAddress, nftOwner, erc20DeployerUser)
     datatokenAddress = await nftDatatoken.createErc20(
       nftAddress,
       nftOwner,
