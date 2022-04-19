@@ -835,12 +835,14 @@ export class Pool {
 
     const tokenAmountIn = await this.amountToUnits(
       tokenInOutMarket.tokenIn,
-      amountsInOutMaxFee.tokenAmountIn
+      amountsInOutMaxFee.tokenAmountIn,
+      tokenInOutMarket.tokenInDecimals
     )
 
     const minAmountOut = await this.amountToUnits(
       tokenInOutMarket.tokenOut,
-      amountsInOutMaxFee.minAmountOut
+      amountsInOutMaxFee.minAmountOut,
+      tokenInOutMarket.tokenOutDecimals
     )
 
     const maxPrice = amountsInOutMaxFee.maxPrice
@@ -912,12 +914,14 @@ export class Pool {
 
     const tokenAmountIn = await this.amountToUnits(
       tokenInOutMarket.tokenIn,
-      amountsInOutMaxFee.tokenAmountIn
+      amountsInOutMaxFee.tokenAmountIn,
+      tokenInOutMarket.tokenInDecimals
     )
 
     const minAmountOut = await this.amountToUnits(
       tokenInOutMarket.tokenOut,
-      amountsInOutMaxFee.minAmountOut
+      amountsInOutMaxFee.minAmountOut,
+      tokenInOutMarket.tokenOutDecimals
     )
 
     let result = null
@@ -983,12 +987,14 @@ export class Pool {
 
     const maxAmountIn = await this.amountToUnits(
       tokenInOutMarket.tokenIn,
-      amountsInOutMaxFee.maxAmountIn
+      amountsInOutMaxFee.maxAmountIn,
+      tokenInOutMarket.tokenInDecimals
     )
 
     const tokenAmountOut = await this.amountToUnits(
       tokenInOutMarket.tokenOut,
-      amountsInOutMaxFee.tokenAmountOut
+      amountsInOutMaxFee.tokenAmountOut,
+      tokenInOutMarket.tokenOutDecimals
     )
 
     const maxPrice = amountsInOutMaxFee.maxPrice
@@ -1055,12 +1061,14 @@ export class Pool {
 
     const maxAmountIn = await this.amountToUnits(
       tokenInOutMarket.tokenIn,
-      amountsInOutMaxFee.maxAmountIn
+      amountsInOutMaxFee.maxAmountIn,
+      tokenInOutMarket.tokenInDecimals
     )
 
     const tokenAmountOut = await this.amountToUnits(
       tokenInOutMarket.tokenOut,
-      amountsInOutMaxFee.tokenAmountOut
+      amountsInOutMaxFee.tokenAmountOut,
+      tokenInOutMarket.tokenOutDecimals
     )
 
     const maxPrice = amountsInOutMaxFee.maxPrice
@@ -1547,7 +1555,11 @@ export class Pool {
       throw new Error(`tokenAmountOut is greater than ${maxSwap.toString()}`)
     }
 
-    const amountOutFormatted = await this.amountToUnits(tokenOut, tokenAmountOut)
+    const amountOutFormatted = await this.amountToUnits(
+      tokenOut,
+      tokenAmountOut,
+      tokenOutDecimals
+    )
 
     let amount = null
 
@@ -1622,7 +1634,11 @@ export class Pool {
       throw new Error(`tokenAmountIn is greater than ${maxSwap.toString()}`)
     }
 
-    const amountInFormatted = await this.amountToUnits(tokenIn, tokenAmountIn)
+    const amountInFormatted = await this.amountToUnits(
+      tokenIn,
+      tokenAmountIn,
+      tokenInDecimals
+    )
 
     let amount = null
 
@@ -1689,7 +1705,10 @@ export class Pool {
 
     try {
       const result = await pool.methods
-        .calcPoolOutSingleIn(tokenIn, await this.amountToUnits(tokenIn, tokenAmountIn))
+        .calcPoolOutSingleIn(
+          tokenIn,
+          await this.amountToUnits(tokenIn, tokenAmountIn, tokenInDecimals)
+        )
         .call()
 
       amount = await this.unitsToAmount(tokenIn, result, tokenInDecimals)
@@ -1718,7 +1737,11 @@ export class Pool {
       this.config
     )
     let amount = null
-    const amountFormatted = await this.amountToUnits(poolAddress, poolAmountOut)
+    const amountFormatted = await this.amountToUnits(
+      tokenIn,
+      poolAmountOut,
+      tokenInDecimals
+    )
     try {
       const result = await pool.methods
         .calcSingleInPoolOut(tokenIn, amountFormatted)
@@ -1756,7 +1779,7 @@ export class Pool {
       const result = await pool.methods
         .calcSingleOutPoolIn(
           tokenOut,
-          await this.amountToUnits(poolAddress, poolAmountIn)
+          await this.amountToUnits(tokenOut, poolAmountIn, tokenOutDecimals)
         )
         .call()
       amount = await this.unitsToAmount(tokenOut, result, tokenOutDecimals)
@@ -1786,7 +1809,10 @@ export class Pool {
 
     try {
       const result = await pool.methods
-        .calcPoolInSingleOut(tokenOut, await this.amountToUnits(tokenOut, tokenAmountOut))
+        .calcPoolInSingleOut(
+          tokenOut,
+          await this.amountToUnits(tokenOut, tokenAmountOut, tokenOutDecimals)
+        )
         .call()
 
       amount = await this.unitsToAmount(tokenOut, result, tokenOutDecimals)
