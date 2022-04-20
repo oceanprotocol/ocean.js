@@ -1362,19 +1362,28 @@ export class Datatoken {
    * @dev setPublishingMarketFee
    *      Only publishMarketFeeAddress can call it
    *      This function allows to set the fee required by the publisherMarket
-   * @param _publishMarketFeeAddress  new _publishMarketFeeAddress
-   * @param _publishMarketFeeToken new _publishMarketFeeToken
-   * @param _publishMarketFeeAmount new fee amount
+   * @param {String} datatokenAddress Datatoken adress
+   * @param publishMarketFeeAddress  new publish Market Fee Address
+   * @param publishMarketFeeToken new publish Market Fee Token
+   * @param publishMarketFeeAmount new fee amount
+   * @param {String} address user adress
    */
   public async setPublishingMarketFee(
+    datatokenAddress: string,
     publishMarketFeeAddress: string,
-        publishMarketFeeToken: string,
-        publishMarketFeeAmount: number
-  ): Promise<string> {
+    publishMarketFeeToken: string,
+    publishMarketFeeAmount: number,
+    address: string
+  ) {
     const dtContract = new this.web3.eth.Contract(this.datatokensAbi, datatokenAddress, {
       from: address
     })
-    const balance = await dtContract.methods.setPublishingMarketFee(address).call()
-    return this.web3.utils.fromWei(balance)
+    await dtContract.methods
+      .setPublishingMarketFee(
+        publishMarketFeeAddress,
+        publishMarketFeeToken,
+        publishMarketFeeAmount
+      )
+      .call()
   }
 }
