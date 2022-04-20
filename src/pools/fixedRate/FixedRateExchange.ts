@@ -6,11 +6,11 @@ import Web3 from 'web3'
 import {
   LoggerInstance,
   getFairGasPrice,
-  configHelperNetworks,
   setContractDefaults,
   amountToUnits,
   unitsToAmount,
-  ZERO_ADDRESS
+  ZERO_ADDRESS,
+  ConfigHelper
 } from '../../utils'
 import { Config } from '../../models/index.js'
 import { PriceAndFees } from '../..'
@@ -77,10 +77,11 @@ export class FixedRateExchange {
     fixedRateAddress: string,
     fixedRateExchangeAbi: AbiItem | AbiItem[] = null,
     oceanAddress: string = null,
-    config?: Config
+    config?: Config,
+    network?: string | number
   ) {
     this.web3 = web3
-    this.config = config || configHelperNetworks[0]
+    this.config = config || new ConfigHelper().getConfig(network || 'unknown')
     this.fixedRateExchangeAbi =
       fixedRateExchangeAbi || (defaultFixedRateExchangeAbi.abi as AbiItem[])
     this.oceanAddress = oceanAddress
