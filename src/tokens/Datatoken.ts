@@ -44,6 +44,12 @@ export interface DispenserParams {
   allowedSwapper?: string // only account that can ask tokens. set address(0) if not required
 }
 
+export interface PublishingMarketFee {
+  publishMarketFeeAddress: string
+  publishMarketFeeToken: string
+  publishMarketFeeAmount: number
+}
+
 export class Datatoken {
   public GASLIMIT_DEFAULT = 1000000
   public factoryAddress: string
@@ -1362,10 +1368,10 @@ export class Datatoken {
    * @dev setPublishingMarketFee
    *      Only publishMarketFeeAddress can call it
    *      This function allows to set the fee required by the publisherMarket
-   * @param {String} datatokenAddress Datatoken adress
-   * @param publishMarketFeeAddress  new publish Market Fee Address
-   * @param publishMarketFeeToken new publish Market Fee Token
-   * @param publishMarketFeeAmount new fee amount
+   * @param {string} datatokenAddress Datatoken adress
+   * @param {string} publishMarketFeeAddress  new publish Market Fee Address
+   * @param {string} publishMarketFeeToken new publish Market Fee Token
+   * @param {number} publishMarketFeeAmount new fee amount
    * @param {String} address user adress
    */
   public async setPublishingMarketFee(
@@ -1385,5 +1391,25 @@ export class Datatoken {
         publishMarketFeeAmount
       )
       .call()
+  }
+
+  /**
+   * @dev getPublishingMarketFee
+   *      Get publishingMarket Fee
+   *      This function allows to get the current fee set by the publishing market
+   * @param {String} datatokenAddress Datatoken adress
+   * @param {String} address user adress
+   * @return {Promise<PublishingMarketFee>} Current fee set by the publishing market
+   */
+  public async getPublishingMarketFee(
+    datatokenAddress: string,
+    address: string
+  ): Promise<PublishingMarketFee> {
+    const dtContract = new this.web3.eth.Contract(this.datatokensAbi, datatokenAddress, {
+      from: address
+    })
+
+    const publishingMarketFee = await dtContract.methods.getPublishingMarketFee().call()
+    return publishingMarketFee
   }
 }
