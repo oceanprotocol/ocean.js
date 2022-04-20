@@ -553,11 +553,34 @@ describe('Datatoken', () => {
     assert((await nftDatatoken.getData(nftAddress, key)) === OldData)
   })
 
+  it('#setPublishingMarketFee - User should not be able to set the Publishing Market Fee', async () => {
+    const originalPublishingMarketFee = await datatoken.getPublishingMarketFee(
+      datatokenAddress,
+      user2
+    )
+    try {
+      await datatoken.setPublishingMarketFee(
+        datatokenAddress,
+        user2,
+        contracts.daiAddress,
+        web3.utils.toWei('10'),
+        user2
+      )
+    } catch (e) {
+      console.log('Error', e)
+    }
+    const newPublishingMarketFee = await datatoken.getPublishingMarketFee(
+      datatokenAddress,
+      user2
+    )
+    assert(newPublishingMarketFee === originalPublishingMarketFee)
+  })
   it('#setPublishingMarketFee - nftOwner should be able to set the Publishing Market Fee', async () => {
     const originalPublishingMarketFee = await datatoken.getPublishingMarketFee(
       datatokenAddress,
       nftOwner
     )
+    console.log('originalPublishingMarketFee', originalPublishingMarketFee)
     try {
       await datatoken.setPublishingMarketFee(
         datatokenAddress,
@@ -573,9 +596,24 @@ describe('Datatoken', () => {
       datatokenAddress,
       nftOwner
     )
+
+    console.log('newPublishingMarketFee', newPublishingMarketFee)
+    console.log(
+      newPublishingMarketFee.publishMarketFeeAddress,
+      originalPublishingMarketFee.publishMarketFeeAddress,
+      nftOwner
+    )
+    console.log(
+      newPublishingMarketFee.publishMarketFeeToken,
+      originalPublishingMarketFee.publishMarketFeeToken,
+      contracts.daiAddress
+    )
+    console.log(
+      newPublishingMarketFee.publishMarketFeeAmount,
+      originalPublishingMarketFee.publishMarketFeeAmount,
+      web3.utils.toWei('10')
+    )
+
     assert(newPublishingMarketFee !== originalPublishingMarketFee)
-    assert(newPublishingMarketFee.publishMarketFeeAddress === nftOwner)
-    assert(newPublishingMarketFee.publishMarketFeeToken === contracts.daiAddress)
-    assert(newPublishingMarketFee.publishMarketFeeAmount === web3.utils.toWei('10'))
   })
 })
