@@ -1689,12 +1689,14 @@ export class Pool {
    * Returns number of poolshares obtain by staking exact tokenAmountIn tokens
    * @param tokenIn tokenIn
    * @param tokenAmountIn exact number of tokens staked
+   * @param {number} poolDecimals optional number of decimals of the poool
    * @param {number} tokenInDecimals optional number of decimals of the token
    */
   public async calcPoolOutGivenSingleIn(
     poolAddress: string,
     tokenIn: string,
     tokenAmountIn: string,
+    poolDecimals?: number,
     tokenInDecimals?: number
   ): Promise<string> {
     const pool = setContractDefaults(
@@ -1711,7 +1713,7 @@ export class Pool {
         )
         .call()
 
-      amount = await this.unitsToAmount(tokenIn, result, tokenInDecimals)
+      amount = await this.unitsToAmount(poolAddress, result, poolDecimals)
     } catch (e) {
       LoggerInstance.error(
         `ERROR: Failed to calculate PoolOutGivenSingleIn : ${e.message}`
@@ -1724,12 +1726,14 @@ export class Pool {
    * Returns number of tokens to be staked to the pool in order to get an exact number of poolshares
    * @param tokenIn tokenIn
    * @param poolAmountOut expected amount of pool shares
+   * @param {number} poolDecimals optional number of decimals of the pool
    * @param {number} tokenInDecimals optional number of decimals of the token
    */
   public async calcSingleInGivenPoolOut(
     poolAddress: string,
     tokenIn: string,
     poolAmountOut: string,
+    poolDecimals?: number,
     tokenInDecimals?: number
   ): Promise<string> {
     const pool = setContractDefaults(
@@ -1738,14 +1742,13 @@ export class Pool {
     )
     let amount = null
     const amountFormatted = await this.amountToUnits(
-      tokenIn,
+      poolAddress,
       poolAmountOut,
-      tokenInDecimals
+      poolDecimals
     )
     try {
       const result = await pool.methods
         .calcSingleInPoolOut(tokenIn, amountFormatted)
-
         .call()
 
       amount = await this.unitsToAmount(tokenIn, result, tokenInDecimals)
@@ -1761,12 +1764,14 @@ export class Pool {
    * Returns expected amount of tokenOut for removing exact poolAmountIn pool shares from the pool
    * @param tokenOut tokenOut
    * @param poolAmountIn amount of shares spent
+   * @param {number} poolDecimals optional number of decimals of the pool
    * @param {number} tokenOutDecimals optional number of decimals of the token
    */
   public async calcSingleOutGivenPoolIn(
     poolAddress: string,
     tokenOut: string,
     poolAmountIn: string,
+    poolDecimals?: number,
     tokenOutDecimals?: number
   ): Promise<string> {
     const pool = setContractDefaults(
@@ -1779,7 +1784,7 @@ export class Pool {
       const result = await pool.methods
         .calcSingleOutPoolIn(
           tokenOut,
-          await this.amountToUnits(tokenOut, poolAmountIn, tokenOutDecimals)
+          await this.amountToUnits(poolAddress, poolAmountIn, poolDecimals)
         )
         .call()
       amount = await this.unitsToAmount(tokenOut, result, tokenOutDecimals)
@@ -1793,12 +1798,14 @@ export class Pool {
    * Returns number of poolshares needed to withdraw exact tokenAmountOut tokens
    * @param tokenOut tokenOut
    * @param tokenAmountOut expected amount of tokensOut
+   * @param {number} poolDecimals optional number of decimals of the pool
    * @param {number} tokenOutDecimals optional number of decimals of the token
    */
   public async calcPoolInGivenSingleOut(
     poolAddress: string,
     tokenOut: string,
     tokenAmountOut: string,
+    poolDecimals?: number,
     tokenOutDecimals?: number
   ): Promise<string> {
     const pool = setContractDefaults(
@@ -1815,7 +1822,7 @@ export class Pool {
         )
         .call()
 
-      amount = await this.unitsToAmount(tokenOut, result, tokenOutDecimals)
+      amount = await this.unitsToAmount(poolAddress, result, poolDecimals)
     } catch (e) {
       LoggerInstance.error(
         `ERROR: Failed to calculate PoolInGivenSingleOut : ${e.message}`
