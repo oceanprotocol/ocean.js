@@ -552,4 +552,30 @@ describe('Datatoken', () => {
     const key = web3.utils.keccak256(datatokenAddress)
     assert((await nftDatatoken.getData(nftAddress, key)) === OldData)
   })
+  
+  it('#setPublishingMarketFee - nftOwner should be able to set the Publishing Market Fee', async () => {
+    const originalPublishingMarketFee = await datatoken.getPublishingMarketFee(
+      datatokenAddress,
+      nftOwner
+    )
+    try {
+      await datatoken.setPublishingMarketFee(
+        datatokenAddress,
+        nftOwner,
+        contracts.daiAddress,
+        web3.utils.toWei('10'),
+        nftOwner
+      )
+    } catch (e) {
+      console.log('Error', e)
+    }
+    const newPublishingMarketFee = await datatoken.getPublishingMarketFee(
+      datatokenAddress,
+      nftOwner
+    )
+    assert(newPublishingMarketFee !== originalPublishingMarketFee)
+    assert(newPublishingMarketFee.publishMarketFeeAddress === nftOwner)
+    assert(newPublishingMarketFee.publishMarketFeeToken === contracts.daiAddress)
+    assert(newPublishingMarketFee.publishMarketFeeAmount === web3.utils.toWei('10'))
+  })
 })

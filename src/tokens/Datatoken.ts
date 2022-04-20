@@ -47,7 +47,7 @@ export interface DispenserParams {
 export interface PublishingMarketFee {
   publishMarketFeeAddress: string
   publishMarketFeeToken: string
-  publishMarketFeeAmount: number
+  publishMarketFeeAmount: string
 }
 
 export class Datatoken {
@@ -1371,14 +1371,14 @@ export class Datatoken {
    * @param {string} datatokenAddress Datatoken adress
    * @param {string} publishMarketFeeAddress  new publish Market Fee Address
    * @param {string} publishMarketFeeToken new publish Market Fee Token
-   * @param {number} publishMarketFeeAmount new fee amount
+   * @param {string} publishMarketFeeAmount new fee amount
    * @param {String} address user adress
    */
   public async setPublishingMarketFee(
     datatokenAddress: string,
     publishMarketFeeAddress: string,
     publishMarketFeeToken: string,
-    publishMarketFeeAmount: number,
+    publishMarketFeeAmount: string,
     address: string
   ) {
     const dtContract = new this.web3.eth.Contract(this.datatokensAbi, datatokenAddress, {
