@@ -552,7 +552,7 @@ describe('Datatoken', () => {
     const key = web3.utils.keccak256(datatokenAddress)
     assert((await nftDatatoken.getData(nftAddress, key)) === OldData)
   })
-  
+
   it('#setPublishingMarketFee - nftOwner should be able to set the Publishing Market Fee', async () => {
     const originalPublishingMarketFee = await datatoken.getPublishingMarketFee(
       datatokenAddress,
