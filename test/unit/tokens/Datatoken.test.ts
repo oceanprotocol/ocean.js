@@ -558,7 +558,6 @@ describe('Datatoken', () => {
       datatokenAddress,
       user2
     )
-    console.log('originalPublishingMarketFee', originalPublishingMarketFee)
     try {
       await datatoken.setPublishingMarketFee(
         datatokenAddress,
@@ -568,14 +567,12 @@ describe('Datatoken', () => {
         user2
       )
     } catch (e) {
-      console.log('Error', e)
       assert(e.message === 'ERC20Template: not publishMarketFeeAddress')
     }
     const newPublishingMarketFee = await datatoken.getPublishingMarketFee(
       datatokenAddress,
       user2
     )
-    console.log('newPublishingMarketFee', newPublishingMarketFee)
     assert(
       newPublishingMarketFee.publishMarketFeeAddress ===
         originalPublishingMarketFee.publishMarketFeeAddress
@@ -612,22 +609,13 @@ describe('Datatoken', () => {
     )
 
     console.log('newPublishingMarketFee', newPublishingMarketFee)
-    console.log(
-      newPublishingMarketFee.publishMarketFeeAddress,
-      originalPublishingMarketFee.publishMarketFeeAddress,
-      nftOwner
-    )
-    console.log(
-      newPublishingMarketFee.publishMarketFeeToken,
-      originalPublishingMarketFee.publishMarketFeeToken,
-      contracts.daiAddress
-    )
-    console.log(
-      newPublishingMarketFee.publishMarketFeeAmount,
-      originalPublishingMarketFee.publishMarketFeeAmount,
-      web3.utils.toWei('10')
-    )
+    console.log(newPublishingMarketFee.publishMarketFeeAddress, nftOwner)
+    console.log(newPublishingMarketFee.publishMarketFeeToken, contracts.daiAddress)
+    console.log(newPublishingMarketFee.publishMarketFeeAmount, web3.utils.toWei('10'))
 
     assert(newPublishingMarketFee !== originalPublishingMarketFee)
+    assert(newPublishingMarketFee.publishMarketFeeAddress === nftOwner)
+    assert(newPublishingMarketFee.publishMarketFeeAmount === web3.utils.toWei('10'))
+    assert(newPublishingMarketFee.publishMarketFeeToken === contracts.daiAddress)
   })
 })
