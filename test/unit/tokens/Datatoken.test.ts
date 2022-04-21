@@ -576,7 +576,18 @@ describe('Datatoken', () => {
       user2
     )
     console.log('newPublishingMarketFee', newPublishingMarketFee)
-    assert(newPublishingMarketFee === originalPublishingMarketFee)
+    assert(
+      newPublishingMarketFee.publishMarketFeeAddress ===
+        originalPublishingMarketFee.publishMarketFeeAddress
+    )
+    assert(
+      newPublishingMarketFee.publishMarketFeeAmount ===
+        originalPublishingMarketFee.publishMarketFeeAmount
+    )
+    assert(
+      newPublishingMarketFee.publishMarketFeeToken ===
+        originalPublishingMarketFee.publishMarketFeeToken
+    )
   })
   it('#setPublishingMarketFee - nftOwner should be able to set the Publishing Market Fee', async () => {
     const originalPublishingMarketFee = await datatoken.getPublishingMarketFee(
