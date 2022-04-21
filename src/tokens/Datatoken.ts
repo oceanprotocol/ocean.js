@@ -1410,11 +1410,13 @@ export class Datatoken {
     })
 
     const publishingMarketFee = await dtContract.methods.getPublishingMarketFee().call()
+    console.log('publishingMarketFee', publishingMarketFee)
     const returnValues = {
       publishMarketFeeAddress: publishingMarketFee[0],
       publishMarketFeeToken: publishingMarketFee[1],
       publishMarketFeeAmount: publishingMarketFee[2]
     }
+    console.log('returnValues', returnValues)
     return returnValues
   }
 }

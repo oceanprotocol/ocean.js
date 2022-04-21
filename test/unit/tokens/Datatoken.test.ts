@@ -586,19 +586,20 @@ describe('Datatoken', () => {
         originalPublishingMarketFee.publishMarketFeeToken
     )
   })
-  it('#setPublishingMarketFee - nftOwner should be able to set the Publishing Market Fee', async () => {
+  it('#setPublishingMarketFee - Marketplace fee address should be able to set the Publishing Market Fee', async () => {
+    console.log('users: ', user1, user2, user3, nftOwner, erc20DeployerUser)
     const originalPublishingMarketFee = await datatoken.getPublishingMarketFee(
       datatokenAddress,
-      nftOwner
+      user1
     )
     console.log('originalPublishingMarketFee', originalPublishingMarketFee)
     try {
       await datatoken.setPublishingMarketFee(
         datatokenAddress,
-        nftOwner,
+        user1,
         contracts.daiAddress,
         web3.utils.toWei('10'),
-        nftOwner
+        user1
       )
     } catch (e) {
       console.log('Error', e)
