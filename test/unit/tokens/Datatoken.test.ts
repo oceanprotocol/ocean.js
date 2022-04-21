@@ -558,6 +558,7 @@ describe('Datatoken', () => {
       datatokenAddress,
       user2
     )
+    console.log('originalPublishingMarketFee', originalPublishingMarketFee)
     try {
       await datatoken.setPublishingMarketFee(
         datatokenAddress,
@@ -568,11 +569,13 @@ describe('Datatoken', () => {
       )
     } catch (e) {
       console.log('Error', e)
+      assert(e.message === 'ERC20Template: not publishMarketFeeAddress')
     }
     const newPublishingMarketFee = await datatoken.getPublishingMarketFee(
       datatokenAddress,
       user2
     )
+    console.log('newPublishingMarketFee', newPublishingMarketFee)
     assert(newPublishingMarketFee === originalPublishingMarketFee)
   })
   it('#setPublishingMarketFee - nftOwner should be able to set the Publishing Market Fee', async () => {
