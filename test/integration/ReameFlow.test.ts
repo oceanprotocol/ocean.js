@@ -1,5 +1,7 @@
 /// # Ocean.js Code Examples
 
+/// The following guide runs you through the process of using ocean.js in a publish flow. The code examples below are all working and you can learn how to publish by following along.
+
 /// Start by importing all of the necessary dependencies
 
 /// ```Typescript
@@ -28,10 +30,16 @@ import {
 } from '../../src'
 /// ```
 
+/// Here we define some variables that we will use later
+/// ```Typescript
 let nft: Nft
 let factory: NftFactory
 let accounts: string[]
+/// ```
 
+/// We will need a file to publish, so here we define the file that we intend to publish.
+
+/// ```Typescript
 const files = [
   {
     type: 'url',
@@ -39,6 +47,10 @@ const files = [
     method: 'GET'
   }
 ]
+/// ```
+
+/// Next, we define the metadata that will describe our data asset. This is what we call the DDO
+/// ```Typescript
 const genericAsset: DDO = {
   '@context': ['https://w3id.org/did/v1'],
   id: 'testFakeDid',
@@ -69,8 +81,10 @@ const genericAsset: DDO = {
     }
   ]
 }
+/// ```
 
-describe('Publish tests', async () => {
+describe('Publishing a dataset', async () => {
+/// ```Typescript
   let config: Config
   let addresses: any
   let aquarius: Aquarius
@@ -81,9 +95,10 @@ describe('Publish tests', async () => {
     addresses = getAddresses()
     aquarius = new Aquarius(config.metadataCacheUri)
     providerUrl = config.providerUri
-  })
+  }) /// ```
 
   it('initialise testes classes', async () => {
+/// ```Typescript
     nft = new Nft(web3)
     factory = new NftFactory(addresses.ERC721Factory, web3)
     accounts = await web3.eth.getAccounts()
@@ -94,9 +109,10 @@ describe('Publish tests', async () => {
     await daiContract.methods
       .approve(addresses.ERC721Factory, web3.utils.toWei('100000'))
       .send({ from: accounts[0] })
-  })
+  }) /// ```
 
   it('should publish a dataset with pool (create NFT + ERC20 + pool) and with Metdata proof', async () => {
+/// ```Typescript
     const poolDdo: DDO = { ...genericAsset }
     const nftParams: NftCreateData = {
       name: 'testNftPool',
@@ -175,9 +191,10 @@ describe('Publish tests', async () => {
 
     const resolvedDDO = await aquarius.waitForAqua(poolDdo.id)
     assert(resolvedDDO, 'Cannot fetch DDO from Aquarius')
-  })
+  }) /// ```
 
   it('should publish a dataset with fixed price (create NFT + ERC20 + fixed price) with an explicit empty Metadata Proof', async () => {
+/// ```Typescript
     const fixedPriceDdo: DDO = { ...genericAsset }
     const nftParams: NftCreateData = {
       name: 'testNftFre',
@@ -253,9 +270,11 @@ describe('Publish tests', async () => {
     )
     const resolvedDDO = await aquarius.waitForAqua(fixedPriceDdo.id)
     assert(resolvedDDO, 'Cannot fetch DDO from Aquarius')
-  })
+  }) /// ```
+
 
   it('should publish a dataset with dispenser (create NFT + ERC20 + dispenser) with no defined MetadataProof', async () => {
+/// ```Typescript
     const dispenserDdo: DDO = { ...genericAsset }
     const nftParams: NftCreateData = {
       name: 'testNftDispenser',
@@ -324,5 +343,5 @@ describe('Publish tests', async () => {
     )
     const resolvedDDO = await aquarius.waitForAqua(dispenserDdo.id)
     assert(resolvedDDO, 'Cannot fetch DDO from Aquarius')
-  })
-})
+  }) /// ```
+}) /// 
