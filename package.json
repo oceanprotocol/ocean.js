@@ -41,7 +41,8 @@
     "test:integration": "npm run mocha -- 'test/integration/**/*.test.ts'",
     "test:provider": "npm run mocha -- 'test/integration/Provider.test.ts'",
     "test:compute": "npm run mocha -- 'test/integration/ComputeFlow.test.ts'",
-    "test:integration:cover": "nyc --report-dir coverage/integration --no-clean npm run test:integration"
+    "test:integration:cover": "nyc --report-dir coverage/integration --no-clean npm run test:integration",
+    "create:guide": "chmod +x ./scripts/createGuide.sh && ./scripts/createGuide.sh"
   },
   "repository": {
     "type": "git",
