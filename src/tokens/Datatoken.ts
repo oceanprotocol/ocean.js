@@ -1365,6 +1365,42 @@ export class Datatoken {
   }
 
   /**
+   * @dev estGasSetPublishingMarketFee
+   *      Estimating gas for publishMarketFeeAddress method
+   * @param {string} datatokenAddress Datatoken adress
+   * @param {string} publishMarketFeeAddress  new publish Market Fee Address
+   * @param {string} publishMarketFeeToken new publish Market Fee Token
+   * @param {string} publishMarketFeeAmount new fee amount
+   * @param {String} address user adress
+   */
+  public async estGasSetPublishingMarketFee(
+    datatokenAddress: string,
+    publishMarketFeeAddress: string,
+    publishMarketFeeToken: string,
+    publishMarketFeeAmount: string,
+    address: string
+  ): Promise<number> {
+    // Estimate gas cost for publishMarketFeeAddress method
+    const gasLimitDefault = this.GASLIMIT_DEFAULT
+    const dtContract = new this.web3.eth.Contract(this.datatokensAbi, datatokenAddress, {
+      from: address
+    })
+    let estGas
+    try {
+      estGas = await dtContract.methods
+        .setPublishingMarketFee(
+          publishMarketFeeAddress,
+          publishMarketFeeToken,
+          publishMarketFeeAmount
+        )
+        .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
+    } catch (error) {
+      estGas = gasLimitDefault
+    }
+    return estGas
+  }
+
+  /**
    * @dev setPublishingMarketFee
    *      Only publishMarketFeeAddress can call it
    *      This function allows to set the fee required by the publisherMarket
@@ -1384,13 +1420,24 @@ export class Datatoken {
     const dtContract = new this.web3.eth.Contract(this.datatokensAbi, datatokenAddress, {
       from: address
     })
+    const estGas = await this.estGasSetPublishingMarketFee(
+      datatokenAddress,
+      publishMarketFeeAddress,
+      publishMarketFeeToken,
+      publishMarketFeeAmount,
+      address
+    )
     await dtContract.methods
       .setPublishingMarketFee(
         publishMarketFeeAddress,
         publishMarketFeeToken,
         publishMarketFeeAmount
       )
-      .call()
+      .send({
+        from: address,
+        gas: estGas + 1,
+        gasPrice: await getFairGasPrice(this.web3, this.config)
+      })
   }
 
   /**
@@ -1410,13 +1457,11 @@ export class Datatoken {
     })
 
     const publishingMarketFee = await dtContract.methods.getPublishingMarketFee().call()
-    console.log('publishingMarketFee', publishingMarketFee)
     const returnValues = {
       publishMarketFeeAddress: publishingMarketFee[0],
       publishMarketFeeToken: publishingMarketFee[1],
       publishMarketFeeAmount: publishingMarketFee[2]
     }
-    console.log('returnValues', returnValues)
     return returnValues
   }
 }

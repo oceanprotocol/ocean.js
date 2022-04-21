@@ -556,23 +556,28 @@ describe('Datatoken', () => {
   it('#setPublishingMarketFee - User should not be able to set the Publishing Market Fee', async () => {
     const originalPublishingMarketFee = await datatoken.getPublishingMarketFee(
       datatokenAddress,
-      user3
+      user1
     )
     try {
       await datatoken.setPublishingMarketFee(
         datatokenAddress,
-        user3,
+        user1,
         contracts.daiAddress,
         web3.utils.toWei('10'),
-        user3
+        user1
       )
     } catch (e) {
-      assert(e.message === 'ERC20Template: not publishMarketFeeAddress')
+      console.log('Message:', e.message)
+      assert(
+        e.message ===
+          'Returned error: VM Exception while processing transaction: revert ERC20Template: not publishMarketFeeAddress'
+      )
     }
     const newPublishingMarketFee = await datatoken.getPublishingMarketFee(
       datatokenAddress,
       user3
     )
+
     assert(
       newPublishingMarketFee.publishMarketFeeAddress ===
         originalPublishingMarketFee.publishMarketFeeAddress
@@ -587,12 +592,10 @@ describe('Datatoken', () => {
     )
   })
   it('#setPublishingMarketFee - Marketplace fee address should be able to set the Publishing Market Fee', async () => {
-    console.log('users: ', user1, user2, user3, nftOwner, erc20DeployerUser)
     const originalPublishingMarketFee = await datatoken.getPublishingMarketFee(
       datatokenAddress,
       user2
     )
-    console.log('originalPublishingMarketFee', originalPublishingMarketFee)
     try {
       await datatoken.setPublishingMarketFee(
         datatokenAddress,
@@ -602,17 +605,12 @@ describe('Datatoken', () => {
         user2
       )
     } catch (e) {
-      console.log('Error', e)
+      console.log('Error:', e)
     }
     const newPublishingMarketFee = await datatoken.getPublishingMarketFee(
       datatokenAddress,
       user2
     )
-
-    console.log('newPublishingMarketFee', newPublishingMarketFee)
-    console.log(newPublishingMarketFee.publishMarketFeeAddress, nftOwner)
-    console.log(newPublishingMarketFee.publishMarketFeeToken, contracts.daiAddress)
-    console.log(newPublishingMarketFee.publishMarketFeeAmount, web3.utils.toWei('10'))
 
     assert(newPublishingMarketFee !== originalPublishingMarketFee)
     assert(newPublishingMarketFee.publishMarketFeeAddress === user2)
