@@ -20,7 +20,11 @@ import {
   downloadFile
 } from '../../src'
 import { ProviderFees, Erc20CreateParams } from '../../src/@types'
+```
 
+We will need a file to publish, so here we define the file that we intend to publish.
+
+```Typescript
 const assetUrl = [
   {
     type: 'url',
@@ -28,6 +32,10 @@ const assetUrl = [
     method: 'GET'
   }
 ]
+```
+
+Next, we define the metadata that will describe our data asset. This is what we call the DDO
+```Typescript
 const ddo = {
   '@context': ['https://w3id.org/did/v1'],
   id: 'did:op:efba17455c127a885ec7830d687a8f6e64f5ba559f8506f8723c1f10f05c049c',
@@ -58,8 +66,10 @@ const ddo = {
     }
   ]
 }
+```
 
-## Simple Publish & consume test
+```Typescript
+
   let config: Config
   let addresses: any
   let aquarius: Aquarius
@@ -175,3 +185,4 @@ const ddo = {
     }
   })
 })
+```

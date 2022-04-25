@@ -12,7 +12,7 @@ sed -i 's/\/\/\/ //' CodeExamples.md
 
 
 # Generate titles
-sed -i "s/describe('/\#\# /" CodeExamples.md
+sed -i "s/describe('Simple Publish & Consume Flow', async () => {//" CodeExamples.md
 sed -i "s/it('/\#\#\# /" CodeExamples.md
 sed -i "s/', async () => {//" CodeExamples.md
 sed -i "s/before(async () => {//" CodeExamples.md
