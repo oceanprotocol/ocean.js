@@ -1,11 +1,11 @@
-# Ocean.js Code Examples
+/// # Ocean.js Code Examples
 
-The following guide runs you through the process of using ocean.js to publish and then consume a dataset. The code examples below are all working and you can learn how to publish by following along.
+/// The following guide runs you through the process of using ocean.js to publish and then consume a dataset. The code examples below are all working and you can learn how to publish by following along.
 
-Start by importing all of the necessary dependencies
+/// Start by importing all of the necessary dependencies
 
-```Typescript
-
+/// ```Typescript
+import { assert } from 'chai'
 import { SHA256 } from 'crypto-js'
 import { web3, getTestConfig, getAddresses } from '../config'
 import {
@@ -59,20 +59,20 @@ const ddo = {
   ]
 }
 
-## Simple Publish & consume test
+describe('Simple Publish & consume test', async () => {
   let config: Config
   let addresses: any
   let aquarius: Aquarius
   let providerUrl: any
 
-  
+  before(async () => {
     config = await getTestConfig(web3)
     addresses = getAddresses()
     aquarius = new Aquarius(config.metadataCacheUri)
     providerUrl = config.providerUri
   })
 
-  ### should publish a dataset (create NFT + ERC20)
+  it('should publish a dataset (create NFT + ERC20)', async () => {
     const nft = new Nft(web3)
     const datatoken = new Datatoken(web3)
     const Factory = new NftFactory(addresses.ERC721Factory, web3)

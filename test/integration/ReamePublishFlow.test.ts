@@ -84,7 +84,7 @@ const genericAsset: DDO = {
 /// ```
 
 describe('Publishing a dataset', async () => {
-/// ```Typescript
+  /// ```Typescript
   let config: Config
   let addresses: any
   let aquarius: Aquarius
@@ -98,7 +98,7 @@ describe('Publishing a dataset', async () => {
   }) /// ```
 
   it('initialise testes classes', async () => {
-/// ```Typescript
+    /// ```Typescript
     nft = new Nft(web3)
     factory = new NftFactory(addresses.ERC721Factory, web3)
     accounts = await web3.eth.getAccounts()
@@ -112,7 +112,7 @@ describe('Publishing a dataset', async () => {
   }) /// ```
 
   it('should publish a dataset with pool (create NFT + ERC20 + pool) and with Metdata proof', async () => {
-/// ```Typescript
+    /// ```Typescript
     const poolDdo: DDO = { ...genericAsset }
     const nftParams: NftCreateData = {
       name: 'testNftPool',
@@ -194,7 +194,7 @@ describe('Publishing a dataset', async () => {
   }) /// ```
 
   it('should publish a dataset with fixed price (create NFT + ERC20 + fixed price) with an explicit empty Metadata Proof', async () => {
-/// ```Typescript
+    /// ```Typescript
     const fixedPriceDdo: DDO = { ...genericAsset }
     const nftParams: NftCreateData = {
       name: 'testNftFre',
@@ -272,9 +272,8 @@ describe('Publishing a dataset', async () => {
     assert(resolvedDDO, 'Cannot fetch DDO from Aquarius')
   }) /// ```
 
-
   it('should publish a dataset with dispenser (create NFT + ERC20 + dispenser) with no defined MetadataProof', async () => {
-/// ```Typescript
+    /// ```Typescript
     const dispenserDdo: DDO = { ...genericAsset }
     const nftParams: NftCreateData = {
       name: 'testNftDispenser',
@@ -344,4 +343,4 @@ describe('Publishing a dataset', async () => {
     const resolvedDDO = await aquarius.waitForAqua(dispenserDdo.id)
     assert(resolvedDDO, 'Cannot fetch DDO from Aquarius')
   }) /// ```
-}) /// 
+}) ///

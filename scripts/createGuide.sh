@@ -1,6 +1,10 @@
 #!/bin/bash
 # Create markdown file
-cp test/integration/ReameFlow.test.ts CodeExamples.md
+cp test/integration/ReadmeFlow.test.ts CodeExamples.md
+
+# Remove unneccessay imports
+sed -i "s/import { assert } from 'chai'//" CodeExamples.md
+
 
 # Replace comments
 sed -i 's/}) \/\/\/ //' CodeExamples.md
