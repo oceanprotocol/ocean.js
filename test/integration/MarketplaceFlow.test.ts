@@ -1,3 +1,71 @@
+/// # Quickstart: Marketplace Flow
+
+/// This quickstart describes a batteries-included flow including using off-chain services for metadata (Aquarius) and consuming datasets (Provider).
+
+/// For pool creation, it is used as base token, OCEAN token. The base token can be changed into something else, such as USDC, DAI etc., but it will require an extra fee.
+
+/// It focuses on Alice's experience as a publisher, and Bob's experience as a buyer & consumer. The rest are services used by Alice and Bob.
+
+/// Here are the steps:
+
+/// 1. Initialize services
+/// 2. Create a new node.js project
+/// 3. Install dependancies
+/// 4. Publish Data NFT, Datatoken & Pool
+/// 5. Market displays the asset for sale
+/// 6. Consumer buys data asset, and downloads it
+
+/// Let's go through each step.
+
+/// ## 1. Initialize services
+
+/// We start by initializing the services. To do this, we clone the Barge repository and run it. This will run the current default versions of [Aquarius](https://github.com/oceanprotocol/aquarius), [Provider](https://github.com/oceanprotocol/provider), and [Ganache](https://github.com/trufflesuite/ganache) with [our contracts](https://github.com/oceanprotocol/contracts) deployed to it.
+
+/// ```bash
+/// git clone https://github.com/oceanprotocol/barge.git
+/// cd barge/
+/// ./start_ocean.sh --with-provider2 --no-dashboard
+/// ```
+
+/// ## 2. Create a new node.js project
+
+/// Start by creating a new Node.js project. Open a new terminal and enter the following commands:
+
+/// ```bash
+/// mkdir marketplace-quickstart
+/// cd marketplace-quickstart
+/// npm init
+/// # Answer the questions in the command line prompt
+/// cat > marketplace.js
+/// # On linux press CTRL + D to save
+/// ```
+
+/// ## 3. Install dependancies
+
+/// Open the package.json file in a text editor and update the dependancies to include the following:
+
+/// ```JSON
+///   "dependencies": {
+///     "@oceanprotocol/contracts": "1.0.0-alpha.28",
+///     "@oceanprotocol/lib": "1.0.0-next.37",
+///     "crypto-js": "^4.1.1",
+///     "web3": "^1.7.3"
+///   }
+/// ```
+
+/// Now in your terminal run the following command:
+
+/// ```bash
+/// npm install
+/// ```
+
+/// ## 4. Publish Data NFT, Datatoken & Pool
+
+/// Now open the `marketplace.js` file in your text editor.
+
+/// Start by importing all of the necessary dependencies
+
+/// ```Typescript
 import { assert } from 'chai'
 import { SHA256 } from 'crypto-js'
 import {
@@ -22,8 +90,15 @@ import {
 } from '../../src'
 import { getTestConfig, web3 } from '../config'
 import { Addresses, deployContracts } from '../TestContractHandler'
+/// ```
 
+/// <!--
 describe('Marketplace flow tests', async () => {
+  /// -->
+
+  /// Variables and constants needed for the test:
+
+  /// ```Typescript
   let config: Config
   let aquarius: Aquarius
   let providerUrl: any
@@ -34,10 +109,11 @@ describe('Marketplace flow tests', async () => {
   let datatokenAddress: string
   let poolAddress: string
 
-  const NFT_NAME = 'Datatoken 1'
   const NFT_SYMBOL = 'DT1'
-  const CAP_AMOUNT = '100000'
+  /// ```
 
+  ///  We will need a file to publish, so here we define the file that we intend to publish.
+  /// ```Typescript
   const ASSET_URL = [
     {
       type: 'url',
@@ -45,7 +121,10 @@ describe('Marketplace flow tests', async () => {
       method: 'GET'
     }
   ]
+  /// ```
 
+  /// Next, we define the metadata that will describe our data asset. This is what we call the DDO
+  /// ```Typescript
   const DDO = {
     '@context': ['https://w3id.org/did/v1'],
     id: '',
@@ -72,7 +151,9 @@ describe('Marketplace flow tests', async () => {
       }
     ]
   }
+  /// ```
 
+  /// ```Typescript
   before(async () => {
     config = await getTestConfig(web3)
     aquarius = new Aquarius(config.metadataCacheUri)
@@ -93,22 +174,14 @@ describe('Marketplace flow tests', async () => {
 
   it('deploy contracts', async () => {
     contracts = await deployContracts(web3, publisherAccount)
-
-    await approve(
-      web3,
-      publisherAccount,
-      contracts.oceanAddress,
-      contracts.erc721FactoryAddress,
-      '10000'
-    )
   })
 
   it('publish a dataset (create NFT + ERC20) with a liquidity pool', async () => {
     const factory = new NftFactory(contracts.erc721FactoryAddress, web3)
 
     const nftParams: NftCreateData = {
-      name: NFT_NAME,
-      symbol: NFT_SYMBOL,
+      name: 'Datatoken 1',
+      symbol: 'DT1',
       templateIndex: 1,
       tokenURI: '',
       transferable: true,
@@ -117,7 +190,7 @@ describe('Marketplace flow tests', async () => {
 
     const erc20Params: Erc20CreateParams = {
       templateIndex: 1,
-      cap: CAP_AMOUNT,
+      cap: '100000',
       feeAmount: '0',
       paymentCollector: ZERO_ADDRESS,
       feeToken: ZERO_ADDRESS,
@@ -140,6 +213,14 @@ describe('Marketplace flow tests', async () => {
       swapFeeLiquidityProvider: '0.001',
       swapFeeMarketRunner: '0.001'
     }
+
+    await approve(
+      web3,
+      publisherAccount,
+      contracts.oceanAddress,
+      contracts.erc721FactoryAddress,
+      '10000'
+    )
 
     const tx = await factory.createNftErc20WithPool(
       publisherAccount,
@@ -296,3 +377,4 @@ describe('Marketplace flow tests', async () => {
     }
   })
 })
+/// ```
