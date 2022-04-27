@@ -1,8 +1,10 @@
 import { assert } from 'chai'
 import { SHA256 } from 'crypto-js'
 import {
+  AmountsOutMaxFee,
   approve,
   Aquarius,
+  balance,
   Config,
   Datatoken,
   downloadFile,
@@ -15,45 +17,11 @@ import {
   PoolCreationParams,
   ProviderFees,
   ProviderInstance,
+  TokenInOutMarket,
   ZERO_ADDRESS
 } from '../../src'
 import { getTestConfig, web3 } from '../config'
 import { Addresses, deployContracts } from '../TestContractHandler'
-
-const assetUrl = [
-  {
-    type: 'url',
-    url: 'https://raw.githubusercontent.com/oceanprotocol/testdatasets/main/shs_dataset_test.txt',
-    method: 'GET'
-  }
-]
-
-const ddo = {
-  '@context': ['https://w3id.org/did/v1'],
-  id: '',
-  version: '4.0.0',
-  chainId: 4,
-  nftAddress: '0x0',
-  metadata: {
-    created: '2021-12-20T14:35:20Z',
-    updated: '2021-12-20T14:35:20Z',
-    type: 'dataset',
-    name: 'dataset-name',
-    description: 'Ocean protocol test dataset description',
-    author: 'oceanprotocol-team',
-    license: 'MIT'
-  },
-  services: [
-    {
-      id: 'testFakeId',
-      type: 'access',
-      files: '',
-      datatokenAddress: '0x0',
-      serviceEndpoint: 'https://providerv4.rinkeby.oceanprotocol.com',
-      timeout: 0
-    }
-  ]
-}
 
 describe('Marketplace flow tests', async () => {
   let config: Config
@@ -62,22 +30,68 @@ describe('Marketplace flow tests', async () => {
   let publisherAccount: string
   let consumerAccount: string
   let contracts: Addresses
+  let erc721Address: string
+  let datatokenAddress: string
+  let poolAddress: string
+
+  const NFT_NAME = 'Datatoken 1'
+  const NFT_SYMBOL = 'DT1'
+  const CAP_AMOUNT = '100000'
+
+  const ASSET_URL = [
+    {
+      type: 'url',
+      url: 'https://raw.githubusercontent.com/oceanprotocol/testdatasets/main/shs_dataset_test.txt',
+      method: 'GET'
+    }
+  ]
+
+  const DDO = {
+    '@context': ['https://w3id.org/did/v1'],
+    id: '',
+    version: '4.0.0',
+    chainId: 4,
+    nftAddress: '0x0',
+    metadata: {
+      created: '2021-12-20T14:35:20Z',
+      updated: '2021-12-20T14:35:20Z',
+      type: 'dataset',
+      name: 'dataset-name',
+      description: 'Ocean protocol test dataset description',
+      author: 'oceanprotocol-team',
+      license: 'MIT'
+    },
+    services: [
+      {
+        id: 'testFakeId',
+        type: 'access',
+        files: '',
+        datatokenAddress: '0x0',
+        serviceEndpoint: 'https://providerv4.rinkeby.oceanprotocol.com',
+        timeout: 0
+      }
+    ]
+  }
 
   before(async () => {
-    const accounts = await web3.eth.getAccounts()
-    publisherAccount = accounts[0]
-    consumerAccount = accounts[1]
-
-    console.log(`Publisher account address: ${publisherAccount}`)
-    console.log(`Consumer account address: ${consumerAccount}`)
-
     config = await getTestConfig(web3)
     aquarius = new Aquarius(config.metadataCacheUri)
     providerUrl = 'http://127.0.0.1:8030' // config.providerUri
 
     console.log(`Aquarius URL: ${config.metadataCacheUri}`)
     console.log(`Provider URL: ${providerUrl}`)
+  })
 
+  it('initialize accounts', async () => {
+    const accounts = await web3.eth.getAccounts()
+    publisherAccount = accounts[0]
+    consumerAccount = accounts[1]
+
+    console.log(`Publisher account address: ${publisherAccount}`)
+    console.log(`Consumer account address: ${consumerAccount}`)
+  })
+
+  it('deploy contracts', async () => {
     contracts = await deployContracts(web3, publisherAccount)
 
     await approve(
@@ -89,14 +103,12 @@ describe('Marketplace flow tests', async () => {
     )
   })
 
-  it('should publish a dataset (create NFT + ERC20)', async () => {
-    const nft = new Nft(web3)
-    const datatoken = new Datatoken(web3)
+  it('publish a dataset (create NFT + ERC20) with a liquidity pool', async () => {
     const factory = new NftFactory(contracts.erc721FactoryAddress, web3)
 
     const nftParams: NftCreateData = {
-      name: 'Datatoken 1',
-      symbol: 'DT1',
+      name: NFT_NAME,
+      symbol: NFT_SYMBOL,
       templateIndex: 1,
       tokenURI: '',
       transferable: true,
@@ -105,7 +117,7 @@ describe('Marketplace flow tests', async () => {
 
     const erc20Params: Erc20CreateParams = {
       templateIndex: 1,
-      cap: '100000',
+      cap: CAP_AMOUNT,
       feeAmount: '0',
       paymentCollector: ZERO_ADDRESS,
       feeToken: ZERO_ADDRESS,
@@ -136,37 +148,147 @@ describe('Marketplace flow tests', async () => {
       poolParams
     )
 
-    const erc721Address = tx.events.NFTCreated.returnValues[0]
-    const datatokenAddress = tx.events.TokenCreated.returnValues[0]
-    const poolAdress = tx.events.NewPool.returnValues[0]
+    erc721Address = tx.events.NFTCreated.returnValues[0]
+    datatokenAddress = tx.events.TokenCreated.returnValues[0]
+    poolAddress = tx.events.NewPool.returnValues[0]
 
     console.log(`NFT address: ${erc721Address}`)
     console.log(`Datatoken address: ${datatokenAddress}`)
-    console.log(`Pool address: ${poolAdress}`)
+    console.log(`Pool address: ${poolAddress}`)
 
     // update ddo and set the right did
-    ddo.chainId = await web3.eth.getChainId()
-    ddo.id =
+    DDO.chainId = await web3.eth.getChainId()
+    DDO.id =
       'did:op:' +
-      SHA256(web3.utils.toChecksumAddress(erc721Address) + ddo.chainId.toString(10))
-    ddo.nftAddress = erc721Address
+      SHA256(web3.utils.toChecksumAddress(erc721Address) + DDO.chainId.toString(10))
+    DDO.nftAddress = erc721Address
     // encrypt file(s) using provider
-    const encryptedFiles = await ProviderInstance.encrypt(assetUrl, providerUrl)
-    ddo.services[0].files = await encryptedFiles
-    ddo.services[0].datatokenAddress = datatokenAddress
+    const encryptedFiles = await ProviderInstance.encrypt(ASSET_URL, providerUrl)
+    DDO.services[0].files = await encryptedFiles
+    DDO.services[0].datatokenAddress = datatokenAddress
 
-    console.log(`DID: ${ddo.id}`)
+    console.log(`DID: ${DDO.id}`)
+  })
 
-    // Marketplace displays asset for sale
+  it('set metadata in the NFT', async () => {
+    const nft = new Nft(web3)
+    const providerResponse = await ProviderInstance.encrypt(DDO, providerUrl)
+    const encryptedDDO = await providerResponse
+    const metadataHash = getHash(JSON.stringify(DDO))
+    await nft.setMetadata(
+      erc721Address,
+      publisherAccount,
+      0,
+      providerUrl,
+      '',
+      '0x2',
+      encryptedDDO,
+      '0x' + metadataHash
+    )
+    // TODO: const resolvedDDO = await aquarius.waitForAqua(DDO.id)
+    // TODO: assert(resolvedDDO, 'Cannot fetch DDO from Aquarius')
+  })
+
+  it('marketplace displays asset for sale', async () => {
     const pool = new Pool(web3)
     const prices = await pool.getAmountInExactOut(
-      poolAdress,
+      poolAddress,
       datatokenAddress,
       contracts.oceanAddress,
       '1',
       '0.01'
     )
-    console.log(prices)
-    console.log(`Price of 1 ${nftParams.symbol} is ${prices.tokenAmount}`)
+    console.log(`Price of 1 ${NFT_SYMBOL} is ${prices.tokenAmount} OCEAN`)
+  })
+
+  it('consumer buys data asset, and downloads it', async () => {
+    const datatoken = new Datatoken(web3)
+
+    const consumerETHBalance = await web3.eth.getBalance(consumerAccount)
+    console.log(`Consumer ETH balance: ${consumerETHBalance}`)
+    let consumerOCEANBalance = await balance(
+      web3,
+      contracts.oceanAddress,
+      publisherAccount
+    )
+    console.log(`Consumer OCEAN balance before swap: ${consumerOCEANBalance}`)
+    let consumerDTBalance = await balance(web3, datatokenAddress, publisherAccount)
+    console.log(`Consumer ${NFT_SYMBOL} balance before swap: ${consumerDTBalance}`)
+
+    await approve(web3, publisherAccount, contracts.oceanAddress, poolAddress, '100')
+
+    const pool = new Pool(web3)
+    const tokenInOutMarket: TokenInOutMarket = {
+      tokenIn: contracts.oceanAddress,
+      tokenOut: datatokenAddress,
+      marketFeeAddress: publisherAccount
+    }
+    const amountsInOutMaxFee: AmountsOutMaxFee = {
+      maxAmountIn: '10',
+      tokenAmountOut: '1',
+      swapMarketFee: '0.1'
+    }
+    await pool.swapExactAmountOut(
+      publisherAccount,
+      poolAddress,
+      tokenInOutMarket,
+      amountsInOutMaxFee
+    )
+
+    consumerOCEANBalance = await balance(web3, contracts.oceanAddress, publisherAccount)
+    console.log(`Consumer OCEAN balance after swap: ${consumerOCEANBalance}`)
+    consumerDTBalance = await balance(web3, datatokenAddress, publisherAccount)
+    console.log(`Consumer ${NFT_SYMBOL} balance after swap: ${consumerDTBalance}`)
+
+    // initialize provider
+    const initializeData = await ProviderInstance.initialize(
+      DDO.id,
+      DDO.services[0].id,
+      0,
+      consumerAccount,
+      providerUrl
+    )
+    const providerFees: ProviderFees = {
+      providerFeeAddress: initializeData.providerFee.providerFeeAddress,
+      providerFeeToken: initializeData.providerFee.providerFeeToken,
+      providerFeeAmount: initializeData.providerFee.providerFeeAmount,
+      v: initializeData.providerFee.v,
+      r: initializeData.providerFee.r,
+      s: initializeData.providerFee.s,
+      providerData: initializeData.providerFee.providerData,
+      validUntil: initializeData.providerFee.validUntil
+    }
+    // make the payment
+    const txid = await datatoken.startOrder(
+      datatokenAddress,
+      publisherAccount,
+      publisherAccount,
+      0,
+      providerFees
+    )
+    // get the url
+    const downloadURL = await ProviderInstance.getDownloadUrl(
+      DDO.id,
+      publisherAccount,
+      DDO.services[0].id,
+      0,
+      txid.transactionHash,
+      providerUrl,
+      web3
+    )
+
+    console.log(`Download URL: ${downloadURL}`)
+
+    consumerOCEANBalance = await balance(web3, contracts.oceanAddress, publisherAccount)
+    console.log(`Consumer OCEAN balance after order: ${consumerOCEANBalance}`)
+    consumerDTBalance = await balance(web3, datatokenAddress, publisherAccount)
+    console.log(`Consumer ${NFT_SYMBOL} balance after order: ${consumerDTBalance}`)
+
+    try {
+      const fileData = await downloadFile(downloadURL)
+      console.log(fileData)
+    } catch (e) {
+      assert.fail('Download failed')
+    }
   })
 })
