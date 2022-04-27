@@ -248,6 +248,7 @@ describe('Marketplace flow tests', async () => {
       consumerAccount,
       providerUrl
     )
+    console.log(initializeData)
     const providerFees: ProviderFees = {
       providerFeeAddress: initializeData.providerFee.providerFeeAddress,
       providerFeeToken: initializeData.providerFee.providerFeeToken,
