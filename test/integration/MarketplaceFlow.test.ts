@@ -240,10 +240,13 @@ describe('Marketplace flow tests', async () => {
     consumerDTBalance = await balance(web3, datatokenAddress, publisherAccount)
     console.log(`Consumer ${NFT_SYMBOL} balance after swap: ${consumerDTBalance}`)
 
+    const resolvedDDO = await aquarius.waitForAqua(DDO.id)
+    assert(resolvedDDO, 'Cannot fetch DDO from Aquarius')
+
     // initialize provider
     const initializeData = await ProviderInstance.initialize(
-      DDO.id,
-      DDO.services[0].id,
+      resolvedDDO.id,
+      resolvedDDO.services[0].id,
       0,
       consumerAccount,
       providerUrl
