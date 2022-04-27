@@ -1,7 +1,29 @@
 /// # Ocean.js Code Examples
 
-/// The following guide runs you through the process of using ocean.js to publish and then consume a dataset. The code examples below are all working and you can learn how to publish by following along.
+/// ## Introduction
 
+/// The following guide runs you through the process of using ocean.js to publish and then consume a dataset. The code examples below are all working and you can learn how to publish by following along.
+/// The process involves creating a Data NFT (which represents the base-IP on-chain) and a datatoken (which will be used to purchase the dataset). This guide provides all the code you need and no prior knowledge is required. It is helpful if you have some experience with javascript but it is not necessary. 
+
+/// Selling your data over the blockchain puts you in charge of how it is used and can be a great source of passive income. There are many AI startups that have deep expertise in machine learning but need more data to improve their models. Selling your data via the blockchain gives you a level of security that you would be unable to achieve if you were selling via a centralised marketplace. 
+
+/// In this guide we'll be making use of the Ocean.js library. Ocean Protocol provides you with everything you need to quickly get setup and start selling data over the blockchain.
+
+/// If you have any questions or issues at any point while following along to this article please reach out to us on [discord](https://discord.gg/TnXjkR5). 
+
+/// Here are the steps we will be following throughout the article:
+
+/// 1. Prerequisites
+/// 2. Initialize services
+/// 3. Create a new node.js project
+/// 4. Install dependencies
+/// 5. Create a config file and update contract addresses
+/// 6. Publish a new datatoken
+/// 7. Mint 200 tokens
+/// 8. Publish a dataset
+/// 9. Allow the marketplace to sell your datatokens
+
+/// Let's go through each step:
 /// Start by importing all of the necessary dependencies
 
 /// ```Typescript
