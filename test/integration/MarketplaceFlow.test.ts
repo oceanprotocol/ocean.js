@@ -302,7 +302,7 @@ describe('Marketplace flow tests', async () => {
     // we send some OCEAN to consumer account
     const oceanContract = new web3.eth.Contract(
       MockERC20.abi as AbiItem[],
-      contracts.daiAddress
+      contracts.oceanAddress
     )
 
     await oceanContract.methods
