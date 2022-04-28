@@ -4,7 +4,7 @@ import { minAbi } from './minAbi'
 import LoggerInstance from './Logger'
 import { TransactionReceipt } from 'web3-core'
 import Web3 from 'web3'
-import { GASLIMIT_DEFAULT } from '.'
+import { GASLIMIT_DEFAULT } from './Constants'
 
 /**
  * Estimates the gas used when a function would be executed on chain
