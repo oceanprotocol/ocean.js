@@ -15,20 +15,11 @@ describe('NFT', () => {
   let nftFactory: NftFactory
   let nftAddress: string
 
-  const NFT_NAME = 'NFTName'
-  const NFT_SYMBOL = 'NFTSymbol'
-  const NFT_TOKEN_URI = 'https://oceanprotocol.com/nft/'
-  const DECRYPTO_URL = 'http://myprovider:8030'
-  const DECRYPTOR_ADDRESS = '0x123'
-  const FEE_ZERO = '0'
-  const CAP_AMOUNT = '10000'
-  const META_DATA_STATE = 1
-
-  const NFT_DATA: NftCreateData = {
-    name: NFT_NAME,
-    symbol: NFT_SYMBOL,
+  const nftData: NftCreateData = {
+    name: 'NFTName',
+    symbol: 'NFTSymbol',
     templateIndex: 1,
-    tokenURI: NFT_TOKEN_URI,
+    tokenURI: 'https://oceanprotocol.com/nft/',
     transferable: true,
     owner: nftOwner
   }
@@ -40,7 +31,7 @@ describe('NFT', () => {
     user2 = accounts[2]
     user3 = accounts[3]
 
-    NFT_DATA.owner = nftOwner
+    nftData.owner = nftOwner
   })
 
   it('should deploy contracts', async () => {
@@ -50,13 +41,13 @@ describe('NFT', () => {
   it('should initialize NFTFactory instance and create a new NFT', async () => {
     nftFactory = new NftFactory(contracts.erc721FactoryAddress, web3)
 
-    nftAddress = await nftFactory.createNFT(nftOwner, NFT_DATA)
+    nftAddress = await nftFactory.createNFT(nftOwner, nftData)
     nftDatatoken = new Nft(web3)
   })
 
   it('#getTokenURI', async () => {
     const tokenURI = await nftDatatoken.getTokenURI(nftAddress, 1)
-    assert(tokenURI === NFT_TOKEN_URI)
+    assert(tokenURI === nftData.tokenURI)
   })
 
   it('#createERC20 - should create a new ERC20 DT from NFT contract', async () => {
@@ -67,10 +58,10 @@ describe('NFT', () => {
       user1,
       user2,
       ZERO_ADDRESS,
-      FEE_ZERO,
-      CAP_AMOUNT,
-      NFT_NAME,
-      NFT_SYMBOL,
+      '0',
+      '10000',
+      nftData.name,
+      nftData.symbol,
       1
     )
     assert(erc20Address !== null)
@@ -85,10 +76,10 @@ describe('NFT', () => {
         user1,
         user2,
         ZERO_ADDRESS,
-        FEE_ZERO,
-        CAP_AMOUNT,
-        NFT_NAME,
-        NFT_SYMBOL,
+        '0',
+        '10000',
+        nftData.name,
+        nftData.symbol,
         1
       )
       assert(false)
@@ -339,17 +330,17 @@ describe('NFT', () => {
     await nftDatatoken.setMetadata(
       nftAddress,
       user1,
-      META_DATA_STATE,
-      DECRYPTO_URL,
-      DECRYPTOR_ADDRESS,
+      1,
+      'http://myprovider:8030',
+      '0x123',
       web3.utils.asciiToHex(user2),
       web3.utils.asciiToHex(user2),
       '0x' + sha256(web3.utils.asciiToHex(user2)).toString()
     )
 
     const metadata = await nftDatatoken.getMetadata(nftAddress)
-    assert(metadata[0] === DECRYPTO_URL)
-    assert(metadata[1] === DECRYPTOR_ADDRESS)
+    assert(metadata[0] === 'http://myprovider:8030')
+    assert(metadata[1] === '0x123')
   })
 
   it('#setMetaData - should fail to update metadata if NOT metadataUpdater', async () => {
@@ -360,9 +351,9 @@ describe('NFT', () => {
       await nftDatatoken.setMetadata(
         nftAddress,
         user3,
-        META_DATA_STATE,
-        DECRYPTO_URL,
-        DECRYPTOR_ADDRESS,
+        1,
+        'http://myprovider:8030',
+        '0x123',
         web3.utils.asciiToHex(user2),
         web3.utils.asciiToHex(user2),
         '0x' + sha256(web3.utils.asciiToHex(user2)).toString()
@@ -416,9 +407,9 @@ describe('NFT', () => {
   it('#setMetaDataAndTokenURI - should update tokenURI and set metadata', async () => {
     const data = web3.utils.asciiToHex(user2)
     const metadataAndTokenURI: MetadataAndTokenURI = {
-      metaDataState: META_DATA_STATE,
-      metaDataDecryptorUrl: DECRYPTO_URL,
-      metaDataDecryptorAddress: DECRYPTOR_ADDRESS,
+      metaDataState: 1,
+      metaDataDecryptorUrl: 'http://myprovider:8030',
+      metaDataDecryptorAddress: '0x123',
       flags: web3.utils.asciiToHex(user1),
       data: web3.utils.asciiToHex(user1),
       metaDataHash: '0x' + sha256(data).toString(),
@@ -439,7 +430,7 @@ describe('NFT', () => {
     assert(tx.events.MetadataUpdated)
 
     const metadata = await nftDatatoken.getMetadata(nftAddress)
-    assert(metadata[0] === DECRYPTO_URL)
-    assert(metadata[1] === DECRYPTOR_ADDRESS)
+    assert(metadata[0] === metadataAndTokenURI.metaDataDecryptorUrl)
+    assert(metadata[1] === metadataAndTokenURI.metaDataDecryptorAddress)
   })
 })
