@@ -111,8 +111,17 @@ describe('Marketplace flow tests', async () => {
   let poolNftAddress: string
   let poolDatatokenAddress: string
   let poolAddress: string
+  let freNftAddress: string
+  let freDatatokenAddress: string
+  let dispenserNftAddress: string
+  let dispenserDatatokenAddress: string
 
-  const NFT_SYMBOL = 'DT1'
+  const POOL_NFT_NAME = 'Datatoken 1'
+  const POOL_NFT_SYMBOL = 'DT1'
+  const FRE_NFT_NAME = 'Datatoken 2'
+  const FRE_NFT_SYMBOL = 'DT2'
+  const DISP_NFT_NAME = 'Datatoken 3'
+  const DISP_NFT_SYMBOL = 'DT3'
   /// ```
 
   ///  We will need a file to publish, so here we define the file that we intend to publish.
@@ -187,7 +196,7 @@ describe('Marketplace flow tests', async () => {
   })
   /// ```
 
-  it('We send some OCEAN to consumer and liquidity account', async () => {
+  it('We send some OCEAN to consumer and liquidity accounts', async () => {
     /// ```Typescript
     const oceanContract = new web3.eth.Contract(
       MockERC20.abi as AbiItem[],
@@ -195,22 +204,22 @@ describe('Marketplace flow tests', async () => {
     )
 
     await oceanContract.methods
-      .transfer(consumerAccount, web3.utils.toWei('10'))
+      .transfer(consumerAccount, web3.utils.toWei('100'))
       .send({ from: publisherAccount })
 
     await oceanContract.methods
-      .transfer(liquidityAccount, web3.utils.toWei('10'))
+      .transfer(liquidityAccount, web3.utils.toWei('100'))
       .send({ from: publisherAccount })
   })
   /// ```
 
-  it('Publish a dataset (create NFT + ERC20) with a liquidity pool', async () => {
+  it('Publish a dataset (create NFT + Datatoken) with a liquidity pool', async () => {
     /// ```Typescript
     const factory = new NftFactory(contracts.erc721FactoryAddress, web3)
 
     const nftParams: NftCreateData = {
-      name: 'Datatoken 1',
-      symbol: NFT_SYMBOL,
+      name: POOL_NFT_NAME,
+      symbol: POOL_NFT_SYMBOL,
       templateIndex: 1,
       tokenURI: '',
       transferable: true,
@@ -262,13 +271,13 @@ describe('Marketplace flow tests', async () => {
     poolDatatokenAddress = tx.events.TokenCreated.returnValues[0]
     poolAddress = tx.events.NewPool.returnValues[0]
 
-    console.log(`NFT address: ${poolNftAddress}`)
-    console.log(`Datatoken address: ${poolDatatokenAddress}`)
+    console.log(`Pool NFT address: ${poolNftAddress}`)
+    console.log(`Pool Datatoken address: ${poolDatatokenAddress}`)
     console.log(`Pool address: ${poolAddress}`)
   })
   /// ```
 
-  it('Set metadata in the NFT', async () => {
+  it('Set metadata in the Pool NFT', async () => {
     /// ```Typescript
     const nft = new Nft(web3)
 
@@ -321,7 +330,7 @@ describe('Marketplace flow tests', async () => {
       '1',
       '0.01'
     )
-    console.log(`Price of 1 ${NFT_SYMBOL} is ${prices.tokenAmount} OCEAN`)
+    console.log(`Price of 1 ${POOL_NFT_SYMBOL} is ${prices.tokenAmount} OCEAN`)
   })
   /// ```
 
@@ -338,7 +347,7 @@ describe('Marketplace flow tests', async () => {
     )
     console.log(`Consumer OCEAN balance before swap: ${consumerOCEANBalance}`)
     let consumerDTBalance = await balance(web3, poolDatatokenAddress, consumerAccount)
-    console.log(`Consumer ${NFT_SYMBOL} balance before swap: ${consumerDTBalance}`)
+    console.log(`Consumer ${POOL_NFT_SYMBOL} balance before swap: ${consumerDTBalance}`)
 
     await approve(web3, consumerAccount, contracts.oceanAddress, poolAddress, '100')
 
@@ -363,7 +372,7 @@ describe('Marketplace flow tests', async () => {
     consumerOCEANBalance = await balance(web3, contracts.oceanAddress, consumerAccount)
     console.log(`Consumer OCEAN balance after swap: ${consumerOCEANBalance}`)
     consumerDTBalance = await balance(web3, poolDatatokenAddress, consumerAccount)
-    console.log(`Consumer ${NFT_SYMBOL} balance after swap: ${consumerDTBalance}`)
+    console.log(`Consumer ${POOL_NFT_SYMBOL} balance after swap: ${consumerDTBalance}`)
 
     const resolvedDDO = await aquarius.waitForAqua(DDO.id)
     assert(resolvedDDO, 'Cannot fetch DDO from Aquarius')
@@ -411,7 +420,7 @@ describe('Marketplace flow tests', async () => {
     consumerOCEANBalance = await balance(web3, contracts.oceanAddress, consumerAccount)
     console.log(`Consumer OCEAN balance after order: ${consumerOCEANBalance}`)
     consumerDTBalance = await balance(web3, poolDatatokenAddress, consumerAccount)
-    console.log(`Consumer ${NFT_SYMBOL} balance after order: ${consumerDTBalance}`)
+    console.log(`Consumer ${POOL_NFT_SYMBOL} balance after order: ${consumerDTBalance}`)
 
     try {
       const fileData = await downloadFile(downloadURL)
