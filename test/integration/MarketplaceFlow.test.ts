@@ -66,7 +66,7 @@
 /// Start by importing all of the necessary dependencies
 
 /// ```Typescript
-import { assert } from 'chai'
+import { assert, expect } from 'chai'
 import { AbiItem } from 'web3-utils/types'
 import { SHA256 } from 'crypto-js'
 import MockERC20 from '@oceanprotocol/contracts/artifacts/contracts/utils/mock/MockERC20Decimals.sol/MockERC20Decimals.json'
@@ -184,6 +184,25 @@ describe('Marketplace flow tests', async () => {
   })
   /// ```
 
+  it('We send some OCEAN to consumer account', async () => {
+    /// ```Typescript
+    const oceanContract = new web3.eth.Contract(
+      MockERC20.abi as AbiItem[],
+      contracts.oceanAddress
+    )
+
+    const balanceBefore = await oceanContract.methods.balanceOf(consumerAccount).call()
+
+    await oceanContract.methods
+      .transfer(consumerAccount, web3.utils.toWei('10'))
+      .send({ from: publisherAccount })
+
+    expect(await oceanContract.methods.balanceOf(consumerAccount).call()).to.equal(
+      (+balanceBefore + +web3.utils.toWei('10')).toString()
+    )
+  })
+  /// ```
+
   it('Publish a dataset (create NFT + ERC20) with a liquidity pool', async () => {
     /// ```Typescript
     const factory = new NftFactory(contracts.erc721FactoryAddress, web3)
@@ -228,7 +247,7 @@ describe('Marketplace flow tests', async () => {
       publisherAccount,
       contracts.oceanAddress,
       contracts.erc721FactoryAddress,
-      '10000'
+      poolParams.vestingAmount
     )
 
     const tx = await factory.createNftErc20WithPool(
@@ -298,16 +317,6 @@ describe('Marketplace flow tests', async () => {
   it('Consumer buys data asset, and downloads it', async () => {
     /// ```Typescript
     const datatoken = new Datatoken(web3)
-
-    // we send some OCEAN to consumer account
-    const oceanContract = new web3.eth.Contract(
-      MockERC20.abi as AbiItem[],
-      contracts.oceanAddress
-    )
-
-    await oceanContract.methods
-      .transfer(consumerAccount, web3.utils.toWei('2'))
-      .send({ from: publisherAccount })
 
     const consumerETHBalance = await web3.eth.getBalance(consumerAccount)
     console.log(`Consumer ETH balance: ${consumerETHBalance}`)
