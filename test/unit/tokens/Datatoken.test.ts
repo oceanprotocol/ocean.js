@@ -27,6 +27,7 @@ describe('Datatoken', () => {
   let datatokenAddress: string
   let fixedRateAddress: string
   let exchangeId: string
+  let freParams: FreCreationParams
 
   const nftData: NftCreateData = {
     name: 'NFTName',
@@ -35,17 +36,6 @@ describe('Datatoken', () => {
     tokenURI: 'https://oceanprotocol.com/nft/',
     transferable: true,
     owner: nftOwner
-  }
-
-  const freParams: FreCreationParams = {
-    fixedRateAddress: contracts.fixedRateAddress,
-    baseTokenAddress: contracts.daiAddress,
-    owner: nftOwner,
-    marketFeeCollector: nftOwner,
-    baseTokenDecimals: 18,
-    datatokenDecimals: 18,
-    fixedRate: web3.utils.toWei('1'),
-    marketFee: '0'
   }
 
   before(async () => {
@@ -57,12 +47,21 @@ describe('Datatoken', () => {
     erc20DeployerUser = accounts[4]
 
     nftData.owner = nftOwner
-    freParams.owner = nftOwner
-    freParams.marketFeeCollector = nftOwner
   })
 
   it('should deploy contracts', async () => {
     contracts = await deployContracts(web3, nftOwner)
+
+    freParams = {
+      fixedRateAddress: contracts.fixedRateAddress,
+      baseTokenAddress: contracts.daiAddress,
+      owner: nftOwner,
+      marketFeeCollector: nftOwner,
+      baseTokenDecimals: 18,
+      datatokenDecimals: 18,
+      fixedRate: web3.utils.toWei('1'),
+      marketFee: '0'
+    }
   })
 
   it('should initialize NFTFactory, nftDT and DT instances and create a new NFT', async () => {
