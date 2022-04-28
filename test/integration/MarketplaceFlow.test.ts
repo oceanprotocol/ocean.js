@@ -157,7 +157,7 @@ describe('Marketplace flow tests', async () => {
   before(async () => {
     config = await getTestConfig(web3)
     aquarius = new Aquarius(config.metadataCacheUri)
-    providerUrl = 'http://127.0.0.1:8030' // config.providerUri
+    providerUrl = config.providerUri
 
     console.log(`Aquarius URL: ${config.metadataCacheUri}`)
     console.log(`Provider URL: ${providerUrl}`)
@@ -181,7 +181,7 @@ describe('Marketplace flow tests', async () => {
 
     const nftParams: NftCreateData = {
       name: 'Datatoken 1',
-      symbol: 'DT1',
+      symbol: NFT_SYMBOL,
       templateIndex: 1,
       tokenURI: '',
       transferable: true,
@@ -266,8 +266,6 @@ describe('Marketplace flow tests', async () => {
       encryptedDDO,
       '0x' + metadataHash
     )
-    // TODO: const resolvedDDO = await aquarius.waitForAqua(DDO.id)
-    // TODO: assert(resolvedDDO, 'Cannot fetch DDO from Aquarius')
   })
 
   it('marketplace displays asset for sale', async () => {
