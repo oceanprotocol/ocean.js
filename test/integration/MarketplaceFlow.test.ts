@@ -168,7 +168,7 @@ describe('Marketplace flow tests', async () => {
   /// ```
 
   it('Initialize accounts', async () => {
-  /// ```Typescript
+    /// ```Typescript
     const accounts = await web3.eth.getAccounts()
     publisherAccount = accounts[0]
     consumerAccount = accounts[1]
@@ -179,13 +179,13 @@ describe('Marketplace flow tests', async () => {
   /// ```
 
   it('Deploy contracts', async () => {
-  /// ```Typescript
+    /// ```Typescript
     contracts = await deployContracts(web3, publisherAccount)
   })
   /// ```
 
   it('Publish a dataset (create NFT + ERC20) with a liquidity pool', async () => {
-  /// ```Typescript
+    /// ```Typescript
     const factory = new NftFactory(contracts.erc721FactoryAddress, web3)
 
     const nftParams: NftCreateData = {
@@ -249,7 +249,7 @@ describe('Marketplace flow tests', async () => {
   /// ```
 
   it('Set metadata in the NFT', async () => {
-  /// ```Typescript
+    /// ```Typescript
     const nft = new Nft(web3)
 
     // update ddo and set the right did
@@ -282,7 +282,7 @@ describe('Marketplace flow tests', async () => {
   /// ```
 
   it('Marketplace displays asset for sale', async () => {
-  /// ```Typescript
+    /// ```Typescript
     const pool = new Pool(web3)
     const prices = await pool.getAmountInExactOut(
       poolAddress,
@@ -296,7 +296,7 @@ describe('Marketplace flow tests', async () => {
   /// ```
 
   it('Consumer buys data asset, and downloads it', async () => {
-  /// ```Typescript
+    /// ```Typescript
     const datatoken = new Datatoken(web3)
 
     // we send some OCEAN to consumer account
