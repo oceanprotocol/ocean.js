@@ -153,6 +153,7 @@ describe('Marketplace flow tests', async () => {
   }
   /// ```
 
+  /// We load the configuration:
   /// ```Typescript
   before(async () => {
     config = await getTestConfig(web3)
@@ -162,8 +163,10 @@ describe('Marketplace flow tests', async () => {
     console.log(`Aquarius URL: ${config.metadataCacheUri}`)
     console.log(`Provider URL: ${providerUrl}`)
   })
+  /// ```
 
-  it('initialize accounts', async () => {
+  it('Initialize accounts', async () => {
+  /// ```Typescript
     const accounts = await web3.eth.getAccounts()
     publisherAccount = accounts[0]
     consumerAccount = accounts[1]
@@ -171,12 +174,16 @@ describe('Marketplace flow tests', async () => {
     console.log(`Publisher account address: ${publisherAccount}`)
     console.log(`Consumer account address: ${consumerAccount}`)
   })
+  /// ```
 
-  it('deploy contracts', async () => {
+  it('Deploy contracts', async () => {
+  /// ```Typescript
     contracts = await deployContracts(web3, publisherAccount)
   })
+  /// ```
 
-  it('publish a dataset (create NFT + ERC20) with a liquidity pool', async () => {
+  it('Publish a dataset (create NFT + ERC20) with a liquidity pool', async () => {
+  /// ```Typescript
     const factory = new NftFactory(contracts.erc721FactoryAddress, web3)
 
     const nftParams: NftCreateData = {
@@ -236,6 +243,12 @@ describe('Marketplace flow tests', async () => {
     console.log(`NFT address: ${erc721Address}`)
     console.log(`Datatoken address: ${datatokenAddress}`)
     console.log(`Pool address: ${poolAddress}`)
+  })
+  /// ```
+
+  it('Set metadata in the NFT', async () => {
+  /// ```Typescript
+    const nft = new Nft(web3)
 
     // update ddo and set the right did
     DDO.chainId = await web3.eth.getChainId()
@@ -249,10 +262,7 @@ describe('Marketplace flow tests', async () => {
     DDO.services[0].datatokenAddress = datatokenAddress
 
     console.log(`DID: ${DDO.id}`)
-  })
 
-  it('set metadata in the NFT', async () => {
-    const nft = new Nft(web3)
     const providerResponse = await ProviderInstance.encrypt(DDO, providerUrl)
     const encryptedDDO = await providerResponse
     const metadataHash = getHash(JSON.stringify(DDO))
@@ -267,8 +277,10 @@ describe('Marketplace flow tests', async () => {
       '0x' + metadataHash
     )
   })
+  /// ```
 
-  it('marketplace displays asset for sale', async () => {
+  it('Marketplace displays asset for sale', async () => {
+  /// ```Typescript
     const pool = new Pool(web3)
     const prices = await pool.getAmountInExactOut(
       poolAddress,
@@ -279,8 +291,10 @@ describe('Marketplace flow tests', async () => {
     )
     console.log(`Price of 1 ${NFT_SYMBOL} is ${prices.tokenAmount} OCEAN`)
   })
+  /// ```
 
-  it('consumer buys data asset, and downloads it', async () => {
+  it('Consumer buys data asset, and downloads it', async () => {
+  /// ```Typescript
     const datatoken = new Datatoken(web3)
 
     const consumerETHBalance = await web3.eth.getBalance(consumerAccount)
