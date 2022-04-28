@@ -21,33 +21,25 @@ describe('Dispenser flow', () => {
   let datatoken: Datatoken
   let dtAddress: string
 
-  const CAP_AMOUNT = '1000000'
-  const NFT_NAME = '72120Bundle'
-  const NFT_SYMBOL = '72Bundle'
-  const NFT_TOKEN_URI = 'https://oceanprotocol.com/nft/'
-  const ERC20_NAME = 'ERC20B1'
-  const ERC20_SYMBOL = 'ERC20DT1Symbol'
-  const FEE_ZERO = '0'
-
-  const NFT_DATA: NftCreateData = {
-    name: NFT_NAME,
-    symbol: NFT_SYMBOL,
+  const nftData: NftCreateData = {
+    name: '72120Bundle',
+    symbol: '72Bundle',
     templateIndex: 1,
-    tokenURI: NFT_TOKEN_URI,
+    tokenURI: 'https://oceanprotocol.com/nft/',
     transferable: true,
     owner: factoryOwner
   }
 
-  const ERC_PARAMS: Erc20CreateParams = {
+  const ercParams: Erc20CreateParams = {
     templateIndex: 1,
     minter: factoryOwner,
     paymentCollector: user2,
     mpFeeAddress: user1,
     feeToken: ZERO_ADDRESS,
-    cap: CAP_AMOUNT,
-    feeAmount: FEE_ZERO,
-    name: ERC20_NAME,
-    symbol: ERC20_SYMBOL
+    cap: '1000000',
+    feeAmount: '0',
+    name: 'ERC20B1',
+    symbol: 'ERC20DT1Symbol'
   }
 
   before(async () => {
@@ -56,10 +48,10 @@ describe('Dispenser flow', () => {
     user1 = accounts[3]
     user2 = accounts[4]
 
-    NFT_DATA.owner = factoryOwner
-    ERC_PARAMS.minter = factoryOwner
-    ERC_PARAMS.paymentCollector = user2
-    ERC_PARAMS.mpFeeAddress = user1
+    nftData.owner = factoryOwner
+    ercParams.minter = factoryOwner
+    ercParams.paymentCollector = user2
+    ercParams.mpFeeAddress = user1
   })
 
   it('should deploy contracts', async () => {
@@ -76,8 +68,8 @@ describe('Dispenser flow', () => {
 
     const txReceipt = await nftFactory.createNftWithErc20(
       factoryOwner,
-      NFT_DATA,
-      ERC_PARAMS
+      nftData,
+      ercParams
     )
 
     expect(txReceipt.events.NFTCreated.event === 'NFTCreated')
