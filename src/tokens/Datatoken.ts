@@ -949,17 +949,7 @@ export class Datatoken {
         this.config
       )
 
-    // Estimate gas for reuseOrder method
-    const gasLimitDefault = this.GASLIMIT_DEFAULT
-    let estGas
-    try {
-      estGas = await dtContract.methods
-        .reuseOrder(orderTxId, providerFees)
-        .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
-    } catch (e) {
-      estGas = gasLimitDefault
-    }
-    return estGas
+    return estimateGas(address, dtContract.methods.reuseOrder, orderTxId, providerFees)
   }
 
   /** Reuse Order: called by payer or consumer having a valid order, but with expired provider access.
@@ -982,12 +972,11 @@ export class Datatoken {
       this.config
     )
     try {
-      const estGas = await this.estGasReuseOrder(
-        dtAddress,
+      const estGas = await estimateGas(
         address,
+        dtContract.methods.reuseOrder,
         orderTxId,
-        providerFees,
-        dtContract
+        providerFees
       )
 
       const trxReceipt = await dtContract.methods
