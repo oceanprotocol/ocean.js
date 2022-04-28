@@ -715,8 +715,15 @@ export class Datatoken {
       new this.web3.eth.Contract(this.datatokensAbi, dtAddress),
       this.config
     )
-    if ((await this.getDTPermissions(dtAddress, address)).paymentManager !== true) {
-      throw new Error(`Caller is not Fee Manager`)
+    const isPaymentManager = (await this.getDTPermissions(dtAddress, address))
+      .paymentManager
+    const nftAddress = !isPaymentManager && (await this.getNFTAddress(dtAddress))
+    const isNftOwner = nftAddress && (await this.nft.getNftOwner(nftAddress)) === address
+    const nftPermissions =
+      nftAddress && !isNftOwner && (await this.nft.getNftPermissions(nftAddress, address))
+    const isErc20Deployer = nftPermissions?.deployERC20
+    if (!isPaymentManager && !isNftOwner && !isErc20Deployer) {
+      throw new Error(`Caller is not Fee Manager, owner or erc20 Deployer`)
     }
 
     const estGas = await estimateGas(
@@ -916,6 +923,83 @@ export class Datatoken {
       return trxReceipt
     } catch (e) {
       LoggerInstance.error(`ERROR: Failed to start order : ${e.message}`)
+      throw new Error(`Failed to start order: ${e.message}`)
+    }
+  }
+
+  /** Estimate gas cost for reuseOrder method
+   * @param {String} dtAddress Datatoken address
+   * @param {String} address User address which calls
+   * @param {String} orderTxId previous valid order
+   * @param {providerFees} providerFees provider fees
+   * @param {Contract} contractInstance optional contract instance
+   * @return {Promise<any>}
+   */
+  public async estGasReuseOrder(
+    dtAddress: string,
+    address: string,
+    orderTxId: string,
+    providerFees: ProviderFees,
+    contractInstance?: Contract
+  ): Promise<any> {
+    const dtContract =
+      contractInstance ||
+      setContractDefaults(
+        new this.web3.eth.Contract(this.datatokensAbi, dtAddress),
+        this.config
+      )
+
+    // Estimate gas for reuseOrder method
+    const gasLimitDefault = this.GASLIMIT_DEFAULT
+    let estGas
+    try {
+      estGas = await dtContract.methods
+        .reuseOrder(orderTxId, providerFees)
+        .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
+    } catch (e) {
+      estGas = gasLimitDefault
+    }
+    return estGas
+  }
+
+  /** Reuse Order: called by payer or consumer having a valid order, but with expired provider access.
+   * Pays the provider fee again, but it will not require a new datatoken payment
+   * Requires previous approval of provider fee.
+   * @param {String} dtAddress Datatoken address
+   * @param {String} address User address which calls
+   * @param {String} orderTxId previous valid order
+   * @param {providerFees} providerFees provider fees
+   * @return {Promise<TransactionReceipt>} string
+   */
+  public async reuseOrder(
+    dtAddress: string,
+    address: string,
+    orderTxId: string,
+    providerFees: ProviderFees
+  ): Promise<TransactionReceipt> {
+    const dtContract = setContractDefaults(
+      new this.web3.eth.Contract(this.datatokensAbi, dtAddress),
+      this.config
+    )
+    try {
+      const estGas = await this.estGasReuseOrder(
+        dtAddress,
+        address,
+        orderTxId,
+        providerFees,
+        dtContract
+      )
+
+      const trxReceipt = await dtContract.methods
+        .reuseOrder(orderTxId, providerFees)
+        .send({
+          from: address,
+          gas: estGas + 1,
+          gasPrice: await getFairGasPrice(this.web3, this.config)
+        })
+      return trxReceipt
+    } catch (e) {
+      LoggerInstance.error(`ERROR: Failed to call reuse order order : ${e.message}`)
       throw new Error(`Failed to start order: ${e.message}`)
     }
   }

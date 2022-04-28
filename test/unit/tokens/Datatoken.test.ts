@@ -24,6 +24,7 @@ describe('Datatoken', () => {
   let user1: string
   let user2: string
   let user3: string
+  let erc20DeployerUser: string
   let contracts: Addresses
   let nftDatatoken: Nft
   let datatoken: Datatoken
@@ -42,6 +43,7 @@ describe('Datatoken', () => {
     user1 = accounts[1]
     user2 = accounts[2]
     user3 = accounts[3]
+    erc20DeployerUser = accounts[4]
   })
 
   it('should deploy contracts', async () => {
@@ -76,7 +78,7 @@ describe('Datatoken', () => {
   })
 
   it('#createERC20 - should create a new ERC20 DT from NFT contract', async () => {
-    // await nftDatatoken.addERC20Deployer(nftAddress, nftOwner, nftOwner)
+    await nftDatatoken.addErc20Deployer(nftAddress, nftOwner, erc20DeployerUser)
     datatokenAddress = await nftDatatoken.createErc20(
       nftAddress,
       nftOwner,
@@ -287,7 +289,7 @@ describe('Datatoken', () => {
     )
   })
 
-  it('#setPaymentCollector - should fail to set a new paymentCollector, if NOT PAYMENT Manager', async () => {
+  it('#setPaymentCollector - should fail to set a new paymentCollector, if NOT PAYMENT Manager, NFT OWNER OR ERC 20 DEPLOYER', async () => {
     assert(
       (await datatoken.getDTPermissions(datatokenAddress, user2)).paymentManager === false
     )
@@ -295,7 +297,7 @@ describe('Datatoken', () => {
     try {
       await datatoken.setPaymentCollector(datatokenAddress, user1, user2)
     } catch (e) {
-      assert(e.message === 'Caller is not Fee Manager')
+      assert(e.message === 'Caller is not Fee Manager, owner or erc20 Deployer')
     }
   })
 
@@ -309,6 +311,25 @@ describe('Datatoken', () => {
     )
 
     await datatoken.setPaymentCollector(datatokenAddress, user1, user3)
+
+    assert((await datatoken.getPaymentCollector(datatokenAddress)) === user3)
+  })
+
+  it('#setPaymentCollector - should set a new paymentCollector, if NFT OWNER', async () => {
+    assert((await nftDatatoken.getNftOwner(nftAddress)) === nftOwner)
+
+    await datatoken.setPaymentCollector(datatokenAddress, nftOwner, user2)
+
+    assert((await datatoken.getPaymentCollector(datatokenAddress)) === user2)
+  })
+
+  it('#setPaymentCollector - should set a new paymentCollector, if ERC 20 DEPLOYER', async () => {
+    assert(
+      (await nftDatatoken.getNftPermissions(nftAddress, erc20DeployerUser))
+        .deployERC20 === true
+    )
+
+    await datatoken.setPaymentCollector(datatokenAddress, erc20DeployerUser, user3)
 
     assert((await datatoken.getPaymentCollector(datatokenAddress)) === user3)
   })
@@ -365,6 +386,47 @@ describe('Datatoken', () => {
       )) === '0.97',
       'Invalid publisher reward, we should have 1 DT'
     )
+  })
+
+  it('#reuseOrder- user2 should user should succeed to call reuseOrder on a using a previous txId ', async () => {
+    const providerData = JSON.stringify({ timeout: 0 })
+    const providerFeeToken = ZERO_ADDRESS
+    const providerFeeAmount = '0'
+    const providerValidUntil = '0'
+    const message = web3.utils.soliditySha3(
+      { t: 'bytes', v: web3.utils.toHex(web3.utils.asciiToHex(providerData)) },
+      { t: 'address', v: user3 },
+      { t: 'address', v: providerFeeToken },
+      { t: 'uint256', v: providerFeeAmount },
+      { t: 'uint256', v: providerValidUntil }
+    )
+    const { v, r, s } = await signHash(web3, message, user3)
+    const providerFees: ProviderFees = {
+      providerFeeAddress: user3,
+      providerFeeToken: providerFeeToken,
+      providerFeeAmount: providerFeeAmount,
+      v: v,
+      r: r,
+      s: s,
+      providerData: web3.utils.toHex(web3.utils.asciiToHex(providerData)),
+      validUntil: providerValidUntil
+    }
+    const order = await datatoken.startOrder(
+      datatokenAddress,
+      user1,
+      user2,
+      1,
+      providerFees
+    )
+    assert(order.transactionHash, ' Failed to start order')
+    const reusedOrder = await datatoken.reuseOrder(
+      datatokenAddress,
+      user2,
+      order.transactionHash,
+      providerFees
+    )
+    assert(reusedOrder.events.OrderReused.event === 'OrderReused')
+    assert(reusedOrder.events.ProviderFee.event === 'ProviderFee')
   })
 
   it('#buyFromDispenserAndOrder- Enterprise method', async () => {
