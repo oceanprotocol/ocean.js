@@ -26,24 +26,26 @@ describe('Fixed Rate unit test', () => {
   let dtContract: Contract
   let daiContract: Contract
   let usdcContract: Contract
-  let ercParams: Erc20CreateParams
 
-  const CAP_AMOUNT = '1000000'
-  const NFT_NAME = '72120Bundle'
-  const NFT_SYMBOL = '72Bundle'
-  const NFT_TOKEN_URI = 'https://oceanprotocol.com/nft/'
-  const ERC20_NAME = 'ERC20B1'
-  const ERC20_SYMBOL = 'ERC20DT1Symbol'
-  const FEE = '0.001'
-  const FEE_ZERO = '0'
-
-  const NFT_DATA: NftCreateData = {
-    name: NFT_NAME,
-    symbol: NFT_SYMBOL,
+  const nftData: NftCreateData = {
+    name: '72120Bundle',
+    symbol: '72Bundle',
     templateIndex: 1,
-    tokenURI: NFT_TOKEN_URI,
+    tokenURI: 'https://oceanprotocol.com/nft/',
     transferable: true,
     owner: factoryOwner
+  }
+
+  const ercParams: Erc20CreateParams = {
+    templateIndex: 1,
+    minter: factoryOwner,
+    paymentCollector: user2,
+    mpFeeAddress: factoryOwner,
+    feeToken: ZERO_ADDRESS,
+    cap: '1000000',
+    feeAmount: '0',
+    name: 'ERC20B1',
+    symbol: 'ERC20DT1Symbol'
   }
 
   before(async () => {
@@ -53,19 +55,10 @@ describe('Fixed Rate unit test', () => {
     user2 = accounts[2]
     exchangeOwner = accounts[0]
 
-    NFT_DATA.owner = factoryOwner
-
-    ercParams = {
-      templateIndex: 1,
-      minter: factoryOwner,
-      paymentCollector: user2,
-      mpFeeAddress: factoryOwner,
-      feeToken: ZERO_ADDRESS,
-      cap: CAP_AMOUNT,
-      feeAmount: FEE_ZERO,
-      name: ERC20_NAME,
-      symbol: ERC20_SYMBOL
-    }
+    nftData.owner = factoryOwner
+    ercParams.minter = factoryOwner
+    ercParams.paymentCollector = user2
+    ercParams.mpFeeAddress = factoryOwner
   })
 
   it('should deploy contracts', async () => {
@@ -97,14 +90,14 @@ describe('Fixed Rate unit test', () => {
         baseTokenDecimals: 18,
         datatokenDecimals: 18,
         fixedRate: '1',
-        marketFee: FEE,
+        marketFee: '0.001',
         allowedConsumer: ZERO_ADDRESS,
         withMint: false
       }
 
       const txReceipt = await nftFactory.createNftErc20WithFixedRate(
         exchangeOwner,
-        NFT_DATA,
+        nftData,
         ercParams,
         freParams
       )
@@ -416,7 +409,7 @@ describe('Fixed Rate unit test', () => {
 
       const txReceipt = await nftFactory.createNftErc20WithFixedRate(
         exchangeOwner,
-        NFT_DATA,
+        nftData,
         ercParams,
         freParams
       )
