@@ -66,7 +66,7 @@
 /// Start by importing all of the necessary dependencies
 
 /// ```Typescript
-import { assert, expect } from 'chai'
+import { assert } from 'chai'
 import { AbiItem } from 'web3-utils/types'
 import { SHA256 } from 'crypto-js'
 import MockERC20 from '@oceanprotocol/contracts/artifacts/contracts/utils/mock/MockERC20Decimals.sol/MockERC20Decimals.json'
@@ -106,6 +106,7 @@ describe('Marketplace flow tests', async () => {
   let providerUrl: any
   let publisherAccount: string
   let consumerAccount: string
+  let liquidityAccount: string
   let contracts: Addresses
   let erc721Address: string
   let datatokenAddress: string
@@ -172,9 +173,11 @@ describe('Marketplace flow tests', async () => {
     const accounts = await web3.eth.getAccounts()
     publisherAccount = accounts[0]
     consumerAccount = accounts[1]
+    liquidityAccount = accounts[2]
 
     console.log(`Publisher account address: ${publisherAccount}`)
     console.log(`Consumer account address: ${consumerAccount}`)
+    console.log(`Liquidity account address: ${liquidityAccount}`)
   })
   /// ```
 
@@ -184,22 +187,20 @@ describe('Marketplace flow tests', async () => {
   })
   /// ```
 
-  it('We send some OCEAN to consumer account', async () => {
+  it('We send some OCEAN to consumer and liquidity account', async () => {
     /// ```Typescript
     const oceanContract = new web3.eth.Contract(
       MockERC20.abi as AbiItem[],
       contracts.oceanAddress
     )
 
-    const balanceBefore = await oceanContract.methods.balanceOf(consumerAccount).call()
-
     await oceanContract.methods
       .transfer(consumerAccount, web3.utils.toWei('10'))
       .send({ from: publisherAccount })
 
-    expect(await oceanContract.methods.balanceOf(consumerAccount).call()).to.equal(
-      (+balanceBefore + +web3.utils.toWei('10')).toString()
-    )
+    await oceanContract.methods
+      .transfer(liquidityAccount, web3.utils.toWei('10'))
+      .send({ from: publisherAccount })
   })
   /// ```
 
@@ -297,6 +298,16 @@ describe('Marketplace flow tests', async () => {
       encryptedDDO,
       '0x' + metadataHash
     )
+  })
+  /// ```
+
+  it('User should add liquidity to the pool, receiving LP tokens', async () => {
+    /// ```Typescript
+    const pool = new Pool(web3)
+
+    await approve(web3, liquidityAccount, contracts.oceanAddress, poolAddress, '5', true)
+
+    await pool.joinswapExternAmountIn(liquidityAccount, poolAddress, '5', '0.1')
   })
   /// ```
 
