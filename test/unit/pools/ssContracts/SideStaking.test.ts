@@ -38,37 +38,28 @@ describe('SideStaking unit test', () => {
   let daiContract: Contract
   let usdcContract: Contract
 
-  const DAI_AMOUNT = 2000
-  const USDC_AMOUNT = 10000
   const VESTED_BLOCKS = 2500000
   const VESTING_AMOUNT = '10000'
-  const CAP_AMOUNT = '1000000'
-  const NFT_NAME = '72120Bundle'
-  const NFT_SYMBOL = '72Bundle'
-  const NFT_TOKEN_URI = 'https://oceanprotocol.com/nft/'
-  const ERC20_NAME = 'ERC20B1'
-  const ERC20_SYMBOL = 'ERC20DT1Symbol'
-  const FEE_ZERO = '0'
 
-  const NFT_DATA: NftCreateData = {
-    name: NFT_NAME,
-    symbol: NFT_SYMBOL,
+  const nftData: NftCreateData = {
+    name: '72120Bundle',
+    symbol: '72Bundle',
     templateIndex: 1,
-    tokenURI: NFT_TOKEN_URI,
+    tokenURI: 'https://oceanprotocol.com/nft/',
     transferable: true,
     owner: factoryOwner
   }
 
-  const ERC_PARAMS: Erc20CreateParams = {
+  const ercParams: Erc20CreateParams = {
     templateIndex: 1,
     minter: factoryOwner,
     paymentCollector: user2,
     mpFeeAddress: factoryOwner,
     feeToken: ZERO_ADDRESS,
-    cap: CAP_AMOUNT,
-    feeAmount: FEE_ZERO,
-    name: ERC20_NAME,
-    symbol: ERC20_SYMBOL
+    cap: '1000000',
+    feeAmount: '0',
+    name: 'ERC20B1',
+    symbol: 'ERC20DT1Symbol'
   }
 
   before(async () => {
@@ -77,10 +68,10 @@ describe('SideStaking unit test', () => {
     user1 = accounts[1]
     user2 = accounts[2]
 
-    NFT_DATA.owner = factoryOwner
-    ERC_PARAMS.minter = factoryOwner
-    ERC_PARAMS.paymentCollector = user2
-    ERC_PARAMS.mpFeeAddress = factoryOwner
+    nftData.owner = factoryOwner
+    ercParams.minter = factoryOwner
+    ercParams.paymentCollector = user2
+    ercParams.mpFeeAddress = factoryOwner
   })
 
   it('should deploy contracts', async () => {
@@ -102,7 +93,7 @@ describe('SideStaking unit test', () => {
       factoryOwner,
       contracts.daiAddress,
       contracts.erc721FactoryAddress,
-      DAI_AMOUNT.toString()
+      '2000'
     )
 
     assert(
@@ -113,7 +104,7 @@ describe('SideStaking unit test', () => {
           factoryOwner,
           contracts.erc721FactoryAddress
         )
-      ) >= DAI_AMOUNT
+      ) >= 2000
     )
 
     await approve(
@@ -121,7 +112,7 @@ describe('SideStaking unit test', () => {
       factoryOwner,
       contracts.usdcAddress,
       contracts.erc721FactoryAddress,
-      USDC_AMOUNT.toString()
+      '10000'
     )
 
     assert(
@@ -132,7 +123,7 @@ describe('SideStaking unit test', () => {
           factoryOwner,
           contracts.erc721FactoryAddress
         )
-      ) >= USDC_AMOUNT
+      ) >= 10000
     )
   })
 
@@ -160,8 +151,8 @@ describe('SideStaking unit test', () => {
 
       const txReceipt = await nftFactory.createNftErc20WithPool(
         factoryOwner,
-        NFT_DATA,
-        ERC_PARAMS,
+        nftData,
+        ercParams,
         poolParams
       )
 
@@ -398,8 +389,8 @@ describe('SideStaking unit test', () => {
 
       const txReceipt = await nftFactory.createNftErc20WithPool(
         factoryOwner,
-        NFT_DATA,
-        ERC_PARAMS,
+        nftData,
+        ercParams,
         poolParams
       )
 
