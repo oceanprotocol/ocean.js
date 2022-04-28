@@ -27,26 +27,25 @@ describe('Datatoken', () => {
   let datatokenAddress: string
   let fixedRateAddress: string
   let exchangeId: string
-  let freParams: FreCreationParams
 
-  const NFT_NAME = 'NFTName'
-  const NFT_SYMBOL = 'NFTSymbol'
-  const NFT_TOKEN_URI = 'https://oceanprotocol.com/nft/'
-  const FEE_ZERO = '0'
-  const CAP_AMOUNT = '10000'
-  const DECIMALS = 18
-  const FIXED_RATE = web3.utils.toWei('1')
-  const DATATOKENS_AMOUNT = '10'
-  const ERC20_NAME = 'ERC20B1'
-  const ERC20_SYMBOL = 'ERC20DT1Symbol'
-
-  const NFT_DATA: NftCreateData = {
-    name: NFT_NAME,
-    symbol: NFT_SYMBOL,
+  const nftData: NftCreateData = {
+    name: 'NFTName',
+    symbol: 'NFTSymbol',
     templateIndex: 1,
-    tokenURI: NFT_TOKEN_URI,
+    tokenURI: 'https://oceanprotocol.com/nft/',
     transferable: true,
     owner: nftOwner
+  }
+
+  const freParams: FreCreationParams = {
+    fixedRateAddress: contracts.fixedRateAddress,
+    baseTokenAddress: contracts.daiAddress,
+    owner: nftOwner,
+    marketFeeCollector: nftOwner,
+    baseTokenDecimals: 18,
+    datatokenDecimals: 18,
+    fixedRate: web3.utils.toWei('1'),
+    marketFee: '0'
   }
 
   before(async () => {
@@ -57,22 +56,13 @@ describe('Datatoken', () => {
     user3 = accounts[3]
     erc20DeployerUser = accounts[4]
 
-    NFT_DATA.owner = nftOwner
+    nftData.owner = nftOwner
+    freParams.owner = nftOwner
+    freParams.marketFeeCollector = nftOwner
   })
 
   it('should deploy contracts', async () => {
     contracts = await deployContracts(web3, nftOwner)
-
-    freParams = {
-      fixedRateAddress: contracts.fixedRateAddress,
-      baseTokenAddress: contracts.daiAddress,
-      owner: nftOwner,
-      marketFeeCollector: nftOwner,
-      baseTokenDecimals: DECIMALS,
-      datatokenDecimals: DECIMALS,
-      fixedRate: FIXED_RATE,
-      marketFee: FEE_ZERO
-    }
   })
 
   it('should initialize NFTFactory, nftDT and DT instances and create a new NFT', async () => {
@@ -80,7 +70,7 @@ describe('Datatoken', () => {
     nftDatatoken = new Nft(web3)
     datatoken = new Datatoken(web3)
 
-    nftAddress = await nftFactory.createNFT(nftOwner, NFT_DATA)
+    nftAddress = await nftFactory.createNFT(nftOwner, nftData)
   })
 
   it('#createERC20 - should create a new ERC20 DT from NFT contract', async () => {
@@ -92,10 +82,10 @@ describe('Datatoken', () => {
       user1,
       user2,
       ZERO_ADDRESS,
-      FEE_ZERO,
-      CAP_AMOUNT,
-      ERC20_NAME,
-      ERC20_SYMBOL
+      '0',
+      '10000',
+      'ERC20B1',
+      'ERC20DT1Symbol'
     )
     assert(datatokenAddress !== null)
   })
@@ -103,7 +93,7 @@ describe('Datatoken', () => {
   it('#mint - should fail to mint DT20, if NOT Minter', async () => {
     assert((await datatoken.getDTPermissions(datatokenAddress, user1)).minter === false)
     try {
-      await datatoken.mint(datatokenAddress, user1, DATATOKENS_AMOUNT, user1)
+      await datatoken.mint(datatokenAddress, user1, '10', user1)
       assert(false)
     } catch (e) {
       assert(e.message === 'Caller is not Minter')
@@ -135,9 +125,9 @@ describe('Datatoken', () => {
 
   it('#mint - should mint ERC20 datatoken to user1, if Minter', async () => {
     assert((await datatoken.getDTPermissions(datatokenAddress, nftOwner)).minter === true)
-    await datatoken.mint(datatokenAddress, nftOwner, DATATOKENS_AMOUNT, user1)
+    await datatoken.mint(datatokenAddress, nftOwner, '10', user1)
 
-    assert((await datatoken.balance(datatokenAddress, user1)) === DATATOKENS_AMOUNT)
+    assert((await datatoken.balance(datatokenAddress, user1)) === '10')
   })
 
   it('#createFixedRate - should create FRE for the erc20 dt', async () => {
@@ -321,7 +311,7 @@ describe('Datatoken', () => {
 
   it('#startOrder- user2 should create an order for DT ', async () => {
     assert(
-      (await datatoken.balance(datatokenAddress, user1)) === DATATOKENS_AMOUNT,
+      (await datatoken.balance(datatokenAddress, user1)) === '10',
       'User1 does not hold 10 datatokens'
     )
     assert(
@@ -331,7 +321,7 @@ describe('Datatoken', () => {
 
     const providerData = JSON.stringify({ timeout: 0 })
     const providerFeeToken = ZERO_ADDRESS
-    const providerFeeAmount = FEE_ZERO
+    const providerFeeAmount = '0'
     const providerValidUntil = '0'
     const message = web3.utils.soliditySha3(
       { t: 'bytes', v: web3.utils.toHex(web3.utils.asciiToHex(providerData)) },
@@ -376,7 +366,7 @@ describe('Datatoken', () => {
   it('#buyFromDispenserAndOrder- Enterprise method', async () => {
     const providerData = JSON.stringify({ timeout: 0 })
     const providerFeeToken = ZERO_ADDRESS
-    const providerFeeAmount = FEE_ZERO
+    const providerFeeAmount = '0'
     const message = web3.utils.soliditySha3(
       { t: 'bytes', v: web3.utils.toHex(web3.utils.asciiToHex(providerData)) },
       { t: 'address', v: user3 },
@@ -398,7 +388,7 @@ describe('Datatoken', () => {
     const consumeMarketFee = {
       consumeMarketFeeAddress: ZERO_ADDRESS,
       consumeMarketFeeToken: ZERO_ADDRESS,
-      consumeMarketFeeAmount: FEE_ZERO
+      consumeMarketFeeAmount: '0'
     }
     const order: OrderParams = {
       consumer: user1,
@@ -418,7 +408,7 @@ describe('Datatoken', () => {
   it('#buyFromFreAndOrder - Enterprise method ', async () => {
     const providerData = JSON.stringify({ timeout: 0 })
     const providerFeeToken = ZERO_ADDRESS
-    const providerFeeAmount = FEE_ZERO
+    const providerFeeAmount = '0'
     const message = web3.utils.soliditySha3(
       { t: 'bytes', v: web3.utils.toHex(web3.utils.asciiToHex(providerData)) },
       { t: 'address', v: user3 },
@@ -440,7 +430,7 @@ describe('Datatoken', () => {
     const consumeMarketFee = {
       consumeMarketFeeAddress: ZERO_ADDRESS,
       consumeMarketFeeToken: ZERO_ADDRESS,
-      consumeMarketFeeAmount: FEE_ZERO
+      consumeMarketFeeAmount: '0'
     }
     const order: OrderParams = {
       consumer: user1,
@@ -541,7 +531,7 @@ describe('Datatoken', () => {
 
   it('#getDecimals - should return the number of decimals of the datatoken', async () => {
     const decimals = await datatoken.getDecimals(datatokenAddress)
-    assert(decimals === DECIMALS.toString())
+    assert(decimals === '18')
   })
 
   it('#transfer - we can transfer the datatoken', async () => {
