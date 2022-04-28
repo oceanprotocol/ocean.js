@@ -67,7 +67,9 @@
 
 /// ```Typescript
 import { assert } from 'chai'
+import { AbiItem } from 'web3-utils/types'
 import { SHA256 } from 'crypto-js'
+import MockERC20 from '@oceanprotocol/contracts/artifacts/contracts/utils/mock/MockERC20Decimals.sol/MockERC20Decimals.json'
 import {
   AmountsOutMaxFee,
   approve,
@@ -297,24 +299,34 @@ describe('Marketplace flow tests', async () => {
   /// ```Typescript
     const datatoken = new Datatoken(web3)
 
+    // we send some OCEAN to consumer account
+    const oceanContract = new web3.eth.Contract(
+      MockERC20.abi as AbiItem[],
+      contracts.daiAddress
+    )
+
+    await oceanContract.methods
+      .transfer(consumerAccount, web3.utils.toWei('2'))
+      .send({ from: publisherAccount })
+
     const consumerETHBalance = await web3.eth.getBalance(consumerAccount)
     console.log(`Consumer ETH balance: ${consumerETHBalance}`)
     let consumerOCEANBalance = await balance(
       web3,
       contracts.oceanAddress,
-      publisherAccount
+      consumerAccount
     )
     console.log(`Consumer OCEAN balance before swap: ${consumerOCEANBalance}`)
-    let consumerDTBalance = await balance(web3, datatokenAddress, publisherAccount)
+    let consumerDTBalance = await balance(web3, datatokenAddress, consumerAccount)
     console.log(`Consumer ${NFT_SYMBOL} balance before swap: ${consumerDTBalance}`)
 
-    await approve(web3, publisherAccount, contracts.oceanAddress, poolAddress, '100')
+    await approve(web3, consumerAccount, contracts.oceanAddress, poolAddress, '100')
 
     const pool = new Pool(web3)
     const tokenInOutMarket: TokenInOutMarket = {
       tokenIn: contracts.oceanAddress,
       tokenOut: datatokenAddress,
-      marketFeeAddress: publisherAccount
+      marketFeeAddress: consumerAccount
     }
     const amountsInOutMaxFee: AmountsOutMaxFee = {
       maxAmountIn: '10',
@@ -322,15 +334,15 @@ describe('Marketplace flow tests', async () => {
       swapMarketFee: '0.1'
     }
     await pool.swapExactAmountOut(
-      publisherAccount,
+      consumerAccount,
       poolAddress,
       tokenInOutMarket,
       amountsInOutMaxFee
     )
 
-    consumerOCEANBalance = await balance(web3, contracts.oceanAddress, publisherAccount)
+    consumerOCEANBalance = await balance(web3, contracts.oceanAddress, consumerAccount)
     console.log(`Consumer OCEAN balance after swap: ${consumerOCEANBalance}`)
-    consumerDTBalance = await balance(web3, datatokenAddress, publisherAccount)
+    consumerDTBalance = await balance(web3, datatokenAddress, consumerAccount)
     console.log(`Consumer ${NFT_SYMBOL} balance after swap: ${consumerDTBalance}`)
 
     const resolvedDDO = await aquarius.waitForAqua(DDO.id)
