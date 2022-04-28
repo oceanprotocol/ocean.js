@@ -363,6 +363,47 @@ describe('Datatoken', () => {
     )
   })
 
+  it('#reuseOrder- user2 should user should succeed to call reuseOrder on a using a previous txId ', async () => {
+    const providerData = JSON.stringify({ timeout: 0 })
+    const providerFeeToken = ZERO_ADDRESS
+    const providerFeeAmount = '0'
+    const providerValidUntil = '0'
+    const message = web3.utils.soliditySha3(
+      { t: 'bytes', v: web3.utils.toHex(web3.utils.asciiToHex(providerData)) },
+      { t: 'address', v: user3 },
+      { t: 'address', v: providerFeeToken },
+      { t: 'uint256', v: providerFeeAmount },
+      { t: 'uint256', v: providerValidUntil }
+    )
+    const { v, r, s } = await signHash(web3, message, user3)
+    const providerFees: ProviderFees = {
+      providerFeeAddress: user3,
+      providerFeeToken: providerFeeToken,
+      providerFeeAmount: providerFeeAmount,
+      v: v,
+      r: r,
+      s: s,
+      providerData: web3.utils.toHex(web3.utils.asciiToHex(providerData)),
+      validUntil: providerValidUntil
+    }
+    const order = await datatoken.startOrder(
+      datatokenAddress,
+      user1,
+      user2,
+      1,
+      providerFees
+    )
+    assert(order.transactionHash, ' Failed to start order')
+    const reusedOrder = await datatoken.reuseOrder(
+      datatokenAddress,
+      user2,
+      order.transactionHash,
+      providerFees
+    )
+    assert(reusedOrder.events.OrderReused.event === 'OrderReused')
+    assert(reusedOrder.events.ProviderFee.event === 'ProviderFee')
+  })
+
   it('#buyFromDispenserAndOrder- Enterprise method', async () => {
     const providerData = JSON.stringify({ timeout: 0 })
     const providerFeeToken = ZERO_ADDRESS
