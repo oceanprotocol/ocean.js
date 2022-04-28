@@ -108,8 +108,8 @@ describe('Marketplace flow tests', async () => {
   let consumerAccount: string
   let liquidityAccount: string
   let contracts: Addresses
-  let erc721Address: string
-  let datatokenAddress: string
+  let poolNftAddress: string
+  let poolDatatokenAddress: string
   let poolAddress: string
 
   const NFT_SYMBOL = 'DT1'
@@ -258,12 +258,12 @@ describe('Marketplace flow tests', async () => {
       poolParams
     )
 
-    erc721Address = tx.events.NFTCreated.returnValues[0]
-    datatokenAddress = tx.events.TokenCreated.returnValues[0]
+    poolNftAddress = tx.events.NFTCreated.returnValues[0]
+    poolDatatokenAddress = tx.events.TokenCreated.returnValues[0]
     poolAddress = tx.events.NewPool.returnValues[0]
 
-    console.log(`NFT address: ${erc721Address}`)
-    console.log(`Datatoken address: ${datatokenAddress}`)
+    console.log(`NFT address: ${poolNftAddress}`)
+    console.log(`Datatoken address: ${poolDatatokenAddress}`)
     console.log(`Pool address: ${poolAddress}`)
   })
   /// ```
@@ -276,12 +276,12 @@ describe('Marketplace flow tests', async () => {
     DDO.chainId = await web3.eth.getChainId()
     DDO.id =
       'did:op:' +
-      SHA256(web3.utils.toChecksumAddress(erc721Address) + DDO.chainId.toString(10))
-    DDO.nftAddress = erc721Address
+      SHA256(web3.utils.toChecksumAddress(poolNftAddress) + DDO.chainId.toString(10))
+    DDO.nftAddress = poolNftAddress
     // encrypt file(s) using provider
     const encryptedFiles = await ProviderInstance.encrypt(ASSET_URL, providerUrl)
     DDO.services[0].files = await encryptedFiles
-    DDO.services[0].datatokenAddress = datatokenAddress
+    DDO.services[0].datatokenAddress = poolDatatokenAddress
 
     console.log(`DID: ${DDO.id}`)
 
@@ -289,7 +289,7 @@ describe('Marketplace flow tests', async () => {
     const encryptedDDO = await providerResponse
     const metadataHash = getHash(JSON.stringify(DDO))
     await nft.setMetadata(
-      erc721Address,
+      poolNftAddress,
       publisherAccount,
       0,
       providerUrl,
@@ -316,7 +316,7 @@ describe('Marketplace flow tests', async () => {
     const pool = new Pool(web3)
     const prices = await pool.getAmountInExactOut(
       poolAddress,
-      datatokenAddress,
+      poolDatatokenAddress,
       contracts.oceanAddress,
       '1',
       '0.01'
@@ -337,7 +337,7 @@ describe('Marketplace flow tests', async () => {
       consumerAccount
     )
     console.log(`Consumer OCEAN balance before swap: ${consumerOCEANBalance}`)
-    let consumerDTBalance = await balance(web3, datatokenAddress, consumerAccount)
+    let consumerDTBalance = await balance(web3, poolDatatokenAddress, consumerAccount)
     console.log(`Consumer ${NFT_SYMBOL} balance before swap: ${consumerDTBalance}`)
 
     await approve(web3, consumerAccount, contracts.oceanAddress, poolAddress, '100')
@@ -345,7 +345,7 @@ describe('Marketplace flow tests', async () => {
     const pool = new Pool(web3)
     const tokenInOutMarket: TokenInOutMarket = {
       tokenIn: contracts.oceanAddress,
-      tokenOut: datatokenAddress,
+      tokenOut: poolDatatokenAddress,
       marketFeeAddress: consumerAccount
     }
     const amountsInOutMaxFee: AmountsOutMaxFee = {
@@ -362,7 +362,7 @@ describe('Marketplace flow tests', async () => {
 
     consumerOCEANBalance = await balance(web3, contracts.oceanAddress, consumerAccount)
     console.log(`Consumer OCEAN balance after swap: ${consumerOCEANBalance}`)
-    consumerDTBalance = await balance(web3, datatokenAddress, consumerAccount)
+    consumerDTBalance = await balance(web3, poolDatatokenAddress, consumerAccount)
     console.log(`Consumer ${NFT_SYMBOL} balance after swap: ${consumerDTBalance}`)
 
     const resolvedDDO = await aquarius.waitForAqua(DDO.id)
@@ -389,7 +389,7 @@ describe('Marketplace flow tests', async () => {
     }
     // make the payment
     const txid = await datatoken.startOrder(
-      datatokenAddress,
+      poolDatatokenAddress,
       consumerAccount,
       consumerAccount,
       0,
@@ -410,7 +410,7 @@ describe('Marketplace flow tests', async () => {
 
     consumerOCEANBalance = await balance(web3, contracts.oceanAddress, consumerAccount)
     console.log(`Consumer OCEAN balance after order: ${consumerOCEANBalance}`)
-    consumerDTBalance = await balance(web3, datatokenAddress, consumerAccount)
+    consumerDTBalance = await balance(web3, poolDatatokenAddress, consumerAccount)
     console.log(`Consumer ${NFT_SYMBOL} balance after order: ${consumerDTBalance}`)
 
     try {
@@ -420,5 +420,5 @@ describe('Marketplace flow tests', async () => {
       assert.fail('Download failed')
     }
   })
+  /// ```
 })
-/// ```
