@@ -1047,7 +1047,7 @@ export class Pool {
     )
     let result = null
 
-    const maxSwap = await getMaxSwapExactOut(this, poolAddress, tokenInOutMarket.tokenIn)
+    const maxSwap = await getMaxSwapExactOut(this, poolAddress, tokenInOutMarket.tokenOut)
     if (new Decimal(amountsInOutMaxFee.tokenAmountOut).greaterThan(maxSwap)) {
       throw new Error(`tokenAmountOut is greater than ${maxSwap.toString()}`)
     }
@@ -1549,7 +1549,7 @@ export class Pool {
       this.config
     )
 
-    const maxSwap = await getMaxSwapExactOut(this, poolAddress, tokenIn)
+    const maxSwap = await getMaxSwapExactOut(this, poolAddress, tokenOut)
 
     if (new Decimal(tokenAmountOut).greaterThan(maxSwap)) {
       throw new Error(`tokenAmountOut is greater than ${maxSwap.toString()}`)
