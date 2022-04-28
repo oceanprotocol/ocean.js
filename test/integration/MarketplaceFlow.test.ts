@@ -370,15 +370,15 @@ describe('Marketplace flow tests', async () => {
     // make the payment
     const txid = await datatoken.startOrder(
       datatokenAddress,
-      publisherAccount,
-      publisherAccount,
+      consumerAccount,
+      consumerAccount,
       0,
       providerFees
     )
     // get the url
     const downloadURL = await ProviderInstance.getDownloadUrl(
       DDO.id,
-      publisherAccount,
+      consumerAccount,
       DDO.services[0].id,
       0,
       txid.transactionHash,
@@ -388,9 +388,9 @@ describe('Marketplace flow tests', async () => {
 
     console.log(`Download URL: ${downloadURL}`)
 
-    consumerOCEANBalance = await balance(web3, contracts.oceanAddress, publisherAccount)
+    consumerOCEANBalance = await balance(web3, contracts.oceanAddress, consumerAccount)
     console.log(`Consumer OCEAN balance after order: ${consumerOCEANBalance}`)
-    consumerDTBalance = await balance(web3, datatokenAddress, publisherAccount)
+    consumerDTBalance = await balance(web3, datatokenAddress, consumerAccount)
     console.log(`Consumer ${NFT_SYMBOL} balance after order: ${consumerDTBalance}`)
 
     try {
