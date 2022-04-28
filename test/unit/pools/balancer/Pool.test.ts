@@ -37,26 +37,11 @@ describe('Pool unit test', () => {
   let usdcContract: Contract
   let ercParams: Erc20CreateParams
 
-  const VESTING_AMOUNT = '10000'
-  const CAP_AMOUNT = '1000000'
-  const NFT_NAME = '72120Bundle'
-  const NFT_SYMBOL = '72Bundle'
-  const NFT_TOKEN_URI = 'https://oceanprotocol.com/nft/'
-  const ERC20_NAME = 'ERC20B1'
-  const ERC20_SYMBOL = 'ERC20DT1Symbol'
-  const FEE_ZERO = '0'
-  const DAI_AMOUNT = 2000
-  const USDC_AMOUNT = 10000
-  const RATE = '1'
-  const VESTED_BLOCKS = 2500000
-  const FEE_LIQUIDITY_PROVIDER = '0.001'
-  const FEE_MARKET = '0.001'
-
-  const NFT_DATA: NftCreateData = {
-    name: NFT_NAME,
-    symbol: NFT_SYMBOL,
+  const nftData: NftCreateData = {
+    name: '72120Bundle',
+    symbol: '72Bundle',
     templateIndex: 1,
-    tokenURI: NFT_TOKEN_URI,
+    tokenURI: 'https://oceanprotocol.com/nft/',
     transferable: true,
     owner: factoryOwner
   }
@@ -67,7 +52,7 @@ describe('Pool unit test', () => {
     user1 = accounts[3]
     user2 = accounts[4]
 
-    NFT_DATA.owner = factoryOwner
+    nftData.owner = factoryOwner
 
     ercParams = {
       templateIndex: 1,
@@ -75,10 +60,10 @@ describe('Pool unit test', () => {
       paymentCollector: user2,
       mpFeeAddress: factoryOwner,
       feeToken: ZERO_ADDRESS,
-      cap: CAP_AMOUNT,
-      feeAmount: FEE_ZERO,
-      name: ERC20_NAME,
-      symbol: ERC20_SYMBOL
+      cap: '1000000',
+      feeAmount: '0',
+      name: 'ERC20B1',
+      symbol: 'ERC20DT1Symbol'
     }
   })
 
@@ -99,7 +84,7 @@ describe('Pool unit test', () => {
       factoryOwner,
       contracts.daiAddress,
       contracts.erc721FactoryAddress,
-      DAI_AMOUNT.toString()
+      '2000'
     )
 
     assert(
@@ -110,7 +95,7 @@ describe('Pool unit test', () => {
           factoryOwner,
           contracts.erc721FactoryAddress
         )
-      ) >= DAI_AMOUNT
+      ) >= 2000
     )
 
     await approve(
@@ -118,7 +103,7 @@ describe('Pool unit test', () => {
       factoryOwner,
       contracts.usdcAddress,
       contracts.erc721FactoryAddress,
-      USDC_AMOUNT.toString()
+      '10000'
     )
 
     assert(
@@ -129,7 +114,7 @@ describe('Pool unit test', () => {
           factoryOwner,
           contracts.erc721FactoryAddress
         )
-      ) >= USDC_AMOUNT
+      ) >= 10000
     )
   })
 
@@ -144,20 +129,20 @@ describe('Pool unit test', () => {
         publisherAddress: factoryOwner,
         marketFeeCollector: factoryOwner,
         poolTemplateAddress: contracts.poolTemplateAddress,
-        rate: RATE,
+        rate: '1',
         baseTokenDecimals: 18,
-        vestingAmount: VESTING_AMOUNT,
-        vestedBlocks: VESTED_BLOCKS,
+        vestingAmount: '10000',
+        vestedBlocks: 2500000,
         initialBaseTokenLiquidity: '2000',
-        swapFeeLiquidityProvider: FEE_LIQUIDITY_PROVIDER,
-        swapFeeMarketRunner: FEE_MARKET
+        swapFeeLiquidityProvider: '0.001',
+        swapFeeMarketRunner: '0.001'
       }
 
       const nftFactory = new NftFactory(contracts.erc721FactoryAddress, web3)
 
       const txReceipt = await nftFactory.createNftErc20WithPool(
         factoryOwner,
-        NFT_DATA,
+        nftData,
         ercParams,
         poolParams
       )
@@ -575,24 +560,24 @@ describe('Pool unit test', () => {
         publisherAddress: factoryOwner,
         marketFeeCollector: factoryOwner,
         poolTemplateAddress: contracts.poolTemplateAddress,
-        rate: RATE,
+        rate: '1',
         baseTokenDecimals: await usdcContract.methods.decimals().call(),
-        vestingAmount: VESTING_AMOUNT,
-        vestedBlocks: VESTED_BLOCKS,
+        vestingAmount: '10000',
+        vestedBlocks: 2500000,
         initialBaseTokenLiquidity: await unitsToAmount(
           web3,
           contracts.usdcAddress,
           await amountToUnits(web3, contracts.usdcAddress, '2000')
         ),
-        swapFeeLiquidityProvider: FEE_LIQUIDITY_PROVIDER,
-        swapFeeMarketRunner: FEE_MARKET
+        swapFeeLiquidityProvider: '0.001',
+        swapFeeMarketRunner: '0.001'
       }
 
       const nftFactory = new NftFactory(contracts.erc721FactoryAddress, web3)
 
       const txReceipt = await nftFactory.createNftErc20WithPool(
         factoryOwner,
-        NFT_DATA,
+        nftData,
         ercParams,
         poolParams
       )
