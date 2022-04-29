@@ -294,21 +294,6 @@ describe('Pool unit test', () => {
       assert(tx != null)
     })
 
-    it('#joinPool- user2 should add liquidity, receiving LP tokens', async () => {
-      const BPTAmountOut = '0.01'
-      const maxAmountsIn = [
-        '50', // Amounts IN
-        '50' // Amounts IN
-      ]
-
-      await approve(web3, user2, erc20Token, poolAddress, '50')
-      await approve(web3, user2, contracts.daiAddress, poolAddress, '50')
-      const tx = await pool.joinPool(user2, poolAddress, BPTAmountOut, maxAmountsIn)
-      assert(tx != null)
-      expect(await pool.sharesBalance(user2, poolAddress)).to.equal(BPTAmountOut)
-      expect(tx.events.LOG_JOIN.event === 'LOG_JOIN')
-      expect(tx.events.LOG_BPT.event === 'LOG_BPT')
-    })
     it('#joinswapExternAmountIn- user2 should add liquidity, receiving LP tokens', async () => {
       const daiAmountIn = '100'
       const minBPTOut = '0.1'
@@ -331,21 +316,6 @@ describe('Pool unit test', () => {
       expect(tx.events.LOG_JOIN[0].returnValues.bptAmount).to.equal(
         tx.events.LOG_JOIN[1].returnValues.bptAmount
       )
-    })
-
-    it('#exitPool- user2 exit the pool receiving both tokens, burning LP', async () => {
-      const BPTAmountIn = '0.5'
-      const minAmountOut = [
-        '1', // min amount out for OCEAN AND DT
-        '1'
-      ]
-
-      const tx = await pool.exitPool(user2, poolAddress, BPTAmountIn, minAmountOut)
-
-      assert(tx != null)
-
-      expect(tx.events.LOG_EXIT[0].returnValues.tokenOut).to.equal(erc20Token)
-      expect(tx.events.LOG_EXIT[1].returnValues.tokenOut).to.equal(contracts.daiAddress)
     })
 
     it('#exitswapPoolAmountIn- user2 exit the pool receiving only DAI', async () => {
@@ -826,25 +796,6 @@ describe('Pool unit test', () => {
       // console.log(tx.events)
     })
 
-    it('#joinPool- user2 should add liquidity, receiving LP tokens', async () => {
-      const BPTAmountOut = '0.01'
-      const maxAmountsIn = [
-        '50', // Amounts IN
-        '50' // Amounts IN
-      ]
-
-      await approve(web3, user2, erc20Token, poolAddress, '50')
-      await approve(web3, user2, contracts.usdcAddress, poolAddress, '50')
-      const tx = await pool.joinPool(user2, poolAddress, BPTAmountOut, maxAmountsIn)
-      assert(tx != null)
-      expect(await pool.sharesBalance(user2, poolAddress)).to.equal(BPTAmountOut)
-      expect(tx.events.LOG_JOIN.event === 'LOG_JOIN')
-      expect(tx.events.LOG_BPT.event === 'LOG_BPT')
-
-      // console.log(tx)
-      // console.log(tx.events.LOG_JOIN)
-      // console.log(tx.events.LOG_BPT)
-    })
     it('#joinswapExternAmountIn- user2 should add liquidity, receiving LP tokens', async () => {
       const usdcAmountIn = '100'
       const minBPTOut = '0.1'
@@ -865,21 +816,6 @@ describe('Pool unit test', () => {
       expect(tx.events.LOG_JOIN[0].returnValues.bptAmount).to.equal(
         tx.events.LOG_JOIN[1].returnValues.bptAmount
       )
-    })
-
-    it('#exitPool- user2 exit the pool receiving both tokens, burning LP', async () => {
-      const BPTAmountIn = '0.5'
-      const minAmountOut = [
-        '1', // min amount out for USDC AND DT
-        '1'
-      ]
-
-      const tx = await pool.exitPool(user2, poolAddress, BPTAmountIn, minAmountOut)
-
-      assert(tx != null)
-
-      expect(tx.events.LOG_EXIT[0].returnValues.tokenOut).to.equal(erc20Token)
-      expect(tx.events.LOG_EXIT[1].returnValues.tokenOut).to.equal(contracts.usdcAddress)
     })
 
     it('#exitswapPoolAmountIn- user2 exit the pool receiving only USDC', async () => {
