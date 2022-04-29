@@ -437,11 +437,6 @@ describe('SideStaking unit test', () => {
       ).to.equal(initialBlock.toString())
     })
 
-    it('#getvestingEndBlock ', async () => {
-      expect(
-        await sideStaking.getvestingEndBlock(sideStakingAddress, erc20Token)
-      ).to.equal((initialBlock + vestedBlocks).toString())
-    })
     it('#getvestingAmountSoFar ', async () => {
       expect(
         await sideStaking.getvestingAmountSoFar(sideStakingAddress, erc20Token)
