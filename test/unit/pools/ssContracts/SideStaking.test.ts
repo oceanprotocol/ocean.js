@@ -234,27 +234,6 @@ describe('SideStaking unit test', () => {
       ).to.equal('0')
     })
 
-    it('#getVesting ', async () => {
-      expect(await erc20Contract.methods.balanceOf(factoryOwner).call()).to.equal('0')
-
-      const tx = await sideStaking.getVesting(
-        factoryOwner,
-        sideStakingAddress,
-        erc20Token
-      )
-      const collector = await erc20Contract.methods.getPaymentCollector().call()
-      expect(
-        await sideStaking.unitsToAmount(
-          erc20Token,
-          await erc20Contract.methods.balanceOf(collector).call()
-        )
-      ).to.equal(await sideStaking.getvestingAmountSoFar(sideStakingAddress, erc20Token))
-
-      expect(
-        await sideStaking.getvestingLastBlock(sideStakingAddress, erc20Token)
-      ).to.equal((await web3.eth.getBlockNumber()).toString())
-    })
-
     it('#swapExactAmountIn - should swap', async () => {
       await daiContract.methods
         .transfer(user2, web3.utils.toWei('1000'))
@@ -423,7 +402,7 @@ describe('SideStaking unit test', () => {
 
     it('#getvestingAmount ', async () => {
       expect(await sideStaking.getvestingAmount(sideStakingAddress, erc20Token)).to.equal(
-        '10000'
+        '0'
       )
     })
     it('#getvestingLastBlock ', async () => {
@@ -436,27 +415,6 @@ describe('SideStaking unit test', () => {
       expect(
         await sideStaking.getvestingAmountSoFar(sideStakingAddress, erc20Token)
       ).to.equal('0')
-    })
-
-    it('#getVesting ', async () => {
-      expect(await erc20Contract.methods.balanceOf(factoryOwner).call()).to.equal('0')
-
-      const tx = await sideStaking.getVesting(
-        factoryOwner,
-        sideStakingAddress,
-        erc20Token
-      )
-      const collector = await erc20Contract.methods.getPaymentCollector().call()
-      expect(
-        await sideStaking.unitsToAmount(
-          erc20Token,
-          await erc20Contract.methods.balanceOf(collector).call()
-        )
-      ).to.equal(await sideStaking.getvestingAmountSoFar(sideStakingAddress, erc20Token))
-
-      expect(
-        await sideStaking.getvestingLastBlock(sideStakingAddress, erc20Token)
-      ).to.equal((await web3.eth.getBlockNumber()).toString())
     })
 
     it('#swapExactAmountIn - should swap', async () => {
