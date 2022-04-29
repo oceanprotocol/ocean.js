@@ -219,7 +219,7 @@ describe('SideStaking unit test', () => {
 
     it('#getvestingAmount ', async () => {
       expect(await sideStaking.getvestingAmount(sideStakingAddress, erc20Token)).to.equal(
-        '10000'
+        '0'
       )
     })
     it('#getvestingLastBlock ', async () => {
