@@ -79,6 +79,7 @@ import {
   Datatoken,
   downloadFile,
   Erc20CreateParams,
+  FreCreationParams,
   getHash,
   Nft,
   NftCreateData,
@@ -113,6 +114,7 @@ describe('Marketplace flow tests', async () => {
   let poolAddress: string
   let freNftAddress: string
   let freDatatokenAddress: string
+  let freAddress: string
   let dispenserNftAddress: string
   let dispenserDatatokenAddress: string
 
@@ -428,6 +430,59 @@ describe('Marketplace flow tests', async () => {
     } catch (e) {
       assert.fail('Download failed')
     }
+  })
+  /// ```
+
+  it('Publish a dataset (create NFT + Datatoken) with a fixed rate exchange', async () => {
+    /// ```Typescript
+    const factory = new NftFactory(contracts.erc721FactoryAddress, web3)
+
+    const nftParams: NftCreateData = {
+      name: FRE_NFT_NAME,
+      symbol: FRE_NFT_SYMBOL,
+      templateIndex: 1,
+      tokenURI: '',
+      transferable: true,
+      owner: publisherAccount
+    }
+
+    const erc20Params: Erc20CreateParams = {
+      templateIndex: 1,
+      cap: '100000',
+      feeAmount: '0',
+      paymentCollector: ZERO_ADDRESS,
+      feeToken: ZERO_ADDRESS,
+      minter: publisherAccount,
+      mpFeeAddress: ZERO_ADDRESS
+    }
+
+    const freParams: FreCreationParams = {
+      fixedRateAddress: contracts.fixedRateAddress,
+      baseTokenAddress: contracts.oceanAddress,
+      owner: publisherAccount,
+      marketFeeCollector: publisherAccount,
+      baseTokenDecimals: 18,
+      datatokenDecimals: 18,
+      fixedRate: '1',
+      marketFee: '0.001',
+      allowedConsumer: ZERO_ADDRESS,
+      withMint: false
+    }
+
+    const tx = await factory.createNftErc20WithFixedRate(
+      publisherAccount,
+      nftParams,
+      erc20Params,
+      freParams
+    )
+
+    freNftAddress = tx.events.NFTCreated.returnValues[0]
+    freDatatokenAddress = tx.events.TokenCreated.returnValues[0]
+    freAddress = tx.events.NewFixedRate.returnValues[0]
+
+    console.log(`Fixed rate exchange NFT address: ${poolNftAddress}`)
+    console.log(`Fixed rate exchange Datatoken address: ${poolDatatokenAddress}`)
+    console.log(`Fixed rate exchange address: ${poolAddress}`)
   })
   /// ```
 })
