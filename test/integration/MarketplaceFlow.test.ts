@@ -79,6 +79,7 @@ import {
   Datatoken,
   downloadFile,
   Erc20CreateParams,
+  FixedRateExchange,
   FreCreationParams,
   getHash,
   Nft,
@@ -115,6 +116,7 @@ describe('Marketplace flow tests', async () => {
   let freNftAddress: string
   let freDatatokenAddress: string
   let freAddress: string
+  let freId: string
   let dispenserNftAddress: string
   let dispenserDatatokenAddress: string
 
@@ -322,7 +324,7 @@ describe('Marketplace flow tests', async () => {
   })
   /// ```
 
-  it('Marketplace displays asset for sale', async () => {
+  it('Marketplace displays pool asset for sale', async () => {
     /// ```Typescript
     const pool = new Pool(web3)
     const prices = await pool.getAmountInExactOut(
@@ -336,7 +338,7 @@ describe('Marketplace flow tests', async () => {
   })
   /// ```
 
-  it('Consumer buys data asset, and downloads it', async () => {
+  it('Consumer buys a pool data asset, and downloads it', async () => {
     /// ```Typescript
     const datatoken = new Datatoken(web3)
 
@@ -387,7 +389,7 @@ describe('Marketplace flow tests', async () => {
       consumerAccount,
       providerUrl
     )
-    console.log(initializeData)
+
     const providerFees: ProviderFees = {
       providerFeeAddress: initializeData.providerFee.providerFeeAddress,
       providerFeeToken: initializeData.providerFee.providerFeeToken,
@@ -399,7 +401,7 @@ describe('Marketplace flow tests', async () => {
       validUntil: initializeData.providerFee.validUntil
     }
     // make the payment
-    const txid = await datatoken.startOrder(
+    const tx = await datatoken.startOrder(
       poolDatatokenAddress,
       consumerAccount,
       consumerAccount,
@@ -412,7 +414,7 @@ describe('Marketplace flow tests', async () => {
       consumerAccount,
       DDO.services[0].id,
       0,
-      txid.transactionHash,
+      tx.transactionHash,
       providerUrl,
       web3
     )
@@ -478,11 +480,148 @@ describe('Marketplace flow tests', async () => {
 
     freNftAddress = tx.events.NFTCreated.returnValues[0]
     freDatatokenAddress = tx.events.TokenCreated.returnValues[0]
-    freAddress = tx.events.NewFixedRate.returnValues[0]
+    freAddress = tx.events.NewFixedRate.returnValues.exchangeContract
+    freId = tx.events.NewFixedRate.returnValues.exchangeId
 
-    console.log(`Fixed rate exchange NFT address: ${poolNftAddress}`)
-    console.log(`Fixed rate exchange Datatoken address: ${poolDatatokenAddress}`)
-    console.log(`Fixed rate exchange address: ${poolAddress}`)
+    console.log(`Fixed rate exchange NFT address: ${freNftAddress}`)
+    console.log(`Fixed rate exchange Datatoken address: ${freDatatokenAddress}`)
+    console.log(`Fixed rate exchange address: ${freAddress}`)
+    console.log(`Fixed rate exchange Id: ${freId}`)
+  })
+  /// ```
+
+  it('Set metadata in the Fixed Rate Exchange NFT', async () => {
+    /// ```Typescript
+    const nft = new Nft(web3)
+
+    // update ddo and set the right did
+    DDO.chainId = await web3.eth.getChainId()
+    DDO.id =
+      'did:op:' +
+      SHA256(web3.utils.toChecksumAddress(freNftAddress) + DDO.chainId.toString(10))
+    DDO.nftAddress = freNftAddress
+    // encrypt file(s) using provider
+    const encryptedFiles = await ProviderInstance.encrypt(ASSET_URL, providerUrl)
+    DDO.services[0].files = await encryptedFiles
+    DDO.services[0].datatokenAddress = freDatatokenAddress
+
+    console.log(`DID: ${DDO.id}`)
+
+    const providerResponse = await ProviderInstance.encrypt(DDO, providerUrl)
+    const encryptedDDO = await providerResponse
+    const metadataHash = getHash(JSON.stringify(DDO))
+    await nft.setMetadata(
+      freNftAddress,
+      publisherAccount,
+      0,
+      providerUrl,
+      '',
+      '0x2',
+      encryptedDDO,
+      '0x' + metadataHash
+    )
+  })
+  /// ```
+
+  it('Marketplace displays fixed rate asset for sale', async () => {
+    /// ```Typescript
+    const fixedRate = new FixedRateExchange(web3, freAddress)
+    const oceanAmount = await (
+      await fixedRate.calcBaseInGivenOutDT(freId, '1')
+    ).baseTokenAmount
+    console.log(`Price of 1 ${FRE_NFT_SYMBOL} is ${oceanAmount} OCEAN`)
+  })
+  /// ```
+
+  it('Consumer buys a fixed rate asset data asset, and downloads it', async () => {
+    /// ```Typescript
+    const datatoken = new Datatoken(web3)
+    const DATATOKEN_AMOUNT = '10000'
+
+    await datatoken.mint(freDatatokenAddress, publisherAccount, DATATOKEN_AMOUNT)
+
+    const consumerETHBalance = await web3.eth.getBalance(consumerAccount)
+    console.log(`Consumer ETH balance: ${consumerETHBalance}`)
+    let consumerOCEANBalance = await balance(
+      web3,
+      contracts.oceanAddress,
+      consumerAccount
+    )
+    console.log(`Consumer OCEAN balance before swap: ${consumerOCEANBalance}`)
+    let consumerDTBalance = await balance(web3, freDatatokenAddress, consumerAccount)
+    console.log(`Consumer ${FRE_NFT_SYMBOL} balance before swap: ${consumerDTBalance}`)
+
+    await approve(web3, consumerAccount, contracts.oceanAddress, freAddress, '100')
+    await approve(
+      web3,
+      publisherAccount,
+      freDatatokenAddress,
+      freAddress,
+      DATATOKEN_AMOUNT
+    )
+
+    const fixedRate = new FixedRateExchange(web3, freAddress)
+    await fixedRate.buyDT(consumerAccount, freId, '1', '2')
+
+    consumerOCEANBalance = await balance(web3, contracts.oceanAddress, consumerAccount)
+    console.log(`Consumer OCEAN balance after swap: ${consumerOCEANBalance}`)
+    consumerDTBalance = await balance(web3, freDatatokenAddress, consumerAccount)
+    console.log(`Consumer ${FRE_NFT_SYMBOL} balance after swap: ${consumerDTBalance}`)
+
+    const resolvedDDO = await aquarius.waitForAqua(DDO.id)
+    assert(resolvedDDO, 'Cannot fetch DDO from Aquarius')
+
+    // initialize provider
+    const initializeData = await ProviderInstance.initialize(
+      resolvedDDO.id,
+      resolvedDDO.services[0].id,
+      0,
+      consumerAccount,
+      providerUrl
+    )
+
+    const providerFees: ProviderFees = {
+      providerFeeAddress: initializeData.providerFee.providerFeeAddress,
+      providerFeeToken: initializeData.providerFee.providerFeeToken,
+      providerFeeAmount: initializeData.providerFee.providerFeeAmount,
+      v: initializeData.providerFee.v,
+      r: initializeData.providerFee.r,
+      s: initializeData.providerFee.s,
+      providerData: initializeData.providerFee.providerData,
+      validUntil: initializeData.providerFee.validUntil
+    }
+    // make the payment
+    const tx = await datatoken.startOrder(
+      freDatatokenAddress,
+      consumerAccount,
+      consumerAccount,
+      0,
+      providerFees
+    )
+    // get the url
+    const downloadURL = await ProviderInstance.getDownloadUrl(
+      DDO.id,
+      consumerAccount,
+      DDO.services[0].id,
+      0,
+      tx.transactionHash,
+      providerUrl,
+      web3
+    )
+
+    console.log(`Download URL: ${downloadURL}`)
+
+    consumerOCEANBalance = await balance(web3, contracts.oceanAddress, consumerAccount)
+    console.log(`Consumer OCEAN balance after order: ${consumerOCEANBalance}`)
+    consumerDTBalance = await balance(web3, freDatatokenAddress, consumerAccount)
+    console.log(`Consumer ${FRE_NFT_SYMBOL} balance after order: ${consumerDTBalance}`)
+
+    try {
+      const fileData = await downloadFile(downloadURL)
+      console.log(fileData)
+    } catch (e) {
+      assert.fail('Download failed')
+    }
   })
   /// ```
 })
