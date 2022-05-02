@@ -110,7 +110,7 @@ describe('Marketplace flow tests', async () => {
   let providerUrl: any
   let publisherAccount: string
   let consumerAccount: string
-  let liquidityAccount: string
+  let stakerAccount: string
   let contracts: Addresses
   let poolNftAddress: string
   let poolDatatokenAddress: string
@@ -189,11 +189,11 @@ describe('Marketplace flow tests', async () => {
     const accounts = await web3.eth.getAccounts()
     publisherAccount = accounts[0]
     consumerAccount = accounts[1]
-    liquidityAccount = accounts[2]
+    stakerAccount = accounts[2]
 
     console.log(`Publisher account address: ${publisherAccount}`)
     console.log(`Consumer account address: ${consumerAccount}`)
-    console.log(`Liquidity account address: ${liquidityAccount}`)
+    console.log(`Staker account address: ${stakerAccount}`)
   })
   /// ```
 
@@ -203,7 +203,7 @@ describe('Marketplace flow tests', async () => {
   })
   /// ```
 
-  it('We send some OCEAN to consumer and liquidity accounts', async () => {
+  it('We send some OCEAN to consumer and staker accounts', async () => {
     /// ```Typescript
     const oceanContract = new web3.eth.Contract(
       MockERC20.abi as AbiItem[],
@@ -215,7 +215,7 @@ describe('Marketplace flow tests', async () => {
       .send({ from: publisherAccount })
 
     await oceanContract.methods
-      .transfer(liquidityAccount, web3.utils.toWei('100'))
+      .transfer(stakerAccount, web3.utils.toWei('100'))
       .send({ from: publisherAccount })
   })
   /// ```
@@ -321,9 +321,9 @@ describe('Marketplace flow tests', async () => {
     /// ```Typescript
     const pool = new Pool(web3)
 
-    await approve(web3, liquidityAccount, contracts.oceanAddress, poolAddress, '5', true)
+    await approve(web3, stakerAccount, contracts.oceanAddress, poolAddress, '5', true)
 
-    await pool.joinswapExternAmountIn(liquidityAccount, poolAddress, '5', '0.1')
+    await pool.joinswapExternAmountIn(stakerAccount, poolAddress, '5', '0.1')
   })
   /// ```
 
