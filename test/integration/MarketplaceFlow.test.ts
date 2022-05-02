@@ -77,6 +77,8 @@ import {
   balance,
   Config,
   Datatoken,
+  Dispenser,
+  DispenserCreationParams,
   downloadFile,
   Erc20CreateParams,
   FixedRateExchange,
@@ -119,6 +121,7 @@ describe('Marketplace flow tests', async () => {
   let freId: string
   let dispenserNftAddress: string
   let dispenserDatatokenAddress: string
+  let dispenserAddress: string
 
   const POOL_NFT_NAME = 'Datatoken 1'
   const POOL_NFT_SYMBOL = 'DT1'
@@ -281,7 +284,7 @@ describe('Marketplace flow tests', async () => {
   })
   /// ```
 
-  it('Set metadata in the Pool NFT', async () => {
+  it('Set metadata in the pool NFT', async () => {
     /// ```Typescript
     const nft = new Nft(web3)
 
@@ -490,7 +493,7 @@ describe('Marketplace flow tests', async () => {
   })
   /// ```
 
-  it('Set metadata in the Fixed Rate Exchange NFT', async () => {
+  it('Set metadata in the fixed rate exchange NFT', async () => {
     /// ```Typescript
     const nft = new Nft(web3)
 
@@ -615,6 +618,168 @@ describe('Marketplace flow tests', async () => {
     console.log(`Consumer OCEAN balance after order: ${consumerOCEANBalance}`)
     consumerDTBalance = await balance(web3, freDatatokenAddress, consumerAccount)
     console.log(`Consumer ${FRE_NFT_SYMBOL} balance after order: ${consumerDTBalance}`)
+
+    try {
+      const fileData = await downloadFile(downloadURL)
+      console.log(fileData)
+    } catch (e) {
+      assert.fail('Download failed')
+    }
+  })
+  /// ```
+
+  it('Publish a dataset (create NFT + Datatoken) with a dipenser', async () => {
+    /// ```Typescript
+    const factory = new NftFactory(contracts.erc721FactoryAddress, web3)
+
+    const nftParams: NftCreateData = {
+      name: DISP_NFT_NAME,
+      symbol: DISP_NFT_SYMBOL,
+      templateIndex: 1,
+      tokenURI: '',
+      transferable: true,
+      owner: publisherAccount
+    }
+
+    const erc20Params: Erc20CreateParams = {
+      templateIndex: 1,
+      cap: '100000',
+      feeAmount: '0',
+      paymentCollector: ZERO_ADDRESS,
+      feeToken: ZERO_ADDRESS,
+      minter: publisherAccount,
+      mpFeeAddress: ZERO_ADDRESS
+    }
+
+    const dispenserParams: DispenserCreationParams = {
+      dispenserAddress: contracts.dispenserAddress,
+      maxTokens: '1',
+      maxBalance: '1',
+      withMint: true,
+      allowedSwapper: ZERO_ADDRESS
+    }
+
+    const tx = await factory.createNftErc20WithDispenser(
+      publisherAccount,
+      nftParams,
+      erc20Params,
+      dispenserParams
+    )
+
+    dispenserNftAddress = tx.events.NFTCreated.returnValues[0]
+    dispenserDatatokenAddress = tx.events.TokenCreated.returnValues[0]
+    dispenserAddress = tx.events.DispenserCreated.returnValues[0]
+
+    console.log(`Dispenser NFT address: ${dispenserNftAddress}`)
+    console.log(`Dispenser Datatoken address: ${dispenserDatatokenAddress}`)
+    console.log(`Dispenser address: ${dispenserAddress}`)
+  })
+  /// ```
+
+  it('Set metadata in the dispenser NFT', async () => {
+    /// ```Typescript
+    const nft = new Nft(web3)
+
+    // update ddo and set the right did
+    DDO.chainId = await web3.eth.getChainId()
+    DDO.id =
+      'did:op:' +
+      SHA256(web3.utils.toChecksumAddress(dispenserNftAddress) + DDO.chainId.toString(10))
+    DDO.nftAddress = dispenserNftAddress
+    // encrypt file(s) using provider
+    const encryptedFiles = await ProviderInstance.encrypt(ASSET_URL, providerUrl)
+    DDO.services[0].files = await encryptedFiles
+    DDO.services[0].datatokenAddress = dispenserDatatokenAddress
+
+    console.log(`DID: ${DDO.id}`)
+
+    const providerResponse = await ProviderInstance.encrypt(DDO, providerUrl)
+    const encryptedDDO = await providerResponse
+    const metadataHash = getHash(JSON.stringify(DDO))
+    await nft.setMetadata(
+      dispenserNftAddress,
+      publisherAccount,
+      0,
+      providerUrl,
+      '',
+      '0x2',
+      encryptedDDO,
+      '0x' + metadataHash
+    )
+  })
+  /// ```
+
+  it('Consumer gets a dispenser data asset, and downloads it', async () => {
+    /// ```Typescript
+    const datatoken = new Datatoken(web3)
+    const dispenser = new Dispenser(web3, contracts.dispenserAddress)
+
+    let consumerDTBalance = await balance(
+      web3,
+      dispenserDatatokenAddress,
+      consumerAccount
+    )
+    console.log(
+      `Consumer ${DISP_NFT_SYMBOL} balance before dispense: ${consumerDTBalance}`
+    )
+
+    await dispenser.dispense(
+      dispenserDatatokenAddress,
+      consumerAccount,
+      '1',
+      consumerAccount
+    )
+
+    consumerDTBalance = await balance(web3, dispenserDatatokenAddress, consumerAccount)
+    console.log(
+      `Consumer ${DISP_NFT_SYMBOL} balance after dispense: ${consumerDTBalance}`
+    )
+
+    const resolvedDDO = await aquarius.waitForAqua(DDO.id)
+    assert(resolvedDDO, 'Cannot fetch DDO from Aquarius')
+
+    // initialize provider
+    const initializeData = await ProviderInstance.initialize(
+      resolvedDDO.id,
+      resolvedDDO.services[0].id,
+      0,
+      consumerAccount,
+      providerUrl
+    )
+
+    const providerFees: ProviderFees = {
+      providerFeeAddress: initializeData.providerFee.providerFeeAddress,
+      providerFeeToken: initializeData.providerFee.providerFeeToken,
+      providerFeeAmount: initializeData.providerFee.providerFeeAmount,
+      v: initializeData.providerFee.v,
+      r: initializeData.providerFee.r,
+      s: initializeData.providerFee.s,
+      providerData: initializeData.providerFee.providerData,
+      validUntil: initializeData.providerFee.validUntil
+    }
+    // make the payment
+    const tx = await datatoken.startOrder(
+      dispenserDatatokenAddress,
+      consumerAccount,
+      consumerAccount,
+      0,
+      providerFees
+    )
+    // get the url
+    const downloadURL = await ProviderInstance.getDownloadUrl(
+      DDO.id,
+      consumerAccount,
+      DDO.services[0].id,
+      0,
+      tx.transactionHash,
+      providerUrl,
+      web3
+    )
+
+    console.log(`Download URL: ${downloadURL}`)
+
+    consumerDTBalance = await balance(web3, dispenserDatatokenAddress, consumerAccount)
+    console.log(`Consumer ${DISP_NFT_SYMBOL} balance after order: ${consumerDTBalance}`)
 
     try {
       const fileData = await downloadFile(downloadURL)
