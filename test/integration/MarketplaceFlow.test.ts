@@ -11,9 +11,10 @@
 /// 1. Initialize services
 /// 2. Create a new node.js project
 /// 3. Install dependancies
-/// 4. Publish Data NFT, Datatoken & Pool
-/// 5. Market displays the asset for sale
-/// 6. Consumer buys data asset, and downloads it
+/// 4. Import dependencies and add variables and constants
+/// 4. Publish Data NFT and a Datatoken with a liquidity pool
+/// 5. Publish Data NFT and a Datatoken with a fixed rate exchange
+/// 6. Publish Data NFT and a Datatoken with a dispenser
 
 /// Let's go through each step.
 
@@ -59,7 +60,7 @@
 /// npm install
 /// ```
 
-/// ## 4. Publish Data NFT, Datatoken & Pool
+/// ## 4. Import dependencies and add variables and constants
 
 /// Now open the `marketplace.js` file in your text editor.
 
@@ -219,6 +220,8 @@ describe('Marketplace flow tests', async () => {
       .send({ from: publisherAccount })
   })
   /// ```
+
+  /// ## 4. Publish Data NFT and a Datatoken with a liquidity pool
 
   it('Publish a dataset (create NFT + Datatoken) with a liquidity pool', async () => {
     /// ```Typescript
@@ -438,6 +441,8 @@ describe('Marketplace flow tests', async () => {
   })
   /// ```
 
+  /// ## 5. Publish Data NFT and a Datatoken with a fixed rate exchange
+
   it('Publish a dataset (create NFT + Datatoken) with a fixed rate exchange', async () => {
     /// ```Typescript
     const factory = new NftFactory(contracts.erc721FactoryAddress, web3)
@@ -627,6 +632,8 @@ describe('Marketplace flow tests', async () => {
     }
   })
   /// ```
+
+  /// ## 6. Publish Data NFT and a Datatoken with a dispenser
 
   it('Publish a dataset (create NFT + Datatoken) with a dipenser', async () => {
     /// ```Typescript
