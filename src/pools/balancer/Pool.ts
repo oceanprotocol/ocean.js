@@ -4,11 +4,11 @@ import { TransactionReceipt } from 'web3-core'
 import { Contract } from 'web3-eth-contract'
 import {
   getFairGasPrice,
-  configHelperNetworks,
   setContractDefaults,
   unitsToAmount,
   amountToUnits,
-  LoggerInstance
+  LoggerInstance,
+  ConfigHelper
 } from '../../utils'
 import BigNumber from 'bignumber.js'
 import PoolTemplate from '@oceanprotocol/contracts/artifacts/contracts/pools/balancer/BPool.sol/BPool.json'
@@ -40,11 +40,16 @@ export class Pool {
   public GASLIMIT_DEFAULT = 1000000
   private config: Config
 
-  constructor(web3: Web3, poolAbi: AbiItem | AbiItem[] = null, config?: Config) {
+  constructor(
+    web3: Web3,
+    network?: string | number,
+    poolAbi: AbiItem | AbiItem[] = null,
+    config?: Config
+  ) {
     if (poolAbi) this.poolAbi = poolAbi
     else this.poolAbi = PoolTemplate.abi as AbiItem[]
     this.web3 = web3
-    this.config = config || configHelperNetworks[0]
+    this.config = config || new ConfigHelper().getConfig(network || 'unknown')
   }
 
   async amountToUnits(

@@ -118,6 +118,7 @@ describe('Fixed Rate unit test', () => {
       fixedRate = new FixedRateExchange(
         web3,
         fixedRateAddress,
+        8996,
         FixedRate.abi as AbiItem[],
         contracts.oceanAddress
       )
@@ -438,6 +439,7 @@ describe('Fixed Rate unit test', () => {
       fixedRate = new FixedRateExchange(
         web3,
         fixedRateAddress,
+        8996,
         FixedRate.abi as AbiItem[],
         contracts.oceanAddress
       )

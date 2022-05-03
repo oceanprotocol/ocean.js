@@ -59,10 +59,10 @@ describe('SideStaking unit test', () => {
     sideStakingAddress = contracts.sideStakingAddress
 
     // initialize Pool instance
-    pool = new Pool(web3, PoolTemplate.abi as AbiItem[])
+    pool = new Pool(web3, 8996, PoolTemplate.abi as AbiItem[])
     assert(pool != null)
     //
-    sideStaking = new SideStaking(web3, SSContract.abi as AbiItem[])
+    sideStaking = new SideStaking(web3, 8996, SSContract.abi as AbiItem[])
     assert(sideStaking != null)
 
     daiContract = new web3.eth.Contract(MockERC20.abi as AbiItem[], contracts.daiAddress)

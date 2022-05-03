@@ -2,12 +2,7 @@ import Web3 from 'web3'
 import { AbiItem } from 'web3-utils/types'
 import { TransactionReceipt } from 'web3-core'
 import { Contract } from 'web3-eth-contract'
-import {
-  LoggerInstance,
-  getFairGasPrice,
-  configHelperNetworks,
-  unitsToAmount
-} from '../../utils'
+import { LoggerInstance, getFairGasPrice, ConfigHelper, unitsToAmount } from '../../utils'
 import SideStakingTemplate from '@oceanprotocol/contracts/artifacts/contracts/pools/ssContracts/SideStaking.sol/SideStaking.json'
 import { Config } from '../../models'
 
@@ -17,11 +12,16 @@ export class SideStaking {
   public GASLIMIT_DEFAULT = 1000000
   public config: Config
 
-  constructor(web3: Web3, ssAbi: AbiItem | AbiItem[] = null, config?: Config) {
+  constructor(
+    web3: Web3,
+    network?: string | number,
+    ssAbi: AbiItem | AbiItem[] = null,
+    config?: Config
+  ) {
     if (ssAbi) this.ssAbi = ssAbi
     else this.ssAbi = SideStakingTemplate.abi as AbiItem[]
     this.web3 = web3
-    this.config = config || configHelperNetworks[0]
+    this.config = config || new ConfigHelper().getConfig(network || 'unknown')
   }
 
   async unitsToAmount(

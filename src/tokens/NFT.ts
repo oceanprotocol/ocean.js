@@ -7,7 +7,7 @@ import {
   getFairGasPrice,
   generateDtName,
   setContractDefaults,
-  configHelperNetworks
+  ConfigHelper
 } from '../utils'
 import { Contract } from 'web3-eth-contract'
 import { MetadataProof } from '../../src/@types'
@@ -33,10 +33,15 @@ export class Nft {
   public startBlock: number
   public config: Config
 
-  constructor(web3: Web3, nftAbi?: AbiItem | AbiItem[], config?: Config) {
+  constructor(
+    web3: Web3,
+    network?: string | number,
+    nftAbi?: AbiItem | AbiItem[],
+    config?: Config
+  ) {
     this.nftAbi = nftAbi || (defaultNftAbi.abi as AbiItem[])
     this.web3 = web3
-    this.config = config || configHelperNetworks[0]
+    this.config = config || new ConfigHelper().getConfig(network || 'unknown')
   }
 
   /**
