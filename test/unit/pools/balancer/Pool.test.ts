@@ -54,7 +54,7 @@ describe('Pool unit test', () => {
     contracts = await deployContracts(web3, factoryOwner)
 
     // initialize Pool instance
-    pool = new Pool(web3, PoolTemplate.abi as AbiItem[])
+    pool = new Pool(web3, 8996, PoolTemplate.abi as AbiItem[])
     assert(pool != null)
 
     daiContract = new web3.eth.Contract(MockERC20.abi as AbiItem[], contracts.daiAddress)
@@ -143,6 +143,7 @@ describe('Pool unit test', () => {
       const nftFactory = new NftFactory(
         contracts.erc721FactoryAddress,
         web3,
+        8996,
         ERC721Factory.abi as AbiItem[]
       )
 
@@ -572,6 +573,7 @@ describe('Pool unit test', () => {
       const nftFactory = new NftFactory(
         contracts.erc721FactoryAddress,
         web3,
+        8996,
         ERC721Factory.abi as AbiItem[]
       )
 
