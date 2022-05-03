@@ -27,9 +27,9 @@ export class Router {
   constructor(
     routerAddress: string,
     web3: Web3,
+    network?: string | number,
     RouterAbi?: AbiItem | AbiItem[],
-    config?: Config,
-    network?: string | number
+    config?: Config
   ) {
     this.routerAddress = routerAddress
     this.RouterAbi = RouterAbi || (defaultRouter.abi as AbiItem[])

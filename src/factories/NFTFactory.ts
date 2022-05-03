@@ -66,9 +66,9 @@ export class NftFactory {
   constructor(
     factory721Address: string,
     web3: Web3,
+    network?: string | number,
     factory721Abi?: AbiItem | AbiItem[],
-    config?: Config,
-    network?: string | number
+    config?: Config
   ) {
     this.factory721Address = factory721Address
     this.factory721Abi = factory721Abi || (defaultFactory721Abi.abi as AbiItem[])

@@ -42,9 +42,9 @@ export class Pool {
 
   constructor(
     web3: Web3,
+    network?: string | number,
     poolAbi: AbiItem | AbiItem[] = null,
-    config?: Config,
-    network?: string | number
+    config?: Config
   ) {
     if (poolAbi) this.poolAbi = poolAbi
     else this.poolAbi = PoolTemplate.abi as AbiItem[]

@@ -16,9 +16,9 @@ export class SideStaking {
 
   constructor(
     web3: Web3,
+    network?: string | number,
     ssAbi: AbiItem | AbiItem[] = null,
-    config?: Config,
-    network?: string | number
+    config?: Config
   ) {
     if (ssAbi) this.ssAbi = ssAbi
     else this.ssAbi = SideStakingTemplate.abi as AbiItem[]

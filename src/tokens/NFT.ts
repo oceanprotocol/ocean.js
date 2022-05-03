@@ -35,9 +35,9 @@ export class Nft {
 
   constructor(
     web3: Web3,
+    network?: string | number,
     nftAbi?: AbiItem | AbiItem[],
-    config?: Config,
-    network?: string | number
+    config?: Config
   ) {
     this.nftAbi = nftAbi || (defaultNftAbi.abi as AbiItem[])
     this.web3 = web3

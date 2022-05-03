@@ -61,10 +61,10 @@ export class Datatoken {
    */
   constructor(
     web3: Web3,
+    network?: string | number,
     datatokensAbi?: AbiItem | AbiItem[],
     datatokensEnterpriseAbi?: AbiItem | AbiItem[],
-    config?: Config,
-    network?: string | number
+    config?: Config
   ) {
     this.web3 = web3
     this.datatokensAbi = datatokensAbi || (defaultDatatokensAbi.abi as AbiItem[])

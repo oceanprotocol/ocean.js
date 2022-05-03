@@ -75,10 +75,10 @@ export class FixedRateExchange {
   constructor(
     web3: Web3,
     fixedRateAddress: string,
+    network?: string | number,
     fixedRateExchangeAbi: AbiItem | AbiItem[] = null,
     oceanAddress: string = null,
-    config?: Config,
-    network?: string | number
+    config?: Config
   ) {
     this.web3 = web3
     this.config = config || new ConfigHelper().getConfig(network || 'unknown')

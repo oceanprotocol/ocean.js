@@ -39,10 +39,10 @@ export class Dispenser {
    */
   constructor(
     web3: Web3,
+    network?: string | number,
     dispenserAddress: string = null,
     dispenserAbi: AbiItem | AbiItem[] = null,
-    config?: Config,
-    network?: string | number
+    config?: Config
   ) {
     this.web3 = web3
     this.dispenserAddress = dispenserAddress
