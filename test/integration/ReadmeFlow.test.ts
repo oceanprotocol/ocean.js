@@ -3,33 +3,56 @@
 /// ## Introduction
 
 /// The following guide runs you through the process of using ocean.js to publish and then consume a dataset. The code examples below are all working and you can learn how to publish by following along.
-/// The process involves creating a Data NFT (which represents the base-IP on-chain) and a datatoken (which will be used to purchase the dataset). This guide provides all the code you need and no prior knowledge is required. It is helpful if you have some experience with javascript but it is not necessary. 
+/// The process involves creating a Data NFT (which represents the base-IP on-chain) and a datatoken (which will be used to purchase the dataset). This guide provides all the code you need and no prior knowledge is required. It is helpful if you have some experience with javascript but it is not necessary.
 
-/// Selling your data over the blockchain puts you in charge of how it is used and can be a great source of passive income. There are many AI startups that have deep expertise in machine learning but need more data to improve their models. Selling your data via the blockchain gives you a level of security that you would be unable to achieve if you were selling via a centralised marketplace. 
+/// Selling your data over the blockchain puts you in charge of how it is used and can be a great source of passive income. There are many AI startups that have deep expertise in machine learning but need more data to improve their models. Selling your data via the blockchain gives you a level of security that you would be unable to achieve if you were selling via a centralised marketplace.
 
 /// In this guide we'll be making use of the Ocean.js library. Ocean Protocol provides you with everything you need to quickly get setup and start selling data over the blockchain.
 
-/// If you have any questions or issues at any point while following along to this article please reach out to us on [discord](https://discord.gg/TnXjkR5). 
+/// If you have any questions or issues at any point while following along to this article please reach out to us on [discord](https://discord.gg/TnXjkR5).
 
 /// Here are the steps we will be following throughout the article:
 
 /// 1. Prerequisites
-/// 2. Initialize services
-/// 3. Create a new node.js project
-/// 4. Install dependencies
-/// 5. Create a config file and update contract addresses
-/// 6. Publish a new datatoken
-/// 7. Mint 200 tokens
-/// 8. Publish a dataset
-/// 9. Allow the marketplace to sell your datatokens
+/// 2. Create a new node.js project
+/// 3. Install dependencies
+/// 4. Define files and metadata
+/// 5. Publish a dataset
 
 /// Let's go through each step:
-/// Start by importing all of the necessary dependencies
+
+/// ## 1. Prerequisites
+/// Before we start it is important that you have all of the necessary prerequisites installed on your computer.
+/// - **A Unix based operating system (Linux or Mac)**. If you are a Windows user you can try to run linux inside a virtual machine but this is outside of the scope of this article.
+/// - **Git**. Instructions for installing Git can be found here: https://git-scm.com/book/en/v2/Getting-Started-Installing-Git
+/// - **Node.js** can be downloaded from here: https://nodejs.org/en/download/
+/// - **Docker** can be installed from here: https://docs.docker.com/get-docker/. Please note that Docker must run as a non-root user, you can set this up by following these instructions: https://docs.docker.com/engine/install/linux-postinstall/
+
+/// ## 2. Create a new node.js project
+
+/// You are now ready to start your project. We start by creating a new folder and initiating a new Node.js project. Open a new terminal and enter the following commands:
+
+/// ```bash
+/// mkdir quickstart
+/// cd quickstart
+/// npm init
+/// # Answer the questions in the command line prompt
+/// cat > index.js
+/// # On linux press CTRL + D to save
+/// ```
+
+/// ## 3. Install dependencies
+
+/// ```bash
+/// npm install @oceanprotocol/lib
+/// ```
+
+/// Now you're ready to start coding! Let's start by opening the index.js file and importing all of the necessary dependencies
 
 /// ```Typescript
 import { assert } from 'chai'
 import { SHA256 } from 'crypto-js'
-import { web3, getTestConfig, getAddresses } from '../config'
+import { web3, getTestConfig, getAddresses } from '../config' // We'll be using the test config setup in this example
 import {
   Config,
   ProviderInstance,
@@ -43,6 +66,8 @@ import {
 } from '../../src'
 import { ProviderFees, Erc20CreateParams } from '../../src/@types'
 /// ```
+
+/// ## 4. Define files and metadata
 
 /// We will need a file to publish, so here we define the file that we intend to publish.
 
@@ -90,19 +115,14 @@ const ddo = {
 }
 /// ```
 
+/// ## 5. Publish a dataset
+
 /// ```Typescript
 describe('Simple Publish & Consume Flow', async () => {
-  let config: Config
-  let addresses: any
-  let aquarius: Aquarius
-  let providerUrl: any
-
-  before(async () => {
-    config = await getTestConfig(web3)
-    addresses = getAddresses()
-    aquarius = new Aquarius(config.metadataCacheUri)
-    providerUrl = config.providerUri
-  })
+  const config: Config = await getTestConfig(web3)
+  const addresses: any = getAddresses()
+  const aquarius: Aquarius = new Aquarius(config.metadataCacheUri)
+  const providerUrl: any = config.providerUri
 
   it('should publish a dataset (create NFT + ERC20)', async () => {
     const nft = new Nft(web3)
@@ -136,7 +156,12 @@ describe('Simple Publish & Consume Flow', async () => {
     const erc721Address = result.events.NFTCreated.returnValues[0]
     const datatokenAddress = result.events.TokenCreated.returnValues[0]
 
-    // create the files encrypted string
+    /// ```
+
+    /// ### Create the files encrypted string
+
+    /// ```Typescript
+
     let providerResponse = await ProviderInstance.encrypt(assetUrl, providerUrl)
     ddo.services[0].files = await providerResponse
     ddo.services[0].datatokenAddress = datatokenAddress
