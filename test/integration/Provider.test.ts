@@ -35,10 +35,6 @@ describe('Provider tests', async () => {
 
   it('Alice tests compute environments', async () => {
     const computeEnvs = await providerInstance.getComputeEnvironments(config.providerUri)
-    console.log(computeEnvs)
+    assert(computeEnvs, 'No Compute environments found')
   })
-
-  // encrypt
-  // checkDidFiles
-  // getComputeEnvironments
 })
