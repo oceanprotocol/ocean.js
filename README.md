@@ -24,7 +24,7 @@ This is in alpha state. If you run into problems, please open up a [new issue](h
 
 - [📚 Prerequisites](#-prerequisites)
 - [🏗 Installation](#-installation)
-- [🏄 Quickstart](#-quickstart): simple flow, marketplace, compute-to-data, more
+- [📖 Learn More](#-learn-more)
 - [🦑 Development](#-development)
 - [✨ Code Style](#-code-style)
 - [👩‍🔬 Testing](#-testing)
@@ -42,66 +42,18 @@ This is in alpha state. If you run into problems, please open up a [new issue](h
 - Docker ([Managed as a non-root user](https://docs.docker.com/engine/install/linux-postinstall/))
 - A Unix based operating system (Mac or Linux)
 
-### Note
-
-Any function that uses `getPastEvents()` will only work on Eth (see: <https://github.com/oceanprotocol/ocean.js/issues/741>). This includes:
-
-- searchPoolforDT()
-- getPoolsbyCreator()
-- getPoolSharesByAddress()
-- getAllPoolLogs()
-- getPreviousValidOrders()
-- searchforDT()
-- getExchangesbyCreator()
-- getExchangeSwaps()
-- getAllExchangesSwaps()
-
 ## 🏗 Installation
 
 ```bash
 npm install @oceanprotocol/lib
 ```
-
-## 🏄 Quickstart
-
-```ts
-import { Ocean, Config, ConfigHelper, Logger } from '@oceanprotocol/lib'
-
-const defaultConfig: Config = new ConfigHelper().getConfig(
-  'rinkeby',
-  'YOUR_INFURA_PROJECT_ID'
-)
-
-const config = {
-  ...defaultConfig,
-  metadataCacheUri: 'https://your-metadata-cache.com',
-  providerUri: 'https://your-provider.com'
-}
-
-async function init() {
-  const ocean = await Ocean.getInstance(config)
-  return ocean
-}
-```
-
-Here are flows to try out, from beginners to advanced.
-
-- **[Beginners guide](docs/beginners_guide.md)** - for developers who are completely new to blockchain, no coding experience is required.
-- **[Simple flow](docs/quickstart_simple.md)** - the essence of Ocean - creating a data NFT & datatoken.
-- **[Marketplace flow](docs/quickstart_marketplace.md)** - a data asset is posted for sale in a datatoken pool, then purchased. Includes metadata and Compute-to-Data.
-
-
 ### 📖 Learn more
 
-- [Get test OCEAN](docs/get-test-OCEAN.md) - from rinkeby
-- [Understand config parameters](docs/parameters.md) - envvars vs files
-- [Learn about off-chain services](docs/services.md) - Ocean Provider for data services, Aquarius metadata store
-- [Learn about wallets](docs/wallets.md) - on generating, storing, and accessing private keys
-- [Get an overview of ocean.js](docs/overview.md) - key modules and functions
-
-If you have any difficulties with the quickstarts, or if you have further questions about how to use ocean.js please reach out to us on [Discord](https://discord.gg/TnXjkR5).
-
-If you notice any bugs or issues with ocean.js please [open an issue on github](https://github.com/oceanprotocol/ocean.js/issues/new?assignees=&labels=bug&template=bug_report.md&title=).
+- Checkout our [code examples](CodeExamples.md) to see how you can use ocean.js.
+- Refer to the [Ocean Protocol documentation](https://docs.oceanprotocol.com/) for more guides and tutorials.
+- Visit the [Ocean Protocol website](https://docs.oceanprotocol.com/) for general information about Ocean Protocol.
+- If you have any difficulties or if you have further questions about how to use ocean.js please reach out to us on [Discord](https://discord.gg/TnXjkR5).
+- If you notice any bugs or issues with ocean.js please [open an issue on github](https://github.com/oceanprotocol/ocean.js/issues/new?assignees=&labels=bug&template=bug_report.md&title=).
 
 ## 🦑 Development
 

@@ -1,24 +1,41 @@
-/// # Quickstart: Marketplace Flow
+/// # Ocean.js Code Examples
 
-/// This quickstart describes a batteries-included flow including using off-chain services for metadata (Aquarius) and consuming datasets (Provider).
+/// ## Introduction
 
-/// For pool creation, it is used as base token, OCEAN token. The base token can be changed into something else, such as USDC, DAI etc., but it will require an extra fee.
+/// The following guide runs you through the process of using ocean.js to publish and then consume a dataset. The code examples below are all working and you can learn how to publish by following along.
+/// The process involves creating a Data NFT (which represents the base-IP on-chain) and a datatoken (which will be used to purchase the dataset). This guide provides all the code you need and no prior knowledge is required. It is helpful if you have some experience with javascript but it is not necessary.
 
-/// It focuses on Alice's experience as a publisher, and Bob's experience as a buyer & consumer. The rest are services used by Alice and Bob.
+/// Selling your data over the blockchain puts you in charge of how it is used and can be a great source of passive income. There are many AI startups that have deep expertise in machine learning but need more data to improve their models. Selling your data via the blockchain gives you a level of security that you would be unable to achieve if you were selling via a centralised marketplace.
+
+/// In this guide we'll be making use of the Ocean.js library. Ocean Protocol provides you with everything you need to quickly get setup and start selling data over the blockchain.
+
+/// These examples take you through a typical user journey that focuses on Alice's experience as a publisher, and Bob's experience as a buyer & consumer. The rest are services used by Alice and Bob.
+
+/// If you have any questions or issues at any point while following along to this article please reach out to us on [discord](https://discord.gg/TnXjkR5).
+
+/// Here are the steps we will be following throughout the article:
 
 /// Here are the steps:
 
-/// 1. Initialize services
-/// 2. Create a new node.js project
-/// 3. Install dependancies
-/// 4. Import dependencies and add variables and constants
-/// 4. Publish Data NFT and a Datatoken with a liquidity pool
-/// 5. Publish Data NFT and a Datatoken with a fixed rate exchange
-/// 6. Publish Data NFT and a Datatoken with a dispenser
+/// 1. Prerequisites
+/// 2. Initialize services
+/// 3. Create a new node.js project
+/// 4. Install dependancies
+/// 5. Import dependencies and add variables and constants
+/// 6. Publish Data NFT and a Datatoken with a liquidity pool
+/// 7. Publish Data NFT and a Datatoken with a fixed rate exchange
+/// 8. Publish Data NFT and a Datatoken with a dispenser
 
-/// Let's go through each step.
+/// ## 1. Prerequisites
+/// Before we start it is important that you have all of the necessary prerequisites installed on your computer.
+/// - **A Unix based operating system (Linux or Mac)**. If you are a Windows user you can try to run linux inside a virtual machine but this is outside of the scope of this article.
+/// - **Git**. Instructions for installing Git can be found here: https://git-scm.com/book/en/v2/Getting-Started-Installing-Git
+/// - **Node.js** can be downloaded from here: https://nodejs.org/en/download/
+/// - **Docker** can be installed from here: https://docs.docker.com/get-docker/. Please note that Docker must run as a non-root user, you can set this up by following these instructions: https://docs.docker.com/engine/install/linux-postinstall/
 
 /// ## 1. Initialize services
+
+/// Ocean.js uses off-chain services for metadata (Aquarius) and consuming datasets (Provider).
 
 /// We start by initializing the services. To do this, we clone the Barge repository and run it. This will run the current default versions of [Aquarius](https://github.com/oceanprotocol/aquarius), [Provider](https://github.com/oceanprotocol/provider), and [Ganache](https://github.com/trufflesuite/ganache) with [our contracts](https://github.com/oceanprotocol/contracts) deployed to it.
 
@@ -222,6 +239,8 @@ describe('Marketplace flow tests', async () => {
   /// ```
 
   /// ## 4. Publish Data NFT and a Datatoken with a liquidity pool
+
+  /// For pool creation, the OCEAN token is used as the base token. The base token can be changed into something else, such as USDC, DAI etc., but it will require an extra fee.
 
   it('Publish a dataset (create NFT + Datatoken) with a liquidity pool', async () => {
     /// ```Typescript
