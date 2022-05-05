@@ -120,7 +120,7 @@ import { Addresses, deployContracts } from '../TestContractHandler'
 describe('Marketplace flow tests', async () => {
   /// -->
 
-  /// Variables and constants needed for the test:
+  /// Now we define the variables which we will need later
 
   /// ```Typescript
   let config: Config
@@ -140,7 +140,10 @@ describe('Marketplace flow tests', async () => {
   let dispenserNftAddress: string
   let dispenserDatatokenAddress: string
   let dispenserAddress: string
+  /// ```
 
+  /// We also define some constants that we will use:
+  /// ```Typescript
   const POOL_NFT_NAME = 'Datatoken 1'
   const POOL_NFT_SYMBOL = 'DT1'
   const FRE_NFT_NAME = 'Datatoken 2'
@@ -199,7 +202,7 @@ describe('Marketplace flow tests', async () => {
 
     console.log(`Aquarius URL: ${config.metadataCacheUri}`)
     console.log(`Provider URL: ${providerUrl}`)
-  })
+  }) ///
   /// ```
 
   it('Initialize accounts', async () => {
@@ -212,13 +215,13 @@ describe('Marketplace flow tests', async () => {
     console.log(`Publisher account address: ${publisherAccount}`)
     console.log(`Consumer account address: ${consumerAccount}`)
     console.log(`Staker account address: ${stakerAccount}`)
-  })
+  }) ///
   /// ```
 
-  it('Deploy contracts', async () => {
+  it('Next, lets deploy the contracts', async () => {
     /// ```Typescript
     contracts = await deployContracts(web3, publisherAccount)
-  })
+  }) ///
   /// ```
 
   it('We send some OCEAN to consumer and staker accounts', async () => {
@@ -235,7 +238,7 @@ describe('Marketplace flow tests', async () => {
     await oceanContract.methods
       .transfer(stakerAccount, web3.utils.toWei('100'))
       .send({ from: publisherAccount })
-  })
+  }) ///
   /// ```
 
   /// ## 4. Publish Data NFT and a Datatoken with a liquidity pool
@@ -303,24 +306,29 @@ describe('Marketplace flow tests', async () => {
     console.log(`Pool NFT address: ${poolNftAddress}`)
     console.log(`Pool Datatoken address: ${poolDatatokenAddress}`)
     console.log(`Pool address: ${poolAddress}`)
-  })
+  }) ///
   /// ```
 
   it('Set metadata in the pool NFT', async () => {
     /// ```Typescript
     const nft = new Nft(web3)
-
-    // update ddo and set the right did
+    /// ```
+    /// Now we update the ddo and set the right did
+    /// ```Typescript
     DDO.chainId = await web3.eth.getChainId()
     DDO.id =
       'did:op:' +
       SHA256(web3.utils.toChecksumAddress(poolNftAddress) + DDO.chainId.toString(10))
     DDO.nftAddress = poolNftAddress
-    // encrypt file(s) using provider
+    /// ```
+    /// Next we encrypt the file or files using Ocean Provider. The provider is an off chain proxy built specifically for this task
+    /// ```Typescript
     const encryptedFiles = await ProviderInstance.encrypt(ASSET_URL, providerUrl)
     DDO.services[0].files = await encryptedFiles
     DDO.services[0].datatokenAddress = poolDatatokenAddress
-
+    /// ```
+    /// Now let's console log the result to check everything is working
+    /// ```Typescript
     console.log(`DID: ${DDO.id}`)
 
     const providerResponse = await ProviderInstance.encrypt(DDO, providerUrl)
@@ -336,7 +344,7 @@ describe('Marketplace flow tests', async () => {
       encryptedDDO,
       '0x' + metadataHash
     )
-  })
+  }) ///
   /// ```
 
   it('User should add liquidity to the pool, receiving LP tokens', async () => {
@@ -346,7 +354,7 @@ describe('Marketplace flow tests', async () => {
     await approve(web3, stakerAccount, contracts.oceanAddress, poolAddress, '5', true)
 
     await pool.joinswapExternAmountIn(stakerAccount, poolAddress, '5', '0.1')
-  })
+  }) ///
   /// ```
 
   it('Marketplace displays pool asset for sale', async () => {
@@ -359,8 +367,11 @@ describe('Marketplace flow tests', async () => {
       '1',
       '0.01'
     )
+    /// ```
+    /// Now let's console log the result to check everything is working
+    /// ```Typescript
     console.log(`Price of 1 ${POOL_NFT_SYMBOL} is ${prices.tokenAmount} OCEAN`)
-  })
+  }) ///
   /// ```
 
   it('Consumer buys a pool data asset, and downloads it', async () => {
@@ -368,14 +379,23 @@ describe('Marketplace flow tests', async () => {
     const datatoken = new Datatoken(web3)
 
     const consumerETHBalance = await web3.eth.getBalance(consumerAccount)
+    /// ```
+    /// Now let's console log the result to check everything is working
+    /// ```Typescript
     console.log(`Consumer ETH balance: ${consumerETHBalance}`)
     let consumerOCEANBalance = await balance(
       web3,
       contracts.oceanAddress,
       consumerAccount
     )
+    /// ```
+    /// Now let's console log consumerOCEANBalance to check everything is working
+    /// ```Typescript
     console.log(`Consumer OCEAN balance before swap: ${consumerOCEANBalance}`)
     let consumerDTBalance = await balance(web3, poolDatatokenAddress, consumerAccount)
+    /// ```
+    /// Now let's console log POOL_NFT_SYMBOL and consumerDTBalance to check everything is working
+    /// ```Typescript
     console.log(`Consumer ${POOL_NFT_SYMBOL} balance before swap: ${consumerDTBalance}`)
 
     await approve(web3, consumerAccount, contracts.oceanAddress, poolAddress, '100')
@@ -399,8 +419,14 @@ describe('Marketplace flow tests', async () => {
     )
 
     consumerOCEANBalance = await balance(web3, contracts.oceanAddress, consumerAccount)
+    /// ```
+    /// Now let's console log the Consumer OCEAN balance after swap to check everything is working
+    /// ```Typescript
     console.log(`Consumer OCEAN balance after swap: ${consumerOCEANBalance}`)
     consumerDTBalance = await balance(web3, poolDatatokenAddress, consumerAccount)
+    /// ```
+    /// Next let's console log the POOL_NFT_SYMBOL and consumerDTBalance
+    /// ```Typescript
     console.log(`Consumer ${POOL_NFT_SYMBOL} balance after swap: ${consumerDTBalance}`)
 
     const resolvedDDO = await aquarius.waitForAqua(DDO.id)
@@ -444,11 +470,18 @@ describe('Marketplace flow tests', async () => {
       web3
     )
 
+    /// ```
+    /// Now let's console log the Download URL to check everything is working
+    /// ```Typescript
     console.log(`Download URL: ${downloadURL}`)
 
     consumerOCEANBalance = await balance(web3, contracts.oceanAddress, consumerAccount)
     console.log(`Consumer OCEAN balance after order: ${consumerOCEANBalance}`)
     consumerDTBalance = await balance(web3, poolDatatokenAddress, consumerAccount)
+
+    /// ```
+    /// Now let's console log the Consumer balance after order to check everything is working
+    /// ```Typescript
     console.log(`Consumer ${POOL_NFT_SYMBOL} balance after order: ${consumerDTBalance}`)
 
     try {
@@ -457,7 +490,7 @@ describe('Marketplace flow tests', async () => {
     } catch (e) {
       assert.fail('Download failed')
     }
-  })
+  }) ///
   /// ```
 
   /// ## 5. Publish Data NFT and a Datatoken with a fixed rate exchange
@@ -510,11 +543,14 @@ describe('Marketplace flow tests', async () => {
     freAddress = tx.events.NewFixedRate.returnValues.exchangeContract
     freId = tx.events.NewFixedRate.returnValues.exchangeId
 
+    /// ```
+    /// Now let's console log each of those values to check everything is working
+    /// ```Typescript
     console.log(`Fixed rate exchange NFT address: ${freNftAddress}`)
     console.log(`Fixed rate exchange Datatoken address: ${freDatatokenAddress}`)
     console.log(`Fixed rate exchange address: ${freAddress}`)
     console.log(`Fixed rate exchange Id: ${freId}`)
-  })
+  }) ///
   /// ```
 
   it('Set metadata in the fixed rate exchange NFT', async () => {
@@ -532,6 +568,9 @@ describe('Marketplace flow tests', async () => {
     DDO.services[0].files = await encryptedFiles
     DDO.services[0].datatokenAddress = freDatatokenAddress
 
+    /// ```
+    /// Now let's console log the DID to check everything is working
+    /// ```Typescript
     console.log(`DID: ${DDO.id}`)
 
     const providerResponse = await ProviderInstance.encrypt(DDO, providerUrl)
@@ -556,8 +595,11 @@ describe('Marketplace flow tests', async () => {
     const oceanAmount = await (
       await fixedRate.calcBaseInGivenOutDT(freId, '1')
     ).baseTokenAmount
+    /// ```
+    /// Now that the market has fetched those values it can display the asset on the front end. In our case we will just console log the results:
+    /// ```Typescript
     console.log(`Price of 1 ${FRE_NFT_SYMBOL} is ${oceanAmount} OCEAN`)
-  })
+  }) ///
   /// ```
 
   it('Consumer buys a fixed rate asset data asset, and downloads it', async () => {
@@ -568,6 +610,10 @@ describe('Marketplace flow tests', async () => {
     await datatoken.mint(freDatatokenAddress, publisherAccount, DATATOKEN_AMOUNT)
 
     const consumerETHBalance = await web3.eth.getBalance(consumerAccount)
+
+    /// ```
+    /// Let's do a quick check of the consumer ETH balance before the swap
+    /// ```Typescript
     console.log(`Consumer ETH balance: ${consumerETHBalance}`)
     let consumerOCEANBalance = await balance(
       web3,
@@ -649,7 +695,7 @@ describe('Marketplace flow tests', async () => {
     } catch (e) {
       assert.fail('Download failed')
     }
-  })
+  }) ///
   /// ```
 
   /// ## 6. Publish Data NFT and a Datatoken with a dispenser
@@ -732,7 +778,7 @@ describe('Marketplace flow tests', async () => {
       encryptedDDO,
       '0x' + metadataHash
     )
-  })
+  }) ///
   /// ```
 
   it('Consumer gets a dispenser data asset, and downloads it', async () => {
@@ -813,6 +859,6 @@ describe('Marketplace flow tests', async () => {
     } catch (e) {
       assert.fail('Download failed')
     }
-  })
+  }) ///
   /// ```
-})
+}) ///
