@@ -8,7 +8,7 @@
   "module": "./dist/lib.module.js",
   "exports": {
     "require": "./dist/lib.js",
-    "default": "./dist/lib.modern.js"
+    "default": "./dist/lib.modern.mjs"
   },
   "types": "./dist/src/index.d.ts",
   "scripts": {
