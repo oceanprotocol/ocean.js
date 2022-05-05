@@ -17,14 +17,14 @@ Here are the steps we will be following throughout the article:
 
 Here are the steps:
 
-1. Prerequisites
-2. Initialize services
-3. Create a new node.js project
-4. Install dependancies
-5. Import dependencies and add variables and constants
-6. Publish Data NFT and a Datatoken with a liquidity pool
-7. Publish Data NFT and a Datatoken with a fixed rate exchange
-8. Publish Data NFT and a Datatoken with a dispenser
+1. [Prerequisites](#-Prerequisites)
+2. [Initialize services](#-initialize-services)
+3. [Create a new node.js project](#-create-a-new-node.js-project)
+4. [Install dependencies](#-install-dependencies)
+5. [Import dependencies and add variables and constants](#-import-dependencies-and-add-variables-and-constants)
+6. [Publish Data NFT and a Datatoken with a liquidity pool](#-Publish-data-nft-and-a-datatoken-with-a-liquidity-pool)
+7. [Publish Data NFT and a Datatoken with a fixed rate exchange](#-publish-data-nft-and-a-datatoken-with-a-fixed-rate-exchange)
+8. [Publish Data NFT and a Datatoken with a dispenser](#-publish-data-nft-and-a-datatoken-with-a-dispenser)
 
 ## 1. Prerequisites
 Before we start it is important that you have all of the necessary prerequisites installed on your computer.
