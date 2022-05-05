@@ -8,6 +8,7 @@ sed -i '' -e "s/import { assert } from 'chai'//" CodeExamples.md
 
 # Replace comments
 sed -i '' -e 's/}) \/\/\/ //' CodeExamples.md
+sed -i '' -e 's/}) \/\/\///' CodeExamples.md
 sed -i '' -e 's/    \/\/\/ //' CodeExamples.md
 sed -i '' -e 's/  \/\/\/ //' CodeExamples.md
 sed -i '' -e 's/\/\/\/ //' CodeExamples.md
