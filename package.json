@@ -43,7 +43,8 @@
     "test:provider": "npm run mocha -- 'test/integration/Provider.test.ts'",
     "test:compute": "npm run mocha -- 'test/integration/ComputeFlow.test.ts'",
     "test:integration:cover": "nyc --report-dir coverage/integration --no-clean npm run test:integration",
-    "create:guide": "chmod +x ./scripts/createCodeExamples.sh && ./scripts/createCodeExamples.sh"
+    "create:guide": "chmod +x ./scripts/createCodeExamples.sh && ./scripts/createCodeExamples.sh",
+    "create:guide:mac": "chmod +x ./scripts/createCodeExamples-mac.sh && ./scripts/createCodeExamples-mac.sh"
   },
   "repository": {
     "type": "git",
