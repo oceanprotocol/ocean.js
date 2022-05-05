@@ -199,7 +199,9 @@ We load the configuration:
     config = await getTestConfig(web3)
     aquarius = new Aquarius(config.metadataCacheUri)
     providerUrl = config.providerUri
-
+```
+As we go along it's a good idea to console log the values so that you check they are right
+```Typescript
     console.log(`Aquarius URL: ${config.metadataCacheUri}`)
     console.log(`Provider URL: ${providerUrl}`)
   
@@ -211,7 +213,9 @@ We load the configuration:
     publisherAccount = accounts[0]
     consumerAccount = accounts[1]
     stakerAccount = accounts[2]
-
+```
+Again, lets console log the values so that we can check that they have been saved properly
+```Typescript
     console.log(`Publisher account address: ${publisherAccount}`)
     console.log(`Consumer account address: ${consumerAccount}`)
     console.log(`Staker account address: ${stakerAccount}`)
@@ -283,7 +287,9 @@ For pool creation, the OCEAN token is used as the base token. The base token can
       swapFeeLiquidityProvider: '0.001',
       swapFeeMarketRunner: '0.001'
     }
-
+```
+Before we call the contract we have to call `approve` so that the contract can move our tokens. This is standard when using any ERC20 tokens
+```Typescript
     await approve(
       web3,
       publisherAccount,
@@ -292,6 +298,9 @@ For pool creation, the OCEAN token is used as the base token. The base token can
       poolParams.vestingAmount
     )
 
+```
+Now we can make the contract call
+```Typescript
     const tx = await factory.createNftErc20WithPool(
       publisherAccount,
       nftParams,
@@ -302,7 +311,9 @@ For pool creation, the OCEAN token is used as the base token. The base token can
     poolNftAddress = tx.events.NFTCreated.returnValues[0]
     poolDatatokenAddress = tx.events.TokenCreated.returnValues[0]
     poolAddress = tx.events.NewPool.returnValues[0]
-
+```
+Now, we did quite a few things there. Let's check that we successfully published a dataset (create NFT + Datatoken) with a liquidity pool
+```Typescript
     console.log(`Pool NFT address: ${poolNftAddress}`)
     console.log(`Pool Datatoken address: ${poolDatatokenAddress}`)
     console.log(`Pool address: ${poolAddress}`)
@@ -351,8 +362,14 @@ Now let's console log the result to check everything is working
 ```Typescript
     const pool = new Pool(web3)
 
+```
+Before we call the contract we have to call `approve` so that the contract can move our tokens. This is standard when using any ERC20 tokens
+```Typescript
     await approve(web3, stakerAccount, contracts.oceanAddress, poolAddress, '5', true)
 
+```
+Now we can make the contract call
+```Typescript
     await pool.joinswapExternAmountIn(stakerAccount, poolAddress, '5', '0.1')
   
 ```
@@ -398,6 +415,9 @@ Now let's console log POOL_NFT_SYMBOL and consumerDTBalance to check everything 
 ```Typescript
     console.log(`Consumer ${POOL_NFT_SYMBOL} balance before swap: ${consumerDTBalance}`)
 
+```
+Before we call the contract we have to call `approve` so that the contract can move our tokens. This is standard when using any ERC20 tokens
+```Typescript
     await approve(web3, consumerAccount, contracts.oceanAddress, poolAddress, '100')
 
     const pool = new Pool(web3)
@@ -411,6 +431,10 @@ Now let's console log POOL_NFT_SYMBOL and consumerDTBalance to check everything 
       tokenAmountOut: '1',
       swapMarketFee: '0.1'
     }
+
+```
+Now we can make the contract call
+```Typescript
     await pool.swapExactAmountOut(
       consumerAccount,
       poolAddress,
@@ -432,7 +456,9 @@ Next let's console log the POOL_NFT_SYMBOL and consumerDTBalance
     const resolvedDDO = await aquarius.waitForAqua(DDO.id)
     assert(resolvedDDO, 'Cannot fetch DDO from Aquarius')
 
-    // initialize provider
+```
+The next step is to initialize the provider instance
+```Typescript
     const initializeData = await ProviderInstance.initialize(
       resolvedDDO.id,
       resolvedDDO.services[0].id,
@@ -451,7 +477,10 @@ Next let's console log the POOL_NFT_SYMBOL and consumerDTBalance
       providerData: initializeData.providerFee.providerData,
       validUntil: initializeData.providerFee.validUntil
     }
-    // make the payment
+
+```
+Now let's make a payment
+```Typescript
     const tx = await datatoken.startOrder(
       poolDatatokenAddress,
       consumerAccount,
@@ -459,7 +488,10 @@ Next let's console log the POOL_NFT_SYMBOL and consumerDTBalance
       0,
       providerFees
     )
-    // get the url
+
+```
+Next up, let's get the URL
+```Typescript
     const downloadURL = await ProviderInstance.getDownloadUrl(
       DDO.id,
       consumerAccount,
@@ -557,13 +589,18 @@ Now let's console log each of those values to check everything is working
 ```Typescript
     const nft = new Nft(web3)
 
-    // update ddo and set the right did
+```
+Now we are going to update the ddo and set the did
+```Typescript
     DDO.chainId = await web3.eth.getChainId()
     DDO.id =
       'did:op:' +
       SHA256(web3.utils.toChecksumAddress(freNftAddress) + DDO.chainId.toString(10))
     DDO.nftAddress = freNftAddress
-    // encrypt file(s) using provider
+
+```
+Next, let's encrypt the file(s) using provider
+```Typescript
     const encryptedFiles = await ProviderInstance.encrypt(ASSET_URL, providerUrl)
     DDO.services[0].files = await encryptedFiles
     DDO.services[0].datatokenAddress = freDatatokenAddress
@@ -624,6 +661,9 @@ Let's do a quick check of the consumer ETH balance before the swap
     let consumerDTBalance = await balance(web3, freDatatokenAddress, consumerAccount)
     console.log(`Consumer ${FRE_NFT_SYMBOL} balance before swap: ${consumerDTBalance}`)
 
+```
+Before we call the contract we have to call `approve` so that the contract can move our tokens. This is standard when using any ERC20 tokens
+```Typescript
     await approve(web3, consumerAccount, contracts.oceanAddress, freAddress, '100')
     await approve(
       web3,
@@ -634,6 +674,9 @@ Let's do a quick check of the consumer ETH balance before the swap
     )
 
     const fixedRate = new FixedRateExchange(web3, freAddress)
+```
+Now we can make the contract call
+```Typescript
     await fixedRate.buyDT(consumerAccount, freId, '1', '2')
 
     consumerOCEANBalance = await balance(web3, contracts.oceanAddress, consumerAccount)
@@ -644,7 +687,9 @@ Let's do a quick check of the consumer ETH balance before the swap
     const resolvedDDO = await aquarius.waitForAqua(DDO.id)
     assert(resolvedDDO, 'Cannot fetch DDO from Aquarius')
 
-    // initialize provider
+```
+Next, we need to initialize the provider
+```Typescript
     const initializeData = await ProviderInstance.initialize(
       resolvedDDO.id,
       resolvedDDO.services[0].id,
@@ -663,7 +708,10 @@ Let's do a quick check of the consumer ETH balance before the swap
       providerData: initializeData.providerFee.providerData,
       validUntil: initializeData.providerFee.validUntil
     }
-    // make the payment
+
+```
+Lets now make the payment
+```Typescript
     const tx = await datatoken.startOrder(
       freDatatokenAddress,
       consumerAccount,
@@ -671,7 +719,9 @@ Let's do a quick check of the consumer ETH balance before the swap
       0,
       providerFees
     )
-    // get the url
+```
+Now we can get the url
+```Typescript
     const downloadURL = await ProviderInstance.getDownloadUrl(
       DDO.id,
       consumerAccount,
@@ -682,6 +732,9 @@ Let's do a quick check of the consumer ETH balance before the swap
       web3
     )
 
+```
+Lets check that the download URL was successfully received
+```Typescript
     console.log(`Download URL: ${downloadURL}`)
 
     consumerOCEANBalance = await balance(web3, contracts.oceanAddress, consumerAccount)
@@ -752,13 +805,18 @@ Let's do a quick check of the consumer ETH balance before the swap
 ```Typescript
     const nft = new Nft(web3)
 
-    // update ddo and set the right did
+```
+Lets start by updating the ddo and setting the did
+```Typescript
     DDO.chainId = await web3.eth.getChainId()
     DDO.id =
       'did:op:' +
       SHA256(web3.utils.toChecksumAddress(dispenserNftAddress) + DDO.chainId.toString(10))
     DDO.nftAddress = dispenserNftAddress
-    // encrypt file(s) using provider
+
+```
+Now we need to encrypt file(s) using provider
+```Typescript
     const encryptedFiles = await ProviderInstance.encrypt(ASSET_URL, providerUrl)
     DDO.services[0].files = await encryptedFiles
     DDO.services[0].datatokenAddress = dispenserDatatokenAddress
@@ -809,8 +867,9 @@ Let's do a quick check of the consumer ETH balance before the swap
 
     const resolvedDDO = await aquarius.waitForAqua(DDO.id)
     assert(resolvedDDO, 'Cannot fetch DDO from Aquarius')
-
-    // initialize provider
+```
+At this point we need to encrypt file(s) using provider
+```Typescript
     const initializeData = await ProviderInstance.initialize(
       resolvedDDO.id,
       resolvedDDO.services[0].id,
@@ -829,7 +888,9 @@ Let's do a quick check of the consumer ETH balance before the swap
       providerData: initializeData.providerFee.providerData,
       validUntil: initializeData.providerFee.validUntil
     }
-    // make the payment
+```
+Now we need to make the payment
+```Typescript
     const tx = await datatoken.startOrder(
       dispenserDatatokenAddress,
       consumerAccount,
@@ -837,7 +898,9 @@ Let's do a quick check of the consumer ETH balance before the swap
       0,
       providerFees
     )
-    // get the url
+```
+Now we can get the download URL
+```Typescript
     const downloadURL = await ProviderInstance.getDownloadUrl(
       DDO.id,
       consumerAccount,
@@ -847,7 +910,9 @@ Let's do a quick check of the consumer ETH balance before the swap
       providerUrl,
       web3
     )
-
+```
+Let's check we received the download URL ok
+```Typescript
     console.log(`Download URL: ${downloadURL}`)
 
     consumerDTBalance = await balance(web3, dispenserDatatokenAddress, consumerAccount)
