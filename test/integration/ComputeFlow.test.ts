@@ -8,16 +8,13 @@ import {
   NftFactory,
   NftCreateData,
   Datatoken,
-  getHash,
   Nft,
   sleep,
   ZERO_ADDRESS
 } from '../../src'
 import {
-  ProviderFees,
   Erc20CreateParams,
   ComputeJob,
-  Asset,
   ComputeAsset,
   ComputeAlgorithm,
   ProviderComputeInitialize,
@@ -263,7 +260,7 @@ async function createAsset(
   const encryptedResponse = await providerResponse
   const validateResult = await aquarius.validate(ddo)
   assert(validateResult.valid, 'Could not validate metadata')
-  const res = await nft.setMetadata(
+  await nft.setMetadata(
     erc721AddressAsset,
     owner,
     0,
