@@ -13,7 +13,7 @@ import {
   downloadFile,
   ZERO_ADDRESS
 } from '../../src'
-import { ProviderFees, Erc20CreateParams } from '../../src/@types'
+import { ProviderFees, Erc20CreateParams, DDO } from '../../src/@types'
 
 describe('Simple Publish & consume test', async () => {
   let config: Config
@@ -31,7 +31,7 @@ describe('Simple Publish & consume test', async () => {
     }
   ]
 
-  const ddo = {
+  const ddo: DDO = {
     '@context': ['https://w3id.org/did/v1'],
     id: '',
     version: '4.0.0',
