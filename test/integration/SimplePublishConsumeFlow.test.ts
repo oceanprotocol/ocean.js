@@ -12,7 +12,7 @@ import {
   Nft,
   downloadFile
 } from '../../src'
-import { ProviderFees, Erc20CreateParams } from '../../src/@types'
+import { ProviderFees, Erc20CreateParams, DDO } from '../../src/@types'
 
 const assetUrl = [
   {
@@ -21,7 +21,7 @@ const assetUrl = [
     method: 'GET'
   }
 ]
-const ddo = {
+const ddo: DDO = {
   '@context': ['https://w3id.org/did/v1'],
   id: 'did:op:efba17455c127a885ec7830d687a8f6e64f5ba559f8506f8723c1f10f05c049c',
   version: '4.0.0',
