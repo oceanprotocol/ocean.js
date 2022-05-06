@@ -1,6 +1,6 @@
 import { assert } from 'chai'
 import { SHA256 } from 'crypto-js'
-import { web3, getTestConfig } from '../config'
+import { web3, getTestConfig, getAddresses } from '../config'
 import {
   Config,
   ProviderInstance,
@@ -14,11 +14,10 @@ import {
   ZERO_ADDRESS
 } from '../../src'
 import { ProviderFees, Erc20CreateParams } from '../../src/@types'
-import { Addresses, deployContracts } from '../TestContractHandler'
 
 describe('Simple Publish & consume test', async () => {
   let config: Config
-  let contracts: Addresses
+  let addresses: any
   let aquarius: Aquarius
   let providerUrl: any
   let publisherAccount: string
@@ -63,6 +62,8 @@ describe('Simple Publish & consume test', async () => {
     config = await getTestConfig(web3)
     aquarius = new Aquarius(config.metadataCacheUri)
     providerUrl = config.providerUri
+
+    addresses = getAddresses()
   })
 
   it('Initialize accounts', async () => {
@@ -71,14 +72,10 @@ describe('Simple Publish & consume test', async () => {
     consumerAccount = accounts[1]
   })
 
-  it('Deploy contracts', async () => {
-    contracts = await deployContracts(web3, publisherAccount)
-  })
-
   it('should publish a dataset (create NFT + ERC20)', async () => {
     const nft = new Nft(web3)
     const datatoken = new Datatoken(web3)
-    const Factory = new NftFactory(contracts.erc721FactoryAddress, web3)
+    const Factory = new NftFactory(addresses.ERC721Factory, web3)
 
     const nftParams: NftCreateData = {
       name: '72120Bundle',
