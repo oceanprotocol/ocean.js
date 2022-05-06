@@ -36,7 +36,7 @@
     "test:factory": "npm run mocha -- 'test/unit/NftFactory.test.ts'",
     "test:router": "npm run mocha -- 'test/unit/pools/Router.test.ts'",
     "test:publishAll": "npm run mocha -- 'test/integration/PublishFlows.test.ts'",
-    "test:marketplace": "npm run mocha -- 'test/integration/MarketplaceFlow.test.ts'",
+    "test:examples": "npm run mocha -- 'test/integration/CodeExamples.test.ts'",
     "test:unit": "npm run mocha -- 'test/unit/**/*.test.ts'",
     "test:unit:cover": "nyc --report-dir coverage/unit npm run test:unit",
     "test:integration": "npm run mocha -- 'test/integration/**/*.test.ts'",
