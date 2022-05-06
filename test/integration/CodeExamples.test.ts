@@ -9,7 +9,7 @@
 
 /// In this guide we'll be making use of the Ocean.js library. Ocean Protocol provides you with everything you need to quickly get setup and start selling data over the blockchain.
 
-/// These examples take you through a typical user journey that focuses on Alice's experience as a publisher, and Bob's experience as a buyer & consumer. The rest are services used by Alice and Bob.
+/// These examples take you through a typical user journey that focuses on the experience of a publisher, and a buyer / consumer.
 
 /// If you have any questions or issues at any point while following along to this article please reach out to us on [discord](https://discord.gg/TnXjkR5).
 
@@ -17,16 +17,17 @@
 
 /// Here are the steps:
 
-/// 1. [Prerequisites](#-Prerequisites)
-/// 2. [Initialize services](#-initialize-services)
-/// 3. [Create a new node.js project](#-create-a-new-node.js-project)
-/// 4. [Install dependencies](#-install-dependencies)
+/// 0. [Prerequisites](#-Prerequisites)
+/// 1. [Initialize services](#-initialize-services)
+/// 2. [Create a new node.js project](#-create-a-new-node.js-project)
+/// 3. [Install dependencies](#-install-dependencies)
+/// 4. [Initialize accounts and deploy contracts](#-initialize-accounts-and-deploy-contracts)
 /// 5. [Import dependencies and add variables and constants](#-import-dependencies-and-add-variables-and-constants)
 /// 6. [Publish Data NFT and a Datatoken with a liquidity pool](#-Publish-data-nft-and-a-datatoken-with-a-liquidity-pool)
 /// 7. [Publish Data NFT and a Datatoken with a fixed rate exchange](#-publish-data-nft-and-a-datatoken-with-a-fixed-rate-exchange)
 /// 8. [Publish Data NFT and a Datatoken with a dispenser](#-publish-data-nft-and-a-datatoken-with-a-dispenser)
 
-/// ## 1. Prerequisites
+/// ## 0. Prerequisites
 /// Before we start it is important that you have all of the necessary prerequisites installed on your computer.
 /// - **A Unix based operating system (Linux or Mac)**. If you are a Windows user you can try to run linux inside a virtual machine but this is outside of the scope of this article.
 /// - **Git**. Instructions for installing Git can be found here: https://git-scm.com/book/en/v2/Getting-Started-Installing-Git
@@ -207,7 +208,8 @@ describe('Marketplace flow tests', async () => {
   }) ///
   /// ```
 
-  it('Initialize accounts', async () => {
+  /// ## 5. Initialize accounts and deploy contracts
+  it('5.1 Initialize accounts', async () => {
     /// ```Typescript
     const accounts = await web3.eth.getAccounts()
     publisherAccount = accounts[0]
@@ -222,13 +224,13 @@ describe('Marketplace flow tests', async () => {
   }) ///
   /// ```
 
-  it('Next, lets deploy the contracts', async () => {
+  it('5.2 Next, lets deploy the contracts', async () => {
     /// ```Typescript
     contracts = await deployContracts(web3, publisherAccount)
   }) ///
   /// ```
 
-  it('We send some OCEAN to consumer and staker accounts', async () => {
+  it('5.3 We send some OCEAN to consumer and staker accounts', async () => {
     /// ```Typescript
     const oceanContract = new web3.eth.Contract(
       MockERC20.abi as AbiItem[],
@@ -245,11 +247,11 @@ describe('Marketplace flow tests', async () => {
   }) ///
   /// ```
 
-  /// ## 4. Publish Data NFT and a Datatoken with a liquidity pool
+  /// ## 6. Publish Data NFT and a Datatoken with a liquidity pool
 
   /// For pool creation, the OCEAN token is used as the base token. The base token can be changed into something else, such as USDC, DAI etc., but it will require an extra fee.
 
-  it('Publish a dataset (create NFT + Datatoken) with a liquidity pool', async () => {
+  it('6.1 Publish a dataset (create NFT + Datatoken) with a liquidity pool', async () => {
     /// ```Typescript
     const factory = new NftFactory(contracts.erc721FactoryAddress, web3)
 
@@ -320,7 +322,7 @@ describe('Marketplace flow tests', async () => {
   }) ///
   /// ```
 
-  it('Set metadata in the pool NFT', async () => {
+  it('6.2 Set metadata in the pool NFT', async () => {
     /// ```Typescript
     const nft = new Nft(web3)
     /// ```
@@ -358,7 +360,7 @@ describe('Marketplace flow tests', async () => {
   }) ///
   /// ```
 
-  it('User should add liquidity to the pool, receiving LP tokens', async () => {
+  it('6.3 User should add liquidity to the pool, receiving LP tokens', async () => {
     /// ```Typescript
     const pool = new Pool(web3)
 
@@ -374,7 +376,7 @@ describe('Marketplace flow tests', async () => {
   }) ///
   /// ```
 
-  it('Marketplace displays pool asset for sale', async () => {
+  it('6.4 Marketplace displays pool asset for sale', async () => {
     /// ```Typescript
     const pool = new Pool(web3)
     const prices = await pool.getAmountInExactOut(
@@ -391,7 +393,7 @@ describe('Marketplace flow tests', async () => {
   }) ///
   /// ```
 
-  it('Consumer buys a pool data asset, and downloads it', async () => {
+  it('6.5 Consumer buys a pool data asset, and downloads it', async () => {
     /// ```Typescript
     const datatoken = new Datatoken(web3)
 
@@ -525,9 +527,9 @@ describe('Marketplace flow tests', async () => {
   }) ///
   /// ```
 
-  /// ## 5. Publish Data NFT and a Datatoken with a fixed rate exchange
+  /// ## 7. Publish Data NFT and a Datatoken with a fixed rate exchange
 
-  it('Publish a dataset (create NFT + Datatoken) with a fixed rate exchange', async () => {
+  it('7.1 Publish a dataset (create NFT + Datatoken) with a fixed rate exchange', async () => {
     /// ```Typescript
     const factory = new NftFactory(contracts.erc721FactoryAddress, web3)
 
@@ -585,7 +587,7 @@ describe('Marketplace flow tests', async () => {
   }) ///
   /// ```
 
-  it('Set metadata in the fixed rate exchange NFT', async () => {
+  it('7.2 Set metadata in the fixed rate exchange NFT', async () => {
     /// ```Typescript
     const nft = new Nft(web3)
 
@@ -626,7 +628,7 @@ describe('Marketplace flow tests', async () => {
   })
   /// ```
 
-  it('Marketplace displays fixed rate asset for sale', async () => {
+  it('7.3 Marketplace displays fixed rate asset for sale', async () => {
     /// ```Typescript
     const fixedRate = new FixedRateExchange(web3, freAddress)
     const oceanAmount = await (
@@ -639,7 +641,7 @@ describe('Marketplace flow tests', async () => {
   }) ///
   /// ```
 
-  it('Consumer buys a fixed rate asset data asset, and downloads it', async () => {
+  it('7.4 Consumer buys a fixed rate asset data asset, and downloads it', async () => {
     /// ```Typescript
     const datatoken = new Datatoken(web3)
     const DATATOKEN_AMOUNT = '10000'
@@ -751,9 +753,9 @@ describe('Marketplace flow tests', async () => {
   }) ///
   /// ```
 
-  /// ## 6. Publish Data NFT and a Datatoken with a dispenser
+  /// ## 8. Publish Data NFT and a Datatoken with a dispenser
 
-  it('Publish a dataset (create NFT + Datatoken) with a dipenser', async () => {
+  it('8.1 Publish a dataset (create NFT + Datatoken) with a dispenser', async () => {
     /// ```Typescript
     const factory = new NftFactory(contracts.erc721FactoryAddress, web3)
 
@@ -803,7 +805,7 @@ describe('Marketplace flow tests', async () => {
   }) ///
   /// ```
 
-  it('Set metadata in the dispenser NFT', async () => {
+  it('8.2 Set metadata in the dispenser NFT', async () => {
     /// ```Typescript
     const nft = new Nft(web3)
 
@@ -841,7 +843,7 @@ describe('Marketplace flow tests', async () => {
   }) ///
   /// ```
 
-  it('Consumer gets a dispenser data asset, and downloads it', async () => {
+  it('8.3 Consumer gets a dispenser data asset, and downloads it', async () => {
     /// ```Typescript
     const datatoken = new Datatoken(web3)
     const dispenser = new Dispenser(web3, contracts.dispenserAddress)
