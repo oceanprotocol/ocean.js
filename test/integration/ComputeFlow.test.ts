@@ -294,7 +294,7 @@ async function handleOrder(
       order.providerFee.providerFeeToken,
       datatokenAddress,
       order.providerFee.providerFeeAmount,
-      consumerAccount
+      payerAccount
     )
   }
   if (order.validOrder) {
