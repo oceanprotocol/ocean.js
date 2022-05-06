@@ -86,7 +86,13 @@ describe('Publish tests', async () => {
     nft = new Nft(web3)
     factory = new NftFactory(addresses.ERC721Factory, web3)
 
-    approve(web3, publisherAccount, addresses.MockDAI, addresses.ERC721Factory, '100000')
+    await approve(
+      web3,
+      publisherAccount,
+      addresses.MockDAI,
+      addresses.ERC721Factory,
+      '100000'
+    )
   })
 
   it('should publish a dataset with pool (create NFT + ERC20 + pool) and with Metdata proof', async () => {
