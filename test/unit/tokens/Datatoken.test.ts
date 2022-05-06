@@ -62,6 +62,7 @@ describe('Datatoken', () => {
     nftFactory = new NftFactory(
       contracts.erc721FactoryAddress,
       web3,
+      8996,
       ERC721Factory.abi as AbiItem[]
     )
     const nftData: NftCreateData = {
@@ -74,7 +75,7 @@ describe('Datatoken', () => {
     }
 
     nftAddress = await nftFactory.createNFT(nftOwner, nftData)
-    nftDatatoken = new Nft(web3, ERC721Template.abi as AbiItem[])
+    nftDatatoken = new Nft(web3, 8996, ERC721Template.abi as AbiItem[])
   })
 
   it('#createERC20 - should create a new ERC20 DT from NFT contract', async () => {
@@ -98,6 +99,7 @@ describe('Datatoken', () => {
   it('should initialize DT20 Instance', async () => {
     datatoken = new Datatoken(
       web3,
+      8996,
       ERC20Template.abi as AbiItem[],
       ERC20TemplateEnterprise.abi as AbiItem[]
     )

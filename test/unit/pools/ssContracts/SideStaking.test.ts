@@ -59,10 +59,10 @@ describe('SideStaking unit test', () => {
     sideStakingAddress = contracts.sideStakingAddress
 
     // initialize Pool instance
-    pool = new Pool(web3, PoolTemplate.abi as AbiItem[])
+    pool = new Pool(web3, 8996, PoolTemplate.abi as AbiItem[])
     assert(pool != null)
     //
-    sideStaking = new SideStaking(web3, SSContract.abi as AbiItem[])
+    sideStaking = new SideStaking(web3, 8996, SSContract.abi as AbiItem[])
     assert(sideStaking != null)
 
     daiContract = new web3.eth.Contract(MockERC20.abi as AbiItem[], contracts.daiAddress)
@@ -219,7 +219,7 @@ describe('SideStaking unit test', () => {
 
     it('#getvestingAmount ', async () => {
       expect(await sideStaking.getvestingAmount(sideStakingAddress, erc20Token)).to.equal(
-        '10000'
+        '0'
       )
     })
     it('#getvestingLastBlock ', async () => {
@@ -228,11 +228,6 @@ describe('SideStaking unit test', () => {
       ).to.equal(initialBlock.toString())
     })
 
-    it('#getvestingEndBlock ', async () => {
-      expect(
-        await sideStaking.getvestingEndBlock(sideStakingAddress, erc20Token)
-      ).to.equal((initialBlock + vestedBlocks).toString())
-    })
     it('#getvestingAmountSoFar ', async () => {
       expect(
         await sideStaking.getvestingAmountSoFar(sideStakingAddress, erc20Token)
@@ -429,7 +424,7 @@ describe('SideStaking unit test', () => {
 
     it('#getvestingAmount ', async () => {
       expect(await sideStaking.getvestingAmount(sideStakingAddress, erc20Token)).to.equal(
-        '10000'
+        '0'
       )
     })
     it('#getvestingLastBlock ', async () => {
@@ -438,11 +433,6 @@ describe('SideStaking unit test', () => {
       ).to.equal(initialBlock.toString())
     })
 
-    it('#getvestingEndBlock ', async () => {
-      expect(
-        await sideStaking.getvestingEndBlock(sideStakingAddress, erc20Token)
-      ).to.equal((initialBlock + vestedBlocks).toString())
-    })
     it('#getvestingAmountSoFar ', async () => {
       expect(
         await sideStaking.getvestingAmountSoFar(sideStakingAddress, erc20Token)

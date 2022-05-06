@@ -52,7 +52,8 @@ export async function estApprove(
  * @param {String} tokenAddress
  * @param {String} spender
  * @param {String} amount  (always expressed as wei)
- * @param {String} force  if true, will overwrite any previous allowence. Else, will check if allowence is enough and will not send a transaction if it's not needed
+ * @param {boolean} force  if true, will overwrite any previous allowence. Else, will check if allowence is enough and will not send a transaction if it's not needed
+ * @param {number} tokenDecimals optional number of decimals of the token
  * @param {Config} config  configuration that provide values for web3 transaction gasFeeMultiplier, transactionBlockTimeout, transactionConfirmationBlocks, transactionPollingTimeout
  */
 export async function approve(
@@ -62,6 +63,7 @@ export async function approve(
   spender: string,
   amount: string,
   force = false,
+  tokenDecimals?: number,
   config?: ContractConfig
 ): Promise<TransactionReceipt | string> {
   const tokenContract = setContractDefaults(
@@ -69,13 +71,20 @@ export async function approve(
     config
   )
   if (!force) {
-    const currentAllowance = await allowance(web3, tokenAddress, account, spender, config)
+    const currentAllowance = await allowance(
+      web3,
+      tokenAddress,
+      account,
+      spender,
+      tokenDecimals,
+      config
+    )
     if (new Decimal(currentAllowance).greaterThanOrEqualTo(new Decimal(amount))) {
       return currentAllowance
     }
   }
   let result = null
-  const amountFormatted = await amountToUnits(web3, tokenAddress, amount)
+  const amountFormatted = await amountToUnits(web3, tokenAddress, amount, tokenDecimals)
   const estGas = await estApprove(
     web3,
     account,
@@ -105,12 +114,15 @@ export async function approve(
  * @param {String } tokenAdress
  * @param {String} account
  * @param {String} spender
+ * @param {number} tokenDecimals optional number of decimals of the token
+ * @param {Config} config  configuration that provide values for web3 transaction gasFeeMultiplier, transactionBlockTimeout, transactionConfirmationBlocks, transactionPollingTimeout
  */
 export async function allowance(
   web3: Web3,
   tokenAddress: string,
   account: string,
   spender: string,
+  tokenDecimals?: number,
   config?: ContractConfig
 ): Promise<string> {
   const tokenContract = setContractDefaults(
@@ -119,7 +131,7 @@ export async function allowance(
   )
   const trxReceipt = await tokenContract.methods.allowance(account, spender).call()
 
-  return await unitsToAmount(web3, tokenAddress, trxReceipt)
+  return await unitsToAmount(web3, tokenAddress, trxReceipt, tokenDecimals)
 }
 
 /**
@@ -128,11 +140,14 @@ export async function allowance(
  * @param {String} tokenAdress
  * @param {String} owner
  * @param {String} spender
+ * @param {number} tokenDecimals optional number of decimals of the token
+ * @param {Config} config  configuration that provide values for web3 transaction gasFeeMultiplier, transactionBlockTimeout, transactionConfirmationBlocks, transactionPollingTimeout
  */
 export async function balance(
   web3: Web3,
   tokenAddress: string,
   account: string,
+  tokenDecimals?: number,
   config?: Config
 ): Promise<string> {
   const tokenContract = setContractDefaults(
@@ -141,5 +156,5 @@ export async function balance(
   )
   const trxReceipt = await tokenContract.methods.balanceOf(account).call()
 
-  return await unitsToAmount(web3, tokenAddress, trxReceipt)
+  return await unitsToAmount(web3, tokenAddress, trxReceipt, tokenDecimals)
 }
