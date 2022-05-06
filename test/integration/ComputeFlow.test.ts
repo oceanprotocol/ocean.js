@@ -10,7 +10,8 @@ import {
   Datatoken,
   getHash,
   Nft,
-  sleep
+  sleep,
+  ZERO_ADDRESS
 } from '../../src'
 import {
   ProviderFees,
@@ -238,10 +239,10 @@ async function createAsset(
     templateIndex: 1,
     cap: '100000',
     feeAmount: '0',
-    paymentCollector: '0x0000000000000000000000000000000000000000',
-    feeToken: '0x0000000000000000000000000000000000000000',
+    paymentCollector: ZERO_ADDRESS,
+    feeToken: ZERO_ADDRESS,
     minter: owner,
-    mpFeeAddress: '0x0000000000000000000000000000000000000000'
+    mpFeeAddress: ZERO_ADDRESS
   }
 
   const result = await Factory.createNftWithErc20(owner, nftParamsAsset, erc20ParamsAsset)
