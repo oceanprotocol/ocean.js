@@ -119,6 +119,7 @@ jobs:
           bash -x start_ocean.sh --with-provider2 --no-dashboard --with-c2d 2>&1 > start_ocean.log &
         env:
           CONTRACTS_VERSION: v1.0.0-alpha.31
+          PROVIDER_VERSION: separate-initialize
       - run: npm ci
       - run: npm run build:metadata
 
