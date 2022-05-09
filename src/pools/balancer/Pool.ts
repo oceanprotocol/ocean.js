@@ -1153,13 +1153,15 @@ export class Pool {
    * @param {String} poolAddress
    * @param {String} tokenAmountIn exact number of base tokens to spend
    * @param {String} minPoolAmountOut minimum of pool shares expectex
+   * @param {number} tokenInDecimals optional number of decimals of the token
    * @return {TransactionReceipt}
    */
   async joinswapExternAmountIn(
     account: string,
     poolAddress: string,
     tokenAmountIn: string,
-    minPoolAmountOut: string
+    minPoolAmountOut: string,
+    tokenInDecimals?: number
   ): Promise<TransactionReceipt> {
     const pool = setContractDefaults(
       new this.web3.eth.Contract(this.poolAbi, poolAddress),
@@ -1172,7 +1174,11 @@ export class Pool {
       throw new Error(`tokenAmountOut is greater than ${maxSwap.toString()}`)
     }
 
-    const amountInFormatted = await this.amountToUnits(tokenIn, tokenAmountIn)
+    const amountInFormatted = await this.amountToUnits(
+      tokenIn,
+      tokenAmountIn,
+      tokenInDecimals
+    )
     const estGas = await this.estJoinswapExternAmountIn(
       account,
       poolAddress,
@@ -1241,13 +1247,15 @@ export class Pool {
    * @param {String} poolAddress
    * @param {String} poolAmountIn exact number of pool shares to spend
    * @param {String} minTokenAmountOut minimum amount of basetokens expected
+   * @param {number} poolDecimals optional number of decimals of the poool
    * @return {TransactionReceipt}
    */
   async exitswapPoolAmountIn(
     account: string,
     poolAddress: string,
     poolAmountIn: string,
-    minTokenAmountOut: string
+    minTokenAmountOut: string,
+    poolDecimals?: number
   ): Promise<TransactionReceipt> {
     const pool = setContractDefaults(
       new this.web3.eth.Contract(this.poolAbi, poolAddress),
@@ -1269,7 +1277,8 @@ export class Pool {
 
     const minTokenOutFormatted = await this.amountToUnits(
       await this.getBaseToken(poolAddress),
-      minTokenAmountOut
+      minTokenAmountOut,
+      poolDecimals
     )
     const estGas = await this.estExitswapPoolAmountIn(
       account,
