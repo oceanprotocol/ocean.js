@@ -113,8 +113,7 @@ import {
   TokenInOutMarket,
   ZERO_ADDRESS
 } from '../../src'
-import { getTestConfig, web3 } from '../config'
-import { Addresses, deployContracts } from '../TestContractHandler'
+import { getAddresses, getTestConfig, web3 } from '../config'
 /// ```
 
 /// <!--
@@ -130,7 +129,7 @@ describe('Marketplace flow tests', async () => {
   let publisherAccount: string
   let consumerAccount: string
   let stakerAccount: string
-  let contracts: Addresses
+  let addresses: any
   let poolNftAddress: string
   let poolDatatokenAddress: string
   let poolAddress: string
@@ -224,9 +223,9 @@ describe('Marketplace flow tests', async () => {
   }) ///
   /// ```
 
-  it('5.2 Next, lets deploy the contracts', async () => {
+  it('5.2 Next, lets get the address of the deployed contracts', async () => {
     /// ```Typescript
-    contracts = await deployContracts(web3, publisherAccount)
+    addresses = getAddresses()
   }) ///
   /// ```
 
@@ -234,7 +233,7 @@ describe('Marketplace flow tests', async () => {
     /// ```Typescript
     const oceanContract = new web3.eth.Contract(
       MockERC20.abi as AbiItem[],
-      contracts.oceanAddress
+      addresses.Ocean
     )
 
     await oceanContract.methods
@@ -253,7 +252,7 @@ describe('Marketplace flow tests', async () => {
 
   it('6.1 Publish a dataset (create NFT + Datatoken) with a liquidity pool', async () => {
     /// ```Typescript
-    const factory = new NftFactory(contracts.erc721FactoryAddress, web3)
+    const factory = new NftFactory(addresses.ERC721Factory, web3)
 
     const nftParams: NftCreateData = {
       name: POOL_NFT_NAME,
@@ -275,12 +274,12 @@ describe('Marketplace flow tests', async () => {
     }
 
     const poolParams: PoolCreationParams = {
-      ssContract: contracts.sideStakingAddress,
-      baseTokenAddress: contracts.oceanAddress,
-      baseTokenSender: contracts.erc721FactoryAddress,
+      ssContract: addresses.Staking,
+      baseTokenAddress: addresses.Ocean,
+      baseTokenSender: addresses.ERC721Factory,
       publisherAddress: publisherAccount,
       marketFeeCollector: publisherAccount,
-      poolTemplateAddress: contracts.poolTemplateAddress,
+      poolTemplateAddress: addresses.poolTemplate,
       rate: '1',
       baseTokenDecimals: 18,
       vestingAmount: '10000',
@@ -295,8 +294,8 @@ describe('Marketplace flow tests', async () => {
     await approve(
       web3,
       publisherAccount,
-      contracts.oceanAddress,
-      contracts.erc721FactoryAddress,
+      addresses.Ocean,
+      addresses.ERC721Factory,
       poolParams.vestingAmount
     )
 
@@ -367,7 +366,7 @@ describe('Marketplace flow tests', async () => {
     /// ```
     /// Before we call the contract we have to call `approve` so that the contract can move our tokens. This is standard when using any ERC20 tokens
     /// ```Typescript
-    await approve(web3, stakerAccount, contracts.oceanAddress, poolAddress, '5', true)
+    await approve(web3, stakerAccount, addresses.Ocean, poolAddress, '5', true)
 
     /// ```
     /// Now we can make the contract call
@@ -382,7 +381,7 @@ describe('Marketplace flow tests', async () => {
     const prices = await pool.getAmountInExactOut(
       poolAddress,
       poolDatatokenAddress,
-      contracts.oceanAddress,
+      addresses.Ocean,
       '1',
       '0.01'
     )
@@ -404,7 +403,7 @@ describe('Marketplace flow tests', async () => {
     console.log(`Consumer ETH balance: ${consumerETHBalance}`)
     let consumerOCEANBalance = await balance(
       web3,
-      contracts.oceanAddress,
+      addresses.Ocean,
       consumerAccount
     )
     /// ```
@@ -420,11 +419,11 @@ describe('Marketplace flow tests', async () => {
     /// ```
     /// Before we call the contract we have to call `approve` so that the contract can move our tokens. This is standard when using any ERC20 tokens
     /// ```Typescript
-    await approve(web3, consumerAccount, contracts.oceanAddress, poolAddress, '100')
+    await approve(web3, consumerAccount, addresses.Ocean, poolAddress, '100')
 
     const pool = new Pool(web3)
     const tokenInOutMarket: TokenInOutMarket = {
-      tokenIn: contracts.oceanAddress,
+      tokenIn: addresses.Ocean,
       tokenOut: poolDatatokenAddress,
       marketFeeAddress: consumerAccount
     }
@@ -444,7 +443,7 @@ describe('Marketplace flow tests', async () => {
       amountsInOutMaxFee
     )
 
-    consumerOCEANBalance = await balance(web3, contracts.oceanAddress, consumerAccount)
+    consumerOCEANBalance = await balance(web3, addresses.Ocean, consumerAccount)
     /// ```
     /// Now let's console log the Consumer OCEAN balance after swap to check everything is working
     /// ```Typescript
@@ -509,7 +508,7 @@ describe('Marketplace flow tests', async () => {
     /// ```Typescript
     console.log(`Download URL: ${downloadURL}`)
 
-    consumerOCEANBalance = await balance(web3, contracts.oceanAddress, consumerAccount)
+    consumerOCEANBalance = await balance(web3, addresses.Ocean, consumerAccount)
     console.log(`Consumer OCEAN balance after order: ${consumerOCEANBalance}`)
     consumerDTBalance = await balance(web3, poolDatatokenAddress, consumerAccount)
 
@@ -531,7 +530,7 @@ describe('Marketplace flow tests', async () => {
 
   it('7.1 Publish a dataset (create NFT + Datatoken) with a fixed rate exchange', async () => {
     /// ```Typescript
-    const factory = new NftFactory(contracts.erc721FactoryAddress, web3)
+    const factory = new NftFactory(addresses.ERC721Factory, web3)
 
     const nftParams: NftCreateData = {
       name: FRE_NFT_NAME,
@@ -553,8 +552,8 @@ describe('Marketplace flow tests', async () => {
     }
 
     const freParams: FreCreationParams = {
-      fixedRateAddress: contracts.fixedRateAddress,
-      baseTokenAddress: contracts.oceanAddress,
+      fixedRateAddress: addresses.FixedPrice,
+      baseTokenAddress: addresses.Ocean,
       owner: publisherAccount,
       marketFeeCollector: publisherAccount,
       baseTokenDecimals: 18,
@@ -656,7 +655,7 @@ describe('Marketplace flow tests', async () => {
     console.log(`Consumer ETH balance: ${consumerETHBalance}`)
     let consumerOCEANBalance = await balance(
       web3,
-      contracts.oceanAddress,
+      addresses.Ocean,
       consumerAccount
     )
     console.log(`Consumer OCEAN balance before swap: ${consumerOCEANBalance}`)
@@ -666,7 +665,7 @@ describe('Marketplace flow tests', async () => {
     /// ```
     /// Before we call the contract we have to call `approve` so that the contract can move our tokens. This is standard when using any ERC20 tokens
     /// ```Typescript
-    await approve(web3, consumerAccount, contracts.oceanAddress, freAddress, '100')
+    await approve(web3, consumerAccount, addresses.Ocean, freAddress, '100')
     await approve(
       web3,
       publisherAccount,
@@ -681,7 +680,7 @@ describe('Marketplace flow tests', async () => {
     /// ```Typescript
     await fixedRate.buyDT(consumerAccount, freId, '1', '2')
 
-    consumerOCEANBalance = await balance(web3, contracts.oceanAddress, consumerAccount)
+    consumerOCEANBalance = await balance(web3, addresses.Ocean, consumerAccount)
     console.log(`Consumer OCEAN balance after swap: ${consumerOCEANBalance}`)
     consumerDTBalance = await balance(web3, freDatatokenAddress, consumerAccount)
     console.log(`Consumer ${FRE_NFT_SYMBOL} balance after swap: ${consumerDTBalance}`)
@@ -739,7 +738,7 @@ describe('Marketplace flow tests', async () => {
     /// ```Typescript
     console.log(`Download URL: ${downloadURL}`)
 
-    consumerOCEANBalance = await balance(web3, contracts.oceanAddress, consumerAccount)
+    consumerOCEANBalance = await balance(web3, addresses.Ocean, consumerAccount)
     console.log(`Consumer OCEAN balance after order: ${consumerOCEANBalance}`)
     consumerDTBalance = await balance(web3, freDatatokenAddress, consumerAccount)
     console.log(`Consumer ${FRE_NFT_SYMBOL} balance after order: ${consumerDTBalance}`)
@@ -757,7 +756,7 @@ describe('Marketplace flow tests', async () => {
 
   it('8.1 Publish a dataset (create NFT + Datatoken) with a dispenser', async () => {
     /// ```Typescript
-    const factory = new NftFactory(contracts.erc721FactoryAddress, web3)
+    const factory = new NftFactory(addresses.ERC721Factory, web3)
 
     const nftParams: NftCreateData = {
       name: DISP_NFT_NAME,
@@ -779,7 +778,7 @@ describe('Marketplace flow tests', async () => {
     }
 
     const dispenserParams: DispenserCreationParams = {
-      dispenserAddress: contracts.dispenserAddress,
+      dispenserAddress: addresses.Dispenser,
       maxTokens: '1',
       maxBalance: '1',
       withMint: true,
@@ -846,7 +845,7 @@ describe('Marketplace flow tests', async () => {
   it('8.3 Consumer gets a dispenser data asset, and downloads it', async () => {
     /// ```Typescript
     const datatoken = new Datatoken(web3)
-    const dispenser = new Dispenser(web3, null, contracts.dispenserAddress)
+    const dispenser = new Dispenser(web3, null, addresses.Dispenser)
 
     let consumerDTBalance = await balance(
       web3,
