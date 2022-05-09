@@ -401,11 +401,7 @@ describe('Marketplace flow tests', async () => {
     /// Now let's console log the result to check everything is working
     /// ```Typescript
     console.log(`Consumer ETH balance: ${consumerETHBalance}`)
-    let consumerOCEANBalance = await balance(
-      web3,
-      addresses.Ocean,
-      consumerAccount
-    )
+    let consumerOCEANBalance = await balance(web3, addresses.Ocean, consumerAccount)
     /// ```
     /// Now let's console log consumerOCEANBalance to check everything is working
     /// ```Typescript
@@ -653,11 +649,7 @@ describe('Marketplace flow tests', async () => {
     /// Let's do a quick check of the consumer ETH balance before the swap
     /// ```Typescript
     console.log(`Consumer ETH balance: ${consumerETHBalance}`)
-    let consumerOCEANBalance = await balance(
-      web3,
-      addresses.Ocean,
-      consumerAccount
-    )
+    let consumerOCEANBalance = await balance(web3, addresses.Ocean, consumerAccount)
     console.log(`Consumer OCEAN balance before swap: ${consumerOCEANBalance}`)
     let consumerDTBalance = await balance(web3, freDatatokenAddress, consumerAccount)
     console.log(`Consumer ${FRE_NFT_SYMBOL} balance before swap: ${consumerDTBalance}`)
