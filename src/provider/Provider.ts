@@ -7,7 +7,8 @@ import {
   ComputeAlgorithm,
   ComputeAsset,
   ComputeEnvironment,
-  ProviderInitialize
+  ProviderInitialize,
+  ProviderComputeInitializeResults
 } from '../@types/'
 import { noZeroX } from '../utils/ConversionTypeHelper'
 import fetch from 'cross-fetch'
@@ -324,6 +325,60 @@ export class Provider {
     } catch (e) {
       LoggerInstance.error(e)
       throw new Error('Asset URL not found or not available.')
+    }
+  }
+
+  /** Initialize a compute request.
+   * @param {ComputeAsset} assets
+   * @param {ComputeAlgorithmber} algorithm
+   * @param {string} computeEnv
+   * @param {number} validUntil
+   * @param {string} providerUri Identifier of the asset to be registered in ocean
+   * @param {string} accountId
+   * @param {AbortSignal} signal abort signal
+   * @return {Promise<ProviderComputeInitialize>} ProviderComputeInitialize data
+   */
+  public async initializeCompute(
+    assets: ComputeAsset[],
+    algorithm: ComputeAlgorithm,
+    computeEnv: string,
+    validUntil: number,
+    providerUri: string,
+    accountId: string,
+    signal?: AbortSignal
+  ): Promise<ProviderComputeInitializeResults> {
+    const providerEndpoints = await this.getEndpoints(providerUri)
+    const serviceEndpoints = await this.getServiceEndpoints(
+      providerUri,
+      providerEndpoints
+    )
+    const providerData = {
+      datasets: assets,
+      algorithm: algorithm,
+      compute: {
+        env: computeEnv,
+        validUntil: validUntil
+      },
+      consumerAddress: accountId
+    }
+    const initializeUrl = this.getEndpointURL(serviceEndpoints, 'initializeCompute')
+      ? this.getEndpointURL(serviceEndpoints, 'initializeCompute').urlPath
+      : null
+    if (!initializeUrl) return null
+    try {
+      const response = await fetch(initializeUrl, {
+        method: 'POST',
+        body: JSON.stringify(providerData),
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        signal: signal
+      })
+      const results = await response.json()
+      return results
+    } catch (e) {
+      LoggerInstance.error(e)
+      throw new Error('ComputeJob cannot be initialized')
     }
   }
 
