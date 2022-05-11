@@ -1627,7 +1627,7 @@ export class Pool {
     const eventdata = abi.find(
       ({ name, type }) => type === 'event' && name === 'LOG_SWAP'
     )
-    const topic = this.web3.eth.abi.encodeEventSignature(eventdata as any)
+    const topic = this.web3.eth.abi.encodeEventSignature(eventdata)
     return topic
   }
 
@@ -1640,7 +1640,7 @@ export class Pool {
     const eventdata = abi.find(
       ({ name, type }) => type === 'event' && name === 'LOG_JOIN'
     )
-    const topic = this.web3.eth.abi.encodeEventSignature(eventdata as any)
+    const topic = this.web3.eth.abi.encodeEventSignature(eventdata)
     return topic
   }
 
@@ -1653,7 +1653,7 @@ export class Pool {
     const eventdata = abi.find(
       ({ name, type }) => type === 'event' && name === 'LOG_EXIT'
     )
-    const topic = this.web3.eth.abi.encodeEventSignature(eventdata as any)
+    const topic = this.web3.eth.abi.encodeEventSignature(eventdata)
     return topic
   }
 }
