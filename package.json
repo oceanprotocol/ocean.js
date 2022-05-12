@@ -35,6 +35,7 @@
     "test:nftDt": "npm run mocha -- 'test/unit/tokens/Nft.test.ts'",
     "test:factory": "npm run mocha -- 'test/unit/NftFactory.test.ts'",
     "test:router": "npm run mocha -- 'test/unit/pools/Router.test.ts'",
+    "test:estimateGas": "npm run mocha -- 'test/unit/utils/estimateGas.test.ts'",
     "test:publishAll": "npm run mocha -- 'test/integration/PublishFlows.test.ts'",
     "test:unit": "npm run mocha -- 'test/unit/**/*.test.ts'",
     "test:unit:cover": "nyc --report-dir coverage/unit npm run test:unit",
