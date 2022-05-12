@@ -183,7 +183,15 @@ export async function estimateGas(
       {
         from: from
       },
-      (err, estGas) => (err ? GASLIMIT_DEFAULT : estGas)
+      (err, estGas) => {
+        if (err) {
+          console.log('ERROR ESTIMATING GAS: ' + err)
+          return GASLIMIT_DEFAULT
+        } else {
+          console.log('OK ESTIMATING GAS: ' + estGas)
+          return estGas
+        }
+      }
     )
   } catch (e) {
     LoggerInstance.error(`ERROR: Estimate gas failed!`, e)
