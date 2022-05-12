@@ -39,6 +39,7 @@ describe('NFT', () => {
     nftFactory = new NftFactory(
       contracts.erc721FactoryAddress,
       web3,
+      8996,
       ERC721Factory.abi as AbiItem[]
     )
     const nftData: NftCreateData = {
@@ -51,7 +52,7 @@ describe('NFT', () => {
     }
 
     nftAddress = await nftFactory.createNFT(nftOwner, nftData)
-    nftDatatoken = new Nft(web3, ERC721Template.abi as AbiItem[])
+    nftDatatoken = new Nft(web3, 8996, ERC721Template.abi as AbiItem[])
   })
   it('#getTokenURI', async () => {
     const tokenURI = await nftDatatoken.getTokenURI(nftAddress, 1)

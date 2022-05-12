@@ -120,11 +120,12 @@ export async function getPoolCreationParams(
 export async function unitsToAmount(
   web3: Web3,
   token: string,
-  amount: string
+  amount: string,
+  tokenDecimals?: number
 ): Promise<string> {
   try {
     const tokenContract = new web3.eth.Contract(minAbi, token)
-    let decimals = await tokenContract.methods.decimals().call()
+    let decimals = tokenDecimals || (await tokenContract.methods.decimals().call())
     if (decimals === '0') {
       decimals = 18
     }
@@ -143,11 +144,12 @@ export async function unitsToAmount(
 export async function amountToUnits(
   web3: Web3,
   token: string,
-  amount: string
+  amount: string,
+  tokenDecimals?: number
 ): Promise<string> {
   try {
     const tokenContract = new web3.eth.Contract(minAbi, token)
-    let decimals = await tokenContract.methods.decimals().call()
+    let decimals = tokenDecimals || (await tokenContract.methods.decimals().call())
     if (decimals === '0') {
       decimals = 18
     }

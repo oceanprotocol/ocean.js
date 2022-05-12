@@ -10,10 +10,10 @@ import {
   getFreCreationParams,
   getErcCreationParams,
   getPoolCreationParams,
-  configHelperNetworks,
   setContractDefaults,
   estimateGas,
-  ZERO_ADDRESS
+  ZERO_ADDRESS,
+  ConfigHelper
 } from '../utils'
 import { Config } from '../models/index.js'
 import {
@@ -66,13 +66,14 @@ export class NftFactory {
   constructor(
     factory721Address: string,
     web3: Web3,
+    network?: string | number,
     factory721Abi?: AbiItem | AbiItem[],
     config?: Config
   ) {
     this.factory721Address = factory721Address
     this.factory721Abi = factory721Abi || (defaultFactory721Abi.abi as AbiItem[])
     this.web3 = web3
-    this.config = config || configHelperNetworks[0]
+    this.config = config || new ConfigHelper().getConfig(network || 'unknown')
     this.factory721 = setContractDefaults(
       new this.web3.eth.Contract(this.factory721Abi, this.factory721Address),
       this.config

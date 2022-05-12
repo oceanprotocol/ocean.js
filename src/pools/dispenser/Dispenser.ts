@@ -7,9 +7,9 @@ import defaultDispenserAbi from '@oceanprotocol/contracts/artifacts/contracts/po
 import {
   LoggerInstance as logger,
   getFairGasPrice,
-  configHelperNetworks,
   setContractDefaults,
-  estimateGas
+  estimateGas,
+  ConfigHelper
 } from '../../utils/'
 import { Datatoken } from '../../tokens'
 import { Config } from '../../models/index.js'
@@ -39,6 +39,7 @@ export class Dispenser {
    */
   constructor(
     web3: Web3,
+    network?: string | number,
     dispenserAddress: string = null,
     dispenserAbi: AbiItem | AbiItem[] = null,
     config?: Config
@@ -46,7 +47,7 @@ export class Dispenser {
     this.web3 = web3
     this.dispenserAddress = dispenserAddress
     this.dispenserAbi = dispenserAbi || (defaultDispenserAbi.abi as AbiItem[])
-    this.config = config || configHelperNetworks[0]
+    this.config = config || new ConfigHelper().getConfig(network || 'unknown')
     if (web3)
       this.dispenserContract = setContractDefaults(
         new this.web3.eth.Contract(this.dispenserAbi, this.dispenserAddress),

@@ -9,10 +9,10 @@ import {
   LoggerInstance,
   getFairGasPrice,
   setContractDefaults,
-  configHelperNetworks,
   getFreOrderParams,
   estimateGas,
-  ZERO_ADDRESS
+  ZERO_ADDRESS,
+  ConfigHelper
 } from '../utils'
 import {
   ConsumeMarketFee,
@@ -61,6 +61,7 @@ export class Datatoken {
    */
   constructor(
     web3: Web3,
+    network?: string | number,
     datatokensAbi?: AbiItem | AbiItem[],
     datatokensEnterpriseAbi?: AbiItem | AbiItem[],
     config?: Config
@@ -69,7 +70,7 @@ export class Datatoken {
     this.datatokensAbi = datatokensAbi || (defaultDatatokensAbi.abi as AbiItem[])
     this.datatokensEnterpriseAbi =
       datatokensEnterpriseAbi || (defaultDatatokensEnterpriseAbi.abi as AbiItem[])
-    this.config = config || configHelperNetworks[0]
+    this.config = config || new ConfigHelper().getConfig(network || 'unknown')
     this.nft = new Nft(this.web3)
   }
 
