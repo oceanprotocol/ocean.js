@@ -71,7 +71,8 @@ describe('Pool unit test', () => {
     contracts = await deployContracts(web3, factoryOwner)
 
     // initialize Pool instance
-    pool = new Pool(web3)
+    pool = new Pool(web3, 8996)
+    assert(pool != null)
 
     daiContract = new web3.eth.Contract(MockERC20.abi as AbiItem[], contracts.daiAddress)
     usdcContract = new web3.eth.Contract(
@@ -138,7 +139,7 @@ describe('Pool unit test', () => {
         swapFeeMarketRunner: '0.001'
       }
 
-      const nftFactory = new NftFactory(contracts.erc721FactoryAddress, web3)
+      const nftFactory = new NftFactory(contracts.erc721FactoryAddress, web3, 8996)
 
       const txReceipt = await nftFactory.createNftErc20WithPool(
         factoryOwner,
@@ -289,23 +290,7 @@ describe('Pool unit test', () => {
       assert(tx != null)
     })
 
-    it('#joinPool- user1 should add liquidity, receiving LP tokens', async () => {
-      const BPTAmountOut = '0.01'
-      const maxAmountsIn = [
-        '50', // Amounts IN
-        '50' // Amounts IN
-      ]
-
-      await approve(web3, user1, erc20Token, poolAddress, '50')
-      await approve(web3, user1, contracts.daiAddress, poolAddress, '50')
-      const tx = await pool.joinPool(user1, poolAddress, BPTAmountOut, maxAmountsIn)
-      assert(tx != null)
-      expect(await pool.sharesBalance(user1, poolAddress)).to.equal(BPTAmountOut)
-      expect(tx.events.LOG_JOIN.event === 'LOG_JOIN')
-      expect(tx.events.LOG_BPT.event === 'LOG_BPT')
-    })
-
-    it('#joinswapExternAmountIn - user1 should add liquidity, receiving LP tokens', async () => {
+    it('#joinswapExternAmountIn- user2 should add liquidity, receiving LP tokens', async () => {
       const daiAmountIn = '100'
       const minBPTOut = '0.1'
       await approve(web3, user1, contracts.daiAddress, poolAddress, '100', true)
@@ -329,22 +314,7 @@ describe('Pool unit test', () => {
       )
     })
 
-    it('#exitPool- user1 exit the pool receiving both tokens, burning LP', async () => {
-      const BPTAmountIn = '0.5'
-      const minAmountOut = [
-        '1', // min amount out for OCEAN AND DT
-        '1'
-      ]
-
-      const tx = await pool.exitPool(user1, poolAddress, BPTAmountIn, minAmountOut)
-
-      assert(tx != null)
-
-      expect(tx.events.LOG_EXIT[0].returnValues.tokenOut).to.equal(erc20Token)
-      expect(tx.events.LOG_EXIT[1].returnValues.tokenOut).to.equal(contracts.daiAddress)
-    })
-
-    it('#exitswapPoolAmountIn - user1 exit the pool receiving only DAI', async () => {
+    it('#exitswapPoolAmountIn- user2 exit the pool receiving only DAI', async () => {
       const BPTAmountIn = '0.5'
       const minDAIOut = '0.5'
 
@@ -573,7 +543,7 @@ describe('Pool unit test', () => {
         swapFeeMarketRunner: '0.001'
       }
 
-      const nftFactory = new NftFactory(contracts.erc721FactoryAddress, web3)
+      const nftFactory = new NftFactory(contracts.erc721FactoryAddress, web3, 8996)
 
       const txReceipt = await nftFactory.createNftErc20WithPool(
         factoryOwner,
@@ -797,27 +767,7 @@ describe('Pool unit test', () => {
       // console.log(tx.events)
     })
 
-    it('#joinPool- user1 should add liquidity, receiving LP tokens', async () => {
-      const BPTAmountOut = '0.01'
-      const maxAmountsIn = [
-        '50', // Amounts IN
-        '50' // Amounts IN
-      ]
-
-      await approve(web3, user1, erc20Token, poolAddress, '50')
-      await approve(web3, user1, contracts.usdcAddress, poolAddress, '50')
-      const tx = await pool.joinPool(user1, poolAddress, BPTAmountOut, maxAmountsIn)
-      assert(tx != null)
-      expect(await pool.sharesBalance(user1, poolAddress)).to.equal(BPTAmountOut)
-      expect(tx.events.LOG_JOIN.event === 'LOG_JOIN')
-      expect(tx.events.LOG_BPT.event === 'LOG_BPT')
-
-      // console.log(tx)
-      // console.log(tx.events.LOG_JOIN)
-      // console.log(tx.events.LOG_BPT)
-    })
-
-    it('#joinswapExternAmountIn - user1 should add liquidity, receiving LP tokens', async () => {
+    it('#joinswapExternAmountIn- user2 should add liquidity, receiving LP tokens', async () => {
       const usdcAmountIn = '100'
       const minBPTOut = '0.1'
       await approve(web3, user1, contracts.usdcAddress, poolAddress, '100', true)
@@ -839,22 +789,7 @@ describe('Pool unit test', () => {
       )
     })
 
-    it('#exitPool- user1 exit the pool receiving both tokens, burning LP', async () => {
-      const BPTAmountIn = '0.5'
-      const minAmountOut = [
-        '1', // min amount out for USDC AND DT
-        '1'
-      ]
-
-      const tx = await pool.exitPool(user1, poolAddress, BPTAmountIn, minAmountOut)
-
-      assert(tx != null)
-
-      expect(tx.events.LOG_EXIT[0].returnValues.tokenOut).to.equal(erc20Token)
-      expect(tx.events.LOG_EXIT[1].returnValues.tokenOut).to.equal(contracts.usdcAddress)
-    })
-
-    it('#exitswapPoolAmountIn - user1 exit the pool receiving only USDC', async () => {
+    it('#exitswapPoolAmountIn- user2 exit the pool receiving only USDC', async () => {
       const BPTAmountIn = '0.5'
       const minUSDCOut = '0.5'
 

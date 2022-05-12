@@ -43,6 +43,7 @@ describe('Dispenser flow', () => {
   it('should initialize Dispenser class', async () => {
     DispenserClass = new Dispenser(
       web3,
+      8996,
       contracts.dispenserAddress,
       DispenserTemplate.abi as AbiItem[]
     )
@@ -87,7 +88,7 @@ describe('Dispenser flow', () => {
   })
 
   it('Make user2 minter', async () => {
-    datatoken = new Datatoken(web3, ERC20Template.abi as AbiItem[])
+    datatoken = new Datatoken(web3, 8996, ERC20Template.abi as AbiItem[])
     await datatoken.addMinter(dtAddress, factoryOwner, user2)
     assert((await datatoken.getDTPermissions(dtAddress, user2)).minter === true)
   })
