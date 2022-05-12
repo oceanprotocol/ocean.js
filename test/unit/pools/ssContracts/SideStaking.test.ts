@@ -222,9 +222,9 @@ describe('SideStaking unit test', () => {
     })
 
     it('#getvestingAmount ', async () => {
-      expect(await sideStaking.getvestingAmount(contracts.sideStakingAddress, erc20Token)).to.equal(
-        '0'
-      )
+      expect(
+        await sideStaking.getvestingAmount(contracts.sideStakingAddress, erc20Token)
+      ).to.equal('0')
     })
 
     it('#getvestingLastBlock ', async () => {
@@ -389,9 +389,9 @@ describe('SideStaking unit test', () => {
     })
 
     it('#getvestingAmount ', async () => {
-      expect(await sideStaking.getvestingAmount(contracts.sideStakingAddress, erc20Token)).to.equal(
-        '0'
-      )
+      expect(
+        await sideStaking.getvestingAmount(contracts.sideStakingAddress, erc20Token)
+      ).to.equal('0')
     })
 
     it('#getvestingLastBlock ', async () => {
