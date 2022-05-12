@@ -810,7 +810,7 @@ export class FixedRateExchange {
     let estGas
     try {
       estGas = await fixedRate.methods
-        .toggleMintState(exchangeId)
+        .toggleMintState(exchangeId, false)
         .estimateGas({ from: account }, (err, estGas) => (err ? gasLimitDefault : estGas))
       console.log('### estGas', estGas)
     } catch (e) {
@@ -834,7 +834,7 @@ export class FixedRateExchange {
     if (!exchange) return null
     if (exchange.withMint === false) return null
 
-    const estGas = await this.estDeactivate(address, exchangeId)
+    const estGas = await this.estDeactivateMint(address, exchangeId)
     console.log('estGas', estGas)
 
     const trxReceipt = await this.fixedRateContract.methods
