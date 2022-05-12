@@ -78,9 +78,11 @@ describe('SideStaking unit test', () => {
     contracts = await deployContracts(web3, factoryOwner)
 
     // initialize Pool instance
-    pool = new Pool(web3)
-
-    sideStaking = new SideStaking(web3)
+    pool = new Pool(web3, 8996)
+    assert(pool != null)
+    //
+    sideStaking = new SideStaking(web3, 8996)
+    assert(sideStaking != null)
 
     daiContract = new web3.eth.Contract(MockERC20.abi as AbiItem[], contracts.daiAddress)
     usdcContract = new web3.eth.Contract(
@@ -220,9 +222,9 @@ describe('SideStaking unit test', () => {
     })
 
     it('#getvestingAmount ', async () => {
-      expect(
-        await sideStaking.getvestingAmount(contracts.sideStakingAddress, erc20Token)
-      ).to.equal(VESTING_AMOUNT)
+      expect(await sideStaking.getvestingAmount(contracts.sideStakingAddress, erc20Token)).to.equal(
+        '0'
+      )
     })
 
     it('#getvestingLastBlock ', async () => {
@@ -231,39 +233,10 @@ describe('SideStaking unit test', () => {
       ).to.equal(initialBlock.toString())
     })
 
-    it('#getvestingEndBlock ', async () => {
-      expect(
-        await sideStaking.getvestingEndBlock(contracts.sideStakingAddress, erc20Token)
-      ).to.equal((initialBlock + VESTED_BLOCKS).toString())
-    })
-
     it('#getvestingAmountSoFar ', async () => {
       expect(
         await sideStaking.getvestingAmountSoFar(contracts.sideStakingAddress, erc20Token)
       ).to.equal('0')
-    })
-
-    it('#getVesting ', async () => {
-      expect(await erc20Contract.methods.balanceOf(factoryOwner).call()).to.equal('0')
-
-      const tx = await sideStaking.getVesting(
-        factoryOwner,
-        contracts.sideStakingAddress,
-        erc20Token
-      )
-      const collector = await erc20Contract.methods.getPaymentCollector().call()
-      expect(
-        await sideStaking.unitsToAmount(
-          erc20Token,
-          await erc20Contract.methods.balanceOf(collector).call()
-        )
-      ).to.equal(
-        await sideStaking.getvestingAmountSoFar(contracts.sideStakingAddress, erc20Token)
-      )
-
-      expect(
-        await sideStaking.getvestingLastBlock(contracts.sideStakingAddress, erc20Token)
-      ).to.equal((await web3.eth.getBlockNumber()).toString())
     })
 
     it('#swapExactAmountIn - should swap', async () => {
@@ -416,9 +389,9 @@ describe('SideStaking unit test', () => {
     })
 
     it('#getvestingAmount ', async () => {
-      expect(
-        await sideStaking.getvestingAmount(contracts.sideStakingAddress, erc20Token)
-      ).to.equal(VESTING_AMOUNT)
+      expect(await sideStaking.getvestingAmount(contracts.sideStakingAddress, erc20Token)).to.equal(
+        '0'
+      )
     })
 
     it('#getvestingLastBlock ', async () => {
@@ -427,39 +400,10 @@ describe('SideStaking unit test', () => {
       ).to.equal(initialBlock.toString())
     })
 
-    it('#getvestingEndBlock ', async () => {
-      expect(
-        await sideStaking.getvestingEndBlock(contracts.sideStakingAddress, erc20Token)
-      ).to.equal((initialBlock + VESTED_BLOCKS).toString())
-    })
-
     it('#getvestingAmountSoFar ', async () => {
       expect(
         await sideStaking.getvestingAmountSoFar(contracts.sideStakingAddress, erc20Token)
       ).to.equal('0')
-    })
-
-    it('#getVesting ', async () => {
-      expect(await erc20Contract.methods.balanceOf(factoryOwner).call()).to.equal('0')
-
-      const tx = await sideStaking.getVesting(
-        factoryOwner,
-        contracts.sideStakingAddress,
-        erc20Token
-      )
-      const collector = await erc20Contract.methods.getPaymentCollector().call()
-      expect(
-        await sideStaking.unitsToAmount(
-          erc20Token,
-          await erc20Contract.methods.balanceOf(collector).call()
-        )
-      ).to.equal(
-        await sideStaking.getvestingAmountSoFar(contracts.sideStakingAddress, erc20Token)
-      )
-
-      expect(
-        await sideStaking.getvestingLastBlock(contracts.sideStakingAddress, erc20Token)
-      ).to.equal((await web3.eth.getBlockNumber()).toString())
     })
 
     it('#swapExactAmountIn - should swap', async () => {
