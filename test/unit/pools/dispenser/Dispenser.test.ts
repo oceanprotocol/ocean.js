@@ -59,7 +59,7 @@ describe('Dispenser flow', () => {
   })
 
   it('should initialize Dispenser class', async () => {
-    DispenserClass = new Dispenser(web3, contracts.dispenserAddress)
+    DispenserClass = new Dispenser(web3, 8996, contracts.dispenserAddress)
     assert(DispenserClass !== null)
   })
 
@@ -78,10 +78,10 @@ describe('Dispenser flow', () => {
     dtAddress = txReceipt.events.TokenCreated.returnValues.newTokenAddress
   })
 
-  it('Make user1 minter', async () => {
-    datatoken = new Datatoken(web3)
-    await datatoken.addMinter(dtAddress, factoryOwner, user1)
-    assert((await datatoken.getDTPermissions(dtAddress, user1)).minter === true)
+  it('Make user2 minter', async () => {
+    datatoken = new Datatoken(web3, 8996)
+    await datatoken.addMinter(dtAddress, factoryOwner, user2)
+    assert((await datatoken.getDTPermissions(dtAddress, user2)).minter === true)
   })
 
   it('Create dispenser', async () => {
