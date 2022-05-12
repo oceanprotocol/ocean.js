@@ -64,12 +64,11 @@ describe('Datatoken', () => {
     }
   })
 
-  it('should initialize NFTFactory, nftDT and DT instances and create a new NFT', async () => {
-    nftFactory = new NftFactory(contracts.erc721FactoryAddress, web3)
-    nftDatatoken = new Nft(web3)
-    datatoken = new Datatoken(web3)
+  it('should initialize NFTFactory instance and create a new NFT', async () => {
+    nftFactory = new NftFactory(contracts.erc721FactoryAddress, web3, 8996)
 
     nftAddress = await nftFactory.createNFT(nftOwner, nftData)
+    nftDatatoken = new Nft(web3, 8996)
   })
 
   it('#createERC20 - should create a new ERC20 DT from NFT contract', async () => {
@@ -87,6 +86,10 @@ describe('Datatoken', () => {
       'ERC20DT1Symbol'
     )
     assert(datatokenAddress !== null)
+  })
+
+  it('should initialize DT20 Instance', async () => {
+    datatoken = new Datatoken(web3, 8996)
   })
 
   it('#mint - should fail to mint DT20, if NOT Minter', async () => {
