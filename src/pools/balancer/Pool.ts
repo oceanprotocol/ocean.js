@@ -4,11 +4,11 @@ import { TransactionReceipt } from 'web3-core'
 import { Contract } from 'web3-eth-contract'
 import {
   getFairGasPrice,
-  configHelperNetworks,
   setContractDefaults,
   unitsToAmount,
   amountToUnits,
-  LoggerInstance
+  LoggerInstance,
+  ConfigHelper
 } from '../../utils'
 import BigNumber from 'bignumber.js'
 import PoolTemplate from '@oceanprotocol/contracts/artifacts/contracts/pools/balancer/BPool.sol/BPool.json'
@@ -40,11 +40,32 @@ export class Pool {
   public GASLIMIT_DEFAULT = 1000000
   private config: Config
 
-  constructor(web3: Web3, poolAbi: AbiItem | AbiItem[] = null, config?: Config) {
+  constructor(
+    web3: Web3,
+    network?: string | number,
+    poolAbi: AbiItem | AbiItem[] = null,
+    config?: Config
+  ) {
     if (poolAbi) this.poolAbi = poolAbi
     else this.poolAbi = PoolTemplate.abi as AbiItem[]
     this.web3 = web3
-    this.config = config || configHelperNetworks[0]
+    this.config = config || new ConfigHelper().getConfig(network || 'unknown')
+  }
+
+  async amountToUnits(
+    token: string,
+    amount: string,
+    tokenDecimals?: number
+  ): Promise<string> {
+    return amountToUnits(this.web3, token, amount, tokenDecimals)
+  }
+
+  async unitsToAmount(
+    token: string,
+    amount: string,
+    tokenDecimals?: number
+  ): Promise<string> {
+    return unitsToAmount(this.web3, token, amount, tokenDecimals)
   }
 
   /**
@@ -362,9 +383,14 @@ export class Pool {
    * Returns the current token reserve amount
    * @param {String} poolAddress
    * @param {String} token  Address of the token to be checked
+   * @param {number} tokenDecimals optional number of decimals of the token
    * @return {String}
    */
-  async getReserve(poolAddress: string, token: string): Promise<string> {
+  async getReserve(
+    poolAddress: string,
+    token: string,
+    tokenDecimals?: number
+  ): Promise<string> {
     let amount = null
     try {
       const pool = setContractDefaults(
@@ -372,7 +398,7 @@ export class Pool {
         this.config
       )
       const result = await pool.methods.getBalance(token).call()
-      amount = await unitsToAmount(this.web3, token, result)
+      amount = await this.unitsToAmount(token, result, tokenDecimals)
     } catch (e) {
       LoggerInstance.error(`ERROR: Failed to get how many tokens \
       are in the pool: ${e.message}`)
@@ -498,9 +524,14 @@ export class Pool {
    * Get Market Fees available to be collected for a specific token
    * @param {String} poolAddress
    * @param {String} token token we want to check fees
+   * @param {number} tokenDecimals optional number of decimals of the token
    * @return {String}
    */
-  async getMarketFees(poolAddress: string, token: string): Promise<string> {
+  async getMarketFees(
+    poolAddress: string,
+    token: string,
+    tokenDecimals?: number
+  ): Promise<string> {
     const pool = setContractDefaults(
       new this.web3.eth.Contract(this.poolAbi, poolAddress),
       this.config
@@ -508,7 +539,7 @@ export class Pool {
     let weight = null
     try {
       const result = await pool.methods.publishMarketFees(token).call()
-      weight = await unitsToAmount(this.web3, token, result)
+      weight = await this.unitsToAmount(token, result, tokenDecimals)
     } catch (e) {
       LoggerInstance.error(`ERROR: Failed to get market fees for a token: ${e.message}`)
     }
@@ -557,9 +588,14 @@ export class Pool {
    * Get Community Fees available to be collected for a specific token
    * @param {String} poolAddress
    * @param {String} token token we want to check fees
+   * @param {number} tokenDecimals optional number of decimals of the token
    * @return {String}
    */
-  async getCommunityFees(poolAddress: string, token: string): Promise<string> {
+  async getCommunityFees(
+    poolAddress: string,
+    token: string,
+    tokenDecimals?: number
+  ): Promise<string> {
     const pool = setContractDefaults(
       new this.web3.eth.Contract(this.poolAbi, poolAddress),
       this.config
@@ -567,7 +603,7 @@ export class Pool {
     let weight = null
     try {
       const result = await pool.methods.communityFees(token).call()
-      weight = await unitsToAmount(this.web3, token, result)
+      weight = await this.unitsToAmount(token, result, tokenDecimals)
     } catch (e) {
       LoggerInstance.error(
         `ERROR: Failed to get community fees for a token: ${e.message}`
@@ -802,21 +838,20 @@ export class Pool {
         this.config
       )
 
-    const tokenAmountIn = await amountToUnits(
-      this.web3,
+    const tokenAmountIn = await this.amountToUnits(
       tokenInOutMarket.tokenIn,
-      amountsInOutMaxFee.tokenAmountIn
+      amountsInOutMaxFee.tokenAmountIn,
+      tokenInOutMarket.tokenInDecimals
     )
 
-    const minAmountOut = await amountToUnits(
-      this.web3,
+    const minAmountOut = await this.amountToUnits(
       tokenInOutMarket.tokenOut,
-      amountsInOutMaxFee.minAmountOut
+      amountsInOutMaxFee.minAmountOut,
+      tokenInOutMarket.tokenOutDecimals
     )
 
     const maxPrice = amountsInOutMaxFee.maxPrice
-      ? amountToUnits(
-          this.web3,
+      ? this.amountToUnits(
           await this.getBaseToken(poolAddress),
           amountsInOutMaxFee.maxPrice
         )
@@ -882,23 +917,22 @@ export class Pool {
       amountsInOutMaxFee
     )
 
-    const tokenAmountIn = await amountToUnits(
-      this.web3,
+    const tokenAmountIn = await this.amountToUnits(
       tokenInOutMarket.tokenIn,
-      amountsInOutMaxFee.tokenAmountIn
+      amountsInOutMaxFee.tokenAmountIn,
+      tokenInOutMarket.tokenInDecimals
     )
 
-    const minAmountOut = await amountToUnits(
-      this.web3,
+    const minAmountOut = await this.amountToUnits(
       tokenInOutMarket.tokenOut,
-      amountsInOutMaxFee.minAmountOut
+      amountsInOutMaxFee.minAmountOut,
+      tokenInOutMarket.tokenOutDecimals
     )
 
     let result = null
 
     const maxPrice = amountsInOutMaxFee.maxPrice
-      ? await amountToUnits(
-          this.web3,
+      ? await this.amountToUnits(
           await this.getBaseToken(poolAddress),
           amountsInOutMaxFee.maxPrice
         )
@@ -956,21 +990,20 @@ export class Pool {
 
     const gasLimitDefault = this.GASLIMIT_DEFAULT
 
-    const maxAmountIn = await amountToUnits(
-      this.web3,
+    const maxAmountIn = await this.amountToUnits(
       tokenInOutMarket.tokenIn,
-      amountsInOutMaxFee.maxAmountIn
+      amountsInOutMaxFee.maxAmountIn,
+      tokenInOutMarket.tokenInDecimals
     )
 
-    const tokenAmountOut = await amountToUnits(
-      this.web3,
+    const tokenAmountOut = await this.amountToUnits(
       tokenInOutMarket.tokenOut,
-      amountsInOutMaxFee.tokenAmountOut
+      amountsInOutMaxFee.tokenAmountOut,
+      tokenInOutMarket.tokenOutDecimals
     )
 
     const maxPrice = amountsInOutMaxFee.maxPrice
-      ? await amountToUnits(
-          this.web3,
+      ? await this.amountToUnits(
           await this.getBaseToken(poolAddress),
           amountsInOutMaxFee.maxPrice
         )
@@ -1031,21 +1064,20 @@ export class Pool {
       amountsInOutMaxFee
     )
 
-    const maxAmountIn = await amountToUnits(
-      this.web3,
+    const maxAmountIn = await this.amountToUnits(
       tokenInOutMarket.tokenIn,
-      amountsInOutMaxFee.maxAmountIn
+      amountsInOutMaxFee.maxAmountIn,
+      tokenInOutMarket.tokenInDecimals
     )
 
-    const tokenAmountOut = await amountToUnits(
-      this.web3,
+    const tokenAmountOut = await this.amountToUnits(
       tokenInOutMarket.tokenOut,
-      amountsInOutMaxFee.tokenAmountOut
+      amountsInOutMaxFee.tokenAmountOut,
+      tokenInOutMarket.tokenOutDecimals
     )
 
     const maxPrice = amountsInOutMaxFee.maxPrice
-      ? amountToUnits(
-          this.web3,
+      ? this.amountToUnits(
           await this.getBaseToken(poolAddress),
           amountsInOutMaxFee.maxPrice
         )
@@ -1073,177 +1105,6 @@ export class Pool {
         })
     } catch (e) {
       LoggerInstance.error(`ERROR: Failed to swap exact amount out: ${e.message}`)
-    }
-    return result
-  }
-
-  /**
-   * Estimate gas cost for joinPool method
-   * @param {String} address
-   * @param {String} poolAddress
-   * @param {String} poolAmountOut expected number of pool shares that you will get
-   * @param {String[]} maxAmountsIn array with maxium amounts spent
-   * @param {Contract} contractInstance optional contract instance
-   * @return {Promise<number>}
-   */
-  public async estJoinPool(
-    address: string,
-    poolAddress: string,
-    poolAmountOut: string,
-    maxAmountsIn: string[],
-    contractInstance?: Contract
-  ): Promise<number> {
-    const poolContract =
-      contractInstance ||
-      setContractDefaults(
-        new this.web3.eth.Contract(this.poolAbi as AbiItem[], poolAddress),
-        this.config
-      )
-
-    const gasLimitDefault = this.GASLIMIT_DEFAULT
-    let estGas
-    try {
-      estGas = await poolContract.methods
-        .joinPool(poolAmountOut, maxAmountsIn)
-        .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
-    } catch (e) {
-      estGas = gasLimitDefault
-    }
-    return estGas
-  }
-
-  /**
-   * Adds dual side liquidity to the pool (both datatoken and basetoken)
-   * This will pull some of each of the currently trading tokens in the pool,
-   * meaning you must have called approve for each token for this pool.
-   * These values are limited by the array of maxAmountsIn in the order of the pool tokens.
-   * @param {String} address
-   * @param {String} poolAddress
-   * @param {String} poolAmountOut expected number of pool shares that you will get
-   * @param {String[]} maxAmountsIn array with maxium amounts spent
-   * @return {TransactionReceipt}
-   */
-  async joinPool(
-    address: string,
-    poolAddress: string,
-    poolAmountOut: string,
-    maxAmountsIn: string[]
-  ): Promise<TransactionReceipt> {
-    const pool = setContractDefaults(
-      new this.web3.eth.Contract(this.poolAbi, poolAddress),
-      this.config
-    )
-    const weiMaxAmountsIn = []
-    const tokens = await this.getFinalTokens(poolAddress)
-
-    for (let i = 0; i < 2; i++) {
-      const amount = await amountToUnits(this.web3, tokens[i], maxAmountsIn[i])
-      weiMaxAmountsIn.push(amount)
-    }
-
-    let result = null
-
-    const estGas = await this.estJoinPool(
-      address,
-      poolAddress,
-      this.web3.utils.toWei(poolAmountOut),
-      weiMaxAmountsIn
-    )
-
-    try {
-      result = await pool.methods
-        .joinPool(this.web3.utils.toWei(poolAmountOut), weiMaxAmountsIn)
-        .send({
-          from: address,
-          gas: estGas + 1,
-          gasPrice: await getFairGasPrice(this.web3, this.config)
-        })
-    } catch (e) {
-      LoggerInstance.error(`ERROR: Failed to join pool: ${e.message}`)
-    }
-    return result
-  }
-
-  /**
-   * Estimate gas cost for exitPool
-   * @param {String} address
-   * @param {String} poolAddress
- ``* @param {String} poolAmountIn amount of pool shares spent
-   * @param {String[]} minAmountsOut  aarray with minimum amount of tokens expected
-   * @param {Contract} contractInstance optional contract instance
-   * @return {Promise<number>}
-   */
-  public async estExitPool(
-    address: string,
-    poolAddress: string,
-    poolAmountIn: string,
-    minAmountsOut: string[],
-    contractInstance?: Contract
-  ): Promise<number> {
-    const poolContract =
-      contractInstance ||
-      setContractDefaults(
-        new this.web3.eth.Contract(this.poolAbi as AbiItem[], poolAddress),
-        this.config
-      )
-
-    const gasLimitDefault = this.GASLIMIT_DEFAULT
-    let estGas
-    try {
-      estGas = await poolContract.methods
-        .exitPool(poolAmountIn, minAmountsOut)
-        .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
-    } catch (e) {
-      estGas = gasLimitDefault
-    }
-    return estGas
-  }
-
-  /**
-   * Removes dual side liquidity from the pool (both datatoken and basetoken)
-   * Exit the pool, paying poolAmountIn pool tokens and getting some of each of the currently trading tokens in return.
-   * These values are limited by the array of minAmountsOut in the order of the pool tokens.
-   * @param {String} account
-   * @param {String} poolAddress
-   * @param {String} poolAmountIn amount of pool shares spent
-   * @param {String[]} minAmountsOut array with minimum amount of tokens expected
-   * @return {TransactionReceipt}
-   */
-  async exitPool(
-    account: string,
-    poolAddress: string,
-    poolAmountIn: string,
-    minAmountsOut: string[]
-  ): Promise<TransactionReceipt> {
-    const pool = setContractDefaults(
-      new this.web3.eth.Contract(this.poolAbi, poolAddress),
-      this.config
-    )
-    const weiMinAmountsOut = []
-    const tokens = await this.getFinalTokens(poolAddress)
-
-    for (let i = 0; i < 2; i++) {
-      const amount = await amountToUnits(this.web3, tokens[i], minAmountsOut[i])
-      weiMinAmountsOut.push(amount)
-    }
-    let result = null
-    const estGas = await this.estExitPool(
-      account,
-      poolAddress,
-      this.web3.utils.toWei(poolAmountIn),
-      weiMinAmountsOut
-    )
-
-    try {
-      result = await pool.methods
-        .exitPool(this.web3.utils.toWei(poolAmountIn), weiMinAmountsOut)
-        .send({
-          from: account,
-          gas: estGas,
-          gasPrice: await getFairGasPrice(this.web3, this.config)
-        })
-    } catch (e) {
-      LoggerInstance.error(`ERROR: Failed to exit pool: ${e.message}`)
     }
     return result
   }
@@ -1292,13 +1153,15 @@ export class Pool {
    * @param {String} poolAddress
    * @param {String} tokenAmountIn exact number of base tokens to spend
    * @param {String} minPoolAmountOut minimum of pool shares expectex
+   * @param {number} tokenInDecimals optional number of decimals of the token
    * @return {TransactionReceipt}
    */
   async joinswapExternAmountIn(
     account: string,
     poolAddress: string,
     tokenAmountIn: string,
-    minPoolAmountOut: string
+    minPoolAmountOut: string,
+    tokenInDecimals?: number
   ): Promise<TransactionReceipt> {
     const pool = setContractDefaults(
       new this.web3.eth.Contract(this.poolAbi, poolAddress),
@@ -1311,7 +1174,11 @@ export class Pool {
       throw new Error(`tokenAmountOut is greater than ${maxSwap.toString()}`)
     }
 
-    const amountInFormatted = await amountToUnits(this.web3, tokenIn, tokenAmountIn)
+    const amountInFormatted = await this.amountToUnits(
+      tokenIn,
+      tokenAmountIn,
+      tokenInDecimals
+    )
     const estGas = await this.estJoinswapExternAmountIn(
       account,
       poolAddress,
@@ -1380,13 +1247,15 @@ export class Pool {
    * @param {String} poolAddress
    * @param {String} poolAmountIn exact number of pool shares to spend
    * @param {String} minTokenAmountOut minimum amount of basetokens expected
+   * @param {number} poolDecimals optional number of decimals of the poool
    * @return {TransactionReceipt}
    */
   async exitswapPoolAmountIn(
     account: string,
     poolAddress: string,
     poolAmountIn: string,
-    minTokenAmountOut: string
+    minTokenAmountOut: string,
+    poolDecimals?: number
   ): Promise<TransactionReceipt> {
     const pool = setContractDefaults(
       new this.web3.eth.Contract(this.poolAbi, poolAddress),
@@ -1406,10 +1275,10 @@ export class Pool {
       throw new Error(`tokenAmountOut is greater than ${maxSwap.toString()}`)
     }
 
-    const minTokenOutFormatted = await amountToUnits(
-      this.web3,
+    const minTokenOutFormatted = await this.amountToUnits(
       await this.getBaseToken(poolAddress),
-      minTokenAmountOut
+      minTokenAmountOut,
+      poolDecimals
     )
     const estGas = await this.estExitswapPoolAmountIn(
       account,
@@ -1506,13 +1375,17 @@ export class Pool {
    * @param tokenOut token to get
    * @param tokenAmountOut exact amount of tokenOut
    * @param swapMarketFee consume market swap fee
+   * @param {number} tokenInDecimals optional number of decimals of the token to be swaped
+   * @param {number} tokenOutDecimals optional number of decimals of the token to get
    */
   public async getAmountInExactOut(
     poolAddress: string,
     tokenIn: string,
     tokenOut: string,
     tokenAmountOut: string,
-    swapMarketFee: string
+    swapMarketFee: string,
+    tokenInDecimals?: number,
+    tokenOutDecimals?: number
   ): Promise<PoolPriceAndFees> {
     const pool = setContractDefaults(
       new this.web3.eth.Contract(this.poolAbi, poolAddress),
@@ -1525,7 +1398,11 @@ export class Pool {
       throw new Error(`tokenAmountOut is greater than ${maxSwap.toString()}`)
     }
 
-    const amountOutFormatted = await amountToUnits(this.web3, tokenOut, tokenAmountOut)
+    const amountOutFormatted = await this.amountToUnits(
+      tokenOut,
+      tokenAmountOut,
+      tokenOutDecimals
+    )
 
     let amount = null
 
@@ -1539,22 +1416,30 @@ export class Pool {
         )
         .call()
       amount = {
-        tokenAmount: await unitsToAmount(this.web3, tokenOut, result.tokenAmountIn),
-        liquidityProviderSwapFeeAmount: await unitsToAmount(
-          this.web3,
-          tokenIn,
-          result.lpFeeAmount
+        tokenAmount: await this.unitsToAmount(
+          tokenOut,
+          result.tokenAmountIn,
+          tokenOutDecimals
         ),
-        oceanFeeAmount: await unitsToAmount(this.web3, tokenIn, result.oceanFeeAmount),
-        publishMarketSwapFeeAmount: await unitsToAmount(
-          this.web3,
+        liquidityProviderSwapFeeAmount: await this.unitsToAmount(
           tokenIn,
-          result.publishMarketSwapFeeAmount
+          result.lpFeeAmount,
+          tokenInDecimals
         ),
-        consumeMarketSwapFeeAmount: await unitsToAmount(
-          this.web3,
+        oceanFeeAmount: await this.unitsToAmount(
           tokenIn,
-          result.consumeMarketSwapFeeAmount
+          result.oceanFeeAmount,
+          tokenInDecimals
+        ),
+        publishMarketSwapFeeAmount: await this.unitsToAmount(
+          tokenIn,
+          result.publishMarketSwapFeeAmount,
+          tokenInDecimals
+        ),
+        consumeMarketSwapFeeAmount: await this.unitsToAmount(
+          tokenIn,
+          result.consumeMarketSwapFeeAmount,
+          tokenInDecimals
         )
       }
     } catch (e) {
@@ -1568,15 +1453,19 @@ export class Pool {
    *  Returns: tokenAmountOut, LPFee, opcFee ,  publishMarketSwapFee, consumeMarketSwapFee
    * @param tokenIn token to be swaped
    * @param tokenOut token to get
-   * @param tokenAmountOut exact amount of tokenOut
-   * @param _consumeMarketSwapFee consume market swap fee
+   * @param tokenAmountIn exact amount of tokenIn
+   * @param swapMarketFee
+   * @param {number} tokenInDecimals optional number of decimals of the token to be swaped
+   * @param {number} tokenOutDecimals optional number of decimals of the token to get
    */
   public async getAmountOutExactIn(
     poolAddress: string,
     tokenIn: string,
     tokenOut: string,
     tokenAmountIn: string,
-    swapMarketFee: string
+    swapMarketFee: string,
+    tokenInDecimals?: number,
+    tokenOutDecimals?: number
   ): Promise<PoolPriceAndFees> {
     const pool = setContractDefaults(
       new this.web3.eth.Contract(this.poolAbi, poolAddress),
@@ -1588,7 +1477,11 @@ export class Pool {
       throw new Error(`tokenAmountIn is greater than ${maxSwap.toString()}`)
     }
 
-    const amountInFormatted = await amountToUnits(this.web3, tokenIn, tokenAmountIn)
+    const amountInFormatted = await this.amountToUnits(
+      tokenIn,
+      tokenAmountIn,
+      tokenInDecimals
+    )
 
     let amount = null
 
@@ -1603,22 +1496,30 @@ export class Pool {
         .call()
 
       amount = {
-        tokenAmount: await unitsToAmount(this.web3, tokenOut, result.tokenAmountOut),
-        liquidityProviderSwapFeeAmount: await unitsToAmount(
-          this.web3,
-          tokenIn,
-          result.lpFeeAmount
+        tokenAmount: await this.unitsToAmount(
+          tokenOut,
+          result.tokenAmountOut,
+          tokenOutDecimals
         ),
-        oceanFeeAmount: await unitsToAmount(this.web3, tokenIn, result.oceanFeeAmount),
-        publishMarketSwapFeeAmount: await unitsToAmount(
-          this.web3,
+        liquidityProviderSwapFeeAmount: await this.unitsToAmount(
           tokenIn,
-          result.publishMarketSwapFeeAmount
+          result.lpFeeAmount,
+          tokenInDecimals
         ),
-        consumeMarketSwapFeeAmount: await unitsToAmount(
-          this.web3,
+        oceanFeeAmount: await this.unitsToAmount(
           tokenIn,
-          result.consumeMarketSwapFeeAmount
+          result.oceanFeeAmount,
+          tokenInDecimals
+        ),
+        publishMarketSwapFeeAmount: await this.unitsToAmount(
+          tokenIn,
+          result.publishMarketSwapFeeAmount,
+          tokenInDecimals
+        ),
+        consumeMarketSwapFeeAmount: await this.unitsToAmount(
+          tokenIn,
+          result.consumeMarketSwapFeeAmount,
+          tokenInDecimals
         )
       }
     } catch (e) {
@@ -1631,11 +1532,15 @@ export class Pool {
    * Returns number of poolshares obtain by staking exact tokenAmountIn tokens
    * @param tokenIn tokenIn
    * @param tokenAmountIn exact number of tokens staked
+   * @param {number} poolDecimals optional number of decimals of the poool
+   * @param {number} tokenInDecimals optional number of decimals of the token
    */
   public async calcPoolOutGivenSingleIn(
     poolAddress: string,
     tokenIn: string,
-    tokenAmountIn: string
+    tokenAmountIn: string,
+    poolDecimals?: number,
+    tokenInDecimals?: number
   ): Promise<string> {
     const pool = setContractDefaults(
       new this.web3.eth.Contract(this.poolAbi, poolAddress),
@@ -1647,11 +1552,11 @@ export class Pool {
       const result = await pool.methods
         .calcPoolOutSingleIn(
           tokenIn,
-          await amountToUnits(this.web3, tokenIn, tokenAmountIn)
+          await this.amountToUnits(tokenIn, tokenAmountIn, tokenInDecimals)
         )
         .call()
 
-      amount = await unitsToAmount(this.web3, poolAddress, result)
+      amount = await this.unitsToAmount(poolAddress, result, poolDecimals)
     } catch (e) {
       LoggerInstance.error(
         `ERROR: Failed to calculate PoolOutGivenSingleIn : ${e.message}`
@@ -1664,25 +1569,32 @@ export class Pool {
    * Returns number of tokens to be staked to the pool in order to get an exact number of poolshares
    * @param tokenIn tokenIn
    * @param poolAmountOut expected amount of pool shares
+   * @param {number} poolDecimals optional number of decimals of the pool
+   * @param {number} tokenInDecimals optional number of decimals of the token
    */
   public async calcSingleInGivenPoolOut(
     poolAddress: string,
     tokenIn: string,
-    poolAmountOut: string
+    poolAmountOut: string,
+    poolDecimals?: number,
+    tokenInDecimals?: number
   ): Promise<string> {
     const pool = setContractDefaults(
       new this.web3.eth.Contract(this.poolAbi, poolAddress),
       this.config
     )
     let amount = null
-    const amountFormatted = await amountToUnits(this.web3, poolAddress, poolAmountOut)
+    const amountFormatted = await this.amountToUnits(
+      poolAddress,
+      poolAmountOut,
+      poolDecimals
+    )
     try {
       const result = await pool.methods
         .calcSingleInPoolOut(tokenIn, amountFormatted)
-
         .call()
 
-      amount = await unitsToAmount(this.web3, tokenIn, result)
+      amount = await this.unitsToAmount(tokenIn, result, tokenInDecimals)
     } catch (e) {
       LoggerInstance.error(
         `ERROR: Failed to calculate SingleInGivenPoolOut : ${e.message}`
@@ -1695,11 +1607,15 @@ export class Pool {
    * Returns expected amount of tokenOut for removing exact poolAmountIn pool shares from the pool
    * @param tokenOut tokenOut
    * @param poolAmountIn amount of shares spent
+   * @param {number} poolDecimals optional number of decimals of the pool
+   * @param {number} tokenOutDecimals optional number of decimals of the token
    */
   public async calcSingleOutGivenPoolIn(
     poolAddress: string,
     tokenOut: string,
-    poolAmountIn: string
+    poolAmountIn: string,
+    poolDecimals?: number,
+    tokenOutDecimals?: number
   ): Promise<string> {
     const pool = setContractDefaults(
       new this.web3.eth.Contract(this.poolAbi, poolAddress),
@@ -1711,10 +1627,10 @@ export class Pool {
       const result = await pool.methods
         .calcSingleOutPoolIn(
           tokenOut,
-          await amountToUnits(this.web3, poolAddress, poolAmountIn)
+          await this.amountToUnits(poolAddress, poolAmountIn, poolDecimals)
         )
         .call()
-      amount = await unitsToAmount(this.web3, tokenOut, result)
+      amount = await this.unitsToAmount(tokenOut, result, tokenOutDecimals)
     } catch (e) {
       LoggerInstance.error(`ERROR: Failed to calculate SingleOutGivenPoolIn : ${e}`)
     }
@@ -1725,11 +1641,15 @@ export class Pool {
    * Returns number of poolshares needed to withdraw exact tokenAmountOut tokens
    * @param tokenOut tokenOut
    * @param tokenAmountOut expected amount of tokensOut
+   * @param {number} poolDecimals optional number of decimals of the pool
+   * @param {number} tokenOutDecimals optional number of decimals of the token
    */
   public async calcPoolInGivenSingleOut(
     poolAddress: string,
     tokenOut: string,
-    tokenAmountOut: string
+    tokenAmountOut: string,
+    poolDecimals?: number,
+    tokenOutDecimals?: number
   ): Promise<string> {
     const pool = setContractDefaults(
       new this.web3.eth.Contract(this.poolAbi, poolAddress),
@@ -1741,11 +1661,11 @@ export class Pool {
       const result = await pool.methods
         .calcPoolInSingleOut(
           tokenOut,
-          await amountToUnits(this.web3, tokenOut, tokenAmountOut)
+          await this.amountToUnits(tokenOut, tokenAmountOut, tokenOutDecimals)
         )
         .call()
 
-      amount = await unitsToAmount(this.web3, poolAddress, result)
+      amount = await this.unitsToAmount(poolAddress, result, poolDecimals)
     } catch (e) {
       LoggerInstance.error(
         `ERROR: Failed to calculate PoolInGivenSingleOut : ${e.message}`
