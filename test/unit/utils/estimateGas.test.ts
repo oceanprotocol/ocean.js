@@ -1,14 +1,23 @@
 import { assert } from 'chai'
 import { AbiItem } from 'web3-utils/types'
+import ERC20Template from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC20Template.sol/ERC20Template.json'
 import MockERC20 from '@oceanprotocol/contracts/artifacts/contracts/utils/mock/MockERC20Decimals.sol/MockERC20Decimals.json'
 import { deployContracts, Addresses } from '../../TestContractHandler'
 import { web3 } from '../../config'
-import { NftFactory, NftCreateData, ZERO_ADDRESS, GASLIMIT_DEFAULT } from '../../../src/'
+import {
+  NftFactory,
+  NftCreateData,
+  ZERO_ADDRESS,
+  GASLIMIT_DEFAULT,
+  TokenOrder,
+  signHash
+} from '../../../src/'
 import {
   DispenserCreationParams,
   Erc20CreateParams,
   FreCreationParams,
-  PoolCreationParams
+  PoolCreationParams,
+  ProviderFees
 } from '../../../src/@types'
 
 describe('estimateGas() function', () => {
@@ -18,6 +27,7 @@ describe('estimateGas() function', () => {
   let user2: string
   let contracts: Addresses
   let nftFactory: NftFactory
+  let dtAddress: string
 
   const FEE = '0.001'
 
@@ -75,6 +85,11 @@ describe('estimateGas() function', () => {
       (await nftFactory.estGasCreateNftWithErc20(nftOwner, nftData, ercParams)) !==
         GASLIMIT_DEFAULT.toString()
     )
+
+    const txReceipt = await nftFactory.createNftWithErc20(nftOwner, nftData, ercParams)
+
+    // stored for later use in startMultipleTokenOrder test
+    dtAddress = txReceipt.events.TokenCreated.returnValues.newTokenAddress
   })
 
   it('nftFactory.estGasCreateNftErc20WithPool()', async () => {
@@ -161,6 +176,135 @@ describe('estimateGas() function', () => {
         ercParams,
         dispenerParams
       )) !== GASLIMIT_DEFAULT.toString()
+    )
+  })
+
+  it('nftFactory.estGasAddNFTTemplate()', async () => {
+    assert(
+      (await nftFactory.estGasAddNFTTemplate(
+        factoryOwner,
+        contracts.erc721TemplateAddress
+      )) !== GASLIMIT_DEFAULT.toString()
+    )
+  })
+
+  it('nftFactory.estGasAddNFTTemplate()', async () => {
+    assert(
+      (await nftFactory.estGasAddNFTTemplate(
+        factoryOwner,
+        contracts.erc721TemplateAddress
+      )) !== GASLIMIT_DEFAULT.toString()
+    )
+  })
+
+  it('nftFactory.estGasDisableNFTTemplate()', async () => {
+    assert(
+      (await nftFactory.estGasDisableNFTTemplate(factoryOwner, 1)) !==
+        GASLIMIT_DEFAULT.toString()
+    )
+  })
+
+  it('nftFactory.estGasReactivateNFTTemplate()', async () => {
+    assert(
+      (await nftFactory.estGasReactivateNFTTemplate(factoryOwner, 1)) !==
+        GASLIMIT_DEFAULT.toString()
+    )
+  })
+
+  it('nftFactory.estGasAddNFTTemplate()', async () => {
+    assert(
+      (await nftFactory.estGasAddNFTTemplate(
+        factoryOwner,
+        contracts.erc721TemplateAddress
+      )) !== GASLIMIT_DEFAULT.toString()
+    )
+  })
+
+  it('nftFactory.estGasAddTokenTemplate()', async () => {
+    assert(
+      (await nftFactory.estGasAddTokenTemplate(
+        factoryOwner,
+        contracts.erc20TemplateAddress
+      )) !== GASLIMIT_DEFAULT.toString()
+    )
+  })
+
+  it('nftFactory.estGasDisableTokenTemplate()', async () => {
+    assert(
+      (await nftFactory.estGasDisableTokenTemplate(factoryOwner, 1)) !==
+        GASLIMIT_DEFAULT.toString()
+    )
+  })
+
+  it('nftFactory.estGasReactivateTokenTemplate()', async () => {
+    assert(
+      (await nftFactory.estGasReactivateTokenTemplate(factoryOwner, 1)) !==
+        GASLIMIT_DEFAULT.toString()
+    )
+  })
+
+  it('nftFactory.estGasReactivateTokenTemplate()', async () => {
+    const DATA_TOKEN_AMOUNT = web3.utils.toWei('2')
+    const consumeFeeAmount = '0' // fee to be collected on top, requires approval
+    const consumeFeeToken = contracts.daiAddress // token address for the feeAmount, in this case DAI
+    const providerData = JSON.stringify({ timeout: 0 })
+    const providerValidUntil = '0'
+
+    // we reuse a DT created in a previous test
+    const dtContract = new web3.eth.Contract(ERC20Template.abi as AbiItem[], dtAddress)
+
+    // dt owner mint DATA_TOKEN_AMOUNT to user1
+    await dtContract.methods.mint(user1, DATA_TOKEN_AMOUNT).send({ from: nftOwner })
+
+    // user1 approves NFTFactory to move his DATA_TOKEN_AMOUNT
+    await dtContract.methods
+      .approve(contracts.erc721FactoryAddress, DATA_TOKEN_AMOUNT)
+      .send({ from: user1 })
+
+    const message = web3.utils.soliditySha3(
+      { t: 'bytes', v: web3.utils.toHex(web3.utils.asciiToHex(providerData)) },
+      { t: 'address', v: user2 },
+      { t: 'address', v: consumeFeeToken },
+      { t: 'uint256', v: web3.utils.toWei(consumeFeeAmount) },
+      { t: 'uint256', v: providerValidUntil }
+    )
+
+    const { v, r, s } = await signHash(web3, message, user2)
+    const providerFees: ProviderFees = {
+      providerFeeAddress: user2,
+      providerFeeToken: consumeFeeToken,
+      providerFeeAmount: consumeFeeAmount,
+      v: v,
+      r: r,
+      s: s,
+      providerData: web3.utils.toHex(web3.utils.asciiToHex(providerData)),
+      validUntil: providerValidUntil
+    }
+    const consumeMarketFee = {
+      consumeMarketFeeAddress: ZERO_ADDRESS,
+      consumeMarketFeeToken: ZERO_ADDRESS,
+      consumeMarketFeeAmount: '0'
+    }
+    const orders: TokenOrder[] = [
+      {
+        tokenAddress: dtAddress,
+        consumer: user1,
+        serviceIndex: 1,
+        _providerFee: providerFees,
+        _consumeMarketFee: consumeMarketFee
+      },
+      {
+        tokenAddress: dtAddress,
+        consumer: user1,
+        serviceIndex: 1,
+        _providerFee: providerFees,
+        _consumeMarketFee: consumeMarketFee
+      }
+    ]
+
+    assert(
+      (await nftFactory.estGasStartMultipleTokenOrder(user1, orders)) !==
+        GASLIMIT_DEFAULT.toString()
     )
   })
 })
