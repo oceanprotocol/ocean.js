@@ -1,4 +1,5 @@
 import Decimal from 'decimal.js'
+import { Contract } from 'web3-eth-contract'
 import {
   amountToUnits,
   estimateGas,
@@ -9,6 +10,29 @@ import { minAbi } from './minAbi'
 import LoggerInstance from './Logger'
 import { TransactionReceipt } from 'web3-core'
 import Web3 from 'web3'
+
+/**
+ * Estimate gas cost for approval function
+ * @param {String} account
+ * @param {String} tokenAddress
+ * @param {String} spender
+ * @param {String} amount
+ * @param {String} force
+ * @param {Contract} contractInstance optional contract instance
+ * @return {Promise<number>}
+ */
+export async function estApprove(
+  web3: Web3,
+  account: string,
+  tokenAddress: string,
+  spender: string,
+  amount: string,
+  contractInstance?: Contract
+): Promise<number> {
+  const tokenContract = contractInstance || new web3.eth.Contract(minAbi, tokenAddress)
+
+  return estimateGas(account, tokenContract.methods.approve, spender, amount)
+}
 
 /**
  * Approve spender to spent amount tokens
@@ -56,6 +80,29 @@ export async function approve(
     )
   }
   return result
+}
+
+/**
+ * Estimate gas cost for transfer function
+ * @param {String} account
+ * @param {String} tokenAddress
+ * @param {String} recipient
+ * @param {String} amount
+ * @param {String} force
+ * @param {Contract} contractInstance optional contract instance
+ * @return {Promise<number>}
+ */
+export async function estTransfer(
+  web3: Web3,
+  account: string,
+  tokenAddress: string,
+  recipient: string,
+  amount: string,
+  contractInstance?: Contract
+): Promise<number> {
+  const tokenContract = contractInstance || new web3.eth.Contract(minAbi, tokenAddress)
+
+  return estimateGas(account, tokenContract.methods.transfer, recipient, amount)
 }
 
 /**
