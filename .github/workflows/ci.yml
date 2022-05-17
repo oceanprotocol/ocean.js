@@ -187,3 +187,8 @@ jobs:
           coverageLocations: |
             ${{ github.workspace }}/unit/lcov.info:lcov
             ${{ github.workspace }}/integration/lcov.info:lcov
+
+  create_guide:
+    runs-on: ubuntu-latest
+    steps:
+      - run: npm run create:guide
