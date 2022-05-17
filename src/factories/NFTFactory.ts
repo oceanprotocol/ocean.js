@@ -11,6 +11,7 @@ import {
   getErcCreationParams,
   getPoolCreationParams,
   setContractDefaults,
+  estimateGas,
   ZERO_ADDRESS,
   ConfigHelper
 } from '../utils'
@@ -50,7 +51,6 @@ export interface NftCreateData {
  * Provides an interface for NFT Factory contract
  */
 export class NftFactory {
-  public GASLIMIT_DEFAULT = 1000000
   public factory721Address: string
   public factory721Abi: AbiItem | AbiItem[]
   public web3: Web3
@@ -87,25 +87,18 @@ export class NftFactory {
    * @return {Promise<string>} NFT datatoken address
    */
   public async estGasCreateNFT(address: string, nftData: NftCreateData): Promise<string> {
-    const gasLimitDefault = this.GASLIMIT_DEFAULT
-    let estGas
-    try {
-      estGas = await this.factory721.methods
-        .deployERC721Contract(
-          nftData.name,
-          nftData.symbol,
-          nftData.templateIndex,
-          ZERO_ADDRESS,
-          ZERO_ADDRESS,
-          nftData.tokenURI,
-          nftData.transferable,
-          nftData.owner
-        )
-        .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
-    } catch (e) {
-      estGas = gasLimitDefault
-    }
-    return estGas
+    return estimateGas(
+      address,
+      this.factory721.methods.deployERC721Contract,
+      nftData.name,
+      nftData.symbol,
+      nftData.templateIndex,
+      ZERO_ADDRESS,
+      ZERO_ADDRESS,
+      nftData.tokenURI,
+      nftData.transferable,
+      nftData.owner
+    )
   }
 
   /**
@@ -132,7 +125,18 @@ export class NftFactory {
     if ((await this.getNFTTemplate(nftData.templateIndex)).isActive === false) {
       throw new Error(`Template is not active`)
     }
-    const estGas = await this.estGasCreateNFT(address, nftData)
+    const estGas = await estimateGas(
+      address,
+      this.factory721.methods.deployERC721Contract,
+      nftData.name,
+      nftData.symbol,
+      nftData.templateIndex,
+      ZERO_ADDRESS,
+      ZERO_ADDRESS,
+      nftData.tokenURI,
+      nftData.transferable,
+      nftData.owner
+    )
 
     // Invoke createToken function of the contract
     const trxReceipt = await this.factory721.methods
@@ -254,16 +258,11 @@ export class NftFactory {
     address: string,
     templateAddress: string
   ): Promise<any> {
-    const gasLimitDefault = this.GASLIMIT_DEFAULT
-    let estGas
-    try {
-      estGas = await this.factory721.methods
-        .add721TokenTemplate(templateAddress)
-        .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
-    } catch (e) {
-      estGas = gasLimitDefault
-    }
-    return estGas
+    return estimateGas(
+      address,
+      this.factory721.methods.add721TokenTemplate,
+      templateAddress
+    )
   }
 
   /**
@@ -283,7 +282,11 @@ export class NftFactory {
       throw new Error(`Template cannot be ZERO address`)
     }
 
-    const estGas = await this.estGasAddNFTTemplate(address, templateAddress)
+    const estGas = await estimateGas(
+      address,
+      this.factory721.methods.add721TokenTemplate,
+      templateAddress
+    )
 
     // Invoke add721TokenTemplate function of the contract
     const trxReceipt = await this.factory721.methods
@@ -307,16 +310,11 @@ export class NftFactory {
     address: string,
     templateIndex: number
   ): Promise<any> {
-    const gasLimitDefault = this.GASLIMIT_DEFAULT
-    let estGas
-    try {
-      estGas = await this.factory721.methods
-        .disable721TokenTemplate(templateIndex)
-        .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
-    } catch (e) {
-      estGas = gasLimitDefault
-    }
-    return estGas
+    return estimateGas(
+      address,
+      this.factory721.methods.disable721TokenTemplate,
+      templateIndex
+    )
   }
 
   /**
@@ -339,7 +337,11 @@ export class NftFactory {
     if (templateIndex === 0) {
       throw new Error(`Template index cannot be ZERO`)
     }
-    const estGas = await this.estGasDisableNFTTemplate(address, templateIndex)
+    const estGas = await estimateGas(
+      address,
+      this.factory721.methods.disable721TokenTemplate,
+      templateIndex
+    )
 
     // Invoke createToken function of the contract
     const trxReceipt = await this.factory721.methods
@@ -363,16 +365,11 @@ export class NftFactory {
     address: string,
     templateIndex: number
   ): Promise<any> {
-    const gasLimitDefault = this.GASLIMIT_DEFAULT
-    let estGas
-    try {
-      estGas = await this.factory721.methods
-        .reactivate721TokenTemplate(templateIndex)
-        .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
-    } catch (e) {
-      estGas = gasLimitDefault
-    }
-    return estGas
+    return estimateGas(
+      address,
+      this.factory721.methods.reactivate721TokenTemplate,
+      templateIndex
+    )
   }
 
   /**
@@ -396,7 +393,11 @@ export class NftFactory {
       throw new Error(`Template index cannot be ZERO`)
     }
 
-    const estGas = await this.estGasReactivateNFTTemplate(address, templateIndex)
+    const estGas = await estimateGas(
+      address,
+      this.factory721.methods.reactivate721TokenTemplate,
+      templateIndex
+    )
 
     // Invoke createToken function of the contract
     const trxReceipt = await this.factory721.methods
@@ -420,17 +421,7 @@ export class NftFactory {
     address: string,
     templateAddress: string
   ): Promise<any> {
-    const gasLimitDefault = this.GASLIMIT_DEFAULT
-    let estGas
-    try {
-      estGas = await this.factory721.methods
-        .addTokenTemplate(templateAddress)
-        .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
-    } catch (e) {
-      estGas = gasLimitDefault
-    }
-
-    return estGas
+    return estimateGas(address, this.factory721.methods.addTokenTemplate, templateAddress)
   }
 
   /**
@@ -450,7 +441,11 @@ export class NftFactory {
       throw new Error(`Template cannot be address ZERO`)
     }
 
-    const estGas = await this.estGasAddTokenTemplate(address, templateAddress)
+    const estGas = await estimateGas(
+      address,
+      this.factory721.methods.addTokenTemplate,
+      templateAddress
+    )
 
     // Invoke createToken function of the contract
     const trxReceipt = await this.factory721.methods
@@ -474,16 +469,11 @@ export class NftFactory {
     address: string,
     templateIndex: number
   ): Promise<any> {
-    const gasLimitDefault = this.GASLIMIT_DEFAULT
-    let estGas
-    try {
-      estGas = await this.factory721.methods
-        .disableTokenTemplate(templateIndex)
-        .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
-    } catch (e) {
-      estGas = gasLimitDefault
-    }
-    return estGas
+    return estimateGas(
+      address,
+      this.factory721.methods.disableTokenTemplate,
+      templateIndex
+    )
   }
 
   /**
@@ -509,7 +499,11 @@ export class NftFactory {
     if ((await this.getTokenTemplate(templateIndex)).isActive === false) {
       throw new Error(`Template is already disabled`)
     }
-    const estGas = await this.estGasDisableTokenTemplate(address, templateIndex)
+    const estGas = await estimateGas(
+      address,
+      this.factory721.methods.disableTokenTemplate,
+      templateIndex
+    )
 
     // Invoke createToken function of the contract
     const trxReceipt = await this.factory721.methods
@@ -533,16 +527,11 @@ export class NftFactory {
     address: string,
     templateIndex: number
   ): Promise<any> {
-    const gasLimitDefault = this.GASLIMIT_DEFAULT
-    let estGas
-    try {
-      estGas = await this.factory721.methods
-        .reactivateTokenTemplate(templateIndex)
-        .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
-    } catch (e) {
-      estGas = gasLimitDefault
-    }
-    return estGas
+    return estimateGas(
+      address,
+      this.factory721.methods.reactivateTokenTemplate,
+      templateIndex
+    )
   }
 
   /**
@@ -569,7 +558,11 @@ export class NftFactory {
       throw new Error(`Template is already active`)
     }
 
-    const estGas = await this.estGasReactivateTokenTemplate(address, templateIndex)
+    const estGas = await estimateGas(
+      address,
+      this.factory721.methods.reactivateTokenTemplate,
+      templateIndex
+    )
 
     // Invoke createToken function of the contract
     const trxReceipt = await this.factory721.methods
@@ -592,16 +585,7 @@ export class NftFactory {
     address: string,
     orders: TokenOrder[]
   ): Promise<any> {
-    const gasLimitDefault = this.GASLIMIT_DEFAULT
-    let estGas
-    try {
-      estGas = await this.factory721.methods
-        .startMultipleTokenOrder(orders)
-        .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
-    } catch (e) {
-      estGas = gasLimitDefault
-    }
-    return estGas
+    return estimateGas(address, this.factory721.methods.startMultipleTokenOrder, orders)
   }
 
   /**
@@ -624,7 +608,11 @@ export class NftFactory {
       throw new Error(`Too many orders`)
     }
 
-    const estGas = await this.estGasStartMultipleTokenOrder(address, orders)
+    const estGas = await estimateGas(
+      address,
+      this.factory721.methods.startMultipleTokenOrder,
+      orders
+    )
 
     // Invoke createToken function of the contract
     const trxReceipt = await this.factory721.methods
@@ -651,18 +639,13 @@ export class NftFactory {
     nftCreateData: NftCreateData,
     ercParams: Erc20CreateParams
   ): Promise<any> {
-    // Get estimated gas value
-    const gasLimitDefault = this.GASLIMIT_DEFAULT
-    let estGas
-    try {
-      const ercCreateData = getErcCreationParams(ercParams)
-      estGas = await this.factory721.methods
-        .createNftWithErc20(nftCreateData, ercCreateData)
-        .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
-    } catch (e) {
-      estGas = gasLimitDefault
-    }
-    return estGas
+    const ercCreateData = getErcCreationParams(ercParams)
+    return estimateGas(
+      address,
+      this.factory721.methods.createNftWithErc20,
+      nftCreateData,
+      ercCreateData
+    )
   }
 
   /**
@@ -681,7 +664,13 @@ export class NftFactory {
   ): Promise<TransactionReceipt> {
     const ercCreateData = getErcCreationParams(ercParams)
 
-    const estGas = await this.estGasCreateNftWithErc20(address, nftCreateData, ercParams)
+    const estGas = await estimateGas(
+      address,
+      this.factory721.methods.createNftWithErc20,
+      nftCreateData,
+      ercCreateData
+    )
+
     // Invoke createToken function of the contract
     const trxReceipt = await this.factory721.methods
       .createNftWithErc20(nftCreateData, ercCreateData)
@@ -708,18 +697,15 @@ export class NftFactory {
     ercParams: Erc20CreateParams,
     poolParams: PoolCreationParams
   ): Promise<any> {
-    const gasLimitDefault = this.GASLIMIT_DEFAULT
-    let estGas
-    try {
-      const ercCreateData = getErcCreationParams(ercParams)
-      const poolData = await getPoolCreationParams(this.web3, poolParams)
-      estGas = await this.factory721.methods
-        .createNftWithErc20WithPool(nftCreateData, ercCreateData, poolData)
-        .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
-    } catch (e) {
-      estGas = gasLimitDefault
-    }
-    return estGas
+    const ercCreateData = getErcCreationParams(ercParams)
+    const poolData = await getPoolCreationParams(this.web3, poolParams)
+    return estimateGas(
+      address,
+      this.factory721.methods.createNftWithErc20WithPool,
+      nftCreateData,
+      ercCreateData,
+      poolData
+    )
   }
 
   /**
@@ -738,14 +724,16 @@ export class NftFactory {
     ercParams: Erc20CreateParams,
     poolParams: PoolCreationParams
   ): Promise<TransactionReceipt> {
-    const estGas = await this.estGasCreateNftErc20WithPool(
-      address,
-      nftCreateData,
-      ercParams,
-      poolParams
-    )
     const ercCreateData = getErcCreationParams(ercParams)
     const poolData = await getPoolCreationParams(this.web3, poolParams)
+
+    const estGas = await estimateGas(
+      address,
+      this.factory721.methods.createNftWithErc20WithPool,
+      nftCreateData,
+      ercCreateData,
+      poolData
+    )
 
     // Invoke createToken function of the contract
     const trxReceipt = await this.factory721.methods
@@ -772,20 +760,15 @@ export class NftFactory {
     ercParams: Erc20CreateParams,
     freParams: FreCreationParams
   ): Promise<any> {
-    const gasLimitDefault = this.GASLIMIT_DEFAULT
-    let estGas
-
     const ercCreateData = getErcCreationParams(ercParams)
     const fixedData = await getFreCreationParams(freParams)
-
-    try {
-      estGas = await this.factory721.methods
-        .createNftWithErc20WithFixedRate(nftCreateData, ercCreateData, fixedData)
-        .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
-    } catch (e) {
-      estGas = gasLimitDefault
-    }
-    return estGas
+    return estimateGas(
+      address,
+      this.factory721.methods.createNftWithErc20WithFixedRate,
+      nftCreateData,
+      ercCreateData,
+      fixedData
+    )
   }
 
   /**
@@ -807,11 +790,12 @@ export class NftFactory {
     const ercCreateData = getErcCreationParams(ercParams)
     const fixedData = getFreCreationParams(freParams)
 
-    const estGas = await this.estGasCreateNftErc20WithFixedRate(
+    const estGas = await estimateGas(
       address,
+      this.factory721.methods.createNftWithErc20WithFixedRate,
       nftCreateData,
-      ercParams,
-      freParams
+      ercCreateData,
+      fixedData
     )
 
     // Invoke createToken function of the contract
@@ -839,20 +823,14 @@ export class NftFactory {
     ercParams: Erc20CreateParams,
     dispenserParams: DispenserCreationParams
   ): Promise<any> {
-    const gasLimitDefault = this.GASLIMIT_DEFAULT
-    let estGas
-
     const ercCreateData = getErcCreationParams(ercParams)
-
-    try {
-      estGas = await this.factory721.methods
-        .createNftWithErc20WithDispenser(nftCreateData, ercCreateData, dispenserParams)
-        .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
-    } catch (e) {
-      estGas = gasLimitDefault
-      LoggerInstance.error('Failed to estimate gas for createNftErc20WithDispenser', e)
-    }
-    return estGas
+    return estimateGas(
+      address,
+      this.factory721.methods.createNftWithErc20WithDispenser,
+      nftCreateData,
+      ercCreateData,
+      dispenserParams
+    )
   }
 
   /**
@@ -876,10 +854,11 @@ export class NftFactory {
     dispenserParams.maxBalance = Web3.utils.toWei(dispenserParams.maxBalance)
     dispenserParams.maxTokens = Web3.utils.toWei(dispenserParams.maxTokens)
 
-    const estGas = await this.estGasCreateNftErc20WithDispenser(
+    const estGas = await estimateGas(
       address,
+      this.factory721.methods.createNftWithErc20WithDispenser,
       nftCreateData,
-      ercParams,
+      ercCreateData,
       dispenserParams
     )
 
