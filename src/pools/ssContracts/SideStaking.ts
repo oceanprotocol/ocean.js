@@ -7,7 +7,8 @@ import {
   getFairGasPrice,
   ConfigHelper,
   unitsToAmount,
-  setContractDefaults
+  setContractDefaults,
+  estimateGas
 } from '../../utils'
 import SideStakingTemplate from '@oceanprotocol/contracts/artifacts/contracts/pools/ssContracts/SideStaking.sol/SideStaking.json'
 import { Config } from '../../models'
@@ -15,7 +16,6 @@ import { Config } from '../../models'
 export class SideStaking {
   public ssAbi: AbiItem | AbiItem[]
   public web3: Web3
-  public GASLIMIT_DEFAULT = 1000000
   public config: Config
 
   constructor(
@@ -289,16 +289,7 @@ export class SideStaking {
   ): Promise<number> {
     const sideStaking = contractInstance || this.sideStakingContract(ssAddress)
 
-    const gasLimitDefault = this.GASLIMIT_DEFAULT
-    let estGas
-    try {
-      estGas = await sideStaking.methods
-        .getVesting(datatokenAddress)
-        .estimateGas({ from: account }, (err, estGas) => (err ? gasLimitDefault : estGas))
-    } catch (e) {
-      estGas = gasLimitDefault
-    }
-    return estGas
+    return estimateGas(account, sideStaking.methods.getVesting, datatokenAddress)
   }
 
   /** Send vested tokens available to the publisher address, can be called by anyone
@@ -316,12 +307,12 @@ export class SideStaking {
     const sideStaking = this.sideStakingContract(ssAddress)
     let result = null
 
-    const estGas = await this.estGetVesting(
+    const estGas = await estimateGas(
       account,
-      ssAddress,
-      datatokenAddress,
-      sideStaking
+      sideStaking.methods.getVesting,
+      datatokenAddress
     )
+
     try {
       result = await sideStaking.methods.getVesting(datatokenAddress).send({
         from: account,
@@ -352,16 +343,13 @@ export class SideStaking {
   ): Promise<number> {
     const sideStaking = contractInstance || this.sideStakingContract(ssAddress)
 
-    const gasLimitDefault = this.GASLIMIT_DEFAULT
-    let estGas
-    try {
-      estGas = await sideStaking.methods
-        .setPoolSwapFee(datatokenAddress, poolAddress, swapFee)
-        .estimateGas({ from: account }, (err, estGas) => (err ? gasLimitDefault : estGas))
-    } catch (e) {
-      estGas = gasLimitDefault
-    }
-    return estGas
+    return estimateGas(
+      account,
+      sideStaking.methods.setPoolSwapFee,
+      datatokenAddress,
+      poolAddress,
+      swapFee
+    )
   }
 
   /** Send vested tokens available to the publisher address, can be called by anyone
@@ -381,14 +369,14 @@ export class SideStaking {
     const sideStaking = this.sideStakingContract(ssAddress)
     let result = null
 
-    const estGas = await this.estSetPoolSwapFee(
+    const estGas = await estimateGas(
       account,
-      ssAddress,
+      sideStaking.methods.setPoolSwapFee,
       datatokenAddress,
       poolAddress,
-      swapFee,
-      sideStaking
+      swapFee
     )
+
     try {
       result = await sideStaking.methods
         .setPoolSwapFee(datatokenAddress, poolAddress, swapFee)

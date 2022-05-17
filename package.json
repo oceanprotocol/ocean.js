@@ -1,14 +1,14 @@
 {
   "name": "@oceanprotocol/lib",
   "source": "./src/index.ts",
-  "version": "1.0.0-next.40",
+  "version": "1.0.0-next.43",
   "description": "JavaScript client library for Ocean Protocol",
   "main": "./dist/lib.js",
   "umd:main": "dist/lib.umd.js",
   "module": "./dist/lib.module.js",
   "exports": {
     "require": "./dist/lib.js",
-    "default": "./dist/lib.modern.mjs"
+    "default": "./dist/lib.modern.js"
   },
   "types": "./dist/src/index.d.ts",
   "scripts": {
@@ -58,7 +58,7 @@
     "web3": "^1.7.3"
   },
   "dependencies": {
-    "@oceanprotocol/contracts": "^1.0.0-alpha.31",
+    "@oceanprotocol/contracts": "^1.0.0-alpha.33",
     "bignumber.js": "^9.0.2",
     "cross-fetch": "^3.1.5",
     "crypto-js": "^4.1.1",
@@ -73,7 +73,7 @@
     "@types/chai-spies": "^1.0.3",
     "@types/crypto-js": "^4.1.1",
     "@types/mocha": "^9.1.1",
-    "@types/node": "^17.0.31",
+    "@types/node": "^17.0.34",
     "@types/node-fetch": "^3.0.3",
     "@typescript-eslint/eslint-plugin": "^4.33.0",
     "@typescript-eslint/parser": "^4.33.0",
@@ -86,7 +86,7 @@
     "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-prettier": "^4.0.0",
     "fs": "0.0.1-security",
-    "microbundle": "^0.15.0",
+    "microbundle": "0.14.2",
     "mocha": "^10.0.0",
     "mock-local-storage": "^1.1.21",
     "nyc": "^15.1.0",
