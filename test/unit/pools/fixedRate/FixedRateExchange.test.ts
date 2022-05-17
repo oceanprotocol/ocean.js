@@ -112,6 +112,7 @@ describe('Fixed Rate unit test', () => {
       fixedRate = new FixedRateExchange(
         web3,
         contracts.fixedRateAddress,
+        8996,
         null,
         contracts.oceanAddress
       )
@@ -125,12 +126,6 @@ describe('Fixed Rate unit test', () => {
 
     it('#getOwner - should get exchange owner given an id', async () => {
       expect(await fixedRate.getExchangeOwner(exchangeId)).to.equal(exchangeOwner)
-    })
-
-    it('#getOPFCollector - should get OPF collector', async () => {
-      expect(await fixedRate.getOPCCollector()).to.equal(
-        contracts.opfCommunityFeeCollectorAddress
-      )
     })
 
     it('#getRouter - should get Router address', async () => {
@@ -424,6 +419,7 @@ describe('Fixed Rate unit test', () => {
       fixedRate = new FixedRateExchange(
         web3,
         contracts.fixedRateAddress,
+        8996,
         null,
         contracts.oceanAddress
       )
@@ -437,12 +433,6 @@ describe('Fixed Rate unit test', () => {
 
     it('#getOwner - should get exchange owner given an id', async () => {
       expect(await fixedRate.getExchangeOwner(exchangeId)).to.equal(exchangeOwner)
-    })
-
-    it('#getOPFCollector - should get OPF collector', async () => {
-      expect(await fixedRate.getOPCCollector()).to.equal(
-        contracts.opfCommunityFeeCollectorAddress
-      )
     })
 
     it('#getRouter - should get Router address', async () => {

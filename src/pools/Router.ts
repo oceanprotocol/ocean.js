@@ -3,7 +3,7 @@ import Web3 from 'web3'
 import { TransactionReceipt } from 'web3-core'
 import { AbiItem } from 'web3-utils'
 import defaultRouter from '@oceanprotocol/contracts/artifacts/contracts/pools/FactoryRouter.sol/FactoryRouter.json'
-import { getFairGasPrice, setContractDefaults, configHelperNetworks } from '../utils'
+import { getFairGasPrice, setContractDefaults, ConfigHelper, estimateGas } from '../utils'
 import { Operation } from '../@types/Router'
 import { Config } from '../models/index.js'
 
@@ -11,7 +11,6 @@ import { Config } from '../models/index.js'
  * Provides an interface for FactoryRouter contract
  */
 export class Router {
-  public GASLIMIT_DEFAULT = 1000000
   public routerAddress: string
   public RouterAbi: AbiItem | AbiItem[]
   public web3: Web3
@@ -27,13 +26,14 @@ export class Router {
   constructor(
     routerAddress: string,
     web3: Web3,
+    network?: string | number,
     RouterAbi?: AbiItem | AbiItem[],
     config?: Config
   ) {
     this.routerAddress = routerAddress
     this.RouterAbi = RouterAbi || (defaultRouter.abi as AbiItem[])
     this.web3 = web3
-    this.config = config || configHelperNetworks[0]
+    this.config = config || new ConfigHelper().getConfig(network || 'unknown')
     this.router = setContractDefaults(
       new this.web3.eth.Contract(this.RouterAbi, this.routerAddress),
       this.config
@@ -47,16 +47,7 @@ export class Router {
    * @return {Promise<TransactionReceipt>} Transaction receipt
    */
   public async estGasBuyDTBatch(address: string, operations: Operation[]): Promise<any> {
-    const gasLimitDefault = this.GASLIMIT_DEFAULT
-    let estGas
-    try {
-      estGas = await this.router.methods
-        .buyDTBatch(operations)
-        .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
-    } catch (e) {
-      estGas = gasLimitDefault
-    }
-    return estGas
+    return estimateGas(address, this.router.methods.buyDTBatch, operations)
   }
 
   /**
@@ -69,7 +60,7 @@ export class Router {
     address: string,
     operations: Operation[]
   ): Promise<TransactionReceipt> {
-    const estGas = await this.estGasBuyDTBatch(address, operations)
+    const estGas = await estimateGas(address, this.router.methods.buyDTBatch, operations)
 
     // Invoke createToken function of the contract
     const trxReceipt = await this.router.methods.buyDTBatch(operations).send({
@@ -134,19 +125,8 @@ export class Router {
     address: string,
     tokenAddress: string,
     contractInstance?: Contract
-  ) {
-    const routerContract = contractInstance || this.router
-
-    const gasLimitDefault = this.GASLIMIT_DEFAULT
-    let estGas
-    try {
-      estGas = await routerContract.methods
-        .addApprovedToken(tokenAddress)
-        .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
-    } catch (e) {
-      estGas = gasLimitDefault
-    }
-    return estGas
+  ): Promise<any> {
+    return estimateGas(address, this.router.methods.addApprovedToken, tokenAddress)
   }
 
   /**
@@ -163,7 +143,11 @@ export class Router {
       throw new Error(`Caller is not Router Owner`)
     }
 
-    const estGas = await this.estGasAddApprovedToken(address, tokenAddress)
+    const estGas = await estimateGas(
+      address,
+      this.router.methods.addApprovedToken,
+      tokenAddress
+    )
 
     // Invoke createToken function of the contract
     const trxReceipt = await this.router.methods.addApprovedToken(tokenAddress).send({
@@ -186,19 +170,8 @@ export class Router {
     address: string,
     tokenAddress: string,
     contractInstance?: Contract
-  ) {
-    const routerContract = contractInstance || this.router
-
-    const gasLimitDefault = this.GASLIMIT_DEFAULT
-    let estGas
-    try {
-      estGas = await routerContract.methods
-        .removeApprovedToken(tokenAddress)
-        .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
-    } catch (e) {
-      estGas = gasLimitDefault
-    }
-    return estGas
+  ): Promise<any> {
+    return estimateGas(address, this.router.methods.removeApprovedToken, tokenAddress)
   }
 
   /**
@@ -215,7 +188,11 @@ export class Router {
       throw new Error(`Caller is not Router Owner`)
     }
 
-    const estGas = await this.estGasRemoveApprovedToken(address, tokenAddress)
+    const estGas = await estimateGas(
+      address,
+      this.router.methods.removeApprovedToken,
+      tokenAddress
+    )
 
     // Invoke createToken function of the contract
     const trxReceipt = await this.router.methods.removeApprovedToken(tokenAddress).send({
@@ -234,17 +211,7 @@ export class Router {
    * @return {Promise<TransactionReceipt>}
    */
   public async estGasAddSSContract(address: string, tokenAddress: string): Promise<any> {
-    const gasLimitDefault = this.GASLIMIT_DEFAULT
-    let estGas
-    try {
-      estGas = await this.router.methods
-        .addSSContract(tokenAddress)
-        .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
-    } catch (e) {
-      estGas = gasLimitDefault
-    }
-
-    return estGas
+    return estimateGas(address, this.router.methods.addSSContract, tokenAddress)
   }
 
   /**
@@ -261,7 +228,12 @@ export class Router {
       throw new Error(`Caller is not Router Owner`)
     }
 
-    const estGas = await this.estGasAddSSContract(address, tokenAddress)
+    const estGas = await estimateGas(
+      address,
+      this.router.methods.addSSContract,
+      tokenAddress
+    )
+
     // Invoke createToken function of the contract
     const trxReceipt = await this.router.methods.addSSContract(tokenAddress).send({
       from: address,
@@ -282,17 +254,7 @@ export class Router {
     address: string,
     tokenAddress: string
   ): Promise<any> {
-    const gasLimitDefault = this.GASLIMIT_DEFAULT
-    let estGas
-    try {
-      estGas = await this.router.methods
-        .removeSSContract(tokenAddress)
-        .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
-    } catch (e) {
-      estGas = gasLimitDefault
-    }
-
-    return estGas
+    return estimateGas(address, this.router.methods.removeSSContract, tokenAddress)
   }
 
   /**
@@ -309,7 +271,12 @@ export class Router {
       throw new Error(`Caller is not Router Owner`)
     }
 
-    const estGas = await this.estGasRemoveSSContract(address, tokenAddress)
+    const estGas = await estimateGas(
+      address,
+      this.router.methods.removeSSContract,
+      tokenAddress
+    )
+
     // Invoke createToken function of the contract
     const trxReceipt = await this.router.methods.removeSSContract(tokenAddress).send({
       from: address,
@@ -330,17 +297,7 @@ export class Router {
     address: string,
     tokenAddress: string
   ): Promise<any> {
-    const gasLimitDefault = this.GASLIMIT_DEFAULT
-    let estGas
-    try {
-      estGas = await this.router.methods
-        .addFixedRateContract(tokenAddress)
-        .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
-    } catch (e) {
-      estGas = gasLimitDefault
-    }
-
-    return estGas
+    return estimateGas(address, this.router.methods.addFixedRateContract, tokenAddress)
   }
 
   /**
@@ -357,7 +314,11 @@ export class Router {
       throw new Error(`Caller is not Router Owner`)
     }
 
-    const estGas = await this.estGasAddFixedRateContract(address, tokenAddress)
+    const estGas = await estimateGas(
+      address,
+      this.router.methods.addFixedRateContract,
+      tokenAddress
+    )
 
     // Invoke createToken function of the contract
     const trxReceipt = await this.router.methods.addFixedRateContract(tokenAddress).send({
@@ -379,17 +340,7 @@ export class Router {
     address: string,
     tokenAddress: string
   ): Promise<any> {
-    const gasLimitDefault = this.GASLIMIT_DEFAULT
-    let estGas
-    try {
-      estGas = await this.router.methods
-        .removeFixedRateContract(tokenAddress)
-        .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
-    } catch (e) {
-      estGas = gasLimitDefault
-    }
-
-    return estGas
+    return estimateGas(address, this.router.methods.removeFixedRateContract, tokenAddress)
   }
 
   /**
@@ -406,7 +357,11 @@ export class Router {
       throw new Error(`Caller is not Router Owner`)
     }
 
-    const estGas = await this.estGasRemoveFixedRateContract(address, tokenAddress)
+    const estGas = await estimateGas(
+      address,
+      this.router.methods.removeFixedRateContract,
+      tokenAddress
+    )
 
     // Invoke removeFixedRateContract function of the contract
     const trxReceipt = await this.router.methods
@@ -430,17 +385,7 @@ export class Router {
     address: string,
     tokenAddress: string
   ): Promise<any> {
-    const gasLimitDefault = this.GASLIMIT_DEFAULT
-    let estGas
-    try {
-      estGas = await this.router.methods
-        .addDispenserContract(tokenAddress)
-        .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
-    } catch (e) {
-      estGas = gasLimitDefault
-    }
-
-    return estGas
+    return estimateGas(address, this.router.methods.addDispenserContract, tokenAddress)
   }
 
   /**
@@ -457,7 +402,11 @@ export class Router {
       throw new Error(`Caller is not Router Owner`)
     }
 
-    const estGas = await this.estGasAddDispenserContract(address, tokenAddress)
+    const estGas = await estimateGas(
+      address,
+      this.router.methods.addDispenserContract,
+      tokenAddress
+    )
 
     // Invoke createToken function of the contract
     const trxReceipt = await this.router.methods.addDispenserContract(tokenAddress).send({
@@ -479,17 +428,7 @@ export class Router {
     address: string,
     tokenAddress: string
   ): Promise<any> {
-    const gasLimitDefault = this.GASLIMIT_DEFAULT
-    let estGas
-    try {
-      estGas = await this.router.methods
-        .removeDispenserContract(tokenAddress)
-        .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
-    } catch (e) {
-      estGas = gasLimitDefault
-    }
-
-    return estGas
+    return estimateGas(address, this.router.methods.removeDispenserContract, tokenAddress)
   }
 
   /**
@@ -506,7 +445,11 @@ export class Router {
       throw new Error(`Caller is not Router Owner`)
     }
 
-    const estGas = await this.estGasRemoveDispenserContract(address, tokenAddress)
+    const estGas = await estimateGas(
+      address,
+      this.router.methods.removeDispenserContract,
+      tokenAddress
+    )
 
     // Invoke createToken function of the contract
     const trxReceipt = await this.router.methods
@@ -547,17 +490,14 @@ export class Router {
     newConsumeFee: number,
     newProviderFee: number
   ): Promise<any> {
-    const gasLimitDefault = this.GASLIMIT_DEFAULT
-    let estGas
-    try {
-      estGas = await this.router.methods
-        .updateOPCFee(newSwapOceanFee, newSwapNonOceanFee, newConsumeFee, newProviderFee)
-        .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
-    } catch (e) {
-      estGas = gasLimitDefault
-    }
-
-    return estGas
+    return estimateGas(
+      address,
+      this.router.methods.updateOPCFee,
+      newSwapOceanFee,
+      newSwapNonOceanFee,
+      newConsumeFee,
+      newProviderFee
+    )
   }
 
   /**
@@ -580,8 +520,9 @@ export class Router {
       throw new Error(`Caller is not Router Owner`)
     }
 
-    const estGas = await this.estGasUpdateOPCFee(
+    const estGas = await estimateGas(
       address,
+      this.router.methods.updateOPCFee,
       newSwapOceanFee,
       newSwapNonOceanFee,
       newConsumeFee,
@@ -610,17 +551,7 @@ export class Router {
     address: string,
     templateAddress: string
   ): Promise<any> {
-    const gasLimitDefault = this.GASLIMIT_DEFAULT
-    let estGas
-    try {
-      estGas = await this.router.methods
-        .addPoolTemplate(templateAddress)
-        .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
-    } catch (e) {
-      estGas = gasLimitDefault
-    }
-
-    return estGas
+    return estimateGas(address, this.router.methods.addPoolTemplate, templateAddress)
   }
 
   /**
@@ -637,7 +568,11 @@ export class Router {
       throw new Error(`Caller is not Router Owner`)
     }
 
-    const estGas = await this.estGasAddPoolTemplate(address, templateAddress)
+    const estGas = await estimateGas(
+      address,
+      this.router.methods.addPoolTemplate,
+      templateAddress
+    )
 
     // Invoke createToken function of the contract
     const trxReceipt = await this.router.methods.addPoolTemplate(templateAddress).send({
@@ -659,16 +594,7 @@ export class Router {
     address: string,
     templateAddress: string
   ): Promise<any> {
-    const gasLimitDefault = this.GASLIMIT_DEFAULT
-    let estGas
-    try {
-      estGas = await this.router.methods
-        .removePoolTemplate(templateAddress)
-        .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
-    } catch (e) {
-      estGas = gasLimitDefault
-    }
-    return estGas
+    return estimateGas(address, this.router.methods.removePoolTemplate, templateAddress)
   }
 
   /**
@@ -685,7 +611,11 @@ export class Router {
       throw new Error(`Caller is not Router Owner`)
     }
 
-    const estGas = await this.estGasRemovePoolTemplate(address, templateAddress)
+    const estGas = await estimateGas(
+      address,
+      this.router.methods.removePoolTemplate,
+      templateAddress
+    )
 
     // Invoke createToken function of the contract
     const trxReceipt = await this.router.methods

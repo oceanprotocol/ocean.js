@@ -7,7 +7,8 @@ import {
   getFairGasPrice,
   generateDtName,
   setContractDefaults,
-  configHelperNetworks
+  estimateGas,
+  ConfigHelper
 } from '../utils'
 import { Contract } from 'web3-eth-contract'
 import { MetadataProof } from '../../src/@types'
@@ -25,7 +26,6 @@ interface Roles {
 }
 
 export class Nft {
-  public GASLIMIT_DEFAULT = 1000000
   public factory721Address: string
   public factory721Abi: AbiItem | AbiItem[]
   public nftAbi: AbiItem | AbiItem[]
@@ -33,10 +33,15 @@ export class Nft {
   public startBlock: number
   public config: Config
 
-  constructor(web3: Web3, nftAbi?: AbiItem | AbiItem[], config?: Config) {
+  constructor(
+    web3: Web3,
+    network?: string | number,
+    nftAbi?: AbiItem | AbiItem[],
+    config?: Config
+  ) {
     this.nftAbi = nftAbi || (defaultNftAbi.abi as AbiItem[])
     this.web3 = web3
-    this.config = config || configHelperNetworks[0]
+    this.config = config || new ConfigHelper().getConfig(network || 'unknown')
   }
 
   /**
@@ -75,22 +80,15 @@ export class Nft {
         new this.web3.eth.Contract(this.nftAbi, nftAddress),
         this.config
       )
-    const gasLimitDefault = this.GASLIMIT_DEFAULT
-    let estGas
-    try {
-      estGas = await nftContract.methods
-        .createERC20(
-          templateIndex,
-          [name, symbol],
-          [minter, paymentCollector, mpFeeAddress, feeToken],
-          [this.web3.utils.toWei(cap), this.web3.utils.toWei(feeAmount)],
-          []
-        )
-        .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
-    } catch (e) {
-      estGas = gasLimitDefault
-    }
-    return estGas
+    return estimateGas(
+      address,
+      nftContract.methods.createERC20,
+      templateIndex,
+      [name, symbol],
+      [minter, paymentCollector, mpFeeAddress, feeToken],
+      [this.web3.utils.toWei(cap), this.web3.utils.toWei(feeAmount)],
+      []
+    )
   }
 
   /**
@@ -137,19 +135,14 @@ export class Nft {
       this.config
     )
 
-    const estGas = await this.estGasCreateErc20(
-      nftAddress,
+    const estGas = await estimateGas(
       address,
-      minter,
-      paymentCollector,
-      mpFeeAddress,
-      feeToken,
-      feeAmount,
-      cap,
-      name,
-      symbol,
+      nftContract.methods.createERC20,
       templateIndex,
-      nftContract
+      [name, symbol],
+      [minter, paymentCollector, mpFeeAddress, feeToken],
+      [this.web3.utils.toWei(cap), this.web3.utils.toWei(feeAmount)],
+      []
     )
 
     // Call createERC20 token function of the contract
@@ -197,16 +190,7 @@ export class Nft {
         this.config
       )
 
-    const gasLimitDefault = this.GASLIMIT_DEFAULT
-    let estGas
-    try {
-      estGas = await nftContract.methods
-        .addManager(manager)
-        .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
-    } catch (e) {
-      estGas = gasLimitDefault
-    }
-    return estGas
+    return estimateGas(address, nftContract.methods.addManager, manager)
   }
 
   /**
@@ -226,7 +210,7 @@ export class Nft {
       throw new Error(`Caller is not NFT Owner`)
     }
 
-    const estGas = await this.estGasAddManager(nftAddress, address, manager, nftContract)
+    const estGas = await estimateGas(address, nftContract.methods.addManager, manager)
 
     // Invoke addManager function of the contract
     const trxReceipt = await nftContract.methods.addManager(manager).send({
@@ -258,16 +242,7 @@ export class Nft {
         new this.web3.eth.Contract(this.nftAbi, nftAddress),
         this.config
       )
-    const gasLimitDefault = this.GASLIMIT_DEFAULT
-    let estGas
-    try {
-      estGas = await nftContract.methods
-        .removeManager(manager)
-        .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
-    } catch (e) {
-      estGas = gasLimitDefault
-    }
-    return estGas
+    return estimateGas(address, nftContract.methods.removeManager, manager)
   }
 
   /**
@@ -287,12 +262,7 @@ export class Nft {
       throw new Error(`Caller is not NFT Owner`)
     }
 
-    const estGas = await this.estGasRemoveManager(
-      nftAddress,
-      address,
-      manager,
-      nftContract
-    )
+    const estGas = await estimateGas(address, nftContract.methods.removeManager, manager)
 
     // Invoke removeManager function of the contract
     const trxReceipt = await nftContract.methods.removeManager(manager).send({
@@ -324,17 +294,7 @@ export class Nft {
         new this.web3.eth.Contract(this.nftAbi, nftAddress),
         this.config
       )
-    const gasLimitDefault = this.GASLIMIT_DEFAULT
-    let estGas
-    try {
-      estGas = await nftContract.methods
-        .addToCreateERC20List(erc20Deployer)
-        .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
-    } catch (e) {
-      estGas = gasLimitDefault
-    }
-
-    return estGas
+    return estimateGas(address, nftContract.methods.addToCreateERC20List, erc20Deployer)
   }
 
   /**
@@ -359,11 +319,10 @@ export class Nft {
     }
 
     // Estimate gas for addToCreateERC20List method
-    const estGas = await this.estGasAddErc20Deployer(
-      nftAddress,
+    const estGas = await estimateGas(
       address,
-      erc20Deployer,
-      nftContract
+      nftContract.methods.addToCreateERC20List,
+      erc20Deployer
     )
 
     // Invoke addToCreateERC20List function of the contract
@@ -399,17 +358,11 @@ export class Nft {
         this.config
       )
 
-    const gasLimitDefault = this.GASLIMIT_DEFAULT
-    let estGas
-    try {
-      estGas = await nftContract.methods
-        .removeFromCreateErc20List(erc20Deployer)
-        .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
-    } catch (e) {
-      estGas = gasLimitDefault
-    }
-
-    return estGas
+    return estimateGas(
+      address,
+      nftContract.methods.removeFromCreateERC20List,
+      erc20Deployer
+    )
   }
 
   /**
@@ -436,11 +389,10 @@ export class Nft {
     ) {
       throw new Error(`Caller is not Manager nor ERC20Deployer`)
     }
-    const estGas = await this.estGasRemoveErc20Deployer(
-      nftAddress,
+    const estGas = await estimateGas(
       address,
-      erc20Deployer,
-      nftContract
+      nftContract.methods.removeFromCreateERC20List,
+      erc20Deployer
     )
 
     // Call removeFromCreateERC20List function of the contract
@@ -476,16 +428,7 @@ export class Nft {
         this.config
       )
 
-    const gasLimitDefault = this.GASLIMIT_DEFAULT
-    let estGas
-    try {
-      estGas = await nftContract.methods
-        .addToMetadataList(metadataUpdater)
-        .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
-    } catch (e) {
-      estGas = gasLimitDefault
-    }
-    return estGas
+    return estimateGas(address, nftContract.methods.addToMetadataList, metadataUpdater)
   }
 
   /**
@@ -509,11 +452,10 @@ export class Nft {
       throw new Error(`Caller is not Manager`)
     }
 
-    const estGas = await this.estGasAddMetadataUpdater(
-      nftAddress,
+    const estGas = await estimateGas(
       address,
-      metadataUpdater,
-      nftContract
+      nftContract.methods.addToMetadataList,
+      metadataUpdater
     )
 
     // Call addToMetadataList function of the contract
@@ -547,17 +489,11 @@ export class Nft {
         this.config
       )
 
-    const gasLimitDefault = this.GASLIMIT_DEFAULT
-    let estGas
-    try {
-      estGas = await nftContract.methods
-        .removeFromMetadataList(metadataUpdater)
-        .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
-    } catch (e) {
-      estGas = gasLimitDefault
-    }
-
-    return estGas
+    return estimateGas(
+      address,
+      nftContract.methods.removeFromMetadataList,
+      metadataUpdater
+    )
   }
 
   /**
@@ -625,16 +561,7 @@ export class Nft {
         this.config
       )
 
-    const gasLimitDefault = this.GASLIMIT_DEFAULT
-    let estGas
-    try {
-      estGas = await nftContract.methods
-        .addTo725StoreList(storeUpdater)
-        .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
-    } catch (e) {
-      estGas = gasLimitDefault
-    }
-    return estGas
+    return estimateGas(address, nftContract.methods.addTo725StoreList, storeUpdater)
   }
 
   /**
@@ -658,11 +585,10 @@ export class Nft {
       throw new Error(`Caller is not Manager`)
     }
 
-    const estGas = await this.estGasAddStoreUpdater(
-      nftAddress,
+    const estGas = await estimateGas(
       address,
-      storeUpdater,
-      nftContract
+      nftContract.methods.addTo725StoreList,
+      storeUpdater
     )
 
     // Call addTo725StoreList function of the contract
@@ -696,16 +622,7 @@ export class Nft {
         this.config
       )
 
-    const gasLimitDefault = this.GASLIMIT_DEFAULT
-    let estGas
-    try {
-      estGas = await nftContract.methods
-        .removeFrom725StoreList(storeUpdater)
-        .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
-    } catch (e) {
-      estGas = gasLimitDefault
-    }
-    return estGas
+    return estimateGas(address, nftContract.methods.removeFrom725StoreList, storeUpdater)
   }
 
   /**
@@ -733,11 +650,10 @@ export class Nft {
       throw new Error(`Caller is not Manager nor storeUpdater`)
     }
 
-    const estGas = await this.estGasRemoveStoreUpdater(
-      nftAddress,
+    const estGas = await estimateGas(
       address,
-      storeUpdater,
-      nftContract
+      nftContract.methods.removeFrom725StoreList,
+      storeUpdater
     )
 
     // Call removeFrom725StoreList function of the contract
@@ -771,16 +687,7 @@ export class Nft {
         this.config
       )
 
-    const gasLimitDefault = this.GASLIMIT_DEFAULT
-    let estGas
-    try {
-      estGas = await nftContract.methods
-        .cleanPermissions()
-        .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
-    } catch (e) {
-      estGas = gasLimitDefault
-    }
-    return estGas
+    return estimateGas(address, nftContract.methods.cleanPermissions)
   }
 
   /**
@@ -806,7 +713,7 @@ export class Nft {
       throw new Error(`Caller is not NFT Owner`)
     }
 
-    const estGas = await this.estGasCleanPermissions(nftAddress, address, nftContract)
+    const estGas = await estimateGas(address, nftContract.methods.cleanPermissions)
 
     // Call cleanPermissions function of the contract
     const trxReceipt = await nftContract.methods.cleanPermissions().send({
@@ -841,19 +748,13 @@ export class Nft {
         this.config
       )
 
-    const gasLimitDefault = this.GASLIMIT_DEFAULT
-    let estGas
-    try {
-      estGas = await nftContract.methods
-        .transferFrom(nftOwner, nftReceiver, tokenId)
-        .estimateGas({ from: nftOwner }, (err, estGas) =>
-          err ? gasLimitDefault : estGas
-        )
-    } catch (e) {
-      estGas = gasLimitDefault
-    }
-
-    return estGas
+    return estimateGas(
+      nftOwner,
+      nftContract.methods.transferFrom,
+      nftOwner,
+      nftReceiver,
+      tokenId
+    )
   }
 
   /**
@@ -882,12 +783,12 @@ export class Nft {
 
     const tokenIdentifier = tokenId || 1
 
-    const estGas = await this.estGasTransferNft(
-      nftAddress,
+    const estGas = await estimateGas(
+      nftOwner,
+      nftContract.methods.transferFrom,
       nftOwner,
       nftReceiver,
-      tokenIdentifier,
-      nftContract
+      tokenIdentifier
     )
 
     // Call transferFrom function of the contract
@@ -925,19 +826,13 @@ export class Nft {
         this.config
       )
 
-    const gasLimitDefault = this.GASLIMIT_DEFAULT
-    let estGas
-    try {
-      estGas = await nftContract.methods
-        .safeTransferFrom(nftOwner, nftReceiver, tokenId)
-        .estimateGas({ from: nftOwner }, (err, estGas) =>
-          err ? gasLimitDefault : estGas
-        )
-    } catch (e) {
-      estGas = gasLimitDefault
-    }
-
-    return estGas
+    return estimateGas(
+      nftOwner,
+      nftContract.methods.safeTransferFrom,
+      nftOwner,
+      nftReceiver,
+      tokenId
+    )
   }
 
   /**
@@ -966,12 +861,12 @@ export class Nft {
 
     const tokenIdentifier = tokenId || 1
 
-    const estGas = await this.estGasSafeTransferNft(
-      nftAddress,
+    const estGas = await estimateGas(
+      nftOwner,
+      nftContract.methods.safeTransferFrom,
       nftOwner,
       nftReceiver,
-      tokenIdentifier,
-      nftContract
+      tokenIdentifier
     )
 
     // Call transferFrom function of the contract
@@ -1016,28 +911,17 @@ export class Nft {
         this.config
       )
     if (!metadataProofs) metadataProofs = []
-    const gasLimitDefault = this.GASLIMIT_DEFAULT
-    let estGas
-    try {
-      estGas = await nftContract.methods
-        .setMetaData(
-          metadataState,
-          metadataDecryptorUrl,
-          metadataDecryptorAddress,
-          flags,
-          data,
-          metadataHash,
-          metadataProofs
-        )
-        .estimateGas({ from: metadataUpdater }, (err, estGas) =>
-          err ? gasLimitDefault : estGas
-        )
-    } catch (e) {
-      LoggerInstance.error('estGasSetMetadata error: ', e.message)
-      estGas = gasLimitDefault
-    }
-
-    return estGas
+    return estimateGas(
+      metadataUpdater,
+      nftContract.methods.setMetaData,
+      metadataState,
+      metadataDecryptorUrl,
+      metadataDecryptorAddress,
+      flags,
+      data,
+      metadataHash,
+      metadataProofs
+    )
   }
 
   /**
@@ -1066,17 +950,16 @@ export class Nft {
     if (!(await this.getNftPermissions(nftAddress, address)).updateMetadata) {
       throw new Error(`Caller is not Metadata updater`)
     }
-    const estGas = await this.estGasSetMetadata(
-      nftAddress,
+    const estGas = await estimateGas(
       address,
+      nftContract.methods.setMetaData,
       metadataState,
       metadataDecryptorUrl,
       metadataDecryptorAddress,
       flags,
       data,
       metadataHash,
-      metadataProofs,
-      nftContract
+      metadataProofs
     )
     const trxReceipt = await nftContract.methods
       .setMetaData(
@@ -1117,23 +1000,15 @@ export class Nft {
         new this.web3.eth.Contract(this.nftAbi, nftAddress),
         this.config
       )
-    const gasLimitDefault = this.GASLIMIT_DEFAULT
-    let estGas
     const sanitizedMetadataAndTokenURI = {
       ...metadataAndTokenURI,
       metadataProofs: metadataAndTokenURI.metadataProofs || []
     }
-    try {
-      estGas = await nftContract.methods
-        .setMetaDataAndTokenURI(sanitizedMetadataAndTokenURI)
-        .estimateGas({ from: metadataUpdater }, (err, estGas) =>
-          err ? gasLimitDefault : estGas
-        )
-    } catch (e) {
-      estGas = gasLimitDefault
-    }
-
-    return estGas
+    return estimateGas(
+      metadataUpdater,
+      nftContract.methods.setMetaDataAndTokenURI,
+      sanitizedMetadataAndTokenURI
+    )
   }
 
   /**
@@ -1155,16 +1030,15 @@ export class Nft {
     if (!(await this.getNftPermissions(nftAddress, metadataUpdater)).updateMetadata) {
       throw new Error(`Caller is not Metadata updater`)
     }
-    const estGas = await this.estGasSetMetadataAndTokenURI(
-      nftAddress,
-      metadataUpdater,
-      metadataAndTokenURI,
-      nftContract
-    )
     const sanitizedMetadataAndTokenURI = {
       ...metadataAndTokenURI,
       metadataProofs: metadataAndTokenURI.metadataProofs || []
     }
+    const estGas = await estimateGas(
+      metadataUpdater,
+      nftContract.methods.setMetaDataAndTokenURI,
+      sanitizedMetadataAndTokenURI
+    )
     const trxReceipt = await nftContract.methods
       .setMetaDataAndTokenURI(sanitizedMetadataAndTokenURI)
       .send({
@@ -1197,19 +1071,11 @@ export class Nft {
         this.config
       )
 
-    const gasLimitDefault = this.GASLIMIT_DEFAULT
-    let estGas
-    try {
-      estGas = await nftContract.methods
-        .setMetaDataState(metadataState)
-        .estimateGas({ from: metadataUpdater }, (err, estGas) =>
-          err ? gasLimitDefault : estGas
-        )
-    } catch (e) {
-      estGas = gasLimitDefault
-    }
-
-    return estGas
+    return estimateGas(
+      metadataUpdater,
+      nftContract.methods.setMetaDataState,
+      metadataState
+    )
   }
 
   /**
@@ -1233,7 +1099,11 @@ export class Nft {
       throw new Error(`Caller is not Metadata updater`)
     }
 
-    const estGas = await this.estGasSetMetadataState(nftAddress, address, metadataState)
+    const estGas = await estimateGas(
+      address,
+      nftContract.methods.setMetaDataState,
+      metadataState
+    )
 
     // Call transferFrom function of the contract
     const trxReceipt = await nftContract.methods.setMetaDataState(metadataState).send({
@@ -1261,17 +1131,7 @@ export class Nft {
       this.config
     )
 
-    const gasLimitDefault = this.GASLIMIT_DEFAULT
-    let estGas
-    try {
-      estGas = await nftContract.methods
-        .setTokenURI('1', data)
-        .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
-    } catch (e) {
-      estGas = gasLimitDefault
-    }
-
-    return estGas
+    return estimateGas(address, nftContract.methods.setTokenURI, '1', data)
   }
 
   /** set TokenURI on an nft
@@ -1290,7 +1150,7 @@ export class Nft {
       this.config
     )
 
-    const estGas = await this.estSetTokenURI(nftAddress, address, data)
+    const estGas = await estimateGas(address, nftContract.methods.setTokenURI, '1', data)
     const trxReceipt = await nftContract.methods.setTokenURI('1', data).send({
       from: address,
       gas: estGas + 1,

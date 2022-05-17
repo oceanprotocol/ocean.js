@@ -32,4 +32,9 @@ describe('Provider tests', async () => {
     )
     assert(fileinfo[0].valid === true, 'Sent file is not valid')
   })
+
+  it('Alice tests compute environments', async () => {
+    const computeEnvs = await providerInstance.getComputeEnvironments(config.providerUri)
+    assert(computeEnvs, 'No Compute environments found')
+  })
 })

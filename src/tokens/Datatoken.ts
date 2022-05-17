@@ -9,9 +9,10 @@ import {
   LoggerInstance,
   getFairGasPrice,
   setContractDefaults,
-  configHelperNetworks,
   getFreOrderParams,
-  ZERO_ADDRESS
+  estimateGas,
+  ZERO_ADDRESS,
+  ConfigHelper
 } from '../utils'
 import {
   ConsumeMarketFee,
@@ -45,7 +46,6 @@ export interface DispenserParams {
 }
 
 export class Datatoken {
-  public GASLIMIT_DEFAULT = 1000000
   public factoryAddress: string
   public factoryABI: AbiItem | AbiItem[]
   public datatokensAbi: AbiItem | AbiItem[]
@@ -61,6 +61,7 @@ export class Datatoken {
    */
   constructor(
     web3: Web3,
+    network?: string | number,
     datatokensAbi?: AbiItem | AbiItem[],
     datatokensEnterpriseAbi?: AbiItem | AbiItem[],
     config?: Config
@@ -69,7 +70,7 @@ export class Datatoken {
     this.datatokensAbi = datatokensAbi || (defaultDatatokensAbi.abi as AbiItem[])
     this.datatokensEnterpriseAbi =
       datatokensEnterpriseAbi || (defaultDatatokensEnterpriseAbi.abi as AbiItem[])
-    this.config = config || configHelperNetworks[0]
+    this.config = config || new ConfigHelper().getConfig(network || 'unknown')
     this.nft = new Nft(this.web3)
   }
 
@@ -96,17 +97,12 @@ export class Datatoken {
         this.config
       )
 
-    // Estimate gas cost for mint method
-    const gasLimitDefault = this.GASLIMIT_DEFAULT
-    let estGas
-    try {
-      estGas = await dtContract.methods
-        .approve(spender, this.web3.utils.toWei(amount))
-        .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
-    } catch (e) {
-      estGas = gasLimitDefault
-    }
-    return estGas
+    return estimateGas(
+      address,
+      dtContract.methods.approve,
+      spender,
+      this.web3.utils.toWei(amount)
+    )
   }
 
   /**
@@ -128,12 +124,11 @@ export class Datatoken {
       this.config
     )
 
-    const estGas = await this.estGasApprove(
-      dtAddress,
-      spender,
-      amount,
+    const estGas = await estimateGas(
       address,
-      dtContract
+      dtContract.methods.approve,
+      spender,
+      this.web3.utils.toWei(amount)
     )
 
     // Call mint contract method
@@ -170,17 +165,12 @@ export class Datatoken {
         this.config
       )
 
-    const gasLimitDefault = this.GASLIMIT_DEFAULT
-    let estGas
-    try {
-      estGas = await dtContract.methods
-        .mint(toAddress || address, this.web3.utils.toWei(amount))
-        .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
-    } catch (e) {
-      estGas = gasLimitDefault
-    }
-
-    return estGas
+    return estimateGas(
+      address,
+      dtContract.methods.mint,
+      toAddress || address,
+      this.web3.utils.toWei(amount)
+    )
   }
 
   /**
@@ -205,36 +195,27 @@ export class Datatoken {
         this.config
       )
 
-    const gasLimitDefault = this.GASLIMIT_DEFAULT
-
     if (!fixedRateParams.allowedConsumer) fixedRateParams.allowedConsumer = ZERO_ADDRESS
     const withMint = fixedRateParams.withMint ? 1 : 0
 
-    let estGas
-    try {
-      estGas = await dtContract.methods
-        .createFixedRate(
-          fixedRateParams.fixedRateAddress,
-          [
-            fixedRateParams.baseTokenAddress,
-            address,
-            fixedRateParams.marketFeeCollector,
-            fixedRateParams.allowedConsumer
-          ],
-          [
-            fixedRateParams.baseTokenDecimals,
-            fixedRateParams.datatokenDecimals,
-            fixedRateParams.fixedRate,
-            fixedRateParams.marketFee,
-            withMint
-          ]
-        )
-        .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
-    } catch (e) {
-      estGas = gasLimitDefault
-    }
-
-    return estGas
+    return estimateGas(
+      address,
+      dtContract.methods.createFixedRate,
+      fixedRateParams.fixedRateAddress,
+      [
+        fixedRateParams.baseTokenAddress,
+        address,
+        fixedRateParams.marketFeeCollector,
+        fixedRateParams.allowedConsumer
+      ],
+      [
+        fixedRateParams.baseTokenDecimals,
+        fixedRateParams.datatokenDecimals,
+        fixedRateParams.fixedRate,
+        fixedRateParams.marketFee,
+        withMint
+      ]
+    )
   }
 
   /**
@@ -263,11 +244,23 @@ export class Datatoken {
 
     // should check ERC20Deployer role using erc721 level ..
 
-    const estGas = await this.estGasCreateFixedRate(
-      dtAddress,
+    const estGas = await estimateGas(
       address,
-      fixedRateParams,
-      dtContract
+      dtContract.methods.createFixedRate,
+      fixedRateParams.fixedRateAddress,
+      [
+        fixedRateParams.baseTokenAddress,
+        fixedRateParams.owner,
+        fixedRateParams.marketFeeCollector,
+        fixedRateParams.allowedConsumer
+      ],
+      [
+        fixedRateParams.baseTokenDecimals,
+        fixedRateParams.datatokenDecimals,
+        fixedRateParams.fixedRate,
+        fixedRateParams.marketFee,
+        withMint
+      ]
     )
 
     // Call createFixedRate contract method
@@ -323,23 +316,15 @@ export class Datatoken {
 
     if (!dispenserParams.withMint) dispenserParams.withMint = false
 
-    const gasLimitDefault = this.GASLIMIT_DEFAULT
-    let estGas
-    try {
-      estGas = await dtContract.methods
-        .createDispenser(
-          dispenserAddress,
-          dispenserParams.maxTokens,
-          dispenserParams.maxBalance,
-          dispenserParams.withMint,
-          dispenserParams.allowedSwapper
-        )
-        .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
-    } catch (e) {
-      estGas = gasLimitDefault
-    }
-
-    return estGas
+    return estimateGas(
+      address,
+      dtContract.methods.createDispenser,
+      dispenserAddress,
+      dispenserParams.maxTokens,
+      dispenserParams.maxBalance,
+      dispenserParams.withMint,
+      dispenserParams.allowedSwapper
+    )
   }
 
   /**
@@ -371,12 +356,14 @@ export class Datatoken {
 
     // should check ERC20Deployer role using erc721 level ..
 
-    const estGas = await this.estGasCreateDispenser(
-      dtAddress,
+    const estGas = await estimateGas(
       address,
+      dtContract.methods.createDispenser,
       dispenserAddress,
-      dispenserParams,
-      dtContract
+      dispenserParams.maxTokens,
+      dispenserParams.maxBalance,
+      dispenserParams.withMint,
+      dispenserParams.allowedSwapper
     )
 
     // Call createFixedRate contract method
@@ -421,12 +408,11 @@ export class Datatoken {
 
     const capAvailble = await this.getCap(dtAddress)
     if (new Decimal(capAvailble).gte(amount)) {
-      const estGas = await this.estGasMint(
-        dtAddress,
+      const estGas = await estimateGas(
         address,
-        amount,
-        toAddress,
-        dtContract
+        dtContract.methods.mint,
+        toAddress || address,
+        this.web3.utils.toWei(amount)
       )
 
       // Call mint contract method
@@ -464,17 +450,7 @@ export class Datatoken {
         this.config
       )
 
-    // Estimate gas cost for addMinter method
-    const gasLimitDefault = this.GASLIMIT_DEFAULT
-    let estGas
-    try {
-      estGas = await dtContract.methods
-        .addMinter(minter)
-        .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
-    } catch (e) {
-      estGas = gasLimitDefault
-    }
-    return estGas
+    return estimateGas(address, dtContract.methods.addMinter, minter)
   }
 
   /**
@@ -499,7 +475,7 @@ export class Datatoken {
       throw new Error(`Caller is not ERC20Deployer`)
     }
     // Estimate gas cost for addMinter method
-    const estGas = await this.estGasAddMinter(dtAddress, address, minter, dtContract)
+    const estGas = await estimateGas(address, dtContract.methods.addMinter, minter)
 
     // Call addMinter function of the contract
     const trxReceipt = await dtContract.methods.addMinter(minter).send({
@@ -534,18 +510,7 @@ export class Datatoken {
 
     // should check ERC20Deployer role using erc721 level ..
 
-    // Estimate gas for removeMinter method
-    const gasLimitDefault = this.GASLIMIT_DEFAULT
-    let estGas
-    try {
-      estGas = await dtContract.methods
-        .removeMinter(minter)
-        .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
-    } catch (e) {
-      estGas = gasLimitDefault
-    }
-
-    return estGas
+    return estimateGas(address, dtContract.methods.removeMinter, minter)
   }
 
   /**
@@ -571,7 +536,7 @@ export class Datatoken {
       throw new Error(`Caller is not ERC20Deployer`)
     }
 
-    const estGas = await this.estGasRemoveMinter(dtAddress, address, minter, dtContract)
+    const estGas = await estimateGas(address, dtContract.methods.removeMinter, minter)
 
     // Call dtContract function of the contract
     const trxReceipt = await dtContract.methods.removeMinter(minter).send({
@@ -604,18 +569,7 @@ export class Datatoken {
         this.config
       )
 
-    // Estimate gas for addFeeManager method
-    const gasLimitDefault = this.GASLIMIT_DEFAULT
-    let estGas
-    try {
-      estGas = await dtContract.methods
-        .addPaymentManager(paymentManager)
-        .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
-    } catch (e) {
-      estGas = gasLimitDefault
-    }
-
-    return estGas
+    return estimateGas(address, dtContract.methods.addPaymentManager, paymentManager)
   }
 
   /**
@@ -640,11 +594,10 @@ export class Datatoken {
       throw new Error(`Caller is not ERC20Deployer`)
     }
 
-    const estGas = await this.estGasAddPaymentManager(
-      dtAddress,
+    const estGas = await estimateGas(
       address,
-      paymentManager,
-      dtContract
+      dtContract.methods.addPaymentManager,
+      paymentManager
     )
 
     // Call addPaymentManager function of the contract
@@ -678,16 +631,7 @@ export class Datatoken {
         this.config
       )
 
-    const gasLimitDefault = this.GASLIMIT_DEFAULT
-    let estGas
-    try {
-      estGas = await dtContract.methods
-        .removePaymentManager(paymentManager)
-        .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
-    } catch (e) {
-      estGas = gasLimitDefault
-    }
-    return estGas
+    return estimateGas(address, dtContract.methods.removePaymentManager, paymentManager)
   }
 
   /**
@@ -712,11 +656,10 @@ export class Datatoken {
       throw new Error(`Caller is not ERC20Deployer`)
     }
 
-    const estGas = await this.estGasRemovePaymentManager(
-      dtAddress,
+    const estGas = await estimateGas(
       address,
-      paymentManager,
-      dtContract
+      dtContract.methods.removePaymentManager,
+      paymentManager
     )
 
     // Call removeFeeManager function of the contract
@@ -752,16 +695,7 @@ export class Datatoken {
         this.config
       )
 
-    const gasLimitDefault = this.GASLIMIT_DEFAULT
-    let estGas
-    try {
-      estGas = await dtContract.methods
-        .setPaymentCollector(paymentCollector)
-        .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
-    } catch (e) {
-      estGas = gasLimitDefault
-    }
-    return estGas
+    return estimateGas(address, dtContract.methods.setPaymentCollector, paymentCollector)
   }
 
   /**
@@ -793,11 +727,10 @@ export class Datatoken {
       throw new Error(`Caller is not Fee Manager, owner or erc20 Deployer`)
     }
 
-    const estGas = await this.estGasSetPaymentCollector(
-      dtAddress,
+    const estGas = await estimateGas(
       address,
-      paymentCollector,
-      dtContract
+      dtContract.methods.setPaymentCollector,
+      paymentCollector
     )
 
     // Call setFeeCollector method of the contract
@@ -866,16 +799,7 @@ export class Datatoken {
         this.config
       )
 
-    const gasLimitDefault = this.GASLIMIT_DEFAULT
-    let estGas
-    try {
-      estGas = await dtContract.methods
-        .transfer(toAddress, amount)
-        .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
-    } catch (e) {
-      estGas = gasLimitDefault
-    }
-    return estGas
+    return estimateGas(address, dtContract.methods.transfer, toAddress, amount)
   }
 
   /**
@@ -897,12 +821,11 @@ export class Datatoken {
       this.config
     )
     try {
-      const estGas = await this.estGasTransfer(
-        dtAddress,
-        toAddress,
-        amount,
+      const estGas = await estimateGas(
         address,
-        dtContract
+        dtContract.methods.transfer,
+        toAddress,
+        amount
       )
       // Call transfer function of the contract
       const trxReceipt = await dtContract.methods.transfer(toAddress, amount).send({
@@ -943,17 +866,14 @@ export class Datatoken {
         this.config
       )
 
-    // Estimate gas for startOrder method
-    const gasLimitDefault = this.GASLIMIT_DEFAULT
-    let estGas
-    try {
-      estGas = await dtContract.methods
-        .startOrder(consumer, serviceIndex, providerFees, consumeMarketFee)
-        .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
-    } catch (e) {
-      estGas = gasLimitDefault
-    }
-    return estGas
+    return estimateGas(
+      address,
+      dtContract.methods.startOrder,
+      consumer,
+      serviceIndex,
+      providerFees,
+      consumeMarketFee
+    )
   }
 
   /** Start Order: called by payer or consumer prior ordering a service consume on a marketplace.
@@ -985,14 +905,13 @@ export class Datatoken {
       }
     }
     try {
-      const estGas = await this.estGasStartOrder(
-        dtAddress,
+      const estGas = await estimateGas(
         address,
+        dtContract.methods.startOrder,
         consumer,
         serviceIndex,
         providerFees,
-        consumeMarketFee,
-        dtContract
+        consumeMarketFee
       )
 
       const trxReceipt = await dtContract.methods
@@ -1031,17 +950,7 @@ export class Datatoken {
         this.config
       )
 
-    // Estimate gas for reuseOrder method
-    const gasLimitDefault = this.GASLIMIT_DEFAULT
-    let estGas
-    try {
-      estGas = await dtContract.methods
-        .reuseOrder(orderTxId, providerFees)
-        .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
-    } catch (e) {
-      estGas = gasLimitDefault
-    }
-    return estGas
+    return estimateGas(address, dtContract.methods.reuseOrder, orderTxId, providerFees)
   }
 
   /** Reuse Order: called by payer or consumer having a valid order, but with expired provider access.
@@ -1064,12 +973,11 @@ export class Datatoken {
       this.config
     )
     try {
-      const estGas = await this.estGasReuseOrder(
-        dtAddress,
+      const estGas = await estimateGas(
         address,
+        dtContract.methods.reuseOrder,
         orderTxId,
-        providerFees,
-        dtContract
+        providerFees
       )
 
       const trxReceipt = await dtContract.methods
@@ -1105,17 +1013,12 @@ export class Datatoken {
       contractInstance ||
       new this.web3.eth.Contract(this.datatokensEnterpriseAbi, dtAddress)
 
-    // Estimate gas for startOrder method
-    const gasLimitDefault = this.GASLIMIT_DEFAULT
-    let estGas
-    try {
-      estGas = await dtContract.methods
-        .buyFromFreAndOrder(orderParams, freParams)
-        .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
-    } catch (e) {
-      estGas = gasLimitDefault
-    }
-    return estGas
+    return estimateGas(
+      address,
+      dtContract.methods.buyFromFreAndOrder,
+      orderParams,
+      freParams
+    )
   }
 
   /** Buys 1 DT from the FRE and then startsOrder, while burning that DT
@@ -1135,12 +1038,11 @@ export class Datatoken {
     try {
       const freContractParams = getFreOrderParams(freParams)
 
-      const estGas = await this.estGasBuyFromFreAndOrder(
-        dtAddress,
+      const estGas = await estimateGas(
         address,
+        dtContract.methods.buyFromFreAndOrder,
         orderParams,
-        freContractParams,
-        dtContract
+        freContractParams
       )
 
       const trxReceipt = await dtContract.methods
@@ -1176,17 +1078,12 @@ export class Datatoken {
       contractInstance ||
       new this.web3.eth.Contract(this.datatokensEnterpriseAbi, dtAddress)
 
-    // Estimate gas for startOrder method
-    const gasLimitDefault = this.GASLIMIT_DEFAULT
-    let estGas
-    try {
-      estGas = await dtContract.methods
-        .buyFromDispenserAndOrder(orderParams, dispenserContract)
-        .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
-    } catch (e) {
-      estGas = gasLimitDefault
-    }
-    return estGas
+    return estimateGas(
+      address,
+      dtContract.methods.buyFromDispenserAndOrder,
+      orderParams,
+      dispenserContract
+    )
   }
 
   /** Gets DT from dispenser and then startsOrder, while burning that DT
@@ -1204,12 +1101,11 @@ export class Datatoken {
   ): Promise<TransactionReceipt> {
     const dtContract = new this.web3.eth.Contract(this.datatokensEnterpriseAbi, dtAddress)
     try {
-      const estGas = await this.estGasBuyFromDispenserAndOrder(
-        dtAddress,
+      const estGas = await estimateGas(
         address,
+        dtContract.methods.buyFromDispenserAndOrder,
         orderParams,
-        dispenserContract,
-        dtContract
+        dispenserContract
       )
 
       const trxReceipt = await dtContract.methods
@@ -1246,16 +1142,7 @@ export class Datatoken {
         this.config
       )
 
-    const gasLimitDefault = this.GASLIMIT_DEFAULT
-    let estGas
-    try {
-      estGas = await dtContract.methods
-        .setData(value)
-        .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
-    } catch (e) {
-      estGas = gasLimitDefault
-    }
-    return estGas
+    return estimateGas(address, dtContract.methods.setData, value)
   }
 
   /** setData
@@ -1280,7 +1167,7 @@ export class Datatoken {
       this.config
     )
 
-    const estGas = await this.estGasSetData(dtAddress, address, value, dtContract)
+    const estGas = await estimateGas(address, dtContract.methods.setData, value)
 
     // Call setData function of the contract
     const trxReceipt = await dtContract.methods.setData(value).send({
@@ -1310,17 +1197,7 @@ export class Datatoken {
         this.config
       )
 
-    const gasLimitDefault = this.GASLIMIT_DEFAULT
-    let estGas
-    try {
-      estGas = await dtContract.methods
-        .cleanPermissions()
-        .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
-    } catch (e) {
-      estGas = gasLimitDefault
-    }
-
-    return estGas
+    return estimateGas(address, dtContract.methods.cleanPermissions)
   }
 
   /**
@@ -1342,7 +1219,7 @@ export class Datatoken {
       this.config
     )
 
-    const estGas = await this.estGasCleanPermissions(dtAddress, address, dtContract)
+    const estGas = await estimateGas(address, dtContract.methods.cleanPermissions)
 
     // Call cleanPermissions function of the contract
     const trxReceipt = await dtContract.methods.cleanPermissions().send({
