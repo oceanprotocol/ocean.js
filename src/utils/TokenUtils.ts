@@ -1,11 +1,15 @@
 import Decimal from 'decimal.js'
 import { Contract } from 'web3-eth-contract'
-import { amountToUnits, getFairGasPrice, unitsToAmount } from './ContractUtils'
+import {
+  amountToUnits,
+  estimateGas,
+  getFairGasPrice,
+  unitsToAmount
+} from './ContractUtils'
 import { minAbi } from './minAbi'
 import LoggerInstance from './Logger'
 import { TransactionReceipt } from 'web3-core'
 import Web3 from 'web3'
-import { GASLIMIT_DEFAULT } from './Constants'
 
 /**
  * Estimate gas cost for approval function
@@ -27,17 +31,7 @@ export async function estApprove(
 ): Promise<number> {
   const tokenContract = contractInstance || new web3.eth.Contract(minAbi, tokenAddress)
 
-  const gasLimitDefault = GASLIMIT_DEFAULT
-  let estGas
-  try {
-    estGas = await tokenContract.methods
-      .approve(spender, amount)
-      .estimateGas({ from: account }, (err, estGas) => (err ? gasLimitDefault : estGas))
-  } catch (e) {
-    estGas = gasLimitDefault
-    LoggerInstance.error('estimate gas failed for approve!', e)
-  }
-  return estGas
+  return estimateGas(account, tokenContract.methods.approve, spender, amount)
 }
 
 /**
@@ -45,7 +39,7 @@ export async function estApprove(
  * @param {String} account
  * @param {String} tokenAddress
  * @param {String} spender
- * @param {String} amount  (always expressed as wei)
+ * @param {String} amount amount of ERC20 tokens (always expressed as wei)
  * @param {boolean} force  if true, will overwrite any previous allowence. Else, will check if allowence is enough and will not send a transaction if it's not needed
  * @param {number} tokenDecimals optional number of decimals of the token
  */
@@ -67,13 +61,11 @@ export async function approve(
   }
   let result = null
   const amountFormatted = await amountToUnits(web3, tokenAddress, amount, tokenDecimals)
-  const estGas = await estApprove(
-    web3,
+  const estGas = await estimateGas(
     account,
-    tokenAddress,
+    tokenContract.methods.approve,
     spender,
-    amountFormatted,
-    tokenContract
+    amountFormatted
   )
 
   try {
@@ -84,8 +76,69 @@ export async function approve(
     })
   } catch (e) {
     LoggerInstance.error(
-      `ERRPR: Failed to approve spender to spend tokens : ${e.message}`
+      `ERROR: Failed to approve spender to spend tokens : ${e.message}`
     )
+  }
+  return result
+}
+
+/**
+ * Estimate gas cost for transfer function
+ * @param {String} account
+ * @param {String} tokenAddress
+ * @param {String} recipient
+ * @param {String} amount
+ * @param {String} force
+ * @param {Contract} contractInstance optional contract instance
+ * @return {Promise<number>}
+ */
+export async function estTransfer(
+  web3: Web3,
+  account: string,
+  tokenAddress: string,
+  recipient: string,
+  amount: string,
+  contractInstance?: Contract
+): Promise<number> {
+  const tokenContract = contractInstance || new web3.eth.Contract(minAbi, tokenAddress)
+
+  return estimateGas(account, tokenContract.methods.transfer, recipient, amount)
+}
+
+/**
+ * Moves amount tokens from the caller’s account to recipient.
+ * @param {String} account
+ * @param {String} tokenAddress
+ * @param {String} recipient
+ * @param {String} amount amount of ERC20 tokens (not as wei)
+ * @param {String} force  if true, will overwrite any previous allowence. Else, will check if allowence is enough and will not send a transaction if it's not needed
+ */
+export async function transfer(
+  web3: Web3,
+  account: string,
+  tokenAddress: string,
+  recipient: string,
+  amount: string
+): Promise<TransactionReceipt | string> {
+  const tokenContract = new web3.eth.Contract(minAbi, tokenAddress)
+
+  let result = null
+  const amountFormatted = await amountToUnits(web3, tokenAddress, amount)
+  const estGas = await estimateGas(
+    account,
+    tokenContract.methods.transfer,
+    recipient,
+    amountFormatted
+  )
+
+  try {
+    result = await tokenContract.methods.transfer(recipient, amountFormatted).send({
+      from: account,
+      gas: estGas + 1,
+      gasPrice: await getFairGasPrice(web3, null)
+    })
+  } catch (e) {
+    LoggerInstance.error(`ERROR: Failed to transfer tokens : ${e.message}`)
   }
   return result
 }
