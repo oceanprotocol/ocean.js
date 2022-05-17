@@ -1,6 +1,7 @@
 import { assert, expect } from 'chai'
 import { AbiItem } from 'web3-utils/types'
 import { Contract } from 'web3-eth-contract'
+import BigNumber from 'bignumber.js'
 import ERC20Template from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC20Template.sol/ERC20Template.json'
 import MockERC20 from '@oceanprotocol/contracts/artifacts/contracts/utils/mock/MockERC20Decimals.sol/MockERC20Decimals.json'
 import { deployContracts, Addresses } from '../../../TestContractHandler'
@@ -40,6 +41,7 @@ describe('SideStaking unit test', () => {
 
   const VESTED_BLOCKS = 2500000
   const VESTING_AMOUNT = '10000'
+  const BASE_TOKEN_LIQUIDITY = 2000
 
   const nftData: NftCreateData = {
     name: '72120Bundle',
@@ -95,7 +97,7 @@ describe('SideStaking unit test', () => {
       factoryOwner,
       contracts.daiAddress,
       contracts.erc721FactoryAddress,
-      '2000'
+      BASE_TOKEN_LIQUIDITY.toString()
     )
 
     assert(
@@ -106,7 +108,7 @@ describe('SideStaking unit test', () => {
           factoryOwner,
           contracts.erc721FactoryAddress
         )
-      ) >= 2000
+      ) >= BASE_TOKEN_LIQUIDITY
     )
 
     await approve(
@@ -114,7 +116,7 @@ describe('SideStaking unit test', () => {
       factoryOwner,
       contracts.usdcAddress,
       contracts.erc721FactoryAddress,
-      '10000'
+      BASE_TOKEN_LIQUIDITY.toString()
     )
 
     assert(
@@ -125,7 +127,7 @@ describe('SideStaking unit test', () => {
           factoryOwner,
           contracts.erc721FactoryAddress
         )
-      ) >= 10000
+      ) >= BASE_TOKEN_LIQUIDITY
     )
   })
 
@@ -146,7 +148,7 @@ describe('SideStaking unit test', () => {
         baseTokenDecimals: 18,
         vestingAmount: VESTING_AMOUNT,
         vestedBlocks: VESTED_BLOCKS,
-        initialBaseTokenLiquidity: '2000',
+        initialBaseTokenLiquidity: BASE_TOKEN_LIQUIDITY.toString(),
         swapFeeLiquidityProvider: '0.001',
         swapFeeMarketRunner: '0.001'
       }
@@ -179,7 +181,7 @@ describe('SideStaking unit test', () => {
           contracts.sideStakingAddress,
           erc20Token
         )
-      ).to.equal(web3.utils.toWei('2000'))
+      ).to.equal(web3.utils.toWei(BASE_TOKEN_LIQUIDITY.toString()))
     })
 
     it('#getDatatokenCurrentCirculatingSupply - should get datatoken supply in circulation ', async () => {
@@ -188,7 +190,7 @@ describe('SideStaking unit test', () => {
           contracts.sideStakingAddress,
           erc20Token
         )
-      ).to.equal(web3.utils.toWei('2000'))
+      ).to.equal(web3.utils.toWei(BASE_TOKEN_LIQUIDITY.toString()))
     })
 
     it('#getBaseToken - should get baseToken address', async () => {
@@ -217,14 +219,23 @@ describe('SideStaking unit test', () => {
 
     it('#getDatatokenBalance ', async () => {
       expect(
-        await sideStaking.getDatatokenBalance(contracts.sideStakingAddress, erc20Token)
-      ).to.equal(((Math.pow(2, 256) - 1) / Math.pow(10, 18)).toString())
+        await (
+          await sideStaking.getDatatokenBalance(contracts.sideStakingAddress, erc20Token)
+        ).toString()
+      ).to.equal(
+        new BigNumber(2)
+          .exponentiatedBy(256)
+          .minus(1)
+          .dividedBy(new BigNumber(10).exponentiatedBy(18))
+          .minus(BASE_TOKEN_LIQUIDITY)
+          .toString()
+      )
     })
 
     it('#getvestingAmount ', async () => {
       expect(
         await sideStaking.getvestingAmount(contracts.sideStakingAddress, erc20Token)
-      ).to.equal('0')
+      ).to.equal(VESTING_AMOUNT)
     })
 
     it('#getvestingLastBlock ', async () => {
@@ -354,7 +365,11 @@ describe('SideStaking unit test', () => {
         initialBaseTokenLiquidity: await unitsToAmount(
           web3,
           contracts.usdcAddress,
-          await amountToUnits(web3, contracts.usdcAddress, '2000')
+          await amountToUnits(
+            web3,
+            contracts.usdcAddress,
+            BASE_TOKEN_LIQUIDITY.toString()
+          )
         ),
         swapFeeLiquidityProvider: '0.001',
         swapFeeMarketRunner: '0.001'
@@ -384,14 +399,23 @@ describe('SideStaking unit test', () => {
 
     it('#getDatatokenBalance ', async () => {
       expect(
-        await sideStaking.getDatatokenBalance(contracts.sideStakingAddress, erc20Token)
-      ).to.equal(((Math.pow(2, 256) - 1) / Math.pow(10, 18)).toString())
+        await (
+          await sideStaking.getDatatokenBalance(contracts.sideStakingAddress, erc20Token)
+        ).toString()
+      ).to.equal(
+        new BigNumber(2)
+          .exponentiatedBy(256)
+          .minus(1)
+          .dividedBy(new BigNumber(10).exponentiatedBy(18))
+          .minus(BASE_TOKEN_LIQUIDITY)
+          .toString()
+      )
     })
 
     it('#getvestingAmount ', async () => {
       expect(
         await sideStaking.getvestingAmount(contracts.sideStakingAddress, erc20Token)
-      ).to.equal('0')
+      ).to.equal(VESTING_AMOUNT)
     })
 
     it('#getvestingLastBlock ', async () => {
