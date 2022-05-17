@@ -946,13 +946,6 @@ describe('Pool unit test', () => {
       assert((await pool.getMarketFeeCollector(poolAddress)) === factoryOwner)
     })
 
-    it('#getOPCCollector- should get market fees for each token', async () => {
-      assert(
-        (await pool.getOPCCollector(poolAddress)) ===
-          contracts.opfCommunityFeeCollectorAddress
-      )
-    })
-
     it('#getCurrentMarketFees- should get curent market fees for each token', async () => {
       const currentMarketFees: CurrentFees = await pool.getCurrentMarketFees(poolAddress)
       assert(currentMarketFees !== null)
