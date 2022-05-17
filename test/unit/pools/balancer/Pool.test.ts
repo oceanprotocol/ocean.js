@@ -468,13 +468,6 @@ describe('Pool unit test', () => {
       assert((await pool.getMarketFeeCollector(poolAddress)) === factoryOwner)
     })
 
-    it('#getOPCCollector- should get market fees for each token', async () => {
-      assert(
-        (await pool.getOPCCollector(poolAddress)) ===
-          contracts.opfCommunityFeeCollectorAddress
-      )
-    })
-
     it('#collectCommunityFee- should get community fees for each token', async () => {
       const spotPriceBefore = await pool.getSpotPrice(
         poolAddress,
@@ -951,13 +944,6 @@ describe('Pool unit test', () => {
     it('#getMarketFeeCollector- should get market fees for each token', async () => {
       // factoryOwner is the marketFeeCollector
       assert((await pool.getMarketFeeCollector(poolAddress)) === factoryOwner)
-    })
-
-    it('#getOPCCollector- should get market fees for each token', async () => {
-      assert(
-        (await pool.getOPCCollector(poolAddress)) ===
-          contracts.opfCommunityFeeCollectorAddress
-      )
     })
 
     it('#getCurrentMarketFees- should get curent market fees for each token', async () => {

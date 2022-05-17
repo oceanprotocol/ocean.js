@@ -1021,20 +1021,6 @@ export class FixedRateExchange {
   }
 
   /**
-   * Get OPF Collector of fixed rate contract
-   * @return {String}
-   */
-  async getOPCCollector(): Promise<string> {
-    let result = null
-    try {
-      result = await this.contract.methods.opcCollector().call()
-    } catch (e) {
-      LoggerInstance.error(`ERROR: Failed to get OPC Collector address: ${e.message}`)
-    }
-    return result
-  }
-
-  /**
    * Get Router address set in fixed rate contract
    * @return {String}
    */

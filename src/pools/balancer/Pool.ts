@@ -330,25 +330,6 @@ export class Pool {
   }
 
   /**
-   * Get OPC Collector of this pool
-   * @param {String} poolAddress
-   * @return {String}
-   */
-  async getOPCCollector(poolAddress: string): Promise<string> {
-    const pool = setContractDefaults(
-      new this.web3.eth.Contract(this.poolAbi, poolAddress),
-      this.config
-    )
-    let result = null
-    try {
-      result = await pool.methods._opcCollector().call()
-    } catch (e) {
-      LoggerInstance.error(`ERROR: Failed to get OPF Collector address: ${e.message}`)
-    }
-    return result
-  }
-
-  /**
    * Get if a token is bounded to a pool
    *  Returns true if token is bound
    * @param {String} poolAddress
