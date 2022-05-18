@@ -201,9 +201,10 @@ jobs:
 
       - name: checkout current branch  
         run: |
-          git pull
+          git status
           branch=${GITHUB_HEAD_REF#refs/heads/}
           echo ${branch}
+          git pull origin ${branch}
           git checkout ${branch}
           git status
       
