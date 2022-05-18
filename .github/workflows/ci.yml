@@ -219,7 +219,7 @@ jobs:
       - name: commit
         run: |
           # Stage the file, commit and push
-          git remote add origin https://github.com/oceanprotocol/ocean.js.git
+          git pull
           BRANCH=${GITHUB_HEAD_REF#refs/heads/}
           echo ${BRANCH}
           git checkout origin/${BRANCH}
