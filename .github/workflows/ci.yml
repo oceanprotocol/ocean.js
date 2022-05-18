@@ -221,4 +221,6 @@ jobs:
           git status
           git add CodeExamples.md
           git commit -m "Updating CodeExamples.md"
-          git push
+          branch=${GITHUB_HEAD_REF#refs/heads/}
+          echo Pushing changes to branch: ${branch}
+          git push origin HEAD:${branch}
