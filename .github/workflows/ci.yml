@@ -192,11 +192,13 @@ jobs:
         with:
           node-version: '16'
 
-      - name: checkout current branch
+      - name: checkout ocean.js repo
         uses: actions/checkout@v2
         with:
           repository: 'oceanprotocol/ocean.js'
           path: 'ocean.js'
+
+      - name: checkout current branch  
         run: |
           branch=${GITHUB_HEAD_REF#refs/heads/}
           echo ${branch}
