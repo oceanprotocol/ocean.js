@@ -219,8 +219,9 @@ jobs:
       - name: commit
         run: |
           # Stage the file, commit and push
-          BRANCH=$(git branch --show-current)
-          git checkout "${BRANCH}"
+          BRANCH=${GITHUB_REF#refs/heads/}
+          echo ${BRANCH}
+          git checkout ${BRANCH}
           git add CodeExamples.md
           git commit -m "Updating CodeExamples.md"
           git push
