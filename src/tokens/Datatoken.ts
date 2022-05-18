@@ -1330,23 +1330,16 @@ export class Datatoken {
     address: string
   ): Promise<number> {
     // Estimate gas cost for publishMarketFeeAddress method
-    const gasLimitDefault = this.GASLIMIT_DEFAULT
     const dtContract = new this.web3.eth.Contract(this.datatokensAbi, datatokenAddress, {
       from: address
     })
-    let estGas
-    try {
-      estGas = await dtContract.methods
-        .setPublishingMarketFee(
-          publishMarketFeeAddress,
-          publishMarketFeeToken,
-          publishMarketFeeAmount
-        )
-        .estimateGas({ from: address }, (err, estGas) => (err ? gasLimitDefault : estGas))
-    } catch (error) {
-      estGas = gasLimitDefault
-    }
-    return estGas
+    return estimateGas(
+      address,
+      dtContract.methods.setPublishingMarketFee,
+      publishMarketFeeAddress,
+      publishMarketFeeToken,
+      publishMarketFeeAmount
+    )
   }
 
   /**
