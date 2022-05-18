@@ -192,13 +192,12 @@ jobs:
         with:
           node-version: '16'
 
-      - name: checkout
+      - name: checkout current branch
         uses: actions/checkout@v2
-
-      - name: save current date
-        run: |
-          # do some operation that changes a file in the git repo
-          date > time.txt
+        with:
+          repository: 'oceanprotocol/ocean.js'
+          path: 'ocean.js'
+          ref: ${GITHUB_HEAD_REF#refs/heads/}
       
       - name: Create code examples file
         uses: actions/cache@v2
@@ -219,9 +218,7 @@ jobs:
       - name: commit
         run: |
           # Stage the file, commit and push
-          BRANCH=${GITHUB_HEAD_REF#refs/heads/}
-          echo ${BRANCH}
-          git checkout origin/${BRANCH}
+          git status
           git add CodeExamples.md
           git commit -m "Updating CodeExamples.md"
           git push
