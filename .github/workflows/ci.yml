@@ -197,16 +197,7 @@ jobs:
         with:
           repository: 'oceanprotocol/ocean.js'
           path: 'ocean.js'
-          ref: main
-
-      - name: checkout current branch  
-        run: |
-          git status
-          branch=${GITHUB_HEAD_REF#refs/heads/}
-          echo ${branch}
-          git pull origin ${branch}
-          git checkout ${branch}
-          git status
+          ref: ${{ github.event.pull_request.head.sha }}
       
       - name: Create code examples file
         uses: actions/cache@v2
