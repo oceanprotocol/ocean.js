@@ -11,7 +11,7 @@ import {
 import { Config } from '../models'
 import { minAbi } from './minAbi'
 import LoggerInstance from './Logger'
-import { ZERO_ADDRESS } from './Constants'
+import { GASLIMIT_DEFAULT, ZERO_ADDRESS } from './Constants'
 
 export function setContractDefaults(contract: Contract, config: Config): Contract {
   if (config) {
@@ -120,11 +120,12 @@ export async function getPoolCreationParams(
 export async function unitsToAmount(
   web3: Web3,
   token: string,
-  amount: string
+  amount: string,
+  tokenDecimals?: number
 ): Promise<string> {
   try {
     const tokenContract = new web3.eth.Contract(minAbi, token)
-    let decimals = await tokenContract.methods.decimals().call()
+    let decimals = tokenDecimals || (await tokenContract.methods.decimals().call())
     if (decimals === '0') {
       decimals = 18
     }
@@ -143,11 +144,12 @@ export async function unitsToAmount(
 export async function amountToUnits(
   web3: Web3,
   token: string,
-  amount: string
+  amount: string,
+  tokenDecimals?: number
 ): Promise<string> {
   try {
     const tokenContract = new web3.eth.Contract(minAbi, token)
-    let decimals = await tokenContract.methods.decimals().call()
+    let decimals = tokenDecimals || (await tokenContract.methods.decimals().call())
     if (decimals === '0') {
       decimals = 18
     }
@@ -161,4 +163,30 @@ export async function amountToUnits(
   } catch (e) {
     LoggerInstance.error(`ERROR: FAILED TO CALL DECIMALS(), USING 18', ${e.message}`)
   }
+}
+
+/**
+ * Estimates the gas used when a function would be executed on chain
+ * @param {string} from account that calls the function
+ * @param {Function} functionToEstimateGas function that we need to estimate the gas
+ * @param {...any[]} args arguments of the function
+ * @return {Promise<number>} gas cost of the function
+ */
+export async function estimateGas(
+  from: string,
+  functionToEstimateGas: Function,
+  ...args: any[]
+): Promise<any> {
+  let estimatedGas = GASLIMIT_DEFAULT
+  try {
+    estimatedGas = await functionToEstimateGas.apply(null, args).estimateGas(
+      {
+        from: from
+      },
+      (err, estGas) => (err ? GASLIMIT_DEFAULT : estGas)
+    )
+  } catch (e) {
+    LoggerInstance.error(`ERROR: Estimate gas failed!`, e)
+  }
+  return estimatedGas
 }
