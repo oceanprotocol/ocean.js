@@ -219,9 +219,10 @@ jobs:
       - name: commit
         run: |
           # Stage the file, commit and push
+          git remote add origin https://github.com/oceanprotocol/ocean.js.git
           BRANCH=${GITHUB_HEAD_REF#refs/heads/}
           echo ${BRANCH}
-          git checkout ${BRANCH}
+          git checkout origin/${BRANCH}
           git add CodeExamples.md
           git commit -m "Updating CodeExamples.md"
           git push
