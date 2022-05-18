@@ -10,9 +10,9 @@ import {
   setContractDefaults,
   estimateGas,
   ConfigHelper
-} from '../../utils/'
-import { Datatoken } from '../../tokens'
-import { Config } from '../../models/index.js'
+} from '../utils/'
+import { Datatoken } from '../tokens'
+import { Config } from '../config/index.js'
 
 export interface DispenserToken {
   active: boolean

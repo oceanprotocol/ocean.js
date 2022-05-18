@@ -14,9 +14,9 @@ import {
   NftFactory,
   NftCreateData,
   Pool,
-  unitsToAmount
+  unitsToAmount,
+  SideStaking
 } from '../../../../src'
-import { SideStaking } from '../../../../src/pools/ssContracts/SideStaking'
 import {
   Erc20CreateParams,
   PoolCreationParams,

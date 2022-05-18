@@ -3,8 +3,14 @@ import { AbiItem } from 'web3-utils/types'
 import { deployContracts, Addresses } from '../../TestContractHandler'
 import MockERC20 from '@oceanprotocol/contracts/artifacts/contracts/utils/mock/MockERC20Decimals.sol/MockERC20Decimals.json'
 import { web3 } from '../../config'
-import { NftFactory, NftCreateData, balance, approve, ZERO_ADDRESS } from '../../../src'
-import { Router } from '../../../src/pools/Router'
+import {
+  NftFactory,
+  NftCreateData,
+  balance,
+  approve,
+  ZERO_ADDRESS,
+  Router
+} from '../../../src'
 import { Erc20CreateParams, PoolCreationParams, Operation } from '../../../src/@types'
 
 const { keccak256 } = require('@ethersproject/keccak256')

@@ -11,10 +11,10 @@ import {
   unitsToAmount,
   estimateGas,
   ZERO_ADDRESS,
-  ConfigHelper
-} from '../../utils'
-import { Config } from '../../models/index.js'
-import { PriceAndFees } from '../..'
+  ConfigHelper,
+  PriceAndFees,
+  Config
+} from '..'
 
 export interface FixedPriceExchange {
   active: boolean

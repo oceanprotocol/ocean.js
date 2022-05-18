@@ -10,7 +10,7 @@ import {
   LoggerInstance,
   estimateGas,
   ConfigHelper
-} from '../../utils'
+} from '../utils'
 import BigNumber from 'bignumber.js'
 import PoolTemplate from '@oceanprotocol/contracts/artifacts/contracts/pools/balancer/BPool.sol/BPool.json'
 import defaultErc20Abi from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC20Template.sol/ERC20Template.json'
@@ -20,14 +20,14 @@ import {
   AmountsInMaxFee,
   AmountsOutMaxFee,
   PoolPriceAndFees
-} from '../../@types'
-import { Config } from '../../models'
+} from '../@types'
+import { Config } from '../config'
 import {
   getMaxAddLiquidity,
   getMaxRemoveLiquidity,
   getMaxSwapExactIn,
   getMaxSwapExactOut
-} from '../../utils/PoolHelpers'
+} from '../utils/PoolHelpers'
 import Decimal from 'decimal.js'
 const MaxUint256 =
   '115792089237316195423570985008687907853269984665640564039457584007913129639934'

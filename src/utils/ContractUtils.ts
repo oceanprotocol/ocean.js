@@ -8,7 +8,7 @@ import {
   FreOrderParams,
   PoolCreationParams
 } from '../@types'
-import { Config } from '../models'
+import { Config } from '../config'
 import { minAbi } from './minAbi'
 import LoggerInstance from './Logger'
 import { GASLIMIT_DEFAULT, ZERO_ADDRESS } from './Constants'

@@ -12,7 +12,7 @@ import {
 } from '../utils'
 import { Contract } from 'web3-eth-contract'
 import { MetadataProof } from '../../src/@types'
-import { Config } from '../models/index.js'
+import { Config } from '../config/index.js'
 import { MetadataAndTokenURI } from '../@types'
 
 /**
