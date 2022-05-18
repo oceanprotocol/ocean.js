@@ -8,9 +8,9 @@ import {
   FreOrderParams,
   PoolCreationParams
 } from '../@types'
-import { Config } from '../config'
+import { Config } from '..'
 import { minAbi } from './minAbi'
-import LoggerInstance from './Logger'
+import { LoggerInstance } from './Logger'
 import { GASLIMIT_DEFAULT, ZERO_ADDRESS } from './Constants'
 
 export function setContractDefaults(contract: Contract, config: Config): Contract {
