@@ -611,10 +611,7 @@ describe('Datatoken', () => {
       )
     } catch (e) {
       console.log('Message:', e.message)
-      assert(
-        e.message ===
-          'Returned error: VM Exception while processing transaction: revert ERC20Template: not publishMarketFeeAddress'
-      )
+      assert(e.message === 'Caller is not the Publishing Market Fee Address')
     }
     const newPublishingMarketFee = await datatoken.getPublishingMarketFee(
       datatokenAddress,

@@ -1362,6 +1362,12 @@ export class Datatoken {
     const dtContract = new this.web3.eth.Contract(this.datatokensAbi, datatokenAddress, {
       from: address
     })
+    const publishingMarketFeeAddress = (
+      await dtContract.methods.getPublishingMarketFee().call()
+    )[0]
+    if (publishingMarketFeeAddress !== address) {
+      throw new Error(`Caller is not the Publishing Market Fee Address`)
+    }
     const estGas = await this.estGasSetPublishingMarketFee(
       datatokenAddress,
       publishMarketFeeAddress,
