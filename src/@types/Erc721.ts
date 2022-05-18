@@ -1,4 +1,4 @@
-import { MetadataProof } from '.'
+import { MetadataProof } from '..'
 
 export interface MetadataAndTokenURI {
   metaDataState: number

@@ -1,5 +1,5 @@
-import { LogLevel } from '../utils/Logger'
 import { AbiItem } from 'web3-utils/types'
+import { LogLevel } from '..'
 
 export class Config {
   /**

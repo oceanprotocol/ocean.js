@@ -1,6 +1,7 @@
 import Web3 from 'web3'
 import { AbiItem } from 'web3-utils'
 import { TransactionReceipt } from 'web3-eth'
+import { Contract } from 'web3-eth-contract'
 import defaultNftAbi from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC721Template.sol/ERC721Template.json'
 import {
   LoggerInstance,
@@ -8,12 +9,10 @@ import {
   generateDtName,
   setContractDefaults,
   estimateGas,
-  ConfigHelper
-} from '../utils'
-import { Contract } from 'web3-eth-contract'
-import { MetadataProof } from '../../src/@types'
-import { Config } from '../config/index.js'
-import { MetadataAndTokenURI } from '../@types'
+  ConfigHelper,
+  Config
+} from '..'
+import { MetadataAndTokenURI, MetadataProof } from '../@types'
 
 /**
  * ERC721 ROLES

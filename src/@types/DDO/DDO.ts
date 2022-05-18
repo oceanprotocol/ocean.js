@@ -1,7 +1,4 @@
-import { Service } from './Service'
-import { Metadata } from './Metadata'
-import { Credentials } from './Credentials'
-import { Event } from './Event'
+import { Service, Metadata, Credentials, Event } from '../..'
 
 /**
  * DID Descriptor Object.

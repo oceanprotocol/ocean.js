@@ -9,10 +9,10 @@ import {
   getFairGasPrice,
   setContractDefaults,
   estimateGas,
-  ConfigHelper
-} from '../utils/'
-import { Datatoken } from '../tokens'
-import { Config } from '../config/index.js'
+  ConfigHelper,
+  Datatoken,
+  Config
+} from '..'
 
 export interface DispenserToken {
   active: boolean

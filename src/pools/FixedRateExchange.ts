@@ -1,8 +1,8 @@
-import defaultFixedRateExchangeAbi from '@oceanprotocol/contracts/artifacts/contracts/pools/fixedRate/FixedRateExchange.sol/FixedRateExchange.json'
 import { TransactionReceipt } from 'web3-core'
 import { Contract } from 'web3-eth-contract'
 import { AbiItem } from 'web3-utils/types'
 import Web3 from 'web3'
+import defaultFixedRateExchangeAbi from '@oceanprotocol/contracts/artifacts/contracts/pools/fixedRate/FixedRateExchange.sol/FixedRateExchange.json'
 import {
   LoggerInstance,
   getFairGasPrice,
