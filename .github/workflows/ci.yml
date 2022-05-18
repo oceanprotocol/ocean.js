@@ -219,7 +219,7 @@ jobs:
       - name: commit
         run: |
           # Stage the file, commit and push
-          BRANCH=${GITHUB_REF#refs/heads/}
+          BRANCH=${GITHUB_HEAD_REF#refs/heads/}
           echo ${BRANCH}
           git checkout ${BRANCH}
           git add CodeExamples.md
