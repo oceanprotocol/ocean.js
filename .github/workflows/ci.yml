@@ -223,4 +223,4 @@ jobs:
           git commit -m "Updating CodeExamples.md"
           branch=${GITHUB_HEAD_REF#refs/heads/}
           echo Pushing changes to branch: ${branch}
-          git push origin HEAD:${branch}
+          git push origin HEAD:${branch} --force
