@@ -197,9 +197,11 @@ jobs:
         with:
           repository: 'oceanprotocol/ocean.js'
           path: 'ocean.js'
+          ref: main
 
       - name: checkout current branch  
         run: |
+          git pull
           branch=${GITHUB_HEAD_REF#refs/heads/}
           echo ${branch}
           git checkout ${branch}
