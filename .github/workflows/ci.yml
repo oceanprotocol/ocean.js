@@ -219,7 +219,6 @@ jobs:
       - name: commit
         run: |
           # Stage the file, commit and push
-          git pull
           BRANCH=${GITHUB_HEAD_REF#refs/heads/}
           echo ${BRANCH}
           git checkout origin/${BRANCH}
