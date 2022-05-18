@@ -191,7 +191,16 @@ jobs:
       - uses: actions/setup-node@v2
         with:
           node-version: '16'
-      - name: Cache node_modules
+
+      - name: checkout
+        uses: actions/checkout@v2
+
+      - name: save current date
+        run: |
+          # do some operation that changes a file in the git repo
+          date > time.txt
+      
+      - name: Create code examples file
         uses: actions/cache@v2
         env:
           cache-name: cache-node-modules
@@ -200,13 +209,6 @@ jobs:
           key: ${{ runner.os }}-lint-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
           restore-keys: ${{ runner.os }}-lint-${{ env.cache-name }}-
       - run: npm run create:guide
-      - name: checkout
-        uses: actions/checkout@v2
-
-      - name: save current date
-        run: |
-          # do some operation that changes a file in the git repo
-          date > time.txt
 
       - name: setup git config
         run: |
@@ -217,6 +219,8 @@ jobs:
       - name: commit
         run: |
           # Stage the file, commit and push
-          git add time.txt
-          git commit -m "new date commit"
-          git push origin master
+          BRANCH=$(git branch --show-current)
+          git checkout "${BRANCH}"
+          git add CodeExamples.md
+          git commit -m "Updating CodeExamples.md"
+          git push
