@@ -197,7 +197,7 @@ jobs:
         with:
           repository: 'oceanprotocol/ocean.js'
           path: 'ocean.js'
-          ref: ${GITHUB_HEAD_REF#refs/heads/}
+          ref: echo ${GITHUB_HEAD_REF#refs/heads/}
       
       - name: Create code examples file
         uses: actions/cache@v2
