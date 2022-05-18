@@ -186,6 +186,7 @@ jobs:
 
   create_guide:
     runs-on: ubuntu-latest
+    needs: [lint, test_unit, test_integration, build, coverage]
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v2
