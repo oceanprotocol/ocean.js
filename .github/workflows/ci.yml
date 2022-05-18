@@ -201,6 +201,7 @@ jobs:
           branch=${GITHUB_HEAD_REF#refs/heads/}
           echo ${branch}
           git checkout ${branch}
+          git status
       
       - name: Create code examples file
         uses: actions/cache@v2
