@@ -803,7 +803,7 @@ export class FixedRateExchange {
 
     const estGas = await estimateGas(
       address,
-      this.fixedRateContract.methods.methods.toggleMintState,
+      this.fixedRateContract.methods.toggleMintState,
       exchangeId,
       false
     )
