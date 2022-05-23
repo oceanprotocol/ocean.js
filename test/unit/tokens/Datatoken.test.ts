@@ -589,4 +589,66 @@ describe('Datatoken', () => {
     assert(+balance1after === +balance1before - 1)
     assert(+balance2after === +balance2before + 1)
   })
+
+  it('#setPublishingMarketFee - User should not be able to set the Publishing Market Fee', async () => {
+    const originalPublishingMarketFee = await datatoken.getPublishingMarketFee(
+      datatokenAddress,
+      user1
+    )
+    try {
+      await datatoken.setPublishingMarketFee(
+        datatokenAddress,
+        user1,
+        contracts.daiAddress,
+        web3.utils.toWei('10'),
+        user1
+      )
+    } catch (e) {
+      console.log('Message:', e.message)
+      assert(e.message === 'Caller is not the Publishing Market Fee Address')
+    }
+    const newPublishingMarketFee = await datatoken.getPublishingMarketFee(
+      datatokenAddress,
+      user3
+    )
+
+    assert(
+      newPublishingMarketFee.publishMarketFeeAddress ===
+        originalPublishingMarketFee.publishMarketFeeAddress
+    )
+    assert(
+      newPublishingMarketFee.publishMarketFeeAmount ===
+        originalPublishingMarketFee.publishMarketFeeAmount
+    )
+    assert(
+      newPublishingMarketFee.publishMarketFeeToken ===
+        originalPublishingMarketFee.publishMarketFeeToken
+    )
+  })
+  it('#setPublishingMarketFee - Marketplace fee address should be able to set the Publishing Market Fee', async () => {
+    const originalPublishingMarketFee = await datatoken.getPublishingMarketFee(
+      datatokenAddress,
+      user2
+    )
+    try {
+      await datatoken.setPublishingMarketFee(
+        datatokenAddress,
+        user2,
+        contracts.daiAddress,
+        web3.utils.toWei('10'),
+        user2
+      )
+    } catch (e) {
+      console.log('Error:', e)
+    }
+    const newPublishingMarketFee = await datatoken.getPublishingMarketFee(
+      datatokenAddress,
+      user2
+    )
+
+    assert(newPublishingMarketFee !== originalPublishingMarketFee)
+    assert(newPublishingMarketFee.publishMarketFeeAddress === user2)
+    assert(newPublishingMarketFee.publishMarketFeeAmount === web3.utils.toWei('10'))
+    assert(newPublishingMarketFee.publishMarketFeeToken === contracts.daiAddress)
+  })
 })
