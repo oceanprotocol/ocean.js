@@ -21,7 +21,7 @@ describe('NFT', () => {
     templateIndex: 1,
     tokenURI: 'https://oceanprotocol.com/nft/',
     transferable: true,
-    owner: nftOwner
+    owner: null
   }
 
   before(async () => {
