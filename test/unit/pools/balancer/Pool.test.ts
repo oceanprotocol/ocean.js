@@ -43,7 +43,7 @@ describe('Pool unit test', () => {
     templateIndex: 1,
     tokenURI: 'https://oceanprotocol.com/nft/',
     transferable: true,
-    owner: factoryOwner
+    owner: null
   }
 
   before(async () => {
