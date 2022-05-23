@@ -49,14 +49,14 @@ describe('SideStaking unit test', () => {
     templateIndex: 1,
     tokenURI: 'https://oceanprotocol.com/nft/',
     transferable: true,
-    owner: factoryOwner
+    owner: null
   }
 
   const ercParams: Erc20CreateParams = {
     templateIndex: 1,
-    minter: factoryOwner,
-    paymentCollector: user2,
-    mpFeeAddress: factoryOwner,
+    minter: null,
+    paymentCollector: null,
+    mpFeeAddress: null,
     feeToken: ZERO_ADDRESS,
     cap: '1000000',
     feeAmount: '0',
