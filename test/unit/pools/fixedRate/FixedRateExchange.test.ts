@@ -224,6 +224,9 @@ describe('Fixed Rate unit test', () => {
       expect(await balance(web3, dtAddress, user1)).to.equal(
         await unitsToAmount(web3, dtAddress, args.datatokenSwappedAmount)
       )
+      console.log(daiBalanceBefore)
+      console.log(await unitsToAmount(web3, dtAddress, args.baseTokenSwappedAmount))
+      console.log(await balance(web3, contracts.daiAddress, user1))
       expect(
         daiBalanceBefore
           .sub(new BN(await unitsToAmount(web3, dtAddress, args.baseTokenSwappedAmount)))
