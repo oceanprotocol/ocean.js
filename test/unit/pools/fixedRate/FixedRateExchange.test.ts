@@ -225,7 +225,9 @@ describe('Fixed Rate unit test', () => {
         await unitsToAmount(web3, dtAddress, args.datatokenSwappedAmount)
       )
       expect(
-        daiBalanceBefore.sub(new BN(args.baseTokenSwappedAmount)).toString()
+        daiBalanceBefore
+          .sub(new BN(await unitsToAmount(web3, dtAddress, args.baseTokenSwappedAmount)))
+          .toString()
       ).to.equal(await balance(web3, contracts.daiAddress, user1))
       // baseToken stays in the contract
       expect((await fixedRate.getExchange(exchangeId)).btBalance).to.equal('10')
@@ -246,7 +248,9 @@ describe('Fixed Rate unit test', () => {
       expect(args.tokenOutAddress).to.equal(contracts.daiAddress)
       expect(await balance(web3, dtAddress, user1)).to.equal('0')
       expect(
-        daiBalanceBefore.add(new BN(args.baseTokenSwappedAmount)).toString()
+        daiBalanceBefore
+          .add(new BN(await unitsToAmount(web3, dtAddress, args.baseTokenSwappedAmount)))
+          .toString()
       ).to.equal(await balance(web3, contracts.daiAddress, user1))
       // DTs stay in the contract
       expect((await fixedRate.getExchange(exchangeId)).dtBalance).to.equal('10')
@@ -345,7 +349,7 @@ describe('Fixed Rate unit test', () => {
       expect(result.oceanFeeAvailable).to.equal('0.042')
       // user2 is the marketFeeCollector
       expect(await balance(web3, contracts.daiAddress, user2)).to.equal(
-        daiBalanceBeforeCollect.add(new BN(web3.utils.toWei('0.021'))).toString()
+        daiBalanceBeforeCollect.add(new BN('0.021')).toString()
       )
     })
 
@@ -520,7 +524,9 @@ describe('Fixed Rate unit test', () => {
         await unitsToAmount(web3, dtAddress, args.datatokenSwappedAmount)
       )
       expect(
-        usdcBalanceBefore.sub(new BN(args.baseTokenSwappedAmount)).toString()
+        usdcBalanceBefore
+          .sub(new BN(await unitsToAmount(web3, dtAddress, args.baseTokenSwappedAmount)))
+          .toString()
       ).to.equal(await balance(web3, contracts.usdcAddress, user1))
       // baseToken stays in the contract
       expect((await fixedRate.getExchange(exchangeId)).btBalance).to.equal('10')
@@ -541,7 +547,9 @@ describe('Fixed Rate unit test', () => {
       expect(args.tokenOutAddress).to.equal(contracts.usdcAddress)
       expect(await balance(web3, dtAddress, user1)).to.equal('0')
       expect(
-        usdcBalanceBefore.add(new BN(args.baseTokenSwappedAmount)).toString()
+        usdcBalanceBefore
+          .add(new BN(await unitsToAmount(web3, dtAddress, args.baseTokenSwappedAmount)))
+          .toString()
       ).to.equal(await balance(web3, contracts.usdcAddress, user1))
       // DTs stay in the contract
       expect((await fixedRate.getExchange(exchangeId)).dtBalance).to.equal('10')
