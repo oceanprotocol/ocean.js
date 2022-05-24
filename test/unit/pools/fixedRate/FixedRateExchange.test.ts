@@ -1,7 +1,7 @@
 import { assert, expect } from 'chai'
 import { AbiItem } from 'web3-utils/types'
 import { Contract } from 'web3-eth-contract'
-import BN from 'bn.js'
+import BigNumber from 'bignumber.js'
 import ERC20Template from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC20Template.sol/ERC20Template.json'
 import { deployContracts, Addresses } from '../../../TestContractHandler'
 import { web3 } from '../../../config'
@@ -210,7 +210,9 @@ describe('Fixed Rate unit test', () => {
 
       // user1 has no dts but has 100 DAI
       expect(await balance(web3, dtAddress, user1)).to.equal('0')
-      const daiBalanceBefore = new BN(await balance(web3, contracts.daiAddress, user1))
+      const daiBalanceBefore = new BigNumber(
+        await balance(web3, contracts.daiAddress, user1)
+      )
 
       // user1 buys 10 DT
       const tx = await fixedRate.buyDT(user1, exchangeId, '10', '11')
@@ -224,12 +226,13 @@ describe('Fixed Rate unit test', () => {
       expect(await balance(web3, dtAddress, user1)).to.equal(
         await unitsToAmount(web3, dtAddress, args.datatokenSwappedAmount)
       )
-      console.log(daiBalanceBefore)
-      console.log(await unitsToAmount(web3, dtAddress, args.baseTokenSwappedAmount))
-      console.log(await balance(web3, contracts.daiAddress, user1))
       expect(
         daiBalanceBefore
-          .sub(new BN(await unitsToAmount(web3, dtAddress, args.baseTokenSwappedAmount)))
+          .minus(
+            new BigNumber(
+              await unitsToAmount(web3, contracts.daiAddress, args.baseTokenSwappedAmount)
+            )
+          )
           .toString()
       ).to.equal(await balance(web3, contracts.daiAddress, user1))
       // baseToken stays in the contract
@@ -240,7 +243,9 @@ describe('Fixed Rate unit test', () => {
 
     it('#sellDT - user1 should sell some dt', async () => {
       await approve(web3, user1, dtAddress, contracts.fixedRateAddress, '100')
-      const daiBalanceBefore = new BN(await balance(web3, contracts.daiAddress, user1))
+      const daiBalanceBefore = new BigNumber(
+        await balance(web3, contracts.daiAddress, user1)
+      )
       const tx = await fixedRate.sellDT(user1, exchangeId, '10', '9')
       // console.log(tx.events.Swapped.returnValues)
       assert(tx.events.Swapped != null)
@@ -252,7 +257,11 @@ describe('Fixed Rate unit test', () => {
       expect(await balance(web3, dtAddress, user1)).to.equal('0')
       expect(
         daiBalanceBefore
-          .add(new BN(await unitsToAmount(web3, dtAddress, args.baseTokenSwappedAmount)))
+          .plus(
+            new BigNumber(
+              await unitsToAmount(web3, contracts.daiAddress, args.baseTokenSwappedAmount)
+            )
+          )
           .toString()
       ).to.equal(await balance(web3, contracts.daiAddress, user1))
       // DTs stay in the contract
@@ -340,7 +349,7 @@ describe('Fixed Rate unit test', () => {
       expect(result.oceanFeeAvailable).to.equal('0.042') // formatted for baseToken decimals
       expect(result.marketFeeCollector).to.equal(user2)
 
-      const daiBalanceBeforeCollect = new BN(
+      const daiBalanceBeforeCollect = new BigNumber(
         await balance(web3, contracts.daiAddress, user2)
       )
 
@@ -352,7 +361,7 @@ describe('Fixed Rate unit test', () => {
       expect(result.oceanFeeAvailable).to.equal('0.042')
       // user2 is the marketFeeCollector
       expect(await balance(web3, contracts.daiAddress, user2)).to.equal(
-        daiBalanceBeforeCollect.add(new BN('0.021')).toString()
+        daiBalanceBeforeCollect.plus(new BigNumber('0.021')).toString()
       )
     })
 
@@ -512,7 +521,9 @@ describe('Fixed Rate unit test', () => {
 
       // user1 has no dts but has 100 USDC
       expect(await balance(web3, dtAddress, user1)).to.equal('0')
-      const usdcBalanceBefore = new BN(await balance(web3, contracts.usdcAddress, user1))
+      const usdcBalanceBefore = new BigNumber(
+        await balance(web3, contracts.usdcAddress, user1)
+      )
 
       // user1 buys 10 DT
       const tx = await fixedRate.buyDT(user1, exchangeId, '10', '11')
@@ -528,7 +539,15 @@ describe('Fixed Rate unit test', () => {
       )
       expect(
         usdcBalanceBefore
-          .sub(new BN(await unitsToAmount(web3, dtAddress, args.baseTokenSwappedAmount)))
+          .minus(
+            new BigNumber(
+              await unitsToAmount(
+                web3,
+                contracts.usdcAddress,
+                args.baseTokenSwappedAmount
+              )
+            )
+          )
           .toString()
       ).to.equal(await balance(web3, contracts.usdcAddress, user1))
       // baseToken stays in the contract
@@ -539,7 +558,9 @@ describe('Fixed Rate unit test', () => {
 
     it('#sellDT - user1 should sell some dt', async () => {
       await approve(web3, user1, dtAddress, contracts.fixedRateAddress, '10')
-      const usdcBalanceBefore = new BN(await balance(web3, contracts.usdcAddress, user1))
+      const usdcBalanceBefore = new BigNumber(
+        await balance(web3, contracts.usdcAddress, user1)
+      )
       const tx = await fixedRate.sellDT(user1, exchangeId, '10', '9')
       // console.log(tx.events.Swapped.returnValues)
       assert(tx.events.Swapped != null)
@@ -551,7 +572,15 @@ describe('Fixed Rate unit test', () => {
       expect(await balance(web3, dtAddress, user1)).to.equal('0')
       expect(
         usdcBalanceBefore
-          .add(new BN(await unitsToAmount(web3, dtAddress, args.baseTokenSwappedAmount)))
+          .plus(
+            new BigNumber(
+              await unitsToAmount(
+                web3,
+                contracts.usdcAddress,
+                args.baseTokenSwappedAmount
+              )
+            )
+          )
           .toString()
       ).to.equal(await balance(web3, contracts.usdcAddress, user1))
       // DTs stay in the contract
