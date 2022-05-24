@@ -15,3 +15,9 @@ export interface ConsumeMarketFee {
   consumeMarketFeeToken: string // address of the token marketplace wants to add fee on top
   consumeMarketFeeAmount: string
 }
+
+export interface PublishingMarketFee {
+  publishMarketFeeAddress: string
+  publishMarketFeeToken: string
+  publishMarketFeeAmount: string
+}
