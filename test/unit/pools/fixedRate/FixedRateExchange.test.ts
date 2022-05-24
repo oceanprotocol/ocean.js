@@ -12,7 +12,8 @@ import {
   ZERO_ADDRESS,
   approve,
   transfer,
-  balance
+  balance,
+  unitsToAmount
 } from '../../../../src'
 import { FreCreationParams, Erc20CreateParams } from '../../../../src/@types'
 
@@ -220,7 +221,9 @@ describe('Fixed Rate unit test', () => {
       expect(args.by).to.equal(user1)
       expect(args.datatokenSwappedAmount).to.equal(web3.utils.toWei('10'))
       expect(args.tokenOutAddress).to.equal(dtAddress)
-      expect(await balance(web3, dtAddress, user1)).to.equal(args.datatokenSwappedAmount)
+      expect(await balance(web3, dtAddress, user1)).to.equal(
+        await unitsToAmount(web3, dtAddress, args.datatokenSwappedAmount)
+      )
       expect(
         daiBalanceBefore.sub(new BN(args.baseTokenSwappedAmount)).toString()
       ).to.equal(await balance(web3, contracts.daiAddress, user1))
@@ -513,7 +516,9 @@ describe('Fixed Rate unit test', () => {
       expect(args.by).to.equal(user1)
       expect(args.datatokenSwappedAmount).to.equal(web3.utils.toWei('10'))
       expect(args.tokenOutAddress).to.equal(dtAddress)
-      expect(await balance(web3, dtAddress, user1)).to.equal(args.datatokenSwappedAmount)
+      expect(await balance(web3, dtAddress, user1)).to.equal(
+        await unitsToAmount(web3, dtAddress, args.datatokenSwappedAmount)
+      )
       expect(
         usdcBalanceBefore.sub(new BN(args.baseTokenSwappedAmount)).toString()
       ).to.equal(await balance(web3, contracts.usdcAddress, user1))
