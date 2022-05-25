@@ -20,7 +20,8 @@ import {
   ConsumeMarketFee,
   FreOrderParams,
   FreCreationParams,
-  ProviderFees
+  ProviderFees,
+  PublishingMarketFee
 } from '../@types'
 
 /**
@@ -1310,5 +1311,103 @@ export class Datatoken {
     })
     const balance = await dtContract.methods.balanceOf(address).call()
     return this.web3.utils.fromWei(balance)
+  }
+
+  /**
+   * @dev estGasSetPublishingMarketFee
+   *      Estimating gas for publishMarketFeeAddress method
+   * @param {string} datatokenAddress Datatoken adress
+   * @param {string} publishMarketFeeAddress  new publish Market Fee Address
+   * @param {string} publishMarketFeeToken new publish Market Fee Token
+   * @param {string} publishMarketFeeAmount new fee amount
+   * @param {String} address user adress
+   */
+  public async estGasSetPublishingMarketFee(
+    datatokenAddress: string,
+    publishMarketFeeAddress: string,
+    publishMarketFeeToken: string,
+    publishMarketFeeAmount: string,
+    address: string
+  ): Promise<number> {
+    // Estimate gas cost for publishMarketFeeAddress method
+    const dtContract = new this.web3.eth.Contract(this.datatokensAbi, datatokenAddress, {
+      from: address
+    })
+    return estimateGas(
+      address,
+      dtContract.methods.setPublishingMarketFee,
+      publishMarketFeeAddress,
+      publishMarketFeeToken,
+      publishMarketFeeAmount
+    )
+  }
+
+  /**
+   * @dev setPublishingMarketFee
+   *      Only publishMarketFeeAddress can call it
+   *      This function allows to set the fee required by the publisherMarket
+   * @param {string} datatokenAddress Datatoken adress
+   * @param {string} publishMarketFeeAddress  new publish Market Fee Address
+   * @param {string} publishMarketFeeToken new publish Market Fee Token
+   * @param {string} publishMarketFeeAmount new fee amount
+   * @param {String} address user adress
+   */
+  public async setPublishingMarketFee(
+    datatokenAddress: string,
+    publishMarketFeeAddress: string,
+    publishMarketFeeToken: string,
+    publishMarketFeeAmount: string,
+    address: string
+  ) {
+    const dtContract = new this.web3.eth.Contract(this.datatokensAbi, datatokenAddress, {
+      from: address
+    })
+    const mktFeeAddress = (await dtContract.methods.getPublishingMarketFee().call())[0]
+    if (mktFeeAddress !== address) {
+      throw new Error(`Caller is not the Publishing Market Fee Address`)
+    }
+    const estGas = await this.estGasSetPublishingMarketFee(
+      datatokenAddress,
+      publishMarketFeeAddress,
+      publishMarketFeeToken,
+      publishMarketFeeAmount,
+      address
+    )
+    await dtContract.methods
+      .setPublishingMarketFee(
+        publishMarketFeeAddress,
+        publishMarketFeeToken,
+        publishMarketFeeAmount
+      )
+      .send({
+        from: address,
+        gas: estGas + 1,
+        gasPrice: await getFairGasPrice(this.web3, this.config)
+      })
+  }
+
+  /**
+   * @dev getPublishingMarketFee
+   *      Get publishingMarket Fee
+   *      This function allows to get the current fee set by the publishing market
+   * @param {String} datatokenAddress Datatoken adress
+   * @param {String} address user adress
+   * @return {Promise<PublishingMarketFee>} Current fee set by the publishing market
+   */
+  public async getPublishingMarketFee(
+    datatokenAddress: string,
+    address: string
+  ): Promise<PublishingMarketFee> {
+    const dtContract = new this.web3.eth.Contract(this.datatokensAbi, datatokenAddress, {
+      from: address
+    })
+
+    const publishingMarketFee = await dtContract.methods.getPublishingMarketFee().call()
+    const returnValues = {
+      publishMarketFeeAddress: publishingMarketFee[0],
+      publishMarketFeeToken: publishingMarketFee[1],
+      publishMarketFeeAmount: publishingMarketFee[2]
+    }
+    return returnValues
   }
 }

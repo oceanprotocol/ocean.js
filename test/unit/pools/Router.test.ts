@@ -6,10 +6,10 @@ import { web3 } from '../../config'
 import {
   NftFactory,
   NftCreateData,
+  Router,
   balance,
   approve,
-  ZERO_ADDRESS,
-  Router
+  ZERO_ADDRESS
 } from '../../../src'
 import { Erc20CreateParams, PoolCreationParams, Operation } from '../../../src/@types'
 
