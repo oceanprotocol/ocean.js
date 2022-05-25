@@ -220,8 +220,10 @@ jobs:
         run: |
           # Stage the file, commit and push
           git status
+          branch=${GITHUB_HEAD_REF#refs/heads/}
+          git checkout -b ${branch}
+          git status
           git add CodeExamples.md
           git commit -m "Updating CodeExamples.md" --untracked-files=no
-          branch=${GITHUB_HEAD_REF#refs/heads/}
           echo Pushing changes to branch: ${branch}
           git push origin HEAD:${branch} --force > /dev/null 2>&1
