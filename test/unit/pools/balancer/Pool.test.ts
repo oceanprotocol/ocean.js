@@ -1,7 +1,6 @@
 import { assert, expect } from 'chai'
 import { AbiItem } from 'web3-utils/types'
 import { Contract } from 'web3-eth-contract'
-import ERC20Template from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC20Template.sol/ERC20Template.json'
 import MockERC20 from '@oceanprotocol/contracts/artifacts/contracts/utils/mock/MockERC20Decimals.sol/MockERC20Decimals.json'
 import { deployContracts, Addresses } from '../../../TestContractHandler'
 import { web3 } from '../../../config'
@@ -13,7 +12,8 @@ import {
   NftCreateData,
   Pool,
   unitsToAmount,
-  ZERO_ADDRESS
+  ZERO_ADDRESS,
+  balance
 } from '../../../../src'
 import {
   PoolCreationParams,
@@ -32,7 +32,6 @@ describe('Pool unit test', () => {
   let pool: Pool
   let poolAddress: string
   let erc20Token: string
-  let erc20Contract: Contract
   let daiContract: Contract
   let usdcContract: Contract
   let ercParams: Erc20CreateParams
@@ -151,9 +150,8 @@ describe('Pool unit test', () => {
       erc20Token = txReceipt.events.TokenCreated.returnValues.newTokenAddress
       poolAddress = txReceipt.events.NewPool.returnValues.poolAddress
 
-      erc20Contract = new web3.eth.Contract(ERC20Template.abi as AbiItem[], erc20Token)
       // user1 has no dt1
-      expect(await erc20Contract.methods.balanceOf(user1).call()).to.equal('0')
+      expect(await balance(web3, erc20Token, user1)).to.equal('0')
     })
 
     it('#sharesBalance - should return user shares balance (datatoken balance, LPT balance, etc) ', async () => {
@@ -242,7 +240,7 @@ describe('Pool unit test', () => {
       expect(await daiContract.methods.balanceOf(user1).call()).to.equal(
         web3.utils.toWei('1000')
       )
-      expect(await erc20Contract.methods.balanceOf(user1).call()).to.equal('0')
+      expect(await balance(web3, erc20Token, user1)).to.equal('0')
       await approve(web3, user1, contracts.daiAddress, poolAddress, '10')
 
       const tokenInOutMarket: TokenInOutMarket = {
@@ -261,7 +259,7 @@ describe('Pool unit test', () => {
         tokenInOutMarket,
         amountsInOutMaxFee
       )
-      expect(await erc20Contract.methods.balanceOf(user1).call()).to.equal(
+      expect(await balance(web3, erc20Token, user1)).to.equal(
         tx.events.LOG_SWAP.returnValues.tokenAmountOut
       )
     })
@@ -548,9 +546,8 @@ describe('Pool unit test', () => {
       erc20Token = txReceipt.events.TokenCreated.returnValues.newTokenAddress
       poolAddress = txReceipt.events.NewPool.returnValues.poolAddress
 
-      erc20Contract = new web3.eth.Contract(ERC20Template.abi as AbiItem[], erc20Token)
       // user1 has no dt1
-      expect(await erc20Contract.methods.balanceOf(user1).call()).to.equal('0')
+      expect(await balance(web3, erc20Token, user1)).to.equal('0')
     })
 
     it('#calcPoolOutGivenSingleIn - should get the amount of pool OUT for exact token IN', async () => {
@@ -712,7 +709,7 @@ describe('Pool unit test', () => {
         transferAmount.toString()
       )
 
-      expect(await erc20Contract.methods.balanceOf(user1).call()).to.equal('0')
+      expect(await balance(web3, erc20Token, user1)).to.equal('0')
       await approve(web3, user1, contracts.usdcAddress, poolAddress, '10')
       const tokenInOutMarket: TokenInOutMarket = {
         tokenIn: contracts.usdcAddress,
@@ -730,7 +727,7 @@ describe('Pool unit test', () => {
         tokenInOutMarket,
         amountsInOutMaxFee
       )
-      expect(await erc20Contract.methods.balanceOf(user1).call()).to.equal(
+      expect(await balance(web3, erc20Token, user1)).to.equal(
         tx.events.LOG_SWAP.returnValues.tokenAmountOut
       )
     })
