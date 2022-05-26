@@ -8,6 +8,7 @@ export function calcMaxExactOut(balance: string): Decimal {
 export function calcMaxExactIn(balance: string): Decimal {
   return new Decimal(balance).div(2)
 }
+
 export async function getMaxSwapExactOut(
   poolInstance: Pool,
   poolAddress: string,
