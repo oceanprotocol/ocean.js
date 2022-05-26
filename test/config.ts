@@ -1,12 +1,7 @@
 import Web3 from 'web3'
 import fs from 'fs'
 import { homedir } from 'os'
-import {
-  ConfigHelper,
-  configHelperNetworks,
-  LoggerInstance,
-  LogLevel
-} from '../src/utils'
+import { ConfigHelper, configHelperNetworks, LoggerInstance, LogLevel } from '../src'
 
 LoggerInstance.setLevel(LogLevel.Error)
 
