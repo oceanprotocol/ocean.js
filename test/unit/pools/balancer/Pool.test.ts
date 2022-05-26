@@ -247,7 +247,11 @@ describe('Pool unit test', () => {
         amountsInOutMaxFee
       )
       expect(await balance(web3, erc20Token, user1)).to.equal(
-        tx.events.LOG_SWAP.returnValues.tokenAmountOut
+        await unitsToAmount(
+          web3,
+          erc20Token,
+          tx.events.LOG_SWAP.returnValues.tokenAmountOut
+        )
       )
     })
 
@@ -715,7 +719,11 @@ describe('Pool unit test', () => {
         amountsInOutMaxFee
       )
       expect(await balance(web3, erc20Token, user1)).to.equal(
-        tx.events.LOG_SWAP.returnValues.tokenAmountOut
+        await unitsToAmount(
+          web3,
+          erc20Token,
+          tx.events.LOG_SWAP.returnValues.tokenAmountOut
+        )
       )
     })
 
