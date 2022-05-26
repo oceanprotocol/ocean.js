@@ -183,3 +183,41 @@ jobs:
           coverageLocations: |
             ${{ github.workspace }}/unit/lcov.info:lcov
             ${{ github.workspace }}/integration/lcov.info:lcov
+
+  create_guide:
+    runs-on: ubuntu-latest
+    needs: [test_unit, test_integration]
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: '16'
+
+      - name: checkout ocean.js repo
+        uses: actions/checkout@v2
+        with:
+          repository: 'oceanprotocol/ocean.js'
+          path: 'ocean.js'
+          ref: ${{ github.event.pull_request.head.sha }}
+      
+      - name: Create code examples file
+        uses: actions/cache@v2
+        env:
+          cache-name: cache-node-modules
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-lint-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: ${{ runner.os }}-lint-${{ env.cache-name }}-
+      - run: npm run create:guide
+
+      - name: setup git config
+        run: |
+          # setup the username and email. I tend to use 'GitHub Actions Bot' with no email by default
+          git config user.name "GitHub Actions Bot"
+          git config user.email "<>"
+
+      - name: Commit if there are changes
+        run: npm run commit:guide
+
+
+
