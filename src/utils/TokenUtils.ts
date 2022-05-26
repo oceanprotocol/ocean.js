@@ -2,12 +2,7 @@ import Decimal from 'decimal.js'
 import { Contract } from 'web3-eth-contract'
 import { TransactionReceipt } from 'web3-core'
 import Web3 from 'web3'
-import {
-  amountToUnits,
-  estimateGas,
-  getFairGasPrice,
-  unitsToAmount
-} from './ContractUtils'
+import { amountToUnits, estimateGas, getFairGasPrice, unitsToAmount } from '..'
 import { minAbi } from './minAbi'
 import LoggerInstance from './Logger'
 

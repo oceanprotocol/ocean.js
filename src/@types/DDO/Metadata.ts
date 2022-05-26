@@ -143,6 +143,7 @@ export interface MetadataProof {
   s?: string
   v?: number
 }
+
 export interface ValidateMetadata {
   valid: Boolean
   errors?: Object
