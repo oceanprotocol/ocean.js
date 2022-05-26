@@ -1,5 +1,4 @@
-# Check if the file has been changed
-# Input file
+# Check if the CodeExamples.md file has been changed
 FILE=CodeExamples.md
 # Timeframe for the comparison
 OLDTIME=60
