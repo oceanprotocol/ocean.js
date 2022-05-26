@@ -1,5 +1,5 @@
 # Ocean.js Code Examples
- 
+
 ## Introduction
 
 The following guide runs you through the process of using ocean.js to publish and then consume a dataset. The code examples below are all working and you can learn how to publish by following along.
