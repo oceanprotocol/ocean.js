@@ -1,5 +1,4 @@
 import { assert, expect } from 'chai'
-import { Contract } from 'web3-eth-contract'
 import { deployContracts, Addresses } from '../../../TestContractHandler'
 import { web3 } from '../../../config'
 import {
@@ -12,7 +11,8 @@ import {
   unitsToAmount,
   ZERO_ADDRESS,
   balance,
-  transfer
+  transfer,
+  decimals
 } from '../../../../src'
 import {
   PoolCreationParams,
@@ -515,7 +515,7 @@ describe('Pool unit test', () => {
         marketFeeCollector: factoryOwner,
         poolTemplateAddress: contracts.poolTemplateAddress,
         rate: '1',
-        baseTokenDecimals: 6,
+        baseTokenDecimals: await decimals(web3, contracts.usdcAddress),
         vestingAmount: '10000',
         vestedBlocks: 2500000,
         initialBaseTokenLiquidity: await unitsToAmount(
@@ -728,10 +728,10 @@ describe('Pool unit test', () => {
     })
 
     it('#swapExactAmountOut - should swap', async () => {
+      await approve(web3, user1, contracts.usdcAddress, poolAddress, '100')
       expect(await balance(web3, contracts.usdcAddress, user1)).to.equal(
         (await amountToUnits(web3, contracts.usdcAddress, '990')).toString()
       )
-      await approve(web3, user1, contracts.usdcAddress, poolAddress, '100')
       const tokenInOutMarket: TokenInOutMarket = {
         tokenIn: contracts.usdcAddress,
         tokenOut: erc20Token,
