@@ -227,6 +227,7 @@ describe('Pool unit test', () => {
     it('#swapExactAmountIn - should swap', async () => {
       await transfer(web3, factoryOwner, contracts.daiAddress, user1, '1000')
       expect(await balance(web3, contracts.daiAddress, user1)).to.equal('1000')
+
       expect(await balance(web3, erc20Token, user1)).to.equal('0')
       await approve(web3, user1, contracts.daiAddress, poolAddress, '10')
 
@@ -518,11 +519,7 @@ describe('Pool unit test', () => {
         baseTokenDecimals: await decimals(web3, contracts.usdcAddress),
         vestingAmount: '10000',
         vestedBlocks: 2500000,
-        initialBaseTokenLiquidity: await unitsToAmount(
-          web3,
-          contracts.usdcAddress,
-          await amountToUnits(web3, contracts.usdcAddress, '2000')
-        ),
+        initialBaseTokenLiquidity: '2000',
         swapFeeLiquidityProvider: '0.001',
         swapFeeMarketRunner: '0.001'
       }
@@ -694,14 +691,12 @@ describe('Pool unit test', () => {
     })
 
     it('#swapExactAmountIn - should swap', async () => {
-      const transferAmount = await amountToUnits(web3, contracts.usdcAddress, '1000') // 1000 USDC
-      await transfer(web3, factoryOwner, contracts.usdcAddress, user1, transferAmount)
-      expect(await balance(web3, contracts.usdcAddress, user1)).to.equal(
-        transferAmount.toString()
-      )
+      await transfer(web3, factoryOwner, contracts.usdcAddress, user1, '1000')
+      expect(await balance(web3, contracts.usdcAddress, user1)).to.equal('1000')
 
       expect(await balance(web3, erc20Token, user1)).to.equal('0')
       await approve(web3, user1, contracts.usdcAddress, poolAddress, '10')
+
       const tokenInOutMarket: TokenInOutMarket = {
         tokenIn: contracts.usdcAddress,
         tokenOut: erc20Token,
@@ -729,9 +724,7 @@ describe('Pool unit test', () => {
 
     it('#swapExactAmountOut - should swap', async () => {
       await approve(web3, user1, contracts.usdcAddress, poolAddress, '100')
-      expect(await balance(web3, contracts.usdcAddress, user1)).to.equal(
-        (await amountToUnits(web3, contracts.usdcAddress, '990')).toString()
-      )
+      expect(await balance(web3, contracts.usdcAddress, user1)).to.equal('990')
       const tokenInOutMarket: TokenInOutMarket = {
         tokenIn: contracts.usdcAddress,
         tokenOut: erc20Token,
