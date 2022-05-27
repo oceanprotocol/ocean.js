@@ -183,3 +183,14 @@ export async function balance(
 
   return await unitsToAmount(web3, tokenAddress, trxReceipt, tokenDecimals)
 }
+
+/**
+ * Get decimals for any erc20
+ * @param {Web3} web3
+ * @param {String} tokenAdress
+ * @return {Promise<number>} Number of decimals of the token
+ */
+export async function decimals(web3: Web3, tokenAddress: string): Promise<number> {
+  const tokenContract = new web3.eth.Contract(minAbi, tokenAddress)
+  return await tokenContract.methods.decimals().call()
+}
