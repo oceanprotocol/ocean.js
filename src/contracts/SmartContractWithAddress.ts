@@ -10,6 +10,7 @@ export abstract class SmartContractWithAddress extends SmartContract {
 
   /**
    * Instantiate the smart contract.
+   * @param {string} address Address of the smart contract
    * @param {Web3} web3
    * @param {Config} config Configutation of the smart contract
    * @param {string | number} network Network id or name
