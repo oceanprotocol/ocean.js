@@ -15,7 +15,8 @@ import {
   Pool,
   SideStaking,
   unitsToAmount,
-  ZERO_ADDRESS
+  ZERO_ADDRESS,
+  balance
 } from '../../../../src'
 import {
   Erc20CreateParams,
@@ -35,7 +36,6 @@ describe('SideStaking unit test', () => {
   let sideStaking: SideStaking
   let poolAddress: string
   let erc20Token: string
-  let erc20Contract: Contract
   let daiContract: Contract
   let usdcContract: Contract
 
@@ -164,9 +164,8 @@ describe('SideStaking unit test', () => {
       erc20Token = txReceipt.events.TokenCreated.returnValues.newTokenAddress
       poolAddress = txReceipt.events.NewPool.returnValues.poolAddress
 
-      erc20Contract = new web3.eth.Contract(ERC20Template.abi as AbiItem[], erc20Token)
       // user1 has no dt1
-      expect(await erc20Contract.methods.balanceOf(user1).call()).to.equal('0')
+      expect(await balance(web3, erc20Token, user1)).to.equal('0')
     })
 
     it('#getRouter - should get Router address', async () => {
@@ -275,8 +274,12 @@ describe('SideStaking unit test', () => {
         amountsInOutMaxFee
       )
 
-      expect(await erc20Contract.methods.balanceOf(user1).call()).to.equal(
-        tx.events.LOG_SWAP.returnValues.tokenAmountOut
+      expect(await balance(web3, erc20Token, user1)).to.equal(
+        await unitsToAmount(
+          web3,
+          erc20Token,
+          tx.events.LOG_SWAP.returnValues.tokenAmountOut
+        )
       )
     })
 
@@ -386,9 +389,8 @@ describe('SideStaking unit test', () => {
       erc20Token = txReceipt.events.TokenCreated.returnValues.newTokenAddress
       poolAddress = txReceipt.events.NewPool.returnValues.poolAddress
 
-      erc20Contract = new web3.eth.Contract(ERC20Template.abi as AbiItem[], erc20Token)
       // user1 has no dt1
-      expect(await erc20Contract.methods.balanceOf(user1).call()).to.equal('0')
+      expect(await balance(web3, erc20Token, user1)).to.equal('0')
     })
 
     it('#getBaseTokenBalance ', async () => {
@@ -453,8 +455,12 @@ describe('SideStaking unit test', () => {
         tokenInOutMarket,
         amountsInOutMaxFee
       )
-      expect(await erc20Contract.methods.balanceOf(user1).call()).to.equal(
-        tx.events.LOG_SWAP.returnValues.tokenAmountOut
+      expect(await balance(web3, erc20Token, user1)).to.equal(
+        await unitsToAmount(
+          web3,
+          erc20Token,
+          tx.events.LOG_SWAP.returnValues.tokenAmountOut
+        )
       )
     })
 
