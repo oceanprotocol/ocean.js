@@ -15,45 +15,7 @@ import {
   PriceAndFees,
   Config
 } from '..'
-
-export interface FixedPriceExchange {
-  active: boolean
-  exchangeOwner: string
-  datatoken: string
-  baseToken: string
-  fixedRate: string
-  dtDecimals: string
-  btDecimals: string
-  dtBalance: string
-  btBalance: string
-  dtSupply: string
-  btSupply: string
-  withMint: boolean
-  allowedSwapper: string
-  exchangeId?: string
-}
-
-export interface FeesInfo {
-  opcFee: string
-  marketFee: string
-  marketFeeCollector: string
-  marketFeeAvailable: string
-  oceanFeeAvailable: string
-  exchangeId: string
-}
-export interface FixedPriceSwap {
-  exchangeId: string
-  caller: string
-  baseTokenAmount: string
-  datatokenAmount: string
-}
-
-/* eslint-disable no-unused-vars */
-export enum FixedRateCreateProgressStep {
-  CreatingExchange,
-  ApprovingDatatoken
-}
-/* eslint-enable no-unused-vars */
+import { FeesInfo, FixedPriceExchange } from '../@types'
 
 export class FixedRateExchange {
   /** Ocean related functions */
