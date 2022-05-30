@@ -100,13 +100,7 @@ describe('Fixed Rate unit test', () => {
       // user1 has no dt1
       expect(await balance(web3, dtAddress, user1)).to.equal('0')
 
-      fixedRate = new FixedRateExchange(
-        web3,
-        contracts.fixedRateAddress,
-        8996,
-        null,
-        contracts.oceanAddress
-      )
+      fixedRate = new FixedRateExchange(contracts.fixedRateAddress, web3, 8996)
       assert(fixedRate != null)
     })
 
@@ -415,13 +409,7 @@ describe('Fixed Rate unit test', () => {
       // user1 has no dt1
       expect(await balance(web3, dtAddress, user1)).to.equal('0')
 
-      fixedRate = new FixedRateExchange(
-        web3,
-        contracts.fixedRateAddress,
-        8996,
-        null,
-        contracts.oceanAddress
-      )
+      fixedRate = new FixedRateExchange(contracts.fixedRateAddress, web3, 8996)
       assert(fixedRate != null)
     })
 

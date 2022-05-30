@@ -42,12 +42,12 @@ export class Datatoken extends SmartContract {
    */
   constructor(
     web3: Web3,
-    config?: Config,
     network?: string | number,
+    config?: Config,
     abi?: AbiItem | AbiItem[],
     abiEnterprise?: AbiItem | AbiItem[]
   ) {
-    super(web3, config, network, abi)
+    super(web3, network, config, abi)
     this.abiEnterprise = abiEnterprise || (ERC20TemplateEnterprise.abi as AbiItem[])
     this.nft = new Nft(this.web3)
   }

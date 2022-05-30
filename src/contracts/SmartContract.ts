@@ -12,14 +12,14 @@ export abstract class SmartContract {
   /**
    * Instantiate the smart contract.
    * @param {Web3} web3
-   * @param {Config} config Configutation of the smart contract
    * @param {string | number} network Network id or name
+   * @param {Config} config Configutation of the smart contract
    * @param {AbiItem | AbiItem[]} abi ABI of the smart contract
    */
   constructor(
     web3: Web3,
-    config?: Config,
     network?: string | number,
+    config?: Config,
     abi?: AbiItem | AbiItem[]
   ) {
     this.web3 = web3

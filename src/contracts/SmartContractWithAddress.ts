@@ -12,18 +12,18 @@ export abstract class SmartContractWithAddress extends SmartContract {
    * Instantiate the smart contract.
    * @param {string} address Address of the smart contract
    * @param {Web3} web3
-   * @param {Config} config Configutation of the smart contract
    * @param {string | number} network Network id or name
+   * @param {Config} config Configutation of the smart contract
    * @param {AbiItem | AbiItem[]} abi ABI of the smart contract
    */
   constructor(
     address: string,
     web3: Web3,
-    config?: Config,
     network?: string | number,
+    config?: Config,
     abi?: AbiItem | AbiItem[]
   ) {
-    super(web3, config, network, abi)
+    super(web3, network, config, abi)
     this.address = address
     this.contract = setContractDefaults(
       new this.web3.eth.Contract(this.getDefaultAbi(), this.address),
