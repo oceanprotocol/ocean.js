@@ -1,48 +1,15 @@
-import { Contract } from 'web3-eth-contract'
-import Web3 from 'web3'
 import { TransactionReceipt } from 'web3-core'
 import { AbiItem } from 'web3-utils'
-import defaultRouter from '@oceanprotocol/contracts/artifacts/contracts/pools/FactoryRouter.sol/FactoryRouter.json'
-import {
-  getFairGasPrice,
-  setContractDefaults,
-  ConfigHelper,
-  estimateGas,
-  Config
-} from '..'
-import { Operation } from '../@types'
+import FactoryRouter from '@oceanprotocol/contracts/artifacts/contracts/pools/FactoryRouter.sol/FactoryRouter.json'
+import { getFairGasPrice, estimateGas, SmartContractWithAddress } from '../..'
+import { Operation } from '../../@types'
 
 /**
  * Provides an interface for FactoryRouter contract
  */
-export class Router {
-  public routerAddress: string
-  public RouterAbi: AbiItem | AbiItem[]
-  public web3: Web3
-  public config: Config
-  public router: Contract
-
-  /**
-   * Instantiate Router.
-   * @param {String} routerAddress
-   * @param {AbiItem | AbiItem[]} Router
-   * @param {Web3} web3
-   */
-  constructor(
-    routerAddress: string,
-    web3: Web3,
-    network?: string | number,
-    RouterAbi?: AbiItem | AbiItem[],
-    config?: Config
-  ) {
-    this.routerAddress = routerAddress
-    this.RouterAbi = RouterAbi || (defaultRouter.abi as AbiItem[])
-    this.web3 = web3
-    this.config = config || new ConfigHelper().getConfig(network || 'unknown')
-    this.router = setContractDefaults(
-      new this.web3.eth.Contract(this.RouterAbi, this.routerAddress),
-      this.config
-    )
+export class Router extends SmartContractWithAddress {
+  getDefaultAbi(): AbiItem | AbiItem[] {
+    return FactoryRouter.abi as AbiItem[]
   }
 
   /**
@@ -52,7 +19,7 @@ export class Router {
    * @return {Promise<TransactionReceipt>} Transaction receipt
    */
   public async estGasBuyDTBatch(address: string, operations: Operation[]): Promise<any> {
-    return estimateGas(address, this.router.methods.buyDTBatch, operations)
+    return estimateGas(address, this.contract.methods.buyDTBatch, operations)
   }
 
   /**
@@ -65,10 +32,14 @@ export class Router {
     address: string,
     operations: Operation[]
   ): Promise<TransactionReceipt> {
-    const estGas = await estimateGas(address, this.router.methods.buyDTBatch, operations)
+    const estGas = await estimateGas(
+      address,
+      this.contract.methods.buyDTBatch,
+      operations
+    )
 
     // Invoke createToken function of the contract
-    const trxReceipt = await this.router.methods.buyDTBatch(operations).send({
+    const trxReceipt = await this.contract.methods.buyDTBatch(operations).send({
       from: address,
       gas: estGas + 1,
       gasPrice: await getFairGasPrice(this.web3, this.config)
@@ -81,57 +52,55 @@ export class Router {
    * @return {Promise<boolean>} true if is on the list.
    */
   public async isApprovedToken(address: string): Promise<boolean> {
-    return await this.router.methods.isApprovedToken(address).call()
+    return await this.contract.methods.isApprovedToken(address).call()
   }
 
   /** Check if an address is a side staking contract.
    * @return {Promise<boolean>} true if is a SS contract
    */
   public async isSideStaking(address: string): Promise<boolean> {
-    return await this.router.methods.isSSContract(address).call()
+    return await this.contract.methods.isSSContract(address).call()
   }
 
   /** Check if an address is a Fixed Rate contract.
    * @return {Promise<boolean>} true if is a Fixed Rate contract
    */
   public async isFixedPrice(address: string): Promise<boolean> {
-    return await this.router.methods.isFixedRateContract(address).call()
+    return await this.contract.methods.isFixedRateContract(address).call()
   }
 
   /** Get Router Owner
    * @return {Promise<string>} Router Owner address
    */
   public async getOwner(): Promise<string> {
-    return await this.router.methods.routerOwner().call()
+    return await this.contract.methods.routerOwner().call()
   }
 
   /** Get NFT Factory address
    * @return {Promise<string>} NFT Factory address
    */
   public async getNFTFactory(): Promise<string> {
-    return await this.router.methods.factory().call()
+    return await this.contract.methods.factory().call()
   }
 
   /** Check if an address is a pool template contract.
    * @return {Promise<boolean>} true if is a Template
    */
   public async isPoolTemplate(address: string): Promise<boolean> {
-    return await this.router.methods.isPoolTemplate(address).call()
+    return await this.contract.methods.isPoolTemplate(address).call()
   }
 
   /**
    * Estimate gas cost for addApprovedToken
    * @param {String} address
    * @param {String} tokenAddress token address we want to add
-   * @param {Contract} routerContract optional contract instance
    * @return {Promise<any>}
    */
   public async estGasAddApprovedToken(
     address: string,
-    tokenAddress: string,
-    contractInstance?: Contract
+    tokenAddress: string
   ): Promise<any> {
-    return estimateGas(address, this.router.methods.addApprovedToken, tokenAddress)
+    return estimateGas(address, this.contract.methods.addApprovedToken, tokenAddress)
   }
 
   /**
@@ -150,12 +119,12 @@ export class Router {
 
     const estGas = await estimateGas(
       address,
-      this.router.methods.addApprovedToken,
+      this.contract.methods.addApprovedToken,
       tokenAddress
     )
 
     // Invoke createToken function of the contract
-    const trxReceipt = await this.router.methods.addApprovedToken(tokenAddress).send({
+    const trxReceipt = await this.contract.methods.addApprovedToken(tokenAddress).send({
       from: address,
       gas: estGas + 1,
       gasPrice: await getFairGasPrice(this.web3, this.config)
@@ -168,15 +137,13 @@ export class Router {
    * Estimate gas cost for removeApprovedToken
    * @param {String} address caller address
    * @param {String} tokenAddress token address we want to add
-   * @param {Contract} routerContract optional contract instance
    * @return {Promise<any>}
    */
   public async estGasRemoveApprovedToken(
     address: string,
-    tokenAddress: string,
-    contractInstance?: Contract
+    tokenAddress: string
   ): Promise<any> {
-    return estimateGas(address, this.router.methods.removeApprovedToken, tokenAddress)
+    return estimateGas(address, this.contract.methods.removeApprovedToken, tokenAddress)
   }
 
   /**
@@ -195,16 +162,18 @@ export class Router {
 
     const estGas = await estimateGas(
       address,
-      this.router.methods.removeApprovedToken,
+      this.contract.methods.removeApprovedToken,
       tokenAddress
     )
 
     // Invoke createToken function of the contract
-    const trxReceipt = await this.router.methods.removeApprovedToken(tokenAddress).send({
-      from: address,
-      gas: estGas + 1,
-      gasPrice: await getFairGasPrice(this.web3, this.config)
-    })
+    const trxReceipt = await this.contract.methods
+      .removeApprovedToken(tokenAddress)
+      .send({
+        from: address,
+        gas: estGas + 1,
+        gasPrice: await getFairGasPrice(this.web3, this.config)
+      })
 
     return trxReceipt
   }
@@ -216,7 +185,7 @@ export class Router {
    * @return {Promise<TransactionReceipt>}
    */
   public async estGasAddSSContract(address: string, tokenAddress: string): Promise<any> {
-    return estimateGas(address, this.router.methods.addSSContract, tokenAddress)
+    return estimateGas(address, this.contract.methods.addSSContract, tokenAddress)
   }
 
   /**
@@ -235,12 +204,12 @@ export class Router {
 
     const estGas = await estimateGas(
       address,
-      this.router.methods.addSSContract,
+      this.contract.methods.addSSContract,
       tokenAddress
     )
 
     // Invoke createToken function of the contract
-    const trxReceipt = await this.router.methods.addSSContract(tokenAddress).send({
+    const trxReceipt = await this.contract.methods.addSSContract(tokenAddress).send({
       from: address,
       gas: estGas + 1,
       gasPrice: await getFairGasPrice(this.web3, this.config)
@@ -259,7 +228,7 @@ export class Router {
     address: string,
     tokenAddress: string
   ): Promise<any> {
-    return estimateGas(address, this.router.methods.removeSSContract, tokenAddress)
+    return estimateGas(address, this.contract.methods.removeSSContract, tokenAddress)
   }
 
   /**
@@ -278,12 +247,12 @@ export class Router {
 
     const estGas = await estimateGas(
       address,
-      this.router.methods.removeSSContract,
+      this.contract.methods.removeSSContract,
       tokenAddress
     )
 
     // Invoke createToken function of the contract
-    const trxReceipt = await this.router.methods.removeSSContract(tokenAddress).send({
+    const trxReceipt = await this.contract.methods.removeSSContract(tokenAddress).send({
       from: address,
       gas: estGas + 1,
       gasPrice: await getFairGasPrice(this.web3, this.config)
@@ -302,7 +271,7 @@ export class Router {
     address: string,
     tokenAddress: string
   ): Promise<any> {
-    return estimateGas(address, this.router.methods.addFixedRateContract, tokenAddress)
+    return estimateGas(address, this.contract.methods.addFixedRateContract, tokenAddress)
   }
 
   /**
@@ -321,16 +290,18 @@ export class Router {
 
     const estGas = await estimateGas(
       address,
-      this.router.methods.addFixedRateContract,
+      this.contract.methods.addFixedRateContract,
       tokenAddress
     )
 
     // Invoke createToken function of the contract
-    const trxReceipt = await this.router.methods.addFixedRateContract(tokenAddress).send({
-      from: address,
-      gas: estGas + 1,
-      gasPrice: await getFairGasPrice(this.web3, this.config)
-    })
+    const trxReceipt = await this.contract.methods
+      .addFixedRateContract(tokenAddress)
+      .send({
+        from: address,
+        gas: estGas + 1,
+        gasPrice: await getFairGasPrice(this.web3, this.config)
+      })
 
     return trxReceipt
   }
@@ -345,7 +316,11 @@ export class Router {
     address: string,
     tokenAddress: string
   ): Promise<any> {
-    return estimateGas(address, this.router.methods.removeFixedRateContract, tokenAddress)
+    return estimateGas(
+      address,
+      this.contract.methods.removeFixedRateContract,
+      tokenAddress
+    )
   }
 
   /**
@@ -364,12 +339,12 @@ export class Router {
 
     const estGas = await estimateGas(
       address,
-      this.router.methods.removeFixedRateContract,
+      this.contract.methods.removeFixedRateContract,
       tokenAddress
     )
 
     // Invoke removeFixedRateContract function of the contract
-    const trxReceipt = await this.router.methods
+    const trxReceipt = await this.contract.methods
       .removeFixedRateContract(tokenAddress)
       .send({
         from: address,
@@ -390,7 +365,7 @@ export class Router {
     address: string,
     tokenAddress: string
   ): Promise<any> {
-    return estimateGas(address, this.router.methods.addDispenserContract, tokenAddress)
+    return estimateGas(address, this.contract.methods.addDispenserContract, tokenAddress)
   }
 
   /**
@@ -409,16 +384,18 @@ export class Router {
 
     const estGas = await estimateGas(
       address,
-      this.router.methods.addDispenserContract,
+      this.contract.methods.addDispenserContract,
       tokenAddress
     )
 
     // Invoke createToken function of the contract
-    const trxReceipt = await this.router.methods.addDispenserContract(tokenAddress).send({
-      from: address,
-      gas: estGas + 1,
-      gasPrice: await getFairGasPrice(this.web3, this.config)
-    })
+    const trxReceipt = await this.contract.methods
+      .addDispenserContract(tokenAddress)
+      .send({
+        from: address,
+        gas: estGas + 1,
+        gasPrice: await getFairGasPrice(this.web3, this.config)
+      })
 
     return trxReceipt
   }
@@ -433,7 +410,11 @@ export class Router {
     address: string,
     tokenAddress: string
   ): Promise<any> {
-    return estimateGas(address, this.router.methods.removeDispenserContract, tokenAddress)
+    return estimateGas(
+      address,
+      this.contract.methods.removeDispenserContract,
+      tokenAddress
+    )
   }
 
   /**
@@ -452,12 +433,12 @@ export class Router {
 
     const estGas = await estimateGas(
       address,
-      this.router.methods.removeDispenserContract,
+      this.contract.methods.removeDispenserContract,
       tokenAddress
     )
 
     // Invoke createToken function of the contract
-    const trxReceipt = await this.router.methods
+    const trxReceipt = await this.contract.methods
       .removeDispenserContract(tokenAddress)
       .send({
         from: address,
@@ -472,14 +453,14 @@ export class Router {
    * @return {Promise<number>} OPC fee for a specific baseToken
    */
   public async getOPCFee(baseToken: string): Promise<number> {
-    return await this.router.methods.getOPCFee(baseToken).call()
+    return await this.contract.methods.getOPCFee(baseToken).call()
   }
 
   /** Get Current OPF Fee
    * @return {Promise<number>} OPF fee
    */
   public async getCurrentOPCFee(): Promise<number> {
-    return await this.router.methods.swapOceanFee().call()
+    return await this.contract.methods.swapOceanFee().call()
   }
 
   /**
@@ -497,7 +478,7 @@ export class Router {
   ): Promise<any> {
     return estimateGas(
       address,
-      this.router.methods.updateOPCFee,
+      this.contract.methods.updateOPCFee,
       newSwapOceanFee,
       newSwapNonOceanFee,
       newConsumeFee,
@@ -527,7 +508,7 @@ export class Router {
 
     const estGas = await estimateGas(
       address,
-      this.router.methods.updateOPCFee,
+      this.contract.methods.updateOPCFee,
       newSwapOceanFee,
       newSwapNonOceanFee,
       newConsumeFee,
@@ -535,7 +516,7 @@ export class Router {
     )
 
     // Invoke createToken function of the contract
-    const trxReceipt = await this.router.methods
+    const trxReceipt = await this.contract.methods
       .updateOPCFee(newSwapOceanFee, newSwapNonOceanFee, newConsumeFee, newProviderFee)
       .send({
         from: address,
@@ -556,7 +537,7 @@ export class Router {
     address: string,
     templateAddress: string
   ): Promise<any> {
-    return estimateGas(address, this.router.methods.addPoolTemplate, templateAddress)
+    return estimateGas(address, this.contract.methods.addPoolTemplate, templateAddress)
   }
 
   /**
@@ -575,12 +556,12 @@ export class Router {
 
     const estGas = await estimateGas(
       address,
-      this.router.methods.addPoolTemplate,
+      this.contract.methods.addPoolTemplate,
       templateAddress
     )
 
     // Invoke createToken function of the contract
-    const trxReceipt = await this.router.methods.addPoolTemplate(templateAddress).send({
+    const trxReceipt = await this.contract.methods.addPoolTemplate(templateAddress).send({
       from: address,
       gas: estGas + 1,
       gasPrice: await getFairGasPrice(this.web3, this.config)
@@ -599,7 +580,7 @@ export class Router {
     address: string,
     templateAddress: string
   ): Promise<any> {
-    return estimateGas(address, this.router.methods.removePoolTemplate, templateAddress)
+    return estimateGas(address, this.contract.methods.removePoolTemplate, templateAddress)
   }
 
   /**
@@ -618,12 +599,12 @@ export class Router {
 
     const estGas = await estimateGas(
       address,
-      this.router.methods.removePoolTemplate,
+      this.contract.methods.removePoolTemplate,
       templateAddress
     )
 
     // Invoke createToken function of the contract
-    const trxReceipt = await this.router.methods
+    const trxReceipt = await this.contract.methods
       .removePoolTemplate(templateAddress)
       .send({
         from: address,
