@@ -31,7 +31,7 @@ describe('Nft Factory test', () => {
   let dtAddress2: string
   let nftAddress: string
 
-  const DATA_TOKEN_AMOUNT = web3.utils.toWei('1')
+  const DATA_TOKEN_AMOUNT = '1'
   const FEE = '0.001'
 
   const nftData: NftCreateData = {
