@@ -1,5 +1,6 @@
 export * from './@types'
 export * from './config'
+export * from './contracts'
 export * from './factories/NFTFactory'
 export * from './pools/Dispenser'
 export * from './pools/FixedRateExchange'
