@@ -144,6 +144,66 @@ export async function transfer(
 }
 
 /**
+ * Estimate gas cost for mint function
+ * @param {String} account
+ * @param {String} tokenAddress
+ * @param {String} recipient
+ * @param {String} amount
+ * @param {Contract} contractInstance optional contract instance
+ * @return {Promise<number>}
+ */
+export async function estMint(
+  web3: Web3,
+  account: string,
+  tokenAddress: string,
+  recipient: string,
+  amount: string,
+  contractInstance?: Contract
+): Promise<number> {
+  const tokenContract = contractInstance || new web3.eth.Contract(minAbi, tokenAddress)
+
+  return estimateGas(account, tokenContract.methods.mint, recipient, amount)
+}
+
+/**
+ * Creates `amount` tokens and assigns them to `recipient`, increasing
+ * the total supply.
+ * @param {String} account
+ * @param {String} tokenAddress
+ * @param {String} recipient
+ * @param {String} amount amount of ERC20 tokens (not as wei)
+ */
+export async function mint(
+  web3: Web3,
+  account: string,
+  tokenAddress: string,
+  recipient: string,
+  amount: string
+): Promise<TransactionReceipt | boolean> {
+  const tokenContract = new web3.eth.Contract(minAbi, tokenAddress)
+
+  let result = null
+  const amountFormatted = await amountToUnits(web3, tokenAddress, amount)
+  const estGas = await estimateGas(
+    account,
+    tokenContract.methods.mint,
+    recipient,
+    amountFormatted
+  )
+
+  try {
+    result = await tokenContract.methods.mint(recipient, amountFormatted).send({
+      from: account,
+      gas: estGas + 1,
+      gasPrice: await getFairGasPrice(web3, null)
+    })
+  } catch (e) {
+    LoggerInstance.error(`ERROR: Failed to transfer tokens : ${e.message}`)
+  }
+  return result
+}
+
+/**
  * Get Allowance for any erc20
  * @param {Web3} web3
  * @param {String } tokenAdress
