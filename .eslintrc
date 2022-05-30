@@ -15,7 +15,7 @@
   "plugins": ["@typescript-eslint"],
   "rules": {
     "no-empty": ["error", { "allowEmptyCatch": true }],
-    "prefer-destructuring": ["warn", { "object": true, "array": false }],
+    "prefer-destructuring": ["warn", { "object": false, "array": false }],
     "no-dupe-class-members": ["warn"],
     "no-useless-constructor": ["warn"],
     "no-unused-vars": ["warn"],
