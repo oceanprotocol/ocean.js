@@ -1,7 +1,5 @@
 import { assert, expect } from 'chai'
-import { AbiItem } from 'web3-utils/types'
 import { deployContracts, Addresses } from '../../TestContractHandler'
-import ERC20Template from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC20Template.sol/ERC20Template.json'
 import { web3 } from '../../config'
 import {
   NftFactory,
@@ -11,7 +9,9 @@ import {
   signHash,
   Nft,
   transfer,
-  approve
+  approve,
+  balance,
+  Datatoken
 } from '../../../src'
 import {
   ProviderFees,
@@ -238,31 +238,38 @@ describe('Nft Factory test', () => {
     const consumeFeeToken = contracts.daiAddress // token address for the feeAmount, in this case DAI
 
     // we reuse a DT created in a previous test
-    const dtContract = new web3.eth.Contract(ERC20Template.abi as AbiItem[], dtAddress)
-    expect(await dtContract.methods.balanceOf(user1).call()).to.equal('0')
+    expect(await balance(web3, dtAddress, user1)).to.equal('0')
 
     // dt owner mint DATA_TOKEN_AMOUNT to user1
-    await dtContract.methods.mint(user1, DATA_TOKEN_AMOUNT).send({ from: nftOwner })
+    const datatoken = new Datatoken(web3)
+    datatoken.mint(dtAddress, nftOwner, DATA_TOKEN_AMOUNT, user1)
 
     // user1 approves NFTFactory to move his DATA_TOKEN_AMOUNT
-    await dtContract.methods
-      .approve(contracts.erc721FactoryAddress, DATA_TOKEN_AMOUNT)
-      .send({ from: user1 })
+    await approve(
+      web3,
+      user1,
+      dtAddress,
+      contracts.erc721FactoryAddress,
+      DATA_TOKEN_AMOUNT
+    )
 
     // we reuse another DT created in a previous test
-    const dtContract2 = new web3.eth.Contract(ERC20Template.abi as AbiItem[], dtAddress2)
-    expect(await dtContract2.methods.balanceOf(user1).call()).to.equal('0')
+    expect(await balance(web3, dtAddress2, user1)).to.equal('0')
 
     // dt owner mint DATA_TOKEN_AMOUNT to user1
-    await dtContract2.methods.mint(user1, DATA_TOKEN_AMOUNT).send({ from: nftOwner })
+    datatoken.mint(dtAddress2, nftOwner, DATA_TOKEN_AMOUNT, user1)
     // user1 approves NFTFactory to move his DATA_TOKEN_AMOUNT
-    await dtContract2.methods
-      .approve(contracts.erc721FactoryAddress, DATA_TOKEN_AMOUNT)
-      .send({ from: user1 })
+    await approve(
+      web3,
+      user1,
+      dtAddress2,
+      contracts.erc721FactoryAddress,
+      DATA_TOKEN_AMOUNT
+    )
 
     // we check user1 has enought DTs
-    expect(await dtContract.methods.balanceOf(user1).call()).to.equal(DATA_TOKEN_AMOUNT)
-    expect(await dtContract2.methods.balanceOf(user1).call()).to.equal(DATA_TOKEN_AMOUNT)
+    expect(await balance(web3, dtAddress, user1)).to.equal(DATA_TOKEN_AMOUNT)
+    expect(await balance(web3, dtAddress2, user1)).to.equal(DATA_TOKEN_AMOUNT)
 
     const providerData = JSON.stringify({ timeout: 0 })
     const providerValidUntil = '0'
@@ -309,8 +316,8 @@ describe('Nft Factory test', () => {
     ]
     await nftFactory.startMultipleTokenOrder(user1, orders)
     // we check user1 has no more DTs
-    expect(await dtContract.methods.balanceOf(user1).call()).to.equal('0')
-    expect(await dtContract2.methods.balanceOf(user1).call()).to.equal('0')
+    expect(await balance(web3, dtAddress, user1)).to.equal('0')
+    expect(await balance(web3, dtAddress2, user1)).to.equal('0')
   })
 
   it('#checkDatatoken - should confirm if DT is from the factory', async () => {
