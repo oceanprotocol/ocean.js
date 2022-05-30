@@ -1,20 +1,17 @@
 import { assert, expect } from 'chai'
-import { AbiItem } from 'web3-utils/types'
-import { Contract } from 'web3-eth-contract'
-import ERC721Factory from '@oceanprotocol/contracts/artifacts/contracts/ERC721Factory.sol/ERC721Factory.json'
-import ERC20Template from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC20Template.sol/ERC20Template.json'
-import PoolTemplate from '@oceanprotocol/contracts/artifacts/contracts/pools/balancer/BPool.sol/BPool.json'
-import MockERC20 from '@oceanprotocol/contracts/artifacts/contracts/utils/mock/MockERC20Decimals.sol/MockERC20Decimals.json'
 import { deployContracts, Addresses } from '../../../TestContractHandler'
 import { web3 } from '../../../config'
 import {
   allowance,
-  amountToUnits,
   approve,
   NftFactory,
   NftCreateData,
   Pool,
-  unitsToAmount
+  unitsToAmount,
+  ZERO_ADDRESS,
+  balance,
+  transfer,
+  decimals
 } from '../../../../src'
 import {
   PoolCreationParams,
@@ -27,42 +24,51 @@ import {
 
 describe('Pool unit test', () => {
   let factoryOwner: string
-  let nftOwner: string
   let user1: string
   let user2: string
-  let user3: string
   let contracts: Addresses
   let pool: Pool
-  let dtAddress: string
-  let dtAddress2: string
   let poolAddress: string
   let erc20Token: string
-  let erc20Contract: Contract
-  let daiContract: Contract
-  let usdcContract: Contract
+  let ercParams: Erc20CreateParams
+
+  const nftData: NftCreateData = {
+    name: '72120Bundle',
+    symbol: '72Bundle',
+    templateIndex: 1,
+    tokenURI: 'https://oceanprotocol.com/nft/',
+    transferable: true,
+    owner: null
+  }
 
   before(async () => {
     const accounts = await web3.eth.getAccounts()
     factoryOwner = accounts[0]
-    nftOwner = accounts[1]
-    user1 = accounts[2]
-    user2 = accounts[3]
-    user3 = accounts[4]
+    user1 = accounts[3]
+    user2 = accounts[4]
+
+    nftData.owner = factoryOwner
+
+    ercParams = {
+      templateIndex: 1,
+      minter: factoryOwner,
+      paymentCollector: user2,
+      mpFeeAddress: factoryOwner,
+      feeToken: ZERO_ADDRESS,
+      cap: '1000000',
+      feeAmount: '0',
+      name: 'ERC20B1',
+      symbol: 'ERC20DT1Symbol'
+    }
   })
 
   it('should deploy contracts', async () => {
     contracts = await deployContracts(web3, factoryOwner)
 
     // initialize Pool instance
-    pool = new Pool(web3, 8996, PoolTemplate.abi as AbiItem[])
+    pool = new Pool(web3, 8996)
     assert(pool != null)
 
-    daiContract = new web3.eth.Contract(MockERC20.abi as AbiItem[], contracts.daiAddress)
-
-    usdcContract = new web3.eth.Contract(
-      MockERC20.abi as AbiItem[],
-      contracts.usdcAddress
-    )
     await approve(
       web3,
       factoryOwner,
@@ -70,6 +76,18 @@ describe('Pool unit test', () => {
       contracts.erc721FactoryAddress,
       '2000'
     )
+
+    assert(
+      parseInt(
+        await allowance(
+          web3,
+          contracts.daiAddress,
+          factoryOwner,
+          contracts.erc721FactoryAddress
+        )
+      ) >= 2000
+    )
+
     await approve(
       web3,
       factoryOwner,
@@ -78,52 +96,22 @@ describe('Pool unit test', () => {
       '10000'
     )
 
-    let allowCheck = await allowance(
-      web3,
-      contracts.daiAddress,
-      factoryOwner,
-      contracts.erc721FactoryAddress
+    assert(
+      parseInt(
+        await allowance(
+          web3,
+          contracts.usdcAddress,
+          factoryOwner,
+          contracts.erc721FactoryAddress
+        )
+      ) >= 10000
     )
-
-    assert(parseInt(allowCheck) >= 2000)
-    allowCheck = await allowance(
-      web3,
-      contracts.usdcAddress,
-      factoryOwner,
-      contracts.erc721FactoryAddress
-    )
-    assert(parseInt(allowCheck) >= 10000)
-
-    await amountToUnits(web3, contracts.usdcAddress, '20')
   })
 
   describe('Test a pool with DAI (18 Decimals)', () => {
     it('#create a pool', async () => {
       // CREATE A POOL
       // we prepare transaction parameters objects
-      const nftData: NftCreateData = {
-        name: '72120Bundle',
-        symbol: '72Bundle',
-        templateIndex: 1,
-        tokenURI: 'https://oceanprotocol.com/nft/',
-        transferable: true,
-        owner: factoryOwner
-      }
-
-      const ercParams: Erc20CreateParams = {
-        templateIndex: 1,
-        minter: factoryOwner,
-        paymentCollector: user3,
-        mpFeeAddress: factoryOwner,
-        feeToken: '0x0000000000000000000000000000000000000000',
-        cap: '1000000',
-        feeAmount: '0',
-        name: 'ERC20B1',
-        symbol: 'ERC20DT1Symbol'
-      }
-
-      const baseTokenInitialLiq = await amountToUnits(web3, contracts.daiAddress, '2000')
-
       const poolParams: PoolCreationParams = {
         ssContract: contracts.sideStakingAddress,
         baseTokenAddress: contracts.daiAddress,
@@ -140,12 +128,7 @@ describe('Pool unit test', () => {
         swapFeeMarketRunner: '0.001'
       }
 
-      const nftFactory = new NftFactory(
-        contracts.erc721FactoryAddress,
-        web3,
-        8996,
-        ERC721Factory.abi as AbiItem[]
-      )
+      const nftFactory = new NftFactory(contracts.erc721FactoryAddress, web3, 8996)
 
       const txReceipt = await nftFactory.createNftErc20WithPool(
         factoryOwner,
@@ -157,16 +140,15 @@ describe('Pool unit test', () => {
       erc20Token = txReceipt.events.TokenCreated.returnValues.newTokenAddress
       poolAddress = txReceipt.events.NewPool.returnValues.poolAddress
 
-      erc20Contract = new web3.eth.Contract(ERC20Template.abi as AbiItem[], erc20Token)
-      // user2 has no dt1
-      expect(await erc20Contract.methods.balanceOf(user2).call()).to.equal('0')
+      // user1 has no dt1
+      expect(await balance(web3, erc20Token, user1)).to.equal('0')
     })
 
-    // it('#sharesBalance - should return user shares balance (datatoken balance, LPT balance, etc) ', async () => {
-    //   expect(await daiContract.methods.balanceOf(user2).call()).to.equal(
-    //     web3.utils.toWei(await pool.sharesBalance(user2, contracts.daiAddress))
-    //   )
-    // })
+    it('#sharesBalance - should return user shares balance (datatoken balance, LPT balance, etc) ', async () => {
+      expect(await balance(web3, contracts.daiAddress, user1)).to.equal(
+        web3.utils.toWei(await pool.sharesBalance(user1, contracts.daiAddress))
+      )
+    })
 
     it('#getNumTokens - should return num of tokens in pool (2)', async () => {
       expect(await pool.getNumTokens(poolAddress)).to.equal('2')
@@ -183,6 +165,7 @@ describe('Pool unit test', () => {
         (2 * Number(dtOwnerLPTBalance)).toString()
       )
     })
+
     it('#getCurrentTokens - should return current pool tokens', async () => {
       const currentTokens = await pool.getCurrentTokens(poolAddress)
       expect(currentTokens[0]).to.equal(erc20Token)
@@ -241,14 +224,11 @@ describe('Pool unit test', () => {
     })
 
     it('#swapExactAmountIn - should swap', async () => {
-      await daiContract.methods
-        .transfer(user2, web3.utils.toWei('1000'))
-        .send({ from: factoryOwner })
-      expect(await daiContract.methods.balanceOf(user2).call()).to.equal(
-        web3.utils.toWei('1000')
-      )
-      expect(await erc20Contract.methods.balanceOf(user2).call()).to.equal('0')
-      await approve(web3, user2, contracts.daiAddress, poolAddress, '10')
+      await transfer(web3, factoryOwner, contracts.daiAddress, user1, '1000')
+      expect(await balance(web3, contracts.daiAddress, user1)).to.equal('1000')
+
+      expect(await balance(web3, erc20Token, user1)).to.equal('0')
+      await approve(web3, user1, contracts.daiAddress, poolAddress, '10')
 
       const tokenInOutMarket: TokenInOutMarket = {
         tokenIn: contracts.daiAddress,
@@ -261,21 +241,23 @@ describe('Pool unit test', () => {
         swapMarketFee: '0.1'
       }
       const tx = await pool.swapExactAmountIn(
-        user2,
+        user1,
         poolAddress,
         tokenInOutMarket,
         amountsInOutMaxFee
       )
-      expect(await erc20Contract.methods.balanceOf(user2).call()).to.equal(
-        tx.events.LOG_SWAP.returnValues.tokenAmountOut
+      expect(await balance(web3, erc20Token, user1)).to.equal(
+        await unitsToAmount(
+          web3,
+          erc20Token,
+          tx.events.LOG_SWAP.returnValues.tokenAmountOut
+        )
       )
     })
 
     it('#swapExactAmountOut - should swap', async () => {
-      await approve(web3, user2, contracts.daiAddress, poolAddress, '100')
-      expect(await daiContract.methods.balanceOf(user2).call()).to.equal(
-        web3.utils.toWei('990')
-      )
+      await approve(web3, user1, contracts.daiAddress, poolAddress, '100')
+      expect(await balance(web3, contracts.daiAddress, user1)).to.equal('990')
       const tokenInOutMarket: TokenInOutMarket = {
         tokenIn: contracts.daiAddress,
         tokenOut: erc20Token,
@@ -287,7 +269,7 @@ describe('Pool unit test', () => {
         swapMarketFee: '0.1'
       }
       const tx = await pool.swapExactAmountOut(
-        user2,
+        user1,
         poolAddress,
         tokenInOutMarket,
         amountsInOutMaxFee
@@ -298,12 +280,12 @@ describe('Pool unit test', () => {
     it('#joinswapExternAmountIn- user2 should add liquidity, receiving LP tokens', async () => {
       const daiAmountIn = '100'
       const minBPTOut = '0.1'
-      await approve(web3, user2, contracts.daiAddress, poolAddress, '100', true)
-      expect(await allowance(web3, contracts.daiAddress, user2, poolAddress)).to.equal(
+      await approve(web3, user1, contracts.daiAddress, poolAddress, '100', true)
+      expect(await allowance(web3, contracts.daiAddress, user1, poolAddress)).to.equal(
         '100'
       )
       const tx = await pool.joinswapExternAmountIn(
-        user2,
+        user1,
         poolAddress,
         daiAmountIn,
         minBPTOut
@@ -324,7 +306,7 @@ describe('Pool unit test', () => {
       const minDAIOut = '0.5'
 
       const tx = await pool.exitswapPoolAmountIn(
-        user2,
+        user1,
         poolAddress,
         BPTAmountIn,
         minDAIOut
@@ -338,12 +320,12 @@ describe('Pool unit test', () => {
       expect(tx.events.LOG_EXIT[1].returnValues.tokenOut).to.equal(erc20Token)
     })
 
-    it('#exitswapExternAmountOut- user2 exit the pool receiving only DAI', async () => {
+    it('#exitswapExternAmountOut- user1 exit the pool receiving only DAI', async () => {
       const maxBTPIn = '0.5'
       const exactDAIOut = '1'
 
       const tx = await pool.exitswapPoolAmountIn(
-        user2,
+        user1,
         poolAddress,
         maxBTPIn,
         exactDAIOut
@@ -358,7 +340,6 @@ describe('Pool unit test', () => {
     })
 
     it('#getAmountInExactOut- should get the amount in for exact out', async () => {
-      const maxBTPIn = '0.5'
       const exactDAIOut = '1'
 
       const result = await pool.getAmountInExactOut(
@@ -385,7 +366,7 @@ describe('Pool unit test', () => {
       assert(amountIn > spotPrice)
     })
 
-    it('#getAmountOutExactIn- should get the amount out for exact In', async () => {
+    it('#getAmountOutExactIn - should get the amount out for exact In', async () => {
       const exactDTIn = '1'
 
       const result = await pool.getAmountOutExactIn(
@@ -445,9 +426,9 @@ describe('Pool unit test', () => {
 
       // factoryOwner is the marketFeeCollector
       assert((await pool.getMarketFeeCollector(poolAddress)) === factoryOwner)
-      // user3 has no DAI (we are going to send DAI fee to him)
-      assert((await daiContract.methods.balanceOf(user3).call()) === '0')
-      // only marketFeeCollector can call this, set user3 as receiver
+      // user2 has no DAI (we are going to send DAI fee to him)
+      assert((await balance(web3, contracts.daiAddress, user2)) === '0')
+      // only marketFeeCollector can call this, set user2 as receiver
       await pool.collectMarketFee(factoryOwner, poolAddress)
       // DAI fees have been collected
       assert((await pool.getMarketFees(poolAddress, contracts.daiAddress)) === '0')
@@ -479,9 +460,11 @@ describe('Pool unit test', () => {
       assert((await pool.getCommunityFees(poolAddress, contracts.daiAddress)) > '0')
       // opf collector has no DAI
       assert(
-        (await daiContract.methods
-          .balanceOf(contracts.opfCommunityFeeCollectorAddress)
-          .call()) === '0'
+        (await balance(
+          web3,
+          contracts.daiAddress,
+          contracts.opfCommunityFeeCollectorAddress
+        )) === '0'
       )
       // anyone can call callectOPF
       await pool.collectOPC(factoryOwner, poolAddress)
@@ -489,9 +472,11 @@ describe('Pool unit test', () => {
       assert((await pool.getCommunityFees(poolAddress, contracts.daiAddress)) === '0')
       // OPF collector got DAI
       assert(
-        (await daiContract.methods
-          .balanceOf(contracts.opfCommunityFeeCollectorAddress)
-          .call()) > '0'
+        (await balance(
+          web3,
+          contracts.daiAddress,
+          contracts.opfCommunityFeeCollectorAddress
+        )) > '0'
       )
       // Spot price hasn't changed after fee collection
       assert(
@@ -511,10 +496,10 @@ describe('Pool unit test', () => {
       await pool.updatePublishMarketFee(
         factoryOwner,
         poolAddress,
-        user3,
+        user2,
         await pool.getMarketFee(poolAddress)
       )
-      assert((await pool.getMarketFeeCollector(poolAddress)) === user3)
+      assert((await pool.getMarketFeeCollector(poolAddress)) === user2)
     })
   })
 
@@ -522,27 +507,6 @@ describe('Pool unit test', () => {
     it('#create a pool', async () => {
       // CREATE A POOL
       // we prepare transaction parameters objects
-      const nftData: NftCreateData = {
-        name: '72120Bundle',
-        symbol: '72Bundle',
-        templateIndex: 1,
-        tokenURI: 'https://oceanprotocol.com/nft/',
-        transferable: true,
-        owner: factoryOwner
-      }
-
-      const ercParams: Erc20CreateParams = {
-        templateIndex: 1,
-        minter: factoryOwner,
-        paymentCollector: user3,
-        mpFeeAddress: factoryOwner,
-        feeToken: '0x0000000000000000000000000000000000000000',
-        cap: '1000000',
-        feeAmount: '0',
-        name: 'ERC20B1',
-        symbol: 'ERC20DT1Symbol'
-      }
-
       const poolParams: PoolCreationParams = {
         ssContract: contracts.sideStakingAddress,
         baseTokenAddress: contracts.usdcAddress,
@@ -551,24 +515,15 @@ describe('Pool unit test', () => {
         marketFeeCollector: factoryOwner,
         poolTemplateAddress: contracts.poolTemplateAddress,
         rate: '1',
-        baseTokenDecimals: await usdcContract.methods.decimals().call(),
+        baseTokenDecimals: await decimals(web3, contracts.usdcAddress),
         vestingAmount: '10000',
         vestedBlocks: 2500000,
-        initialBaseTokenLiquidity: await unitsToAmount(
-          web3,
-          contracts.usdcAddress,
-          await amountToUnits(web3, contracts.usdcAddress, '2000')
-        ),
+        initialBaseTokenLiquidity: '2000',
         swapFeeLiquidityProvider: '0.001',
         swapFeeMarketRunner: '0.001'
       }
 
-      const nftFactory = new NftFactory(
-        contracts.erc721FactoryAddress,
-        web3,
-        8996,
-        ERC721Factory.abi as AbiItem[]
-      )
+      const nftFactory = new NftFactory(contracts.erc721FactoryAddress, web3, 8996)
 
       const txReceipt = await nftFactory.createNftErc20WithPool(
         factoryOwner,
@@ -580,9 +535,8 @@ describe('Pool unit test', () => {
       erc20Token = txReceipt.events.TokenCreated.returnValues.newTokenAddress
       poolAddress = txReceipt.events.NewPool.returnValues.poolAddress
 
-      erc20Contract = new web3.eth.Contract(ERC20Template.abi as AbiItem[], erc20Token)
-      // user2 has no dt1
-      expect(await erc20Contract.methods.balanceOf(user2).call()).to.equal('0')
+      // user1 has no dt1
+      expect(await balance(web3, erc20Token, user1)).to.equal('0')
     })
 
     it('#calcPoolOutGivenSingleIn - should get the amount of pool OUT for exact token IN', async () => {
@@ -656,11 +610,11 @@ describe('Pool unit test', () => {
       )
     })
 
-    // it('#sharesBalance - should return user shares balance (datatoken balance, LPT balance, etc) ', async () => {
-    //   expect(await usdcContract.methods.balanceOf(user2).call()).to.equal(
-    //     await pool.sharesBalance(user2, contracts.usdcAddress)
-    //   )
-    // })
+    it('#sharesBalance - should return user shares balance (datatoken balance, LPT balance, etc) ', async () => {
+      expect(await balance(web3, contracts.usdcAddress, user1)).to.equal(
+        await pool.sharesBalance(user1, contracts.usdcAddress)
+      )
+    })
 
     it('#getNumTokens - should return num of tokens in pool (2)', async () => {
       expect(await pool.getNumTokens(poolAddress)).to.equal('2')
@@ -677,6 +631,7 @@ describe('Pool unit test', () => {
         (2 * Number(dtOwnerLPTBalance)).toString()
       )
     })
+
     it('#getCurrentTokens - should return current pool tokens', async () => {
       const currentTokens = await pool.getCurrentTokens(poolAddress)
       expect(currentTokens[0]).to.equal(erc20Token)
@@ -735,16 +690,12 @@ describe('Pool unit test', () => {
     })
 
     it('#swapExactAmountIn - should swap', async () => {
-      const transferAmount = await amountToUnits(web3, contracts.usdcAddress, '1000') // 1000 USDC
-      await usdcContract.methods
-        .transfer(user2, transferAmount)
-        .send({ from: factoryOwner })
-      expect(await usdcContract.methods.balanceOf(user2).call()).to.equal(
-        transferAmount.toString()
-      )
+      await transfer(web3, factoryOwner, contracts.usdcAddress, user1, '1000')
+      expect(await balance(web3, contracts.usdcAddress, user1)).to.equal('1000')
 
-      expect(await erc20Contract.methods.balanceOf(user2).call()).to.equal('0')
-      await approve(web3, user2, contracts.usdcAddress, poolAddress, '10')
+      expect(await balance(web3, erc20Token, user1)).to.equal('0')
+      await approve(web3, user1, contracts.usdcAddress, poolAddress, '10')
+
       const tokenInOutMarket: TokenInOutMarket = {
         tokenIn: contracts.usdcAddress,
         tokenOut: erc20Token,
@@ -756,21 +707,23 @@ describe('Pool unit test', () => {
         swapMarketFee: '0.1'
       }
       const tx = await pool.swapExactAmountIn(
-        user2,
+        user1,
         poolAddress,
         tokenInOutMarket,
         amountsInOutMaxFee
       )
-      expect(await erc20Contract.methods.balanceOf(user2).call()).to.equal(
-        tx.events.LOG_SWAP.returnValues.tokenAmountOut
+      expect(await balance(web3, erc20Token, user1)).to.equal(
+        await unitsToAmount(
+          web3,
+          erc20Token,
+          tx.events.LOG_SWAP.returnValues.tokenAmountOut
+        )
       )
     })
 
     it('#swapExactAmountOut - should swap', async () => {
-      expect(await usdcContract.methods.balanceOf(user2).call()).to.equal(
-        (await amountToUnits(web3, contracts.usdcAddress, '990')).toString()
-      )
-      await approve(web3, user2, contracts.usdcAddress, poolAddress, '100')
+      await approve(web3, user1, contracts.usdcAddress, poolAddress, '100')
+      expect(await balance(web3, contracts.usdcAddress, user1)).to.equal('990')
       const tokenInOutMarket: TokenInOutMarket = {
         tokenIn: contracts.usdcAddress,
         tokenOut: erc20Token,
@@ -782,7 +735,7 @@ describe('Pool unit test', () => {
         swapMarketFee: '0.1'
       }
       const tx = await pool.swapExactAmountOut(
-        user2,
+        user1,
         poolAddress,
         tokenInOutMarket,
         amountsInOutMaxFee
@@ -794,10 +747,10 @@ describe('Pool unit test', () => {
     it('#joinswapExternAmountIn- user2 should add liquidity, receiving LP tokens', async () => {
       const usdcAmountIn = '100'
       const minBPTOut = '0.1'
-      await approve(web3, user2, contracts.usdcAddress, poolAddress, '100', true)
+      await approve(web3, user1, contracts.usdcAddress, poolAddress, '100', true)
 
       const tx = await pool.joinswapExternAmountIn(
-        user2,
+        user1,
         poolAddress,
         usdcAmountIn,
         minBPTOut
@@ -818,7 +771,7 @@ describe('Pool unit test', () => {
       const minUSDCOut = '0.5'
 
       const tx = await pool.exitswapPoolAmountIn(
-        user2,
+        user1,
         poolAddress,
         BPTAmountIn,
         minUSDCOut
@@ -833,7 +786,6 @@ describe('Pool unit test', () => {
     })
 
     it('#getAmountInExactOut- should get the amount in for exact out', async () => {
-      const maxBTPIn = '0.5'
       const exactUSDCOut = '1'
 
       const result = await pool.getAmountInExactOut(
@@ -856,7 +808,7 @@ describe('Pool unit test', () => {
       assert(amountIn > spotPrice)
     })
 
-    it('#getAmountOutExactIn- should get the amount out for exact In', async () => {
+    it('#getAmountOutExactIn - should get the amount out for exact In', async () => {
       const exactDTIn = '1'
 
       const result = await pool.getAmountOutExactIn(
@@ -923,9 +875,9 @@ describe('Pool unit test', () => {
       )
       // factoryOwner is the marketFeeCollector
       assert((await pool.getMarketFeeCollector(poolAddress)) === factoryOwner)
-      // user3 has no USDC (we are going to send USDC fee to him)
-      assert((await usdcContract.methods.balanceOf(user3).call()) === '0')
-      // only marketFeeCollector can call this, set user3 as receiver
+      // user2 has no USDC (we are going to send USDC fee to him)
+      assert((await balance(web3, contracts.usdcAddress, user2)) === '0')
+      // only marketFeeCollector can call this, set user2 as receiver
       await pool.collectMarketFee(factoryOwner, poolAddress)
       // USDC fees have been collected
       assert((await pool.getMarketFees(poolAddress, contracts.usdcAddress)) === '0')
@@ -967,9 +919,11 @@ describe('Pool unit test', () => {
       assert((await pool.getCommunityFees(poolAddress, contracts.usdcAddress)) > '0')
       // opf collector has no USDC
       assert(
-        (await usdcContract.methods
-          .balanceOf(contracts.opfCommunityFeeCollectorAddress)
-          .call()) === '0'
+        (await balance(
+          web3,
+          contracts.usdcAddress,
+          contracts.opfCommunityFeeCollectorAddress
+        )) === '0'
       )
       // anyone can call callectOPF
       await pool.collectOPC(factoryOwner, poolAddress)
@@ -977,9 +931,11 @@ describe('Pool unit test', () => {
       assert((await pool.getCommunityFees(poolAddress, contracts.usdcAddress)) === '0')
       // OPF collector got USDC
       assert(
-        (await usdcContract.methods
-          .balanceOf(contracts.opfCommunityFeeCollectorAddress)
-          .call()) > '0'
+        (await balance(
+          web3,
+          contracts.usdcAddress,
+          contracts.opfCommunityFeeCollectorAddress
+        )) > '0'
       )
       // Spot price hasn't changed after fee collection
       assert(
@@ -999,11 +955,11 @@ describe('Pool unit test', () => {
       await pool.updatePublishMarketFee(
         factoryOwner,
         poolAddress,
-        user3,
+        user2,
         await pool.getMarketFee(poolAddress)
       )
 
-      assert((await pool.getMarketFeeCollector(poolAddress)) === user3)
+      assert((await pool.getMarketFeeCollector(poolAddress)) === user2)
     })
   })
 })
