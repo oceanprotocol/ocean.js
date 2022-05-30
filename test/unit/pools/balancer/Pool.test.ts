@@ -3,7 +3,6 @@ import { deployContracts, Addresses } from '../../../TestContractHandler'
 import { web3 } from '../../../config'
 import {
   allowance,
-  amountToUnits,
   approve,
   NftFactory,
   NftCreateData,
