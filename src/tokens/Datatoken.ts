@@ -29,7 +29,6 @@ import {
 
 export class Datatoken {
   public factoryAddress: string
-  public factoryABI: AbiItem | AbiItem[]
   public datatokensAbi: AbiItem | AbiItem[]
   public datatokensEnterpriseAbi: AbiItem | AbiItem[]
   public web3: Web3
