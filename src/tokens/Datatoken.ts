@@ -24,7 +24,7 @@ import {
   PublishingMarketFee,
   DispenserParams,
   OrderParams,
-  Roles
+  DatatokenRoles
 } from '../@types'
 
 export class Datatoken {
@@ -1216,9 +1216,12 @@ export class Datatoken {
   /** Returns ERC20 user's permissions for a datatoken
    * @param {String} dtAddress Datatoken adress
    * @param {String} address user adress
-   * @return {Promise<Roles>}
+   * @return {Promise<DatatokenRoles>}
    */
-  public async getDTPermissions(dtAddress: string, address: string): Promise<Roles> {
+  public async getDTPermissions(
+    dtAddress: string,
+    address: string
+  ): Promise<DatatokenRoles> {
     const dtContract = setContractDefaults(
       new this.web3.eth.Contract(this.datatokensAbi, dtAddress),
       this.config
