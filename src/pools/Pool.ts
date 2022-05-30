@@ -18,7 +18,8 @@ import {
   getMaxAddLiquidity,
   getMaxRemoveLiquidity,
   getMaxSwapExactIn,
-  getMaxSwapExactOut
+  getMaxSwapExactOut,
+  MAX_UINT_256
 } from '..'
 import {
   CurrentFees,
@@ -27,9 +28,6 @@ import {
   AmountsOutMaxFee,
   PoolPriceAndFees
 } from '../@types'
-
-const MaxUint256 =
-  '115792089237316195423570985008687907853269984665640564039457584007913129639934'
 
 /**
  * Provides an interface to Ocean friendly fork from Balancer BPool
@@ -804,7 +802,7 @@ export class Pool {
           await this.getBaseToken(poolAddress),
           amountsInOutMaxFee.maxPrice
         )
-      : MaxUint256
+      : MAX_UINT_256
 
     return estimateGas(
       address,
@@ -869,7 +867,7 @@ export class Pool {
           await this.getBaseToken(poolAddress),
           amountsInOutMaxFee.maxPrice
         )
-      : MaxUint256
+      : MAX_UINT_256
 
     const estGas = await estimateGas(
       address,
@@ -955,7 +953,7 @@ export class Pool {
           await this.getBaseToken(poolAddress),
           amountsInOutMaxFee.maxPrice
         )
-      : MaxUint256
+      : MAX_UINT_256
 
     return estimateGas(
       address,
@@ -1016,7 +1014,7 @@ export class Pool {
           await this.getBaseToken(poolAddress),
           amountsInOutMaxFee.maxPrice
         )
-      : MaxUint256
+      : MAX_UINT_256
 
     const estGas = await estimateGas(
       account,
