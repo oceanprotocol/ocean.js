@@ -1,9 +1,5 @@
 import { assert, expect } from 'chai'
-import { AbiItem } from 'web3-utils/types'
-import { Contract } from 'web3-eth-contract'
 import BigNumber from 'bignumber.js'
-import ERC20Template from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC20Template.sol/ERC20Template.json'
-import MockERC20 from '@oceanprotocol/contracts/artifacts/contracts/utils/mock/MockERC20Decimals.sol/MockERC20Decimals.json'
 import { deployContracts, Addresses } from '../../../TestContractHandler'
 import { web3 } from '../../../config'
 import {
@@ -16,7 +12,9 @@ import {
   SideStaking,
   unitsToAmount,
   ZERO_ADDRESS,
-  balance
+  balance,
+  transfer,
+  decimals
 } from '../../../../src'
 import {
   Erc20CreateParams,
@@ -36,8 +34,6 @@ describe('SideStaking unit test', () => {
   let sideStaking: SideStaking
   let poolAddress: string
   let erc20Token: string
-  let daiContract: Contract
-  let usdcContract: Contract
 
   const VESTED_BLOCKS = 2500000
   const VESTING_AMOUNT = '10000'
@@ -85,12 +81,6 @@ describe('SideStaking unit test', () => {
     //
     sideStaking = new SideStaking(web3, 8996)
     assert(sideStaking != null)
-
-    daiContract = new web3.eth.Contract(MockERC20.abi as AbiItem[], contracts.daiAddress)
-    usdcContract = new web3.eth.Contract(
-      MockERC20.abi as AbiItem[],
-      contracts.usdcAddress
-    )
 
     await approve(
       web3,
@@ -250,9 +240,7 @@ describe('SideStaking unit test', () => {
     })
 
     it('#swapExactAmountIn - should swap', async () => {
-      await daiContract.methods
-        .transfer(user1, web3.utils.toWei('1000'))
-        .send({ from: factoryOwner })
+      await transfer(web3, factoryOwner, contracts.daiAddress, user1, '1000')
       await approve(web3, user1, contracts.daiAddress, poolAddress, '10')
 
       const tokenInOutMarket: TokenInOutMarket = {
@@ -362,7 +350,7 @@ describe('SideStaking unit test', () => {
         marketFeeCollector: factoryOwner,
         poolTemplateAddress: contracts.poolTemplateAddress,
         rate: '1',
-        baseTokenDecimals: await usdcContract.methods.decimals().call(),
+        baseTokenDecimals: await decimals(web3, contracts.usdcAddress),
         vestingAmount: VESTING_AMOUNT,
         vestedBlocks: VESTED_BLOCKS,
         initialBaseTokenLiquidity: await unitsToAmount(
@@ -433,12 +421,9 @@ describe('SideStaking unit test', () => {
     })
 
     it('#swapExactAmountIn - should swap', async () => {
-      const transferAmount = await amountToUnits(web3, contracts.usdcAddress, '1000') // 1000 USDC
-      await usdcContract.methods
-        .transfer(user1, transferAmount)
-        .send({ from: factoryOwner })
-
+      await transfer(web3, factoryOwner, contracts.usdcAddress, user1, '1000') // 1000 USDC
       await approve(web3, user1, contracts.usdcAddress, poolAddress, '10')
+
       const tokenInOutMarket: TokenInOutMarket = {
         tokenIn: contracts.usdcAddress,
         tokenOut: erc20Token,
