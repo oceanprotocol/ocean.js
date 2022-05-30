@@ -16,7 +16,6 @@ import { MetadataAndTokenURI, MetadataProof, NftRoles } from '../@types'
 
 export class Nft {
   public factory721Address: string
-  public factory721Abi: AbiItem | AbiItem[]
   public nftAbi: AbiItem | AbiItem[]
   public web3: Web3
   public startBlock: number
