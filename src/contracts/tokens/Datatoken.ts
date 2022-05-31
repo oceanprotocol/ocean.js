@@ -950,7 +950,11 @@ export class Datatoken extends SmartContract {
     contractInstance?: Contract
   ): Promise<any> {
     const dtContract =
-      contractInstance || new this.web3.eth.Contract(this.abiEnterprise, dtAddress)
+      contractInstance ||
+      setContractDefaults(
+        new this.web3.eth.Contract(this.abiEnterprise, dtAddress),
+        this.config
+      )
 
     return estimateGas(
       address,
@@ -1014,7 +1018,11 @@ export class Datatoken extends SmartContract {
     contractInstance?: Contract
   ): Promise<any> {
     const dtContract =
-      contractInstance || new this.web3.eth.Contract(this.abiEnterprise, dtAddress)
+      contractInstance ||
+      setContractDefaults(
+        new this.web3.eth.Contract(this.abiEnterprise, dtAddress),
+        this.config
+      )
 
     return estimateGas(
       address,
