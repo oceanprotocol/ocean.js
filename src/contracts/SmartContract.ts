@@ -31,7 +31,7 @@ export abstract class SmartContract {
   async amountToUnits(
     token: string,
     amount: string,
-    tokenDecimals: number
+    tokenDecimals?: number
   ): Promise<string> {
     return amountToUnits(this.web3, token, amount, tokenDecimals)
   }
@@ -39,7 +39,7 @@ export abstract class SmartContract {
   async unitsToAmount(
     token: string,
     amount: string,
-    tokenDecimals: number
+    tokenDecimals?: number
   ): Promise<string> {
     return unitsToAmount(this.web3, token, amount, tokenDecimals)
   }
