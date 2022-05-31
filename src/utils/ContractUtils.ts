@@ -3,7 +3,6 @@ import BigNumber from 'bignumber.js'
 import { Contract } from 'web3-eth-contract'
 import { GASLIMIT_DEFAULT, minAbi, LoggerInstance } from '.'
 import { Config } from '../config'
-import { FreOrderParams } from '../@types'
 
 export function setContractDefaults(contract: Contract, config: Config): Contract {
   if (config) {
