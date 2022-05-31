@@ -1,6 +1,7 @@
 import Web3 from 'web3'
 import { AbiItem } from 'web3-utils'
-import { Config, ConfigHelper, amountToUnits, unitsToAmount } from '..'
+import { Config, ConfigHelper } from '../config'
+import { amountToUnits, unitsToAmount } from '../utils'
 
 export abstract class SmartContract {
   public web3: Web3

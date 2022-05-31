@@ -1,4 +1,4 @@
-import { ProviderFees } from '..'
+import { ProviderFees } from '.'
 
 export interface Erc20CreateParams {
   templateIndex: number

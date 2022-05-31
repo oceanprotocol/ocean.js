@@ -10,9 +10,8 @@ import {
   getErcCreationParams,
   getPoolCreationParams,
   estimateGas,
-  ZERO_ADDRESS,
-  SmartContractWithAddress
-} from '../..'
+  ZERO_ADDRESS
+} from '../../utils'
 import {
   FreCreationParams,
   Erc20CreateParams,
@@ -22,6 +21,7 @@ import {
   Template,
   TokenOrder
 } from '../../@types'
+import { SmartContractWithAddress } from '..'
 
 /**
  * Provides an interface for NFT Factory contract

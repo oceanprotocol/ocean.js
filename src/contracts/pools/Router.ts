@@ -1,8 +1,9 @@
 import { TransactionReceipt } from 'web3-core'
 import { AbiItem } from 'web3-utils'
 import FactoryRouter from '@oceanprotocol/contracts/artifacts/contracts/pools/FactoryRouter.sol/FactoryRouter.json'
-import { getFairGasPrice, estimateGas, SmartContractWithAddress } from '../..'
+import { getFairGasPrice, estimateGas } from '../../utils'
 import { Operation } from '../../@types'
+import { SmartContractWithAddress } from '..'
 
 /**
  * Provides an interface for FactoryRouter contract

@@ -2,7 +2,8 @@ import { AbiItem } from 'web3-utils/types'
 import { TransactionReceipt } from 'web3-core'
 import { Contract } from 'web3-eth-contract'
 import SideStakingAbi from '@oceanprotocol/contracts/artifacts/contracts/pools/ssContracts/SideStaking.sol/SideStaking.json'
-import { LoggerInstance, getFairGasPrice, estimateGas, SmartContract } from '../..'
+import { LoggerInstance, getFairGasPrice, estimateGas } from '../../utils'
+import { SmartContract } from '..'
 
 export class SideStaking extends SmartContract {
   getDefaultAbi(): AbiItem | AbiItem[] {

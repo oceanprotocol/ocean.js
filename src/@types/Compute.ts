@@ -1,4 +1,4 @@
-import { Metadata, MetadataAlgorithm } from '..'
+import { Metadata, MetadataAlgorithm } from '.'
 
 export type ComputeResultType =
   | 'algorithmLog'

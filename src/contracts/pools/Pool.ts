@@ -16,9 +16,8 @@ import {
   getMaxSwapExactIn,
   getMaxSwapExactOut,
   MAX_UINT_256,
-  SmartContract,
   decimals
-} from '../..'
+} from '../../utils'
 import {
   CurrentFees,
   TokenInOutMarket,
@@ -26,6 +25,7 @@ import {
   AmountsOutMaxFee,
   PoolPriceAndFees
 } from '../../@types'
+import { SmartContract } from '..'
 
 /**
  * Provides an interface to Ocean friendly fork from Balancer BPool

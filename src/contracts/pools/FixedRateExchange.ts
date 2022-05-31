@@ -2,15 +2,9 @@ import { TransactionReceipt } from 'web3-core'
 import { Contract } from 'web3-eth-contract'
 import { AbiItem } from 'web3-utils/types'
 import FixedRateExchangeAbi from '@oceanprotocol/contracts/artifacts/contracts/pools/fixedRate/FixedRateExchange.sol/FixedRateExchange.json'
-import {
-  LoggerInstance,
-  getFairGasPrice,
-  estimateGas,
-  ZERO_ADDRESS,
-  PriceAndFees,
-  SmartContractWithAddress
-} from '../..'
-import { FeesInfo, FixedPriceExchange } from '../../@types'
+import { LoggerInstance, getFairGasPrice, estimateGas, ZERO_ADDRESS } from '../../utils'
+import { FeesInfo, FixedPriceExchange, PriceAndFees } from '../../@types'
+import { SmartContractWithAddress } from '..'
 
 export class FixedRateExchange extends SmartContractWithAddress {
   getDefaultAbi(): AbiItem | AbiItem[] {

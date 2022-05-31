@@ -7,10 +7,10 @@ import {
   getFairGasPrice,
   generateDtName,
   setContractDefaults,
-  estimateGas,
-  SmartContract
-} from '../..'
+  estimateGas
+} from '../../utils'
 import { MetadataAndTokenURI, MetadataProof, NftRoles } from '../../@types'
+import { SmartContract } from '..'
 
 export class Nft extends SmartContract {
   getDefaultAbi(): AbiItem | AbiItem[] {

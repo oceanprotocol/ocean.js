@@ -1,4 +1,4 @@
-import { LoggerInstance } from '..'
+import { LoggerInstance } from '.'
 
 export const zeroX = (input: string): string => zeroXTransformer(input, true)
 export const noZeroX = (input: string): string => zeroXTransformer(input, false)

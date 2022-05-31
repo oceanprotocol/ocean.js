@@ -5,17 +5,15 @@ import { Contract } from 'web3-eth-contract'
 import Decimal from 'decimal.js'
 import ERC20Template from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC20Template.sol/ERC20Template.json'
 import ERC20TemplateEnterprise from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC20TemplateEnterprise.sol/ERC20TemplateEnterprise.json'
+import { Config } from '../../config'
 import {
   LoggerInstance,
   getFairGasPrice,
   setContractDefaults,
   getFreOrderParams,
   estimateGas,
-  ZERO_ADDRESS,
-  Nft,
-  Config,
-  SmartContract
-} from '../..'
+  ZERO_ADDRESS
+} from '../../utils'
 import {
   ConsumeMarketFee,
   FreOrderParams,
@@ -26,6 +24,7 @@ import {
   OrderParams,
   DatatokenRoles
 } from '../../@types'
+import { SmartContract, Nft } from '..'
 
 export class Datatoken extends SmartContract {
   public abiEnterprise: AbiItem | AbiItem[]

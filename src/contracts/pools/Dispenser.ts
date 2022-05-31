@@ -2,14 +2,9 @@ import { AbiItem } from 'web3-utils'
 import { TransactionReceipt } from 'web3-eth'
 import Decimal from 'decimal.js'
 import DispenserAbi from '@oceanprotocol/contracts/artifacts/contracts/pools/dispenser/Dispenser.sol/Dispenser.json'
-import {
-  LoggerInstance,
-  getFairGasPrice,
-  estimateGas,
-  Datatoken,
-  SmartContractWithAddress
-} from '../..'
+import { LoggerInstance, getFairGasPrice, estimateGas } from '../../utils'
 import { DispenserToken } from '../../@types'
+import { SmartContractWithAddress, Datatoken } from '..'
 
 export class Dispenser extends SmartContractWithAddress {
   getDefaultAbi(): AbiItem | AbiItem[] {

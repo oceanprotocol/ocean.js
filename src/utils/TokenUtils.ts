@@ -9,7 +9,7 @@ import {
   unitsToAmount,
   minAbi,
   LoggerInstance
-} from '..'
+} from '.'
 
 /**
  * Estimate gas cost for approval function

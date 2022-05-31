@@ -1,14 +1,8 @@
 import Web3 from 'web3'
 import BigNumber from 'bignumber.js'
 import { Contract } from 'web3-eth-contract'
-import {
-  Config,
-  minAbi,
-  LoggerInstance,
-  GASLIMIT_DEFAULT,
-  ZERO_ADDRESS,
-  generateDtName
-} from '..'
+import { generateDtName, GASLIMIT_DEFAULT, ZERO_ADDRESS, minAbi, LoggerInstance } from '.'
+import { Config } from '../config'
 import {
   Erc20CreateParams,
   FreCreationParams,
