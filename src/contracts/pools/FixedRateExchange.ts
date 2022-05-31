@@ -31,7 +31,6 @@ export class FixedRateExchange extends SmartContractWithAddress {
    * @param {String} datatokenAddress datatokenAddress
    * @param {String} consumeMarketAddress consumeMarketAddress
    * @param {String} consumeMarketFee fee recieved by the consume market when a dt is bought from a fixed rate exchange, percent
-   * @param {Contract} contractInstance optional contract instance
    * @return {Promise<number>}
    */
   public async estGasBuyDT(
@@ -40,14 +39,11 @@ export class FixedRateExchange extends SmartContractWithAddress {
     dtAmount: string,
     maxBaseTokenAmount: string,
     consumeMarketAddress: string,
-    consumeMarketFee: string,
-    contractInstance?: Contract
+    consumeMarketFee: string
   ): Promise<number> {
-    const fixedRate = contractInstance || this.contract
-
     return estimateGas(
       account,
-      fixedRate.methods.buyDT,
+      this.contract.methods.buyDT,
       datatokenAddress,
       dtAmount,
       maxBaseTokenAmount,
@@ -124,7 +120,6 @@ export class FixedRateExchange extends SmartContractWithAddress {
    * @param {String} datatokenAddress datatokenAddress
    * @param {String} consumeMarketAddress consumeMarketAddress
    * @param {String} consumeMarketFee consumeMarketFee
-   * @param {Contract} contractInstance optional contract instance
    * @return {Promise<number>}
    */
   public async estGasSellDT(
@@ -133,14 +128,11 @@ export class FixedRateExchange extends SmartContractWithAddress {
     dtAmount: string,
     maxBaseTokenAmount: string,
     consumeMarketAddress: string,
-    consumeMarketFee: string,
-    contractInstance?: Contract
+    consumeMarketFee: string
   ): Promise<number> {
-    const fixedRate = contractInstance || this.contract
-
     return estimateGas(
       account,
-      fixedRate.methods.sellDT,
+      this.contract.methods.sellDT,
       datatokenAddress,
       dtAmount,
       maxBaseTokenAmount,
@@ -225,20 +217,16 @@ export class FixedRateExchange extends SmartContractWithAddress {
    * @param {String} account
    * @param {String} exchangeId ExchangeId
    * @param {String} newRate New rate
-   * @param {Contract} contractInstance optional contract instance
    * @return {Promise<number>}
    */
   public async estGasSetRate(
     account: string,
     exchangeId: string,
-    newRate: string,
-    contractInstance?: Contract
+    newRate: string
   ): Promise<number> {
-    const fixedRate = contractInstance || this.contract
-
     return estimateGas(
       account,
-      fixedRate.methods.setRate,
+      this.contract.methods.setRate,
       exchangeId,
       await this.web3.utils.toWei(newRate)
     )
@@ -277,20 +265,16 @@ export class FixedRateExchange extends SmartContractWithAddress {
    * @param {String} account
    * @param {String} exchangeId ExchangeId
    * @param {String} newAllowedSwapper new allowed swapper address
-   * @param {Contract} contractInstance optional contract instance
    * @return {Promise<number>}
    */
   public async estGasSetAllowedSwapper(
     account: string,
     exchangeId: string,
-    newAllowedSwapper: string,
-    contractInstance?: Contract
+    newAllowedSwapper: string
   ): Promise<number> {
-    const fixedRate = contractInstance || this.contract
-
     return estimateGas(
       account,
-      fixedRate.methods.setAllowedSwapper,
+      this.contract.methods.setAllowedSwapper,
       exchangeId,
       newAllowedSwapper
     )
@@ -328,17 +312,10 @@ export class FixedRateExchange extends SmartContractWithAddress {
    * Estimate gas cost for activate
    * @param {String} account
    * @param {String} exchangeId ExchangeId
-   * @param {Contract} contractInstance optional contract instance
    * @return {Promise<number>}
    */
-  public async estGasActivate(
-    account: string,
-    exchangeId: string,
-    contractInstance?: Contract
-  ): Promise<number> {
-    const fixedRate = contractInstance || this.contract
-
-    return estimateGas(account, fixedRate.methods.toggleExchangeState, exchangeId)
+  public async estGasActivate(account: string, exchangeId: string): Promise<number> {
+    return estimateGas(account, this.contract.methods.toggleExchangeState, exchangeId)
   }
 
   /**
@@ -371,17 +348,10 @@ export class FixedRateExchange extends SmartContractWithAddress {
    * Estimate gas cost for deactivate
    * @param {String} account
    * @param {String} exchangeId ExchangeId
-   * @param {Contract} contractInstance optional contract instance
    * @return {Promise<number>}
    */
-  public async estGasDeactivate(
-    account: string,
-    exchangeId: string,
-    contractInstance?: Contract
-  ): Promise<number> {
-    const fixedRate = contractInstance || this.contract
-
-    return estimateGas(account, fixedRate.methods.toggleExchangeState, exchangeId)
+  public async estGasDeactivate(account: string, exchangeId: string): Promise<number> {
+    return estimateGas(account, this.contract.methods.toggleExchangeState, exchangeId)
   }
 
   /**
@@ -618,17 +588,10 @@ export class FixedRateExchange extends SmartContractWithAddress {
    * Estimate gas cost for activate
    * @param {String} account
    * @param {String} exchangeId ExchangeId
-   * @param {Contract} contractInstance optional contract instance
    * @return {Promise<number>}
    */
-  public async estGasActivateMint(
-    account: string,
-    exchangeId: string,
-    contractInstance?: Contract
-  ): Promise<number> {
-    const fixedRate = contractInstance || this.contract
-
-    return estimateGas(account, fixedRate.methods.toggleMintState, exchangeId, true)
+  public async estGasActivateMint(account: string, exchangeId: string): Promise<number> {
+    return estimateGas(account, this.contract.methods.toggleMintState, exchangeId, true)
   }
 
   /**
@@ -665,19 +628,15 @@ export class FixedRateExchange extends SmartContractWithAddress {
    * Estimate gas cost for deactivate
    * @param {String} account
    * @param {String} exchangeId ExchangeId
-   * @param {Contract} contractInstance optional contract instance
    * @return {Promise<number>}
    */
   public async estGasDeactivateMint(
     account: string,
-    exchangeId: string,
-    contractInstance?: Contract
+    exchangeId: string
   ): Promise<number> {
-    const fixedRate = contractInstance || this.contract
-
     return estimateGas(
       account,
-      fixedRate.methods.toggleMintState(exchangeId, false),
+      this.contract.methods.toggleMintState(exchangeId, false),
       exchangeId,
       false
     )
@@ -720,16 +679,13 @@ export class FixedRateExchange extends SmartContractWithAddress {
    * @param {String} account
    * @param {String} exchangeId ExchangeId
    * @param {String} amount amount to be collected
-   * @param {Contract} contractInstance optional contract instance
    * @return {Promise<number>}
    */
   public async estGasCollectBT(
     account: string,
     exchangeId: string,
-    amount: string,
-    contractInstance?: Contract
+    amount: string
   ): Promise<number> {
-    const fixedRate = contractInstance || this.contract
     const fixedrate: FixedPriceExchange = await this.contract.methods
       .getExchange(exchangeId)
       .call()
@@ -738,7 +694,7 @@ export class FixedRateExchange extends SmartContractWithAddress {
       amount,
       +fixedrate.btDecimals
     )
-    return estimateGas(account, fixedRate.methods.collectBT, exchangeId, amountWei)
+    return estimateGas(account, this.contract.methods.collectBT, exchangeId, amountWei)
   }
 
   /**
@@ -785,16 +741,13 @@ export class FixedRateExchange extends SmartContractWithAddress {
    * @param {String} account
    * @param {String} exchangeId ExchangeId
    * @param {String} amount amount to be collected
-   * @param {Contract} contractInstance optional contract instance
    * @return {Promise<number>}
    */
   public async estGasCollectDT(
     account: string,
     exchangeId: string,
-    amount: string,
-    contractInstance?: Contract
+    amount: string
   ): Promise<number> {
-    const fixedRate = contractInstance || this.contract
     const fixedrate: FixedPriceExchange = await this.contract.methods
       .getExchange(exchangeId)
       .call()
@@ -804,7 +757,7 @@ export class FixedRateExchange extends SmartContractWithAddress {
       amount,
       +fixedrate.dtDecimals
     )
-    return estimateGas(account, fixedRate.methods.collectDT, exchangeId, amountWei)
+    return estimateGas(account, this.contract.methods.collectDT, exchangeId, amountWei)
   }
 
   /**
@@ -850,17 +803,13 @@ export class FixedRateExchange extends SmartContractWithAddress {
    * Estimate gas cost for collecMarketFee
    * @param {String} account
    * @param {String} exchangeId ExchangeId
-   * @param {Contract} contractInstance optional contract instance
    * @return {Promise<number>}
    */
   public async estGasCollectMarketFee(
     account: string,
-    exchangeId: string,
-    contractInstance?: Contract
+    exchangeId: string
   ): Promise<number> {
-    const fixedRate = contractInstance || this.contract
-
-    return estimateGas(account, fixedRate.methods.collectMarketFee, exchangeId)
+    return estimateGas(account, this.contract.methods.collectMarketFee, exchangeId)
   }
 
   /**
@@ -893,17 +842,13 @@ export class FixedRateExchange extends SmartContractWithAddress {
    * Estimate gas cost for collectOceanFee
    * @param {String} account
    * @param {String} exchangeId ExchangeId
-   * @param {Contract} contractInstance optional contract instance
    * @return {Promise<number>}
    */
   public async estGasCollectOceanFee(
     account: string,
-    exchangeId: string,
-    contractInstance?: Contract
+    exchangeId: string
   ): Promise<number> {
-    const fixedRate = contractInstance || this.contract
-
-    return estimateGas(account, fixedRate.methods.collectMarketFee, exchangeId)
+    return estimateGas(account, this.contract.methods.collectMarketFee, exchangeId)
   }
 
   /**
@@ -980,20 +925,16 @@ export class FixedRateExchange extends SmartContractWithAddress {
    * @param {String} account
    * @param {String} exchangeId ExchangeId
    * @param {String} newMarketFee New market fee
-   * @param {Contract} contractInstance optional contract instance
    * @return {Promise<number>}
    */
   public async estGasUpdateMarketFee(
     account: string,
     exchangeId: string,
-    newMarketFee: string,
-    contractInstance?: Contract
+    newMarketFee: string
   ): Promise<number> {
-    const fixedRate = contractInstance || this.contract
-
     return estimateGas(
       account,
-      fixedRate.methods.updateMarketFee,
+      this.contract.methods.updateMarketFee,
       exchangeId,
       newMarketFee
     )
@@ -1032,20 +973,16 @@ export class FixedRateExchange extends SmartContractWithAddress {
    * @param {String} account
    * @param {String} exchangeId ExchangeId
    * @param {String} newMarketFee New market fee collector
-   * @param {Contract} contractInstance optional contract instance
    * @return {Promise<number>}
    */
   public async estGasUpdateMarketFeeCollector(
     account: string,
     exchangeId: string,
-    newMarketFeeCollector: string,
-    contractInstance?: Contract
+    newMarketFeeCollector: string
   ): Promise<number> {
-    const fixedRate = contractInstance || this.contract
-
     return estimateGas(
       account,
-      fixedRate.methods.updateMarketFeeCollector,
+      this.contract.methods.updateMarketFeeCollector,
       exchangeId,
       newMarketFeeCollector
     )
