@@ -10,7 +10,6 @@ import {
   LoggerInstance,
   getFairGasPrice,
   setContractDefaults,
-  getFreOrderParams,
   estimateGas,
   ZERO_ADDRESS
 } from '../../utils'
@@ -976,7 +975,7 @@ export class Datatoken extends SmartContract {
   ): Promise<TransactionReceipt> {
     const dtContract = new this.web3.eth.Contract(this.abiEnterprise, dtAddress)
     try {
-      const freContractParams = getFreOrderParams(freParams)
+      const freContractParams = this.getFreOrderParams(freParams)
 
       const estGas = await estimateGas(
         address,
@@ -1344,5 +1343,15 @@ export class Datatoken extends SmartContract {
       publishMarketFeeAmount: publishingMarketFee[2]
     }
     return returnValues
+  }
+
+  private getFreOrderParams(freParams: FreOrderParams): any {
+    return {
+      exchangeContract: freParams.exchangeContract,
+      exchangeId: freParams.exchangeId,
+      maxBaseTokenAmount: Web3.utils.toWei(freParams.maxBaseTokenAmount),
+      swapMarketFee: Web3.utils.toWei(freParams.swapMarketFee),
+      marketFeeAddress: freParams.marketFeeAddress
+    }
   }
 }

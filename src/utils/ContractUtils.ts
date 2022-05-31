@@ -27,16 +27,6 @@ export async function getFairGasPrice(web3: Web3, config: Config): Promise<strin
   else return x.toString(10)
 }
 
-export function getFreOrderParams(freParams: FreOrderParams): any {
-  return {
-    exchangeContract: freParams.exchangeContract,
-    exchangeId: freParams.exchangeId,
-    maxBaseTokenAmount: Web3.utils.toWei(freParams.maxBaseTokenAmount),
-    swapMarketFee: Web3.utils.toWei(freParams.swapMarketFee),
-    marketFeeAddress: freParams.marketFeeAddress
-  }
-}
-
 export async function unitsToAmount(
   web3: Web3,
   token: string,
