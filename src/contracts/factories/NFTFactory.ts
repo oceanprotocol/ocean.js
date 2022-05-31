@@ -7,8 +7,7 @@ import {
   getFairGasPrice,
   generateDtName,
   estimateGas,
-  ZERO_ADDRESS,
-  amountToUnits
+  ZERO_ADDRESS
 } from '../../utils'
 import {
   FreCreationParams,
@@ -641,7 +640,7 @@ export class NftFactory extends SmartContractWithAddress {
     poolParams: PoolCreationParams
   ): Promise<any> {
     const ercCreateData = this.getErcCreationParams(ercParams)
-    const poolData = await this.getPoolCreationParams(this.web3, poolParams)
+    const poolData = await this.getPoolCreationParams(poolParams)
     return estimateGas(
       address,
       this.contract.methods.createNftWithErc20WithPool,
@@ -668,7 +667,7 @@ export class NftFactory extends SmartContractWithAddress {
     poolParams: PoolCreationParams
   ): Promise<TransactionReceipt> {
     const ercCreateData = this.getErcCreationParams(ercParams)
-    const poolData = await this.getPoolCreationParams(this.web3, poolParams)
+    const poolData = await this.getPoolCreationParams(poolParams)
 
     const estGas = await estimateGas(
       address,
@@ -859,10 +858,7 @@ export class NftFactory extends SmartContractWithAddress {
     }
   }
 
-  private async getPoolCreationParams(
-    web3: Web3,
-    poolParams: PoolCreationParams
-  ): Promise<any> {
+  private async getPoolCreationParams(poolParams: PoolCreationParams): Promise<any> {
     return {
       addresses: [
         poolParams.ssContract,
@@ -877,8 +873,7 @@ export class NftFactory extends SmartContractWithAddress {
         poolParams.baseTokenDecimals,
         Web3.utils.toWei(poolParams.vestingAmount),
         poolParams.vestedBlocks,
-        await amountToUnits(
-          web3,
+        await this.amountToUnits(
           poolParams.baseTokenAddress,
           poolParams.initialBaseTokenLiquidity
         )

@@ -7,8 +7,6 @@ import Bpool from '@oceanprotocol/contracts/artifacts/contracts/pools/balancer/B
 import {
   getFairGasPrice,
   setContractDefaults,
-  unitsToAmount,
-  amountToUnits,
   LoggerInstance,
   estimateGas,
   getMaxAddLiquidity,
@@ -33,22 +31,6 @@ import { SmartContract } from '..'
 export class Pool extends SmartContract {
   getDefaultAbi(): AbiItem | AbiItem[] {
     return Bpool.abi as AbiItem[]
-  }
-
-  async amountToUnits(
-    token: string,
-    amount: string,
-    tokenDecimals?: number
-  ): Promise<string> {
-    return amountToUnits(this.web3, token, amount, tokenDecimals)
-  }
-
-  async unitsToAmount(
-    token: string,
-    amount: string,
-    tokenDecimals?: number
-  ): Promise<string> {
-    return unitsToAmount(this.web3, token, amount, tokenDecimals)
   }
 
   /**
