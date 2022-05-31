@@ -1,14 +1,9 @@
 import Web3 from 'web3'
 import BigNumber from 'bignumber.js'
 import { Contract } from 'web3-eth-contract'
-import { generateDtName, GASLIMIT_DEFAULT, ZERO_ADDRESS, minAbi, LoggerInstance } from '.'
+import { GASLIMIT_DEFAULT, minAbi, LoggerInstance } from '.'
 import { Config } from '../config'
-import {
-  Erc20CreateParams,
-  FreCreationParams,
-  FreOrderParams,
-  PoolCreationParams
-} from '../@types'
+import { FreOrderParams } from '../@types'
 
 export function setContractDefaults(contract: Contract, config: Config): Contract {
   if (config) {
@@ -32,26 +27,6 @@ export async function getFairGasPrice(web3: Web3, config: Config): Promise<strin
   else return x.toString(10)
 }
 
-export function getErcCreationParams(ercParams: Erc20CreateParams): any {
-  let name: string, symbol: string
-  // Generate name & symbol if not present
-  if (!ercParams.name || !ercParams.symbol) {
-    ;({ name, symbol } = generateDtName())
-  }
-  return {
-    templateIndex: ercParams.templateIndex,
-    strings: [ercParams.name || name, ercParams.symbol || symbol],
-    addresses: [
-      ercParams.minter,
-      ercParams.paymentCollector,
-      ercParams.mpFeeAddress,
-      ercParams.feeToken
-    ],
-    uints: [Web3.utils.toWei(ercParams.cap), Web3.utils.toWei(ercParams.feeAmount)],
-    bytess: []
-  }
-}
-
 export function getFreOrderParams(freParams: FreOrderParams): any {
   return {
     exchangeContract: freParams.exchangeContract,
@@ -59,59 +34,6 @@ export function getFreOrderParams(freParams: FreOrderParams): any {
     maxBaseTokenAmount: Web3.utils.toWei(freParams.maxBaseTokenAmount),
     swapMarketFee: Web3.utils.toWei(freParams.swapMarketFee),
     marketFeeAddress: freParams.marketFeeAddress
-  }
-}
-
-export function getFreCreationParams(freParams: FreCreationParams): any {
-  if (!freParams.allowedConsumer) freParams.allowedConsumer = ZERO_ADDRESS
-  const withMint = freParams.withMint ? 1 : 0
-
-  return {
-    fixedPriceAddress: freParams.fixedRateAddress,
-    addresses: [
-      freParams.baseTokenAddress,
-      freParams.owner,
-      freParams.marketFeeCollector,
-      freParams.allowedConsumer
-    ],
-    uints: [
-      freParams.baseTokenDecimals,
-      freParams.datatokenDecimals,
-      Web3.utils.toWei(freParams.fixedRate),
-      Web3.utils.toWei(freParams.marketFee),
-      withMint
-    ]
-  }
-}
-
-export async function getPoolCreationParams(
-  web3: Web3,
-  poolParams: PoolCreationParams
-): Promise<any> {
-  return {
-    addresses: [
-      poolParams.ssContract,
-      poolParams.baseTokenAddress,
-      poolParams.baseTokenSender,
-      poolParams.publisherAddress,
-      poolParams.marketFeeCollector,
-      poolParams.poolTemplateAddress
-    ],
-    ssParams: [
-      Web3.utils.toWei(poolParams.rate),
-      poolParams.baseTokenDecimals,
-      Web3.utils.toWei(poolParams.vestingAmount),
-      poolParams.vestedBlocks,
-      await amountToUnits(
-        web3,
-        poolParams.baseTokenAddress,
-        poolParams.initialBaseTokenLiquidity
-      )
-    ],
-    swapFees: [
-      Web3.utils.toWei(poolParams.swapFeeLiquidityProvider),
-      Web3.utils.toWei(poolParams.swapFeeMarketRunner)
-    ]
   }
 }
 
