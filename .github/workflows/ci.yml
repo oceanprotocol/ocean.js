@@ -199,16 +199,6 @@ jobs:
           repository: 'oceanprotocol/ocean.js'
           path: 'ocean.js'
           ref: ${{ github.event.pull_request.head.sha }}
-      
-      - name: Create code examples file
-        uses: actions/cache@v2
-        env:
-          cache-name: cache-node-modules
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-lint-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: ${{ runner.os }}-lint-${{ env.cache-name }}-
-      - run: npm run create:guide
 
       - name: setup git config
         run: |
@@ -216,7 +206,7 @@ jobs:
           git config user.name "GitHub Actions Bot"
           git config user.email "<>"
 
-      - name: Commit if there are changes
+      - name: Create Guide & Commit if there are changes
         run: npm run commit:guide
 
 
