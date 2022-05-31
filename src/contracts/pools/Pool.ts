@@ -9,12 +9,10 @@ import {
   setContractDefaults,
   LoggerInstance,
   estimateGas,
-  getMaxAddLiquidity,
-  getMaxRemoveLiquidity,
-  getMaxSwapExactIn,
-  getMaxSwapExactOut,
   MAX_UINT_256,
-  decimals
+  decimals,
+  calcMaxExactOut,
+  calcMaxExactIn
 } from '../../utils'
 import {
   CurrentFees,
@@ -813,7 +811,7 @@ export class Pool extends SmartContract {
       this.config
     )
 
-    const maxSwap = await getMaxSwapExactIn(this, poolAddress, tokenInOutMarket.tokenIn)
+    const maxSwap = await this.getMaxSwapExactIn(poolAddress, tokenInOutMarket.tokenIn)
     if (new Decimal(amountsInOutMaxFee.tokenAmountIn).greaterThan(maxSwap)) {
       throw new Error(`tokenAmountIn is greater than ${maxSwap.toString()}`)
     }
@@ -960,7 +958,7 @@ export class Pool extends SmartContract {
     )
     let result = null
 
-    const maxSwap = await getMaxSwapExactOut(this, poolAddress, tokenInOutMarket.tokenOut)
+    const maxSwap = await this.getMaxSwapExactOut(poolAddress, tokenInOutMarket.tokenOut)
     if (new Decimal(amountsInOutMaxFee.tokenAmountOut).greaterThan(maxSwap)) {
       throw new Error(`tokenAmountOut is greater than ${maxSwap.toString()}`)
     }
@@ -1082,7 +1080,7 @@ export class Pool extends SmartContract {
     )
     let result = null
     const tokenIn = await this.getBaseToken(poolAddress)
-    const maxSwap = await getMaxAddLiquidity(this, poolAddress, tokenIn)
+    const maxSwap = await this.getMaxAddLiquidity(poolAddress, tokenIn)
     if (new Decimal(tokenAmountIn).greaterThan(maxSwap)) {
       throw new Error(`tokenAmountOut is greater than ${maxSwap.toString()}`)
     }
@@ -1179,7 +1177,7 @@ export class Pool extends SmartContract {
       poolAmountIn
     )
 
-    const maxSwap = await getMaxRemoveLiquidity(this, poolAddress, tokenOut)
+    const maxSwap = await this.getMaxRemoveLiquidity(poolAddress, tokenOut)
     if (new Decimal(tokenAmountOut).greaterThan(maxSwap)) {
       throw new Error(`tokenAmountOut is greater than ${maxSwap.toString()}`)
     }
@@ -1293,7 +1291,7 @@ export class Pool extends SmartContract {
       this.config
     )
 
-    const maxSwap = await getMaxSwapExactOut(this, poolAddress, tokenOut)
+    const maxSwap = await this.getMaxSwapExactOut(poolAddress, tokenOut)
 
     if (new Decimal(tokenAmountOut).greaterThan(maxSwap)) {
       throw new Error(`tokenAmountOut is greater than ${maxSwap.toString()}`)
@@ -1373,7 +1371,7 @@ export class Pool extends SmartContract {
       this.config
     )
 
-    const maxSwap = await getMaxSwapExactIn(this, poolAddress, tokenIn)
+    const maxSwap = await this.getMaxSwapExactIn(poolAddress, tokenIn)
     if (new Decimal(tokenAmountIn).greaterThan(maxSwap)) {
       throw new Error(`tokenAmountIn is greater than ${maxSwap.toString()}`)
     }
@@ -1612,5 +1610,41 @@ export class Pool extends SmartContract {
     })
     const topic = this.web3.eth.abi.encodeEventSignature(eventdata as any)
     return topic
+  }
+
+  private async getMaxSwapExactOut(
+    poolAddress: string,
+    tokenAddress: string
+  ): Promise<Decimal> {
+    const reserve = await this.getReserve(poolAddress, tokenAddress)
+
+    return calcMaxExactOut(reserve)
+  }
+
+  private async getMaxSwapExactIn(
+    poolAddress: string,
+    tokenAddress: string
+  ): Promise<Decimal> {
+    const reserve = await this.getReserve(poolAddress, tokenAddress)
+
+    return calcMaxExactIn(reserve)
+  }
+
+  private async getMaxAddLiquidity(
+    poolAddress: string,
+    tokenAddress: string
+  ): Promise<Decimal> {
+    const reserve = await this.getReserve(poolAddress, tokenAddress)
+
+    return calcMaxExactIn(reserve)
+  }
+
+  private async getMaxRemoveLiquidity(
+    poolAddress: string,
+    tokenAddress: string
+  ): Promise<Decimal> {
+    const reserve = await this.getReserve(poolAddress, tokenAddress)
+
+    return calcMaxExactIn(reserve)
   }
 }
