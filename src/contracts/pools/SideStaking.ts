@@ -3,27 +3,22 @@ import { TransactionReceipt } from 'web3-core'
 import { Contract } from 'web3-eth-contract'
 import SideStakingAbi from '@oceanprotocol/contracts/artifacts/contracts/pools/ssContracts/SideStaking.sol/SideStaking.json'
 import { LoggerInstance, getFairGasPrice, estimateGas } from '../../utils'
-import { SmartContract } from '..'
+import { SmartContractWithAddress } from '..'
 
-export class SideStaking extends SmartContract {
+export class SideStaking extends SmartContractWithAddress {
   getDefaultAbi(): AbiItem | AbiItem[] {
     return SideStakingAbi.abi as AbiItem[]
   }
 
   /**
    * Get (total vesting amount + token released from the contract when adding liquidity)
-   * @param {String} ssAddress side staking contract address
    * @param {String} datatokenAddress datatoken address
    * @return {String}
    */
-  async getDatatokenCirculatingSupply(
-    ssAddress: string,
-    datatokenAddress: string
-  ): Promise<string> {
-    const sideStaking = new this.web3.eth.Contract(this.abi, ssAddress)
+  async getDatatokenCirculatingSupply(datatokenAddress: string): Promise<string> {
     let result = null
     try {
-      result = await sideStaking.methods
+      result = await this.contract.methods
         .getDatatokenCirculatingSupply(datatokenAddress)
         .call()
     } catch (e) {
@@ -35,18 +30,13 @@ export class SideStaking extends SmartContract {
   /**
    * Get actual dts in circulation (vested token withdrawn from the contract +
          token released from the contract when adding liquidity)
-   * @param {String} ssAddress side staking contract address
    * @param {String} datatokenAddress datatoken address
    * @return {String}
    */
-  async getDatatokenCurrentCirculatingSupply(
-    ssAddress: string,
-    datatokenAddress: string
-  ): Promise<string> {
+  async getDatatokenCurrentCirculatingSupply(datatokenAddress: string): Promise<string> {
     try {
-      const sideStaking = new this.web3.eth.Contract(this.abi, ssAddress)
       let result = null
-      result = await sideStaking.methods
+      result = await this.contract.methods
         .getDatatokenCurrentCirculatingSupply(datatokenAddress)
         .call()
       return result.toString()
@@ -57,18 +47,13 @@ export class SideStaking extends SmartContract {
 
   /**
    * Get Publisher address
-   * @param {String} ssAddress side staking contract address
    * @param {String} datatokenAddress datatoken address
    * @return {String}
    */
-  async getPublisherAddress(
-    ssAddress: string,
-    datatokenAddress: string
-  ): Promise<string> {
-    const sideStaking = new this.web3.eth.Contract(this.abi, ssAddress)
+  async getPublisherAddress(datatokenAddress: string): Promise<string> {
     let result = null
     try {
-      result = await sideStaking.methods.getPublisherAddress(datatokenAddress).call()
+      result = await this.contract.methods.getPublisherAddress(datatokenAddress).call()
     } catch (e) {
       LoggerInstance.error(`ERROR: Failed to get: ${e.message}`)
     }
@@ -77,15 +62,13 @@ export class SideStaking extends SmartContract {
 
   /**
    * Get
-   * @param {String} ssAddress side staking contract address
    * @param {String} datatokenAddress datatokenAddress
    * @return {String}
    */
-  async getBaseToken(ssAddress: string, datatokenAddress: string): Promise<string> {
-    const sideStaking = new this.web3.eth.Contract(this.abi, ssAddress)
+  async getBaseToken(datatokenAddress: string): Promise<string> {
     let result = null
     try {
-      result = await sideStaking.methods.getBaseTokenAddress(datatokenAddress).call()
+      result = await this.contract.methods.getBaseTokenAddress(datatokenAddress).call()
     } catch (e) {
       LoggerInstance.error(`ERROR: Failed to get: ${e.message}`)
     }
@@ -94,15 +77,13 @@ export class SideStaking extends SmartContract {
 
   /**
    * Get Pool Address
-   * @param {String} ssAddress side staking contract address
    * @param {String} datatokenAddress datatokenAddress
    * @return {String}
    */
-  async getPoolAddress(ssAddress: string, datatokenAddress: string): Promise<string> {
-    const sideStaking = new this.web3.eth.Contract(this.abi, ssAddress)
+  async getPoolAddress(datatokenAddress: string): Promise<string> {
     let result = null
     try {
-      result = await sideStaking.methods.getPoolAddress(datatokenAddress).call()
+      result = await this.contract.methods.getPoolAddress(datatokenAddress).call()
     } catch (e) {
       LoggerInstance.error(`ERROR: Failed to get: ${e.message}`)
     }
@@ -111,18 +92,13 @@ export class SideStaking extends SmartContract {
 
   /**
    * Get baseToken balance in the contract
-   * @param {String} ssAddress side staking contract address
    * @param {String} datatokenAddress datatokenAddress
    * @return {String}
    */
-  async getBaseTokenBalance(
-    ssAddress: string,
-    datatokenAddress: string
-  ): Promise<string> {
-    const sideStaking = new this.web3.eth.Contract(this.abi, ssAddress)
+  async getBaseTokenBalance(datatokenAddress: string): Promise<string> {
     let result = null
     try {
-      result = await sideStaking.methods.getBaseTokenBalance(datatokenAddress).call()
+      result = await this.contract.methods.getBaseTokenBalance(datatokenAddress).call()
     } catch (e) {
       LoggerInstance.error(`ERROR: Failed to get: ${e.message}`)
     }
@@ -131,20 +107,17 @@ export class SideStaking extends SmartContract {
 
   /**
    * Get dt balance in the staking contract available for being added as liquidity
-   * @param {String} ssAddress side staking contract address
    * @param {String} datatokenAddress datatokenAddress
    * @param {number} tokenDecimals optional number of decimals of the token
    * @return {String}
    */
   async getDatatokenBalance(
-    ssAddress: string,
     datatokenAddress: string,
     tokenDecimals?: number
   ): Promise<string> {
-    const sideStaking = new this.web3.eth.Contract(this.abi, ssAddress)
     let result = null
     try {
-      result = await sideStaking.methods.getDatatokenBalance(datatokenAddress).call()
+      result = await this.contract.methods.getDatatokenBalance(datatokenAddress).call()
     } catch (e) {
       LoggerInstance.error(`ERROR: Failed to get: ${e.message}`)
     }
@@ -154,15 +127,13 @@ export class SideStaking extends SmartContract {
 
   /**
    * Get block when vesting ends
-   * @param {String} ssAddress side staking contract address
    * @param {String} datatokenAddress datatokenAddress
    * @return {String} end block for vesting amount
    */
-  async getvestingEndBlock(ssAddress: string, datatokenAddress: string): Promise<string> {
-    const sideStaking = new this.web3.eth.Contract(this.abi, ssAddress)
+  async getvestingEndBlock(datatokenAddress: string): Promise<string> {
     let result = null
     try {
-      result = await sideStaking.methods.getvestingEndBlock(datatokenAddress).call()
+      result = await this.contract.methods.getvestingEndBlock(datatokenAddress).call()
     } catch (e) {
       LoggerInstance.error(`ERROR: Failed to get: ${e.message}`)
     }
@@ -171,20 +142,17 @@ export class SideStaking extends SmartContract {
 
   /**
    * Get total amount vesting
-   * @param {String} ssAddress side staking contract address
    * @param {String} datatokenAddress datatokenAddress
    * @param {number} tokenDecimals optional number of decimals of the token
    * @return {String}
    */
   async getvestingAmount(
-    ssAddress: string,
     datatokenAddress: string,
     tokenDecimals?: number
   ): Promise<string> {
-    const sideStaking = new this.web3.eth.Contract(this.abi, ssAddress)
     let result = null
     try {
-      result = await sideStaking.methods.getvestingAmount(datatokenAddress).call()
+      result = await this.contract.methods.getvestingAmount(datatokenAddress).call()
     } catch (e) {
       LoggerInstance.error(`ERROR: Failed to get: ${e.message}`)
     }
@@ -194,18 +162,13 @@ export class SideStaking extends SmartContract {
 
   /**
    * Get last block publisher got some vested tokens
-   * @param {String} ssAddress side staking contract address
    * @param {String} datatokenAddress datatokenAddress
    * @return {String}
    */
-  async getvestingLastBlock(
-    ssAddress: string,
-    datatokenAddress: string
-  ): Promise<string> {
-    const sideStaking = new this.web3.eth.Contract(this.abi, ssAddress)
+  async getvestingLastBlock(datatokenAddress: string): Promise<string> {
     let result = null
     try {
-      result = await sideStaking.methods.getvestingLastBlock(datatokenAddress).call()
+      result = await this.contract.methods.getvestingLastBlock(datatokenAddress).call()
     } catch (e) {
       LoggerInstance.error(`ERROR: Failed to get: ${e.message}`)
     }
@@ -214,20 +177,17 @@ export class SideStaking extends SmartContract {
 
   /**
    * Get how much has been taken from the vesting amount
-   * @param {String} ssAddress side staking contract address
    * @param {String} datatokenAddress datatokenAddress
    * @param {number} tokenDecimals optional number of decimals of the token
    * @return {String}
    */
   async getvestingAmountSoFar(
-    ssAddress: string,
     datatokenAddress: string,
     tokenDecimals?: number
   ): Promise<string> {
-    const sideStaking = new this.web3.eth.Contract(this.abi, ssAddress)
     let result = null
     try {
-      result = await sideStaking.methods.getvestingAmountSoFar(datatokenAddress).call()
+      result = await this.contract.methods.getvestingAmountSoFar(datatokenAddress).call()
     } catch (e) {
       LoggerInstance.error(`ERROR: Failed to get: ${e.message}`)
     }
@@ -238,46 +198,36 @@ export class SideStaking extends SmartContract {
   /**
    * Estimate gas cost for getVesting
    * @param {String} account
-   * @param {String} ssAddress side staking contract address
    * @param {String} datatokenAddress datatokenAddress
-   * @param {Contract} contractInstance optional contract instance
    * @return {Promise<number>}
    */
   public async estGasGetVesting(
     account: string,
-    ssAddress: string,
-    datatokenAddress: string,
-    contractInstance?: Contract
+    datatokenAddress: string
   ): Promise<number> {
-    const sideStaking =
-      contractInstance || new this.web3.eth.Contract(this.abi as AbiItem[], ssAddress)
-
-    return estimateGas(account, sideStaking.methods.getVesting, datatokenAddress)
+    return estimateGas(account, this.contract.methods.getVesting, datatokenAddress)
   }
 
   /** Send vested tokens available to the publisher address, can be called by anyone
    *
    * @param {String} account
-   * @param {String} ssAddress side staking contract address
    * @param {String} datatokenAddress datatokenAddress
    * @return {TransactionReceipt}
    */
   async getVesting(
     account: string,
-    ssAddress: string,
     datatokenAddress: string
   ): Promise<TransactionReceipt> {
-    const sideStaking = new this.web3.eth.Contract(this.abi, ssAddress)
     let result = null
 
     const estGas = await estimateGas(
       account,
-      sideStaking.methods.getVesting,
+      this.contract.methods.getVesting,
       datatokenAddress
     )
 
     try {
-      result = await sideStaking.methods.getVesting(datatokenAddress).send({
+      result = await this.contract.methods.getVesting(datatokenAddress).send({
         from: account,
         gas: estGas + 1,
         gasPrice: await getFairGasPrice(this.web3, this.config)
@@ -291,25 +241,18 @@ export class SideStaking extends SmartContract {
   /**
    * Estimate gas cost for getVesting
    * @param {String} account
-   * @param {String} ssAddress side staking contract address
    * @param {String} datatokenAddress datatokenAddress
-   * @param {Contract} contractInstance optional contract instance
    * @return {Promise<number>}
    */
   public async estGasSetPoolSwapFee(
     account: string,
-    ssAddress: string,
     datatokenAddress: string,
     poolAddress: string,
-    swapFee: number,
-    contractInstance?: Contract
+    swapFee: number
   ): Promise<number> {
-    const sideStaking =
-      contractInstance || new this.web3.eth.Contract(this.abi as AbiItem[], ssAddress)
-
     return estimateGas(
       account,
-      sideStaking.methods.setPoolSwapFee,
+      this.contract.methods.setPoolSwapFee,
       datatokenAddress,
       poolAddress,
       swapFee
@@ -319,30 +262,27 @@ export class SideStaking extends SmartContract {
   /** Send vested tokens available to the publisher address, can be called by anyone
    *
    * @param {String} account
-   * @param {String} ssAddress side staking contract address
    * @param {String} datatokenAddress datatokenAddress
    * @return {TransactionReceipt}
    */
   async setPoolSwapFee(
     account: string,
-    ssAddress: string,
     datatokenAddress: string,
     poolAddress: string,
     swapFee: number
   ): Promise<TransactionReceipt> {
-    const sideStaking = new this.web3.eth.Contract(this.abi, ssAddress)
     let result = null
 
     const estGas = await estimateGas(
       account,
-      sideStaking.methods.setPoolSwapFee,
+      this.contract.methods.setPoolSwapFee,
       datatokenAddress,
       poolAddress,
       swapFee
     )
 
     try {
-      result = await sideStaking.methods
+      result = await this.contract.methods
         .setPoolSwapFee(datatokenAddress, poolAddress, swapFee)
         .send({
           from: account,
@@ -360,11 +300,10 @@ export class SideStaking extends SmartContract {
    * @param {String} ssAddress side staking contract address
    * @return {String}
    */
-  async getRouter(ssAddress: string): Promise<string> {
-    const sideStaking = new this.web3.eth.Contract(this.abi, ssAddress)
+  async getRouter(): Promise<string> {
     let result = null
     try {
-      result = await sideStaking.methods.router().call()
+      result = await this.contract.methods.router().call()
     } catch (e) {
       LoggerInstance.error(`ERROR: Failed to get Router address: ${e.message}`)
     }

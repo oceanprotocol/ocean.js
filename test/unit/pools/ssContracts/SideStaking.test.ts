@@ -83,7 +83,7 @@ describe('SideStaking unit test', () => {
     pool = new Pool(web3, 8996)
     assert(pool != null)
     //
-    sideStaking = new SideStaking(web3, 8996)
+    sideStaking = new SideStaking(contracts.sideStakingAddress, web3, 8996)
     assert(sideStaking != null)
 
     daiContract = new web3.eth.Contract(MockERC20.abi as AbiItem[], contracts.daiAddress)
@@ -170,58 +170,40 @@ describe('SideStaking unit test', () => {
     })
 
     it('#getRouter - should get Router address', async () => {
-      expect(await sideStaking.getRouter(contracts.sideStakingAddress)).to.equal(
-        contracts.routerAddress
-      )
+      expect(await sideStaking.getRouter()).to.equal(contracts.routerAddress)
     })
 
     it('#getDatatokenCirculatingSupply - should get datatoken supply in circulation (vesting amount excluded)', async () => {
-      expect(
-        await sideStaking.getDatatokenCirculatingSupply(
-          contracts.sideStakingAddress,
-          erc20Token
-        )
-      ).to.equal(web3.utils.toWei(BASE_TOKEN_LIQUIDITY.toString()))
+      expect(await sideStaking.getDatatokenCirculatingSupply(erc20Token)).to.equal(
+        web3.utils.toWei(BASE_TOKEN_LIQUIDITY.toString())
+      )
     })
 
     it('#getDatatokenCurrentCirculatingSupply - should get datatoken supply in circulation ', async () => {
-      expect(
-        await sideStaking.getDatatokenCurrentCirculatingSupply(
-          contracts.sideStakingAddress,
-          erc20Token
-        )
-      ).to.equal(web3.utils.toWei(BASE_TOKEN_LIQUIDITY.toString()))
+      expect(await sideStaking.getDatatokenCurrentCirculatingSupply(erc20Token)).to.equal(
+        web3.utils.toWei(BASE_TOKEN_LIQUIDITY.toString())
+      )
     })
 
     it('#getBaseToken - should get baseToken address', async () => {
-      expect(
-        await sideStaking.getBaseToken(contracts.sideStakingAddress, erc20Token)
-      ).to.equal(contracts.daiAddress)
+      expect(await sideStaking.getBaseToken(erc20Token)).to.equal(contracts.daiAddress)
     })
 
     it('#getPoolAddress - should get pool address', async () => {
-      expect(
-        await sideStaking.getPoolAddress(contracts.sideStakingAddress, erc20Token)
-      ).to.equal(poolAddress)
+      expect(await sideStaking.getPoolAddress(erc20Token)).to.equal(poolAddress)
     })
 
     it('#getPublisherAddress - should get publisher address', async () => {
-      expect(
-        await sideStaking.getPublisherAddress(contracts.sideStakingAddress, erc20Token)
-      ).to.equal(factoryOwner)
+      expect(await sideStaking.getPublisherAddress(erc20Token)).to.equal(factoryOwner)
     })
 
     it('#getBaseTokenBalance ', async () => {
-      expect(
-        await sideStaking.getBaseTokenBalance(contracts.sideStakingAddress, erc20Token)
-      ).to.equal('0')
+      expect(await sideStaking.getBaseTokenBalance(erc20Token)).to.equal('0')
     })
 
     it('#getDatatokenBalance ', async () => {
       expect(
-        await (
-          await sideStaking.getDatatokenBalance(contracts.sideStakingAddress, erc20Token)
-        ).toString()
+        await (await sideStaking.getDatatokenBalance(erc20Token)).toString()
       ).to.equal(
         new BigNumber(2)
           .exponentiatedBy(256)
@@ -233,21 +215,17 @@ describe('SideStaking unit test', () => {
     })
 
     it('#getvestingAmount ', async () => {
-      expect(
-        await sideStaking.getvestingAmount(contracts.sideStakingAddress, erc20Token)
-      ).to.equal('0')
+      expect(await sideStaking.getvestingAmount(erc20Token)).to.equal('0')
     })
 
     it('#getvestingLastBlock ', async () => {
-      expect(
-        await sideStaking.getvestingLastBlock(contracts.sideStakingAddress, erc20Token)
-      ).to.equal(initialBlock.toString())
+      expect(await sideStaking.getvestingLastBlock(erc20Token)).to.equal(
+        initialBlock.toString()
+      )
     })
 
     it('#getvestingAmountSoFar ', async () => {
-      expect(
-        await sideStaking.getvestingAmountSoFar(contracts.sideStakingAddress, erc20Token)
-      ).to.equal('0')
+      expect(await sideStaking.getvestingAmountSoFar(erc20Token)).to.equal('0')
     })
 
     it('#swapExactAmountIn - should swap', async () => {
@@ -392,16 +370,12 @@ describe('SideStaking unit test', () => {
     })
 
     it('#getBaseTokenBalance ', async () => {
-      expect(
-        await sideStaking.getBaseTokenBalance(contracts.sideStakingAddress, erc20Token)
-      ).to.equal('0')
+      expect(await sideStaking.getBaseTokenBalance(erc20Token)).to.equal('0')
     })
 
     it('#getDatatokenBalance ', async () => {
       expect(
-        await (
-          await sideStaking.getDatatokenBalance(contracts.sideStakingAddress, erc20Token)
-        ).toString()
+        await (await sideStaking.getDatatokenBalance(erc20Token)).toString()
       ).to.equal(
         new BigNumber(2)
           .exponentiatedBy(256)
@@ -413,21 +387,17 @@ describe('SideStaking unit test', () => {
     })
 
     it('#getvestingAmount ', async () => {
-      expect(
-        await sideStaking.getvestingAmount(contracts.sideStakingAddress, erc20Token)
-      ).to.equal('0')
+      expect(await sideStaking.getvestingAmount(erc20Token)).to.equal('0')
     })
 
     it('#getvestingLastBlock ', async () => {
-      expect(
-        await sideStaking.getvestingLastBlock(contracts.sideStakingAddress, erc20Token)
-      ).to.equal(initialBlock.toString())
+      expect(await sideStaking.getvestingLastBlock(erc20Token)).to.equal(
+        initialBlock.toString()
+      )
     })
 
     it('#getvestingAmountSoFar ', async () => {
-      expect(
-        await sideStaking.getvestingAmountSoFar(contracts.sideStakingAddress, erc20Token)
-      ).to.equal('0')
+      expect(await sideStaking.getvestingAmountSoFar(erc20Token)).to.equal('0')
     })
 
     it('#swapExactAmountIn - should swap', async () => {
