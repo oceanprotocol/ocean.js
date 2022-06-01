@@ -130,7 +130,7 @@ describe('Nft Factory test', () => {
     expect((await nftFactory.getCurrentTokenCount()) === currentTokenCount + 1)
   })
 
-  it('#createNftErcWithPool- should create an NFT, a Datatoken and a pool DT/DAI', async () => {
+  it('#createNftWithDatatokenWithPool- should create an NFT, a Datatoken and a pool DT/DAI', async () => {
     // we prepare transaction parameters objects
     const poolParams: PoolCreationParams = {
       ssContract: contracts.sideStakingAddress,
@@ -177,7 +177,7 @@ describe('Nft Factory test', () => {
     expect(txReceipt.events.NewPool.event === 'NewPool')
   })
 
-  it('#createNftErcWithFixedRate- should create an NFT, a datatoken and create a Fixed Rate Exchange', async () => {
+  it('#createNftWithDatatokenWithFixedRate- should create an NFT, a datatoken and create a Fixed Rate Exchange', async () => {
     // we prepare transaction parameters objects
     const freParams: FreCreationParams = {
       fixedRateAddress: contracts.fixedRateAddress,
@@ -192,7 +192,7 @@ describe('Nft Factory test', () => {
       withMint: false
     }
 
-    const txReceipt = await nftFactory.createNftErc20WithFixedRate(
+    const txReceipt = await nftFactory.createNftWithDatatokenWithFixedRate(
       nftOwner,
       nftData,
       ercParams,
@@ -208,7 +208,7 @@ describe('Nft Factory test', () => {
     dtAddress2 = txReceipt.events.TokenCreated.returnValues.newTokenAddress
   })
 
-  it('#createNftErcWithDispenser- should create an NFT, a datatoken and create a Dispenser', async () => {
+  it('#createNftWithDatatokenWithDispenser- should create an NFT, a datatoken and create a Dispenser', async () => {
     // we prepare transaction parameters objects
     const dispenserParams = {
       dispenserAddress: contracts.dispenserAddress,
@@ -218,7 +218,7 @@ describe('Nft Factory test', () => {
       allowedSwapper: ZERO_ADDRESS
     }
 
-    const txReceipt = await nftFactory.createNftErc20WithDispenser(
+    const txReceipt = await nftFactory.createNftWithDatatokenWithDispenser(
       nftOwner,
       nftData,
       ercParams,
