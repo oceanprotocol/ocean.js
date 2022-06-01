@@ -30,7 +30,7 @@ describe('Pool unit test', () => {
   let pool: Pool
   let poolAddress: string
   let datatoken: string
-  let ercParams: DatatokenCreateParams
+  let dtParams: DatatokenCreateParams
 
   const nftData: NftCreateData = {
     name: '72120Bundle',
@@ -49,7 +49,7 @@ describe('Pool unit test', () => {
 
     nftData.owner = factoryOwner
 
-    ercParams = {
+    dtParams = {
       templateIndex: 1,
       minter: factoryOwner,
       paymentCollector: user2,
@@ -133,7 +133,7 @@ describe('Pool unit test', () => {
       const txReceipt = await nftFactory.createNftWithDatatokenWithPool(
         factoryOwner,
         nftData,
-        ercParams,
+        dtParams,
         poolParams
       )
 
@@ -520,7 +520,7 @@ describe('Pool unit test', () => {
       const txReceipt = await nftFactory.createNftWithDatatokenWithPool(
         factoryOwner,
         nftData,
-        ercParams,
+        dtParams,
         poolParams
       )
 
