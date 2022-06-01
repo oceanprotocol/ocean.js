@@ -698,7 +698,7 @@ export class FixedRateExchange extends SmartContractWithAddress {
   }
 
   /**
-   * Collect BaseTokens in the contract (anyone can call this, funds are sent to erc20.paymentCollector)
+   * Collect BaseTokens in the contract (anyone can call this, funds are sent to Datatoken.paymentCollector)
    * @param {String} address User address
    * @param {String} exchangeId ExchangeId
    * @param {String} amount amount to be collected
@@ -761,7 +761,7 @@ export class FixedRateExchange extends SmartContractWithAddress {
   }
 
   /**
-   * Collect datatokens in the contract (anyone can call this, funds are sent to erc20.paymentCollector)
+   * Collect datatokens in the contract (anyone can call this, funds are sent to Datatoken.paymentCollector)
    * @param {String} address User address
    * @param {String} exchangeId ExchangeId
    * @param {String} amount amount to be collected

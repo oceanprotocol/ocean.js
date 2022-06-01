@@ -146,7 +146,7 @@ export class NftFactory extends SmartContractWithAddress {
   }
 
   /** Get Current Template  Datatoken (ERC20) Count
-   * @return {Promise<number>} Number of ERC20 Template added to this factory
+   * @return {Promise<number>} Number of Datatoken Template added to this factory
    */
   public async getCurrentTokenTemplateCount(): Promise<number> {
     const count = await this.contract.methods.getCurrentTemplateCount().call()
@@ -169,7 +169,7 @@ export class NftFactory extends SmartContractWithAddress {
     return template
   }
 
-  /** Get Datatoken(erc20) Template
+  /** Get Datatoken (ERC20) Template
    * @param {Number} index Template index
    * @return {Promise<Template>} DT Template info
    */
@@ -178,7 +178,7 @@ export class NftFactory extends SmartContractWithAddress {
     return template
   }
 
-  /** Check if ERC20 is deployed from the factory
+  /** Check if Datatoken is deployed from the factory
    * @param {String} datatoken Datatoken address we want to check
    * @return {Promise<Boolean>} return true if deployed from this factory
    */
@@ -535,7 +535,7 @@ export class NftFactory extends SmartContractWithAddress {
   /**
    * @dev startMultipleTokenOrder
    *      Used as a proxy to order multiple services
-   *      Users can have inifinite approvals for fees for factory instead of having one approval/ erc20 contract
+   *      Users can have inifinite approvals for fees for factory instead of having one approval/ Datatoken contract
    *      Requires previous approval of all :
    *          - consumeFeeTokens
    *          - publishMarketFeeTokens
@@ -572,7 +572,7 @@ export class NftFactory extends SmartContractWithAddress {
    * Estimate gas cost for createNftWithErc20 method
    * @param address Caller address
    * @param _NftCreateData input data for nft creation
-   * @param _ErcCreateData input data for erc20 creation
+   * @param _ErcCreateData input data for Datatoken creation
    *  @return {Promise<TransactionReceipt>} transaction receipt
    */
 
