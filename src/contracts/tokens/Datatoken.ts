@@ -203,7 +203,7 @@ export class Datatoken extends SmartContract {
       this.config
     )
     if (!(await this.isDatatokenDeployer(dtAddress, address))) {
-      throw new Error(`User is not ERC20 Deployer`)
+      throw new Error(`User is not Datatoken Deployer`)
     }
     if (!fixedRateParams.allowedConsumer) fixedRateParams.allowedConsumer = ZERO_ADDRESS
 
@@ -306,7 +306,7 @@ export class Datatoken extends SmartContract {
     dispenserParams: DispenserParams
   ): Promise<TransactionReceipt> {
     if (!(await this.isDatatokenDeployer(dtAddress, address))) {
-      throw new Error(`User is not ERC20 Deployer`)
+      throw new Error(`User is not Datatoken Deployer`)
     }
 
     const dtContract = setContractDefaults(
@@ -673,7 +673,7 @@ export class Datatoken extends SmartContract {
       nftAddress && !isNftOwner && (await this.nft.getNftPermissions(nftAddress, address))
     const isDatatokenDeployer = nftPermissions?.deployDatatoken
     if (!isPaymentManager && !isNftOwner && !isDatatokenDeployer) {
-      throw new Error(`Caller is not Fee Manager, owner or erc20 Deployer`)
+      throw new Error(`Caller is not Fee Manager, owner or Datatoken Deployer`)
     }
 
     const estGas = await estimateGas(
@@ -1102,7 +1102,7 @@ export class Datatoken extends SmartContract {
     value: string
   ): Promise<TransactionReceipt> {
     if (!(await this.isDatatokenDeployer(dtAddress, address))) {
-      throw new Error(`User is not ERC20 Deployer`)
+      throw new Error(`User is not Datatoken Deployer`)
     }
 
     const dtContract = setContractDefaults(

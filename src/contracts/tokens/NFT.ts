@@ -21,7 +21,7 @@ export class Nft extends SmartContract {
    *  Estimate gas cost for createERC20 Datatoken creation
    * @param {String} nftAddress NFT contract address
    * @param {String} address User address
-   * @param {String} minter User set as initial minter for the ERC20
+   * @param {String} minter User set as initial minter for the Datatoken
    * @param {String} paymentCollector initial paymentCollector for this DT
    * @param {String} mpFeeAddress Consume marketplace fee address
    * @param {String} feeToken address of the token marketplace wants to add fee on top
@@ -640,7 +640,7 @@ export class Nft extends SmartContract {
   /**
    * This function allows to remove all ROLES at NFT level: Managers, DatatokenDeployer, MetadataUpdater, StoreUpdater
    * Even NFT Owner has to readd himself as Manager
-   * Permissions at erc20 level stay.
+   * Permissions at Datatoken level stay.
    * Only NFT Owner  can call it.
    * @param {String} nftAddress NFT contract address
    * @param {String} address NFT Owner adress
