@@ -49,7 +49,7 @@ const estimateGasAndDeployContract = async (
 export interface Addresses {
   opfCommunityFeeCollectorAddress: string
   poolTemplateAddress: string
-  erc20TemplateAddress: string
+  datatokenTemplateAddress: string
   nftTemplateAddress: string
   oceanAddress: string
   routerAddress: string
@@ -88,7 +88,7 @@ export const deployContracts = async (web3: Web3, owner: string): Promise<Addres
     ))
 
   // deploy ERC20 template
-  addresses.erc20TemplateAddress =
+  addresses.datatokenTemplateAddress =
     configAddresses.ERC20Template['1'] ||
     (await estimateGasAndDeployContract(
       web3,
@@ -179,7 +179,7 @@ export const deployContracts = async (web3: Web3, owner: string): Promise<Addres
       ERC721Factory.bytecode,
       [
         addresses.nftTemplateAddress,
-        addresses.erc20TemplateAddress,
+        addresses.datatokenTemplateAddress,
         addresses.opfCommunityFeeCollectorAddress,
         addresses.routerAddress
       ],
