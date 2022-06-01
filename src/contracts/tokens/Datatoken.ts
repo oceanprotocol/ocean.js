@@ -202,7 +202,7 @@ export class Datatoken extends SmartContract {
       new this.web3.eth.Contract(this.abi, dtAddress),
       this.config
     )
-    if (!(await this.isERC20Deployer(dtAddress, address))) {
+    if (!(await this.isDatatokenDeployer(dtAddress, address))) {
       throw new Error(`User is not ERC20 Deployer`)
     }
     if (!fixedRateParams.allowedConsumer) fixedRateParams.allowedConsumer = ZERO_ADDRESS
@@ -305,7 +305,7 @@ export class Datatoken extends SmartContract {
     dispenserAddress: string,
     dispenserParams: DispenserParams
   ): Promise<TransactionReceipt> {
-    if (!(await this.isERC20Deployer(dtAddress, address))) {
+    if (!(await this.isDatatokenDeployer(dtAddress, address))) {
       throw new Error(`User is not ERC20 Deployer`)
     }
 
@@ -432,7 +432,7 @@ export class Datatoken extends SmartContract {
       this.config
     )
 
-    if ((await this.isERC20Deployer(dtAddress, address)) !== true) {
+    if ((await this.isDatatokenDeployer(dtAddress, address)) !== true) {
       throw new Error(`Caller is not ERC20Deployer`)
     }
     // Estimate gas cost for addMinter method
@@ -490,7 +490,7 @@ export class Datatoken extends SmartContract {
       this.config
     )
 
-    if ((await this.isERC20Deployer(dtAddress, address)) !== true) {
+    if ((await this.isDatatokenDeployer(dtAddress, address)) !== true) {
       throw new Error(`Caller is not ERC20Deployer`)
     }
 
@@ -545,7 +545,7 @@ export class Datatoken extends SmartContract {
       this.config
     )
 
-    if ((await this.isERC20Deployer(dtAddress, address)) !== true) {
+    if ((await this.isDatatokenDeployer(dtAddress, address)) !== true) {
       throw new Error(`Caller is not ERC20Deployer`)
     }
 
@@ -604,7 +604,7 @@ export class Datatoken extends SmartContract {
       this.config
     )
 
-    if ((await this.isERC20Deployer(dtAddress, address)) !== true) {
+    if ((await this.isDatatokenDeployer(dtAddress, address)) !== true) {
       throw new Error(`Caller is not ERC20Deployer`)
     }
 
@@ -671,8 +671,8 @@ export class Datatoken extends SmartContract {
     const isNftOwner = nftAddress && (await this.nft.getNftOwner(nftAddress)) === address
     const nftPermissions =
       nftAddress && !isNftOwner && (await this.nft.getNftPermissions(nftAddress, address))
-    const isErc20Deployer = nftPermissions?.deployERC20
-    if (!isPaymentManager && !isNftOwner && !isErc20Deployer) {
+    const isDatatokenDeployer = nftPermissions?.deployERC20
+    if (!isPaymentManager && !isNftOwner && !isDatatokenDeployer) {
       throw new Error(`Caller is not Fee Manager, owner or erc20 Deployer`)
     }
 
@@ -1101,7 +1101,7 @@ export class Datatoken extends SmartContract {
     address: string,
     value: string
   ): Promise<TransactionReceipt> {
-    if (!(await this.isERC20Deployer(dtAddress, address))) {
+    if (!(await this.isDatatokenDeployer(dtAddress, address))) {
       throw new Error(`User is not ERC20 Deployer`)
     }
 
@@ -1232,13 +1232,13 @@ export class Datatoken extends SmartContract {
    * @param {String} dtAddress Datatoken adress
    * @return {Promise<boolean>}
    */
-  public async isERC20Deployer(dtAddress: string, address: string): Promise<boolean> {
+  public async isDatatokenDeployer(dtAddress: string, address: string): Promise<boolean> {
     const dtContract = setContractDefaults(
       new this.web3.eth.Contract(this.abi, dtAddress),
       this.config
     )
-    const isERC20Deployer = await dtContract.methods.isERC20Deployer(address).call()
-    return isERC20Deployer
+    const isDatatokenDeployer = await dtContract.methods.isERC20Deployer(address).call()
+    return isDatatokenDeployer
   }
 
   /**
