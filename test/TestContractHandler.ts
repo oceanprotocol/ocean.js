@@ -50,7 +50,7 @@ export interface Addresses {
   opfCommunityFeeCollectorAddress: string
   poolTemplateAddress: string
   erc20TemplateAddress: string
-  erc721TemplateAddress: string
+  nftTemplateAddress: string
   oceanAddress: string
   routerAddress: string
   sideStakingAddress: string
@@ -99,7 +99,7 @@ export const deployContracts = async (web3: Web3, owner: string): Promise<Addres
     ))
 
   // deploy ERC721 template
-  addresses.erc721TemplateAddress =
+  addresses.nftTemplateAddress =
     configAddresses.ERC721Template['1'] ||
     (await estimateGasAndDeployContract(
       web3,
@@ -178,7 +178,7 @@ export const deployContracts = async (web3: Web3, owner: string): Promise<Addres
       ERC721Factory.abi as AbiItem[],
       ERC721Factory.bytecode,
       [
-        addresses.erc721TemplateAddress,
+        addresses.nftTemplateAddress,
         addresses.erc20TemplateAddress,
         addresses.opfCommunityFeeCollectorAddress,
         addresses.routerAddress
