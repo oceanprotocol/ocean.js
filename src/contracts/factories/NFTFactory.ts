@@ -633,7 +633,7 @@ export class NftFactory extends SmartContractWithAddress {
    * @param poolParams input data for Pool Creation
    * @return {Promise<TransactionReceipt>} transaction receipt
    */
-  public async estGasCreateNftErc20WithPool(
+  public async estGasCreateNftWithDatatokenWithPool(
     address: string,
     nftCreateData: NftCreateData,
     ercParams: DatatokenCreateParams,
@@ -651,7 +651,7 @@ export class NftFactory extends SmartContractWithAddress {
   }
 
   /**
-   * @dev createNftErc20WithPool
+   * @dev rceateNftWithDatatokenWithPool
    *      Creates a new NFT, then a ERC20, then a Pool, all in one call
    *      Use this carefully, because if Pool creation fails, you are still going to pay a lot of gas
    * @param address Caller address
@@ -660,7 +660,7 @@ export class NftFactory extends SmartContractWithAddress {
    * @param poolParams input data for Pool Creation
    * @return {Promise<TransactionReceipt>} transaction receipt
    */
-  public async createNftErc20WithPool(
+  public async createNftWithDatatokenWithPool(
     address: string,
     nftCreateData: NftCreateData,
     ercParams: DatatokenCreateParams,

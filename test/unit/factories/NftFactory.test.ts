@@ -164,7 +164,7 @@ describe('Nft Factory test', () => {
       poolParams.vestingAmount
     )
 
-    const txReceipt = await nftFactory.createNftErc20WithPool(
+    const txReceipt = await nftFactory.createNftWithDatatokenWithPool(
       nftOwner,
       nftData,
       ercParams,

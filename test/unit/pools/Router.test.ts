@@ -152,7 +152,7 @@ describe('Router unit test', () => {
     }
 
     const nftFactory = new NftFactory(contracts.nftFactoryAddress, web3)
-    const txReceipt = await nftFactory.createNftErc20WithPool(
+    const txReceipt = await nftFactory.createNftWithDatatokenWithPool(
       factoryOwner,
       NFT_DATA,
       ERC_PARAMS,
@@ -163,7 +163,7 @@ describe('Router unit test', () => {
     const pool1 = txReceipt.events.NewPool.returnValues.poolAddress
 
     // CREATE A SECOND POOL
-    const txReceipt2 = await nftFactory.createNftErc20WithPool(
+    const txReceipt2 = await nftFactory.createNftWithDatatokenWithPool(
       factoryOwner,
       NFT_DATA,
       ERC_PARAMS,

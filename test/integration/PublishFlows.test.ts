@@ -133,7 +133,7 @@ describe('Publish tests', async () => {
       swapFeeMarketRunner: '0.001'
     }
 
-    const bundleNFT = await factory.createNftErc20WithPool(
+    const bundleNFT = await factory.createNftWithDatatokenWithPool(
       publisherAccount,
       nftParams,
       datatokenParams,
