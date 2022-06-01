@@ -209,7 +209,7 @@ export class Datatoken extends SmartContract {
 
     const withMint = fixedRateParams.withMint ? 1 : 0
 
-    // should check ERC20Deployer role using erc721 level ..
+    // should check ERC20Deployer role using NFT level ..
 
     const estGas = await estimateGas(
       address,
@@ -318,7 +318,7 @@ export class Datatoken extends SmartContract {
 
     if (!dispenserParams.withMint) dispenserParams.withMint = false
 
-    // should check ERC20Deployer role using erc721 level ..
+    // should check ERC20Deployer role using NFT level ..
 
     const estGas = await estimateGas(
       address,
@@ -466,7 +466,7 @@ export class Datatoken extends SmartContract {
       contractInstance ||
       setContractDefaults(new this.web3.eth.Contract(this.abi, dtAddress), this.config)
 
-    // should check ERC20Deployer role using erc721 level ..
+    // should check ERC20Deployer role using NFT level ..
 
     return estimateGas(address, dtContract.methods.removeMinter, minter)
   }

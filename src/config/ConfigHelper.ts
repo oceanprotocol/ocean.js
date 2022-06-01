@@ -154,14 +154,14 @@ export class ConfigHelper {
           Dispenser,
           Staking,
           poolTemplate,
-          ERC721Factory,
+          NFTFactory,
           OPFCommunityFeeCollector,
           Ocean,
           chainId,
           startBlock
         } = customAddresses[network]
         configAddresses = {
-          nftFactoryAddress: ERC721Factory,
+          nftFactoryAddress: NFTFactory,
           sideStakingAddress: Staking,
           opfCommunityFeeCollector: OPFCommunityFeeCollector,
           poolTemplateAddress: poolTemplate,
@@ -185,13 +185,13 @@ export class ConfigHelper {
           Staking,
           poolTemplate,
           OPFCommunityFeeCollector,
-          ERC721Factory,
+          NFTFactory,
           Ocean,
           chainId,
           startBlock
         } = DefaultContractsAddresses[network]
         configAddresses = {
-          nftFactoryAddress: ERC721Factory,
+          nftFactoryAddress: NFTFactory,
           sideStakingAddress: Staking,
           opfCommunityFeeCollector: OPFCommunityFeeCollector,
           poolTemplateAddress: poolTemplate,

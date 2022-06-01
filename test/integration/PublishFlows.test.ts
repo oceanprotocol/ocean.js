@@ -84,13 +84,13 @@ describe('Publish tests', async () => {
 
   it('initialize test classes', async () => {
     nft = new Nft(web3)
-    factory = new NftFactory(addresses.ERC721Factory, web3)
+    factory = new NftFactory(addresses.NFTFactory, web3)
 
     await approve(
       web3,
       publisherAccount,
       addresses.MockDAI,
-      addresses.ERC721Factory,
+      addresses.NFTFactory,
       '100000'
     )
   })
@@ -120,7 +120,7 @@ describe('Publish tests', async () => {
     const poolParams: PoolCreationParams = {
       ssContract: addresses.Staking,
       baseTokenAddress: addresses.MockDAI,
-      baseTokenSender: addresses.ERC721Factory,
+      baseTokenSender: addresses.NFTFactory,
       publisherAddress: publisherAccount,
       marketFeeCollector: publisherAccount,
       poolTemplateAddress: addresses.poolTemplate,
