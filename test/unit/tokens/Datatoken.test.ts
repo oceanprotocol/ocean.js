@@ -103,7 +103,7 @@ describe('Datatoken', () => {
   })
 
   it('#addMinter - should add user1 as minter, if user has ERC20Deployer permission', async () => {
-    assert((await nftDatatoken.isErc20Deployer(nftAddress, nftOwner)) === true)
+    assert((await nftDatatoken.isDatatokenDeployer(nftAddress, nftOwner)) === true)
     assert((await datatoken.getDTPermissions(datatokenAddress, user1)).minter === false)
 
     await datatoken.addMinter(datatokenAddress, nftOwner, user1)
@@ -112,7 +112,7 @@ describe('Datatoken', () => {
   })
 
   it('#addMinter - should FAIL TO add user1 as minter, if user has ERC20Deployer permission', async () => {
-    assert((await nftDatatoken.isErc20Deployer(nftAddress, user3)) === false)
+    assert((await nftDatatoken.isDatatokenDeployer(nftAddress, user3)) === false)
     assert((await datatoken.getDTPermissions(datatokenAddress, user2)).minter === false)
 
     try {
@@ -140,7 +140,7 @@ describe('Datatoken', () => {
   })
 
   it('#createFixedRate - should FAIL create FRE if NOT ERC20Deployer', async () => {
-    assert((await nftDatatoken.isErc20Deployer(nftAddress, user3)) === false)
+    assert((await nftDatatoken.isDatatokenDeployer(nftAddress, user3)) === false)
     try {
       await datatoken.createFixedRate(datatokenAddress, user3, freParams)
       assert(false)
@@ -169,7 +169,7 @@ describe('Datatoken', () => {
       maxTokens: '10',
       maxBalance: '100'
     }
-    assert((await nftDatatoken.isErc20Deployer(nftAddress, user3)) === false)
+    assert((await nftDatatoken.isDatatokenDeployer(nftAddress, user3)) === false)
     try {
       await datatoken.createDispenser(
         datatokenAddress,
@@ -184,7 +184,7 @@ describe('Datatoken', () => {
   })
 
   it('#removeMinter - should FAIL to remove user1 as minter, if caller is NOT ERC20Deployer', async () => {
-    assert((await nftDatatoken.isErc20Deployer(nftAddress, user2)) === false)
+    assert((await nftDatatoken.isDatatokenDeployer(nftAddress, user2)) === false)
     assert((await datatoken.getDTPermissions(datatokenAddress, user1)).minter === true)
 
     try {
@@ -197,7 +197,7 @@ describe('Datatoken', () => {
   })
 
   it('#removeMinter - should remove user1 as minter, if nftDatatoken has ERC20Deployer permission', async () => {
-    assert((await nftDatatoken.isErc20Deployer(nftAddress, nftOwner)) === true)
+    assert((await nftDatatoken.isDatatokenDeployer(nftAddress, nftOwner)) === true)
     assert((await datatoken.getDTPermissions(datatokenAddress, user1)).minter === true)
 
     await datatoken.removeMinter(datatokenAddress, nftOwner, user1)
@@ -206,7 +206,7 @@ describe('Datatoken', () => {
   })
 
   it('#addPaymentManager - should FAIL TO add user2 as paymentManager, if caller is NOT ERC20Deployer', async () => {
-    assert((await nftDatatoken.isErc20Deployer(nftAddress, user1)) === false)
+    assert((await nftDatatoken.isDatatokenDeployer(nftAddress, user1)) === false)
     assert(
       (await datatoken.getDTPermissions(datatokenAddress, user2)).paymentManager === false
     )
@@ -223,7 +223,7 @@ describe('Datatoken', () => {
   })
 
   it('#addPaymentManager - should add user2 as paymentManager, if caller has ERC20Deployer permission', async () => {
-    assert((await nftDatatoken.isErc20Deployer(nftAddress, nftOwner)) === true)
+    assert((await nftDatatoken.isDatatokenDeployer(nftAddress, nftOwner)) === true)
     assert(
       (await datatoken.getDTPermissions(datatokenAddress, user2)).paymentManager === false
     )
@@ -236,7 +236,7 @@ describe('Datatoken', () => {
   })
 
   it('#removePaymentManager - should FAIL TO remove user2 as paymentManager, if nftDatatoken has ERC20Deployer permission', async () => {
-    assert((await nftDatatoken.isErc20Deployer(nftAddress, user1)) === false)
+    assert((await nftDatatoken.isDatatokenDeployer(nftAddress, user1)) === false)
     assert(
       (await datatoken.getDTPermissions(datatokenAddress, user2)).paymentManager === true
     )
@@ -253,7 +253,7 @@ describe('Datatoken', () => {
   })
 
   it('#removePaymentManager - should remove user2 as paymentManager, if Caller has ERC20Deployer permission', async () => {
-    assert((await nftDatatoken.isErc20Deployer(nftAddress, nftOwner)) === true)
+    assert((await nftDatatoken.isDatatokenDeployer(nftAddress, nftOwner)) === true)
     assert(
       (await datatoken.getDTPermissions(datatokenAddress, user2)).paymentManager === true
     )
@@ -549,7 +549,7 @@ describe('Datatoken', () => {
   it('#setData - should set a value into 725Y standard, if Caller has ERC20Deployer permission', async () => {
     const data = web3.utils.asciiToHex('SomeData')
 
-    assert((await nftDatatoken.isErc20Deployer(nftAddress, nftOwner)) === true)
+    assert((await nftDatatoken.isDatatokenDeployer(nftAddress, nftOwner)) === true)
 
     await datatoken.setData(datatokenAddress, nftOwner, data)
 
@@ -560,7 +560,7 @@ describe('Datatoken', () => {
   it('#setData - should FAIL to set a value into 725Y standard, if Caller has NOT ERC20Deployer permission', async () => {
     const data = web3.utils.asciiToHex('NewData')
     const OldData = web3.utils.asciiToHex('SomeData')
-    assert((await nftDatatoken.isErc20Deployer(nftAddress, user1)) === false)
+    assert((await nftDatatoken.isDatatokenDeployer(nftAddress, user1)) === false)
 
     try {
       await datatoken.setData(datatokenAddress, user1, data)
