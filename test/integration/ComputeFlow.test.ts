@@ -258,8 +258,7 @@ async function createAsset(
   // update ddo and set the right did
   ddo.nftAddress = web3.utils.toChecksumAddress(nftAddressAsset)
   ddo.id =
-    'did:op:' +
-    SHA256(web3.utils.toChecksumAddress(nftAddressAsset) + chain.toString(10))
+    'did:op:' + SHA256(web3.utils.toChecksumAddress(nftAddressAsset) + chain.toString(10))
   providerResponse = await ProviderInstance.encrypt(ddo, providerUrl)
   const encryptedResponse = await providerResponse
   const validateResult = await aquarius.validate(ddo)
