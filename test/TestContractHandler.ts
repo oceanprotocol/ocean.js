@@ -172,7 +172,7 @@ export const deployContracts = async (web3: Web3, owner: string): Promise<Addres
 
   // deploy ERC721 factory
   addresses.nftFactoryAddress =
-    configAddresses.NFTFactory ||
+    configAddresses.ERC721Factory ||
     (await estimateGasAndDeployContract(
       web3,
       ERC721Factory.abi as AbiItem[],

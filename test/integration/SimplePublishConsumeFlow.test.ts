@@ -75,7 +75,7 @@ describe('Simple Publish & consume test', async () => {
   it('should publish a dataset (create NFT + ERC20)', async () => {
     const nft = new Nft(web3)
     const datatoken = new Datatoken(web3)
-    const Factory = new NftFactory(addresses.NFTFactory, web3)
+    const Factory = new NftFactory(addresses.ERC721Factory, web3)
 
     const nftParams: NftCreateData = {
       name: '72120Bundle',

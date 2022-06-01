@@ -220,7 +220,7 @@ async function createAsset(
   providerUrl: string
 ) {
   const nft = new Nft(web3)
-  const Factory = new NftFactory(addresses.NFTFactory, web3)
+  const Factory = new NftFactory(addresses.ERC721Factory, web3)
 
   const chain = await web3.eth.getChainId()
   ddo.chainId = parseInt(chain.toString(10))
