@@ -86,9 +86,7 @@
 
 /// ```Typescript
 import { assert } from 'chai'
-import { AbiItem } from 'web3-utils/types'
 import { SHA256 } from 'crypto-js'
-import MockERC20 from '@oceanprotocol/contracts/artifacts/contracts/utils/mock/MockERC20Decimals.sol/MockERC20Decimals.json'
 import {
   AmountsOutMaxFee,
   approve,
@@ -111,6 +109,7 @@ import {
   ProviderFees,
   ProviderInstance,
   TokenInOutMarket,
+  transfer,
   ZERO_ADDRESS
 } from '../../src'
 import { getAddresses, getTestConfig, web3 } from '../config'
@@ -231,18 +230,8 @@ describe('Marketplace flow tests', async () => {
 
   it('5.3 We send some OCEAN to consumer and staker accounts', async () => {
     /// ```Typescript
-    const oceanContract = new web3.eth.Contract(
-      MockERC20.abi as AbiItem[],
-      addresses.Ocean
-    )
-
-    await oceanContract.methods
-      .transfer(consumerAccount, web3.utils.toWei('100'))
-      .send({ from: publisherAccount })
-
-    await oceanContract.methods
-      .transfer(stakerAccount, web3.utils.toWei('100'))
-      .send({ from: publisherAccount })
+    transfer(web3, publisherAccount, addresses.Ocean, consumerAccount, '100')
+    transfer(web3, publisherAccount, addresses.Ocean, stakerAccount, '100')
   }) ///
   /// ```
 
