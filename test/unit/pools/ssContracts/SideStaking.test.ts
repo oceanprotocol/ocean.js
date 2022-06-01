@@ -34,8 +34,8 @@ describe('SideStaking unit test', () => {
   let pool: Pool
   let sideStaking: SideStaking
   let poolAddress: string
-  let erc20Token: string
-  let erc20Contract: Contract
+  let datatoken: string
+  let datatokenContract: Contract
   let daiContract: Contract
   let usdcContract: Contract
 
@@ -161,12 +161,12 @@ describe('SideStaking unit test', () => {
       )
 
       initialBlock = await web3.eth.getBlockNumber()
-      erc20Token = txReceipt.events.TokenCreated.returnValues.newTokenAddress
+      datatoken = txReceipt.events.TokenCreated.returnValues.newTokenAddress
       poolAddress = txReceipt.events.NewPool.returnValues.poolAddress
 
-      erc20Contract = new web3.eth.Contract(ERC20Template.abi as AbiItem[], erc20Token)
+      datatokenContract = new web3.eth.Contract(ERC20Template.abi as AbiItem[], datatoken)
       // user1 has no dt1
-      expect(await erc20Contract.methods.balanceOf(user1).call()).to.equal('0')
+      expect(await datatokenContract.methods.balanceOf(user1).call()).to.equal('0')
     })
 
     it('#getRouter - should get Router address', async () => {
@@ -174,36 +174,36 @@ describe('SideStaking unit test', () => {
     })
 
     it('#getDatatokenCirculatingSupply - should get datatoken supply in circulation (vesting amount excluded)', async () => {
-      expect(await sideStaking.getDatatokenCirculatingSupply(erc20Token)).to.equal(
+      expect(await sideStaking.getDatatokenCirculatingSupply(datatoken)).to.equal(
         web3.utils.toWei(BASE_TOKEN_LIQUIDITY.toString())
       )
     })
 
     it('#getDatatokenCurrentCirculatingSupply - should get datatoken supply in circulation ', async () => {
-      expect(await sideStaking.getDatatokenCurrentCirculatingSupply(erc20Token)).to.equal(
+      expect(await sideStaking.getDatatokenCurrentCirculatingSupply(datatoken)).to.equal(
         web3.utils.toWei(BASE_TOKEN_LIQUIDITY.toString())
       )
     })
 
     it('#getBaseToken - should get baseToken address', async () => {
-      expect(await sideStaking.getBaseToken(erc20Token)).to.equal(contracts.daiAddress)
+      expect(await sideStaking.getBaseToken(datatoken)).to.equal(contracts.daiAddress)
     })
 
     it('#getPoolAddress - should get pool address', async () => {
-      expect(await sideStaking.getPoolAddress(erc20Token)).to.equal(poolAddress)
+      expect(await sideStaking.getPoolAddress(datatoken)).to.equal(poolAddress)
     })
 
     it('#getPublisherAddress - should get publisher address', async () => {
-      expect(await sideStaking.getPublisherAddress(erc20Token)).to.equal(factoryOwner)
+      expect(await sideStaking.getPublisherAddress(datatoken)).to.equal(factoryOwner)
     })
 
     it('#getBaseTokenBalance ', async () => {
-      expect(await sideStaking.getBaseTokenBalance(erc20Token)).to.equal('0')
+      expect(await sideStaking.getBaseTokenBalance(datatoken)).to.equal('0')
     })
 
     it('#getDatatokenBalance ', async () => {
       expect(
-        await (await sideStaking.getDatatokenBalance(erc20Token)).toString()
+        await (await sideStaking.getDatatokenBalance(datatoken)).toString()
       ).to.equal(
         new BigNumber(2)
           .exponentiatedBy(256)
@@ -215,17 +215,17 @@ describe('SideStaking unit test', () => {
     })
 
     it('#getvestingAmount ', async () => {
-      expect(await sideStaking.getvestingAmount(erc20Token)).to.equal('0')
+      expect(await sideStaking.getvestingAmount(datatoken)).to.equal('0')
     })
 
     it('#getvestingLastBlock ', async () => {
-      expect(await sideStaking.getvestingLastBlock(erc20Token)).to.equal(
+      expect(await sideStaking.getvestingLastBlock(datatoken)).to.equal(
         initialBlock.toString()
       )
     })
 
     it('#getvestingAmountSoFar ', async () => {
-      expect(await sideStaking.getvestingAmountSoFar(erc20Token)).to.equal('0')
+      expect(await sideStaking.getvestingAmountSoFar(datatoken)).to.equal('0')
     })
 
     it('#swapExactAmountIn - should swap', async () => {
@@ -236,7 +236,7 @@ describe('SideStaking unit test', () => {
 
       const tokenInOutMarket: TokenInOutMarket = {
         tokenIn: contracts.daiAddress,
-        tokenOut: erc20Token,
+        tokenOut: datatoken,
         marketFeeAddress: factoryOwner
       }
 
@@ -253,7 +253,7 @@ describe('SideStaking unit test', () => {
         amountsInOutMaxFee
       )
 
-      expect(await erc20Contract.methods.balanceOf(user1).call()).to.equal(
+      expect(await datatokenContract.methods.balanceOf(user1).call()).to.equal(
         tx.events.LOG_SWAP.returnValues.tokenAmountOut
       )
     })
@@ -262,7 +262,7 @@ describe('SideStaking unit test', () => {
       await approve(web3, user1, contracts.daiAddress, poolAddress, '100')
       const tokenInOutMarket: TokenInOutMarket = {
         tokenIn: contracts.daiAddress,
-        tokenOut: erc20Token,
+        tokenOut: datatoken,
         marketFeeAddress: factoryOwner
       }
       const amountsInOutMaxFee: AmountsOutMaxFee = {
@@ -319,7 +319,7 @@ describe('SideStaking unit test', () => {
       expect(tx.events.LOG_EXIT[0].returnValues.tokenOut).to.equal(contracts.daiAddress)
 
       // DTs were also unstaked in the same transaction (went to the staking contract)
-      expect(tx.events.LOG_EXIT[1].returnValues.tokenOut).to.equal(erc20Token)
+      expect(tx.events.LOG_EXIT[1].returnValues.tokenOut).to.equal(datatoken)
     })
   })
 
@@ -361,21 +361,21 @@ describe('SideStaking unit test', () => {
       )
 
       initialBlock = await web3.eth.getBlockNumber()
-      erc20Token = txReceipt.events.TokenCreated.returnValues.newTokenAddress
+      datatoken = txReceipt.events.TokenCreated.returnValues.newTokenAddress
       poolAddress = txReceipt.events.NewPool.returnValues.poolAddress
 
-      erc20Contract = new web3.eth.Contract(ERC20Template.abi as AbiItem[], erc20Token)
+      datatokenContract = new web3.eth.Contract(ERC20Template.abi as AbiItem[], datatoken)
       // user1 has no dt1
-      expect(await erc20Contract.methods.balanceOf(user1).call()).to.equal('0')
+      expect(await datatokenContract.methods.balanceOf(user1).call()).to.equal('0')
     })
 
     it('#getBaseTokenBalance ', async () => {
-      expect(await sideStaking.getBaseTokenBalance(erc20Token)).to.equal('0')
+      expect(await sideStaking.getBaseTokenBalance(datatoken)).to.equal('0')
     })
 
     it('#getDatatokenBalance ', async () => {
       expect(
-        await (await sideStaking.getDatatokenBalance(erc20Token)).toString()
+        await (await sideStaking.getDatatokenBalance(datatoken)).toString()
       ).to.equal(
         new BigNumber(2)
           .exponentiatedBy(256)
@@ -387,17 +387,17 @@ describe('SideStaking unit test', () => {
     })
 
     it('#getvestingAmount ', async () => {
-      expect(await sideStaking.getvestingAmount(erc20Token)).to.equal('0')
+      expect(await sideStaking.getvestingAmount(datatoken)).to.equal('0')
     })
 
     it('#getvestingLastBlock ', async () => {
-      expect(await sideStaking.getvestingLastBlock(erc20Token)).to.equal(
+      expect(await sideStaking.getvestingLastBlock(datatoken)).to.equal(
         initialBlock.toString()
       )
     })
 
     it('#getvestingAmountSoFar ', async () => {
-      expect(await sideStaking.getvestingAmountSoFar(erc20Token)).to.equal('0')
+      expect(await sideStaking.getvestingAmountSoFar(datatoken)).to.equal('0')
     })
 
     it('#swapExactAmountIn - should swap', async () => {
@@ -409,7 +409,7 @@ describe('SideStaking unit test', () => {
       await approve(web3, user1, contracts.usdcAddress, poolAddress, '10')
       const tokenInOutMarket: TokenInOutMarket = {
         tokenIn: contracts.usdcAddress,
-        tokenOut: erc20Token,
+        tokenOut: datatoken,
         marketFeeAddress: factoryOwner
       }
       const amountsInOutMaxFee: AmountsInMaxFee = {
@@ -423,7 +423,7 @@ describe('SideStaking unit test', () => {
         tokenInOutMarket,
         amountsInOutMaxFee
       )
-      expect(await erc20Contract.methods.balanceOf(user1).call()).to.equal(
+      expect(await datatokenContract.methods.balanceOf(user1).call()).to.equal(
         tx.events.LOG_SWAP.returnValues.tokenAmountOut
       )
     })
@@ -432,7 +432,7 @@ describe('SideStaking unit test', () => {
       await approve(web3, user1, contracts.usdcAddress, poolAddress, '100')
       const tokenInOutMarket: TokenInOutMarket = {
         tokenIn: contracts.usdcAddress,
-        tokenOut: erc20Token,
+        tokenOut: datatoken,
         marketFeeAddress: factoryOwner
       }
       const amountsInOutMaxFee: AmountsOutMaxFee = {
@@ -487,7 +487,7 @@ describe('SideStaking unit test', () => {
       expect(tx.events.LOG_EXIT[0].returnValues.tokenOut).to.equal(contracts.usdcAddress)
 
       // DTs were also unstaked in the same transaction (went to the staking contract)
-      expect(tx.events.LOG_EXIT[1].returnValues.tokenOut).to.equal(erc20Token)
+      expect(tx.events.LOG_EXIT[1].returnValues.tokenOut).to.equal(datatoken)
     })
   })
 })

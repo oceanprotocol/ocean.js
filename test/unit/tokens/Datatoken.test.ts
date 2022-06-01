@@ -125,14 +125,14 @@ describe('Datatoken', () => {
     assert((await datatoken.getDTPermissions(datatokenAddress, user2)).minter === false)
   })
 
-  it('#mint - should mint ERC20 datatoken to user1, if Minter', async () => {
+  it('#mint - should mint Datatoken to user1, if Minter', async () => {
     assert((await datatoken.getDTPermissions(datatokenAddress, nftOwner)).minter === true)
     await datatoken.mint(datatokenAddress, nftOwner, '10', user1)
 
     assert((await datatoken.balance(datatokenAddress, user1)) === '10')
   })
 
-  it('#createFixedRate - should create FRE for the erc20 dt', async () => {
+  it('#createFixedRate - should create FRE for the Datatoken', async () => {
     const fre = await datatoken.createFixedRate(datatokenAddress, nftOwner, freParams)
     assert(fre !== null)
     fixedRateAddress = fre.events.NewFixedRate.address
@@ -145,11 +145,11 @@ describe('Datatoken', () => {
       await datatoken.createFixedRate(datatokenAddress, user3, freParams)
       assert(false)
     } catch (e) {
-      assert(e.message === 'User is not ERC20 Deployer')
+      assert(e.message === 'User is not Datatoken Deployer')
     }
   })
 
-  it('#createDispenser - method creates a dispenser for the erc20DT', async () => {
+  it('#createDispenser - method creates a dispenser for the Datatoken', async () => {
     const dispenserParams: DispenserParams = {
       maxTokens: '10',
       maxBalance: '100'
@@ -164,7 +164,7 @@ describe('Datatoken', () => {
     assert(dispenser !== null)
   })
 
-  it('#createDispenser - should FAIL to create a Dispenser if not ERC20 Deployer', async () => {
+  it('#createDispenser - should FAIL to create a Dispenser if not Datatoken Deployer', async () => {
     const dispenserParams: DispenserParams = {
       maxTokens: '10',
       maxBalance: '100'
@@ -179,7 +179,7 @@ describe('Datatoken', () => {
       )
       assert(false)
     } catch (e) {
-      assert(e.message === 'User is not ERC20 Deployer')
+      assert(e.message === 'User is not Datatoken Deployer')
     }
   })
 
@@ -274,7 +274,7 @@ describe('Datatoken', () => {
       await datatoken.setPaymentCollector(datatokenAddress, user1, user2)
       assert(false)
     } catch (e) {
-      assert(e.message === 'Caller is not Fee Manager, owner or erc20 Deployer')
+      assert(e.message === 'Caller is not Fee Manager, owner or Datatoken Deployer')
     }
   })
 
@@ -494,7 +494,7 @@ describe('Datatoken', () => {
     assert(buyTx !== null)
   })
 
-  it('#cleanPermissions - should FAIL to clean permissions at ERC20 level, if NOT NFT Owner', async () => {
+  it('#cleanPermissions - should FAIL to clean permissions at Datatoken level, if NOT NFT Owner', async () => {
     assert((await datatoken.getDTPermissions(datatokenAddress, nftOwner)).minter === true)
 
     assert((await datatoken.getPaymentCollector(datatokenAddress)) === user3)
@@ -519,7 +519,7 @@ describe('Datatoken', () => {
     )
   })
 
-  it('#cleanPermissions - should clean permissions at ERC20 level', async () => {
+  it('#cleanPermissions - should clean permissions at Datatoken level', async () => {
     assert((await datatoken.getDTPermissions(datatokenAddress, nftOwner)).minter === true)
 
     assert((await datatoken.getPaymentCollector(datatokenAddress)) === user3)
@@ -566,7 +566,7 @@ describe('Datatoken', () => {
       await datatoken.setData(datatokenAddress, user1, data)
       assert(false)
     } catch (e) {
-      assert(e.message === 'User is not ERC20 Deployer')
+      assert(e.message === 'User is not Datatoken Deployer')
     }
     const key = web3.utils.keccak256(datatokenAddress)
     assert((await nftDatatoken.getData(nftAddress, key)) === OldData)

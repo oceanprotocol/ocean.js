@@ -51,7 +51,7 @@ describe('NFT', () => {
   })
 
   it('#createDatatoken - should create a new Datatoken from NFT contract', async () => {
-    const erc20Address = await nftDatatoken.createDatatoken(
+    const datatokenAddress = await nftDatatoken.createDatatoken(
       nftAddress,
       nftOwner,
       nftOwner,
@@ -64,7 +64,7 @@ describe('NFT', () => {
       nftData.symbol,
       1
     )
-    assert(erc20Address !== null)
+    assert(datatokenAddress !== null)
   })
 
   it('#createDatatoken - should fail to create a new Datatoken if not DatatokenDeployer', async () => {
