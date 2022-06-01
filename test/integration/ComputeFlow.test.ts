@@ -244,7 +244,7 @@ async function createAsset(
 
   const result = await Factory.createNftWithErc20(owner, nftParamsAsset, erc20ParamsAsset)
 
-  const erc721AddressAsset = result.events.NFTCreated.returnValues[0]
+  const nftAddressAsset = result.events.NFTCreated.returnValues[0]
   const datatokenAddressAsset = result.events.TokenCreated.returnValues[0]
   // create the files encrypted string
   let providerResponse = await ProviderInstance.encrypt(assetUrl, providerUrl)
@@ -252,16 +252,16 @@ async function createAsset(
   ddo.services[0].datatokenAddress = datatokenAddressAsset
   ddo.services[0].serviceEndpoint = providerUrl
   // update ddo and set the right did
-  ddo.nftAddress = web3.utils.toChecksumAddress(erc721AddressAsset)
+  ddo.nftAddress = web3.utils.toChecksumAddress(nftAddressAsset)
   ddo.id =
     'did:op:' +
-    SHA256(web3.utils.toChecksumAddress(erc721AddressAsset) + chain.toString(10))
+    SHA256(web3.utils.toChecksumAddress(nftAddressAsset) + chain.toString(10))
   providerResponse = await ProviderInstance.encrypt(ddo, providerUrl)
   const encryptedResponse = await providerResponse
   const validateResult = await aquarius.validate(ddo)
   assert(validateResult.valid, 'Could not validate metadata')
   await nft.setMetadata(
-    erc721AddressAsset,
+    nftAddressAsset,
     owner,
     0,
     providerUrl,

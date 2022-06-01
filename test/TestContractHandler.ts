@@ -98,7 +98,7 @@ export const deployContracts = async (web3: Web3, owner: string): Promise<Addres
       owner
     ))
 
-  // deploy ERC721 template
+  // deploy NFT template
   addresses.nftTemplateAddress =
     configAddresses.ERC721Template['1'] ||
     (await estimateGasAndDeployContract(
@@ -170,7 +170,7 @@ export const deployContracts = async (web3: Web3, owner: string): Promise<Addres
       owner
     ))
 
-  // deploy ERC721 factory
+  // deploy NFT factory
   addresses.nftFactoryAddress =
     configAddresses.ERC721Factory ||
     (await estimateGasAndDeployContract(
