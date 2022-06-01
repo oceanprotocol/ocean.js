@@ -71,9 +71,9 @@ describe('Datatoken', () => {
     nftDatatoken = new Nft(web3, 8996)
   })
 
-  it('#createERC20 - should create a new ERC20 DT from NFT contract', async () => {
+  it('#createDatatoken - should create a new Datatoken from NFT contract', async () => {
     await nftDatatoken.addDatatokenDeployer(nftAddress, nftOwner, erc20DeployerUser)
-    datatokenAddress = await nftDatatoken.createErc20(
+    datatokenAddress = await nftDatatoken.createDatatoken(
       nftAddress,
       nftOwner,
       nftOwner,

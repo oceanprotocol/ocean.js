@@ -18,7 +18,7 @@ export class Nft extends SmartContract {
   }
 
   /**
-   *  Estimate gas cost for createERC20 token creation
+   *  Estimate gas cost for createERC20 Datatoken creation
    * @param {String} nftAddress NFT contract address
    * @param {String} address User address
    * @param {String} minter User set as initial minter for the ERC20
@@ -33,7 +33,7 @@ export class Nft extends SmartContract {
    * @param {Contract} nftContract optional contract instance
    * @return {Promise<any>}
    */
-  public async estGasCreateErc20(
+  public async estGasCreateDatatoken(
     nftAddress: string,
     address: string,
     minter: string,
@@ -62,10 +62,10 @@ export class Nft extends SmartContract {
   }
 
   /**
-   * Create new ERC20 datatoken - only user with ERC20Deployer permission can succeed
+   * Create new ERC20 Datatoken - only user with ERC20Deployer permission can succeed
    * @param {String} nftAddress NFT contract address
    * @param {String} address User address
-   * @param {String} minter User set as initial minter for the ERC20
+   * @param {String} minter User set as initial minter for the Datatoken
    * @param {String} paymentCollector initial paymentCollector for this DT
    * @param {String} mpFeeAddress Consume marketplace fee address
    * @param {String} feeToken address of the token marketplace wants to add fee on top
@@ -76,7 +76,7 @@ export class Nft extends SmartContract {
    * @param {Number} templateIndex NFT template index
    * @return {Promise<string>} ERC20 datatoken address
    */
-  public async createErc20(
+  public async createDatatoken(
     nftAddress: string,
     address: string,
     minter: string,
