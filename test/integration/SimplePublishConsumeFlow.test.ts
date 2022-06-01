@@ -96,7 +96,7 @@ describe('Simple Publish & consume test', async () => {
       mpFeeAddress: ZERO_ADDRESS
     }
 
-    const tx = await Factory.createNftWithErc20(
+    const tx = await Factory.createNftWithDatatoken(
       publisherAccount,
       nftParams,
       datatokenParams
