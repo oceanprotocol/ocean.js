@@ -303,7 +303,7 @@ describe('Datatoken', () => {
   it('#setPaymentCollector - should set a new paymentCollector, if ERC 20 DEPLOYER', async () => {
     assert(
       (await nftDatatoken.getNftPermissions(nftAddress, erc20DeployerUser))
-        .deployERC20 === true
+        .deployDatatoken === true
     )
 
     await datatoken.setPaymentCollector(datatokenAddress, erc20DeployerUser, user3)
