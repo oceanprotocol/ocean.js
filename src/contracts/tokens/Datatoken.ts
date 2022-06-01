@@ -209,7 +209,7 @@ export class Datatoken extends SmartContract {
 
     const withMint = fixedRateParams.withMint ? 1 : 0
 
-    // should check ERC20Deployer role using NFT level ..
+    // should check DatatokenDeployer role using NFT level ..
 
     const estGas = await estimateGas(
       address,
@@ -318,7 +318,7 @@ export class Datatoken extends SmartContract {
 
     if (!dispenserParams.withMint) dispenserParams.withMint = false
 
-    // should check ERC20Deployer role using NFT level ..
+    // should check DatatokenDeployer role using NFT level ..
 
     const estGas = await estimateGas(
       address,
@@ -416,7 +416,7 @@ export class Datatoken extends SmartContract {
 
   /**
    * Add Minter for an ERC20 datatoken
-   * only ERC20Deployer can succeed
+   * only DatatokenDeployer can succeed
    * @param {String} dtAddress Datatoken address
    * @param {String} address User address
    * @param {String} minter User which is going to be a Minter
@@ -433,7 +433,7 @@ export class Datatoken extends SmartContract {
     )
 
     if ((await this.isDatatokenDeployer(dtAddress, address)) !== true) {
-      throw new Error(`Caller is not ERC20Deployer`)
+      throw new Error(`Caller is not DatatokenDeployer`)
     }
     // Estimate gas cost for addMinter method
     const estGas = await estimateGas(address, dtContract.methods.addMinter, minter)
@@ -466,14 +466,14 @@ export class Datatoken extends SmartContract {
       contractInstance ||
       setContractDefaults(new this.web3.eth.Contract(this.abi, dtAddress), this.config)
 
-    // should check ERC20Deployer role using NFT level ..
+    // should check DatatokenDeployer role using NFT level ..
 
     return estimateGas(address, dtContract.methods.removeMinter, minter)
   }
 
   /**
    * Revoke Minter permission for an ERC20 datatoken
-   * only ERC20Deployer can succeed
+   * only DatatokenDeployer can succeed
    * @param {String} dtAddress Datatoken address
    * @param {String} address User address
    * @param {String} minter User which will be removed from Minter permission
@@ -491,7 +491,7 @@ export class Datatoken extends SmartContract {
     )
 
     if ((await this.isDatatokenDeployer(dtAddress, address)) !== true) {
-      throw new Error(`Caller is not ERC20Deployer`)
+      throw new Error(`Caller is not DatatokenDeployer`)
     }
 
     const estGas = await estimateGas(address, dtContract.methods.removeMinter, minter)
@@ -529,7 +529,7 @@ export class Datatoken extends SmartContract {
 
   /**
    * Add addPaymentManager (can set who's going to collect fee when consuming orders)
-   * only ERC20Deployer can succeed
+   * only DatatokenDeployer can succeed
    * @param {String} dtAddress Datatoken address
    * @param {String} address User address
    * @param {String} paymentManager User which is going to be a Minter
@@ -546,7 +546,7 @@ export class Datatoken extends SmartContract {
     )
 
     if ((await this.isDatatokenDeployer(dtAddress, address)) !== true) {
-      throw new Error(`Caller is not ERC20Deployer`)
+      throw new Error(`Caller is not DatatokenDeployer`)
     }
 
     const estGas = await estimateGas(
@@ -588,7 +588,7 @@ export class Datatoken extends SmartContract {
 
   /**
    * Revoke paymentManager permission for an ERC20 datatoken
-   * only ERC20Deployer can succeed
+   * only DatatokenDeployer can succeed
    * @param {String} dtAddress Datatoken address
    * @param {String} address User address
    * @param {String} paymentManager User which will be removed from paymentManager permission
@@ -605,7 +605,7 @@ export class Datatoken extends SmartContract {
     )
 
     if ((await this.isDatatokenDeployer(dtAddress, address)) !== true) {
-      throw new Error(`Caller is not ERC20Deployer`)
+      throw new Error(`Caller is not DatatokenDeployer`)
     }
 
     const estGas = await estimateGas(
@@ -1090,7 +1090,7 @@ export class Datatoken extends SmartContract {
 
   /** setData
    * This function allows to store data with a preset key (keccak256(ERC20Address)) into NFT 725 Store
-   * only ERC20Deployer can succeed
+   * only DatatokenDeployer can succeed
    * @param {String} dtAddress Datatoken address
    * @param {String} address User address
    * @param {String} value Data to be stored into 725Y standard
