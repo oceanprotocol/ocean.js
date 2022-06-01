@@ -42,7 +42,7 @@ export class Config {
    * Factory address
    * @type {string}
    */
-  public erc721FactoryAddress?: string
+  public nftFactoryAddress?: string
 
   /**
    * Factory ABI

@@ -96,7 +96,7 @@ describe('SideStaking unit test', () => {
       web3,
       factoryOwner,
       contracts.daiAddress,
-      contracts.erc721FactoryAddress,
+      contracts.nftFactoryAddress,
       BASE_TOKEN_LIQUIDITY.toString()
     )
 
@@ -106,7 +106,7 @@ describe('SideStaking unit test', () => {
           web3,
           contracts.daiAddress,
           factoryOwner,
-          contracts.erc721FactoryAddress
+          contracts.nftFactoryAddress
         )
       ) >= BASE_TOKEN_LIQUIDITY
     )
@@ -115,7 +115,7 @@ describe('SideStaking unit test', () => {
       web3,
       factoryOwner,
       contracts.usdcAddress,
-      contracts.erc721FactoryAddress,
+      contracts.nftFactoryAddress,
       BASE_TOKEN_LIQUIDITY.toString()
     )
 
@@ -125,7 +125,7 @@ describe('SideStaking unit test', () => {
           web3,
           contracts.usdcAddress,
           factoryOwner,
-          contracts.erc721FactoryAddress
+          contracts.nftFactoryAddress
         )
       ) >= BASE_TOKEN_LIQUIDITY
     )
@@ -135,12 +135,12 @@ describe('SideStaking unit test', () => {
     it('#create a pool', async () => {
       // CREATE A POOL
       // we prepare transaction parameters objects
-      const nftFactory = new NftFactory(contracts.erc721FactoryAddress, web3)
+      const nftFactory = new NftFactory(contracts.nftFactoryAddress, web3)
 
       const poolParams: PoolCreationParams = {
         ssContract: contracts.sideStakingAddress,
         baseTokenAddress: contracts.daiAddress,
-        baseTokenSender: contracts.erc721FactoryAddress,
+        baseTokenSender: contracts.nftFactoryAddress,
         publisherAddress: factoryOwner,
         marketFeeCollector: factoryOwner,
         poolTemplateAddress: contracts.poolTemplateAddress,
@@ -327,12 +327,12 @@ describe('SideStaking unit test', () => {
     it('#create a pool', async () => {
       // CREATE A POOL
       // we prepare transaction parameters objects
-      const nftFactory = new NftFactory(contracts.erc721FactoryAddress, web3)
+      const nftFactory = new NftFactory(contracts.nftFactoryAddress, web3)
 
       const poolParams: PoolCreationParams = {
         ssContract: contracts.sideStakingAddress,
         baseTokenAddress: contracts.usdcAddress,
-        baseTokenSender: contracts.erc721FactoryAddress,
+        baseTokenSender: contracts.nftFactoryAddress,
         publisherAddress: factoryOwner,
         marketFeeCollector: factoryOwner,
         poolTemplateAddress: contracts.poolTemplateAddress,

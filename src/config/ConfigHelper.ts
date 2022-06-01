@@ -161,7 +161,7 @@ export class ConfigHelper {
           startBlock
         } = customAddresses[network]
         configAddresses = {
-          erc721FactoryAddress: ERC721Factory,
+          nftFactoryAddress: ERC721Factory,
           sideStakingAddress: Staking,
           opfCommunityFeeCollector: OPFCommunityFeeCollector,
           poolTemplateAddress: poolTemplate,
@@ -191,7 +191,7 @@ export class ConfigHelper {
           startBlock
         } = DefaultContractsAddresses[network]
         configAddresses = {
-          erc721FactoryAddress: ERC721Factory,
+          nftFactoryAddress: ERC721Factory,
           sideStakingAddress: Staking,
           opfCommunityFeeCollector: OPFCommunityFeeCollector,
           poolTemplateAddress: poolTemplate,
