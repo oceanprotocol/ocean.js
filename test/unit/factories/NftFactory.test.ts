@@ -16,7 +16,7 @@ import {
 import {
   ProviderFees,
   FreCreationParams,
-  Erc20CreateParams,
+  DatatokenCreateParams,
   PoolCreationParams
 } from '../../../src/@types'
 
@@ -43,7 +43,7 @@ describe('Nft Factory test', () => {
     owner: factoryOwner
   }
 
-  const ercParams: Erc20CreateParams = {
+  const ercParams: DatatokenCreateParams = {
     templateIndex: 1,
     minter: nftOwner,
     paymentCollector: user2,
