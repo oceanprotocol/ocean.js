@@ -29,7 +29,7 @@ export class NftFactory extends SmartContractWithAddress {
   }
 
   /**
-   * Get estimated gas cost for deployERC721Contract value
+   * Get estimated gas cost for creating a new NFT
    * @param {String} address
    * @param {String} nftData
    * @return {Promise<string>} NFT datatoken address
@@ -214,7 +214,7 @@ export class NftFactory extends SmartContractWithAddress {
   }
 
   /**
-   * Add a new erc721 token template - only factory Owner
+   * Add a new NFT token template - only factory Owner
    * @param {String} address
    * @param {String} templateAddress template address to add
    * @return {Promise<TransactionReceipt>}
@@ -373,7 +373,7 @@ export class NftFactory extends SmartContractWithAddress {
   }
 
   /**
-   * Add a new erc721 token template - only factory Owner
+   * Add a new NFT token template - only factory Owner
    * @param {String} address
    * @param {String} templateAddress template address to add
    * @return {Promise<TransactionReceipt>}

@@ -48,7 +48,7 @@ export class Config {
    * Factory ABI
    * @type {string}
    */
-  public erc721FFactoryABI?: AbiItem | AbiItem[]
+  public nftFFactoryABI?: AbiItem | AbiItem[]
 
   /**
    * datatokens ABI
