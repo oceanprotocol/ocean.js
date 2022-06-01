@@ -2,7 +2,7 @@ import { DDO } from '.'
 
 export interface AssetNft {
   /**
-   * Contract address of the deployed ERC721 NFT contract.
+   * Contract address of the deployed NFT contract.
    * @type {string}
    */
   address: string
@@ -99,7 +99,7 @@ export interface AssetLastEvent {
 
 export interface Asset extends DDO {
   /**
-   * Contains information about the ERC721 NFT contract which represents the intellectual property of the publisher.
+   * Contains information about the NFT contract which represents the intellectual property of the publisher.
    * @type {string}
    */
   nft: AssetNft

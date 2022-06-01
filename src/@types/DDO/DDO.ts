@@ -13,7 +13,7 @@ export interface DDO {
 
   /**
    * DID, descentralized ID.
-   * Computed as sha256(address of ERC721 contract + chainId)
+   * Computed as sha256(address of the NFT contract + chainId)
    * @type {string}
    */
   id: string
