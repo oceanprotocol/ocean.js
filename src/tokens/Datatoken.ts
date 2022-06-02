@@ -22,7 +22,7 @@ import {
   PublishingMarketFee
 } from '../@types'
 import { Nft } from './NFT'
-import { Config } from '../models/index.js'
+import { Config } from '../config/index.js'
 
 /**
  * ERC20 ROLES

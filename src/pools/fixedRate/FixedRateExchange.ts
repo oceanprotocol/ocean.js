@@ -13,7 +13,7 @@ import {
   ZERO_ADDRESS,
   ConfigHelper
 } from '../../utils'
-import { Config } from '../../models/index.js'
+import { Config } from '../../config/index.js'
 import { PriceAndFees } from '../..'
 
 export interface FixedPriceExchange {

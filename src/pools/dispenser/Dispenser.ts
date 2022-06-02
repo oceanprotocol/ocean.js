@@ -12,7 +12,7 @@ import {
   ConfigHelper
 } from '../../utils/'
 import { Datatoken } from '../../tokens'
-import { Config } from '../../models/index.js'
+import { Config } from '../../config/index.js'
 
 export interface DispenserToken {
   active: boolean

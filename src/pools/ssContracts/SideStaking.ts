@@ -10,7 +10,7 @@ import {
   unitsToAmount
 } from '../../utils'
 import SideStakingTemplate from '@oceanprotocol/contracts/artifacts/contracts/pools/ssContracts/SideStaking.sol/SideStaking.json'
-import { Config } from '../../models'
+import { Config } from '../../config'
 
 export class SideStaking {
   public ssAbi: AbiItem | AbiItem[]

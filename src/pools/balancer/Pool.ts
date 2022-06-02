@@ -21,7 +21,7 @@ import {
   AmountsOutMaxFee,
   PoolPriceAndFees
 } from '../../@types'
-import { Config } from '../../models'
+import { Config } from '../../config'
 import {
   getMaxAddLiquidity,
   getMaxRemoveLiquidity,
