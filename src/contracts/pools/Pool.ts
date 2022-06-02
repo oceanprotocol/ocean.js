@@ -8,8 +8,7 @@ import {
   unitsToAmount,
   amountToUnits,
   LoggerInstance,
-  estimateGas,
-  ConfigHelper
+  estimateGas
 } from '../../utils'
 import BigNumber from 'bignumber.js'
 import PoolTemplate from '@oceanprotocol/contracts/artifacts/contracts/pools/balancer/BPool.sol/BPool.json'
@@ -21,7 +20,7 @@ import {
   AmountsOutMaxFee,
   PoolPriceAndFees
 } from '../../@types'
-import { Config } from '../../config'
+import { Config, ConfigHelper } from '../../config'
 import {
   getMaxAddLiquidity,
   getMaxRemoveLiquidity,

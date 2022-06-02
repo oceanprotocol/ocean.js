@@ -2,15 +2,9 @@ import Web3 from 'web3'
 import { AbiItem } from 'web3-utils/types'
 import { TransactionReceipt } from 'web3-core'
 import { Contract } from 'web3-eth-contract'
-import {
-  LoggerInstance,
-  getFairGasPrice,
-  ConfigHelper,
-  estimateGas,
-  unitsToAmount
-} from '../../utils'
+import { LoggerInstance, getFairGasPrice, estimateGas, unitsToAmount } from '../../utils'
 import SideStakingTemplate from '@oceanprotocol/contracts/artifacts/contracts/pools/ssContracts/SideStaking.sol/SideStaking.json'
-import { Config } from '../../config'
+import { Config, ConfigHelper } from '../../config'
 
 export class SideStaking {
   public ssAbi: AbiItem | AbiItem[]

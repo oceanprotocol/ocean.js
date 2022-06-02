@@ -12,10 +12,9 @@ import {
   getPoolCreationParams,
   setContractDefaults,
   estimateGas,
-  ZERO_ADDRESS,
-  ConfigHelper
+  ZERO_ADDRESS
 } from '../../utils'
-import { Config } from '../../config'
+import { Config, ConfigHelper } from '../../config'
 import {
   ProviderFees,
   FreCreationParams,

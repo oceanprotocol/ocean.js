@@ -8,11 +8,10 @@ import {
   LoggerInstance as logger,
   getFairGasPrice,
   setContractDefaults,
-  estimateGas,
-  ConfigHelper
+  estimateGas
 } from '../../utils/'
 import { Datatoken } from '..'
-import { Config } from '../../config/index.js'
+import { Config, ConfigHelper } from '../../config'
 
 export interface DispenserToken {
   active: boolean

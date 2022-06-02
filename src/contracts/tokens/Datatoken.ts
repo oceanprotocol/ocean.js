@@ -11,8 +11,7 @@ import {
   setContractDefaults,
   getFreOrderParams,
   estimateGas,
-  ZERO_ADDRESS,
-  ConfigHelper
+  ZERO_ADDRESS
 } from '../../utils'
 import {
   ConsumeMarketFee,
@@ -22,7 +21,7 @@ import {
   PublishingMarketFee
 } from '../../@types'
 import { Nft } from './NFT'
-import { Config } from '../../config'
+import { Config, ConfigHelper } from '../../config'
 
 /**
  * ERC20 ROLES
