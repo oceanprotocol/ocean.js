@@ -3,9 +3,14 @@ import Web3 from 'web3'
 import { TransactionReceipt } from 'web3-core'
 import { AbiItem } from 'web3-utils'
 import defaultRouter from '@oceanprotocol/contracts/artifacts/contracts/pools/FactoryRouter.sol/FactoryRouter.json'
-import { getFairGasPrice, setContractDefaults, ConfigHelper, estimateGas } from '../utils'
-import { Operation } from '../@types/Router'
-import { Config } from '../config/index.js'
+import {
+  getFairGasPrice,
+  setContractDefaults,
+  ConfigHelper,
+  estimateGas
+} from '../../utils'
+import { Operation } from '../../@types/Router'
+import { Config } from '../../config/index.js'
 
 /**
  * Provides an interface for FactoryRouter contract

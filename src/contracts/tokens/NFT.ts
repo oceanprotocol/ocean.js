@@ -9,11 +9,10 @@ import {
   setContractDefaults,
   estimateGas,
   ConfigHelper
-} from '../utils'
+} from '../../utils'
 import { Contract } from 'web3-eth-contract'
-import { MetadataProof } from '../../src/@types'
-import { Config } from '../config/index.js'
-import { MetadataAndTokenURI } from '../@types'
+import { MetadataProof, MetadataAndTokenURI } from '../../@types'
+import { Config } from '../../config'
 
 /**
  * ERC721 ROLES

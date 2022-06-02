@@ -14,8 +14,8 @@ import {
   estimateGas,
   ZERO_ADDRESS,
   ConfigHelper
-} from '../utils'
-import { Config } from '../config/index.js'
+} from '../../utils'
+import { Config } from '../../config'
 import {
   ProviderFees,
   FreCreationParams,
@@ -23,7 +23,7 @@ import {
   PoolCreationParams,
   DispenserCreationParams,
   ConsumeMarketFee
-} from '../@types/index.js'
+} from '../../@types'
 
 interface Template {
   templateAddress: string

@@ -11,7 +11,7 @@ import {
   estimateGas,
   ConfigHelper
 } from '../../utils/'
-import { Datatoken } from '../../tokens'
+import { Datatoken } from '..'
 import { Config } from '../../config/index.js'
 
 export interface DispenserToken {
