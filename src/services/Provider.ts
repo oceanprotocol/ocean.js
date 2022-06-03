@@ -780,4 +780,3 @@ export class Provider {
 }
 
 export const ProviderInstance = new Provider()
-export default ProviderInstance

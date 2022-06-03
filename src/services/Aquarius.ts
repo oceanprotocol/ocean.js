@@ -122,5 +122,3 @@ export class Aquarius {
     return status
   }
 }
-
-export default Aquarius

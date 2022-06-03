@@ -1,5 +1,5 @@
 import fetch from 'cross-fetch'
-import LoggerInstance from './Logger'
+import { LoggerInstance } from './Logger'
 import { DownloadResponse } from '../@types/DownloadResponse'
 
 export async function fetchData(url: string, opts: RequestInit): Promise<Response> {

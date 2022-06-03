@@ -7,7 +7,7 @@ import {
   unitsToAmount
 } from './ContractUtils'
 import { minAbi } from './minAbi'
-import LoggerInstance from './Logger'
+import { LoggerInstance } from './Logger'
 import { TransactionReceipt } from 'web3-core'
 import Web3 from 'web3'
 

@@ -195,5 +195,3 @@ export class Config {
    */
   gasFeeMultiplier: number
 }
-
-export default Config
