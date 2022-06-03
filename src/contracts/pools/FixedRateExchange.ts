@@ -13,7 +13,7 @@ import {
   ZERO_ADDRESS
 } from '../../utils'
 import { Config, ConfigHelper } from '../../config'
-import { PriceAndFees } from '../..'
+import { PriceAndFees } from '../../@types'
 
 export interface FixedPriceExchange {
   active: boolean

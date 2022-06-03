@@ -2,17 +2,22 @@ import Web3 from 'web3'
 import { AbiItem } from 'web3-utils/types'
 import { TransactionReceipt } from 'web3-core'
 import { Contract } from 'web3-eth-contract'
+import Decimal from 'decimal.js'
+import BigNumber from 'bignumber.js'
+import PoolTemplate from '@oceanprotocol/contracts/artifacts/contracts/pools/balancer/BPool.sol/BPool.json'
+import defaultErc20Abi from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC20Template.sol/ERC20Template.json'
 import {
   getFairGasPrice,
   setContractDefaults,
   unitsToAmount,
   amountToUnits,
   LoggerInstance,
-  estimateGas
+  estimateGas,
+  getMaxAddLiquidity,
+  getMaxRemoveLiquidity,
+  getMaxSwapExactIn,
+  getMaxSwapExactOut
 } from '../../utils'
-import BigNumber from 'bignumber.js'
-import PoolTemplate from '@oceanprotocol/contracts/artifacts/contracts/pools/balancer/BPool.sol/BPool.json'
-import defaultErc20Abi from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC20Template.sol/ERC20Template.json'
 import {
   CurrentFees,
   TokenInOutMarket,
@@ -21,13 +26,7 @@ import {
   PoolPriceAndFees
 } from '../../@types'
 import { Config, ConfigHelper } from '../../config'
-import {
-  getMaxAddLiquidity,
-  getMaxRemoveLiquidity,
-  getMaxSwapExactIn,
-  getMaxSwapExactOut
-} from '../../utils/PoolHelpers'
-import Decimal from 'decimal.js'
+
 const MaxUint256 =
   '115792089237316195423570985008687907853269984665640564039457584007913129639934'
 
