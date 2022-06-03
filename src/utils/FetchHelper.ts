@@ -1,6 +1,6 @@
 import fetch from 'cross-fetch'
-import { LoggerInstance } from './Logger'
-import { DownloadResponse } from '../@types/DownloadResponse'
+import { DownloadResponse } from '../@types'
+import { LoggerInstance } from '.'
 
 export async function fetchData(url: string, opts: RequestInit): Promise<Response> {
   const result = await fetch(url, opts)
