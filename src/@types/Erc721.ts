@@ -11,3 +11,10 @@ export interface MetadataAndTokenURI {
   tokenURI: string
   metadataProofs?: MetadataProof[]
 }
+
+export interface NftRoles {
+  manager: boolean
+  deployERC20: boolean
+  updateMetadata: boolean
+  store: boolean
+}
