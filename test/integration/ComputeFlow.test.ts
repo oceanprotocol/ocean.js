@@ -428,6 +428,12 @@ describe('Simple compute tests', async () => {
       serviceId: resolvedAlgoDdoWith1mTimeout.services[0].id
     }
 
+    console.log('assets', assets)
+    console.log('algo', algo)
+    console.log('computeEnv', computeEnv)
+    console.log('computeValidUntil', computeValidUntil)
+    console.log('providerUrl', providerUrl)
+    console.log('consumerAccount', consumerAccount)
     providerInitializeComputeResults = await ProviderInstance.initializeCompute(
       assets,
       algo,
@@ -436,6 +442,7 @@ describe('Simple compute tests', async () => {
       providerUrl,
       consumerAccount
     )
+    console.log(providerInitializeComputeResults)
     assert(
       !('error' in providerInitializeComputeResults.algorithm),
       'Cannot order algorithm'
