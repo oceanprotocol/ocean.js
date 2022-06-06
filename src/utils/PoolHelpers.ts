@@ -1,5 +1,5 @@
 import Decimal from 'decimal.js'
-import { Pool } from '..'
+import { Pool } from '../contracts'
 
 export function calcMaxExactOut(balance: string): Decimal {
   return new Decimal(balance).div(2)

@@ -1,47 +1,20 @@
-import Web3 from 'web3'
 import { AbiItem } from 'web3-utils'
 import { TransactionReceipt } from 'web3-eth'
-import defaultNftAbi from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC721Template.sol/ERC721Template.json'
+import ERC721Template from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC721Template.sol/ERC721Template.json'
 import {
   LoggerInstance,
   getFairGasPrice,
   generateDtName,
   setContractDefaults,
-  estimateGas,
-  ConfigHelper
-} from '../utils'
+  estimateGas
+} from '../../utils'
 import { Contract } from 'web3-eth-contract'
-import { MetadataProof } from '../../src/@types'
-import { Config } from '../models/index.js'
-import { MetadataAndTokenURI } from '../@types'
+import { MetadataProof, MetadataAndTokenURI, NftRoles } from '../../@types'
+import { SmartContract } from '..'
 
-/**
- * ERC721 ROLES
- */
-interface Roles {
-  manager: boolean
-  deployERC20: boolean
-  updateMetadata: boolean
-  store: boolean
-}
-
-export class Nft {
-  public factory721Address: string
-  public factory721Abi: AbiItem | AbiItem[]
-  public nftAbi: AbiItem | AbiItem[]
-  public web3: Web3
-  public startBlock: number
-  public config: Config
-
-  constructor(
-    web3: Web3,
-    network?: string | number,
-    nftAbi?: AbiItem | AbiItem[],
-    config?: Config
-  ) {
-    this.nftAbi = nftAbi || (defaultNftAbi.abi as AbiItem[])
-    this.web3 = web3
-    this.config = config || new ConfigHelper().getConfig(network || 'unknown')
+export class Nft extends SmartContract {
+  getDefaultAbi(): AbiItem | AbiItem[] {
+    return ERC721Template.abi as AbiItem[]
   }
 
   /**
@@ -76,10 +49,7 @@ export class Nft {
   ): Promise<any> {
     const nftContract =
       contractInstance ||
-      setContractDefaults(
-        new this.web3.eth.Contract(this.nftAbi, nftAddress),
-        this.config
-      )
+      setContractDefaults(new this.web3.eth.Contract(this.abi, nftAddress), this.config)
     return estimateGas(
       address,
       nftContract.methods.createERC20,
@@ -131,7 +101,7 @@ export class Nft {
 
     // Create 721contract object
     const nftContract = setContractDefaults(
-      new this.web3.eth.Contract(this.nftAbi, nftAddress),
+      new this.web3.eth.Contract(this.abi, nftAddress),
       this.config
     )
 
@@ -185,10 +155,7 @@ export class Nft {
   ) {
     const nftContract =
       contractInstance ||
-      setContractDefaults(
-        new this.web3.eth.Contract(this.nftAbi, nftAddress),
-        this.config
-      )
+      setContractDefaults(new this.web3.eth.Contract(this.abi, nftAddress), this.config)
 
     return estimateGas(address, nftContract.methods.addManager, manager)
   }
@@ -202,7 +169,7 @@ export class Nft {
    */
   public async addManager(nftAddress: string, address: string, manager: string) {
     const nftContract = setContractDefaults(
-      new this.web3.eth.Contract(this.nftAbi, nftAddress),
+      new this.web3.eth.Contract(this.abi, nftAddress),
       this.config
     )
 
@@ -238,10 +205,7 @@ export class Nft {
   ) {
     const nftContract =
       contractInstance ||
-      setContractDefaults(
-        new this.web3.eth.Contract(this.nftAbi, nftAddress),
-        this.config
-      )
+      setContractDefaults(new this.web3.eth.Contract(this.abi, nftAddress), this.config)
     return estimateGas(address, nftContract.methods.removeManager, manager)
   }
 
@@ -254,7 +218,7 @@ export class Nft {
    */
   public async removeManager(nftAddress: string, address: string, manager: string) {
     const nftContract = setContractDefaults(
-      new this.web3.eth.Contract(this.nftAbi, nftAddress),
+      new this.web3.eth.Contract(this.abi, nftAddress),
       this.config
     )
 
@@ -290,10 +254,7 @@ export class Nft {
   ): Promise<any> {
     const nftContract =
       contractInstance ||
-      setContractDefaults(
-        new this.web3.eth.Contract(this.nftAbi, nftAddress),
-        this.config
-      )
+      setContractDefaults(new this.web3.eth.Contract(this.abi, nftAddress), this.config)
     return estimateGas(address, nftContract.methods.addToCreateERC20List, erc20Deployer)
   }
 
@@ -310,7 +271,7 @@ export class Nft {
     erc20Deployer: string
   ): Promise<TransactionReceipt> {
     const nftContract = setContractDefaults(
-      new this.web3.eth.Contract(this.nftAbi, nftAddress),
+      new this.web3.eth.Contract(this.abi, nftAddress),
       this.config
     )
 
@@ -353,10 +314,7 @@ export class Nft {
   ): Promise<any> {
     const nftContract =
       contractInstance ||
-      setContractDefaults(
-        new this.web3.eth.Contract(this.nftAbi, nftAddress),
-        this.config
-      )
+      setContractDefaults(new this.web3.eth.Contract(this.abi, nftAddress), this.config)
 
     return estimateGas(
       address,
@@ -378,7 +336,7 @@ export class Nft {
     erc20Deployer: string
   ): Promise<TransactionReceipt> {
     const nftContract = setContractDefaults(
-      new this.web3.eth.Contract(this.nftAbi, nftAddress),
+      new this.web3.eth.Contract(this.abi, nftAddress),
       this.config
     )
 
@@ -423,10 +381,7 @@ export class Nft {
   ): Promise<any> {
     const nftContract =
       contractInstance ||
-      setContractDefaults(
-        new this.web3.eth.Contract(this.nftAbi, nftAddress),
-        this.config
-      )
+      setContractDefaults(new this.web3.eth.Contract(this.abi, nftAddress), this.config)
 
     return estimateGas(address, nftContract.methods.addToMetadataList, metadataUpdater)
   }
@@ -444,7 +399,7 @@ export class Nft {
     metadataUpdater: string
   ): Promise<TransactionReceipt> {
     const nftContract = setContractDefaults(
-      new this.web3.eth.Contract(this.nftAbi, nftAddress),
+      new this.web3.eth.Contract(this.abi, nftAddress),
       this.config
     )
 
@@ -484,10 +439,7 @@ export class Nft {
   ): Promise<any> {
     const nftContract =
       contractInstance ||
-      setContractDefaults(
-        new this.web3.eth.Contract(this.nftAbi, nftAddress),
-        this.config
-      )
+      setContractDefaults(new this.web3.eth.Contract(this.abi, nftAddress), this.config)
 
     return estimateGas(
       address,
@@ -509,7 +461,7 @@ export class Nft {
     metadataUpdater: string
   ): Promise<TransactionReceipt> {
     const nftContract = setContractDefaults(
-      new this.web3.eth.Contract(this.nftAbi, nftAddress),
+      new this.web3.eth.Contract(this.abi, nftAddress),
       this.config
     )
 
@@ -556,10 +508,7 @@ export class Nft {
   ): Promise<any> {
     const nftContract =
       contractInstance ||
-      setContractDefaults(
-        new this.web3.eth.Contract(this.nftAbi, nftAddress),
-        this.config
-      )
+      setContractDefaults(new this.web3.eth.Contract(this.abi, nftAddress), this.config)
 
     return estimateGas(address, nftContract.methods.addTo725StoreList, storeUpdater)
   }
@@ -577,7 +526,7 @@ export class Nft {
     storeUpdater: string
   ): Promise<TransactionReceipt> {
     const nftContract = setContractDefaults(
-      new this.web3.eth.Contract(this.nftAbi, nftAddress),
+      new this.web3.eth.Contract(this.abi, nftAddress),
       this.config
     )
 
@@ -617,10 +566,7 @@ export class Nft {
   ): Promise<any> {
     const nftContract =
       contractInstance ||
-      setContractDefaults(
-        new this.web3.eth.Contract(this.nftAbi, nftAddress),
-        this.config
-      )
+      setContractDefaults(new this.web3.eth.Contract(this.abi, nftAddress), this.config)
 
     return estimateGas(address, nftContract.methods.removeFrom725StoreList, storeUpdater)
   }
@@ -638,7 +584,7 @@ export class Nft {
     storeUpdater: string
   ): Promise<TransactionReceipt> {
     const nftContract = setContractDefaults(
-      new this.web3.eth.Contract(this.nftAbi, nftAddress),
+      new this.web3.eth.Contract(this.abi, nftAddress),
       this.config
     )
 
@@ -682,10 +628,7 @@ export class Nft {
   ): Promise<any> {
     const nftContract =
       contractInstance ||
-      setContractDefaults(
-        new this.web3.eth.Contract(this.nftAbi, nftAddress),
-        this.config
-      )
+      setContractDefaults(new this.web3.eth.Contract(this.abi, nftAddress), this.config)
 
     return estimateGas(address, nftContract.methods.cleanPermissions)
   }
@@ -705,7 +648,7 @@ export class Nft {
     address: string
   ): Promise<TransactionReceipt> {
     const nftContract = setContractDefaults(
-      new this.web3.eth.Contract(this.nftAbi, nftAddress),
+      new this.web3.eth.Contract(this.abi, nftAddress),
       this.config
     )
 
@@ -743,10 +686,7 @@ export class Nft {
   ): Promise<any> {
     const nftContract =
       contractInstance ||
-      setContractDefaults(
-        new this.web3.eth.Contract(this.nftAbi, nftAddress),
-        this.config
-      )
+      setContractDefaults(new this.web3.eth.Contract(this.abi, nftAddress), this.config)
 
     return estimateGas(
       nftOwner,
@@ -773,7 +713,7 @@ export class Nft {
     tokenId?: number
   ): Promise<TransactionReceipt> {
     const nftContract = setContractDefaults(
-      new this.web3.eth.Contract(this.nftAbi, nftAddress),
+      new this.web3.eth.Contract(this.abi, nftAddress),
       this.config
     )
 
@@ -821,10 +761,7 @@ export class Nft {
   ): Promise<any> {
     const nftContract =
       contractInstance ||
-      setContractDefaults(
-        new this.web3.eth.Contract(this.nftAbi, nftAddress),
-        this.config
-      )
+      setContractDefaults(new this.web3.eth.Contract(this.abi, nftAddress), this.config)
 
     return estimateGas(
       nftOwner,
@@ -851,7 +788,7 @@ export class Nft {
     tokenId?: number
   ): Promise<TransactionReceipt> {
     const nftContract = setContractDefaults(
-      new this.web3.eth.Contract(this.nftAbi, nftAddress),
+      new this.web3.eth.Contract(this.abi, nftAddress),
       this.config
     )
 
@@ -906,10 +843,7 @@ export class Nft {
   ): Promise<any> {
     const nftContract =
       contractInstance ||
-      setContractDefaults(
-        new this.web3.eth.Contract(this.nftAbi, nftAddress),
-        this.config
-      )
+      setContractDefaults(new this.web3.eth.Contract(this.abi, nftAddress), this.config)
     if (!metadataProofs) metadataProofs = []
     return estimateGas(
       metadataUpdater,
@@ -943,7 +877,7 @@ export class Nft {
     metadataProofs?: MetadataProof[]
   ): Promise<TransactionReceipt> {
     const nftContract = setContractDefaults(
-      new this.web3.eth.Contract(this.nftAbi, nftAddress),
+      new this.web3.eth.Contract(this.abi, nftAddress),
       this.config
     )
     if (!metadataProofs) metadataProofs = []
@@ -996,10 +930,7 @@ export class Nft {
   ): Promise<any> {
     const nftContract =
       contractInstance ||
-      setContractDefaults(
-        new this.web3.eth.Contract(this.nftAbi, nftAddress),
-        this.config
-      )
+      setContractDefaults(new this.web3.eth.Contract(this.abi, nftAddress), this.config)
     const sanitizedMetadataAndTokenURI = {
       ...metadataAndTokenURI,
       metadataProofs: metadataAndTokenURI.metadataProofs || []
@@ -1024,7 +955,7 @@ export class Nft {
     metadataAndTokenURI: MetadataAndTokenURI
   ): Promise<TransactionReceipt> {
     const nftContract = setContractDefaults(
-      new this.web3.eth.Contract(this.nftAbi, nftAddress),
+      new this.web3.eth.Contract(this.abi, nftAddress),
       this.config
     )
     if (!(await this.getNftPermissions(nftAddress, metadataUpdater)).updateMetadata) {
@@ -1066,10 +997,7 @@ export class Nft {
   ): Promise<any> {
     const nftContract =
       contractInstance ||
-      setContractDefaults(
-        new this.web3.eth.Contract(this.nftAbi, nftAddress),
-        this.config
-      )
+      setContractDefaults(new this.web3.eth.Contract(this.abi, nftAddress), this.config)
 
     return estimateGas(
       metadataUpdater,
@@ -1091,7 +1019,7 @@ export class Nft {
     metadataState: number
   ): Promise<TransactionReceipt> {
     const nftContract = setContractDefaults(
-      new this.web3.eth.Contract(this.nftAbi, nftAddress),
+      new this.web3.eth.Contract(this.abi, nftAddress),
       this.config
     )
 
@@ -1127,7 +1055,7 @@ export class Nft {
     data: string
   ): Promise<any> {
     const nftContract = setContractDefaults(
-      new this.web3.eth.Contract(this.nftAbi, nftAddress),
+      new this.web3.eth.Contract(this.abi, nftAddress),
       this.config
     )
 
@@ -1146,7 +1074,7 @@ export class Nft {
     data: string
   ): Promise<any> {
     const nftContract = setContractDefaults(
-      new this.web3.eth.Contract(this.nftAbi, nftAddress),
+      new this.web3.eth.Contract(this.abi, nftAddress),
       this.config
     )
 
@@ -1165,7 +1093,7 @@ export class Nft {
    */
   public async getNftOwner(nftAddress: string): Promise<string> {
     const nftContract = setContractDefaults(
-      new this.web3.eth.Contract(this.nftAbi, nftAddress),
+      new this.web3.eth.Contract(this.abi, nftAddress),
       this.config
     )
     const trxReceipt = await nftContract.methods.ownerOf(1).call()
@@ -1175,11 +1103,11 @@ export class Nft {
   /** Get users NFT Permissions
    * @param {String} nftAddress erc721 contract adress
    * @param {String} address user adress
-   * @return {Promise<Roles>}
+   * @return {Promise<NftRoles>}
    */
-  public async getNftPermissions(nftAddress: string, address: string): Promise<Roles> {
+  public async getNftPermissions(nftAddress: string, address: string): Promise<NftRoles> {
     const nftContract = setContractDefaults(
-      new this.web3.eth.Contract(this.nftAbi, nftAddress),
+      new this.web3.eth.Contract(this.abi, nftAddress),
       this.config
     )
     const roles = await nftContract.methods.getPermissions(address).call()
@@ -1192,7 +1120,7 @@ export class Nft {
    */
   public async getMetadata(nftAddress: string): Promise<Object> {
     const nftContract = setContractDefaults(
-      new this.web3.eth.Contract(this.nftAbi, nftAddress),
+      new this.web3.eth.Contract(this.abi, nftAddress),
       this.config
     )
     return await nftContract.methods.getMetaData().call()
@@ -1201,11 +1129,11 @@ export class Nft {
   /** Get users ERC20Deployer role
    * @param {String} nftAddress erc721 contract adress
    * @param {String} address user adress
-   * @return {Promise<Roles>}
+   * @return {Promise<boolean>}
    */
   public async isErc20Deployer(nftAddress: string, address: string): Promise<boolean> {
     const nftContract = setContractDefaults(
-      new this.web3.eth.Contract(this.nftAbi, nftAddress),
+      new this.web3.eth.Contract(this.abi, nftAddress),
       this.config
     )
     const isERC20Deployer = await nftContract.methods.isERC20Deployer(address).call()
@@ -1219,7 +1147,7 @@ export class Nft {
    */
   public async getData(nftAddress: string, key: string): Promise<string> {
     const nftContract = setContractDefaults(
-      new this.web3.eth.Contract(this.nftAbi, nftAddress),
+      new this.web3.eth.Contract(this.abi, nftAddress),
       this.config
     )
     const data = await nftContract.methods.getData(key).call()
@@ -1233,7 +1161,7 @@ export class Nft {
    */
   public async getTokenURI(nftAddress: string, id: number): Promise<string> {
     const nftContract = setContractDefaults(
-      new this.web3.eth.Contract(this.nftAbi, nftAddress),
+      new this.web3.eth.Contract(this.abi, nftAddress),
       this.config
     )
     const data = await nftContract.methods.tokenURI(id).call()

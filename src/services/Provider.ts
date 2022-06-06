@@ -1,5 +1,6 @@
 import Web3 from 'web3'
-import { LoggerInstance, getData } from '../utils'
+import fetch from 'cross-fetch'
+import { LoggerInstance, getData, noZeroX } from '../utils'
 import {
   FileMetadata,
   ComputeJob,
@@ -8,22 +9,10 @@ import {
   ComputeAsset,
   ComputeEnvironment,
   ProviderInitialize,
-  ProviderComputeInitializeResults
-} from '../@types/'
-import { noZeroX } from '../utils/ConversionTypeHelper'
-import fetch from 'cross-fetch'
-export interface HttpCallback {
-  (httpMethod: string, url: string, body: string, header: any): Promise<any>
-}
-
-export interface ServiceEndpoint {
-  serviceName: string
-  method: string
-  urlPath: string
-}
-export interface UserCustomParameters {
-  [key: string]: any
-}
+  ProviderComputeInitializeResults,
+  ServiceEndpoint,
+  UserCustomParameters
+} from '../@types'
 
 export class Provider {
   /**
@@ -780,4 +769,3 @@ export class Provider {
 }
 
 export const ProviderInstance = new Provider()
-export default ProviderInstance

@@ -1,7 +1,7 @@
-import Config from '../models/Config'
 // eslint-disable-next-line import/no-named-default
 import { default as DefaultContractsAddresses } from '@oceanprotocol/contracts/addresses/address.json'
-import LoggerInstance from './Logger'
+import { Config } from '.'
+import { LoggerInstance } from '../utils'
 
 const configHelperNetworksBase: Config = {
   chainId: null,
