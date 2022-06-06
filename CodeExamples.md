@@ -614,7 +614,7 @@ Now let's console log the DID to check everything is working
 
   ### 7.3 Marketplace displays fixed rate asset for sale
 ```Typescript
-    const fixedRate = new FixedRateExchange(web3, freAddress)
+    const fixedRate = new FixedRateExchange(freAddress, web3)
     const oceanAmount = await (
       await fixedRate.calcBaseInGivenOutDT(freId, '1')
     ).baseTokenAmount
@@ -655,7 +655,7 @@ Before we call the contract we have to call `approve` so that the contract can m
       DATATOKEN_AMOUNT
     )
 
-    const fixedRate = new FixedRateExchange(web3, freAddress)
+    const fixedRate = new FixedRateExchange(freAddress, web3)
 ```
 Now we can make the contract call
 ```Typescript
@@ -826,7 +826,7 @@ Now we need to encrypt file(s) using provider
   ### 8.3 Consumer gets a dispenser data asset, and downloads it
 ```Typescript
     const datatoken = new Datatoken(web3)
-    const dispenser = new Dispenser(web3, null, addresses.Dispenser)
+    const dispenser = new Dispenser(addresses.Dispenser, web3)
 
     let consumerDTBalance = await balance(
       web3,
