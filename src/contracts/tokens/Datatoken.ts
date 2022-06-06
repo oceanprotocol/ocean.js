@@ -18,32 +18,13 @@ import {
   FreOrderParams,
   FreCreationParams,
   ProviderFees,
-  PublishingMarketFee
+  PublishingMarketFee,
+  DispenserParams,
+  OrderParams,
+  Roles
 } from '../../@types'
 import { Nft } from './NFT'
 import { Config, ConfigHelper } from '../../config'
-
-/**
- * ERC20 ROLES
- */
-interface Roles {
-  minter: boolean
-  paymentManager: boolean
-}
-
-export interface OrderParams {
-  consumer: string
-  serviceIndex: number
-  _providerFee: ProviderFees
-  _consumeMarketFee: ConsumeMarketFee
-}
-
-export interface DispenserParams {
-  maxTokens: string
-  maxBalance: string
-  withMint?: boolean // true if we want to allow the dispenser to be a minter
-  allowedSwapper?: string // only account that can ask tokens. set address(0) if not required
-}
 
 export class Datatoken {
   public factoryAddress: string
