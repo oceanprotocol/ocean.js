@@ -24,7 +24,7 @@ export interface PublishingMarketFee {
   publishMarketFeeAmount: string
 }
 
-export interface Roles {
+export interface DatatokenRoles {
   minter: boolean
   paymentManager: boolean
 }
