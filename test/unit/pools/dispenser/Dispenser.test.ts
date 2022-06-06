@@ -59,7 +59,7 @@ describe('Dispenser flow', () => {
   })
 
   it('should initialize Dispenser class', async () => {
-    DispenserClass = new Dispenser(web3, 8996, contracts.dispenserAddress)
+    DispenserClass = new Dispenser(contracts.dispenserAddress, web3, 8996)
     assert(DispenserClass !== null)
   })
 

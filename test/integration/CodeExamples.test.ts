@@ -826,7 +826,7 @@ describe('Marketplace flow tests', async () => {
   it('8.3 Consumer gets a dispenser data asset, and downloads it', async () => {
     /// ```Typescript
     const datatoken = new Datatoken(web3)
-    const dispenser = new Dispenser(web3, null, addresses.Dispenser)
+    const dispenser = new Dispenser(addresses.Dispenser, web3)
 
     let consumerDTBalance = await balance(
       web3,
