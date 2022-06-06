@@ -10,7 +10,7 @@ import {
 } from '../../utils'
 import { Contract } from 'web3-eth-contract'
 import { MetadataProof, MetadataAndTokenURI, NftRoles } from '../../@types'
-import { SmartContract } from '../SmartContract'
+import { SmartContract } from '..'
 
 export class Nft extends SmartContract {
   getDefaultAbi(): AbiItem | AbiItem[] {
