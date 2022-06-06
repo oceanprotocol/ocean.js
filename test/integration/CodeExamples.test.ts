@@ -614,7 +614,7 @@ describe('Marketplace flow tests', async () => {
 
   it('7.3 Marketplace displays fixed rate asset for sale', async () => {
     /// ```Typescript
-    const fixedRate = new FixedRateExchange(web3, freAddress)
+    const fixedRate = new FixedRateExchange(freAddress, web3)
     const oceanAmount = await (
       await fixedRate.calcBaseInGivenOutDT(freId, '1')
     ).baseTokenAmount
@@ -655,7 +655,7 @@ describe('Marketplace flow tests', async () => {
       DATATOKEN_AMOUNT
     )
 
-    const fixedRate = new FixedRateExchange(web3, freAddress)
+    const fixedRate = new FixedRateExchange(freAddress, web3)
     /// ```
     /// Now we can make the contract call
     /// ```Typescript
