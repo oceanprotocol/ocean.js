@@ -17,7 +17,6 @@ import { PriceAndFees, FeesInfo, FixedPriceExchange } from '../../@types'
 
 export class FixedRateExchange {
   /** Ocean related functions */
-  public oceanAddress: string = null
   public fixedRateAddress: string
   public fixedRateExchangeAbi: AbiItem | AbiItem[]
   public web3: Web3
@@ -36,14 +35,12 @@ export class FixedRateExchange {
     fixedRateAddress: string,
     network?: string | number,
     fixedRateExchangeAbi: AbiItem | AbiItem[] = null,
-    oceanAddress: string = null,
     config?: Config
   ) {
     this.web3 = web3
     this.config = config || new ConfigHelper().getConfig(network || 'unknown')
     this.fixedRateExchangeAbi =
       fixedRateExchangeAbi || (defaultFixedRateExchangeAbi.abi as AbiItem[])
-    this.oceanAddress = oceanAddress
     this.fixedRateAddress = fixedRateAddress
     this.fixedRateContract = setContractDefaults(
       new this.web3.eth.Contract(this.fixedRateExchangeAbi, this.fixedRateAddress),
