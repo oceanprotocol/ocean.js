@@ -422,16 +422,11 @@ describe('Simple compute tests', async () => {
         serviceId: resolvedDdoWith1mTimeout.services[0].id
       }
     ]
-    console.log(assets)
-    console.log(resolvedDdoWith1mTimeout.services[0].datatokenAddress)
     const dtAddressArray = [resolvedDdoWith1mTimeout.services[0].datatokenAddress]
-    console.log(resolvedAlgoDdoWith1mTimeout.id)
-    console.log(resolvedAlgoDdoWith1mTimeout.services[0].id)
     const algo: ComputeAlgorithm = {
       documentId: resolvedAlgoDdoWith1mTimeout.id,
       serviceId: resolvedAlgoDdoWith1mTimeout.services[0].id
     }
-    console.log(algo)
 
     providerInitializeComputeResults = await ProviderInstance.initializeCompute(
       assets,
@@ -441,7 +436,6 @@ describe('Simple compute tests', async () => {
       providerUrl,
       consumerAccount
     )
-    console.log(providerInitializeComputeResults)
     assert(
       !('error' in providerInitializeComputeResults.algorithm),
       'Cannot order algorithm'
@@ -453,7 +447,6 @@ describe('Simple compute tests', async () => {
       computeConsumerAddress,
       0
     )
-    console.log(algo.transferTxId)
     for (let i = 0; i < providerInitializeComputeResults.datasets.length; i++) {
       assets[i].transferTxId = await handleOrder(
         providerInitializeComputeResults.datasets[i],
@@ -463,7 +456,6 @@ describe('Simple compute tests', async () => {
         0
       )
     }
-    console.log(assets[0])
     const computeJobs = await ProviderInstance.computeStart(
       providerUrl,
       web3,
