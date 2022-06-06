@@ -447,6 +447,16 @@ describe('Simple compute tests', async () => {
       !('error' in providerInitializeComputeResults.algorithm),
       'Cannot order algorithm'
     )
+    console.log(
+      'providerInitializeComputeResults.algorithm',
+      providerInitializeComputeResults.algorithm
+    )
+    console.log(
+      'resolvedAlgoDdoWith1mTimeout.services[0].datatokenAddress',
+      resolvedAlgoDdoWith1mTimeout.services[0].datatokenAddress
+    )
+    console.log('consumerAccount', consumerAccount)
+    console.log('computeConsumerAddress', computeConsumerAddress)
     algo.transferTxId = await handleOrder(
       providerInitializeComputeResults.algorithm,
       resolvedAlgoDdoWith1mTimeout.services[0].datatokenAddress,
@@ -463,6 +473,12 @@ describe('Simple compute tests', async () => {
         0
       )
     }
+    console.log('algo.transferTxId', algo.transferTxId)
+    console.log('providerUrl', providerUrl)
+    console.log('consumerAccount', consumerAccount)
+    console.log('computeEnv', computeEnv)
+    console.log('assets[0]', assets[0])
+    console.log('algo', algo)
     const computeJobs = await ProviderInstance.computeStart(
       providerUrl,
       web3,
@@ -471,6 +487,7 @@ describe('Simple compute tests', async () => {
       assets[0],
       algo
     )
+    console.log('computeJobs', computeJobs)
     assert(computeJobs, 'Cannot start compute job')
     computeJobId = computeJobs[0].jobId
   })
