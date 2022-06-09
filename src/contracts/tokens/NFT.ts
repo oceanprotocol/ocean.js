@@ -3,7 +3,6 @@ import { TransactionReceipt } from 'web3-eth'
 import ERC721Template from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC721Template.sol/ERC721Template.json'
 import {
   LoggerInstance,
-  getFairGasPrice,
   generateDtName,
   setContractDefaults,
   estimateGas
@@ -127,7 +126,7 @@ export class Nft extends SmartContract {
       .send({
         from: address,
         gas: estGas + 1,
-        gasPrice: await getFairGasPrice(this.web3, this.config)
+        gasPrice: await this.getFairGasPrice()
       })
 
     let tokenAddress = null
@@ -183,7 +182,7 @@ export class Nft extends SmartContract {
     const trxReceipt = await nftContract.methods.addManager(manager).send({
       from: address,
       gas: estGas + 1,
-      gasPrice: await getFairGasPrice(this.web3, this.config)
+      gasPrice: await this.getFairGasPrice()
     })
 
     return trxReceipt
@@ -232,7 +231,7 @@ export class Nft extends SmartContract {
     const trxReceipt = await nftContract.methods.removeManager(manager).send({
       from: address,
       gas: estGas + 1,
-      gasPrice: await getFairGasPrice(this.web3, this.config)
+      gasPrice: await this.getFairGasPrice()
     })
 
     return trxReceipt
@@ -292,7 +291,7 @@ export class Nft extends SmartContract {
       .send({
         from: address,
         gas: estGas + 1,
-        gasPrice: await getFairGasPrice(this.web3, this.config)
+        gasPrice: await this.getFairGasPrice()
       })
 
     return trxReceipt
@@ -359,7 +358,7 @@ export class Nft extends SmartContract {
       .send({
         from: address,
         gas: estGas + 1,
-        gasPrice: await getFairGasPrice(this.web3, this.config)
+        gasPrice: await this.getFairGasPrice()
       })
 
     return trxReceipt
@@ -417,7 +416,7 @@ export class Nft extends SmartContract {
     const trxReceipt = await nftContract.methods.addToMetadataList(metadataUpdater).send({
       from: address,
       gas: estGas + 1,
-      gasPrice: await getFairGasPrice(this.web3, this.config)
+      gasPrice: await this.getFairGasPrice()
     })
 
     return trxReceipt
@@ -486,7 +485,7 @@ export class Nft extends SmartContract {
       .send({
         from: address,
         gas: estGas + 1,
-        gasPrice: await getFairGasPrice(this.web3, this.config)
+        gasPrice: await this.getFairGasPrice()
       })
 
     return trxReceipt
@@ -544,7 +543,7 @@ export class Nft extends SmartContract {
     const trxReceipt = await nftContract.methods.addTo725StoreList(storeUpdater).send({
       from: address,
       gas: estGas + 1,
-      gasPrice: await getFairGasPrice(this.web3, this.config)
+      gasPrice: await this.getFairGasPrice()
     })
 
     return trxReceipt
@@ -608,7 +607,7 @@ export class Nft extends SmartContract {
       .send({
         from: address,
         gas: estGas + 1,
-        gasPrice: await getFairGasPrice(this.web3, this.config)
+        gasPrice: await this.getFairGasPrice()
       })
 
     return trxReceipt
@@ -662,7 +661,7 @@ export class Nft extends SmartContract {
     const trxReceipt = await nftContract.methods.cleanPermissions().send({
       from: address,
       gas: estGas + 1,
-      gasPrice: await getFairGasPrice(this.web3, this.config)
+      gasPrice: await this.getFairGasPrice()
     })
 
     return trxReceipt
@@ -737,7 +736,7 @@ export class Nft extends SmartContract {
       .send({
         from: nftOwner,
         gas: estGas + 1,
-        gasPrice: await getFairGasPrice(this.web3, this.config)
+        gasPrice: await this.getFairGasPrice()
       })
 
     return trxReceipt
@@ -812,7 +811,7 @@ export class Nft extends SmartContract {
       .send({
         from: nftOwner,
         gas: estGas + 1,
-        gasPrice: await getFairGasPrice(this.web3, this.config)
+        gasPrice: await this.getFairGasPrice()
       })
 
     return trxReceipt
@@ -908,7 +907,7 @@ export class Nft extends SmartContract {
       .send({
         from: address,
         gas: estGas + 1,
-        gasPrice: await getFairGasPrice(this.web3, this.config)
+        gasPrice: await this.getFairGasPrice()
       })
 
     return trxReceipt
@@ -975,7 +974,7 @@ export class Nft extends SmartContract {
       .send({
         from: metadataUpdater,
         gas: estGas + 1,
-        gasPrice: await getFairGasPrice(this.web3, this.config)
+        gasPrice: await this.getFairGasPrice()
       })
 
     return trxReceipt
@@ -1037,7 +1036,7 @@ export class Nft extends SmartContract {
     const trxReceipt = await nftContract.methods.setMetaDataState(metadataState).send({
       from: address,
       gas: estGas + 1,
-      gasPrice: await getFairGasPrice(this.web3, this.config)
+      gasPrice: await this.getFairGasPrice()
     })
 
     return trxReceipt
@@ -1082,7 +1081,7 @@ export class Nft extends SmartContract {
     const trxReceipt = await nftContract.methods.setTokenURI('1', data).send({
       from: address,
       gas: estGas + 1,
-      gasPrice: await getFairGasPrice(this.web3, this.config)
+      gasPrice: await this.getFairGasPrice()
     })
     return trxReceipt
   }

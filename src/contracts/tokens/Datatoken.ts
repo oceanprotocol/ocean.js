@@ -7,7 +7,6 @@ import ERC20Template from '@oceanprotocol/contracts/artifacts/contracts/template
 import ERC20TemplateEnterprise from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC20TemplateEnterprise.sol/ERC20TemplateEnterprise.json'
 import {
   LoggerInstance,
-  getFairGasPrice,
   setContractDefaults,
   getFreOrderParams,
   estimateGas,
@@ -112,7 +111,7 @@ export class Datatoken extends SmartContract {
       .send({
         from: address,
         gas: estGas + 1,
-        gasPrice: await getFairGasPrice(this.web3, this.config)
+        gasPrice: await this.getFairGasPrice()
       })
     return trxReceipt
   }
@@ -253,7 +252,7 @@ export class Datatoken extends SmartContract {
       .send({
         from: address,
         gas: estGas + 1,
-        gasPrice: await getFairGasPrice(this.web3, this.config)
+        gasPrice: await this.getFairGasPrice()
       })
     return trxReceipt
   }
@@ -344,7 +343,7 @@ export class Datatoken extends SmartContract {
       .send({
         from: address,
         gas: estGas + 1,
-        gasPrice: await getFairGasPrice(this.web3, this.config)
+        gasPrice: await this.getFairGasPrice()
       })
     return trxReceipt
   }
@@ -387,7 +386,7 @@ export class Datatoken extends SmartContract {
         .send({
           from: address,
           gas: estGas + 1,
-          gasPrice: await getFairGasPrice(this.web3, this.config)
+          gasPrice: await this.getFairGasPrice()
         })
       return trxReceipt
     } else {
@@ -444,7 +443,7 @@ export class Datatoken extends SmartContract {
     const trxReceipt = await dtContract.methods.addMinter(minter).send({
       from: address,
       gas: estGas + 1,
-      gasPrice: await getFairGasPrice(this.web3, this.config)
+      gasPrice: await this.getFairGasPrice()
     })
 
     return trxReceipt
@@ -502,7 +501,7 @@ export class Datatoken extends SmartContract {
     const trxReceipt = await dtContract.methods.removeMinter(minter).send({
       from: address,
       gas: estGas + 1,
-      gasPrice: await getFairGasPrice(this.web3, this.config)
+      gasPrice: await this.getFairGasPrice()
     })
 
     return trxReceipt
@@ -561,7 +560,7 @@ export class Datatoken extends SmartContract {
     const trxReceipt = await dtContract.methods.addPaymentManager(paymentManager).send({
       from: address,
       gas: estGas + 1,
-      gasPrice: await getFairGasPrice(this.web3, this.config)
+      gasPrice: await this.getFairGasPrice()
     })
 
     return trxReceipt
@@ -622,7 +621,7 @@ export class Datatoken extends SmartContract {
       .send({
         from: address,
         gas: estGas + 1,
-        gasPrice: await getFairGasPrice(this.web3, this.config)
+        gasPrice: await this.getFairGasPrice()
       })
 
     return trxReceipt
@@ -690,7 +689,7 @@ export class Datatoken extends SmartContract {
       .send({
         from: address,
         gas: estGas + 1,
-        gasPrice: await getFairGasPrice(this.web3, this.config)
+        gasPrice: await this.getFairGasPrice()
       })
 
     return trxReceipt
@@ -779,7 +778,7 @@ export class Datatoken extends SmartContract {
       const trxReceipt = await dtContract.methods.transfer(toAddress, amount).send({
         from: address,
         gas: estGas + 1,
-        gasPrice: await getFairGasPrice(this.web3, this.config)
+        gasPrice: await this.getFairGasPrice()
       })
       return trxReceipt
     } catch (e) {
@@ -864,7 +863,7 @@ export class Datatoken extends SmartContract {
         .send({
           from: address,
           gas: estGas + 1,
-          gasPrice: await getFairGasPrice(this.web3, this.config)
+          gasPrice: await this.getFairGasPrice()
         })
       return trxReceipt
     } catch (e) {
@@ -927,7 +926,7 @@ export class Datatoken extends SmartContract {
         .send({
           from: address,
           gas: estGas + 1,
-          gasPrice: await getFairGasPrice(this.web3, this.config)
+          gasPrice: await this.getFairGasPrice()
         })
       return trxReceipt
     } catch (e) {
@@ -991,7 +990,7 @@ export class Datatoken extends SmartContract {
         .send({
           from: address,
           gas: estGas + 1,
-          gasPrice: await getFairGasPrice(this.web3, this.config)
+          gasPrice: await this.getFairGasPrice()
         })
       return trxReceipt
     } catch (e) {
@@ -1053,7 +1052,7 @@ export class Datatoken extends SmartContract {
         .send({
           from: address,
           gas: estGas + 1,
-          gasPrice: await getFairGasPrice(this.web3, this.config)
+          gasPrice: await this.getFairGasPrice()
         })
       return trxReceipt
     } catch (e) {
@@ -1110,7 +1109,7 @@ export class Datatoken extends SmartContract {
     const trxReceipt = await dtContract.methods.setData(value).send({
       from: address,
       gas: estGas + 1,
-      gasPrice: await getFairGasPrice(this.web3, this.config)
+      gasPrice: await this.getFairGasPrice()
     })
 
     return trxReceipt
@@ -1159,7 +1158,7 @@ export class Datatoken extends SmartContract {
     const trxReceipt = await dtContract.methods.cleanPermissions().send({
       from: address,
       gas: estGas + 1,
-      gasPrice: await getFairGasPrice(this.web3, this.config)
+      gasPrice: await this.getFairGasPrice()
     })
 
     return trxReceipt
@@ -1318,7 +1317,7 @@ export class Datatoken extends SmartContract {
       .send({
         from: address,
         gas: estGas + 1,
-        gasPrice: await getFairGasPrice(this.web3, this.config)
+        gasPrice: await this.getFairGasPrice()
       })
   }
 

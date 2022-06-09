@@ -2,7 +2,7 @@ import { Contract } from 'web3-eth-contract'
 import { TransactionReceipt } from 'web3-core'
 import { AbiItem } from 'web3-utils'
 import FactoryRouter from '@oceanprotocol/contracts/artifacts/contracts/pools/FactoryRouter.sol/FactoryRouter.json'
-import { getFairGasPrice, estimateGas } from '../../utils'
+import { estimateGas } from '../../utils'
 import { Operation } from '../../@types'
 import { SmartContractWithAddress } from '..'
 
@@ -44,7 +44,7 @@ export class Router extends SmartContractWithAddress {
     const trxReceipt = await this.contract.methods.buyDTBatch(operations).send({
       from: address,
       gas: estGas + 1,
-      gasPrice: await getFairGasPrice(this.web3, this.config)
+      gasPrice: await this.getFairGasPrice()
     })
 
     return trxReceipt
@@ -131,7 +131,7 @@ export class Router extends SmartContractWithAddress {
     const trxReceipt = await this.contract.methods.addApprovedToken(tokenAddress).send({
       from: address,
       gas: estGas + 1,
-      gasPrice: await getFairGasPrice(this.web3, this.config)
+      gasPrice: await this.getFairGasPrice()
     })
 
     return trxReceipt
@@ -178,7 +178,7 @@ export class Router extends SmartContractWithAddress {
       .send({
         from: address,
         gas: estGas + 1,
-        gasPrice: await getFairGasPrice(this.web3, this.config)
+        gasPrice: await this.getFairGasPrice()
       })
 
     return trxReceipt
@@ -218,7 +218,7 @@ export class Router extends SmartContractWithAddress {
     const trxReceipt = await this.contract.methods.addSSContract(tokenAddress).send({
       from: address,
       gas: estGas + 1,
-      gasPrice: await getFairGasPrice(this.web3, this.config)
+      gasPrice: await this.getFairGasPrice()
     })
 
     return trxReceipt
@@ -261,7 +261,7 @@ export class Router extends SmartContractWithAddress {
     const trxReceipt = await this.contract.methods.removeSSContract(tokenAddress).send({
       from: address,
       gas: estGas + 1,
-      gasPrice: await getFairGasPrice(this.web3, this.config)
+      gasPrice: await this.getFairGasPrice()
     })
 
     return trxReceipt
@@ -306,7 +306,7 @@ export class Router extends SmartContractWithAddress {
       .send({
         from: address,
         gas: estGas + 1,
-        gasPrice: await getFairGasPrice(this.web3, this.config)
+        gasPrice: await this.getFairGasPrice()
       })
 
     return trxReceipt
@@ -355,7 +355,7 @@ export class Router extends SmartContractWithAddress {
       .send({
         from: address,
         gas: estGas + 1,
-        gasPrice: await getFairGasPrice(this.web3, this.config)
+        gasPrice: await this.getFairGasPrice()
       })
 
     return trxReceipt
@@ -400,7 +400,7 @@ export class Router extends SmartContractWithAddress {
       .send({
         from: address,
         gas: estGas + 1,
-        gasPrice: await getFairGasPrice(this.web3, this.config)
+        gasPrice: await this.getFairGasPrice()
       })
 
     return trxReceipt
@@ -449,7 +449,7 @@ export class Router extends SmartContractWithAddress {
       .send({
         from: address,
         gas: estGas + 1,
-        gasPrice: await getFairGasPrice(this.web3, this.config)
+        gasPrice: await this.getFairGasPrice()
       })
 
     return trxReceipt
@@ -527,7 +527,7 @@ export class Router extends SmartContractWithAddress {
       .send({
         from: address,
         gas: estGas + 1,
-        gasPrice: await getFairGasPrice(this.web3, this.config)
+        gasPrice: await this.getFairGasPrice()
       })
 
     return trxReceipt
@@ -570,7 +570,7 @@ export class Router extends SmartContractWithAddress {
     const trxReceipt = await this.contract.methods.addPoolTemplate(templateAddress).send({
       from: address,
       gas: estGas + 1,
-      gasPrice: await getFairGasPrice(this.web3, this.config)
+      gasPrice: await this.getFairGasPrice()
     })
 
     return trxReceipt
@@ -615,7 +615,7 @@ export class Router extends SmartContractWithAddress {
       .send({
         from: address,
         gas: estGas + 1,
-        gasPrice: await getFairGasPrice(this.web3, this.config)
+        gasPrice: await this.getFairGasPrice()
       })
 
     return trxReceipt

@@ -5,7 +5,6 @@ import Decimal from 'decimal.js'
 import BigNumber from 'bignumber.js'
 import Bpool from '@oceanprotocol/contracts/artifacts/contracts/pools/balancer/BPool.sol/BPool.json'
 import {
-  getFairGasPrice,
   setContractDefaults,
   LoggerInstance,
   estimateGas,
@@ -104,7 +103,7 @@ export class Pool extends SmartContract {
       result = await pool.methods.setSwapFee(this.web3.utils.toWei(fee)).send({
         from: account,
         gas: estGas,
-        gasPrice: await getFairGasPrice(this.web3, this.config)
+        gasPrice: await this.getFairGasPrice()
       })
     } catch (e) {
       LoggerInstance.error(`ERROR: Failed to set pool swap fee: ${e.message}`)
@@ -589,7 +588,7 @@ export class Pool extends SmartContract {
       result = await pool.methods.collectOPC().send({
         from: address,
         gas: estGas + 1,
-        gasPrice: await getFairGasPrice(this.web3, this.config)
+        gasPrice: await this.getFairGasPrice()
       })
     } catch (e) {
       LoggerInstance.error(`ERROR: Failed to swap exact amount in : ${e.message}`)
@@ -645,7 +644,7 @@ export class Pool extends SmartContract {
       result = await pool.methods.collectMarketFee().send({
         from: address,
         gas: estGas + 1,
-        gasPrice: await getFairGasPrice(this.web3, this.config)
+        gasPrice: await this.getFairGasPrice()
       })
     } catch (e) {
       LoggerInstance.error(`ERROR: Failed to swap exact amount in : ${e.message}`)
@@ -722,7 +721,7 @@ export class Pool extends SmartContract {
         .send({
           from: address,
           gas: estGas + 1,
-          gasPrice: await getFairGasPrice(this.web3, this.config)
+          gasPrice: await this.getFairGasPrice()
         })
     } catch (e) {
       LoggerInstance.error(`ERROR: Failed to updatePublishMarketFee : ${e.message}`)
@@ -872,7 +871,7 @@ export class Pool extends SmartContract {
         .send({
           from: address,
           gas: estGas + 1,
-          gasPrice: await getFairGasPrice(this.web3, this.config)
+          gasPrice: await this.getFairGasPrice()
         })
     } catch (e) {
       LoggerInstance.error(`ERROR: Failed to swap exact amount in : ${e.message}`)
@@ -1018,7 +1017,7 @@ export class Pool extends SmartContract {
         .send({
           from: account,
           gas: estGas + 1,
-          gasPrice: await getFairGasPrice(this.web3, this.config)
+          gasPrice: await this.getFairGasPrice()
         })
     } catch (e) {
       LoggerInstance.error(`ERROR: Failed to swap exact amount out: ${e.message}`)
@@ -1108,7 +1107,7 @@ export class Pool extends SmartContract {
         .send({
           from: account,
           gas: estGas + 1,
-          gasPrice: await getFairGasPrice(this.web3, this.config)
+          gasPrice: await this.getFairGasPrice()
         })
     } catch (e) {
       LoggerInstance.error(`ERROR: Failed to pay tokens in order to \
@@ -1202,7 +1201,7 @@ export class Pool extends SmartContract {
         .send({
           from: account,
           gas: estGas + 1,
-          gasPrice: await getFairGasPrice(this.web3, this.config)
+          gasPrice: await this.getFairGasPrice()
         })
     } catch (e) {
       LoggerInstance.error(`ERROR: Failed to pay pool shares into the pool: ${e.message}`)
