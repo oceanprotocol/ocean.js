@@ -43,15 +43,6 @@ export async function downloadFile(
   return { data: await response.arrayBuffer(), filename }
 }
 
-export async function getData(url: string): Promise<Response> {
-  return fetch(url, {
-    method: 'GET',
-    headers: {
-      'Content-type': 'application/json'
-    }
-  })
-}
-
 async function postWithHeaders(
   url: string,
   payload: BodyInit,

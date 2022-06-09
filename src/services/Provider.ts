@@ -1,6 +1,6 @@
 import Web3 from 'web3'
 import fetch from 'cross-fetch'
-import { LoggerInstance, getData } from '../utils'
+import { LoggerInstance } from '../utils'
 import {
   FileMetadata,
   ComputeJob,
@@ -21,7 +21,7 @@ export class Provider {
    */
   async getEndpoints(providerUri: string): Promise<any> {
     try {
-      const endpoints = await getData(providerUri)
+      const endpoints = await this.getData(providerUri)
       return await endpoints.json()
     } catch (e) {
       LoggerInstance.error('Finding the service endpoints failed:', e)
@@ -801,6 +801,15 @@ export class Provider {
       return { valid: false, output: input }
     }
     return { valid: true, output: match[1] }
+  }
+
+  private async getData(url: string): Promise<Response> {
+    return fetch(url, {
+      method: 'GET',
+      headers: {
+        'Content-type': 'application/json'
+      }
+    })
   }
 }
 
