@@ -1,7 +1,7 @@
 import Web3 from 'web3'
 import { AbiItem } from 'web3-utils'
 import { Config, ConfigHelper } from '../config'
-import { amountToUnits, unitsToAmount } from '../utils'
+import { amountToUnits, getFairGasPrice, unitsToAmount } from '../utils'
 
 export abstract class SmartContract {
   public web3: Web3
@@ -42,5 +42,9 @@ export abstract class SmartContract {
     tokenDecimals?: number
   ): Promise<string> {
     return unitsToAmount(this.web3, token, amount, tokenDecimals)
+  }
+
+  async getFairGasPrice(): Promise<string> {
+    return getFairGasPrice(this.web3, this.config)
   }
 }
