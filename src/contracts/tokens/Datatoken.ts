@@ -1147,9 +1147,7 @@ export class Datatoken extends SmartContract {
    * @return {Promise<String>} balance  Number of datatokens. Will be converted from wei
    */
   public async balance(datatokenAddress: string, address: string): Promise<string> {
-    const dtContract = new this.web3.eth.Contract(this.abi, datatokenAddress, {
-      from: address
-    })
+    const dtContract = this.getContract(datatokenAddress, address)
     const balance = await dtContract.methods.balanceOf(address).call()
     return this.web3.utils.fromWei(balance)
   }
@@ -1171,9 +1169,7 @@ export class Datatoken extends SmartContract {
     address: string
   ): Promise<number> {
     // Estimate gas cost for publishMarketFeeAddress method
-    const dtContract = new this.web3.eth.Contract(this.abi, datatokenAddress, {
-      from: address
-    })
+    const dtContract = this.getContract(datatokenAddress, address)
     return estimateGas(
       address,
       dtContract.methods.setPublishingMarketFee,
@@ -1200,9 +1196,7 @@ export class Datatoken extends SmartContract {
     publishMarketFeeAmount: string,
     address: string
   ) {
-    const dtContract = new this.web3.eth.Contract(this.abi, datatokenAddress, {
-      from: address
-    })
+    const dtContract = this.getContract(datatokenAddress, address)
     const mktFeeAddress = (await dtContract.methods.getPublishingMarketFee().call())[0]
     if (mktFeeAddress !== address) {
       throw new Error(`Caller is not the Publishing Market Fee Address`)
@@ -1239,9 +1233,7 @@ export class Datatoken extends SmartContract {
     datatokenAddress: string,
     address: string
   ): Promise<PublishingMarketFee> {
-    const dtContract = new this.web3.eth.Contract(this.abi, datatokenAddress, {
-      from: address
-    })
+    const dtContract = this.getContract(datatokenAddress, address)
 
     const publishingMarketFee = await dtContract.methods.getPublishingMarketFee().call()
     const returnValues = {
