@@ -1,7 +1,13 @@
 import Web3 from 'web3'
+import { Contract } from 'web3-eth-contract'
 import { AbiItem } from 'web3-utils'
 import { Config, ConfigHelper } from '../config'
-import { amountToUnits, getFairGasPrice, unitsToAmount } from '../utils'
+import {
+  amountToUnits,
+  getFairGasPrice,
+  setContractDefaults,
+  unitsToAmount
+} from '../utils'
 
 export abstract class SmartContract {
   public web3: Web3
@@ -46,5 +52,12 @@ export abstract class SmartContract {
 
   async getFairGasPrice(): Promise<string> {
     return getFairGasPrice(this.web3, this.config)
+  }
+
+  getContract(address: string, account?: string): Contract {
+    const contract = new this.web3.eth.Contract(this.abi, address, {
+      from: account
+    })
+    return setContractDefaults(contract, this.config)
   }
 }
