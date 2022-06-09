@@ -2,7 +2,6 @@ import Web3 from 'web3'
 import { Contract } from 'web3-eth-contract'
 import { AbiItem } from 'web3-utils'
 import { Config } from '../config'
-import { setContractDefaults } from '../utils'
 import { SmartContract } from '.'
 
 export abstract class SmartContractWithAddress extends SmartContract {
@@ -26,9 +25,6 @@ export abstract class SmartContractWithAddress extends SmartContract {
   ) {
     super(web3, network, config, abi)
     this.address = address
-    this.contract = setContractDefaults(
-      new this.web3.eth.Contract(this.getDefaultAbi(), this.address),
-      this.config
-    )
+    this.contract = this.getContract(this.address)
   }
 }
