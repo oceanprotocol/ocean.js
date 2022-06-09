@@ -54,8 +54,8 @@ export abstract class SmartContract {
     return getFairGasPrice(this.web3, this.config)
   }
 
-  getContract(address: string, account?: string): Contract {
-    const contract = new this.web3.eth.Contract(this.abi, address, {
+  getContract(address: string, account?: string, abi?: AbiItem | AbiItem[]): Contract {
+    const contract = new this.web3.eth.Contract(abi || this.abi, address, {
       from: account
     })
     return setContractDefaults(contract, this.config)

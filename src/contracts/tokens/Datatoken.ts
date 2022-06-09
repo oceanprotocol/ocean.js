@@ -882,7 +882,7 @@ export class Datatoken extends SmartContract {
     contractInstance?: Contract
   ): Promise<any> {
     const dtContract =
-      contractInstance || new this.web3.eth.Contract(this.abiEnterprise, dtAddress)
+      contractInstance || this.getContract(dtAddress, null, this.abiEnterprise)
 
     return estimateGas(
       address,
@@ -905,7 +905,7 @@ export class Datatoken extends SmartContract {
     orderParams: OrderParams,
     freParams: FreOrderParams
   ): Promise<TransactionReceipt> {
-    const dtContract = new this.web3.eth.Contract(this.abiEnterprise, dtAddress)
+    const dtContract = this.getContract(dtAddress, null, this.abiEnterprise)
     try {
       const freContractParams = getFreOrderParams(freParams)
 
@@ -946,7 +946,7 @@ export class Datatoken extends SmartContract {
     contractInstance?: Contract
   ): Promise<any> {
     const dtContract =
-      contractInstance || new this.web3.eth.Contract(this.abiEnterprise, dtAddress)
+      contractInstance || this.getContract(dtAddress, null, this.abiEnterprise)
 
     return estimateGas(
       address,
@@ -969,7 +969,7 @@ export class Datatoken extends SmartContract {
     orderParams: OrderParams,
     dispenserContract: string
   ): Promise<TransactionReceipt> {
-    const dtContract = new this.web3.eth.Contract(this.abiEnterprise, dtAddress)
+    const dtContract = this.getContract(dtAddress, null, this.abiEnterprise)
     try {
       const estGas = await estimateGas(
         address,
