@@ -27,7 +27,7 @@ export class Nft extends SmartContract {
    * @param {Contract} nftContract optional contract instance
    * @return {Promise<any>}
    */
-  public async estGasCreateErc20(
+  public async estGasGasCreateErc20(
     nftAddress: string,
     address: string,
     minter: string,
@@ -136,7 +136,7 @@ export class Nft extends SmartContract {
    * @param {Contract} nftContract optional contract instance
    * @return {Promise<any>}
    */
-  public async estGasAddManager(
+  public async estGasGasAddManager(
     nftAddress: string,
     address: string,
     manager: string,
@@ -181,7 +181,7 @@ export class Nft extends SmartContract {
    * @param {Contract} nftContract optional contract instance
    * @return {Promise<any>}
    */
-  public async estGasRemoveManager(
+  public async estGasGasRemoveManager(
     nftAddress: string,
     address: string,
     manager: string,
@@ -225,7 +225,7 @@ export class Nft extends SmartContract {
    * @param {Contract} nftContract optional contract instance
    * @return {Promise<any>}
    */
-  public async estGasAddErc20Deployer(
+  public async estGasGasAddErc20Deployer(
     nftAddress: string,
     address: string,
     erc20Deployer: string,
@@ -280,7 +280,7 @@ export class Nft extends SmartContract {
    * @param {Contract} nftContract optional contract instance
    * @return {Promise<any>}
    */
-  public async estGasRemoveErc20Deployer(
+  public async estGasGasRemoveErc20Deployer(
     nftAddress: string,
     address: string,
     erc20Deployer: string,
@@ -342,7 +342,7 @@ export class Nft extends SmartContract {
    * @param {Contract} nftContract optional contract instance
    * @return {Promise<any>}
    */
-  public async estGasAddMetadataUpdater(
+  public async estGasGasAddMetadataUpdater(
     nftAddress: string,
     address: string,
     metadataUpdater: string,
@@ -459,7 +459,7 @@ export class Nft extends SmartContract {
    * @param {Contract} nftContract optional contract instance
    * @return {Promise<any>}
    */
-  public async estGasAddStoreUpdater(
+  public async estGasGasAddStoreUpdater(
     nftAddress: string,
     address: string,
     storeUpdater: string,
@@ -512,7 +512,7 @@ export class Nft extends SmartContract {
    * @param {Contract} nftContract optional contract instance
    * @return {Promise<any>}
    */
-  public async estGasRemoveStoreUpdater(
+  public async estGasGasRemoveStoreUpdater(
     nftAddress: string,
     address: string,
     storeUpdater: string,
@@ -570,7 +570,7 @@ export class Nft extends SmartContract {
    * @param {Contract} nftContract optional contract instance
    * @return {Promise<any>}
    */
-  public async estGasCleanPermissions(
+  public async estGasGasCleanPermissions(
     nftAddress: string,
     address: string,
     contractInstance?: Contract
@@ -621,7 +621,7 @@ export class Nft extends SmartContract {
    * @param {Contract} nftContract optional contract instance
    * @return {Promise<any>}
    */
-  public async estGasTransferNft(
+  public async estGasGasTransferNft(
     nftAddress: string,
     nftOwner: string,
     nftReceiver: string,
@@ -691,7 +691,7 @@ export class Nft extends SmartContract {
    * @param {Contract} nftContract optional contract instance
    * @return {Promise<any>}
    */
-  public async estGasSafeTransferNft(
+  public async estGasGasSafeTransferNft(
     nftAddress: string,
     nftOwner: string,
     nftReceiver: string,
@@ -763,7 +763,7 @@ export class Nft extends SmartContract {
    * @param {Contract} nftContract optional contract instance
    * @return {Promise<any>}
    */
-  public async estGasSetMetadata(
+  public async estGasGasSetMetadata(
     nftAddress: string,
     metadataUpdater: string,
     metadataState: number,
@@ -851,7 +851,7 @@ export class Nft extends SmartContract {
    * @param {Contract} nftContract optional contract instance
    * @return {Promise<any>}
    */
-  public async estGasSetMetadataAndTokenURI(
+  public async estGasGasSetMetadataAndTokenURI(
     nftAddress: string,
     metadataUpdater: string,
     metadataAndTokenURI: MetadataAndTokenURI,
@@ -913,7 +913,7 @@ export class Nft extends SmartContract {
    * @param {Contract} nftContract optional contract instance
    * @return {Promise<any>}
    */
-  public async estGasSetMetadataState(
+  public async estGasGasSetMetadataState(
     nftAddress: string,
     metadataUpdater: string,
     metadataState: number,
@@ -968,7 +968,7 @@ export class Nft extends SmartContract {
    * @param data input data for TokenURI
    * @return {Promise<TransactionReceipt>} transaction receipt
    */
-  public async estSetTokenURI(
+  public async estGasSetTokenURI(
     nftAddress: string,
     address: string,
     data: string

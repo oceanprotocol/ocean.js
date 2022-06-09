@@ -243,7 +243,7 @@ export class SideStaking extends SmartContract {
    * @param {Contract} contractInstance optional contract instance
    * @return {Promise<number>}
    */
-  public async estGetVesting(
+  public async estGasGetVesting(
     account: string,
     ssAddress: string,
     datatokenAddress: string,
@@ -295,7 +295,7 @@ export class SideStaking extends SmartContract {
    * @param {Contract} contractInstance optional contract instance
    * @return {Promise<number>}
    */
-  public async estSetPoolSwapFee(
+  public async estGasSetPoolSwapFee(
     account: string,
     ssAddress: string,
     datatokenAddress: string,

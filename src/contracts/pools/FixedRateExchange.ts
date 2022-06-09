@@ -34,7 +34,7 @@ export class FixedRateExchange extends SmartContractWithAddress {
    * @param {Contract} contractInstance optional contract instance
    * @return {Promise<number>}
    */
-  public async estBuyDT(
+  public async estGasBuyDT(
     account: string,
     datatokenAddress: string,
     dtAmount: string,
@@ -127,7 +127,7 @@ export class FixedRateExchange extends SmartContractWithAddress {
    * @param {Contract} contractInstance optional contract instance
    * @return {Promise<number>}
    */
-  public async estSellDT(
+  public async estGasSellDT(
     account: string,
     datatokenAddress: string,
     dtAmount: string,
@@ -228,7 +228,7 @@ export class FixedRateExchange extends SmartContractWithAddress {
    * @param {Contract} contractInstance optional contract instance
    * @return {Promise<number>}
    */
-  public async estSetRate(
+  public async estGasSetRate(
     account: string,
     exchangeId: string,
     newRate: string,
@@ -280,7 +280,7 @@ export class FixedRateExchange extends SmartContractWithAddress {
    * @param {Contract} contractInstance optional contract instance
    * @return {Promise<number>}
    */
-  public async estSetAllowedSwapper(
+  public async estGasSetAllowedSwapper(
     account: string,
     exchangeId: string,
     newAllowedSwapper: string,
@@ -331,7 +331,7 @@ export class FixedRateExchange extends SmartContractWithAddress {
    * @param {Contract} contractInstance optional contract instance
    * @return {Promise<number>}
    */
-  public async estActivate(
+  public async estGasActivate(
     account: string,
     exchangeId: string,
     contractInstance?: Contract
@@ -374,7 +374,7 @@ export class FixedRateExchange extends SmartContractWithAddress {
    * @param {Contract} contractInstance optional contract instance
    * @return {Promise<number>}
    */
-  public async estDeactivate(
+  public async estGasDeactivate(
     account: string,
     exchangeId: string,
     contractInstance?: Contract
@@ -621,7 +621,7 @@ export class FixedRateExchange extends SmartContractWithAddress {
    * @param {Contract} contractInstance optional contract instance
    * @return {Promise<number>}
    */
-  public async estActivateMint(
+  public async estGasActivateMint(
     account: string,
     exchangeId: string,
     contractInstance?: Contract
@@ -668,7 +668,7 @@ export class FixedRateExchange extends SmartContractWithAddress {
    * @param {Contract} contractInstance optional contract instance
    * @return {Promise<number>}
    */
-  public async estDeactivateMint(
+  public async estGasDeactivateMint(
     account: string,
     exchangeId: string,
     contractInstance?: Contract
@@ -723,7 +723,7 @@ export class FixedRateExchange extends SmartContractWithAddress {
    * @param {Contract} contractInstance optional contract instance
    * @return {Promise<number>}
    */
-  public async estCollectBT(
+  public async estGasCollectBT(
     account: string,
     exchangeId: string,
     amount: string,
@@ -788,7 +788,7 @@ export class FixedRateExchange extends SmartContractWithAddress {
    * @param {Contract} contractInstance optional contract instance
    * @return {Promise<number>}
    */
-  public async estCollectDT(
+  public async estGasCollectDT(
     account: string,
     exchangeId: string,
     amount: string,
@@ -853,7 +853,7 @@ export class FixedRateExchange extends SmartContractWithAddress {
    * @param {Contract} contractInstance optional contract instance
    * @return {Promise<number>}
    */
-  public async estCollectMarketFee(
+  public async estGasCollectMarketFee(
     account: string,
     exchangeId: string,
     contractInstance?: Contract
@@ -896,7 +896,7 @@ export class FixedRateExchange extends SmartContractWithAddress {
    * @param {Contract} contractInstance optional contract instance
    * @return {Promise<number>}
    */
-  public async estCollectOceanFee(
+  public async estGasCollectOceanFee(
     account: string,
     exchangeId: string,
     contractInstance?: Contract
@@ -983,7 +983,7 @@ export class FixedRateExchange extends SmartContractWithAddress {
    * @param {Contract} contractInstance optional contract instance
    * @return {Promise<number>}
    */
-  public async estUpdateMarketFee(
+  public async estGasUpdateMarketFee(
     account: string,
     exchangeId: string,
     newMarketFee: string,
@@ -1035,7 +1035,7 @@ export class FixedRateExchange extends SmartContractWithAddress {
    * @param {Contract} contractInstance optional contract instance
    * @return {Promise<number>}
    */
-  public async estUpdateMarketFeeCollector(
+  public async estGasUpdateMarketFeeCollector(
     account: string,
     exchangeId: string,
     newMarketFeeCollector: string,
