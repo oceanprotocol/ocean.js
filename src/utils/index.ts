@@ -1,6 +1,5 @@
 export * from './Constants'
 export * from './ContractUtils'
-export * from './ConversionTypeHelper'
 export * from './DatatokenName'
 export * from './DdoHelpers'
 export * from './FetchHelper'
