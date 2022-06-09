@@ -20,7 +20,7 @@ export class SideStaking extends SmartContract {
     ssAddress: string,
     datatokenAddress: string
   ): Promise<string> {
-    const sideStaking = new this.web3.eth.Contract(this.abi, ssAddress)
+    const sideStaking = this.getContract(ssAddress)
     let result = null
     try {
       result = await sideStaking.methods
@@ -44,7 +44,7 @@ export class SideStaking extends SmartContract {
     datatokenAddress: string
   ): Promise<string> {
     try {
-      const sideStaking = new this.web3.eth.Contract(this.abi, ssAddress)
+      const sideStaking = this.getContract(ssAddress)
       let result = null
       result = await sideStaking.methods
         .getDatatokenCurrentCirculatingSupply(datatokenAddress)
@@ -65,7 +65,7 @@ export class SideStaking extends SmartContract {
     ssAddress: string,
     datatokenAddress: string
   ): Promise<string> {
-    const sideStaking = new this.web3.eth.Contract(this.abi, ssAddress)
+    const sideStaking = this.getContract(ssAddress)
     let result = null
     try {
       result = await sideStaking.methods.getPublisherAddress(datatokenAddress).call()
@@ -82,7 +82,7 @@ export class SideStaking extends SmartContract {
    * @return {String}
    */
   async getBaseToken(ssAddress: string, datatokenAddress: string): Promise<string> {
-    const sideStaking = new this.web3.eth.Contract(this.abi, ssAddress)
+    const sideStaking = this.getContract(ssAddress)
     let result = null
     try {
       result = await sideStaking.methods.getBaseTokenAddress(datatokenAddress).call()
@@ -99,7 +99,7 @@ export class SideStaking extends SmartContract {
    * @return {String}
    */
   async getPoolAddress(ssAddress: string, datatokenAddress: string): Promise<string> {
-    const sideStaking = new this.web3.eth.Contract(this.abi, ssAddress)
+    const sideStaking = this.getContract(ssAddress)
     let result = null
     try {
       result = await sideStaking.methods.getPoolAddress(datatokenAddress).call()
@@ -119,7 +119,7 @@ export class SideStaking extends SmartContract {
     ssAddress: string,
     datatokenAddress: string
   ): Promise<string> {
-    const sideStaking = new this.web3.eth.Contract(this.abi, ssAddress)
+    const sideStaking = this.getContract(ssAddress)
     let result = null
     try {
       result = await sideStaking.methods.getBaseTokenBalance(datatokenAddress).call()
@@ -141,7 +141,7 @@ export class SideStaking extends SmartContract {
     datatokenAddress: string,
     tokenDecimals?: number
   ): Promise<string> {
-    const sideStaking = new this.web3.eth.Contract(this.abi, ssAddress)
+    const sideStaking = this.getContract(ssAddress)
     let result = null
     try {
       result = await sideStaking.methods.getDatatokenBalance(datatokenAddress).call()
@@ -159,7 +159,7 @@ export class SideStaking extends SmartContract {
    * @return {String} end block for vesting amount
    */
   async getvestingEndBlock(ssAddress: string, datatokenAddress: string): Promise<string> {
-    const sideStaking = new this.web3.eth.Contract(this.abi, ssAddress)
+    const sideStaking = this.getContract(ssAddress)
     let result = null
     try {
       result = await sideStaking.methods.getvestingEndBlock(datatokenAddress).call()
@@ -181,7 +181,7 @@ export class SideStaking extends SmartContract {
     datatokenAddress: string,
     tokenDecimals?: number
   ): Promise<string> {
-    const sideStaking = new this.web3.eth.Contract(this.abi, ssAddress)
+    const sideStaking = this.getContract(ssAddress)
     let result = null
     try {
       result = await sideStaking.methods.getvestingAmount(datatokenAddress).call()
@@ -202,7 +202,7 @@ export class SideStaking extends SmartContract {
     ssAddress: string,
     datatokenAddress: string
   ): Promise<string> {
-    const sideStaking = new this.web3.eth.Contract(this.abi, ssAddress)
+    const sideStaking = this.getContract(ssAddress)
     let result = null
     try {
       result = await sideStaking.methods.getvestingLastBlock(datatokenAddress).call()
@@ -224,7 +224,7 @@ export class SideStaking extends SmartContract {
     datatokenAddress: string,
     tokenDecimals?: number
   ): Promise<string> {
-    const sideStaking = new this.web3.eth.Contract(this.abi, ssAddress)
+    const sideStaking = this.getContract(ssAddress)
     let result = null
     try {
       result = await sideStaking.methods.getvestingAmountSoFar(datatokenAddress).call()
@@ -249,8 +249,7 @@ export class SideStaking extends SmartContract {
     datatokenAddress: string,
     contractInstance?: Contract
   ): Promise<number> {
-    const sideStaking =
-      contractInstance || new this.web3.eth.Contract(this.abi as AbiItem[], ssAddress)
+    const sideStaking = contractInstance || this.getContract(ssAddress)
 
     return estimateGas(account, sideStaking.methods.getVesting, datatokenAddress)
   }
@@ -267,7 +266,7 @@ export class SideStaking extends SmartContract {
     ssAddress: string,
     datatokenAddress: string
   ): Promise<TransactionReceipt> {
-    const sideStaking = new this.web3.eth.Contract(this.abi, ssAddress)
+    const sideStaking = this.getContract(ssAddress)
     let result = null
 
     const estGas = await estimateGas(
@@ -304,8 +303,7 @@ export class SideStaking extends SmartContract {
     swapFee: number,
     contractInstance?: Contract
   ): Promise<number> {
-    const sideStaking =
-      contractInstance || new this.web3.eth.Contract(this.abi as AbiItem[], ssAddress)
+    const sideStaking = contractInstance || this.getContract(ssAddress)
 
     return estimateGas(
       account,
@@ -330,7 +328,7 @@ export class SideStaking extends SmartContract {
     poolAddress: string,
     swapFee: number
   ): Promise<TransactionReceipt> {
-    const sideStaking = new this.web3.eth.Contract(this.abi, ssAddress)
+    const sideStaking = this.getContract(ssAddress)
     let result = null
 
     const estGas = await estimateGas(
@@ -361,7 +359,7 @@ export class SideStaking extends SmartContract {
    * @return {String}
    */
   async getRouter(ssAddress: string): Promise<string> {
-    const sideStaking = new this.web3.eth.Contract(this.abi, ssAddress)
+    const sideStaking = this.getContract(ssAddress)
     let result = null
     try {
       result = await sideStaking.methods.router().call()
