@@ -192,7 +192,7 @@ describe('Nft Factory test', () => {
       withMint: false
     }
 
-    const txReceipt = await nftFactory.createNftErc20WithFixedRate(
+    const txReceipt = await nftFactory.createNftWithDatatokenWithFixedRate(
       nftOwner,
       nftData,
       ercParams,

@@ -214,7 +214,7 @@ describe('Publish tests', async () => {
       withMint: false
     }
 
-    const bundleNFT = await factory.createNftErc20WithFixedRate(
+    const bundleNFT = await factory.createNftWithDatatokenWithFixedRate(
       publisherAccount,
       nftParams,
       datatokenParams,

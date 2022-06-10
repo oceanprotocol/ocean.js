@@ -549,7 +549,7 @@ describe('Marketplace flow tests', async () => {
       withMint: false
     }
 
-    const tx = await factory.createNftErc20WithFixedRate(
+    const tx = await factory.createNftWithDatatokenWithFixedRate(
       publisherAccount,
       nftParams,
       datatokenParams,

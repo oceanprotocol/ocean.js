@@ -683,14 +683,14 @@ export class NftFactory extends SmartContractWithAddress {
     return trxReceipt
   }
 
-  /** Estimate gas cost for createNftErc20WithFixedRate method
+  /** Estimate gas cost for createNftWithDatatokenWithFixedRate method
    * @param address Caller address
    * @param nftCreateData input data for NFT Creation
    * @param ercParams input data for Datatoken Creation
    * @param freParams input data for FixedRate Creation
    * @return {Promise<TransactionReceipt>} transaction receipt
    */
-  public async estGasCreateNftErc20WithFixedRate(
+  public async estGasCreateNftWithDatatokenWithFixedRate(
     address: string,
     nftCreateData: NftCreateData,
     ercParams: DatatokenCreateParams,
@@ -708,7 +708,7 @@ export class NftFactory extends SmartContractWithAddress {
   }
 
   /**
-   * @dev createNftErc20WithFixedRate
+   * @dev createNftWithDatatokenWithFixedRate
    *      Creates a new NFT, then a Datatoken, then a FixedRateExchange, all in one call
    *      Use this carefully, because if Fixed Rate creation fails, you are still going to pay a lot of gas
    * @param address Caller address
@@ -717,7 +717,7 @@ export class NftFactory extends SmartContractWithAddress {
    * @param freParams input data for FixedRate Creation
    *  @return {Promise<TransactionReceipt>} transaction receipt
    */
-  public async createNftErc20WithFixedRate(
+  public async createNftWithDatatokenWithFixedRate(
     address: string,
     nftCreateData: NftCreateData,
     ercParams: DatatokenCreateParams,
@@ -746,7 +746,7 @@ export class NftFactory extends SmartContractWithAddress {
     return trxReceipt
   }
 
-  /** Estimate gas cost for createNftErc20WithFixedRate method
+  /** Estimate gas cost for createNftWithDatatokenWithFixedRate method
    * @param address Caller address
    * @param nftCreateData input data for NFT Creation
    * @param ercParams input data for Datatoken Creation
