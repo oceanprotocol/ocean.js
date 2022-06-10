@@ -15,7 +15,7 @@ import {
   balance,
   unitsToAmount
 } from '../../../../src'
-import { FreCreationParams, Erc20CreateParams } from '../../../../src/@types'
+import { FreCreationParams, DatatokenCreateParams } from '../../../../src/@types'
 
 describe('Fixed Rate unit test', () => {
   let factoryOwner: string
@@ -37,7 +37,7 @@ describe('Fixed Rate unit test', () => {
     owner: null
   }
 
-  const ercParams: Erc20CreateParams = {
+  const ercParams: DatatokenCreateParams = {
     templateIndex: 1,
     minter: null,
     paymentCollector: null,

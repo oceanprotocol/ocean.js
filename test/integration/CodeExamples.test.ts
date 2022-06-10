@@ -97,7 +97,7 @@ import {
   Dispenser,
   DispenserCreationParams,
   downloadFile,
-  Erc20CreateParams,
+  DatatokenCreateParams,
   FixedRateExchange,
   FreCreationParams,
   getHash,
@@ -252,7 +252,7 @@ describe('Marketplace flow tests', async () => {
       owner: publisherAccount
     }
 
-    const erc20Params: Erc20CreateParams = {
+    const erc20Params: DatatokenCreateParams = {
       templateIndex: 1,
       cap: '100000',
       feeAmount: '0',
@@ -526,7 +526,7 @@ describe('Marketplace flow tests', async () => {
       owner: publisherAccount
     }
 
-    const erc20Params: Erc20CreateParams = {
+    const erc20Params: DatatokenCreateParams = {
       templateIndex: 1,
       cap: '100000',
       feeAmount: '0',
@@ -748,7 +748,7 @@ describe('Marketplace flow tests', async () => {
       owner: publisherAccount
     }
 
-    const erc20Params: Erc20CreateParams = {
+    const erc20Params: DatatokenCreateParams = {
       templateIndex: 1,
       cap: '100000',
       feeAmount: '0',

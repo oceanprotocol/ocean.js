@@ -15,7 +15,7 @@ import {
 import {
   ValidateMetadata,
   DDO,
-  Erc20CreateParams,
+  DatatokenCreateParams,
   PoolCreationParams,
   FreCreationParams,
   DispenserCreationParams
@@ -107,7 +107,7 @@ describe('Publish tests', async () => {
       owner: publisherAccount
     }
 
-    const erc20Params: Erc20CreateParams = {
+    const erc20Params: DatatokenCreateParams = {
       templateIndex: 1,
       cap: '100000',
       feeAmount: '0',
@@ -191,7 +191,7 @@ describe('Publish tests', async () => {
       owner: publisherAccount
     }
 
-    const erc20Params: Erc20CreateParams = {
+    const erc20Params: DatatokenCreateParams = {
       templateIndex: 1,
       cap: '100000',
       feeAmount: '0',
@@ -270,7 +270,7 @@ describe('Publish tests', async () => {
       owner: publisherAccount
     }
 
-    const erc20Params: Erc20CreateParams = {
+    const erc20Params: DatatokenCreateParams = {
       templateIndex: 1,
       cap: '100000',
       feeAmount: '0',

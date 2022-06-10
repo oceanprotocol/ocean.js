@@ -15,7 +15,7 @@ import {
 } from '../../../../src'
 import {
   PoolCreationParams,
-  Erc20CreateParams,
+  DatatokenCreateParams,
   CurrentFees,
   TokenInOutMarket,
   AmountsInMaxFee,
@@ -30,7 +30,7 @@ describe('Pool unit test', () => {
   let pool: Pool
   let poolAddress: string
   let erc20Token: string
-  let ercParams: Erc20CreateParams
+  let ercParams: DatatokenCreateParams
 
   const nftData: NftCreateData = {
     name: '72120Bundle',

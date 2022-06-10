@@ -18,7 +18,7 @@ import {
   ZERO_ADDRESS
 } from '../../../../src'
 import {
-  Erc20CreateParams,
+  DatatokenCreateParams,
   PoolCreationParams,
   TokenInOutMarket,
   AmountsInMaxFee,
@@ -52,7 +52,7 @@ describe('SideStaking unit test', () => {
     owner: null
   }
 
-  const ercParams: Erc20CreateParams = {
+  const ercParams: DatatokenCreateParams = {
     templateIndex: 1,
     minter: null,
     paymentCollector: null,

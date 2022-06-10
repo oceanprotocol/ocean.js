@@ -13,7 +13,7 @@ import {
   downloadFile,
   ZERO_ADDRESS
 } from '../../src'
-import { ProviderFees, Erc20CreateParams, DDO } from '../../src/@types'
+import { ProviderFees, DatatokenCreateParams, DDO } from '../../src/@types'
 
 describe('Simple Publish & consume test', async () => {
   let config: Config
@@ -86,7 +86,7 @@ describe('Simple Publish & consume test', async () => {
       owner: publisherAccount
     }
 
-    const erc20Params: Erc20CreateParams = {
+    const erc20Params: DatatokenCreateParams = {
       templateIndex: 1,
       cap: '100000',
       feeAmount: '0',

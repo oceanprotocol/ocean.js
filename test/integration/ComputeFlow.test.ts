@@ -13,7 +13,7 @@ import {
   ZERO_ADDRESS
 } from '../../src'
 import {
-  Erc20CreateParams,
+  DatatokenCreateParams,
   ComputeJob,
   ComputeAsset,
   ComputeAlgorithm,
@@ -232,7 +232,7 @@ async function createAsset(
     transferable: true,
     owner: owner
   }
-  const erc20ParamsAsset: Erc20CreateParams = {
+  const erc20ParamsAsset: DatatokenCreateParams = {
     templateIndex: 1,
     cap: '100000',
     feeAmount: '0',

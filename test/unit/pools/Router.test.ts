@@ -11,7 +11,7 @@ import {
   approve,
   ZERO_ADDRESS
 } from '../../../src'
-import { Erc20CreateParams, PoolCreationParams, Operation } from '../../../src/@types'
+import { DatatokenCreateParams, PoolCreationParams, Operation } from '../../../src/@types'
 
 const { keccak256 } = require('@ethersproject/keccak256')
 
@@ -51,7 +51,7 @@ describe('Router unit test', () => {
     owner: factoryOwner
   }
 
-  const ERC_PARAMS: Erc20CreateParams = {
+  const ERC_PARAMS: DatatokenCreateParams = {
     templateIndex: 1,
     minter: factoryOwner,
     paymentCollector: user2,

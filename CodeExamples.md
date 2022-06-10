@@ -97,7 +97,7 @@ import {
   Dispenser,
   DispenserCreationParams,
   downloadFile,
-  Erc20CreateParams,
+  DatatokenCreateParams,
   FixedRateExchange,
   FreCreationParams,
   getHash,
@@ -252,7 +252,7 @@ For pool creation, the OCEAN token is used as the base token. The base token can
       owner: publisherAccount
     }
 
-    const erc20Params: Erc20CreateParams = {
+    const erc20Params: DatatokenCreateParams = {
       templateIndex: 1,
       cap: '100000',
       feeAmount: '0',
@@ -526,7 +526,7 @@ Now let's console log the Consumer balance after order to check everything is wo
       owner: publisherAccount
     }
 
-    const erc20Params: Erc20CreateParams = {
+    const erc20Params: DatatokenCreateParams = {
       templateIndex: 1,
       cap: '100000',
       feeAmount: '0',
@@ -748,7 +748,7 @@ Lets check that the download URL was successfully received
       owner: publisherAccount
     }
 
-    const erc20Params: Erc20CreateParams = {
+    const erc20Params: DatatokenCreateParams = {
       templateIndex: 1,
       cap: '100000',
       feeAmount: '0',
