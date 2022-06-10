@@ -85,7 +85,7 @@ export async function estimateGas(
   from: string,
   functionToEstimateGas: Function,
   ...args: any[]
-): Promise<any> {
+): Promise<number> {
   let estimatedGas = GASLIMIT_DEFAULT
   try {
     estimatedGas = await functionToEstimateGas.apply(null, args).estimateGas(
