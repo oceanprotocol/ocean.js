@@ -1035,10 +1035,13 @@ export class Nft extends SmartContract {
    * @param {String} address user adress
    * @return {Promise<boolean>}
    */
-  public async isErc20Deployer(nftAddress: string, address: string): Promise<boolean> {
+  public async isDatatokenDeployer(
+    nftAddress: string,
+    address: string
+  ): Promise<boolean> {
     const nftContract = this.getContract(nftAddress)
-    const isERC20Deployer = await nftContract.methods.isERC20Deployer(address).call()
-    return isERC20Deployer
+    const isDatatokenDeployer = await nftContract.methods.isERC20Deployer(address).call()
+    return isDatatokenDeployer
   }
 
   /** Gets data at a given `key`
