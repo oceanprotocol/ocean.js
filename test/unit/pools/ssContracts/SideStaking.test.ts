@@ -153,7 +153,7 @@ describe('SideStaking unit test', () => {
         swapFeeMarketRunner: '0.001'
       }
 
-      const txReceipt = await nftFactory.createNftErc20WithPool(
+      const txReceipt = await nftFactory.createNftWithDatatokenWithPool(
         factoryOwner,
         nftData,
         ercParams,
@@ -375,7 +375,7 @@ describe('SideStaking unit test', () => {
         swapFeeMarketRunner: '0.001'
       }
 
-      const txReceipt = await nftFactory.createNftErc20WithPool(
+      const txReceipt = await nftFactory.createNftWithDatatokenWithPool(
         factoryOwner,
         nftData,
         ercParams,

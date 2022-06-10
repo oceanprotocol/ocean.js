@@ -291,7 +291,7 @@ describe('Marketplace flow tests', async () => {
     /// ```
     /// Now we can make the contract call
     /// ```Typescript
-    const tx = await factory.createNftErc20WithPool(
+    const tx = await factory.createNftWithDatatokenWithPool(
       publisherAccount,
       nftParams,
       datatokenParams,
