@@ -73,7 +73,7 @@ describe('Nft Factory test', () => {
   })
 
   it('should initiate NFTFactory instance', async () => {
-    nftFactory = new NftFactory(contracts.erc721FactoryAddress, web3)
+    nftFactory = new NftFactory(contracts.nftFactoryAddress, web3)
   })
 
   it('#getOwner - should return actual owner', async () => {
@@ -131,7 +131,7 @@ describe('Nft Factory test', () => {
     const poolParams: PoolCreationParams = {
       ssContract: contracts.sideStakingAddress,
       baseTokenAddress: contracts.daiAddress,
-      baseTokenSender: contracts.erc721FactoryAddress,
+      baseTokenSender: contracts.nftFactoryAddress,
       publisherAddress: nftOwner,
       marketFeeCollector: nftOwner,
       poolTemplateAddress: contracts.poolTemplateAddress,
@@ -156,7 +156,7 @@ describe('Nft Factory test', () => {
       web3,
       nftOwner,
       contracts.daiAddress,
-      contracts.erc721FactoryAddress,
+      contracts.nftFactoryAddress,
       poolParams.vestingAmount
     )
 
@@ -246,7 +246,7 @@ describe('Nft Factory test', () => {
 
     // user1 approves NFTFactory to move his DATA_TOKEN_AMOUNT
     await dtContract.methods
-      .approve(contracts.erc721FactoryAddress, DATA_TOKEN_AMOUNT)
+      .approve(contracts.nftFactoryAddress, DATA_TOKEN_AMOUNT)
       .send({ from: user1 })
 
     // we reuse another DT created in a previous test
@@ -257,7 +257,7 @@ describe('Nft Factory test', () => {
     await dtContract2.methods.mint(user1, DATA_TOKEN_AMOUNT).send({ from: nftOwner })
     // user1 approves NFTFactory to move his DATA_TOKEN_AMOUNT
     await dtContract2.methods
-      .approve(contracts.erc721FactoryAddress, DATA_TOKEN_AMOUNT)
+      .approve(contracts.nftFactoryAddress, DATA_TOKEN_AMOUNT)
       .send({ from: user1 })
 
     // we check user1 has enought DTs

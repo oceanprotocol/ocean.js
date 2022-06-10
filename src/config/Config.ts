@@ -42,13 +42,7 @@ export class Config {
    * Factory address
    * @type {string}
    */
-  public erc721FactoryAddress?: string
-
-  /**
-   * Factory ABI
-   * @type {string}
-   */
-  public erc721FFactoryABI?: AbiItem | AbiItem[]
+  public nftFactoryAddress?: string
 
   /**
    * datatokens ABI

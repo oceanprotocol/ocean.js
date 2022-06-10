@@ -71,7 +71,7 @@ describe('Fixed Rate unit test', () => {
       // CREATE AN Exchange
       // we prepare transaction parameters objects
 
-      const nftFactory = new NftFactory(contracts.erc721FactoryAddress, web3)
+      const nftFactory = new NftFactory(contracts.nftFactoryAddress, web3)
 
       const freParams: FreCreationParams = {
         fixedRateAddress: contracts.fixedRateAddress,
@@ -380,7 +380,7 @@ describe('Fixed Rate unit test', () => {
       // CREATE AN Exchange
       // we prepare transaction parameters objects
 
-      const nftFactory = new NftFactory(contracts.erc721FactoryAddress, web3)
+      const nftFactory = new NftFactory(contracts.nftFactoryAddress, web3)
 
       const freParams: FreCreationParams = {
         fixedRateAddress: contracts.fixedRateAddress,

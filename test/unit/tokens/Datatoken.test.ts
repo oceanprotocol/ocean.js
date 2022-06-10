@@ -65,7 +65,7 @@ describe('Datatoken', () => {
   })
 
   it('should initialize NFTFactory instance and create a new NFT', async () => {
-    nftFactory = new NftFactory(contracts.erc721FactoryAddress, web3, 8996)
+    nftFactory = new NftFactory(contracts.nftFactoryAddress, web3, 8996)
 
     nftAddress = await nftFactory.createNFT(nftOwner, nftData)
     nftDatatoken = new Nft(web3, 8996)
