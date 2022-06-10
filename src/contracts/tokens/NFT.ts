@@ -280,7 +280,7 @@ export class Nft extends SmartContract {
    * @param {Contract} nftContract optional contract instance
    * @return {Promise<any>}
    */
-  public async estGasGasRemoveErc20Deployer(
+  public async estGasGasRemoveDatatokenDeployer(
     nftAddress: string,
     address: string,
     erc20Deployer: string,
@@ -302,7 +302,7 @@ export class Nft extends SmartContract {
    * @param {String} erc20Deployer Address of the user to be revoked ERC20Deployer Permission
    * @return {Promise<TransactionReceipt>} trxReceipt
    */
-  public async removeErc20Deployer(
+  public async removeDatatokenDeployer(
     nftAddress: string,
     address: string,
     erc20Deployer: string
