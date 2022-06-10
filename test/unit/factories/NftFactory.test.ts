@@ -325,7 +325,7 @@ describe('Nft Factory test', () => {
     assert((await nftFactory.checkNFT(nftAddress)) === nftAddress)
   })
 
-  it('#addNFTTemplate - should add a new erc721 token template', async () => {
+  it('#addNFTTemplate - should add a new NFT token template', async () => {
     const currentNFTTemplateCount = await nftFactory.getCurrentNFTTemplateCount()
 
     await nftFactory.addNFTTemplate(factoryOwner, contracts.nftTemplateAddress)
@@ -335,7 +335,7 @@ describe('Nft Factory test', () => {
     )
   })
 
-  it('#disableNFTTemplate - should disable an erc721 token template', async () => {
+  it('#disableNFTTemplate - should disable an NFT token template', async () => {
     const currentNFTTemplateCount = await nftFactory.getCurrentNFTTemplateCount()
 
     let nftTemplate = await nftFactory.getNFTTemplate(currentNFTTemplateCount)
@@ -347,7 +347,7 @@ describe('Nft Factory test', () => {
     assert(nftTemplate.isActive === false)
   })
 
-  it('#reactivateNFTTemplate - should reactivate an erc721 previously disabled token template', async () => {
+  it('#reactivateNFTTemplate - should reactivate an NFT previously disabled token template', async () => {
     const currentNFTTemplateCount = await nftFactory.getCurrentNFTTemplateCount()
 
     let nftTemplate = await nftFactory.getNFTTemplate(currentNFTTemplateCount)
