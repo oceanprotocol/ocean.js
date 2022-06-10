@@ -621,7 +621,7 @@ export class Datatoken extends SmartContract {
     const isNftOwner = nftAddress && (await this.nft.getNftOwner(nftAddress)) === address
     const nftPermissions =
       nftAddress && !isNftOwner && (await this.nft.getNftPermissions(nftAddress, address))
-    const isDatatokenDeployer = nftPermissions?.deployDatatoken
+    const isDatatokenDeployer = nftPermissions?.deployERC20
     if (!isPaymentManager && !isNftOwner && !isDatatokenDeployer) {
       throw new Error(`Caller is not Fee Manager, owner or Datatoken Deployer`)
     }
@@ -1129,7 +1129,7 @@ export class Datatoken extends SmartContract {
     return nftAddress
   }
 
-  /**  Returns true if address has deployDatatoken role
+  /**  Returns true if address has deployERC20 role
    * @param {String} dtAddress Datatoken adress
    * @param {String} dtAddress Datatoken adress
    * @return {Promise<boolean>}
