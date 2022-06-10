@@ -97,7 +97,7 @@ describe('Simple Publish & consume test', async () => {
     }
 
     const tx = await Factory.createNftWithErc20(publisherAccount, nftParams, erc20Params)
-    const erc721Address = tx.events.NFTCreated.returnValues[0]
+    const nftAddress = tx.events.NFTCreated.returnValues[0]
     const datatokenAddress = tx.events.TokenCreated.returnValues[0]
 
     // create the files encrypted string
@@ -105,16 +105,16 @@ describe('Simple Publish & consume test', async () => {
     ddo.services[0].files = await providerResponse
     ddo.services[0].datatokenAddress = datatokenAddress
     // update ddo and set the right did
-    ddo.nftAddress = erc721Address
+    ddo.nftAddress = nftAddress
     const chain = await web3.eth.getChainId()
     ddo.id =
-      'did:op:' + SHA256(web3.utils.toChecksumAddress(erc721Address) + chain.toString(10))
+      'did:op:' + SHA256(web3.utils.toChecksumAddress(nftAddress) + chain.toString(10))
 
     providerResponse = await ProviderInstance.encrypt(ddo, providerUrl)
     const encryptedResponse = await providerResponse
     const metadataHash = getHash(JSON.stringify(ddo))
     await nft.setMetadata(
-      erc721Address,
+      nftAddress,
       publisherAccount,
       0,
       providerUrl,
