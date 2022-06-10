@@ -50,8 +50,8 @@ describe('NFT', () => {
     assert(tokenURI === nftData.tokenURI)
   })
 
-  it('#createDatatoken - should create a new ERC20 DT from NFT contract', async () => {
-    const erc20Address = await nftDatatoken.createDatatoken(
+  it('#createDatatoken - should create a new ERC20 Datatoken from NFT contract', async () => {
+    const dtAddress = await nftDatatoken.createDatatoken(
       nftAddress,
       nftOwner,
       nftOwner,
@@ -64,10 +64,10 @@ describe('NFT', () => {
       nftData.symbol,
       1
     )
-    assert(erc20Address !== null)
+    assert(dtAddress !== null)
   })
 
-  it('#createDatatoken - should fail to create a new ERC20 DT if not DatatokenDeployer', async () => {
+  it('#createDatatoken - should fail to create a new ERC20 Datatoken if not DatatokenDeployer', async () => {
     try {
       await nftDatatoken.createDatatoken(
         nftAddress,
