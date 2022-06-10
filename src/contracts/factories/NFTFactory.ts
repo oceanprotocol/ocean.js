@@ -163,7 +163,7 @@ export class NftFactory extends SmartContractWithAddress {
     return template
   }
 
-  /** Get Datatoken(ERC20) Template
+  /** Get Datatoken (ERC20) Template
    * @param {Number} index Template index
    * @return {Promise<Template>} DT Template info
    */
@@ -563,14 +563,14 @@ export class NftFactory extends SmartContractWithAddress {
   }
 
   /**
-   * Estimate gas cost for createNftWithErc20 method
+   * Estimate gas cost for createNftWithDatatoken method
    * @param address Caller address
    * @param _NftCreateData input data for NFT creation
    * @param _ErcCreateData input data for Datatoken creation
    *  @return {Promise<TransactionReceipt>} transaction receipt
    */
 
-  public async estGasCreateNftWithErc20(
+  public async estGasCreateNftWithDatatoken(
     address: string,
     nftCreateData: NftCreateData,
     ercParams: DatatokenCreateParams
@@ -585,7 +585,7 @@ export class NftFactory extends SmartContractWithAddress {
   }
 
   /**
-   * @dev createNftWithErc20
+   * @dev createNftWithDatatoken
    *      Creates a new NFT, then a Datatoken,all in one call
    * @param address Caller address
    * @param _NftCreateData input data for nft creation
@@ -593,7 +593,7 @@ export class NftFactory extends SmartContractWithAddress {
    * @return {Promise<TransactionReceipt>} transaction receipt
    */
 
-  public async createNftWithErc20(
+  public async createNftWithDatatoken(
     address: string,
     nftCreateData: NftCreateData,
     ercParams: DatatokenCreateParams

@@ -242,7 +242,11 @@ async function createAsset(
     mpFeeAddress: ZERO_ADDRESS
   }
 
-  const result = await Factory.createNftWithErc20(owner, nftParamsAsset, datatokenParams)
+  const result = await Factory.createNftWithDatatoken(
+    owner,
+    nftParamsAsset,
+    datatokenParams
+  )
 
   const nftAddress = result.events.NFTCreated.returnValues[0]
   const datatokenAddressAsset = result.events.TokenCreated.returnValues[0]
