@@ -218,7 +218,7 @@ describe('Nft Factory test', () => {
       allowedSwapper: ZERO_ADDRESS
     }
 
-    const txReceipt = await nftFactory.createNftErc20WithDispenser(
+    const txReceipt = await nftFactory.createNftWithDatatokenWithDispenser(
       nftOwner,
       nftData,
       ercParams,

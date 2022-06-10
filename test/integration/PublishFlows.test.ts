@@ -288,7 +288,7 @@ describe('Publish tests', async () => {
       allowedSwapper: ZERO_ADDRESS
     }
 
-    const bundleNFT = await factory.createNftErc20WithDispenser(
+    const bundleNFT = await factory.createNftWithDatatokenWithDispenser(
       publisherAccount,
       nftParams,
       datatokenParams,

@@ -746,14 +746,14 @@ export class NftFactory extends SmartContractWithAddress {
     return trxReceipt
   }
 
-  /** Estimate gas cost for createNftWithDatatokenWithFixedRate method
+  /** Estimate gas cost for estGasCreateNftWithDatatokenWithDispenser method
    * @param address Caller address
    * @param nftCreateData input data for NFT Creation
    * @param ercParams input data for Datatoken Creation
    * @param dispenserParams input data for Dispenser Creation
    * @return {Promise<TransactionReceipt>} transaction receipt
    */
-  public async estGasCreateNftErc20WithDispenser(
+  public async estGasCreateNftWithDatatokenWithDispenser(
     address: string,
     nftCreateData: NftCreateData,
     ercParams: DatatokenCreateParams,
@@ -770,7 +770,7 @@ export class NftFactory extends SmartContractWithAddress {
   }
 
   /**
-   * @dev createNftErc20WithDispenser
+   * @dev createNftWithDatatokenWithDispenser
    *      Creates a new NFT, then a Datatoken, then a Dispenser, all in one call
    *      Use this carefully, because if Dispenser creation fails, you are still going to pay a lot of gas
    * @param address Caller address
@@ -779,7 +779,7 @@ export class NftFactory extends SmartContractWithAddress {
    * @param dispenserParams input data for Dispenser Creation
    *  @return {Promise<TransactionReceipt>} transaction receipt
    */
-  public async createNftErc20WithDispenser(
+  public async createNftWithDatatokenWithDispenser(
     address: string,
     nftCreateData: NftCreateData,
     ercParams: DatatokenCreateParams,

@@ -766,7 +766,7 @@ describe('Marketplace flow tests', async () => {
       allowedSwapper: ZERO_ADDRESS
     }
 
-    const tx = await factory.createNftErc20WithDispenser(
+    const tx = await factory.createNftWithDatatokenWithDispenser(
       publisherAccount,
       nftParams,
       datatokenParams,
