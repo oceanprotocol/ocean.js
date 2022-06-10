@@ -541,9 +541,9 @@ describe('Datatoken', () => {
     )
   })
 
-  it('#getERC721Address - should succeed to get the parent ERC721 address', async () => {
+  it('#getNFTAddress - should succeed to get the parent NFT address', async () => {
     const address = await datatoken.getNFTAddress(datatokenAddress)
-    assert(address, 'Not able to get the parent ERC721 address')
+    assert(address, 'Not able to get the parent NFT address')
   })
 
   it('#setData - should set a value into 725Y standard, if Caller has ERC20Deployer permission', async () => {
