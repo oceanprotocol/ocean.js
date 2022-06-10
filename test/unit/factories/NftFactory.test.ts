@@ -359,7 +359,7 @@ describe('Nft Factory test', () => {
     assert(nftTemplate.isActive === true)
   })
 
-  it('#addTokenTemplate - should add a new erc20 token template', async () => {
+  it('#addTokenTemplate - should add a new Datatokent template', async () => {
     const currentTokenTemplateCount = await nftFactory.getCurrentTokenTemplateCount()
 
     await nftFactory.addTokenTemplate(factoryOwner, contracts.erc20TemplateAddress)
@@ -369,7 +369,7 @@ describe('Nft Factory test', () => {
     )
   })
 
-  it('#disableTokenTemplate - should disable an erc20 token template', async () => {
+  it('#disableTokenTemplate - should disable an Datatoken template', async () => {
     const currentTokenTemplateCount = await nftFactory.getCurrentTokenTemplateCount()
 
     let tokenTemplate = await nftFactory.getTokenTemplate(currentTokenTemplateCount)
@@ -381,7 +381,7 @@ describe('Nft Factory test', () => {
     assert(tokenTemplate.isActive === false)
   })
 
-  it('#reactivateTokenTemplate - should reactivate an previously disabled erc20 token template', async () => {
+  it('#reactivateTokenTemplate - should reactivate an previously disabled Datatoken template', async () => {
     const currentTokenTemplateCount = await nftFactory.getCurrentTokenTemplateCount()
 
     let tokenTemplate = await nftFactory.getTokenTemplate(currentTokenTemplateCount)

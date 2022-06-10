@@ -72,7 +72,7 @@ describe('Simple Publish & consume test', async () => {
     consumerAccount = accounts[1]
   })
 
-  it('should publish a dataset (create NFT + ERC20)', async () => {
+  it('should publish a dataset (create NFT + Datatoken)', async () => {
     const nft = new Nft(web3)
     const datatoken = new Datatoken(web3)
     const Factory = new NftFactory(addresses.ERC721Factory, web3)
@@ -131,7 +131,7 @@ describe('Simple Publish & consume test', async () => {
     const resolvedDDO = await aquarius.waitForAqua(ddo.id)
     assert(resolvedDDO, 'Cannot fetch DDO from Aquarius')
 
-    // mint 1 ERC20 and send it to the consumer
+    // mint 1 Datatoken and send it to the consumer
     await datatoken.mint(datatokenAddress, publisherAccount, '1', consumerAccount)
 
     // initialize provider

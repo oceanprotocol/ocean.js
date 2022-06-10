@@ -87,7 +87,7 @@ export const deployContracts = async (web3: Web3, owner: string): Promise<Addres
       owner
     ))
 
-  // deploy ERC20 template
+  // deploy Datatoken template
   addresses.erc20TemplateAddress =
     configAddresses.ERC20Template['1'] ||
     (await estimateGasAndDeployContract(

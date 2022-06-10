@@ -15,7 +15,7 @@ export class Nft extends SmartContract {
    *  Estimate gas cost for createDatatoken token creation
    * @param {String} nftAddress NFT address
    * @param {String} address User address
-   * @param {String} minter User set as initial minter for the ERC20
+   * @param {String} minter User set as initial minter for the Datatoken
    * @param {String} paymentCollector initial paymentCollector for this DT
    * @param {String} mpFeeAddress Consume marketplace fee address
    * @param {String} feeToken address of the token marketplace wants to add fee on top
@@ -54,10 +54,10 @@ export class Nft extends SmartContract {
   }
 
   /**
-   * Create new ERC20 datatoken - only user with DatatokenDeployer permission can succeed
+   * Create new ERC20 Datatoken - only user with DatatokenDeployer permission can succeed
    * @param {String} nftAddress NFT address
    * @param {String} address User address
-   * @param {String} minter User set as initial minter for the ERC20
+   * @param {String} minter User set as initial minter for the Datatoken
    * @param {String} paymentCollector initial paymentCollector for this DT
    * @param {String} mpFeeAddress Consume marketplace fee address
    * @param {String} feeToken address of the token marketplace wants to add fee on top
@@ -66,7 +66,7 @@ export class Nft extends SmartContract {
    * @param {String} name Token name
    * @param {String} symbol Token symbol
    * @param {Number} templateIndex NFT template index
-   * @return {Promise<string>} ERC20 datatoken address
+   * @return {Promise<string>} ERC20 Datatoken address
    */
   public async createDatatoken(
     nftAddress: string,
@@ -587,7 +587,7 @@ export class Nft extends SmartContract {
   /**
    * This function allows to remove all ROLES at NFT level: Managers, DatatokenDeployer, MetadataUpdater, StoreUpdater
    * Even NFT Owner has to readd himself as Manager
-   * Permissions at erc20 level stay.
+   * Permissions at Datatoken level stay.
    * Only NFT Owner  can call it.
    * @param {String} nftAddress NFT contract address
    * @param {String} address NFT Owner adress
@@ -645,7 +645,7 @@ export class Nft extends SmartContract {
 
   /**
    * Transfers the NFT
-   * will clean all permissions both on NFT and erc20 level.
+   * will clean all permissions both on NFT and Datatoken level.
    * @param {String} nftAddress NFT contract address
    * @param {String} nftOwner Current NFT Owner adress
    * @param {String} nftReceiver User which will receive the NFT, will also be set as Manager
@@ -715,7 +715,7 @@ export class Nft extends SmartContract {
 
   /**
    * safeTransferNFT Used for transferring the NFT, can be used by an approved relayer
-   * will clean all permissions both on NFT and erc20 level.
+   * will clean all permissions both on NFT and Datatoken level.
    * @param {String} nftAddress NFT contract address
    * @param {String} nftOwner Current NFT Owner adress
    * @param {String} nftReceiver User which will receive the NFT, will also be set as Manager
@@ -796,7 +796,7 @@ export class Nft extends SmartContract {
 
   /**
    * safeTransferNFT Used for transferring the NFT, can be used by an approved relayer
-   * will clean all permissions both on NFT and erc20 level.
+   * will clean all permissions both on NFT and Datatoken level.
    * @param {String} nftAddress NFT contract address
    * @param {String} address Caller address NFT Owner adress
    * @return {Promise<TransactionReceipt>} trxReceipt

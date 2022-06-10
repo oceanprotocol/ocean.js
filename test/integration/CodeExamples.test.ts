@@ -278,7 +278,7 @@ describe('Marketplace flow tests', async () => {
       swapFeeMarketRunner: '0.001'
     }
     /// ```
-    /// Before we call the contract we have to call `approve` so that the contract can move our tokens. This is standard when using any ERC20 tokens
+    /// Before we call the contract we have to call `approve` so that the contract can move our tokens. This is standard when using any ERC20 Datatokens
     /// ```Typescript
     await approve(
       web3,
@@ -353,7 +353,7 @@ describe('Marketplace flow tests', async () => {
     const pool = new Pool(web3)
 
     /// ```
-    /// Before we call the contract we have to call `approve` so that the contract can move our tokens. This is standard when using any ERC20 tokens
+    /// Before we call the contract we have to call `approve` so that the contract can move our tokens. This is standard when using any ERC20 Datatokens
     /// ```Typescript
     await approve(web3, stakerAccount, addresses.Ocean, poolAddress, '5', true)
 
@@ -402,7 +402,7 @@ describe('Marketplace flow tests', async () => {
     console.log(`Consumer ${POOL_NFT_SYMBOL} balance before swap: ${consumerDTBalance}`)
 
     /// ```
-    /// Before we call the contract we have to call `approve` so that the contract can move our tokens. This is standard when using any ERC20 tokens
+    /// Before we call the contract we have to call `approve` so that the contract can move our tokens. This is standard when using any ERC20 Datatokens
     /// ```Typescript
     await approve(web3, consumerAccount, addresses.Ocean, poolAddress, '100')
 
@@ -644,7 +644,7 @@ describe('Marketplace flow tests', async () => {
     console.log(`Consumer ${FRE_NFT_SYMBOL} balance before swap: ${consumerDTBalance}`)
 
     /// ```
-    /// Before we call the contract we have to call `approve` so that the contract can move our tokens. This is standard when using any ERC20 tokens
+    /// Before we call the contract we have to call `approve` so that the contract can move our tokens. This is standard when using any ERC20 Datatokens
     /// ```Typescript
     await approve(web3, consumerAccount, addresses.Ocean, freAddress, '100')
     await approve(
