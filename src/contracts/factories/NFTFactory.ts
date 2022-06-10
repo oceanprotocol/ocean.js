@@ -140,7 +140,7 @@ export class NftFactory extends SmartContractWithAddress {
   }
 
   /** Get Current Template  Datatoken (ERC20) Count
-   * @return {Promise<number>} Number of ERC20 Template added to this factory
+   * @return {Promise<number>} Number of Datatoken Template added to this factory
    */
   public async getCurrentTokenTemplateCount(): Promise<number> {
     const count = await this.contract.methods.getCurrentTemplateCount().call()
@@ -163,7 +163,7 @@ export class NftFactory extends SmartContractWithAddress {
     return template
   }
 
-  /** Get Datatoken(erc20) Template
+  /** Get Datatoken(ERC20) Template
    * @param {Number} index Template index
    * @return {Promise<Template>} DT Template info
    */
@@ -172,7 +172,7 @@ export class NftFactory extends SmartContractWithAddress {
     return template
   }
 
-  /** Check if ERC20 is deployed from the factory
+  /** Check if Datatoken is deployed from the factory
    * @param {String} datatoken Datatoken address we want to check
    * @return {Promise<Boolean>} return true if deployed from this factory
    */
@@ -529,11 +529,11 @@ export class NftFactory extends SmartContractWithAddress {
   /**
    * @dev startMultipleTokenOrder
    *      Used as a proxy to order multiple services
-   *      Users can have inifinite approvals for fees for factory instead of having one approval/ erc20 contract
+   *      Users can have inifinite approvals for fees for factory instead of having one approval/ Datatoken contract
    *      Requires previous approval of all :
    *          - consumeFeeTokens
    *          - publishMarketFeeTokens
-   *          - erc20 datatokens
+   *          - ERC20 Datatokens
    * @param address Caller address
    * @param orders an array of struct tokenOrder
    * @return {Promise<TransactionReceipt>} transaction receipt
@@ -565,8 +565,8 @@ export class NftFactory extends SmartContractWithAddress {
   /**
    * Estimate gas cost for createNftWithErc20 method
    * @param address Caller address
-   * @param _NftCreateData input data for nft creation
-   * @param _ErcCreateData input data for erc20 creation
+   * @param _NftCreateData input data for NFT creation
+   * @param _ErcCreateData input data for Datatoken creation
    *  @return {Promise<TransactionReceipt>} transaction receipt
    */
 
@@ -586,10 +586,10 @@ export class NftFactory extends SmartContractWithAddress {
 
   /**
    * @dev createNftWithErc20
-   *      Creates a new NFT, then a ERC20,all in one call
+   *      Creates a new NFT, then a Datatoken,all in one call
    * @param address Caller address
    * @param _NftCreateData input data for nft creation
-   * @param _ErcCreateData input data for erc20 creation
+   * @param _ErcCreateData input data for Datatoken creation
    * @return {Promise<TransactionReceipt>} transaction receipt
    */
 
@@ -623,7 +623,7 @@ export class NftFactory extends SmartContractWithAddress {
    * Estimate gas cost for createNftErc20WithPool method
    * @param address Caller address
    * @param nftCreateData input data for NFT Creation
-   * @param ercParams input data for ERC20 Creation
+   * @param ercParams input data for Datatoken Creation
    * @param poolParams input data for Pool Creation
    * @return {Promise<TransactionReceipt>} transaction receipt
    */
@@ -646,11 +646,11 @@ export class NftFactory extends SmartContractWithAddress {
 
   /**
    * @dev createNftErc20WithPool
-   *      Creates a new NFT, then a ERC20, then a Pool, all in one call
+   *      Creates a new NFT, then a Datatoken, then a Pool, all in one call
    *      Use this carefully, because if Pool creation fails, you are still going to pay a lot of gas
    * @param address Caller address
    * @param nftCreateData input data for NFT Creation
-   * @param ercParams input data for ERC20 Creation
+   * @param ercParams input data for Datatoken Creation
    * @param poolParams input data for Pool Creation
    * @return {Promise<TransactionReceipt>} transaction receipt
    */
@@ -686,7 +686,7 @@ export class NftFactory extends SmartContractWithAddress {
   /** Estimate gas cost for createNftErc20WithFixedRate method
    * @param address Caller address
    * @param nftCreateData input data for NFT Creation
-   * @param ercParams input data for ERC20 Creation
+   * @param ercParams input data for Datatoken Creation
    * @param freParams input data for FixedRate Creation
    * @return {Promise<TransactionReceipt>} transaction receipt
    */
@@ -709,11 +709,11 @@ export class NftFactory extends SmartContractWithAddress {
 
   /**
    * @dev createNftErc20WithFixedRate
-   *      Creates a new NFT, then a ERC20, then a FixedRateExchange, all in one call
+   *      Creates a new NFT, then a Datatoken, then a FixedRateExchange, all in one call
    *      Use this carefully, because if Fixed Rate creation fails, you are still going to pay a lot of gas
    * @param address Caller address
    * @param nftCreateData input data for NFT Creation
-   * @param ercParams input data for ERC20 Creation
+   * @param ercParams input data for Datatoken Creation
    * @param freParams input data for FixedRate Creation
    *  @return {Promise<TransactionReceipt>} transaction receipt
    */
@@ -749,7 +749,7 @@ export class NftFactory extends SmartContractWithAddress {
   /** Estimate gas cost for createNftErc20WithFixedRate method
    * @param address Caller address
    * @param nftCreateData input data for NFT Creation
-   * @param ercParams input data for ERC20 Creation
+   * @param ercParams input data for Datatoken Creation
    * @param dispenserParams input data for Dispenser Creation
    * @return {Promise<TransactionReceipt>} transaction receipt
    */
@@ -771,11 +771,11 @@ export class NftFactory extends SmartContractWithAddress {
 
   /**
    * @dev createNftErc20WithDispenser
-   *      Creates a new NFT, then a ERC20, then a Dispenser, all in one call
+   *      Creates a new NFT, then a Datatoken, then a Dispenser, all in one call
    *      Use this carefully, because if Dispenser creation fails, you are still going to pay a lot of gas
    * @param address Caller address
    * @param nftCreateData input data for NFT Creation
-   * @param ercParams input data for ERC20 Creation
+   * @param ercParams input data for Datatoken Creation
    * @param dispenserParams input data for Dispenser Creation
    *  @return {Promise<TransactionReceipt>} transaction receipt
    */
