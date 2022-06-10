@@ -13,7 +13,7 @@ export class Nft extends SmartContract {
 
   /**
    *  Estimate gas cost for createERC20 token creation
-   * @param {String} nftAddress ERC721 addreess
+   * @param {String} nftAddress NFT address
    * @param {String} address User address
    * @param {String} minter User set as initial minter for the ERC20
    * @param {String} paymentCollector initial paymentCollector for this DT
@@ -55,7 +55,7 @@ export class Nft extends SmartContract {
 
   /**
    * Create new ERC20 datatoken - only user with ERC20Deployer permission can succeed
-   * @param {String} nftAddress ERC721 addreess
+   * @param {String} nftAddress NFT address
    * @param {String} address User address
    * @param {String} minter User set as initial minter for the ERC20
    * @param {String} paymentCollector initial paymentCollector for this DT
@@ -130,7 +130,7 @@ export class Nft extends SmartContract {
 
   /**
    * Estimate gas cost for add manager call
-   * @param {String} nftAddress erc721 contract adress
+   * @param {String} nftAddress NFT contract address
    * @param {String} address NFT Owner adress
    * @param {String} manager User adress which is going to be assing manager
    * @param {Contract} nftContract optional contract instance
@@ -149,7 +149,7 @@ export class Nft extends SmartContract {
 
   /**
    * Add Manager for NFT Contract (only NFT Owner can succeed)
-   * @param {String} nftAddress erc721 contract adress
+   * @param {String} nftAddress NFT contract address
    * @param {String} address NFT Owner adress
    * @param {String} manager User adress which is going to be assing manager
    * @return {Promise<TransactionReceipt>} trxReceipt
@@ -175,7 +175,7 @@ export class Nft extends SmartContract {
 
   /**
    * Estimate gas cost for removeManager method
-   * @param {String} nftAddress erc721 contract adress
+   * @param {String} nftAddress NFT contract address
    * @param {String} address NFT Owner adress
    * @param {String} manager User adress which is going to be removed as manager
    * @param {Contract} nftContract optional contract instance
@@ -193,7 +193,7 @@ export class Nft extends SmartContract {
 
   /**
    * Removes a specific manager for NFT Contract (only NFT Owner can succeed)
-   * @param {String} nftAddress erc721 contract adress
+   * @param {String} nftAddress NFT contract address
    * @param {String} address NFT Owner adress
    * @param {String} manager User adress which is going to be removed as manager
    * @return {Promise<TransactionReceipt>} trxReceipt
@@ -219,7 +219,7 @@ export class Nft extends SmartContract {
 
   /**
    *  Estimate gas cost for addToCreateERC20List method
-   * @param {String} nftAddress erc721 contract adress
+   * @param {String} nftAddress NFT contract address
    * @param {String} address NFT Manager adress
    * @param {String} erc20Deployer User adress which is going to have erc20Deployer permission
    * @param {Contract} nftContract optional contract instance
@@ -237,7 +237,7 @@ export class Nft extends SmartContract {
 
   /**
    * Add ERC20Deployer permission - only Manager can succeed
-   * @param {String} nftAddress erc721 contract adress
+   * @param {String} nftAddress NFT contract address
    * @param {String} address NFT Manager adress
    * @param {String} erc20Deployer User adress which is going to have erc20Deployer permission
    * @return {Promise<TransactionReceipt>} trxReceipt
@@ -274,7 +274,7 @@ export class Nft extends SmartContract {
 
   /**
    * Estimate gas cost for removeFromCreateERC20List method
-   * @param {String} nftAddress erc721 contract adress
+   * @param {String} nftAddress NFT contract address
    * @param {String} address NFT Manager adress
    * @param {String} erc20Deployer Address of the user to be revoked ERC20Deployer Permission
    * @param {Contract} nftContract optional contract instance
@@ -297,7 +297,7 @@ export class Nft extends SmartContract {
 
   /**
    * Remove ERC20Deployer permission - only Manager can succeed
-   * @param {String} nftAddress erc721 contract adress
+   * @param {String} nftAddress NFT contract address
    * @param {String} address NFT Manager adress
    * @param {String} erc20Deployer Address of the user to be revoked ERC20Deployer Permission
    * @return {Promise<TransactionReceipt>} trxReceipt
@@ -336,7 +336,7 @@ export class Nft extends SmartContract {
 
   /**
    * Estimate gas cost for addToMetadataList method
-   * @param {String} nftAddress erc721 contract adress
+   * @param {String} nftAddress NFT contract address
    * @param {String} address NFT Manager adress
    * @param {String} metadataUpdater User adress which is going to have Metadata Updater permission
    * @param {Contract} nftContract optional contract instance
@@ -355,7 +355,7 @@ export class Nft extends SmartContract {
 
   /**
    * Add Metadata Updater permission - only Manager can succeed
-   * @param {String} nftAddress erc721 contract adress
+   * @param {String} nftAddress NFT contract address
    * @param {String} address NFT Manager adress
    * @param {String} metadataUpdater User adress which is going to have Metadata Updater permission
    * @return {Promise<TransactionReceipt>} trxReceipt
@@ -389,7 +389,7 @@ export class Nft extends SmartContract {
 
   /**
    * Estimate gas cost for removeFromMetadataList method
-   * @param {String} nftAddress erc721 contract adress
+   * @param {String} nftAddress NFT contract address
    * @param {String} address NFT Manager adress
    * @param {String} metadataUpdater Address of the user to be revoked Metadata updater Permission
    * @param {Contract} nftContract optional contract instance
@@ -412,7 +412,7 @@ export class Nft extends SmartContract {
 
   /**
    * Remove Metadata Updater permission - only Manager can succeed
-   * @param {String} nftAddress erc721 contract adress
+   * @param {String} nftAddress NFT contract address
    * @param {String} address NFT Manager adress
    * @param {String} metadataUpdater Address of the user to be revoked Metadata updater Permission
    * @return {Promise<TransactionReceipt>} trxReceipt
@@ -453,7 +453,7 @@ export class Nft extends SmartContract {
 
   /**
    * Estimate gas cost for addTo725StoreList method
-   * @param {String} nftAddress erc721 contract adress
+   * @param {String} nftAddress NFT contract address
    * @param {String} address NFT Manager adress
    * @param {String} storeUpdater User adress which is going to have Store Updater permission
    * @param {Contract} nftContract optional contract instance
@@ -472,7 +472,7 @@ export class Nft extends SmartContract {
 
   /**
    * Add Store Updater permission - only Manager can succeed
-   * @param {String} nftAddress erc721 contract adress
+   * @param {String} nftAddress NFT contract address
    * @param {String} address NFT Manager adress
    * @param {String} storeUpdater User adress which is going to have Store Updater permission
    * @return {Promise<TransactionReceipt>} trxReceipt
@@ -506,7 +506,7 @@ export class Nft extends SmartContract {
 
   /**
    *  Estimate gas cost for removeFrom725StoreList method
-   * @param {String} nftAddress erc721 contract adress
+   * @param {String} nftAddress NFT contract address
    * @param {String} address NFT Manager adress
    * @param {String} storeUpdater Address of the user to be revoked Store Updater Permission
    * @param {Contract} nftContract optional contract instance
@@ -525,7 +525,7 @@ export class Nft extends SmartContract {
 
   /**
    * Remove Store Updater permission - only Manager can succeed
-   * @param {String} nftAddress erc721 contract adress
+   * @param {String} nftAddress NFT contract address
    * @param {String} address NFT Manager adress
    * @param {String} storeUpdater Address of the user to be revoked Store Updater Permission
    * @return {Promise<TransactionReceipt>} trxReceipt
@@ -565,7 +565,7 @@ export class Nft extends SmartContract {
 
   /**
    *  Estimate gas cost for cleanPermissions method
-   * @param {String} nftAddress erc721 contract adress
+   * @param {String} nftAddress NFT contract address
    * @param {String} address NFT Owner adress
    * @param {Contract} nftContract optional contract instance
    * @return {Promise<any>}
@@ -581,11 +581,11 @@ export class Nft extends SmartContract {
   }
 
   /**
-   * This function allows to remove all ROLES at erc721 level: Managers, ERC20Deployer, MetadataUpdater, StoreUpdater
+   * This function allows to remove all ROLES at NFT level: Managers, ERC20Deployer, MetadataUpdater, StoreUpdater
    * Even NFT Owner has to readd himself as Manager
    * Permissions at erc20 level stay.
    * Only NFT Owner  can call it.
-   * @param {String} nftAddress erc721 contract adress
+   * @param {String} nftAddress NFT contract address
    * @param {String} address NFT Owner adress
    * @return {Promise<TransactionReceipt>} trxReceipt
    */
@@ -614,7 +614,7 @@ export class Nft extends SmartContract {
 
   /**
    * Estimate gas cost for transfer NFT method
-   * @param {String} nftAddress erc721 contract adress
+   * @param {String} nftAddress NFT contract address
    * @param {String} nftOwner Current NFT Owner adress
    * @param {String} nftReceiver User which will receive the NFT, will also be set as Manager
    * @param {Number} tokenId The id of the token to be transfered
@@ -641,8 +641,8 @@ export class Nft extends SmartContract {
 
   /**
    * Transfers the NFT
-   * will clean all permissions both on erc721 and erc20 level.
-   * @param {String} nftAddress erc721 contract adress
+   * will clean all permissions both on NFT and erc20 level.
+   * @param {String} nftAddress NFT contract address
    * @param {String} nftOwner Current NFT Owner adress
    * @param {String} nftReceiver User which will receive the NFT, will also be set as Manager
    * @param {Number} tokenId The id of the token to be transfered
@@ -684,7 +684,7 @@ export class Nft extends SmartContract {
 
   /**
    * Estimate gas cost for safeTransfer NFT method
-   * @param {String} nftAddress erc721 contract adress
+   * @param {String} nftAddress NFT contract address
    * @param {String} nftOwner Current NFT Owner adress
    * @param {String} nftReceiver User which will receive the NFT, will also be set as Manager
    * @param {Number} tokenId The id of the token to be transfered
@@ -711,8 +711,8 @@ export class Nft extends SmartContract {
 
   /**
    * safeTransferNFT Used for transferring the NFT, can be used by an approved relayer
-   * will clean all permissions both on erc721 and erc20 level.
-   * @param {String} nftAddress erc721 contract adress
+   * will clean all permissions both on NFT and erc20 level.
+   * @param {String} nftAddress NFT contract address
    * @param {String} nftOwner Current NFT Owner adress
    * @param {String} nftReceiver User which will receive the NFT, will also be set as Manager
    * @param {Number} tokenId The id of the token to be transfered
@@ -755,7 +755,7 @@ export class Nft extends SmartContract {
   // TODO: Finish this description
   /**
    * Estimate gas cost for setMetadata  method
-   * @param {String} nftAddress erc721 contract adress
+   * @param {String} nftAddress NFT contract address
    * @param {String} metadataUpdater metadataUpdater address
    * @param {Number} metadataState User which will receive the NFT, will also be set as Manager
    * @param {String} metadataDecryptorUrl
@@ -792,8 +792,8 @@ export class Nft extends SmartContract {
 
   /**
    * safeTransferNFT Used for transferring the NFT, can be used by an approved relayer
-   * will clean all permissions both on erc721 and erc20 level.
-   * @param {String} nftAddress erc721 contract adress
+   * will clean all permissions both on NFT and erc20 level.
+   * @param {String} nftAddress NFT contract address
    * @param {String} address Caller address NFT Owner adress
    * @return {Promise<TransactionReceipt>} trxReceipt
    */
@@ -845,7 +845,7 @@ export class Nft extends SmartContract {
 
   /**
    * Estimate gas cost for setMetadata  method
-   * @param {String} nftAddress erc721 contract adress
+   * @param {String} nftAddress NFT contract address
    * @param {String} metadataUpdater metadataUpdater address
    * @param {MetaDataAndTokenURI} metadataAndTokenURI metaDataAndTokenURI object
    * @param {Contract} nftContract optional contract instance
@@ -871,7 +871,7 @@ export class Nft extends SmartContract {
 
   /**
    *  Helper function to improve UX sets both MetaData & TokenURI in one tx
-   * @param {String} nftAddress erc721 contract adress
+   * @param {String} nftAddress NFT contract address
    * @param {String} address Caller address
    * @param {MetadataAndTokenURI} metadataAndTokenURI metaDataAndTokenURI object
    * @return {Promise<TransactionReceipt>} trxReceipt
@@ -907,7 +907,7 @@ export class Nft extends SmartContract {
 
   /**
    * Estimate gas cost for setMetadataState  method
-   * @param {String} nftAddress erc721 contract adress
+   * @param {String} nftAddress NFT contract address
    * @param {String} nftOwner Current NFT Owner adress
    * @param {Number} metadataState new metadata state
    * @param {Contract} nftContract optional contract instance
@@ -930,7 +930,7 @@ export class Nft extends SmartContract {
 
   /**
    * setMetadataState Used for updating the metadata State
-   * @param {String} nftAddress erc721 contract adress
+   * @param {String} nftAddress NFT contract address
    * @param {String} address Caller address => metadata updater
    * @param {Number} metadataState new metadata state
    * @return {Promise<TransactionReceipt>} trxReceipt
@@ -963,7 +963,7 @@ export class Nft extends SmartContract {
   }
 
   /** Estimate gas cost for setTokenURI method
-   * @param nftAddress erc721 contract adress
+   * @param nftAddress NFT contract address
    * @param address user adress
    * @param data input data for TokenURI
    * @return {Promise<TransactionReceipt>} transaction receipt
@@ -979,7 +979,7 @@ export class Nft extends SmartContract {
   }
 
   /** set TokenURI on an nft
-   * @param nftAddress erc721 contract adress
+   * @param nftAddress NFT contract address
    * @param address user adress
    * @param data input data for TokenURI
    * @return {Promise<TransactionReceipt>} transaction receipt
@@ -1001,7 +1001,7 @@ export class Nft extends SmartContract {
   }
 
   /** Get Owner
-   * @param {String} nftAddress erc721 contract adress
+   * @param {String} nftAddress NFT contract address
    * @return {Promise<string>} string
    */
   public async getNftOwner(nftAddress: string): Promise<string> {
@@ -1011,7 +1011,7 @@ export class Nft extends SmartContract {
   }
 
   /** Get users NFT Permissions
-   * @param {String} nftAddress erc721 contract adress
+   * @param {String} nftAddress NFT contract address
    * @param {String} address user adress
    * @return {Promise<NftRoles>}
    */
@@ -1022,7 +1022,7 @@ export class Nft extends SmartContract {
   }
 
   /** Get users Metadata, return Metadata details
-   * @param {String} nftAddress erc721 contract adress
+   * @param {String} nftAddress NFT contract address
    * @return {Promise<Objecta>}
    */
   public async getMetadata(nftAddress: string): Promise<Object> {
@@ -1031,7 +1031,7 @@ export class Nft extends SmartContract {
   }
 
   /** Get users ERC20Deployer role
-   * @param {String} nftAddress erc721 contract adress
+   * @param {String} nftAddress NFT contract address
    * @param {String} address user adress
    * @return {Promise<boolean>}
    */
@@ -1042,7 +1042,7 @@ export class Nft extends SmartContract {
   }
 
   /** Gets data at a given `key`
-   * @param {String} nftAddress erc721 contract adress
+   * @param {String} nftAddress NFT contract address
    * @param {String} key the key which value to retrieve
    * @return {Promise<string>} The data stored at the key
    */
@@ -1053,7 +1053,7 @@ export class Nft extends SmartContract {
   }
 
   /** Gets data at a given `key`
-   * @param {String} nftAddress erc721 contract adress
+   * @param {String} nftAddress NFT contract address
    * @param {String} id
    * @return {Promise<string>} The data stored at the key
    */

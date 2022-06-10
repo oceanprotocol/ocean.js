@@ -208,7 +208,7 @@ export class NftFactory extends SmartContractWithAddress {
   }
 
   /**
-   * Add a new erc721 token template - only factory Owner
+   * Add a new NFT token template - only factory Owner
    * @param {String} address
    * @param {String} templateAddress template address to add
    * @return {Promise<TransactionReceipt>}
@@ -367,7 +367,7 @@ export class NftFactory extends SmartContractWithAddress {
   }
 
   /**
-   * Add a new erc721 token template - only factory Owner
+   * Add a new NFT token template - only factory Owner
    * @param {String} address
    * @param {String} templateAddress template address to add
    * @return {Promise<TransactionReceipt>}
