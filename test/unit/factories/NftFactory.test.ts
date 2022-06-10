@@ -90,7 +90,7 @@ describe('Nft Factory test', () => {
   it('#getTokenTemplate - should return Token template struct', async () => {
     const tokenTemplate = await nftFactory.getTokenTemplate(1)
     assert(tokenTemplate.isActive === true)
-    assert(tokenTemplate.templateAddress === contracts.erc20TemplateAddress)
+    assert(tokenTemplate.templateAddress === contracts.datatokenTemplateAddress)
   })
 
   it('#createNft - should create an NFT', async () => {
@@ -362,7 +362,7 @@ describe('Nft Factory test', () => {
   it('#addTokenTemplate - should add a new Datatokent template', async () => {
     const currentTokenTemplateCount = await nftFactory.getCurrentTokenTemplateCount()
 
-    await nftFactory.addTokenTemplate(factoryOwner, contracts.erc20TemplateAddress)
+    await nftFactory.addTokenTemplate(factoryOwner, contracts.datatokenTemplateAddress)
 
     expect(
       (await nftFactory.getCurrentTokenTemplateCount()) === currentTokenTemplateCount + 1
