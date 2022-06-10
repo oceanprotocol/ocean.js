@@ -84,7 +84,7 @@ describe('Nft Factory test', () => {
   it('#getNFTTemplate - should return NFT template struct', async () => {
     const nftTemplate = await nftFactory.getNFTTemplate(1)
     assert(nftTemplate.isActive === true)
-    assert(nftTemplate.templateAddress === contracts.erc721TemplateAddress)
+    assert(nftTemplate.templateAddress === contracts.nftTemplateAddress)
   })
 
   it('#getTokenTemplate - should return Token template struct', async () => {
@@ -328,7 +328,7 @@ describe('Nft Factory test', () => {
   it('#addNFTTemplate - should add a new erc721 token template', async () => {
     const currentNFTTemplateCount = await nftFactory.getCurrentNFTTemplateCount()
 
-    await nftFactory.addNFTTemplate(factoryOwner, contracts.erc721TemplateAddress)
+    await nftFactory.addNFTTemplate(factoryOwner, contracts.nftTemplateAddress)
 
     expect(
       (await nftFactory.getCurrentNFTTemplateCount()) === currentNFTTemplateCount + 1
