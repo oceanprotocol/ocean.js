@@ -107,7 +107,7 @@ describe('Publish tests', async () => {
       owner: publisherAccount
     }
 
-    const erc20Params: DatatokenCreateParams = {
+    const datatokenParams: DatatokenCreateParams = {
       templateIndex: 1,
       cap: '100000',
       feeAmount: '0',
@@ -136,7 +136,7 @@ describe('Publish tests', async () => {
     const bundleNFT = await factory.createNftErc20WithPool(
       publisherAccount,
       nftParams,
-      erc20Params,
+      datatokenParams,
       poolParams
     )
 
@@ -191,7 +191,7 @@ describe('Publish tests', async () => {
       owner: publisherAccount
     }
 
-    const erc20Params: DatatokenCreateParams = {
+    const datatokenParams: DatatokenCreateParams = {
       templateIndex: 1,
       cap: '100000',
       feeAmount: '0',
@@ -217,7 +217,7 @@ describe('Publish tests', async () => {
     const bundleNFT = await factory.createNftErc20WithFixedRate(
       publisherAccount,
       nftParams,
-      erc20Params,
+      datatokenParams,
       fixedPriceParams
     )
 
@@ -270,7 +270,7 @@ describe('Publish tests', async () => {
       owner: publisherAccount
     }
 
-    const erc20Params: DatatokenCreateParams = {
+    const datatokenParams: DatatokenCreateParams = {
       templateIndex: 1,
       cap: '100000',
       feeAmount: '0',
@@ -291,7 +291,7 @@ describe('Publish tests', async () => {
     const bundleNFT = await factory.createNftErc20WithDispenser(
       publisherAccount,
       nftParams,
-      erc20Params,
+      datatokenParams,
       dispenserParams
     )
 

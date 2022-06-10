@@ -252,7 +252,7 @@ describe('Marketplace flow tests', async () => {
       owner: publisherAccount
     }
 
-    const erc20Params: DatatokenCreateParams = {
+    const datatokenParams: DatatokenCreateParams = {
       templateIndex: 1,
       cap: '100000',
       feeAmount: '0',
@@ -294,7 +294,7 @@ describe('Marketplace flow tests', async () => {
     const tx = await factory.createNftErc20WithPool(
       publisherAccount,
       nftParams,
-      erc20Params,
+      datatokenParams,
       poolParams
     )
 
@@ -526,7 +526,7 @@ describe('Marketplace flow tests', async () => {
       owner: publisherAccount
     }
 
-    const erc20Params: DatatokenCreateParams = {
+    const datatokenParams: DatatokenCreateParams = {
       templateIndex: 1,
       cap: '100000',
       feeAmount: '0',
@@ -552,7 +552,7 @@ describe('Marketplace flow tests', async () => {
     const tx = await factory.createNftErc20WithFixedRate(
       publisherAccount,
       nftParams,
-      erc20Params,
+      datatokenParams,
       freParams
     )
 
@@ -748,7 +748,7 @@ describe('Marketplace flow tests', async () => {
       owner: publisherAccount
     }
 
-    const erc20Params: DatatokenCreateParams = {
+    const datatokenParams: DatatokenCreateParams = {
       templateIndex: 1,
       cap: '100000',
       feeAmount: '0',
@@ -769,7 +769,7 @@ describe('Marketplace flow tests', async () => {
     const tx = await factory.createNftErc20WithDispenser(
       publisherAccount,
       nftParams,
-      erc20Params,
+      datatokenParams,
       dispenserParams
     )
 

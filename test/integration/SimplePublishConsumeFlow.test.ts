@@ -86,7 +86,7 @@ describe('Simple Publish & consume test', async () => {
       owner: publisherAccount
     }
 
-    const erc20Params: DatatokenCreateParams = {
+    const datatokenParams: DatatokenCreateParams = {
       templateIndex: 1,
       cap: '100000',
       feeAmount: '0',
@@ -96,7 +96,11 @@ describe('Simple Publish & consume test', async () => {
       mpFeeAddress: ZERO_ADDRESS
     }
 
-    const tx = await Factory.createNftWithErc20(publisherAccount, nftParams, erc20Params)
+    const tx = await Factory.createNftWithErc20(
+      publisherAccount,
+      nftParams,
+      datatokenParams
+    )
     const nftAddress = tx.events.NFTCreated.returnValues[0]
     const datatokenAddress = tx.events.TokenCreated.returnValues[0]
 
