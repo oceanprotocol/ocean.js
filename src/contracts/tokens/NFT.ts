@@ -81,7 +81,7 @@ export class Nft extends SmartContract {
     symbol?: string,
     templateIndex?: number
   ): Promise<string> {
-    if ((await this.getNftPermissions(nftAddress, address)).deployERC20 !== true) {
+    if ((await this.getNftPermissions(nftAddress, address)).deployDatatoken !== true) {
       throw new Error(`Caller is not DatatokenDeployer`)
     }
     if (!templateIndex) templateIndex = 1
@@ -316,7 +316,7 @@ export class Nft extends SmartContract {
     if (
       (await this.getNftPermissions(nftAddress, address)).manager !== true ||
       (address === datatokenDeployer &&
-        (await this.getNftPermissions(nftAddress, address)).deployERC20 !== true)
+        (await this.getNftPermissions(nftAddress, address)).deployDatatoken !== true)
     ) {
       throw new Error(`Caller is not Manager nor DatatokenDeployer`)
     }

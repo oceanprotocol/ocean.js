@@ -14,7 +14,7 @@ export interface MetadataAndTokenURI {
 
 export interface NftRoles {
   manager: boolean
-  deployERC20: boolean
+  deployDatatoken: boolean
   updateMetadata: boolean
   store: boolean
 }
