@@ -124,17 +124,17 @@ describe('NFT', () => {
   })
 
   // ERC20Deployer
-  it('#addERC20Deployer -should add ERC20deployer if Manager', async () => {
+  it('#addDatatokenDeployer -should add ERC20deployer if Manager', async () => {
     assert((await nftDatatoken.isDatatokenDeployer(nftAddress, user1)) === false)
 
-    await nftDatatoken.addErc20Deployer(nftAddress, nftOwner, user1)
+    await nftDatatoken.addDatatokenDeployer(nftAddress, nftOwner, user1)
 
     assert((await nftDatatoken.isDatatokenDeployer(nftAddress, user1)) === true)
   })
 
-  it('#addERC20Deployer - should fail to add ERC20deployer if NOT Manager', async () => {
+  it('#addDatatokenDeployer - should fail to add ERC20deployer if NOT Manager', async () => {
     try {
-      await nftDatatoken.addErc20Deployer(nftAddress, user1, user1)
+      await nftDatatoken.addDatatokenDeployer(nftAddress, user1, user1)
       assert(false)
     } catch (e) {
       assert(e.message === 'Caller is not Manager')
@@ -150,7 +150,7 @@ describe('NFT', () => {
   })
 
   it('#removeERC20Deployer - should fail and remove ERC20deployer if NOT Manager nor himself an ERC20Deployer', async () => {
-    await nftDatatoken.addErc20Deployer(nftAddress, nftOwner, user1)
+    await nftDatatoken.addDatatokenDeployer(nftAddress, nftOwner, user1)
     assert((await nftDatatoken.isDatatokenDeployer(nftAddress, user1)) === true)
     try {
       await nftDatatoken.removeErc20Deployer(nftAddress, user1, user1)
@@ -264,7 +264,7 @@ describe('NFT', () => {
 
   it('#transferNFT - should transfer the NFT and clean all permissions, set new owner as manager', async () => {
     await nftDatatoken.addManager(nftAddress, nftOwner, user2)
-    await nftDatatoken.addErc20Deployer(nftAddress, user2, user1)
+    await nftDatatoken.addDatatokenDeployer(nftAddress, user2, user1)
     assert((await nftDatatoken.isDatatokenDeployer(nftAddress, user1)) === true)
 
     assert((await nftDatatoken.getNftOwner(nftAddress)) === nftOwner)
@@ -292,7 +292,7 @@ describe('NFT', () => {
 
   it('#safeTransferNft - should transfer the NFT and clean all permissions, set new owner as manager', async () => {
     await nftDatatoken.addManager(nftAddress, nftOwner, user2)
-    await nftDatatoken.addErc20Deployer(nftAddress, user2, user1)
+    await nftDatatoken.addDatatokenDeployer(nftAddress, user2, user1)
     assert((await nftDatatoken.isDatatokenDeployer(nftAddress, user1)) === true)
 
     assert((await nftDatatoken.getNftOwner(nftAddress)) === nftOwner)
@@ -312,7 +312,7 @@ describe('NFT', () => {
 
   it('#cleanPermissions - should cleanPermissions if NFTOwner', async () => {
     await nftDatatoken.addManager(nftAddress, user1, user1)
-    await nftDatatoken.addErc20Deployer(nftAddress, user1, user2)
+    await nftDatatoken.addDatatokenDeployer(nftAddress, user1, user2)
     assert((await nftDatatoken.isDatatokenDeployer(nftAddress, user2)) === true)
 
     await nftDatatoken.cleanPermissions(nftAddress, user1)
