@@ -12,48 +12,6 @@ export class Nft extends SmartContract {
   }
 
   /**
-   *  Estimate gas cost for createDatatoken token creation
-   * @param {String} nftAddress NFT address
-   * @param {String} address User address
-   * @param {String} minter User set as initial minter for the Datatoken
-   * @param {String} paymentCollector initial paymentCollector for this DT
-   * @param {String} mpFeeAddress Consume marketplace fee address
-   * @param {String} feeToken address of the token marketplace wants to add fee on top
-   * @param {String} feeAmount amount of feeToken to be transferred to mpFeeAddress on top, will be converted to WEI
-   * @param {String} cap Maximum cap (Number) - will be converted to wei
-   * @param {String} name Token name
-   * @param {String} symbol Token symbol
-   * @param {Number} templateIndex NFT template index
-   * @param {Contract} nftContract optional contract instance
-   * @return {Promise<any>}
-   */
-  public async estGasGasCreateDatatoken(
-    nftAddress: string,
-    address: string,
-    minter: string,
-    paymentCollector: string,
-    mpFeeAddress: string,
-    feeToken: string,
-    feeAmount: string,
-    cap: string,
-    name?: string,
-    symbol?: string,
-    templateIndex?: number,
-    contractInstance?: Contract
-  ): Promise<any> {
-    const nftContract = contractInstance || this.getContract(nftAddress)
-    return calculateEstimatedGas(
-      address,
-      nftContract.methods.createERC20,
-      templateIndex,
-      [name, symbol],
-      [minter, paymentCollector, mpFeeAddress, feeToken],
-      [this.web3.utils.toWei(cap), this.web3.utils.toWei(feeAmount)],
-      []
-    )
-  }
-
-  /**
    * Create new ERC20 Datatoken - only user with DatatokenDeployer permission can succeed
    * @param {String} nftAddress NFT address
    * @param {String} address User address
@@ -129,25 +87,6 @@ export class Nft extends SmartContract {
   }
 
   /**
-   * Estimate gas cost for add manager call
-   * @param {String} nftAddress NFT contract address
-   * @param {String} address NFT Owner adress
-   * @param {String} manager User adress which is going to be assing manager
-   * @param {Contract} nftContract optional contract instance
-   * @return {Promise<any>}
-   */
-  public async estGasGasAddManager(
-    nftAddress: string,
-    address: string,
-    manager: string,
-    contractInstance?: Contract
-  ) {
-    const nftContract = contractInstance || this.getContract(nftAddress)
-
-    return calculateEstimatedGas(address, nftContract.methods.addManager, manager)
-  }
-
-  /**
    * Add Manager for NFT Contract (only NFT Owner can succeed)
    * @param {String} nftAddress NFT contract address
    * @param {String} address NFT Owner adress
@@ -178,24 +117,6 @@ export class Nft extends SmartContract {
   }
 
   /**
-   * Estimate gas cost for removeManager method
-   * @param {String} nftAddress NFT contract address
-   * @param {String} address NFT Owner adress
-   * @param {String} manager User adress which is going to be removed as manager
-   * @param {Contract} nftContract optional contract instance
-   * @return {Promise<any>}
-   */
-  public async estGasGasRemoveManager(
-    nftAddress: string,
-    address: string,
-    manager: string,
-    contractInstance?: Contract
-  ) {
-    const nftContract = contractInstance || this.getContract(nftAddress)
-    return calculateEstimatedGas(address, nftContract.methods.removeManager, manager)
-  }
-
-  /**
    * Removes a specific manager for NFT Contract (only NFT Owner can succeed)
    * @param {String} nftAddress NFT contract address
    * @param {String} address NFT Owner adress
@@ -223,28 +144,6 @@ export class Nft extends SmartContract {
     })
 
     return trxReceipt
-  }
-
-  /**
-   *  Estimate gas cost for addToCreateERC20List method
-   * @param {String} nftAddress NFT contract address
-   * @param {String} address NFT Manager adress
-   * @param {String} datatokenDeployer User adress which is going to have DatatokenDeployer permission
-   * @param {Contract} nftContract optional contract instance
-   * @return {Promise<any>}
-   */
-  public async estGasGasAddDatatokenDeployer(
-    nftAddress: string,
-    address: string,
-    datatokenDeployer: string,
-    contractInstance?: Contract
-  ): Promise<any> {
-    const nftContract = contractInstance || this.getContract(nftAddress)
-    return calculateEstimatedGas(
-      address,
-      nftContract.methods.addToCreateERC20List,
-      datatokenDeployer
-    )
   }
 
   /**
@@ -285,29 +184,6 @@ export class Nft extends SmartContract {
   }
 
   /**
-   * Estimate gas cost for removeFromCreateERC20List method
-   * @param {String} nftAddress NFT contract address
-   * @param {String} address NFT Manager adress
-   * @param {String} datatokenDeployer Address of the user to be revoked DatatokenDeployer Permission
-   * @param {Contract} nftContract optional contract instance
-   * @return {Promise<any>}
-   */
-  public async estGasGasRemoveDatatokenDeployer(
-    nftAddress: string,
-    address: string,
-    datatokenDeployer: string,
-    contractInstance?: Contract
-  ): Promise<any> {
-    const nftContract = contractInstance || this.getContract(nftAddress)
-
-    return calculateEstimatedGas(
-      address,
-      nftContract.methods.removeFromCreateERC20List,
-      datatokenDeployer
-    )
-  }
-
-  /**
    * Remove DatatokenDeployer permission - only Manager can succeed
    * @param {String} nftAddress NFT contract address
    * @param {String} address NFT Manager adress
@@ -344,29 +220,6 @@ export class Nft extends SmartContract {
       })
 
     return trxReceipt
-  }
-
-  /**
-   * Estimate gas cost for addToMetadataList method
-   * @param {String} nftAddress NFT contract address
-   * @param {String} address NFT Manager adress
-   * @param {String} metadataUpdater User adress which is going to have Metadata Updater permission
-   * @param {Contract} nftContract optional contract instance
-   * @return {Promise<any>}
-   */
-  public async estGasGasAddMetadataUpdater(
-    nftAddress: string,
-    address: string,
-    metadataUpdater: string,
-    contractInstance?: Contract
-  ): Promise<any> {
-    const nftContract = contractInstance || this.getContract(nftAddress)
-
-    return calculateEstimatedGas(
-      address,
-      nftContract.methods.addToMetadataList,
-      metadataUpdater
-    )
   }
 
   /**
@@ -468,29 +321,6 @@ export class Nft extends SmartContract {
   }
 
   /**
-   * Estimate gas cost for addTo725StoreList method
-   * @param {String} nftAddress NFT contract address
-   * @param {String} address NFT Manager adress
-   * @param {String} storeUpdater User adress which is going to have Store Updater permission
-   * @param {Contract} nftContract optional contract instance
-   * @return {Promise<any>}
-   */
-  public async estGasGasAddStoreUpdater(
-    nftAddress: string,
-    address: string,
-    storeUpdater: string,
-    contractInstance?: Contract
-  ): Promise<any> {
-    const nftContract = contractInstance || this.getContract(nftAddress)
-
-    return calculateEstimatedGas(
-      address,
-      nftContract.methods.addTo725StoreList,
-      storeUpdater
-    )
-  }
-
-  /**
    * Add Store Updater permission - only Manager can succeed
    * @param {String} nftAddress NFT contract address
    * @param {String} address NFT Manager adress
@@ -522,29 +352,6 @@ export class Nft extends SmartContract {
     })
 
     return trxReceipt
-  }
-
-  /**
-   *  Estimate gas cost for removeFrom725StoreList method
-   * @param {String} nftAddress NFT contract address
-   * @param {String} address NFT Manager adress
-   * @param {String} storeUpdater Address of the user to be revoked Store Updater Permission
-   * @param {Contract} nftContract optional contract instance
-   * @return {Promise<any>}
-   */
-  public async estGasGasRemoveStoreUpdater(
-    nftAddress: string,
-    address: string,
-    storeUpdater: string,
-    contractInstance?: Contract
-  ): Promise<any> {
-    const nftContract = contractInstance || this.getContract(nftAddress)
-
-    return calculateEstimatedGas(
-      address,
-      nftContract.methods.removeFrom725StoreList,
-      storeUpdater
-    )
   }
 
   /**
@@ -588,23 +395,6 @@ export class Nft extends SmartContract {
   }
 
   /**
-   *  Estimate gas cost for cleanPermissions method
-   * @param {String} nftAddress NFT contract address
-   * @param {String} address NFT Owner adress
-   * @param {Contract} nftContract optional contract instance
-   * @return {Promise<any>}
-   */
-  public async estGasGasCleanPermissions(
-    nftAddress: string,
-    address: string,
-    contractInstance?: Contract
-  ): Promise<any> {
-    const nftContract = contractInstance || this.getContract(nftAddress)
-
-    return calculateEstimatedGas(address, nftContract.methods.cleanPermissions)
-  }
-
-  /**
    * This function allows to remove all ROLES at NFT level: Managers, DatatokenDeployer, MetadataUpdater, StoreUpdater
    * Even NFT Owner has to readd himself as Manager
    * Permissions at Datatoken level stay.
@@ -637,33 +427,6 @@ export class Nft extends SmartContract {
     })
 
     return trxReceipt
-  }
-
-  /**
-   * Estimate gas cost for transfer NFT method
-   * @param {String} nftAddress NFT contract address
-   * @param {String} nftOwner Current NFT Owner adress
-   * @param {String} nftReceiver User which will receive the NFT, will also be set as Manager
-   * @param {Number} tokenId The id of the token to be transfered
-   * @param {Contract} nftContract optional contract instance
-   * @return {Promise<any>}
-   */
-  public async estGasGasTransferNft(
-    nftAddress: string,
-    nftOwner: string,
-    nftReceiver: string,
-    tokenId: number,
-    contractInstance?: Contract
-  ): Promise<any> {
-    const nftContract = contractInstance || this.getContract(nftAddress)
-
-    return calculateEstimatedGas(
-      nftOwner,
-      nftContract.methods.transferFrom,
-      nftOwner,
-      nftReceiver,
-      tokenId
-    )
   }
 
   /**
@@ -710,33 +473,6 @@ export class Nft extends SmartContract {
   }
 
   /**
-   * Estimate gas cost for safeTransfer NFT method
-   * @param {String} nftAddress NFT contract address
-   * @param {String} nftOwner Current NFT Owner adress
-   * @param {String} nftReceiver User which will receive the NFT, will also be set as Manager
-   * @param {Number} tokenId The id of the token to be transfered
-   * @param {Contract} nftContract optional contract instance
-   * @return {Promise<any>}
-   */
-  public async estGasGasSafeTransferNft(
-    nftAddress: string,
-    nftOwner: string,
-    nftReceiver: string,
-    tokenId: number,
-    contractInstance?: Contract
-  ): Promise<any> {
-    const nftContract = contractInstance || this.getContract(nftAddress)
-
-    return calculateEstimatedGas(
-      nftOwner,
-      nftContract.methods.safeTransferFrom,
-      nftOwner,
-      nftReceiver,
-      tokenId
-    )
-  }
-
-  /**
    * safeTransferNFT Used for transferring the NFT, can be used by an approved relayer
    * will clean all permissions both on NFT and Datatoken level.
    * @param {String} nftAddress NFT contract address
@@ -777,44 +513,6 @@ export class Nft extends SmartContract {
       })
 
     return trxReceipt
-  }
-
-  // TODO: Finish this description
-  /**
-   * Estimate gas cost for setMetadata  method
-   * @param {String} nftAddress NFT contract address
-   * @param {String} metadataUpdater metadataUpdater address
-   * @param {Number} metadataState User which will receive the NFT, will also be set as Manager
-   * @param {String} metadataDecryptorUrl
-   * @param {Number} tokenId The id of the token to be transfered
-   * @param {Contract} nftContract optional contract instance
-   * @return {Promise<any>}
-   */
-  public async estGasGasSetMetadata(
-    nftAddress: string,
-    metadataUpdater: string,
-    metadataState: number,
-    metadataDecryptorUrl: string,
-    metadataDecryptorAddress: string,
-    flags: string,
-    data: string,
-    metadataHash: string,
-    metadataProofs?: MetadataProof[],
-    contractInstance?: Contract
-  ): Promise<any> {
-    const nftContract = contractInstance || this.getContract(nftAddress)
-    if (!metadataProofs) metadataProofs = []
-    return calculateEstimatedGas(
-      metadataUpdater,
-      nftContract.methods.setMetaData,
-      metadataState,
-      metadataDecryptorUrl,
-      metadataDecryptorAddress,
-      flags,
-      data,
-      metadataHash,
-      metadataProofs
-    )
   }
 
   /**
@@ -871,32 +569,6 @@ export class Nft extends SmartContract {
   }
 
   /**
-   * Estimate gas cost for setMetadata  method
-   * @param {String} nftAddress NFT contract address
-   * @param {String} metadataUpdater metadataUpdater address
-   * @param {MetaDataAndTokenURI} metadataAndTokenURI metaDataAndTokenURI object
-   * @param {Contract} nftContract optional contract instance
-   * @return {Promise<any>}
-   */
-  public async estGasGasSetMetadataAndTokenURI(
-    nftAddress: string,
-    metadataUpdater: string,
-    metadataAndTokenURI: MetadataAndTokenURI,
-    contractInstance?: Contract
-  ): Promise<any> {
-    const nftContract = contractInstance || this.getContract(nftAddress)
-    const sanitizedMetadataAndTokenURI = {
-      ...metadataAndTokenURI,
-      metadataProofs: metadataAndTokenURI.metadataProofs || []
-    }
-    return calculateEstimatedGas(
-      metadataUpdater,
-      nftContract.methods.setMetaDataAndTokenURI,
-      sanitizedMetadataAndTokenURI
-    )
-  }
-
-  /**
    *  Helper function to improve UX sets both MetaData & TokenURI in one tx
    * @param {String} nftAddress NFT contract address
    * @param {String} address Caller address
@@ -933,29 +605,6 @@ export class Nft extends SmartContract {
   }
 
   /**
-   * Estimate gas cost for setMetadataState  method
-   * @param {String} nftAddress NFT contract address
-   * @param {String} nftOwner Current NFT Owner adress
-   * @param {Number} metadataState new metadata state
-   * @param {Contract} nftContract optional contract instance
-   * @return {Promise<any>}
-   */
-  public async estGasGasSetMetadataState(
-    nftAddress: string,
-    metadataUpdater: string,
-    metadataState: number,
-    contractInstance?: Contract
-  ): Promise<any> {
-    const nftContract = contractInstance || this.getContract(nftAddress)
-
-    return calculateEstimatedGas(
-      metadataUpdater,
-      nftContract.methods.setMetaDataState,
-      metadataState
-    )
-  }
-
-  /**
    * setMetadataState Used for updating the metadata State
    * @param {String} nftAddress NFT contract address
    * @param {String} address Caller address => metadata updater
@@ -987,22 +636,6 @@ export class Nft extends SmartContract {
     })
 
     return trxReceipt
-  }
-
-  /** Estimate gas cost for setTokenURI method
-   * @param nftAddress NFT contract address
-   * @param address user adress
-   * @param data input data for TokenURI
-   * @return {Promise<TransactionReceipt>} transaction receipt
-   */
-  public async estGasSetTokenURI(
-    nftAddress: string,
-    address: string,
-    data: string
-  ): Promise<any> {
-    const nftContract = this.getContract(nftAddress)
-
-    return calculateEstimatedGas(address, nftContract.methods.setTokenURI, '1', data)
   }
 
   /** set TokenURI on an nft

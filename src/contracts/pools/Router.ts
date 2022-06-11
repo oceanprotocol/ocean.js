@@ -1,4 +1,3 @@
-import { Contract } from 'web3-eth-contract'
 import { TransactionReceipt } from 'web3-core'
 import { AbiItem } from 'web3-utils'
 import FactoryRouter from '@oceanprotocol/contracts/artifacts/contracts/pools/FactoryRouter.sol/FactoryRouter.json'
@@ -12,16 +11,6 @@ import { SmartContractWithAddress } from '..'
 export class Router extends SmartContractWithAddress {
   getDefaultAbi(): AbiItem | AbiItem[] {
     return FactoryRouter.abi as AbiItem[]
-  }
-
-  /**
-   * Estimate gas cost for buyDTBatch method
-   * @param {String} address
-   * @param {Operation} operations Operations objects array
-   * @return {Promise<TransactionReceipt>} Transaction receipt
-   */
-  public async estGasBuyDTBatch(address: string, operations: Operation[]): Promise<any> {
-    return calculateEstimatedGas(address, this.contract.methods.buyDTBatch, operations)
   }
 
   /**
@@ -93,25 +82,6 @@ export class Router extends SmartContractWithAddress {
   }
 
   /**
-   * Estimate gas cost for addApprovedToken
-   * @param {String} address
-   * @param {String} tokenAddress token address we want to add
-   * @param {Contract} routerContract optional contract instance
-   * @return {Promise<any>}
-   */
-  public async estGasAddApprovedToken(
-    address: string,
-    tokenAddress: string,
-    contractInstance?: Contract
-  ): Promise<any> {
-    return calculateEstimatedGas(
-      address,
-      this.contract.methods.addApprovedToken,
-      tokenAddress
-    )
-  }
-
-  /**
    * Add a new token to oceanTokens list, pools with baseToken in this list have NO opf Fee
    * @param {String} address caller address
    * @param {String} tokenAddress token address to add
@@ -139,25 +109,6 @@ export class Router extends SmartContractWithAddress {
     })
 
     return trxReceipt
-  }
-
-  /**
-   * Estimate gas cost for removeApprovedToken
-   * @param {String} address caller address
-   * @param {String} tokenAddress token address we want to add
-   * @param {Contract} routerContract optional contract instance
-   * @return {Promise<any>}
-   */
-  public async estGasRemoveApprovedToken(
-    address: string,
-    tokenAddress: string,
-    contractInstance?: Contract
-  ): Promise<any> {
-    return calculateEstimatedGas(
-      address,
-      this.contract.methods.removeApprovedToken,
-      tokenAddress
-    )
   }
 
   /**
@@ -193,20 +144,6 @@ export class Router extends SmartContractWithAddress {
   }
 
   /**
-   * Estimate gas cost for addSSContract method
-   * @param {String} address
-   * @param {String} tokenAddress contract address to add
-   * @return {Promise<TransactionReceipt>}
-   */
-  public async estGasAddSSContract(address: string, tokenAddress: string): Promise<any> {
-    return calculateEstimatedGas(
-      address,
-      this.contract.methods.addSSContract,
-      tokenAddress
-    )
-  }
-
-  /**
    * Add a new contract to ssContract list, after is added, can be used when deploying a new pool
    * @param {String} address
    * @param {String} tokenAddress contract address to add
@@ -237,23 +174,6 @@ export class Router extends SmartContractWithAddress {
   }
 
   /**
-   * Estimate gas cost for removeSSContract method
-   * @param {String} address caller address
-   * @param {String} tokenAddress contract address to add
-   * @return {Promise<TransactionReceipt>}
-   */
-  public async estGasRemoveSSContract(
-    address: string,
-    tokenAddress: string
-  ): Promise<any> {
-    return calculateEstimatedGas(
-      address,
-      this.contract.methods.removeSSContract,
-      tokenAddress
-    )
-  }
-
-  /**
    * Removes a new contract from ssContract list
    * @param {String} address caller address
    * @param {String} tokenAddress contract address to removed
@@ -281,23 +201,6 @@ export class Router extends SmartContractWithAddress {
     })
 
     return trxReceipt
-  }
-
-  /**
-   * Estimate gas cost for addFixedRateContract method
-   * @param {String} address
-   * @param {String} tokenAddress contract address to add
-   * @return {Promise<TransactionReceipt>}
-   */
-  public async estGasAddFixedRateContract(
-    address: string,
-    tokenAddress: string
-  ): Promise<any> {
-    return calculateEstimatedGas(
-      address,
-      this.contract.methods.addFixedRateContract,
-      tokenAddress
-    )
   }
 
   /**
@@ -333,23 +236,6 @@ export class Router extends SmartContractWithAddress {
   }
 
   /**
-   * Estimate gas cost for addFixedRateContract method
-   * @param {String} address
-   * @param {String} tokenAddress contract address to add
-   * @return {Promise<TransactionReceipt>}
-   */
-  public async estGasRemoveFixedRateContract(
-    address: string,
-    tokenAddress: string
-  ): Promise<any> {
-    return calculateEstimatedGas(
-      address,
-      this.contract.methods.removeFixedRateContract,
-      tokenAddress
-    )
-  }
-
-  /**
    * Removes a contract from fixedRate list
    * @param {String} address
    * @param {String} tokenAddress contract address to add
@@ -382,23 +268,6 @@ export class Router extends SmartContractWithAddress {
   }
 
   /**
-   * Estimate gas cost for addDispenserContract method
-   * @param {String} address
-   * @param {String} tokenAddress contract address to add
-   * @return {Promise<TransactionReceipt>}
-   */
-  public async estGasAddDispenserContract(
-    address: string,
-    tokenAddress: string
-  ): Promise<any> {
-    return calculateEstimatedGas(
-      address,
-      this.contract.methods.addDispenserContract,
-      tokenAddress
-    )
-  }
-
-  /**
    * Add a new contract to dispenser list, after is added, can be used when deploying a new pool
    * @param {String} address
    * @param {String} tokenAddress contract address to add
@@ -428,23 +297,6 @@ export class Router extends SmartContractWithAddress {
       })
 
     return trxReceipt
-  }
-
-  /**
-   * Estimate gas cost for addDispenserContract method
-   * @param {String} address
-   * @param {String} tokenAddress contract address to add
-   * @return {Promise<TransactionReceipt>}
-   */
-  public async estGasRemoveDispenserContract(
-    address: string,
-    tokenAddress: string
-  ): Promise<any> {
-    return calculateEstimatedGas(
-      address,
-      this.contract.methods.removeDispenserContract,
-      tokenAddress
-    )
   }
 
   /**
@@ -494,29 +346,6 @@ export class Router extends SmartContractWithAddress {
   }
 
   /**
-   * Estimate gas cost for updateOPFFee method
-   * @param {String} address
-   * @param {String} newFee new OPF Fee
-   * @return {Promise<TransactionReceipt>}
-   */
-  public async estGasUpdateOPCFee(
-    address: string,
-    newSwapOceanFee: number,
-    newSwapNonOceanFee: number,
-    newConsumeFee: number,
-    newProviderFee: number
-  ): Promise<any> {
-    return calculateEstimatedGas(
-      address,
-      this.contract.methods.updateOPCFee,
-      newSwapOceanFee,
-      newSwapNonOceanFee,
-      newConsumeFee,
-      newProviderFee
-    )
-  }
-
-  /**
    * Add a new contract to fixedRate list, after is added, can be used when deploying a new pool
    * @param {String} address
    * @param {number} newSwapOceanFee Amount charged for swapping with ocean approved tokens
@@ -558,23 +387,6 @@ export class Router extends SmartContractWithAddress {
   }
 
   /**
-   * Estimate gas cost for addPoolTemplate method
-   * @param {String} address
-   * @param {String} templateAddress template address to add
-   * @return {Promise<TransactionReceipt>}
-   */
-  public async estGasAddPoolTemplate(
-    address: string,
-    templateAddress: string
-  ): Promise<any> {
-    return calculateEstimatedGas(
-      address,
-      this.contract.methods.addPoolTemplate,
-      templateAddress
-    )
-  }
-
-  /**
    * Add a new template to poolTemplates mapping, after template is added,it can be used
    * @param {String} address
    * @param {String} templateAddress template address to add
@@ -602,23 +414,6 @@ export class Router extends SmartContractWithAddress {
     })
 
     return trxReceipt
-  }
-
-  /**
-   * Estimate gas cost for removePoolTemplate method
-   * @param {String} address
-   * @param {String} templateAddress template address to remove
-   * @return {Promise<TransactionReceipt>}
-   */
-  public async estGasRemovePoolTemplate(
-    address: string,
-    templateAddress: string
-  ): Promise<any> {
-    return calculateEstimatedGas(
-      address,
-      this.contract.methods.removePoolTemplate,
-      templateAddress
-    )
   }
 
   /**

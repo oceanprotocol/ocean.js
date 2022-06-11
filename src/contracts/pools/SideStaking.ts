@@ -1,6 +1,5 @@
 import { AbiItem } from 'web3-utils/types'
 import { TransactionReceipt } from 'web3-core'
-import { Contract } from 'web3-eth-contract'
 import SideStakingAbi from '@oceanprotocol/contracts/artifacts/contracts/pools/ssContracts/SideStaking.sol/SideStaking.json'
 import { LoggerInstance, calculateEstimatedGas } from '../../utils'
 import { SmartContract } from '..'
@@ -235,29 +234,6 @@ export class SideStaking extends SmartContract {
     return result
   }
 
-  /**
-   * Estimate gas cost for getVesting
-   * @param {String} account
-   * @param {String} ssAddress side staking contract address
-   * @param {String} datatokenAddress datatokenAddress
-   * @param {Contract} contractInstance optional contract instance
-   * @return {Promise<number>}
-   */
-  public async estGasGetVesting(
-    account: string,
-    ssAddress: string,
-    datatokenAddress: string,
-    contractInstance?: Contract
-  ): Promise<number> {
-    const sideStaking = contractInstance || this.getContract(ssAddress)
-
-    return calculateEstimatedGas(
-      account,
-      sideStaking.methods.getVesting,
-      datatokenAddress
-    )
-  }
-
   /** Send vested tokens available to the publisher address, can be called by anyone
    *
    * @param {String} account
@@ -289,33 +265,6 @@ export class SideStaking extends SmartContract {
       LoggerInstance.error('ERROR: Failed to join swap pool amount out')
     }
     return result
-  }
-
-  /**
-   * Estimate gas cost for getVesting
-   * @param {String} account
-   * @param {String} ssAddress side staking contract address
-   * @param {String} datatokenAddress datatokenAddress
-   * @param {Contract} contractInstance optional contract instance
-   * @return {Promise<number>}
-   */
-  public async estGasSetPoolSwapFee(
-    account: string,
-    ssAddress: string,
-    datatokenAddress: string,
-    poolAddress: string,
-    swapFee: number,
-    contractInstance?: Contract
-  ): Promise<number> {
-    const sideStaking = contractInstance || this.getContract(ssAddress)
-
-    return calculateEstimatedGas(
-      account,
-      sideStaking.methods.setPoolSwapFee,
-      datatokenAddress,
-      poolAddress,
-      swapFee
-    )
   }
 
   /** Send vested tokens available to the publisher address, can be called by anyone

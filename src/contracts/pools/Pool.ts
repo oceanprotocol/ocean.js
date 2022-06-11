@@ -1,6 +1,5 @@
 import { AbiItem } from 'web3-utils/types'
 import { TransactionReceipt } from 'web3-core'
-import { Contract } from 'web3-eth-contract'
 import Decimal from 'decimal.js'
 import BigNumber from 'bignumber.js'
 import Bpool from '@oceanprotocol/contracts/artifacts/contracts/pools/balancer/BPool.sol/BPool.json'
@@ -45,27 +44,6 @@ export class Pool extends SmartContract {
       LoggerInstance.error(`ERROR: Failed to get shares of pool : ${e.message}`)
     }
     return result
-  }
-
-  /**
-   * Estimate gas cost for setSwapFee
-   * @param {String} account
-   * @param {String} tokenAddress
-   * @param {String} spender
-   * @param {String} amount
-   * @param {String} force
-   * @param {Contract} contractInstance optional contract instance
-   * @return {Promise<number>}
-   */
-  public async estGasSetSwapFee(
-    account: string,
-    poolAddress: string,
-    fee: string,
-    contractInstance?: Contract
-  ): Promise<number> {
-    const poolContract = contractInstance || this.getContract(poolAddress)
-
-    return calculateEstimatedGas(account, poolContract.methods.setSwapFee, fee)
   }
 
   /**
@@ -473,23 +451,6 @@ export class Pool extends SmartContract {
   }
 
   /**
-   * Estimate gas cost for collectOPF
-   * @param {String} address
-   * @param {String} poolAddress
-   * @param {Contract} contractInstance optional contract instance
-   * @return {Promise<number>}
-   */
-  public async estGasCollectOPC(
-    address: string,
-    poolAddress: string,
-    contractInstance?: Contract
-  ): Promise<number> {
-    const poolContract = contractInstance || this.getContract(poolAddress)
-
-    return calculateEstimatedGas(address, poolContract.methods.collectOPC)
-  }
-
-  /**
    * collectOPF - collect opf fee - can be called by anyone
    * @param {String} address
    * @param {String} poolAddress
@@ -510,24 +471,6 @@ export class Pool extends SmartContract {
       LoggerInstance.error(`ERROR: Failed to swap exact amount in : ${e.message}`)
     }
     return result
-  }
-
-  /**
-   * Estimate gas cost for collectMarketFee
-   * @param {String} address
-   * @param {String} poolAddress
-   * @param {String} to address that will receive fees
-   * @param {Contract} contractInstance optional contract instance
-   * @return {Promise<number>}
-   */
-  public async estGasCollectMarketFee(
-    address: string,
-    poolAddress: string,
-    contractInstance?: Contract
-  ): Promise<number> {
-    const poolContract = contractInstance || this.getContract(poolAddress)
-
-    return calculateEstimatedGas(address, poolContract.methods.collectMarketFee)
   }
 
   /**
@@ -558,32 +501,6 @@ export class Pool extends SmartContract {
       LoggerInstance.error(`ERROR: Failed to swap exact amount in : ${e.message}`)
     }
     return result
-  }
-
-  /**
-   * Estimate gas cost for updatePublishMarketFee
-   * @param {String} address
-   * @param {String} poolAddress
-   * @param {String} newPublishMarketAddress new market address
-   * @param {String} newPublishMarketSwapFee new market swap fee
-   * @param {Contract} contractInstance optional contract instance
-   * @return {Promise<number>}
-   */
-  public async estGasUpdatePublishMarketFee(
-    address: string,
-    poolAddress: string,
-    newPublishMarketAddress: string,
-    newPublishMarketSwapFee: string,
-    contractInstance?: Contract
-  ): Promise<number> {
-    const poolContract = contractInstance || this.getContract(poolAddress)
-
-    return calculateEstimatedGas(
-      address,
-      poolContract.methods.updatePublishMarketFee,
-      newPublishMarketAddress,
-      this.web3.utils.toWei(newPublishMarketSwapFee)
-    )
   }
 
   /**
@@ -627,60 +544,6 @@ export class Pool extends SmartContract {
       LoggerInstance.error(`ERROR: Failed to updatePublishMarketFee : ${e.message}`)
     }
     return result
-  }
-
-  /**
-   * Estimate gas cost for swapExactAmountIn
-   * @param {String} address
-   * @param {String} poolAddress
-   * @param {TokenInOutMarket} tokenInOutMarket object contianing addresses like tokenIn, tokenOut, consumeMarketFeeAddress
-   * @param {AmountsInMaxFee} amountsInOutMaxFee object contianing tokenAmountIn, minAmountOut, maxPrice, consumeMarketSwapFee
-   * @param {Contract} contractInstance optional contract instance
-   * @return {Promise<number>}
-   */
-  public async estGasSwapExactAmountIn(
-    address: string,
-    poolAddress: string,
-    tokenInOutMarket: TokenInOutMarket,
-    amountsInOutMaxFee: AmountsInMaxFee,
-    contractInstance?: Contract
-  ): Promise<number> {
-    const poolContract = contractInstance || this.getContract(poolAddress)
-
-    const tokenAmountIn = await this.amountToUnits(
-      tokenInOutMarket.tokenIn,
-      amountsInOutMaxFee.tokenAmountIn,
-      tokenInOutMarket.tokenInDecimals
-    )
-
-    const minAmountOut = await this.amountToUnits(
-      tokenInOutMarket.tokenOut,
-      amountsInOutMaxFee.minAmountOut,
-      tokenInOutMarket.tokenOutDecimals
-    )
-
-    const maxPrice = amountsInOutMaxFee.maxPrice
-      ? this.amountToUnits(
-          await this.getBaseToken(poolAddress),
-          amountsInOutMaxFee.maxPrice
-        )
-      : MAX_UINT_256
-
-    return calculateEstimatedGas(
-      address,
-      poolContract.methods.swapExactAmountIn,
-      [
-        tokenInOutMarket.tokenIn,
-        tokenInOutMarket.tokenOut,
-        tokenInOutMarket.marketFeeAddress
-      ],
-      [
-        tokenAmountIn,
-        minAmountOut,
-        maxPrice,
-        this.web3.utils.toWei(amountsInOutMaxFee.swapMarketFee)
-      ]
-    )
   }
 
   /**
@@ -773,60 +636,6 @@ export class Pool extends SmartContract {
   }
 
   /**
-   * Estimate gas cost for swapExactAmountOut
-   * @param {String} address
-   * @param {String} poolAddress
-   * @param {TokenInOutMarket} tokenInOutMarket
-   * @param {AmountsOutMaxFee} amountsInOutMaxFee
-   * @param {Contract} contractInstance optional contract instance
-   * @return {Promise<number>}
-   */
-  public async estGasSwapExactAmountOut(
-    address: string,
-    poolAddress: string,
-    tokenInOutMarket: TokenInOutMarket,
-    amountsInOutMaxFee: AmountsOutMaxFee,
-    contractInstance?: Contract
-  ): Promise<number> {
-    const poolContract = contractInstance || this.getContract(poolAddress)
-
-    const maxAmountIn = await this.amountToUnits(
-      tokenInOutMarket.tokenIn,
-      amountsInOutMaxFee.maxAmountIn,
-      tokenInOutMarket.tokenInDecimals
-    )
-
-    const tokenAmountOut = await this.amountToUnits(
-      tokenInOutMarket.tokenOut,
-      amountsInOutMaxFee.tokenAmountOut,
-      tokenInOutMarket.tokenOutDecimals
-    )
-
-    const maxPrice = amountsInOutMaxFee.maxPrice
-      ? await this.amountToUnits(
-          await this.getBaseToken(poolAddress),
-          amountsInOutMaxFee.maxPrice
-        )
-      : MAX_UINT_256
-
-    return calculateEstimatedGas(
-      address,
-      poolContract.methods.swapExactAmountOut,
-      [
-        tokenInOutMarket.tokenIn,
-        tokenInOutMarket.tokenOut,
-        tokenInOutMarket.marketFeeAddress
-      ],
-      [
-        maxAmountIn,
-        tokenAmountOut,
-        maxPrice,
-        this.web3.utils.toWei(amountsInOutMaxFee.swapMarketFee)
-      ]
-    )
-  }
-
-  /**
    * Swaps a maximum  maxAmountIn of tokensIn to get an exact amount of tokenOut
    * @param {String} account
    * @param {String} poolAddress
@@ -910,33 +719,6 @@ export class Pool extends SmartContract {
   }
 
   /**
-   * Estimate gas cost for joinswapExternAmountIn
-   * @param {String} address
-   * @param {String} poolAddress
-   * @param {String} tokenIn
-   * @param {String} tokenAmountIn exact number of base tokens to spend
-   * @param {String} minPoolAmountOut minimum of pool shares expectex
-   * @param {Contract} contractInstance optional contract instance
-   * @return {Promise<number>}
-   */
-  public async estGasJoinswapExternAmountIn(
-    address: string,
-    poolAddress: string,
-    tokenAmountIn: string,
-    minPoolAmountOut: string,
-    contractInstance?: Contract
-  ): Promise<number> {
-    const poolContract = contractInstance || this.getContract(poolAddress)
-
-    return calculateEstimatedGas(
-      address,
-      poolContract.methods.joinswapExternAmountIn,
-      tokenAmountIn,
-      minPoolAmountOut
-    )
-  }
-
-  /**
    * Single side add liquidity to the pool,
    * expecting a minPoolAmountOut of shares for spending tokenAmountIn basetokens.
    * Pay tokenAmountIn of baseToken to join the pool, getting poolAmountOut of the pool shares.
@@ -990,32 +772,6 @@ export class Pool extends SmartContract {
       join the pool: ${e.message}`)
     }
     return result
-  }
-
-  /**
-   * Estimate gas cost for exitswapPoolAmountIn
-   * @param {String} address
-   *  @param {String} poolAddress
-   * @param {String} poolAmountIn exact number of pool shares to spend
-   * @param {String} minTokenAmountOut minimum amount of basetokens expected
-   * @param {Contract} contractInstance optional contract instance
-   * @return {Promise<number>}
-   */
-  public async estGasExitswapPoolAmountIn(
-    address: string,
-    poolAddress: string,
-    poolAmountIn: string,
-    minTokenAmountOut: string,
-    contractInstance?: Contract
-  ): Promise<number> {
-    const poolContract = contractInstance || this.getContract(poolAddress)
-
-    return calculateEstimatedGas(
-      address,
-      poolContract.methods.exitswapPoolAmountIn,
-      poolAmountIn,
-      minTokenAmountOut
-    )
   }
 
   /**
