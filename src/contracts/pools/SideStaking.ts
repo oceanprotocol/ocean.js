@@ -2,7 +2,7 @@ import { AbiItem } from 'web3-utils/types'
 import { TransactionReceipt } from 'web3-core'
 import { Contract } from 'web3-eth-contract'
 import SideStakingAbi from '@oceanprotocol/contracts/artifacts/contracts/pools/ssContracts/SideStaking.sol/SideStaking.json'
-import { LoggerInstance, estimateGas } from '../../utils'
+import { LoggerInstance, calculateEstimatedGas } from '../../utils'
 import { SmartContract } from '..'
 
 export class SideStaking extends SmartContract {
@@ -251,7 +251,11 @@ export class SideStaking extends SmartContract {
   ): Promise<number> {
     const sideStaking = contractInstance || this.getContract(ssAddress)
 
-    return estimateGas(account, sideStaking.methods.getVesting, datatokenAddress)
+    return calculateEstimatedGas(
+      account,
+      sideStaking.methods.getVesting,
+      datatokenAddress
+    )
   }
 
   /** Send vested tokens available to the publisher address, can be called by anyone
@@ -269,7 +273,7 @@ export class SideStaking extends SmartContract {
     const sideStaking = this.getContract(ssAddress)
     let result = null
 
-    const estGas = await estimateGas(
+    const estGas = await calculateEstimatedGas(
       account,
       sideStaking.methods.getVesting,
       datatokenAddress
@@ -305,7 +309,7 @@ export class SideStaking extends SmartContract {
   ): Promise<number> {
     const sideStaking = contractInstance || this.getContract(ssAddress)
 
-    return estimateGas(
+    return calculateEstimatedGas(
       account,
       sideStaking.methods.setPoolSwapFee,
       datatokenAddress,
@@ -331,7 +335,7 @@ export class SideStaking extends SmartContract {
     const sideStaking = this.getContract(ssAddress)
     let result = null
 
-    const estGas = await estimateGas(
+    const estGas = await calculateEstimatedGas(
       account,
       sideStaking.methods.setPoolSwapFee,
       datatokenAddress,

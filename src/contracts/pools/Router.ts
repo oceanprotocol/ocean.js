@@ -2,7 +2,7 @@ import { Contract } from 'web3-eth-contract'
 import { TransactionReceipt } from 'web3-core'
 import { AbiItem } from 'web3-utils'
 import FactoryRouter from '@oceanprotocol/contracts/artifacts/contracts/pools/FactoryRouter.sol/FactoryRouter.json'
-import { estimateGas } from '../../utils'
+import { calculateEstimatedGas } from '../../utils'
 import { Operation } from '../../@types'
 import { SmartContractWithAddress } from '..'
 
@@ -21,7 +21,7 @@ export class Router extends SmartContractWithAddress {
    * @return {Promise<TransactionReceipt>} Transaction receipt
    */
   public async estGasBuyDTBatch(address: string, operations: Operation[]): Promise<any> {
-    return estimateGas(address, this.contract.methods.buyDTBatch, operations)
+    return calculateEstimatedGas(address, this.contract.methods.buyDTBatch, operations)
   }
 
   /**
@@ -34,7 +34,7 @@ export class Router extends SmartContractWithAddress {
     address: string,
     operations: Operation[]
   ): Promise<TransactionReceipt> {
-    const estGas = await estimateGas(
+    const estGas = await calculateEstimatedGas(
       address,
       this.contract.methods.buyDTBatch,
       operations
@@ -104,7 +104,11 @@ export class Router extends SmartContractWithAddress {
     tokenAddress: string,
     contractInstance?: Contract
   ): Promise<any> {
-    return estimateGas(address, this.contract.methods.addApprovedToken, tokenAddress)
+    return calculateEstimatedGas(
+      address,
+      this.contract.methods.addApprovedToken,
+      tokenAddress
+    )
   }
 
   /**
@@ -121,7 +125,7 @@ export class Router extends SmartContractWithAddress {
       throw new Error(`Caller is not Router Owner`)
     }
 
-    const estGas = await estimateGas(
+    const estGas = await calculateEstimatedGas(
       address,
       this.contract.methods.addApprovedToken,
       tokenAddress
@@ -149,7 +153,11 @@ export class Router extends SmartContractWithAddress {
     tokenAddress: string,
     contractInstance?: Contract
   ): Promise<any> {
-    return estimateGas(address, this.contract.methods.removeApprovedToken, tokenAddress)
+    return calculateEstimatedGas(
+      address,
+      this.contract.methods.removeApprovedToken,
+      tokenAddress
+    )
   }
 
   /**
@@ -166,7 +174,7 @@ export class Router extends SmartContractWithAddress {
       throw new Error(`Caller is not Router Owner`)
     }
 
-    const estGas = await estimateGas(
+    const estGas = await calculateEstimatedGas(
       address,
       this.contract.methods.removeApprovedToken,
       tokenAddress
@@ -191,7 +199,11 @@ export class Router extends SmartContractWithAddress {
    * @return {Promise<TransactionReceipt>}
    */
   public async estGasAddSSContract(address: string, tokenAddress: string): Promise<any> {
-    return estimateGas(address, this.contract.methods.addSSContract, tokenAddress)
+    return calculateEstimatedGas(
+      address,
+      this.contract.methods.addSSContract,
+      tokenAddress
+    )
   }
 
   /**
@@ -208,7 +220,7 @@ export class Router extends SmartContractWithAddress {
       throw new Error(`Caller is not Router Owner`)
     }
 
-    const estGas = await estimateGas(
+    const estGas = await calculateEstimatedGas(
       address,
       this.contract.methods.addSSContract,
       tokenAddress
@@ -234,7 +246,11 @@ export class Router extends SmartContractWithAddress {
     address: string,
     tokenAddress: string
   ): Promise<any> {
-    return estimateGas(address, this.contract.methods.removeSSContract, tokenAddress)
+    return calculateEstimatedGas(
+      address,
+      this.contract.methods.removeSSContract,
+      tokenAddress
+    )
   }
 
   /**
@@ -251,7 +267,7 @@ export class Router extends SmartContractWithAddress {
       throw new Error(`Caller is not Router Owner`)
     }
 
-    const estGas = await estimateGas(
+    const estGas = await calculateEstimatedGas(
       address,
       this.contract.methods.removeSSContract,
       tokenAddress
@@ -277,7 +293,11 @@ export class Router extends SmartContractWithAddress {
     address: string,
     tokenAddress: string
   ): Promise<any> {
-    return estimateGas(address, this.contract.methods.addFixedRateContract, tokenAddress)
+    return calculateEstimatedGas(
+      address,
+      this.contract.methods.addFixedRateContract,
+      tokenAddress
+    )
   }
 
   /**
@@ -294,7 +314,7 @@ export class Router extends SmartContractWithAddress {
       throw new Error(`Caller is not Router Owner`)
     }
 
-    const estGas = await estimateGas(
+    const estGas = await calculateEstimatedGas(
       address,
       this.contract.methods.addFixedRateContract,
       tokenAddress
@@ -322,7 +342,7 @@ export class Router extends SmartContractWithAddress {
     address: string,
     tokenAddress: string
   ): Promise<any> {
-    return estimateGas(
+    return calculateEstimatedGas(
       address,
       this.contract.methods.removeFixedRateContract,
       tokenAddress
@@ -343,7 +363,7 @@ export class Router extends SmartContractWithAddress {
       throw new Error(`Caller is not Router Owner`)
     }
 
-    const estGas = await estimateGas(
+    const estGas = await calculateEstimatedGas(
       address,
       this.contract.methods.removeFixedRateContract,
       tokenAddress
@@ -371,7 +391,11 @@ export class Router extends SmartContractWithAddress {
     address: string,
     tokenAddress: string
   ): Promise<any> {
-    return estimateGas(address, this.contract.methods.addDispenserContract, tokenAddress)
+    return calculateEstimatedGas(
+      address,
+      this.contract.methods.addDispenserContract,
+      tokenAddress
+    )
   }
 
   /**
@@ -388,7 +412,7 @@ export class Router extends SmartContractWithAddress {
       throw new Error(`Caller is not Router Owner`)
     }
 
-    const estGas = await estimateGas(
+    const estGas = await calculateEstimatedGas(
       address,
       this.contract.methods.addDispenserContract,
       tokenAddress
@@ -416,7 +440,7 @@ export class Router extends SmartContractWithAddress {
     address: string,
     tokenAddress: string
   ): Promise<any> {
-    return estimateGas(
+    return calculateEstimatedGas(
       address,
       this.contract.methods.removeDispenserContract,
       tokenAddress
@@ -437,7 +461,7 @@ export class Router extends SmartContractWithAddress {
       throw new Error(`Caller is not Router Owner`)
     }
 
-    const estGas = await estimateGas(
+    const estGas = await calculateEstimatedGas(
       address,
       this.contract.methods.removeDispenserContract,
       tokenAddress
@@ -482,7 +506,7 @@ export class Router extends SmartContractWithAddress {
     newConsumeFee: number,
     newProviderFee: number
   ): Promise<any> {
-    return estimateGas(
+    return calculateEstimatedGas(
       address,
       this.contract.methods.updateOPCFee,
       newSwapOceanFee,
@@ -512,7 +536,7 @@ export class Router extends SmartContractWithAddress {
       throw new Error(`Caller is not Router Owner`)
     }
 
-    const estGas = await estimateGas(
+    const estGas = await calculateEstimatedGas(
       address,
       this.contract.methods.updateOPCFee,
       newSwapOceanFee,
@@ -543,7 +567,11 @@ export class Router extends SmartContractWithAddress {
     address: string,
     templateAddress: string
   ): Promise<any> {
-    return estimateGas(address, this.contract.methods.addPoolTemplate, templateAddress)
+    return calculateEstimatedGas(
+      address,
+      this.contract.methods.addPoolTemplate,
+      templateAddress
+    )
   }
 
   /**
@@ -560,7 +588,7 @@ export class Router extends SmartContractWithAddress {
       throw new Error(`Caller is not Router Owner`)
     }
 
-    const estGas = await estimateGas(
+    const estGas = await calculateEstimatedGas(
       address,
       this.contract.methods.addPoolTemplate,
       templateAddress
@@ -586,7 +614,11 @@ export class Router extends SmartContractWithAddress {
     address: string,
     templateAddress: string
   ): Promise<any> {
-    return estimateGas(address, this.contract.methods.removePoolTemplate, templateAddress)
+    return calculateEstimatedGas(
+      address,
+      this.contract.methods.removePoolTemplate,
+      templateAddress
+    )
   }
 
   /**
@@ -603,7 +635,7 @@ export class Router extends SmartContractWithAddress {
       throw new Error(`Caller is not Router Owner`)
     }
 
-    const estGas = await estimateGas(
+    const estGas = await calculateEstimatedGas(
       address,
       this.contract.methods.removePoolTemplate,
       templateAddress

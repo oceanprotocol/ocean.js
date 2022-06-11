@@ -6,7 +6,7 @@ import BigNumber from 'bignumber.js'
 import Bpool from '@oceanprotocol/contracts/artifacts/contracts/pools/balancer/BPool.sol/BPool.json'
 import {
   LoggerInstance,
-  estimateGas,
+  calculateEstimatedGas,
   MAX_UINT_256,
   decimals,
   calcMaxExactOut,
@@ -65,7 +65,7 @@ export class Pool extends SmartContract {
   ): Promise<number> {
     const poolContract = contractInstance || this.getContract(poolAddress)
 
-    return estimateGas(account, poolContract.methods.setSwapFee, fee)
+    return calculateEstimatedGas(account, poolContract.methods.setSwapFee, fee)
   }
 
   /**
@@ -81,7 +81,7 @@ export class Pool extends SmartContract {
   ): Promise<TransactionReceipt> {
     const pool = this.getContract(poolAddress, account)
     let result = null
-    const estGas = await estimateGas(account, pool.methods.setSwapFee, fee)
+    const estGas = await calculateEstimatedGas(account, pool.methods.setSwapFee, fee)
 
     try {
       result = await pool.methods.setSwapFee(this.web3.utils.toWei(fee)).send({
@@ -486,7 +486,7 @@ export class Pool extends SmartContract {
   ): Promise<number> {
     const poolContract = contractInstance || this.getContract(poolAddress)
 
-    return estimateGas(address, poolContract.methods.collectOPC)
+    return calculateEstimatedGas(address, poolContract.methods.collectOPC)
   }
 
   /**
@@ -498,7 +498,7 @@ export class Pool extends SmartContract {
   async collectOPC(address: string, poolAddress: string): Promise<TransactionReceipt> {
     const pool = this.getContract(poolAddress)
     let result = null
-    const estGas = await estimateGas(address, pool.methods.collectOPC)
+    const estGas = await calculateEstimatedGas(address, pool.methods.collectOPC)
 
     try {
       result = await pool.methods.collectOPC().send({
@@ -527,7 +527,7 @@ export class Pool extends SmartContract {
   ): Promise<number> {
     const poolContract = contractInstance || this.getContract(poolAddress)
 
-    return estimateGas(address, poolContract.methods.collectMarketFee)
+    return calculateEstimatedGas(address, poolContract.methods.collectMarketFee)
   }
 
   /**
@@ -546,7 +546,7 @@ export class Pool extends SmartContract {
     }
     const pool = this.getContract(poolAddress)
     let result = null
-    const estGas = await estimateGas(address, pool.methods.collectMarketFee)
+    const estGas = await calculateEstimatedGas(address, pool.methods.collectMarketFee)
 
     try {
       result = await pool.methods.collectMarketFee().send({
@@ -578,7 +578,7 @@ export class Pool extends SmartContract {
   ): Promise<number> {
     const poolContract = contractInstance || this.getContract(poolAddress)
 
-    return estimateGas(
+    return calculateEstimatedGas(
       address,
       poolContract.methods.updatePublishMarketFee,
       newPublishMarketAddress,
@@ -606,7 +606,7 @@ export class Pool extends SmartContract {
     const pool = this.getContract(poolAddress)
     let result = null
 
-    const estGas = await estimateGas(
+    const estGas = await calculateEstimatedGas(
       address,
       pool.methods.updatePublishMarketFee,
       newPublishMarketAddress,
@@ -666,7 +666,7 @@ export class Pool extends SmartContract {
         )
       : MAX_UINT_256
 
-    return estimateGas(
+    return calculateEstimatedGas(
       address,
       poolContract.methods.swapExactAmountIn,
       [
@@ -728,7 +728,7 @@ export class Pool extends SmartContract {
         )
       : MAX_UINT_256
 
-    const estGas = await estimateGas(
+    const estGas = await calculateEstimatedGas(
       address,
       pool.methods.swapExactAmountIn,
       [
@@ -809,7 +809,7 @@ export class Pool extends SmartContract {
         )
       : MAX_UINT_256
 
-    return estimateGas(
+    return calculateEstimatedGas(
       address,
       poolContract.methods.swapExactAmountOut,
       [
@@ -867,7 +867,7 @@ export class Pool extends SmartContract {
         )
       : MAX_UINT_256
 
-    const estGas = await estimateGas(
+    const estGas = await calculateEstimatedGas(
       account,
       pool.methods.swapExactAmountOut,
       [
@@ -928,7 +928,7 @@ export class Pool extends SmartContract {
   ): Promise<number> {
     const poolContract = contractInstance || this.getContract(poolAddress)
 
-    return estimateGas(
+    return calculateEstimatedGas(
       address,
       poolContract.methods.joinswapExternAmountIn,
       tokenAmountIn,
@@ -967,7 +967,7 @@ export class Pool extends SmartContract {
       tokenAmountIn,
       tokenInDecimals
     )
-    const estGas = await estimateGas(
+    const estGas = await calculateEstimatedGas(
       account,
       pool.methods.joinswapExternAmountIn,
       amountInFormatted,
@@ -1010,7 +1010,7 @@ export class Pool extends SmartContract {
   ): Promise<number> {
     const poolContract = contractInstance || this.getContract(poolAddress)
 
-    return estimateGas(
+    return calculateEstimatedGas(
       address,
       poolContract.methods.exitswapPoolAmountIn,
       poolAmountIn,
@@ -1056,7 +1056,7 @@ export class Pool extends SmartContract {
       minTokenAmountOut,
       poolDecimals
     )
-    const estGas = await estimateGas(
+    const estGas = await calculateEstimatedGas(
       account,
       pool.methods.exitswapPoolAmountIn,
       this.web3.utils.toWei(poolAmountIn),

@@ -4,7 +4,7 @@ import { TransactionReceipt } from 'web3-core'
 import Web3 from 'web3'
 import {
   amountToUnits,
-  estimateGas,
+  calculateEstimatedGas,
   getFairGasPrice,
   unitsToAmount,
   minAbi,
@@ -31,7 +31,7 @@ export async function estApprove(
 ): Promise<number> {
   const tokenContract = contractInstance || new web3.eth.Contract(minAbi, tokenAddress)
 
-  return estimateGas(account, tokenContract.methods.approve, spender, amount)
+  return calculateEstimatedGas(account, tokenContract.methods.approve, spender, amount)
 }
 
 /**
@@ -61,7 +61,7 @@ export async function approve(
   }
   let result = null
   const amountFormatted = await amountToUnits(web3, tokenAddress, amount, tokenDecimals)
-  const estGas = await estimateGas(
+  const estGas = await calculateEstimatedGas(
     account,
     tokenContract.methods.approve,
     spender,
@@ -102,7 +102,7 @@ export async function estTransfer(
 ): Promise<number> {
   const tokenContract = contractInstance || new web3.eth.Contract(minAbi, tokenAddress)
 
-  return estimateGas(account, tokenContract.methods.transfer, recipient, amount)
+  return calculateEstimatedGas(account, tokenContract.methods.transfer, recipient, amount)
 }
 
 /**
@@ -124,7 +124,7 @@ export async function transfer(
 
   let result = null
   const amountFormatted = await amountToUnits(web3, tokenAddress, amount)
-  const estGas = await estimateGas(
+  const estGas = await calculateEstimatedGas(
     account,
     tokenContract.methods.transfer,
     recipient,

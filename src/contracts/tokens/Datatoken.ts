@@ -5,7 +5,7 @@ import { Contract } from 'web3-eth-contract'
 import Decimal from 'decimal.js'
 import ERC20Template from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC20Template.sol/ERC20Template.json'
 import ERC20TemplateEnterprise from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC20TemplateEnterprise.sol/ERC20TemplateEnterprise.json'
-import { LoggerInstance, estimateGas, ZERO_ADDRESS } from '../../utils'
+import { LoggerInstance, calculateEstimatedGas, ZERO_ADDRESS } from '../../utils'
 import {
   ConsumeMarketFee,
   FreOrderParams,
@@ -63,7 +63,7 @@ export class Datatoken extends SmartContract {
   ): Promise<any> {
     const dtContract = contractInstance || this.getContract(dtAddress)
 
-    return estimateGas(
+    return calculateEstimatedGas(
       address,
       dtContract.methods.approve,
       spender,
@@ -87,7 +87,7 @@ export class Datatoken extends SmartContract {
   ): Promise<TransactionReceipt> {
     const dtContract = this.getContract(dtAddress)
 
-    const estGas = await estimateGas(
+    const estGas = await calculateEstimatedGas(
       address,
       dtContract.methods.approve,
       spender,
@@ -123,7 +123,7 @@ export class Datatoken extends SmartContract {
   ): Promise<any> {
     const dtContract = contractInstance || this.getContract(dtAddress)
 
-    return estimateGas(
+    return calculateEstimatedGas(
       address,
       dtContract.methods.mint,
       toAddress || address,
@@ -151,7 +151,7 @@ export class Datatoken extends SmartContract {
     if (!fixedRateParams.allowedConsumer) fixedRateParams.allowedConsumer = ZERO_ADDRESS
     const withMint = fixedRateParams.withMint ? 1 : 0
 
-    return estimateGas(
+    return calculateEstimatedGas(
       address,
       dtContract.methods.createFixedRate,
       fixedRateParams.fixedRateAddress,
@@ -194,7 +194,7 @@ export class Datatoken extends SmartContract {
 
     // should check DatatokenDeployer role using NFT level ..
 
-    const estGas = await estimateGas(
+    const estGas = await calculateEstimatedGas(
       address,
       dtContract.methods.createFixedRate,
       fixedRateParams.fixedRateAddress,
@@ -261,7 +261,7 @@ export class Datatoken extends SmartContract {
 
     if (!dispenserParams.withMint) dispenserParams.withMint = false
 
-    return estimateGas(
+    return calculateEstimatedGas(
       address,
       dtContract.methods.createDispenser,
       dispenserAddress,
@@ -298,7 +298,7 @@ export class Datatoken extends SmartContract {
 
     // should check DatatokenDeployer role using NFT level ..
 
-    const estGas = await estimateGas(
+    const estGas = await calculateEstimatedGas(
       address,
       dtContract.methods.createDispenser,
       dispenserAddress,
@@ -347,7 +347,7 @@ export class Datatoken extends SmartContract {
 
     const capAvailble = await this.getCap(dtAddress)
     if (new Decimal(capAvailble).gte(amount)) {
-      const estGas = await estimateGas(
+      const estGas = await calculateEstimatedGas(
         address,
         dtContract.methods.mint,
         toAddress || address,
@@ -384,7 +384,7 @@ export class Datatoken extends SmartContract {
   ): Promise<any> {
     const dtContract = contractInstance || this.getContract(dtAddress)
 
-    return estimateGas(address, dtContract.methods.addMinter, minter)
+    return calculateEstimatedGas(address, dtContract.methods.addMinter, minter)
   }
 
   /**
@@ -406,7 +406,11 @@ export class Datatoken extends SmartContract {
       throw new Error(`Caller is not DatatokenDeployer`)
     }
     // Estimate gas cost for addMinter method
-    const estGas = await estimateGas(address, dtContract.methods.addMinter, minter)
+    const estGas = await calculateEstimatedGas(
+      address,
+      dtContract.methods.addMinter,
+      minter
+    )
 
     // Call addMinter function of the contract
     const trxReceipt = await dtContract.methods.addMinter(minter).send({
@@ -436,7 +440,7 @@ export class Datatoken extends SmartContract {
 
     // should check DatatokenDeployer role using NFT level ..
 
-    return estimateGas(address, dtContract.methods.removeMinter, minter)
+    return calculateEstimatedGas(address, dtContract.methods.removeMinter, minter)
   }
 
   /**
@@ -459,7 +463,11 @@ export class Datatoken extends SmartContract {
       throw new Error(`Caller is not DatatokenDeployer`)
     }
 
-    const estGas = await estimateGas(address, dtContract.methods.removeMinter, minter)
+    const estGas = await calculateEstimatedGas(
+      address,
+      dtContract.methods.removeMinter,
+      minter
+    )
 
     // Call dtContract function of the contract
     const trxReceipt = await dtContract.methods.removeMinter(minter).send({
@@ -487,7 +495,11 @@ export class Datatoken extends SmartContract {
   ): Promise<any> {
     const dtContract = contractInstance || this.getContract(dtAddress)
 
-    return estimateGas(address, dtContract.methods.addPaymentManager, paymentManager)
+    return calculateEstimatedGas(
+      address,
+      dtContract.methods.addPaymentManager,
+      paymentManager
+    )
   }
 
   /**
@@ -509,7 +521,7 @@ export class Datatoken extends SmartContract {
       throw new Error(`Caller is not DatatokenDeployer`)
     }
 
-    const estGas = await estimateGas(
+    const estGas = await calculateEstimatedGas(
       address,
       dtContract.methods.addPaymentManager,
       paymentManager
@@ -541,7 +553,11 @@ export class Datatoken extends SmartContract {
   ): Promise<any> {
     const dtContract = contractInstance || this.getContract(dtAddress)
 
-    return estimateGas(address, dtContract.methods.removePaymentManager, paymentManager)
+    return calculateEstimatedGas(
+      address,
+      dtContract.methods.removePaymentManager,
+      paymentManager
+    )
   }
 
   /**
@@ -563,7 +579,7 @@ export class Datatoken extends SmartContract {
       throw new Error(`Caller is not DatatokenDeployer`)
     }
 
-    const estGas = await estimateGas(
+    const estGas = await calculateEstimatedGas(
       address,
       dtContract.methods.removePaymentManager,
       paymentManager
@@ -597,7 +613,11 @@ export class Datatoken extends SmartContract {
   ): Promise<any> {
     const dtContract = contractInstance || this.getContract(dtAddress)
 
-    return estimateGas(address, dtContract.methods.setPaymentCollector, paymentCollector)
+    return calculateEstimatedGas(
+      address,
+      dtContract.methods.setPaymentCollector,
+      paymentCollector
+    )
   }
 
   /**
@@ -626,7 +646,7 @@ export class Datatoken extends SmartContract {
       throw new Error(`Caller is not Fee Manager, owner or Datatoken Deployer`)
     }
 
-    const estGas = await estimateGas(
+    const estGas = await calculateEstimatedGas(
       address,
       dtContract.methods.setPaymentCollector,
       paymentCollector
@@ -690,7 +710,7 @@ export class Datatoken extends SmartContract {
   ): Promise<any> {
     const dtContract = contractInstance || this.getContract(dtAddress)
 
-    return estimateGas(address, dtContract.methods.transfer, toAddress, amount)
+    return calculateEstimatedGas(address, dtContract.methods.transfer, toAddress, amount)
   }
 
   /**
@@ -709,7 +729,7 @@ export class Datatoken extends SmartContract {
   ): Promise<TransactionReceipt> {
     const dtContract = this.getContract(dtAddress)
     try {
-      const estGas = await estimateGas(
+      const estGas = await calculateEstimatedGas(
         address,
         dtContract.methods.transfer,
         toAddress,
@@ -749,7 +769,7 @@ export class Datatoken extends SmartContract {
   ): Promise<any> {
     const dtContract = contractInstance || this.getContract(dtAddress)
 
-    return estimateGas(
+    return calculateEstimatedGas(
       address,
       dtContract.methods.startOrder,
       consumer,
@@ -785,7 +805,7 @@ export class Datatoken extends SmartContract {
       }
     }
     try {
-      const estGas = await estimateGas(
+      const estGas = await calculateEstimatedGas(
         address,
         dtContract.methods.startOrder,
         consumer,
@@ -825,7 +845,12 @@ export class Datatoken extends SmartContract {
   ): Promise<any> {
     const dtContract = contractInstance || this.getContract(dtAddress)
 
-    return estimateGas(address, dtContract.methods.reuseOrder, orderTxId, providerFees)
+    return calculateEstimatedGas(
+      address,
+      dtContract.methods.reuseOrder,
+      orderTxId,
+      providerFees
+    )
   }
 
   /** Reuse Order: called by payer or consumer having a valid order, but with expired provider access.
@@ -845,7 +870,7 @@ export class Datatoken extends SmartContract {
   ): Promise<TransactionReceipt> {
     const dtContract = this.getContract(dtAddress)
     try {
-      const estGas = await estimateGas(
+      const estGas = await calculateEstimatedGas(
         address,
         dtContract.methods.reuseOrder,
         orderTxId,
@@ -884,7 +909,7 @@ export class Datatoken extends SmartContract {
     const dtContract =
       contractInstance || this.getContract(dtAddress, null, this.abiEnterprise)
 
-    return estimateGas(
+    return calculateEstimatedGas(
       address,
       dtContract.methods.buyFromFreAndOrder,
       orderParams,
@@ -909,7 +934,7 @@ export class Datatoken extends SmartContract {
     try {
       const freContractParams = this.getFreOrderParams(freParams)
 
-      const estGas = await estimateGas(
+      const estGas = await calculateEstimatedGas(
         address,
         dtContract.methods.buyFromFreAndOrder,
         orderParams,
@@ -948,7 +973,7 @@ export class Datatoken extends SmartContract {
     const dtContract =
       contractInstance || this.getContract(dtAddress, null, this.abiEnterprise)
 
-    return estimateGas(
+    return calculateEstimatedGas(
       address,
       dtContract.methods.buyFromDispenserAndOrder,
       orderParams,
@@ -971,7 +996,7 @@ export class Datatoken extends SmartContract {
   ): Promise<TransactionReceipt> {
     const dtContract = this.getContract(dtAddress, null, this.abiEnterprise)
     try {
-      const estGas = await estimateGas(
+      const estGas = await calculateEstimatedGas(
         address,
         dtContract.methods.buyFromDispenserAndOrder,
         orderParams,
@@ -1007,7 +1032,7 @@ export class Datatoken extends SmartContract {
   ): Promise<any> {
     const dtContract = contractInstance || this.getContract(dtAddress)
 
-    return estimateGas(address, dtContract.methods.setData, value)
+    return calculateEstimatedGas(address, dtContract.methods.setData, value)
   }
 
   /** setData
@@ -1029,7 +1054,7 @@ export class Datatoken extends SmartContract {
 
     const dtContract = this.getContract(dtAddress)
 
-    const estGas = await estimateGas(address, dtContract.methods.setData, value)
+    const estGas = await calculateEstimatedGas(address, dtContract.methods.setData, value)
 
     // Call setData function of the contract
     const trxReceipt = await dtContract.methods.setData(value).send({
@@ -1054,7 +1079,7 @@ export class Datatoken extends SmartContract {
   ): Promise<any> {
     const dtContract = contractInstance || this.getContract(dtAddress)
 
-    return estimateGas(address, dtContract.methods.cleanPermissions)
+    return calculateEstimatedGas(address, dtContract.methods.cleanPermissions)
   }
 
   /**
@@ -1073,7 +1098,10 @@ export class Datatoken extends SmartContract {
     }
     const dtContract = this.getContract(dtAddress)
 
-    const estGas = await estimateGas(address, dtContract.methods.cleanPermissions)
+    const estGas = await calculateEstimatedGas(
+      address,
+      dtContract.methods.cleanPermissions
+    )
 
     // Call cleanPermissions function of the contract
     const trxReceipt = await dtContract.methods.cleanPermissions().send({
@@ -1170,7 +1198,7 @@ export class Datatoken extends SmartContract {
   ): Promise<number> {
     // Estimate gas cost for publishMarketFeeAddress method
     const dtContract = this.getContract(datatokenAddress, address)
-    return estimateGas(
+    return calculateEstimatedGas(
       address,
       dtContract.methods.setPublishingMarketFee,
       publishMarketFeeAddress,

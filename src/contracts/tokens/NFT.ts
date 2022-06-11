@@ -1,7 +1,7 @@
 import { AbiItem } from 'web3-utils'
 import { TransactionReceipt } from 'web3-eth'
 import ERC721Template from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC721Template.sol/ERC721Template.json'
-import { LoggerInstance, generateDtName, estimateGas } from '../../utils'
+import { LoggerInstance, generateDtName, calculateEstimatedGas } from '../../utils'
 import { Contract } from 'web3-eth-contract'
 import { MetadataProof, MetadataAndTokenURI, NftRoles } from '../../@types'
 import { SmartContract } from '..'
@@ -42,7 +42,7 @@ export class Nft extends SmartContract {
     contractInstance?: Contract
   ): Promise<any> {
     const nftContract = contractInstance || this.getContract(nftAddress)
-    return estimateGas(
+    return calculateEstimatedGas(
       address,
       nftContract.methods.createERC20,
       templateIndex,
@@ -94,7 +94,7 @@ export class Nft extends SmartContract {
     // Create 721contract object
     const nftContract = this.getContract(nftAddress)
 
-    const estGas = await estimateGas(
+    const estGas = await calculateEstimatedGas(
       address,
       nftContract.methods.createERC20,
       templateIndex,
@@ -144,7 +144,7 @@ export class Nft extends SmartContract {
   ) {
     const nftContract = contractInstance || this.getContract(nftAddress)
 
-    return estimateGas(address, nftContract.methods.addManager, manager)
+    return calculateEstimatedGas(address, nftContract.methods.addManager, manager)
   }
 
   /**
@@ -161,7 +161,11 @@ export class Nft extends SmartContract {
       throw new Error(`Caller is not NFT Owner`)
     }
 
-    const estGas = await estimateGas(address, nftContract.methods.addManager, manager)
+    const estGas = await calculateEstimatedGas(
+      address,
+      nftContract.methods.addManager,
+      manager
+    )
 
     // Invoke addManager function of the contract
     const trxReceipt = await nftContract.methods.addManager(manager).send({
@@ -188,7 +192,7 @@ export class Nft extends SmartContract {
     contractInstance?: Contract
   ) {
     const nftContract = contractInstance || this.getContract(nftAddress)
-    return estimateGas(address, nftContract.methods.removeManager, manager)
+    return calculateEstimatedGas(address, nftContract.methods.removeManager, manager)
   }
 
   /**
@@ -205,7 +209,11 @@ export class Nft extends SmartContract {
       throw new Error(`Caller is not NFT Owner`)
     }
 
-    const estGas = await estimateGas(address, nftContract.methods.removeManager, manager)
+    const estGas = await calculateEstimatedGas(
+      address,
+      nftContract.methods.removeManager,
+      manager
+    )
 
     // Invoke removeManager function of the contract
     const trxReceipt = await nftContract.methods.removeManager(manager).send({
@@ -232,7 +240,7 @@ export class Nft extends SmartContract {
     contractInstance?: Contract
   ): Promise<any> {
     const nftContract = contractInstance || this.getContract(nftAddress)
-    return estimateGas(
+    return calculateEstimatedGas(
       address,
       nftContract.methods.addToCreateERC20List,
       datatokenDeployer
@@ -258,7 +266,7 @@ export class Nft extends SmartContract {
     }
 
     // Estimate gas for addToCreateERC20List method
-    const estGas = await estimateGas(
+    const estGas = await calculateEstimatedGas(
       address,
       nftContract.methods.addToCreateERC20List,
       datatokenDeployer
@@ -292,7 +300,7 @@ export class Nft extends SmartContract {
   ): Promise<any> {
     const nftContract = contractInstance || this.getContract(nftAddress)
 
-    return estimateGas(
+    return calculateEstimatedGas(
       address,
       nftContract.methods.removeFromCreateERC20List,
       datatokenDeployer
@@ -320,7 +328,7 @@ export class Nft extends SmartContract {
     ) {
       throw new Error(`Caller is not Manager nor DatatokenDeployer`)
     }
-    const estGas = await estimateGas(
+    const estGas = await calculateEstimatedGas(
       address,
       nftContract.methods.removeFromCreateERC20List,
       datatokenDeployer
@@ -354,7 +362,11 @@ export class Nft extends SmartContract {
   ): Promise<any> {
     const nftContract = contractInstance || this.getContract(nftAddress)
 
-    return estimateGas(address, nftContract.methods.addToMetadataList, metadataUpdater)
+    return calculateEstimatedGas(
+      address,
+      nftContract.methods.addToMetadataList,
+      metadataUpdater
+    )
   }
 
   /**
@@ -375,7 +387,7 @@ export class Nft extends SmartContract {
       throw new Error(`Caller is not Manager`)
     }
 
-    const estGas = await estimateGas(
+    const estGas = await calculateEstimatedGas(
       address,
       nftContract.methods.addToMetadataList,
       metadataUpdater
@@ -407,7 +419,7 @@ export class Nft extends SmartContract {
   ): Promise<any> {
     const nftContract = contractInstance || this.getContract(nftAddress)
 
-    return estimateGas(
+    return calculateEstimatedGas(
       address,
       nftContract.methods.removeFromMetadataList,
       metadataUpdater
@@ -471,7 +483,11 @@ export class Nft extends SmartContract {
   ): Promise<any> {
     const nftContract = contractInstance || this.getContract(nftAddress)
 
-    return estimateGas(address, nftContract.methods.addTo725StoreList, storeUpdater)
+    return calculateEstimatedGas(
+      address,
+      nftContract.methods.addTo725StoreList,
+      storeUpdater
+    )
   }
 
   /**
@@ -492,7 +508,7 @@ export class Nft extends SmartContract {
       throw new Error(`Caller is not Manager`)
     }
 
-    const estGas = await estimateGas(
+    const estGas = await calculateEstimatedGas(
       address,
       nftContract.methods.addTo725StoreList,
       storeUpdater
@@ -524,7 +540,11 @@ export class Nft extends SmartContract {
   ): Promise<any> {
     const nftContract = contractInstance || this.getContract(nftAddress)
 
-    return estimateGas(address, nftContract.methods.removeFrom725StoreList, storeUpdater)
+    return calculateEstimatedGas(
+      address,
+      nftContract.methods.removeFrom725StoreList,
+      storeUpdater
+    )
   }
 
   /**
@@ -549,7 +569,7 @@ export class Nft extends SmartContract {
       throw new Error(`Caller is not Manager nor storeUpdater`)
     }
 
-    const estGas = await estimateGas(
+    const estGas = await calculateEstimatedGas(
       address,
       nftContract.methods.removeFrom725StoreList,
       storeUpdater
@@ -581,7 +601,7 @@ export class Nft extends SmartContract {
   ): Promise<any> {
     const nftContract = contractInstance || this.getContract(nftAddress)
 
-    return estimateGas(address, nftContract.methods.cleanPermissions)
+    return calculateEstimatedGas(address, nftContract.methods.cleanPermissions)
   }
 
   /**
@@ -604,7 +624,10 @@ export class Nft extends SmartContract {
       throw new Error(`Caller is not NFT Owner`)
     }
 
-    const estGas = await estimateGas(address, nftContract.methods.cleanPermissions)
+    const estGas = await calculateEstimatedGas(
+      address,
+      nftContract.methods.cleanPermissions
+    )
 
     // Call cleanPermissions function of the contract
     const trxReceipt = await nftContract.methods.cleanPermissions().send({
@@ -634,7 +657,7 @@ export class Nft extends SmartContract {
   ): Promise<any> {
     const nftContract = contractInstance || this.getContract(nftAddress)
 
-    return estimateGas(
+    return calculateEstimatedGas(
       nftOwner,
       nftContract.methods.transferFrom,
       nftOwner,
@@ -666,7 +689,7 @@ export class Nft extends SmartContract {
 
     const tokenIdentifier = tokenId || 1
 
-    const estGas = await estimateGas(
+    const estGas = await calculateEstimatedGas(
       nftOwner,
       nftContract.methods.transferFrom,
       nftOwner,
@@ -704,7 +727,7 @@ export class Nft extends SmartContract {
   ): Promise<any> {
     const nftContract = contractInstance || this.getContract(nftAddress)
 
-    return estimateGas(
+    return calculateEstimatedGas(
       nftOwner,
       nftContract.methods.safeTransferFrom,
       nftOwner,
@@ -736,7 +759,7 @@ export class Nft extends SmartContract {
 
     const tokenIdentifier = tokenId || 1
 
-    const estGas = await estimateGas(
+    const estGas = await calculateEstimatedGas(
       nftOwner,
       nftContract.methods.safeTransferFrom,
       nftOwner,
@@ -781,7 +804,7 @@ export class Nft extends SmartContract {
   ): Promise<any> {
     const nftContract = contractInstance || this.getContract(nftAddress)
     if (!metadataProofs) metadataProofs = []
-    return estimateGas(
+    return calculateEstimatedGas(
       metadataUpdater,
       nftContract.methods.setMetaData,
       metadataState,
@@ -817,7 +840,7 @@ export class Nft extends SmartContract {
     if (!(await this.getNftPermissions(nftAddress, address)).updateMetadata) {
       throw new Error(`Caller is not Metadata updater`)
     }
-    const estGas = await estimateGas(
+    const estGas = await calculateEstimatedGas(
       address,
       nftContract.methods.setMetaData,
       metadataState,
@@ -866,7 +889,7 @@ export class Nft extends SmartContract {
       ...metadataAndTokenURI,
       metadataProofs: metadataAndTokenURI.metadataProofs || []
     }
-    return estimateGas(
+    return calculateEstimatedGas(
       metadataUpdater,
       nftContract.methods.setMetaDataAndTokenURI,
       sanitizedMetadataAndTokenURI
@@ -893,7 +916,7 @@ export class Nft extends SmartContract {
       ...metadataAndTokenURI,
       metadataProofs: metadataAndTokenURI.metadataProofs || []
     }
-    const estGas = await estimateGas(
+    const estGas = await calculateEstimatedGas(
       metadataUpdater,
       nftContract.methods.setMetaDataAndTokenURI,
       sanitizedMetadataAndTokenURI
@@ -925,7 +948,7 @@ export class Nft extends SmartContract {
   ): Promise<any> {
     const nftContract = contractInstance || this.getContract(nftAddress)
 
-    return estimateGas(
+    return calculateEstimatedGas(
       metadataUpdater,
       nftContract.methods.setMetaDataState,
       metadataState
@@ -950,7 +973,7 @@ export class Nft extends SmartContract {
       throw new Error(`Caller is not Metadata updater`)
     }
 
-    const estGas = await estimateGas(
+    const estGas = await calculateEstimatedGas(
       address,
       nftContract.methods.setMetaDataState,
       metadataState
@@ -979,7 +1002,7 @@ export class Nft extends SmartContract {
   ): Promise<any> {
     const nftContract = this.getContract(nftAddress)
 
-    return estimateGas(address, nftContract.methods.setTokenURI, '1', data)
+    return calculateEstimatedGas(address, nftContract.methods.setTokenURI, '1', data)
   }
 
   /** set TokenURI on an nft
@@ -995,7 +1018,12 @@ export class Nft extends SmartContract {
   ): Promise<any> {
     const nftContract = this.getContract(nftAddress)
 
-    const estGas = await estimateGas(address, nftContract.methods.setTokenURI, '1', data)
+    const estGas = await calculateEstimatedGas(
+      address,
+      nftContract.methods.setTokenURI,
+      '1',
+      data
+    )
     const trxReceipt = await nftContract.methods.setTokenURI('1', data).send({
       from: address,
       gas: estGas + 1,
