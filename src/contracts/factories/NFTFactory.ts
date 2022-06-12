@@ -33,7 +33,11 @@ export class NftFactory extends SmartContractWithAddress {
    * @param {NFTCreateData} nftData
    * @return {Promise<string>} NFT datatoken address
    */
-  public async createNFT(address: string, nftData: NftCreateData): Promise<string> {
+  public async createNFT<G extends boolean = false>(
+    address: string,
+    nftData: NftCreateData,
+    estimateGas?: G
+  ): Promise<G extends false ? string : number> {
     if (!nftData.templateIndex) nftData.templateIndex = 1
 
     if (!nftData.name || !nftData.symbol) {
@@ -63,6 +67,7 @@ export class NftFactory extends SmartContractWithAddress {
       nftData.transferable,
       nftData.owner
     )
+    if (estimateGas) return estGas
 
     // Invoke createToken function of the contract
     const trxReceipt = await this.contract.methods
@@ -180,10 +185,11 @@ export class NftFactory extends SmartContractWithAddress {
    * @param {String} templateAddress template address to add
    * @return {Promise<TransactionReceipt>}
    */
-  public async addNFTTemplate(
+  public async addNFTTemplate<G extends boolean = false>(
     address: string,
-    templateAddress: string
-  ): Promise<TransactionReceipt> {
+    templateAddress: string,
+    estimateGas?: G
+  ): Promise<G extends false ? TransactionReceipt : number> {
     if ((await this.getOwner()) !== address) {
       throw new Error(`Caller is not Factory Owner`)
     }
@@ -196,6 +202,7 @@ export class NftFactory extends SmartContractWithAddress {
       this.contract.methods.add721TokenTemplate,
       templateAddress
     )
+    if (estimateGas) return estGas
 
     // Invoke add721TokenTemplate function of the contract
     const trxReceipt = await this.contract.methods
