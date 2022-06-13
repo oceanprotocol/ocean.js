@@ -297,7 +297,8 @@ async function handleOrder(
      - no validOrder -> we need to call startOrder, to pay 1 DT & providerFees
   */
   if (order.providerFee && order.providerFee.providerFeeAmount) {
-    await datatoken.approve(
+    order.providerFee.providerFeeAmount = String(order.providerFee.providerFeeAmount)
+    await datatoken.approveWei(
       order.providerFee.providerFeeToken,
       datatokenAddress,
       order.providerFee.providerFeeAmount,
