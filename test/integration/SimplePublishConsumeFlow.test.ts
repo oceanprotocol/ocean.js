@@ -23,13 +23,17 @@ describe('Simple Publish & consume test', async () => {
   let publisherAccount: string
   let consumerAccount: string
 
-  const assetUrl = [
-    {
-      type: 'url',
-      url: 'https://raw.githubusercontent.com/oceanprotocol/testdatasets/main/shs_dataset_test.txt',
-      method: 'GET'
-    }
-  ]
+  const assetUrl = {
+    datatokenAddress: '0x0',
+    nftAddress: '0x0',
+    files: [
+      {
+        type: 'url',
+        url: 'https://raw.githubusercontent.com/oceanprotocol/testdatasets/main/shs_dataset_test.txt',
+        method: 'GET'
+      }
+    ]
+  }
 
   const ddo: DDO = {
     '@context': ['https://w3id.org/did/v1'],
@@ -101,6 +105,8 @@ describe('Simple Publish & consume test', async () => {
     const datatokenAddress = tx.events.TokenCreated.returnValues[0]
 
     // create the files encrypted string
+    assetUrl.datatokenAddress = datatokenAddress
+    assetUrl.nftAddress = erc721Address
     let providerResponse = await ProviderInstance.encrypt(assetUrl, providerUrl)
     ddo.services[0].files = await providerResponse
     ddo.services[0].datatokenAddress = datatokenAddress
