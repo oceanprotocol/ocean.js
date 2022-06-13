@@ -52,14 +52,16 @@ export class Pool extends SmartContract {
    * @param {String} poolAddress
    * @param {String} fee swap fee (1e17 = 10 % , 1e16 = 1% , 1e15 = 0.1%, 1e14 = 0.01%)
    */
-  async setSwapFee(
+  async setSwapFee<G extends boolean = false>(
     account: string,
     poolAddress: string,
-    fee: string
-  ): Promise<TransactionReceipt> {
+    fee: string,
+    estimateGas?: G
+  ): Promise<G extends false ? TransactionReceipt : number> {
     const pool = this.getContract(poolAddress, account)
     let result = null
     const estGas = await calculateEstimatedGas(account, pool.methods.setSwapFee, fee)
+    if (estimateGas) return estGas
 
     try {
       result = await pool.methods.setSwapFee(this.web3.utils.toWei(fee)).send({
@@ -456,10 +458,15 @@ export class Pool extends SmartContract {
    * @param {String} poolAddress
    * @return {TransactionReceipt}
    */
-  async collectOPC(address: string, poolAddress: string): Promise<TransactionReceipt> {
+  async collectOPC<G extends boolean = false>(
+    address: string,
+    poolAddress: string,
+    estimateGas?: G
+  ): Promise<G extends false ? TransactionReceipt : number> {
     const pool = this.getContract(poolAddress)
     let result = null
     const estGas = await calculateEstimatedGas(address, pool.methods.collectOPC)
+    if (estimateGas) return estGas
 
     try {
       result = await pool.methods.collectOPC().send({
@@ -480,16 +487,18 @@ export class Pool extends SmartContract {
    * @param {String} to address that will receive fees
    * @return {TransactionReceipt}
    */
-  async collectMarketFee(
+  async collectMarketFee<G extends boolean = false>(
     address: string,
-    poolAddress: string
-  ): Promise<TransactionReceipt> {
+    poolAddress: string,
+    estimateGas?: G
+  ): Promise<G extends false ? TransactionReceipt : number> {
     if ((await this.getMarketFeeCollector(poolAddress)) !== address) {
       throw new Error(`Caller is not MarketFeeCollector`)
     }
     const pool = this.getContract(poolAddress)
     let result = null
     const estGas = await calculateEstimatedGas(address, pool.methods.collectMarketFee)
+    if (estimateGas) return estGas
 
     try {
       result = await pool.methods.collectMarketFee().send({
@@ -511,12 +520,13 @@ export class Pool extends SmartContract {
    * @param {String} newPublishMarketSwapFee fee recieved by the publisher market when a dt is swaped from a pool, percent
    * @return {TransactionReceipt}
    */
-  async updatePublishMarketFee(
+  async updatePublishMarketFee<G extends boolean = false>(
     address: string,
     poolAddress: string,
     newPublishMarketAddress: string,
-    newPublishMarketSwapFee: string
-  ): Promise<TransactionReceipt> {
+    newPublishMarketSwapFee: string,
+    estimateGas?: G
+  ): Promise<G extends false ? TransactionReceipt : number> {
     if ((await this.getMarketFeeCollector(poolAddress)) !== address) {
       throw new Error(`Caller is not MarketFeeCollector`)
     }
@@ -529,6 +539,8 @@ export class Pool extends SmartContract {
       newPublishMarketAddress,
       this.web3.utils.toWei(newPublishMarketSwapFee)
     )
+    if (estimateGas) return estGas
+
     try {
       result = await pool.methods
         .updatePublishMarketFee(
@@ -559,12 +571,13 @@ export class Pool extends SmartContract {
    * @param {AmountsInMaxFee} amountsInOutMaxFee object contianing tokenAmountIn, minAmountOut, maxPrice, consumeMarketSwapFee
    * @return {TransactionReceipt}
    */
-  async swapExactAmountIn(
+  async swapExactAmountIn<G extends boolean = false>(
     address: string,
     poolAddress: string,
     tokenInOutMarket: TokenInOutMarket,
-    amountsInOutMaxFee: AmountsInMaxFee
-  ): Promise<TransactionReceipt> {
+    amountsInOutMaxFee: AmountsInMaxFee,
+    estimateGas?: G
+  ): Promise<G extends false ? TransactionReceipt : number> {
     const pool = this.getContract(poolAddress)
 
     const maxSwap = await this.getMaxSwapExactIn(poolAddress, tokenInOutMarket.tokenIn)
@@ -606,6 +619,7 @@ export class Pool extends SmartContract {
         this.web3.utils.toWei(amountsInOutMaxFee.swapMarketFee)
       ]
     )
+    if (estimateGas) return estGas
 
     let result = null
     try {
@@ -643,12 +657,13 @@ export class Pool extends SmartContract {
    * @param {AmountsOutMaxFee} amountsInOutMaxFee Object containging maxAmountIn,tokenAmountOut,maxPrice, consumeMarketSwapFee]
    * @return {TransactionReceipt}
    */
-  async swapExactAmountOut(
+  async swapExactAmountOut<G extends boolean = false>(
     account: string,
     poolAddress: string,
     tokenInOutMarket: TokenInOutMarket,
-    amountsInOutMaxFee: AmountsOutMaxFee
-  ): Promise<TransactionReceipt> {
+    amountsInOutMaxFee: AmountsOutMaxFee,
+    estimateGas?: G
+  ): Promise<G extends false ? TransactionReceipt : number> {
     const pool = this.getContract(poolAddress)
     let result = null
 
@@ -691,6 +706,7 @@ export class Pool extends SmartContract {
         this.web3.utils.toWei(amountsInOutMaxFee.swapMarketFee)
       ]
     )
+    if (estimateGas) return estGas
 
     try {
       result = await pool.methods
@@ -729,13 +745,14 @@ export class Pool extends SmartContract {
    * @param {number} tokenInDecimals optional number of decimals of the token
    * @return {TransactionReceipt}
    */
-  async joinswapExternAmountIn(
+  async joinswapExternAmountIn<G extends boolean = false>(
     account: string,
     poolAddress: string,
     tokenAmountIn: string,
     minPoolAmountOut: string,
-    tokenInDecimals?: number
-  ): Promise<TransactionReceipt> {
+    tokenInDecimals?: number,
+    estimateGas?: G
+  ): Promise<G extends false ? TransactionReceipt : number> {
     const pool = this.getContract(poolAddress)
     let result = null
     const tokenIn = await this.getBaseToken(poolAddress)
@@ -755,6 +772,7 @@ export class Pool extends SmartContract {
       amountInFormatted,
       this.web3.utils.toWei(minPoolAmountOut)
     )
+    if (estimateGas) return estGas
 
     try {
       result = await pool.methods
@@ -785,13 +803,14 @@ export class Pool extends SmartContract {
    * @param {number} poolDecimals optional number of decimals of the poool
    * @return {TransactionReceipt}
    */
-  async exitswapPoolAmountIn(
+  async exitswapPoolAmountIn<G extends boolean = false>(
     account: string,
     poolAddress: string,
     poolAmountIn: string,
     minTokenAmountOut: string,
-    poolDecimals?: number
-  ): Promise<TransactionReceipt> {
+    poolDecimals?: number,
+    estimateGas?: G
+  ): Promise<G extends false ? TransactionReceipt : number> {
     const pool = this.getContract(poolAddress)
     let result = null
     const tokenOut = await this.getBaseToken(poolAddress)
@@ -818,6 +837,7 @@ export class Pool extends SmartContract {
       this.web3.utils.toWei(poolAmountIn),
       minTokenOutFormatted
     )
+    if (estimateGas) return estGas
 
     try {
       result = await pool.methods
