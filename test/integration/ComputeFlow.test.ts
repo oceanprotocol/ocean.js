@@ -56,7 +56,7 @@ const assetUrl = {
 const ddoWithNoTimeout = {
   '@context': ['https://w3id.org/did/v1'],
   id: 'did:op:efba17455c127a885ec7830d687a8f6e64f5ba559f8506f8723c1f10f05c049c',
-  version: '4.0.0',
+  version: '4.1.0',
   chainId: 4,
   nftAddress: '0x0',
   metadata: {
@@ -93,7 +93,7 @@ const ddoWithNoTimeout = {
 const ddoWith1mTimeout = {
   '@context': ['https://w3id.org/did/v1'],
   id: 'did:op:efba17455c127a885ec7830d687a8f6e64f5ba559f8506f8723c1f10f05c049c',
-  version: '4.0.0',
+  version: '4.1.0',
   chainId: 4,
   nftAddress: '0x0',
   metadata: {
@@ -140,7 +140,7 @@ const algoAssetUrl = {
 const algoDdoWithNoTimeout = {
   '@context': ['https://w3id.org/did/v1'],
   id: 'did:op:efba17455c127a885ec7830d687a8f6e64f5ba559f8506f8723c1f10f05c049c',
-  version: '4.0.0',
+  version: '4.1.0',
   chainId: 4,
   nftAddress: '0x0',
   metadata: {
@@ -181,7 +181,7 @@ const algoDdoWithNoTimeout = {
 const algoDdoWith1mTimeout = {
   '@context': ['https://w3id.org/did/v1'],
   id: 'did:op:efba17455c127a885ec7830d687a8f6e64f5ba559f8506f8723c1f10f05c049c',
-  version: '4.0.0',
+  version: '4.1.0',
   chainId: 4,
   nftAddress: '0x0',
   metadata: {

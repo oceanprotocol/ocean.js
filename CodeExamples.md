@@ -171,7 +171,7 @@ Next, we define the metadata that will describe our data asset. This is what we 
   const DDO = {
     '@context': ['https://w3id.org/did/v1'],
     id: '',
-    version: '4.0.0',
+    version: '4.1.0',
     chainId: 4,
     nftAddress: '0x0',
     metadata: {

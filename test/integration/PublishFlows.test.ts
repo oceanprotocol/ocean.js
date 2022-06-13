@@ -45,7 +45,7 @@ describe('Publish tests', async () => {
   const genericAsset: DDO = {
     '@context': ['https://w3id.org/did/v1'],
     id: '',
-    version: '4.0.0',
+    version: '4.1.0',
     chainId: 4,
     nftAddress: '0x0',
     metadata: {
