@@ -241,11 +241,12 @@ export class SideStaking extends SmartContract {
    * @param {String} datatokenAddress datatokenAddress
    * @return {TransactionReceipt}
    */
-  async getVesting(
+  async getVesting<G extends boolean = false>(
     account: string,
     ssAddress: string,
-    datatokenAddress: string
-  ): Promise<TransactionReceipt> {
+    datatokenAddress: string,
+    estimateGas?: G
+  ): Promise<G extends false ? TransactionReceipt : number> {
     const sideStaking = this.getContract(ssAddress)
     let result = null
 
@@ -254,6 +255,7 @@ export class SideStaking extends SmartContract {
       sideStaking.methods.getVesting,
       datatokenAddress
     )
+    if (estimateGas) return estGas
 
     try {
       result = await sideStaking.methods.getVesting(datatokenAddress).send({
@@ -274,13 +276,14 @@ export class SideStaking extends SmartContract {
    * @param {String} datatokenAddress datatokenAddress
    * @return {TransactionReceipt}
    */
-  private async setPoolSwapFee(
+  private async setPoolSwapFee<G extends boolean = false>(
     account: string,
     ssAddress: string,
     datatokenAddress: string,
     poolAddress: string,
-    swapFee: number
-  ): Promise<TransactionReceipt> {
+    swapFee: number,
+    estimateGas?: G
+  ): Promise<G extends false ? TransactionReceipt : number> {
     const sideStaking = this.getContract(ssAddress)
     let result = null
 
@@ -291,6 +294,7 @@ export class SideStaking extends SmartContract {
       poolAddress,
       swapFee
     )
+    if (estimateGas) return estGas
 
     try {
       result = await sideStaking.methods
