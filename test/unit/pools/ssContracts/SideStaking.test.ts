@@ -52,7 +52,7 @@ describe('SideStaking unit test', () => {
     owner: null
   }
 
-  const ercParams: DatatokenCreateParams = {
+  const dtParams: DatatokenCreateParams = {
     templateIndex: 1,
     minter: null,
     paymentCollector: null,
@@ -71,9 +71,9 @@ describe('SideStaking unit test', () => {
     user2 = accounts[2]
 
     nftData.owner = factoryOwner
-    ercParams.minter = factoryOwner
-    ercParams.paymentCollector = user2
-    ercParams.mpFeeAddress = factoryOwner
+    dtParams.minter = factoryOwner
+    dtParams.paymentCollector = user2
+    dtParams.mpFeeAddress = factoryOwner
   })
 
   it('should deploy contracts', async () => {
@@ -156,7 +156,7 @@ describe('SideStaking unit test', () => {
       const txReceipt = await nftFactory.createNftWithDatatokenWithPool(
         factoryOwner,
         nftData,
-        ercParams,
+        dtParams,
         poolParams
       )
 
@@ -378,7 +378,7 @@ describe('SideStaking unit test', () => {
       const txReceipt = await nftFactory.createNftWithDatatokenWithPool(
         factoryOwner,
         nftData,
-        ercParams,
+        dtParams,
         poolParams
       )
 

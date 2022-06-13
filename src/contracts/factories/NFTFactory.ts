@@ -573,9 +573,9 @@ export class NftFactory extends SmartContractWithAddress {
   public async estGasCreateNftWithDatatoken(
     address: string,
     nftCreateData: NftCreateData,
-    ercParams: DatatokenCreateParams
+    dtParams: DatatokenCreateParams
   ): Promise<any> {
-    const ercCreateData = this.getErcCreationParams(ercParams)
+    const ercCreateData = this.getErcCreationParams(dtParams)
     return estimateGas(
       address,
       this.contract.methods.createNftWithErc20,
@@ -596,9 +596,9 @@ export class NftFactory extends SmartContractWithAddress {
   public async createNftWithDatatoken(
     address: string,
     nftCreateData: NftCreateData,
-    ercParams: DatatokenCreateParams
+    dtParams: DatatokenCreateParams
   ): Promise<TransactionReceipt> {
-    const ercCreateData = this.getErcCreationParams(ercParams)
+    const ercCreateData = this.getErcCreationParams(dtParams)
 
     const estGas = await estimateGas(
       address,
@@ -623,17 +623,17 @@ export class NftFactory extends SmartContractWithAddress {
    * Estimate gas cost for createNftWithDatatokenWithPool method
    * @param address Caller address
    * @param nftCreateData input data for NFT Creation
-   * @param ercParams input data for Datatoken Creation
+   * @param dtParams input data for Datatoken Creation
    * @param poolParams input data for Pool Creation
    * @return {Promise<TransactionReceipt>} transaction receipt
    */
   public async estGasCreateNftWithDatatokenWithPool(
     address: string,
     nftCreateData: NftCreateData,
-    ercParams: DatatokenCreateParams,
+    dtParams: DatatokenCreateParams,
     poolParams: PoolCreationParams
   ): Promise<any> {
-    const ercCreateData = this.getErcCreationParams(ercParams)
+    const ercCreateData = this.getErcCreationParams(dtParams)
     const poolData = await this.getPoolCreationParams(poolParams)
     return estimateGas(
       address,
@@ -650,17 +650,17 @@ export class NftFactory extends SmartContractWithAddress {
    *      Use this carefully, because if Pool creation fails, you are still going to pay a lot of gas
    * @param address Caller address
    * @param nftCreateData input data for NFT Creation
-   * @param ercParams input data for Datatoken Creation
+   * @param dtParams input data for Datatoken Creation
    * @param poolParams input data for Pool Creation
    * @return {Promise<TransactionReceipt>} transaction receipt
    */
   public async createNftWithDatatokenWithPool(
     address: string,
     nftCreateData: NftCreateData,
-    ercParams: DatatokenCreateParams,
+    dtParams: DatatokenCreateParams,
     poolParams: PoolCreationParams
   ): Promise<TransactionReceipt> {
-    const ercCreateData = this.getErcCreationParams(ercParams)
+    const ercCreateData = this.getErcCreationParams(dtParams)
     const poolData = await this.getPoolCreationParams(poolParams)
 
     const estGas = await estimateGas(
@@ -686,17 +686,17 @@ export class NftFactory extends SmartContractWithAddress {
   /** Estimate gas cost for createNftWithDatatokenWithFixedRate method
    * @param address Caller address
    * @param nftCreateData input data for NFT Creation
-   * @param ercParams input data for Datatoken Creation
+   * @param dtParams input data for Datatoken Creation
    * @param freParams input data for FixedRate Creation
    * @return {Promise<TransactionReceipt>} transaction receipt
    */
   public async estGasCreateNftWithDatatokenWithFixedRate(
     address: string,
     nftCreateData: NftCreateData,
-    ercParams: DatatokenCreateParams,
+    dtParams: DatatokenCreateParams,
     freParams: FreCreationParams
   ): Promise<any> {
-    const ercCreateData = this.getErcCreationParams(ercParams)
+    const ercCreateData = this.getErcCreationParams(dtParams)
     const fixedData = await this.getFreCreationParams(freParams)
     return estimateGas(
       address,
@@ -713,17 +713,17 @@ export class NftFactory extends SmartContractWithAddress {
    *      Use this carefully, because if Fixed Rate creation fails, you are still going to pay a lot of gas
    * @param address Caller address
    * @param nftCreateData input data for NFT Creation
-   * @param ercParams input data for Datatoken Creation
+   * @param dtParams input data for Datatoken Creation
    * @param freParams input data for FixedRate Creation
    *  @return {Promise<TransactionReceipt>} transaction receipt
    */
   public async createNftWithDatatokenWithFixedRate(
     address: string,
     nftCreateData: NftCreateData,
-    ercParams: DatatokenCreateParams,
+    dtParams: DatatokenCreateParams,
     freParams: FreCreationParams
   ): Promise<TransactionReceipt> {
-    const ercCreateData = this.getErcCreationParams(ercParams)
+    const ercCreateData = this.getErcCreationParams(dtParams)
     const fixedData = this.getFreCreationParams(freParams)
 
     const estGas = await estimateGas(
@@ -749,17 +749,17 @@ export class NftFactory extends SmartContractWithAddress {
   /** Estimate gas cost for estGasCreateNftWithDatatokenWithDispenser method
    * @param address Caller address
    * @param nftCreateData input data for NFT Creation
-   * @param ercParams input data for Datatoken Creation
+   * @param dtParams input data for Datatoken Creation
    * @param dispenserParams input data for Dispenser Creation
    * @return {Promise<TransactionReceipt>} transaction receipt
    */
   public async estGasCreateNftWithDatatokenWithDispenser(
     address: string,
     nftCreateData: NftCreateData,
-    ercParams: DatatokenCreateParams,
+    dtParams: DatatokenCreateParams,
     dispenserParams: DispenserCreationParams
   ): Promise<any> {
-    const ercCreateData = this.getErcCreationParams(ercParams)
+    const ercCreateData = this.getErcCreationParams(dtParams)
     return estimateGas(
       address,
       this.contract.methods.createNftWithErc20WithDispenser,
@@ -775,17 +775,17 @@ export class NftFactory extends SmartContractWithAddress {
    *      Use this carefully, because if Dispenser creation fails, you are still going to pay a lot of gas
    * @param address Caller address
    * @param nftCreateData input data for NFT Creation
-   * @param ercParams input data for Datatoken Creation
+   * @param dtParams input data for Datatoken Creation
    * @param dispenserParams input data for Dispenser Creation
    *  @return {Promise<TransactionReceipt>} transaction receipt
    */
   public async createNftWithDatatokenWithDispenser(
     address: string,
     nftCreateData: NftCreateData,
-    ercParams: DatatokenCreateParams,
+    dtParams: DatatokenCreateParams,
     dispenserParams: DispenserCreationParams
   ): Promise<TransactionReceipt> {
-    const ercCreateData = this.getErcCreationParams(ercParams)
+    const ercCreateData = this.getErcCreationParams(dtParams)
 
     dispenserParams.maxBalance = Web3.utils.toWei(dispenserParams.maxBalance)
     dispenserParams.maxTokens = Web3.utils.toWei(dispenserParams.maxTokens)
@@ -810,22 +810,22 @@ export class NftFactory extends SmartContractWithAddress {
     return trxReceipt
   }
 
-  private getErcCreationParams(ercParams: DatatokenCreateParams): any {
+  private getErcCreationParams(dtParams: DatatokenCreateParams): any {
     let name: string, symbol: string
     // Generate name & symbol if not present
-    if (!ercParams.name || !ercParams.symbol) {
+    if (!dtParams.name || !dtParams.symbol) {
       ;({ name, symbol } = generateDtName())
     }
     return {
-      templateIndex: ercParams.templateIndex,
-      strings: [ercParams.name || name, ercParams.symbol || symbol],
+      templateIndex: dtParams.templateIndex,
+      strings: [dtParams.name || name, dtParams.symbol || symbol],
       addresses: [
-        ercParams.minter,
-        ercParams.paymentCollector,
-        ercParams.mpFeeAddress,
-        ercParams.feeToken
+        dtParams.minter,
+        dtParams.paymentCollector,
+        dtParams.mpFeeAddress,
+        dtParams.feeToken
       ],
-      uints: [Web3.utils.toWei(ercParams.cap), Web3.utils.toWei(ercParams.feeAmount)],
+      uints: [Web3.utils.toWei(dtParams.cap), Web3.utils.toWei(dtParams.feeAmount)],
       bytess: []
     }
   }
