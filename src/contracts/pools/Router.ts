@@ -19,15 +19,17 @@ export class Router extends SmartContractWithAddress {
    * @param {Operation} operations Operations objects array
    * @return {Promise<TransactionReceipt>} Transaction receipt
    */
-  public async buyDTBatch(
+  public async buyDTBatch<G extends boolean = false>(
     address: string,
-    operations: Operation[]
-  ): Promise<TransactionReceipt> {
+    operations: Operation[],
+    estimateGas?: G
+  ): Promise<G extends false ? TransactionReceipt : number> {
     const estGas = await calculateEstimatedGas(
       address,
       this.contract.methods.buyDTBatch,
       operations
     )
+    if (estimateGas) return estGas
 
     // Invoke createToken function of the contract
     const trxReceipt = await this.contract.methods.buyDTBatch(operations).send({
@@ -87,10 +89,11 @@ export class Router extends SmartContractWithAddress {
    * @param {String} tokenAddress token address to add
    * @return {Promise<TransactionReceipt>}
    */
-  public async addApprovedToken(
+  public async addApprovedToken<G extends boolean = false>(
     address: string,
-    tokenAddress: string
-  ): Promise<TransactionReceipt> {
+    tokenAddress: string,
+    estimateGas?: G
+  ): Promise<G extends false ? TransactionReceipt : number> {
     if ((await this.getOwner()) !== address) {
       throw new Error(`Caller is not Router Owner`)
     }
@@ -100,6 +103,7 @@ export class Router extends SmartContractWithAddress {
       this.contract.methods.addApprovedToken,
       tokenAddress
     )
+    if (estimateGas) return estGas
 
     // Invoke createToken function of the contract
     const trxReceipt = await this.contract.methods.addApprovedToken(tokenAddress).send({
@@ -117,10 +121,11 @@ export class Router extends SmartContractWithAddress {
    * @param {String} tokenAddress address to remove
    * @return {Promise<TransactionReceipt>}
    */
-  public async removeApprovedToken(
+  public async removeApprovedToken<G extends boolean = false>(
     address: string,
-    tokenAddress: string
-  ): Promise<TransactionReceipt> {
+    tokenAddress: string,
+    estimateGas?: G
+  ): Promise<G extends false ? TransactionReceipt : number> {
     if ((await this.getOwner()) !== address) {
       throw new Error(`Caller is not Router Owner`)
     }
@@ -130,6 +135,7 @@ export class Router extends SmartContractWithAddress {
       this.contract.methods.removeApprovedToken,
       tokenAddress
     )
+    if (estimateGas) return estGas
 
     // Invoke createToken function of the contract
     const trxReceipt = await this.contract.methods
@@ -149,10 +155,11 @@ export class Router extends SmartContractWithAddress {
    * @param {String} tokenAddress contract address to add
    * @return {Promise<TransactionReceipt>}
    */
-  public async addSSContract(
+  public async addSSContract<G extends boolean = false>(
     address: string,
-    tokenAddress: string
-  ): Promise<TransactionReceipt> {
+    tokenAddress: string,
+    estimateGas?: G
+  ): Promise<G extends false ? TransactionReceipt : number> {
     if ((await this.getOwner()) !== address) {
       throw new Error(`Caller is not Router Owner`)
     }
@@ -162,6 +169,7 @@ export class Router extends SmartContractWithAddress {
       this.contract.methods.addSSContract,
       tokenAddress
     )
+    if (estimateGas) return estGas
 
     // Invoke createToken function of the contract
     const trxReceipt = await this.contract.methods.addSSContract(tokenAddress).send({
@@ -179,10 +187,11 @@ export class Router extends SmartContractWithAddress {
    * @param {String} tokenAddress contract address to removed
    * @return {Promise<TransactionReceipt>}
    */
-  public async removeSSContract(
+  public async removeSSContract<G extends boolean = false>(
     address: string,
-    tokenAddress: string
-  ): Promise<TransactionReceipt> {
+    tokenAddress: string,
+    estimateGas?: G
+  ): Promise<G extends false ? TransactionReceipt : number> {
     if ((await this.getOwner()) !== address) {
       throw new Error(`Caller is not Router Owner`)
     }
@@ -192,6 +201,7 @@ export class Router extends SmartContractWithAddress {
       this.contract.methods.removeSSContract,
       tokenAddress
     )
+    if (estimateGas) return estGas
 
     // Invoke createToken function of the contract
     const trxReceipt = await this.contract.methods.removeSSContract(tokenAddress).send({
@@ -209,10 +219,11 @@ export class Router extends SmartContractWithAddress {
    * @param {String} tokenAddress contract address to add
    * @return {Promise<TransactionReceipt>}
    */
-  public async addFixedRateContract(
+  public async addFixedRateContract<G extends boolean = false>(
     address: string,
-    tokenAddress: string
-  ): Promise<TransactionReceipt> {
+    tokenAddress: string,
+    estimateGas?: G
+  ): Promise<G extends false ? TransactionReceipt : number> {
     if ((await this.getOwner()) !== address) {
       throw new Error(`Caller is not Router Owner`)
     }
@@ -222,6 +233,7 @@ export class Router extends SmartContractWithAddress {
       this.contract.methods.addFixedRateContract,
       tokenAddress
     )
+    if (estimateGas) return estGas
 
     // Invoke createToken function of the contract
     const trxReceipt = await this.contract.methods
@@ -241,10 +253,11 @@ export class Router extends SmartContractWithAddress {
    * @param {String} tokenAddress contract address to add
    * @return {Promise<TransactionReceipt>}
    */
-  public async removeFixedRateContract(
+  public async removeFixedRateContract<G extends boolean = false>(
     address: string,
-    tokenAddress: string
-  ): Promise<TransactionReceipt> {
+    tokenAddress: string,
+    estimateGas?: G
+  ): Promise<G extends false ? TransactionReceipt : number> {
     if ((await this.getOwner()) !== address) {
       throw new Error(`Caller is not Router Owner`)
     }
@@ -254,6 +267,7 @@ export class Router extends SmartContractWithAddress {
       this.contract.methods.removeFixedRateContract,
       tokenAddress
     )
+    if (estimateGas) return estGas
 
     // Invoke removeFixedRateContract function of the contract
     const trxReceipt = await this.contract.methods
@@ -273,10 +287,11 @@ export class Router extends SmartContractWithAddress {
    * @param {String} tokenAddress contract address to add
    * @return {Promise<TransactionReceipt>}
    */
-  public async addDispenserContract(
+  public async addDispenserContract<G extends boolean = false>(
     address: string,
-    tokenAddress: string
-  ): Promise<TransactionReceipt> {
+    tokenAddress: string,
+    estimateGas?: G
+  ): Promise<G extends false ? TransactionReceipt : number> {
     if ((await this.getOwner()) !== address) {
       throw new Error(`Caller is not Router Owner`)
     }
@@ -286,6 +301,7 @@ export class Router extends SmartContractWithAddress {
       this.contract.methods.addDispenserContract,
       tokenAddress
     )
+    if (estimateGas) return estGas
 
     // Invoke createToken function of the contract
     const trxReceipt = await this.contract.methods
@@ -305,10 +321,11 @@ export class Router extends SmartContractWithAddress {
    * @param {String} tokenAddress contract address to add
    * @return {Promise<TransactionReceipt>}
    */
-  public async removeDispenserContract(
+  public async removeDispenserContract<G extends boolean = false>(
     address: string,
-    tokenAddress: string
-  ): Promise<TransactionReceipt> {
+    tokenAddress: string,
+    estimateGas?: G
+  ): Promise<G extends false ? TransactionReceipt : number> {
     if ((await this.getOwner()) !== address) {
       throw new Error(`Caller is not Router Owner`)
     }
@@ -318,6 +335,7 @@ export class Router extends SmartContractWithAddress {
       this.contract.methods.removeDispenserContract,
       tokenAddress
     )
+    if (estimateGas) return estGas
 
     // Invoke createToken function of the contract
     const trxReceipt = await this.contract.methods
@@ -354,13 +372,14 @@ export class Router extends SmartContractWithAddress {
    * @param {number} newProviderFee Amount charged for providerFees
    * @return {Promise<TransactionReceipt>}
    */
-  public async updateOPCFee(
+  public async updateOPCFee<G extends boolean = false>(
     address: string,
     newSwapOceanFee: number,
     newSwapNonOceanFee: number,
     newConsumeFee: number,
-    newProviderFee: number
-  ): Promise<TransactionReceipt> {
+    newProviderFee: number,
+    estimateGas?: G
+  ): Promise<G extends false ? TransactionReceipt : number> {
     if ((await this.getOwner()) !== address) {
       throw new Error(`Caller is not Router Owner`)
     }
@@ -373,6 +392,7 @@ export class Router extends SmartContractWithAddress {
       newConsumeFee,
       newProviderFee
     )
+    if (estimateGas) return estGas
 
     // Invoke createToken function of the contract
     const trxReceipt = await this.contract.methods
@@ -392,10 +412,11 @@ export class Router extends SmartContractWithAddress {
    * @param {String} templateAddress template address to add
    * @return {Promise<TransactionReceipt>}
    */
-  public async addPoolTemplate(
+  public async addPoolTemplate<G extends boolean = false>(
     address: string,
-    templateAddress: string
-  ): Promise<TransactionReceipt> {
+    templateAddress: string,
+    estimateGas?: G
+  ): Promise<G extends false ? TransactionReceipt : number> {
     if ((await this.getOwner()) !== address) {
       throw new Error(`Caller is not Router Owner`)
     }
@@ -405,6 +426,7 @@ export class Router extends SmartContractWithAddress {
       this.contract.methods.addPoolTemplate,
       templateAddress
     )
+    if (estimateGas) return estGas
 
     // Invoke createToken function of the contract
     const trxReceipt = await this.contract.methods.addPoolTemplate(templateAddress).send({
@@ -422,10 +444,11 @@ export class Router extends SmartContractWithAddress {
    * @param {String} templateAddress template address to remove
    * @return {Promise<TransactionReceipt>}
    */
-  public async removePoolTemplate(
+  public async removePoolTemplate<G extends boolean = false>(
     address: string,
-    templateAddress: string
-  ): Promise<TransactionReceipt> {
+    templateAddress: string,
+    estimateGas?: G
+  ): Promise<G extends false ? TransactionReceipt : number> {
     if ((await this.getOwner()) !== address) {
       throw new Error(`Caller is not Router Owner`)
     }
@@ -435,6 +458,7 @@ export class Router extends SmartContractWithAddress {
       this.contract.methods.removePoolTemplate,
       templateAddress
     )
+    if (estimateGas) return estGas
 
     // Invoke createToken function of the contract
     const trxReceipt = await this.contract.methods
