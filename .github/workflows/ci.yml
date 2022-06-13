@@ -115,6 +115,10 @@ jobs:
         working-directory: ${{ github.workspace }}/barge
         run: |
           bash -x start_ocean.sh --with-provider2 --no-dashboard --with-c2d 2>&1 > start_ocean.log &
+        env:
+          AQUARIUS_VERSION: schema-4.1.0
+          PROVIDER_VERSION: schema-4.1.0
+
       - run: npm ci
       - run: npm run build:metadata
 

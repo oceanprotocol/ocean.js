@@ -42,17 +42,21 @@ let resolvedDdoWithNoTimeout
 let resolvedAlgoDdoWith1mTimeout
 let resolvedAlgoDdoWithNoTimeout
 
-const assetUrl = [
-  {
-    type: 'url',
-    url: 'https://raw.githubusercontent.com/oceanprotocol/testdatasets/main/shs_dataset_test.txt',
-    method: 'GET'
-  }
-]
+const assetUrl = {
+  datatokenAddress: '0x0',
+  nftAddress: '0x0',
+  files: [
+    {
+      type: 'url',
+      url: 'https://raw.githubusercontent.com/oceanprotocol/testdatasets/main/shs_dataset_test.txt',
+      method: 'GET'
+    }
+  ]
+}
 const ddoWithNoTimeout = {
   '@context': ['https://w3id.org/did/v1'],
   id: 'did:op:efba17455c127a885ec7830d687a8f6e64f5ba559f8506f8723c1f10f05c049c',
-  version: '4.0.0',
+  version: '4.1.0',
   chainId: 4,
   nftAddress: '0x0',
   metadata: {
@@ -89,7 +93,7 @@ const ddoWithNoTimeout = {
 const ddoWith1mTimeout = {
   '@context': ['https://w3id.org/did/v1'],
   id: 'did:op:efba17455c127a885ec7830d687a8f6e64f5ba559f8506f8723c1f10f05c049c',
-  version: '4.0.0',
+  version: '4.1.0',
   chainId: 4,
   nftAddress: '0x0',
   metadata: {
@@ -122,17 +126,21 @@ const ddoWith1mTimeout = {
     }
   ]
 }
-const algoAssetUrl = [
-  {
-    type: 'url',
-    url: 'https://raw.githubusercontent.com/oceanprotocol/test-algorithm/master/javascript/algo.js',
-    method: 'GET'
-  }
-]
+const algoAssetUrl = {
+  datatokenAddress: '0x0',
+  nftAddress: '0x0',
+  files: [
+    {
+      type: 'url',
+      url: 'https://raw.githubusercontent.com/oceanprotocol/test-algorithm/master/javascript/algo.js',
+      method: 'GET'
+    }
+  ]
+}
 const algoDdoWithNoTimeout = {
   '@context': ['https://w3id.org/did/v1'],
   id: 'did:op:efba17455c127a885ec7830d687a8f6e64f5ba559f8506f8723c1f10f05c049c',
-  version: '4.0.0',
+  version: '4.1.0',
   chainId: 4,
   nftAddress: '0x0',
   metadata: {
@@ -173,7 +181,7 @@ const algoDdoWithNoTimeout = {
 const algoDdoWith1mTimeout = {
   '@context': ['https://w3id.org/did/v1'],
   id: 'did:op:efba17455c127a885ec7830d687a8f6e64f5ba559f8506f8723c1f10f05c049c',
-  version: '4.0.0',
+  version: '4.1.0',
   chainId: 4,
   nftAddress: '0x0',
   metadata: {
@@ -246,13 +254,15 @@ async function createAsset(
 
   const erc721AddressAsset = result.events.NFTCreated.returnValues[0]
   const datatokenAddressAsset = result.events.TokenCreated.returnValues[0]
+  ddo.nftAddress = web3.utils.toChecksumAddress(erc721AddressAsset)
   // create the files encrypted string
+  assetUrl.datatokenAddress = datatokenAddressAsset
+  assetUrl.nftAddress = ddo.nftAddress
   let providerResponse = await ProviderInstance.encrypt(assetUrl, providerUrl)
   ddo.services[0].files = await providerResponse
   ddo.services[0].datatokenAddress = datatokenAddressAsset
   ddo.services[0].serviceEndpoint = providerUrl
   // update ddo and set the right did
-  ddo.nftAddress = web3.utils.toChecksumAddress(erc721AddressAsset)
   ddo.id =
     'did:op:' +
     SHA256(web3.utils.toChecksumAddress(erc721AddressAsset) + chain.toString(10))
@@ -287,10 +297,10 @@ async function handleOrder(
      - no validOrder -> we need to call startOrder, to pay 1 DT & providerFees
   */
   if (order.providerFee && order.providerFee.providerFeeAmount) {
-    await datatoken.approve(
+    await datatoken.approveWei(
       order.providerFee.providerFeeToken,
       datatokenAddress,
-      order.providerFee.providerFeeAmount,
+      String(order.providerFee.providerFeeAmount),
       payerAccount
     )
   }
