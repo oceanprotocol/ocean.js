@@ -257,7 +257,7 @@ async function createAsset(
   ddo.nftAddress = web3.utils.toChecksumAddress(erc721AddressAsset)
   // create the files encrypted string
   assetUrl.datatokenAddress = datatokenAddressAsset
-  assetUrl.mftAddress = ddo.nftAddress
+  assetUrl.nftAddress = ddo.nftAddress
   let providerResponse = await ProviderInstance.encrypt(assetUrl, providerUrl)
   ddo.services[0].files = await providerResponse
   ddo.services[0].datatokenAddress = datatokenAddressAsset
@@ -446,6 +446,7 @@ describe('Simple compute tests', async () => {
       providerUrl,
       consumerAccount
     )
+    console.log(providerInitializeComputeResults)
     assert(
       !('error' in providerInitializeComputeResults.algorithm),
       'Cannot order algorithm'
