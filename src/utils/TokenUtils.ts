@@ -1,5 +1,4 @@
 import Decimal from 'decimal.js'
-import { Contract } from 'web3-eth-contract'
 import { TransactionReceipt } from 'web3-core'
 import Web3 from 'web3'
 import {
@@ -20,20 +19,21 @@ import {
  * @param {boolean} force  if true, will overwrite any previous allowence. Else, will check if allowence is enough and will not send a transaction if it's not needed
  * @param {number} tokenDecimals optional number of decimals of the token
  */
-export async function approve(
+export async function approve<G extends boolean = false>(
   web3: Web3,
   account: string,
   tokenAddress: string,
   spender: string,
   amount: string,
   force = false,
-  tokenDecimals?: number
-): Promise<TransactionReceipt | string> {
+  tokenDecimals?: number,
+  estimateGas?: G
+): Promise<G extends false ? TransactionReceipt : number> {
   const tokenContract = new web3.eth.Contract(minAbi, tokenAddress)
   if (!force) {
     const currentAllowence = await allowance(web3, tokenAddress, account, spender)
     if (new Decimal(currentAllowence).greaterThanOrEqualTo(new Decimal(amount))) {
-      return currentAllowence
+      return null
     }
   }
   let result = null
@@ -44,6 +44,7 @@ export async function approve(
     spender,
     amountFormatted
   )
+  if (estimateGas) return estGas
 
   try {
     result = await tokenContract.methods.approve(spender, amountFormatted).send({
@@ -67,13 +68,14 @@ export async function approve(
  * @param {String} amount amount of ERC20 Datatokens (not as wei)
  * @param {String} force  if true, will overwrite any previous allowence. Else, will check if allowence is enough and will not send a transaction if it's not needed
  */
-export async function transfer(
+export async function transfer<G extends boolean = false>(
   web3: Web3,
   account: string,
   tokenAddress: string,
   recipient: string,
-  amount: string
-): Promise<TransactionReceipt | string> {
+  amount: string,
+  estimateGas?: G
+): Promise<G extends false ? TransactionReceipt : number> {
   const tokenContract = new web3.eth.Contract(minAbi, tokenAddress)
 
   let result = null
@@ -84,6 +86,7 @@ export async function transfer(
     recipient,
     amountFormatted
   )
+  if (estimateGas) return estGas
 
   try {
     result = await tokenContract.methods.transfer(recipient, amountFormatted).send({
