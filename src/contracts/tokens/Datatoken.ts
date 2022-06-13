@@ -847,7 +847,7 @@ export class Datatoken extends SmartContract {
     return returnValues
   }
 
-  getFreOrderParams(freParams: FreOrderParams): any {
+  private getFreOrderParams(freParams: FreOrderParams): any {
     return {
       exchangeContract: freParams.exchangeContract,
       exchangeId: freParams.exchangeId,

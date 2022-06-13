@@ -34,7 +34,7 @@ export abstract class SmartContract {
     this.abi = abi || (this.getDefaultAbi() as AbiItem[])
   }
 
-  async amountToUnits(
+  protected async amountToUnits(
     token: string,
     amount: string,
     tokenDecimals?: number
@@ -42,7 +42,7 @@ export abstract class SmartContract {
     return amountToUnits(this.web3, token, amount, tokenDecimals)
   }
 
-  async unitsToAmount(
+  protected async unitsToAmount(
     token: string,
     amount: string,
     tokenDecimals?: number
@@ -50,11 +50,15 @@ export abstract class SmartContract {
     return unitsToAmount(this.web3, token, amount, tokenDecimals)
   }
 
-  async getFairGasPrice(): Promise<string> {
+  protected async getFairGasPrice(): Promise<string> {
     return getFairGasPrice(this.web3, this.config)
   }
 
-  getContract(address: string, account?: string, abi?: AbiItem | AbiItem[]): Contract {
+  protected getContract(
+    address: string,
+    account?: string,
+    abi?: AbiItem | AbiItem[]
+  ): Contract {
     const contract = new this.web3.eth.Contract(abi || this.abi, address, {
       from: account
     })

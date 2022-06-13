@@ -677,7 +677,7 @@ export class FixedRateExchange extends SmartContractWithAddress {
    * Get Router address set in fixed rate contract
    * @return {String}
    */
-  async getRouter(): Promise<string> {
+  public async getRouter(): Promise<string> {
     let result = null
     try {
       result = await this.contract.methods.router().call()

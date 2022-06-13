@@ -499,7 +499,7 @@ export class NftFactory extends SmartContractWithAddress {
     poolParams: PoolCreationParams
   ): Promise<TransactionReceipt> {
     const ercCreateData = this.getErcCreationParams(ercParams)
-    const poolData = await this.getPoolCreationParams(this.web3, poolParams)
+    const poolData = await this.getPoolCreationParams(poolParams)
 
     const estGas = await calculateEstimatedGas(
       address,
@@ -601,7 +601,7 @@ export class NftFactory extends SmartContractWithAddress {
     return trxReceipt
   }
 
-  getErcCreationParams(ercParams: DatatokenCreateParams): any {
+  private getErcCreationParams(ercParams: DatatokenCreateParams): any {
     let name: string, symbol: string
     // Generate name & symbol if not present
     if (!ercParams.name || !ercParams.symbol) {
@@ -621,7 +621,7 @@ export class NftFactory extends SmartContractWithAddress {
     }
   }
 
-  getFreCreationParams(freParams: FreCreationParams): any {
+  private getFreCreationParams(freParams: FreCreationParams): any {
     if (!freParams.allowedConsumer) freParams.allowedConsumer = ZERO_ADDRESS
     const withMint = freParams.withMint ? 1 : 0
 
@@ -643,7 +643,7 @@ export class NftFactory extends SmartContractWithAddress {
     }
   }
 
-  async getPoolCreationParams(web3: Web3, poolParams: PoolCreationParams): Promise<any> {
+  private async getPoolCreationParams(poolParams: PoolCreationParams): Promise<any> {
     return {
       addresses: [
         poolParams.ssContract,
