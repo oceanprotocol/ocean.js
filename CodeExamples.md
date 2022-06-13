@@ -593,6 +593,8 @@ Now we are going to update the ddo and set the did
 ```
 Next, let's encrypt the file(s) using provider
 ```Typescript
+    ASSET_URL.datatokenAddress = freDatatokenAddress
+    ASSET_URL.nftAddress = freNftAddress
     const encryptedFiles = await ProviderInstance.encrypt(ASSET_URL, providerUrl)
     DDO.services[0].files = await encryptedFiles
     DDO.services[0].datatokenAddress = freDatatokenAddress
@@ -807,6 +809,8 @@ Lets start by updating the ddo and setting the did
 ```
 Now we need to encrypt file(s) using provider
 ```Typescript
+    ASSET_URL.datatokenAddress = dispenserDatatokenAddress
+    ASSET_URL.nftAddress = dispenserNftAddress
     const encryptedFiles = await ProviderInstance.encrypt(ASSET_URL, providerUrl)
     DDO.services[0].files = await encryptedFiles
     DDO.services[0].datatokenAddress = dispenserDatatokenAddress

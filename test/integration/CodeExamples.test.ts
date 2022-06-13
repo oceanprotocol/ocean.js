@@ -593,6 +593,8 @@ describe('Marketplace flow tests', async () => {
     /// ```
     /// Next, let's encrypt the file(s) using provider
     /// ```Typescript
+    ASSET_URL.datatokenAddress = freDatatokenAddress
+    ASSET_URL.nftAddress = freNftAddress
     const encryptedFiles = await ProviderInstance.encrypt(ASSET_URL, providerUrl)
     DDO.services[0].files = await encryptedFiles
     DDO.services[0].datatokenAddress = freDatatokenAddress
@@ -807,6 +809,8 @@ describe('Marketplace flow tests', async () => {
     /// ```
     /// Now we need to encrypt file(s) using provider
     /// ```Typescript
+    ASSET_URL.datatokenAddress = dispenserDatatokenAddress
+    ASSET_URL.nftAddress = dispenserNftAddress
     const encryptedFiles = await ProviderInstance.encrypt(ASSET_URL, providerUrl)
     DDO.services[0].files = await encryptedFiles
     DDO.services[0].datatokenAddress = dispenserDatatokenAddress
