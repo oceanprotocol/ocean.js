@@ -2,7 +2,6 @@ import { AbiItem } from 'web3-utils'
 import { TransactionReceipt } from 'web3-eth'
 import ERC721Template from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC721Template.sol/ERC721Template.json'
 import { LoggerInstance, generateDtName, calculateEstimatedGas } from '../../utils'
-import { Contract } from 'web3-eth-contract'
 import { MetadataProof, MetadataAndTokenURI, NftRoles } from '../../@types'
 import { SmartContract } from '..'
 
