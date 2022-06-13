@@ -15,7 +15,7 @@ import {
 } from '../../../../src'
 import {
   PoolCreationParams,
-  Erc20CreateParams,
+  DatatokenCreateParams,
   CurrentFees,
   TokenInOutMarket,
   AmountsInMaxFee,
@@ -29,8 +29,8 @@ describe('Pool unit test', () => {
   let contracts: Addresses
   let pool: Pool
   let poolAddress: string
-  let erc20Token: string
-  let ercParams: Erc20CreateParams
+  let datatoken: string
+  let ercParams: DatatokenCreateParams
 
   const nftData: NftCreateData = {
     name: '72120Bundle',
@@ -73,7 +73,7 @@ describe('Pool unit test', () => {
       web3,
       factoryOwner,
       contracts.daiAddress,
-      contracts.erc721FactoryAddress,
+      contracts.nftFactoryAddress,
       '2000'
     )
 
@@ -83,7 +83,7 @@ describe('Pool unit test', () => {
           web3,
           contracts.daiAddress,
           factoryOwner,
-          contracts.erc721FactoryAddress
+          contracts.nftFactoryAddress
         )
       ) >= 2000
     )
@@ -92,7 +92,7 @@ describe('Pool unit test', () => {
       web3,
       factoryOwner,
       contracts.usdcAddress,
-      contracts.erc721FactoryAddress,
+      contracts.nftFactoryAddress,
       '10000'
     )
 
@@ -102,7 +102,7 @@ describe('Pool unit test', () => {
           web3,
           contracts.usdcAddress,
           factoryOwner,
-          contracts.erc721FactoryAddress
+          contracts.nftFactoryAddress
         )
       ) >= 10000
     )
@@ -115,7 +115,7 @@ describe('Pool unit test', () => {
       const poolParams: PoolCreationParams = {
         ssContract: contracts.sideStakingAddress,
         baseTokenAddress: contracts.daiAddress,
-        baseTokenSender: contracts.erc721FactoryAddress,
+        baseTokenSender: contracts.nftFactoryAddress,
         publisherAddress: factoryOwner,
         marketFeeCollector: factoryOwner,
         poolTemplateAddress: contracts.poolTemplateAddress,
@@ -128,20 +128,20 @@ describe('Pool unit test', () => {
         swapFeeMarketRunner: '0.001'
       }
 
-      const nftFactory = new NftFactory(contracts.erc721FactoryAddress, web3, 8996)
+      const nftFactory = new NftFactory(contracts.nftFactoryAddress, web3, 8996)
 
-      const txReceipt = await nftFactory.createNftErc20WithPool(
+      const txReceipt = await nftFactory.createNftWithDatatokenWithPool(
         factoryOwner,
         nftData,
         ercParams,
         poolParams
       )
 
-      erc20Token = txReceipt.events.TokenCreated.returnValues.newTokenAddress
+      datatoken = txReceipt.events.TokenCreated.returnValues.newTokenAddress
       poolAddress = txReceipt.events.NewPool.returnValues.poolAddress
 
       // user1 has no dt1
-      expect(await balance(web3, erc20Token, user1)).to.equal('0')
+      expect(await balance(web3, datatoken, user1)).to.equal('0')
     })
 
     it('#sharesBalance - should return user shares balance (datatoken balance, LPT balance, etc) ', async () => {
@@ -168,13 +168,13 @@ describe('Pool unit test', () => {
 
     it('#getCurrentTokens - should return current pool tokens', async () => {
       const currentTokens = await pool.getCurrentTokens(poolAddress)
-      expect(currentTokens[0]).to.equal(erc20Token)
+      expect(currentTokens[0]).to.equal(datatoken)
       expect(currentTokens[1]).to.equal(contracts.daiAddress)
     })
 
     it('#getFinalTokens - should return final pool tokens', async () => {
       const finalTokens = await pool.getFinalTokens(poolAddress)
-      expect(finalTokens[0]).to.equal(erc20Token)
+      expect(finalTokens[0]).to.equal(datatoken)
       expect(finalTokens[1]).to.equal(contracts.daiAddress)
     })
 
@@ -190,7 +190,7 @@ describe('Pool unit test', () => {
     it('#getReserve - should return final pool tokens', async () => {
       expect(await pool.getReserve(poolAddress, contracts.daiAddress)).to.equal('2000') // baseToken initial liquidity
       // rate is 1 so we have the same amount of DTs
-      expect(await pool.getReserve(poolAddress, erc20Token)).to.equal('2000')
+      expect(await pool.getReserve(poolAddress, datatoken)).to.equal('2000')
     })
 
     it('#isFinalized - should return true if pool is finalized', async () => {
@@ -205,14 +205,14 @@ describe('Pool unit test', () => {
       expect(await pool.getNormalizedWeight(poolAddress, contracts.daiAddress)).to.equal(
         '0.5'
       )
-      expect(await pool.getNormalizedWeight(poolAddress, erc20Token)).to.equal('0.5')
+      expect(await pool.getNormalizedWeight(poolAddress, datatoken)).to.equal('0.5')
     })
 
     it('#getDenormalizedWeight - should return the denormalized weight', async () => {
       expect(
         await pool.getDenormalizedWeight(poolAddress, contracts.daiAddress)
       ).to.equal('5')
-      expect(await pool.getDenormalizedWeight(poolAddress, erc20Token)).to.equal('5')
+      expect(await pool.getDenormalizedWeight(poolAddress, datatoken)).to.equal('5')
     })
 
     it('#getBaseToken - should return the baseToken address', async () => {
@@ -220,19 +220,19 @@ describe('Pool unit test', () => {
     })
 
     it('#getDatatoken - should return the datatoken address', async () => {
-      expect(await pool.getDatatoken(poolAddress)).to.equal(erc20Token)
+      expect(await pool.getDatatoken(poolAddress)).to.equal(datatoken)
     })
 
     it('#swapExactAmountIn - should swap', async () => {
       await transfer(web3, factoryOwner, contracts.daiAddress, user1, '1000')
       expect(await balance(web3, contracts.daiAddress, user1)).to.equal('1000')
 
-      expect(await balance(web3, erc20Token, user1)).to.equal('0')
+      expect(await balance(web3, datatoken, user1)).to.equal('0')
       await approve(web3, user1, contracts.daiAddress, poolAddress, '10')
 
       const tokenInOutMarket: TokenInOutMarket = {
         tokenIn: contracts.daiAddress,
-        tokenOut: erc20Token,
+        tokenOut: datatoken,
         marketFeeAddress: factoryOwner
       }
       const amountsInOutMaxFee: AmountsInMaxFee = {
@@ -246,10 +246,10 @@ describe('Pool unit test', () => {
         tokenInOutMarket,
         amountsInOutMaxFee
       )
-      expect(await balance(web3, erc20Token, user1)).to.equal(
+      expect(await balance(web3, datatoken, user1)).to.equal(
         await unitsToAmount(
           web3,
-          erc20Token,
+          datatoken,
           tx.events.LOG_SWAP.returnValues.tokenAmountOut
         )
       )
@@ -260,7 +260,7 @@ describe('Pool unit test', () => {
       expect(await balance(web3, contracts.daiAddress, user1)).to.equal('990')
       const tokenInOutMarket: TokenInOutMarket = {
         tokenIn: contracts.daiAddress,
-        tokenOut: erc20Token,
+        tokenOut: datatoken,
         marketFeeAddress: factoryOwner
       }
       const amountsInOutMaxFee: AmountsOutMaxFee = {
@@ -317,7 +317,7 @@ describe('Pool unit test', () => {
       expect(tx.events.LOG_EXIT[0].returnValues.tokenOut).to.equal(contracts.daiAddress)
 
       // DTs were also unstaked in the same transaction (went to the staking contract)
-      expect(tx.events.LOG_EXIT[1].returnValues.tokenOut).to.equal(erc20Token)
+      expect(tx.events.LOG_EXIT[1].returnValues.tokenOut).to.equal(datatoken)
     })
 
     it('#exitswapExternAmountOut- user1 exit the pool receiving only DAI', async () => {
@@ -336,7 +336,7 @@ describe('Pool unit test', () => {
       expect(tx.events.LOG_EXIT[0].returnValues.tokenOut).to.equal(contracts.daiAddress)
 
       // DTs were also unstaked in the same transaction (went to the staking contract)
-      expect(tx.events.LOG_EXIT[1].returnValues.tokenOut).to.equal(erc20Token)
+      expect(tx.events.LOG_EXIT[1].returnValues.tokenOut).to.equal(datatoken)
     })
 
     it('#getAmountInExactOut- should get the amount in for exact out', async () => {
@@ -344,7 +344,7 @@ describe('Pool unit test', () => {
 
       const result = await pool.getAmountInExactOut(
         poolAddress,
-        erc20Token,
+        datatoken,
         contracts.daiAddress,
         exactDAIOut,
         '0.1'
@@ -357,7 +357,7 @@ describe('Pool unit test', () => {
 
       const spotPrice = await pool.getSpotPrice(
         poolAddress,
-        erc20Token,
+        datatoken,
         contracts.daiAddress,
         '0.1'
       )
@@ -371,7 +371,7 @@ describe('Pool unit test', () => {
 
       const result = await pool.getAmountOutExactIn(
         poolAddress,
-        erc20Token,
+        datatoken,
         contracts.daiAddress,
         exactDTIn,
         '0.1'
@@ -383,7 +383,7 @@ describe('Pool unit test', () => {
       const spotPrice = await pool.getSpotPrice(
         poolAddress,
         contracts.daiAddress,
-        erc20Token,
+        datatoken,
         '0.1'
       )
       // amount of DAI received will be slightly less than spotPrice
@@ -392,34 +392,34 @@ describe('Pool unit test', () => {
 
     it('#getSpotPrice- should get the spot price', async () => {
       assert(
-        (await pool.getSpotPrice(poolAddress, erc20Token, contracts.daiAddress, '0.1')) !=
+        (await pool.getSpotPrice(poolAddress, datatoken, contracts.daiAddress, '0.1')) !=
           null
       )
       assert(
-        (await pool.getSpotPrice(poolAddress, contracts.daiAddress, erc20Token, '0.1')) !=
+        (await pool.getSpotPrice(poolAddress, contracts.daiAddress, datatoken, '0.1')) !=
           null
       )
     })
 
     it('#getMarketFees- should get market fees for each token', async () => {
-      // we haven't performed any swap DT => DAI so there's no fee in erc20Token
+      // we haven't performed any swap DT => DAI so there's no fee in datatoken
       // but there's a fee in DAI
-      assert((await pool.getMarketFees(poolAddress, erc20Token)) === '0')
+      assert((await pool.getMarketFees(poolAddress, datatoken)) === '0')
       assert((await pool.getMarketFees(poolAddress, contracts.daiAddress)) > '0')
     })
 
     it('#getCommunityFees- should get community fees for each token', async () => {
-      // we haven't performed any swap DT => DAI so there's no fee in erc20Token
+      // we haven't performed any swap DT => DAI so there's no fee in datatoken
       // but there's a fee in DAI
 
-      assert((await pool.getCommunityFees(poolAddress, erc20Token)) === '0')
+      assert((await pool.getCommunityFees(poolAddress, datatoken)) === '0')
       assert((await pool.getCommunityFees(poolAddress, contracts.daiAddress)) > '0')
     })
 
     it('#collectMarketFee- should collect market fees for each token', async () => {
       const spotPriceBefore = await pool.getSpotPrice(
         poolAddress,
-        erc20Token,
+        datatoken,
         contracts.daiAddress,
         '0.1'
       )
@@ -435,12 +435,8 @@ describe('Pool unit test', () => {
 
       // Spot price hasn't changed after fee collection
       assert(
-        (await pool.getSpotPrice(
-          poolAddress,
-          erc20Token,
-          contracts.daiAddress,
-          '0.1'
-        )) === spotPriceBefore
+        (await pool.getSpotPrice(poolAddress, datatoken, contracts.daiAddress, '0.1')) ===
+          spotPriceBefore
       )
     })
 
@@ -452,7 +448,7 @@ describe('Pool unit test', () => {
     it('#collectCommunityFee- should get community fees for each token', async () => {
       const spotPriceBefore = await pool.getSpotPrice(
         poolAddress,
-        erc20Token,
+        datatoken,
         contracts.daiAddress,
         '0.1'
       )
@@ -480,12 +476,8 @@ describe('Pool unit test', () => {
       )
       // Spot price hasn't changed after fee collection
       assert(
-        (await pool.getSpotPrice(
-          poolAddress,
-          erc20Token,
-          contracts.daiAddress,
-          '0.1'
-        )) === spotPriceBefore
+        (await pool.getSpotPrice(poolAddress, datatoken, contracts.daiAddress, '0.1')) ===
+          spotPriceBefore
       )
     })
 
@@ -510,7 +502,7 @@ describe('Pool unit test', () => {
       const poolParams: PoolCreationParams = {
         ssContract: contracts.sideStakingAddress,
         baseTokenAddress: contracts.usdcAddress,
-        baseTokenSender: contracts.erc721FactoryAddress,
+        baseTokenSender: contracts.nftFactoryAddress,
         publisherAddress: factoryOwner,
         marketFeeCollector: factoryOwner,
         poolTemplateAddress: contracts.poolTemplateAddress,
@@ -523,20 +515,20 @@ describe('Pool unit test', () => {
         swapFeeMarketRunner: '0.001'
       }
 
-      const nftFactory = new NftFactory(contracts.erc721FactoryAddress, web3, 8996)
+      const nftFactory = new NftFactory(contracts.nftFactoryAddress, web3, 8996)
 
-      const txReceipt = await nftFactory.createNftErc20WithPool(
+      const txReceipt = await nftFactory.createNftWithDatatokenWithPool(
         factoryOwner,
         nftData,
         ercParams,
         poolParams
       )
 
-      erc20Token = txReceipt.events.TokenCreated.returnValues.newTokenAddress
+      datatoken = txReceipt.events.TokenCreated.returnValues.newTokenAddress
       poolAddress = txReceipt.events.NewPool.returnValues.poolAddress
 
       // user1 has no dt1
-      expect(await balance(web3, erc20Token, user1)).to.equal('0')
+      expect(await balance(web3, datatoken, user1)).to.equal('0')
     })
 
     it('#calcPoolOutGivenSingleIn - should get the amount of pool OUT for exact token IN', async () => {
@@ -544,7 +536,7 @@ describe('Pool unit test', () => {
       // amount of pool out received for same amount of different token In is equal
       const tokenInAmount = '10' // 10 USDC or 10 DTs
       expect(
-        await pool.calcPoolOutGivenSingleIn(poolAddress, erc20Token, tokenInAmount)
+        await pool.calcPoolOutGivenSingleIn(poolAddress, datatoken, tokenInAmount)
       ).to.equal(
         await pool.calcPoolOutGivenSingleIn(
           poolAddress,
@@ -552,7 +544,7 @@ describe('Pool unit test', () => {
           tokenInAmount
         )
       )
-      // console.log(await pool.calcPoolOutGivenSingleIn(poolAddress, erc20Token, tokenInAmount))
+      // console.log(await pool.calcPoolOutGivenSingleIn(poolAddress, datatoken, tokenInAmount))
     })
 
     it('#calcSingleInGivenPoolOut - should get the amount of token IN for exact pool token OUT', async () => {
@@ -561,7 +553,7 @@ describe('Pool unit test', () => {
       const poolAmountOut = '1'
       expect(
         parseInt(
-          await pool.calcSingleInGivenPoolOut(poolAddress, erc20Token, poolAmountOut)
+          await pool.calcSingleInGivenPoolOut(poolAddress, datatoken, poolAmountOut)
         )
       ).to.be.closeTo(
         parseInt(
@@ -580,7 +572,7 @@ describe('Pool unit test', () => {
       // amount amount of different token Out for rediming the same pool In is equal
       const poolAmountIn = '10'
       expect(
-        await pool.calcSingleOutGivenPoolIn(poolAddress, erc20Token, poolAmountIn)
+        await pool.calcSingleOutGivenPoolIn(poolAddress, datatoken, poolAmountIn)
       ).to.equal(
         await pool.calcSingleOutGivenPoolIn(
           poolAddress,
@@ -596,7 +588,7 @@ describe('Pool unit test', () => {
       const tokenAmountOut = '10'
       expect(
         parseInt(
-          await pool.calcPoolInGivenSingleOut(poolAddress, erc20Token, tokenAmountOut)
+          await pool.calcPoolInGivenSingleOut(poolAddress, datatoken, tokenAmountOut)
         )
       ).to.be.closeTo(
         parseInt(
@@ -634,13 +626,13 @@ describe('Pool unit test', () => {
 
     it('#getCurrentTokens - should return current pool tokens', async () => {
       const currentTokens = await pool.getCurrentTokens(poolAddress)
-      expect(currentTokens[0]).to.equal(erc20Token)
+      expect(currentTokens[0]).to.equal(datatoken)
       expect(currentTokens[1]).to.equal(contracts.usdcAddress)
     })
 
     it('#getFinalTokens - should return final pool tokens', async () => {
       const finalTokens = await pool.getFinalTokens(poolAddress)
-      expect(finalTokens[0]).to.equal(erc20Token)
+      expect(finalTokens[0]).to.equal(datatoken)
       expect(finalTokens[1]).to.equal(contracts.usdcAddress)
     })
 
@@ -656,7 +648,7 @@ describe('Pool unit test', () => {
     it('#getReserve - should return final pool tokens Reserve', async () => {
       expect(await pool.getReserve(poolAddress, contracts.usdcAddress)).to.equal('2000') // baseToken initial liquidity
       // rate is 1 so we have the same amount of DTs
-      expect(await pool.getReserve(poolAddress, erc20Token)).to.equal('2000')
+      expect(await pool.getReserve(poolAddress, datatoken)).to.equal('2000')
     })
 
     it('#isFinalized - should return true if pool is finalized', async () => {
@@ -671,14 +663,14 @@ describe('Pool unit test', () => {
       expect(await pool.getNormalizedWeight(poolAddress, contracts.usdcAddress)).to.equal(
         '0.5'
       )
-      expect(await pool.getNormalizedWeight(poolAddress, erc20Token)).to.equal('0.5')
+      expect(await pool.getNormalizedWeight(poolAddress, datatoken)).to.equal('0.5')
     })
 
     it('#getDenormalizedWeight - should return the denormalized weight', async () => {
       expect(
         await pool.getDenormalizedWeight(poolAddress, contracts.usdcAddress)
       ).to.equal('5')
-      expect(await pool.getDenormalizedWeight(poolAddress, erc20Token)).to.equal('5')
+      expect(await pool.getDenormalizedWeight(poolAddress, datatoken)).to.equal('5')
     })
 
     it('#getBaseToken - should return the baseToken address', async () => {
@@ -686,19 +678,19 @@ describe('Pool unit test', () => {
     })
 
     it('#getDatatoken - should return the datatoken address', async () => {
-      expect(await pool.getDatatoken(poolAddress)).to.equal(erc20Token)
+      expect(await pool.getDatatoken(poolAddress)).to.equal(datatoken)
     })
 
     it('#swapExactAmountIn - should swap', async () => {
       await transfer(web3, factoryOwner, contracts.usdcAddress, user1, '1000')
       expect(await balance(web3, contracts.usdcAddress, user1)).to.equal('1000')
 
-      expect(await balance(web3, erc20Token, user1)).to.equal('0')
+      expect(await balance(web3, datatoken, user1)).to.equal('0')
       await approve(web3, user1, contracts.usdcAddress, poolAddress, '10')
 
       const tokenInOutMarket: TokenInOutMarket = {
         tokenIn: contracts.usdcAddress,
-        tokenOut: erc20Token,
+        tokenOut: datatoken,
         marketFeeAddress: factoryOwner
       }
       const amountsInOutMaxFee: AmountsInMaxFee = {
@@ -712,10 +704,10 @@ describe('Pool unit test', () => {
         tokenInOutMarket,
         amountsInOutMaxFee
       )
-      expect(await balance(web3, erc20Token, user1)).to.equal(
+      expect(await balance(web3, datatoken, user1)).to.equal(
         await unitsToAmount(
           web3,
-          erc20Token,
+          datatoken,
           tx.events.LOG_SWAP.returnValues.tokenAmountOut
         )
       )
@@ -726,7 +718,7 @@ describe('Pool unit test', () => {
       expect(await balance(web3, contracts.usdcAddress, user1)).to.equal('990')
       const tokenInOutMarket: TokenInOutMarket = {
         tokenIn: contracts.usdcAddress,
-        tokenOut: erc20Token,
+        tokenOut: datatoken,
         marketFeeAddress: factoryOwner
       }
       const amountsInOutMaxFee: AmountsOutMaxFee = {
@@ -782,7 +774,7 @@ describe('Pool unit test', () => {
       expect(tx.events.LOG_EXIT[0].returnValues.tokenOut).to.equal(contracts.usdcAddress)
 
       // DTs were also unstaked in the same transaction (went to the staking contract)
-      expect(tx.events.LOG_EXIT[1].returnValues.tokenOut).to.equal(erc20Token)
+      expect(tx.events.LOG_EXIT[1].returnValues.tokenOut).to.equal(datatoken)
     })
 
     it('#getAmountInExactOut- should get the amount in for exact out', async () => {
@@ -790,7 +782,7 @@ describe('Pool unit test', () => {
 
       const result = await pool.getAmountInExactOut(
         poolAddress,
-        erc20Token,
+        datatoken,
         contracts.usdcAddress,
         exactUSDCOut,
         '0.1'
@@ -800,7 +792,7 @@ describe('Pool unit test', () => {
 
       const spotPrice = await pool.getSpotPrice(
         poolAddress,
-        erc20Token,
+        datatoken,
         contracts.usdcAddress,
         '0.1'
       )
@@ -813,7 +805,7 @@ describe('Pool unit test', () => {
 
       const result = await pool.getAmountOutExactIn(
         poolAddress,
-        erc20Token,
+        datatoken,
         contracts.usdcAddress,
         exactDTIn,
         '0.1'
@@ -825,7 +817,7 @@ describe('Pool unit test', () => {
       const spotPrice = await pool.getSpotPrice(
         poolAddress,
         contracts.usdcAddress,
-        erc20Token,
+        datatoken,
         '0.1'
       )
       // amount of USDC received will be slightly less than spotPrice
@@ -834,42 +826,34 @@ describe('Pool unit test', () => {
 
     it('#getSpotPrice- should get the spot price', async () => {
       assert(
-        (await pool.getSpotPrice(
-          poolAddress,
-          erc20Token,
-          contracts.usdcAddress,
-          '0.1'
-        )) != null
+        (await pool.getSpotPrice(poolAddress, datatoken, contracts.usdcAddress, '0.1')) !=
+          null
       )
       assert(
-        (await pool.getSpotPrice(
-          poolAddress,
-          contracts.usdcAddress,
-          erc20Token,
-          '0.1'
-        )) != null
+        (await pool.getSpotPrice(poolAddress, contracts.usdcAddress, datatoken, '0.1')) !=
+          null
       )
     })
 
     it('#getMarketFees- should get market fees for each token', async () => {
-      // we haven't performed any swap DT => USDC so there's no fee in erc20Token
+      // we haven't performed any swap DT => USDC so there's no fee in datatoken
       // but there's a fee in USDC
-      assert((await pool.getMarketFees(poolAddress, erc20Token)) === '0')
+      assert((await pool.getMarketFees(poolAddress, datatoken)) === '0')
       assert((await pool.getMarketFees(poolAddress, contracts.usdcAddress)) > '0')
     })
 
     it('#getCommunityFees- should get community fees for each token', async () => {
-      // we haven't performed any swap DT => USDC so there's no fee in erc20Token
+      // we haven't performed any swap DT => USDC so there's no fee in datatoken
       // but there's a fee in USDC
 
-      assert((await pool.getCommunityFees(poolAddress, erc20Token)) === '0')
+      assert((await pool.getCommunityFees(poolAddress, datatoken)) === '0')
       assert((await pool.getCommunityFees(poolAddress, contracts.usdcAddress)) > '0')
     })
 
     it('#collectMarketFee- should collect market fees for each token', async () => {
       const spotPriceBefore = await pool.getSpotPrice(
         poolAddress,
-        erc20Token,
+        datatoken,
         contracts.usdcAddress,
         '0.1'
       )
@@ -886,7 +870,7 @@ describe('Pool unit test', () => {
       assert(
         (await pool.getSpotPrice(
           poolAddress,
-          erc20Token,
+          datatoken,
           contracts.usdcAddress,
           '0.1'
         )) === spotPriceBefore
@@ -911,7 +895,7 @@ describe('Pool unit test', () => {
     it('#collectCommunityFee- should get community fees for each token', async () => {
       const spotPriceBefore = await pool.getSpotPrice(
         poolAddress,
-        erc20Token,
+        datatoken,
         contracts.usdcAddress,
         '0.1'
       )
@@ -941,7 +925,7 @@ describe('Pool unit test', () => {
       assert(
         (await pool.getSpotPrice(
           poolAddress,
-          erc20Token,
+          datatoken,
           contracts.usdcAddress,
           '0.1'
         )) === spotPriceBefore

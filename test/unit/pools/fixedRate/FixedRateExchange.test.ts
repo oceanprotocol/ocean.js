@@ -15,7 +15,7 @@ import {
   balance,
   unitsToAmount
 } from '../../../../src'
-import { FreCreationParams, Erc20CreateParams } from '../../../../src/@types'
+import { FreCreationParams, DatatokenCreateParams } from '../../../../src/@types'
 
 describe('Fixed Rate unit test', () => {
   let factoryOwner: string
@@ -37,7 +37,7 @@ describe('Fixed Rate unit test', () => {
     owner: null
   }
 
-  const ercParams: Erc20CreateParams = {
+  const ercParams: DatatokenCreateParams = {
     templateIndex: 1,
     minter: null,
     paymentCollector: null,
@@ -71,7 +71,7 @@ describe('Fixed Rate unit test', () => {
       // CREATE AN Exchange
       // we prepare transaction parameters objects
 
-      const nftFactory = new NftFactory(contracts.erc721FactoryAddress, web3)
+      const nftFactory = new NftFactory(contracts.nftFactoryAddress, web3)
 
       const freParams: FreCreationParams = {
         fixedRateAddress: contracts.fixedRateAddress,
@@ -86,7 +86,7 @@ describe('Fixed Rate unit test', () => {
         withMint: false
       }
 
-      const txReceipt = await nftFactory.createNftErc20WithFixedRate(
+      const txReceipt = await nftFactory.createNftWithDatatokenWithFixedRate(
         exchangeOwner,
         nftData,
         ercParams,
@@ -100,13 +100,7 @@ describe('Fixed Rate unit test', () => {
       // user1 has no dt1
       expect(await balance(web3, dtAddress, user1)).to.equal('0')
 
-      fixedRate = new FixedRateExchange(
-        web3,
-        contracts.fixedRateAddress,
-        8996,
-        null,
-        contracts.oceanAddress
-      )
+      fixedRate = new FixedRateExchange(contracts.fixedRateAddress, web3, 8996)
       assert(fixedRate != null)
     })
 
@@ -386,7 +380,7 @@ describe('Fixed Rate unit test', () => {
       // CREATE AN Exchange
       // we prepare transaction parameters objects
 
-      const nftFactory = new NftFactory(contracts.erc721FactoryAddress, web3)
+      const nftFactory = new NftFactory(contracts.nftFactoryAddress, web3)
 
       const freParams: FreCreationParams = {
         fixedRateAddress: contracts.fixedRateAddress,
@@ -401,7 +395,7 @@ describe('Fixed Rate unit test', () => {
         withMint: false
       }
 
-      const txReceipt = await nftFactory.createNftErc20WithFixedRate(
+      const txReceipt = await nftFactory.createNftWithDatatokenWithFixedRate(
         exchangeOwner,
         nftData,
         ercParams,
@@ -415,13 +409,7 @@ describe('Fixed Rate unit test', () => {
       // user1 has no dt1
       expect(await balance(web3, dtAddress, user1)).to.equal('0')
 
-      fixedRate = new FixedRateExchange(
-        web3,
-        contracts.fixedRateAddress,
-        8996,
-        null,
-        contracts.oceanAddress
-      )
+      fixedRate = new FixedRateExchange(contracts.fixedRateAddress, web3, 8996)
       assert(fixedRate != null)
     })
 

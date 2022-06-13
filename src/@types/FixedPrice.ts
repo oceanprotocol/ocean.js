@@ -25,3 +25,29 @@ export interface PriceAndFees {
   marketFeeAmount: string
   consumeMarketFeeAmount: string
 }
+
+export interface FixedPriceExchange {
+  active: boolean
+  exchangeOwner: string
+  datatoken: string
+  baseToken: string
+  fixedRate: string
+  dtDecimals: string
+  btDecimals: string
+  dtBalance: string
+  btBalance: string
+  dtSupply: string
+  btSupply: string
+  withMint: boolean
+  allowedSwapper: string
+  exchangeId?: string
+}
+
+export interface FeesInfo {
+  opcFee: string
+  marketFee: string
+  marketFeeCollector: string
+  marketFeeAvailable: string
+  oceanFeeAvailable: string
+  exchangeId: string
+}

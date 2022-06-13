@@ -15,7 +15,7 @@ import {
 import {
   ValidateMetadata,
   DDO,
-  Erc20CreateParams,
+  DatatokenCreateParams,
   PoolCreationParams,
   FreCreationParams,
   DispenserCreationParams
@@ -95,7 +95,7 @@ describe('Publish tests', async () => {
     )
   })
 
-  it('should publish a dataset with pool (create NFT + ERC20 + pool) and with Metdata proof', async () => {
+  it('should publish a dataset with pool (create NFT + Datatoken + pool) and with Metdata proof', async () => {
     const poolDdo: DDO = { ...genericAsset }
 
     const nftParams: NftCreateData = {
@@ -107,7 +107,7 @@ describe('Publish tests', async () => {
       owner: publisherAccount
     }
 
-    const erc20Params: Erc20CreateParams = {
+    const datatokenParams: DatatokenCreateParams = {
       templateIndex: 1,
       cap: '100000',
       feeAmount: '0',
@@ -133,10 +133,10 @@ describe('Publish tests', async () => {
       swapFeeMarketRunner: '0.001'
     }
 
-    const bundleNFT = await factory.createNftErc20WithPool(
+    const bundleNFT = await factory.createNftWithDatatokenWithPool(
       publisherAccount,
       nftParams,
-      erc20Params,
+      datatokenParams,
       poolParams
     )
 
@@ -179,7 +179,7 @@ describe('Publish tests', async () => {
     assert(resolvedDDO, 'Cannot fetch DDO from Aquarius')
   })
 
-  it('should publish a dataset with fixed price (create NFT + ERC20 + fixed price) with an explicit empty Metadata Proof', async () => {
+  it('should publish a dataset with fixed price (create NFT + Datoken + fixed price) with an explicit empty Metadata Proof', async () => {
     const fixedPriceDdo: DDO = { ...genericAsset }
 
     const nftParams: NftCreateData = {
@@ -191,7 +191,7 @@ describe('Publish tests', async () => {
       owner: publisherAccount
     }
 
-    const erc20Params: Erc20CreateParams = {
+    const datatokenParams: DatatokenCreateParams = {
       templateIndex: 1,
       cap: '100000',
       feeAmount: '0',
@@ -214,10 +214,10 @@ describe('Publish tests', async () => {
       withMint: false
     }
 
-    const bundleNFT = await factory.createNftErc20WithFixedRate(
+    const bundleNFT = await factory.createNftWithDatatokenWithFixedRate(
       publisherAccount,
       nftParams,
-      erc20Params,
+      datatokenParams,
       fixedPriceParams
     )
 
@@ -258,7 +258,7 @@ describe('Publish tests', async () => {
     assert(resolvedDDO, 'Cannot fetch DDO from Aquarius')
   })
 
-  it('should publish a dataset with dispenser (create NFT + ERC20 + dispenser) with no defined MetadataProof', async () => {
+  it('should publish a dataset with dispenser (create NFT + Datatoken + dispenser) with no defined MetadataProof', async () => {
     const dispenserDdo: DDO = { ...genericAsset }
 
     const nftParams: NftCreateData = {
@@ -270,7 +270,7 @@ describe('Publish tests', async () => {
       owner: publisherAccount
     }
 
-    const erc20Params: Erc20CreateParams = {
+    const datatokenParams: DatatokenCreateParams = {
       templateIndex: 1,
       cap: '100000',
       feeAmount: '0',
@@ -288,10 +288,10 @@ describe('Publish tests', async () => {
       allowedSwapper: ZERO_ADDRESS
     }
 
-    const bundleNFT = await factory.createNftErc20WithDispenser(
+    const bundleNFT = await factory.createNftWithDatatokenWithDispenser(
       publisherAccount,
       nftParams,
-      erc20Params,
+      datatokenParams,
       dispenserParams
     )
 

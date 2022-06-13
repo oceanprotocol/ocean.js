@@ -1,4 +1,4 @@
-import wordListDefault from '../data/words.json'
+import wordListDefault from './data/words.json'
 
 /**
  * Generate new datatoken name & symbol from a word list

@@ -13,7 +13,7 @@ import {
   downloadFile,
   ZERO_ADDRESS
 } from '../../src'
-import { ProviderFees, Erc20CreateParams, DDO } from '../../src/@types'
+import { ProviderFees, DatatokenCreateParams, DDO } from '../../src/@types'
 
 describe('Simple Publish & consume test', async () => {
   let config: Config
@@ -72,7 +72,7 @@ describe('Simple Publish & consume test', async () => {
     consumerAccount = accounts[1]
   })
 
-  it('should publish a dataset (create NFT + ERC20)', async () => {
+  it('should publish a dataset (create NFT + Datatoken)', async () => {
     const nft = new Nft(web3)
     const datatoken = new Datatoken(web3)
     const Factory = new NftFactory(addresses.ERC721Factory, web3)
@@ -86,7 +86,7 @@ describe('Simple Publish & consume test', async () => {
       owner: publisherAccount
     }
 
-    const erc20Params: Erc20CreateParams = {
+    const datatokenParams: DatatokenCreateParams = {
       templateIndex: 1,
       cap: '100000',
       feeAmount: '0',
@@ -96,8 +96,12 @@ describe('Simple Publish & consume test', async () => {
       mpFeeAddress: ZERO_ADDRESS
     }
 
-    const tx = await Factory.createNftWithErc20(publisherAccount, nftParams, erc20Params)
-    const erc721Address = tx.events.NFTCreated.returnValues[0]
+    const tx = await Factory.createNftWithDatatoken(
+      publisherAccount,
+      nftParams,
+      datatokenParams
+    )
+    const nftAddress = tx.events.NFTCreated.returnValues[0]
     const datatokenAddress = tx.events.TokenCreated.returnValues[0]
 
     // create the files encrypted string
@@ -105,16 +109,16 @@ describe('Simple Publish & consume test', async () => {
     ddo.services[0].files = await providerResponse
     ddo.services[0].datatokenAddress = datatokenAddress
     // update ddo and set the right did
-    ddo.nftAddress = erc721Address
+    ddo.nftAddress = nftAddress
     const chain = await web3.eth.getChainId()
     ddo.id =
-      'did:op:' + SHA256(web3.utils.toChecksumAddress(erc721Address) + chain.toString(10))
+      'did:op:' + SHA256(web3.utils.toChecksumAddress(nftAddress) + chain.toString(10))
 
     providerResponse = await ProviderInstance.encrypt(ddo, providerUrl)
     const encryptedResponse = await providerResponse
     const metadataHash = getHash(JSON.stringify(ddo))
     await nft.setMetadata(
-      erc721Address,
+      nftAddress,
       publisherAccount,
       0,
       providerUrl,
@@ -127,7 +131,7 @@ describe('Simple Publish & consume test', async () => {
     const resolvedDDO = await aquarius.waitForAqua(ddo.id)
     assert(resolvedDDO, 'Cannot fetch DDO from Aquarius')
 
-    // mint 1 ERC20 and send it to the consumer
+    // mint 1 Datatoken and send it to the consumer
     await datatoken.mint(datatokenAddress, publisherAccount, '1', consumerAccount)
 
     // initialize provider

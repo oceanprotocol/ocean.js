@@ -1,4 +1,4 @@
-import { DDO } from './DDO/DDO'
+import { DDO } from '.'
 
 export interface AssetNft {
   /**
@@ -65,7 +65,7 @@ export interface Purgatory {
 
 export interface AssetDatatoken {
   /**
-   * Contract address of the deployed ERC20 contract.
+   * Contract address of the deployed Datatoken contract.
    * @type {string}
    */
   address: string
@@ -105,7 +105,7 @@ export interface Asset extends DDO {
   nft: AssetNft
 
   /**
-   * Contains information about the ERC20 datatokens attached to asset services.
+   * Contains information about the ERC20 Datatokens attached to asset services.
    * @type {string}
    */
   datatokens: AssetDatatoken[]

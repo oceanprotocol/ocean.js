@@ -97,7 +97,7 @@ import {
   Dispenser,
   DispenserCreationParams,
   downloadFile,
-  Erc20CreateParams,
+  DatatokenCreateParams,
   FixedRateExchange,
   FreCreationParams,
   getHash,
@@ -252,7 +252,7 @@ For pool creation, the OCEAN token is used as the base token. The base token can
       owner: publisherAccount
     }
 
-    const erc20Params: Erc20CreateParams = {
+    const datatokenParams: DatatokenCreateParams = {
       templateIndex: 1,
       cap: '100000',
       feeAmount: '0',
@@ -294,7 +294,7 @@ Now we can make the contract call
     const tx = await factory.createNftErc20WithPool(
       publisherAccount,
       nftParams,
-      erc20Params,
+      datatokenParams,
       poolParams
     )
 
@@ -526,7 +526,7 @@ Now let's console log the Consumer balance after order to check everything is wo
       owner: publisherAccount
     }
 
-    const erc20Params: Erc20CreateParams = {
+    const datatokenParams: DatatokenCreateParams = {
       templateIndex: 1,
       cap: '100000',
       feeAmount: '0',
@@ -552,7 +552,7 @@ Now let's console log the Consumer balance after order to check everything is wo
     const tx = await factory.createNftErc20WithFixedRate(
       publisherAccount,
       nftParams,
-      erc20Params,
+      datatokenParams,
       freParams
     )
 
@@ -614,7 +614,7 @@ Now let's console log the DID to check everything is working
 
   ### 7.3 Marketplace displays fixed rate asset for sale
 ```Typescript
-    const fixedRate = new FixedRateExchange(web3, freAddress)
+    const fixedRate = new FixedRateExchange(freAddress, web3)
     const oceanAmount = await (
       await fixedRate.calcBaseInGivenOutDT(freId, '1')
     ).baseTokenAmount
@@ -655,7 +655,7 @@ Before we call the contract we have to call `approve` so that the contract can m
       DATATOKEN_AMOUNT
     )
 
-    const fixedRate = new FixedRateExchange(web3, freAddress)
+    const fixedRate = new FixedRateExchange(freAddress, web3)
 ```
 Now we can make the contract call
 ```Typescript
@@ -748,7 +748,7 @@ Lets check that the download URL was successfully received
       owner: publisherAccount
     }
 
-    const erc20Params: Erc20CreateParams = {
+    const datatokenParams: DatatokenCreateParams = {
       templateIndex: 1,
       cap: '100000',
       feeAmount: '0',
@@ -769,7 +769,7 @@ Lets check that the download URL was successfully received
     const tx = await factory.createNftErc20WithDispenser(
       publisherAccount,
       nftParams,
-      erc20Params,
+      datatokenParams,
       dispenserParams
     )
 
@@ -826,7 +826,7 @@ Now we need to encrypt file(s) using provider
   ### 8.3 Consumer gets a dispenser data asset, and downloads it
 ```Typescript
     const datatoken = new Datatoken(web3)
-    const dispenser = new Dispenser(web3, null, addresses.Dispenser)
+    const dispenser = new Dispenser(addresses.Dispenser, web3)
 
     let consumerDTBalance = await balance(
       web3,

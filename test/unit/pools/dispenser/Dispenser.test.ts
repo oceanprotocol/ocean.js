@@ -9,7 +9,7 @@ import {
   Dispenser,
   ZERO_ADDRESS
 } from '../../../../src/'
-import { Erc20CreateParams } from '../../../../src/@types'
+import { DatatokenCreateParams } from '../../../../src/@types'
 
 describe('Dispenser flow', () => {
   let factoryOwner: string
@@ -30,7 +30,7 @@ describe('Dispenser flow', () => {
     owner: null
   }
 
-  const ercParams: Erc20CreateParams = {
+  const ercParams: DatatokenCreateParams = {
     templateIndex: 1,
     minter: null,
     paymentCollector: null,
@@ -59,14 +59,14 @@ describe('Dispenser flow', () => {
   })
 
   it('should initialize Dispenser class', async () => {
-    DispenserClass = new Dispenser(web3, 8996, contracts.dispenserAddress)
+    DispenserClass = new Dispenser(contracts.dispenserAddress, web3, 8996)
     assert(DispenserClass !== null)
   })
 
   it('#createNftwithErc - should create an NFT and a Datatoken ', async () => {
-    nftFactory = new NftFactory(contracts.erc721FactoryAddress, web3)
+    nftFactory = new NftFactory(contracts.nftFactoryAddress, web3)
 
-    const txReceipt = await nftFactory.createNftWithErc20(
+    const txReceipt = await nftFactory.createNftWithDatatoken(
       factoryOwner,
       nftData,
       ercParams
