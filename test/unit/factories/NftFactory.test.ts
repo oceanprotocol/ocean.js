@@ -105,11 +105,7 @@ describe('Nft Factory test', () => {
 
   it('#createNftwithErc - should create an NFT and a Datatoken', async () => {
     // we prepare transaction parameters objects
-    const txReceipt = await nftFactory.createNftWithDatatoken(
-      nftOwner,
-      nftData,
-      dtParams
-    )
+    const txReceipt = await nftFactory.createNftWithDatatoken(nftOwner, nftData, dtParams)
 
     // events have been emitted
     expect(txReceipt.events.NFTCreated.event === 'NFTCreated')
