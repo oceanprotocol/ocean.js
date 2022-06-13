@@ -43,7 +43,7 @@ describe('Nft Factory test', () => {
     owner: factoryOwner
   }
 
-  const ercParams: DatatokenCreateParams = {
+  const dtParams: DatatokenCreateParams = {
     templateIndex: 1,
     minter: nftOwner,
     paymentCollector: user2,
@@ -63,9 +63,9 @@ describe('Nft Factory test', () => {
     user2 = accounts[3]
 
     nftData.owner = factoryOwner
-    ercParams.minter = nftOwner
-    ercParams.paymentCollector = user2
-    ercParams.mpFeeAddress = user1
+    dtParams.minter = nftOwner
+    dtParams.paymentCollector = user2
+    dtParams.mpFeeAddress = user1
   })
 
   it('should deploy contracts', async () => {
@@ -108,7 +108,7 @@ describe('Nft Factory test', () => {
     const txReceipt = await nftFactory.createNftWithDatatoken(
       nftOwner,
       nftData,
-      ercParams
+      dtParams
     )
 
     // events have been emitted
@@ -124,7 +124,7 @@ describe('Nft Factory test', () => {
     const currentNFTCount = await nftFactory.getCurrentNFTCount()
     const currentTokenCount = await nftFactory.getCurrentTokenCount()
 
-    await nftFactory.createNftWithDatatoken(nftOwner, nftData, ercParams)
+    await nftFactory.createNftWithDatatoken(nftOwner, nftData, dtParams)
 
     expect((await nftFactory.getCurrentNFTCount()) === currentNFTCount + 1)
     expect((await nftFactory.getCurrentTokenCount()) === currentTokenCount + 1)
@@ -167,7 +167,7 @@ describe('Nft Factory test', () => {
     const txReceipt = await nftFactory.createNftWithDatatokenWithPool(
       nftOwner,
       nftData,
-      ercParams,
+      dtParams,
       poolParams
     )
 
@@ -195,7 +195,7 @@ describe('Nft Factory test', () => {
     const txReceipt = await nftFactory.createNftWithDatatokenWithFixedRate(
       nftOwner,
       nftData,
-      ercParams,
+      dtParams,
       freParams
     )
 
@@ -221,7 +221,7 @@ describe('Nft Factory test', () => {
     const txReceipt = await nftFactory.createNftWithDatatokenWithDispenser(
       nftOwner,
       nftData,
-      ercParams,
+      dtParams,
       dispenserParams
     )
 

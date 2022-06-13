@@ -37,7 +37,7 @@ describe('Fixed Rate unit test', () => {
     owner: null
   }
 
-  const ercParams: DatatokenCreateParams = {
+  const dtParams: DatatokenCreateParams = {
     templateIndex: 1,
     minter: null,
     paymentCollector: null,
@@ -57,9 +57,9 @@ describe('Fixed Rate unit test', () => {
     exchangeOwner = accounts[0]
 
     nftData.owner = factoryOwner
-    ercParams.minter = factoryOwner
-    ercParams.paymentCollector = user2
-    ercParams.mpFeeAddress = factoryOwner
+    dtParams.minter = factoryOwner
+    dtParams.paymentCollector = user2
+    dtParams.mpFeeAddress = factoryOwner
   })
 
   it('should deploy contracts', async () => {
@@ -89,7 +89,7 @@ describe('Fixed Rate unit test', () => {
       const txReceipt = await nftFactory.createNftWithDatatokenWithFixedRate(
         exchangeOwner,
         nftData,
-        ercParams,
+        dtParams,
         freParams
       )
 
@@ -398,7 +398,7 @@ describe('Fixed Rate unit test', () => {
       const txReceipt = await nftFactory.createNftWithDatatokenWithFixedRate(
         exchangeOwner,
         nftData,
-        ercParams,
+        dtParams,
         freParams
       )
 

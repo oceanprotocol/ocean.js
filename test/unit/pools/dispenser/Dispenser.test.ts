@@ -30,7 +30,7 @@ describe('Dispenser flow', () => {
     owner: null
   }
 
-  const ercParams: DatatokenCreateParams = {
+  const dtParams: DatatokenCreateParams = {
     templateIndex: 1,
     minter: null,
     paymentCollector: null,
@@ -49,9 +49,9 @@ describe('Dispenser flow', () => {
     user2 = accounts[4]
 
     nftData.owner = factoryOwner
-    ercParams.minter = factoryOwner
-    ercParams.paymentCollector = user2
-    ercParams.mpFeeAddress = user1
+    dtParams.minter = factoryOwner
+    dtParams.paymentCollector = user2
+    dtParams.mpFeeAddress = user1
   })
 
   it('should deploy contracts', async () => {
@@ -69,7 +69,7 @@ describe('Dispenser flow', () => {
     const txReceipt = await nftFactory.createNftWithDatatoken(
       factoryOwner,
       nftData,
-      ercParams
+      dtParams
     )
 
     expect(txReceipt.events.NFTCreated.event === 'NFTCreated')
