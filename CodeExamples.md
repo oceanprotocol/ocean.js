@@ -278,7 +278,7 @@ For pool creation, the OCEAN token is used as the base token. The base token can
       swapFeeMarketRunner: '0.001'
     }
 ```
-Before we call the contract we have to call `approve` so that the contract can move our tokens. This is standard when using any ERC20 tokens
+Before we call the contract we have to call `approve` so that the contract can move our tokens. This is standard when using any ERC20 Datatokens
 ```Typescript
     await approve(
       web3,
@@ -291,7 +291,7 @@ Before we call the contract we have to call `approve` so that the contract can m
 ```
 Now we can make the contract call
 ```Typescript
-    const tx = await factory.createNftErc20WithPool(
+    const tx = await factory.createNftWithDatatokenWithPool(
       publisherAccount,
       nftParams,
       datatokenParams,
@@ -353,7 +353,7 @@ Now let's console log the result to check everything is working
     const pool = new Pool(web3)
 
 ```
-Before we call the contract we have to call `approve` so that the contract can move our tokens. This is standard when using any ERC20 tokens
+Before we call the contract we have to call `approve` so that the contract can move our tokens. This is standard when using any ERC20 Datatokens
 ```Typescript
     await approve(web3, stakerAccount, addresses.Ocean, poolAddress, '5', true)
 
@@ -402,7 +402,7 @@ Now let's console log POOL_NFT_SYMBOL and consumerDTBalance to check everything 
     console.log(`Consumer ${POOL_NFT_SYMBOL} balance before swap: ${consumerDTBalance}`)
 
 ```
-Before we call the contract we have to call `approve` so that the contract can move our tokens. This is standard when using any ERC20 tokens
+Before we call the contract we have to call `approve` so that the contract can move our tokens. This is standard when using any ERC20 Datatokens
 ```Typescript
     await approve(web3, consumerAccount, addresses.Ocean, poolAddress, '100')
 
@@ -549,7 +549,7 @@ Now let's console log the Consumer balance after order to check everything is wo
       withMint: false
     }
 
-    const tx = await factory.createNftErc20WithFixedRate(
+    const tx = await factory.createNftWithDatatokenWithFixedRate(
       publisherAccount,
       nftParams,
       datatokenParams,
@@ -644,7 +644,7 @@ Let's do a quick check of the consumer ETH balance before the swap
     console.log(`Consumer ${FRE_NFT_SYMBOL} balance before swap: ${consumerDTBalance}`)
 
 ```
-Before we call the contract we have to call `approve` so that the contract can move our tokens. This is standard when using any ERC20 tokens
+Before we call the contract we have to call `approve` so that the contract can move our tokens. This is standard when using any ERC20 Datatokens
 ```Typescript
     await approve(web3, consumerAccount, addresses.Ocean, freAddress, '100')
     await approve(
@@ -766,7 +766,7 @@ Lets check that the download URL was successfully received
       allowedSwapper: ZERO_ADDRESS
     }
 
-    const tx = await factory.createNftErc20WithDispenser(
+    const tx = await factory.createNftWithDatatokenWithDispenser(
       publisherAccount,
       nftParams,
       datatokenParams,
