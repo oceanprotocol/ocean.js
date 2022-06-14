@@ -388,7 +388,7 @@ export class FixedRateExchange extends SmartContractWithAddress {
     consumeMarketFee: string = '0'
   ): Promise<string> {
     const exchange = await this.getExchange(exchangeId)
-    const result = await this.contract.methods
+    const amount = await this.contract.methods
       .calcBaseOutGivenInDT(
         exchangeId,
         await this.amountToUnits(
@@ -400,7 +400,7 @@ export class FixedRateExchange extends SmartContractWithAddress {
       )
       .call()
 
-    return await this.unitsToAmount(exchange.baseToken, result[0], +exchange.btDecimals)
+    return await this.unitsToAmount(exchange.baseToken, amount[0], +exchange.btDecimals)
   }
 
   /**
@@ -696,13 +696,13 @@ export class FixedRateExchange extends SmartContractWithAddress {
    * @return {String}
    */
   async getOPCCollector(): Promise<string> {
-    let result = null
+    let address = null
     try {
-      result = await this.contract.methods.opcCollector().call()
+      address = await this.contract.methods.opcCollector().call()
     } catch (e) {
       LoggerInstance.error(`ERROR: Failed to get OPC Collector address: ${e.message}`)
     }
-    return result
+    return address
   }
 
   /**
@@ -710,13 +710,13 @@ export class FixedRateExchange extends SmartContractWithAddress {
    * @return {String}
    */
   public async getRouter(): Promise<string> {
-    let result = null
+    let address = null
     try {
-      result = await this.contract.methods.router().call()
+      address = await this.contract.methods.router().call()
     } catch (e) {
       LoggerInstance.error(`ERROR: Failed to get Router address: ${e.message}`)
     }
-    return result
+    return address
   }
 
   /**
@@ -725,13 +725,13 @@ export class FixedRateExchange extends SmartContractWithAddress {
    * @return {String} return exchange owner
    */
   async getExchangeOwner(exchangeId: string): Promise<string> {
-    let result = null
+    let address = null
     try {
-      result = await (await this.getExchange(exchangeId)).exchangeOwner
+      address = await (await this.getExchange(exchangeId)).exchangeOwner
     } catch (e) {
       LoggerInstance.error(`ERROR: Failed to get OPF Collector address: ${e.message}`)
     }
-    return result
+    return address
   }
 
   /**
