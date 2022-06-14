@@ -404,7 +404,6 @@ export class Nft extends SmartContract {
    * @param {String} address NFT Owner adress
    * @return {Promise<TransactionReceipt>} trxReceipt
    */
-
   public async cleanPermissions<G extends boolean = false>(
     nftAddress: string,
     address: string,
