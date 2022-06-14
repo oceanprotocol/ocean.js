@@ -18,7 +18,8 @@ import {
   ComputeAsset,
   ComputeAlgorithm,
   ProviderComputeInitialize,
-  ConsumeMarketFee
+  ConsumeMarketFee,
+  Files
 } from '../../src/@types'
 
 let config: Config
@@ -42,7 +43,7 @@ let resolvedDdoWithNoTimeout
 let resolvedAlgoDdoWith1mTimeout
 let resolvedAlgoDdoWithNoTimeout
 
-const assetUrl = {
+const assetUrl: Files = {
   datatokenAddress: '0x0',
   nftAddress: '0x0',
   files: [
@@ -126,7 +127,7 @@ const ddoWith1mTimeout = {
     }
   ]
 }
-const algoAssetUrl = {
+const algoAssetUrl: Files = {
   datatokenAddress: '0x0',
   nftAddress: '0x0',
   files: [

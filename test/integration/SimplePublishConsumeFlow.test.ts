@@ -13,7 +13,7 @@ import {
   downloadFile,
   ZERO_ADDRESS
 } from '../../src'
-import { ProviderFees, Erc20CreateParams, DDO } from '../../src/@types'
+import { ProviderFees, Erc20CreateParams, DDO, Files } from '../../src/@types'
 
 describe('Simple Publish & consume test', async () => {
   let config: Config
@@ -23,7 +23,7 @@ describe('Simple Publish & consume test', async () => {
   let publisherAccount: string
   let consumerAccount: string
 
-  const assetUrl = {
+  const assetUrl: Files = {
     datatokenAddress: '0x0',
     nftAddress: '0x0',
     files: [

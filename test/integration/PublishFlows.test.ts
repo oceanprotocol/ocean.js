@@ -18,7 +18,8 @@ import {
   Erc20CreateParams,
   PoolCreationParams,
   FreCreationParams,
-  DispenserCreationParams
+  DispenserCreationParams,
+  Files
 } from '../../src/@types'
 
 describe('Publish tests', async () => {
@@ -30,7 +31,7 @@ describe('Publish tests', async () => {
   let factory: NftFactory
   let publisherAccount: string
 
-  const assetUrl = {
+  const assetUrl: Files = {
     datatokenAddress: '0x0',
     nftAddress: '0x0',
     files: [
