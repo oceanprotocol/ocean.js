@@ -81,7 +81,7 @@ describe('Dispenser flow', () => {
   it('Make user2 minter', async () => {
     datatoken = new Datatoken(web3, 8996)
     await datatoken.addMinter(dtAddress, factoryOwner, user2)
-    assert((await datatoken.getDTPermissions(dtAddress, user2)).minter === true)
+    assert((await datatoken.getPermissions(dtAddress, user2)).minter === true)
   })
 
   it('Create dispenser', async () => {

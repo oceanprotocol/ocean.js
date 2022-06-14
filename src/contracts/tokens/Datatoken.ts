@@ -222,7 +222,7 @@ export class Datatoken extends SmartContract {
   ): Promise<G extends false ? TransactionReceipt : number> {
     const dtContract = this.getContract(dtAddress)
 
-    if ((await this.getDTPermissions(dtAddress, address)).minter !== true) {
+    if ((await this.getPermissions(dtAddress, address)).minter !== true) {
       throw new Error(`Caller is not Minter`)
     }
 
@@ -417,7 +417,7 @@ export class Datatoken extends SmartContract {
     estimateGas?: G
   ): Promise<G extends false ? TransactionReceipt : number> {
     const dtContract = this.getContract(dtAddress)
-    const isPaymentManager = (await this.getDTPermissions(dtAddress, address))
+    const isPaymentManager = (await this.getPermissions(dtAddress, address))
       .paymentManager
     const nftAddress = !isPaymentManager && (await this.getNFTAddress(dtAddress))
     const isNftOwner = nftAddress && (await this.nft.getNftOwner(nftAddress)) === address
@@ -753,7 +753,7 @@ export class Datatoken extends SmartContract {
    * @param {String} address user adress
    * @return {Promise<DatatokenRoles>}
    */
-  public async getDTPermissions(
+  public async getPermissions(
     dtAddress: string,
     address: string
   ): Promise<DatatokenRoles> {
