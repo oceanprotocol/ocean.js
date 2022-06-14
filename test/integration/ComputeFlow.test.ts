@@ -431,7 +431,7 @@ describe('Simple compute tests', async () => {
   })
 
   it('should start a computeJob using the free environment', async () => {
-    // we choose the first env
+    // we choose the free env
     const computeEnv = computeEnvs.find((ce) => ce.priceMin === 0)
     assert(computeEnv, 'Cannot find the free compute env')
 
@@ -490,7 +490,7 @@ describe('Simple compute tests', async () => {
   })
 
   it('should restart a computeJob without paying anything, because order is valid and providerFees are still valid', async () => {
-    // we choose the first env
+    // we choose the free env
     const computeEnv = computeEnvs.find((ce) => ce.priceMin === 0)
     assert(computeEnv, 'Cannot find the free compute env')
 
@@ -683,9 +683,10 @@ describe('Simple compute tests', async () => {
     computeValidUntil = Math.floor(mytime.getTime() / 1000)
   })
 
-  //  THIS TEST WILL FAIL if we uncomment the assert lines
+  //  THIS TEST WILL FAIL if we uncomment the assert lines, so this one is broken
+  // We should have a new set of providerFees, but our provider is saying that we can use the old one, although validUntil has changes
   it('should start a computeJob using the free environment, by paying only providerFee (reuseOrder)', async () => {
-    // we choose the first env
+    // we choose the free env
     const computeEnv = computeEnvs.find((ce) => ce.priceMin === 0)
     assert(computeEnv, 'Cannot find the free compute env')
 
@@ -771,7 +772,8 @@ describe('Simple compute tests', async () => {
     computeJobId = computeJobs[0].jobId
   })
 
-  //  THIS TEST WILL FAIL if we uncomment the assert lines
+  //  THIS TEST WILL FAIL if we uncomment the assert lines, so this one is broken
+  // We should have a new set of providerFees, but our provider is saying that we can use the old one, although validUntil has changes
   it('should start a computeJob using the paid environment, by paying only providerFee (reuseOrder)', async () => {
     // we choose the paid env
     const computeEnv = computeEnvs.find((ce) => ce.priceMin !== 0)
