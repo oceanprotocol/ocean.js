@@ -300,7 +300,7 @@ async function handleOrder(
     await datatoken.approveWei(
       order.providerFee.providerFeeToken,
       datatokenAddress,
-      String(order.providerFee.providerFeeAmount),
+      order.providerFee.providerFeeAmount,
       payerAccount
     )
   }
@@ -418,10 +418,10 @@ describe('Simple compute tests', async () => {
     assert(computeEnvs, 'No Compute environments found')
   })
 
-  it('should start a computeJob', async () => {
+  it('should start a computeJob using the free environment', async () => {
     // we choose the first env
-    const computeEnv = computeEnvs[0].id
-    const computeConsumerAddress = computeEnvs[0].consumerAddress
+    const computeEnv = computeEnvs.find((ce) => ce.priceMin === 0)
+    assert(computeEnv, 'Cannot find the free compute env')
     // let's have 10 minutesof compute access
     const mytime = new Date()
     mytime.setMinutes(mytime.getMinutes() + 19)
@@ -441,7 +441,7 @@ describe('Simple compute tests', async () => {
     providerInitializeComputeResults = await ProviderInstance.initializeCompute(
       assets,
       algo,
-      computeEnv,
+      computeEnv.id,
       computeValidUntil,
       providerUrl,
       consumerAccount
@@ -454,7 +454,7 @@ describe('Simple compute tests', async () => {
       providerInitializeComputeResults.algorithm,
       resolvedAlgoDdoWith1mTimeout.services[0].datatokenAddress,
       consumerAccount,
-      computeConsumerAddress,
+      computeEnv.consumerAddress,
       0
     )
     for (let i = 0; i < providerInitializeComputeResults.datasets.length; i++) {
@@ -462,7 +462,7 @@ describe('Simple compute tests', async () => {
         providerInitializeComputeResults.datasets[i],
         dtAddressArray[i],
         consumerAccount,
-        computeConsumerAddress,
+        computeEnv.consumerAddress,
         0
       )
     }
@@ -470,7 +470,67 @@ describe('Simple compute tests', async () => {
       providerUrl,
       web3,
       consumerAccount,
-      computeEnv,
+      computeEnv.id,
+      assets[0],
+      algo
+    )
+    assert(computeJobs, 'Cannot start compute job')
+    computeJobId = computeJobs[0].jobId
+  })
+
+  it('should start a computeJob on a paid environment', async () => {
+    // we choose the first env
+    const computeEnv = computeEnvs.find((ce) => ce.priceMin !== 0)
+    assert(computeEnv, 'Cannot find the paid compute env')
+    // let's have 10 minutesof compute access
+    const mytime = new Date()
+    mytime.setMinutes(mytime.getMinutes() + 19)
+    const computeValidUntil = Math.floor(mytime.getTime() / 1000)
+    const assets: ComputeAsset[] = [
+      {
+        documentId: resolvedDdoWith1mTimeout.id,
+        serviceId: resolvedDdoWith1mTimeout.services[0].id
+      }
+    ]
+    const dtAddressArray = [resolvedDdoWith1mTimeout.services[0].datatokenAddress]
+    const algo: ComputeAlgorithm = {
+      documentId: resolvedAlgoDdoWith1mTimeout.id,
+      serviceId: resolvedAlgoDdoWith1mTimeout.services[0].id
+    }
+
+    providerInitializeComputeResults = await ProviderInstance.initializeCompute(
+      assets,
+      algo,
+      computeEnv.id,
+      computeValidUntil,
+      providerUrl,
+      consumerAccount
+    )
+    assert(
+      !('error' in providerInitializeComputeResults.algorithm),
+      'Cannot order algorithm'
+    )
+    algo.transferTxId = await handleOrder(
+      providerInitializeComputeResults.algorithm,
+      resolvedAlgoDdoWith1mTimeout.services[0].datatokenAddress,
+      consumerAccount,
+      computeEnv.consumerAddress,
+      0
+    )
+    for (let i = 0; i < providerInitializeComputeResults.datasets.length; i++) {
+      assets[i].transferTxId = await handleOrder(
+        providerInitializeComputeResults.datasets[i],
+        dtAddressArray[i],
+        consumerAccount,
+        computeEnv.consumerAddress,
+        0
+      )
+    }
+    const computeJobs = await ProviderInstance.computeStart(
+      providerUrl,
+      web3,
+      consumerAccount,
+      computeEnv.id,
       assets[0],
       algo
     )
