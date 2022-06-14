@@ -1,7 +1,7 @@
-import Config from '../models/Config'
 // eslint-disable-next-line import/no-named-default
 import { default as DefaultContractsAddresses } from '@oceanprotocol/contracts/addresses/address.json'
-import LoggerInstance from './Logger'
+import { Config } from '.'
+import { LoggerInstance } from '../utils'
 
 const configHelperNetworksBase: Config = {
   chainId: null,
@@ -161,7 +161,7 @@ export class ConfigHelper {
           startBlock
         } = customAddresses[network]
         configAddresses = {
-          erc721FactoryAddress: ERC721Factory,
+          nftFactoryAddress: ERC721Factory,
           sideStakingAddress: Staking,
           opfCommunityFeeCollector: OPFCommunityFeeCollector,
           poolTemplateAddress: poolTemplate,
@@ -191,7 +191,7 @@ export class ConfigHelper {
           startBlock
         } = DefaultContractsAddresses[network]
         configAddresses = {
-          erc721FactoryAddress: ERC721Factory,
+          nftFactoryAddress: ERC721Factory,
           sideStakingAddress: Staking,
           opfCommunityFeeCollector: OPFCommunityFeeCollector,
           poolTemplateAddress: poolTemplate,

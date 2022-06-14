@@ -97,7 +97,7 @@ import {
   Dispenser,
   DispenserCreationParams,
   downloadFile,
-  Erc20CreateParams,
+  DatatokenCreateParams,
   FixedRateExchange,
   FreCreationParams,
   getHash,
@@ -252,7 +252,7 @@ describe('Marketplace flow tests', async () => {
       owner: publisherAccount
     }
 
-    const erc20Params: Erc20CreateParams = {
+    const datatokenParams: DatatokenCreateParams = {
       templateIndex: 1,
       cap: '100000',
       feeAmount: '0',
@@ -278,7 +278,7 @@ describe('Marketplace flow tests', async () => {
       swapFeeMarketRunner: '0.001'
     }
     /// ```
-    /// Before we call the contract we have to call `approve` so that the contract can move our tokens. This is standard when using any ERC20 tokens
+    /// Before we call the contract we have to call `approve` so that the contract can move our tokens. This is standard when using any ERC20 Datatokens
     /// ```Typescript
     await approve(
       web3,
@@ -291,10 +291,10 @@ describe('Marketplace flow tests', async () => {
     /// ```
     /// Now we can make the contract call
     /// ```Typescript
-    const tx = await factory.createNftErc20WithPool(
+    const tx = await factory.createNftWithDatatokenWithPool(
       publisherAccount,
       nftParams,
-      erc20Params,
+      datatokenParams,
       poolParams
     )
 
@@ -353,7 +353,7 @@ describe('Marketplace flow tests', async () => {
     const pool = new Pool(web3)
 
     /// ```
-    /// Before we call the contract we have to call `approve` so that the contract can move our tokens. This is standard when using any ERC20 tokens
+    /// Before we call the contract we have to call `approve` so that the contract can move our tokens. This is standard when using any ERC20 Datatokens
     /// ```Typescript
     await approve(web3, stakerAccount, addresses.Ocean, poolAddress, '5', true)
 
@@ -402,7 +402,7 @@ describe('Marketplace flow tests', async () => {
     console.log(`Consumer ${POOL_NFT_SYMBOL} balance before swap: ${consumerDTBalance}`)
 
     /// ```
-    /// Before we call the contract we have to call `approve` so that the contract can move our tokens. This is standard when using any ERC20 tokens
+    /// Before we call the contract we have to call `approve` so that the contract can move our tokens. This is standard when using any ERC20 Datatokens
     /// ```Typescript
     await approve(web3, consumerAccount, addresses.Ocean, poolAddress, '100')
 
@@ -526,7 +526,7 @@ describe('Marketplace flow tests', async () => {
       owner: publisherAccount
     }
 
-    const erc20Params: Erc20CreateParams = {
+    const datatokenParams: DatatokenCreateParams = {
       templateIndex: 1,
       cap: '100000',
       feeAmount: '0',
@@ -549,10 +549,10 @@ describe('Marketplace flow tests', async () => {
       withMint: false
     }
 
-    const tx = await factory.createNftErc20WithFixedRate(
+    const tx = await factory.createNftWithDatatokenWithFixedRate(
       publisherAccount,
       nftParams,
-      erc20Params,
+      datatokenParams,
       freParams
     )
 
@@ -614,9 +614,9 @@ describe('Marketplace flow tests', async () => {
 
   it('7.3 Marketplace displays fixed rate asset for sale', async () => {
     /// ```Typescript
-    const fixedRate = new FixedRateExchange(web3, freAddress)
+    const fixedRate = new FixedRateExchange(freAddress, web3)
     const oceanAmount = await (
-      await fixedRate.calcBaseInGivenOutDT(freId, '1')
+      await fixedRate.calcBaseInGivenDatatokensOut(freId, '1')
     ).baseTokenAmount
     /// ```
     /// Now that the market has fetched those values it can display the asset on the front end. In our case we will just console log the results:
@@ -644,7 +644,7 @@ describe('Marketplace flow tests', async () => {
     console.log(`Consumer ${FRE_NFT_SYMBOL} balance before swap: ${consumerDTBalance}`)
 
     /// ```
-    /// Before we call the contract we have to call `approve` so that the contract can move our tokens. This is standard when using any ERC20 tokens
+    /// Before we call the contract we have to call `approve` so that the contract can move our tokens. This is standard when using any ERC20 Datatokens
     /// ```Typescript
     await approve(web3, consumerAccount, addresses.Ocean, freAddress, '100')
     await approve(
@@ -655,11 +655,11 @@ describe('Marketplace flow tests', async () => {
       DATATOKEN_AMOUNT
     )
 
-    const fixedRate = new FixedRateExchange(web3, freAddress)
+    const fixedRate = new FixedRateExchange(freAddress, web3)
     /// ```
     /// Now we can make the contract call
     /// ```Typescript
-    await fixedRate.buyDT(consumerAccount, freId, '1', '2')
+    await fixedRate.buyDatatokens(consumerAccount, freId, '1', '2')
 
     consumerOCEANBalance = await balance(web3, addresses.Ocean, consumerAccount)
     console.log(`Consumer OCEAN balance after swap: ${consumerOCEANBalance}`)
@@ -748,7 +748,7 @@ describe('Marketplace flow tests', async () => {
       owner: publisherAccount
     }
 
-    const erc20Params: Erc20CreateParams = {
+    const datatokenParams: DatatokenCreateParams = {
       templateIndex: 1,
       cap: '100000',
       feeAmount: '0',
@@ -766,10 +766,10 @@ describe('Marketplace flow tests', async () => {
       allowedSwapper: ZERO_ADDRESS
     }
 
-    const tx = await factory.createNftErc20WithDispenser(
+    const tx = await factory.createNftWithDatatokenWithDispenser(
       publisherAccount,
       nftParams,
-      erc20Params,
+      datatokenParams,
       dispenserParams
     )
 
@@ -826,7 +826,7 @@ describe('Marketplace flow tests', async () => {
   it('8.3 Consumer gets a dispenser data asset, and downloads it', async () => {
     /// ```Typescript
     const datatoken = new Datatoken(web3)
-    const dispenser = new Dispenser(web3, null, addresses.Dispenser)
+    const dispenser = new Dispenser(addresses.Dispenser, web3)
 
     let consumerDTBalance = await balance(
       web3,

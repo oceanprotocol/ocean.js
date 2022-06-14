@@ -1,72 +1,50 @@
 import Decimal from 'decimal.js'
-import { Contract } from 'web3-eth-contract'
-import {
-  amountToUnits,
-  estimateGas,
-  getFairGasPrice,
-  unitsToAmount
-} from './ContractUtils'
-import { minAbi } from './minAbi'
-import LoggerInstance from './Logger'
 import { TransactionReceipt } from 'web3-core'
 import Web3 from 'web3'
-
-/**
- * Estimate gas cost for approval function
- * @param {String} account
- * @param {String} tokenAddress
- * @param {String} spender
- * @param {String} amount
- * @param {String} force
- * @param {Contract} contractInstance optional contract instance
- * @return {Promise<number>}
- */
-export async function estApprove(
-  web3: Web3,
-  account: string,
-  tokenAddress: string,
-  spender: string,
-  amount: string,
-  contractInstance?: Contract
-): Promise<number> {
-  const tokenContract = contractInstance || new web3.eth.Contract(minAbi, tokenAddress)
-
-  return estimateGas(account, tokenContract.methods.approve, spender, amount)
-}
+import {
+  amountToUnits,
+  calculateEstimatedGas,
+  getFairGasPrice,
+  unitsToAmount,
+  minAbi,
+  LoggerInstance
+} from '.'
 
 /**
  * Approve spender to spent amount tokens
  * @param {String} account
  * @param {String} tokenAddress
  * @param {String} spender
- * @param {String} amount amount of ERC20 tokens (always expressed as wei)
+ * @param {String} amount amount of ERC20 Datatokens (always expressed as wei)
  * @param {boolean} force  if true, will overwrite any previous allowence. Else, will check if allowence is enough and will not send a transaction if it's not needed
  * @param {number} tokenDecimals optional number of decimals of the token
  */
-export async function approve(
+export async function approve<G extends boolean = false>(
   web3: Web3,
   account: string,
   tokenAddress: string,
   spender: string,
   amount: string,
   force = false,
-  tokenDecimals?: number
-): Promise<TransactionReceipt | string> {
+  tokenDecimals?: number,
+  estimateGas?: G
+): Promise<G extends false ? TransactionReceipt : number> {
   const tokenContract = new web3.eth.Contract(minAbi, tokenAddress)
   if (!force) {
     const currentAllowence = await allowance(web3, tokenAddress, account, spender)
     if (new Decimal(currentAllowence).greaterThanOrEqualTo(new Decimal(amount))) {
-      return currentAllowence
+      return null
     }
   }
   let result = null
   const amountFormatted = await amountToUnits(web3, tokenAddress, amount, tokenDecimals)
-  const estGas = await estimateGas(
+  const estGas = await calculateEstimatedGas(
     account,
     tokenContract.methods.approve,
     spender,
     amountFormatted
   )
+  if (estimateGas) return estGas
 
   try {
     result = await tokenContract.methods.approve(spender, amountFormatted).send({
@@ -83,53 +61,32 @@ export async function approve(
 }
 
 /**
- * Estimate gas cost for transfer function
+ * Moves amount tokens from the caller’s account to recipient.
  * @param {String} account
  * @param {String} tokenAddress
  * @param {String} recipient
- * @param {String} amount
- * @param {String} force
- * @param {Contract} contractInstance optional contract instance
- * @return {Promise<number>}
+ * @param {String} amount amount of ERC20 Datatokens (not as wei)
+ * @param {String} force  if true, will overwrite any previous allowence. Else, will check if allowence is enough and will not send a transaction if it's not needed
  */
-export async function estTransfer(
+export async function transfer<G extends boolean = false>(
   web3: Web3,
   account: string,
   tokenAddress: string,
   recipient: string,
   amount: string,
-  contractInstance?: Contract
-): Promise<number> {
-  const tokenContract = contractInstance || new web3.eth.Contract(minAbi, tokenAddress)
-
-  return estimateGas(account, tokenContract.methods.transfer, recipient, amount)
-}
-
-/**
- * Moves amount tokens from the caller’s account to recipient.
- * @param {String} account
- * @param {String} tokenAddress
- * @param {String} recipient
- * @param {String} amount amount of ERC20 tokens (not as wei)
- * @param {String} force  if true, will overwrite any previous allowence. Else, will check if allowence is enough and will not send a transaction if it's not needed
- */
-export async function transfer(
-  web3: Web3,
-  account: string,
-  tokenAddress: string,
-  recipient: string,
-  amount: string
-): Promise<TransactionReceipt | string> {
+  estimateGas?: G
+): Promise<G extends false ? TransactionReceipt : number> {
   const tokenContract = new web3.eth.Contract(minAbi, tokenAddress)
 
   let result = null
   const amountFormatted = await amountToUnits(web3, tokenAddress, amount)
-  const estGas = await estimateGas(
+  const estGas = await calculateEstimatedGas(
     account,
     tokenContract.methods.transfer,
     recipient,
     amountFormatted
   )
+  if (estimateGas) return estGas
 
   try {
     result = await tokenContract.methods.transfer(recipient, amountFormatted).send({
@@ -144,7 +101,7 @@ export async function transfer(
 }
 
 /**
- * Get Allowance for any erc20
+ * Get Allowance for any Datatoken
  * @param {Web3} web3
  * @param {String } tokenAdress
  * @param {String} account
@@ -165,7 +122,7 @@ export async function allowance(
 }
 
 /**
- * Get balance for any erc20
+ * Get balance for any Datatoken
  * @param {Web3} web3
  * @param {String} tokenAdress
  * @param {String} owner
@@ -185,7 +142,7 @@ export async function balance(
 }
 
 /**
- * Get decimals for any erc20
+ * Get decimals for any Datatoken
  * @param {Web3} web3
  * @param {String} tokenAdress
  * @return {Promise<number>} Number of decimals of the token

@@ -16,7 +16,7 @@ import {
 import {
   ProviderFees,
   FreCreationParams,
-  Erc20CreateParams,
+  DatatokenCreateParams,
   PoolCreationParams
 } from '../../../src/@types'
 
@@ -43,7 +43,7 @@ describe('Nft Factory test', () => {
     owner: factoryOwner
   }
 
-  const ercParams: Erc20CreateParams = {
+  const dtParams: DatatokenCreateParams = {
     templateIndex: 1,
     minter: nftOwner,
     paymentCollector: user2,
@@ -63,9 +63,9 @@ describe('Nft Factory test', () => {
     user2 = accounts[3]
 
     nftData.owner = factoryOwner
-    ercParams.minter = nftOwner
-    ercParams.paymentCollector = user2
-    ercParams.mpFeeAddress = user1
+    dtParams.minter = nftOwner
+    dtParams.paymentCollector = user2
+    dtParams.mpFeeAddress = user1
   })
 
   it('should deploy contracts', async () => {
@@ -73,7 +73,7 @@ describe('Nft Factory test', () => {
   })
 
   it('should initiate NFTFactory instance', async () => {
-    nftFactory = new NftFactory(contracts.erc721FactoryAddress, web3)
+    nftFactory = new NftFactory(contracts.nftFactoryAddress, web3)
   })
 
   it('#getOwner - should return actual owner', async () => {
@@ -84,13 +84,13 @@ describe('Nft Factory test', () => {
   it('#getNFTTemplate - should return NFT template struct', async () => {
     const nftTemplate = await nftFactory.getNFTTemplate(1)
     assert(nftTemplate.isActive === true)
-    assert(nftTemplate.templateAddress === contracts.erc721TemplateAddress)
+    assert(nftTemplate.templateAddress === contracts.nftTemplateAddress)
   })
 
   it('#getTokenTemplate - should return Token template struct', async () => {
     const tokenTemplate = await nftFactory.getTokenTemplate(1)
     assert(tokenTemplate.isActive === true)
-    assert(tokenTemplate.templateAddress === contracts.erc20TemplateAddress)
+    assert(tokenTemplate.templateAddress === contracts.datatokenTemplateAddress)
   })
 
   it('#createNft - should create an NFT', async () => {
@@ -105,7 +105,7 @@ describe('Nft Factory test', () => {
 
   it('#createNftwithErc - should create an NFT and a Datatoken', async () => {
     // we prepare transaction parameters objects
-    const txReceipt = await nftFactory.createNftWithErc20(nftOwner, nftData, ercParams)
+    const txReceipt = await nftFactory.createNftWithDatatoken(nftOwner, nftData, dtParams)
 
     // events have been emitted
     expect(txReceipt.events.NFTCreated.event === 'NFTCreated')
@@ -120,7 +120,7 @@ describe('Nft Factory test', () => {
     const currentNFTCount = await nftFactory.getCurrentNFTCount()
     const currentTokenCount = await nftFactory.getCurrentTokenCount()
 
-    await nftFactory.createNftWithErc20(nftOwner, nftData, ercParams)
+    await nftFactory.createNftWithDatatoken(nftOwner, nftData, dtParams)
 
     expect((await nftFactory.getCurrentNFTCount()) === currentNFTCount + 1)
     expect((await nftFactory.getCurrentTokenCount()) === currentTokenCount + 1)
@@ -131,7 +131,7 @@ describe('Nft Factory test', () => {
     const poolParams: PoolCreationParams = {
       ssContract: contracts.sideStakingAddress,
       baseTokenAddress: contracts.daiAddress,
-      baseTokenSender: contracts.erc721FactoryAddress,
+      baseTokenSender: contracts.nftFactoryAddress,
       publisherAddress: nftOwner,
       marketFeeCollector: nftOwner,
       poolTemplateAddress: contracts.poolTemplateAddress,
@@ -156,14 +156,14 @@ describe('Nft Factory test', () => {
       web3,
       nftOwner,
       contracts.daiAddress,
-      contracts.erc721FactoryAddress,
+      contracts.nftFactoryAddress,
       poolParams.vestingAmount
     )
 
-    const txReceipt = await nftFactory.createNftErc20WithPool(
+    const txReceipt = await nftFactory.createNftWithDatatokenWithPool(
       nftOwner,
       nftData,
-      ercParams,
+      dtParams,
       poolParams
     )
 
@@ -188,10 +188,10 @@ describe('Nft Factory test', () => {
       withMint: false
     }
 
-    const txReceipt = await nftFactory.createNftErc20WithFixedRate(
+    const txReceipt = await nftFactory.createNftWithDatatokenWithFixedRate(
       nftOwner,
       nftData,
-      ercParams,
+      dtParams,
       freParams
     )
 
@@ -214,10 +214,10 @@ describe('Nft Factory test', () => {
       allowedSwapper: ZERO_ADDRESS
     }
 
-    const txReceipt = await nftFactory.createNftErc20WithDispenser(
+    const txReceipt = await nftFactory.createNftWithDatatokenWithDispenser(
       nftOwner,
       nftData,
-      ercParams,
+      dtParams,
       dispenserParams
     )
 
@@ -246,7 +246,7 @@ describe('Nft Factory test', () => {
 
     // user1 approves NFTFactory to move his DATA_TOKEN_AMOUNT
     await dtContract.methods
-      .approve(contracts.erc721FactoryAddress, DATA_TOKEN_AMOUNT)
+      .approve(contracts.nftFactoryAddress, DATA_TOKEN_AMOUNT)
       .send({ from: user1 })
 
     // we reuse another DT created in a previous test
@@ -257,7 +257,7 @@ describe('Nft Factory test', () => {
     await dtContract2.methods.mint(user1, DATA_TOKEN_AMOUNT).send({ from: nftOwner })
     // user1 approves NFTFactory to move his DATA_TOKEN_AMOUNT
     await dtContract2.methods
-      .approve(contracts.erc721FactoryAddress, DATA_TOKEN_AMOUNT)
+      .approve(contracts.nftFactoryAddress, DATA_TOKEN_AMOUNT)
       .send({ from: user1 })
 
     // we check user1 has enought DTs
@@ -325,17 +325,17 @@ describe('Nft Factory test', () => {
     assert((await nftFactory.checkNFT(nftAddress)) === nftAddress)
   })
 
-  it('#addNFTTemplate - should add a new erc721 token template', async () => {
+  it('#addNFTTemplate - should add a new NFT token template', async () => {
     const currentNFTTemplateCount = await nftFactory.getCurrentNFTTemplateCount()
 
-    await nftFactory.addNFTTemplate(factoryOwner, contracts.erc721TemplateAddress)
+    await nftFactory.addNFTTemplate(factoryOwner, contracts.nftTemplateAddress)
 
     expect(
       (await nftFactory.getCurrentNFTTemplateCount()) === currentNFTTemplateCount + 1
     )
   })
 
-  it('#disableNFTTemplate - should disable an erc721 token template', async () => {
+  it('#disableNFTTemplate - should disable an NFT token template', async () => {
     const currentNFTTemplateCount = await nftFactory.getCurrentNFTTemplateCount()
 
     let nftTemplate = await nftFactory.getNFTTemplate(currentNFTTemplateCount)
@@ -347,7 +347,7 @@ describe('Nft Factory test', () => {
     assert(nftTemplate.isActive === false)
   })
 
-  it('#reactivateNFTTemplate - should reactivate an erc721 previously disabled token template', async () => {
+  it('#reactivateNFTTemplate - should reactivate an NFT previously disabled token template', async () => {
     const currentNFTTemplateCount = await nftFactory.getCurrentNFTTemplateCount()
 
     let nftTemplate = await nftFactory.getNFTTemplate(currentNFTTemplateCount)
@@ -359,17 +359,17 @@ describe('Nft Factory test', () => {
     assert(nftTemplate.isActive === true)
   })
 
-  it('#addTokenTemplate - should add a new erc20 token template', async () => {
+  it('#addTokenTemplate - should add a new Datatokent template', async () => {
     const currentTokenTemplateCount = await nftFactory.getCurrentTokenTemplateCount()
 
-    await nftFactory.addTokenTemplate(factoryOwner, contracts.erc20TemplateAddress)
+    await nftFactory.addTokenTemplate(factoryOwner, contracts.datatokenTemplateAddress)
 
     expect(
       (await nftFactory.getCurrentTokenTemplateCount()) === currentTokenTemplateCount + 1
     )
   })
 
-  it('#disableTokenTemplate - should disable an erc20 token template', async () => {
+  it('#disableTokenTemplate - should disable an Datatoken template', async () => {
     const currentTokenTemplateCount = await nftFactory.getCurrentTokenTemplateCount()
 
     let tokenTemplate = await nftFactory.getTokenTemplate(currentTokenTemplateCount)
@@ -381,7 +381,7 @@ describe('Nft Factory test', () => {
     assert(tokenTemplate.isActive === false)
   })
 
-  it('#reactivateTokenTemplate - should reactivate an previously disabled erc20 token template', async () => {
+  it('#reactivateTokenTemplate - should reactivate an previously disabled Datatoken template', async () => {
     const currentTokenTemplateCount = await nftFactory.getCurrentTokenTemplateCount()
 
     let tokenTemplate = await nftFactory.getTokenTemplate(currentTokenTemplateCount)

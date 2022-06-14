@@ -1,5 +1,5 @@
-import { LogLevel } from '../utils/Logger'
 import { AbiItem } from 'web3-utils/types'
+import { LogLevel } from '../utils'
 
 export class Config {
   /**
@@ -42,13 +42,7 @@ export class Config {
    * Factory address
    * @type {string}
    */
-  public erc721FactoryAddress?: string
-
-  /**
-   * Factory ABI
-   * @type {string}
-   */
-  public erc721FFactoryABI?: AbiItem | AbiItem[]
+  public nftFactoryAddress?: string
 
   /**
    * datatokens ABI
@@ -195,5 +189,3 @@ export class Config {
    */
   gasFeeMultiplier: number
 }
-
-export default Config
