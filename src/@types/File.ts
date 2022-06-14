@@ -1,4 +1,4 @@
-export interface UrlFiles {
+export interface UrlFile {
   type: 'url'
 
   /**
@@ -23,5 +23,5 @@ export interface UrlFiles {
 export interface Files {
   nftAddress: string
   datatokenAddress: string
-  files: UrlFiles[]
+  files: UrlFile[]
 }
