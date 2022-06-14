@@ -156,7 +156,7 @@ We also define some constants that we will use:
   const ASSET_URL = {
     datatokenAddress: '0x0',
     nftAddress: '0x0',
-    files:[
+    files: [
       {
         type: 'url',
         url: 'https://raw.githubusercontent.com/oceanprotocol/testdatasets/main/shs_dataset_test.txt',
