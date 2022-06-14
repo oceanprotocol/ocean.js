@@ -14,12 +14,12 @@ export class Router extends SmartContractWithAddress {
   }
 
   /**
-   * BuyDTBatch
+   * buyDatatokenBatch
    * @param {String} address
    * @param {Operation} operations Operations objects array
    * @return {Promise<TransactionReceipt>} Transaction receipt
    */
-  public async buyDTBatch<G extends boolean = false>(
+  public async buyDatatokenBatch<G extends boolean = false>(
     address: string,
     operations: Operation[],
     estimateGas?: G

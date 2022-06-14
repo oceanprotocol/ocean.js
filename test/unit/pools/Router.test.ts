@@ -121,7 +121,7 @@ describe('Router unit test', () => {
     expect(await router.isPoolTemplate(contracts.fixedRateAddress)).to.equal(false)
   })
 
-  it('#buyDTBatch - should buy multiple DT in one call', async () => {
+  it('#buyDatatokenBatch - should buy multiple DT in one call', async () => {
     // APPROVE DAI
     const daiContract = new web3.eth.Contract(
       MockERC20.abi as AbiItem[],
@@ -210,7 +210,7 @@ describe('Router unit test', () => {
       marketFeeAddress: factoryOwner
     }
 
-    await router.buyDTBatch(user1, [operations1, operations2])
+    await router.buyDatatokenBatch(user1, [operations1, operations2])
 
     // user1 got his dts
     expect(+(await balance(web3, datatokenAddress, user1))).gt(0)
