@@ -169,7 +169,7 @@ export class Pool extends SmartContract {
    * @param {String} poolAddress
    * @return {String}
    */
-  async getBaseToken(poolAddress: string): Promise<string> {
+  async getBasetoken(poolAddress: string): Promise<string> {
     const pool = this.getContract(poolAddress)
     let result = null
     try {
@@ -599,7 +599,7 @@ export class Pool extends SmartContract {
 
     const maxPrice = amountsInOutMaxFee.maxPrice
       ? await this.amountToUnits(
-          await this.getBaseToken(poolAddress),
+          await this.getBasetoken(poolAddress),
           amountsInOutMaxFee.maxPrice
         )
       : MAX_UINT_256
@@ -686,7 +686,7 @@ export class Pool extends SmartContract {
 
     const maxPrice = amountsInOutMaxFee.maxPrice
       ? this.amountToUnits(
-          await this.getBaseToken(poolAddress),
+          await this.getBasetoken(poolAddress),
           amountsInOutMaxFee.maxPrice
         )
       : MAX_UINT_256
@@ -755,7 +755,7 @@ export class Pool extends SmartContract {
   ): Promise<G extends false ? TransactionReceipt : number> {
     const pool = this.getContract(poolAddress)
     let result = null
-    const tokenIn = await this.getBaseToken(poolAddress)
+    const tokenIn = await this.getBasetoken(poolAddress)
     const maxSwap = await this.getMaxAddLiquidity(poolAddress, tokenIn)
     if (new Decimal(tokenAmountIn).greaterThan(maxSwap)) {
       throw new Error(`tokenAmountOut is greater than ${maxSwap.toString()}`)
@@ -803,7 +803,7 @@ export class Pool extends SmartContract {
    * @param {number} poolDecimals optional number of decimals of the poool
    * @return {TransactionReceipt}
    */
-  async exitswapPoolAmountIn<G extends boolean = false>(
+  async exitSwapPoolAmountIn<G extends boolean = false>(
     account: string,
     poolAddress: string,
     poolAmountIn: string,
@@ -813,7 +813,7 @@ export class Pool extends SmartContract {
   ): Promise<G extends false ? TransactionReceipt : number> {
     const pool = this.getContract(poolAddress)
     let result = null
-    const tokenOut = await this.getBaseToken(poolAddress)
+    const tokenOut = await this.getBasetoken(poolAddress)
 
     const tokenAmountOut = await this.calcSingleOutGivenPoolIn(
       poolAddress,
@@ -827,7 +827,7 @@ export class Pool extends SmartContract {
     }
 
     const minTokenOutFormatted = await this.amountToUnits(
-      await this.getBaseToken(poolAddress),
+      await this.getBasetoken(poolAddress),
       minTokenAmountOut,
       poolDecimals
     )
