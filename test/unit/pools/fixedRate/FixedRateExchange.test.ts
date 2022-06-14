@@ -168,31 +168,31 @@ describe('Fixed Rate unit test', () => {
       expect(await fixedRate.getRate(exchangeId)).to.equal('1')
     })
 
-    it('#getDTSupply - should get the dt supply in the exchange', async () => {
+    it('#getDatatokenSupply - should get the dt supply in the exchange', async () => {
       // exchange owner hasn't approved any DT for sell
-      expect(await fixedRate.getDTSupply(exchangeId)).to.equal('0')
+      expect(await fixedRate.getDatatokenSupply(exchangeId)).to.equal('0')
     })
 
-    it('#getBTSupply - should get the bt supply in the exchange', async () => {
+    it('#getBasetokenSupply - should get the bt supply in the exchange', async () => {
       // no baseToken at the beginning
-      expect(await fixedRate.getBTSupply(exchangeId)).to.equal('0')
+      expect(await fixedRate.getBasetokenSupply(exchangeId)).to.equal('0')
     })
 
-    it('#calcBaseInGivenOutDT - should get bt amount in for a specific dt amount', async () => {
+    it('#calcBaseInGivenDatatokensOut - should get bt amount in for a specific dt amount', async () => {
       // 100.2 DAI for 100 DT (0.1% market fee and 0.1% ocean fee)
       expect(
         await (
-          await fixedRate.calcBaseInGivenOutDT(exchangeId, '100')
+          await fixedRate.calcBaseInGivenDatatokensOut(exchangeId, '100')
         ).baseTokenAmount
       ).to.equal('100.3')
     })
 
-    it('#getAmountBTOut - should get bt amount out for a specific dt amount', async () => {
+    it('#getAmountBasetokensOut - should get bt amount out for a specific dt amount', async () => {
       // 99.8 DAI for 100 DT (0.1% market fee and 0.1% ocean fee)
-      expect(await fixedRate.getAmountBTOut(exchangeId, '100')).to.equal('99.7')
+      expect(await fixedRate.getAmountBasetokensOut(exchangeId, '100')).to.equal('99.7')
     })
 
-    it('#buyDT - user1 should buy some dt', async () => {
+    it('#buyDatatokens - user1 should buy some dt', async () => {
       // total supply is ZERO right now so dt owner mints 1000 DT and approves the fixed rate contract
       await dtContract.methods
         .mint(exchangeOwner, web3.utils.toWei('1000'))
@@ -209,7 +209,7 @@ describe('Fixed Rate unit test', () => {
       )
 
       // user1 buys 10 DT
-      const tx = await fixedRate.buyDT(user1, exchangeId, '10', '11')
+      const tx = await fixedRate.buyDatatokens(user1, exchangeId, '10', '11')
       //  console.log(tx.events.Swapped.returnValues)
       assert(tx.events.Swapped != null)
       const args = tx.events.Swapped.returnValues
@@ -235,12 +235,12 @@ describe('Fixed Rate unit test', () => {
       expect((await fixedRate.getExchange(exchangeId)).dtBalance).to.equal('0')
     })
 
-    it('#sellDT - user1 should sell some dt', async () => {
+    it('#sellDatatokens - user1 should sell some dt', async () => {
       await approve(web3, user1, dtAddress, contracts.fixedRateAddress, '100')
       const daiBalanceBefore = new BigNumber(
         await balance(web3, contracts.daiAddress, user1)
       )
-      const tx = await fixedRate.sellDT(user1, exchangeId, '10', '9')
+      const tx = await fixedRate.sellDatatokens(user1, exchangeId, '10', '9')
       // console.log(tx.events.Swapped.returnValues)
       assert(tx.events.Swapped != null)
       const args = tx.events.Swapped.returnValues
@@ -263,7 +263,7 @@ describe('Fixed Rate unit test', () => {
       // no BTs in the contract (except for the fees, but not accounted here)
       expect((await fixedRate.getExchange(exchangeId)).btBalance).to.equal('0')
       // DT supply is back at 1000 (exchange Owner allowance + dt balance in the fixed rate)
-      expect(await fixedRate.getDTSupply(exchangeId)).to.equal('1000')
+      expect(await fixedRate.getDatatokenSupply(exchangeId)).to.equal('1000')
     })
 
     it('#getExchange - should return exchange details', async () => {
@@ -307,26 +307,30 @@ describe('Fixed Rate unit test', () => {
       expect(await fixedRate.getAllowedSwapper(exchangeId)).to.equal(ZERO_ADDRESS)
     })
 
-    it('#collectBT- should collect BT in the contract, if exchangeOwner', async () => {
+    it('#collectBasetokens- should collect BT in the contract, if exchangeOwner', async () => {
       // there are no bt in the contract
       expect((await fixedRate.getExchange(exchangeId)).btBalance).to.equal('0')
       // user1 buys 1 DT
-      await fixedRate.buyDT(user1, exchangeId, '1', '2')
+      await fixedRate.buyDatatokens(user1, exchangeId, '1', '2')
       // 1 DAI in the contract
       const fixedRateDetails = await fixedRate.getExchange(exchangeId)
       expect(fixedRateDetails.btBalance).to.equal('1')
       // owner collects BTs
-      await fixedRate.collectBT(exchangeOwner, exchangeId, fixedRateDetails.btBalance)
+      await fixedRate.collectBasetokens(
+        exchangeOwner,
+        exchangeId,
+        fixedRateDetails.btBalance
+      )
       // btBalance is zero
       expect((await fixedRate.getExchange(exchangeId)).btBalance).to.equal('0')
     })
 
-    it('#collectDT- should collect DT in the contract, if exchangeOwner', async () => {
+    it('#collectDatatokens- should collect DT in the contract, if exchangeOwner', async () => {
       const result = await fixedRate.getExchange(exchangeId)
       // 9 dts left
       expect(result.dtBalance).to.equal('9')
       // owner collects DTs
-      await fixedRate.collectDT(exchangeOwner, exchangeId, result.dtBalance)
+      await fixedRate.collectDatatokens(exchangeOwner, exchangeId, result.dtBalance)
       // no more dts in the contract
       const result2 = await fixedRate.getExchange(exchangeId)
       expect(result2.dtBalance).to.equal('0')
@@ -473,31 +477,31 @@ describe('Fixed Rate unit test', () => {
       expect(await fixedRate.getRate(exchangeId)).to.equal('1')
     })
 
-    it('#getDTSupply - should get the dt supply in the exchange', async () => {
+    it('#getDatatokenSupply - should get the dt supply in the exchange', async () => {
       // exchange owner hasn't approved any DT for sell
-      expect(await fixedRate.getDTSupply(exchangeId)).to.equal('0')
+      expect(await fixedRate.getDatatokenSupply(exchangeId)).to.equal('0')
     })
 
-    it('#getBTSupply - should get the bt supply in the exchange', async () => {
+    it('#getBasetokenSupply - should get the bt supply in the exchange', async () => {
       // no baseToken at the beginning
-      expect(await fixedRate.getBTSupply(exchangeId)).to.equal('0')
+      expect(await fixedRate.getBasetokenSupply(exchangeId)).to.equal('0')
     })
 
-    it('#calcBaseInGivenOutDT - should get bt amount in for a specific dt amount', async () => {
+    it('#calcBaseInGivenDatatokensOut - should get bt amount in for a specific dt amount', async () => {
       // 100.2 USDC for 100 DT (0.1% market fee and 0.1% ocean fee)
       expect(
         await (
-          await fixedRate.calcBaseInGivenOutDT(exchangeId, '100')
+          await fixedRate.calcBaseInGivenDatatokensOut(exchangeId, '100')
         ).baseTokenAmount
       ).to.equal('100.3')
     })
 
-    it('#getAmountBTOut - should get bt amount out for a specific dt amount', async () => {
+    it('#getAmountBasetokensOut - should get bt amount out for a specific dt amount', async () => {
       // 99.8 USDC for 100 DT (0.1% market fee and 0.1% ocean fee)
-      expect(await fixedRate.getAmountBTOut(exchangeId, '100')).to.equal('99.7')
+      expect(await fixedRate.getAmountBasetokensOut(exchangeId, '100')).to.equal('99.7')
     })
 
-    it('#buyDT - user1 should buy some dt', async () => {
+    it('#buyDatatokens - user1 should buy some dt', async () => {
       // total supply is ZERO right now so dt owner mints 1000 DT and approves the fixed rate contract
       await dtContract.methods
         .mint(exchangeOwner, web3.utils.toWei('1000'))
@@ -514,7 +518,7 @@ describe('Fixed Rate unit test', () => {
       )
 
       // user1 buys 10 DT
-      const tx = await fixedRate.buyDT(user1, exchangeId, '10', '11')
+      const tx = await fixedRate.buyDatatokens(user1, exchangeId, '10', '11')
       //  console.log(tx.events.Swapped.returnValues)
       assert(tx.events.Swapped != null)
       const args = tx.events.Swapped.returnValues
@@ -544,12 +548,12 @@ describe('Fixed Rate unit test', () => {
       expect((await fixedRate.getExchange(exchangeId)).dtBalance).to.equal('0')
     })
 
-    it('#sellDT - user1 should sell some dt', async () => {
+    it('#sellDatatokens - user1 should sell some dt', async () => {
       await approve(web3, user1, dtAddress, contracts.fixedRateAddress, '10')
       const usdcBalanceBefore = new BigNumber(
         await balance(web3, contracts.usdcAddress, user1)
       )
-      const tx = await fixedRate.sellDT(user1, exchangeId, '10', '9')
+      const tx = await fixedRate.sellDatatokens(user1, exchangeId, '10', '9')
       // console.log(tx.events.Swapped.returnValues)
       assert(tx.events.Swapped != null)
       const args = tx.events.Swapped.returnValues
@@ -576,7 +580,7 @@ describe('Fixed Rate unit test', () => {
       // no BTs in the contract (except for the fees, but not accounted here)
       expect((await fixedRate.getExchange(exchangeId)).btBalance).to.equal('0')
       // DT supply is back at 1000 (exchange Owner allowance + dt balance in the fixed rate)
-      expect(await fixedRate.getDTSupply(exchangeId)).to.equal('1000')
+      expect(await fixedRate.getDatatokenSupply(exchangeId)).to.equal('1000')
     })
 
     it('#getExchange - should return exchange details', async () => {
@@ -620,26 +624,30 @@ describe('Fixed Rate unit test', () => {
       expect(await fixedRate.getAllowedSwapper(exchangeId)).to.equal(ZERO_ADDRESS)
     })
 
-    it('#collectBT- should collect BT in the contract, if exchangeOwner', async () => {
+    it('#collectBasetokens- should collect BT in the contract, if exchangeOwner', async () => {
       // there are no bt in the contract
       expect((await fixedRate.getExchange(exchangeId)).btBalance).to.equal('0')
       // user1 buys 1 DT
-      await fixedRate.buyDT(user1, exchangeId, '1', '2')
+      await fixedRate.buyDatatokens(user1, exchangeId, '1', '2')
       // 1 DAI in the contract
       const exchangeDetails = await fixedRate.getExchange(exchangeId)
       expect(exchangeDetails.btBalance).to.equal('1')
       // owner collects BTs
-      await fixedRate.collectBT(exchangeOwner, exchangeId, exchangeDetails.btBalance)
+      await fixedRate.collectBasetokens(
+        exchangeOwner,
+        exchangeId,
+        exchangeDetails.btBalance
+      )
       // btBalance is zero
       expect((await fixedRate.getExchange(exchangeId)).btBalance).to.equal('0')
     })
 
-    it('#collectDT- should collect DT in the contract, if exchangeOwner', async () => {
+    it('#collectDatatokens- should collect DT in the contract, if exchangeOwner', async () => {
       const result = await fixedRate.getExchange(exchangeId)
       // 9 dts left
       expect(result.dtBalance).to.equal('9')
       // owner collects DTs
-      await fixedRate.collectDT(exchangeOwner, exchangeId, result.dtBalance)
+      await fixedRate.collectDatatokens(exchangeOwner, exchangeId, result.dtBalance)
       // no more dts in the contract
       const result2 = await fixedRate.getExchange(exchangeId)
       expect(result2.dtBalance).to.equal('0')

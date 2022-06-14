@@ -33,7 +33,7 @@ export class FixedRateExchange extends SmartContractWithAddress {
    * @param {String} consumeMarketFee consumeMarketFee in fraction
    * @return {Promise<TransactionReceipt>} transaction receipt
    */
-  public async buyDT<G extends boolean = false>(
+  public async buyDatatokens<G extends boolean = false>(
     address: string,
     exchangeId: string,
     datatokenAmount: string,
@@ -97,7 +97,7 @@ export class FixedRateExchange extends SmartContractWithAddress {
    * @param {String} consumeMarketFee consumeMarketFee in fraction
    * @return {Promise<TransactionReceipt>} transaction receipt
    */
-  public async sellDT<G extends boolean = false>(
+  public async sellDatatokens<G extends boolean = false>(
     address: string,
     exchangeId: string,
     datatokenAmount: string,
@@ -299,7 +299,7 @@ export class FixedRateExchange extends SmartContractWithAddress {
    * @param {String} exchangeId ExchangeId
    * @return {Promise<string>}  dt supply formatted
    */
-  public async getDTSupply(exchangeId: string): Promise<string> {
+  public async getDatatokenSupply(exchangeId: string): Promise<string> {
     const dtSupply = await this.contract.methods.getDTSupply(exchangeId).call()
     const exchange = await this.getExchange(exchangeId)
     return await this.unitsToAmount(exchange.datatoken, dtSupply, +exchange.dtDecimals)
@@ -310,7 +310,7 @@ export class FixedRateExchange extends SmartContractWithAddress {
    * @param {String} exchangeId ExchangeId
    * @return {Promise<string>} dt supply formatted
    */
-  public async getBTSupply(exchangeId: string): Promise<string> {
+  public async getBasetokenSupply(exchangeId: string): Promise<string> {
     const btSupply = await this.contract.methods.getBTSupply(exchangeId).call()
     const exchange = await this.getExchange(exchangeId)
     return await this.unitsToAmount(exchange.baseToken, btSupply, +exchange.btDecimals)
@@ -326,19 +326,19 @@ export class FixedRateExchange extends SmartContractWithAddress {
   }
 
   /**
-   * calcBaseInGivenOutDT - Calculates how many base tokens are needed to get specified amount of datatokens
+   * calcBaseInGivenDatatokensOut - Calculates how many base tokens are needed to get specified amount of datatokens
    * @param {String} exchangeId ExchangeId
    * @param {string} datatokenAmount Amount of datatokens user wants to buy
    * @param {String} consumeMarketFee consumeMarketFee in fraction
    * @return {Promise<PriceAndFees>} how many base tokens are needed and fees
    */
-  public async calcBaseInGivenOutDT(
+  public async calcBaseInGivenDatatokensOut(
     exchangeId: string,
     datatokenAmount: string,
     consumeMarketFee: string = '0'
   ): Promise<PriceAndFees> {
     const fixedRateExchange = await this.getExchange(exchangeId)
-    const result = await this.contract.methods
+    const outDT = await this.contract.methods
       .calcBaseInGivenOutDT(
         exchangeId,
         await this.amountToUnits(
@@ -353,22 +353,22 @@ export class FixedRateExchange extends SmartContractWithAddress {
     const priceAndFees = {
       baseTokenAmount: await this.unitsToAmount(
         fixedRateExchange.baseToken,
-        result.baseTokenAmount,
+        outDT.baseTokenAmount,
         +fixedRateExchange.btDecimals
       ),
       marketFeeAmount: await this.unitsToAmount(
         fixedRateExchange.baseToken,
-        result.marketFeeAmount,
+        outDT.marketFeeAmount,
         +fixedRateExchange.btDecimals
       ),
       oceanFeeAmount: await this.unitsToAmount(
         fixedRateExchange.baseToken,
-        result.oceanFeeAmount,
+        outDT.oceanFeeAmount,
         +fixedRateExchange.btDecimals
       ),
       consumeMarketFeeAmount: await this.unitsToAmount(
         fixedRateExchange.baseToken,
-        result.consumeMarketFeeAmount,
+        outDT.consumeMarketFeeAmount,
         +fixedRateExchange.btDecimals
       )
     } as PriceAndFees
@@ -382,7 +382,7 @@ export class FixedRateExchange extends SmartContractWithAddress {
    * @param {String} consumeMarketFee consumeMarketFee in fraction
    * @return {Promise<string>} Amount of baseTokens user will receive
    */
-  public async getAmountBTOut(
+  public async getAmountBasetokensOut(
     exchangeId: string,
     datatokenAmount: string,
     consumeMarketFee: string = '0'
@@ -409,34 +409,34 @@ export class FixedRateExchange extends SmartContractWithAddress {
    * @return {Promise<FixedPricedExchange>} Exchange details
    */
   public async getExchange(exchangeId: string): Promise<FixedPriceExchange> {
-    const result: FixedPriceExchange = await this.contract.methods
+    const exchange: FixedPriceExchange = await this.contract.methods
       .getExchange(exchangeId)
       .call()
-    result.dtDecimals = result.dtDecimals.toString()
-    result.btDecimals = result.btDecimals.toString()
-    result.dtBalance = await this.unitsToAmount(
-      result.datatoken,
-      result.dtBalance,
-      +result.dtDecimals
+    exchange.dtDecimals = exchange.dtDecimals.toString()
+    exchange.btDecimals = exchange.btDecimals.toString()
+    exchange.dtBalance = await this.unitsToAmount(
+      exchange.datatoken,
+      exchange.dtBalance,
+      +exchange.dtDecimals
     )
-    result.btBalance = await this.unitsToAmount(
-      result.baseToken,
-      result.btBalance,
-      +result.btDecimals
+    exchange.btBalance = await this.unitsToAmount(
+      exchange.baseToken,
+      exchange.btBalance,
+      +exchange.btDecimals
     )
-    result.dtSupply = await this.unitsToAmount(
-      result.datatoken,
-      result.dtSupply,
-      +result.dtDecimals
+    exchange.dtSupply = await this.unitsToAmount(
+      exchange.datatoken,
+      exchange.dtSupply,
+      +exchange.dtDecimals
     )
-    result.btSupply = await this.unitsToAmount(
-      result.baseToken,
-      result.btSupply,
-      +result.btDecimals
+    exchange.btSupply = await this.unitsToAmount(
+      exchange.baseToken,
+      exchange.btSupply,
+      +exchange.btDecimals
     )
-    result.fixedRate = this.web3.utils.fromWei(result.fixedRate)
-    result.exchangeId = exchangeId
-    return result
+    exchange.fixedRate = this.web3.utils.fromWei(exchange.fixedRate)
+    exchange.exchangeId = exchangeId
+    return exchange
   }
 
   /**
@@ -445,24 +445,24 @@ export class FixedRateExchange extends SmartContractWithAddress {
    * @return {Promise<FixedPricedExchange>} Exchange details
    */
   public async getFeesInfo(exchangeId: string): Promise<FeesInfo> {
-    const result: FeesInfo = await this.contract.methods.getFeesInfo(exchangeId).call()
-    result.opcFee = this.web3.utils.fromWei(result.opcFee.toString())
-    result.marketFee = this.web3.utils.fromWei(result.marketFee.toString())
+    const feesInfo: FeesInfo = await this.contract.methods.getFeesInfo(exchangeId).call()
+    feesInfo.opcFee = this.web3.utils.fromWei(feesInfo.opcFee.toString())
+    feesInfo.marketFee = this.web3.utils.fromWei(feesInfo.marketFee.toString())
 
     const exchange = await this.getExchange(exchangeId)
-    result.marketFeeAvailable = await this.unitsToAmount(
+    feesInfo.marketFeeAvailable = await this.unitsToAmount(
       exchange.baseToken,
-      result.marketFeeAvailable,
+      feesInfo.marketFeeAvailable,
       +exchange.btDecimals
     )
-    result.oceanFeeAvailable = await this.unitsToAmount(
+    feesInfo.oceanFeeAvailable = await this.unitsToAmount(
       exchange.baseToken,
-      result.oceanFeeAvailable,
+      feesInfo.oceanFeeAvailable,
       +exchange.btDecimals
     )
 
-    result.exchangeId = exchangeId
-    return result
+    feesInfo.exchangeId = exchangeId
+    return feesInfo
   }
 
   /**
@@ -480,8 +480,8 @@ export class FixedRateExchange extends SmartContractWithAddress {
    * @return {Promise<Boolean>} Result
    */
   public async isActive(exchangeId: string): Promise<boolean> {
-    const result = await this.contract.methods.isActive(exchangeId).call()
-    return result
+    const active = await this.contract.methods.isActive(exchangeId).call()
+    return active
   }
 
   /**
@@ -558,7 +558,7 @@ export class FixedRateExchange extends SmartContractWithAddress {
    * @param {String} amount amount to be collected
    * @return {Promise<TransactionReceipt>} transaction receipt
    */
-  public async collectBT<G extends boolean = false>(
+  public async collectBasetokens<G extends boolean = false>(
     address: string,
     exchangeId: string,
     amount: string,
@@ -599,7 +599,7 @@ export class FixedRateExchange extends SmartContractWithAddress {
    * @param {String} amount amount to be collected
    * @return {Promise<TransactionReceipt>} transaction receipt
    */
-  public async collectDT<G extends boolean = false>(
+  public async collectDatatokens<G extends boolean = false>(
     address: string,
     exchangeId: string,
     amount: string,
