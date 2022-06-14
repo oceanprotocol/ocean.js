@@ -1,7 +1,7 @@
 import Web3 from 'web3'
 import { LoggerInstance, getData } from '../utils'
 import {
-  FileMetadata,
+  FileInfo,
   ComputeJob,
   ComputeOutput,
   ComputeAlgorithm,
@@ -164,21 +164,21 @@ export class Provider {
    * @param {number} serviceId the id of the service for which to check the files
    * @param {string} providerUri uri of the provider that will be used to check the file
    * @param {AbortSignal} signal abort signal
-   * @return {Promise<FileMetadata[]>} urlDetails
+   * @return {Promise<FileInfo[]>} urlDetails
    */
   public async checkDidFiles(
     did: string,
     serviceId: number,
     providerUri: string,
     signal?: AbortSignal
-  ): Promise<FileMetadata[]> {
+  ): Promise<FileInfo[]> {
     const providerEndpoints = await this.getEndpoints(providerUri)
     const serviceEndpoints = await this.getServiceEndpoints(
       providerUri,
       providerEndpoints
     )
     const args = { did: did, serviceId: serviceId }
-    const files: FileMetadata[] = []
+    const files: FileInfo[] = []
     const path = this.getEndpointURL(serviceEndpoints, 'fileinfo')
       ? this.getEndpointURL(serviceEndpoints, 'fileinfo').urlPath
       : null
@@ -192,7 +192,7 @@ export class Provider {
         },
         signal: signal
       })
-      const results: FileMetadata[] = await response.json()
+      const results: FileInfo[] = await response.json()
       for (const result of results) {
         files.push(result)
       }
@@ -206,20 +206,20 @@ export class Provider {
    * @param {string} url or did
    * @param {string} providerUri uri of the provider that will be used to check the file
    * @param {AbortSignal} signal abort signal
-   * @return {Promise<FileMetadata[]>} urlDetails
+   * @return {Promise<FileInfo[]>} urlDetails
    */
   public async checkFileUrl(
     url: string,
     providerUri: string,
     signal?: AbortSignal
-  ): Promise<FileMetadata[]> {
+  ): Promise<FileInfo[]> {
     const providerEndpoints = await this.getEndpoints(providerUri)
     const serviceEndpoints = await this.getServiceEndpoints(
       providerUri,
       providerEndpoints
     )
     const args = { url: url, type: 'url' }
-    const files: FileMetadata[] = []
+    const files: FileInfo[] = []
     const path = this.getEndpointURL(serviceEndpoints, 'fileinfo')
       ? this.getEndpointURL(serviceEndpoints, 'fileinfo').urlPath
       : null
@@ -233,7 +233,7 @@ export class Provider {
         },
         signal: signal
       })
-      const results: FileMetadata[] = await response.json()
+      const results: FileInfo[] = await response.json()
       for (const result of results) {
         files.push(result)
       }

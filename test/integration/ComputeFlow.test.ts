@@ -18,7 +18,8 @@ import {
   ComputeAsset,
   ComputeAlgorithm,
   ProviderComputeInitialize,
-  ConsumeMarketFee
+  ConsumeMarketFee,
+  Files
 } from '../../src/@types'
 
 let config: Config
@@ -42,17 +43,21 @@ let resolvedDdoWithNoTimeout
 let resolvedAlgoDdoWith1mTimeout
 let resolvedAlgoDdoWithNoTimeout
 
-const assetUrl = [
-  {
-    type: 'url',
-    url: 'https://raw.githubusercontent.com/oceanprotocol/testdatasets/main/shs_dataset_test.txt',
-    method: 'GET'
-  }
-]
+const assetUrl: Files = {
+  datatokenAddress: '0x0',
+  nftAddress: '0x0',
+  files: [
+    {
+      type: 'url',
+      url: 'https://raw.githubusercontent.com/oceanprotocol/testdatasets/main/shs_dataset_test.txt',
+      method: 'GET'
+    }
+  ]
+}
 const ddoWithNoTimeout = {
   '@context': ['https://w3id.org/did/v1'],
   id: 'did:op:efba17455c127a885ec7830d687a8f6e64f5ba559f8506f8723c1f10f05c049c',
-  version: '4.0.0',
+  version: '4.1.0',
   chainId: 4,
   nftAddress: '0x0',
   metadata: {
@@ -89,7 +94,7 @@ const ddoWithNoTimeout = {
 const ddoWith1mTimeout = {
   '@context': ['https://w3id.org/did/v1'],
   id: 'did:op:efba17455c127a885ec7830d687a8f6e64f5ba559f8506f8723c1f10f05c049c',
-  version: '4.0.0',
+  version: '4.1.0',
   chainId: 4,
   nftAddress: '0x0',
   metadata: {
@@ -122,17 +127,21 @@ const ddoWith1mTimeout = {
     }
   ]
 }
-const algoAssetUrl = [
-  {
-    type: 'url',
-    url: 'https://raw.githubusercontent.com/oceanprotocol/test-algorithm/master/javascript/algo.js',
-    method: 'GET'
-  }
-]
+const algoAssetUrl: Files = {
+  datatokenAddress: '0x0',
+  nftAddress: '0x0',
+  files: [
+    {
+      type: 'url',
+      url: 'https://raw.githubusercontent.com/oceanprotocol/test-algorithm/master/javascript/algo.js',
+      method: 'GET'
+    }
+  ]
+}
 const algoDdoWithNoTimeout = {
   '@context': ['https://w3id.org/did/v1'],
   id: 'did:op:efba17455c127a885ec7830d687a8f6e64f5ba559f8506f8723c1f10f05c049c',
-  version: '4.0.0',
+  version: '4.1.0',
   chainId: 4,
   nftAddress: '0x0',
   metadata: {
@@ -173,7 +182,7 @@ const algoDdoWithNoTimeout = {
 const algoDdoWith1mTimeout = {
   '@context': ['https://w3id.org/did/v1'],
   id: 'did:op:efba17455c127a885ec7830d687a8f6e64f5ba559f8506f8723c1f10f05c049c',
-  version: '4.0.0',
+  version: '4.1.0',
   chainId: 4,
   nftAddress: '0x0',
   metadata: {
@@ -246,13 +255,15 @@ async function createAsset(
 
   const erc721AddressAsset = result.events.NFTCreated.returnValues[0]
   const datatokenAddressAsset = result.events.TokenCreated.returnValues[0]
+  ddo.nftAddress = web3.utils.toChecksumAddress(erc721AddressAsset)
   // create the files encrypted string
+  assetUrl.datatokenAddress = datatokenAddressAsset
+  assetUrl.nftAddress = ddo.nftAddress
   let providerResponse = await ProviderInstance.encrypt(assetUrl, providerUrl)
   ddo.services[0].files = await providerResponse
   ddo.services[0].datatokenAddress = datatokenAddressAsset
   ddo.services[0].serviceEndpoint = providerUrl
   // update ddo and set the right did
-  ddo.nftAddress = web3.utils.toChecksumAddress(erc721AddressAsset)
   ddo.id =
     'did:op:' +
     SHA256(web3.utils.toChecksumAddress(erc721AddressAsset) + chain.toString(10))
@@ -287,7 +298,7 @@ async function handleOrder(
      - no validOrder -> we need to call startOrder, to pay 1 DT & providerFees
   */
   if (order.providerFee && order.providerFee.providerFeeAmount) {
-    await datatoken.approve(
+    await datatoken.approveWei(
       order.providerFee.providerFeeToken,
       datatokenAddress,
       order.providerFee.providerFeeAmount,
@@ -408,10 +419,10 @@ describe('Simple compute tests', async () => {
     assert(computeEnvs, 'No Compute environments found')
   })
 
-  it('should start a computeJob', async () => {
+  it('should start a computeJob using the free environment', async () => {
     // we choose the first env
-    const computeEnv = computeEnvs[0].id
-    const computeConsumerAddress = computeEnvs[0].consumerAddress
+    const computeEnv = computeEnvs.find((ce) => ce.priceMin === 0)
+    assert(computeEnv, 'Cannot find the free compute env')
     // let's have 10 minutesof compute access
     const mytime = new Date()
     mytime.setMinutes(mytime.getMinutes() + 19)
@@ -431,7 +442,7 @@ describe('Simple compute tests', async () => {
     providerInitializeComputeResults = await ProviderInstance.initializeCompute(
       assets,
       algo,
-      computeEnv,
+      computeEnv.id,
       computeValidUntil,
       providerUrl,
       consumerAccount
@@ -444,7 +455,7 @@ describe('Simple compute tests', async () => {
       providerInitializeComputeResults.algorithm,
       resolvedAlgoDdoWith1mTimeout.services[0].datatokenAddress,
       consumerAccount,
-      computeConsumerAddress,
+      computeEnv.consumerAddress,
       0
     )
     for (let i = 0; i < providerInitializeComputeResults.datasets.length; i++) {
@@ -452,7 +463,7 @@ describe('Simple compute tests', async () => {
         providerInitializeComputeResults.datasets[i],
         dtAddressArray[i],
         consumerAccount,
-        computeConsumerAddress,
+        computeEnv.consumerAddress,
         0
       )
     }
@@ -460,7 +471,67 @@ describe('Simple compute tests', async () => {
       providerUrl,
       web3,
       consumerAccount,
-      computeEnv,
+      computeEnv.id,
+      assets[0],
+      algo
+    )
+    assert(computeJobs, 'Cannot start compute job')
+    computeJobId = computeJobs[0].jobId
+  })
+
+  it('should start a computeJob on a paid environment', async () => {
+    // we choose the first env
+    const computeEnv = computeEnvs.find((ce) => ce.priceMin !== 0)
+    assert(computeEnv, 'Cannot find the paid compute env')
+    // let's have 10 minutesof compute access
+    const mytime = new Date()
+    mytime.setMinutes(mytime.getMinutes() + 19)
+    const computeValidUntil = Math.floor(mytime.getTime() / 1000)
+    const assets: ComputeAsset[] = [
+      {
+        documentId: resolvedDdoWith1mTimeout.id,
+        serviceId: resolvedDdoWith1mTimeout.services[0].id
+      }
+    ]
+    const dtAddressArray = [resolvedDdoWith1mTimeout.services[0].datatokenAddress]
+    const algo: ComputeAlgorithm = {
+      documentId: resolvedAlgoDdoWith1mTimeout.id,
+      serviceId: resolvedAlgoDdoWith1mTimeout.services[0].id
+    }
+
+    providerInitializeComputeResults = await ProviderInstance.initializeCompute(
+      assets,
+      algo,
+      computeEnv.id,
+      computeValidUntil,
+      providerUrl,
+      consumerAccount
+    )
+    assert(
+      !('error' in providerInitializeComputeResults.algorithm),
+      'Cannot order algorithm'
+    )
+    algo.transferTxId = await handleOrder(
+      providerInitializeComputeResults.algorithm,
+      resolvedAlgoDdoWith1mTimeout.services[0].datatokenAddress,
+      consumerAccount,
+      computeEnv.consumerAddress,
+      0
+    )
+    for (let i = 0; i < providerInitializeComputeResults.datasets.length; i++) {
+      assets[i].transferTxId = await handleOrder(
+        providerInitializeComputeResults.datasets[i],
+        dtAddressArray[i],
+        consumerAccount,
+        computeEnv.consumerAddress,
+        0
+      )
+    }
+    const computeJobs = await ProviderInstance.computeStart(
+      providerUrl,
+      web3,
+      consumerAccount,
+      computeEnv.id,
       assets[0],
       algo
     )
