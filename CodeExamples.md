@@ -98,6 +98,7 @@ import {
   DispenserCreationParams,
   downloadFile,
   Erc20CreateParams,
+  Files,
   FixedRateExchange,
   FreCreationParams,
   getHash,
@@ -153,7 +154,7 @@ We also define some constants that we will use:
 
  We will need a file to publish, so here we define the file that we intend to publish.
 ```Typescript
-  const ASSET_URL = {
+  const ASSET_URL: Files = {
     datatokenAddress: '0x0',
     nftAddress: '0x0',
     files: [
