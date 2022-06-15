@@ -52,7 +52,6 @@ jobs:
         with:
           repository: 'oceanprotocol/barge'
           path: 'barge'
-          ref: v4
 
       - name: Run Ganache with Barge
         working-directory: ${{ github.workspace }}/barge
@@ -101,7 +100,6 @@ jobs:
         with:
           repository: 'oceanprotocol/barge'
           path: 'barge'
-          ref: v4
 
       - name: Login to Docker Hub
         if: ${{ env.DOCKERHUB_PASSWORD && env.DOCKERHUB_USERNAME }}
@@ -115,6 +113,7 @@ jobs:
         working-directory: ${{ github.workspace }}/barge
         run: |
           bash -x start_ocean.sh --with-provider2 --no-dashboard --with-c2d 2>&1 > start_ocean.log &
+
       - run: npm ci
       - run: npm run build:metadata
 
