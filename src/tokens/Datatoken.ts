@@ -144,36 +144,6 @@ export class Datatoken {
   }
 
   /**
-   * ApproveWei
-   * @param {String} dtAddress Datatoken address
-   * @param {String} spender Spender address
-   * @param {string} amount Number of datatokens, as number. Will NOT be converted to wei
-   * @param {String} address User adress
-   * @return {Promise<TransactionReceipt>} trxReceipt
-   */
-  public async approveWei(
-    dtAddress: string,
-    spender: string,
-    amount: string,
-    address: string
-  ): Promise<TransactionReceipt> {
-    const dtContract = setContractDefaults(
-      new this.web3.eth.Contract(this.datatokensAbi, dtAddress),
-      this.config
-    )
-
-    const estGas = await estimateGas(address, dtContract.methods.approve, spender, amount)
-
-    // Call mint contract method
-    const trxReceipt = await dtContract.methods.approve(spender, amount).send({
-      from: address,
-      gas: estGas + 1,
-      gasPrice: await getFairGasPrice(this.web3, this.config)
-    })
-    return trxReceipt
-  }
-
-  /**
    * Estimate gas cost for mint method
    * @param {String} dtAddress Datatoken address
    * @param {String} address Minter address

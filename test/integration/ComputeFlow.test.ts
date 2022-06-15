@@ -10,7 +10,8 @@ import {
   Datatoken,
   Nft,
   sleep,
-  ZERO_ADDRESS
+  ZERO_ADDRESS,
+  approveWei
 } from '../../src'
 import {
   Erc20CreateParams,
@@ -309,11 +310,12 @@ async function handleOrder(
      - no validOrder -> we need to call startOrder, to pay 1 DT & providerFees
   */
   if (order.providerFee && order.providerFee.providerFeeAmount) {
-    await datatoken.approveWei(
+    await approveWei(
+      web3,
+      payerAccount,
       order.providerFee.providerFeeToken,
       datatokenAddress,
-      order.providerFee.providerFeeAmount,
-      payerAccount
+      order.providerFee.providerFeeAmount
     )
   }
   if (order.validOrder) {
