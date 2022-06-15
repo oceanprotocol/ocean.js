@@ -683,8 +683,6 @@ describe('Simple compute tests', async () => {
     computeValidUntil = Math.floor(mytime.getTime() / 1000)
   })
 
-  //  THIS TEST WILL FAIL if we uncomment the assert lines, so this one is broken
-  // We should have a new set of providerFees, but our provider is saying that we can use the old one, although validUntil has changes
   it('should start a computeJob using the free environment, by paying only providerFee (reuseOrder)', async () => {
     // we choose the free env
     const computeEnv = computeEnvs.find((ce) => ce.priceMin === 0)
@@ -722,11 +720,11 @@ describe('Simple compute tests', async () => {
       'We should have a valid order for dataset'
     )
 
-    // assert(
-    //  providerInitializeComputeResults.algorithm.providerFee ||
-    //    providerInitializeComputeResults.datasets[0].providerFee,
-    //  'We should pay providerFees again for algorithm or dataset. Cannot have empty for both'
-    // )
+    assert(
+      providerInitializeComputeResults.algorithm.providerFee ||
+        providerInitializeComputeResults.datasets[0].providerFee,
+      'We should pay providerFees again for algorithm or dataset. Cannot have empty for both'
+    )
 
     assert(
       !('error' in providerInitializeComputeResults.algorithm),
@@ -748,16 +746,11 @@ describe('Simple compute tests', async () => {
         0
       )
     }
-    // console.log('freeEnvAlgoTxId:' + freeEnvAlgoTxId)
-    // console.log(providerInitializeComputeResults.algorithm)
-    // console.log('freeEnvDatasetTxId:' + freeEnvDatasetTxId)
-    // console.log(providerInitializeComputeResults.datasets[0])
-
-    // assert(
-    // algo.transferTxId !== freeEnvAlgoTxId ||
-    //   assets[0].transferTxId !== freeEnvDatasetTxId,
-    // 'We should not use the same orders, because providerFee must be paid'
-    // )
+    assert(
+      algo.transferTxId !== freeEnvAlgoTxId ||
+        assets[0].transferTxId !== freeEnvDatasetTxId,
+      'We should not use the same orders, because providerFee must be paid'
+    )
     const computeJobs = await ProviderInstance.computeStart(
       providerUrl,
       web3,
@@ -772,8 +765,6 @@ describe('Simple compute tests', async () => {
     computeJobId = computeJobs[0].jobId
   })
 
-  //  THIS TEST WILL FAIL if we uncomment the assert lines, so this one is broken
-  // We should have a new set of providerFees, but our provider is saying that we can use the old one, although validUntil has changes
   it('should start a computeJob using the paid environment, by paying only providerFee (reuseOrder)', async () => {
     // we choose the paid env
     const computeEnv = computeEnvs.find((ce) => ce.priceMin !== 0)
@@ -801,7 +792,6 @@ describe('Simple compute tests', async () => {
       providerUrl,
       consumerAccount
     )
-    // console.log(JSON.stringify(providerInitializeComputeResults))
     assert(
       providerInitializeComputeResults.algorithm.validOrder,
       'We should have a valid order for algorithm'
@@ -810,11 +800,11 @@ describe('Simple compute tests', async () => {
       providerInitializeComputeResults.datasets[0].validOrder,
       'We should have a valid order for dataset'
     )
-    // assert(
-    //  providerInitializeComputeResults.algorithm.providerFee ||
-    //    providerInitializeComputeResults.datasets[0].providerFee,
-    //  'We should pay providerFees again for algorithm or dataset. Cannot have empty for both'
-    // )
+    assert(
+      providerInitializeComputeResults.algorithm.providerFee ||
+        providerInitializeComputeResults.datasets[0].providerFee,
+      'We should pay providerFees again for algorithm or dataset. Cannot have empty for both'
+    )
 
     assert(
       !('error' in providerInitializeComputeResults.algorithm),
@@ -836,15 +826,15 @@ describe('Simple compute tests', async () => {
         0
       )
     }
-    // console.log('paidEnvAlgoTxId:' + paidEnvAlgoTxId)
-    // console.log(providerInitializeComputeResults.algorithm)
-    // console.log('paidEnvDatasetTxId:' + paidEnvDatasetTxId)
-    // console.log(providerInitializeComputeResults.datasets[0])
-    // assert(
-    // algo.transferTxId !== paidEnvAlgoTxId ||
-    //   assets[0].transferTxId !== paidEnvDatasetTxId,
-    // 'We should not use the same orders, because providerFee must be paid'
-    // )
+    console.log('paidEnvAlgoTxId:' + paidEnvAlgoTxId)
+    console.log(providerInitializeComputeResults.algorithm)
+    console.log('paidEnvDatasetTxId:' + paidEnvDatasetTxId)
+    console.log(providerInitializeComputeResults.datasets[0])
+    assert(
+      algo.transferTxId !== paidEnvAlgoTxId ||
+        assets[0].transferTxId !== paidEnvDatasetTxId,
+      'We should not use the same orders, because providerFee must be paid'
+    )
     const computeJobs = await ProviderInstance.computeStart(
       providerUrl,
       web3,
