@@ -11,13 +11,13 @@ export interface UrlFile {
    * File URL.
    * @type {string}
    */
-  url?: string
+  url: string
 
   /**
    * HTTP method used
    * @type {string}
    */
-  method?: string
+  method: string
 }
 
 export interface Files {
