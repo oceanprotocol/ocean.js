@@ -15,7 +15,7 @@ export class SideStaking extends SmartContract {
    * @param {String} datatokenAddress datatoken address
    * @return {String}
    */
-  async getDatatokenCirculatingSupply(
+  public async getDatatokenCirculatingSupply(
     ssAddress: string,
     datatokenAddress: string
   ): Promise<string> {
@@ -38,7 +38,7 @@ export class SideStaking extends SmartContract {
    * @param {String} datatokenAddress datatoken address
    * @return {String}
    */
-  async getDatatokenCurrentCirculatingSupply(
+  public async getDatatokenCurrentCirculatingSupply(
     ssAddress: string,
     datatokenAddress: string
   ): Promise<string> {
@@ -60,7 +60,7 @@ export class SideStaking extends SmartContract {
    * @param {String} datatokenAddress datatoken address
    * @return {String}
    */
-  async getPublisherAddress(
+  public async getPublisherAddress(
     ssAddress: string,
     datatokenAddress: string
   ): Promise<string> {
@@ -80,7 +80,10 @@ export class SideStaking extends SmartContract {
    * @param {String} datatokenAddress datatokenAddress
    * @return {String}
    */
-  async getBasetoken(ssAddress: string, datatokenAddress: string): Promise<string> {
+  public async getBasetoken(
+    ssAddress: string,
+    datatokenAddress: string
+  ): Promise<string> {
     const sideStaking = this.getContract(ssAddress)
     let address = null
     try {
@@ -97,7 +100,10 @@ export class SideStaking extends SmartContract {
    * @param {String} datatokenAddress datatokenAddress
    * @return {String}
    */
-  async getPoolAddress(ssAddress: string, datatokenAddress: string): Promise<string> {
+  public async getPoolAddress(
+    ssAddress: string,
+    datatokenAddress: string
+  ): Promise<string> {
     const sideStaking = this.getContract(ssAddress)
     let address = null
     try {
@@ -114,7 +120,7 @@ export class SideStaking extends SmartContract {
    * @param {String} datatokenAddress datatokenAddress
    * @return {String}
    */
-  async getBasetokenBalance(
+  public async getBasetokenBalance(
     ssAddress: string,
     datatokenAddress: string
   ): Promise<string> {
@@ -135,7 +141,7 @@ export class SideStaking extends SmartContract {
    * @param {number} tokenDecimals optional number of decimals of the token
    * @return {String}
    */
-  async getDatatokenBalance(
+  public async getDatatokenBalance(
     ssAddress: string,
     datatokenAddress: string,
     tokenDecimals?: number
@@ -157,7 +163,10 @@ export class SideStaking extends SmartContract {
    * @param {String} datatokenAddress datatokenAddress
    * @return {String} end block for vesting amount
    */
-  async getVestingEndBlock(ssAddress: string, datatokenAddress: string): Promise<string> {
+  public async getVestingEndBlock(
+    ssAddress: string,
+    datatokenAddress: string
+  ): Promise<string> {
     const sideStaking = this.getContract(ssAddress)
     let block = null
     try {
@@ -175,7 +184,7 @@ export class SideStaking extends SmartContract {
    * @param {number} tokenDecimals optional number of decimals of the token
    * @return {String}
    */
-  async getVestingAmount(
+  public async getVestingAmount(
     ssAddress: string,
     datatokenAddress: string,
     tokenDecimals?: number
@@ -197,7 +206,7 @@ export class SideStaking extends SmartContract {
    * @param {String} datatokenAddress datatokenAddress
    * @return {String}
    */
-  async getVestingLastBlock(
+  public async getVestingLastBlock(
     ssAddress: string,
     datatokenAddress: string
   ): Promise<string> {
@@ -218,7 +227,7 @@ export class SideStaking extends SmartContract {
    * @param {number} tokenDecimals optional number of decimals of the token
    * @return {String}
    */
-  async getVestingAmountSoFar(
+  public async getVestingAmountSoFar(
     ssAddress: string,
     datatokenAddress: string,
     tokenDecimals?: number
@@ -241,7 +250,7 @@ export class SideStaking extends SmartContract {
    * @param {String} datatokenAddress datatokenAddress
    * @return {TransactionReceipt}
    */
-  async getVesting<G extends boolean = false>(
+  public async getVesting<G extends boolean = false>(
     account: string,
     ssAddress: string,
     datatokenAddress: string,
@@ -276,7 +285,7 @@ export class SideStaking extends SmartContract {
    * @param {String} datatokenAddress datatokenAddress
    * @return {TransactionReceipt}
    */
-  private async setPoolSwapFee<G extends boolean = false>(
+  public async setPoolSwapFee<G extends boolean = false>(
     account: string,
     ssAddress: string,
     datatokenAddress: string,
