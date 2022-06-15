@@ -83,7 +83,6 @@ export async function approve(
   return result
 }
 
-
 /**
  * Approve spender to spent amount tokens
  * @param {String} account
