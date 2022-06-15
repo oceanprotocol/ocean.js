@@ -1624,10 +1624,10 @@ export class Pool {
    */
   public getSwapEventSignature(): string {
     const abi = this.poolAbi as AbiItem[]
-    const eventdata = abi.find(function (o) {
-      if (o.name === 'LOG_SWAP' && o.type === 'event') return o
-    })
-    const topic = this.web3.eth.abi.encodeEventSignature(eventdata as any)
+    const eventdata = abi.find(
+      ({ name, type }) => type === 'event' && name === 'LOG_SWAP'
+    )
+    const topic = this.web3.eth.abi.encodeEventSignature(eventdata)
     return topic
   }
 
@@ -1637,10 +1637,10 @@ export class Pool {
    */
   public getJoinEventSignature(): string {
     const abi = this.poolAbi as AbiItem[]
-    const eventdata = abi.find(function (o) {
-      if (o.name === 'LOG_JOIN' && o.type === 'event') return o
-    })
-    const topic = this.web3.eth.abi.encodeEventSignature(eventdata as any)
+    const eventdata = abi.find(
+      ({ name, type }) => type === 'event' && name === 'LOG_JOIN'
+    )
+    const topic = this.web3.eth.abi.encodeEventSignature(eventdata)
     return topic
   }
 
@@ -1650,10 +1650,10 @@ export class Pool {
    */
   public getExitEventSignature(): string {
     const abi = this.poolAbi as AbiItem[]
-    const eventdata = abi.find(function (o) {
-      if (o.name === 'LOG_EXIT' && o.type === 'event') return o
-    })
-    const topic = this.web3.eth.abi.encodeEventSignature(eventdata as any)
+    const eventdata = abi.find(
+      ({ name, type }) => type === 'event' && name === 'LOG_EXIT'
+    )
+    const topic = this.web3.eth.abi.encodeEventSignature(eventdata)
     return topic
   }
 }
