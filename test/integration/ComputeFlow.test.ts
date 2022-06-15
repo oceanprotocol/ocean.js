@@ -515,7 +515,6 @@ describe('Simple compute tests', async () => {
       providerUrl,
       consumerAccount
     )
-    console.log(JSON.stringify(providerInitializeComputeResults))
     assert(
       providerInitializeComputeResults.algorithm.validOrder,
       'We should have a valid order for algorithm'
@@ -578,7 +577,6 @@ describe('Simple compute tests', async () => {
       providerUrl,
       consumerAccount
     )
-    console.log(JSON.stringify(providerInitializeComputeResults))
     assert(
       !('error' in providerInitializeComputeResults.algorithm),
       'Cannot order algorithm'
@@ -710,7 +708,6 @@ describe('Simple compute tests', async () => {
       providerUrl,
       consumerAccount
     )
-    console.log(JSON.stringify(providerInitializeComputeResults))
     assert(
       providerInitializeComputeResults.algorithm.validOrder,
       'We should have a valid order for algorithm'
@@ -826,10 +823,6 @@ describe('Simple compute tests', async () => {
         0
       )
     }
-    console.log('paidEnvAlgoTxId:' + paidEnvAlgoTxId)
-    console.log(providerInitializeComputeResults.algorithm)
-    console.log('paidEnvDatasetTxId:' + paidEnvDatasetTxId)
-    console.log(providerInitializeComputeResults.datasets[0])
     assert(
       algo.transferTxId !== paidEnvAlgoTxId ||
         assets[0].transferTxId !== paidEnvDatasetTxId,
