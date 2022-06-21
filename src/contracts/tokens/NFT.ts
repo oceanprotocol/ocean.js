@@ -78,13 +78,7 @@ export class Nft extends SmartContract {
         gasPrice: await this.getFairGasPrice()
       })
 
-    let tokenAddress = null
-    try {
-      tokenAddress = trxReceipt.events.TokenCreated.returnValues[0]
-    } catch (e) {
-      LoggerInstance.error(`ERROR: Failed to create datatoken : ${e.message}`)
-    }
-    return tokenAddress
+    return trxReceipt.events.TokenCreated.returnValues[0]
   }
 
   /**
