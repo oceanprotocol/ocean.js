@@ -87,13 +87,7 @@ export class NftFactory extends SmartContractWithAddress {
         gasPrice: await this.getFairGasPrice()
       })
 
-    let tokenAddress = null
-    try {
-      tokenAddress = trxReceipt.events.NFTCreated.returnValues[0]
-    } catch (e) {
-      LoggerInstance.error(`ERROR: Failed to create datatoken : ${e.message}`)
-    }
-    return tokenAddress
+    return trxReceipt.events.NFTCreated.returnValues[0]
   }
 
   /** Get Current NFT Count (NFT created)
