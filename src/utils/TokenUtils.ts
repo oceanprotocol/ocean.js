@@ -36,7 +36,6 @@ export async function approve<G extends boolean = false>(
       return null
     }
   }
-  let result = null
   const amountFormatted = await amountToUnits(web3, tokenAddress, amount, tokenDecimals)
   const estGas = await calculateEstimatedGas(
     account,
@@ -46,18 +45,12 @@ export async function approve<G extends boolean = false>(
   )
   if (estimateGas) return estGas
 
-  try {
-    result = await tokenContract.methods.approve(spender, amountFormatted).send({
-      from: account,
-      gas: estGas + 1,
-      gasPrice: await getFairGasPrice(web3, null)
-    })
-  } catch (e) {
-    LoggerInstance.error(
-      `ERROR: Failed to approve spender to spend tokens : ${e.message}`
-    )
-  }
-  return result
+  const trxReceipt = await tokenContract.methods.approve(spender, amountFormatted).send({
+    from: account,
+    gas: estGas + 1,
+    gasPrice: await getFairGasPrice(web3, null)
+  })
+  return trxReceipt
 }
 
 /**
@@ -78,7 +71,6 @@ export async function transfer<G extends boolean = false>(
 ): Promise<G extends false ? TransactionReceipt : number> {
   const tokenContract = new web3.eth.Contract(minAbi, tokenAddress)
 
-  let result = null
   const amountFormatted = await amountToUnits(web3, tokenAddress, amount)
   const estGas = await calculateEstimatedGas(
     account,
@@ -88,16 +80,14 @@ export async function transfer<G extends boolean = false>(
   )
   if (estimateGas) return estGas
 
-  try {
-    result = await tokenContract.methods.transfer(recipient, amountFormatted).send({
+  const trxReceipt = await tokenContract.methods
+    .transfer(recipient, amountFormatted)
+    .send({
       from: account,
       gas: estGas + 1,
       gasPrice: await getFairGasPrice(web3, null)
     })
-  } catch (e) {
-    LoggerInstance.error(`ERROR: Failed to transfer tokens : ${e.message}`)
-  }
-  return result
+  return trxReceipt
 }
 
 /**
