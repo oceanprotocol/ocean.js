@@ -491,26 +491,22 @@ export class Datatoken extends SmartContract {
     estimateGas?: G
   ): Promise<G extends false ? TransactionReceipt : number> {
     const dtContract = this.getContract(dtAddress)
-    try {
-      const estGas = await calculateEstimatedGas(
-        address,
-        dtContract.methods.transfer,
-        toAddress,
-        amount
-      )
-      if (estimateGas) return estGas
 
-      // Call transfer function of the contract
-      const trxReceipt = await dtContract.methods.transfer(toAddress, amount).send({
-        from: address,
-        gas: estGas + 1,
-        gasPrice: await this.getFairGasPrice()
-      })
-      return trxReceipt
-    } catch (e) {
-      LoggerInstance.error(`ERROR: Failed to transfer tokens: ${e.message}`)
-      throw new Error(`Failed Failed to transfer tokens: ${e.message}`)
-    }
+    const estGas = await calculateEstimatedGas(
+      address,
+      dtContract.methods.transfer,
+      toAddress,
+      amount
+    )
+    if (estimateGas) return estGas
+
+    // Call transfer function of the contract
+    const trxReceipt = await dtContract.methods.transfer(toAddress, amount).send({
+      from: address,
+      gas: estGas + 1,
+      gasPrice: await this.getFairGasPrice()
+    })
+    return trxReceipt
   }
 
   /** Start Order: called by payer or consumer prior ordering a service consume on a marketplace.
@@ -539,29 +535,25 @@ export class Datatoken extends SmartContract {
         consumeMarketFeeAmount: '0'
       }
     }
-    try {
-      const estGas = await calculateEstimatedGas(
-        address,
-        dtContract.methods.startOrder,
-        consumer,
-        serviceIndex,
-        providerFees,
-        consumeMarketFee
-      )
-      if (estimateGas) return estGas
 
-      const trxReceipt = await dtContract.methods
-        .startOrder(consumer, serviceIndex, providerFees, consumeMarketFee)
-        .send({
-          from: address,
-          gas: estGas + 1,
-          gasPrice: await this.getFairGasPrice()
-        })
-      return trxReceipt
-    } catch (e) {
-      LoggerInstance.error(`ERROR: Failed to start order : ${e.message}`)
-      throw new Error(`Failed to start order: ${e.message}`)
-    }
+    const estGas = await calculateEstimatedGas(
+      address,
+      dtContract.methods.startOrder,
+      consumer,
+      serviceIndex,
+      providerFees,
+      consumeMarketFee
+    )
+    if (estimateGas) return estGas
+
+    const trxReceipt = await dtContract.methods
+      .startOrder(consumer, serviceIndex, providerFees, consumeMarketFee)
+      .send({
+        from: address,
+        gas: estGas + 1,
+        gasPrice: await this.getFairGasPrice()
+      })
+    return trxReceipt
   }
 
   /** Reuse Order: called by payer or consumer having a valid order, but with expired provider access.
@@ -581,27 +573,21 @@ export class Datatoken extends SmartContract {
     estimateGas?: G
   ): Promise<G extends false ? TransactionReceipt : number> {
     const dtContract = this.getContract(dtAddress)
-    try {
-      const estGas = await calculateEstimatedGas(
-        address,
-        dtContract.methods.reuseOrder,
-        orderTxId,
-        providerFees
-      )
-      if (estimateGas) return estGas
 
-      const trxReceipt = await dtContract.methods
-        .reuseOrder(orderTxId, providerFees)
-        .send({
-          from: address,
-          gas: estGas + 1,
-          gasPrice: await this.getFairGasPrice()
-        })
-      return trxReceipt
-    } catch (e) {
-      LoggerInstance.error(`ERROR: Failed to call reuse order order : ${e.message}`)
-      throw new Error(`Failed to start order: ${e.message}`)
-    }
+    const estGas = await calculateEstimatedGas(
+      address,
+      dtContract.methods.reuseOrder,
+      orderTxId,
+      providerFees
+    )
+    if (estimateGas) return estGas
+
+    const trxReceipt = await dtContract.methods.reuseOrder(orderTxId, providerFees).send({
+      from: address,
+      gas: estGas + 1,
+      gasPrice: await this.getFairGasPrice()
+    })
+    return trxReceipt
   }
 
   /** Buys 1 DT from the FRE and then startsOrder, while burning that DT
@@ -619,29 +605,25 @@ export class Datatoken extends SmartContract {
     estimateGas?: G
   ): Promise<G extends false ? TransactionReceipt : number> {
     const dtContract = this.getContract(dtAddress, null, this.abiEnterprise)
-    try {
-      const freContractParams = this.getFreOrderParams(freParams)
 
-      const estGas = await calculateEstimatedGas(
-        address,
-        dtContract.methods.buyFromFreAndOrder,
-        orderParams,
-        freContractParams
-      )
-      if (estimateGas) return estGas
+    const freContractParams = this.getFreOrderParams(freParams)
 
-      const trxReceipt = await dtContract.methods
-        .buyFromFreAndOrder(orderParams, freContractParams)
-        .send({
-          from: address,
-          gas: estGas + 1,
-          gasPrice: await this.getFairGasPrice()
-        })
-      return trxReceipt
-    } catch (e) {
-      LoggerInstance.error(`ERROR: Failed to buy DT From Fre And Order : ${e.message}`)
-      throw new Error(`Failed to buy DT From Fre And Order: ${e.message}`)
-    }
+    const estGas = await calculateEstimatedGas(
+      address,
+      dtContract.methods.buyFromFreAndOrder,
+      orderParams,
+      freContractParams
+    )
+    if (estimateGas) return estGas
+
+    const trxReceipt = await dtContract.methods
+      .buyFromFreAndOrder(orderParams, freContractParams)
+      .send({
+        from: address,
+        gas: estGas + 1,
+        gasPrice: await this.getFairGasPrice()
+      })
+    return trxReceipt
   }
 
   /** Gets DT from dispenser and then startsOrder, while burning that DT
@@ -659,27 +641,23 @@ export class Datatoken extends SmartContract {
     estimateGas?: G
   ): Promise<G extends false ? TransactionReceipt : number> {
     const dtContract = this.getContract(dtAddress, null, this.abiEnterprise)
-    try {
-      const estGas = await calculateEstimatedGas(
-        address,
-        dtContract.methods.buyFromDispenserAndOrder,
-        orderParams,
-        dispenserContract
-      )
-      if (estimateGas) return estGas
 
-      const trxReceipt = await dtContract.methods
-        .buyFromDispenserAndOrder(orderParams, dispenserContract)
-        .send({
-          from: address,
-          gas: estGas + 1,
-          gasPrice: await this.getFairGasPrice()
-        })
-      return trxReceipt
-    } catch (e) {
-      LoggerInstance.error(`ERROR: Failed to buy DT From Fre And Order : ${e.message}`)
-      throw new Error(`Failed to buy DT From Fre And Order: ${e.message}`)
-    }
+    const estGas = await calculateEstimatedGas(
+      address,
+      dtContract.methods.buyFromDispenserAndOrder,
+      orderParams,
+      dispenserContract
+    )
+    if (estimateGas) return estGas
+
+    const trxReceipt = await dtContract.methods
+      .buyFromDispenserAndOrder(orderParams, dispenserContract)
+      .send({
+        from: address,
+        gas: estGas + 1,
+        gasPrice: await this.getFairGasPrice()
+      })
+    return trxReceipt
   }
 
   /** setData
