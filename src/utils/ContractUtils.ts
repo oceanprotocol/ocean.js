@@ -32,22 +32,18 @@ export async function unitsToAmount(
   amount: string,
   tokenDecimals?: number
 ): Promise<string> {
-  try {
-    const tokenContract = new web3.eth.Contract(minAbi, token)
-    let decimals = tokenDecimals || (await tokenContract.methods.decimals().call())
-    if (decimals === '0') {
-      decimals = 18
-    }
-
-    const amountFormatted = new BigNumber(amount).div(
-      new BigNumber(10).exponentiatedBy(decimals)
-    )
-
-    BigNumber.config({ EXPONENTIAL_AT: 50 })
-    return amountFormatted.toString()
-  } catch (e) {
-    LoggerInstance.error(`ERROR: FAILED TO CALL DECIMALS(), USING 18' : ${e.message}`)
+  const tokenContract = new web3.eth.Contract(minAbi, token)
+  let decimals = tokenDecimals || (await tokenContract.methods.decimals().call())
+  if (decimals === '0') {
+    decimals = 18
   }
+
+  const amountFormatted = new BigNumber(amount).div(
+    new BigNumber(10).exponentiatedBy(decimals)
+  )
+
+  BigNumber.config({ EXPONENTIAL_AT: 50 })
+  return amountFormatted.toString()
 }
 
 export async function amountToUnits(
@@ -56,22 +52,18 @@ export async function amountToUnits(
   amount: string,
   tokenDecimals?: number
 ): Promise<string> {
-  try {
-    const tokenContract = new web3.eth.Contract(minAbi, token)
-    let decimals = tokenDecimals || (await tokenContract.methods.decimals().call())
-    if (decimals === '0') {
-      decimals = 18
-    }
-    BigNumber.config({ EXPONENTIAL_AT: 50 })
-
-    const amountFormatted = new BigNumber(amount).times(
-      new BigNumber(10).exponentiatedBy(decimals)
-    )
-
-    return amountFormatted.toString()
-  } catch (e) {
-    LoggerInstance.error(`ERROR: FAILED TO CALL DECIMALS(), USING 18', ${e.message}`)
+  const tokenContract = new web3.eth.Contract(minAbi, token)
+  let decimals = tokenDecimals || (await tokenContract.methods.decimals().call())
+  if (decimals === '0') {
+    decimals = 18
   }
+  BigNumber.config({ EXPONENTIAL_AT: 50 })
+
+  const amountFormatted = new BigNumber(amount).times(
+    new BigNumber(10).exponentiatedBy(decimals)
+  )
+
+  return amountFormatted.toString()
 }
 
 /**
@@ -86,16 +78,11 @@ export async function calculateEstimatedGas(
   functionToEstimateGas: Function,
   ...args: any[]
 ): Promise<any> {
-  let estimatedGas = GASLIMIT_DEFAULT
-  try {
-    estimatedGas = await functionToEstimateGas.apply(null, args).estimateGas(
-      {
-        from: from
-      },
-      (err, estGas) => (err ? GASLIMIT_DEFAULT : estGas)
-    )
-  } catch (e) {
-    LoggerInstance.error(`ERROR: Estimate gas failed!`, e)
-  }
+  const estimatedGas = await functionToEstimateGas.apply(null, args).estimateGas(
+    {
+      from: from
+    },
+    (err, estGas) => (err ? GASLIMIT_DEFAULT : estGas)
+  )
   return estimatedGas
 }
