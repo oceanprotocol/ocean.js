@@ -765,7 +765,7 @@ export class Provider {
       return false
     } catch (error) {
       LoggerInstance.error(`Error validating provider: ${error.message}`)
-      throw new Error('HTTP request failed calling Provider')
+      return false
     }
   }
 
