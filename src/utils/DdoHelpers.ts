@@ -9,9 +9,5 @@ export function generateDid(nftAddress: string, chainId: number): string {
 }
 
 export function getHash(data: any): string {
-  try {
-    return sha256(data).toString()
-  } catch (e) {
-    LoggerInstance.error('getHash error: ', e.message)
-  }
+  return sha256(data).toString()
 }
