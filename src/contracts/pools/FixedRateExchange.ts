@@ -1,7 +1,7 @@
 import FixedRateExchangeAbi from '@oceanprotocol/contracts/artifacts/contracts/pools/fixedRate/FixedRateExchange.sol/FixedRateExchange.json'
 import { TransactionReceipt } from 'web3-core'
 import { AbiItem } from 'web3-utils/types'
-import { LoggerInstance, calculateEstimatedGas, ZERO_ADDRESS } from '../../utils'
+import { calculateEstimatedGas, ZERO_ADDRESS } from '../../utils'
 import { PriceAndFees, FeesInfo, FixedPriceExchange } from '../../@types'
 import { SmartContractWithAddress } from '..'
 

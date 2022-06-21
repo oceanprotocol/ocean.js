@@ -2,7 +2,7 @@ import Web3 from 'web3'
 import BigNumber from 'bignumber.js'
 import { Contract } from 'web3-eth-contract'
 import { Config } from '../config'
-import { minAbi, LoggerInstance, GASLIMIT_DEFAULT } from '.'
+import { minAbi, GASLIMIT_DEFAULT } from '.'
 
 export function setContractDefaults(contract: Contract, config: Config): Contract {
   if (config) {

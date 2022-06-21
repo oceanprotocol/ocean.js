@@ -6,8 +6,7 @@ import {
   calculateEstimatedGas,
   getFairGasPrice,
   unitsToAmount,
-  minAbi,
-  LoggerInstance
+  minAbi
 } from '.'
 
 /**
