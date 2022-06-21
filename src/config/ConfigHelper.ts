@@ -148,33 +148,28 @@ export class ConfigHelper {
 
     // load from custom addresses structure
     if (customAddresses) {
-      try {
-        const {
-          FixedPrice,
-          Dispenser,
-          Staking,
-          poolTemplate,
-          ERC721Factory,
-          OPFCommunityFeeCollector,
-          Ocean,
-          chainId,
-          startBlock
-        } = customAddresses[network]
-        configAddresses = {
-          nftFactoryAddress: ERC721Factory,
-          sideStakingAddress: Staking,
-          opfCommunityFeeCollector: OPFCommunityFeeCollector,
-          poolTemplateAddress: poolTemplate,
-          fixedRateExchangeAddress: FixedPrice,
-          dispenserAddress: Dispenser,
-          oceanTokenAddress: Ocean,
-          chainId: chainId,
-          startBlock: startBlock,
-          ...(process.env.AQUARIUS_URI && { metadataCacheUri: process.env.AQUARIUS_URI })
-        }
-      } catch (e) {
-        // console.error(`ERROR: Could not load local contract address file: ${e.message}`)
-        // return null
+      const {
+        FixedPrice,
+        Dispenser,
+        Staking,
+        poolTemplate,
+        ERC721Factory,
+        OPFCommunityFeeCollector,
+        Ocean,
+        chainId,
+        startBlock
+      } = customAddresses[network]
+      configAddresses = {
+        nftFactoryAddress: ERC721Factory,
+        sideStakingAddress: Staking,
+        opfCommunityFeeCollector: OPFCommunityFeeCollector,
+        poolTemplateAddress: poolTemplate,
+        fixedRateExchangeAddress: FixedPrice,
+        dispenserAddress: Dispenser,
+        oceanTokenAddress: Ocean,
+        chainId: chainId,
+        startBlock: startBlock,
+        ...(process.env.AQUARIUS_URI && { metadataCacheUri: process.env.AQUARIUS_URI })
       }
     } else {
       // no custom addresses structure was passed, trying to load default
