@@ -66,25 +66,20 @@ export class FixedRateExchange extends SmartContractWithAddress {
     )
     if (estimateGas) return estGas
 
-    try {
-      const trxReceipt = await this.contract.methods
-        .buyDT(
-          exchangeId,
-          dtAmountFormatted,
-          maxBtFormatted,
-          consumeMarketAddress,
-          consumeMarketFeeFormatted
-        )
-        .send({
-          from: address,
-          gas: estGas + 1,
-          gasPrice: await this.getFairGasPrice()
-        })
-      return trxReceipt
-    } catch (e) {
-      LoggerInstance.error(`ERROR: Failed to buy datatokens: ${e.message}`)
-      return null
-    }
+    const trxReceipt = await this.contract.methods
+      .buyDT(
+        exchangeId,
+        dtAmountFormatted,
+        maxBtFormatted,
+        consumeMarketAddress,
+        consumeMarketFeeFormatted
+      )
+      .send({
+        from: address,
+        gas: estGas + 1,
+        gasPrice: await this.getFairGasPrice()
+      })
+    return trxReceipt
   }
 
   /**
@@ -129,25 +124,20 @@ export class FixedRateExchange extends SmartContractWithAddress {
     )
     if (estimateGas) return estGas
 
-    try {
-      const trxReceipt = await this.contract.methods
-        .sellDT(
-          exchangeId,
-          dtAmountFormatted,
-          minBtFormatted,
-          consumeMarketAddress,
-          consumeMarketFeeFormatted
-        )
-        .send({
-          from: address,
-          gas: estGas + 1,
-          gasPrice: await this.getFairGasPrice()
-        })
-      return trxReceipt
-    } catch (e) {
-      LoggerInstance.error(`ERROR: Failed to sell datatokens: ${e.message}`)
-      return null
-    }
+    const trxReceipt = await this.contract.methods
+      .sellDT(
+        exchangeId,
+        dtAmountFormatted,
+        minBtFormatted,
+        consumeMarketAddress,
+        consumeMarketFeeFormatted
+      )
+      .send({
+        from: address,
+        gas: estGas + 1,
+        gasPrice: await this.getFairGasPrice()
+      })
+    return trxReceipt
   }
 
   /**
@@ -696,12 +686,7 @@ export class FixedRateExchange extends SmartContractWithAddress {
    * @return {String}
    */
   async getOPCCollector(): Promise<string> {
-    let address = null
-    try {
-      address = await this.contract.methods.opcCollector().call()
-    } catch (e) {
-      LoggerInstance.error(`ERROR: Failed to get OPC Collector address: ${e.message}`)
-    }
+    const address = await this.contract.methods.opcCollector().call()
     return address
   }
 
@@ -710,12 +695,7 @@ export class FixedRateExchange extends SmartContractWithAddress {
    * @return {String}
    */
   public async getRouter(): Promise<string> {
-    let address = null
-    try {
-      address = await this.contract.methods.router().call()
-    } catch (e) {
-      LoggerInstance.error(`ERROR: Failed to get Router address: ${e.message}`)
-    }
+    const address = await this.contract.methods.router().call()
     return address
   }
 
@@ -725,12 +705,7 @@ export class FixedRateExchange extends SmartContractWithAddress {
    * @return {String} return exchange owner
    */
   async getExchangeOwner(exchangeId: string): Promise<string> {
-    let address = null
-    try {
-      address = await (await this.getExchange(exchangeId)).exchangeOwner
-    } catch (e) {
-      LoggerInstance.error(`ERROR: Failed to get OPF Collector address: ${e.message}`)
-    }
+    const address = await (await this.getExchange(exchangeId)).exchangeOwner
     return address
   }
 
