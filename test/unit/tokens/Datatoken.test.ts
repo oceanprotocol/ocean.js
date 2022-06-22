@@ -1,11 +1,5 @@
 import { assert } from 'chai'
-import ERC20TemplateEnterprise from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC20TemplateEnterprise.sol/ERC20TemplateEnterprise.json'
-import ERC721Factory from '@oceanprotocol/contracts/artifacts/contracts/ERC721Factory.sol/ERC721Factory.json'
-import ERC721Template from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC721Template.sol/ERC721Template.json'
-import ERC20Template from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC20Template.sol/ERC20Template.json'
-import MockERC20 from '@oceanprotocol/contracts/artifacts/contracts/utils/mock/MockERC20Decimals.sol/MockERC20Decimals.json'
 import { deployContracts, Addresses } from '../../TestContractHandler'
-import { AbiItem } from 'web3-utils'
 import { web3 } from '../../config'
 import {
   NftFactory,
@@ -17,7 +11,7 @@ import {
   ZERO_ADDRESS,
   signHash
 } from '../../../src'
-import { ProviderFees, FreCreationParams, FreOrderParams } from '../../../src/@types/'
+import { ProviderFees, FreCreationParams, FreOrderParams } from '../../../src/@types'
 
 describe('Datatoken', () => {
   let nftOwner: string
@@ -33,9 +27,16 @@ describe('Datatoken', () => {
   let datatokenAddress: string
   let fixedRateAddress: string
   let exchangeId: string
+  let freParams: FreCreationParams
 
-  const nftName = 'NFTName'
-  const nftSymbol = 'NFTSymbol'
+  const nftData: NftCreateData = {
+    name: 'NFTName',
+    symbol: 'NFTSymbol',
+    templateIndex: 1,
+    tokenURI: 'https://oceanprotocol.com/nft/',
+    transferable: true,
+    owner: null
+  }
 
   before(async () => {
     const accounts = await web3.eth.getAccounts()
@@ -44,38 +45,30 @@ describe('Datatoken', () => {
     user2 = accounts[2]
     user3 = accounts[3]
     erc20DeployerUser = accounts[4]
+
+    nftData.owner = nftOwner
   })
 
   it('should deploy contracts', async () => {
     contracts = await deployContracts(web3, nftOwner)
 
-    const daiContract = new web3.eth.Contract(
-      MockERC20.abi as AbiItem[],
-      contracts.daiAddress
-    )
-    await daiContract.methods
-      .approve(contracts.erc721FactoryAddress, web3.utils.toWei('10000'))
-      .send({ from: nftOwner })
+    freParams = {
+      fixedRateAddress: contracts.fixedRateAddress,
+      baseTokenAddress: contracts.daiAddress,
+      owner: nftOwner,
+      marketFeeCollector: nftOwner,
+      baseTokenDecimals: 18,
+      datatokenDecimals: 18,
+      fixedRate: web3.utils.toWei('1'),
+      marketFee: '0'
+    }
   })
 
   it('should initialize NFTFactory instance and create a new NFT', async () => {
-    nftFactory = new NftFactory(
-      contracts.erc721FactoryAddress,
-      web3,
-      8996,
-      ERC721Factory.abi as AbiItem[]
-    )
-    const nftData: NftCreateData = {
-      name: nftName,
-      symbol: nftSymbol,
-      templateIndex: 1,
-      tokenURI: 'https://oceanprotocol.com/nft/',
-      transferable: true,
-      owner: nftOwner
-    }
+    nftFactory = new NftFactory(contracts.erc721FactoryAddress, web3, 8996)
 
     nftAddress = await nftFactory.createNFT(nftOwner, nftData)
-    nftDatatoken = new Nft(web3, 8996, ERC721Template.abi as AbiItem[])
+    nftDatatoken = new Nft(web3, 8996)
   })
 
   it('#createERC20 - should create a new ERC20 DT from NFT contract', async () => {
@@ -86,29 +79,24 @@ describe('Datatoken', () => {
       nftOwner,
       user1,
       user2,
-      '0x0000000000000000000000000000000000000000',
+      ZERO_ADDRESS,
       '0',
       '10000',
-      nftName,
-      nftSymbol,
-      1
+      'ERC20B1',
+      'ERC20DT1Symbol'
     )
     assert(datatokenAddress !== null)
   })
 
   it('should initialize DT20 Instance', async () => {
-    datatoken = new Datatoken(
-      web3,
-      8996,
-      ERC20Template.abi as AbiItem[],
-      ERC20TemplateEnterprise.abi as AbiItem[]
-    )
+    datatoken = new Datatoken(web3, 8996)
   })
 
   it('#mint - should fail to mint DT20, if NOT Minter', async () => {
-    // assert((await datatoken.getDTPermissions(datatokenAddress, user1)).minter === false)
+    assert((await datatoken.getDTPermissions(datatokenAddress, user1)).minter === false)
     try {
       await datatoken.mint(datatokenAddress, user1, '10', user1)
+      assert(false)
     } catch (e) {
       assert(e.message === 'Caller is not Minter')
     }
@@ -129,6 +117,7 @@ describe('Datatoken', () => {
 
     try {
       await datatoken.addMinter(datatokenAddress, user3, user2)
+      assert(false)
     } catch (e) {
       assert(e.message === 'Caller is not ERC20Deployer')
     }
@@ -144,16 +133,6 @@ describe('Datatoken', () => {
   })
 
   it('#createFixedRate - should create FRE for the erc20 dt', async () => {
-    const freParams: FreCreationParams = {
-      fixedRateAddress: contracts.fixedRateAddress,
-      baseTokenAddress: contracts.daiAddress,
-      owner: nftOwner,
-      marketFeeCollector: nftOwner,
-      baseTokenDecimals: 18,
-      datatokenDecimals: 18,
-      fixedRate: web3.utils.toWei('1'),
-      marketFee: '0'
-    }
     const fre = await datatoken.createFixedRate(datatokenAddress, nftOwner, freParams)
     assert(fre !== null)
     fixedRateAddress = fre.events.NewFixedRate.address
@@ -162,18 +141,9 @@ describe('Datatoken', () => {
 
   it('#createFixedRate - should FAIL create FRE if NOT ERC20Deployer', async () => {
     assert((await nftDatatoken.isErc20Deployer(nftAddress, user3)) === false)
-    const freParams: FreCreationParams = {
-      fixedRateAddress: contracts.fixedRateAddress,
-      baseTokenAddress: contracts.daiAddress,
-      owner: nftOwner,
-      marketFeeCollector: nftOwner,
-      baseTokenDecimals: 18,
-      datatokenDecimals: 18,
-      fixedRate: web3.utils.toWei('1'),
-      marketFee: '0'
-    }
     try {
       await datatoken.createFixedRate(datatokenAddress, user3, freParams)
+      assert(false)
     } catch (e) {
       assert(e.message === 'User is not ERC20 Deployer')
     }
@@ -207,6 +177,7 @@ describe('Datatoken', () => {
         contracts.dispenserAddress,
         dispenserParams
       )
+      assert(false)
     } catch (e) {
       assert(e.message === 'User is not ERC20 Deployer')
     }
@@ -218,6 +189,7 @@ describe('Datatoken', () => {
 
     try {
       await datatoken.removeMinter(datatokenAddress, user2, user1)
+      assert(false)
     } catch (e) {
       assert(e.message === 'Caller is not ERC20Deployer')
     }
@@ -241,6 +213,7 @@ describe('Datatoken', () => {
 
     try {
       await datatoken.addPaymentManager(datatokenAddress, user1, user2)
+      assert(false)
     } catch (e) {
       assert(e.message === 'Caller is not ERC20Deployer')
     }
@@ -269,6 +242,7 @@ describe('Datatoken', () => {
     )
     try {
       await datatoken.removePaymentManager(datatokenAddress, user1, user2)
+      assert(false)
     } catch (e) {
       assert(e.message === 'Caller is not ERC20Deployer')
     }
@@ -298,6 +272,7 @@ describe('Datatoken', () => {
 
     try {
       await datatoken.setPaymentCollector(datatokenAddress, user1, user2)
+      assert(false)
     } catch (e) {
       assert(e.message === 'Caller is not Fee Manager, owner or erc20 Deployer')
     }
@@ -435,7 +410,6 @@ describe('Datatoken', () => {
     const providerData = JSON.stringify({ timeout: 0 })
     const providerFeeToken = ZERO_ADDRESS
     const providerFeeAmount = '0'
-    const dtAmount = web3.utils.toWei('1')
     const message = web3.utils.soliditySha3(
       { t: 'bytes', v: web3.utils.toHex(web3.utils.asciiToHex(providerData)) },
       { t: 'address', v: user3 },
@@ -455,8 +429,8 @@ describe('Datatoken', () => {
       validUntil: providerValidUntil
     }
     const consumeMarketFee = {
-      consumeMarketFeeAddress: '0x0000000000000000000000000000000000000000',
-      consumeMarketFeeToken: '0x0000000000000000000000000000000000000000',
+      consumeMarketFeeAddress: ZERO_ADDRESS,
+      consumeMarketFeeToken: ZERO_ADDRESS,
       consumeMarketFeeAmount: '0'
     }
     const order: OrderParams = {
@@ -497,8 +471,8 @@ describe('Datatoken', () => {
       validUntil: providerValidUntil
     }
     const consumeMarketFee = {
-      consumeMarketFeeAddress: '0x0000000000000000000000000000000000000000',
-      consumeMarketFeeToken: '0x0000000000000000000000000000000000000000',
+      consumeMarketFeeAddress: ZERO_ADDRESS,
+      consumeMarketFeeToken: ZERO_ADDRESS,
       consumeMarketFeeAmount: '0'
     }
     const order: OrderParams = {
@@ -513,7 +487,7 @@ describe('Datatoken', () => {
       exchangeId: exchangeId,
       maxBaseTokenAmount: '1',
       swapMarketFee: '0.1',
-      marketFeeAddress: '0x0000000000000000000000000000000000000000'
+      marketFeeAddress: ZERO_ADDRESS
     }
 
     const buyTx = await datatoken.buyFromFreAndOrder(datatokenAddress, user1, order, fre)
@@ -531,6 +505,7 @@ describe('Datatoken', () => {
 
     try {
       await datatoken.cleanPermissions(datatokenAddress, user2)
+      assert(false)
     } catch (e) {
       assert(e.message === 'Caller is NOT Nft Owner')
     }
@@ -589,10 +564,91 @@ describe('Datatoken', () => {
 
     try {
       await datatoken.setData(datatokenAddress, user1, data)
+      assert(false)
     } catch (e) {
       assert(e.message === 'User is not ERC20 Deployer')
     }
     const key = web3.utils.keccak256(datatokenAddress)
     assert((await nftDatatoken.getData(nftAddress, key)) === OldData)
+  })
+
+  it('#getDecimals - should return the number of decimals of the datatoken', async () => {
+    const decimals = await datatoken.getDecimals(datatokenAddress)
+    assert(decimals === '18')
+  })
+
+  it('#transfer - we can transfer the datatoken', async () => {
+    const balance1before = await datatoken.balance(datatokenAddress, user1)
+    const balance2before = await datatoken.balance(datatokenAddress, user2)
+
+    await datatoken.transfer(datatokenAddress, user2, '1', user1)
+
+    const balance1after = await datatoken.balance(datatokenAddress, user1)
+    const balance2after = await datatoken.balance(datatokenAddress, user2)
+
+    assert(+balance1after === +balance1before - 1)
+    assert(+balance2after === +balance2before + 1)
+  })
+
+  it('#setPublishingMarketFee - User should not be able to set the Publishing Market Fee', async () => {
+    const originalPublishingMarketFee = await datatoken.getPublishingMarketFee(
+      datatokenAddress,
+      user1
+    )
+    try {
+      await datatoken.setPublishingMarketFee(
+        datatokenAddress,
+        user1,
+        contracts.daiAddress,
+        web3.utils.toWei('10'),
+        user1
+      )
+    } catch (e) {
+      console.log('Message:', e.message)
+      assert(e.message === 'Caller is not the Publishing Market Fee Address')
+    }
+    const newPublishingMarketFee = await datatoken.getPublishingMarketFee(
+      datatokenAddress,
+      user3
+    )
+
+    assert(
+      newPublishingMarketFee.publishMarketFeeAddress ===
+        originalPublishingMarketFee.publishMarketFeeAddress
+    )
+    assert(
+      newPublishingMarketFee.publishMarketFeeAmount ===
+        originalPublishingMarketFee.publishMarketFeeAmount
+    )
+    assert(
+      newPublishingMarketFee.publishMarketFeeToken ===
+        originalPublishingMarketFee.publishMarketFeeToken
+    )
+  })
+  it('#setPublishingMarketFee - Marketplace fee address should be able to set the Publishing Market Fee', async () => {
+    const originalPublishingMarketFee = await datatoken.getPublishingMarketFee(
+      datatokenAddress,
+      user2
+    )
+    try {
+      await datatoken.setPublishingMarketFee(
+        datatokenAddress,
+        user2,
+        contracts.daiAddress,
+        web3.utils.toWei('10'),
+        user2
+      )
+    } catch (e) {
+      console.log('Error:', e)
+    }
+    const newPublishingMarketFee = await datatoken.getPublishingMarketFee(
+      datatokenAddress,
+      user2
+    )
+
+    assert(newPublishingMarketFee !== originalPublishingMarketFee)
+    assert(newPublishingMarketFee.publishMarketFeeAddress === user2)
+    assert(newPublishingMarketFee.publishMarketFeeAmount === web3.utils.toWei('10'))
+    assert(newPublishingMarketFee.publishMarketFeeToken === contracts.daiAddress)
   })
 })

@@ -2,11 +2,11 @@ import Decimal from 'decimal.js'
 import { Pool } from '..'
 
 export function calcMaxExactOut(balance: string): Decimal {
-  return new Decimal(balance).div(3.01)
+  return new Decimal(balance).div(2)
 }
 
 export function calcMaxExactIn(balance: string): Decimal {
-  return new Decimal(balance).div(2.01)
+  return new Decimal(balance).div(2)
 }
 export async function getMaxSwapExactOut(
   poolInstance: Pool,

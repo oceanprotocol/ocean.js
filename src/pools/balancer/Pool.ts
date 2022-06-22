@@ -330,25 +330,6 @@ export class Pool {
   }
 
   /**
-   * Get OPC Collector of this pool
-   * @param {String} poolAddress
-   * @return {String}
-   */
-  async getOPCCollector(poolAddress: string): Promise<string> {
-    const pool = setContractDefaults(
-      new this.web3.eth.Contract(this.poolAbi, poolAddress),
-      this.config
-    )
-    let result = null
-    try {
-      result = await pool.methods._opcCollector().call()
-    } catch (e) {
-      LoggerInstance.error(`ERROR: Failed to get OPF Collector address: ${e.message}`)
-    }
-    return result
-  }
-
-  /**
    * Get if a token is bounded to a pool
    *  Returns true if token is bound
    * @param {String} poolAddress
@@ -1643,10 +1624,10 @@ export class Pool {
    */
   public getSwapEventSignature(): string {
     const abi = this.poolAbi as AbiItem[]
-    const eventdata = abi.find(function (o) {
-      if (o.name === 'LOG_SWAP' && o.type === 'event') return o
-    })
-    const topic = this.web3.eth.abi.encodeEventSignature(eventdata as any)
+    const eventdata = abi.find(
+      ({ name, type }) => type === 'event' && name === 'LOG_SWAP'
+    )
+    const topic = this.web3.eth.abi.encodeEventSignature(eventdata)
     return topic
   }
 
@@ -1656,10 +1637,10 @@ export class Pool {
    */
   public getJoinEventSignature(): string {
     const abi = this.poolAbi as AbiItem[]
-    const eventdata = abi.find(function (o) {
-      if (o.name === 'LOG_JOIN' && o.type === 'event') return o
-    })
-    const topic = this.web3.eth.abi.encodeEventSignature(eventdata as any)
+    const eventdata = abi.find(
+      ({ name, type }) => type === 'event' && name === 'LOG_JOIN'
+    )
+    const topic = this.web3.eth.abi.encodeEventSignature(eventdata)
     return topic
   }
 
@@ -1669,10 +1650,10 @@ export class Pool {
    */
   public getExitEventSignature(): string {
     const abi = this.poolAbi as AbiItem[]
-    const eventdata = abi.find(function (o) {
-      if (o.name === 'LOG_EXIT' && o.type === 'event') return o
-    })
-    const topic = this.web3.eth.abi.encodeEventSignature(eventdata as any)
+    const eventdata = abi.find(
+      ({ name, type }) => type === 'event' && name === 'LOG_EXIT'
+    )
+    const topic = this.web3.eth.abi.encodeEventSignature(eventdata)
     return topic
   }
 }

@@ -1,10 +1,15 @@
 import { assert, expect } from 'chai'
-import { AbiItem } from 'web3-utils/types'
 import { deployContracts, Addresses } from '../../TestContractHandler'
-import MockERC20 from '@oceanprotocol/contracts/artifacts/contracts/utils/mock/MockERC20Decimals.sol/MockERC20Decimals.json'
 import { web3 } from '../../config'
-import { NftFactory, NftCreateData, balance, approve, ZERO_ADDRESS } from '../../../src'
-import { Router } from '../../../src/pools/Router'
+import {
+  NftFactory,
+  NftCreateData,
+  Router,
+  balance,
+  approve,
+  ZERO_ADDRESS,
+  transfer
+} from '../../../src'
 import { Erc20CreateParams, PoolCreationParams, Operation } from '../../../src/@types'
 
 const { keccak256 } = require('@ethersproject/keccak256')
@@ -117,14 +122,7 @@ describe('Router unit test', () => {
 
   it('#buyDTBatch - should buy multiple DT in one call', async () => {
     // APPROVE DAI
-    const daiContract = new web3.eth.Contract(
-      MockERC20.abi as AbiItem[],
-      contracts.daiAddress
-    )
-
-    await daiContract.methods
-      .transfer(user1, web3.utils.toWei(DAI_AMOUNT))
-      .send({ from: factoryOwner })
+    await transfer(web3, factoryOwner, contracts.daiAddress, user1, DAI_AMOUNT)
 
     await approve(web3, user1, contracts.daiAddress, contracts.routerAddress, DAI_AMOUNT)
 

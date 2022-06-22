@@ -1,4 +1,4 @@
-export interface FileMetadata {
+export interface FileInfo {
   /**
    * File URL.
    * @type {string}

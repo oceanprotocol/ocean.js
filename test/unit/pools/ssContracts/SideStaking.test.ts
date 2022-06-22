@@ -1,10 +1,5 @@
 import { assert, expect } from 'chai'
-import { AbiItem } from 'web3-utils/types'
-import { Contract } from 'web3-eth-contract'
-import SSContract from '@oceanprotocol/contracts/artifacts/contracts/pools/ssContracts/SideStaking.sol/SideStaking.json'
-import ERC20Template from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC20Template.sol/ERC20Template.json'
-import PoolTemplate from '@oceanprotocol/contracts/artifacts/contracts/pools/balancer/BPool.sol/BPool.json'
-import MockERC20 from '@oceanprotocol/contracts/artifacts/contracts/utils/mock/MockERC20Decimals.sol/MockERC20Decimals.json'
+import BigNumber from 'bignumber.js'
 import { deployContracts, Addresses } from '../../../TestContractHandler'
 import { web3 } from '../../../config'
 import {
@@ -14,9 +9,13 @@ import {
   NftFactory,
   NftCreateData,
   Pool,
-  unitsToAmount
+  SideStaking,
+  unitsToAmount,
+  ZERO_ADDRESS,
+  balance,
+  transfer,
+  decimals
 } from '../../../../src'
-import { SideStaking } from '../../../../src/pools/ssContracts/SideStaking'
 import {
   Erc20CreateParams,
   PoolCreationParams,
@@ -27,86 +26,99 @@ import {
 
 describe('SideStaking unit test', () => {
   let factoryOwner: string
-  let nftOwner: string
   let user1: string
   let user2: string
-  let user3: string
   let initialBlock: number
-  let sideStakingAddress: string
   let contracts: Addresses
   let pool: Pool
   let sideStaking: SideStaking
-  let dtAddress: string
-  let dtAddress2: string
   let poolAddress: string
   let erc20Token: string
-  let erc20Contract: Contract
-  let daiContract: Contract
-  let usdcContract: Contract
-  const vestedBlocks = 2500000
+
+  const VESTED_BLOCKS = 2500000
+  const VESTING_AMOUNT = '10000'
+  const BASE_TOKEN_LIQUIDITY = 2000
+
+  const nftData: NftCreateData = {
+    name: '72120Bundle',
+    symbol: '72Bundle',
+    templateIndex: 1,
+    tokenURI: 'https://oceanprotocol.com/nft/',
+    transferable: true,
+    owner: null
+  }
+
+  const ercParams: Erc20CreateParams = {
+    templateIndex: 1,
+    minter: null,
+    paymentCollector: null,
+    mpFeeAddress: null,
+    feeToken: ZERO_ADDRESS,
+    cap: '1000000',
+    feeAmount: '0',
+    name: 'ERC20B1',
+    symbol: 'ERC20DT1Symbol'
+  }
 
   before(async () => {
     const accounts = await web3.eth.getAccounts()
     factoryOwner = accounts[0]
-    nftOwner = accounts[1]
-    user1 = accounts[2]
-    user2 = accounts[3]
-    user3 = accounts[4]
+    user1 = accounts[1]
+    user2 = accounts[2]
+
+    nftData.owner = factoryOwner
+    ercParams.minter = factoryOwner
+    ercParams.paymentCollector = user2
+    ercParams.mpFeeAddress = factoryOwner
   })
 
   it('should deploy contracts', async () => {
     contracts = await deployContracts(web3, factoryOwner)
-    sideStakingAddress = contracts.sideStakingAddress
 
     // initialize Pool instance
-    pool = new Pool(web3, 8996, PoolTemplate.abi as AbiItem[])
+    pool = new Pool(web3, 8996)
     assert(pool != null)
     //
-    sideStaking = new SideStaking(web3, 8996, SSContract.abi as AbiItem[])
+    sideStaking = new SideStaking(web3, 8996)
     assert(sideStaking != null)
 
-    daiContract = new web3.eth.Contract(MockERC20.abi as AbiItem[], contracts.daiAddress)
-
-    usdcContract = new web3.eth.Contract(
-      MockERC20.abi as AbiItem[],
-      contracts.usdcAddress
-    )
     await approve(
       web3,
       factoryOwner,
       contracts.daiAddress,
       contracts.erc721FactoryAddress,
-      '2000'
+      BASE_TOKEN_LIQUIDITY.toString()
     )
+
+    assert(
+      parseInt(
+        await allowance(
+          web3,
+          contracts.daiAddress,
+          factoryOwner,
+          contracts.erc721FactoryAddress
+        )
+      ) >= BASE_TOKEN_LIQUIDITY
+    )
+
     await approve(
       web3,
       factoryOwner,
       contracts.usdcAddress,
       contracts.erc721FactoryAddress,
-      '10000'
+      BASE_TOKEN_LIQUIDITY.toString()
     )
 
-    let allowCheck = await allowance(
-      web3,
-      contracts.daiAddress,
-      factoryOwner,
-      contracts.erc721FactoryAddress
+    assert(
+      parseInt(
+        await allowance(
+          web3,
+          contracts.usdcAddress,
+          factoryOwner,
+          contracts.erc721FactoryAddress
+        )
+      ) >= BASE_TOKEN_LIQUIDITY
     )
-    assert(parseInt(allowCheck) >= 2000)
-    allowCheck = await allowance(
-      web3,
-      contracts.usdcAddress,
-      factoryOwner,
-      contracts.erc721FactoryAddress
-    )
-    assert(parseInt(allowCheck) >= 10000)
-
-    console.log(
-      await usdcContract.methods.decimals().call(),
-      'USDC DECIMALS IN THIS TEST'
-    )
-
-    await amountToUnits(web3, contracts.usdcAddress, '20')
   })
 
   describe('Test a pool with DAI (18 Decimals)', () => {
@@ -114,27 +126,6 @@ describe('SideStaking unit test', () => {
       // CREATE A POOL
       // we prepare transaction parameters objects
       const nftFactory = new NftFactory(contracts.erc721FactoryAddress, web3)
-
-      const nftData: NftCreateData = {
-        name: '72120Bundle',
-        symbol: '72Bundle',
-        templateIndex: 1,
-        tokenURI: 'https://oceanprotocol.com/nft/',
-        transferable: true,
-        owner: factoryOwner
-      }
-
-      const ercParams: Erc20CreateParams = {
-        templateIndex: 1,
-        minter: factoryOwner,
-        paymentCollector: user3,
-        mpFeeAddress: factoryOwner,
-        feeToken: '0x0000000000000000000000000000000000000000',
-        cap: '1000000',
-        feeAmount: '0',
-        name: 'ERC20B1',
-        symbol: 'ERC20DT1Symbol'
-      }
 
       const poolParams: PoolCreationParams = {
         ssContract: contracts.sideStakingAddress,
@@ -145,9 +136,9 @@ describe('SideStaking unit test', () => {
         poolTemplateAddress: contracts.poolTemplateAddress,
         rate: '1',
         baseTokenDecimals: 18,
-        vestingAmount: '10000',
-        vestedBlocks: vestedBlocks,
-        initialBaseTokenLiquidity: '2000',
+        vestingAmount: VESTING_AMOUNT,
+        vestedBlocks: VESTED_BLOCKS,
+        initialBaseTokenLiquidity: BASE_TOKEN_LIQUIDITY.toString(),
         swapFeeLiquidityProvider: '0.001',
         swapFeeMarketRunner: '0.001'
       }
@@ -163,14 +154,12 @@ describe('SideStaking unit test', () => {
       erc20Token = txReceipt.events.TokenCreated.returnValues.newTokenAddress
       poolAddress = txReceipt.events.NewPool.returnValues.poolAddress
 
-      erc20Contract = new web3.eth.Contract(ERC20Template.abi as AbiItem[], erc20Token)
-      // user2 has no dt1
-      expect(await erc20Contract.methods.balanceOf(user2).call()).to.equal('0')
-
-      sideStakingAddress = contracts.sideStakingAddress
+      // user1 has no dt1
+      expect(await balance(web3, erc20Token, user1)).to.equal('0')
     })
+
     it('#getRouter - should get Router address', async () => {
-      expect(await sideStaking.getRouter(sideStakingAddress)).to.equal(
+      expect(await sideStaking.getRouter(contracts.sideStakingAddress)).to.equal(
         contracts.routerAddress
       )
     })
@@ -181,69 +170,85 @@ describe('SideStaking unit test', () => {
           contracts.sideStakingAddress,
           erc20Token
         )
-      ).to.equal(web3.utils.toWei('2000'))
+      ).to.equal(web3.utils.toWei(BASE_TOKEN_LIQUIDITY.toString()))
     })
+
     it('#getDatatokenCurrentCirculatingSupply - should get datatoken supply in circulation ', async () => {
       expect(
         await sideStaking.getDatatokenCurrentCirculatingSupply(
           contracts.sideStakingAddress,
           erc20Token
         )
-      ).to.equal(web3.utils.toWei('2000'))
+      ).to.equal(web3.utils.toWei(BASE_TOKEN_LIQUIDITY.toString()))
     })
+
     it('#getBaseToken - should get baseToken address', async () => {
-      expect(await sideStaking.getBaseToken(sideStakingAddress, erc20Token)).to.equal(
-        contracts.daiAddress
-      )
+      expect(
+        await sideStaking.getBaseToken(contracts.sideStakingAddress, erc20Token)
+      ).to.equal(contracts.daiAddress)
     })
+
     it('#getPoolAddress - should get pool address', async () => {
-      expect(await sideStaking.getPoolAddress(sideStakingAddress, erc20Token)).to.equal(
-        poolAddress
-      )
+      expect(
+        await sideStaking.getPoolAddress(contracts.sideStakingAddress, erc20Token)
+      ).to.equal(poolAddress)
     })
+
     it('#getPublisherAddress - should get publisher address', async () => {
       expect(
-        await sideStaking.getPublisherAddress(sideStakingAddress, erc20Token)
+        await sideStaking.getPublisherAddress(contracts.sideStakingAddress, erc20Token)
       ).to.equal(factoryOwner)
     })
+
     it('#getBaseTokenBalance ', async () => {
       expect(
-        await sideStaking.getBaseTokenBalance(sideStakingAddress, erc20Token)
+        await sideStaking.getBaseTokenBalance(contracts.sideStakingAddress, erc20Token)
       ).to.equal('0')
     })
-    // it('#getDatatokenBalance ', async () => {
-    //   expect(
-    //     await sideStaking.getDatatokenBalance(sideStakingAddress, erc20Token)
-    //   ).to.equal('997999.9999999999')
-    // })
 
-    it('#getvestingAmount ', async () => {
-      expect(await sideStaking.getvestingAmount(sideStakingAddress, erc20Token)).to.equal(
-        '0'
+    it('#getDatatokenBalance ', async () => {
+      expect(
+        await (
+          await sideStaking.getDatatokenBalance(contracts.sideStakingAddress, erc20Token)
+        ).toString()
+      ).to.equal(
+        new BigNumber(2)
+          .exponentiatedBy(256)
+          .minus(1)
+          .dividedBy(new BigNumber(10).exponentiatedBy(18))
+          .minus(BASE_TOKEN_LIQUIDITY)
+          .toString()
       )
     })
+
+    it('#getvestingAmount ', async () => {
+      expect(
+        await sideStaking.getvestingAmount(contracts.sideStakingAddress, erc20Token)
+      ).to.equal('0')
+    })
+
     it('#getvestingLastBlock ', async () => {
       expect(
-        await sideStaking.getvestingLastBlock(sideStakingAddress, erc20Token)
+        await sideStaking.getvestingLastBlock(contracts.sideStakingAddress, erc20Token)
       ).to.equal(initialBlock.toString())
     })
 
     it('#getvestingAmountSoFar ', async () => {
       expect(
-        await sideStaking.getvestingAmountSoFar(sideStakingAddress, erc20Token)
+        await sideStaking.getvestingAmountSoFar(contracts.sideStakingAddress, erc20Token)
       ).to.equal('0')
     })
 
     it('#swapExactAmountIn - should swap', async () => {
-      await daiContract.methods
-        .transfer(user2, web3.utils.toWei('1000'))
-        .send({ from: factoryOwner })
-      await approve(web3, user2, contracts.daiAddress, poolAddress, '10')
+      await transfer(web3, factoryOwner, contracts.daiAddress, user1, '1000')
+      await approve(web3, user1, contracts.daiAddress, poolAddress, '10')
+
       const tokenInOutMarket: TokenInOutMarket = {
         tokenIn: contracts.daiAddress,
         tokenOut: erc20Token,
         marketFeeAddress: factoryOwner
       }
+
       const amountsInOutMaxFee: AmountsInMaxFee = {
         tokenAmountIn: '10',
         minAmountOut: '1',
@@ -251,18 +256,23 @@ describe('SideStaking unit test', () => {
       }
 
       const tx = await pool.swapExactAmountIn(
-        user2,
+        user1,
         poolAddress,
         tokenInOutMarket,
         amountsInOutMaxFee
       )
-      expect(await erc20Contract.methods.balanceOf(user2).call()).to.equal(
-        tx.events.LOG_SWAP.returnValues.tokenAmountOut
+
+      expect(await balance(web3, erc20Token, user1)).to.equal(
+        await unitsToAmount(
+          web3,
+          erc20Token,
+          tx.events.LOG_SWAP.returnValues.tokenAmountOut
+        )
       )
     })
 
     it('#swapExactAmountOut - should swap', async () => {
-      await approve(web3, user2, contracts.daiAddress, poolAddress, '100')
+      await approve(web3, user1, contracts.daiAddress, poolAddress, '100')
       const tokenInOutMarket: TokenInOutMarket = {
         tokenIn: contracts.daiAddress,
         tokenOut: erc20Token,
@@ -274,7 +284,7 @@ describe('SideStaking unit test', () => {
         swapMarketFee: '0.1'
       }
       const tx = await pool.swapExactAmountOut(
-        user2,
+        user1,
         poolAddress,
         tokenInOutMarket,
         amountsInOutMaxFee
@@ -282,15 +292,15 @@ describe('SideStaking unit test', () => {
       assert(tx != null)
     })
 
-    it('#joinswapExternAmountIn- user2 should add liquidity, receiving LP tokens', async () => {
+    it('#joinswapExternAmountIn- user1 should add liquidity, receiving LP tokens', async () => {
       const daiAmountIn = '100'
       const minBPTOut = '0.1'
-      await approve(web3, user2, contracts.daiAddress, poolAddress, '100', true)
-      expect(await allowance(web3, contracts.daiAddress, user2, poolAddress)).to.equal(
+      await approve(web3, user1, contracts.daiAddress, poolAddress, '100', true)
+      expect(await allowance(web3, contracts.daiAddress, user1, poolAddress)).to.equal(
         '100'
       )
       const tx = await pool.joinswapExternAmountIn(
-        user2,
+        user1,
         poolAddress,
         daiAmountIn,
         minBPTOut
@@ -306,12 +316,12 @@ describe('SideStaking unit test', () => {
       )
     })
 
-    it('#exitswapPoolAmountIn- user2 exit the pool receiving only DAI', async () => {
+    it('#exitswapPoolAmountIn- user1 exit the pool receiving only DAI', async () => {
       const BPTAmountIn = '0.5'
       const minDAIOut = '0.5'
 
       const tx = await pool.exitswapPoolAmountIn(
-        user2,
+        user1,
         poolAddress,
         BPTAmountIn,
         minDAIOut
@@ -332,27 +342,6 @@ describe('SideStaking unit test', () => {
       // we prepare transaction parameters objects
       const nftFactory = new NftFactory(contracts.erc721FactoryAddress, web3)
 
-      const nftData: NftCreateData = {
-        name: '72120Bundle',
-        symbol: '72Bundle',
-        templateIndex: 1,
-        tokenURI: 'https://oceanprotocol.com/nft/',
-        transferable: true,
-        owner: factoryOwner
-      }
-
-      const ercParams: Erc20CreateParams = {
-        templateIndex: 1,
-        minter: factoryOwner,
-        paymentCollector: user3,
-        mpFeeAddress: factoryOwner,
-        feeToken: '0x0000000000000000000000000000000000000000',
-        cap: '1000000',
-        feeAmount: '0',
-        name: 'ERC20B1',
-        symbol: 'ERC20DT1Symbol'
-      }
-
       const poolParams: PoolCreationParams = {
         ssContract: contracts.sideStakingAddress,
         baseTokenAddress: contracts.usdcAddress,
@@ -361,13 +350,17 @@ describe('SideStaking unit test', () => {
         marketFeeCollector: factoryOwner,
         poolTemplateAddress: contracts.poolTemplateAddress,
         rate: '1',
-        baseTokenDecimals: await usdcContract.methods.decimals().call(),
-        vestingAmount: '10000',
-        vestedBlocks: 2500000,
+        baseTokenDecimals: await decimals(web3, contracts.usdcAddress),
+        vestingAmount: VESTING_AMOUNT,
+        vestedBlocks: VESTED_BLOCKS,
         initialBaseTokenLiquidity: await unitsToAmount(
           web3,
           contracts.usdcAddress,
-          await amountToUnits(web3, contracts.usdcAddress, '2000')
+          await amountToUnits(
+            web3,
+            contracts.usdcAddress,
+            BASE_TOKEN_LIQUIDITY.toString()
+          )
         ),
         swapFeeLiquidityProvider: '0.001',
         swapFeeMarketRunner: '0.001'
@@ -384,46 +377,53 @@ describe('SideStaking unit test', () => {
       erc20Token = txReceipt.events.TokenCreated.returnValues.newTokenAddress
       poolAddress = txReceipt.events.NewPool.returnValues.poolAddress
 
-      erc20Contract = new web3.eth.Contract(ERC20Template.abi as AbiItem[], erc20Token)
-      // user2 has no dt1
-      expect(await erc20Contract.methods.balanceOf(user2).call()).to.equal('0')
+      // user1 has no dt1
+      expect(await balance(web3, erc20Token, user1)).to.equal('0')
     })
 
     it('#getBaseTokenBalance ', async () => {
       expect(
-        await sideStaking.getBaseTokenBalance(sideStakingAddress, erc20Token)
+        await sideStaking.getBaseTokenBalance(contracts.sideStakingAddress, erc20Token)
       ).to.equal('0')
     })
-    // it('#getDatatokenBalance ', async () => {
-    //   expect(
-    //     await sideStaking.getDatatokenBalance(sideStakingAddress, erc20Token)
-    //   ).to.equal('997999.9999999999')
-    // })
 
-    it('#getvestingAmount ', async () => {
-      expect(await sideStaking.getvestingAmount(sideStakingAddress, erc20Token)).to.equal(
-        '0'
+    it('#getDatatokenBalance ', async () => {
+      expect(
+        await (
+          await sideStaking.getDatatokenBalance(contracts.sideStakingAddress, erc20Token)
+        ).toString()
+      ).to.equal(
+        new BigNumber(2)
+          .exponentiatedBy(256)
+          .minus(1)
+          .dividedBy(new BigNumber(10).exponentiatedBy(18))
+          .minus(BASE_TOKEN_LIQUIDITY)
+          .toString()
       )
     })
+
+    it('#getvestingAmount ', async () => {
+      expect(
+        await sideStaking.getvestingAmount(contracts.sideStakingAddress, erc20Token)
+      ).to.equal('0')
+    })
+
     it('#getvestingLastBlock ', async () => {
       expect(
-        await sideStaking.getvestingLastBlock(sideStakingAddress, erc20Token)
+        await sideStaking.getvestingLastBlock(contracts.sideStakingAddress, erc20Token)
       ).to.equal(initialBlock.toString())
     })
 
     it('#getvestingAmountSoFar ', async () => {
       expect(
-        await sideStaking.getvestingAmountSoFar(sideStakingAddress, erc20Token)
+        await sideStaking.getvestingAmountSoFar(contracts.sideStakingAddress, erc20Token)
       ).to.equal('0')
     })
 
     it('#swapExactAmountIn - should swap', async () => {
-      const transferAmount = await amountToUnits(web3, contracts.usdcAddress, '1000') // 1000 USDC
-      await usdcContract.methods
-        .transfer(user2, transferAmount)
-        .send({ from: factoryOwner })
+      await transfer(web3, factoryOwner, contracts.usdcAddress, user1, '1000') // 1000 USDC
+      await approve(web3, user1, contracts.usdcAddress, poolAddress, '10')
 
-      await approve(web3, user2, contracts.usdcAddress, poolAddress, '10')
       const tokenInOutMarket: TokenInOutMarket = {
         tokenIn: contracts.usdcAddress,
         tokenOut: erc20Token,
@@ -435,18 +435,22 @@ describe('SideStaking unit test', () => {
         swapMarketFee: '0.1'
       }
       const tx = await pool.swapExactAmountIn(
-        user2,
+        user1,
         poolAddress,
         tokenInOutMarket,
         amountsInOutMaxFee
       )
-      expect(await erc20Contract.methods.balanceOf(user2).call()).to.equal(
-        tx.events.LOG_SWAP.returnValues.tokenAmountOut
+      expect(await balance(web3, erc20Token, user1)).to.equal(
+        await unitsToAmount(
+          web3,
+          erc20Token,
+          tx.events.LOG_SWAP.returnValues.tokenAmountOut
+        )
       )
     })
 
     it('#swapExactAmountOut - should swap', async () => {
-      await approve(web3, user2, contracts.usdcAddress, poolAddress, '100')
+      await approve(web3, user1, contracts.usdcAddress, poolAddress, '100')
       const tokenInOutMarket: TokenInOutMarket = {
         tokenIn: contracts.usdcAddress,
         tokenOut: erc20Token,
@@ -458,22 +462,21 @@ describe('SideStaking unit test', () => {
         swapMarketFee: '0.1'
       }
       const tx = await pool.swapExactAmountOut(
-        user2,
+        user1,
         poolAddress,
         tokenInOutMarket,
         amountsInOutMaxFee
       )
       assert(tx != null)
-      // console.log(tx.events)
     })
 
-    it('#joinswapExternAmountIn- user2 should add liquidity, receiving LP tokens', async () => {
+    it('#joinswapExternAmountIn- user1 should add liquidity, receiving LP tokens', async () => {
       const usdcAmountIn = '100'
       const minBPTOut = '0.1'
-      await approve(web3, user2, contracts.usdcAddress, poolAddress, '100', true)
+      await approve(web3, user1, contracts.usdcAddress, poolAddress, '100', true)
 
       const tx = await pool.joinswapExternAmountIn(
-        user2,
+        user1,
         poolAddress,
         usdcAmountIn,
         minBPTOut
@@ -489,12 +492,12 @@ describe('SideStaking unit test', () => {
       )
     })
 
-    it('#exitswapPoolAmountIn- user2 exit the pool receiving only USDC', async () => {
+    it('#exitswapPoolAmountIn- user1 exit the pool receiving only USDC', async () => {
       const BPTAmountIn = '0.5'
       const minUSDCOut = '0.5'
 
       const tx = await pool.exitswapPoolAmountIn(
-        user2,
+        user1,
         poolAddress,
         BPTAmountIn,
         minUSDCOut
