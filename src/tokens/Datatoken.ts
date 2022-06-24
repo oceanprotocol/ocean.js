@@ -1037,7 +1037,7 @@ export class Datatoken {
   ): Promise<TransactionReceipt> {
     const dtContract = new this.web3.eth.Contract(this.datatokensEnterpriseAbi, dtAddress)
     try {
-      const freContractParams = getFreOrderParams(freParams)
+      const freContractParams = await getFreOrderParams(this.web3, freParams)
 
       const estGas = await estimateGas(
         address,
