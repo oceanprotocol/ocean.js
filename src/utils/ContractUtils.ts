@@ -55,12 +55,25 @@ export function getErcCreationParams(ercParams: Erc20CreateParams): any {
   }
 }
 
-export async function getFreOrderParams(web3: Web3,freParams: FreOrderParams): Promise<any> {
+export async function getFreOrderParams(
+  web3: Web3,
+  freParams: FreOrderParams
+): Promise<any> {
   return {
     exchangeContract: freParams.exchangeContract,
     exchangeId: freParams.exchangeId,
-    maxBaseTokenAmount: await amountToUnits(web3,freParams.baseTokenAddress, freParams.maxBaseTokenAmount, freParams.baseTokenDecimals) ,
-    swapMarketFee: await amountToUnits(web3,freParams.baseTokenAddress,freParams.swapMarketFee,freParams.baseTokenDecimals),
+    maxBaseTokenAmount: await amountToUnits(
+      web3,
+      freParams.baseTokenAddress,
+      freParams.maxBaseTokenAmount,
+      freParams.baseTokenDecimals
+    ),
+    swapMarketFee: await amountToUnits(
+      web3,
+      freParams.baseTokenAddress,
+      freParams.swapMarketFee,
+      freParams.baseTokenDecimals
+    ),
     marketFeeAddress: freParams.marketFeeAddress
   }
 }
