@@ -1363,7 +1363,7 @@ export class Pool {
         tokenAmount: await this.unitsToAmount(
           tokenOut,
           result.tokenAmountIn,
-          tokenOutDecimals
+          tokenInDecimals
         ),
         liquidityProviderSwapFeeAmount: await this.unitsToAmount(
           tokenIn,

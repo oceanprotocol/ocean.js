@@ -486,6 +486,8 @@ describe('Datatoken', () => {
       exchangeContract: fixedRateAddress,
       exchangeId: exchangeId,
       maxBaseTokenAmount: '1',
+      baseTokenAddress: contracts.daiAddress,
+      baseTokenDecimals: 18,
       swapMarketFee: '0.1',
       marketFeeAddress: ZERO_ADDRESS
     }
