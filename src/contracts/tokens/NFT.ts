@@ -7,13 +7,11 @@ import {
   getFairGasPrice,
   generateDtName,
   setContractDefaults,
-  estimateGas,
-  ConfigHelper
-} from '../utils'
+  estimateGas
+} from '../../utils'
 import { Contract } from 'web3-eth-contract'
-import { MetadataProof } from '../../src/@types'
-import { Config } from '../models/index.js'
-import { MetadataAndTokenURI } from '../@types'
+import { MetadataProof, MetadataAndTokenURI } from '../../@types'
+import { Config, ConfigHelper } from '../../config'
 
 /**
  * ERC721 ROLES

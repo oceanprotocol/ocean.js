@@ -12,10 +12,9 @@ import {
   getPoolCreationParams,
   setContractDefaults,
   estimateGas,
-  ZERO_ADDRESS,
-  ConfigHelper
-} from '../utils'
-import { Config } from '../models/index.js'
+  ZERO_ADDRESS
+} from '../../utils'
+import { Config, ConfigHelper } from '../../config'
 import {
   ProviderFees,
   FreCreationParams,
@@ -23,7 +22,7 @@ import {
   PoolCreationParams,
   DispenserCreationParams,
   ConsumeMarketFee
-} from '../@types/index.js'
+} from '../../@types'
 
 interface Template {
   templateAddress: string

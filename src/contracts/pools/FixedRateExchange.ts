@@ -10,10 +10,9 @@ import {
   amountToUnits,
   unitsToAmount,
   estimateGas,
-  ZERO_ADDRESS,
-  ConfigHelper
+  ZERO_ADDRESS
 } from '../../utils'
-import { Config } from '../../models/index.js'
+import { Config, ConfigHelper } from '../../config'
 import { PriceAndFees } from '../..'
 
 export interface FixedPriceExchange {
