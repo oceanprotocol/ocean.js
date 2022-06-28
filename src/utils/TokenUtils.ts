@@ -1,15 +1,15 @@
 import Decimal from 'decimal.js'
 import { Contract } from 'web3-eth-contract'
+import { TransactionReceipt } from 'web3-core'
+import Web3 from 'web3'
 import {
   amountToUnits,
   estimateGas,
   getFairGasPrice,
-  unitsToAmount
-} from './ContractUtils'
-import { minAbi } from './minAbi'
-import LoggerInstance from './Logger'
-import { TransactionReceipt } from 'web3-core'
-import Web3 from 'web3'
+  unitsToAmount,
+  minAbi,
+  LoggerInstance
+} from '.'
 
 /**
  * Estimate gas cost for approval function

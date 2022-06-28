@@ -1,5 +1,5 @@
 export * from './@types'
-export * from './services'
-export * from './contracts'
 export * from './config'
+export * from './contracts'
+export * from './services'
 export * from './utils'

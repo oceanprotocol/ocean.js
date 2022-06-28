@@ -1,5 +1,5 @@
-import { LogLevel } from '../utils/Logger'
 import { AbiItem } from 'web3-utils/types'
+import { LogLevel } from '../utils'
 
 export class Config {
   /**
@@ -195,5 +195,3 @@ export class Config {
    */
   gasFeeMultiplier: number
 }
-
-export default Config
