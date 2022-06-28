@@ -45,7 +45,9 @@
     "test:integration:cover": "nyc --report-dir coverage/integration --exclude 'src/@types/**/*' --no-clean npm run test:integration",
     "create:guide": "chmod +x ./scripts/createCodeExamples.sh && ./scripts/createCodeExamples.sh",
     "create:guide:mac": "chmod +x ./scripts/createCodeExamples-mac.sh && ./scripts/createCodeExamples-mac.sh",
-    "commit:guide": "chmod +x scripts/commitChanges.sh && scripts/commitChanges.sh"
+    "create:guidec2d": "chmod +x ./scripts/createC2DExamples.sh && ./scripts/createC2DExamples.sh",
+    "create:guidec2d:mac": "chmod +x ./scripts/createC2DExamples-mac.sh && ./scripts/createC2DExamples-mac.sh",
+    "commit:guides": "chmod +x scripts/commitChanges.sh && scripts/commitChanges.sh"
   },
   "repository": {
     "type": "git",
