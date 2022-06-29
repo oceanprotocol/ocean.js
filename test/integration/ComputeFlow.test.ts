@@ -449,6 +449,7 @@ describe('Simple compute tests', async () => {
       serviceId: resolvedAlgoDdoWith1mTimeout.services[0].id
     }
 
+    console.log(computeValidUntil)
     providerInitializeComputeResults = await ProviderInstance.initializeCompute(
       assets,
       algo,
