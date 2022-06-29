@@ -172,8 +172,7 @@ export async function amountToUnits(
     const amountFormatted = new BigNumber(amount).times(
       new BigNumber(10).exponentiatedBy(decimals)
     )
-
-    return amountFormatted.toString()
+    return amountFormatted.toFixed(0)
   } catch (e) {
     LoggerInstance.error(`ERROR: FAILED TO CALL DECIMALS(), USING 18', ${e.message}`)
   }
