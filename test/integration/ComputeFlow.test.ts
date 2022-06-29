@@ -51,7 +51,7 @@ let paidEnvAlgoTxId
 
 // let's have 2 minutes of compute access
 const mytime = new Date()
-const computeMinutes = 1
+const computeMinutes = 10
 mytime.setMinutes(mytime.getMinutes() + computeMinutes)
 let computeValidUntil = Math.floor(mytime.getTime() / 1000)
 
@@ -449,7 +449,6 @@ describe('Simple compute tests', async () => {
       serviceId: resolvedAlgoDdoWith1mTimeout.services[0].id
     }
 
-    console.log(computeValidUntil)
     providerInitializeComputeResults = await ProviderInstance.initializeCompute(
       assets,
       algo,
