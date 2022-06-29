@@ -537,8 +537,6 @@ describe('Compute flow tests', async () => {
     mytime.setMinutes(mytime.getMinutes() + computeMinutes)
     const computeValidUntil = Math.floor(mytime.getTime() / 1000)
 
-    console.log(computeValidUntil)
-
     const providerInitializeComputeResults = await ProviderInstance.initializeCompute(
       assets,
       algo,
