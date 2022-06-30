@@ -16,35 +16,14 @@ import {
 } from '../../utils'
 import { Config, ConfigHelper } from '../../config'
 import {
-  ProviderFees,
   FreCreationParams,
   Erc20CreateParams,
   PoolCreationParams,
   DispenserCreationParams,
-  ConsumeMarketFee
+  NftCreateData,
+  Template,
+  TokenOrder
 } from '../../@types'
-
-interface Template {
-  templateAddress: string
-  isActive: boolean
-}
-
-export interface TokenOrder {
-  tokenAddress: string
-  consumer: string
-  serviceIndex: number
-  _providerFee: ProviderFees
-  _consumeMarketFee: ConsumeMarketFee
-}
-
-export interface NftCreateData {
-  name: string
-  symbol: string
-  templateIndex: number
-  tokenURI: string
-  transferable: boolean
-  owner: string
-}
 
 /**
  * Provides an interface for NFT Factory contract

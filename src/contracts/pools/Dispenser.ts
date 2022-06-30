@@ -12,16 +12,7 @@ import {
 } from '../../utils/'
 import { Datatoken } from '..'
 import { Config, ConfigHelper } from '../../config'
-
-export interface DispenserToken {
-  active: boolean
-  owner: string
-  maxTokens: string
-  maxBalance: string
-  balance: string
-  isMinter: boolean
-  allowedSwapper: string
-}
+import { DispenserToken } from '../../@types'
 
 export class Dispenser {
   public web3: Web3 = null

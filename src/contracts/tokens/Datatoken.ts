@@ -18,36 +18,16 @@ import {
   FreOrderParams,
   FreCreationParams,
   ProviderFees,
-  PublishingMarketFee
+  PublishingMarketFee,
+  DispenserParams,
+  OrderParams,
+  DatatokenRoles
 } from '../../@types'
 import { Nft } from './NFT'
 import { Config, ConfigHelper } from '../../config'
 
-/**
- * ERC20 ROLES
- */
-interface Roles {
-  minter: boolean
-  paymentManager: boolean
-}
-
-export interface OrderParams {
-  consumer: string
-  serviceIndex: number
-  _providerFee: ProviderFees
-  _consumeMarketFee: ConsumeMarketFee
-}
-
-export interface DispenserParams {
-  maxTokens: string
-  maxBalance: string
-  withMint?: boolean // true if we want to allow the dispenser to be a minter
-  allowedSwapper?: string // only account that can ask tokens. set address(0) if not required
-}
-
 export class Datatoken {
   public factoryAddress: string
-  public factoryABI: AbiItem | AbiItem[]
   public datatokensAbi: AbiItem | AbiItem[]
   public datatokensEnterpriseAbi: AbiItem | AbiItem[]
   public web3: Web3
@@ -1234,9 +1214,12 @@ export class Datatoken {
   /** Returns ERC20 user's permissions for a datatoken
    * @param {String} dtAddress Datatoken adress
    * @param {String} address user adress
-   * @return {Promise<Roles>}
+   * @return {Promise<DatatokenRoles>}
    */
-  public async getDTPermissions(dtAddress: string, address: string): Promise<Roles> {
+  public async getDTPermissions(
+    dtAddress: string,
+    address: string
+  ): Promise<DatatokenRoles> {
     const dtContract = setContractDefaults(
       new this.web3.eth.Contract(this.datatokensAbi, dtAddress),
       this.config

@@ -10,22 +10,11 @@ import {
   estimateGas
 } from '../../utils'
 import { Contract } from 'web3-eth-contract'
-import { MetadataProof, MetadataAndTokenURI } from '../../@types'
+import { MetadataProof, MetadataAndTokenURI, NftRoles } from '../../@types'
 import { Config, ConfigHelper } from '../../config'
-
-/**
- * ERC721 ROLES
- */
-interface Roles {
-  manager: boolean
-  deployERC20: boolean
-  updateMetadata: boolean
-  store: boolean
-}
 
 export class Nft {
   public factory721Address: string
-  public factory721Abi: AbiItem | AbiItem[]
   public nftAbi: AbiItem | AbiItem[]
   public web3: Web3
   public startBlock: number
@@ -1173,9 +1162,9 @@ export class Nft {
   /** Get users NFT Permissions
    * @param {String} nftAddress erc721 contract adress
    * @param {String} address user adress
-   * @return {Promise<Roles>}
+   * @return {Promise<NftRoles>}
    */
-  public async getNftPermissions(nftAddress: string, address: string): Promise<Roles> {
+  public async getNftPermissions(nftAddress: string, address: string): Promise<NftRoles> {
     const nftContract = setContractDefaults(
       new this.web3.eth.Contract(this.nftAbi, nftAddress),
       this.config
@@ -1199,7 +1188,7 @@ export class Nft {
   /** Get users ERC20Deployer role
    * @param {String} nftAddress erc721 contract adress
    * @param {String} address user adress
-   * @return {Promise<Roles>}
+   * @return {Promise<boolean>}
    */
   public async isErc20Deployer(nftAddress: string, address: string): Promise<boolean> {
     const nftContract = setContractDefaults(

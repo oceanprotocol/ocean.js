@@ -9,21 +9,10 @@ import {
   ComputeAsset,
   ComputeEnvironment,
   ProviderInitialize,
-  ProviderComputeInitializeResults
+  ProviderComputeInitializeResults,
+  ServiceEndpoint,
+  UserCustomParameters
 } from '../@types'
-
-export interface HttpCallback {
-  (httpMethod: string, url: string, body: string, header: any): Promise<any>
-}
-
-export interface ServiceEndpoint {
-  serviceName: string
-  method: string
-  urlPath: string
-}
-export interface UserCustomParameters {
-  [key: string]: any
-}
 
 export class Provider {
   /**
