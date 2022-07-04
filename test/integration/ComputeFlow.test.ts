@@ -175,7 +175,8 @@ const algoDdoWithNoTimeout = {
         entrypoint: 'node $ALGO',
         image: 'ubuntu',
         tag: 'latest',
-        checksum: '44e10daa6637893f4276bb8d7301eb35306ece50f61ca34dcab550'
+        checksum:
+          'sha256:bace9fb0d5923a675c894d5c815da75ffe35e24970166a48a4460a48ae6e0d19'
       }
     }
   },
@@ -216,7 +217,8 @@ const algoDdoWith1mTimeout = {
         entrypoint: 'node $ALGO',
         image: 'ubuntu',
         tag: 'latest',
-        checksum: '44e10daa6637893f4276bb8d7301eb35306ece50f61ca34dcab550'
+        checksum:
+          'sha256:bace9fb0d5923a675c894d5c815da75ffe35e24970166a48a4460a48ae6e0d19'
       }
     }
   },
