@@ -86,8 +86,6 @@ import {
   ConsumeMarketFee,
   approveWei
 } from '@oceanprotocol/lib'
-// you can see an example of the ../config file in
-// https://github.com/oceanprotocol/ocean.js/blob/main/test/config.ts
 import { web3, getTestConfig, getAddresses } from '../config'
 ```
 
