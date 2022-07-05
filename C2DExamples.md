@@ -86,6 +86,8 @@ import {
   ConsumeMarketFee,
   approveWei
 } from '@oceanprotocol/lib'
+// you can see an example of the ../config file in
+// https://github.com/oceanprotocol/ocean.js/blob/main/test/config.ts
 import { web3, getTestConfig, getAddresses } from '../config'
 ```
 
@@ -283,13 +285,13 @@ Again, lets console log the values so that we can check that they have been save
   
 ```
 
-  ### 5.2 Next, lets get the address of the deployed contracts
+  ### 5.2 Get the address of the deployed contracts
 ```Typescript
     addresses = getAddresses()
   
 ```
 
-  ### 5.3 We send some OCEAN to consumer account
+  ### 5.3 Send some OCEAN to consumer account
 ```Typescript
     transfer(web3, publisherAccount, addresses.Ocean, consumerAccount, '100')
   
@@ -339,7 +341,7 @@ Now, we did quite a few things there. Let's check that we successfully published
 ```Typescript
     const nft = new Nft(web3)
 ```
-Now we update the ddo and set the right did
+Now we update the DDO and set the right did
 ```Typescript
     DATASET_DDO.chainId = await web3.eth.getChainId()
     DATASET_DDO.id =
@@ -424,7 +426,7 @@ Now, we did quite a few things there. Let's check that we successfully published
 ```Typescript
     const nft = new Nft(web3)
 ```
-Now we update the ddo and set the right did
+Now we update the DDO and set the right did
 ```Typescript
     ALGORITHM_DDO.chainId = await web3.eth.getChainId()
     ALGORITHM_DDO.id =
@@ -569,7 +571,7 @@ Now let's console log the result to check everything is working
   
 ```
 
-## 11. Check compute status and get download compute results url
+## 11. Check compute status and get download compute results URL
   ### 11.1 Check compute status
 ```Typescript
     const jobStatus = (await ProviderInstance.computeStatus(
@@ -583,7 +585,7 @@ Now let's console log the result to check everything is working
   
 ```
 
-  ### 11.2 Get download compute results url
+  ### 11.2 Get download compute results URL
 ```Typescript
     await sleep(10000)
     const downloadURL = await ProviderInstance.getComputeResultUrl(
