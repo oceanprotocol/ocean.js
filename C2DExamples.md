@@ -8,8 +8,8 @@ Here are the steps:
 3. [Install dependencies](#-install-dependencies)
 4. [Import dependencies and add variables and constants](#-import-dependencies-and-add-variables-and-constants)
 5. [Initialize accounts and deploy contracts](#-initialize-accounts-and-deploy-contracts)
-6. [Publish a dataset (Data NFT and datatoken)](#-publish-a-dataset-data-nft-and-datatoken)
-7. [Publish an algorithm (Data NFT and datatoken)](#-publish-an-algorithm-data-nft-and-datatoken)
+6. [Publish a dataset (Data NFT and Datatoken)](#-publish-a-dataset-data-nft-and-datatoken)
+7. [Publish an algorithm (Data NFT and Datatoken)](#-publish-an-algorithm-data-nft-and-datatoken)
 8. [Resolve published datasets and algorithms](#-resolve-published-datasets-and-algorithms)
 9. [Send datatokens to consumer](#-send-datatokens-to-consumer)
 10. [Consumer starts a compute job using a free C2D environment](#-consumer-starts-a-compute-job-using-a-free-c2D-environment)
@@ -54,7 +54,7 @@ cat > marketplace.js
 Install dependencies running the following command in your terminal:
 
 ```bash
-npm install @oceanprotocol/contracts @oceanprotocol/lib crypto-js web3
+npm install @oceanprotocol/lib crypto-js web3
 ```
 
 ## 4. Import dependencies and add variables and constants
@@ -155,7 +155,7 @@ Now we define the variables which we will need later
   let computeJobId: string
 ```
 
- We will need two files to publish, one as dataset and one as algorithm, so here we define the files that we intend to publish.
+ We will need two files to publish, one as Dataset and one as Algorithm, so here we define the files that we intend to publish.
 ```Typescript
   const DATASET_ASSET_URL: Files = {
     datatokenAddress: '0x0',
@@ -182,7 +182,7 @@ Now we define the variables which we will need later
   }
 ```
 
-Next, we define the metadata for the dataset and algorithm that will describe our data assets. This is what we call the DDOs
+Next, we define the metadata for the Dataset and Algorithm that will describe our data assets. This is what we call the DDOs
 ```Typescript
   const DATASET_DDO: any = {
     '@context': ['https://w3id.org/did/v1'],
@@ -295,9 +295,9 @@ Again, lets console log the values so that we can check that they have been save
   
 ```
 
-## 6. Publish a dataset (Data NFT and datatoken)
+## 6. Publish a dataset (Data NFT and Datatoken)
 
-  ### 6.1 Publish a dataset (create NFT + datatoken)
+  ### 6.1 Publish a dataset (create NFT + Datatoken)
 ```Typescript
     const factory = new NftFactory(addresses.ERC721Factory, web3)
 
@@ -328,10 +328,10 @@ Now we can make the contract call
     datasetNftAddress = tx.events.NFTCreated.returnValues[0]
     datasetDatatokenAddress = tx.events.TokenCreated.returnValues[0]
 ```
-Now, we did quite a few things there. Let's check that we successfully published a dataset (create NFT + datatoken)
+Now, we did quite a few things there. Let's check that we successfully published a dataset (create NFT + Datatoken)
 ```Typescript
     console.log(`Dataset NFT address: ${datasetNftAddress}`)
-    console.log(`Dataset datatoken address: ${datasetDatatokenAddress}`)
+    console.log(`Dataset Datatoken address: ${datasetDatatokenAddress}`)
   
 ```
 
@@ -380,9 +380,9 @@ Now let's console log the result to check everything is working
   
 ```
 
-## 7. Publish an algorithm (Data NFT and datatoken)
+## 7. Publish an algorithm (Data NFT and Datatoken)
 
-  ### 7.1 Publish an algorithm (create NFT + datatoken)
+  ### 7.1 Publish an algorithm (create NFT + Datatoken)
 ```Typescript
     const factory = new NftFactory(addresses.ERC721Factory, web3)
 
@@ -413,10 +413,10 @@ Now we can make the contract call
     algorithmNftAddress = tx.events.NFTCreated.returnValues[0]
     algorithmDatatokenAddress = tx.events.TokenCreated.returnValues[0]
 ```
-Now, we did quite a few things there. Let's check that we successfully published an algorithm (create NFT + datatoken)
+Now, we did quite a few things there. Let's check that we successfully published an algorithm (create NFT + Datatoken)
 ```Typescript
     console.log(`Algorithm NFT address: ${algorithmNftAddress}`)
-    console.log(`Algorithm datatoken address: ${algorithmDatatokenAddress}`)
+    console.log(`Algorithm Datatoken address: ${algorithmDatatokenAddress}`)
   
 ```
 
