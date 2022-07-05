@@ -51,7 +51,7 @@ let paidEnvAlgoTxId
 
 // let's have 2 minutes of compute access
 const mytime = new Date()
-const computeMinutes = 1
+const computeMinutes = 2
 mytime.setMinutes(mytime.getMinutes() + computeMinutes)
 let computeValidUntil = Math.floor(mytime.getTime() / 1000)
 
