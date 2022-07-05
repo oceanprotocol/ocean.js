@@ -283,13 +283,13 @@ describe('Compute flow tests', async () => {
   }) ///
   /// ```
 
-  it('5.2 Next, lets get the address of the deployed contracts', async () => {
+  it('5.2 Get the address of the deployed contracts', async () => {
     /// ```Typescript
     addresses = getAddresses()
   }) ///
   /// ```
 
-  it('5.3 We send some OCEAN to consumer account', async () => {
+  it('5.3 Send some OCEAN to consumer account', async () => {
     /// ```Typescript
     transfer(web3, publisherAccount, addresses.Ocean, consumerAccount, '100')
   }) ///
@@ -339,7 +339,7 @@ describe('Compute flow tests', async () => {
     /// ```Typescript
     const nft = new Nft(web3)
     /// ```
-    /// Now we update the ddo and set the right did
+    /// Now we update the DDO and set the right did
     /// ```Typescript
     DATASET_DDO.chainId = await web3.eth.getChainId()
     DATASET_DDO.id =
@@ -424,7 +424,7 @@ describe('Compute flow tests', async () => {
     /// ```Typescript
     const nft = new Nft(web3)
     /// ```
-    /// Now we update the ddo and set the right did
+    /// Now we update the DDO and set the right did
     /// ```Typescript
     ALGORITHM_DDO.chainId = await web3.eth.getChainId()
     ALGORITHM_DDO.id =
@@ -569,7 +569,7 @@ describe('Compute flow tests', async () => {
   }) ///
   /// ```
 
-  /// ## 11. Check compute status and get download compute results url
+  /// ## 11. Check compute status and get download compute results URL
   it('11.1 Check compute status', async () => {
     /// ```Typescript
     const jobStatus = (await ProviderInstance.computeStatus(
@@ -583,7 +583,7 @@ describe('Compute flow tests', async () => {
   }) ///
   /// ```
 
-  it('11.2 Get download compute results url', async () => {
+  it('11.2 Get download compute results URL', async () => {
     /// ```Typescript
     await sleep(10000)
     const downloadURL = await ProviderInstance.getComputeResultUrl(
