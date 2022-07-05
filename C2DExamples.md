@@ -49,23 +49,12 @@ cat > marketplace.js
 # On linux press CTRL + D to save
 ```
 
-## 3. Install dependancies
+## 3. Install dependencies
 
-Open the package.json file in a text editor and update the dependancies to include the following:
-
-```JSON
-  "dependencies": {
-    "@oceanprotocol/contracts": "1.0.0-alpha.28",
-    "@oceanprotocol/lib": "1.0.0-next.37",
-    "crypto-js": "^4.1.1",
-    "web3": "^1.7.3"
-  }
-```
-
-Now in your terminal run the following command:
+Install dependencies running the following command in your terminal:
 
 ```bash
-npm install
+npm install @oceanprotocol/contracts @oceanprotocol/lib crypto-js web3
 ```
 
 ## 4. Import dependencies and add variables and constants
@@ -216,7 +205,7 @@ Next, we define the metadata for the Dataset and Algorithm that will describe ou
         type: 'compute',
         files: '',
         datatokenAddress: '0x0',
-        serviceEndpoint: 'https://providerv4.rinkeby.oceanprotocol.com',
+        serviceEndpoint: 'https://v4.provider.rinkeby.oceanprotocol.com/',
         timeout: 60,
         compute: {
           publisherTrustedAlgorithmPublishers: [],
@@ -259,7 +248,7 @@ Next, we define the metadata for the Dataset and Algorithm that will describe ou
         type: 'access',
         files: '',
         datatokenAddress: '0x0',
-        serviceEndpoint: 'https://providerv4.rinkeby.oceanprotocol.com',
+        serviceEndpoint: 'https://v4.provider.rinkeby.oceanprotocol.com/',
         timeout: 60
       }
     ]
