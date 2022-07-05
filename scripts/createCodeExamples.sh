@@ -26,7 +26,7 @@ fi
 eval "sed $params \"s/import { assert } from 'chai'//\" $outputfile"
 
 # Change imports
-eval "sed $params \"s/} from '../../src'/} from '@oceanprotocol/lib'/\" $outputfile"
+eval "sed $params \"s/} from '..\/..\/src'/} from '@oceanprotocol\/lib'/\" $outputfile"
 
 # Replace comments
 eval "sed $params \"s/}) \/\/\/ //\" $outputfile"
