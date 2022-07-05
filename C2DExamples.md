@@ -85,7 +85,7 @@ import {
   ProviderComputeInitialize,
   ConsumeMarketFee,
   approveWei
-} from '../../src'
+} from '@oceanprotocol/lib'
 import { web3, getTestConfig, getAddresses } from '../config'
 ```
 
