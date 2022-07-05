@@ -216,7 +216,7 @@ describe('Compute flow tests', async () => {
         type: 'compute',
         files: '',
         datatokenAddress: '0x0',
-        serviceEndpoint: 'https://providerv4.rinkeby.oceanprotocol.com',
+        serviceEndpoint: 'https://v4.provider.rinkeby.oceanprotocol.com/',
         timeout: 60,
         compute: {
           publisherTrustedAlgorithmPublishers: [],
@@ -259,7 +259,7 @@ describe('Compute flow tests', async () => {
         type: 'access',
         files: '',
         datatokenAddress: '0x0',
-        serviceEndpoint: 'https://providerv4.rinkeby.oceanprotocol.com',
+        serviceEndpoint: 'https://v4.provider.rinkeby.oceanprotocol.com/',
         timeout: 60
       }
     ]
