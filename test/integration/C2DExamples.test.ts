@@ -51,21 +51,10 @@
 
 /// ## 3. Install dependencies
 
-/// Open the package.json file in a text editor and update the dependencies to include the following:
-
-/// ```JSON
-///   "dependencies": {
-///     "@oceanprotocol/contracts": "1.0.0-alpha.28",
-///     "@oceanprotocol/lib": "1.0.0-next.37",
-///     "crypto-js": "^4.1.1",
-///     "web3": "^1.7.3"
-///   }
-/// ```
-
-/// Now in your terminal run the following command:
+/// Install dependencies running the following command in your terminal:
 
 /// ```bash
-/// npm install
+/// npm install @oceanprotocol/contracts @oceanprotocol/lib crypto-js web3
 /// ```
 
 /// ## 4. Import dependencies and add variables and constants
