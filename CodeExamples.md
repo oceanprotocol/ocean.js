@@ -190,7 +190,7 @@ Next, we define the metadata that will describe our data asset. This is what we 
         type: 'access',
         files: '',
         datatokenAddress: '0x0',
-        serviceEndpoint: 'https://providerv4.rinkeby.oceanprotocol.com',
+        serviceEndpoint: 'https://v4.provider.rinkeby.oceanprotocol.com',
         timeout: 0
       }
     ]
