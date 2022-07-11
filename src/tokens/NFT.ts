@@ -1174,15 +1174,19 @@ export class Nft {
     key: string,
     value: string
   ): Promise<TransactionReceipt> {
-    const dtContract = setContractDefaults(
+    if ((await this.getNftPermissions(nftAddress, address)).store !== true) {
+      throw new Error(`User is not ERC20 store updater`)
+    }
+
+    const nftContract = setContractDefaults(
       new this.web3.eth.Contract(this.nftAbi, nftAddress),
       this.config
     )
 
-    const estGas = await estimateGas(address, dtContract.methods.setNewData, key, value)
+    const estGas = await estimateGas(address, nftContract.methods.setNewData, key, value)
 
     // Call setData function of the contract
-    const trxReceipt = await dtContract.methods.setNewData(key, value).send({
+    const trxReceipt = await nftContract.methods.setNewData(key, value).send({
       from: address,
       gas: estGas + 1,
       gasPrice: await getFairGasPrice(this.web3, this.config)
