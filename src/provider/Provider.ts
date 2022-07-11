@@ -168,8 +168,9 @@ export class Provider {
    */
   public async checkDidFiles(
     did: string,
-    serviceId: number,
+    serviceId: string,
     providerUri: string,
+    withChecksum: boolean = false,
     signal?: AbortSignal
   ): Promise<FileInfo[]> {
     const providerEndpoints = await this.getEndpoints(providerUri)
@@ -177,7 +178,7 @@ export class Provider {
       providerUri,
       providerEndpoints
     )
-    const args = { did: did, serviceId: serviceId }
+    const args = { did: did, serviceId: serviceId, checksum: withChecksum }
     const files: FileInfo[] = []
     const path = this.getEndpointURL(serviceEndpoints, 'fileinfo')
       ? this.getEndpointURL(serviceEndpoints, 'fileinfo').urlPath
