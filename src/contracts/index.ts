@@ -1,3 +1,5 @@
+export * from './SmartContract'
+export * from './SmartContractWithAddress'
 export * from './factories/NFTFactory'
 export * from './pools/Dispenser'
 export * from './pools/FixedRateExchange'
