@@ -549,19 +549,18 @@ describe('Datatoken', () => {
   })
 
   it('#setData - should set a value into 725Y standard, if Caller has ERC20Deployer permission', async () => {
-    const data = web3.utils.asciiToHex('SomeData')
+    const data = 'SomeData'
 
     assert((await nftDatatoken.isErc20Deployer(nftAddress, nftOwner)) === true)
 
     await datatoken.setData(datatokenAddress, nftOwner, data)
 
-    const key = web3.utils.keccak256(datatokenAddress)
-    assert((await nftDatatoken.getData(nftAddress, key)) === data)
+    assert((await nftDatatoken.getData(nftAddress, datatokenAddress)) === data)
   })
 
   it('#setData - should FAIL to set a value into 725Y standard, if Caller has NOT ERC20Deployer permission', async () => {
-    const data = web3.utils.asciiToHex('NewData')
-    const OldData = web3.utils.asciiToHex('SomeData')
+    const data = 'NewData'
+    const OldData = 'SomeData'
     assert((await nftDatatoken.isErc20Deployer(nftAddress, user1)) === false)
 
     try {
@@ -570,8 +569,7 @@ describe('Datatoken', () => {
     } catch (e) {
       assert(e.message === 'User is not ERC20 Deployer')
     }
-    const key = web3.utils.keccak256(datatokenAddress)
-    assert((await nftDatatoken.getData(nftAddress, key)) === OldData)
+    assert((await nftDatatoken.getData(nftAddress, datatokenAddress)) === OldData)
   })
 
   it('#getDecimals - should return the number of decimals of the datatoken', async () => {
