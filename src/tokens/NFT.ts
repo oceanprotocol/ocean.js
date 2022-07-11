@@ -1183,10 +1183,18 @@ export class Nft {
       this.config
     )
 
-    const estGas = await estimateGas(address, nftContract.methods.setNewData, key, value)
+    const keyHash = this.web3.utils.keccak256(key)
+    const valueHex = this.web3.utils.asciiToHex(value)
+
+    const estGas = await estimateGas(
+      address,
+      nftContract.methods.setNewData,
+      keyHash,
+      valueHex
+    )
 
     // Call setData function of the contract
-    const trxReceipt = await nftContract.methods.setNewData(key, value).send({
+    const trxReceipt = await nftContract.methods.setNewData(keyHash, valueHex).send({
       from: address,
       gas: estGas + 1,
       gasPrice: await getFairGasPrice(this.web3, this.config)
@@ -1258,8 +1266,9 @@ export class Nft {
       new this.web3.eth.Contract(this.nftAbi, nftAddress),
       this.config
     )
-    const data = await nftContract.methods.getData(key).call()
-    return data
+    const keyHash = this.web3.utils.keccak256(key)
+    const data = await nftContract.methods.getData(keyHash).call()
+    return data ? this.web3.utils.hexToAscii(data) : null
   }
 
   /** Gets data at a given `key`
