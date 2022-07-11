@@ -1159,6 +1159,38 @@ export class Nft {
     return trxReceipt
   }
 
+  /** setData
+   * This function allows to store data with a preset key (keccak256(ERC20Address)) into NFT 725 Store
+   * only ERC20Deployer can succeed
+   * @param nftAddress erc721 contract adress
+   * @param address user adress
+   * @param key Key of the data to be stored into 725Y standard
+   * @param value Data to be stored into 725Y standard
+   * @return {Promise<TransactionReceipt>} transactionId
+   */
+  public async setData(
+    nftAddress: string,
+    address: string,
+    key: string,
+    value: string
+  ): Promise<TransactionReceipt> {
+    const dtContract = setContractDefaults(
+      new this.web3.eth.Contract(this.nftAbi, nftAddress),
+      this.config
+    )
+
+    const estGas = await estimateGas(address, dtContract.methods.setNewData, key, value)
+
+    // Call setData function of the contract
+    const trxReceipt = await dtContract.methods.setNewData(key, value).send({
+      from: address,
+      gas: estGas + 1,
+      gasPrice: await getFairGasPrice(this.web3, this.config)
+    })
+
+    return trxReceipt
+  }
+
   /** Get Owner
    * @param {String} nftAddress erc721 contract adress
    * @return {Promise<string>} string
