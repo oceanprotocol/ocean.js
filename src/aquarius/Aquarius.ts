@@ -173,7 +173,7 @@ export class Aquarius {
       }
     } catch (error) {
       LoggerInstance.error('Error getting metadata: ', error)
-      throw new Error('Error getting metadata: ', error)
+      throw new Error('Error getting metadata: ' + error)
     }
   }
 
@@ -203,7 +203,7 @@ export class Aquarius {
       }
     } catch (error) {
       LoggerInstance.error('Error querying metadata: ', error)
-      throw new Error('Error querying metadata: ', error)
+      throw new Error('Error querying metadata: ' + error)
     }
   }
 }
