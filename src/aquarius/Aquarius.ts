@@ -1,6 +1,30 @@
 import { LoggerInstance, sleep } from '../utils'
 import { Asset, DDO, ValidateMetadata } from '../@types/'
 import fetch from 'cross-fetch'
+
+export interface SearchQuery {
+  from?: number
+  size?: number
+  query: {
+    match?: {
+      [property: string]:
+        | string
+        | number
+        | boolean
+        | Record<string, string | number | boolean>
+    }
+    // eslint-disable-next-line camelcase
+    query_string?: {
+      [property: string]: string | number | string[] | number[] | boolean
+    }
+    // eslint-disable-next-line camelcase
+    simple_query_string?: {
+      [property: string]: string | number | string[] | number[] | boolean
+    }
+  }
+  sort?: { [jsonPath: string]: string }
+}
+
 export class Aquarius {
   public aquariusURL
   /**
@@ -120,6 +144,37 @@ export class Aquarius {
       LoggerInstance.error('Error validating metadata: ', error)
     }
     return status
+  }
+
+  /**
+   * Search over the DDOs using a query.
+   * @param  {SearchQuery} query Query to filter the DDOs.
+   * @param {AbortSignal} signal abort signal
+   * @return {Promise<QueryResult>}
+   */
+  public async querySearch(query: SearchQuery, signal?: AbortSignal): Promise<any> {
+    const path = this.aquariusURL + '/api/aquarius/assets/query'
+
+    try {
+      const response = await fetch(path, {
+        method: 'POST',
+        body: JSON.stringify(query),
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        signal: signal
+      })
+
+      if (response.ok) {
+        return response.json()
+      } else {
+        LoggerInstance.error('querySearch failed: ', response.status, response.statusText)
+        return null
+      }
+    } catch (error) {
+      LoggerInstance.error('Error querying metadata: ', error)
+      throw new Error('Error querying metadata: ', error)
+    }
   }
 }
 
