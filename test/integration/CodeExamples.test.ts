@@ -112,8 +112,8 @@ import {
   TokenInOutMarket,
   transfer,
   ZERO_ADDRESS
-} from '../../src'
-import { getAddresses, getTestConfig, web3 } from '../config'
+} from '@oceanprotocol/lib'
+import { getAddresses, getTestConfig, web3 } from '@oceanprotocol/lib/dist/test/config'
 /// ```
 
 /// <!--
