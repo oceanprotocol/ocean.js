@@ -112,9 +112,19 @@ import {
   TokenInOutMarket,
   transfer,
   ZERO_ADDRESS
-} from '@oceanprotocol/lib'
-import { getAddresses, getTestConfig, web3 } from '@oceanprotocol/lib/dist/test/config'
+} from '../../src'
+import { getAddresses, getTestConfig, web3 } from '../config'
 /// ```
+
+/// ### Update relative import paths
+/// Change the import header of marketplace.js to import from the ocean.js module
+/// 1. Change the line
+/// From: ```} from '../../src'```
+/// To: ```} from '@oceanprotocol/lib'```
+///
+/// 2. Change the line
+/// From: ```import { getAddresses, getTestConfig, web3 } from '../config'```
+/// To: ```import { getAddresses, getTestConfig, web3 } from '@oceanprotocol/lib/dist/test/config'```
 
 /// <!--
 describe('Marketplace flow tests', async () => {
