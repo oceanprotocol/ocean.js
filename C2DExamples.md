@@ -86,7 +86,7 @@ import {
   ConsumeMarketFee,
   approveWei
 } from '@oceanprotocol/lib'
-import { web3, getTestConfig, getAddresses } from '../config'
+import { web3, getTestConfig, getAddresses } from '@oceanprotocol/lib/dist/test/config'
 ```
 
 Add a `handleOrder()`function.
