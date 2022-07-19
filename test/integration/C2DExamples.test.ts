@@ -45,7 +45,7 @@
 /// cd marketplace-quickstart
 /// npm init
 /// # Answer the questions in the command line prompt
-/// cat > marketplace.js
+/// touch marketplace.js
 /// # On linux press CTRL + D to save
 /// ```
 
