@@ -55,7 +55,7 @@
 /// cd marketplace-quickstart
 /// npm init
 /// # Answer the questions in the command line prompt
-/// touch marketplace.js
+/// touch marketplace.ts
 /// # On linux press CTRL + D to save
 /// ```
 
@@ -80,7 +80,7 @@
 
 /// ## 4. Import dependencies and add variables and constants
 
-/// Now open the `marketplace.js` file in your text editor.
+/// Now open the `marketplace.ts` file in your text editor.
 
 /// Start by importing all of the necessary dependencies
 
