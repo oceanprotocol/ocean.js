@@ -37,6 +37,12 @@ export interface FileInfo {
   method?: string
 
   /**
+   * Computed file checksum
+   * @type {string}
+   */
+  checksum?: string
+
+  /**
    * check if file exists
    * @type {boolean}
    */
