@@ -67,12 +67,6 @@
 /// npm install @oceanprotocol/lib crypto-js web3 typescript @types/node ts-node
 /// ```
 
-/// Now in your terminal run the following command:
-
-/// ```bash
-/// npm install
-/// ```
-
 /// ## 4. Import dependencies and add variables and constants
 
 /// Now open the `marketplace.ts` file in your text editor.
