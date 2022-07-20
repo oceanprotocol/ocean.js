@@ -54,7 +54,7 @@
 /// Install dependencies running the following command in your terminal:
 
 /// ```bash
-/// npm install @oceanprotocol/lib crypto-js web3
+/// npm install @oceanprotocol/lib crypto-js web3 typescript @types/node ts-node
 /// ```
 
 /// ## 4. Import dependencies and add variables and constants
