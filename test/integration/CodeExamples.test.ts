@@ -78,15 +78,26 @@
 ///     "removeComments": false,
 ///     "experimentalDecorators": true,
 ///     "preserveConstEnums": true,
-///     "outDir": "./dist/",
+///     "outDir": "./",
 ///     "sourceMap": true,
-///     "declarationDir": "./dist/"
+///     "declarationDir": "./d"
 ///   },
 ///   "include": [
-///     "src/**/*",
-///     "test/**/*"
+///     "marketplace.ts"
 ///   ]
 /// }
+/// ```
+
+/// Now you can compile your typescript with the following command:
+
+/// ```bash
+/// tsc
+/// ```
+
+/// To run your script as we go along, you can use the following command:
+
+/// ```bash
+/// node marketplace.js
 /// ```
 
 /// ## 3. Install dependencies
