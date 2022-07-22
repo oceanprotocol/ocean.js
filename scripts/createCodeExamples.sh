@@ -9,7 +9,7 @@ if [ ! -f "$inputfile" ]; then
 fi
 
 # We get the path to the output file
-outputfile="$(basename -a -s .test.ts $inputfile).md"
+outputfile="$(basename -a -s .test.js $inputfile).md"
 
 # Create markdown file
 cp $inputfile $outputfile
@@ -26,8 +26,8 @@ fi
 eval "sed $params \"s/import { assert } from 'chai'//\" $outputfile"
 
 # Change imports
-eval "sed $params \"s/} from '..\/..\/src'/} from '@oceanprotocol\/lib'/\" $outputfile"
-eval "sed $params \"s/} from '..\/config'/} from '@oceanprotocol\/lib\/dist\/test\/config'/\" $outputfile"
+eval "sed $params \"s/} = require('..\/..\/src')/} = require('@oceanprotocol\/lib')/\" $outputfile"
+eval "sed $params \"s/} = require('..\/config')/} = require('@oceanprotocol\/lib\/dist\/test\/config')/\" $outputfile"
 
 # Replace comments
 eval "sed $params \"s/}) \/\/\/ //\" $outputfile"
