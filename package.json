@@ -44,7 +44,7 @@
     "test:compute": "npm run mocha -- 'test/integration/ComputeFlow.test.ts'",
     "test:integration:cover": "nyc --report-dir coverage/integration --exclude 'src/@types/**/*' --no-clean npm run test:integration",
     "create:guide": "./scripts/createCodeExamples.sh test/integration/CodeExamples.test.ts",
-    "create:guidec2d": "./scripts/createCodeExamples.sh test/integration/C2DExamples.test.ts",
+    "create:guidec2d": "./scripts/createCodeExamples.sh test/integration/C2DExamples.test.js",
     "commit:guides": "./scripts/commitChanges.sh"
   },
   "repository": {
