@@ -45,8 +45,14 @@ mkdir marketplace-quickstart
 cd marketplace-quickstart
 npm init
 # Answer the questions in the command line prompt
-touch marketplace.ts
+touch marketplace.js
 # On linux press CTRL + D to save
+```
+
+To run your script as we go along, you can use the following command:
+
+```bash
+node marketplace.js
 ```
 
 ## 3. Install dependencies
@@ -54,50 +60,41 @@ touch marketplace.ts
 Install dependencies running the following command in your terminal:
 
 ```bash
-npm install @oceanprotocol/lib crypto-js web3 typescript @types/node ts-node
+npm install @oceanprotocol/lib crypto-js web3
 ```
 
 ## 4. Import dependencies and add variables and constants
 
-Now open the `marketplace.ts` file in your text editor.
+Now open the `marketplace.js` file in your text editor.
 
 Start by importing all of the necessary dependencies
 
-```Typescript
-
-import { SHA256 } from 'crypto-js'
-import {
-  Config,
+```Javascript
+const { assert } = require('chai')
+const { SHA256 } = require('crypto-js')
+const {
   ProviderInstance,
   Aquarius,
   NftFactory,
-  NftCreateData,
   Datatoken,
   Nft,
   ZERO_ADDRESS,
-  Erc20CreateParams,
-  Files,
   transfer,
-  ComputeAsset,
-  ComputeAlgorithm,
-  ComputeJob,
   sleep,
-  ProviderComputeInitialize,
-  ConsumeMarketFee,
   approveWei
-} from '@oceanprotocol/lib'
-import { web3, getTestConfig, getAddresses } from '@oceanprotocol/lib/dist/test/config'
+} = require('@oceanprotocol/lib')
+const { web3, getTestConfig, getAddresses } = require('@oceanprotocol/lib/dist/test/config')
 ```
 
 Add a `handleOrder()`function.
-```Typescript
+```Javascript
 async function handleOrder(
-  order: ProviderComputeInitialize,
-  datatokenAddress: string,
-  payerAccount: string,
-  consumerAccount: string,
-  serviceIndex: number,
-  consumeMarkerFee?: ConsumeMarketFee
+  order,
+  datatokenAddress,
+  payerAccount,
+  consumerAccount,
+  serviceIndex,
+  consumeMarkerFee
 ) {
   const datatoken = new Datatoken(web3)
   /* We do have 3 possible situations:
@@ -141,23 +138,23 @@ describe('Compute flow tests
 -->
 
 Now we define the variables which we will need later
-```Typescript
-  let config: Config
-  let aquarius: Aquarius
-  let providerUrl: any
-  let publisherAccount: string
-  let consumerAccount: string
-  let addresses: any
-  let datasetNftAddress: string
-  let datasetDatatokenAddress: string
-  let algorithmNftAddress: string
-  let algorithmDatatokenAddress: string
-  let computeJobId: string
+```Javascript
+  let config
+  let aquarius
+  let providerUrl
+  let publisherAccount
+  let consumerAccount
+  let addresses
+  let datasetNftAddress
+  let datasetDatatokenAddress
+  let algorithmNftAddress
+  let algorithmDatatokenAddress
+  let computeJobId
 ```
 
  We will need two files to publish, one as Dataset and one as Algorithm, so here we define the files that we intend to publish.
-```Typescript
-  const DATASET_ASSET_URL: Files = {
+```Javascript
+  const DATASET_ASSET_URL = {
     datatokenAddress: '0x0',
     nftAddress: '0x0',
     files: [
@@ -169,7 +166,7 @@ Now we define the variables which we will need later
     ]
   }
 
-  const ALGORITHM_ASSET_URL: Files = {
+  const ALGORITHM_ASSET_URL = {
     datatokenAddress: '0x0',
     nftAddress: '0x0',
     files: [
@@ -183,8 +180,8 @@ Now we define the variables which we will need later
 ```
 
 Next, we define the metadata for the Dataset and Algorithm that will describe our data assets. This is what we call the DDOs
-```Typescript
-  const DATASET_DDO: any = {
+```Javascript
+  const DATASET_DDO = {
     '@context': ['https://w3id.org/did/v1'],
     id: '',
     version: '4.1.0',
@@ -217,7 +214,7 @@ Next, we define the metadata for the Dataset and Algorithm that will describe ou
     ]
   }
 
-  const ALGORITHM_DDO: any = {
+  const ALGORITHM_DDO = {
     '@context': ['https://w3id.org/did/v1'],
     id: '',
     version: '4.1.0',
@@ -256,14 +253,14 @@ Next, we define the metadata for the Dataset and Algorithm that will describe ou
 ```
 
 We load the configuration:
-```Typescript
+```Javascript
   
     config = await getTestConfig(web3)
     aquarius = new Aquarius(config.metadataCacheUri)
     providerUrl = config.providerUri
 ```
 As we go along it's a good idea to console log the values so that you check they are right
-```Typescript
+```Javascript
     console.log(`Aquarius URL: ${config.metadataCacheUri}`)
     console.log(`Provider URL: ${providerUrl}`)
   
@@ -271,26 +268,26 @@ As we go along it's a good idea to console log the values so that you check they
 
 ## 5. Initialize accounts and deploy contracts
   ### 5.1 Initialize accounts
-```Typescript
+```Javascript
     const accounts = await web3.eth.getAccounts()
     publisherAccount = accounts[0]
     consumerAccount = accounts[1]
 ```
 Again, lets console log the values so that we can check that they have been saved properly
-```Typescript
+```Javascript
     console.log(`Publisher account address: ${publisherAccount}`)
     console.log(`Consumer account address: ${consumerAccount}`)
   
 ```
 
   ### 5.2 Get the address of the deployed contracts
-```Typescript
+```Javascript
     addresses = getAddresses()
   
 ```
 
   ### 5.3 Send some OCEAN to consumer account
-```Typescript
+```Javascript
     transfer(web3, publisherAccount, addresses.Ocean, consumerAccount, '100')
   
 ```
@@ -298,10 +295,10 @@ Again, lets console log the values so that we can check that they have been save
 ## 6. Publish a dataset (Data NFT and Datatoken)
 
   ### 6.1 Publish a dataset (create NFT + Datatoken)
-```Typescript
+```Javascript
     const factory = new NftFactory(addresses.ERC721Factory, web3)
 
-    const nftParams: NftCreateData = {
+    const nftParams = {
       name: 'DATA 1',
       symbol: 'D1',
       templateIndex: 1,
@@ -310,7 +307,7 @@ Again, lets console log the values so that we can check that they have been save
       owner: publisherAccount
     }
 
-    const erc20Params: Erc20CreateParams = {
+    const erc20Params = {
       templateIndex: 1,
       cap: '100000',
       feeAmount: '0',
@@ -322,25 +319,25 @@ Again, lets console log the values so that we can check that they have been save
 
 ```
 Now we can make the contract call
-```Typescript
+```Javascript
     const tx = await factory.createNftWithErc20(publisherAccount, nftParams, erc20Params)
 
     datasetNftAddress = tx.events.NFTCreated.returnValues[0]
     datasetDatatokenAddress = tx.events.TokenCreated.returnValues[0]
 ```
 Now, we did quite a few things there. Let's check that we successfully published a dataset (create NFT + Datatoken)
-```Typescript
+```Javascript
     console.log(`Dataset NFT address: ${datasetNftAddress}`)
     console.log(`Dataset Datatoken address: ${datasetDatatokenAddress}`)
   
 ```
 
   ### 6.2 Set metadata in the dataset NFT
-```Typescript
+```Javascript
     const nft = new Nft(web3)
 ```
 Now we update the DDO and set the right did
-```Typescript
+```Javascript
     DATASET_DDO.chainId = await web3.eth.getChainId()
     DATASET_DDO.id =
       'did:op:' +
@@ -350,7 +347,7 @@ Now we update the DDO and set the right did
     DATASET_DDO.nftAddress = web3.utils.toChecksumAddress(datasetNftAddress)
 ```
 Next we encrypt the file or files using Ocean Provider. The provider is an off chain proxy built specifically for this task
-```Typescript
+```Javascript
     DATASET_ASSET_URL.datatokenAddress = datasetDatatokenAddress
     DATASET_ASSET_URL.nftAddress = DATASET_DDO.nftAddress
     const encryptedFiles = await ProviderInstance.encrypt(DATASET_ASSET_URL, providerUrl)
@@ -359,7 +356,7 @@ Next we encrypt the file or files using Ocean Provider. The provider is an off c
     DATASET_DDO.services[0].serviceEndpoint = providerUrl
 ```
 Now let's console log the result to check everything is working
-```Typescript
+```Javascript
     console.log(`Dataset DID: ${DATASET_DDO.id}`)
 
     const providerResponse = await ProviderInstance.encrypt(DATASET_DDO, providerUrl)
@@ -383,10 +380,10 @@ Now let's console log the result to check everything is working
 ## 7. Publish an algorithm (Data NFT and Datatoken)
 
   ### 7.1 Publish an algorithm (create NFT + Datatoken)
-```Typescript
+```Javascript
     const factory = new NftFactory(addresses.ERC721Factory, web3)
 
-    const nftParams: NftCreateData = {
+    const nftParams = {
       name: 'ALGO 1',
       symbol: 'A1',
       templateIndex: 1,
@@ -395,7 +392,7 @@ Now let's console log the result to check everything is working
       owner: publisherAccount
     }
 
-    const erc20Params: Erc20CreateParams = {
+    const erc20Params = {
       templateIndex: 1,
       cap: '100000',
       feeAmount: '0',
@@ -407,25 +404,25 @@ Now let's console log the result to check everything is working
 
 ```
 Now we can make the contract call
-```Typescript
+```Javascript
     const tx = await factory.createNftWithErc20(publisherAccount, nftParams, erc20Params)
 
     algorithmNftAddress = tx.events.NFTCreated.returnValues[0]
     algorithmDatatokenAddress = tx.events.TokenCreated.returnValues[0]
 ```
 Now, we did quite a few things there. Let's check that we successfully published an algorithm (create NFT + Datatoken)
-```Typescript
+```Javascript
     console.log(`Algorithm NFT address: ${algorithmNftAddress}`)
     console.log(`Algorithm Datatoken address: ${algorithmDatatokenAddress}`)
   
 ```
 
   ### 7.2 Set metadata in the algorithm NFT
-```Typescript
+```Javascript
     const nft = new Nft(web3)
 ```
 Now we update the DDO and set the right did
-```Typescript
+```Javascript
     ALGORITHM_DDO.chainId = await web3.eth.getChainId()
     ALGORITHM_DDO.id =
       'did:op:' +
@@ -436,7 +433,7 @@ Now we update the DDO and set the right did
     ALGORITHM_DDO.nftAddress = web3.utils.toChecksumAddress(algorithmNftAddress)
 ```
 Next we encrypt the file or files using Ocean Provider. The provider is an off chain proxy built specifically for this task
-```Typescript
+```Javascript
     ALGORITHM_ASSET_URL.datatokenAddress = algorithmDatatokenAddress
     ALGORITHM_ASSET_URL.nftAddress = ALGORITHM_DDO.nftAddress
     const encryptedFiles = await ProviderInstance.encrypt(
@@ -448,7 +445,7 @@ Next we encrypt the file or files using Ocean Provider. The provider is an off c
     ALGORITHM_DDO.services[0].serviceEndpoint = providerUrl
 ```
 Now let's console log the result to check everything is working
-```Typescript
+```Javascript
     console.log(`Algorithm DID: ${ALGORITHM_DDO.id}`)
 
     const providerResponse = await ProviderInstance.encrypt(ALGORITHM_DDO, providerUrl)
@@ -472,7 +469,7 @@ Now let's console log the result to check everything is working
 ## 8. Resolve published datasets and algorithms
 
   ### 8.1 Resolve published datasets and algorithms
-```Typescript
+```Javascript
     const resolvedDatasetDdo = await aquarius.waitForAqua(DATASET_DDO.id)
     assert(resolvedDatasetDdo, 'Cannot fetch DDO from Aquarius')
     const resolvedAlgorithmDdo = await aquarius.waitForAqua(ALGORITHM_DDO.id)
@@ -483,7 +480,7 @@ Now let's console log the result to check everything is working
 ## 9. Send datatokens to consumer
 
   ### 9.1 Send datatokens to publisher
-```Typescript
+```Javascript
     const datatoken = new Datatoken(web3)
 
     await datatoken.mint(datasetDatatokenAddress, publisherAccount, '10', consumerAccount)
@@ -499,7 +496,7 @@ Now let's console log the result to check everything is working
 ## 10. Consumer starts a compute job using a free C2D environment
 
   ### 10.1 Start a compute job using a free C2D environment
-```Typescript
+```Javascript
     const computeEnvs = await ProviderInstance.getComputeEnvironments(providerUrl)
     assert(computeEnvs, 'No Compute environments found')
 
@@ -507,7 +504,7 @@ Now let's console log the result to check everything is working
     const computeEnv = computeEnvs.find((ce) => ce.priceMin === 0)
     assert(computeEnv, 'Cannot find the free compute env')
 
-    const assets: ComputeAsset[] = [
+    const assets = [
       {
         documentId: DATASET_DDO.id,
         serviceId: DATASET_DDO.services[0].id
@@ -515,7 +512,7 @@ Now let's console log the result to check everything is working
     ]
     const dtAddressArray = [DATASET_DDO.services[0].datatokenAddress]
 
-    const algo: ComputeAlgorithm = {
+    const algo = {
       documentId: ALGORITHM_DDO.id,
       serviceId: ALGORITHM_DDO.services[0].id
     }
@@ -571,20 +568,20 @@ Now let's console log the result to check everything is working
 
 ## 11. Check compute status and get download compute results URL
   ### 11.1 Check compute status
-```Typescript
-    const jobStatus = (await ProviderInstance.computeStatus(
+```Javascript
+    const jobStatus = await ProviderInstance.computeStatus(
       providerUrl,
       consumerAccount,
       computeJobId,
       DATASET_DDO.id
-    )) as ComputeJob
+    )
     assert(jobStatus, 'Cannot retrieve compute status!')
     console.log(jobStatus)
   
 ```
 
   ### 11.2 Get download compute results URL
-```Typescript
+```Javascript
     await sleep(10000)
     const downloadURL = await ProviderInstance.getComputeResultUrl(
       providerUrl,
