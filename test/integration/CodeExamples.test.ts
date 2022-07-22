@@ -46,7 +46,7 @@
 /// ./start_ocean.sh --with-provider2 --no-dashboard
 /// ```
 
-/// ## 2. Create a new node.js project
+/// ## 2. Create a new node.js project with Typescript
 
 /// Start by creating a new Node.js project. Open a new terminal and enter the following commands:
 
@@ -55,32 +55,62 @@
 /// cd marketplace-quickstart
 /// npm init
 /// # Answer the questions in the command line prompt
-/// cat > marketplace.js
+/// touch marketplace.ts
 /// # On linux press CTRL + D to save
 /// ```
 
-/// ## 3. Install dependancies
+/// Next, we need to setup our typescript compiler options. Create a new file called `tsconfig.json` in the root of the `marketplace-quickstart` directory. copy the following content into the file:
 
-/// Open the package.json file in a text editor and update the dependancies to include the following:
-
-/// ```JSON
-///   "dependencies": {
-///     "@oceanprotocol/contracts": "1.0.0-alpha.28",
-///     "@oceanprotocol/lib": "1.0.0-next.37",
-///     "crypto-js": "^4.1.1",
-///     "web3": "^1.7.3"
-///   }
+/// ```json
+/// {
+///   "compilerOptions": {
+///     "resolveJsonModule": true,
+///     "moduleResolution": "node",
+///     "esModuleInterop": true,
+///     "allowSyntheticDefaultImports": true,
+///     "lib": [
+///       "ESNext",
+///       "dom"
+///     ],
+///     "declaration": true,
+///     "module": "ESNext",
+///     "target": "ESNext",
+///     "removeComments": false,
+///     "experimentalDecorators": true,
+///     "preserveConstEnums": true,
+///     "outDir": "./",
+///     "sourceMap": true,
+///     "declarationDir": "./d"
+///   },
+///   "include": [
+///     "marketplace.ts"
+///   ]
+/// }
 /// ```
 
-/// Now in your terminal run the following command:
+/// Now you can compile your typescript with the following command:
 
 /// ```bash
-/// npm install
+/// tsc
+/// ```
+
+/// To run your script as we go along, you can use the following command:
+
+/// ```bash
+/// node marketplace.js
+/// ```
+
+/// ## 3. Install dependencies
+
+/// Install dependencies running the following command in your terminal:
+
+/// ```bash
+/// npm install @oceanprotocol/lib crypto-js web3 typescript @types/node ts-node
 /// ```
 
 /// ## 4. Import dependencies and add variables and constants
 
-/// Now open the `marketplace.js` file in your text editor.
+/// Now open the `marketplace.ts` file in your text editor.
 
 /// Start by importing all of the necessary dependencies
 

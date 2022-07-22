@@ -55,32 +55,21 @@ mkdir marketplace-quickstart
 cd marketplace-quickstart
 npm init
 # Answer the questions in the command line prompt
-cat > marketplace.js
+touch marketplace.ts
 # On linux press CTRL + D to save
 ```
 
-## 3. Install dependancies
+## 3. Install dependencies
 
-Open the package.json file in a text editor and update the dependancies to include the following:
-
-```JSON
-  "dependencies": {
-    "@oceanprotocol/contracts": "1.0.0-alpha.28",
-    "@oceanprotocol/lib": "1.0.0-next.37",
-    "crypto-js": "^4.1.1",
-    "web3": "^1.7.3"
-  }
-```
-
-Now in your terminal run the following command:
+Install dependencies running the following command in your terminal:
 
 ```bash
-npm install
+npm install @oceanprotocol/lib crypto-js web3 typescript @types/node ts-node
 ```
 
 ## 4. Import dependencies and add variables and constants
 
-Now open the `marketplace.js` file in your text editor.
+Now open the `marketplace.ts` file in your text editor.
 
 Start by importing all of the necessary dependencies
 
@@ -112,8 +101,8 @@ import {
   TokenInOutMarket,
   transfer,
   ZERO_ADDRESS
-} from '../../src'
-import { getAddresses, getTestConfig, web3 } from '../config'
+} from '@oceanprotocol/lib'
+import { getAddresses, getTestConfig, web3 } from '@oceanprotocol/lib/dist/test/config'
 ```
 
 <!--

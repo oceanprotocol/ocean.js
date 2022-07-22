@@ -205,4 +205,4 @@ jobs:
           git config user.email "<>"
 
       - name: Create Guide & Commit if there are changes
-        run: npm run commit:guide
+        run: npm run commit:guides
