@@ -57,7 +57,7 @@ export class Pool extends SmartContract {
    * @param {Contract} contractInstance optional contract instance
    * @return {Promise<number>}
    */
-  public async estSetSwapFee(
+  public async estGasSetSwapFee(
     account: string,
     poolAddress: string,
     fee: string,
@@ -479,7 +479,7 @@ export class Pool extends SmartContract {
    * @param {Contract} contractInstance optional contract instance
    * @return {Promise<number>}
    */
-  public async estCollectOPC(
+  public async estGasCollectOPC(
     address: string,
     poolAddress: string,
     contractInstance?: Contract
@@ -520,7 +520,7 @@ export class Pool extends SmartContract {
    * @param {Contract} contractInstance optional contract instance
    * @return {Promise<number>}
    */
-  public async estCollectMarketFee(
+  public async estGasCollectMarketFee(
     address: string,
     poolAddress: string,
     contractInstance?: Contract
@@ -569,7 +569,7 @@ export class Pool extends SmartContract {
    * @param {Contract} contractInstance optional contract instance
    * @return {Promise<number>}
    */
-  public async estUpdatePublishMarketFee(
+  public async estGasUpdatePublishMarketFee(
     address: string,
     poolAddress: string,
     newPublishMarketAddress: string,
@@ -638,7 +638,7 @@ export class Pool extends SmartContract {
    * @param {Contract} contractInstance optional contract instance
    * @return {Promise<number>}
    */
-  public async estSwapExactAmountIn(
+  public async estGasSwapExactAmountIn(
     address: string,
     poolAddress: string,
     tokenInOutMarket: TokenInOutMarket,
@@ -781,7 +781,7 @@ export class Pool extends SmartContract {
    * @param {Contract} contractInstance optional contract instance
    * @return {Promise<number>}
    */
-  public async estSwapExactAmountOut(
+  public async estGasSwapExactAmountOut(
     address: string,
     poolAddress: string,
     tokenInOutMarket: TokenInOutMarket,
@@ -919,7 +919,7 @@ export class Pool extends SmartContract {
    * @param {Contract} contractInstance optional contract instance
    * @return {Promise<number>}
    */
-  public async estJoinswapExternAmountIn(
+  public async estGasJoinswapExternAmountIn(
     address: string,
     poolAddress: string,
     tokenAmountIn: string,
@@ -1001,7 +1001,7 @@ export class Pool extends SmartContract {
    * @param {Contract} contractInstance optional contract instance
    * @return {Promise<number>}
    */
-  public async estExitswapPoolAmountIn(
+  public async estGasExitswapPoolAmountIn(
     address: string,
     poolAddress: string,
     poolAmountIn: string,
