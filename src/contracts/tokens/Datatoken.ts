@@ -5,7 +5,7 @@ import { Contract } from 'web3-eth-contract'
 import Decimal from 'decimal.js'
 import ERC20Template from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC20Template.sol/ERC20Template.json'
 import ERC20TemplateEnterprise from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC20TemplateEnterprise.sol/ERC20TemplateEnterprise.json'
-import { LoggerInstance, getFreOrderParams, estimateGas, ZERO_ADDRESS } from '../../utils'
+import { LoggerInstance, estimateGas, ZERO_ADDRESS } from '../../utils'
 import {
   ConsumeMarketFee,
   FreOrderParams,
@@ -907,7 +907,7 @@ export class Datatoken extends SmartContract {
   ): Promise<TransactionReceipt> {
     const dtContract = this.getContract(dtAddress, null, this.abiEnterprise)
     try {
-      const freContractParams = getFreOrderParams(freParams)
+      const freContractParams = this.getFreOrderParams(freParams)
 
       const estGas = await estimateGas(
         address,
@@ -1242,5 +1242,15 @@ export class Datatoken extends SmartContract {
       publishMarketFeeAmount: publishingMarketFee[2]
     }
     return returnValues
+  }
+
+  private getFreOrderParams(freParams: FreOrderParams): any {
+    return {
+      exchangeContract: freParams.exchangeContract,
+      exchangeId: freParams.exchangeId,
+      maxBaseTokenAmount: Web3.utils.toWei(freParams.maxBaseTokenAmount),
+      swapMarketFee: Web3.utils.toWei(freParams.swapMarketFee),
+      marketFeeAddress: freParams.marketFeeAddress
+    }
   }
 }

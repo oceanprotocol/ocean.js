@@ -321,7 +321,7 @@ export class SideStaking extends SmartContract {
    * @param {String} datatokenAddress datatokenAddress
    * @return {TransactionReceipt}
    */
-  async setPoolSwapFee(
+  private async setPoolSwapFee(
     account: string,
     ssAddress: string,
     datatokenAddress: string,
@@ -358,7 +358,7 @@ export class SideStaking extends SmartContract {
    * @param {String} ssAddress side staking contract address
    * @return {String}
    */
-  async getRouter(ssAddress: string): Promise<string> {
+  public async getRouter(ssAddress: string): Promise<string> {
     const sideStaking = this.getContract(ssAddress)
     let result = null
     try {

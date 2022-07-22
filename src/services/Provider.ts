@@ -1,6 +1,6 @@
 import Web3 from 'web3'
 import fetch from 'cross-fetch'
-import { LoggerInstance, getData, noZeroX } from '../utils'
+import { LoggerInstance } from '../utils'
 import {
   FileMetadata,
   ComputeJob,
@@ -21,7 +21,7 @@ export class Provider {
    */
   async getEndpoints(providerUri: string): Promise<any> {
     try {
-      const endpoints = await getData(providerUri)
+      const endpoints = await this.getData(providerUri)
       return await endpoints.json()
     } catch (e) {
       LoggerInstance.error('Finding the service endpoints failed:', e)
@@ -526,7 +526,7 @@ export class Provider {
 
     let signatureMessage = consumerAddress
     signatureMessage += jobId || ''
-    signatureMessage += (did && `${noZeroX(did)}`) || ''
+    signatureMessage += (did && `${this.noZeroX(did)}`) || ''
     signatureMessage += nonce
     const signature = await this.signProviderRequest(
       web3,
@@ -535,7 +535,7 @@ export class Provider {
     )
     const payload = Object()
     payload.signature = signature
-    payload.documentId = noZeroX(did)
+    payload.documentId = this.noZeroX(did)
     payload.consumerAddress = consumerAddress
     if (jobId) payload.jobId = jobId
 
@@ -590,7 +590,7 @@ export class Provider {
       : null
 
     let url = `?consumerAddress=${consumerAddress}`
-    url += (did && `&documentId=${noZeroX(did)}`) || ''
+    url += (did && `&documentId=${this.noZeroX(did)}`) || ''
     url += (jobId && `&jobId=${jobId}`) || ''
 
     if (!computeStatusUrl) return null
@@ -699,7 +699,7 @@ export class Provider {
 
     let signatureMessage = consumerAddress
     signatureMessage += jobId || ''
-    signatureMessage += (did && `${noZeroX(did)}`) || ''
+    signatureMessage += (did && `${this.noZeroX(did)}`) || ''
     signatureMessage += nonce
     const signature = await this.signProviderRequest(
       web3,
@@ -707,7 +707,7 @@ export class Provider {
       signatureMessage
     )
     const payload = Object()
-    payload.documentId = noZeroX(did)
+    payload.documentId = this.noZeroX(did)
     payload.consumerAddress = consumerAddress
     payload.jobId = jobId
     if (signature) payload.signature = signature
@@ -765,6 +765,51 @@ export class Provider {
       LoggerInstance.error(`Error validating provider: ${error.message}`)
       return false
     }
+  }
+
+  private zeroX(input: string): string {
+    return this.zeroXTransformer(input, true)
+  }
+
+  private noZeroX(input: string): string {
+    return this.zeroXTransformer(input, false)
+  }
+
+  private zeroXTransformer(input = '', zeroOutput: boolean): string {
+    const { valid, output } = this.inputMatch(
+      input,
+      /^(?:0x)*([a-f0-9]+)$/i,
+      'zeroXTransformer'
+    )
+    return (zeroOutput && valid ? '0x' : '') + output
+  }
+
+  // Shared functions
+  private inputMatch(
+    input: string,
+    regexp: RegExp,
+    conversorName: string
+  ): { valid: boolean; output: string } {
+    if (typeof input !== 'string') {
+      LoggerInstance.debug('Not input string:')
+      LoggerInstance.debug(input)
+      throw new Error(`[${conversorName}] Expected string, input type: ${typeof input}`)
+    }
+    const match = input.match(regexp)
+    if (!match) {
+      LoggerInstance.warn(`[${conversorName}] Input transformation failed.`)
+      return { valid: false, output: input }
+    }
+    return { valid: true, output: match[1] }
+  }
+
+  private async getData(url: string): Promise<Response> {
+    return fetch(url, {
+      method: 'GET',
+      headers: {
+        'Content-type': 'application/json'
+      }
+    })
   }
 }
 
