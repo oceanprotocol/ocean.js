@@ -13,10 +13,23 @@ export async function fetchData(url: string, opts: RequestInit): Promise<Respons
 }
 
 export async function downloadFileBrowser(url: string): Promise<void> {
-  const anchor = document.createElement('a')
-  anchor.download = ''
-  anchor.href = url
-  anchor.click()
+  const headResponse = await fetch(url, { method: 'HEAD' })
+  const contentHeader = headResponse.headers.get('content-disposition')
+  const fileName = contentHeader.split('=')[1]
+  const xhr = new XMLHttpRequest()
+  xhr.responseType = 'blob'
+  xhr.open('GET', url)
+  xhr.onload = () => {
+    const blobURL = window.URL.createObjectURL(xhr.response)
+    const a = document.createElement('a')
+    a.href = blobURL
+    a.setAttribute('download', fileName)
+    document.body.appendChild(a)
+    a.click()
+    a.remove()
+    window.URL.revokeObjectURL(blobURL)
+  }
+  xhr.send(null)
 }
 
 export async function downloadFile(

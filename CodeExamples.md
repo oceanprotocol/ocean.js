@@ -46,7 +46,7 @@ cd barge/
 ./start_ocean.sh --with-provider2 --no-dashboard
 ```
 
-## 2. Create a new node.js project
+## 2. Create a new node.js project with Typescript
 
 Start by creating a new Node.js project. Open a new terminal and enter the following commands:
 
@@ -57,6 +57,47 @@ npm init
 # Answer the questions in the command line prompt
 touch marketplace.ts
 # On linux press CTRL + D to save
+```
+
+Next, we need to setup our typescript compiler options. Create a new file called `tsconfig.json` in the root of the `marketplace-quickstart` directory. copy the following content into the file:
+
+```json
+{
+  "compilerOptions": {
+    "resolveJsonModule": true,
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "lib": [
+      "ESNext",
+      "dom"
+    ],
+    "declaration": true,
+    "module": "ESNext",
+    "target": "ESNext",
+    "removeComments": false,
+    "experimentalDecorators": true,
+    "preserveConstEnums": true,
+    "outDir": "./",
+    "sourceMap": true,
+    "declarationDir": "./d"
+  },
+  "include": [
+    "marketplace.ts"
+  ]
+}
+```
+
+Now you can compile your typescript with the following command:
+
+```bash
+tsc
+```
+
+To run your script as we go along, you can use the following command:
+
+```bash
+node marketplace.js
 ```
 
 ## 3. Install dependencies
