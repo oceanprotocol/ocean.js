@@ -111,6 +111,14 @@ const {
 const { web3, getTestConfig, getAddresses } = require('../config')
 /// ```
 
+/// We will put all the following code inside this function, that will be called when the script is run:
+
+/// ```Javascript
+/// (async() => {
+/// /* all the code goes here */
+/// })()
+/// ```
+
 /// <!--
 describe('Marketplace flow tests', async () => {
   /// -->
