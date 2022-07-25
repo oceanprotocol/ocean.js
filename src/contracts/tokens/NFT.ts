@@ -12,10 +12,10 @@ export class Nft extends SmartContract {
   }
 
   /**
-   *  Estimate gas cost for createERC20 token creation
+   *  Estimate gas cost for createDatatoken token creation
    * @param {String} nftAddress NFT address
    * @param {String} address User address
-   * @param {String} minter User set as initial minter for the ERC20
+   * @param {String} minter User set as initial minter for the Datatoken
    * @param {String} paymentCollector initial paymentCollector for this DT
    * @param {String} mpFeeAddress Consume marketplace fee address
    * @param {String} feeToken address of the token marketplace wants to add fee on top
@@ -27,7 +27,7 @@ export class Nft extends SmartContract {
    * @param {Contract} nftContract optional contract instance
    * @return {Promise<any>}
    */
-  public async estGasGasCreateErc20(
+  public async estGasGasCreateDatatoken(
     nftAddress: string,
     address: string,
     minter: string,
@@ -54,10 +54,10 @@ export class Nft extends SmartContract {
   }
 
   /**
-   * Create new ERC20 datatoken - only user with ERC20Deployer permission can succeed
+   * Create new ERC20 Datatoken - only user with DatatokenDeployer permission can succeed
    * @param {String} nftAddress NFT address
    * @param {String} address User address
-   * @param {String} minter User set as initial minter for the ERC20
+   * @param {String} minter User set as initial minter for the Datatoken
    * @param {String} paymentCollector initial paymentCollector for this DT
    * @param {String} mpFeeAddress Consume marketplace fee address
    * @param {String} feeToken address of the token marketplace wants to add fee on top
@@ -66,9 +66,9 @@ export class Nft extends SmartContract {
    * @param {String} name Token name
    * @param {String} symbol Token symbol
    * @param {Number} templateIndex NFT template index
-   * @return {Promise<string>} ERC20 datatoken address
+   * @return {Promise<string>} ERC20 Datatoken address
    */
-  public async createErc20(
+  public async createDatatoken(
     nftAddress: string,
     address: string,
     minter: string,
@@ -82,7 +82,7 @@ export class Nft extends SmartContract {
     templateIndex?: number
   ): Promise<string> {
     if ((await this.getNftPermissions(nftAddress, address)).deployERC20 !== true) {
-      throw new Error(`Caller is not ERC20Deployer`)
+      throw new Error(`Caller is not DatatokenDeployer`)
     }
     if (!templateIndex) templateIndex = 1
 
@@ -221,31 +221,35 @@ export class Nft extends SmartContract {
    *  Estimate gas cost for addToCreateERC20List method
    * @param {String} nftAddress NFT contract address
    * @param {String} address NFT Manager adress
-   * @param {String} erc20Deployer User adress which is going to have erc20Deployer permission
+   * @param {String} datatokenDeployer User adress which is going to have DatatokenDeployer permission
    * @param {Contract} nftContract optional contract instance
    * @return {Promise<any>}
    */
-  public async estGasGasAddErc20Deployer(
+  public async estGasGasAddDatatokenDeployer(
     nftAddress: string,
     address: string,
-    erc20Deployer: string,
+    datatokenDeployer: string,
     contractInstance?: Contract
   ): Promise<any> {
     const nftContract = contractInstance || this.getContract(nftAddress)
-    return estimateGas(address, nftContract.methods.addToCreateERC20List, erc20Deployer)
+    return estimateGas(
+      address,
+      nftContract.methods.addToCreateERC20List,
+      datatokenDeployer
+    )
   }
 
   /**
-   * Add ERC20Deployer permission - only Manager can succeed
+   * Add DatatokenDeployer permission - only Manager can succeed
    * @param {String} nftAddress NFT contract address
    * @param {String} address NFT Manager adress
-   * @param {String} erc20Deployer User adress which is going to have erc20Deployer permission
+   * @param {String} datatokenDeployer User adress which is going to have DatatokenDeployer permission
    * @return {Promise<TransactionReceipt>} trxReceipt
    */
-  public async addErc20Deployer(
+  public async addDatatokenDeployer(
     nftAddress: string,
     address: string,
-    erc20Deployer: string
+    datatokenDeployer: string
   ): Promise<TransactionReceipt> {
     const nftContract = this.getContract(nftAddress)
 
@@ -257,12 +261,12 @@ export class Nft extends SmartContract {
     const estGas = await estimateGas(
       address,
       nftContract.methods.addToCreateERC20List,
-      erc20Deployer
+      datatokenDeployer
     )
 
     // Invoke addToCreateERC20List function of the contract
     const trxReceipt = await nftContract.methods
-      .addToCreateERC20List(erc20Deployer)
+      .addToCreateERC20List(datatokenDeployer)
       .send({
         from: address,
         gas: estGas + 1,
@@ -276,14 +280,14 @@ export class Nft extends SmartContract {
    * Estimate gas cost for removeFromCreateERC20List method
    * @param {String} nftAddress NFT contract address
    * @param {String} address NFT Manager adress
-   * @param {String} erc20Deployer Address of the user to be revoked ERC20Deployer Permission
+   * @param {String} datatokenDeployer Address of the user to be revoked DatatokenDeployer Permission
    * @param {Contract} nftContract optional contract instance
    * @return {Promise<any>}
    */
-  public async estGasGasRemoveErc20Deployer(
+  public async estGasGasRemoveDatatokenDeployer(
     nftAddress: string,
     address: string,
-    erc20Deployer: string,
+    datatokenDeployer: string,
     contractInstance?: Contract
   ): Promise<any> {
     const nftContract = contractInstance || this.getContract(nftAddress)
@@ -291,40 +295,40 @@ export class Nft extends SmartContract {
     return estimateGas(
       address,
       nftContract.methods.removeFromCreateERC20List,
-      erc20Deployer
+      datatokenDeployer
     )
   }
 
   /**
-   * Remove ERC20Deployer permission - only Manager can succeed
+   * Remove DatatokenDeployer permission - only Manager can succeed
    * @param {String} nftAddress NFT contract address
    * @param {String} address NFT Manager adress
-   * @param {String} erc20Deployer Address of the user to be revoked ERC20Deployer Permission
+   * @param {String} datatokenDeployer Address of the user to be revoked DatatokenDeployer Permission
    * @return {Promise<TransactionReceipt>} trxReceipt
    */
-  public async removeErc20Deployer(
+  public async removeDatatokenDeployer(
     nftAddress: string,
     address: string,
-    erc20Deployer: string
+    datatokenDeployer: string
   ): Promise<TransactionReceipt> {
     const nftContract = this.getContract(nftAddress)
 
     if (
       (await this.getNftPermissions(nftAddress, address)).manager !== true ||
-      (address === erc20Deployer &&
+      (address === datatokenDeployer &&
         (await this.getNftPermissions(nftAddress, address)).deployERC20 !== true)
     ) {
-      throw new Error(`Caller is not Manager nor ERC20Deployer`)
+      throw new Error(`Caller is not Manager nor DatatokenDeployer`)
     }
     const estGas = await estimateGas(
       address,
       nftContract.methods.removeFromCreateERC20List,
-      erc20Deployer
+      datatokenDeployer
     )
 
     // Call removeFromCreateERC20List function of the contract
     const trxReceipt = await nftContract.methods
-      .removeFromCreateERC20List(erc20Deployer)
+      .removeFromCreateERC20List(datatokenDeployer)
       .send({
         from: address,
         gas: estGas + 1,
@@ -581,9 +585,9 @@ export class Nft extends SmartContract {
   }
 
   /**
-   * This function allows to remove all ROLES at NFT level: Managers, ERC20Deployer, MetadataUpdater, StoreUpdater
+   * This function allows to remove all ROLES at NFT level: Managers, DatatokenDeployer, MetadataUpdater, StoreUpdater
    * Even NFT Owner has to readd himself as Manager
-   * Permissions at erc20 level stay.
+   * Permissions at Datatoken level stay.
    * Only NFT Owner  can call it.
    * @param {String} nftAddress NFT contract address
    * @param {String} address NFT Owner adress
@@ -641,7 +645,7 @@ export class Nft extends SmartContract {
 
   /**
    * Transfers the NFT
-   * will clean all permissions both on NFT and erc20 level.
+   * will clean all permissions both on NFT and Datatoken level.
    * @param {String} nftAddress NFT contract address
    * @param {String} nftOwner Current NFT Owner adress
    * @param {String} nftReceiver User which will receive the NFT, will also be set as Manager
@@ -711,7 +715,7 @@ export class Nft extends SmartContract {
 
   /**
    * safeTransferNFT Used for transferring the NFT, can be used by an approved relayer
-   * will clean all permissions both on NFT and erc20 level.
+   * will clean all permissions both on NFT and Datatoken level.
    * @param {String} nftAddress NFT contract address
    * @param {String} nftOwner Current NFT Owner adress
    * @param {String} nftReceiver User which will receive the NFT, will also be set as Manager
@@ -792,7 +796,7 @@ export class Nft extends SmartContract {
 
   /**
    * safeTransferNFT Used for transferring the NFT, can be used by an approved relayer
-   * will clean all permissions both on NFT and erc20 level.
+   * will clean all permissions both on NFT and Datatoken level.
    * @param {String} nftAddress NFT contract address
    * @param {String} address Caller address NFT Owner adress
    * @return {Promise<TransactionReceipt>} trxReceipt
@@ -1030,15 +1034,18 @@ export class Nft extends SmartContract {
     return await nftContract.methods.getMetaData().call()
   }
 
-  /** Get users ERC20Deployer role
+  /** Get users DatatokenDeployer role
    * @param {String} nftAddress NFT contract address
    * @param {String} address user adress
    * @return {Promise<boolean>}
    */
-  public async isErc20Deployer(nftAddress: string, address: string): Promise<boolean> {
+  public async isDatatokenDeployer(
+    nftAddress: string,
+    address: string
+  ): Promise<boolean> {
     const nftContract = this.getContract(nftAddress)
-    const isERC20Deployer = await nftContract.methods.isERC20Deployer(address).call()
-    return isERC20Deployer
+    const isDatatokenDeployer = await nftContract.methods.isERC20Deployer(address).call()
+    return isDatatokenDeployer
   }
 
   /** Gets data at a given `key`

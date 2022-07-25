@@ -1,6 +1,6 @@
 import { ProviderFees } from '.'
 
-export interface Erc20CreateParams {
+export interface DatatokenCreateParams {
   templateIndex: number
   minter: string
   paymentCollector: string

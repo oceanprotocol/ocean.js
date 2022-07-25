@@ -97,7 +97,7 @@ import {
   Dispenser,
   DispenserCreationParams,
   downloadFile,
-  Erc20CreateParams,
+  DatatokenCreateParams,
   FixedRateExchange,
   FreCreationParams,
   getHash,
@@ -252,7 +252,7 @@ describe('Marketplace flow tests', async () => {
       owner: publisherAccount
     }
 
-    const erc20Params: Erc20CreateParams = {
+    const datatokenParams: DatatokenCreateParams = {
       templateIndex: 1,
       cap: '100000',
       feeAmount: '0',
@@ -278,7 +278,7 @@ describe('Marketplace flow tests', async () => {
       swapFeeMarketRunner: '0.001'
     }
     /// ```
-    /// Before we call the contract we have to call `approve` so that the contract can move our tokens. This is standard when using any ERC20 tokens
+    /// Before we call the contract we have to call `approve` so that the contract can move our tokens. This is standard when using any ERC20 Datatokens
     /// ```Typescript
     await approve(
       web3,
@@ -291,10 +291,10 @@ describe('Marketplace flow tests', async () => {
     /// ```
     /// Now we can make the contract call
     /// ```Typescript
-    const tx = await factory.createNftErc20WithPool(
+    const tx = await factory.createNftWithDatatokenWithPool(
       publisherAccount,
       nftParams,
-      erc20Params,
+      datatokenParams,
       poolParams
     )
 
@@ -353,7 +353,7 @@ describe('Marketplace flow tests', async () => {
     const pool = new Pool(web3)
 
     /// ```
-    /// Before we call the contract we have to call `approve` so that the contract can move our tokens. This is standard when using any ERC20 tokens
+    /// Before we call the contract we have to call `approve` so that the contract can move our tokens. This is standard when using any ERC20 Datatokens
     /// ```Typescript
     await approve(web3, stakerAccount, addresses.Ocean, poolAddress, '5', true)
 
@@ -402,7 +402,7 @@ describe('Marketplace flow tests', async () => {
     console.log(`Consumer ${POOL_NFT_SYMBOL} balance before swap: ${consumerDTBalance}`)
 
     /// ```
-    /// Before we call the contract we have to call `approve` so that the contract can move our tokens. This is standard when using any ERC20 tokens
+    /// Before we call the contract we have to call `approve` so that the contract can move our tokens. This is standard when using any ERC20 Datatokens
     /// ```Typescript
     await approve(web3, consumerAccount, addresses.Ocean, poolAddress, '100')
 
@@ -526,7 +526,7 @@ describe('Marketplace flow tests', async () => {
       owner: publisherAccount
     }
 
-    const erc20Params: Erc20CreateParams = {
+    const datatokenParams: DatatokenCreateParams = {
       templateIndex: 1,
       cap: '100000',
       feeAmount: '0',
@@ -549,10 +549,10 @@ describe('Marketplace flow tests', async () => {
       withMint: false
     }
 
-    const tx = await factory.createNftErc20WithFixedRate(
+    const tx = await factory.createNftWithDatatokenWithFixedRate(
       publisherAccount,
       nftParams,
-      erc20Params,
+      datatokenParams,
       freParams
     )
 
@@ -644,7 +644,7 @@ describe('Marketplace flow tests', async () => {
     console.log(`Consumer ${FRE_NFT_SYMBOL} balance before swap: ${consumerDTBalance}`)
 
     /// ```
-    /// Before we call the contract we have to call `approve` so that the contract can move our tokens. This is standard when using any ERC20 tokens
+    /// Before we call the contract we have to call `approve` so that the contract can move our tokens. This is standard when using any ERC20 Datatokens
     /// ```Typescript
     await approve(web3, consumerAccount, addresses.Ocean, freAddress, '100')
     await approve(
@@ -748,7 +748,7 @@ describe('Marketplace flow tests', async () => {
       owner: publisherAccount
     }
 
-    const erc20Params: Erc20CreateParams = {
+    const datatokenParams: DatatokenCreateParams = {
       templateIndex: 1,
       cap: '100000',
       feeAmount: '0',
@@ -766,10 +766,10 @@ describe('Marketplace flow tests', async () => {
       allowedSwapper: ZERO_ADDRESS
     }
 
-    const tx = await factory.createNftErc20WithDispenser(
+    const tx = await factory.createNftWithDatatokenWithDispenser(
       publisherAccount,
       nftParams,
-      erc20Params,
+      datatokenParams,
       dispenserParams
     )
 

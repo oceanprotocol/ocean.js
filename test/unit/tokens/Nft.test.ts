@@ -50,8 +50,8 @@ describe('NFT', () => {
     assert(tokenURI === nftData.tokenURI)
   })
 
-  it('#createERC20 - should create a new ERC20 DT from NFT contract', async () => {
-    const erc20Address = await nftDatatoken.createErc20(
+  it('#createDatatoken - should create a new ERC20 Datatoken from NFT contract', async () => {
+    const dtAddress = await nftDatatoken.createDatatoken(
       nftAddress,
       nftOwner,
       nftOwner,
@@ -64,12 +64,12 @@ describe('NFT', () => {
       nftData.symbol,
       1
     )
-    assert(erc20Address !== null)
+    assert(dtAddress !== null)
   })
 
-  it('#createERC20 - should fail to create a new ERC20 DT if not ERC20Deployer', async () => {
+  it('#createDatatoken - should fail to create a new ERC20 Datatoken if not DatatokenDeployer', async () => {
     try {
-      await nftDatatoken.createErc20(
+      await nftDatatoken.createDatatoken(
         nftAddress,
         user1,
         nftOwner,
@@ -84,7 +84,7 @@ describe('NFT', () => {
       )
       assert(false)
     } catch (e) {
-      assert(e.message === 'Caller is not ERC20Deployer')
+      assert(e.message === 'Caller is not DatatokenDeployer')
     }
   })
 
@@ -123,53 +123,53 @@ describe('NFT', () => {
     }
   })
 
-  // ERC20Deployer
-  it('#addERC20Deployer -should add ERC20deployer if Manager', async () => {
-    assert((await nftDatatoken.isErc20Deployer(nftAddress, user1)) === false)
+  // DatatokenDeployer
+  it('#addDatatokenDeployer -should add DatatokenDeployer if Manager', async () => {
+    assert((await nftDatatoken.isDatatokenDeployer(nftAddress, user1)) === false)
 
-    await nftDatatoken.addErc20Deployer(nftAddress, nftOwner, user1)
+    await nftDatatoken.addDatatokenDeployer(nftAddress, nftOwner, user1)
 
-    assert((await nftDatatoken.isErc20Deployer(nftAddress, user1)) === true)
+    assert((await nftDatatoken.isDatatokenDeployer(nftAddress, user1)) === true)
   })
 
-  it('#addERC20Deployer - should fail to add ERC20deployer if NOT Manager', async () => {
+  it('#addDatatokenDeployer - should fail to add DatatokenDeployer if NOT Manager', async () => {
     try {
-      await nftDatatoken.addErc20Deployer(nftAddress, user1, user1)
+      await nftDatatoken.addDatatokenDeployer(nftAddress, user1, user1)
       assert(false)
     } catch (e) {
       assert(e.message === 'Caller is not Manager')
     }
   })
 
-  it('#removeERC20Deployer - remove ERC20deployer if Manager', async () => {
-    assert((await nftDatatoken.isErc20Deployer(nftAddress, user1)) === true)
+  it('#removeDatatokenDeployer - remove DatatokenDeployer if Manager', async () => {
+    assert((await nftDatatoken.isDatatokenDeployer(nftAddress, user1)) === true)
 
-    await nftDatatoken.removeErc20Deployer(nftAddress, nftOwner, user1)
+    await nftDatatoken.removeDatatokenDeployer(nftAddress, nftOwner, user1)
 
-    assert((await nftDatatoken.isErc20Deployer(nftAddress, user1)) === false)
+    assert((await nftDatatoken.isDatatokenDeployer(nftAddress, user1)) === false)
   })
 
-  it('#removeERC20Deployer - should fail and remove ERC20deployer if NOT Manager nor himself an ERC20Deployer', async () => {
-    await nftDatatoken.addErc20Deployer(nftAddress, nftOwner, user1)
-    assert((await nftDatatoken.isErc20Deployer(nftAddress, user1)) === true)
+  it('#removeDatatokenDeployer - should fail and remove DatatokenDeployer if NOT Manager nor himself an DatatokenDeployer', async () => {
+    await nftDatatoken.addDatatokenDeployer(nftAddress, nftOwner, user1)
+    assert((await nftDatatoken.isDatatokenDeployer(nftAddress, user1)) === true)
     try {
-      await nftDatatoken.removeErc20Deployer(nftAddress, user1, user1)
+      await nftDatatoken.removeDatatokenDeployer(nftAddress, user1, user1)
       assert(false)
     } catch (e) {
-      assert(e.message === 'Caller is not Manager nor ERC20Deployer')
+      assert(e.message === 'Caller is not Manager nor DatatokenDeployer')
     }
-    assert((await nftDatatoken.isErc20Deployer(nftAddress, user1)) === true)
+    assert((await nftDatatoken.isDatatokenDeployer(nftAddress, user1)) === true)
   })
 
-  it('#removeERC20Deployer - should fail to remove himself as an ERC20Deployer', async () => {
-    assert((await nftDatatoken.isErc20Deployer(nftAddress, user1)) === true)
+  it('#removeDatatokenDeployer - should fail to remove himself as an DatatokenDeployer', async () => {
+    assert((await nftDatatoken.isDatatokenDeployer(nftAddress, user1)) === true)
     try {
-      await nftDatatoken.removeErc20Deployer(nftAddress, user1, user1)
+      await nftDatatoken.removeDatatokenDeployer(nftAddress, user1, user1)
       assert(false)
     } catch (e) {
-      assert(e.message === 'Caller is not Manager nor ERC20Deployer')
+      assert(e.message === 'Caller is not Manager nor DatatokenDeployer')
     }
-    assert((await nftDatatoken.isErc20Deployer(nftAddress, user1)) === true)
+    assert((await nftDatatoken.isDatatokenDeployer(nftAddress, user1)) === true)
   })
 
   //  MetadataUpdate
@@ -264,15 +264,15 @@ describe('NFT', () => {
 
   it('#transferNFT - should transfer the NFT and clean all permissions, set new owner as manager', async () => {
     await nftDatatoken.addManager(nftAddress, nftOwner, user2)
-    await nftDatatoken.addErc20Deployer(nftAddress, user2, user1)
-    assert((await nftDatatoken.isErc20Deployer(nftAddress, user1)) === true)
+    await nftDatatoken.addDatatokenDeployer(nftAddress, user2, user1)
+    assert((await nftDatatoken.isDatatokenDeployer(nftAddress, user1)) === true)
 
     assert((await nftDatatoken.getNftOwner(nftAddress)) === nftOwner)
     await nftDatatoken.transferNft(nftAddress, nftOwner, user1, 1)
     assert((await nftDatatoken.getNftOwner(nftAddress)) === user1)
 
-    assert((await nftDatatoken.isErc20Deployer(nftAddress, nftOwner)) === false)
-    assert((await nftDatatoken.isErc20Deployer(nftAddress, user2)) === false)
+    assert((await nftDatatoken.isDatatokenDeployer(nftAddress, nftOwner)) === false)
+    assert((await nftDatatoken.isDatatokenDeployer(nftAddress, user2)) === false)
   })
 
   // Safe transfer test
@@ -292,8 +292,8 @@ describe('NFT', () => {
 
   it('#safeTransferNft - should transfer the NFT and clean all permissions, set new owner as manager', async () => {
     await nftDatatoken.addManager(nftAddress, nftOwner, user2)
-    await nftDatatoken.addErc20Deployer(nftAddress, user2, user1)
-    assert((await nftDatatoken.isErc20Deployer(nftAddress, user1)) === true)
+    await nftDatatoken.addDatatokenDeployer(nftAddress, user2, user1)
+    assert((await nftDatatoken.isDatatokenDeployer(nftAddress, user1)) === true)
 
     assert((await nftDatatoken.getNftOwner(nftAddress)) === nftOwner)
     await nftDatatoken.safeTransferNft(nftAddress, nftOwner, user1, 1)
@@ -312,12 +312,12 @@ describe('NFT', () => {
 
   it('#cleanPermissions - should cleanPermissions if NFTOwner', async () => {
     await nftDatatoken.addManager(nftAddress, user1, user1)
-    await nftDatatoken.addErc20Deployer(nftAddress, user1, user2)
-    assert((await nftDatatoken.isErc20Deployer(nftAddress, user2)) === true)
+    await nftDatatoken.addDatatokenDeployer(nftAddress, user1, user2)
+    assert((await nftDatatoken.isDatatokenDeployer(nftAddress, user2)) === true)
 
     await nftDatatoken.cleanPermissions(nftAddress, user1)
 
-    assert((await nftDatatoken.isErc20Deployer(nftAddress, user2)) === false)
+    assert((await nftDatatoken.isDatatokenDeployer(nftAddress, user2)) === false)
     assert((await nftDatatoken.getNftPermissions(nftAddress, nftOwner)).manager === false)
   })
 

@@ -185,14 +185,14 @@ export class Datatoken extends SmartContract {
     fixedRateParams: FreCreationParams
   ): Promise<TransactionReceipt> {
     const dtContract = this.getContract(dtAddress)
-    if (!(await this.isERC20Deployer(dtAddress, address))) {
-      throw new Error(`User is not ERC20 Deployer`)
+    if (!(await this.isDatatokenDeployer(dtAddress, address))) {
+      throw new Error(`User is not Datatoken Deployer`)
     }
     if (!fixedRateParams.allowedConsumer) fixedRateParams.allowedConsumer = ZERO_ADDRESS
 
     const withMint = fixedRateParams.withMint ? 1 : 0
 
-    // should check ERC20Deployer role using NFT level ..
+    // should check DatatokenDeployer role using NFT level ..
 
     const estGas = await estimateGas(
       address,
@@ -286,8 +286,8 @@ export class Datatoken extends SmartContract {
     dispenserAddress: string,
     dispenserParams: DispenserParams
   ): Promise<TransactionReceipt> {
-    if (!(await this.isERC20Deployer(dtAddress, address))) {
-      throw new Error(`User is not ERC20 Deployer`)
+    if (!(await this.isDatatokenDeployer(dtAddress, address))) {
+      throw new Error(`User is not Datatoken Deployer`)
     }
 
     const dtContract = this.getContract(dtAddress)
@@ -296,7 +296,7 @@ export class Datatoken extends SmartContract {
 
     if (!dispenserParams.withMint) dispenserParams.withMint = false
 
-    // should check ERC20Deployer role using NFT level ..
+    // should check DatatokenDeployer role using NFT level ..
 
     const estGas = await estimateGas(
       address,
@@ -388,8 +388,8 @@ export class Datatoken extends SmartContract {
   }
 
   /**
-   * Add Minter for an ERC20 datatoken
-   * only ERC20Deployer can succeed
+   * Add Minter for an ERC20 Datatoken
+   * only DatatokenDeployer can succeed
    * @param {String} dtAddress Datatoken address
    * @param {String} address User address
    * @param {String} minter User which is going to be a Minter
@@ -402,8 +402,8 @@ export class Datatoken extends SmartContract {
   ): Promise<TransactionReceipt> {
     const dtContract = this.getContract(dtAddress)
 
-    if ((await this.isERC20Deployer(dtAddress, address)) !== true) {
-      throw new Error(`Caller is not ERC20Deployer`)
+    if ((await this.isDatatokenDeployer(dtAddress, address)) !== true) {
+      throw new Error(`Caller is not DatatokenDeployer`)
     }
     // Estimate gas cost for addMinter method
     const estGas = await estimateGas(address, dtContract.methods.addMinter, minter)
@@ -434,14 +434,14 @@ export class Datatoken extends SmartContract {
   ): Promise<any> {
     const dtContract = contractInstance || this.getContract(dtAddress)
 
-    // should check ERC20Deployer role using NFT level ..
+    // should check DatatokenDeployer role using NFT level ..
 
     return estimateGas(address, dtContract.methods.removeMinter, minter)
   }
 
   /**
-   * Revoke Minter permission for an ERC20 datatoken
-   * only ERC20Deployer can succeed
+   * Revoke Minter permission for an ERC20 Datatoken
+   * only DatatokenDeployer can succeed
    * @param {String} dtAddress Datatoken address
    * @param {String} address User address
    * @param {String} minter User which will be removed from Minter permission
@@ -455,8 +455,8 @@ export class Datatoken extends SmartContract {
   ): Promise<TransactionReceipt> {
     const dtContract = this.getContract(dtAddress)
 
-    if ((await this.isERC20Deployer(dtAddress, address)) !== true) {
-      throw new Error(`Caller is not ERC20Deployer`)
+    if ((await this.isDatatokenDeployer(dtAddress, address)) !== true) {
+      throw new Error(`Caller is not DatatokenDeployer`)
     }
 
     const estGas = await estimateGas(address, dtContract.methods.removeMinter, minter)
@@ -492,7 +492,7 @@ export class Datatoken extends SmartContract {
 
   /**
    * Add addPaymentManager (can set who's going to collect fee when consuming orders)
-   * only ERC20Deployer can succeed
+   * only DatatokenDeployer can succeed
    * @param {String} dtAddress Datatoken address
    * @param {String} address User address
    * @param {String} paymentManager User which is going to be a Minter
@@ -505,8 +505,8 @@ export class Datatoken extends SmartContract {
   ): Promise<TransactionReceipt> {
     const dtContract = this.getContract(dtAddress)
 
-    if ((await this.isERC20Deployer(dtAddress, address)) !== true) {
-      throw new Error(`Caller is not ERC20Deployer`)
+    if ((await this.isDatatokenDeployer(dtAddress, address)) !== true) {
+      throw new Error(`Caller is not DatatokenDeployer`)
     }
 
     const estGas = await estimateGas(
@@ -545,8 +545,8 @@ export class Datatoken extends SmartContract {
   }
 
   /**
-   * Revoke paymentManager permission for an ERC20 datatoken
-   * only ERC20Deployer can succeed
+   * Revoke paymentManager permission for an ERC20 Datatoken
+   * only DatatokenDeployer can succeed
    * @param {String} dtAddress Datatoken address
    * @param {String} address User address
    * @param {String} paymentManager User which will be removed from paymentManager permission
@@ -559,8 +559,8 @@ export class Datatoken extends SmartContract {
   ): Promise<TransactionReceipt> {
     const dtContract = this.getContract(dtAddress)
 
-    if ((await this.isERC20Deployer(dtAddress, address)) !== true) {
-      throw new Error(`Caller is not ERC20Deployer`)
+    if ((await this.isDatatokenDeployer(dtAddress, address)) !== true) {
+      throw new Error(`Caller is not DatatokenDeployer`)
     }
 
     const estGas = await estimateGas(
@@ -621,9 +621,9 @@ export class Datatoken extends SmartContract {
     const isNftOwner = nftAddress && (await this.nft.getNftOwner(nftAddress)) === address
     const nftPermissions =
       nftAddress && !isNftOwner && (await this.nft.getNftPermissions(nftAddress, address))
-    const isErc20Deployer = nftPermissions?.deployERC20
-    if (!isPaymentManager && !isNftOwner && !isErc20Deployer) {
-      throw new Error(`Caller is not Fee Manager, owner or erc20 Deployer`)
+    const isDatatokenDeployer = nftPermissions?.deployERC20
+    if (!isPaymentManager && !isNftOwner && !isDatatokenDeployer) {
+      throw new Error(`Caller is not Fee Manager, owner or Datatoken Deployer`)
     }
 
     const estGas = await estimateGas(
@@ -1011,8 +1011,8 @@ export class Datatoken extends SmartContract {
   }
 
   /** setData
-   * This function allows to store data with a preset key (keccak256(ERC20Address)) into NFT 725 Store
-   * only ERC20Deployer can succeed
+   * This function allows to store data with a preset key (keccak256(dtAddress)) into NFT 725 Store
+   * only DatatokenDeployer can succeed
    * @param {String} dtAddress Datatoken address
    * @param {String} address User address
    * @param {String} value Data to be stored into 725Y standard
@@ -1023,8 +1023,8 @@ export class Datatoken extends SmartContract {
     address: string,
     value: string
   ): Promise<TransactionReceipt> {
-    if (!(await this.isERC20Deployer(dtAddress, address))) {
-      throw new Error(`User is not ERC20 Deployer`)
+    if (!(await this.isDatatokenDeployer(dtAddress, address))) {
+      throw new Error(`User is not Datatoken Deployer`)
     }
 
     const dtContract = this.getContract(dtAddress)
@@ -1058,7 +1058,7 @@ export class Datatoken extends SmartContract {
   }
 
   /**
-   * Clean erc20level Permissions (minters, paymentManager and reset the paymentCollector) for an ERC20 datatoken
+   * Clean Datatoken level Permissions (minters, paymentManager and reset the paymentCollector) for an ERC20 Datatoken
    * Only NFT Owner (at 721 level) can call it.
    * @param dtAddress Datatoken address where we want to clean permissions
    * @param address User adress
@@ -1085,7 +1085,7 @@ export class Datatoken extends SmartContract {
     return trxReceipt
   }
 
-  /** Returns ERC20 user's permissions for a datatoken
+  /** Returns ERC20 Datatoken user's permissions for a datatoken
    * @param {String} dtAddress Datatoken adress
    * @param {String} address user adress
    * @return {Promise<DatatokenRoles>}
@@ -1134,10 +1134,10 @@ export class Datatoken extends SmartContract {
    * @param {String} dtAddress Datatoken adress
    * @return {Promise<boolean>}
    */
-  public async isERC20Deployer(dtAddress: string, address: string): Promise<boolean> {
+  public async isDatatokenDeployer(dtAddress: string, address: string): Promise<boolean> {
     const dtContract = this.getContract(dtAddress)
-    const isERC20Deployer = await dtContract.methods.isERC20Deployer(address).call()
-    return isERC20Deployer
+    const isDatatokenDeployer = await dtContract.methods.isERC20Deployer(address).call()
+    return isDatatokenDeployer
   }
 
   /**

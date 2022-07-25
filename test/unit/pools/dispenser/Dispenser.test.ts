@@ -9,7 +9,7 @@ import {
   Dispenser,
   ZERO_ADDRESS
 } from '../../../../src/'
-import { Erc20CreateParams } from '../../../../src/@types'
+import { DatatokenCreateParams } from '../../../../src/@types'
 
 describe('Dispenser flow', () => {
   let factoryOwner: string
@@ -30,7 +30,7 @@ describe('Dispenser flow', () => {
     owner: null
   }
 
-  const ercParams: Erc20CreateParams = {
+  const dtParams: DatatokenCreateParams = {
     templateIndex: 1,
     minter: null,
     paymentCollector: null,
@@ -49,9 +49,9 @@ describe('Dispenser flow', () => {
     user2 = accounts[4]
 
     nftData.owner = factoryOwner
-    ercParams.minter = factoryOwner
-    ercParams.paymentCollector = user2
-    ercParams.mpFeeAddress = user1
+    dtParams.minter = factoryOwner
+    dtParams.paymentCollector = user2
+    dtParams.mpFeeAddress = user1
   })
 
   it('should deploy contracts', async () => {
@@ -66,10 +66,10 @@ describe('Dispenser flow', () => {
   it('#createNftwithErc - should create an NFT and a Datatoken ', async () => {
     nftFactory = new NftFactory(contracts.nftFactoryAddress, web3)
 
-    const txReceipt = await nftFactory.createNftWithErc20(
+    const txReceipt = await nftFactory.createNftWithDatatoken(
       factoryOwner,
       nftData,
-      ercParams
+      dtParams
     )
 
     expect(txReceipt.events.NFTCreated.event === 'NFTCreated')

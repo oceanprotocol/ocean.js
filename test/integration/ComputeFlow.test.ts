@@ -13,7 +13,7 @@ import {
   ZERO_ADDRESS
 } from '../../src'
 import {
-  Erc20CreateParams,
+  DatatokenCreateParams,
   ComputeJob,
   ComputeAsset,
   ComputeAlgorithm,
@@ -232,7 +232,7 @@ async function createAsset(
     transferable: true,
     owner: owner
   }
-  const erc20ParamsAsset: Erc20CreateParams = {
+  const datatokenParams: DatatokenCreateParams = {
     templateIndex: 1,
     cap: '100000',
     feeAmount: '0',
@@ -242,7 +242,11 @@ async function createAsset(
     mpFeeAddress: ZERO_ADDRESS
   }
 
-  const result = await Factory.createNftWithErc20(owner, nftParamsAsset, erc20ParamsAsset)
+  const result = await Factory.createNftWithDatatoken(
+    owner,
+    nftParamsAsset,
+    datatokenParams
+  )
 
   const nftAddress = result.events.NFTCreated.returnValues[0]
   const datatokenAddressAsset = result.events.TokenCreated.returnValues[0]

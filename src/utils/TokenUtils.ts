@@ -39,7 +39,7 @@ export async function estApprove(
  * @param {String} account
  * @param {String} tokenAddress
  * @param {String} spender
- * @param {String} amount amount of ERC20 tokens (always expressed as wei)
+ * @param {String} amount amount of ERC20 Datatokens (always expressed as wei)
  * @param {boolean} force  if true, will overwrite any previous allowence. Else, will check if allowence is enough and will not send a transaction if it's not needed
  * @param {number} tokenDecimals optional number of decimals of the token
  */
@@ -110,7 +110,7 @@ export async function estTransfer(
  * @param {String} account
  * @param {String} tokenAddress
  * @param {String} recipient
- * @param {String} amount amount of ERC20 tokens (not as wei)
+ * @param {String} amount amount of ERC20 Datatokens (not as wei)
  * @param {String} force  if true, will overwrite any previous allowence. Else, will check if allowence is enough and will not send a transaction if it's not needed
  */
 export async function transfer(
@@ -144,7 +144,7 @@ export async function transfer(
 }
 
 /**
- * Get Allowance for any erc20
+ * Get Allowance for any Datatoken
  * @param {Web3} web3
  * @param {String } tokenAdress
  * @param {String} account
@@ -165,7 +165,7 @@ export async function allowance(
 }
 
 /**
- * Get balance for any erc20
+ * Get balance for any Datatoken
  * @param {Web3} web3
  * @param {String} tokenAdress
  * @param {String} owner
@@ -185,7 +185,7 @@ export async function balance(
 }
 
 /**
- * Get decimals for any erc20
+ * Get decimals for any Datatoken
  * @param {Web3} web3
  * @param {String} tokenAdress
  * @return {Promise<number>} Number of decimals of the token

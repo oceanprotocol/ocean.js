@@ -11,7 +11,7 @@ import {
   approve,
   ZERO_ADDRESS
 } from '../../../src'
-import { Erc20CreateParams, PoolCreationParams, Operation } from '../../../src/@types'
+import { DatatokenCreateParams, PoolCreationParams, Operation } from '../../../src/@types'
 
 const { keccak256 } = require('@ethersproject/keccak256')
 
@@ -25,8 +25,8 @@ describe('Router unit test', () => {
   const NFT_NAME = '72120Bundle'
   const NFT_SYMBOL = '72Bundle'
   const NFT_TOKEN_URI = 'https://oceanprotocol.com/nft/'
-  const ERC20_NAME = 'ERC20B1'
-  const ERC20_SYMBOL = 'ERC20DT1Symbol'
+  const DATATOKEN_NAME = 'ERC20B1'
+  const DATATOKEN_SYMBOL = 'ERC20DT1Symbol'
   const RATE = '1'
   const FEE = '0.001'
   const FEE_ZERO = '0'
@@ -51,7 +51,7 @@ describe('Router unit test', () => {
     owner: factoryOwner
   }
 
-  const ERC_PARAMS: Erc20CreateParams = {
+  const ERC_PARAMS: DatatokenCreateParams = {
     templateIndex: 1,
     minter: factoryOwner,
     paymentCollector: user2,
@@ -59,8 +59,8 @@ describe('Router unit test', () => {
     feeToken: ZERO_ADDRESS,
     cap: CAP_AMOUNT,
     feeAmount: FEE_ZERO,
-    name: ERC20_NAME,
-    symbol: ERC20_SYMBOL
+    name: DATATOKEN_NAME,
+    symbol: DATATOKEN_SYMBOL
   }
 
   before(async () => {
@@ -152,31 +152,31 @@ describe('Router unit test', () => {
     }
 
     const nftFactory = new NftFactory(contracts.nftFactoryAddress, web3)
-    const txReceipt = await nftFactory.createNftErc20WithPool(
+    const txReceipt = await nftFactory.createNftWithDatatokenWithPool(
       factoryOwner,
       NFT_DATA,
       ERC_PARAMS,
       poolParams
     )
 
-    const erc20TokenAddress = txReceipt.events.TokenCreated.returnValues.newTokenAddress
+    const datatokenAddress = txReceipt.events.TokenCreated.returnValues.newTokenAddress
     const pool1 = txReceipt.events.NewPool.returnValues.poolAddress
 
     // CREATE A SECOND POOL
-    const txReceipt2 = await nftFactory.createNftErc20WithPool(
+    const txReceipt2 = await nftFactory.createNftWithDatatokenWithPool(
       factoryOwner,
       NFT_DATA,
       ERC_PARAMS,
       poolParams
     )
 
-    const erc20Token2Address = txReceipt2.events.TokenCreated.returnValues.newTokenAddress
+    const datatoken2Address = txReceipt2.events.TokenCreated.returnValues.newTokenAddress
     const pool2 = txReceipt2.events.NewPool.returnValues.poolAddress
 
     // user1 has no dt1
-    expect(await balance(web3, erc20TokenAddress, user1)).to.equal('0')
+    expect(await balance(web3, datatokenAddress, user1)).to.equal('0')
     // user1 has no dt2
-    expect(await balance(web3, erc20Token2Address, user1)).to.equal('0')
+    expect(await balance(web3, datatoken2Address, user1)).to.equal('0')
 
     // we now can prepare the Operations objects
 
@@ -190,7 +190,7 @@ describe('Router unit test', () => {
       operation: 0, // swapExactAmountIn
       tokenIn: contracts.daiAddress,
       amountsIn: AMOUNTS_IN, // when swapExactAmountIn is EXACT amount IN
-      tokenOut: erc20TokenAddress,
+      tokenOut: datatokenAddress,
       amountsOut: AMOUNTS_OUT, // when swapExactAmountIn is MIN amount OUT
       maxPrice: MAX_PRICE, // max price (only for pools),
       swapMarketFee: SWAP_MARKET_FEE,
@@ -203,7 +203,7 @@ describe('Router unit test', () => {
       operation: 0, // swapExactAmountIn
       tokenIn: contracts.daiAddress,
       amountsIn: AMOUNTS_IN, // when swapExactAmountIn is EXACT amount IN
-      tokenOut: erc20Token2Address,
+      tokenOut: datatoken2Address,
       amountsOut: AMOUNTS_OUT, // when swapExactAmountIn is MIN amount OUT
       maxPrice: MAX_PRICE, // max price (only for pools),
       swapMarketFee: SWAP_MARKET_FEE,
@@ -213,7 +213,7 @@ describe('Router unit test', () => {
     await router.buyDTBatch(user1, [operations1, operations2])
 
     // user1 got his dts
-    expect(+(await balance(web3, erc20TokenAddress, user1))).gt(0)
-    expect(+(await balance(web3, erc20Token2Address, user1))).gt(0)
+    expect(+(await balance(web3, datatokenAddress, user1))).gt(0)
+    expect(+(await balance(web3, datatoken2Address, user1))).gt(0)
   })
 })
