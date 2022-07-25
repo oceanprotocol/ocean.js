@@ -16,8 +16,7 @@
   "rules": {
     "no-empty": ["error", { "allowEmptyCatch": true }],
     "prefer-destructuring": ["warn", { "object": true, "array": false }],
-    "no-dupe-class-members": "off",
-    "no-redeclare": "off",
+    "no-dupe-class-members": ["warn"],
     "no-useless-constructor": ["warn"],
     "no-unused-vars": ["warn"],
     "constructor-super": ["warn"]
