@@ -83,7 +83,38 @@ const {
   sleep,
   approveWei
 } = require('../../src')
-const { web3, getTestConfig, getAddresses } = require('../config')
+/// ```
+
+/// We add this code to get the default test configuration:
+
+/// ```Javascript
+/// const {
+///   ConfigHelper,
+///   configHelperNetworks
+/// } = require('@oceanprotocol/lib')
+/// const Web3 = require('web3')
+/// const fs = require('fs')
+/// const { homedir } = require('os')
+
+/// const web3 = new Web3(process.env.NODE_URI || configHelperNetworks[1].nodeUri)
+
+/// const getTestConfig = async (web3) => {
+///   const config = new ConfigHelper().getConfig(await web3.eth.getChainId())
+///   config.providerUri = process.env.PROVIDER_URL || config.providerUri
+///   return config
+/// }
+
+/// const getAddresses = () => {
+///   const data = JSON.parse(
+///     // eslint-disable-next-line security/detect-non-literal-fs-filename
+///     fs.readFileSync(
+///       process.env.ADDRESS_FILE ||
+///         `${homedir}/.ocean/ocean-contracts/artifacts/address.json`,
+///       'utf8'
+///     )
+///   )
+///   return data.development
+/// }
 /// ```
 
 /// Add a `handleOrder()`function.
@@ -145,7 +176,7 @@ async function handleOrder(
 ///   .catch(error => {
 ///     console.error(error);
 ///     process.exit(1);
-///   });
+///   })
 /// ```
 
 /// <!--
