@@ -1168,10 +1168,12 @@ export class Datatoken {
       this.config
     )
 
-    const estGas = await estimateGas(address, dtContract.methods.setData, value)
+    const valueHex = this.web3.utils.asciiToHex(value)
+
+    const estGas = await estimateGas(address, dtContract.methods.setData, valueHex)
 
     // Call setData function of the contract
-    const trxReceipt = await dtContract.methods.setData(value).send({
+    const trxReceipt = await dtContract.methods.setData(valueHex).send({
       from: address,
       gas: estGas + 1,
       gasPrice: await getFairGasPrice(this.web3, this.config)
