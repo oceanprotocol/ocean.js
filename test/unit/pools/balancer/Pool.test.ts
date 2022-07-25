@@ -73,7 +73,7 @@ describe('Pool unit test', () => {
       web3,
       factoryOwner,
       contracts.daiAddress,
-      contracts.erc721FactoryAddress,
+      contracts.nftFactoryAddress,
       '2000'
     )
 
@@ -83,7 +83,7 @@ describe('Pool unit test', () => {
           web3,
           contracts.daiAddress,
           factoryOwner,
-          contracts.erc721FactoryAddress
+          contracts.nftFactoryAddress
         )
       ) >= 2000
     )
@@ -92,7 +92,7 @@ describe('Pool unit test', () => {
       web3,
       factoryOwner,
       contracts.usdcAddress,
-      contracts.erc721FactoryAddress,
+      contracts.nftFactoryAddress,
       '10000'
     )
 
@@ -102,7 +102,7 @@ describe('Pool unit test', () => {
           web3,
           contracts.usdcAddress,
           factoryOwner,
-          contracts.erc721FactoryAddress
+          contracts.nftFactoryAddress
         )
       ) >= 10000
     )
@@ -115,7 +115,7 @@ describe('Pool unit test', () => {
       const poolParams: PoolCreationParams = {
         ssContract: contracts.sideStakingAddress,
         baseTokenAddress: contracts.daiAddress,
-        baseTokenSender: contracts.erc721FactoryAddress,
+        baseTokenSender: contracts.nftFactoryAddress,
         publisherAddress: factoryOwner,
         marketFeeCollector: factoryOwner,
         poolTemplateAddress: contracts.poolTemplateAddress,
@@ -128,7 +128,7 @@ describe('Pool unit test', () => {
         swapFeeMarketRunner: '0.001'
       }
 
-      const nftFactory = new NftFactory(contracts.erc721FactoryAddress, web3, 8996)
+      const nftFactory = new NftFactory(contracts.nftFactoryAddress, web3, 8996)
 
       const txReceipt = await nftFactory.createNftErc20WithPool(
         factoryOwner,
@@ -510,7 +510,7 @@ describe('Pool unit test', () => {
       const poolParams: PoolCreationParams = {
         ssContract: contracts.sideStakingAddress,
         baseTokenAddress: contracts.usdcAddress,
-        baseTokenSender: contracts.erc721FactoryAddress,
+        baseTokenSender: contracts.nftFactoryAddress,
         publisherAddress: factoryOwner,
         marketFeeCollector: factoryOwner,
         poolTemplateAddress: contracts.poolTemplateAddress,
@@ -523,7 +523,7 @@ describe('Pool unit test', () => {
         swapFeeMarketRunner: '0.001'
       }
 
-      const nftFactory = new NftFactory(contracts.erc721FactoryAddress, web3, 8996)
+      const nftFactory = new NftFactory(contracts.nftFactoryAddress, web3, 8996)
 
       const txReceipt = await nftFactory.createNftErc20WithPool(
         factoryOwner,

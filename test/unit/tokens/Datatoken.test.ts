@@ -65,7 +65,7 @@ describe('Datatoken', () => {
   })
 
   it('should initialize NFTFactory instance and create a new NFT', async () => {
-    nftFactory = new NftFactory(contracts.erc721FactoryAddress, web3, 8996)
+    nftFactory = new NftFactory(contracts.nftFactoryAddress, web3, 8996)
 
     nftAddress = await nftFactory.createNFT(nftOwner, nftData)
     nftDatatoken = new Nft(web3, 8996)
@@ -541,9 +541,9 @@ describe('Datatoken', () => {
     )
   })
 
-  it('#getERC721Address - should succeed to get the parent ERC721 address', async () => {
+  it('#getNFTAddress - should succeed to get the parent NFT address', async () => {
     const address = await datatoken.getNFTAddress(datatokenAddress)
-    assert(address, 'Not able to get the parent ERC721 address')
+    assert(address, 'Not able to get the parent NFT address')
   })
 
   it('#setData - should set a value into 725Y standard, if Caller has ERC20Deployer permission', async () => {

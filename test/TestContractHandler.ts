@@ -50,13 +50,13 @@ export interface Addresses {
   opfCommunityFeeCollectorAddress: string
   poolTemplateAddress: string
   erc20TemplateAddress: string
-  erc721TemplateAddress: string
+  nftTemplateAddress: string
   oceanAddress: string
   routerAddress: string
   sideStakingAddress: string
   fixedRateAddress: string
   dispenserAddress: string
-  erc721FactoryAddress: string
+  nftFactoryAddress: string
   daiAddress: string
   usdcAddress: string
 }
@@ -98,8 +98,8 @@ export const deployContracts = async (web3: Web3, owner: string): Promise<Addres
       owner
     ))
 
-  // deploy ERC721 template
-  addresses.erc721TemplateAddress =
+  // deploy NFT template
+  addresses.nftTemplateAddress =
     configAddresses.ERC721Template['1'] ||
     (await estimateGasAndDeployContract(
       web3,
@@ -170,15 +170,15 @@ export const deployContracts = async (web3: Web3, owner: string): Promise<Addres
       owner
     ))
 
-  // deploy ERC721 factory
-  addresses.erc721FactoryAddress =
+  // deploy NFT factory
+  addresses.nftFactoryAddress =
     configAddresses.ERC721Factory ||
     (await estimateGasAndDeployContract(
       web3,
       ERC721Factory.abi as AbiItem[],
       ERC721Factory.bytecode,
       [
-        addresses.erc721TemplateAddress,
+        addresses.nftTemplateAddress,
         addresses.erc20TemplateAddress,
         addresses.opfCommunityFeeCollectorAddress,
         addresses.routerAddress
@@ -215,7 +215,7 @@ export const deployContracts = async (web3: Web3, owner: string): Promise<Addres
     )
 
     await RouterContract.methods
-      .addFactory(addresses.erc721FactoryAddress)
+      .addFactory(addresses.nftFactoryAddress)
       .send({ from: owner })
     await RouterContract.methods
       .addFixedRateContract(addresses.fixedRateAddress)

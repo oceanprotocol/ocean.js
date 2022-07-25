@@ -82,7 +82,7 @@ describe('Router unit test', () => {
       web3,
       factoryOwner,
       contracts.daiAddress,
-      contracts.erc721FactoryAddress,
+      contracts.nftFactoryAddress,
       web3.utils.toWei('10000')
     )
   })
@@ -98,7 +98,7 @@ describe('Router unit test', () => {
 
   it('#getNFTFactory - should return NFT Factory address', async () => {
     const factory = await router.getNFTFactory()
-    assert(factory === contracts.erc721FactoryAddress)
+    assert(factory === contracts.nftFactoryAddress)
   })
 
   it('#isOceanTokens - should return true if in oceanTokens list', async () => {
@@ -138,7 +138,7 @@ describe('Router unit test', () => {
     const poolParams: PoolCreationParams = {
       ssContract: contracts.sideStakingAddress,
       baseTokenAddress: contracts.daiAddress,
-      baseTokenSender: contracts.erc721FactoryAddress,
+      baseTokenSender: contracts.nftFactoryAddress,
       publisherAddress: factoryOwner,
       marketFeeCollector: factoryOwner,
       poolTemplateAddress: contracts.poolTemplateAddress,
@@ -151,7 +151,7 @@ describe('Router unit test', () => {
       swapFeeMarketRunner: FEE
     }
 
-    const nftFactory = new NftFactory(contracts.erc721FactoryAddress, web3)
+    const nftFactory = new NftFactory(contracts.nftFactoryAddress, web3)
     const txReceipt = await nftFactory.createNftErc20WithPool(
       factoryOwner,
       NFT_DATA,
