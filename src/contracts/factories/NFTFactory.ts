@@ -2,7 +2,12 @@ import Web3 from 'web3'
 import { TransactionReceipt } from 'web3-core'
 import { AbiItem } from 'web3-utils'
 import ERC721Factory from '@oceanprotocol/contracts/artifacts/contracts/ERC721Factory.sol/ERC721Factory.json'
-import { LoggerInstance, generateDtName, estimateGas, ZERO_ADDRESS } from '../../utils'
+import {
+  LoggerInstance,
+  generateDtName,
+  calculateEstimatedGas,
+  ZERO_ADDRESS
+} from '../../utils'
 import {
   FreCreationParams,
   DatatokenCreateParams,
@@ -23,33 +28,16 @@ export class NftFactory extends SmartContractWithAddress {
   }
 
   /**
-   * Get estimated gas cost for deployERC721Contract value
-   * @param {String} address
-   * @param {String} nftData
-   * @return {Promise<string>} NFT datatoken address
-   */
-  public async estGasCreateNFT(address: string, nftData: NftCreateData): Promise<string> {
-    return estimateGas(
-      address,
-      this.contract.methods.deployERC721Contract,
-      nftData.name,
-      nftData.symbol,
-      nftData.templateIndex,
-      ZERO_ADDRESS,
-      ZERO_ADDRESS,
-      nftData.tokenURI,
-      nftData.transferable,
-      nftData.owner
-    )
-  }
-
-  /**
    * Create new NFT
    * @param {String} address
    * @param {NFTCreateData} nftData
    * @return {Promise<string>} NFT datatoken address
    */
-  public async createNFT(address: string, nftData: NftCreateData): Promise<string> {
+  public async createNFT<G extends boolean = false>(
+    address: string,
+    nftData: NftCreateData,
+    estimateGas?: G
+  ): Promise<G extends false ? string : number> {
     if (!nftData.templateIndex) nftData.templateIndex = 1
 
     if (!nftData.name || !nftData.symbol) {
@@ -67,7 +55,7 @@ export class NftFactory extends SmartContractWithAddress {
     if ((await this.getNFTTemplate(nftData.templateIndex)).isActive === false) {
       throw new Error(`Template is not active`)
     }
-    const estGas = await estimateGas(
+    const estGas = await calculateEstimatedGas(
       address,
       this.contract.methods.deployERC721Contract,
       nftData.name,
@@ -79,6 +67,7 @@ export class NftFactory extends SmartContractWithAddress {
       nftData.transferable,
       nftData.owner
     )
+    if (estimateGas) return estGas
 
     // Invoke createToken function of the contract
     const trxReceipt = await this.contract.methods
@@ -191,32 +180,16 @@ export class NftFactory extends SmartContractWithAddress {
   }
 
   /**
-   * Estimate gas cost for add721TokenTemplate method
-   * @param {String} address
-   * @param {String} templateAddress template address to add
-   * @return {Promise<TransactionReceipt>}
-   */
-  public async estGasAddNFTTemplate(
-    address: string,
-    templateAddress: string
-  ): Promise<any> {
-    return estimateGas(
-      address,
-      this.contract.methods.add721TokenTemplate,
-      templateAddress
-    )
-  }
-
-  /**
    * Add a new NFT token template - only factory Owner
    * @param {String} address
    * @param {String} templateAddress template address to add
    * @return {Promise<TransactionReceipt>}
    */
-  public async addNFTTemplate(
+  public async addNFTTemplate<G extends boolean = false>(
     address: string,
-    templateAddress: string
-  ): Promise<TransactionReceipt> {
+    templateAddress: string,
+    estimateGas?: G
+  ): Promise<G extends false ? TransactionReceipt : number> {
     if ((await this.getOwner()) !== address) {
       throw new Error(`Caller is not Factory Owner`)
     }
@@ -224,11 +197,12 @@ export class NftFactory extends SmartContractWithAddress {
       throw new Error(`Template cannot be ZERO address`)
     }
 
-    const estGas = await estimateGas(
+    const estGas = await calculateEstimatedGas(
       address,
       this.contract.methods.add721TokenTemplate,
       templateAddress
     )
+    if (estimateGas) return estGas
 
     // Invoke add721TokenTemplate function of the contract
     const trxReceipt = await this.contract.methods
@@ -243,32 +217,16 @@ export class NftFactory extends SmartContractWithAddress {
   }
 
   /**
-   * Estimate gas cost for disable721TokenTemplate method
-   * @param {String} address
-   * @param {Number} templateIndex index of the template we want to disable
-   * @return {Promise<TransactionReceipt>} current token template count
-   */
-  public async estGasDisableNFTTemplate(
-    address: string,
-    templateIndex: number
-  ): Promise<any> {
-    return estimateGas(
-      address,
-      this.contract.methods.disable721TokenTemplate,
-      templateIndex
-    )
-  }
-
-  /**
    * Disable token template - only factory Owner
    * @param {String} address
    * @param {Number} templateIndex index of the template we want to disable
    * @return {Promise<TransactionReceipt>} current token template count
    */
-  public async disableNFTTemplate(
+  public async disableNFTTemplate<G extends boolean = false>(
     address: string,
-    templateIndex: number
-  ): Promise<TransactionReceipt> {
+    templateIndex: number,
+    estimateGas?: G
+  ): Promise<G extends false ? TransactionReceipt : number> {
     if ((await this.getOwner()) !== address) {
       throw new Error(`Caller is not Factory Owner`)
     }
@@ -279,11 +237,12 @@ export class NftFactory extends SmartContractWithAddress {
     if (templateIndex === 0) {
       throw new Error(`Template index cannot be ZERO`)
     }
-    const estGas = await estimateGas(
+    const estGas = await calculateEstimatedGas(
       address,
       this.contract.methods.disable721TokenTemplate,
       templateIndex
     )
+    if (estimateGas) return estGas
 
     // Invoke createToken function of the contract
     const trxReceipt = await this.contract.methods
@@ -303,27 +262,11 @@ export class NftFactory extends SmartContractWithAddress {
    * @param {Number} templateIndex index of the template we want to reactivate
    * @return {Promise<TransactionReceipt>} current token template count
    */
-  public async estGasReactivateNFTTemplate(
+  public async reactivateNFTTemplate<G extends boolean = false>(
     address: string,
-    templateIndex: number
-  ): Promise<any> {
-    return estimateGas(
-      address,
-      this.contract.methods.reactivate721TokenTemplate,
-      templateIndex
-    )
-  }
-
-  /**
-   * Reactivate a previously disabled token template - only factory Owner
-   * @param {String} address
-   * @param {Number} templateIndex index of the template we want to reactivate
-   * @return {Promise<TransactionReceipt>} current token template count
-   */
-  public async reactivateNFTTemplate(
-    address: string,
-    templateIndex: number
-  ): Promise<TransactionReceipt> {
+    templateIndex: number,
+    estimateGas?: G
+  ): Promise<G extends false ? TransactionReceipt : number> {
     if ((await this.getOwner()) !== address) {
       throw new Error(`Caller is not Factory Owner`)
     }
@@ -335,11 +278,12 @@ export class NftFactory extends SmartContractWithAddress {
       throw new Error(`Template index cannot be ZERO`)
     }
 
-    const estGas = await estimateGas(
+    const estGas = await calculateEstimatedGas(
       address,
       this.contract.methods.reactivate721TokenTemplate,
       templateIndex
     )
+    if (estimateGas) return estGas
 
     // Invoke createToken function of the contract
     const trxReceipt = await this.contract.methods
@@ -354,28 +298,16 @@ export class NftFactory extends SmartContractWithAddress {
   }
 
   /**
-   * Estimate gas cost for addTokenTemplate method
-   * @param {String} address
-   * @param {String} templateAddress template address to add
-   * @return {Promise<TransactionReceipt>}
-   */
-  public async estGasAddTokenTemplate(
-    address: string,
-    templateAddress: string
-  ): Promise<any> {
-    return estimateGas(address, this.contract.methods.addTokenTemplate, templateAddress)
-  }
-
-  /**
    * Add a new NFT token template - only factory Owner
    * @param {String} address
    * @param {String} templateAddress template address to add
    * @return {Promise<TransactionReceipt>}
    */
-  public async addTokenTemplate(
+  public async addTokenTemplate<G extends boolean = false>(
     address: string,
-    templateAddress: string
-  ): Promise<TransactionReceipt> {
+    templateAddress: string,
+    estimateGas?: G
+  ): Promise<G extends false ? TransactionReceipt : number> {
     if ((await this.getOwner()) !== address) {
       throw new Error(`Caller is not Factory Owner`)
     }
@@ -383,11 +315,12 @@ export class NftFactory extends SmartContractWithAddress {
       throw new Error(`Template cannot be address ZERO`)
     }
 
-    const estGas = await estimateGas(
+    const estGas = await calculateEstimatedGas(
       address,
       this.contract.methods.addTokenTemplate,
       templateAddress
     )
+    if (estimateGas) return estGas
 
     // Invoke createToken function of the contract
     const trxReceipt = await this.contract.methods
@@ -402,28 +335,16 @@ export class NftFactory extends SmartContractWithAddress {
   }
 
   /**
-   * Estimate gas cost for disableTokenTemplate method
-   * @param {String} address
-   * @param {Number} templateIndex index of the template we want to disable
-   * @return {Promise<TransactionReceipt>} current token template count
-   */
-  public async estGasDisableTokenTemplate(
-    address: string,
-    templateIndex: number
-  ): Promise<any> {
-    return estimateGas(address, this.contract.methods.disableTokenTemplate, templateIndex)
-  }
-
-  /**
    * Disable token template - only factory Owner
    * @param {String} address
    * @param {Number} templateIndex index of the template we want to disable
    * @return {Promise<TransactionReceipt>} current token template count
    */
-  public async disableTokenTemplate(
+  public async disableTokenTemplate<G extends boolean = false>(
     address: string,
-    templateIndex: number
-  ): Promise<TransactionReceipt> {
+    templateIndex: number,
+    estimateGas?: G
+  ): Promise<G extends false ? TransactionReceipt : number> {
     if ((await this.getOwner()) !== address) {
       throw new Error(`Caller is not Factory Owner`)
     }
@@ -437,11 +358,12 @@ export class NftFactory extends SmartContractWithAddress {
     if ((await this.getTokenTemplate(templateIndex)).isActive === false) {
       throw new Error(`Template is already disabled`)
     }
-    const estGas = await estimateGas(
+    const estGas = await calculateEstimatedGas(
       address,
       this.contract.methods.disableTokenTemplate,
       templateIndex
     )
+    if (estimateGas) return estGas
 
     // Invoke createToken function of the contract
     const trxReceipt = await this.contract.methods
@@ -456,32 +378,16 @@ export class NftFactory extends SmartContractWithAddress {
   }
 
   /**
-   * Estimate gas cost for reactivateTokenTemplate method
-   * @param {String} address
-   * @param {Number} templateIndex index of the template we want to reactivate
-   * @return {Promise<TransactionReceipt>} current token template count
-   */
-  public async estGasReactivateTokenTemplate(
-    address: string,
-    templateIndex: number
-  ): Promise<any> {
-    return estimateGas(
-      address,
-      this.contract.methods.reactivateTokenTemplate,
-      templateIndex
-    )
-  }
-
-  /**
    * Reactivate a previously disabled token template - only factory Owner
    * @param {String} address
    * @param {Number} templateIndex index of the template we want to reactivate
    * @return {Promise<TransactionReceipt>} current token template count
    */
-  public async reactivateTokenTemplate(
+  public async reactivateTokenTemplate<G extends boolean = false>(
     address: string,
-    templateIndex: number
-  ): Promise<TransactionReceipt> {
+    templateIndex: number,
+    estimateGas?: G
+  ): Promise<G extends false ? TransactionReceipt : number> {
     if ((await this.getOwner()) !== address) {
       throw new Error(`Caller is not Factory Owner`)
     }
@@ -496,11 +402,12 @@ export class NftFactory extends SmartContractWithAddress {
       throw new Error(`Template is already active`)
     }
 
-    const estGas = await estimateGas(
+    const estGas = await calculateEstimatedGas(
       address,
       this.contract.methods.reactivateTokenTemplate,
       templateIndex
     )
+    if (estimateGas) return estGas
 
     // Invoke createToken function of the contract
     const trxReceipt = await this.contract.methods
@@ -512,18 +419,6 @@ export class NftFactory extends SmartContractWithAddress {
       })
 
     return trxReceipt
-  }
-
-  /** Estimate gas cost for startMultipleTokenOrder method
-   * @param address Caller address
-   * @param orders an array of struct tokenOrder
-   * @return {Promise<TransactionReceipt>} transaction receipt
-   */
-  public async estGasStartMultipleTokenOrder(
-    address: string,
-    orders: TokenOrder[]
-  ): Promise<any> {
-    return estimateGas(address, this.contract.methods.startMultipleTokenOrder, orders)
   }
 
   /**
@@ -538,19 +433,21 @@ export class NftFactory extends SmartContractWithAddress {
    * @param orders an array of struct tokenOrder
    * @return {Promise<TransactionReceipt>} transaction receipt
    */
-  public async startMultipleTokenOrder(
+  public async startMultipleTokenOrder<G extends boolean = false>(
     address: string,
-    orders: TokenOrder[]
-  ): Promise<TransactionReceipt> {
+    orders: TokenOrder[],
+    estimateGas?: G
+  ): Promise<G extends false ? TransactionReceipt : number> {
     if (orders.length > 50) {
       throw new Error(`Too many orders`)
     }
 
-    const estGas = await estimateGas(
+    const estGas = await calculateEstimatedGas(
       address,
       this.contract.methods.startMultipleTokenOrder,
       orders
     )
+    if (estimateGas) return estGas
 
     // Invoke createToken function of the contract
     const trxReceipt = await this.contract.methods.startMultipleTokenOrder(orders).send({
@@ -563,28 +460,6 @@ export class NftFactory extends SmartContractWithAddress {
   }
 
   /**
-   * Estimate gas cost for createNftWithDatatoken method
-   * @param address Caller address
-   * @param _NftCreateData input data for NFT creation
-   * @param _ErcCreateData input data for Datatoken creation
-   *  @return {Promise<TransactionReceipt>} transaction receipt
-   */
-
-  public async estGasCreateNftWithDatatoken(
-    address: string,
-    nftCreateData: NftCreateData,
-    dtParams: DatatokenCreateParams
-  ): Promise<any> {
-    const ercCreateData = this.getErcCreationParams(dtParams)
-    return estimateGas(
-      address,
-      this.contract.methods.createNftWithErc20,
-      nftCreateData,
-      ercCreateData
-    )
-  }
-
-  /**
    * @dev createNftWithDatatoken
    *      Creates a new NFT, then a Datatoken,all in one call
    * @param address Caller address
@@ -593,19 +468,21 @@ export class NftFactory extends SmartContractWithAddress {
    * @return {Promise<TransactionReceipt>} transaction receipt
    */
 
-  public async createNftWithDatatoken(
+  public async createNftWithDatatoken<G extends boolean = false>(
     address: string,
     nftCreateData: NftCreateData,
-    dtParams: DatatokenCreateParams
-  ): Promise<TransactionReceipt> {
+    dtParams: DatatokenCreateParams,
+    estimateGas?: G
+  ): Promise<G extends false ? TransactionReceipt : number> {
     const ercCreateData = this.getErcCreationParams(dtParams)
 
-    const estGas = await estimateGas(
+    const estGas = await calculateEstimatedGas(
       address,
       this.contract.methods.createNftWithErc20,
       nftCreateData,
       ercCreateData
     )
+    if (estimateGas) return estGas
 
     // Invoke createToken function of the contract
     const trxReceipt = await this.contract.methods
@@ -620,31 +497,6 @@ export class NftFactory extends SmartContractWithAddress {
   }
 
   /**
-   * Estimate gas cost for createNftWithDatatokenWithPool method
-   * @param address Caller address
-   * @param nftCreateData input data for NFT Creation
-   * @param dtParams input data for Datatoken Creation
-   * @param poolParams input data for Pool Creation
-   * @return {Promise<TransactionReceipt>} transaction receipt
-   */
-  public async estGasCreateNftWithDatatokenWithPool(
-    address: string,
-    nftCreateData: NftCreateData,
-    dtParams: DatatokenCreateParams,
-    poolParams: PoolCreationParams
-  ): Promise<any> {
-    const ercCreateData = this.getErcCreationParams(dtParams)
-    const poolData = await this.getPoolCreationParams(poolParams)
-    return estimateGas(
-      address,
-      this.contract.methods.createNftWithErc20WithPool,
-      nftCreateData,
-      ercCreateData,
-      poolData
-    )
-  }
-
-  /**
    * @dev createNftWithDatatokenWithPool
    *      Creates a new NFT, then a Datatoken, then a Pool, all in one call
    *      Use this carefully, because if Pool creation fails, you are still going to pay a lot of gas
@@ -654,22 +506,24 @@ export class NftFactory extends SmartContractWithAddress {
    * @param poolParams input data for Pool Creation
    * @return {Promise<TransactionReceipt>} transaction receipt
    */
-  public async createNftWithDatatokenWithPool(
+  public async createNftWithDatatokenWithPool<G extends boolean = false>(
     address: string,
     nftCreateData: NftCreateData,
     dtParams: DatatokenCreateParams,
-    poolParams: PoolCreationParams
-  ): Promise<TransactionReceipt> {
+    poolParams: PoolCreationParams,
+    estimateGas?: G
+  ): Promise<G extends false ? TransactionReceipt : number> {
     const ercCreateData = this.getErcCreationParams(dtParams)
     const poolData = await this.getPoolCreationParams(poolParams)
 
-    const estGas = await estimateGas(
+    const estGas = await calculateEstimatedGas(
       address,
       this.contract.methods.createNftWithErc20WithPool,
       nftCreateData,
       ercCreateData,
       poolData
     )
+    if (estimateGas) return estGas
 
     // Invoke createToken function of the contract
     const trxReceipt = await this.contract.methods
@@ -683,30 +537,6 @@ export class NftFactory extends SmartContractWithAddress {
     return trxReceipt
   }
 
-  /** Estimate gas cost for createNftWithDatatokenWithFixedRate method
-   * @param address Caller address
-   * @param nftCreateData input data for NFT Creation
-   * @param dtParams input data for Datatoken Creation
-   * @param freParams input data for FixedRate Creation
-   * @return {Promise<TransactionReceipt>} transaction receipt
-   */
-  public async estGasCreateNftWithDatatokenWithFixedRate(
-    address: string,
-    nftCreateData: NftCreateData,
-    dtParams: DatatokenCreateParams,
-    freParams: FreCreationParams
-  ): Promise<any> {
-    const ercCreateData = this.getErcCreationParams(dtParams)
-    const fixedData = await this.getFreCreationParams(freParams)
-    return estimateGas(
-      address,
-      this.contract.methods.createNftWithErc20WithFixedRate,
-      nftCreateData,
-      ercCreateData,
-      fixedData
-    )
-  }
-
   /**
    * @dev createNftWithDatatokenWithFixedRate
    *      Creates a new NFT, then a Datatoken, then a FixedRateExchange, all in one call
@@ -717,22 +547,24 @@ export class NftFactory extends SmartContractWithAddress {
    * @param freParams input data for FixedRate Creation
    *  @return {Promise<TransactionReceipt>} transaction receipt
    */
-  public async createNftWithDatatokenWithFixedRate(
+  public async createNftWithDatatokenWithFixedRate<G extends boolean = false>(
     address: string,
     nftCreateData: NftCreateData,
     dtParams: DatatokenCreateParams,
-    freParams: FreCreationParams
-  ): Promise<TransactionReceipt> {
+    freParams: FreCreationParams,
+    estimateGas?: G
+  ): Promise<G extends false ? TransactionReceipt : number> {
     const ercCreateData = this.getErcCreationParams(dtParams)
     const fixedData = this.getFreCreationParams(freParams)
 
-    const estGas = await estimateGas(
+    const estGas = await calculateEstimatedGas(
       address,
       this.contract.methods.createNftWithErc20WithFixedRate,
       nftCreateData,
       ercCreateData,
       fixedData
     )
+    if (estimateGas) return estGas
 
     // Invoke createToken function of the contract
     const trxReceipt = await this.contract.methods
@@ -746,29 +578,6 @@ export class NftFactory extends SmartContractWithAddress {
     return trxReceipt
   }
 
-  /** Estimate gas cost for estGasCreateNftWithDatatokenWithDispenser method
-   * @param address Caller address
-   * @param nftCreateData input data for NFT Creation
-   * @param dtParams input data for Datatoken Creation
-   * @param dispenserParams input data for Dispenser Creation
-   * @return {Promise<TransactionReceipt>} transaction receipt
-   */
-  public async estGasCreateNftWithDatatokenWithDispenser(
-    address: string,
-    nftCreateData: NftCreateData,
-    dtParams: DatatokenCreateParams,
-    dispenserParams: DispenserCreationParams
-  ): Promise<any> {
-    const ercCreateData = this.getErcCreationParams(dtParams)
-    return estimateGas(
-      address,
-      this.contract.methods.createNftWithErc20WithDispenser,
-      nftCreateData,
-      ercCreateData,
-      dispenserParams
-    )
-  }
-
   /**
    * @dev createNftWithDatatokenWithDispenser
    *      Creates a new NFT, then a Datatoken, then a Dispenser, all in one call
@@ -779,24 +588,26 @@ export class NftFactory extends SmartContractWithAddress {
    * @param dispenserParams input data for Dispenser Creation
    *  @return {Promise<TransactionReceipt>} transaction receipt
    */
-  public async createNftWithDatatokenWithDispenser(
+  public async createNftWithDatatokenWithDispenser<G extends boolean = false>(
     address: string,
     nftCreateData: NftCreateData,
     dtParams: DatatokenCreateParams,
-    dispenserParams: DispenserCreationParams
-  ): Promise<TransactionReceipt> {
+    dispenserParams: DispenserCreationParams,
+    estimateGas?: G
+  ): Promise<G extends false ? TransactionReceipt : number> {
     const ercCreateData = this.getErcCreationParams(dtParams)
 
     dispenserParams.maxBalance = Web3.utils.toWei(dispenserParams.maxBalance)
     dispenserParams.maxTokens = Web3.utils.toWei(dispenserParams.maxTokens)
 
-    const estGas = await estimateGas(
+    const estGas = await calculateEstimatedGas(
       address,
       this.contract.methods.createNftWithErc20WithDispenser,
       nftCreateData,
       ercCreateData,
       dispenserParams
     )
+    if (estimateGas) return estGas
 
     // Invoke createToken function of the contract
     const trxReceipt = await this.contract.methods

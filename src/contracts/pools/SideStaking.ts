@@ -1,8 +1,7 @@
 import { AbiItem } from 'web3-utils/types'
 import { TransactionReceipt } from 'web3-core'
-import { Contract } from 'web3-eth-contract'
 import SideStakingAbi from '@oceanprotocol/contracts/artifacts/contracts/pools/ssContracts/SideStaking.sol/SideStaking.json'
-import { LoggerInstance, estimateGas } from '../../utils'
+import { LoggerInstance, calculateEstimatedGas } from '../../utils'
 import { SmartContract } from '..'
 
 export class SideStaking extends SmartContract {
@@ -235,25 +234,6 @@ export class SideStaking extends SmartContract {
     return result
   }
 
-  /**
-   * Estimate gas cost for getVesting
-   * @param {String} account
-   * @param {String} ssAddress side staking contract address
-   * @param {String} datatokenAddress datatokenAddress
-   * @param {Contract} contractInstance optional contract instance
-   * @return {Promise<number>}
-   */
-  public async estGasGetVesting(
-    account: string,
-    ssAddress: string,
-    datatokenAddress: string,
-    contractInstance?: Contract
-  ): Promise<number> {
-    const sideStaking = contractInstance || this.getContract(ssAddress)
-
-    return estimateGas(account, sideStaking.methods.getVesting, datatokenAddress)
-  }
-
   /** Send vested tokens available to the publisher address, can be called by anyone
    *
    * @param {String} account
@@ -261,19 +241,21 @@ export class SideStaking extends SmartContract {
    * @param {String} datatokenAddress datatokenAddress
    * @return {TransactionReceipt}
    */
-  async getVesting(
+  async getVesting<G extends boolean = false>(
     account: string,
     ssAddress: string,
-    datatokenAddress: string
-  ): Promise<TransactionReceipt> {
+    datatokenAddress: string,
+    estimateGas?: G
+  ): Promise<G extends false ? TransactionReceipt : number> {
     const sideStaking = this.getContract(ssAddress)
     let result = null
 
-    const estGas = await estimateGas(
+    const estGas = await calculateEstimatedGas(
       account,
       sideStaking.methods.getVesting,
       datatokenAddress
     )
+    if (estimateGas) return estGas
 
     try {
       result = await sideStaking.methods.getVesting(datatokenAddress).send({
@@ -287,33 +269,6 @@ export class SideStaking extends SmartContract {
     return result
   }
 
-  /**
-   * Estimate gas cost for getVesting
-   * @param {String} account
-   * @param {String} ssAddress side staking contract address
-   * @param {String} datatokenAddress datatokenAddress
-   * @param {Contract} contractInstance optional contract instance
-   * @return {Promise<number>}
-   */
-  public async estGasSetPoolSwapFee(
-    account: string,
-    ssAddress: string,
-    datatokenAddress: string,
-    poolAddress: string,
-    swapFee: number,
-    contractInstance?: Contract
-  ): Promise<number> {
-    const sideStaking = contractInstance || this.getContract(ssAddress)
-
-    return estimateGas(
-      account,
-      sideStaking.methods.setPoolSwapFee,
-      datatokenAddress,
-      poolAddress,
-      swapFee
-    )
-  }
-
   /** Send vested tokens available to the publisher address, can be called by anyone
    *
    * @param {String} account
@@ -321,23 +276,25 @@ export class SideStaking extends SmartContract {
    * @param {String} datatokenAddress datatokenAddress
    * @return {TransactionReceipt}
    */
-  private async setPoolSwapFee(
+  private async setPoolSwapFee<G extends boolean = false>(
     account: string,
     ssAddress: string,
     datatokenAddress: string,
     poolAddress: string,
-    swapFee: number
-  ): Promise<TransactionReceipt> {
+    swapFee: number,
+    estimateGas?: G
+  ): Promise<G extends false ? TransactionReceipt : number> {
     const sideStaking = this.getContract(ssAddress)
     let result = null
 
-    const estGas = await estimateGas(
+    const estGas = await calculateEstimatedGas(
       account,
       sideStaking.methods.setPoolSwapFee,
       datatokenAddress,
       poolAddress,
       swapFee
     )
+    if (estimateGas) return estGas
 
     try {
       result = await sideStaking.methods

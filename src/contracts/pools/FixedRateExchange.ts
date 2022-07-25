@@ -1,8 +1,7 @@
 import FixedRateExchangeAbi from '@oceanprotocol/contracts/artifacts/contracts/pools/fixedRate/FixedRateExchange.sol/FixedRateExchange.json'
 import { TransactionReceipt } from 'web3-core'
-import { Contract } from 'web3-eth-contract'
 import { AbiItem } from 'web3-utils/types'
-import { LoggerInstance, estimateGas, ZERO_ADDRESS } from '../../utils'
+import { LoggerInstance, calculateEstimatedGas, ZERO_ADDRESS } from '../../utils'
 import { PriceAndFees, FeesInfo, FixedPriceExchange } from '../../@types'
 import { SmartContractWithAddress } from '..'
 
@@ -25,38 +24,6 @@ export class FixedRateExchange extends SmartContractWithAddress {
   }
 
   /**
-   * Estimate gas cost for buyDT
-   * @param {String} account
-   * @param {String} dtAmount datatoken amount we want to buy
-   * @param {String} datatokenAddress datatokenAddress
-   * @param {String} consumeMarketAddress consumeMarketAddress
-   * @param {String} consumeMarketFee fee recieved by the consume market when a dt is bought from a fixed rate exchange, percent
-   * @param {Contract} contractInstance optional contract instance
-   * @return {Promise<number>}
-   */
-  public async estGasBuyDT(
-    account: string,
-    datatokenAddress: string,
-    dtAmount: string,
-    maxBaseTokenAmount: string,
-    consumeMarketAddress: string,
-    consumeMarketFee: string,
-    contractInstance?: Contract
-  ): Promise<number> {
-    const fixedRate = contractInstance || this.contract
-
-    return estimateGas(
-      account,
-      fixedRate.methods.buyDT,
-      datatokenAddress,
-      dtAmount,
-      maxBaseTokenAmount,
-      consumeMarketAddress,
-      consumeMarketFee
-    )
-  }
-
-  /**
    * Atomic swap
    * @param {String} exchangeId ExchangeId
    * @param {String} datatokenAmount Amount of datatokens
@@ -66,14 +33,15 @@ export class FixedRateExchange extends SmartContractWithAddress {
    * @param {String} consumeMarketFee consumeMarketFee in fraction
    * @return {Promise<TransactionReceipt>} transaction receipt
    */
-  public async buyDT(
+  public async buyDT<G extends boolean = false>(
     address: string,
     exchangeId: string,
     datatokenAmount: string,
     maxBaseTokenAmount: string,
     consumeMarketAddress: string = ZERO_ADDRESS,
-    consumeMarketFee: string = '0'
-  ): Promise<TransactionReceipt> {
+    consumeMarketFee: string = '0',
+    estimateGas?: G
+  ): Promise<G extends false ? TransactionReceipt : number> {
     const exchange = await this.getExchange(exchangeId)
     const consumeMarketFeeFormatted = this.web3.utils.toWei(consumeMarketFee)
     const dtAmountFormatted = await this.amountToUnits(
@@ -87,7 +55,7 @@ export class FixedRateExchange extends SmartContractWithAddress {
       +exchange.btDecimals
     )
 
-    const estGas = await estimateGas(
+    const estGas = await calculateEstimatedGas(
       address,
       this.contract.methods.buyDT,
       exchangeId,
@@ -96,6 +64,8 @@ export class FixedRateExchange extends SmartContractWithAddress {
       consumeMarketAddress,
       consumeMarketFeeFormatted
     )
+    if (estimateGas) return estGas
+
     try {
       const trxReceipt = await this.contract.methods
         .buyDT(
@@ -118,38 +88,6 @@ export class FixedRateExchange extends SmartContractWithAddress {
   }
 
   /**
-   * Estimate gas cost for sellDT
-   * @param {String} account
-   * @param {String} dtAmount datatoken amount we want to sell
-   * @param {String} datatokenAddress datatokenAddress
-   * @param {String} consumeMarketAddress consumeMarketAddress
-   * @param {String} consumeMarketFee consumeMarketFee
-   * @param {Contract} contractInstance optional contract instance
-   * @return {Promise<number>}
-   */
-  public async estGasSellDT(
-    account: string,
-    datatokenAddress: string,
-    dtAmount: string,
-    maxBaseTokenAmount: string,
-    consumeMarketAddress: string,
-    consumeMarketFee: string,
-    contractInstance?: Contract
-  ): Promise<number> {
-    const fixedRate = contractInstance || this.contract
-
-    return estimateGas(
-      account,
-      fixedRate.methods.sellDT,
-      datatokenAddress,
-      dtAmount,
-      maxBaseTokenAmount,
-      consumeMarketAddress,
-      consumeMarketFee
-    )
-  }
-
-  /**
    * Atomic swap
    * @param {String} exchangeId ExchangeId
    * @param {String} datatokenAmount Amount of datatokens
@@ -159,14 +97,15 @@ export class FixedRateExchange extends SmartContractWithAddress {
    * @param {String} consumeMarketFee consumeMarketFee in fraction
    * @return {Promise<TransactionReceipt>} transaction receipt
    */
-  public async sellDT(
+  public async sellDT<G extends boolean = false>(
     address: string,
     exchangeId: string,
     datatokenAmount: string,
     minBaseTokenAmount: string,
     consumeMarketAddress: string = ZERO_ADDRESS,
-    consumeMarketFee: string = '0'
-  ): Promise<TransactionReceipt> {
+    consumeMarketFee: string = '0',
+    estimateGas?: G
+  ): Promise<G extends false ? TransactionReceipt : number> {
     const exchange = await this.getExchange(exchangeId)
     const consumeMarketFeeFormatted = this.web3.utils.toWei(consumeMarketFee)
     const dtAmountFormatted = await this.amountToUnits(
@@ -179,7 +118,7 @@ export class FixedRateExchange extends SmartContractWithAddress {
       minBaseTokenAmount,
       +exchange.btDecimals
     )
-    const estGas = await estimateGas(
+    const estGas = await calculateEstimatedGas(
       address,
       this.contract.methods.sellDT,
       exchangeId,
@@ -188,6 +127,8 @@ export class FixedRateExchange extends SmartContractWithAddress {
       consumeMarketAddress,
       consumeMarketFeeFormatted
     )
+    if (estimateGas) return estGas
+
     try {
       const trxReceipt = await this.contract.methods
         .sellDT(
@@ -221,47 +162,26 @@ export class FixedRateExchange extends SmartContractWithAddress {
   }
 
   /**
-   * Estimate gas cost for setRate
-   * @param {String} account
-   * @param {String} exchangeId ExchangeId
-   * @param {String} newRate New rate
-   * @param {Contract} contractInstance optional contract instance
-   * @return {Promise<number>}
-   */
-  public async estGasSetRate(
-    account: string,
-    exchangeId: string,
-    newRate: string,
-    contractInstance?: Contract
-  ): Promise<number> {
-    const fixedRate = contractInstance || this.contract
-
-    return estimateGas(
-      account,
-      fixedRate.methods.setRate,
-      exchangeId,
-      await this.web3.utils.toWei(newRate)
-    )
-  }
-
-  /**
    * Set new rate
    * @param {String} exchangeId ExchangeId
    * @param {String} newRate New rate
    * @param {String} address User account
    * @return {Promise<TransactionReceipt>} transaction receipt
    */
-  public async setRate(
+  public async setRate<G extends boolean = false>(
     address: string,
     exchangeId: string,
-    newRate: string
-  ): Promise<TransactionReceipt> {
-    const estGas = await estimateGas(
+    newRate: string,
+    estimateGas?: G
+  ): Promise<G extends false ? TransactionReceipt : number> {
+    const estGas = await calculateEstimatedGas(
       address,
       this.contract.methods.setRate,
       exchangeId,
       this.web3.utils.toWei(newRate)
     )
+    if (estimateGas) return estGas
+
     const trxReceipt = await this.contract.methods
       .setRate(exchangeId, this.web3.utils.toWei(newRate))
       .send({
@@ -273,47 +193,26 @@ export class FixedRateExchange extends SmartContractWithAddress {
   }
 
   /**
-   * Estimate gas cost for setRate
-   * @param {String} account
-   * @param {String} exchangeId ExchangeId
-   * @param {String} newAllowedSwapper new allowed swapper address
-   * @param {Contract} contractInstance optional contract instance
-   * @return {Promise<number>}
-   */
-  public async estGasSetAllowedSwapper(
-    account: string,
-    exchangeId: string,
-    newAllowedSwapper: string,
-    contractInstance?: Contract
-  ): Promise<number> {
-    const fixedRate = contractInstance || this.contract
-
-    return estimateGas(
-      account,
-      fixedRate.methods.setAllowedSwapper,
-      exchangeId,
-      newAllowedSwapper
-    )
-  }
-
-  /**
    * Set new rate
    * @param {String} exchangeId ExchangeId
    * @param {String} newAllowedSwapper newAllowedSwapper (set address zero if we want to remove allowed swapper)
    * @param {String} address User account
    * @return {Promise<TransactionReceipt>} transaction receipt
    */
-  public async setAllowedSwapper(
+  public async setAllowedSwapper<G extends boolean = false>(
     address: string,
     exchangeId: string,
-    newAllowedSwapper: string
-  ): Promise<TransactionReceipt> {
-    const estGas = await estimateGas(
+    newAllowedSwapper: string,
+    estimateGas?: G
+  ): Promise<G extends false ? TransactionReceipt : number> {
+    const estGas = await calculateEstimatedGas(
       address,
       this.contract.methods.setAllowedSwapper,
       exchangeId,
       newAllowedSwapper
     )
+    if (estimateGas) return estGas
+
     const trxReceipt = await this.contract.methods
       .setAllowedSwapper(exchangeId, newAllowedSwapper)
       .send({
@@ -325,40 +224,26 @@ export class FixedRateExchange extends SmartContractWithAddress {
   }
 
   /**
-   * Estimate gas cost for activate
-   * @param {String} account
-   * @param {String} exchangeId ExchangeId
-   * @param {Contract} contractInstance optional contract instance
-   * @return {Promise<number>}
-   */
-  public async estGasActivate(
-    account: string,
-    exchangeId: string,
-    contractInstance?: Contract
-  ): Promise<number> {
-    const fixedRate = contractInstance || this.contract
-
-    return estimateGas(account, fixedRate.methods.toggleExchangeState, exchangeId)
-  }
-
-  /**
    * Activate an exchange
    * @param {String} exchangeId ExchangeId
    * @param {String} address User address
    * @return {Promise<TransactionReceipt>} transaction receipt
    */
-  public async activate(
+  public async activate<G extends boolean = false>(
     address: string,
-    exchangeId: string
-  ): Promise<TransactionReceipt> {
+    exchangeId: string,
+    estimateGas?: G
+  ): Promise<G extends false ? TransactionReceipt : number> {
     const exchange = await this.getExchange(exchangeId)
     if (!exchange) return null
     if (exchange.active === true) return null
-    const estGas = await estimateGas(
+    const estGas = await calculateEstimatedGas(
       address,
       this.contract.methods.toggleExchangeState,
       exchangeId
     )
+    if (estimateGas) return estGas
+
     const trxReceipt = await this.contract.methods.toggleExchangeState(exchangeId).send({
       from: address,
       gas: estGas + 1,
@@ -368,41 +253,26 @@ export class FixedRateExchange extends SmartContractWithAddress {
   }
 
   /**
-   * Estimate gas cost for deactivate
-   * @param {String} account
-   * @param {String} exchangeId ExchangeId
-   * @param {Contract} contractInstance optional contract instance
-   * @return {Promise<number>}
-   */
-  public async estGasDeactivate(
-    account: string,
-    exchangeId: string,
-    contractInstance?: Contract
-  ): Promise<number> {
-    const fixedRate = contractInstance || this.contract
-
-    return estimateGas(account, fixedRate.methods.toggleExchangeState, exchangeId)
-  }
-
-  /**
    * Deactivate an exchange
    * @param {String} exchangeId ExchangeId
    * @param {String} address User address
    * @return {Promise<TransactionReceipt>} transaction receipt
    */
-  public async deactivate(
+  public async deactivate<G extends boolean = false>(
     address: string,
-    exchangeId: string
-  ): Promise<TransactionReceipt> {
+    exchangeId: string,
+    estimateGas?: G
+  ): Promise<G extends false ? TransactionReceipt : number> {
     const exchange = await this.getExchange(exchangeId)
     if (!exchange) return null
     if (exchange.active === false) return null
 
-    const estGas = await estimateGas(
+    const estGas = await calculateEstimatedGas(
       address,
       this.contract.methods.toggleExchangeState,
       exchangeId
     )
+    if (estimateGas) return estGas
 
     const trxReceipt = await this.contract.methods.toggleExchangeState(exchangeId).send({
       from: address,
@@ -615,42 +485,28 @@ export class FixedRateExchange extends SmartContractWithAddress {
   }
 
   /**
-   * Estimate gas cost for activate
-   * @param {String} account
-   * @param {String} exchangeId ExchangeId
-   * @param {Contract} contractInstance optional contract instance
-   * @return {Promise<number>}
-   */
-  public async estGasActivateMint(
-    account: string,
-    exchangeId: string,
-    contractInstance?: Contract
-  ): Promise<number> {
-    const fixedRate = contractInstance || this.contract
-
-    return estimateGas(account, fixedRate.methods.toggleMintState, exchangeId, true)
-  }
-
-  /**
    * Activate minting option for fixed rate contract
    * @param {String} exchangeId ExchangeId
    * @param {String} address User address
    * @return {Promise<TransactionReceipt>} transaction receipt
    */
-  public async activateMint(
+  public async activateMint<G extends boolean = false>(
     address: string,
-    exchangeId: string
-  ): Promise<TransactionReceipt> {
+    exchangeId: string,
+    estimateGas?: G
+  ): Promise<G extends false ? TransactionReceipt : number> {
     const exchange = await this.getExchange(exchangeId)
     if (!exchange) return null
     if (exchange.withMint === true) return null
 
-    const estGas = await estimateGas(
+    const estGas = await calculateEstimatedGas(
       address,
       this.contract.methods.toggleMintState,
       exchangeId,
       true
     )
+    if (estimateGas) return estGas
+
     const trxReceipt = await this.contract.methods
       .toggleMintState(exchangeId, true)
       .send({
@@ -662,47 +518,27 @@ export class FixedRateExchange extends SmartContractWithAddress {
   }
 
   /**
-   * Estimate gas cost for deactivate
-   * @param {String} account
-   * @param {String} exchangeId ExchangeId
-   * @param {Contract} contractInstance optional contract instance
-   * @return {Promise<number>}
-   */
-  public async estGasDeactivateMint(
-    account: string,
-    exchangeId: string,
-    contractInstance?: Contract
-  ): Promise<number> {
-    const fixedRate = contractInstance || this.contract
-
-    return estimateGas(
-      account,
-      fixedRate.methods.toggleMintState(exchangeId, false),
-      exchangeId,
-      false
-    )
-  }
-
-  /**
    * Deactivate minting for fixed rate
    * @param {String} exchangeId ExchangeId
    * @param {String} address User address
    * @return {Promise<TransactionReceipt>} transaction receipt
    */
-  public async deactivateMint(
+  public async deactivateMint<G extends boolean = false>(
     address: string,
-    exchangeId: string
-  ): Promise<TransactionReceipt> {
+    exchangeId: string,
+    estimateGas?: G
+  ): Promise<G extends false ? TransactionReceipt : number> {
     const exchange = await this.getExchange(exchangeId)
     if (!exchange) return null
     if (exchange.withMint === false) return null
 
-    const estGas = await estimateGas(
+    const estGas = await calculateEstimatedGas(
       address,
       this.contract.methods.toggleMintState,
       exchangeId,
       false
     )
+    if (estimateGas) return estGas
 
     const trxReceipt = await this.contract.methods
       .toggleMintState(exchangeId, false)
@@ -716,43 +552,18 @@ export class FixedRateExchange extends SmartContractWithAddress {
   }
 
   /**
-   * Estimate gas cost for collectBT
-   * @param {String} account
-   * @param {String} exchangeId ExchangeId
-   * @param {String} amount amount to be collected
-   * @param {Contract} contractInstance optional contract instance
-   * @return {Promise<number>}
-   */
-  public async estGasCollectBT(
-    account: string,
-    exchangeId: string,
-    amount: string,
-    contractInstance?: Contract
-  ): Promise<number> {
-    const fixedRate = contractInstance || this.contract
-    const fixedrate: FixedPriceExchange = await this.contract.methods
-      .getExchange(exchangeId)
-      .call()
-    const amountWei = await this.amountToUnits(
-      fixedrate.baseToken,
-      amount,
-      +fixedrate.btDecimals
-    )
-    return estimateGas(account, fixedRate.methods.collectBT, exchangeId, amountWei)
-  }
-
-  /**
    * Collect BaseTokens in the contract (anyone can call this, funds are sent to Datatoken.paymentCollector)
    * @param {String} address User address
    * @param {String} exchangeId ExchangeId
    * @param {String} amount amount to be collected
    * @return {Promise<TransactionReceipt>} transaction receipt
    */
-  public async collectBT(
+  public async collectBT<G extends boolean = false>(
     address: string,
     exchangeId: string,
-    amount: string
-  ): Promise<TransactionReceipt> {
+    amount: string,
+    estimateGas?: G
+  ): Promise<G extends false ? TransactionReceipt : number> {
     const exchange = await this.getExchange(exchangeId)
     if (!exchange) return null
 
@@ -765,12 +576,13 @@ export class FixedRateExchange extends SmartContractWithAddress {
       +fixedrate.btDecimals
     )
 
-    const estGas = await estimateGas(
+    const estGas = await calculateEstimatedGas(
       address,
       this.contract.methods.collectBT,
       exchangeId,
       amountWei
     )
+    if (estimateGas) return estGas
 
     const trxReceipt = await this.contract.methods.collectBT(exchangeId, amountWei).send({
       from: address,
@@ -781,44 +593,18 @@ export class FixedRateExchange extends SmartContractWithAddress {
   }
 
   /**
-   * Estimate gas cost for collecDT
-   * @param {String} account
-   * @param {String} exchangeId ExchangeId
-   * @param {String} amount amount to be collected
-   * @param {Contract} contractInstance optional contract instance
-   * @return {Promise<number>}
-   */
-  public async estGasCollectDT(
-    account: string,
-    exchangeId: string,
-    amount: string,
-    contractInstance?: Contract
-  ): Promise<number> {
-    const fixedRate = contractInstance || this.contract
-    const fixedrate: FixedPriceExchange = await this.contract.methods
-      .getExchange(exchangeId)
-      .call()
-
-    const amountWei = await this.amountToUnits(
-      fixedrate.datatoken,
-      amount,
-      +fixedrate.dtDecimals
-    )
-    return estimateGas(account, fixedRate.methods.collectDT, exchangeId, amountWei)
-  }
-
-  /**
    * Collect datatokens in the contract (anyone can call this, funds are sent to Datatoken.paymentCollector)
    * @param {String} address User address
    * @param {String} exchangeId ExchangeId
    * @param {String} amount amount to be collected
    * @return {Promise<TransactionReceipt>} transaction receipt
    */
-  public async collectDT(
+  public async collectDT<G extends boolean = false>(
     address: string,
     exchangeId: string,
-    amount: string
-  ): Promise<TransactionReceipt> {
+    amount: string,
+    estimateGas?: G
+  ): Promise<G extends false ? TransactionReceipt : number> {
     const exchange = await this.getExchange(exchangeId)
     if (!exchange) return null
 
@@ -831,12 +617,13 @@ export class FixedRateExchange extends SmartContractWithAddress {
       +fixedrate.dtDecimals
     )
 
-    const estGas = await estimateGas(
+    const estGas = await calculateEstimatedGas(
       address,
       this.contract.methods.collectDT,
       exchangeId,
       amountWei
     )
+    if (estimateGas) return estGas
 
     const trxReceipt = await this.contract.methods.collectDT(exchangeId, amountWei).send({
       from: address,
@@ -847,40 +634,26 @@ export class FixedRateExchange extends SmartContractWithAddress {
   }
 
   /**
-   * Estimate gas cost for collecMarketFee
-   * @param {String} account
-   * @param {String} exchangeId ExchangeId
-   * @param {Contract} contractInstance optional contract instance
-   * @return {Promise<number>}
-   */
-  public async estGasCollectMarketFee(
-    account: string,
-    exchangeId: string,
-    contractInstance?: Contract
-  ): Promise<number> {
-    const fixedRate = contractInstance || this.contract
-
-    return estimateGas(account, fixedRate.methods.collectMarketFee, exchangeId)
-  }
-
-  /**
    * Collect market fee and send it to marketFeeCollector (anyone can call it)
    * @param {String} exchangeId ExchangeId
    * @param {String} address User address
    * @return {Promise<TransactionReceipt>} transaction receipt
    */
-  public async collectMarketFee(
+  public async collectMarketFee<G extends boolean = false>(
     address: string,
-    exchangeId: string
-  ): Promise<TransactionReceipt> {
+    exchangeId: string,
+    estimateGas?: G
+  ): Promise<G extends false ? TransactionReceipt : number> {
     const exchange = await this.getExchange(exchangeId)
     if (!exchange) return null
 
-    const estGas = await estimateGas(
+    const estGas = await calculateEstimatedGas(
       address,
       this.contract.methods.collectMarketFee,
       exchangeId
     )
+    if (estimateGas) return estGas
+
     const trxReceipt = await this.contract.methods.collectMarketFee(exchangeId).send({
       from: address,
       gas: estGas + 1,
@@ -890,40 +663,26 @@ export class FixedRateExchange extends SmartContractWithAddress {
   }
 
   /**
-   * Estimate gas cost for collectOceanFee
-   * @param {String} account
-   * @param {String} exchangeId ExchangeId
-   * @param {Contract} contractInstance optional contract instance
-   * @return {Promise<number>}
-   */
-  public async estGasCollectOceanFee(
-    account: string,
-    exchangeId: string,
-    contractInstance?: Contract
-  ): Promise<number> {
-    const fixedRate = contractInstance || this.contract
-
-    return estimateGas(account, fixedRate.methods.collectMarketFee, exchangeId)
-  }
-
-  /**
    * Collect ocean fee and send it to OPF collector (anyone can call it)
    * @param {String} exchangeId ExchangeId
    * @param {String} address User address
    * @return {Promise<TransactionReceipt>} transaction receipt
    */
-  public async collectOceanFee(
+  public async collectOceanFee<G extends boolean = false>(
     address: string,
-    exchangeId: string
-  ): Promise<TransactionReceipt> {
+    exchangeId: string,
+    estimateGas?: G
+  ): Promise<G extends false ? TransactionReceipt : number> {
     const exchange = await this.getExchange(exchangeId)
     if (!exchange) return null
 
-    const estGas = await estimateGas(
+    const estGas = await calculateEstimatedGas(
       address,
       this.contract.methods.collectOceanFee,
       exchangeId
     )
+    if (estimateGas) return estGas
+
     const trxReceipt = await this.contract.methods.collectOceanFee(exchangeId).send({
       from: address,
       gas: estGas + 1,
@@ -976,47 +735,26 @@ export class FixedRateExchange extends SmartContractWithAddress {
   }
 
   /**
-   * Estimate gas cost for updateMarketFee
-   * @param {String} account
-   * @param {String} exchangeId ExchangeId
-   * @param {String} newMarketFee New market fee
-   * @param {Contract} contractInstance optional contract instance
-   * @return {Promise<number>}
-   */
-  public async estGasUpdateMarketFee(
-    account: string,
-    exchangeId: string,
-    newMarketFee: string,
-    contractInstance?: Contract
-  ): Promise<number> {
-    const fixedRate = contractInstance || this.contract
-
-    return estimateGas(
-      account,
-      fixedRate.methods.updateMarketFee,
-      exchangeId,
-      newMarketFee
-    )
-  }
-
-  /**
    * Set new market fee, only market fee collector can update it
    * @param {String} address user address
    * @param {String} exchangeId ExchangeId
    * @param {String} newMarketFee New market fee
    * @return {Promise<TransactionReceipt>} transaction receipt
    */
-  public async updateMarketFee(
+  public async updateMarketFee<G extends boolean = false>(
     address: string,
     exchangeId: string,
-    newMarketFee: string
-  ): Promise<TransactionReceipt> {
-    const estGas = await estimateGas(
+    newMarketFee: string,
+    estimateGas?: G
+  ): Promise<G extends false ? TransactionReceipt : number> {
+    const estGas = await calculateEstimatedGas(
       address,
       this.contract.methods.updateMarketFee,
       exchangeId,
       this.web3.utils.toWei(newMarketFee)
     )
+    if (estimateGas) return estGas
+
     const trxReceipt = await this.contract.methods
       .updateMarketFee(exchangeId, this.web3.utils.toWei(newMarketFee))
       .send({
@@ -1028,47 +766,26 @@ export class FixedRateExchange extends SmartContractWithAddress {
   }
 
   /**
-   * Estimate gas cost for updateMarketFeeCollector
-   * @param {String} account
-   * @param {String} exchangeId ExchangeId
-   * @param {String} newMarketFee New market fee collector
-   * @param {Contract} contractInstance optional contract instance
-   * @return {Promise<number>}
-   */
-  public async estGasUpdateMarketFeeCollector(
-    account: string,
-    exchangeId: string,
-    newMarketFeeCollector: string,
-    contractInstance?: Contract
-  ): Promise<number> {
-    const fixedRate = contractInstance || this.contract
-
-    return estimateGas(
-      account,
-      fixedRate.methods.updateMarketFeeCollector,
-      exchangeId,
-      newMarketFeeCollector
-    )
-  }
-
-  /**
    * Set new market fee collector, only market fee collector can update it
    * @param {String} address user address
    * @param {String} exchangeId ExchangeId
    * @param {String} newMarketFeeCollector New market fee collector
    * @return {Promise<TransactionReceipt>} transaction receipt
    */
-  public async updateMarketFeeCollector(
+  public async updateMarketFeeCollector<G extends boolean = false>(
     address: string,
     exchangeId: string,
-    newMarketFeeCollector: string
-  ): Promise<TransactionReceipt> {
-    const estGas = await estimateGas(
+    newMarketFeeCollector: string,
+    estimateGas?: G
+  ): Promise<G extends false ? TransactionReceipt : number> {
+    const estGas = await calculateEstimatedGas(
       address,
       this.contract.methods.updateMarketFeeCollector,
       exchangeId,
       newMarketFeeCollector
     )
+    if (estimateGas) return estGas
+
     const trxReceipt = await this.contract.methods
       .updateMarketFeeCollector(exchangeId, newMarketFeeCollector)
       .send({

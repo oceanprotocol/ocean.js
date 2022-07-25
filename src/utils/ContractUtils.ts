@@ -81,7 +81,7 @@ export async function amountToUnits(
  * @param {...any[]} args arguments of the function
  * @return {Promise<number>} gas cost of the function
  */
-export async function estimateGas(
+export async function calculateEstimatedGas(
   from: string,
   functionToEstimateGas: Function,
   ...args: any[]

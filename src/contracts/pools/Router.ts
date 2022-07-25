@@ -1,8 +1,7 @@
-import { Contract } from 'web3-eth-contract'
 import { TransactionReceipt } from 'web3-core'
 import { AbiItem } from 'web3-utils'
 import FactoryRouter from '@oceanprotocol/contracts/artifacts/contracts/pools/FactoryRouter.sol/FactoryRouter.json'
-import { estimateGas } from '../../utils'
+import { calculateEstimatedGas } from '../../utils'
 import { Operation } from '../../@types'
 import { SmartContractWithAddress } from '..'
 
@@ -15,30 +14,22 @@ export class Router extends SmartContractWithAddress {
   }
 
   /**
-   * Estimate gas cost for buyDTBatch method
-   * @param {String} address
-   * @param {Operation} operations Operations objects array
-   * @return {Promise<TransactionReceipt>} Transaction receipt
-   */
-  public async estGasBuyDTBatch(address: string, operations: Operation[]): Promise<any> {
-    return estimateGas(address, this.contract.methods.buyDTBatch, operations)
-  }
-
-  /**
    * BuyDTBatch
    * @param {String} address
    * @param {Operation} operations Operations objects array
    * @return {Promise<TransactionReceipt>} Transaction receipt
    */
-  public async buyDTBatch(
+  public async buyDTBatch<G extends boolean = false>(
     address: string,
-    operations: Operation[]
-  ): Promise<TransactionReceipt> {
-    const estGas = await estimateGas(
+    operations: Operation[],
+    estimateGas?: G
+  ): Promise<G extends false ? TransactionReceipt : number> {
+    const estGas = await calculateEstimatedGas(
       address,
       this.contract.methods.buyDTBatch,
       operations
     )
+    if (estimateGas) return estGas
 
     // Invoke createToken function of the contract
     const trxReceipt = await this.contract.methods.buyDTBatch(operations).send({
@@ -93,39 +84,26 @@ export class Router extends SmartContractWithAddress {
   }
 
   /**
-   * Estimate gas cost for addApprovedToken
-   * @param {String} address
-   * @param {String} tokenAddress token address we want to add
-   * @param {Contract} routerContract optional contract instance
-   * @return {Promise<any>}
-   */
-  public async estGasAddApprovedToken(
-    address: string,
-    tokenAddress: string,
-    contractInstance?: Contract
-  ): Promise<any> {
-    return estimateGas(address, this.contract.methods.addApprovedToken, tokenAddress)
-  }
-
-  /**
    * Add a new token to oceanTokens list, pools with baseToken in this list have NO opf Fee
    * @param {String} address caller address
    * @param {String} tokenAddress token address to add
    * @return {Promise<TransactionReceipt>}
    */
-  public async addApprovedToken(
+  public async addApprovedToken<G extends boolean = false>(
     address: string,
-    tokenAddress: string
-  ): Promise<TransactionReceipt> {
+    tokenAddress: string,
+    estimateGas?: G
+  ): Promise<G extends false ? TransactionReceipt : number> {
     if ((await this.getOwner()) !== address) {
       throw new Error(`Caller is not Router Owner`)
     }
 
-    const estGas = await estimateGas(
+    const estGas = await calculateEstimatedGas(
       address,
       this.contract.methods.addApprovedToken,
       tokenAddress
     )
+    if (estimateGas) return estGas
 
     // Invoke createToken function of the contract
     const trxReceipt = await this.contract.methods.addApprovedToken(tokenAddress).send({
@@ -138,39 +116,26 @@ export class Router extends SmartContractWithAddress {
   }
 
   /**
-   * Estimate gas cost for removeApprovedToken
-   * @param {String} address caller address
-   * @param {String} tokenAddress token address we want to add
-   * @param {Contract} routerContract optional contract instance
-   * @return {Promise<any>}
-   */
-  public async estGasRemoveApprovedToken(
-    address: string,
-    tokenAddress: string,
-    contractInstance?: Contract
-  ): Promise<any> {
-    return estimateGas(address, this.contract.methods.removeApprovedToken, tokenAddress)
-  }
-
-  /**
    * Remove a token from oceanTokens list, pools without baseToken in this list have a opf Fee
    * @param {String} address
    * @param {String} tokenAddress address to remove
    * @return {Promise<TransactionReceipt>}
    */
-  public async removeApprovedToken(
+  public async removeApprovedToken<G extends boolean = false>(
     address: string,
-    tokenAddress: string
-  ): Promise<TransactionReceipt> {
+    tokenAddress: string,
+    estimateGas?: G
+  ): Promise<G extends false ? TransactionReceipt : number> {
     if ((await this.getOwner()) !== address) {
       throw new Error(`Caller is not Router Owner`)
     }
 
-    const estGas = await estimateGas(
+    const estGas = await calculateEstimatedGas(
       address,
       this.contract.methods.removeApprovedToken,
       tokenAddress
     )
+    if (estimateGas) return estGas
 
     // Invoke createToken function of the contract
     const trxReceipt = await this.contract.methods
@@ -185,34 +150,26 @@ export class Router extends SmartContractWithAddress {
   }
 
   /**
-   * Estimate gas cost for addSSContract method
-   * @param {String} address
-   * @param {String} tokenAddress contract address to add
-   * @return {Promise<TransactionReceipt>}
-   */
-  public async estGasAddSSContract(address: string, tokenAddress: string): Promise<any> {
-    return estimateGas(address, this.contract.methods.addSSContract, tokenAddress)
-  }
-
-  /**
    * Add a new contract to ssContract list, after is added, can be used when deploying a new pool
    * @param {String} address
    * @param {String} tokenAddress contract address to add
    * @return {Promise<TransactionReceipt>}
    */
-  public async addSSContract(
+  public async addSSContract<G extends boolean = false>(
     address: string,
-    tokenAddress: string
-  ): Promise<TransactionReceipt> {
+    tokenAddress: string,
+    estimateGas?: G
+  ): Promise<G extends false ? TransactionReceipt : number> {
     if ((await this.getOwner()) !== address) {
       throw new Error(`Caller is not Router Owner`)
     }
 
-    const estGas = await estimateGas(
+    const estGas = await calculateEstimatedGas(
       address,
       this.contract.methods.addSSContract,
       tokenAddress
     )
+    if (estimateGas) return estGas
 
     // Invoke createToken function of the contract
     const trxReceipt = await this.contract.methods.addSSContract(tokenAddress).send({
@@ -225,37 +182,26 @@ export class Router extends SmartContractWithAddress {
   }
 
   /**
-   * Estimate gas cost for removeSSContract method
-   * @param {String} address caller address
-   * @param {String} tokenAddress contract address to add
-   * @return {Promise<TransactionReceipt>}
-   */
-  public async estGasRemoveSSContract(
-    address: string,
-    tokenAddress: string
-  ): Promise<any> {
-    return estimateGas(address, this.contract.methods.removeSSContract, tokenAddress)
-  }
-
-  /**
    * Removes a new contract from ssContract list
    * @param {String} address caller address
    * @param {String} tokenAddress contract address to removed
    * @return {Promise<TransactionReceipt>}
    */
-  public async removeSSContract(
+  public async removeSSContract<G extends boolean = false>(
     address: string,
-    tokenAddress: string
-  ): Promise<TransactionReceipt> {
+    tokenAddress: string,
+    estimateGas?: G
+  ): Promise<G extends false ? TransactionReceipt : number> {
     if ((await this.getOwner()) !== address) {
       throw new Error(`Caller is not Router Owner`)
     }
 
-    const estGas = await estimateGas(
+    const estGas = await calculateEstimatedGas(
       address,
       this.contract.methods.removeSSContract,
       tokenAddress
     )
+    if (estimateGas) return estGas
 
     // Invoke createToken function of the contract
     const trxReceipt = await this.contract.methods.removeSSContract(tokenAddress).send({
@@ -268,37 +214,26 @@ export class Router extends SmartContractWithAddress {
   }
 
   /**
-   * Estimate gas cost for addFixedRateContract method
-   * @param {String} address
-   * @param {String} tokenAddress contract address to add
-   * @return {Promise<TransactionReceipt>}
-   */
-  public async estGasAddFixedRateContract(
-    address: string,
-    tokenAddress: string
-  ): Promise<any> {
-    return estimateGas(address, this.contract.methods.addFixedRateContract, tokenAddress)
-  }
-
-  /**
    * Add a new contract to fixedRate list, after is added, can be used when deploying a new pool
    * @param {String} address
    * @param {String} tokenAddress contract address to add
    * @return {Promise<TransactionReceipt>}
    */
-  public async addFixedRateContract(
+  public async addFixedRateContract<G extends boolean = false>(
     address: string,
-    tokenAddress: string
-  ): Promise<TransactionReceipt> {
+    tokenAddress: string,
+    estimateGas?: G
+  ): Promise<G extends false ? TransactionReceipt : number> {
     if ((await this.getOwner()) !== address) {
       throw new Error(`Caller is not Router Owner`)
     }
 
-    const estGas = await estimateGas(
+    const estGas = await calculateEstimatedGas(
       address,
       this.contract.methods.addFixedRateContract,
       tokenAddress
     )
+    if (estimateGas) return estGas
 
     // Invoke createToken function of the contract
     const trxReceipt = await this.contract.methods
@@ -313,41 +248,26 @@ export class Router extends SmartContractWithAddress {
   }
 
   /**
-   * Estimate gas cost for addFixedRateContract method
-   * @param {String} address
-   * @param {String} tokenAddress contract address to add
-   * @return {Promise<TransactionReceipt>}
-   */
-  public async estGasRemoveFixedRateContract(
-    address: string,
-    tokenAddress: string
-  ): Promise<any> {
-    return estimateGas(
-      address,
-      this.contract.methods.removeFixedRateContract,
-      tokenAddress
-    )
-  }
-
-  /**
    * Removes a contract from fixedRate list
    * @param {String} address
    * @param {String} tokenAddress contract address to add
    * @return {Promise<TransactionReceipt>}
    */
-  public async removeFixedRateContract(
+  public async removeFixedRateContract<G extends boolean = false>(
     address: string,
-    tokenAddress: string
-  ): Promise<TransactionReceipt> {
+    tokenAddress: string,
+    estimateGas?: G
+  ): Promise<G extends false ? TransactionReceipt : number> {
     if ((await this.getOwner()) !== address) {
       throw new Error(`Caller is not Router Owner`)
     }
 
-    const estGas = await estimateGas(
+    const estGas = await calculateEstimatedGas(
       address,
       this.contract.methods.removeFixedRateContract,
       tokenAddress
     )
+    if (estimateGas) return estGas
 
     // Invoke removeFixedRateContract function of the contract
     const trxReceipt = await this.contract.methods
@@ -362,37 +282,26 @@ export class Router extends SmartContractWithAddress {
   }
 
   /**
-   * Estimate gas cost for addDispenserContract method
-   * @param {String} address
-   * @param {String} tokenAddress contract address to add
-   * @return {Promise<TransactionReceipt>}
-   */
-  public async estGasAddDispenserContract(
-    address: string,
-    tokenAddress: string
-  ): Promise<any> {
-    return estimateGas(address, this.contract.methods.addDispenserContract, tokenAddress)
-  }
-
-  /**
    * Add a new contract to dispenser list, after is added, can be used when deploying a new pool
    * @param {String} address
    * @param {String} tokenAddress contract address to add
    * @return {Promise<TransactionReceipt>}
    */
-  public async addDispenserContract(
+  public async addDispenserContract<G extends boolean = false>(
     address: string,
-    tokenAddress: string
-  ): Promise<TransactionReceipt> {
+    tokenAddress: string,
+    estimateGas?: G
+  ): Promise<G extends false ? TransactionReceipt : number> {
     if ((await this.getOwner()) !== address) {
       throw new Error(`Caller is not Router Owner`)
     }
 
-    const estGas = await estimateGas(
+    const estGas = await calculateEstimatedGas(
       address,
       this.contract.methods.addDispenserContract,
       tokenAddress
     )
+    if (estimateGas) return estGas
 
     // Invoke createToken function of the contract
     const trxReceipt = await this.contract.methods
@@ -407,41 +316,26 @@ export class Router extends SmartContractWithAddress {
   }
 
   /**
-   * Estimate gas cost for addDispenserContract method
-   * @param {String} address
-   * @param {String} tokenAddress contract address to add
-   * @return {Promise<TransactionReceipt>}
-   */
-  public async estGasRemoveDispenserContract(
-    address: string,
-    tokenAddress: string
-  ): Promise<any> {
-    return estimateGas(
-      address,
-      this.contract.methods.removeDispenserContract,
-      tokenAddress
-    )
-  }
-
-  /**
    * Add a new contract to dispenser list, after is added, can be used when deploying a new pool
    * @param {String} address
    * @param {String} tokenAddress contract address to add
    * @return {Promise<TransactionReceipt>}
    */
-  public async removeDispenserContract(
+  public async removeDispenserContract<G extends boolean = false>(
     address: string,
-    tokenAddress: string
-  ): Promise<TransactionReceipt> {
+    tokenAddress: string,
+    estimateGas?: G
+  ): Promise<G extends false ? TransactionReceipt : number> {
     if ((await this.getOwner()) !== address) {
       throw new Error(`Caller is not Router Owner`)
     }
 
-    const estGas = await estimateGas(
+    const estGas = await calculateEstimatedGas(
       address,
       this.contract.methods.removeDispenserContract,
       tokenAddress
     )
+    if (estimateGas) return estGas
 
     // Invoke createToken function of the contract
     const trxReceipt = await this.contract.methods
@@ -470,29 +364,6 @@ export class Router extends SmartContractWithAddress {
   }
 
   /**
-   * Estimate gas cost for updateOPFFee method
-   * @param {String} address
-   * @param {String} newFee new OPF Fee
-   * @return {Promise<TransactionReceipt>}
-   */
-  public async estGasUpdateOPCFee(
-    address: string,
-    newSwapOceanFee: number,
-    newSwapNonOceanFee: number,
-    newConsumeFee: number,
-    newProviderFee: number
-  ): Promise<any> {
-    return estimateGas(
-      address,
-      this.contract.methods.updateOPCFee,
-      newSwapOceanFee,
-      newSwapNonOceanFee,
-      newConsumeFee,
-      newProviderFee
-    )
-  }
-
-  /**
    * Add a new contract to fixedRate list, after is added, can be used when deploying a new pool
    * @param {String} address
    * @param {number} newSwapOceanFee Amount charged for swapping with ocean approved tokens
@@ -501,18 +372,19 @@ export class Router extends SmartContractWithAddress {
    * @param {number} newProviderFee Amount charged for providerFees
    * @return {Promise<TransactionReceipt>}
    */
-  public async updateOPCFee(
+  public async updateOPCFee<G extends boolean = false>(
     address: string,
     newSwapOceanFee: number,
     newSwapNonOceanFee: number,
     newConsumeFee: number,
-    newProviderFee: number
-  ): Promise<TransactionReceipt> {
+    newProviderFee: number,
+    estimateGas?: G
+  ): Promise<G extends false ? TransactionReceipt : number> {
     if ((await this.getOwner()) !== address) {
       throw new Error(`Caller is not Router Owner`)
     }
 
-    const estGas = await estimateGas(
+    const estGas = await calculateEstimatedGas(
       address,
       this.contract.methods.updateOPCFee,
       newSwapOceanFee,
@@ -520,6 +392,7 @@ export class Router extends SmartContractWithAddress {
       newConsumeFee,
       newProviderFee
     )
+    if (estimateGas) return estGas
 
     // Invoke createToken function of the contract
     const trxReceipt = await this.contract.methods
@@ -534,37 +407,26 @@ export class Router extends SmartContractWithAddress {
   }
 
   /**
-   * Estimate gas cost for addPoolTemplate method
-   * @param {String} address
-   * @param {String} templateAddress template address to add
-   * @return {Promise<TransactionReceipt>}
-   */
-  public async estGasAddPoolTemplate(
-    address: string,
-    templateAddress: string
-  ): Promise<any> {
-    return estimateGas(address, this.contract.methods.addPoolTemplate, templateAddress)
-  }
-
-  /**
    * Add a new template to poolTemplates mapping, after template is added,it can be used
    * @param {String} address
    * @param {String} templateAddress template address to add
    * @return {Promise<TransactionReceipt>}
    */
-  public async addPoolTemplate(
+  public async addPoolTemplate<G extends boolean = false>(
     address: string,
-    templateAddress: string
-  ): Promise<TransactionReceipt> {
+    templateAddress: string,
+    estimateGas?: G
+  ): Promise<G extends false ? TransactionReceipt : number> {
     if ((await this.getOwner()) !== address) {
       throw new Error(`Caller is not Router Owner`)
     }
 
-    const estGas = await estimateGas(
+    const estGas = await calculateEstimatedGas(
       address,
       this.contract.methods.addPoolTemplate,
       templateAddress
     )
+    if (estimateGas) return estGas
 
     // Invoke createToken function of the contract
     const trxReceipt = await this.contract.methods.addPoolTemplate(templateAddress).send({
@@ -577,37 +439,26 @@ export class Router extends SmartContractWithAddress {
   }
 
   /**
-   * Estimate gas cost for removePoolTemplate method
-   * @param {String} address
-   * @param {String} templateAddress template address to remove
-   * @return {Promise<TransactionReceipt>}
-   */
-  public async estGasRemovePoolTemplate(
-    address: string,
-    templateAddress: string
-  ): Promise<any> {
-    return estimateGas(address, this.contract.methods.removePoolTemplate, templateAddress)
-  }
-
-  /**
    * Remove template from poolTemplates mapping, after template is removed,it can be used anymore
    * @param {String} address
    * @param {String} templateAddress template address to remove
    * @return {Promise<TransactionReceipt>}
    */
-  public async removePoolTemplate(
+  public async removePoolTemplate<G extends boolean = false>(
     address: string,
-    templateAddress: string
-  ): Promise<TransactionReceipt> {
+    templateAddress: string,
+    estimateGas?: G
+  ): Promise<G extends false ? TransactionReceipt : number> {
     if ((await this.getOwner()) !== address) {
       throw new Error(`Caller is not Router Owner`)
     }
 
-    const estGas = await estimateGas(
+    const estGas = await calculateEstimatedGas(
       address,
       this.contract.methods.removePoolTemplate,
       templateAddress
     )
+    if (estimateGas) return estGas
 
     // Invoke createToken function of the contract
     const trxReceipt = await this.contract.methods
