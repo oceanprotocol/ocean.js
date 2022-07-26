@@ -18,11 +18,11 @@ export class Dispenser extends SmartContractWithAddress {
    */
   public async status(dtAdress: string): Promise<DispenserToken> {
     try {
-      const result: DispenserToken = await this.contract.methods.status(dtAdress).call()
-      result.maxTokens = this.web3.utils.fromWei(result.maxTokens)
-      result.maxBalance = this.web3.utils.fromWei(result.maxBalance)
-      result.balance = this.web3.utils.fromWei(result.balance)
-      return result
+      const status: DispenserToken = await this.contract.methods.status(dtAdress).call()
+      status.maxTokens = this.web3.utils.fromWei(status.maxTokens)
+      status.maxBalance = this.web3.utils.fromWei(status.maxBalance)
+      status.balance = this.web3.utils.fromWei(status.balance)
+      return status
     } catch (e) {
       LoggerInstance.warn(`No dispenser available for datatoken: ${dtAdress}`)
     }

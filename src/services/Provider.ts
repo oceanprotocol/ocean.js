@@ -767,10 +767,6 @@ export class Provider {
     }
   }
 
-  private zeroX(input: string): string {
-    return this.zeroXTransformer(input, true)
-  }
-
   private noZeroX(input: string): string {
     return this.zeroXTransformer(input, false)
   }

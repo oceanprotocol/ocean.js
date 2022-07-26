@@ -15,20 +15,20 @@ export class SideStaking extends SmartContract {
    * @param {String} datatokenAddress datatoken address
    * @return {String}
    */
-  async getDatatokenCirculatingSupply(
+  public async getDatatokenCirculatingSupply(
     ssAddress: string,
     datatokenAddress: string
   ): Promise<string> {
     const sideStaking = this.getContract(ssAddress)
-    let result = null
+    let supply = null
     try {
-      result = await sideStaking.methods
+      supply = await sideStaking.methods
         .getDatatokenCirculatingSupply(datatokenAddress)
         .call()
     } catch (e) {
       LoggerInstance.error(`ERROR: Failed to get: ${e.message}`)
     }
-    return result.toString()
+    return supply.toString()
   }
 
   /**
@@ -38,17 +38,17 @@ export class SideStaking extends SmartContract {
    * @param {String} datatokenAddress datatoken address
    * @return {String}
    */
-  async getDatatokenCurrentCirculatingSupply(
+  public async getDatatokenCurrentCirculatingSupply(
     ssAddress: string,
     datatokenAddress: string
   ): Promise<string> {
     try {
       const sideStaking = this.getContract(ssAddress)
-      let result = null
-      result = await sideStaking.methods
+      let supply = null
+      supply = await sideStaking.methods
         .getDatatokenCurrentCirculatingSupply(datatokenAddress)
         .call()
-      return result.toString()
+      return supply.toString()
     } catch (e) {
       LoggerInstance.error(`ERROR: Failed to get: ${e.message}`)
     }
@@ -60,18 +60,18 @@ export class SideStaking extends SmartContract {
    * @param {String} datatokenAddress datatoken address
    * @return {String}
    */
-  async getPublisherAddress(
+  public async getPublisherAddress(
     ssAddress: string,
     datatokenAddress: string
   ): Promise<string> {
     const sideStaking = this.getContract(ssAddress)
-    let result = null
+    let address = null
     try {
-      result = await sideStaking.methods.getPublisherAddress(datatokenAddress).call()
+      address = await sideStaking.methods.getPublisherAddress(datatokenAddress).call()
     } catch (e) {
       LoggerInstance.error(`ERROR: Failed to get: ${e.message}`)
     }
-    return result
+    return address
   }
 
   /**
@@ -80,15 +80,18 @@ export class SideStaking extends SmartContract {
    * @param {String} datatokenAddress datatokenAddress
    * @return {String}
    */
-  async getBaseToken(ssAddress: string, datatokenAddress: string): Promise<string> {
+  public async getBasetoken(
+    ssAddress: string,
+    datatokenAddress: string
+  ): Promise<string> {
     const sideStaking = this.getContract(ssAddress)
-    let result = null
+    let address = null
     try {
-      result = await sideStaking.methods.getBaseTokenAddress(datatokenAddress).call()
+      address = await sideStaking.methods.getBaseTokenAddress(datatokenAddress).call()
     } catch (e) {
       LoggerInstance.error(`ERROR: Failed to get: ${e.message}`)
     }
-    return result
+    return address
   }
 
   /**
@@ -97,15 +100,18 @@ export class SideStaking extends SmartContract {
    * @param {String} datatokenAddress datatokenAddress
    * @return {String}
    */
-  async getPoolAddress(ssAddress: string, datatokenAddress: string): Promise<string> {
+  public async getPoolAddress(
+    ssAddress: string,
+    datatokenAddress: string
+  ): Promise<string> {
     const sideStaking = this.getContract(ssAddress)
-    let result = null
+    let address = null
     try {
-      result = await sideStaking.methods.getPoolAddress(datatokenAddress).call()
+      address = await sideStaking.methods.getPoolAddress(datatokenAddress).call()
     } catch (e) {
       LoggerInstance.error(`ERROR: Failed to get: ${e.message}`)
     }
-    return result
+    return address
   }
 
   /**
@@ -114,18 +120,18 @@ export class SideStaking extends SmartContract {
    * @param {String} datatokenAddress datatokenAddress
    * @return {String}
    */
-  async getBaseTokenBalance(
+  public async getBasetokenBalance(
     ssAddress: string,
     datatokenAddress: string
   ): Promise<string> {
     const sideStaking = this.getContract(ssAddress)
-    let result = null
+    let balance = null
     try {
-      result = await sideStaking.methods.getBaseTokenBalance(datatokenAddress).call()
+      balance = await sideStaking.methods.getBaseTokenBalance(datatokenAddress).call()
     } catch (e) {
       LoggerInstance.error(`ERROR: Failed to get: ${e.message}`)
     }
-    return result
+    return balance
   }
 
   /**
@@ -135,20 +141,20 @@ export class SideStaking extends SmartContract {
    * @param {number} tokenDecimals optional number of decimals of the token
    * @return {String}
    */
-  async getDatatokenBalance(
+  public async getDatatokenBalance(
     ssAddress: string,
     datatokenAddress: string,
     tokenDecimals?: number
   ): Promise<string> {
     const sideStaking = this.getContract(ssAddress)
-    let result = null
+    let balance = null
     try {
-      result = await sideStaking.methods.getDatatokenBalance(datatokenAddress).call()
+      balance = await sideStaking.methods.getDatatokenBalance(datatokenAddress).call()
     } catch (e) {
       LoggerInstance.error(`ERROR: Failed to get: ${e.message}`)
     }
-    result = await this.unitsToAmount(datatokenAddress, result, tokenDecimals)
-    return result
+    balance = await this.unitsToAmount(datatokenAddress, balance, tokenDecimals)
+    return balance
   }
 
   /**
@@ -157,15 +163,18 @@ export class SideStaking extends SmartContract {
    * @param {String} datatokenAddress datatokenAddress
    * @return {String} end block for vesting amount
    */
-  async getvestingEndBlock(ssAddress: string, datatokenAddress: string): Promise<string> {
+  public async getVestingEndBlock(
+    ssAddress: string,
+    datatokenAddress: string
+  ): Promise<string> {
     const sideStaking = this.getContract(ssAddress)
-    let result = null
+    let block = null
     try {
-      result = await sideStaking.methods.getvestingEndBlock(datatokenAddress).call()
+      block = await sideStaking.methods.getvestingEndBlock(datatokenAddress).call()
     } catch (e) {
       LoggerInstance.error(`ERROR: Failed to get: ${e.message}`)
     }
-    return result
+    return block
   }
 
   /**
@@ -175,20 +184,20 @@ export class SideStaking extends SmartContract {
    * @param {number} tokenDecimals optional number of decimals of the token
    * @return {String}
    */
-  async getvestingAmount(
+  public async getVestingAmount(
     ssAddress: string,
     datatokenAddress: string,
     tokenDecimals?: number
   ): Promise<string> {
     const sideStaking = this.getContract(ssAddress)
-    let result = null
+    let amount = null
     try {
-      result = await sideStaking.methods.getvestingAmount(datatokenAddress).call()
+      amount = await sideStaking.methods.getvestingAmount(datatokenAddress).call()
     } catch (e) {
       LoggerInstance.error(`ERROR: Failed to get: ${e.message}`)
     }
-    result = await this.unitsToAmount(datatokenAddress, result, tokenDecimals)
-    return result
+    amount = await this.unitsToAmount(datatokenAddress, amount, tokenDecimals)
+    return amount
   }
 
   /**
@@ -197,18 +206,18 @@ export class SideStaking extends SmartContract {
    * @param {String} datatokenAddress datatokenAddress
    * @return {String}
    */
-  async getvestingLastBlock(
+  public async getVestingLastBlock(
     ssAddress: string,
     datatokenAddress: string
   ): Promise<string> {
     const sideStaking = this.getContract(ssAddress)
-    let result = null
+    let block = null
     try {
-      result = await sideStaking.methods.getvestingLastBlock(datatokenAddress).call()
+      block = await sideStaking.methods.getvestingLastBlock(datatokenAddress).call()
     } catch (e) {
       LoggerInstance.error(`ERROR: Failed to get: ${e.message}`)
     }
-    return result
+    return block
   }
 
   /**
@@ -218,20 +227,20 @@ export class SideStaking extends SmartContract {
    * @param {number} tokenDecimals optional number of decimals of the token
    * @return {String}
    */
-  async getvestingAmountSoFar(
+  public async getVestingAmountSoFar(
     ssAddress: string,
     datatokenAddress: string,
     tokenDecimals?: number
   ): Promise<string> {
     const sideStaking = this.getContract(ssAddress)
-    let result = null
+    let amount = null
     try {
-      result = await sideStaking.methods.getvestingAmountSoFar(datatokenAddress).call()
+      amount = await sideStaking.methods.getvestingAmountSoFar(datatokenAddress).call()
     } catch (e) {
       LoggerInstance.error(`ERROR: Failed to get: ${e.message}`)
     }
-    result = await this.unitsToAmount(datatokenAddress, result, tokenDecimals)
-    return result
+    amount = await this.unitsToAmount(datatokenAddress, amount, tokenDecimals)
+    return amount
   }
 
   /** Send vested tokens available to the publisher address, can be called by anyone
@@ -241,14 +250,14 @@ export class SideStaking extends SmartContract {
    * @param {String} datatokenAddress datatokenAddress
    * @return {TransactionReceipt}
    */
-  async getVesting<G extends boolean = false>(
+  public async getVesting<G extends boolean = false>(
     account: string,
     ssAddress: string,
     datatokenAddress: string,
     estimateGas?: G
   ): Promise<G extends false ? TransactionReceipt : number> {
     const sideStaking = this.getContract(ssAddress)
-    let result = null
+    let vesting = null
 
     const estGas = await calculateEstimatedGas(
       account,
@@ -258,7 +267,7 @@ export class SideStaking extends SmartContract {
     if (estimateGas) return estGas
 
     try {
-      result = await sideStaking.methods.getVesting(datatokenAddress).send({
+      vesting = await sideStaking.methods.getVesting(datatokenAddress).send({
         from: account,
         gas: estGas + 1,
         gasPrice: await this.getFairGasPrice()
@@ -266,7 +275,7 @@ export class SideStaking extends SmartContract {
     } catch (e) {
       LoggerInstance.error('ERROR: Failed to join swap pool amount out')
     }
-    return result
+    return vesting
   }
 
   /** Send vested tokens available to the publisher address, can be called by anyone
@@ -276,7 +285,7 @@ export class SideStaking extends SmartContract {
    * @param {String} datatokenAddress datatokenAddress
    * @return {TransactionReceipt}
    */
-  private async setPoolSwapFee<G extends boolean = false>(
+  public async setPoolSwapFee<G extends boolean = false>(
     account: string,
     ssAddress: string,
     datatokenAddress: string,
@@ -285,7 +294,7 @@ export class SideStaking extends SmartContract {
     estimateGas?: G
   ): Promise<G extends false ? TransactionReceipt : number> {
     const sideStaking = this.getContract(ssAddress)
-    let result = null
+    let fee = null
 
     const estGas = await calculateEstimatedGas(
       account,
@@ -297,7 +306,7 @@ export class SideStaking extends SmartContract {
     if (estimateGas) return estGas
 
     try {
-      result = await sideStaking.methods
+      fee = await sideStaking.methods
         .setPoolSwapFee(datatokenAddress, poolAddress, swapFee)
         .send({
           from: account,
@@ -307,7 +316,7 @@ export class SideStaking extends SmartContract {
     } catch (e) {
       LoggerInstance.error('ERROR: Failed to join swap pool amount out')
     }
-    return result
+    return fee
   }
 
   /**
@@ -317,12 +326,12 @@ export class SideStaking extends SmartContract {
    */
   public async getRouter(ssAddress: string): Promise<string> {
     const sideStaking = this.getContract(ssAddress)
-    let result = null
+    let router = null
     try {
-      result = await sideStaking.methods.router().call()
+      router = await sideStaking.methods.router().call()
     } catch (e) {
       LoggerInstance.error(`ERROR: Failed to get Router address: ${e.message}`)
     }
-    return result
+    return router
   }
 }

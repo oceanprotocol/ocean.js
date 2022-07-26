@@ -215,8 +215,8 @@ describe('Pool unit test', () => {
       expect(await pool.getDenormalizedWeight(poolAddress, datatoken)).to.equal('5')
     })
 
-    it('#getBaseToken - should return the baseToken address', async () => {
-      expect(await pool.getBaseToken(poolAddress)).to.equal(contracts.daiAddress)
+    it('#getBasetoken - should return the baseToken address', async () => {
+      expect(await pool.getBasetoken(poolAddress)).to.equal(contracts.daiAddress)
     })
 
     it('#getDatatoken - should return the datatoken address', async () => {
@@ -301,11 +301,11 @@ describe('Pool unit test', () => {
       )
     })
 
-    it('#exitswapPoolAmountIn- user2 exit the pool receiving only DAI', async () => {
+    it('#exitSwapPoolAmountIn- user2 exit the pool receiving only DAI', async () => {
       const BPTAmountIn = '0.5'
       const minDAIOut = '0.5'
 
-      const tx = await pool.exitswapPoolAmountIn(
+      const tx = await pool.exitSwapPoolAmountIn(
         user1,
         poolAddress,
         BPTAmountIn,
@@ -324,7 +324,7 @@ describe('Pool unit test', () => {
       const maxBTPIn = '0.5'
       const exactDAIOut = '1'
 
-      const tx = await pool.exitswapPoolAmountIn(
+      const tx = await pool.exitSwapPoolAmountIn(
         user1,
         poolAddress,
         maxBTPIn,
@@ -673,8 +673,8 @@ describe('Pool unit test', () => {
       expect(await pool.getDenormalizedWeight(poolAddress, datatoken)).to.equal('5')
     })
 
-    it('#getBaseToken - should return the baseToken address', async () => {
-      expect(await pool.getBaseToken(poolAddress)).to.equal(contracts.usdcAddress)
+    it('#getBasetoken - should return the baseToken address', async () => {
+      expect(await pool.getBasetoken(poolAddress)).to.equal(contracts.usdcAddress)
     })
 
     it('#getDatatoken - should return the datatoken address', async () => {
@@ -758,11 +758,11 @@ describe('Pool unit test', () => {
       )
     })
 
-    it('#exitswapPoolAmountIn- user2 exit the pool receiving only USDC', async () => {
+    it('#exitSwapPoolAmountIn- user2 exit the pool receiving only USDC', async () => {
       const BPTAmountIn = '0.5'
       const minUSDCOut = '0.5'
 
-      const tx = await pool.exitswapPoolAmountIn(
+      const tx = await pool.exitSwapPoolAmountIn(
         user1,
         poolAddress,
         BPTAmountIn,

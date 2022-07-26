@@ -193,9 +193,9 @@ describe('SideStaking unit test', () => {
       ).to.equal(web3.utils.toWei(BASE_TOKEN_LIQUIDITY.toString()))
     })
 
-    it('#getBaseToken - should get baseToken address', async () => {
+    it('#getBasetoken - should get baseToken address', async () => {
       expect(
-        await sideStaking.getBaseToken(contracts.sideStakingAddress, datatoken)
+        await sideStaking.getBasetoken(contracts.sideStakingAddress, datatoken)
       ).to.equal(contracts.daiAddress)
     })
 
@@ -211,9 +211,9 @@ describe('SideStaking unit test', () => {
       ).to.equal(factoryOwner)
     })
 
-    it('#getBaseTokenBalance ', async () => {
+    it('#getBasetokenBalance ', async () => {
       expect(
-        await sideStaking.getBaseTokenBalance(contracts.sideStakingAddress, datatoken)
+        await sideStaking.getBasetokenBalance(contracts.sideStakingAddress, datatoken)
       ).to.equal('0')
     })
 
@@ -232,21 +232,21 @@ describe('SideStaking unit test', () => {
       )
     })
 
-    it('#getvestingAmount ', async () => {
+    it('#getVestingAmount ', async () => {
       expect(
-        await sideStaking.getvestingAmount(contracts.sideStakingAddress, datatoken)
+        await sideStaking.getVestingAmount(contracts.sideStakingAddress, datatoken)
       ).to.equal('0')
     })
 
-    it('#getvestingLastBlock ', async () => {
+    it('#getVestingLastBlock ', async () => {
       expect(
-        await sideStaking.getvestingLastBlock(contracts.sideStakingAddress, datatoken)
+        await sideStaking.getVestingLastBlock(contracts.sideStakingAddress, datatoken)
       ).to.equal(initialBlock.toString())
     })
 
-    it('#getvestingAmountSoFar ', async () => {
+    it('#getVestingAmountSoFar ', async () => {
       expect(
-        await sideStaking.getvestingAmountSoFar(contracts.sideStakingAddress, datatoken)
+        await sideStaking.getVestingAmountSoFar(contracts.sideStakingAddress, datatoken)
       ).to.equal('0')
     })
 
@@ -325,11 +325,11 @@ describe('SideStaking unit test', () => {
       )
     })
 
-    it('#exitswapPoolAmountIn- user1 exit the pool receiving only DAI', async () => {
+    it('#exitSwapPoolAmountIn- user1 exit the pool receiving only DAI', async () => {
       const BPTAmountIn = '0.5'
       const minDAIOut = '0.5'
 
-      const tx = await pool.exitswapPoolAmountIn(
+      const tx = await pool.exitSwapPoolAmountIn(
         user1,
         poolAddress,
         BPTAmountIn,
@@ -391,9 +391,9 @@ describe('SideStaking unit test', () => {
       expect(await datatokenContract.methods.balanceOf(user1).call()).to.equal('0')
     })
 
-    it('#getBaseTokenBalance ', async () => {
+    it('#getBasetokenBalance ', async () => {
       expect(
-        await sideStaking.getBaseTokenBalance(contracts.sideStakingAddress, datatoken)
+        await sideStaking.getBasetokenBalance(contracts.sideStakingAddress, datatoken)
       ).to.equal('0')
     })
 
@@ -412,21 +412,21 @@ describe('SideStaking unit test', () => {
       )
     })
 
-    it('#getvestingAmount ', async () => {
+    it('#getVestingAmount ', async () => {
       expect(
-        await sideStaking.getvestingAmount(contracts.sideStakingAddress, datatoken)
+        await sideStaking.getVestingAmount(contracts.sideStakingAddress, datatoken)
       ).to.equal('0')
     })
 
-    it('#getvestingLastBlock ', async () => {
+    it('#getVestingLastBlock ', async () => {
       expect(
-        await sideStaking.getvestingLastBlock(contracts.sideStakingAddress, datatoken)
+        await sideStaking.getVestingLastBlock(contracts.sideStakingAddress, datatoken)
       ).to.equal(initialBlock.toString())
     })
 
-    it('#getvestingAmountSoFar ', async () => {
+    it('#getVestingAmountSoFar ', async () => {
       expect(
-        await sideStaking.getvestingAmountSoFar(contracts.sideStakingAddress, datatoken)
+        await sideStaking.getVestingAmountSoFar(contracts.sideStakingAddress, datatoken)
       ).to.equal('0')
     })
 
@@ -501,11 +501,11 @@ describe('SideStaking unit test', () => {
       )
     })
 
-    it('#exitswapPoolAmountIn- user1 exit the pool receiving only USDC', async () => {
+    it('#exitSwapPoolAmountIn- user1 exit the pool receiving only USDC', async () => {
       const BPTAmountIn = '0.5'
       const minUSDCOut = '0.5'
 
-      const tx = await pool.exitswapPoolAmountIn(
+      const tx = await pool.exitSwapPoolAmountIn(
         user1,
         poolAddress,
         BPTAmountIn,

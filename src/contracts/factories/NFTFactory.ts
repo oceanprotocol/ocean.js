@@ -100,24 +100,24 @@ export class NftFactory extends SmartContractWithAddress {
    * @return {Promise<number>} Number of NFT created from this factory
    */
   public async getCurrentNFTCount(): Promise<number> {
-    const trxReceipt = await this.contract.methods.getCurrentNFTCount().call()
-    return trxReceipt
+    const nftCount = await this.contract.methods.getCurrentNFTCount().call()
+    return nftCount
   }
 
   /** Get Current Datatoken Count
    * @return {Promise<number>} Number of DTs created from this factory
    */
   public async getCurrentTokenCount(): Promise<number> {
-    const trxReceipt = await this.contract.methods.getCurrentTokenCount().call()
-    return trxReceipt
+    const tokenCount = await this.contract.methods.getCurrentTokenCount().call()
+    return tokenCount
   }
 
   /** Get Factory Owner
    * @return {Promise<string>} Factory Owner address
    */
   public async getOwner(): Promise<string> {
-    const trxReceipt = await this.contract.methods.owner().call()
-    return trxReceipt
+    const owner = await this.contract.methods.owner().call()
+    return owner
   }
 
   /** Get Current NFT Template Count

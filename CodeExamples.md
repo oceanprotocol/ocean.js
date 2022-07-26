@@ -616,7 +616,7 @@ Now let's console log the DID to check everything is working
 ```Typescript
     const fixedRate = new FixedRateExchange(freAddress, web3)
     const oceanAmount = await (
-      await fixedRate.calcBaseInGivenOutDT(freId, '1')
+      await fixedRate.calcBaseInGivenDatatokensOut(freId, '1')
     ).baseTokenAmount
 ```
 Now that the market has fetched those values it can display the asset on the front end. In our case we will just console log the results:
@@ -659,7 +659,7 @@ Before we call the contract we have to call `approve` so that the contract can m
 ```
 Now we can make the contract call
 ```Typescript
-    await fixedRate.buyDT(consumerAccount, freId, '1', '2')
+    await fixedRate.buyDatatokens(consumerAccount, freId, '1', '2')
 
     consumerOCEANBalance = await balance(web3, addresses.Ocean, consumerAccount)
     console.log(`Consumer OCEAN balance after swap: ${consumerOCEANBalance}`)

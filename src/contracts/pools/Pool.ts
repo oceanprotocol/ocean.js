@@ -35,15 +35,15 @@ export class Pool extends SmartContract {
    * @return {String}
    */
   async sharesBalance(account: string, poolAddress: string): Promise<string> {
-    let result = null
+    let shares = null
     try {
       const token = this.getContract(poolAddress)
       const balance = await token.methods.balanceOf(account).call()
-      result = this.web3.utils.fromWei(balance)
+      shares = this.web3.utils.fromWei(balance)
     } catch (e) {
       LoggerInstance.error(`ERROR: Failed to get shares of pool : ${e.message}`)
     }
-    return result
+    return shares
   }
 
   /**
@@ -59,12 +59,12 @@ export class Pool extends SmartContract {
     estimateGas?: G
   ): Promise<G extends false ? TransactionReceipt : number> {
     const pool = this.getContract(poolAddress, account)
-    let result = null
+    let trxReceipt = null
     const estGas = await calculateEstimatedGas(account, pool.methods.setSwapFee, fee)
     if (estimateGas) return estGas
 
     try {
-      result = await pool.methods.setSwapFee(this.web3.utils.toWei(fee)).send({
+      trxReceipt = await pool.methods.setSwapFee(this.web3.utils.toWei(fee)).send({
         from: account,
         gas: estGas,
         gasPrice: await this.getFairGasPrice()
@@ -72,7 +72,7 @@ export class Pool extends SmartContract {
     } catch (e) {
       LoggerInstance.error(`ERROR: Failed to set pool swap fee: ${e.message}`)
     }
-    return result
+    return trxReceipt
   }
 
   /**
@@ -82,13 +82,13 @@ export class Pool extends SmartContract {
    */
   async getNumTokens(poolAddress: string): Promise<string> {
     const pool = this.getContract(poolAddress)
-    let result = null
+    let tokens = null
     try {
-      result = await pool.methods.getNumTokens().call()
+      tokens = await pool.methods.getNumTokens().call()
     } catch (e) {
       LoggerInstance.error(`ERROR: Failed to get number of tokens: ${e.message}`)
     }
-    return result
+    return tokens
   }
 
   /**
@@ -100,8 +100,8 @@ export class Pool extends SmartContract {
     const pool = this.getContract(poolAddress)
     let amount = null
     try {
-      const result = await pool.methods.totalSupply().call()
-      amount = this.web3.utils.fromWei(result)
+      const supply = await pool.methods.totalSupply().call()
+      amount = this.web3.utils.fromWei(supply)
     } catch (e) {
       LoggerInstance.error(
         `ERROR: Failed to get total supply of pool shares: ${e.message}`
@@ -118,15 +118,15 @@ export class Pool extends SmartContract {
    */
   async getCurrentTokens(poolAddress: string): Promise<string[]> {
     const pool = this.getContract(poolAddress)
-    let result = null
+    let tokens = null
     try {
-      result = await pool.methods.getCurrentTokens().call()
+      tokens = await pool.methods.getCurrentTokens().call()
     } catch (e) {
       LoggerInstance.error(
         `ERROR: Failed to get tokens composing this pool: ${e.message}`
       )
     }
-    return result
+    return tokens
   }
 
   /**
@@ -137,15 +137,15 @@ export class Pool extends SmartContract {
    */
   async getFinalTokens(poolAddress: string): Promise<string[]> {
     const pool = this.getContract(poolAddress)
-    let result = null
+    let tokens = null
     try {
-      result = await pool.methods.getFinalTokens().call()
+      tokens = await pool.methods.getFinalTokens().call()
     } catch (e) {
       LoggerInstance.error(
         `ERROR: Failed to get the final tokens composing this pool ${e.message}`
       )
     }
-    return result
+    return tokens
   }
 
   /**
@@ -155,13 +155,13 @@ export class Pool extends SmartContract {
    */
   async getController(poolAddress: string): Promise<string> {
     const pool = this.getContract(poolAddress)
-    let result = null
+    let address = null
     try {
-      result = await pool.methods.getController().call()
+      address = await pool.methods.getController().call()
     } catch (e) {
       LoggerInstance.error(`ERROR: Failed to get pool controller address: ${e.message}`)
     }
-    return result
+    return address
   }
 
   /**
@@ -169,15 +169,15 @@ export class Pool extends SmartContract {
    * @param {String} poolAddress
    * @return {String}
    */
-  async getBaseToken(poolAddress: string): Promise<string> {
+  async getBasetoken(poolAddress: string): Promise<string> {
     const pool = this.getContract(poolAddress)
-    let result = null
+    let address = null
     try {
-      result = await pool.methods.getBaseTokenAddress().call()
+      address = await pool.methods.getBaseTokenAddress().call()
     } catch (e) {
       LoggerInstance.error(`ERROR: Failed to get baseToken address: ${e.message}`)
     }
-    return result
+    return address
   }
 
   /**
@@ -187,13 +187,13 @@ export class Pool extends SmartContract {
    */
   async getDatatoken(poolAddress: string): Promise<string> {
     const pool = this.getContract(poolAddress)
-    let result = null
+    let address = null
     try {
-      result = await pool.methods.getDatatokenAddress().call()
+      address = await pool.methods.getDatatokenAddress().call()
     } catch (e) {
       LoggerInstance.error(`ERROR: Failed to get datatoken address: ${e.message}`)
     }
-    return result
+    return address
   }
 
   /**
@@ -203,13 +203,13 @@ export class Pool extends SmartContract {
    */
   async getMarketFee(poolAddress: string): Promise<string> {
     const pool = this.getContract(poolAddress)
-    let result = null
+    let fee = null
     try {
-      result = await pool.methods.getMarketFee().call()
+      fee = await pool.methods.getMarketFee().call()
     } catch (e) {
       LoggerInstance.error(`ERROR: Failed to get getMarketFee: ${e.message}`)
     }
-    return this.web3.utils.fromWei(result).toString()
+    return this.web3.utils.fromWei(fee).toString()
   }
 
   /**
@@ -219,15 +219,15 @@ export class Pool extends SmartContract {
    */
   async getMarketFeeCollector(poolAddress: string): Promise<string> {
     const pool = this.getContract(poolAddress)
-    let result = null
+    let address = null
     try {
-      result = await pool.methods._publishMarketCollector().call()
+      address = await pool.methods._publishMarketCollector().call()
     } catch (e) {
       LoggerInstance.error(
         `ERROR: Failed to get marketFeeCollector address: ${e.message}`
       )
     }
-    return result
+    return address
   }
 
   /**
@@ -239,14 +239,14 @@ export class Pool extends SmartContract {
    */
   async isBound(poolAddress: string, token: string): Promise<boolean> {
     const pool = this.getContract(poolAddress)
-    let result = null
+    let isBound = null
     try {
-      result = await pool.methods.isBound(token).call()
+      isBound = await pool.methods.isBound(token).call()
     } catch (e) {
       LoggerInstance.error(`ERROR: Failed to check whether a token \
       bounded to a pool. ${e.message}`)
     }
-    return result
+    return isBound
   }
 
   /**
@@ -264,8 +264,8 @@ export class Pool extends SmartContract {
     let amount = null
     try {
       const pool = this.getContract(poolAddress)
-      const result = await pool.methods.getBalance(token).call()
-      amount = await this.unitsToAmount(token, result, tokenDecimals)
+      const balance = await pool.methods.getBalance(token).call()
+      amount = await this.unitsToAmount(token, balance, tokenDecimals)
     } catch (e) {
       LoggerInstance.error(`ERROR: Failed to get how many tokens \
       are in the pool: ${e.message}`)
@@ -281,15 +281,15 @@ export class Pool extends SmartContract {
    */
   async isFinalized(poolAddress: string): Promise<boolean> {
     const pool = this.getContract(poolAddress)
-    let result = null
+    let isFinalized = null
     try {
-      result = await pool.methods.isFinalized().call()
+      isFinalized = await pool.methods.isFinalized().call()
     } catch (e) {
       LoggerInstance.error(
         `ERROR: Failed to check whether pool is finalized: ${e.message}`
       )
     }
-    return result
+    return isFinalized
   }
 
   /**
@@ -301,8 +301,8 @@ export class Pool extends SmartContract {
     const pool = this.getContract(poolAddress)
     let fee = null
     try {
-      const result = await pool.methods.getSwapFee().call()
-      fee = this.web3.utils.fromWei(result)
+      const swapFee = await pool.methods.getSwapFee().call()
+      fee = this.web3.utils.fromWei(swapFee)
     } catch (e) {
       LoggerInstance.error(`ERROR: Failed to get pool fee: ${e.message}`)
     }
@@ -321,8 +321,8 @@ export class Pool extends SmartContract {
     const pool = this.getContract(poolAddress)
     let weight = null
     try {
-      const result = await pool.methods.getNormalizedWeight(token).call()
-      weight = this.web3.utils.fromWei(result)
+      const normalizedWeight = await pool.methods.getNormalizedWeight(token).call()
+      weight = this.web3.utils.fromWei(normalizedWeight)
     } catch (e) {
       LoggerInstance.error(
         `ERROR: Failed to get normalized weight of a token: ${e.message}`
@@ -341,8 +341,8 @@ export class Pool extends SmartContract {
     const pool = this.getContract(poolAddress)
     let weight = null
     try {
-      const result = await pool.methods.getDenormalizedWeight(token).call()
-      weight = this.web3.utils.fromWei(result)
+      const denormalizedWeight = await pool.methods.getDenormalizedWeight(token).call()
+      weight = this.web3.utils.fromWei(denormalizedWeight)
     } catch (e) {
       LoggerInstance.error(
         `ERROR: Failed to get denormalized weight of a token in pool ${e.message}`
@@ -361,8 +361,8 @@ export class Pool extends SmartContract {
     const pool = this.getContract(poolAddress)
     let weight = null
     try {
-      const result = await pool.methods.getTotalDenormalizedWeight().call()
-      weight = this.web3.utils.fromWei(result)
+      const denormalizedWeight = await pool.methods.getTotalDenormalizedWeight().call()
+      weight = this.web3.utils.fromWei(denormalizedWeight)
     } catch (e) {
       LoggerInstance.error(
         `ERROR: Failed to get total denormalized weight in pool ${e.message}`
@@ -387,8 +387,8 @@ export class Pool extends SmartContract {
     const pool = this.getContract(poolAddress)
     let weight = null
     try {
-      const result = await pool.methods.publishMarketFees(token).call()
-      weight = await this.unitsToAmount(token, result, tokenDecimals)
+      const fee = await pool.methods.publishMarketFees(token).call()
+      weight = await this.unitsToAmount(token, fee, tokenDecimals)
     } catch (e) {
       LoggerInstance.error(`ERROR: Failed to get market fees for a token: ${e.message}`)
     }
@@ -442,8 +442,8 @@ export class Pool extends SmartContract {
     const pool = this.getContract(poolAddress)
     let weight = null
     try {
-      const result = await pool.methods.communityFees(token).call()
-      weight = await this.unitsToAmount(token, result, tokenDecimals)
+      const fee = await pool.methods.communityFees(token).call()
+      weight = await this.unitsToAmount(token, fee, tokenDecimals)
     } catch (e) {
       LoggerInstance.error(
         `ERROR: Failed to get community fees for a token: ${e.message}`
@@ -464,12 +464,12 @@ export class Pool extends SmartContract {
     estimateGas?: G
   ): Promise<G extends false ? TransactionReceipt : number> {
     const pool = this.getContract(poolAddress)
-    let result = null
+    let trxReceipt = null
     const estGas = await calculateEstimatedGas(address, pool.methods.collectOPC)
     if (estimateGas) return estGas
 
     try {
-      result = await pool.methods.collectOPC().send({
+      trxReceipt = await pool.methods.collectOPC().send({
         from: address,
         gas: estGas + 1,
         gasPrice: await this.getFairGasPrice()
@@ -477,7 +477,7 @@ export class Pool extends SmartContract {
     } catch (e) {
       LoggerInstance.error(`ERROR: Failed to swap exact amount in : ${e.message}`)
     }
-    return result
+    return trxReceipt
   }
 
   /**
@@ -496,12 +496,12 @@ export class Pool extends SmartContract {
       throw new Error(`Caller is not MarketFeeCollector`)
     }
     const pool = this.getContract(poolAddress)
-    let result = null
+    let trxReceipt = null
     const estGas = await calculateEstimatedGas(address, pool.methods.collectMarketFee)
     if (estimateGas) return estGas
 
     try {
-      result = await pool.methods.collectMarketFee().send({
+      trxReceipt = await pool.methods.collectMarketFee().send({
         from: address,
         gas: estGas + 1,
         gasPrice: await this.getFairGasPrice()
@@ -509,7 +509,7 @@ export class Pool extends SmartContract {
     } catch (e) {
       LoggerInstance.error(`ERROR: Failed to swap exact amount in : ${e.message}`)
     }
-    return result
+    return trxReceipt
   }
 
   /**
@@ -531,7 +531,7 @@ export class Pool extends SmartContract {
       throw new Error(`Caller is not MarketFeeCollector`)
     }
     const pool = this.getContract(poolAddress)
-    let result = null
+    let trxReceipt = null
 
     const estGas = await calculateEstimatedGas(
       address,
@@ -542,7 +542,7 @@ export class Pool extends SmartContract {
     if (estimateGas) return estGas
 
     try {
-      result = await pool.methods
+      trxReceipt = await pool.methods
         .updatePublishMarketFee(
           newPublishMarketAddress,
           this.web3.utils.toWei(newPublishMarketSwapFee)
@@ -555,7 +555,7 @@ export class Pool extends SmartContract {
     } catch (e) {
       LoggerInstance.error(`ERROR: Failed to updatePublishMarketFee : ${e.message}`)
     }
-    return result
+    return trxReceipt
   }
 
   /**
@@ -599,7 +599,7 @@ export class Pool extends SmartContract {
 
     const maxPrice = amountsInOutMaxFee.maxPrice
       ? await this.amountToUnits(
-          await this.getBaseToken(poolAddress),
+          await this.getBasetoken(poolAddress),
           amountsInOutMaxFee.maxPrice
         )
       : MAX_UINT_256
@@ -621,9 +621,9 @@ export class Pool extends SmartContract {
     )
     if (estimateGas) return estGas
 
-    let result = null
+    let trxReceipt = null
     try {
-      result = await pool.methods
+      trxReceipt = await pool.methods
         .swapExactAmountIn(
           [
             tokenInOutMarket.tokenIn,
@@ -646,7 +646,7 @@ export class Pool extends SmartContract {
       LoggerInstance.error(`ERROR: Failed to swap exact amount in : ${e.message}`)
     }
 
-    return result
+    return trxReceipt
   }
 
   /**
@@ -665,7 +665,7 @@ export class Pool extends SmartContract {
     estimateGas?: G
   ): Promise<G extends false ? TransactionReceipt : number> {
     const pool = this.getContract(poolAddress)
-    let result = null
+    let trxReceipt = null
 
     const maxSwap = await this.getMaxSwapExactOut(poolAddress, tokenInOutMarket.tokenOut)
     if (new Decimal(amountsInOutMaxFee.tokenAmountOut).greaterThan(maxSwap)) {
@@ -686,7 +686,7 @@ export class Pool extends SmartContract {
 
     const maxPrice = amountsInOutMaxFee.maxPrice
       ? this.amountToUnits(
-          await this.getBaseToken(poolAddress),
+          await this.getBasetoken(poolAddress),
           amountsInOutMaxFee.maxPrice
         )
       : MAX_UINT_256
@@ -709,7 +709,7 @@ export class Pool extends SmartContract {
     if (estimateGas) return estGas
 
     try {
-      result = await pool.methods
+      trxReceipt = await pool.methods
         .swapExactAmountOut(
           [
             tokenInOutMarket.tokenIn,
@@ -731,7 +731,7 @@ export class Pool extends SmartContract {
     } catch (e) {
       LoggerInstance.error(`ERROR: Failed to swap exact amount out: ${e.message}`)
     }
-    return result
+    return trxReceipt
   }
 
   /**
@@ -754,8 +754,8 @@ export class Pool extends SmartContract {
     estimateGas?: G
   ): Promise<G extends false ? TransactionReceipt : number> {
     const pool = this.getContract(poolAddress)
-    let result = null
-    const tokenIn = await this.getBaseToken(poolAddress)
+    let trxReceipt = null
+    const tokenIn = await this.getBasetoken(poolAddress)
     const maxSwap = await this.getMaxAddLiquidity(poolAddress, tokenIn)
     if (new Decimal(tokenAmountIn).greaterThan(maxSwap)) {
       throw new Error(`tokenAmountOut is greater than ${maxSwap.toString()}`)
@@ -775,7 +775,7 @@ export class Pool extends SmartContract {
     if (estimateGas) return estGas
 
     try {
-      result = await pool.methods
+      trxReceipt = await pool.methods
         .joinswapExternAmountIn(
           amountInFormatted,
           this.web3.utils.toWei(minPoolAmountOut)
@@ -789,7 +789,7 @@ export class Pool extends SmartContract {
       LoggerInstance.error(`ERROR: Failed to pay tokens in order to \
       join the pool: ${e.message}`)
     }
-    return result
+    return trxReceipt
   }
 
   /**
@@ -803,7 +803,7 @@ export class Pool extends SmartContract {
    * @param {number} poolDecimals optional number of decimals of the poool
    * @return {TransactionReceipt}
    */
-  async exitswapPoolAmountIn<G extends boolean = false>(
+  async exitSwapPoolAmountIn<G extends boolean = false>(
     account: string,
     poolAddress: string,
     poolAmountIn: string,
@@ -812,8 +812,8 @@ export class Pool extends SmartContract {
     estimateGas?: G
   ): Promise<G extends false ? TransactionReceipt : number> {
     const pool = this.getContract(poolAddress)
-    let result = null
-    const tokenOut = await this.getBaseToken(poolAddress)
+    let trxReceipt = null
+    const tokenOut = await this.getBasetoken(poolAddress)
 
     const tokenAmountOut = await this.calcSingleOutGivenPoolIn(
       poolAddress,
@@ -827,7 +827,7 @@ export class Pool extends SmartContract {
     }
 
     const minTokenOutFormatted = await this.amountToUnits(
-      await this.getBaseToken(poolAddress),
+      await this.getBasetoken(poolAddress),
       minTokenAmountOut,
       poolDecimals
     )
@@ -840,7 +840,7 @@ export class Pool extends SmartContract {
     if (estimateGas) return estGas
 
     try {
-      result = await pool.methods
+      trxReceipt = await pool.methods
         .exitswapPoolAmountIn(this.web3.utils.toWei(poolAmountIn), minTokenOutFormatted)
         .send({
           from: account,
@@ -850,7 +850,7 @@ export class Pool extends SmartContract {
     } catch (e) {
       LoggerInstance.error(`ERROR: Failed to pay pool shares into the pool: ${e.message}`)
     }
-    return result
+    return trxReceipt
   }
 
   /**
@@ -945,7 +945,7 @@ export class Pool extends SmartContract {
     let amount = null
 
     try {
-      const result = await pool.methods
+      const amountIn = await pool.methods
         .getAmountInExactOut(
           tokenIn,
           tokenOut,
@@ -956,27 +956,27 @@ export class Pool extends SmartContract {
       amount = {
         tokenAmount: await this.unitsToAmount(
           tokenOut,
-          result.tokenAmountIn,
+          amountIn.tokenAmountIn,
           tokenOutDecimals
         ),
         liquidityProviderSwapFeeAmount: await this.unitsToAmount(
           tokenIn,
-          result.lpFeeAmount,
+          amountIn.lpFeeAmount,
           tokenInDecimals
         ),
         oceanFeeAmount: await this.unitsToAmount(
           tokenIn,
-          result.oceanFeeAmount,
+          amountIn.oceanFeeAmount,
           tokenInDecimals
         ),
         publishMarketSwapFeeAmount: await this.unitsToAmount(
           tokenIn,
-          result.publishMarketSwapFeeAmount,
+          amountIn.publishMarketSwapFeeAmount,
           tokenInDecimals
         ),
         consumeMarketSwapFeeAmount: await this.unitsToAmount(
           tokenIn,
-          result.consumeMarketSwapFeeAmount,
+          amountIn.consumeMarketSwapFeeAmount,
           tokenInDecimals
         )
       }
@@ -1021,7 +1021,7 @@ export class Pool extends SmartContract {
     let amount = null
 
     try {
-      const result = await pool.methods
+      const amountOut = await pool.methods
         .getAmountOutExactIn(
           tokenIn,
           tokenOut,
@@ -1033,27 +1033,27 @@ export class Pool extends SmartContract {
       amount = {
         tokenAmount: await this.unitsToAmount(
           tokenOut,
-          result.tokenAmountOut,
+          amountOut.tokenAmountOut,
           tokenOutDecimals
         ),
         liquidityProviderSwapFeeAmount: await this.unitsToAmount(
           tokenIn,
-          result.lpFeeAmount,
+          amountOut.lpFeeAmount,
           tokenInDecimals
         ),
         oceanFeeAmount: await this.unitsToAmount(
           tokenIn,
-          result.oceanFeeAmount,
+          amountOut.oceanFeeAmount,
           tokenInDecimals
         ),
         publishMarketSwapFeeAmount: await this.unitsToAmount(
           tokenIn,
-          result.publishMarketSwapFeeAmount,
+          amountOut.publishMarketSwapFeeAmount,
           tokenInDecimals
         ),
         consumeMarketSwapFeeAmount: await this.unitsToAmount(
           tokenIn,
-          result.consumeMarketSwapFeeAmount,
+          amountOut.consumeMarketSwapFeeAmount,
           tokenInDecimals
         )
       }
@@ -1081,14 +1081,14 @@ export class Pool extends SmartContract {
     let amount = null
 
     try {
-      const result = await pool.methods
+      const poolOut = await pool.methods
         .calcPoolOutSingleIn(
           tokenIn,
           await this.amountToUnits(tokenIn, tokenAmountIn, tokenInDecimals)
         )
         .call()
 
-      amount = await this.unitsToAmount(poolAddress, result, poolDecimals)
+      amount = await this.unitsToAmount(poolAddress, poolOut, poolDecimals)
     } catch (e) {
       LoggerInstance.error(
         `ERROR: Failed to calculate PoolOutGivenSingleIn : ${e.message}`
@@ -1119,11 +1119,11 @@ export class Pool extends SmartContract {
       poolDecimals
     )
     try {
-      const result = await pool.methods
+      const singleIn = await pool.methods
         .calcSingleInPoolOut(tokenIn, amountFormatted)
         .call()
 
-      amount = await this.unitsToAmount(tokenIn, result, tokenInDecimals)
+      amount = await this.unitsToAmount(tokenIn, singleIn, tokenInDecimals)
     } catch (e) {
       LoggerInstance.error(
         `ERROR: Failed to calculate SingleInGivenPoolOut : ${e.message}`
@@ -1150,13 +1150,13 @@ export class Pool extends SmartContract {
     let amount = null
 
     try {
-      const result = await pool.methods
+      const singleOut = await pool.methods
         .calcSingleOutPoolIn(
           tokenOut,
           await this.amountToUnits(poolAddress, poolAmountIn, poolDecimals)
         )
         .call()
-      amount = await this.unitsToAmount(tokenOut, result, tokenOutDecimals)
+      amount = await this.unitsToAmount(tokenOut, singleOut, tokenOutDecimals)
     } catch (e) {
       LoggerInstance.error(`ERROR: Failed to calculate SingleOutGivenPoolIn : ${e}`)
     }
@@ -1181,14 +1181,14 @@ export class Pool extends SmartContract {
     let amount = null
 
     try {
-      const result = await pool.methods
+      const poolIn = await pool.methods
         .calcPoolInSingleOut(
           tokenOut,
           await this.amountToUnits(tokenOut, tokenAmountOut, tokenOutDecimals)
         )
         .call()
 
-      amount = await this.unitsToAmount(poolAddress, result, poolDecimals)
+      amount = await this.unitsToAmount(poolAddress, poolIn, poolDecimals)
     } catch (e) {
       LoggerInstance.error(
         `ERROR: Failed to calculate PoolInGivenSingleOut : ${e.message}`
