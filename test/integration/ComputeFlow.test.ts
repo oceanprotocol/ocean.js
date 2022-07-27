@@ -257,7 +257,7 @@ async function createAsset(
   }
   const erc20ParamsAsset: Erc20CreateParams = {
     templateIndex: 1,
-    cap: '10',
+    cap: '100000',
     feeAmount: '0',
     paymentCollector: ZERO_ADDRESS,
     feeToken: ZERO_ADDRESS,
