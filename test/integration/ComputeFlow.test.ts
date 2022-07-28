@@ -439,6 +439,7 @@ describe('Simple compute tests', async () => {
       providerUrl,
       consumerAccount
     )
+    console.log('providerInitializeComputeResults =', providerInitializeComputeResults)
     assert(
       !('error' in providerInitializeComputeResults.algorithm),
       'Cannot order algorithm'
@@ -459,6 +460,8 @@ describe('Simple compute tests', async () => {
         0
       )
     }
+    console.log(' asset =', assets[0])
+    console.log(' algo =', assets[0])
     const computeJobs = await ProviderInstance.computeStart(
       providerUrl,
       web3,
@@ -467,6 +470,7 @@ describe('Simple compute tests', async () => {
       assets[0],
       algo
     )
+    console.log(' computeJobs response =', computeJobs)
     assert(computeJobs, 'Cannot start compute job')
     computeJobId = computeJobs[0].jobId
   })
