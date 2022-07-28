@@ -16,7 +16,6 @@ import {
   ValidateMetadata,
   DDO,
   DatatokenCreateParams,
-  PoolCreationParams,
   FreCreationParams,
   DispenserCreationParams
 } from '../../src/@types'
@@ -93,90 +92,6 @@ describe('Publish tests', async () => {
       addresses.ERC721Factory,
       '100000'
     )
-  })
-
-  it('should publish a dataset with pool (create NFT + Datatoken + pool) and with Metdata proof', async () => {
-    const poolDdo: DDO = { ...genericAsset }
-
-    const nftParams: NftCreateData = {
-      name: 'testNftPool',
-      symbol: 'TSTP',
-      templateIndex: 1,
-      tokenURI: '',
-      transferable: true,
-      owner: publisherAccount
-    }
-
-    const datatokenParams: DatatokenCreateParams = {
-      templateIndex: 1,
-      cap: '100000',
-      feeAmount: '0',
-      paymentCollector: ZERO_ADDRESS,
-      feeToken: ZERO_ADDRESS,
-      minter: publisherAccount,
-      mpFeeAddress: ZERO_ADDRESS
-    }
-
-    const poolParams: PoolCreationParams = {
-      ssContract: addresses.Staking,
-      baseTokenAddress: addresses.MockDAI,
-      baseTokenSender: addresses.ERC721Factory,
-      publisherAddress: publisherAccount,
-      marketFeeCollector: publisherAccount,
-      poolTemplateAddress: addresses.poolTemplate,
-      rate: '1',
-      baseTokenDecimals: 18,
-      vestingAmount: '10000',
-      vestedBlocks: 2500000,
-      initialBaseTokenLiquidity: '2000',
-      swapFeeLiquidityProvider: '0.001',
-      swapFeeMarketRunner: '0.001'
-    }
-
-    const bundleNFT = await factory.createNftWithDatatokenWithPool(
-      publisherAccount,
-      nftParams,
-      datatokenParams,
-      poolParams
-    )
-
-    const nftAddress = bundleNFT.events.NFTCreated.returnValues[0]
-    const datatokenAddress = bundleNFT.events.TokenCreated.returnValues[0]
-
-    const encryptedFiles = await ProviderInstance.encrypt(assetUrl, providerUrl)
-
-    poolDdo.metadata.name = 'test-dataset-pool'
-    poolDdo.services[0].files = await encryptedFiles
-    poolDdo.services[0].datatokenAddress = datatokenAddress
-
-    poolDdo.nftAddress = nftAddress
-    const chain = await web3.eth.getChainId()
-    poolDdo.chainId = chain
-    poolDdo.id =
-      'did:op:' + SHA256(web3.utils.toChecksumAddress(nftAddress) + chain.toString(10))
-
-    const AssetValidation: ValidateMetadata = await aquarius.validate(poolDdo)
-    assert(AssetValidation.valid === true, 'Published asset is not valid')
-
-    const encryptedDdo = await ProviderInstance.encrypt(poolDdo, providerUrl)
-    const encryptedResponse = await encryptedDdo
-    const metadataHash = getHash(JSON.stringify(poolDdo))
-    // just to make sure that our hash matches one computed by aquarius
-    assert(AssetValidation.hash === '0x' + metadataHash, 'Metadata hash is a missmatch')
-    await nft.setMetadata(
-      nftAddress,
-      publisherAccount,
-      0,
-      providerUrl,
-      '',
-      '0x2',
-      encryptedResponse,
-      '0x' + metadataHash,
-      [AssetValidation.proof]
-    )
-
-    const resolvedDDO = await aquarius.waitForAqua(poolDdo.id)
-    assert(resolvedDDO, 'Cannot fetch DDO from Aquarius')
   })
 
   it('should publish a dataset with fixed price (create NFT + Datoken + fixed price) with an explicit empty Metadata Proof', async () => {

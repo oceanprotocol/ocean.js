@@ -16,8 +16,7 @@ import {
 import {
   ProviderFees,
   FreCreationParams,
-  DatatokenCreateParams,
-  PoolCreationParams
+  DatatokenCreateParams
 } from '../../../src/@types'
 
 describe('Nft Factory test', () => {
@@ -124,53 +123,6 @@ describe('Nft Factory test', () => {
 
     expect((await nftFactory.getCurrentNFTCount()) === currentNFTCount + 1)
     expect((await nftFactory.getCurrentTokenCount()) === currentTokenCount + 1)
-  })
-
-  it('#createNftErcWithPool- should create an NFT, a Datatoken and a pool DT/DAI', async () => {
-    // we prepare transaction parameters objects
-    const poolParams: PoolCreationParams = {
-      ssContract: contracts.sideStakingAddress,
-      baseTokenAddress: contracts.daiAddress,
-      baseTokenSender: contracts.nftFactoryAddress,
-      publisherAddress: nftOwner,
-      marketFeeCollector: nftOwner,
-      poolTemplateAddress: contracts.poolTemplateAddress,
-      rate: '1',
-      baseTokenDecimals: 18,
-      vestingAmount: '10000',
-      vestedBlocks: 2500000,
-      initialBaseTokenLiquidity: '2000',
-      swapFeeLiquidityProvider: FEE,
-      swapFeeMarketRunner: FEE
-    }
-
-    await transfer(
-      web3,
-      factoryOwner,
-      contracts.daiAddress,
-      nftOwner,
-      poolParams.vestingAmount
-    )
-
-    await approve(
-      web3,
-      nftOwner,
-      contracts.daiAddress,
-      contracts.nftFactoryAddress,
-      poolParams.vestingAmount
-    )
-
-    const txReceipt = await nftFactory.createNftWithDatatokenWithPool(
-      nftOwner,
-      nftData,
-      dtParams,
-      poolParams
-    )
-
-    // events have been emitted
-    expect(txReceipt.events.NFTCreated.event === 'NFTCreated')
-    expect(txReceipt.events.TokenCreated.event === 'TokenCreated')
-    expect(txReceipt.events.NewPool.event === 'NewPool')
   })
 
   it('#createNftErcWithFixedRate- should create an NFT, a datatoken and create a Fixed Rate Exchange', async () => {

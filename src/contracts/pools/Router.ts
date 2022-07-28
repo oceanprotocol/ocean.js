@@ -76,13 +76,6 @@ export class Router extends SmartContractWithAddress {
     return await this.contract.methods.factory().call()
   }
 
-  /** Check if an address is a pool template contract.
-   * @return {Promise<boolean>} true if is a Template
-   */
-  public async isPoolTemplate(address: string): Promise<boolean> {
-    return await this.contract.methods.isPoolTemplate(address).call()
-  }
-
   /**
    * Add a new token to oceanTokens list, pools with baseToken in this list have NO opf Fee
    * @param {String} address caller address
@@ -111,40 +104,6 @@ export class Router extends SmartContractWithAddress {
       gas: estGas + 1,
       gasPrice: await this.getFairGasPrice()
     })
-
-    return trxReceipt
-  }
-
-  /**
-   * Remove a token from oceanTokens list, pools without baseToken in this list have a opf Fee
-   * @param {String} address
-   * @param {String} tokenAddress address to remove
-   * @return {Promise<TransactionReceipt>}
-   */
-  public async removeApprovedToken<G extends boolean = false>(
-    address: string,
-    tokenAddress: string,
-    estimateGas?: G
-  ): Promise<G extends false ? TransactionReceipt : number> {
-    if ((await this.getOwner()) !== address) {
-      throw new Error(`Caller is not Router Owner`)
-    }
-
-    const estGas = await calculateEstimatedGas(
-      address,
-      this.contract.methods.removeApprovedToken,
-      tokenAddress
-    )
-    if (estimateGas) return estGas
-
-    // Invoke createToken function of the contract
-    const trxReceipt = await this.contract.methods
-      .removeApprovedToken(tokenAddress)
-      .send({
-        from: address,
-        gas: estGas + 1,
-        gasPrice: await this.getFairGasPrice()
-      })
 
     return trxReceipt
   }
@@ -397,72 +356,6 @@ export class Router extends SmartContractWithAddress {
     // Invoke createToken function of the contract
     const trxReceipt = await this.contract.methods
       .updateOPCFee(newSwapOceanFee, newSwapNonOceanFee, newConsumeFee, newProviderFee)
-      .send({
-        from: address,
-        gas: estGas + 1,
-        gasPrice: await this.getFairGasPrice()
-      })
-
-    return trxReceipt
-  }
-
-  /**
-   * Add a new template to poolTemplates mapping, after template is added,it can be used
-   * @param {String} address
-   * @param {String} templateAddress template address to add
-   * @return {Promise<TransactionReceipt>}
-   */
-  public async addPoolTemplate<G extends boolean = false>(
-    address: string,
-    templateAddress: string,
-    estimateGas?: G
-  ): Promise<G extends false ? TransactionReceipt : number> {
-    if ((await this.getOwner()) !== address) {
-      throw new Error(`Caller is not Router Owner`)
-    }
-
-    const estGas = await calculateEstimatedGas(
-      address,
-      this.contract.methods.addPoolTemplate,
-      templateAddress
-    )
-    if (estimateGas) return estGas
-
-    // Invoke createToken function of the contract
-    const trxReceipt = await this.contract.methods.addPoolTemplate(templateAddress).send({
-      from: address,
-      gas: estGas + 1,
-      gasPrice: await this.getFairGasPrice()
-    })
-
-    return trxReceipt
-  }
-
-  /**
-   * Remove template from poolTemplates mapping, after template is removed,it can be used anymore
-   * @param {String} address
-   * @param {String} templateAddress template address to remove
-   * @return {Promise<TransactionReceipt>}
-   */
-  public async removePoolTemplate<G extends boolean = false>(
-    address: string,
-    templateAddress: string,
-    estimateGas?: G
-  ): Promise<G extends false ? TransactionReceipt : number> {
-    if ((await this.getOwner()) !== address) {
-      throw new Error(`Caller is not Router Owner`)
-    }
-
-    const estGas = await calculateEstimatedGas(
-      address,
-      this.contract.methods.removePoolTemplate,
-      templateAddress
-    )
-    if (estimateGas) return estGas
-
-    // Invoke createToken function of the contract
-    const trxReceipt = await this.contract.methods
-      .removePoolTemplate(templateAddress)
       .send({
         from: address,
         gas: estGas + 1,

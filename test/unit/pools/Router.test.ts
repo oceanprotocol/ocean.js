@@ -11,7 +11,7 @@ import {
   approve,
   ZERO_ADDRESS
 } from '../../../src'
-import { DatatokenCreateParams, PoolCreationParams, Operation } from '../../../src/@types'
+import { DatatokenCreateParams, Operation } from '../../../src/@types'
 
 const { keccak256 } = require('@ethersproject/keccak256')
 
@@ -116,104 +116,100 @@ describe('Router unit test', () => {
     expect(await router.isFixedPrice(contracts.daiAddress)).to.equal(false)
   })
 
-  it('#isPoolTemplate - should return true if in poolTemplates list', async () => {
-    expect(await router.isPoolTemplate(contracts.poolTemplateAddress)).to.equal(true)
-    expect(await router.isPoolTemplate(contracts.fixedRateAddress)).to.equal(false)
-  })
+  // replace this with fre assets
+  // it('#buyDatatokenBatch - should buy multiple DT in one call', async () => {
+  //   // APPROVE DAI
+  //   const daiContract = new web3.eth.Contract(
+  //     MockERC20.abi as AbiItem[],
+  //     contracts.daiAddress
+  //   )
 
-  it('#buyDatatokenBatch - should buy multiple DT in one call', async () => {
-    // APPROVE DAI
-    const daiContract = new web3.eth.Contract(
-      MockERC20.abi as AbiItem[],
-      contracts.daiAddress
-    )
+  //   await daiContract.methods
+  //     .transfer(user1, web3.utils.toWei(DAI_AMOUNT))
+  //     .send({ from: factoryOwner })
 
-    await daiContract.methods
-      .transfer(user1, web3.utils.toWei(DAI_AMOUNT))
-      .send({ from: factoryOwner })
+  //   await approve(web3, user1, contracts.daiAddress, contracts.routerAddress, DAI_AMOUNT)
 
-    await approve(web3, user1, contracts.daiAddress, contracts.routerAddress, DAI_AMOUNT)
+  //   // CREATE A FIRST POOL
+  //   const poolParams: PoolCreationParams = {
+  //     ssContract: contracts.sideStakingAddress,
+  //     baseTokenAddress: contracts.daiAddress,
+  //     baseTokenSender: contracts.nftFactoryAddress,
+  //     publisherAddress: factoryOwner,
+  //     marketFeeCollector: factoryOwner,
+  //     poolTemplateAddress: contracts.poolTemplateAddress,
+  //     rate: RATE,
+  //     baseTokenDecimals: TOKEN_DECIMALS,
+  //     vestingAmount: VESTING_AMOUNT,
+  //     vestedBlocks: VESTED_BLOCKS,
+  //     initialBaseTokenLiquidity: BASE_TOKEN_LIQUIDITY,
+  //     swapFeeLiquidityProvider: FEE,
+  //     swapFeeMarketRunner: FEE
+  //   }
 
-    // CREATE A FIRST POOL
-    const poolParams: PoolCreationParams = {
-      ssContract: contracts.sideStakingAddress,
-      baseTokenAddress: contracts.daiAddress,
-      baseTokenSender: contracts.nftFactoryAddress,
-      publisherAddress: factoryOwner,
-      marketFeeCollector: factoryOwner,
-      poolTemplateAddress: contracts.poolTemplateAddress,
-      rate: RATE,
-      baseTokenDecimals: TOKEN_DECIMALS,
-      vestingAmount: VESTING_AMOUNT,
-      vestedBlocks: VESTED_BLOCKS,
-      initialBaseTokenLiquidity: BASE_TOKEN_LIQUIDITY,
-      swapFeeLiquidityProvider: FEE,
-      swapFeeMarketRunner: FEE
-    }
+  //   const nftFactory = new NftFactory(contracts.nftFactoryAddress, web3)
+  //   const txReceipt = await nftFactory.createNftWithDatatokenWithPool(
+  //     factoryOwner,
+  //     NFT_DATA,
+  //     ERC_PARAMS,
+  //     poolParams
+  //   )
 
-    const nftFactory = new NftFactory(contracts.nftFactoryAddress, web3)
-    const txReceipt = await nftFactory.createNftWithDatatokenWithPool(
-      factoryOwner,
-      NFT_DATA,
-      ERC_PARAMS,
-      poolParams
-    )
+  //   const datatokenAddress = txReceipt.events.TokenCreated.returnValues.newTokenAddress
+  //   const pool1 = txReceipt.events.NewPool.returnValues.poolAddress
 
-    const datatokenAddress = txReceipt.events.TokenCreated.returnValues.newTokenAddress
-    const pool1 = txReceipt.events.NewPool.returnValues.poolAddress
+  //   // CREATE A SECOND POOL
+  //   const txReceipt2 = await nftFactory.createNftWithDatatokenWithPool(
+  //     factoryOwner,
+  //     NFT_DATA,
+  //     ERC_PARAMS,
+  //     poolParams
+  //   )
 
-    // CREATE A SECOND POOL
-    const txReceipt2 = await nftFactory.createNftWithDatatokenWithPool(
-      factoryOwner,
-      NFT_DATA,
-      ERC_PARAMS,
-      poolParams
-    )
+  //   const datatoken2Address = txReceipt2.events.TokenCreated.returnValues.newTokenAddress
+  //   const pool2 = txReceipt2.events.NewPool.returnValues.poolAddress
 
-    const datatoken2Address = txReceipt2.events.TokenCreated.returnValues.newTokenAddress
-    const pool2 = txReceipt2.events.NewPool.returnValues.poolAddress
+  //   // user1 has no dt1
+  //   expect(await balance(web3, datatokenAddress, user1)).to.equal('0')
+  //   // user1 has no dt2
+  //   expect(await balance(web3, datatoken2Address, user1)).to.equal('0')
 
-    // user1 has no dt1
-    expect(await balance(web3, datatokenAddress, user1)).to.equal('0')
-    // user1 has no dt2
-    expect(await balance(web3, datatoken2Address, user1)).to.equal('0')
+  //   // we now can prepare the Operations objects
 
-    // we now can prepare the Operations objects
+  //   // operation: 0 - swapExactAmountIn
+  //   // 1 - swapExactAmountOut
+  //   // 2 - FixedRateExchange
+  //   // 3 - Dispenser
+  //   const operations1: Operation = {
+  //     exchangeIds: EXCHANGE_IDS, // used only for FixedRate or Dispenser, but needs to be filled even for pool
+  //     source: pool1, // pool Address
+  //     operation: 0, // swapExactAmountIn
+  //     tokenIn: contracts.daiAddress,
+  //     amountsIn: AMOUNTS_IN, // when swapExactAmountIn is EXACT amount IN
+  //     tokenOut: datatokenAddress,
+  //     amountsOut: AMOUNTS_OUT, // when swapExactAmountIn is MIN amount OUT
+  //     maxPrice: MAX_PRICE, // max price (only for pools),
+  //     swapMarketFee: SWAP_MARKET_FEE,
+  //     marketFeeAddress: factoryOwner
+  //   }
 
-    // operation: 0 - swapExactAmountIn
-    // 1 - swapExactAmountOut
-    // 2 - FixedRateExchange
-    // 3 - Dispenser
-    const operations1: Operation = {
-      exchangeIds: EXCHANGE_IDS, // used only for FixedRate or Dispenser, but needs to be filled even for pool
-      source: pool1, // pool Address
-      operation: 0, // swapExactAmountIn
-      tokenIn: contracts.daiAddress,
-      amountsIn: AMOUNTS_IN, // when swapExactAmountIn is EXACT amount IN
-      tokenOut: datatokenAddress,
-      amountsOut: AMOUNTS_OUT, // when swapExactAmountIn is MIN amount OUT
-      maxPrice: MAX_PRICE, // max price (only for pools),
-      swapMarketFee: SWAP_MARKET_FEE,
-      marketFeeAddress: factoryOwner
-    }
+  //   const operations2: Operation = {
+  //     exchangeIds: EXCHANGE_IDS, // used only for FixedRate or Dispenser, but needs to be filled even for pool
+  //     source: pool2, // pool Address
+  //     operation: 0, // swapExactAmountIn
+  //     tokenIn: contracts.daiAddress,
+  //     amountsIn: AMOUNTS_IN, // when swapExactAmountIn is EXACT amount IN
+  //     tokenOut: datatoken2Address,
+  //     amountsOut: AMOUNTS_OUT, // when swapExactAmountIn is MIN amount OUT
+  //     maxPrice: MAX_PRICE, // max price (only for pools),
+  //     swapMarketFee: SWAP_MARKET_FEE,
+  //     marketFeeAddress: factoryOwner
+  //   }
 
-    const operations2: Operation = {
-      exchangeIds: EXCHANGE_IDS, // used only for FixedRate or Dispenser, but needs to be filled even for pool
-      source: pool2, // pool Address
-      operation: 0, // swapExactAmountIn
-      tokenIn: contracts.daiAddress,
-      amountsIn: AMOUNTS_IN, // when swapExactAmountIn is EXACT amount IN
-      tokenOut: datatoken2Address,
-      amountsOut: AMOUNTS_OUT, // when swapExactAmountIn is MIN amount OUT
-      maxPrice: MAX_PRICE, // max price (only for pools),
-      swapMarketFee: SWAP_MARKET_FEE,
-      marketFeeAddress: factoryOwner
-    }
+  //   await router.buyDatatokenBatch(user1, [operations1, operations2])
 
-    await router.buyDatatokenBatch(user1, [operations1, operations2])
-
-    // user1 got his dts
-    expect(+(await balance(web3, datatokenAddress, user1))).gt(0)
-    expect(+(await balance(web3, datatoken2Address, user1))).gt(0)
-  })
+  //   // user1 got his dts
+  //   expect(+(await balance(web3, datatokenAddress, user1))).gt(0)
+  //   expect(+(await balance(web3, datatoken2Address, user1))).gt(0)
+  // })
 })
