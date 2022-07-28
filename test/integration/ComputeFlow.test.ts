@@ -154,7 +154,8 @@ const algoDdoWithNoTimeout = {
         entrypoint: 'node $ALGO',
         image: 'ubuntu',
         tag: 'latest',
-        checksum: '44e10daa6637893f4276bb8d7301eb35306ece50f61ca34dcab550'
+        checksum:
+          'sha256:bace9fb0d5923a675c894d5c815da75ffe35e24970166a48a4460a48ae6e0d19'
       }
     }
   },
@@ -195,7 +196,8 @@ const algoDdoWith1mTimeout = {
         entrypoint: 'node $ALGO',
         image: 'ubuntu',
         tag: 'latest',
-        checksum: '44e10daa6637893f4276bb8d7301eb35306ece50f61ca34dcab550'
+        checksum:
+          'sha256:bace9fb0d5923a675c894d5c815da75ffe35e24970166a48a4460a48ae6e0d19'
       }
     }
   },
@@ -461,18 +463,22 @@ describe('Simple compute tests', async () => {
       )
     }
     console.log(' asset =', assets[0])
-    console.log(' algo =', assets[0])
-    const computeJobs = await ProviderInstance.computeStart(
-      providerUrl,
-      web3,
-      consumerAccount,
-      computeEnv,
-      assets[0],
-      algo
-    )
-    console.log(' computeJobs response =', computeJobs)
-    assert(computeJobs, 'Cannot start compute job')
-    computeJobId = computeJobs[0].jobId
+    console.log(' algo =', algo)
+    try {
+      const computeJobs = await ProviderInstance.computeStart(
+        providerUrl,
+        web3,
+        consumerAccount,
+        computeEnv,
+        assets[0],
+        algo
+      )
+      console.log(' computeJobs response =', computeJobs)
+      assert(computeJobs, 'Cannot start compute job')
+      computeJobId = computeJobs[0].jobId
+    } catch (error) {
+      console.log(' error =', error)
+    }
   })
 
   it('Check compute status', async () => {
