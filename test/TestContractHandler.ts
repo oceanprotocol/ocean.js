@@ -1,7 +1,6 @@
 import Web3 from 'web3'
 import { AbiItem } from 'web3-utils/types'
 import OPFCommunityFeeCollector from '@oceanprotocol/contracts/artifacts/contracts/communityFee/OPFCommunityFeeCollector.sol/OPFCommunityFeeCollector.json'
-import PoolTemplate from '@oceanprotocol/contracts/artifacts/contracts/pools/balancer/BPool.sol/BPool.json'
 import ERC20Template from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC20Template.sol/ERC20Template.json'
 import ERC721Template from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC721Template.sol/ERC721Template.json'
 import MockERC20 from '@oceanprotocol/contracts/artifacts/contracts/utils/mock/MockERC20Decimals.sol/MockERC20Decimals.json'
@@ -48,7 +47,6 @@ const estimateGasAndDeployContract = async (
 
 export interface Addresses {
   opfCommunityFeeCollectorAddress: string
-  poolTemplateAddress: string
   datatokenTemplateAddress: string
   nftTemplateAddress: string
   oceanAddress: string
@@ -73,17 +71,6 @@ export const deployContracts = async (web3: Web3, owner: string): Promise<Addres
       OPFCommunityFeeCollector.abi as AbiItem[],
       OPFCommunityFeeCollector.bytecode,
       [owner, owner],
-      owner
-    ))
-
-  // deploy pool template
-  addresses.poolTemplateAddress =
-    configAddresses.poolTemplate ||
-    (await estimateGasAndDeployContract(
-      web3,
-      PoolTemplate.abi as AbiItem[],
-      PoolTemplate.bytecode,
-      [],
       owner
     ))
 
@@ -127,13 +114,7 @@ export const deployContracts = async (web3: Web3, owner: string): Promise<Addres
       web3,
       Router.abi as AbiItem[],
       Router.bytecode,
-      [
-        owner,
-        addresses.oceanAddress,
-        addresses.poolTemplateAddress,
-        addresses.opfCommunityFeeCollectorAddress,
-        []
-      ],
+      [owner, addresses.oceanAddress, addresses.opfCommunityFeeCollectorAddress, []],
       owner
     ))
 
