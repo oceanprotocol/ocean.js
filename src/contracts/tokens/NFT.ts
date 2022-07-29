@@ -1,7 +1,7 @@
 import { AbiItem } from 'web3-utils'
 import { TransactionReceipt } from 'web3-eth'
 import ERC721Template from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC721Template.sol/ERC721Template.json'
-import { LoggerInstance, generateDtName, calculateEstimatedGas } from '../../utils'
+import { generateDtName, calculateEstimatedGas } from '../../utils'
 import { MetadataProof, MetadataAndTokenURI, NftRoles } from '../../@types'
 import { SmartContract } from '..'
 
@@ -78,13 +78,7 @@ export class Nft extends SmartContract {
         gasPrice: await this.getFairGasPrice()
       })
 
-    let tokenAddress = null
-    try {
-      tokenAddress = trxReceipt.events.TokenCreated.returnValues[0]
-    } catch (e) {
-      LoggerInstance.error(`ERROR: Failed to create datatoken : ${e.message}`)
-    }
-    return tokenAddress
+    return trxReceipt?.events?.TokenCreated?.returnValues?.[0]
   }
 
   /**

@@ -2,7 +2,7 @@ import { AbiItem } from 'web3-utils'
 import { TransactionReceipt } from 'web3-eth'
 import Decimal from 'decimal.js'
 import DispenserAbi from '@oceanprotocol/contracts/artifacts/contracts/pools/dispenser/Dispenser.sol/Dispenser.json'
-import { LoggerInstance, calculateEstimatedGas } from '../../utils/'
+import { calculateEstimatedGas } from '../../utils/'
 import { Datatoken, SmartContractWithAddress } from '..'
 import { DispenserToken } from '../../@types'
 
@@ -17,16 +17,14 @@ export class Dispenser extends SmartContractWithAddress {
    * @return {Promise<FixedPricedExchange>} Exchange details
    */
   public async status(dtAdress: string): Promise<DispenserToken> {
-    try {
-      const status: DispenserToken = await this.contract.methods.status(dtAdress).call()
-      status.maxTokens = this.web3.utils.fromWei(status.maxTokens)
-      status.maxBalance = this.web3.utils.fromWei(status.maxBalance)
-      status.balance = this.web3.utils.fromWei(status.balance)
-      return status
-    } catch (e) {
-      LoggerInstance.warn(`No dispenser available for datatoken: ${dtAdress}`)
+    const status: DispenserToken = await this.contract.methods.status(dtAdress).call()
+    if (!status) {
+      throw new Error(`Np dispenser found for the given datatoken address`)
     }
-    return null
+    status.maxTokens = this.web3.utils.fromWei(status.maxTokens)
+    status.maxBalance = this.web3.utils.fromWei(status.maxBalance)
+    status.balance = this.web3.utils.fromWei(status.balance)
+    return status
   }
 
   /**
@@ -89,32 +87,27 @@ export class Dispenser extends SmartContractWithAddress {
     address: string,
     estimateGas?: G
   ): Promise<G extends false ? TransactionReceipt : number> {
-    try {
-      const estGas = await calculateEstimatedGas(
-        address,
-        this.contract.methods.activate,
+    const estGas = await calculateEstimatedGas(
+      address,
+      this.contract.methods.activate,
+      dtAddress,
+      this.web3.utils.toWei(maxTokens),
+      this.web3.utils.toWei(maxBalance)
+    )
+    if (estimateGas) return estGas
+
+    const trxReceipt = await this.contract.methods
+      .activate(
         dtAddress,
         this.web3.utils.toWei(maxTokens),
         this.web3.utils.toWei(maxBalance)
       )
-      if (estimateGas) return estGas
-
-      const trxReceipt = await this.contract.methods
-        .activate(
-          dtAddress,
-          this.web3.utils.toWei(maxTokens),
-          this.web3.utils.toWei(maxBalance)
-        )
-        .send({
-          from: address,
-          gas: estGas + 1,
-          gasPrice: await this.getFairGasPrice()
-        })
-      return trxReceipt
-    } catch (e) {
-      LoggerInstance.error(`ERROR: Failed to activate dispenser: ${e.message}`)
-    }
-    return null
+      .send({
+        from: address,
+        gas: estGas + 1,
+        gasPrice: await this.getFairGasPrice()
+      })
+    return trxReceipt
   }
 
   /**
@@ -128,24 +121,19 @@ export class Dispenser extends SmartContractWithAddress {
     address: string,
     estimateGas?: G
   ): Promise<G extends false ? TransactionReceipt : number> {
-    try {
-      const estGas = await calculateEstimatedGas(
-        address,
-        this.contract.methods.deactivate,
-        dtAddress
-      )
-      if (estimateGas) return estGas
+    const estGas = await calculateEstimatedGas(
+      address,
+      this.contract.methods.deactivate,
+      dtAddress
+    )
+    if (estimateGas) return estGas
 
-      const trxReceipt = await this.contract.methods.deactivate(dtAddress).send({
-        from: address,
-        gas: estGas + 1,
-        gasPrice: await this.getFairGasPrice()
-      })
-      return trxReceipt
-    } catch (e) {
-      LoggerInstance.error(`ERROR: Failed to activate dispenser: ${e.message}`)
-    }
-    return null
+    const trxReceipt = await this.contract.methods.deactivate(dtAddress).send({
+      from: address,
+      gas: estGas + 1,
+      gasPrice: await this.getFairGasPrice()
+    })
+    return trxReceipt
   }
 
   /**
@@ -161,27 +149,22 @@ export class Dispenser extends SmartContractWithAddress {
     newAllowedSwapper: string,
     estimateGas?: G
   ): Promise<G extends false ? TransactionReceipt : number> {
-    try {
-      const estGas = await calculateEstimatedGas(
-        address,
-        this.contract.methods.setAllowedSwapper,
-        dtAddress,
-        newAllowedSwapper
-      )
-      if (estimateGas) return estGas
+    const estGas = await calculateEstimatedGas(
+      address,
+      this.contract.methods.setAllowedSwapper,
+      dtAddress,
+      newAllowedSwapper
+    )
+    if (estimateGas) return estGas
 
-      const trxReceipt = await this.contract.methods
-        .setAllowedSwapper(dtAddress, newAllowedSwapper)
-        .send({
-          from: address,
-          gas: estGas + 1,
-          gasPrice: await this.getFairGasPrice()
-        })
-      return trxReceipt
-    } catch (e) {
-      LoggerInstance.error(`ERROR: Failed to activate dispenser: ${e.message}`)
-    }
-    return null
+    const trxReceipt = await this.contract.methods
+      .setAllowedSwapper(dtAddress, newAllowedSwapper)
+      .send({
+        from: address,
+        gas: estGas + 1,
+        gasPrice: await this.getFairGasPrice()
+      })
+    return trxReceipt
   }
 
   /**
@@ -210,19 +193,14 @@ export class Dispenser extends SmartContractWithAddress {
     )
     if (estimateGas) return estGas
 
-    try {
-      const trxReceipt = await this.contract.methods
-        .dispense(dtAddress, this.web3.utils.toWei(amount), destination)
-        .send({
-          from: address,
-          gas: estGas + 1,
-          gasPrice: await this.getFairGasPrice()
-        })
-      return trxReceipt
-    } catch (e) {
-      LoggerInstance.error(`ERROR: Failed to dispense tokens: ${e.message}`)
-    }
-    return null
+    const trxReceipt = await this.contract.methods
+      .dispense(dtAddress, this.web3.utils.toWei(amount), destination)
+      .send({
+        from: address,
+        gas: estGas + 1,
+        gasPrice: await this.getFairGasPrice()
+      })
+    return trxReceipt
   }
 
   /**
@@ -243,17 +221,12 @@ export class Dispenser extends SmartContractWithAddress {
     )
     if (estimateGas) return estGas
 
-    try {
-      const trxReceipt = await this.contract.methods.ownerWithdraw(dtAddress).send({
-        from: address,
-        gas: estGas + 1,
-        gasPrice: await this.getFairGasPrice()
-      })
-      return trxReceipt
-    } catch (e) {
-      LoggerInstance.error(`ERROR: Failed to withdraw tokens: ${e.message}`)
-    }
-    return null
+    const trxReceipt = await this.contract.methods.ownerWithdraw(dtAddress).send({
+      from: address,
+      gas: estGas + 1,
+      gasPrice: await this.getFairGasPrice()
+    })
+    return trxReceipt
   }
 
   /**
