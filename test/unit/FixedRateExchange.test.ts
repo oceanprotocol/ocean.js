@@ -3,8 +3,8 @@ import { AbiItem } from 'web3-utils/types'
 import { Contract } from 'web3-eth-contract'
 import BigNumber from 'bignumber.js'
 import ERC20Template from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC20Template.sol/ERC20Template.json'
-import { deployContracts, Addresses } from '../../../TestContractHandler'
-import { web3 } from '../../../config'
+import { deployContracts, Addresses } from '../TestContractHandler'
+import { web3 } from '../config'
 import {
   NftFactory,
   NftCreateData,
@@ -14,8 +14,8 @@ import {
   transfer,
   balance,
   unitsToAmount
-} from '../../../../src'
-import { FreCreationParams, DatatokenCreateParams } from '../../../../src/@types'
+} from '../../src'
+import { FreCreationParams, DatatokenCreateParams } from '../../src/@types'
 
 describe('Fixed Rate unit test', () => {
   let factoryOwner: string

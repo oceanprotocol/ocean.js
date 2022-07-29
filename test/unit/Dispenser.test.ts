@@ -1,6 +1,6 @@
 import { assert, expect } from 'chai'
-import { deployContracts, Addresses } from '../../../TestContractHandler'
-import { web3 } from '../../../config'
+import { deployContracts, Addresses } from '../TestContractHandler'
+import { web3 } from '../config'
 import {
   NftFactory,
   NftCreateData,
@@ -8,8 +8,8 @@ import {
   DispenserParams,
   Dispenser,
   ZERO_ADDRESS
-} from '../../../../src/'
-import { DatatokenCreateParams } from '../../../../src/@types'
+} from '../../src/'
+import { DatatokenCreateParams } from '../../src/@types'
 
 describe('Dispenser flow', () => {
   let factoryOwner: string

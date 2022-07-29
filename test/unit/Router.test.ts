@@ -1,8 +1,8 @@
 import { assert, expect } from 'chai'
 import { AbiItem } from 'web3-utils/types'
-import { deployContracts, Addresses } from '../../TestContractHandler'
+import { deployContracts, Addresses } from '../TestContractHandler'
 import MockERC20 from '@oceanprotocol/contracts/artifacts/contracts/utils/mock/MockERC20Decimals.sol/MockERC20Decimals.json'
-import { web3 } from '../../config'
+import { web3 } from '../config'
 import {
   NftFactory,
   NftCreateData,
@@ -10,8 +10,8 @@ import {
   balance,
   approve,
   ZERO_ADDRESS
-} from '../../../src'
-import { DatatokenCreateParams, Operation } from '../../../src/@types'
+} from '../../src'
+import { DatatokenCreateParams, Operation } from '../../src/@types'
 
 const { keccak256 } = require('@ethersproject/keccak256')
 

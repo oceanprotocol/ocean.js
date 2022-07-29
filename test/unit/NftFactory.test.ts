@@ -1,23 +1,17 @@
 import { assert, expect } from 'chai'
 import { AbiItem } from 'web3-utils/types'
-import { deployContracts, Addresses } from '../../TestContractHandler'
+import { deployContracts, Addresses } from '../TestContractHandler'
 import ERC20Template from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC20Template.sol/ERC20Template.json'
-import { web3 } from '../../config'
+import { web3 } from '../config'
 import {
   NftFactory,
   NftCreateData,
   TokenOrder,
   ZERO_ADDRESS,
   signHash,
-  Nft,
-  transfer,
-  approve
-} from '../../../src'
-import {
-  ProviderFees,
-  FreCreationParams,
-  DatatokenCreateParams
-} from '../../../src/@types'
+  Nft
+} from '../../src'
+import { ProviderFees, FreCreationParams, DatatokenCreateParams } from '../../src/@types'
 
 describe('Nft Factory test', () => {
   let factoryOwner: string
@@ -232,9 +226,9 @@ describe('Nft Factory test', () => {
       providerFeeAddress: consumeFeeAddress,
       providerFeeToken: consumeFeeToken,
       providerFeeAmount: consumeFeeAmount,
-      v: v,
-      r: r,
-      s: s,
+      v,
+      r,
+      s,
       providerData: web3.utils.toHex(web3.utils.asciiToHex(providerData)),
       validUntil: providerValidUntil
     }
@@ -246,15 +240,15 @@ describe('Nft Factory test', () => {
     const orders: TokenOrder[] = [
       {
         tokenAddress: dtAddress,
-        consumer: consumer,
-        serviceIndex: serviceIndex,
+        consumer,
+        serviceIndex,
         _providerFee: providerFees,
         _consumeMarketFee: consumeMarketFee
       },
       {
         tokenAddress: dtAddress2,
-        consumer: consumer,
-        serviceIndex: serviceIndex,
+        consumer,
+        serviceIndex,
         _providerFee: providerFees,
         _consumeMarketFee: consumeMarketFee
       }

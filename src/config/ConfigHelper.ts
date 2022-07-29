@@ -151,7 +151,6 @@ export class ConfigHelper {
         FixedPrice,
         Dispenser,
         Staking,
-        poolTemplate,
         ERC721Factory,
         OPFCommunityFeeCollector,
         Ocean,
@@ -165,8 +164,8 @@ export class ConfigHelper {
         fixedRateExchangeAddress: FixedPrice,
         dispenserAddress: Dispenser,
         oceanTokenAddress: Ocean,
-        chainId: chainId,
-        startBlock: startBlock,
+        chainId,
+        startBlock,
         ...(process.env.AQUARIUS_URI && { metadataCacheUri: process.env.AQUARIUS_URI })
       }
     } else {
@@ -176,7 +175,6 @@ export class ConfigHelper {
           FixedPrice,
           Dispenser,
           Staking,
-          poolTemplate,
           OPFCommunityFeeCollector,
           ERC721Factory,
           Ocean,
@@ -190,8 +188,8 @@ export class ConfigHelper {
           fixedRateExchangeAddress: FixedPrice,
           dispenserAddress: Dispenser,
           oceanTokenAddress: Ocean,
-          chainId: chainId,
-          startBlock: startBlock,
+          chainId,
+          startBlock,
           ...(process.env.AQUARIUS_URI && { metadataCacheUri: process.env.AQUARIUS_URI })
         }
       }
