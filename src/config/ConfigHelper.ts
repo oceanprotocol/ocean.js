@@ -150,7 +150,6 @@ export class ConfigHelper {
       const {
         FixedPrice,
         Dispenser,
-        Staking,
         ERC721Factory,
         OPFCommunityFeeCollector,
         Ocean,
@@ -159,7 +158,6 @@ export class ConfigHelper {
       } = customAddresses[network]
       configAddresses = {
         nftFactoryAddress: ERC721Factory,
-        sideStakingAddress: Staking,
         opfCommunityFeeCollector: OPFCommunityFeeCollector,
         fixedRateExchangeAddress: FixedPrice,
         dispenserAddress: Dispenser,
@@ -174,7 +172,6 @@ export class ConfigHelper {
         const {
           FixedPrice,
           Dispenser,
-          Staking,
           OPFCommunityFeeCollector,
           ERC721Factory,
           Ocean,
@@ -183,7 +180,6 @@ export class ConfigHelper {
         } = DefaultContractsAddresses[network]
         configAddresses = {
           nftFactoryAddress: ERC721Factory,
-          sideStakingAddress: Staking,
           opfCommunityFeeCollector: OPFCommunityFeeCollector,
           fixedRateExchangeAddress: FixedPrice,
           dispenserAddress: Dispenser,

@@ -48,13 +48,6 @@ export class Router extends SmartContractWithAddress {
     return await this.contract.methods.isApprovedToken(address).call()
   }
 
-  /** Check if an address is a side staking contract.
-   * @return {Promise<boolean>} true if is a SS contract
-   */
-  public async isSideStaking(address: string): Promise<boolean> {
-    return await this.contract.methods.isSSContract(address).call()
-  }
-
   /** Check if an address is a Fixed Rate contract.
    * @return {Promise<boolean>} true if is a Fixed Rate contract
    */
