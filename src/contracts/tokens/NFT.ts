@@ -78,7 +78,7 @@ export class Nft extends SmartContract {
         gasPrice: await this.getFairGasPrice()
       })
 
-    return trxReceipt.events.TokenCreated.returnValues[0]
+    return trxReceipt?.events?.TokenCreated?.returnValues?.[0]
   }
 
   /**

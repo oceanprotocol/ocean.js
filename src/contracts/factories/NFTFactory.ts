@@ -82,7 +82,7 @@ export class NftFactory extends SmartContractWithAddress {
         gasPrice: await this.getFairGasPrice()
       })
 
-    return trxReceipt.events.NFTCreated.returnValues[0]
+    return trxReceipt?.events?.NFTCreated?.returnValues?.[0]
   }
 
   /** Get Current NFT Count (NFT created)
