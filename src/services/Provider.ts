@@ -25,7 +25,7 @@ export class Provider {
       return await endpoints.json()
     } catch (e) {
       LoggerInstance.error('Finding the service endpoints failed:', e)
-      return null
+      throw new Error('HTTP request failed calling Provider')
     }
   }
 
@@ -91,7 +91,7 @@ export class Provider {
       return (await response.json()).nonce.toString()
     } catch (e) {
       LoggerInstance.error(e)
-      throw new Error('HTTP request failed')
+      throw new Error('HTTP request failed calling Provider')
     }
   }
 
@@ -144,7 +144,7 @@ export class Provider {
       return await response.text()
     } catch (e) {
       LoggerInstance.error(e)
-      throw new Error('HTTP request failed')
+      throw new Error('HTTP request failed calling Provider')
     }
   }
 
@@ -187,7 +187,8 @@ export class Provider {
       }
       return files
     } catch (e) {
-      return null
+      LoggerInstance.error(e)
+      throw new Error('HTTP request failed calling Provider')
     }
   }
 
@@ -228,7 +229,8 @@ export class Provider {
       }
       return files
     } catch (e) {
-      return null
+      LoggerInstance.error(e)
+      throw new Error('HTTP request failed calling Provider')
     }
   }
 
@@ -257,8 +259,8 @@ export class Provider {
       const envs: ComputeEnvironment[] = await response.json()
       return envs
     } catch (e) {
-      LoggerInstance.error(e.message)
-      return null
+      LoggerInstance.error(e)
+      throw new Error('HTTP request failed calling Provider')
     }
   }
 
@@ -486,7 +488,7 @@ export class Provider {
       LoggerInstance.error('Compute start failed:')
       LoggerInstance.error(e)
       LoggerInstance.error('Payload was:', payload)
-      return null
+      throw new Error('HTTP request failed calling Provider')
     }
   }
 
@@ -561,7 +563,7 @@ export class Provider {
       LoggerInstance.error('Compute stop failed:')
       LoggerInstance.error(e)
       LoggerInstance.error('Payload was:', payload)
-      return null
+      throw new Error('HTTP request failed calling Provider')
     }
   }
 
@@ -615,7 +617,7 @@ export class Provider {
     } catch (e) {
       LoggerInstance.error('Get compute status failed')
       LoggerInstance.error(e)
-      return null
+      throw new Error('HTTP request failed calling Provider')
     }
   }
 
@@ -738,7 +740,7 @@ export class Provider {
       LoggerInstance.error('Delete compute job failed:')
       LoggerInstance.error(e)
       LoggerInstance.error('Payload was:', payload)
-      return null
+      throw new Error('HTTP request failed calling Provider')
     }
   }
 
