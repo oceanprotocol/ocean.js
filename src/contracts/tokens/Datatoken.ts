@@ -17,7 +17,7 @@ import {
 } from '../../@types'
 import { Nft } from './NFT'
 import { Config } from '../../config'
-import { SmartContract } from '..'
+import { SmartContract } from '../SmartContract'
 
 export class Datatoken extends SmartContract {
   public abiEnterprise: AbiItem | AbiItem[]

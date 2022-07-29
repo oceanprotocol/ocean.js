@@ -3,7 +3,7 @@ import { TransactionReceipt } from 'web3-core'
 import { AbiItem } from 'web3-utils/types'
 import { calculateEstimatedGas, ZERO_ADDRESS } from '../utils'
 import { PriceAndFees, FeesInfo, FixedPriceExchange } from '../@types'
-import { SmartContractWithAddress } from '..'
+import { SmartContractWithAddress } from './SmartContractWithAddress'
 
 export class FixedRateExchange extends SmartContractWithAddress {
   getDefaultAbi(): AbiItem | AbiItem[] {

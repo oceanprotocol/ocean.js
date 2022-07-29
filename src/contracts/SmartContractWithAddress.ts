@@ -2,7 +2,7 @@ import Web3 from 'web3'
 import { Contract } from 'web3-eth-contract'
 import { AbiItem } from 'web3-utils'
 import { Config } from '../config'
-import { SmartContract } from '.'
+import { SmartContract } from './SmartContract'
 
 export abstract class SmartContractWithAddress extends SmartContract {
   public address: string

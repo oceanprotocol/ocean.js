@@ -11,7 +11,7 @@ import {
   Template,
   TokenOrder
 } from '../../@types'
-import { SmartContractWithAddress } from '..'
+import { SmartContractWithAddress } from '../SmartContractWithAddress'
 
 /**
  * Provides an interface for NFT Factory contract
