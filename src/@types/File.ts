@@ -20,6 +20,10 @@ export interface UrlFile {
   method: string
 }
 
+export interface ArweaveFile {
+  type: 'arweave'
+}
+
 export interface Files {
   nftAddress: string
   datatokenAddress: string
