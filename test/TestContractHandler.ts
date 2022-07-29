@@ -5,7 +5,6 @@ import ERC20Template from '@oceanprotocol/contracts/artifacts/contracts/template
 import ERC721Template from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC721Template.sol/ERC721Template.json'
 import MockERC20 from '@oceanprotocol/contracts/artifacts/contracts/utils/mock/MockERC20Decimals.sol/MockERC20Decimals.json'
 import Router from '@oceanprotocol/contracts/artifacts/contracts/pools/FactoryRouter.sol/FactoryRouter.json'
-import SideStaking from '@oceanprotocol/contracts/artifacts/contracts/pools/ssContracts/SideStaking.sol/SideStaking.json'
 import FixedRate from '@oceanprotocol/contracts/artifacts/contracts/pools/fixedRate/FixedRateExchange.sol/FixedRateExchange.json'
 import Dispenser from '@oceanprotocol/contracts/artifacts/contracts/pools/dispenser/Dispenser.sol/Dispenser.json'
 import ERC721Factory from '@oceanprotocol/contracts/artifacts/contracts/ERC721Factory.sol/ERC721Factory.json'
@@ -118,17 +117,6 @@ export const deployContracts = async (web3: Web3, owner: string): Promise<Addres
       owner
     ))
 
-  // deploy side stacking
-  addresses.sideStakingAddress =
-    configAddresses.Staking ||
-    (await estimateGasAndDeployContract(
-      web3,
-      SideStaking.abi as AbiItem[],
-      SideStaking.bytecode,
-      [addresses.routerAddress],
-      owner
-    ))
-
   // deploy fixed rate
   addresses.fixedRateAddress =
     configAddresses.FixedPrice ||
@@ -203,9 +191,6 @@ export const deployContracts = async (web3: Web3, owner: string): Promise<Addres
       .send({ from: owner })
     await RouterContract.methods
       .addDispenserContract(addresses.dispenserAddress)
-      .send({ from: owner })
-    await RouterContract.methods
-      .addSSContract(addresses.sideStakingAddress)
       .send({ from: owner })
     // TODO: add OPF deployment
     // await RouterContract.methods

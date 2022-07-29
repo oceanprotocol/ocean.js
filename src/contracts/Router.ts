@@ -1,8 +1,8 @@
 import { TransactionReceipt } from 'web3-core'
 import { AbiItem } from 'web3-utils'
 import FactoryRouter from '@oceanprotocol/contracts/artifacts/contracts/pools/FactoryRouter.sol/FactoryRouter.json'
-import { calculateEstimatedGas } from '../../utils'
-import { Operation } from '../../@types'
+import { calculateEstimatedGas } from '../utils'
+import { Operation } from '../@types'
 import { SmartContractWithAddress } from '..'
 
 /**
@@ -100,70 +100,6 @@ export class Router extends SmartContractWithAddress {
 
     // Invoke createToken function of the contract
     const trxReceipt = await this.contract.methods.addApprovedToken(tokenAddress).send({
-      from: address,
-      gas: estGas + 1,
-      gasPrice: await this.getFairGasPrice()
-    })
-
-    return trxReceipt
-  }
-
-  /**
-   * Add a new contract to ssContract list, after is added, can be used when deploying a new pool
-   * @param {String} address
-   * @param {String} tokenAddress contract address to add
-   * @return {Promise<TransactionReceipt>}
-   */
-  public async addSSContract<G extends boolean = false>(
-    address: string,
-    tokenAddress: string,
-    estimateGas?: G
-  ): Promise<G extends false ? TransactionReceipt : number> {
-    if ((await this.getOwner()) !== address) {
-      throw new Error(`Caller is not Router Owner`)
-    }
-
-    const estGas = await calculateEstimatedGas(
-      address,
-      this.contract.methods.addSSContract,
-      tokenAddress
-    )
-    if (estimateGas) return estGas
-
-    // Invoke createToken function of the contract
-    const trxReceipt = await this.contract.methods.addSSContract(tokenAddress).send({
-      from: address,
-      gas: estGas + 1,
-      gasPrice: await this.getFairGasPrice()
-    })
-
-    return trxReceipt
-  }
-
-  /**
-   * Removes a new contract from ssContract list
-   * @param {String} address caller address
-   * @param {String} tokenAddress contract address to removed
-   * @return {Promise<TransactionReceipt>}
-   */
-  public async removeSSContract<G extends boolean = false>(
-    address: string,
-    tokenAddress: string,
-    estimateGas?: G
-  ): Promise<G extends false ? TransactionReceipt : number> {
-    if ((await this.getOwner()) !== address) {
-      throw new Error(`Caller is not Router Owner`)
-    }
-
-    const estGas = await calculateEstimatedGas(
-      address,
-      this.contract.methods.removeSSContract,
-      tokenAddress
-    )
-    if (estimateGas) return estGas
-
-    // Invoke createToken function of the contract
-    const trxReceipt = await this.contract.methods.removeSSContract(tokenAddress).send({
       from: address,
       gas: estGas + 1,
       gasPrice: await this.getFairGasPrice()
