@@ -106,11 +106,6 @@ describe('Router unit test', () => {
     expect(await router.isApprovedToken(contracts.daiAddress)).to.equal(false)
   })
 
-  it('#isSideStaking - should return true if in ssContracts list', async () => {
-    expect(await router.isSideStaking(contracts.sideStakingAddress)).to.equal(true)
-    expect(await router.isSideStaking(contracts.fixedRateAddress)).to.equal(false)
-  })
-
   it('#isFixedPrice - should return true if in fixedPrice list', async () => {
     expect(await router.isFixedPrice(contracts.fixedRateAddress)).to.equal(true)
     expect(await router.isFixedPrice(contracts.daiAddress)).to.equal(false)

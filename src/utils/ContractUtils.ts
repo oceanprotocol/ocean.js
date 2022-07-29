@@ -78,11 +78,8 @@ export async function calculateEstimatedGas(
   functionToEstimateGas: Function,
   ...args: any[]
 ): Promise<any> {
-  const estimatedGas = await functionToEstimateGas.apply(null, args).estimateGas(
-    {
-      from: from
-    },
-    (err, estGas) => (err ? GASLIMIT_DEFAULT : estGas)
-  )
+  const estimatedGas = await functionToEstimateGas
+    .apply(null, args)
+    .estimateGas({ from }, (err, estGas) => (err ? GASLIMIT_DEFAULT : estGas))
   return estimatedGas
 }

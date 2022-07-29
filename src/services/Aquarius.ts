@@ -3,7 +3,8 @@ import { LoggerInstance, sleep } from '../utils'
 import { Asset, DDO, ValidateMetadata } from '../@types'
 
 export class Aquarius {
-  public aquariusURL
+  public aquariusURL: string
+
   /**
    * Instantiate Aquarius
    * @param {String} aquariusURL
@@ -22,10 +23,8 @@ export class Aquarius {
     try {
       const response = await fetch(path, {
         method: 'GET',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        signal: signal
+        headers: { 'Content-Type': 'application/json' },
+        signal
       })
 
       if (response.ok) {
@@ -59,10 +58,8 @@ export class Aquarius {
         const path = this.aquariusURL + '/api/aquarius/assets/ddo/' + did
         const response = await fetch(path, {
           method: 'GET',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          signal: signal
+          headers: { 'Content-Type': 'application/json' },
+          signal
         })
         if (response.ok) {
           const ddo = await response.json()
@@ -97,10 +94,8 @@ export class Aquarius {
       const response = await fetch(path, {
         method: 'POST',
         body: JSON.stringify(ddo),
-        headers: {
-          'Content-Type': 'application/octet-stream'
-        },
-        signal: signal
+        headers: { 'Content-Type': 'application/octet-stream' },
+        signal
       })
 
       jsonResponse = await response.json()
