@@ -3,7 +3,7 @@ import { TransactionReceipt } from 'web3-eth'
 import Decimal from 'decimal.js'
 import DispenserAbi from '@oceanprotocol/contracts/artifacts/contracts/pools/dispenser/Dispenser.sol/Dispenser.json'
 import { calculateEstimatedGas } from '../utils'
-import { Datatoken } from './tokens/Datatoken'
+import { Datatoken } from './Datatoken'
 import { SmartContractWithAddress } from './SmartContractWithAddress'
 import { DispenserToken } from '../@types'
 

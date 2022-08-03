@@ -2,7 +2,7 @@ import Web3 from 'web3'
 import { TransactionReceipt } from 'web3-core'
 import { AbiItem } from 'web3-utils'
 import ERC721Factory from '@oceanprotocol/contracts/artifacts/contracts/ERC721Factory.sol/ERC721Factory.json'
-import { generateDtName, calculateEstimatedGas, ZERO_ADDRESS } from '../../utils'
+import { generateDtName, calculateEstimatedGas, ZERO_ADDRESS } from '../utils'
 import {
   FreCreationParams,
   DatatokenCreateParams,
@@ -10,8 +10,8 @@ import {
   NftCreateData,
   Template,
   TokenOrder
-} from '../../@types'
-import { SmartContractWithAddress } from '../SmartContractWithAddress'
+} from '../@types'
+import { SmartContractWithAddress } from './SmartContractWithAddress'
 
 /**
  * Provides an interface for NFT Factory contract
