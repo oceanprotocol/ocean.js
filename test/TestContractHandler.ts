@@ -189,6 +189,9 @@ export const deployContracts = async (web3: Web3, owner: string): Promise<Addres
     await RouterContract.methods
       .addFixedRateContract(addresses.fixedRateAddress)
       .send({ from: owner })
+    await RouterContract.methods
+      .addDispenserContract(addresses.dispenserAddress)
+      .send({ from: owner })
   }
 
   return addresses

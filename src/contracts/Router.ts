@@ -70,7 +70,7 @@ export class Router extends SmartContractWithAddress {
   }
 
   /**
-   * Add a new token to oceanTokens list, pools with baseToken in this list have NO opf Fee
+   * Adds a token to the list of tokens with reduced fees
    * @param {String} address caller address
    * @param {String} tokenAddress token address to add
    * @return {Promise<TransactionReceipt>}
@@ -102,7 +102,7 @@ export class Router extends SmartContractWithAddress {
   }
 
   /**
-   * Remove a token from oceanTokens list, pools without baseToken in this list have a opf Fee
+   * Removes a token if exists from the list of tokens with reduced fees
    * @param {String} address
    * @param {String} tokenAddress address to remove
    * @return {Promise<TransactionReceipt>}
@@ -136,7 +136,7 @@ export class Router extends SmartContractWithAddress {
   }
 
   /**
-   * Add a new contract to fixedRate list, after is added, can be used when deploying a new pool
+   * Adds an address to the list of fixed rate contracts
    * @param {String} address
    * @param {String} tokenAddress contract address to add
    * @return {Promise<TransactionReceipt>}
@@ -170,7 +170,7 @@ export class Router extends SmartContractWithAddress {
   }
 
   /**
-   * Removes a contract from fixedRate list
+   * Removes an address from the list of fixed rate contracts
    * @param {String} address
    * @param {String} tokenAddress contract address to add
    * @return {Promise<TransactionReceipt>}
@@ -204,9 +204,43 @@ export class Router extends SmartContractWithAddress {
   }
 
   /**
-   * Add a new contract to dispenser list, after is added, can be used when deploying a new pool
+   * Adds an address to the list of dispensers
    * @param {String} address
    * @param {String} tokenAddress contract address to add
+   * @return {Promise<TransactionReceipt>}
+   */
+  public async addDispenserContract<G extends boolean = false>(
+    address: string,
+    tokenAddress: string,
+    estimateGas?: G
+  ): Promise<G extends false ? TransactionReceipt : number> {
+    if ((await this.getOwner()) !== address) {
+      throw new Error(`Caller is not Router Owner`)
+    }
+
+    const estGas = await calculateEstimatedGas(
+      address,
+      this.contract.methods.addDispenserContract,
+      tokenAddress
+    )
+    if (estimateGas) return estGas
+
+    // Invoke createToken function of the contract
+    const trxReceipt = await this.contract.methods
+      .addDispenserContract(tokenAddress)
+      .send({
+        from: address,
+        gas: estGas + 1,
+        gasPrice: await this.getFairGasPrice()
+      })
+
+    return trxReceipt
+  }
+
+  /**
+   * Removes an address from the list of dispensers
+   * @param {String} address
+   * @param {String} tokenAddress address Contract to be removed
    * @return {Promise<TransactionReceipt>}
    */
   public async removeDispenserContract<G extends boolean = false>(
@@ -252,7 +286,7 @@ export class Router extends SmartContractWithAddress {
   }
 
   /**
-   * Add a new contract to fixedRate list, after is added, can be used when deploying a new pool
+   * Updates OP Community Fees
    * @param {String} address
    * @param {number} newSwapOceanFee Amount charged for swapping with ocean approved tokens
    * @param {number} newSwapNonOceanFee Amount charged for swapping with non ocean approved tokens

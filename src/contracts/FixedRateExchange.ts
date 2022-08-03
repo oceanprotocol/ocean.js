@@ -83,7 +83,7 @@ export class FixedRateExchange extends SmartContractWithAddress {
   }
 
   /**
-   * Atomic swap
+   * Sell datatokenAmount while expecting at least minBaseTokenAmount
    * @param {String} exchangeId ExchangeId
    * @param {String} datatokenAmount Amount of datatokens
    * @param {String} minBaseTokenAmount min amount of baseToken we want to receive back
@@ -183,7 +183,7 @@ export class FixedRateExchange extends SmartContractWithAddress {
   }
 
   /**
-   * Set new rate
+   * Sets a new allowedSwapper
    * @param {String} exchangeId ExchangeId
    * @param {String} newAllowedSwapper newAllowedSwapper (set address zero if we want to remove allowed swapper)
    * @param {String} address User account
