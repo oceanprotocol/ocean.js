@@ -237,6 +237,7 @@ export class Datatoken extends SmartContract {
         address,
         estGas + 1,
         this.web3,
+        this.config,
         dtContract.methods.mint,
         toAddress || address,
         this.web3.utils.toWei(amount)
