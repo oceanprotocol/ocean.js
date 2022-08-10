@@ -1,6 +1,6 @@
 import { assert, expect } from 'chai'
 import { deployContracts, Addresses } from '../../../TestContractHandler'
-import { web3 } from '../../../config'
+import { getTestConfig, web3 } from '../../../config'
 import {
   allowance,
   approve,
@@ -11,7 +11,8 @@ import {
   ZERO_ADDRESS,
   balance,
   transfer,
-  decimals
+  decimals,
+  Config
 } from '../../../../src'
 import {
   PoolCreationParams,
@@ -31,6 +32,7 @@ describe('Pool unit test', () => {
   let poolAddress: string
   let datatoken: string
   let dtParams: DatatokenCreateParams
+  let config: Config
 
   const nftData: NftCreateData = {
     name: '72120Bundle',
@@ -48,6 +50,8 @@ describe('Pool unit test', () => {
     user2 = accounts[4]
 
     nftData.owner = factoryOwner
+
+    config = await getTestConfig(web3)
 
     dtParams = {
       templateIndex: 1,
@@ -71,6 +75,7 @@ describe('Pool unit test', () => {
 
     await approve(
       web3,
+      config,
       factoryOwner,
       contracts.daiAddress,
       contracts.nftFactoryAddress,
@@ -90,6 +95,7 @@ describe('Pool unit test', () => {
 
     await approve(
       web3,
+      config,
       factoryOwner,
       contracts.usdcAddress,
       contracts.nftFactoryAddress,
@@ -224,11 +230,11 @@ describe('Pool unit test', () => {
     })
 
     it('#swapExactAmountIn - should swap', async () => {
-      await transfer(web3, factoryOwner, contracts.daiAddress, user1, '1000')
+      await transfer(web3, config, factoryOwner, contracts.daiAddress, user1, '1000')
       expect(await balance(web3, contracts.daiAddress, user1)).to.equal('1000')
 
       expect(await balance(web3, datatoken, user1)).to.equal('0')
-      await approve(web3, user1, contracts.daiAddress, poolAddress, '10')
+      await approve(web3, config, user1, contracts.daiAddress, poolAddress, '10')
 
       const tokenInOutMarket: TokenInOutMarket = {
         tokenIn: contracts.daiAddress,
@@ -256,7 +262,7 @@ describe('Pool unit test', () => {
     })
 
     it('#swapExactAmountOut - should swap', async () => {
-      await approve(web3, user1, contracts.daiAddress, poolAddress, '100')
+      await approve(web3, config, user1, contracts.daiAddress, poolAddress, '100')
       expect(await balance(web3, contracts.daiAddress, user1)).to.equal('990')
       const tokenInOutMarket: TokenInOutMarket = {
         tokenIn: contracts.daiAddress,
@@ -280,7 +286,7 @@ describe('Pool unit test', () => {
     it('#joinswapExternAmountIn- user2 should add liquidity, receiving LP tokens', async () => {
       const daiAmountIn = '100'
       const minBPTOut = '0.1'
-      await approve(web3, user1, contracts.daiAddress, poolAddress, '100', true)
+      await approve(web3, config, user1, contracts.daiAddress, poolAddress, '100', true)
       expect(await allowance(web3, contracts.daiAddress, user1, poolAddress)).to.equal(
         '100'
       )
@@ -682,11 +688,11 @@ describe('Pool unit test', () => {
     })
 
     it('#swapExactAmountIn - should swap', async () => {
-      await transfer(web3, factoryOwner, contracts.usdcAddress, user1, '1000')
+      await transfer(web3, config, factoryOwner, contracts.usdcAddress, user1, '1000')
       expect(await balance(web3, contracts.usdcAddress, user1)).to.equal('1000')
 
       expect(await balance(web3, datatoken, user1)).to.equal('0')
-      await approve(web3, user1, contracts.usdcAddress, poolAddress, '10')
+      await approve(web3, config, user1, contracts.usdcAddress, poolAddress, '10')
 
       const tokenInOutMarket: TokenInOutMarket = {
         tokenIn: contracts.usdcAddress,
@@ -714,7 +720,7 @@ describe('Pool unit test', () => {
     })
 
     it('#swapExactAmountOut - should swap', async () => {
-      await approve(web3, user1, contracts.usdcAddress, poolAddress, '100')
+      await approve(web3, config, user1, contracts.usdcAddress, poolAddress, '100')
       expect(await balance(web3, contracts.usdcAddress, user1)).to.equal('990')
       const tokenInOutMarket: TokenInOutMarket = {
         tokenIn: contracts.usdcAddress,
@@ -739,7 +745,7 @@ describe('Pool unit test', () => {
     it('#joinswapExternAmountIn- user2 should add liquidity, receiving LP tokens', async () => {
       const usdcAmountIn = '100'
       const minBPTOut = '0.1'
-      await approve(web3, user1, contracts.usdcAddress, poolAddress, '100', true)
+      await approve(web3, config, user1, contracts.usdcAddress, poolAddress, '100', true)
 
       const tx = await pool.joinswapExternAmountIn(
         user1,

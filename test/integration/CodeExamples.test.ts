@@ -230,8 +230,8 @@ describe('Marketplace flow tests', async () => {
 
   it('5.3 We send some OCEAN to consumer and staker accounts', async () => {
     /// ```Typescript
-    transfer(web3, publisherAccount, addresses.Ocean, consumerAccount, '100')
-    transfer(web3, publisherAccount, addresses.Ocean, stakerAccount, '100')
+    transfer(web3, config, publisherAccount, addresses.Ocean, consumerAccount, '100')
+    transfer(web3, config, publisherAccount, addresses.Ocean, stakerAccount, '100')
   }) ///
   /// ```
 
@@ -282,6 +282,7 @@ describe('Marketplace flow tests', async () => {
     /// ```Typescript
     await approve(
       web3,
+      config,
       publisherAccount,
       addresses.Ocean,
       addresses.ERC721Factory,
@@ -313,6 +314,7 @@ describe('Marketplace flow tests', async () => {
   it('6.2 Set metadata in the pool NFT', async () => {
     /// ```Typescript
     const nft = new Nft(web3)
+
     /// ```
     /// Now we update the ddo and set the right did
     /// ```Typescript
@@ -355,7 +357,7 @@ describe('Marketplace flow tests', async () => {
     /// ```
     /// Before we call the contract we have to call `approve` so that the contract can move our tokens. This is standard when using any ERC20 Datatokens
     /// ```Typescript
-    await approve(web3, stakerAccount, addresses.Ocean, poolAddress, '5', true)
+    await approve(web3, config, stakerAccount, addresses.Ocean, poolAddress, '5', true)
 
     /// ```
     /// Now we can make the contract call
@@ -404,7 +406,7 @@ describe('Marketplace flow tests', async () => {
     /// ```
     /// Before we call the contract we have to call `approve` so that the contract can move our tokens. This is standard when using any ERC20 Datatokens
     /// ```Typescript
-    await approve(web3, consumerAccount, addresses.Ocean, poolAddress, '100')
+    await approve(web3, config, consumerAccount, addresses.Ocean, poolAddress, '100')
 
     const pool = new Pool(web3)
     const tokenInOutMarket: TokenInOutMarket = {
@@ -646,9 +648,10 @@ describe('Marketplace flow tests', async () => {
     /// ```
     /// Before we call the contract we have to call `approve` so that the contract can move our tokens. This is standard when using any ERC20 Datatokens
     /// ```Typescript
-    await approve(web3, consumerAccount, addresses.Ocean, freAddress, '100')
+    await approve(web3, config, consumerAccount, addresses.Ocean, freAddress, '100')
     await approve(
       web3,
+      config,
       publisherAccount,
       freDatatokenAddress,
       freAddress,

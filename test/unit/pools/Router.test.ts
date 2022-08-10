@@ -2,14 +2,15 @@ import { assert, expect } from 'chai'
 import { AbiItem } from 'web3-utils/types'
 import { deployContracts, Addresses } from '../../TestContractHandler'
 import MockERC20 from '@oceanprotocol/contracts/artifacts/contracts/utils/mock/MockERC20Decimals.sol/MockERC20Decimals.json'
-import { web3 } from '../../config'
+import { getTestConfig, web3 } from '../../config'
 import {
   NftFactory,
   NftCreateData,
   Router,
   balance,
   approve,
-  ZERO_ADDRESS
+  ZERO_ADDRESS,
+  Config
 } from '../../../src'
 import { DatatokenCreateParams, PoolCreationParams, Operation } from '../../../src/@types'
 
@@ -21,6 +22,7 @@ describe('Router unit test', () => {
   let user2: string
   let contracts: Addresses
   let router: Router
+  let config: Config
 
   const NFT_NAME = '72120Bundle'
   const NFT_SYMBOL = '72Bundle'
@@ -73,6 +75,8 @@ describe('Router unit test', () => {
     ERC_PARAMS.minter = factoryOwner
     ERC_PARAMS.paymentCollector = user2
     ERC_PARAMS.mpFeeAddress = factoryOwner
+
+    config = await getTestConfig(web3)
   })
 
   it('should deploy contracts', async () => {
@@ -80,6 +84,7 @@ describe('Router unit test', () => {
 
     await approve(
       web3,
+      config,
       factoryOwner,
       contracts.daiAddress,
       contracts.nftFactoryAddress,
@@ -132,7 +137,14 @@ describe('Router unit test', () => {
       .transfer(user1, web3.utils.toWei(DAI_AMOUNT))
       .send({ from: factoryOwner })
 
-    await approve(web3, user1, contracts.daiAddress, contracts.routerAddress, DAI_AMOUNT)
+    await approve(
+      web3,
+      config,
+      user1,
+      contracts.daiAddress,
+      contracts.routerAddress,
+      DAI_AMOUNT
+    )
 
     // CREATE A FIRST POOL
     const poolParams: PoolCreationParams = {

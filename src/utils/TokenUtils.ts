@@ -9,6 +9,8 @@ import {
   minAbi,
   sendTx
 } from '.'
+import { config } from 'process'
+import { Config } from '../config'
 
 /**
  * Approve spender to spent amount tokens
@@ -21,6 +23,7 @@ import {
  */
 export async function approve<G extends boolean = false>(
   web3: Web3,
+  config: Config,
   account: string,
   tokenAddress: string,
   spender: string,
@@ -48,7 +51,8 @@ export async function approve<G extends boolean = false>(
   const trxReceipt = await sendTx(
     account,
     estGas + 1,
-    this.web3,
+    web3,
+    config,
     tokenContract.methods.approve,
     spender,
     amountFormatted
@@ -66,6 +70,7 @@ export async function approve<G extends boolean = false>(
  */
 export async function transfer<G extends boolean = false>(
   web3: Web3,
+  config: Config,
   account: string,
   tokenAddress: string,
   recipient: string,
@@ -86,7 +91,8 @@ export async function transfer<G extends boolean = false>(
   const trxReceipt = await sendTx(
     account,
     estGas + 1,
-    this.web3,
+    web3,
+    config,
     tokenContract.methods.transfer,
     recipient,
     amountFormatted

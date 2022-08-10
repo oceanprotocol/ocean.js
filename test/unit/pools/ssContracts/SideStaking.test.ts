@@ -5,7 +5,7 @@ import BigNumber from 'bignumber.js'
 import ERC20Template from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC20Template.sol/ERC20Template.json'
 import MockERC20 from '@oceanprotocol/contracts/artifacts/contracts/utils/mock/MockERC20Decimals.sol/MockERC20Decimals.json'
 import { deployContracts, Addresses } from '../../../TestContractHandler'
-import { web3 } from '../../../config'
+import { getTestConfig, web3 } from '../../../config'
 import {
   allowance,
   amountToUnits,
@@ -15,7 +15,8 @@ import {
   Pool,
   SideStaking,
   unitsToAmount,
-  ZERO_ADDRESS
+  ZERO_ADDRESS,
+  Config
 } from '../../../../src'
 import {
   DatatokenCreateParams,
@@ -38,6 +39,7 @@ describe('SideStaking unit test', () => {
   let datatokenContract: Contract
   let daiContract: Contract
   let usdcContract: Contract
+  let config: Config
 
   const VESTED_BLOCKS = 2500000
   const VESTING_AMOUNT = '10000'
@@ -74,6 +76,8 @@ describe('SideStaking unit test', () => {
     dtParams.minter = factoryOwner
     dtParams.paymentCollector = user2
     dtParams.mpFeeAddress = factoryOwner
+
+    config = await getTestConfig(web3)
   })
 
   it('should deploy contracts', async () => {
@@ -94,6 +98,7 @@ describe('SideStaking unit test', () => {
 
     await approve(
       web3,
+      config,
       factoryOwner,
       contracts.daiAddress,
       contracts.nftFactoryAddress,
@@ -113,6 +118,7 @@ describe('SideStaking unit test', () => {
 
     await approve(
       web3,
+      config,
       factoryOwner,
       contracts.usdcAddress,
       contracts.nftFactoryAddress,
@@ -254,7 +260,7 @@ describe('SideStaking unit test', () => {
       await daiContract.methods
         .transfer(user1, web3.utils.toWei('1000'))
         .send({ from: factoryOwner })
-      await approve(web3, user1, contracts.daiAddress, poolAddress, '10')
+      await approve(web3, config, user1, contracts.daiAddress, poolAddress, '10')
 
       const tokenInOutMarket: TokenInOutMarket = {
         tokenIn: contracts.daiAddress,
@@ -281,7 +287,7 @@ describe('SideStaking unit test', () => {
     })
 
     it('#swapExactAmountOut - should swap', async () => {
-      await approve(web3, user1, contracts.daiAddress, poolAddress, '100')
+      await approve(web3, config, user1, contracts.daiAddress, poolAddress, '100')
       const tokenInOutMarket: TokenInOutMarket = {
         tokenIn: contracts.daiAddress,
         tokenOut: datatoken,
@@ -304,7 +310,7 @@ describe('SideStaking unit test', () => {
     it('#joinswapExternAmountIn- user1 should add liquidity, receiving LP tokens', async () => {
       const daiAmountIn = '100'
       const minBPTOut = '0.1'
-      await approve(web3, user1, contracts.daiAddress, poolAddress, '100', true)
+      await approve(web3, config, user1, contracts.daiAddress, poolAddress, '100', true)
       expect(await allowance(web3, contracts.daiAddress, user1, poolAddress)).to.equal(
         '100'
       )
@@ -436,7 +442,7 @@ describe('SideStaking unit test', () => {
         .transfer(user1, transferAmount)
         .send({ from: factoryOwner })
 
-      await approve(web3, user1, contracts.usdcAddress, poolAddress, '10')
+      await approve(web3, config, user1, contracts.usdcAddress, poolAddress, '10')
       const tokenInOutMarket: TokenInOutMarket = {
         tokenIn: contracts.usdcAddress,
         tokenOut: datatoken,
@@ -459,7 +465,7 @@ describe('SideStaking unit test', () => {
     })
 
     it('#swapExactAmountOut - should swap', async () => {
-      await approve(web3, user1, contracts.usdcAddress, poolAddress, '100')
+      await approve(web3, config, user1, contracts.usdcAddress, poolAddress, '100')
       const tokenInOutMarket: TokenInOutMarket = {
         tokenIn: contracts.usdcAddress,
         tokenOut: datatoken,
@@ -482,7 +488,7 @@ describe('SideStaking unit test', () => {
     it('#joinswapExternAmountIn- user1 should add liquidity, receiving LP tokens', async () => {
       const usdcAmountIn = '100'
       const minBPTOut = '0.1'
-      await approve(web3, user1, contracts.usdcAddress, poolAddress, '100', true)
+      await approve(web3, config, user1, contracts.usdcAddress, poolAddress, '100', true)
 
       const tx = await pool.joinswapExternAmountIn(
         user1,

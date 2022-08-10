@@ -2,7 +2,7 @@ import { assert, expect } from 'chai'
 import { AbiItem } from 'web3-utils/types'
 import { deployContracts, Addresses } from '../../TestContractHandler'
 import ERC20Template from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC20Template.sol/ERC20Template.json'
-import { web3 } from '../../config'
+import { getTestConfig, web3 } from '../../config'
 import {
   NftFactory,
   NftCreateData,
@@ -11,7 +11,8 @@ import {
   signHash,
   Nft,
   transfer,
-  approve
+  approve,
+  Config
 } from '../../../src'
 import {
   ProviderFees,
@@ -30,6 +31,7 @@ describe('Nft Factory test', () => {
   let dtAddress: string
   let dtAddress2: string
   let nftAddress: string
+  let config: Config
 
   const DATA_TOKEN_AMOUNT = web3.utils.toWei('1')
   const FEE = '0.001'
@@ -66,6 +68,8 @@ describe('Nft Factory test', () => {
     dtParams.minter = nftOwner
     dtParams.paymentCollector = user2
     dtParams.mpFeeAddress = user1
+
+    config = await getTestConfig(web3)
   })
 
   it('should deploy contracts', async () => {
@@ -146,6 +150,7 @@ describe('Nft Factory test', () => {
 
     await transfer(
       web3,
+      config,
       factoryOwner,
       contracts.daiAddress,
       nftOwner,
@@ -154,6 +159,7 @@ describe('Nft Factory test', () => {
 
     await approve(
       web3,
+      config,
       nftOwner,
       contracts.daiAddress,
       contracts.nftFactoryAddress,
