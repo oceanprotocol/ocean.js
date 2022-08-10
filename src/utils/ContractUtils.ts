@@ -2,7 +2,7 @@ import Web3 from 'web3'
 import BigNumber from 'bignumber.js'
 import { Contract } from 'web3-eth-contract'
 import { Config } from '../config'
-import { minAbi, GASLIMIT_DEFAULT } from '.'
+import { minAbi, GASLIMIT_DEFAULT, LoggerInstance } from '.'
 
 export function setContractDefaults(contract: Contract, config: Config): Contract {
   if (config) {
@@ -116,17 +116,18 @@ export async function sendTx(
     from: from,
     gas: estGas + 1
   }
-  const feeHistory = await web3.eth.getFeeHistory(1, 'pending', [75])
-  if (feeHistory && feeHistory.baseFeePerGas && feeHistory.reward[0][0]) {
-    sendTxValue.maxPriorityFeePerGas = new BigNumber(feeHistory.reward[0][0])
+  try {
+    const feeHistory = await web3.eth.getFeeHistory(1, 'pending', [75])
+    sendTxValue.maxPriorityFeePerGas = new BigNumber(feeHistory?.reward?.[0]?.[0])
       .integerValue(BigNumber.ROUND_DOWN)
       .toString(10)
 
-    sendTxValue.maxFeePerGas = new BigNumber(feeHistory.reward[0][0])
-      .plus(new BigNumber(feeHistory.baseFeePerGas[0]).multipliedBy(2))
+    sendTxValue.maxFeePerGas = new BigNumber(feeHistory?.reward?.[0]?.[0])
+      .plus(new BigNumber(feeHistory?.baseFeePerGas?.[0]).multipliedBy(2))
       .integerValue(BigNumber.ROUND_DOWN)
       .toString(10)
-  } else {
+  } catch (err) {
+    LoggerInstance.log('EIP 1559 not supported by network')
     sendTxValue.gasPrice = await this.getFairGasPrice()
   }
 
