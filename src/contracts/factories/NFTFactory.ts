@@ -69,6 +69,7 @@ export class NftFactory extends SmartContractWithAddress {
       address,
       estGas + 1,
       this.web3,
+      this.config,
       this.contract.methods.deployERC721Contract,
       nftData.name,
       nftData.symbol,
@@ -194,6 +195,7 @@ export class NftFactory extends SmartContractWithAddress {
       address,
       estGas + 1,
       this.web3,
+      this.config,
       this.contract.methods.add721TokenTemplate,
       templateAddress
     )
@@ -232,6 +234,7 @@ export class NftFactory extends SmartContractWithAddress {
       address,
       estGas + 1,
       this.web3,
+      this.config,
       this.contract.methods.disable721TokenTemplate,
       templateIndex
     )
@@ -272,6 +275,7 @@ export class NftFactory extends SmartContractWithAddress {
       address,
       estGas + 1,
       this.web3,
+      this.config,
       this.contract.methods.reactivate721TokenTemplate,
       templateIndex
     )
@@ -308,6 +312,7 @@ export class NftFactory extends SmartContractWithAddress {
       address,
       estGas + 1,
       this.web3,
+      this.config,
       this.contract.methods.addTokenTemplate,
       templateAddress
     )
@@ -350,6 +355,7 @@ export class NftFactory extends SmartContractWithAddress {
       address,
       estGas + 1,
       this.web3,
+      this.config,
       this.contract.methods.disableTokenTemplate,
       templateIndex
     )
@@ -393,6 +399,7 @@ export class NftFactory extends SmartContractWithAddress {
       address,
       estGas + 1,
       this.web3,
+      this.config,
       this.contract.methods.reactivateTokenTemplate,
       templateIndex
     )
@@ -432,6 +439,7 @@ export class NftFactory extends SmartContractWithAddress {
       address,
       estGas + 1,
       this.web3,
+      this.config,
       this.contract.methods.startMultipleTokenOrder,
       orders
     )
@@ -468,6 +476,7 @@ export class NftFactory extends SmartContractWithAddress {
       address,
       estGas + 1,
       this.web3,
+      this.config,
       this.contract.methods.createNftWithErc20,
       nftCreateData,
       ercCreateData
@@ -509,6 +518,7 @@ export class NftFactory extends SmartContractWithAddress {
       address,
       estGas + 1,
       this.web3,
+      this.config,
       this.contract.methods.createNftWithErc20WithPool,
       nftCreateData,
       ercCreateData,
@@ -551,6 +561,7 @@ export class NftFactory extends SmartContractWithAddress {
       address,
       estGas + 1,
       this.web3,
+      this.config,
       this.contract.methods.createNftWithErc20WithFixedRate,
       nftCreateData,
       ercCreateData,
@@ -595,6 +606,7 @@ export class NftFactory extends SmartContractWithAddress {
       address,
       estGas + 1,
       this.web3,
+      this.config,
       this.contract.methods.createNftWithErc20WithDispenser,
       nftCreateData,
       ercCreateData,

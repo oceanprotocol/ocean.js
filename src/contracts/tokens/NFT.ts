@@ -67,6 +67,7 @@ export class Nft extends SmartContract {
       address,
       estGas + 1,
       this.web3,
+      this.config,
       nftContract.methods.createERC20,
       templateIndex,
       [name, symbol],
@@ -108,6 +109,7 @@ export class Nft extends SmartContract {
       address,
       estGas + 1,
       this.web3,
+      this.config,
       nftContract.methods.addManager,
       manager
     )
@@ -145,6 +147,7 @@ export class Nft extends SmartContract {
       address,
       estGas + 1,
       this.web3,
+      this.config,
       nftContract.methods.removeManager,
       manager
     )
@@ -183,6 +186,7 @@ export class Nft extends SmartContract {
       address,
       estGas + 1,
       this.web3,
+      this.config,
       nftContract.methods.addToCreateERC20List,
       datatokenDeployer
     )
@@ -223,6 +227,7 @@ export class Nft extends SmartContract {
       address,
       estGas + 1,
       this.web3,
+      this.config,
       nftContract.methods.removeFromCreateERC20List,
       datatokenDeployer
     )
@@ -260,6 +265,7 @@ export class Nft extends SmartContract {
       address,
       estGas + 1,
       this.web3,
+      this.config,
       nftContract.methods.addToMetadataList,
       metadataUpdater
     )
@@ -300,6 +306,7 @@ export class Nft extends SmartContract {
       address,
       estGas + 1,
       this.web3,
+      this.config,
       nftContract.methods.removeFromMetadataList,
       metadataUpdater
     )
@@ -336,6 +343,7 @@ export class Nft extends SmartContract {
       address,
       estGas + 1,
       this.web3,
+      this.config,
       nftContract.methods.addTo725StoreList,
       storeUpdater
     )
@@ -377,6 +385,7 @@ export class Nft extends SmartContract {
       address,
       estGas + 1,
       this.web3,
+      this.config,
       nftContract.methods.removeFrom725StoreList,
       storeUpdater
     )
@@ -414,6 +423,7 @@ export class Nft extends SmartContract {
       address,
       estGas + 1,
       this.web3,
+      this.config,
       nftContract.methods.cleanPermissions
     )
 
@@ -457,6 +467,7 @@ export class Nft extends SmartContract {
       nftOwner,
       estGas + 1,
       this.web3,
+      this.config,
       nftContract.methods.transferFrom,
       nftOwner,
       nftReceiver,
@@ -503,6 +514,7 @@ export class Nft extends SmartContract {
       nftOwner,
       estGas + 1,
       this.web3,
+      this.config,
       nftContract.methods.safeTransferFrom,
       nftOwner,
       nftReceiver,
@@ -553,6 +565,7 @@ export class Nft extends SmartContract {
       address,
       estGas + 1,
       this.web3,
+      this.config,
       nftContract.methods.setMetaData,
       metadataState,
       metadataDecryptorUrl,
@@ -598,6 +611,7 @@ export class Nft extends SmartContract {
       metadataUpdater,
       estGas + 1,
       this.web3,
+      this.config,
       nftContract.methods.setMetaDataAndTokenURI,
       sanitizedMetadataAndTokenURI
     )
@@ -635,6 +649,7 @@ export class Nft extends SmartContract {
       address,
       estGas + 1,
       this.web3,
+      this.config,
       nftContract.methods.setMetaDataState,
       metadataState
     )
@@ -667,6 +682,7 @@ export class Nft extends SmartContract {
       address,
       estGas + 1,
       this.web3,
+      this.config,
       nftContract.methods.setTokenURI,
       '1',
       data

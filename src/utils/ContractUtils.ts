@@ -109,6 +109,7 @@ export async function sendTx(
   from: string,
   estGas: any,
   web3: Web3,
+  config: Config,
   functionToSend: Function,
   ...args: any[]
 ): Promise<any> {
@@ -128,7 +129,7 @@ export async function sendTx(
       .toString(10)
   } catch (err) {
     LoggerInstance.log('EIP 1559 not supported by network')
-    sendTxValue.gasPrice = await this.getFairGasPrice()
+    sendTxValue.gasPrice = await getFairGasPrice(web3, config)
   }
 
   const trxReceipt = await functionToSend.apply(null, args).send(sendTxValue)

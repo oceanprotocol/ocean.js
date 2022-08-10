@@ -35,6 +35,7 @@ export class Router extends SmartContractWithAddress {
       address,
       estGas + 1,
       this.web3,
+      this.config,
       this.contract.methods.buyDTBatch,
       operations
     )
@@ -110,6 +111,7 @@ export class Router extends SmartContractWithAddress {
       address,
       estGas + 1,
       this.web3,
+      this.config,
       this.contract.methods.addApprovedToken,
       tokenAddress
     )
@@ -143,6 +145,7 @@ export class Router extends SmartContractWithAddress {
       address,
       estGas + 1,
       this.web3,
+      this.config,
       this.contract.methods.removeApprovedToken,
       tokenAddress
     )
@@ -175,6 +178,7 @@ export class Router extends SmartContractWithAddress {
       address,
       estGas + 1,
       this.web3,
+      this.config,
       this.contract.methods.addSSContract,
       tokenAddress
     )
@@ -207,6 +211,7 @@ export class Router extends SmartContractWithAddress {
       address,
       estGas + 1,
       this.web3,
+      this.config,
       this.contract.methods.removeSSContract,
       tokenAddress
     )
@@ -239,6 +244,7 @@ export class Router extends SmartContractWithAddress {
       address,
       estGas + 1,
       this.web3,
+      this.config,
       this.contract.methods.addFixedRateContract,
       tokenAddress
     )
@@ -272,6 +278,7 @@ export class Router extends SmartContractWithAddress {
       address,
       estGas + 1,
       this.web3,
+      this.config,
       this.contract.methods.removeFixedRateContract,
       tokenAddress
     )
@@ -305,6 +312,7 @@ export class Router extends SmartContractWithAddress {
       address,
       estGas + 1,
       this.web3,
+      this.config,
       this.contract.methods.addDispenserContract,
       tokenAddress
     )
@@ -337,6 +345,7 @@ export class Router extends SmartContractWithAddress {
       address,
       estGas + 1,
       this.web3,
+      this.config,
       this.contract.methods.removeDispenserContract,
       tokenAddress
     )
@@ -392,6 +401,7 @@ export class Router extends SmartContractWithAddress {
       address,
       estGas + 1,
       this.web3,
+      this.config,
       this.contract.methods.updateOPCFee,
       newSwapOceanFee,
       newSwapNonOceanFee,
@@ -428,6 +438,7 @@ export class Router extends SmartContractWithAddress {
       address,
       estGas + 1,
       this.web3,
+      this.config,
       this.contract.methods.addPoolTemplate,
       templateAddress
     )
@@ -461,6 +472,7 @@ export class Router extends SmartContractWithAddress {
       address,
       estGas + 1,
       this.web3,
+      this.config,
       this.contract.methods.removePoolTemplate,
       templateAddress
     )
