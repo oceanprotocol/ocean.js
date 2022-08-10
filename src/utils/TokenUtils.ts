@@ -6,7 +6,8 @@ import {
   calculateEstimatedGas,
   getFairGasPrice,
   unitsToAmount,
-  minAbi
+  minAbi,
+  sendTx
 } from '.'
 
 /**
@@ -44,11 +45,14 @@ export async function approve<G extends boolean = false>(
   )
   if (estimateGas) return estGas
 
-  const trxReceipt = await tokenContract.methods.approve(spender, amountFormatted).send({
-    from: account,
-    gas: estGas + 1,
-    gasPrice: await getFairGasPrice(web3, null)
-  })
+  const trxReceipt = await sendTx(
+    account,
+    estGas + 1,
+    this.web3,
+    tokenContract.methods.approve,
+    spender,
+    amountFormatted
+  )
   return trxReceipt
 }
 
@@ -79,13 +83,14 @@ export async function transfer<G extends boolean = false>(
   )
   if (estimateGas) return estGas
 
-  const trxReceipt = await tokenContract.methods
-    .transfer(recipient, amountFormatted)
-    .send({
-      from: account,
-      gas: estGas + 1,
-      gasPrice: await getFairGasPrice(web3, null)
-    })
+  const trxReceipt = await sendTx(
+    account,
+    estGas + 1,
+    this.web3,
+    tokenContract.methods.transfer,
+    recipient,
+    amountFormatted
+  )
   return trxReceipt
 }
 
