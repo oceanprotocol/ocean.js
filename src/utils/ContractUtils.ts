@@ -112,18 +112,18 @@ export async function sendTx(
   functionToSend: Function,
   ...args: any[]
 ): Promise<any> {
-  let sendTxValue: Record<string, any> = {
+  const sendTxValue: Record<string, any> = {
     from: from,
     gas: estGas + 1
   }
   const feeHistory = await web3.eth.getFeeHistory(1, 'pending', [75])
-  if (feeHistory && feeHistory.baseFeePerGas) {
+  if (feeHistory && feeHistory.baseFeePerGas && feeHistory.reward[0][0]) {
     sendTxValue.maxPriorityFeePerGas = new BigNumber(feeHistory.reward[0][0])
       .integerValue(BigNumber.ROUND_DOWN)
       .toString(10)
 
     sendTxValue.maxFeePerGas = new BigNumber(feeHistory.reward[0][0])
-      .plus(new BigNumber(feeHistory.reward[0][0]).multipliedBy(2))
+      .plus(new BigNumber(feeHistory.baseFeePerGas[0]).multipliedBy(2))
       .integerValue(BigNumber.ROUND_DOWN)
       .toString(10)
   } else {
