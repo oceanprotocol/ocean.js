@@ -176,7 +176,7 @@ const algoDdoWithNoTimeout = {
         image: 'ubuntu',
         tag: 'latest',
         checksum:
-          'sha256:d39ab4712a8395d0b399dea44d9cb8b34ac942411b6a380449ebdb9d321136a3'
+          'sha256:42ba2dfce475de1113d55602d40af18415897167d47c2045ec7b6d9746ff148f'
       }
     }
   },
@@ -218,7 +218,7 @@ const algoDdoWith1mTimeout = {
         image: 'ubuntu',
         tag: 'latest',
         checksum:
-          'sha256:d39ab4712a8395d0b399dea44d9cb8b34ac942411b6a380449ebdb9d321136a3'
+          'sha256:42ba2dfce475de1113d55602d40af18415897167d47c2045ec7b6d9746ff148f'
       }
     }
   },
@@ -459,7 +459,6 @@ describe('Simple compute tests', async () => {
       providerUrl,
       consumerAccount
     )
-    console.log('providerInitializeComputeResults =', providerInitializeComputeResults)
     assert(
       !('error' in providerInitializeComputeResults.algorithm),
       'Cannot order algorithm'
@@ -480,28 +479,18 @@ describe('Simple compute tests', async () => {
         0
       )
     }
-    console.log(' asset =', assets[0])
-    console.log(' algo =', algo)
-    console.log(' consumerAccount =', consumerAccount)
-    console.log(' computeEnv.id =', computeEnv.id)
-    try {
-      const computeJobs = await ProviderInstance.computeStart(
-        providerUrl,
-        web3,
-        consumerAccount,
-        computeEnv.id,
-        assets[0],
-        algo
-      )
-      console.log(' computeJobs response =', computeJobs)
-      freeEnvDatasetTxId = assets[0].transferTxId
-      freeEnvAlgoTxId = algo.transferTxId
-      assert(computeJobs, 'Cannot start compute job')
-      computeJobId = computeJobs[0].jobId
-    } catch (error) {
-      console.log(' computeJobs error =', error)
-      console.log(' computeJobs error =', error.message)
-    }
+    const computeJobs = await ProviderInstance.computeStart(
+      providerUrl,
+      web3,
+      consumerAccount,
+      computeEnv.id,
+      assets[0],
+      algo
+    )
+    freeEnvDatasetTxId = assets[0].transferTxId
+    freeEnvAlgoTxId = algo.transferTxId
+    assert(computeJobs, 'Cannot start compute job')
+    computeJobId = computeJobs[0].jobId
   })
 
   it('should restart a computeJob without paying anything, because order is valid and providerFees are still valid', async () => {
