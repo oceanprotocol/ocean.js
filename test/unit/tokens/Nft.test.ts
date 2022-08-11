@@ -433,4 +433,31 @@ describe('NFT', () => {
     assert(metadata[0] === metadataAndTokenURI.metaDataDecryptorUrl)
     assert(metadata[1] === metadataAndTokenURI.metaDataDecryptorAddress)
   })
+
+  it('#setData - should FAIL to set a value into 725Y standard, if Caller has NOT store updater permission', async () => {
+    const key = 'KEY'
+    const data = 'NewData'
+    assert((await nftDatatoken.getNftPermissions(nftAddress, user1)).store === false)
+
+    try {
+      await nftDatatoken.setData(nftAddress, user1, key, data)
+      assert(false)
+    } catch (e) {
+      assert(e.message === 'User is not ERC20 store updater')
+    }
+    assert((await nftDatatoken.getData(nftAddress, key)) === null)
+  })
+
+  it('#setData - should set a value into 725Y standard, if Caller has store updater permission', async () => {
+    const key = 'KEY'
+    const data = 'NewData'
+
+    // add store updater permission
+    await nftDatatoken.addStoreUpdater(nftAddress, user1, user1)
+    assert((await nftDatatoken.getNftPermissions(nftAddress, user1)).store === true)
+
+    await nftDatatoken.setData(nftAddress, user1, key, data)
+
+    assert((await nftDatatoken.getData(nftAddress, key)) === data)
+  })
 })

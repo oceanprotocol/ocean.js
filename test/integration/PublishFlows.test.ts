@@ -18,7 +18,8 @@ import {
   DatatokenCreateParams,
   PoolCreationParams,
   FreCreationParams,
-  DispenserCreationParams
+  DispenserCreationParams,
+  Files
 } from '../../src/@types'
 
 describe('Publish tests', async () => {
@@ -30,18 +31,22 @@ describe('Publish tests', async () => {
   let factory: NftFactory
   let publisherAccount: string
 
-  const assetUrl = [
-    {
-      type: 'url',
-      url: 'https://raw.githubusercontent.com/oceanprotocol/testdatasets/main/shs_dataset_test.txt',
-      method: 'GET'
-    }
-  ]
+  const assetUrl: Files = {
+    datatokenAddress: '0x0',
+    nftAddress: '0x0',
+    files: [
+      {
+        type: 'url',
+        url: 'https://raw.githubusercontent.com/oceanprotocol/testdatasets/main/shs_dataset_test.txt',
+        method: 'GET'
+      }
+    ]
+  }
 
   const genericAsset: DDO = {
     '@context': ['https://w3id.org/did/v1'],
     id: '',
-    version: '4.0.0',
+    version: '4.1.0',
     chainId: 4,
     nftAddress: '0x0',
     metadata: {
@@ -63,7 +68,7 @@ describe('Publish tests', async () => {
         description: 'Download service',
         files: '',
         datatokenAddress: '0x0',
-        serviceEndpoint: 'https://providerv4.rinkeby.oceanprotocol.com',
+        serviceEndpoint: 'https://v4.provider.rinkeby.oceanprotocol.com',
         timeout: 0
       }
     ]
@@ -142,7 +147,8 @@ describe('Publish tests', async () => {
 
     const nftAddress = bundleNFT.events.NFTCreated.returnValues[0]
     const datatokenAddress = bundleNFT.events.TokenCreated.returnValues[0]
-
+    assetUrl.datatokenAddress = datatokenAddress
+    assetUrl.nftAddress = nftAddress
     const encryptedFiles = await ProviderInstance.encrypt(assetUrl, providerUrl)
 
     poolDdo.metadata.name = 'test-dataset-pool'
@@ -223,7 +229,8 @@ describe('Publish tests', async () => {
 
     const nftAddress = bundleNFT.events.NFTCreated.returnValues[0]
     const datatokenAddress = bundleNFT.events.TokenCreated.returnValues[0]
-
+    assetUrl.datatokenAddress = datatokenAddress
+    assetUrl.nftAddress = nftAddress
     const encryptedFiles = await ProviderInstance.encrypt(assetUrl, providerUrl)
 
     fixedPriceDdo.metadata.name = 'test-dataset-fixedPrice'
@@ -297,7 +304,8 @@ describe('Publish tests', async () => {
 
     const nftAddress = bundleNFT.events.NFTCreated.returnValues[0]
     const datatokenAddress = bundleNFT.events.TokenCreated.returnValues[0]
-
+    assetUrl.datatokenAddress = datatokenAddress
+    assetUrl.nftAddress = nftAddress
     const encryptedFiles = await ProviderInstance.encrypt(assetUrl, providerUrl)
     dispenserDdo.metadata.name = 'test-dataset-dispenser'
     dispenserDdo.services[0].files = await encryptedFiles

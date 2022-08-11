@@ -2,7 +2,7 @@ import Web3 from 'web3'
 import BigNumber from 'bignumber.js'
 import { Contract } from 'web3-eth-contract'
 import { Config } from '../config'
-import { minAbi, GASLIMIT_DEFAULT } from '.'
+import { minAbi, GASLIMIT_DEFAULT, LoggerInstance } from '.'
 
 export function setContractDefaults(contract: Contract, config: Config): Contract {
   if (config) {
@@ -58,12 +58,14 @@ export async function amountToUnits(
     decimals = 18
   }
   BigNumber.config({ EXPONENTIAL_AT: 50 })
-
-  const amountFormatted = new BigNumber(amount).times(
-    new BigNumber(10).exponentiatedBy(decimals)
-  )
-
-  return amountFormatted.toString()
+  try {
+    const amountFormatted = new BigNumber(amount).times(
+      new BigNumber(10).exponentiatedBy(decimals)
+    )
+    return amountFormatted.toFixed(0)
+  } catch (e) {
+    LoggerInstance.error(`ERROR: FAILED TO CALL DECIMALS(), USING 18', ${e.message}`)
+  }
 }
 
 /**
