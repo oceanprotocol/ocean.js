@@ -30,7 +30,7 @@ describe('Router unit test', () => {
   const RATE = '1'
   const FEE = '0.001'
   const FEE_ZERO = '0'
-  const DAI_AMOUNT = '2' // 2 DAI
+  const DAI_AMOUNT = '10' // 2 DAI
   const CAP_AMOUNT = '1000000'
   const AMOUNTS_IN = web3.utils.toWei('1')
   const AMOUNTS_OUT = web3.utils.toWei('0.1')
@@ -147,7 +147,7 @@ describe('Router unit test', () => {
 
     const freId1 = txReceipt.events.NewFixedRate.returnValues.exchangeId
 
-    // CREATE A SECOND POOL
+    // CREATE A SECOND FRE
 
     const txReceipt2 = await nftFactory.createNftWithDatatokenWithFixedRate(
       factoryOwner,
