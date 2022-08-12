@@ -32,11 +32,6 @@ describe('Router unit test', () => {
   const FEE_ZERO = '0'
   const DAI_AMOUNT = '2' // 2 DAI
   const CAP_AMOUNT = '1000000'
-  const VESTING_AMOUNT = '10000'
-  const TOKEN_DECIMALS = 18
-  const VESTED_BLOCKS = 2500000
-  const BASE_TOKEN_LIQUIDITY = '2000'
-  const EXCHANGE_IDS = keccak256('0x00')
   const AMOUNTS_IN = web3.utils.toWei('1')
   const AMOUNTS_OUT = web3.utils.toWei('0.1')
   const MAX_PRICE = web3.utils.toWei('10')
@@ -150,6 +145,8 @@ describe('Router unit test', () => {
 
     const fre1 = txReceipt.events.NewFixedRate.returnValues.exchangeContract
 
+    const freId1 = txReceipt.events.NewFixedRate.returnValues.exchangeId
+
     // CREATE A SECOND POOL
 
     const txReceipt2 = await nftFactory.createNftWithDatatokenWithFixedRate(
@@ -163,6 +160,8 @@ describe('Router unit test', () => {
 
     const fre2 = txReceipt2.events.NewFixedRate.returnValues.exchangeContract
 
+    const freId2 = txReceipt2.events.NewFixedRate.returnValues.exchangeId
+
     // user1 has no dt1
     expect(await balance(web3, datatokenAddress, user1)).to.equal('0')
     // user1 has no dt2
@@ -175,7 +174,7 @@ describe('Router unit test', () => {
     // 2 - FixedRateExchange
     // 3 - Dispenser
     const operations1: Operation = {
-      exchangeIds: EXCHANGE_IDS, // used only for FixedRate or Dispenser, but needs to be filled even for pool
+      exchangeIds: freId1, // used only for FixedRate or Dispenser, but needs to be filled even for pool
       source: fre1, // pool Address
       operation: 2, // swapExactAmountIn
       tokenIn: contracts.daiAddress,
@@ -188,7 +187,7 @@ describe('Router unit test', () => {
     }
 
     const operations2: Operation = {
-      exchangeIds: EXCHANGE_IDS, // used only for FixedRate or Dispenser, but needs to be filled even for pool
+      exchangeIds: freId2, // used only for FixedRate or Dispenser, but needs to be filled even for pool
       source: fre2, // pool Address
       operation: 2, // swapExactAmountIn
       tokenIn: contracts.daiAddress,
