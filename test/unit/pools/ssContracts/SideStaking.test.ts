@@ -159,8 +159,6 @@ describe('SideStaking unit test', () => {
       poolAddress = txReceipt.events.NewPool.returnValues.poolAddress
 
       // user1 has no dt1
-      expect(await datatokenContract.methods.balanceOf(user1).call()).to.equal('0')
-      // user1 has no dt1
       expect(await balance(web3, datatoken, user1)).to.equal('0')
     })
 
