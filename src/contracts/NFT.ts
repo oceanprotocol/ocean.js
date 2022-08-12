@@ -519,14 +519,12 @@ export class Nft extends SmartContract {
    * Creates or update Metadata cached by Aquarius. Also, updates the METADATA_DECRYPTOR key
    * @param {String} nftAddress NFT contract address
    * @param {String} address Caller address NFT Owner adress
-   * @param {String} metadataState metadata state
-   * @param {String} metadataDecryptorUrl decryptor URL
-   * @param {String} metadataDecryptorAddress decryptor public key
-   * @param {String} flags flags used by Aquarius
-   * @param {String} data data to be stored by Aquarius
-   * @param {String} metadataHash hash of clear data (before the encryption, if any)
-   * @param {String} metadataProofs optional signatures of entitys who validated data (before the encryption, if any)
-   * @param {String} estimateGas if true returns the estimate gas for the method
+   * @param {String} address Caller address NFT Owner adress
+   * @param {String} address Caller address NFT Owner adress
+   * @param {String} address Caller address NFT Owner adress
+   * @param {String} address Caller address NFT Owner adress
+   * @param {String} address Caller address NFT Owner adress
+   * @param {String} address Caller address NFT Owner adress
    * @return {Promise<TransactionReceipt>} trxReceipt
    */
   public async setMetadata<G extends boolean = false>(
@@ -725,6 +723,47 @@ export class Nft extends SmartContract {
     const nftContract = this.getContract(nftAddress)
     const isDatatokenDeployer = await nftContract.methods.isERC20Deployer(address).call()
     return isDatatokenDeployer
+  }
+
+  /** setData
+   * This function allows to store data with a preset key (keccak256(ERC20Address)) into NFT 725 Store
+   * only ERC20Deployer can succeed
+   * @param nftAddress erc721 contract adress
+   * @param address user adress
+   * @param key Key of the data to be stored into 725Y standard
+   * @param value Data to be stored into 725Y standard
+   * @return {Promise<TransactionReceipt>} transactionId
+   */
+  public async setData(
+    nftAddress: string,
+    address: string,
+    key: string,
+    value: string
+  ): Promise<TransactionReceipt> {
+    if ((await this.getNftPermissions(nftAddress, address)).store !== true) {
+      throw new Error(`User is not ERC20 store updater`)
+    }
+
+    const nftContract = this.getContract(nftAddress)
+
+    const keyHash = this.web3.utils.keccak256(key)
+    const valueHex = this.web3.utils.asciiToHex(value)
+
+    const estGas = await calculateEstimatedGas(
+      address,
+      nftContract.methods.setNewData,
+      keyHash,
+      valueHex
+    )
+
+    // Call setData function of the contract
+    const trxReceipt = await nftContract.methods.setNewData(keyHash, valueHex).send({
+      from: address,
+      gas: estGas + 1,
+      gasPrice: await this.getFairGasPrice()
+    })
+
+    return trxReceipt
   }
 
   /** Gets data at a given `key`

@@ -96,6 +96,7 @@ import {
   DispenserCreationParams,
   downloadFile,
   DatatokenCreateParams,
+  Files,
   FixedRateExchange,
   FreCreationParams,
   getHash,
@@ -143,13 +144,17 @@ We also define some constants that we will use:
 
  We will need a file to publish, so here we define the file that we intend to publish.
 ```Typescript
-  const ASSET_URL = [
-    {
-      type: 'url',
-      url: 'https://raw.githubusercontent.com/oceanprotocol/testdatasets/main/shs_dataset_test.txt',
-      method: 'GET'
-    }
-  ]
+  const ASSET_URL: Files = {
+    datatokenAddress: '0x0',
+    nftAddress: '0x0',
+    files: [
+      {
+        type: 'url',
+        url: 'https://raw.githubusercontent.com/oceanprotocol/testdatasets/main/shs_dataset_test.txt',
+        method: 'GET'
+      }
+    ]
+  }
 ```
 
 Next, we define the metadata that will describe our data asset. This is what we call the DDO
@@ -157,7 +162,7 @@ Next, we define the metadata that will describe our data asset. This is what we 
   const DDO = {
     '@context': ['https://w3id.org/did/v1'],
     id: '',
-    version: '4.0.0',
+    version: '4.1.0',
     chainId: 4,
     nftAddress: '0x0',
     metadata: {
@@ -175,7 +180,7 @@ Next, we define the metadata that will describe our data asset. This is what we 
         type: 'access',
         files: '',
         datatokenAddress: '0x0',
-        serviceEndpoint: 'https://providerv4.rinkeby.oceanprotocol.com',
+        serviceEndpoint: 'https://v4.provider.rinkeby.oceanprotocol.com',
         timeout: 0
       }
     ]
@@ -225,7 +230,7 @@ Again, lets console log the values so that we can check that they have been save
   
 ```
 
-## 7. Publish Data NFT and a Datatoken with a fixed rate exchange
+## 6. Publish Data NFT and a Datatoken with a fixed rate exchange
 
   ### 6.1 Publish a dataset (create NFT + Datatoken) with a fixed rate exchange
 ```Typescript
@@ -301,6 +306,8 @@ Now we are going to update the ddo and set the did
 ```
 Next, let's encrypt the file(s) using provider
 ```Typescript
+    ASSET_URL.datatokenAddress = freDatatokenAddress
+    ASSET_URL.nftAddress = freNftAddress
     const encryptedFiles = await ProviderInstance.encrypt(ASSET_URL, providerUrl)
     DDO.services[0].files = await encryptedFiles
     DDO.services[0].datatokenAddress = freDatatokenAddress
@@ -515,6 +522,8 @@ Lets start by updating the ddo and setting the did
 ```
 Now we need to encrypt file(s) using provider
 ```Typescript
+    ASSET_URL.datatokenAddress = dispenserDatatokenAddress
+    ASSET_URL.nftAddress = dispenserNftAddress
     const encryptedFiles = await ProviderInstance.encrypt(ASSET_URL, providerUrl)
     DDO.services[0].files = await encryptedFiles
     DDO.services[0].datatokenAddress = dispenserDatatokenAddress

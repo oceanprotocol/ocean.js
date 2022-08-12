@@ -486,6 +486,8 @@ describe('Datatoken', () => {
       exchangeContract: fixedRateAddress,
       exchangeId,
       maxBaseTokenAmount: '1',
+      baseTokenAddress: contracts.daiAddress,
+      baseTokenDecimals: 18,
       swapMarketFee: '0.1',
       marketFeeAddress: ZERO_ADDRESS
     }
@@ -544,20 +546,19 @@ describe('Datatoken', () => {
     assert(address, 'Not able to get the parent NFT address')
   })
 
-  it('#setData - should set a value into 725Y standard, if Caller has DatatokenDeployer permission', async () => {
-    const data = web3.utils.asciiToHex('SomeData')
+  it('#setData - should set a value into 725Y standard, if Caller has ERC20Deployer permission', async () => {
+    const data = 'SomeData'
 
     assert((await nftDatatoken.isDatatokenDeployer(nftAddress, nftOwner)) === true)
 
     await datatoken.setData(datatokenAddress, nftOwner, data)
 
-    const key = web3.utils.keccak256(datatokenAddress)
-    assert((await nftDatatoken.getData(nftAddress, key)) === data)
+    assert((await nftDatatoken.getData(nftAddress, datatokenAddress)) === data)
   })
 
-  it('#setData - should FAIL to set a value into 725Y standard, if Caller has NOT DatatokenDeployer permission', async () => {
-    const data = web3.utils.asciiToHex('NewData')
-    const OldData = web3.utils.asciiToHex('SomeData')
+  it('#setData - should FAIL to set a value into 725Y standard, if Caller has NOT ERC20Deployer permission', async () => {
+    const data = 'NewData'
+    const OldData = 'SomeData'
     assert((await nftDatatoken.isDatatokenDeployer(nftAddress, user1)) === false)
 
     try {
@@ -566,8 +567,7 @@ describe('Datatoken', () => {
     } catch (e) {
       assert(e.message === 'User is not Datatoken Deployer')
     }
-    const key = web3.utils.keccak256(datatokenAddress)
-    assert((await nftDatatoken.getData(nftAddress, key)) === OldData)
+    assert((await nftDatatoken.getData(nftAddress, datatokenAddress)) === OldData)
   })
 
   it('#getDecimals - should return the number of decimals of the datatoken', async () => {

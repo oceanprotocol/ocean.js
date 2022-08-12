@@ -1,7 +1,7 @@
 import { assert } from 'chai'
 import { web3, getTestConfig } from '../config'
 import { Config, Provider } from '../../src'
-import { FileMetadata } from '../../src/@types'
+import { FileInfo } from '../../src/@types'
 
 describe('Provider tests', async () => {
   let config: Config
@@ -26,7 +26,7 @@ describe('Provider tests', async () => {
   })
 
   it('Alice checks fileinfo', async () => {
-    const fileinfo: FileMetadata[] = await providerInstance.checkFileUrl(
+    const fileinfo: FileInfo[] = await providerInstance.checkFileUrl(
       'https://dumps.wikimedia.org/enwiki/latest/enwiki-latest-abstract.xml.gz-rss.xml',
       config.providerUri
     )

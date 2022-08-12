@@ -13,7 +13,7 @@ import {
   downloadFile,
   ZERO_ADDRESS
 } from '../../src'
-import { ProviderFees, DatatokenCreateParams, DDO } from '../../src/@types'
+import { ProviderFees, DatatokenCreateParams, DDO, Files } from '../../src/@types'
 
 describe('Simple Publish & consume test', async () => {
   let config: Config
@@ -23,18 +23,22 @@ describe('Simple Publish & consume test', async () => {
   let publisherAccount: string
   let consumerAccount: string
 
-  const assetUrl = [
-    {
-      type: 'url',
-      url: 'https://raw.githubusercontent.com/oceanprotocol/testdatasets/main/shs_dataset_test.txt',
-      method: 'GET'
-    }
-  ]
+  const assetUrl: Files = {
+    datatokenAddress: '0x0',
+    nftAddress: '0x0',
+    files: [
+      {
+        type: 'url',
+        url: 'https://raw.githubusercontent.com/oceanprotocol/testdatasets/main/shs_dataset_test.txt',
+        method: 'GET'
+      }
+    ]
+  }
 
   const ddo: DDO = {
     '@context': ['https://w3id.org/did/v1'],
     id: '',
-    version: '4.0.0',
+    version: '4.1.0',
     chainId: 4,
     nftAddress: '0x0',
     metadata: {
@@ -52,7 +56,7 @@ describe('Simple Publish & consume test', async () => {
         type: 'access',
         files: '',
         datatokenAddress: '0x0',
-        serviceEndpoint: 'https://providerv4.rinkeby.oceanprotocol.com',
+        serviceEndpoint: 'https://v4.provider.rinkeby.oceanprotocol.com',
         timeout: 0
       }
     ]
@@ -105,6 +109,8 @@ describe('Simple Publish & consume test', async () => {
     const datatokenAddress = tx.events.TokenCreated.returnValues[0]
 
     // create the files encrypted string
+    assetUrl.datatokenAddress = datatokenAddress
+    assetUrl.nftAddress = nftAddress
     let providerResponse = await ProviderInstance.encrypt(assetUrl, providerUrl)
     ddo.services[0].files = await providerResponse
     ddo.services[0].datatokenAddress = datatokenAddress
