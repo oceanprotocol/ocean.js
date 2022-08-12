@@ -993,9 +993,9 @@ export class Pool extends SmartContract {
    */
   public getSwapEventSignature(): string {
     const abi = this.abi as AbiItem[]
-    const eventdata = abi.find(function (o) {
-      if (o.name === 'LOG_SWAP' && o.type === 'event') return o
-    })
+    const eventdata = abi.find(
+      (data) => data.name === 'LOG_SWAP' && data.type === 'event'
+    )
     const topic = this.web3.eth.abi.encodeEventSignature(eventdata as any)
     return topic
   }
@@ -1006,9 +1006,9 @@ export class Pool extends SmartContract {
    */
   public getJoinEventSignature(): string {
     const abi = this.abi as AbiItem[]
-    const eventdata = abi.find(function (o) {
-      if (o.name === 'LOG_JOIN' && o.type === 'event') return o
-    })
+    const eventdata = abi.find(
+      (data) => data.name === 'LOG_JOIN' && data.type === 'event'
+    )
     const topic = this.web3.eth.abi.encodeEventSignature(eventdata as any)
     return topic
   }
@@ -1019,9 +1019,9 @@ export class Pool extends SmartContract {
    */
   public getExitEventSignature(): string {
     const abi = this.abi as AbiItem[]
-    const eventdata = abi.find(function (o) {
-      if (o.name === 'LOG_EXIT' && o.type === 'event') return o
-    })
+    const eventdata = abi.find(
+      (data) => data.name === 'LOG_EXIT' && data.type === 'event'
+    )
     const topic = this.web3.eth.abi.encodeEventSignature(eventdata as any)
     return topic
   }
