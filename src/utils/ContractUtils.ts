@@ -1,17 +1,8 @@
 import Web3 from 'web3'
 import BigNumber from 'bignumber.js'
 import { Contract } from 'web3-eth-contract'
-import { generateDtName } from './DatatokenName'
-import {
-  Erc20CreateParams,
-  FreCreationParams,
-  FreOrderParams,
-  PoolCreationParams
-} from '../@types'
-import { Config } from '../models'
-import { minAbi } from './minAbi'
-import LoggerInstance from './Logger'
-import { GASLIMIT_DEFAULT, ZERO_ADDRESS } from './Constants'
+import { Config } from '../config'
+import { minAbi, GASLIMIT_DEFAULT, LoggerInstance } from '.'
 
 export function setContractDefaults(contract: Contract, config: Config): Contract {
   if (config) {
@@ -35,124 +26,24 @@ export async function getFairGasPrice(web3: Web3, config: Config): Promise<strin
   else return x.toString(10)
 }
 
-export function getErcCreationParams(ercParams: Erc20CreateParams): any {
-  let name: string, symbol: string
-  // Generate name & symbol if not present
-  if (!ercParams.name || !ercParams.symbol) {
-    ;({ name, symbol } = generateDtName())
-  }
-  return {
-    templateIndex: ercParams.templateIndex,
-    strings: [ercParams.name || name, ercParams.symbol || symbol],
-    addresses: [
-      ercParams.minter,
-      ercParams.paymentCollector,
-      ercParams.mpFeeAddress,
-      ercParams.feeToken
-    ],
-    uints: [Web3.utils.toWei(ercParams.cap), Web3.utils.toWei(ercParams.feeAmount)],
-    bytess: []
-  }
-}
-
-export async function getFreOrderParams(
-  web3: Web3,
-  freParams: FreOrderParams
-): Promise<any> {
-  return {
-    exchangeContract: freParams.exchangeContract,
-    exchangeId: freParams.exchangeId,
-    maxBaseTokenAmount: await amountToUnits(
-      web3,
-      freParams.baseTokenAddress,
-      freParams.maxBaseTokenAmount,
-      freParams.baseTokenDecimals
-    ),
-    swapMarketFee: await amountToUnits(
-      web3,
-      freParams.baseTokenAddress,
-      freParams.swapMarketFee,
-      freParams.baseTokenDecimals
-    ),
-    marketFeeAddress: freParams.marketFeeAddress
-  }
-}
-
-export function getFreCreationParams(freParams: FreCreationParams): any {
-  if (!freParams.allowedConsumer) freParams.allowedConsumer = ZERO_ADDRESS
-  const withMint = freParams.withMint ? 1 : 0
-
-  return {
-    fixedPriceAddress: freParams.fixedRateAddress,
-    addresses: [
-      freParams.baseTokenAddress,
-      freParams.owner,
-      freParams.marketFeeCollector,
-      freParams.allowedConsumer
-    ],
-    uints: [
-      freParams.baseTokenDecimals,
-      freParams.datatokenDecimals,
-      Web3.utils.toWei(freParams.fixedRate),
-      Web3.utils.toWei(freParams.marketFee),
-      withMint
-    ]
-  }
-}
-
-export async function getPoolCreationParams(
-  web3: Web3,
-  poolParams: PoolCreationParams
-): Promise<any> {
-  return {
-    addresses: [
-      poolParams.ssContract,
-      poolParams.baseTokenAddress,
-      poolParams.baseTokenSender,
-      poolParams.publisherAddress,
-      poolParams.marketFeeCollector,
-      poolParams.poolTemplateAddress
-    ],
-    ssParams: [
-      Web3.utils.toWei(poolParams.rate),
-      poolParams.baseTokenDecimals,
-      Web3.utils.toWei(poolParams.vestingAmount),
-      poolParams.vestedBlocks,
-      await amountToUnits(
-        web3,
-        poolParams.baseTokenAddress,
-        poolParams.initialBaseTokenLiquidity
-      )
-    ],
-    swapFees: [
-      Web3.utils.toWei(poolParams.swapFeeLiquidityProvider),
-      Web3.utils.toWei(poolParams.swapFeeMarketRunner)
-    ]
-  }
-}
-
 export async function unitsToAmount(
   web3: Web3,
   token: string,
   amount: string,
   tokenDecimals?: number
 ): Promise<string> {
-  try {
-    const tokenContract = new web3.eth.Contract(minAbi, token)
-    let decimals = tokenDecimals || (await tokenContract.methods.decimals().call())
-    if (decimals === '0') {
-      decimals = 18
-    }
-
-    const amountFormatted = new BigNumber(amount).div(
-      new BigNumber(10).exponentiatedBy(decimals)
-    )
-
-    BigNumber.config({ EXPONENTIAL_AT: 50 })
-    return amountFormatted.toString()
-  } catch (e) {
-    LoggerInstance.error(`ERROR: FAILED TO CALL DECIMALS(), USING 18' : ${e.message}`)
+  const tokenContract = new web3.eth.Contract(minAbi, token)
+  let decimals = tokenDecimals || (await tokenContract.methods.decimals().call())
+  if (decimals === '0') {
+    decimals = 18
   }
+
+  const amountFormatted = new BigNumber(amount).div(
+    new BigNumber(10).exponentiatedBy(decimals)
+  )
+
+  BigNumber.config({ EXPONENTIAL_AT: 50 })
+  return amountFormatted.toString()
 }
 
 export async function amountToUnits(
@@ -161,21 +52,17 @@ export async function amountToUnits(
   amount: string,
   tokenDecimals?: number
 ): Promise<string> {
-  try {
-    const tokenContract = new web3.eth.Contract(minAbi, token)
-    let decimals = tokenDecimals || (await tokenContract.methods.decimals().call())
-    if (decimals === '0') {
-      decimals = 18
-    }
-    BigNumber.config({ EXPONENTIAL_AT: 50 })
-
-    const amountFormatted = new BigNumber(amount).times(
-      new BigNumber(10).exponentiatedBy(decimals)
-    )
-    return amountFormatted.toFixed(0)
-  } catch (e) {
-    LoggerInstance.error(`ERROR: FAILED TO CALL DECIMALS(), USING 18', ${e.message}`)
+  const tokenContract = new web3.eth.Contract(minAbi, token)
+  let decimals = tokenDecimals || (await tokenContract.methods.decimals().call())
+  if (decimals === '0') {
+    decimals = 18
   }
+  BigNumber.config({ EXPONENTIAL_AT: 50 })
+
+  const amountFormatted = new BigNumber(amount).times(
+    new BigNumber(10).exponentiatedBy(decimals)
+  )
+  return amountFormatted.toFixed(0)
 }
 
 /**
@@ -185,21 +72,16 @@ export async function amountToUnits(
  * @param {...any[]} args arguments of the function
  * @return {Promise<number>} gas cost of the function
  */
-export async function estimateGas(
+export async function calculateEstimatedGas(
   from: string,
   functionToEstimateGas: Function,
   ...args: any[]
 ): Promise<any> {
-  let estimatedGas = GASLIMIT_DEFAULT
-  try {
-    estimatedGas = await functionToEstimateGas.apply(null, args).estimateGas(
-      {
-        from: from
-      },
-      (err, estGas) => (err ? GASLIMIT_DEFAULT : estGas)
-    )
-  } catch (e) {
-    LoggerInstance.error(`ERROR: Estimate gas failed!`, e)
-  }
+  const estimatedGas = await functionToEstimateGas.apply(null, args).estimateGas(
+    {
+      from: from
+    },
+    (err, estGas) => (err ? GASLIMIT_DEFAULT : estGas)
+  )
   return estimatedGas
 }

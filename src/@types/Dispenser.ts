@@ -5,3 +5,13 @@ export interface DispenserCreationParams {
   withMint?: boolean // true if we want to allow the dispenser to be a minter
   allowedSwapper?: string // only account that can ask tokens. set address(0) if not required
 }
+
+export interface DispenserToken {
+  active: boolean
+  owner: string
+  maxTokens: string
+  maxBalance: string
+  balance: string
+  isMinter: boolean
+  allowedSwapper: string
+}

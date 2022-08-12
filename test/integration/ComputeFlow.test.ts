@@ -14,7 +14,7 @@ import {
   approveWei
 } from '../../src'
 import {
-  Erc20CreateParams,
+  DatatokenCreateParams,
   ComputeJob,
   ComputeAsset,
   ComputeAlgorithm,
@@ -255,7 +255,7 @@ async function createAsset(
     transferable: true,
     owner: owner
   }
-  const erc20ParamsAsset: Erc20CreateParams = {
+  const datatokenParams: DatatokenCreateParams = {
     templateIndex: 1,
     cap: '100000',
     feeAmount: '0',
@@ -265,11 +265,15 @@ async function createAsset(
     mpFeeAddress: ZERO_ADDRESS
   }
 
-  const result = await Factory.createNftWithErc20(owner, nftParamsAsset, erc20ParamsAsset)
+  const result = await Factory.createNftWithDatatoken(
+    owner,
+    nftParamsAsset,
+    datatokenParams
+  )
 
-  const erc721AddressAsset = result.events.NFTCreated.returnValues[0]
+  const nftAddress = result.events.NFTCreated.returnValues[0]
   const datatokenAddressAsset = result.events.TokenCreated.returnValues[0]
-  ddo.nftAddress = web3.utils.toChecksumAddress(erc721AddressAsset)
+  ddo.nftAddress = web3.utils.toChecksumAddress(nftAddress)
   // create the files encrypted string
   assetUrl.datatokenAddress = datatokenAddressAsset
   assetUrl.nftAddress = ddo.nftAddress
@@ -278,15 +282,15 @@ async function createAsset(
   ddo.services[0].datatokenAddress = datatokenAddressAsset
   ddo.services[0].serviceEndpoint = providerUrl
   // update ddo and set the right did
+  ddo.nftAddress = web3.utils.toChecksumAddress(nftAddress)
   ddo.id =
-    'did:op:' +
-    SHA256(web3.utils.toChecksumAddress(erc721AddressAsset) + chain.toString(10))
+    'did:op:' + SHA256(web3.utils.toChecksumAddress(nftAddress) + chain.toString(10))
   providerResponse = await ProviderInstance.encrypt(ddo, providerUrl)
   const encryptedResponse = await providerResponse
   const validateResult = await aquarius.validate(ddo)
   assert(validateResult.valid, 'Could not validate metadata')
   await nft.setMetadata(
-    erc721AddressAsset,
+    nftAddress,
     owner,
     0,
     providerUrl,

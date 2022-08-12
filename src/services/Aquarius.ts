@@ -1,6 +1,6 @@
-import { LoggerInstance, sleep } from '../utils'
-import { Asset, DDO, ValidateMetadata } from '../@types/'
 import fetch from 'cross-fetch'
+import { LoggerInstance, sleep } from '../utils'
+import { Asset, DDO, ValidateMetadata } from '../@types'
 
 export interface SearchQuery {
   from?: number
@@ -193,5 +193,3 @@ export class Aquarius {
     }
   }
 }
-
-export default Aquarius

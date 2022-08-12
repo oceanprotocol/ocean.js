@@ -26,3 +26,12 @@ export interface ProviderComputeInitializeResults {
   algorithm?: ProviderComputeInitialize
   datasets?: ProviderComputeInitialize[]
 }
+
+export interface ServiceEndpoint {
+  serviceName: string
+  method: string
+  urlPath: string
+}
+export interface UserCustomParameters {
+  [key: string]: any
+}
