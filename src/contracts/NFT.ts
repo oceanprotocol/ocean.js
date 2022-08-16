@@ -1,9 +1,9 @@
 import { AbiItem } from 'web3-utils'
 import { TransactionReceipt } from 'web3-eth'
 import ERC721Template from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC721Template.sol/ERC721Template.json'
-import { generateDtName, calculateEstimatedGas, setContractDefaults } from '../../utils'
-import { MetadataProof, MetadataAndTokenURI, NftRoles } from '../../@types'
-import { SmartContract } from '..'
+import { generateDtName, calculateEstimatedGas } from '../utils'
+import { MetadataProof, MetadataAndTokenURI, NftRoles } from '../@types'
+import { SmartContract } from './SmartContract'
 
 export class Nft extends SmartContract {
   getDefaultAbi(): AbiItem | AbiItem[] {
@@ -516,9 +516,14 @@ export class Nft extends SmartContract {
   }
 
   /**
-   * safeTransferNFT Used for transferring the NFT, can be used by an approved relayer
-   * will clean all permissions both on NFT and Datatoken level.
+   * Creates or update Metadata cached by Aquarius. Also, updates the METADATA_DECRYPTOR key
    * @param {String} nftAddress NFT contract address
+   * @param {String} address Caller address NFT Owner adress
+   * @param {String} address Caller address NFT Owner adress
+   * @param {String} address Caller address NFT Owner adress
+   * @param {String} address Caller address NFT Owner adress
+   * @param {String} address Caller address NFT Owner adress
+   * @param {String} address Caller address NFT Owner adress
    * @param {String} address Caller address NFT Owner adress
    * @return {Promise<TransactionReceipt>} trxReceipt
    */

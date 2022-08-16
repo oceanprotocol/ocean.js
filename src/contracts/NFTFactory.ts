@@ -2,17 +2,16 @@ import Web3 from 'web3'
 import { TransactionReceipt } from 'web3-core'
 import { AbiItem } from 'web3-utils'
 import ERC721Factory from '@oceanprotocol/contracts/artifacts/contracts/ERC721Factory.sol/ERC721Factory.json'
-import { generateDtName, calculateEstimatedGas, ZERO_ADDRESS } from '../../utils'
+import { generateDtName, calculateEstimatedGas, ZERO_ADDRESS } from '../utils'
 import {
   FreCreationParams,
   DatatokenCreateParams,
-  PoolCreationParams,
   DispenserCreationParams,
   NftCreateData,
   Template,
   TokenOrder
-} from '../../@types'
-import { SmartContractWithAddress } from '..'
+} from '../@types'
+import { SmartContractWithAddress } from './SmartContractWithAddress'
 
 /**
  * Provides an interface for NFT Factory contract
@@ -486,47 +485,6 @@ export class NftFactory extends SmartContractWithAddress {
   }
 
   /**
-   * @dev createNftWithDatatokenWithPool
-   *      Creates a new NFT, then a Datatoken, then a Pool, all in one call
-   *      Use this carefully, because if Pool creation fails, you are still going to pay a lot of gas
-   * @param address Caller address
-   * @param nftCreateData input data for NFT Creation
-   * @param dtParams input data for Datatoken Creation
-   * @param poolParams input data for Pool Creation
-   * @return {Promise<TransactionReceipt>} transaction receipt
-   */
-  public async createNftWithDatatokenWithPool<G extends boolean = false>(
-    address: string,
-    nftCreateData: NftCreateData,
-    dtParams: DatatokenCreateParams,
-    poolParams: PoolCreationParams,
-    estimateGas?: G
-  ): Promise<G extends false ? TransactionReceipt : number> {
-    const ercCreateData = this.getErcCreationParams(dtParams)
-    const poolData = await this.getPoolCreationParams(poolParams)
-
-    const estGas = await calculateEstimatedGas(
-      address,
-      this.contract.methods.createNftWithErc20WithPool,
-      nftCreateData,
-      ercCreateData,
-      poolData
-    )
-    if (estimateGas) return estGas
-
-    // Invoke createToken function of the contract
-    const trxReceipt = await this.contract.methods
-      .createNftWithErc20WithPool(nftCreateData, ercCreateData, poolData)
-      .send({
-        from: address,
-        gas: estGas + 1,
-        gasPrice: await this.getFairGasPrice()
-      })
-
-    return trxReceipt
-  }
-
-  /**
    * @dev createNftWithDatatokenWithFixedRate
    *      Creates a new NFT, then a Datatoken, then a FixedRateExchange, all in one call
    *      Use this carefully, because if Fixed Rate creation fails, you are still going to pay a lot of gas
@@ -648,33 +606,6 @@ export class NftFactory extends SmartContractWithAddress {
         Web3.utils.toWei(freParams.fixedRate),
         Web3.utils.toWei(freParams.marketFee),
         withMint
-      ]
-    }
-  }
-
-  private async getPoolCreationParams(poolParams: PoolCreationParams): Promise<any> {
-    return {
-      addresses: [
-        poolParams.ssContract,
-        poolParams.baseTokenAddress,
-        poolParams.baseTokenSender,
-        poolParams.publisherAddress,
-        poolParams.marketFeeCollector,
-        poolParams.poolTemplateAddress
-      ],
-      ssParams: [
-        Web3.utils.toWei(poolParams.rate),
-        poolParams.baseTokenDecimals,
-        Web3.utils.toWei(poolParams.vestingAmount),
-        poolParams.vestedBlocks,
-        await this.amountToUnits(
-          poolParams.baseTokenAddress,
-          poolParams.initialBaseTokenLiquidity
-        )
-      ],
-      swapFees: [
-        Web3.utils.toWei(poolParams.swapFeeLiquidityProvider),
-        Web3.utils.toWei(poolParams.swapFeeMarketRunner)
       ]
     }
   }

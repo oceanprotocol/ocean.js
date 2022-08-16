@@ -13,7 +13,6 @@ const configHelperNetworksBase: Config = {
   explorerUri: null,
   oceanTokenAddress: null,
   oceanTokenSymbol: 'OCEAN',
-  poolTemplateAddress: null,
   fixedRateExchangeAddress: null,
   dispenserAddress: null,
   startBlock: 0,
@@ -151,8 +150,6 @@ export class ConfigHelper {
       const {
         FixedPrice,
         Dispenser,
-        Staking,
-        poolTemplate,
         ERC721Factory,
         OPFCommunityFeeCollector,
         Ocean,
@@ -161,14 +158,12 @@ export class ConfigHelper {
       } = customAddresses[network]
       configAddresses = {
         nftFactoryAddress: ERC721Factory,
-        sideStakingAddress: Staking,
         opfCommunityFeeCollector: OPFCommunityFeeCollector,
-        poolTemplateAddress: poolTemplate,
         fixedRateExchangeAddress: FixedPrice,
         dispenserAddress: Dispenser,
         oceanTokenAddress: Ocean,
-        chainId: chainId,
-        startBlock: startBlock,
+        chainId,
+        startBlock,
         ...(process.env.AQUARIUS_URI && { metadataCacheUri: process.env.AQUARIUS_URI })
       }
     } else {
@@ -177,8 +172,6 @@ export class ConfigHelper {
         const {
           FixedPrice,
           Dispenser,
-          Staking,
-          poolTemplate,
           OPFCommunityFeeCollector,
           ERC721Factory,
           Ocean,
@@ -187,14 +180,12 @@ export class ConfigHelper {
         } = DefaultContractsAddresses[network]
         configAddresses = {
           nftFactoryAddress: ERC721Factory,
-          sideStakingAddress: Staking,
           opfCommunityFeeCollector: OPFCommunityFeeCollector,
-          poolTemplateAddress: poolTemplate,
           fixedRateExchangeAddress: FixedPrice,
           dispenserAddress: Dispenser,
           oceanTokenAddress: Ocean,
-          chainId: chainId,
-          startBlock: startBlock,
+          chainId,
+          startBlock,
           ...(process.env.AQUARIUS_URI && { metadataCacheUri: process.env.AQUARIUS_URI })
         }
       }

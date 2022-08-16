@@ -1,6 +1,6 @@
 import { assert } from 'chai'
-import { deployContracts, Addresses } from '../../TestContractHandler'
-import { web3 } from '../../config'
+import { deployContracts, Addresses } from '../TestContractHandler'
+import { web3 } from '../config'
 import {
   NftFactory,
   NftCreateData,
@@ -10,8 +10,8 @@ import {
   DispenserParams,
   ZERO_ADDRESS,
   signHash
-} from '../../../src'
-import { ProviderFees, FreCreationParams, FreOrderParams } from '../../../src/@types'
+} from '../../src'
+import { ProviderFees, FreCreationParams, FreOrderParams } from '../../src/@types'
 
 describe('Datatoken', () => {
   let nftOwner: string
@@ -335,11 +335,11 @@ describe('Datatoken', () => {
     const { v, r, s } = await signHash(web3, message, user3)
     const providerFees: ProviderFees = {
       providerFeeAddress: user3,
-      providerFeeToken: providerFeeToken,
-      providerFeeAmount: providerFeeAmount,
-      v: v,
-      r: r,
-      s: s,
+      providerFeeToken,
+      providerFeeAmount,
+      v,
+      r,
+      s,
       providerData: web3.utils.toHex(web3.utils.asciiToHex(providerData)),
       validUntil: providerValidUntil
     }
@@ -380,11 +380,11 @@ describe('Datatoken', () => {
     const { v, r, s } = await signHash(web3, message, user3)
     const providerFees: ProviderFees = {
       providerFeeAddress: user3,
-      providerFeeToken: providerFeeToken,
-      providerFeeAmount: providerFeeAmount,
-      v: v,
-      r: r,
-      s: s,
+      providerFeeToken,
+      providerFeeAmount,
+      v,
+      r,
+      s,
       providerData: web3.utils.toHex(web3.utils.asciiToHex(providerData)),
       validUntil: providerValidUntil
     }
@@ -420,11 +420,11 @@ describe('Datatoken', () => {
     const providerValidUntil = '0'
     const providerFees: ProviderFees = {
       providerFeeAddress: user3,
-      providerFeeToken: providerFeeToken,
-      providerFeeAmount: providerFeeAmount,
-      v: v,
-      r: r,
-      s: s,
+      providerFeeToken,
+      providerFeeAmount,
+      v,
+      r,
+      s,
       providerData: web3.utils.toHex(web3.utils.asciiToHex(providerData)),
       validUntil: providerValidUntil
     }
@@ -462,11 +462,11 @@ describe('Datatoken', () => {
     const providerValidUntil = '0'
     const providerFees: ProviderFees = {
       providerFeeAddress: user1,
-      providerFeeToken: providerFeeToken,
-      providerFeeAmount: providerFeeAmount,
-      v: v,
-      r: r,
-      s: s,
+      providerFeeToken,
+      providerFeeAmount,
+      v,
+      r,
+      s,
       providerData: web3.utils.toHex(web3.utils.asciiToHex(providerData)),
       validUntil: providerValidUntil
     }
@@ -484,7 +484,7 @@ describe('Datatoken', () => {
 
     const fre: FreOrderParams = {
       exchangeContract: fixedRateAddress,
-      exchangeId: exchangeId,
+      exchangeId,
       maxBaseTokenAmount: '1',
       baseTokenAddress: contracts.daiAddress,
       baseTokenDecimals: 18,

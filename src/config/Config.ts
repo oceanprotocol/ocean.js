@@ -51,24 +51,6 @@ export class Config {
   public datatokensABI?: AbiItem | AbiItem[]
 
   /**
-   * Pool Template address
-   * @type {string}
-   */
-  public poolTemplateAddress?: string
-
-  /**
-   * Pool Factory ABI
-   * @type {string}
-   */
-  public poolFactoryABI?: AbiItem | AbiItem[]
-
-  /**
-   * Pool ABI
-   * @type {string}
-   */
-  public poolABI?: AbiItem | AbiItem[]
-
-  /**
    * FixedRateExchangeAddress
    * @type {string}
    */

@@ -23,9 +23,8 @@
 /// 3. [Install dependencies](#-install-dependencies)
 /// 4. [Initialize accounts and deploy contracts](#-initialize-accounts-and-deploy-contracts)
 /// 5. [Import dependencies and add variables and constants](#-import-dependencies-and-add-variables-and-constants)
-/// 6. [Publish Data NFT and a Datatoken with a liquidity pool](#-Publish-data-nft-and-a-datatoken-with-a-liquidity-pool)
-/// 7. [Publish Data NFT and a Datatoken with a fixed rate exchange](#-publish-data-nft-and-a-datatoken-with-a-fixed-rate-exchange)
-/// 8. [Publish Data NFT and a Datatoken with a dispenser](#-publish-data-nft-and-a-datatoken-with-a-dispenser)
+/// 6. [Publish Data NFT and a Datatoken with a fixed rate exchange](#-publish-data-nft-and-a-datatoken-with-a-fixed-rate-exchange)
+/// 7. [Publish Data NFT and a Datatoken with a dispenser](#-publish-data-nft-and-a-datatoken-with-a-dispenser)
 
 /// ## 0. Prerequisites
 /// Before we start it is important that you have all of the necessary prerequisites installed on your computer.
@@ -88,7 +87,6 @@
 import { assert } from 'chai'
 import { SHA256 } from 'crypto-js'
 import {
-  AmountsOutMaxFee,
   approve,
   Aquarius,
   balance,
@@ -105,11 +103,8 @@ import {
   Nft,
   NftCreateData,
   NftFactory,
-  Pool,
-  PoolCreationParams,
   ProviderFees,
   ProviderInstance,
-  TokenInOutMarket,
   transfer,
   ZERO_ADDRESS
 } from '../../src'
@@ -130,9 +125,6 @@ describe('Marketplace flow tests', async () => {
   let consumerAccount: string
   let stakerAccount: string
   let addresses: any
-  let poolNftAddress: string
-  let poolDatatokenAddress: string
-  let poolAddress: string
   let freNftAddress: string
   let freDatatokenAddress: string
   let freAddress: string
@@ -144,8 +136,6 @@ describe('Marketplace flow tests', async () => {
 
   /// We also define some constants that we will use:
   /// ```Typescript
-  const POOL_NFT_NAME = 'Datatoken 1'
-  const POOL_NFT_SYMBOL = 'DT1'
   const FRE_NFT_NAME = 'Datatoken 2'
   const FRE_NFT_SYMBOL = 'DT2'
   const DISP_NFT_NAME = 'Datatoken 3'
@@ -240,287 +230,9 @@ describe('Marketplace flow tests', async () => {
   }) ///
   /// ```
 
-  /// ## 6. Publish Data NFT and a Datatoken with a liquidity pool
+  /// ## 6. Publish Data NFT and a Datatoken with a fixed rate exchange
 
-  /// For pool creation, the OCEAN token is used as the base token. The base token can be changed into something else, such as USDC, DAI etc., but it will require an extra fee.
-
-  it('6.1 Publish a dataset (create NFT + Datatoken) with a liquidity pool', async () => {
-    /// ```Typescript
-    const factory = new NftFactory(addresses.ERC721Factory, web3)
-
-    const nftParams: NftCreateData = {
-      name: POOL_NFT_NAME,
-      symbol: POOL_NFT_SYMBOL,
-      templateIndex: 1,
-      tokenURI: '',
-      transferable: true,
-      owner: publisherAccount
-    }
-
-    const datatokenParams: DatatokenCreateParams = {
-      templateIndex: 1,
-      cap: '100000',
-      feeAmount: '0',
-      paymentCollector: ZERO_ADDRESS,
-      feeToken: ZERO_ADDRESS,
-      minter: publisherAccount,
-      mpFeeAddress: ZERO_ADDRESS
-    }
-
-    const poolParams: PoolCreationParams = {
-      ssContract: addresses.Staking,
-      baseTokenAddress: addresses.Ocean,
-      baseTokenSender: addresses.ERC721Factory,
-      publisherAddress: publisherAccount,
-      marketFeeCollector: publisherAccount,
-      poolTemplateAddress: addresses.poolTemplate,
-      rate: '1',
-      baseTokenDecimals: 18,
-      vestingAmount: '10000',
-      vestedBlocks: 2500000,
-      initialBaseTokenLiquidity: '2000',
-      swapFeeLiquidityProvider: '0.001',
-      swapFeeMarketRunner: '0.001'
-    }
-    /// ```
-    /// Before we call the contract we have to call `approve` so that the contract can move our tokens. This is standard when using any ERC20 Datatokens
-    /// ```Typescript
-    await approve(
-      web3,
-      publisherAccount,
-      addresses.Ocean,
-      addresses.ERC721Factory,
-      poolParams.vestingAmount
-    )
-
-    /// ```
-    /// Now we can make the contract call
-    /// ```Typescript
-    const tx = await factory.createNftWithDatatokenWithPool(
-      publisherAccount,
-      nftParams,
-      datatokenParams,
-      poolParams
-    )
-
-    poolNftAddress = tx.events.NFTCreated.returnValues[0]
-    poolDatatokenAddress = tx.events.TokenCreated.returnValues[0]
-    poolAddress = tx.events.NewPool.returnValues[0]
-    /// ```
-    /// Now, we did quite a few things there. Let's check that we successfully published a dataset (create NFT + Datatoken) with a liquidity pool
-    /// ```Typescript
-    console.log(`Pool NFT address: ${poolNftAddress}`)
-    console.log(`Pool Datatoken address: ${poolDatatokenAddress}`)
-    console.log(`Pool address: ${poolAddress}`)
-  }) ///
-  /// ```
-
-  it('6.2 Set metadata in the pool NFT', async () => {
-    /// ```Typescript
-    const nft = new Nft(web3)
-    /// ```
-    /// Now we update the ddo and set the right did
-    /// ```Typescript
-    DDO.chainId = await web3.eth.getChainId()
-    DDO.id =
-      'did:op:' +
-      SHA256(web3.utils.toChecksumAddress(poolNftAddress) + DDO.chainId.toString(10))
-    DDO.nftAddress = poolNftAddress
-    /// ```
-    /// Next we encrypt the file or files using Ocean Provider. The provider is an off chain proxy built specifically for this task
-    /// ```Typescript
-    ASSET_URL.datatokenAddress = poolDatatokenAddress
-    ASSET_URL.nftAddress = poolNftAddress
-    const encryptedFiles = await ProviderInstance.encrypt(ASSET_URL, providerUrl)
-    DDO.services[0].files = await encryptedFiles
-    DDO.services[0].datatokenAddress = poolDatatokenAddress
-    /// ```
-    /// Now let's console log the result to check everything is working
-    /// ```Typescript
-    console.log(`DID: ${DDO.id}`)
-
-    const providerResponse = await ProviderInstance.encrypt(DDO, providerUrl)
-    const encryptedDDO = await providerResponse
-    const metadataHash = getHash(JSON.stringify(DDO))
-    await nft.setMetadata(
-      poolNftAddress,
-      publisherAccount,
-      0,
-      providerUrl,
-      '',
-      '0x2',
-      encryptedDDO,
-      '0x' + metadataHash
-    )
-  }) ///
-  /// ```
-
-  it('6.3 User should add liquidity to the pool, receiving LP tokens', async () => {
-    /// ```Typescript
-    const pool = new Pool(web3)
-
-    /// ```
-    /// Before we call the contract we have to call `approve` so that the contract can move our tokens. This is standard when using any ERC20 Datatokens
-    /// ```Typescript
-    await approve(web3, stakerAccount, addresses.Ocean, poolAddress, '5', true)
-
-    /// ```
-    /// Now we can make the contract call
-    /// ```Typescript
-    await pool.joinswapExternAmountIn(stakerAccount, poolAddress, '5', '0.1')
-  }) ///
-  /// ```
-
-  it('6.4 Marketplace displays pool asset for sale', async () => {
-    /// ```Typescript
-    const pool = new Pool(web3)
-    const prices = await pool.getAmountInExactOut(
-      poolAddress,
-      poolDatatokenAddress,
-      addresses.Ocean,
-      '1',
-      '0.01'
-    )
-    /// ```
-    /// Now let's console log the result to check everything is working
-    /// ```Typescript
-    console.log(`Price of 1 ${POOL_NFT_SYMBOL} is ${prices.tokenAmount} OCEAN`)
-  }) ///
-  /// ```
-
-  it('6.5 Consumer buys a pool data asset, and downloads it', async () => {
-    /// ```Typescript
-    const datatoken = new Datatoken(web3)
-
-    const consumerETHBalance = await web3.eth.getBalance(consumerAccount)
-    /// ```
-    /// Now let's console log the result to check everything is working
-    /// ```Typescript
-    console.log(`Consumer ETH balance: ${consumerETHBalance}`)
-    let consumerOCEANBalance = await balance(web3, addresses.Ocean, consumerAccount)
-    /// ```
-    /// Now let's console log consumerOCEANBalance to check everything is working
-    /// ```Typescript
-    console.log(`Consumer OCEAN balance before swap: ${consumerOCEANBalance}`)
-    let consumerDTBalance = await balance(web3, poolDatatokenAddress, consumerAccount)
-    /// ```
-    /// Now let's console log POOL_NFT_SYMBOL and consumerDTBalance to check everything is working
-    /// ```Typescript
-    console.log(`Consumer ${POOL_NFT_SYMBOL} balance before swap: ${consumerDTBalance}`)
-
-    /// ```
-    /// Before we call the contract we have to call `approve` so that the contract can move our tokens. This is standard when using any ERC20 Datatokens
-    /// ```Typescript
-    await approve(web3, consumerAccount, addresses.Ocean, poolAddress, '100')
-
-    const pool = new Pool(web3)
-    const tokenInOutMarket: TokenInOutMarket = {
-      tokenIn: addresses.Ocean,
-      tokenOut: poolDatatokenAddress,
-      marketFeeAddress: consumerAccount
-    }
-    const amountsInOutMaxFee: AmountsOutMaxFee = {
-      maxAmountIn: '10',
-      tokenAmountOut: '1',
-      swapMarketFee: '0.1'
-    }
-
-    /// ```
-    /// Now we can make the contract call
-    /// ```Typescript
-    await pool.swapExactAmountOut(
-      consumerAccount,
-      poolAddress,
-      tokenInOutMarket,
-      amountsInOutMaxFee
-    )
-
-    consumerOCEANBalance = await balance(web3, addresses.Ocean, consumerAccount)
-    /// ```
-    /// Now let's console log the Consumer OCEAN balance after swap to check everything is working
-    /// ```Typescript
-    console.log(`Consumer OCEAN balance after swap: ${consumerOCEANBalance}`)
-    consumerDTBalance = await balance(web3, poolDatatokenAddress, consumerAccount)
-    /// ```
-    /// Next let's console log the POOL_NFT_SYMBOL and consumerDTBalance
-    /// ```Typescript
-    console.log(`Consumer ${POOL_NFT_SYMBOL} balance after swap: ${consumerDTBalance}`)
-
-    const resolvedDDO = await aquarius.waitForAqua(DDO.id)
-    assert(resolvedDDO, 'Cannot fetch DDO from Aquarius')
-
-    /// ```
-    /// The next step is to initialize the provider instance
-    /// ```Typescript
-    const initializeData = await ProviderInstance.initialize(
-      resolvedDDO.id,
-      resolvedDDO.services[0].id,
-      0,
-      consumerAccount,
-      providerUrl
-    )
-
-    const providerFees: ProviderFees = {
-      providerFeeAddress: initializeData.providerFee.providerFeeAddress,
-      providerFeeToken: initializeData.providerFee.providerFeeToken,
-      providerFeeAmount: initializeData.providerFee.providerFeeAmount,
-      v: initializeData.providerFee.v,
-      r: initializeData.providerFee.r,
-      s: initializeData.providerFee.s,
-      providerData: initializeData.providerFee.providerData,
-      validUntil: initializeData.providerFee.validUntil
-    }
-
-    /// ```
-    /// Now let's make a payment
-    /// ```Typescript
-    const tx = await datatoken.startOrder(
-      poolDatatokenAddress,
-      consumerAccount,
-      consumerAccount,
-      0,
-      providerFees
-    )
-
-    /// ```
-    /// Next up, let's get the URL
-    /// ```Typescript
-    const downloadURL = await ProviderInstance.getDownloadUrl(
-      DDO.id,
-      consumerAccount,
-      DDO.services[0].id,
-      0,
-      tx.transactionHash,
-      providerUrl,
-      web3
-    )
-
-    /// ```
-    /// Now let's console log the Download URL to check everything is working
-    /// ```Typescript
-    console.log(`Download URL: ${downloadURL}`)
-
-    consumerOCEANBalance = await balance(web3, addresses.Ocean, consumerAccount)
-    console.log(`Consumer OCEAN balance after order: ${consumerOCEANBalance}`)
-    consumerDTBalance = await balance(web3, poolDatatokenAddress, consumerAccount)
-
-    /// ```
-    /// Now let's console log the Consumer balance after order to check everything is working
-    /// ```Typescript
-    console.log(`Consumer ${POOL_NFT_SYMBOL} balance after order: ${consumerDTBalance}`)
-
-    try {
-      const fileData = await downloadFile(downloadURL)
-      console.log(fileData)
-    } catch (e) {
-      assert.fail('Download failed')
-    }
-  }) ///
-  /// ```
-
-  /// ## 7. Publish Data NFT and a Datatoken with a fixed rate exchange
-
-  it('7.1 Publish a dataset (create NFT + Datatoken) with a fixed rate exchange', async () => {
+  it('6.1 Publish a dataset (create NFT + Datatoken) with a fixed rate exchange', async () => {
     /// ```Typescript
     const factory = new NftFactory(addresses.ERC721Factory, web3)
 
@@ -578,7 +290,7 @@ describe('Marketplace flow tests', async () => {
   }) ///
   /// ```
 
-  it('7.2 Set metadata in the fixed rate exchange NFT', async () => {
+  it('6.2 Set metadata in the fixed rate exchange NFT', async () => {
     /// ```Typescript
     const nft = new Nft(web3)
 
@@ -621,7 +333,7 @@ describe('Marketplace flow tests', async () => {
   })
   /// ```
 
-  it('7.3 Marketplace displays fixed rate asset for sale', async () => {
+  it('6.3 Marketplace displays fixed rate asset for sale', async () => {
     /// ```Typescript
     const fixedRate = new FixedRateExchange(freAddress, web3)
     const oceanAmount = await (
@@ -634,7 +346,7 @@ describe('Marketplace flow tests', async () => {
   }) ///
   /// ```
 
-  it('7.4 Consumer buys a fixed rate asset data asset, and downloads it', async () => {
+  it('6.4 Consumer buys a fixed rate asset data asset, and downloads it', async () => {
     /// ```Typescript
     const datatoken = new Datatoken(web3)
     const DATATOKEN_AMOUNT = '10000'
@@ -742,9 +454,9 @@ describe('Marketplace flow tests', async () => {
   }) ///
   /// ```
 
-  /// ## 8. Publish Data NFT and a Datatoken with a dispenser
+  /// ## 7. Publish Data NFT and a Datatoken with a dispenser
 
-  it('8.1 Publish a dataset (create NFT + Datatoken) with a dispenser', async () => {
+  it('7.1 Publish a dataset (create NFT + Datatoken) with a dispenser', async () => {
     /// ```Typescript
     const factory = new NftFactory(addresses.ERC721Factory, web3)
 
@@ -794,7 +506,7 @@ describe('Marketplace flow tests', async () => {
   }) ///
   /// ```
 
-  it('8.2 Set metadata in the dispenser NFT', async () => {
+  it('7.2 Set metadata in the dispenser NFT', async () => {
     /// ```Typescript
     const nft = new Nft(web3)
 
@@ -834,7 +546,7 @@ describe('Marketplace flow tests', async () => {
   }) ///
   /// ```
 
-  it('8.3 Consumer gets a dispenser data asset, and downloads it', async () => {
+  it('7.3 Consumer gets a dispenser data asset, and downloads it', async () => {
     /// ```Typescript
     const datatoken = new Datatoken(web3)
     const dispenser = new Dispenser(addresses.Dispenser, web3)

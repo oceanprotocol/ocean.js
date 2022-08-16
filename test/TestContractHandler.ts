@@ -1,15 +1,15 @@
 import Web3 from 'web3'
 import { AbiItem } from 'web3-utils/types'
 import OPFCommunityFeeCollector from '@oceanprotocol/contracts/artifacts/contracts/communityFee/OPFCommunityFeeCollector.sol/OPFCommunityFeeCollector.json'
-import PoolTemplate from '@oceanprotocol/contracts/artifacts/contracts/pools/balancer/BPool.sol/BPool.json'
 import ERC20Template from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC20Template.sol/ERC20Template.json'
 import ERC721Template from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC721Template.sol/ERC721Template.json'
 import MockERC20 from '@oceanprotocol/contracts/artifacts/contracts/utils/mock/MockERC20Decimals.sol/MockERC20Decimals.json'
 import Router from '@oceanprotocol/contracts/artifacts/contracts/pools/FactoryRouter.sol/FactoryRouter.json'
-import SideStaking from '@oceanprotocol/contracts/artifacts/contracts/pools/ssContracts/SideStaking.sol/SideStaking.json'
 import FixedRate from '@oceanprotocol/contracts/artifacts/contracts/pools/fixedRate/FixedRateExchange.sol/FixedRateExchange.json'
 import Dispenser from '@oceanprotocol/contracts/artifacts/contracts/pools/dispenser/Dispenser.sol/Dispenser.json'
 import ERC721Factory from '@oceanprotocol/contracts/artifacts/contracts/ERC721Factory.sol/ERC721Factory.json'
+// delete this once removed from contracts
+import PoolTemplate from '@oceanprotocol/contracts/artifacts/contracts/pools/balancer/BPool.sol/BPool.json'
 import { getAddresses, GAS_PRICE } from './config'
 
 const estimateGasAndDeployContract = async (
@@ -48,7 +48,6 @@ const estimateGasAndDeployContract = async (
 
 export interface Addresses {
   opfCommunityFeeCollectorAddress: string
-  poolTemplateAddress: string
   datatokenTemplateAddress: string
   nftTemplateAddress: string
   oceanAddress: string
@@ -59,6 +58,7 @@ export interface Addresses {
   nftFactoryAddress: string
   daiAddress: string
   usdcAddress: string
+  poolTemplateAddress: string
 }
 
 export const deployContracts = async (web3: Web3, owner: string): Promise<Addresses> => {
@@ -67,7 +67,7 @@ export const deployContracts = async (web3: Web3, owner: string): Promise<Addres
 
   // deploy OPF free collector
   addresses.opfCommunityFeeCollectorAddress =
-    configAddresses.OPFCommunityFeeCollector ||
+    configAddresses?.OPFCommunityFeeCollector ||
     (await estimateGasAndDeployContract(
       web3,
       OPFCommunityFeeCollector.abi as AbiItem[],
@@ -76,20 +76,9 @@ export const deployContracts = async (web3: Web3, owner: string): Promise<Addres
       owner
     ))
 
-  // deploy pool template
-  addresses.poolTemplateAddress =
-    configAddresses.poolTemplate ||
-    (await estimateGasAndDeployContract(
-      web3,
-      PoolTemplate.abi as AbiItem[],
-      PoolTemplate.bytecode,
-      [],
-      owner
-    ))
-
   // deploy Datatoken template
   addresses.datatokenTemplateAddress =
-    configAddresses.ERC20Template['1'] ||
+    configAddresses?.ERC20Template['1'] ||
     (await estimateGasAndDeployContract(
       web3,
       ERC20Template.abi as AbiItem[],
@@ -100,7 +89,7 @@ export const deployContracts = async (web3: Web3, owner: string): Promise<Addres
 
   // deploy NFT template
   addresses.nftTemplateAddress =
-    configAddresses.ERC721Template['1'] ||
+    configAddresses?.ERC721Template?.['1'] ||
     (await estimateGasAndDeployContract(
       web3,
       ERC721Template.abi as AbiItem[],
@@ -111,7 +100,7 @@ export const deployContracts = async (web3: Web3, owner: string): Promise<Addres
 
   // deploy OCEAN mock tocken
   addresses.oceanAddress =
-    configAddresses.Ocean ||
+    configAddresses?.Ocean ||
     (await estimateGasAndDeployContract(
       web3,
       MockERC20.abi as AbiItem[],
@@ -120,9 +109,20 @@ export const deployContracts = async (web3: Web3, owner: string): Promise<Addres
       owner
     ))
 
+  // deploy pool template to be removed once the pools are removed from contracts
+  addresses.poolTemplateAddress =
+    configAddresses?.poolTemplate ||
+    (await estimateGasAndDeployContract(
+      web3,
+      PoolTemplate.abi as AbiItem[],
+      PoolTemplate.bytecode,
+      [],
+      owner
+    ))
+
   // deploy router
   addresses.routerAddress =
-    configAddresses.Router ||
+    configAddresses?.Router ||
     (await estimateGasAndDeployContract(
       web3,
       Router.abi as AbiItem[],
@@ -137,31 +137,20 @@ export const deployContracts = async (web3: Web3, owner: string): Promise<Addres
       owner
     ))
 
-  // deploy side stacking
-  addresses.sideStakingAddress =
-    configAddresses.Staking ||
-    (await estimateGasAndDeployContract(
-      web3,
-      SideStaking.abi as AbiItem[],
-      SideStaking.bytecode,
-      [addresses.routerAddress],
-      owner
-    ))
-
   // deploy fixed rate
   addresses.fixedRateAddress =
-    configAddresses.FixedPrice ||
+    configAddresses?.FixedPrice ||
     (await estimateGasAndDeployContract(
       web3,
       FixedRate.abi as AbiItem[],
       FixedRate.bytecode,
-      [addresses.routerAddress, addresses.opfCommunityFeeCollectorAddress],
+      [addresses.routerAddress],
       owner
     ))
 
   // deploy dispenser
   addresses.dispenserAddress =
-    configAddresses.Dispenser ||
+    configAddresses?.Dispenser ||
     (await estimateGasAndDeployContract(
       web3,
       Dispenser.abi as AbiItem[],
@@ -172,7 +161,7 @@ export const deployContracts = async (web3: Web3, owner: string): Promise<Addres
 
   // deploy NFT factory
   addresses.nftFactoryAddress =
-    configAddresses.ERC721Factory ||
+    configAddresses?.ERC721Factory ||
     (await estimateGasAndDeployContract(
       web3,
       ERC721Factory.abi as AbiItem[],
@@ -180,7 +169,6 @@ export const deployContracts = async (web3: Web3, owner: string): Promise<Addres
       [
         addresses.nftTemplateAddress,
         addresses.datatokenTemplateAddress,
-        addresses.opfCommunityFeeCollectorAddress,
         addresses.routerAddress
       ],
       owner
@@ -188,7 +176,7 @@ export const deployContracts = async (web3: Web3, owner: string): Promise<Addres
 
   // deploy USDC mock tocken
   addresses.usdcAddress =
-    configAddresses.MockUSDC ||
+    configAddresses?.MockUSDC ||
     (await estimateGasAndDeployContract(
       web3,
       MockERC20.abi as AbiItem[],
@@ -199,7 +187,7 @@ export const deployContracts = async (web3: Web3, owner: string): Promise<Addres
 
   // deploy DAI mock tocken
   addresses.daiAddress =
-    configAddresses.MockDAI ||
+    configAddresses?.MockDAI ||
     (await estimateGasAndDeployContract(
       web3,
       MockERC20.abi as AbiItem[],
@@ -208,7 +196,7 @@ export const deployContracts = async (web3: Web3, owner: string): Promise<Addres
       owner
     ))
 
-  if (!configAddresses.Router) {
+  if (!configAddresses?.Router) {
     const RouterContract = new web3.eth.Contract(
       Router.abi as AbiItem[],
       addresses.routerAddress
@@ -223,13 +211,6 @@ export const deployContracts = async (web3: Web3, owner: string): Promise<Addres
     await RouterContract.methods
       .addDispenserContract(addresses.dispenserAddress)
       .send({ from: owner })
-    await RouterContract.methods
-      .addSSContract(addresses.sideStakingAddress)
-      .send({ from: owner })
-    // TODO: add OPF deployment
-    // await RouterContract.methods
-    //   .changeRouterOwner(this.opfCommunityFeeCollectorAddress)
-    //   .send({ from: owner })
   }
 
   return addresses

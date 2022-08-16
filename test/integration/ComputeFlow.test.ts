@@ -248,12 +248,12 @@ async function createAsset(
   const chain = await web3.eth.getChainId()
   ddo.chainId = parseInt(chain.toString(10))
   const nftParamsAsset: NftCreateData = {
-    name: name,
-    symbol: symbol,
+    name,
+    symbol,
     templateIndex: 1,
     tokenURI: 'aaa',
     transferable: true,
-    owner: owner
+    owner
   }
   const datatokenParams: DatatokenCreateParams = {
     templateIndex: 1,

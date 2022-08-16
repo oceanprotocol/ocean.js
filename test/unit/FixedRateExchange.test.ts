@@ -1,7 +1,7 @@
 import { assert, expect } from 'chai'
 import BigNumber from 'bignumber.js'
-import { deployContracts, Addresses } from '../../../TestContractHandler'
-import { web3 } from '../../../config'
+import { deployContracts, Addresses } from '../TestContractHandler'
+import { web3 } from '../config'
 import {
   NftFactory,
   NftCreateData,
@@ -12,8 +12,8 @@ import {
   balance,
   unitsToAmount,
   Datatoken
-} from '../../../../src'
-import { FreCreationParams, DatatokenCreateParams } from '../../../../src/@types'
+} from '../../src'
+import { FreCreationParams, DatatokenCreateParams } from '../../src/@types'
 
 describe('Fixed Rate unit test', () => {
   let factoryOwner: string

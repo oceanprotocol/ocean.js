@@ -14,8 +14,7 @@
 With ocean.js, you can:
 
 - **Publish** data services: downloadable files or compute-to-data. Create an ERC721 **data NFT** for each service, and ERC20 **datatoken** for access (1.0 datatokens to access).
-- **Sell** datatokens via an OCEAN-datatoken Balancer pool (for auto price discovery), or for a fixed price. Sell data NFTs.
-- **Stake OCEAN** on datatoken pools
+- **Sell** datatokens for a fixed price. Sell data NFTs.
 - **Transfer** data NFTs & datatokens to another owner, and **all other ERC721 & ERC20 actions** using [web3.js](https://web3js.readthedocs.io/en/v1.2.9/web3-eth-contract.html) etc.
 
 ocean.js is part of the [Ocean Protocol](https://oceanprotocol.com) toolset.
@@ -23,8 +22,7 @@ ocean.js is part of the [Ocean Protocol](https://oceanprotocol.com) toolset.
 This is in alpha state. If you run into problems, please open up a [new issue](https://github.com/oceanprotocol/ocean.js/issues/new?assignees=&labels=bug&template=bug_report.md&title=).
 
 - [📚 Prerequisites](#-prerequisites)
-- [🏗 Installation](#-installation)
-- [📖 Learn More](#-learn-more)
+- [🏗 Installation & Usage](#-installation--usage)
 - [🦑 Development](#-development)
 - [✨ Code Style](#-code-style)
 - [👩‍🔬 Testing](#-testing)
@@ -33,7 +31,7 @@ This is in alpha state. If you run into problems, please open up a [new issue](h
 - [🛳 Production](#-production)
 - [⬆️ Releases](#️-releases)
   - [Production](#production)
-  - [Pre-releases](#pre-releases)
+  - [Pre-Releases](#pre-releases)
 - [🏛 License](#-license)
 
 ## 📚 Prerequisites
@@ -42,12 +40,11 @@ This is in alpha state. If you run into problems, please open up a [new issue](h
 - Docker ([Managed as a non-root user](https://docs.docker.com/engine/install/linux-postinstall/))
 - A Unix based operating system (Mac or Linux)
 
-## 🏗 Installation
+## 🏗 Installation & Usage
 
 ```bash
 npm install @oceanprotocol/lib
 ```
-### 📖 Learn more
 
 - Checkout our [code examples](CodeExamples.md) to see how you can use ocean.js.
 - Refer to the [Ocean Protocol documentation](https://docs.oceanprotocol.com/) for more guides and tutorials.

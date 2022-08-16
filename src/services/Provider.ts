@@ -83,10 +83,8 @@ export class Provider {
     try {
       const response = await fetch(path + `?userAddress=${consumerAddress}`, {
         method: 'GET',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        signal: signal
+        headers: { 'Content-Type': 'application/json' },
+        signal
       })
       return (await response.json()).nonce.toString()
     } catch (e) {
@@ -136,10 +134,8 @@ export class Provider {
       const response = await fetch(path, {
         method: 'POST',
         body: JSON.stringify(data),
-        headers: {
-          'Content-Type': 'application/octet-stream'
-        },
-        signal: signal
+        headers: { 'Content-Type': 'application/octet-stream' },
+        signal
       })
       return await response.text()
     } catch (e) {
@@ -177,10 +173,8 @@ export class Provider {
       const response = await fetch(path, {
         method: 'POST',
         body: JSON.stringify(args),
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        signal: signal
+        headers: { 'Content-Type': 'application/json' },
+        signal
       })
       const results: FileInfo[] = await response.json()
       for (const result of results) {
@@ -219,10 +213,8 @@ export class Provider {
       const response = await fetch(path, {
         method: 'POST',
         body: JSON.stringify(args),
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        signal: signal
+        headers: { 'Content-Type': 'application/json' },
+        signal
       })
       const results: FileInfo[] = await response.json()
       for (const result of results) {
@@ -252,10 +244,8 @@ export class Provider {
     try {
       const response = await fetch(path, {
         method: 'GET',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        signal: signal
+        headers: { 'Content-Type': 'application/json' },
+        signal
       })
       const envs: ComputeEnvironment[] = await response.json()
       return envs
@@ -307,10 +297,8 @@ export class Provider {
     try {
       const response = await fetch(initializeUrl, {
         method: 'GET',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        signal: signal
+        headers: { 'Content-Type': 'application/json' },
+        signal
       })
       const results: ProviderInitialize = await response.json()
       return results
@@ -346,11 +334,8 @@ export class Provider {
     )
     const providerData = {
       datasets: assets,
-      algorithm: algorithm,
-      compute: {
-        env: computeEnv,
-        validUntil: validUntil
-      },
+      algorithm,
+      compute: { env: computeEnv, validUntil },
       consumerAddress: accountId
     }
     const initializeUrl = this.getEndpointURL(serviceEndpoints, 'initializeCompute')
@@ -361,10 +346,8 @@ export class Provider {
       const response = await fetch(initializeUrl, {
         method: 'POST',
         body: JSON.stringify(providerData),
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        signal: signal
+        headers: { 'Content-Type': 'application/json' },
+        signal
       })
       const results = await response.json()
       return results
@@ -472,10 +455,8 @@ export class Provider {
       const response = await fetch(computeStartUrl, {
         method: 'POST',
         body: JSON.stringify(payload),
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        signal: signal
+        headers: { 'Content-Type': 'application/json' },
+        signal
       })
 
       if (response?.ok) {
@@ -547,10 +528,8 @@ export class Provider {
       const response = await fetch(computeStopUrl, {
         method: 'PUT',
         body: JSON.stringify(payload),
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        signal: signal
+        headers: { 'Content-Type': 'application/json' },
+        signal
       })
 
       if (response?.ok) {
@@ -600,10 +579,8 @@ export class Provider {
     try {
       const response = await fetch(computeStatusUrl + url, {
         method: 'GET',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        signal: signal
+        headers: { 'Content-Type': 'application/json' },
+        signal
       })
       if (response?.ok) {
         const params = await response.json()
@@ -720,10 +697,8 @@ export class Provider {
       const response = await fetch(computeDeleteUrl, {
         method: 'DELETE',
         body: JSON.stringify(payload),
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        signal: signal
+        headers: { 'Content-Type': 'application/json' },
+        signal
       })
 
       if (response?.ok) {
@@ -754,10 +729,8 @@ export class Provider {
     try {
       const response = await fetch(url, {
         method: 'GET',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        signal: signal
+        headers: { 'Content-Type': 'application/json' },
+        signal
       })
       if (response?.ok) {
         const params = await response.json()
