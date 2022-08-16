@@ -9,7 +9,8 @@ import {
   Router,
   balance,
   approve,
-  ZERO_ADDRESS
+  ZERO_ADDRESS,
+  Datatoken
 } from '../../src'
 import { DatatokenCreateParams, FreCreationParams, Operation } from '../../src/@types'
 
@@ -27,10 +28,11 @@ describe('Router unit test', () => {
   const NFT_TOKEN_URI = 'https://oceanprotocol.com/nft/'
   const DATATOKEN_NAME = 'ERC20B1'
   const DATATOKEN_SYMBOL = 'ERC20DT1Symbol'
+  const DATATOKEN_AMMOUNT = '1000'
   const RATE = '1'
   const FEE = '0.001'
   const FEE_ZERO = '0'
-  const DAI_AMOUNT = '10' // 2 DAI
+  const DAI_AMOUNT = '100' // 100 DAI
   const CAP_AMOUNT = '1000000'
   const AMOUNTS_IN = web3.utils.toWei('1')
   const AMOUNTS_OUT = web3.utils.toWei('0.1')
@@ -78,7 +80,7 @@ describe('Router unit test', () => {
       factoryOwner,
       contracts.daiAddress,
       contracts.nftFactoryAddress,
-      web3.utils.toWei('10000')
+      web3.utils.toWei('100000')
     )
   })
 
@@ -127,8 +129,8 @@ describe('Router unit test', () => {
       marketFeeCollector: user2,
       baseTokenDecimals: 18,
       datatokenDecimals: 18,
-      fixedRate: '1',
-      marketFee: '0.001',
+      fixedRate: RATE,
+      marketFee: FEE,
       allowedConsumer: ZERO_ADDRESS,
       withMint: false
     }
@@ -147,6 +149,16 @@ describe('Router unit test', () => {
 
     const freId1 = txReceipt.events.NewFixedRate.returnValues.exchangeId
 
+    const datatoken = new Datatoken(web3)
+    await datatoken.mint(datatokenAddress, factoryOwner, '1000', factoryOwner)
+    await approve(
+      web3,
+      factoryOwner,
+      datatokenAddress,
+      contracts.fixedRateAddress,
+      DATATOKEN_AMMOUNT
+    )
+
     // CREATE A SECOND FRE
 
     const txReceipt2 = await nftFactory.createNftWithDatatokenWithFixedRate(
@@ -162,13 +174,21 @@ describe('Router unit test', () => {
 
     const freId2 = txReceipt2.events.NewFixedRate.returnValues.exchangeId
 
+    await datatoken.mint(datatoken2Address, factoryOwner, '1000', factoryOwner)
+    await approve(
+      web3,
+      factoryOwner,
+      datatoken2Address,
+      contracts.fixedRateAddress,
+      DATATOKEN_AMMOUNT
+    )
+
     // user1 has no dt1
     expect(await balance(web3, datatokenAddress, user1)).to.equal('0')
     // user1 has no dt2
     expect(await balance(web3, datatoken2Address, user1)).to.equal('0')
 
     // we now can prepare the Operations objects
-
     // operation: 0 - swapExactAmountIn
     // 1 - swapExactAmountOut
     // 2 - FixedRateExchange
@@ -192,7 +212,7 @@ describe('Router unit test', () => {
       operation: 2, // swapExactAmountIn
       tokenIn: contracts.daiAddress,
       amountsIn: AMOUNTS_IN, // when swapExactAmountIn is EXACT amount IN
-      tokenOut: datatoken2Address,
+      tokenOut: datatokenAddress,
       amountsOut: AMOUNTS_OUT, // when swapExactAmountIn is MIN amount OUT
       maxPrice: MAX_PRICE, // max price (only for pools),
       swapMarketFee: SWAP_MARKET_FEE,
