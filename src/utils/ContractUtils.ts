@@ -119,11 +119,16 @@ export async function sendTx(
   }
   try {
     const feeHistory = await web3.eth.getFeeHistory(1, 'pending', [75])
-    sendTxValue.maxPriorityFeePerGas = new BigNumber(feeHistory?.reward?.[0]?.[0])
+    let aggressiveFee = new BigNumber(feeHistory?.reward?.[0]?.[0])
+    if (this.config?.gasFeeMultiplier > 1) {
+      aggressiveFee = aggressiveFee.multipliedBy(this.config?.gasFeeMultiplier)
+    }
+
+    sendTxValue.maxPriorityFeePerGas = aggressiveFee
       .integerValue(BigNumber.ROUND_DOWN)
       .toString(10)
 
-    sendTxValue.maxFeePerGas = new BigNumber(feeHistory?.reward?.[0]?.[0])
+    sendTxValue.maxFeePerGas = aggressiveFee
       .plus(new BigNumber(feeHistory?.baseFeePerGas?.[0]).multipliedBy(2))
       .integerValue(BigNumber.ROUND_DOWN)
       .toString(10)
