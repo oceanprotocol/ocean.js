@@ -5,24 +5,10 @@ import fetch from 'cross-fetch'
 export interface SearchQuery {
   from?: number
   size?: number
-  query: {
-    match?: {
-      [property: string]:
-        | string
-        | number
-        | boolean
-        | Record<string, string | number | boolean>
-    }
-    // eslint-disable-next-line camelcase
-    query_string?: {
-      [property: string]: string | number | string[] | number[] | boolean
-    }
-    // eslint-disable-next-line camelcase
-    simple_query_string?: {
-      [property: string]: string | number | string[] | number[] | boolean
-    }
-  }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  query: any
   sort?: { [jsonPath: string]: string }
+  aggs?: any
 }
 
 export class Aquarius {
