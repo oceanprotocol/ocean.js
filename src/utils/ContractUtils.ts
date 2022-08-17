@@ -114,7 +114,7 @@ export async function sendTx(
     gas: estGas + 1
   }
   try {
-    const feeHistory = await web3.eth.getFeeHistory(1, 'pending', [75])
+    const feeHistory = await web3.eth.getFeeHistory(1, 'latest', [75])
     let aggressiveFee = new BigNumber(feeHistory?.reward?.[0]?.[0])
     if (this.config?.gasFeeMultiplier > 1) {
       aggressiveFee = aggressiveFee.multipliedBy(this.config?.gasFeeMultiplier)
