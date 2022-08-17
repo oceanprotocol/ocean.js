@@ -4,10 +4,7 @@
     "moduleResolution": "node",
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
-    "lib": [
-      "ESNext",
-      "dom"
-    ],
+    "lib": ["ESNext", "dom"],
     "declaration": true,
     "module": "ESNext",
     "target": "ESNext",
@@ -18,8 +15,5 @@
     "sourceMap": true,
     "declarationDir": "./dist/"
   },
-  "include": [
-    "src/**/*",
-    "test/**/*"
-  ]
+  "include": ["src/**/*", "test/**/*"]
 }

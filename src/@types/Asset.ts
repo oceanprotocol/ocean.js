@@ -125,13 +125,13 @@ export interface Asset extends DDO {
      * How often an asset was consumed, meaning how often it was either downloaded or used as part of a compute job.
      * @type {string}
      */
-    consume: number
+    orders: number
   }
 
   /**
    * Contains information about an asset's purgatory status defined in
    * [`list-purgatory`](https://github.com/oceanprotocol/list-purgatory).
-   * Marketplace interfaces are encouraged to prevent certain user actions like adding liquidity on assets in purgatory.
+   * Marketplace interfaces are encouraged to prevent certain user actions like downloading on assets in purgatory.
    * @type {Purgatory}
    */
   purgatory: Purgatory

@@ -1,8 +1,6 @@
 import { assert, expect } from 'chai'
-import { AbiItem } from 'web3-utils/types'
-import { deployContracts, Addresses } from '../../TestContractHandler'
-import ERC20Template from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC20Template.sol/ERC20Template.json'
-import { getTestConfig, web3 } from '../../config'
+import { deployContracts, Addresses } from '../TestContractHandler'
+import { web3, getTestConfig } from '../config'
 import {
   NftFactory,
   NftCreateData,
@@ -12,14 +10,11 @@ import {
   Nft,
   transfer,
   approve,
-  Config
-} from '../../../src'
-import {
-  ProviderFees,
-  FreCreationParams,
-  DatatokenCreateParams,
-  PoolCreationParams
-} from '../../../src/@types'
+  Config,
+  balance,
+  Datatoken
+} from '../../src'
+import { ProviderFees, FreCreationParams, DatatokenCreateParams } from '../../src/@types'
 
 describe('Nft Factory test', () => {
   let factoryOwner: string
@@ -33,7 +28,7 @@ describe('Nft Factory test', () => {
   let nftAddress: string
   let config: Config
 
-  const DATA_TOKEN_AMOUNT = web3.utils.toWei('1')
+  const DATA_TOKEN_AMOUNT = '1'
   const FEE = '0.001'
 
   const nftData: NftCreateData = {
@@ -130,55 +125,6 @@ describe('Nft Factory test', () => {
     expect((await nftFactory.getCurrentTokenCount()) === currentTokenCount + 1)
   })
 
-  it('#createNftErcWithPool- should create an NFT, a Datatoken and a pool DT/DAI', async () => {
-    // we prepare transaction parameters objects
-    const poolParams: PoolCreationParams = {
-      ssContract: contracts.sideStakingAddress,
-      baseTokenAddress: contracts.daiAddress,
-      baseTokenSender: contracts.nftFactoryAddress,
-      publisherAddress: nftOwner,
-      marketFeeCollector: nftOwner,
-      poolTemplateAddress: contracts.poolTemplateAddress,
-      rate: '1',
-      baseTokenDecimals: 18,
-      vestingAmount: '10000',
-      vestedBlocks: 2500000,
-      initialBaseTokenLiquidity: '2000',
-      swapFeeLiquidityProvider: FEE,
-      swapFeeMarketRunner: FEE
-    }
-
-    await transfer(
-      web3,
-      config,
-      factoryOwner,
-      contracts.daiAddress,
-      nftOwner,
-      poolParams.vestingAmount
-    )
-
-    await approve(
-      web3,
-      config,
-      nftOwner,
-      contracts.daiAddress,
-      contracts.nftFactoryAddress,
-      poolParams.vestingAmount
-    )
-
-    const txReceipt = await nftFactory.createNftWithDatatokenWithPool(
-      nftOwner,
-      nftData,
-      dtParams,
-      poolParams
-    )
-
-    // events have been emitted
-    expect(txReceipt.events.NFTCreated.event === 'NFTCreated')
-    expect(txReceipt.events.TokenCreated.event === 'TokenCreated')
-    expect(txReceipt.events.NewPool.event === 'NewPool')
-  })
-
   it('#createNftErcWithFixedRate- should create an NFT, a datatoken and create a Fixed Rate Exchange', async () => {
     // we prepare transaction parameters objects
     const freParams: FreCreationParams = {
@@ -244,31 +190,40 @@ describe('Nft Factory test', () => {
     const consumeFeeToken = contracts.daiAddress // token address for the feeAmount, in this case DAI
 
     // we reuse a DT created in a previous test
-    const dtContract = new web3.eth.Contract(ERC20Template.abi as AbiItem[], dtAddress)
-    expect(await dtContract.methods.balanceOf(user1).call()).to.equal('0')
+    expect(await balance(web3, dtAddress, user1)).to.equal('0')
 
     // dt owner mint DATA_TOKEN_AMOUNT to user1
-    await dtContract.methods.mint(user1, DATA_TOKEN_AMOUNT).send({ from: nftOwner })
+    const datatoken = new Datatoken(web3)
+    datatoken.mint(dtAddress, nftOwner, DATA_TOKEN_AMOUNT, user1)
 
     // user1 approves NFTFactory to move his DATA_TOKEN_AMOUNT
-    await dtContract.methods
-      .approve(contracts.nftFactoryAddress, DATA_TOKEN_AMOUNT)
-      .send({ from: user1 })
+    await approve(
+      web3,
+      config,
+      user1,
+      dtAddress,
+      contracts.nftFactoryAddress,
+      DATA_TOKEN_AMOUNT
+    )
 
     // we reuse another DT created in a previous test
-    const dtContract2 = new web3.eth.Contract(ERC20Template.abi as AbiItem[], dtAddress2)
-    expect(await dtContract2.methods.balanceOf(user1).call()).to.equal('0')
+    expect(await balance(web3, dtAddress2, user1)).to.equal('0')
 
     // dt owner mint DATA_TOKEN_AMOUNT to user1
-    await dtContract2.methods.mint(user1, DATA_TOKEN_AMOUNT).send({ from: nftOwner })
+    datatoken.mint(dtAddress2, nftOwner, DATA_TOKEN_AMOUNT, user1)
     // user1 approves NFTFactory to move his DATA_TOKEN_AMOUNT
-    await dtContract2.methods
-      .approve(contracts.nftFactoryAddress, DATA_TOKEN_AMOUNT)
-      .send({ from: user1 })
+    await approve(
+      web3,
+      config,
+      user1,
+      dtAddress2,
+      contracts.nftFactoryAddress,
+      DATA_TOKEN_AMOUNT
+    )
 
     // we check user1 has enought DTs
-    expect(await dtContract.methods.balanceOf(user1).call()).to.equal(DATA_TOKEN_AMOUNT)
-    expect(await dtContract2.methods.balanceOf(user1).call()).to.equal(DATA_TOKEN_AMOUNT)
+    expect(await balance(web3, dtAddress, user1)).to.equal(DATA_TOKEN_AMOUNT)
+    expect(await balance(web3, dtAddress2, user1)).to.equal(DATA_TOKEN_AMOUNT)
 
     const providerData = JSON.stringify({ timeout: 0 })
     const providerValidUntil = '0'
@@ -286,9 +241,9 @@ describe('Nft Factory test', () => {
       providerFeeAddress: consumeFeeAddress,
       providerFeeToken: consumeFeeToken,
       providerFeeAmount: consumeFeeAmount,
-      v: v,
-      r: r,
-      s: s,
+      v,
+      r,
+      s,
       providerData: web3.utils.toHex(web3.utils.asciiToHex(providerData)),
       validUntil: providerValidUntil
     }
@@ -300,23 +255,23 @@ describe('Nft Factory test', () => {
     const orders: TokenOrder[] = [
       {
         tokenAddress: dtAddress,
-        consumer: consumer,
-        serviceIndex: serviceIndex,
+        consumer,
+        serviceIndex,
         _providerFee: providerFees,
         _consumeMarketFee: consumeMarketFee
       },
       {
         tokenAddress: dtAddress2,
-        consumer: consumer,
-        serviceIndex: serviceIndex,
+        consumer,
+        serviceIndex,
         _providerFee: providerFees,
         _consumeMarketFee: consumeMarketFee
       }
     ]
     await nftFactory.startMultipleTokenOrder(user1, orders)
     // we check user1 has no more DTs
-    expect(await dtContract.methods.balanceOf(user1).call()).to.equal('0')
-    expect(await dtContract2.methods.balanceOf(user1).call()).to.equal('0')
+    expect(await balance(web3, dtAddress, user1)).to.equal('0')
+    expect(await balance(web3, dtAddress2, user1)).to.equal('0')
   })
 
   it('#checkDatatoken - should confirm if DT is from the factory', async () => {

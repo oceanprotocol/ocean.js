@@ -4,7 +4,7 @@ import { TransactionReceipt } from 'web3-eth'
 import Decimal from 'decimal.js'
 import ERC20Template from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC20Template.sol/ERC20Template.json'
 import ERC20TemplateEnterprise from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC20TemplateEnterprise.sol/ERC20TemplateEnterprise.json'
-import { calculateEstimatedGas, sendTx, ZERO_ADDRESS } from '../../utils'
+import { amountToUnits, sendTx, calculateEstimatedGas, ZERO_ADDRESS } from '../utils'
 import {
   ConsumeMarketFee,
   FreOrderParams,
@@ -14,10 +14,10 @@ import {
   DispenserParams,
   OrderParams,
   DatatokenRoles
-} from '../../@types'
+} from '../@types'
 import { Nft } from './NFT'
-import { Config } from '../../config'
-import { SmartContract } from '..'
+import { Config } from '../config'
+import { SmartContract } from './SmartContract'
 
 export class Datatoken extends SmartContract {
   public abiEnterprise: AbiItem | AbiItem[]
@@ -620,7 +620,7 @@ export class Datatoken extends SmartContract {
   ): Promise<G extends false ? TransactionReceipt : number> {
     const dtContract = this.getContract(dtAddress, null, this.abiEnterprise)
 
-    const freContractParams = this.getFreOrderParams(freParams)
+    const freContractParams = await this.getFreOrderParams(freParams)
 
     const estGas = await calculateEstimatedGas(
       address,
@@ -698,7 +698,13 @@ export class Datatoken extends SmartContract {
 
     const dtContract = this.getContract(dtAddress)
 
-    const estGas = await calculateEstimatedGas(address, dtContract.methods.setData, value)
+    const valueHex = this.web3.utils.asciiToHex(value)
+
+    const estGas = await calculateEstimatedGas(
+      address,
+      dtContract.methods.setData,
+      valueHex
+    )
     if (estimateGas) return estGas
 
     const trxReceipt = await sendTx(
@@ -707,7 +713,7 @@ export class Datatoken extends SmartContract {
       this.web3,
       this.config,
       dtContract.methods.setData,
-      value
+      valueHex
     )
 
     return trxReceipt
@@ -883,12 +889,23 @@ export class Datatoken extends SmartContract {
     return returnValues
   }
 
-  private getFreOrderParams(freParams: FreOrderParams): any {
+  private async getFreOrderParams(freParams: FreOrderParams): Promise<any> {
     return {
       exchangeContract: freParams.exchangeContract,
       exchangeId: freParams.exchangeId,
-      maxBaseTokenAmount: Web3.utils.toWei(freParams.maxBaseTokenAmount),
-      swapMarketFee: Web3.utils.toWei(freParams.swapMarketFee),
+      maxBaseTokenAmount: await amountToUnits(
+        this.web3,
+        freParams.baseTokenAddress,
+        freParams.maxBaseTokenAmount,
+        freParams.baseTokenDecimals
+      ),
+      swapMarketFee: await amountToUnits(
+        this.web3,
+        freParams.baseTokenAddress,
+        freParams.swapMarketFee,
+        freParams.baseTokenDecimals
+      ),
+
       marketFeeAddress: freParams.marketFeeAddress
     }
   }

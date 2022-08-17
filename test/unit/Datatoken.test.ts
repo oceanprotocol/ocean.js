@@ -1,6 +1,6 @@
 import { assert } from 'chai'
-import { deployContracts, Addresses } from '../../TestContractHandler'
-import { web3 } from '../../config'
+import { deployContracts, Addresses } from '../TestContractHandler'
+import { web3 } from '../config'
 import {
   NftFactory,
   NftCreateData,
@@ -10,8 +10,8 @@ import {
   DispenserParams,
   ZERO_ADDRESS,
   signHash
-} from '../../../src'
-import { ProviderFees, FreCreationParams, FreOrderParams } from '../../../src/@types'
+} from '../../src'
+import { ProviderFees, FreCreationParams, FreOrderParams } from '../../src/@types'
 
 describe('Datatoken', () => {
   let nftOwner: string
@@ -335,11 +335,11 @@ describe('Datatoken', () => {
     const { v, r, s } = await signHash(web3, message, user3)
     const providerFees: ProviderFees = {
       providerFeeAddress: user3,
-      providerFeeToken: providerFeeToken,
-      providerFeeAmount: providerFeeAmount,
-      v: v,
-      r: r,
-      s: s,
+      providerFeeToken,
+      providerFeeAmount,
+      v,
+      r,
+      s,
       providerData: web3.utils.toHex(web3.utils.asciiToHex(providerData)),
       validUntil: providerValidUntil
     }
@@ -380,11 +380,11 @@ describe('Datatoken', () => {
     const { v, r, s } = await signHash(web3, message, user3)
     const providerFees: ProviderFees = {
       providerFeeAddress: user3,
-      providerFeeToken: providerFeeToken,
-      providerFeeAmount: providerFeeAmount,
-      v: v,
-      r: r,
-      s: s,
+      providerFeeToken,
+      providerFeeAmount,
+      v,
+      r,
+      s,
       providerData: web3.utils.toHex(web3.utils.asciiToHex(providerData)),
       validUntil: providerValidUntil
     }
@@ -420,11 +420,11 @@ describe('Datatoken', () => {
     const providerValidUntil = '0'
     const providerFees: ProviderFees = {
       providerFeeAddress: user3,
-      providerFeeToken: providerFeeToken,
-      providerFeeAmount: providerFeeAmount,
-      v: v,
-      r: r,
-      s: s,
+      providerFeeToken,
+      providerFeeAmount,
+      v,
+      r,
+      s,
       providerData: web3.utils.toHex(web3.utils.asciiToHex(providerData)),
       validUntil: providerValidUntil
     }
@@ -462,11 +462,11 @@ describe('Datatoken', () => {
     const providerValidUntil = '0'
     const providerFees: ProviderFees = {
       providerFeeAddress: user1,
-      providerFeeToken: providerFeeToken,
-      providerFeeAmount: providerFeeAmount,
-      v: v,
-      r: r,
-      s: s,
+      providerFeeToken,
+      providerFeeAmount,
+      v,
+      r,
+      s,
       providerData: web3.utils.toHex(web3.utils.asciiToHex(providerData)),
       validUntil: providerValidUntil
     }
@@ -484,8 +484,10 @@ describe('Datatoken', () => {
 
     const fre: FreOrderParams = {
       exchangeContract: fixedRateAddress,
-      exchangeId: exchangeId,
+      exchangeId,
       maxBaseTokenAmount: '1',
+      baseTokenAddress: contracts.daiAddress,
+      baseTokenDecimals: 18,
       swapMarketFee: '0.1',
       marketFeeAddress: ZERO_ADDRESS
     }
@@ -544,20 +546,19 @@ describe('Datatoken', () => {
     assert(address, 'Not able to get the parent NFT address')
   })
 
-  it('#setData - should set a value into 725Y standard, if Caller has DatatokenDeployer permission', async () => {
-    const data = web3.utils.asciiToHex('SomeData')
+  it('#setData - should set a value into 725Y standard, if Caller has ERC20Deployer permission', async () => {
+    const data = 'SomeData'
 
     assert((await nftDatatoken.isDatatokenDeployer(nftAddress, nftOwner)) === true)
 
     await datatoken.setData(datatokenAddress, nftOwner, data)
 
-    const key = web3.utils.keccak256(datatokenAddress)
-    assert((await nftDatatoken.getData(nftAddress, key)) === data)
+    assert((await nftDatatoken.getData(nftAddress, datatokenAddress)) === data)
   })
 
-  it('#setData - should FAIL to set a value into 725Y standard, if Caller has NOT DatatokenDeployer permission', async () => {
-    const data = web3.utils.asciiToHex('NewData')
-    const OldData = web3.utils.asciiToHex('SomeData')
+  it('#setData - should FAIL to set a value into 725Y standard, if Caller has NOT ERC20Deployer permission', async () => {
+    const data = 'NewData'
+    const OldData = 'SomeData'
     assert((await nftDatatoken.isDatatokenDeployer(nftAddress, user1)) === false)
 
     try {
@@ -566,8 +567,7 @@ describe('Datatoken', () => {
     } catch (e) {
       assert(e.message === 'User is not Datatoken Deployer')
     }
-    const key = web3.utils.keccak256(datatokenAddress)
-    assert((await nftDatatoken.getData(nftAddress, key)) === OldData)
+    assert((await nftDatatoken.getData(nftAddress, datatokenAddress)) === OldData)
   })
 
   it('#getDecimals - should return the number of decimals of the datatoken', async () => {

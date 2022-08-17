@@ -1,9 +1,9 @@
 import { AbiItem } from 'web3-utils'
 import { TransactionReceipt } from 'web3-eth'
 import ERC721Template from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC721Template.sol/ERC721Template.json'
-import { generateDtName, calculateEstimatedGas, sendTx } from '../../utils'
-import { MetadataProof, MetadataAndTokenURI, NftRoles } from '../../@types'
-import { SmartContract } from '..'
+import { generateDtName, calculateEstimatedGas, sendTx } from '../utils'
+import { MetadataProof, MetadataAndTokenURI, NftRoles } from '../@types'
+import { SmartContract } from './SmartContract'
 
 export class Nft extends SmartContract {
   getDefaultAbi(): AbiItem | AbiItem[] {
@@ -525,9 +525,14 @@ export class Nft extends SmartContract {
   }
 
   /**
-   * safeTransferNFT Used for transferring the NFT, can be used by an approved relayer
-   * will clean all permissions both on NFT and Datatoken level.
+   * Creates or update Metadata cached by Aquarius. Also, updates the METADATA_DECRYPTOR key
    * @param {String} nftAddress NFT contract address
+   * @param {String} address Caller address NFT Owner adress
+   * @param {String} address Caller address NFT Owner adress
+   * @param {String} address Caller address NFT Owner adress
+   * @param {String} address Caller address NFT Owner adress
+   * @param {String} address Caller address NFT Owner adress
+   * @param {String} address Caller address NFT Owner adress
    * @param {String} address Caller address NFT Owner adress
    * @return {Promise<TransactionReceipt>} trxReceipt
    */
@@ -734,6 +739,47 @@ export class Nft extends SmartContract {
     return isDatatokenDeployer
   }
 
+  /** setData
+   * This function allows to store data with a preset key (keccak256(ERC20Address)) into NFT 725 Store
+   * only ERC20Deployer can succeed
+   * @param nftAddress erc721 contract adress
+   * @param address user adress
+   * @param key Key of the data to be stored into 725Y standard
+   * @param value Data to be stored into 725Y standard
+   * @return {Promise<TransactionReceipt>} transactionId
+   */
+  public async setData(
+    nftAddress: string,
+    address: string,
+    key: string,
+    value: string
+  ): Promise<TransactionReceipt> {
+    if ((await this.getNftPermissions(nftAddress, address)).store !== true) {
+      throw new Error(`User is not ERC20 store updater`)
+    }
+
+    const nftContract = this.getContract(nftAddress)
+
+    const keyHash = this.web3.utils.keccak256(key)
+    const valueHex = this.web3.utils.asciiToHex(value)
+
+    const estGas = await calculateEstimatedGas(
+      address,
+      nftContract.methods.setNewData,
+      keyHash,
+      valueHex
+    )
+
+    // Call setData function of the contract
+    const trxReceipt = await nftContract.methods.setNewData(keyHash, valueHex).send({
+      from: address,
+      gas: estGas + 1,
+      gasPrice: await this.getFairGasPrice()
+    })
+
+    return trxReceipt
+  }
+
   /** Gets data at a given `key`
    * @param {String} nftAddress NFT contract address
    * @param {String} key the key which value to retrieve
@@ -741,8 +787,9 @@ export class Nft extends SmartContract {
    */
   public async getData(nftAddress: string, key: string): Promise<string> {
     const nftContract = this.getContract(nftAddress)
-    const data = await nftContract.methods.getData(key).call()
-    return data
+    const keyHash = this.web3.utils.keccak256(key)
+    const data = await nftContract.methods.getData(keyHash).call()
+    return data ? this.web3.utils.hexToAscii(data) : null
   }
 
   /** Gets data at a given `key`

@@ -1,10 +1,7 @@
 import { assert, expect } from 'chai'
-import { AbiItem } from 'web3-utils/types'
-import { Contract } from 'web3-eth-contract'
 import BigNumber from 'bignumber.js'
-import ERC20Template from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC20Template.sol/ERC20Template.json'
-import { deployContracts, Addresses } from '../../../TestContractHandler'
-import { web3, getTestConfig } from '../../../config'
+import { deployContracts, Addresses } from '../TestContractHandler'
+import { web3, getTestConfig } from '../config'
 import {
   NftFactory,
   NftCreateData,
@@ -14,9 +11,11 @@ import {
   transfer,
   balance,
   unitsToAmount,
-  Config
-} from '../../../../src'
-import { FreCreationParams, DatatokenCreateParams } from '../../../../src/@types'
+  Config,
+  Datatoken
+} from '../../src'
+import { FreCreationParams, DatatokenCreateParams } from '../../src/@types'
+import { Contract } from 'web3-eth-contract'
 
 describe('Fixed Rate unit test', () => {
   let factoryOwner: string
@@ -100,7 +99,6 @@ describe('Fixed Rate unit test', () => {
       dtAddress = txReceipt.events.TokenCreated.returnValues.newTokenAddress
       exchangeId = txReceipt.events.NewFixedRate.returnValues.exchangeId
 
-      dtContract = new web3.eth.Contract(ERC20Template.abi as AbiItem[], dtAddress)
       // user1 has no dt1
       expect(await balance(web3, dtAddress, user1)).to.equal('0')
 
@@ -198,9 +196,8 @@ describe('Fixed Rate unit test', () => {
 
     it('#buyDatatokens - user1 should buy some dt', async () => {
       // total supply is ZERO right now so dt owner mints 1000 DT and approves the fixed rate contract
-      await dtContract.methods
-        .mint(exchangeOwner, web3.utils.toWei('1000'))
-        .send({ from: exchangeOwner })
+      const datatoken = new Datatoken(web3)
+      await datatoken.mint(dtAddress, exchangeOwner, '1000', exchangeOwner)
       await approve(
         web3,
         config,
@@ -427,7 +424,6 @@ describe('Fixed Rate unit test', () => {
       dtAddress = txReceipt.events.TokenCreated.returnValues.newTokenAddress
       exchangeId = txReceipt.events.NewFixedRate.returnValues.exchangeId
 
-      dtContract = new web3.eth.Contract(ERC20Template.abi as AbiItem[], dtAddress)
       // user1 has no dt1
       expect(await balance(web3, dtAddress, user1)).to.equal('0')
 
@@ -521,9 +517,8 @@ describe('Fixed Rate unit test', () => {
 
     it('#buyDatatokens - user1 should buy some dt', async () => {
       // total supply is ZERO right now so dt owner mints 1000 DT and approves the fixed rate contract
-      await dtContract.methods
-        .mint(exchangeOwner, web3.utils.toWei('1000'))
-        .send({ from: exchangeOwner })
+      const datatoken = new Datatoken(web3)
+      await datatoken.mint(dtAddress, exchangeOwner, '1000', exchangeOwner)
       await approve(
         web3,
         config,

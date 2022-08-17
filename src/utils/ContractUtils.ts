@@ -71,8 +71,7 @@ export async function amountToUnits(
   const amountFormatted = new BigNumber(amount).times(
     new BigNumber(10).exponentiatedBy(decimals)
   )
-
-  return amountFormatted.toString()
+  return amountFormatted.toFixed(0)
 }
 
 /**
@@ -87,12 +86,9 @@ export async function calculateEstimatedGas(
   functionToEstimateGas: Function,
   ...args: any[]
 ): Promise<any> {
-  const estimatedGas = await functionToEstimateGas.apply(null, args).estimateGas(
-    {
-      from: from
-    },
-    (err, estGas) => (err ? GASLIMIT_DEFAULT : estGas)
-  )
+  const estimatedGas = await functionToEstimateGas
+    .apply(null, args)
+    .estimateGas({ from }, (err, estGas) => (err ? GASLIMIT_DEFAULT : estGas))
   return estimatedGas
 }
 

@@ -2,8 +2,18 @@ import fetch from 'cross-fetch'
 import { LoggerInstance, sleep } from '../utils'
 import { Asset, DDO, ValidateMetadata } from '../@types'
 
+export interface SearchQuery {
+  from?: number
+  size?: number
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  query: any
+  sort?: { [jsonPath: string]: string }
+  aggs?: any
+}
+
 export class Aquarius {
-  public aquariusURL
+  public aquariusURL: string
+
   /**
    * Instantiate Aquarius
    * @param {String} aquariusURL
@@ -22,10 +32,8 @@ export class Aquarius {
     try {
       const response = await fetch(path, {
         method: 'GET',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        signal: signal
+        headers: { 'Content-Type': 'application/json' },
+        signal
       })
 
       if (response.ok) {
@@ -59,10 +67,8 @@ export class Aquarius {
         const path = this.aquariusURL + '/api/aquarius/assets/ddo/' + did
         const response = await fetch(path, {
           method: 'GET',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          signal: signal
+          headers: { 'Content-Type': 'application/json' },
+          signal
         })
         if (response.ok) {
           const ddo = await response.json()
@@ -97,10 +103,8 @@ export class Aquarius {
       const response = await fetch(path, {
         method: 'POST',
         body: JSON.stringify(ddo),
-        headers: {
-          'Content-Type': 'application/octet-stream'
-        },
-        signal: signal
+        headers: { 'Content-Type': 'application/octet-stream' },
+        signal
       })
 
       jsonResponse = await response.json()
@@ -121,5 +125,66 @@ export class Aquarius {
       LoggerInstance.error('Error validating metadata: ', error)
     }
     return status
+  }
+
+  /**
+   * Search over the DDOs using a query.
+   * @param {string} did DID of the asset
+   * @param {AbortSignal} signal abort signal
+   * @return {Promise<QueryResult>}
+   */
+  public async getAssetMetadata(did: string, signal?: AbortSignal): Promise<any> {
+    const path = this.aquariusURL + '/api/aquarius/assets/metadata/' + did
+
+    try {
+      const response = await fetch(path, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        signal: signal
+      })
+
+      if (response.ok) {
+        return response.json()
+      } else {
+        throw new Error(
+          'getAssetMetadata failed: ' + response.status + response.statusText
+        )
+      }
+    } catch (error) {
+      LoggerInstance.error('Error getting metadata: ', error)
+      throw new Error('Error getting metadata: ' + error)
+    }
+  }
+
+  /**
+   * Search over the DDOs using a query.
+   * @param  {SearchQuery} query Query to filter the DDOs.
+   * @param {AbortSignal} signal abort signal
+   * @return {Promise<QueryResult>}
+   */
+  public async querySearch(query: SearchQuery, signal?: AbortSignal): Promise<any> {
+    const path = this.aquariusURL + '/api/aquarius/assets/query'
+
+    try {
+      const response = await fetch(path, {
+        method: 'POST',
+        body: JSON.stringify(query),
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        signal: signal
+      })
+
+      if (response.ok) {
+        return response.json()
+      } else {
+        throw new Error('querySearch failed: ' + response.status + response.statusText)
+      }
+    } catch (error) {
+      LoggerInstance.error('Error querying metadata: ', error)
+      throw new Error('Error querying metadata: ' + error)
+    }
   }
 }

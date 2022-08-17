@@ -1,9 +1,9 @@
 import FixedRateExchangeAbi from '@oceanprotocol/contracts/artifacts/contracts/pools/fixedRate/FixedRateExchange.sol/FixedRateExchange.json'
 import { TransactionReceipt } from 'web3-core'
 import { AbiItem } from 'web3-utils/types'
-import { calculateEstimatedGas, sendTx, ZERO_ADDRESS } from '../../utils'
-import { PriceAndFees, FeesInfo, FixedPriceExchange } from '../../@types'
-import { SmartContractWithAddress } from '..'
+import { calculateEstimatedGas, sendTx, ZERO_ADDRESS } from '../utils'
+import { PriceAndFees, FeesInfo, FixedPriceExchange } from '../@types'
+import { SmartContractWithAddress } from './SmartContractWithAddress'
 
 export class FixedRateExchange extends SmartContractWithAddress {
   getDefaultAbi(): AbiItem | AbiItem[] {
@@ -83,7 +83,7 @@ export class FixedRateExchange extends SmartContractWithAddress {
   }
 
   /**
-   * Atomic swap
+   * Sell datatokenAmount while expecting at least minBaseTokenAmount
    * @param {String} exchangeId ExchangeId
    * @param {String} datatokenAmount Amount of datatokens
    * @param {String} minBaseTokenAmount min amount of baseToken we want to receive back
@@ -185,7 +185,7 @@ export class FixedRateExchange extends SmartContractWithAddress {
   }
 
   /**
-   * Set new rate
+   * Sets a new allowedSwapper
    * @param {String} exchangeId ExchangeId
    * @param {String} newAllowedSwapper newAllowedSwapper (set address zero if we want to remove allowed swapper)
    * @param {String} address User account

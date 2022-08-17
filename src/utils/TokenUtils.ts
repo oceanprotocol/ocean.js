@@ -1,15 +1,16 @@
 import Decimal from 'decimal.js'
 import { TransactionReceipt } from 'web3-core'
 import Web3 from 'web3'
+import BigNumber from 'bignumber.js'
 import {
   amountToUnits,
   calculateEstimatedGas,
   getFairGasPrice,
   unitsToAmount,
   minAbi,
-  sendTx
+  sendTx,
+  LoggerInstance
 } from '.'
-import { config } from 'process'
 import { Config } from '../config'
 
 /**
@@ -58,6 +59,54 @@ export async function approve<G extends boolean = false>(
     amountFormatted
   )
   return trxReceipt
+}
+
+/**
+ * Approve spender to spent amount tokens
+ * @param {String} account
+ * @param {String} tokenAddress
+ * @param {String} spender
+ * @param {String} amount amount of ERC20 tokens (always expressed as wei)
+ * @param {boolean} force  if true, will overwrite any previous allowence. Else, will check if allowence is enough and will not send a transaction if it's not needed
+ */
+export async function approveWei<G extends boolean = false>(
+  web3: Web3,
+  account: string,
+  tokenAddress: string,
+  spender: string,
+  amount: string,
+  force = false,
+  estimateGas?: G
+): Promise<G extends false ? TransactionReceipt : string> {
+  const tokenContract = new web3.eth.Contract(minAbi, tokenAddress)
+  if (!force) {
+    const currentAllowence = await allowanceWei(web3, tokenAddress, account, spender)
+    if (new BigNumber(currentAllowence).gt(new BigNumber(amount))) {
+      return null
+    }
+  }
+  let result = null
+
+  const estGas = await calculateEstimatedGas(
+    account,
+    tokenContract.methods.approve,
+    spender,
+    amount
+  )
+  if (estimateGas) return estGas
+
+  try {
+    result = await tokenContract.methods.approve(spender, amount).send({
+      from: account,
+      gas: estGas + 1,
+      gasPrice: await getFairGasPrice(web3, null)
+    })
+  } catch (e) {
+    LoggerInstance.error(
+      `ERROR: Failed to approve spender to spend tokens : ${e.message}`
+    )
+  }
+  return result
 }
 
 /**
@@ -139,6 +188,24 @@ export async function balance(
   const trxReceipt = await tokenContract.methods.balanceOf(account).call()
 
   return await unitsToAmount(web3, tokenAddress, trxReceipt, tokenDecimals)
+}
+
+/**
+ * Get Allowance for any erc20
+ * @param {Web3} web3
+ * @param {String} tokenAdress
+ * @param {String} account
+ * @param {String} spender
+ */
+export async function allowanceWei(
+  web3: Web3,
+  tokenAddress: string,
+  account: string,
+  spender: string,
+  tokenDecimals?: number
+): Promise<string> {
+  const tokenContract = new web3.eth.Contract(minAbi, tokenAddress)
+  return await tokenContract.methods.allowance(account, spender).call()
 }
 
 /**

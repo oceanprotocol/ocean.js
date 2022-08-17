@@ -1,6 +1,6 @@
 export interface Operation {
   /**
-   * used only for FixedRate or Dispenser, but needs to be filled even for pool
+   * used for FixedRate or Dispenser
    * @type {string}
    */
   exchangeIds: string
