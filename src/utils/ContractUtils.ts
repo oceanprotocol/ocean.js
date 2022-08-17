@@ -110,7 +110,7 @@ export async function sendTx(
   ...args: any[]
 ): Promise<any> {
   const sendTxValue: Record<string, any> = {
-    from: from,
+    from,
     gas: estGas + 1
   }
   try {

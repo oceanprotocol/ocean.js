@@ -8,7 +8,6 @@ import {
   ZERO_ADDRESS,
   signHash,
   Nft,
-  transfer,
   approve,
   Config,
   balance,

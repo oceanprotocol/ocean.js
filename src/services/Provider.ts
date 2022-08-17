@@ -163,7 +163,7 @@ export class Provider {
       providerUri,
       providerEndpoints
     )
-    const args = { did: did, serviceId: serviceId, checksum: withChecksum }
+    const args = { did, serviceId, checksum: withChecksum }
     const files: FileInfo[] = []
     const path = this.getEndpointURL(serviceEndpoints, 'fileinfo')
       ? this.getEndpointURL(serviceEndpoints, 'fileinfo').urlPath
@@ -203,7 +203,7 @@ export class Provider {
       providerUri,
       providerEndpoints
     )
-    const args = { url: url, type: 'url' }
+    const args = { url, type: 'url' }
     const files: FileInfo[] = []
     const path = this.getEndpointURL(serviceEndpoints, 'fileinfo')
       ? this.getEndpointURL(serviceEndpoints, 'fileinfo').urlPath

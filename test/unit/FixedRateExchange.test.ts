@@ -15,7 +15,6 @@ import {
   Datatoken
 } from '../../src'
 import { FreCreationParams, DatatokenCreateParams } from '../../src/@types'
-import { Contract } from 'web3-eth-contract'
 
 describe('Fixed Rate unit test', () => {
   let factoryOwner: string
@@ -26,7 +25,6 @@ describe('Fixed Rate unit test', () => {
   let contracts: Addresses
   let fixedRate: FixedRateExchange
   let dtAddress: string
-  let dtContract: Contract
   let config: Config
 
   const nftData: NftCreateData = {

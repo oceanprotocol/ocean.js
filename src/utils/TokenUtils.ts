@@ -5,7 +5,6 @@ import BigNumber from 'bignumber.js'
 import {
   amountToUnits,
   calculateEstimatedGas,
-  getFairGasPrice,
   unitsToAmount,
   minAbi,
   sendTx,
