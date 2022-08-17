@@ -4,7 +4,7 @@ import { TransactionReceipt } from 'web3-eth'
 import Decimal from 'decimal.js'
 import ERC20Template from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC20Template.sol/ERC20Template.json'
 import ERC20TemplateEnterprise from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC20TemplateEnterprise.sol/ERC20TemplateEnterprise.json'
-import { amountToUnits, calculateEstimatedGas, ZERO_ADDRESS } from '../utils'
+import { amountToUnits, sendTx, calculateEstimatedGas, ZERO_ADDRESS } from '../utils'
 import {
   ConsumeMarketFee,
   FreOrderParams,
@@ -69,14 +69,15 @@ export class Datatoken extends SmartContract {
     )
     if (estimateGas) return estGas
 
-    // Call mint contract method
-    const trxReceipt = await dtContract.methods
-      .approve(spender, this.web3.utils.toWei(amount))
-      .send({
-        from: address,
-        gas: estGas + 1,
-        gasPrice: await this.getFairGasPrice()
-      })
+    const trxReceipt = await sendTx(
+      address,
+      estGas + 1,
+      this.web3,
+      this.config,
+      dtContract.methods.approve,
+      spender,
+      this.web3.utils.toWei(amount)
+    )
     return trxReceipt
   }
 
@@ -124,29 +125,27 @@ export class Datatoken extends SmartContract {
     )
     if (estimateGas) return estGas
 
-    // Call createFixedRate contract method
-    const trxReceipt = await dtContract.methods
-      .createFixedRate(
-        fixedRateParams.fixedRateAddress,
-        [
-          fixedRateParams.baseTokenAddress,
-          fixedRateParams.owner,
-          fixedRateParams.marketFeeCollector,
-          fixedRateParams.allowedConsumer
-        ],
-        [
-          fixedRateParams.baseTokenDecimals,
-          fixedRateParams.datatokenDecimals,
-          fixedRateParams.fixedRate,
-          fixedRateParams.marketFee,
-          withMint
-        ]
-      )
-      .send({
-        from: address,
-        gas: estGas + 1,
-        gasPrice: await this.getFairGasPrice()
-      })
+    const trxReceipt = await sendTx(
+      address,
+      estGas + 1,
+      this.web3,
+      this.config,
+      dtContract.methods.createFixedRate,
+      fixedRateParams.fixedRateAddress,
+      [
+        fixedRateParams.baseTokenAddress,
+        fixedRateParams.owner,
+        fixedRateParams.marketFeeCollector,
+        fixedRateParams.allowedConsumer
+      ],
+      [
+        fixedRateParams.baseTokenDecimals,
+        fixedRateParams.datatokenDecimals,
+        fixedRateParams.fixedRate,
+        fixedRateParams.marketFee,
+        withMint
+      ]
+    )
     return trxReceipt
   }
 
@@ -188,20 +187,18 @@ export class Datatoken extends SmartContract {
     )
     if (estimateGas) return estGas
 
-    // Call createFixedRate contract method
-    const trxReceipt = await dtContract.methods
-      .createDispenser(
-        dispenserAddress,
-        dispenserParams.maxTokens,
-        dispenserParams.maxBalance,
-        dispenserParams.withMint,
-        dispenserParams.allowedSwapper
-      )
-      .send({
-        from: address,
-        gas: estGas + 1,
-        gasPrice: await this.getFairGasPrice()
-      })
+    const trxReceipt = await sendTx(
+      address,
+      estGas + 1,
+      this.web3,
+      this.config,
+      dtContract.methods.createDispenser,
+      dispenserAddress,
+      dispenserParams.maxTokens,
+      dispenserParams.maxBalance,
+      dispenserParams.withMint,
+      dispenserParams.allowedSwapper
+    )
     return trxReceipt
   }
 
@@ -236,14 +233,15 @@ export class Datatoken extends SmartContract {
       )
       if (estimateGas) return estGas
 
-      // Call mint contract method
-      const trxReceipt = await dtContract.methods
-        .mint(toAddress || address, this.web3.utils.toWei(amount))
-        .send({
-          from: address,
-          gas: estGas + 1,
-          gasPrice: await this.getFairGasPrice()
-        })
+      const trxReceipt = await sendTx(
+        address,
+        estGas + 1,
+        this.web3,
+        this.config,
+        dtContract.methods.mint,
+        toAddress || address,
+        this.web3.utils.toWei(amount)
+      )
       return trxReceipt
     } else {
       throw new Error(`Mint amount exceeds cap available`)
@@ -277,12 +275,14 @@ export class Datatoken extends SmartContract {
     )
     if (estimateGas) return estGas
 
-    // Call addMinter function of the contract
-    const trxReceipt = await dtContract.methods.addMinter(minter).send({
-      from: address,
-      gas: estGas + 1,
-      gasPrice: await this.getFairGasPrice()
-    })
+    const trxReceipt = await sendTx(
+      address,
+      estGas + 1,
+      this.web3,
+      this.config,
+      dtContract.methods.addMinter,
+      minter
+    )
 
     return trxReceipt
   }
@@ -315,12 +315,14 @@ export class Datatoken extends SmartContract {
     )
     if (estimateGas) return estGas
 
-    // Call dtContract function of the contract
-    const trxReceipt = await dtContract.methods.removeMinter(minter).send({
-      from: address,
-      gas: estGas + 1,
-      gasPrice: await this.getFairGasPrice()
-    })
+    const trxReceipt = await sendTx(
+      address,
+      estGas + 1,
+      this.web3,
+      this.config,
+      dtContract.methods.removeMinter,
+      minter
+    )
 
     return trxReceipt
   }
@@ -352,12 +354,14 @@ export class Datatoken extends SmartContract {
     )
     if (estimateGas) return estGas
 
-    // Call addPaymentManager function of the contract
-    const trxReceipt = await dtContract.methods.addPaymentManager(paymentManager).send({
-      from: address,
-      gas: estGas + 1,
-      gasPrice: await this.getFairGasPrice()
-    })
+    const trxReceipt = await sendTx(
+      address,
+      estGas + 1,
+      this.web3,
+      this.config,
+      dtContract.methods.addPaymentManager,
+      paymentManager
+    )
 
     return trxReceipt
   }
@@ -389,14 +393,14 @@ export class Datatoken extends SmartContract {
     )
     if (estimateGas) return estGas
 
-    // Call removeFeeManager function of the contract
-    const trxReceipt = await dtContract.methods
-      .removePaymentManager(paymentManager)
-      .send({
-        from: address,
-        gas: estGas + 1,
-        gasPrice: await this.getFairGasPrice()
-      })
+    const trxReceipt = await sendTx(
+      address,
+      estGas + 1,
+      this.web3,
+      this.config,
+      dtContract.methods.removePaymentManager,
+      paymentManager
+    )
 
     return trxReceipt
   }
@@ -435,15 +439,14 @@ export class Datatoken extends SmartContract {
     )
     if (estimateGas) return estGas
 
-    // Call setFeeCollector method of the contract
-    const trxReceipt = await dtContract.methods
-      .setPaymentCollector(paymentCollector)
-      .send({
-        from: address,
-        gas: estGas + 1,
-        gasPrice: await this.getFairGasPrice()
-      })
-
+    const trxReceipt = await sendTx(
+      address,
+      estGas + 1,
+      this.web3,
+      this.config,
+      dtContract.methods.setPaymentCollector,
+      paymentCollector
+    )
     return trxReceipt
   }
 
@@ -500,12 +503,15 @@ export class Datatoken extends SmartContract {
     )
     if (estimateGas) return estGas
 
-    // Call transfer function of the contract
-    const trxReceipt = await dtContract.methods.transfer(toAddress, amount).send({
-      from: address,
-      gas: estGas + 1,
-      gasPrice: await this.getFairGasPrice()
-    })
+    const trxReceipt = await sendTx(
+      address,
+      estGas + 1,
+      this.web3,
+      this.config,
+      dtContract.methods.transfer,
+      toAddress,
+      amount
+    )
     return trxReceipt
   }
 
@@ -546,13 +552,17 @@ export class Datatoken extends SmartContract {
     )
     if (estimateGas) return estGas
 
-    const trxReceipt = await dtContract.methods
-      .startOrder(consumer, serviceIndex, providerFees, consumeMarketFee)
-      .send({
-        from: address,
-        gas: estGas + 1,
-        gasPrice: await this.getFairGasPrice()
-      })
+    const trxReceipt = await sendTx(
+      address,
+      estGas + 1,
+      this.web3,
+      this.config,
+      dtContract.methods.startOrder,
+      consumer,
+      serviceIndex,
+      providerFees,
+      consumeMarketFee
+    )
     return trxReceipt
   }
 
@@ -582,11 +592,15 @@ export class Datatoken extends SmartContract {
     )
     if (estimateGas) return estGas
 
-    const trxReceipt = await dtContract.methods.reuseOrder(orderTxId, providerFees).send({
-      from: address,
-      gas: estGas + 1,
-      gasPrice: await this.getFairGasPrice()
-    })
+    const trxReceipt = await sendTx(
+      address,
+      estGas + 1,
+      this.web3,
+      this.config,
+      dtContract.methods.reuseOrder,
+      orderTxId,
+      providerFees
+    )
     return trxReceipt
   }
 
@@ -616,13 +630,15 @@ export class Datatoken extends SmartContract {
     )
     if (estimateGas) return estGas
 
-    const trxReceipt = await dtContract.methods
-      .buyFromFreAndOrder(orderParams, freContractParams)
-      .send({
-        from: address,
-        gas: estGas + 1,
-        gasPrice: await this.getFairGasPrice()
-      })
+    const trxReceipt = await sendTx(
+      address,
+      estGas + 1,
+      this.web3,
+      this.config,
+      dtContract.methods.buyFromFreAndOrder,
+      orderParams,
+      freContractParams
+    )
     return trxReceipt
   }
 
@@ -650,13 +666,15 @@ export class Datatoken extends SmartContract {
     )
     if (estimateGas) return estGas
 
-    const trxReceipt = await dtContract.methods
-      .buyFromDispenserAndOrder(orderParams, dispenserContract)
-      .send({
-        from: address,
-        gas: estGas + 1,
-        gasPrice: await this.getFairGasPrice()
-      })
+    const trxReceipt = await sendTx(
+      address,
+      estGas + 1,
+      this.web3,
+      this.config,
+      dtContract.methods.buyFromDispenserAndOrder,
+      orderParams,
+      dispenserContract
+    )
     return trxReceipt
   }
 
@@ -689,12 +707,14 @@ export class Datatoken extends SmartContract {
     )
     if (estimateGas) return estGas
 
-    // Call setData function of the contract
-    const trxReceipt = await dtContract.methods.setData(valueHex).send({
-      from: address,
-      gas: estGas + 1,
-      gasPrice: await this.getFairGasPrice()
-    })
+    const trxReceipt = await sendTx(
+      address,
+      estGas + 1,
+      this.web3,
+      this.config,
+      dtContract.methods.setData,
+      valueHex
+    )
 
     return trxReceipt
   }
@@ -722,12 +742,13 @@ export class Datatoken extends SmartContract {
     )
     if (estimateGas) return estGas
 
-    // Call cleanPermissions function of the contract
-    const trxReceipt = await dtContract.methods.cleanPermissions().send({
-      from: address,
-      gas: estGas + 1,
-      gasPrice: await this.getFairGasPrice()
-    })
+    const trxReceipt = await sendTx(
+      address,
+      estGas + 1,
+      this.web3,
+      this.config,
+      dtContract.methods.cleanPermissions
+    )
 
     return trxReceipt
   }
@@ -831,17 +852,16 @@ export class Datatoken extends SmartContract {
     )
     if (estimateGas) return estGas
 
-    const trxReceipt = await dtContract.methods
-      .setPublishingMarketFee(
-        publishMarketFeeAddress,
-        publishMarketFeeToken,
-        publishMarketFeeAmount
-      )
-      .send({
-        from: address,
-        gas: estGas + 1,
-        gasPrice: await this.getFairGasPrice()
-      })
+    const trxReceipt = await sendTx(
+      address,
+      estGas + 1,
+      this.web3,
+      this.config,
+      dtContract.methods.setPublishingMarketFee,
+      publishMarketFeeAddress,
+      publishMarketFeeToken,
+      publishMarketFeeAmount
+    )
 
     return trxReceipt
   }

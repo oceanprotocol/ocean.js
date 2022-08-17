@@ -2,7 +2,7 @@ import Web3 from 'web3'
 import { TransactionReceipt } from 'web3-core'
 import { AbiItem } from 'web3-utils'
 import ERC721Factory from '@oceanprotocol/contracts/artifacts/contracts/ERC721Factory.sol/ERC721Factory.json'
-import { generateDtName, calculateEstimatedGas, ZERO_ADDRESS } from '../utils'
+import { generateDtName, calculateEstimatedGas, ZERO_ADDRESS, sendTx } from '../utils'
 import {
   FreCreationParams,
   DatatokenCreateParams,
@@ -64,23 +64,21 @@ export class NftFactory extends SmartContractWithAddress {
     if (estimateGas) return estGas
 
     // Invoke createToken function of the contract
-    const trxReceipt = await this.contract.methods
-      .deployERC721Contract(
-        nftData.name,
-        nftData.symbol,
-        nftData.templateIndex,
-        ZERO_ADDRESS,
-        ZERO_ADDRESS,
-        nftData.tokenURI,
-        nftData.transferable,
-        nftData.owner
-      )
-      .send({
-        from: address,
-        gas: estGas + 1,
-        gasPrice: await this.getFairGasPrice()
-      })
-
+    const trxReceipt = await sendTx(
+      address,
+      estGas + 1,
+      this.web3,
+      this.config,
+      this.contract.methods.deployERC721Contract,
+      nftData.name,
+      nftData.symbol,
+      nftData.templateIndex,
+      ZERO_ADDRESS,
+      ZERO_ADDRESS,
+      nftData.tokenURI,
+      nftData.transferable,
+      nftData.owner
+    )
     return trxReceipt?.events?.NFTCreated?.returnValues?.[0]
   }
 
@@ -192,15 +190,14 @@ export class NftFactory extends SmartContractWithAddress {
     )
     if (estimateGas) return estGas
 
-    // Invoke add721TokenTemplate function of the contract
-    const trxReceipt = await this.contract.methods
-      .add721TokenTemplate(templateAddress)
-      .send({
-        from: address,
-        gas: estGas + 1,
-        gasPrice: await this.getFairGasPrice()
-      })
-
+    const trxReceipt = await sendTx(
+      address,
+      estGas + 1,
+      this.web3,
+      this.config,
+      this.contract.methods.add721TokenTemplate,
+      templateAddress
+    )
     return trxReceipt
   }
 
@@ -232,14 +229,14 @@ export class NftFactory extends SmartContractWithAddress {
     )
     if (estimateGas) return estGas
 
-    // Invoke createToken function of the contract
-    const trxReceipt = await this.contract.methods
-      .disable721TokenTemplate(templateIndex)
-      .send({
-        from: address,
-        gas: estGas + 1,
-        gasPrice: await this.getFairGasPrice()
-      })
+    const trxReceipt = await sendTx(
+      address,
+      estGas + 1,
+      this.web3,
+      this.config,
+      this.contract.methods.disable721TokenTemplate,
+      templateIndex
+    )
 
     return trxReceipt
   }
@@ -273,14 +270,14 @@ export class NftFactory extends SmartContractWithAddress {
     )
     if (estimateGas) return estGas
 
-    // Invoke createToken function of the contract
-    const trxReceipt = await this.contract.methods
-      .reactivate721TokenTemplate(templateIndex)
-      .send({
-        from: address,
-        gas: estGas + 1,
-        gasPrice: await this.getFairGasPrice()
-      })
+    const trxReceipt = await sendTx(
+      address,
+      estGas + 1,
+      this.web3,
+      this.config,
+      this.contract.methods.reactivate721TokenTemplate,
+      templateIndex
+    )
 
     return trxReceipt
   }
@@ -310,14 +307,14 @@ export class NftFactory extends SmartContractWithAddress {
     )
     if (estimateGas) return estGas
 
-    // Invoke createToken function of the contract
-    const trxReceipt = await this.contract.methods
-      .addTokenTemplate(templateAddress)
-      .send({
-        from: address,
-        gas: estGas + 1,
-        gasPrice: await this.getFairGasPrice()
-      })
+    const trxReceipt = await sendTx(
+      address,
+      estGas + 1,
+      this.web3,
+      this.config,
+      this.contract.methods.addTokenTemplate,
+      templateAddress
+    )
 
     return trxReceipt
   }
@@ -353,14 +350,14 @@ export class NftFactory extends SmartContractWithAddress {
     )
     if (estimateGas) return estGas
 
-    // Invoke createToken function of the contract
-    const trxReceipt = await this.contract.methods
-      .disableTokenTemplate(templateIndex)
-      .send({
-        from: address,
-        gas: estGas + 1,
-        gasPrice: await this.getFairGasPrice()
-      })
+    const trxReceipt = await sendTx(
+      address,
+      estGas + 1,
+      this.web3,
+      this.config,
+      this.contract.methods.disableTokenTemplate,
+      templateIndex
+    )
 
     return trxReceipt
   }
@@ -397,14 +394,14 @@ export class NftFactory extends SmartContractWithAddress {
     )
     if (estimateGas) return estGas
 
-    // Invoke createToken function of the contract
-    const trxReceipt = await this.contract.methods
-      .reactivateTokenTemplate(templateIndex)
-      .send({
-        from: address,
-        gas: estGas + 1,
-        gasPrice: await this.getFairGasPrice()
-      })
+    const trxReceipt = await sendTx(
+      address,
+      estGas + 1,
+      this.web3,
+      this.config,
+      this.contract.methods.reactivateTokenTemplate,
+      templateIndex
+    )
 
     return trxReceipt
   }
@@ -437,12 +434,14 @@ export class NftFactory extends SmartContractWithAddress {
     )
     if (estimateGas) return estGas
 
-    // Invoke createToken function of the contract
-    const trxReceipt = await this.contract.methods.startMultipleTokenOrder(orders).send({
-      from: address,
-      gas: estGas + 1,
-      gasPrice: await this.getFairGasPrice()
-    })
+    const trxReceipt = await sendTx(
+      address,
+      estGas + 1,
+      this.web3,
+      this.config,
+      this.contract.methods.startMultipleTokenOrder,
+      orders
+    )
 
     return trxReceipt
   }
@@ -472,14 +471,15 @@ export class NftFactory extends SmartContractWithAddress {
     )
     if (estimateGas) return estGas
 
-    // Invoke createToken function of the contract
-    const trxReceipt = await this.contract.methods
-      .createNftWithErc20(nftCreateData, ercCreateData)
-      .send({
-        from: address,
-        gas: estGas + 1,
-        gasPrice: await this.getFairGasPrice()
-      })
+    const trxReceipt = await sendTx(
+      address,
+      estGas + 1,
+      this.web3,
+      this.config,
+      this.contract.methods.createNftWithErc20,
+      nftCreateData,
+      ercCreateData
+    )
 
     return trxReceipt
   }
@@ -513,14 +513,16 @@ export class NftFactory extends SmartContractWithAddress {
     )
     if (estimateGas) return estGas
 
-    // Invoke createToken function of the contract
-    const trxReceipt = await this.contract.methods
-      .createNftWithErc20WithFixedRate(nftCreateData, ercCreateData, fixedData)
-      .send({
-        from: address,
-        gas: estGas + 1,
-        gasPrice: await this.getFairGasPrice()
-      })
+    const trxReceipt = await sendTx(
+      address,
+      estGas + 1,
+      this.web3,
+      this.config,
+      this.contract.methods.createNftWithErc20WithFixedRate,
+      nftCreateData,
+      ercCreateData,
+      fixedData
+    )
 
     return trxReceipt
   }
@@ -556,14 +558,16 @@ export class NftFactory extends SmartContractWithAddress {
     )
     if (estimateGas) return estGas
 
-    // Invoke createToken function of the contract
-    const trxReceipt = await this.contract.methods
-      .createNftWithErc20WithDispenser(nftCreateData, ercCreateData, dispenserParams)
-      .send({
-        from: address,
-        gas: estGas + 1,
-        gasPrice: await this.getFairGasPrice()
-      })
+    const trxReceipt = await sendTx(
+      address,
+      estGas + 1,
+      this.web3,
+      this.config,
+      this.contract.methods.createNftWithErc20WithDispenser,
+      nftCreateData,
+      ercCreateData,
+      dispenserParams
+    )
 
     return trxReceipt
   }

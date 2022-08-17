@@ -8,8 +8,10 @@ import {
   getFairGasPrice,
   unitsToAmount,
   minAbi,
+  sendTx,
   LoggerInstance
 } from '.'
+import { Config } from '../config'
 
 /**
  * Approve spender to spent amount tokens
@@ -22,6 +24,7 @@ import {
  */
 export async function approve<G extends boolean = false>(
   web3: Web3,
+  config: Config,
   account: string,
   tokenAddress: string,
   spender: string,
@@ -46,11 +49,15 @@ export async function approve<G extends boolean = false>(
   )
   if (estimateGas) return estGas
 
-  const trxReceipt = await tokenContract.methods.approve(spender, amountFormatted).send({
-    from: account,
-    gas: estGas + 1,
-    gasPrice: await getFairGasPrice(web3, null)
-  })
+  const trxReceipt = await sendTx(
+    account,
+    estGas + 1,
+    web3,
+    config,
+    tokenContract.methods.approve,
+    spender,
+    amountFormatted
+  )
   return trxReceipt
 }
 
@@ -64,6 +71,7 @@ export async function approve<G extends boolean = false>(
  */
 export async function approveWei<G extends boolean = false>(
   web3: Web3,
+  config: Config,
   account: string,
   tokenAddress: string,
   spender: string,
@@ -89,11 +97,15 @@ export async function approveWei<G extends boolean = false>(
   if (estimateGas) return estGas
 
   try {
-    result = await tokenContract.methods.approve(spender, amount).send({
-      from: account,
-      gas: estGas + 1,
-      gasPrice: await getFairGasPrice(web3, null)
-    })
+    result = await sendTx(
+      account,
+      estGas + 1,
+      web3,
+      config,
+      tokenContract.methods.approve,
+      spender,
+      amount
+    )
   } catch (e) {
     LoggerInstance.error(
       `ERROR: Failed to approve spender to spend tokens : ${e.message}`
@@ -112,6 +124,7 @@ export async function approveWei<G extends boolean = false>(
  */
 export async function transfer<G extends boolean = false>(
   web3: Web3,
+  config: Config,
   account: string,
   tokenAddress: string,
   recipient: string,
@@ -129,13 +142,15 @@ export async function transfer<G extends boolean = false>(
   )
   if (estimateGas) return estGas
 
-  const trxReceipt = await tokenContract.methods
-    .transfer(recipient, amountFormatted)
-    .send({
-      from: account,
-      gas: estGas + 1,
-      gasPrice: await getFairGasPrice(web3, null)
-    })
+  const trxReceipt = await sendTx(
+    account,
+    estGas + 1,
+    web3,
+    config,
+    tokenContract.methods.transfer,
+    recipient,
+    amountFormatted
+  )
   return trxReceipt
 }
 

@@ -2,7 +2,7 @@ import { AbiItem } from 'web3-utils'
 import { TransactionReceipt } from 'web3-eth'
 import Decimal from 'decimal.js'
 import DispenserAbi from '@oceanprotocol/contracts/artifacts/contracts/pools/dispenser/Dispenser.sol/Dispenser.json'
-import { calculateEstimatedGas } from '../utils'
+import { calculateEstimatedGas, sendTx } from '../utils'
 import { Datatoken } from './Datatoken'
 import { SmartContractWithAddress } from './SmartContractWithAddress'
 import { DispenserToken } from '../@types'
@@ -57,19 +57,19 @@ export class Dispenser extends SmartContractWithAddress {
     if (estimateGas) return estGas
 
     // Call createFixedRate contract method
-    const trxReceipt = await this.contract.methods
-      .create(
-        dtAddress,
-        this.web3.utils.toWei(maxTokens),
-        this.web3.utils.toWei(maxBalance),
-        address,
-        allowedSwapper
-      )
-      .send({
-        from: address,
-        gas: estGas + 1,
-        gasPrice: await this.getFairGasPrice()
-      })
+    const trxReceipt = await sendTx(
+      address,
+      estGas + 1,
+      this.web3,
+      this.config,
+      this.contract.methods.create,
+      dtAddress,
+      this.web3.utils.toWei(maxTokens),
+      this.web3.utils.toWei(maxBalance),
+      address,
+      allowedSwapper
+    )
+
     return trxReceipt
   }
 
@@ -97,17 +97,17 @@ export class Dispenser extends SmartContractWithAddress {
     )
     if (estimateGas) return estGas
 
-    const trxReceipt = await this.contract.methods
-      .activate(
-        dtAddress,
-        this.web3.utils.toWei(maxTokens),
-        this.web3.utils.toWei(maxBalance)
-      )
-      .send({
-        from: address,
-        gas: estGas + 1,
-        gasPrice: await this.getFairGasPrice()
-      })
+    const trxReceipt = await sendTx(
+      address,
+      estGas + 1,
+      this.web3,
+      this.config,
+      this.contract.methods.activate,
+      dtAddress,
+      this.web3.utils.toWei(maxTokens),
+      this.web3.utils.toWei(maxBalance)
+    )
+
     return trxReceipt
   }
 
@@ -129,11 +129,15 @@ export class Dispenser extends SmartContractWithAddress {
     )
     if (estimateGas) return estGas
 
-    const trxReceipt = await this.contract.methods.deactivate(dtAddress).send({
-      from: address,
-      gas: estGas + 1,
-      gasPrice: await this.getFairGasPrice()
-    })
+    const trxReceipt = await sendTx(
+      address,
+      estGas + 1,
+      this.web3,
+      this.config,
+      this.contract.methods.deactivate,
+      dtAddress
+    )
+
     return trxReceipt
   }
 
@@ -158,13 +162,15 @@ export class Dispenser extends SmartContractWithAddress {
     )
     if (estimateGas) return estGas
 
-    const trxReceipt = await this.contract.methods
-      .setAllowedSwapper(dtAddress, newAllowedSwapper)
-      .send({
-        from: address,
-        gas: estGas + 1,
-        gasPrice: await this.getFairGasPrice()
-      })
+    const trxReceipt = await sendTx(
+      address,
+      estGas + 1,
+      this.web3,
+      this.config,
+      this.contract.methods.setAllowedSwapper,
+      dtAddress,
+      newAllowedSwapper
+    )
     return trxReceipt
   }
 
@@ -194,13 +200,16 @@ export class Dispenser extends SmartContractWithAddress {
     )
     if (estimateGas) return estGas
 
-    const trxReceipt = await this.contract.methods
-      .dispense(dtAddress, this.web3.utils.toWei(amount), destination)
-      .send({
-        from: address,
-        gas: estGas + 1,
-        gasPrice: await this.getFairGasPrice()
-      })
+    const trxReceipt = await sendTx(
+      address,
+      estGas + 1,
+      this.web3,
+      this.config,
+      this.contract.methods.dispense,
+      dtAddress,
+      this.web3.utils.toWei(amount),
+      destination
+    )
     return trxReceipt
   }
 
@@ -222,11 +231,15 @@ export class Dispenser extends SmartContractWithAddress {
     )
     if (estimateGas) return estGas
 
-    const trxReceipt = await this.contract.methods.ownerWithdraw(dtAddress).send({
-      from: address,
-      gas: estGas + 1,
-      gasPrice: await this.getFairGasPrice()
-    })
+    const trxReceipt = await sendTx(
+      address,
+      estGas + 1,
+      this.web3,
+      this.config,
+      this.contract.methods.ownerWithdraw,
+      dtAddress
+    )
+
     return trxReceipt
   }
 

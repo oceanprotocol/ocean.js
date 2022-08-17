@@ -1,7 +1,7 @@
 import { TransactionReceipt } from 'web3-core'
 import { AbiItem } from 'web3-utils'
 import FactoryRouter from '@oceanprotocol/contracts/artifacts/contracts/pools/FactoryRouter.sol/FactoryRouter.json'
-import { calculateEstimatedGas } from '../utils'
+import { calculateEstimatedGas, sendTx } from '../utils'
 import { Operation } from '../@types'
 import { SmartContractWithAddress } from './SmartContractWithAddress'
 
@@ -31,12 +31,14 @@ export class Router extends SmartContractWithAddress {
     )
     if (estimateGas) return estGas
 
-    // Invoke createToken function of the contract
-    const trxReceipt = await this.contract.methods.buyDTBatch(operations).send({
-      from: address,
-      gas: estGas + 1,
-      gasPrice: await this.getFairGasPrice()
-    })
+    const trxReceipt = await sendTx(
+      address,
+      estGas + 1,
+      this.web3,
+      this.config,
+      this.contract.methods.buyDTBatch,
+      operations
+    )
 
     return trxReceipt
   }
@@ -91,12 +93,14 @@ export class Router extends SmartContractWithAddress {
     )
     if (estimateGas) return estGas
 
-    // Invoke createToken function of the contract
-    const trxReceipt = await this.contract.methods.addApprovedToken(tokenAddress).send({
-      from: address,
-      gas: estGas + 1,
-      gasPrice: await this.getFairGasPrice()
-    })
+    const trxReceipt = await sendTx(
+      address,
+      estGas + 1,
+      this.web3,
+      this.config,
+      this.contract.methods.addApprovedToken,
+      tokenAddress
+    )
 
     return trxReceipt
   }
@@ -123,15 +127,14 @@ export class Router extends SmartContractWithAddress {
     )
     if (estimateGas) return estGas
 
-    // Invoke createToken function of the contract
-    const trxReceipt = await this.contract.methods
-      .removeApprovedToken(tokenAddress)
-      .send({
-        from: address,
-        gas: estGas + 1,
-        gasPrice: await this.getFairGasPrice()
-      })
-
+    const trxReceipt = await sendTx(
+      address,
+      estGas + 1,
+      this.web3,
+      this.config,
+      this.contract.methods.removeApprovedToken,
+      tokenAddress
+    )
     return trxReceipt
   }
 
@@ -157,14 +160,14 @@ export class Router extends SmartContractWithAddress {
     )
     if (estimateGas) return estGas
 
-    // Invoke createToken function of the contract
-    const trxReceipt = await this.contract.methods
-      .addFixedRateContract(tokenAddress)
-      .send({
-        from: address,
-        gas: estGas + 1,
-        gasPrice: await this.getFairGasPrice()
-      })
+    const trxReceipt = await sendTx(
+      address,
+      estGas + 1,
+      this.web3,
+      this.config,
+      this.contract.methods.addFixedRateContract,
+      tokenAddress
+    )
 
     return trxReceipt
   }
@@ -191,14 +194,14 @@ export class Router extends SmartContractWithAddress {
     )
     if (estimateGas) return estGas
 
-    // Invoke removeFixedRateContract function of the contract
-    const trxReceipt = await this.contract.methods
-      .removeFixedRateContract(tokenAddress)
-      .send({
-        from: address,
-        gas: estGas + 1,
-        gasPrice: await this.getFairGasPrice()
-      })
+    const trxReceipt = await sendTx(
+      address,
+      estGas + 1,
+      this.web3,
+      this.config,
+      this.contract.methods.removeFixedRateContract,
+      tokenAddress
+    )
 
     return trxReceipt
   }
@@ -225,15 +228,14 @@ export class Router extends SmartContractWithAddress {
     )
     if (estimateGas) return estGas
 
-    // Invoke createToken function of the contract
-    const trxReceipt = await this.contract.methods
-      .addDispenserContract(tokenAddress)
-      .send({
-        from: address,
-        gas: estGas + 1,
-        gasPrice: await this.getFairGasPrice()
-      })
-
+    const trxReceipt = await sendTx(
+      address,
+      estGas + 1,
+      this.web3,
+      this.config,
+      this.contract.methods.addDispenserContract,
+      tokenAddress
+    )
     return trxReceipt
   }
 
@@ -259,15 +261,14 @@ export class Router extends SmartContractWithAddress {
     )
     if (estimateGas) return estGas
 
-    // Invoke createToken function of the contract
-    const trxReceipt = await this.contract.methods
-      .removeDispenserContract(tokenAddress)
-      .send({
-        from: address,
-        gas: estGas + 1,
-        gasPrice: await this.getFairGasPrice()
-      })
-
+    const trxReceipt = await sendTx(
+      address,
+      estGas + 1,
+      this.web3,
+      this.config,
+      this.contract.methods.removeDispenserContract,
+      tokenAddress
+    )
     return trxReceipt
   }
 
@@ -316,14 +317,17 @@ export class Router extends SmartContractWithAddress {
     )
     if (estimateGas) return estGas
 
-    // Invoke createToken function of the contract
-    const trxReceipt = await this.contract.methods
-      .updateOPCFee(newSwapOceanFee, newSwapNonOceanFee, newConsumeFee, newProviderFee)
-      .send({
-        from: address,
-        gas: estGas + 1,
-        gasPrice: await this.getFairGasPrice()
-      })
+    const trxReceipt = await sendTx(
+      address,
+      estGas + 1,
+      this.web3,
+      this.config,
+      this.contract.methods.updateOPCFee,
+      newSwapOceanFee,
+      newSwapNonOceanFee,
+      newConsumeFee,
+      newProviderFee
+    )
 
     return trxReceipt
   }

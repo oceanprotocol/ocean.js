@@ -318,6 +318,7 @@ async function handleOrder(
   if (order.providerFee && order.providerFee.providerFeeAmount) {
     await approveWei(
       web3,
+      config,
       payerAccount,
       order.providerFee.providerFeeToken,
       datatokenAddress,

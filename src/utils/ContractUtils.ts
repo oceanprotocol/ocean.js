@@ -16,6 +16,15 @@ export function setContractDefaults(contract: Contract, config: Config): Contrac
   return contract
 }
 
+export async function networkSupportsEip1559(web3: Web3): Promise<boolean> {
+  const feeHistory = await web3.eth.getFeeHistory(4, 'pending', [25, 50, 75])
+  if (feeHistory && feeHistory.baseFeePerGas) {
+    return true
+  } else {
+    return false
+  }
+}
+
 export async function getFairGasPrice(web3: Web3, config: Config): Promise<string> {
   const x = new BigNumber(await web3.eth.getGasPrice())
   if (config && config.gasFeeMultiplier)
@@ -81,4 +90,49 @@ export async function calculateEstimatedGas(
     .apply(null, args)
     .estimateGas({ from }, (err, estGas) => (err ? GASLIMIT_DEFAULT : estGas))
   return estimatedGas
+}
+
+/**
+ * Send the transation on chain
+ * @param {string} from account that calls the function
+ * @param {any} estGas estimated gas for the transaction
+ * @param {Web3} web3 web3 objcet
+ * @param {Function} functionToEstimateGas function that we need to send
+ * @param {...any[]} args arguments of the function
+ * @return {Promise<any>} transaction receipt
+ */
+export async function sendTx(
+  from: string,
+  estGas: any,
+  web3: Web3,
+  config: Config,
+  functionToSend: Function,
+  ...args: any[]
+): Promise<any> {
+  const sendTxValue: Record<string, any> = {
+    from: from,
+    gas: estGas + 1
+  }
+  try {
+    const feeHistory = await web3.eth.getFeeHistory(1, 'pending', [75])
+    let aggressiveFee = new BigNumber(feeHistory?.reward?.[0]?.[0])
+    if (this.config?.gasFeeMultiplier > 1) {
+      aggressiveFee = aggressiveFee.multipliedBy(this.config?.gasFeeMultiplier)
+    }
+
+    sendTxValue.maxPriorityFeePerGas = aggressiveFee
+      .integerValue(BigNumber.ROUND_DOWN)
+      .toString(10)
+
+    sendTxValue.maxFeePerGas = aggressiveFee
+      .plus(new BigNumber(feeHistory?.baseFeePerGas?.[0]).multipliedBy(2))
+      .integerValue(BigNumber.ROUND_DOWN)
+      .toString(10)
+  } catch (err) {
+    LoggerInstance.log('EIP 1559 not supported by network')
+    sendTxValue.gasPrice = await getFairGasPrice(web3, config)
+  }
+
+  const trxReceipt = await functionToSend.apply(null, args).send(sendTxValue)
+  return trxReceipt
 }
