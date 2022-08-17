@@ -71,6 +71,7 @@ export async function approve<G extends boolean = false>(
  */
 export async function approveWei<G extends boolean = false>(
   web3: Web3,
+  config: Config,
   account: string,
   tokenAddress: string,
   spender: string,
@@ -99,8 +100,8 @@ export async function approveWei<G extends boolean = false>(
     result = await sendTx(
       account,
       estGas + 1,
-      this.web3,
-      this.config,
+      web3,
+      config,
       tokenContract.methods.approve,
       spender,
       amount
