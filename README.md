@@ -24,7 +24,7 @@ This is in alpha state. If you run into problems, please open up a [new issue](h
 
 - [📚 Prerequisites](#-prerequisites)
 - [🏗 Installation](#-installation)
-- [📖 Learn More](#-learn-more)
+  - [📖 Learn more](#-learn-more)
 - [🦑 Development](#-development)
 - [✨ Code Style](#-code-style)
 - [👩‍🔬 Testing](#-testing)
@@ -33,7 +33,7 @@ This is in alpha state. If you run into problems, please open up a [new issue](h
 - [🛳 Production](#-production)
 - [⬆️ Releases](#️-releases)
   - [Production](#production)
-  - [Pre-releases](#pre-releases)
+  - [Pre-Releases](#pre-releases)
 - [🏛 License](#-license)
 
 ## 📚 Prerequisites
@@ -47,6 +47,7 @@ This is in alpha state. If you run into problems, please open up a [new issue](h
 ```bash
 npm install @oceanprotocol/lib
 ```
+
 ### 📖 Learn more
 
 - Checkout our [code examples](CodeExamples.md) to see how you can use ocean.js.
@@ -88,7 +89,7 @@ Running all tests requires running Ocean Protocol components beforehand with [Ba
 git clone https://github.com/oceanprotocol/barge
 cd barge
 
-./start_ocean.sh --with-provider2 --no-dashboard
+./start_ocean.sh --with-provider2 --no-dashboard --with-c2d
 ```
 
 You can then proceed to run in another terminal.
