@@ -770,12 +770,15 @@ export class Nft extends SmartContract {
       valueHex
     )
 
-    // Call setData function of the contract
-    const trxReceipt = await nftContract.methods.setNewData(keyHash, valueHex).send({
-      from: address,
-      gas: estGas + 1,
-      gasPrice: await this.getFairGasPrice()
-    })
+    const trxReceipt = await sendTx(
+      address,
+      estGas + 1,
+      this.web3,
+      this.config,
+      nftContract.methods.setNewData,
+      keyHash,
+      valueHex
+    )
 
     return trxReceipt
   }

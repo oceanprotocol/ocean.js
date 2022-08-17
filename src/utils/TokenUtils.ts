@@ -96,11 +96,15 @@ export async function approveWei<G extends boolean = false>(
   if (estimateGas) return estGas
 
   try {
-    result = await tokenContract.methods.approve(spender, amount).send({
-      from: account,
-      gas: estGas + 1,
-      gasPrice: await getFairGasPrice(web3, null)
-    })
+    result = await sendTx(
+      account,
+      estGas + 1,
+      this.web3,
+      this.config,
+      tokenContract.methods.approve,
+      spender,
+      amount
+    )
   } catch (e) {
     LoggerInstance.error(
       `ERROR: Failed to approve spender to spend tokens : ${e.message}`
