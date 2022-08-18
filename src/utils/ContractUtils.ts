@@ -129,7 +129,7 @@ export async function sendTx(
       .integerValue(BigNumber.ROUND_DOWN)
       .toString(10)
   } catch (err) {
-    LoggerInstance.log('EIP 1559 not supported by network')
+    LoggerInstance.error('Not able to use EIP 1559.')
     sendTxValue.gasPrice = await getFairGasPrice(web3, config)
   }
 
