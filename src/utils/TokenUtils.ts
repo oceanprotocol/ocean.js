@@ -52,7 +52,7 @@ export async function approve<G extends boolean = false>(
     account,
     estGas + 1,
     web3,
-    config,
+    config?.gasFeeMultiplier,
     tokenContract.methods.approve,
     spender,
     amountFormatted
@@ -100,7 +100,7 @@ export async function approveWei<G extends boolean = false>(
       account,
       estGas + 1,
       web3,
-      config,
+      config?.gasFeeMultiplier,
       tokenContract.methods.approve,
       spender,
       amount
@@ -145,7 +145,7 @@ export async function transfer<G extends boolean = false>(
     account,
     estGas + 1,
     web3,
-    config,
+    config?.gasFeeMultiplier,
     tokenContract.methods.transfer,
     recipient,
     amountFormatted

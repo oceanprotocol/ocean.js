@@ -61,7 +61,7 @@ export class Dispenser extends SmartContractWithAddress {
       address,
       estGas + 1,
       this.web3,
-      this.config,
+      this.config?.gasFeeMultiplier,
       this.contract.methods.create,
       dtAddress,
       this.web3.utils.toWei(maxTokens),
@@ -101,7 +101,7 @@ export class Dispenser extends SmartContractWithAddress {
       address,
       estGas + 1,
       this.web3,
-      this.config,
+      this.config?.gasFeeMultiplier,
       this.contract.methods.activate,
       dtAddress,
       this.web3.utils.toWei(maxTokens),
@@ -133,7 +133,7 @@ export class Dispenser extends SmartContractWithAddress {
       address,
       estGas + 1,
       this.web3,
-      this.config,
+      this.config?.gasFeeMultiplier,
       this.contract.methods.deactivate,
       dtAddress
     )
@@ -166,7 +166,7 @@ export class Dispenser extends SmartContractWithAddress {
       address,
       estGas + 1,
       this.web3,
-      this.config,
+      this.config?.gasFeeMultiplier,
       this.contract.methods.setAllowedSwapper,
       dtAddress,
       newAllowedSwapper
@@ -204,7 +204,7 @@ export class Dispenser extends SmartContractWithAddress {
       address,
       estGas + 1,
       this.web3,
-      this.config,
+      this.config?.gasFeeMultiplier,
       this.contract.methods.dispense,
       dtAddress,
       this.web3.utils.toWei(amount),
@@ -235,7 +235,7 @@ export class Dispenser extends SmartContractWithAddress {
       address,
       estGas + 1,
       this.web3,
-      this.config,
+      this.config?.gasFeeMultiplier,
       this.contract.methods.ownerWithdraw,
       dtAddress
     )

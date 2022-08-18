@@ -16,20 +16,14 @@ export function setContractDefaults(contract: Contract, config: Config): Contrac
   return contract
 }
 
-export async function networkSupportsEip1559(web3: Web3): Promise<boolean> {
-  const feeHistory = await web3.eth.getFeeHistory(4, 'pending', [25, 50, 75])
-  if (feeHistory && feeHistory.baseFeePerGas) {
-    return true
-  } else {
-    return false
-  }
-}
-
-export async function getFairGasPrice(web3: Web3, config: Config): Promise<string> {
+export async function getFairGasPrice(
+  web3: Web3,
+  gasFeeMultiplier: number
+): Promise<string> {
   const x = new BigNumber(await web3.eth.getGasPrice())
-  if (config && config.gasFeeMultiplier)
+  if (gasFeeMultiplier)
     return x
-      .multipliedBy(config.gasFeeMultiplier)
+      .multipliedBy(gasFeeMultiplier)
       .integerValue(BigNumber.ROUND_DOWN)
       .toString(10)
   else return x.toString(10)
@@ -97,7 +91,7 @@ export async function calculateEstimatedGas(
  * @param {string} from account that calls the function
  * @param {any} estGas estimated gas for the transaction
  * @param {Web3} web3 web3 objcet
- * @param {Function} functionToEstimateGas function that we need to send
+ * @param {Function} functionToSend function that we need to send
  * @param {...any[]} args arguments of the function
  * @return {Promise<any>} transaction receipt
  */
@@ -105,7 +99,7 @@ export async function sendTx(
   from: string,
   estGas: any,
   web3: Web3,
-  config: Config,
+  gasFeeMultiplier: number,
   functionToSend: Function,
   ...args: any[]
 ): Promise<any> {
@@ -116,8 +110,8 @@ export async function sendTx(
   try {
     const feeHistory = await web3.eth.getFeeHistory(1, 'latest', [75])
     let aggressiveFee = new BigNumber(feeHistory?.reward?.[0]?.[0])
-    if (this.config?.gasFeeMultiplier > 1) {
-      aggressiveFee = aggressiveFee.multipliedBy(this.config?.gasFeeMultiplier)
+    if (gasFeeMultiplier > 1) {
+      aggressiveFee = aggressiveFee.multipliedBy(gasFeeMultiplier)
     }
 
     sendTxValue.maxPriorityFeePerGas = aggressiveFee
@@ -130,7 +124,7 @@ export async function sendTx(
       .toString(10)
   } catch (err) {
     LoggerInstance.error('Not able to use EIP 1559.')
-    sendTxValue.gasPrice = await getFairGasPrice(web3, config)
+    sendTxValue.gasPrice = await getFairGasPrice(web3, gasFeeMultiplier)
   }
 
   const trxReceipt = await functionToSend.apply(null, args).send(sendTxValue)

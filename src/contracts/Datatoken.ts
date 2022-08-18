@@ -73,7 +73,7 @@ export class Datatoken extends SmartContract {
       address,
       estGas + 1,
       this.web3,
-      this.config,
+      this.config?.gasFeeMultiplier,
       dtContract.methods.approve,
       spender,
       this.web3.utils.toWei(amount)
@@ -129,7 +129,7 @@ export class Datatoken extends SmartContract {
       address,
       estGas + 1,
       this.web3,
-      this.config,
+      this.config?.gasFeeMultiplier,
       dtContract.methods.createFixedRate,
       fixedRateParams.fixedRateAddress,
       [
@@ -191,7 +191,7 @@ export class Datatoken extends SmartContract {
       address,
       estGas + 1,
       this.web3,
-      this.config,
+      this.config?.gasFeeMultiplier,
       dtContract.methods.createDispenser,
       dispenserAddress,
       dispenserParams.maxTokens,
@@ -237,7 +237,7 @@ export class Datatoken extends SmartContract {
         address,
         estGas + 1,
         this.web3,
-        this.config,
+        this.config?.gasFeeMultiplier,
         dtContract.methods.mint,
         toAddress || address,
         this.web3.utils.toWei(amount)
@@ -279,7 +279,7 @@ export class Datatoken extends SmartContract {
       address,
       estGas + 1,
       this.web3,
-      this.config,
+      this.config?.gasFeeMultiplier,
       dtContract.methods.addMinter,
       minter
     )
@@ -319,7 +319,7 @@ export class Datatoken extends SmartContract {
       address,
       estGas + 1,
       this.web3,
-      this.config,
+      this.config?.gasFeeMultiplier,
       dtContract.methods.removeMinter,
       minter
     )
@@ -358,7 +358,7 @@ export class Datatoken extends SmartContract {
       address,
       estGas + 1,
       this.web3,
-      this.config,
+      this.config?.gasFeeMultiplier,
       dtContract.methods.addPaymentManager,
       paymentManager
     )
@@ -397,7 +397,7 @@ export class Datatoken extends SmartContract {
       address,
       estGas + 1,
       this.web3,
-      this.config,
+      this.config?.gasFeeMultiplier,
       dtContract.methods.removePaymentManager,
       paymentManager
     )
@@ -443,7 +443,7 @@ export class Datatoken extends SmartContract {
       address,
       estGas + 1,
       this.web3,
-      this.config,
+      this.config?.gasFeeMultiplier,
       dtContract.methods.setPaymentCollector,
       paymentCollector
     )
@@ -507,7 +507,7 @@ export class Datatoken extends SmartContract {
       address,
       estGas + 1,
       this.web3,
-      this.config,
+      this.config?.gasFeeMultiplier,
       dtContract.methods.transfer,
       toAddress,
       amount
@@ -556,7 +556,7 @@ export class Datatoken extends SmartContract {
       address,
       estGas + 1,
       this.web3,
-      this.config,
+      this.config?.gasFeeMultiplier,
       dtContract.methods.startOrder,
       consumer,
       serviceIndex,
@@ -596,7 +596,7 @@ export class Datatoken extends SmartContract {
       address,
       estGas + 1,
       this.web3,
-      this.config,
+      this.config?.gasFeeMultiplier,
       dtContract.methods.reuseOrder,
       orderTxId,
       providerFees
@@ -634,7 +634,7 @@ export class Datatoken extends SmartContract {
       address,
       estGas + 1,
       this.web3,
-      this.config,
+      this.config?.gasFeeMultiplier,
       dtContract.methods.buyFromFreAndOrder,
       orderParams,
       freContractParams
@@ -670,7 +670,7 @@ export class Datatoken extends SmartContract {
       address,
       estGas + 1,
       this.web3,
-      this.config,
+      this.config?.gasFeeMultiplier,
       dtContract.methods.buyFromDispenserAndOrder,
       orderParams,
       dispenserContract
@@ -711,7 +711,7 @@ export class Datatoken extends SmartContract {
       address,
       estGas + 1,
       this.web3,
-      this.config,
+      this.config?.gasFeeMultiplier,
       dtContract.methods.setData,
       valueHex
     )
@@ -746,7 +746,7 @@ export class Datatoken extends SmartContract {
       address,
       estGas + 1,
       this.web3,
-      this.config,
+      this.config?.gasFeeMultiplier,
       dtContract.methods.cleanPermissions
     )
 
@@ -856,7 +856,7 @@ export class Datatoken extends SmartContract {
       address,
       estGas + 1,
       this.web3,
-      this.config,
+      this.config?.gasFeeMultiplier,
       dtContract.methods.setPublishingMarketFee,
       publishMarketFeeAddress,
       publishMarketFeeToken,

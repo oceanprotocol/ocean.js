@@ -67,7 +67,7 @@ export class Nft extends SmartContract {
       address,
       estGas + 1,
       this.web3,
-      this.config,
+      this.config?.gasFeeMultiplier,
       nftContract.methods.createERC20,
       templateIndex,
       [name, symbol],
@@ -109,7 +109,7 @@ export class Nft extends SmartContract {
       address,
       estGas + 1,
       this.web3,
-      this.config,
+      this.config?.gasFeeMultiplier,
       nftContract.methods.addManager,
       manager
     )
@@ -147,7 +147,7 @@ export class Nft extends SmartContract {
       address,
       estGas + 1,
       this.web3,
-      this.config,
+      this.config?.gasFeeMultiplier,
       nftContract.methods.removeManager,
       manager
     )
@@ -186,7 +186,7 @@ export class Nft extends SmartContract {
       address,
       estGas + 1,
       this.web3,
-      this.config,
+      this.config?.gasFeeMultiplier,
       nftContract.methods.addToCreateERC20List,
       datatokenDeployer
     )
@@ -227,7 +227,7 @@ export class Nft extends SmartContract {
       address,
       estGas + 1,
       this.web3,
-      this.config,
+      this.config?.gasFeeMultiplier,
       nftContract.methods.removeFromCreateERC20List,
       datatokenDeployer
     )
@@ -265,7 +265,7 @@ export class Nft extends SmartContract {
       address,
       estGas + 1,
       this.web3,
-      this.config,
+      this.config?.gasFeeMultiplier,
       nftContract.methods.addToMetadataList,
       metadataUpdater
     )
@@ -306,7 +306,7 @@ export class Nft extends SmartContract {
       address,
       estGas + 1,
       this.web3,
-      this.config,
+      this.config?.gasFeeMultiplier,
       nftContract.methods.removeFromMetadataList,
       metadataUpdater
     )
@@ -343,7 +343,7 @@ export class Nft extends SmartContract {
       address,
       estGas + 1,
       this.web3,
-      this.config,
+      this.config?.gasFeeMultiplier,
       nftContract.methods.addTo725StoreList,
       storeUpdater
     )
@@ -385,7 +385,7 @@ export class Nft extends SmartContract {
       address,
       estGas + 1,
       this.web3,
-      this.config,
+      this.config?.gasFeeMultiplier,
       nftContract.methods.removeFrom725StoreList,
       storeUpdater
     )
@@ -423,7 +423,7 @@ export class Nft extends SmartContract {
       address,
       estGas + 1,
       this.web3,
-      this.config,
+      this.config?.gasFeeMultiplier,
       nftContract.methods.cleanPermissions
     )
 
@@ -467,7 +467,7 @@ export class Nft extends SmartContract {
       nftOwner,
       estGas + 1,
       this.web3,
-      this.config,
+      this.config?.gasFeeMultiplier,
       nftContract.methods.transferFrom,
       nftOwner,
       nftReceiver,
@@ -514,7 +514,7 @@ export class Nft extends SmartContract {
       nftOwner,
       estGas + 1,
       this.web3,
-      this.config,
+      this.config?.gasFeeMultiplier,
       nftContract.methods.safeTransferFrom,
       nftOwner,
       nftReceiver,
@@ -570,7 +570,7 @@ export class Nft extends SmartContract {
       address,
       estGas + 1,
       this.web3,
-      this.config,
+      this.config?.gasFeeMultiplier,
       nftContract.methods.setMetaData,
       metadataState,
       metadataDecryptorUrl,
@@ -616,7 +616,7 @@ export class Nft extends SmartContract {
       metadataUpdater,
       estGas + 1,
       this.web3,
-      this.config,
+      this.config?.gasFeeMultiplier,
       nftContract.methods.setMetaDataAndTokenURI,
       sanitizedMetadataAndTokenURI
     )
@@ -654,7 +654,7 @@ export class Nft extends SmartContract {
       address,
       estGas + 1,
       this.web3,
-      this.config,
+      this.config?.gasFeeMultiplier,
       nftContract.methods.setMetaDataState,
       metadataState
     )
@@ -687,7 +687,7 @@ export class Nft extends SmartContract {
       address,
       estGas + 1,
       this.web3,
-      this.config,
+      this.config?.gasFeeMultiplier,
       nftContract.methods.setTokenURI,
       '1',
       data
@@ -774,7 +774,7 @@ export class Nft extends SmartContract {
       address,
       estGas + 1,
       this.web3,
-      this.config,
+      this.config?.gasFeeMultiplier,
       nftContract.methods.setNewData,
       keyHash,
       valueHex

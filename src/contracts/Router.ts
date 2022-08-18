@@ -35,7 +35,7 @@ export class Router extends SmartContractWithAddress {
       address,
       estGas + 1,
       this.web3,
-      this.config,
+      this.config?.gasFeeMultiplier,
       this.contract.methods.buyDTBatch,
       operations
     )
@@ -97,7 +97,7 @@ export class Router extends SmartContractWithAddress {
       address,
       estGas + 1,
       this.web3,
-      this.config,
+      this.config?.gasFeeMultiplier,
       this.contract.methods.addApprovedToken,
       tokenAddress
     )
@@ -131,7 +131,7 @@ export class Router extends SmartContractWithAddress {
       address,
       estGas + 1,
       this.web3,
-      this.config,
+      this.config?.gasFeeMultiplier,
       this.contract.methods.removeApprovedToken,
       tokenAddress
     )
@@ -164,7 +164,7 @@ export class Router extends SmartContractWithAddress {
       address,
       estGas + 1,
       this.web3,
-      this.config,
+      this.config?.gasFeeMultiplier,
       this.contract.methods.addFixedRateContract,
       tokenAddress
     )
@@ -198,7 +198,7 @@ export class Router extends SmartContractWithAddress {
       address,
       estGas + 1,
       this.web3,
-      this.config,
+      this.config?.gasFeeMultiplier,
       this.contract.methods.removeFixedRateContract,
       tokenAddress
     )
@@ -232,7 +232,7 @@ export class Router extends SmartContractWithAddress {
       address,
       estGas + 1,
       this.web3,
-      this.config,
+      this.config?.gasFeeMultiplier,
       this.contract.methods.addDispenserContract,
       tokenAddress
     )
@@ -265,7 +265,7 @@ export class Router extends SmartContractWithAddress {
       address,
       estGas + 1,
       this.web3,
-      this.config,
+      this.config?.gasFeeMultiplier,
       this.contract.methods.removeDispenserContract,
       tokenAddress
     )
@@ -321,7 +321,7 @@ export class Router extends SmartContractWithAddress {
       address,
       estGas + 1,
       this.web3,
-      this.config,
+      this.config?.gasFeeMultiplier,
       this.contract.methods.updateOPCFee,
       newSwapOceanFee,
       newSwapNonOceanFee,

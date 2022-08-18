@@ -70,7 +70,7 @@ export class FixedRateExchange extends SmartContractWithAddress {
       address,
       estGas + 1,
       this.web3,
-      this.config,
+      this.config?.gasFeeMultiplier,
       this.contract.methods.buyDT,
       exchangeId,
       dtAmountFormatted,
@@ -128,7 +128,7 @@ export class FixedRateExchange extends SmartContractWithAddress {
       address,
       estGas + 1,
       this.web3,
-      this.config,
+      this.config?.gasFeeMultiplier,
       this.contract.methods.sellDT,
       exchangeId,
       dtAmountFormatted,
@@ -175,7 +175,7 @@ export class FixedRateExchange extends SmartContractWithAddress {
       address,
       estGas + 1,
       this.web3,
-      this.config,
+      this.config?.gasFeeMultiplier,
       this.contract.methods.setRate,
       exchangeId,
       this.web3.utils.toWei(newRate)
@@ -209,7 +209,7 @@ export class FixedRateExchange extends SmartContractWithAddress {
       address,
       estGas + 1,
       this.web3,
-      this.config,
+      this.config?.gasFeeMultiplier,
       this.contract.methods.setAllowedSwapper,
       exchangeId,
       newAllowedSwapper
@@ -242,7 +242,7 @@ export class FixedRateExchange extends SmartContractWithAddress {
       address,
       estGas + 1,
       this.web3,
-      this.config,
+      this.config?.gasFeeMultiplier,
       this.contract.methods.toggleExchangeState,
       exchangeId
     )
@@ -275,7 +275,7 @@ export class FixedRateExchange extends SmartContractWithAddress {
       address,
       estGas + 1,
       this.web3,
-      this.config,
+      this.config?.gasFeeMultiplier,
       this.contract.methods.toggleExchangeState,
       exchangeId
     )
@@ -510,7 +510,7 @@ export class FixedRateExchange extends SmartContractWithAddress {
       address,
       estGas + 1,
       this.web3,
-      this.config,
+      this.config?.gasFeeMultiplier,
       this.contract.methods.toggleMintState,
       exchangeId,
       true
@@ -545,7 +545,7 @@ export class FixedRateExchange extends SmartContractWithAddress {
       address,
       estGas + 1,
       this.web3,
-      this.config,
+      this.config?.gasFeeMultiplier,
       this.contract.methods.toggleMintState,
       exchangeId,
       false
@@ -590,7 +590,7 @@ export class FixedRateExchange extends SmartContractWithAddress {
       address,
       estGas + 1,
       this.web3,
-      this.config,
+      this.config?.gasFeeMultiplier,
       this.contract.methods.collectBT,
       exchangeId,
       amountWei
@@ -635,7 +635,7 @@ export class FixedRateExchange extends SmartContractWithAddress {
       address,
       estGas + 1,
       this.web3,
-      this.config,
+      this.config?.gasFeeMultiplier,
       this.contract.methods.collectDT,
       exchangeId,
       amountWei
@@ -668,7 +668,7 @@ export class FixedRateExchange extends SmartContractWithAddress {
       address,
       estGas + 1,
       this.web3,
-      this.config,
+      this.config?.gasFeeMultiplier,
       this.contract.methods.collectMarketFee,
       exchangeId
     )
@@ -701,7 +701,7 @@ export class FixedRateExchange extends SmartContractWithAddress {
       address,
       estGas + 1,
       this.web3,
-      this.config,
+      this.config?.gasFeeMultiplier,
       this.contract.methods.collectOceanFee,
       exchangeId
     )
@@ -762,7 +762,7 @@ export class FixedRateExchange extends SmartContractWithAddress {
       address,
       estGas + 1,
       this.web3,
-      this.config,
+      this.config?.gasFeeMultiplier,
       this.contract.methods.updateMarketFee,
       exchangeId,
       this.web3.utils.toWei(newMarketFee)
@@ -796,7 +796,7 @@ export class FixedRateExchange extends SmartContractWithAddress {
       address,
       estGas + 1,
       this.web3,
-      this.config,
+      this.config?.gasFeeMultiplier,
       this.contract.methods.updateMarketFeeCollector,
       exchangeId,
       newMarketFeeCollector
