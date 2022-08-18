@@ -1,8 +1,7 @@
 import FixedRateExchangeAbi from '@oceanprotocol/contracts/artifacts/contracts/pools/fixedRate/FixedRateExchange.sol/FixedRateExchange.json'
-import { TransactionReceipt } from 'web3-core'
 import { AbiItem } from 'web3-utils/types'
 import { calculateEstimatedGas, sendTx, ZERO_ADDRESS } from '../utils'
-import { PriceAndFees, FeesInfo, FixedPriceExchange } from '../@types'
+import { PriceAndFees, FeesInfo, FixedPriceExchange, ReceiptOrEstimate } from '../@types'
 import { SmartContractWithAddress } from './SmartContractWithAddress'
 
 export class FixedRateExchange extends SmartContractWithAddress {
@@ -31,7 +30,7 @@ export class FixedRateExchange extends SmartContractWithAddress {
    * @param {String} address User address
    * @param {String} consumeMarketAddress consumeMarketAddress
    * @param {String} consumeMarketFee consumeMarketFee in fraction
-   * @return {Promise<TransactionReceipt>} transaction receipt
+   * @return {Promise<ReceiptOrEstimate>} transaction receipt
    */
   public async buyDatatokens<G extends boolean = false>(
     address: string,
@@ -41,7 +40,7 @@ export class FixedRateExchange extends SmartContractWithAddress {
     consumeMarketAddress: string = ZERO_ADDRESS,
     consumeMarketFee: string = '0',
     estimateGas?: G
-  ): Promise<G extends false ? TransactionReceipt : number> {
+  ): Promise<ReceiptOrEstimate<G>> {
     const exchange = await this.getExchange(exchangeId)
     const consumeMarketFeeFormatted = this.web3.utils.toWei(consumeMarketFee)
     const dtAmountFormatted = await this.amountToUnits(
@@ -64,7 +63,7 @@ export class FixedRateExchange extends SmartContractWithAddress {
       consumeMarketAddress,
       consumeMarketFeeFormatted
     )
-    if (estimateGas) return estGas
+    if (estimateGas) return <ReceiptOrEstimate<G>>estGas
 
     const trxReceipt = await sendTx(
       address,
@@ -79,7 +78,7 @@ export class FixedRateExchange extends SmartContractWithAddress {
       consumeMarketFeeFormatted
     )
 
-    return trxReceipt
+    return <ReceiptOrEstimate<G>>trxReceipt
   }
 
   /**
@@ -90,7 +89,7 @@ export class FixedRateExchange extends SmartContractWithAddress {
    * @param {String} address User address
    * @param {String} consumeMarketAddress consumeMarketAddress
    * @param {String} consumeMarketFee consumeMarketFee in fraction
-   * @return {Promise<TransactionReceipt>} transaction receipt
+   * @return {Promise<ReceiptOrEstimate>} transaction receipt
    */
   public async sellDatatokens<G extends boolean = false>(
     address: string,
@@ -100,7 +99,7 @@ export class FixedRateExchange extends SmartContractWithAddress {
     consumeMarketAddress: string = ZERO_ADDRESS,
     consumeMarketFee: string = '0',
     estimateGas?: G
-  ): Promise<G extends false ? TransactionReceipt : number> {
+  ): Promise<ReceiptOrEstimate<G>> {
     const exchange = await this.getExchange(exchangeId)
     const consumeMarketFeeFormatted = this.web3.utils.toWei(consumeMarketFee)
     const dtAmountFormatted = await this.amountToUnits(
@@ -122,7 +121,7 @@ export class FixedRateExchange extends SmartContractWithAddress {
       consumeMarketAddress,
       consumeMarketFeeFormatted
     )
-    if (estimateGas) return estGas
+    if (estimateGas) return <ReceiptOrEstimate<G>>estGas
 
     const trxReceipt = await sendTx(
       address,
@@ -136,7 +135,7 @@ export class FixedRateExchange extends SmartContractWithAddress {
       consumeMarketAddress,
       consumeMarketFeeFormatted
     )
-    return trxReceipt
+    return <ReceiptOrEstimate<G>>trxReceipt
   }
 
   /**
@@ -155,21 +154,21 @@ export class FixedRateExchange extends SmartContractWithAddress {
    * @param {String} exchangeId ExchangeId
    * @param {String} newRate New rate
    * @param {String} address User account
-   * @return {Promise<TransactionReceipt>} transaction receipt
+   * @return {Promise<ReceiptOrEstimate>} transaction receipt
    */
   public async setRate<G extends boolean = false>(
     address: string,
     exchangeId: string,
     newRate: string,
     estimateGas?: G
-  ): Promise<G extends false ? TransactionReceipt : number> {
+  ): Promise<ReceiptOrEstimate<G>> {
     const estGas = await calculateEstimatedGas(
       address,
       this.contract.methods.setRate,
       exchangeId,
       this.web3.utils.toWei(newRate)
     )
-    if (estimateGas) return estGas
+    if (estimateGas) return <ReceiptOrEstimate<G>>estGas
 
     const trxReceipt = await sendTx(
       address,
@@ -181,7 +180,7 @@ export class FixedRateExchange extends SmartContractWithAddress {
       this.web3.utils.toWei(newRate)
     )
 
-    return trxReceipt
+    return <ReceiptOrEstimate<G>>trxReceipt
   }
 
   /**
@@ -189,21 +188,21 @@ export class FixedRateExchange extends SmartContractWithAddress {
    * @param {String} exchangeId ExchangeId
    * @param {String} newAllowedSwapper newAllowedSwapper (set address zero if we want to remove allowed swapper)
    * @param {String} address User account
-   * @return {Promise<TransactionReceipt>} transaction receipt
+   * @return {Promise<ReceiptOrEstimate>} transaction receipt
    */
   public async setAllowedSwapper<G extends boolean = false>(
     address: string,
     exchangeId: string,
     newAllowedSwapper: string,
     estimateGas?: G
-  ): Promise<G extends false ? TransactionReceipt : number> {
+  ): Promise<ReceiptOrEstimate<G>> {
     const estGas = await calculateEstimatedGas(
       address,
       this.contract.methods.setAllowedSwapper,
       exchangeId,
       newAllowedSwapper
     )
-    if (estimateGas) return estGas
+    if (estimateGas) return <ReceiptOrEstimate<G>>estGas
 
     const trxReceipt = await sendTx(
       address,
@@ -214,20 +213,20 @@ export class FixedRateExchange extends SmartContractWithAddress {
       exchangeId,
       newAllowedSwapper
     )
-    return trxReceipt
+    return <ReceiptOrEstimate<G>>trxReceipt
   }
 
   /**
    * Activate an exchange
    * @param {String} exchangeId ExchangeId
    * @param {String} address User address
-   * @return {Promise<TransactionReceipt>} transaction receipt
+   * @return {Promise<ReceiptOrEstimate>} transaction receipt
    */
   public async activate<G extends boolean = false>(
     address: string,
     exchangeId: string,
     estimateGas?: G
-  ): Promise<G extends false ? TransactionReceipt : number> {
+  ): Promise<ReceiptOrEstimate<G>> {
     const exchange = await this.getExchange(exchangeId)
     if (!exchange) return null
     if (exchange.active === true) return null
@@ -236,7 +235,7 @@ export class FixedRateExchange extends SmartContractWithAddress {
       this.contract.methods.toggleExchangeState,
       exchangeId
     )
-    if (estimateGas) return estGas
+    if (estimateGas) return <ReceiptOrEstimate<G>>estGas
 
     const trxReceipt = await sendTx(
       address,
@@ -246,20 +245,20 @@ export class FixedRateExchange extends SmartContractWithAddress {
       this.contract.methods.toggleExchangeState,
       exchangeId
     )
-    return trxReceipt
+    return <ReceiptOrEstimate<G>>trxReceipt
   }
 
   /**
    * Deactivate an exchange
    * @param {String} exchangeId ExchangeId
    * @param {String} address User address
-   * @return {Promise<TransactionReceipt>} transaction receipt
+   * @return {Promise<ReceiptOrEstimate>} transaction receipt
    */
   public async deactivate<G extends boolean = false>(
     address: string,
     exchangeId: string,
     estimateGas?: G
-  ): Promise<G extends false ? TransactionReceipt : number> {
+  ): Promise<ReceiptOrEstimate<G>> {
     const exchange = await this.getExchange(exchangeId)
     if (!exchange) return null
     if (exchange.active === false) return null
@@ -269,7 +268,7 @@ export class FixedRateExchange extends SmartContractWithAddress {
       this.contract.methods.toggleExchangeState,
       exchangeId
     )
-    if (estimateGas) return estGas
+    if (estimateGas) return <ReceiptOrEstimate<G>>estGas
 
     const trxReceipt = await sendTx(
       address,
@@ -279,7 +278,7 @@ export class FixedRateExchange extends SmartContractWithAddress {
       this.contract.methods.toggleExchangeState,
       exchangeId
     )
-    return trxReceipt
+    return <ReceiptOrEstimate<G>>trxReceipt
   }
 
   /**
@@ -487,13 +486,13 @@ export class FixedRateExchange extends SmartContractWithAddress {
    * Activate minting option for fixed rate contract
    * @param {String} exchangeId ExchangeId
    * @param {String} address User address
-   * @return {Promise<TransactionReceipt>} transaction receipt
+   * @return {Promise<ReceiptOrEstimate>} transaction receipt
    */
   public async activateMint<G extends boolean = false>(
     address: string,
     exchangeId: string,
     estimateGas?: G
-  ): Promise<G extends false ? TransactionReceipt : number> {
+  ): Promise<ReceiptOrEstimate<G>> {
     const exchange = await this.getExchange(exchangeId)
     if (!exchange) return null
     if (exchange.withMint === true) return null
@@ -504,7 +503,7 @@ export class FixedRateExchange extends SmartContractWithAddress {
       exchangeId,
       true
     )
-    if (estimateGas) return estGas
+    if (estimateGas) return <ReceiptOrEstimate<G>>estGas
 
     const trxReceipt = await sendTx(
       address,
@@ -515,20 +514,20 @@ export class FixedRateExchange extends SmartContractWithAddress {
       exchangeId,
       true
     )
-    return trxReceipt
+    return <ReceiptOrEstimate<G>>trxReceipt
   }
 
   /**
    * Deactivate minting for fixed rate
    * @param {String} exchangeId ExchangeId
    * @param {String} address User address
-   * @return {Promise<TransactionReceipt>} transaction receipt
+   * @return {Promise<ReceiptOrEstimate>} transaction receipt
    */
   public async deactivateMint<G extends boolean = false>(
     address: string,
     exchangeId: string,
     estimateGas?: G
-  ): Promise<G extends false ? TransactionReceipt : number> {
+  ): Promise<ReceiptOrEstimate<G>> {
     const exchange = await this.getExchange(exchangeId)
     if (!exchange) return null
     if (exchange.withMint === false) return null
@@ -539,7 +538,7 @@ export class FixedRateExchange extends SmartContractWithAddress {
       exchangeId,
       false
     )
-    if (estimateGas) return estGas
+    if (estimateGas) return <ReceiptOrEstimate<G>>estGas
 
     const trxReceipt = await sendTx(
       address,
@@ -550,7 +549,7 @@ export class FixedRateExchange extends SmartContractWithAddress {
       exchangeId,
       false
     )
-    return trxReceipt
+    return <ReceiptOrEstimate<G>>trxReceipt
   }
 
   /**
@@ -558,14 +557,14 @@ export class FixedRateExchange extends SmartContractWithAddress {
    * @param {String} address User address
    * @param {String} exchangeId ExchangeId
    * @param {String} amount amount to be collected
-   * @return {Promise<TransactionReceipt>} transaction receipt
+   * @return {Promise<ReceiptOrEstimate>} transaction receipt
    */
   public async collectBasetokens<G extends boolean = false>(
     address: string,
     exchangeId: string,
     amount: string,
     estimateGas?: G
-  ): Promise<G extends false ? TransactionReceipt : number> {
+  ): Promise<ReceiptOrEstimate<G>> {
     const exchange = await this.getExchange(exchangeId)
     if (!exchange) return null
 
@@ -584,7 +583,7 @@ export class FixedRateExchange extends SmartContractWithAddress {
       exchangeId,
       amountWei
     )
-    if (estimateGas) return estGas
+    if (estimateGas) return <ReceiptOrEstimate<G>>estGas
 
     const trxReceipt = await sendTx(
       address,
@@ -595,7 +594,7 @@ export class FixedRateExchange extends SmartContractWithAddress {
       exchangeId,
       amountWei
     )
-    return trxReceipt
+    return <ReceiptOrEstimate<G>>trxReceipt
   }
 
   /**
@@ -603,14 +602,14 @@ export class FixedRateExchange extends SmartContractWithAddress {
    * @param {String} address User address
    * @param {String} exchangeId ExchangeId
    * @param {String} amount amount to be collected
-   * @return {Promise<TransactionReceipt>} transaction receipt
+   * @return {Promise<ReceiptOrEstimate>} transaction receipt
    */
   public async collectDatatokens<G extends boolean = false>(
     address: string,
     exchangeId: string,
     amount: string,
     estimateGas?: G
-  ): Promise<G extends false ? TransactionReceipt : number> {
+  ): Promise<ReceiptOrEstimate<G>> {
     const exchange = await this.getExchange(exchangeId)
     if (!exchange) return null
 
@@ -629,7 +628,7 @@ export class FixedRateExchange extends SmartContractWithAddress {
       exchangeId,
       amountWei
     )
-    if (estimateGas) return estGas
+    if (estimateGas) return <ReceiptOrEstimate<G>>estGas
 
     const trxReceipt = await sendTx(
       address,
@@ -640,20 +639,20 @@ export class FixedRateExchange extends SmartContractWithAddress {
       exchangeId,
       amountWei
     )
-    return trxReceipt
+    return <ReceiptOrEstimate<G>>trxReceipt
   }
 
   /**
    * Collect market fee and send it to marketFeeCollector (anyone can call it)
    * @param {String} exchangeId ExchangeId
    * @param {String} address User address
-   * @return {Promise<TransactionReceipt>} transaction receipt
+   * @return {Promise<ReceiptOrEstimate>} transaction receipt
    */
   public async collectMarketFee<G extends boolean = false>(
     address: string,
     exchangeId: string,
     estimateGas?: G
-  ): Promise<G extends false ? TransactionReceipt : number> {
+  ): Promise<ReceiptOrEstimate<G>> {
     const exchange = await this.getExchange(exchangeId)
     if (!exchange) return null
 
@@ -662,7 +661,7 @@ export class FixedRateExchange extends SmartContractWithAddress {
       this.contract.methods.collectMarketFee,
       exchangeId
     )
-    if (estimateGas) return estGas
+    if (estimateGas) return <ReceiptOrEstimate<G>>estGas
 
     const trxReceipt = await sendTx(
       address,
@@ -673,20 +672,20 @@ export class FixedRateExchange extends SmartContractWithAddress {
       exchangeId
     )
 
-    return trxReceipt
+    return <ReceiptOrEstimate<G>>trxReceipt
   }
 
   /**
    * Collect ocean fee and send it to OPF collector (anyone can call it)
    * @param {String} exchangeId ExchangeId
    * @param {String} address User address
-   * @return {Promise<TransactionReceipt>} transaction receipt
+   * @return {Promise<ReceiptOrEstimate>} transaction receipt
    */
   public async collectOceanFee<G extends boolean = false>(
     address: string,
     exchangeId: string,
     estimateGas?: G
-  ): Promise<G extends false ? TransactionReceipt : number> {
+  ): Promise<ReceiptOrEstimate<G>> {
     const exchange = await this.getExchange(exchangeId)
     if (!exchange) return null
 
@@ -695,7 +694,7 @@ export class FixedRateExchange extends SmartContractWithAddress {
       this.contract.methods.collectOceanFee,
       exchangeId
     )
-    if (estimateGas) return estGas
+    if (estimateGas) return <ReceiptOrEstimate<G>>estGas
 
     const trxReceipt = await sendTx(
       address,
@@ -706,7 +705,7 @@ export class FixedRateExchange extends SmartContractWithAddress {
       exchangeId
     )
 
-    return trxReceipt
+    return <ReceiptOrEstimate<G>>trxReceipt
   }
 
   /**
@@ -742,21 +741,21 @@ export class FixedRateExchange extends SmartContractWithAddress {
    * @param {String} address user address
    * @param {String} exchangeId ExchangeId
    * @param {String} newMarketFee New market fee
-   * @return {Promise<TransactionReceipt>} transaction receipt
+   * @return {Promise<ReceiptOrEstimate>} transaction receipt
    */
   public async updateMarketFee<G extends boolean = false>(
     address: string,
     exchangeId: string,
     newMarketFee: string,
     estimateGas?: G
-  ): Promise<G extends false ? TransactionReceipt : number> {
+  ): Promise<ReceiptOrEstimate<G>> {
     const estGas = await calculateEstimatedGas(
       address,
       this.contract.methods.updateMarketFee,
       exchangeId,
       this.web3.utils.toWei(newMarketFee)
     )
-    if (estimateGas) return estGas
+    if (estimateGas) return <ReceiptOrEstimate<G>>estGas
 
     const trxReceipt = await sendTx(
       address,
@@ -768,7 +767,7 @@ export class FixedRateExchange extends SmartContractWithAddress {
       this.web3.utils.toWei(newMarketFee)
     )
 
-    return trxReceipt
+    return <ReceiptOrEstimate<G>>trxReceipt
   }
 
   /**
@@ -776,21 +775,21 @@ export class FixedRateExchange extends SmartContractWithAddress {
    * @param {String} address user address
    * @param {String} exchangeId ExchangeId
    * @param {String} newMarketFeeCollector New market fee collector
-   * @return {Promise<TransactionReceipt>} transaction receipt
+   * @return {Promise<ReceiptOrEstimate>} transaction receipt
    */
   public async updateMarketFeeCollector<G extends boolean = false>(
     address: string,
     exchangeId: string,
     newMarketFeeCollector: string,
     estimateGas?: G
-  ): Promise<G extends false ? TransactionReceipt : number> {
+  ): Promise<ReceiptOrEstimate<G>> {
     const estGas = await calculateEstimatedGas(
       address,
       this.contract.methods.updateMarketFeeCollector,
       exchangeId,
       newMarketFeeCollector
     )
-    if (estimateGas) return estGas
+    if (estimateGas) return <ReceiptOrEstimate<G>>estGas
 
     const trxReceipt = await sendTx(
       address,
@@ -802,6 +801,6 @@ export class FixedRateExchange extends SmartContractWithAddress {
       newMarketFeeCollector
     )
 
-    return trxReceipt
+    return <ReceiptOrEstimate<G>>trxReceipt
   }
 }

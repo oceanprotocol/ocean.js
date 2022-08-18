@@ -3,6 +3,7 @@ import BigNumber from 'bignumber.js'
 import { Contract } from 'web3-eth-contract'
 import { Config } from '../config'
 import { minAbi, GASLIMIT_DEFAULT, LoggerInstance } from '.'
+import { TransactionReceipt } from 'web3-core'
 
 export function setContractDefaults(contract: Contract, config: Config): Contract {
   if (config) {
@@ -79,7 +80,7 @@ export async function calculateEstimatedGas(
   from: string,
   functionToEstimateGas: Function,
   ...args: any[]
-): Promise<any> {
+): Promise<number> {
   const estimatedGas = await functionToEstimateGas
     .apply(null, args)
     .estimateGas({ from }, (err, estGas) => (err ? GASLIMIT_DEFAULT : estGas))
@@ -97,12 +98,12 @@ export async function calculateEstimatedGas(
  */
 export async function sendTx(
   from: string,
-  estGas: any,
+  estGas: number,
   web3: Web3,
   gasFeeMultiplier: number,
   functionToSend: Function,
   ...args: any[]
-): Promise<any> {
+): Promise<TransactionReceipt> {
   const sendTxValue: Record<string, any> = {
     from,
     gas: estGas + 1
