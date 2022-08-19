@@ -2,7 +2,7 @@ import Web3 from 'web3'
 import BigNumber from 'bignumber.js'
 import { Contract } from 'web3-eth-contract'
 import { Config } from '../config'
-import { minAbi, GASLIMIT_DEFAULT, LoggerInstance } from '.'
+import { minAbi, GASLIMIT_DEFAULT, LoggerInstance, FEE_HISTORY_NOT_SUPPORTED } from '.'
 import { TransactionReceipt } from 'web3-core'
 
 export function setContractDefaults(contract: Contract, config: Config): Contract {
@@ -110,21 +110,28 @@ export async function sendTx(
   }
   try {
     const feeHistory = await web3.eth.getFeeHistory(1, 'latest', [75])
-    let aggressiveFee = new BigNumber(feeHistory?.reward?.[0]?.[0])
-    if (gasFeeMultiplier > 1) {
-      aggressiveFee = aggressiveFee.multipliedBy(gasFeeMultiplier)
+    if (feeHistory && feeHistory?.baseFeePerGas?.[0] && feeHistory?.reward?.[0]?.[0]) {
+      let aggressiveFee = new BigNumber(feeHistory?.reward?.[0]?.[0])
+      if (gasFeeMultiplier > 1) {
+        aggressiveFee = aggressiveFee.multipliedBy(gasFeeMultiplier)
+      }
+
+      sendTxValue.maxPriorityFeePerGas = aggressiveFee
+        .integerValue(BigNumber.ROUND_DOWN)
+        .toString(10)
+
+      sendTxValue.maxFeePerGas = aggressiveFee
+        .plus(new BigNumber(feeHistory?.baseFeePerGas?.[0]).multipliedBy(2))
+        .integerValue(BigNumber.ROUND_DOWN)
+        .toString(10)
+    } else {
+      sendTxValue.gasPrice = await getFairGasPrice(web3, gasFeeMultiplier)
     }
-
-    sendTxValue.maxPriorityFeePerGas = aggressiveFee
-      .integerValue(BigNumber.ROUND_DOWN)
-      .toString(10)
-
-    sendTxValue.maxFeePerGas = aggressiveFee
-      .plus(new BigNumber(feeHistory?.baseFeePerGas?.[0]).multipliedBy(2))
-      .integerValue(BigNumber.ROUND_DOWN)
-      .toString(10)
   } catch (err) {
-    LoggerInstance.error('Not able to use EIP 1559.')
+    err?.message === FEE_HISTORY_NOT_SUPPORTED &&
+      LoggerInstance.log(
+        'Not able to use EIP 1559, getFeeHistory method not suported by network.'
+      )
     sendTxValue.gasPrice = await getFairGasPrice(web3, gasFeeMultiplier)
   }
 
