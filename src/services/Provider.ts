@@ -464,6 +464,8 @@ export class Provider {
         return params
       }
       LoggerInstance.error('Compute start failed: ', response.status, response.statusText)
+      // will include only relevant data in the prev log after some more debuging
+      LoggerInstance.error('Compute response object: ', response)
       LoggerInstance.error('Payload was:', payload)
       return null
     } catch (e) {
