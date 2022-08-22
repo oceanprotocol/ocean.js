@@ -499,8 +499,8 @@ describe('Simple compute tests', async () => {
   })
 
   it('should restart a computeJob without paying anything, because order is valid and providerFees are still valid', async () => {
-    // wait some time so the other compute job finishes his job
-    await sleep(2000)
+    // wait 1 min time so the other compute job finishes his job
+    await sleep(60000)
 
     // we choose the free env
     const computeEnv = computeEnvs.find((ce) => ce.priceMin === 0)
