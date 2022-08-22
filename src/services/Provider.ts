@@ -463,10 +463,12 @@ export class Provider {
         const params = await response.json()
         return params
       }
-      LoggerInstance.error('Compute start failed: ', response.status, response.statusText)
-      // will include only relevant data in the prev log after some more debuging
-      LoggerInstance.error('Compute response body: ', response.body)
-      LoggerInstance.error('Compute response json: ', await response.json())
+      LoggerInstance.error(
+        'Compute start failed: ',
+        response.status,
+        response.statusText,
+        await response.json()
+      )
       LoggerInstance.error('Payload was:', payload)
       return null
     } catch (e) {
