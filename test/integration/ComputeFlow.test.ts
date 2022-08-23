@@ -438,13 +438,14 @@ describe('Simple compute tests', async () => {
   it('should fetch compute environments from provider', async () => {
     // get compute environments
     computeEnvs = await ProviderInstance.getComputeEnvironments(providerUrl)
+    console.log('compute envs', computeEnvs)
     assert(computeEnvs, 'No Compute environments found')
   })
 
   it('should start a computeJob using the free environment', async () => {
-    // let's have 5 minutes of compute access
+    // let's have 2 minutes of compute access
     const mytime = new Date()
-    const computeMinutes = 5
+    const computeMinutes = 2
     mytime.setMinutes(mytime.getMinutes() + computeMinutes)
     computeValidUntil = Math.floor(mytime.getTime() / 1000)
     console.log('compute valid until ==', computeValidUntil)
@@ -572,7 +573,7 @@ describe('Simple compute tests', async () => {
     assert(computeJobs, 'Cannot start compute job')
   })
 
-  delay(120000)
+  delay(100000)
 
   it('Check compute status', async () => {
     const jobStatus = (await ProviderInstance.computeStatus(
@@ -593,7 +594,6 @@ describe('Simple compute tests', async () => {
       freeComputeJobId,
       0
     )
-    console.log('downloadURL', downloadURL)
     assert(downloadURL, 'Provider getComputeResultUrl failed!')
   })
 
