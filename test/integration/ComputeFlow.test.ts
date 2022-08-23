@@ -497,11 +497,29 @@ describe('Simple compute tests', async () => {
     freeEnvAlgoTxId = algo.transferTxId
     assert(computeJobs, 'Cannot start compute job')
     computeJobId = computeJobs[0].jobId
+
+    await sleep(5000)
+    const jobStatus = (await ProviderInstance.computeStatus(
+      providerUrl,
+      consumerAccount,
+      computeJobId,
+      resolvedDdoWith1mTimeout.id
+    )) as ComputeJob
+    console.log('job status after 1 sec', jobStatus)
   })
 
   it('should restart a computeJob without paying anything, because order is valid and providerFees are still valid', async () => {
     // wait 1 min time so the other compute job finishes his job
-    await sleep(15000)
+    await sleep(10000)
+
+    const jobStatus = (await ProviderInstance.computeStatus(
+      providerUrl,
+      consumerAccount,
+      computeJobId,
+      resolvedDdoWith1mTimeout.id
+    )) as ComputeJob
+
+    console.log('job status after  15 sec', jobStatus)
 
     // we choose the free env
     const computeEnv = computeEnvs.find((ce) => ce.priceMin === 0)
@@ -867,7 +885,7 @@ describe('Simple compute tests', async () => {
   })
 
   it('Get download compute results url', async () => {
-    await sleep(5000)
+    await sleep(10000)
     const downloadURL = await ProviderInstance.getComputeResultUrl(
       providerUrl,
       web3,
