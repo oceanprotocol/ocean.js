@@ -443,9 +443,10 @@ describe('Simple compute tests', async () => {
   })
 
   it('should start a computeJob using the free environment', async () => {
-    // let's have 2 minutes of compute access
+    // let's have 1 minute of compute access
     const mytime = new Date()
-    const computeMinutes = 2
+    console.log('my time', mytime)
+    const computeMinutes = 1
     mytime.setMinutes(mytime.getMinutes() + computeMinutes)
     computeValidUntil = Math.floor(mytime.getTime() / 1000)
     console.log('compute valid until ==', computeValidUntil)
@@ -573,7 +574,7 @@ describe('Simple compute tests', async () => {
     assert(computeJobs, 'Cannot start compute job')
   })
 
-  delay(100000)
+  delay(50000)
 
   it('Check compute status', async () => {
     const jobStatus = (await ProviderInstance.computeStatus(
@@ -582,7 +583,7 @@ describe('Simple compute tests', async () => {
       freeComputeJobId,
       resolvedDdoWith1mTimeout.id
     )) as ComputeJob
-    console.log('jobStatus', jobStatus)
+    console.log('jobStatus = ', jobStatus.statusText)
     assert(jobStatus, 'Cannot retrieve compute status!')
   })
 
@@ -616,7 +617,8 @@ describe('Simple compute tests', async () => {
       serviceId: resolvedAlgoDdoWith1mTimeout.services[0].id,
       transferTxId: freeEnvAlgoTxId
     }
-
+    console.log('current time == ', new Date())
+    console.log('compute valid until ==', computeValidUntil)
     providerInitializeComputeResults = await ProviderInstance.initializeCompute(
       assets,
       algo,
