@@ -142,7 +142,7 @@ export class Aquarius {
         headers: {
           'Content-Type': 'application/json'
         },
-        signal: signal
+        signal
       })
 
       if (response.ok) {
@@ -174,7 +174,7 @@ export class Aquarius {
         headers: {
           'Content-Type': 'application/json'
         },
-        signal: signal
+        signal
       })
 
       if (response.ok) {

@@ -1,7 +1,7 @@
 import { assert, expect } from 'chai'
 import BigNumber from 'bignumber.js'
 import { deployContracts, Addresses } from '../TestContractHandler'
-import { web3 } from '../config'
+import { web3, getTestConfig } from '../config'
 import {
   NftFactory,
   NftCreateData,
@@ -11,6 +11,7 @@ import {
   transfer,
   balance,
   unitsToAmount,
+  Config,
   Datatoken
 } from '../../src'
 import { FreCreationParams, DatatokenCreateParams } from '../../src/@types'
@@ -24,6 +25,7 @@ describe('Fixed Rate unit test', () => {
   let contracts: Addresses
   let fixedRate: FixedRateExchange
   let dtAddress: string
+  let config: Config
 
   const nftData: NftCreateData = {
     name: '72120Bundle',
@@ -57,6 +59,8 @@ describe('Fixed Rate unit test', () => {
     dtParams.minter = factoryOwner
     dtParams.paymentCollector = user2
     dtParams.mpFeeAddress = factoryOwner
+
+    config = await getTestConfig(web3)
   })
 
   it('should deploy contracts', async () => {
@@ -192,10 +196,24 @@ describe('Fixed Rate unit test', () => {
       // total supply is ZERO right now so dt owner mints 1000 DT and approves the fixed rate contract
       const datatoken = new Datatoken(web3)
       await datatoken.mint(dtAddress, exchangeOwner, '1000', exchangeOwner)
-      await approve(web3, exchangeOwner, dtAddress, contracts.fixedRateAddress, '1000')
+      await approve(
+        web3,
+        config,
+        exchangeOwner,
+        dtAddress,
+        contracts.fixedRateAddress,
+        '1000'
+      )
       // user1 gets 100 DAI so he can buy DTs
-      await transfer(web3, exchangeOwner, contracts.daiAddress, user1, '100')
-      await approve(web3, user1, contracts.daiAddress, contracts.fixedRateAddress, '100')
+      await transfer(web3, config, exchangeOwner, contracts.daiAddress, user1, '100')
+      await approve(
+        web3,
+        config,
+        user1,
+        contracts.daiAddress,
+        contracts.fixedRateAddress,
+        '100'
+      )
 
       // user1 has no dts but has 100 DAI
       expect(await balance(web3, dtAddress, user1)).to.equal('0')
@@ -231,7 +249,7 @@ describe('Fixed Rate unit test', () => {
     })
 
     it('#sellDatatokens - user1 should sell some dt', async () => {
-      await approve(web3, user1, dtAddress, contracts.fixedRateAddress, '100')
+      await approve(web3, config, user1, dtAddress, contracts.fixedRateAddress, '100')
       const daiBalanceBefore = new BigNumber(
         await balance(web3, contracts.daiAddress, user1)
       )
@@ -499,10 +517,24 @@ describe('Fixed Rate unit test', () => {
       // total supply is ZERO right now so dt owner mints 1000 DT and approves the fixed rate contract
       const datatoken = new Datatoken(web3)
       await datatoken.mint(dtAddress, exchangeOwner, '1000', exchangeOwner)
-      await approve(web3, exchangeOwner, dtAddress, contracts.fixedRateAddress, '1000')
+      await approve(
+        web3,
+        config,
+        exchangeOwner,
+        dtAddress,
+        contracts.fixedRateAddress,
+        '1000'
+      )
       // user1 gets 100 USDC so he can buy DTs
-      await transfer(web3, exchangeOwner, contracts.usdcAddress, user1, '100')
-      await approve(web3, user1, contracts.usdcAddress, contracts.fixedRateAddress, '100')
+      await transfer(web3, config, exchangeOwner, contracts.usdcAddress, user1, '100')
+      await approve(
+        web3,
+        config,
+        user1,
+        contracts.usdcAddress,
+        contracts.fixedRateAddress,
+        '100'
+      )
 
       // user1 has no dts but has 100 USDC
       expect(await balance(web3, dtAddress, user1)).to.equal('0')
@@ -542,7 +574,7 @@ describe('Fixed Rate unit test', () => {
     })
 
     it('#sellDatatokens - user1 should sell some dt', async () => {
-      await approve(web3, user1, dtAddress, contracts.fixedRateAddress, '10')
+      await approve(web3, config, user1, dtAddress, contracts.fixedRateAddress, '10')
       const usdcBalanceBefore = new BigNumber(
         await balance(web3, contracts.usdcAddress, user1)
       )

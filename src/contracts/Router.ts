@@ -1,8 +1,7 @@
-import { TransactionReceipt } from 'web3-core'
 import { AbiItem } from 'web3-utils'
 import FactoryRouter from '@oceanprotocol/contracts/artifacts/contracts/pools/FactoryRouter.sol/FactoryRouter.json'
-import { calculateEstimatedGas } from '../utils'
-import { Operation } from '../@types'
+import { calculateEstimatedGas, sendTx } from '../utils'
+import { Operation, ReceiptOrEstimate } from '../@types'
 import { SmartContractWithAddress } from './SmartContractWithAddress'
 
 /**
@@ -17,28 +16,30 @@ export class Router extends SmartContractWithAddress {
    * buyDatatokenBatch
    * @param {String} address
    * @param {Operation} operations Operations objects array
-   * @return {Promise<TransactionReceipt>} Transaction receipt
+   * @return {Promise<ReceiptOrEstimate>} Transaction receipt
    */
   public async buyDatatokenBatch<G extends boolean = false>(
     address: string,
     operations: Operation[],
     estimateGas?: G
-  ): Promise<G extends false ? TransactionReceipt : number> {
+  ): Promise<ReceiptOrEstimate<G>> {
     const estGas = await calculateEstimatedGas(
       address,
       this.contract.methods.buyDTBatch,
       operations
     )
-    if (estimateGas) return estGas
+    if (estimateGas) return <ReceiptOrEstimate<G>>estGas
 
-    // Invoke createToken function of the contract
-    const trxReceipt = await this.contract.methods.buyDTBatch(operations).send({
-      from: address,
-      gas: estGas + 1,
-      gasPrice: await this.getFairGasPrice()
-    })
+    const trxReceipt = await sendTx(
+      address,
+      estGas + 1,
+      this.web3,
+      this.config?.gasFeeMultiplier,
+      this.contract.methods.buyDTBatch,
+      operations
+    )
 
-    return trxReceipt
+    return <ReceiptOrEstimate<G>>trxReceipt
   }
 
   /** Check if a token is on approved tokens list, if true opfFee is lower in pools with that token/DT
@@ -73,13 +74,13 @@ export class Router extends SmartContractWithAddress {
    * Adds a token to the list of tokens with reduced fees
    * @param {String} address caller address
    * @param {String} tokenAddress token address to add
-   * @return {Promise<TransactionReceipt>}
+   * @return {Promise<ReceiptOrEstimate>}
    */
   public async addApprovedToken<G extends boolean = false>(
     address: string,
     tokenAddress: string,
     estimateGas?: G
-  ): Promise<G extends false ? TransactionReceipt : number> {
+  ): Promise<ReceiptOrEstimate<G>> {
     if ((await this.getOwner()) !== address) {
       throw new Error(`Caller is not Router Owner`)
     }
@@ -89,29 +90,31 @@ export class Router extends SmartContractWithAddress {
       this.contract.methods.addApprovedToken,
       tokenAddress
     )
-    if (estimateGas) return estGas
+    if (estimateGas) return <ReceiptOrEstimate<G>>estGas
 
-    // Invoke createToken function of the contract
-    const trxReceipt = await this.contract.methods.addApprovedToken(tokenAddress).send({
-      from: address,
-      gas: estGas + 1,
-      gasPrice: await this.getFairGasPrice()
-    })
+    const trxReceipt = await sendTx(
+      address,
+      estGas + 1,
+      this.web3,
+      this.config?.gasFeeMultiplier,
+      this.contract.methods.addApprovedToken,
+      tokenAddress
+    )
 
-    return trxReceipt
+    return <ReceiptOrEstimate<G>>trxReceipt
   }
 
   /**
    * Removes a token if exists from the list of tokens with reduced fees
    * @param {String} address
    * @param {String} tokenAddress address to remove
-   * @return {Promise<TransactionReceipt>}
+   * @return {Promise<ReceiptOrEstimate>}
    */
   public async removeApprovedToken<G extends boolean = false>(
     address: string,
     tokenAddress: string,
     estimateGas?: G
-  ): Promise<G extends false ? TransactionReceipt : number> {
+  ): Promise<ReceiptOrEstimate<G>> {
     if ((await this.getOwner()) !== address) {
       throw new Error(`Caller is not Router Owner`)
     }
@@ -121,31 +124,30 @@ export class Router extends SmartContractWithAddress {
       this.contract.methods.removeApprovedToken,
       tokenAddress
     )
-    if (estimateGas) return estGas
+    if (estimateGas) return <ReceiptOrEstimate<G>>estGas
 
-    // Invoke createToken function of the contract
-    const trxReceipt = await this.contract.methods
-      .removeApprovedToken(tokenAddress)
-      .send({
-        from: address,
-        gas: estGas + 1,
-        gasPrice: await this.getFairGasPrice()
-      })
-
-    return trxReceipt
+    const trxReceipt = await sendTx(
+      address,
+      estGas + 1,
+      this.web3,
+      this.config?.gasFeeMultiplier,
+      this.contract.methods.removeApprovedToken,
+      tokenAddress
+    )
+    return <ReceiptOrEstimate<G>>trxReceipt
   }
 
   /**
    * Adds an address to the list of fixed rate contracts
    * @param {String} address
    * @param {String} tokenAddress contract address to add
-   * @return {Promise<TransactionReceipt>}
+   * @return {Promise<ReceiptOrEstimate>}
    */
   public async addFixedRateContract<G extends boolean = false>(
     address: string,
     tokenAddress: string,
     estimateGas?: G
-  ): Promise<G extends false ? TransactionReceipt : number> {
+  ): Promise<ReceiptOrEstimate<G>> {
     if ((await this.getOwner()) !== address) {
       throw new Error(`Caller is not Router Owner`)
     }
@@ -155,31 +157,31 @@ export class Router extends SmartContractWithAddress {
       this.contract.methods.addFixedRateContract,
       tokenAddress
     )
-    if (estimateGas) return estGas
+    if (estimateGas) return <ReceiptOrEstimate<G>>estGas
 
-    // Invoke createToken function of the contract
-    const trxReceipt = await this.contract.methods
-      .addFixedRateContract(tokenAddress)
-      .send({
-        from: address,
-        gas: estGas + 1,
-        gasPrice: await this.getFairGasPrice()
-      })
+    const trxReceipt = await sendTx(
+      address,
+      estGas + 1,
+      this.web3,
+      this.config?.gasFeeMultiplier,
+      this.contract.methods.addFixedRateContract,
+      tokenAddress
+    )
 
-    return trxReceipt
+    return <ReceiptOrEstimate<G>>trxReceipt
   }
 
   /**
    * Removes an address from the list of fixed rate contracts
    * @param {String} address
    * @param {String} tokenAddress contract address to add
-   * @return {Promise<TransactionReceipt>}
+   * @return {Promise<ReceiptOrEstimate>}
    */
   public async removeFixedRateContract<G extends boolean = false>(
     address: string,
     tokenAddress: string,
     estimateGas?: G
-  ): Promise<G extends false ? TransactionReceipt : number> {
+  ): Promise<ReceiptOrEstimate<G>> {
     if ((await this.getOwner()) !== address) {
       throw new Error(`Caller is not Router Owner`)
     }
@@ -189,31 +191,31 @@ export class Router extends SmartContractWithAddress {
       this.contract.methods.removeFixedRateContract,
       tokenAddress
     )
-    if (estimateGas) return estGas
+    if (estimateGas) return <ReceiptOrEstimate<G>>estGas
 
-    // Invoke removeFixedRateContract function of the contract
-    const trxReceipt = await this.contract.methods
-      .removeFixedRateContract(tokenAddress)
-      .send({
-        from: address,
-        gas: estGas + 1,
-        gasPrice: await this.getFairGasPrice()
-      })
+    const trxReceipt = await sendTx(
+      address,
+      estGas + 1,
+      this.web3,
+      this.config?.gasFeeMultiplier,
+      this.contract.methods.removeFixedRateContract,
+      tokenAddress
+    )
 
-    return trxReceipt
+    return <ReceiptOrEstimate<G>>trxReceipt
   }
 
   /**
    * Adds an address to the list of dispensers
    * @param {String} address
    * @param {String} tokenAddress contract address to add
-   * @return {Promise<TransactionReceipt>}
+   * @return {Promise<ReceiptOrEstimate>}
    */
   public async addDispenserContract<G extends boolean = false>(
     address: string,
     tokenAddress: string,
     estimateGas?: G
-  ): Promise<G extends false ? TransactionReceipt : number> {
+  ): Promise<ReceiptOrEstimate<G>> {
     if ((await this.getOwner()) !== address) {
       throw new Error(`Caller is not Router Owner`)
     }
@@ -223,31 +225,30 @@ export class Router extends SmartContractWithAddress {
       this.contract.methods.addDispenserContract,
       tokenAddress
     )
-    if (estimateGas) return estGas
+    if (estimateGas) return <ReceiptOrEstimate<G>>estGas
 
-    // Invoke createToken function of the contract
-    const trxReceipt = await this.contract.methods
-      .addDispenserContract(tokenAddress)
-      .send({
-        from: address,
-        gas: estGas + 1,
-        gasPrice: await this.getFairGasPrice()
-      })
-
-    return trxReceipt
+    const trxReceipt = await sendTx(
+      address,
+      estGas + 1,
+      this.web3,
+      this.config?.gasFeeMultiplier,
+      this.contract.methods.addDispenserContract,
+      tokenAddress
+    )
+    return <ReceiptOrEstimate<G>>trxReceipt
   }
 
   /**
    * Removes an address from the list of dispensers
    * @param {String} address
    * @param {String} tokenAddress address Contract to be removed
-   * @return {Promise<TransactionReceipt>}
+   * @return {Promise<ReceiptOrEstimate>}
    */
   public async removeDispenserContract<G extends boolean = false>(
     address: string,
     tokenAddress: string,
     estimateGas?: G
-  ): Promise<G extends false ? TransactionReceipt : number> {
+  ): Promise<ReceiptOrEstimate<G>> {
     if ((await this.getOwner()) !== address) {
       throw new Error(`Caller is not Router Owner`)
     }
@@ -257,18 +258,17 @@ export class Router extends SmartContractWithAddress {
       this.contract.methods.removeDispenserContract,
       tokenAddress
     )
-    if (estimateGas) return estGas
+    if (estimateGas) return <ReceiptOrEstimate<G>>estGas
 
-    // Invoke createToken function of the contract
-    const trxReceipt = await this.contract.methods
-      .removeDispenserContract(tokenAddress)
-      .send({
-        from: address,
-        gas: estGas + 1,
-        gasPrice: await this.getFairGasPrice()
-      })
-
-    return trxReceipt
+    const trxReceipt = await sendTx(
+      address,
+      estGas + 1,
+      this.web3,
+      this.config?.gasFeeMultiplier,
+      this.contract.methods.removeDispenserContract,
+      tokenAddress
+    )
+    return <ReceiptOrEstimate<G>>trxReceipt
   }
 
   /** Get OPF Fee per token
@@ -292,7 +292,7 @@ export class Router extends SmartContractWithAddress {
    * @param {number} newSwapNonOceanFee Amount charged for swapping with non ocean approved tokens
    * @param {number} newConsumeFee Amount charged from consumeFees
    * @param {number} newProviderFee Amount charged for providerFees
-   * @return {Promise<TransactionReceipt>}
+   * @return {Promise<ReceiptOrEstimate>}
    */
   public async updateOPCFee<G extends boolean = false>(
     address: string,
@@ -301,7 +301,7 @@ export class Router extends SmartContractWithAddress {
     newConsumeFee: number,
     newProviderFee: number,
     estimateGas?: G
-  ): Promise<G extends false ? TransactionReceipt : number> {
+  ): Promise<ReceiptOrEstimate<G>> {
     if ((await this.getOwner()) !== address) {
       throw new Error(`Caller is not Router Owner`)
     }
@@ -314,17 +314,20 @@ export class Router extends SmartContractWithAddress {
       newConsumeFee,
       newProviderFee
     )
-    if (estimateGas) return estGas
+    if (estimateGas) return <ReceiptOrEstimate<G>>estGas
 
-    // Invoke createToken function of the contract
-    const trxReceipt = await this.contract.methods
-      .updateOPCFee(newSwapOceanFee, newSwapNonOceanFee, newConsumeFee, newProviderFee)
-      .send({
-        from: address,
-        gas: estGas + 1,
-        gasPrice: await this.getFairGasPrice()
-      })
+    const trxReceipt = await sendTx(
+      address,
+      estGas + 1,
+      this.web3,
+      this.config?.gasFeeMultiplier,
+      this.contract.methods.updateOPCFee,
+      newSwapOceanFee,
+      newSwapNonOceanFee,
+      newConsumeFee,
+      newProviderFee
+    )
 
-    return trxReceipt
+    return <ReceiptOrEstimate<G>>trxReceipt
   }
 }

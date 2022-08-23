@@ -92,6 +92,7 @@ describe('Publish tests', async () => {
 
     await approve(
       web3,
+      config,
       publisherAccount,
       addresses.MockDAI,
       addresses.ERC721Factory,

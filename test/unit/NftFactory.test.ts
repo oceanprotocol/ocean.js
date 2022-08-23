@@ -1,6 +1,6 @@
 import { assert, expect } from 'chai'
 import { deployContracts, Addresses } from '../TestContractHandler'
-import { web3 } from '../config'
+import { web3, getTestConfig } from '../config'
 import {
   NftFactory,
   NftCreateData,
@@ -8,8 +8,8 @@ import {
   ZERO_ADDRESS,
   signHash,
   Nft,
-  transfer,
   approve,
+  Config,
   balance,
   Datatoken
 } from '../../src'
@@ -25,6 +25,7 @@ describe('Nft Factory test', () => {
   let dtAddress: string
   let dtAddress2: string
   let nftAddress: string
+  let config: Config
 
   const DATA_TOKEN_AMOUNT = '1'
   const FEE = '0.001'
@@ -61,6 +62,8 @@ describe('Nft Factory test', () => {
     dtParams.minter = nftOwner
     dtParams.paymentCollector = user2
     dtParams.mpFeeAddress = user1
+
+    config = await getTestConfig(web3)
   })
 
   it('should deploy contracts', async () => {
@@ -193,7 +196,14 @@ describe('Nft Factory test', () => {
     datatoken.mint(dtAddress, nftOwner, DATA_TOKEN_AMOUNT, user1)
 
     // user1 approves NFTFactory to move his DATA_TOKEN_AMOUNT
-    await approve(web3, user1, dtAddress, contracts.nftFactoryAddress, DATA_TOKEN_AMOUNT)
+    await approve(
+      web3,
+      config,
+      user1,
+      dtAddress,
+      contracts.nftFactoryAddress,
+      DATA_TOKEN_AMOUNT
+    )
 
     // we reuse another DT created in a previous test
     expect(await balance(web3, dtAddress2, user1)).to.equal('0')
@@ -201,7 +211,14 @@ describe('Nft Factory test', () => {
     // dt owner mint DATA_TOKEN_AMOUNT to user1
     datatoken.mint(dtAddress2, nftOwner, DATA_TOKEN_AMOUNT, user1)
     // user1 approves NFTFactory to move his DATA_TOKEN_AMOUNT
-    await approve(web3, user1, dtAddress2, contracts.nftFactoryAddress, DATA_TOKEN_AMOUNT)
+    await approve(
+      web3,
+      config,
+      user1,
+      dtAddress2,
+      contracts.nftFactoryAddress,
+      DATA_TOKEN_AMOUNT
+    )
 
     // we check user1 has enought DTs
     expect(await balance(web3, dtAddress, user1)).to.equal(DATA_TOKEN_AMOUNT)

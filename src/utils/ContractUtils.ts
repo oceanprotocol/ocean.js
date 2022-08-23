@@ -2,7 +2,8 @@ import Web3 from 'web3'
 import BigNumber from 'bignumber.js'
 import { Contract } from 'web3-eth-contract'
 import { Config } from '../config'
-import { minAbi, GASLIMIT_DEFAULT, LoggerInstance } from '.'
+import { minAbi, GASLIMIT_DEFAULT, LoggerInstance, FEE_HISTORY_NOT_SUPPORTED } from '.'
+import { TransactionReceipt } from 'web3-core'
 
 export function setContractDefaults(contract: Contract, config: Config): Contract {
   if (config) {
@@ -16,11 +17,14 @@ export function setContractDefaults(contract: Contract, config: Config): Contrac
   return contract
 }
 
-export async function getFairGasPrice(web3: Web3, config: Config): Promise<string> {
+export async function getFairGasPrice(
+  web3: Web3,
+  gasFeeMultiplier: number
+): Promise<string> {
   const x = new BigNumber(await web3.eth.getGasPrice())
-  if (config && config.gasFeeMultiplier)
+  if (gasFeeMultiplier)
     return x
-      .multipliedBy(config.gasFeeMultiplier)
+      .multipliedBy(gasFeeMultiplier)
       .integerValue(BigNumber.ROUND_DOWN)
       .toString(10)
   else return x.toString(10)
@@ -76,9 +80,61 @@ export async function calculateEstimatedGas(
   from: string,
   functionToEstimateGas: Function,
   ...args: any[]
-): Promise<any> {
+): Promise<number> {
   const estimatedGas = await functionToEstimateGas
     .apply(null, args)
     .estimateGas({ from }, (err, estGas) => (err ? GASLIMIT_DEFAULT : estGas))
   return estimatedGas
+}
+
+/**
+ * Send the transation on chain
+ * @param {string} from account that calls the function
+ * @param {any} estGas estimated gas for the transaction
+ * @param {Web3} web3 web3 objcet
+ * @param {Function} functionToSend function that we need to send
+ * @param {...any[]} args arguments of the function
+ * @return {Promise<any>} transaction receipt
+ */
+export async function sendTx(
+  from: string,
+  estGas: number,
+  web3: Web3,
+  gasFeeMultiplier: number,
+  functionToSend: Function,
+  ...args: any[]
+): Promise<TransactionReceipt> {
+  const sendTxValue: Record<string, any> = {
+    from,
+    gas: estGas + 1
+  }
+  try {
+    const feeHistory = await web3.eth.getFeeHistory(1, 'latest', [75])
+    if (feeHistory && feeHistory?.baseFeePerGas?.[0] && feeHistory?.reward?.[0]?.[0]) {
+      let aggressiveFee = new BigNumber(feeHistory?.reward?.[0]?.[0])
+      if (gasFeeMultiplier > 1) {
+        aggressiveFee = aggressiveFee.multipliedBy(gasFeeMultiplier)
+      }
+
+      sendTxValue.maxPriorityFeePerGas = aggressiveFee
+        .integerValue(BigNumber.ROUND_DOWN)
+        .toString(10)
+
+      sendTxValue.maxFeePerGas = aggressiveFee
+        .plus(new BigNumber(feeHistory?.baseFeePerGas?.[0]).multipliedBy(2))
+        .integerValue(BigNumber.ROUND_DOWN)
+        .toString(10)
+    } else {
+      sendTxValue.gasPrice = await getFairGasPrice(web3, gasFeeMultiplier)
+    }
+  } catch (err) {
+    err?.message === FEE_HISTORY_NOT_SUPPORTED &&
+      LoggerInstance.log(
+        'Not able to use EIP 1559, getFeeHistory method not suported by network.'
+      )
+    sendTxValue.gasPrice = await getFairGasPrice(web3, gasFeeMultiplier)
+  }
+
+  const trxReceipt = await functionToSend.apply(null, args).send(sendTxValue)
+  return trxReceipt
 }

@@ -225,8 +225,8 @@ Again, lets console log the values so that we can check that they have been save
 
   ### 5.3 We send some OCEAN to consumer and staker accounts
 ```Typescript
-    transfer(web3, publisherAccount, addresses.Ocean, consumerAccount, '100')
-    transfer(web3, publisherAccount, addresses.Ocean, stakerAccount, '100')
+    transfer(web3, config, publisherAccount, addresses.Ocean, consumerAccount, '100')
+    transfer(web3, config, publisherAccount, addresses.Ocean, stakerAccount, '100')
   
 ```
 
@@ -367,9 +367,10 @@ Let's do a quick check of the consumer ETH balance before the swap
 ```
 Before we call the contract we have to call `approve` so that the contract can move our tokens. This is standard when using any ERC20 Datatokens
 ```Typescript
-    await approve(web3, consumerAccount, addresses.Ocean, freAddress, '100')
+    await approve(web3, config, consumerAccount, addresses.Ocean, freAddress, '100')
     await approve(
       web3,
+      config,
       publisherAccount,
       freDatatokenAddress,
       freAddress,

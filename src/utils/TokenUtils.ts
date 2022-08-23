@@ -1,15 +1,16 @@
 import Decimal from 'decimal.js'
-import { TransactionReceipt } from 'web3-core'
 import Web3 from 'web3'
 import BigNumber from 'bignumber.js'
 import {
   amountToUnits,
   calculateEstimatedGas,
-  getFairGasPrice,
   unitsToAmount,
   minAbi,
+  sendTx,
   LoggerInstance
 } from '.'
+import { Config } from '../config'
+import { ReceiptOrEstimate } from '../@types'
 
 /**
  * Approve spender to spent amount tokens
@@ -22,6 +23,7 @@ import {
  */
 export async function approve<G extends boolean = false>(
   web3: Web3,
+  config: Config,
   account: string,
   tokenAddress: string,
   spender: string,
@@ -29,7 +31,7 @@ export async function approve<G extends boolean = false>(
   force = false,
   tokenDecimals?: number,
   estimateGas?: G
-): Promise<G extends false ? TransactionReceipt : number> {
+): Promise<ReceiptOrEstimate<G>> {
   const tokenContract = new web3.eth.Contract(minAbi, tokenAddress)
   if (!force) {
     const currentAllowence = await allowance(web3, tokenAddress, account, spender)
@@ -44,14 +46,18 @@ export async function approve<G extends boolean = false>(
     spender,
     amountFormatted
   )
-  if (estimateGas) return estGas
+  if (estimateGas) return <ReceiptOrEstimate<G>>estGas
 
-  const trxReceipt = await tokenContract.methods.approve(spender, amountFormatted).send({
-    from: account,
-    gas: estGas + 1,
-    gasPrice: await getFairGasPrice(web3, null)
-  })
-  return trxReceipt
+  const trxReceipt = await sendTx(
+    account,
+    estGas + 1,
+    web3,
+    config?.gasFeeMultiplier,
+    tokenContract.methods.approve,
+    spender,
+    amountFormatted
+  )
+  return <ReceiptOrEstimate<G>>trxReceipt
 }
 
 /**
@@ -64,13 +70,14 @@ export async function approve<G extends boolean = false>(
  */
 export async function approveWei<G extends boolean = false>(
   web3: Web3,
+  config: Config,
   account: string,
   tokenAddress: string,
   spender: string,
   amount: string,
   force = false,
   estimateGas?: G
-): Promise<G extends false ? TransactionReceipt : string> {
+): Promise<ReceiptOrEstimate<G>> {
   const tokenContract = new web3.eth.Contract(minAbi, tokenAddress)
   if (!force) {
     const currentAllowence = await allowanceWei(web3, tokenAddress, account, spender)
@@ -86,14 +93,18 @@ export async function approveWei<G extends boolean = false>(
     spender,
     amount
   )
-  if (estimateGas) return estGas
+  if (estimateGas) return <ReceiptOrEstimate<G>>estGas
 
   try {
-    result = await tokenContract.methods.approve(spender, amount).send({
-      from: account,
-      gas: estGas + 1,
-      gasPrice: await getFairGasPrice(web3, null)
-    })
+    result = await sendTx(
+      account,
+      estGas + 1,
+      web3,
+      config?.gasFeeMultiplier,
+      tokenContract.methods.approve,
+      spender,
+      amount
+    )
   } catch (e) {
     LoggerInstance.error(
       `ERROR: Failed to approve spender to spend tokens : ${e.message}`
@@ -112,12 +123,13 @@ export async function approveWei<G extends boolean = false>(
  */
 export async function transfer<G extends boolean = false>(
   web3: Web3,
+  config: Config,
   account: string,
   tokenAddress: string,
   recipient: string,
   amount: string,
   estimateGas?: G
-): Promise<G extends false ? TransactionReceipt : number> {
+): Promise<ReceiptOrEstimate<G>> {
   const tokenContract = new web3.eth.Contract(minAbi, tokenAddress)
 
   const amountFormatted = await amountToUnits(web3, tokenAddress, amount)
@@ -127,16 +139,18 @@ export async function transfer<G extends boolean = false>(
     recipient,
     amountFormatted
   )
-  if (estimateGas) return estGas
+  if (estimateGas) return <ReceiptOrEstimate<G>>estGas
 
-  const trxReceipt = await tokenContract.methods
-    .transfer(recipient, amountFormatted)
-    .send({
-      from: account,
-      gas: estGas + 1,
-      gasPrice: await getFairGasPrice(web3, null)
-    })
-  return trxReceipt
+  const trxReceipt = await sendTx(
+    account,
+    estGas + 1,
+    web3,
+    config?.gasFeeMultiplier,
+    tokenContract.methods.transfer,
+    recipient,
+    amountFormatted
+  )
+  return <ReceiptOrEstimate<G>>trxReceipt
 }
 
 /**

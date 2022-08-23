@@ -51,7 +51,7 @@ export abstract class SmartContract {
   }
 
   protected async getFairGasPrice(): Promise<string> {
-    return getFairGasPrice(this.web3, this.config)
+    return getFairGasPrice(this.web3, this.config?.gasFeeMultiplier)
   }
 
   protected getContract(

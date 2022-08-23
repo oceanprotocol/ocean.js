@@ -2,7 +2,7 @@ import { assert, expect } from 'chai'
 import { AbiItem } from 'web3-utils/types'
 import { deployContracts, Addresses } from '../TestContractHandler'
 import MockERC20 from '@oceanprotocol/contracts/artifacts/contracts/utils/mock/MockERC20Decimals.sol/MockERC20Decimals.json'
-import { web3 } from '../config'
+import { web3, getTestConfig } from '../config'
 import {
   NftFactory,
   NftCreateData,
@@ -10,11 +10,10 @@ import {
   balance,
   approve,
   ZERO_ADDRESS,
-  Datatoken
+  Datatoken,
+  Config
 } from '../../src'
 import { DatatokenCreateParams, FreCreationParams, Operation } from '../../src/@types'
-
-const { keccak256 } = require('@ethersproject/keccak256')
 
 describe('Router unit test', () => {
   let factoryOwner: string
@@ -22,6 +21,7 @@ describe('Router unit test', () => {
   let user2: string
   let contracts: Addresses
   let router: Router
+  let config: Config
 
   const NFT_NAME = '72120Bundle'
   const NFT_SYMBOL = '72Bundle'
@@ -70,6 +70,8 @@ describe('Router unit test', () => {
     ERC_PARAMS.minter = factoryOwner
     ERC_PARAMS.paymentCollector = user2
     ERC_PARAMS.mpFeeAddress = factoryOwner
+
+    config = await getTestConfig(web3)
   })
 
   it('should deploy contracts', async () => {
@@ -77,6 +79,7 @@ describe('Router unit test', () => {
 
     await approve(
       web3,
+      config,
       factoryOwner,
       contracts.daiAddress,
       contracts.nftFactoryAddress,
@@ -119,7 +122,14 @@ describe('Router unit test', () => {
       .transfer(user1, web3.utils.toWei(DAI_AMOUNT))
       .send({ from: factoryOwner })
 
-    await approve(web3, user1, contracts.daiAddress, contracts.routerAddress, DAI_AMOUNT)
+    await approve(
+      web3,
+      config,
+      user1,
+      contracts.daiAddress,
+      contracts.routerAddress,
+      DAI_AMOUNT
+    )
 
     // CREATE A FIRST FRE
     const freParams: FreCreationParams = {
@@ -153,6 +163,7 @@ describe('Router unit test', () => {
     await datatoken.mint(datatokenAddress, factoryOwner, '1000', factoryOwner)
     await approve(
       web3,
+      config,
       factoryOwner,
       datatokenAddress,
       contracts.fixedRateAddress,
@@ -177,6 +188,7 @@ describe('Router unit test', () => {
     await datatoken.mint(datatoken2Address, factoryOwner, '1000', factoryOwner)
     await approve(
       web3,
+      config,
       factoryOwner,
       datatoken2Address,
       contracts.fixedRateAddress,
