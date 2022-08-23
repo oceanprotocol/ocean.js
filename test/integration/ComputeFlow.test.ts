@@ -52,7 +52,7 @@ let paidEnvAlgoTxId
 
 // let's have 2 minutes of compute access
 const mytime = new Date()
-const computeMinutes = 1
+const computeMinutes = 3
 mytime.setMinutes(mytime.getMinutes() + computeMinutes)
 let computeValidUntil = Math.floor(mytime.getTime() / 1000)
 
@@ -505,7 +505,7 @@ describe('Simple compute tests', async () => {
     freeComputeJobId = computeJobs[0].jobId
   })
 
-  delay(60000)
+  delay(90000)
 
   it('Check compute status', async () => {
     const jobStatus = (await ProviderInstance.computeStatus(
