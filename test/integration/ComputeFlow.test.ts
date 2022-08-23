@@ -473,8 +473,10 @@ describe('Simple compute tests', async () => {
       providerUrl,
       consumerAccount
     )
-    console.log('first providerInitializeComputeResults'),
+    console.log(
+      'first providerInitializeComputeResults',
       providerInitializeComputeResults
+    )
     assert(
       !('error' in providerInitializeComputeResults.algorithm),
       'Cannot order algorithm'
