@@ -498,28 +498,30 @@ describe('Simple compute tests', async () => {
     assert(computeJobs, 'Cannot start compute job')
     computeJobId = computeJobs[0].jobId
 
-    await sleep(5000)
-    const jobStatus = (await ProviderInstance.computeStatus(
-      providerUrl,
-      consumerAccount,
-      computeJobId,
-      resolvedDdoWith1mTimeout.id
-    )) as ComputeJob
-    console.log('job status after 1 sec', jobStatus)
+    for (let index = 0; index < 10; index++) {
+      await sleep(1000)
+      const jobStatus = (await ProviderInstance.computeStatus(
+        providerUrl,
+        consumerAccount,
+        computeJobId,
+        resolvedDdoWith1mTimeout.id
+      )) as ComputeJob
+      console.log('job status after 1 sec', jobStatus)
+    }
   })
 
   it('should restart a computeJob without paying anything, because order is valid and providerFees are still valid', async () => {
     // wait 1 min time so the other compute job finishes his job
-    await sleep(10000)
-
-    const jobStatus = (await ProviderInstance.computeStatus(
-      providerUrl,
-      consumerAccount,
-      computeJobId,
-      resolvedDdoWith1mTimeout.id
-    )) as ComputeJob
-
-    console.log('job status after  15 sec', jobStatus)
+    for (let index = 0; index < 15; index++) {
+      await sleep(1000)
+      const jobStatus = (await ProviderInstance.computeStatus(
+        providerUrl,
+        consumerAccount,
+        computeJobId,
+        resolvedDdoWith1mTimeout.id
+      )) as ComputeJob
+      console.log('log job status again: ', jobStatus)
+    }
 
     // we choose the free env
     const computeEnv = computeEnvs.find((ce) => ce.priceMin === 0)
