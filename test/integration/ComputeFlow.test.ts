@@ -436,6 +436,7 @@ describe('Simple compute tests', async () => {
   it('should fetch compute environments from provider', async () => {
     // get compute environments
     computeEnvs = await ProviderInstance.getComputeEnvironments(providerUrl)
+    console.log('computeEnvs = ', computeEnvs)
     assert(computeEnvs, 'No Compute environments found')
   })
 
@@ -500,11 +501,12 @@ describe('Simple compute tests', async () => {
 
   it('should restart a computeJob without paying anything, because order is valid and providerFees are still valid', async () => {
     // wait 1 min time so the other compute job finishes his job
-    await sleep(10000)
+    await sleep(15000)
 
     // we choose the free env
     const computeEnv = computeEnvs.find((ce) => ce.priceMin === 0)
     assert(computeEnv, 'Cannot find the free compute env')
+    console.log('free compute env', computeEnv)
 
     const assets: ComputeAsset[] = [
       {
@@ -865,7 +867,7 @@ describe('Simple compute tests', async () => {
   })
 
   it('Get download compute results url', async () => {
-    await sleep(10000)
+    await sleep(5000)
     const downloadURL = await ProviderInstance.getComputeResultUrl(
       providerUrl,
       web3,
