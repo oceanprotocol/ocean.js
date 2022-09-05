@@ -46,7 +46,7 @@ describe('veOcean tests', async () => {
     ] as AbiItem[]
     const tokenContract = new web3.eth.Contract(minAbi, addresses.Ocean)
     console.log('Mint OCEAN(' + addresses.Ocean + ') for Alice')
-    const estGas = calculateEstimatedGas(
+    const estGas = await calculateEstimatedGas(
       ownerAccount,
       tokenContract.methods.mint,
       Alice,
@@ -55,7 +55,7 @@ describe('veOcean tests', async () => {
     console.log('Estimated gas for mint:' + estGas)
     await sendTx(
       ownerAccount,
-      1000000,
+      estGas,
       web3,
       1,
       tokenContract.methods.mint,
@@ -65,7 +65,7 @@ describe('veOcean tests', async () => {
     console.log('Mint OCEAN(' + addresses.Ocean + ') for Bob')
     await sendTx(
       ownerAccount,
-      1000000,
+      estGas,
       web3,
       1,
       tokenContract.methods.mint,
