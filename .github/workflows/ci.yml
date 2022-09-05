@@ -46,7 +46,10 @@ jobs:
           path: ~/.npm
           key: ${{ runner.os }}-test-unit-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
           restore-keys: ${{ runner.os }}-test-unit-${{ env.cache-name }}-
-
+      # Env var expansion workaround
+      # https://docs.github.com/en/actions/reference/workflow-commands-for-github-actions#setting-an-environment-variable
+      - name: Set ADDRESS_FILE
+        run: echo "ADDRESS_FILE=${HOME}/.ocean/ocean-contracts/artifacts/address.json" >> $GITHUB_ENV
       - name: Checkout Barge
         uses: actions/checkout@v3
         with:
