@@ -44,8 +44,6 @@ describe('veOcean tests', async () => {
       }
     ] as AbiItem[]
     const tokenContract = new web3.eth.Contract(minAbi, addresses.Ocean)
-    const oceanOwner = await tokenContract.methods.owner().call()
-    const ownerOceanBalance = await tokenContract.methods.balanceOf(oceanOwner).call()
     const estGas = await calculateEstimatedGas(
       ownerAccount,
       tokenContract.methods.mint,

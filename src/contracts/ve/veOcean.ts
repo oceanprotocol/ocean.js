@@ -35,7 +35,7 @@ export class VeOcean extends SmartContractWithAddress {
     // Invoke function of the contract
     const trxReceipt = await sendTx(
       userAddress,
-      estGas + 1,
+      estGas * 2 + 1,
       this.web3,
       this.config?.gasFeeMultiplier,
       this.contract.methods.create_lock,
@@ -101,7 +101,7 @@ export class VeOcean extends SmartContractWithAddress {
     // Invoke function of the contract
     const trxReceipt = await sendTx(
       userAddress,
-      estGas + 1,
+      estGas * 2 + 1,
       this.web3,
       this.config?.gasFeeMultiplier,
       this.contract.methods.increase_amount,
@@ -131,7 +131,7 @@ export class VeOcean extends SmartContractWithAddress {
     // Invoke function of the contract
     const trxReceipt = await sendTx(
       userAddress,
-      estGas + 1,
+      estGas * 2 + 1,
       this.web3,
       this.config?.gasFeeMultiplier,
       this.contract.methods.increase_unlock_time,
