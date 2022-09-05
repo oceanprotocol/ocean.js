@@ -30,6 +30,7 @@
     "test:unit": "npm run mocha -- 'test/unit/**/*.test.ts'",
     "test:unit:cover": "nyc --report-dir coverage/unit --exclude 'src/@types/**/*' npm run test:unit",
     "test:integration": "npm run mocha -- 'test/integration/**/*.test.ts'",
+    "test:ve": "npm run mocha -- 'test/integration/veOcean.test.ts'",
     "test:integration:cover": "nyc --report-dir coverage/integration --no-clean npm run test:integration",
     "create:guide": "./scripts/createCodeExamples.sh",
     "commit:guide": "./scripts/commitChanges.sh"
@@ -49,7 +50,7 @@
     "web3": "^1.7.4"
   },
   "dependencies": {
-    "@oceanprotocol/contracts": "^1.0.0",
+    "@oceanprotocol/contracts": "^1.1.3",
     "bignumber.js": "^9.0.2",
     "cross-fetch": "^3.1.5",
     "crypto-js": "^4.1.1",
