@@ -27,7 +27,6 @@ describe('veOcean tests', async () => {
     addresses = getAddresses()
     const accounts = await web3.eth.getAccounts()
     ownerAccount = accounts[0]
-    console.log('owner:' + ownerAccount)
     Alice = accounts[1]
     Bob = accounts[2]
     const minAbi = [
@@ -42,41 +41,17 @@ describe('veOcean tests', async () => {
         payable: false,
         stateMutability: 'nonpayable',
         type: 'function'
-      },
-      {
-        constant: true,
-        inputs: [],
-        name: 'owner',
-        outputs: [{ name: '', type: 'address' }],
-        payable: false,
-        stateMutability: 'view',
-        type: 'function'
-      },
-      {
-        constant: true,
-        inputs: [{ name: 'owner', type: 'address' }],
-        name: 'balanceOf',
-        outputs: [{ name: '', type: 'uint256' }],
-        payable: false,
-        stateMutability: 'view',
-        type: 'function'
       }
     ] as AbiItem[]
-    console.log(addresses)
     const tokenContract = new web3.eth.Contract(minAbi, addresses.Ocean)
-    console.log(tokenContract)
     const oceanOwner = await tokenContract.methods.owner().call()
-    console.log('Ocean owner:' + oceanOwner)
     const ownerOceanBalance = await tokenContract.methods.balanceOf(oceanOwner).call()
-    console.log('owner ocean balance:' + ownerOceanBalance)
-    console.log('Mint OCEAN(' + addresses.Ocean + ') for Alice')
     const estGas = await calculateEstimatedGas(
       ownerAccount,
       tokenContract.methods.mint,
       Alice,
       web3.utils.toWei('1000')
     )
-    console.log('Estimated gas for mint:' + estGas)
     await sendTx(
       ownerAccount,
       estGas,
@@ -86,7 +61,6 @@ describe('veOcean tests', async () => {
       Alice,
       web3.utils.toWei('1000')
     )
-    console.log('Mint OCEAN(' + addresses.Ocean + ') for Bob')
     await sendTx(
       ownerAccount,
       estGas,
