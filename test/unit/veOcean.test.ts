@@ -14,10 +14,11 @@ describe('veOcean tests', async () => {
 
   before(async () => {
     config = await getTestConfig(web3)
-    addresses = getAddresses()
+    
   })
 
   it('initialize accounts', async () => {
+    addresses = getAddresses()
     const accounts = await web3.eth.getAccounts()
     ownerAccount = accounts[0]
     Alice = accounts[2]
@@ -37,6 +38,7 @@ describe('veOcean tests', async () => {
       }
     ] as AbiItem[]
     const tokenContract = new web3.eth.Contract(minAbi, addresses.Ocean)
+    console.log('Mint OCEAN(' + addresses.Ocean + ') for Alice')
     await sendTx(
       ownerAccount,
       1000000,
@@ -46,6 +48,7 @@ describe('veOcean tests', async () => {
       Alice,
       web3.utils.toWei('1000')
     )
+    console.log('Mint OCEAN(' + addresses.Ocean + ') for Bob')
     await sendTx(
       ownerAccount,
       1000000,
@@ -104,6 +107,8 @@ describe('veOcean tests', async () => {
     const currentLock = await veOcean.lockEnd(Alice)
     const amount = '200'
     await approve(web3, config, Alice, addresses.Ocean, addresses.veOCEAN, amount)
+    const estGas = await veOcean.increaseAmount(Alice, amount, true)
+    console.log('Estimated gas for increaseAmount:' + estGas)
     await veOcean.increaseAmount(Alice, amount)
     const newCurrentBalance = await veOcean.getLockedAmount(Alice)
     const newCurrentLock = await veOcean.lockEnd(Alice)
