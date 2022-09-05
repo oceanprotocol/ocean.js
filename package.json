@@ -30,7 +30,6 @@
     "test:unit": "npm run mocha -- 'test/unit/**/*.test.ts'",
     "test:unit:cover": "nyc --report-dir coverage/unit --exclude 'src/@types/**/*' npm run test:unit",
     "test:integration": "npm run mocha -- 'test/integration/**/*.test.ts'",
-    "test:ve": "npm run mocha -- 'test/integration/veOcean.test.ts'",
     "test:integration:cover": "nyc --report-dir coverage/integration --no-clean npm run test:integration",
     "create:guide": "./scripts/createCodeExamples.sh",
     "commit:guide": "./scripts/commitChanges.sh"
