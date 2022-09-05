@@ -62,7 +62,9 @@ describe('veOcean tests', async () => {
         type: 'function'
       }
     ] as AbiItem[]
+    console.log(addresses)
     const tokenContract = new web3.eth.Contract(minAbi, addresses.Ocean)
+    console.log(tokenContract)
     const oceanOwner = await tokenContract.methods.owner().call()
     console.log('Ocean owner:' + oceanOwner)
     const ownerOceanBalance = await tokenContract.methods.balanceOf(oceanOwner).call()
@@ -117,6 +119,8 @@ describe('veOcean tests', async () => {
         // do nothing
       }
     } else {
+      const estGas = await veOcean.lockTokens(Alice, amount, unlockTime, true)
+      console.log('Estimate gas for lockTokens:' + estGas)
       const tx = await veOcean.lockTokens(Alice, amount, unlockTime)
       // check events
       assert(tx.events.Deposit.returnValues[0] === Alice)
