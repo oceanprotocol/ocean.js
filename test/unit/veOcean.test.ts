@@ -1,7 +1,14 @@
 import { assert } from 'chai'
 import { AbiItem } from 'web3-utils'
 import { web3, getTestConfig, getAddresses } from '../config'
-import { Config, approve, VeOcean, VeFeeDistributor, sendTx } from '../../src'
+import {
+  Config,
+  approve,
+  VeOcean,
+  VeFeeDistributor,
+  sendTx,
+  calculateEstimatedGas
+} from '../../src'
 
 describe('veOcean tests', async () => {
   let config: Config
@@ -14,15 +21,15 @@ describe('veOcean tests', async () => {
 
   before(async () => {
     config = await getTestConfig(web3)
-    
   })
 
   it('initialize accounts', async () => {
     addresses = getAddresses()
     const accounts = await web3.eth.getAccounts()
     ownerAccount = accounts[0]
-    Alice = accounts[2]
-    Bob = accounts[3]
+    console.log('owner:' + ownerAccount)
+    Alice = accounts[1]
+    Bob = accounts[2]
     const minAbi = [
       {
         constant: false,
@@ -39,6 +46,13 @@ describe('veOcean tests', async () => {
     ] as AbiItem[]
     const tokenContract = new web3.eth.Contract(minAbi, addresses.Ocean)
     console.log('Mint OCEAN(' + addresses.Ocean + ') for Alice')
+    const estGas = calculateEstimatedGas(
+      ownerAccount,
+      tokenContract.methods.mint,
+      Alice,
+      web3.utils.toWei('1000')
+    )
+    console.log('Estimated gas for mint:' + estGas)
     await sendTx(
       ownerAccount,
       1000000,
