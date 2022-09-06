@@ -104,7 +104,7 @@ export class VeAllocate extends SmartContractWithAddress {
    * @param {String} chainId chainId of NFT
    * @return {Promise<number>}
    */
-  public async getveAllocation(
+  public async getVeAllocation(
     userAddress: string,
     nft: string,
     chainId: string

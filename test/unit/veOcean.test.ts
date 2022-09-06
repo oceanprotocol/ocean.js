@@ -175,7 +175,7 @@ describe('veOcean tests', async () => {
       parseInt(String(newTotalAllocation)) === parseInt(String(expectedAllocation)),
       'NewAllocation (' + newTotalAllocation + ') should be ' + expectedAllocation
     )
-    const nftAllocation = await veAllocate.getveAllocation(Alice, nft1, chainId)
+    const nftAllocation = await veAllocate.getVeAllocation(Alice, nft1, chainId)
     assert(
       parseInt(String(nftAllocation)) === parseInt('1000'),
       nftAllocation + ' should be 1000'
@@ -204,12 +204,12 @@ describe('veOcean tests', async () => {
       parseInt(String(newTotalAllocation)) === parseInt(String(expectedAllocation)),
       'NewAllocation (' + newTotalAllocation + ') should be ' + expectedAllocation
     )
-    let nftAllocation = await veAllocate.getveAllocation(Alice, nft2, chainId)
+    let nftAllocation = await veAllocate.getVeAllocation(Alice, nft2, chainId)
     assert(
       parseInt(String(nftAllocation)) === parseInt('1000'),
       nftAllocation + ' should be 1000'
     )
-    nftAllocation = await veAllocate.getveAllocation(Alice, nft3, chainId)
+    nftAllocation = await veAllocate.getVeAllocation(Alice, nft3, chainId)
     assert(
       parseInt(String(nftAllocation)) === parseInt('2000'),
       nftAllocation + ' should be 2000'
