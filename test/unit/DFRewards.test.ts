@@ -100,7 +100,7 @@ describe('veOcean tests', async () => {
 
   it('Alice should check for rewards', async () => {
     const rewards = await dfRewards.getAvailableRewards(Alice, addresses.Ocean)
-    assert(parseInt(rewards) >= 100, 'Alice reward missmatch, got only '+rewards)
+    assert(parseInt(rewards) >= 100, 'Alice reward missmatch, got only ' + rewards)
     const multipleRewards = await dfStrategy.getMultipleAvailableRewards(Alice, [
       addresses.Ocean
     ])
