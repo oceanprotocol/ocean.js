@@ -51,7 +51,7 @@ export class VeAllocate extends SmartContractWithAddress {
   }
 
   /**
-   * set a specific percentage of veOcean to a specific nft
+   * set specific percetage of veOcean to multiple nfts
    * Maximum allocated percentage is 10000, so 1% is specified as 100
    * @param {String} userAddress user address
    * @param {String[]} amount Array of percentages used
