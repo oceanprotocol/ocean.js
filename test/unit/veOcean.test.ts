@@ -112,8 +112,6 @@ describe('veOcean tests', async () => {
   })
 
   it('Alice should increase the lock time', async () => {
-    // since we can only lock once, we test if tx fails or not
-    // so if there is already a lock, skip it
     const currentLock = await veOcean.lockEnd(Alice)
     const newLock = parseInt(String(currentLock)) + 7 * 86400
     await veOcean.increaseUnlockTime(Alice, newLock)
@@ -122,8 +120,6 @@ describe('veOcean tests', async () => {
   })
 
   it('Alice should increase the locked amount', async () => {
-    // since we can only lock once, this test will fail if runned twice or more
-    // so if there is already a lock, skip it
     const currentBalance = await veOcean.getLockedAmount(Alice)
     const currentLock = await veOcean.lockEnd(Alice)
     const amount = '200'
