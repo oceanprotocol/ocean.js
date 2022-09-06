@@ -12,10 +12,10 @@ export class VeAllocate extends SmartContractWithAddress {
   }
 
   /**
-   * set a specific percentage*100 of veOcean to a specific nft
-   * Maximum allocated percentage is 10000
+   * set a specific percentage of veOcean to a specific nft
+   * Maximum allocated percentage is 10000, so 1% is specified as 100
    * @param {String} userAddress user address
-   * @param {String} amount Percentage used (*100)
+   * @param {String} amount Percentage used
    * @param {String} nft NFT address to allocate to
    * @param {String} chainId chainId of NFT
    * @return {Promise<ReceiptOrEstimate>}
@@ -51,10 +51,10 @@ export class VeAllocate extends SmartContractWithAddress {
   }
 
   /**
-   * set a specific percentage*100 of veOcean to a specific nft
-   * Maximum allocated percentage is 10000
+   * set a specific percentage of veOcean to a specific nft
+   * Maximum allocated percentage is 10000, so 1% is specified as 100
    * @param {String} userAddress user address
-   * @param {String[]} amount Array of percentages used (*100)
+   * @param {String[]} amount Array of percentages used
    * @param {String[]} nft Array of NFT addresses
    * @param {String[]} chainId Array of chainIds
    * @return {Promise<ReceiptOrEstimate>}
@@ -87,5 +87,31 @@ export class VeAllocate extends SmartContractWithAddress {
       chainId
     )
     return <ReceiptOrEstimate<G>>trxReceipt
+  }
+
+  /** Get totalAllocation for address
+   * @param {String} userAddress user address
+   * @return {Promise<number>}
+   */
+  public async getTotalAllocation(userAddress: string): Promise<number> {
+    const allocation = await this.contract.methods.getTotalAllocation(userAddress).call()
+    return allocation
+  }
+
+  /** Get getveAllocation for address, nft, chainId
+   * @param {String} userAddress user address
+   * @param {String} nft NFT address to allocate to
+   * @param {String} chainId chainId of NFT
+   * @return {Promise<number>}
+   */
+  public async getveAllocation(
+    userAddress: string,
+    nft: string,
+    chainId: string
+  ): Promise<number> {
+    const allocation = await this.contract.methods
+      .getveAllocation(userAddress, nft, chainId)
+      .call()
+    return allocation
   }
 }

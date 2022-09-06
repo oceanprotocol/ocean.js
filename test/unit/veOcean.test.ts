@@ -7,17 +7,23 @@ import {
   VeOcean,
   VeFeeDistributor,
   sendTx,
-  calculateEstimatedGas
+  calculateEstimatedGas,
+  NftFactory,
+  VeAllocate
 } from '../../src'
 
 describe('veOcean tests', async () => {
   let config: Config
   let addresses: any
+  let nftFactory
   let veOcean: VeOcean
   let veFeeDistributor: VeFeeDistributor
+  let veAllocate: VeAllocate
   let ownerAccount: string
   let Alice: string
   let Bob: string
+  let nft1, nft2, nft3
+  let chainId
 
   before(async () => {
     config = await getTestConfig(web3)
@@ -26,6 +32,7 @@ describe('veOcean tests', async () => {
   it('initialize accounts', async () => {
     addresses = getAddresses()
     const accounts = await web3.eth.getAccounts()
+    chainId = await web3.eth.getChainId()
     ownerAccount = accounts[0]
     Alice = accounts[1]
     Bob = accounts[2]
@@ -70,6 +77,8 @@ describe('veOcean tests', async () => {
     )
     veOcean = new VeOcean(addresses.veOCEAN, web3)
     veFeeDistributor = new VeFeeDistributor(addresses.veFeeDistributor, web3)
+    veAllocate = new VeAllocate(addresses.veAllocate, web3)
+    nftFactory = new NftFactory(addresses.ERC721Factory, web3)
   })
 
   it('Alice should lock 100 Ocean', async () => {
@@ -82,7 +91,7 @@ describe('veOcean tests', async () => {
     const timestamp = Math.floor(Date.now() / 1000)
     const unlockTime = timestamp + 7 * 86400
 
-    if (currentBalance > 0 || currentLock > 0) {
+    if (parseInt(currentBalance) > 0 || currentLock > 0) {
       // we already have some locked tokens, so our transaction should fail
       try {
         await veOcean.lockTokens(Alice, amount, unlockTime)
@@ -96,7 +105,7 @@ describe('veOcean tests', async () => {
       const tx = await veOcean.lockTokens(Alice, amount, unlockTime)
       // check events
       assert(tx.events.Deposit.returnValues[0] === Alice)
-      assert(tx.events.Deposit.returnValues[1] === amount)
+      assert(tx.events.Deposit.returnValues[1] === web3.utils.toWei(amount))
       assert(tx.events.Deposit.returnValues[2] > 0) // we cannot compare it to the actual untiLock, because contract will round it to weeks
       assert(tx.events.Supply.returnValues[1] > tx.events.Supply.returnValues[0]) // supply has increased
     }
@@ -119,12 +128,95 @@ describe('veOcean tests', async () => {
     const currentLock = await veOcean.lockEnd(Alice)
     const amount = '200'
     await approve(web3, config, Alice, addresses.Ocean, addresses.veOCEAN, amount)
-    const estGas = await veOcean.increaseAmount(Alice, amount, true)
-    console.log('Estimated gas for increaseAmount:' + estGas)
     await veOcean.increaseAmount(Alice, amount)
     const newCurrentBalance = await veOcean.getLockedAmount(Alice)
     const newCurrentLock = await veOcean.lockEnd(Alice)
     assert(newCurrentLock === currentLock, 'Lock time should not change')
-    assert(newCurrentBalance > currentBalance, 'Amount error')
+    assert(
+      newCurrentBalance > currentBalance,
+      'Amount error:' + newCurrentBalance + ' shoud be > than ' + currentBalance
+    )
+  })
+
+  it('Alice should publish 3 NFTs', async () => {
+    // publish 3 nfts
+    nft1 = await nftFactory.createNFT(Alice, {
+      name: 'testNft1',
+      symbol: 'TSTF1',
+      templateIndex: 1,
+      tokenURI: '',
+      transferable: true,
+      owner: Alice
+    })
+    nft2 = await nftFactory.createNFT(Alice, {
+      name: 'testNft2',
+      symbol: 'TSTF2',
+      templateIndex: 1,
+      tokenURI: '',
+      transferable: true,
+      owner: Alice
+    })
+    nft3 = await nftFactory.createNFT(Alice, {
+      name: 'testNft3',
+      symbol: 'TSTF3',
+      templateIndex: 1,
+      tokenURI: '',
+      transferable: true,
+      owner: Alice
+    })
+  })
+
+  it('Alice should allocate 10% to NFT1', async () => {
+    const totalAllocation = await veAllocate.getTotalAllocation(Alice)
+    const tx = await veAllocate.setAllocation(Alice, '1000', nft1, chainId)
+    assert(tx.events.AllocationSet.returnValues[0] === Alice)
+    assert(tx.events.AllocationSet.returnValues[1] === nft1)
+    assert(parseInt(tx.events.AllocationSet.returnValues[2]) === parseInt(chainId))
+    assert(tx.events.AllocationSet.returnValues[3] === '1000')
+    const newTotalAllocation = await veAllocate.getTotalAllocation(Alice)
+    const expectedAllocation = parseInt(String(totalAllocation)) + 1000
+    assert(
+      parseInt(String(newTotalAllocation)) === parseInt(String(expectedAllocation)),
+      'NewAllocation (' + newTotalAllocation + ') should be ' + expectedAllocation
+    )
+    const nftAllocation = await veAllocate.getveAllocation(Alice, nft1, chainId)
+    assert(
+      parseInt(String(nftAllocation)) === parseInt('1000'),
+      nftAllocation + ' should be 1000'
+    )
+  })
+
+  it('Alice should allocate 10% to NFT2 and 20% to NFT3', async () => {
+    const totalAllocation = await veAllocate.getTotalAllocation(Alice)
+    const tx = await veAllocate.setBatchAllocation(
+      Alice,
+      ['1000', '2000'],
+      [nft2, nft3],
+      [chainId, chainId]
+    )
+    assert(tx.events.AllocationSetMultiple.returnValues[0] === Alice)
+    assert(tx.events.AllocationSetMultiple.returnValues[1][0] === nft2)
+    assert(tx.events.AllocationSetMultiple.returnValues[1][1] === nft3)
+    assert(
+      parseInt(tx.events.AllocationSetMultiple.returnValues[2][0]) === parseInt(chainId)
+    )
+    assert(tx.events.AllocationSetMultiple.returnValues[3][0] === '1000')
+    assert(tx.events.AllocationSetMultiple.returnValues[3][1] === '2000')
+    const newTotalAllocation = await veAllocate.getTotalAllocation(Alice)
+    const expectedAllocation = parseInt(String(totalAllocation)) + 3000
+    assert(
+      parseInt(String(newTotalAllocation)) === parseInt(String(expectedAllocation)),
+      'NewAllocation (' + newTotalAllocation + ') should be ' + expectedAllocation
+    )
+    let nftAllocation = await veAllocate.getveAllocation(Alice, nft2, chainId)
+    assert(
+      parseInt(String(nftAllocation)) === parseInt('1000'),
+      nftAllocation + ' should be 1000'
+    )
+    nftAllocation = await veAllocate.getveAllocation(Alice, nft3, chainId)
+    assert(
+      parseInt(String(nftAllocation)) === parseInt('2000'),
+      nftAllocation + ' should be 2000'
+    )
   })
 })

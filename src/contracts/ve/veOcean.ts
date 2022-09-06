@@ -24,10 +24,11 @@ export class VeOcean extends SmartContractWithAddress {
     unlockTime: number,
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
+    const amountFormatted = await this.amountToUnits(await this.getToken(), amount)
     const estGas = await calculateEstimatedGas(
       userAddress,
       this.contract.methods.create_lock,
-      amount,
+      amountFormatted,
       unlockTime
     )
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
@@ -35,11 +36,11 @@ export class VeOcean extends SmartContractWithAddress {
     // Invoke function of the contract
     const trxReceipt = await sendTx(
       userAddress,
-      estGas * 2 + 1,
+      estGas + 20000, // sometimes, it's not enough
       this.web3,
       this.config?.gasFeeMultiplier,
       this.contract.methods.create_lock,
-      amount,
+      amountFormatted,
       unlockTime
     )
     return <ReceiptOrEstimate<G>>trxReceipt
@@ -59,23 +60,24 @@ export class VeOcean extends SmartContractWithAddress {
     amount: string,
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
+    const amountFormatted = await this.amountToUnits(await this.getToken(), amount)
     const estGas = await calculateEstimatedGas(
       fromUserAddress,
       this.contract.methods.deposit_for,
       toAddress,
-      amount
+      amountFormatted
     )
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
 
     // Invoke function of the contract
     const trxReceipt = await sendTx(
       fromUserAddress,
-      estGas + 1,
+      estGas + 20000, // sometimes, it's not enough
       this.web3,
       this.config?.gasFeeMultiplier,
       this.contract.methods.deposit_for,
       toAddress,
-      amount
+      amountFormatted
     )
     return <ReceiptOrEstimate<G>>trxReceipt
   }
@@ -91,21 +93,22 @@ export class VeOcean extends SmartContractWithAddress {
     amount: string,
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
+    const amountFormatted = await this.amountToUnits(await this.getToken(), amount)
     const estGas = await calculateEstimatedGas(
       userAddress,
       this.contract.methods.increase_amount,
-      amount
+      amountFormatted
     )
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
 
     // Invoke function of the contract
     const trxReceipt = await sendTx(
       userAddress,
-      estGas * 2 + 1,
+      estGas + 20000, // sometimes, it's not enough
       this.web3,
       this.config?.gasFeeMultiplier,
       this.contract.methods.increase_amount,
-      amount
+      amountFormatted
     )
     return <ReceiptOrEstimate<G>>trxReceipt
   }
@@ -131,7 +134,7 @@ export class VeOcean extends SmartContractWithAddress {
     // Invoke function of the contract
     const trxReceipt = await sendTx(
       userAddress,
-      estGas * 2 + 1,
+      estGas + 20000, // sometimes, it's not enough
       this.web3,
       this.config?.gasFeeMultiplier,
       this.contract.methods.increase_unlock_time,
@@ -177,11 +180,16 @@ export class VeOcean extends SmartContractWithAddress {
 
   /** Get locked balance
    * @param {String} userAddress user address
-   * @return {Promise<number>}
+   * @return {Promise<string>}
    */
-  public async getLockedAmount(userAddress: string): Promise<number> {
+  public async getLockedAmount(userAddress: string): Promise<string> {
     const balance = await this.contract.methods.locked(userAddress).call()
-    return balance.amount
+    const balanceFormated = await this.unitsToAmount(
+      await this.getToken(),
+      balance.amount
+    )
+
+    return balanceFormated
   }
 
   /** Get untilLock for address
@@ -196,8 +204,19 @@ export class VeOcean extends SmartContractWithAddress {
   /** Get total supply
    * @return {Promise<number>}
    */
-  public async totalSupply(): Promise<number> {
-    const supply = await this.contract.methods.totalSupply().call()
-    return supply
+  public async totalSupply(): Promise<string> {
+    const supplyFormated = await this.unitsToAmount(
+      await this.getToken(),
+      await this.contract.methods.totalSupply().call()
+    )
+    return supplyFormated
+  }
+
+  /** Get token
+   * @return {Promise<string>}
+   */
+  public async getToken(): Promise<string> {
+    const tokenAddress = await this.contract.methods.token().call()
+    return tokenAddress
   }
 }
