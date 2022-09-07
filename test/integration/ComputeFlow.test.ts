@@ -441,9 +441,9 @@ describe('Simple compute tests', async () => {
   })
 
   it('should start a computeJob using the free environment', async () => {
-    // let's have 1 minute of compute access
+    // let's have 5 minute of compute access
     const mytime = new Date()
-    const computeMinutes = 1
+    const computeMinutes = 3
     mytime.setMinutes(mytime.getMinutes() + computeMinutes)
     computeValidUntil = Math.floor(mytime.getTime() / 1000)
 
@@ -503,6 +503,90 @@ describe('Simple compute tests', async () => {
     freeEnvAlgoTxId = algo.transferTxId
     assert(computeJobs, 'Cannot start compute job')
     freeComputeJobId = computeJobs[0].jobId
+  })
+
+  //   put this flows back when we are able to handle this scenarios
+  // at the momement max job duration is 60 seconds, it takes the job around 100 to finish
+  // we are not able to to increase neither the valid until value, neither wait for the job to finish since the provider fees  will expire
+
+  delay(100000)
+
+  it('Check compute status', async () => {
+    const jobStatus = (await ProviderInstance.computeStatus(
+      providerUrl,
+      consumerAccount,
+      freeComputeJobId,
+      resolvedDdoWith1mTimeout.id
+    )) as ComputeJob
+    assert(jobStatus, 'Cannot retrieve compute status!')
+    console.log('jobStatus', jobStatus)
+  })
+
+  // move to start orders with initial txid's and provider fees
+  it('should restart a computeJob without paying anything, because order is valid and providerFees are still valid', async () => {
+    // we choose the free env
+    const computeEnv = computeEnvs.find((ce) => ce.priceMin === 0)
+    assert(computeEnv, 'Cannot find the free compute env')
+
+    const assets: ComputeAsset[] = [
+      {
+        documentId: resolvedDdoWith1mTimeout.id,
+        serviceId: resolvedDdoWith1mTimeout.services[0].id,
+        transferTxId: freeEnvDatasetTxId
+      }
+    ]
+    const algo: ComputeAlgorithm = {
+      documentId: resolvedAlgoDdoWith1mTimeout.id,
+      serviceId: resolvedAlgoDdoWith1mTimeout.services[0].id,
+      transferTxId: freeEnvAlgoTxId
+    }
+    const mytime = new Date()
+    console.log('my time', mytime.getTime() / 1000)
+    console.log('compute valid until ==', computeValidUntil)
+    providerInitializeComputeResults = await ProviderInstance.initializeCompute(
+      assets,
+      algo,
+      computeEnv.id,
+      computeValidUntil,
+      providerUrl,
+      consumerAccount
+    )
+    console.log(
+      'second job providerInitializeComputeResults',
+      providerInitializeComputeResults
+    )
+    assert(
+      providerInitializeComputeResults.algorithm.validOrder,
+      'We should have a valid order for algorithm'
+    )
+    assert(
+      !providerInitializeComputeResults.algorithm.providerFee,
+      'We should not pay providerFees again for algorithm'
+    )
+    assert(
+      providerInitializeComputeResults.datasets[0].validOrder,
+      'We should have a valid order for dataset'
+    )
+    assert(
+      !providerInitializeComputeResults.datasets[0].providerFee,
+      'We should not pay providerFees again for dataset'
+    )
+    algo.transferTxId = providerInitializeComputeResults.algorithm.validOrder
+    assets[0].transferTxId = providerInitializeComputeResults.datasets[0].validOrder
+    assert(
+      algo.transferTxId === freeEnvAlgoTxId &&
+        assets[0].transferTxId === freeEnvDatasetTxId,
+      'We should use the same orders, because no fess must be paid'
+    )
+    const computeJobs = await ProviderInstance.computeStart(
+      providerUrl,
+      web3,
+      consumerAccount,
+      computeEnv.id,
+      assets[0],
+      algo
+    )
+    assert(computeJobs, 'Cannot start compute job')
   })
 
   // moving to paid environments
@@ -756,78 +840,6 @@ describe('Simple compute tests', async () => {
     )
     assert(downloadURL, 'Provider getComputeResultUrl failed!')
   })
-
-  // put this flows back when we are able to handle this scenarios
-  // at the momement max job duration is 60 seconds, it takes the job around 100 to finish
-  // we are not able to to increase neither the valid until value, neither wait for the job to finish since the provider fees  will expire
-
-  // move to start orders with initial txid's and provider fees
-
-  // it('should restart a computeJob without paying anything, because order is valid and providerFees are still valid', async () => {
-  //   // we choose the free env
-  //   const computeEnv = computeEnvs.find((ce) => ce.priceMin === 0)
-  //   assert(computeEnv, 'Cannot find the free compute env')
-
-  //   const assets: ComputeAsset[] = [
-  //     {
-  //       documentId: resolvedDdoWith1mTimeout.id,
-  //       serviceId: resolvedDdoWith1mTimeout.services[0].id,
-  //       transferTxId: freeEnvDatasetTxId
-  //     }
-  //   ]
-  //   const algo: ComputeAlgorithm = {
-  //     documentId: resolvedAlgoDdoWith1mTimeout.id,
-  //     serviceId: resolvedAlgoDdoWith1mTimeout.services[0].id,
-  //     transferTxId: freeEnvAlgoTxId
-  //   }
-  //   const mytime = new Date()
-  //   console.log('my time', mytime.getTime() / 1000)
-  //   console.log('compute valid until ==', computeValidUntil)
-  //   providerInitializeComputeResults = await ProviderInstance.initializeCompute(
-  //     assets,
-  //     algo,
-  //     computeEnv.id,
-  //     computeValidUntil,
-  //     providerUrl,
-  //     consumerAccount
-  //   )
-  //   console.log(
-  //     'second job providerInitializeComputeResults',
-  //     providerInitializeComputeResults
-  //   )
-  //   assert(
-  //     providerInitializeComputeResults.algorithm.validOrder,
-  //     'We should have a valid order for algorithm'
-  //   )
-  //   assert(
-  //     !providerInitializeComputeResults.algorithm.providerFee,
-  //     'We should not pay providerFees again for algorithm'
-  //   )
-  //   assert(
-  //     providerInitializeComputeResults.datasets[0].validOrder,
-  //     'We should have a valid order for dataset'
-  //   )
-  //   assert(
-  //     !providerInitializeComputeResults.datasets[0].providerFee,
-  //     'We should not pay providerFees again for dataset'
-  //   )
-  //   algo.transferTxId = providerInitializeComputeResults.algorithm.validOrder
-  //   assets[0].transferTxId = providerInitializeComputeResults.datasets[0].validOrder
-  //   assert(
-  //     algo.transferTxId === freeEnvAlgoTxId &&
-  //       assets[0].transferTxId === freeEnvDatasetTxId,
-  //     'We should use the same orders, because no fess must be paid'
-  //   )
-  //   const computeJobs = await ProviderInstance.computeStart(
-  //     providerUrl,
-  //     web3,
-  //     consumerAccount,
-  //     computeEnv.id,
-  //     assets[0],
-  //     algo
-  //   )
-  //   assert(computeJobs, 'Cannot start compute job')
-  // })
 
   // it('should restart a computeJob on paid environment, without paying anything, because order is valid and providerFees are still valid', async () => {
   //   sleep(10000)
