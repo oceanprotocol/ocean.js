@@ -506,10 +506,6 @@ describe('Simple compute tests', async () => {
     freeComputeJobId = computeJobs[0].jobId
   })
 
-  //   put this flows back when we are able to handle this scenarios
-  // at the momement max job duration is 60 seconds, it takes the job around 100 to finish
-  // we are not able to to increase neither the valid until value, neither wait for the job to finish since the provider fees  will expire
-
   delay(100000)
 
   it('Check compute status', async () => {
@@ -883,8 +879,6 @@ describe('Simple compute tests', async () => {
     // freeEnvAlgoTxId = algo.transferTxId
     assert(computeJobs, 'Cannot start compute job')
   })
-
-  delay(100000)
 
   it('Check compute status', async () => {
     const jobStatus = (await ProviderInstance.computeStatus(
