@@ -38,6 +38,7 @@ let algoDdoWith5mTimeoutId
 let algoDdoWithNoTimeoutId
 
 let freeComputeJobId: string
+let paidComputeJobId: string
 
 let resolvedDdoWith5mTimeout
 let resolvedDdoWithNoTimeout
@@ -651,6 +652,82 @@ describe('Simple compute tests', async () => {
     paidEnvDatasetTxId = assets[0].transferTxId
     paidEnvAlgoTxId = algo.transferTxId
     assert(computeJobs, 'Cannot start compute job')
+    paidComputeJobId = computeJobs[0].jobId
+  })
+
+  delay(100000)
+
+  it('Check compute status', async () => {
+    const jobStatus = (await ProviderInstance.computeStatus(
+      providerUrl,
+      consumerAccount,
+      paidComputeJobId,
+      resolvedDdoWith5mTimeout.id
+    )) as ComputeJob
+    assert(jobStatus, 'Cannot retrieve compute status!')
+    const mytime = new Date()
+    console.log('my time at compute status call', mytime.getTime() / 1000)
+    console.log('jobStatus', jobStatus)
+  })
+
+  it('should restart a computeJob on paid environment, without paying anything, because order is valid and providerFees are still valid', async () => {
+    // we choose the paid env
+    const computeEnv = computeEnvs.find((ce) => ce.priceMin !== 0)
+    assert(computeEnv, 'Cannot find the free compute env')
+
+    const assets: ComputeAsset[] = [
+      {
+        documentId: resolvedDdoWith5mTimeout.id,
+        serviceId: resolvedDdoWith5mTimeout.services[0].id,
+        transferTxId: paidEnvDatasetTxId
+      }
+    ]
+    const algo: ComputeAlgorithm = {
+      documentId: resolvedAlgoDdoWith5mTimeout.id,
+      serviceId: resolvedAlgoDdoWith5mTimeout.services[0].id,
+      transferTxId: paidEnvAlgoTxId
+    }
+
+    providerInitializeComputeResults = await ProviderInstance.initializeCompute(
+      assets,
+      algo,
+      computeEnv.id,
+      computeValidUntil,
+      providerUrl,
+      consumerAccount
+    )
+    assert(
+      providerInitializeComputeResults.algorithm.validOrder,
+      'We should have a valid order for algorithm'
+    )
+    assert(
+      !providerInitializeComputeResults.algorithm.providerFee,
+      'We should not pay providerFees again for algorithm'
+    )
+    assert(
+      providerInitializeComputeResults.datasets[0].validOrder,
+      'We should have a valid order for dataset'
+    )
+    assert(
+      !providerInitializeComputeResults.datasets[0].providerFee,
+      'We should not pay providerFees again for dataset'
+    )
+    algo.transferTxId = providerInitializeComputeResults.algorithm.validOrder
+    assets[0].transferTxId = providerInitializeComputeResults.datasets[0].validOrder
+    assert(
+      algo.transferTxId === paidEnvAlgoTxId &&
+        assets[0].transferTxId === paidEnvDatasetTxId,
+      'We should use the same orders, because no fess must be paid'
+    )
+    const computeJobs = await ProviderInstance.computeStart(
+      providerUrl,
+      web3,
+      consumerAccount,
+      computeEnv.id,
+      assets[0],
+      algo
+    )
+    assert(computeJobs, 'Cannot start compute job')
   })
 
   // move to reuse Orders
@@ -843,65 +920,4 @@ describe('Simple compute tests', async () => {
     )
     assert(downloadURL, 'Provider getComputeResultUrl failed!')
   })
-
-  // it('should restart a computeJob on paid environment, without paying anything, because order is valid and providerFees are still valid', async () => {
-  //   sleep(10000)
-  //   // we choose the paid env
-  //   const computeEnv = computeEnvs.find((ce) => ce.priceMin !== 0)
-  //   assert(computeEnv, 'Cannot find the free compute env')
-
-  //   const assets: ComputeAsset[] = [
-  //     {
-  //       documentId: resolvedDdoWith5mTimeout.id,
-  //       serviceId: resolvedDdoWith5mTimeout.services[0].id,
-  //       transferTxId: paidEnvDatasetTxId
-  //     }
-  //   ]
-  //   const algo: ComputeAlgorithm = {
-  //     documentId: resolvedAlgoDdoWith5mTimeout.id,
-  //     serviceId: resolvedAlgoDdoWith5mTimeout.services[0].id,
-  //     transferTxId: paidEnvAlgoTxId
-  //   }
-
-  //   providerInitializeComputeResults = await ProviderInstance.initializeCompute(
-  //     assets,
-  //     algo,
-  //     computeEnv.id,
-  //     computeValidUntil,
-  //     providerUrl,
-  //     consumerAccount
-  //   )
-  //   assert(
-  //     providerInitializeComputeResults.algorithm.validOrder,
-  //     'We should have a valid order for algorithm'
-  //   )
-  //   assert(
-  //     !providerInitializeComputeResults.algorithm.providerFee,
-  //     'We should not pay providerFees again for algorithm'
-  //   )
-  //   assert(
-  //     providerInitializeComputeResults.datasets[0].validOrder,
-  //     'We should have a valid order for dataset'
-  //   )
-  //   assert(
-  //     !providerInitializeComputeResults.datasets[0].providerFee,
-  //     'We should not pay providerFees again for dataset'
-  //   )
-  //   algo.transferTxId = providerInitializeComputeResults.algorithm.validOrder
-  //   assets[0].transferTxId = providerInitializeComputeResults.datasets[0].validOrder
-  //   assert(
-  //     algo.transferTxId === paidEnvAlgoTxId &&
-  //       assets[0].transferTxId === paidEnvDatasetTxId,
-  //     'We should use the same orders, because no fess must be paid'
-  //   )
-  //   const computeJobs = await ProviderInstance.computeStart(
-  //     providerUrl,
-  //     web3,
-  //     consumerAccount,
-  //     computeEnv.id,
-  //     assets[0],
-  //     algo
-  //   )
-  //   assert(computeJobs, 'Cannot start compute job')
-  // })
 })
