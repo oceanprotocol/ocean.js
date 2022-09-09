@@ -32,16 +32,16 @@ let publisherAccount: string
 let providerInitializeComputeResults
 let computeEnvs
 let addresses: any
-let ddoWith1mTimeoutId
+let ddoWith5mTimeoutId
 let ddoWithNoTimeoutId
-let algoDdoWith1mTimeoutId
+let algoDdoWith5mTimeoutId
 let algoDdoWithNoTimeoutId
 
 let freeComputeJobId: string
 
-let resolvedDdoWith1mTimeout
+let resolvedDdoWith5mTimeout
 let resolvedDdoWithNoTimeout
-let resolvedAlgoDdoWith1mTimeout
+let resolvedAlgoDdoWith5mTimeout
 let resolvedAlgoDdoWithNoTimeout
 
 let freeEnvDatasetTxId
@@ -98,7 +98,7 @@ const ddoWithNoTimeout = {
   ]
 }
 
-const ddoWith1mTimeout = {
+const ddoWith5mTimeout = {
   '@context': ['https://w3id.org/did/v1'],
   id: 'did:op:efba17455c127a885ec7830d687a8f6e64f5ba559f8506f8723c1f10f05c049c',
   version: '4.1.0',
@@ -124,7 +124,7 @@ const ddoWith1mTimeout = {
       files: '',
       datatokenAddress: '0xa15024b732A8f2146423D14209eFd074e61964F3',
       serviceEndpoint: 'https://v4.provider.rinkeby.oceanprotocol.com',
-      timeout: 60,
+      timeout: 300,
       compute: {
         publisherTrustedAlgorithmPublishers: [],
         publisherTrustedAlgorithms: [],
@@ -187,7 +187,7 @@ const algoDdoWithNoTimeout = {
   ]
 }
 
-const algoDdoWith1mTimeout = {
+const algoDdoWith5mTimeout = {
   '@context': ['https://w3id.org/did/v1'],
   id: 'did:op:efba17455c127a885ec7830d687a8f6e64f5ba559f8506f8723c1f10f05c049c',
   version: '4.1.0',
@@ -224,7 +224,7 @@ const algoDdoWith1mTimeout = {
       files: '',
       datatokenAddress: '0xa15024b732A8f2146423D14209eFd074e61964F3',
       serviceEndpoint: 'https://v4.provider.rinkeby.oceanprotocol.com',
-      timeout: 60
+      timeout: 300
     }
   ]
 }
@@ -360,12 +360,12 @@ describe('Simple compute tests', async () => {
     const accounts = await web3.eth.getAccounts()
     publisherAccount = accounts[0]
     consumerAccount = accounts[1]
-    ddoWith1mTimeoutId = await createAsset(
+    ddoWith5mTimeoutId = await createAsset(
       'D1Min',
       'D1M',
       publisherAccount,
       assetUrl,
-      ddoWith1mTimeout,
+      ddoWith5mTimeout,
       providerUrl
     )
     ddoWithNoTimeoutId = await createAsset(
@@ -376,12 +376,12 @@ describe('Simple compute tests', async () => {
       ddoWithNoTimeout,
       providerUrl
     )
-    algoDdoWith1mTimeoutId = await createAsset(
+    algoDdoWith5mTimeoutId = await createAsset(
       'A1Min',
       'A1M',
       publisherAccount,
       algoAssetUrl,
-      algoDdoWith1mTimeout,
+      algoDdoWith5mTimeout,
       providerUrl
     )
 
@@ -396,12 +396,12 @@ describe('Simple compute tests', async () => {
   })
 
   it('should resolve published datasets and algorithms', async () => {
-    resolvedDdoWith1mTimeout = await aquarius.waitForAqua(ddoWith1mTimeoutId)
-    assert(resolvedDdoWith1mTimeout, 'Cannot fetch DDO from Aquarius')
+    resolvedDdoWith5mTimeout = await aquarius.waitForAqua(ddoWith5mTimeoutId)
+    assert(resolvedDdoWith5mTimeout, 'Cannot fetch DDO from Aquarius')
     resolvedDdoWithNoTimeout = await aquarius.waitForAqua(ddoWithNoTimeoutId)
     assert(resolvedDdoWithNoTimeout, 'Cannot fetch DDO from Aquarius')
-    resolvedAlgoDdoWith1mTimeout = await aquarius.waitForAqua(algoDdoWith1mTimeoutId)
-    assert(resolvedAlgoDdoWith1mTimeout, 'Cannot fetch DDO from Aquarius')
+    resolvedAlgoDdoWith5mTimeout = await aquarius.waitForAqua(algoDdoWith5mTimeoutId)
+    assert(resolvedAlgoDdoWith5mTimeout, 'Cannot fetch DDO from Aquarius')
     resolvedAlgoDdoWithNoTimeout = await aquarius.waitForAqua(algoDdoWithNoTimeoutId)
     assert(resolvedAlgoDdoWithNoTimeout, 'Cannot fetch DDO from Aquarius')
   })
@@ -409,7 +409,7 @@ describe('Simple compute tests', async () => {
   it('should send DT to consumer', async () => {
     const datatoken = new Datatoken(web3)
     await datatoken.mint(
-      resolvedDdoWith1mTimeout.services[0].datatokenAddress,
+      resolvedDdoWith5mTimeout.services[0].datatokenAddress,
       publisherAccount,
       '10',
       consumerAccount
@@ -421,7 +421,7 @@ describe('Simple compute tests', async () => {
       consumerAccount
     )
     await datatoken.mint(
-      resolvedAlgoDdoWith1mTimeout.services[0].datatokenAddress,
+      resolvedAlgoDdoWith5mTimeout.services[0].datatokenAddress,
       publisherAccount,
       '10',
       consumerAccount
@@ -453,14 +453,14 @@ describe('Simple compute tests', async () => {
 
     const assets: ComputeAsset[] = [
       {
-        documentId: resolvedDdoWith1mTimeout.id,
-        serviceId: resolvedDdoWith1mTimeout.services[0].id
+        documentId: resolvedDdoWith5mTimeout.id,
+        serviceId: resolvedDdoWith5mTimeout.services[0].id
       }
     ]
-    const dtAddressArray = [resolvedDdoWith1mTimeout.services[0].datatokenAddress]
+    const dtAddressArray = [resolvedDdoWith5mTimeout.services[0].datatokenAddress]
     const algo: ComputeAlgorithm = {
-      documentId: resolvedAlgoDdoWith1mTimeout.id,
-      serviceId: resolvedAlgoDdoWith1mTimeout.services[0].id
+      documentId: resolvedAlgoDdoWith5mTimeout.id,
+      serviceId: resolvedAlgoDdoWith5mTimeout.services[0].id
     }
 
     providerInitializeComputeResults = await ProviderInstance.initializeCompute(
@@ -478,7 +478,7 @@ describe('Simple compute tests', async () => {
     )
     algo.transferTxId = await handleOrder(
       providerInitializeComputeResults.algorithm,
-      resolvedAlgoDdoWith1mTimeout.services[0].datatokenAddress,
+      resolvedAlgoDdoWith5mTimeout.services[0].datatokenAddress,
       consumerAccount,
       computeEnv.consumerAddress,
       0
@@ -517,7 +517,7 @@ describe('Simple compute tests', async () => {
       providerUrl,
       consumerAccount,
       freeComputeJobId,
-      resolvedDdoWith1mTimeout.id
+      resolvedDdoWith5mTimeout.id
     )) as ComputeJob
     assert(jobStatus, 'Cannot retrieve compute status!')
     const mytime = new Date()
@@ -533,14 +533,14 @@ describe('Simple compute tests', async () => {
 
     const assets: ComputeAsset[] = [
       {
-        documentId: resolvedDdoWith1mTimeout.id,
-        serviceId: resolvedDdoWith1mTimeout.services[0].id,
+        documentId: resolvedDdoWith5mTimeout.id,
+        serviceId: resolvedDdoWith5mTimeout.services[0].id,
         transferTxId: freeEnvDatasetTxId
       }
     ]
     const algo: ComputeAlgorithm = {
-      documentId: resolvedAlgoDdoWith1mTimeout.id,
-      serviceId: resolvedAlgoDdoWith1mTimeout.services[0].id,
+      documentId: resolvedAlgoDdoWith5mTimeout.id,
+      serviceId: resolvedAlgoDdoWith5mTimeout.services[0].id,
       transferTxId: freeEnvAlgoTxId
     }
     const mytime = new Date()
@@ -601,14 +601,14 @@ describe('Simple compute tests', async () => {
 
     const assets: ComputeAsset[] = [
       {
-        documentId: resolvedDdoWith1mTimeout.id,
-        serviceId: resolvedDdoWith1mTimeout.services[0].id
+        documentId: resolvedDdoWith5mTimeout.id,
+        serviceId: resolvedDdoWith5mTimeout.services[0].id
       }
     ]
-    const dtAddressArray = [resolvedDdoWith1mTimeout.services[0].datatokenAddress]
+    const dtAddressArray = [resolvedDdoWith5mTimeout.services[0].datatokenAddress]
     const algo: ComputeAlgorithm = {
-      documentId: resolvedAlgoDdoWith1mTimeout.id,
-      serviceId: resolvedAlgoDdoWith1mTimeout.services[0].id
+      documentId: resolvedAlgoDdoWith5mTimeout.id,
+      serviceId: resolvedAlgoDdoWith5mTimeout.services[0].id
     }
 
     providerInitializeComputeResults = await ProviderInstance.initializeCompute(
@@ -625,7 +625,7 @@ describe('Simple compute tests', async () => {
     )
     algo.transferTxId = await handleOrder(
       providerInitializeComputeResults.algorithm,
-      resolvedAlgoDdoWith1mTimeout.services[0].datatokenAddress,
+      resolvedAlgoDdoWith5mTimeout.services[0].datatokenAddress,
       consumerAccount,
       computeEnv.consumerAddress,
       0
@@ -669,15 +669,15 @@ describe('Simple compute tests', async () => {
 
     const assets: ComputeAsset[] = [
       {
-        documentId: resolvedDdoWith1mTimeout.id,
-        serviceId: resolvedDdoWith1mTimeout.services[0].id,
+        documentId: resolvedDdoWith5mTimeout.id,
+        serviceId: resolvedDdoWith5mTimeout.services[0].id,
         transferTxId: freeEnvDatasetTxId
       }
     ]
-    const dtAddressArray = [resolvedDdoWith1mTimeout.services[0].datatokenAddress]
+    const dtAddressArray = [resolvedDdoWith5mTimeout.services[0].datatokenAddress]
     const algo: ComputeAlgorithm = {
-      documentId: resolvedAlgoDdoWith1mTimeout.id,
-      serviceId: resolvedAlgoDdoWith1mTimeout.services[0].id,
+      documentId: resolvedAlgoDdoWith5mTimeout.id,
+      serviceId: resolvedAlgoDdoWith5mTimeout.services[0].id,
       transferTxId: freeEnvAlgoTxId
     }
 
@@ -710,7 +710,7 @@ describe('Simple compute tests', async () => {
     )
     algo.transferTxId = await handleOrder(
       providerInitializeComputeResults.algorithm,
-      resolvedAlgoDdoWith1mTimeout.services[0].datatokenAddress,
+      resolvedAlgoDdoWith5mTimeout.services[0].datatokenAddress,
       consumerAccount,
       computeEnv.consumerAddress,
       0
@@ -749,15 +749,15 @@ describe('Simple compute tests', async () => {
 
     const assets: ComputeAsset[] = [
       {
-        documentId: resolvedDdoWith1mTimeout.id,
-        serviceId: resolvedDdoWith1mTimeout.services[0].id,
+        documentId: resolvedDdoWith5mTimeout.id,
+        serviceId: resolvedDdoWith5mTimeout.services[0].id,
         transferTxId: paidEnvDatasetTxId
       }
     ]
-    const dtAddressArray = [resolvedDdoWith1mTimeout.services[0].datatokenAddress]
+    const dtAddressArray = [resolvedDdoWith5mTimeout.services[0].datatokenAddress]
     const algo: ComputeAlgorithm = {
-      documentId: resolvedAlgoDdoWith1mTimeout.id,
-      serviceId: resolvedAlgoDdoWith1mTimeout.services[0].id,
+      documentId: resolvedAlgoDdoWith5mTimeout.id,
+      serviceId: resolvedAlgoDdoWith5mTimeout.services[0].id,
       transferTxId: paidEnvAlgoTxId
     }
 
@@ -789,7 +789,7 @@ describe('Simple compute tests', async () => {
     )
     algo.transferTxId = await handleOrder(
       providerInitializeComputeResults.algorithm,
-      resolvedAlgoDdoWith1mTimeout.services[0].datatokenAddress,
+      resolvedAlgoDdoWith5mTimeout.services[0].datatokenAddress,
       consumerAccount,
       computeEnv.consumerAddress,
       0
@@ -828,7 +828,7 @@ describe('Simple compute tests', async () => {
       providerUrl,
       consumerAccount,
       freeComputeJobId,
-      resolvedDdoWith1mTimeout.id
+      resolvedDdoWith5mTimeout.id
     )) as ComputeJob
     assert(jobStatus, 'Cannot retrieve compute status!')
   })
@@ -852,14 +852,14 @@ describe('Simple compute tests', async () => {
 
   //   const assets: ComputeAsset[] = [
   //     {
-  //       documentId: resolvedDdoWith1mTimeout.id,
-  //       serviceId: resolvedDdoWith1mTimeout.services[0].id,
+  //       documentId: resolvedDdoWith5mTimeout.id,
+  //       serviceId: resolvedDdoWith5mTimeout.services[0].id,
   //       transferTxId: paidEnvDatasetTxId
   //     }
   //   ]
   //   const algo: ComputeAlgorithm = {
-  //     documentId: resolvedAlgoDdoWith1mTimeout.id,
-  //     serviceId: resolvedAlgoDdoWith1mTimeout.services[0].id,
+  //     documentId: resolvedAlgoDdoWith5mTimeout.id,
+  //     serviceId: resolvedAlgoDdoWith5mTimeout.services[0].id,
   //     transferTxId: paidEnvAlgoTxId
   //   }
 
