@@ -472,7 +472,6 @@ describe('Simple compute tests', async () => {
       providerUrl,
       consumerAccount
     )
-    console.log('initalize compute 1st run', providerInitializeComputeResults)
     assert(
       !('error' in providerInitializeComputeResults.algorithm),
       'Cannot order algorithm'
@@ -521,9 +520,6 @@ describe('Simple compute tests', async () => {
       resolvedDdoWith5mTimeout.id
     )) as ComputeJob
     assert(jobStatus, 'Cannot retrieve compute status!')
-    const mytime = new Date()
-    console.log('my time at compute status call', mytime.getTime() / 1000)
-    console.log('jobStatus', jobStatus)
   })
 
   // move to start orders with initial txid's and provider fees
@@ -544,9 +540,6 @@ describe('Simple compute tests', async () => {
       serviceId: resolvedAlgoDdoWith5mTimeout.services[0].id,
       transferTxId: freeEnvAlgoTxId
     }
-    const mytime = new Date()
-    console.log('my time 2nd run ==', mytime.getTime() / 1000)
-    console.log('compute valid until run 2 ==', computeValidUntil)
     providerInitializeComputeResults = await ProviderInstance.initializeCompute(
       assets,
       algo,
@@ -554,10 +547,6 @@ describe('Simple compute tests', async () => {
       computeValidUntil,
       providerUrl,
       consumerAccount
-    )
-    console.log(
-      'second job providerInitializeComputeResults',
-      providerInitializeComputeResults
     )
     assert(
       providerInitializeComputeResults.algorithm.validOrder,
@@ -665,9 +654,6 @@ describe('Simple compute tests', async () => {
       resolvedDdoWith5mTimeout.id
     )) as ComputeJob
     assert(jobStatus, 'Cannot retrieve compute status!')
-    const mytime = new Date()
-    console.log('my time at compute status call', mytime.getTime() / 1000)
-    console.log('jobStatus', jobStatus)
   })
 
   it('should restart a computeJob on paid environment, without paying anything, because order is valid and providerFees are still valid', async () => {
