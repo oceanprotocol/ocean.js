@@ -443,7 +443,7 @@ describe('Simple compute tests', async () => {
   it('should start a computeJob using the free environment', async () => {
     // let's have 5 minute of compute access
     const mytime = new Date()
-    const computeMinutes = 3
+    const computeMinutes = 5
     mytime.setMinutes(mytime.getMinutes() + computeMinutes)
     computeValidUntil = Math.floor(mytime.getTime() / 1000)
 
@@ -471,6 +471,7 @@ describe('Simple compute tests', async () => {
       providerUrl,
       consumerAccount
     )
+    console.log('initalize compute 1st run', providerInitializeComputeResults)
     assert(
       !('error' in providerInitializeComputeResults.algorithm),
       'Cannot order algorithm'
@@ -519,6 +520,8 @@ describe('Simple compute tests', async () => {
       resolvedDdoWith1mTimeout.id
     )) as ComputeJob
     assert(jobStatus, 'Cannot retrieve compute status!')
+    const mytime = new Date()
+    console.log('my time at compute status call', mytime.getTime() / 1000)
     console.log('jobStatus', jobStatus)
   })
 
@@ -541,8 +544,8 @@ describe('Simple compute tests', async () => {
       transferTxId: freeEnvAlgoTxId
     }
     const mytime = new Date()
-    console.log('my time', mytime.getTime() / 1000)
-    console.log('compute valid until ==', computeValidUntil)
+    console.log('my time 2nd run ==', mytime.getTime() / 1000)
+    console.log('compute valid until run 2 ==', computeValidUntil)
     providerInitializeComputeResults = await ProviderInstance.initializeCompute(
       assets,
       algo,
