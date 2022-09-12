@@ -20,8 +20,29 @@ export interface UrlFile {
   method: string
 }
 
+export interface GraphqlQuery {
+  type: 'graphql'
+
+  /**
+   * @type {number}
+   */
+  index?: number
+
+  /**
+   * Endpoint URL
+   * @type {string}
+   */
+  url: string
+
+  /**
+   * query
+   * @type {string}
+   */
+  query: string
+}
+
 export interface Files {
   nftAddress: string
   datatokenAddress: string
-  files: UrlFile[]
+  files: UrlFile[] | GraphqlQuery[]
 }
