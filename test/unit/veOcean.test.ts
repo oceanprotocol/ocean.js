@@ -80,6 +80,7 @@ describe('veOcean tests', async () => {
     veOcean = new VeOcean(addresses.veOCEAN, web3)
     veFeeDistributor = new VeFeeDistributor(addresses.veFeeDistributor, web3)
     veAllocate = new VeAllocate(addresses.veAllocate, web3)
+    veFeeEstimate = new VeFeeEstimate(addresses.veFeeEstimate, web3)
     nftFactory = new NftFactory(addresses.ERC721Factory, web3)
   })
 
