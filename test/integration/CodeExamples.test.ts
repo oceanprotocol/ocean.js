@@ -205,7 +205,13 @@ describe('Marketplace flow tests', async () => {
   /// ```
 
   /// ## 5. Initialize accounts and deploy contracts
-  it('5.1 Initialize accounts', async () => {
+  it('5.1 Next, lets get the address of the deployed contracts', async () => {
+    /// ```Typescript
+    addresses = getAddresses()
+  }) ///
+  /// ```
+
+  it('5.2 Initialize accounts', async () => {
     /// ```Typescript
     const accounts = await web3.eth.getAccounts()
     publisherAccount = accounts[0]
