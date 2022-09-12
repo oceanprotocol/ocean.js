@@ -1,5 +1,6 @@
 import { assert } from 'chai'
 import { SHA256 } from 'crypto-js'
+import { AbiItem } from 'web3-utils'
 import { web3, getTestConfig, getAddresses } from '../config'
 import {
   Config,
@@ -10,7 +11,9 @@ import {
   Datatoken,
   Nft,
   ZERO_ADDRESS,
-  approveWei
+  approveWei,
+  calculateEstimatedGas,
+  sendTx
 } from '../../src'
 import {
   DatatokenCreateParams,
@@ -360,6 +363,40 @@ describe('Simple compute tests', async () => {
     const accounts = await web3.eth.getAccounts()
     publisherAccount = accounts[0]
     consumerAccount = accounts[1]
+    // mint Ocean
+    /// <!--
+    // mint ocean to publisherAccount
+    const minAbi = [
+      {
+        constant: false,
+        inputs: [
+          { name: 'to', type: 'address' },
+          { name: 'value', type: 'uint256' }
+        ],
+        name: 'mint',
+        outputs: [{ name: '', type: 'bool' }],
+        payable: false,
+        stateMutability: 'nonpayable',
+        type: 'function'
+      }
+    ] as AbiItem[]
+    const tokenContract = new web3.eth.Contract(minAbi, addresses.Ocean)
+    const estGas = await calculateEstimatedGas(
+      publisherAccount,
+      tokenContract.methods.mint,
+      publisherAccount,
+      web3.utils.toWei('1000')
+    )
+    await sendTx(
+      publisherAccount,
+      estGas,
+      web3,
+      1,
+      tokenContract.methods.mint,
+      publisherAccount,
+      web3.utils.toWei('1000')
+    )
+
     ddoWith1mTimeoutId = await createAsset(
       'D1Min',
       'D1M',

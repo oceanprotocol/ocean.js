@@ -14,12 +14,15 @@ import { ReceiptOrEstimate } from '../@types'
 
 /**
  * Approve spender to spent amount tokens
+ * @param {Web3} web3
+ * @param {Config} config
  * @param {String} account
  * @param {String} tokenAddress
  * @param {String} spender
  * @param {String} amount amount of ERC20 Datatokens (always expressed as wei)
  * @param {boolean} force  if true, will overwrite any previous allowence. Else, will check if allowence is enough and will not send a transaction if it's not needed
  * @param {number} tokenDecimals optional number of decimals of the token
+ * @param {boolean} estimateGas  if true, returns the estimate gas cost for calling the method
  */
 export async function approve<G extends boolean = false>(
   web3: Web3,
@@ -36,7 +39,7 @@ export async function approve<G extends boolean = false>(
   if (!force) {
     const currentAllowence = await allowance(web3, tokenAddress, account, spender)
     if (new Decimal(currentAllowence).greaterThanOrEqualTo(new Decimal(amount))) {
-      return null
+      return <ReceiptOrEstimate<G>>new Decimal(currentAllowence).toNumber()
     }
   }
   const amountFormatted = await amountToUnits(web3, tokenAddress, amount, tokenDecimals)
@@ -62,11 +65,14 @@ export async function approve<G extends boolean = false>(
 
 /**
  * Approve spender to spent amount tokens
+ * @param {Web3} web3
+ * @param {Config} config
  * @param {String} account
  * @param {String} tokenAddress
  * @param {String} spender
  * @param {String} amount amount of ERC20 tokens (always expressed as wei)
  * @param {boolean} force  if true, will overwrite any previous allowence. Else, will check if allowence is enough and will not send a transaction if it's not needed
+ * @param {boolean} estimateGas  if true, returns the estimate gas cost for calling the method
  */
 export async function approveWei<G extends boolean = false>(
   web3: Web3,
@@ -82,7 +88,7 @@ export async function approveWei<G extends boolean = false>(
   if (!force) {
     const currentAllowence = await allowanceWei(web3, tokenAddress, account, spender)
     if (new BigNumber(currentAllowence).gt(new BigNumber(amount))) {
-      return null
+      return <ReceiptOrEstimate<G>>new Decimal(currentAllowence).toNumber()
     }
   }
   let result = null
@@ -205,8 +211,7 @@ export async function allowanceWei(
   web3: Web3,
   tokenAddress: string,
   account: string,
-  spender: string,
-  tokenDecimals?: number
+  spender: string
 ): Promise<string> {
   const tokenContract = new web3.eth.Contract(minAbi, tokenAddress)
   return await tokenContract.methods.allowance(account, spender).call()
