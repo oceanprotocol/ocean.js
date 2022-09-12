@@ -9,7 +9,8 @@ import {
   sendTx,
   calculateEstimatedGas,
   NftFactory,
-  VeAllocate
+  VeAllocate,
+  VeFeeEstimate
 } from '../../src'
 
 describe('veOcean tests', async () => {
@@ -18,6 +19,7 @@ describe('veOcean tests', async () => {
   let nftFactory
   let veOcean: VeOcean
   let veFeeDistributor: VeFeeDistributor
+  let veFeeEstimate: VeFeeEstimate
   let veAllocate: VeAllocate
   let ownerAccount: string
   let Alice: string
@@ -78,6 +80,7 @@ describe('veOcean tests', async () => {
     veOcean = new VeOcean(addresses.veOCEAN, web3)
     veFeeDistributor = new VeFeeDistributor(addresses.veFeeDistributor, web3)
     veAllocate = new VeAllocate(addresses.veAllocate, web3)
+    veFeeEstimate = new VeFeeEstimate(addresses.veFeeEstimate, web3)
     nftFactory = new NftFactory(addresses.ERC721Factory, web3)
   })
 
@@ -214,5 +217,11 @@ describe('veOcean tests', async () => {
       parseInt(String(nftAllocation)) === parseInt('2000'),
       nftAllocation + ' should be 2000'
     )
+  })
+
+  it('Alice should be able to estimate her claim amount', async () => {
+    const estimatedClaim = await veFeeEstimate.estimateClaim(Alice)
+    // since we have no rewards, we are expecting 0
+    assert(estimatedClaim === '0')
   })
 })

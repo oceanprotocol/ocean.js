@@ -1,5 +1,6 @@
 import { assert } from 'chai'
 import { SHA256 } from 'crypto-js'
+import { AbiItem } from 'web3-utils'
 import { web3, getTestConfig, getAddresses } from '../config'
 import {
   Config,
@@ -11,7 +12,9 @@ import {
   getHash,
   Nft,
   downloadFile,
-  ZERO_ADDRESS
+  ZERO_ADDRESS,
+  calculateEstimatedGas,
+  sendTx
 } from '../../src'
 import { ProviderFees, DatatokenCreateParams, DDO, Files } from '../../src/@types'
 
@@ -74,6 +77,40 @@ describe('Simple Publish & consume test', async () => {
     const accounts = await web3.eth.getAccounts()
     publisherAccount = accounts[0]
     consumerAccount = accounts[1]
+
+    // mint Ocean tokens
+    /// <!--
+    // mint ocean to publisherAccount
+    const minAbi = [
+      {
+        constant: false,
+        inputs: [
+          { name: 'to', type: 'address' },
+          { name: 'value', type: 'uint256' }
+        ],
+        name: 'mint',
+        outputs: [{ name: '', type: 'bool' }],
+        payable: false,
+        stateMutability: 'nonpayable',
+        type: 'function'
+      }
+    ] as AbiItem[]
+    const tokenContract = new web3.eth.Contract(minAbi, addresses.Ocean)
+    const estGas = await calculateEstimatedGas(
+      publisherAccount,
+      tokenContract.methods.mint,
+      publisherAccount,
+      web3.utils.toWei('1000')
+    )
+    await sendTx(
+      publisherAccount,
+      estGas,
+      web3,
+      1,
+      tokenContract.methods.mint,
+      publisherAccount,
+      web3.utils.toWei('1000')
+    )
   })
 
   it('should publish a dataset (create NFT + Datatoken)', async () => {

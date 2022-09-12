@@ -85,6 +85,7 @@ Start by importing all of the necessary dependencies
 
 ```Typescript
 
+import { AbiItem } from 'web3-utils'
 import { SHA256 } from 'crypto-js'
 import {
   approve,
@@ -106,7 +107,9 @@ import {
   ProviderFees,
   ProviderInstance,
   transfer,
-  ZERO_ADDRESS
+  ZERO_ADDRESS,
+  calculateEstimatedGas,
+  sendTx
 } from '../../src'
 import { getAddresses, getTestConfig, web3 } from '../config'
 ```
@@ -202,7 +205,13 @@ As we go along it's a good idea to console log the values so that you check they
 ```
 
 ## 5. Initialize accounts and deploy contracts
-  ### 5.1 Initialize accounts
+  ### 5.1 Next, lets get the address of the deployed contracts
+```Typescript
+    addresses = getAddresses()
+  
+```
+
+  ### 5.2 Initialize accounts
 ```Typescript
     const accounts = await web3.eth.getAccounts()
     publisherAccount = accounts[0]
@@ -214,6 +223,39 @@ Again, lets console log the values so that we can check that they have been save
     console.log(`Publisher account address: ${publisherAccount}`)
     console.log(`Consumer account address: ${consumerAccount}`)
     console.log(`Staker account address: ${stakerAccount}`)
+<!--
+    // mint ocean to publisherAccount
+    const minAbi = [
+      {
+        constant: false,
+        inputs: [
+          { name: 'to', type: 'address' },
+          { name: 'value', type: 'uint256' }
+        ],
+        name: 'mint',
+        outputs: [{ name: '', type: 'bool' }],
+        payable: false,
+        stateMutability: 'nonpayable',
+        type: 'function'
+      }
+    ] as AbiItem[]
+    const tokenContract = new web3.eth.Contract(minAbi, addresses.Ocean)
+    const estGas = await calculateEstimatedGas(
+      publisherAccount,
+      tokenContract.methods.mint,
+      publisherAccount,
+      web3.utils.toWei('1000')
+    )
+    await sendTx(
+      publisherAccount,
+      estGas,
+      web3,
+      1,
+      tokenContract.methods.mint,
+      publisherAccount,
+      web3.utils.toWei('1000')
+    )
+-->
   
 ```
 
