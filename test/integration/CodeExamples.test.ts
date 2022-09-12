@@ -85,6 +85,7 @@
 
 /// ```Typescript
 import { assert } from 'chai'
+import { AbiItem } from 'web3-utils'
 import { SHA256 } from 'crypto-js'
 import {
   approve,
@@ -106,7 +107,9 @@ import {
   ProviderFees,
   ProviderInstance,
   transfer,
-  ZERO_ADDRESS
+  ZERO_ADDRESS,
+  calculateEstimatedGas,
+  sendTx
 } from '../../src'
 import { getAddresses, getTestConfig, web3 } from '../config'
 /// ```
@@ -214,6 +217,39 @@ describe('Marketplace flow tests', async () => {
     console.log(`Publisher account address: ${publisherAccount}`)
     console.log(`Consumer account address: ${consumerAccount}`)
     console.log(`Staker account address: ${stakerAccount}`)
+    /// <!--
+    // mint ocean to publisherAccount
+    const minAbi = [
+      {
+        constant: false,
+        inputs: [
+          { name: 'to', type: 'address' },
+          { name: 'value', type: 'uint256' }
+        ],
+        name: 'mint',
+        outputs: [{ name: '', type: 'bool' }],
+        payable: false,
+        stateMutability: 'nonpayable',
+        type: 'function'
+      }
+    ] as AbiItem[]
+    const tokenContract = new web3.eth.Contract(minAbi, addresses.Ocean)
+    const estGas = await calculateEstimatedGas(
+      publisherAccount,
+      tokenContract.methods.mint,
+      publisherAccount,
+      web3.utils.toWei('1000')
+    )
+    await sendTx(
+      publisherAccount,
+      estGas,
+      web3,
+      1,
+      tokenContract.methods.mint,
+      publisherAccount,
+      web3.utils.toWei('1000')
+    )
+    /// -->
   }) ///
   /// ```
 
