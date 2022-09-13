@@ -77,7 +77,7 @@
     "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-prettier": "^4.2.1",
     "fs": "0.0.1-security",
-    "microbundle": "0.15.1",
+    "microbundle": "0.14.2",
     "mocha": "^10.0.0",
     "mock-local-storage": "^1.1.21",
     "nyc": "^15.1.0",
