@@ -90,7 +90,7 @@ const ddoWithNoTimeout = {
       type: 'compute',
       files: '',
       datatokenAddress: '0xa15024b732A8f2146423D14209eFd074e61964F3',
-      serviceEndpoint: 'https://v4.provider.rinkeby.oceanprotocol.com',
+      serviceEndpoint: 'https://v4.provider.goerli.oceanprotocol.com',
       timeout: 0,
       compute: {
         publisherTrustedAlgorithmPublishers: [],
@@ -127,7 +127,7 @@ const ddoWith5mTimeout = {
       type: 'compute',
       files: '',
       datatokenAddress: '0xa15024b732A8f2146423D14209eFd074e61964F3',
-      serviceEndpoint: 'https://v4.provider.rinkeby.oceanprotocol.com',
+      serviceEndpoint: 'https://v4.provider.goerli.oceanprotocol.com',
       timeout: 300,
       compute: {
         publisherTrustedAlgorithmPublishers: [],
@@ -185,7 +185,7 @@ const algoDdoWithNoTimeout = {
       type: 'access',
       files: '',
       datatokenAddress: '0xa15024b732A8f2146423D14209eFd074e61964F3',
-      serviceEndpoint: 'https://v4.provider.rinkeby.oceanprotocol.com',
+      serviceEndpoint: 'https://v4.provider.goerli.oceanprotocol.com',
       timeout: 0
     }
   ]
@@ -227,7 +227,7 @@ const algoDdoWith5mTimeout = {
       type: 'access',
       files: '',
       datatokenAddress: '0xa15024b732A8f2146423D14209eFd074e61964F3',
-      serviceEndpoint: 'https://v4.provider.rinkeby.oceanprotocol.com',
+      serviceEndpoint: 'https://v4.provider.goerli.oceanprotocol.com',
       timeout: 300
     }
   ]

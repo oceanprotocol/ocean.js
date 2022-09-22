@@ -27,7 +27,9 @@ Here are the steps:
 7. [Publish Data NFT and a Datatoken with a dispenser](#-publish-data-nft-and-a-datatoken-with-a-dispenser)
 
 ## 0. Prerequisites
+
 Before we start it is important that you have all of the necessary prerequisites installed on your computer.
+
 - **A Unix based operating system (Linux or Mac)**. If you are a Windows user you can try to run linux inside a virtual machine but this is outside of the scope of this article.
 - **Git**. Instructions for installing Git can be found here: https://git-scm.com/book/en/v2/Getting-Started-Installing-Git
 - **Node.js** can be downloaded from here: https://nodejs.org/en/download/
@@ -138,6 +140,7 @@ Now we define the variables which we will need later
 ```
 
 We also define some constants that we will use:
+
 ```Typescript
   const FRE_NFT_NAME = 'Datatoken 2'
   const FRE_NFT_SYMBOL = 'DT2'
@@ -145,7 +148,8 @@ We also define some constants that we will use:
   const DISP_NFT_SYMBOL = 'DT3'
 ```
 
- We will need a file to publish, so here we define the file that we intend to publish.
+We will need a file to publish, so here we define the file that we intend to publish.
+
 ```Typescript
   const ASSET_URL: Files = {
     datatokenAddress: '0x0',
@@ -161,6 +165,7 @@ We also define some constants that we will use:
 ```
 
 Next, we define the metadata that will describe our data asset. This is what we call the DDO
+
 ```Typescript
   const DDO = {
     '@context': ['https://w3id.org/did/v1'],
@@ -183,7 +188,7 @@ Next, we define the metadata that will describe our data asset. This is what we 
         type: 'access',
         files: '',
         datatokenAddress: '0x0',
-        serviceEndpoint: 'https://v4.provider.rinkeby.oceanprotocol.com',
+        serviceEndpoint: 'https://v4.provider.goerli.oceanprotocol.com',
         timeout: 0
       }
     ]
@@ -191,34 +196,42 @@ Next, we define the metadata that will describe our data asset. This is what we 
 ```
 
 We load the configuration:
+
 ```Typescript
-  
+
     config = await getTestConfig(web3)
     aquarius = new Aquarius(config.metadataCacheUri)
     providerUrl = config.providerUri
 ```
+
 As we go along it's a good idea to console log the values so that you check they are right
+
 ```Typescript
     console.log(`Aquarius URL: ${config.metadataCacheUri}`)
     console.log(`Provider URL: ${providerUrl}`)
-  
+
 ```
 
 ## 5. Initialize accounts and deploy contracts
-  ### 5.1 Next, lets get the address of the deployed contracts
+
+### 5.1 Next, lets get the address of the deployed contracts
+
 ```Typescript
     addresses = getAddresses()
-  
+
 ```
 
-  ### 5.2 Initialize accounts
+### 5.2 Initialize accounts
+
 ```Typescript
     const accounts = await web3.eth.getAccounts()
     publisherAccount = accounts[0]
     consumerAccount = accounts[1]
     stakerAccount = accounts[2]
 ```
+
 Again, lets console log the values so that we can check that they have been saved properly
+
 ```Typescript
     console.log(`Publisher account address: ${publisherAccount}`)
     console.log(`Consumer account address: ${consumerAccount}`)
@@ -256,25 +269,28 @@ Again, lets console log the values so that we can check that they have been save
       web3.utils.toWei('1000')
     )
 -->
-  
+
 ```
 
-  ### 5.2 Next, lets get the address of the deployed contracts
+### 5.2 Next, lets get the address of the deployed contracts
+
 ```Typescript
     addresses = getAddresses()
-  
+
 ```
 
-  ### 5.3 We send some OCEAN to consumer and staker accounts
+### 5.3 We send some OCEAN to consumer and staker accounts
+
 ```Typescript
     transfer(web3, config, publisherAccount, addresses.Ocean, consumerAccount, '100')
     transfer(web3, config, publisherAccount, addresses.Ocean, stakerAccount, '100')
-  
+
 ```
 
 ## 6. Publish Data NFT and a Datatoken with a fixed rate exchange
 
-  ### 6.1 Publish a dataset (create NFT + Datatoken) with a fixed rate exchange
+### 6.1 Publish a dataset (create NFT + Datatoken) with a fixed rate exchange
+
 ```Typescript
     const factory = new NftFactory(addresses.ERC721Factory, web3)
 
@@ -323,21 +339,26 @@ Again, lets console log the values so that we can check that they have been save
     freId = tx.events.NewFixedRate.returnValues.exchangeId
 
 ```
+
 Now let's console log each of those values to check everything is working
+
 ```Typescript
     console.log(`Fixed rate exchange NFT address: ${freNftAddress}`)
     console.log(`Fixed rate exchange Datatoken address: ${freDatatokenAddress}`)
     console.log(`Fixed rate exchange address: ${freAddress}`)
     console.log(`Fixed rate exchange Id: ${freId}`)
-  
+
 ```
 
-  ### 6.2 Set metadata in the fixed rate exchange NFT
+### 6.2 Set metadata in the fixed rate exchange NFT
+
 ```Typescript
     const nft = new Nft(web3)
 
 ```
+
 Now we are going to update the ddo and set the did
+
 ```Typescript
     DDO.chainId = await web3.eth.getChainId()
     DDO.id =
@@ -346,7 +367,9 @@ Now we are going to update the ddo and set the did
     DDO.nftAddress = freNftAddress
 
 ```
+
 Next, let's encrypt the file(s) using provider
+
 ```Typescript
     ASSET_URL.datatokenAddress = freDatatokenAddress
     ASSET_URL.nftAddress = freNftAddress
@@ -355,7 +378,9 @@ Next, let's encrypt the file(s) using provider
     DDO.services[0].datatokenAddress = freDatatokenAddress
 
 ```
+
 Now let's console log the DID to check everything is working
+
 ```Typescript
     console.log(`DID: ${DDO.id}`)
 
@@ -375,20 +400,24 @@ Now let's console log the DID to check everything is working
   })
 ```
 
-  ### 6.3 Marketplace displays fixed rate asset for sale
+### 6.3 Marketplace displays fixed rate asset for sale
+
 ```Typescript
     const fixedRate = new FixedRateExchange(freAddress, web3)
     const oceanAmount = await (
       await fixedRate.calcBaseInGivenDatatokensOut(freId, '1')
     ).baseTokenAmount
 ```
+
 Now that the market has fetched those values it can display the asset on the front end. In our case we will just console log the results:
+
 ```Typescript
     console.log(`Price of 1 ${FRE_NFT_SYMBOL} is ${oceanAmount} OCEAN`)
-  
+
 ```
 
-  ### 6.4 Consumer buys a fixed rate asset data asset, and downloads it
+### 6.4 Consumer buys a fixed rate asset data asset, and downloads it
+
 ```Typescript
     const datatoken = new Datatoken(web3)
     const DATATOKEN_AMOUNT = '10000'
@@ -398,7 +427,9 @@ Now that the market has fetched those values it can display the asset on the fro
     const consumerETHBalance = await web3.eth.getBalance(consumerAccount)
 
 ```
+
 Let's do a quick check of the consumer ETH balance before the swap
+
 ```Typescript
     console.log(`Consumer ETH balance: ${consumerETHBalance}`)
     let consumerOCEANBalance = await balance(web3, addresses.Ocean, consumerAccount)
@@ -407,7 +438,9 @@ Let's do a quick check of the consumer ETH balance before the swap
     console.log(`Consumer ${FRE_NFT_SYMBOL} balance before swap: ${consumerDTBalance}`)
 
 ```
+
 Before we call the contract we have to call `approve` so that the contract can move our tokens. This is standard when using any ERC20 Datatokens
+
 ```Typescript
     await approve(web3, config, consumerAccount, addresses.Ocean, freAddress, '100')
     await approve(
@@ -421,7 +454,9 @@ Before we call the contract we have to call `approve` so that the contract can m
 
     const fixedRate = new FixedRateExchange(freAddress, web3)
 ```
+
 Now we can make the contract call
+
 ```Typescript
     await fixedRate.buyDatatokens(consumerAccount, freId, '1', '2')
 
@@ -434,7 +469,9 @@ Now we can make the contract call
     assert(resolvedDDO, 'Cannot fetch DDO from Aquarius')
 
 ```
+
 Next, we need to initialize the provider
+
 ```Typescript
     const initializeData = await ProviderInstance.initialize(
       resolvedDDO.id,
@@ -456,7 +493,9 @@ Next, we need to initialize the provider
     }
 
 ```
+
 Lets now make the payment
+
 ```Typescript
     const tx = await datatoken.startOrder(
       freDatatokenAddress,
@@ -466,7 +505,9 @@ Lets now make the payment
       providerFees
     )
 ```
+
 Now we can get the url
+
 ```Typescript
     const downloadURL = await ProviderInstance.getDownloadUrl(
       DDO.id,
@@ -479,7 +520,9 @@ Now we can get the url
     )
 
 ```
+
 Lets check that the download URL was successfully received
+
 ```Typescript
     console.log(`Download URL: ${downloadURL}`)
 
@@ -494,12 +537,13 @@ Lets check that the download URL was successfully received
     } catch (e) {
       assert.fail('Download failed')
     }
-  
+
 ```
 
 ## 7. Publish Data NFT and a Datatoken with a dispenser
 
-  ### 7.1 Publish a dataset (create NFT + Datatoken) with a dispenser
+### 7.1 Publish a dataset (create NFT + Datatoken) with a dispenser
+
 ```Typescript
     const factory = new NftFactory(addresses.ERC721Factory, web3)
 
@@ -541,20 +585,25 @@ Lets check that the download URL was successfully received
     dispenserDatatokenAddress = tx.events.TokenCreated.returnValues[0]
     dispenserAddress = tx.events.DispenserCreated.returnValues[0]
 ```
+
 Lets check that we managed to received all of those values without any problems
+
 ```Typescript
     console.log(`Dispenser NFT address: ${dispenserNftAddress}`)
     console.log(`Dispenser Datatoken address: ${dispenserDatatokenAddress}`)
     console.log(`Dispenser address: ${dispenserAddress}`)
-  
+
 ```
 
-  ### 7.2 Set metadata in the dispenser NFT
+### 7.2 Set metadata in the dispenser NFT
+
 ```Typescript
     const nft = new Nft(web3)
 
 ```
+
 Lets start by updating the ddo and setting the did
+
 ```Typescript
     DDO.chainId = await web3.eth.getChainId()
     DDO.id =
@@ -563,7 +612,9 @@ Lets start by updating the ddo and setting the did
     DDO.nftAddress = dispenserNftAddress
 
 ```
+
 Now we need to encrypt file(s) using provider
+
 ```Typescript
     ASSET_URL.datatokenAddress = dispenserDatatokenAddress
     ASSET_URL.nftAddress = dispenserNftAddress
@@ -586,10 +637,11 @@ Now we need to encrypt file(s) using provider
       encryptedDDO,
       '0x' + metadataHash
     )
-  
+
 ```
 
-  ### 7.3 Consumer gets a dispenser data asset, and downloads it
+### 7.3 Consumer gets a dispenser data asset, and downloads it
+
 ```Typescript
     const datatoken = new Datatoken(web3)
     const dispenser = new Dispenser(addresses.Dispenser, web3)
@@ -618,7 +670,9 @@ Now we need to encrypt file(s) using provider
     const resolvedDDO = await aquarius.waitForAqua(DDO.id)
     assert(resolvedDDO, 'Cannot fetch DDO from Aquarius')
 ```
+
 At this point we need to encrypt file(s) using provider
+
 ```Typescript
     const initializeData = await ProviderInstance.initialize(
       resolvedDDO.id,
@@ -639,7 +693,9 @@ At this point we need to encrypt file(s) using provider
       validUntil: initializeData.providerFee.validUntil
     }
 ```
+
 Now we need to make the payment
+
 ```Typescript
     const tx = await datatoken.startOrder(
       dispenserDatatokenAddress,
@@ -649,7 +705,9 @@ Now we need to make the payment
       providerFees
     )
 ```
+
 Now we can get the download URL
+
 ```Typescript
     const downloadURL = await ProviderInstance.getDownloadUrl(
       DDO.id,
@@ -661,7 +719,9 @@ Now we can get the download URL
       web3
     )
 ```
+
 Let's check we received the download URL ok
+
 ```Typescript
     console.log(`Download URL: ${downloadURL}`)
 
@@ -674,11 +734,11 @@ Let's check we received the download URL ok
     } catch (e) {
       assert.fail('Download failed')
     }
-  
+
 ```
 
-
 ## Editing this file
+
 Please note that CodeExamples.md is an autogenerated file, you should not edit it directly.
 Updates should be done in `test/integration/CodeExamples.test.ts` and all markdown should have three forward slashes before it
 e.g. `/// # H1 Title`
