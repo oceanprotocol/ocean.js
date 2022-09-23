@@ -27,12 +27,14 @@
     "changelog": "auto-changelog -p",
     "prepublishOnly": "npm run build",
     "mocha": "TS_NODE_PROJECT='./test/tsconfig.json' mocha --config=test/.mocharc.json --node-env=test --exit",
+    "test": "npm run lint && npm run test:unit && npm run test:integration",
     "test:unit": "npm run mocha -- 'test/unit/**/*.test.ts'",
     "test:unit:cover": "nyc --report-dir coverage/unit --exclude 'src/@types/**/*' npm run test:unit",
     "test:integration": "npm run mocha -- 'test/integration/**/*.test.ts'",
     "test:integration:cover": "nyc --report-dir coverage/integration --no-clean npm run test:integration",
-    "create:guide": "./scripts/createCodeExamples.sh",
-    "commit:guide": "./scripts/commitChanges.sh"
+    "create:guide": "./scripts/createCodeExamples.sh test/integration/CodeExamples.test.ts",
+    "create:guidec2d": "./scripts/createCodeExamples.sh test/integration/C2dExamples.test.ts",
+    "commit:guides": "./scripts/commitChanges.sh"
   },
   "repository": {
     "type": "git",
