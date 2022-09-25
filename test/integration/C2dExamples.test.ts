@@ -228,7 +228,7 @@ async function handleOrder(
 /// ```
 
 /// <!--
-describe('Compute flow tests', async () => {
+describe('Compute to date example tests', async () => {
   /// -->
 
   /// Now we define the variables which we will need later
@@ -633,7 +633,10 @@ describe('Compute flow tests', async () => {
       providerUrl,
       consumerAccount
     )
-
+    console.log(
+      'compute examples initializeCompute result = ',
+      providerInitializeComputeResults
+    )
     assert(
       !('error' in providerInitializeComputeResults.algorithm),
       'Cannot order algorithm'
