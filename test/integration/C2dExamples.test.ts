@@ -329,7 +329,8 @@ describe('Compute to date example tests', async () => {
           entrypoint: 'node $ALGO',
           image: 'ubuntu',
           tag: 'latest',
-          checksum: '44e10daa6637893f4276bb8d7301eb35306ece50f61ca34dcab550'
+          checksum:
+            'sha256:2d7ecc9c5e08953d586a6e50c29b91479a48f69ac1ba1f9dc0420d18a728dfc5'
         }
       }
     },
