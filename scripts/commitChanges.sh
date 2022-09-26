@@ -33,7 +33,7 @@ else
     echo "ComputeExamples.md file has been changed. Committing changes"
     # Stage the file, commit and push
     git status
-    git add C2DExamples.md
+    git add ComputeExamples.md
     git commit -m "Updating ComputeExamples.md"
     branch=${GITHUB_HEAD_REF#refs/heads/}
     echo Pushing changes to branch: ${branch}
