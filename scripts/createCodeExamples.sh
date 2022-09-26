@@ -7,11 +7,21 @@ if [ ! -f "$inputfile" ]; then
   exit 1
 fi
 
+echo "File $inputfile found"
+inputesize=$(md5sum $inputfile)
+echo $inputesize
+
 # We get the path to the output file
 outputfile="$(basename -a -s .test.js $inputfile).md"
 
+echo "Generated output $outputfile "
+outputsize=$(md5sum $outputfile)
+echo $outputsize
+
 # Create markdown file
 cp $inputfile $outputfile
+
+echo "after copy into $outputfile"
 
 # Parameters of sed command depending on the OS
 if [[ $(uname) == 'Darwin' ]]; then
@@ -40,3 +50,7 @@ eval "sed $params \"s/describe('Simple Publish & Consume Flow', async () => {//\
 eval "sed $params \"s/it('/\#\#\# /\" $outputfile"
 eval "sed $params \"s/', async () => {//\" $outputfile"
 eval "sed $params \"s/before(async () => {//\" $outputfile"
+
+echo "final version of $outputfile"
+finalsize=$(md5sum $outputfile)
+echo $finalsize
