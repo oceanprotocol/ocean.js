@@ -186,7 +186,7 @@ const ALGORITHM_ASSET_URL: Files = {
   files: [
     {
       type: 'url',
-      url: 'https://raw.githubusercontent.com/oceanprotocol/test-algorithm/master/Typescript/algo.js',
+      url: 'https://raw.githubusercontent.com/oceanprotocol/testdatasets/main/shs_dataset_test.txt',
       method: 'GET'
     }
   ]
