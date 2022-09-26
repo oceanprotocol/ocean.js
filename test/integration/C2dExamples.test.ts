@@ -95,7 +95,7 @@
 /// Install dependencies running the following command in your terminal:
 
 /// ```bash
-/// npm install @oceanprotocol/lib crypto-js web3 typescript @types/node ts-node
+/// npm install @oceanprotocol/lib crypto-js web3 web3-utils typescript @types/node ts-node
 /// ```
 
 /// ## 4. Import dependencies and add variables and constants
@@ -107,6 +107,7 @@
 /// ```Typescript
 import { assert } from 'chai'
 import { SHA256 } from 'crypto-js'
+import { AbiItem } from 'web3-utils'
 import {
   ProviderInstance,
   Aquarius,
@@ -125,7 +126,9 @@ import {
   Files,
   DDO,
   NftCreateData,
-  DatatokenCreateParams
+  DatatokenCreateParams,
+  calculateEstimatedGas,
+  sendTx
 } from '../../src'
 import { getAddresses, getTestConfig, web3 } from '../config'
 
@@ -161,6 +164,213 @@ import { getAddresses, getTestConfig, web3 } from '../config'
 ///   )
 ///   return data.development
 /// }
+/// ```
+
+///  We will need two files to publish, one as Dataset and one as Algorithm, so here we define the files that we intend to publish.
+/// ```Typescript
+const DATASET_ASSET_URL: Files = {
+  datatokenAddress: '0x0',
+  nftAddress: '0x0',
+  files: [
+    {
+      type: 'url',
+      url: 'https://raw.githubusercontent.com/oceanprotocol/testdatasets/main/shs_dataset_test.txt',
+      method: 'GET'
+    }
+  ]
+}
+
+const ALGORITHM_ASSET_URL: Files = {
+  datatokenAddress: '0x0',
+  nftAddress: '0x0',
+  files: [
+    {
+      type: 'url',
+      url: 'https://raw.githubusercontent.com/oceanprotocol/test-algorithm/master/Typescript/algo.js',
+      method: 'GET'
+    }
+  ]
+}
+/// ```
+
+/// Next, we define the metadata for the Dataset and Algorithm that will describe our data assets. This is what we call the DDOs
+/// ```Typescript
+const DATASET_DDO: DDO = {
+  '@context': ['https://w3id.org/did/v1'],
+  id: 'id:op:efba17455c127a885ec7830d687a8f6e64f5ba559f8506f8723c1f10f05c049c',
+  version: '4.1.0',
+  chainId: 4,
+  nftAddress: '0x0',
+  metadata: {
+    created: '2021-12-20T14:35:20Z',
+    updated: '2021-12-20T14:35:20Z',
+    type: 'dataset',
+    name: 'dataset-name',
+    description: 'Ocean protocol test dataset description',
+    author: 'oceanprotocol-team',
+    license: 'https://market.oceanprotocol.com/terms',
+    additionalInformation: {
+      termsAndConditions: true
+    }
+  },
+  services: [
+    {
+      id: 'notAnId',
+      type: 'compute',
+      files: '',
+      datatokenAddress: '0xa15024b732A8f2146423D14209eFd074e61964F3',
+      serviceEndpoint: 'https://v4.provider.rinkeby.oceanprotocol.com/',
+      timeout: 300,
+      compute: {
+        publisherTrustedAlgorithmPublishers: [],
+        publisherTrustedAlgorithms: [],
+        allowRawAlgorithm: true,
+        allowNetworkAccess: true
+      }
+    }
+  ]
+}
+
+const ALGORITHM_DDO: DDO = {
+  '@context': ['https://w3id.org/did/v1'],
+  id: 'did:op:efba17455c127a885ec7830d687a8f6e64f5ba559f8506f8723c1f10f05c049c',
+  version: '4.1.0',
+  chainId: 4,
+  nftAddress: '0x0',
+  metadata: {
+    created: '2021-12-20T14:35:20Z',
+    updated: '2021-12-20T14:35:20Z',
+    type: 'algorithm',
+    name: 'algorithm-name',
+    description: 'Ocean protocol test algorithm description',
+    author: 'oceanprotocol-team',
+    license: 'https://market.oceanprotocol.com/terms',
+    additionalInformation: {
+      termsAndConditions: true
+    },
+    algorithm: {
+      language: 'Node.js',
+      version: '1.0.0',
+      container: {
+        entrypoint: 'node $ALGO',
+        image: 'ubuntu',
+        tag: 'latest',
+        checksum:
+          'sha256:2d7ecc9c5e08953d586a6e50c29b91479a48f69ac1ba1f9dc0420d18a728dfc5'
+      }
+    }
+  },
+  services: [
+    {
+      id: 'notAnId',
+      type: 'access',
+      files: '',
+      datatokenAddress: '0xa15024b732A8f2146423D14209eFd074e61964F3',
+      serviceEndpoint: 'https://v4.provider.rinkeby.oceanprotocol.com',
+      timeout: 300
+    }
+  ]
+}
+/// ```
+
+/// Now we define the variables which we will need later
+/// ```Typescript
+let config: Config
+let aquarius: Aquarius
+let datatoken: Datatoken
+let providerUrl: string
+let publisherAccount: string
+let consumerAccount: string
+let addresses: any
+let computeEnvs
+
+let datasetId
+let algorithmId
+let resolvedDatasetDdo
+let resolvedAlgorithmDdo
+
+let computeJobId: string
+/// ```
+
+/// Add a `createAsset()`function.
+/// ```Typescript
+async function createAsset(
+  name: string,
+  symbol: string,
+  owner: string,
+  assetUrl: any,
+  ddo: any,
+  providerUrl: string
+) {
+  /// ```Typescript
+  const nft = new Nft(web3)
+  const Factory = new NftFactory(addresses.ERC721Factory, web3)
+
+  /// ```
+  /// Now we update the DDO and set the right did
+  /// ```Typescript
+  const chain = await web3.eth.getChainId()
+  ddo.chainId = parseInt(chain.toString(10))
+  const nftParamsAsset: NftCreateData = {
+    name,
+    symbol,
+    templateIndex: 1,
+    tokenURI: 'aaa',
+    transferable: true,
+    owner
+  }
+  const datatokenParams: DatatokenCreateParams = {
+    templateIndex: 1,
+    cap: '100000',
+    feeAmount: '0',
+    paymentCollector: ZERO_ADDRESS,
+    feeToken: ZERO_ADDRESS,
+    minter: owner,
+    mpFeeAddress: ZERO_ADDRESS
+  }
+  /// ```
+  /// Now we can make the contract call createNftWithDatatoken
+  /// ```Typescript
+  const result = await Factory.createNftWithDatatoken(
+    owner,
+    nftParamsAsset,
+    datatokenParams
+  )
+
+  const nftAddress = result.events.NFTCreated.returnValues[0]
+  const datatokenAddressAsset = result.events.TokenCreated.returnValues[0]
+  ddo.nftAddress = web3.utils.toChecksumAddress(nftAddress)
+  /// ```
+  /// Next we encrypt the file or files using Ocean Provider. The provider is an off chain proxy built specifically for this task
+  /// ```Typescript
+  assetUrl.datatokenAddress = datatokenAddressAsset
+  assetUrl.nftAddress = ddo.nftAddress
+  let providerResponse = await ProviderInstance.encrypt(assetUrl, providerUrl)
+  ddo.services[0].files = await providerResponse
+  ddo.services[0].datatokenAddress = datatokenAddressAsset
+  ddo.services[0].serviceEndpoint = providerUrl
+  /// ```
+  /// Next we update ddo and set the right did
+  /// ```Typescript
+  ddo.nftAddress = web3.utils.toChecksumAddress(nftAddress)
+  ddo.id =
+    'did:op:' + SHA256(web3.utils.toChecksumAddress(nftAddress) + chain.toString(10))
+  providerResponse = await ProviderInstance.encrypt(ddo, providerUrl)
+  const encryptedResponse = await providerResponse
+  const validateResult = await aquarius.validate(ddo)
+  assert(validateResult.valid, 'Could not validate metadata')
+  await nft.setMetadata(
+    nftAddress,
+    owner,
+    0,
+    providerUrl,
+    '',
+    '0x2',
+    encryptedResponse,
+    validateResult.hash
+  )
+  return ddo.id
+}
 /// ```
 
 /// Add a `handleOrder()`function.
@@ -231,133 +441,20 @@ async function handleOrder(
 describe('Compute to date example tests', async () => {
   /// -->
 
-  /// Now we define the variables which we will need later
-  /// ```Typescript
-  let config: Config
-  let aquarius: Aquarius
-  let providerUrl: string
-  let publisherAccount: string
-  let consumerAccount: string
-  let addresses: any
-  let datasetNftAddress: string
-  let datasetDatatokenAddress: string
-  let algorithmNftAddress: string
-  let algorithmDatatokenAddress: string
-  let computeJobId: string
-  /// ```
-
-  ///  We will need two files to publish, one as Dataset and one as Algorithm, so here we define the files that we intend to publish.
-  /// ```Typescript
-  const DATASET_ASSET_URL: Files = {
-    datatokenAddress: '0x0',
-    nftAddress: '0x0',
-    files: [
-      {
-        type: 'url',
-        url: 'https://raw.githubusercontent.com/oceanprotocol/testdatasets/main/shs_dataset_test.txt',
-        method: 'GET'
-      }
-    ]
-  }
-
-  const ALGORITHM_ASSET_URL: Files = {
-    datatokenAddress: '0x0',
-    nftAddress: '0x0',
-    files: [
-      {
-        type: 'url',
-        url: 'https://raw.githubusercontent.com/oceanprotocol/test-algorithm/master/Typescript/algo.js',
-        method: 'GET'
-      }
-    ]
-  }
-  /// ```
-
-  /// Next, we define the metadata for the Dataset and Algorithm that will describe our data assets. This is what we call the DDOs
-  /// ```Typescript
-  const DATASET_DDO: DDO = {
-    '@context': ['https://w3id.org/did/v1'],
-    id: '',
-    version: '4.1.0',
-    chainId: 4,
-    nftAddress: '0x0',
-    metadata: {
-      created: '2021-12-20T14:35:20Z',
-      updated: '2021-12-20T14:35:20Z',
-      type: 'dataset',
-      name: 'dataset-name',
-      description: 'Ocean protocol test dataset description',
-      author: 'oceanprotocol-team',
-      license: 'MIT'
-    },
-    services: [
-      {
-        id: 'testFakeId',
-        type: 'compute',
-        files: '',
-        datatokenAddress: '0x0',
-        serviceEndpoint: 'https://v4.provider.rinkeby.oceanprotocol.com/',
-        timeout: 60,
-        compute: {
-          publisherTrustedAlgorithmPublishers: [],
-          publisherTrustedAlgorithms: [],
-          allowRawAlgorithm: true,
-          allowNetworkAccess: true
-        }
-      }
-    ]
-  }
-
-  const ALGORITHM_DDO: DDO = {
-    '@context': ['https://w3id.org/did/v1'],
-    id: '',
-    version: '4.1.0',
-    chainId: 4,
-    nftAddress: '0x0',
-    metadata: {
-      created: '2021-12-20T14:35:20Z',
-      updated: '2021-12-20T14:35:20Z',
-      type: 'algorithm',
-      name: 'algorithm-name',
-      description: 'Ocean protocol test algorithm description',
-      author: 'oceanprotocol-team',
-      license: 'MIT',
-      algorithm: {
-        language: 'Node.js',
-        version: '1.0.0',
-        container: {
-          entrypoint: 'node $ALGO',
-          image: 'ubuntu',
-          tag: 'latest',
-          checksum:
-            'sha256:2d7ecc9c5e08953d586a6e50c29b91479a48f69ac1ba1f9dc0420d18a728dfc5'
-        }
-      }
-    },
-    services: [
-      {
-        id: 'testFakeId',
-        type: 'access',
-        files: '',
-        datatokenAddress: '0x0',
-        serviceEndpoint: 'https://v4.provider.rinkeby.oceanprotocol.com/',
-        timeout: 60
-      }
-    ]
-  }
-  /// ```
-
   /// We load the configuration:
   /// ```Typescript
   before(async () => {
     config = await getTestConfig(web3)
+    addresses = getAddresses()
     aquarius = new Aquarius(config.metadataCacheUri)
     providerUrl = config.providerUri
+    datatoken = new Datatoken(web3)
     /// ```
     /// As we go along it's a good idea to console log the values so that you check they are right
     /// ```Typescript
     console.log(`Aquarius URL: ${config.metadataCacheUri}`)
     console.log(`Provider URL: ${providerUrl}`)
+    console.log(`Deployed contracts address: ${addresses}`)
   }) ///
   /// ```
 
@@ -375,9 +472,38 @@ describe('Compute to date example tests', async () => {
   }) ///
   /// ```
 
-  it('5.2 Get the address of the deployed contracts', async () => {
+  it('5.2 Mint OCEAN to publisher account', async () => {
     /// ```Typescript
-    addresses = getAddresses()
+    const minAbi = [
+      {
+        constant: false,
+        inputs: [
+          { name: 'to', type: 'address' },
+          { name: 'value', type: 'uint256' }
+        ],
+        name: 'mint',
+        outputs: [{ name: '', type: 'bool' }],
+        payable: false,
+        stateMutability: 'nonpayable',
+        type: 'function'
+      }
+    ] as AbiItem[]
+    const tokenContract = new web3.eth.Contract(minAbi, addresses.Ocean)
+    const estGas = await calculateEstimatedGas(
+      publisherAccount,
+      tokenContract.methods.mint,
+      publisherAccount,
+      web3.utils.toWei('1000')
+    )
+    await sendTx(
+      publisherAccount,
+      estGas,
+      web3,
+      1,
+      tokenContract.methods.mint,
+      publisherAccount,
+      web3.utils.toWei('1000')
+    )
   }) ///
   /// ```
 
@@ -389,183 +515,39 @@ describe('Compute to date example tests', async () => {
 
   /// ## 6. Publish a dataset (Data NFT and Datatoken)
 
-  it('6.1 Publish a dataset (create NFT + Datatoken)', async () => {
+  it('6.1 Publish a dataset (create NFT + Datatoken) and set dataset metadata', async () => {
     /// ```Typescript
-    const factory = new NftFactory(addresses.ERC721Factory, web3)
-
-    const nftParams: NftCreateData = {
-      name: 'DATA 1',
-      symbol: 'D1',
-      templateIndex: 1,
-      tokenURI: '',
-      transferable: true,
-      owner: publisherAccount
-    }
-
-    const datatokenParams: DatatokenCreateParams = {
-      templateIndex: 1,
-      cap: '100000',
-      feeAmount: '0',
-      paymentCollector: ZERO_ADDRESS,
-      feeToken: ZERO_ADDRESS,
-      minter: publisherAccount,
-      mpFeeAddress: ZERO_ADDRESS
-    }
-
-    /// ```
-    /// Now we can make the contract call createNftWithErc20
-    /// ```Typescript
-    const tx = await factory.createNftWithDatatoken(
+    datasetId = await createAsset(
+      'D1Min',
+      'D1M',
       publisherAccount,
-      nftParams,
-      datatokenParams
+      DATASET_ASSET_URL,
+      DATASET_DDO,
+      providerUrl
     )
-
-    datasetNftAddress = tx.events.NFTCreated.returnValues[0]
-    datasetDatatokenAddress = tx.events.TokenCreated.returnValues[0]
     /// ```
-    /// Now, we did quite a few things there. Let's check that we successfully published a dataset (create NFT + Datatoken)
+    /// Now, let's check that we successfully published a dataset (create NFT + Datatoken)
     /// ```Typescript
-    console.log(`Dataset NFT address: ${datasetNftAddress}`)
-    console.log(`Dataset Datatoken address: ${datasetDatatokenAddress}`)
-  }) ///
-  /// ```
-
-  it('6.2 Set metadata in the dataset NFT', async () => {
-    /// ```Typescript
-    const nft = new Nft(web3)
-    /// ```
-    /// Now we update the DDO and set the right did
-    /// ```Typescript
-    DATASET_DDO.chainId = await web3.eth.getChainId()
-    DATASET_DDO.id =
-      'did:op:' +
-      SHA256(
-        web3.utils.toChecksumAddress(datasetNftAddress) + DATASET_DDO.chainId.toString(10)
-      )
-    DATASET_DDO.nftAddress = web3.utils.toChecksumAddress(datasetNftAddress)
-    /// ```
-    /// Next we encrypt the file or files using Ocean Provider. The provider is an off chain proxy built specifically for this task
-    /// ```Typescript
-    DATASET_ASSET_URL.datatokenAddress = datasetDatatokenAddress
-    DATASET_ASSET_URL.nftAddress = DATASET_DDO.nftAddress
-    const encryptedFiles = await ProviderInstance.encrypt(DATASET_ASSET_URL, providerUrl)
-    DATASET_DDO.services[0].files = await encryptedFiles
-    DATASET_DDO.services[0].datatokenAddress = datasetDatatokenAddress
-    DATASET_DDO.services[0].serviceEndpoint = providerUrl
-    /// ```
-    /// Now let's console log the result to check everything is working
-    /// ```Typescript
-    console.log(`Dataset DID: ${DATASET_DDO.id}`)
-
-    const providerResponse = await ProviderInstance.encrypt(DATASET_DDO, providerUrl)
-    const encryptedDDO = await providerResponse
-
-    const validateResult = await aquarius.validate(DATASET_DDO)
-    assert(validateResult.valid, 'Could not validate metadata')
-    await nft.setMetadata(
-      datasetNftAddress,
-      publisherAccount,
-      0,
-      providerUrl,
-      '',
-      '0x2',
-      encryptedDDO,
-      validateResult.hash
-    )
+    console.log(`Dataset id: ${datasetId}`)
   }) ///
   /// ```
 
   /// ## 7. Publish an algorithm (Data NFT and Datatoken)
 
-  it('7.1 Publish an algorithm (create NFT + Datatoken)', async () => {
+  it('7.1 Publish an algorithm (create NFT + Datatoken) and set algorithm metadata', async () => {
     /// ```Typescript
-    const factory = new NftFactory(addresses.ERC721Factory, web3)
-
-    const nftParams: NftCreateData = {
-      name: 'ALGO 1',
-      symbol: 'A1',
-      templateIndex: 1,
-      tokenURI: '',
-      transferable: true,
-      owner: publisherAccount
-    }
-
-    const datatokenParams: DatatokenCreateParams = {
-      templateIndex: 1,
-      cap: '100000',
-      feeAmount: '0',
-      paymentCollector: ZERO_ADDRESS,
-      feeToken: ZERO_ADDRESS,
-      minter: publisherAccount,
-      mpFeeAddress: ZERO_ADDRESS
-    }
-
-    /// ```
-    /// Now we can make the contract call createNftWithErc20
-    /// ```Typescript
-    const tx = await factory.createNftWithDatatoken(
+    algorithmId = await createAsset(
+      'D1Min',
+      'D1M',
       publisherAccount,
-      nftParams,
-      datatokenParams
-    )
-
-    algorithmNftAddress = tx.events.NFTCreated.returnValues[0]
-    algorithmDatatokenAddress = tx.events.TokenCreated.returnValues[0]
-    /// ```
-    /// Now, we did quite a few things there. Let's check that we successfully published an algorithm (create NFT + Datatoken)
-    /// ```Typescript
-    console.log(`Algorithm NFT address: ${algorithmNftAddress}`)
-    console.log(`Algorithm Datatoken address: ${algorithmDatatokenAddress}`)
-  }) ///
-  /// ```
-
-  it('7.2 Set metadata in the algorithm NFT', async () => {
-    /// ```Typescript
-    const nft = new Nft(web3)
-    /// ```
-    /// Now we update the DDO and set the right did
-    /// ```Typescript
-    ALGORITHM_DDO.chainId = await web3.eth.getChainId()
-    ALGORITHM_DDO.id =
-      'did:op:' +
-      SHA256(
-        web3.utils.toChecksumAddress(algorithmNftAddress) +
-          ALGORITHM_DDO.chainId.toString(10)
-      )
-    ALGORITHM_DDO.nftAddress = web3.utils.toChecksumAddress(algorithmNftAddress)
-    /// ```
-    /// Next we encrypt the file or files using Ocean Provider. The provider is an off chain proxy built specifically for this task
-    /// ```Typescript
-    ALGORITHM_ASSET_URL.datatokenAddress = algorithmDatatokenAddress
-    ALGORITHM_ASSET_URL.nftAddress = ALGORITHM_DDO.nftAddress
-    const encryptedFiles = await ProviderInstance.encrypt(
       ALGORITHM_ASSET_URL,
+      ALGORITHM_DDO,
       providerUrl
     )
-    ALGORITHM_DDO.services[0].files = await encryptedFiles
-    ALGORITHM_DDO.services[0].datatokenAddress = algorithmDatatokenAddress
-    ALGORITHM_DDO.services[0].serviceEndpoint = providerUrl
     /// ```
-    /// Now let's console log the result to check everything is working
+    /// Now, let's check that we successfully published a algorithm (create NFT + Datatoken)
     /// ```Typescript
-    console.log(`Algorithm DID: ${ALGORITHM_DDO.id}`)
-
-    const providerResponse = await ProviderInstance.encrypt(ALGORITHM_DDO, providerUrl)
-    const encryptedDDO = await providerResponse
-
-    const validateResult = await aquarius.validate(ALGORITHM_DDO)
-    assert(validateResult.valid, 'Could not validate metadata')
-    await nft.setMetadata(
-      algorithmNftAddress,
-      publisherAccount,
-      0,
-      providerUrl,
-      '',
-      '0x2',
-      encryptedDDO,
-      validateResult.hash
-    )
+    console.log(`Algorithm id: ${algorithmId}`)
   }) ///
   /// ```
 
@@ -573,9 +555,9 @@ describe('Compute to date example tests', async () => {
 
   it('8.1 Resolve published datasets and algorithms', async () => {
     /// ```Typescript
-    const resolvedDatasetDdo = await aquarius.waitForAqua(DATASET_DDO.id)
+    resolvedDatasetDdo = await aquarius.waitForAqua(datasetId)
     assert(resolvedDatasetDdo, 'Cannot fetch DDO from Aquarius')
-    const resolvedAlgorithmDdo = await aquarius.waitForAqua(ALGORITHM_DDO.id)
+    resolvedAlgorithmDdo = await aquarius.waitForAqua(algorithmId)
     assert(resolvedAlgorithmDdo, 'Cannot fetch DDO from Aquarius')
   }) ///
   /// ```
@@ -584,11 +566,15 @@ describe('Compute to date example tests', async () => {
 
   it('9.1 Send datatokens to publisher', async () => {
     /// ```Typescript
-    const datatoken = new Datatoken(web3)
-
-    await datatoken.mint(datasetDatatokenAddress, publisherAccount, '10', consumerAccount)
     await datatoken.mint(
-      algorithmDatatokenAddress,
+      resolvedDatasetDdo.services[0].datatokenAddress,
+      publisherAccount,
+      '10',
+      consumerAccount
+    )
+
+    await datatoken.mint(
+      resolvedAlgorithmDdo.services[0].datatokenAddress,
       publisherAccount,
       '10',
       consumerAccount
@@ -596,35 +582,44 @@ describe('Compute to date example tests', async () => {
   }) ///
   /// ```
 
+  /// ## 9. Fetch compute environments from provider
+
+  it('9.1 Fetch compute environments from provider', async () => {
+    /// ```Typescript
+    computeEnvs = await ProviderInstance.getComputeEnvironments(providerUrl)
+    assert(computeEnvs, 'No Compute environments found')
+  }) ///
+  /// ```
+
   /// ## 10. Consumer starts a compute job using a free C2D environment
 
   it('10.1 Start a compute job using a free C2D environment', async () => {
     /// ```Typescript
-    const computeEnvs = await ProviderInstance.getComputeEnvironments(providerUrl)
-    assert(computeEnvs, 'No Compute environments found')
-
-    // we choose the free env
     const computeEnv = computeEnvs.find((ce) => ce.priceMin === 0)
+    /// ```
+    /// let's check the free compute environment
+    /// ```Typescript
     assert(computeEnv, 'Cannot find the free compute env')
+
+    /// ```
+    /// Let's have 5 minute of compute access
+    /// ```Typescript
+    const mytime = new Date()
+    const computeMinutes = 5
+    mytime.setMinutes(mytime.getMinutes() + computeMinutes)
+    const computeValidUntil = Math.floor(mytime.getTime() / 1000)
 
     const assets: ComputeAsset[] = [
       {
-        documentId: DATASET_DDO.id,
-        serviceId: DATASET_DDO.services[0].id
+        documentId: resolvedDatasetDdo.id,
+        serviceId: resolvedDatasetDdo.services[0].id
       }
     ]
-    const dtAddressArray = [DATASET_DDO.services[0].datatokenAddress]
-
+    const dtAddressArray = [resolvedDatasetDdo.services[0].datatokenAddress]
     const algo: ComputeAlgorithm = {
-      documentId: ALGORITHM_DDO.id,
-      serviceId: ALGORITHM_DDO.services[0].id
+      documentId: resolvedAlgorithmDdo.id,
+      serviceId: resolvedAlgorithmDdo.services[0].id
     }
-
-    // let's have 2 minutes of compute access
-    const mytime = new Date()
-    const computeMinutes = 1
-    mytime.setMinutes(mytime.getMinutes() + computeMinutes)
-    const computeValidUntil = Math.floor(mytime.getTime() / 1000)
 
     const providerInitializeComputeResults = await ProviderInstance.initializeCompute(
       assets,
@@ -635,17 +630,13 @@ describe('Compute to date example tests', async () => {
       consumerAccount
     )
     console.log(
-      'compute examples initializeCompute result = ',
+      'compute flow initializeCompute result = ',
       providerInitializeComputeResults
     )
-    assert(
-      !('error' in providerInitializeComputeResults.algorithm),
-      'Cannot order algorithm'
-    )
-
+    assert(!('error' in providerInitializeComputeResults), 'Cannot order algorithm')
     algo.transferTxId = await handleOrder(
       providerInitializeComputeResults.algorithm,
-      ALGORITHM_DDO.services[0].datatokenAddress,
+      resolvedAlgorithmDdo.services[0].datatokenAddress,
       consumerAccount,
       computeEnv.consumerAddress,
       0
@@ -667,6 +658,8 @@ describe('Compute to date example tests', async () => {
       assets[0],
       algo
     )
+    // freeEnvDatasetTxId = assets[0].transferTxId
+    // freeEnvAlgoTxId = algo.transferTxId
     assert(computeJobs, 'Cannot start compute job')
     computeJobId = computeJobs[0].jobId
   }) ///
