@@ -12,8 +12,9 @@ Here are the steps:
 7. [Publish an algorithm (Data NFT and Datatoken)](#-publish-an-algorithm-data-nft-and-datatoken)
 8. [Resolve published datasets and algorithms](#-resolve-published-datasets-and-algorithms)
 9. [Send datatokens to consumer](#-send-datatokens-to-consumer)
-10. [Consumer starts a compute job using a free C2D environment](#-consumer-starts-a-compute-job-using-a-free-c2D-environment)
-10. [Check compute status and get download compute results url](#-check-compute-status-and-get-download-compute-results-url)
+10. [Consumer fetches compute environment](#-consumer-starts-a-compute-job-using-a-free-c2D-environment)
+11. [Consumer starts a compute job using a free C2D environment](#-consumer-starts-a-compute-job-using-a-free-c2D-environment)
+12. [Check compute status and get download compute results url](#-check-compute-status-and-get-download-compute-results-url)
 
 Let's go through each step.
 
@@ -98,9 +99,11 @@ Install dependencies running the following command in your terminal:
 npm install @oceanprotocol/lib crypto-js web3 web3-utils typescript @types/node ts-node
 ```
 
-## 4. Import dependencies and add variables and constants
+## 4. Import dependencies and add variables, constants and helper methods
 
 Now open the `marketplace.ts` file in your text editor.
+
+### 4.1. Dependencies
 
 Start by importing all of the necessary dependencies
 
@@ -134,38 +137,6 @@ import { getAddresses, getTestConfig, web3 } from '@oceanprotocol/lib/dist/test/
 
 ```
 
-We add this code to get the default test configuration:
-
-```Typescript
-const {
-  ConfigHelper,
-  configHelperNetworks
-} = require('@oceanprotocol/lib')
-const Web3 = require('web3')
-const fs = require('fs')
-const { homedir } = require('os')
-
-const web3 = new Web3(process.env.NODE_URI || configHelperNetworks[1].nodeUri)
-
-const getTestConfig = async (web3) => {
-  const config = new ConfigHelper().getConfig(await web3.eth.getChainId())
-  config.providerUri = process.env.PROVIDER_URL || config.providerUri
-  return config
-}
-
-const getAddresses = () => {
-  const data = JSON.parse(
-    // eslint-disable-next-line security/detect-non-literal-fs-filename
-    fs.readFileSync(
-      process.env.ADDRESS_FILE ||
-        `${homedir}/.ocean/ocean-contracts/artifacts/address.json`,
-      'utf8'
-    )
-  )
-  return data.development
-}
-```
-
  We will need two files to publish, one as Dataset and one as Algorithm, so here we define the files that we intend to publish.
 ```Typescript
 const DATASET_ASSET_URL: Files = {
@@ -192,6 +163,8 @@ const ALGORITHM_ASSET_URL: Files = {
   ]
 }
 ```
+
+### 4.2. Constants and variables
 
 Next, we define the metadata for the Dataset and Algorithm that will describe our data assets. This is what we call the DDOs
 ```Typescript
@@ -292,6 +265,10 @@ let resolvedAlgorithmDdo
 let computeJobId: string
 ```
 
+### 4.3 Helper methods
+
+Now we define the helper methods which we will use later to publish the Dataset and Algorithm, and also order them
+
 Add a `createAsset()`function.
 ```Typescript
 async function createAsset(
@@ -306,9 +283,7 @@ async function createAsset(
   const nft = new Nft(web3)
   const Factory = new NftFactory(addresses.ERC721Factory, web3)
 
-```
-Now we update the DDO and set the right did
-```Typescript
+  // Now we update the DDO and set the right did
   const chain = await web3.eth.getChainId()
   ddo.chainId = parseInt(chain.toString(10))
   const nftParamsAsset: NftCreateData = {
@@ -328,9 +303,7 @@ Now we update the DDO and set the right did
     minter: owner,
     mpFeeAddress: ZERO_ADDRESS
   }
-```
-Now we can make the contract call createNftWithDatatoken
-```Typescript
+  // Now we can make the contract call createNftWithDatatoken
   const result = await Factory.createNftWithDatatoken(
     owner,
     nftParamsAsset,
@@ -340,18 +313,16 @@ Now we can make the contract call createNftWithDatatoken
   const nftAddress = result.events.NFTCreated.returnValues[0]
   const datatokenAddressAsset = result.events.TokenCreated.returnValues[0]
   ddo.nftAddress = web3.utils.toChecksumAddress(nftAddress)
-```
-Next we encrypt the file or files using Ocean Provider. The provider is an off chain proxy built specifically for this task
-```Typescript
+
+  // Next we encrypt the file or files using Ocean Provider. The provider is an off chain proxy built specifically for this task
   assetUrl.datatokenAddress = datatokenAddressAsset
   assetUrl.nftAddress = ddo.nftAddress
   let providerResponse = await ProviderInstance.encrypt(assetUrl, providerUrl)
   ddo.services[0].files = await providerResponse
   ddo.services[0].datatokenAddress = datatokenAddressAsset
   ddo.services[0].serviceEndpoint = providerUrl
-```
-Next we update ddo and set the right did
-```Typescript
+
+  // Next we update ddo and set the right did
   ddo.nftAddress = web3.utils.toChecksumAddress(nftAddress)
   ddo.id =
     'did:op:' + SHA256(web3.utils.toChecksumAddress(nftAddress) + chain.toString(10))
@@ -422,21 +393,6 @@ async function handleOrder(
 }
 ```
 
-We will put all the following code inside this function, that will be called when the script is run:
-
-```Typescript
-async function main() {
-  /* all the code goes here */
-}
-///
-main()
-  .then(() => process.exit(0))
-  .catch(error => {
-    console.error(error);
-    process.exit(1);
-  })
-```
-
 <!--
 describe('Compute to date example tests
 -->
@@ -458,7 +414,7 @@ As we go along it's a good idea to console log the values so that you check they
   
 ```
 
-## 5. Initialize accounts and deploy contracts
+## 5. Initialize accounts
   ### 5.1 Initialize accounts
 ```Typescript
     const accounts = await web3.eth.getAccounts()
@@ -556,9 +512,13 @@ Now, let's check that we successfully published a algorithm (create NFT + Datato
   ### 8.1 Resolve published datasets and algorithms
 ```Typescript
     resolvedDatasetDdo = await aquarius.waitForAqua(datasetId)
+<!--
     assert(resolvedDatasetDdo, 'Cannot fetch DDO from Aquarius')
+-->
     resolvedAlgorithmDdo = await aquarius.waitForAqua(algorithmId)
+<!--
     assert(resolvedAlgorithmDdo, 'Cannot fetch DDO from Aquarius')
+-->
   
 ```
 
@@ -582,24 +542,29 @@ Now, let's check that we successfully published a algorithm (create NFT + Datato
   
 ```
 
-## 9. Fetch compute environments from provider
+## 10. Fetch compute environments from provider
 
-  ### 9.1 Fetch compute environments from provider
+  ### 10 Fetch compute environments from provider
 ```Typescript
     computeEnvs = await ProviderInstance.getComputeEnvironments(providerUrl)
+<!--
     assert(computeEnvs, 'No Compute environments found')
+-->
   
 ```
 
-## 10. Consumer starts a compute job using a free C2D environment
+## 11. Consumer starts a compute job using a free C2D environment
 
-  ### 10.1 Start a compute job using a free C2D environment
+  ### 11 Start a compute job using a free C2D environment
 ```Typescript
     const computeEnv = computeEnvs.find((ce) => ce.priceMin === 0)
 ```
 let's check the free compute environment
 ```Typescript
+    console.log('Free compute environment = ', computeEnv)
+<!--
     assert(computeEnv, 'Cannot find the free compute env')
+-->
 
 ```
 Let's have 5 minute of compute access
@@ -629,11 +594,9 @@ Let's have 5 minute of compute access
       providerUrl,
       consumerAccount
     )
-    console.log(
-      'compute flow initializeCompute result = ',
-      providerInitializeComputeResults
-    )
+<!--
     assert(!('error' in providerInitializeComputeResults), 'Cannot order algorithm')
+-->
     algo.transferTxId = await handleOrder(
       providerInitializeComputeResults.algorithm,
       resolvedAlgorithmDdo.services[0].datatokenAddress,
@@ -660,12 +623,14 @@ Let's have 5 minute of compute access
     )
     // freeEnvDatasetTxId = assets[0].transferTxId
     // freeEnvAlgoTxId = algo.transferTxId
+<!--
     assert(computeJobs, 'Cannot start compute job')
+-->
     computeJobId = computeJobs[0].jobId
   
 ```
 
-## 11. Check compute status and get download compute results URL
+## 12. Check compute status and get download compute results URL
   ### 11.1 Check compute status
 ```Typescript
     const jobStatus = await ProviderInstance.computeStatus(
@@ -674,7 +639,9 @@ Let's have 5 minute of compute access
       computeJobId,
       DATASET_DDO.id
     )
+<!--
     assert(jobStatus, 'Cannot retrieve compute status!')
+-->
     console.log(jobStatus)
   
 ```
@@ -689,7 +656,9 @@ Let's have 5 minute of compute access
       computeJobId,
       0
     )
+<!--
     assert(downloadURL, 'Provider getComputeResultUrl failed!')
+-->
     console.log(`Compute results URL: ${downloadURL}`)
   
 ```
