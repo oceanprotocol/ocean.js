@@ -8,13 +8,12 @@
 /// 3. [Install dependencies](#-install-dependencies)
 /// 4. [Import dependencies and add variables and constants](#-import-dependencies-and-add-variables-and-constants)
 /// 5. [Initialize accounts and deploy contracts](#-initialize-accounts-and-deploy-contracts)
-/// 6. [Publish a dataset (Data NFT and Datatoken)](#-publish-a-dataset-data-nft-and-datatoken)
-/// 7. [Publish an algorithm (Data NFT and Datatoken)](#-publish-an-algorithm-data-nft-and-datatoken)
-/// 8. [Resolve published datasets and algorithms](#-resolve-published-datasets-and-algorithms)
-/// 9. [Send datatokens to consumer](#-send-datatokens-to-consumer)
-/// 10. [Consumer fetches compute environment](#-consumer-starts-a-compute-job-using-a-free-c2D-environment)
-/// 11. [Consumer starts a compute job using a free C2D environment](#-consumer-starts-a-compute-job-using-a-free-c2D-environment)
-/// 12. [Check compute status and get download compute results url](#-check-compute-status-and-get-download-compute-results-url)
+/// 6. [Publish a dataset and  an algorithm](#-publish-a-dataset-data-nft-and-datatoken)
+/// 7. [Resolve published datasets and algorithms](#-resolve-published-datasets-and-algorithms)
+/// 8. [Send datatokens to consumer](#-send-datatokens-to-consumer)
+/// 9. [Consumer fetches compute environment](#-consumer-starts-a-compute-job-using-a-free-c2D-environment)
+/// 10. [Consumer starts a compute job using a free C2D environment](#-consumer-starts-a-compute-job-using-a-free-c2D-environment)
+/// 11. [Check compute status and get download compute results url](#-check-compute-status-and-get-download-compute-results-url)
 
 /// Let's go through each step.
 
@@ -34,7 +33,7 @@
 /// ```bash
 /// git clone https://github.com/oceanprotocol/barge.git
 /// cd barge/
-/// ./start_ocean.sh --with-provider2 --no-dashboard
+/// ./start_ocean.sh --with-provider2 --no-dashboard --with-c2d
 /// ```
 
 /// ## 2. Create a new node.js project with Typescript
@@ -42,15 +41,15 @@
 /// Start by creating a new Node.js project. Open a new terminal and enter the following commands:
 
 /// ```bash
-/// mkdir marketplace-quickstart
-/// cd marketplace-quickstart
+/// mkdir compute-quickstart
+/// cd compute-quickstart
 /// npm init
 /// # Answer the questions in the command line prompt
-/// touch marketplace.ts
+/// touch compute.ts
 /// # On linux press CTRL + D to save
 /// ```
 
-/// Next, we need to setup our typescript compiler options. Create a new file called `tsconfig.json` in the root of the `marketplace-quickstart` directory. copy the following content into the file:
+/// Next, we need to setup our typescript compiler options. Create a new file called `tsconfig.json` in the root of the `compute-quickstart` directory. copy the following content into the file:
 
 /// ```json
 /// {
@@ -74,7 +73,7 @@
 ///     "declarationDir": "./d"
 ///   },
 ///   "include": [
-///     "marketplace.ts"
+///     "compute.ts"
 ///   ]
 /// }
 /// ```
@@ -88,7 +87,7 @@
 /// To run your script as we go along, you can use the following command:
 
 /// ```bash
-/// node marketplace.js
+/// node compute.js
 /// ```
 
 /// ## 3. Install dependencies
@@ -101,7 +100,7 @@
 
 /// ## 4. Import dependencies and add variables, constants and helper methods
 
-/// Now open the `marketplace.ts` file in your text editor.
+/// Now open the `compute.ts` file in your text editor.
 
 /// ### 4.1. Dependencies
 
@@ -472,7 +471,7 @@ describe('Compute to date example tests', async () => {
   }) ///
   /// ```
 
-  /// ## 6. Publish a dataset (Data NFT and Datatoken)
+  /// ## 6. Publish assets dataset and algorithm
 
   it('6.1 Publish a dataset (create NFT + Datatoken) and set dataset metadata', async () => {
     /// ```Typescript
@@ -491,9 +490,7 @@ describe('Compute to date example tests', async () => {
   }) ///
   /// ```
 
-  /// ## 7. Publish an algorithm (Data NFT and Datatoken)
-
-  it('7.1 Publish an algorithm (create NFT + Datatoken) and set algorithm metadata', async () => {
+  it('6.2 Publish an algorithm (create NFT + Datatoken) and set algorithm metadata', async () => {
     /// ```Typescript
     algorithmId = await createAsset(
       'D1Min',
@@ -510,9 +507,9 @@ describe('Compute to date example tests', async () => {
   }) ///
   /// ```
 
-  /// ## 8. Resolve published datasets and algorithms
+  /// ## 7. Resolve assets
 
-  it('8.1 Resolve published datasets and algorithms', async () => {
+  it('7.1 Resolve published datasets and algorithms', async () => {
     /// ```Typescript
     resolvedDatasetDdo = await aquarius.waitForAqua(datasetId)
     resolvedAlgorithmDdo = await aquarius.waitForAqua(algorithmId)
@@ -523,9 +520,9 @@ describe('Compute to date example tests', async () => {
     /// -->
   }) ///
 
-  /// ## 9. Send datatokens to consumer
+  /// ## 8. Send datatokens to consumer
 
-  it('9.1 Send datatokens to publisher', async () => {
+  it('8.1 Mint dataset and algorithm datatokens to publisher', async () => {
     /// ```Typescript
     await datatoken.mint(
       resolvedDatasetDdo.services[0].datatokenAddress,
@@ -543,9 +540,9 @@ describe('Compute to date example tests', async () => {
   }) ///
   /// ```
 
-  /// ## 10. Fetch compute environments from provider
+  /// ## 9. Get compute environments
 
-  it('10 Fetch compute environments from provider', async () => {
+  it('9.1 Fetch compute environments from provider', async () => {
     /// ```Typescript
     computeEnvs = await ProviderInstance.getComputeEnvironments(providerUrl)
     /// ```
@@ -554,9 +551,9 @@ describe('Compute to date example tests', async () => {
     /// -->
   }) ///
 
-  /// ## 11. Consumer starts a compute job using a free C2D environment
+  /// ## 10. Consumer starts a compute job
 
-  it('11 Start a compute job using a free C2D environment', async () => {
+  it('10.1 Start a compute job using a free C2D environment', async () => {
     /// let's check the free compute environment
     /// ```Typescript
     const computeEnv = computeEnvs.find((ce) => ce.priceMin === 0)
@@ -626,13 +623,15 @@ describe('Compute to date example tests', async () => {
     /// <!--
     assert(computeJobs, 'Cannot start compute job')
     /// -->
+    /// Let's save the compute job it, we re going to use later
     /// ```Typescript
     computeJobId = computeJobs[0].jobId
   }) ///
   /// ```
 
-  /// ## 12. Check compute status and get download compute results URL
+  /// ## 11. Check compute status and get download compute results URL
   it('11.1 Check compute status', async () => {
+    /// You can also add various delays so you see the various states of the compute job
     /// ```Typescript
     const jobStatus = await ProviderInstance.computeStatus(
       providerUrl,
@@ -644,8 +643,9 @@ describe('Compute to date example tests', async () => {
     /// <!--
     assert(jobStatus, 'Cannot retrieve compute status!')
     /// -->
+    /// Now, let's see the current status of the previously started computer job
     /// ```Typescript
-    console.log(jobStatus)
+    console.log('Current status of the compute job: ', jobStatus)
   }) ///
   /// ```
 
@@ -663,6 +663,7 @@ describe('Compute to date example tests', async () => {
     /// <!--
     assert(downloadURL, 'Provider getComputeResultUrl failed!')
     /// -->
+    /// Let's check the compute results url for the specified index
     /// ```Typescript
     console.log(`Compute results URL: ${downloadURL}`)
   }) ///
@@ -670,6 +671,6 @@ describe('Compute to date example tests', async () => {
 }) ///
 
 /// ## Editing this file
-/// Please note that C2DExamples.md is an autogenerated file, you should not edit it directly.
-/// Updates should be done in `test/integration/C2DExamples.test.ts` and all markdown should have three forward slashes before it
+/// Please note that ComputeExamples.md is an autogenerated file, you should not edit it directly.
+/// Updates should be done in `test/integration/ComputeExamples.test.ts` and all markdown should have three forward slashes before it
 /// e.g. `/// # H1 Title`
