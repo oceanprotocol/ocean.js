@@ -110,8 +110,8 @@ import {
   ZERO_ADDRESS,
   calculateEstimatedGas,
   sendTx
-} from '../../src'
-import { getAddresses, getTestConfig, web3 } from '../config'
+} from '@oceanprotocol/lib'
+import { getAddresses, getTestConfig, web3 } from '@oceanprotocol/lib/dist/test/config'
 ```
 
 <!--
