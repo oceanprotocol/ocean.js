@@ -137,6 +137,8 @@ import { getAddresses, getTestConfig, web3 } from '../config'
 
 /// ```
 
+/// ### 4.2. Constants and variables
+
 ///  We will need two files to publish, one as Dataset and one as Algorithm, so here we define the files that we intend to publish.
 /// ```Typescript
 const DATASET_ASSET_URL: Files = {
@@ -163,8 +165,6 @@ const ALGORITHM_ASSET_URL: Files = {
   ]
 }
 /// ```
-
-/// ### 4.2. Constants and variables
 
 /// Next, we define the metadata for the Dataset and Algorithm that will describe our data assets. This is what we call the DDOs
 /// ```Typescript
@@ -279,7 +279,6 @@ async function createAsset(
   ddo: any,
   providerUrl: string
 ) {
-  /// ```Typescript
   const nft = new Nft(web3)
   const Factory = new NftFactory(addresses.ERC721Factory, web3)
 
@@ -329,7 +328,11 @@ async function createAsset(
   providerResponse = await ProviderInstance.encrypt(ddo, providerUrl)
   const encryptedResponse = await providerResponse
   const validateResult = await aquarius.validate(ddo)
+  /// ```
+  /// <!--
   assert(validateResult.valid, 'Could not validate metadata')
+  /// -->
+  /// ```Typescript
   await nft.setMetadata(
     nftAddress,
     owner,
@@ -512,10 +515,13 @@ describe('Compute to date example tests', async () => {
   it('8.1 Resolve published datasets and algorithms', async () => {
     /// ```Typescript
     resolvedDatasetDdo = await aquarius.waitForAqua(datasetId)
+    /// ```
     /// <!--
     assert(resolvedDatasetDdo, 'Cannot fetch DDO from Aquarius')
     /// -->
+    /// ```Typescript
     resolvedAlgorithmDdo = await aquarius.waitForAqua(algorithmId)
+    /// ```
     /// <!--
     assert(resolvedAlgorithmDdo, 'Cannot fetch DDO from Aquarius')
     /// -->
@@ -547,6 +553,7 @@ describe('Compute to date example tests', async () => {
   it('10 Fetch compute environments from provider', async () => {
     /// ```Typescript
     computeEnvs = await ProviderInstance.getComputeEnvironments(providerUrl)
+    /// ```
     /// <!--
     assert(computeEnvs, 'No Compute environments found')
     /// -->
@@ -562,6 +569,7 @@ describe('Compute to date example tests', async () => {
     /// let's check the free compute environment
     /// ```Typescript
     console.log('Free compute environment = ', computeEnv)
+    /// ```
     /// <!--
     assert(computeEnv, 'Cannot find the free compute env')
     /// -->
@@ -594,9 +602,11 @@ describe('Compute to date example tests', async () => {
       providerUrl,
       consumerAccount
     )
+    /// ```
     /// <!--
     assert(!('error' in providerInitializeComputeResults), 'Cannot order algorithm')
     /// -->
+    /// ```Typescript
     algo.transferTxId = await handleOrder(
       providerInitializeComputeResults.algorithm,
       resolvedAlgorithmDdo.services[0].datatokenAddress,
@@ -623,9 +633,11 @@ describe('Compute to date example tests', async () => {
     )
     // freeEnvDatasetTxId = assets[0].transferTxId
     // freeEnvAlgoTxId = algo.transferTxId
+    /// ```
     /// <!--
     assert(computeJobs, 'Cannot start compute job')
     /// -->
+    /// ```Typescript
     computeJobId = computeJobs[0].jobId
   }) ///
   /// ```
@@ -639,9 +651,11 @@ describe('Compute to date example tests', async () => {
       computeJobId,
       DATASET_DDO.id
     )
+    /// ```
     /// <!--
     assert(jobStatus, 'Cannot retrieve compute status!')
     /// -->
+    /// ```Typescript
     console.log(jobStatus)
   }) ///
   /// ```
@@ -656,9 +670,11 @@ describe('Compute to date example tests', async () => {
       computeJobId,
       0
     )
+    /// ```
     /// <!--
     assert(downloadURL, 'Provider getComputeResultUrl failed!')
     /// -->
+    /// ```Typescript
     console.log(`Compute results URL: ${downloadURL}`)
   }) ///
   /// ```
