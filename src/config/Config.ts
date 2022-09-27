@@ -124,7 +124,7 @@ export class Config {
   chainId: number
 
   /**
-   * Network name ex: mainnet, rinkeby, polygon
+   * Network name ex: mainnet, goerli, polygon
    * @type {string}
    */
   network: string

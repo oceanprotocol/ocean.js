@@ -110,8 +110,8 @@ import {
   ZERO_ADDRESS,
   calculateEstimatedGas,
   sendTx
-} from '../../src'
-import { getAddresses, getTestConfig, web3 } from '../config'
+} from '@oceanprotocol/lib'
+import { getAddresses, getTestConfig, web3 } from '@oceanprotocol/lib/dist/test/config'
 ```
 
 <!--
@@ -183,7 +183,7 @@ Next, we define the metadata that will describe our data asset. This is what we 
         type: 'access',
         files: '',
         datatokenAddress: '0x0',
-        serviceEndpoint: 'https://v4.provider.rinkeby.oceanprotocol.com',
+        serviceEndpoint: 'https://v4.provider.goerli.oceanprotocol.com',
         timeout: 0
       }
     ]
