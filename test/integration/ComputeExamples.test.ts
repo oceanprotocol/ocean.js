@@ -515,18 +515,13 @@ describe('Compute to date example tests', async () => {
   it('8.1 Resolve published datasets and algorithms', async () => {
     /// ```Typescript
     resolvedDatasetDdo = await aquarius.waitForAqua(datasetId)
-    /// ```
-    /// <!--
-    assert(resolvedDatasetDdo, 'Cannot fetch DDO from Aquarius')
-    /// -->
-    /// ```Typescript
     resolvedAlgorithmDdo = await aquarius.waitForAqua(algorithmId)
     /// ```
     /// <!--
+    assert(resolvedDatasetDdo, 'Cannot fetch DDO from Aquarius')
     assert(resolvedAlgorithmDdo, 'Cannot fetch DDO from Aquarius')
     /// -->
   }) ///
-  /// ```
 
   /// ## 9. Send datatokens to consumer
 
@@ -558,23 +553,19 @@ describe('Compute to date example tests', async () => {
     assert(computeEnvs, 'No Compute environments found')
     /// -->
   }) ///
-  /// ```
 
   /// ## 11. Consumer starts a compute job using a free C2D environment
 
   it('11 Start a compute job using a free C2D environment', async () => {
-    /// ```Typescript
-    const computeEnv = computeEnvs.find((ce) => ce.priceMin === 0)
-    /// ```
     /// let's check the free compute environment
     /// ```Typescript
+    const computeEnv = computeEnvs.find((ce) => ce.priceMin === 0)
     console.log('Free compute environment = ', computeEnv)
     /// ```
     /// <!--
     assert(computeEnv, 'Cannot find the free compute env')
     /// -->
 
-    /// ```
     /// Let's have 5 minute of compute access
     /// ```Typescript
     const mytime = new Date()
@@ -631,8 +622,6 @@ describe('Compute to date example tests', async () => {
       assets[0],
       algo
     )
-    // freeEnvDatasetTxId = assets[0].transferTxId
-    // freeEnvAlgoTxId = algo.transferTxId
     /// ```
     /// <!--
     assert(computeJobs, 'Cannot start compute job')
