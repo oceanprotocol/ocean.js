@@ -171,7 +171,7 @@ const DATASET_DDO: DDO = {
   '@context': ['https://w3id.org/did/v1'],
   id: 'id:op:efba17455c127a885ec7830d687a8f6e64f5ba559f8506f8723c1f10f05c049c',
   version: '4.1.0',
-  chainId: 4,
+  chainId: 5,
   nftAddress: '0x0',
   metadata: {
     created: '2021-12-20T14:35:20Z',
@@ -191,7 +191,7 @@ const DATASET_DDO: DDO = {
       type: 'compute',
       files: '',
       datatokenAddress: '0xa15024b732A8f2146423D14209eFd074e61964F3',
-      serviceEndpoint: 'https://v4.provider.rinkeby.oceanprotocol.com/',
+      serviceEndpoint: 'https://v4.provider.goerli.oceanprotocol.com/',
       timeout: 300,
       compute: {
         publisherTrustedAlgorithmPublishers: [],
@@ -207,7 +207,7 @@ const ALGORITHM_DDO: DDO = {
   '@context': ['https://w3id.org/did/v1'],
   id: 'did:op:efba17455c127a885ec7830d687a8f6e64f5ba559f8506f8723c1f10f05c049c',
   version: '4.1.0',
-  chainId: 4,
+  chainId: 5,
   nftAddress: '0x0',
   metadata: {
     created: '2021-12-20T14:35:20Z',
@@ -238,7 +238,7 @@ const ALGORITHM_DDO: DDO = {
       type: 'access',
       files: '',
       datatokenAddress: '0xa15024b732A8f2146423D14209eFd074e61964F3',
-      serviceEndpoint: 'https://v4.provider.rinkeby.oceanprotocol.com',
+      serviceEndpoint: 'https://v4.provider.goerli.oceanprotocol.com',
       timeout: 300
     }
   ]
