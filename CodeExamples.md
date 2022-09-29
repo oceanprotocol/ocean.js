@@ -166,7 +166,7 @@ Next, we define the metadata that will describe our data asset. This is what we 
     '@context': ['https://w3id.org/did/v1'],
     id: '',
     version: '4.1.0',
-    chainId: 4,
+    chainId: 5,
     nftAddress: '0x0',
     metadata: {
       created: '2021-12-20T14:35:20Z',
