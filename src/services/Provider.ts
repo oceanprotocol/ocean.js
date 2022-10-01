@@ -2,7 +2,7 @@ import Web3 from 'web3'
 import fetch from 'cross-fetch'
 import { LoggerInstance } from '../utils'
 import {
-  FileInfo,
+  ArweaveFileInfo,
   ComputeJob,
   ComputeOutput,
   ComputeAlgorithm,
@@ -11,6 +11,7 @@ import {
   ProviderInitialize,
   ProviderComputeInitializeResults,
   ServiceEndpoint,
+  UrlFileInfo,
   UserCustomParameters
 } from '../@types'
 
@@ -149,7 +150,7 @@ export class Provider {
    * @param {number} serviceId the id of the service for which to check the files
    * @param {string} providerUri uri of the provider that will be used to check the file
    * @param {AbortSignal} signal abort signal
-   * @return {Promise<FileInfo[]>} urlDetails
+   * @return {Promise<(UrlFileInfo | ArweaveFileInfo)[]>} urlDetails
    */
   public async checkDidFiles(
     did: string,
@@ -157,14 +158,14 @@ export class Provider {
     providerUri: string,
     withChecksum: boolean = false,
     signal?: AbortSignal
-  ): Promise<FileInfo[]> {
+  ): Promise<(UrlFileInfo | ArweaveFileInfo)[]> {
     const providerEndpoints = await this.getEndpoints(providerUri)
     const serviceEndpoints = await this.getServiceEndpoints(
       providerUri,
       providerEndpoints
     )
     const args = { did, serviceId, checksum: withChecksum }
-    const files: FileInfo[] = []
+    const files: (UrlFileInfo | ArweaveFileInfo)[] = []
     const path = this.getEndpointURL(serviceEndpoints, 'fileinfo')
       ? this.getEndpointURL(serviceEndpoints, 'fileinfo').urlPath
       : null
@@ -176,7 +177,7 @@ export class Provider {
         headers: { 'Content-Type': 'application/json' },
         signal
       })
-      const results: FileInfo[] = await response.json()
+      const results: (UrlFileInfo | ArweaveFileInfo)[] = await response.json()
       for (const result of results) {
         files.push(result)
       }
@@ -191,20 +192,20 @@ export class Provider {
    * @param {string} url or did
    * @param {string} providerUri uri of the provider that will be used to check the file
    * @param {AbortSignal} signal abort signal
-   * @return {Promise<FileInfo[]>} urlDetails
+   * @return {Promise<(UrlFileInfo | ArweaveFileInfo)[]>} urlDetails
    */
   public async checkFileUrl(
     url: string,
     providerUri: string,
     signal?: AbortSignal
-  ): Promise<FileInfo[]> {
+  ): Promise<(UrlFileInfo | ArweaveFileInfo)[]> {
     const providerEndpoints = await this.getEndpoints(providerUri)
     const serviceEndpoints = await this.getServiceEndpoints(
       providerUri,
       providerEndpoints
     )
     const args = { url, type: 'url' }
-    const files: FileInfo[] = []
+    const files: (UrlFileInfo | ArweaveFileInfo)[] = []
     const path = this.getEndpointURL(serviceEndpoints, 'fileinfo')
       ? this.getEndpointURL(serviceEndpoints, 'fileinfo').urlPath
       : null
@@ -216,7 +217,7 @@ export class Provider {
         headers: { 'Content-Type': 'application/json' },
         signal
       })
-      const results: FileInfo[] = await response.json()
+      const results: (UrlFileInfo | ArweaveFileInfo)[] = await response.json()
       for (const result of results) {
         files.push(result)
       }
