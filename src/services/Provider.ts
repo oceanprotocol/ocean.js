@@ -11,7 +11,12 @@ import {
   ProviderInitialize,
   ProviderComputeInitializeResults,
   ServiceEndpoint,
-  UserCustomParameters
+  UserCustomParameters,
+  UrlFile,
+  GraphqlQuery,
+  Arweave,
+  Ipfs,
+  Smartcontract
 } from '../@types'
 
 export class Provider {
@@ -194,7 +199,7 @@ export class Provider {
    * @return {Promise<FileInfo[]>} urlDetails
    */
   public async checkFileUrl(
-    url: string,
+    file: (UrlFile | GraphqlQuery | Arweave | Smartcontract | Ipfs),
     providerUri: string,
     signal?: AbortSignal
   ): Promise<FileInfo[]> {
@@ -203,7 +208,7 @@ export class Provider {
       providerUri,
       providerEndpoints
     )
-    const args = { url, type: 'url' }
+    const args = file
     const files: FileInfo[] = []
     const path = this.getEndpointURL(serviceEndpoints, 'fileinfo')
       ? this.getEndpointURL(serviceEndpoints, 'fileinfo').urlPath
