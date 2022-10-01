@@ -1,6 +1,6 @@
-export interface FileInfo {
+export interface BaseFileInfo {
   /**
-   * File URL.
+   * File type
    * @type {string}
    */
   type: string
@@ -25,18 +25,6 @@ export interface FileInfo {
   index?: number
 
   /**
-   * File URL.
-   * @type {string}
-   */
-  url?: string
-
-  /**
-   * HTTP method used
-   * @type {string}
-   */
-  method?: string
-
-  /**
    * Computed file checksum
    * @type {string}
    */
@@ -47,4 +35,38 @@ export interface FileInfo {
    * @type {boolean}
    */
   valid?: boolean
+}
+
+export interface UrlFileInfo extends BaseFileInfo {
+    /**
+   * File type.
+   * @type {string}
+   */
+  type: 'url'
+
+  /**
+   * File URL.
+   * @type {string}
+   */
+   url?: string
+
+   /**
+    * HTTP method used
+    * @type {string}
+    */
+   method?: string
+}
+
+export interface ArweaveFileInfo extends BaseFileInfo {
+    /**
+   * File type.
+   * @type {string}
+   */
+     type: 'arweave'
+
+  /**
+   * Arweave Transaction ID.
+   * @type {string}
+   */
+  transactionId: string
 }
