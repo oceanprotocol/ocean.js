@@ -2,6 +2,7 @@ import Web3 from 'web3'
 import fetch from 'cross-fetch'
 import { LoggerInstance } from '../utils'
 import {
+  Arweave,
   FileInfo,
   ComputeJob,
   ComputeOutput,
@@ -11,12 +12,8 @@ import {
   ProviderInitialize,
   ProviderComputeInitializeResults,
   ServiceEndpoint,
-  UserCustomParameters,
   UrlFile,
-  GraphqlQuery,
-  Arweave,
-  Ipfs,
-  Smartcontract
+  UserCustomParameters
 } from '../@types'
 
 export class Provider {
@@ -199,7 +196,7 @@ export class Provider {
    * @return {Promise<FileInfo[]>} urlDetails
    */
   public async checkFileUrl(
-    file: (UrlFile | GraphqlQuery | Arweave | Smartcontract | Ipfs),
+    file: (UrlFile | Arweave),
     providerUri: string,
     signal?: AbortSignal
   ): Promise<FileInfo[]> {
