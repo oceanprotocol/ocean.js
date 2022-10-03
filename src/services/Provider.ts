@@ -196,7 +196,7 @@ export class Provider {
    * @return {Promise<FileInfo[]>} urlDetails
    */
   public async checkFileUrl(
-    file: (UrlFile | Arweave),
+    file: UrlFile | Arweave,
     providerUri: string,
     signal?: AbortSignal
   ): Promise<FileInfo[]> {
