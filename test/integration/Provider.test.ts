@@ -30,7 +30,7 @@ describe('Provider tests', async () => {
       {
         type: 'url',
         url: 'https://dumps.wikimedia.org/enwiki/latest/enwiki-latest-abstract.xml.gz-rss.xml',
-        method: 'GET',
+        method: 'GET'
       },
       config.providerUri
     )
