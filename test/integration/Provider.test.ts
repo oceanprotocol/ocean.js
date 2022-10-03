@@ -1,7 +1,7 @@
 import { assert } from 'chai'
 import { web3, getTestConfig } from '../config'
 import { Config, Provider } from '../../src'
-import { FileInfo, UrlFile } from '../../src/@types'
+import { FileInfo } from '../../src/@types'
 
 describe('Provider tests', async () => {
   let config: Config
@@ -28,9 +28,9 @@ describe('Provider tests', async () => {
   it('Alice checks fileinfo', async () => {
     const fileinfo: FileInfo[] = await providerInstance.checkFileUrl(
       {
-        'type': 'url',
-        'url': 'https://dumps.wikimedia.org/enwiki/latest/enwiki-latest-abstract.xml.gz-rss.xml',
-        'method': 'GET',
+        type: 'url',
+        url: 'https://dumps.wikimedia.org/enwiki/latest/enwiki-latest-abstract.xml.gz-rss.xml',
+        method: 'GET',
       },
       config.providerUri
     )
