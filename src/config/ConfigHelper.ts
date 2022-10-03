@@ -36,26 +36,6 @@ export const configHelperNetworks: Config[] = [
   },
   {
     ...configHelperNetworksBase,
-    chainId: 3,
-    network: 'ropsten',
-    nodeUri: 'https://ropsten.infura.io/v3',
-    providerUri: 'https://v4.provider.ropsten.oceanprotocol.com',
-    subgraphUri: 'https://v4.subgraph.ropsten.oceanprotocol.com',
-    explorerUri: 'https://ropsten.etherscan.io',
-    gasFeeMultiplier: 1.1
-  },
-  {
-    ...configHelperNetworksBase,
-    chainId: 4,
-    network: 'rinkeby',
-    nodeUri: 'https://rinkeby.infura.io/v3',
-    providerUri: 'https://v4.provider.rinkeby.oceanprotocol.com',
-    subgraphUri: 'https://v4.subgraph.rinkeby.oceanprotocol.com',
-    explorerUri: 'https://rinkeby.etherscan.io',
-    gasFeeMultiplier: 1.1
-  },
-  {
-    ...configHelperNetworksBase,
     chainId: 5,
     network: 'goerli',
     nodeUri: 'https://goerli.infura.io/v3',
