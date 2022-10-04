@@ -100,7 +100,7 @@ export interface Stats {
    * Total amount of veOCEAN allocated on this asset.
    * @type {number}
    */
-  allocated: number
+  allocated?: number
 }
 
 export interface AssetLastEvent {
