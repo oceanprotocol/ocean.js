@@ -176,18 +176,19 @@ describe('Nft Factory test', () => {
     expect(txReceipt.events.NFTCreated.event === 'NFTCreated')
     expect(txReceipt.events.TokenCreated.event === 'TokenCreated')
     expect(txReceipt.events.DispenserCreated.event === 'DispenserCreated')
-    expect(
-      txReceipt.events.DispenserAllowedSwapperChanged.event ===
-        'DispenserAllowedSwapperChanged'
-    )
+    // expect(
+    //   txReceipt.events.DispenserAllowedSwapperChanged.event ===
+    //     'DispenserAllowedSwapperChanged'
+    // )
 
     // allows dispensing for everybody
-    console.log(`DispenserCreated: ${JSON.stringify(txReceipt.events.DispenserCreated)}`)
-    console.log(
-      `DispenserAllowedSwapperChanged: ${JSON.stringify(
-        txReceipt.events.DispenserAllowedSwapperChanged
-      )}`
-    )
+    console.log('Events', txReceipt.events)
+    console.log('DispenserCreated', txReceipt.events.DispenserCreated)
+    // console.log(
+    //   'DispenserAllowedSwapperChanged',
+    //   txReceipt.events.DispenserAllowedSwapperChanged
+    // )
+
     const allowedSwapper = txReceipt.events.DispenserCreated.returnValues[4]
     console.log(`Allowed Swapper: ${allowedSwapper}`)
     assert(allowedSwapper === ZERO_ADDRESS, 'ZERO_ADDRESS is not set as allowedSwapper')
