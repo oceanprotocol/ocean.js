@@ -177,6 +177,11 @@ describe('Nft Factory test', () => {
     expect(txReceipt.events.TokenCreated.event === 'TokenCreated')
     expect(txReceipt.events.DispenserCreated.event === 'DispenserCreated')
 
+    // allows dispensing for everybody
+    const allowedSwapper = txReceipt.events.DispenserCreated.returnValues[4]
+    console.log(`Allowed Swapper: ${allowedSwapper}`)
+    assert(allowedSwapper === ZERO_ADDRESS, 'ZERO_ADDRESS is not set as allowedSwapper')
+
     // stored for later use in startMultipleTokenOrder test
     dtAddress2 = txReceipt.events.TokenCreated.returnValues.newTokenAddress
   })
