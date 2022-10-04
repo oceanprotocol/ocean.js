@@ -217,6 +217,9 @@ describe('Publish tests', async () => {
       dispenserParams
     )
 
+    const allowedSwapper = bundleNFT.events.DispenserCreated.returnValues[4]
+    assert(allowedSwapper === ZERO_ADDRESS, 'ZERO_ADDRESS is not set as allowedSwapper')
+
     const nftAddress = bundleNFT.events.NFTCreated.returnValues[0]
     const datatokenAddress = bundleNFT.events.TokenCreated.returnValues[0]
     assetUrl.datatokenAddress = datatokenAddress
