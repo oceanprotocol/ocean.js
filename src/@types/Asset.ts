@@ -89,6 +89,20 @@ export interface AssetDatatoken {
   serviceId: string
 }
 
+export interface Stats {
+  /**
+   * How often an asset was consumed, meaning how often it was either downloaded or used as part of a compute job.
+   * @type {number}
+   */
+  orders: number
+
+  /**
+   * Total amount of veOCEAN allocated on this asset.
+   * @type {number}
+   */
+  allocated?: number
+}
+
 export interface AssetLastEvent {
   tx: string
   block: number
@@ -117,16 +131,10 @@ export interface Asset extends DDO {
   event: AssetLastEvent
 
   /**
-   * The stats section contains different statistics fields.
-   * @type {string}
+   * The stats section contains different statistics fields. This section is added by Aquarius
+   * @type {Stats}
    */
-  stats: {
-    /**
-     * How often an asset was consumed, meaning how often it was either downloaded or used as part of a compute job.
-     * @type {string}
-     */
-    orders: number
-  }
+  stats: Stats
 
   /**
    * Contains information about an asset's purgatory status defined in
