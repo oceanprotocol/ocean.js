@@ -144,7 +144,15 @@ export class ConfigHelper {
         OPFCommunityFeeCollector,
         Ocean,
         chainId,
-        startBlock
+        startBlock,
+        veAllocate,
+        veOCEAN,
+        veDelegation,
+        veFeeDistributor,
+        veDelegationProxy,
+        DFRewards,
+        DFStrategyV1,
+        veFeeEstimate
       } = customAddresses[network]
       configAddresses = {
         nftFactoryAddress: ERC721Factory,
@@ -154,6 +162,14 @@ export class ConfigHelper {
         oceanTokenAddress: Ocean,
         chainId,
         startBlock,
+        veAllocate,
+        veOCEAN,
+        veDelegation,
+        veFeeDistributor,
+        veDelegationProxy,
+        DFRewards,
+        DFStrategyV1,
+        veFeeEstimate,
         ...(process.env.AQUARIUS_URI && { metadataCacheUri: process.env.AQUARIUS_URI })
       }
     } else {
@@ -166,7 +182,15 @@ export class ConfigHelper {
           ERC721Factory,
           Ocean,
           chainId,
-          startBlock
+          startBlock,
+          veAllocate,
+          veOCEAN,
+          veDelegation,
+          veFeeDistributor,
+          veDelegationProxy,
+          DFRewards,
+          DFStrategyV1,
+          veFeeEstimate
         } = DefaultContractsAddresses[network]
         configAddresses = {
           nftFactoryAddress: ERC721Factory,
@@ -176,6 +200,14 @@ export class ConfigHelper {
           oceanTokenAddress: Ocean,
           chainId,
           startBlock,
+          veAllocate,
+          veOCEAN,
+          veDelegation,
+          veFeeDistributor,
+          veDelegationProxy,
+          DFRewards,
+          DFStrategyV1,
+          veFeeEstimate,
           ...(process.env.AQUARIUS_URI && { metadataCacheUri: process.env.AQUARIUS_URI })
         }
       }
