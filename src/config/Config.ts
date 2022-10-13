@@ -170,4 +170,13 @@ export class Config {
    * @type {number}
    */
   gasFeeMultiplier: number
+
+  veAllocate?: string
+  veOCEAN?: string
+  veDelegation?: string
+  veFeeDistributor?: string
+  veDelegationProxy?: string
+  DFRewards?: string
+  DFStrategyV1?: string
+  veFeeEstimate?: string
 }
