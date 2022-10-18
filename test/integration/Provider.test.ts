@@ -25,12 +25,23 @@ describe('Provider tests', async () => {
     assert(valid === true)
   })
 
-  it('Alice checks fileinfo', async () => {
+  it('Alice checks URL fileinfo', async () => {
     const fileinfo: FileInfo[] = await providerInstance.checkFileUrl(
       {
         type: 'url',
         url: 'https://dumps.wikimedia.org/enwiki/latest/enwiki-latest-abstract.xml.gz-rss.xml',
         method: 'GET'
+      },
+      config.providerUri
+    )
+    assert(fileinfo[0].valid === true, 'Sent file is not valid')
+  })
+
+  it('Alice checks Arweave fileinfo', async () => {
+    const fileinfo: FileInfo[] = await providerInstance.checkFileUrl(
+      {
+        type: 'arweave',
+        transactionId: 'a4qJoQZa1poIv5guEzkfgZYSAD0uYm7Vw4zm_tCswVQ',
       },
       config.providerUri
     )
