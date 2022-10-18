@@ -181,13 +181,13 @@ jobs:
         with:
           name: coverage
 
-      # - uses: paambaati/codeclimate-action@v2.7.5
-      #   env:
-      #     CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_REPORTER_ID }}
-      #   with:
-      #     coverageLocations: |
-      #       ${{ github.workspace }}/unit/lcov.info:lcov
-      #       ${{ github.workspace }}/integration/lcov.info:lcov
+      - uses: paambaati/codeclimate-action@v2.7.5
+        env:
+          CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_REPORTER_ID }}
+        with:
+          coverageLocations: |
+            ${{ github.workspace }}/unit/lcov.info:lcov
+            ${{ github.workspace }}/integration/lcov.info:lcov
 
   create_guide:
     runs-on: ubuntu-latest
