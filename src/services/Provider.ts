@@ -195,7 +195,7 @@ export class Provider {
    * @param {AbortSignal} signal abort signal
    * @return {Promise<FileInfo[]>} urlDetails
    */
-  public async checkFileUrl(
+  public async getFileInfo(
     file: UrlFile | Arweave,
     providerUri: string,
     signal?: AbortSignal

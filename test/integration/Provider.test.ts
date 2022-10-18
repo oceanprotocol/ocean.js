@@ -26,7 +26,7 @@ describe('Provider tests', async () => {
   })
 
   it('Alice checks URL fileinfo', async () => {
-    const fileinfo: FileInfo[] = await providerInstance.checkFileUrl(
+    const fileinfo: FileInfo[] = await providerInstance.getFileInfo(
       {
         type: 'url',
         url: 'https://dumps.wikimedia.org/enwiki/latest/enwiki-latest-abstract.xml.gz-rss.xml',
@@ -38,7 +38,7 @@ describe('Provider tests', async () => {
   })
 
   it('Alice checks Arweave fileinfo', async () => {
-    const fileinfo: FileInfo[] = await providerInstance.checkFileUrl(
+    const fileinfo: FileInfo[] = await providerInstance.getFileInfo(
       {
         type: 'arweave',
         transactionId: 'a4qJoQZa1poIv5guEzkfgZYSAD0uYm7Vw4zm_tCswVQ',
