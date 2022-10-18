@@ -41,7 +41,7 @@ describe('Provider tests', async () => {
     const fileinfo: FileInfo[] = await providerInstance.getFileInfo(
       {
         type: 'arweave',
-        transactionId: 'a4qJoQZa1poIv5guEzkfgZYSAD0uYm7Vw4zm_tCswVQ',
+        transactionId: 'a4qJoQZa1poIv5guEzkfgZYSAD0uYm7Vw4zm_tCswVQ'
       },
       config.providerUri
     )
