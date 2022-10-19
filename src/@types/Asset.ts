@@ -34,7 +34,7 @@ export interface AssetNft {
    * 4	Ordering is temporary disabled.
    * @type {number}
    */
-  state: 0 | 1 | 2 | 3 | 4
+  state: 0 | 1 | 2 | 3 | 4 | 5
 
   /**
    * Contains the date of NFT creation.
