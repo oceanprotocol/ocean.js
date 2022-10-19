@@ -67,7 +67,7 @@ export const configHelperNetworks: Config[] = [
     subgraphUri: 'https://v4.subgraph.polygon.oceanprotocol.com',
     explorerUri: 'https://polygonscan.com',
     oceanTokenSymbol: 'mOCEAN',
-    gasFeeMultiplier: 1.4
+    gasFeeMultiplier: 1.6
   },
   {
     ...configHelperNetworksBase,
