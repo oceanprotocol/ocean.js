@@ -32,6 +32,7 @@ export interface AssetNft {
    * 2	Deprecated (by another asset).
    * 3	Revoked by publisher.
    * 4	Ordering is temporary disabled.
+   * 5  Unlisted in markets.
    * @type {number}
    */
   state: 0 | 1 | 2 | 3 | 4 | 5
