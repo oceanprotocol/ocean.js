@@ -111,7 +111,7 @@ import {
   calculateEstimatedGas,
   sendTx
 } from '@oceanprotocol/lib'
-import { getAddresses, getTestConfig, web3 } from '@oceanprotocol/lib/dist/test/config'
+import { getAddresses, getTestConfig, web3 } from '../config'
 ```
 
 <!--
