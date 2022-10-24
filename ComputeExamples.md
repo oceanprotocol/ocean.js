@@ -36,7 +36,7 @@ cd barge/
 ./start_ocean.sh --with-provider2 --no-dashboard --with-c2d
 ```
 
-## 2. Create a new node.js project with Typescript
+## 2. Create a new Node.js project with TypeScript
 
 Start by creating a new Node.js project. Open a new terminal and enter the following commands:
 
@@ -49,7 +49,7 @@ touch compute.ts
 # On linux press CTRL + D to save
 ```
 
-Next, we need to setup our typescript compiler options. Create a new file called `tsconfig.json` in the root of the `compute-quickstart` directory. copy the following content into the file:
+Next, we need to setup our TypeScript compiler options. Create a new file called `tsconfig.json` in the root of the `compute-quickstart` directory. copy the following content into the file:
 
 ```json
 {
@@ -78,7 +78,7 @@ Next, we need to setup our typescript compiler options. Create a new file called
 }
 ```
 
-Now you can compile your typescript with the following command:
+Now you can compile your TypeScript with the following command:
 
 ```bash
 tsc
@@ -138,7 +138,7 @@ import { getAddresses, getTestConfig, web3 } from '@oceanprotocol/lib/dist/test/
 
 ### 4.2. Constants and variables
 
- We will need two files to publish, one as Dataset and one as Algorithm, so here we define the files that we intend to publish.
+ We will need two files to publish, one as dataset and one as algorithm, so here we define the files that we intend to publish.
 ```Typescript
 const DATASET_ASSET_URL: Files = {
   datatokenAddress: '0x0',
@@ -165,7 +165,7 @@ const ALGORITHM_ASSET_URL: Files = {
 }
 ```
 
-Next, we define the metadata for the Dataset and Algorithm that will describe our data assets. This is what we call the DDOs
+Next, we define the metadata for the dataset and algorithm that will describe our data assets. This is what we call the DDOs
 ```Typescript
 const DATASET_DDO: DDO = {
   '@context': ['https://w3id.org/did/v1'],
@@ -266,7 +266,7 @@ let computeJobId: string
 
 ### 4.3 Helper methods
 
-Now we define the helper methods which we will use later to publish the Dataset and Algorithm, and also order them
+Now we define the helper methods which we will use later to publish the dataset and algorithm, and also order them
 
 Add a `createAsset()`function.
 ```Typescript
@@ -396,7 +396,7 @@ async function handleOrder(
 ```
 
 <!--
-describe('Compute to date example tests
+describe('Compute-to-data example tests
 -->
 
 We load the configuration:
@@ -486,7 +486,7 @@ Again, lets console log the values so that we can check that they have been save
 ```
 Now, let's check that we successfully published a dataset (create NFT + Datatoken)
 ```Typescript
-    console.log(`Dataset id: ${datasetId}`)
+    console.log(`dataset id: ${datasetId}`)
   
 ```
 
@@ -503,7 +503,7 @@ Now, let's check that we successfully published a dataset (create NFT + Datatoke
 ```
 Now, let's check that we successfully published a algorithm (create NFT + Datatoken)
 ```Typescript
-    console.log(`Algorithm id: ${algorithmId}`)
+    console.log(`algorithm id: ${algorithmId}`)
   
 ```
 
