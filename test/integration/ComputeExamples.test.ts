@@ -107,8 +107,11 @@
 /// Start by importing all of the necessary dependencies
 
 /// ```Typescript
+import fs from 'fs'
+import { homedir } from 'os'
 import { assert } from 'chai'
 import { SHA256 } from 'crypto-js'
+import Web3 from 'web3'
 import { AbiItem } from 'web3-utils'
 import {
   ProviderInstance,
@@ -130,9 +133,11 @@ import {
   NftCreateData,
   DatatokenCreateParams,
   calculateEstimatedGas,
-  sendTx
+  sendTx,
+  configHelperNetworks,
+  ConfigHelper,
+  Asset
 } from '../../src'
-import { getAddresses, getTestConfig, web3 } from '../config'
 
 /// ```
 
@@ -247,19 +252,20 @@ const ALGORITHM_DDO: DDO = {
 
 /// Now we define the variables which we will need later
 /// ```Typescript
+let web3: Web3
 let config: Config
 let aquarius: Aquarius
 let datatoken: Datatoken
 let providerUrl: string
 let publisherAccount: string
 let consumerAccount: string
-let addresses: any
+let addresses
 let computeEnvs
 
-let datasetId
-let algorithmId
-let resolvedDatasetDdo
-let resolvedAlgorithmDdo
+let datasetId: string
+let algorithmId: string
+let resolvedDatasetDdo: DDO
+let resolvedAlgorithmDdo: DDO
 
 let computeJobId: string
 /// ```
@@ -274,8 +280,8 @@ async function createAsset(
   name: string,
   symbol: string,
   owner: string,
-  assetUrl: any,
-  ddo: any,
+  assetUrl: Files,
+  ddo: DDO,
   providerUrl: string
 ) {
   const nft = new Nft(web3)
@@ -356,8 +362,6 @@ async function handleOrder(
   serviceIndex: number,
   consumeMarkerFee?: ConsumeMarketFee
 ) {
-  const datatoken = new Datatoken(web3)
-  const config = await getTestConfig(web3)
   /* We do have 3 possible situations:
      - have validOrder and no providerFees -> then order is valid, providerFees are valid, just use it in startCompute
      - have validOrder and providerFees -> then order is valid but providerFees are not valid, we need to call reuseOrder and pay only providerFees
@@ -402,8 +406,17 @@ describe('Compute-to-data example tests', async () => {
   /// We load the configuration:
   /// ```Typescript
   before(async () => {
-    config = await getTestConfig(web3)
-    addresses = getAddresses()
+    web3 = new Web3(process.env.NODE_URI || configHelperNetworks[1].nodeUri)
+    config = new ConfigHelper().getConfig(await web3.eth.getChainId())
+    config.providerUri = process.env.PROVIDER_URL || config.providerUri
+    addresses = JSON.parse(
+      // eslint-disable-next-line security/detect-non-literal-fs-filename
+      fs.readFileSync(
+        process.env.ADDRESS_FILE ||
+          `${homedir}/.ocean/ocean-contracts/artifacts/address.json`,
+        'utf8'
+      )
+    ).development
     aquarius = new Aquarius(config.metadataCacheUri)
     providerUrl = config.providerUri
     datatoken = new Datatoken(web3)
