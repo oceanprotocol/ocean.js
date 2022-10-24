@@ -36,26 +36,6 @@ export const configHelperNetworks: Config[] = [
   },
   {
     ...configHelperNetworksBase,
-    chainId: 3,
-    network: 'ropsten',
-    nodeUri: 'https://ropsten.infura.io/v3',
-    providerUri: 'https://v4.provider.ropsten.oceanprotocol.com',
-    subgraphUri: 'https://v4.subgraph.ropsten.oceanprotocol.com',
-    explorerUri: 'https://ropsten.etherscan.io',
-    gasFeeMultiplier: 1.1
-  },
-  {
-    ...configHelperNetworksBase,
-    chainId: 4,
-    network: 'rinkeby',
-    nodeUri: 'https://rinkeby.infura.io/v3',
-    providerUri: 'https://v4.provider.rinkeby.oceanprotocol.com',
-    subgraphUri: 'https://v4.subgraph.rinkeby.oceanprotocol.com',
-    explorerUri: 'https://rinkeby.etherscan.io',
-    gasFeeMultiplier: 1.1
-  },
-  {
-    ...configHelperNetworksBase,
     chainId: 5,
     network: 'goerli',
     nodeUri: 'https://goerli.infura.io/v3',
@@ -86,7 +66,8 @@ export const configHelperNetworks: Config[] = [
     providerUri: 'https://v4.provider.polygon.oceanprotocol.com',
     subgraphUri: 'https://v4.subgraph.polygon.oceanprotocol.com',
     explorerUri: 'https://polygonscan.com',
-    oceanTokenSymbol: 'mOCEAN'
+    oceanTokenSymbol: 'mOCEAN',
+    gasFeeMultiplier: 1.6
   },
   {
     ...configHelperNetworksBase,
@@ -164,7 +145,15 @@ export class ConfigHelper {
         OPFCommunityFeeCollector,
         Ocean,
         chainId,
-        startBlock
+        startBlock,
+        veAllocate,
+        veOCEAN,
+        veDelegation,
+        veFeeDistributor,
+        veDelegationProxy,
+        DFRewards,
+        DFStrategyV1,
+        veFeeEstimate
       } = customAddresses[network]
       configAddresses = {
         nftFactoryAddress: ERC721Factory,
@@ -174,6 +163,14 @@ export class ConfigHelper {
         oceanTokenAddress: Ocean,
         chainId,
         startBlock,
+        veAllocate,
+        veOCEAN,
+        veDelegation,
+        veFeeDistributor,
+        veDelegationProxy,
+        DFRewards,
+        DFStrategyV1,
+        veFeeEstimate,
         ...(process.env.AQUARIUS_URI && { metadataCacheUri: process.env.AQUARIUS_URI })
       }
     } else {
@@ -186,7 +183,15 @@ export class ConfigHelper {
           ERC721Factory,
           Ocean,
           chainId,
-          startBlock
+          startBlock,
+          veAllocate,
+          veOCEAN,
+          veDelegation,
+          veFeeDistributor,
+          veDelegationProxy,
+          DFRewards,
+          DFStrategyV1,
+          veFeeEstimate
         } = DefaultContractsAddresses[network]
         configAddresses = {
           nftFactoryAddress: ERC721Factory,
@@ -196,6 +201,14 @@ export class ConfigHelper {
           oceanTokenAddress: Ocean,
           chainId,
           startBlock,
+          veAllocate,
+          veOCEAN,
+          veDelegation,
+          veFeeDistributor,
+          veDelegationProxy,
+          DFRewards,
+          DFStrategyV1,
+          veFeeEstimate,
           ...(process.env.AQUARIUS_URI && { metadataCacheUri: process.env.AQUARIUS_URI })
         }
       }

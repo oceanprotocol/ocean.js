@@ -2,6 +2,7 @@ import Web3 from 'web3'
 import fetch from 'cross-fetch'
 import { LoggerInstance } from '../utils'
 import {
+  Arweave,
   FileInfo,
   ComputeJob,
   ComputeOutput,
@@ -11,6 +12,7 @@ import {
   ProviderInitialize,
   ProviderComputeInitializeResults,
   ServiceEndpoint,
+  UrlFile,
   UserCustomParameters
 } from '../@types'
 
@@ -193,8 +195,8 @@ export class Provider {
    * @param {AbortSignal} signal abort signal
    * @return {Promise<FileInfo[]>} urlDetails
    */
-  public async checkFileUrl(
-    url: string,
+  public async getFileInfo(
+    file: UrlFile | Arweave,
     providerUri: string,
     signal?: AbortSignal
   ): Promise<FileInfo[]> {
@@ -203,7 +205,7 @@ export class Provider {
       providerUri,
       providerEndpoints
     )
-    const args = { url, type: 'url' }
+    const args = file
     const files: FileInfo[] = []
     const path = this.getEndpointURL(serviceEndpoints, 'fileinfo')
       ? this.getEndpointURL(serviceEndpoints, 'fileinfo').urlPath
