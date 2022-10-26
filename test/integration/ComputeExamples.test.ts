@@ -49,32 +49,29 @@
 /// # On linux press CTRL + D to save
 /// ```
 
-/// Next, we need to setup our TypeScript compiler options. Create a new file called `tsconfig.json` in the root of the `compute-quickstart` directory. copy the following content into the file:
+/// Next, we need to setup our TypeScript compiler options. Create a new file called `tsconfig.json` in the root of the `compute-quickstart` directory.
+
+/// ```bash
+/// touch tsconfig.json
+/// # Copy the following json content into the file, On linux press CTRL + D to save
+/// ```
 
 /// ```json
 /// {
 ///   "compilerOptions": {
-///     "resolveJsonModule": true,
-///     "moduleResolution": "node",
+///     "lib": ["es6", "es7"],
+///     "module": "CommonJS",
+///     "target": "ES5",
 ///     "esModuleInterop": true,
 ///     "allowSyntheticDefaultImports": true,
-///     "lib": [
-///       "ESNext",
-///       "dom"
-///     ],
+///     "outDir": "./dist/",
 ///     "declaration": true,
-///     "module": "ESNext",
-///     "target": "ESNext",
-///     "removeComments": false,
-///     "experimentalDecorators": true,
-///     "preserveConstEnums": true,
-///     "outDir": "./",
-///     "sourceMap": true,
-///     "declarationDir": "./d"
+///     "declarationDir": "./dist/"
 ///   },
 ///   "include": [
 ///     "compute.ts"
-///   ]
+///   ],
+///   "exclude": [ "node_modules", "dist" ]
 /// }
 /// ```
 
@@ -84,10 +81,10 @@
 /// tsc
 /// ```
 
-/// To run your script as we go along, you can use the following command:
+/// To run your script as we go along, compile the script then you can use the following command:
 
 /// ```bash
-/// node compute.js
+/// node dist/compute.js
 /// ```
 
 /// ## 3. Install dependencies
@@ -135,8 +132,7 @@ import {
   calculateEstimatedGas,
   sendTx,
   configHelperNetworks,
-  ConfigHelper,
-  Asset
+  ConfigHelper
 } from '../../src'
 
 /// ```
@@ -399,6 +395,7 @@ async function handleOrder(
 }
 /// ```
 
+/// In your compute.ts file create a function that you can call later where you can add and test the following chunks of code
 /// <!--
 describe('Compute-to-data example tests', async () => {
   /// -->
