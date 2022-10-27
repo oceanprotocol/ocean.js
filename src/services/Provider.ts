@@ -14,7 +14,9 @@ import {
   ServiceEndpoint,
   UrlFile,
   UserCustomParameters,
-  Ipfs
+  Ipfs,
+  Smartcontract,
+  GraphqlQuery
 } from '../@types'
 
 export class Provider {
@@ -197,7 +199,7 @@ export class Provider {
    * @return {Promise<FileInfo[]>} urlDetails
    */
   public async getFileInfo(
-    file: UrlFile | Arweave | Ipfs,
+    file: UrlFile | Arweave | Ipfs | GraphqlQuery | Smartcontract,
     providerUri: string,
     signal?: AbortSignal
   ): Promise<FileInfo[]> {
