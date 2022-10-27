@@ -150,6 +150,7 @@ export class Provider {
    * @param {string} did did
    * @param {number} serviceId the id of the service for which to check the files
    * @param {string} providerUri uri of the provider that will be used to check the file
+   * @param {boolean} withChecksum if true, will return checksum of files content
    * @param {AbortSignal} signal abort signal
    * @return {Promise<FileInfo[]>} urlDetails
    */
@@ -192,20 +193,24 @@ export class Provider {
   /** Get URL details (if possible)
    * @param {string} url or did
    * @param {string} providerUri uri of the provider that will be used to check the file
+   * @param {boolean} withChecksum if true, will return checksum of files content
    * @param {AbortSignal} signal abort signal
+   * @param {any} headers headers key value pairs associated with the asset GET request
    * @return {Promise<FileInfo[]>} urlDetails
    */
   public async getFileInfo(
     file: UrlFile | Arweave,
     providerUri: string,
-    signal?: AbortSignal
+    withChecksum: boolean = false,
+    signal?: AbortSignal,
+    headers?: any
   ): Promise<FileInfo[]> {
     const providerEndpoints = await this.getEndpoints(providerUri)
     const serviceEndpoints = await this.getServiceEndpoints(
       providerUri,
       providerEndpoints
     )
-    const args = file
+    const args = { ...file, headers, checksum: withChecksum }
     const files: FileInfo[] = []
     const path = this.getEndpointURL(serviceEndpoints, 'fileinfo')
       ? this.getEndpointURL(serviceEndpoints, 'fileinfo').urlPath
