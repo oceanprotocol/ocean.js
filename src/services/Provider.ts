@@ -13,7 +13,8 @@ import {
   ProviderComputeInitializeResults,
   ServiceEndpoint,
   UrlFile,
-  UserCustomParameters
+  UserCustomParameters,
+  Ipfs
 } from '../@types'
 
 export class Provider {
@@ -196,7 +197,7 @@ export class Provider {
    * @return {Promise<FileInfo[]>} urlDetails
    */
   public async getFileInfo(
-    file: UrlFile | Arweave,
+    file: UrlFile | Arweave | Ipfs,
     providerUri: string,
     signal?: AbortSignal
   ): Promise<FileInfo[]> {
