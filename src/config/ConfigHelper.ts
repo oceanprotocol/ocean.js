@@ -71,16 +71,6 @@ export const configHelperNetworks: Config[] = [
   },
   {
     ...configHelperNetworksBase,
-    chainId: 1287,
-    network: 'moonbase',
-    nodeUri: 'https://rpc.api.moonbase.moonbeam.network',
-    providerUri: 'https://v4.provider.moonbase.oceanprotocol.com',
-    subgraphUri: 'https://v4.subgraph.moonbase.oceanprotocol.com',
-    explorerUri: 'https://moonbase.moonscan.io/',
-    gasFeeMultiplier: 1.1
-  },
-  {
-    ...configHelperNetworksBase,
     chainId: 2021000,
     network: 'gaiaxtestnet',
     nodeUri: 'https://rpc.gaiaxtestnet.oceanprotocol.com',
