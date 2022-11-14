@@ -117,16 +117,16 @@ export interface Stats {
   orders: number
 
   /**
+   * Contains information about the price of this asset.
+   * @type {AssetPrice}
+   */
+  price: AssetPrice
+
+  /**
    * Total amount of veOCEAN allocated on this asset.
    * @type {number}
    */
   allocated?: number
-
-  /**
-   * Contains information about the price of this asset.
-   * @type {AssetPrice}
-   */
-  price?: AssetPrice
 }
 
 export interface AssetLastEvent {
