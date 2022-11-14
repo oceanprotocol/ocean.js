@@ -91,8 +91,22 @@ export interface AssetDatatoken {
 }
 
 export interface AssetPrice {
+  /**
+   * The price of the asset expressed as a number. If 0 then the price is FREE.
+   * @type {number}
+   */
   value: number
+
+  /**
+   * The symbol that the price of the asset is expressed in.
+   * @type {string}
+   */
   tokenSymbol?: string
+
+  /**
+   * The address of the token that the price needs to be paid in.
+   * @type {string}
+   */
   tokenAddress?: string
 }
 export interface Stats {
