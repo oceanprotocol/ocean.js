@@ -90,6 +90,11 @@ export interface AssetDatatoken {
   serviceId: string
 }
 
+export interface AssetPrice {
+  value: number
+  tokenSymbol?: string
+  tokenAddress?: string
+}
 export interface Stats {
   /**
    * How often an asset was consumed, meaning how often it was either downloaded or used as part of a compute job.
@@ -102,6 +107,12 @@ export interface Stats {
    * @type {number}
    */
   allocated?: number
+
+  /**
+   * Contains information about the price of this asset.
+   * @type {AssetPrice}
+   */
+  price?: AssetPrice
 }
 
 export interface AssetLastEvent {
