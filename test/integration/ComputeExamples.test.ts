@@ -90,7 +90,7 @@
 
 /// Or if you don't want to install TypeScript use the following command to compile your file:
 /// ```bash
-///npx tsc compute.ts
+/// npx tsc compute.ts
 /// ```
 
 /// To run your script as we go along, compile the script then you can use the following command:
