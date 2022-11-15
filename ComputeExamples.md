@@ -75,10 +75,22 @@ touch tsconfig.json
 }
 ```
 
-Now you can compile your TypeScript with the following command:
+Now you can compile your TypeScript project.
+If you have TypeScript installed use the following command:
 
 ```bash
 tsc
+```
+
+If you don't have TypeScript installed you can install it using the command below and then compile using the above command:
+
+```bash
+npm install -g typescript
+```
+
+Or if you don't want to install TypeScript use the following command to compile your file:
+```bash
+npx tsc compute.ts
 ```
 
 To run your script as we go along, compile the script then you can use the following command:
@@ -441,6 +453,9 @@ Again, lets console log the values so that we can check that they have been save
 ```
 
   ### 5.2 Mint OCEAN to publisher account
+You can skip this step if you are running your script against a remote network,
+you need to mint oceans to mentioned accounts only if you are using barge to test your script
+
 ```Typescript
     const minAbi = [
       {
