@@ -31,8 +31,9 @@ export const configHelperNetworks: Config[] = [
     ...configHelperNetworksBase,
     chainId: 8996,
     network: 'development',
-    metadataCacheUri: 'http://127.0.0.1:5000',
-    providerUri: 'http://172.15.0.4:8030'
+    metadataCacheUri: 'http://172.15.0.5:5000',
+    providerUri: 'http://172.15.0.4:8030',
+    subgraphUri: 'https://172.15.0.15:9000'
   },
   {
     ...configHelperNetworksBase,
