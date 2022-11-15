@@ -75,10 +75,22 @@
 /// }
 /// ```
 
-/// Now you can compile your TypeScript with the following command:
+/// Now you can compile your TypeScript project.
+/// If you have TypeScript installed use the following command:
 
 /// ```bash
 /// tsc
+/// ```
+
+/// If you don't have TypeScript installed you can install it using the command below and then compile using the above command:
+
+/// ```bash
+/// npm install -g typescript
+/// ```
+
+/// Or if you don't want to install TypeScript use the following command to compile your file:
+/// ```bash
+///npx tsc compute.ts
 /// ```
 
 /// To run your script as we go along, compile the script then you can use the following command:
