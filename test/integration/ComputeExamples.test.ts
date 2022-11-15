@@ -453,6 +453,9 @@ describe('Compute-to-data example tests', async () => {
   /// ```
 
   it('5.2 Mint OCEAN to publisher account', async () => {
+    /// You can skip this step if you are running your script against a remote network,
+    /// you need to mint oceans to mentioned accounts only if you are using barge to test your script
+
     /// ```Typescript
     const minAbi = [
       {
