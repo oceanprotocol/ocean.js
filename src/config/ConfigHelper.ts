@@ -31,8 +31,9 @@ export const configHelperNetworks: Config[] = [
     ...configHelperNetworksBase,
     chainId: 8996,
     network: 'development',
-    metadataCacheUri: 'http://127.0.0.1:5000',
-    providerUri: 'http://172.15.0.4:8030'
+    metadataCacheUri: 'http://172.15.0.5:5000',
+    providerUri: 'http://172.15.0.4:8030',
+    subgraphUri: 'https://172.15.0.15:9000'
   },
   {
     ...configHelperNetworksBase,
@@ -68,16 +69,6 @@ export const configHelperNetworks: Config[] = [
     explorerUri: 'https://polygonscan.com',
     oceanTokenSymbol: 'mOCEAN',
     gasFeeMultiplier: 1.6
-  },
-  {
-    ...configHelperNetworksBase,
-    chainId: 1287,
-    network: 'moonbase',
-    nodeUri: 'https://rpc.api.moonbase.moonbeam.network',
-    providerUri: 'https://v4.provider.moonbase.oceanprotocol.com',
-    subgraphUri: 'https://v4.subgraph.moonbase.oceanprotocol.com',
-    explorerUri: 'https://moonbase.moonscan.io/',
-    gasFeeMultiplier: 1.1
   },
   {
     ...configHelperNetworksBase,
