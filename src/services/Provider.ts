@@ -188,13 +188,14 @@ export class Provider {
         }
         return files
       }
+      const resolvedResponse = await response.json()
       LoggerInstance.error(
         'File info call failed: ',
         response.status,
         response.statusText,
-        await response.json()
+        resolvedResponse
       )
-      throw new Error('File info call failed: ', await response.json())
+      throw new Error(`File info call failed: ${resolvedResponse}`)
     } catch (e) {
       LoggerInstance.error(e)
       throw new Error('HTTP request failed calling Provider')
@@ -237,13 +238,14 @@ export class Provider {
         }
         return files
       }
+      const resolvedResponse = await response.json()
       LoggerInstance.error(
         'File info call failed: ',
         response.status,
         response.statusText,
-        await response.json()
+        resolvedResponse
       )
-      throw new Error('File info call failed: ', await response.json())
+      throw new Error(`File info call failed: ${resolvedResponse}`)
     } catch (e) {
       LoggerInstance.error(e)
       throw new Error('HTTP request failed calling Provider')
@@ -274,13 +276,14 @@ export class Provider {
         const envs: ComputeEnvironment[] = await response.json()
         return envs
       }
+      const resolvedResponse = await response.json()
       LoggerInstance.error(
         'Fetch compute env failed: ',
         response.status,
         response.statusText,
-        await response.json()
+        resolvedResponse
       )
-      throw new Error('Fetch compute env failed: ', await response.json())
+      throw new Error(`Fetch compute env failed: ${resolvedResponse}`)
     } catch (e) {
       LoggerInstance.error(e)
       throw new Error('HTTP request failed calling Provider')
@@ -337,13 +340,14 @@ export class Provider {
         const results: ProviderInitialize = await response.json()
         return results
       }
+      const resolvedResponse = await response.json()
       LoggerInstance.error(
         'Provider initialized failed: ',
         response.status,
         response.statusText,
-        await response.json()
+        resolvedResponse
       )
-      throw new Error('Provider initialized failed: ', await response.json())
+      throw new Error(`Provider initialized failed: ${resolvedResponse}`)
     } catch (e) {
       LoggerInstance.error(e)
       throw new Error('Asset URL not found or not available.')
@@ -395,14 +399,15 @@ export class Provider {
         const params = await response.json()
         return params
       }
+      const resolvedResponse = await response.json()
       LoggerInstance.error(
         'Compute start failed: ',
         response.status,
         response.statusText,
-        await response.json()
+        resolvedResponse
       )
       LoggerInstance.error('Payload was:', providerData)
-      throw new Error('Compute initialized failed: ', await response.json())
+      throw new Error(`Compute initialized failed: ${resolvedResponse}`)
     } catch (e) {
       LoggerInstance.error(e)
       throw new Error('ComputeJob cannot be initialized')
@@ -515,14 +520,15 @@ export class Provider {
         const params = await response.json()
         return params
       }
+      const resolvedResponse = await response.json()
       LoggerInstance.error(
         'Compute start failed: ',
         response.status,
         response.statusText,
-        await response.json()
+        resolvedResponse
       )
       LoggerInstance.error('Payload was:', payload)
-      throw new Error('Compute start failed: ', await response.json())
+      throw new Error(`Compute start failed: ${resolvedResponse}`)
     } catch (e) {
       LoggerInstance.error('Compute start failed:')
       LoggerInstance.error(e)
@@ -600,14 +606,15 @@ export class Provider {
         const params = await response.json()
         return params
       }
+      const resolvedResponse = await response.json()
       LoggerInstance.error(
         'Compute start failed: ',
         response.status,
         response.statusText,
-        await response.json()
+        resolvedResponse
       )
       LoggerInstance.error('Payload was:', payload)
-      throw new Error('Compute stop failed: ', await response.json())
+      throw new Error(`Compute stop failed: ${resolvedResponse}`)
     } catch (e) {
       LoggerInstance.error('Compute stop failed:')
       LoggerInstance.error(e)
@@ -655,12 +662,14 @@ export class Provider {
         const params = await response.json()
         return params
       }
+      const resolvedResponse = await response.json()
       LoggerInstance.error(
         'Get compute status failed:',
         response.status,
-        response.statusText
+        response.statusText,
+        resolvedResponse
       )
-      throw new Error('Compute status call failed: ', await response.json())
+      throw new Error(`Compute status call failed: ${resolvedResponse}`)
     } catch (e) {
       LoggerInstance.error('Get compute status failed')
       LoggerInstance.error(e)
@@ -774,13 +783,15 @@ export class Provider {
         const params = await response.json()
         return params
       }
+      const resolvedResponse = await response.json()
       LoggerInstance.error(
         'Delete compute job failed:',
         response.status,
-        response.statusText
+        response.statusText,
+        resolvedResponse
       )
       LoggerInstance.error('Payload was:', payload)
-      throw new Error('Delete compute job failed: ', await response.json())
+      throw new Error(`Delete compute job failed: ${resolvedResponse}`)
     } catch (e) {
       LoggerInstance.error('Delete compute job failed:')
       LoggerInstance.error(e)
