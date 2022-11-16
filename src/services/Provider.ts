@@ -33,7 +33,7 @@ export class Provider {
       throw new Error('HTTP request failed calling Provider')
     }
   }
-  d
+
   getEndpointURL(
     servicesEndpoints: ServiceEndpoint[],
     serviceName: string
