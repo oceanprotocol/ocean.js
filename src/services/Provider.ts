@@ -809,22 +809,22 @@ export class Provider {
    * @return {Promise<boolean>} string
    */
   public async isValidProvider(url: string, signal?: AbortSignal): Promise<boolean> {
-    let response
     try {
-      response = await fetch(url, {
+      const response = await fetch(url, {
         method: 'GET',
         headers: { 'Content-Type': 'application/json' },
         signal
       })
+
+      if (response?.ok) {
+        const params = await response.json()
+        if (params && params.providerAddress) return true
+      }
+      return false
     } catch (error) {
       LoggerInstance.error(`Error validating provider: ${error.message}`)
       return false
     }
-    if (response?.ok) {
-      const params = await response.json()
-      if (params && params.providerAddress) return true
-    }
-    return false
   }
 
   private noZeroX(input: string): string {
