@@ -201,7 +201,7 @@ export class Provider {
       response.statusText,
       resolvedResponse
     )
-    throw new Error(resolvedResponse)
+    throw new Error(resolvedResponse?.error)
   }
 
   /** Get URL details (if possible)
@@ -253,7 +253,7 @@ export class Provider {
       response.statusText,
       resolvedResponse
     )
-    throw new Error(resolvedResponse)
+    throw new Error(resolvedResponse?.error)
   }
 
   /** Get Compute Environments
@@ -293,7 +293,7 @@ export class Provider {
       response.statusText,
       resolvedResponse
     )
-    throw new Error(resolvedResponse)
+    throw new Error(resolvedResponse?.error)
   }
 
   /** Initialize a service request.
@@ -358,7 +358,7 @@ export class Provider {
       response.statusText,
       resolvedResponse
     )
-    throw new Error(resolvedResponse)
+    throw new Error(resolvedResponse?.error)
   }
 
   /** Initialize a compute request.
@@ -420,7 +420,7 @@ export class Provider {
       resolvedResponse
     )
     LoggerInstance.error('Payload was:', providerData)
-    throw new Error(resolvedResponse)
+    throw new Error(resolvedResponse?.error)
   }
 
   /** Gets fully signed URL for download
@@ -543,7 +543,7 @@ export class Provider {
       resolvedResponse
     )
     LoggerInstance.error('Payload was:', payload)
-    throw new Error(resolvedResponse)
+    throw new Error(resolvedResponse?.error)
   }
 
   /** Instruct the provider to Stop the execution of a to stop a compute job.
@@ -622,7 +622,7 @@ export class Provider {
       resolvedResponse
     )
     LoggerInstance.error('Payload was:', payload)
-    throw new Error(resolvedResponse)
+    throw new Error(resolvedResponse?.error)
   }
 
   /** Get compute status for a specific jobId/documentId/owner.
@@ -677,7 +677,7 @@ export class Provider {
       response.statusText,
       resolvedResponse
     )
-    throw new Error(resolvedResponse)
+    throw new Error(resolvedResponse?.error)
   }
 
   /** Get compute result url
@@ -800,7 +800,7 @@ export class Provider {
       resolvedResponse
     )
     LoggerInstance.error('Payload was:', payload)
-    throw new Error(resolvedResponse)
+    throw new Error(resolvedResponse?.error)
   }
 
   /** Check for a valid provider at URL
