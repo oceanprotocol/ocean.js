@@ -341,11 +341,9 @@ async function createAsset(
   providerResponse = await ProviderInstance.encrypt(ddo, providerUrl)
   const encryptedResponse = await providerResponse
   const validateResult = await aquarius.validate(ddo)
-  /// ```
-  /// <!--
-  assert(validateResult.valid, 'Could not validate metadata')
-  /// -->
-  /// ```Typescript
+
+  // Next you can check if if the ddo is valid by checking if validateResult.valid returned true
+
   await nft.setMetadata(
     nftAddress,
     owner,
@@ -407,12 +405,12 @@ async function handleOrder(
 }
 /// ```
 
-/// In your compute.ts file create a function that you can call later where you can add and test the following chunks of code
+/// At the end of your compute.ts file define `async function run(){ }`. We will use this function to add and test the following chunks of code.
 /// <!--
 describe('Compute-to-data example tests', async () => {
   /// -->
 
-  /// We load the configuration:
+  /// We need to load the configuration. Add the following code into your `run(){ }` function
   /// ```Typescript
   before(async () => {
     web3 = new Web3(process.env.NODE_URI || configHelperNetworks[1].nodeUri)
@@ -430,7 +428,7 @@ describe('Compute-to-data example tests', async () => {
     providerUrl = config.providerUri
     datatoken = new Datatoken(web3)
     /// ```
-    /// As we go along it's a good idea to console log the values so that you check they are right
+    /// As we go along it's a good idea to console log the values so that you check they are right. At the end of your `run(){ ... }` function add the following logs:
     /// ```Typescript
     console.log(`Aquarius URL: ${config.metadataCacheUri}`)
     console.log(`Provider URL: ${providerUrl}`)
@@ -438,8 +436,12 @@ describe('Compute-to-data example tests', async () => {
   }) ///
   /// ```
 
+  /// Now at the end of your compute.ts file call you `run()` function. Next, let's compile the file with the `tsc` command in the console and run `node dist/compute.js`.
+  /// If everything is working you should see the logs in the console and no errors.
   /// ## 5. Initialize accounts
   it('5.1 Initialize accounts', async () => {
+    /// We will use all of the following code snippets in the same way. Add the code snippet and the logs to the end of your `run(){ ... }` function as well as the logs.
+    /// Then compile your file with the `tsc` command and run it with `node dist/compute.js`
     /// ```Typescript
     const accounts = await web3.eth.getAccounts()
     publisherAccount = accounts[0]
