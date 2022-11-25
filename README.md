@@ -46,7 +46,7 @@ This is in alpha state. If you run into problems, please open up a [new issue](h
 npm install @oceanprotocol/lib
 ```
 
-- Checkout our [code examples](CodeExamples.md) to see how you can use ocean.js.
+- Checkout our [code examples](CodeExamples.md) or [compute to data examples](C2DExamples.md) to see how you can use ocean.js.
 - Refer to the [Ocean Protocol documentation](https://docs.oceanprotocol.com/) for more guides and tutorials.
 - Visit the [Ocean Protocol website](https://docs.oceanprotocol.com/) for general information about Ocean Protocol.
 - If you have any difficulties or if you have further questions about how to use ocean.js please reach out to us on [Discord](https://discord.gg/TnXjkR5).
@@ -85,7 +85,7 @@ Running all tests requires running Ocean Protocol components beforehand with [Ba
 git clone https://github.com/oceanprotocol/barge
 cd barge
 
-./start_ocean.sh --with-provider2 --no-dashboard
+./start_ocean.sh --with-provider2 --no-dashboard --with-c2d
 ```
 
 You can then proceed to run in another terminal.
