@@ -276,7 +276,7 @@ async function createAsset(
   // create the files encrypted string
   assetUrl.datatokenAddress = datatokenAddressAsset
   assetUrl.nftAddress = ddo.nftAddress
-  let providerResponse = await ProviderInstance.encrypt(assetUrl, providerUrl)
+  let providerResponse = await ProviderInstance.encrypt(assetUrl, chain, providerUrl)
   ddo.services[0].files = await providerResponse
   ddo.services[0].datatokenAddress = datatokenAddressAsset
   ddo.services[0].serviceEndpoint = providerUrl
@@ -284,7 +284,7 @@ async function createAsset(
   ddo.nftAddress = web3.utils.toChecksumAddress(nftAddress)
   ddo.id =
     'did:op:' + SHA256(web3.utils.toChecksumAddress(nftAddress) + chain.toString(10))
-  providerResponse = await ProviderInstance.encrypt(ddo, providerUrl)
+  providerResponse = await ProviderInstance.encrypt(ddo, chain, providerUrl)
   const encryptedResponse = await providerResponse
   const validateResult = await aquarius.validate(ddo)
   assert(validateResult.valid, 'Could not validate metadata')

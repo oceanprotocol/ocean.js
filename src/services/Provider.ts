@@ -123,7 +123,7 @@ export class Provider {
    */
   public async encrypt(
     data: any,
-    chainId: string,
+    chainId: number,
     providerUri: string,
     signal?: AbortSignal
   ): Promise<string> {
