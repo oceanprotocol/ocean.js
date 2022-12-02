@@ -123,6 +123,7 @@ export class Provider {
    */
   public async encrypt(
     data: any,
+    chainId: string,
     providerUri: string,
     signal?: AbortSignal
   ): Promise<string> {
@@ -135,10 +136,11 @@ export class Provider {
       ? this.getEndpointURL(serviceEndpoints, 'encrypt').urlPath
       : null
     if (!path) return null
+    const body = { chainId, data }
     try {
       const response = await fetch(path, {
         method: 'POST',
-        body: JSON.stringify(data),
+        body: JSON.stringify(body),
         headers: { 'Content-Type': 'application/octet-stream' },
         signal
       })
