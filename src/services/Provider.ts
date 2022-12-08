@@ -132,20 +132,22 @@ export class Provider {
       providerUri,
       providerEndpoints
     )
-    const path = this.getEndpointURL(serviceEndpoints, 'encrypt')
-      ? this.getEndpointURL(serviceEndpoints, 'encrypt').urlPath
-      : null
+    const path =
+      (this.getEndpointURL(serviceEndpoints, 'encrypt')
+        ? this.getEndpointURL(serviceEndpoints, 'encrypt').urlPath
+        : null) + `?chainId=${chainId}`
     if (!path) return null
-    const body = { chainId, data }
+    console.log('Path:', path)
     try {
       const response = await fetch(path, {
         method: 'POST',
-        body: JSON.stringify(body),
+        body: JSON.stringify(data),
         headers: { 'Content-Type': 'application/octet-stream' },
         signal
       })
       return await response.text()
     } catch (e) {
+      console.log('Error:', e)
       LoggerInstance.error(e)
       throw new Error('HTTP request failed calling Provider')
     }
