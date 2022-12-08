@@ -137,7 +137,6 @@ export class Provider {
         ? this.getEndpointURL(serviceEndpoints, 'encrypt').urlPath
         : null) + `?chainId=${chainId}`
     if (!path) return null
-    console.log('Path:', path)
     try {
       const response = await fetch(path, {
         method: 'POST',
@@ -147,7 +146,6 @@ export class Provider {
       })
       return await response.text()
     } catch (e) {
-      console.log('Error:', e)
       LoggerInstance.error(e)
       throw new Error('HTTP request failed calling Provider')
     }
