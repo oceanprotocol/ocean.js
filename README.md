@@ -105,7 +105,7 @@ npm run build:metadata
 Executing linting, type checking, unit, and integration tests with coverage reporting all in one go:
 
 ```bash
-npm run test:integration
+npm run test
 ```
 
 ### Unit Tests
