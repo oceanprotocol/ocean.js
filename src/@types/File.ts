@@ -1,4 +1,9 @@
 import { AbiItem } from 'web3-utils'
+
+interface FileTypeHeaders {
+  [key: string]: string
+}
+
 export interface UrlFile {
   type: 'url'
 
@@ -19,8 +24,13 @@ export interface UrlFile {
    * @type {string}
    */
   method: string
-}
 
+  /**
+   * Headers key value pairs associated with the asset GET request
+   * @type {string}
+   */
+  headers?: FileTypeHeaders
+}
 export interface GraphqlQuery {
   type: 'graphql'
 
@@ -40,6 +50,12 @@ export interface GraphqlQuery {
    * @type {string}
    */
   query: string
+
+  /**
+   * Headers key value pairs associated with the asset GET request
+   * @type {string}
+   */
+  headers?: FileTypeHeaders
 }
 
 export interface Arweave {
