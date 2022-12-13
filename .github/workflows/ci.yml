@@ -55,6 +55,7 @@ jobs:
         with:
           repository: 'oceanprotocol/barge'
           path: 'barge'
+          ref: 'feature/ganache_upgrade'
 
       - name: Run Ganache with Barge
         working-directory: ${{ github.workspace }}/barge
