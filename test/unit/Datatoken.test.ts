@@ -575,6 +575,16 @@ describe('Datatoken', () => {
     assert(decimals === '18')
   })
 
+  it('#getSymbol - should return the number of decimals of the datatoken', async () => {
+    const symbol = await datatoken.getSymbol(datatokenAddress)
+    assert(symbol === 'ERC20DT1Symbol')
+  })
+
+  it('#getName - should return the number of decimals of the datatoken', async () => {
+    const name = await datatoken.getDecimals(datatokenAddress)
+    assert(name === 'ERC20B1')
+  })
+
   it('#transfer - we can transfer the datatoken', async () => {
     const balance1before = await datatoken.balance(datatokenAddress, user1)
     const balance2before = await datatoken.balance(datatokenAddress, user2)
