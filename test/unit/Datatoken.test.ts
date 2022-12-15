@@ -575,12 +575,12 @@ describe('Datatoken', () => {
     assert(decimals === '18')
   })
 
-  it('#getSymbol - should return the number of decimals of the datatoken', async () => {
+  it('#getSymbol - should return the symbbol of the datatoken', async () => {
     const symbol = await datatoken.getSymbol(datatokenAddress)
     assert(symbol === 'ERC20DT1Symbol')
   })
 
-  it('#getName - should return the number of decimals of the datatoken', async () => {
+  it('#getName - should return the name of the datatoken', async () => {
     const name = await datatoken.getName(datatokenAddress)
     assert(name === 'ERC20B1')
   })

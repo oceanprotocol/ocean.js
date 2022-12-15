@@ -798,7 +798,7 @@ export class Datatoken extends SmartContract {
     return symbol
   }
 
-  /** It returns the token decimals, how many supported decimal points
+  /** It returns the name of the token
    * @param {String} dtAddress Datatoken adress
    * @return {Promise<number>}
    */
