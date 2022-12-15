@@ -581,7 +581,7 @@ describe('Datatoken', () => {
   })
 
   it('#getName - should return the number of decimals of the datatoken', async () => {
-    const name = await datatoken.getDecimals(datatokenAddress)
+    const name = await datatoken.getName(datatokenAddress)
     assert(name === 'ERC20B1')
   })
 
