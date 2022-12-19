@@ -788,6 +788,26 @@ export class Datatoken extends SmartContract {
     return decimals
   }
 
+  /** It returns the token symbol
+   * @param {String} dtAddress Datatoken adress
+   * @return {Promise<number>}
+   */
+  public async getSymbol(dtAddress: string): Promise<string> {
+    const dtContract = this.getContract(dtAddress)
+    const symbol = await dtContract.methods.symbol().call()
+    return symbol
+  }
+
+  /** It returns the name of the token
+   * @param {String} dtAddress Datatoken adress
+   * @return {Promise<number>}
+   */
+  public async getName(dtAddress: string): Promise<string> {
+    const dtContract = this.getContract(dtAddress)
+    const name = await dtContract.methods.name().call()
+    return name
+  }
+
   /** It returns the token decimals, how many supported decimal points
    * @param {String} dtAddress Datatoken adress
    * @return {Promise<number>}
