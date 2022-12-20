@@ -5,6 +5,10 @@ import { Config } from '../config'
 import { minAbi, GASLIMIT_DEFAULT, LoggerInstance, FEE_HISTORY_NOT_SUPPORTED } from '.'
 import { TransactionReceipt } from 'web3-core'
 
+const MIN_GAS_FEE_POLYGON = 30000000000
+const POLYGON_NETWORK_ID = 137
+const MUMBAI_NETWORK_ID = 8001
+
 export function setContractDefaults(contract: Contract, config: Config): Contract {
   if (config) {
     if (config.transactionBlockTimeout)
@@ -81,17 +85,9 @@ export async function calculateEstimatedGas(
   functionToEstimateGas: Function,
   ...args: any[]
 ): Promise<number> {
-  // const minGwei = Web3.utils.toWei('1', 'gwei')
-  // console.log('minGwei', minGwei)
   const estimatedGas = await functionToEstimateGas
     .apply(null, args)
     .estimateGas({ from }, (err, estGas) => (err ? GASLIMIT_DEFAULT : estGas))
-  // console.log('estimate gas', estimatedGas)
-  // return estimatedGas > minGwei ? estimatedGas : minGwei
-  console.log(
-    'in estimate ',
-    new BigNumber('30000000000').integerValue(BigNumber.ROUND_DOWN).toString(10)
-  )
   return estimatedGas
 }
 
@@ -131,10 +127,13 @@ export async function sendTx(
         .toString(10)
 
       sendTxValue.maxPriorityFeePerGas =
-        (networkId === 8001 || networkId === 137) &&
-        new BigNumber(sendTxValue.maxPriorityFeePerGas) < new BigNumber('30000000000')
-          ? sendTxValue.maxPriorityFeePerGas
-          : new BigNumber('30000000000').integerValue(BigNumber.ROUND_DOWN).toString(10)
+        (networkId === MUMBAI_NETWORK_ID || networkId === POLYGON_NETWORK_ID) &&
+        new BigNumber(sendTxValue.maxPriorityFeePerGas) <
+          new BigNumber(MIN_GAS_FEE_POLYGON)
+          ? new BigNumber(MIN_GAS_FEE_POLYGON)
+              .integerValue(BigNumber.ROUND_DOWN)
+              .toString(10)
+          : sendTxValue.maxPriorityFeePerGas
 
       sendTxValue.maxFeePerGas = aggressiveFee
         .plus(new BigNumber(feeHistory?.baseFeePerGas?.[0]).multipliedBy(2))
@@ -142,10 +141,12 @@ export async function sendTx(
         .toString(10)
 
       sendTxValue.maxFeePerGas =
-        (networkId === 8001 || networkId === 137) &&
-        new BigNumber(sendTxValue.maxFeePerGas) < new BigNumber('30000000000')
-          ? sendTxValue.maxFeePerGas
-          : new BigNumber('30000000000').integerValue(BigNumber.ROUND_DOWN).toString(10)
+        (networkId === MUMBAI_NETWORK_ID || networkId === POLYGON_NETWORK_ID) &&
+        new BigNumber(sendTxValue.maxFeePerGas) < new BigNumber(MIN_GAS_FEE_POLYGON)
+          ? new BigNumber(MIN_GAS_FEE_POLYGON)
+              .integerValue(BigNumber.ROUND_DOWN)
+              .toString(10)
+          : sendTxValue.maxFeePerGas
 
       console.log('network ', await web3.eth.getChainId())
       console.log('sendTxValue', sendTxValue)
