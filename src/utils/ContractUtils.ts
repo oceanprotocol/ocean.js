@@ -7,7 +7,7 @@ import { TransactionReceipt } from 'web3-core'
 
 const MIN_GAS_FEE_POLYGON = 30000000000
 const POLYGON_NETWORK_ID = 137
-const MUMBAI_NETWORK_ID = 8001
+const MUMBAI_NETWORK_ID = 80001
 
 export function setContractDefaults(contract: Contract, config: Config): Contract {
   if (config) {
@@ -111,7 +111,6 @@ export async function sendTx(
   const sendTxValue: Record<string, any> = {
     from,
     gas: estGas + 1
-    // gas: 30000000000
   }
   const networkId = await web3.eth.getChainId()
   try {
@@ -128,8 +127,9 @@ export async function sendTx(
 
       sendTxValue.maxPriorityFeePerGas =
         (networkId === MUMBAI_NETWORK_ID || networkId === POLYGON_NETWORK_ID) &&
-        new BigNumber(sendTxValue.maxPriorityFeePerGas) <
+        new BigNumber(sendTxValue.maxPriorityFeePerGas).lte(
           new BigNumber(MIN_GAS_FEE_POLYGON)
+        )
           ? new BigNumber(MIN_GAS_FEE_POLYGON)
               .integerValue(BigNumber.ROUND_DOWN)
               .toString(10)
@@ -142,14 +142,11 @@ export async function sendTx(
 
       sendTxValue.maxFeePerGas =
         (networkId === MUMBAI_NETWORK_ID || networkId === POLYGON_NETWORK_ID) &&
-        new BigNumber(sendTxValue.maxFeePerGas) < new BigNumber(MIN_GAS_FEE_POLYGON)
+        new BigNumber(sendTxValue.maxFeePerGas).lte(new BigNumber(MIN_GAS_FEE_POLYGON))
           ? new BigNumber(MIN_GAS_FEE_POLYGON)
               .integerValue(BigNumber.ROUND_DOWN)
               .toString(10)
           : sendTxValue.maxFeePerGas
-
-      console.log('network ', await web3.eth.getChainId())
-      console.log('sendTxValue', sendTxValue)
     } else {
       sendTxValue.gasPrice = await getFairGasPrice(web3, gasFeeMultiplier)
     }
