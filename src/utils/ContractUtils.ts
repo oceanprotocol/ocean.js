@@ -81,9 +81,17 @@ export async function calculateEstimatedGas(
   functionToEstimateGas: Function,
   ...args: any[]
 ): Promise<number> {
+  // const minGwei = Web3.utils.toWei('1', 'gwei')
+  // console.log('minGwei', minGwei)
   const estimatedGas = await functionToEstimateGas
     .apply(null, args)
     .estimateGas({ from }, (err, estGas) => (err ? GASLIMIT_DEFAULT : estGas))
+  // console.log('estimate gas', estimatedGas)
+  // return estimatedGas > minGwei ? estimatedGas : minGwei
+  console.log(
+    'in estimate ',
+    new BigNumber('30000000000').integerValue(BigNumber.ROUND_DOWN).toString(10)
+  )
   return estimatedGas
 }
 
@@ -107,7 +115,9 @@ export async function sendTx(
   const sendTxValue: Record<string, any> = {
     from,
     gas: estGas + 1
+    // gas: 30000000000
   }
+  const networkId = await web3.eth.getChainId()
   try {
     const feeHistory = await web3.eth.getFeeHistory(1, 'latest', [75])
     if (feeHistory && feeHistory?.baseFeePerGas?.[0] && feeHistory?.reward?.[0]?.[0]) {
@@ -120,10 +130,25 @@ export async function sendTx(
         .integerValue(BigNumber.ROUND_DOWN)
         .toString(10)
 
+      sendTxValue.maxPriorityFeePerGas =
+        (networkId === 8001 || networkId === 137) &&
+        new BigNumber(sendTxValue.maxPriorityFeePerGas) < new BigNumber('30000000000')
+          ? sendTxValue.maxPriorityFeePerGas
+          : new BigNumber('30000000000').integerValue(BigNumber.ROUND_DOWN).toString(10)
+
       sendTxValue.maxFeePerGas = aggressiveFee
         .plus(new BigNumber(feeHistory?.baseFeePerGas?.[0]).multipliedBy(2))
         .integerValue(BigNumber.ROUND_DOWN)
         .toString(10)
+
+      sendTxValue.maxFeePerGas =
+        (networkId === 8001 || networkId === 137) &&
+        new BigNumber(sendTxValue.maxFeePerGas) < new BigNumber('30000000000')
+          ? sendTxValue.maxFeePerGas
+          : new BigNumber('30000000000').integerValue(BigNumber.ROUND_DOWN).toString(10)
+
+      console.log('network ', await web3.eth.getChainId())
+      console.log('sendTxValue', sendTxValue)
     } else {
       sendTxValue.gasPrice = await getFairGasPrice(web3, gasFeeMultiplier)
     }
