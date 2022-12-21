@@ -676,6 +676,35 @@ describe('Marketplace flow tests', async () => {
     }
   }) ///
   /// ```
+
+  it('8.1 Add key-value pair to data NFT', async () => {
+    /// ```Typescript
+    const nft = new Nft(web3)
+    const data = 'SomeData'
+    try {
+      /// Use the `setData` method to update the nft key value store with some data
+      await nft.setData(freNftAddress, publisherAccount, '1', data)
+    } catch (e) {
+      console.error(e)
+      assert.fail('Download failed')
+    }
+    /// ```
+  }) ///
+
+  it('8.2 Add key-value pair to data NFT', async () => {
+    /// ```Typescript
+    const nft = new Nft(web3)
+    try {
+      /// Use the `getData` method to get the data stored in the nft key value store
+      const data = await nft.getData(freNftAddress, '1')
+      console.log('Data: ', data)
+    } catch (e) {
+      console.error(e)
+      assert.fail('Download failed')
+    }
+    /// ```
+  }) ///
+  /// ```
 }) ///
 
 /// ## Editing this file
