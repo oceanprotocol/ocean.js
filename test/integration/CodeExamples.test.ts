@@ -678,20 +678,33 @@ describe('Marketplace flow tests', async () => {
   /// ```
 
   it('8.1 Add key-value pair to data NFT', async () => {
+    /// Data NFTs can store arbitrary key-value pairs on-chain. This opens up their usage for a broad variety of applications, such as comments & ratings, attestations, and privately sharing data (when the value is encrypted).
+
+    /// Let's see how!
+
+    /// Here are the steps:
+
+    /// 1. Setup (same as above)
+    /// 2. Publish data NFT (same as above)
+    /// 3. Add key-value pair to data NFT (use the `setData` method)
+    /// 4. Retrieve value from data NFT (use the `getData` method)
+
+    /// Let's start by using the `setData` method to update the nft key value store with some data
     /// ```Typescript
     const nft = new Nft(web3)
     const data = 'SomeData'
     try {
-      /// Use the `setData` method to update the nft key value store with some data
       await nft.setData(freNftAddress, publisherAccount, '1', data)
     } catch (e) {
       console.error(e)
       assert.fail('Download failed')
     }
     /// ```
+
+    /// Under the hood, this uses [ERC725](https://erc725alliance.org/), which augments ERC721 with a well-defined way to set and get key-value pairs.
   }) ///
 
-  it('8.2 Add key-value pair to data NFT', async () => {
+  it('8.2 get the key-value pair data from the NFT', async () => {
     /// ```Typescript
     const nft = new Nft(web3)
     try {
@@ -703,8 +716,9 @@ describe('Marketplace flow tests', async () => {
       assert.fail('Download failed')
     }
     /// ```
+
+    /// That's it! Note the simplicity. All data was stored and retrieved from on-chain. We don't need Ocean Provider or Ocean Aquarius for these use cases (though the latter can help for fast querying & retrieval).
   }) ///
-  /// ```
 }) ///
 
 /// ## Editing this file
