@@ -5,7 +5,7 @@ import { Config } from '../config'
 import { minAbi, GASLIMIT_DEFAULT, LoggerInstance, FEE_HISTORY_NOT_SUPPORTED } from '.'
 import { TransactionReceipt } from 'web3-core'
 
-const MIN_GAS_FEE_POLYGON = 30000000000
+const MIN_GAS_FEE_POLYGON = 30000000000 // minimum recommended 30 gwei polygon main and mumbai fees
 const POLYGON_NETWORK_ID = 137
 const MUMBAI_NETWORK_ID = 80001
 
@@ -125,6 +125,12 @@ export async function sendTx(
         .integerValue(BigNumber.ROUND_DOWN)
         .toString(10)
 
+      sendTxValue.maxFeePerGas = aggressiveFee
+        .plus(new BigNumber(feeHistory?.baseFeePerGas?.[0]).multipliedBy(2))
+        .integerValue(BigNumber.ROUND_DOWN)
+        .toString(10)
+
+      // if network is polygon and mumbai and fees is lower than the 30 gwei trashold, sets MIN_GAS_FEE_POLYGON
       sendTxValue.maxPriorityFeePerGas =
         (networkId === MUMBAI_NETWORK_ID || networkId === POLYGON_NETWORK_ID) &&
         new BigNumber(sendTxValue.maxPriorityFeePerGas).lte(
@@ -134,11 +140,6 @@ export async function sendTx(
               .integerValue(BigNumber.ROUND_DOWN)
               .toString(10)
           : sendTxValue.maxPriorityFeePerGas
-
-      sendTxValue.maxFeePerGas = aggressiveFee
-        .plus(new BigNumber(feeHistory?.baseFeePerGas?.[0]).multipliedBy(2))
-        .integerValue(BigNumber.ROUND_DOWN)
-        .toString(10)
 
       sendTxValue.maxFeePerGas =
         (networkId === MUMBAI_NETWORK_ID || networkId === POLYGON_NETWORK_ID) &&
