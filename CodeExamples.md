@@ -704,7 +704,7 @@ Let's start by using the `setData` method to update the nft key value store with
 Under the hood, this uses [ERC725](https://erc725alliance.org/), which augments ERC721 with a well-defined way to set and get key-value pairs.
   
 
-  ### 8.2 Add key-value pair to data NFT
+  ### 8.2 get the key-value pair data from the NFT
 ```Typescript
     const nft = new Nft(web3)
     try {
