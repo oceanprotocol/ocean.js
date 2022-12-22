@@ -697,7 +697,7 @@ describe('Marketplace flow tests', async () => {
       await nft.setData(freNftAddress, publisherAccount, '1', data)
     } catch (e) {
       console.error(e)
-      assert.fail('Download failed')
+      assert.fail('Failed to set data in NFT ERC725 key value store', e)
     }
     /// ```
 
@@ -713,7 +713,7 @@ describe('Marketplace flow tests', async () => {
       console.log('Data: ', data)
     } catch (e) {
       console.error(e)
-      assert.fail('Download failed')
+      assert.fail('Failed to get data from NFT ERC725 key value store', e)
     }
     /// ```
 
