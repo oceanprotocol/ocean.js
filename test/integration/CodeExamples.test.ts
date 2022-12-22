@@ -677,18 +677,20 @@ describe('Marketplace flow tests', async () => {
   }) ///
   /// ```
 
+  /// ## 8. Using ERC725 Key-Value Store
+
+  /// Data NFTs can store arbitrary key-value pairs on-chain. This opens up their usage for a broad variety of applications, such as comments & ratings, attestations, and privately sharing data (when the value is encrypted).
+
+  /// Let's see how!
+
+  /// Here are the steps:
+
+  /// 1. Setup (same as above)
+  /// 2. Publish data NFT (same as above)
+  /// 3. Add key-value pair to data NFT (use the `setData` method)
+  /// 4. Retrieve value from data NFT (use the `getData` method)
+
   it('8.1 Add key-value pair to data NFT', async () => {
-    /// Data NFTs can store arbitrary key-value pairs on-chain. This opens up their usage for a broad variety of applications, such as comments & ratings, attestations, and privately sharing data (when the value is encrypted).
-
-    /// Let's see how!
-
-    /// Here are the steps:
-
-    /// 1. Setup (same as above)
-    /// 2. Publish data NFT (same as above)
-    /// 3. Add key-value pair to data NFT (use the `setData` method)
-    /// 4. Retrieve value from data NFT (use the `getData` method)
-
     /// Let's start by using the `setData` method to update the nft key value store with some data
     /// ```Typescript
     const nft = new Nft(web3)
@@ -696,23 +698,25 @@ describe('Marketplace flow tests', async () => {
     try {
       await nft.setData(freNftAddress, publisherAccount, '1', data)
     } catch (e) {
-      console.error(e)
       assert.fail('Failed to set data in NFT ERC725 key value store', e)
     }
     /// ```
 
     /// Under the hood, this uses [ERC725](https://erc725alliance.org/), which augments ERC721 with a well-defined way to set and get key-value pairs.
-  }) ///
 
-  it('8.2 get the key-value pair data from the NFT', async () => {
+    /// ### 8.2 get the key-value pair data from the NFT'
+
+    /// Use the `getData` method to get the data stored in the nft key value store
+
     /// ```Typescript
-    const nft = new Nft(web3)
     try {
-      /// Use the `getData` method to get the data stored in the nft key value store
-      const data = await nft.getData(freNftAddress, '1')
-      console.log('Data: ', data)
+      const response = await nft.getData(freNftAddress, '1')
+      console.log('getData response: ', response)
+      assert(
+        response === data,
+        'Wrong data received when getting data from NFT ERC725 key value store'
+      )
     } catch (e) {
-      console.error(e)
       assert.fail('Failed to get data from NFT ERC725 key value store', e)
     }
     /// ```
