@@ -5,6 +5,10 @@ import { Config } from '../config'
 import { minAbi, GASLIMIT_DEFAULT, LoggerInstance, FEE_HISTORY_NOT_SUPPORTED } from '.'
 import { TransactionReceipt } from 'web3-core'
 
+const MIN_GAS_FEE_POLYGON = 30000000000 // minimum recommended 30 gwei polygon main and mumbai fees
+const POLYGON_NETWORK_ID = 137
+const MUMBAI_NETWORK_ID = 80001
+
 export function setContractDefaults(contract: Contract, config: Config): Contract {
   if (config) {
     if (config.transactionBlockTimeout)
@@ -108,6 +112,7 @@ export async function sendTx(
     from,
     gas: estGas + 1
   }
+  const networkId = await web3.eth.getChainId()
   try {
     const feeHistory = await web3.eth.getFeeHistory(1, 'latest', [75])
     if (feeHistory && feeHistory?.baseFeePerGas?.[0] && feeHistory?.reward?.[0]?.[0]) {
@@ -124,6 +129,25 @@ export async function sendTx(
         .plus(new BigNumber(feeHistory?.baseFeePerGas?.[0]).multipliedBy(2))
         .integerValue(BigNumber.ROUND_DOWN)
         .toString(10)
+
+      // if network is polygon and mumbai and fees is lower than the 30 gwei trashold, sets MIN_GAS_FEE_POLYGON
+      sendTxValue.maxPriorityFeePerGas =
+        (networkId === MUMBAI_NETWORK_ID || networkId === POLYGON_NETWORK_ID) &&
+        new BigNumber(sendTxValue.maxPriorityFeePerGas).lte(
+          new BigNumber(MIN_GAS_FEE_POLYGON)
+        )
+          ? new BigNumber(MIN_GAS_FEE_POLYGON)
+              .integerValue(BigNumber.ROUND_DOWN)
+              .toString(10)
+          : sendTxValue.maxPriorityFeePerGas
+
+      sendTxValue.maxFeePerGas =
+        (networkId === MUMBAI_NETWORK_ID || networkId === POLYGON_NETWORK_ID) &&
+        new BigNumber(sendTxValue.maxFeePerGas).lte(new BigNumber(MIN_GAS_FEE_POLYGON))
+          ? new BigNumber(MIN_GAS_FEE_POLYGON)
+              .integerValue(BigNumber.ROUND_DOWN)
+              .toString(10)
+          : sendTxValue.maxFeePerGas
     } else {
       sendTxValue.gasPrice = await getFairGasPrice(web3, gasFeeMultiplier)
     }
