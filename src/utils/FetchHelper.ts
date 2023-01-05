@@ -4,7 +4,7 @@ import { DownloadResponse } from '../@types'
 export async function downloadFileBrowser(url: string): Promise<void> {
   const headResponse = await fetch(url, { method: 'HEAD' })
   const contentHeader = headResponse.headers.get('content-disposition')
-  const fileName = contentHeader.split('=')[1]
+  const fileName = contentHeader?.split('=')[1] ? contentHeader?.split('=')[1] : 'file'
   const xhr = new XMLHttpRequest()
   xhr.responseType = 'blob'
   xhr.open('GET', url)
