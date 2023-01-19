@@ -71,6 +71,12 @@ const ddoWithNoTimeout = {
   ]
 }
 
+function delay(interval: number) {
+  return it('should delay', (done) => {
+    setTimeout(() => done(), interval)
+  }).timeout(interval + 100)
+}
+
 describe('Multichain Provider test', async () => {
   before(async () => {
     config = await getTestConfig(web3)
@@ -143,7 +149,7 @@ describe('Multichain Provider test', async () => {
 
   it('Resolve published datasets and algorithms', async () => {
     resolvedDdoWith5mTimeout = await aquarius.waitForAqua(ddoWith5mTimeoutId)
-    console.log('resolvedDdoWith5mTimeout ', resolvedDdoWith5mTimeout)
+    console.log('+++resolvedDdoWith5mTimeout+++ ', resolvedDdoWith5mTimeout)
     assert(resolvedDdoWith5mTimeout, 'Cannot fetch DDO from Aquarius')
   })
 
@@ -219,9 +225,11 @@ describe('Multichain Provider test', async () => {
     assert(updateTx, 'Failed to update asset metadata')
   })
 
+  delay(100000) //let's wait for aquarius to index the updated ddo
+
   it('Should resolve updated metadata asset', async () => {
     resolvedDdoAfterUpdate = await aquarius.waitForAqua(ddoWith5mTimeoutId)
-    console.log('resolvedDdoAfterUpdate ', resolvedDdoAfterUpdate)
+    console.log('____resolvedDdoAfterUpdate____ ', resolvedDdoAfterUpdate)
     assert(resolvedDdoAfterUpdate, 'Cannot fetch DDO from Aquarius')
   })
 
