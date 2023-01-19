@@ -225,7 +225,7 @@ describe('Multichain Provider test', async () => {
     assert(updateTx, 'Failed to update asset metadata')
   })
 
-  delay(100000) //let's wait for aquarius to index the updated ddo
+  delay(100000) // let's wait for aquarius to index the updated ddo
 
   it('Should resolve updated metadata asset', async () => {
     resolvedDdoAfterUpdate = await aquarius.waitForAqua(ddoWith5mTimeoutId)
