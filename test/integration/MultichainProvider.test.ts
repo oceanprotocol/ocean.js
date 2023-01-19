@@ -209,7 +209,7 @@ describe('Multichain Provider test', async () => {
   })
 
   it('Should update metadata the asset metadata with second provider as serviceEndpoint', async () => {
-    resolvedDdoWith5mTimeout.services[0].serviceEndpoint = 'http://172.15.0.4:8030'
+    resolvedDdoWith5mTimeout.services[0].serviceEndpoint = 'http://172.15.0.104:8030'
     const updateTx = await updateAssetMetadata(
       publisherAccount,
       resolvedDdoWith5mTimeout,
