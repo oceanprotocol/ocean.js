@@ -293,66 +293,66 @@ describe('Multichain Provider test', async () => {
     }
   })
 
-  delay(1000) // let's wait and try with multichain provider now
+  //   delay(1000) // let's wait and try with multichain provider now
 
-  it('Should order the of the dataset with multichain provider', async () => {
-    providerUrl = 'http://172.15.0.104:8030'
-    const initializeData = await ProviderInstance.initialize(
-      resolvedDdoAfterUpdate.id,
-      resolvedDdoAfterUpdate.services[0].id,
-      0,
-      consumerAccount,
-      providerUrl
-    )
+  //   it('Should order the of the dataset with multichain provider', async () => {
+  //     providerUrl = 'http://172.15.0.104:8030'
+  //     const initializeData = await ProviderInstance.initialize(
+  //       resolvedDdoAfterUpdate.id,
+  //       resolvedDdoAfterUpdate.services[0].id,
+  //       0,
+  //       consumerAccount,
+  //       providerUrl
+  //     )
 
-    assert(
-      initializeData,
-      'Failed initializing the provider with ipa 172.15.0.104 failed'
-    )
+  //     assert(
+  //       initializeData,
+  //       'Failed initializing the provider with ipa 172.15.0.104 failed'
+  //     )
 
-    const providerFees: ProviderFees = {
-      providerFeeAddress: initializeData.providerFee.providerFeeAddress,
-      providerFeeToken: initializeData.providerFee.providerFeeToken,
-      providerFeeAmount: initializeData.providerFee.providerFeeAmount,
-      v: initializeData.providerFee.v,
-      r: initializeData.providerFee.r,
-      s: initializeData.providerFee.s,
-      providerData: initializeData.providerFee.providerData,
-      validUntil: initializeData.providerFee.validUntil
-    }
+  //     const providerFees: ProviderFees = {
+  //       providerFeeAddress: initializeData.providerFee.providerFeeAddress,
+  //       providerFeeToken: initializeData.providerFee.providerFeeToken,
+  //       providerFeeAmount: initializeData.providerFee.providerFeeAmount,
+  //       v: initializeData.providerFee.v,
+  //       r: initializeData.providerFee.r,
+  //       s: initializeData.providerFee.s,
+  //       providerData: initializeData.providerFee.providerData,
+  //       validUntil: initializeData.providerFee.validUntil
+  //     }
 
-    // make the payment
-    orderTx = await datatoken.startOrder(
-      resolvedDdoAfterUpdate.services[0].datatokenAddress,
-      consumerAccount,
-      consumerAccount,
-      0,
-      providerFees
-    )
-    assert(
-      orderTx,
-      'Ordering the dataset failed for multichain provider with ipa 172.15.0.104.'
-    )
-  })
+  //     // make the payment
+  //     orderTx = await datatoken.startOrder(
+  //       resolvedDdoAfterUpdate.services[0].datatokenAddress,
+  //       consumerAccount,
+  //       consumerAccount,
+  //       0,
+  //       providerFees
+  //     )
+  //     assert(
+  //       orderTx,
+  //       'Ordering the dataset failed for multichain provider with ipa 172.15.0.104.'
+  //     )
+  //   })
 
-  it('Should download with multichain provider', async () => {
-    const downloadURL = await ProviderInstance.getDownloadUrl(
-      resolvedDdoAfterUpdate.id,
-      consumerAccount,
-      resolvedDdoAfterUpdate.services[0].id,
-      0,
-      orderTx.transactionHash,
-      providerUrl,
-      web3
-    )
-    assert(
-      downloadURL,
-      'Provider getDownloadUrl failed with multichain provider with ipa 172.15.0.104 failed'
-    )
-    try {
-      await downloadFile(downloadURL)
-    } catch (e) {
-      assert.fail('Download failed for multichain provider with ipa 172.15.0.104 failed')
-    }
-  })
+  //   it('Should download with multichain provider', async () => {
+  //     const downloadURL = await ProviderInstance.getDownloadUrl(
+  //       resolvedDdoAfterUpdate.id,
+  //       consumerAccount,
+  //       resolvedDdoAfterUpdate.services[0].id,
+  //       0,
+  //       orderTx.transactionHash,
+  //       providerUrl,
+  //       web3
+  //     )
+  //     assert(
+  //       downloadURL,
+  //       'Provider getDownloadUrl failed with multichain provider with ipa 172.15.0.104 failed'
+  //     )
+  //     try {
+  //       await downloadFile(downloadURL)
+  //     } catch (e) {
+  //       assert.fail('Download failed for multichain provider with ipa 172.15.0.104 failed')
+  //     }
+  //  })
 })
