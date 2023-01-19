@@ -61,18 +61,12 @@ const ddoWithNoTimeout = {
   },
   services: [
     {
-      id: 'notAnId',
-      type: 'compute',
+      id: 'testFakeId',
+      type: 'access',
       files: '',
-      datatokenAddress: '0xa15024b732A8f2146423D14209eFd074e61964F3',
+      datatokenAddress: '0x0',
       serviceEndpoint: 'http://172.15.0.4:8030',
-      timeout: 0,
-      compute: {
-        publisherTrustedAlgorithmPublishers: [],
-        publisherTrustedAlgorithms: [],
-        allowRawAlgorithm: true,
-        allowNetworkAccess: true
-      }
+      timeout: 0
     }
   ]
 }
