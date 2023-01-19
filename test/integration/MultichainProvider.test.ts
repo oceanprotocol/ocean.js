@@ -6,26 +6,13 @@ import {
   Config,
   ProviderInstance,
   Aquarius,
-  NftFactory,
-  NftCreateData,
   Datatoken,
-  getHash,
-  Nft,
   downloadFile,
-  ZERO_ADDRESS,
   calculateEstimatedGas,
   sendTx,
   transfer
 } from '../../src'
-import {
-  ProviderFees,
-  DatatokenCreateParams,
-  DDO,
-  Files,
-  ProviderComputeInitialize,
-  ConsumeMarketFee,
-  Asset
-} from '../../src/@types'
+import { ProviderFees, Files } from '../../src/@types'
 import { createAsset, updateAssetMetadata } from './utils'
 
 let config: Config
@@ -35,8 +22,6 @@ let datatoken: Datatoken
 let providerUrl: string
 let consumerAccount: string
 let publisherAccount: string
-let providerInitializeComputeResults
-let computeEnvs
 let addresses: any
 let ddoWith5mTimeoutId
 let resolvedDdoWith5mTimeout
@@ -80,7 +65,7 @@ const ddoWithNoTimeout = {
       type: 'compute',
       files: '',
       datatokenAddress: '0xa15024b732A8f2146423D14209eFd074e61964F3',
-      serviceEndpoint: 'http:/172.15.0.4:8030',
+      serviceEndpoint: 'http://172.15.0.4:8030',
       timeout: 0,
       compute: {
         publisherTrustedAlgorithmPublishers: [],
@@ -97,7 +82,7 @@ describe('Multichain Provider test', async () => {
     config = await getTestConfig(web3)
     addresses = getAddresses()
     aquarius = new Aquarius(config.metadataCacheUri)
-    providerUrl = 'http:/172.15.0.4:8030'
+    providerUrl = 'http://172.15.0.4:8030'
     datatoken = new Datatoken(web3)
   })
 
@@ -230,7 +215,7 @@ describe('Multichain Provider test', async () => {
   })
 
   it('Should update metadata the asset metadata with second provider as serviceEndpoint', async () => {
-    resolvedDdoWith5mTimeout.services[0].serviceEndpoint = 'http:/172.15.0.4:8030'
+    resolvedDdoWith5mTimeout.services[0].serviceEndpoint = 'http://172.15.0.4:8030'
     const updateTx = await updateAssetMetadata(
       publisherAccount,
       resolvedDdoWith5mTimeout,
