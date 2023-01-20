@@ -23,8 +23,8 @@ let providerUrl: string
 let consumerAccount: string
 let publisherAccount: string
 let addresses: any
-let ddoWith5mTimeoutId
-let resolvedDdoWith5mTimeout
+let assetId
+let resolvedDdo
 let resolvedDdoAfterUpdate
 let orderTx
 
@@ -40,7 +40,7 @@ const assetUrl: Files = {
   ]
 }
 
-const ddoWithNoTimeout = {
+const initialDdo = {
   '@context': ['https://w3id.org/did/v1'],
   id: 'did:op:efba17455c127a885ec7830d687a8f6e64f5ba559f8506f8723c1f10f05c049c',
   version: '4.1.0',
@@ -133,29 +133,29 @@ describe('Multichain Provider test', async () => {
   })
 
   it('Should publish the dataset', async () => {
-    ddoWith5mTimeoutId = await createAsset(
+    assetId = await createAsset(
       'D1Min',
       'D1M',
       publisherAccount,
       assetUrl,
-      ddoWithNoTimeout,
+      initialDdo,
       providerUrl,
       addresses.ERC721Factory,
       aquarius
     )
-    assert(ddoWith5mTimeoutId, 'Failed to publish DDO')
-    console.log(`dataset id: ${ddoWith5mTimeoutId}`)
+    assert(assetId, 'Failed to publish DDO')
+    console.log(`dataset id: ${assetId}`)
   })
 
   it('Resolve published datasets and algorithms', async () => {
-    resolvedDdoWith5mTimeout = await aquarius.waitForAqua(ddoWith5mTimeoutId)
-    console.log('+++resolvedDdoWith5mTimeout+++ ', resolvedDdoWith5mTimeout)
-    assert(resolvedDdoWith5mTimeout, 'Cannot fetch DDO from Aquarius')
+    resolvedDdo = await aquarius.waitForAqua(assetId)
+    console.log('+++resolvedDdo+++ ', resolvedDdo)
+    assert(resolvedDdo, 'Cannot fetch DDO from Aquarius')
   })
 
   it('Mint dataset and algorithm datatokens to publisher', async () => {
     const dtMintTx = await datatoken.mint(
-      resolvedDdoWith5mTimeout.services[0].datatokenAddress,
+      resolvedDdo.services[0].datatokenAddress,
       publisherAccount,
       '10',
       consumerAccount
@@ -165,8 +165,8 @@ describe('Multichain Provider test', async () => {
 
   it('Should order the dataset', async () => {
     const initializeData = await ProviderInstance.initialize(
-      resolvedDdoWith5mTimeout.id,
-      resolvedDdoWith5mTimeout.services[0].id,
+      resolvedDdo.id,
+      resolvedDdo.services[0].id,
       0,
       consumerAccount,
       providerUrl
@@ -187,7 +187,7 @@ describe('Multichain Provider test', async () => {
 
     // make the payment
     orderTx = await datatoken.startOrder(
-      resolvedDdoWith5mTimeout.services[0].datatokenAddress,
+      resolvedDdo.services[0].datatokenAddress,
       consumerAccount,
       consumerAccount,
       0,
@@ -198,9 +198,9 @@ describe('Multichain Provider test', async () => {
 
   it('Should download the dataset file', async () => {
     const downloadURL = await ProviderInstance.getDownloadUrl(
-      resolvedDdoWith5mTimeout.id,
+      resolvedDdo.id,
       consumerAccount,
-      resolvedDdoWith5mTimeout.services[0].id,
+      resolvedDdo.services[0].id,
       0,
       orderTx.transactionHash,
       providerUrl,
@@ -215,10 +215,10 @@ describe('Multichain Provider test', async () => {
   })
 
   it('Should update metadata the asset metadata with second provider as serviceEndpoint', async () => {
-    resolvedDdoWith5mTimeout.services[0].serviceEndpoint = 'http://172.15.0.104:8030'
+    resolvedDdo.services[0].serviceEndpoint = 'http://172.15.0.104:8030'
     const updateTx = await updateAssetMetadata(
       publisherAccount,
-      resolvedDdoWith5mTimeout,
+      resolvedDdo,
       providerUrl,
       aquarius
     )
@@ -228,7 +228,7 @@ describe('Multichain Provider test', async () => {
   delay(100000) // let's wait for aquarius to index the updated ddo
 
   it('Should resolve updated metadata asset', async () => {
-    resolvedDdoAfterUpdate = await aquarius.waitForAqua(ddoWith5mTimeoutId)
+    resolvedDdoAfterUpdate = await aquarius.waitForAqua(assetId)
     console.log('____resolvedDdoAfterUpdate____ ', resolvedDdoAfterUpdate)
     assert(resolvedDdoAfterUpdate, 'Cannot fetch DDO from Aquarius')
   })
@@ -292,67 +292,4 @@ describe('Multichain Provider test', async () => {
       assert.fail('Download failed after multichain provider serivce enpoint set')
     }
   })
-
-  //   delay(1000) // let's wait and try with multichain provider now
-
-  //   it('Should order the of the dataset with multichain provider', async () => {
-  //     providerUrl = 'http://172.15.0.104:8030'
-  //     const initializeData = await ProviderInstance.initialize(
-  //       resolvedDdoAfterUpdate.id,
-  //       resolvedDdoAfterUpdate.services[0].id,
-  //       0,
-  //       consumerAccount,
-  //       providerUrl
-  //     )
-
-  //     assert(
-  //       initializeData,
-  //       'Failed initializing the provider with ipa 172.15.0.104 failed'
-  //     )
-
-  //     const providerFees: ProviderFees = {
-  //       providerFeeAddress: initializeData.providerFee.providerFeeAddress,
-  //       providerFeeToken: initializeData.providerFee.providerFeeToken,
-  //       providerFeeAmount: initializeData.providerFee.providerFeeAmount,
-  //       v: initializeData.providerFee.v,
-  //       r: initializeData.providerFee.r,
-  //       s: initializeData.providerFee.s,
-  //       providerData: initializeData.providerFee.providerData,
-  //       validUntil: initializeData.providerFee.validUntil
-  //     }
-
-  //     // make the payment
-  //     orderTx = await datatoken.startOrder(
-  //       resolvedDdoAfterUpdate.services[0].datatokenAddress,
-  //       consumerAccount,
-  //       consumerAccount,
-  //       0,
-  //       providerFees
-  //     )
-  //     assert(
-  //       orderTx,
-  //       'Ordering the dataset failed for multichain provider with ipa 172.15.0.104.'
-  //     )
-  //   })
-
-  //   it('Should download with multichain provider', async () => {
-  //     const downloadURL = await ProviderInstance.getDownloadUrl(
-  //       resolvedDdoAfterUpdate.id,
-  //       consumerAccount,
-  //       resolvedDdoAfterUpdate.services[0].id,
-  //       0,
-  //       orderTx.transactionHash,
-  //       providerUrl,
-  //       web3
-  //     )
-  //     assert(
-  //       downloadURL,
-  //       'Provider getDownloadUrl failed with multichain provider with ipa 172.15.0.104 failed'
-  //     )
-  //     try {
-  //       await downloadFile(downloadURL)
-  //     } catch (e) {
-  //       assert.fail('Download failed for multichain provider with ipa 172.15.0.104 failed')
-  //     }
-  //  })
 })
