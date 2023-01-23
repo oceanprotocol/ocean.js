@@ -239,13 +239,23 @@ describe('Publish consume test', async () => {
   it('Should order the datasets', async () => {
     const txUrlOrder = orderAsset(
       resolvedUrlAssetDdo.id,
-      resolvedUrlAssetDdo.serivce[0].datatokenAddress,
+      resolvedUrlAssetDdo.services[0].datatokenAddress,
       consumerAccount,
       0,
       datatoken,
       config
     )
     assert(txUrlOrder, 'Ordering the dataset failed.')
+
+    const txArwavOrder = orderAsset(
+      resolvedArweaveAssetDdo.id,
+      resolvedArweaveAssetDdo.services[0].datatokenAddress,
+      consumerAccount,
+      0,
+      datatoken,
+      config
+    )
+    assert(txArwavOrder, 'Ordering the dataset failed.')
   })
 
   it('Should download the datasets files', async () => {
