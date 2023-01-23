@@ -11,7 +11,7 @@ import {
   sendTx,
   transfer
 } from '../../src'
-import { ProviderFees, Files } from '../../src/@types'
+import { Files } from '../../src/@types'
 import { createAsset, orderAsset, updateAssetMetadata } from './helpers'
 
 let config: Config
@@ -30,6 +30,10 @@ let resolvedUrlAssetDdoAfterUpdate
 let arweaveAssetId
 let resolvedArweaveAssetDdo
 let resolvedArweaveAssetDdoAfterUpdate
+
+let ipfsAssetId
+let resolvedIpfsAssetDdo
+let resolvedIpfsAssetDdoAfterUpdate
 
 let orderTx
 
@@ -56,6 +60,17 @@ const arweaveFile: Files = {
   ]
 }
 
+const ifpsFile: Files = {
+  datatokenAddress: '0x0',
+  nftAddress: '0x0',
+  files: [
+    {
+      type: 'ipfs',
+      hash: 'QmUKs5qmvj8rQbH3kvp2SytPFuDyWfSPh7EKkkyeXrA5MB-98'
+    }
+  ]
+}
+
 const assetDdo = {
   '@context': ['https://w3id.org/did/v1'],
   id: 'did:op:efba17455c127a885ec7830d687a8f6e64f5ba559f8506f8723c1f10f05c049c',
@@ -66,10 +81,10 @@ const assetDdo = {
     created: '2021-12-20T14:35:20Z',
     updated: '2021-12-20T14:35:20Z',
     type: 'dataset',
-    name: 'dfgdfgdg',
-    description: 'd dfgd fgd dfg dfgdfgd dfgdf',
+    name: 'Test asset',
+    description: 'desc for the storage type assets',
     tags: [''],
-    author: 'dd',
+    author: 'ocean-protocol',
     license: 'https://market.oceanprotocol.com/terms',
     additionalInformation: {
       termsAndConditions: true
@@ -150,8 +165,8 @@ describe('Publish consume test', async () => {
 
   it('Should publish the assets', async () => {
     urlAssetId = await createAsset(
-      'D1Min',
-      'D1M',
+      'UrlDatatoken',
+      'URLDT',
       publisherAccount,
       urlFile,
       assetDdo,
@@ -159,12 +174,12 @@ describe('Publish consume test', async () => {
       addresses.ERC721Factory,
       aquarius
     )
-    assert(urlAssetId, 'Failed to publish DDO')
-    console.log(`dataset id: ${urlAssetId}`)
+    assert(urlAssetId, 'Failed to publish url DDO')
+    console.log(`url dataset id: ${urlAssetId}`)
 
     arweaveAssetId = await createAsset(
-      'D1Min',
-      'D1M',
+      'ArwaveDatatoken',
+      'ARWAVEDT',
       publisherAccount,
       arweaveFile,
       assetDdo,
@@ -172,18 +187,35 @@ describe('Publish consume test', async () => {
       addresses.ERC721Factory,
       aquarius
     )
-    assert(urlAssetId, 'Failed to publish DDO')
-    console.log(`dataset id: ${urlAssetId}`)
+    assert(urlAssetId, 'Failed to arwave publish DDO')
+    console.log(`arwave dataset id: ${urlAssetId}`)
+
+    ipfsAssetId = await createAsset(
+      'IpfsDatatoken',
+      'IPFSDT',
+      publisherAccount,
+      ifpsFile,
+      assetDdo,
+      providerUrl,
+      addresses.ERC721Factory,
+      aquarius
+    )
+    assert(urlAssetId, 'Failed to publish ipfs DDO')
+    console.log(`ipfs dataset id: ${urlAssetId}`)
   })
 
   it('Resolve published assets', async () => {
     resolvedUrlAssetDdo = await aquarius.waitForAqua(urlAssetId)
     console.log('+++resolvedDdo+++ ', resolvedUrlAssetDdo)
-    assert(resolvedUrlAssetDdo, 'Cannot fetch DDO from Aquarius')
+    assert(resolvedUrlAssetDdo, 'Cannot fetch url DDO from Aquarius')
 
     resolvedArweaveAssetDdo = await aquarius.waitForAqua(arweaveAssetId)
     console.log('+++resolvedArweaveAssetDdo+++ ', resolvedArweaveAssetDdo)
-    assert(resolvedArweaveAssetDdo, 'Cannot fetch DDO from Aquarius')
+    assert(resolvedArweaveAssetDdo, 'Cannot fetch arwave DDO from Aquarius')
+
+    resolvedIpfsAssetDdo = await aquarius.waitForAqua(ipfsAssetId)
+    console.log('+++resolvedArweaveAssetDdo+++ ', resolvedIpfsAssetDdo)
+    assert(resolvedIpfsAssetDdo, 'Cannot fetch ipfs DDO from Aquarius')
   })
 
   it('Mint datasets datatokens to publisher', async () => {
@@ -236,13 +268,22 @@ describe('Publish consume test', async () => {
 
   it('Should update datasets metadata', async () => {
     resolvedUrlAssetDdo.metadata.name = 'updated url asset name'
-    const updateTx = await updateAssetMetadata(
+    const updateUrlTx = await updateAssetMetadata(
       publisherAccount,
       resolvedUrlAssetDdo,
       providerUrl,
       aquarius
     )
-    assert(updateTx, 'Failed to update asset metadata')
+    assert(updateUrlTx, 'Failed to update asset metadata')
+
+    resolvedArweaveAssetDdo.metadata.name = 'updated arwave asset name'
+    const updateArwaveTx = await updateAssetMetadata(
+      publisherAccount,
+      resolvedUrlAssetDdo,
+      providerUrl,
+      aquarius
+    )
+    assert(updateArwaveTx, 'Failed to update asset metadata')
   })
 
   delay(100000) // let's wait for aquarius to index the updated ddo
@@ -252,9 +293,9 @@ describe('Publish consume test', async () => {
     console.log('____resolvedDdoAfterUpdate____ ', resolvedUrlAssetDdoAfterUpdate)
     assert(resolvedUrlAssetDdoAfterUpdate, 'Cannot fetch DDO from Aquarius')
 
-    resolvedUrlAssetDdoAfterUpdate = await aquarius.waitForAqua(urlAssetId)
-    console.log('____resolvedDdoAfterUpdate____ ', resolvedUrlAssetDdoAfterUpdate)
-    assert(resolvedUrlAssetDdoAfterUpdate, 'Cannot fetch DDO from Aquarius')
+    resolvedArweaveAssetDdoAfterUpdate = await aquarius.waitForAqua(arweaveAssetId)
+    console.log('resolvedArweaveAssetDdoAfterUpdate ', resolvedArweaveAssetDdoAfterUpdate)
+    assert(resolvedArweaveAssetDdoAfterUpdate, 'Cannot fetch DDO from Aquarius')
   })
 
   // it('Should order the datasets after updated', async () => {
