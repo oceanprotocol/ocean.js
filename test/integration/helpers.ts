@@ -12,7 +12,8 @@ import {
   ConsumeMarketFee,
   Datatoken,
   Config,
-  DDO
+  DDO,
+  ProviderFees
 } from '../../src'
 import { web3 } from '../config'
 
@@ -152,4 +153,42 @@ export async function handleComputeOrder(
     consumeMarkerFee
   )
   return tx.transactionHash
+}
+
+export async function orderAsset(
+  did: string,
+  datatokenAddress: string,
+  consumerAccount: string,
+  serviceIndex: number,
+  datatoken: Datatoken,
+  config: Config
+) {
+  const initializeData = await ProviderInstance.initialize(
+    did, //resolvedDdoAfterUpdate.id,
+    datatokenAddress, // resolvedDdoAfterUpdate.services[0].id,
+    serviceIndex,
+    consumerAccount,
+    config.providerUri
+  )
+
+  const providerFees: ProviderFees = {
+    providerFeeAddress: initializeData.providerFee.providerFeeAddress,
+    providerFeeToken: initializeData.providerFee.providerFeeToken,
+    providerFeeAmount: initializeData.providerFee.providerFeeAmount,
+    v: initializeData.providerFee.v,
+    r: initializeData.providerFee.r,
+    s: initializeData.providerFee.s,
+    providerData: initializeData.providerFee.providerData,
+    validUntil: initializeData.providerFee.validUntil
+  }
+
+  // make the payment
+  const orderTx = await datatoken.startOrder(
+    datatokenAddress, //resolvedDdoAfterUpdate.services[0].datatokenAddress,
+    consumerAccount,
+    consumerAccount,
+    0,
+    providerFees
+  )
+  return orderTx
 }
