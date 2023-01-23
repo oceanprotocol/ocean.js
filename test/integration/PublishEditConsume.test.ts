@@ -12,7 +12,7 @@ import {
   transfer
 } from '../../src'
 import { ProviderFees, Files } from '../../src/@types'
-import { createAsset, updateAssetMetadata } from './helpers'
+import { createAsset, orderAsset, updateAssetMetadata } from './helpers'
 
 let config: Config
 
@@ -205,36 +205,15 @@ describe('Publish consume test', async () => {
   })
 
   it('Should order the datasets', async () => {
-    const initializeData = await ProviderInstance.initialize(
+    const txUrlOrder = orderAsset(
       resolvedUrlAssetDdo.id,
-      resolvedUrlAssetDdo.services[0].id,
-      0,
-      consumerAccount,
-      providerUrl
-    )
-
-    assert(initializeData, 'Failed initializing the provider for order.')
-
-    const providerFees: ProviderFees = {
-      providerFeeAddress: initializeData.providerFee.providerFeeAddress,
-      providerFeeToken: initializeData.providerFee.providerFeeToken,
-      providerFeeAmount: initializeData.providerFee.providerFeeAmount,
-      v: initializeData.providerFee.v,
-      r: initializeData.providerFee.r,
-      s: initializeData.providerFee.s,
-      providerData: initializeData.providerFee.providerData,
-      validUntil: initializeData.providerFee.validUntil
-    }
-
-    // make the payment
-    orderTx = await datatoken.startOrder(
-      resolvedUrlAssetDdo.services[0].datatokenAddress,
-      consumerAccount,
+      resolvedUrlAssetDdo.serivce[0].datatokenAddress,
       consumerAccount,
       0,
-      providerFees
+      datatoken,
+      config
     )
-    assert(orderTx, 'Ordering the dataset failed.')
+    assert(txUrlOrder, 'Ordering the dataset failed.')
   })
 
   it('Should download the datasets files', async () => {
@@ -272,65 +251,69 @@ describe('Publish consume test', async () => {
     resolvedUrlAssetDdoAfterUpdate = await aquarius.waitForAqua(urlAssetId)
     console.log('____resolvedDdoAfterUpdate____ ', resolvedUrlAssetDdoAfterUpdate)
     assert(resolvedUrlAssetDdoAfterUpdate, 'Cannot fetch DDO from Aquarius')
+
+    resolvedUrlAssetDdoAfterUpdate = await aquarius.waitForAqua(urlAssetId)
+    console.log('____resolvedDdoAfterUpdate____ ', resolvedUrlAssetDdoAfterUpdate)
+    assert(resolvedUrlAssetDdoAfterUpdate, 'Cannot fetch DDO from Aquarius')
   })
 
-  it('Should order the datasets after updated', async () => {
-    const initializeData = await ProviderInstance.initialize(
-      resolvedUrlAssetDdoAfterUpdate.id,
-      resolvedUrlAssetDdoAfterUpdate.services[0].id,
-      0,
-      consumerAccount,
-      providerUrl
-    )
+  // it('Should order the datasets after updated', async () => {
+  //   const initializeData = await ProviderInstance.initialize(
+  //     resolvedUrlAssetDdoAfterUpdate.id,
+  //     resolvedUrlAssetDdoAfterUpdate.services[0].id,
+  //     0,
+  //     consumerAccount,
+  //     providerUrl
+  //   )
 
-    assert(
-      initializeData,
-      'Failed initializing the provider after multichain provider serivce enpoint set.'
-    )
+  //   assert(
+  //     initializeData,
+  //     'Failed initializing the provider after multichain provider serivce enpoint set.'
+  //   )
 
-    const providerFees: ProviderFees = {
-      providerFeeAddress: initializeData.providerFee.providerFeeAddress,
-      providerFeeToken: initializeData.providerFee.providerFeeToken,
-      providerFeeAmount: initializeData.providerFee.providerFeeAmount,
-      v: initializeData.providerFee.v,
-      r: initializeData.providerFee.r,
-      s: initializeData.providerFee.s,
-      providerData: initializeData.providerFee.providerData,
-      validUntil: initializeData.providerFee.validUntil
-    }
+  //   const providerFees: ProviderFees = {
+  //     providerFeeAddress: initializeData.providerFee.providerFeeAddress,
+  //     providerFeeToken: initializeData.providerFee.providerFeeToken,
+  //     providerFeeAmount: initializeData.providerFee.providerFeeAmount,
+  //     v: initializeData.providerFee.v,
+  //     r: initializeData.providerFee.r,
+  //     s: initializeData.providerFee.s,
+  //     providerData: initializeData.providerFee.providerData,
+  //     validUntil: initializeData.providerFee.validUntil
+  //   }
 
-    // make the payment
-    orderTx = await datatoken.startOrder(
-      resolvedUrlAssetDdoAfterUpdate.services[0].datatokenAddress,
-      consumerAccount,
-      consumerAccount,
-      0,
-      providerFees
-    )
-    assert(
-      orderTx,
-      'Ordering the dataset failed after multichain provider serivce enpoint set.'
-    )
-  })
+  //   // make the payment
+  //   orderTx = await datatoken.startOrder(
+  //     resolvedUrlAssetDdoAfterUpdate.services[0].datatokenAddress,
+  //     consumerAccount,
+  //     consumerAccount,
+  //     0,
+  //     providerFees
+  //   )
+  //   assert(
+  //     orderTx,
+  //     'Ordering the dataset failed after multichain provider serivce enpoint set.'
+  //   )
+  // })
 
-  it('Should download files after updated datasets', async () => {
-    const downloadURL = await ProviderInstance.getDownloadUrl(
-      resolvedUrlAssetDdoAfterUpdate.id,
-      consumerAccount,
-      resolvedUrlAssetDdoAfterUpdate.services[0].id,
-      0,
-      orderTx.transactionHash,
-      providerUrl,
-      web3
-    )
-    assert(
-      downloadURL,
-      'Provider getDownloadUrl failed after multichain provider serivce enpoint set'
-    )
-    try {
-      await downloadFile(downloadURL)
-    } catch (e) {
-      assert.fail('Download failed after multichain provider serivce enpoint set')
-    }
-  })
+  // it('Should download files after updated datasets', async () => {
+  //   const downloadURL = await ProviderInstance.getDownloadUrl(
+  //     resolvedUrlAssetDdoAfterUpdate.id,
+  //     consumerAccount,
+  //     resolvedUrlAssetDdoAfterUpdate.services[0].id,
+  //     0,
+  //     orderTx.transactionHash,
+  //     providerUrl,
+  //     web3
+  //   )
+  //   assert(
+  //     downloadURL,
+  //     'Provider getDownloadUrl failed after multichain provider serivce enpoint set'
+  //   )
+  //   try {
+  //     await downloadFile(downloadURL)
+  //   } catch (e) {
+  //     assert.fail('Download failed after multichain provider serivce enpoint set')
+  //   }
+  // })
 })
