@@ -26,9 +26,14 @@ let addresses: any
 let urlAssetId
 let resolvedUrlAssetDdo
 let resolvedUrlAssetDdoAfterUpdate
+
+let arweaveAssetId
+let resolvedArweaveAssetDdo
+let resolvedArweaveAssetDdoAfterUpdate
+
 let orderTx
 
-const assetUrl: Files = {
+const urlFile: Files = {
   datatokenAddress: '0x0',
   nftAddress: '0x0',
   files: [
@@ -36,6 +41,17 @@ const assetUrl: Files = {
       type: 'url',
       url: 'https://raw.githubusercontent.com/oceanprotocol/testdatasets/main/shs_dataset_test.txt',
       method: 'GET'
+    }
+  ]
+}
+
+const arweaveFile: Files = {
+  datatokenAddress: '0x0',
+  nftAddress: '0x0',
+  files: [
+    {
+      type: 'arweave',
+      transactionId: 'USuWnUl3gLPhm4TPbmL6E2a2e2SWMCVo9yWCaapD-98'
     }
   ]
 }
@@ -137,7 +153,20 @@ describe('Publish consume test', async () => {
       'D1Min',
       'D1M',
       publisherAccount,
-      assetUrl,
+      urlFile,
+      assetDdo,
+      providerUrl,
+      addresses.ERC721Factory,
+      aquarius
+    )
+    assert(urlAssetId, 'Failed to publish DDO')
+    console.log(`dataset id: ${urlAssetId}`)
+
+    arweaveAssetId = await createAsset(
+      'D1Min',
+      'D1M',
+      publisherAccount,
+      arweaveFile,
       assetDdo,
       providerUrl,
       addresses.ERC721Factory,
@@ -151,16 +180,28 @@ describe('Publish consume test', async () => {
     resolvedUrlAssetDdo = await aquarius.waitForAqua(urlAssetId)
     console.log('+++resolvedDdo+++ ', resolvedUrlAssetDdo)
     assert(resolvedUrlAssetDdo, 'Cannot fetch DDO from Aquarius')
+
+    resolvedArweaveAssetDdo = await aquarius.waitForAqua(arweaveAssetId)
+    console.log('+++resolvedArweaveAssetDdo+++ ', resolvedArweaveAssetDdo)
+    assert(resolvedArweaveAssetDdo, 'Cannot fetch DDO from Aquarius')
   })
 
   it('Mint datasets datatokens to publisher', async () => {
-    const dtMintTx = await datatoken.mint(
+    const urlMintTx = await datatoken.mint(
       resolvedUrlAssetDdo.services[0].datatokenAddress,
       publisherAccount,
       '10',
       consumerAccount
     )
-    assert(dtMintTx, 'Failed minting datatoken to consumer.')
+    assert(urlMintTx, 'Failed minting datatoken to consumer.')
+
+    const arwaveMintTx = await datatoken.mint(
+      resolvedUrlAssetDdo.services[0].datatokenAddress,
+      publisherAccount,
+      '10',
+      consumerAccount
+    )
+    assert(arwaveMintTx, 'Failed minting datatoken to consumer.')
   })
 
   it('Should order the datasets', async () => {
