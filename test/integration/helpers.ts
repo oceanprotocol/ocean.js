@@ -164,7 +164,7 @@ export async function orderAsset(
   config: Config
 ) {
   const initializeData = await ProviderInstance.initialize(
-    did, //resolvedDdoAfterUpdate.id,
+    did, // resolvedDdoAfterUpdate.id,
     datatokenAddress, // resolvedDdoAfterUpdate.services[0].id,
     serviceIndex,
     consumerAccount,
@@ -184,7 +184,7 @@ export async function orderAsset(
 
   // make the payment
   const orderTx = await datatoken.startOrder(
-    datatokenAddress, //resolvedDdoAfterUpdate.services[0].datatokenAddress,
+    datatokenAddress, // resolvedDdoAfterUpdate.services[0].datatokenAddress,
     consumerAccount,
     consumerAccount,
     0,
