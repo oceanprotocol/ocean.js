@@ -350,7 +350,11 @@ Next, let's encrypt the file(s) using provider
 ```Typescript
     ASSET_URL.datatokenAddress = freDatatokenAddress
     ASSET_URL.nftAddress = freNftAddress
-    const encryptedFiles = await ProviderInstance.encrypt(ASSET_URL, providerUrl)
+    const encryptedFiles = await ProviderInstance.encrypt(
+      ASSET_URL,
+      DDO.chainId,
+      providerUrl
+    )
     DDO.services[0].files = await encryptedFiles
     DDO.services[0].datatokenAddress = freDatatokenAddress
 
@@ -359,7 +363,7 @@ Now let's console log the DID to check everything is working
 ```Typescript
     console.log(`DID: ${DDO.id}`)
 
-    const providerResponse = await ProviderInstance.encrypt(DDO, providerUrl)
+    const providerResponse = await ProviderInstance.encrypt(DDO, DDO.chainId, providerUrl)
     const encryptedDDO = await providerResponse
     const metadataHash = getHash(JSON.stringify(DDO))
     await nft.setMetadata(
@@ -567,13 +571,17 @@ Now we need to encrypt file(s) using provider
 ```Typescript
     ASSET_URL.datatokenAddress = dispenserDatatokenAddress
     ASSET_URL.nftAddress = dispenserNftAddress
-    const encryptedFiles = await ProviderInstance.encrypt(ASSET_URL, providerUrl)
+    const encryptedFiles = await ProviderInstance.encrypt(
+      ASSET_URL,
+      DDO.chainId,
+      providerUrl
+    )
     DDO.services[0].files = await encryptedFiles
     DDO.services[0].datatokenAddress = dispenserDatatokenAddress
 
     console.log(`DID: ${DDO.id}`)
 
-    const providerResponse = await ProviderInstance.encrypt(DDO, providerUrl)
+    const providerResponse = await ProviderInstance.encrypt(DDO, DDO.chainId, providerUrl)
     const encryptedDDO = await providerResponse
     const metadataHash = getHash(JSON.stringify(DDO))
     await nft.setMetadata(

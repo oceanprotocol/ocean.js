@@ -146,14 +146,14 @@ describe('Publish tests', async () => {
     const datatokenAddress = bundleNFT.events.TokenCreated.returnValues[0]
     assetUrl.datatokenAddress = datatokenAddress
     assetUrl.nftAddress = nftAddress
-    const encryptedFiles = await ProviderInstance.encrypt(assetUrl, providerUrl)
+    const chain = await web3.eth.getChainId()
+    const encryptedFiles = await ProviderInstance.encrypt(assetUrl, chain, providerUrl)
 
     fixedPriceDdo.metadata.name = 'test-dataset-fixedPrice'
     fixedPriceDdo.services[0].files = await encryptedFiles
     fixedPriceDdo.services[0].datatokenAddress = datatokenAddress
 
     fixedPriceDdo.nftAddress = nftAddress
-    const chain = await web3.eth.getChainId()
     fixedPriceDdo.chainId = chain
     fixedPriceDdo.id =
       'did:op:' + SHA256(web3.utils.toChecksumAddress(nftAddress) + chain.toString(10))
@@ -161,7 +161,7 @@ describe('Publish tests', async () => {
     const isAssetValid: ValidateMetadata = await aquarius.validate(fixedPriceDdo)
     assert(isAssetValid.valid === true, 'Published asset is not valid')
 
-    const encryptedDdo = await ProviderInstance.encrypt(fixedPriceDdo, providerUrl)
+    const encryptedDdo = await ProviderInstance.encrypt(fixedPriceDdo, chain, providerUrl)
     const encryptedResponse = await encryptedDdo
     const metadataHash = getHash(JSON.stringify(fixedPriceDdo))
     // this is publishing with an explicit empty metadataProofs
@@ -221,13 +221,14 @@ describe('Publish tests', async () => {
     const datatokenAddress = bundleNFT.events.TokenCreated.returnValues[0]
     assetUrl.datatokenAddress = datatokenAddress
     assetUrl.nftAddress = nftAddress
-    const encryptedFiles = await ProviderInstance.encrypt(assetUrl, providerUrl)
+    const chain = await web3.eth.getChainId()
+
+    const encryptedFiles = await ProviderInstance.encrypt(assetUrl, chain, providerUrl)
     dispenserDdo.metadata.name = 'test-dataset-dispenser'
     dispenserDdo.services[0].files = await encryptedFiles
     dispenserDdo.services[0].datatokenAddress = datatokenAddress
 
     dispenserDdo.nftAddress = nftAddress
-    const chain = await web3.eth.getChainId()
     dispenserDdo.chainId = chain
     dispenserDdo.id =
       'did:op:' + SHA256(web3.utils.toChecksumAddress(nftAddress) + chain.toString(10))
@@ -235,7 +236,7 @@ describe('Publish tests', async () => {
     const isAssetValid: ValidateMetadata = await aquarius.validate(dispenserDdo)
     assert(isAssetValid.valid === true, 'Published asset is not valid')
 
-    const encryptedDdo = await ProviderInstance.encrypt(dispenserDdo, providerUrl)
+    const encryptedDdo = await ProviderInstance.encrypt(dispenserDdo, chain, providerUrl)
     const encryptedResponse = await encryptedDdo
     const metadataHash = getHash(JSON.stringify(dispenserDdo))
     // this is publishing with any explicit metadataProofs
