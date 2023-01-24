@@ -223,6 +223,7 @@ describe('Multichain Provider test', async () => {
       aquarius
     )
     assert(updateTx, 'Failed to update asset metadata')
+    providerUrl = 'http://172.15.0.104:8030
   })
 
   delay(100000) // let's wait for aquarius to index the updated ddo
