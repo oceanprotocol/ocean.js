@@ -61,7 +61,11 @@ export async function createAsset(
   // create the files encrypted string
   assetUrl.datatokenAddress = datatokenAddressAsset
   assetUrl.nftAddress = ddo.nftAddress
-  let providerResponse = await ProviderInstance.encrypt(assetUrl, providerUrl)
+  let providerResponse = await ProviderInstance.encrypt(
+    assetUrl,
+    ddo.chainId,
+    providerUrl
+  )
   ddo.services[0].files = await providerResponse
   ddo.services[0].datatokenAddress = datatokenAddressAsset
   ddo.services[0].serviceEndpoint = providerUrl
@@ -69,7 +73,7 @@ export async function createAsset(
   ddo.nftAddress = web3.utils.toChecksumAddress(nftAddress)
   ddo.id =
     'did:op:' + SHA256(web3.utils.toChecksumAddress(nftAddress) + chain.toString(10))
-  providerResponse = await ProviderInstance.encrypt(ddo, providerUrl)
+  providerResponse = await ProviderInstance.encrypt(ddo, ddo.chainId, providerUrl)
   const encryptedResponse = await providerResponse
   const validateResult = await aquariusInstance.validate(ddo)
   await nft.setMetadata(
@@ -92,7 +96,11 @@ export async function updateAssetMetadata(
   aquariusInstance: Aquarius
 ) {
   const nft = new Nft(web3)
-  const providerResponse = await ProviderInstance.encrypt(updatedDdo, providerUrl)
+  const providerResponse = await ProviderInstance.encrypt(
+    updatedDdo,
+    updatedDdo.chainId,
+    providerUrl
+  )
   const encryptedResponse = await providerResponse
   const validateResult = await aquariusInstance.validate(updatedDdo)
   const updateDdoTX = await nft.setMetadata(
