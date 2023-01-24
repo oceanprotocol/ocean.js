@@ -37,12 +37,17 @@ let resolvedIpfsAssetDdoAfterUpdate
 
 let onchainAssetId
 let resolvedOnchainAssetDdo
-let resolvedOnhainAssetDdoAfterUpdate
+let resolvedOnchainAssetDdoAfterUpdate
+
+let grapqlAssetId
+let resolvedGraphqlAssetDdo
+let resolvedGraphqlAssetDdoAfterUpdate
 
 let urlOrderTx
 let arwaveOrderTx
 let ipfsOrderTx
 let onchainOrderTx
+let grapqlOrderTx
 
 const urlFile: Files = {
   datatokenAddress: '0x0',
@@ -93,6 +98,26 @@ const onchainFile: Files = {
         type: 'function'
       },
       chainId: 80001
+    }
+  ]
+}
+
+const grapqlFile: Files = {
+  datatokenAddress: '0x0',
+  nftAddress: '0x0',
+  files: [
+    {
+      type: 'graphql',
+      url: 'https://v4.subgraph.goerli.oceanprotocol.com/subgraphs/name/oceanprotocol/ocean-subgraph',
+      query: `"
+          query{
+                nfts(orderBy: createdTimestamp,orderDirection:desc){
+                     id
+                     symbol
+                     createdTimestamp
+                }
+               }
+               "`
     }
   ]
 }
@@ -239,8 +264,21 @@ describe('Publish consume test', async () => {
       addresses.ERC721Factory,
       aquarius
     )
-    assert(onchainAssetId, 'Failed to publish ipfs DDO')
+    assert(onchainAssetId, 'Failed to publish onchain DDO')
     console.log(`onchain dataset id: ${onchainAssetId}`)
+
+    grapqlAssetId = await createAsset(
+      'IpfsDatatoken',
+      'IPFSDT',
+      publisherAccount,
+      grapqlFile,
+      assetDdo,
+      providerUrl,
+      addresses.ERC721Factory,
+      aquarius
+    )
+    assert(grapqlAssetId, 'Failed to publish graphql DDO')
+    console.log(`graphql dataset id: ${grapqlAssetId}`)
   })
 
   it('Resolve published assets', async () => {
@@ -259,6 +297,10 @@ describe('Publish consume test', async () => {
     resolvedOnchainAssetDdo = await aquarius.waitForAqua(onchainAssetId)
     console.log('+++resolvedOnchainAssetDdo+++ ', resolvedOnchainAssetDdo)
     assert(resolvedOnchainAssetDdo, 'Cannot fetch onchain DDO from Aquarius')
+
+    resolvedGraphqlAssetDdo = await aquarius.waitForAqua(grapqlAssetId)
+    console.log('+++resolvedGraphqlAssetDdo+++ ', resolvedGraphqlAssetDdo)
+    assert(resolvedGraphqlAssetDdo, 'Cannot fetch graphql DDO from Aquarius')
   })
 
   it('Mint datasets datatokens to publisher', async () => {
@@ -293,6 +335,14 @@ describe('Publish consume test', async () => {
       consumerAccount
     )
     assert(onchainMintTx, 'Failed minting onchain datatoken to consumer.')
+
+    const graphqlMintTx = await datatoken.mint(
+      resolvedGraphqlAssetDdo.services[0].datatokenAddress,
+      publisherAccount,
+      '10',
+      consumerAccount
+    )
+    assert(graphqlMintTx, 'Failed minting graphql datatoken to consumer.')
   })
 
   it('Should order the datasets', async () => {
@@ -335,6 +385,16 @@ describe('Publish consume test', async () => {
       config
     )
     assert(onchainOrderTx, 'Ordering onchain dataset failed.')
+
+    grapqlOrderTx = orderAsset(
+      resolvedGraphqlAssetDdo.id,
+      resolvedGraphqlAssetDdo.services[0].datatokenAddress,
+      consumerAccount,
+      0,
+      datatoken,
+      config
+    )
+    assert(grapqlOrderTx, 'Ordering graphql dataset failed.')
   })
 
   it('Should download the datasets files', async () => {
@@ -401,6 +461,22 @@ describe('Publish consume test', async () => {
     } catch (e) {
       assert.fail(`Download onchain dataset failed ${e}`)
     }
+
+    const graphqlDownloadURL = await ProviderInstance.getDownloadUrl(
+      resolvedGraphqlAssetDdoAfterUpdate.id,
+      consumerAccount,
+      resolvedGraphqlAssetDdoAfterUpdate.services[0].id,
+      0,
+      onchainOrderTx.transactionHash,
+      providerUrl,
+      web3
+    )
+    assert(graphqlDownloadURL, 'Provider getDownloadUrl failed for graphql dataset')
+    try {
+      await downloadFile(graphqlDownloadURL)
+    } catch (e) {
+      assert.fail(`Download onchain dataset failed ${e}`)
+    }
   })
 
   it('Should update datasets metadata', async () => {
@@ -439,6 +515,15 @@ describe('Publish consume test', async () => {
       aquarius
     )
     assert(updateOnchainTx, 'Failed to update ipfs asset metadata')
+
+    resolvedGraphqlAssetDdoAfterUpdate.metadata.name = 'updated graphql asset name'
+    const updateGraphqlTx = await updateAssetMetadata(
+      publisherAccount,
+      resolvedOnchainAssetDdo,
+      providerUrl,
+      aquarius
+    )
+    assert(updateGraphqlTx, 'Failed to update graphql asset metadata')
   })
 
   delay(100000) // let's wait for aquarius to index the updated ddo's
@@ -459,8 +544,12 @@ describe('Publish consume test', async () => {
     console.log('____resolvedIpfsDdoAfterUpdate____ ', resolvedIpfsAssetDdoAfterUpdate)
     assert(resolvedIpfsAssetDdoAfterUpdate, 'Cannot fetch ipfs DDO from Aquarius')
 
-    resolvedOnhainAssetDdoAfterUpdate = await aquarius.waitForAqua(onchainAssetId)
-    console.log('resolvedOnhainAssetDdoAfterUpdate ', resolvedIpfsAssetDdoAfterUpdate)
-    assert(resolvedOnhainAssetDdoAfterUpdate, 'Cannot fetch onchain DDO from Aquarius')
+    resolvedOnchainAssetDdoAfterUpdate = await aquarius.waitForAqua(onchainAssetId)
+    console.log('resolvedOnchainAssetDdoAfterUpdate ', resolvedOnchainAssetDdoAfterUpdate)
+    assert(resolvedOnchainAssetDdoAfterUpdate, 'Cannot fetch onchain DDO from Aquarius')
+
+    resolvedGraphqlAssetDdoAfterUpdate = await aquarius.waitForAqua(grapqlAssetId)
+    console.log('resolvedGraphqlAssetDdoAfterUpdate ', resolvedGraphqlAssetDdoAfterUpdate)
+    assert(resolvedGraphqlAssetDdoAfterUpdate, 'Cannot fetch onchain DDO from Aquarius')
   })
 })
