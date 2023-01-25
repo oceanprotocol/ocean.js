@@ -226,7 +226,7 @@ describe('Publish consume test', async () => {
       aquarius
     )
     assert(urlAssetId, 'Failed to publish url DDO')
-    console.log(`url dataset id: ${urlAssetId}`)
+    // console.log(`url dataset id: ${urlAssetId}`)
 
     arweaveAssetId = await createAsset(
       'ArwaveDatatoken',
@@ -239,7 +239,7 @@ describe('Publish consume test', async () => {
       aquarius
     )
     assert(urlAssetId, 'Failed to arwave publish DDO')
-    console.log(`arwave dataset id: ${arweaveAssetId}`)
+    // console.log(`arwave dataset id: ${arweaveAssetId}`)
 
     ipfsAssetId = await createAsset(
       'IpfsDatatoken',
@@ -252,7 +252,7 @@ describe('Publish consume test', async () => {
       aquarius
     )
     assert(urlAssetId, 'Failed to publish ipfs DDO')
-    console.log(`ipfs dataset id: ${ipfsAssetId}`)
+    // console.log(`ipfs dataset id: ${ipfsAssetId}`)
 
     onchainAssetId = await createAsset(
       'IpfsDatatoken',
@@ -265,7 +265,7 @@ describe('Publish consume test', async () => {
       aquarius
     )
     assert(onchainAssetId, 'Failed to publish onchain DDO')
-    console.log(`onchain dataset id: ${onchainAssetId}`)
+    // console.log(`onchain dataset id: ${onchainAssetId}`)
 
     grapqlAssetId = await createAsset(
       'IpfsDatatoken',
@@ -278,28 +278,28 @@ describe('Publish consume test', async () => {
       aquarius
     )
     assert(grapqlAssetId, 'Failed to publish graphql DDO')
-    console.log(`graphql dataset id: ${grapqlAssetId}`)
+    // console.log(`graphql dataset id: ${grapqlAssetId}`)
   })
 
   it('Resolve published assets', async () => {
     resolvedUrlAssetDdo = await aquarius.waitForAqua(urlAssetId)
-    console.log('+++resolvedDdo+++ ', resolvedUrlAssetDdo)
+    // console.log('+++resolvedDdo+++ ', resolvedUrlAssetDdo)
     assert(resolvedUrlAssetDdo, 'Cannot fetch url DDO from Aquarius')
 
     resolvedArweaveAssetDdo = await aquarius.waitForAqua(arweaveAssetId)
-    console.log('+++resolvedArweaveAssetDdo+++ ', resolvedArweaveAssetDdo)
+    // console.log('+++resolvedArweaveAssetDdo+++ ', resolvedArweaveAssetDdo)
     assert(resolvedArweaveAssetDdo, 'Cannot fetch arwave DDO from Aquarius')
 
     resolvedIpfsAssetDdo = await aquarius.waitForAqua(ipfsAssetId)
-    console.log('+++resolvedArweaveAssetDdo+++ ', resolvedIpfsAssetDdo)
+    // console.log('+++resolvedArweaveAssetDdo+++ ', resolvedIpfsAssetDdo)
     assert(resolvedIpfsAssetDdo, 'Cannot fetch ipfs DDO from Aquarius')
 
     resolvedOnchainAssetDdo = await aquarius.waitForAqua(onchainAssetId)
-    console.log('+++resolvedOnchainAssetDdo+++ ', resolvedOnchainAssetDdo)
+    // console.log('+++resolvedOnchainAssetDdo+++ ', resolvedOnchainAssetDdo)
     assert(resolvedOnchainAssetDdo, 'Cannot fetch onchain DDO from Aquarius')
 
     resolvedGraphqlAssetDdo = await aquarius.waitForAqua(grapqlAssetId)
-    console.log('+++resolvedGraphqlAssetDdo+++ ', resolvedGraphqlAssetDdo)
+    // console.log('+++resolvedGraphqlAssetDdo+++ ', resolvedGraphqlAssetDdo)
     assert(resolvedGraphqlAssetDdo, 'Cannot fetch graphql DDO from Aquarius')
   })
 
@@ -355,7 +355,7 @@ describe('Publish consume test', async () => {
       datatoken,
       config
     )
-    console.log('urlOrderTx ', urlOrderTx)
+    console.log('urlOrderTx ', urlOrderTx.transactionHash)
     assert(urlOrderTx, 'Ordering url dataset failed.')
 
     arwaveOrderTx = await orderAsset(
@@ -367,7 +367,7 @@ describe('Publish consume test', async () => {
       datatoken,
       config
     )
-    console.log('urlOrderTx ', urlOrderTx)
+    console.log('arwaveOrderTx ', arwaveOrderTx.transactionHash)
     assert(arwaveOrderTx, 'Ordering arwave dataset failed.')
 
     ipfsOrderTx = await orderAsset(
@@ -379,7 +379,7 @@ describe('Publish consume test', async () => {
       datatoken,
       config
     )
-    console.log('ipfsOrderTx ', ipfsOrderTx)
+    console.log('ipfsOrderTx ', ipfsOrderTx.transactionHash)
     assert(ipfsOrderTx, 'Ordering ipfs dataset failed.')
 
     onchainOrderTx = await orderAsset(
@@ -391,7 +391,7 @@ describe('Publish consume test', async () => {
       datatoken,
       config
     )
-    console.log('onchainOrderTx ', onchainOrderTx)
+    console.log('onchainOrderTx ', onchainOrderTx.transactionHash)
     assert(onchainOrderTx, 'Ordering onchain dataset failed.')
 
     grapqlOrderTx = await orderAsset(
@@ -403,7 +403,7 @@ describe('Publish consume test', async () => {
       datatoken,
       config
     )
-    console.log('grapqlOrderTx ', grapqlOrderTx)
+    console.log('grapqlOrderTx ', grapqlOrderTx.transactionHash)
     assert(grapqlOrderTx, 'Ordering graphql dataset failed.')
   })
 
