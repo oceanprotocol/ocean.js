@@ -346,7 +346,7 @@ describe('Publish consume test', async () => {
   })
 
   it('Should order the datasets', async () => {
-    urlOrderTx = orderAsset(
+    urlOrderTx = await orderAsset(
       resolvedUrlAssetDdo.id,
       resolvedUrlAssetDdo.services[0].datatokenAddress,
       consumerAccount,
@@ -355,9 +355,10 @@ describe('Publish consume test', async () => {
       datatoken,
       config
     )
+    console.log('urlOrderTx ', urlOrderTx)
     assert(urlOrderTx, 'Ordering url dataset failed.')
 
-    arwaveOrderTx = orderAsset(
+    arwaveOrderTx = await orderAsset(
       resolvedArweaveAssetDdo.id,
       resolvedArweaveAssetDdo.services[0].datatokenAddress,
       consumerAccount,
@@ -366,9 +367,10 @@ describe('Publish consume test', async () => {
       datatoken,
       config
     )
+    console.log('urlOrderTx ', urlOrderTx)
     assert(arwaveOrderTx, 'Ordering arwave dataset failed.')
 
-    ipfsOrderTx = orderAsset(
+    ipfsOrderTx = await orderAsset(
       resolvedIpfsAssetDdo.id,
       resolvedIpfsAssetDdo.services[0].datatokenAddress,
       consumerAccount,
@@ -377,9 +379,10 @@ describe('Publish consume test', async () => {
       datatoken,
       config
     )
+    console.log('ipfsOrderTx ', ipfsOrderTx)
     assert(ipfsOrderTx, 'Ordering ipfs dataset failed.')
 
-    onchainOrderTx = orderAsset(
+    onchainOrderTx = await orderAsset(
       resolvedOnchainAssetDdo.id,
       resolvedOnchainAssetDdo.services[0].datatokenAddress,
       consumerAccount,
@@ -388,9 +391,10 @@ describe('Publish consume test', async () => {
       datatoken,
       config
     )
+    console.log('onchainOrderTx ', onchainOrderTx)
     assert(onchainOrderTx, 'Ordering onchain dataset failed.')
 
-    grapqlOrderTx = orderAsset(
+    grapqlOrderTx = await orderAsset(
       resolvedGraphqlAssetDdo.id,
       resolvedGraphqlAssetDdo.services[0].datatokenAddress,
       consumerAccount,
@@ -399,6 +403,7 @@ describe('Publish consume test', async () => {
       datatoken,
       config
     )
+    console.log('grapqlOrderTx ', grapqlOrderTx)
     assert(grapqlOrderTx, 'Ordering graphql dataset failed.')
   })
 
