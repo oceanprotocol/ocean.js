@@ -235,6 +235,7 @@ describe('Multichain Provider test', async () => {
   })
 
   it('Should order the dataset after updated serviceEndpoint to point to multichain provider', async () => {
+    console.log('providerUrl', providerUrl)
     const initializeData = await ProviderInstance.initialize(
       resolvedDdoAfterUpdate.id,
       resolvedDdoAfterUpdate.services[0].id,

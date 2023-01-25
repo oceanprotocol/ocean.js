@@ -62,7 +62,7 @@ jobs:
         run: |
           bash -x start_ocean.sh  --no-aquarius --no-elasticsearch --no-provider --no-dashboard 2>&1 > start_ocean.log &
         env:
-          PROVIDER_VERSION: multichain
+          # PROVIDER_VERSION: multichain
       - run: npm ci
       - name: Wait for contracts deployment
         working-directory: ${{ github.workspace }}/barge
