@@ -159,13 +159,14 @@ export async function orderAsset(
   did: string,
   datatokenAddress: string,
   consumerAccount: string,
+  serviceId: string,
   serviceIndex: number,
   datatoken: Datatoken,
   config: Config
 ) {
   const initializeData = await ProviderInstance.initialize(
     did, // resolvedDdoAfterUpdate.id,
-    datatokenAddress, // resolvedDdoAfterUpdate.services[0].id,
+    serviceId, // resolvedDdoAfterUpdate.services[0].id,
     serviceIndex,
     consumerAccount,
     config.providerUri

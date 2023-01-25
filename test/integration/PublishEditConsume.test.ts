@@ -350,6 +350,7 @@ describe('Publish consume test', async () => {
       resolvedUrlAssetDdo.id,
       resolvedUrlAssetDdo.services[0].datatokenAddress,
       consumerAccount,
+      resolvedUrlAssetDdo.services[0].id,
       0,
       datatoken,
       config
@@ -360,6 +361,7 @@ describe('Publish consume test', async () => {
       resolvedArweaveAssetDdo.id,
       resolvedArweaveAssetDdo.services[0].datatokenAddress,
       consumerAccount,
+      resolvedArweaveAssetDdo.services[0].id,
       0,
       datatoken,
       config
@@ -370,6 +372,7 @@ describe('Publish consume test', async () => {
       resolvedIpfsAssetDdo.id,
       resolvedIpfsAssetDdo.services[0].datatokenAddress,
       consumerAccount,
+      resolvedIpfsAssetDdo.services[0].id,
       0,
       datatoken,
       config
@@ -380,6 +383,7 @@ describe('Publish consume test', async () => {
       resolvedOnchainAssetDdo.id,
       resolvedOnchainAssetDdo.services[0].datatokenAddress,
       consumerAccount,
+      resolvedOnchainAssetDdo.services[0].id,
       0,
       datatoken,
       config
@@ -390,6 +394,7 @@ describe('Publish consume test', async () => {
       resolvedGraphqlAssetDdo.id,
       resolvedGraphqlAssetDdo.services[0].datatokenAddress,
       consumerAccount,
+      resolvedGraphqlAssetDdo.services[0].id,
       0,
       datatoken,
       config
