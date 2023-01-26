@@ -217,7 +217,7 @@ describe('Multichain Provider test', async () => {
   })
 
   it('Should update metadata the asset metadata with second provider as serviceEndpoint', async () => {
-    resolvedDdo.services[0].serviceEndpoint = 'http://172.15.0.104:8030'
+    resolvedDdo.services[0].serviceEndpoint = 'http://172.15.0.104:8032'
     const updateTx = await updateAssetMetadata(
       publisherAccount,
       resolvedDdo,
@@ -230,7 +230,7 @@ describe('Multichain Provider test', async () => {
   delay(10000) // let's wait for aquarius to index the updated ddo
 
   it('Should resolve updated metadata asset', async () => {
-    providerUrl = 'http://172.15.0.104:8030'
+    providerUrl = 'http://172.15.0.104:8032'
     resolvedDdoAfterUpdate = await aquarius.waitForAqua(assetId)
     console.log('____resolvedDdoAfterUpdate____ ', resolvedDdoAfterUpdate)
     assert(resolvedDdoAfterUpdate, 'Cannot fetch DDO from Aquarius')
