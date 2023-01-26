@@ -78,7 +78,7 @@ const ifpsFile: Files = {
   files: [
     {
       type: 'ipfs',
-      hash: 'QmUKs5qmvj8rQbH3kvp2SytPFuDyWfSPh7EKkkyeXrA5MB-98'
+      hash: 'QmQYvMm8G4gZpy7pS51geEBSRmJ5d5bxLcJq8GmydFipcz'
     }
   ]
 }
