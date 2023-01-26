@@ -281,6 +281,8 @@ describe('Publish consume test', async () => {
     console.log(`graphql dataset id: ${grapqlAssetId}`)
   })
 
+  delay(10000) // let's wait for aquarius to index the  assets
+
   it('Resolve published assets', async () => {
     resolvedUrlAssetDdo = await aquarius.waitForAqua(urlAssetId)
     // console.log('+++resolvedDdo+++ ', resolvedUrlAssetDdo)
@@ -536,7 +538,7 @@ describe('Publish consume test', async () => {
     assert(updateGraphqlTx, 'Failed to update graphql asset metadata')
   })
 
-  delay(100000) // let's wait for aquarius to index the updated ddo's
+  delay(10000) // let's wait for aquarius to index the updated ddo's
 
   it('Should resolve updated datasets', async () => {
     resolvedUrlAssetDdoAfterUpdate = await aquarius.waitForAqua(urlAssetId)

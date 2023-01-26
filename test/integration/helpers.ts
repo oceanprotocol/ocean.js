@@ -171,16 +171,16 @@ export async function orderAsset(
     consumerAccount,
     config.providerUri
   )
-  console.log(`initializeData for did:${did} == ${initializeData}`)
+  console.log(`initializeData fees for did:${did} == ${initializeData.providerFee}`)
   const providerFees: ProviderFees = {
-    providerFeeAddress: initializeData?.providerFee?.providerFeeAddress,
-    providerFeeToken: initializeData?.providerFee?.providerFeeToken,
-    providerFeeAmount: initializeData?.providerFee?.providerFeeAmount,
-    v: initializeData?.providerFee?.v,
-    r: initializeData?.providerFee?.r,
-    s: initializeData?.providerFee?.s,
-    providerData: initializeData?.providerFee?.providerData,
-    validUntil: initializeData?.providerFee?.validUntil
+    providerFeeAddress: initializeData.providerFee.providerFeeAddress,
+    providerFeeToken: initializeData.providerFee.providerFeeToken,
+    providerFeeAmount: initializeData.providerFee.providerFeeAmount,
+    v: initializeData.providerFee.v,
+    r: initializeData.providerFee.r,
+    s: initializeData.providerFee.s,
+    providerData: initializeData.providerFee.providerData,
+    validUntil: initializeData.providerFee.validUntil
   }
 
   // make the payment
