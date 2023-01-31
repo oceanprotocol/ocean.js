@@ -479,7 +479,7 @@ describe('Publish consume test', async () => {
       consumerAccount,
       resolvedGraphqlAssetDdo.services[0].id,
       0,
-      onchainOrderTx.transactionHash,
+      grapqlOrderTx.transactionHash,
       providerUrl,
       web3
     )
@@ -487,7 +487,7 @@ describe('Publish consume test', async () => {
     try {
       await downloadFile(graphqlDownloadURL)
     } catch (e) {
-      assert.fail(`Download onchain dataset failed ${e}`)
+      assert.fail(`Download graphql dataset failed ${e}`)
     }
   })
 
