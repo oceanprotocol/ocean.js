@@ -475,9 +475,9 @@ describe('Publish consume test', async () => {
     // }
 
     const graphqlDownloadURL = await ProviderInstance.getDownloadUrl(
-      resolvedGraphqlAssetDdoAfterUpdate.id,
+      resolvedGraphqlAssetDdo.id,
       consumerAccount,
-      resolvedGraphqlAssetDdoAfterUpdate.services[0].id,
+      resolvedGraphqlAssetDdo.services[0].id,
       0,
       onchainOrderTx.transactionHash,
       providerUrl,
@@ -528,10 +528,10 @@ describe('Publish consume test', async () => {
     // )
     // assert(updateOnchainTx, 'Failed to update ipfs asset metadata')
 
-    resolvedGraphqlAssetDdoAfterUpdate.metadata.name = 'updated graphql asset name'
+    resolvedGraphqlAssetDdo.metadata.name = 'updated graphql asset name'
     const updateGraphqlTx = await updateAssetMetadata(
       publisherAccount,
-      resolvedOnchainAssetDdo,
+      resolvedGraphqlAssetDdo,
       providerUrl,
       aquarius
     )
