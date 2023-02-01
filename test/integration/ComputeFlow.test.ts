@@ -24,6 +24,7 @@ import {
   ConsumeMarketFee,
   Files
 } from '../../src/@types'
+import { updateAssetMetadata } from './utils'
 
 let config: Config
 
@@ -42,16 +43,21 @@ let algoDdoWithNoTimeoutId
 
 let freeComputeJobId: string
 let paidComputeJobId: string
+let afterUpdateComputeJobId: string
 
 let resolvedDdoWith5mTimeout
 let resolvedDdoWithNoTimeout
 let resolvedAlgoDdoWith5mTimeout
 let resolvedAlgoDdoWithNoTimeout
+let resolvedDdoAfterUpdate
+let resolvedAlgoAfterUpdate
 
 let freeEnvDatasetTxId
 let freeEnvAlgoTxId
 let paidEnvDatasetTxId
 let paidEnvAlgoTxId
+let afterUpdateDatasetTxId
+let afterUpdateAlgoTxId
 let computeValidUntil
 
 const assetUrl: Files = {
@@ -65,6 +71,7 @@ const assetUrl: Files = {
     }
   ]
 }
+
 const ddoWithNoTimeout = {
   '@context': ['https://w3id.org/did/v1'],
   id: 'did:op:efba17455c127a885ec7830d687a8f6e64f5ba559f8506f8723c1f10f05c049c',
@@ -138,6 +145,7 @@ const ddoWith5mTimeout = {
     }
   ]
 }
+
 const algoAssetUrl: Files = {
   datatokenAddress: '0x0',
   nftAddress: '0x0',
@@ -149,6 +157,7 @@ const algoAssetUrl: Files = {
     }
   ]
 }
+
 const algoDdoWithNoTimeout = {
   '@context': ['https://w3id.org/did/v1'],
   id: 'did:op:efba17455c127a885ec7830d687a8f6e64f5ba559f8506f8723c1f10f05c049c',
@@ -937,6 +946,131 @@ describe('Simple compute tests', async () => {
       web3,
       consumerAccount,
       freeComputeJobId,
+      0
+    )
+    assert(downloadURL, 'Provider getComputeResultUrl failed!')
+  })
+
+  it('Should update metadata of the dataset and algorithm with second provider as serviceEndpoint', async () => {
+    resolvedDdoWith5mTimeout.services[0].serviceEndpoint = 'http://172.15.0.104:8030'
+    const updateDdoTx = await updateAssetMetadata(
+      publisherAccount,
+      resolvedDdoWith5mTimeout,
+      providerUrl,
+      aquarius
+    )
+    assert(updateDdoTx, 'Failed to update asset metadata')
+
+    resolvedAlgoDdoWith5mTimeout.services[0].serviceEndpoint = 'http://172.15.0.104:8030'
+    const updateTx = await updateAssetMetadata(
+      publisherAccount,
+      resolvedAlgoDdoWith5mTimeout,
+      providerUrl,
+      aquarius
+    )
+    assert(updateTx, 'Failed to update asset metadata')
+  })
+
+  delay(10000) // let's wait for aquarius to index the updated ddo
+
+  it('Should resolve updated metadata asset', async () => {
+    providerUrl = 'http://172.15.0.104:8030'
+    resolvedDdoAfterUpdate = await aquarius.waitForAqua(ddoWith5mTimeoutId)
+    console.log('____resolvedDdoAfterUpdate____ ', resolvedDdoAfterUpdate)
+    assert(resolvedDdoAfterUpdate, 'Cannot fetch DDO from Aquarius')
+
+    resolvedAlgoAfterUpdate = await aquarius.waitForAqua(algoDdoWith5mTimeoutId)
+    console.log('____resolvedAlgoAfterUpdate____ ', resolvedAlgoAfterUpdate)
+    assert(resolvedAlgoAfterUpdate, 'Cannot fetch DDO from Aquarius')
+  })
+
+  it('should start a computeJob using the free environment for assets after update', async () => {
+    // let's have 5 minute of compute access
+    const mytime = new Date()
+    const computeMinutes = 5
+    mytime.setMinutes(mytime.getMinutes() + computeMinutes)
+    computeValidUntil = Math.floor(mytime.getTime() / 1000)
+
+    // we choose the free env
+    const computeEnv = computeEnvs.find((ce) => ce.priceMin === 0)
+    assert(computeEnv, 'Cannot find the free compute env')
+
+    const assets: ComputeAsset[] = [
+      {
+        documentId: resolvedDdoAfterUpdate.id,
+        serviceId: resolvedDdoAfterUpdate.services[0].id
+      }
+    ]
+    const dtAddressArray = [resolvedDdoAfterUpdate.services[0].datatokenAddress]
+    const algo: ComputeAlgorithm = {
+      documentId: resolvedAlgoAfterUpdate.id,
+      serviceId: resolvedAlgoAfterUpdate.services[0].id
+    }
+
+    providerInitializeComputeResults = await ProviderInstance.initializeCompute(
+      assets,
+      algo,
+      computeEnv.id,
+      computeValidUntil,
+      providerUrl,
+      consumerAccount
+    )
+    console.log(
+      'compute flow initializeCompute result = ',
+      providerInitializeComputeResults
+    )
+    assert(
+      !('error' in providerInitializeComputeResults.algorithm),
+      'Cannot order algorithm'
+    )
+    algo.transferTxId = await handleOrder(
+      providerInitializeComputeResults.algorithm,
+      resolvedAlgoAfterUpdate.services[0].datatokenAddress,
+      consumerAccount,
+      computeEnv.consumerAddress,
+      0
+    )
+    for (let i = 0; i < providerInitializeComputeResults.datasets.length; i++) {
+      assets[i].transferTxId = await handleOrder(
+        providerInitializeComputeResults.datasets[i],
+        dtAddressArray[i],
+        consumerAccount,
+        computeEnv.consumerAddress,
+        0
+      )
+    }
+    const computeJobs = await ProviderInstance.computeStart(
+      providerUrl,
+      web3,
+      consumerAccount,
+      computeEnv.id,
+      assets[0],
+      algo
+    )
+    afterUpdateAlgoTxId = assets[0].transferTxId
+    afterUpdateDatasetTxId = algo.transferTxId
+    assert(computeJobs, 'Cannot start compute job')
+    afterUpdateComputeJobId = computeJobs[0].jobId
+  })
+
+  delay(100000)
+
+  it('Check compute status for second multichain provider', async () => {
+    const jobStatus = (await ProviderInstance.computeStatus(
+      providerUrl,
+      consumerAccount,
+      afterUpdateComputeJobId,
+      resolvedDdoAfterUpdate.id
+    )) as ComputeJob
+    assert(jobStatus, 'Cannot retrieve compute status!')
+  })
+
+  it('Get download compute results url using multichain provider', async () => {
+    const downloadURL = await ProviderInstance.getComputeResultUrl(
+      providerUrl,
+      web3,
+      consumerAccount,
+      afterUpdateComputeJobId,
       0
     )
     assert(downloadURL, 'Provider getComputeResultUrl failed!')
