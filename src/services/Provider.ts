@@ -117,6 +117,7 @@ export class Provider {
 
   /** Encrypt data using the Provider's own symmetric key
    * @param {string} data data in json format that needs to be sent , it can either be a DDO or a File array
+   * @param {number} chainId network's id so provider can choose the corresponding web3 object
    * @param {string} providerUri provider uri address
    * @param {AbortSignal} signal abort signal
    * @return {Promise<string>} urlDetails
