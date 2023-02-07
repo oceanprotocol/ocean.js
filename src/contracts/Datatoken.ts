@@ -173,7 +173,7 @@ export class Datatoken extends SmartContract {
 
     if (!dispenserParams.allowedSwapper) dispenserParams.allowedSwapper = ZERO_ADDRESS
 
-    dispenserParams.withMint = dispenserParams.withMint === false ? false : true
+    dispenserParams.withMint = dispenserParams.withMint !== false
 
     // should check DatatokenDeployer role using NFT level ..
 
