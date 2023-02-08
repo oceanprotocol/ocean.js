@@ -78,7 +78,7 @@ const ifpsFile: Files = {
   files: [
     {
       type: 'ipfs',
-      hash: 'QmUKs5qmvj8rQbH3kvp2SytPFuDyWfSPh7EKkkyeXrA5MB'
+      hash: 'QmdMBw956S3i2H2ioS9cERrtxoLJuSsfjzCvkqoDgUa2xm'
     }
   ]
 }
@@ -97,7 +97,7 @@ const onchainFile: Files = {
         stateMutability: 'view',
         type: 'function'
       },
-      chainId: 80001
+      chainId: 8996
     }
   ]
 }
@@ -293,7 +293,7 @@ describe('Publish consume test', async () => {
     assert(resolvedArweaveAssetDdo, 'Cannot fetch arwave DDO from Aquarius')
 
     resolvedIpfsAssetDdo = await aquarius.waitForAqua(ipfsAssetId)
-    console.log('+++resolvedArweaveAssetDdo+++ ', resolvedIpfsAssetDdo)
+    console.log('+++resolvedIpfsAssetDdo+++ ', resolvedIpfsAssetDdo)
     assert(resolvedIpfsAssetDdo, 'Cannot fetch ipfs DDO from Aquarius')
 
     resolvedOnchainAssetDdo = await aquarius.waitForAqua(onchainAssetId)
@@ -372,6 +372,18 @@ describe('Publish consume test', async () => {
     console.log('arwaveOrderTx ', arwaveOrderTx.transactionHash)
     assert(arwaveOrderTx, 'Ordering arwave dataset failed.')
 
+    onchainOrderTx = await orderAsset(
+      resolvedOnchainAssetDdo.id,
+      resolvedOnchainAssetDdo.services[0].datatokenAddress,
+      consumerAccount,
+      resolvedOnchainAssetDdo.services[0].id,
+      0,
+      datatoken,
+      config
+    )
+    console.log('onchainOrderTx ', onchainOrderTx.transactionHash)
+    assert(onchainOrderTx, 'Ordering onchain dataset failed.')
+
     ipfsOrderTx = await orderAsset(
       resolvedIpfsAssetDdo.id,
       resolvedIpfsAssetDdo.services[0].datatokenAddress,
@@ -383,18 +395,6 @@ describe('Publish consume test', async () => {
     )
     console.log('ipfsOrderTx ', ipfsOrderTx.transactionHash)
     assert(ipfsOrderTx, 'Ordering ipfs dataset failed.')
-
-    // onchainOrderTx = await orderAsset(
-    //   resolvedOnchainAssetDdo.id,
-    //   resolvedOnchainAssetDdo.services[0].datatokenAddress,
-    //   consumerAccount,
-    //   resolvedOnchainAssetDdo.services[0].id,
-    //   0,
-    //   datatoken,
-    //   config
-    // )
-    // console.log('onchainOrderTx ', onchainOrderTx.transactionHash)
-    // assert(onchainOrderTx, 'Ordering onchain dataset failed.')
 
     grapqlOrderTx = await orderAsset(
       resolvedGraphqlAssetDdo.id,
