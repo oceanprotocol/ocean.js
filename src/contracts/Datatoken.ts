@@ -102,7 +102,7 @@ export class Datatoken extends SmartContract {
     }
     if (!fixedRateParams.allowedConsumer) fixedRateParams.allowedConsumer = ZERO_ADDRESS
 
-    const withMint = fixedRateParams.withMint ? 1 : 0
+    const withMint = fixedRateParams.withMint === false ? 0 : 1
 
     // should check DatatokenDeployer role using NFT level ..
 
@@ -173,7 +173,7 @@ export class Datatoken extends SmartContract {
 
     if (!dispenserParams.allowedSwapper) dispenserParams.allowedSwapper = ZERO_ADDRESS
 
-    if (!dispenserParams.withMint) dispenserParams.withMint = false
+    dispenserParams.withMint = dispenserParams.withMint !== false
 
     // should check DatatokenDeployer role using NFT level ..
 

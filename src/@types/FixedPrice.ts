@@ -7,7 +7,7 @@ export interface FreCreationParams {
   datatokenDecimals: number
   fixedRate: string
   marketFee: string
-  withMint?: boolean // add FixedPriced contract as minter if withMint == true
+  withMint?: boolean // adds FixedPriced contract as minter if withMint is not set to false
   allowedConsumer?: string //  only account that consume the exhchange
 }
 
