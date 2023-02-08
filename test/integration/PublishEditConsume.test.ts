@@ -285,11 +285,11 @@ describe('Publish consume test', async () => {
 
   it('Resolve published assets', async () => {
     resolvedUrlAssetDdo = await aquarius.waitForAqua(urlAssetId)
-    console.log('+++resolvedDdo+++ ', resolvedUrlAssetDdo)
+    // console.log('+++resolvedDdo+++ ', resolvedUrlAssetDdo)
     assert(resolvedUrlAssetDdo, 'Cannot fetch url DDO from Aquarius')
 
     resolvedArweaveAssetDdo = await aquarius.waitForAqua(arweaveAssetId)
-    console.log('+++resolvedArweaveAssetDdo+++ ', resolvedArweaveAssetDdo)
+    // console.log('+++resolvedArweaveAssetDdo+++ ', resolvedArweaveAssetDdo)
     assert(resolvedArweaveAssetDdo, 'Cannot fetch arwave DDO from Aquarius')
 
     resolvedIpfsAssetDdo = await aquarius.waitForAqua(ipfsAssetId)
@@ -297,11 +297,11 @@ describe('Publish consume test', async () => {
     assert(resolvedIpfsAssetDdo, 'Cannot fetch ipfs DDO from Aquarius')
 
     resolvedOnchainAssetDdo = await aquarius.waitForAqua(onchainAssetId)
-    console.log('+++resolvedOnchainAssetDdo+++ ', resolvedOnchainAssetDdo)
+    // console.log('+++resolvedOnchainAssetDdo+++ ', resolvedOnchainAssetDdo)
     assert(resolvedOnchainAssetDdo, 'Cannot fetch onchain DDO from Aquarius')
 
     resolvedGraphqlAssetDdo = await aquarius.waitForAqua(grapqlAssetId)
-    console.log('+++resolvedGraphqlAssetDdo+++ ', resolvedGraphqlAssetDdo)
+    // console.log('+++resolvedGraphqlAssetDdo+++ ', resolvedGraphqlAssetDdo)
     assert(resolvedGraphqlAssetDdo, 'Cannot fetch graphql DDO from Aquarius')
   })
 
@@ -372,17 +372,17 @@ describe('Publish consume test', async () => {
     console.log('arwaveOrderTx ', arwaveOrderTx.transactionHash)
     assert(arwaveOrderTx, 'Ordering arwave dataset failed.')
 
-    // ipfsOrderTx = await orderAsset(
-    //   resolvedIpfsAssetDdo.id,
-    //   resolvedIpfsAssetDdo.services[0].datatokenAddress,
-    //   consumerAccount,
-    //   resolvedIpfsAssetDdo.services[0].id,
-    //   0,
-    //   datatoken,
-    //   config
-    // )
-    // console.log('ipfsOrderTx ', ipfsOrderTx.transactionHash)
-    // assert(ipfsOrderTx, 'Ordering ipfs dataset failed.')
+    ipfsOrderTx = await orderAsset(
+      resolvedIpfsAssetDdo.id,
+      resolvedIpfsAssetDdo.services[0].datatokenAddress,
+      consumerAccount,
+      resolvedIpfsAssetDdo.services[0].id,
+      0,
+      datatoken,
+      config
+    )
+    console.log('ipfsOrderTx ', ipfsOrderTx.transactionHash)
+    assert(ipfsOrderTx, 'Ordering ipfs dataset failed.')
 
     // onchainOrderTx = await orderAsset(
     //   resolvedOnchainAssetDdo.id,

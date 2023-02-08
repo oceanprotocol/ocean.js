@@ -171,7 +171,9 @@ export async function orderAsset(
     consumerAccount,
     config.providerUri
   )
+
   console.log(`initializeData fees for did:${did} == ${initializeData.providerFee}`)
+
   const providerFees: ProviderFees = {
     providerFeeAddress: initializeData.providerFee.providerFeeAddress,
     providerFeeToken: initializeData.providerFee.providerFeeToken,
