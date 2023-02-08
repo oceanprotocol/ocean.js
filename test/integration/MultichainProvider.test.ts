@@ -107,10 +107,10 @@ describe('Multichain Provider test', async () => {
     //   'provider 2 endpoints 8031',
     //   await ProviderInstance.getEndpoints('http://172.15.0.7:8031')
     // )
-    console.log(
-      'provider multi endpoints',
-      await ProviderInstance.getEndpoints('http://172.15.0.9:8030')
-    )
+    // console.log(
+    //   'provider multi endpoints',
+    //   await ProviderInstance.getEndpoints('http://172.15.0.9:8030')
+    // )
     console.log(
       'provider multi endpoints 8032',
       await ProviderInstance.getEndpoints('http://172.15.0.9:8032')
