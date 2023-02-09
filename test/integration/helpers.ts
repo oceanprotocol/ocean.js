@@ -162,14 +162,14 @@ export async function orderAsset(
   serviceId: string,
   serviceIndex: number,
   datatoken: Datatoken,
-  config: Config
+  providerUrl: string
 ) {
   const initializeData = await ProviderInstance.initialize(
     did, // resolvedDdoAfterUpdate.id,
     serviceId, // resolvedDdoAfterUpdate.services[0].id,
     serviceIndex,
     consumerAccount,
-    config.providerUri
+    providerUrl
   )
 
   console.log(`initializeData fees for did:${did} == ${initializeData.providerFee}`)
