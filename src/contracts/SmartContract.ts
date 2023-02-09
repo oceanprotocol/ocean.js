@@ -1,6 +1,7 @@
-import Web3 from 'web3'
-import { Contract } from 'web3-eth-contract'
-import { AbiItem } from 'web3-utils'
+// import Web3 from 'web3'
+// import { Contract } from 'web3-eth-contract'
+// import { AbiItem } from 'web3-utils'
+import { ethers, Signer, Interface, Contract, InterfaceAbi } from 'ethers'
 import { Config, ConfigHelper } from '../config'
 import {
   amountToUnits,
@@ -10,28 +11,28 @@ import {
 } from '../utils'
 
 export abstract class SmartContract {
-  public web3: Web3
+  public signer: Signer
   public config: Config
-  public abi: AbiItem | AbiItem[]
+  public abi: InterfaceAbi
 
-  abstract getDefaultAbi(): AbiItem | AbiItem[]
+  abstract getDefaultAbi()
 
   /**
    * Instantiate the smart contract.
-   * @param {Web3} web3
+   * @param {Signer} signer
    * @param {string | number} network Network id or name
    * @param {Config} config Configutation of the smart contract
    * @param {AbiItem | AbiItem[]} abi ABI of the smart contract
    */
   constructor(
-    web3: Web3,
+    signer: Signer,
     network?: string | number,
     config?: Config,
-    abi?: AbiItem | AbiItem[]
+    abi?: InterfaceAbi
   ) {
-    this.web3 = web3
+    this.signer = signer
     this.config = config || new ConfigHelper().getConfig(network || 'unknown')
-    this.abi = abi || (this.getDefaultAbi() as AbiItem[])
+    this.abi = abi || this.getDefaultAbi()
   }
 
   protected async amountToUnits(
@@ -39,7 +40,7 @@ export abstract class SmartContract {
     amount: string,
     tokenDecimals?: number
   ): Promise<string> {
-    return amountToUnits(this.web3, token, amount, tokenDecimals)
+    return amountToUnits(this.signer, token, amount, tokenDecimals)
   }
 
   protected async unitsToAmount(
@@ -47,21 +48,15 @@ export abstract class SmartContract {
     amount: string,
     tokenDecimals?: number
   ): Promise<string> {
-    return unitsToAmount(this.web3, token, amount, tokenDecimals)
+    return unitsToAmount(this.signer, token, amount, tokenDecimals)
   }
 
   protected async getFairGasPrice(): Promise<string> {
-    return getFairGasPrice(this.web3, this.config?.gasFeeMultiplier)
+    return getFairGasPrice(this.signer, this.config?.gasFeeMultiplier)
   }
 
-  protected getContract(
-    address: string,
-    account?: string,
-    abi?: AbiItem | AbiItem[]
-  ): Contract {
-    const contract = new this.web3.eth.Contract(abi || this.abi, address, {
-      from: account
-    })
+  protected getContract(address: string, account?: string, abi?: InterfaceAbi): Contract {
+    const contract = new ethers.Contract(address, abi || this.abi, this.signer)
     return setContractDefaults(contract, this.config)
   }
 }

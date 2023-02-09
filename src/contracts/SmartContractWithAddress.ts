@@ -1,6 +1,8 @@
-import Web3 from 'web3'
-import { Contract } from 'web3-eth-contract'
-import { AbiItem } from 'web3-utils'
+// import Web3 from 'web3'
+// import { Contract } from 'web3-eth-contract'
+// import { AbiItem } from 'web3-utils'
+
+import { Signer, InterfaceAbi, Contract } from 'ethers'
 import { Config } from '../config'
 import { SmartContract } from './SmartContract'
 
@@ -11,19 +13,19 @@ export abstract class SmartContractWithAddress extends SmartContract {
   /**
    * Instantiate the smart contract.
    * @param {string} address Address of the smart contract
-   * @param {Web3} web3
+   * @param {Signer} signer
    * @param {string | number} network Network id or name
    * @param {Config} config Configutation of the smart contract
-   * @param {AbiItem | AbiItem[]} abi ABI of the smart contract
+   * @param {InterfaceAbi} abi ABI of the smart contract
    */
   constructor(
     address: string,
-    web3: Web3,
+    signer: Signer,
     network?: string | number,
     config?: Config,
-    abi?: AbiItem | AbiItem[]
+    abi?: InterfaceAbi
   ) {
-    super(web3, network, config, abi)
+    super(signer, network, config, abi)
     this.address = address
     this.contract = this.getContract(this.address)
   }
