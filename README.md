@@ -128,7 +128,7 @@ npm run test:integration
 npm run test:integration:cover
 ```
 
-Note: If you are running the integration tests operating system macOS you should also do same changes to the `provider`, `metadataCache` and `subgraph` urls, since the default barge ip can not be accessed due to some network constraints on macOS. So we should be using the `http://127.0.0.1` for each direct call from the to the mentioned services, but we should keep the internal barge provider url (`http://172.15.0.4:8030`) hardcoded inside all ddo's `serviceEndpoint` and when calling `nft.setMetadata` method.
+> Note: On macOS, changes to the `provider`, `metadataCache` and `subgraph` URLs are required, as their default `barge` IPs can not be accessed due to network constraints on macOS. Instead use `http://127.0.0.1` for each direct call to the mentioned services, but keep the internal `provider` URL (`http://172.15.0.4:8030`) hardcoded inside all DDO's `serviceEndpoint`, and when calling `nft.setMetadata()`.
 
 ## 🛳 Production
 
