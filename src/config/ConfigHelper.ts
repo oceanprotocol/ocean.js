@@ -31,9 +31,9 @@ export const configHelperNetworks: Config[] = [
     ...configHelperNetworksBase,
     chainId: 8996,
     network: 'development',
-    metadataCacheUri: 'http://172.15.0.5:5000',
-    providerUri: 'http://172.15.0.4:8030',
-    subgraphUri: 'https://172.15.0.15:9000'
+    metadataCacheUri: 'http://172.15.0.5:5000', // use http://127.0.0.1:5000/ if running on macOS
+    providerUri: 'http://172.15.0.4:8030', // use http://127.0.0.1:8030/ if running on macOS
+    subgraphUri: 'https://172.15.0.15:8000' // use http://127.0.0.1:9000/ if running on macOS
   },
   {
     ...configHelperNetworksBase,
