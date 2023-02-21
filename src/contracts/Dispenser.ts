@@ -1,4 +1,5 @@
-import { AbiItem } from 'web3-utils'
+// import { AbiItem } from 'web3-utils'
+import { ethers, Signer, InterfaceAbi } from 'ethers'
 import Decimal from 'decimal.js'
 import DispenserAbi from '@oceanprotocol/contracts/artifacts/contracts/pools/dispenser/Dispenser.sol/Dispenser.json'
 import { calculateEstimatedGas, sendTx } from '../utils'
@@ -7,8 +8,8 @@ import { SmartContractWithAddress } from './SmartContractWithAddress'
 import { DispenserToken, ReceiptOrEstimate } from '../@types'
 
 export class Dispenser extends SmartContractWithAddress {
-  getDefaultAbi(): AbiItem | AbiItem[] {
-    return DispenserAbi.abi as AbiItem[]
+  getDefaultAbi() {
+    return DispenserAbi.abi
   }
 
   /**
@@ -17,13 +18,13 @@ export class Dispenser extends SmartContractWithAddress {
    * @return {Promise<FixedPricedExchange>} Exchange details
    */
   public async status(dtAdress: string): Promise<DispenserToken> {
-    const status: DispenserToken = await this.contract.methods.status(dtAdress).call()
+    const status: DispenserToken = await this.contract.status(dtAdress)
     if (!status) {
       throw new Error(`Np dispenser found for the given datatoken address`)
     }
-    status.maxTokens = this.web3.utils.fromWei(status.maxTokens)
-    status.maxBalance = this.web3.utils.fromWei(status.maxBalance)
-    status.balance = this.web3.utils.fromWei(status.balance)
+    status.maxTokens = ethers.formatEther(status.maxTokens)
+    status.maxBalance = ethers.formatEther(status.maxBalance)
+    status.balance = ethers.formatEther(status.balance)
     return status
   }
 
@@ -34,6 +35,7 @@ export class Dispenser extends SmartContractWithAddress {
    * @param {String} maxTokens max tokens to dispense
    * @param {String} maxBalance max balance of requester
    * @param {String} allowedSwapper  only account that can ask tokens. set address(0) if not required
+   * @param {Boolean} estimateGas if True, return gas estimate
    * @return {Promise<ReceiptOrEstimate>} transactionId
    */
   public async create<G extends boolean = false>(
@@ -45,11 +47,10 @@ export class Dispenser extends SmartContractWithAddress {
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
     const estGas = await calculateEstimatedGas(
-      address,
-      this.contract.methods.create,
+      this.contract.create,
       dtAddress,
-      this.web3.utils.toWei(maxTokens),
-      this.web3.utils.toWei(maxBalance),
+      ethers.parseUnits(maxTokens, 'ethers'),
+      ethers.parseUnits(maxBalance, 'ethers'),
       address,
       allowedSwapper
     )
@@ -57,14 +58,13 @@ export class Dispenser extends SmartContractWithAddress {
 
     // Call createFixedRate contract method
     const trxReceipt = await sendTx(
-      address,
       estGas + 1,
-      this.web3,
+      this.signer,
       this.config?.gasFeeMultiplier,
-      this.contract.methods.create,
+      this.contract.create,
       dtAddress,
-      this.web3.utils.toWei(maxTokens),
-      this.web3.utils.toWei(maxBalance),
+      ethers.parseUnits(maxTokens, 'ethers'),
+      ethers.parseUnits(maxBalance, 'ethers'),
       address,
       allowedSwapper
     )
@@ -77,34 +77,31 @@ export class Dispenser extends SmartContractWithAddress {
    * @param {String} dtAddress refers to datatoken address.
    * @param {Number} maxTokens max amount of tokens to dispense
    * @param {Number} maxBalance max balance of user. If user balance is >, then dispense will be rejected
-   * @param {String} address User address (must be owner of the datatoken)
+   * @param {Boolean} estimateGas if True, return gas estimate
    * @return {Promise<ReceiptOrEstimate>} TransactionReceipt
    */
   public async activate<G extends boolean = false>(
     dtAddress: string,
     maxTokens: string,
     maxBalance: string,
-    address: string,
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
     const estGas = await calculateEstimatedGas(
-      address,
-      this.contract.methods.activate,
+      this.contract.activate,
       dtAddress,
-      this.web3.utils.toWei(maxTokens),
-      this.web3.utils.toWei(maxBalance)
+      ethers.parseUnits(maxTokens, 'ethers'),
+      ethers.parseUnits(maxBalance, 'ethers')
     )
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
 
     const trxReceipt = await sendTx(
-      address,
       estGas + 1,
-      this.web3,
+      this.signer,
       this.config?.gasFeeMultiplier,
-      this.contract.methods.activate,
+      this.contract.activate,
       dtAddress,
-      this.web3.utils.toWei(maxTokens),
-      this.web3.utils.toWei(maxBalance)
+      ethers.parseUnits(maxTokens, 'ethers'),
+      ethers.parseUnits(maxBalance, 'ethers')
     )
 
     return <ReceiptOrEstimate<G>>trxReceipt
@@ -113,27 +110,21 @@ export class Dispenser extends SmartContractWithAddress {
   /**
    * Deactivate an existing dispenser.
    * @param {String} dtAddress refers to datatoken address.
-   * @param {String} address User address (must be owner of the datatoken)
+   * @param {Boolean} estimateGas if True, return gas estimate
    * @return {Promise<ReceiptOrEstimate>} TransactionReceipt
    */
   public async deactivate<G extends boolean = false>(
     dtAddress: string,
-    address: string,
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
-    const estGas = await calculateEstimatedGas(
-      address,
-      this.contract.methods.deactivate,
-      dtAddress
-    )
+    const estGas = await calculateEstimatedGas(this.contract.deactivate, dtAddress)
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
 
     const trxReceipt = await sendTx(
-      address,
       estGas + 1,
-      this.web3,
+      this.signer,
       this.config?.gasFeeMultiplier,
-      this.contract.methods.deactivate,
+      this.contract.deactivate,
       dtAddress
     )
 
@@ -143,30 +134,27 @@ export class Dispenser extends SmartContractWithAddress {
   /**
    * Sets a new allowedSwapper.
    * @param {String} dtAddress refers to datatoken address.
-   * @param {String} address User address (must be owner of the datatoken)
    * @param {String} newAllowedSwapper refers to the new allowedSwapper
+   * @param {Boolean} estimateGas if True, return gas estimate
    * @return {Promise<ReceiptOrEstimate>} TransactionReceipt
    */
   public async setAllowedSwapper<G extends boolean = false>(
     dtAddress: string,
-    address: string,
     newAllowedSwapper: string,
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
     const estGas = await calculateEstimatedGas(
-      address,
-      this.contract.methods.setAllowedSwapper,
+      this.contract.setAllowedSwapper,
       dtAddress,
       newAllowedSwapper
     )
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
 
     const trxReceipt = await sendTx(
-      address,
       estGas + 1,
-      this.web3,
+      this.signer,
       this.config?.gasFeeMultiplier,
-      this.contract.methods.setAllowedSwapper,
+      this.contract.setAllowedSwapper,
       dtAddress,
       newAllowedSwapper
     )
@@ -178,35 +166,32 @@ export class Dispenser extends SmartContractWithAddress {
    * The dispenser must be active, hold enough DT (or be able to mint more)
    * and respect maxTokens/maxBalance requirements
    * @param {String} dtAddress refers to datatoken address.
-   * @param {String} address User address
    * @param {String} amount amount of datatokens required.
    * @param {String} destination who will receive the tokens
+   * @param {Boolean} estimateGas if True, return gas estimate
    * @return {Promise<ReceiptOrEstimate>} TransactionReceipt
    */
   public async dispense<G extends boolean = false>(
     dtAddress: string,
-    address: string,
     amount: string = '1',
     destination: string,
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
     const estGas = await calculateEstimatedGas(
-      address,
-      this.contract.methods.dispense,
+      this.contract.dispense,
       dtAddress,
-      this.web3.utils.toWei(amount),
+      ethers.parseUnits(amount, 'ether'),
       destination
     )
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
 
     const trxReceipt = await sendTx(
-      address,
       estGas + 1,
-      this.web3,
+      this.signer,
       this.config?.gasFeeMultiplier,
-      this.contract.methods.dispense,
+      this.contract.dispense,
       dtAddress,
-      this.web3.utils.toWei(amount),
+      ethers.parseUnits(amount, 'ether'),
       destination
     )
     return <ReceiptOrEstimate<G>>trxReceipt
@@ -215,27 +200,21 @@ export class Dispenser extends SmartContractWithAddress {
   /**
    * Withdraw all tokens from the dispenser
    * @param {String} dtAddress refers to datatoken address.
-   * @param {String} address User address (must be owner of the dispenser)
+   * @param {Boolean} estimateGas if True, return gas estimate
    * @return {Promise<ReceiptOrEstimate>} TransactionReceipt
    */
   public async ownerWithdraw<G extends boolean = false>(
     dtAddress: string,
-    address: string,
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
-    const estGas = await calculateEstimatedGas(
-      address,
-      this.contract.methods.ownerWithdraw,
-      dtAddress
-    )
+    const estGas = await calculateEstimatedGas(this.contract.ownerWithdraw, dtAddress)
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
 
     const trxReceipt = await sendTx(
-      address,
       estGas + 1,
-      this.web3,
+      this.signer,
       this.config?.gasFeeMultiplier,
-      this.contract.methods.ownerWithdraw,
+      this.contract.ownerWithdraw,
       dtAddress
     )
 

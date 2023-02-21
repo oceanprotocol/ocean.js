@@ -95,9 +95,9 @@ export async function amountToUnits(
 export async function calculateEstimatedGas(
   functionToEstimateGas: ContractMethod,
   ...args: any[]
-): Promise<bigint> {
+): Promise<number> {
   const estimate = await functionToEstimateGas.estimateGas(args)
-  return estimate || GASLIMIT_DEFAULT
+  return Number(estimate) || GASLIMIT_DEFAULT
   /* const estimatedGas = await functionToEstimateGas
     .apply(null, args)
     .estimateGas({ from }, (err, estGas) => (err ? GASLIMIT_DEFAULT : estGas))
@@ -121,7 +121,7 @@ export function getEventFromTx(txReceipt, eventName) {
  * @return {Promise<any>} transaction receipt
  */
 export async function sendTx(
-  estGas: bigint,
+  estGas: Number,
   signer: Signer,
   gasFeeMultiplier: number,
   functionToSend: Function,

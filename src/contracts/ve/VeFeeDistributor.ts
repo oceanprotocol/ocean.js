@@ -19,6 +19,7 @@ export class VeFeeDistributor extends SmartContractWithAddress {
          may need to be called more than once to claim all available
          fees. In the `Claimed` event that fires, if `claim_epoch` is
          less than `max_epoch`, the account may claim again
+   * @param {Boolean} estimateGas if True, return gas estimate
    * @return {Promise<ReceiptOrEstimate>}
    */
   public async claim<G extends boolean = false>(
@@ -29,7 +30,7 @@ export class VeFeeDistributor extends SmartContractWithAddress {
 
     // Invoke function of the contract
     const trxReceipt = await sendTx(
-      estGas + BigInt(20000),
+      estGas + 20000,
       this.signer,
       this.config?.gasFeeMultiplier,
       this.contract.claim
@@ -43,6 +44,7 @@ export class VeFeeDistributor extends SmartContractWithAddress {
          multiple claims for the same address when that address
          has significant veOCEAN history
    * @param {String} addresses array of addresses to claim
+   * @param {Boolean} estimateGas if True, return gas estimate
    * @return {Promise<ReceiptOrEstimate>}
    */
   public async claimMany<G extends boolean = false>(
@@ -54,7 +56,7 @@ export class VeFeeDistributor extends SmartContractWithAddress {
 
     // Invoke function of the contract
     const trxReceipt = await sendTx(
-      estGas + BigInt(20000),
+      estGas + 20000,
       this.signer,
       this.config?.gasFeeMultiplier,
       this.contract.claim_many,

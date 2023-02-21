@@ -1,6 +1,7 @@
-import Web3 from 'web3'
-import { AbiItem } from 'web3-utils'
-import { TransactionReceipt } from 'web3-eth'
+// import Web3 from 'web3'
+// import { AbiItem } from 'web3-utils'
+// import { TransactionReceipt } from 'web3-eth'
+import { ethers, Signer, InterfaceAbi } from 'ethers'
 import Decimal from 'decimal.js'
 import ERC20Template from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC20Template.sol/ERC20Template.json'
 import ERC20TemplateEnterprise from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC20TemplateEnterprise.sol/ERC20TemplateEnterprise.json'
@@ -21,11 +22,11 @@ import { Config } from '../config'
 import { SmartContract } from './SmartContract'
 
 export class Datatoken extends SmartContract {
-  public abiEnterprise: AbiItem | AbiItem[]
+  public abiEnterprise: InterfaceAbi
   public nft: Nft
 
-  getDefaultAbi(): AbiItem | AbiItem[] {
-    return ERC20Template.abi as AbiItem[]
+  getDefaultAbi() {
+    return ERC20Template.abi
   }
 
   /**
@@ -34,15 +35,15 @@ export class Datatoken extends SmartContract {
    * @param {Web3} web3
    */
   constructor(
-    web3: Web3,
+    signer: Signer,
     network?: string | number,
     config?: Config,
-    abi?: AbiItem | AbiItem[],
-    abiEnterprise?: AbiItem | AbiItem[]
+    abi?: InterfaceAbi,
+    abiEnterprise?: InterfaceAbi
   ) {
-    super(web3, network, config, abi)
-    this.abiEnterprise = abiEnterprise || (ERC20TemplateEnterprise.abi as AbiItem[])
-    this.nft = new Nft(this.web3)
+    super(signer, network, config, abi)
+    this.abiEnterprise = abiEnterprise || (ERC20TemplateEnterprise.abi as InterfaceAbi)
+    this.nft = new Nft(this.signer)
   }
 
   /**
@@ -50,34 +51,31 @@ export class Datatoken extends SmartContract {
    * @param {String} dtAddress Datatoken address
    * @param {String} spender Spender address
    * @param {string} amount Number of datatokens, as number. Will be converted to wei
-   * @param {String} address User adress
+   * @param {Boolean} estimateGas if True, return gas estimate
    * @return {Promise<ReceiptOrEstimate>} trxReceipt
    */
   public async approve<G extends boolean = false>(
     dtAddress: string,
     spender: string,
     amount: string,
-    address: string,
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
     const dtContract = this.getContract(dtAddress)
 
     const estGas = await calculateEstimatedGas(
-      address,
-      dtContract.methods.approve,
+      dtContract.approve,
       spender,
-      this.web3.utils.toWei(amount)
+      ethers.parseUnits(amount, 'ether')
     )
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
 
     const trxReceipt = await sendTx(
-      address,
       estGas + 1,
-      this.web3,
+      this.signer,
       this.config?.gasFeeMultiplier,
-      dtContract.methods.approve,
+      dtContract.approve,
       spender,
-      this.web3.utils.toWei(amount)
+      ethers.parseUnits(amount, 'ether')
     )
     return <ReceiptOrEstimate<G>>trxReceipt
   }
@@ -86,8 +84,8 @@ export class Datatoken extends SmartContract {
    * Creates a new FixedRateExchange setup.
    * @param {String} dtAddress Datatoken address
    * @param {String} address Caller address
-   * @param {String} fixedPriceAddress
    * @param {FixedRateParams} fixedRateParams
+   * @param {Boolean} estimateGas if True, return gas estimate
    * @return {Promise<ReceiptOrEstimate>} transactionId
    */
   public async createFixedRate<G extends boolean = false>(
@@ -107,8 +105,7 @@ export class Datatoken extends SmartContract {
     // should check DatatokenDeployer role using NFT level ..
 
     const estGas = await calculateEstimatedGas(
-      address,
-      dtContract.methods.createFixedRate,
+      dtContract.createFixedRate,
       fixedRateParams.fixedRateAddress,
       [
         fixedRateParams.baseTokenAddress,
@@ -127,11 +124,10 @@ export class Datatoken extends SmartContract {
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
 
     const trxReceipt = await sendTx(
-      address,
       estGas + 1,
-      this.web3,
+      this.signer,
       this.config?.gasFeeMultiplier,
-      dtContract.methods.createFixedRate,
+      dtContract.createFixedRate,
       fixedRateParams.fixedRateAddress,
       [
         fixedRateParams.baseTokenAddress,
@@ -156,6 +152,7 @@ export class Datatoken extends SmartContract {
    * @param {String} address Caller address
    * @param {String} dispenserAddress ispenser contract address
    * @param {String} dispenserParams
+   * @param {Boolean} estimateGas if True, return gas estimate
    * @return {Promise<ReceiptOrEstimate>} transactionId
    */
   public async createDispenser<G extends boolean = false>(
@@ -178,8 +175,7 @@ export class Datatoken extends SmartContract {
     // should check DatatokenDeployer role using NFT level ..
 
     const estGas = await calculateEstimatedGas(
-      address,
-      dtContract.methods.createDispenser,
+      dtContract.createDispenser,
       dispenserAddress,
       dispenserParams.maxTokens,
       dispenserParams.maxBalance,
@@ -189,11 +185,10 @@ export class Datatoken extends SmartContract {
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
 
     const trxReceipt = await sendTx(
-      address,
       estGas + 1,
-      this.web3,
+      this.signer,
       this.config?.gasFeeMultiplier,
-      dtContract.methods.createDispenser,
+      dtContract.createDispenser,
       dispenserAddress,
       dispenserParams.maxTokens,
       dispenserParams.maxBalance,
@@ -209,6 +204,7 @@ export class Datatoken extends SmartContract {
    * @param {String} address Minter address
    * @param {String} amount Number of datatokens, as number. Will be converted to wei
    * @param {String} toAddress only if toAddress is different from the minter
+   * @param {Boolean} estimateGas if True, return gas estimate
    * @return {Promise<ReceiptOrEstimate>} transactionId
    */
   public async mint<G extends boolean = false>(
@@ -227,21 +223,19 @@ export class Datatoken extends SmartContract {
     const capAvailble = await this.getCap(dtAddress)
     if (new Decimal(capAvailble).gte(amount)) {
       const estGas = await calculateEstimatedGas(
-        address,
-        dtContract.methods.mint,
+        dtContract.mint,
         toAddress || address,
-        this.web3.utils.toWei(amount)
+        ethers.parseUnits(amount, 'ether')
       )
       if (estimateGas) return <ReceiptOrEstimate<G>>estGas
 
       const trxReceipt = await sendTx(
-        address,
         estGas + 1,
-        this.web3,
+        this.signer,
         this.config?.gasFeeMultiplier,
-        dtContract.methods.mint,
+        dtContract.mint,
         toAddress || address,
-        this.web3.utils.toWei(amount)
+        ethers.parseUnits(amount, 'ether')
       )
       return <ReceiptOrEstimate<G>>trxReceipt
     } else {
@@ -255,6 +249,7 @@ export class Datatoken extends SmartContract {
    * @param {String} dtAddress Datatoken address
    * @param {String} address User address
    * @param {String} minter User which is going to be a Minter
+   * @param {Boolean} estimateGas if True, return gas estimate
    * @return {Promise<ReceiptOrEstimate>} transactionId
    */
   public async addMinter<G extends boolean = false>(
@@ -269,19 +264,14 @@ export class Datatoken extends SmartContract {
       throw new Error(`Caller is not DatatokenDeployer`)
     }
     // Estimate gas cost for addMinter method
-    const estGas = await calculateEstimatedGas(
-      address,
-      dtContract.methods.addMinter,
-      minter
-    )
+    const estGas = await calculateEstimatedGas(dtContract.addMinter, minter)
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
 
     const trxReceipt = await sendTx(
-      address,
       estGas + 1,
-      this.web3,
+      this.signer,
       this.config?.gasFeeMultiplier,
-      dtContract.methods.addMinter,
+      dtContract.addMinter,
       minter
     )
 
@@ -294,7 +284,7 @@ export class Datatoken extends SmartContract {
    * @param {String} dtAddress Datatoken address
    * @param {String} address User address
    * @param {String} minter User which will be removed from Minter permission
-   * @param {Contract} contractInstance optional contract instance
+   * @param {Boolean} estimateGas if True, return gas estimate
    * @return {Promise<any>}
    */
   public async removeMinter<G extends boolean = false>(
@@ -309,19 +299,14 @@ export class Datatoken extends SmartContract {
       throw new Error(`Caller is not DatatokenDeployer`)
     }
 
-    const estGas = await calculateEstimatedGas(
-      address,
-      dtContract.methods.removeMinter,
-      minter
-    )
+    const estGas = await calculateEstimatedGas(dtContract.removeMinter, minter)
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
 
     const trxReceipt = await sendTx(
-      address,
       estGas + 1,
-      this.web3,
+      this.signer,
       this.config?.gasFeeMultiplier,
-      dtContract.methods.removeMinter,
+      dtContract.removeMinter,
       minter
     )
 
@@ -334,6 +319,7 @@ export class Datatoken extends SmartContract {
    * @param {String} dtAddress Datatoken address
    * @param {String} address User address
    * @param {String} paymentManager User which is going to be a Minter
+   * @param {Boolean} estimateGas if True, return gas estimate
    * @return {Promise<ReceiptOrEstimate>} transactionId
    */
   public async addPaymentManager<G extends boolean = false>(
@@ -349,18 +335,16 @@ export class Datatoken extends SmartContract {
     }
 
     const estGas = await calculateEstimatedGas(
-      address,
-      dtContract.methods.addPaymentManager,
+      dtContract.addPaymentManager,
       paymentManager
     )
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
 
     const trxReceipt = await sendTx(
-      address,
       estGas + 1,
-      this.web3,
+      this.signer,
       this.config?.gasFeeMultiplier,
-      dtContract.methods.addPaymentManager,
+      dtContract.addPaymentManager,
       paymentManager
     )
 
@@ -373,6 +357,7 @@ export class Datatoken extends SmartContract {
    * @param {String} dtAddress Datatoken address
    * @param {String} address User address
    * @param {String} paymentManager User which will be removed from paymentManager permission
+   * @param {Boolean} estimateGas if True, return gas estimate
    * @return {Promise<ReceiptOrEstimate>} trxReceipt
    */
   public async removePaymentManager<G extends boolean = false>(
@@ -388,18 +373,16 @@ export class Datatoken extends SmartContract {
     }
 
     const estGas = await calculateEstimatedGas(
-      address,
-      dtContract.methods.removePaymentManager,
+      dtContract.removePaymentManager,
       paymentManager
     )
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
 
     const trxReceipt = await sendTx(
-      address,
       estGas + 1,
-      this.web3,
+      this.signer,
       this.config?.gasFeeMultiplier,
-      dtContract.methods.removePaymentManager,
+      dtContract.removePaymentManager,
       paymentManager
     )
 
@@ -413,6 +396,7 @@ export class Datatoken extends SmartContract {
    * @param dtAddress datatoken address
    * @param address Caller address
    * @param paymentCollector User to be set as new payment collector
+   * @param {Boolean} estimateGas if True, return gas estimate
    * @return {Promise<ReceiptOrEstimate>} trxReceipt
    */
   public async setPaymentCollector<G extends boolean = false>(
@@ -434,18 +418,16 @@ export class Datatoken extends SmartContract {
     }
 
     const estGas = await calculateEstimatedGas(
-      address,
-      dtContract.methods.setPaymentCollector,
+      dtContract.setPaymentCollector,
       paymentCollector
     )
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
 
     const trxReceipt = await sendTx(
-      address,
       estGas + 1,
-      this.web3,
+      this.signer,
       this.config?.gasFeeMultiplier,
-      dtContract.methods.setPaymentCollector,
+      dtContract.setPaymentCollector,
       paymentCollector
     )
     return <ReceiptOrEstimate<G>>trxReceipt
@@ -457,7 +439,7 @@ export class Datatoken extends SmartContract {
    */
   public async getPaymentCollector(dtAddress: string): Promise<string> {
     const dtContract = this.getContract(dtAddress)
-    const paymentCollector = await dtContract.methods.getPaymentCollector().call()
+    const paymentCollector = await dtContract.getPaymentCollector()
     return paymentCollector
   }
 
@@ -466,17 +448,17 @@ export class Datatoken extends SmartContract {
    * @param {String} dtAddress Datatoken address
    * @param {String} toAddress Receiver address
    * @param {String} amount Number of datatokens, as number. To be converted to wei.
-   * @param {String} address User adress
+   * @param {Boolean} estimateGas if True, return gas estimate
    * @return {Promise<ReceiptOrEstimate>} transactionId
    */
-  public async transfer(
+  public async transfer<G extends boolean = false>(
     dtAddress: string,
     toAddress: string,
     amount: string,
-    address: string
-  ): Promise<TransactionReceipt> {
-    const weiAmount = this.web3.utils.toWei(amount)
-    return this.transferWei(dtAddress, toAddress, weiAmount, address)
+    estimateGas?: G
+  ): Promise<ReceiptOrEstimate<G>> {
+    const weiAmount = ethers.parseUnits(amount, 'ether')
+    return this.transferWei(dtAddress, toAddress, String(weiAmount), estimateGas)
   }
 
   /**
@@ -484,32 +466,25 @@ export class Datatoken extends SmartContract {
    * @param {String} dtAddress Datatoken address
    * @param {String} toAddress Receiver address
    * @param {String} amount Number of datatokens, as number. Expressed as wei
-   * @param {String} address User adress
+   * @param {Boolean} estimateGas if True, return gas estimate
    * @return {Promise<ReceiptOrEstimate>} transactionId
    */
   public async transferWei<G extends boolean = false>(
     dtAddress: string,
     toAddress: string,
     amount: string,
-    address: string,
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
     const dtContract = this.getContract(dtAddress)
 
-    const estGas = await calculateEstimatedGas(
-      address,
-      dtContract.methods.transfer,
-      toAddress,
-      amount
-    )
+    const estGas = await calculateEstimatedGas(dtContract.transfer, toAddress, amount)
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
 
     const trxReceipt = await sendTx(
-      address,
       estGas + 1,
-      this.web3,
+      this.signer,
       this.config?.gasFeeMultiplier,
-      dtContract.methods.transfer,
+      dtContract.transfer,
       toAddress,
       amount
     )
@@ -518,16 +493,15 @@ export class Datatoken extends SmartContract {
 
   /** Start Order: called by payer or consumer prior ordering a service consume on a marketplace.
    * @param {String} dtAddress Datatoken address
-   * @param {String} address User address which calls
    * @param {String} consumer Consumer Address
    * @param {Number} serviceIndex  Service index in the metadata
    * @param {providerFees} providerFees provider fees
    * @param {consumeMarketFee} ConsumeMarketFee consume market fees
+   * @param {Boolean} estimateGas if True, return gas estimate
    * @return {Promise<ReceiptOrEstimate>} string
    */
   public async startOrder<G extends boolean = false>(
     dtAddress: string,
-    address: string,
     consumer: string,
     serviceIndex: number,
     providerFees: ProviderFees,
@@ -544,8 +518,7 @@ export class Datatoken extends SmartContract {
     }
 
     const estGas = await calculateEstimatedGas(
-      address,
-      dtContract.methods.startOrder,
+      dtContract.startOrder,
       consumer,
       serviceIndex,
       providerFees,
@@ -554,11 +527,10 @@ export class Datatoken extends SmartContract {
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
 
     const trxReceipt = await sendTx(
-      address,
       estGas + 1,
-      this.web3,
+      this.signer,
       this.config?.gasFeeMultiplier,
-      dtContract.methods.startOrder,
+      dtContract.startOrder,
       consumer,
       serviceIndex,
       providerFees,
@@ -571,14 +543,13 @@ export class Datatoken extends SmartContract {
    * Pays the provider fee again, but it will not require a new datatoken payment
    * Requires previous approval of provider fee.
    * @param {String} dtAddress Datatoken address
-   * @param {String} address User address which calls
    * @param {String} orderTxId previous valid order
    * @param {providerFees} providerFees provider fees
+   * @param {Boolean} estimateGas if True, return gas estimate
    * @return {Promise<ReceiptOrEstimate>} string
    */
   public async reuseOrder<G extends boolean = false>(
     dtAddress: string,
-    address: string,
     orderTxId: string,
     providerFees: ProviderFees,
     estimateGas?: G
@@ -586,19 +557,17 @@ export class Datatoken extends SmartContract {
     const dtContract = this.getContract(dtAddress)
 
     const estGas = await calculateEstimatedGas(
-      address,
-      dtContract.methods.reuseOrder,
+      dtContract.reuseOrder,
       orderTxId,
       providerFees
     )
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
 
     const trxReceipt = await sendTx(
-      address,
       estGas + 1,
-      this.web3,
+      this.signer,
       this.config?.gasFeeMultiplier,
-      dtContract.methods.reuseOrder,
+      dtContract.reuseOrder,
       orderTxId,
       providerFees
     )
@@ -607,14 +576,13 @@ export class Datatoken extends SmartContract {
 
   /** Buys 1 DT from the FRE and then startsOrder, while burning that DT
    * @param {String} dtAddress Datatoken address
-   * @param {String} address User address which calls
    * @param {OrderParams} orderParams Consumer Address
    * @param {FreParams} freParams Amount of tokens that is going to be transfered
+   * @param {Boolean} estimateGas if True, return gas estimate
    * @return {Promise<ReceiptOrEstimate>}
    */
   public async buyFromFreAndOrder<G extends boolean = false>(
     dtAddress: string,
-    address: string,
     orderParams: OrderParams,
     freParams: FreOrderParams,
     estimateGas?: G
@@ -624,19 +592,17 @@ export class Datatoken extends SmartContract {
     const freContractParams = await this.getFreOrderParams(freParams)
 
     const estGas = await calculateEstimatedGas(
-      address,
-      dtContract.methods.buyFromFreAndOrder,
+      dtContract.buyFromFreAndOrder,
       orderParams,
       freContractParams
     )
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
 
     const trxReceipt = await sendTx(
-      address,
       estGas + 1,
-      this.web3,
+      this.signer,
       this.config?.gasFeeMultiplier,
-      dtContract.methods.buyFromFreAndOrder,
+      dtContract.buyFromFreAndOrder,
       orderParams,
       freContractParams
     )
@@ -645,14 +611,13 @@ export class Datatoken extends SmartContract {
 
   /** Gets DT from dispenser and then startsOrder, while burning that DT
    * @param {String} dtAddress Datatoken address
-   * @param {String} address User address which calls
    * @param {OrderParams} orderParams
    * @param {String} dispenserContract
+   * @param {Boolean} estimateGas if True, return gas estimate
    * @return {Promise<ReceiptOrEstimate>}
    */
   public async buyFromDispenserAndOrder<G extends boolean = false>(
     dtAddress: string,
-    address: string,
     orderParams: OrderParams,
     dispenserContract: string,
     estimateGas?: G
@@ -660,19 +625,17 @@ export class Datatoken extends SmartContract {
     const dtContract = this.getContract(dtAddress, null, this.abiEnterprise)
 
     const estGas = await calculateEstimatedGas(
-      address,
-      dtContract.methods.buyFromDispenserAndOrder,
+      dtContract.buyFromDispenserAndOrder,
       orderParams,
       dispenserContract
     )
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
 
     const trxReceipt = await sendTx(
-      address,
       estGas + 1,
-      this.web3,
+      this.signer,
       this.config?.gasFeeMultiplier,
-      dtContract.methods.buyFromDispenserAndOrder,
+      dtContract.buyFromDispenserAndOrder,
       orderParams,
       dispenserContract
     )
@@ -685,6 +648,7 @@ export class Datatoken extends SmartContract {
    * @param {String} dtAddress Datatoken address
    * @param {String} address User address
    * @param {String} value Data to be stored into 725Y standard
+   * @param {Boolean} estimateGas if True, return gas estimate
    * @return {Promise<ReceiptOrEstimate>} transactionId
    */
   public async setData<G extends boolean = false>(
@@ -699,21 +663,16 @@ export class Datatoken extends SmartContract {
 
     const dtContract = this.getContract(dtAddress)
 
-    const valueHex = this.web3.utils.asciiToHex(value)
+    const valueHex = ethers.hexlify(value)
 
-    const estGas = await calculateEstimatedGas(
-      address,
-      dtContract.methods.setData,
-      valueHex
-    )
+    const estGas = await calculateEstimatedGas(dtContract.setData, valueHex)
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
 
     const trxReceipt = await sendTx(
-      address,
       estGas + 1,
-      this.web3,
+      this.signer,
       this.config?.gasFeeMultiplier,
-      dtContract.methods.setData,
+      dtContract.setData,
       valueHex
     )
 
@@ -725,6 +684,7 @@ export class Datatoken extends SmartContract {
    * Only NFT Owner (at 721 level) can call it.
    * @param dtAddress Datatoken address where we want to clean permissions
    * @param address User adress
+   * @param {Boolean} estimateGas if True, return gas estimate
    * @return {Promise<ReceiptOrEstimate>} transactionId
    */
   public async cleanPermissions<G extends boolean = false>(
@@ -737,18 +697,14 @@ export class Datatoken extends SmartContract {
     }
     const dtContract = this.getContract(dtAddress)
 
-    const estGas = await calculateEstimatedGas(
-      address,
-      dtContract.methods.cleanPermissions
-    )
+    const estGas = await calculateEstimatedGas(dtContract.cleanPermissions)
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
 
     const trxReceipt = await sendTx(
-      address,
       estGas + 1,
-      this.web3,
+      this.signer,
       this.config?.gasFeeMultiplier,
-      dtContract.methods.cleanPermissions
+      dtContract.cleanPermissions
     )
 
     return <ReceiptOrEstimate<G>>trxReceipt
@@ -764,7 +720,7 @@ export class Datatoken extends SmartContract {
     address: string
   ): Promise<DatatokenRoles> {
     const dtContract = this.getContract(dtAddress)
-    const roles = await dtContract.methods.permissions(address).call()
+    const roles = await dtContract.permissions(address)
     return roles
   }
 
@@ -774,8 +730,8 @@ export class Datatoken extends SmartContract {
    */
   public async getCap(dtAddress: string): Promise<string> {
     const dtContract = this.getContract(dtAddress)
-    const cap = await dtContract.methods.cap().call()
-    return this.web3.utils.fromWei(cap)
+    const cap = await dtContract.cap()
+    return ethers.formatEther(cap)
   }
 
   /** It returns the token decimals, how many supported decimal points
@@ -784,7 +740,7 @@ export class Datatoken extends SmartContract {
    */
   public async getDecimals(dtAddress: string): Promise<string> {
     const dtContract = this.getContract(dtAddress)
-    const decimals = await dtContract.methods.decimals().call()
+    const decimals = await dtContract.decimals()
     return decimals
   }
 
@@ -794,7 +750,7 @@ export class Datatoken extends SmartContract {
    */
   public async getSymbol(dtAddress: string): Promise<string> {
     const dtContract = this.getContract(dtAddress)
-    const symbol = await dtContract.methods.symbol().call()
+    const symbol = await dtContract.symbol()
     return symbol
   }
 
@@ -804,7 +760,7 @@ export class Datatoken extends SmartContract {
    */
   public async getName(dtAddress: string): Promise<string> {
     const dtContract = this.getContract(dtAddress)
-    const name = await dtContract.methods.name().call()
+    const name = await dtContract.name()
     return name
   }
 
@@ -814,7 +770,7 @@ export class Datatoken extends SmartContract {
    */
   public async getNFTAddress(dtAddress: string): Promise<string> {
     const dtContract = this.getContract(dtAddress)
-    const nftAddress = await dtContract.methods.getERC721Address().call()
+    const nftAddress = await dtContract.getERC721Address()
     return nftAddress
   }
 
@@ -825,7 +781,7 @@ export class Datatoken extends SmartContract {
    */
   public async isDatatokenDeployer(dtAddress: string, address: string): Promise<boolean> {
     const dtContract = this.getContract(dtAddress)
-    const isDatatokenDeployer = await dtContract.methods.isERC20Deployer(address).call()
+    const isDatatokenDeployer = await dtContract.isERC20Deployer(address)
     return isDatatokenDeployer
   }
 
@@ -837,8 +793,8 @@ export class Datatoken extends SmartContract {
    */
   public async balance(datatokenAddress: string, address: string): Promise<string> {
     const dtContract = this.getContract(datatokenAddress, address)
-    const balance = await dtContract.methods.balanceOf(address).call()
-    return this.web3.utils.fromWei(balance)
+    const balance = await dtContract.balanceOf(address)
+    return ethers.formatEther(balance)
   }
 
   /**
@@ -850,6 +806,7 @@ export class Datatoken extends SmartContract {
    * @param {string} publishMarketFeeToken new publish Market Fee Token
    * @param {string} publishMarketFeeAmount new fee amount
    * @param {String} address user adress
+   * @param {Boolean} estimateGas if True, return gas estimate
    */
   public async setPublishingMarketFee<G extends boolean = false>(
     datatokenAddress: string,
@@ -860,13 +817,12 @@ export class Datatoken extends SmartContract {
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
     const dtContract = this.getContract(datatokenAddress, address)
-    const mktFeeAddress = (await dtContract.methods.getPublishingMarketFee().call())[0]
+    const mktFeeAddress = (await dtContract.getPublishingMarketFee())[0]
     if (mktFeeAddress !== address) {
       throw new Error(`Caller is not the Publishing Market Fee Address`)
     }
     const estGas = await calculateEstimatedGas(
-      address,
-      dtContract.methods.setPublishingMarketFee,
+      dtContract.setPublishingMarketFee,
       publishMarketFeeAddress,
       publishMarketFeeToken,
       publishMarketFeeAmount
@@ -874,11 +830,10 @@ export class Datatoken extends SmartContract {
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
 
     const trxReceipt = await sendTx(
-      address,
       estGas + 1,
-      this.web3,
+      this.signer,
       this.config?.gasFeeMultiplier,
-      dtContract.methods.setPublishingMarketFee,
+      dtContract.setPublishingMarketFee,
       publishMarketFeeAddress,
       publishMarketFeeToken,
       publishMarketFeeAmount
@@ -901,7 +856,7 @@ export class Datatoken extends SmartContract {
   ): Promise<PublishingMarketFee> {
     const dtContract = this.getContract(datatokenAddress, address)
 
-    const publishingMarketFee = await dtContract.methods.getPublishingMarketFee().call()
+    const publishingMarketFee = await dtContract.getPublishingMarketFee()
     const returnValues = {
       publishMarketFeeAddress: publishingMarketFee[0],
       publishMarketFeeToken: publishingMarketFee[1],
@@ -915,13 +870,13 @@ export class Datatoken extends SmartContract {
       exchangeContract: freParams.exchangeContract,
       exchangeId: freParams.exchangeId,
       maxBaseTokenAmount: await amountToUnits(
-        this.web3,
+        this.signer,
         freParams.baseTokenAddress,
         freParams.maxBaseTokenAmount,
         freParams.baseTokenDecimals
       ),
       swapMarketFee: await amountToUnits(
-        this.web3,
+        this.signer,
         freParams.baseTokenAddress,
         freParams.swapMarketFee,
         freParams.baseTokenDecimals

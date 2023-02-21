@@ -1,6 +1,4 @@
 // import { AbiItem } from 'web3-utils/types'
-import { ethers } from 'ethers'
-
 export const minAbi = [
   {
     constant: true,
