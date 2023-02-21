@@ -350,7 +350,11 @@ describe('Marketplace flow tests', async () => {
     /// ```Typescript
     ASSET_URL.datatokenAddress = freDatatokenAddress
     ASSET_URL.nftAddress = freNftAddress
-    const encryptedFiles = await ProviderInstance.encrypt(ASSET_URL, providerUrl)
+    const encryptedFiles = await ProviderInstance.encrypt(
+      ASSET_URL,
+      DDO.chainId,
+      providerUrl
+    )
     DDO.services[0].files = await encryptedFiles
     DDO.services[0].datatokenAddress = freDatatokenAddress
 
