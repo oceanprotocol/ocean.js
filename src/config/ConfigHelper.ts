@@ -40,7 +40,7 @@ export const configHelperNetworks: Config[] = [
     chainId: 5,
     network: 'goerli',
     nodeUri: 'https://goerli.infura.io/v3',
-    providerUri: 'https://v4.provider.goerli.oceanprotocol.com',
+    providerUri: 'https://v4-2.provider.goerli.oceanprotocol.com',
     subgraphUri: 'https://v4.subgraph.goerli.oceanprotocol.com',
     explorerUri: 'https://goerli.etherscan.io',
     gasFeeMultiplier: 1.1
@@ -64,7 +64,7 @@ export const configHelperNetworks: Config[] = [
     chainId: 137,
     network: 'polygon',
     nodeUri: 'https://polygon-mainnet.infura.io/v3',
-    providerUri: 'https://v4.provider.polygon.oceanprotocol.com',
+    providerUri: 'https://v4-2.provider.polygon.oceanprotocol.com',
     subgraphUri: 'https://v4.subgraph.polygon.oceanprotocol.com',
     explorerUri: 'https://polygonscan.com',
     oceanTokenSymbol: 'mOCEAN',
@@ -84,7 +84,7 @@ export const configHelperNetworks: Config[] = [
     chainId: 80001,
     network: 'mumbai',
     nodeUri: 'https://polygon-mumbai.infura.io/v3',
-    providerUri: 'https://v4.provider.mumbai.oceanprotocol.com',
+    providerUri: 'https://v4-2.provider.mumbai.oceanprotocol.com',
     subgraphUri: 'https://v4.subgraph.mumbai.oceanprotocol.com',
     explorerUri: 'https://mumbai.polygonscan.com',
     gasFeeMultiplier: 1.1
