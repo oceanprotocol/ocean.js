@@ -1,12 +1,13 @@
 import veFeeEstimate from '@oceanprotocol/contracts/artifacts/contracts/ve/veFeeEstimate.vy/veFeeEstimate.json'
 import { SmartContractWithAddress } from '../SmartContractWithAddress'
 import { VeOcean } from './VeOcean'
+import { AbiItem } from '../../@types'
 /**
  * Provides an interface for veOcean contract
  */
 export class VeFeeEstimate extends SmartContractWithAddress {
   getDefaultAbi() {
-    return veFeeEstimate.abi
+    return veFeeEstimate.abi as AbiItem[]
   }
 
   /**

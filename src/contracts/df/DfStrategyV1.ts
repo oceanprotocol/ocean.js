@@ -1,14 +1,13 @@
 import dfStrategyV1ABI from '@oceanprotocol/contracts/artifacts/contracts/df/DFStrategyV1.sol/DFStrategyV1.json'
-import { calculateEstimatedGas, sendTx } from '../../utils'
+import { sendTx } from '../../utils'
 import { SmartContractWithAddress } from '../SmartContractWithAddress'
-import { ReceiptOrEstimate } from '../../@types'
-
+import { ReceiptOrEstimate, AbiItem } from '../../@types'
 /**
  * Provides an interface for dfStrategyV1 contract
  */
 export class DfStrategyV1 extends SmartContractWithAddress {
   getDefaultAbi() {
-    return dfStrategyV1ABI.abi
+    return dfStrategyV1ABI.abi as AbiItem[]
   }
 
   /** Get available DF Rewards for multiple tokens
@@ -39,8 +38,7 @@ export class DfStrategyV1 extends SmartContractWithAddress {
     tokenAddresses: string[],
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
-    const estGas = await calculateEstimatedGas(
-      this.contract.claimMultiple,
+    const estGas = await this.contract.estimateGas.claimMultiple(
       userAddress,
       tokenAddresses
     )
@@ -48,7 +46,7 @@ export class DfStrategyV1 extends SmartContractWithAddress {
 
     // Invoke function of the contract
     const trxReceipt = await sendTx(
-      estGas + 1,
+      estGas,
       this.signer,
       this.config?.gasFeeMultiplier,
       this.contract.claimMultiple,

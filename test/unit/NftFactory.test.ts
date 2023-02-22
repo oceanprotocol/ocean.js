@@ -1,7 +1,5 @@
-/*
 import { assert, expect } from 'chai'
-import { deployContracts, Addresses } from '../TestContractHandler'
-import { getTestConfig, provider } from '../config'
+import { getTestConfig, provider, getAddresses } from '../config'
 import { ethers, Signer } from 'ethers'
 import {
   NftFactory,
@@ -13,16 +11,17 @@ import {
   approve,
   Config,
   balance,
-  Datatoken
+  Datatoken,
+  getEventFromTx
 } from '../../src'
 import { ProviderFees, FreCreationParams, DatatokenCreateParams } from '../../src/@types'
 
 describe('Nft Factory test', () => {
-  let factoryOwner: string
-  let nftOwner: string
-  let user1: string
-  let user2: string
-  let contracts: Addresses
+  let factoryOwner: Signer
+  let nftOwner: Signer
+  let user1: Signer
+  let user2: Signer
+  let addresses
   let nftFactory: NftFactory
   let dtAddress: string
   let dtAddress2: string
@@ -32,90 +31,85 @@ describe('Nft Factory test', () => {
   const DATA_TOKEN_AMOUNT = '1'
   const FEE = '0.001'
 
-  const nftData: NftCreateData = {
-    name: '72120Bundle',
-    symbol: '72Bundle',
-    templateIndex: 1,
-    tokenURI: 'https://oceanprotocol.com/nft/',
-    transferable: true,
-    owner: factoryOwner
-  }
-
-  const dtParams: DatatokenCreateParams = {
-    templateIndex: 1,
-    minter: nftOwner,
-    paymentCollector: user2,
-    mpFeeAddress: user1,
-    feeToken: ZERO_ADDRESS,
-    cap: '1000000',
-    feeAmount: '0',
-    name: 'ERC20B1',
-    symbol: 'ERC20DT1Symbol'
-  }
+  let nftData: NftCreateData
+  let dtParams: DatatokenCreateParams
 
   before(async () => {
-    const accounts = await web3.eth.getAccounts()
-    factoryOwner = accounts[0]
-    nftOwner = accounts[1]
-    user1 = accounts[2]
-    user2 = accounts[3]
+    factoryOwner = (await provider.getSigner(0)) as Signer
+    nftOwner = (await provider.getSigner(1)) as Signer
+    user1 = (await provider.getSigner(2)) as Signer
+    user2 = (await provider.getSigner(3)) as Signer
 
-    nftData.owner = factoryOwner
-    dtParams.minter = nftOwner
-    dtParams.paymentCollector = user2
-    dtParams.mpFeeAddress = user1
+    config = await getTestConfig(factoryOwner as Signer)
+    addresses = await getAddresses()
 
-    config = await getTestConfig(web3)
-  })
+    nftData = {
+      name: '72120Bundle',
+      symbol: '72Bundle',
+      templateIndex: 1,
+      tokenURI: 'https://oceanprotocol.com/nft/',
+      transferable: true,
+      owner: await nftOwner.getAddress()
+    }
 
-  it('should deploy contracts', async () => {
-    contracts = await deployContracts(web3, factoryOwner)
+    dtParams = {
+      templateIndex: 1,
+      minter: await nftOwner.getAddress(),
+      paymentCollector: await user2.getAddress(),
+      mpFeeAddress: await user1.getAddress(),
+      feeToken: ZERO_ADDRESS,
+      cap: '1000000',
+      feeAmount: '0',
+      name: 'ERC20B1',
+      symbol: 'ERC20DT1Symbol'
+    }
   })
 
   it('should initiate NFTFactory instance', async () => {
-    nftFactory = new NftFactory(contracts.nftFactoryAddress, web3)
+    nftFactory = new NftFactory(addresses.ERC721Factory, nftOwner)
   })
 
   it('#getOwner - should return actual owner', async () => {
     const owner = await nftFactory.getOwner()
-    assert(owner === factoryOwner)
+    assert(owner.toLowerCase() === (await factoryOwner.getAddress()).toLowerCase())
   })
 
   it('#getNFTTemplate - should return NFT template struct', async () => {
     const nftTemplate = await nftFactory.getNFTTemplate(1)
-    assert(nftTemplate.isActive === true)
-    assert(nftTemplate.templateAddress === contracts.nftTemplateAddress)
+    assert(nftTemplate[1] === true)
+    assert(nftTemplate[0].toLowerCase() === addresses.ERC721Template['1'].toLowerCase())
   })
 
   it('#getTokenTemplate - should return Token template struct', async () => {
     const tokenTemplate = await nftFactory.getTokenTemplate(1)
-    assert(tokenTemplate.isActive === true)
-    assert(tokenTemplate.templateAddress === contracts.datatokenTemplateAddress)
+    assert(tokenTemplate[1] === true)
+    assert(tokenTemplate[0].toLowerCase() === addresses.ERC20Template['1'].toLowerCase())
   })
 
   it('#createNft - should create an NFT', async () => {
     // we prepare transaction parameters objects
-    const nftAddress = await nftFactory.createNFT(nftOwner, nftData)
+    const nftAddress = await nftFactory.createNFT(nftData)
 
     // we check the created nft
-    const nftDatatoken = new Nft(web3)
+    const nftDatatoken = new Nft(nftOwner)
     const tokenURI = await nftDatatoken.getTokenURI(nftAddress, 1)
     assert(tokenURI === nftData.tokenURI)
   })
 
   it('#createNftwithErc - should create an NFT and a Datatoken', async () => {
     // we prepare transaction parameters objects
-    const txReceipt = await nftFactory.createNftWithDatatoken(nftOwner, nftData, dtParams)
-
+    const tx = await nftFactory.createNftWithDatatoken(nftData, dtParams)
+    const trxReceipt = await tx.wait()
+    const nftCreatedEvent = getEventFromTx(trxReceipt, 'NFTCreated')
+    const tokenCreatedEvent = getEventFromTx(trxReceipt, 'TokenCreated')
     // events have been emitted
-    expect(txReceipt.events.NFTCreated.event === 'NFTCreated')
-    expect(txReceipt.events.TokenCreated.event === 'TokenCreated')
-
+    expect(nftCreatedEvent.event === 'NFTCreated')
+    expect(tokenCreatedEvent.event === 'TokenCreated')
     // stored for later use in startMultipleTokenOrder test
-    nftAddress = txReceipt.events.NFTCreated.returnValues.newTokenAddress
-    dtAddress = txReceipt.events.TokenCreated.returnValues.newTokenAddress
+    // nftAddress = txReceipt.events.NFTCreated.returnValues.newTokenAddress
+    // dtAddress = txReceipt.events.TokenCreated.returnValues.newTokenAddress
   })
-
+  /*
   it('#createNftwithErc - should increment nft and token count', async () => {
     const currentNFTCount = await nftFactory.getCurrentNFTCount()
     const currentTokenCount = await nftFactory.getCurrentTokenCount()
@@ -354,5 +348,5 @@ describe('Nft Factory test', () => {
     tokenTemplate = await nftFactory.getTokenTemplate(currentTokenTemplateCount)
     assert(tokenTemplate.isActive === true)
   })
+  */
 })
-*/

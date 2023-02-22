@@ -1,14 +1,14 @@
 import dfRewardsABI from '@oceanprotocol/contracts/artifacts/contracts/df/DFRewards.sol/DFRewards.json'
-import { calculateEstimatedGas, sendTx } from '../../utils'
+import { sendTx } from '../../utils'
 import { SmartContractWithAddress } from '../SmartContractWithAddress'
-import { ReceiptOrEstimate } from '../../@types'
+import { AbiItem, ReceiptOrEstimate } from '../../@types'
 
 /**
  * Provides an interface for DFRewards contract
  */
 export class DfRewards extends SmartContractWithAddress {
   getDefaultAbi() {
-    return dfRewardsABI.abi
+    return dfRewardsABI.abi as AbiItem[]
   }
 
   /** Get available DF Rewards for a token
@@ -37,16 +37,12 @@ export class DfRewards extends SmartContractWithAddress {
     tokenAddress: string,
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
-    const estGas = await calculateEstimatedGas(
-      this.contract.claimFor,
-      userAddress,
-      tokenAddress
-    )
+    const estGas = await this.contract.estimateGas.claimFor(userAddress, tokenAddress)
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
 
     // Invoke function of the contract
     const trxReceipt = await sendTx(
-      estGas + 1,
+      estGas,
       this.signer,
       this.config?.gasFeeMultiplier,
       this.contract.claimFor,
@@ -72,8 +68,7 @@ export class DfRewards extends SmartContractWithAddress {
     for (let i = 0; i < amounts.length; i++) {
       amounts[i] = await this.amountToUnits(tokenAddress, amounts[i])
     }
-    const estGas = await calculateEstimatedGas(
-      this.contract.allocate,
+    const estGas = await this.contract.estimateGas.allocate(
       userAddresses,
       amounts,
       tokenAddress
@@ -82,7 +77,7 @@ export class DfRewards extends SmartContractWithAddress {
 
     // Invoke function of the contract
     const trxReceipt = await sendTx(
-      estGas + 1,
+      estGas,
       this.signer,
       this.config?.gasFeeMultiplier,
       this.contract.allocate,

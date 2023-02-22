@@ -1,13 +1,13 @@
 import veAllocateABI from '@oceanprotocol/contracts/artifacts/contracts/ve/veAllocate.sol/veAllocate.json'
-import { calculateEstimatedGas, sendTx } from '../../utils'
+import { sendTx } from '../../utils'
 import { SmartContractWithAddress } from '../SmartContractWithAddress'
-import { ReceiptOrEstimate } from '../../@types'
+import { ReceiptOrEstimate, AbiItem } from '../../@types'
 /**
  * Provides an interface for veOcean contract
  */
 export class VeAllocate extends SmartContractWithAddress {
   getDefaultAbi() {
-    return veAllocateABI.abi
+    return veAllocateABI.abi as AbiItem[]
   }
 
   /**
@@ -24,17 +24,12 @@ export class VeAllocate extends SmartContractWithAddress {
     chainId: number,
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
-    const estGas = await calculateEstimatedGas(
-      this.contract.setAllocation,
-      amount,
-      nft,
-      chainId
-    )
+    const estGas = await this.contract.estimateGas.setAllocation(amount, nft, chainId)
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
 
     // Invoke function of the contract
     const trxReceipt = await sendTx(
-      estGas + 1,
+      estGas,
       this.signer,
       this.config?.gasFeeMultiplier,
       this.contract.setAllocation,
@@ -59,8 +54,7 @@ export class VeAllocate extends SmartContractWithAddress {
     chainId: number[],
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
-    const estGas = await calculateEstimatedGas(
-      this.contract.setBatchAllocation,
+    const estGas = await this.contract.estimateGas.setBatchAllocation(
       amount,
       nft,
       chainId
@@ -69,7 +63,7 @@ export class VeAllocate extends SmartContractWithAddress {
 
     // Invoke function of the contract
     const trxReceipt = await sendTx(
-      estGas + 1,
+      estGas,
       this.signer,
       this.config?.gasFeeMultiplier,
       this.contract.setBatchAllocation,

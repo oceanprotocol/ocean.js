@@ -6,11 +6,11 @@ import {
   VeOcean,
   VeFeeDistributor,
   sendTx,
-  calculateEstimatedGas,
   NftFactory,
   VeAllocate,
   VeFeeEstimate,
-  getEventFromTx
+  getEventFromTx,
+  amountToUnits
 } from '../../src'
 import { ethers, Signer } from 'ethers'
 describe('veOcean tests', () => {
@@ -52,10 +52,9 @@ describe('veOcean tests', () => {
       }
     ]
     const tokenContract = new ethers.Contract(addresses.Ocean, minAbi, ownerAccount)
-    const estGas = await calculateEstimatedGas(
-      tokenContract.mint,
+    const estGas = await tokenContract.estimateGas.mint(
       await Alice.getAddress(),
-      ethers.parseUnits('1000', 'ether')
+      amountToUnits(null, null, '1000', 18)
     )
     await sendTx(
       estGas,
@@ -63,7 +62,7 @@ describe('veOcean tests', () => {
       1,
       tokenContract.mint,
       await Alice.getAddress(),
-      ethers.parseUnits('1000')
+      amountToUnits(null, null, '1000', 18)
     )
     await sendTx(
       estGas,
@@ -71,7 +70,7 @@ describe('veOcean tests', () => {
       1,
       tokenContract.mint,
       await Bob.getAddress(),
-      ethers.parseUnits('1000')
+      amountToUnits(null, null, '1000', 18)
     )
     veOcean = new VeOcean(addresses.veOCEAN, Alice)
     veFeeDistributor = new VeFeeDistributor(addresses.veFeeDistributor, Alice)
@@ -114,7 +113,10 @@ describe('veOcean tests', () => {
       assert(
         depositEvent.args[0].toLowerCase() === (await Alice.getAddress()).toLowerCase()
       )
-      assert(depositEvent.args[1] === ethers.parseUnits(amount))
+      assert(
+        depositEvent.args[1].toString() ===
+          (await amountToUnits(null, null, amount, 18)).toString()
+      )
       assert(depositEvent.args[2] > 0) // we cannot compare it to the actual untiLock, because contract will round it to weeks
       assert(depositEvent.args[1] > supplyEvent.args[0]) // supply has increased
     }
@@ -122,7 +124,7 @@ describe('veOcean tests', () => {
 
   it('Alice should increase the lock time', async () => {
     const currentLock = await veOcean.lockEnd(await Alice.getAddress())
-    const newLock = parseInt(String(currentLock)) + 7 * 86400
+    const newLock = parseInt(String(currentLock)) + 7 * 86400 + 20
     await veOcean.increaseUnlockTime(newLock)
     const newCurrentLock = await veOcean.lockEnd(await Alice.getAddress())
     assert(newCurrentLock > currentLock, 'Lock time should change"')
@@ -145,7 +147,7 @@ describe('veOcean tests', () => {
     const newCurrentLock = await veOcean.lockEnd(await Alice.getAddress())
     assert(newCurrentLock === currentLock, 'Lock time should not change')
     assert(
-      newCurrentBalance > currentBalance,
+      parseFloat(newCurrentBalance) > parseFloat(currentBalance),
       'Amount error:' + newCurrentBalance + ' shoud be > than ' + currentBalance
     )
   })

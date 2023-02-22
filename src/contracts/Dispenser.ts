@@ -1,14 +1,14 @@
 import { ethers } from 'ethers'
 import Decimal from 'decimal.js'
 import DispenserAbi from '@oceanprotocol/contracts/artifacts/contracts/pools/dispenser/Dispenser.sol/Dispenser.json'
-import { calculateEstimatedGas, sendTx } from '../utils'
+import { sendTx } from '../utils'
 import { Datatoken } from './Datatoken'
 import { SmartContractWithAddress } from './SmartContractWithAddress'
-import { DispenserToken, ReceiptOrEstimate } from '../@types'
+import { DispenserToken, ReceiptOrEstimate, AbiItem } from '../@types'
 
 export class Dispenser extends SmartContractWithAddress {
   getDefaultAbi() {
-    return DispenserAbi.abi
+    return DispenserAbi.abi as AbiItem[]
   }
 
   /**
@@ -21,9 +21,9 @@ export class Dispenser extends SmartContractWithAddress {
     if (!status) {
       throw new Error(`Np dispenser found for the given datatoken address`)
     }
-    status.maxTokens = ethers.formatEther(status.maxTokens)
-    status.maxBalance = ethers.formatEther(status.maxBalance)
-    status.balance = ethers.formatEther(status.balance)
+    status.maxTokens = await this.unitsToAmount(null, status.maxTokens, 18)
+    status.maxBalance = await this.unitsToAmount(null, status.maxBalance, 18)
+    status.balance = await this.unitsToAmount(null, status.balance, 18)
     return status
   }
 
@@ -45,11 +45,10 @@ export class Dispenser extends SmartContractWithAddress {
     allowedSwapper: string,
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
-    const estGas = await calculateEstimatedGas(
-      this.contract.create,
+    const estGas = await this.contract.estimateGas.create(
       dtAddress,
-      ethers.parseUnits(maxTokens, 'ethers'),
-      ethers.parseUnits(maxBalance, 'ethers'),
+      this.amountToUnits(null, maxTokens, 18),
+      this.amountToUnits(null, maxBalance, 18),
       address,
       allowedSwapper
     )
@@ -57,13 +56,13 @@ export class Dispenser extends SmartContractWithAddress {
 
     // Call createFixedRate contract method
     const trxReceipt = await sendTx(
-      estGas + 1,
+      estGas,
       this.signer,
       this.config?.gasFeeMultiplier,
       this.contract.create,
       dtAddress,
-      ethers.parseUnits(maxTokens, 'ethers'),
-      ethers.parseUnits(maxBalance, 'ethers'),
+      this.amountToUnits(null, maxTokens, 18),
+      this.amountToUnits(null, maxBalance, 18),
       address,
       allowedSwapper
     )
@@ -85,22 +84,21 @@ export class Dispenser extends SmartContractWithAddress {
     maxBalance: string,
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
-    const estGas = await calculateEstimatedGas(
-      this.contract.activate,
+    const estGas = await this.contract.estimateGas.activate(
       dtAddress,
-      ethers.parseUnits(maxTokens, 'ethers'),
-      ethers.parseUnits(maxBalance, 'ethers')
+      this.amountToUnits(null, maxTokens, 18),
+      this.amountToUnits(null, maxBalance, 18)
     )
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
 
     const trxReceipt = await sendTx(
-      estGas + 1,
+      estGas,
       this.signer,
       this.config?.gasFeeMultiplier,
       this.contract.activate,
       dtAddress,
-      ethers.parseUnits(maxTokens, 'ethers'),
-      ethers.parseUnits(maxBalance, 'ethers')
+      this.amountToUnits(null, maxTokens, 18),
+      this.amountToUnits(null, maxBalance, 18)
     )
 
     return <ReceiptOrEstimate<G>>trxReceipt
@@ -116,11 +114,11 @@ export class Dispenser extends SmartContractWithAddress {
     dtAddress: string,
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
-    const estGas = await calculateEstimatedGas(this.contract.deactivate, dtAddress)
+    const estGas = await this.contract.estimateGas.deactivate(dtAddress)
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
 
     const trxReceipt = await sendTx(
-      estGas + 1,
+      estGas,
       this.signer,
       this.config?.gasFeeMultiplier,
       this.contract.deactivate,
@@ -142,15 +140,14 @@ export class Dispenser extends SmartContractWithAddress {
     newAllowedSwapper: string,
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
-    const estGas = await calculateEstimatedGas(
-      this.contract.setAllowedSwapper,
+    const estGas = await this.contract.estimateGas.setAllowedSwapper(
       dtAddress,
       newAllowedSwapper
     )
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
 
     const trxReceipt = await sendTx(
-      estGas + 1,
+      estGas,
       this.signer,
       this.config?.gasFeeMultiplier,
       this.contract.setAllowedSwapper,
@@ -176,21 +173,20 @@ export class Dispenser extends SmartContractWithAddress {
     destination: string,
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
-    const estGas = await calculateEstimatedGas(
-      this.contract.dispense,
+    const estGas = await this.contract.estimateGas.dispense(
       dtAddress,
-      ethers.parseUnits(amount, 'ether'),
+      this.amountToUnits(null, amount, 18),
       destination
     )
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
 
     const trxReceipt = await sendTx(
-      estGas + 1,
+      estGas,
       this.signer,
       this.config?.gasFeeMultiplier,
       this.contract.dispense,
       dtAddress,
-      ethers.parseUnits(amount, 'ether'),
+      this.amountToUnits(null, amount, 18),
       destination
     )
     return <ReceiptOrEstimate<G>>trxReceipt
@@ -206,11 +202,11 @@ export class Dispenser extends SmartContractWithAddress {
     dtAddress: string,
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
-    const estGas = await calculateEstimatedGas(this.contract.ownerWithdraw, dtAddress)
+    const estGas = await this.contract.estimateGas.ownerWithdraw(dtAddress)
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
 
     const trxReceipt = await sendTx(
-      estGas + 1,
+      estGas,
       this.signer,
       this.config?.gasFeeMultiplier,
       this.contract.ownerWithdraw,

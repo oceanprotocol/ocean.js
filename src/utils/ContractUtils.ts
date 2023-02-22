@@ -1,12 +1,5 @@
-import {
-  ethers,
-  Signer,
-  Contract,
-  TransactionResponse,
-  ContractMethod,
-  ContractMethodArgs
-} from 'ethers'
-import BigNumber from 'bignumber.js'
+import { ethers, Signer, providers, Contract, ContractFunction, BigNumber } from 'ethers'
+
 import { Config } from '../config'
 import { minAbi, GASLIMIT_DEFAULT, LoggerInstance, FEE_HISTORY_NOT_SUPPORTED } from '.'
 
@@ -33,13 +26,9 @@ export async function getFairGasPrice(
   gasFeeMultiplier: number
 ): Promise<string> {
   const price = await (await signer.provider.getFeeData()).gasPrice
-  const x = BigNumber(price.toString())
-  if (gasFeeMultiplier)
-    return x
-      .multipliedBy(gasFeeMultiplier)
-      .integerValue(BigNumber.ROUND_DOWN)
-      .toString(10)
-  else return x.toString(10)
+  const x = ethers.BigNumber.from(price.toString())
+  if (gasFeeMultiplier) return x.mul(gasFeeMultiplier).toBigInt().toString(10)
+  else return x.toString()
 }
 
 export async function getTokenDecimals(signer: Signer, token: string) {
@@ -57,11 +46,7 @@ export async function unitsToAmount(
     decimals = 18
   }
 
-  const amountFormatted = new BigNumber(amount).div(
-    new BigNumber(10).exponentiatedBy(decimals)
-  )
-
-  BigNumber.config({ EXPONENTIAL_AT: 50 })
+  const amountFormatted = ethers.utils.formatUnits(amount, decimals)
   return amountFormatted.toString()
 }
 
@@ -75,41 +60,13 @@ export async function amountToUnits(
   if (decimals === '0') {
     decimals = 18
   }
-  BigNumber.config({ EXPONENTIAL_AT: 50 })
-
-  const amountFormatted = new BigNumber(amount).times(
-    new BigNumber(10).exponentiatedBy(decimals)
-  )
-  return amountFormatted.toFixed(0)
-}
-
-/**
- * Estimates the gas used when a function would be executed on chain
- * @param {Function} functionToEstimateGas function that we need to estimate the gas
- * @param {...any[]} args arguments of the function
- * @return {Promise<number>} gas cost of the function
- */
-export async function calculateEstimatedGas(
-  functionToEstimateGas: ContractMethod,
-  ...args: any[]
-): Promise<number> {
-  try {
-    const estimate = await functionToEstimateGas.estimateGas(...args)
-    return Number(estimate) || GASLIMIT_DEFAULT
-  } catch (e) {
-    return GASLIMIT_DEFAULT
-  }
-
-  /* const estimatedGas = await functionToEstimateGas
-    .apply(null, args)
-    .estimateGas({ from }, (err, estGas) => (err ? GASLIMIT_DEFAULT : estGas))
-  return estimatedGas
-  */
+  const amountFormatted = ethers.utils.parseUnits(amount, decimals)
+  return amountFormatted.toString()
 }
 
 export function getEventFromTx(txReceipt, eventName) {
-  return txReceipt.logs.filter((log) => {
-    return log.fragment?.name === eventName
+  return txReceipt.events.filter((log) => {
+    return log.event === eventName
   })[0]
 }
 
@@ -123,12 +80,12 @@ export function getEventFromTx(txReceipt, eventName) {
  * @return {Promise<any>} transaction receipt
  */
 export async function sendTx(
-  estGas: Number,
+  estGas: BigNumber,
   signer: Signer,
   gasFeeMultiplier: number,
-  functionToSend: Function,
+  functionToSend: ContractFunction,
   ...args: any[]
-): Promise<TransactionResponse> {
+): Promise<providers.TransactionResponse> {
   const { chainId } = await signer.provider.getNetwork()
   const feeHistory = await signer.provider.getFeeData()
   let overrides

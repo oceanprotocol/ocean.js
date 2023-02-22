@@ -1,7 +1,5 @@
-// import Web3 from 'web3'
-// import { Contract } from 'web3-eth-contract'
-// import { AbiItem } from 'web3-utils'
-import { ethers, Signer, Interface, Contract, InterfaceAbi } from 'ethers'
+import { ethers, Signer, Contract } from 'ethers'
+import { AbiItem } from '../@types'
 import { Config, ConfigHelper } from '../config'
 import {
   amountToUnits,
@@ -13,7 +11,7 @@ import {
 export abstract class SmartContract {
   public signer: Signer
   public config: Config
-  public abi: InterfaceAbi
+  public abi: AbiItem[]
 
   abstract getDefaultAbi()
 
@@ -22,13 +20,13 @@ export abstract class SmartContract {
    * @param {Signer} signer
    * @param {string | number} network Network id or name
    * @param {Config} config Configutation of the smart contract
-   * @param {AbiItem | AbiItem[]} abi ABI of the smart contract
+   * @param {AbiItem[]} abi ABI of the smart contract
    */
   constructor(
     signer: Signer,
     network?: string | number,
     config?: Config,
-    abi?: InterfaceAbi
+    abi?: AbiItem[]
   ) {
     this.signer = signer
     this.config = config || new ConfigHelper().getConfig(network || 'unknown')
@@ -55,8 +53,13 @@ export abstract class SmartContract {
     return getFairGasPrice(this.signer, this.config?.gasFeeMultiplier)
   }
 
-  protected getContract(address: string, account?: string, abi?: InterfaceAbi): Contract {
-    const contract = new ethers.Contract(address, abi || this.abi, this.signer)
+  protected getContract(address: string, account?: string, abi?: AbiItem[]): Contract {
+    const abiToUse = abi || this.abi
+    const contract = new ethers.Contract(
+      address,
+      new ethers.utils.Interface(JSON.stringify(abiToUse)),
+      this.signer
+    )
     return setContractDefaults(contract, this.config)
   }
 }

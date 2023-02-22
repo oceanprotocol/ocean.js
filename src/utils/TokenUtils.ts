@@ -1,16 +1,8 @@
 import Decimal from 'decimal.js'
-import { ethers, Signer } from 'ethers'
-import BigNumber from 'bignumber.js'
-import {
-  amountToUnits,
-  calculateEstimatedGas,
-  unitsToAmount,
-  minAbi,
-  sendTx,
-  LoggerInstance
-} from '.'
+import { ethers, Signer, BigNumber } from 'ethers'
+import { amountToUnits, unitsToAmount, minAbi, sendTx, LoggerInstance } from '.'
 import { Config } from '../config'
-import { ReceiptOrEstimate } from '../@types'
+import { ReceiptOrEstimate, ReceiptOrDecimal } from '../@types'
 // import { AbiItem } from 'web3-utils'
 
 /**
@@ -35,31 +27,27 @@ export async function approve<G extends boolean = false>(
   force = false,
   tokenDecimals?: number,
   estimateGas?: G
-): Promise<ReceiptOrEstimate<G> | number> {
+): Promise<ReceiptOrDecimal<G> | number> {
   const tokenContract = new ethers.Contract(tokenAddress, minAbi, signer)
   if (!force) {
     const currentAllowence = await allowance(signer, tokenAddress, account, spender)
     if (new Decimal(currentAllowence).greaterThanOrEqualTo(new Decimal(amount))) {
-      return <ReceiptOrEstimate<G>>new Decimal(currentAllowence).toNumber()
+      return <ReceiptOrDecimal<G>>new Decimal(currentAllowence).toNumber()
     }
   }
   const amountFormatted = await amountToUnits(signer, tokenAddress, amount, tokenDecimals)
-  const estGas = await calculateEstimatedGas(
-    tokenContract.approve,
-    spender,
-    amountFormatted
-  )
-  if (estimateGas) return <ReceiptOrEstimate<G>>estGas
+  const estGas = await tokenContract.estimateGas.approve(spender, amountFormatted)
+  if (estimateGas) return <ReceiptOrDecimal<G>>(<unknown>new Decimal(estGas.toString()))
 
   const trxReceipt = await sendTx(
-    estGas + 1,
+    estGas,
     signer,
     config?.gasFeeMultiplier,
     tokenContract.approve,
     spender,
     amountFormatted
   )
-  return <ReceiptOrEstimate<G>>trxReceipt
+  return <ReceiptOrDecimal<G>>trxReceipt
 }
 
 /**
@@ -86,18 +74,18 @@ export async function approveWei<G extends boolean = false>(
   const tokenContract = new ethers.Contract(tokenAddress, minAbi, signer)
   if (!force) {
     const currentAllowence = await allowanceWei(signer, tokenAddress, account, spender)
-    if (new BigNumber(currentAllowence).gt(new BigNumber(amount))) {
-      return <ReceiptOrEstimate<G>>new Decimal(currentAllowence).toNumber()
+    if (ethers.BigNumber.from(currentAllowence).gt(ethers.BigNumber.from(amount))) {
+      return <ReceiptOrEstimate<G>>ethers.BigNumber.from(currentAllowence)
     }
   }
   let result = null
 
-  const estGas = await calculateEstimatedGas(tokenContract.approve, spender, amount)
+  const estGas = await tokenContract.estimateGas.approve(spender, amount)
   if (estimateGas) return <ReceiptOrEstimate<G>>estGas
 
   try {
     result = await sendTx(
-      estGas + 1,
+      estGas,
       signer,
       config?.gasFeeMultiplier,
       tokenContract.approve,
@@ -131,15 +119,11 @@ export async function transfer<G extends boolean = false>(
 ): Promise<ReceiptOrEstimate<G>> {
   const tokenContract = new ethers.Contract(tokenAddress, minAbi, signer)
   const amountFormatted = await amountToUnits(signer, tokenAddress, amount)
-  const estGas = await calculateEstimatedGas(
-    tokenContract.transfer,
-    recipient,
-    amountFormatted
-  )
+  const estGas = await tokenContract.estimateGas.transfer(recipient, amountFormatted)
   if (estimateGas) return <ReceiptOrEstimate<G>>estGas
 
   const trxReceipt = await sendTx(
-    estGas + 1,
+    estGas,
     signer,
     config?.gasFeeMultiplier,
     tokenContract.transfer,

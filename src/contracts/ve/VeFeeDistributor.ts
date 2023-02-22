@@ -1,13 +1,13 @@
 import veFeeABI from '@oceanprotocol/contracts/artifacts/contracts/ve/veFeeDistributor.vy/veFeeDistributor.json'
-import { calculateEstimatedGas, sendTx } from '../../utils'
+import { sendTx } from '../../utils'
 import { SmartContractWithAddress } from '../SmartContractWithAddress'
-import { ReceiptOrEstimate } from '../../@types'
+import { ReceiptOrEstimate, AbiItem } from '../../@types'
 /**
  * Provides an interface for veOcean contract
  */
 export class VeFeeDistributor extends SmartContractWithAddress {
   getDefaultAbi() {
-    return veFeeABI.abi
+    return veFeeABI.abi as AbiItem[]
   }
 
   /**
@@ -23,12 +23,12 @@ export class VeFeeDistributor extends SmartContractWithAddress {
   public async claim<G extends boolean = false>(
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
-    const estGas = await calculateEstimatedGas(this.contract.claim)
+    const estGas = await this.contract.estimateGas.claim()
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
 
     // Invoke function of the contract
     const trxReceipt = await sendTx(
-      estGas + 20000,
+      estGas,
       this.signer,
       this.config?.gasFeeMultiplier,
       this.contract.claim
@@ -49,12 +49,12 @@ export class VeFeeDistributor extends SmartContractWithAddress {
     addresses: string[],
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
-    const estGas = await calculateEstimatedGas(this.contract.claim_many, addresses)
+    const estGas = await this.contract.estimateGas.claim_many(addresses)
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
 
     // Invoke function of the contract
     const trxReceipt = await sendTx(
-      estGas + 20000,
+      estGas,
       this.signer,
       this.config?.gasFeeMultiplier,
       this.contract.claim_many,

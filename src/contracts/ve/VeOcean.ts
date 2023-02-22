@@ -1,13 +1,13 @@
 import veOceanABI from '@oceanprotocol/contracts/artifacts/contracts/ve/veOCEAN.vy/veOCEAN.json'
-import { calculateEstimatedGas, sendTx } from '../../utils'
+import { sendTx } from '../../utils'
 import { SmartContractWithAddress } from '../SmartContractWithAddress'
-import { ReceiptOrEstimate } from '../../@types'
+import { ReceiptOrEstimate, AbiItem } from '../../@types'
 /**
  * Provides an interface for veOcean contract
  */
 export class VeOcean extends SmartContractWithAddress {
   getDefaultAbi() {
-    return veOceanABI.abi
+    return veOceanABI.abi as AbiItem[]
   }
 
   /**
@@ -23,8 +23,7 @@ export class VeOcean extends SmartContractWithAddress {
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
     const amountFormatted = await this.amountToUnits(await this.getToken(), amount)
-    const estGas = await calculateEstimatedGas(
-      this.contract.create_lock,
+    const estGas = await this.contract.estimateGas.create_lock(
       amountFormatted,
       unlockTime
     )
@@ -32,7 +31,7 @@ export class VeOcean extends SmartContractWithAddress {
 
     // Invoke function of the contract
     const trxReceipt = await sendTx(
-      estGas + 20000,
+      estGas,
       this.signer,
       this.config?.gasFeeMultiplier,
       this.contract.create_lock,
@@ -56,16 +55,12 @@ export class VeOcean extends SmartContractWithAddress {
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
     const amountFormatted = await this.amountToUnits(await this.getToken(), amount)
-    const estGas = await calculateEstimatedGas(
-      this.contract.deposit_for,
-      toAddress,
-      amountFormatted
-    )
+    const estGas = await this.contract.estimateGas.deposit_for(toAddress, amountFormatted)
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
 
     // Invoke function of the contract
     const trxReceipt = await sendTx(
-      estGas + 20000,
+      estGas,
       this.signer,
       this.config?.gasFeeMultiplier,
       this.contract.deposit_for,
@@ -86,15 +81,12 @@ export class VeOcean extends SmartContractWithAddress {
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
     const amountFormatted = await this.amountToUnits(await this.getToken(), amount)
-    const estGas = await calculateEstimatedGas(
-      this.contract.increase_amount,
-      amountFormatted
-    )
+    const estGas = await this.contract.estimateGas.increase_amount(amountFormatted)
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
 
     // Invoke function of the contract
     const trxReceipt = await sendTx(
-      estGas + 20000,
+      estGas,
       this.signer,
       this.config?.gasFeeMultiplier,
       this.contract.increase_amount,
@@ -113,15 +105,12 @@ export class VeOcean extends SmartContractWithAddress {
     unlockTime: number,
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
-    const estGas = await calculateEstimatedGas(
-      this.contract.increase_unlock_time,
-      unlockTime
-    )
+    const estGas = await this.contract.estimateGas.increase_unlock_time(unlockTime)
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
 
     // Invoke function of the contract
     const trxReceipt = await sendTx(
-      estGas + 20000,
+      estGas,
       this.signer,
       this.config?.gasFeeMultiplier,
       this.contract.increase_unlock_time,
@@ -138,12 +127,12 @@ export class VeOcean extends SmartContractWithAddress {
   public async withdraw<G extends boolean = false>(
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
-    const estGas = await calculateEstimatedGas(this.contract.withdraw)
+    const estGas = await this.contract.estimateGas.withdraw()
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
 
     // Invoke function of the contract
     const trxReceipt = await sendTx(
-      estGas + 1,
+      estGas,
       this.signer,
       this.config?.gasFeeMultiplier,
       this.contract.withdraw
@@ -168,7 +157,7 @@ export class VeOcean extends SmartContractWithAddress {
     const balance = await this.contract.locked(userAddress)
     const balanceFormated = await this.unitsToAmount(
       await this.getToken(),
-      balance.amount
+      balance.amount.toString()
     )
 
     return balanceFormated
@@ -180,7 +169,7 @@ export class VeOcean extends SmartContractWithAddress {
    */
   public async lockEnd(userAddress: string): Promise<number> {
     const untilLock = await this.contract.locked__end(userAddress)
-    return untilLock
+    return parseInt(untilLock.toString())
   }
 
   /** Get total supply
