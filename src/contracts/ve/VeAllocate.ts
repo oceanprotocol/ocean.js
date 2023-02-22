@@ -1,5 +1,3 @@
-// import { AbiItem } from 'web3-utils'
-import { ethers, Signer, Interface, InterfaceAbi, Contract } from 'ethers'
 import veAllocateABI from '@oceanprotocol/contracts/artifacts/contracts/ve/veAllocate.sol/veAllocate.json'
 import { calculateEstimatedGas, sendTx } from '../../utils'
 import { SmartContractWithAddress } from '../SmartContractWithAddress'

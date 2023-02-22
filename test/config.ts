@@ -20,7 +20,7 @@ export const provider = new JsonRpcProvider(
 
 export const getTestConfig = async (signer: Signer) => {
   const { chainId } = await signer.provider.getNetwork()
-  const config = new ConfigHelper().getConfig(String(chainId))
+  const config = new ConfigHelper().getConfig(parseInt(String(chainId)))
   config.providerUri = process.env.PROVIDER_URL || config.providerUri
   return config
 }

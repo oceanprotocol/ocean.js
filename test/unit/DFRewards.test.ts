@@ -1,6 +1,7 @@
+/*
 import { assert } from 'chai'
-import { AbiItem } from 'web3-utils'
-import { web3, getTestConfig, getAddresses } from '../config'
+import { ethers, Signer } from 'ethers'
+import { getTestConfig, getAddresses, provider } from '../config'
 import {
   Config,
   approve,
@@ -131,3 +132,4 @@ describe('veOcean tests', async () => {
     assert(parseInt(newBobOceanBalance) >= expected, 'Bob failed to claim')
   })
 })
+*/

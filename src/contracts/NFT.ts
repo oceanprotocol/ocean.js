@@ -1,6 +1,4 @@
-// import { AbiItem } from 'web3-utils'
-// import { TransactionReceipt } from 'web3-eth'
-import { ethers, Signer, InterfaceAbi } from 'ethers'
+import { ethers } from 'ethers'
 import ERC721Template from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC721Template.sol/ERC721Template.json'
 import { generateDtName, calculateEstimatedGas, sendTx, getEventFromTx } from '../utils'
 import {

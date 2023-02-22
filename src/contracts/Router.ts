@@ -1,5 +1,3 @@
-// import { AbiItem } from 'web3-utils'
-import { ethers, Signer, InterfaceAbi } from 'ethers'
 import FactoryRouter from '@oceanprotocol/contracts/artifacts/contracts/pools/FactoryRouter.sol/FactoryRouter.json'
 import { calculateEstimatedGas, sendTx } from '../utils'
 import { Operation, ReceiptOrEstimate } from '../@types'

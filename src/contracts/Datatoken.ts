@@ -1,6 +1,3 @@
-// import Web3 from 'web3'
-// import { AbiItem } from 'web3-utils'
-// import { TransactionReceipt } from 'web3-eth'
 import { ethers, Signer, InterfaceAbi } from 'ethers'
 import Decimal from 'decimal.js'
 import ERC20Template from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC20Template.sol/ERC20Template.json'

@@ -1,5 +1,4 @@
-// import { AbiItem } from 'web3-utils'
-import { ethers, Signer, InterfaceAbi } from 'ethers'
+import { ethers } from 'ethers'
 import Decimal from 'decimal.js'
 import DispenserAbi from '@oceanprotocol/contracts/artifacts/contracts/pools/dispenser/Dispenser.sol/Dispenser.json'
 import { calculateEstimatedGas, sendTx } from '../utils'

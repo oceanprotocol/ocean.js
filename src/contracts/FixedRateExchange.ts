@@ -1,5 +1,5 @@
 import FixedRateExchangeAbi from '@oceanprotocol/contracts/artifacts/contracts/pools/fixedRate/FixedRateExchange.sol/FixedRateExchange.json'
-import { ethers, Signer, InterfaceAbi } from 'ethers'
+import { ethers } from 'ethers'
 import { calculateEstimatedGas, sendTx, ZERO_ADDRESS } from '../utils'
 import { PriceAndFees, FeesInfo, FixedPriceExchange, ReceiptOrEstimate } from '../@types'
 import { SmartContractWithAddress } from './SmartContractWithAddress'

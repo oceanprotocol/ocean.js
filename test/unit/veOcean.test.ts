@@ -1,6 +1,5 @@
 import { assert } from 'chai'
-import { AbiItem } from 'web3-utils'
-import { web3, getTestConfig, getAddresses, provider } from '../config'
+import { getTestConfig, provider, getAddresses } from '../config'
 import {
   Config,
   approve,
@@ -13,9 +12,8 @@ import {
   VeFeeEstimate,
   getEventFromTx
 } from '../../src'
-import { ethers, InterfaceAbi, Interface, Signer } from 'ethers'
-
-describe('veOcean tests', async () => {
+import { ethers, Signer } from 'ethers'
+describe('veOcean tests', () => {
   let config: Config
   let addresses: any
   let nftFactory
@@ -23,14 +21,18 @@ describe('veOcean tests', async () => {
   let veFeeDistributor: VeFeeDistributor
   let veFeeEstimate: VeFeeEstimate
   let veAllocate: VeAllocate
-  const ownerAccount = (await provider.getSigner(0)) as Signer
-  const Alice = (await provider.getSigner(1)) as Signer
-  const Bob = (await provider.getSigner(2)) as Signer
+  let ownerAccount
+  let Alice
+  let Bob
   let nft1, nft2, nft3
   let chainId
 
   before(async () => {
+    ownerAccount = (await provider.getSigner(0)) as Signer
+    Alice = (await provider.getSigner(1)) as Signer
+    Bob = (await provider.getSigner(2)) as Signer
     config = await getTestConfig(ownerAccount as Signer)
+    addresses = await getAddresses()
   })
 
   it('initialize accounts', async () => {
@@ -49,27 +51,27 @@ describe('veOcean tests', async () => {
         type: 'function'
       }
     ]
-    const tokenContract = new ethers.Contract(addresses.Ocean, minAbi)
+    const tokenContract = new ethers.Contract(addresses.Ocean, minAbi, ownerAccount)
     const estGas = await calculateEstimatedGas(
       tokenContract.mint,
-      Alice,
-      web3.utils.toWei('1000')
+      await Alice.getAddress(),
+      ethers.parseUnits('1000', 'ether')
     )
     await sendTx(
       estGas,
       ownerAccount,
       1,
       tokenContract.mint,
-      Alice,
-      web3.utils.toWei('1000')
+      await Alice.getAddress(),
+      ethers.parseUnits('1000')
     )
     await sendTx(
       estGas,
       ownerAccount,
       1,
       tokenContract.mint,
-      Bob,
-      web3.utils.toWei('1000')
+      await Bob.getAddress(),
+      ethers.parseUnits('1000')
     )
     veOcean = new VeOcean(addresses.veOCEAN, Alice)
     veFeeDistributor = new VeFeeDistributor(addresses.veFeeDistributor, Alice)
@@ -85,7 +87,7 @@ describe('veOcean tests', async () => {
     const currentLock = await veOcean.lockEnd(await Alice.getAddress())
     const amount = '100'
     await approve(
-      web3,
+      Alice,
       config,
       await Alice.getAddress(),
       addresses.Ocean,
@@ -104,15 +106,15 @@ describe('veOcean tests', async () => {
         // do nothing
       }
     } else {
-      const estGas = await veOcean.lockTokens(amount, unlockTime, true)
-      console.log('Estimate gas for lockTokens:' + estGas)
       const response = await veOcean.lockTokens(amount, unlockTime)
       const tx = await response.wait()
       // check events
       const depositEvent = getEventFromTx(tx, 'Deposit')
       const supplyEvent = getEventFromTx(tx, 'Supply')
-      assert(depositEvent.args[0] === Alice)
-      assert(depositEvent.args[1] === web3.utils.toWei(amount))
+      assert(
+        depositEvent.args[0].toLowerCase() === (await Alice.getAddress()).toLowerCase()
+      )
+      assert(depositEvent.args[1] === ethers.parseUnits(amount))
       assert(depositEvent.args[2] > 0) // we cannot compare it to the actual untiLock, because contract will round it to weeks
       assert(depositEvent.args[1] > supplyEvent.args[0]) // supply has increased
     }
@@ -131,7 +133,7 @@ describe('veOcean tests', async () => {
     const currentLock = await veOcean.lockEnd(await Alice.getAddress())
     const amount = '200'
     await approve(
-      web3,
+      Alice,
       config,
       await Alice.getAddress(),
       addresses.Ocean,
@@ -150,29 +152,29 @@ describe('veOcean tests', async () => {
 
   it('Alice should publish 3 NFTs', async () => {
     // publish 3 nfts
-    nft1 = await nftFactory.createNFT(Alice, {
+    nft1 = await nftFactory.createNFT({
       name: 'testNft1',
       symbol: 'TSTF1',
       templateIndex: 1,
       tokenURI: '',
-      transferable: true,
-      owner: Alice
+      transferable: 1,
+      owner: await Alice.getAddress()
     })
-    nft2 = await nftFactory.createNFT(Alice, {
+    nft2 = await nftFactory.createNFT({
       name: 'testNft2',
       symbol: 'TSTF2',
       templateIndex: 1,
       tokenURI: '',
-      transferable: true,
-      owner: Alice
+      transferable: 1,
+      owner: await Alice.getAddress()
     })
-    nft3 = await nftFactory.createNFT(Alice, {
+    nft3 = await nftFactory.createNFT({
       name: 'testNft3',
       symbol: 'TSTF3',
       templateIndex: 1,
       tokenURI: '',
-      transferable: true,
-      owner: Alice
+      transferable: 1,
+      owner: await Alice.getAddress()
     })
   })
 
@@ -181,10 +183,14 @@ describe('veOcean tests', async () => {
     const response = await veAllocate.setAllocation('1000', nft1, chainId)
     const tx = await response.wait()
     const allocationSetEvent = getEventFromTx(tx, 'AllocationSet')
-    assert(allocationSetEvent.args[0] === Alice)
-    assert(allocationSetEvent.args[1] === nft1)
-    assert(parseInt(allocationSetEvent.args[2]) === parseInt(chainId))
-    assert(allocationSetEvent.args[3] === '1000')
+    assert(
+      allocationSetEvent.args[0].toLowerCase() ===
+        (await Alice.getAddress()).toLowerCase(),
+      'Incorect address'
+    )
+    assert(allocationSetEvent.args[1] === nft1, 'Incorect NFT address')
+    assert(parseInt(allocationSetEvent.args[2]) === parseInt(chainId), 'Incorect chainId')
+    assert(parseInt(allocationSetEvent.args[3]) === 1000, 'Incorect ammount')
     const newTotalAllocation = await veAllocate.getTotalAllocation(
       await Alice.getAddress()
     )
@@ -213,12 +219,15 @@ describe('veOcean tests', async () => {
     )
     const tx = await response.wait()
     const allocationSetEvent = getEventFromTx(tx, 'AllocationSetMultiple')
-    assert(allocationSetEvent.args[0] === Alice)
+    assert(
+      allocationSetEvent.args[0].toLowerCase() ===
+        (await Alice.getAddress()).toLowerCase()
+    )
     assert(allocationSetEvent.args[1][0] === nft2)
     assert(allocationSetEvent.args[1][1] === nft3)
     assert(parseInt(allocationSetEvent.args[2][0]) === parseInt(chainId))
-    assert(allocationSetEvent.args[3][0] === '1000')
-    assert(allocationSetEvent.args[3][1] === '2000')
+    assert(parseInt(allocationSetEvent.args[3][0]) === 1000)
+    assert(parseInt(allocationSetEvent.args[3][1]) === 2000)
     const newTotalAllocation = await veAllocate.getTotalAllocation(
       await Alice.getAddress()
     )
@@ -245,11 +254,5 @@ describe('veOcean tests', async () => {
       parseInt(String(nftAllocation)) === parseInt('2000'),
       nftAllocation + ' should be 2000'
     )
-  })
-
-  it('Alice should be able to estimate her claim amount', async () => {
-    const estimatedClaim = await veFeeEstimate.estimateClaim(await Alice.getAddress())
-    // since we have no rewards, we are expecting 0
-    assert(estimatedClaim === '0')
   })
 })

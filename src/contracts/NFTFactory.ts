@@ -1,6 +1,4 @@
-// import Web3 from 'web3'
-// import { AbiItem } from 'web3-utils'
-import { ethers, Signer, InterfaceAbi } from 'ethers'
+import { ethers } from 'ethers'
 import ERC721Factory from '@oceanprotocol/contracts/artifacts/contracts/ERC721Factory.sol/ERC721Factory.json'
 import {
   generateDtName,
@@ -67,9 +65,8 @@ export class NftFactory extends SmartContractWithAddress {
       nftData.owner
     )
     if (estimateGas) return <G extends false ? string : number>estGas
-
     // Invoke createToken function of the contract
-    const trxReceipt = await sendTx(
+    const tx = await sendTx(
       estGas + 1,
       this.signer,
       this.config?.gasFeeMultiplier,
@@ -83,6 +80,7 @@ export class NftFactory extends SmartContractWithAddress {
       nftData.transferable,
       nftData.owner
     )
+    const trxReceipt = await tx.wait()
     const events = getEventFromTx(trxReceipt, 'NFTCreated')
     return events.args[0]
   }

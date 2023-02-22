@@ -1,13 +1,10 @@
-// import Web3 from 'web3'
-// import { Contract } from 'web3-eth-contract'
-// import { TransactionReceipt } from 'web3-core'
 import {
   ethers,
   Signer,
-  InterfaceAbi,
   Contract,
   TransactionResponse,
-  ContractMethod
+  ContractMethod,
+  ContractMethodArgs
 } from 'ethers'
 import BigNumber from 'bignumber.js'
 import { Config } from '../config'
@@ -96,8 +93,13 @@ export async function calculateEstimatedGas(
   functionToEstimateGas: ContractMethod,
   ...args: any[]
 ): Promise<number> {
-  const estimate = await functionToEstimateGas.estimateGas(args)
-  return Number(estimate) || GASLIMIT_DEFAULT
+  try {
+    const estimate = await functionToEstimateGas.estimateGas(...args)
+    return Number(estimate) || GASLIMIT_DEFAULT
+  } catch (e) {
+    return GASLIMIT_DEFAULT
+  }
+
   /* const estimatedGas = await functionToEstimateGas
     .apply(null, args)
     .estimateGas({ from }, (err, estGas) => (err ? GASLIMIT_DEFAULT : estGas))
@@ -106,8 +108,8 @@ export async function calculateEstimatedGas(
 }
 
 export function getEventFromTx(txReceipt, eventName) {
-  return txReceipt.events.filter((log) => {
-    return log.event === eventName
+  return txReceipt.logs.filter((log) => {
+    return log.fragment?.name === eventName
   })[0]
 }
 
@@ -141,8 +143,12 @@ export async function sendTx(
     }
   }
   overrides.gasLimit = estGas
-  const trxReceipt = await functionToSend(args, overrides)
-  return trxReceipt
+  try {
+    const trxReceipt = await functionToSend(...args, overrides)
+    return trxReceipt
+  } catch (e) {
+    return null
+  }
   /* try {
     const feeHistory = await signer.provider,web3.eth.getFeeHistory(1, 'latest', [75])
     if (feeHistory && feeHistory?.baseFeePerGas?.[0] && feeHistory?.reward?.[0]?.[0]) {

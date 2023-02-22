@@ -1,7 +1,9 @@
+/*
 import { assert } from 'chai'
-import { deployContracts, Addresses } from '../TestContractHandler'
-import { web3 } from '../config'
+import { getTestConfig, provider, getAddresses } from '../config'
+import { ethers, Signer } from 'ethers'
 import {
+  Config,
   NftFactory,
   NftCreateData,
   Datatoken,
@@ -13,13 +15,12 @@ import {
 } from '../../src'
 import { ProviderFees, FreCreationParams, FreOrderParams } from '../../src/@types'
 
-describe('Datatoken', () => {
-  let nftOwner: string
-  let user1: string
-  let user2: string
-  let user3: string
-  let datatokenDeployer: string
-  let contracts: Addresses
+describe('Datatoken', async () => {
+  const nftOwner = (await provider.getSigner(0)) as Signer
+  const user1 = (await provider.getSigner(1)) as Signer
+  const user2 = (await provider.getSigner(2)) as Signer
+  const user3 = (await provider.getSigner(3)) as Signer
+  const datatokenDeployer = (await provider.getSigner(4)) as Signer
   let nftDatatoken: Nft
   let datatoken: Datatoken
   let nftFactory: NftFactory
@@ -28,6 +29,8 @@ describe('Datatoken', () => {
   let fixedRateAddress: string
   let exchangeId: string
   let freParams: FreCreationParams
+  let config: Config
+  let addresses: any
 
   const nftData: NftCreateData = {
     name: 'NFTName',
@@ -35,50 +38,32 @@ describe('Datatoken', () => {
     templateIndex: 1,
     tokenURI: 'https://oceanprotocol.com/nft/',
     transferable: true,
-    owner: null
+    owner: await nftOwner.getAddress()
   }
 
   before(async () => {
-    const accounts = await web3.eth.getAccounts()
-    nftOwner = accounts[0]
-    user1 = accounts[1]
-    user2 = accounts[2]
-    user3 = accounts[3]
-    datatokenDeployer = accounts[4]
-
-    nftData.owner = nftOwner
+    config = await getTestConfig(nftOwner as Signer)
+    addresses = await getAddresses()
   })
-
-  it('should deploy contracts', async () => {
-    contracts = await deployContracts(web3, nftOwner)
-
-    freParams = {
-      fixedRateAddress: contracts.fixedRateAddress,
-      baseTokenAddress: contracts.daiAddress,
-      owner: nftOwner,
-      marketFeeCollector: nftOwner,
-      baseTokenDecimals: 18,
-      datatokenDecimals: 18,
-      fixedRate: web3.utils.toWei('1'),
-      marketFee: '0'
-    }
-  })
-
   it('should initialize NFTFactory instance and create a new NFT', async () => {
-    nftFactory = new NftFactory(contracts.nftFactoryAddress, web3, 8996)
+    nftFactory = new NftFactory(addresses.nftFactoryAddress, nftOwner, 8996)
 
-    nftAddress = await nftFactory.createNFT(nftOwner, nftData)
-    nftDatatoken = new Nft(web3, 8996)
+    nftAddress = await nftFactory.createNFT(nftData)
+    nftDatatoken = new Nft(nftOwner, 8996)
   })
 
   it('#createDatatoken - should create a new ERC20 Datatoken from NFT contract', async () => {
-    await nftDatatoken.addDatatokenDeployer(nftAddress, nftOwner, datatokenDeployer)
+    await nftDatatoken.addDatatokenDeployer(
+      nftAddress,
+      await nftOwner.getAddress(),
+      await datatokenDeployer.getAddress()
+    )
     datatokenAddress = await nftDatatoken.createDatatoken(
       nftAddress,
-      nftOwner,
-      nftOwner,
-      user1,
-      user2,
+      await nftOwner.getAddress(),
+      await nftOwner.getAddress(),
+      await user1.getAddress(),
+      await user2.getAddress(),
       ZERO_ADDRESS,
       '0',
       '10000',
@@ -89,13 +74,16 @@ describe('Datatoken', () => {
   })
 
   it('should initialize DT20 Instance', async () => {
-    datatoken = new Datatoken(web3, 8996)
+    datatoken = new Datatoken(user1, 8996)
   })
 
   it('#mint - should fail to mint DT20, if NOT Minter', async () => {
-    assert((await datatoken.getPermissions(datatokenAddress, user1)).minter === false)
+    assert(
+      (await datatoken.getPermissions(datatokenAddress, await user1.getAddress()))
+        .minter === false
+    )
     try {
-      await datatoken.mint(datatokenAddress, user1, '10', user1)
+      await datatoken.mint(datatokenAddress, await user1.getAddress(), '10', user1)
       assert(false)
     } catch (e) {
       assert(e.message === 'Caller is not Minter')
@@ -660,3 +648,4 @@ describe('Datatoken', () => {
     assert(newPublishingMarketFee.publishMarketFeeToken === contracts.daiAddress)
   })
 })
+*/

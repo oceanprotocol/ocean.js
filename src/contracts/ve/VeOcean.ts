@@ -1,4 +1,3 @@
-// import { AbiItem } from 'web3-utils'
 import veOceanABI from '@oceanprotocol/contracts/artifacts/contracts/ve/veOCEAN.vy/veOCEAN.json'
 import { calculateEstimatedGas, sendTx } from '../../utils'
 import { SmartContractWithAddress } from '../SmartContractWithAddress'
