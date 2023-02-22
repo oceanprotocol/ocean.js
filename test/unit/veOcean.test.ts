@@ -125,7 +125,8 @@ describe('veOcean tests', () => {
   it('Alice should increase the lock time', async () => {
     const currentLock = await veOcean.lockEnd(await Alice.getAddress())
     const newLock = parseInt(String(currentLock)) + 7 * 86400 + 20
-    await veOcean.increaseUnlockTime(newLock)
+    const tx = await veOcean.increaseUnlockTime(newLock)
+    await tx.wait()
     const newCurrentLock = await veOcean.lockEnd(await Alice.getAddress())
     console.log(currentLock)
     console.log(newCurrentLock)
