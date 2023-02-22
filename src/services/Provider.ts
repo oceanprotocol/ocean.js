@@ -750,7 +750,7 @@ export class Provider {
       })
       if (response?.ok) {
         const params = await response.json()
-        if (params && params.providerAddress) return true
+        if (params && (params.providerAddress || params.providerAddresses)) return true
       }
       return false
     } catch (error) {
