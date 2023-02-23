@@ -137,7 +137,7 @@ describe('veOcean tests', () => {
     const currentBalance = await veOcean.getLockedAmount(await Alice.getAddress())
     const currentLock = await veOcean.lockEnd(await Alice.getAddress())
     const amount = '200'
-    await approve(
+    let tx = await approve(
       Alice,
       config,
       await Alice.getAddress(),
@@ -145,7 +145,8 @@ describe('veOcean tests', () => {
       addresses.veOCEAN,
       amount
     )
-    await veOcean.increaseAmount(amount)
+    tx = await veOcean.increaseAmount(amount)
+    await tx.wait()
     const newCurrentBalance = await veOcean.getLockedAmount(await Alice.getAddress())
     const newCurrentLock = await veOcean.lockEnd(await Alice.getAddress())
     assert(newCurrentLock === currentLock, 'Lock time should not change')
