@@ -1,6 +1,6 @@
 import { assert, expect } from 'chai'
 import { getTestConfig, provider, getAddresses } from '../config'
-import { ethers, Signer } from 'ethers'
+import { ethers, Signer, providers } from 'ethers'
 import {
   NftFactory,
   NftCreateData,
@@ -88,7 +88,7 @@ describe('Nft Factory test', () => {
 
   it('#createNft - should create an NFT', async () => {
     // we prepare transaction parameters objects
-    const nftAddress = await nftFactory.createNFT(nftData)
+    nftAddress = await nftFactory.createNFT(nftData)
 
     // we check the created nft
     const nftDatatoken = new Nft(nftOwner)
@@ -106,15 +106,15 @@ describe('Nft Factory test', () => {
     expect(nftCreatedEvent.event === 'NFTCreated')
     expect(tokenCreatedEvent.event === 'TokenCreated')
     // stored for later use in startMultipleTokenOrder test
-    // nftAddress = txReceipt.events.NFTCreated.returnValues.newTokenAddress
-    // dtAddress = txReceipt.events.TokenCreated.returnValues.newTokenAddress
+    nftAddress = nftCreatedEvent.args.newTokenAddress
+    dtAddress = tokenCreatedEvent.args.newTokenAddress
   })
-  /*
+
   it('#createNftwithErc - should increment nft and token count', async () => {
     const currentNFTCount = await nftFactory.getCurrentNFTCount()
     const currentTokenCount = await nftFactory.getCurrentTokenCount()
 
-    await nftFactory.createNftWithDatatoken(nftOwner, nftData, dtParams)
+    await nftFactory.createNftWithDatatoken(nftData, dtParams)
 
     expect((await nftFactory.getCurrentNFTCount()) === currentNFTCount + 1)
     expect((await nftFactory.getCurrentTokenCount()) === currentTokenCount + 1)
@@ -123,58 +123,62 @@ describe('Nft Factory test', () => {
   it('#createNftErcWithFixedRate- should create an NFT, a datatoken and create a Fixed Rate Exchange', async () => {
     // we prepare transaction parameters objects
     const freParams: FreCreationParams = {
-      fixedRateAddress: contracts.fixedRateAddress,
-      baseTokenAddress: contracts.daiAddress,
-      owner: nftOwner,
-      marketFeeCollector: nftOwner,
+      fixedRateAddress: addresses.FixedPrice,
+      baseTokenAddress: addresses.MockDAI,
+      owner: await nftOwner.getAddress(),
+      marketFeeCollector: await nftOwner.getAddress(),
       baseTokenDecimals: 18,
       datatokenDecimals: 18,
       fixedRate: '1',
       marketFee: FEE,
-      allowedConsumer: user1,
+      allowedConsumer: await user1.getAddress(),
       withMint: false
     }
 
-    const txReceipt = await nftFactory.createNftWithDatatokenWithFixedRate(
-      nftOwner,
+    const tx = await nftFactory.createNftWithDatatokenWithFixedRate(
       nftData,
       dtParams,
       freParams
     )
-
+    const trxReceipt = await tx.wait()
     // events have been emitted
-    expect(txReceipt.events.NFTCreated.event === 'NFTCreated')
-    expect(txReceipt.events.TokenCreated.event === 'TokenCreated')
-    expect(txReceipt.events.NewFixedRate.event === 'NewFixedRate')
+    const nftCreatedEvent = getEventFromTx(trxReceipt, 'NFTCreated')
+    const TokenCreatedEvent = getEventFromTx(trxReceipt, 'TokenCreated')
+    const NewFixedRateEvent = getEventFromTx(trxReceipt, 'NewFixedRate')
+    expect(nftCreatedEvent.event === 'NFTCreated')
+    expect(TokenCreatedEvent.event === 'TokenCreated')
+    expect(NewFixedRateEvent.event === 'NewFixedRate')
 
     // stored for later use in startMultipleTokenOrder test
-    dtAddress2 = txReceipt.events.TokenCreated.returnValues.newTokenAddress
+    dtAddress = TokenCreatedEvent.args.newTokenAddress
   })
 
   it('#createNftErcWithDispenser- should create an NFT, a datatoken and create a Dispenser', async () => {
     // we prepare transaction parameters objects
     const dispenserParams = {
-      dispenserAddress: contracts.dispenserAddress,
+      dispenserAddress: addresses.Dispenser,
       maxTokens: '1',
       maxBalance: '1',
       withMint: true,
       allowedSwapper: ZERO_ADDRESS
     }
 
-    const txReceipt = await nftFactory.createNftWithDatatokenWithDispenser(
-      nftOwner,
+    const tx = await nftFactory.createNftWithDatatokenWithDispenser(
       nftData,
       dtParams,
       dispenserParams
     )
-
+    const trxReceipt = await tx.wait()
     // events have been emitted
-    expect(txReceipt.events.NFTCreated.event === 'NFTCreated')
-    expect(txReceipt.events.TokenCreated.event === 'TokenCreated')
-    expect(txReceipt.events.DispenserCreated.event === 'DispenserCreated')
+    const nftCreatedEvent = getEventFromTx(trxReceipt, 'NFTCreated')
+    const TokenCreatedEvent = getEventFromTx(trxReceipt, 'TokenCreated')
+    const DispenserCreatedEvent = getEventFromTx(trxReceipt, 'DispenserCreated')
+    expect(nftCreatedEvent.event === 'NFTCreated')
+    expect(TokenCreatedEvent.event === 'TokenCreated')
+    expect(DispenserCreatedEvent.event === 'DispenserCreated')
 
     // stored for later use in startMultipleTokenOrder test
-    dtAddress2 = txReceipt.events.TokenCreated.returnValues.newTokenAddress
+    dtAddress2 = TokenCreatedEvent.args.newTokenAddress
   })
 
   it('#startMultipleTokenOrder- should succed to start multiple orders', async () => {
@@ -182,64 +186,101 @@ describe('Nft Factory test', () => {
     const serviceIndex = 1 // dummy index
     const consumeFeeAddress = user2 // marketplace fee Collector
     const consumeFeeAmount = '0' // fee to be collected on top, requires approval
-    const consumeFeeToken = contracts.daiAddress // token address for the feeAmount, in this case DAI
-
+    const consumeFeeToken = addresses.MockDAI // token address for the feeAmount, in this case DAI
+    nftFactory = new NftFactory(addresses.ERC721Factory, consumer)
     // we reuse a DT created in a previous test
-    expect(await balance(web3, dtAddress, user1)).to.equal('0')
+    expect(
+      parseInt(await balance(nftOwner, dtAddress, await user1.getAddress()))
+    ).to.equal(0)
 
     // dt owner mint DATA_TOKEN_AMOUNT to user1
-    const datatoken = new Datatoken(web3)
-    datatoken.mint(dtAddress, nftOwner, DATA_TOKEN_AMOUNT, user1)
+    const datatoken = new Datatoken(nftOwner)
+    datatoken.mint(
+      dtAddress,
+      await nftOwner.getAddress(),
+      DATA_TOKEN_AMOUNT,
+      await user1.getAddress()
+    )
 
     // user1 approves NFTFactory to move his DATA_TOKEN_AMOUNT
     await approve(
-      web3,
-      config,
       user1,
+      config,
+      await user1.getAddress(),
       dtAddress,
-      contracts.nftFactoryAddress,
+      addresses.ERC721Factory,
       DATA_TOKEN_AMOUNT
     )
 
     // we reuse another DT created in a previous test
-    expect(await balance(web3, dtAddress2, user1)).to.equal('0')
+    expect(parseInt(await balance(user1, dtAddress2, await user1.getAddress()))).to.equal(
+      0
+    )
 
     // dt owner mint DATA_TOKEN_AMOUNT to user1
-    datatoken.mint(dtAddress2, nftOwner, DATA_TOKEN_AMOUNT, user1)
+    datatoken.mint(
+      dtAddress2,
+      await nftOwner.getAddress(),
+      DATA_TOKEN_AMOUNT,
+      await user1.getAddress()
+    )
     // user1 approves NFTFactory to move his DATA_TOKEN_AMOUNT
     await approve(
-      web3,
-      config,
       user1,
+      config,
+      await user1.getAddress(),
       dtAddress2,
-      contracts.nftFactoryAddress,
+      addresses.ERC721Factory,
       DATA_TOKEN_AMOUNT
     )
 
     // we check user1 has enought DTs
-    expect(await balance(web3, dtAddress, user1)).to.equal(DATA_TOKEN_AMOUNT)
-    expect(await balance(web3, dtAddress2, user1)).to.equal(DATA_TOKEN_AMOUNT)
+    const user1Dt1Balance = await balance(user1, dtAddress, await user1.getAddress())
+    const user1Dt2Balance = await balance(user1, dtAddress2, await user1.getAddress())
+    expect(parseInt(user1Dt1Balance)).to.equal(parseInt(DATA_TOKEN_AMOUNT))
+    expect(parseInt(user1Dt2Balance)).to.equal(parseInt(DATA_TOKEN_AMOUNT))
 
     const providerData = JSON.stringify({ timeout: 0 })
     const providerValidUntil = '0'
 
-    const message = web3.utils.soliditySha3(
-      { t: 'bytes', v: web3.utils.toHex(web3.utils.asciiToHex(providerData)) },
-      { t: 'address', v: consumeFeeAddress },
-      { t: 'address', v: consumeFeeToken },
-      { t: 'uint256', v: web3.utils.toWei(consumeFeeAmount) },
-      { t: 'uint256', v: providerValidUntil }
+    const message = ethers.utils.solidityKeccak256(
+      ['bytes', 'address', 'address', 'uint256', 'uint256'],
+      [
+        ethers.utils.hexlify(ethers.utils.toUtf8Bytes(providerData)),
+        await consumeFeeAddress.getAddress(),
+        consumeFeeToken,
+        consumeFeeAmount,
+        providerValidUntil
+      ]
     )
+    /* Since ganache has no support yet for personal_sign, we must use the legacy implementation
+    const signedMessage = await user2.signMessage(message)
+    */
+    // const signedMessage = await (user2 as providers.JsonRpcSigner)._legacySignMessage(
+    // message
+    // )
+    // console.log(signedMessage)
 
-    const { v, r, s } = await signHash(web3, message, consumeFeeAddress)
+    // const { v, r, s } = await signHash(web3, message, consumeFeeAddress)
+    const messageHashBytes = ethers.utils.arrayify(message)
+    let signedMessage = await (
+      consumeFeeAddress as providers.JsonRpcSigner
+    )._legacySignMessage(messageHashBytes)
+    signedMessage = signedMessage.substr(2) // remove 0x
+    const r = '0x' + signedMessage.slice(0, 64)
+    const s = '0x' + signedMessage.slice(64, 128)
+    let v = '0x' + signedMessage.slice(128, 130)
+    if (v === '0x00') v = '0x1b'
+    if (v === '0x01') v = '0x1c'
+
     const providerFees: ProviderFees = {
-      providerFeeAddress: consumeFeeAddress,
+      providerFeeAddress: await consumeFeeAddress.getAddress(),
       providerFeeToken: consumeFeeToken,
       providerFeeAmount: consumeFeeAmount,
       v,
       r,
       s,
-      providerData: web3.utils.toHex(web3.utils.asciiToHex(providerData)),
+      providerData: ethers.utils.hexlify(ethers.utils.toUtf8Bytes(providerData)),
       validUntil: providerValidUntil
     }
     const consumeMarketFee = {
@@ -250,29 +291,33 @@ describe('Nft Factory test', () => {
     const orders: TokenOrder[] = [
       {
         tokenAddress: dtAddress,
-        consumer,
+        consumer: await consumer.getAddress(),
         serviceIndex,
         _providerFee: providerFees,
         _consumeMarketFee: consumeMarketFee
       },
       {
         tokenAddress: dtAddress2,
-        consumer,
+        consumer: await consumer.getAddress(),
         serviceIndex,
         _providerFee: providerFees,
         _consumeMarketFee: consumeMarketFee
       }
     ]
-    await nftFactory.startMultipleTokenOrder(user1, orders)
+    await nftFactory.startMultipleTokenOrder(orders)
     // we check user1 has no more DTs
-    expect(await balance(web3, dtAddress, user1)).to.equal('0')
-    expect(await balance(web3, dtAddress2, user1)).to.equal('0')
+    expect(parseInt(await balance(user1, dtAddress, await user1.getAddress()))).to.equal(
+      0
+    )
+    expect(parseInt(await balance(user1, dtAddress2, await user1.getAddress()))).to.equal(
+      0
+    )
   })
 
   it('#checkDatatoken - should confirm if DT is from the factory', async () => {
     assert((await nftFactory.checkDatatoken(dtAddress)) === true)
     assert((await nftFactory.checkDatatoken(dtAddress2)) === true)
-    assert((await nftFactory.checkDatatoken(user1)) === false)
+    assert((await nftFactory.checkDatatoken(await user1.getAddress())) === false)
     assert((await nftFactory.checkDatatoken(nftAddress)) === false)
   })
 
@@ -283,8 +328,11 @@ describe('Nft Factory test', () => {
 
   it('#addNFTTemplate - should add a new NFT token template', async () => {
     const currentNFTTemplateCount = await nftFactory.getCurrentNFTTemplateCount()
-
-    await nftFactory.addNFTTemplate(factoryOwner, contracts.nftTemplateAddress)
+    nftFactory = new NftFactory(addresses.ERC721Factory, factoryOwner)
+    await nftFactory.addNFTTemplate(
+      await factoryOwner.getAddress(),
+      addresses.ERC721Template['1']
+    )
 
     expect(
       (await nftFactory.getCurrentNFTTemplateCount()) === currentNFTTemplateCount + 1
@@ -293,11 +341,14 @@ describe('Nft Factory test', () => {
 
   it('#disableNFTTemplate - should disable an NFT token template', async () => {
     const currentNFTTemplateCount = await nftFactory.getCurrentNFTTemplateCount()
-
+    nftFactory = new NftFactory(addresses.ERC721Factory, factoryOwner)
     let nftTemplate = await nftFactory.getNFTTemplate(currentNFTTemplateCount)
     assert(nftTemplate.isActive === true)
 
-    await nftFactory.disableNFTTemplate(factoryOwner, currentNFTTemplateCount)
+    await nftFactory.disableNFTTemplate(
+      await factoryOwner.getAddress(),
+      currentNFTTemplateCount
+    )
 
     nftTemplate = await nftFactory.getNFTTemplate(currentNFTTemplateCount)
     assert(nftTemplate.isActive === false)
@@ -305,11 +356,14 @@ describe('Nft Factory test', () => {
 
   it('#reactivateNFTTemplate - should reactivate an NFT previously disabled token template', async () => {
     const currentNFTTemplateCount = await nftFactory.getCurrentNFTTemplateCount()
-
+    nftFactory = new NftFactory(addresses.ERC721Factory, factoryOwner)
     let nftTemplate = await nftFactory.getNFTTemplate(currentNFTTemplateCount)
     assert(nftTemplate.isActive === false)
 
-    await nftFactory.reactivateNFTTemplate(factoryOwner, currentNFTTemplateCount)
+    await nftFactory.reactivateNFTTemplate(
+      await factoryOwner.getAddress(),
+      currentNFTTemplateCount
+    )
 
     nftTemplate = await nftFactory.getNFTTemplate(currentNFTTemplateCount)
     assert(nftTemplate.isActive === true)
@@ -318,7 +372,10 @@ describe('Nft Factory test', () => {
   it('#addTokenTemplate - should add a new Datatokent template', async () => {
     const currentTokenTemplateCount = await nftFactory.getCurrentTokenTemplateCount()
 
-    await nftFactory.addTokenTemplate(factoryOwner, contracts.datatokenTemplateAddress)
+    await nftFactory.addTokenTemplate(
+      await factoryOwner.getAddress(),
+      addresses.ERC20Template['1']
+    )
 
     expect(
       (await nftFactory.getCurrentTokenTemplateCount()) === currentTokenTemplateCount + 1
@@ -331,7 +388,10 @@ describe('Nft Factory test', () => {
     let tokenTemplate = await nftFactory.getTokenTemplate(currentTokenTemplateCount)
     assert(tokenTemplate.isActive === true)
 
-    await nftFactory.disableTokenTemplate(factoryOwner, currentTokenTemplateCount)
+    await nftFactory.disableTokenTemplate(
+      await factoryOwner.getAddress(),
+      currentTokenTemplateCount
+    )
 
     tokenTemplate = await nftFactory.getTokenTemplate(currentTokenTemplateCount)
     assert(tokenTemplate.isActive === false)
@@ -343,10 +403,12 @@ describe('Nft Factory test', () => {
     let tokenTemplate = await nftFactory.getTokenTemplate(currentTokenTemplateCount)
     assert(tokenTemplate.isActive === false)
 
-    await nftFactory.reactivateTokenTemplate(factoryOwner, currentTokenTemplateCount)
+    await nftFactory.reactivateTokenTemplate(
+      await factoryOwner.getAddress(),
+      currentTokenTemplateCount
+    )
 
     tokenTemplate = await nftFactory.getTokenTemplate(currentTokenTemplateCount)
     assert(tokenTemplate.isActive === true)
   })
-  */
 })
