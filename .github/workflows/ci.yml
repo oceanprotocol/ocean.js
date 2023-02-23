@@ -55,6 +55,7 @@ jobs:
         with:
           repository: 'oceanprotocol/barge'
           path: 'barge'
+          ref: 'use_public_ipfs_gateway'
 
       - name: Run Ganache with Barge
         working-directory: ${{ github.workspace }}/barge
