@@ -386,17 +386,17 @@ describe('Publish consume test', async () => {
     console.log('onchainOrderTx ', onchainOrderTx.transactionHash)
     assert(onchainOrderTx, 'Ordering onchain dataset failed.')
 
-    // ipfsOrderTx = await orderAsset(
-    //   resolvedIpfsAssetDdo.id,
-    //   resolvedIpfsAssetDdo.services[0].datatokenAddress,
-    //   consumerAccount,
-    //   resolvedIpfsAssetDdo.services[0].id,
-    //   0,
-    //   datatoken,
-    //   config
-    // )
-    // console.log('ipfsOrderTx ', ipfsOrderTx.transactionHash)
-    // assert(ipfsOrderTx, 'Ordering ipfs dataset failed.')
+    ipfsOrderTx = await orderAsset(
+      resolvedIpfsAssetDdo.id,
+      resolvedIpfsAssetDdo.services[0].datatokenAddress,
+      consumerAccount,
+      resolvedIpfsAssetDdo.services[0].id,
+      0,
+      datatoken,
+      providerUrl
+    )
+    console.log('ipfsOrderTx ', ipfsOrderTx.transactionHash)
+    assert(ipfsOrderTx, 'Ordering ipfs dataset failed.')
 
     grapqlOrderTx = await orderAsset(
       resolvedGraphqlAssetDdo.id,
@@ -444,21 +444,21 @@ describe('Publish consume test', async () => {
       assert.fail(`Download arwave dataset failed: ${e}`)
     }
 
-    // const ipfsDownloadURL = await ProviderInstance.getDownloadUrl(
-    //   resolvedIpfsAssetDdo.id,
-    //   consumerAccount,
-    //   resolvedIpfsAssetDdo.services[0].id,
-    //   0,
-    //   ipfsOrderTx.transactionHash,
-    //   providerUrl,
-    //   web3
-    // )
-    // assert(ipfsDownloadURL, 'Provider getDownloadUrl failed for ipfs dataset')
-    // try {
-    //   await downloadFile(ipfsDownloadURL)
-    // } catch (e) {
-    //   assert.fail(`Download ipfs dataset failed ${e}`)
-    // }
+    const ipfsDownloadURL = await ProviderInstance.getDownloadUrl(
+      resolvedIpfsAssetDdo.id,
+      consumerAccount,
+      resolvedIpfsAssetDdo.services[0].id,
+      0,
+      ipfsOrderTx.transactionHash,
+      providerUrl,
+      web3
+    )
+    assert(ipfsDownloadURL, 'Provider getDownloadUrl failed for ipfs dataset')
+    try {
+      await downloadFile(ipfsDownloadURL)
+    } catch (e) {
+      assert.fail(`Download ipfs dataset failed ${e}`)
+    }
 
     const onchainDownloadURL = await ProviderInstance.getDownloadUrl(
       resolvedOnchainAssetDdo.id,
