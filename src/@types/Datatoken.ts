@@ -39,6 +39,6 @@ export interface OrderParams {
 export interface DispenserParams {
   maxTokens: string
   maxBalance: string
-  withMint?: boolean // true if we want to allow the dispenser to be a minter
+  withMint?: boolean // true if we want to allow the dispenser to be a minter, default true
   allowedSwapper?: string // only account that can ask tokens. set address(0) if not required
 }

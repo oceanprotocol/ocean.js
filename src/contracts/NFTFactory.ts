@@ -594,7 +594,7 @@ export class NftFactory extends SmartContractWithAddress {
 
   private getFreCreationParams(freParams: FreCreationParams): any {
     if (!freParams.allowedConsumer) freParams.allowedConsumer = ZERO_ADDRESS
-    const withMint = freParams.withMint ? 1 : 0
+    const withMint = freParams.withMint === false ? 0 : 1
 
     return {
       fixedPriceAddress: freParams.fixedRateAddress,
