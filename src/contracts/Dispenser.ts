@@ -17,13 +17,19 @@ export class Dispenser extends SmartContractWithAddress {
    * @return {Promise<FixedPricedExchange>} Exchange details
    */
   public async status(dtAdress: string): Promise<DispenserToken> {
-    const status: DispenserToken = await this.contract.status(dtAdress)
-    if (!status) {
+    const status2: DispenserToken = await this.contract.status(dtAdress)
+    if (!status2) {
       throw new Error(`Np dispenser found for the given datatoken address`)
     }
-    status.maxTokens = await this.unitsToAmount(null, status.maxTokens, 18)
-    status.maxBalance = await this.unitsToAmount(null, status.maxBalance, 18)
-    status.balance = await this.unitsToAmount(null, status.balance, 18)
+    const status = {
+      active: status2[0],
+      owner: status2[1],
+      isMinter: status2[2],
+      maxTokens: await this.unitsToAmount(null, status2[3], 18),
+      maxBalance: await this.unitsToAmount(null, status2[4], 18),
+      balance: await this.unitsToAmount(null, status2[5], 18),
+      allowedSwapper: status2[6]
+    }
     return status
   }
 
