@@ -70,7 +70,7 @@ export class Nft extends SmartContract {
     )
     if (estimateGas) return <G extends false ? string : BigNumber>estGas
 
-    const trxReceipt = await sendTx(
+    const tx = await sendTx(
       estGas,
       this.signer,
       this.config?.gasFeeMultiplier,
@@ -84,8 +84,10 @@ export class Nft extends SmartContract {
       ],
       []
     )
+    const trxReceipt = await tx.wait()
+    // console.log('trxReceipt =', trxReceipt)
     const event = getEventFromTx(trxReceipt, 'TokenCreated')
-    return event.args[0]
+    return event?.args[0]
   }
 
   /**
@@ -720,8 +722,8 @@ export class Nft extends SmartContract {
 
     const nftContract = this.getContract(nftAddress)
 
-    const keyHash = ethers.utils.keccak256(key)
-    const valueHex = ethers.utils.hexlify(value)
+    const keyHash = ethers.utils.keccak256(ethers.utils.toUtf8Bytes(key))
+    const valueHex = ethers.utils.hexlify(ethers.utils.toUtf8Bytes(value))
 
     const estGas = await nftContract.estimateGas.setNewData(keyHash, valueHex)
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
@@ -744,10 +746,9 @@ export class Nft extends SmartContract {
    */
   public async getData(nftAddress: string, key: string): Promise<string> {
     const nftContract = this.getContract(nftAddress)
-    const keyHash = ethers.utils.keccak256(key)
+    const keyHash = ethers.utils.keccak256(ethers.utils.toUtf8Bytes(key))
     const data = await nftContract.getData(keyHash)
-    return data
-    // return data ? this.web3.utils.hexToAscii(data) : null
+    return data ? ethers.utils.toUtf8String(data) : null
   }
 
   /** Gets data at a given `key`

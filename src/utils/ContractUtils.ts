@@ -65,7 +65,7 @@ export async function amountToUnits(
 }
 
 export function getEventFromTx(txReceipt, eventName) {
-  return txReceipt.events.filter((log) => {
+  return txReceipt?.events?.filter((log) => {
     return log.event === eventName
   })[0]
 }
