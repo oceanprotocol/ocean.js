@@ -11,7 +11,8 @@ import {
   DispenserParams,
   ZERO_ADDRESS,
   signHash,
-  getEventFromTx
+  getEventFromTx,
+  amountToUnits
 } from '../../src'
 import { ProviderFees, FreCreationParams, FreOrderParams } from '../../src/@types'
 
@@ -51,7 +52,6 @@ describe('Datatoken', () => {
     config = await getTestConfig(nftOwner as Signer)
     addresses = await getAddresses()
 
-    console.log('addresses', addresses)
     freParams = {
       fixedRateAddress: addresses.FixedPrice,
       baseTokenAddress: addresses.MockDAI,
@@ -59,8 +59,8 @@ describe('Datatoken', () => {
       marketFeeCollector: await nftOwner.getAddress(),
       baseTokenDecimals: 18,
       datatokenDecimals: 18,
-      fixedRate: '1',
-      marketFee: '0'
+      fixedRate: await amountToUnits(nftOwner, null, '1', 18),
+      marketFee: await amountToUnits(nftOwner, null, '0.01', 18)
     }
   })
 
@@ -90,7 +90,6 @@ describe('Datatoken', () => {
       'ERC20B1',
       'ERC20DT1Symbol'
     )
-    console.log('datatokenAddress', datatokenAddress)
     assert(datatokenAddress)
   })
 
@@ -185,7 +184,7 @@ describe('Datatoken', () => {
       (await datatoken.getPermissions(datatokenAddress, await nftOwner.getAddress()))
         .minter === true
     )
-    const tx = await datatoken.mint(
+    await datatoken.mint(
       datatokenAddress,
       await nftOwner.getAddress(),
       '10',
@@ -206,19 +205,23 @@ describe('Datatoken', () => {
     const trxReceipt = await freTx.wait()
     const freCreatedEvent = getEventFromTx(trxReceipt, 'NewFixedRate')
 
-    console.log('freCreatedEvent', freCreatedEvent)
     assert(freCreatedEvent !== null)
 
     // fixedRateAddress = freCreatedEvent.args.ad
     exchangeId = freCreatedEvent.args.exchangeId
   })
 
-  /*
-    
   it('#createFixedRate - should FAIL create FRE if NOT DatatokenDeployer', async () => {
-    assert((await nftDatatoken.isDatatokenDeployer(nftAddress, user3)) === false)
+    assert(
+      (await nftDatatoken.isDatatokenDeployer(nftAddress, await user3.getAddress())) ===
+        false
+    )
     try {
-      await datatoken.createFixedRate(datatokenAddress, user3, freParams)
+      await datatoken.createFixedRate(
+        datatokenAddress,
+        await user3.getAddress(),
+        freParams
+      )
       assert(false)
     } catch (e) {
       assert(e.message === 'User is not Datatoken Deployer')
@@ -227,30 +230,33 @@ describe('Datatoken', () => {
 
   it('#createDispenser - method creates a dispenser for the ERC20 Datatoken', async () => {
     const dispenserParams: DispenserParams = {
-      maxTokens: '10',
-      maxBalance: '100'
+      maxTokens: await amountToUnits(nftOwner, null, '10', 18),
+      maxBalance: await amountToUnits(nftOwner, null, '100', 18)
     }
 
     const dispenser = await datatoken.createDispenser(
       datatokenAddress,
-      nftOwner,
-      contracts.dispenserAddress,
+      await nftOwner.getAddress(),
+      addresses.Dispenser,
       dispenserParams
     )
-    assert(dispenser !== null)
+    assert(dispenser)
   })
 
   it('#createDispenser - should FAIL to create a Dispenser if not Datatoken Deployer', async () => {
     const dispenserParams: DispenserParams = {
-      maxTokens: '10',
-      maxBalance: '100'
+      maxTokens: await amountToUnits(nftOwner, null, '10', 18),
+      maxBalance: await amountToUnits(nftOwner, null, '100', 18)
     }
-    assert((await nftDatatoken.isDatatokenDeployer(nftAddress, user3)) === false)
+    assert(
+      (await nftDatatoken.isDatatokenDeployer(nftAddress, await user3.getAddress())) ===
+        false
+    )
     try {
       await datatoken.createDispenser(
         datatokenAddress,
-        user2,
-        contracts.dispenserAddress,
+        await user2.getAddress(),
+        addresses.Dispenser,
         dispenserParams
       )
       assert(false)
@@ -260,56 +266,106 @@ describe('Datatoken', () => {
   })
 
   it('#removeMinter - should FAIL to remove user1 as minter, if caller is NOT DatatokenDeployer', async () => {
-    assert((await nftDatatoken.isDatatokenDeployer(nftAddress, user2)) === false)
-    assert((await datatoken.getPermissions(datatokenAddress, user1)).minter === true)
-
-    try {
-      await datatoken.removeMinter(datatokenAddress, user2, user1)
-      assert(false)
-    } catch (e) {
-      assert(e.message === 'Caller is not DatatokenDeployer')
-    }
-    assert((await datatoken.getPermissions(datatokenAddress, user1)).minter === true)
-  })
-
-  it('#removeMinter - should remove user1 as minter, if nftDatatoken has DatatokenDeployer permission', async () => {
-    assert((await nftDatatoken.isDatatokenDeployer(nftAddress, nftOwner)) === true)
-    assert((await datatoken.getPermissions(datatokenAddress, user1)).minter === true)
-
-    await datatoken.removeMinter(datatokenAddress, nftOwner, user1)
-
-    assert((await datatoken.getPermissions(datatokenAddress, user1)).minter === false)
-  })
-
-  it('#addPaymentManager - should FAIL TO add user2 as paymentManager, if caller is NOT DatatokenDeployer', async () => {
-    assert((await nftDatatoken.isDatatokenDeployer(nftAddress, user1)) === false)
     assert(
-      (await datatoken.getPermissions(datatokenAddress, user2)).paymentManager === false
+      (await nftDatatoken.isDatatokenDeployer(nftAddress, await user2.getAddress())) ===
+        false
+    )
+    assert(
+      (await datatoken.getPermissions(datatokenAddress, await user1.getAddress()))
+        .minter === true
     )
 
     try {
-      await datatoken.addPaymentManager(datatokenAddress, user1, user2)
+      await datatoken.removeMinter(
+        datatokenAddress,
+        await user2.getAddress(),
+        await user1.getAddress()
+      )
       assert(false)
     } catch (e) {
       assert(e.message === 'Caller is not DatatokenDeployer')
     }
     assert(
-      (await datatoken.getPermissions(datatokenAddress, user2)).paymentManager === false
+      (await datatoken.getPermissions(datatokenAddress, await user1.getAddress()))
+        .minter === true
+    )
+  })
+
+  it('#removeMinter - should remove user1 as minter, if nftDatatoken has DatatokenDeployer permission', async () => {
+    assert(
+      (await nftDatatoken.isDatatokenDeployer(
+        nftAddress,
+        await nftOwner.getAddress()
+      )) === true
+    )
+    assert(
+      (await datatoken.getPermissions(datatokenAddress, await user1.getAddress()))
+        .minter === true
+    )
+
+    await datatoken.removeMinter(
+      datatokenAddress,
+      await nftOwner.getAddress(),
+      await user1.getAddress()
+    )
+
+    assert(
+      (await datatoken.getPermissions(datatokenAddress, await user1.getAddress()))
+        .minter === false
+    )
+  })
+
+  it('#addPaymentManager - should FAIL TO add user2 as paymentManager, if caller is NOT DatatokenDeployer', async () => {
+    assert(
+      (await nftDatatoken.isDatatokenDeployer(nftAddress, await user2.getAddress())) ===
+        false
+    )
+    assert(
+      (await datatoken.getPermissions(datatokenAddress, await user3.getAddress()))
+        .paymentManager === false
+    )
+
+    try {
+      await datatoken.addPaymentManager(
+        datatokenAddress,
+        await user2.getAddress(),
+        await user3.getAddress()
+      )
+      assert(false)
+    } catch (e) {
+      assert(e.message === 'Caller is not DatatokenDeployer')
+    }
+    assert(
+      (await datatoken.getPermissions(datatokenAddress, await user3.getAddress()))
+        .paymentManager === false
     )
   })
 
   it('#addPaymentManager - should add user2 as paymentManager, if caller has DatatokenDeployer permission', async () => {
-    assert((await nftDatatoken.isDatatokenDeployer(nftAddress, nftOwner)) === true)
     assert(
-      (await datatoken.getPermissions(datatokenAddress, user2)).paymentManager === false
+      (await nftDatatoken.isDatatokenDeployer(
+        nftAddress,
+        await nftOwner.getAddress()
+      )) === true
+    )
+    assert(
+      (await datatoken.getPermissions(datatokenAddress, await user2.getAddress()))
+        .paymentManager === false
     )
 
-    await datatoken.addPaymentManager(datatokenAddress, nftOwner, user2)
+    await datatoken.addPaymentManager(
+      datatokenAddress,
+      await nftOwner.getAddress(),
+      await user2.getAddress()
+    )
 
     assert(
-      (await datatoken.getPermissions(datatokenAddress, user2)).paymentManager === true
+      (await datatoken.getPermissions(datatokenAddress, await user2.getAddress()))
+        .paymentManager === true
     )
   })
+
+  /*
 
   it('#removePaymentManager - should FAIL TO remove user2 as paymentManager, if nftDatatoken has DatatokenDeployer permission', async () => {
     assert((await nftDatatoken.isDatatokenDeployer(nftAddress, user1)) === false)
