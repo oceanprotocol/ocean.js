@@ -29,7 +29,7 @@ export class VeAllocate extends SmartContractWithAddress {
 
     // Invoke function of the contract
     const trxReceipt = await sendTx(
-      estGas,
+      estGas.add(20000),
       this.signer,
       this.config?.gasFeeMultiplier,
       this.contract.setAllocation,
@@ -63,7 +63,7 @@ export class VeAllocate extends SmartContractWithAddress {
 
     // Invoke function of the contract
     const trxReceipt = await sendTx(
-      estGas,
+      estGas.add(20000),
       this.signer,
       this.config?.gasFeeMultiplier,
       this.contract.setBatchAllocation,

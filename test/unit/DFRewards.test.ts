@@ -1,40 +1,37 @@
-/*
 import { assert } from 'chai'
+import { getTestConfig, provider, getAddresses } from '../config'
 import { ethers, Signer } from 'ethers'
-import { getTestConfig, getAddresses, provider } from '../config'
+
 import {
   Config,
   approve,
   DfRewards,
   DfStrategyV1,
   sendTx,
-  calculateEstimatedGas
+  amountToUnits,
+  unitsToAmount
 } from '../../src'
 
 describe('veOcean tests', async () => {
   let config: Config
   let addresses: any
-  let nftFactory
   let dfRewards: DfRewards
   let dfStrategy: DfStrategyV1
-  let ownerAccount: string
-  let Alice: string
-  let Bob: string
-  let nft1, nft2, nft3
+  let ownerAccount: Signer
+  let Alice: Signer
+  let Bob: Signer
   let tokenContract
-  let chainId
 
   before(async () => {
-    config = await getTestConfig(web3)
+    ownerAccount = (await provider.getSigner(0)) as Signer
+    Alice = (await provider.getSigner(1)) as Signer
+    Bob = (await provider.getSigner(2)) as Signer
+    config = await getTestConfig(ownerAccount as Signer)
+    addresses = await getAddresses()
   })
 
   it('initialize accounts', async () => {
     addresses = getAddresses()
-    const accounts = await web3.eth.getAccounts()
-    chainId = await web3.eth.getChainId()
-    ownerAccount = accounts[0]
-    Alice = accounts[1]
-    Bob = accounts[2]
     const minAbi = [
       {
         constant: false,
@@ -57,79 +54,99 @@ describe('veOcean tests', async () => {
         stateMutability: 'view',
         type: 'function'
       }
-    ] as AbiItem[]
-    tokenContract = new web3.eth.Contract(minAbi, addresses.Ocean)
-    const estGas = await calculateEstimatedGas(
-      ownerAccount,
-      tokenContract.methods.mint,
-      ownerAccount,
-      web3.utils.toWei('10000')
+    ]
+    tokenContract = new ethers.Contract(addresses.Ocean, minAbi, ownerAccount)
+    const estGas = await tokenContract.estimateGas.mint(
+      await ownerAccount.getAddress(),
+      amountToUnits(null, null, '10000', 18)
     )
     // mint some Oceans
     await sendTx(
-      ownerAccount,
       estGas,
-      web3,
-      1,
-      tokenContract.methods.mint,
       ownerAccount,
-      web3.utils.toWei('1000')
+      1,
+      tokenContract.mint,
+      await ownerAccount.getAddress(),
+      amountToUnits(null, null, '1000', 18)
     )
-    dfRewards = new DfRewards(addresses.DFRewards, web3)
-    dfStrategy = new DfStrategyV1(addresses.DFStrategyV1, web3)
+    dfRewards = new DfRewards(addresses.DFRewards, ownerAccount)
+    dfStrategy = new DfStrategyV1(addresses.DFStrategyV1, ownerAccount)
   })
 
   it('Generous owner should allocate some DF Rewards', async () => {
-    const dfOceanBalance = web3.utils.fromWei(
-      await tokenContract.methods.balanceOf(addresses.DFRewards).call()
+    const dfOceanBalance = await unitsToAmount(
+      ownerAccount,
+      addresses.Ocean,
+      await tokenContract.balanceOf(addresses.DFRewards)
     )
     // approve 500 tokens
-    await approve(web3, config, ownerAccount, addresses.Ocean, addresses.DFRewards, '300')
+    await approve(
+      ownerAccount,
+      config,
+      await ownerAccount.getAddress(),
+      addresses.Ocean,
+      addresses.DFRewards,
+      '300'
+    )
     // fund DFRewards
     await dfRewards.allocateRewards(
-      ownerAccount,
-      [Alice, Bob],
+      [await Alice.getAddress(), await Bob.getAddress()],
       ['100', '200'],
       addresses.Ocean
     )
-    const newDfOceanBalance = web3.utils.fromWei(
-      await tokenContract.methods.balanceOf(addresses.DFRewards).call()
+    const newDfOceanBalance = await unitsToAmount(
+      ownerAccount,
+      addresses.Ocean,
+      await tokenContract.balanceOf(addresses.DFRewards)
     )
     const expected = parseInt(dfOceanBalance) + 300
     assert(parseInt(newDfOceanBalance) === expected, 'DFRewards allocate failed')
   })
 
   it('Alice should check for rewards', async () => {
-    const rewards = await dfRewards.getAvailableRewards(Alice, addresses.Ocean)
-    assert(parseInt(rewards) >= 100, 'Alice reward missmatch, got only ' + rewards)
-    const multipleRewards = await dfStrategy.getMultipleAvailableRewards(Alice, [
+    const rewards = await dfRewards.getAvailableRewards(
+      await Alice.getAddress(),
       addresses.Ocean
-    ])
+    )
+    assert(parseInt(rewards) >= 100, 'Alice reward missmatch, got only ' + rewards)
+    const multipleRewards = await dfStrategy.getMultipleAvailableRewards(
+      await Alice.getAddress(),
+      [addresses.Ocean]
+    )
     assert(parseInt(multipleRewards[0]) >= 100, 'Alice reward missmatch')
   })
 
   it('Alice should claim the rewards using DFRewards claim', async () => {
-    const aliceOceanBalance = web3.utils.fromWei(
-      await tokenContract.methods.balanceOf(Alice).call()
+    const aliceOceanBalance = await unitsToAmount(
+      ownerAccount,
+      addresses.Ocean,
+      await tokenContract.balanceOf(await Alice.getAddress())
     )
-    await dfRewards.claimRewards(Alice, Alice, addresses.Ocean)
-    const newAliceOceanBalance = web3.utils.fromWei(
-      await tokenContract.methods.balanceOf(Alice).call()
+    dfRewards = new DfRewards(addresses.DFRewards, Alice)
+    await dfRewards.claimRewards(await Alice.getAddress(), addresses.Ocean)
+    const newAliceOceanBalance = await unitsToAmount(
+      ownerAccount,
+      addresses.Ocean,
+      await tokenContract.balanceOf(await Alice.getAddress())
     )
     const expected = parseInt(aliceOceanBalance) + 100
     assert(parseInt(newAliceOceanBalance) >= expected, 'Alice failed to claim')
   })
 
   it('Bob should claim the rewards using DFStrategy claim', async () => {
-    const bobOceanBalance = web3.utils.fromWei(
-      await tokenContract.methods.balanceOf(Bob).call()
+    dfRewards = new DfRewards(addresses.DFRewards, Bob)
+    const bobOceanBalance = await unitsToAmount(
+      ownerAccount,
+      addresses.Ocean,
+      await tokenContract.balanceOf(await Bob.getAddress())
     )
-    await dfStrategy.claimMultipleRewards(Bob, Bob, [addresses.Ocean])
-    const newBobOceanBalance = web3.utils.fromWei(
-      await tokenContract.methods.balanceOf(Bob).call()
+    await dfStrategy.claimMultipleRewards(await Bob.getAddress(), [addresses.Ocean])
+    const newBobOceanBalance = await unitsToAmount(
+      ownerAccount,
+      addresses.Ocean,
+      await tokenContract.balanceOf(await Bob.getAddress())
     )
     const expected = parseInt(bobOceanBalance) + 200
     assert(parseInt(newBobOceanBalance) >= expected, 'Bob failed to claim')
   })
 })
-*/
