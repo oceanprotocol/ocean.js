@@ -320,7 +320,6 @@ export class FixedRateExchange extends SmartContractWithAddress {
       ),
       await this.amountToUnits(null, consumeMarketFee, 18)
     )
-
     const priceAndFees = {
       baseTokenAmount: await this.unitsToAmount(
         fixedRateExchange.baseToken,
@@ -329,7 +328,7 @@ export class FixedRateExchange extends SmartContractWithAddress {
       ),
       marketFeeAmount: await this.unitsToAmount(
         fixedRateExchange.baseToken,
-        outDT.marketFeeAmount,
+        outDT.publishMarketFeeAmount,
         +fixedRateExchange.btDecimals
       ),
       oceanFeeAmount: await this.unitsToAmount(
@@ -374,31 +373,39 @@ export class FixedRateExchange extends SmartContractWithAddress {
    * @return {Promise<FixedPricedExchange>} Exchange details
    */
   public async getExchange(exchangeId: string): Promise<FixedPriceExchange> {
-    const exchange: FixedPriceExchange = await this.contract.getExchange(exchangeId)
-    exchange.dtDecimals = exchange.dtDecimals.toString()
-    exchange.btDecimals = exchange.btDecimals.toString()
-    exchange.dtBalance = await this.unitsToAmount(
-      exchange.datatoken,
-      exchange.dtBalance,
-      +exchange.dtDecimals
-    )
-    exchange.btBalance = await this.unitsToAmount(
-      exchange.baseToken,
-      exchange.btBalance,
-      +exchange.btDecimals
-    )
-    exchange.dtSupply = await this.unitsToAmount(
-      exchange.datatoken,
-      exchange.dtSupply,
-      +exchange.dtDecimals
-    )
-    exchange.btSupply = await this.unitsToAmount(
-      exchange.baseToken,
-      exchange.btSupply,
-      +exchange.btDecimals
-    )
-    exchange.fixedRate = await this.unitsToAmount(null, exchange.fixedRate, 18)
-    exchange.exchangeId = exchangeId
+    const result: FixedPriceExchange = await this.contract.getExchange(exchangeId)
+    const exchange: FixedPriceExchange = {
+      active: result.active,
+      datatoken: result.datatoken,
+      baseToken: result.baseToken,
+      withMint: result.withMint,
+      exchangeOwner: result.exchangeOwner,
+      allowedSwapper: result.allowedSwapper,
+      dtDecimals: result.dtDecimals.toString(),
+      btDecimals: result.btDecimals.toString(),
+      dtBalance: await this.unitsToAmount(
+        result.datatoken,
+        result.dtBalance,
+        +result.dtDecimals
+      ),
+      btBalance: await this.unitsToAmount(
+        result.baseToken,
+        result.btBalance,
+        +result.btDecimals
+      ),
+      dtSupply: await this.unitsToAmount(
+        result.datatoken,
+        result.dtSupply,
+        +result.dtDecimals
+      ),
+      btSupply: await this.unitsToAmount(
+        result.baseToken,
+        result.btSupply,
+        +result.btDecimals
+      ),
+      fixedRate: await this.unitsToAmount(null, result.fixedRate, 18),
+      exchangeId
+    }
     return exchange
   }
 
@@ -408,23 +415,25 @@ export class FixedRateExchange extends SmartContractWithAddress {
    * @return {Promise<FixedPricedExchange>} Exchange details
    */
   public async getFeesInfo(exchangeId: string): Promise<FeesInfo> {
-    const feesInfo: FeesInfo = await this.contract.getFeesInfo(exchangeId)
-    feesInfo.opcFee = await this.unitsToAmount(null, feesInfo.opcFee.toString(), 18)
-    feesInfo.marketFee = await this.unitsToAmount(null, feesInfo.marketFee.toString(), 18)
-
+    const result: FeesInfo = await this.contract.getFeesInfo(exchangeId)
     const exchange = await this.getExchange(exchangeId)
-    feesInfo.marketFeeAvailable = await this.unitsToAmount(
-      exchange.baseToken,
-      feesInfo.marketFeeAvailable,
-      +exchange.btDecimals
-    )
-    feesInfo.oceanFeeAvailable = await this.unitsToAmount(
-      exchange.baseToken,
-      feesInfo.oceanFeeAvailable,
-      +exchange.btDecimals
-    )
+    const feesInfo: FeesInfo = {
+      opcFee: await this.unitsToAmount(null, result.opcFee.toString(), 18),
+      marketFee: await this.unitsToAmount(null, result.marketFee.toString(), 18),
+      marketFeeCollector: result.marketFeeCollector,
+      marketFeeAvailable: await this.unitsToAmount(
+        exchange.baseToken,
+        result.marketFeeAvailable,
+        +exchange.btDecimals
+      ),
+      oceanFeeAvailable: await this.unitsToAmount(
+        exchange.baseToken,
+        result.oceanFeeAvailable,
+        +exchange.btDecimals
+      ),
 
-    feesInfo.exchangeId = exchangeId
+      exchangeId
+    }
     return feesInfo
   }
 
