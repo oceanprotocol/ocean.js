@@ -10,7 +10,8 @@ import {
   OrderParams,
   DispenserParams,
   ZERO_ADDRESS,
-  signHash
+  signHash,
+  getEventFromTx
 } from '../../src'
 import { ProviderFees, FreCreationParams, FreOrderParams } from '../../src/@types'
 
@@ -49,6 +50,18 @@ describe('Datatoken', () => {
 
     config = await getTestConfig(nftOwner as Signer)
     addresses = await getAddresses()
+
+    console.log('addresses', addresses)
+    freParams = {
+      fixedRateAddress: addresses.FixedPrice,
+      baseTokenAddress: addresses.MockDAI,
+      owner: await nftOwner.getAddress(),
+      marketFeeCollector: await nftOwner.getAddress(),
+      baseTokenDecimals: 18,
+      datatokenDecimals: 18,
+      fixedRate: '1',
+      marketFee: '0'
+    }
   })
 
   it('should initialize NFTFactory instance and create a new NFT', async () => {
@@ -172,24 +185,36 @@ describe('Datatoken', () => {
       (await datatoken.getPermissions(datatokenAddress, await nftOwner.getAddress()))
         .minter === true
     )
-    await datatoken.mint(
+    const tx = await datatoken.mint(
       datatokenAddress,
       await nftOwner.getAddress(),
       '10',
       await user1.getAddress()
     )
 
-    assert((await datatoken.balance(datatokenAddress, await user1.getAddress())) === '10')
+    assert(
+      (await datatoken.balance(datatokenAddress, await user1.getAddress())) === '10.0'
+    )
+  })
+
+  it('#createFixedRate - should create FRE for the ERC20 Datatoken', async () => {
+    const freTx = await datatoken.createFixedRate(
+      datatokenAddress,
+      await nftOwner.getAddress(),
+      freParams
+    )
+    const trxReceipt = await freTx.wait()
+    const freCreatedEvent = getEventFromTx(trxReceipt, 'NewFixedRate')
+
+    console.log('freCreatedEvent', freCreatedEvent)
+    assert(freCreatedEvent !== null)
+
+    // fixedRateAddress = freCreatedEvent.args.ad
+    exchangeId = freCreatedEvent.args.exchangeId
   })
 
   /*
-  it('#createFixedRate - should create FRE for the ERC20 Datatoken', async () => {
-    const fre = await datatoken.createFixedRate(datatokenAddress, nftOwner, freParams)
-    assert(fre !== null)
-    fixedRateAddress = fre.events.NewFixedRate.address
-    exchangeId = fre.events.NewFixedRate.returnValues[0]
-  })
-
+    
   it('#createFixedRate - should FAIL create FRE if NOT DatatokenDeployer', async () => {
     assert((await nftDatatoken.isDatatokenDeployer(nftAddress, user3)) === false)
     try {
