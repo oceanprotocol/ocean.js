@@ -674,7 +674,7 @@ describe('NFT', () => {
   })
 
   it('#setData - should FAIL to set a value into 725Y standard, if Caller has NOT store updater permission', async () => {
-    const key = 'KEY'
+    const key = '0x1234'
     const data = 'NewData'
     assert(
       (await nftDatatoken.getNftPermissions(nftAddress, await user1.getAddress()))
@@ -690,7 +690,7 @@ describe('NFT', () => {
   })
 
   it('#setData - should set a value into 725Y standard, if Caller has store updater permission', async () => {
-    const key = 'KEY'
+    const key = '0x1234'
     const data = 'NewData'
 
     // add store updater permission

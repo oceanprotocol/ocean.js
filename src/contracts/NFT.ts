@@ -722,7 +722,7 @@ export class Nft extends SmartContract {
 
     const nftContract = this.getContract(nftAddress)
 
-    const keyHash = ethers.utils.keccak256(ethers.utils.toUtf8Bytes(key))
+    const keyHash = ethers.utils.keccak256(key)
     const valueHex = ethers.utils.hexlify(ethers.utils.toUtf8Bytes(value))
 
     const estGas = await nftContract.estimateGas.setNewData(keyHash, valueHex)
