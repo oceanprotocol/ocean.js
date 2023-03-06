@@ -646,7 +646,7 @@ export class Datatoken extends SmartContract {
 
     const dtContract = this.getContract(dtAddress)
 
-    const valueHex = ethers.utils.hexlify(value)
+    const valueHex = ethers.utils.hexlify(ethers.utils.toUtf8Bytes(value))
 
     const estGas = await dtContract.estimateGas.setData(valueHex)
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
@@ -721,7 +721,7 @@ export class Datatoken extends SmartContract {
    * @param {String} dtAddress Datatoken adress
    * @return {Promise<number>}
    */
-  public async getDecimals(dtAddress: string): Promise<string> {
+  public async getDecimals(dtAddress: string): Promise<number> {
     const dtContract = this.getContract(dtAddress)
     const decimals = await dtContract.decimals()
     return decimals
@@ -842,7 +842,7 @@ export class Datatoken extends SmartContract {
     const returnValues = {
       publishMarketFeeAddress: publishingMarketFee[0],
       publishMarketFeeToken: publishingMarketFee[1],
-      publishMarketFeeAmount: publishingMarketFee[2]
+      publishMarketFeeAmount: publishingMarketFee[2].toString()
     }
     return returnValues
   }

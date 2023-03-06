@@ -746,7 +746,7 @@ export class Nft extends SmartContract {
    */
   public async getData(nftAddress: string, key: string): Promise<string> {
     const nftContract = this.getContract(nftAddress)
-    const keyHash = ethers.utils.keccak256(ethers.utils.toUtf8Bytes(key))
+    const keyHash = ethers.utils.keccak256(key)
     const data = await nftContract.getData(keyHash)
     return data ? ethers.utils.toUtf8String(data) : null
   }

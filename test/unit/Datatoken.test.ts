@@ -1,6 +1,6 @@
-import { assert } from 'chai'
+import { assert, expect } from 'chai'
 import { getTestConfig, provider, getAddresses } from '../config'
-import { ethers, Signer } from 'ethers'
+import { ethers, Signer, providers } from 'ethers'
 import {
   Config,
   NftFactory,
@@ -365,45 +365,68 @@ describe('Datatoken', () => {
     )
   })
 
-  /*
-
   it('#removePaymentManager - should FAIL TO remove user2 as paymentManager, if nftDatatoken has DatatokenDeployer permission', async () => {
-    assert((await nftDatatoken.isDatatokenDeployer(nftAddress, user1)) === false)
     assert(
-      (await datatoken.getPermissions(datatokenAddress, user2)).paymentManager === true
+      (await nftDatatoken.isDatatokenDeployer(nftAddress, await user3.getAddress())) ===
+        false
+    )
+    assert(
+      (await datatoken.getPermissions(datatokenAddress, await user2.getAddress()))
+        .paymentManager === true
     )
     try {
-      await datatoken.removePaymentManager(datatokenAddress, user1, user2)
+      await datatoken.removePaymentManager(
+        datatokenAddress,
+        await user3.getAddress(),
+        await user2.getAddress()
+      )
       assert(false)
     } catch (e) {
       assert(e.message === 'Caller is not DatatokenDeployer')
     }
 
     assert(
-      (await datatoken.getPermissions(datatokenAddress, user2)).paymentManager === true
+      (await datatoken.getPermissions(datatokenAddress, await user2.getAddress()))
+        .paymentManager === true
     )
   })
 
   it('#removePaymentManager - should remove user2 as paymentManager, if Caller has DatatokenDeployer permission', async () => {
-    assert((await nftDatatoken.isDatatokenDeployer(nftAddress, nftOwner)) === true)
     assert(
-      (await datatoken.getPermissions(datatokenAddress, user2)).paymentManager === true
+      (await nftDatatoken.isDatatokenDeployer(
+        nftAddress,
+        await nftOwner.getAddress()
+      )) === true
+    )
+    assert(
+      (await datatoken.getPermissions(datatokenAddress, await user2.getAddress()))
+        .paymentManager === true
     )
 
-    await datatoken.removePaymentManager(datatokenAddress, nftOwner, user2)
+    await datatoken.removePaymentManager(
+      datatokenAddress,
+      await nftOwner.getAddress(),
+      await user2.getAddress()
+    )
 
     assert(
-      (await datatoken.getPermissions(datatokenAddress, user2)).paymentManager === false
+      (await datatoken.getPermissions(datatokenAddress, await user2.getAddress()))
+        .paymentManager === false
     )
   })
 
   it('#setPaymentCollector - should fail to set a new paymentCollector, if NOT PAYMENT Manager, NFT OWNER OR ERC 20 DEPLOYER', async () => {
     assert(
-      (await datatoken.getPermissions(datatokenAddress, user2)).paymentManager === false
+      (await datatoken.getPermissions(datatokenAddress, await user2.getAddress()))
+        .paymentManager === false
     )
 
     try {
-      await datatoken.setPaymentCollector(datatokenAddress, user1, user2)
+      await datatoken.setPaymentCollector(
+        datatokenAddress,
+        await user3.getAddress(),
+        await user2.getAddress()
+      )
       assert(false)
     } catch (e) {
       assert(e.message === 'Caller is not Fee Manager, owner or Datatoken Deployer')
@@ -411,45 +434,79 @@ describe('Datatoken', () => {
   })
 
   it('#setPaymentCollector - should set a new paymentCollector, if PAYMENT MANAGER', async () => {
-    assert((await datatoken.getPaymentCollector(datatokenAddress)) === user1)
-
-    await datatoken.addPaymentManager(datatokenAddress, nftOwner, user1)
-
     assert(
-      (await datatoken.getPermissions(datatokenAddress, user1)).paymentManager === true
+      (await datatoken.getPaymentCollector(datatokenAddress)) ===
+        (await user1.getAddress())
     )
 
-    await datatoken.setPaymentCollector(datatokenAddress, user1, user3)
+    await datatoken.addPaymentManager(
+      datatokenAddress,
+      await nftOwner.getAddress(),
+      await user1.getAddress()
+    )
 
-    assert((await datatoken.getPaymentCollector(datatokenAddress)) === user3)
+    assert(
+      (await datatoken.getPermissions(datatokenAddress, await user1.getAddress()))
+        .paymentManager === true
+    )
+
+    await datatoken.setPaymentCollector(
+      datatokenAddress,
+      await user1.getAddress(),
+      await user3.getAddress()
+    )
+
+    assert(
+      (await datatoken.getPaymentCollector(datatokenAddress)) ===
+        (await user3.getAddress())
+    )
   })
 
   it('#setPaymentCollector - should set a new paymentCollector, if NFT OWNER', async () => {
-    assert((await nftDatatoken.getNftOwner(nftAddress)) === nftOwner)
+    assert((await nftDatatoken.getNftOwner(nftAddress)) === (await nftOwner.getAddress()))
 
-    await datatoken.setPaymentCollector(datatokenAddress, nftOwner, user2)
+    await datatoken.setPaymentCollector(
+      datatokenAddress,
+      await nftOwner.getAddress(),
+      await user2.getAddress()
+    )
 
-    assert((await datatoken.getPaymentCollector(datatokenAddress)) === user2)
+    assert(
+      (await datatoken.getPaymentCollector(datatokenAddress)) ===
+        (await user2.getAddress())
+    )
   })
 
   it('#setPaymentCollector - should set a new paymentCollector, if ERC 20 DEPLOYER', async () => {
     assert(
-      (await nftDatatoken.getNftPermissions(nftAddress, datatokenDeployer))
-        .deployERC20 === true
+      (
+        await nftDatatoken.getNftPermissions(
+          nftAddress,
+          await datatokenDeployer.getAddress()
+        )
+      ).deployERC20 === true
     )
 
-    await datatoken.setPaymentCollector(datatokenAddress, datatokenDeployer, user3)
+    await datatoken.setPaymentCollector(
+      datatokenAddress,
+      await datatokenDeployer.getAddress(),
+      await user3.getAddress()
+    )
 
-    assert((await datatoken.getPaymentCollector(datatokenAddress)) === user3)
+    assert(
+      (await datatoken.getPaymentCollector(datatokenAddress)) ===
+        (await user3.getAddress())
+    )
   })
 
   it('#startOrder- user2 should create an order for DT ', async () => {
     assert(
-      (await datatoken.balance(datatokenAddress, user1)) === '10',
+      (await datatoken.balance(datatokenAddress, await user1.getAddress())) === '10.0',
       'User1 does not hold 10 datatokens'
     )
+
     assert(
-      (await datatoken.balance(datatokenAddress, user2)) === '0',
+      (await datatoken.balance(datatokenAddress, await user2.getAddress())) === '0.0',
       'User2 does not hold 0 datatokens'
     )
 
@@ -457,35 +514,50 @@ describe('Datatoken', () => {
     const providerFeeToken = ZERO_ADDRESS
     const providerFeeAmount = '0'
     const providerValidUntil = '0'
-    const message = web3.utils.soliditySha3(
-      { t: 'bytes', v: web3.utils.toHex(web3.utils.asciiToHex(providerData)) },
-      { t: 'address', v: user3 },
-      { t: 'address', v: providerFeeToken },
-      { t: 'uint256', v: providerFeeAmount },
-      { t: 'uint256', v: providerValidUntil }
+
+    const message = ethers.utils.solidityKeccak256(
+      ['bytes', 'address', 'address', 'uint256', 'uint256'],
+      [
+        ethers.utils.hexlify(ethers.utils.toUtf8Bytes(providerData)),
+        await user3.getAddress(),
+        providerFeeToken,
+        providerFeeAmount,
+        providerValidUntil
+      ]
     )
-    const { v, r, s } = await signHash(web3, message, user3)
+
+    // const { v, r, s } = await signHash(web3, message,user3)
+    const messageHashBytes = ethers.utils.arrayify(message)
+    let signedMessage = await (user3 as providers.JsonRpcSigner)._legacySignMessage(
+      messageHashBytes
+    )
+    signedMessage = signedMessage.substr(2) // remove 0x
+    const r = '0x' + signedMessage.slice(0, 64)
+    const s = '0x' + signedMessage.slice(64, 128)
+    let v = '0x' + signedMessage.slice(128, 130)
+    if (v === '0x00') v = '0x1b'
+    if (v === '0x01') v = '0x1c'
+
     const providerFees: ProviderFees = {
-      providerFeeAddress: user3,
+      providerFeeAddress: await user3.getAddress(),
       providerFeeToken,
       providerFeeAmount,
       v,
       r,
       s,
-      providerData: web3.utils.toHex(web3.utils.asciiToHex(providerData)),
+      providerData: ethers.utils.hexlify(ethers.utils.toUtf8Bytes(providerData)),
       validUntil: providerValidUntil
     }
     const order = await datatoken.startOrder(
       datatokenAddress,
-      user1,
-      user2,
+      await user2.getAddress(),
       1,
       providerFees
     )
     assert(order !== null)
 
     assert(
-      (await datatoken.balance(datatokenAddress, user1)) === '9',
+      (await datatoken.balance(datatokenAddress, await user1.getAddress())) === '9.0',
       'Invalid user balance, DT was not substracted'
     )
     assert(
@@ -502,174 +574,249 @@ describe('Datatoken', () => {
     const providerFeeToken = ZERO_ADDRESS
     const providerFeeAmount = '0'
     const providerValidUntil = '0'
-    const message = web3.utils.soliditySha3(
-      { t: 'bytes', v: web3.utils.toHex(web3.utils.asciiToHex(providerData)) },
-      { t: 'address', v: user3 },
-      { t: 'address', v: providerFeeToken },
-      { t: 'uint256', v: providerFeeAmount },
-      { t: 'uint256', v: providerValidUntil }
+
+    const message = ethers.utils.solidityKeccak256(
+      ['bytes', 'address', 'address', 'uint256', 'uint256'],
+      [
+        ethers.utils.hexlify(ethers.utils.toUtf8Bytes(providerData)),
+        await user3.getAddress(),
+        providerFeeToken,
+        providerFeeAmount,
+        providerValidUntil
+      ]
     )
-    const { v, r, s } = await signHash(web3, message, user3)
+
+    const messageHashBytes = ethers.utils.arrayify(message)
+    let signedMessage = await (user3 as providers.JsonRpcSigner)._legacySignMessage(
+      messageHashBytes
+    )
+    signedMessage = signedMessage.substr(2) // remove 0x
+    const r = '0x' + signedMessage.slice(0, 64)
+    const s = '0x' + signedMessage.slice(64, 128)
+    let v = '0x' + signedMessage.slice(128, 130)
+    if (v === '0x00') v = '0x1b'
+    if (v === '0x01') v = '0x1c'
+
     const providerFees: ProviderFees = {
-      providerFeeAddress: user3,
+      providerFeeAddress: await user3.getAddress(),
       providerFeeToken,
       providerFeeAmount,
       v,
       r,
       s,
-      providerData: web3.utils.toHex(web3.utils.asciiToHex(providerData)),
+      providerData: ethers.utils.hexlify(ethers.utils.toUtf8Bytes(providerData)),
       validUntil: providerValidUntil
     }
+
     const order = await datatoken.startOrder(
       datatokenAddress,
-      user1,
-      user2,
+      await user2.getAddress(),
       1,
       providerFees
     )
-    assert(order.transactionHash, ' Failed to start order')
-    const reusedOrder = await datatoken.reuseOrder(
-      datatokenAddress,
-      user2,
-      order.transactionHash,
-      providerFees
-    )
-    assert(reusedOrder.events.OrderReused.event === 'OrderReused')
-    assert(reusedOrder.events.ProviderFee.event === 'ProviderFee')
+
+    assert(order.blockHash, ' Failed to start order')
+    const tx = await datatoken.reuseOrder(datatokenAddress, order.blockHash, providerFees)
+    const reusedTx = await tx.wait()
+
+    const orderReusedTx = getEventFromTx(reusedTx, 'OrderReused')
+    const providerFeeTx = getEventFromTx(reusedTx, 'ProviderFee')
+
+    expect(orderReusedTx.event === 'OrderReused')
+    expect(providerFeeTx.event === 'ProviderFee')
   })
 
   it('#buyFromDispenserAndOrder- Enterprise method', async () => {
     const providerData = JSON.stringify({ timeout: 0 })
     const providerFeeToken = ZERO_ADDRESS
     const providerFeeAmount = '0'
-    const message = web3.utils.soliditySha3(
-      { t: 'bytes', v: web3.utils.toHex(web3.utils.asciiToHex(providerData)) },
-      { t: 'address', v: user3 },
-      { t: 'address', v: providerFeeToken },
-      { t: 'uint256', v: providerFeeAmount }
-    )
-    const { v, r, s } = await signHash(web3, message, user3)
     const providerValidUntil = '0'
+    const message = ethers.utils.solidityKeccak256(
+      ['bytes', 'address', 'address', 'uint256', 'uint256'],
+      [
+        ethers.utils.hexlify(ethers.utils.toUtf8Bytes(providerData)),
+        await user3.getAddress(),
+        providerFeeToken,
+        providerFeeAmount,
+        providerValidUntil
+      ]
+    )
+    const messageHashBytes = ethers.utils.arrayify(message)
+    let signedMessage = await (user3 as providers.JsonRpcSigner)._legacySignMessage(
+      messageHashBytes
+    )
+    signedMessage = signedMessage.substr(2) // remove 0x
+    const r = '0x' + signedMessage.slice(0, 64)
+    const s = '0x' + signedMessage.slice(64, 128)
+    let v = '0x' + signedMessage.slice(128, 130)
+    if (v === '0x00') v = '0x1b'
+    if (v === '0x01') v = '0x1c'
+
     const providerFees: ProviderFees = {
-      providerFeeAddress: user3,
+      providerFeeAddress: await user3.getAddress(),
       providerFeeToken,
       providerFeeAmount,
       v,
       r,
       s,
-      providerData: web3.utils.toHex(web3.utils.asciiToHex(providerData)),
+      providerData: ethers.utils.hexlify(ethers.utils.toUtf8Bytes(providerData)),
       validUntil: providerValidUntil
     }
+
     const consumeMarketFee = {
       consumeMarketFeeAddress: ZERO_ADDRESS,
       consumeMarketFeeToken: ZERO_ADDRESS,
       consumeMarketFeeAmount: '0'
     }
     const order: OrderParams = {
-      consumer: user1,
+      consumer: await user1.getAddress(),
       serviceIndex: 1,
       _providerFee: providerFees,
       _consumeMarketFee: consumeMarketFee
     }
     const buyFromDispenseTx = await datatoken.buyFromDispenserAndOrder(
       datatokenAddress,
-      nftOwner,
       order,
-      contracts.dispenserAddress
+      addresses.Dispenser
     )
-    assert(buyFromDispenseTx !== null)
+    assert(buyFromDispenseTx)
   })
 
   it('#buyFromFreAndOrder - Enterprise method ', async () => {
     const providerData = JSON.stringify({ timeout: 0 })
     const providerFeeToken = ZERO_ADDRESS
     const providerFeeAmount = '0'
-    const message = web3.utils.soliditySha3(
-      { t: 'bytes', v: web3.utils.toHex(web3.utils.asciiToHex(providerData)) },
-      { t: 'address', v: user3 },
-      { t: 'address', v: providerFeeToken },
-      { t: 'uint256', v: providerFeeAmount }
-    )
-    const { v, r, s } = await signHash(web3, message, user3)
     const providerValidUntil = '0'
+
+    const message = ethers.utils.solidityKeccak256(
+      ['bytes', 'address', 'address', 'uint256', 'uint256'],
+      [
+        ethers.utils.hexlify(ethers.utils.toUtf8Bytes(providerData)),
+        await user3.getAddress(),
+        providerFeeToken,
+        providerFeeAmount,
+        providerValidUntil
+      ]
+    )
+    const messageHashBytes = ethers.utils.arrayify(message)
+    let signedMessage = await (user3 as providers.JsonRpcSigner)._legacySignMessage(
+      messageHashBytes
+    )
+    signedMessage = signedMessage.substr(2) // remove 0x
+    const r = '0x' + signedMessage.slice(0, 64)
+    const s = '0x' + signedMessage.slice(64, 128)
+    let v = '0x' + signedMessage.slice(128, 130)
+    if (v === '0x00') v = '0x1b'
+    if (v === '0x01') v = '0x1c'
+
     const providerFees: ProviderFees = {
-      providerFeeAddress: user1,
+      providerFeeAddress: await user1.getAddress(),
       providerFeeToken,
       providerFeeAmount,
       v,
       r,
       s,
-      providerData: web3.utils.toHex(web3.utils.asciiToHex(providerData)),
+      providerData: ethers.utils.hexlify(ethers.utils.toUtf8Bytes(providerData)),
       validUntil: providerValidUntil
     }
+
     const consumeMarketFee = {
       consumeMarketFeeAddress: ZERO_ADDRESS,
       consumeMarketFeeToken: ZERO_ADDRESS,
       consumeMarketFeeAmount: '0'
     }
     const order: OrderParams = {
-      consumer: user1,
+      consumer: await user1.getAddress(),
       serviceIndex: 1,
       _providerFee: providerFees,
       _consumeMarketFee: consumeMarketFee
     }
 
     const fre: FreOrderParams = {
-      exchangeContract: fixedRateAddress,
+      exchangeContract: addresses.FixedPrice,
       exchangeId,
       maxBaseTokenAmount: '1',
-      baseTokenAddress: contracts.daiAddress,
+      baseTokenAddress: addresses.MockDAI,
       baseTokenDecimals: 18,
       swapMarketFee: '0.1',
       marketFeeAddress: ZERO_ADDRESS
     }
 
-    const buyTx = await datatoken.buyFromFreAndOrder(datatokenAddress, user1, order, fre)
-    assert(buyTx !== null)
+    const buyTx = await datatoken.buyFromFreAndOrder(datatokenAddress, order, fre)
+    assert(buyTx)
   })
 
   it('#cleanPermissions - should FAIL to clean permissions at Datatoken level, if NOT NFT Owner', async () => {
-    assert((await datatoken.getPermissions(datatokenAddress, nftOwner)).minter === true)
-
-    assert((await datatoken.getPaymentCollector(datatokenAddress)) === user3)
+    assert(
+      (await datatoken.getPermissions(datatokenAddress, await nftOwner.getAddress()))
+        .minter === true
+    )
 
     assert(
-      (await datatoken.getPermissions(datatokenAddress, user1)).paymentManager === true
+      (await datatoken.getPaymentCollector(datatokenAddress)) ===
+        (await user3.getAddress())
+    )
+
+    assert(
+      (await datatoken.getPermissions(datatokenAddress, await user1.getAddress()))
+        .paymentManager === true
     )
 
     try {
-      await datatoken.cleanPermissions(datatokenAddress, user2)
+      await datatoken.cleanPermissions(datatokenAddress, await user2.getAddress())
       assert(false)
     } catch (e) {
       assert(e.message === 'Caller is NOT Nft Owner')
     }
 
-    assert((await datatoken.getPaymentCollector(datatokenAddress)) === user3)
-
-    assert((await datatoken.getPermissions(datatokenAddress, nftOwner)).minter === true)
+    assert(
+      (await datatoken.getPaymentCollector(datatokenAddress)) ===
+        (await user3.getAddress())
+    )
 
     assert(
-      (await datatoken.getPermissions(datatokenAddress, user1)).paymentManager === true
+      (await datatoken.getPermissions(datatokenAddress, await nftOwner.getAddress()))
+        .minter === true
+    )
+
+    assert(
+      (await datatoken.getPermissions(datatokenAddress, await user1.getAddress()))
+        .paymentManager === true
     )
   })
 
   it('#cleanPermissions - should clean permissions at Datatoken level', async () => {
-    assert((await datatoken.getPermissions(datatokenAddress, nftOwner)).minter === true)
-
-    assert((await datatoken.getPaymentCollector(datatokenAddress)) === user3)
-
     assert(
-      (await datatoken.getPermissions(datatokenAddress, user1)).paymentManager === true
+      (await datatoken.getPermissions(datatokenAddress, await nftOwner.getAddress()))
+        .minter === true
     )
 
-    await datatoken.cleanPermissions(datatokenAddress, nftOwner)
-
-    assert((await datatoken.getPaymentCollector(datatokenAddress)) === nftOwner)
-
-    assert((await datatoken.getPermissions(datatokenAddress, nftOwner)).minter === false)
+    assert(
+      (await datatoken.getPaymentCollector(datatokenAddress)) ===
+        (await user3.getAddress())
+    )
 
     assert(
-      (await datatoken.getPermissions(datatokenAddress, user1)).paymentManager === false
+      (await datatoken.getPermissions(datatokenAddress, await user1.getAddress()))
+        .paymentManager === true
+    )
+
+    datatoken = new Datatoken(nftOwner, 8996)
+    await datatoken.cleanPermissions(datatokenAddress, await nftOwner.getAddress())
+
+    assert(
+      (await datatoken.getPaymentCollector(datatokenAddress)) ===
+        (await nftOwner.getAddress())
+    )
+
+    assert(
+      (await datatoken.getPermissions(datatokenAddress, await nftOwner.getAddress()))
+        .minter === false
+    )
+
+    assert(
+      (await datatoken.getPermissions(datatokenAddress, await user1.getAddress()))
+        .paymentManager === false
     )
   })
 
@@ -681,9 +828,14 @@ describe('Datatoken', () => {
   it('#setData - should set a value into 725Y standard, if Caller has ERC20Deployer permission', async () => {
     const data = 'SomeData'
 
-    assert((await nftDatatoken.isDatatokenDeployer(nftAddress, nftOwner)) === true)
+    assert(
+      (await nftDatatoken.isDatatokenDeployer(
+        nftAddress,
+        await nftOwner.getAddress()
+      )) === true
+    )
 
-    await datatoken.setData(datatokenAddress, nftOwner, data)
+    await datatoken.setData(datatokenAddress, await nftOwner.getAddress(), data)
 
     assert((await nftDatatoken.getData(nftAddress, datatokenAddress)) === data)
   })
@@ -691,10 +843,13 @@ describe('Datatoken', () => {
   it('#setData - should FAIL to set a value into 725Y standard, if Caller has NOT ERC20Deployer permission', async () => {
     const data = 'NewData'
     const OldData = 'SomeData'
-    assert((await nftDatatoken.isDatatokenDeployer(nftAddress, user1)) === false)
+    assert(
+      (await nftDatatoken.isDatatokenDeployer(nftAddress, await user3.getAddress())) ===
+        false
+    )
 
     try {
-      await datatoken.setData(datatokenAddress, user1, data)
+      await datatoken.setData(datatokenAddress, await user3.getAddress(), data)
       assert(false)
     } catch (e) {
       assert(e.message === 'User is not Datatoken Deployer')
@@ -704,7 +859,7 @@ describe('Datatoken', () => {
 
   it('#getDecimals - should return the number of decimals of the datatoken', async () => {
     const decimals = await datatoken.getDecimals(datatokenAddress)
-    assert(decimals === '18')
+    assert(decimals === 18)
   })
 
   it('#getSymbol - should return the symbbol of the datatoken', async () => {
@@ -718,13 +873,26 @@ describe('Datatoken', () => {
   })
 
   it('#transfer - we can transfer the datatoken', async () => {
-    const balance1before = await datatoken.balance(datatokenAddress, user1)
-    const balance2before = await datatoken.balance(datatokenAddress, user2)
+    datatoken = new Datatoken(user1, 8996)
+    const balance1before = await datatoken.balance(
+      datatokenAddress,
+      await user1.getAddress()
+    )
+    const balance2before = await datatoken.balance(
+      datatokenAddress,
+      await user2.getAddress()
+    )
 
-    await datatoken.transfer(datatokenAddress, user2, '1', user1)
+    await datatoken.transfer(datatokenAddress, await user2.getAddress(), '1')
 
-    const balance1after = await datatoken.balance(datatokenAddress, user1)
-    const balance2after = await datatoken.balance(datatokenAddress, user2)
+    const balance1after = await datatoken.balance(
+      datatokenAddress,
+      await user1.getAddress()
+    )
+    const balance2after = await datatoken.balance(
+      datatokenAddress,
+      await user2.getAddress()
+    )
 
     assert(+balance1after === +balance1before - 1)
     assert(+balance2after === +balance2before + 1)
@@ -733,23 +901,22 @@ describe('Datatoken', () => {
   it('#setPublishingMarketFee - User should not be able to set the Publishing Market Fee', async () => {
     const originalPublishingMarketFee = await datatoken.getPublishingMarketFee(
       datatokenAddress,
-      user1
+      await user1.getAddress()
     )
     try {
       await datatoken.setPublishingMarketFee(
         datatokenAddress,
-        user1,
-        contracts.daiAddress,
-        web3.utils.toWei('10'),
-        user1
+        await user1.getAddress(),
+        addresses.MockDAI,
+        ethers.utils.parseUnits('10').toString(),
+        await user1.getAddress()
       )
     } catch (e) {
-      console.log('Message:', e.message)
       assert(e.message === 'Caller is not the Publishing Market Fee Address')
     }
     const newPublishingMarketFee = await datatoken.getPublishingMarketFee(
       datatokenAddress,
-      user3
+      await user3.getAddress()
     )
 
     assert(
@@ -757,39 +924,45 @@ describe('Datatoken', () => {
         originalPublishingMarketFee.publishMarketFeeAddress
     )
     assert(
-      newPublishingMarketFee.publishMarketFeeAmount ===
-        originalPublishingMarketFee.publishMarketFeeAmount
-    )
-    assert(
       newPublishingMarketFee.publishMarketFeeToken ===
         originalPublishingMarketFee.publishMarketFeeToken
     )
+    assert(
+      newPublishingMarketFee.publishMarketFeeAmount ===
+        originalPublishingMarketFee.publishMarketFeeAmount
+    )
   })
+
   it('#setPublishingMarketFee - Marketplace fee address should be able to set the Publishing Market Fee', async () => {
+    datatoken = new Datatoken(user2, 8996)
+
     const originalPublishingMarketFee = await datatoken.getPublishingMarketFee(
       datatokenAddress,
-      user2
+      await user2.getAddress()
     )
     try {
       await datatoken.setPublishingMarketFee(
         datatokenAddress,
-        user2,
-        contracts.daiAddress,
-        web3.utils.toWei('10'),
-        user2
+        await user2.getAddress(),
+        addresses.MockDAI,
+        ethers.utils.parseUnits('10').toString(),
+        await user2.getAddress()
       )
     } catch (e) {
       console.log('Error:', e)
     }
     const newPublishingMarketFee = await datatoken.getPublishingMarketFee(
       datatokenAddress,
-      user2
+      await user2.getAddress()
     )
 
     assert(newPublishingMarketFee !== originalPublishingMarketFee)
-    assert(newPublishingMarketFee.publishMarketFeeAddress === user2)
-    assert(newPublishingMarketFee.publishMarketFeeAmount === web3.utils.toWei('10'))
-    assert(newPublishingMarketFee.publishMarketFeeToken === contracts.daiAddress)
+    assert(newPublishingMarketFee.publishMarketFeeAddress === (await user2.getAddress()))
+
+    assert(
+      newPublishingMarketFee.publishMarketFeeAmount ===
+        ethers.utils.parseUnits('10').toString()
+    )
+    assert(newPublishingMarketFee.publishMarketFeeToken === addresses.MockDAI)
   })
-  */
 })
