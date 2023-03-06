@@ -389,105 +389,102 @@ describe('NFT', () => {
     }
   })
 
-  // it('#transferNFT - should transfer the NFT and clean all permissions, set new owner as manager', async () => {
-  //   await nftDatatoken.addManager(
-  //     nftAddress,
-  //     await nftOwner.getAddress(),
-  //     await user1.getAddress()
-  //   )
-  //   await nftDatatoken.addDatatokenDeployer(
-  //     nftAddress,
-  //     await user1.getAddress(),
-  //     await user1.getAddress()
-  //   )
-  //   assert(
-  //     (await nftDatatoken.isDatatokenDeployer(nftAddress, await user1.getAddress())) ===
-  //       true
-  //   )
+  it('#transferNFT - should transfer the NFT and clean all permissions, set new owner as manager', async () => {
+    await nftDatatoken.addManager(
+      nftAddress,
+      await nftOwner.getAddress(),
+      await user1.getAddress()
+    )
+    await nftDatatoken.addDatatokenDeployer(
+      nftAddress,
+      await user1.getAddress(),
+      await user1.getAddress()
+    )
+    assert(
+      (await nftDatatoken.isDatatokenDeployer(nftAddress, await user1.getAddress())) ===
+        true
+    )
 
-  //   assert((await nftDatatoken.getNftOwner(nftAddress)) === (await nftOwner.getAddress()))
+    assert((await nftDatatoken.getNftOwner(nftAddress)) === (await nftOwner.getAddress()))
 
-  //   await nftDatatoken.transferNft(
-  //     nftAddress,
-  //     await nftOwner.getAddress(),
-  //     await user1.getAddress(),
-  //     1
-  //   )
-  //   assert((await nftDatatoken.getNftOwner(nftAddress)) === (await user1.getAddress()))
-  //   assert(
-  //     (await nftDatatoken.isDatatokenDeployer(nftAddress, await user1.getAddress())) ===
-  //       true
-  //   )
+    await nftDatatoken.transferNft(
+      nftAddress,
+      await nftOwner.getAddress(),
+      await user1.getAddress(),
+      1
+    )
+    assert((await nftDatatoken.getNftOwner(nftAddress)) === (await user1.getAddress()))
+    assert(
+      (await nftDatatoken.isDatatokenDeployer(nftAddress, await user1.getAddress())) ===
+        true
+    )
 
-  //   assert(
-  //     (await nftDatatoken.isDatatokenDeployer(
-  //       nftAddress,
-  //       await nftOwner.getAddress()
-  //     )) === false
-  //   )
-  //   assert(
-  //     (await nftDatatoken.isDatatokenDeployer(nftAddress, await user2.getAddress())) ===
-  //       false
-  //   )
-  // })
+    assert(
+      (await nftDatatoken.isDatatokenDeployer(
+        nftAddress,
+        await nftOwner.getAddress()
+      )) === false
+    )
+    assert(
+      (await nftDatatoken.isDatatokenDeployer(nftAddress, await user2.getAddress())) ===
+        false
+    )
+  })
 
-  // // Safe transfer test
-  // it('#safeTransferNft - should fail to transfer the NFT and clean all permissions, if NOT NFT Owner', async () => {
-  //   await nftDatatoken.transferNft(
-  //     nftAddress,
-  //     await user1.getAddress(),
-  //     await nftOwner.getAddress(),
-  //     1
-  //   )
-  //   assert((await nftDatatoken.getNftOwner(nftAddress)) === (await nftOwner.getAddress()))
+  // Safe transfer test
+  it('#safeTransferNft - should fail to transfer the NFT and clean all permissions, if NOT NFT Owner', async () => {
+    nftDatatoken = new Nft(user1, 8996)
+    assert((await nftDatatoken.getNftOwner(nftAddress)) === (await user1.getAddress()))
 
-  //   try {
-  //     await nftDatatoken.safeTransferNft(
-  //       nftAddress,
-  //       await nftOwner.getAddress(),
-  //       await user1.getAddress(),
-  //       1
-  //     )
-  //     assert(false)
-  //   } catch (e) {
-  //     assert(e.message === 'Caller is not NFT Owner')
-  //   }
-  // })
+    try {
+      await nftDatatoken.safeTransferNft(
+        nftAddress,
+        await nftOwner.getAddress(),
+        await user1.getAddress(),
+        1
+      )
+      assert(false)
+    } catch (e) {
+      assert(e.message === 'Caller is not NFT Owner')
+    }
+  })
 
-  // it('#safeTransferNft - should transfer the NFT and clean all permissions, set new owner as manager', async () => {
-  //   await nftDatatoken.addManager(
-  //     nftAddress,
-  //     await nftOwner.getAddress(),
-  //     await user2.getAddress()
-  //   )
+  it('#safeTransferNft - should transfer the NFT and clean all permissions, set new owner as manager', async () => {
+    await nftDatatoken.addManager(
+      nftAddress,
+      await user1.getAddress(),
+      await user2.getAddress()
+    )
 
-  //   await nftDatatoken.addDatatokenDeployer(
-  //     nftAddress,
-  //     await user2.getAddress(),
-  //     await nftOwner.getAddress()
-  //   )
+    await nftDatatoken.addDatatokenDeployer(
+      nftAddress,
+      await user1.getAddress(),
+      await nftOwner.getAddress()
+    )
 
-  //   assert(
-  //     (await nftDatatoken.isDatatokenDeployer(
-  //       nftAddress,
-  //       await nftOwner.getAddress()
-  //     )) === true
-  //   )
+    assert(
+      (await nftDatatoken.isDatatokenDeployer(
+        nftAddress,
+        await nftOwner.getAddress()
+      )) === true
+    )
 
-  //   assert((await nftDatatoken.getNftOwner(nftAddress)) === (await user1.getAddress()))
+    assert((await nftDatatoken.getNftOwner(nftAddress)) === (await user1.getAddress()))
 
-  //   await nftDatatoken.safeTransferNft(
-  //     nftAddress,
-  //     await user1.getAddress(),
-  //     await nftOwner.getAddress(),
-  //     1
-  //   )
+    await nftDatatoken.safeTransferNft(
+      nftAddress,
+      await user1.getAddress(),
+      await nftOwner.getAddress(),
+      1
+    )
 
-  //   assert((await nftDatatoken.getNftOwner(nftAddress)) === (await nftOwner.getAddress()))
-  // })
+    assert((await nftDatatoken.getNftOwner(nftAddress)) === (await nftOwner.getAddress()))
+  })
 
   // Clear permisions
   it('#cleanPermissions - should fail to cleanPermissions if NOT NFTOwner', async () => {
+    nftDatatoken = new Nft(nftOwner, 8996)
+
     try {
       await nftDatatoken.cleanPermissions(nftAddress, await user2.getAddress())
       assert(false)
