@@ -1,5 +1,5 @@
-import Web3 from 'web3'
 import fetch from 'cross-fetch'
+import { ethers, Signer, providers } from 'ethers'
 import { LoggerInstance } from '../utils'
 import {
   Arweave,
@@ -98,21 +98,25 @@ export class Provider {
     }
   }
 
+  // aici trebuie modificat
   public async signProviderRequest(
-    web3: Web3,
-    accountId: string,
+    signer: Signer,
     message: string,
     password?: string
   ): Promise<string> {
-    const consumerMessage = web3.utils.soliditySha3({
-      t: 'bytes',
-      v: web3.utils.utf8ToHex(message)
-    })
-    const isMetaMask =
-      web3 && web3.currentProvider && (web3.currentProvider as any).isMetaMask
-    if (isMetaMask)
-      return await web3.eth.personal.sign(consumerMessage, accountId, password)
-    else return await web3.eth.sign(consumerMessage, accountId)
+    const consumerMessage = ethers.utils.solidityKeccak256(
+      ['bytes'],
+      [ethers.utils.hexlify(ethers.utils.toUtf8Bytes(message))]
+    )
+
+    // const isMetaMask =
+    //   web3 && web3.currentProvider && (web3.currentProvider as any).isMetaMask
+
+    // return await web3.eth.personal.sign(consumerMessage, accountId, password)
+    // if (isMetaMask)
+    //   (signer as providers.JsonRpcSigner)._legacySignMessage(consumerMessage)
+    // else
+    return await (signer as providers.JsonRpcSigner)._legacySignMessage(consumerMessage)
   }
 
   /** Encrypt data using the Provider's own symmetric key
@@ -371,7 +375,7 @@ export class Provider {
    * @param {string} serviceId
    * @param {number} fileIndex
    * @param {string} providerUri
-   * @param {Web3} web3
+   * @param {Signer} signer
    * @param {UserCustomParameters} userCustomParameters
    * @return {Promise<string>}
    */
@@ -382,7 +386,7 @@ export class Provider {
     fileIndex: number,
     transferTxId: string,
     providerUri: string,
-    web3: Web3,
+    signer: Signer,
     userCustomParameters?: UserCustomParameters
   ): Promise<any> {
     const providerEndpoints = await this.getEndpoints(providerUri)
@@ -395,7 +399,7 @@ export class Provider {
       : null
     if (!downloadUrl) return null
     const nonce = Date.now()
-    const signature = await this.signProviderRequest(web3, accountId, did + nonce)
+    const signature = await this.signProviderRequest(signer, did + nonce)
     let consumeUrl = downloadUrl
     consumeUrl += `?fileIndex=${fileIndex}`
     consumeUrl += `&documentId=${did}`
@@ -409,20 +413,22 @@ export class Provider {
     return consumeUrl
   }
 
+  // need to update
+  // this as well
   /** Instruct the provider to start a compute job
    * @param {string} did
    * @param {string} consumerAddress
    * @param {string} computeEnv
    * @param {ComputeAlgorithm} algorithm
    * @param {string} providerUri
-   * @param {Web3} web3
+   * @param {Signer} signer
    * @param {AbortSignal} signal abort signal
    * @param {ComputeOutput} output
    * @return {Promise<ComputeJob | ComputeJob[]>}
    */
   public async computeStart(
     providerUri: string,
-    web3: Web3,
+    signer: Signer,
     consumerAddress: string,
     computeEnv: string,
     dataset: ComputeAsset,
@@ -444,11 +450,7 @@ export class Provider {
     let signatureMessage = consumerAddress
     signatureMessage += dataset.documentId
     signatureMessage += nonce
-    const signature = await this.signProviderRequest(
-      web3,
-      consumerAddress,
-      signatureMessage
-    )
+    const signature = await this.signProviderRequest(signer, signatureMessage)
     const payload = Object()
     payload.consumerAddress = consumerAddress
     payload.signature = signature
@@ -487,12 +489,13 @@ export class Provider {
     }
   }
 
+  // this as well
   /** Instruct the provider to Stop the execution of a to stop a compute job.
    * @param {string} did
    * @param {string} consumerAddress
    * @param {string} jobId
    * @param {string} providerUri
-   * @param {Web3} web3
+   * @param {Signer} signer
    * @param {AbortSignal} signal abort signal
    * @return {Promise<ComputeJob | ComputeJob[]>}
    */
@@ -501,7 +504,7 @@ export class Provider {
     consumerAddress: string,
     jobId: string,
     providerUri: string,
-    web3: Web3,
+    signer: Signer,
     signal?: AbortSignal
   ): Promise<ComputeJob | ComputeJob[]> {
     const providerEndpoints = await this.getEndpoints(providerUri)
@@ -525,11 +528,7 @@ export class Provider {
     signatureMessage += jobId || ''
     signatureMessage += (did && `${this.noZeroX(did)}`) || ''
     signatureMessage += nonce
-    const signature = await this.signProviderRequest(
-      web3,
-      consumerAddress,
-      signatureMessage
-    )
+    const signature = await this.signProviderRequest(signer, signatureMessage)
     const payload = Object()
     payload.signature = signature
     payload.documentId = this.noZeroX(did)
@@ -614,7 +613,7 @@ export class Provider {
 
   /** Get compute result url
    * @param {string} providerUri The URI of the provider we want to query
-   * @param {Web3} web3 Web3 instance
+   * @param {Signer} signer Web3 instance
    * @param {string} consumerAddress The consumer ethereum address
    * @param {string} jobId The ID of a compute job.
    * @param {number} index Result index
@@ -622,7 +621,7 @@ export class Provider {
    */
   public async getComputeResultUrl(
     providerUri: string,
-    web3: Web3,
+    signer: Signer,
     consumerAddress: string,
     jobId: string,
     index: number
@@ -641,11 +640,7 @@ export class Provider {
     signatureMessage += jobId
     signatureMessage += index.toString()
     signatureMessage += nonce
-    const signature = await this.signProviderRequest(
-      web3,
-      consumerAddress,
-      signatureMessage
-    )
+    const signature = await this.signProviderRequest(signer, signatureMessage)
     if (!computeResultUrl) return null
     let resultUrl = computeResultUrl
     resultUrl += `?consumerAddress=${consumerAddress}`
@@ -656,6 +651,7 @@ export class Provider {
     return resultUrl
   }
 
+  // needs update
   /** Deletes a compute job.
    * @param {string} did
    * @param {string} consumerAddress
@@ -670,7 +666,7 @@ export class Provider {
     consumerAddress: string,
     jobId: string,
     providerUri: string,
-    web3: Web3,
+    signer: Signer,
     signal?: AbortSignal
   ): Promise<ComputeJob | ComputeJob[]> {
     const providerEndpoints = await this.getEndpoints(providerUri)
@@ -694,11 +690,7 @@ export class Provider {
     signatureMessage += jobId || ''
     signatureMessage += (did && `${this.noZeroX(did)}`) || ''
     signatureMessage += nonce
-    const signature = await this.signProviderRequest(
-      web3,
-      consumerAddress,
-      signatureMessage
-    )
+    const signature = await this.signProviderRequest(signer, signatureMessage)
     const payload = Object()
     payload.documentId = this.noZeroX(did)
     payload.consumerAddress = consumerAddress

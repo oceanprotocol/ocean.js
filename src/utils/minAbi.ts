@@ -1,5 +1,4 @@
-import { AbiItem } from 'web3-utils/types'
-
+// import { AbiItem } from 'web3-utils/types'
 export const minAbi = [
   {
     constant: true,
@@ -221,4 +220,4 @@ export const minAbi = [
     name: 'Transfer',
     type: 'event'
   }
-] as AbiItem[]
+]
