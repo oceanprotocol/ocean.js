@@ -1,7 +1,7 @@
 import { assert } from 'chai'
 import { getTestConfig, provider } from '../config'
 import { Config, Provider } from '../../src'
-import { ethers, Signer, providers } from 'ethers'
+import { ethers, Signer } from 'ethers'
 import { FileInfo } from '../../src/@types'
 
 describe('Provider tests', async () => {

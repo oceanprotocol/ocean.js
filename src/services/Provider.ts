@@ -98,7 +98,6 @@ export class Provider {
     }
   }
 
-  // aici trebuie modificat
   public async signProviderRequest(
     signer: Signer,
     message: string,
@@ -413,8 +412,6 @@ export class Provider {
     return consumeUrl
   }
 
-  // need to update
-  // this as well
   /** Instruct the provider to start a compute job
    * @param {string} did
    * @param {string} consumerAddress
@@ -489,7 +486,6 @@ export class Provider {
     }
   }
 
-  // this as well
   /** Instruct the provider to Stop the execution of a to stop a compute job.
    * @param {string} did
    * @param {string} consumerAddress
@@ -651,7 +647,6 @@ export class Provider {
     return resultUrl
   }
 
-  // needs update
   /** Deletes a compute job.
    * @param {string} did
    * @param {string} consumerAddress
