@@ -583,7 +583,9 @@ describe('Compute-to-data example tests', async () => {
   it('10.1 Start a compute job using a free C2D environment', async () => {
     /// let's check the free compute environment
     /// ```Typescript
-    const computeEnv = computeEnvs.find((ce) => ce.priceMin === 0)
+    const computeEnv = computeEnvs[resolvedDatasetDdo.chainId].find(
+      (ce) => ce.priceMin === 0
+    )
     console.log('Free compute environment = ', computeEnv)
     /// ```
     /// <!--
