@@ -329,7 +329,7 @@ async function createAsset(
   // Next we encrypt the file or files using Ocean Provider. The provider is an off chain proxy built specifically for this task
   assetUrl.datatokenAddress = datatokenAddressAsset
   assetUrl.nftAddress = ddo.nftAddress
-  let providerResponse = await ProviderInstance.encrypt(assetUrl, providerUrl)
+  let providerResponse = await ProviderInstance.encrypt(assetUrl, chain, providerUrl)
   ddo.services[0].files = await providerResponse
   ddo.services[0].datatokenAddress = datatokenAddressAsset
   ddo.services[0].serviceEndpoint = providerUrl
@@ -338,7 +338,7 @@ async function createAsset(
   ddo.nftAddress = web3.utils.toChecksumAddress(nftAddress)
   ddo.id =
     'did:op:' + SHA256(web3.utils.toChecksumAddress(nftAddress) + chain.toString(10))
-  providerResponse = await ProviderInstance.encrypt(ddo, providerUrl)
+  providerResponse = await ProviderInstance.encrypt(ddo, chain, providerUrl)
   const encryptedResponse = await providerResponse
   const validateResult = await aquarius.validate(ddo)
 
@@ -583,7 +583,9 @@ describe('Compute-to-data example tests', async () => {
   it('10.1 Start a compute job using a free C2D environment', async () => {
     /// let's check the free compute environment
     /// ```Typescript
-    const computeEnv = computeEnvs.find((ce) => ce.priceMin === 0)
+    const computeEnv = computeEnvs[resolvedDatasetDdo.chainId].find(
+      (ce) => ce.priceMin === 0
+    )
     console.log('Free compute environment = ', computeEnv)
     /// ```
     /// <!--

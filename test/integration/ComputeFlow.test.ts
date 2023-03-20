@@ -276,7 +276,7 @@ async function createAsset(
   // create the files encrypted string
   assetUrl.datatokenAddress = datatokenAddressAsset
   assetUrl.nftAddress = ddo.nftAddress
-  let providerResponse = await ProviderInstance.encrypt(assetUrl, providerUrl)
+  let providerResponse = await ProviderInstance.encrypt(assetUrl, chain, providerUrl)
   ddo.services[0].files = await providerResponse
   ddo.services[0].datatokenAddress = datatokenAddressAsset
   ddo.services[0].serviceEndpoint = providerUrl
@@ -284,7 +284,7 @@ async function createAsset(
   ddo.nftAddress = web3.utils.toChecksumAddress(nftAddress)
   ddo.id =
     'did:op:' + SHA256(web3.utils.toChecksumAddress(nftAddress) + chain.toString(10))
-  providerResponse = await ProviderInstance.encrypt(ddo, providerUrl)
+  providerResponse = await ProviderInstance.encrypt(ddo, chain, providerUrl)
   const encryptedResponse = await providerResponse
   const validateResult = await aquarius.validate(ddo)
   assert(validateResult.valid, 'Could not validate metadata')
@@ -486,7 +486,9 @@ describe('Simple compute tests', async () => {
     computeValidUntil = Math.floor(mytime.getTime() / 1000)
 
     // we choose the free env
-    const computeEnv = computeEnvs.find((ce) => ce.priceMin === 0)
+    const computeEnv = computeEnvs[resolvedDdoWith5mTimeout.chainId].find(
+      (ce) => ce.priceMin === 0
+    )
     assert(computeEnv, 'Cannot find the free compute env')
 
     const assets: ComputeAsset[] = [
@@ -562,7 +564,9 @@ describe('Simple compute tests', async () => {
   // move to start orders with initial txid's and provider fees
   it('should restart a computeJob without paying anything, because order is valid and providerFees are still valid', async () => {
     // we choose the free env
-    const computeEnv = computeEnvs.find((ce) => ce.priceMin === 0)
+    const computeEnv = computeEnvs[resolvedDdoWith5mTimeout.chainId].find(
+      (ce) => ce.priceMin === 0
+    )
     assert(computeEnv, 'Cannot find the free compute env')
 
     const assets: ComputeAsset[] = [
@@ -623,7 +627,9 @@ describe('Simple compute tests', async () => {
 
   it('should start a computeJob on a paid environment', async () => {
     // we choose the paid env
-    const computeEnv = computeEnvs.find((ce) => ce.priceMin !== 0)
+    const computeEnv = computeEnvs[resolvedDdoWith5mTimeout.chainId].find(
+      (ce) => ce.priceMin !== 0
+    )
     assert(computeEnv, 'Cannot find the paid compute env')
 
     const assets: ComputeAsset[] = [
@@ -695,7 +701,9 @@ describe('Simple compute tests', async () => {
 
   it('should restart a computeJob on paid environment, without paying anything, because order is valid and providerFees are still valid', async () => {
     // we choose the paid env
-    const computeEnv = computeEnvs.find((ce) => ce.priceMin !== 0)
+    const computeEnv = computeEnvs[resolvedDdoWith5mTimeout.chainId].find(
+      (ce) => ce.priceMin !== 0
+    )
     assert(computeEnv, 'Cannot find the free compute env')
 
     const assets: ComputeAsset[] = [
@@ -764,7 +772,9 @@ describe('Simple compute tests', async () => {
 
   it('should start a computeJob using the free environment, by paying only providerFee (reuseOrder)', async () => {
     // we choose the free env
-    const computeEnv = computeEnvs.find((ce) => ce.priceMin === 0)
+    const computeEnv = computeEnvs[resolvedDdoWith5mTimeout.chainId].find(
+      (ce) => ce.priceMin === 0
+    )
     assert(computeEnv, 'Cannot find the free compute env')
 
     const assets: ComputeAsset[] = [
@@ -844,7 +854,9 @@ describe('Simple compute tests', async () => {
 
   it('should start a computeJob using the paid environment, by paying only providerFee (reuseOrder)', async () => {
     // we choose the paid env
-    const computeEnv = computeEnvs.find((ce) => ce.priceMin !== 0)
+    const computeEnv = computeEnvs[resolvedDdoWith5mTimeout.chainId].find(
+      (ce) => ce.priceMin !== 0
+    )
     assert(computeEnv, 'Cannot find the free compute env')
 
     const assets: ComputeAsset[] = [
