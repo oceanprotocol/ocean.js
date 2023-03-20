@@ -93,7 +93,7 @@ export async function updateAssetMetadata(
   aquariusInstance: Aquarius
 ) {
   const nft = new Nft(web3)
-  const providerResponse = await ProviderInstance.encrypt(updatedDdo, chain, providerUrl)
+  const providerResponse = await ProviderInstance.encrypt(updatedDdo, updatedDdo.chainId, providerUrl)
   const encryptedResponse = await providerResponse
   const validateResult = await aquariusInstance.validate(updatedDdo)
   const updateDdoTX = await nft.setMetadata(
