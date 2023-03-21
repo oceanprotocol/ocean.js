@@ -120,12 +120,14 @@ export class Provider {
 
   /** Encrypt data using the Provider's own symmetric key
    * @param {string} data data in json format that needs to be sent , it can either be a DDO or a File array
+   * @param {number} chainId network's id so provider can choose the corresponding web3 object
    * @param {string} providerUri provider uri address
    * @param {AbortSignal} signal abort signal
    * @return {Promise<string>} urlDetails
    */
   public async encrypt(
     data: any,
+    chainId: number,
     providerUri: string,
     signal?: AbortSignal
   ): Promise<string> {
@@ -134,9 +136,10 @@ export class Provider {
       providerUri,
       providerEndpoints
     )
-    const path = this.getEndpointURL(serviceEndpoints, 'encrypt')
-      ? this.getEndpointURL(serviceEndpoints, 'encrypt').urlPath
-      : null
+    const path =
+      (this.getEndpointURL(serviceEndpoints, 'encrypt')
+        ? this.getEndpointURL(serviceEndpoints, 'encrypt').urlPath
+        : null) + `?chainId=${chainId}`
     if (!path) return null
     try {
       const response = await fetch(path, {
@@ -734,7 +737,7 @@ export class Provider {
       })
       if (response?.ok) {
         const params = await response.json()
-        if (params && params.providerAddress) return true
+        if (params && (params.providerAddress || params.providerAddresses)) return true
       }
       return false
     } catch (error) {

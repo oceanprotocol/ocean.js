@@ -349,7 +349,11 @@ describe('Marketplace flow tests', async () => {
     /// ```Typescript
     ASSET_URL.datatokenAddress = freDatatokenAddress
     ASSET_URL.nftAddress = freNftAddress
-    const encryptedFiles = await ProviderInstance.encrypt(ASSET_URL, providerUrl)
+    const encryptedFiles = await ProviderInstance.encrypt(
+      ASSET_URL,
+      DDO.chainId,
+      providerUrl
+    )
     DDO.services[0].files = await encryptedFiles
     DDO.services[0].datatokenAddress = freDatatokenAddress
 
@@ -358,7 +362,7 @@ describe('Marketplace flow tests', async () => {
     /// ```Typescript
     console.log(`DID: ${DDO.id}`)
 
-    const providerResponse = await ProviderInstance.encrypt(DDO, providerUrl)
+    const providerResponse = await ProviderInstance.encrypt(DDO, DDO.chainId, providerUrl)
     const encryptedDDO = await providerResponse
     const metadataHash = getHash(JSON.stringify(DDO))
     await nft.setMetadata(
@@ -566,13 +570,17 @@ describe('Marketplace flow tests', async () => {
     /// ```Typescript
     ASSET_URL.datatokenAddress = dispenserDatatokenAddress
     ASSET_URL.nftAddress = dispenserNftAddress
-    const encryptedFiles = await ProviderInstance.encrypt(ASSET_URL, providerUrl)
+    const encryptedFiles = await ProviderInstance.encrypt(
+      ASSET_URL,
+      DDO.chainId,
+      providerUrl
+    )
     DDO.services[0].files = await encryptedFiles
     DDO.services[0].datatokenAddress = dispenserDatatokenAddress
 
     console.log(`DID: ${DDO.id}`)
 
-    const providerResponse = await ProviderInstance.encrypt(DDO, providerUrl)
+    const providerResponse = await ProviderInstance.encrypt(DDO, DDO.chainId, providerUrl)
     const encryptedDDO = await providerResponse
     const metadataHash = getHash(JSON.stringify(DDO))
     await nft.setMetadata(

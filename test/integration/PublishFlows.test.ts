@@ -153,6 +153,7 @@ describe('Publish tests', async () => {
 
     fixedPriceDdo.services[0].files = await ProviderInstance.encrypt(
       assetUrl,
+      config.chainId,
       providerUrl
     )
 
@@ -168,7 +169,11 @@ describe('Publish tests', async () => {
 
     const isAssetValid: ValidateMetadata = await aquarius.validate(fixedPriceDdo)
     assert(isAssetValid.valid === true, 'Published asset is not valid')
-    const encryptedResponse = await ProviderInstance.encrypt(fixedPriceDdo, providerUrl)
+    const encryptedResponse = await ProviderInstance.encrypt(
+      fixedPriceDdo,
+      config.chainId,
+      providerUrl
+    )
 
     await nft.setMetadata(
       nftAddress,
@@ -233,7 +238,11 @@ describe('Publish tests', async () => {
     assetUrl.datatokenAddress = datatokenAddress
     assetUrl.nftAddress = nftAddress
 
-    const encryptedFiles = await ProviderInstance.encrypt(assetUrl, providerUrl)
+    const encryptedFiles = await ProviderInstance.encrypt(
+      assetUrl,
+      config.chainId,
+      providerUrl
+    )
     dispenserDdo.metadata.name = 'test-dataset-dispenser'
     dispenserDdo.services[0].files = await encryptedFiles
     dispenserDdo.services[0].datatokenAddress = datatokenAddress
@@ -247,7 +256,11 @@ describe('Publish tests', async () => {
     const isAssetValid: ValidateMetadata = await aquarius.validate(dispenserDdo)
     assert(isAssetValid.valid === true, 'Published asset is not valid')
 
-    const encryptedDdo = await ProviderInstance.encrypt(dispenserDdo, providerUrl)
+    const encryptedDdo = await ProviderInstance.encrypt(
+      dispenserDdo,
+      config.chainId,
+      providerUrl
+    )
     const encryptedResponse = await encryptedDdo
     // this is publishing with any explicit metadataProofs
     await nft.setMetadata(
