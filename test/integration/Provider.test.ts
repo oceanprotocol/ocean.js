@@ -1,14 +1,17 @@
 import { assert } from 'chai'
-import { web3, getTestConfig } from '../config'
+import { getTestConfig, provider } from '../config'
 import { Config, Provider } from '../../src'
+import { ethers, Signer } from 'ethers'
 import { FileInfo } from '../../src/@types'
 
 describe('Provider tests', async () => {
   let config: Config
+  let signer: Signer
   let providerInstance: Provider
 
   before(async () => {
-    config = await getTestConfig(web3)
+    signer = (await provider.getSigner(0)) as Signer
+    config = await getTestConfig(signer)
   })
 
   it('Initialize Ocean', async () => {

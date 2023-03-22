@@ -108,7 +108,6 @@ import {
   ProviderInstance,
   transfer,
   ZERO_ADDRESS,
-  calculateEstimatedGas,
   sendTx
 } from '../../src'
 import { getAddresses, getTestConfig, web3 } from '../config'
