@@ -99,28 +99,20 @@ export class Provider {
     }
   }
 
-  public async signProviderRequest(
-    signer: Signer,
-    message: string,
-    web3?: Web3
-  ): Promise<string> {
+  public async signProviderRequest(signer: Signer, message: string): Promise<string> {
     const consumerMessage = ethers.utils.solidityKeccak256(
       ['bytes'],
       [ethers.utils.hexlify(ethers.utils.toUtf8Bytes(message))]
     )
+    //  const isMetaMask = web3 && web3.currentProvider && (web3.currentProvider as any).isMetaMask
+    //  if (isMetaMask) return await web3.eth.personal.sign(consumerMessage, accountId, password)
+    //  await web3.eth.sign(consumerMessage, await signer.getAddress())
 
-    // const isMetaMask =
-    //   web3 && web3.currentProvider && (web3.currentProvider as any).isMetaMask
-
-    // return await web3.eth.personal.sign(consumerMessage, accountId, password)
-    // if (isMetaMask)
-    //   (signer as providers.JsonRpcSigner)._legacySignMessage(consumerMessage)
-    // else
-    const oldSignature = await web3.eth.sign(consumerMessage, await signer.getAddress())
-    console.log('initial signature = ', oldSignature)
-    const newSignature = await (signer as providers.JsonRpcSigner)._legacySignMessage(
-      consumerMessage
+    const messageHashBytes = ethers.utils.arrayify(consumerMessage)
+    let newSignature = await (signer as providers.JsonRpcSigner)._legacySignMessage(
+      messageHashBytes
     )
+
     console.log('new signature = ', newSignature)
     return newSignature
   }
@@ -395,7 +387,6 @@ export class Provider {
     transferTxId: string,
     providerUri: string,
     signer: Signer,
-    web3: Web3,
     userCustomParameters?: UserCustomParameters
   ): Promise<any> {
     const providerEndpoints = await this.getEndpoints(providerUri)
@@ -408,7 +399,7 @@ export class Provider {
       : null
     if (!downloadUrl) return null
     const nonce = Date.now()
-    const signature = await this.signProviderRequest(signer, did + nonce, web3)
+    const signature = await this.signProviderRequest(signer, did + nonce)
     let consumeUrl = downloadUrl
     consumeUrl += `?fileIndex=${fileIndex}`
     consumeUrl += `&documentId=${did}`

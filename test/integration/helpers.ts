@@ -180,8 +180,6 @@ export async function orderAsset(
     providerUrl
   )
 
-  console.log('intialized', initializeData)
-
   const providerFees: ProviderFees = {
     providerFeeAddress: initializeData.providerFee.providerFeeAddress,
     providerFeeToken: initializeData.providerFee.providerFeeToken,
@@ -194,11 +192,13 @@ export async function orderAsset(
   }
 
   // make the payment
-  const orderTx = await datatoken.startOrder(
+  const tx = await datatoken.startOrder(
     datatokenAddress,
     consumerAccount,
     0,
     providerFees
   )
-  return orderTx
+  const orderTx = await tx.wait()
+  const OrderStartedTx = getEventFromTx(orderTx, 'OrderStarted')
+  return OrderStartedTx
 }

@@ -396,77 +396,76 @@ describe('Publish consume test', async () => {
   })
 
   it('Should download the datasets files', async () => {
-    // const urlDownloadUrl = await ProviderInstance.getDownloadUrl(
-    //   resolvedUrlAssetDdo.id,
-    //   resolvedUrlAssetDdo.services[0].id,
-    //   0,
-    //   urlOrderTx.transactionHash,
-    //   providerUrl,
-    //   consumerAccount,
-    //   web3
-    // )
-    // assert(urlDownloadUrl, 'Provider getDownloadUrl failed for url dataset')
-    // try {
-    //   await downloadFile(urlDownloadUrl)
-    // } catch (e) {
-    //   assert.fail(`Download url dataset failed: ${e}`)
-    // }
-    // const arwaveDownloadURL = await ProviderInstance.getDownloadUrl(
-    //   resolvedArweaveAssetDdo.id,
-    //   resolvedArweaveAssetDdo.services[0].id,
-    //   0,
-    //   arwaveOrderTx.transactionHash,
-    //   providerUrl,
-    //   consumerAccount
-    // )
-    // assert(arwaveDownloadURL, 'Provider getDownloadUrl failed for arwave dataset')
-    // try {
-    //   await downloadFile(arwaveDownloadURL)
-    // } catch (e) {
-    //   assert.fail(`Download arwave dataset failed: ${e}`)
-    // }
-    // const ipfsDownloadURL = await ProviderInstance.getDownloadUrl(
-    //   resolvedIpfsAssetDdo.id,
-    //   resolvedIpfsAssetDdo.services[0].id,
-    //   0,
-    //   ipfsOrderTx.transactionHash,
-    //   providerUrl,
-    //   consumerAccount
-    // )
-    // assert(ipfsDownloadURL, 'Provider getDownloadUrl failed for ipfs dataset')
-    // try {
-    //   await downloadFile(ipfsDownloadURL)
-    // } catch (e) {
-    //   assert.fail(`Download ipfs dataset failed ${e}`)
-    // }
-    // const onchainDownloadURL = await ProviderInstance.getDownloadUrl(
-    //   resolvedOnchainAssetDdo.id,
-    //   resolvedOnchainAssetDdo.services[0].id,
-    //   0,
-    //   onchainOrderTx.transactionHash,
-    //   providerUrl,
-    //   consumerAccount
-    // )
-    // assert(onchainDownloadURL, 'Provider getDownloadUrl failed for onchain dataset')
-    // try {
-    //   await downloadFile(onchainDownloadURL)
-    // } catch (e) {
-    //   assert.fail(`Download onchain dataset failed ${e}`)
-    // }
-    // const graphqlDownloadURL = await ProviderInstance.getDownloadUrl(
-    //   resolvedGraphqlAssetDdo.id,
-    //   resolvedGraphqlAssetDdo.services[0].id,
-    //   0,
-    //   grapqlOrderTx.transactionHash,
-    //   providerUrl,
-    //   consumerAccount
-    // )
-    // assert(graphqlDownloadURL, 'Provider getDownloadUrl failed for graphql dataset')
-    // try {
-    //   await downloadFile(graphqlDownloadURL)
-    // } catch (e) {
-    //   assert.fail(`Download graphql dataset failed ${e}`)
-    // }
+    const urlDownloadUrl = await ProviderInstance.getDownloadUrl(
+      resolvedUrlAssetDdo.id,
+      resolvedUrlAssetDdo.services[0].id,
+      0,
+      urlOrderTx.transactionHash,
+      providerUrl,
+      consumerAccount
+    )
+    assert(urlDownloadUrl, 'Provider getDownloadUrl failed for url dataset')
+    try {
+      await downloadFile(urlDownloadUrl)
+    } catch (e) {
+      assert.fail(`Download url dataset failed: ${e}`)
+    }
+    const arwaveDownloadURL = await ProviderInstance.getDownloadUrl(
+      resolvedArweaveAssetDdo.id,
+      resolvedArweaveAssetDdo.services[0].id,
+      0,
+      arwaveOrderTx.transactionHash,
+      providerUrl,
+      consumerAccount
+    )
+    assert(arwaveDownloadURL, 'Provider getDownloadUrl failed for arwave dataset')
+    try {
+      await downloadFile(arwaveDownloadURL)
+    } catch (e) {
+      assert.fail(`Download arwave dataset failed: ${e}`)
+    }
+    const ipfsDownloadURL = await ProviderInstance.getDownloadUrl(
+      resolvedIpfsAssetDdo.id,
+      resolvedIpfsAssetDdo.services[0].id,
+      0,
+      ipfsOrderTx.transactionHash,
+      providerUrl,
+      consumerAccount
+    )
+    assert(ipfsDownloadURL, 'Provider getDownloadUrl failed for ipfs dataset')
+    try {
+      await downloadFile(ipfsDownloadURL)
+    } catch (e) {
+      assert.fail(`Download ipfs dataset failed ${e}`)
+    }
+    const onchainDownloadURL = await ProviderInstance.getDownloadUrl(
+      resolvedOnchainAssetDdo.id,
+      resolvedOnchainAssetDdo.services[0].id,
+      0,
+      onchainOrderTx.transactionHash,
+      providerUrl,
+      consumerAccount
+    )
+    assert(onchainDownloadURL, 'Provider getDownloadUrl failed for onchain dataset')
+    try {
+      await downloadFile(onchainDownloadURL)
+    } catch (e) {
+      assert.fail(`Download onchain dataset failed ${e}`)
+    }
+    const graphqlDownloadURL = await ProviderInstance.getDownloadUrl(
+      resolvedGraphqlAssetDdo.id,
+      resolvedGraphqlAssetDdo.services[0].id,
+      0,
+      grapqlOrderTx.transactionHash,
+      providerUrl,
+      consumerAccount
+    )
+    assert(graphqlDownloadURL, 'Provider getDownloadUrl failed for graphql dataset')
+    try {
+      await downloadFile(graphqlDownloadURL)
+    } catch (e) {
+      assert.fail(`Download graphql dataset failed ${e}`)
+    }
   })
 
   it('Should update datasets metadata', async () => {
