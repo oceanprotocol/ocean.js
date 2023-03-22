@@ -28,7 +28,7 @@ export async function createAsset(
   nftContractAddress: string, // addresses.ERC721Factory,
   aquariusInstance: Aquarius
 ) {
-  const nft = new Nft(owner, 8996)
+  const nft = new Nft(owner, (await owner.provider.getNetwork()).chainId)
 
   const nftFactory = new NftFactory(nftContractAddress, owner)
 
@@ -82,7 +82,7 @@ export async function createAsset(
     await owner.getAddress(),
     0,
     'http://172.15.0.4:8030', // put back proviederUrl
-    '123',
+    '',
     ethers.utils.hexlify(2),
     encryptedResponse,
     validateResult.hash
@@ -90,32 +90,32 @@ export async function createAsset(
   return ddo.id
 }
 
-// export async function updateAssetMetadata(
-//   owner: string,
-//   updatedDdo: DDO,
-//   providerUrl: string,
-//   aquariusInstance: Aquarius
-// ) {
-//   const nft = new Nft(web3)
-//   const providerResponse = await ProviderInstance.encrypt(
-//     updatedDdo,
-//     updatedDdo.chainId,
-//     providerUrl
-//   )
-//   const encryptedResponse = await providerResponse
-//   const validateResult = await aquariusInstance.validate(updatedDdo)
-//   const updateDdoTX = await nft.setMetadata(
-//     updatedDdo.nftAddress,
-//     owner,
-//     0,
-//     providerUrl,
-//     '',
-//     '0x2',
-//     encryptedResponse,
-//     validateResult.hash
-//   )
-//   return updateDdoTX
-// }
+export async function updateAssetMetadata(
+  owner: Signer,
+  updatedDdo: DDO,
+  providerUrl: string,
+  aquariusInstance: Aquarius
+) {
+  const nft = new Nft(owner, (await owner.provider.getNetwork()).chainId)
+  const providerResponse = await ProviderInstance.encrypt(
+    updatedDdo,
+    updatedDdo.chainId,
+    providerUrl
+  )
+  const encryptedResponse = await providerResponse
+  const validateResult = await aquariusInstance.validate(updatedDdo)
+  const updateDdoTX = await nft.setMetadata(
+    updatedDdo.nftAddress,
+    await owner.getAddress(),
+    0,
+    providerUrl,
+    '',
+    ethers.utils.hexlify(2),
+    encryptedResponse,
+    validateResult.hash
+  )
+  return updateDdoTX
+}
 
 // export async function handleComputeOrder(
 //   order: ProviderComputeInitialize,
