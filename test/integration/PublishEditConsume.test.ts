@@ -1,6 +1,6 @@
 import { assert } from 'chai'
 import { ethers, Signer } from 'ethers'
-import { getTestConfig, getAddresses, provider } from '../config'
+import { getTestConfig, getAddresses, provider, web3 } from '../config'
 import {
   Config,
   ProviderInstance,
@@ -12,7 +12,7 @@ import {
   amountToUnits
 } from '../../src'
 import { Files, Smartcontract } from '../../src/@types'
-import { createAsset } from './helpers'
+import { createAsset, orderAsset } from './helpers'
 
 let config: Config
 
@@ -293,186 +293,185 @@ describe('Publish consume test', async () => {
     assert(resolvedGraphqlAssetDdo, 'Cannot fetch graphql DDO from Aquarius')
   })
 
-  // it('Mint datasets datatokens to publisher', async () => {
-  //   const urlMintTx = await datatoken.mint(
-  //     resolvedUrlAssetDdo.services[0].datatokenAddress,
-  //     publisherAccount,
-  //     '10',
-  //     consumerAccount
-  //   )
-  //   assert(urlMintTx, 'Failed minting url datatoken to consumer.')
+  it('Mint datasets datatokens to publisher', async () => {
+    datatoken = new Datatoken(publisherAccount, config.chainId)
+    const urlMintTx = await datatoken.mint(
+      resolvedUrlAssetDdo.services[0].datatokenAddress,
+      await publisherAccount.getAddress(),
+      '10',
+      await consumerAccount.getAddress()
+    )
+    assert(urlMintTx, 'Failed minting url datatoken to consumer.')
 
-  //   const arwaveMintTx = await datatoken.mint(
-  //     resolvedArweaveAssetDdo.services[0].datatokenAddress,
-  //     publisherAccount,
-  //     '10',
-  //     consumerAccount
-  //   )
-  //   assert(arwaveMintTx, 'Failed minting arwave datatoken to consumer.')
+    const arwaveMintTx = await datatoken.mint(
+      resolvedArweaveAssetDdo.services[0].datatokenAddress,
+      await publisherAccount.getAddress(),
+      '10',
+      await consumerAccount.getAddress()
+    )
+    assert(arwaveMintTx, 'Failed minting arwave datatoken to consumer.')
 
-  //   const ipfsMintTx = await datatoken.mint(
-  //     resolvedIpfsAssetDdo.services[0].datatokenAddress,
-  //     publisherAccount,
-  //     '10',
-  //     consumerAccount
-  //   )
-  //   assert(ipfsMintTx, 'Failed minting ipfs datatoken to consumer.')
+    const ipfsMintTx = await datatoken.mint(
+      resolvedIpfsAssetDdo.services[0].datatokenAddress,
+      await publisherAccount.getAddress(),
+      '10',
+      await consumerAccount.getAddress()
+    )
+    assert(ipfsMintTx, 'Failed minting ipfs datatoken to consumer.')
 
-  //   const onchainMintTx = await datatoken.mint(
-  //     resolvedOnchainAssetDdo.services[0].datatokenAddress,
-  //     publisherAccount,
-  //     '10',
-  //     consumerAccount
-  //   )
-  //   assert(onchainMintTx, 'Failed minting onchain datatoken to consumer.')
+    const onchainMintTx = await datatoken.mint(
+      resolvedOnchainAssetDdo.services[0].datatokenAddress,
+      await publisherAccount.getAddress(),
+      '10',
+      await consumerAccount.getAddress()
+    )
+    assert(onchainMintTx, 'Failed minting onchain datatoken to consumer.')
 
-  //   const graphqlMintTx = await datatoken.mint(
-  //     resolvedGraphqlAssetDdo.services[0].datatokenAddress,
-  //     publisherAccount,
-  //     '10',
-  //     consumerAccount
-  //   )
-  //   assert(graphqlMintTx, 'Failed minting graphql datatoken to consumer.')
-  // })
+    const graphqlMintTx = await datatoken.mint(
+      resolvedGraphqlAssetDdo.services[0].datatokenAddress,
+      await publisherAccount.getAddress(),
+      '10',
+      await consumerAccount.getAddress()
+    )
+    assert(graphqlMintTx, 'Failed minting graphql datatoken to consumer.')
+  })
 
-  // it('Should order the datasets', async () => {
-  //   urlOrderTx = await orderAsset(
-  //     resolvedUrlAssetDdo.id,
-  //     resolvedUrlAssetDdo.services[0].datatokenAddress,
-  //     consumerAccount,
-  //     resolvedUrlAssetDdo.services[0].id,
-  //     0,
-  //     datatoken,
-  //     providerUrl
-  //   )
-  //   assert(urlOrderTx, 'Ordering url dataset failed.')
+  it('Should order the datasets', async () => {
+    datatoken = new Datatoken(consumerAccount, config.chainId)
 
-  //   arwaveOrderTx = await orderAsset(
-  //     resolvedArweaveAssetDdo.id,
-  //     resolvedArweaveAssetDdo.services[0].datatokenAddress,
-  //     consumerAccount,
-  //     resolvedArweaveAssetDdo.services[0].id,
-  //     0,
-  //     datatoken,
-  //     providerUrl
-  //   )
-  //   assert(arwaveOrderTx, 'Ordering arwave dataset failed.')
+    urlOrderTx = await orderAsset(
+      resolvedUrlAssetDdo.id,
+      resolvedUrlAssetDdo.services[0].datatokenAddress,
+      await consumerAccount.getAddress(),
+      resolvedUrlAssetDdo.services[0].id,
+      0,
+      datatoken,
+      providerUrl
+    )
+    assert(urlOrderTx, 'Ordering url dataset failed.')
 
-  //   onchainOrderTx = await orderAsset(
-  //     resolvedOnchainAssetDdo.id,
-  //     resolvedOnchainAssetDdo.services[0].datatokenAddress,
-  //     consumerAccount,
-  //     resolvedOnchainAssetDdo.services[0].id,
-  //     0,
-  //     datatoken,
-  //     providerUrl
-  //   )
-  //   assert(onchainOrderTx, 'Ordering onchain dataset failed.')
+    arwaveOrderTx = await orderAsset(
+      resolvedArweaveAssetDdo.id,
+      resolvedArweaveAssetDdo.services[0].datatokenAddress,
+      await consumerAccount.getAddress(),
+      resolvedArweaveAssetDdo.services[0].id,
+      0,
+      datatoken,
+      providerUrl
+    )
+    assert(arwaveOrderTx, 'Ordering arwave dataset failed.')
 
-  //   ipfsOrderTx = await orderAsset(
-  //     resolvedIpfsAssetDdo.id,
-  //     resolvedIpfsAssetDdo.services[0].datatokenAddress,
-  //     consumerAccount,
-  //     resolvedIpfsAssetDdo.services[0].id,
-  //     0,
-  //     datatoken,
-  //     providerUrl
-  //   )
-  //   assert(ipfsOrderTx, 'Ordering ipfs dataset failed.')
+    onchainOrderTx = await orderAsset(
+      resolvedOnchainAssetDdo.id,
+      resolvedOnchainAssetDdo.services[0].datatokenAddress,
+      await consumerAccount.getAddress(),
+      resolvedOnchainAssetDdo.services[0].id,
+      0,
+      datatoken,
+      providerUrl
+    )
+    assert(onchainOrderTx, 'Ordering onchain dataset failed.')
 
-  //   grapqlOrderTx = await orderAsset(
-  //     resolvedGraphqlAssetDdo.id,
-  //     resolvedGraphqlAssetDdo.services[0].datatokenAddress,
-  //     consumerAccount,
-  //     resolvedGraphqlAssetDdo.services[0].id,
-  //     0,
-  //     datatoken,
-  //     providerUrl
-  //   )
-  //   assert(grapqlOrderTx, 'Ordering graphql dataset failed.')
-  // })
+    ipfsOrderTx = await orderAsset(
+      resolvedIpfsAssetDdo.id,
+      resolvedIpfsAssetDdo.services[0].datatokenAddress,
+      await consumerAccount.getAddress(),
+      resolvedIpfsAssetDdo.services[0].id,
+      0,
+      datatoken,
+      providerUrl
+    )
+    assert(ipfsOrderTx, 'Ordering ipfs dataset failed.')
 
-  // it('Should download the datasets files', async () => {
-  //   const urlDownloadUrl = await ProviderInstance.getDownloadUrl(
-  //     resolvedUrlAssetDdo.id,
-  //     consumerAccount,
-  //     resolvedUrlAssetDdo.services[0].id,
-  //     0,
-  //     urlOrderTx.transactionHash,
-  //     providerUrl,
-  //     web3
-  //   )
-  //   assert(urlDownloadUrl, 'Provider getDownloadUrl failed for url dataset')
-  //   try {
-  //     await downloadFile(urlDownloadUrl)
-  //   } catch (e) {
-  //     assert.fail(`Download url dataset failed: ${e}`)
-  //   }
+    grapqlOrderTx = await orderAsset(
+      resolvedGraphqlAssetDdo.id,
+      resolvedGraphqlAssetDdo.services[0].datatokenAddress,
+      await consumerAccount.getAddress(),
+      resolvedGraphqlAssetDdo.services[0].id,
+      0,
+      datatoken,
+      providerUrl
+    )
+    assert(grapqlOrderTx, 'Ordering graphql dataset failed.')
+  })
 
-  //   const arwaveDownloadURL = await ProviderInstance.getDownloadUrl(
-  //     resolvedArweaveAssetDdo.id,
-  //     consumerAccount,
-  //     resolvedArweaveAssetDdo.services[0].id,
-  //     0,
-  //     arwaveOrderTx.transactionHash,
-  //     providerUrl,
-  //     web3
-  //   )
-  //   assert(arwaveDownloadURL, 'Provider getDownloadUrl failed for arwave dataset')
-  //   try {
-  //     await downloadFile(arwaveDownloadURL)
-  //   } catch (e) {
-  //     assert.fail(`Download arwave dataset failed: ${e}`)
-  //   }
+  it('Should download the datasets files', async () => {
+    const urlDownloadUrl = await ProviderInstance.getDownloadUrl(
+      resolvedUrlAssetDdo.id,
+      resolvedUrlAssetDdo.services[0].id,
+      0,
+      urlOrderTx.transactionHash,
+      providerUrl,
+      consumerAccount,
+      web3
+    )
+    assert(urlDownloadUrl, 'Provider getDownloadUrl failed for url dataset')
+    try {
+      await downloadFile(urlDownloadUrl)
+    } catch (e) {
+      assert.fail(`Download url dataset failed: ${e}`)
+    }
 
-  //   const ipfsDownloadURL = await ProviderInstance.getDownloadUrl(
-  //     resolvedIpfsAssetDdo.id,
-  //     consumerAccount,
-  //     resolvedIpfsAssetDdo.services[0].id,
-  //     0,
-  //     ipfsOrderTx.transactionHash,
-  //     providerUrl,
-  //     web3
-  //   )
-  //   assert(ipfsDownloadURL, 'Provider getDownloadUrl failed for ipfs dataset')
-  //   try {
-  //     await downloadFile(ipfsDownloadURL)
-  //   } catch (e) {
-  //     assert.fail(`Download ipfs dataset failed ${e}`)
-  //   }
+    // const arwaveDownloadURL = await ProviderInstance.getDownloadUrl(
+    //   resolvedArweaveAssetDdo.id,
+    //   resolvedArweaveAssetDdo.services[0].id,
+    //   0,
+    //   arwaveOrderTx.transactionHash,
+    //   providerUrl,
+    //   consumerAccount
+    // )
+    // assert(arwaveDownloadURL, 'Provider getDownloadUrl failed for arwave dataset')
+    // try {
+    //   await downloadFile(arwaveDownloadURL)
+    // } catch (e) {
+    //   assert.fail(`Download arwave dataset failed: ${e}`)
+    // }
 
-  //   const onchainDownloadURL = await ProviderInstance.getDownloadUrl(
-  //     resolvedOnchainAssetDdo.id,
-  //     consumerAccount,
-  //     resolvedOnchainAssetDdo.services[0].id,
-  //     0,
-  //     onchainOrderTx.transactionHash,
-  //     providerUrl,
-  //     web3
-  //   )
-  //   assert(onchainDownloadURL, 'Provider getDownloadUrl failed for onchain dataset')
-  //   try {
-  //     await downloadFile(onchainDownloadURL)
-  //   } catch (e) {
-  //     assert.fail(`Download onchain dataset failed ${e}`)
-  //   }
+    // const ipfsDownloadURL = await ProviderInstance.getDownloadUrl(
+    //   resolvedIpfsAssetDdo.id,
+    //   resolvedIpfsAssetDdo.services[0].id,
+    //   0,
+    //   ipfsOrderTx.transactionHash,
+    //   providerUrl,
+    //   consumerAccount
+    // )
+    // assert(ipfsDownloadURL, 'Provider getDownloadUrl failed for ipfs dataset')
+    // try {
+    //   await downloadFile(ipfsDownloadURL)
+    // } catch (e) {
+    //   assert.fail(`Download ipfs dataset failed ${e}`)
+    // }
 
-  //   const graphqlDownloadURL = await ProviderInstance.getDownloadUrl(
-  //     resolvedGraphqlAssetDdo.id,
-  //     consumerAccount,
-  //     resolvedGraphqlAssetDdo.services[0].id,
-  //     0,
-  //     grapqlOrderTx.transactionHash,
-  //     providerUrl,
-  //     web3
-  //   )
-  //   assert(graphqlDownloadURL, 'Provider getDownloadUrl failed for graphql dataset')
-  //   try {
-  //     await downloadFile(graphqlDownloadURL)
-  //   } catch (e) {
-  //     assert.fail(`Download graphql dataset failed ${e}`)
-  //   }
-  // })
+    // const onchainDownloadURL = await ProviderInstance.getDownloadUrl(
+    //   resolvedOnchainAssetDdo.id,
+    //   resolvedOnchainAssetDdo.services[0].id,
+    //   0,
+    //   onchainOrderTx.transactionHash,
+    //   providerUrl,
+    //   consumerAccount
+    // )
+    // assert(onchainDownloadURL, 'Provider getDownloadUrl failed for onchain dataset')
+    // try {
+    //   await downloadFile(onchainDownloadURL)
+    // } catch (e) {
+    //   assert.fail(`Download onchain dataset failed ${e}`)
+    // }
+
+    // const graphqlDownloadURL = await ProviderInstance.getDownloadUrl(
+    //   resolvedGraphqlAssetDdo.id,
+    //   resolvedGraphqlAssetDdo.services[0].id,
+    //   0,
+    //   grapqlOrderTx.transactionHash,
+    //   providerUrl,
+    //   consumerAccount
+    // )
+    // assert(graphqlDownloadURL, 'Provider getDownloadUrl failed for graphql dataset')
+    // try {
+    //   await downloadFile(graphqlDownloadURL)
+    // } catch (e) {
+    //   assert.fail(`Download graphql dataset failed ${e}`)
+    // }
+  })
 
   // it('Should update datasets metadata', async () => {
   //   resolvedUrlAssetDdo.metadata.name = 'updated url asset name'

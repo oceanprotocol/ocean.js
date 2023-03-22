@@ -67,7 +67,7 @@ export async function createAsset(
   const datatokenAddressAsset = tokenCreatedEvent.args.newTokenAddress
   // create the files encrypted string
   assetUrl.datatokenAddress = datatokenAddressAsset
-  assetUrl.nftAddress = ddo.nftAddress
+  assetUrl.nftAddress = nftAddress
   ddo.services[0].files = await ProviderInstance.encrypt(assetUrl, chain, providerUrl)
   ddo.services[0].datatokenAddress = datatokenAddressAsset
   ddo.services[0].serviceEndpoint = 'http://172.15.0.4:8030' // put back proviederUrl
@@ -83,7 +83,7 @@ export async function createAsset(
     0,
     'http://172.15.0.4:8030', // put back proviederUrl
     '123',
-    '0x02',
+    ethers.utils.hexlify(2),
     encryptedResponse,
     validateResult.hash
   )
@@ -163,43 +163,42 @@ export async function createAsset(
 //   return tx.transactionHash
 // }
 
-// export async function orderAsset(
-//   did: string,
-//   datatokenAddress: string,
-//   consumerAccount: string,
-//   serviceId: string,
-//   serviceIndex: number,
-//   datatoken: Datatoken,
-//   providerUrl: string
-// ) {
-//   const initializeData = await ProviderInstance.initialize(
-//     did, // resolvedDdoAfterUpdate.id,
-//     serviceId, // resolvedDdoAfterUpdate.services[0].id,
-//     serviceIndex,
-//     consumerAccount,
-//     providerUrl
-//   )
+export async function orderAsset(
+  did: string,
+  datatokenAddress: string,
+  consumerAccount: string,
+  serviceId: string,
+  serviceIndex: number,
+  datatoken: Datatoken,
+  providerUrl: string
+) {
+  const initializeData = await ProviderInstance.initialize(
+    did,
+    serviceId,
+    serviceIndex,
+    consumerAccount,
+    providerUrl
+  )
 
-//   console.log(`initializeData fees for did:${did} == ${initializeData.providerFee}`)
+  console.log('intialized', initializeData)
 
-//   const providerFees: ProviderFees = {
-//     providerFeeAddress: initializeData.providerFee.providerFeeAddress,
-//     providerFeeToken: initializeData.providerFee.providerFeeToken,
-//     providerFeeAmount: initializeData.providerFee.providerFeeAmount,
-//     v: initializeData.providerFee.v,
-//     r: initializeData.providerFee.r,
-//     s: initializeData.providerFee.s,
-//     providerData: initializeData.providerFee.providerData,
-//     validUntil: initializeData.providerFee.validUntil
-//   }
+  const providerFees: ProviderFees = {
+    providerFeeAddress: initializeData.providerFee.providerFeeAddress,
+    providerFeeToken: initializeData.providerFee.providerFeeToken,
+    providerFeeAmount: initializeData.providerFee.providerFeeAmount,
+    v: initializeData.providerFee.v,
+    r: initializeData.providerFee.r,
+    s: initializeData.providerFee.s,
+    providerData: initializeData.providerFee.providerData,
+    validUntil: initializeData.providerFee.validUntil
+  }
 
-//   // make the payment
-//   const orderTx = await datatoken.startOrder(
-//     datatokenAddress, // resolvedDdoAfterUpdate.services[0].datatokenAddress,
-//     consumerAccount,
-//     consumerAccount,
-//     0,
-//     providerFees
-//   )
-//   return orderTx
-// }
+  // make the payment
+  const orderTx = await datatoken.startOrder(
+    datatokenAddress,
+    consumerAccount,
+    0,
+    providerFees
+  )
+  return orderTx
+}

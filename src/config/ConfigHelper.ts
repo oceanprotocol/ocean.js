@@ -32,13 +32,13 @@ export const configHelperNetworks: Config[] = [
     chainId: 8996,
     network: 'development',
     // comment th following configs if running on macOS
-    // metadataCacheUri: 'http://172.15.0.5:5000',
-    // providerUri: 'http://172.15.0.4:8030',
-    // subgraphUri: 'https://172.15.0.15:8000'
+    metadataCacheUri: 'http://172.15.0.5:5000',
+    providerUri: 'http://172.15.0.4:8030',
+    subgraphUri: 'https://172.15.0.15:8000'
     // uncomment the following configs if running on macOS
-    metadataCacheUri: 'http://127.0.0.1:5000',
-    providerUri: 'http://127.0.0.1:8030/',
-    subgraphUri: 'http://127.0.0.1:9000/'
+    // metadataCacheUri: 'http://127.0.0.1:5000',
+    // providerUri: 'http://127.0.0.1:8030/',
+    // subgraphUri: 'http://127.0.0.1:9000/'
   },
   {
     ...configHelperNetworksBase,

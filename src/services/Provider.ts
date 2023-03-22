@@ -18,6 +18,7 @@ import {
   Smartcontract,
   GraphqlQuery
 } from '../@types'
+import Web3 from 'web3'
 
 export class Provider {
   /**
@@ -101,7 +102,7 @@ export class Provider {
   public async signProviderRequest(
     signer: Signer,
     message: string,
-    password?: string
+    web3?: Web3
   ): Promise<string> {
     const consumerMessage = ethers.utils.solidityKeccak256(
       ['bytes'],
@@ -115,7 +116,13 @@ export class Provider {
     // if (isMetaMask)
     //   (signer as providers.JsonRpcSigner)._legacySignMessage(consumerMessage)
     // else
-    return await (signer as providers.JsonRpcSigner)._legacySignMessage(consumerMessage)
+    const oldSignature = await web3.eth.sign(consumerMessage, await signer.getAddress())
+    console.log('initial signature = ', oldSignature)
+    const newSignature = await (signer as providers.JsonRpcSigner)._legacySignMessage(
+      consumerMessage
+    )
+    console.log('new signature = ', newSignature)
+    return newSignature
   }
 
   /** Encrypt data using the Provider's own symmetric key
@@ -318,7 +325,7 @@ export class Provider {
       return results
     } catch (e) {
       LoggerInstance.error(e)
-      throw new Error('Asset URL not found or not available.')
+      throw new Error(`Provider initialize failed url: ${initializeUrl} `)
     }
   }
 
@@ -383,12 +390,12 @@ export class Provider {
    */
   public async getDownloadUrl(
     did: string,
-    accountId: string,
     serviceId: string,
     fileIndex: number,
     transferTxId: string,
     providerUri: string,
     signer: Signer,
+    web3: Web3,
     userCustomParameters?: UserCustomParameters
   ): Promise<any> {
     const providerEndpoints = await this.getEndpoints(providerUri)
@@ -401,13 +408,13 @@ export class Provider {
       : null
     if (!downloadUrl) return null
     const nonce = Date.now()
-    const signature = await this.signProviderRequest(signer, did + nonce)
+    const signature = await this.signProviderRequest(signer, did + nonce, web3)
     let consumeUrl = downloadUrl
     consumeUrl += `?fileIndex=${fileIndex}`
     consumeUrl += `&documentId=${did}`
     consumeUrl += `&transferTxId=${transferTxId}`
     consumeUrl += `&serviceId=${serviceId}`
-    consumeUrl += `&consumerAddress=${accountId}`
+    consumeUrl += `&consumerAddress=${await signer.getAddress()}`
     consumeUrl += `&nonce=${nonce}`
     consumeUrl += `&signature=${signature}`
     if (userCustomParameters)
