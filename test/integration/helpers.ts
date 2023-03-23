@@ -121,7 +121,7 @@ export async function handleComputeOrder(
   order: ProviderComputeInitialize,
   datatokenAddress: string,
   payerAccount: Signer,
-  consumerAccount: Signer,
+  consumerAccount: string,
   serviceIndex: number,
   datatoken: Datatoken,
   config: Config,
@@ -155,7 +155,7 @@ export async function handleComputeOrder(
   }
   const tx = await datatoken.startOrder(
     datatokenAddress,
-    await consumerAccount.getAddress(),
+    consumerAccount,
     serviceIndex,
     order.providerFee,
     consumeMarkerFee
