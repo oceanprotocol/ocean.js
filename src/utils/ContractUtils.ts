@@ -1,16 +1,15 @@
-import Web3 from 'web3'
-import BigNumber from 'bignumber.js'
-import { Contract } from 'web3-eth-contract'
+import { ethers, Signer, providers, Contract, ContractFunction, BigNumber } from 'ethers'
+
 import { Config } from '../config'
 import { minAbi, GASLIMIT_DEFAULT, LoggerInstance, FEE_HISTORY_NOT_SUPPORTED } from '.'
-import { TransactionReceipt } from 'web3-core'
 
 const MIN_GAS_FEE_POLYGON = 30000000000 // minimum recommended 30 gwei polygon main and mumbai fees
 const POLYGON_NETWORK_ID = 137
 const MUMBAI_NETWORK_ID = 80001
 
 export function setContractDefaults(contract: Contract, config: Config): Contract {
-  if (config) {
+  // TO DO - since ethers does not provide this
+  /* if (config) {
     if (config.transactionBlockTimeout)
       contract.transactionBlockTimeout = config.transactionBlockTimeout
     if (config.transactionConfirmationBlocks)
@@ -18,77 +17,57 @@ export function setContractDefaults(contract: Contract, config: Config): Contrac
     if (config.transactionPollingTimeout)
       contract.transactionPollingTimeout = config.transactionPollingTimeout
   }
+  */
   return contract
 }
 
 export async function getFairGasPrice(
-  web3: Web3,
+  signer: Signer,
   gasFeeMultiplier: number
 ): Promise<string> {
-  const x = new BigNumber(await web3.eth.getGasPrice())
-  if (gasFeeMultiplier)
-    return x
-      .multipliedBy(gasFeeMultiplier)
-      .integerValue(BigNumber.ROUND_DOWN)
-      .toString(10)
-  else return x.toString(10)
+  const price = await (await signer.provider.getFeeData()).gasPrice
+  const x = ethers.BigNumber.from(price.toString())
+  if (gasFeeMultiplier) return x.mul(gasFeeMultiplier).toBigInt().toString(10)
+  else return x.toString()
 }
 
+export async function getTokenDecimals(signer: Signer, token: string) {
+  const tokenContract = new ethers.Contract(token, minAbi, signer)
+  return tokenContract.decimals()
+}
 export async function unitsToAmount(
-  web3: Web3,
+  signer: Signer,
   token: string,
   amount: string,
   tokenDecimals?: number
 ): Promise<string> {
-  const tokenContract = new web3.eth.Contract(minAbi, token)
-  let decimals = tokenDecimals || (await tokenContract.methods.decimals().call())
+  let decimals = tokenDecimals || (await getTokenDecimals(signer, token))
   if (decimals === '0') {
     decimals = 18
   }
 
-  const amountFormatted = new BigNumber(amount).div(
-    new BigNumber(10).exponentiatedBy(decimals)
-  )
-
-  BigNumber.config({ EXPONENTIAL_AT: 50 })
+  const amountFormatted = ethers.utils.formatUnits(amount, decimals)
   return amountFormatted.toString()
 }
 
 export async function amountToUnits(
-  web3: Web3,
+  signer: Signer,
   token: string,
   amount: string,
   tokenDecimals?: number
 ): Promise<string> {
-  const tokenContract = new web3.eth.Contract(minAbi, token)
-  let decimals = tokenDecimals || (await tokenContract.methods.decimals().call())
+  let decimals = tokenDecimals || (await getTokenDecimals(signer, token))
   if (decimals === '0') {
     decimals = 18
   }
-  BigNumber.config({ EXPONENTIAL_AT: 50 })
-
-  const amountFormatted = new BigNumber(amount).times(
-    new BigNumber(10).exponentiatedBy(decimals)
-  )
-  return amountFormatted.toFixed(0)
+  const amountFormatted = ethers.utils.parseUnits(amount, decimals)
+  return amountFormatted.toString()
 }
 
-/**
- * Estimates the gas used when a function would be executed on chain
- * @param {string} from account that calls the function
- * @param {Function} functionToEstimateGas function that we need to estimate the gas
- * @param {...any[]} args arguments of the function
- * @return {Promise<number>} gas cost of the function
- */
-export async function calculateEstimatedGas(
-  from: string,
-  functionToEstimateGas: Function,
-  ...args: any[]
-): Promise<number> {
-  const estimatedGas = await functionToEstimateGas
-    .apply(null, args)
-    .estimateGas({ from }, (err, estGas) => (err ? GASLIMIT_DEFAULT : estGas))
-  return estimatedGas
+export function getEventFromTx(txReceipt, eventName) {
+  return txReceipt?.events?.filter((log) => {
+    return log.event === eventName
+  })[0]
 }
 
 /**
@@ -101,20 +80,34 @@ export async function calculateEstimatedGas(
  * @return {Promise<any>} transaction receipt
  */
 export async function sendTx(
-  from: string,
-  estGas: number,
-  web3: Web3,
+  estGas: BigNumber,
+  signer: Signer,
   gasFeeMultiplier: number,
-  functionToSend: Function,
+  functionToSend: ContractFunction,
   ...args: any[]
-): Promise<TransactionReceipt> {
-  const sendTxValue: Record<string, any> = {
-    from,
-    gas: estGas + 1
+): Promise<providers.TransactionResponse> {
+  const { chainId } = await signer.provider.getNetwork()
+  const feeHistory = await signer.provider.getFeeData()
+  let overrides
+  if (feeHistory.maxPriorityFeePerGas) {
+    overrides = {
+      maxPriorityFeePerGas: feeHistory.maxPriorityFeePerGas,
+      maxFeePerGas: feeHistory.maxFeePerGas
+    }
+  } else {
+    overrides = {
+      gasPrice: feeHistory.gasPrice
+    }
   }
-  const networkId = await web3.eth.getChainId()
+  overrides.gasLimit = estGas
   try {
-    const feeHistory = await web3.eth.getFeeHistory(1, 'latest', [75])
+    const trxReceipt = await functionToSend(...args, overrides)
+    return trxReceipt
+  } catch (e) {
+    return null
+  }
+  /* try {
+    const feeHistory = await signer.provider,web3.eth.getFeeHistory(1, 'latest', [75])
     if (feeHistory && feeHistory?.baseFeePerGas?.[0] && feeHistory?.reward?.[0]?.[0]) {
       let aggressiveFee = new BigNumber(feeHistory?.reward?.[0]?.[0])
       if (gasFeeMultiplier > 1) {
@@ -161,4 +154,5 @@ export async function sendTx(
 
   const trxReceipt = await functionToSend.apply(null, args).send(sendTxValue)
   return trxReceipt
+  */
 }

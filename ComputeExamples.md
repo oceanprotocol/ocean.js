@@ -141,7 +141,6 @@ import {
   DDO,
   NftCreateData,
   DatatokenCreateParams,
-  calculateEstimatedGas,
   sendTx,
   configHelperNetworks,
   ConfigHelper
