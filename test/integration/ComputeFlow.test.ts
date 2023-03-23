@@ -364,8 +364,8 @@ describe('Compute flow tests', async () => {
 
   it('should start a computeJob using the free environment', async () => {
     const datatoken = new Datatoken(
-      publisherAccount,
-      (await publisherAccount.provider.getNetwork()).chainId
+      consumerAccount,
+      (await consumerAccount.provider.getNetwork()).chainId
     )
     // let's have 5 minute of compute access
     const mytime = new Date()
