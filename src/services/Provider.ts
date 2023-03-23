@@ -18,7 +18,6 @@ import {
   Smartcontract,
   GraphqlQuery
 } from '../@types'
-import Web3 from 'web3'
 
 export class Provider {
   /**
@@ -119,7 +118,7 @@ export class Provider {
 
   /** Encrypt data using the Provider's own symmetric key
    * @param {string} data data in json format that needs to be sent , it can either be a DDO or a File array
-   * @param {number} chainId network's id so provider can choose the corresponding web3 object
+   * @param {number} chainId network's id so provider can choose the corresponding Signer object
    * @param {string} providerUri provider uri address
    * @param {AbortSignal} signal abort signal
    * @return {Promise<string>} urlDetails
@@ -414,20 +413,20 @@ export class Provider {
   }
 
   /** Instruct the provider to start a compute job
-   * @param {string} did
-   * @param {string} consumerAddress
-   * @param {string} computeEnv
-   * @param {ComputeAlgorithm} algorithm
    * @param {string} providerUri
    * @param {Signer} signer
+   * @param {string} consumerAddress
+   * @param {string} computeEnv
+   * @param {ComputeAsset} dataset
+   * @param {ComputeAlgorithm} algorithm
    * @param {AbortSignal} signal abort signal
+   * @param {ComputeAsset[]} additionalDatasets
    * @param {ComputeOutput} output
    * @return {Promise<ComputeJob | ComputeJob[]>}
    */
   public async computeStart(
     providerUri: string,
-    signer: Signer,
-    consumerAddress: string,
+    consumer: Signer,
     computeEnv: string,
     dataset: ComputeAsset,
     algorithm: ComputeAlgorithm,
@@ -445,12 +444,12 @@ export class Provider {
       : null
 
     const nonce = Date.now()
-    let signatureMessage = consumerAddress
+    let signatureMessage = await consumer.getAddress()
     signatureMessage += dataset.documentId
     signatureMessage += nonce
-    const signature = await this.signProviderRequest(signer, signatureMessage)
+    const signature = await this.signProviderRequest(consumer, signatureMessage)
     const payload = Object()
-    payload.consumerAddress = consumerAddress
+    payload.consumerAddress = await consumer.getAddress()
     payload.signature = signature
     payload.nonce = nonce
     payload.environment = computeEnv
@@ -610,16 +609,14 @@ export class Provider {
 
   /** Get compute result url
    * @param {string} providerUri The URI of the provider we want to query
-   * @param {Signer} signer Web3 instance
-   * @param {string} consumerAddress The consumer ethereum address
+   * @param {Signer} consumer ether.Signer instance
    * @param {string} jobId The ID of a compute job.
    * @param {number} index Result index
    * @return {Promise<string>}
    */
   public async getComputeResultUrl(
     providerUri: string,
-    signer: Signer,
-    consumerAddress: string,
+    consumer: Signer,
     jobId: string,
     index: number
   ): Promise<string> {
@@ -633,14 +630,14 @@ export class Provider {
       : null
 
     const nonce = Date.now()
-    let signatureMessage = consumerAddress
+    let signatureMessage = await consumer.getAddress()
     signatureMessage += jobId
     signatureMessage += index.toString()
     signatureMessage += nonce
-    const signature = await this.signProviderRequest(signer, signatureMessage)
+    const signature = await this.signProviderRequest(consumer, signatureMessage)
     if (!computeResultUrl) return null
     let resultUrl = computeResultUrl
-    resultUrl += `?consumerAddress=${consumerAddress}`
+    resultUrl += `?consumerAddress=${await consumer.getAddress()}`
     resultUrl += `&jobId=${jobId}`
     resultUrl += `&index=${index.toString()}`
     resultUrl += `&nonce=${nonce}`
@@ -650,19 +647,17 @@ export class Provider {
 
   /** Deletes a compute job.
    * @param {string} did
-   * @param {string} consumerAddress
+   * @param {Signer} consumer
    * @param {string} jobId
    * @param {string} providerUri
-   * @param {Web3} web3
    * @param {AbortSignal} signal abort signal
    * @return {Promise<ComputeJob | ComputeJob[]>}
    */
   public async computeDelete(
     did: string,
-    consumerAddress: string,
+    consumer: Signer,
     jobId: string,
     providerUri: string,
-    signer: Signer,
     signal?: AbortSignal
   ): Promise<ComputeJob | ComputeJob[]> {
     const providerEndpoints = await this.getEndpoints(providerUri)
@@ -676,20 +671,20 @@ export class Provider {
 
     const nonce = await this.getNonce(
       providerUri,
-      consumerAddress,
+      await consumer.getAddress(),
       signal,
       providerEndpoints,
       serviceEndpoints
     )
 
-    let signatureMessage = consumerAddress
+    let signatureMessage = await consumer.getAddress()
     signatureMessage += jobId || ''
     signatureMessage += (did && `${this.noZeroX(did)}`) || ''
     signatureMessage += nonce
-    const signature = await this.signProviderRequest(signer, signatureMessage)
+    const signature = await this.signProviderRequest(consumer, signatureMessage)
     const payload = Object()
     payload.documentId = this.noZeroX(did)
-    payload.consumerAddress = consumerAddress
+    payload.consumerAddress = await consumer.getAddress()
     payload.jobId = jobId
     if (signature) payload.signature = signature
 

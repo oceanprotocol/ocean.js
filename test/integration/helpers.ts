@@ -117,51 +117,53 @@ export async function updateAssetMetadata(
   return updateDdoTX
 }
 
-// export async function handleComputeOrder(
-//   order: ProviderComputeInitialize,
-//   datatokenAddress: string,
-//   payerAccount: string,
-//   consumerAccount: string,
-//   serviceIndex: number,
-//   datatoken: Datatoken,
-//   config: Config,
-//   consumeMarkerFee?: ConsumeMarketFee
-// ) {
-//   /* We do have 3 possible situations:
-//        - have validOrder and no providerFees -> then order is valid, providerFees are valid, just use it in startCompute
-//        - have validOrder and providerFees -> then order is valid but providerFees are not valid, we need to call reuseOrder and pay only providerFees
-//        - no validOrder -> we need to call startOrder, to pay 1 DT & providerFees
-//     */
-//   if (order.providerFee && order.providerFee.providerFeeAmount) {
-//     await approveWei(
-//       web3,
-//       config,
-//       payerAccount,
-//       order.providerFee.providerFeeToken,
-//       datatokenAddress,
-//       order.providerFee.providerFeeAmount
-//     )
-//   }
-//   if (order.validOrder) {
-//     if (!order.providerFee) return order.validOrder
-//     const tx = await datatoken.reuseOrder(
-//       datatokenAddress,
-//       payerAccount,
-//       order.validOrder,
-//       order.providerFee
-//     )
-//     return tx.transactionHash
-//   }
-//   const tx = await datatoken.startOrder(
-//     datatokenAddress,
-//     payerAccount,
-//     consumerAccount,
-//     serviceIndex,
-//     order.providerFee,
-//     consumeMarkerFee
-//   )
-//   return tx.transactionHash
-// }
+export async function handleComputeOrder(
+  order: ProviderComputeInitialize,
+  datatokenAddress: string,
+  payerAccount: Signer,
+  consumerAccount: Signer,
+  serviceIndex: number,
+  datatoken: Datatoken,
+  config: Config,
+  consumeMarkerFee?: ConsumeMarketFee
+) {
+  /* We do have 3 possible situations:
+       - have validOrder and no providerFees -> then order is valid, providerFees are valid, just use it in startCompute
+       - have validOrder and providerFees -> then order is valid but providerFees are not valid, we need to call reuseOrder and pay only providerFees
+       - no validOrder -> we need to call startOrder, to pay 1 DT & providerFees
+    */
+  if (order.providerFee && order.providerFee.providerFeeAmount) {
+    await approveWei(
+      payerAccount,
+      config,
+      await payerAccount.getAddress(),
+      order.providerFee.providerFeeToken,
+      datatokenAddress,
+      order.providerFee.providerFeeAmount
+    )
+  }
+  if (order.validOrder) {
+    if (!order.providerFee) return order.validOrder
+    const tx = await datatoken.reuseOrder(
+      datatokenAddress,
+      order.validOrder,
+      order.providerFee
+    )
+    const reusedTx = await tx.wait()
+    const orderReusedTx = getEventFromTx(reusedTx, 'OrderReused')
+    return orderReusedTx.transactionHash
+  }
+  const tx = await datatoken.startOrder(
+    datatokenAddress,
+    await consumerAccount.getAddress(),
+    serviceIndex,
+    order.providerFee,
+    consumeMarkerFee
+  )
+  const orderTx = await tx.wait()
+  const orderStartedTx = getEventFromTx(orderTx, 'OrderStarted')
+  return orderStartedTx.transactionHash
+}
 
 export async function orderAsset(
   did: string,
@@ -199,6 +201,6 @@ export async function orderAsset(
     providerFees
   )
   const orderTx = await tx.wait()
-  const OrderStartedTx = getEventFromTx(orderTx, 'OrderStarted')
-  return OrderStartedTx
+  const orderStartedTx = getEventFromTx(orderTx, 'OrderStarted')
+  return orderStartedTx
 }

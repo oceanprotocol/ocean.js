@@ -1,6 +1,6 @@
 import { assert } from 'chai'
 import { ethers, Signer } from 'ethers'
-import { getTestConfig, getAddresses, provider, web3 } from '../config'
+import { getTestConfig, getAddresses, provider } from '../config'
 import {
   Config,
   ProviderInstance,
@@ -153,7 +153,6 @@ describe('Publish consume test', async () => {
     config = await getTestConfig(publisherAccount)
     aquarius = new Aquarius(config?.metadataCacheUri)
     providerUrl = config?.providerUri
-    console.log(config)
     addresses = getAddresses()
   })
 
