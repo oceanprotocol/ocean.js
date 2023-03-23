@@ -363,7 +363,7 @@ describe('Compute flow tests', async () => {
   })
 
   it('should start a computeJob using the free environment', async () => {
-    const datatoken = new Datatoken(
+    datatoken = new Datatoken(
       consumerAccount,
       (await consumerAccount.provider.getNetwork()).chainId
     )
