@@ -104,7 +104,7 @@
 /// Install dependencies running the following command in your terminal:
 
 /// ```bash
-/// npm install @oceanprotocol/lib crypto-js web3 web3-utils typescript @types/node ts-node
+/// npm install @oceanprotocol/lib crypto-js ethers typescript @types/node ts-node
 /// ```
 
 /// ## 4. Import dependencies and add variables, constants and helper methods
@@ -120,8 +120,7 @@ import fs from 'fs'
 import { homedir } from 'os'
 import { assert } from 'chai'
 import { SHA256 } from 'crypto-js'
-import Web3 from 'web3'
-import { AbiItem } from 'web3-utils'
+import { ethers, providers, Signer } from 'ethers'
 import {
   ProviderInstance,
   Aquarius,
@@ -143,9 +142,10 @@ import {
   DatatokenCreateParams,
   sendTx,
   configHelperNetworks,
-  ConfigHelper
+  ConfigHelper,
+  getEventFromTx,
+  amountToUnits
 } from '../../src'
-
 /// ```
 
 /// ### 4.2. Constants and variables
@@ -259,13 +259,12 @@ const ALGORITHM_DDO: DDO = {
 
 /// Now we define the variables which we will need later
 /// ```Typescript
-let web3: Web3
 let config: Config
-let aquarius: Aquarius
+let aquariusInstance: Aquarius
 let datatoken: Datatoken
 let providerUrl: string
-let publisherAccount: string
-let consumerAccount: string
+let publisherAccount: Signer
+let consumerAccount: Signer
 let addresses
 let computeEnvs
 
@@ -286,16 +285,17 @@ let computeJobId: string
 async function createAsset(
   name: string,
   symbol: string,
-  owner: string,
+  owner: Signer,
   assetUrl: Files,
   ddo: DDO,
   providerUrl: string
 ) {
-  const nft = new Nft(web3)
-  const Factory = new NftFactory(addresses.ERC721Factory, web3)
+  const nft = new Nft(owner, (await owner.provider.getNetwork()).chainId)
 
-  // Now we update the DDO and set the right did
-  const chain = await web3.eth.getChainId()
+  const nftFactory = new NftFactory(addresses.ERC721Factory, owner)
+
+  const chain = (await owner.provider.getNetwork()).chainId
+
   ddo.chainId = parseInt(chain.toString(10))
   const nftParamsAsset: NftCreateData = {
     name,
@@ -303,7 +303,7 @@ async function createAsset(
     templateIndex: 1,
     tokenURI: 'aaa',
     transferable: true,
-    owner
+    owner: await owner.getAddress()
   }
   const datatokenParams: DatatokenCreateParams = {
     templateIndex: 1,
@@ -311,45 +311,41 @@ async function createAsset(
     feeAmount: '0',
     paymentCollector: ZERO_ADDRESS,
     feeToken: ZERO_ADDRESS,
-    minter: owner,
+    minter: await owner.getAddress(),
     mpFeeAddress: ZERO_ADDRESS
   }
-  // Now we can make the contract call createNftWithDatatoken
-  const result = await Factory.createNftWithDatatoken(
-    owner,
+
+  const bundleNFT = await nftFactory.createNftWithDatatoken(
     nftParamsAsset,
     datatokenParams
   )
 
-  const nftAddress = result.events.NFTCreated.returnValues[0]
-  const datatokenAddressAsset = result.events.TokenCreated.returnValues[0]
-  ddo.nftAddress = web3.utils.toChecksumAddress(nftAddress)
+  const trxReceipt = await bundleNFT.wait()
+  // events have been emitted
+  const nftCreatedEvent = getEventFromTx(trxReceipt, 'NFTCreated')
+  const tokenCreatedEvent = getEventFromTx(trxReceipt, 'TokenCreated')
 
-  // Next we encrypt the file or files using Ocean Provider. The provider is an off chain proxy built specifically for this task
+  const nftAddress = nftCreatedEvent.args.newTokenAddress
+  const datatokenAddressAsset = tokenCreatedEvent.args.newTokenAddress
+  // create the files encrypted string
   assetUrl.datatokenAddress = datatokenAddressAsset
-  assetUrl.nftAddress = ddo.nftAddress
-  let providerResponse = await ProviderInstance.encrypt(assetUrl, chain, providerUrl)
-  ddo.services[0].files = await providerResponse
+  assetUrl.nftAddress = nftAddress
+  ddo.services[0].files = await ProviderInstance.encrypt(assetUrl, chain, providerUrl)
   ddo.services[0].datatokenAddress = datatokenAddressAsset
-  ddo.services[0].serviceEndpoint = providerUrl
+  ddo.services[0].serviceEndpoint = 'http://172.15.0.4:8030' // put back proviederUrl
 
-  // Next we update ddo and set the right did
-  ddo.nftAddress = web3.utils.toChecksumAddress(nftAddress)
-  ddo.id =
-    'did:op:' + SHA256(web3.utils.toChecksumAddress(nftAddress) + chain.toString(10))
-  providerResponse = await ProviderInstance.encrypt(ddo, chain, providerUrl)
-  const encryptedResponse = await providerResponse
-  const validateResult = await aquarius.validate(ddo)
+  ddo.nftAddress = nftAddress
+  ddo.id = 'did:op:' + SHA256(ethers.utils.getAddress(nftAddress) + chain.toString(10))
 
-  // Next you can check if if the ddo is valid by checking if validateResult.valid returned true
-
+  const encryptedResponse = await ProviderInstance.encrypt(ddo, chain, providerUrl)
+  const validateResult = await aquariusInstance.validate(ddo)
   await nft.setMetadata(
     nftAddress,
-    owner,
+    await owner.getAddress(),
     0,
-    providerUrl,
+    'http://172.15.0.4:8030', // put back proviederUrl
     '',
-    '0x2',
+    ethers.utils.hexlify(2),
     encryptedResponse,
     validateResult.hash
   )
@@ -362,7 +358,7 @@ async function createAsset(
 async function handleOrder(
   order: ProviderComputeInitialize,
   datatokenAddress: string,
-  payerAccount: string,
+  payerAccount: Signer,
   consumerAccount: string,
   serviceIndex: number,
   consumeMarkerFee?: ConsumeMarketFee
@@ -374,9 +370,9 @@ async function handleOrder(
   */
   if (order.providerFee && order.providerFee.providerFeeAmount) {
     await approveWei(
-      web3,
-      config,
       payerAccount,
+      config,
+      await payerAccount.getAddress(),
       order.providerFee.providerFeeToken,
       datatokenAddress,
       order.providerFee.providerFeeAmount
@@ -386,21 +382,23 @@ async function handleOrder(
     if (!order.providerFee) return order.validOrder
     const tx = await datatoken.reuseOrder(
       datatokenAddress,
-      payerAccount,
       order.validOrder,
       order.providerFee
     )
-    return tx.transactionHash
+    const reusedTx = await tx.wait()
+    const orderReusedTx = getEventFromTx(reusedTx, 'OrderReused')
+    return orderReusedTx.transactionHash
   }
   const tx = await datatoken.startOrder(
     datatokenAddress,
-    payerAccount,
     consumerAccount,
     serviceIndex,
     order.providerFee,
     consumeMarkerFee
   )
-  return tx.transactionHash
+  const orderTx = await tx.wait()
+  const orderStartedTx = getEventFromTx(orderTx, 'OrderStarted')
+  return orderStartedTx.transactionHash
 }
 /// ```
 
@@ -412,9 +410,17 @@ describe('Compute-to-data example tests', async () => {
   /// We need to load the configuration. Add the following code into your `run(){ }` function
   /// ```Typescript
   before(async () => {
-    web3 = new Web3(process.env.NODE_URI || configHelperNetworks[1].nodeUri)
-    config = new ConfigHelper().getConfig(await web3.eth.getChainId())
+    const provider = new providers.JsonRpcProvider(
+      process.env.NODE_URI || configHelperNetworks[1].nodeUri
+    )
+    publisherAccount = (await provider.getSigner(0)) as Signer
+    consumerAccount = (await provider.getSigner(1)) as Signer
+    const config = new ConfigHelper().getConfig(
+      parseInt(String((await publisherAccount.provider.getNetwork()).chainId))
+    )
     config.providerUri = process.env.PROVIDER_URL || config.providerUri
+    aquariusInstance = new Aquarius(config?.metadataCacheUri)
+    providerUrl = config?.providerUri
     addresses = JSON.parse(
       // eslint-disable-next-line security/detect-non-literal-fs-filename
       fs.readFileSync(
@@ -423,37 +429,24 @@ describe('Compute-to-data example tests', async () => {
         'utf8'
       )
     ).development
-    aquarius = new Aquarius(config.metadataCacheUri)
-    providerUrl = config.providerUri
-    datatoken = new Datatoken(web3)
+
     /// ```
     /// As we go along it's a good idea to console log the values so that you check they are right. At the end of your `run(){ ... }` function add the following logs:
     /// ```Typescript
     console.log(`Aquarius URL: ${config.metadataCacheUri}`)
     console.log(`Provider URL: ${providerUrl}`)
     console.log(`Deployed contracts address: ${addresses}`)
-  }) ///
-  /// ```
-
-  /// Now at the end of your compute.ts file call you `run()` function. Next, let's compile the file with the `tsc` command in the console and run `node dist/compute.js`.
-  /// If everything is working you should see the logs in the console and no errors.
-  /// ## 5. Initialize accounts
-  it('5.1 Initialize accounts', async () => {
-    /// We will use all of the following code snippets in the same way. Add the code snippet and the logs to the end of your `run(){ ... }` function as well as the logs.
-    /// Then compile your file with the `tsc` command and run it with `node dist/compute.js`
-    /// ```Typescript
-    const accounts = await web3.eth.getAccounts()
-    publisherAccount = accounts[0]
-    consumerAccount = accounts[1]
-    /// ```
-    /// Again, lets console log the values so that we can check that they have been saved properly
-    /// ```Typescript
     console.log(`Publisher account address: ${publisherAccount}`)
     console.log(`Consumer account address: ${consumerAccount}`)
   }) ///
   /// ```
 
-  it('5.2 Mint OCEAN to publisher account', async () => {
+  /// Now at the end of your compute.ts file call you `run()` function. Next, let's compile the file with the `tsc` command in the console and run `node dist/compute.js`.
+  /// If everything is working you should see the logs in the console and no errors.
+  /// We will use all of the following code snippets in the same way. Add the code snippet and the logs to the end of your `run(){ ... }` function as well as the logs.
+  /// Then compile your file with the `tsc` command and run it with `node dist/compute.js`
+
+  it('5.1 Mint OCEAN to publisher account', async () => {
     /// You can skip this step if you are running your script against a remote network,
     /// you need to mint oceans to mentioned accounts only if you are using barge to test your script
 
@@ -471,29 +464,33 @@ describe('Compute-to-data example tests', async () => {
         stateMutability: 'nonpayable',
         type: 'function'
       }
-    ] as AbiItem[]
-    const tokenContract = new web3.eth.Contract(minAbi, addresses.Ocean)
-    const estGas = await calculateEstimatedGas(
-      publisherAccount,
-      tokenContract.methods.mint,
-      publisherAccount,
-      web3.utils.toWei('1000')
+    ]
+
+    const tokenContract = new ethers.Contract(addresses.Ocean, minAbi, publisherAccount)
+    const estGasPublisher = await tokenContract.estimateGas.mint(
+      await publisherAccount.getAddress(),
+      amountToUnits(null, null, '1000', 18)
     )
     await sendTx(
+      estGasPublisher,
       publisherAccount,
-      estGas,
-      web3,
       1,
-      tokenContract.methods.mint,
-      publisherAccount,
-      web3.utils.toWei('1000')
+      tokenContract.mint,
+      await publisherAccount.getAddress(),
+      amountToUnits(null, null, '1000', 18)
     )
   }) ///
   /// ```
 
-  it('5.3 Send some OCEAN to consumer account', async () => {
+  it('5.2 Send some OCEAN to consumer account', async () => {
     /// ```Typescript
-    transfer(web3, config, publisherAccount, addresses.Ocean, consumerAccount, '100')
+    transfer(
+      publisherAccount,
+      config,
+      addresses.Ocean,
+      await consumerAccount.getAddress(),
+      '100'
+    )
   }) ///
   /// ```
 
@@ -537,8 +534,8 @@ describe('Compute-to-data example tests', async () => {
 
   it('7.1 Resolve published datasets and algorithms', async () => {
     /// ```Typescript
-    resolvedDatasetDdo = await aquarius.waitForAqua(datasetId)
-    resolvedAlgorithmDdo = await aquarius.waitForAqua(algorithmId)
+    resolvedDatasetDdo = await aquariusInstance.waitForAqua(datasetId)
+    resolvedAlgorithmDdo = await aquariusInstance.waitForAqua(algorithmId)
     /// ```
     /// <!--
     assert(resolvedDatasetDdo, 'Cannot fetch DDO from Aquarius')
@@ -550,18 +547,22 @@ describe('Compute-to-data example tests', async () => {
 
   it('8.1 Mint dataset and algorithm datatokens to publisher', async () => {
     /// ```Typescript
+    const datatoken = new Datatoken(
+      publisherAccount,
+      (await publisherAccount.provider.getNetwork()).chainId
+    )
     await datatoken.mint(
       resolvedDatasetDdo.services[0].datatokenAddress,
-      publisherAccount,
+      await publisherAccount.getAddress(),
       '10',
-      consumerAccount
+      await consumerAccount.getAddress()
     )
 
     await datatoken.mint(
       resolvedAlgorithmDdo.services[0].datatokenAddress,
-      publisherAccount,
+      await publisherAccount.getAddress(),
       '10',
-      consumerAccount
+      await consumerAccount.getAddress()
     )
   }) ///
   /// ```
@@ -580,6 +581,11 @@ describe('Compute-to-data example tests', async () => {
   /// ## 10. Consumer starts a compute job
 
   it('10.1 Start a compute job using a free C2D environment', async () => {
+    datatoken = new Datatoken(
+      consumerAccount,
+      (await consumerAccount.provider.getNetwork()).chainId
+    )
+
     /// let's check the free compute environment
     /// ```Typescript
     const computeEnv = computeEnvs[resolvedDatasetDdo.chainId].find(
@@ -616,7 +622,7 @@ describe('Compute-to-data example tests', async () => {
       computeEnv.id,
       computeValidUntil,
       providerUrl,
-      consumerAccount
+      await consumerAccount.getAddress()
     )
     /// ```
     /// <!--
@@ -639,14 +645,15 @@ describe('Compute-to-data example tests', async () => {
         0
       )
     }
+
     const computeJobs = await ProviderInstance.computeStart(
       providerUrl,
-      web3,
       consumerAccount,
       computeEnv.id,
       assets[0],
       algo
     )
+
     /// ```
     /// <!--
     assert(computeJobs, 'Cannot start compute job')
@@ -663,7 +670,7 @@ describe('Compute-to-data example tests', async () => {
     /// ```Typescript
     const jobStatus = await ProviderInstance.computeStatus(
       providerUrl,
-      consumerAccount,
+      await consumerAccount.getAddress(),
       computeJobId,
       DATASET_DDO.id
     )
@@ -682,7 +689,6 @@ describe('Compute-to-data example tests', async () => {
     await sleep(10000)
     const downloadURL = await ProviderInstance.getComputeResultUrl(
       providerUrl,
-      web3,
       consumerAccount,
       computeJobId,
       0
