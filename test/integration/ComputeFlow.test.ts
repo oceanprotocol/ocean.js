@@ -1,5 +1,4 @@
 import { assert } from 'chai'
-import { AbiItem } from 'web3-utils'
 import { ethers, Signer } from 'ethers'
 import { getTestConfig, getAddresses, provider } from '../config'
 import {
@@ -257,17 +256,32 @@ describe('Compute flow tests', async () => {
     ]
 
     const tokenContract = new ethers.Contract(addresses.Ocean, minAbi, publisherAccount)
-    const estGas = await tokenContract.estimateGas.mint(
+    const estGasPublisher = await tokenContract.estimateGas.mint(
       await publisherAccount.getAddress(),
       amountToUnits(null, null, '1000', 18)
     )
 
     await sendTx(
-      estGas,
+      estGasPublisher,
       publisherAccount,
       1,
       tokenContract.mint,
       await publisherAccount.getAddress(),
+      amountToUnits(null, null, '1000', 18)
+    )
+
+    // mint ocean to consumer
+    const estGasConsumer = await tokenContract.estimateGas.mint(
+      await consumerAccount.getAddress(),
+      amountToUnits(null, null, '1000', 18)
+    )
+
+    await sendTx(
+      estGasConsumer,
+      consumerAccount,
+      1,
+      tokenContract.mint,
+      await consumerAccount.getAddress(),
       amountToUnits(null, null, '1000', 18)
     )
 

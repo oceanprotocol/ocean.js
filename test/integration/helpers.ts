@@ -133,6 +133,7 @@ export async function handleComputeOrder(
        - no validOrder -> we need to call startOrder, to pay 1 DT & providerFees
     */
   if (order.providerFee && order.providerFee.providerFeeAmount) {
+    console.log('approving provider fees')
     await approveWei(
       payerAccount,
       config,
@@ -143,6 +144,7 @@ export async function handleComputeOrder(
     )
   }
   if (order.validOrder) {
+    console.log('return validOrder', order.validOrder)
     if (!order.providerFee) return order.validOrder
     const tx = await datatoken.reuseOrder(
       datatokenAddress,
@@ -151,6 +153,7 @@ export async function handleComputeOrder(
     )
     const reusedTx = await tx.wait()
     const orderReusedTx = getEventFromTx(reusedTx, 'OrderReused')
+    console.log('return reused order', orderReusedTx.transactionHash)
     return orderReusedTx.transactionHash
   }
   const tx = await datatoken.startOrder(
@@ -162,6 +165,7 @@ export async function handleComputeOrder(
   )
   const orderTx = await tx.wait()
   const orderStartedTx = getEventFromTx(orderTx, 'OrderStarted')
+  console.log('create new order', orderStartedTx.transactionHash)
   return orderStartedTx.transactionHash
 }
 
