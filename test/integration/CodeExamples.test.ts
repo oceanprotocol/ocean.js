@@ -408,7 +408,7 @@ describe('Marketplace flow tests', async () => {
       0,
       providerUrl,
       '',
-      '0x2',
+      ethers.utils.hexlify(2),
       encryptedDDO,
       isAssetValid.hash
     )
@@ -673,7 +673,7 @@ describe('Marketplace flow tests', async () => {
       0,
       providerUrl,
       '',
-      '0x2',
+      ethers.utils.hexlify(2),
       encryptedDDO,
       isAssetValid.hash
     )
