@@ -211,6 +211,7 @@ describe('Marketplace flow tests', async () => {
     )
     publisherAccount = (await provider.getSigner(0)) as Signer
     consumerAccount = (await provider.getSigner(1)) as Signer
+    stakerAccount = (await provider.getSigner(2)) as Signer
     const config = new ConfigHelper().getConfig(
       parseInt(String((await publisherAccount.provider.getNetwork()).chainId))
     )
@@ -231,9 +232,9 @@ describe('Marketplace flow tests', async () => {
     console.log(`Aquarius URL: ${config.metadataCacheUri}`)
     console.log(`Provider URL: ${providerUrl}`)
     console.log(`Deployed contracts address: ${addresses}`)
-    console.log(`Publisher account address: ${publisherAccount}`)
-    console.log(`Consumer account address: ${consumerAccount}`)
-    console.log(`Staker account address: ${stakerAccount}`)
+    console.log(`Publisher account address: ${await publisherAccount.getAddress()}`)
+    console.log(`Consumer account address: ${await consumerAccount.getAddress()}`)
+    console.log(`Staker account address: ${await stakerAccount.getAddress()}`)
   }) ///
   /// ```
 
