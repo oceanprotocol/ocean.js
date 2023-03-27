@@ -2,18 +2,18 @@
 
 Here are the steps:
 
-0. [Prerequisites](#-Prerequisites)
-1. [Initialize services](#-initialize-services)
-2. [Create a new node.js project](#-create-a-new-node.js-project)
-3. [Install dependencies](#-install-dependencies)
-4. [Import dependencies and add variables and constants](#-import-dependencies-and-add-variables-and-constants)
+0. [Prerequisites](#0-prerequisites)
+1. [Initialize services](#1-initialize-services)
+2. [Create a new node.js project](#2-create-a-new-nodejs-project-with-typescript)
+3. [Install dependencies](#3-install-dependencies)
+4. [Import dependencies and add variables and constants](#4-import-dependencies-and-add-variables-constants-and-helper-methods)
 5. [Initialize accounts and deploy contracts](#-initialize-accounts-and-deploy-contracts)
-6. [Publish a dataset and  an algorithm](#-publish-a-dataset-data-nft-and-datatoken)
-7. [Resolve published datasets and algorithms](#-resolve-published-datasets-and-algorithms)
-8. [Send datatokens to consumer](#-send-datatokens-to-consumer)
-9. [Consumer fetches compute environment](#-consumer-starts-a-compute-job-using-a-free-c2D-environment)
-10. [Consumer starts a compute job using a free C2D environment](#-consumer-starts-a-compute-job-using-a-free-c2D-environment)
-11. [Check compute status and get download compute results url](#-check-compute-status-and-get-download-compute-results-url)
+6. [Publish a dataset and  an algorithm](#6-publish-assets-dataset-and-algorithm)
+7. [Resolve published datasets and algorithms](#7-resolve-assets)
+8. [Send datatokens to consumer](#8-send-datatokens-to-consumer)
+9. [Consumer fetches compute environment](#9-get-compute-environments)
+10. [Consumer starts a compute job using a free C2D environment](#10-consumer-starts-a-compute-job)
+11. [Check compute status and get download compute results url](#11-check-compute-status-and-get-download-compute-results-url)
 
 Let's go through each step.
 
