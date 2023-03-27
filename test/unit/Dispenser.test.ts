@@ -1,25 +1,29 @@
 import { assert, expect } from 'chai'
-import { deployContracts, Addresses } from '../TestContractHandler'
-import { web3 } from '../config'
+import { getTestConfig, provider, getAddresses } from '../config'
+import { ethers, Signer, providers } from 'ethers'
+
 import {
   NftFactory,
   NftCreateData,
   Datatoken,
   DispenserParams,
   Dispenser,
-  ZERO_ADDRESS
+  ZERO_ADDRESS,
+  Config,
+  getEventFromTx
 } from '../../src/'
 import { DatatokenCreateParams } from '../../src/@types'
 
 describe('Dispenser flow', () => {
-  let factoryOwner: string
-  let user1: string
-  let user2: string
-  let contracts: Addresses
+  let factoryOwner: Signer
+  let user1: Signer
+  let user2: Signer
   let DispenserClass: Dispenser
   let nftFactory: NftFactory
   let datatoken: Datatoken
   let dtAddress: string
+  let addresses
+  let config: Config
 
   const nftData: NftCreateData = {
     name: '72120Bundle',
@@ -43,45 +47,48 @@ describe('Dispenser flow', () => {
   }
 
   before(async () => {
-    const accounts = await web3.eth.getAccounts()
-    factoryOwner = accounts[0]
-    user1 = accounts[3]
-    user2 = accounts[4]
+    factoryOwner = (await provider.getSigner(0)) as Signer
+    user1 = (await provider.getSigner(3)) as Signer
+    user2 = (await provider.getSigner(4)) as Signer
 
-    nftData.owner = factoryOwner
-    dtParams.minter = factoryOwner
-    dtParams.paymentCollector = user2
-    dtParams.mpFeeAddress = user1
-  })
+    config = await getTestConfig(factoryOwner as Signer)
+    addresses = await getAddresses()
 
-  it('should deploy contracts', async () => {
-    contracts = await deployContracts(web3, factoryOwner)
+    nftData.owner = await factoryOwner.getAddress()
+    dtParams.minter = await factoryOwner.getAddress()
+    dtParams.paymentCollector = await user2.getAddress()
+    dtParams.mpFeeAddress = await user1.getAddress()
   })
 
   it('should initialize Dispenser class', async () => {
-    DispenserClass = new Dispenser(contracts.dispenserAddress, web3, 8996)
+    DispenserClass = new Dispenser(addresses.Dispenser, factoryOwner)
     assert(DispenserClass !== null)
   })
 
   it('#createNftwithErc - should create an NFT and a Datatoken ', async () => {
-    nftFactory = new NftFactory(contracts.nftFactoryAddress, web3)
+    nftFactory = new NftFactory(addresses.ERC721Factory, factoryOwner)
 
-    const txReceipt = await nftFactory.createNftWithDatatoken(
-      factoryOwner,
-      nftData,
-      dtParams
-    )
+    const tx = await nftFactory.createNftWithDatatoken(nftData, dtParams)
+    const trxReceipt = await tx.wait()
+    const nftCreatedEvent = getEventFromTx(trxReceipt, 'NFTCreated')
+    const tokenCreatedEvent = getEventFromTx(trxReceipt, 'TokenCreated')
+    expect(nftCreatedEvent.event === 'NFTCreated')
+    expect(tokenCreatedEvent.event === 'TokenCreated')
 
-    expect(txReceipt.events.NFTCreated.event === 'NFTCreated')
-    expect(txReceipt.events.TokenCreated.event === 'TokenCreated')
-
-    dtAddress = txReceipt.events.TokenCreated.returnValues.newTokenAddress
+    dtAddress = tokenCreatedEvent.args.newTokenAddress
   })
 
   it('Make user2 minter', async () => {
-    datatoken = new Datatoken(web3, 8996)
-    await datatoken.addMinter(dtAddress, factoryOwner, user2)
-    assert((await datatoken.getPermissions(dtAddress, user2)).minter === true)
+    datatoken = new Datatoken(factoryOwner)
+    await datatoken.addMinter(
+      dtAddress,
+      await factoryOwner.getAddress(),
+      await user2.getAddress()
+    )
+    assert(
+      (await datatoken.getPermissions(dtAddress, await user2.getAddress())).minter ===
+        true
+    )
   })
 
   it('Create dispenser', async () => {
@@ -92,51 +99,67 @@ describe('Dispenser flow', () => {
     }
     const tx = await datatoken.createDispenser(
       dtAddress,
-      factoryOwner,
-      contracts.dispenserAddress,
+      await factoryOwner.getAddress(),
+      addresses.Dispenser,
       dispenserParams
     )
     assert(tx, 'Cannot create dispenser')
   })
 
   it('Activate dispenser', async () => {
-    const tx = await DispenserClass.activate(dtAddress, '1', '1', factoryOwner)
+    const tx = await DispenserClass.activate(dtAddress, '1', '1')
     assert(tx, 'Cannot activate dispenser')
   })
 
   it('user1 gets the dispenser status', async () => {
     const status = await DispenserClass.status(dtAddress)
     assert(status.active === true, 'Dispenser not active')
-    assert(status.owner === factoryOwner, 'Dispenser owner is not alice')
+    assert(
+      status.owner === (await factoryOwner.getAddress()),
+      'Dispenser owner is not alice'
+    )
     assert(status.isMinter === true, 'Dispenser is not a minter')
   })
 
-  it('user1 deactivates the dispenser', async () => {
-    const tx = await DispenserClass.deactivate(dtAddress, factoryOwner)
+  it('Deactivates the dispenser', async () => {
+    const tx = await DispenserClass.deactivate(dtAddress)
     assert(tx, 'Cannot deactivate dispenser')
     const status = await DispenserClass.status(dtAddress)
     assert(status.active === false, 'Dispenser is still active')
   })
 
-  it('user1 sets user2 as an AllowedSwapper for the dispenser', async () => {
-    const tx = await DispenserClass.setAllowedSwapper(dtAddress, factoryOwner, user2)
+  it('Sets user2 as an AllowedSwapper for the dispenser', async () => {
+    const tx = await DispenserClass.setAllowedSwapper(dtAddress, await user2.getAddress())
     assert(tx, 'Cannot set Allowed Swapper')
     const status = await DispenserClass.status(dtAddress)
-    assert(status.allowedSwapper === user2, 'user2 is Allowed Swapper')
+    assert(
+      status.allowedSwapper === (await user2.getAddress()),
+      'user2 is Allowed Swapper'
+    )
   })
 
   it('user2 requests datatokens', async () => {
-    await DispenserClass.activate(dtAddress, '10', '10', factoryOwner)
-    const check = await DispenserClass.isDispensable(dtAddress, datatoken, user2, '1')
+    await DispenserClass.activate(dtAddress, '10', '10')
+    const check = await DispenserClass.isDispensable(
+      dtAddress,
+      datatoken,
+      await user2.getAddress(),
+      '1'
+    )
     assert(check === true, 'isDispensable should return true')
-    const tx = await DispenserClass.dispense(dtAddress, user2, '1', user2)
+    const DispenserClassForUser2 = new Dispenser(addresses.Dispenser, user2)
+    const tx = await DispenserClassForUser2.dispense(
+      dtAddress,
+      '1',
+      await user2.getAddress()
+    )
     assert(tx, 'user2 failed to get 1DT')
   })
 
-  it('user1 withdraws all datatokens', async () => {
-    const tx = await DispenserClass.ownerWithdraw(dtAddress, factoryOwner)
-    assert(tx, 'user1 failed to withdraw all her tokens')
+  it('Withdraws all datatokens', async () => {
+    const tx = await DispenserClass.ownerWithdraw(dtAddress)
+    assert(tx, 'failed to withdraw all her tokens')
     const status = await DispenserClass.status(dtAddress)
-    assert(status.balance === '0', 'Balance > 0')
+    assert(status.balance === '0.0', 'Balance > 0')
   })
 })
