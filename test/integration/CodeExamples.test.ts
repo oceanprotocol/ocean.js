@@ -17,17 +17,17 @@
 
 /// Here are the steps:
 
-/// 0. [Prerequisites](#-Prerequisites)
-/// 1. [Initialize services](#-initialize-services)
-/// 2. [Create a new node.js project](#-create-a-new-node.js-project)
-/// 3. [Install dependencies](#-install-dependencies)
-/// 4. [Import dependencies and add variables and constants](#-import-dependencies-and-add-variables-and-constantss)
-/// 5. [Load the configuration, initialize accounts and deploy contracts](#-load-the-configuration-initialize-accounts-and-deploy-contracts)
-/// 6. [Publish Data NFT and a Datatoken with a fixed rate exchange](#-publish-data-nft-and-a-datatoken-with-a-fixed-rate-exchange)
-/// 7. [Consume a fixed rate asset data asset, and downloads it'](#-consume-a-fixed-rate-asset-data-asset)
-/// 8. [Publish Data NFT and a Datatoken with a dispenser](#-publish-data-nft-and-a-datatoken-with-a-dispenser)
-/// 9. [Consume a dispenser data asset](#-consume-a-dispenser-data-asset)
-/// 10. [Using ERC725 Key-Value Store](#-using-ERC725-Key-Value-Store)
+/// 0. [Prerequisites](#0-prerequisites)
+/// 1. [Initialize services](#1-initialize-services)
+/// 2. [Create a new node.js project](#2-create-a-new-nodejs-project)
+/// 3. [Install dependencies](#3-install-dependancies)
+/// 4. [Import dependencies and add variables and constants](#4-import-dependencies-and-add-variables-and-constants)
+/// 5. [Load the configuration, initialize accounts and deploy contracts](#5-load-the-configuration-initialize-accounts-and-deploy-contracts)
+/// 6. [Publish Data NFT and a Datatoken with a fixed rate exchange](#6-publish-data-nft-and-a-datatoken-with-a-fixed-rate-exchange
+/// 7. [Consume a fixed rate asset data asset, and downloads it'](#7-consume-a-fixed-rate-asset-data-asset)
+/// 8. [Publish Data NFT and a Datatoken with a dispenser](#8-publish-data-nft-and-a-datatoken-with-a-dispenserr)
+/// 9. [Consume a dispenser data asset](#9-consume-a-dispenser-data-asset)
+/// 10. [Using ERC725 Key-Value Store](#10-using-erc725-key-value-store)
 
 /// ## 0. Prerequisites
 /// Before we start it is important that you have all of the necessary prerequisites installed on your computer.
