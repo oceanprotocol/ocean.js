@@ -67,7 +67,7 @@ Open the package.json file in a text editor and update the dependancies to inclu
     "@oceanprotocol/contracts": "1.0.0-alpha.28",
     "@oceanprotocol/lib": "1.0.0-next.37",
     "crypto-js": "^4.1.1",
-    "web3": "^1.7.3"
+    "ethers": "^5.7.2"
   }
 ```
 
@@ -211,6 +211,7 @@ Next, we define the metadata that will describe our data asset. This is what we 
     )
     publisherAccount = (await provider.getSigner(0)) as Signer
     consumerAccount = (await provider.getSigner(1)) as Signer
+    stakerAccount = (await provider.getSigner(2)) as Signer
     const config = new ConfigHelper().getConfig(
       parseInt(String((await publisherAccount.provider.getNetwork()).chainId))
     )
@@ -231,9 +232,9 @@ As we go along it's a good idea to console log the values so that you check they
     console.log(`Aquarius URL: ${config.metadataCacheUri}`)
     console.log(`Provider URL: ${providerUrl}`)
     console.log(`Deployed contracts address: ${addresses}`)
-    console.log(`Publisher account address: ${publisherAccount}`)
-    console.log(`Consumer account address: ${consumerAccount}`)
-    console.log(`Staker account address: ${stakerAccount}`)
+    console.log(`Publisher account address: ${await publisherAccount.getAddress()}`)
+    console.log(`Consumer account address: ${await consumerAccount.getAddress()}`)
+    console.log(`Staker account address: ${await stakerAccount.getAddress()}`)
   
 ```
 
@@ -407,7 +408,7 @@ Now let's console log the DID to check everything is working
       0,
       providerUrl,
       '',
-      '0x2',
+      ethers.utils.hexlify(2),
       encryptedDDO,
       isAssetValid.hash
     )
@@ -672,7 +673,7 @@ Now we need to encrypt file(s) using provider
       0,
       providerUrl,
       '',
-      '0x2',
+      ethers.utils.hexlify(2),
       encryptedDDO,
       isAssetValid.hash
     )
@@ -711,7 +712,7 @@ Now we need to encrypt file(s) using provider
     const resolvedDDO = await aquarius.waitForAqua(fixedDDO.id)
     assert(resolvedDDO, 'Cannot fetch DDO from Aquarius')
 
-    datatoken = new Datatoken(publisherAccount)
+    datatoken = new Datatoken(consumerAccount)
 
 ```
 At this point we need to encrypt file(s) using provider
@@ -796,8 +797,14 @@ Let's start by using the `setData` method to update the nft key value store with
     const nft = new Nft(publisherAccount)
     const data = 'SomeData'
     try {
-      await nft.setData(freNftAddress, await publisherAccount.getAddress(), '1', data)
+      await nft.setData(
+        freNftAddress,
+        await publisherAccount.getAddress(),
+        '0x1234',
+        data
+      )
     } catch (e) {
+      console.log('e = ', e)
       assert.fail('Failed to set data in NFT ERC725 key value store', e)
     }
 ```
@@ -810,13 +817,14 @@ Use the `getData` method to get the data stored in the nft key value store
 
 ```Typescript
     try {
-      const response = await nft.getData(freNftAddress, '1')
+      const response = await nft.getData(freNftAddress, '0x1234')
       console.log('getData response: ', response)
       assert(
         response === data,
         'Wrong data received when getting data from NFT ERC725 key value store'
       )
     } catch (e) {
+      console.log('e = ', e)
       assert.fail('Failed to get data from NFT ERC725 key value store', e)
     }
 ```
