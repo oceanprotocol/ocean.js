@@ -1,14 +1,12 @@
-import { AbiItem } from 'web3-utils'
 import dfStrategyV1ABI from '@oceanprotocol/contracts/artifacts/contracts/df/DFStrategyV1.sol/DFStrategyV1.json'
-import { calculateEstimatedGas, sendTx } from '../../utils'
+import { sendTx } from '../../utils'
 import { SmartContractWithAddress } from '../SmartContractWithAddress'
-import { ReceiptOrEstimate } from '../../@types'
-
+import { ReceiptOrEstimate, AbiItem } from '../../@types'
 /**
  * Provides an interface for dfStrategyV1 contract
  */
 export class DfStrategyV1 extends SmartContractWithAddress {
-  getDefaultAbi(): AbiItem | AbiItem[] {
+  getDefaultAbi() {
     return dfStrategyV1ABI.abi as AbiItem[]
   }
 
@@ -21,9 +19,7 @@ export class DfStrategyV1 extends SmartContractWithAddress {
     userAddress: string,
     tokenAddresses: string[]
   ): Promise<string[]> {
-    const rewards = await this.contract.methods
-      .claimables(userAddress, tokenAddresses)
-      .call()
+    const rewards = await this.contract.claimables(userAddress, tokenAddresses)
     const rewardsFormated: string[] = []
     for (let i = 0; i < rewards.length; i++) {
       rewardsFormated.push(await this.unitsToAmount(tokenAddresses[i], rewards[i]))
@@ -33,20 +29,16 @@ export class DfStrategyV1 extends SmartContractWithAddress {
 
   /**
    * claim multiple token rewards for any address
-   * @param {String} fromUserAddress user that generates the tx
    * @param {String} userAddress user address to claim
    * @param {String} tokenAddresses array of tokens
    * @return {Promise<ReceiptOrEstimate>}
    */
   public async claimMultipleRewards<G extends boolean = false>(
-    fromUserAddress: string,
     userAddress: string,
     tokenAddresses: string[],
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
-    const estGas = await calculateEstimatedGas(
-      fromUserAddress,
-      this.contract.methods.claimMultiple,
+    const estGas = await this.contract.estimateGas.claimMultiple(
       userAddress,
       tokenAddresses
     )
@@ -54,11 +46,10 @@ export class DfStrategyV1 extends SmartContractWithAddress {
 
     // Invoke function of the contract
     const trxReceipt = await sendTx(
-      fromUserAddress,
-      estGas + 1,
-      this.web3,
+      estGas,
+      this.signer,
       this.config?.gasFeeMultiplier,
-      this.contract.methods.claimMultiple,
+      this.contract.claimMultiple,
       userAddress,
       tokenAddresses
     )

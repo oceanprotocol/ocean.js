@@ -1,13 +1,13 @@
 import { assert } from 'chai'
-import { AbiItem } from 'web3-utils'
-import { web3, getTestConfig, getAddresses } from '../config'
+import { ethers, Signer } from 'ethers'
+import { getTestConfig, getAddresses, provider } from '../config'
 import {
   Config,
   ProviderInstance,
   Aquarius,
   Datatoken,
-  calculateEstimatedGas,
-  sendTx
+  sendTx,
+  amountToUnits
 } from '../../src'
 import { ComputeJob, ComputeAsset, ComputeAlgorithm, Files } from '../../src/@types'
 import { createAsset, handleComputeOrder } from './helpers'
@@ -17,8 +17,8 @@ let config: Config
 let aquarius: Aquarius
 let datatoken: Datatoken
 let providerUrl: string
-let consumerAccount: string
-let publisherAccount: string
+let consumerAccount: Signer
+let publisherAccount: Signer
 let providerInitializeComputeResults
 let computeEnvs
 let addresses: any
@@ -77,7 +77,7 @@ const ddoWithNoTimeout = {
       type: 'compute',
       files: '',
       datatokenAddress: '0xa15024b732A8f2146423D14209eFd074e61964F3',
-      serviceEndpoint: 'https://v4.provider.goerli.oceanprotocol.com',
+      serviceEndpoint: 'http://172.15.0.4:8030',
       timeout: 0,
       compute: {
         publisherTrustedAlgorithmPublishers: [],
@@ -114,7 +114,7 @@ const ddoWith5mTimeout = {
       type: 'compute',
       files: '',
       datatokenAddress: '0xa15024b732A8f2146423D14209eFd074e61964F3',
-      serviceEndpoint: 'https://v4.provider.goerli.oceanprotocol.com',
+      serviceEndpoint: 'http://172.15.0.4:8030',
       timeout: 300,
       compute: {
         publisherTrustedAlgorithmPublishers: [],
@@ -172,7 +172,7 @@ const algoDdoWithNoTimeout = {
       type: 'access',
       files: '',
       datatokenAddress: '0xa15024b732A8f2146423D14209eFd074e61964F3',
-      serviceEndpoint: 'https://v4.provider.goerli.oceanprotocol.com',
+      serviceEndpoint: 'http://172.15.0.4:8030',
       timeout: 0
     }
   ]
@@ -214,7 +214,7 @@ const algoDdoWith5mTimeout = {
       type: 'access',
       files: '',
       datatokenAddress: '0xa15024b732A8f2146423D14209eFd074e61964F3',
-      serviceEndpoint: 'https://v4.provider.goerli.oceanprotocol.com',
+      serviceEndpoint: 'http://172.15.0.4:8030',
       timeout: 300
     }
   ]
@@ -226,19 +226,17 @@ function delay(interval: number) {
   }).timeout(interval + 100)
 }
 
-describe('Simple compute tests', async () => {
+describe('Compute flow tests', async () => {
   before(async () => {
-    config = await getTestConfig(web3)
+    publisherAccount = (await provider.getSigner(0)) as Signer
+    consumerAccount = (await provider.getSigner(1)) as Signer
+    config = await getTestConfig(publisherAccount)
+    aquarius = new Aquarius(config?.metadataCacheUri)
+    providerUrl = config?.providerUri
     addresses = getAddresses()
-    aquarius = new Aquarius(config.metadataCacheUri)
-    providerUrl = config.providerUri
-    datatoken = new Datatoken(web3)
   })
 
   it('should publish datasets and algorithms', async () => {
-    const accounts = await web3.eth.getAccounts()
-    publisherAccount = accounts[0]
-    consumerAccount = accounts[1]
     // mint Ocean
     /// <!--
     // mint ocean to publisherAccount
@@ -255,22 +253,36 @@ describe('Simple compute tests', async () => {
         stateMutability: 'nonpayable',
         type: 'function'
       }
-    ] as AbiItem[]
-    const tokenContract = new web3.eth.Contract(minAbi, addresses.Ocean)
-    const estGas = await calculateEstimatedGas(
-      publisherAccount,
-      tokenContract.methods.mint,
-      publisherAccount,
-      web3.utils.toWei('1000')
+    ]
+
+    const tokenContract = new ethers.Contract(addresses.Ocean, minAbi, publisherAccount)
+    const estGasPublisher = await tokenContract.estimateGas.mint(
+      await publisherAccount.getAddress(),
+      amountToUnits(null, null, '1000', 18)
     )
+
     await sendTx(
+      estGasPublisher,
       publisherAccount,
-      estGas,
-      web3,
       1,
-      tokenContract.methods.mint,
-      publisherAccount,
-      web3.utils.toWei('1000')
+      tokenContract.mint,
+      await publisherAccount.getAddress(),
+      amountToUnits(null, null, '1000', 18)
+    )
+
+    // mint ocean to consumer
+    const estGasConsumer = await tokenContract.estimateGas.mint(
+      await consumerAccount.getAddress(),
+      amountToUnits(null, null, '1000', 18)
+    )
+
+    await sendTx(
+      estGasConsumer,
+      consumerAccount,
+      1,
+      tokenContract.mint,
+      await consumerAccount.getAddress(),
+      amountToUnits(null, null, '1000', 18)
     )
 
     ddoWith5mTimeoutId = await createAsset(
@@ -328,30 +340,33 @@ describe('Simple compute tests', async () => {
   })
 
   it('should send DT to consumer', async () => {
-    const datatoken = new Datatoken(web3)
+    const datatoken = new Datatoken(
+      publisherAccount,
+      (await publisherAccount.provider.getNetwork()).chainId
+    )
     await datatoken.mint(
       resolvedDdoWith5mTimeout.services[0].datatokenAddress,
-      publisherAccount,
+      await publisherAccount.getAddress(),
       '10',
-      consumerAccount
+      await consumerAccount.getAddress()
     )
     await datatoken.mint(
       resolvedDdoWithNoTimeout.services[0].datatokenAddress,
-      publisherAccount,
+      await publisherAccount.getAddress(),
       '10',
-      consumerAccount
+      await consumerAccount.getAddress()
     )
     await datatoken.mint(
       resolvedAlgoDdoWith5mTimeout.services[0].datatokenAddress,
-      publisherAccount,
+      await publisherAccount.getAddress(),
       '10',
-      consumerAccount
+      await consumerAccount.getAddress()
     )
     await datatoken.mint(
       resolvedAlgoDdoWithNoTimeout.services[0].datatokenAddress,
-      publisherAccount,
+      await publisherAccount.getAddress(),
       '10',
-      consumerAccount
+      await consumerAccount.getAddress()
     )
   })
 
@@ -362,6 +377,10 @@ describe('Simple compute tests', async () => {
   })
 
   it('should start a computeJob using the free environment', async () => {
+    datatoken = new Datatoken(
+      consumerAccount,
+      (await consumerAccount.provider.getNetwork()).chainId
+    )
     // let's have 5 minute of compute access
     const mytime = new Date()
     const computeMinutes = 5
@@ -392,7 +411,7 @@ describe('Simple compute tests', async () => {
       computeEnv.id,
       computeValidUntil,
       providerUrl,
-      consumerAccount
+      await consumerAccount.getAddress()
     )
     console.log(
       'compute flow initializeCompute result = ',
@@ -411,6 +430,7 @@ describe('Simple compute tests', async () => {
       datatoken,
       config
     )
+
     for (let i = 0; i < providerInitializeComputeResults.datasets.length; i++) {
       assets[i].transferTxId = await handleComputeOrder(
         providerInitializeComputeResults.datasets[i],
@@ -424,7 +444,6 @@ describe('Simple compute tests', async () => {
     }
     const computeJobs = await ProviderInstance.computeStart(
       providerUrl,
-      web3,
       consumerAccount,
       computeEnv.id,
       assets[0],
@@ -441,7 +460,7 @@ describe('Simple compute tests', async () => {
   it('Check compute status', async () => {
     const jobStatus = (await ProviderInstance.computeStatus(
       providerUrl,
-      consumerAccount,
+      await consumerAccount.getAddress(),
       freeComputeJobId,
       resolvedDdoWith5mTimeout.id
     )) as ComputeJob
@@ -474,7 +493,7 @@ describe('Simple compute tests', async () => {
       computeEnv.id,
       computeValidUntil,
       providerUrl,
-      consumerAccount
+      await consumerAccount.getAddress()
     )
     assert(
       providerInitializeComputeResults.algorithm.validOrder,
@@ -501,7 +520,6 @@ describe('Simple compute tests', async () => {
     )
     const computeJobs = await ProviderInstance.computeStart(
       providerUrl,
-      web3,
       consumerAccount,
       computeEnv.id,
       assets[0],
@@ -510,7 +528,7 @@ describe('Simple compute tests', async () => {
     assert(computeJobs, 'Cannot start compute job')
   })
 
-  // moving to paid environments
+  //   // moving to paid environments
 
   it('should start a computeJob on a paid environment', async () => {
     // we choose the paid env
@@ -537,7 +555,7 @@ describe('Simple compute tests', async () => {
       computeEnv.id,
       computeValidUntil,
       providerUrl,
-      consumerAccount
+      await consumerAccount.getAddress()
     )
     assert(
       !('error' in providerInitializeComputeResults.algorithm),
@@ -566,7 +584,6 @@ describe('Simple compute tests', async () => {
 
     const computeJobs = await ProviderInstance.computeStart(
       providerUrl,
-      web3,
       consumerAccount,
       computeEnv.id,
       assets[0],
@@ -583,7 +600,7 @@ describe('Simple compute tests', async () => {
   it('Check compute status', async () => {
     const jobStatus = (await ProviderInstance.computeStatus(
       providerUrl,
-      consumerAccount,
+      await consumerAccount.getAddress(),
       paidComputeJobId,
       resolvedDdoWith5mTimeout.id
     )) as ComputeJob
@@ -616,7 +633,7 @@ describe('Simple compute tests', async () => {
       computeEnv.id,
       computeValidUntil,
       providerUrl,
-      consumerAccount
+      await consumerAccount.getAddress()
     )
     assert(
       providerInitializeComputeResults.algorithm.validOrder,
@@ -643,7 +660,6 @@ describe('Simple compute tests', async () => {
     )
     const computeJobs = await ProviderInstance.computeStart(
       providerUrl,
-      web3,
       consumerAccount,
       computeEnv.id,
       assets[0],
@@ -688,7 +704,7 @@ describe('Simple compute tests', async () => {
       computeEnv.id,
       computeValidUntil,
       providerUrl,
-      consumerAccount
+      await consumerAccount.getAddress()
     )
     assert(
       providerInitializeComputeResults.algorithm.validOrder,
@@ -736,7 +752,6 @@ describe('Simple compute tests', async () => {
     )
     const computeJobs = await ProviderInstance.computeStart(
       providerUrl,
-      web3,
       consumerAccount,
       computeEnv.id,
       assets[0],
@@ -774,7 +789,7 @@ describe('Simple compute tests', async () => {
       computeEnv.id,
       computeValidUntil,
       providerUrl,
-      consumerAccount
+      await consumerAccount.getAddress()
     )
     assert(
       providerInitializeComputeResults.algorithm.validOrder,
@@ -821,7 +836,6 @@ describe('Simple compute tests', async () => {
     )
     const computeJobs = await ProviderInstance.computeStart(
       providerUrl,
-      web3,
       consumerAccount,
       computeEnv.id,
       assets[0],
@@ -835,7 +849,7 @@ describe('Simple compute tests', async () => {
   it('Check compute status', async () => {
     const jobStatus = (await ProviderInstance.computeStatus(
       providerUrl,
-      consumerAccount,
+      await consumerAccount.getAddress(),
       freeComputeJobId,
       resolvedDdoWith5mTimeout.id
     )) as ComputeJob
@@ -845,7 +859,6 @@ describe('Simple compute tests', async () => {
   it('Get download compute results url', async () => {
     const downloadURL = await ProviderInstance.getComputeResultUrl(
       providerUrl,
-      web3,
       consumerAccount,
       freeComputeJobId,
       0
