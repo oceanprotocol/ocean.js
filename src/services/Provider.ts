@@ -108,11 +108,9 @@ export class Provider {
     //  await web3.eth.sign(consumerMessage, await signer.getAddress())
 
     const messageHashBytes = ethers.utils.arrayify(consumerMessage)
-    let newSignature = await (signer as providers.JsonRpcSigner)._legacySignMessage(
+    const newSignature = await (signer as providers.JsonRpcSigner)._legacySignMessage(
       messageHashBytes
     )
-
-    console.log('new signature = ', newSignature)
     return newSignature
   }
 

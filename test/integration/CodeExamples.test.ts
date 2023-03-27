@@ -87,7 +87,7 @@
 import fs from 'fs'
 import { assert } from 'chai'
 import { ethers, providers, Signer } from 'ethers'
-]import { SHA256 } from 'crypto-js'
+import { SHA256 } from 'crypto-js'
 import { homedir } from 'os'
 import {
   approve,
@@ -118,7 +118,6 @@ import {
   getEventFromTx,
   DDO
 } from '../../src'
-import { getAddresses, getTestConfig } from '../config'
 /// ```
 
 /// <!--
@@ -128,8 +127,10 @@ describe('Marketplace flow tests', async () => {
   /// Now we define the variables which we will need later
 
   /// ```Typescript
+  let provider: ethers.providers.JsonRpcProvider
   let config: Config
   let aquarius: Aquarius
+  let datatoken: Datatoken
   let providerUrl: any
   let publisherAccount: Signer
   let consumerAccount: Signer
@@ -142,6 +143,7 @@ describe('Marketplace flow tests', async () => {
   let dispenserNftAddress: string
   let dispenserDatatokenAddress: string
   let dispenserAddress: string
+  let fixedDDO
   /// ```
 
   /// We also define some constants that we will use:
@@ -169,7 +171,7 @@ describe('Marketplace flow tests', async () => {
 
   /// Next, we define the metadata that will describe our data asset. This is what we call the DDO
   /// ```Typescript
-  const genericAsset:DDO = {
+  const genericAsset: DDO = {
     '@context': ['https://w3id.org/did/v1'],
     id: '',
     version: '4.1.0',
@@ -204,7 +206,7 @@ describe('Marketplace flow tests', async () => {
   /// ## 5. Load the configuration, initialize accounts and deploy contracts
   /// ```Typescript
   before(async () => {
-    const provider = new providers.JsonRpcProvider(
+    provider = new providers.JsonRpcProvider(
       process.env.NODE_URI || configHelperNetworks[1].nodeUri
     )
     publisherAccount = (await provider.getSigner(0)) as Signer
@@ -234,7 +236,6 @@ describe('Marketplace flow tests', async () => {
     console.log(`Staker account address: ${stakerAccount}`)
   }) ///
   /// ```
-
 
   it('5.1 Mint OCEAN to publisher account', async () => {
     /// You can skip this step if you are running your script against a remote network,
@@ -271,7 +272,6 @@ describe('Marketplace flow tests', async () => {
     )
   }) ///
   /// ```
-
 
   it('5.3 We send some OCEAN to consumer and staker accounts', async () => {
     /// ```Typescript
@@ -342,9 +342,9 @@ describe('Marketplace flow tests', async () => {
     const tokenCreatedEvent = getEventFromTx(trxReceipt, 'TokenCreated')
     const newFreEvent = getEventFromTx(trxReceipt, 'NewFixedRate')
 
-    freNftAddress =  nftCreatedEvent.args.newTokenAddress
-    freDatatokenAddress= tokenCreatedEvent.args.newTokenAddress
-    freAddress =  newFreEvent.args.exchangeContract
+    freNftAddress = nftCreatedEvent.args.newTokenAddress
+    freDatatokenAddress = tokenCreatedEvent.args.newTokenAddress
+    freAddress = newFreEvent.args.exchangeContract
     freId = newFreEvent.args.exchangeId
 
     /// ```
@@ -359,9 +359,12 @@ describe('Marketplace flow tests', async () => {
 
   it('6.2 Set metadata in the fixed rate exchange NFT', async () => {
     /// ```Typescript
-    const nft = new Nft(publisherAccount, (await publisherAccount.provider.getNetwork()).chainId)
+    const nft = new Nft(
+      publisherAccount,
+      (await publisherAccount.provider.getNetwork()).chainId
+    )
 
-    const fixedDDO: DDO = { ...genericAsset }
+    fixedDDO = { ...genericAsset }
 
     /// ```
     /// Now we are going to update the ddo and set the did
@@ -369,10 +372,9 @@ describe('Marketplace flow tests', async () => {
 
     fixedDDO.chainId = (await publisherAccount.provider.getNetwork()).chainId
     fixedDDO.id =
-    'did:op:' +
-    SHA256(ethers.utils.getAddress(freNftAddress) + fixedDDO.chainId.toString(10))
+      'did:op:' +
+      SHA256(ethers.utils.getAddress(freNftAddress) + fixedDDO.chainId.toString(10))
     fixedDDO.nftAddress = freNftAddress
-
 
     /// ```
     /// Next, let's encrypt the file(s) using provider
@@ -391,7 +393,11 @@ describe('Marketplace flow tests', async () => {
     /// ```Typescript
     console.log(`DID: ${fixedDDO.id}`)
 
-    const providerResponse = await ProviderInstance.encrypt(fixedDDO, fixedDDO.chainId, providerUrl)
+    const providerResponse = await ProviderInstance.encrypt(
+      fixedDDO,
+      fixedDDO.chainId,
+      providerUrl
+    )
     const encryptedDDO = await providerResponse
     const isAssetValid: ValidateMetadata = await aquarius.validate(fixedDDO)
     assert(isAssetValid.valid === true, 'Published asset is not valid')
@@ -423,47 +429,75 @@ describe('Marketplace flow tests', async () => {
 
   it('6.4 Consumer buys a fixed rate asset data asset, and downloads it', async () => {
     /// ```Typescript
-    const datatoken = new Datatoken(web3)
+    datatoken = new Datatoken(publisherAccount)
     const DATATOKEN_AMOUNT = '10000'
 
-    await datatoken.mint(freDatatokenAddress, publisherAccount, DATATOKEN_AMOUNT)
+    await datatoken.mint(
+      freDatatokenAddress,
+      await publisherAccount.getAddress(),
+      DATATOKEN_AMOUNT
+    )
 
-    const consumerETHBalance = await web3.eth.getBalance(consumerAccount)
+    const consumerBalance = await provider.getBalance(await consumerAccount.getAddress())
+    const consumerETHBalance = ethers.utils.formatEther(consumerBalance)
 
     /// ```
     /// Let's do a quick check of the consumer ETH balance before the swap
     /// ```Typescript
     console.log(`Consumer ETH balance: ${consumerETHBalance}`)
-    let consumerOCEANBalance = await balance(web3, addresses.Ocean, consumerAccount)
+    let consumerOCEANBalance = await balance(
+      consumerAccount,
+      addresses.Ocean,
+      await consumerAccount.getAddress()
+    )
     console.log(`Consumer OCEAN balance before swap: ${consumerOCEANBalance}`)
-    let consumerDTBalance = await balance(web3, freDatatokenAddress, consumerAccount)
+    let consumerDTBalance = await balance(
+      consumerAccount,
+      freDatatokenAddress,
+      await consumerAccount.getAddress()
+    )
     console.log(`Consumer ${FRE_NFT_SYMBOL} balance before swap: ${consumerDTBalance}`)
 
     /// ```
     /// Before we call the contract we have to call `approve` so that the contract can move our tokens. This is standard when using any ERC20 Datatokens
     /// ```Typescript
-    await approve(web3, config, consumerAccount, addresses.Ocean, freAddress, '100')
     await approve(
-      web3,
+      consumerAccount,
       config,
+      await consumerAccount.getAddress(),
+      addresses.Ocean,
+      freAddress,
+      '100'
+    )
+    await approve(
       publisherAccount,
+      config,
+      await publisherAccount.getAddress(),
       freDatatokenAddress,
       freAddress,
       DATATOKEN_AMOUNT
     )
 
-    const fixedRate = new FixedRateExchange(freAddress, web3)
+    const fixedRate = new FixedRateExchange(freAddress, consumerAccount)
     /// ```
     /// Now we can make the contract call
     /// ```Typescript
-    await fixedRate.buyDatatokens(consumerAccount, freId, '1', '2')
+    await fixedRate.buyDatatokens(freId, '1', '2')
 
-    consumerOCEANBalance = await balance(web3, addresses.Ocean, consumerAccount)
+    consumerOCEANBalance = await balance(
+      consumerAccount,
+      addresses.Ocean,
+      await consumerAccount.getAddress()
+    )
     console.log(`Consumer OCEAN balance after swap: ${consumerOCEANBalance}`)
-    consumerDTBalance = await balance(web3, freDatatokenAddress, consumerAccount)
+    consumerDTBalance = await balance(
+      consumerAccount,
+      freDatatokenAddress,
+      await consumerAccount.getAddress()
+    )
     console.log(`Consumer ${FRE_NFT_SYMBOL} balance after swap: ${consumerDTBalance}`)
 
-    const resolvedDDO = await aquarius.waitForAqua(DDO.id)
+    const resolvedDDO = await aquarius.waitForAqua(fixedDDO.id)
     assert(resolvedDDO, 'Cannot fetch DDO from Aquarius')
 
     /// ```
@@ -473,7 +507,7 @@ describe('Marketplace flow tests', async () => {
       resolvedDDO.id,
       resolvedDDO.services[0].id,
       0,
-      consumerAccount,
+      await consumerAccount.getAddress(),
       providerUrl
     )
 
@@ -488,27 +522,29 @@ describe('Marketplace flow tests', async () => {
       validUntil: initializeData.providerFee.validUntil
     }
 
+    datatoken = new Datatoken(consumerAccount)
+
     /// ```
     /// Lets now make the payment
     /// ```Typescript
     const tx = await datatoken.startOrder(
       freDatatokenAddress,
-      consumerAccount,
-      consumerAccount,
+      await consumerAccount.getAddress(),
       0,
       providerFees
     )
+    const orderTx = await tx.wait()
+    const orderStartedTx = getEventFromTx(orderTx, 'OrderStarted')
     /// ```
     /// Now we can get the url
     /// ```Typescript
     const downloadURL = await ProviderInstance.getDownloadUrl(
-      DDO.id,
-      consumerAccount,
-      DDO.services[0].id,
+      fixedDDO.id,
+      fixedDDO.services[0].id,
       0,
-      tx.transactionHash,
+      orderStartedTx.transactionHash,
       providerUrl,
-      web3
+      consumerAccount
     )
 
     /// ```
@@ -516,9 +552,17 @@ describe('Marketplace flow tests', async () => {
     /// ```Typescript
     console.log(`Download URL: ${downloadURL}`)
 
-    consumerOCEANBalance = await balance(web3, addresses.Ocean, consumerAccount)
+    consumerOCEANBalance = await balance(
+      consumerAccount,
+      addresses.Ocean,
+      await consumerAccount.getAddress()
+    )
     console.log(`Consumer OCEAN balance after order: ${consumerOCEANBalance}`)
-    consumerDTBalance = await balance(web3, freDatatokenAddress, consumerAccount)
+    consumerDTBalance = await balance(
+      consumerAccount,
+      freDatatokenAddress,
+      await consumerAccount.getAddress()
+    )
     console.log(`Consumer ${FRE_NFT_SYMBOL} balance after order: ${consumerDTBalance}`)
 
     try {
@@ -534,7 +578,7 @@ describe('Marketplace flow tests', async () => {
 
   it('7.1 Publish a dataset (create NFT + Datatoken) with a dispenser', async () => {
     /// ```Typescript
-    const factory = new NftFactory(addresses.ERC721Factory, web3)
+    const factory = new NftFactory(addresses.ERC721Factory, publisherAccount)
 
     const nftParams: NftCreateData = {
       name: DISP_NFT_NAME,
@@ -542,7 +586,7 @@ describe('Marketplace flow tests', async () => {
       templateIndex: 1,
       tokenURI: '',
       transferable: true,
-      owner: publisherAccount
+      owner: await publisherAccount.getAddress()
     }
 
     const datatokenParams: DatatokenCreateParams = {
@@ -551,7 +595,7 @@ describe('Marketplace flow tests', async () => {
       feeAmount: '0',
       paymentCollector: ZERO_ADDRESS,
       feeToken: ZERO_ADDRESS,
-      minter: publisherAccount,
+      minter: await publisherAccount.getAddress(),
       mpFeeAddress: ZERO_ADDRESS
     }
 
@@ -563,16 +607,19 @@ describe('Marketplace flow tests', async () => {
       allowedSwapper: ZERO_ADDRESS
     }
 
-    const tx = await factory.createNftWithDatatokenWithDispenser(
-      publisherAccount,
+    const bundleNFT = await factory.createNftWithDatatokenWithDispenser(
       nftParams,
       datatokenParams,
       dispenserParams
     )
+    const trxReceipt = await bundleNFT.wait()
+    const nftCreatedEvent = getEventFromTx(trxReceipt, 'NFTCreated')
+    const tokenCreatedEvent = getEventFromTx(trxReceipt, 'TokenCreated')
+    const dispenserCreatedEvent = getEventFromTx(trxReceipt, 'DispenserCreated')
 
-    dispenserNftAddress = tx.events.NFTCreated.returnValues[0]
-    dispenserDatatokenAddress = tx.events.TokenCreated.returnValues[0]
-    dispenserAddress = tx.events.DispenserCreated.returnValues[0]
+    dispenserNftAddress = nftCreatedEvent.args.newTokenAddress
+    dispenserDatatokenAddress = tokenCreatedEvent.args.newTokenAddress
+    dispenserAddress = dispenserCreatedEvent.args.newTokenAddress // double check this
     /// ```
     /// Lets check that we managed to received all of those values without any problems
     /// ```Typescript
@@ -584,57 +631,63 @@ describe('Marketplace flow tests', async () => {
 
   it('7.2 Set metadata in the dispenser NFT', async () => {
     /// ```Typescript
-    const nft = new Nft(web3)
+    const nft = new Nft(
+      publisherAccount,
+      (await publisherAccount.provider.getNetwork()).chainId
+    )
 
     /// ```
     /// Lets start by updating the ddo and setting the did
     /// ```Typescript
-    DDO.chainId = await web3.eth.getChainId()
-    DDO.id =
-      'did:op:' +
-      SHA256(web3.utils.toChecksumAddress(dispenserNftAddress) + DDO.chainId.toString(10))
-    DDO.nftAddress = dispenserNftAddress
+    fixedDDO.chainId = (await publisherAccount.provider.getNetwork()).chainId
 
+    fixedDDO.id =
+      'did:op:' +
+      SHA256(ethers.utils.getAddress(dispenserNftAddress) + fixedDDO.chainId.toString(10))
+    fixedDDO.nftAddress = dispenserNftAddress
     /// ```
     /// Now we need to encrypt file(s) using provider
     /// ```Typescript
     ASSET_URL.datatokenAddress = dispenserDatatokenAddress
     ASSET_URL.nftAddress = dispenserNftAddress
-    const encryptedFiles = await ProviderInstance.encrypt(
+    fixedDDO.services[0].files = await ProviderInstance.encrypt(
       ASSET_URL,
-      DDO.chainId,
+      fixedDDO.chainId,
       providerUrl
     )
-    DDO.services[0].files = await encryptedFiles
-    DDO.services[0].datatokenAddress = dispenserDatatokenAddress
+    fixedDDO.services[0].datatokenAddress = dispenserDatatokenAddress
 
-    console.log(`DID: ${DDO.id}`)
+    console.log(`DID: ${fixedDDO.id}`)
 
-    const providerResponse = await ProviderInstance.encrypt(DDO, DDO.chainId, providerUrl)
-    const encryptedDDO = await providerResponse
-    const metadataHash = getHash(JSON.stringify(DDO))
+    const encryptedDDO = await ProviderInstance.encrypt(
+      fixedDDO,
+      fixedDDO.chainId,
+      providerUrl
+    )
+    const isAssetValid: ValidateMetadata = await aquarius.validate(fixedDDO)
+    assert(isAssetValid.valid === true, 'Published asset is not valid')
     await nft.setMetadata(
       dispenserNftAddress,
-      publisherAccount,
+      await publisherAccount.getAddress(),
       0,
       providerUrl,
       '',
       '0x2',
       encryptedDDO,
-      '0x' + metadataHash
+      isAssetValid.hash
     )
   }) ///
   /// ```
 
   it('7.3 Consumer gets a dispenser data asset, and downloads it', async () => {
     /// ```Typescript
-    const datatoken = new Datatoken(web3)
-    const dispenser = new Dispenser(addresses.Dispenser, web3)
+    datatoken = new Datatoken(publisherAccount)
+    const dispenser = new Dispenser(addresses.Dispenser, consumerAccount)
 
     let consumerDTBalance = await balance(
-      web3,
+      consumerAccount,
       dispenserDatatokenAddress,
-      consumerAccount
+      await consumerAccount.getAddress()
     )
     console.log(
       `Consumer ${DISP_NFT_SYMBOL} balance before dispense: ${consumerDTBalance}`
@@ -642,18 +695,24 @@ describe('Marketplace flow tests', async () => {
 
     await dispenser.dispense(
       dispenserDatatokenAddress,
-      consumerAccount,
       '1',
-      consumerAccount
+      await consumerAccount.getAddress()
     )
 
-    consumerDTBalance = await balance(web3, dispenserDatatokenAddress, consumerAccount)
+    consumerDTBalance = await balance(
+      consumerAccount,
+      dispenserDatatokenAddress,
+      await consumerAccount.getAddress()
+    )
     console.log(
       `Consumer ${DISP_NFT_SYMBOL} balance after dispense: ${consumerDTBalance}`
     )
 
-    const resolvedDDO = await aquarius.waitForAqua(DDO.id)
+    const resolvedDDO = await aquarius.waitForAqua(fixedDDO.id)
     assert(resolvedDDO, 'Cannot fetch DDO from Aquarius')
+
+    datatoken = new Datatoken(publisherAccount)
+
     /// ```
     /// At this point we need to encrypt file(s) using provider
     /// ```Typescript
@@ -661,7 +720,7 @@ describe('Marketplace flow tests', async () => {
       resolvedDDO.id,
       resolvedDDO.services[0].id,
       0,
-      consumerAccount,
+      await consumerAccount.getAddress(),
       providerUrl
     )
 
@@ -680,29 +739,33 @@ describe('Marketplace flow tests', async () => {
     /// ```Typescript
     const tx = await datatoken.startOrder(
       dispenserDatatokenAddress,
-      consumerAccount,
-      consumerAccount,
+      await consumerAccount.getAddress(),
       0,
       providerFees
     )
+    const orderTx = await tx.wait()
+    const orderStartedTx = getEventFromTx(orderTx, 'OrderStarted')
     /// ```
     /// Now we can get the download URL
     /// ```Typescript
     const downloadURL = await ProviderInstance.getDownloadUrl(
-      DDO.id,
-      consumerAccount,
-      DDO.services[0].id,
+      fixedDDO.id,
+      fixedDDO.services[0].id,
       0,
-      tx.transactionHash,
+      orderStartedTx.transactionHash,
       providerUrl,
-      web3
+      consumerAccount
     )
     /// ```
     /// Let's check we received the download URL ok
     /// ```Typescript
     console.log(`Download URL: ${downloadURL}`)
 
-    consumerDTBalance = await balance(web3, dispenserDatatokenAddress, consumerAccount)
+    consumerDTBalance = await balance(
+      consumerAccount,
+      dispenserDatatokenAddress,
+      await consumerAccount.getAddress()
+    )
     console.log(`Consumer ${DISP_NFT_SYMBOL} balance after order: ${consumerDTBalance}`)
 
     try {
@@ -730,10 +793,10 @@ describe('Marketplace flow tests', async () => {
   it('8.1 Add key-value pair to data NFT', async () => {
     /// Let's start by using the `setData` method to update the nft key value store with some data
     /// ```Typescript
-    const nft = new Nft(web3)
+    const nft = new Nft(publisherAccount)
     const data = 'SomeData'
     try {
-      await nft.setData(freNftAddress, publisherAccount, '1', data)
+      await nft.setData(freNftAddress, await publisherAccount.getAddress(), '1', data)
     } catch (e) {
       assert.fail('Failed to set data in NFT ERC725 key value store', e)
     }
