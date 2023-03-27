@@ -67,7 +67,7 @@
 ///     "@oceanprotocol/contracts": "1.0.0-alpha.28",
 ///     "@oceanprotocol/lib": "1.0.0-next.37",
 ///     "crypto-js": "^4.1.1",
-///     "web3": "^1.7.3"
+///     "ethers": "^5.7.2"
 ///   }
 /// ```
 
