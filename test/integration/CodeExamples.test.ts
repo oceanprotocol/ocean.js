@@ -712,7 +712,7 @@ describe('Marketplace flow tests', async () => {
     const resolvedDDO = await aquarius.waitForAqua(fixedDDO.id)
     assert(resolvedDDO, 'Cannot fetch DDO from Aquarius')
 
-    datatoken = new Datatoken(publisherAccount)
+    datatoken = new Datatoken(consumerAccount)
 
     /// ```
     /// At this point we need to encrypt file(s) using provider
