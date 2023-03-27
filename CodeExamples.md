@@ -21,10 +21,13 @@ Here are the steps:
 1. [Initialize services](#-initialize-services)
 2. [Create a new node.js project](#-create-a-new-node.js-project)
 3. [Install dependencies](#-install-dependencies)
-4. [Initialize accounts and deploy contracts](#-initialize-accounts-and-deploy-contracts)
-5. [Import dependencies and add variables and constants](#-import-dependencies-and-add-variables-and-constants)
+4. [Import dependencies and add variables and constants](#-import-dependencies-and-add-variables-and-constantss)
+5. [Load the configuration, initialize accounts and deploy contracts](#-load-the-configuration-initialize-accounts-and-deploy-contracts)
 6. [Publish Data NFT and a Datatoken with a fixed rate exchange](#-publish-data-nft-and-a-datatoken-with-a-fixed-rate-exchange)
-7. [Publish Data NFT and a Datatoken with a dispenser](#-publish-data-nft-and-a-datatoken-with-a-dispenser)
+7. [Consume a fixed rate asset data asset, and downloads it'](#-consume-a-fixed-rate-asset-data-asset)
+8. [Publish Data NFT and a Datatoken with a dispenser](#-publish-data-nft-and-a-datatoken-with-a-dispenser)
+9. [Consume a dispenser data asset](#-consume-a-dispenser-data-asset)
+10. [Using ERC725 Key-Value Store](#-using-ERC725-Key-Value-Store)
 
 ## 0. Prerequisites
 Before we start it is important that you have all of the necessary prerequisites installed on your computer.
@@ -428,7 +431,9 @@ Now that the market has fetched those values it can display the asset on the fro
   
 ```
 
-  ### 6.4 Consumer buys a fixed rate asset data asset, and downloads it
+## 7. Consume a fixed rate asset data asset
+
+  ### 7.1 Consumer buys a fixed rate asset data asset, and downloads it
 ```Typescript
     datatoken = new Datatoken(publisherAccount)
     const DATATOKEN_AMOUNT = '10000'
@@ -575,9 +580,9 @@ Lets check that the download URL was successfully received
   
 ```
 
-## 7. Publish Data NFT and a Datatoken with a dispenser
+## 8. Publish Data NFT and a Datatoken with a dispenser
 
-  ### 7.1 Publish a dataset (create NFT + Datatoken) with a dispenser
+  ### 8.1 Publish a dataset (create NFT + Datatoken) with a dispenser
 ```Typescript
     const factory = new NftFactory(addresses.ERC721Factory, publisherAccount)
 
@@ -630,7 +635,7 @@ Lets check that we managed to received all of those values without any problems
   
 ```
 
-  ### 7.2 Set metadata in the dispenser NFT
+  ### 8.2 Set metadata in the dispenser NFT
 ```Typescript
     const nft = new Nft(
       publisherAccount,
@@ -680,7 +685,9 @@ Now we need to encrypt file(s) using provider
   
 ```
 
-  ### 7.3 Consumer gets a dispenser data asset, and downloads it
+## 9. Consume a dispenser data asset
+
+  ### 9.1 Consumer gets a dispenser data asset, and downloads it
 ```Typescript
     datatoken = new Datatoken(publisherAccount)
     const dispenser = new Dispenser(addresses.Dispenser, consumerAccount)
@@ -778,7 +785,7 @@ Let's check we received the download URL ok
   
 ```
 
-## 8. Using ERC725 Key-Value Store
+## 10. Using ERC725 Key-Value Store
 
 Data NFTs can store arbitrary key-value pairs on-chain. This opens up their usage for a broad variety of applications, such as comments & ratings, attestations, and privately sharing data (when the value is encrypted).
 
@@ -791,7 +798,7 @@ Here are the steps:
 3. Add key-value pair to data NFT (use the `setData` method)
 4. Retrieve value from data NFT (use the `getData` method)
 
-  ### 8.1 Add key-value pair to data NFT
+  ### 10.1 Add key-value pair to data NFT
 Let's start by using the `setData` method to update the nft key value store with some data
 ```Typescript
     const nft = new Nft(publisherAccount)
@@ -811,7 +818,7 @@ Let's start by using the `setData` method to update the nft key value store with
 
 Under the hood, this uses [ERC725](https://erc725alliance.org/), which augments ERC721 with a well-defined way to set and get key-value pairs.
 
-### 8.2 get the key-value pair data from the NFT'
+### 10.2 get the key-value pair data from the NFT'
 
 Use the `getData` method to get the data stored in the nft key value store
 
