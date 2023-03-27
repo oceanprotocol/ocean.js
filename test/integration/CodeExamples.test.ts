@@ -797,8 +797,14 @@ describe('Marketplace flow tests', async () => {
     const nft = new Nft(publisherAccount)
     const data = 'SomeData'
     try {
-      await nft.setData(freNftAddress, await publisherAccount.getAddress(), '1', data)
+      await nft.setData(
+        freNftAddress,
+        await publisherAccount.getAddress(),
+        '0x1234',
+        data
+      )
     } catch (e) {
+      console.log('e = ', e)
       assert.fail('Failed to set data in NFT ERC725 key value store', e)
     }
     /// ```
@@ -811,13 +817,14 @@ describe('Marketplace flow tests', async () => {
 
     /// ```Typescript
     try {
-      const response = await nft.getData(freNftAddress, '1')
+      const response = await nft.getData(freNftAddress, '0x1234')
       console.log('getData response: ', response)
       assert(
         response === data,
         'Wrong data received when getting data from NFT ERC725 key value store'
       )
     } catch (e) {
+      console.log('e = ', e)
       assert.fail('Failed to get data from NFT ERC725 key value store', e)
     }
     /// ```
