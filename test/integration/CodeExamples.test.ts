@@ -84,9 +84,11 @@
 /// Start by importing all of the necessary dependencies
 
 /// ```Typescript
+import fs from 'fs'
 import { assert } from 'chai'
-import { AbiItem } from 'web3-utils'
-import { SHA256 } from 'crypto-js'
+import { ethers, providers, Signer } from 'ethers'
+]import { SHA256 } from 'crypto-js'
+import { homedir } from 'os'
 import {
   approve,
   Aquarius,
@@ -108,9 +110,15 @@ import {
   ProviderInstance,
   transfer,
   ZERO_ADDRESS,
-  sendTx
+  sendTx,
+  ConfigHelper,
+  configHelperNetworks,
+  amountToUnits,
+  ValidateMetadata,
+  getEventFromTx,
+  DDO
 } from '../../src'
-import { getAddresses, getTestConfig, web3 } from '../config'
+import { getAddresses, getTestConfig } from '../config'
 /// ```
 
 /// <!--
@@ -123,9 +131,9 @@ describe('Marketplace flow tests', async () => {
   let config: Config
   let aquarius: Aquarius
   let providerUrl: any
-  let publisherAccount: string
-  let consumerAccount: string
-  let stakerAccount: string
+  let publisherAccount: Signer
+  let consumerAccount: Signer
+  let stakerAccount: Signer
   let addresses: any
   let freNftAddress: string
   let freDatatokenAddress: string
@@ -161,11 +169,11 @@ describe('Marketplace flow tests', async () => {
 
   /// Next, we define the metadata that will describe our data asset. This is what we call the DDO
   /// ```Typescript
-  const DDO = {
+  const genericAsset:DDO = {
     '@context': ['https://w3id.org/did/v1'],
     id: '',
     version: '4.1.0',
-    chainId: 5,
+    chainId: 4,
     nftAddress: '0x0',
     metadata: {
       created: '2021-12-20T14:35:20Z',
@@ -174,56 +182,65 @@ describe('Marketplace flow tests', async () => {
       name: 'dataset-name',
       description: 'Ocean protocol test dataset description',
       author: 'oceanprotocol-team',
-      license: 'MIT'
+      license: 'MIT',
+      tags: ['white-papers'],
+      additionalInformation: { 'test-key': 'test-value' },
+      links: ['http://data.ceda.ac.uk/badc/ukcp09/']
     },
     services: [
       {
         id: 'testFakeId',
         type: 'access',
+        description: 'Download service',
         files: '',
         datatokenAddress: '0x0',
-        serviceEndpoint: 'https://v4.provider.goerli.oceanprotocol.com',
+        serviceEndpoint: 'http://172.15.0.4:8030',
         timeout: 0
       }
     ]
   }
   /// ```
 
-  /// We load the configuration:
+  /// ## 5. Load the configuration, initialize accounts and deploy contracts
   /// ```Typescript
   before(async () => {
-    config = await getTestConfig(web3)
-    aquarius = new Aquarius(config.metadataCacheUri)
-    providerUrl = config.providerUri
+    const provider = new providers.JsonRpcProvider(
+      process.env.NODE_URI || configHelperNetworks[1].nodeUri
+    )
+    publisherAccount = (await provider.getSigner(0)) as Signer
+    consumerAccount = (await provider.getSigner(1)) as Signer
+    const config = new ConfigHelper().getConfig(
+      parseInt(String((await publisherAccount.provider.getNetwork()).chainId))
+    )
+    config.providerUri = process.env.PROVIDER_URL || config.providerUri
+    aquarius = new Aquarius(config?.metadataCacheUri)
+    providerUrl = config?.providerUri
+    addresses = JSON.parse(
+      // eslint-disable-next-line security/detect-non-literal-fs-filename
+      fs.readFileSync(
+        process.env.ADDRESS_FILE ||
+          `${homedir}/.ocean/ocean-contracts/artifacts/address.json`,
+        'utf8'
+      )
+    ).development
     /// ```
     /// As we go along it's a good idea to console log the values so that you check they are right
     /// ```Typescript
     console.log(`Aquarius URL: ${config.metadataCacheUri}`)
     console.log(`Provider URL: ${providerUrl}`)
-  }) ///
-  /// ```
-
-  /// ## 5. Initialize accounts and deploy contracts
-  it('5.1 Next, lets get the address of the deployed contracts', async () => {
-    /// ```Typescript
-    addresses = getAddresses()
-  }) ///
-  /// ```
-
-  it('5.2 Initialize accounts', async () => {
-    /// ```Typescript
-    const accounts = await web3.eth.getAccounts()
-    publisherAccount = accounts[0]
-    consumerAccount = accounts[1]
-    stakerAccount = accounts[2]
-    /// ```
-    /// Again, lets console log the values so that we can check that they have been saved properly
-    /// ```Typescript
+    console.log(`Deployed contracts address: ${addresses}`)
     console.log(`Publisher account address: ${publisherAccount}`)
     console.log(`Consumer account address: ${consumerAccount}`)
     console.log(`Staker account address: ${stakerAccount}`)
-    /// <!--
-    // mint ocean to publisherAccount
+  }) ///
+  /// ```
+
+
+  it('5.1 Mint OCEAN to publisher account', async () => {
+    /// You can skip this step if you are running your script against a remote network,
+    /// you need to mint oceans to mentioned accounts only if you are using barge to test your script
+
+    /// ```Typescript
     const minAbi = [
       {
         constant: false,
@@ -237,37 +254,41 @@ describe('Marketplace flow tests', async () => {
         stateMutability: 'nonpayable',
         type: 'function'
       }
-    ] as AbiItem[]
-    const tokenContract = new web3.eth.Contract(minAbi, addresses.Ocean)
-    const estGas = await calculateEstimatedGas(
-      publisherAccount,
-      tokenContract.methods.mint,
-      publisherAccount,
-      web3.utils.toWei('1000')
+    ]
+
+    const tokenContract = new ethers.Contract(addresses.Ocean, minAbi, publisherAccount)
+    const estGasPublisher = await tokenContract.estimateGas.mint(
+      await publisherAccount.getAddress(),
+      amountToUnits(null, null, '1000', 18)
     )
     await sendTx(
+      estGasPublisher,
       publisherAccount,
-      estGas,
-      web3,
       1,
-      tokenContract.methods.mint,
-      publisherAccount,
-      web3.utils.toWei('1000')
+      tokenContract.mint,
+      await publisherAccount.getAddress(),
+      amountToUnits(null, null, '1000', 18)
     )
-    /// -->
   }) ///
   /// ```
 
-  it('5.2 Next, lets get the address of the deployed contracts', async () => {
-    /// ```Typescript
-    addresses = getAddresses()
-  }) ///
-  /// ```
 
   it('5.3 We send some OCEAN to consumer and staker accounts', async () => {
     /// ```Typescript
-    transfer(web3, config, publisherAccount, addresses.Ocean, consumerAccount, '100')
-    transfer(web3, config, publisherAccount, addresses.Ocean, stakerAccount, '100')
+    transfer(
+      publisherAccount,
+      config,
+      addresses.Ocean,
+      await consumerAccount.getAddress(),
+      '100'
+    )
+    transfer(
+      publisherAccount,
+      config,
+      addresses.Ocean,
+      await stakerAccount.getAddress(),
+      '100'
+    )
   }) ///
   /// ```
 
@@ -275,7 +296,7 @@ describe('Marketplace flow tests', async () => {
 
   it('6.1 Publish a dataset (create NFT + Datatoken) with a fixed rate exchange', async () => {
     /// ```Typescript
-    const factory = new NftFactory(addresses.ERC721Factory, web3)
+    const factory = new NftFactory(addresses.ERC721Factory, publisherAccount)
 
     const nftParams: NftCreateData = {
       name: FRE_NFT_NAME,
@@ -283,7 +304,7 @@ describe('Marketplace flow tests', async () => {
       templateIndex: 1,
       tokenURI: '',
       transferable: true,
-      owner: publisherAccount
+      owner: await publisherAccount.getAddress()
     }
 
     const datatokenParams: DatatokenCreateParams = {
@@ -292,15 +313,15 @@ describe('Marketplace flow tests', async () => {
       feeAmount: '0',
       paymentCollector: ZERO_ADDRESS,
       feeToken: ZERO_ADDRESS,
-      minter: publisherAccount,
+      minter: await publisherAccount.getAddress(),
       mpFeeAddress: ZERO_ADDRESS
     }
 
     const freParams: FreCreationParams = {
       fixedRateAddress: addresses.FixedPrice,
       baseTokenAddress: addresses.Ocean,
-      owner: publisherAccount,
-      marketFeeCollector: publisherAccount,
+      owner: await publisherAccount.getAddress(),
+      marketFeeCollector: await publisherAccount.getAddress(),
       baseTokenDecimals: 18,
       datatokenDecimals: 18,
       fixedRate: '1',
@@ -309,17 +330,22 @@ describe('Marketplace flow tests', async () => {
       withMint: false
     }
 
-    const tx = await factory.createNftWithDatatokenWithFixedRate(
-      publisherAccount,
+    const bundleNFT = await factory.createNftWithDatatokenWithFixedRate(
       nftParams,
       datatokenParams,
       freParams
     )
 
-    freNftAddress = tx.events.NFTCreated.returnValues[0]
-    freDatatokenAddress = tx.events.TokenCreated.returnValues[0]
-    freAddress = tx.events.NewFixedRate.returnValues.exchangeContract
-    freId = tx.events.NewFixedRate.returnValues.exchangeId
+    const trxReceipt = await bundleNFT.wait()
+    // events have been emitted
+    const nftCreatedEvent = getEventFromTx(trxReceipt, 'NFTCreated')
+    const tokenCreatedEvent = getEventFromTx(trxReceipt, 'TokenCreated')
+    const newFreEvent = getEventFromTx(trxReceipt, 'NewFixedRate')
+
+    freNftAddress =  nftCreatedEvent.args.newTokenAddress
+    freDatatokenAddress= tokenCreatedEvent.args.newTokenAddress
+    freAddress =  newFreEvent.args.exchangeContract
+    freId = newFreEvent.args.exchangeId
 
     /// ```
     /// Now let's console log each of those values to check everything is working
@@ -333,54 +359,58 @@ describe('Marketplace flow tests', async () => {
 
   it('6.2 Set metadata in the fixed rate exchange NFT', async () => {
     /// ```Typescript
-    const nft = new Nft(web3)
+    const nft = new Nft(publisherAccount, (await publisherAccount.provider.getNetwork()).chainId)
+
+    const fixedDDO: DDO = { ...genericAsset }
 
     /// ```
     /// Now we are going to update the ddo and set the did
     /// ```Typescript
-    DDO.chainId = await web3.eth.getChainId()
-    DDO.id =
-      'did:op:' +
-      SHA256(web3.utils.toChecksumAddress(freNftAddress) + DDO.chainId.toString(10))
-    DDO.nftAddress = freNftAddress
+
+    fixedDDO.chainId = (await publisherAccount.provider.getNetwork()).chainId
+    fixedDDO.id =
+    'did:op:' +
+    SHA256(ethers.utils.getAddress(freNftAddress) + fixedDDO.chainId.toString(10))
+    fixedDDO.nftAddress = freNftAddress
+
 
     /// ```
     /// Next, let's encrypt the file(s) using provider
     /// ```Typescript
     ASSET_URL.datatokenAddress = freDatatokenAddress
     ASSET_URL.nftAddress = freNftAddress
-    const encryptedFiles = await ProviderInstance.encrypt(
+    fixedDDO.services[0].files = await ProviderInstance.encrypt(
       ASSET_URL,
-      DDO.chainId,
+      fixedDDO.chainId,
       providerUrl
     )
-    DDO.services[0].files = await encryptedFiles
-    DDO.services[0].datatokenAddress = freDatatokenAddress
+    fixedDDO.services[0].datatokenAddress = freDatatokenAddress
 
     /// ```
     /// Now let's console log the DID to check everything is working
     /// ```Typescript
-    console.log(`DID: ${DDO.id}`)
+    console.log(`DID: ${fixedDDO.id}`)
 
-    const providerResponse = await ProviderInstance.encrypt(DDO, DDO.chainId, providerUrl)
+    const providerResponse = await ProviderInstance.encrypt(fixedDDO, fixedDDO.chainId, providerUrl)
     const encryptedDDO = await providerResponse
-    const metadataHash = getHash(JSON.stringify(DDO))
+    const isAssetValid: ValidateMetadata = await aquarius.validate(fixedDDO)
+    assert(isAssetValid.valid === true, 'Published asset is not valid')
     await nft.setMetadata(
       freNftAddress,
-      publisherAccount,
+      await publisherAccount.getAddress(),
       0,
       providerUrl,
       '',
       '0x2',
       encryptedDDO,
-      '0x' + metadataHash
+      isAssetValid.hash
     )
   })
   /// ```
 
   it('6.3 Marketplace displays fixed rate asset for sale', async () => {
     /// ```Typescript
-    const fixedRate = new FixedRateExchange(freAddress, web3)
+    const fixedRate = new FixedRateExchange(freAddress, publisherAccount)
     const oceanAmount = await (
       await fixedRate.calcBaseInGivenDatatokensOut(freId, '1')
     ).baseTokenAmount
