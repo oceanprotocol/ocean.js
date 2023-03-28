@@ -1,9 +1,4 @@
-// import Web3 from 'web3'
-// import { Contract } from 'web3-eth-contract'
-// import { AbiItem } from 'web3-utils'
-
 import { Signer, Contract, ContractFunction } from 'ethers'
-import { Interface } from 'ethers/lib/utils'
 import { AbiItem } from '../@types'
 import { Config } from '../config'
 import { SmartContract } from './SmartContract'

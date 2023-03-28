@@ -526,17 +526,7 @@ describe('Datatoken', () => {
       ]
     )
 
-    // const { v, r, s } = await signHash(web3, message,user3)
-    const messageHashBytes = ethers.utils.arrayify(message)
-    let signedMessage = await (user3 as providers.JsonRpcSigner)._legacySignMessage(
-      messageHashBytes
-    )
-    signedMessage = signedMessage.substr(2) // remove 0x
-    const r = '0x' + signedMessage.slice(0, 64)
-    const s = '0x' + signedMessage.slice(64, 128)
-    let v = '0x' + signedMessage.slice(128, 130)
-    if (v === '0x00') v = '0x1b'
-    if (v === '0x01') v = '0x1c'
+    const { v, r, s } = await signHash(user3, message)
 
     const providerFees: ProviderFees = {
       providerFeeAddress: await user3.getAddress(),
@@ -586,16 +576,7 @@ describe('Datatoken', () => {
       ]
     )
 
-    const messageHashBytes = ethers.utils.arrayify(message)
-    let signedMessage = await (user3 as providers.JsonRpcSigner)._legacySignMessage(
-      messageHashBytes
-    )
-    signedMessage = signedMessage.substr(2) // remove 0x
-    const r = '0x' + signedMessage.slice(0, 64)
-    const s = '0x' + signedMessage.slice(64, 128)
-    let v = '0x' + signedMessage.slice(128, 130)
-    if (v === '0x00') v = '0x1b'
-    if (v === '0x01') v = '0x1c'
+    const { v, r, s } = await signHash(user3, message)
 
     const providerFees: ProviderFees = {
       providerFeeAddress: await user3.getAddress(),
@@ -641,16 +622,8 @@ describe('Datatoken', () => {
         providerValidUntil
       ]
     )
-    const messageHashBytes = ethers.utils.arrayify(message)
-    let signedMessage = await (user3 as providers.JsonRpcSigner)._legacySignMessage(
-      messageHashBytes
-    )
-    signedMessage = signedMessage.substr(2) // remove 0x
-    const r = '0x' + signedMessage.slice(0, 64)
-    const s = '0x' + signedMessage.slice(64, 128)
-    let v = '0x' + signedMessage.slice(128, 130)
-    if (v === '0x00') v = '0x1b'
-    if (v === '0x01') v = '0x1c'
+
+    const { v, r, s } = await signHash(user3, message)
 
     const providerFees: ProviderFees = {
       providerFeeAddress: await user3.getAddress(),
@@ -698,16 +671,8 @@ describe('Datatoken', () => {
         providerValidUntil
       ]
     )
-    const messageHashBytes = ethers.utils.arrayify(message)
-    let signedMessage = await (user3 as providers.JsonRpcSigner)._legacySignMessage(
-      messageHashBytes
-    )
-    signedMessage = signedMessage.substr(2) // remove 0x
-    const r = '0x' + signedMessage.slice(0, 64)
-    const s = '0x' + signedMessage.slice(64, 128)
-    let v = '0x' + signedMessage.slice(128, 130)
-    if (v === '0x00') v = '0x1b'
-    if (v === '0x01') v = '0x1c'
+
+    const { v, r, s } = await signHash(user3, message)
 
     const providerFees: ProviderFees = {
       providerFeeAddress: await user1.getAddress(),

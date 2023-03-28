@@ -72,9 +72,9 @@ export function getEventFromTx(txReceipt, eventName) {
 
 /**
  * Send the transation on chain
- * @param {string} from account that calls the function
- * @param {any} estGas estimated gas for the transaction
- * @param {Web3} web3 web3 objcet
+ * @param {BigNumber} estGas estimated gas for the transaction
+ * @param {Signer} signer signer object
+ * @param {number} gasFeeMultiplier number represinting the multiplier we apply to gas fees
  * @param {Function} functionToSend function that we need to send
  * @param {...any[]} args arguments of the function
  * @return {Promise<any>} transaction receipt

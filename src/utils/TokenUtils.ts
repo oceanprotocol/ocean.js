@@ -3,7 +3,6 @@ import { ethers, Signer, BigNumber } from 'ethers'
 import { amountToUnits, unitsToAmount, minAbi, sendTx, LoggerInstance } from '.'
 import { Config } from '../config'
 import { ReceiptOrEstimate, ReceiptOrDecimal } from '../@types'
-// import { AbiItem } from 'web3-utils'
 
 /**
  * Approve spender to spent amount tokens

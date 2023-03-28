@@ -1,5 +1,4 @@
-import Web3 from 'web3'
-import { ethers, Wallet, providers, Signer } from 'ethers'
+import { providers, Signer } from 'ethers'
 import fs from 'fs'
 import { homedir } from 'os'
 import { ConfigHelper, configHelperNetworks } from '../src/config'
@@ -7,11 +6,24 @@ import { LoggerInstance, LogLevel } from '../src/utils'
 
 LoggerInstance.setLevel(LogLevel.Error)
 
+export interface Addresses {
+  opfCommunityFeeCollectorAddress: string
+  datatokenTemplateAddress: string
+  nftTemplateAddress: string
+  oceanAddress: string
+  routerAddress: string
+  sideStakingAddress: string
+  fixedRateAddress: string
+  dispenserAddress: string
+  nftFactoryAddress: string
+  daiAddress: string
+  usdcAddress: string
+  poolTemplateAddress: string
+}
+
 export const GAS_PRICE = '3000000000'
 
 // by default, we connect with development network
-export const web3 = new Web3(process.env.NODE_URI || configHelperNetworks[1].nodeUri)
-
 export const provider = new providers.JsonRpcProvider(
   process.env.NODE_URI || configHelperNetworks[1].nodeUri
 )

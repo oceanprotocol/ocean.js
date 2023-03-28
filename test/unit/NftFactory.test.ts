@@ -253,25 +253,8 @@ describe('Nft Factory test', () => {
         providerValidUntil
       ]
     )
-    /* Since ganache has no support yet for personal_sign, we must use the legacy implementation
-    const signedMessage = await user2.signMessage(message)
-    */
-    // const signedMessage = await (user2 as providers.JsonRpcSigner)._legacySignMessage(
-    // message
-    // )
-    // console.log(signedMessage)
 
-    // const { v, r, s } = await signHash(web3, message, consumeFeeAddress)
-    const messageHashBytes = ethers.utils.arrayify(message)
-    let signedMessage = await (
-      consumeFeeAddress as providers.JsonRpcSigner
-    )._legacySignMessage(messageHashBytes)
-    signedMessage = signedMessage.substr(2) // remove 0x
-    const r = '0x' + signedMessage.slice(0, 64)
-    const s = '0x' + signedMessage.slice(64, 128)
-    let v = '0x' + signedMessage.slice(128, 130)
-    if (v === '0x00') v = '0x1b'
-    if (v === '0x01') v = '0x1c'
+    const { v, r, s } = await signHash(consumeFeeAddress, message)
 
     const providerFees: ProviderFees = {
       providerFeeAddress: await consumeFeeAddress.getAddress(),

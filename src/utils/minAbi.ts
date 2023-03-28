@@ -1,4 +1,3 @@
-// import { AbiItem } from 'web3-utils/types'
 export const minAbi = [
   {
     constant: true,

@@ -30,8 +30,11 @@ export class Datatoken extends SmartContract {
 
   /**
    * Instantiate ERC20 Datatokens
-   * @param {AbiItem | AbiItem[]} datatokensAbi
-   * @param {Web3} web3
+   * @param {Signer} signer
+   * @param {string | number} network optional network name or chain id
+   * @param {Config} config optional config object
+   * @param {AbiItem[]} abi optional abi
+   * @param {AbiItem[]} abiEnterprise optional enterprise abi
    */
   constructor(
     signer: Signer,
