@@ -23,8 +23,8 @@ Here are the steps:
 3. [Install dependencies](#3-install-dependancies)
 4. [Import dependencies and add variables and constants](#4-import-dependencies-and-add-variables-and-constants)
 5. [Load the configuration, initialize accounts and deploy contracts](#5-load-the-configuration-initialize-accounts-and-deploy-contracts)
-6. [Publish Data NFT and a Datatoken with a fixed rate exchange](#6-publish-data-nft-and-a-datatoken-with-a-fixed-rate-exchange
-7. [Consume a fixed rate asset data asset, and downloads it'](#7-consume-a-fixed-rate-asset-data-asset)
+6. [Publish Data NFT and a Datatoken with a fixed rate exchange](#6-publish-data-nft-and-a-datatoken-with-a-fixed-rate-exchange)
+7. [Consume a fixed rate asset data asset'](#7-consume-a-fixed-rate-asset-data-asset)
 8. [Publish Data NFT and a Datatoken with a dispenser](#8-publish-data-nft-and-a-datatoken-with-a-dispenserr)
 9. [Consume a dispenser data asset](#9-consume-a-dispenser-data-asset)
 10. [Using ERC725 Key-Value Store](#10-using-erc725-key-value-store)
