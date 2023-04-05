@@ -865,8 +865,7 @@ describe('Datatoken', () => {
 
   it('#setPublishingMarketFee - User should not be able to set the Publishing Market Fee', async () => {
     const originalPublishingMarketFee = await datatoken.getPublishingMarketFee(
-      datatokenAddress,
-      await user1.getAddress()
+      datatokenAddress
     )
     try {
       await datatoken.setPublishingMarketFee(
@@ -880,8 +879,7 @@ describe('Datatoken', () => {
       assert(e.message === 'Caller is not the Publishing Market Fee Address')
     }
     const newPublishingMarketFee = await datatoken.getPublishingMarketFee(
-      datatokenAddress,
-      await user3.getAddress()
+      datatokenAddress
     )
 
     assert(
@@ -902,8 +900,7 @@ describe('Datatoken', () => {
     datatoken = new Datatoken(user2, 8996)
 
     const originalPublishingMarketFee = await datatoken.getPublishingMarketFee(
-      datatokenAddress,
-      await user2.getAddress()
+      datatokenAddress
     )
     try {
       await datatoken.setPublishingMarketFee(
@@ -917,8 +914,7 @@ describe('Datatoken', () => {
       console.log('Error:', e)
     }
     const newPublishingMarketFee = await datatoken.getPublishingMarketFee(
-      datatokenAddress,
-      await user2.getAddress()
+      datatokenAddress
     )
 
     assert(newPublishingMarketFee !== originalPublishingMarketFee)

@@ -95,7 +95,7 @@ export class Nft extends SmartContract {
    * @param {String} nftAddress NFT contract address
    * @param {String} address NFT Owner adress
    * @param {String} manager User adress which is going to be assing manager
-   * @param {Boolean} estimateGas if True, return gas estimate
+   * @param {Boolean} [estimateGas] if True, return gas estimate
    * @return {Promise<ReceiptOrEstimate>} trxReceipt
    */
   public async addManager<G extends boolean = false>(
@@ -129,7 +129,7 @@ export class Nft extends SmartContract {
    * @param {String} nftAddress NFT contract address
    * @param {String} address NFT Owner adress
    * @param {String} manager User adress which is going to be removed as manager
-   * @param {Boolean} estimateGas if True, return gas estimate
+   * @param {Boolean} [estimateGas] if True, return gas estimate
    * @return {Promise<ReceiptOrEstimate>} trxReceipt
    */
   public async removeManager<G extends boolean = false>(
@@ -628,7 +628,8 @@ export class Nft extends SmartContract {
     return <ReceiptOrEstimate<G>>trxReceipt
   }
 
-  /** set TokenURI on an nft
+  /**
+   * set TokenURI on an nft
    * @param {String} nftAddress NFT contract address
    * @param {String} data input data for TokenURI
    * @param {Boolean} estimateGas if True, return gas estimate
@@ -655,7 +656,8 @@ export class Nft extends SmartContract {
     return <ReceiptOrEstimate<G>>trxReceipt
   }
 
-  /** Get Owner
+  /**
+   * Get NFT Owner
    * @param {String} nftAddress NFT contract address
    * @return {Promise<string>} string
    */
@@ -665,7 +667,8 @@ export class Nft extends SmartContract {
     return trxReceipt
   }
 
-  /** Get users NFT Permissions
+  /**
+   * Gets NFT Permissions for a specified user
    * @param {String} nftAddress NFT contract address
    * @param {String} address user adress
    * @return {Promise<NftRoles>}
@@ -676,7 +679,8 @@ export class Nft extends SmartContract {
     return roles
   }
 
-  /** Get users Metadata, return Metadata details
+  /**
+   * Returns Metadata details for an NFT
    * @param {String} nftAddress NFT contract address
    * @return {Promise<Objecta>}
    */
@@ -685,7 +689,8 @@ export class Nft extends SmartContract {
     return await nftContract.getMetaData()
   }
 
-  /** Get users DatatokenDeployer role
+  /**
+   * Checks if user has DatatokenDeployer role
    * @param {String} nftAddress NFT contract address
    * @param {String} address user adress
    * @return {Promise<boolean>}
@@ -699,14 +704,14 @@ export class Nft extends SmartContract {
     return isDatatokenDeployer
   }
 
-  /** setData
-   * This function allows to store data with a preset key (keccak256(ERC20Address)) into NFT 725 Store
+  /**
+   * Allows users to store data with a preset key (keccak256(ERC20Address)) into NFT 725 Store
    * only ERC20Deployer can succeed
-   * @param nftAddress erc721 contract adress
-   * @param address user adress
-   * @param key Key of the data to be stored into 725Y standard
-   * @param value Data to be stored into 725Y standard
-   * @param {Boolean} estimateGas if True, return gas estimate
+   * @param {string} nftAddress Nft datatoken adress
+   * @param {string} address User adress
+   * @param {string} key Key of the data to be stored into 725Y standard
+   * @param {string} value Data to be stored into 725Y standard
+   * @param {boolean} estimateGas if True, return gas estimate
    * @return {Promise<ReceiptOrEstimate>} transactionId
    */
   public async setData<G extends boolean = false>(
@@ -739,9 +744,10 @@ export class Nft extends SmartContract {
     return <ReceiptOrEstimate<G>>trxReceipt
   }
 
-  /** Gets data at a given `key`
-   * @param {String} nftAddress NFT contract address
-   * @param {String} key the key which value to retrieve
+  /**
+   * Gets stored data at a given `key` in an NFT
+   * @param {string} nftAddress - The address of the NFT.
+   * @param {string} key - The key of the data to get.
    * @return {Promise<string>} The data stored at the key
    */
   public async getData(nftAddress: string, key: string): Promise<string> {
@@ -751,10 +757,11 @@ export class Nft extends SmartContract {
     return data ? ethers.utils.toUtf8String(data) : null
   }
 
-  /** Gets data at a given `key`
-   * @param {String} nftAddress NFT contract address
-   * @param {String} id
-   * @return {Promise<string>} The data stored at the key
+  /**
+   * Gets the token URI of an NFT.
+   * @param {string} nftAddress - The address of the NFT.
+   * @param {number} id - The ID of the token.
+   * @returns {Promise&lt;string&gt;}
    */
   public async getTokenURI(nftAddress: string, id: number): Promise<string> {
     const nftContract = this.getContract(nftAddress)

@@ -22,10 +22,10 @@ export class NftFactory extends SmartContractWithAddress {
   }
 
   /**
-   * Create new NFT
-   * @param {NFTCreateData} nftData
-   * @param {Boolean} estimateGas if True, return gas estimate
-   * @return {Promise<string>} NFT datatoken address
+   * Create new data NFT
+   * @param {NFTCreateData} nftData The data needed to create an NFT.
+   * @param {Boolean} [estimateGas] if True, return gas estimate
+   * @return {Promise<string|BigNumber>} The transaction hash or the gas estimate.
    */
   public async createNFT<G extends boolean = false>(
     nftData: NftCreateData,
@@ -79,7 +79,8 @@ export class NftFactory extends SmartContractWithAddress {
     return events.args[0]
   }
 
-  /** Get Current NFT Count (NFT created)
+  /**
+   * Get Current NFT Count (NFT created)
    * @return {Promise<number>} Number of NFT created from this factory
    */
   public async getCurrentNFTCount(): Promise<number> {
@@ -87,7 +88,8 @@ export class NftFactory extends SmartContractWithAddress {
     return nftCount
   }
 
-  /** Get Current Datatoken Count
+  /**
+   * Get Current Datatoken Count
    * @return {Promise<number>} Number of DTs created from this factory
    */
   public async getCurrentTokenCount(): Promise<number> {
@@ -95,7 +97,8 @@ export class NftFactory extends SmartContractWithAddress {
     return tokenCount
   }
 
-  /** Get Factory Owner
+  /**
+   *  Get Factory Owner
    * @return {Promise<string>} Factory Owner address
    */
   public async getOwner(): Promise<string> {
@@ -103,7 +106,8 @@ export class NftFactory extends SmartContractWithAddress {
     return owner
   }
 
-  /** Get Current NFT Template Count
+  /**
+   * Get Current NFT Template Count
    * @return {Promise<number>} Number of NFT Template added to this factory
    */
   public async getCurrentNFTTemplateCount(): Promise<number> {
@@ -111,7 +115,8 @@ export class NftFactory extends SmartContractWithAddress {
     return count
   }
 
-  /** Get Current Template  Datatoken (ERC20) Count
+  /**
+   * Get Current Template  Datatoken (ERC20) Count
    * @return {Promise<number>} Number of Datatoken Template added to this factory
    */
   public async getCurrentTokenTemplateCount(): Promise<number> {
@@ -119,8 +124,9 @@ export class NftFactory extends SmartContractWithAddress {
     return count
   }
 
-  /** Get NFT Template
-   * @param {Number} index Template index
+  /**
+   * Get NFT Template
+   * @param {number} index Template index
    * @return {Promise<Template>} Number of Template added to this factory
    */
   public async getNFTTemplate(index: number): Promise<Template> {
@@ -135,8 +141,9 @@ export class NftFactory extends SmartContractWithAddress {
     return template
   }
 
-  /** Get Datatoken (ERC20) Template
-   * @param {Number} index Template index
+  /**
+   * Get Datatoken (ERC20) Template
+   * @param {number} index Template index
    * @return {Promise<Template>} DT Template info
    */
   public async getTokenTemplate(index: number): Promise<Template> {
@@ -144,8 +151,9 @@ export class NftFactory extends SmartContractWithAddress {
     return template
   }
 
-  /** Check if Datatoken is deployed from the factory
-   * @param {String} datatoken Datatoken address we want to check
+  /**
+   * Check if Datatoken is deployed from the factory
+   * @param {String} datatoken Datatoken address to check
    * @return {Promise<Boolean>} return true if deployed from this factory
    */
   public async checkDatatoken(datatoken: string): Promise<Boolean> {
@@ -153,8 +161,9 @@ export class NftFactory extends SmartContractWithAddress {
     return isDeployed
   }
 
-  /** Check if  NFT is deployed from the factory
-   * @param {String} nftAddress nftAddress address we want to check
+  /**
+   * Check if  NFT is deployed from the factory
+   * @param {String} nftAddress nftAddress address to check
    * @return {Promise<String>} return address(0) if it's not, or the nftAddress if true
    */
   public async checkNFT(nftAddress: string): Promise<String> {
@@ -164,9 +173,9 @@ export class NftFactory extends SmartContractWithAddress {
 
   /**
    * Add a new NFT token template - only factory Owner
-   * @param {String} address
+   * @param {String} address caller address
    * @param {String} templateAddress template address to add
-   * @param {Boolean} estimateGas if True, return gas estimate
+   * @param {Boolean} [estimateGas] if True, return gas estimate
    * @return {Promise<ReceiptOrEstimate>}
    */
   public async addNFTTemplate<G extends boolean = false>(
@@ -271,7 +280,7 @@ export class NftFactory extends SmartContractWithAddress {
 
   /**
    * Add a new NFT token template - only factory Owner
-   * @param {String} address
+   * @param {String} address caller address
    * @param {String} templateAddress template address to add
    * @param {Boolean} estimateGas if True, return gas estimate
    * @return {Promise<ReceiptOrEstimate>}
@@ -304,7 +313,7 @@ export class NftFactory extends SmartContractWithAddress {
 
   /**
    * Disable token template - only factory Owner
-   * @param {String} address
+   * @param {String} address caller address
    * @param {Number} templateIndex index of the template we want to disable
    * @param {Boolean} estimateGas if True, return gas estimate
    * @return {Promise<ReceiptOrEstimate>} current token template count
@@ -343,7 +352,7 @@ export class NftFactory extends SmartContractWithAddress {
 
   /**
    * Reactivate a previously disabled token template - only factory Owner
-   * @param {String} address
+   * @param {String} address caller address
    * @param {Number} templateIndex index of the template we want to reactivate
    * @param {Boolean} estimateGas if True, return gas estimate
    * @return {Promise<ReceiptOrEstimate>} current token template count
@@ -382,15 +391,14 @@ export class NftFactory extends SmartContractWithAddress {
   }
 
   /**
-   * @dev startMultipleTokenOrder
    *      Used as a proxy to order multiple services
    *      Users can have inifinite approvals for fees for factory instead of having one approval/ Datatoken contract
    *      Requires previous approval of all :
    *          - consumeFeeTokens
    *          - publishMarketFeeTokens
    *          - ERC20 Datatokens
-   * @param orders an array of struct tokenOrder
-   * @param {Boolean} estimateGas if True, return gas estimate
+   * @param {TokenOrder[]} orders array of of orders
+   * @param {Boolean} [estimateGas] if True, return gas estimate
    * @return {Promise<ReceiptOrEstimate>} transaction receipt
    */
   public async startMultipleTokenOrder<G extends boolean = false>(
@@ -416,11 +424,10 @@ export class NftFactory extends SmartContractWithAddress {
   }
 
   /**
-   * @dev createNftWithDatatoken
-   *      Creates a new NFT, then a Datatoken,all in one call
-   * @param _NftCreateData input data for nft creation
-   * @param _ErcCreateData input data for Datatoken creation
-   * @param {Boolean} estimateGas if True, return gas estimate
+   *  Creates a new NFT, then a datatoken,all in one call
+   * @param {NftCreateData} nftCreateData - The data required to create an NFT.
+   * @param {DatatokenCreateParams} dtParams - The parameters required to create a datatoken.
+   * @param {boolean} [estimateGas] - Whether to return only estimate gas or not.
    * @return {Promise<ReceiptOrEstimate>} transaction receipt
    */
 
@@ -449,15 +456,13 @@ export class NftFactory extends SmartContractWithAddress {
   }
 
   /**
-   * @dev createNftWithDatatokenWithFixedRate
-   *      Creates a new NFT, then a Datatoken, then a FixedRateExchange, all in one call
-   *      Use this carefully, because if Fixed Rate creation fails, you are still going to pay a lot of gas
-   * @param address Caller address
-   * @param nftCreateData input data for NFT Creation
-   * @param dtParams input data for Datatoken Creation
-   * @param freParams input data for FixedRate Creation
-   * @param {Boolean} estimateGas if True, return gas estimate
-   *  @return {Promise<TransactionReceipt>} transaction receipt
+   * Creates an NFT with a datatoken with a fixed rate  all in one call.
+   * be aware if Fixed Rate creation fails, you are still going to pay a lot of gas
+   * @param {NftCreateData} nftCreateData - The data required to create an NFT.
+   * @param {DatatokenCreateParams} dtParams - The parameters required to create a datatoken.
+   * @param {FreCreationParams} freParams - The parameters required to create a fixed-rate exchange contract.
+   * @param {boolean} [estimateGas] - Whether to return only estimate gas or not.
+   * @returns {Promis<ReceiptOrEstimate<G>>}
    */
   public async createNftWithDatatokenWithFixedRate<G extends boolean = false>(
     nftCreateData: NftCreateData,
@@ -489,14 +494,13 @@ export class NftFactory extends SmartContractWithAddress {
   }
 
   /**
-   * @dev createNftWithDatatokenWithDispenser
-   *      Creates a new NFT, then a Datatoken, then a Dispenser, all in one call
-   *      Use this carefully, because if Dispenser creation fails, you are still going to pay a lot of gas
-   * @param nftCreateData input data for NFT Creation
-   * @param dtParams input data for Datatoken Creation
-   * @param dispenserParams input data for Dispenser Creation
-   * @param {Boolean} estimateGas if True, return gas estimate
-   *  @return {Promise<TransactionReceipt>} transaction receipt
+   * Creates an NFT with a datatoken with a dispenser in one call.
+   * Be aware if Fixed Rate creation fails, you are still going to pay a lot of gas
+   * @param {NftCreateData} nftCreateData - The data required to create an NFT.
+   * @param {DatatokenCreateParams} dtParams - The parameters required to create a datatoken.
+   * @param {DispenserCreationParams} dispenserParams - The parameters required to create a dispenser contract.
+   * @param {boolean} [estimateGas] - Whether to estimate gas or not.
+   * @returns {Promis<ReceiptOrEstimate<G>>}
    */
   public async createNftWithDatatokenWithDispenser<G extends boolean = false>(
     nftCreateData: NftCreateData,
@@ -538,6 +542,11 @@ export class NftFactory extends SmartContractWithAddress {
     return <ReceiptOrEstimate<G>>trxReceipt
   }
 
+  /**
+   * Gets the parameters required to create an ERC20 token.
+   * @param {DatatokenCreateParams} dtParams - The parameters required to create a datatoken.
+   * @returns {Promise<any>}
+   */
   private async getErcCreationParams(dtParams: DatatokenCreateParams): Promise<any> {
     let name: string, symbol: string
     // Generate name & symbol if not present
@@ -561,6 +570,11 @@ export class NftFactory extends SmartContractWithAddress {
     }
   }
 
+  /**
+   * Gets the parameters required to create a fixed-rate exchange contract.
+   * @param {FreCreationParams} freParams - The parameters required to create a fixed-rate exchange contract.
+   * @returns {Promise<any> }
+   */
   private async getFreCreationParams(freParams: FreCreationParams): Promise<any> {
     if (!freParams.allowedConsumer) freParams.allowedConsumer = ZERO_ADDRESS
     const withMint = freParams.withMint === false ? 0 : 1

@@ -86,6 +86,7 @@ export async function sendTx(
   functionToSend: ContractFunction,
   ...args: any[]
 ): Promise<providers.TransactionResponse> {
+  // TODO: update method to use also gasFeeMultiplier
   const { chainId } = await signer.provider.getNetwork()
   const feeHistory = await signer.provider.getFeeData()
   let overrides

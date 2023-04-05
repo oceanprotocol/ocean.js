@@ -205,6 +205,12 @@ export class ConfigHelper {
     return configAddresses
   }
 
+  /**
+   * Returns the config object for a specific network supported by the oceanprotocol stack
+   * @param {string | number} network the network's chainId or name
+   * @param {string} infuraProjectId optional infura project id that will replace the configs node URI
+   * @return {Config} Config obhjedct
+   */
   public getConfig(network: string | number, infuraProjectId?: string): Config {
     const filterBy = typeof network === 'string' ? 'network' : 'chainId'
     let config = configHelperNetworks.find((c) => c[filterBy] === network)

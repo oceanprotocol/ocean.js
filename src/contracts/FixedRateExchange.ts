@@ -136,8 +136,6 @@ export class FixedRateExchange extends SmartContractWithAddress {
 
   /**
    * Gets total number of exchanges
-   * @param {String} exchangeId ExchangeId
-   * @param {Number} datatokenAmount Amount of datatokens
    * @return {Promise<Number>} no of available exchanges
    */
   public async getNumberOfExchanges(): Promise<number> {
@@ -147,7 +145,7 @@ export class FixedRateExchange extends SmartContractWithAddress {
 
   /**
    * Set new rate
-   * @param {String} exchangeId ExchangeId
+   * @param {String} exchangeId Exchange ID
    * @param {String} newRate New rate
    * @param {Boolean} estimateGas if True, return gas estimate
    * @return {Promise<ReceiptOrEstimate>} transaction receipt
@@ -177,8 +175,8 @@ export class FixedRateExchange extends SmartContractWithAddress {
 
   /**
    * Sets a new allowedSwapper
-   * @param {String} exchangeId ExchangeId
-   * @param {String} newAllowedSwapper newAllowedSwapper (set address zero if we want to remove allowed swapper)
+   * @param {String} exchangeId Exchange ID
+   * @param {String} newAllowedSwapper  The address of the new allowed swapper (set address zero if we want to remove allowed swapper)
    * @param {Boolean} estimateGas if True, return gas estimate
    * @return {Promise<ReceiptOrEstimate>} transaction receipt
    */
@@ -207,7 +205,7 @@ export class FixedRateExchange extends SmartContractWithAddress {
   /**
    * Activate an exchange
    * @param {String} exchangeId ExchangeId
-   * @param {String} address User address
+   * @param {Boolean} estimateGas if True, return gas estimate
    * @return {Promise<ReceiptOrEstimate>} transaction receipt
    */
   public async activate<G extends boolean = false>(
@@ -258,8 +256,8 @@ export class FixedRateExchange extends SmartContractWithAddress {
   }
 
   /**
-   * Get Rate
-   * @param {String} exchangeId ExchangeId
+   * Get Exchange Rate
+   * @param {String} exchangeId Exchange ID
    * @return {Promise<string>} Rate (converted from wei)
    */
   public async getRate(exchangeId: string): Promise<string> {
@@ -269,7 +267,7 @@ export class FixedRateExchange extends SmartContractWithAddress {
 
   /**
    * Get Datatoken Supply in the exchange
-   * @param {String} exchangeId ExchangeId
+   * @param {String} exchangeId Exchange Id
    * @return {Promise<string>}  dt supply formatted
    */
   public async getDatatokenSupply(exchangeId: string): Promise<string> {
@@ -279,8 +277,8 @@ export class FixedRateExchange extends SmartContractWithAddress {
   }
 
   /**
-   * Get BaseToken Supply in the exchange
-   * @param {String} exchangeId ExchangeId
+   * Returns basetoken supply in the exchange
+   * @param {String} exchangeId Exchange Id
    * @return {Promise<string>} dt supply formatted
    */
   public async getBasetokenSupply(exchangeId: string): Promise<string> {
@@ -291,8 +289,8 @@ export class FixedRateExchange extends SmartContractWithAddress {
 
   /**
    * Get Allower Swapper (if set this is the only account which can use this exchange, else is set at address(0))
-   * @param {String} exchangeId ExchangeId
-   * @return {Promise<string>} address of allowedSwapper
+   * @param {String} exchangeId Exchange Id
+   * @return {Promise<string>} address of allowed swapper
    */
   public async getAllowedSwapper(exchangeId: string): Promise<string> {
     return await this.contract.getAllowedSwapper(exchangeId)
@@ -300,7 +298,7 @@ export class FixedRateExchange extends SmartContractWithAddress {
 
   /**
    * calcBaseInGivenDatatokensOut - Calculates how many base tokens are needed to get specified amount of datatokens
-   * @param {String} exchangeId ExchangeId
+   * @param {String} exchangeId Exchange Id
    * @param {string} datatokenAmount Amount of datatokens user wants to buy
    * @param {String} consumeMarketFee consumeMarketFee in fraction
    * @return {Promise<PriceAndFees>} how many base tokens are needed and fees
@@ -346,8 +344,8 @@ export class FixedRateExchange extends SmartContractWithAddress {
   }
 
   /**
-   * getBTOut - returns amount in baseToken that user will receive for datatokenAmount sold
-   * @param {String} exchangeId ExchangeId
+   * Returns amount in baseToken that user will receive for datatokenAmount sold
+   * @param {String} exchangeId Exchange Id
    * @param {Number} datatokenAmount Amount of datatokens
    * @param {String} consumeMarketFee consumeMarketFee in fraction
    * @return {Promise<string>} Amount of baseTokens user will receive
@@ -369,7 +367,7 @@ export class FixedRateExchange extends SmartContractWithAddress {
 
   /**
    * Get exchange details
-   * @param {String} exchangeId ExchangeId
+   * @param {String} exchangeId Exchange Id
    * @return {Promise<FixedPricedExchange>} Exchange details
    */
   public async getExchange(exchangeId: string): Promise<FixedPriceExchange> {
@@ -411,8 +409,8 @@ export class FixedRateExchange extends SmartContractWithAddress {
 
   /**
    * Get fee details for an exchange
-   * @param {String} exchangeId ExchangeId
-   * @return {Promise<FixedPricedExchange>} Exchange details
+   * @param {String} exchangeId Exchange Id
+   * @return {Promise<FeesInfo>} Exchange details
    */
   public async getFeesInfo(exchangeId: string): Promise<FeesInfo> {
     const result: FeesInfo = await this.contract.getFeesInfo(exchangeId)
@@ -438,8 +436,8 @@ export class FixedRateExchange extends SmartContractWithAddress {
   }
 
   /**
-   * Get all exchanges
-   * @param {String} exchangeId ExchangeId
+   * Returns all exchanges
+   * @param {String} exchangeId Exchang eId
    * @return {Promise<String[]>} Exchanges list
    */
   public async getExchanges(): Promise<string[]> {
@@ -449,7 +447,7 @@ export class FixedRateExchange extends SmartContractWithAddress {
   /**
    * Check if an exchange is active
    * @param {String} exchangeId ExchangeId
-   * @return {Promise<Boolean>} Result
+   * @return {Promise<Boolean>}
    */
   public async isActive(exchangeId: string): Promise<boolean> {
     const active = await this.contract.isActive(exchangeId)
@@ -458,7 +456,7 @@ export class FixedRateExchange extends SmartContractWithAddress {
 
   /**
    * Activate minting option for fixed rate contract
-   * @param {String} exchangeId ExchangeId
+   * @param {String} exchangeId Exchang eId
    * @param {Boolean} estimateGas if True, return gas estimate
    * @return {Promise<ReceiptOrEstimate>} transaction receipt
    */
@@ -514,7 +512,7 @@ export class FixedRateExchange extends SmartContractWithAddress {
 
   /**
    * Collect BaseTokens in the contract (anyone can call this, funds are sent to Datatoken.paymentCollector)
-   * @param {String} exchangeId ExchangeId
+   * @param {String} exchangeId Exchange Id
    * @param {String} amount amount to be collected
    * @param {Boolean} estimateGas if True, return gas estimate
    * @return {Promise<ReceiptOrEstimate>} transaction receipt
@@ -550,7 +548,7 @@ export class FixedRateExchange extends SmartContractWithAddress {
 
   /**
    * Collect datatokens in the contract (anyone can call this, funds are sent to Datatoken.paymentCollector)
-   * @param {String} exchangeId ExchangeId
+   * @param {String} exchangeId Exchange Id
    * @param {String} amount amount to be collected
    * @param {Boolean} estimateGas if True, return gas estimate
    * @return {Promise<ReceiptOrEstimate>} transaction receipt
@@ -586,7 +584,7 @@ export class FixedRateExchange extends SmartContractWithAddress {
 
   /**
    * Collect market fee and send it to marketFeeCollector (anyone can call it)
-   * @param {String} exchangeId ExchangeId
+   * @param {String} exchangeId Exchange Id
    * @param {Boolean} estimateGas if True, return gas estimate
    * @return {Promise<ReceiptOrEstimate>} transaction receipt
    */
@@ -613,7 +611,7 @@ export class FixedRateExchange extends SmartContractWithAddress {
 
   /**
    * Collect ocean fee and send it to OPF collector (anyone can call it)
-   * @param {String} exchangeId ExchangeId
+   * @param {String} exchangeId Exchange Id
    * @param {Boolean} estimateGas if True, return gas estimate
    * @return {Promise<ReceiptOrEstimate>} transaction receipt
    */
@@ -658,7 +656,7 @@ export class FixedRateExchange extends SmartContractWithAddress {
 
   /**
    * Get Exchange Owner given an exchangeId
-   * @param {String} exchangeId ExchangeId
+   * @param {String} exchangeId Exchange Id
    * @return {String} return exchange owner
    */
   async getExchangeOwner(exchangeId: string): Promise<string> {
@@ -668,7 +666,7 @@ export class FixedRateExchange extends SmartContractWithAddress {
 
   /**
    * Set new market fee, only market fee collector can update it
-   * @param {String} exchangeId ExchangeId
+   * @param {String} exchangeId Exchange Id
    * @param {String} newMarketFee New market fee
    * @param {Boolean} estimateGas if True, return gas estimate
    * @return {Promise<ReceiptOrEstimate>} transaction receipt
@@ -698,7 +696,7 @@ export class FixedRateExchange extends SmartContractWithAddress {
 
   /**
    * Set new market fee collector, only market fee collector can update it
-   * @param {String} exchangeId ExchangeId
+   * @param {String} exchangeId Exchange Id
    * @param {String} newMarketFeeCollector New market fee collector
    * @param {Boolean} estimateGas if True, return gas estimate
    * @return {Promise<ReceiptOrEstimate>} transaction receipt

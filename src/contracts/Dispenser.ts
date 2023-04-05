@@ -14,7 +14,7 @@ export class Dispenser extends SmartContractWithAddress {
   /**
    * Get information about a datatoken dispenser
    * @param {String} dtAddress
-   * @return {Promise<FixedPricedExchange>} Exchange details
+   * @return {Promise<DispenserToken>}
    */
   public async status(dtAdress: string): Promise<DispenserToken> {
     const status2: DispenserToken = await this.contract.status(dtAdress)
@@ -77,7 +77,7 @@ export class Dispenser extends SmartContractWithAddress {
   }
 
   /**
-   * Activates a new dispener.
+   * Activates a dispener.
    * @param {String} dtAddress refers to datatoken address.
    * @param {Number} maxTokens max amount of tokens to dispense
    * @param {Number} maxBalance max balance of user. If user balance is >, then dispense will be rejected
@@ -135,11 +135,11 @@ export class Dispenser extends SmartContractWithAddress {
   }
 
   /**
-   * Sets a new allowedSwapper.
-   * @param {String} dtAddress refers to datatoken address.
-   * @param {String} newAllowedSwapper refers to the new allowedSwapper
+   * Sets a new allowed swapper.
+   * @param {String} dtAddress Datatoken address.
+   * @param {String} newAllowedSwapper The address of the new allowed swapper.
    * @param {Boolean} estimateGas if True, return gas estimate
-   * @return {Promise<ReceiptOrEstimate>} TransactionReceipt
+   * @return {Promise<ReceiptOrEstimate>}
    */
   public async setAllowedSwapper<G extends boolean = false>(
     dtAddress: string,
@@ -165,13 +165,13 @@ export class Dispenser extends SmartContractWithAddress {
 
   /**
    * Dispense datatokens to caller.
-   * The dispenser must be active, hold enough DT (or be able to mint more)
+   * The dispenser must be active, hold enough datatokens (or be able to mint more)
    * and respect maxTokens/maxBalance requirements
-   * @param {String} dtAddress refers to datatoken address.
-   * @param {String} amount amount of datatokens required.
-   * @param {String} destination who will receive the tokens
+   * @param {String} dtAddress Datatoken address.
+   * @param {String} amount Amount of datatokens required.
+   * @param {String} destination address of tokens receiver
    * @param {Boolean} estimateGas if True, return gas estimate
-   * @return {Promise<ReceiptOrEstimate>} TransactionReceipt
+   * @return {Promise<ReceiptOrEstimate>}
    */
   public async dispense<G extends boolean = false>(
     dtAddress: string,
@@ -200,9 +200,9 @@ export class Dispenser extends SmartContractWithAddress {
 
   /**
    * Withdraw all tokens from the dispenser
-   * @param {String} dtAddress refers to datatoken address.
+   * @param {String} dtAddress Datatoken address.
    * @param {Boolean} estimateGas if True, return gas estimate
-   * @return {Promise<ReceiptOrEstimate>} TransactionReceipt
+   * @return {Promise<ReceiptOrEstimate>}
    */
   public async ownerWithdraw<G extends boolean = false>(
     dtAddress: string,
@@ -224,7 +224,7 @@ export class Dispenser extends SmartContractWithAddress {
 
   /**
    * Check if tokens can be dispensed
-   * @param {String} dtAddress
+   * @param {String} dtAddress Datatoken address
    * @param {String} address User address that will receive datatokens
    * @param {String} amount amount of datatokens required.
    * @return {Promise<Boolean>}

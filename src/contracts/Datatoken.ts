@@ -1,5 +1,4 @@
-import { ethers, Signer, BigNumber } from 'ethers'
-import { Interface } from 'ethers/lib/utils'
+import { ethers, Signer } from 'ethers'
 import Decimal from 'decimal.js'
 import ERC20Template from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC20Template.sol/ERC20Template.json'
 import ERC20TemplateEnterprise from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC20TemplateEnterprise.sol/ERC20TemplateEnterprise.json'
@@ -29,12 +28,12 @@ export class Datatoken extends SmartContract {
   }
 
   /**
-   * Instantiate ERC20 Datatokens
-   * @param {Signer} signer
-   * @param {string | number} network optional network name or chain id
-   * @param {Config} config optional config object
-   * @param {AbiItem[]} abi optional abi
-   * @param {AbiItem[]} abiEnterprise optional enterprise abi
+   * Instantiate Datatoken class
+   * @param {Signer} signer The signer object.
+   * @param {string | number} [network] Network id or name
+   * @param {Config} [config] The configuration object.
+   * @param {AbiItem[]} [abi] ABI array of the smart contract
+   * @param {AbiItem[]} abiEnterprise Enterprise ABI array of the smart contract
    */
   constructor(
     signer: Signer,
@@ -49,12 +48,12 @@ export class Datatoken extends SmartContract {
   }
 
   /**
-   * Approve
+   * Approves a spender to spend a certain amount of datatokens.
    * @param {String} dtAddress Datatoken address
    * @param {String} spender Spender address
    * @param {string} amount Number of datatokens, as number. Will be converted to wei
    * @param {Boolean} estimateGas if True, return gas estimate
-   * @return {Promise<ReceiptOrEstimate>} trxReceipt
+   * @return {Promise<ReceiptOrEstimate>}
    */
   public async approve<G extends boolean = false>(
     dtAddress: string,
@@ -85,9 +84,9 @@ export class Datatoken extends SmartContract {
    * Creates a new FixedRateExchange setup.
    * @param {String} dtAddress Datatoken address
    * @param {String} address Caller address
-   * @param {FixedRateParams} fixedRateParams
+   * @param {FixedRateParams} fixedRateParams The parameters required to create a fixed-rate exchange contract.
    * @param {Boolean} estimateGas if True, return gas estimate
-   * @return {Promise<ReceiptOrEstimate>} transactionId
+   * @return {Promise<ReceiptOrEstimate>}
    */
   public async createFixedRate<G extends boolean = false>(
     dtAddress: string,
@@ -150,8 +149,8 @@ export class Datatoken extends SmartContract {
    * Creates a new Dispenser
    * @param {String} dtAddress Datatoken address
    * @param {String} address Caller address
-   * @param {String} dispenserAddress ispenser contract address
-   * @param {String} dispenserParams
+   * @param {String} dispenserAddress Dispenser contract address
+   * @param {DispenserParams} dispenserParams The parameters required to create a dispenser contract.
    * @param {Boolean} estimateGas if True, return gas estimate
    * @return {Promise<ReceiptOrEstimate>} transactionId
    */
@@ -198,7 +197,7 @@ export class Datatoken extends SmartContract {
   }
 
   /**
-   * Mint
+   * Mints datatokens
    * @param {String} dtAddress Datatoken address
    * @param {String} address Minter address
    * @param {String} amount Number of datatokens, as number. Will be converted to wei
@@ -245,8 +244,8 @@ export class Datatoken extends SmartContract {
    * Add Minter for an ERC20 Datatoken
    * only DatatokenDeployer can succeed
    * @param {String} dtAddress Datatoken address
-   * @param {String} address User address
-   * @param {String} minter User which is going to be a Minter
+   * @param {String} address caller address
+   * @param {String} minter address which is going to be a Minter
    * @param {Boolean} estimateGas if True, return gas estimate
    * @return {Promise<ReceiptOrEstimate>} transactionId
    */
@@ -280,10 +279,10 @@ export class Datatoken extends SmartContract {
    * Revoke Minter permission for an ERC20 Datatoken
    * only DatatokenDeployer can succeed
    * @param {String} dtAddress Datatoken address
-   * @param {String} address User address
-   * @param {String} minter User which will be removed from Minter permission
+   * @param {String} address caller address
+   * @param {String} minter address which will have removed the Minter permission
    * @param {Boolean} estimateGas if True, return gas estimate
-   * @return {Promise<any>}
+   * @return {Promise<ReceiptOrEstimate>}
    */
   public async removeMinter<G extends boolean = false>(
     dtAddress: string,
@@ -312,11 +311,11 @@ export class Datatoken extends SmartContract {
   }
 
   /**
-   * Add addPaymentManager (can set who's going to collect fee when consuming orders)
+   *  Adds a payment manager on a datatoken to a desired address.(can set who's going to collect fee when consuming orders)
    * only DatatokenDeployer can succeed
    * @param {String} dtAddress Datatoken address
-   * @param {String} address User address
-   * @param {String} paymentManager User which is going to be a Minter
+   * @param {String} address Caller address
+   * @param {String} paymentManager  The address of the payment manager
    * @param {Boolean} estimateGas if True, return gas estimate
    * @return {Promise<ReceiptOrEstimate>} transactionId
    */
@@ -385,7 +384,7 @@ export class Datatoken extends SmartContract {
    * This function allows to set a new PaymentCollector (receives DT when consuming)
    * If not set the paymentCollector is the NFT Owner
    * only NFT owner can call
-   * @param dtAddress datatoken address
+   * @param dtAddress Datatoken address
    * @param address Caller address
    * @param paymentCollector User to be set as new payment collector
    * @param {Boolean} estimateGas if True, return gas estimate
@@ -422,7 +421,8 @@ export class Datatoken extends SmartContract {
     return <ReceiptOrEstimate<G>>trxReceipt
   }
 
-  /** getPaymentCollector - It returns the current paymentCollector
+  /**
+   * getPaymentCollector - It returns the current paymentCollector
    * @param dtAddress datatoken address
    * @return {Promise<string>}
    */
@@ -433,10 +433,10 @@ export class Datatoken extends SmartContract {
   }
 
   /**
-   * Transfer as number from address to toAddress
+   * Transfer tokens(as number) from address to toAddress
    * @param {String} dtAddress Datatoken address
    * @param {String} toAddress Receiver address
-   * @param {String} amount Number of datatokens, as number. To be converted to wei.
+   * @param {String} amount Number of datatokens, as number. Will be converted to wei.
    * @param {Boolean} estimateGas if True, return gas estimate
    * @return {Promise<ReceiptOrEstimate>} transactionId
    */
@@ -458,7 +458,7 @@ export class Datatoken extends SmartContract {
    * Transfer in wei from address to toAddress
    * @param {String} dtAddress Datatoken address
    * @param {String} toAddress Receiver address
-   * @param {String} amount Number of datatokens, as number. Expressed as wei
+   * @param {String} amount Number of datatokens (number) expressed as wei
    * @param {Boolean} estimateGas if True, return gas estimate
    * @return {Promise<ReceiptOrEstimate>} transactionId
    */
@@ -484,7 +484,8 @@ export class Datatoken extends SmartContract {
     return <ReceiptOrEstimate<G>>trxReceipt
   }
 
-  /** Start Order: called by payer or consumer prior ordering a service consume on a marketplace.
+  /**
+   * Start Order: called by payer or consumer prior ordering a service consume on a marketplace.
    * @param {String} dtAddress Datatoken address
    * @param {String} consumer Consumer Address
    * @param {Number} serviceIndex  Service index in the metadata
@@ -531,7 +532,8 @@ export class Datatoken extends SmartContract {
     return <ReceiptOrEstimate<G>>trxReceipt
   }
 
-  /** Reuse Order: called by payer or consumer having a valid order, but with expired provider access.
+  /**
+   * Reuse Order: called by payer or consumer having a valid order, but with expired provider access.
    * Pays the provider fee again, but it will not require a new datatoken payment
    * Requires previous approval of provider fee.
    * @param {String} dtAddress Datatoken address
@@ -562,10 +564,11 @@ export class Datatoken extends SmartContract {
     return <ReceiptOrEstimate<G>>trxReceipt
   }
 
-  /** Buys 1 DT from the FRE and then startsOrder, while burning that DT
+  /**
+   * Buys 1 DT from the FRE and then startsOrder, while burning that DT
    * @param {String} dtAddress Datatoken address
-   * @param {OrderParams} orderParams Consumer Address
-   * @param {FreParams} freParams Amount of tokens that is going to be transfered
+   * @param {OrderParams} orderParams  The parameters required to place an order.
+   * @param {FreParams} freParams The parameters required to buy from a fixed-rate exchange.
    * @param {Boolean} estimateGas if True, return gas estimate
    * @return {Promise<ReceiptOrEstimate>}
    */
@@ -575,7 +578,7 @@ export class Datatoken extends SmartContract {
     freParams: FreOrderParams,
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
-    const dtContract = this.getContract(dtAddress, null, this.abiEnterprise)
+    const dtContract = this.getContract(dtAddress, this.abiEnterprise)
 
     const freContractParams = await this.getFreOrderParams(freParams)
 
@@ -596,10 +599,11 @@ export class Datatoken extends SmartContract {
     return <ReceiptOrEstimate<G>>trxReceipt
   }
 
-  /** Gets DT from dispenser and then startsOrder, while burning that DT
+  /**
+   * Gets 1 DT from dispenser and then startsOrder, while burning that DT
    * @param {String} dtAddress Datatoken address
-   * @param {OrderParams} orderParams
-   * @param {String} dispenserContract
+   * @param {OrderParams} orderParams - The parameters required to place an order.
+   * @param {String} dispenserContract  dispenser address
    * @param {Boolean} estimateGas if True, return gas estimate
    * @return {Promise<ReceiptOrEstimate>}
    */
@@ -609,7 +613,7 @@ export class Datatoken extends SmartContract {
     dispenserContract: string,
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
-    const dtContract = this.getContract(dtAddress, null, this.abiEnterprise)
+    const dtContract = this.getContract(dtAddress, this.abiEnterprise)
 
     const estGas = await dtContract.estimateGas.buyFromDispenserAndOrder(
       orderParams,
@@ -668,8 +672,8 @@ export class Datatoken extends SmartContract {
   /**
    * Clean Datatoken level Permissions (minters, paymentManager and reset the paymentCollector) for an ERC20 Datatoken
    * Only NFT Owner (at 721 level) can call it.
-   * @param dtAddress Datatoken address where we want to clean permissions
-   * @param address User adress
+   * @param {string} dtAddress Datatoken address where we want to clean permissions
+   * @param {string} address User adress
    * @param {Boolean} estimateGas if True, return gas estimate
    * @return {Promise<ReceiptOrEstimate>} transactionId
    */
@@ -696,7 +700,8 @@ export class Datatoken extends SmartContract {
     return <ReceiptOrEstimate<G>>trxReceipt
   }
 
-  /** Returns ERC20 Datatoken user's permissions for a datatoken
+  /**
+   * Returns ERC20 Datatoken user's permissions for a datatoken
    * @param {String} dtAddress Datatoken adress
    * @param {String} address user adress
    * @return {Promise<DatatokenRoles>}
@@ -710,7 +715,8 @@ export class Datatoken extends SmartContract {
     return roles
   }
 
-  /** Returns the Datatoken cap
+  /**
+   * Returns the Datatoken cap
    * @param {String} dtAddress Datatoken adress
    * @return {Promise<string>}
    */
@@ -720,7 +726,8 @@ export class Datatoken extends SmartContract {
     return await this.unitsToAmount(null, cap, 18)
   }
 
-  /** It returns the token decimals, how many supported decimal points
+  /**
+   * It returns the token decimals, how many supported decimal points
    * @param {String} dtAddress Datatoken adress
    * @return {Promise<number>}
    */
@@ -730,7 +737,8 @@ export class Datatoken extends SmartContract {
     return decimals
   }
 
-  /** It returns the token symbol
+  /**
+   * It returns the token symbol
    * @param {String} dtAddress Datatoken adress
    * @return {Promise<number>}
    */
@@ -740,7 +748,8 @@ export class Datatoken extends SmartContract {
     return symbol
   }
 
-  /** It returns the name of the token
+  /**
+   *  It returns the name of the token
    * @param {String} dtAddress Datatoken adress
    * @return {Promise<number>}
    */
@@ -750,7 +759,8 @@ export class Datatoken extends SmartContract {
     return name
   }
 
-  /** It returns the token decimals, how many supported decimal points
+  /**
+   * It returns the token decimals, how many supported decimal points
    * @param {String} dtAddress Datatoken adress
    * @return {Promise<number>}
    */
@@ -760,7 +770,8 @@ export class Datatoken extends SmartContract {
     return nftAddress
   }
 
-  /**  Returns true if address has deployERC20 role
+  /**
+   *  Returns true if address has deployERC20 role
    * @param {String} dtAddress Datatoken adress
    * @param {String} dtAddress Datatoken adress
    * @return {Promise<boolean>}
@@ -778,15 +789,14 @@ export class Datatoken extends SmartContract {
    * @return {Promise<String>} balance  Number of datatokens. Will be converted from wei
    */
   public async balance(datatokenAddress: string, address: string): Promise<string> {
-    const dtContract = this.getContract(datatokenAddress, address)
+    const dtContract = this.getContract(datatokenAddress)
     const balance = await dtContract.balanceOf(address)
     return await this.unitsToAmount(null, balance, 18)
   }
 
   /**
-   * @dev setPublishingMarketFee
-   *      Only publishMarketFeeAddress can call it
-   *      This function allows to set the fee required by the publisherMarket
+   * Allows to set the fee required by the publisherMarket
+   * only publishMarketFeeAddress can call it
    * @param {string} datatokenAddress Datatoken adress
    * @param {string} publishMarketFeeAddress  new publish Market Fee Address
    * @param {string} publishMarketFeeToken new publish Market Fee Token
@@ -802,7 +812,7 @@ export class Datatoken extends SmartContract {
     address: string,
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
-    const dtContract = this.getContract(datatokenAddress, address)
+    const dtContract = this.getContract(datatokenAddress)
     const mktFeeAddress = (await dtContract.getPublishingMarketFee())[0]
     if (mktFeeAddress !== address) {
       throw new Error(`Caller is not the Publishing Market Fee Address`)
@@ -828,18 +838,14 @@ export class Datatoken extends SmartContract {
   }
 
   /**
-   * @dev getPublishingMarketFee
-   *      Get publishingMarket Fee
-   *      This function allows to get the current fee set by the publishing market
+   * Returns the current fee set by the publishing market
    * @param {String} datatokenAddress Datatoken adress
-   * @param {String} address user adress
    * @return {Promise<PublishingMarketFee>} Current fee set by the publishing market
    */
   public async getPublishingMarketFee(
-    datatokenAddress: string,
-    address: string
+    datatokenAddress: string
   ): Promise<PublishingMarketFee> {
-    const dtContract = this.getContract(datatokenAddress, address)
+    const dtContract = this.getContract(datatokenAddress)
 
     const publishingMarketFee = await dtContract.getPublishingMarketFee()
     const returnValues = {
