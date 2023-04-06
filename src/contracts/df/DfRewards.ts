@@ -30,6 +30,7 @@ export class DfRewards extends SmartContractWithAddress {
    * claim rewards for any address
    * @param {String} userAddress user address to claim
    * @param {String} tokenAddress token address
+   * @param {Boolean} estimateGas if True, return gas estimate
    * @return {Promise<ReceiptOrEstimate>}
    */
   public async claimRewards<G extends boolean = false>(
@@ -57,6 +58,7 @@ export class DfRewards extends SmartContractWithAddress {
    * @param {String[]} userAddresses array of users that will receive rewards
    * @param {String[]} amounts array of amounts
    * @param {String} tokenAddress token address
+   * @param {Boolean} estimateGas if True, return gas estimate
    * @return {Promise<ReceiptOrEstimate>}
    */
   public async allocateRewards<G extends boolean = false>(

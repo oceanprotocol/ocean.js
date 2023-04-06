@@ -1,5 +1,4 @@
 import FixedRateExchangeAbi from '@oceanprotocol/contracts/artifacts/contracts/pools/fixedRate/FixedRateExchange.sol/FixedRateExchange.json'
-import { ethers } from 'ethers'
 import { sendTx, ZERO_ADDRESS } from '../utils'
 import {
   PriceAndFees,

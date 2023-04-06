@@ -22,7 +22,8 @@ import {
 export class Provider {
   /**
    * Returns the provider endpoints
-   * @return {Promise<ServiceEndpoint[]>}
+   * @param {string} providerUri - the provider url
+   * @return {Promise<any>}
    */
   async getEndpoints(providerUri: string): Promise<any> {
     try {
@@ -34,6 +35,12 @@ export class Provider {
     }
   }
 
+  /**
+   * This function returns the endpoint URL for a given service name.
+   * @param {ServiceEndpoint[]} servicesEndpoints - The array of service endpoints
+   * @param {string} serviceName - The name of the service
+   * @returns {ServiceEndpoint} The endpoint URL for the given service name
+   */
   getEndpointURL(
     servicesEndpoints: ServiceEndpoint[],
     serviceName: string
@@ -43,9 +50,10 @@ export class Provider {
   }
 
   /**
-   * Returns the service endpoints that exist in provider.
-   * @param {any} endpoints
-   * @return {Promise<ServiceEndpoint[]>}
+   * This function returns an array of service endpoints for a given provider endpoint.
+   * @param {string} providerEndpoint - The provider endpoint
+   * @param {any} endpoints - The endpoints object
+   * @returns {ServiceEndpoint[]} An array of service endpoints
    */
   public async getServiceEndpoints(providerEndpoint: string, endpoints: any) {
     const serviceEndpoints: ServiceEndpoint[] = []
@@ -60,7 +68,8 @@ export class Provider {
     return serviceEndpoints
   }
 
-  /** Gets current nonce
+  /**
+   * Get current nonce from the provider.
    * @param {string} providerUri provider uri address
    * @param {string} consumerAddress Publisher address
    * @param {AbortSignal} signal abort signal
@@ -98,6 +107,12 @@ export class Provider {
     }
   }
 
+  /**
+   * Sign a provider request with a signer.
+   * @param {Signer} signer - The signer to use.
+   * @param {string} message - The message to sign.
+   * @returns {Promise<string>} A promise that resolves with the signature.
+   */
   public async signProviderRequest(signer: Signer, message: string): Promise<string> {
     const consumerMessage = ethers.utils.solidityKeccak256(
       ['bytes'],
@@ -114,7 +129,8 @@ export class Provider {
     return newSignature
   }
 
-  /** Encrypt data using the Provider's own symmetric key
+  /**
+   * Encrypt data using the Provider's own symmetric key
    * @param {string} data data in json format that needs to be sent , it can either be a DDO or a File array
    * @param {number} chainId network's id so provider can choose the corresponding Signer object
    * @param {string} providerUri provider uri address
@@ -151,13 +167,14 @@ export class Provider {
     }
   }
 
-  /** Get DDO File details (if possible)
-   * @param {UrlFile | Arweave | Ipfs | GraphqlQuery | Smartcontract} file one of the supported file structures
-   * @param {string} serviceId the id of the service for which to check the files
-   * @param {string} providerUri uri of the provider that will be used to check the file
-   * @param {boolean} withChecksum if true, will return checksum of files content
-   * @param {AbortSignal} signal abort signal
-   * @return {Promise<FileInfo[]>} urlDetails
+  /**
+   * Get file details for a given DID and service ID.
+   * @param {string} did - The DID to check.
+   * @param {string} serviceId - The service ID to check.
+   * @param {string} providerUri - The URI of the provider.
+   * @param {boolean} [withChecksum=false] - Whether or not to include a checksum.
+   * @param {AbortSignal} [signal] - An optional abort signal.
+   * @returns {Promise<FileInfo[]>} A promise that resolves with an array of file info objects.
    */
   public async checkDidFiles(
     did: string,
@@ -195,12 +212,13 @@ export class Provider {
     }
   }
 
-  /** Get URL details (if possible)
+  /**
+   * Get File details (if possible)
    * @param {UrlFile | Arweave | Ipfs | GraphqlQuery | Smartcontract} file one of the supported file structures
    * @param {string} providerUri uri of the provider that will be used to check the file
-   * @param {boolean} withChecksum if true, will return checksum of files content
-   * @param {AbortSignal} signal abort signal
-   * @return {Promise<FileInfo[]>} urlDetails
+   * @param {boolean} [withChecksum=false] - Whether or not to include a checksum.
+   * @param {AbortSignal} [signal] - An optional abort signal.
+   * @returns {Promise<FileInfo[]>} A promise that resolves with an array of file info objects.
    */
   public async getFileInfo(
     file: UrlFile | Arweave | Ipfs | GraphqlQuery | Smartcontract,
@@ -237,8 +255,11 @@ export class Provider {
     }
   }
 
-  /** Get Compute Environments
-   * @return {Promise<ComputeEnvironment[]>} urlDetails
+  /**
+   * Returns compute environments from a provider.
+   * @param {string} providerUri - The URI of the provider.
+   * @param {AbortSignal} [signal] - An optional abort signal.
+   * @returns {Promise<ComputeEnvironment[]>} A promise that resolves with an array of compute environments.
    */
   public async getComputeEnvironments(
     providerUri: string,
@@ -265,15 +286,18 @@ export class Provider {
     }
   }
 
-  /** Initialize a service request.
-   * @param {DDO | string} asset
-   * @param {number} serviceIndex
-   * @param {string} serviceType
-   * @param {string} consumerAddress
-   * @param {UserCustomParameters} userCustomParameters
-   * @param {string} providerUri Identifier of the asset to be registered in ocean
-   * @param {AbortSignal} signal abort signal
-   * @return {Promise<ProviderInitialize>} ProviderInitialize data
+  /**
+   * Initializes the provider for a service request.
+   * @param {string} did - The asset DID .
+   * @param {string} serviceId - The asset service ID.
+   * @param {number} fileIndex - The file index.
+   * @param {string} consumerAddress - The consumer address.
+   * @param {string} providerUri - The URI of the provider.
+   * @param {AbortSignal} [signal] - The abort signal if any.
+   * @param {UserCustomParameters} [userCustomParameters] - The custom parameters if any.
+   * @param {string} [computeEnv] - The compute environment if any.
+   * @param {number} [validUntil] - The validity time if any.
+   * @returns {Promise<ProviderInitialize>} A promise that resolves with ProviderInitialize response.
    */
   public async initialize(
     did: string,
@@ -318,13 +342,13 @@ export class Provider {
     }
   }
 
-  /** Initialize a compute request.
-   * @param {ComputeAsset} assets
-   * @param {ComputeAlgorithmber} algorithm
-   * @param {string} computeEnv
-   * @param {number} validUntil
-   * @param {string} providerUri Identifier of the asset to be registered in ocean
-   * @param {string} accountId
+  /** Initializes the provider for a compute request.
+   * @param {ComputeAsset[]} assets The datasets array to initialize compute request.
+   * @param {ComputeAlgorithmber} algorithm The algorithm to use.
+   * @param {string} computeEnv The compute environment.
+   * @param {number} validUntil  The job expiration date.
+   * @param {string} providerUri The provider URI.
+   * @param {string} accountId caller address
    * @param {AbortSignal} signal abort signal
    * @return {Promise<ProviderComputeInitialize>} ProviderComputeInitialize data
    */
@@ -377,6 +401,18 @@ export class Provider {
    * @param {UserCustomParameters} userCustomParameters
    * @return {Promise<string>}
    */
+
+  /**
+   * Gets the download URL.
+   * @param {string} did - The DID.
+   * @param {string} serviceId - The service ID.
+   * @param {number} fileIndex - The file index.
+   * @param {string} transferTxId - The transfer transaction ID.
+   * @param {string} providerUri - The provider URI.
+   * @param {Signer} signer - The signer.
+   * @param {UserCustomParameters} userCustomParameters - The user custom parameters.
+   * @returns {Promise<any>} The download URL.
+   */
   public async getDownloadUrl(
     did: string,
     serviceId: string,
@@ -411,16 +447,15 @@ export class Provider {
   }
 
   /** Instruct the provider to start a compute job
-   * @param {string} providerUri
-   * @param {Signer} signer
-   * @param {string} consumerAddress
-   * @param {string} computeEnv
-   * @param {ComputeAsset} dataset
-   * @param {ComputeAlgorithm} algorithm
+   * @param {string} providerUri The provider URI.
+   * @param {Signer} signer The consumer signer object.
+   * @param {string} computeEnv The compute environment.
+   * @param {ComputeAsset} dataset The dataset to start compute on
+   * @param {ComputeAlgorithm} algorithm The algorithm to start compute with.
    * @param {AbortSignal} signal abort signal
-   * @param {ComputeAsset[]} additionalDatasets
-   * @param {ComputeOutput} output
-   * @return {Promise<ComputeJob | ComputeJob[]>}
+   * @param {ComputeAsset[]} additionalDatasets The additional datasets if that is the case.
+   * @param {ComputeOutput} output The compute job output settings.
+   * @return {Promise<ComputeJob | ComputeJob[]>} The compute job or jobs.
    */
   public async computeStart(
     providerUri: string,
@@ -485,11 +520,11 @@ export class Provider {
   }
 
   /** Instruct the provider to Stop the execution of a to stop a compute job.
-   * @param {string} did
-   * @param {string} consumerAddress
-   * @param {string} jobId
-   * @param {string} providerUri
-   * @param {Signer} signer
+   * @param {string} did the asset did
+   * @param {string} consumerAddress The consumer address.
+   * @param {string} jobId the compute job id
+   * @param {string} providerUri The provider URI.
+   * @param {Signer} signer The consumer signer object.
    * @param {AbortSignal} signal abort signal
    * @return {Promise<ComputeJob | ComputeJob[]>}
    */
@@ -607,7 +642,7 @@ export class Provider {
 
   /** Get compute result url
    * @param {string} providerUri The URI of the provider we want to query
-   * @param {Signer} consumer ether.Signer instance
+   * @param {Signer} consumer consumer Signer wallet object
    * @param {string} jobId The ID of a compute job.
    * @param {number} index Result index
    * @return {Promise<string>}
@@ -644,10 +679,10 @@ export class Provider {
   }
 
   /** Deletes a compute job.
-   * @param {string} did
-   * @param {Signer} consumer
-   * @param {string} jobId
-   * @param {string} providerUri
+   * @param {string} did asset did
+   * @param {Signer} consumer consumer Signer wallet object
+   * @param {string} jobId the compute job ID
+   * @param {string} providerUri The URI of the provider we want to query
    * @param {AbortSignal} signal abort signal
    * @return {Promise<ComputeJob | ComputeJob[]>}
    */
@@ -717,7 +752,7 @@ export class Provider {
   /** Check for a valid provider at URL
    * @param {String} url provider uri address
    * @param {AbortSignal} signal abort signal
-   * @return {Promise<boolean>} string
+   * @return {Promise<boolean>} valid or not
    */
   public async isValidProvider(url: string, signal?: AbortSignal): Promise<boolean> {
     try {
@@ -737,10 +772,21 @@ export class Provider {
     }
   }
 
+  /**
+   * Private method that removes the leading 0x from a string.
+   * @param {string} input - The input string.
+   * @returns The transformed string.
+   */
   private noZeroX(input: string): string {
     return this.zeroXTransformer(input, false)
   }
 
+  /**
+   * Private method that removes the leading 0x from a string.
+   * @param {string} input - The input string.
+   * @param {boolean} zeroOutput - Whether to include 0x in the output if the input is valid and zeroOutput is true.
+   * @returns The transformed string.
+   */
   private zeroXTransformer(input = '', zeroOutput: boolean): string {
     const { valid, output } = this.inputMatch(
       input,
@@ -750,7 +796,13 @@ export class Provider {
     return (zeroOutput && valid ? '0x' : '') + output
   }
 
-  // Shared functions
+  /**
+   * Private method that matches an input string against a regular expression and returns the first capture group.
+   * @param {string} input - The input string to match.
+   * @param {RegExp} regexp - The regular expression to match against.
+   * @param {string} conversorName - The name of the method calling this function.
+   * @returns An object with two properties: `valid` (a boolean indicating whether the input matched the regular expression) and `output` (the first capture group of the match, or the original input if there was no match).
+   */
   private inputMatch(
     input: string,
     regexp: RegExp,
@@ -769,6 +821,11 @@ export class Provider {
     return { valid: true, output: match[1] }
   }
 
+  /**
+   * Private method that fetches data from a URL using the GET method.
+   * @param {string} url - The URL to fetch data from.
+   * @returns A Promise that resolves to a Response object.
+   */
   private async getData(url: string): Promise<Response> {
     return fetch(url, {
       method: 'GET',

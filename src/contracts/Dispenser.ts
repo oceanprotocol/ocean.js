@@ -1,4 +1,3 @@
-import { ethers } from 'ethers'
 import Decimal from 'decimal.js'
 import DispenserAbi from '@oceanprotocol/contracts/artifacts/contracts/pools/dispenser/Dispenser.sol/Dispenser.json'
 import { sendTx } from '../utils'
