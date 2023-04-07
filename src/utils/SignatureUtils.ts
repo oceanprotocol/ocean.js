@@ -1,9 +1,15 @@
 import { ethers, Signer, providers } from 'ethers'
 
+/**
+ * Signs the hash of a message using the provided signer.
+ * @param {Signer} signer - The signer to use for signing the hash.
+ * @param {string} message - The message to sign.
+ * @returns {Promise<string>} - A Promise that resolves to the signature of the hash of the message.
+ */
 export async function signHash(signer: Signer, message: string) {
-  /* Since ganache has no support yet for personal_sign, we must use the legacy implementation
-    const signedMessage = await user2.signMessage(message)
-    */
+  // Since ganache has no support yet for personal_sign, we must use the legacy implementation
+  // const signedMessage = await user2.signMessage(message)
+
   const messageHashBytes = ethers.utils.arrayify(message)
   let signedMessage = await (signer as providers.JsonRpcSigner)._legacySignMessage(
     messageHashBytes
