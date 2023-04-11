@@ -194,22 +194,34 @@ export class Provider {
       ? this.getEndpointURL(serviceEndpoints, 'fileinfo').urlPath
       : null
     if (!path) return null
+    let response
     try {
-      const response = await fetch(path, {
+      response = await fetch(path, {
         method: 'POST',
         body: JSON.stringify(args),
         headers: { 'Content-Type': 'application/json' },
         signal
       })
+    } catch (e) {
+      LoggerInstance.error('File info call failed: ')
+      LoggerInstance.error(e)
+      throw new Error(e)
+    }
+    if (response?.ok) {
       const results: FileInfo[] = await response.json()
       for (const result of results) {
         files.push(result)
       }
       return files
-    } catch (e) {
-      LoggerInstance.error(e)
-      throw new Error('HTTP request failed calling Provider')
     }
+    const resolvedResponse = await response.json()
+    LoggerInstance.error(
+      'File info call failed: ',
+      response.status,
+      response.statusText,
+      resolvedResponse
+    )
+    throw new Error(resolvedResponse?.error)
   }
 
   /**
@@ -237,22 +249,34 @@ export class Provider {
       ? this.getEndpointURL(serviceEndpoints, 'fileinfo').urlPath
       : null
     if (!path) return null
+    let response
     try {
-      const response = await fetch(path, {
+      response = await fetch(path, {
         method: 'POST',
         body: JSON.stringify(args),
         headers: { 'Content-Type': 'application/json' },
         signal
       })
+    } catch (e) {
+      LoggerInstance.error('File info call failed: ')
+      LoggerInstance.error(e)
+      throw new Error(e)
+    }
+    if (response?.ok) {
       const results: FileInfo[] = await response.json()
       for (const result of results) {
         files.push(result)
       }
       return files
-    } catch (e) {
-      LoggerInstance.error(e)
-      throw new Error('HTTP request failed calling Provider')
     }
+    const resolvedResponse = await response.json()
+    LoggerInstance.error(
+      'File info call failed: ',
+      response.status,
+      response.statusText,
+      resolvedResponse
+    )
+    throw new Error(resolvedResponse?.error)
   }
 
   /**
@@ -272,18 +296,30 @@ export class Provider {
     )
     const path = this.getEndpointURL(serviceEndpoints, 'computeEnvironments')?.urlPath
     if (!path) return null
+    let response
     try {
-      const response = await fetch(path, {
+      response = await fetch(path, {
         method: 'GET',
         headers: { 'Content-Type': 'application/json' },
         signal
       })
+    } catch (e) {
+      LoggerInstance.error('Fetch compute env failed: ')
+      LoggerInstance.error(e)
+      throw new Error(e)
+    }
+    if (response?.ok) {
       const envs: ComputeEnvironment[] = await response.json()
       return envs
-    } catch (e) {
-      LoggerInstance.error(e)
-      throw new Error('HTTP request failed calling Provider')
     }
+    const resolvedResponse = await response.json()
+    LoggerInstance.error(
+      'Fetch compute env failed: ',
+      response.status,
+      response.statusText,
+      resolvedResponse
+    )
+    throw new Error(resolvedResponse?.error)
   }
 
   /**
@@ -328,18 +364,30 @@ export class Provider {
       initializeUrl += '&userdata=' + encodeURI(JSON.stringify(userCustomParameters))
     if (computeEnv) initializeUrl += '&environment=' + encodeURI(computeEnv)
     if (validUntil) initializeUrl += '&validUntil=' + validUntil
+    let response
     try {
-      const response = await fetch(initializeUrl, {
+      response = await fetch(initializeUrl, {
         method: 'GET',
         headers: { 'Content-Type': 'application/json' },
         signal
       })
-      const results: ProviderInitialize = await response.json()
-      return results
     } catch (e) {
+      LoggerInstance.error('Provider initialized failed: ')
       LoggerInstance.error(e)
       throw new Error(`Provider initialize failed url: ${initializeUrl} `)
     }
+    if (response?.ok) {
+      const results: ProviderInitialize = await response.json()
+      return results
+    }
+    const resolvedResponse = await response.json()
+    LoggerInstance.error(
+      'Provider initialized failed: ',
+      response.status,
+      response.statusText,
+      resolvedResponse
+    )
+    throw new Error(resolvedResponse?.error)
   }
 
   /** Initializes the provider for a compute request.
@@ -376,31 +424,33 @@ export class Provider {
       ? this.getEndpointURL(serviceEndpoints, 'initializeCompute').urlPath
       : null
     if (!initializeUrl) return null
+    let response
     try {
-      const response = await fetch(initializeUrl, {
+      response = await fetch(initializeUrl, {
         method: 'POST',
         body: JSON.stringify(providerData),
         headers: { 'Content-Type': 'application/json' },
         signal
       })
-      const results = await response.json()
-      return results
     } catch (e) {
+      LoggerInstance.error('Initialize compute failed: ')
       LoggerInstance.error(e)
       throw new Error('ComputeJob cannot be initialized')
     }
+    if (response?.ok) {
+      const params = await response.json()
+      return params
+    }
+    const resolvedResponse = await response.json()
+    LoggerInstance.error(
+      'Initialize compute failed: ',
+      response.status,
+      response.statusText,
+      resolvedResponse
+    )
+    LoggerInstance.error('Payload was:', providerData)
+    throw new Error(resolvedResponse?.error)
   }
-
-  /** Gets fully signed URL for download
-   * @param {string} did
-   * @param {string} accountId
-   * @param {string} serviceId
-   * @param {number} fileIndex
-   * @param {string} providerUri
-   * @param {Signer} signer
-   * @param {UserCustomParameters} userCustomParameters
-   * @return {Promise<string>}
-   */
 
   /**
    * Gets the download URL.
@@ -491,32 +541,32 @@ export class Provider {
     if (payload.additionalDatasets) payload.additionalDatasets = additionalDatasets
     if (output) payload.output = output
     if (!computeStartUrl) return null
+    let response
     try {
-      const response = await fetch(computeStartUrl, {
+      response = await fetch(computeStartUrl, {
         method: 'POST',
         body: JSON.stringify(payload),
         headers: { 'Content-Type': 'application/json' },
         signal
       })
-
-      if (response?.ok) {
-        const params = await response.json()
-        return params
-      }
-      LoggerInstance.error(
-        'Compute start failed: ',
-        response.status,
-        response.statusText,
-        await response.json()
-      )
-      LoggerInstance.error('Payload was:', payload)
-      return null
     } catch (e) {
       LoggerInstance.error('Compute start failed:')
       LoggerInstance.error(e)
       LoggerInstance.error('Payload was:', payload)
       throw new Error('HTTP request failed calling Provider')
     }
+    if (response?.ok) {
+      const params = await response.json()
+      return params
+    }
+    LoggerInstance.error(
+      'Compute start failed: ',
+      response.status,
+      response.statusText,
+      await response.json()
+    )
+    LoggerInstance.error('Payload was:', payload)
+    return null
   }
 
   /** Instruct the provider to Stop the execution of a to stop a compute job.
@@ -565,27 +615,34 @@ export class Provider {
     if (jobId) payload.jobId = jobId
 
     if (!computeStopUrl) return null
+    let response
     try {
-      const response = await fetch(computeStopUrl, {
+      response = await fetch(computeStopUrl, {
         method: 'PUT',
         body: JSON.stringify(payload),
         headers: { 'Content-Type': 'application/json' },
         signal
       })
-
-      if (response?.ok) {
-        const params = await response.json()
-        return params
-      }
-      LoggerInstance.error('Compute stop failed:', response.status, response.statusText)
-      LoggerInstance.error('Payload was:', payload)
-      return null
     } catch (e) {
       LoggerInstance.error('Compute stop failed:')
       LoggerInstance.error(e)
       LoggerInstance.error('Payload was:', payload)
       throw new Error('HTTP request failed calling Provider')
     }
+
+    if (response?.ok) {
+      const params = await response.json()
+      return params
+    }
+    const resolvedResponse = await response.json()
+    LoggerInstance.error(
+      'Compute stop failed: ',
+      response.status,
+      response.statusText,
+      resolvedResponse
+    )
+    LoggerInstance.error('Payload was:', payload)
+    throw new Error(resolvedResponse?.error)
   }
 
   /** Get compute status for a specific jobId/documentId/owner.
@@ -617,27 +674,39 @@ export class Provider {
     url += (jobId && `&jobId=${jobId}`) || ''
 
     if (!computeStatusUrl) return null
+    let response
     try {
-      const response = await fetch(computeStatusUrl + url, {
+      response = await fetch(computeStatusUrl + url, {
         method: 'GET',
         headers: { 'Content-Type': 'application/json' },
         signal
       })
-      if (response?.ok) {
-        const params = await response.json()
-        return params
-      }
-      LoggerInstance.error(
-        'Get compute status failed:',
-        response.status,
-        response.statusText
-      )
-      return null
     } catch (e) {
       LoggerInstance.error('Get compute status failed')
       LoggerInstance.error(e)
-      throw new Error('HTTP request failed calling Provider')
+      throw new Error(e)
     }
+    if (response?.ok) {
+      const params = await response.json()
+      return params
+    }
+    LoggerInstance.error(
+      'Get compute status failed:',
+      response.status,
+      response.statusText
+    )
+    if (response?.ok) {
+      const params = await response.json()
+      return params
+    }
+    const resolvedResponse = await response.json()
+    LoggerInstance.error(
+      'Get compute status failed:',
+      response.status,
+      response.statusText,
+      resolvedResponse
+    )
+    throw new Error(resolvedResponse?.error)
   }
 
   /** Get compute result url
@@ -722,31 +791,33 @@ export class Provider {
     if (signature) payload.signature = signature
 
     if (!computeDeleteUrl) return null
+    let response
     try {
-      const response = await fetch(computeDeleteUrl, {
+      response = await fetch(computeDeleteUrl, {
         method: 'DELETE',
         body: JSON.stringify(payload),
         headers: { 'Content-Type': 'application/json' },
         signal
       })
-
-      if (response?.ok) {
-        const params = await response.json()
-        return params
-      }
-      LoggerInstance.error(
-        'Delete compute job failed:',
-        response.status,
-        response.statusText
-      )
-      LoggerInstance.error('Payload was:', payload)
-      return null
     } catch (e) {
       LoggerInstance.error('Delete compute job failed:')
       LoggerInstance.error(e)
       LoggerInstance.error('Payload was:', payload)
       throw new Error('HTTP request failed calling Provider')
     }
+    if (response?.ok) {
+      const params = await response.json()
+      return params
+    }
+    const resolvedResponse = await response.json()
+    LoggerInstance.error(
+      'Delete compute job failed:',
+      response.status,
+      response.statusText,
+      resolvedResponse
+    )
+    LoggerInstance.error('Payload was:', payload)
+    throw new Error(resolvedResponse?.error)
   }
 
   /** Check for a valid provider at URL
