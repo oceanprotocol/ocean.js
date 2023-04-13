@@ -307,7 +307,7 @@ Again, lets console log the values so that we can check that they have been save
       fixedRate: '1',
       marketFee: '0.001',
       allowedConsumer: ZERO_ADDRESS,
-      withMint: false
+      withMint: true
     }
 
     const tx = await factory.createNftWithDatatokenWithFixedRate(
