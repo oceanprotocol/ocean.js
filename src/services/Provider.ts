@@ -283,12 +283,12 @@ export class Provider {
    * Returns compute environments from a provider.
    * @param {string} providerUri - The URI of the provider.
    * @param {AbortSignal} [signal] - An optional abort signal.
-   * @returns {Promise<ComputeEnvironment[]>} A promise that resolves with an array of compute environments.
+   * @returns {Promise<{[chainId: number]: ComputeEnvironment[]}>} A promise that resolves with an object containing compute environments for each chain ID.
    */
   public async getComputeEnvironments(
     providerUri: string,
     signal?: AbortSignal
-  ): Promise<ComputeEnvironment[]> {
+  ): Promise<{ [chainId: number]: ComputeEnvironment[] }> {
     const providerEndpoints = await this.getEndpoints(providerUri)
     const serviceEndpoints = await this.getServiceEndpoints(
       providerUri,
@@ -309,8 +309,12 @@ export class Provider {
       throw new Error(e)
     }
     if (response?.ok) {
-      const envs: ComputeEnvironment[] = await response.json()
-      return envs
+      const result = response.json()
+      if (Array.isArray(result)) {
+        const providerChain: number = providerEndpoints.chainId
+        return { [providerChain]: result }
+      }
+      return result
     }
     const resolvedResponse = await response.json()
     LoggerInstance.error(
