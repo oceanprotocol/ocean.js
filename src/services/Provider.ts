@@ -122,9 +122,8 @@ export class Provider {
       [ethers.utils.hexlify(ethers.utils.toUtf8Bytes(message))]
     )
     const messageHashBytes = ethers.utils.arrayify(consumerMessage)
-
     const chainId = await signer.getChainId()
-    if (chainId == 8996) {
+    if (chainId === 8996) {
       return await (signer as providers.JsonRpcSigner)._legacySignMessage(
         messageHashBytes
       )
