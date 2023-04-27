@@ -50,6 +50,7 @@ export async function getTokenDecimals(signer: Signer, token: string) {
 
 /**
  * Converts an amount of units to tokens
+ * @param {Signer} signer -  The signer object to use.
  * @param {string} token - The token to convert
  * @param {string} amount - The amount of units to convert
  * @param {number} [tokenDecimals] - The number of decimals in the token
@@ -72,6 +73,7 @@ export async function unitsToAmount(
 
 /**
  * Converts an amount of tokens to units
+ * @param {Signer} signer -  The signer object to use.
  * @param {string} token - The token to convert
  * @param {string} amount - The amount of tokens to convert
  * @param {number} [tokenDecimals] - The number of decimals of the token

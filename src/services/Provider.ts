@@ -114,19 +114,22 @@ export class Provider {
    * @returns {Promise<string>} A promise that resolves with the signature.
    */
   public async signProviderRequest(signer: Signer, message: string): Promise<string> {
+    //  const isMetaMask = web3 && web3.currentProvider && (web3.currentProvider as any).isMetaMask
+    //  if (isMetaMask) return await web3.eth.personal.sign(consumerMessage, accountId, password)
+    //  await web3.eth.sign(consumerMessage, await signer.getAddress())
     const consumerMessage = ethers.utils.solidityKeccak256(
       ['bytes'],
       [ethers.utils.hexlify(ethers.utils.toUtf8Bytes(message))]
     )
-    //  const isMetaMask = web3 && web3.currentProvider && (web3.currentProvider as any).isMetaMask
-    //  if (isMetaMask) return await web3.eth.personal.sign(consumerMessage, accountId, password)
-    //  await web3.eth.sign(consumerMessage, await signer.getAddress())
-
     const messageHashBytes = ethers.utils.arrayify(consumerMessage)
-    const newSignature = await (signer as providers.JsonRpcSigner)._legacySignMessage(
-      messageHashBytes
-    )
-    return newSignature
+
+    const chainId = await signer.getChainId()
+    if (chainId == 8996) {
+      return await (signer as providers.JsonRpcSigner)._legacySignMessage(
+        messageHashBytes
+      )
+    }
+    return await signer.signMessage(messageHashBytes)
   }
 
   /**
