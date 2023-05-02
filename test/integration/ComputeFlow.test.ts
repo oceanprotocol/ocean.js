@@ -226,7 +226,7 @@ function delay(interval: number) {
   }).timeout(interval + 100)
 }
 
-function waitTillJobEnds() {
+async function waitTillJobEnds(): Promise<number> {
   return new Promise((resolve, reject) => {
     const interval = setInterval(async () => {
       const jobStatus = (await ProviderInstance.computeStatus(
@@ -467,8 +467,8 @@ describe('Simple compute tests', async () => {
   //   assert(jobStatus, 'Cannot retrieve compute status!')
   // })
 
-  waitTillJobEnds()
-
+  const jobFinished = await waitTillJobEnds()
+  console.log('wait ended', jobFinished)
   // move to start orders with initial txid's and provider fees
   it('should restart a computeJob without paying anything, because order is valid and providerFees are still valid', async () => {
     // we choose the free env
