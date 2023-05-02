@@ -35,7 +35,8 @@
     "test:integration:cover": "nyc --report-dir coverage/integration --no-clean npm run test:integration",
     "create:guide": "./scripts/createCodeExamples.sh test/integration/CodeExamples.test.ts",
     "create:guidec2d": "./scripts/createCodeExamples.sh test/integration/ComputeExamples.test.ts",
-    "commit:guides": "./scripts/commitChanges.sh"
+    "commit:guides": "./scripts/commitChanges.sh",
+    "commit:docs": "./scripts/updateDocs.sh"
   },
   "repository": {
     "type": "git",
