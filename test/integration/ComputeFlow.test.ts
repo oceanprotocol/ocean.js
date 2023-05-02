@@ -227,7 +227,7 @@ function delay(interval: number) {
 }
 
 async function waitTillJobEnds(): Promise<number> {
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
     const interval = setInterval(async () => {
       const jobStatus = (await ProviderInstance.computeStatus(
         providerUrl,
@@ -235,12 +235,11 @@ async function waitTillJobEnds(): Promise<number> {
         freeComputeJobId,
         resolvedDdoWith5mTimeout.id
       )) as ComputeJob
-      console.log('jobStatus', jobStatus)
-      if (jobStatus.status === 70) {
+      if (jobStatus?.status === 70) {
         clearInterval(interval)
         resolve(jobStatus.status)
       }
-    }, 5000)
+    }, 10000)
   })
 }
 
@@ -456,19 +455,8 @@ describe('Simple compute tests', async () => {
 
   delay(100000)
 
-  // it('Check compute status', async () => {
-  //   const jobStatus = (await ProviderInstance.computeStatus(
-  //     providerUrl,
-  //     consumerAccount,
-  //     freeComputeJobId,
-  //     resolvedDdoWith5mTimeout.id
-  //   )) as ComputeJob
-  //   console.log('jobStatus: ', jobStatus)
-  //   assert(jobStatus, 'Cannot retrieve compute status!')
-  // })
-
   const jobFinished = await waitTillJobEnds()
-  console.log('wait ended', jobFinished)
+
   // move to start orders with initial txid's and provider fees
   it('should restart a computeJob without paying anything, because order is valid and providerFees are still valid', async () => {
     // we choose the free env
