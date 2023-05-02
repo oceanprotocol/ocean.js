@@ -231,7 +231,7 @@ async function waitTillJobEnds(): Promise<number> {
     const interval = setInterval(async () => {
       const jobStatus = (await ProviderInstance.computeStatus(
         providerUrl,
-        consumerAccount,
+        await consumerAccount.getAddress(),
         freeComputeJobId,
         resolvedDdoWith5mTimeout.id
       )) as ComputeJob
