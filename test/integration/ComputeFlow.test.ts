@@ -226,6 +226,23 @@ function delay(interval: number) {
   }).timeout(interval + 100)
 }
 
+async function waitTillJobEnds(): Promise<number> {
+  return new Promise((resolve) => {
+    const interval = setInterval(async () => {
+      const jobStatus = (await ProviderInstance.computeStatus(
+        providerUrl,
+        consumerAccount,
+        freeComputeJobId,
+        resolvedDdoWith5mTimeout.id
+      )) as ComputeJob
+      if (jobStatus?.status === 70) {
+        clearInterval(interval)
+        resolve(jobStatus.status)
+      }
+    }, 10000)
+  })
+}
+
 describe('Compute flow tests', async () => {
   before(async () => {
     publisherAccount = (await provider.getSigner(0)) as Signer
@@ -413,10 +430,6 @@ describe('Compute flow tests', async () => {
       providerUrl,
       await consumerAccount.getAddress()
     )
-    console.log(
-      'compute flow initializeCompute result = ',
-      providerInitializeComputeResults
-    )
     assert(
       !('error' in providerInitializeComputeResults.algorithm),
       'Cannot order algorithm'
@@ -457,15 +470,7 @@ describe('Compute flow tests', async () => {
 
   delay(100000)
 
-  it('Check compute status', async () => {
-    const jobStatus = (await ProviderInstance.computeStatus(
-      providerUrl,
-      await consumerAccount.getAddress(),
-      freeComputeJobId,
-      resolvedDdoWith5mTimeout.id
-    )) as ComputeJob
-    assert(jobStatus, 'Cannot retrieve compute status!')
-  })
+  const jobFinished = await waitTillJobEnds()
 
   // move to start orders with initial txid's and provider fees
   it('should restart a computeJob without paying anything, because order is valid and providerFees are still valid', async () => {

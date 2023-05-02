@@ -331,7 +331,7 @@ you need to mint oceans to mentioned accounts only if you are using barge to tes
       fixedRate: '1',
       marketFee: '0.001',
       allowedConsumer: ZERO_ADDRESS,
-      withMint: false
+      withMint: true
     }
 
     const bundleNFT = await factory.createNftWithDatatokenWithFixedRate(

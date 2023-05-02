@@ -331,7 +331,7 @@ describe('Marketplace flow tests', async () => {
       fixedRate: '1',
       marketFee: '0.001',
       allowedConsumer: ZERO_ADDRESS,
-      withMint: false
+      withMint: true
     }
 
     const bundleNFT = await factory.createNftWithDatatokenWithFixedRate(
