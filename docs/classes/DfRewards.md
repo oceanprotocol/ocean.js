@@ -59,7 +59,7 @@ Instantiate the smart contract.
 
 #### Defined in
 
-[contracts/SmartContractWithAddress.ts:17](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/SmartContractWithAddress.ts#L17)
+[contracts/SmartContractWithAddress.ts:17](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/SmartContractWithAddress.ts#L17)
 
 ## Properties
 
@@ -73,7 +73,7 @@ Instantiate the smart contract.
 
 #### Defined in
 
-[contracts/SmartContract.ts:14](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/SmartContract.ts#L14)
+[contracts/SmartContract.ts:14](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/SmartContract.ts#L14)
 
 ___
 
@@ -87,7 +87,7 @@ ___
 
 #### Defined in
 
-[contracts/SmartContractWithAddress.ts:6](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/SmartContractWithAddress.ts#L6)
+[contracts/SmartContractWithAddress.ts:6](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/SmartContractWithAddress.ts#L6)
 
 ___
 
@@ -101,7 +101,7 @@ ___
 
 #### Defined in
 
-[contracts/SmartContract.ts:13](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/SmartContract.ts#L13)
+[contracts/SmartContract.ts:13](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/SmartContract.ts#L13)
 
 ___
 
@@ -115,7 +115,7 @@ ___
 
 #### Defined in
 
-[contracts/SmartContractWithAddress.ts:7](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/SmartContractWithAddress.ts#L7)
+[contracts/SmartContractWithAddress.ts:7](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/SmartContractWithAddress.ts#L7)
 
 ___
 
@@ -129,7 +129,7 @@ ___
 
 #### Defined in
 
-[contracts/SmartContract.ts:12](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/SmartContract.ts#L12)
+[contracts/SmartContract.ts:12](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/SmartContract.ts#L12)
 
 ## Methods
 
@@ -160,7 +160,7 @@ allocate rewards to address.  An approve must exist before calling this function
 
 #### Defined in
 
-[contracts/df/DfRewards.ts:64](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/df/DfRewards.ts#L64)
+[contracts/df/DfRewards.ts:64](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/df/DfRewards.ts#L64)
 
 ___
 
@@ -190,7 +190,7 @@ Converts an amount of tokens to units
 
 #### Defined in
 
-[contracts/SmartContract.ts:43](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/SmartContract.ts#L43)
+[contracts/SmartContract.ts:43](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/SmartContract.ts#L43)
 
 ___
 
@@ -220,7 +220,7 @@ claim rewards for any address
 
 #### Defined in
 
-[contracts/df/DfRewards.ts:36](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/df/DfRewards.ts#L36)
+[contracts/df/DfRewards.ts:36](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/df/DfRewards.ts#L36)
 
 ___
 
@@ -243,7 +243,7 @@ Get available DF Rewards for a token
 
 #### Defined in
 
-[contracts/df/DfRewards.ts:19](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/df/DfRewards.ts#L19)
+[contracts/df/DfRewards.ts:19](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/df/DfRewards.ts#L19)
 
 ___
 
@@ -272,7 +272,7 @@ Returns a contract instance for the given address
 
 #### Defined in
 
-[contracts/SmartContract.ts:80](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/SmartContract.ts#L80)
+[contracts/SmartContract.ts:80](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/SmartContract.ts#L80)
 
 ___
 
@@ -290,7 +290,7 @@ ___
 
 #### Defined in
 
-[contracts/df/DfRewards.ts:10](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/df/DfRewards.ts#L10)
+[contracts/df/DfRewards.ts:10](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/df/DfRewards.ts#L10)
 
 ___
 
@@ -312,7 +312,7 @@ Retruns the gas price
 
 #### Defined in
 
-[contracts/SmartContract.ts:70](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/SmartContract.ts#L70)
+[contracts/SmartContract.ts:70](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/SmartContract.ts#L70)
 
 ___
 
@@ -342,4 +342,4 @@ Converts an amount of units to tokens
 
 #### Defined in
 
-[contracts/SmartContract.ts:58](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/SmartContract.ts#L58)
+[contracts/SmartContract.ts:58](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/SmartContract.ts#L58)

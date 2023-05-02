@@ -19,7 +19,7 @@ If asset is in purgatory, contains the reason for being there as defined in `lis
 
 #### Defined in
 
-[@types/Asset.ts:64](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/Asset.ts#L64)
+[@types/Asset.ts:64](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/Asset.ts#L64)
 
 ___
 
@@ -31,4 +31,4 @@ If `true`, asset is in purgatory.
 
 #### Defined in
 
-[@types/Asset.ts:58](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/Asset.ts#L58)
+[@types/Asset.ts:58](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/Asset.ts#L58)

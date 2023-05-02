@@ -24,7 +24,7 @@ Contract address of the deployed ERC721 NFT contract.
 
 #### Defined in
 
-[@types/Asset.ts:8](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/Asset.ts#L8)
+[@types/Asset.ts:8](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/Asset.ts#L8)
 
 ___
 
@@ -36,7 +36,7 @@ Contains the date of NFT creation.
 
 #### Defined in
 
-[@types/Asset.ts:44](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/Asset.ts#L44)
+[@types/Asset.ts:44](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/Asset.ts#L44)
 
 ___
 
@@ -48,7 +48,7 @@ Name of NFT set in contract.
 
 #### Defined in
 
-[@types/Asset.ts:14](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/Asset.ts#L14)
+[@types/Asset.ts:14](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/Asset.ts#L14)
 
 ___
 
@@ -60,7 +60,7 @@ ETH account address of the NFT owner.
 
 #### Defined in
 
-[@types/Asset.ts:26](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/Asset.ts#L26)
+[@types/Asset.ts:26](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/Asset.ts#L26)
 
 ___
 
@@ -78,7 +78,7 @@ State of the asset reflecting the NFT contract value.
 
 #### Defined in
 
-[@types/Asset.ts:38](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/Asset.ts#L38)
+[@types/Asset.ts:38](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/Asset.ts#L38)
 
 ___
 
@@ -90,7 +90,7 @@ Symbol of NFT set in contract.
 
 #### Defined in
 
-[@types/Asset.ts:20](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/Asset.ts#L20)
+[@types/Asset.ts:20](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/Asset.ts#L20)
 
 ___
 
@@ -102,4 +102,4 @@ NFT token URI.
 
 #### Defined in
 
-[@types/Asset.ts:50](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/Asset.ts#L50)
+[@types/Asset.ts:50](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/Asset.ts#L50)

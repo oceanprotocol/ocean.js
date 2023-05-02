@@ -20,7 +20,7 @@
 
 #### Defined in
 
-[utils/Logger.ts:4](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/utils/Logger.ts#L4)
+[utils/Logger.ts:4](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/utils/Logger.ts#L4)
 
 ___
 
@@ -30,7 +30,7 @@ ___
 
 #### Defined in
 
-[utils/Logger.ts:6](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/utils/Logger.ts#L6)
+[utils/Logger.ts:6](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/utils/Logger.ts#L6)
 
 ___
 
@@ -40,7 +40,7 @@ ___
 
 #### Defined in
 
-[utils/Logger.ts:3](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/utils/Logger.ts#L3)
+[utils/Logger.ts:3](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/utils/Logger.ts#L3)
 
 ___
 
@@ -50,7 +50,7 @@ ___
 
 #### Defined in
 
-[utils/Logger.ts:7](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/utils/Logger.ts#L7)
+[utils/Logger.ts:7](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/utils/Logger.ts#L7)
 
 ___
 
@@ -60,4 +60,4 @@ ___
 
 #### Defined in
 
-[utils/Logger.ts:5](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/utils/Logger.ts#L5)
+[utils/Logger.ts:5](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/utils/Logger.ts#L5)

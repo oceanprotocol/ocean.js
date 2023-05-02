@@ -65,7 +65,7 @@ A promise that resolves with an array of file info objects.
 
 #### Defined in
 
-[services/Provider.ts:179](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/services/Provider.ts#L179)
+[services/Provider.ts:181](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/services/Provider.ts#L181)
 
 ___
 
@@ -91,7 +91,7 @@ Deletes a compute job.
 
 #### Defined in
 
-[services/Provider.ts:762](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/services/Provider.ts#L762)
+[services/Provider.ts:764](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/services/Provider.ts#L764)
 
 ___
 
@@ -122,7 +122,7 @@ The compute job or jobs.
 
 #### Defined in
 
-[services/Provider.ts:514](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/services/Provider.ts#L514)
+[services/Provider.ts:516](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/services/Provider.ts#L516)
 
 ___
 
@@ -148,7 +148,7 @@ Get compute status for a specific jobId/documentId/owner.
 
 #### Defined in
 
-[services/Provider.ts:660](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/services/Provider.ts#L660)
+[services/Provider.ts:662](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/services/Provider.ts#L662)
 
 ___
 
@@ -175,7 +175,7 @@ Instruct the provider to Stop the execution of a to stop a compute job.
 
 #### Defined in
 
-[services/Provider.ts:585](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/services/Provider.ts#L585)
+[services/Provider.ts:587](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/services/Provider.ts#L587)
 
 ___
 
@@ -202,7 +202,7 @@ urlDetails
 
 #### Defined in
 
-[services/Provider.ts:140](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/services/Provider.ts#L140)
+[services/Provider.ts:142](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/services/Provider.ts#L142)
 
 ___
 
@@ -227,7 +227,7 @@ A promise that resolves with an object containing compute environments for each 
 
 #### Defined in
 
-[services/Provider.ts:288](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/services/Provider.ts#L288)
+[services/Provider.ts:290](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/services/Provider.ts#L290)
 
 ___
 
@@ -252,7 +252,7 @@ Get compute result url
 
 #### Defined in
 
-[services/Provider.ts:723](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/services/Provider.ts#L723)
+[services/Provider.ts:725](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/services/Provider.ts#L725)
 
 ___
 
@@ -276,7 +276,7 @@ A Promise that resolves to a Response object.
 
 #### Defined in
 
-[services/Provider.ts:904](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/services/Provider.ts#L904)
+[services/Provider.ts:906](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/services/Provider.ts#L906)
 
 ___
 
@@ -306,7 +306,7 @@ The download URL.
 
 #### Defined in
 
-[services/Provider.ts:470](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/services/Provider.ts#L470)
+[services/Provider.ts:472](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/services/Provider.ts#L472)
 
 ___
 
@@ -331,7 +331,7 @@ The endpoint URL for the given service name
 
 #### Defined in
 
-[services/Provider.ts:44](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/services/Provider.ts#L44)
+[services/Provider.ts:44](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/services/Provider.ts#L44)
 
 ___
 
@@ -353,7 +353,7 @@ Returns the provider endpoints
 
 #### Defined in
 
-[services/Provider.ts:28](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/services/Provider.ts#L28)
+[services/Provider.ts:28](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/services/Provider.ts#L28)
 
 ___
 
@@ -380,7 +380,7 @@ A promise that resolves with an array of file info objects.
 
 #### Defined in
 
-[services/Provider.ts:235](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/services/Provider.ts#L235)
+[services/Provider.ts:237](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/services/Provider.ts#L237)
 
 ___
 
@@ -408,7 +408,7 @@ urlDetails
 
 #### Defined in
 
-[services/Provider.ts:80](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/services/Provider.ts#L80)
+[services/Provider.ts:80](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/services/Provider.ts#L80)
 
 ___
 
@@ -433,7 +433,7 @@ An array of service endpoints
 
 #### Defined in
 
-[services/Provider.ts:58](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/services/Provider.ts#L58)
+[services/Provider.ts:58](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/services/Provider.ts#L58)
 
 ___
 
@@ -465,7 +465,7 @@ A promise that resolves with ProviderInitialize response.
 
 #### Defined in
 
-[services/Provider.ts:342](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/services/Provider.ts#L342)
+[services/Provider.ts:344](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/services/Provider.ts#L344)
 
 ___
 
@@ -495,7 +495,7 @@ ProviderComputeInitialize data
 
 #### Defined in
 
-[services/Provider.ts:407](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/services/Provider.ts#L407)
+[services/Provider.ts:409](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/services/Provider.ts#L409)
 
 ___
 
@@ -526,7 +526,7 @@ An object with two properties: `valid` (a boolean indicating whether the input m
 
 #### Defined in
 
-[services/Provider.ts:881](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/services/Provider.ts#L881)
+[services/Provider.ts:883](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/services/Provider.ts#L883)
 
 ___
 
@@ -551,7 +551,7 @@ valid or not
 
 #### Defined in
 
-[services/Provider.ts:832](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/services/Provider.ts#L832)
+[services/Provider.ts:834](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/services/Provider.ts#L834)
 
 ___
 
@@ -575,7 +575,7 @@ The transformed string.
 
 #### Defined in
 
-[services/Provider.ts:855](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/services/Provider.ts#L855)
+[services/Provider.ts:857](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/services/Provider.ts#L857)
 
 ___
 
@@ -600,7 +600,7 @@ A promise that resolves with the signature.
 
 #### Defined in
 
-[services/Provider.ts:116](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/services/Provider.ts#L116)
+[services/Provider.ts:116](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/services/Provider.ts#L116)
 
 ___
 
@@ -625,4 +625,4 @@ The transformed string.
 
 #### Defined in
 
-[services/Provider.ts:865](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/services/Provider.ts#L865)
+[services/Provider.ts:867](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/services/Provider.ts#L867)

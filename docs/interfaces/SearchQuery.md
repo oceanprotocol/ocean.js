@@ -20,7 +20,7 @@
 
 #### Defined in
 
-[services/Aquarius.ts:11](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/services/Aquarius.ts#L11)
+[services/Aquarius.ts:11](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/services/Aquarius.ts#L11)
 
 ___
 
@@ -30,7 +30,7 @@ ___
 
 #### Defined in
 
-[services/Aquarius.ts:6](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/services/Aquarius.ts#L6)
+[services/Aquarius.ts:6](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/services/Aquarius.ts#L6)
 
 ___
 
@@ -40,7 +40,7 @@ ___
 
 #### Defined in
 
-[services/Aquarius.ts:9](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/services/Aquarius.ts#L9)
+[services/Aquarius.ts:9](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/services/Aquarius.ts#L9)
 
 ___
 
@@ -50,7 +50,7 @@ ___
 
 #### Defined in
 
-[services/Aquarius.ts:7](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/services/Aquarius.ts#L7)
+[services/Aquarius.ts:7](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/services/Aquarius.ts#L7)
 
 ___
 
@@ -64,4 +64,4 @@ ___
 
 #### Defined in
 
-[services/Aquarius.ts:10](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/services/Aquarius.ts#L10)
+[services/Aquarius.ts:10](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/services/Aquarius.ts#L10)

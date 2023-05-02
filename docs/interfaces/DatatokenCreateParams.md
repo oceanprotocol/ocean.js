@@ -24,7 +24,7 @@
 
 #### Defined in
 
-[@types/Datatoken.ts:10](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/Datatoken.ts#L10)
+[@types/Datatoken.ts:10](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/Datatoken.ts#L10)
 
 ___
 
@@ -34,7 +34,7 @@ ___
 
 #### Defined in
 
-[@types/Datatoken.ts:9](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/Datatoken.ts#L9)
+[@types/Datatoken.ts:9](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/Datatoken.ts#L9)
 
 ___
 
@@ -44,7 +44,7 @@ ___
 
 #### Defined in
 
-[@types/Datatoken.ts:8](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/Datatoken.ts#L8)
+[@types/Datatoken.ts:8](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/Datatoken.ts#L8)
 
 ___
 
@@ -54,7 +54,7 @@ ___
 
 #### Defined in
 
-[@types/Datatoken.ts:5](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/Datatoken.ts#L5)
+[@types/Datatoken.ts:5](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/Datatoken.ts#L5)
 
 ___
 
@@ -64,7 +64,7 @@ ___
 
 #### Defined in
 
-[@types/Datatoken.ts:7](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/Datatoken.ts#L7)
+[@types/Datatoken.ts:7](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/Datatoken.ts#L7)
 
 ___
 
@@ -74,7 +74,7 @@ ___
 
 #### Defined in
 
-[@types/Datatoken.ts:11](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/Datatoken.ts#L11)
+[@types/Datatoken.ts:11](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/Datatoken.ts#L11)
 
 ___
 
@@ -84,7 +84,7 @@ ___
 
 #### Defined in
 
-[@types/Datatoken.ts:6](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/Datatoken.ts#L6)
+[@types/Datatoken.ts:6](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/Datatoken.ts#L6)
 
 ___
 
@@ -94,7 +94,7 @@ ___
 
 #### Defined in
 
-[@types/Datatoken.ts:12](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/Datatoken.ts#L12)
+[@types/Datatoken.ts:12](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/Datatoken.ts#L12)
 
 ___
 
@@ -104,4 +104,4 @@ ___
 
 #### Defined in
 
-[@types/Datatoken.ts:4](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/Datatoken.ts#L4)
+[@types/Datatoken.ts:4](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/Datatoken.ts#L4)

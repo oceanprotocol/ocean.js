@@ -22,7 +22,7 @@ Headers key value pairs associated with the asset GET request
 
 #### Defined in
 
-[@types/File.ts:58](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/File.ts#L58)
+[@types/File.ts:58](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/File.ts#L58)
 
 ___
 
@@ -32,7 +32,7 @@ ___
 
 #### Defined in
 
-[@types/File.ts:40](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/File.ts#L40)
+[@types/File.ts:40](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/File.ts#L40)
 
 ___
 
@@ -44,7 +44,7 @@ query
 
 #### Defined in
 
-[@types/File.ts:52](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/File.ts#L52)
+[@types/File.ts:52](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/File.ts#L52)
 
 ___
 
@@ -54,7 +54,7 @@ ___
 
 #### Defined in
 
-[@types/File.ts:35](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/File.ts#L35)
+[@types/File.ts:35](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/File.ts#L35)
 
 ___
 
@@ -66,4 +66,4 @@ Endpoint URL
 
 #### Defined in
 
-[@types/File.ts:46](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/File.ts#L46)
+[@types/File.ts:46](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/File.ts#L46)

@@ -23,7 +23,7 @@
 
 #### Defined in
 
-[@types/Provider.ts:8](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/Provider.ts#L8)
+[@types/Provider.ts:8](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/Provider.ts#L8)
 
 ___
 
@@ -33,7 +33,7 @@ ___
 
 #### Defined in
 
-[@types/Provider.ts:2](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/Provider.ts#L2)
+[@types/Provider.ts:2](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/Provider.ts#L2)
 
 ___
 
@@ -43,7 +43,7 @@ ___
 
 #### Defined in
 
-[@types/Provider.ts:4](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/Provider.ts#L4)
+[@types/Provider.ts:4](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/Provider.ts#L4)
 
 ___
 
@@ -53,7 +53,7 @@ ___
 
 #### Defined in
 
-[@types/Provider.ts:3](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/Provider.ts#L3)
+[@types/Provider.ts:3](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/Provider.ts#L3)
 
 ___
 
@@ -63,7 +63,7 @@ ___
 
 #### Defined in
 
-[@types/Provider.ts:6](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/Provider.ts#L6)
+[@types/Provider.ts:6](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/Provider.ts#L6)
 
 ___
 
@@ -73,7 +73,7 @@ ___
 
 #### Defined in
 
-[@types/Provider.ts:7](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/Provider.ts#L7)
+[@types/Provider.ts:7](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/Provider.ts#L7)
 
 ___
 
@@ -83,7 +83,7 @@ ___
 
 #### Defined in
 
-[@types/Provider.ts:5](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/Provider.ts#L5)
+[@types/Provider.ts:5](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/Provider.ts#L5)
 
 ___
 
@@ -93,4 +93,4 @@ ___
 
 #### Defined in
 
-[@types/Provider.ts:9](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/Provider.ts#L9)
+[@types/Provider.ts:9](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/Provider.ts#L9)

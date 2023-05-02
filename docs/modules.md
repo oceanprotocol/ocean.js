@@ -146,7 +146,7 @@
 
 #### Defined in
 
-[@types/Contracts.ts:1](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/Contracts.ts#L1)
+[@types/Contracts.ts:1](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/Contracts.ts#L1)
 
 ___
 
@@ -156,7 +156,7 @@ ___
 
 #### Defined in
 
-[@types/Compute.ts:3](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/Compute.ts#L3)
+[@types/Compute.ts:3](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/Compute.ts#L3)
 
 ___
 
@@ -172,7 +172,7 @@ ___
 
 #### Defined in
 
-[@types/ReturnTypes.ts:5](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/ReturnTypes.ts#L5)
+[@types/ReturnTypes.ts:5](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/ReturnTypes.ts#L5)
 
 ___
 
@@ -188,7 +188,7 @@ ___
 
 #### Defined in
 
-[@types/ReturnTypes.ts:2](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/ReturnTypes.ts#L2)
+[@types/ReturnTypes.ts:2](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/ReturnTypes.ts#L2)
 
 ___
 
@@ -198,7 +198,7 @@ ___
 
 #### Defined in
 
-[@types/Contracts.ts:2](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/Contracts.ts#L2)
+[@types/Contracts.ts:2](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/Contracts.ts#L2)
 
 ## Variables
 
@@ -208,7 +208,7 @@ ___
 
 #### Defined in
 
-[utils/Constants.ts:5](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/utils/Constants.ts#L5)
+[utils/Constants.ts:5](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/utils/Constants.ts#L5)
 
 ___
 
@@ -218,7 +218,7 @@ ___
 
 #### Defined in
 
-[utils/Constants.ts:2](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/utils/Constants.ts#L2)
+[utils/Constants.ts:2](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/utils/Constants.ts#L2)
 
 ___
 
@@ -228,7 +228,7 @@ ___
 
 #### Defined in
 
-[utils/Logger.ts:45](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/utils/Logger.ts#L45)
+[utils/Logger.ts:45](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/utils/Logger.ts#L45)
 
 ___
 
@@ -238,7 +238,7 @@ ___
 
 #### Defined in
 
-[utils/Constants.ts:3](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/utils/Constants.ts#L3)
+[utils/Constants.ts:3](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/utils/Constants.ts#L3)
 
 ___
 
@@ -248,7 +248,7 @@ ___
 
 #### Defined in
 
-[services/Provider.ts:914](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/services/Provider.ts#L914)
+[services/Provider.ts:916](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/services/Provider.ts#L916)
 
 ___
 
@@ -258,7 +258,7 @@ ___
 
 #### Defined in
 
-[utils/Constants.ts:1](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/utils/Constants.ts#L1)
+[utils/Constants.ts:1](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/utils/Constants.ts#L1)
 
 ___
 
@@ -268,7 +268,7 @@ ___
 
 #### Defined in
 
-[config/ConfigHelper.ts:25](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/config/ConfigHelper.ts#L25)
+[config/ConfigHelper.ts:25](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/config/ConfigHelper.ts#L25)
 
 ___
 
@@ -278,7 +278,7 @@ ___
 
 #### Defined in
 
-[utils/minAbi.ts:1](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/utils/minAbi.ts#L1)
+[utils/minAbi.ts:1](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/utils/minAbi.ts#L1)
 
 ## Functions
 
@@ -304,7 +304,7 @@ Get Allowance for any Datatoken
 
 #### Defined in
 
-[utils/TokenUtils.ts:143](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/utils/TokenUtils.ts#L143)
+[utils/TokenUtils.ts:143](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/utils/TokenUtils.ts#L143)
 
 ___
 
@@ -329,7 +329,7 @@ Get Allowance in wei for any erc20
 
 #### Defined in
 
-[utils/TokenUtils.ts:182](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/utils/TokenUtils.ts#L182)
+[utils/TokenUtils.ts:182](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/utils/TokenUtils.ts#L182)
 
 ___
 
@@ -343,7 +343,7 @@ Converts an amount of tokens to units
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `signer` | `Signer` | - |
+| `signer` | `Signer` | The signer object to use. |
 | `token` | `string` | The token to convert |
 | `amount` | `string` | The amount of tokens to convert |
 | `tokenDecimals?` | `number` | The number of decimals of the token |
@@ -356,7 +356,7 @@ Converts an amount of tokens to units
 
 #### Defined in
 
-[utils/ContractUtils.ts:80](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/utils/ContractUtils.ts#L80)
+[utils/ContractUtils.ts:82](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/utils/ContractUtils.ts#L82)
 
 ___
 
@@ -392,7 +392,7 @@ Approve spender to spent amount tokens
 
 #### Defined in
 
-[utils/TokenUtils.ts:19](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/utils/TokenUtils.ts#L19)
+[utils/TokenUtils.ts:19](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/utils/TokenUtils.ts#L19)
 
 ___
 
@@ -427,7 +427,7 @@ Approve spender to spent amount tokens
 
 #### Defined in
 
-[utils/TokenUtils.ts:63](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/utils/TokenUtils.ts#L63)
+[utils/TokenUtils.ts:63](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/utils/TokenUtils.ts#L63)
 
 ___
 
@@ -452,7 +452,7 @@ Get balance for any Datatoken
 
 #### Defined in
 
-[utils/TokenUtils.ts:163](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/utils/TokenUtils.ts#L163)
+[utils/TokenUtils.ts:163](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/utils/TokenUtils.ts#L163)
 
 ___
 
@@ -477,7 +477,7 @@ Number of decimals of the token
 
 #### Defined in
 
-[utils/TokenUtils.ts:198](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/utils/TokenUtils.ts#L198)
+[utils/TokenUtils.ts:198](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/utils/TokenUtils.ts#L198)
 
 ___
 
@@ -502,7 +502,7 @@ Triggers  a file download from the specified URL when called from a browser cont
 
 #### Defined in
 
-[utils/FetchHelper.ts:35](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/utils/FetchHelper.ts#L35)
+[utils/FetchHelper.ts:35](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/utils/FetchHelper.ts#L35)
 
 ___
 
@@ -526,7 +526,7 @@ Triggers  a file download from the specified URL when called from a browser cont
 
 #### Defined in
 
-[utils/FetchHelper.ts:9](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/utils/FetchHelper.ts#L9)
+[utils/FetchHelper.ts:9](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/utils/FetchHelper.ts#L9)
 
 ___
 
@@ -551,7 +551,7 @@ Generates a valid DID
 
 #### Defined in
 
-[utils/DdoHelpers.ts:10](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/utils/DdoHelpers.ts#L10)
+[utils/DdoHelpers.ts:10](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/utils/DdoHelpers.ts#L10)
 
 ___
 
@@ -582,7 +582,7 @@ Returns an object containing the generated name and symbol. Produces e.g. "Endem
 
 #### Defined in
 
-[utils/DatatokenName.ts:10](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/utils/DatatokenName.ts#L10)
+[utils/DatatokenName.ts:10](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/utils/DatatokenName.ts#L10)
 
 ___
 
@@ -602,7 +602,7 @@ ___
 
 #### Defined in
 
-[utils/ProviderErrors.ts:77](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/utils/ProviderErrors.ts#L77)
+[utils/ProviderErrors.ts:77](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/utils/ProviderErrors.ts#L77)
 
 ___
 
@@ -623,7 +623,7 @@ ___
 
 #### Defined in
 
-[utils/ContractUtils.ts:94](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/utils/ContractUtils.ts#L94)
+[utils/ContractUtils.ts:96](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/utils/ContractUtils.ts#L96)
 
 ___
 
@@ -648,7 +648,7 @@ A Promise that resolves to a string representation of the fair gas price.
 
 #### Defined in
 
-[utils/ContractUtils.ts:30](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/utils/ContractUtils.ts#L30)
+[utils/ContractUtils.ts:30](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/utils/ContractUtils.ts#L30)
 
 ___
 
@@ -672,7 +672,7 @@ Returns the SHA256 hash of the input data
 
 #### Defined in
 
-[utils/DdoHelpers.ts:21](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/utils/DdoHelpers.ts#L21)
+[utils/DdoHelpers.ts:21](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/utils/DdoHelpers.ts#L21)
 
 ___
 
@@ -697,7 +697,7 @@ A Promise that resolves to the number of decimal places for the token.
 
 #### Defined in
 
-[utils/ContractUtils.ts:46](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/utils/ContractUtils.ts#L46)
+[utils/ContractUtils.ts:46](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/utils/ContractUtils.ts#L46)
 
 ___
 
@@ -725,7 +725,7 @@ transaction receipt
 
 #### Defined in
 
-[utils/ContractUtils.ts:109](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/utils/ContractUtils.ts#L109)
+[utils/ContractUtils.ts:111](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/utils/ContractUtils.ts#L111)
 
 ___
 
@@ -746,7 +746,7 @@ ___
 
 #### Defined in
 
-[utils/ContractUtils.ts:10](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/utils/ContractUtils.ts#L10)
+[utils/ContractUtils.ts:10](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/utils/ContractUtils.ts#L10)
 
 ___
 
@@ -771,7 +771,7 @@ Signs the hash of a message using the provided signer.
 
 #### Defined in
 
-[utils/SignatureUtils.ts:9](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/utils/SignatureUtils.ts#L9)
+[utils/SignatureUtils.ts:9](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/utils/SignatureUtils.ts#L9)
 
 ___
 
@@ -793,7 +793,7 @@ Simple blocking sleep function
 
 #### Defined in
 
-[utils/General.ts:5](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/utils/General.ts#L5)
+[utils/General.ts:5](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/utils/General.ts#L5)
 
 ___
 
@@ -826,7 +826,7 @@ Moves amount tokens from the caller’s account to recipient.
 
 #### Defined in
 
-[utils/TokenUtils.ts:111](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/utils/TokenUtils.ts#L111)
+[utils/TokenUtils.ts:111](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/utils/TokenUtils.ts#L111)
 
 ___
 
@@ -840,7 +840,7 @@ Converts an amount of units to tokens
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `signer` | `Signer` | - |
+| `signer` | `Signer` | The signer object to use. |
 | `token` | `string` | The token to convert |
 | `amount` | `string` | The amount of units to convert |
 | `tokenDecimals?` | `number` | The number of decimals in the token |
@@ -853,4 +853,4 @@ Converts an amount of units to tokens
 
 #### Defined in
 
-[utils/ContractUtils.ts:58](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/utils/ContractUtils.ts#L58)
+[utils/ContractUtils.ts:59](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/utils/ContractUtils.ts#L59)

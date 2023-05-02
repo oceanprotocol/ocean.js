@@ -83,7 +83,7 @@ Instantiate Datatoken class
 
 #### Defined in
 
-[contracts/Datatoken.ts:38](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/Datatoken.ts#L38)
+[contracts/Datatoken.ts:38](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/Datatoken.ts#L38)
 
 ## Properties
 
@@ -97,7 +97,7 @@ Instantiate Datatoken class
 
 #### Defined in
 
-[contracts/SmartContract.ts:14](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/SmartContract.ts#L14)
+[contracts/SmartContract.ts:14](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/SmartContract.ts#L14)
 
 ___
 
@@ -107,7 +107,7 @@ ___
 
 #### Defined in
 
-[contracts/Datatoken.ts:23](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/Datatoken.ts#L23)
+[contracts/Datatoken.ts:23](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/Datatoken.ts#L23)
 
 ___
 
@@ -121,7 +121,7 @@ ___
 
 #### Defined in
 
-[contracts/SmartContract.ts:13](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/SmartContract.ts#L13)
+[contracts/SmartContract.ts:13](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/SmartContract.ts#L13)
 
 ___
 
@@ -131,7 +131,7 @@ ___
 
 #### Defined in
 
-[contracts/Datatoken.ts:24](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/Datatoken.ts#L24)
+[contracts/Datatoken.ts:24](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/Datatoken.ts#L24)
 
 ___
 
@@ -145,7 +145,7 @@ ___
 
 #### Defined in
 
-[contracts/SmartContract.ts:12](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/SmartContract.ts#L12)
+[contracts/SmartContract.ts:12](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/SmartContract.ts#L12)
 
 ## Methods
 
@@ -179,7 +179,7 @@ transactionId
 
 #### Defined in
 
-[contracts/Datatoken.ts:252](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/Datatoken.ts#L252)
+[contracts/Datatoken.ts:252](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/Datatoken.ts#L252)
 
 ___
 
@@ -213,7 +213,7 @@ transactionId
 
 #### Defined in
 
-[contracts/Datatoken.ts:322](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/Datatoken.ts#L322)
+[contracts/Datatoken.ts:322](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/Datatoken.ts#L322)
 
 ___
 
@@ -243,7 +243,7 @@ Converts an amount of tokens to units
 
 #### Defined in
 
-[contracts/SmartContract.ts:43](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/SmartContract.ts#L43)
+[contracts/SmartContract.ts:43](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/SmartContract.ts#L43)
 
 ___
 
@@ -274,7 +274,7 @@ Approves a spender to spend a certain amount of datatokens.
 
 #### Defined in
 
-[contracts/Datatoken.ts:58](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/Datatoken.ts#L58)
+[contracts/Datatoken.ts:58](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/Datatoken.ts#L58)
 
 ___
 
@@ -299,7 +299,7 @@ balance  Number of datatokens. Will be converted from wei
 
 #### Defined in
 
-[contracts/Datatoken.ts:791](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/Datatoken.ts#L791)
+[contracts/Datatoken.ts:791](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/Datatoken.ts#L791)
 
 ___
 
@@ -330,7 +330,7 @@ Gets 1 DT from dispenser and then startsOrder, while burning that DT
 
 #### Defined in
 
-[contracts/Datatoken.ts:610](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/Datatoken.ts#L610)
+[contracts/Datatoken.ts:610](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/Datatoken.ts#L610)
 
 ___
 
@@ -361,7 +361,7 @@ Buys 1 DT from the FRE and then startsOrder, while burning that DT
 
 #### Defined in
 
-[contracts/Datatoken.ts:575](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/Datatoken.ts#L575)
+[contracts/Datatoken.ts:575](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/Datatoken.ts#L575)
 
 ___
 
@@ -394,7 +394,7 @@ transactionId
 
 #### Defined in
 
-[contracts/Datatoken.ts:680](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/Datatoken.ts#L680)
+[contracts/Datatoken.ts:680](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/Datatoken.ts#L680)
 
 ___
 
@@ -428,7 +428,7 @@ transactionId
 
 #### Defined in
 
-[contracts/Datatoken.ts:157](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/Datatoken.ts#L157)
+[contracts/Datatoken.ts:157](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/Datatoken.ts#L157)
 
 ___
 
@@ -459,7 +459,7 @@ Creates a new FixedRateExchange setup.
 
 #### Defined in
 
-[contracts/Datatoken.ts:91](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/Datatoken.ts#L91)
+[contracts/Datatoken.ts:91](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/Datatoken.ts#L91)
 
 ___
 
@@ -481,7 +481,7 @@ Returns the Datatoken cap
 
 #### Defined in
 
-[contracts/Datatoken.ts:723](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/Datatoken.ts#L723)
+[contracts/Datatoken.ts:723](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/Datatoken.ts#L723)
 
 ___
 
@@ -510,7 +510,7 @@ Returns a contract instance for the given address
 
 #### Defined in
 
-[contracts/SmartContract.ts:80](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/SmartContract.ts#L80)
+[contracts/SmartContract.ts:80](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/SmartContract.ts#L80)
 
 ___
 
@@ -532,7 +532,7 @@ It returns the token decimals, how many supported decimal points
 
 #### Defined in
 
-[contracts/Datatoken.ts:734](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/Datatoken.ts#L734)
+[contracts/Datatoken.ts:734](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/Datatoken.ts#L734)
 
 ___
 
@@ -550,7 +550,7 @@ ___
 
 #### Defined in
 
-[contracts/Datatoken.ts:26](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/Datatoken.ts#L26)
+[contracts/Datatoken.ts:26](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/Datatoken.ts#L26)
 
 ___
 
@@ -572,7 +572,7 @@ Retruns the gas price
 
 #### Defined in
 
-[contracts/SmartContract.ts:70](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/SmartContract.ts#L70)
+[contracts/SmartContract.ts:70](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/SmartContract.ts#L70)
 
 ___
 
@@ -592,7 +592,7 @@ ___
 
 #### Defined in
 
-[contracts/Datatoken.ts:859](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/Datatoken.ts#L859)
+[contracts/Datatoken.ts:859](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/Datatoken.ts#L859)
 
 ___
 
@@ -614,7 +614,7 @@ It returns the token decimals, how many supported decimal points
 
 #### Defined in
 
-[contracts/Datatoken.ts:767](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/Datatoken.ts#L767)
+[contracts/Datatoken.ts:767](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/Datatoken.ts#L767)
 
 ___
 
@@ -636,7 +636,7 @@ It returns the name of the token
 
 #### Defined in
 
-[contracts/Datatoken.ts:756](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/Datatoken.ts#L756)
+[contracts/Datatoken.ts:756](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/Datatoken.ts#L756)
 
 ___
 
@@ -658,7 +658,7 @@ getPaymentCollector - It returns the current paymentCollector
 
 #### Defined in
 
-[contracts/Datatoken.ts:429](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/Datatoken.ts#L429)
+[contracts/Datatoken.ts:429](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/Datatoken.ts#L429)
 
 ___
 
@@ -681,7 +681,7 @@ Returns ERC20 Datatoken user's permissions for a datatoken
 
 #### Defined in
 
-[contracts/Datatoken.ts:709](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/Datatoken.ts#L709)
+[contracts/Datatoken.ts:709](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/Datatoken.ts#L709)
 
 ___
 
@@ -705,7 +705,7 @@ Current fee set by the publishing market
 
 #### Defined in
 
-[contracts/Datatoken.ts:845](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/Datatoken.ts#L845)
+[contracts/Datatoken.ts:845](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/Datatoken.ts#L845)
 
 ___
 
@@ -727,7 +727,7 @@ It returns the token symbol
 
 #### Defined in
 
-[contracts/Datatoken.ts:745](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/Datatoken.ts#L745)
+[contracts/Datatoken.ts:745](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/Datatoken.ts#L745)
 
 ___
 
@@ -750,7 +750,7 @@ Returns true if address has deployERC20 role
 
 #### Defined in
 
-[contracts/Datatoken.ts:779](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/Datatoken.ts#L779)
+[contracts/Datatoken.ts:779](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/Datatoken.ts#L779)
 
 ___
 
@@ -784,7 +784,7 @@ transactionId
 
 #### Defined in
 
-[contracts/Datatoken.ts:208](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/Datatoken.ts#L208)
+[contracts/Datatoken.ts:208](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/Datatoken.ts#L208)
 
 ___
 
@@ -816,7 +816,7 @@ only DatatokenDeployer can succeed
 
 #### Defined in
 
-[contracts/Datatoken.ts:287](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/Datatoken.ts#L287)
+[contracts/Datatoken.ts:287](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/Datatoken.ts#L287)
 
 ___
 
@@ -850,7 +850,7 @@ trxReceipt
 
 #### Defined in
 
-[contracts/Datatoken.ts:357](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/Datatoken.ts#L357)
+[contracts/Datatoken.ts:357](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/Datatoken.ts#L357)
 
 ___
 
@@ -885,7 +885,7 @@ string
 
 #### Defined in
 
-[contracts/Datatoken.ts:545](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/Datatoken.ts#L545)
+[contracts/Datatoken.ts:545](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/Datatoken.ts#L545)
 
 ___
 
@@ -920,7 +920,7 @@ transactionId
 
 #### Defined in
 
-[contracts/Datatoken.ts:644](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/Datatoken.ts#L644)
+[contracts/Datatoken.ts:644](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/Datatoken.ts#L644)
 
 ___
 
@@ -955,7 +955,7 @@ trxReceipt
 
 #### Defined in
 
-[contracts/Datatoken.ts:393](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/Datatoken.ts#L393)
+[contracts/Datatoken.ts:393](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/Datatoken.ts#L393)
 
 ___
 
@@ -989,7 +989,7 @@ only publishMarketFeeAddress can call it
 
 #### Defined in
 
-[contracts/Datatoken.ts:807](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/Datatoken.ts#L807)
+[contracts/Datatoken.ts:807](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/Datatoken.ts#L807)
 
 ___
 
@@ -1024,7 +1024,7 @@ string
 
 #### Defined in
 
-[contracts/Datatoken.ts:497](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/Datatoken.ts#L497)
+[contracts/Datatoken.ts:497](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/Datatoken.ts#L497)
 
 ___
 
@@ -1057,7 +1057,7 @@ transactionId
 
 #### Defined in
 
-[contracts/Datatoken.ts:443](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/Datatoken.ts#L443)
+[contracts/Datatoken.ts:443](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/Datatoken.ts#L443)
 
 ___
 
@@ -1090,7 +1090,7 @@ transactionId
 
 #### Defined in
 
-[contracts/Datatoken.ts:465](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/Datatoken.ts#L465)
+[contracts/Datatoken.ts:465](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/Datatoken.ts#L465)
 
 ___
 
@@ -1120,4 +1120,4 @@ Converts an amount of units to tokens
 
 #### Defined in
 
-[contracts/SmartContract.ts:58](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/SmartContract.ts#L58)
+[contracts/SmartContract.ts:58](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/SmartContract.ts#L58)

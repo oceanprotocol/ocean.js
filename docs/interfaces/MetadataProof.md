@@ -19,7 +19,7 @@
 
 #### Defined in
 
-[@types/DDO/Metadata.ts:142](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/DDO/Metadata.ts#L142)
+[@types/DDO/Metadata.ts:142](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/DDO/Metadata.ts#L142)
 
 ___
 
@@ -29,7 +29,7 @@ ___
 
 #### Defined in
 
-[@types/DDO/Metadata.ts:143](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/DDO/Metadata.ts#L143)
+[@types/DDO/Metadata.ts:143](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/DDO/Metadata.ts#L143)
 
 ___
 
@@ -39,7 +39,7 @@ ___
 
 #### Defined in
 
-[@types/DDO/Metadata.ts:144](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/DDO/Metadata.ts#L144)
+[@types/DDO/Metadata.ts:144](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/DDO/Metadata.ts#L144)
 
 ___
 
@@ -49,4 +49,4 @@ ___
 
 #### Defined in
 
-[@types/DDO/Metadata.ts:141](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/DDO/Metadata.ts#L141)
+[@types/DDO/Metadata.ts:141](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/DDO/Metadata.ts#L141)

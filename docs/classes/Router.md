@@ -70,7 +70,7 @@ Instantiate the smart contract.
 
 #### Defined in
 
-[contracts/SmartContractWithAddress.ts:17](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/SmartContractWithAddress.ts#L17)
+[contracts/SmartContractWithAddress.ts:17](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/SmartContractWithAddress.ts#L17)
 
 ## Properties
 
@@ -84,7 +84,7 @@ Instantiate the smart contract.
 
 #### Defined in
 
-[contracts/SmartContract.ts:14](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/SmartContract.ts#L14)
+[contracts/SmartContract.ts:14](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/SmartContract.ts#L14)
 
 ___
 
@@ -98,7 +98,7 @@ ___
 
 #### Defined in
 
-[contracts/SmartContractWithAddress.ts:6](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/SmartContractWithAddress.ts#L6)
+[contracts/SmartContractWithAddress.ts:6](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/SmartContractWithAddress.ts#L6)
 
 ___
 
@@ -112,7 +112,7 @@ ___
 
 #### Defined in
 
-[contracts/SmartContract.ts:13](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/SmartContract.ts#L13)
+[contracts/SmartContract.ts:13](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/SmartContract.ts#L13)
 
 ___
 
@@ -126,7 +126,7 @@ ___
 
 #### Defined in
 
-[contracts/SmartContractWithAddress.ts:7](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/SmartContractWithAddress.ts#L7)
+[contracts/SmartContractWithAddress.ts:7](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/SmartContractWithAddress.ts#L7)
 
 ___
 
@@ -140,7 +140,7 @@ ___
 
 #### Defined in
 
-[contracts/SmartContract.ts:12](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/SmartContract.ts#L12)
+[contracts/SmartContract.ts:12](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/SmartContract.ts#L12)
 
 ## Methods
 
@@ -170,7 +170,7 @@ Adds a token to the list of tokens with reduced fees
 
 #### Defined in
 
-[contracts/Router.ts:82](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/Router.ts#L82)
+[contracts/Router.ts:82](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/Router.ts#L82)
 
 ___
 
@@ -200,7 +200,7 @@ Adds an address to the list of dispensers
 
 #### Defined in
 
-[contracts/Router.ts:201](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/Router.ts#L201)
+[contracts/Router.ts:201](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/Router.ts#L201)
 
 ___
 
@@ -230,7 +230,7 @@ Adds an address to the list of fixed rate contracts
 
 #### Defined in
 
-[contracts/Router.ts:141](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/Router.ts#L141)
+[contracts/Router.ts:141](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/Router.ts#L141)
 
 ___
 
@@ -260,7 +260,7 @@ Converts an amount of tokens to units
 
 #### Defined in
 
-[contracts/SmartContract.ts:43](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/SmartContract.ts#L43)
+[contracts/SmartContract.ts:43](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/SmartContract.ts#L43)
 
 ___
 
@@ -293,7 +293,7 @@ Transaction receipt
 
 #### Defined in
 
-[contracts/Router.ts:22](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/Router.ts#L22)
+[contracts/Router.ts:22](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/Router.ts#L22)
 
 ___
 
@@ -322,7 +322,7 @@ Returns a contract instance for the given address
 
 #### Defined in
 
-[contracts/SmartContract.ts:80](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/SmartContract.ts#L80)
+[contracts/SmartContract.ts:80](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/SmartContract.ts#L80)
 
 ___
 
@@ -340,7 +340,7 @@ OPF fee
 
 #### Defined in
 
-[contracts/Router.ts:262](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/Router.ts#L262)
+[contracts/Router.ts:262](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/Router.ts#L262)
 
 ___
 
@@ -358,7 +358,7 @@ ___
 
 #### Defined in
 
-[contracts/Router.ts:10](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/Router.ts#L10)
+[contracts/Router.ts:10](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/Router.ts#L10)
 
 ___
 
@@ -380,7 +380,7 @@ Retruns the gas price
 
 #### Defined in
 
-[contracts/SmartContract.ts:70](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/SmartContract.ts#L70)
+[contracts/SmartContract.ts:70](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/SmartContract.ts#L70)
 
 ___
 
@@ -398,7 +398,7 @@ NFT Factory address
 
 #### Defined in
 
-[contracts/Router.ts:71](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/Router.ts#L71)
+[contracts/Router.ts:71](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/Router.ts#L71)
 
 ___
 
@@ -422,7 +422,7 @@ OPC fee for a specific baseToken
 
 #### Defined in
 
-[contracts/Router.ts:255](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/Router.ts#L255)
+[contracts/Router.ts:255](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/Router.ts#L255)
 
 ___
 
@@ -440,7 +440,7 @@ Router Owner address
 
 #### Defined in
 
-[contracts/Router.ts:63](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/Router.ts#L63)
+[contracts/Router.ts:63](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/Router.ts#L63)
 
 ___
 
@@ -465,7 +465,7 @@ true if is on the list.
 
 #### Defined in
 
-[contracts/Router.ts:46](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/Router.ts#L46)
+[contracts/Router.ts:46](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/Router.ts#L46)
 
 ___
 
@@ -489,7 +489,7 @@ true if is a Fixed Rate contract
 
 #### Defined in
 
-[contracts/Router.ts:55](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/Router.ts#L55)
+[contracts/Router.ts:55](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/Router.ts#L55)
 
 ___
 
@@ -519,7 +519,7 @@ Removes a token if exists from the list of tokens with reduced fees
 
 #### Defined in
 
-[contracts/Router.ts:112](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/Router.ts#L112)
+[contracts/Router.ts:112](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/Router.ts#L112)
 
 ___
 
@@ -549,7 +549,7 @@ Removes an address from the list of dispensers
 
 #### Defined in
 
-[contracts/Router.ts:230](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/Router.ts#L230)
+[contracts/Router.ts:230](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/Router.ts#L230)
 
 ___
 
@@ -579,7 +579,7 @@ Removes an address from the list of fixed rate contracts
 
 #### Defined in
 
-[contracts/Router.ts:171](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/Router.ts#L171)
+[contracts/Router.ts:171](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/Router.ts#L171)
 
 ___
 
@@ -609,7 +609,7 @@ Converts an amount of units to tokens
 
 #### Defined in
 
-[contracts/SmartContract.ts:58](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/SmartContract.ts#L58)
+[contracts/SmartContract.ts:58](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/SmartContract.ts#L58)
 
 ___
 
@@ -642,4 +642,4 @@ Updates OP Community Fees
 
 #### Defined in
 
-[contracts/Router.ts:276](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/Router.ts#L276)
+[contracts/Router.ts:276](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/Router.ts#L276)

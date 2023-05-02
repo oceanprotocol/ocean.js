@@ -62,7 +62,7 @@
 
 #### Defined in
 
-[config/Config.ts:180](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/config/Config.ts#L180)
+[config/Config.ts:180](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/config/Config.ts#L180)
 
 ___
 
@@ -72,7 +72,7 @@ ___
 
 #### Defined in
 
-[config/Config.ts:181](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/config/Config.ts#L181)
+[config/Config.ts:181](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/config/Config.ts#L181)
 
 ___
 
@@ -84,7 +84,7 @@ Message shown when the user creates its own token.
 
 #### Defined in
 
-[config/Config.ts:105](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/config/Config.ts#L105)
+[config/Config.ts:105](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/config/Config.ts#L105)
 
 ___
 
@@ -96,7 +96,7 @@ Token expiration time in ms.
 
 #### Defined in
 
-[config/Config.ts:111](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/config/Config.ts#L111)
+[config/Config.ts:111](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/config/Config.ts#L111)
 
 ___
 
@@ -108,7 +108,7 @@ Chain ID
 
 #### Defined in
 
-[config/Config.ts:125](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/config/Config.ts#L125)
+[config/Config.ts:125](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/config/Config.ts#L125)
 
 ___
 
@@ -120,7 +120,7 @@ datatokens ABI
 
 #### Defined in
 
-[config/Config.ts:52](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/config/Config.ts#L52)
+[config/Config.ts:52](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/config/Config.ts#L52)
 
 ___
 
@@ -132,7 +132,7 @@ DispenserABI
 
 #### Defined in
 
-[config/Config.ts:76](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/config/Config.ts#L76)
+[config/Config.ts:76](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/config/Config.ts#L76)
 
 ___
 
@@ -144,7 +144,7 @@ DispenserAddress
 
 #### Defined in
 
-[config/Config.ts:70](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/config/Config.ts#L70)
+[config/Config.ts:70](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/config/Config.ts#L70)
 
 ___
 
@@ -156,7 +156,7 @@ Url of the  blockchain exporer ex: https://etherscan.io
 
 #### Defined in
 
-[config/Config.ts:143](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/config/Config.ts#L143)
+[config/Config.ts:143](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/config/Config.ts#L143)
 
 ___
 
@@ -168,7 +168,7 @@ FixedRateExchangeAddress
 
 #### Defined in
 
-[config/Config.ts:58](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/config/Config.ts#L58)
+[config/Config.ts:58](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/config/Config.ts#L58)
 
 ___
 
@@ -180,7 +180,7 @@ FixedRateExchangeAddressABI
 
 #### Defined in
 
-[config/Config.ts:64](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/config/Config.ts#L64)
+[config/Config.ts:64](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/config/Config.ts#L64)
 
 ___
 
@@ -192,7 +192,7 @@ Specify the multiplier for the gas fee
 
 #### Defined in
 
-[config/Config.ts:173](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/config/Config.ts#L173)
+[config/Config.ts:173](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/config/Config.ts#L173)
 
 ___
 
@@ -204,7 +204,7 @@ Metadata Store URL.
 
 #### Defined in
 
-[config/Config.ts:21](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/config/Config.ts#L21)
+[config/Config.ts:21](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/config/Config.ts#L21)
 
 ___
 
@@ -216,7 +216,7 @@ Network name ex: mainnet, goerli, polygon
 
 #### Defined in
 
-[config/Config.ts:131](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/config/Config.ts#L131)
+[config/Config.ts:131](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/config/Config.ts#L131)
 
 ___
 
@@ -228,7 +228,7 @@ Factory address
 
 #### Defined in
 
-[config/Config.ts:46](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/config/Config.ts#L46)
+[config/Config.ts:46](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/config/Config.ts#L46)
 
 ___
 
@@ -240,7 +240,7 @@ Ethereum node URL.
 
 #### Defined in
 
-[config/Config.ts:9](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/config/Config.ts#L9)
+[config/Config.ts:9](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/config/Config.ts#L9)
 
 ___
 
@@ -252,7 +252,7 @@ Ocean Token address
 
 #### Defined in
 
-[config/Config.ts:40](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/config/Config.ts#L40)
+[config/Config.ts:40](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/config/Config.ts#L40)
 
 ___
 
@@ -264,7 +264,7 @@ Ocean toke symbol on the chain, it's used just for convenience to reduce number 
 
 #### Defined in
 
-[config/Config.ts:149](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/config/Config.ts#L149)
+[config/Config.ts:149](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/config/Config.ts#L149)
 
 ___
 
@@ -276,7 +276,7 @@ OPFCommunityFeeCollector
 
 #### Defined in
 
-[config/Config.ts:82](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/config/Config.ts#L82)
+[config/Config.ts:82](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/config/Config.ts#L82)
 
 ___
 
@@ -288,7 +288,7 @@ Parity config
 
 #### Defined in
 
-[config/Config.ts:117](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/config/Config.ts#L117)
+[config/Config.ts:117](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/config/Config.ts#L117)
 
 ___
 
@@ -300,7 +300,7 @@ Address of Provider.
 
 #### Defined in
 
-[config/Config.ts:15](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/config/Config.ts#L15)
+[config/Config.ts:15](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/config/Config.ts#L15)
 
 ___
 
@@ -312,7 +312,7 @@ Provider URL.
 
 #### Defined in
 
-[config/Config.ts:27](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/config/Config.ts#L27)
+[config/Config.ts:27](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/config/Config.ts#L27)
 
 ___
 
@@ -324,7 +324,7 @@ SideStaking address
 
 #### Defined in
 
-[config/Config.ts:88](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/config/Config.ts#L88)
+[config/Config.ts:88](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/config/Config.ts#L88)
 
 ___
 
@@ -336,7 +336,7 @@ block number of the deployment
 
 #### Defined in
 
-[config/Config.ts:94](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/config/Config.ts#L94)
+[config/Config.ts:94](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/config/Config.ts#L94)
 
 ___
 
@@ -348,7 +348,7 @@ Url of the relevant subgraph instance ex: https://subgraph.mainnet.oceanprotocol
 
 #### Defined in
 
-[config/Config.ts:137](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/config/Config.ts#L137)
+[config/Config.ts:137](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/config/Config.ts#L137)
 
 ___
 
@@ -358,7 +358,7 @@ ___
 
 #### Defined in
 
-[config/Config.ts:119](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/config/Config.ts#L119)
+[config/Config.ts:119](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/config/Config.ts#L119)
 
 ___
 
@@ -370,7 +370,7 @@ Specify the transaction Block Timeout
 
 #### Defined in
 
-[config/Config.ts:155](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/config/Config.ts#L155)
+[config/Config.ts:155](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/config/Config.ts#L155)
 
 ___
 
@@ -382,7 +382,7 @@ Specify the transaction Confirmation Blocks
 
 #### Defined in
 
-[config/Config.ts:161](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/config/Config.ts#L161)
+[config/Config.ts:161](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/config/Config.ts#L161)
 
 ___
 
@@ -394,7 +394,7 @@ Specify the transaction Polling Blocks Timeout
 
 #### Defined in
 
-[config/Config.ts:167](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/config/Config.ts#L167)
+[config/Config.ts:167](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/config/Config.ts#L167)
 
 ___
 
@@ -404,7 +404,7 @@ ___
 
 #### Defined in
 
-[config/Config.ts:175](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/config/Config.ts#L175)
+[config/Config.ts:175](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/config/Config.ts#L175)
 
 ___
 
@@ -414,7 +414,7 @@ ___
 
 #### Defined in
 
-[config/Config.ts:177](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/config/Config.ts#L177)
+[config/Config.ts:177](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/config/Config.ts#L177)
 
 ___
 
@@ -424,7 +424,7 @@ ___
 
 #### Defined in
 
-[config/Config.ts:179](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/config/Config.ts#L179)
+[config/Config.ts:179](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/config/Config.ts#L179)
 
 ___
 
@@ -434,7 +434,7 @@ ___
 
 #### Defined in
 
-[config/Config.ts:178](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/config/Config.ts#L178)
+[config/Config.ts:178](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/config/Config.ts#L178)
 
 ___
 
@@ -444,7 +444,7 @@ ___
 
 #### Defined in
 
-[config/Config.ts:182](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/config/Config.ts#L182)
+[config/Config.ts:182](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/config/Config.ts#L182)
 
 ___
 
@@ -454,7 +454,7 @@ ___
 
 #### Defined in
 
-[config/Config.ts:176](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/config/Config.ts#L176)
+[config/Config.ts:176](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/config/Config.ts#L176)
 
 ___
 
@@ -466,7 +466,7 @@ Log level.
 
 #### Defined in
 
-[config/Config.ts:99](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/config/Config.ts#L99)
+[config/Config.ts:99](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/config/Config.ts#L99)
 
 ___
 
@@ -478,4 +478,4 @@ Web3 Provider.
 
 #### Defined in
 
-[config/Config.ts:34](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/config/Config.ts#L34)
+[config/Config.ts:34](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/config/Config.ts#L34)

@@ -20,7 +20,7 @@
 
 #### Defined in
 
-[@types/Dispenser.ts:6](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/Dispenser.ts#L6)
+[@types/Dispenser.ts:6](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/Dispenser.ts#L6)
 
 ___
 
@@ -30,7 +30,7 @@ ___
 
 #### Defined in
 
-[@types/Dispenser.ts:2](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/Dispenser.ts#L2)
+[@types/Dispenser.ts:2](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/Dispenser.ts#L2)
 
 ___
 
@@ -40,7 +40,7 @@ ___
 
 #### Defined in
 
-[@types/Dispenser.ts:4](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/Dispenser.ts#L4)
+[@types/Dispenser.ts:4](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/Dispenser.ts#L4)
 
 ___
 
@@ -50,7 +50,7 @@ ___
 
 #### Defined in
 
-[@types/Dispenser.ts:3](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/Dispenser.ts#L3)
+[@types/Dispenser.ts:3](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/Dispenser.ts#L3)
 
 ___
 
@@ -60,4 +60,4 @@ ___
 
 #### Defined in
 
-[@types/Dispenser.ts:5](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/Dispenser.ts#L5)
+[@types/Dispenser.ts:5](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/Dispenser.ts#L5)

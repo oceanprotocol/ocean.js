@@ -36,7 +36,7 @@
 
 #### Defined in
 
-[utils/Logger.ts:12](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/utils/Logger.ts#L12)
+[utils/Logger.ts:12](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/utils/Logger.ts#L12)
 
 ## Properties
 
@@ -46,7 +46,7 @@
 
 #### Defined in
 
-[utils/Logger.ts:12](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/utils/Logger.ts#L12)
+[utils/Logger.ts:12](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/utils/Logger.ts#L12)
 
 ## Methods
 
@@ -66,7 +66,7 @@
 
 #### Defined in
 
-[utils/Logger.ts:18](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/utils/Logger.ts#L18)
+[utils/Logger.ts:18](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/utils/Logger.ts#L18)
 
 ___
 
@@ -86,7 +86,7 @@ ___
 
 #### Defined in
 
-[utils/Logger.ts:22](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/utils/Logger.ts#L22)
+[utils/Logger.ts:22](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/utils/Logger.ts#L22)
 
 ___
 
@@ -108,7 +108,7 @@ ___
 
 #### Defined in
 
-[utils/Logger.ts:38](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/utils/Logger.ts#L38)
+[utils/Logger.ts:38](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/utils/Logger.ts#L38)
 
 ___
 
@@ -128,7 +128,7 @@ ___
 
 #### Defined in
 
-[utils/Logger.ts:34](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/utils/Logger.ts#L34)
+[utils/Logger.ts:34](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/utils/Logger.ts#L34)
 
 ___
 
@@ -148,7 +148,7 @@ ___
 
 #### Defined in
 
-[utils/Logger.ts:26](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/utils/Logger.ts#L26)
+[utils/Logger.ts:26](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/utils/Logger.ts#L26)
 
 ___
 
@@ -168,7 +168,7 @@ ___
 
 #### Defined in
 
-[utils/Logger.ts:14](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/utils/Logger.ts#L14)
+[utils/Logger.ts:14](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/utils/Logger.ts#L14)
 
 ___
 
@@ -188,4 +188,4 @@ ___
 
 #### Defined in
 
-[utils/Logger.ts:30](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/utils/Logger.ts#L30)
+[utils/Logger.ts:30](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/utils/Logger.ts#L30)

@@ -20,7 +20,7 @@
 
 #### Defined in
 
-[@types/NFTFactory.ts:13](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/NFTFactory.ts#L13)
+[@types/NFTFactory.ts:13](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/NFTFactory.ts#L13)
 
 ___
 
@@ -30,7 +30,7 @@ ___
 
 #### Defined in
 
-[@types/NFTFactory.ts:12](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/NFTFactory.ts#L12)
+[@types/NFTFactory.ts:12](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/NFTFactory.ts#L12)
 
 ___
 
@@ -40,7 +40,7 @@ ___
 
 #### Defined in
 
-[@types/NFTFactory.ts:10](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/NFTFactory.ts#L10)
+[@types/NFTFactory.ts:10](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/NFTFactory.ts#L10)
 
 ___
 
@@ -50,7 +50,7 @@ ___
 
 #### Defined in
 
-[@types/NFTFactory.ts:11](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/NFTFactory.ts#L11)
+[@types/NFTFactory.ts:11](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/NFTFactory.ts#L11)
 
 ___
 
@@ -60,4 +60,4 @@ ___
 
 #### Defined in
 
-[@types/NFTFactory.ts:9](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/NFTFactory.ts#L9)
+[@types/NFTFactory.ts:9](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/NFTFactory.ts#L9)

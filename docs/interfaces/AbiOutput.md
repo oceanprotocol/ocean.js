@@ -19,7 +19,7 @@
 
 #### Defined in
 
-[@types/Contracts.ts:15](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/Contracts.ts#L15)
+[@types/Contracts.ts:15](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/Contracts.ts#L15)
 
 ___
 
@@ -29,7 +29,7 @@ ___
 
 #### Defined in
 
-[@types/Contracts.ts:16](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/Contracts.ts#L16)
+[@types/Contracts.ts:16](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/Contracts.ts#L16)
 
 ___
 
@@ -39,7 +39,7 @@ ___
 
 #### Defined in
 
-[@types/Contracts.ts:13](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/Contracts.ts#L13)
+[@types/Contracts.ts:13](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/Contracts.ts#L13)
 
 ___
 
@@ -49,4 +49,4 @@ ___
 
 #### Defined in
 
-[@types/Contracts.ts:14](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/Contracts.ts#L14)
+[@types/Contracts.ts:14](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/Contracts.ts#L14)

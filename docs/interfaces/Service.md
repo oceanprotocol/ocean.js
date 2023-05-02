@@ -27,7 +27,7 @@ Stores service specific additional information, this is customizable by publishe
 
 #### Defined in
 
-[@types/DDO/Service.ts:109](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/DDO/Service.ts#L109)
+[@types/DDO/Service.ts:109](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/DDO/Service.ts#L109)
 
 ___
 
@@ -39,7 +39,7 @@ If service is of type compute, holds information about the compute-related priva
 
 #### Defined in
 
-[@types/DDO/Service.ts:103](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/DDO/Service.ts#L103)
+[@types/DDO/Service.ts:103](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/DDO/Service.ts#L103)
 
 ___
 
@@ -51,7 +51,7 @@ Datatoken address
 
 #### Defined in
 
-[@types/DDO/Service.ts:73](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/DDO/Service.ts#L73)
+[@types/DDO/Service.ts:73](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/DDO/Service.ts#L73)
 
 ___
 
@@ -63,7 +63,7 @@ Service description
 
 #### Defined in
 
-[@types/DDO/Service.ts:97](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/DDO/Service.ts#L97)
+[@types/DDO/Service.ts:97](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/DDO/Service.ts#L97)
 
 ___
 
@@ -75,7 +75,7 @@ Encrypted file URLs.
 
 #### Defined in
 
-[@types/DDO/Service.ts:67](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/DDO/Service.ts#L67)
+[@types/DDO/Service.ts:67](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/DDO/Service.ts#L67)
 
 ___
 
@@ -87,7 +87,7 @@ Unique ID
 
 #### Defined in
 
-[@types/DDO/Service.ts:55](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/DDO/Service.ts#L55)
+[@types/DDO/Service.ts:55](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/DDO/Service.ts#L55)
 
 ___
 
@@ -99,7 +99,7 @@ Service friendly name
 
 #### Defined in
 
-[@types/DDO/Service.ts:91](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/DDO/Service.ts#L91)
+[@types/DDO/Service.ts:91](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/DDO/Service.ts#L91)
 
 ___
 
@@ -111,7 +111,7 @@ Provider URL (schema + host).
 
 #### Defined in
 
-[@types/DDO/Service.ts:79](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/DDO/Service.ts#L79)
+[@types/DDO/Service.ts:79](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/DDO/Service.ts#L79)
 
 ___
 
@@ -123,7 +123,7 @@ Describing how long the service can be used after consumption is initiated.
 
 #### Defined in
 
-[@types/DDO/Service.ts:85](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/DDO/Service.ts#L85)
+[@types/DDO/Service.ts:85](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/DDO/Service.ts#L85)
 
 ___
 
@@ -135,4 +135,4 @@ Type of service (access, compute, wss.
 
 #### Defined in
 
-[@types/DDO/Service.ts:61](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/DDO/Service.ts#L61)
+[@types/DDO/Service.ts:61](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/DDO/Service.ts#L61)

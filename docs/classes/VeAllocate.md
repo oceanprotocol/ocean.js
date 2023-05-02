@@ -60,7 +60,7 @@ Instantiate the smart contract.
 
 #### Defined in
 
-[contracts/SmartContractWithAddress.ts:17](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/SmartContractWithAddress.ts#L17)
+[contracts/SmartContractWithAddress.ts:17](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/SmartContractWithAddress.ts#L17)
 
 ## Properties
 
@@ -74,7 +74,7 @@ Instantiate the smart contract.
 
 #### Defined in
 
-[contracts/SmartContract.ts:14](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/SmartContract.ts#L14)
+[contracts/SmartContract.ts:14](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/SmartContract.ts#L14)
 
 ___
 
@@ -88,7 +88,7 @@ ___
 
 #### Defined in
 
-[contracts/SmartContractWithAddress.ts:6](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/SmartContractWithAddress.ts#L6)
+[contracts/SmartContractWithAddress.ts:6](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/SmartContractWithAddress.ts#L6)
 
 ___
 
@@ -102,7 +102,7 @@ ___
 
 #### Defined in
 
-[contracts/SmartContract.ts:13](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/SmartContract.ts#L13)
+[contracts/SmartContract.ts:13](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/SmartContract.ts#L13)
 
 ___
 
@@ -116,7 +116,7 @@ ___
 
 #### Defined in
 
-[contracts/SmartContractWithAddress.ts:7](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/SmartContractWithAddress.ts#L7)
+[contracts/SmartContractWithAddress.ts:7](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/SmartContractWithAddress.ts#L7)
 
 ___
 
@@ -130,7 +130,7 @@ ___
 
 #### Defined in
 
-[contracts/SmartContract.ts:12](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/SmartContract.ts#L12)
+[contracts/SmartContract.ts:12](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/SmartContract.ts#L12)
 
 ## Methods
 
@@ -160,7 +160,7 @@ Converts an amount of tokens to units
 
 #### Defined in
 
-[contracts/SmartContract.ts:43](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/SmartContract.ts#L43)
+[contracts/SmartContract.ts:43](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/SmartContract.ts#L43)
 
 ___
 
@@ -189,7 +189,7 @@ Returns a contract instance for the given address
 
 #### Defined in
 
-[contracts/SmartContract.ts:80](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/SmartContract.ts#L80)
+[contracts/SmartContract.ts:80](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/SmartContract.ts#L80)
 
 ___
 
@@ -207,7 +207,7 @@ ___
 
 #### Defined in
 
-[contracts/ve/VeAllocate.ts:9](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/ve/VeAllocate.ts#L9)
+[contracts/ve/VeAllocate.ts:9](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/ve/VeAllocate.ts#L9)
 
 ___
 
@@ -229,7 +229,7 @@ Retruns the gas price
 
 #### Defined in
 
-[contracts/SmartContract.ts:70](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/SmartContract.ts#L70)
+[contracts/SmartContract.ts:70](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/SmartContract.ts#L70)
 
 ___
 
@@ -251,7 +251,7 @@ Get totalAllocation for address
 
 #### Defined in
 
-[contracts/ve/VeAllocate.ts:81](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/ve/VeAllocate.ts#L81)
+[contracts/ve/VeAllocate.ts:81](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/ve/VeAllocate.ts#L81)
 
 ___
 
@@ -275,7 +275,7 @@ Get getveAllocation for address, nft, chainId
 
 #### Defined in
 
-[contracts/ve/VeAllocate.ts:92](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/ve/VeAllocate.ts#L92)
+[contracts/ve/VeAllocate.ts:92](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/ve/VeAllocate.ts#L92)
 
 ___
 
@@ -307,7 +307,7 @@ Maximum allocated percentage is 10000, so 1% is specified as 100
 
 #### Defined in
 
-[contracts/ve/VeAllocate.ts:21](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/ve/VeAllocate.ts#L21)
+[contracts/ve/VeAllocate.ts:21](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/ve/VeAllocate.ts#L21)
 
 ___
 
@@ -339,7 +339,7 @@ Maximum allocated percentage is 10000, so 1% is specified as 100
 
 #### Defined in
 
-[contracts/ve/VeAllocate.ts:51](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/ve/VeAllocate.ts#L51)
+[contracts/ve/VeAllocate.ts:51](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/ve/VeAllocate.ts#L51)
 
 ___
 
@@ -369,4 +369,4 @@ Converts an amount of units to tokens
 
 #### Defined in
 
-[contracts/SmartContract.ts:58](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/SmartContract.ts#L58)
+[contracts/SmartContract.ts:58](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/SmartContract.ts#L58)

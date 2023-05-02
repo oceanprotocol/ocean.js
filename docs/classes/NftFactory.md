@@ -78,7 +78,7 @@ Instantiate the smart contract.
 
 #### Defined in
 
-[contracts/SmartContractWithAddress.ts:17](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/SmartContractWithAddress.ts#L17)
+[contracts/SmartContractWithAddress.ts:17](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/SmartContractWithAddress.ts#L17)
 
 ## Properties
 
@@ -92,7 +92,7 @@ Instantiate the smart contract.
 
 #### Defined in
 
-[contracts/SmartContract.ts:14](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/SmartContract.ts#L14)
+[contracts/SmartContract.ts:14](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/SmartContract.ts#L14)
 
 ___
 
@@ -106,7 +106,7 @@ ___
 
 #### Defined in
 
-[contracts/SmartContractWithAddress.ts:6](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/SmartContractWithAddress.ts#L6)
+[contracts/SmartContractWithAddress.ts:6](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/SmartContractWithAddress.ts#L6)
 
 ___
 
@@ -120,7 +120,7 @@ ___
 
 #### Defined in
 
-[contracts/SmartContract.ts:13](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/SmartContract.ts#L13)
+[contracts/SmartContract.ts:13](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/SmartContract.ts#L13)
 
 ___
 
@@ -134,7 +134,7 @@ ___
 
 #### Defined in
 
-[contracts/SmartContractWithAddress.ts:7](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/SmartContractWithAddress.ts#L7)
+[contracts/SmartContractWithAddress.ts:7](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/SmartContractWithAddress.ts#L7)
 
 ___
 
@@ -148,7 +148,7 @@ ___
 
 #### Defined in
 
-[contracts/SmartContract.ts:12](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/SmartContract.ts#L12)
+[contracts/SmartContract.ts:12](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/SmartContract.ts#L12)
 
 ## Methods
 
@@ -178,7 +178,7 @@ Add a new NFT token template - only factory Owner
 
 #### Defined in
 
-[contracts/NFTFactory.ts:181](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/NFTFactory.ts#L181)
+[contracts/NFTFactory.ts:181](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/NFTFactory.ts#L181)
 
 ___
 
@@ -208,7 +208,7 @@ Add a new NFT token template - only factory Owner
 
 #### Defined in
 
-[contracts/NFTFactory.ts:288](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/NFTFactory.ts#L288)
+[contracts/NFTFactory.ts:288](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/NFTFactory.ts#L288)
 
 ___
 
@@ -238,7 +238,7 @@ Converts an amount of tokens to units
 
 #### Defined in
 
-[contracts/SmartContract.ts:43](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/SmartContract.ts#L43)
+[contracts/SmartContract.ts:43](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/SmartContract.ts#L43)
 
 ___
 
@@ -262,7 +262,7 @@ return true if deployed from this factory
 
 #### Defined in
 
-[contracts/NFTFactory.ts:159](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/NFTFactory.ts#L159)
+[contracts/NFTFactory.ts:159](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/NFTFactory.ts#L159)
 
 ___
 
@@ -286,7 +286,7 @@ return address(0) if it's not, or the nftAddress if true
 
 #### Defined in
 
-[contracts/NFTFactory.ts:169](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/NFTFactory.ts#L169)
+[contracts/NFTFactory.ts:169](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/NFTFactory.ts#L169)
 
 ___
 
@@ -317,7 +317,7 @@ The transaction hash or the gas estimate.
 
 #### Defined in
 
-[contracts/NFTFactory.ts:30](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/NFTFactory.ts#L30)
+[contracts/NFTFactory.ts:30](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/NFTFactory.ts#L30)
 
 ___
 
@@ -349,7 +349,7 @@ transaction receipt
 
 #### Defined in
 
-[contracts/NFTFactory.ts:434](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/NFTFactory.ts#L434)
+[contracts/NFTFactory.ts:434](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/NFTFactory.ts#L434)
 
 ___
 
@@ -381,7 +381,7 @@ Be aware if Fixed Rate creation fails, you are still going to pay a lot of gas
 
 #### Defined in
 
-[contracts/NFTFactory.ts:505](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/NFTFactory.ts#L505)
+[contracts/NFTFactory.ts:505](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/NFTFactory.ts#L505)
 
 ___
 
@@ -413,7 +413,7 @@ be aware if Fixed Rate creation fails, you are still going to pay a lot of gas
 
 #### Defined in
 
-[contracts/NFTFactory.ts:467](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/NFTFactory.ts#L467)
+[contracts/NFTFactory.ts:467](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/NFTFactory.ts#L467)
 
 ___
 
@@ -445,7 +445,7 @@ current token template count
 
 #### Defined in
 
-[contracts/NFTFactory.ts:213](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/NFTFactory.ts#L213)
+[contracts/NFTFactory.ts:213](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/NFTFactory.ts#L213)
 
 ___
 
@@ -477,7 +477,7 @@ current token template count
 
 #### Defined in
 
-[contracts/NFTFactory.ts:321](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/NFTFactory.ts#L321)
+[contracts/NFTFactory.ts:321](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/NFTFactory.ts#L321)
 
 ___
 
@@ -506,7 +506,7 @@ Returns a contract instance for the given address
 
 #### Defined in
 
-[contracts/SmartContract.ts:80](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/SmartContract.ts#L80)
+[contracts/SmartContract.ts:80](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/SmartContract.ts#L80)
 
 ___
 
@@ -524,7 +524,7 @@ Number of NFT created from this factory
 
 #### Defined in
 
-[contracts/NFTFactory.ts:86](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/NFTFactory.ts#L86)
+[contracts/NFTFactory.ts:86](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/NFTFactory.ts#L86)
 
 ___
 
@@ -542,7 +542,7 @@ Number of NFT Template added to this factory
 
 #### Defined in
 
-[contracts/NFTFactory.ts:113](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/NFTFactory.ts#L113)
+[contracts/NFTFactory.ts:113](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/NFTFactory.ts#L113)
 
 ___
 
@@ -560,7 +560,7 @@ Number of DTs created from this factory
 
 #### Defined in
 
-[contracts/NFTFactory.ts:95](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/NFTFactory.ts#L95)
+[contracts/NFTFactory.ts:95](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/NFTFactory.ts#L95)
 
 ___
 
@@ -578,7 +578,7 @@ Number of Datatoken Template added to this factory
 
 #### Defined in
 
-[contracts/NFTFactory.ts:122](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/NFTFactory.ts#L122)
+[contracts/NFTFactory.ts:122](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/NFTFactory.ts#L122)
 
 ___
 
@@ -596,7 +596,7 @@ ___
 
 #### Defined in
 
-[contracts/NFTFactory.ts:20](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/NFTFactory.ts#L20)
+[contracts/NFTFactory.ts:20](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/NFTFactory.ts#L20)
 
 ___
 
@@ -618,7 +618,7 @@ Gets the parameters required to create an ERC20 token.
 
 #### Defined in
 
-[contracts/NFTFactory.ts:550](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/NFTFactory.ts#L550)
+[contracts/NFTFactory.ts:550](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/NFTFactory.ts#L550)
 
 ___
 
@@ -640,7 +640,7 @@ Retruns the gas price
 
 #### Defined in
 
-[contracts/SmartContract.ts:70](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/SmartContract.ts#L70)
+[contracts/SmartContract.ts:70](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/SmartContract.ts#L70)
 
 ___
 
@@ -662,7 +662,7 @@ Gets the parameters required to create a fixed-rate exchange contract.
 
 #### Defined in
 
-[contracts/NFTFactory.ts:578](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/NFTFactory.ts#L578)
+[contracts/NFTFactory.ts:578](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/NFTFactory.ts#L578)
 
 ___
 
@@ -686,7 +686,7 @@ Number of Template added to this factory
 
 #### Defined in
 
-[contracts/NFTFactory.ts:132](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/NFTFactory.ts#L132)
+[contracts/NFTFactory.ts:132](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/NFTFactory.ts#L132)
 
 ___
 
@@ -704,7 +704,7 @@ Factory Owner address
 
 #### Defined in
 
-[contracts/NFTFactory.ts:104](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/NFTFactory.ts#L104)
+[contracts/NFTFactory.ts:104](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/NFTFactory.ts#L104)
 
 ___
 
@@ -728,7 +728,7 @@ DT Template info
 
 #### Defined in
 
-[contracts/NFTFactory.ts:149](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/NFTFactory.ts#L149)
+[contracts/NFTFactory.ts:149](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/NFTFactory.ts#L149)
 
 ___
 
@@ -760,7 +760,7 @@ current token template count
 
 #### Defined in
 
-[contracts/NFTFactory.ts:249](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/NFTFactory.ts#L249)
+[contracts/NFTFactory.ts:249](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/NFTFactory.ts#L249)
 
 ___
 
@@ -792,7 +792,7 @@ current token template count
 
 #### Defined in
 
-[contracts/NFTFactory.ts:360](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/NFTFactory.ts#L360)
+[contracts/NFTFactory.ts:360](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/NFTFactory.ts#L360)
 
 ___
 
@@ -828,7 +828,7 @@ transaction receipt
 
 #### Defined in
 
-[contracts/NFTFactory.ts:404](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/NFTFactory.ts#L404)
+[contracts/NFTFactory.ts:404](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/NFTFactory.ts#L404)
 
 ___
 
@@ -858,4 +858,4 @@ Converts an amount of units to tokens
 
 #### Defined in
 
-[contracts/SmartContract.ts:58](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/SmartContract.ts#L58)
+[contracts/SmartContract.ts:58](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/SmartContract.ts#L58)

@@ -38,7 +38,7 @@
 
 #### Defined in
 
-[config/ConfigHelper.ts:124](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/config/ConfigHelper.ts#L124)
+[config/ConfigHelper.ts:124](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/config/ConfigHelper.ts#L124)
 
 ___
 
@@ -63,4 +63,4 @@ Config obhjedct
 
 #### Defined in
 
-[config/ConfigHelper.ts:214](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/config/ConfigHelper.ts#L214)
+[config/ConfigHelper.ts:214](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/config/ConfigHelper.ts#L214)

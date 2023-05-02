@@ -20,7 +20,7 @@ Hash of algorithm’s metadata.algorithm.container section.
 
 #### Defined in
 
-[@types/DDO/Service.ts:18](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/DDO/Service.ts#L18)
+[@types/DDO/Service.ts:18](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/DDO/Service.ts#L18)
 
 ___
 
@@ -32,7 +32,7 @@ The DID of the algorithm which is trusted by the publisher.
 
 #### Defined in
 
-[@types/DDO/Service.ts:6](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/DDO/Service.ts#L6)
+[@types/DDO/Service.ts:6](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/DDO/Service.ts#L6)
 
 ___
 
@@ -44,4 +44,4 @@ Hash of algorithm’s files section.
 
 #### Defined in
 
-[@types/DDO/Service.ts:12](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/DDO/Service.ts#L12)
+[@types/DDO/Service.ts:12](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/DDO/Service.ts#L12)

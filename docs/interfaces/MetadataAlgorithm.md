@@ -30,7 +30,7 @@ Object describing the Docker container image.
 
 #### Defined in
 
-[@types/DDO/Metadata.ts:24](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/DDO/Metadata.ts#L24)
+[@types/DDO/Metadata.ts:24](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/DDO/Metadata.ts#L24)
 
 ___
 
@@ -42,7 +42,7 @@ Programming language used to implement the software.
 
 #### Defined in
 
-[@types/DDO/Metadata.ts:6](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/DDO/Metadata.ts#L6)
+[@types/DDO/Metadata.ts:6](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/DDO/Metadata.ts#L6)
 
 ___
 
@@ -54,7 +54,7 @@ Rawcode
 
 #### Defined in
 
-[@types/DDO/Metadata.ts:18](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/DDO/Metadata.ts#L18)
+[@types/DDO/Metadata.ts:18](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/DDO/Metadata.ts#L18)
 
 ___
 
@@ -66,4 +66,4 @@ Version of the software preferably in SemVer notation.
 
 #### Defined in
 
-[@types/DDO/Metadata.ts:12](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/DDO/Metadata.ts#L12)
+[@types/DDO/Metadata.ts:12](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/DDO/Metadata.ts#L12)

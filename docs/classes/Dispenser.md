@@ -62,7 +62,7 @@ Instantiate the smart contract.
 
 #### Defined in
 
-[contracts/SmartContractWithAddress.ts:17](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/SmartContractWithAddress.ts#L17)
+[contracts/SmartContractWithAddress.ts:17](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/SmartContractWithAddress.ts#L17)
 
 ## Properties
 
@@ -76,7 +76,7 @@ Instantiate the smart contract.
 
 #### Defined in
 
-[contracts/SmartContract.ts:14](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/SmartContract.ts#L14)
+[contracts/SmartContract.ts:14](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/SmartContract.ts#L14)
 
 ___
 
@@ -90,7 +90,7 @@ ___
 
 #### Defined in
 
-[contracts/SmartContractWithAddress.ts:6](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/SmartContractWithAddress.ts#L6)
+[contracts/SmartContractWithAddress.ts:6](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/SmartContractWithAddress.ts#L6)
 
 ___
 
@@ -104,7 +104,7 @@ ___
 
 #### Defined in
 
-[contracts/SmartContract.ts:13](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/SmartContract.ts#L13)
+[contracts/SmartContract.ts:13](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/SmartContract.ts#L13)
 
 ___
 
@@ -118,7 +118,7 @@ ___
 
 #### Defined in
 
-[contracts/SmartContractWithAddress.ts:7](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/SmartContractWithAddress.ts#L7)
+[contracts/SmartContractWithAddress.ts:7](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/SmartContractWithAddress.ts#L7)
 
 ___
 
@@ -132,7 +132,7 @@ ___
 
 #### Defined in
 
-[contracts/SmartContract.ts:12](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/SmartContract.ts#L12)
+[contracts/SmartContract.ts:12](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/SmartContract.ts#L12)
 
 ## Methods
 
@@ -165,7 +165,7 @@ TransactionReceipt
 
 #### Defined in
 
-[contracts/Dispenser.ts:86](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/Dispenser.ts#L86)
+[contracts/Dispenser.ts:86](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/Dispenser.ts#L86)
 
 ___
 
@@ -195,7 +195,7 @@ Converts an amount of tokens to units
 
 #### Defined in
 
-[contracts/SmartContract.ts:43](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/SmartContract.ts#L43)
+[contracts/SmartContract.ts:43](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/SmartContract.ts#L43)
 
 ___
 
@@ -230,7 +230,7 @@ transactionId
 
 #### Defined in
 
-[contracts/Dispenser.ts:45](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/Dispenser.ts#L45)
+[contracts/Dispenser.ts:45](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/Dispenser.ts#L45)
 
 ___
 
@@ -261,7 +261,7 @@ TransactionReceipt
 
 #### Defined in
 
-[contracts/Dispenser.ts:118](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/Dispenser.ts#L118)
+[contracts/Dispenser.ts:118](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/Dispenser.ts#L118)
 
 ___
 
@@ -294,7 +294,7 @@ and respect maxTokens/maxBalance requirements
 
 #### Defined in
 
-[contracts/Dispenser.ts:175](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/Dispenser.ts#L175)
+[contracts/Dispenser.ts:175](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/Dispenser.ts#L175)
 
 ___
 
@@ -323,7 +323,7 @@ Returns a contract instance for the given address
 
 #### Defined in
 
-[contracts/SmartContract.ts:80](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/SmartContract.ts#L80)
+[contracts/SmartContract.ts:80](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/SmartContract.ts#L80)
 
 ___
 
@@ -341,7 +341,7 @@ ___
 
 #### Defined in
 
-[contracts/Dispenser.ts:9](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/Dispenser.ts#L9)
+[contracts/Dispenser.ts:9](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/Dispenser.ts#L9)
 
 ___
 
@@ -363,7 +363,7 @@ Retruns the gas price
 
 #### Defined in
 
-[contracts/SmartContract.ts:70](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/SmartContract.ts#L70)
+[contracts/SmartContract.ts:70](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/SmartContract.ts#L70)
 
 ___
 
@@ -388,7 +388,7 @@ Check if tokens can be dispensed
 
 #### Defined in
 
-[contracts/Dispenser.ts:231](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/Dispenser.ts#L231)
+[contracts/Dispenser.ts:231](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/Dispenser.ts#L231)
 
 ___
 
@@ -417,7 +417,7 @@ Withdraw all tokens from the dispenser
 
 #### Defined in
 
-[contracts/Dispenser.ts:206](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/Dispenser.ts#L206)
+[contracts/Dispenser.ts:206](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/Dispenser.ts#L206)
 
 ___
 
@@ -447,7 +447,7 @@ Sets a new allowed swapper.
 
 #### Defined in
 
-[contracts/Dispenser.ts:143](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/Dispenser.ts#L143)
+[contracts/Dispenser.ts:143](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/Dispenser.ts#L143)
 
 ___
 
@@ -469,7 +469,7 @@ Get information about a datatoken dispenser
 
 #### Defined in
 
-[contracts/Dispenser.ts:18](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/Dispenser.ts#L18)
+[contracts/Dispenser.ts:18](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/Dispenser.ts#L18)
 
 ___
 
@@ -499,4 +499,4 @@ Converts an amount of units to tokens
 
 #### Defined in
 
-[contracts/SmartContract.ts:58](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/SmartContract.ts#L58)
+[contracts/SmartContract.ts:58](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/SmartContract.ts#L58)

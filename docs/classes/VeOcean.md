@@ -66,7 +66,7 @@ Instantiate the smart contract.
 
 #### Defined in
 
-[contracts/SmartContractWithAddress.ts:17](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/SmartContractWithAddress.ts#L17)
+[contracts/SmartContractWithAddress.ts:17](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/SmartContractWithAddress.ts#L17)
 
 ## Properties
 
@@ -80,7 +80,7 @@ Instantiate the smart contract.
 
 #### Defined in
 
-[contracts/SmartContract.ts:14](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/SmartContract.ts#L14)
+[contracts/SmartContract.ts:14](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/SmartContract.ts#L14)
 
 ___
 
@@ -94,7 +94,7 @@ ___
 
 #### Defined in
 
-[contracts/SmartContractWithAddress.ts:6](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/SmartContractWithAddress.ts#L6)
+[contracts/SmartContractWithAddress.ts:6](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/SmartContractWithAddress.ts#L6)
 
 ___
 
@@ -108,7 +108,7 @@ ___
 
 #### Defined in
 
-[contracts/SmartContract.ts:13](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/SmartContract.ts#L13)
+[contracts/SmartContract.ts:13](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/SmartContract.ts#L13)
 
 ___
 
@@ -122,7 +122,7 @@ ___
 
 #### Defined in
 
-[contracts/SmartContractWithAddress.ts:7](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/SmartContractWithAddress.ts#L7)
+[contracts/SmartContractWithAddress.ts:7](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/SmartContractWithAddress.ts#L7)
 
 ___
 
@@ -136,7 +136,7 @@ ___
 
 #### Defined in
 
-[contracts/SmartContract.ts:12](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/SmartContract.ts#L12)
+[contracts/SmartContract.ts:12](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/SmartContract.ts#L12)
 
 ## Methods
 
@@ -166,7 +166,7 @@ Converts an amount of tokens to units
 
 #### Defined in
 
-[contracts/SmartContract.ts:43](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/SmartContract.ts#L43)
+[contracts/SmartContract.ts:43](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/SmartContract.ts#L43)
 
 ___
 
@@ -197,7 +197,7 @@ Anyone (even a smart contract) can deposit for someone else, but cannot extend t
 
 #### Defined in
 
-[contracts/ve/VeOcean.ts:52](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/ve/VeOcean.ts#L52)
+[contracts/ve/VeOcean.ts:52](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/ve/VeOcean.ts#L52)
 
 ___
 
@@ -226,7 +226,7 @@ Returns a contract instance for the given address
 
 #### Defined in
 
-[contracts/SmartContract.ts:80](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/SmartContract.ts#L80)
+[contracts/SmartContract.ts:80](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/SmartContract.ts#L80)
 
 ___
 
@@ -244,7 +244,7 @@ ___
 
 #### Defined in
 
-[contracts/ve/VeOcean.ts:9](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/ve/VeOcean.ts#L9)
+[contracts/ve/VeOcean.ts:9](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/ve/VeOcean.ts#L9)
 
 ___
 
@@ -266,7 +266,7 @@ Retruns the gas price
 
 #### Defined in
 
-[contracts/SmartContract.ts:70](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/SmartContract.ts#L70)
+[contracts/SmartContract.ts:70](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/SmartContract.ts#L70)
 
 ___
 
@@ -288,7 +288,7 @@ Get locked balance
 
 #### Defined in
 
-[contracts/ve/VeOcean.ts:156](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/ve/VeOcean.ts#L156)
+[contracts/ve/VeOcean.ts:156](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/ve/VeOcean.ts#L156)
 
 ___
 
@@ -304,7 +304,7 @@ Get token
 
 #### Defined in
 
-[contracts/ve/VeOcean.ts:189](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/ve/VeOcean.ts#L189)
+[contracts/ve/VeOcean.ts:189](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/ve/VeOcean.ts#L189)
 
 ___
 
@@ -326,7 +326,7 @@ Get voting power for address
 
 #### Defined in
 
-[contracts/ve/VeOcean.ts:147](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/ve/VeOcean.ts#L147)
+[contracts/ve/VeOcean.ts:147](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/ve/VeOcean.ts#L147)
 
 ___
 
@@ -355,7 +355,7 @@ Deposit `amount` additional tokens for `userAddress` without modifying the unloc
 
 #### Defined in
 
-[contracts/ve/VeOcean.ts:79](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/ve/VeOcean.ts#L79)
+[contracts/ve/VeOcean.ts:79](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/ve/VeOcean.ts#L79)
 
 ___
 
@@ -384,7 +384,7 @@ Extend the unlock time for `userAddress` to `unlockTime`
 
 #### Defined in
 
-[contracts/ve/VeOcean.ts:104](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/ve/VeOcean.ts#L104)
+[contracts/ve/VeOcean.ts:104](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/ve/VeOcean.ts#L104)
 
 ___
 
@@ -406,7 +406,7 @@ Get untilLock for address
 
 #### Defined in
 
-[contracts/ve/VeOcean.ts:170](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/ve/VeOcean.ts#L170)
+[contracts/ve/VeOcean.ts:170](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/ve/VeOcean.ts#L170)
 
 ___
 
@@ -436,7 +436,7 @@ Deposit `amount` tokens for `userAddress` and lock until `unlockTime`
 
 #### Defined in
 
-[contracts/ve/VeOcean.ts:20](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/ve/VeOcean.ts#L20)
+[contracts/ve/VeOcean.ts:20](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/ve/VeOcean.ts#L20)
 
 ___
 
@@ -452,7 +452,7 @@ Get total supply
 
 #### Defined in
 
-[contracts/ve/VeOcean.ts:178](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/ve/VeOcean.ts#L178)
+[contracts/ve/VeOcean.ts:178](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/ve/VeOcean.ts#L178)
 
 ___
 
@@ -482,7 +482,7 @@ Converts an amount of units to tokens
 
 #### Defined in
 
-[contracts/SmartContract.ts:58](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/SmartContract.ts#L58)
+[contracts/SmartContract.ts:58](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/SmartContract.ts#L58)
 
 ___
 
@@ -510,4 +510,4 @@ Withdraw all tokens for `userAddress`
 
 #### Defined in
 
-[contracts/ve/VeOcean.ts:127](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/ve/VeOcean.ts#L127)
+[contracts/ve/VeOcean.ts:127](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/ve/VeOcean.ts#L127)

@@ -19,7 +19,7 @@
 
 #### Defined in
 
-[@types/Provider.ts:15](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/Provider.ts#L15)
+[@types/Provider.ts:15](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/Provider.ts#L15)
 
 ___
 
@@ -29,7 +29,7 @@ ___
 
 #### Defined in
 
-[@types/Provider.ts:13](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/Provider.ts#L13)
+[@types/Provider.ts:13](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/Provider.ts#L13)
 
 ___
 
@@ -39,7 +39,7 @@ ___
 
 #### Defined in
 
-[@types/Provider.ts:14](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/Provider.ts#L14)
+[@types/Provider.ts:14](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/Provider.ts#L14)
 
 ___
 
@@ -49,4 +49,4 @@ ___
 
 #### Defined in
 
-[@types/Provider.ts:16](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/Provider.ts#L16)
+[@types/Provider.ts:16](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/Provider.ts#L16)

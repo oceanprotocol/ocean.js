@@ -22,7 +22,7 @@ Block of txid
 
 #### Defined in
 
-[@types/DDO/Event.ts:12](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/DDO/Event.ts#L12)
+[@types/DDO/Event.ts:12](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/DDO/Event.ts#L12)
 
 ___
 
@@ -34,7 +34,7 @@ Contract
 
 #### Defined in
 
-[@types/DDO/Event.ts:24](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/DDO/Event.ts#L24)
+[@types/DDO/Event.ts:24](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/DDO/Event.ts#L24)
 
 ___
 
@@ -46,7 +46,7 @@ datetime of tx
 
 #### Defined in
 
-[@types/DDO/Event.ts:30](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/DDO/Event.ts#L30)
+[@types/DDO/Event.ts:30](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/DDO/Event.ts#L30)
 
 ___
 
@@ -58,7 +58,7 @@ Sender of tx
 
 #### Defined in
 
-[@types/DDO/Event.ts:18](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/DDO/Event.ts#L18)
+[@types/DDO/Event.ts:18](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/DDO/Event.ts#L18)
 
 ___
 
@@ -70,4 +70,4 @@ TX id of the last create/update
 
 #### Defined in
 
-[@types/DDO/Event.ts:6](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/DDO/Event.ts#L6)
+[@types/DDO/Event.ts:6](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/DDO/Event.ts#L6)

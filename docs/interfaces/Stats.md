@@ -20,7 +20,7 @@ Total amount of veOCEAN allocated on this asset.
 
 #### Defined in
 
-[@types/Asset.ts:129](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/Asset.ts#L129)
+[@types/Asset.ts:129](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/Asset.ts#L129)
 
 ___
 
@@ -32,7 +32,7 @@ How often an asset was consumed, meaning how often it was either downloaded or u
 
 #### Defined in
 
-[@types/Asset.ts:117](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/Asset.ts#L117)
+[@types/Asset.ts:117](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/Asset.ts#L117)
 
 ___
 
@@ -44,4 +44,4 @@ Contains information about the price of this asset.
 
 #### Defined in
 
-[@types/Asset.ts:123](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/Asset.ts#L123)
+[@types/Asset.ts:123](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/Asset.ts#L123)

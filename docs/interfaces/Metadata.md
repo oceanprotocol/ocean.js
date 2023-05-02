@@ -31,7 +31,7 @@ Stores additional information, this is customizable by publisher
 
 #### Defined in
 
-[@types/DDO/Metadata.ts:137](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/DDO/Metadata.ts#L137)
+[@types/DDO/Metadata.ts:137](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/DDO/Metadata.ts#L137)
 
 ___
 
@@ -43,7 +43,7 @@ Information about asset of type algorithm. Required for algorithm assets.
 
 #### Defined in
 
-[@types/DDO/Metadata.ts:131](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/DDO/Metadata.ts#L131)
+[@types/DDO/Metadata.ts:131](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/DDO/Metadata.ts#L131)
 
 ___
 
@@ -55,7 +55,7 @@ Name of the entity generating this data (e.g. Tfl, Disney Corp, etc.).
 
 #### Defined in
 
-[@types/DDO/Metadata.ts:87](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/DDO/Metadata.ts#L87)
+[@types/DDO/Metadata.ts:87](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/DDO/Metadata.ts#L87)
 
 ___
 
@@ -67,7 +67,7 @@ Array of categories associated to the asset. Note: recommended to use tags inste
 
 #### Defined in
 
-[@types/DDO/Metadata.ts:113](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/DDO/Metadata.ts#L113)
+[@types/DDO/Metadata.ts:113](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/DDO/Metadata.ts#L113)
 
 ___
 
@@ -79,7 +79,7 @@ The language of the content. Use one of the language codes from the IETF BCP 47 
 
 #### Defined in
 
-[@types/DDO/Metadata.ts:125](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/DDO/Metadata.ts#L125)
+[@types/DDO/Metadata.ts:125](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/DDO/Metadata.ts#L125)
 
 ___
 
@@ -91,7 +91,7 @@ The party holding the legal copyright. Empty by default.
 
 #### Defined in
 
-[@types/DDO/Metadata.ts:119](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/DDO/Metadata.ts#L119)
+[@types/DDO/Metadata.ts:119](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/DDO/Metadata.ts#L119)
 
 ___
 
@@ -103,7 +103,7 @@ Contains the date of publishing in ISO Date Time
 
 #### Defined in
 
-[@types/DDO/Metadata.ts:56](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/DDO/Metadata.ts#L56)
+[@types/DDO/Metadata.ts:56](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/DDO/Metadata.ts#L56)
 
 ___
 
@@ -115,7 +115,7 @@ Details of what the resource is.
 
 #### Defined in
 
-[@types/DDO/Metadata.ts:74](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/DDO/Metadata.ts#L74)
+[@types/DDO/Metadata.ts:74](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/DDO/Metadata.ts#L74)
 
 ___
 
@@ -128,7 +128,7 @@ If it’s not specified, the following value will be added: “No License Specif
 
 #### Defined in
 
-[@types/DDO/Metadata.ts:94](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/DDO/Metadata.ts#L94)
+[@types/DDO/Metadata.ts:94](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/DDO/Metadata.ts#L94)
 
 ___
 
@@ -141,7 +141,7 @@ Links may be to either a URL or another asset.
 
 #### Defined in
 
-[@types/DDO/Metadata.ts:101](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/DDO/Metadata.ts#L101)
+[@types/DDO/Metadata.ts:101](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/DDO/Metadata.ts#L101)
 
 ___
 
@@ -153,7 +153,7 @@ Descriptive name or title of the asset.
 
 #### Defined in
 
-[@types/DDO/Metadata.ts:68](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/DDO/Metadata.ts#L68)
+[@types/DDO/Metadata.ts:68](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/DDO/Metadata.ts#L68)
 
 ___
 
@@ -165,7 +165,7 @@ Array of keywords or tags used to describe this content. Empty by default.
 
 #### Defined in
 
-[@types/DDO/Metadata.ts:107](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/DDO/Metadata.ts#L107)
+[@types/DDO/Metadata.ts:107](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/DDO/Metadata.ts#L107)
 
 ___
 
@@ -178,7 +178,7 @@ Each type needs a different subset of metadata attributes.
 
 #### Defined in
 
-[@types/DDO/Metadata.ts:81](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/DDO/Metadata.ts#L81)
+[@types/DDO/Metadata.ts:81](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/DDO/Metadata.ts#L81)
 
 ___
 
@@ -190,4 +190,4 @@ Contains the the date of last update in ISO Date Time
 
 #### Defined in
 
-[@types/DDO/Metadata.ts:62](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/DDO/Metadata.ts#L62)
+[@types/DDO/Metadata.ts:62](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/DDO/Metadata.ts#L62)

@@ -24,7 +24,7 @@
 
 #### Defined in
 
-[@types/NFT.ts:8](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/NFT.ts#L8)
+[@types/NFT.ts:8](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/NFT.ts#L8)
 
 ___
 
@@ -34,7 +34,7 @@ ___
 
 #### Defined in
 
-[@types/NFT.ts:7](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/NFT.ts#L7)
+[@types/NFT.ts:7](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/NFT.ts#L7)
 
 ___
 
@@ -44,7 +44,7 @@ ___
 
 #### Defined in
 
-[@types/NFT.ts:6](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/NFT.ts#L6)
+[@types/NFT.ts:6](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/NFT.ts#L6)
 
 ___
 
@@ -54,7 +54,7 @@ ___
 
 #### Defined in
 
-[@types/NFT.ts:5](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/NFT.ts#L5)
+[@types/NFT.ts:5](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/NFT.ts#L5)
 
 ___
 
@@ -64,7 +64,7 @@ ___
 
 #### Defined in
 
-[@types/NFT.ts:9](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/NFT.ts#L9)
+[@types/NFT.ts:9](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/NFT.ts#L9)
 
 ___
 
@@ -74,7 +74,7 @@ ___
 
 #### Defined in
 
-[@types/NFT.ts:4](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/NFT.ts#L4)
+[@types/NFT.ts:4](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/NFT.ts#L4)
 
 ___
 
@@ -84,7 +84,7 @@ ___
 
 #### Defined in
 
-[@types/NFT.ts:12](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/NFT.ts#L12)
+[@types/NFT.ts:12](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/NFT.ts#L12)
 
 ___
 
@@ -94,7 +94,7 @@ ___
 
 #### Defined in
 
-[@types/NFT.ts:10](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/NFT.ts#L10)
+[@types/NFT.ts:10](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/NFT.ts#L10)
 
 ___
 
@@ -104,4 +104,4 @@ ___
 
 #### Defined in
 
-[@types/NFT.ts:11](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/NFT.ts#L11)
+[@types/NFT.ts:11](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/NFT.ts#L11)

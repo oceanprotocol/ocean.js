@@ -19,7 +19,7 @@ hash
 
 #### Defined in
 
-[@types/File.ts:78](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/File.ts#L78)
+[@types/File.ts:78](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/File.ts#L78)
 
 ___
 
@@ -29,4 +29,4 @@ ___
 
 #### Defined in
 
-[@types/File.ts:72](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/File.ts#L72)
+[@types/File.ts:72](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/File.ts#L72)

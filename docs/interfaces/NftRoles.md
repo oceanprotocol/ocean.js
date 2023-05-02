@@ -19,7 +19,7 @@
 
 #### Defined in
 
-[@types/NFT.ts:17](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/NFT.ts#L17)
+[@types/NFT.ts:17](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/NFT.ts#L17)
 
 ___
 
@@ -29,7 +29,7 @@ ___
 
 #### Defined in
 
-[@types/NFT.ts:16](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/NFT.ts#L16)
+[@types/NFT.ts:16](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/NFT.ts#L16)
 
 ___
 
@@ -39,7 +39,7 @@ ___
 
 #### Defined in
 
-[@types/NFT.ts:19](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/NFT.ts#L19)
+[@types/NFT.ts:19](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/NFT.ts#L19)
 
 ___
 
@@ -49,4 +49,4 @@ ___
 
 #### Defined in
 
-[@types/NFT.ts:18](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/NFT.ts#L18)
+[@types/NFT.ts:18](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/NFT.ts#L18)

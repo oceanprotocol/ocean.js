@@ -17,7 +17,7 @@
 
 #### Defined in
 
-[@types/Datatoken.ts:28](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/Datatoken.ts#L28)
+[@types/Datatoken.ts:28](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/Datatoken.ts#L28)
 
 ___
 
@@ -27,4 +27,4 @@ ___
 
 #### Defined in
 
-[@types/Datatoken.ts:29](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/Datatoken.ts#L29)
+[@types/Datatoken.ts:29](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/Datatoken.ts#L29)

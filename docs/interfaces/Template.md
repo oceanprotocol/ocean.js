@@ -17,7 +17,7 @@
 
 #### Defined in
 
-[@types/NFTFactory.ts:5](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/NFTFactory.ts#L5)
+[@types/NFTFactory.ts:5](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/NFTFactory.ts#L5)
 
 ___
 
@@ -27,4 +27,4 @@ ___
 
 #### Defined in
 
-[@types/NFTFactory.ts:4](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/NFTFactory.ts#L4)
+[@types/NFTFactory.ts:4](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/NFTFactory.ts#L4)

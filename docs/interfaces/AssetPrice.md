@@ -20,7 +20,7 @@ The address of the token that the price needs to be paid in.
 
 #### Defined in
 
-[@types/Asset.ts:110](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/Asset.ts#L110)
+[@types/Asset.ts:110](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/Asset.ts#L110)
 
 ___
 
@@ -32,7 +32,7 @@ The symbol that the price of the asset is expressed in.
 
 #### Defined in
 
-[@types/Asset.ts:104](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/Asset.ts#L104)
+[@types/Asset.ts:104](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/Asset.ts#L104)
 
 ___
 
@@ -44,4 +44,4 @@ The price of the asset expressed as a number. If 0 then the price is FREE.
 
 #### Defined in
 
-[@types/Asset.ts:98](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/Asset.ts#L98)
+[@types/Asset.ts:98](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/Asset.ts#L98)

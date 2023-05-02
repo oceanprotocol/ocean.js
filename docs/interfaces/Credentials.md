@@ -17,7 +17,7 @@
 
 #### Defined in
 
-[@types/DDO/Credentials.ts:7](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/DDO/Credentials.ts#L7)
+[@types/DDO/Credentials.ts:7](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/DDO/Credentials.ts#L7)
 
 ___
 
@@ -27,4 +27,4 @@ ___
 
 #### Defined in
 
-[@types/DDO/Credentials.ts:8](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/DDO/Credentials.ts#L8)
+[@types/DDO/Credentials.ts:8](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/DDO/Credentials.ts#L8)

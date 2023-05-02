@@ -29,7 +29,7 @@
 
 #### Defined in
 
-[@types/FixedPrice.ts:32](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/FixedPrice.ts#L32)
+[@types/FixedPrice.ts:32](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/FixedPrice.ts#L32)
 
 ___
 
@@ -39,7 +39,7 @@ ___
 
 #### Defined in
 
-[@types/FixedPrice.ts:44](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/FixedPrice.ts#L44)
+[@types/FixedPrice.ts:44](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/FixedPrice.ts#L44)
 
 ___
 
@@ -49,7 +49,7 @@ ___
 
 #### Defined in
 
-[@types/FixedPrice.ts:35](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/FixedPrice.ts#L35)
+[@types/FixedPrice.ts:35](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/FixedPrice.ts#L35)
 
 ___
 
@@ -59,7 +59,7 @@ ___
 
 #### Defined in
 
-[@types/FixedPrice.ts:40](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/FixedPrice.ts#L40)
+[@types/FixedPrice.ts:40](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/FixedPrice.ts#L40)
 
 ___
 
@@ -69,7 +69,7 @@ ___
 
 #### Defined in
 
-[@types/FixedPrice.ts:38](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/FixedPrice.ts#L38)
+[@types/FixedPrice.ts:38](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/FixedPrice.ts#L38)
 
 ___
 
@@ -79,7 +79,7 @@ ___
 
 #### Defined in
 
-[@types/FixedPrice.ts:42](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/FixedPrice.ts#L42)
+[@types/FixedPrice.ts:42](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/FixedPrice.ts#L42)
 
 ___
 
@@ -89,7 +89,7 @@ ___
 
 #### Defined in
 
-[@types/FixedPrice.ts:34](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/FixedPrice.ts#L34)
+[@types/FixedPrice.ts:34](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/FixedPrice.ts#L34)
 
 ___
 
@@ -99,7 +99,7 @@ ___
 
 #### Defined in
 
-[@types/FixedPrice.ts:39](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/FixedPrice.ts#L39)
+[@types/FixedPrice.ts:39](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/FixedPrice.ts#L39)
 
 ___
 
@@ -109,7 +109,7 @@ ___
 
 #### Defined in
 
-[@types/FixedPrice.ts:37](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/FixedPrice.ts#L37)
+[@types/FixedPrice.ts:37](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/FixedPrice.ts#L37)
 
 ___
 
@@ -119,7 +119,7 @@ ___
 
 #### Defined in
 
-[@types/FixedPrice.ts:41](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/FixedPrice.ts#L41)
+[@types/FixedPrice.ts:41](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/FixedPrice.ts#L41)
 
 ___
 
@@ -129,7 +129,7 @@ ___
 
 #### Defined in
 
-[@types/FixedPrice.ts:45](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/FixedPrice.ts#L45)
+[@types/FixedPrice.ts:45](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/FixedPrice.ts#L45)
 
 ___
 
@@ -139,7 +139,7 @@ ___
 
 #### Defined in
 
-[@types/FixedPrice.ts:33](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/FixedPrice.ts#L33)
+[@types/FixedPrice.ts:33](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/FixedPrice.ts#L33)
 
 ___
 
@@ -149,7 +149,7 @@ ___
 
 #### Defined in
 
-[@types/FixedPrice.ts:36](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/FixedPrice.ts#L36)
+[@types/FixedPrice.ts:36](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/FixedPrice.ts#L36)
 
 ___
 
@@ -159,4 +159,4 @@ ___
 
 #### Defined in
 
-[@types/FixedPrice.ts:43](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/FixedPrice.ts#L43)
+[@types/FixedPrice.ts:43](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/FixedPrice.ts#L43)

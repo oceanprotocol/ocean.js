@@ -36,7 +36,7 @@ Instantiate Aquarius
 
 #### Defined in
 
-[services/Aquarius.ts:21](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/services/Aquarius.ts#L21)
+[services/Aquarius.ts:21](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/services/Aquarius.ts#L21)
 
 ## Properties
 
@@ -46,7 +46,7 @@ Instantiate Aquarius
 
 #### Defined in
 
-[services/Aquarius.ts:15](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/services/Aquarius.ts#L15)
+[services/Aquarius.ts:15](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/services/Aquarius.ts#L15)
 
 ## Methods
 
@@ -69,7 +69,7 @@ Search over the DDOs using a query.
 
 #### Defined in
 
-[services/Aquarius.ts:135](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/services/Aquarius.ts#L135)
+[services/Aquarius.ts:135](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/services/Aquarius.ts#L135)
 
 ___
 
@@ -92,7 +92,7 @@ Search over the DDOs using a query.
 
 #### Defined in
 
-[services/Aquarius.ts:166](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/services/Aquarius.ts#L166)
+[services/Aquarius.ts:166](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/services/Aquarius.ts#L166)
 
 ___
 
@@ -117,7 +117,7 @@ Asset
 
 #### Defined in
 
-[services/Aquarius.ts:30](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/services/Aquarius.ts#L30)
+[services/Aquarius.ts:30](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/services/Aquarius.ts#L30)
 
 ___
 
@@ -142,7 +142,7 @@ Validate DDO content
 
 #### Defined in
 
-[services/Aquarius.ts:94](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/services/Aquarius.ts#L94)
+[services/Aquarius.ts:94](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/services/Aquarius.ts#L94)
 
 ___
 
@@ -168,4 +168,4 @@ DDO of the asset.
 
 #### Defined in
 
-[services/Aquarius.ts:58](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/services/Aquarius.ts#L58)
+[services/Aquarius.ts:58](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/services/Aquarius.ts#L58)

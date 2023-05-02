@@ -43,7 +43,7 @@ Contexts used for validation.
 
 #### Defined in
 
-[@types/DDO/DDO.ts:12](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/DDO/DDO.ts#L12)
+[@types/DDO/DDO.ts:12](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/DDO/DDO.ts#L12)
 
 ___
 
@@ -59,7 +59,7 @@ ChainId of the network the DDO was published to.
 
 #### Defined in
 
-[@types/DDO/DDO.ts:38](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/DDO/DDO.ts#L38)
+[@types/DDO/DDO.ts:38](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/DDO/DDO.ts#L38)
 
 ___
 
@@ -76,7 +76,7 @@ in addition to the services definition.
 
 #### Defined in
 
-[@types/DDO/DDO.ts:57](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/DDO/DDO.ts#L57)
+[@types/DDO/DDO.ts:57](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/DDO/DDO.ts#L57)
 
 ___
 
@@ -88,7 +88,7 @@ Contains information about the ERC20 Datatokens attached to asset services.
 
 #### Defined in
 
-[@types/Asset.ts:151](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/Asset.ts#L151)
+[@types/Asset.ts:151](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/Asset.ts#L151)
 
 ___
 
@@ -104,7 +104,7 @@ Contains information about the last transaction that created or updated the DDO.
 
 #### Defined in
 
-[@types/Asset.ts:157](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/Asset.ts#L157)
+[@types/Asset.ts:157](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/Asset.ts#L157)
 
 ___
 
@@ -121,7 +121,7 @@ Computed as sha256(address of NFT contract + chainId)
 
 #### Defined in
 
-[@types/DDO/DDO.ts:19](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/DDO/DDO.ts#L19)
+[@types/DDO/DDO.ts:19](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/DDO/DDO.ts#L19)
 
 ___
 
@@ -137,7 +137,7 @@ Stores an object describing the asset.
 
 #### Defined in
 
-[@types/DDO/DDO.ts:44](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/DDO/DDO.ts#L44)
+[@types/DDO/DDO.ts:44](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/DDO/DDO.ts#L44)
 
 ___
 
@@ -149,7 +149,7 @@ Contains information about the ERC721 NFT contract which represents the intellec
 
 #### Defined in
 
-[@types/Asset.ts:145](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/Asset.ts#L145)
+[@types/Asset.ts:145](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/Asset.ts#L145)
 
 ___
 
@@ -165,7 +165,7 @@ NFT contract address
 
 #### Defined in
 
-[@types/DDO/DDO.ts:32](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/DDO/DDO.ts#L32)
+[@types/DDO/DDO.ts:32](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/DDO/DDO.ts#L32)
 
 ___
 
@@ -179,7 +179,7 @@ Marketplace interfaces are encouraged to prevent certain user actions like downl
 
 #### Defined in
 
-[@types/Asset.ts:171](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/Asset.ts#L171)
+[@types/Asset.ts:171](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/Asset.ts#L171)
 
 ___
 
@@ -195,7 +195,7 @@ Stores an array of services defining access to the asset.
 
 #### Defined in
 
-[@types/DDO/DDO.ts:50](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/DDO/DDO.ts#L50)
+[@types/DDO/DDO.ts:50](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/DDO/DDO.ts#L50)
 
 ___
 
@@ -207,7 +207,7 @@ The stats section contains different statistics fields. This section is added by
 
 #### Defined in
 
-[@types/Asset.ts:163](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/Asset.ts#L163)
+[@types/Asset.ts:163](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/Asset.ts#L163)
 
 ___
 
@@ -224,4 +224,4 @@ referring to the DDO spec version
 
 #### Defined in
 
-[@types/DDO/DDO.ts:26](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/DDO/DDO.ts#L26)
+[@types/DDO/DDO.ts:26](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/DDO/DDO.ts#L26)

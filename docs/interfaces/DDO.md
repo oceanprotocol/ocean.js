@@ -35,7 +35,7 @@ Contexts used for validation.
 
 #### Defined in
 
-[@types/DDO/DDO.ts:12](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/DDO/DDO.ts#L12)
+[@types/DDO/DDO.ts:12](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/DDO/DDO.ts#L12)
 
 ___
 
@@ -47,7 +47,7 @@ ChainId of the network the DDO was published to.
 
 #### Defined in
 
-[@types/DDO/DDO.ts:38](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/DDO/DDO.ts#L38)
+[@types/DDO/DDO.ts:38](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/DDO/DDO.ts#L38)
 
 ___
 
@@ -60,7 +60,7 @@ in addition to the services definition.
 
 #### Defined in
 
-[@types/DDO/DDO.ts:57](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/DDO/DDO.ts#L57)
+[@types/DDO/DDO.ts:57](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/DDO/DDO.ts#L57)
 
 ___
 
@@ -72,7 +72,7 @@ Describes the event of last metadata event
 
 #### Defined in
 
-[@types/DDO/DDO.ts:63](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/DDO/DDO.ts#L63)
+[@types/DDO/DDO.ts:63](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/DDO/DDO.ts#L63)
 
 ___
 
@@ -85,7 +85,7 @@ Computed as sha256(address of NFT contract + chainId)
 
 #### Defined in
 
-[@types/DDO/DDO.ts:19](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/DDO/DDO.ts#L19)
+[@types/DDO/DDO.ts:19](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/DDO/DDO.ts#L19)
 
 ___
 
@@ -97,7 +97,7 @@ Stores an object describing the asset.
 
 #### Defined in
 
-[@types/DDO/DDO.ts:44](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/DDO/DDO.ts#L44)
+[@types/DDO/DDO.ts:44](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/DDO/DDO.ts#L44)
 
 ___
 
@@ -109,7 +109,7 @@ NFT contract address
 
 #### Defined in
 
-[@types/DDO/DDO.ts:32](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/DDO/DDO.ts#L32)
+[@types/DDO/DDO.ts:32](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/DDO/DDO.ts#L32)
 
 ___
 
@@ -121,7 +121,7 @@ Stores an array of services defining access to the asset.
 
 #### Defined in
 
-[@types/DDO/DDO.ts:50](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/DDO/DDO.ts#L50)
+[@types/DDO/DDO.ts:50](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/DDO/DDO.ts#L50)
 
 ___
 
@@ -134,4 +134,4 @@ referring to the DDO spec version
 
 #### Defined in
 
-[@types/DDO/DDO.ts:26](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/DDO/DDO.ts#L26)
+[@types/DDO/DDO.ts:26](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/DDO/DDO.ts#L26)

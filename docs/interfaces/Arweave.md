@@ -19,7 +19,7 @@ transactionId
 
 #### Defined in
 
-[@types/File.ts:68](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/File.ts#L68)
+[@types/File.ts:68](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/File.ts#L68)
 
 ___
 
@@ -29,4 +29,4 @@ ___
 
 #### Defined in
 
-[@types/File.ts:62](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/File.ts#L62)
+[@types/File.ts:62](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/File.ts#L62)

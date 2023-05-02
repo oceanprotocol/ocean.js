@@ -21,7 +21,7 @@ Contract address of the deployed Datatoken contract.
 
 #### Defined in
 
-[@types/Asset.ts:72](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/Asset.ts#L72)
+[@types/Asset.ts:72](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/Asset.ts#L72)
 
 ___
 
@@ -33,7 +33,7 @@ Name of NFT set in contract.
 
 #### Defined in
 
-[@types/Asset.ts:78](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/Asset.ts#L78)
+[@types/Asset.ts:78](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/Asset.ts#L78)
 
 ___
 
@@ -45,7 +45,7 @@ ID of the service the datatoken is attached to.
 
 #### Defined in
 
-[@types/Asset.ts:90](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/Asset.ts#L90)
+[@types/Asset.ts:90](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/Asset.ts#L90)
 
 ___
 
@@ -57,4 +57,4 @@ Symbol of NFT set in contract.
 
 #### Defined in
 
-[@types/Asset.ts:84](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/Asset.ts#L84)
+[@types/Asset.ts:84](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/Asset.ts#L84)

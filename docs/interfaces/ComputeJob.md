@@ -27,7 +27,7 @@
 
 #### Defined in
 
-[@types/Compute.ts:45](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/Compute.ts#L45)
+[@types/Compute.ts:45](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/Compute.ts#L45)
 
 ___
 
@@ -37,7 +37,7 @@ ___
 
 #### Defined in
 
-[@types/Compute.ts:44](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/Compute.ts#L44)
+[@types/Compute.ts:44](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/Compute.ts#L44)
 
 ___
 
@@ -47,7 +47,7 @@ ___
 
 #### Defined in
 
-[@types/Compute.ts:38](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/Compute.ts#L38)
+[@types/Compute.ts:38](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/Compute.ts#L38)
 
 ___
 
@@ -57,7 +57,7 @@ ___
 
 #### Defined in
 
-[@types/Compute.ts:39](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/Compute.ts#L39)
+[@types/Compute.ts:39](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/Compute.ts#L39)
 
 ___
 
@@ -67,7 +67,7 @@ ___
 
 #### Defined in
 
-[@types/Compute.ts:36](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/Compute.ts#L36)
+[@types/Compute.ts:36](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/Compute.ts#L36)
 
 ___
 
@@ -77,7 +77,7 @@ ___
 
 #### Defined in
 
-[@types/Compute.ts:46](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/Compute.ts#L46)
+[@types/Compute.ts:46](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/Compute.ts#L46)
 
 ___
 
@@ -87,7 +87,7 @@ ___
 
 #### Defined in
 
-[@types/Compute.ts:43](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/Compute.ts#L43)
+[@types/Compute.ts:43](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/Compute.ts#L43)
 
 ___
 
@@ -97,7 +97,7 @@ ___
 
 #### Defined in
 
-[@types/Compute.ts:37](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/Compute.ts#L37)
+[@types/Compute.ts:37](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/Compute.ts#L37)
 
 ___
 
@@ -107,7 +107,7 @@ ___
 
 #### Defined in
 
-[@types/Compute.ts:35](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/Compute.ts#L35)
+[@types/Compute.ts:35](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/Compute.ts#L35)
 
 ___
 
@@ -117,7 +117,7 @@ ___
 
 #### Defined in
 
-[@types/Compute.ts:42](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/Compute.ts#L42)
+[@types/Compute.ts:42](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/Compute.ts#L42)
 
 ___
 
@@ -127,7 +127,7 @@ ___
 
 #### Defined in
 
-[@types/Compute.ts:40](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/Compute.ts#L40)
+[@types/Compute.ts:40](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/Compute.ts#L40)
 
 ___
 
@@ -137,4 +137,4 @@ ___
 
 #### Defined in
 
-[@types/Compute.ts:41](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/Compute.ts#L41)
+[@types/Compute.ts:41](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/Compute.ts#L41)

@@ -28,7 +28,7 @@ expressed in Wei
 
 #### Defined in
 
-[@types/Router.ts:31](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/Router.ts#L31)
+[@types/Router.ts:31](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/Router.ts#L31)
 
 ___
 
@@ -41,7 +41,7 @@ expressed in Wei
 
 #### Defined in
 
-[@types/Router.ts:42](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/Router.ts#L42)
+[@types/Router.ts:42](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/Router.ts#L42)
 
 ___
 
@@ -53,7 +53,7 @@ used for FixedRate or Dispenser
 
 #### Defined in
 
-[@types/Router.ts:6](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/Router.ts#L6)
+[@types/Router.ts:6](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/Router.ts#L6)
 
 ___
 
@@ -65,7 +65,7 @@ market fee address to receive fees
 
 #### Defined in
 
-[@types/Router.ts:58](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/Router.ts#L58)
+[@types/Router.ts:58](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/Router.ts#L58)
 
 ___
 
@@ -78,7 +78,7 @@ expressed in Wei
 
 #### Defined in
 
-[@types/Router.ts:48](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/Router.ts#L48)
+[@types/Router.ts:48](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/Router.ts#L48)
 
 ___
 
@@ -94,7 +94,7 @@ operation:
 
 #### Defined in
 
-[@types/Router.ts:20](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/Router.ts#L20)
+[@types/Router.ts:20](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/Router.ts#L20)
 
 ___
 
@@ -106,7 +106,7 @@ pool Address
 
 #### Defined in
 
-[@types/Router.ts:11](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/Router.ts#L11)
+[@types/Router.ts:11](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/Router.ts#L11)
 
 ___
 
@@ -118,7 +118,7 @@ swap fee amount
 
 #### Defined in
 
-[@types/Router.ts:53](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/Router.ts#L53)
+[@types/Router.ts:53](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/Router.ts#L53)
 
 ___
 
@@ -130,7 +130,7 @@ token in address
 
 #### Defined in
 
-[@types/Router.ts:25](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/Router.ts#L25)
+[@types/Router.ts:25](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/Router.ts#L25)
 
 ___
 
@@ -142,4 +142,4 @@ token out address
 
 #### Defined in
 
-[@types/Router.ts:36](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/Router.ts#L36)
+[@types/Router.ts:36](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/Router.ts#L36)

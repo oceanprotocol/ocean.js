@@ -17,7 +17,7 @@
 
 #### Defined in
 
-[@types/DownloadResponse.ts:2](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/DownloadResponse.ts#L2)
+[@types/DownloadResponse.ts:2](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/DownloadResponse.ts#L2)
 
 ___
 
@@ -27,4 +27,4 @@ ___
 
 #### Defined in
 
-[@types/DownloadResponse.ts:3](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/DownloadResponse.ts#L3)
+[@types/DownloadResponse.ts:3](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/DownloadResponse.ts#L3)

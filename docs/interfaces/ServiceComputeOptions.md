@@ -21,7 +21,7 @@ If true, the algorithm job will have network access.
 
 #### Defined in
 
-[@types/DDO/Service.ts:34](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/DDO/Service.ts#L34)
+[@types/DDO/Service.ts:34](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/DDO/Service.ts#L34)
 
 ___
 
@@ -35,7 +35,7 @@ Should be false by default in all implementations.
 
 #### Defined in
 
-[@types/DDO/Service.ts:28](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/DDO/Service.ts#L28)
+[@types/DDO/Service.ts:28](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/DDO/Service.ts#L28)
 
 ___
 
@@ -48,7 +48,7 @@ Otherwise, only published algorithms by some publishers are allowed
 
 #### Defined in
 
-[@types/DDO/Service.ts:41](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/DDO/Service.ts#L41)
+[@types/DDO/Service.ts:41](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/DDO/Service.ts#L41)
 
 ___
 
@@ -60,4 +60,4 @@ If empty, then any published algorithm is allowed. (see below)
 
 #### Defined in
 
-[@types/DDO/Service.ts:47](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/DDO/Service.ts#L47)
+[@types/DDO/Service.ts:47](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/DDO/Service.ts#L47)

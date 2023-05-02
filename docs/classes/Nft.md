@@ -74,7 +74,7 @@ Instantiate the smart contract.
 
 #### Defined in
 
-[contracts/SmartContract.ts:25](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/SmartContract.ts#L25)
+[contracts/SmartContract.ts:25](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/SmartContract.ts#L25)
 
 ## Properties
 
@@ -88,7 +88,7 @@ Instantiate the smart contract.
 
 #### Defined in
 
-[contracts/SmartContract.ts:14](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/SmartContract.ts#L14)
+[contracts/SmartContract.ts:14](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/SmartContract.ts#L14)
 
 ___
 
@@ -102,7 +102,7 @@ ___
 
 #### Defined in
 
-[contracts/SmartContract.ts:13](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/SmartContract.ts#L13)
+[contracts/SmartContract.ts:13](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/SmartContract.ts#L13)
 
 ___
 
@@ -116,7 +116,7 @@ ___
 
 #### Defined in
 
-[contracts/SmartContract.ts:12](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/SmartContract.ts#L12)
+[contracts/SmartContract.ts:12](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/SmartContract.ts#L12)
 
 ## Methods
 
@@ -149,7 +149,7 @@ trxReceipt
 
 #### Defined in
 
-[contracts/NFT.ts:169](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/NFT.ts#L169)
+[contracts/NFT.ts:169](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/NFT.ts#L169)
 
 ___
 
@@ -182,7 +182,7 @@ trxReceipt
 
 #### Defined in
 
-[contracts/NFT.ts:101](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/NFT.ts#L101)
+[contracts/NFT.ts:101](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/NFT.ts#L101)
 
 ___
 
@@ -215,7 +215,7 @@ trxReceipt
 
 #### Defined in
 
-[contracts/NFT.ts:243](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/NFT.ts#L243)
+[contracts/NFT.ts:243](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/NFT.ts#L243)
 
 ___
 
@@ -248,7 +248,7 @@ trxReceipt
 
 #### Defined in
 
-[contracts/NFT.ts:313](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/NFT.ts#L313)
+[contracts/NFT.ts:313](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/NFT.ts#L313)
 
 ___
 
@@ -278,7 +278,7 @@ Converts an amount of tokens to units
 
 #### Defined in
 
-[contracts/SmartContract.ts:43](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/SmartContract.ts#L43)
+[contracts/SmartContract.ts:43](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/SmartContract.ts#L43)
 
 ___
 
@@ -313,7 +313,7 @@ trxReceipt
 
 #### Defined in
 
-[contracts/NFT.ts:387](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/NFT.ts#L387)
+[contracts/NFT.ts:387](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/NFT.ts#L387)
 
 ___
 
@@ -354,7 +354,7 @@ ERC20 Datatoken address
 
 #### Defined in
 
-[contracts/NFT.ts:34](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/NFT.ts#L34)
+[contracts/NFT.ts:34](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/NFT.ts#L34)
 
 ___
 
@@ -383,7 +383,7 @@ Returns a contract instance for the given address
 
 #### Defined in
 
-[contracts/SmartContract.ts:80](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/SmartContract.ts#L80)
+[contracts/SmartContract.ts:80](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/SmartContract.ts#L80)
 
 ___
 
@@ -408,7 +408,7 @@ The data stored at the key
 
 #### Defined in
 
-[contracts/NFT.ts:753](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/NFT.ts#L753)
+[contracts/NFT.ts:753](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/NFT.ts#L753)
 
 ___
 
@@ -426,7 +426,7 @@ ___
 
 #### Defined in
 
-[contracts/NFT.ts:14](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/NFT.ts#L14)
+[contracts/NFT.ts:14](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/NFT.ts#L14)
 
 ___
 
@@ -448,7 +448,7 @@ Retruns the gas price
 
 #### Defined in
 
-[contracts/SmartContract.ts:70](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/SmartContract.ts#L70)
+[contracts/SmartContract.ts:70](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/SmartContract.ts#L70)
 
 ___
 
@@ -470,7 +470,7 @@ Returns Metadata details for an NFT
 
 #### Defined in
 
-[contracts/NFT.ts:687](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/NFT.ts#L687)
+[contracts/NFT.ts:687](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/NFT.ts#L687)
 
 ___
 
@@ -494,7 +494,7 @@ string
 
 #### Defined in
 
-[contracts/NFT.ts:664](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/NFT.ts#L664)
+[contracts/NFT.ts:664](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/NFT.ts#L664)
 
 ___
 
@@ -517,7 +517,7 @@ Gets NFT Permissions for a specified user
 
 #### Defined in
 
-[contracts/NFT.ts:676](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/NFT.ts#L676)
+[contracts/NFT.ts:676](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/NFT.ts#L676)
 
 ___
 
@@ -540,7 +540,7 @@ Gets the token URI of an NFT.
 
 #### Defined in
 
-[contracts/NFT.ts:766](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/NFT.ts#L766)
+[contracts/NFT.ts:766](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/NFT.ts#L766)
 
 ___
 
@@ -563,7 +563,7 @@ Checks if user has DatatokenDeployer role
 
 #### Defined in
 
-[contracts/NFT.ts:698](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/NFT.ts#L698)
+[contracts/NFT.ts:698](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/NFT.ts#L698)
 
 ___
 
@@ -596,7 +596,7 @@ trxReceipt
 
 #### Defined in
 
-[contracts/NFT.ts:204](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/NFT.ts#L204)
+[contracts/NFT.ts:204](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/NFT.ts#L204)
 
 ___
 
@@ -629,7 +629,7 @@ trxReceipt
 
 #### Defined in
 
-[contracts/NFT.ts:135](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/NFT.ts#L135)
+[contracts/NFT.ts:135](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/NFT.ts#L135)
 
 ___
 
@@ -662,7 +662,7 @@ trxReceipt
 
 #### Defined in
 
-[contracts/NFT.ts:276](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/NFT.ts#L276)
+[contracts/NFT.ts:276](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/NFT.ts#L276)
 
 ___
 
@@ -695,7 +695,7 @@ trxReceipt
 
 #### Defined in
 
-[contracts/NFT.ts:347](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/NFT.ts#L347)
+[contracts/NFT.ts:347](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/NFT.ts#L347)
 
 ___
 
@@ -730,7 +730,7 @@ trxReceipt
 
 #### Defined in
 
-[contracts/NFT.ts:466](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/NFT.ts#L466)
+[contracts/NFT.ts:466](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/NFT.ts#L466)
 
 ___
 
@@ -765,7 +765,7 @@ transactionId
 
 #### Defined in
 
-[contracts/NFT.ts:717](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/NFT.ts#L717)
+[contracts/NFT.ts:717](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/NFT.ts#L717)
 
 ___
 
@@ -804,7 +804,7 @@ trxReceipt
 
 #### Defined in
 
-[contracts/NFT.ts:515](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/NFT.ts#L515)
+[contracts/NFT.ts:515](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/NFT.ts#L515)
 
 ___
 
@@ -837,7 +837,7 @@ trxReceipt
 
 #### Defined in
 
-[contracts/NFT.ts:568](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/NFT.ts#L568)
+[contracts/NFT.ts:568](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/NFT.ts#L568)
 
 ___
 
@@ -870,7 +870,7 @@ trxReceipt
 
 #### Defined in
 
-[contracts/NFT.ts:606](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/NFT.ts#L606)
+[contracts/NFT.ts:606](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/NFT.ts#L606)
 
 ___
 
@@ -902,7 +902,7 @@ transaction receipt
 
 #### Defined in
 
-[contracts/NFT.ts:638](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/NFT.ts#L638)
+[contracts/NFT.ts:638](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/NFT.ts#L638)
 
 ___
 
@@ -937,7 +937,7 @@ trxReceipt
 
 #### Defined in
 
-[contracts/NFT.ts:421](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/NFT.ts#L421)
+[contracts/NFT.ts:421](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/NFT.ts#L421)
 
 ___
 
@@ -967,4 +967,4 @@ Converts an amount of units to tokens
 
 #### Defined in
 
-[contracts/SmartContract.ts:58](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/SmartContract.ts#L58)
+[contracts/SmartContract.ts:58](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/SmartContract.ts#L58)

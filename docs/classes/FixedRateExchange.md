@@ -83,7 +83,7 @@ Instantiate the smart contract.
 
 #### Defined in
 
-[contracts/SmartContractWithAddress.ts:17](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/SmartContractWithAddress.ts#L17)
+[contracts/SmartContractWithAddress.ts:17](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/SmartContractWithAddress.ts#L17)
 
 ## Properties
 
@@ -97,7 +97,7 @@ Instantiate the smart contract.
 
 #### Defined in
 
-[contracts/SmartContract.ts:14](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/SmartContract.ts#L14)
+[contracts/SmartContract.ts:14](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/SmartContract.ts#L14)
 
 ___
 
@@ -111,7 +111,7 @@ ___
 
 #### Defined in
 
-[contracts/SmartContractWithAddress.ts:6](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/SmartContractWithAddress.ts#L6)
+[contracts/SmartContractWithAddress.ts:6](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/SmartContractWithAddress.ts#L6)
 
 ___
 
@@ -125,7 +125,7 @@ ___
 
 #### Defined in
 
-[contracts/SmartContract.ts:13](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/SmartContract.ts#L13)
+[contracts/SmartContract.ts:13](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/SmartContract.ts#L13)
 
 ___
 
@@ -139,7 +139,7 @@ ___
 
 #### Defined in
 
-[contracts/SmartContractWithAddress.ts:7](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/SmartContractWithAddress.ts#L7)
+[contracts/SmartContractWithAddress.ts:7](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/SmartContractWithAddress.ts#L7)
 
 ___
 
@@ -153,7 +153,7 @@ ___
 
 #### Defined in
 
-[contracts/SmartContract.ts:12](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/SmartContract.ts#L12)
+[contracts/SmartContract.ts:12](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/SmartContract.ts#L12)
 
 ## Methods
 
@@ -184,7 +184,7 @@ transaction receipt
 
 #### Defined in
 
-[contracts/FixedRateExchange.ts:210](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/FixedRateExchange.ts#L210)
+[contracts/FixedRateExchange.ts:210](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/FixedRateExchange.ts#L210)
 
 ___
 
@@ -215,7 +215,7 @@ transaction receipt
 
 #### Defined in
 
-[contracts/FixedRateExchange.ts:462](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/FixedRateExchange.ts#L462)
+[contracts/FixedRateExchange.ts:462](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/FixedRateExchange.ts#L462)
 
 ___
 
@@ -245,7 +245,7 @@ Converts an amount of tokens to units
 
 #### Defined in
 
-[contracts/SmartContract.ts:43](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/SmartContract.ts#L43)
+[contracts/SmartContract.ts:43](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/SmartContract.ts#L43)
 
 ___
 
@@ -280,7 +280,7 @@ transaction receipt
 
 #### Defined in
 
-[contracts/FixedRateExchange.ts:38](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/FixedRateExchange.ts#L38)
+[contracts/FixedRateExchange.ts:38](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/FixedRateExchange.ts#L38)
 
 ___
 
@@ -306,7 +306,7 @@ how many base tokens are needed and fees
 
 #### Defined in
 
-[contracts/FixedRateExchange.ts:305](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/FixedRateExchange.ts#L305)
+[contracts/FixedRateExchange.ts:305](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/FixedRateExchange.ts#L305)
 
 ___
 
@@ -338,7 +338,7 @@ transaction receipt
 
 #### Defined in
 
-[contracts/FixedRateExchange.ts:519](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/FixedRateExchange.ts#L519)
+[contracts/FixedRateExchange.ts:519](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/FixedRateExchange.ts#L519)
 
 ___
 
@@ -370,7 +370,7 @@ transaction receipt
 
 #### Defined in
 
-[contracts/FixedRateExchange.ts:555](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/FixedRateExchange.ts#L555)
+[contracts/FixedRateExchange.ts:555](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/FixedRateExchange.ts#L555)
 
 ___
 
@@ -401,7 +401,7 @@ transaction receipt
 
 #### Defined in
 
-[contracts/FixedRateExchange.ts:590](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/FixedRateExchange.ts#L590)
+[contracts/FixedRateExchange.ts:590](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/FixedRateExchange.ts#L590)
 
 ___
 
@@ -432,7 +432,7 @@ transaction receipt
 
 #### Defined in
 
-[contracts/FixedRateExchange.ts:617](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/FixedRateExchange.ts#L617)
+[contracts/FixedRateExchange.ts:617](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/FixedRateExchange.ts#L617)
 
 ___
 
@@ -463,7 +463,7 @@ transaction receipt
 
 #### Defined in
 
-[contracts/FixedRateExchange.ts:236](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/FixedRateExchange.ts#L236)
+[contracts/FixedRateExchange.ts:236](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/FixedRateExchange.ts#L236)
 
 ___
 
@@ -494,7 +494,7 @@ transaction receipt
 
 #### Defined in
 
-[contracts/FixedRateExchange.ts:490](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/FixedRateExchange.ts#L490)
+[contracts/FixedRateExchange.ts:490](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/FixedRateExchange.ts#L490)
 
 ___
 
@@ -519,7 +519,7 @@ exchangeId
 
 #### Defined in
 
-[contracts/FixedRateExchange.ts:23](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/FixedRateExchange.ts#L23)
+[contracts/FixedRateExchange.ts:23](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/FixedRateExchange.ts#L23)
 
 ___
 
@@ -543,7 +543,7 @@ address of allowed swapper
 
 #### Defined in
 
-[contracts/FixedRateExchange.ts:294](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/FixedRateExchange.ts#L294)
+[contracts/FixedRateExchange.ts:294](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/FixedRateExchange.ts#L294)
 
 ___
 
@@ -569,7 +569,7 @@ Amount of baseTokens user will receive
 
 #### Defined in
 
-[contracts/FixedRateExchange.ts:352](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/FixedRateExchange.ts#L352)
+[contracts/FixedRateExchange.ts:352](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/FixedRateExchange.ts#L352)
 
 ___
 
@@ -593,7 +593,7 @@ dt supply formatted
 
 #### Defined in
 
-[contracts/FixedRateExchange.ts:283](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/FixedRateExchange.ts#L283)
+[contracts/FixedRateExchange.ts:283](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/FixedRateExchange.ts#L283)
 
 ___
 
@@ -622,7 +622,7 @@ Returns a contract instance for the given address
 
 #### Defined in
 
-[contracts/SmartContract.ts:80](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/SmartContract.ts#L80)
+[contracts/SmartContract.ts:80](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/SmartContract.ts#L80)
 
 ___
 
@@ -646,7 +646,7 @@ dt supply formatted
 
 #### Defined in
 
-[contracts/FixedRateExchange.ts:272](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/FixedRateExchange.ts#L272)
+[contracts/FixedRateExchange.ts:272](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/FixedRateExchange.ts#L272)
 
 ___
 
@@ -664,7 +664,7 @@ ___
 
 #### Defined in
 
-[contracts/FixedRateExchange.ts:13](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/FixedRateExchange.ts#L13)
+[contracts/FixedRateExchange.ts:13](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/FixedRateExchange.ts#L13)
 
 ___
 
@@ -688,7 +688,7 @@ Exchange details
 
 #### Defined in
 
-[contracts/FixedRateExchange.ts:372](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/FixedRateExchange.ts#L372)
+[contracts/FixedRateExchange.ts:372](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/FixedRateExchange.ts#L372)
 
 ___
 
@@ -712,7 +712,7 @@ return exchange owner
 
 #### Defined in
 
-[contracts/FixedRateExchange.ts:661](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/FixedRateExchange.ts#L661)
+[contracts/FixedRateExchange.ts:661](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/FixedRateExchange.ts#L661)
 
 ___
 
@@ -730,7 +730,7 @@ Exchanges list
 
 #### Defined in
 
-[contracts/FixedRateExchange.ts:442](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/FixedRateExchange.ts#L442)
+[contracts/FixedRateExchange.ts:442](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/FixedRateExchange.ts#L442)
 
 ___
 
@@ -752,7 +752,7 @@ Retruns the gas price
 
 #### Defined in
 
-[contracts/SmartContract.ts:70](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/SmartContract.ts#L70)
+[contracts/SmartContract.ts:70](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/SmartContract.ts#L70)
 
 ___
 
@@ -776,7 +776,7 @@ Exchange details
 
 #### Defined in
 
-[contracts/FixedRateExchange.ts:414](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/FixedRateExchange.ts#L414)
+[contracts/FixedRateExchange.ts:414](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/FixedRateExchange.ts#L414)
 
 ___
 
@@ -794,7 +794,7 @@ no of available exchanges
 
 #### Defined in
 
-[contracts/FixedRateExchange.ts:140](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/FixedRateExchange.ts#L140)
+[contracts/FixedRateExchange.ts:140](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/FixedRateExchange.ts#L140)
 
 ___
 
@@ -810,7 +810,7 @@ Get OPF Collector of fixed rate contract
 
 #### Defined in
 
-[contracts/FixedRateExchange.ts:642](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/FixedRateExchange.ts#L642)
+[contracts/FixedRateExchange.ts:642](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/FixedRateExchange.ts#L642)
 
 ___
 
@@ -834,7 +834,7 @@ Rate (converted from wei)
 
 #### Defined in
 
-[contracts/FixedRateExchange.ts:262](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/FixedRateExchange.ts#L262)
+[contracts/FixedRateExchange.ts:262](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/FixedRateExchange.ts#L262)
 
 ___
 
@@ -850,7 +850,7 @@ Get Router address set in fixed rate contract
 
 #### Defined in
 
-[contracts/FixedRateExchange.ts:651](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/FixedRateExchange.ts#L651)
+[contracts/FixedRateExchange.ts:651](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/FixedRateExchange.ts#L651)
 
 ___
 
@@ -872,7 +872,7 @@ Check if an exchange is active
 
 #### Defined in
 
-[contracts/FixedRateExchange.ts:451](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/FixedRateExchange.ts#L451)
+[contracts/FixedRateExchange.ts:451](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/FixedRateExchange.ts#L451)
 
 ___
 
@@ -907,7 +907,7 @@ transaction receipt
 
 #### Defined in
 
-[contracts/FixedRateExchange.ts:93](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/FixedRateExchange.ts#L93)
+[contracts/FixedRateExchange.ts:93](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/FixedRateExchange.ts#L93)
 
 ___
 
@@ -939,7 +939,7 @@ transaction receipt
 
 #### Defined in
 
-[contracts/FixedRateExchange.ts:182](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/FixedRateExchange.ts#L182)
+[contracts/FixedRateExchange.ts:182](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/FixedRateExchange.ts#L182)
 
 ___
 
@@ -971,7 +971,7 @@ transaction receipt
 
 #### Defined in
 
-[contracts/FixedRateExchange.ts:152](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/FixedRateExchange.ts#L152)
+[contracts/FixedRateExchange.ts:152](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/FixedRateExchange.ts#L152)
 
 ___
 
@@ -1001,7 +1001,7 @@ Converts an amount of units to tokens
 
 #### Defined in
 
-[contracts/SmartContract.ts:58](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/SmartContract.ts#L58)
+[contracts/SmartContract.ts:58](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/SmartContract.ts#L58)
 
 ___
 
@@ -1033,7 +1033,7 @@ transaction receipt
 
 #### Defined in
 
-[contracts/FixedRateExchange.ts:673](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/FixedRateExchange.ts#L673)
+[contracts/FixedRateExchange.ts:673](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/FixedRateExchange.ts#L673)
 
 ___
 
@@ -1065,4 +1065,4 @@ transaction receipt
 
 #### Defined in
 
-[contracts/FixedRateExchange.ts:703](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/contracts/FixedRateExchange.ts#L703)
+[contracts/FixedRateExchange.ts:703](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/contracts/FixedRateExchange.ts#L703)

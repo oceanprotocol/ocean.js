@@ -25,7 +25,7 @@ Computed file checksum
 
 #### Defined in
 
-[@types/FileInfo.ts:43](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/FileInfo.ts#L43)
+[@types/FileInfo.ts:43](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/FileInfo.ts#L43)
 
 ___
 
@@ -37,7 +37,7 @@ File content length.
 
 #### Defined in
 
-[@types/FileInfo.ts:19](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/FileInfo.ts#L19)
+[@types/FileInfo.ts:19](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/FileInfo.ts#L19)
 
 ___
 
@@ -55,7 +55,7 @@ File format, if applicable.
 
 #### Defined in
 
-[@types/FileInfo.ts:13](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/FileInfo.ts#L13)
+[@types/FileInfo.ts:13](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/FileInfo.ts#L13)
 
 ___
 
@@ -67,7 +67,7 @@ File index.
 
 #### Defined in
 
-[@types/FileInfo.ts:25](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/FileInfo.ts#L25)
+[@types/FileInfo.ts:25](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/FileInfo.ts#L25)
 
 ___
 
@@ -79,7 +79,7 @@ HTTP method used
 
 #### Defined in
 
-[@types/FileInfo.ts:37](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/FileInfo.ts#L37)
+[@types/FileInfo.ts:37](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/FileInfo.ts#L37)
 
 ___
 
@@ -91,7 +91,7 @@ File URL.
 
 #### Defined in
 
-[@types/FileInfo.ts:6](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/FileInfo.ts#L6)
+[@types/FileInfo.ts:6](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/FileInfo.ts#L6)
 
 ___
 
@@ -103,7 +103,7 @@ File URL.
 
 #### Defined in
 
-[@types/FileInfo.ts:31](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/FileInfo.ts#L31)
+[@types/FileInfo.ts:31](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/FileInfo.ts#L31)
 
 ___
 
@@ -115,4 +115,4 @@ check if file exists
 
 #### Defined in
 
-[@types/FileInfo.ts:49](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/FileInfo.ts#L49)
+[@types/FileInfo.ts:49](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/FileInfo.ts#L49)

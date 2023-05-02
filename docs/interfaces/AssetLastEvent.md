@@ -20,7 +20,7 @@
 
 #### Defined in
 
-[@types/Asset.ts:134](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/Asset.ts#L134)
+[@types/Asset.ts:134](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/Asset.ts#L134)
 
 ___
 
@@ -30,7 +30,7 @@ ___
 
 #### Defined in
 
-[@types/Asset.ts:136](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/Asset.ts#L136)
+[@types/Asset.ts:136](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/Asset.ts#L136)
 
 ___
 
@@ -40,7 +40,7 @@ ___
 
 #### Defined in
 
-[@types/Asset.ts:137](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/Asset.ts#L137)
+[@types/Asset.ts:137](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/Asset.ts#L137)
 
 ___
 
@@ -50,7 +50,7 @@ ___
 
 #### Defined in
 
-[@types/Asset.ts:135](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/Asset.ts#L135)
+[@types/Asset.ts:135](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/Asset.ts#L135)
 
 ___
 
@@ -60,4 +60,4 @@ ___
 
 #### Defined in
 
-[@types/Asset.ts:133](https://github.com/oceanprotocol/ocean.js/blob/4f5a8cee/src/@types/Asset.ts#L133)
+[@types/Asset.ts:133](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/Asset.ts#L133)
