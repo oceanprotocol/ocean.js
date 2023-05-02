@@ -445,6 +445,7 @@ describe('Simple compute tests', async () => {
       freeComputeJobId,
       resolvedDdoWith5mTimeout.id
     )) as ComputeJob
+    console.log('jobStatus: ', jobStatus)
     assert(jobStatus, 'Cannot retrieve compute status!')
   })
 
@@ -454,6 +455,7 @@ describe('Simple compute tests', async () => {
     const computeEnv = computeEnvs[resolvedDdoWith5mTimeout.chainId].find(
       (ce) => ce.priceMin === 0
     )
+    console.log('free compute env: ', computeEnv)
     assert(computeEnv, 'Cannot find the free compute env')
 
     const assets: ComputeAsset[] = [
@@ -587,6 +589,7 @@ describe('Simple compute tests', async () => {
       paidComputeJobId,
       resolvedDdoWith5mTimeout.id
     )) as ComputeJob
+    console.log('jobStatus: ', jobStatus)
     assert(jobStatus, 'Cannot retrieve compute status!')
   })
 
