@@ -1,8 +1,11 @@
 import wordListDefault from './data/words.json'
 
 /**
- * Generate new datatoken name & symbol from a word list
- * @return {<{ name: String; symbol: String }>} datatoken name & symbol. Produces e.g. "Endemic Jellyfish Token" & "ENDJEL-45"
+ * This function generates a datatoken name and symbol from a given word list.
+ * @param {Object} [wordList] - An object containing an array of nouns and adjectives.
+ * @param {string[]} [wordList.nouns] - An array of nouns.
+ * @param {string[]} [wordList.adjectives] - An array of adjectives.
+ * @returns {Object} Returns an object containing the generated name and symbol. Produces e.g. "Endemic Jellyfish Token" & "ENDJEL-45"
  */
 export function generateDtName(wordList?: { nouns: string[]; adjectives: string[] }): {
   name: string
