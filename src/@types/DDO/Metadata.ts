@@ -1,3 +1,5 @@
+import { ConsumerParameter } from './ConsumerParameter'
+
 export interface MetadataAlgorithm {
   /**
    * Language used to implement the software.
@@ -46,6 +48,12 @@ export interface MetadataAlgorithm {
      */
     checksum: string
   }
+
+  /**
+   * Array of objects describing the consumer parameters
+   * @type {ConsumerParameter[]}
+   */
+  consumerParameters?: ConsumerParameter[]
 }
 
 export interface Metadata {
