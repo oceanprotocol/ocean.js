@@ -1,48 +1,38 @@
-import { AbiItem } from 'web3-utils'
 import veAllocateABI from '@oceanprotocol/contracts/artifacts/contracts/ve/veAllocate.sol/veAllocate.json'
-import { calculateEstimatedGas, sendTx } from '../../utils'
+import { sendTx } from '../../utils'
 import { SmartContractWithAddress } from '../SmartContractWithAddress'
-import { ReceiptOrEstimate } from '../../@types'
+import { ReceiptOrEstimate, AbiItem } from '../../@types'
 /**
  * Provides an interface for veOcean contract
  */
 export class VeAllocate extends SmartContractWithAddress {
-  getDefaultAbi(): AbiItem | AbiItem[] {
+  getDefaultAbi() {
     return veAllocateABI.abi as AbiItem[]
   }
 
   /**
    * set a specific percentage of veOcean to a specific nft
    * Maximum allocated percentage is 10000, so 1% is specified as 100
-   * @param {String} userAddress user address
    * @param {String} amount Percentage used
    * @param {String} nft NFT address to allocate to
    * @param {String} chainId chainId of NFT
    * @return {Promise<ReceiptOrEstimate>}
    */
   public async setAllocation<G extends boolean = false>(
-    userAddress: string,
     amount: string,
     nft: string,
     chainId: number,
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
-    const estGas = await calculateEstimatedGas(
-      userAddress,
-      this.contract.methods.setAllocation,
-      amount,
-      nft,
-      chainId
-    )
+    const estGas = await this.contract.estimateGas.setAllocation(amount, nft, chainId)
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
 
     // Invoke function of the contract
     const trxReceipt = await sendTx(
-      userAddress,
-      estGas + 1,
-      this.web3,
+      estGas.add(20000),
+      this.signer,
       this.config?.gasFeeMultiplier,
-      this.contract.methods.setAllocation,
+      this.contract.setAllocation,
       amount,
       nft,
       chainId
@@ -53,22 +43,18 @@ export class VeAllocate extends SmartContractWithAddress {
   /**
    * set specific percetage of veOcean to multiple nfts
    * Maximum allocated percentage is 10000, so 1% is specified as 100
-   * @param {String} userAddress user address
    * @param {String[]} amount Array of percentages used
    * @param {String[]} nft Array of NFT addresses
    * @param {String[]} chainId Array of chainIds
    * @return {Promise<ReceiptOrEstimate>}
    */
   public async setBatchAllocation<G extends boolean = false>(
-    userAddress: string,
     amount: string[],
     nft: string[],
     chainId: number[],
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
-    const estGas = await calculateEstimatedGas(
-      userAddress,
-      this.contract.methods.setBatchAllocation,
+    const estGas = await this.contract.estimateGas.setBatchAllocation(
       amount,
       nft,
       chainId
@@ -77,11 +63,10 @@ export class VeAllocate extends SmartContractWithAddress {
 
     // Invoke function of the contract
     const trxReceipt = await sendTx(
-      userAddress,
-      estGas + 1,
-      this.web3,
+      estGas.add(20000),
+      this.signer,
       this.config?.gasFeeMultiplier,
-      this.contract.methods.setBatchAllocation,
+      this.contract.setBatchAllocation,
       amount,
       nft,
       chainId
@@ -94,7 +79,7 @@ export class VeAllocate extends SmartContractWithAddress {
    * @return {Promise<number>}
    */
   public async getTotalAllocation(userAddress: string): Promise<number> {
-    const allocation = await this.contract.methods.getTotalAllocation(userAddress).call()
+    const allocation = await this.contract.getTotalAllocation(userAddress)
     return allocation
   }
 
@@ -109,9 +94,7 @@ export class VeAllocate extends SmartContractWithAddress {
     nft: string,
     chainId: string
   ): Promise<number> {
-    const allocation = await this.contract.methods
-      .getveAllocation(userAddress, nft, chainId)
-      .call()
+    const allocation = await this.contract.getveAllocation(userAddress, nft, chainId)
     return allocation
   }
 }
