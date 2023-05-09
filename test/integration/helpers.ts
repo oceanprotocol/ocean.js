@@ -1,4 +1,5 @@
 import { SHA256 } from 'crypto-js'
+import { ethers, Signer } from 'ethers'
 import {
   Aquarius,
   DatatokenCreateParams,
@@ -13,24 +14,26 @@ import {
   Datatoken,
   Config,
   DDO,
-  ProviderFees
+  ProviderFees,
+  getEventFromTx
 } from '../../src'
-import { web3 } from '../config'
 
 export async function createAsset(
   name: string,
   symbol: string,
-  owner: string,
+  owner: Signer,
   assetUrl: any,
   ddo: any,
   providerUrl: string,
   nftContractAddress: string, // addresses.ERC721Factory,
   aquariusInstance: Aquarius
 ) {
-  const nft = new Nft(web3)
-  const Factory = new NftFactory(nftContractAddress, web3)
+  const nft = new Nft(owner, (await owner.provider.getNetwork()).chainId)
 
-  const chain = await web3.eth.getChainId()
+  const nftFactory = new NftFactory(nftContractAddress, owner)
+
+  const chain = (await owner.provider.getNetwork()).chainId
+
   ddo.chainId = parseInt(chain.toString(10))
   const nftParamsAsset: NftCreateData = {
     name,
@@ -38,7 +41,7 @@ export async function createAsset(
     templateIndex: 1,
     tokenURI: 'aaa',
     transferable: true,
-    owner
+    owner: await owner.getAddress()
   }
   const datatokenParams: DatatokenCreateParams = {
     templateIndex: 1,
@@ -46,40 +49,41 @@ export async function createAsset(
     feeAmount: '0',
     paymentCollector: ZERO_ADDRESS,
     feeToken: ZERO_ADDRESS,
-    minter: owner,
+    minter: await owner.getAddress(),
     mpFeeAddress: ZERO_ADDRESS
   }
 
-  const result = await Factory.createNftWithDatatoken(
-    owner,
+  const bundleNFT = await nftFactory.createNftWithDatatoken(
     nftParamsAsset,
     datatokenParams
   )
 
-  const nftAddress = result.events.NFTCreated.returnValues[0]
-  const datatokenAddressAsset = result.events.TokenCreated.returnValues[0]
-  ddo.nftAddress = web3.utils.toChecksumAddress(nftAddress)
+  const trxReceipt = await bundleNFT.wait()
+  // events have been emitted
+  const nftCreatedEvent = getEventFromTx(trxReceipt, 'NFTCreated')
+  const tokenCreatedEvent = getEventFromTx(trxReceipt, 'TokenCreated')
+
+  const nftAddress = nftCreatedEvent.args.newTokenAddress
+  const datatokenAddressAsset = tokenCreatedEvent.args.newTokenAddress
   // create the files encrypted string
   assetUrl.datatokenAddress = datatokenAddressAsset
-  assetUrl.nftAddress = ddo.nftAddress
-  let providerResponse = await ProviderInstance.encrypt(assetUrl, chain, providerUrl)
-  ddo.services[0].files = await providerResponse
+  assetUrl.nftAddress = nftAddress
+  ddo.services[0].files = await ProviderInstance.encrypt(assetUrl, chain, providerUrl)
   ddo.services[0].datatokenAddress = datatokenAddressAsset
-  ddo.services[0].serviceEndpoint = providerUrl
-  // update ddo and set the right did
-  ddo.nftAddress = web3.utils.toChecksumAddress(nftAddress)
-  ddo.id =
-    'did:op:' + SHA256(web3.utils.toChecksumAddress(nftAddress) + chain.toString(10))
-  providerResponse = await ProviderInstance.encrypt(ddo, chain, providerUrl)
-  const encryptedResponse = await providerResponse
+  ddo.services[0].serviceEndpoint = 'http://172.15.0.4:8030' // put back proviederUrl
+
+  ddo.nftAddress = nftAddress
+  ddo.id = 'did:op:' + SHA256(ethers.utils.getAddress(nftAddress) + chain.toString(10))
+
+  const encryptedResponse = await ProviderInstance.encrypt(ddo, chain, providerUrl)
   const validateResult = await aquariusInstance.validate(ddo)
   await nft.setMetadata(
     nftAddress,
-    owner,
+    await owner.getAddress(),
     0,
-    providerUrl,
+    'http://172.15.0.4:8030', // put back proviederUrl
     '',
-    '0x2',
+    ethers.utils.hexlify(2),
     encryptedResponse,
     validateResult.hash
   )
@@ -87,12 +91,12 @@ export async function createAsset(
 }
 
 export async function updateAssetMetadata(
-  owner: string,
+  owner: Signer,
   updatedDdo: DDO,
   providerUrl: string,
   aquariusInstance: Aquarius
 ) {
-  const nft = new Nft(web3)
+  const nft = new Nft(owner, (await owner.provider.getNetwork()).chainId)
   const providerResponse = await ProviderInstance.encrypt(
     updatedDdo,
     updatedDdo.chainId,
@@ -102,11 +106,11 @@ export async function updateAssetMetadata(
   const validateResult = await aquariusInstance.validate(updatedDdo)
   const updateDdoTX = await nft.setMetadata(
     updatedDdo.nftAddress,
-    owner,
+    await owner.getAddress(),
     0,
     providerUrl,
     '',
-    '0x2',
+    ethers.utils.hexlify(2),
     encryptedResponse,
     validateResult.hash
   )
@@ -116,7 +120,7 @@ export async function updateAssetMetadata(
 export async function handleComputeOrder(
   order: ProviderComputeInitialize,
   datatokenAddress: string,
-  payerAccount: string,
+  payerAccount: Signer,
   consumerAccount: string,
   serviceIndex: number,
   datatoken: Datatoken,
@@ -130,9 +134,9 @@ export async function handleComputeOrder(
     */
   if (order.providerFee && order.providerFee.providerFeeAmount) {
     await approveWei(
-      web3,
-      config,
       payerAccount,
+      config,
+      await payerAccount.getAddress(),
       order.providerFee.providerFeeToken,
       datatokenAddress,
       order.providerFee.providerFeeAmount
@@ -142,21 +146,23 @@ export async function handleComputeOrder(
     if (!order.providerFee) return order.validOrder
     const tx = await datatoken.reuseOrder(
       datatokenAddress,
-      payerAccount,
       order.validOrder,
       order.providerFee
     )
-    return tx.transactionHash
+    const reusedTx = await tx.wait()
+    const orderReusedTx = getEventFromTx(reusedTx, 'OrderReused')
+    return orderReusedTx.transactionHash
   }
   const tx = await datatoken.startOrder(
     datatokenAddress,
-    payerAccount,
     consumerAccount,
     serviceIndex,
     order.providerFee,
     consumeMarkerFee
   )
-  return tx.transactionHash
+  const orderTx = await tx.wait()
+  const orderStartedTx = getEventFromTx(orderTx, 'OrderStarted')
+  return orderStartedTx.transactionHash
 }
 
 export async function orderAsset(
@@ -169,14 +175,12 @@ export async function orderAsset(
   providerUrl: string
 ) {
   const initializeData = await ProviderInstance.initialize(
-    did, // resolvedDdoAfterUpdate.id,
-    serviceId, // resolvedDdoAfterUpdate.services[0].id,
+    did,
+    serviceId,
     serviceIndex,
     consumerAccount,
     providerUrl
   )
-
-  console.log(`initializeData fees for did:${did} == ${initializeData.providerFee}`)
 
   const providerFees: ProviderFees = {
     providerFeeAddress: initializeData.providerFee.providerFeeAddress,
@@ -190,12 +194,13 @@ export async function orderAsset(
   }
 
   // make the payment
-  const orderTx = await datatoken.startOrder(
-    datatokenAddress, // resolvedDdoAfterUpdate.services[0].datatokenAddress,
-    consumerAccount,
+  const tx = await datatoken.startOrder(
+    datatokenAddress,
     consumerAccount,
     0,
     providerFees
   )
-  return orderTx
+  const orderTx = await tx.wait()
+  const orderStartedTx = getEventFromTx(orderTx, 'OrderStarted')
+  return orderStartedTx
 }
