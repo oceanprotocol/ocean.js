@@ -26,7 +26,6 @@ export class Config {
    */
   public providerUri?: string
 
-  // TODO: check if this is still necesary
   /**
    * Web3 Provider.
    * @type {any}

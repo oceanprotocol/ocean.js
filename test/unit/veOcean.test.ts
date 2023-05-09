@@ -128,8 +128,6 @@ describe('veOcean tests', () => {
     const tx = await veOcean.increaseUnlockTime(newLock)
     await tx.wait()
     const newCurrentLock = await veOcean.lockEnd(await Alice.getAddress())
-    console.log(currentLock)
-    console.log(newCurrentLock)
     assert(newCurrentLock > currentLock, 'Lock time should change"')
   })
 

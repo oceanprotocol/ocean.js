@@ -246,7 +246,6 @@ describe('Fixed Rate unit test', () => {
       const tx = await fixedRate.buyDatatokens(exchangeId, amount, maxAmount)
       const trxReceipt = await tx.wait()
       const SwappedEvent = getEventFromTx(trxReceipt, 'Swapped')
-      //  console.log(tx.events.Swapped.returnValues)
       assert(SwappedEvent != null)
       expect(SwappedEvent.args.exchangeId).to.equal(exchangeId)
       expect(SwappedEvent.args.by).to.equal(await user1.getAddress())
@@ -464,8 +463,6 @@ describe('Fixed Rate unit test', () => {
     it('#create an exchange', async () => {
       // CREATE AN Exchange
       // we prepare transaction parameters objects
-
-      console.log(' addresses: ', addresses)
       const nftFactory = new NftFactory(addresses.ERC721Factory, exchangeOwner)
 
       const freParams: FreCreationParams = {

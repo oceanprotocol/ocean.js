@@ -115,14 +115,25 @@ export async function sendTx(
   functionToSend: ContractFunction,
   ...args: any[]
 ): Promise<providers.TransactionResponse> {
-  // TODO: update method to use also gasFeeMultiplier
   const { chainId } = await signer.provider.getNetwork()
   const feeHistory = await signer.provider.getFeeData()
   let overrides
   if (feeHistory.maxPriorityFeePerGas) {
+    let aggressiveFee = feeHistory.maxPriorityFeePerGas
+    if (gasFeeMultiplier > 1) {
+      aggressiveFee = aggressiveFee.mul(gasFeeMultiplier)
+    }
     overrides = {
-      maxPriorityFeePerGas: feeHistory.maxPriorityFeePerGas,
-      maxFeePerGas: feeHistory.maxFeePerGas
+      maxPriorityFeePerGas:
+        (chainId === MUMBAI_NETWORK_ID || chainId === POLYGON_NETWORK_ID) &&
+        aggressiveFee.lte(MIN_GAS_FEE_POLYGON)
+          ? MIN_GAS_FEE_POLYGON
+          : aggressiveFee,
+      maxFeePerGas:
+        (chainId === MUMBAI_NETWORK_ID || chainId === POLYGON_NETWORK_ID) &&
+        feeHistory.maxFeePerGas.lte(MIN_GAS_FEE_POLYGON)
+          ? MIN_GAS_FEE_POLYGON
+          : feeHistory.maxFeePerGas
     }
   } else {
     overrides = {
@@ -136,53 +147,4 @@ export async function sendTx(
   } catch (e) {
     return null
   }
-  /* try {
-    const feeHistory = await signer.provider,web3.eth.getFeeHistory(1, 'latest', [75])
-    if (feeHistory && feeHistory?.baseFeePerGas?.[0] && feeHistory?.reward?.[0]?.[0]) {
-      let aggressiveFee = new BigNumber(feeHistory?.reward?.[0]?.[0])
-      if (gasFeeMultiplier > 1) {
-        aggressiveFee = aggressiveFee.multipliedBy(gasFeeMultiplier)
-      }
-
-      sendTxValue.maxPriorityFeePerGas = aggressiveFee
-        .integerValue(BigNumber.ROUND_DOWN)
-        .toString(10)
-
-      sendTxValue.maxFeePerGas = aggressiveFee
-        .plus(new BigNumber(feeHistory?.baseFeePerGas?.[0]).multipliedBy(2))
-        .integerValue(BigNumber.ROUND_DOWN)
-        .toString(10)
-
-      // if network is polygon and mumbai and fees is lower than the 30 gwei trashold, sets MIN_GAS_FEE_POLYGON
-      sendTxValue.maxPriorityFeePerGas =
-        (networkId === MUMBAI_NETWORK_ID || networkId === POLYGON_NETWORK_ID) &&
-        new BigNumber(sendTxValue.maxPriorityFeePerGas).lte(
-          new BigNumber(MIN_GAS_FEE_POLYGON)
-        )
-          ? new BigNumber(MIN_GAS_FEE_POLYGON)
-              .integerValue(BigNumber.ROUND_DOWN)
-              .toString(10)
-          : sendTxValue.maxPriorityFeePerGas
-
-      sendTxValue.maxFeePerGas =
-        (networkId === MUMBAI_NETWORK_ID || networkId === POLYGON_NETWORK_ID) &&
-        new BigNumber(sendTxValue.maxFeePerGas).lte(new BigNumber(MIN_GAS_FEE_POLYGON))
-          ? new BigNumber(MIN_GAS_FEE_POLYGON)
-              .integerValue(BigNumber.ROUND_DOWN)
-              .toString(10)
-          : sendTxValue.maxFeePerGas
-    } else {
-      sendTxValue.gasPrice = await getFairGasPrice(web3, gasFeeMultiplier)
-    }
-  } catch (err) {
-    err?.message === FEE_HISTORY_NOT_SUPPORTED &&
-      LoggerInstance.log(
-        'Not able to use EIP 1559, getFeeHistory method not suported by network.'
-      )
-    sendTxValue.gasPrice = await getFairGasPrice(web3, gasFeeMultiplier)
-  }
-
-  const trxReceipt = await functionToSend.apply(null, args).send(sendTxValue)
-  return trxReceipt
-  */
 }
