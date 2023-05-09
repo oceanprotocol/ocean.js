@@ -1,6 +1,11 @@
 import fetch from 'cross-fetch'
 import { DownloadResponse } from '../@types'
 
+/**
+ * Triggers  a file download from the specified URL when called from a browser context.
+ * @param {string} url - The URL of the file to download
+ * @returns {Promise<void>} - A Promise that resolves when the file has been downloaded
+ */
 export async function downloadFileBrowser(url: string): Promise<void> {
   const headResponse = await fetch(url, { method: 'HEAD' })
   const contentHeader = headResponse.headers.get('content-disposition')
@@ -21,6 +26,12 @@ export async function downloadFileBrowser(url: string): Promise<void> {
   xhr.send(null)
 }
 
+/**
+ * Triggers  a file download from the specified URL when called from a browser context.
+ * @param {string} url - The URL of the file to download
+ * @param {number} [index] - The file index
+ * @returns {Promise<void>} - A Promise that resolves when the file has been downloaded
+ */
 export async function downloadFile(
   url: string,
   index?: number

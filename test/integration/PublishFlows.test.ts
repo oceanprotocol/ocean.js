@@ -1,6 +1,7 @@
-import { assert } from 'chai'
+import { assert, expect } from 'chai'
 import { SHA256 } from 'crypto-js'
-import { web3, getTestConfig, getAddresses } from '../config'
+import { ethers, Signer } from 'ethers'
+import { getTestConfig, getAddresses, provider } from '../config'
 import {
   Config,
   ProviderInstance,
@@ -10,7 +11,8 @@ import {
   getHash,
   ZERO_ADDRESS,
   Nft,
-  approve
+  approve,
+  getEventFromTx
 } from '../../src'
 import {
   ValidateMetadata,
@@ -28,7 +30,7 @@ describe('Publish tests', async () => {
   let providerUrl: any
   let nft: Nft
   let factory: NftFactory
-  let publisherAccount: string
+  let publisherAccount: Signer
 
   const assetUrl: Files = {
     datatokenAddress: '0x0',
@@ -67,33 +69,30 @@ describe('Publish tests', async () => {
         description: 'Download service',
         files: '',
         datatokenAddress: '0x0',
-        serviceEndpoint: 'https://v4.provider.goerli.oceanprotocol.com',
+        serviceEndpoint: 'http://172.15.0.4:8030',
         timeout: 0
       }
     ]
   }
 
   before(async () => {
-    config = await getTestConfig(web3)
+    publisherAccount = (await provider.getSigner(0)) as Signer
+    config = await getTestConfig(publisherAccount)
+
     aquarius = new Aquarius(config.metadataCacheUri)
     providerUrl = config.providerUri
 
     addresses = getAddresses()
   })
 
-  it('initialize accounts', async () => {
-    const accounts = await web3.eth.getAccounts()
-    publisherAccount = accounts[0]
-  })
-
   it('initialize test classes', async () => {
-    nft = new Nft(web3)
-    factory = new NftFactory(addresses.ERC721Factory, web3)
+    nft = new Nft(publisherAccount)
+    factory = new NftFactory(addresses.ERC721Factory, publisherAccount)
 
     await approve(
-      web3,
-      config,
       publisherAccount,
+      config,
+      await publisherAccount.getAddress(),
       addresses.MockDAI,
       addresses.ERC721Factory,
       '100000'
@@ -109,7 +108,7 @@ describe('Publish tests', async () => {
       templateIndex: 1,
       tokenURI: '',
       transferable: true,
-      owner: publisherAccount
+      owner: await publisherAccount.getAddress()
     }
 
     const datatokenParams: DatatokenCreateParams = {
@@ -118,63 +117,73 @@ describe('Publish tests', async () => {
       feeAmount: '0',
       paymentCollector: ZERO_ADDRESS,
       feeToken: ZERO_ADDRESS,
-      minter: publisherAccount,
+      minter: await publisherAccount.getAddress(),
       mpFeeAddress: ZERO_ADDRESS
     }
 
     const fixedPriceParams: FreCreationParams = {
       fixedRateAddress: addresses.FixedPrice,
       baseTokenAddress: addresses.MockDAI,
-      owner: publisherAccount,
-      marketFeeCollector: publisherAccount,
+      owner: await publisherAccount.getAddress(),
+      marketFeeCollector: await publisherAccount.getAddress(),
       baseTokenDecimals: 18,
       datatokenDecimals: 18,
       fixedRate: '1',
       marketFee: '0',
-      allowedConsumer: publisherAccount,
+      allowedConsumer: await publisherAccount.getAddress(),
       withMint: false
     }
 
     const bundleNFT = await factory.createNftWithDatatokenWithFixedRate(
-      publisherAccount,
       nftParams,
       datatokenParams,
       fixedPriceParams
     )
+    const trxReceipt = await bundleNFT.wait()
+    // events have been emitted
+    const nftCreatedEvent = getEventFromTx(trxReceipt, 'NFTCreated')
+    const tokenCreatedEvent = getEventFromTx(trxReceipt, 'TokenCreated')
+    expect(nftCreatedEvent.event === 'NFTCreated')
+    expect(tokenCreatedEvent.event === 'TokenCreated')
 
-    const nftAddress = bundleNFT.events.NFTCreated.returnValues[0]
-    const datatokenAddress = bundleNFT.events.TokenCreated.returnValues[0]
+    const nftAddress = nftCreatedEvent.args.newTokenAddress
+    const datatokenAddress = tokenCreatedEvent.args.newTokenAddress
     assetUrl.datatokenAddress = datatokenAddress
     assetUrl.nftAddress = nftAddress
 
-    const chain = await web3.eth.getChainId()
-    const encryptedFiles = await ProviderInstance.encrypt(assetUrl, chain, providerUrl)
+    fixedPriceDdo.services[0].files = await ProviderInstance.encrypt(
+      assetUrl,
+      config.chainId,
+      providerUrl
+    )
 
     fixedPriceDdo.metadata.name = 'test-dataset-fixedPrice'
-    fixedPriceDdo.services[0].files = await encryptedFiles
     fixedPriceDdo.services[0].datatokenAddress = datatokenAddress
 
     fixedPriceDdo.nftAddress = nftAddress
-    fixedPriceDdo.chainId = chain
+
+    fixedPriceDdo.chainId = config.chainId
     fixedPriceDdo.id =
-      'did:op:' + SHA256(web3.utils.toChecksumAddress(nftAddress) + chain.toString(10))
+      'did:op:' +
+      SHA256(ethers.utils.getAddress(nftAddress) + config.chainId.toString(10))
 
     const isAssetValid: ValidateMetadata = await aquarius.validate(fixedPriceDdo)
     assert(isAssetValid.valid === true, 'Published asset is not valid')
+    const encryptedResponse = await ProviderInstance.encrypt(
+      fixedPriceDdo,
+      config.chainId,
+      providerUrl
+    )
 
-    const encryptedDdo = await ProviderInstance.encrypt(fixedPriceDdo, chain, providerUrl)
-    const encryptedResponse = await encryptedDdo
-    const metadataHash = getHash(JSON.stringify(fixedPriceDdo))
-    // this is publishing with an explicit empty metadataProofs
     await nft.setMetadata(
       nftAddress,
-      publisherAccount,
+      await publisherAccount.getAddress(),
       0,
       providerUrl,
-      '',
-      '0x2',
+      '0x123',
+      '0x02',
       encryptedResponse,
-      '0x' + metadataHash,
+      isAssetValid.hash,
       []
     )
     const resolvedDDO = await aquarius.waitForAqua(fixedPriceDdo.id)
@@ -190,7 +199,7 @@ describe('Publish tests', async () => {
       templateIndex: 1,
       tokenURI: '',
       transferable: true,
-      owner: publisherAccount
+      owner: await publisherAccount.getAddress()
     }
 
     const datatokenParams: DatatokenCreateParams = {
@@ -199,7 +208,7 @@ describe('Publish tests', async () => {
       feeAmount: '0',
       paymentCollector: ZERO_ADDRESS,
       feeToken: ZERO_ADDRESS,
-      minter: publisherAccount,
+      minter: await publisherAccount.getAddress(),
       mpFeeAddress: ZERO_ADDRESS
     }
 
@@ -212,43 +221,57 @@ describe('Publish tests', async () => {
     }
 
     const bundleNFT = await factory.createNftWithDatatokenWithDispenser(
-      publisherAccount,
       nftParams,
       datatokenParams,
       dispenserParams
     )
 
-    const nftAddress = bundleNFT.events.NFTCreated.returnValues[0]
-    const datatokenAddress = bundleNFT.events.TokenCreated.returnValues[0]
+    const trxReceipt = await bundleNFT.wait()
+    // events have been emitted
+    const nftCreatedEvent = getEventFromTx(trxReceipt, 'NFTCreated')
+    const tokenCreatedEvent = getEventFromTx(trxReceipt, 'TokenCreated')
+    expect(nftCreatedEvent.event === 'NFTCreated')
+    expect(tokenCreatedEvent.event === 'TokenCreated')
+
+    const nftAddress = nftCreatedEvent.args.newTokenAddress
+    const datatokenAddress = tokenCreatedEvent.args.newTokenAddress
     assetUrl.datatokenAddress = datatokenAddress
     assetUrl.nftAddress = nftAddress
-    const chain = await web3.eth.getChainId()
-    const encryptedFiles = await ProviderInstance.encrypt(assetUrl, chain, providerUrl)
+
+    const encryptedFiles = await ProviderInstance.encrypt(
+      assetUrl,
+      config.chainId,
+      providerUrl
+    )
     dispenserDdo.metadata.name = 'test-dataset-dispenser'
     dispenserDdo.services[0].files = await encryptedFiles
     dispenserDdo.services[0].datatokenAddress = datatokenAddress
 
     dispenserDdo.nftAddress = nftAddress
-    dispenserDdo.chainId = chain
+    dispenserDdo.chainId = config.chainId
     dispenserDdo.id =
-      'did:op:' + SHA256(web3.utils.toChecksumAddress(nftAddress) + chain.toString(10))
+      'did:op:' +
+      SHA256(ethers.utils.getAddress(nftAddress) + config.chainId.toString(10))
 
     const isAssetValid: ValidateMetadata = await aquarius.validate(dispenserDdo)
     assert(isAssetValid.valid === true, 'Published asset is not valid')
 
-    const encryptedDdo = await ProviderInstance.encrypt(dispenserDdo, chain, providerUrl)
+    const encryptedDdo = await ProviderInstance.encrypt(
+      dispenserDdo,
+      config.chainId,
+      providerUrl
+    )
     const encryptedResponse = await encryptedDdo
-    const metadataHash = getHash(JSON.stringify(dispenserDdo))
     // this is publishing with any explicit metadataProofs
     await nft.setMetadata(
       nftAddress,
-      publisherAccount,
+      await publisherAccount.getAddress(),
       0,
       providerUrl,
       '',
-      '0x2',
+      '0x02',
       encryptedResponse,
-      '0x' + metadataHash
+      isAssetValid.hash
     )
     const resolvedDDO = await aquarius.waitForAqua(dispenserDdo.id)
     assert(resolvedDDO, 'Cannot fetch DDO from Aquarius')
