@@ -119,21 +119,27 @@ export async function sendTx(
   const feeHistory = await signer.provider.getFeeData()
   let overrides
   if (feeHistory.maxPriorityFeePerGas) {
-    let aggressiveFee = feeHistory.maxPriorityFeePerGas
+    let aggressiveFeePriorityFeePerGas
+    let aggressiveFeePerGas
     if (gasFeeMultiplier > 1) {
-      aggressiveFee = aggressiveFee.mul(gasFeeMultiplier)
+      aggressiveFeePriorityFeePerGas = Math.round(
+        feeHistory.maxPriorityFeePerGas.toNumber() * gasFeeMultiplier
+      ).toString()
+      aggressiveFeePerGas = Math.round(
+        feeHistory.maxFeePerGas.toNumber() * gasFeeMultiplier
+      ).toString()
     }
     overrides = {
       maxPriorityFeePerGas:
         (chainId === MUMBAI_NETWORK_ID || chainId === POLYGON_NETWORK_ID) &&
-        aggressiveFee.lte(MIN_GAS_FEE_POLYGON)
+        aggressiveFeePriorityFeePerGas < MIN_GAS_FEE_POLYGON
           ? MIN_GAS_FEE_POLYGON
-          : aggressiveFee,
+          : aggressiveFeePriorityFeePerGas,
       maxFeePerGas:
         (chainId === MUMBAI_NETWORK_ID || chainId === POLYGON_NETWORK_ID) &&
-        feeHistory.maxFeePerGas.lte(MIN_GAS_FEE_POLYGON)
+        aggressiveFeePerGas < MIN_GAS_FEE_POLYGON
           ? MIN_GAS_FEE_POLYGON
-          : feeHistory.maxFeePerGas
+          : aggressiveFeePerGas
     }
   } else {
     overrides = {
