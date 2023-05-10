@@ -23,7 +23,7 @@ export class Aquarius {
   }
 
   /** Resolves a DID
-   * @param {string} did
+   * @param {string} did DID of the asset.
    * @param {AbortSignal} signal abort signal
    * @return {Promise<Asset>} Asset
    */
@@ -50,11 +50,10 @@ export class Aquarius {
 
   /**
    * Blocks until Aqua will cache the did (or the update for that did) or timeouts
-   
    * @param {string} did DID of the asset.
    * @param {string} txid used when the did exists and we expect an update with that txid.
-     * @param {AbortSignal} signal abort signal
-   * @return {Promise<DDO>} DDO of the asset.
+   * @param {AbortSignal} signal abort signal
+   * @return {Promise<Asset>} DDO of the asset.
    */
   public async waitForAqua(
     did: string,
