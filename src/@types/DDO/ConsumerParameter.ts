@@ -19,7 +19,7 @@ export interface ConsumerParameter {
 
   /**
    * Defines if customer input for this field is mandatory.
-   * @type {string}
+   * @type {boolean}
    */
   required: boolean
 
