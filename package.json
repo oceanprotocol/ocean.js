@@ -1,7 +1,7 @@
 {
   "name": "@oceanprotocol/lib",
   "source": "./src/index.ts",
-  "version": "2.7.0",
+  "version": "3.0.0-next.4",
   "description": "JavaScript client library for Ocean Protocol",
   "main": "./dist/lib.js",
   "umd:main": "dist/lib.umd.js",
@@ -22,6 +22,7 @@
     "format": "prettier --parser typescript --ignore-path .gitignore --write '**/*.{js,jsx,ts,tsx}'",
     "type-check": "npm run build:metadata && tsc --noEmit",
     "doc:json": "node ./scripts/typedoc.js",
+    "docs": "typedoc --options typedoc.json --plugin typedoc-plugin-markdown",
     "run": "ts-node",
     "release": "release-it --non-interactive",
     "changelog": "auto-changelog -p",
@@ -29,12 +30,13 @@
     "mocha": "TS_NODE_PROJECT='./test/tsconfig.json' mocha --config=test/.mocharc.json --node-env=test --exit",
     "test": "npm run lint && npm run test:unit:cover && npm run test:integration:cover",
     "test:unit": "npm run mocha -- 'test/unit/**/*.test.ts'",
+    "test:integration": "npm run mocha --  'test/integration/**/*.test.ts'",
     "test:unit:cover": "nyc --report-dir coverage/unit npm run test:unit",
-    "test:integration": "npm run mocha -- 'test/integration/**/*.test.ts'",
     "test:integration:cover": "nyc --report-dir coverage/integration --no-clean npm run test:integration",
     "create:guide": "./scripts/createCodeExamples.sh test/integration/CodeExamples.test.ts",
     "create:guidec2d": "./scripts/createCodeExamples.sh test/integration/ComputeExamples.test.ts",
-    "commit:guides": "./scripts/commitChanges.sh"
+    "commit:guides": "./scripts/commitChanges.sh",
+    "commit:docs": "./scripts/updateDocs.sh"
   },
   "repository": {
     "type": "git",
@@ -52,13 +54,10 @@
   },
   "dependencies": {
     "@oceanprotocol/contracts": "^1.1.8",
-    "bignumber.js": "^9.1.0",
     "cross-fetch": "^3.1.5",
     "crypto-js": "^4.1.1",
     "decimal.js": "^10.4.1",
-    "web3-core": "^1.8.1",
-    "web3-eth-contract": "^1.8.1",
-    "web3": "^1.8.1"
+    "ethers": "^5.7.2"
   },
   "devDependencies": {
     "@truffle/hdwallet-provider": "^2.0.14",
@@ -89,7 +88,8 @@
     "source-map-support": "^0.5.19",
     "ts-node": "^10.9.1",
     "ts-node-register": "^1.0.0",
-    "typedoc": "0.23.19",
+    "typedoc": "^0.24.6",
+    "typedoc-plugin-markdown": "^3.15.2",
     "typescript": "^4.7.4"
   },
   "nyc": {

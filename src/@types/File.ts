@@ -1,4 +1,4 @@
-import { AbiItem } from 'web3-utils'
+import { AbiItem } from './Contracts'
 
 interface FileTypeHeaders {
   [key: string]: string
