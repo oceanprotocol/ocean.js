@@ -1,3 +1,5 @@
+import { ConsumerParameter } from './ConsumerParameter'
+
 export interface PublisherTrustedAlgorithm {
   /**
    * The DID of the algorithm which is trusted by the publisher.
@@ -107,4 +109,10 @@ export interface Service {
    * @type {any}
    */
   additionalInformation?: any
+
+  /**
+   * Array of objects describing the consumer parameters
+   * @type {ConsumerParameter[]}
+   */
+  consumerParameters?: ConsumerParameter[]
 }
