@@ -59,7 +59,7 @@ jobs:
       - name: Run Ganache with Barge
         working-directory: ${{ github.workspace }}/barge
         run: |
-          bash -x start_ocean.sh  --no-aquarius --no-elasticsearch --no-provider --no-dashboard 2>&1 > start_ocean.log &
+          git checkout issue-367-remove-sudo && bash -x start_ocean.sh  --no-aquarius --no-elasticsearch --no-provider --no-dashboard 2>&1 > start_ocean.log &
         env:
           CONTRACTS_VERSION: v1.1.4
       - run: npm ci
