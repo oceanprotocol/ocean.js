@@ -105,14 +105,14 @@ export interface Service {
   compute?: ServiceComputeOptions
 
   /**
-   * Stores service specific additional information, this is customizable by publisher
-   * @type {any}
-   */
-  additionalInformation?: any
-
-  /**
    * Array of objects describing the consumer parameters
    * @type {ConsumerParameter[]}
    */
   consumerParameters?: ConsumerParameter[]
+
+  /**
+   * Stores service specific additional information, this is customizable by publisher
+   * @type {any}
+   */
+  additionalInformation?: any
 }

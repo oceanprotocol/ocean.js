@@ -54,6 +54,12 @@ export interface MetadataAlgorithm {
      */
     consumerParameters?: ConsumerParameter[]
   }
+
+  /**
+   * Array of objects describing the consumer parameters
+   * @type {ConsumerParameter[]}
+   */
+  consumerParameters?: ConsumerParameter[]
 }
 
 export interface Metadata {
