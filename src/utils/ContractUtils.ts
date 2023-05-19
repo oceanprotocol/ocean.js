@@ -119,8 +119,8 @@ export async function sendTx(
   const feeHistory = await signer.provider.getFeeData()
   let overrides
   if (feeHistory.maxPriorityFeePerGas) {
-    let aggressiveFeePriorityFeePerGas
-    let aggressiveFeePerGas
+    let aggressiveFeePriorityFeePerGas = feeHistory.maxPriorityFeePerGas.toString()
+    let aggressiveFeePerGas = feeHistory.maxFeePerGas.toString()
     if (gasFeeMultiplier > 1) {
       aggressiveFeePriorityFeePerGas = Math.round(
         feeHistory.maxPriorityFeePerGas.toNumber() * gasFeeMultiplier
@@ -130,23 +130,23 @@ export async function sendTx(
       ).toString()
     }
     overrides = {
-      maxPriorityFeePerGas:
-        (chainId === MUMBAI_NETWORK_ID || chainId === POLYGON_NETWORK_ID) &&
-        aggressiveFeePriorityFeePerGas < MIN_GAS_FEE_POLYGON
-          ? MIN_GAS_FEE_POLYGON
-          : aggressiveFeePriorityFeePerGas,
+      maxPriorityFeePerGas: aggressiveFeePriorityFeePerGas,
+      // (chainId === MUMBAI_NETWORK_ID || chainId === POLYGON_NETWORK_ID) &&
+      // aggressiveFeePriorityFeePerGas < MIN_GAS_FEE_POLYGON
+      //   ? MIN_GAS_FEE_POLYGON
+
       maxFeePerGas:
         (chainId === MUMBAI_NETWORK_ID || chainId === POLYGON_NETWORK_ID) &&
-        aggressiveFeePerGas < MIN_GAS_FEE_POLYGON
+        Number(aggressiveFeePerGas) < MIN_GAS_FEE_POLYGON
           ? MIN_GAS_FEE_POLYGON
-          : aggressiveFeePerGas
+          : Number(aggressiveFeePerGas)
     }
   } else {
     overrides = {
       gasPrice: feeHistory.gasPrice
     }
   }
-  overrides.gasLimit = estGas
+  overrides.gasLimit = estGas.add(20000)
   try {
     const trxReceipt = await functionToSend(...args, overrides)
     return trxReceipt
