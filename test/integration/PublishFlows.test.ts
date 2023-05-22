@@ -23,6 +23,12 @@ import {
   Files
 } from '../../src/@types'
 
+function delay(interval: number) {
+  return it('should delay', (done) => {
+    setTimeout(() => done(), interval)
+  }).timeout(interval + 100)
+}
+
 describe('Publish tests', async () => {
   let config: Config
   let addresses: any
@@ -191,6 +197,8 @@ describe('Publish tests', async () => {
     )
   })
 
+  delay(10000)
+
   it('should resolve the fixed price dataset', async () => {
     const resolvedDDO = await aquarius.waitForAqua(fixedPricedDID)
     assert(resolvedDDO, 'Cannot fetch DDO from Aquarius')
@@ -281,6 +289,8 @@ describe('Publish tests', async () => {
       isAssetValid.hash
     )
   })
+
+  delay(10000)
 
   it('should resolve the free dataset', async () => {
     const resolvedDDO = await aquarius.waitForAqua(dispenserDID)
