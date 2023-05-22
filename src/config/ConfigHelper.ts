@@ -31,9 +31,14 @@ export const configHelperNetworks: Config[] = [
     ...configHelperNetworksBase,
     chainId: 8996,
     network: 'development',
-    metadataCacheUri: 'http://172.15.0.5:5000', // use http://127.0.0.1:5000/ if running on macOS
-    providerUri: 'http://172.15.0.4:8030', // use http://127.0.0.1:8030/ if running on macOS
-    subgraphUri: 'https://172.15.0.15:8000' // use http://127.0.0.1:9000/ if running on macOS
+    // comment th following configs if running on macOS
+    metadataCacheUri: 'http://172.15.0.5:5000',
+    providerUri: 'http://172.15.0.4:8030',
+    subgraphUri: 'https://172.15.0.15:8000'
+    // uncomment the following configs if running on macOS
+    // metadataCacheUri: 'http://127.0.0.1:5000',
+    // providerUri: 'http://127.0.0.1:8030/',
+    // subgraphUri: 'http://127.0.0.1:9000/'
   },
   {
     ...configHelperNetworksBase,
@@ -200,6 +205,12 @@ export class ConfigHelper {
     return configAddresses
   }
 
+  /**
+   * Returns the config object for a specific network supported by the oceanprotocol stack
+   * @param {string | number} network the network's chainId or name
+   * @param {string} infuraProjectId optional infura project id that will replace the configs node URI
+   * @return {Config} Config obhjedct
+   */
   public getConfig(network: string | number, infuraProjectId?: string): Config {
     const filterBy = typeof network === 'string' ? 'network' : 'chainId'
     let config = configHelperNetworks.find((c) => c[filterBy] === network)
