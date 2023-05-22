@@ -345,6 +345,8 @@ describe('Compute flow tests', async () => {
     )
   })
 
+  delay(10000)
+
   it('should resolve published datasets and algorithms', async () => {
     resolvedDdoWith5mTimeout = await aquarius.waitForAqua(ddoWith5mTimeoutId)
     assert(resolvedDdoWith5mTimeout, 'Cannot fetch DDO from Aquarius')

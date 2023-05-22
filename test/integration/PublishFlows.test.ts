@@ -31,6 +31,8 @@ describe('Publish tests', async () => {
   let nft: Nft
   let factory: NftFactory
   let publisherAccount: Signer
+  let fixedPricedDID: string
+  let dispenserDID: string
 
   const assetUrl: Files = {
     datatokenAddress: '0x0',
@@ -167,6 +169,7 @@ describe('Publish tests', async () => {
       'did:op:' +
       SHA256(ethers.utils.getAddress(nftAddress) + config.chainId.toString(10))
 
+    fixedPricedDID = fixedPriceDdo.id
     const isAssetValid: ValidateMetadata = await aquarius.validate(fixedPriceDdo)
     assert(isAssetValid.valid === true, 'Published asset is not valid')
     const encryptedResponse = await ProviderInstance.encrypt(
@@ -186,7 +189,10 @@ describe('Publish tests', async () => {
       isAssetValid.hash,
       []
     )
-    const resolvedDDO = await aquarius.waitForAqua(fixedPriceDdo.id)
+  })
+
+  it('should resolve the fixed price dataset', async () => {
+    const resolvedDDO = await aquarius.waitForAqua(fixedPricedDID)
     assert(resolvedDDO, 'Cannot fetch DDO from Aquarius')
   })
 
@@ -252,6 +258,7 @@ describe('Publish tests', async () => {
     dispenserDdo.id =
       'did:op:' +
       SHA256(ethers.utils.getAddress(nftAddress) + config.chainId.toString(10))
+    dispenserDID = dispenserDdo.id
 
     const isAssetValid: ValidateMetadata = await aquarius.validate(dispenserDdo)
     assert(isAssetValid.valid === true, 'Published asset is not valid')
@@ -273,7 +280,10 @@ describe('Publish tests', async () => {
       encryptedResponse,
       isAssetValid.hash
     )
-    const resolvedDDO = await aquarius.waitForAqua(dispenserDdo.id)
+  })
+
+  it('should resolve the free dataset', async () => {
+    const resolvedDDO = await aquarius.waitForAqua(dispenserDID)
     assert(resolvedDDO, 'Cannot fetch DDO from Aquarius')
   })
 })
