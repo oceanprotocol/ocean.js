@@ -1,5 +1,5 @@
-import Web3 from 'web3'
 import fetch from 'cross-fetch'
+import { ethers, Signer, providers } from 'ethers'
 import { LoggerInstance } from '../utils'
 import {
   Arweave,
@@ -22,7 +22,8 @@ import {
 export class Provider {
   /**
    * Returns the provider endpoints
-   * @return {Promise<ServiceEndpoint[]>}
+   * @param {string} providerUri - the provider url
+   * @return {Promise<any>}
    */
   async getEndpoints(providerUri: string): Promise<any> {
     try {
@@ -34,6 +35,12 @@ export class Provider {
     }
   }
 
+  /**
+   * This function returns the endpoint URL for a given service name.
+   * @param {ServiceEndpoint[]} servicesEndpoints - The array of service endpoints
+   * @param {string} serviceName - The name of the service
+   * @returns {ServiceEndpoint} The endpoint URL for the given service name
+   */
   getEndpointURL(
     servicesEndpoints: ServiceEndpoint[],
     serviceName: string
@@ -43,9 +50,10 @@ export class Provider {
   }
 
   /**
-   * Returns the service endpoints that exist in provider.
-   * @param {any} endpoints
-   * @return {Promise<ServiceEndpoint[]>}
+   * This function returns an array of service endpoints for a given provider endpoint.
+   * @param {string} providerEndpoint - The provider endpoint
+   * @param {any} endpoints - The endpoints object
+   * @returns {ServiceEndpoint[]} An array of service endpoints
    */
   public async getServiceEndpoints(providerEndpoint: string, endpoints: any) {
     const serviceEndpoints: ServiceEndpoint[] = []
@@ -60,7 +68,8 @@ export class Provider {
     return serviceEndpoints
   }
 
-  /** Gets current nonce
+  /**
+   * Get current nonce from the provider.
    * @param {string} providerUri provider uri address
    * @param {string} consumerAddress Publisher address
    * @param {AbortSignal} signal abort signal
@@ -98,26 +107,34 @@ export class Provider {
     }
   }
 
-  public async signProviderRequest(
-    web3: Web3,
-    accountId: string,
-    message: string,
-    password?: string
-  ): Promise<string> {
-    const consumerMessage = web3.utils.soliditySha3({
-      t: 'bytes',
-      v: web3.utils.utf8ToHex(message)
-    })
-    const isMetaMask =
-      web3 && web3.currentProvider && (web3.currentProvider as any).isMetaMask
-    if (isMetaMask)
-      return await web3.eth.personal.sign(consumerMessage, accountId, password)
-    else return await web3.eth.sign(consumerMessage, accountId)
+  /**
+   * Sign a provider request with a signer.
+   * @param {Signer} signer - The signer to use.
+   * @param {string} message - The message to sign.
+   * @returns {Promise<string>} A promise that resolves with the signature.
+   */
+  public async signProviderRequest(signer: Signer, message: string): Promise<string> {
+    //  const isMetaMask = web3 && web3.currentProvider && (web3.currentProvider as any).isMetaMask
+    //  if (isMetaMask) return await web3.eth.personal.sign(consumerMessage, accountId, password)
+    //  await web3.eth.sign(consumerMessage, await signer.getAddress())
+    const consumerMessage = ethers.utils.solidityKeccak256(
+      ['bytes'],
+      [ethers.utils.hexlify(ethers.utils.toUtf8Bytes(message))]
+    )
+    const messageHashBytes = ethers.utils.arrayify(consumerMessage)
+    const chainId = await signer.getChainId()
+    if (chainId === 8996) {
+      return await (signer as providers.JsonRpcSigner)._legacySignMessage(
+        messageHashBytes
+      )
+    }
+    return await signer.signMessage(messageHashBytes)
   }
 
-  /** Encrypt data using the Provider's own symmetric key
+  /**
+   * Encrypt data using the Provider's own symmetric key
    * @param {string} data data in json format that needs to be sent , it can either be a DDO or a File array
-   * @param {number} chainId network's id so provider can choose the corresponding web3 object
+   * @param {number} chainId network's id so provider can choose the corresponding Signer object
    * @param {string} providerUri provider uri address
    * @param {AbortSignal} signal abort signal
    * @return {Promise<string>} urlDetails
@@ -152,13 +169,14 @@ export class Provider {
     }
   }
 
-  /** Get DDO File details (if possible)
-   * @param {UrlFile | Arweave | Ipfs | GraphqlQuery | Smartcontract} file one of the supported file structures
-   * @param {string} serviceId the id of the service for which to check the files
-   * @param {string} providerUri uri of the provider that will be used to check the file
-   * @param {boolean} withChecksum if true, will return checksum of files content
-   * @param {AbortSignal} signal abort signal
-   * @return {Promise<FileInfo[]>} urlDetails
+  /**
+   * Get file details for a given DID and service ID.
+   * @param {string} did - The DID to check.
+   * @param {string} serviceId - The service ID to check.
+   * @param {string} providerUri - The URI of the provider.
+   * @param {boolean} [withChecksum=false] - Whether or not to include a checksum.
+   * @param {AbortSignal} [signal] - An optional abort signal.
+   * @returns {Promise<FileInfo[]>} A promise that resolves with an array of file info objects.
    */
   public async checkDidFiles(
     did: string,
@@ -178,30 +196,43 @@ export class Provider {
       ? this.getEndpointURL(serviceEndpoints, 'fileinfo').urlPath
       : null
     if (!path) return null
+    let response
     try {
-      const response = await fetch(path, {
+      response = await fetch(path, {
         method: 'POST',
         body: JSON.stringify(args),
         headers: { 'Content-Type': 'application/json' },
         signal
       })
+    } catch (e) {
+      LoggerInstance.error('File info call failed: ')
+      LoggerInstance.error(e)
+      throw new Error(e)
+    }
+    if (response?.ok) {
       const results: FileInfo[] = await response.json()
       for (const result of results) {
         files.push(result)
       }
       return files
-    } catch (e) {
-      LoggerInstance.error(e)
-      throw new Error('HTTP request failed calling Provider')
     }
+    const resolvedResponse = await response.json()
+    LoggerInstance.error(
+      'File info call failed: ',
+      response.status,
+      response.statusText,
+      resolvedResponse
+    )
+    throw new Error(resolvedResponse?.error)
   }
 
-  /** Get URL details (if possible)
+  /**
+   * Get File details (if possible)
    * @param {UrlFile | Arweave | Ipfs | GraphqlQuery | Smartcontract} file one of the supported file structures
    * @param {string} providerUri uri of the provider that will be used to check the file
-   * @param {boolean} withChecksum if true, will return checksum of files content
-   * @param {AbortSignal} signal abort signal
-   * @return {Promise<FileInfo[]>} urlDetails
+   * @param {boolean} [withChecksum=false] - Whether or not to include a checksum.
+   * @param {AbortSignal} [signal] - An optional abort signal.
+   * @returns {Promise<FileInfo[]>} A promise that resolves with an array of file info objects.
    */
   public async getFileInfo(
     file: UrlFile | Arweave | Ipfs | GraphqlQuery | Smartcontract,
@@ -220,22 +251,34 @@ export class Provider {
       ? this.getEndpointURL(serviceEndpoints, 'fileinfo').urlPath
       : null
     if (!path) return null
+    let response
     try {
-      const response = await fetch(path, {
+      response = await fetch(path, {
         method: 'POST',
         body: JSON.stringify(args),
         headers: { 'Content-Type': 'application/json' },
         signal
       })
+    } catch (e) {
+      LoggerInstance.error('File info call failed: ')
+      LoggerInstance.error(e)
+      throw new Error(e)
+    }
+    if (response?.ok) {
       const results: FileInfo[] = await response.json()
       for (const result of results) {
         files.push(result)
       }
       return files
-    } catch (e) {
-      LoggerInstance.error(e)
-      throw new Error('HTTP request failed calling Provider')
     }
+    const resolvedResponse = await response.json()
+    LoggerInstance.error(
+      'File info call failed: ',
+      response.status,
+      response.statusText,
+      resolvedResponse
+    )
+    throw new Error(resolvedResponse?.error)
   }
 
   /**
@@ -255,33 +298,48 @@ export class Provider {
     )
     const path = this.getEndpointURL(serviceEndpoints, 'computeEnvironments')?.urlPath
     if (!path) return null
+    let response
     try {
-      const response = await fetch(path, {
+      response = await fetch(path, {
         method: 'GET',
         headers: { 'Content-Type': 'application/json' },
         signal
       })
+    } catch (e) {
+      LoggerInstance.error('Fetch compute env failed: ')
+      LoggerInstance.error(e)
+      throw new Error(e)
+    }
+    if (response?.ok) {
       const result = response.json()
       if (Array.isArray(result)) {
         const providerChain: number = providerEndpoints.chainId
         return { [providerChain]: result }
       }
       return result
-    } catch (e) {
-      LoggerInstance.error(e)
-      throw new Error('HTTP request failed calling Provider')
     }
+    const resolvedResponse = await response.json()
+    LoggerInstance.error(
+      'Fetch compute env failed: ',
+      response.status,
+      response.statusText,
+      resolvedResponse
+    )
+    throw new Error(resolvedResponse?.error)
   }
 
-  /** Initialize a service request.
-   * @param {DDO | string} asset
-   * @param {number} serviceIndex
-   * @param {string} serviceType
-   * @param {string} consumerAddress
-   * @param {UserCustomParameters} userCustomParameters
-   * @param {string} providerUri Identifier of the asset to be registered in ocean
-   * @param {AbortSignal} signal abort signal
-   * @return {Promise<ProviderInitialize>} ProviderInitialize data
+  /**
+   * Initializes the provider for a service request.
+   * @param {string} did - The asset DID .
+   * @param {string} serviceId - The asset service ID.
+   * @param {number} fileIndex - The file index.
+   * @param {string} consumerAddress - The consumer address.
+   * @param {string} providerUri - The URI of the provider.
+   * @param {AbortSignal} [signal] - The abort signal if any.
+   * @param {UserCustomParameters} [userCustomParameters] - The custom parameters if any.
+   * @param {string} [computeEnv] - The compute environment if any.
+   * @param {number} [validUntil] - The validity time if any.
+   * @returns {Promise<ProviderInitialize>} A promise that resolves with ProviderInitialize response.
    */
   public async initialize(
     did: string,
@@ -312,27 +370,39 @@ export class Provider {
       initializeUrl += '&userdata=' + encodeURI(JSON.stringify(userCustomParameters))
     if (computeEnv) initializeUrl += '&environment=' + encodeURI(computeEnv)
     if (validUntil) initializeUrl += '&validUntil=' + validUntil
+    let response
     try {
-      const response = await fetch(initializeUrl, {
+      response = await fetch(initializeUrl, {
         method: 'GET',
         headers: { 'Content-Type': 'application/json' },
         signal
       })
+    } catch (e) {
+      LoggerInstance.error('Provider initialized failed: ')
+      LoggerInstance.error(e)
+      throw new Error(`Provider initialize failed url: ${initializeUrl} `)
+    }
+    if (response?.ok) {
       const results: ProviderInitialize = await response.json()
       return results
-    } catch (e) {
-      LoggerInstance.error(e)
-      throw new Error('Asset URL not found or not available.')
     }
+    const resolvedResponse = await response.json()
+    LoggerInstance.error(
+      'Provider initialized failed: ',
+      response.status,
+      response.statusText,
+      resolvedResponse
+    )
+    throw new Error(resolvedResponse?.error)
   }
 
-  /** Initialize a compute request.
-   * @param {ComputeAsset} assets
-   * @param {ComputeAlgorithmber} algorithm
-   * @param {string} computeEnv
-   * @param {number} validUntil
-   * @param {string} providerUri Identifier of the asset to be registered in ocean
-   * @param {string} accountId
+  /** Initializes the provider for a compute request.
+   * @param {ComputeAsset[]} assets The datasets array to initialize compute request.
+   * @param {ComputeAlgorithmber} algorithm The algorithm to use.
+   * @param {string} computeEnv The compute environment.
+   * @param {number} validUntil  The job expiration date.
+   * @param {string} providerUri The provider URI.
+   * @param {string} accountId caller address
    * @param {AbortSignal} signal abort signal
    * @return {Promise<ProviderComputeInitialize>} ProviderComputeInitialize data
    */
@@ -360,39 +430,52 @@ export class Provider {
       ? this.getEndpointURL(serviceEndpoints, 'initializeCompute').urlPath
       : null
     if (!initializeUrl) return null
+    let response
     try {
-      const response = await fetch(initializeUrl, {
+      response = await fetch(initializeUrl, {
         method: 'POST',
         body: JSON.stringify(providerData),
         headers: { 'Content-Type': 'application/json' },
         signal
       })
-      const results = await response.json()
-      return results
     } catch (e) {
+      LoggerInstance.error('Initialize compute failed: ')
       LoggerInstance.error(e)
       throw new Error('ComputeJob cannot be initialized')
     }
+    if (response?.ok) {
+      const params = await response.json()
+      return params
+    }
+    const resolvedResponse = await response.json()
+    LoggerInstance.error(
+      'Initialize compute failed: ',
+      response.status,
+      response.statusText,
+      resolvedResponse
+    )
+    LoggerInstance.error('Payload was:', providerData)
+    throw new Error(resolvedResponse?.error)
   }
 
-  /** Gets fully signed URL for download
-   * @param {string} did
-   * @param {string} accountId
-   * @param {string} serviceId
-   * @param {number} fileIndex
-   * @param {string} providerUri
-   * @param {Web3} web3
-   * @param {UserCustomParameters} userCustomParameters
-   * @return {Promise<string>}
+  /**
+   * Gets the download URL.
+   * @param {string} did - The DID.
+   * @param {string} serviceId - The service ID.
+   * @param {number} fileIndex - The file index.
+   * @param {string} transferTxId - The transfer transaction ID.
+   * @param {string} providerUri - The provider URI.
+   * @param {Signer} signer - The signer.
+   * @param {UserCustomParameters} userCustomParameters - The user custom parameters.
+   * @returns {Promise<any>} The download URL.
    */
   public async getDownloadUrl(
     did: string,
-    accountId: string,
     serviceId: string,
     fileIndex: number,
     transferTxId: string,
     providerUri: string,
-    web3: Web3,
+    signer: Signer,
     userCustomParameters?: UserCustomParameters
   ): Promise<any> {
     const providerEndpoints = await this.getEndpoints(providerUri)
@@ -405,13 +488,13 @@ export class Provider {
       : null
     if (!downloadUrl) return null
     const nonce = Date.now()
-    const signature = await this.signProviderRequest(web3, accountId, did + nonce)
+    const signature = await this.signProviderRequest(signer, did + nonce)
     let consumeUrl = downloadUrl
     consumeUrl += `?fileIndex=${fileIndex}`
     consumeUrl += `&documentId=${did}`
     consumeUrl += `&transferTxId=${transferTxId}`
     consumeUrl += `&serviceId=${serviceId}`
-    consumeUrl += `&consumerAddress=${accountId}`
+    consumeUrl += `&consumerAddress=${await signer.getAddress()}`
     consumeUrl += `&nonce=${nonce}`
     consumeUrl += `&signature=${signature}`
     if (userCustomParameters)
@@ -420,20 +503,19 @@ export class Provider {
   }
 
   /** Instruct the provider to start a compute job
-   * @param {string} did
-   * @param {string} consumerAddress
-   * @param {string} computeEnv
-   * @param {ComputeAlgorithm} algorithm
-   * @param {string} providerUri
-   * @param {Web3} web3
+   * @param {string} providerUri The provider URI.
+   * @param {Signer} signer The consumer signer object.
+   * @param {string} computeEnv The compute environment.
+   * @param {ComputeAsset} dataset The dataset to start compute on
+   * @param {ComputeAlgorithm} algorithm The algorithm to start compute with.
    * @param {AbortSignal} signal abort signal
-   * @param {ComputeOutput} output
-   * @return {Promise<ComputeJob | ComputeJob[]>}
+   * @param {ComputeAsset[]} additionalDatasets The additional datasets if that is the case.
+   * @param {ComputeOutput} output The compute job output settings.
+   * @return {Promise<ComputeJob | ComputeJob[]>} The compute job or jobs.
    */
   public async computeStart(
     providerUri: string,
-    web3: Web3,
-    consumerAddress: string,
+    consumer: Signer,
     computeEnv: string,
     dataset: ComputeAsset,
     algorithm: ComputeAlgorithm,
@@ -451,16 +533,12 @@ export class Provider {
       : null
 
     const nonce = Date.now()
-    let signatureMessage = consumerAddress
+    let signatureMessage = await consumer.getAddress()
     signatureMessage += dataset.documentId
     signatureMessage += nonce
-    const signature = await this.signProviderRequest(
-      web3,
-      consumerAddress,
-      signatureMessage
-    )
+    const signature = await this.signProviderRequest(consumer, signatureMessage)
     const payload = Object()
-    payload.consumerAddress = consumerAddress
+    payload.consumerAddress = await consumer.getAddress()
     payload.signature = signature
     payload.nonce = nonce
     payload.environment = computeEnv
@@ -469,40 +547,40 @@ export class Provider {
     if (payload.additionalDatasets) payload.additionalDatasets = additionalDatasets
     if (output) payload.output = output
     if (!computeStartUrl) return null
+    let response
     try {
-      const response = await fetch(computeStartUrl, {
+      response = await fetch(computeStartUrl, {
         method: 'POST',
         body: JSON.stringify(payload),
         headers: { 'Content-Type': 'application/json' },
         signal
       })
-
-      if (response?.ok) {
-        const params = await response.json()
-        return params
-      }
-      LoggerInstance.error(
-        'Compute start failed: ',
-        response.status,
-        response.statusText,
-        await response.json()
-      )
-      LoggerInstance.error('Payload was:', payload)
-      return null
     } catch (e) {
       LoggerInstance.error('Compute start failed:')
       LoggerInstance.error(e)
       LoggerInstance.error('Payload was:', payload)
       throw new Error('HTTP request failed calling Provider')
     }
+    if (response?.ok) {
+      const params = await response.json()
+      return params
+    }
+    LoggerInstance.error(
+      'Compute start failed: ',
+      response.status,
+      response.statusText,
+      await response.json()
+    )
+    LoggerInstance.error('Payload was:', payload)
+    return null
   }
 
   /** Instruct the provider to Stop the execution of a to stop a compute job.
-   * @param {string} did
-   * @param {string} consumerAddress
-   * @param {string} jobId
-   * @param {string} providerUri
-   * @param {Web3} web3
+   * @param {string} did the asset did
+   * @param {string} consumerAddress The consumer address.
+   * @param {string} jobId the compute job id
+   * @param {string} providerUri The provider URI.
+   * @param {Signer} signer The consumer signer object.
    * @param {AbortSignal} signal abort signal
    * @return {Promise<ComputeJob | ComputeJob[]>}
    */
@@ -511,7 +589,7 @@ export class Provider {
     consumerAddress: string,
     jobId: string,
     providerUri: string,
-    web3: Web3,
+    signer: Signer,
     signal?: AbortSignal
   ): Promise<ComputeJob | ComputeJob[]> {
     const providerEndpoints = await this.getEndpoints(providerUri)
@@ -535,11 +613,7 @@ export class Provider {
     signatureMessage += jobId || ''
     signatureMessage += (did && `${this.noZeroX(did)}`) || ''
     signatureMessage += nonce
-    const signature = await this.signProviderRequest(
-      web3,
-      consumerAddress,
-      signatureMessage
-    )
+    const signature = await this.signProviderRequest(signer, signatureMessage)
     const payload = Object()
     payload.signature = signature
     payload.documentId = this.noZeroX(did)
@@ -547,27 +621,34 @@ export class Provider {
     if (jobId) payload.jobId = jobId
 
     if (!computeStopUrl) return null
+    let response
     try {
-      const response = await fetch(computeStopUrl, {
+      response = await fetch(computeStopUrl, {
         method: 'PUT',
         body: JSON.stringify(payload),
         headers: { 'Content-Type': 'application/json' },
         signal
       })
-
-      if (response?.ok) {
-        const params = await response.json()
-        return params
-      }
-      LoggerInstance.error('Compute stop failed:', response.status, response.statusText)
-      LoggerInstance.error('Payload was:', payload)
-      return null
     } catch (e) {
       LoggerInstance.error('Compute stop failed:')
       LoggerInstance.error(e)
       LoggerInstance.error('Payload was:', payload)
       throw new Error('HTTP request failed calling Provider')
     }
+
+    if (response?.ok) {
+      const params = await response.json()
+      return params
+    }
+    const resolvedResponse = await response.json()
+    LoggerInstance.error(
+      'Compute stop failed: ',
+      response.status,
+      response.statusText,
+      resolvedResponse
+    )
+    LoggerInstance.error('Payload was:', payload)
+    throw new Error(resolvedResponse?.error)
   }
 
   /** Get compute status for a specific jobId/documentId/owner.
@@ -599,41 +680,51 @@ export class Provider {
     url += (jobId && `&jobId=${jobId}`) || ''
 
     if (!computeStatusUrl) return null
+    let response
     try {
-      const response = await fetch(computeStatusUrl + url, {
+      response = await fetch(computeStatusUrl + url, {
         method: 'GET',
         headers: { 'Content-Type': 'application/json' },
         signal
       })
-      if (response?.ok) {
-        const params = await response.json()
-        return params
-      }
-      LoggerInstance.error(
-        'Get compute status failed:',
-        response.status,
-        response.statusText
-      )
-      return null
     } catch (e) {
       LoggerInstance.error('Get compute status failed')
       LoggerInstance.error(e)
-      throw new Error('HTTP request failed calling Provider')
+      throw new Error(e)
     }
+    if (response?.ok) {
+      const params = await response.json()
+      return params
+    }
+    LoggerInstance.error(
+      'Get compute status failed:',
+      response.status,
+      response.statusText
+    )
+    if (response?.ok) {
+      const params = await response.json()
+      return params
+    }
+    const resolvedResponse = await response.json()
+    LoggerInstance.error(
+      'Get compute status failed:',
+      response.status,
+      response.statusText,
+      resolvedResponse
+    )
+    throw new Error(resolvedResponse?.error)
   }
 
   /** Get compute result url
    * @param {string} providerUri The URI of the provider we want to query
-   * @param {Web3} web3 Web3 instance
-   * @param {string} consumerAddress The consumer ethereum address
+   * @param {Signer} consumer consumer Signer wallet object
    * @param {string} jobId The ID of a compute job.
    * @param {number} index Result index
    * @return {Promise<string>}
    */
   public async getComputeResultUrl(
     providerUri: string,
-    web3: Web3,
-    consumerAddress: string,
+    consumer: Signer,
     jobId: string,
     index: number
   ): Promise<string> {
@@ -647,18 +738,14 @@ export class Provider {
       : null
 
     const nonce = Date.now()
-    let signatureMessage = consumerAddress
+    let signatureMessage = await consumer.getAddress()
     signatureMessage += jobId
     signatureMessage += index.toString()
     signatureMessage += nonce
-    const signature = await this.signProviderRequest(
-      web3,
-      consumerAddress,
-      signatureMessage
-    )
+    const signature = await this.signProviderRequest(consumer, signatureMessage)
     if (!computeResultUrl) return null
     let resultUrl = computeResultUrl
-    resultUrl += `?consumerAddress=${consumerAddress}`
+    resultUrl += `?consumerAddress=${await consumer.getAddress()}`
     resultUrl += `&jobId=${jobId}`
     resultUrl += `&index=${index.toString()}`
     resultUrl += `&nonce=${nonce}`
@@ -667,20 +754,18 @@ export class Provider {
   }
 
   /** Deletes a compute job.
-   * @param {string} did
-   * @param {string} consumerAddress
-   * @param {string} jobId
-   * @param {string} providerUri
-   * @param {Web3} web3
+   * @param {string} did asset did
+   * @param {Signer} consumer consumer Signer wallet object
+   * @param {string} jobId the compute job ID
+   * @param {string} providerUri The URI of the provider we want to query
    * @param {AbortSignal} signal abort signal
    * @return {Promise<ComputeJob | ComputeJob[]>}
    */
   public async computeDelete(
     did: string,
-    consumerAddress: string,
+    consumer: Signer,
     jobId: string,
     providerUri: string,
-    web3: Web3,
     signal?: AbortSignal
   ): Promise<ComputeJob | ComputeJob[]> {
     const providerEndpoints = await this.getEndpoints(providerUri)
@@ -694,59 +779,57 @@ export class Provider {
 
     const nonce = await this.getNonce(
       providerUri,
-      consumerAddress,
+      await consumer.getAddress(),
       signal,
       providerEndpoints,
       serviceEndpoints
     )
 
-    let signatureMessage = consumerAddress
+    let signatureMessage = await consumer.getAddress()
     signatureMessage += jobId || ''
     signatureMessage += (did && `${this.noZeroX(did)}`) || ''
     signatureMessage += nonce
-    const signature = await this.signProviderRequest(
-      web3,
-      consumerAddress,
-      signatureMessage
-    )
+    const signature = await this.signProviderRequest(consumer, signatureMessage)
     const payload = Object()
     payload.documentId = this.noZeroX(did)
-    payload.consumerAddress = consumerAddress
+    payload.consumerAddress = await consumer.getAddress()
     payload.jobId = jobId
     if (signature) payload.signature = signature
 
     if (!computeDeleteUrl) return null
+    let response
     try {
-      const response = await fetch(computeDeleteUrl, {
+      response = await fetch(computeDeleteUrl, {
         method: 'DELETE',
         body: JSON.stringify(payload),
         headers: { 'Content-Type': 'application/json' },
         signal
       })
-
-      if (response?.ok) {
-        const params = await response.json()
-        return params
-      }
-      LoggerInstance.error(
-        'Delete compute job failed:',
-        response.status,
-        response.statusText
-      )
-      LoggerInstance.error('Payload was:', payload)
-      return null
     } catch (e) {
       LoggerInstance.error('Delete compute job failed:')
       LoggerInstance.error(e)
       LoggerInstance.error('Payload was:', payload)
       throw new Error('HTTP request failed calling Provider')
     }
+    if (response?.ok) {
+      const params = await response.json()
+      return params
+    }
+    const resolvedResponse = await response.json()
+    LoggerInstance.error(
+      'Delete compute job failed:',
+      response.status,
+      response.statusText,
+      resolvedResponse
+    )
+    LoggerInstance.error('Payload was:', payload)
+    throw new Error(resolvedResponse?.error)
   }
 
   /** Check for a valid provider at URL
    * @param {String} url provider uri address
    * @param {AbortSignal} signal abort signal
-   * @return {Promise<boolean>} string
+   * @return {Promise<boolean>} valid or not
    */
   public async isValidProvider(url: string, signal?: AbortSignal): Promise<boolean> {
     try {
@@ -766,10 +849,21 @@ export class Provider {
     }
   }
 
+  /**
+   * Private method that removes the leading 0x from a string.
+   * @param {string} input - The input string.
+   * @returns The transformed string.
+   */
   private noZeroX(input: string): string {
     return this.zeroXTransformer(input, false)
   }
 
+  /**
+   * Private method that removes the leading 0x from a string.
+   * @param {string} input - The input string.
+   * @param {boolean} zeroOutput - Whether to include 0x in the output if the input is valid and zeroOutput is true.
+   * @returns The transformed string.
+   */
   private zeroXTransformer(input = '', zeroOutput: boolean): string {
     const { valid, output } = this.inputMatch(
       input,
@@ -779,7 +873,13 @@ export class Provider {
     return (zeroOutput && valid ? '0x' : '') + output
   }
 
-  // Shared functions
+  /**
+   * Private method that matches an input string against a regular expression and returns the first capture group.
+   * @param {string} input - The input string to match.
+   * @param {RegExp} regexp - The regular expression to match against.
+   * @param {string} conversorName - The name of the method calling this function.
+   * @returns An object with two properties: `valid` (a boolean indicating whether the input matched the regular expression) and `output` (the first capture group of the match, or the original input if there was no match).
+   */
   private inputMatch(
     input: string,
     regexp: RegExp,
@@ -798,6 +898,11 @@ export class Provider {
     return { valid: true, output: match[1] }
   }
 
+  /**
+   * Private method that fetches data from a URL using the GET method.
+   * @param {string} url - The URL to fetch data from.
+   * @returns A Promise that resolves to a Response object.
+   */
   private async getData(url: string): Promise<Response> {
     return fetch(url, {
       method: 'GET',
