@@ -130,7 +130,11 @@ export async function sendTx(
       ).toString()
     }
     overrides = {
-      maxPriorityFeePerGas: aggressiveFeePriorityFeePerGas,
+      maxPriorityFeePerGas:
+        (chainId === MUMBAI_NETWORK_ID || chainId === POLYGON_NETWORK_ID) &&
+        Number(aggressiveFeePriorityFeePerGas) < MIN_GAS_FEE_POLYGON
+          ? MIN_GAS_FEE_POLYGON
+          : Number(aggressiveFeePriorityFeePerGas),
       maxFeePerGas:
         (chainId === MUMBAI_NETWORK_ID || chainId === POLYGON_NETWORK_ID) &&
         Number(aggressiveFeePerGas) < MIN_GAS_FEE_POLYGON
