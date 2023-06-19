@@ -116,6 +116,17 @@ export const configHelperNetworks: Config[] = [
     subgraphUri: 'https://v4.subgraph.moonriver.oceanprotocol.com',
     explorerUri: 'https://moonriver.moonscan.io/',
     gasFeeMultiplier: 1.05
+  },
+  {
+    ...configHelperNetworksBase,
+    chainId: 100,
+    network: 'gen-x-testnet',
+    nodeUri: 'https://rpc.genx.minimal-gaia-x.eu',
+    metadataCacheUri: 'https://aquarius.v4.delta-dao.com',
+    providerUri: 'https://provider.v4.genx.delta-dao.com',
+    subgraphUri: 'https://subgraph.v4.genx.minimal-gaia-x.eu',
+    explorerUri: 'https://explorer.genx.minimal-gaia-x.eu/',
+    gasFeeMultiplier: 1
   }
 ]
 
