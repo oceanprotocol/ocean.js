@@ -67,9 +67,10 @@
 
 /// ```JSON
 ///   "dependencies": {
-///     "@oceanprotocol/contracts": "1.0.0-alpha.28",
-///     "@oceanprotocol/lib": "1.0.0-next.37",
+///     "@oceanprotocol/contracts": "^1.1.8",
+///     "@oceanprotocol/lib": "^3.0.1",
 ///     "crypto-js": "^4.1.1",
+///     "decimal.js": "^10.4.1",
 ///     "ethers": "^5.7.2"
 ///   }
 /// ```
