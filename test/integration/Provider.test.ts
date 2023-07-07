@@ -57,7 +57,7 @@ describe('Provider tests', async () => {
   })
 
   it('Alice tests getNonce', async () => {
-    let nonce = await providerInstance.getNonce(
+    const nonce = await providerInstance.getNonce(
       config.providerUri,
       '0xe2DD09d719Da89e5a3D0F2549c7E24566e947260'
     )
