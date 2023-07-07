@@ -55,4 +55,12 @@ describe('Provider tests', async () => {
     const computeEnvs = await providerInstance.getComputeEnvironments(config.providerUri)
     assert(computeEnvs, 'No Compute environments found')
   })
+
+  it('Alice tests getNonce', async () => {
+    let nonce = await providerInstance.getNonce(
+      config.providerUri,
+      '0xe2DD09d719Da89e5a3D0F2549c7E24566e947260'
+    )
+    assert(nonce, 'could not get nonce for the sent address')
+  })
 })

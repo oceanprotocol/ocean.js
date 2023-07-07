@@ -100,10 +100,11 @@ export class Provider {
         headers: { 'Content-Type': 'application/json' },
         signal
       })
-      return (await response.json()).nonce.toString()
+      LoggerInstance.log(await response.json())
+      return (await response.json()).nonce
     } catch (e) {
       LoggerInstance.error(e)
-      throw new Error('HTTP request failed calling Provider')
+      throw new Error(e.message)
     }
   }
 
