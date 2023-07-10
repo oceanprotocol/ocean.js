@@ -100,7 +100,6 @@ export class Provider {
         headers: { 'Content-Type': 'application/json' },
         signal
       })
-      LoggerInstance.log(await response.json())
       return (await response.json()).nonce
     } catch (e) {
       LoggerInstance.error(e)
