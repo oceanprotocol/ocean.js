@@ -100,7 +100,9 @@ export class Provider {
         headers: { 'Content-Type': 'application/json' },
         signal
       })
-      return (await response.json()).nonce
+      const nonce = (await response.json()).nonce
+      const sanitizedNonce = !nonce || nonce === null ? '0' : nonce
+      return sanitizedNonce
     } catch (e) {
       LoggerInstance.error(e)
       throw new Error(e.message)
