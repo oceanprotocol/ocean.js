@@ -214,27 +214,27 @@ jobs:
       - name: Create Guide & Commit if there are changes
         run: npm run commit:guides
 
-  update_docs:
-    runs-on: ubuntu-latest
-    needs: [test_unit, test_integration]
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v2
-        with:
-          node-version: '16'
+  # update_docs:
+  #   runs-on: ubuntu-latest
+  #   needs: [test_unit, test_integration]
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #     - uses: actions/setup-node@v2
+  #       with:
+  #         node-version: '16'
 
-      - name: checkout ocean.js repo
-        uses: actions/checkout@v3
-        with:
-          repository: 'oceanprotocol/ocean.js'
-          path: 'ocean.js'
-          ref: ${{ github.event.pull_request.head.sha }}
+  #     - name: checkout ocean.js repo
+  #       uses: actions/checkout@v3
+  #       with:
+  #         repository: 'oceanprotocol/ocean.js'
+  #         path: 'ocean.js'
+  #         ref: ${{ github.event.pull_request.head.sha }}
 
-      - name: setup git config
-        run: |
-          # setup the username and email. I tend to use 'GitHub Actions Bot' with no email by default
-          git config user.name "GitHub Actions Bot"
-          git config user.email "<>"
+  #     - name: setup git config
+  #       run: |
+  #         # setup the username and email. I tend to use 'GitHub Actions Bot' with no email by default
+  #         git config user.name "GitHub Actions Bot"
+  #         git config user.email "<>"
 
-      - name: Create updated docs & commit changes
-        run: npm run commit:docs
+  #     - name: Create updated docs & commit changes
+  #       run: npm run commit:docs
