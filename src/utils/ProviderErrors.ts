@@ -77,23 +77,16 @@ const PREDEFINED_ERRORS = {
 }
 
 export function getErrorMessage(error: Object): string {
-  LoggerInstance.log('lib error: ', error)
   const key = Object.keys(error)[0]
-  LoggerInstance.log('error key: ', key)
   if (key === 'error') {
     const message = error[key]
-    LoggerInstance.log('error message: ', message)
     const errorMessage =
       PREDEFINED_ERRORS[key][message] || `Provider request failed: ${message}`
-    LoggerInstance.log('returned error message: ', message)
     return errorMessage
   } else {
     const errorObject = error[key]
-    LoggerInstance.log('error message: ', errorObject)
     const messagekey = Object.keys(error)[1]
-    LoggerInstance.log('error message key: ', messagekey)
     const errorMessage = error[messagekey]
-    LoggerInstance.log('returned error message: ', `${errorMessage} : ${errorObject}`)
     return `${errorMessage} : ${errorObject}`
   }
 }
