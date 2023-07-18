@@ -120,6 +120,7 @@ jobs:
           bash -x start_ocean.sh --with-provider2 --no-dashboard --with-c2d 2>&1 > start_ocean.log &
         env:
           CONTRACTS_VERSION: v1.1.3
+          PROVIDER_VERSION: invalid-signature
 
       - run: npm ci
       - run: npm run build:metadata
