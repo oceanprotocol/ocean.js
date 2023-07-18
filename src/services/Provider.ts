@@ -101,6 +101,7 @@ export class Provider {
         signal
       })
       const nonce = (await response.json()).nonce
+      console.log(`[getNonce] Consumer: ${consumerAddress} nonce: ${nonce}`)
       const sanitizedNonce = !nonce || nonce === null ? '0' : nonce
       return sanitizedNonce
     } catch (e) {
@@ -491,15 +492,13 @@ export class Provider {
     if (!downloadUrl) return null
     const consumerAddress = await signer.getAddress()
     const nonce = (
-      parseInt(
-        await this.getNonce(
-          providerUri,
-          consumerAddress,
-          null,
-          providerEndpoints,
-          serviceEndpoints
-        )
-      ) + 1
+      (await this.getNonce(
+        providerUri,
+        consumerAddress,
+        null,
+        providerEndpoints,
+        serviceEndpoints
+      )) + 1
     ).toString()
 
     const signature = await this.signProviderRequest(signer, did + nonce)
@@ -548,15 +547,13 @@ export class Provider {
 
     const consumerAddress = await consumer.getAddress()
     const nonce = (
-      parseInt(
-        await this.getNonce(
-          providerUri,
-          consumerAddress,
-          signal,
-          providerEndpoints,
-          serviceEndpoints
-        )
-      ) + 1
+      (await this.getNonce(
+        providerUri,
+        consumerAddress,
+        signal,
+        providerEndpoints,
+        serviceEndpoints
+      )) + 1
     ).toString()
 
     let signatureMessage = consumerAddress
@@ -628,15 +625,13 @@ export class Provider {
       : null
 
     const nonce = (
-      parseInt(
-        await this.getNonce(
-          providerUri,
-          consumerAddress,
-          signal,
-          providerEndpoints,
-          serviceEndpoints
-        )
-      ) + 1
+      (await this.getNonce(
+        providerUri,
+        consumerAddress,
+        signal,
+        providerEndpoints,
+        serviceEndpoints
+      )) + 1
     ).toString()
 
     let signatureMessage = consumerAddress
@@ -768,15 +763,13 @@ export class Provider {
       : null
 
     const nonce = (
-      parseInt(
-        await this.getNonce(
-          providerUri,
-          await consumer.getAddress(),
-          null,
-          providerEndpoints,
-          serviceEndpoints
-        )
-      ) + 1
+      (await this.getNonce(
+        providerUri,
+        await consumer.getAddress(),
+        null,
+        providerEndpoints,
+        serviceEndpoints
+      )) + 1
     ).toString()
     let signatureMessage = await consumer.getAddress()
     signatureMessage += jobId
@@ -818,15 +811,13 @@ export class Provider {
       : null
 
     const nonce = (
-      parseInt(
-        await this.getNonce(
-          providerUri,
-          await consumer.getAddress(),
-          signal,
-          providerEndpoints,
-          serviceEndpoints
-        )
-      ) + 1
+      (await this.getNonce(
+        providerUri,
+        await consumer.getAddress(),
+        signal,
+        providerEndpoints,
+        serviceEndpoints
+      )) + 1
     ).toString()
 
     let signatureMessage = await consumer.getAddress()
