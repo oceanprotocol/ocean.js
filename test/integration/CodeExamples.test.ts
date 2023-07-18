@@ -61,23 +61,12 @@
 /// # On linux press CTRL + D to save
 /// ```
 
-/// ## 3. Install dependancies
+/// ## 3. Install dependencies
 
-/// Open the package.json file in a text editor and update the dependancies to include the following:
-
-/// ```JSON
-///   "dependencies": {
-///     "@oceanprotocol/contracts": "1.0.0-alpha.28",
-///     "@oceanprotocol/lib": "1.0.0-next.37",
-///     "crypto-js": "^4.1.1",
-///     "ethers": "^5.7.2"
-///   }
-/// ```
-
-/// Now in your terminal run the following command:
+/// Install dependencies running the following command in your terminal:
 
 /// ```bash
-/// npm install
+/// npm install @oceanprotocol/lib crypto-js ethers@5.7.2 typescript @types/node ts-node
 /// ```
 
 /// ## 4. Import dependencies and add variables and constants

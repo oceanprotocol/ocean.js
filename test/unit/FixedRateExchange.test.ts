@@ -64,7 +64,7 @@ describe('Fixed Rate unit test', () => {
     dtParams.mpFeeAddress = await factoryOwner.getAddress()
   })
 
-  describe('Test a Fixed Rate Exchange with DAI (18 Decimals)', () => {
+  describe('Test a Fixed Rate Exchange with DAI (18 Decimals) as Basetoken', () => {
     it('#create an exchange', async () => {
       // CREATE AN Exchange
       // we prepare transaction parameters objects
@@ -459,7 +459,7 @@ describe('Fixed Rate unit test', () => {
     })
   })
 
-  describe('Test a Fixed Rate Exchange with USDC (6 Decimals)', () => {
+  describe('Test a Fixed Rate Exchange with USDC (6 Decimals) as Basetoken', () => {
     it('#create an exchange', async () => {
       // CREATE AN Exchange
       // we prepare transaction parameters objects
@@ -808,6 +808,91 @@ describe('Fixed Rate unit test', () => {
 
       expect((await fixedRate.getFeesInfo(exchangeId)).marketFeeCollector).to.equal(
         await user1.getAddress()
+      )
+    })
+  })
+
+  describe('Test a Fixed Rate Exchange With Different Fee Tokens', () => {
+    it('#create a fixed rate exchange with DAI as feetoken', async () => {
+      // CREATE AN Exchange
+      // we prepare transaction parameters objects
+
+      const nftFactory = new NftFactory(addresses.ERC721Factory, exchangeOwner)
+
+      const freParams: FreCreationParams = {
+        fixedRateAddress: addresses.FixedPrice,
+        baseTokenAddress: addresses.MockDAI,
+        owner: await exchangeOwner.getAddress(),
+        marketFeeCollector: await user2.getAddress(),
+        baseTokenDecimals: 18,
+        datatokenDecimals: 18,
+        fixedRate: '1',
+        marketFee: '0.001',
+        allowedConsumer: ZERO_ADDRESS,
+        withMint: false
+      }
+
+      dtParams.feeToken = addresses.MockDAI
+      dtParams.feeAmount = '0.123456789'
+
+      const tx = await nftFactory.createNftWithDatatokenWithFixedRate(
+        nftData,
+        dtParams,
+        freParams
+      )
+      const txReceipt = await tx.wait()
+      const tokenCreatedEvent = getEventFromTx(txReceipt, 'TokenCreated')
+
+      const datatokenAddress = tokenCreatedEvent.args.newTokenAddress
+
+      const datatoken = new Datatoken(exchangeOwner)
+
+      const publishingMarketFee = await datatoken.getPublishingMarketFee(datatokenAddress)
+
+      assert(
+        publishingMarketFee.publishMarketFeeAmount ===
+          ethers.utils.parseUnits('0.123456789').toString()
+      )
+    })
+
+    it('#create a fixed rate exchange with USDC as feetoken', async () => {
+      // CREATE AN Exchange
+      // we prepare transaction parameters objects
+
+      const nftFactory = new NftFactory(addresses.ERC721Factory, exchangeOwner)
+
+      const freParams: FreCreationParams = {
+        fixedRateAddress: addresses.FixedPrice,
+        baseTokenAddress: addresses.MockDAI,
+        owner: await exchangeOwner.getAddress(),
+        marketFeeCollector: await user2.getAddress(),
+        baseTokenDecimals: 18,
+        datatokenDecimals: 18,
+        fixedRate: '1',
+        marketFee: '0.001',
+        allowedConsumer: ZERO_ADDRESS,
+        withMint: false
+      }
+
+      dtParams.feeToken = addresses.MockUSDC
+      dtParams.feeAmount = '987654321'
+
+      const tx = await nftFactory.createNftWithDatatokenWithFixedRate(
+        nftData,
+        dtParams,
+        freParams
+      )
+      const txReceipt = await tx.wait()
+      const tokenCreatedEvent = getEventFromTx(txReceipt, 'TokenCreated')
+
+      const datatokenAddress = tokenCreatedEvent.args.newTokenAddress
+
+      const datatoken = new Datatoken(exchangeOwner)
+
+      const publishingMarketFee = await datatoken.getPublishingMarketFee(datatokenAddress)
+      assert(
+        publishingMarketFee.publishMarketFeeAmount ===
+          ethers.utils.parseUnits('987654321', 6).toString()
       )
     })
   })

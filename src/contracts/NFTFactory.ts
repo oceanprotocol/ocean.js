@@ -1,6 +1,13 @@
 import { BigNumber } from 'ethers'
 import ERC721Factory from '@oceanprotocol/contracts/artifacts/contracts/ERC721Factory.sol/ERC721Factory.json'
-import { generateDtName, ZERO_ADDRESS, sendTx, getEventFromTx } from '../utils'
+import {
+  generateDtName,
+  ZERO_ADDRESS,
+  sendTx,
+  getEventFromTx,
+  getTokenDecimals,
+  LoggerInstance
+} from '../utils'
 import {
   AbiItem,
   FreCreationParams,
@@ -553,6 +560,16 @@ export class NftFactory extends SmartContractWithAddress {
     if (!dtParams.name || !dtParams.symbol) {
       ;({ name, symbol } = generateDtName())
     }
+
+    let feeTokenDecimals = 18
+    if (dtParams.feeToken !== ZERO_ADDRESS) {
+      try {
+        feeTokenDecimals = await getTokenDecimals(this.signer, dtParams.feeToken)
+      } catch (error) {
+        LoggerInstance.error('getTokenDecimals error', error)
+      }
+    }
+
     return {
       templateIndex: dtParams.templateIndex,
       strings: [dtParams.name || name, dtParams.symbol || symbol],
@@ -564,7 +581,7 @@ export class NftFactory extends SmartContractWithAddress {
       ],
       uints: [
         await this.amountToUnits(null, dtParams.cap, 18),
-        await this.amountToUnits(null, dtParams.feeAmount, 18)
+        await this.amountToUnits(null, dtParams.feeAmount, feeTokenDecimals)
       ],
       bytess: []
     }
