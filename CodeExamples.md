@@ -108,7 +108,8 @@ import {
   amountToUnits,
   ValidateMetadata,
   getEventFromTx,
-  DDO
+  DDO,
+  LoggerInstance
 } from '@oceanprotocol/lib'
 ```
 
@@ -564,6 +565,7 @@ Lets check that the download URL was successfully received
       const fileData = await downloadFile(downloadURL)
       console.log(fileData)
     } catch (e) {
+      LoggerInstance.error('Download failed', e)
       assert.fail('Download failed')
     }
   
