@@ -100,7 +100,7 @@ export class Provider {
         headers: { 'Content-Type': 'application/json' },
         signal
       })
-      const nonce = (await response.json()).nonce
+      const { nonce } = await response.json()
       console.log(`[getNonce] Consumer: ${consumerAddress} nonce: ${nonce}`)
       const sanitizedNonce = !nonce || nonce === null ? '0' : nonce
       return sanitizedNonce
