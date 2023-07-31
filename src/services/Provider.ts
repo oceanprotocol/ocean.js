@@ -100,10 +100,13 @@ export class Provider {
         headers: { 'Content-Type': 'application/json' },
         signal
       })
-      return (await response.json()).nonce.toString()
+      const { nonce } = await response.json()
+      console.log(`[getNonce] Consumer: ${consumerAddress} nonce: ${nonce}`)
+      const sanitizedNonce = !nonce || nonce === null ? '0' : nonce
+      return sanitizedNonce
     } catch (e) {
       LoggerInstance.error(e)
-      throw new Error('HTTP request failed calling Provider')
+      throw new Error(e.message)
     }
   }
 
@@ -487,14 +490,24 @@ export class Provider {
       ? this.getEndpointURL(serviceEndpoints, 'download').urlPath
       : null
     if (!downloadUrl) return null
-    const nonce = Date.now()
+    const consumerAddress = await signer.getAddress()
+    const nonce = (
+      (await this.getNonce(
+        providerUri,
+        consumerAddress,
+        null,
+        providerEndpoints,
+        serviceEndpoints
+      )) + 1
+    ).toString()
+
     const signature = await this.signProviderRequest(signer, did + nonce)
     let consumeUrl = downloadUrl
     consumeUrl += `?fileIndex=${fileIndex}`
     consumeUrl += `&documentId=${did}`
     consumeUrl += `&transferTxId=${transferTxId}`
     consumeUrl += `&serviceId=${serviceId}`
-    consumeUrl += `&consumerAddress=${await signer.getAddress()}`
+    consumeUrl += `&consumerAddress=${consumerAddress}`
     consumeUrl += `&nonce=${nonce}`
     consumeUrl += `&signature=${signature}`
     if (userCustomParameters)
@@ -532,13 +545,23 @@ export class Provider {
       ? this.getEndpointURL(serviceEndpoints, 'computeStart').urlPath
       : null
 
-    const nonce = Date.now()
-    let signatureMessage = await consumer.getAddress()
+    const consumerAddress = await consumer.getAddress()
+    const nonce = (
+      (await this.getNonce(
+        providerUri,
+        consumerAddress,
+        signal,
+        providerEndpoints,
+        serviceEndpoints
+      )) + 1
+    ).toString()
+
+    let signatureMessage = consumerAddress
     signatureMessage += dataset.documentId
     signatureMessage += nonce
     const signature = await this.signProviderRequest(consumer, signatureMessage)
     const payload = Object()
-    payload.consumerAddress = await consumer.getAddress()
+    payload.consumerAddress = consumerAddress
     payload.signature = signature
     payload.nonce = nonce
     payload.environment = computeEnv
@@ -601,13 +624,15 @@ export class Provider {
       ? this.getEndpointURL(serviceEndpoints, 'computeStop').urlPath
       : null
 
-    const nonce = await this.getNonce(
-      providerUri,
-      consumerAddress,
-      signal,
-      providerEndpoints,
-      serviceEndpoints
-    )
+    const nonce = (
+      (await this.getNonce(
+        providerUri,
+        consumerAddress,
+        signal,
+        providerEndpoints,
+        serviceEndpoints
+      )) + 1
+    ).toString()
 
     let signatureMessage = consumerAddress
     signatureMessage += jobId || ''
@@ -737,7 +762,15 @@ export class Provider {
       ? this.getEndpointURL(serviceEndpoints, 'computeResult').urlPath
       : null
 
-    const nonce = Date.now()
+    const nonce = (
+      (await this.getNonce(
+        providerUri,
+        await consumer.getAddress(),
+        null,
+        providerEndpoints,
+        serviceEndpoints
+      )) + 1
+    ).toString()
     let signatureMessage = await consumer.getAddress()
     signatureMessage += jobId
     signatureMessage += index.toString()
@@ -777,13 +810,15 @@ export class Provider {
       ? this.getEndpointURL(serviceEndpoints, 'computeDelete').urlPath
       : null
 
-    const nonce = await this.getNonce(
-      providerUri,
-      await consumer.getAddress(),
-      signal,
-      providerEndpoints,
-      serviceEndpoints
-    )
+    const nonce = (
+      (await this.getNonce(
+        providerUri,
+        await consumer.getAddress(),
+        signal,
+        providerEndpoints,
+        serviceEndpoints
+      )) + 1
+    ).toString()
 
     let signatureMessage = await consumer.getAddress()
     signatureMessage += jobId || ''

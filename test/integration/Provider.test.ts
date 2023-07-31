@@ -1,7 +1,7 @@
 import { assert } from 'chai'
 import { getTestConfig, provider } from '../config'
 import { Config, Provider } from '../../src'
-import { ethers, Signer } from 'ethers'
+import { Signer } from 'ethers'
 import { FileInfo } from '../../src/@types'
 
 describe('Provider tests', async () => {
@@ -54,5 +54,13 @@ describe('Provider tests', async () => {
   it('Alice tests compute environments', async () => {
     const computeEnvs = await providerInstance.getComputeEnvironments(config.providerUri)
     assert(computeEnvs, 'No Compute environments found')
+  })
+
+  it('Alice tests getNonce', async () => {
+    const nonce = await providerInstance.getNonce(
+      config.providerUri,
+      '0xe2DD09d719Da89e5a3D0F2549c7E24566e947260'
+    )
+    assert(nonce, 'could not get nonce for the sent address')
   })
 })
