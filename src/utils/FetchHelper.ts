@@ -6,14 +6,17 @@ import { DownloadResponse } from '../@types'
  * @param {string} url - The URL of the file to download
  * @returns {Promise<void>} - A Promise that resolves when the file has been downloaded
  */
-export async function downloadFileBrowser(url: string): Promise<void> {
-  const headResponse = await fetch(url, { method: 'HEAD' })
-  const contentHeader = headResponse.headers.get('content-disposition')
-  const fileName = contentHeader?.split('=')[1] ? contentHeader?.split('=')[1] : 'file'
+export function downloadFileBrowser(url: string): void {
   const xhr = new XMLHttpRequest()
   xhr.responseType = 'blob'
   xhr.open('GET', url)
   xhr.onload = () => {
+    const contentDispositionHeader = xhr.getResponseHeader('content-disposition')
+    const fileNameMatch = contentDispositionHeader?.match(
+      /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/
+    )
+    const fileName = fileNameMatch && fileNameMatch[1] ? fileNameMatch[1] : 'file'
+
     const blobURL = window.URL.createObjectURL(xhr.response)
     const a = document.createElement('a')
     a.href = blobURL
@@ -23,7 +26,7 @@ export async function downloadFileBrowser(url: string): Promise<void> {
     a.remove()
     window.URL.revokeObjectURL(blobURL)
   }
-  xhr.send(null)
+  xhr.send()
 }
 
 /**
