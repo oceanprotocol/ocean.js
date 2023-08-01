@@ -13,7 +13,7 @@ export function downloadFileBrowser(url: string): void {
   xhr.onload = () => {
     const contentDispositionHeader = xhr.getResponseHeader('content-disposition')
     const fileNameMatch = contentDispositionHeader?.match(
-      /filename[^;=\n]*=(([\'"]).*?\2|[^;\n]*)/
+      /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/
     )
     const fileName = fileNameMatch && fileNameMatch[1] ? fileNameMatch[1] : 'file'
 
