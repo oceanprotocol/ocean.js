@@ -18,8 +18,6 @@ import {
 import { Nft } from './NFT'
 import { Config } from '../config'
 import { SmartContract } from './SmartContract'
-import { FixedRateExchange } from './FixedRateExchange'
-import { Dispenser } from './Dispenser'
 
 export class Datatoken extends SmartContract {
   public abiEnterprise: AbiItem[]

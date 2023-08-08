@@ -60,6 +60,9 @@ export async function orderAsset(
           '1',
           await consumerAccount.getAddress()
         )
+        if (!dispenserTx) {
+          return
+        }
         return await datatoken.startOrder(
           asset.datatokens[0].address,
           orderParams.consumer,
@@ -124,6 +127,9 @@ export async function orderAsset(
           consumeMarketFixedSwapFee
         )
         const buyDtTx = await freTx.wait()
+        if (!buyDtTx) {
+          return
+        }
         return await datatoken.startOrder(
           asset.datatokens[0].address,
           orderParams.consumer,
