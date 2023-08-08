@@ -18,12 +18,13 @@ export async function orderAsset(
   consumerAccount: Signer,
   config: Config,
   datatoken: Datatoken,
-  consumeMarketOrderFee?: ConsumeMarketFee
+  consumeMarketOrderFee?: ConsumeMarketFee,
+  consumeMarketFixedSwapFee: string = '0'
 ) {
   if (!consumeMarketOrderFee)
     consumeMarketOrderFee = {
       consumeMarketFeeAddress: '0x0000000000000000000000000000000000000000',
-      consumeMarketFeeAmount: '0x0000000000000000000000000000000000000000',
+      consumeMarketFeeAmount: '0',
       consumeMarketFeeToken:
         asset.stats.price.tokenAddress || '0x0000000000000000000000000000000000000000'
     }
@@ -74,6 +75,7 @@ export async function orderAsset(
           config.dispenserAddress
         )
       }
+      break
     }
     case 'fixed': {
       const fre = new FixedRateExchange(config.fixedRateExchangeAddress, consumerAccount)
@@ -81,7 +83,8 @@ export async function orderAsset(
       const exchange = await fre.getExchange(fixedRates[0].id)
       const { baseTokenAmount } = await fre.calcBaseInGivenDatatokensOut(
         fees.exchangeId,
-        '1'
+        '1',
+        consumeMarketOrderFee.consumeMarketFeeAmount
       )
 
       const price = new Decimal(+baseTokenAmount || 0)
@@ -95,7 +98,7 @@ export async function orderAsset(
         maxBaseTokenAmount: price,
         baseTokenAddress: exchange.baseToken,
         baseTokenDecimals: parseInt(exchange.btDecimals) || 18,
-        swapMarketFee: fees.marketFeeAvailable,
+        swapMarketFee: consumeMarketFixedSwapFee,
         marketFeeAddress: publishMarketFees.publishMarketFeeAddress
       } as FreOrderParams
 
@@ -118,7 +121,7 @@ export async function orderAsset(
           '1',
           price,
           publishMarketFees.publishMarketFeeAddress,
-          consumeMarketOrderFee.consumeMarketFeeAmount
+          consumeMarketFixedSwapFee
         )
         const buyDtTx = await freTx.wait()
         return await datatoken.startOrder(
