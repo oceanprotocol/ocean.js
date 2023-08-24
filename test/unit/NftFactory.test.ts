@@ -1,6 +1,6 @@
 import { assert, expect } from 'chai'
 import { getTestConfig, provider, getAddresses } from '../config'
-import { ethers, Signer, providers } from 'ethers'
+import { ethers, Signer } from 'ethers'
 import {
   NftFactory,
   NftCreateData,

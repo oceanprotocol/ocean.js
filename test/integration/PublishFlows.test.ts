@@ -8,7 +8,6 @@ import {
   Aquarius,
   NftFactory,
   NftCreateData,
-  getHash,
   ZERO_ADDRESS,
   Nft,
   approve,

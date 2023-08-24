@@ -1,6 +1,5 @@
 import { assert, expect } from 'chai'
 import { getTestConfig, provider, getAddresses } from '../config'
-import MockERC20 from '@oceanprotocol/contracts/artifacts/contracts/utils/mock/MockERC20Decimals.sol/MockERC20Decimals.json'
 import { ethers, Signer } from 'ethers'
 import {
   NftFactory,
@@ -176,9 +175,8 @@ describe('Router unit test', () => {
       ERC_PARAMS,
       freParams
     )
-    const trxReceipt2 = await tx.wait()
+    const trxReceipt2 = await tx2.wait()
     // events have been emitted
-    const nftCreatedEvent2 = getEventFromTx(trxReceipt2, 'NFTCreated')
     const TokenCreatedEvent2 = getEventFromTx(trxReceipt2, 'TokenCreated')
     const NewFixedRateEvent2 = getEventFromTx(trxReceipt2, 'NewFixedRate')
 

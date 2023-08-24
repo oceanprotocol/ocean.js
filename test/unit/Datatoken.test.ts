@@ -1,8 +1,7 @@
 import { assert, expect } from 'chai'
-import { getTestConfig, provider, getAddresses } from '../config'
-import { ethers, Signer, providers } from 'ethers'
+import { provider, getAddresses } from '../config'
+import { ethers, Signer } from 'ethers'
 import {
-  Config,
   NftFactory,
   NftCreateData,
   Datatoken,
@@ -27,10 +26,8 @@ describe('Datatoken', () => {
   let nftFactory: NftFactory
   let nftAddress: string
   let datatokenAddress: string
-  let fixedRateAddress: string
   let exchangeId: string
   let freParams: FreCreationParams
-  let config: Config
   let addresses: any
 
   const nftData: NftCreateData = {
@@ -49,7 +46,6 @@ describe('Datatoken', () => {
     user3 = (await provider.getSigner(3)) as Signer
     datatokenDeployer = (await provider.getSigner(4)) as Signer
 
-    config = await getTestConfig(nftOwner as Signer)
     addresses = await getAddresses()
 
     freParams = {
@@ -208,7 +204,7 @@ describe('Datatoken', () => {
     assert(freCreatedEvent !== null)
 
     // fixedRateAddress = freCreatedEvent.args.ad
-    exchangeId = freCreatedEvent.args.exchangeId
+    exchangeId = freCreatedEvent?.args?.exchangeId
   })
 
   it('#createFixedRate - should FAIL create FRE if NOT DatatokenDeployer', async () => {

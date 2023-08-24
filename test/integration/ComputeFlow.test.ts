@@ -473,6 +473,7 @@ describe('Compute flow tests', async () => {
   delay(100000)
 
   const jobFinished = await waitTillJobEnds()
+  console.log('Job finished: ', jobFinished)
 
   // move to start orders with initial txid's and provider fees
   it('should restart a computeJob without paying anything, because order is valid and providerFees are still valid', async () => {

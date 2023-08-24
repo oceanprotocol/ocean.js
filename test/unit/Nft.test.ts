@@ -1,7 +1,7 @@
 import { assert } from 'chai'
 import sha256 from 'crypto-js/sha256'
 import { ethers, Signer } from 'ethers'
-import { getAddresses, getTestConfig, provider } from '../config'
+import { getAddresses, provider } from '../config'
 import { NftFactory, NftCreateData, Nft, ZERO_ADDRESS, getEventFromTx } from '../../src'
 import { MetadataAndTokenURI } from '../../src/@types'
 

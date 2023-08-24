@@ -4,11 +4,9 @@ import {
   Config,
   approve,
   VeOcean,
-  VeFeeDistributor,
   sendTx,
   NftFactory,
   VeAllocate,
-  VeFeeEstimate,
   getEventFromTx,
   amountToUnits
 } from '../../src'
@@ -18,8 +16,6 @@ describe('veOcean tests', () => {
   let addresses: any
   let nftFactory
   let veOcean: VeOcean
-  let veFeeDistributor: VeFeeDistributor
-  let veFeeEstimate: VeFeeEstimate
   let veAllocate: VeAllocate
   let ownerAccount
   let Alice
@@ -36,7 +32,7 @@ describe('veOcean tests', () => {
   })
 
   it('initialize accounts', async () => {
-    chainId = (await Alice.provider.getNetwork()).chainId
+    chainId = (await Alice.provider.getNetwork())?.chainId
     const minAbi = [
       {
         constant: false,
@@ -73,9 +69,7 @@ describe('veOcean tests', () => {
       amountToUnits(null, null, '1000', 18)
     )
     veOcean = new VeOcean(addresses.veOCEAN, Alice)
-    veFeeDistributor = new VeFeeDistributor(addresses.veFeeDistributor, Alice)
     veAllocate = new VeAllocate(addresses.veAllocate, Alice)
-    veFeeEstimate = new VeFeeEstimate(addresses.veFeeEstimate, Alice)
     nftFactory = new NftFactory(addresses.ERC721Factory, Alice)
   })
 

@@ -1,6 +1,6 @@
 import { assert, expect } from 'chai'
-import { getTestConfig, provider, getAddresses } from '../config'
-import { ethers, Signer, providers } from 'ethers'
+import { provider, getAddresses } from '../config'
+import { Signer } from 'ethers'
 
 import {
   NftFactory,
@@ -9,7 +9,6 @@ import {
   DispenserParams,
   Dispenser,
   ZERO_ADDRESS,
-  Config,
   getEventFromTx
 } from '../../src/'
 import { DatatokenCreateParams } from '../../src/@types'
@@ -23,7 +22,6 @@ describe('Dispenser flow', () => {
   let datatoken: Datatoken
   let dtAddress: string
   let addresses
-  let config: Config
 
   const nftData: NftCreateData = {
     name: '72120Bundle',
@@ -51,7 +49,6 @@ describe('Dispenser flow', () => {
     user1 = (await provider.getSigner(3)) as Signer
     user2 = (await provider.getSigner(4)) as Signer
 
-    config = await getTestConfig(factoryOwner as Signer)
     addresses = await getAddresses()
 
     nftData.owner = await factoryOwner.getAddress()

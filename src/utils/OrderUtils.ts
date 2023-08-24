@@ -78,7 +78,7 @@ export async function orderAsset(
 
   const orderParams = {
     consumer: await consumerAccount.getAddress(),
-    serviceIndex: serviceIndex,
+    serviceIndex,
     _providerFee: initializeData.providerFee,
     _consumeMarketFee: consumeMarketOrderFee
   } as OrderParams
