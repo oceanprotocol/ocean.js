@@ -94,7 +94,6 @@ import {
   Files,
   FixedRateExchange,
   FreCreationParams,
-  getHash,
   Nft,
   NftCreateData,
   NftFactory,

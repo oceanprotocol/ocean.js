@@ -1,5 +1,5 @@
 import Decimal from 'decimal.js'
-import { ethers, Signer, BigNumber } from 'ethers'
+import { ethers, Signer } from 'ethers'
 import { amountToUnits, unitsToAmount, minAbi, sendTx, LoggerInstance } from '.'
 import { Config } from '../config'
 import { ReceiptOrEstimate, ReceiptOrDecimal } from '../@types'

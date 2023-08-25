@@ -1,5 +1,3 @@
-import { LoggerInstance } from './Logger'
-
 const PREDEFINED_ERRORS = {
   datasets: {
     invalid: 'Datasets is not a list, as expected'

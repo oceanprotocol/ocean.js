@@ -1,0 +1,204 @@
+import { Signer } from 'ethers'
+import {
+  ProviderInstance,
+  Datatoken,
+  Dispenser,
+  Config,
+  OrderParams,
+  Asset,
+  FreOrderParams,
+  approve,
+  FixedRateExchange,
+  ConsumeMarketFee
+} from '../index'
+import Decimal from 'decimal.js'
+
+/**
+ * Orders an asset based on the specified pricing schema and configuration.
+ * @param {Asset} asset - The asset to be ordered.
+ * @param {Signer} consumerAccount - The signer account of the consumer.
+ * @param {Config} config - The configuration settings.
+ * @param {Datatoken} datatoken - The Datatoken instance.
+ * @param {ConsumeMarketFee} [consumeMarketOrderFee] - Optional consume market fee.
+ * @param {string} [consumeMarketFixedSwapFee='0'] - Fixed swap fee for consuming the market.
+ * @param {number} [datatokenIndex=0] - Index of the datatoken within the asset.
+ * @param {number} [serviceIndex=0] - Index of the service within the asset.
+ * @param {number} [fixedRateIndex=0] - Index of the fixed rate within the pricing schema.
+ * @returns {Promise<void>} - A promise that resolves when the asset order process is completed.
+ * @throws {Error} If the pricing schema is not supported or if required indexes are invalid.
+ */
+export async function orderAsset(
+  asset: Asset,
+  consumerAccount: Signer,
+  config: Config,
+  datatoken: Datatoken,
+  consumeMarketOrderFee?: ConsumeMarketFee,
+  consumeMarketFixedSwapFee: string = '0',
+  datatokenIndex: number = 0,
+  serviceIndex: number = 0,
+  fixedRateIndex: number = 0
+) {
+  if (!consumeMarketOrderFee)
+    consumeMarketOrderFee = {
+      consumeMarketFeeAddress: '0x0000000000000000000000000000000000000000',
+      consumeMarketFeeAmount: '0',
+      consumeMarketFeeToken:
+        asset.stats.price.tokenAddress || '0x0000000000000000000000000000000000000000'
+    }
+
+  if (!asset.datatokens[datatokenIndex].address)
+    throw new Error(
+      `The datatoken with index: ${datatokenIndex} does not exist for the asset with did: ${asset.id}`
+    )
+
+  if (!asset.services[serviceIndex].id)
+    throw new Error(
+      `There is no service with index: ${serviceIndex} defined for the asset with did: ${asset.id}`
+    )
+
+  const templateIndex = await datatoken.getId(asset.datatokens[datatokenIndex].address)
+  const fixedRates = await datatoken.getFixedRates(
+    asset.datatokens[datatokenIndex].address
+  )
+  const dispensers = await datatoken.getDispensers(
+    asset.datatokens[datatokenIndex].address
+  )
+  const publishMarketFees = await datatoken.getPublishingMarketFee(
+    asset.datatokens[datatokenIndex].address
+  )
+  const pricingType =
+    fixedRates.length > 0 ? 'fixed' : dispensers.length > 0 ? 'free' : 'NOT_ALLOWED'
+  const initializeData = await ProviderInstance.initialize(
+    asset.id,
+    asset.services[serviceIndex].id,
+    0,
+    await consumerAccount.getAddress(),
+    config.providerUri
+  )
+
+  const orderParams = {
+    consumer: await consumerAccount.getAddress(),
+    serviceIndex,
+    _providerFee: initializeData.providerFee,
+    _consumeMarketFee: consumeMarketOrderFee
+  } as OrderParams
+
+  switch (pricingType) {
+    case 'free': {
+      if (templateIndex === 1) {
+        const dispenser = new Dispenser(config.dispenserAddress, consumerAccount)
+        const dispenserTx = await dispenser.dispense(
+          asset.datatokens[datatokenIndex].address,
+          '1',
+          await consumerAccount.getAddress()
+        )
+        if (!dispenserTx) {
+          return
+        }
+        return await datatoken.startOrder(
+          asset.datatokens[datatokenIndex].address,
+          orderParams.consumer,
+          orderParams.serviceIndex,
+          orderParams._providerFee,
+          orderParams._consumeMarketFee
+        )
+      }
+      if (templateIndex === 2) {
+        return await datatoken.buyFromDispenserAndOrder(
+          asset.services[serviceIndex].datatokenAddress,
+          orderParams,
+          config.dispenserAddress
+        )
+      }
+      break
+    }
+    case 'fixed': {
+      const fre = new FixedRateExchange(config.fixedRateExchangeAddress, consumerAccount)
+
+      if (!fixedRates[fixedRateIndex].id)
+        throw new Error(
+          `There is no fixed rate exchange with index: ${serviceIndex} for the asset with did: ${asset.id}`
+        )
+      const fees = await fre.getFeesInfo(fixedRates[fixedRateIndex].id)
+      const exchange = await fre.getExchange(fixedRates[fixedRateIndex].id)
+      const { baseTokenAmount } = await fre.calcBaseInGivenDatatokensOut(
+        fees.exchangeId,
+        '1',
+        consumeMarketOrderFee.consumeMarketFeeAmount
+      )
+
+      const price = new Decimal(+baseTokenAmount || 0)
+        .add(new Decimal(consumeMarketOrderFee.consumeMarketFeeAmount || 0))
+        .add(new Decimal(+publishMarketFees.publishMarketFeeAmount || 0))
+        .toString()
+
+      const freParams = {
+        exchangeContract: config.fixedRateExchangeAddress,
+        exchangeId: fees.exchangeId,
+        maxBaseTokenAmount: price,
+        baseTokenAddress: exchange.baseToken,
+        baseTokenDecimals: parseInt(exchange.btDecimals) || 18,
+        swapMarketFee: consumeMarketFixedSwapFee,
+        marketFeeAddress: publishMarketFees.publishMarketFeeAddress
+      } as FreOrderParams
+
+      if (templateIndex === 1) {
+        const tx: any = await approve(
+          consumerAccount,
+          config,
+          await consumerAccount.getAddress(),
+          exchange.baseToken,
+          config.fixedRateExchangeAddress,
+          price,
+          false
+        )
+        const txApprove = typeof tx !== 'number' ? await tx.wait() : tx
+        if (!txApprove) {
+          return
+        }
+        const freTx = await fre.buyDatatokens(
+          exchange.exchangeId,
+          '1',
+          price,
+          publishMarketFees.publishMarketFeeAddress,
+          consumeMarketFixedSwapFee
+        )
+        const buyDtTx = await freTx.wait()
+        if (!buyDtTx) {
+          return
+        }
+        return await datatoken.startOrder(
+          asset.datatokens[datatokenIndex].address,
+          orderParams.consumer,
+          orderParams.serviceIndex,
+          orderParams._providerFee,
+          orderParams._consumeMarketFee
+        )
+      }
+      if (templateIndex === 2) {
+        const tx: any = await approve(
+          consumerAccount,
+          config,
+          await consumerAccount.getAddress(),
+          exchange.baseToken,
+          asset.datatokens[datatokenIndex].address,
+          price,
+          false
+        )
+
+        const txApprove = typeof tx !== 'number' ? await tx.wait() : tx
+        if (!txApprove) {
+          return
+        }
+        return await datatoken.buyFromFreAndOrder(
+          asset.datatokens[datatokenIndex].address,
+          orderParams,
+          freParams
+        )
+      }
+      break
+    }
+    default:
+      throw new Error('Pricing schema not supported !')
+  }
+}

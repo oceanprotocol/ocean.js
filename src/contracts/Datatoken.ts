@@ -738,6 +738,17 @@ export class Datatoken extends SmartContract {
   }
 
   /**
+   * It returns the token template index.
+   * @param {String} dtAddress Datatoken adress
+   * @return {Promise<number>}
+   */
+  public async getId(dtAddress: string): Promise<number> {
+    const dtContract = this.getContract(dtAddress)
+    const id = await dtContract.getId()
+    return id
+  }
+
+  /**
    * It returns the token symbol
    * @param {String} dtAddress Datatoken adress
    * @return {Promise<number>}
@@ -768,6 +779,28 @@ export class Datatoken extends SmartContract {
     const dtContract = this.getContract(dtAddress)
     const nftAddress = await dtContract.getERC721Address()
     return nftAddress
+  }
+
+  /**
+   * It returns the list of fixedRateExchanges created for this datatoken.
+   * @param {String} dtAddress Datatoken adress
+   * @return {Promise<number>}
+   */
+  public async getFixedRates(dtAddress: string): Promise<any[]> {
+    const dtContract = this.getContract(dtAddress)
+    const fixedRates = await dtContract.getFixedRates()
+    return fixedRates
+  }
+
+  /**
+   * It returns the list of dispensers created for this datatoken.
+   * @param {String} dtAddress Datatoken adress
+   * @return {Promise<number>}
+   */
+  public async getDispensers(dtAddress: string): Promise<any[]> {
+    const dtContract = this.getContract(dtAddress)
+    const dispensers = await dtContract.getDispensers()
+    return dispensers
   }
 
   /**

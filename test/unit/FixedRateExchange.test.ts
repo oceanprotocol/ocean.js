@@ -93,8 +93,8 @@ describe('Fixed Rate unit test', () => {
       const freCreatedEvent = getEventFromTx(trxReceipt, 'NewFixedRate')
       const tokenCreatedEvent = getEventFromTx(trxReceipt, 'TokenCreated')
 
-      dtAddress = tokenCreatedEvent.args.newTokenAddress
-      exchangeId = freCreatedEvent.args.exchangeId
+      dtAddress = tokenCreatedEvent?.args?.newTokenAddress
+      exchangeId = freCreatedEvent?.args?.exchangeId
 
       // user1 has no dt1
       expect(await balance(user1, dtAddress, await user1.getAddress())).to.equal('0.0')
@@ -487,8 +487,8 @@ describe('Fixed Rate unit test', () => {
       const freCreatedEvent = getEventFromTx(trxReceipt, 'NewFixedRate')
       const tokenCreatedEvent = getEventFromTx(trxReceipt, 'TokenCreated')
 
-      dtAddress = tokenCreatedEvent.args.newTokenAddress
-      exchangeId = freCreatedEvent.args.exchangeId
+      dtAddress = tokenCreatedEvent?.args?.newTokenAddress
+      exchangeId = freCreatedEvent?.args?.exchangeId
 
       // user1 has no dt1
       expect(await balance(user1, dtAddress, await user1.getAddress())).to.equal('0.0')
