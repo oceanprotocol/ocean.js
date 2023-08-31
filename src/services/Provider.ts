@@ -643,6 +643,7 @@ export class Provider {
     payload.signature = signature
     payload.documentId = this.noZeroX(did)
     payload.consumerAddress = consumerAddress
+    payload.nonce = nonce
     if (jobId) payload.jobId = jobId
 
     if (!computeStopUrl) return null
