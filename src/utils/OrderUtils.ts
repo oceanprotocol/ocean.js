@@ -9,7 +9,8 @@ import {
   FreOrderParams,
   approve,
   FixedRateExchange,
-  ConsumeMarketFee
+  ConsumeMarketFee,
+  ProviderFees
 } from '../index'
 import Decimal from 'decimal.js'
 
@@ -19,7 +20,10 @@ import Decimal from 'decimal.js'
  * @param {Signer} consumerAccount - The signer account of the consumer.
  * @param {Config} config - The configuration settings.
  * @param {Datatoken} datatoken - The Datatoken instance.
+ * @param {string} [providerUrl] - Optional the consumer address
+ * @param {string} [consumerAccount] - Optional the consumer address
  * @param {ConsumeMarketFee} [consumeMarketOrderFee] - Optional consume market fee.
+ *  @param {ProviderFees} [providerFees] - Optional provider fees
  * @param {string} [consumeMarketFixedSwapFee='0'] - Fixed swap fee for consuming the market.
  * @param {number} [datatokenIndex=0] - Index of the datatoken within the asset.
  * @param {number} [serviceIndex=0] - Index of the service within the asset.
@@ -32,7 +36,10 @@ export async function orderAsset(
   consumerAccount: Signer,
   config: Config,
   datatoken: Datatoken,
+  providerUrl?: string,
+  consumerAddress?: string,
   consumeMarketOrderFee?: ConsumeMarketFee,
+  providerFees?: ProviderFees,
   consumeMarketFixedSwapFee: string = '0',
   datatokenIndex: number = 0,
   serviceIndex: number = 0,
@@ -68,18 +75,23 @@ export async function orderAsset(
   )
   const pricingType =
     fixedRates.length > 0 ? 'fixed' : dispensers.length > 0 ? 'free' : 'NOT_ALLOWED'
-  const initializeData = await ProviderInstance.initialize(
-    asset.id,
-    asset.services[serviceIndex].id,
-    0,
-    await consumerAccount.getAddress(),
-    config.providerUri
-  )
+
+  const fees =
+    providerFees ||
+    (
+      await ProviderInstance.initialize(
+        asset.id,
+        asset.services[serviceIndex].id,
+        0,
+        await consumerAccount.getAddress(),
+        providerUrl || config.providerUri
+      )
+    ).providerFee
 
   const orderParams = {
-    consumer: await consumerAccount.getAddress(),
+    consumer: consumerAddress || (await consumerAccount.getAddress()),
     serviceIndex,
-    _providerFee: initializeData.providerFee,
+    _providerFee: fees,
     _consumeMarketFee: consumeMarketOrderFee
   } as OrderParams
 
