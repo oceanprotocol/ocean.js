@@ -180,7 +180,8 @@ export class ConfigHelper {
         DFRewards,
         DFStrategyV1,
         veFeeEstimate,
-        ...(process.env.AQUARIUS_URI && { metadataCacheUri: process.env.AQUARIUS_URI })
+        ...(process.env.AQUARIUS_URI && { metadataCacheUri: process.env.AQUARIUS_URI }),
+        ...(process.env.PROVIDER_URI && { providerUri: process.env.PROVIDER_URI })
       }
     } else {
       // no custom addresses structure was passed, trying to load default
@@ -240,7 +241,10 @@ export class ConfigHelper {
       return null
     }
 
-    const contractAddressesConfig = this.getAddressesFromEnv(config.network)
+    const contractAddressesConfig = this.getAddressesFromEnv(
+      config.network,
+      process.env.ADDRESS_FILE || null
+    )
     config = { ...config, ...contractAddressesConfig }
 
     const nodeUri = infuraProjectId
