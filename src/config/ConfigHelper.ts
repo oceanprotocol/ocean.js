@@ -145,9 +145,8 @@ export class ConfigHelper {
   public getAddressesFromEnv(network: string, customAddresses?: any): Partial<Config> {
     // use the defaults first
     let configAddresses: Partial<Config>
-
     // load from custom addresses structure
-    if (customAddresses & customAddresses[network]) {
+    if (customAddresses && customAddresses[network]) {
       const {
         FixedPrice,
         Dispenser,
@@ -220,7 +219,8 @@ export class ConfigHelper {
           DFRewards,
           DFStrategyV1,
           veFeeEstimate,
-          ...(process.env.AQUARIUS_URI && { metadataCacheUri: process.env.AQUARIUS_URI })
+          ...(process.env.AQUARIUS_URI && { metadataCacheUri: process.env.AQUARIUS_URI }),
+          ...(process.env.PROVIDER_URI && { providerUri: process.env.PROVIDER_URI })
         }
       }
     }
