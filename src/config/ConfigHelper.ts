@@ -1,5 +1,6 @@
 // eslint-disable-next-line import/no-named-default
 import { default as DefaultContractsAddresses } from '@oceanprotocol/contracts/addresses/address.json'
+import fs from 'fs'
 import { Config } from '.'
 import { LoggerInstance } from '../utils'
 
@@ -144,9 +145,8 @@ export class ConfigHelper {
   public getAddressesFromEnv(network: string, customAddresses?: any): Partial<Config> {
     // use the defaults first
     let configAddresses: Partial<Config>
-
     // load from custom addresses structure
-    if (customAddresses) {
+    if (customAddresses && customAddresses[network]) {
       const {
         FixedPrice,
         Dispenser,
@@ -180,7 +180,8 @@ export class ConfigHelper {
         DFRewards,
         DFStrategyV1,
         veFeeEstimate,
-        ...(process.env.AQUARIUS_URI && { metadataCacheUri: process.env.AQUARIUS_URI })
+        ...(process.env.AQUARIUS_URI && { metadataCacheUri: process.env.AQUARIUS_URI }),
+        ...(process.env.PROVIDER_URI && { providerUri: process.env.PROVIDER_URI })
       }
     } else {
       // no custom addresses structure was passed, trying to load default
@@ -218,7 +219,8 @@ export class ConfigHelper {
           DFRewards,
           DFStrategyV1,
           veFeeEstimate,
-          ...(process.env.AQUARIUS_URI && { metadataCacheUri: process.env.AQUARIUS_URI })
+          ...(process.env.AQUARIUS_URI && { metadataCacheUri: process.env.AQUARIUS_URI }),
+          ...(process.env.PROVIDER_URI && { providerUri: process.env.PROVIDER_URI })
         }
       }
     }
@@ -239,8 +241,16 @@ export class ConfigHelper {
       LoggerInstance.error(`No config found for given network '${network}'`)
       return null
     }
-
-    const contractAddressesConfig = this.getAddressesFromEnv(config.network)
+    const customAddresses = process.env.ADDRESS_FILE
+      ? JSON.parse(
+          // eslint-disable-next-line security/detect-non-literal-fs-filename
+          fs.readFileSync(process.env.ADDRESS_FILE, 'utf8')
+        )
+      : null
+    const contractAddressesConfig = this.getAddressesFromEnv(
+      config.network,
+      customAddresses
+    )
     config = { ...config, ...contractAddressesConfig }
 
     const nodeUri = infuraProjectId
