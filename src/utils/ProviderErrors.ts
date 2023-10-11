@@ -1,3 +1,5 @@
+import { LoggerInstance } from './Logger'
+
 const PREDEFINED_ERRORS = {
   datasets: {
     invalid: 'Datasets is not a list, as expected'
@@ -74,17 +76,23 @@ const PREDEFINED_ERRORS = {
   }
 }
 
-export function getErrorMessage(error: Object): string {
-  const key = Object.keys(error)[0]
-  if (key === 'error') {
-    const message = error[key]
-    const errorMessage =
-      PREDEFINED_ERRORS[key][message] || `Provider request failed: ${message}`
-    return errorMessage
-  } else {
-    const errorObject = error[key]
-    const messagekey = Object.keys(error)[1]
-    const errorMessage = error[messagekey]
-    return `${errorMessage} : ${errorObject}`
+export function getErrorMessage(err: string): string {
+  try {
+    const error = JSON.parse(err)
+    const key = Object.keys(error)[0]
+    if (key === 'error') {
+      const message = error[key]
+      const errorMessage =
+        PREDEFINED_ERRORS[key][message] || `Provider request failed: ${message}`
+      return errorMessage
+    } else {
+      const errorObject = error[key]
+      const messagekey = Object.keys(error)[1]
+      const errorMessage = error[messagekey]
+      return `${errorMessage} : ${errorObject}`
+    }
+  } catch (e) {
+    LoggerInstance.error('[getErrorMessage] error: ', e)
+    return err
   }
 }
