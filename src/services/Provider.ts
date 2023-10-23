@@ -83,7 +83,7 @@ export class Provider {
     signal?: AbortSignal,
     providerEndpoints?: any,
     serviceEndpoints?: ServiceEndpoint[]
-  ): Promise<string> {
+  ): Promise<number> {
     if (!providerEndpoints) {
       providerEndpoints = await this.getEndpoints(providerUri)
     }
@@ -102,7 +102,7 @@ export class Provider {
       })
       const { nonce } = await response.json()
       console.log(`[getNonce] Consumer: ${consumerAddress} nonce: ${nonce}`)
-      const sanitizedNonce = !nonce || nonce === null ? '0' : nonce
+      const sanitizedNonce = !nonce || nonce === null ? 0 : Number(nonce)
       return sanitizedNonce
     } catch (e) {
       LoggerInstance.error(e)
