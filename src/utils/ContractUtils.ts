@@ -4,6 +4,7 @@ import { Config } from '../config'
 import { LoggerInstance, minAbi } from '.'
 
 const MIN_GAS_FEE_POLYGON = 30000000000 // minimum recommended 30 gwei polygon main and mumbai fees
+const MIN_GAS_FEE_SEPOLIA = 4000000000 // minimum 4 gwei for eth sepolia testnet
 const POLYGON_NETWORK_ID = 137
 const MUMBAI_NETWORK_ID = 80001
 const SEPOLIA_NETWORK_ID = 11155111
@@ -132,18 +133,21 @@ export async function sendTx(
     }
     overrides = {
       maxPriorityFeePerGas:
-        (chainId === MUMBAI_NETWORK_ID ||
-          chainId === POLYGON_NETWORK_ID ||
-          chainId === SEPOLIA_NETWORK_ID) &&
+        (chainId === MUMBAI_NETWORK_ID || chainId === POLYGON_NETWORK_ID) &&
         Number(aggressiveFeePriorityFeePerGas) < MIN_GAS_FEE_POLYGON
           ? MIN_GAS_FEE_POLYGON
+          : chainId === SEPOLIA_NETWORK_ID &&
+            Number(aggressiveFeePriorityFeePerGas) < MIN_GAS_FEE_SEPOLIA
+          ? MIN_GAS_FEE_SEPOLIA
           : Number(aggressiveFeePriorityFeePerGas),
+
       maxFeePerGas:
-        (chainId === MUMBAI_NETWORK_ID ||
-          chainId === POLYGON_NETWORK_ID ||
-          chainId === SEPOLIA_NETWORK_ID) &&
+        (chainId === MUMBAI_NETWORK_ID || chainId === POLYGON_NETWORK_ID) &&
         Number(aggressiveFeePerGas) < MIN_GAS_FEE_POLYGON
           ? MIN_GAS_FEE_POLYGON
+          : chainId === SEPOLIA_NETWORK_ID &&
+            Number(aggressiveFeePerGas) < MIN_GAS_FEE_SEPOLIA
+          ? MIN_GAS_FEE_SEPOLIA
           : Number(aggressiveFeePerGas)
     }
   } else {
@@ -153,11 +157,8 @@ export async function sendTx(
   }
   overrides.gasLimit = estGas.add(20000)
   try {
-    console.log('Send new tx args:', args)
-    console.log('Overides ', overrides)
     const trxReceipt = await functionToSend(...args, overrides)
     const receipt = await trxReceipt.wait()
-    console.log('Receipt', receipt)
     return trxReceipt
   } catch (e) {
     LoggerInstance.error('Send tx error: ', e)
