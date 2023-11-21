@@ -136,6 +136,24 @@ export const configHelperNetworks: Config[] = [
     subgraphUri: 'https://subgraph.v4.genx.minimal-gaia-x.eu',
     explorerUri: 'https://explorer.genx.minimal-gaia-x.eu/',
     gasFeeMultiplier: 1
+  },
+  {
+    ...configHelperNetworksBase,
+    chainId: 10,
+    network: 'optimism',
+    nodeUri: 'https://mainnet.optimism.io',
+    subgraphUri: 'https://v4.subgraph.optimism.oceanprotocol.com',
+    explorerUri: 'https://optimistic.etherscan.io/',
+    gasFeeMultiplier: 1.1
+  },
+  {
+    ...configHelperNetworksBase,
+    chainId: 11155420,
+    network: 'optimism-sepolia',
+    nodeUri: 'https://sepolia.optimism.io',
+    subgraphUri: 'https://v4.subgraph.optimism-sepolia.oceanprotocol.com',
+    explorerUri: 'https://sepolia-optimism.etherscan.io/',
+    gasFeeMultiplier: 1.1
   }
 ]
 
