@@ -132,7 +132,7 @@ describe('Nft Factory test', () => {
       fixedRate: '1',
       marketFee: FEE,
       allowedConsumer: await user1.getAddress(),
-      withMint: false
+      withMint: true
     }
 
     const tx = await nftFactory.createNftWithDatatokenWithFixedRate(

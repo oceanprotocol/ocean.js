@@ -820,7 +820,7 @@ describe('Fixed Rate unit test', () => {
         fixedRate: '1',
         marketFee: '0.001',
         allowedConsumer: ZERO_ADDRESS,
-        withMint: false
+        withMint: true
       }
 
       dtParams.feeToken = addresses.MockDAI
@@ -862,7 +862,7 @@ describe('Fixed Rate unit test', () => {
         fixedRate: '1',
         marketFee: '0.001',
         allowedConsumer: ZERO_ADDRESS,
-        withMint: false
+        withMint: true
       }
 
       dtParams.feeToken = addresses.MockUSDC
