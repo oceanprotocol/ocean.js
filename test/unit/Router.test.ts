@@ -130,7 +130,7 @@ describe('Router unit test', () => {
       fixedRate: RATE,
       marketFee: FEE,
       allowedConsumer: ZERO_ADDRESS,
-      withMint: false
+      withMint: true
     }
 
     const nftFactory = new NftFactory(addresses.ERC721Factory, factoryOwner)
