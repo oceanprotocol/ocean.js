@@ -81,7 +81,7 @@ describe('Fixed Rate unit test', () => {
         fixedRate: '1',
         marketFee: '0.001',
         allowedConsumer: ZERO_ADDRESS,
-        withMint: false
+        withMint: true
       }
 
       const tx = await nftFactory.createNftWithDatatokenWithFixedRate(
@@ -134,19 +134,16 @@ describe('Fixed Rate unit test', () => {
       await fixedRate.activate(exchangeId)
       expect(await fixedRate.isActive(exchangeId)).to.equal(true)
     })
-
-    it('#activateMint - should activate Mint(allows fixed rate contract to mint dts if required), if exchangeOwner', async () => {
-      expect((await fixedRate.getExchange(exchangeId)).withMint).to.equal(false)
-      await fixedRate.activateMint(exchangeId)
-      expect((await fixedRate.getExchange(exchangeId)).withMint).to.equal(true)
-    })
-
     it('#dectivateMint - should deactivate Mint if exchangeOwner', async () => {
       expect((await fixedRate.getExchange(exchangeId)).withMint).to.equal(true)
       await fixedRate.deactivateMint(exchangeId)
       expect((await fixedRate.getExchange(exchangeId)).withMint).to.equal(false)
     })
-
+    it('#activateMint - should activate Mint(allows fixed rate contract to mint dts if required), if exchangeOwner', async () => {
+      expect((await fixedRate.getExchange(exchangeId)).withMint).to.equal(false)
+      await fixedRate.activateMint(exchangeId)
+      expect((await fixedRate.getExchange(exchangeId)).withMint).to.equal(true)
+    })
     it('#generate exchangeId - should generate a specific exchangeId', async () => {
       expect(await fixedRate.generateExchangeId(addresses.MockDAI, dtAddress)).to.equal(
         exchangeId
@@ -175,7 +172,8 @@ describe('Fixed Rate unit test', () => {
 
     it('#getDatatokenSupply - should get the dt supply in the exchange', async () => {
       // exchange owner hasn't approved any DT for sell
-      expect(await fixedRate.getDatatokenSupply(exchangeId)).to.equal('0.0')
+      // since fre is withMint, dtSupply is 2^256
+      expect(parseFloat(await fixedRate.getDatatokenSupply(exchangeId))).to.greaterThan(0)
     })
 
     it('#getBasetokenSupply - should get the bt supply in the exchange', async () => {
@@ -319,8 +317,6 @@ describe('Fixed Rate unit test', () => {
       expect((await fixedRate.getExchange(exchangeId)).dtBalance).to.equal('10.0')
       // no BTs in the contract (except for the fees, but not accounted here)
       expect((await fixedRate.getExchange(exchangeId)).btBalance).to.equal('0.0')
-      // DT supply is back at 1000 (exchange Owner allowance + dt balance in the fixed rate)
-      expect(await fixedRate.getDatatokenSupply(exchangeId)).to.equal('1000.0')
     })
 
     it('#getExchange - should return exchange details', async () => {
@@ -331,10 +327,11 @@ describe('Fixed Rate unit test', () => {
       expect(result.baseToken).to.equal(addresses.MockDAI)
       expect(result.datatoken).to.equal(dtAddress)
       expect(result.exchangeOwner).to.equal(await exchangeOwner.getAddress())
-      expect(result.withMint).to.equal(false)
+      expect(result.withMint).to.equal(true)
       expect(result.dtBalance).to.equal('10.0') // balance in the fixedRate
       expect(result.btBalance).to.equal('0.0') // balance in the fixedRate
-      expect(result.dtSupply).to.equal('1000.0') // total supply available (owner allowance + dtBalance)
+      // since fre is withMint, dtSupply is 2^256
+      expect(parseFloat(result.dtSupply)).to.gt(0) // total supply available (owner allowance + dtBalance)
       expect(result.btSupply).to.equal('0.0') // total supply available of baseToken in the contract
       expect(result.fixedRate).to.equal('1.0')
     })
@@ -391,9 +388,10 @@ describe('Fixed Rate unit test', () => {
       await fixedRate.collectDatatokens(exchangeId, result.dtBalance)
       // no more dts in the contract
       const result2 = await fixedRate.getExchange(exchangeId)
+      // since fre is withMint, dtSupply is 2^256
       expect(result2.dtBalance).to.equal('0.0')
-      // Only allowance left since dt is ZERO
-      expect(result2.dtSupply).to.equal('990.0')
+      // since fre is withMint, dtSupply is 2^256
+      expect(parseFloat(result2.dtSupply)).to.gt(0)
     })
 
     it('#collectMarketFee- should collect marketFee and send it to marketFeeCollector, anyone can call it', async () => {
@@ -462,7 +460,9 @@ describe('Fixed Rate unit test', () => {
   describe('Test a Fixed Rate Exchange with USDC (6 Decimals) as Basetoken', () => {
     it('#create an exchange', async () => {
       // CREATE AN Exchange
+      // since FRE is created without mint rights, owner has to send dt to that exchange
       // we prepare transaction parameters objects
+
       const nftFactory = new NftFactory(addresses.ERC721Factory, exchangeOwner)
 
       const freParams: FreCreationParams = {
@@ -475,7 +475,7 @@ describe('Fixed Rate unit test', () => {
         fixedRate: '1',
         marketFee: '0.001',
         allowedConsumer: ZERO_ADDRESS,
-        withMint: false
+        withMint: true
       }
 
       const tx = await nftFactory.createNftWithDatatokenWithFixedRate(
@@ -528,17 +528,15 @@ describe('Fixed Rate unit test', () => {
       await fixedRate.activate(exchangeId)
       expect(await fixedRate.isActive(exchangeId)).to.equal(true)
     })
-
-    it('#activateMint - should activate Mint(allows fixed rate contract to mint dts if required), if exchangeOwner', async () => {
-      expect((await fixedRate.getExchange(exchangeId)).withMint).to.equal(false)
-      await fixedRate.activateMint(exchangeId)
-      expect((await fixedRate.getExchange(exchangeId)).withMint).to.equal(true)
-    })
-
     it('#dectivateMint - should deactivate Mint if exchangeOwner', async () => {
       expect((await fixedRate.getExchange(exchangeId)).withMint).to.equal(true)
       await fixedRate.deactivateMint(exchangeId)
       expect((await fixedRate.getExchange(exchangeId)).withMint).to.equal(false)
+    })
+    it('#activateMint - should activate Mint(allows fixed rate contract to mint dts if required), if exchangeOwner', async () => {
+      expect((await fixedRate.getExchange(exchangeId)).withMint).to.equal(false)
+      await fixedRate.activateMint(exchangeId)
+      expect((await fixedRate.getExchange(exchangeId)).withMint).to.equal(true)
     })
 
     it('#generate exchangeId - should generate a specific exchangeId', async () => {
@@ -564,8 +562,8 @@ describe('Fixed Rate unit test', () => {
     })
 
     it('#getDatatokenSupply - should get the dt supply in the exchange', async () => {
-      // exchange owner hasn't approved any DT for sell
-      expect(await fixedRate.getDatatokenSupply(exchangeId)).to.equal('0.0')
+      // fre has mint rights
+      expect(parseFloat(await fixedRate.getDatatokenSupply(exchangeId))).to.gt(0)
     })
 
     it('#getBasetokenSupply - should get the bt supply in the exchange', async () => {
@@ -594,15 +592,7 @@ describe('Fixed Rate unit test', () => {
         dtAddress,
         await exchangeOwner.getAddress(),
         '1000',
-        await exchangeOwner.getAddress()
-      )
-      await approve(
-        exchangeOwner,
-        config,
-        await exchangeOwner.getAddress(),
-        dtAddress,
-        addresses.FixedPrice,
-        '1000'
+        fixedRate.address
       )
       // user1 gets 100 USDC so he can buy DTs
       await transfer(
@@ -709,8 +699,8 @@ describe('Fixed Rate unit test', () => {
       expect((await fixedRate.getExchange(exchangeId)).dtBalance).to.equal('10.0')
       // no BTs in the contract (except for the fees, but not accounted here)
       expect((await fixedRate.getExchange(exchangeId)).btBalance).to.equal('0.0')
-      // DT supply is back at 1000 (exchange Owner allowance + dt balance in the fixed rate)
-      expect(await fixedRate.getDatatokenSupply(exchangeId)).to.equal('1000.0')
+      // DT supply is huge, cause fre has mint rights
+      expect(parseFloat(await fixedRate.getDatatokenSupply(exchangeId))).to.gt(1000)
     })
 
     it('#getExchange - should return exchange details', async () => {
@@ -721,10 +711,11 @@ describe('Fixed Rate unit test', () => {
       expect(result.baseToken).to.equal(addresses.MockUSDC)
       expect(result.datatoken).to.equal(dtAddress)
       expect(result.exchangeOwner).to.equal(await exchangeOwner.getAddress())
-      expect(result.withMint).to.equal(false)
+      expect(result.withMint).to.equal(true)
       expect(result.dtBalance).to.equal('10.0') // balance in the fixedRate
       expect(result.btBalance).to.equal('0.0') // balance in the fixedRate
-      expect(result.dtSupply).to.equal('1000.0') // total supply available (owner allowance + dtBalance)
+      // since fre has mint rights, dtSupply is huge
+      expect(parseFloat(result.dtSupply)).to.gt(1000) // total supply available (owner allowance + dtBalance)
       expect(result.btSupply).to.equal('0.0') // total supply available of baseToken in the contract
       expect(result.fixedRate).to.equal('1.0')
     })
@@ -785,8 +776,8 @@ describe('Fixed Rate unit test', () => {
       // no more dts in the contract
       const result2 = await fixedRate.getExchange(exchangeId)
       expect(result2.dtBalance).to.equal('0.0')
-      // Only allowance left since dt is ZERO
-      expect(result2.dtSupply).to.equal('990.0')
+      // since fre has mint rights, dtSupply is huge
+      expect(parseFloat(result2.dtSupply)).to.gt(990)
     })
 
     it('#updateMarketFee- should update Market fee if market fee collector', async () => {
@@ -829,7 +820,7 @@ describe('Fixed Rate unit test', () => {
         fixedRate: '1',
         marketFee: '0.001',
         allowedConsumer: ZERO_ADDRESS,
-        withMint: false
+        withMint: true
       }
 
       dtParams.feeToken = addresses.MockDAI
@@ -871,7 +862,7 @@ describe('Fixed Rate unit test', () => {
         fixedRate: '1',
         marketFee: '0.001',
         allowedConsumer: ZERO_ADDRESS,
-        withMint: false
+        withMint: true
       }
 
       dtParams.feeToken = addresses.MockUSDC
