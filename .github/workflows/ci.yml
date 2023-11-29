@@ -55,7 +55,6 @@ jobs:
         with:
           repository: 'oceanprotocol/barge'
           path: 'barge'
-          ref: feature/bump_contracts_and_subgraph
 
       - name: Run Ganache with Barge
         working-directory: ${{ github.workspace }}/barge
@@ -104,8 +103,6 @@ jobs:
         with:
           repository: 'oceanprotocol/barge'
           path: 'barge'
-          ref: feature/bump_contracts_and_subgraph
-
       - name: Login to Docker Hub
         if: ${{ env.DOCKERHUB_PASSWORD && env.DOCKERHUB_USERNAME }}
         run: |
