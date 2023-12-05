@@ -197,7 +197,6 @@ export async function orderAsset(
           price,
           false
         )
-        
         if (!tx) {
           return
         }
