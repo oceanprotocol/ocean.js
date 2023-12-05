@@ -571,7 +571,7 @@ export class Provider {
     payload.environment = computeEnv
     payload.dataset = dataset
     payload.algorithm = algorithm
-    if (payload.additionalDatasets) payload.additionalDatasets = additionalDatasets
+    if (additionalDatasets) payload.additionalDatasets = additionalDatasets
     if (output) payload.output = output
     if (!computeStartUrl) return null
     let response
