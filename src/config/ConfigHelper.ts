@@ -149,7 +149,7 @@ export const configHelperNetworks: Config[] = [
   {
     ...configHelperNetworksBase,
     chainId: 11155420,
-    network: 'optimism-sepolia',
+    network: 'optimism_sepolia',
     nodeUri: 'https://sepolia.optimism.io',
     subgraphUri: 'https://v4.subgraph.optimism-sepolia.oceanprotocol.com',
     explorerUri: 'https://sepolia-optimism.etherscan.io/',
