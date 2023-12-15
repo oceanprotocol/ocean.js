@@ -1,4 +1,4 @@
-import { Signer, ethers } from 'ethers'
+import { Signer } from 'ethers'
 import {
   ProviderInstance,
   Datatoken,
@@ -92,7 +92,7 @@ export async function orderAsset(
 
   if (
     fees &&
-    fees.providerFeeAddress != ZERO_ADDRESS &&
+    fees.providerFeeAddress !== ZERO_ADDRESS &&
     fees.providerFeeAmount &&
     parseInt(fees.providerFeeAmount) > 0
   ) {
