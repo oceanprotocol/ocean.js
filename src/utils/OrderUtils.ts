@@ -1,4 +1,4 @@
-import { Signer } from 'ethers'
+import { Signer, ethers } from 'ethers'
 import {
   ProviderInstance,
   Datatoken,
@@ -10,7 +10,9 @@ import {
   approve,
   FixedRateExchange,
   ConsumeMarketFee,
-  ProviderFees
+  ProviderFees,
+  ZERO_ADDRESS,
+  approveWei
 } from '../index'
 import Decimal from 'decimal.js'
 
@@ -88,13 +90,32 @@ export async function orderAsset(
       )
     ).providerFee
 
+  if (
+    fees &&
+    fees.providerFeeAddress != ZERO_ADDRESS &&
+    fees.providerFeeAmount &&
+    parseInt(fees.providerFeeAmount) > 0
+  ) {
+    try {
+      await approveWei(
+        consumerAccount,
+        config,
+        await consumerAccount.getAddress(),
+        fees.providerFeeToken,
+        asset.services[0].datatokenAddress,
+        fees.providerFeeAmount
+      )
+    } catch (error) {
+      throw new Error(`Failed to approve provider fee token ${fees.providerFeeToken}`)
+    }
+  }
+
   const orderParams = {
     consumer: consumerAddress || (await consumerAccount.getAddress()),
     serviceIndex,
     _providerFee: fees,
     _consumeMarketFee: consumeMarketOrderFee
   } as OrderParams
-
   switch (pricingType) {
     case 'free': {
       if (templateIndex === 1) {
@@ -105,8 +126,9 @@ export async function orderAsset(
           await consumerAccount.getAddress()
         )
         if (!dispenserTx) {
-          return
+          throw new Error(`Failed to dispense !`)
         }
+        await dispenserTx.wait()
         return await datatoken.startOrder(
           asset.datatokens[datatokenIndex].address,
           orderParams.consumer,
@@ -133,6 +155,7 @@ export async function orderAsset(
         )
       const fees = await fre.getFeesInfo(fixedRates[fixedRateIndex].id)
       const exchange = await fre.getExchange(fixedRates[fixedRateIndex].id)
+
       const { baseTokenAmount } = await fre.calcBaseInGivenDatatokensOut(
         fees.exchangeId,
         '1',
@@ -161,12 +184,12 @@ export async function orderAsset(
           await consumerAccount.getAddress(),
           exchange.baseToken,
           config.fixedRateExchangeAddress,
-          price,
+          '1',
           false
         )
         const txApprove = typeof tx !== 'number' ? await tx.wait() : tx
         if (!txApprove) {
-          return
+          throw new Error(`Failed to appove ${exchange.baseToken} !`)
         }
         const freTx = await fre.buyDatatokens(
           exchange.exchangeId,
@@ -177,7 +200,7 @@ export async function orderAsset(
         )
         const buyDtTx = await freTx.wait()
         if (!buyDtTx) {
-          return
+          throw new Error(`Failed to buy datatoken from fixed rate!`)
         }
         return await datatoken.startOrder(
           asset.datatokens[datatokenIndex].address,
@@ -202,11 +225,12 @@ export async function orderAsset(
         if (!txApprove) {
           return
         }
-        return await datatoken.buyFromFreAndOrder(
+        const txBuy = await datatoken.buyFromFreAndOrder(
           asset.datatokens[datatokenIndex].address,
           orderParams,
           freParams
         )
+        return txBuy
       }
       break
     }
