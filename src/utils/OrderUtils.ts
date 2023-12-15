@@ -184,7 +184,7 @@ export async function orderAsset(
           await consumerAccount.getAddress(),
           exchange.baseToken,
           config.fixedRateExchangeAddress,
-          '1',
+          price,
           false
         )
         const txApprove = typeof tx !== 'number' ? await tx.wait() : tx
