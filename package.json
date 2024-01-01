@@ -57,7 +57,7 @@
     "cross-fetch": "^4.0.0",
     "crypto-js": "^4.1.1",
     "decimal.js": "^10.4.1",
-    "ethers": "^5.7.2"
+    "ethers": "^6.9.1"
   },
   "devDependencies": {
     "@truffle/hdwallet-provider": "^2.0.14",
