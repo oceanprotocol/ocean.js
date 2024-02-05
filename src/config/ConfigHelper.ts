@@ -1,5 +1,6 @@
 // eslint-disable-next-line import/no-named-default
 import { default as DefaultContractsAddresses } from '@oceanprotocol/contracts/addresses/address.json'
+import fs from 'fs'
 import { Config } from '.'
 import { LoggerInstance } from '../utils'
 
@@ -261,8 +262,14 @@ export class ConfigHelper {
 
     let addresses
     try {
-      addresses = JSON.parse(process.env.ADDRESS_FILE)
+      addresses = process.env.ADDRESS_FILE
+        ? JSON.parse(
+            // eslint-disable-next-line security/detect-non-literal-fs-filename
+            fs.readFileSync(process.env.ADDRESS_FILE, 'utf8')
+          )
+        : null
     } catch (e) {
+      console.log(e)
       addresses = null
     }
     const contractAddressesConfig = this.getAddressesFromEnv(config.network, addresses)
