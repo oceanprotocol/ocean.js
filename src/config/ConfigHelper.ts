@@ -164,7 +164,7 @@ export const configHelperNetworks: Config[] = [
     metadataCacheUri: 'https://aquarius.dev.pontus-x.eu',
     providerUri: 'https://provider.dev.pontus-x.eu',
     subgraphUri: 'https://subgraph.dev.pontus-x.eu',
-    explorerUri: 'https://explorer.dev.pontus-x.eu/'
+    explorerUri: 'https://explorer.dev.pontus-x.eu/testnet/pontusx'
   }
 ]
 
