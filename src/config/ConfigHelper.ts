@@ -161,11 +161,10 @@ export const configHelperNetworks: Config[] = [
     chainId: 32456,
     network: 'pontus-x-devnet',
     nodeUri: 'https://rpc.dev.pontus-x.eu',
-    metadataCacheUri: 'https://aquarius.deb.pontus-x.eu',
+    metadataCacheUri: 'https://aquarius.dev.pontus-x.eu',
     providerUri: 'https://provider.dev.pontus-x.eu',
     subgraphUri: 'https://subgraph.dev.pontus-x.eu',
-    explorerUri: 'https://explorer.dev.pontus-x.eu/',
-    gasFeeMultiplier: 1
+    explorerUri: 'https://explorer.dev.pontus-x.eu/'
   }
 ]
 
