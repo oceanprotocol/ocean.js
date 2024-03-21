@@ -43,15 +43,6 @@ export const configHelperNetworks: Config[] = [
   },
   {
     ...configHelperNetworksBase,
-    chainId: 5,
-    network: 'goerli',
-    nodeUri: 'https://goerli.infura.io/v3',
-    subgraphUri: 'https://v4.subgraph.goerli.oceanprotocol.com',
-    explorerUri: 'https://goerli.etherscan.io',
-    gasFeeMultiplier: 1.1
-  },
-  {
-    ...configHelperNetworksBase,
     chainId: 11155111,
     network: 'sepolia',
     nodeUri: 'https://sepolia.infura.io/v3',
