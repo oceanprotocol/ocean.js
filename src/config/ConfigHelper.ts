@@ -155,6 +155,15 @@ export const configHelperNetworks: Config[] = [
     subgraphUri: 'https://v4.subgraph.optimism-sepolia.oceanprotocol.com',
     explorerUri: 'https://sepolia-optimism.etherscan.io/',
     gasFeeMultiplier: 1.1
+  },
+  {
+    ...configHelperNetworksBase,
+    chainId: 23294,
+    network: 'oasis_sapphire',
+    nodeUri: 'https://sapphire.oasis.io',
+    subgraphUri: 'https://v4.subgraph.sapphire-mainnet.oceanprotocol.com/',
+    explorerUri: 'https://explorer.oasis.io/mainnet/sapphire/',
+    gasFeeMultiplier: 1
   }
 ]
 
