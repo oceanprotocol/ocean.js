@@ -146,6 +146,16 @@ export const configHelperNetworks: Config[] = [
     subgraphUri: 'https://v4.subgraph.optimism-sepolia.oceanprotocol.com',
     explorerUri: 'https://sepolia-optimism.etherscan.io/',
     gasFeeMultiplier: 1.1
+  },
+  {
+    ...configHelperNetworksBase,
+    chainId: 32456,
+    network: 'pontus-x-devnet',
+    nodeUri: 'https://rpc.dev.pontus-x.eu',
+    metadataCacheUri: 'https://aquarius.dev.pontus-x.eu',
+    providerUri: 'https://provider.dev.pontus-x.eu',
+    subgraphUri: 'https://subgraph.dev.pontus-x.eu',
+    explorerUri: 'https://explorer.dev.pontus-x.eu/testnet/pontusx'
   }
 ]
 
