@@ -103,7 +103,6 @@ jobs:
         with:
           repository: 'oceanprotocol/barge'
           path: 'barge'
-
       - name: Login to Docker Hub
         if: ${{ env.DOCKERHUB_PASSWORD && env.DOCKERHUB_USERNAME }}
         run: |
@@ -120,14 +119,11 @@ jobs:
       - run: npm run build:metadata
       - name: Delete default runner images
         run: |
-          docker image rm node:14
-          docker image rm node:14-alpine
           docker image rm node:16
           docker image rm node:16-alpine
           docker image rm node:18
           docker image rm node:18-alpine
-          docker image rm buildpack-deps:buster
-          docker image rm buildpack-deps:bullseye
+          docker image rm node:20
           docker image rm debian:10
           docker image rm debian:11
           docker image rm moby/buildkit:latest
