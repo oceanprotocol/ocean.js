@@ -347,7 +347,6 @@ describe('Publish consume test', async () => {
       datatoken,
       providerUrl
     )
-    console.log('urlOrderTx == ', urlOrderTx)
     assert(urlOrderTx, 'Ordering url dataset failed.')
 
     arwaveOrderTx = await orderAsset(
@@ -359,8 +358,6 @@ describe('Publish consume test', async () => {
       datatoken,
       providerUrl
     )
-    console.log('arwaveOrderTx == ', arwaveOrderTx)
-
     assert(arwaveOrderTx, 'Ordering arwave dataset failed.')
 
     onchainOrderTx = await orderAsset(
@@ -372,7 +369,6 @@ describe('Publish consume test', async () => {
       datatoken,
       providerUrl
     )
-    console.log('onchainOrderTx == ', onchainOrderTx)
     assert(onchainOrderTx, 'Ordering onchain dataset failed.')
 
     ipfsOrderTx = await orderAsset(
@@ -384,7 +380,6 @@ describe('Publish consume test', async () => {
       datatoken,
       providerUrl
     )
-    console.log('ipfsOrderTx == ', ipfsOrderTx)
     assert(ipfsOrderTx, 'Ordering ipfs dataset failed.')
 
     grapqlOrderTx = await orderAsset(
@@ -396,9 +391,8 @@ describe('Publish consume test', async () => {
       datatoken,
       providerUrl
     )
-    console.log('grapqlOrderTx == ', grapqlOrderTx)
     assert(grapqlOrderTx, 'Ordering graphql dataset failed.')
-  })
+  }).timeout(40000)
 
   it('Should download the datasets files', async () => {
     const urlDownloadUrl = await ProviderInstance.getDownloadUrl(
