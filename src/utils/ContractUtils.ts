@@ -158,7 +158,7 @@ export async function sendTx(
   overrides.gasLimit = estGas.add(20000)
   try {
     const trxReceipt = await functionToSend(...args, overrides)
-    const receipt = await trxReceipt.wait()
+    await trxReceipt.wait()
     return trxReceipt
   } catch (e) {
     LoggerInstance.error('Send tx error: ', e)
