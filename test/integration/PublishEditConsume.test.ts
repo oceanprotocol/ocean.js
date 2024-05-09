@@ -95,7 +95,7 @@ const grapqlFile: Files = {
   files: [
     {
       type: 'graphql',
-      url: 'https://v4.subgraph.goerli.oceanprotocol.com/subgraphs/name/oceanprotocol/ocean-subgraph',
+      url: 'https://v4.subgraph.sepolia.oceanprotocol.com/subgraphs/name/oceanprotocol/ocean-subgraph',
       query: `"
           query{
                 nfts(orderBy: createdTimestamp,orderDirection:desc){
@@ -392,7 +392,7 @@ describe('Publish consume test', async () => {
       providerUrl
     )
     assert(grapqlOrderTx, 'Ordering graphql dataset failed.')
-  })
+  }).timeout(40000)
 
   it('Should download the datasets files', async () => {
     const urlDownloadUrl = await ProviderInstance.getDownloadUrl(
