@@ -43,15 +43,6 @@ export const configHelperNetworks: Config[] = [
   },
   {
     ...configHelperNetworksBase,
-    chainId: 5,
-    network: 'goerli',
-    nodeUri: 'https://goerli.infura.io/v3',
-    subgraphUri: 'https://v4.subgraph.goerli.oceanprotocol.com',
-    explorerUri: 'https://goerli.etherscan.io',
-    gasFeeMultiplier: 1.1
-  },
-  {
-    ...configHelperNetworksBase,
     chainId: 11155111,
     network: 'sepolia',
     nodeUri: 'https://sepolia.infura.io/v3',
@@ -155,6 +146,15 @@ export const configHelperNetworks: Config[] = [
     subgraphUri: 'https://v4.subgraph.optimism-sepolia.oceanprotocol.com',
     explorerUri: 'https://sepolia-optimism.etherscan.io/',
     gasFeeMultiplier: 1.1
+  },
+  {
+    ...configHelperNetworksBase,
+    chainId: 23294,
+    network: 'oasis_sapphire',
+    nodeUri: 'https://sapphire.oasis.io',
+    subgraphUri: 'https://v4.subgraph.sapphire-mainnet.oceanprotocol.com/',
+    explorerUri: 'https://explorer.oasis.io/mainnet/sapphire/',
+    gasFeeMultiplier: 1
   },
   {
     ...configHelperNetworksBase,
