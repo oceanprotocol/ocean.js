@@ -308,7 +308,7 @@ export class Provider {
     let response
     const providerChain: number = providerEndpoints.chainId
     try {
-      response = await fetch(path  + `?chainId=${providerChain}`, {
+      response = await fetch(path + `?chainId=${providerChain}`, {
         method: 'GET',
         headers: { 'Content-Type': 'application/json' },
         signal
