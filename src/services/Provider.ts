@@ -306,8 +306,9 @@ export class Provider {
     const path = this.getEndpointURL(serviceEndpoints, 'computeEnvironments')?.urlPath
     if (!path) return null
     let response
+    const providerChain: number = providerEndpoints.chainId
     try {
-      response = await fetch(path, {
+      response = await fetch(path  + `?chainId=${providerChain}`, {
         method: 'GET',
         headers: { 'Content-Type': 'application/json' },
         signal
@@ -320,7 +321,6 @@ export class Provider {
     if (response?.ok) {
       const result = response.json()
       if (Array.isArray(result)) {
-        const providerChain: number = providerEndpoints.chainId
         return { [providerChain]: result }
       }
       return result
