@@ -61,7 +61,7 @@ export class Provider {
       const endpoint: ServiceEndpoint = {
         serviceName: i,
         method: endpoints.serviceEndpoints[i][0],
-        urlPath: providerEndpoint + endpoints.serviceEndpoints[i][1]
+        urlPath: providerEndpoint.endsWith('/') ? providerEndpoint + endpoints.serviceEndpoints[i][1] : providerEndpoint + '/' + endpoints.serviceEndpoints[i][1]
       }
       serviceEndpoints.push(endpoint)
     }
