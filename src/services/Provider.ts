@@ -61,7 +61,7 @@ export class Provider {
       const endpoint: ServiceEndpoint = {
         serviceName: i,
         method: endpoints.serviceEndpoints[i][0],
-        urlPath: 
+        urlPath:
           providerEndpoint.replace(/\/+$/, '') +
           '/' +
           endpoints.serviceEndpoints[i][1].replace(/^\/+/, '')
