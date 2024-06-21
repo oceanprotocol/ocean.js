@@ -128,9 +128,9 @@ ___
 
 ### computeStatus
 
-▸ **computeStatus**(`providerUri`, `consumerAddress`, `jobId?`, `did?`, `signal?`): `Promise`<[`ComputeJob`](../interfaces/ComputeJob.md) \| [`ComputeJob`](../interfaces/ComputeJob.md)[]\>
+▸ **computeStatus**(`providerUri`, `consumerAddress`, `jobId?`, `agreementId?`, `signal?`): `Promise`<[`ComputeJob`](../interfaces/ComputeJob.md) \| [`ComputeJob`](../interfaces/ComputeJob.md)[]\>
 
-Get compute status for a specific jobId/documentId/owner.
+Get compute status for a specific jobId/agreementId/owner.
 
 #### Parameters
 
@@ -139,7 +139,7 @@ Get compute status for a specific jobId/documentId/owner.
 | `providerUri` | `string` | The URI of the provider we want to query |
 | `consumerAddress` | `string` | The consumer ethereum address |
 | `jobId?` | `string` | The ID of a compute job. |
-| `did?` | `string` | The ID of the asset |
+| `agreementId?` | `string` | The ID of service agreement |
 | `signal?` | `AbortSignal` | abort signal |
 
 #### Returns
