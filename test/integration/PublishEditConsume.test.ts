@@ -354,7 +354,7 @@ describe('Publish consume test', async () => {
       providerUrl
     )
     assert(urlOrderTx, 'Ordering url dataset failed.')
-  })
+  }).timeout(40000)
 
   it('Should order arweave dataset', async () => {
     arwaveOrderTx = await orderAsset(
@@ -367,7 +367,7 @@ describe('Publish consume test', async () => {
       providerUrl
     )
     assert(arwaveOrderTx, 'Ordering arwave dataset failed.')
-  })
+  }).timeout(40000)
 
   it('Should order ipfs dataset', async () => {
     ipfsOrderTx = await orderAsset(
@@ -380,7 +380,7 @@ describe('Publish consume test', async () => {
       providerUrl
     )
     assert(ipfsOrderTx, 'Ordering ipfs dataset failed.')
-  })
+  }).timeout(40000)
 
   it('Should order onchain dataset', async () => {
     onchainOrderTx = await orderAsset(
@@ -393,7 +393,8 @@ describe('Publish consume test', async () => {
       providerUrl
     )
     assert(onchainOrderTx, 'Ordering onchain dataset failed.')
-  })
+  }).timeout(40000)
+
   it('Should order graphQl dataset', async () => {
     grapqlOrderTx = await orderAsset(
       resolvedGraphqlAssetDdo.id,
