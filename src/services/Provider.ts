@@ -688,7 +688,7 @@ export class Provider {
    * @param {string} providerUri The URI of the provider we want to query
    * @param {string} consumerAddress The consumer ethereum address
    * @param {string} jobId The ID of a compute job.
-   * @param {string} did The ID of the asset
+   * @param {string} agreementId The ID of the service agreement (tx id)
    * @param {AbortSignal} signal abort signal
    * @return {Promise<ComputeJob | ComputeJob[]>}
    */
@@ -696,7 +696,7 @@ export class Provider {
     providerUri: string,
     consumerAddress: string,
     jobId?: string,
-    did?: string,
+    agreementId?: string,
     signal?: AbortSignal
   ): Promise<ComputeJob | ComputeJob[]> {
     const providerEndpoints = await this.getEndpoints(providerUri)
@@ -709,7 +709,7 @@ export class Provider {
       : null
 
     let url = `?consumerAddress=${consumerAddress}`
-    url += (did && `&documentId=${this.noZeroX(did)}`) || ''
+    url += (agreementId && `&agreementId=${this.noZeroX(agreementId)}`) || ''
     url += (jobId && `&jobId=${jobId}`) || ''
 
     if (!computeStatusUrl) return null
