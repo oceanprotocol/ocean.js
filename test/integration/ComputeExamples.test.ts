@@ -655,8 +655,6 @@ describe('Compute-to-data example tests', async () => {
       algo
     )
 
-    console.log('COMPUTE JOBS', computeJobs)
-
     /// ```
     /// <!--
     assert(computeJobs, 'Cannot start compute job')
