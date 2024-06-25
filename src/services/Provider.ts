@@ -620,6 +620,7 @@ export class Provider {
     jobId: string,
     providerUri: string,
     signer: Signer,
+    agreementId?: string,
     signal?: AbortSignal
   ): Promise<ComputeJob | ComputeJob[]> {
     const providerEndpoints = await this.getEndpoints(providerUri)
@@ -643,12 +644,13 @@ export class Provider {
 
     let signatureMessage = consumerAddress
     signatureMessage += jobId || ''
-    signatureMessage += (did && `${this.noZeroX(did)}`) || ''
-    signatureMessage += nonce
+    // On provider service we just check signature owner + jobId
+    // signatureMessage += (agreementId && `${this.noZeroX(agreementId)}`) || ''
+    // signatureMessage += nonce
     const signature = await this.signProviderRequest(signer, signatureMessage)
     const payload = Object()
     payload.signature = signature
-    payload.documentId = this.noZeroX(did)
+    payload.agreementId = this.noZeroX(agreementId)
     payload.consumerAddress = consumerAddress
     payload.nonce = nonce
     if (jobId) payload.jobId = jobId

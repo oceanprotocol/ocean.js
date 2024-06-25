@@ -154,7 +154,7 @@ ___
 
 ### computeStop
 
-▸ **computeStop**(`did`, `consumerAddress`, `jobId`, `providerUri`, `signer`, `signal?`): `Promise`<[`ComputeJob`](../interfaces/ComputeJob.md) \| [`ComputeJob`](../interfaces/ComputeJob.md)[]\>
+▸ **computeStop**(`did`, `consumerAddress`, `jobId`, `providerUri`, `signer`, `signal?`, `agreementId?`): `Promise`<[`ComputeJob`](../interfaces/ComputeJob.md) \| [`ComputeJob`](../interfaces/ComputeJob.md)[]\>
 
 Instruct the provider to Stop the execution of a to stop a compute job.
 
@@ -168,6 +168,7 @@ Instruct the provider to Stop the execution of a to stop a compute job.
 | `providerUri` | `string` | The provider URI. |
 | `signer` | `Signer` | The consumer signer object. |
 | `signal?` | `AbortSignal` | abort signal |
+| `agreementId?` | `string` | service agreement id |
 
 #### Returns
 
