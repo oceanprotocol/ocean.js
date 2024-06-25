@@ -274,6 +274,7 @@ let resolvedDatasetDdo: DDO
 let resolvedAlgorithmDdo: DDO
 
 let computeJobId: string
+let agreementId: string
 ```
 
 ### 4.3 Helper methods
@@ -654,13 +655,18 @@ Let's have 5 minute of compute access
       algo
     )
 
+    console.log('COMPUTE JOBS', computeJobs)
+
 ```
 <!--
     assert(computeJobs, 'Cannot start compute job')
 -->
-Let's save the compute job it, we re going to use later
+Let's save the compute job id, we re going to use later
+We can also save the agreementId. Its another optional field that we can later use to retrieve the job status
 ```Typescript
     computeJobId = computeJobs[0].jobId
+    // eslint-disable-next-line prefer-destructuring
+    agreementId = computeJobs[0].agreementId
   
 ```
 
@@ -672,7 +678,7 @@ You can also add various delays so you see the various states of the compute job
       providerUrl,
       await consumerAccount.getAddress(),
       computeJobId,
-      DATASET_DDO.id
+      agreementId
     )
 ```
 <!--
