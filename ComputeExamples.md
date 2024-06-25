@@ -672,7 +672,7 @@ You can also add various delays so you see the various states of the compute job
       providerUrl,
       await consumerAccount.getAddress(),
       computeJobId,
-      DATASET_DDO.id
+      agreementId
     )
 ```
 <!--
