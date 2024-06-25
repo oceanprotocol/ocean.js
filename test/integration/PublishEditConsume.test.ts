@@ -230,7 +230,7 @@ describe('Publish consume test', async () => {
       'ArweaveDatatoken',
       'ARWEAVEDT',
       publisherAccount,
-      ifpsFile,
+      arweaveFile,
       assetDdo,
       providerUrl,
       addresses.ERC721Factory,
