@@ -197,7 +197,7 @@ describe('Publish consume test', async () => {
     )
   })
 
-  it('Should publish the assets', async () => {
+  it('Should publish url asset', async () => {
     urlAssetId = await createAsset(
       'UrlDatatoken',
       'URLDT',
@@ -209,19 +209,9 @@ describe('Publish consume test', async () => {
       aquarius
     )
     assert(urlAssetId, 'Failed to publish url DDO')
+  })
 
-    arweaveAssetId = await createAsset(
-      'ArwaveDatatoken',
-      'ARWAVEDT',
-      publisherAccount,
-      arweaveFile,
-      assetDdo,
-      providerUrl,
-      addresses.ERC721Factory,
-      aquarius
-    )
-    assert(urlAssetId, 'Failed to arwave publish DDO')
-
+  it('Should publish ipfs asset', async () => {
     ipfsAssetId = await createAsset(
       'IpfsDatatoken',
       'IPFSDT',
@@ -233,7 +223,23 @@ describe('Publish consume test', async () => {
       aquarius
     )
     assert(urlAssetId, 'Failed to publish ipfs DDO')
+  })
 
+  it('Should publish arwave asset', async () => {
+    arweaveAssetId = await createAsset(
+      'ArweaveDatatoken',
+      'ARWEAVEDT',
+      publisherAccount,
+      ifpsFile,
+      assetDdo,
+      providerUrl,
+      addresses.ERC721Factory,
+      aquarius
+    )
+    assert(arweaveAssetId, 'Failed to publish ipfs DDO')
+  })
+
+  it('Should publish onchain asset', async () => {
     const chainFile: Smartcontract = {
       type: 'smartcontract',
       address: addresses.Router,
@@ -246,11 +252,10 @@ describe('Publish consume test', async () => {
       },
       chainId: 8996
     }
-
     onchainFile.files[0] = chainFile
     onchainAssetId = await createAsset(
-      'IpfsDatatoken',
-      'IPFSDT',
+      'ChainDatatoken',
+      'CHAINDT',
       publisherAccount,
       onchainFile,
       assetDdo,
@@ -259,10 +264,12 @@ describe('Publish consume test', async () => {
       aquarius
     )
     assert(onchainAssetId, 'Failed to publish onchain DDO')
+  })
 
+  it('Should publish graphql asset', async () => {
     grapqlAssetId = await createAsset(
-      'IpfsDatatoken',
-      'IPFSDT',
+      'GraphDatatoken',
+      'GRAPHDT',
       publisherAccount,
       grapqlFile,
       assetDdo,
@@ -335,9 +342,8 @@ describe('Publish consume test', async () => {
     assert(graphqlMintTx, 'Failed minting graphql datatoken to consumer.')
   })
 
-  it('Should order the datasets', async () => {
+  it('Should order url dataset', async () => {
     datatoken = new Datatoken(consumerAccount, config.chainId)
-
     urlOrderTx = await orderAsset(
       resolvedUrlAssetDdo.id,
       resolvedUrlAssetDdo.services[0].datatokenAddress,
@@ -348,7 +354,9 @@ describe('Publish consume test', async () => {
       providerUrl
     )
     assert(urlOrderTx, 'Ordering url dataset failed.')
+  })
 
+  it('Should order arweave dataset', async () => {
     arwaveOrderTx = await orderAsset(
       resolvedArweaveAssetDdo.id,
       resolvedArweaveAssetDdo.services[0].datatokenAddress,
@@ -359,18 +367,9 @@ describe('Publish consume test', async () => {
       providerUrl
     )
     assert(arwaveOrderTx, 'Ordering arwave dataset failed.')
+  })
 
-    onchainOrderTx = await orderAsset(
-      resolvedOnchainAssetDdo.id,
-      resolvedOnchainAssetDdo.services[0].datatokenAddress,
-      await consumerAccount.getAddress(),
-      resolvedOnchainAssetDdo.services[0].id,
-      0,
-      datatoken,
-      providerUrl
-    )
-    assert(onchainOrderTx, 'Ordering onchain dataset failed.')
-
+  it('Should order ipfs dataset', async () => {
     ipfsOrderTx = await orderAsset(
       resolvedIpfsAssetDdo.id,
       resolvedIpfsAssetDdo.services[0].datatokenAddress,
@@ -381,7 +380,21 @@ describe('Publish consume test', async () => {
       providerUrl
     )
     assert(ipfsOrderTx, 'Ordering ipfs dataset failed.')
+  })
 
+  it('Should order onchain dataset', async () => {
+    onchainOrderTx = await orderAsset(
+      resolvedOnchainAssetDdo.id,
+      resolvedOnchainAssetDdo.services[0].datatokenAddress,
+      await consumerAccount.getAddress(),
+      resolvedOnchainAssetDdo.services[0].id,
+      0,
+      datatoken,
+      providerUrl
+    )
+    assert(onchainOrderTx, 'Ordering onchain dataset failed.')
+  })
+  it('Should order graphQl dataset', async () => {
     grapqlOrderTx = await orderAsset(
       resolvedGraphqlAssetDdo.id,
       resolvedGraphqlAssetDdo.services[0].datatokenAddress,
@@ -392,7 +405,7 @@ describe('Publish consume test', async () => {
       providerUrl
     )
     assert(grapqlOrderTx, 'Ordering graphql dataset failed.')
-  }).timeout(40000)
+  })
 
   it('Should download the datasets files', async () => {
     const urlDownloadUrl = await ProviderInstance.getDownloadUrl(
@@ -467,7 +480,7 @@ describe('Publish consume test', async () => {
     }
   })
 
-  it('Should update datasets metadata', async () => {
+  it('Should update url dataset', async () => {
     resolvedUrlAssetDdo.metadata.name = 'updated url asset name'
     const updateUrlTx = await updateAssetMetadata(
       publisherAccount,
@@ -476,7 +489,9 @@ describe('Publish consume test', async () => {
       aquarius
     )
     assert(updateUrlTx, 'Failed to update url asset metadata')
+  })
 
+  it('Should update arweave dataset', async () => {
     resolvedArweaveAssetDdo.metadata.name = 'updated arwave asset name'
     const updateArwaveTx = await updateAssetMetadata(
       publisherAccount,
@@ -485,7 +500,9 @@ describe('Publish consume test', async () => {
       aquarius
     )
     assert(updateArwaveTx, 'Failed to update arwave asset metadata')
+  })
 
+  it('Should update ipfs dataset', async () => {
     resolvedIpfsAssetDdo.metadata.name = 'updated ipfs asset name'
     const updateIpfsTx = await updateAssetMetadata(
       publisherAccount,
@@ -494,7 +511,9 @@ describe('Publish consume test', async () => {
       aquarius
     )
     assert(updateIpfsTx, 'Failed to update ipfs asset metadata')
+  })
 
+  it('Should update onchain dataset', async () => {
     resolvedOnchainAssetDdo.metadata.name = 'updated onchain asset name'
     const updateOnchainTx = await updateAssetMetadata(
       publisherAccount,
@@ -503,7 +522,9 @@ describe('Publish consume test', async () => {
       aquarius
     )
     assert(updateOnchainTx, 'Failed to update ipfs asset metadata')
+  })
 
+  it('Should update graphql dataset', async () => {
     resolvedGraphqlAssetDdo.metadata.name = 'updated graphql asset name'
     const updateGraphqlTx = await updateAssetMetadata(
       publisherAccount,
