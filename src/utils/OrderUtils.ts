@@ -220,7 +220,9 @@ export async function orderAsset(
           price,
           false
         )
-
+        if (!tx) {
+          return
+        }
         const txApprove = typeof tx !== 'number' ? await tx.wait() : tx
         if (!txApprove) {
           return
