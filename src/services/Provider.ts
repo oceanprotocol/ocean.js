@@ -644,7 +644,10 @@ export class Provider {
 
     let signatureMessage = consumerAddress
     signatureMessage += jobId || ''
-    // On provider service we just check signature owner + jobId
+    // On current provider impl (and nodes) we DO NOT check this signature
+    // On nodes we are signing again just the Nonce to send the request to Operator Service
+    // on current provider we sign: {owner}{job_id}{nonce}" OR {owner}{nonce} if no jobId
+    // On provider service STOP route, we just check signature owner + jobId OR just owner if no jobId
     // signatureMessage += (agreementId && `${this.noZeroX(agreementId)}`) || ''
     // signatureMessage += nonce
     const signature = await this.signProviderRequest(signer, signatureMessage)
