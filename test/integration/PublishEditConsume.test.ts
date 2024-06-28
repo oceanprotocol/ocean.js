@@ -211,20 +211,6 @@ describe('Publish consume test', async () => {
     assert(urlAssetId, 'Failed to publish url DDO')
   })
 
-  it('Should publish ipfs asset', async () => {
-    ipfsAssetId = await createAsset(
-      'IpfsDatatoken',
-      'IPFSDT',
-      publisherAccount,
-      ifpsFile,
-      assetDdo,
-      providerUrl,
-      addresses.ERC721Factory,
-      aquarius
-    )
-    assert(ipfsAssetId, 'Failed to publish ipfs DDO')
-  })
-
   it('Should publish arwave asset', async () => {
     arweaveAssetId = await createAsset(
       'ArweaveDatatoken',
@@ -237,6 +223,20 @@ describe('Publish consume test', async () => {
       aquarius
     )
     assert(arweaveAssetId, 'Failed to publish ipfs DDO')
+  })
+
+  it('Should publish ipfs asset', async () => {
+    ipfsAssetId = await createAsset(
+      'IpfsDatatoken',
+      'IPFSDT',
+      publisherAccount,
+      ifpsFile,
+      assetDdo,
+      providerUrl,
+      addresses.ERC721Factory,
+      aquarius
+    )
+    assert(ipfsAssetId, 'Failed to publish ipfs DDO')
   })
 
   it('Should publish onchain asset', async () => {
