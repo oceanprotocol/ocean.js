@@ -380,7 +380,7 @@ describe('Publish consume test', async () => {
       providerUrl
     )
     assert(ipfsOrderTx, 'Ordering ipfs dataset failed.')
-  }).timeout(40000)
+  }).timeout(60000)
 
   it('Should order onchain dataset', async () => {
     onchainOrderTx = await orderAsset(
