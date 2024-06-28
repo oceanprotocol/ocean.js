@@ -211,20 +211,6 @@ describe('Publish consume test', async () => {
     assert(urlAssetId, 'Failed to publish url DDO')
   })
 
-  it('Should publish arwave asset', async () => {
-    arweaveAssetId = await createAsset(
-      'ArweaveDatatoken',
-      'ARWEAVEDT',
-      publisherAccount,
-      arweaveFile,
-      assetDdo,
-      providerUrl,
-      addresses.ERC721Factory,
-      aquarius
-    )
-    assert(arweaveAssetId, 'Failed to publish ipfs DDO')
-  })
-
   it('Should publish ipfs asset', async () => {
     ipfsAssetId = await createAsset(
       'IpfsDatatoken',
@@ -237,6 +223,20 @@ describe('Publish consume test', async () => {
       aquarius
     )
     assert(ipfsAssetId, 'Failed to publish ipfs DDO')
+  })
+
+  it('Should publish arwave asset', async () => {
+    arweaveAssetId = await createAsset(
+      'ArweaveDatatoken',
+      'ARWEAVEDT',
+      publisherAccount,
+      arweaveFile,
+      assetDdo,
+      providerUrl,
+      addresses.ERC721Factory,
+      aquarius
+    )
+    assert(arweaveAssetId, 'Failed to publish ipfs DDO')
   })
 
   it('Should publish onchain asset', async () => {
@@ -380,7 +380,7 @@ describe('Publish consume test', async () => {
       providerUrl
     )
     assert(ipfsOrderTx, 'Ordering ipfs dataset failed.')
-  }).timeout(60000)
+  }).timeout(40000)
 
   it('Should order onchain dataset', async () => {
     onchainOrderTx = await orderAsset(
