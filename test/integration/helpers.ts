@@ -174,6 +174,15 @@ export async function orderAsset(
   datatoken: Datatoken,
   providerUrl: string
 ) {
+  console.log('Before providerInitialize')
+  console.log(did)
+  console.log(datatokenAddress)
+  console.log(consumerAccount)
+  console.log(serviceId)
+  console.log(serviceIndex)
+  console.log(datatoken)
+  console.log(providerUrl)
+  console.log('--------------------------------------------------------')
   const initializeData = await ProviderInstance.initialize(
     did,
     serviceId,
