@@ -382,22 +382,18 @@ export class Provider {
     if (validUntil) initializeUrl += '&validUntil=' + validUntil
     let response
     try {
-      console.log('ProviderInitialize url: ', initializeUrl)
       response = await fetch(initializeUrl, {
         method: 'GET',
         headers: { 'Content-Type': 'application/json' },
         signal
       })
-      console.log('response: ', response)
     } catch (e) {
-      console.log('error: ', e)
       LoggerInstance.error('Provider initialized failed: ')
       LoggerInstance.error(e)
       throw new Error(`Provider initialize failed url: ${initializeUrl} `)
     }
     if (response?.ok) {
       const results: ProviderInitialize = await response.json()
-      console.log('results: ', results)
       return results
     }
     const resolvedResponse = await response.json()
@@ -407,7 +403,6 @@ export class Provider {
       response.statusText,
       resolvedResponse
     )
-    console.log('resolvedResponse: ', resolvedResponse)
     throw new Error(JSON.stringify(resolvedResponse))
   }
 

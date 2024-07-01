@@ -79,7 +79,6 @@ const ifpsFile: Files = {
     {
       type: 'ipfs',
       hash: 'QmRhsp7eghZtW4PktPC2wAHdKoy2LiF1n6UXMKmAhqQJUA'
-      // not exists anymore? 'QmdMBw956S3i2H2ioS9cERrtxoLJuSsfjzCvkqoDgUa2xm'
     }
   ]
 }
@@ -292,7 +291,6 @@ describe('Publish consume test', async () => {
 
     resolvedIpfsAssetDdo = await aquarius.waitForAqua(ipfsAssetId)
     assert(resolvedIpfsAssetDdo, 'Cannot fetch ipfs DDO from Aquarius')
-    console.log('RESOLVE: resolvedIpfsAssetDdo: ', resolvedIpfsAssetDdo)
 
     resolvedOnchainAssetDdo = await aquarius.waitForAqua(onchainAssetId)
     assert(resolvedOnchainAssetDdo, 'Cannot fetch onchain DDO from Aquarius')
@@ -372,7 +370,6 @@ describe('Publish consume test', async () => {
   }).timeout(40000)
 
   it('Should order ipfs dataset', async () => {
-    console.log('ORDER resolvedIpfsAssetDdo: ', resolvedIpfsAssetDdo)
     ipfsOrderTx = await orderAsset(
       resolvedIpfsAssetDdo.id,
       resolvedIpfsAssetDdo.services[0].datatokenAddress,
