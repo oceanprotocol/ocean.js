@@ -274,6 +274,7 @@ let resolvedDatasetDdo: DDO
 let resolvedAlgorithmDdo: DDO
 
 let computeJobId: string
+let agreementId: string
 /// ```
 
 /// ### 4.3 Helper methods
@@ -661,6 +662,8 @@ describe('Compute-to-data example tests', async () => {
     /// Let's save the compute job it, we re going to use later
     /// ```Typescript
     computeJobId = computeJobs[0].jobId
+    // eslint-disable-next-line prefer-destructuring
+    agreementId = computeJobs[0].agreementId
   }) ///
   /// ```
 
@@ -672,7 +675,7 @@ describe('Compute-to-data example tests', async () => {
       providerUrl,
       await consumerAccount.getAddress(),
       computeJobId,
-      DATASET_DDO.id
+      agreementId
     )
     /// ```
     /// <!--

@@ -78,7 +78,7 @@ const ifpsFile: Files = {
   files: [
     {
       type: 'ipfs',
-      hash: 'QmdMBw956S3i2H2ioS9cERrtxoLJuSsfjzCvkqoDgUa2xm'
+      hash: 'QmRhsp7eghZtW4PktPC2wAHdKoy2LiF1n6UXMKmAhqQJUA'
     }
   ]
 }
@@ -222,7 +222,7 @@ describe('Publish consume test', async () => {
       addresses.ERC721Factory,
       aquarius
     )
-    assert(urlAssetId, 'Failed to publish ipfs DDO')
+    assert(ipfsAssetId, 'Failed to publish ipfs DDO')
   })
 
   it('Should publish arwave asset', async () => {

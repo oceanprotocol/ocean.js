@@ -620,6 +620,7 @@ export class Provider {
     jobId: string,
     providerUri: string,
     signer: Signer,
+    agreementId?: string,
     signal?: AbortSignal
   ): Promise<ComputeJob | ComputeJob[]> {
     const providerEndpoints = await this.getEndpoints(providerUri)
@@ -643,12 +644,16 @@ export class Provider {
 
     let signatureMessage = consumerAddress
     signatureMessage += jobId || ''
-    signatureMessage += (did && `${this.noZeroX(did)}`) || ''
-    signatureMessage += nonce
+    // On current provider impl (and nodes) we DO NOT check this signature
+    // On nodes we are signing again just the Nonce to send the request to Operator Service
+    // on current provider we sign: {owner}{job_id}{nonce}" OR {owner}{nonce} if no jobId
+    // On provider service STOP route, we just check signature owner + jobId OR just owner if no jobId
+    // signatureMessage += (agreementId && `${this.noZeroX(agreementId)}`) || ''
+    // signatureMessage += nonce
     const signature = await this.signProviderRequest(signer, signatureMessage)
     const payload = Object()
     payload.signature = signature
-    payload.documentId = this.noZeroX(did)
+    payload.agreementId = this.noZeroX(agreementId)
     payload.consumerAddress = consumerAddress
     payload.nonce = nonce
     if (jobId) payload.jobId = jobId
@@ -688,7 +693,7 @@ export class Provider {
    * @param {string} providerUri The URI of the provider we want to query
    * @param {string} consumerAddress The consumer ethereum address
    * @param {string} jobId The ID of a compute job.
-   * @param {string} did The ID of the asset
+   * @param {string} agreementId The ID of the service agreement (tx id)
    * @param {AbortSignal} signal abort signal
    * @return {Promise<ComputeJob | ComputeJob[]>}
    */
@@ -696,7 +701,7 @@ export class Provider {
     providerUri: string,
     consumerAddress: string,
     jobId?: string,
-    did?: string,
+    agreementId?: string,
     signal?: AbortSignal
   ): Promise<ComputeJob | ComputeJob[]> {
     const providerEndpoints = await this.getEndpoints(providerUri)
@@ -709,7 +714,7 @@ export class Provider {
       : null
 
     let url = `?consumerAddress=${consumerAddress}`
-    url += (did && `&documentId=${this.noZeroX(did)}`) || ''
+    url += (agreementId && `&agreementId=${this.noZeroX(agreementId)}`) || ''
     url += (jobId && `&jobId=${jobId}`) || ''
 
     if (!computeStatusUrl) return null
