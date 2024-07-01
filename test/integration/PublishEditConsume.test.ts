@@ -222,7 +222,7 @@ describe('Publish consume test', async () => {
       addresses.ERC721Factory,
       aquarius
     )
-    assert(urlAssetId, 'Failed to publish ipfs DDO')
+    assert(ipfsAssetId, 'Failed to publish ipfs DDO')
   })
 
   it('Should publish arwave asset', async () => {
