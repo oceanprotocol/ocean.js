@@ -46,7 +46,9 @@ export class Provider {
     serviceName: string
   ): ServiceEndpoint {
     if (!servicesEndpoints) return null
-    return servicesEndpoints.find((s) => s.serviceName === serviceName) as ServiceEndpoint
+    return servicesEndpoints.find(
+      (s) => s.serviceName.toLowerCase() === serviceName.toLowerCase()
+    ) as ServiceEndpoint
   }
 
   /**
