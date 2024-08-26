@@ -1,5 +1,6 @@
+/* eslint-disable lines-between-class-members */
 import { Datatoken } from './Datatoken'
-import { Signer } from 'ethers'
+import { Bytes, Signer } from 'ethers'
 import ERC20Template4 from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC20Template4.sol/ERC20Template4.json'
 import { AbiItem, ReceiptOrEstimate } from '../@types'
 import { AccessListContract } from './AccessList'
@@ -55,16 +56,18 @@ export class Datatoken4 extends Datatoken {
    * This function allows to set another address for allowListContract, only by datatoken deployer
    * only DatatokenDeployer can succeed
    * @param {String} dtAddress Datatoken address
-   * @param {String} address User address
+   * @param {String} address Contract address
+   * @param {String} consumer User address
    * @param {Boolean} estimateGas if True, return gas estimate
    * @return {Promise<ReceiptOrEstimate>} transactionId
    */
   public async setAllowListContract<G extends boolean = false>(
     dtAddress: string,
     address: string,
+    consumer: string,
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
-    if (!(await this.isDatatokenDeployer(dtAddress, address))) {
+    if (!(await this.isDatatokenDeployer(dtAddress, consumer))) {
       throw new Error(`User is not Datatoken Deployer`)
     }
 
@@ -87,16 +90,18 @@ export class Datatoken4 extends Datatoken {
    * This function allows to set another address for allowListContract, only by datatoken deployer
    * only DatatokenDeployer can succeed
    * @param {String} dtAddress Datatoken address
-   * @param {String} address User address
+   * @param {String} address Contract address
+   * @param {String} consumer User address
    * @param {Boolean} estimateGas if True, return gas estimate
    * @return {Promise<ReceiptOrEstimate>} transactionId
    */
   public async setDenyListContract<G extends boolean = false>(
     dtAddress: string,
     address: string,
+    consumer: string,
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
-    if (!(await this.isDatatokenDeployer(dtAddress, address))) {
+    if (!(await this.isDatatokenDeployer(dtAddress, consumer))) {
       throw new Error(`User is not Datatoken Deployer`)
     }
 
@@ -110,6 +115,38 @@ export class Datatoken4 extends Datatoken {
       this.config?.gasFeeMultiplier,
       dtContract.setDenyListContract,
       address
+    )
+
+    return <ReceiptOrEstimate<G>>trxReceipt
+  }
+  /** setFileObject
+   * This function allows to set file object in ecnrypted format, only by datatoken deployer
+   * only DatatokenDeployer can succeed
+   * @param {String} dtAddress Datatoken address
+   * @param {String} address User address
+   * @param {Boolean} estimateGas if True, return gas estimate
+   * @return {Promise<ReceiptOrEstimate>} transactionId
+   */
+  public async setFileObject<G extends boolean = false>(
+    dtAddress: string,
+    address: string,
+    fileObject: Bytes,
+    estimateGas?: G
+  ): Promise<ReceiptOrEstimate<G>> {
+    if (!(await this.isDatatokenDeployer(dtAddress, address))) {
+      throw new Error(`User is not Datatoken Deployer`)
+    }
+
+    const dtContract = this.getContract(dtAddress)
+    const estGas = await dtContract.estimateGas.setFileObject(fileObject)
+    if (estimateGas) return <ReceiptOrEstimate<G>>estGas
+
+    const trxReceipt = await sendTx(
+      estGas,
+      this.signer,
+      this.config?.gasFeeMultiplier,
+      dtContract.setFileObject,
+      fileObject
     )
 
     return <ReceiptOrEstimate<G>>trxReceipt
