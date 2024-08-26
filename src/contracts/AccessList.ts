@@ -5,7 +5,7 @@ import { AbiItem, ReceiptOrEstimate } from '../@types'
 import { Config } from '../config'
 import { SmartContract } from './SmartContract'
 
-export class AccessList extends SmartContract {
+export class AccessListContract extends SmartContract {
   public abiEnterprise: AbiItem[]
 
   getDefaultAbi() {
