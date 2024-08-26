@@ -151,4 +151,94 @@ export class Datatoken4 extends Datatoken {
 
     return <ReceiptOrEstimate<G>>trxReceipt
   }
+
+  /** addConsumer
+   * This function allows to add consumer
+   * only DatatokenDeployer can succeed
+   * @param {String} dtAddress Datatoken address
+   * @param {String} consumer User address
+   * @param {Boolean} estimateGas if True, return gas estimate
+   * @return {Promise<ReceiptOrEstimate>} transactionId
+   */
+  public async addConsumer<G extends boolean = false>(
+    dtAddress: string,
+    consumer: string,
+    estimateGas?: G
+  ): Promise<ReceiptOrEstimate<G>> {
+    const dtContract = this.getContract(dtAddress)
+    const estGas = await dtContract.estimateGas.addConsumer(consumer)
+    if (estimateGas) return <ReceiptOrEstimate<G>>estGas
+
+    const trxReceipt = await sendTx(
+      estGas,
+      this.signer,
+      this.config?.gasFeeMultiplier,
+      dtContract.addConsumer,
+      consumer
+    )
+
+    return <ReceiptOrEstimate<G>>trxReceipt
+  }
+
+  /** checkConsumer
+   * This function allows to add consumer
+   * only DatatokenDeployer can succeed
+   * @param {String} dtAddress Datatoken address
+   * @param {Number} serviceId Service Identifier
+   * @param {String} consumer User address
+   * @param {Boolean} estimateGas if True, return gas estimate
+   * @return {Promise<ReceiptOrEstimate>} transactionId
+   */
+  public async checkConsumer<G extends boolean = false>(
+    dtAddress: string,
+    serviceId: number,
+    consumer: string,
+    estimateGas?: G
+  ): Promise<ReceiptOrEstimate<G>> {
+    const dtContract = this.getContract(dtAddress)
+    const estGas = await dtContract.estimateGas.checkConsumer(serviceId, consumer)
+    if (estimateGas) return <ReceiptOrEstimate<G>>estGas
+
+    const trxReceipt = await sendTx(
+      estGas,
+      this.signer,
+      this.config?.gasFeeMultiplier,
+      dtContract.checkConsumer,
+      serviceId,
+      consumer
+    )
+    return <ReceiptOrEstimate<G>>trxReceipt
+  }
+
+  /**
+   * getFileObject - It returns the consumer's file object encrypted format.
+   * @param {String} dtAddress datatoken address
+   * @param {Number} serviceId - service identifier
+   * @param {String} providerAddress
+   * @param {Bytes} providerSignature
+   * @param {Bytes} consumerData
+   * @param {Bytes} consumerSignature
+   * @param {String} consumerAddress
+   * @return {Promise<string>}
+   */
+  public async getFileObject(
+    dtAddress: string,
+    serviceId: number,
+    providerAddress: string,
+    providerSignature: Bytes,
+    consumerData: Bytes,
+    consumerSignature: Bytes,
+    consumerAddress: string
+  ): Promise<Bytes> {
+    const dtContract = this.getContract(dtAddress)
+    const fileObject = await dtContract.getFileObject(
+      serviceId,
+      providerAddress,
+      providerSignature,
+      consumerData,
+      consumerSignature,
+      consumerAddress
+    )
+    return fileObject
+  }
 }
