@@ -1,4 +1,4 @@
-import { BigNumber } from 'ethers'
+import { BigNumber, ethers } from 'ethers'
 import ERC721Factory from '@oceanprotocol/contracts/artifacts/contracts/ERC721Factory.sol/ERC721Factory.json'
 import {
   generateDtName,
@@ -583,7 +583,10 @@ export class NftFactory extends SmartContractWithAddress {
         await this.amountToUnits(null, dtParams.cap, 18),
         await this.amountToUnits(null, dtParams.feeAmount, feeTokenDecimals)
       ],
-      bytess: []
+      bytess:
+        dtParams.templateIndex === 4
+          ? [ethers.utils.toUtf8Bytes(JSON.stringify(dtParams.filesObject))]
+          : []
     }
   }
 

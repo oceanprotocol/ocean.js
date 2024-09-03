@@ -17,7 +17,8 @@ import {
   // ProviderFees,
   getEventFromTx,
   DispenserCreationParams,
-  FreCreationParams
+  FreCreationParams,
+  ConfigHelper
 } from '../../src'
 import { hexlify } from 'ethers/lib/utils'
 import { createHash } from 'crypto'
@@ -53,25 +54,29 @@ export async function createAsset(
   providerFeeToken: string,
   nftContractAddress: string, // addresses.ERC721Factory,
   aquariusInstance: Aquarius,
-  filesObject: any,
+  filesObject?: any
   // fixed rate
-  dispenserAddress?: string,
-  fixedRateAddress?: string,
-  baseTokenAddress?
+  // dispenserAddress?: string,
+  // fixedRateAddress?: string,
+  // baseTokenAddress?: string // ocean token?
 ): Promise<string> {
   if (!VALID_TEMPLATE_INDEXES.includes(templateIndex)) {
     throw new Error('Invalid template index: ' + templateIndex)
   }
 
-  const chain = (await owner.provider.getNetwork()).chainId
+  const chainID = (await owner.provider.getNetwork()).chainId
 
-  const nft = new Nft(owner, chain)
+  const config = new ConfigHelper().getConfig(parseInt(String(chainID)))
+
+  const nft = new Nft(owner, chainID)
 
   const nftFactory = new NftFactory(nftContractAddress, owner)
 
+  // get nft owner
   const account = await owner.getAddress()
 
-  ddo.chainId = parseInt(chain.toString(10))
+  // from hex to number format
+  ddo.chainId = parseInt(chainID.toString(10))
   const nftParamsAsset: NftCreateData = {
     name,
     symbol,
@@ -85,14 +90,14 @@ export async function createAsset(
     cap: '100000',
     feeAmount: '0',
     paymentCollector: account,
-    feeToken: providerFeeToken,
+    feeToken: providerFeeToken || config.oceanTokenAddress,
     minter: account,
     mpFeeAddress: ZERO_ADDRESS
   }
 
   // include fileObject in the DT constructor
   if (templateIndex === 4) {
-    datatokenParams.fileObject = filesObject
+    datatokenParams.filesObject = filesObject
   }
 
   let bundleNFT
@@ -101,7 +106,7 @@ export async function createAsset(
     bundleNFT = await nftFactory.createNftWithDatatoken(nftParamsAsset, datatokenParams)
   } else if (ddo.stats?.price?.value === '0') {
     const dispenserParams: DispenserCreationParams = {
-      dispenserAddress,
+      dispenserAddress: config.dispenserAddress,
       maxTokens: '1',
       maxBalance: '100000000',
       withMint: true,
@@ -115,8 +120,8 @@ export async function createAsset(
   } else {
     // fixed price
     const fixedPriceParams: FreCreationParams = {
-      fixedRateAddress,
-      baseTokenAddress,
+      fixedRateAddress: config.fixedRateExchangeAddress,
+      baseTokenAddress: config.oceanTokenAddress,
       owner: account,
       marketFeeCollector: account,
       baseTokenDecimals: 18,
@@ -143,22 +148,24 @@ export async function createAsset(
   // create the files encrypted string
   assetUrl.datatokenAddress = datatokenAddressAsset
   assetUrl.nftAddress = nftAddress
-  // TODO if template 4??
+  // TODO if template 4 no need to encrypt it??
   if (templateIndex !== 4) {
-    ddo.services[0].files = await ProviderInstance.encrypt(assetUrl, chain, providerUrl)
+    ddo.services[0].files = await ProviderInstance.encrypt(assetUrl, chainID, providerUrl)
+  } else {
+    ddo.services[0].files = assetUrl
   }
 
   ddo.services[0].datatokenAddress = datatokenAddressAsset
   ddo.services[0].serviceEndpoint = providerUrl
 
   ddo.nftAddress = nftAddress
-  ddo.id = 'did:op:' + SHA256(ethers.utils.getAddress(nftAddress) + chain.toString(10))
+  ddo.id = 'did:op:' + SHA256(ethers.utils.getAddress(nftAddress) + chainID.toString(10))
 
   let metadata
   let metadataHash
   let flags
   if (encryptDDO) {
-    metadata = await ProviderInstance.encrypt(ddo, chain, providerUrl)
+    metadata = await ProviderInstance.encrypt(ddo, chainID, providerUrl)
     const validateResult = await aquariusInstance.validate(ddo)
     metadataHash = validateResult.hash
     flags = 2
