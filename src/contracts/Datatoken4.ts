@@ -6,9 +6,11 @@ import { AbiItem, ReceiptOrEstimate } from '../@types'
 import { AccessListContract } from './AccessList'
 import { Config } from '../config'
 import { sendTx } from '../utils'
+import * as sapphire from '@oasisprotocol/sapphire-paratime'
 
 export class Datatoken4 extends Datatoken {
   public accessList: AccessListContract
+  public fileObject: Bytes
   getDefaultAbi() {
     return ERC20Template4.abi as AbiItem[]
   }
@@ -22,12 +24,16 @@ export class Datatoken4 extends Datatoken {
    */
   constructor(
     signer: Signer,
+    fileObject: Bytes,
     network?: string | number,
     config?: Config,
     abi?: AbiItem[]
   ) {
     super(signer, network, config, abi)
+    // Wrap signer's address for encrypted data tx
+    this.signer = sapphire.wrap(signer)
     this.accessList = new AccessListContract(this.signer)
+    this.fileObject = fileObject
   }
 
   /**
@@ -150,37 +156,5 @@ export class Datatoken4 extends Datatoken {
     )
 
     return <ReceiptOrEstimate<G>>trxReceipt
-  }
-
-  /**
-   * getFileObject - It returns the consumer's file object encrypted format.
-   * @param {String} dtAddress datatoken address
-   * @param {Number} serviceId - service identifier
-   * @param {String} providerAddress
-   * @param {Bytes} providerSignature
-   * @param {Bytes} consumerData
-   * @param {Bytes} consumerSignature
-   * @param {String} consumerAddress
-   * @return {Promise<string>}
-   */
-  public async getFileObject(
-    dtAddress: string,
-    serviceId: number,
-    providerAddress: string,
-    providerSignature: Bytes,
-    consumerData: Bytes,
-    consumerSignature: Bytes,
-    consumerAddress: string
-  ): Promise<Bytes> {
-    const dtContract = this.getContract(dtAddress)
-    const fileObject = await dtContract.getFileObject(
-      serviceId,
-      providerAddress,
-      providerSignature,
-      consumerData,
-      consumerSignature,
-      consumerAddress
-    )
-    return fileObject
   }
 }
