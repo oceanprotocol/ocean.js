@@ -4,6 +4,7 @@ import { sendTx } from '../utils'
 import { AbiItem, ReceiptOrEstimate } from '../@types'
 import { Config } from '../config'
 import { SmartContract } from './SmartContract'
+import * as sapphire from '@oasisprotocol/sapphire-paratime'
 
 export class AccessListContract extends SmartContract {
   public abiEnterprise: AbiItem[]
@@ -28,6 +29,7 @@ export class AccessListContract extends SmartContract {
     abiEnterprise?: AbiItem[]
   ) {
     super(signer, network, config, abi)
+    this.signer = sapphire.wrap(signer)
     this.abiEnterprise = abiEnterprise || (AccessList.abi as AbiItem[])
   }
 
