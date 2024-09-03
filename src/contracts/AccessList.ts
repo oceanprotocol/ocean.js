@@ -25,12 +25,11 @@ export class AccessListContract extends SmartContract {
     signer: Signer,
     network?: string | number,
     config?: Config,
-    abi?: AbiItem[],
-    abiEnterprise?: AbiItem[]
+    abi?: AbiItem[]
   ) {
     super(signer, network, config, abi)
     this.signer = sapphire.wrap(signer)
-    this.abiEnterprise = abiEnterprise || (AccessList.abi as AbiItem[])
+    this.abi = abi || this.getDefaultAbi()
   }
 
   /**
@@ -64,7 +63,7 @@ export class AccessListContract extends SmartContract {
       estGas,
       this.signer,
       this.config?.gasFeeMultiplier,
-      accessListContract.mint,
+      accessListContract.functions.mint,
       user,
       tokenUri
     )
@@ -93,7 +92,7 @@ export class AccessListContract extends SmartContract {
       estGas,
       this.signer,
       this.config?.gasFeeMultiplier,
-      accessListContract.batchMint,
+      accessListContract.functions.batchMint,
       users,
       tokenUris
     )
@@ -113,7 +112,7 @@ export class AccessListContract extends SmartContract {
       estGas,
       this.signer,
       this.config?.gasFeeMultiplier,
-      accessListContract.burn,
+      accessListContract.functions.burn,
       tokenId
     )
     return <ReceiptOrEstimate<G>>trxReceipt
