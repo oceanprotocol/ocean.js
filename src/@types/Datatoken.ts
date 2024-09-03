@@ -10,6 +10,7 @@ export interface DatatokenCreateParams {
   cap: string
   name?: string
   symbol?: string
+  fileObject?: any // file object for template 4
 }
 
 export interface ConsumeMarketFee {
