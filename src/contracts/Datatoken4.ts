@@ -85,7 +85,7 @@ export class Datatoken4 extends Datatoken {
       estGas,
       this.signer,
       this.config?.gasFeeMultiplier,
-      dtContract.setAllowListContract,
+      dtContract.functions.setAllowListContract,
       address
     )
 
@@ -119,7 +119,7 @@ export class Datatoken4 extends Datatoken {
       estGas,
       this.signer,
       this.config?.gasFeeMultiplier,
-      dtContract.setDenyListContract,
+      dtContract.functions.setDenyListContract,
       address
     )
 
@@ -144,14 +144,14 @@ export class Datatoken4 extends Datatoken {
     }
 
     const dtContract = this.getContract(dtAddress)
-    const estGas = await dtContract.estimateGas.setFileObject(fileObject)
+    const estGas = await dtContract.estimateGas.setFilesObject(fileObject)
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
 
     const trxReceipt = await sendTx(
       estGas,
       this.signer,
       this.config?.gasFeeMultiplier,
-      dtContract.setFileObject,
+      dtContract.functions.setFilesObject,
       fileObject
     )
 
