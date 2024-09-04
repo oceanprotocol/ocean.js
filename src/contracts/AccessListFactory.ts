@@ -4,7 +4,6 @@ import AccessListFactory from '@oceanprotocol/contracts/artifacts/contracts/acce
 import { generateDtName, sendTx, getEventFromTx, ZERO_ADDRESS } from '../utils'
 import { AbiItem, AccessListData, ReceiptOrEstimate } from '../@types'
 import { SmartContractWithAddress } from './SmartContractWithAddress'
-import * as sapphire from '@oasisprotocol/sapphire-paratime'
 
 /**
  * Provides an interface for Access List Factory contract
@@ -30,7 +29,6 @@ export class AccesslistFactory extends SmartContractWithAddress {
     abi?: AbiItem[]
   ) {
     super(address, signer, network, config, abi)
-    this.signer = sapphire.wrap(signer)
     this.abi = abi || this.getDefaultAbi()
   }
 
