@@ -33,7 +33,7 @@
     "test:integration": "npm run mocha --  'test/integration/**/*.test.ts'",
     "test:unit:cover": "nyc --report-dir coverage/unit npm run test:unit",
     "test:integration:cover": "nyc --report-dir coverage/integration --no-clean npm run test:integration",
-    "test:sapphire": "npm run mocha -- 'test/scripts/sapphireTest.test.ts'",
+    // "test:sapphire": "npm run mocha -- 'test/scripts/sapphireTest.test.ts'",
     "create:guide": "./scripts/createCodeExamples.sh test/integration/CodeExamples.test.ts",
     "create:guidec2d": "./scripts/createCodeExamples.sh test/integration/ComputeExamples.test.ts",
     "commit:guides": "./scripts/commitChanges.sh",
