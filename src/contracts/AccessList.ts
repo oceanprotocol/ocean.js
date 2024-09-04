@@ -40,6 +40,33 @@ export class AccessListContract extends SmartContract {
   }
 
   /**
+   * Get Owner
+   * @return {Promise<string>} Owner
+   */
+  public async getOwner(accessListAddress: string): Promise<string> {
+    const accessListContract = this.getContract(accessListAddress)
+    return await accessListContract.owner()
+  }
+
+  /**
+   * Get Name of Access list
+   * @return {Promise<string>} Name
+   */
+  public async getName(accessListAddress: string): Promise<string> {
+    const accessListContract = this.getContract(accessListAddress)
+    return await accessListContract.name()
+  }
+
+  /**
+   * Get Symbol of Access list
+   * @return {Promise<string>} Symbol
+   */
+  public async getSymbol(accessListAddress: string): Promise<string> {
+    const accessListContract = this.getContract(accessListAddress)
+    return await accessListContract.symbol()
+  }
+
+  /**
    * Mint ERC721 contract
    * @param {String} accessListAddress AccessList contract address
    * @param {String} user Minter address
@@ -97,6 +124,13 @@ export class AccessListContract extends SmartContract {
     return <ReceiptOrEstimate<G>>trxReceipt
   }
 
+  /**
+   * Burn Access List
+   * @param {String} accessListAddress AccessList contract address
+   * @param {Number} tokenId token ID
+   * @param {Boolean} estimateGas if True, return gas estimate
+   * @return {Promise<ReceiptOrEstimate>} transactionId
+   */
   public async burn<G extends boolean = false>(
     accessListAddress: string,
     tokenId: number,
@@ -112,6 +146,55 @@ export class AccessListContract extends SmartContract {
       this.config?.gasFeeMultiplier,
       accessListContract.functions.burn,
       tokenId
+    )
+    return <ReceiptOrEstimate<G>>trxReceipt
+  }
+
+  /**
+   * Transfer Ownership of an access list, called by owner of access list
+   * @param {String} accessListAddress AccessList contract address
+   * @param {Number} newOwner new owner of the access list
+   * @param {Boolean} estimateGas if True, return gas estimate
+   * @return {Promise<ReceiptOrEstimate>} transactionId
+   */
+  public async transferOwnership<G extends boolean = false>(
+    accessListAddress: string,
+    newOwner: string,
+    estimateGas?: G
+  ): Promise<ReceiptOrEstimate<G>> {
+    const accessListContract = this.getContract(accessListAddress)
+    const estGas = await accessListContract.estimateGas.transferOwnership(newOwner)
+    if (estimateGas) return <ReceiptOrEstimate<G>>estGas
+
+    const trxReceipt = await sendTx(
+      estGas,
+      this.signer,
+      this.config?.gasFeeMultiplier,
+      accessListContract.functions.transferOwnership,
+      newOwner
+    )
+    return <ReceiptOrEstimate<G>>trxReceipt
+  }
+
+  /**
+   * Renounce Ownership of an access list, called by owner of access list
+   * @param {String} accessListAddress AccessList contract address
+   * @param {Boolean} estimateGas if True, return gas estimate
+   * @return {Promise<ReceiptOrEstimate>} transactionId
+   */
+  public async renounceOwnership<G extends boolean = false>(
+    accessListAddress: string,
+    estimateGas?: G
+  ): Promise<ReceiptOrEstimate<G>> {
+    const accessListContract = this.getContract(accessListAddress)
+    const estGas = await accessListContract.estimateGas.renounceOwnership()
+    if (estimateGas) return <ReceiptOrEstimate<G>>estGas
+
+    const trxReceipt = await sendTx(
+      estGas,
+      this.signer,
+      this.config?.gasFeeMultiplier,
+      accessListContract.functions.renounceOwnership
     )
     return <ReceiptOrEstimate<G>>trxReceipt
   }
