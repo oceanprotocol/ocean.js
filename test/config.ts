@@ -48,3 +48,16 @@ export const getAddresses = () => {
   )
   return data.development
 }
+
+export const getAddressesForSapphire = (testnet: boolean) => {
+  const data = JSON.parse(
+    // eslint-disable-next-line security/detect-non-literal-fs-filename
+    fs.readFileSync(
+      process.env.ADDRESS_FILE ||
+        `${homedir}/.ocean/ocean-contracts/artifacts/address.json`,
+      'utf8'
+    )
+  )
+  if (testnet) return data.oasis_saphire_testnet
+  return data.oasis_saphire
+}
