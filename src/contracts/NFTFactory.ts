@@ -583,10 +583,9 @@ export class NftFactory extends SmartContractWithAddress {
         await this.amountToUnits(null, dtParams.cap, 18),
         await this.amountToUnits(null, dtParams.feeAmount, feeTokenDecimals)
       ],
-      bytess:
-        dtParams.templateIndex === 4
-          ? [ethers.utils.toUtf8Bytes(JSON.stringify(dtParams.filesObject))]
-          : []
+      bytess: dtParams.filesObject
+        ? [ethers.utils.toUtf8Bytes(JSON.stringify(dtParams.filesObject))]
+        : []
     }
   }
 

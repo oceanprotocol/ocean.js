@@ -179,4 +179,7 @@ export class Config {
   DFRewards?: string
   DFStrategyV1?: string
   veFeeEstimate?: string
+
+  // is confidential evm
+  confidentialEVM?: boolean
 }

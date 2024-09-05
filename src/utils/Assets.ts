@@ -22,8 +22,61 @@ import {
 } from '../../src'
 import { hexlify } from 'ethers/lib/utils'
 import { createHash } from 'crypto'
+import fs from 'fs'
+import addresses from '@oceanprotocol/contracts/addresses/address.json' assert { type: 'json' }
 
-const VALID_TEMPLATE_INDEXES = [1, 2, 4]
+// template address OR templateId
+export function isConfidentialEVM(network: string | number): boolean {
+  const config = new ConfigHelper().getConfig(network)
+  return config && config.confidentialEVM
+}
+
+/**
+ * Get the artifacts address from the address.json file
+ * either from the env or from the ocean-contracts dir
+ * @returns data or null
+ */
+export function getOceanArtifactsAdresses(): any {
+  try {
+    if (process.env.ADDRESS_FILE) {
+      // eslint-disable-next-line security/detect-non-literal-fs-filename
+      const data = fs.readFileSync(process.env.ADDRESS_FILE, 'utf8')
+      return JSON.parse(data)
+    }
+    return addresses
+  } catch (error) {
+    return addresses
+  }
+}
+
+/**
+ * Get the artifacts address from the address.json file, for the given chain
+ * either from the env or from the ocean-contracts dir, safer than above, because sometimes the network name
+ * is mispeled, best example "optimism_sepolia" vs "optimism-sepolia"
+ * @returns data or null
+ */
+export function getOceanArtifactsAdressesByChainId(chain: number): any {
+  try {
+    // eslint-disable-next-line security/detect-non-literal-fs-filename
+    const data = getOceanArtifactsAdresses()
+    if (data) {
+      const networks = Object.keys(data)
+      for (const network of networks) {
+        if (data[network].chainId === chain) {
+          return data[network]
+        }
+      }
+    }
+  } catch (error) {
+    console.error(error)
+  }
+  return null
+}
+
+export async function calculateTemplateIndex(chainID: number): Promise<number> {
+  const artifacts = await getOceanArtifactsAdressesByChainId(chainID)
+  return -1
+}
 /**
  *
  * @param name asset name
@@ -47,7 +100,7 @@ export async function createAsset(
   symbol: string,
   owner: Signer,
   assetUrl: any,
-  templateIndex: number,
+  template: string | number, // If string, it's template address , otherwise, it's templateId
   ddo: any,
   encryptDDO: boolean = true, // default is true
   providerUrl: string,
@@ -60,10 +113,11 @@ export async function createAsset(
   // fixedRateAddress?: string,
   // baseTokenAddress?: string // ocean token?
 ): Promise<string> {
-  if (!VALID_TEMPLATE_INDEXES.includes(templateIndex)) {
-    throw new Error('Invalid template index: ' + templateIndex)
+  const isAddress = typeof template === 'string'
+  const isTemplateIndex = typeof template === 'number'
+  if (!isAddress && !isTemplateIndex) {
+    throw new Error('Invalid template! Must be a "number" or a "string"')
   }
-
   const chainID = (await owner.provider.getNetwork()).chainId
 
   const config = new ConfigHelper().getConfig(parseInt(String(chainID)))
@@ -96,7 +150,7 @@ export async function createAsset(
   }
 
   // include fileObject in the DT constructor
-  if (templateIndex === 4) {
+  if (config.confidentialEVM) {
     datatokenParams.filesObject = filesObject
   }
 
@@ -149,10 +203,8 @@ export async function createAsset(
   assetUrl.datatokenAddress = datatokenAddressAsset
   assetUrl.nftAddress = nftAddress
   // TODO if template 4 no need to encrypt it??
-  if (templateIndex !== 4) {
+  if (config.confidentialEVM) {
     ddo.services[0].files = await ProviderInstance.encrypt(assetUrl, chainID, providerUrl)
-  } else {
-    ddo.services[0].files = assetUrl
   }
 
   ddo.services[0].datatokenAddress = datatokenAddressAsset
