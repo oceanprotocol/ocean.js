@@ -3,7 +3,8 @@ dist/
 .nyc_output/
 coverage/
 doc/
-test/**/*.js
+test/unit/*.js
+test/integration/*.js
 src/**/*.js
 
 src/metadata\.json
