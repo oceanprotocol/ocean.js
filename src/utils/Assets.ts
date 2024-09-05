@@ -73,9 +73,30 @@ export function getOceanArtifactsAdressesByChainId(chain: number): any {
   return null
 }
 
-export async function calculateTemplateIndex(chainID: number): Promise<number> {
+async function calculateTemplateIndex(
+  chainID: number,
+  template: string | number
+): Promise<number> {
+  let index = -1
   const artifacts = await getOceanArtifactsAdressesByChainId(chainID)
-  return -1
+  if (artifacts) {
+    const templatesAvailable = artifacts.ERC20Template
+    if (templatesAvailable) {
+      // template address?
+      if (typeof template === 'string') {
+        const templateAddresses: any[] = Object.values(templatesAvailable)
+        index = templateAddresses.findIndex(function (item) {
+          return item.indexOf(template) !== -1
+        })
+      } else {
+        const templateIndexes = Object.keys(templatesAvailable)
+        index = templateIndexes.findIndex(function (item) {
+          return item.indexOf(template.toString()) !== -1
+        })
+      }
+    }
+  }
+  return index
 }
 /**
  *
@@ -121,6 +142,11 @@ export async function createAsset(
   const chainID = (await owner.provider.getNetwork()).chainId
 
   const config = new ConfigHelper().getConfig(parseInt(String(chainID)))
+
+  const templateIndex = await calculateTemplateIndex(chainID, template)
+  if (templateIndex < 1) {
+    throw new Error(`Invalid template index: ${templateIndex}`)
+  }
 
   const nft = new Nft(owner, chainID)
 
