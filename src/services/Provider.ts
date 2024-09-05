@@ -127,7 +127,9 @@ export class Provider {
     const messageHashBytes = ethers.utils.arrayify(consumerMessage)
     const chainId = await signer.getChainId()
     try {
-      return await signer.signMessage(messageHashBytes)
+      return await (signer as providers.JsonRpcSigner)._legacySignMessage(
+        messageHashBytes
+      )
     } catch (error) {
       LoggerInstance.error('Sign provider message error: ', error)
       if (chainId === 8996) {

@@ -155,6 +155,15 @@ export const configHelperNetworks: Config[] = [
     subgraphUri: 'https://v4.subgraph.sapphire-mainnet.oceanprotocol.com/',
     explorerUri: 'https://explorer.oasis.io/mainnet/sapphire/',
     gasFeeMultiplier: 1
+  },
+  {
+    ...configHelperNetworksBase,
+    chainId: 23295,
+    network: 'oasis_saphire_testnet',
+    nodeUri: 'https://testnet.sapphire.oasis.dev',
+    subgraphUri: 'https://v4.subgraph.sapphire-testnet.oceanprotocol.com/subgraphs/name/oceanprotocol/ocean-subgraph',
+    explorerUri: 'https://explorer.oasis.io/testnet/sapphire/',
+    gasFeeMultiplier: 1
   }
 ]
 
