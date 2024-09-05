@@ -23,7 +23,9 @@ import {
 import { hexlify } from 'ethers/lib/utils'
 import { createHash } from 'crypto'
 import fs from 'fs'
-import addresses from '@oceanprotocol/contracts/addresses/address.json' assert { type: 'json' }
+
+// eslint-disable-next-line import/no-named-default
+import { default as Addresses } from '@oceanprotocol/contracts/addresses/address.json'
 
 // template address OR templateId
 export function isConfidentialEVM(network: string | number): boolean {
@@ -43,9 +45,9 @@ export function getOceanArtifactsAdresses(): any {
       const data = fs.readFileSync(process.env.ADDRESS_FILE, 'utf8')
       return JSON.parse(data)
     }
-    return addresses
+    return Addresses
   } catch (error) {
-    return addresses
+    return Addresses
   }
 }
 
