@@ -75,7 +75,7 @@ export function getOceanArtifactsAdressesByChainId(chain: number): any {
   return null
 }
 
-async function calculateTemplateIndex(
+export async function calculateTemplateIndex(
   chainID: number,
   template: string | number
 ): Promise<number> {
