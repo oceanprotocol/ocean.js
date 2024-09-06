@@ -336,6 +336,10 @@ export class ConfigHelper {
             fs.readFileSync(process.env.ADDRESS_FILE, 'utf8')
           )
         : null
+      // test
+      if (addresses) {
+        console.log('config adding addresses: ', addresses)
+      }
     } catch (e) {
       console.log(e)
       addresses = null
