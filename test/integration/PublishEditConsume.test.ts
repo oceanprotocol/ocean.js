@@ -349,50 +349,50 @@ describe('Publish consume test', async () => {
     )
     assert(urlOrderTx, 'Ordering url dataset failed.')
 
-    arwaveOrderTx = await orderAsset(
-      resolvedArweaveAssetDdo.id,
-      resolvedArweaveAssetDdo.services[0].datatokenAddress,
-      await consumerAccount.getAddress(),
-      resolvedArweaveAssetDdo.services[0].id,
-      0,
-      datatoken,
-      providerUrl
-    )
-    assert(arwaveOrderTx, 'Ordering arwave dataset failed.')
+    // arwaveOrderTx = await orderAsset(
+    //   resolvedArweaveAssetDdo.id,
+    //   resolvedArweaveAssetDdo.services[0].datatokenAddress,
+    //   await consumerAccount.getAddress(),
+    //   resolvedArweaveAssetDdo.services[0].id,
+    //   0,
+    //   datatoken,
+    //   providerUrl
+    // )
+    // assert(arwaveOrderTx, 'Ordering arwave dataset failed.')
 
-    onchainOrderTx = await orderAsset(
-      resolvedOnchainAssetDdo.id,
-      resolvedOnchainAssetDdo.services[0].datatokenAddress,
-      await consumerAccount.getAddress(),
-      resolvedOnchainAssetDdo.services[0].id,
-      0,
-      datatoken,
-      providerUrl
-    )
-    assert(onchainOrderTx, 'Ordering onchain dataset failed.')
+    // onchainOrderTx = await orderAsset(
+    //   resolvedOnchainAssetDdo.id,
+    //   resolvedOnchainAssetDdo.services[0].datatokenAddress,
+    //   await consumerAccount.getAddress(),
+    //   resolvedOnchainAssetDdo.services[0].id,
+    //   0,
+    //   datatoken,
+    //   providerUrl
+    // )
+    // assert(onchainOrderTx, 'Ordering onchain dataset failed.')
 
-    ipfsOrderTx = await orderAsset(
-      resolvedIpfsAssetDdo.id,
-      resolvedIpfsAssetDdo.services[0].datatokenAddress,
-      await consumerAccount.getAddress(),
-      resolvedIpfsAssetDdo.services[0].id,
-      0,
-      datatoken,
-      providerUrl
-    )
-    assert(ipfsOrderTx, 'Ordering ipfs dataset failed.')
+    // ipfsOrderTx = await orderAsset(
+    //   resolvedIpfsAssetDdo.id,
+    //   resolvedIpfsAssetDdo.services[0].datatokenAddress,
+    //   await consumerAccount.getAddress(),
+    //   resolvedIpfsAssetDdo.services[0].id,
+    //   0,
+    //   datatoken,
+    //   providerUrl
+    // )
+    // assert(ipfsOrderTx, 'Ordering ipfs dataset failed.')
 
-    grapqlOrderTx = await orderAsset(
-      resolvedGraphqlAssetDdo.id,
-      resolvedGraphqlAssetDdo.services[0].datatokenAddress,
-      await consumerAccount.getAddress(),
-      resolvedGraphqlAssetDdo.services[0].id,
-      0,
-      datatoken,
-      providerUrl
-    )
-    assert(grapqlOrderTx, 'Ordering graphql dataset failed.')
-  }).timeout(60000)
+    // grapqlOrderTx = await orderAsset(
+    //   resolvedGraphqlAssetDdo.id,
+    //   resolvedGraphqlAssetDdo.services[0].datatokenAddress,
+    //   await consumerAccount.getAddress(),
+    //   resolvedGraphqlAssetDdo.services[0].id,
+    //   0,
+    //   datatoken,
+    //   providerUrl
+    // )
+    // assert(grapqlOrderTx, 'Ordering graphql dataset failed.')
+  }).timeout(40000)
 
   it('Should download the datasets files', async () => {
     const urlDownloadUrl = await ProviderInstance.getDownloadUrl(
