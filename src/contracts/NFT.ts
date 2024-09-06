@@ -1,4 +1,4 @@
-import { BigNumber, ethers } from 'ethers'
+import { BigNumber, ethers, providers } from 'ethers'
 import ERC721Template from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC721Template.sol/ERC721Template.json'
 import { generateDtName, sendTx, getEventFromTx } from '../utils'
 import {
@@ -43,6 +43,7 @@ export class Nft extends SmartContract {
     name?: string,
     symbol?: string,
     templateIndex?: number,
+    filesObject?: string,
     estimateGas?: G
   ): Promise<G extends false ? string : BigNumber> {
     if ((await this.getNftPermissions(nftAddress, address)).deployERC20 !== true) {
@@ -70,20 +71,39 @@ export class Nft extends SmartContract {
     )
     if (estimateGas) return <G extends false ? string : BigNumber>estGas
 
-    const tx = await sendTx(
-      estGas,
-      this.signer,
-      this.config?.gasFeeMultiplier,
-      nftContract.createERC20,
-      templateIndex,
-      [name, symbol],
-      [minter, paymentCollector, mpFeeAddress, feeToken],
-      [
-        await this.amountToUnits(null, cap, 18),
-        await this.amountToUnits(null, feeAmount, 18)
-      ],
-      []
-    )
+    let tx: providers.TransactionResponse
+    if (templateIndex === 4) {
+      tx = await sendTx(
+        estGas,
+        this.signer,
+        this.config?.gasFeeMultiplier,
+        nftContract.createERC20,
+        templateIndex,
+        [name, symbol],
+        [minter, paymentCollector, mpFeeAddress, feeToken],
+        [
+          await this.amountToUnits(null, cap, 18),
+          await this.amountToUnits(null, feeAmount, 18)
+        ],
+        [ethers.utils.toUtf8Bytes(filesObject)]
+      )
+    } else {
+      tx = await sendTx(
+        estGas,
+        this.signer,
+        this.config?.gasFeeMultiplier,
+        nftContract.createERC20,
+        templateIndex,
+        [name, symbol],
+        [minter, paymentCollector, mpFeeAddress, feeToken],
+        [
+          await this.amountToUnits(null, cap, 18),
+          await this.amountToUnits(null, feeAmount, 18)
+        ],
+        []
+      )
+    }
+    console.log(`tx: ${tx}`)
     const trxReceipt = await tx.wait()
     // console.log('trxReceipt =', trxReceipt)
     const event = getEventFromTx(trxReceipt, 'TokenCreated')
