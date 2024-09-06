@@ -1,5 +1,4 @@
 {
-  "type": "module",
   "name": "@oceanprotocol/lib",
   "source": "./src/index.ts",
   "version": "3.3.1",
