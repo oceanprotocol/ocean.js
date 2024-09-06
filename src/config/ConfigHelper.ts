@@ -202,6 +202,7 @@ export class ConfigHelper {
         FixedPrice,
         Dispenser,
         ERC721Factory,
+        ERC20Template, // added to Config
         OPFCommunityFeeCollector,
         Ocean,
         chainId,
@@ -217,6 +218,7 @@ export class ConfigHelper {
       } = customAddresses[network]
       configAddresses = {
         nftFactoryAddress: ERC721Factory,
+        eRC20Template: ERC20Template, // added to Config
         opfCommunityFeeCollector: OPFCommunityFeeCollector,
         fixedRateExchangeAddress: FixedPrice,
         dispenserAddress: Dispenser,
@@ -337,9 +339,9 @@ export class ConfigHelper {
           )
         : null
       // test
-      if (addresses) {
-        console.log('config adding addresses: ', addresses)
-      }
+      // if (addresses) {
+      //   console.log('config adding addresses: ', addresses)
+      // }
     } catch (e) {
       console.log(e)
       addresses = null
