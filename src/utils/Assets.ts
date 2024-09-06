@@ -139,6 +139,8 @@ export async function createAsset(
 
   const config = new ConfigHelper().getConfig(parseInt(String(chainID)))
 
+  console.log('Config is:', config)
+
   const templateIndex = await calculateTemplateIndex(chainID, template)
   if (templateIndex < 1) {
     throw new Error(`Invalid template index: ${templateIndex}`)
