@@ -1,31 +1,22 @@
 import { SHA256 } from 'crypto-js'
 import { ethers, Signer } from 'ethers'
-import {
-  Aquarius,
-  DatatokenCreateParams,
-  Nft,
-  NftCreateData,
-  NftFactory,
-  ProviderInstance,
-  ZERO_ADDRESS,
-  // approveWei,
-  // ProviderComputeInitialize,
-  // ConsumeMarketFee,
-  // Datatoken,
-  // Config,
-  // DDO,
-  // ProviderFees,
-  getEventFromTx,
-  DispenserCreationParams,
-  FreCreationParams,
-  ConfigHelper
-} from '../../src'
+import { ConfigHelper, KNOWN_CONFIDENTIAL_EVMS } from '../../src/config'
 import { hexlify } from 'ethers/lib/utils'
 import { createHash } from 'crypto'
 import fs from 'fs'
 
 // eslint-disable-next-line import/no-named-default
 import { default as Addresses } from '@oceanprotocol/contracts/addresses/address.json'
+import { Aquarius } from '../services/Aquarius'
+import { NftFactory } from '../contracts/NFTFactory'
+import { Nft } from '../contracts/NFT'
+import { DatatokenCreateParams } from '../@types/Datatoken'
+import { NftCreateData } from '../@types/NFTFactory'
+import { ZERO_ADDRESS } from './Constants'
+import { DispenserCreationParams } from '../@types/Dispenser'
+import { FreCreationParams } from '../@types/FixedPrice'
+import { getEventFromTx } from './ContractUtils'
+import { ProviderInstance } from '../services/Provider'
 
 // template address OR templateId
 export function isConfidentialEVM(network: string | number): boolean {
@@ -88,13 +79,16 @@ export async function calculateTemplateIndex(
       if (typeof template === 'string') {
         const templateAddresses: any[] = Object.values(templatesAvailable)
         index = templateAddresses.findIndex(function (item) {
-          return item.indexOf(template) !== -1
+          return item === template
         })
       } else {
         const templateIndexes = Object.keys(templatesAvailable)
         index = templateIndexes.findIndex(function (item) {
           return item.indexOf(template.toString()) !== -1
         })
+      }
+      if (index !== -1) {
+        index += 1
       }
     }
   }
