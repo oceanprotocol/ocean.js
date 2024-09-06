@@ -22,6 +22,7 @@ import {
   Files
 } from '../../src/@types'
 
+import { createAsset } from '../../src/utils'
 function delay(interval: number) {
   return it('should delay', (done) => {
     setTimeout(() => done(), interval)
@@ -197,6 +198,112 @@ describe('Publish tests', async () => {
   })
 
   delay(19000)
+
+  it('should publish a dataset with fixed price (create NFT + Datoken + fixed price) using createAsset() fn', async () => {
+    const fixedPriceDdo: DDO = { ...genericAsset }
+    const ownerAddress = publisherAccount
+    const asset = await createAsset(
+      'test asset',
+      'TEST',
+      ownerAddress,
+      assetUrl,
+      '0x13a9813e7CE3fdc867C23Ef9c084570B7F2abdeC', // template 1 on dev network
+      fixedPriceDdo,
+      true, // encrypted ddo
+      providerUrl,
+      ZERO_ADDRESS, // provider fee token
+      addresses.ERC721Factory, // nft template factory
+      aquarius
+    )
+
+    console.log('Published asset, ddo id:', asset)
+
+    // const nftParams: NftCreateData = {
+    //   name: 'testNftFre',
+    //   symbol: 'TSTF',
+    //   templateIndex: 1,
+    //   tokenURI: '',
+    //   transferable: true,
+    //   owner: await publisherAccount.getAddress()
+    // }
+
+    // const datatokenParams: DatatokenCreateParams = {
+    //   templateIndex: 1,
+    //   cap: '100000',
+    //   feeAmount: '0',
+    //   paymentCollector: ZERO_ADDRESS,
+    //   feeToken: ZERO_ADDRESS,
+    //   minter: await publisherAccount.getAddress(),
+    //   mpFeeAddress: ZERO_ADDRESS
+    // }
+
+    // const fixedPriceParams: FreCreationParams = {
+    //   fixedRateAddress: addresses.FixedPrice,
+    //   baseTokenAddress: addresses.MockDAI,
+    //   owner: await publisherAccount.getAddress(),
+    //   marketFeeCollector: await publisherAccount.getAddress(),
+    //   baseTokenDecimals: 18,
+    //   datatokenDecimals: 18,
+    //   fixedRate: '1',
+    //   marketFee: '0',
+    //   allowedConsumer: await publisherAccount.getAddress(),
+    //   withMint: true
+    // }
+
+    // const bundleNFT = await factory.createNftWithDatatokenWithFixedRate(
+    //   nftParams,
+    //   datatokenParams,
+    //   fixedPriceParams
+    // )
+    // const trxReceipt = await bundleNFT.wait()
+    // // events have been emitted
+    // const nftCreatedEvent = getEventFromTx(trxReceipt, 'NFTCreated')
+    // const tokenCreatedEvent = getEventFromTx(trxReceipt, 'TokenCreated')
+    // expect(nftCreatedEvent.event === 'NFTCreated')
+    // expect(tokenCreatedEvent.event === 'TokenCreated')
+
+    // const nftAddress = nftCreatedEvent.args.newTokenAddress
+    // const datatokenAddress = tokenCreatedEvent.args.newTokenAddress
+    // assetUrl.datatokenAddress = datatokenAddress
+    // assetUrl.nftAddress = nftAddress
+
+    // fixedPriceDdo.services[0].files = await ProviderInstance.encrypt(
+    //   assetUrl,
+    //   config.chainId,
+    //   providerUrl
+    // )
+
+    // fixedPriceDdo.metadata.name = 'test-dataset-fixedPrice'
+    // fixedPriceDdo.services[0].datatokenAddress = datatokenAddress
+
+    // fixedPriceDdo.nftAddress = nftAddress
+
+    // fixedPriceDdo.chainId = config.chainId
+    // fixedPriceDdo.id =
+    //   'did:op:' +
+    //   SHA256(ethers.utils.getAddress(nftAddress) + config.chainId.toString(10))
+
+    // fixedPricedDID = fixedPriceDdo.id
+    // const isAssetValid: ValidateMetadata = await aquarius.validate(fixedPriceDdo)
+    // assert(isAssetValid.valid === true, 'Published asset is not valid')
+    // const encryptedResponse = await ProviderInstance.encrypt(
+    //   fixedPriceDdo,
+    //   config.chainId,
+    //   providerUrl
+    // )
+
+    // await nft.setMetadata(
+    //   nftAddress,
+    //   await publisherAccount.getAddress(),
+    //   0,
+    //   providerUrl,
+    //   '0x123',
+    //   '0x02',
+    //   encryptedResponse,
+    //   isAssetValid.hash,
+    //   []
+    // )
+  })
 
   it('should resolve the fixed price dataset', async () => {
     const resolvedDDO = await aquarius.waitForAqua(fixedPricedDID)
