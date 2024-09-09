@@ -71,6 +71,12 @@ export function getOceanArtifactsAdressesByChainId(chain: number): any {
   return null
 }
 
+/**
+ * Use this function if don't need to check if the template if active
+ * @param chainID the chain identifier
+ * @param template the id or the template address
+ * @returns the index of the template from the 'ERC20Template' object
+ */
 export async function calculateTemplateIndex(
   chainID: number,
   template: string | number
@@ -97,15 +103,22 @@ export async function calculateTemplateIndex(
       }
     }
   }
+  // index or -1 if not found
   return index
 }
 
+/**
+ * Use this function to accurately calculate the template index, and also checking if the template is active
+ * @param owner the signer account
+ * @param nftContractAddress the nft contract address, usually artifactsAddresses.ERC721Factory
+ * @param template the template ID or template address
+ * @returns index of the template
+ */
 export async function calculateActiveTemplateIndex(
   owner: Signer,
   nftContractAddress: string, // addresses.ERC721Factory,
   template: string | number
 ): Promise<number> {
-  console.log('calculating active template index for template', template)
   // is an ID number?
   const isTemplateID = typeof template === 'number'
 
@@ -113,21 +126,16 @@ export async function calculateActiveTemplateIndex(
   const currentTokenCount = await factoryERC721.getCurrentTokenTemplateCount()
   for (let i = 1; i <= currentTokenCount; i++) {
     const tokenTemplate = await factoryERC721.getTokenTemplate(i)
-    console.log('\n\n------------\ntemplateIndex:' + i)
-    console.log(tokenTemplate)
 
-    // const artifact = await hre.artifacts.readArtifact('ERC20Template')
     const erc20Template = new ethers.Contract(
       tokenTemplate.templateAddress,
       ERC20Template.abi,
       owner
     )
-    console.log('check for id?', isTemplateID)
 
     // check for ID
     if (isTemplateID) {
       const id = await erc20Template.connect(owner).getId()
-      console.log('templateId: ' + id)
       if (tokenTemplate.isActive && id.toString() === template.toString()) {
         return i
       }
@@ -138,7 +146,7 @@ export async function calculateActiveTemplateIndex(
       return i
     }
   }
-  console.log('no template found for template id/address: ', template)
+  // if nothing is found it returns -1
   return -1
 }
 /**
@@ -186,15 +194,15 @@ export async function createAsset(
 
   const config = new ConfigHelper().getConfig(parseInt(String(chainID)))
 
-  // let templateIndex = await calculateTemplateIndexOld(chainID, template)
+  // This function does not consider the fact the template could be disabled
+  // let templateIndex = await calculateTemplateIndex(chainID, template)
 
   let templateIndex = await calculateActiveTemplateIndex(
     owner,
     nftContractAddress,
     template
   )
-  console.log('first template index:', templateIndex)
-  // console.log('last template index:', templateIndexV2)
+
   if (templateIndex < 1) {
     // for testing purposes only
     if (chainID === DEVELOPMENT_CHAIN_ID) {
