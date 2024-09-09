@@ -20,6 +20,7 @@ import { ProviderInstance } from '../services/Provider'
 
 import { HardhatEthersHelpers } from '@nomiclabs/hardhat-ethers/types'
 import { HardhatRuntimeEnvironment } from 'hardhat/types'
+import { getContractAtFromArtifact } from '@nomiclabs/hardhat-ethers/internal/helpers'
 import hre from 'hardhat'
 
 const hardhatEthers = hre as HardhatRuntimeEnvironment & { ethers: any } & {
@@ -139,11 +140,20 @@ export async function calculateTemplateIndexV2(
     console.log('\n\n------------\ntemplateIndex:' + i)
     console.log(tokenTemplate)
     console.log('hardhatEthers', hardhatEthers)
-    console.log('has ethers prop?:', hre)
-    const erc20Template = await hardhatEthers.ethers.getContractAt(
-      'ERC20Template',
-      tokenTemplate.templateAddress
+
+    const artifact = await hre.artifacts.readArtifact('ERC20Template')
+
+    const erc20Template = await getContractAtFromArtifact(
+      hre,
+      artifact,
+      tokenTemplate.templateAddress,
+      owner
     )
+    console.log('erc20Template: ', erc20Template)
+    // hardhatEthers.ethers.getContractAt(
+    //   'ERC20Template',
+    //   tokenTemplate.templateAddress
+    // )
     // check for ID
     if (isTemplateID) {
       const id = await erc20Template.connect(owner).getId()
