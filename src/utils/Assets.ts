@@ -138,6 +138,8 @@ export async function calculateTemplateIndexV2(
     const tokenTemplate = await factoryERC721.getTokenTemplate(i)
     console.log('\n\n------------\ntemplateIndex:' + i)
     console.log(tokenTemplate)
+    console.log('hardhatEthers', hardhatEthers)
+    console.log('ethers prop?:', hre.ethers)
     const erc20Template = await hardhatEthers.ethers.getContractAt(
       'ERC20Template',
       tokenTemplate.templateAddress
