@@ -290,8 +290,8 @@ export async function createAsset(
   // create the files encrypted string
   assetUrl.datatokenAddress = datatokenAddressAsset
   assetUrl.nftAddress = nftAddress
-  // TODO if template 4 no need to encrypt it??
-  if (config.confidentialEVM) {
+  // if template 4 no need to encrypt it??
+  if (!config.confidentialEVM) {
     ddo.services[0].files = await ProviderInstance.encrypt(assetUrl, chainID, providerUrl)
   }
 
