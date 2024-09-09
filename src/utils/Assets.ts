@@ -17,18 +17,8 @@ import { DispenserCreationParams } from '../@types/Dispenser'
 import { FreCreationParams } from '../@types/FixedPrice'
 import { getEventFromTx } from './ContractUtils'
 import { ProviderInstance } from '../services/Provider'
-
-import { HardhatEthersHelpers } from '@nomiclabs/hardhat-ethers/types'
-import { HardhatRuntimeEnvironment } from 'hardhat/types'
-import hre from 'hardhat'
 // eslint-disable-next-line import/no-named-default
 import ERC20Template from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC20Template.sol/ERC20Template.json'
-
-console.log('ABI', ERC20Template.abi)
-
-const hardhatEthers = hre as HardhatRuntimeEnvironment & { ethers: any } & {
-  ethers: typeof ethers & HardhatEthersHelpers
-}
 
 // import * as hre from 'hardhat'
 
@@ -128,7 +118,7 @@ export async function calculateTemplateIndex(
     ```
  */
 
-export async function calculateTemplateIndexV2(
+export async function calculateActiveTemplateIndex(
   owner: Signer,
   nftContractAddress: string, // addresses.ERC721Factory,
   template: string | number
@@ -142,7 +132,6 @@ export async function calculateTemplateIndexV2(
     const tokenTemplate = await factoryERC721.getTokenTemplate(i)
     console.log('\n\n------------\ntemplateIndex:' + i)
     console.log(tokenTemplate)
-    console.log('hardhatEthers', hardhatEthers)
 
     // const artifact = await hre.artifacts.readArtifact('ERC20Template')
     const erc20Template = new ethers.Contract(
@@ -150,18 +139,8 @@ export async function calculateTemplateIndexV2(
       ERC20Template.abi,
       owner
     )
-
-    // const erc20Template = await getContractAtFromArtifact(
-    //   hre,
-    //   artifact,
-    //   tokenTemplate.templateAddress,
-    //   owner
-    // )
     console.log('erc20Template: ', erc20Template)
-    // hardhatEthers.ethers.getContractAt(
-    //   'ERC20Template',
-    //   tokenTemplate.templateAddress
-    // )
+
     // check for ID
     if (isTemplateID) {
       const id = await erc20Template.connect(owner).getId()
@@ -220,15 +199,15 @@ export async function createAsset(
 
   const config = new ConfigHelper().getConfig(parseInt(String(chainID)))
 
-  let templateIndex = await calculateTemplateIndex(chainID, template)
+  // let templateIndex = await calculateTemplateIndexOld(chainID, template)
 
-  const templateIndexV2 = await calculateTemplateIndexV2(
+  let templateIndex = await calculateActiveTemplateIndex(
     owner,
     nftContractAddress,
     template
   )
   console.log('first template index:', templateIndex)
-  console.log('last template index:', templateIndexV2)
+  // console.log('last template index:', templateIndexV2)
   if (templateIndex < 1) {
     // for testing purposes only
     if (chainID === DEVELOPMENT_CHAIN_ID) {
