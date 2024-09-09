@@ -80,16 +80,18 @@ describe('Sapphire tests', async () => {
     datatokenAddress = await (nftToken as Nft).createDatatoken(
       nftAddress,
       await walletWrapped.getAddress(),
-      await walletWrapped.getAddress(),
-      await walletWrapped.getAddress(),
-      await walletWrapped.getAddress(),
+      await wallet.getAddress(),
+      await wallet.getAddress(),
+      await wallet.getAddress(),
       ZERO_ADDRESS,
       '0',
-      '10000',
+      '100000',
       'ERC20T4',
       'ERC20DT1Symbol',
-      4,
-      JSON.stringify(filesObject)
+      1,
+      JSON.stringify(filesObject),
+      addrs.AccessListFactory,
+      listAddress
     )
     assert(datatokenAddress, 'datatoken not created.')
   })

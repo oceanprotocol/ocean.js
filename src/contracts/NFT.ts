@@ -44,6 +44,9 @@ export class Nft extends SmartContract {
     symbol?: string,
     templateIndex?: number,
     filesObject?: string,
+    accessListContract?: string,
+    allowAccessList?: string,
+    denyAccessList?: string,
     estimateGas?: G
   ): Promise<G extends false ? string : BigNumber> {
     if ((await this.getNftPermissions(nftAddress, address)).deployERC20 !== true) {
@@ -71,41 +74,32 @@ export class Nft extends SmartContract {
     )
     if (estimateGas) return <G extends false ? string : BigNumber>estGas
 
-    let tx: providers.TransactionResponse
-    if (templateIndex === 4) {
-      tx = await sendTx(
-        estGas,
-        this.signer,
-        this.config?.gasFeeMultiplier,
-        nftContract.createERC20,
-        templateIndex,
-        [name, symbol],
-        [minter, paymentCollector, mpFeeAddress, feeToken],
-        [
-          await this.amountToUnits(null, cap, 18),
-          await this.amountToUnits(null, feeAmount, 18)
-        ],
-        [ethers.utils.toUtf8Bytes(filesObject)]
-      )
-    } else {
-      tx = await sendTx(
-        estGas,
-        this.signer,
-        this.config?.gasFeeMultiplier,
-        nftContract.createERC20,
-        templateIndex,
-        [name, symbol],
-        [minter, paymentCollector, mpFeeAddress, feeToken],
-        [
-          await this.amountToUnits(null, cap, 18),
-          await this.amountToUnits(null, feeAmount, 18)
-        ],
-        []
-      )
+    const addresses = [minter, paymentCollector, mpFeeAddress, feeToken]
+    if (accessListContract) {
+      addresses.push(accessListContract)
+      if (allowAccessList) {
+        addresses.push(allowAccessList)
+      }
+      if (denyAccessList) {
+        addresses.push(denyAccessList)
+      }
     }
-    console.log(`tx: ${tx}`)
+
+    const tx = await sendTx(
+      estGas,
+      this.signer,
+      this.config?.gasFeeMultiplier,
+      nftContract.functions.createERC20,
+      templateIndex,
+      [name, symbol],
+      addresses,
+      [
+        await this.amountToUnits(null, cap, 18),
+        await this.amountToUnits(null, feeAmount, 18)
+      ],
+      filesObject ? [ethers.utils.toUtf8Bytes(filesObject)] : []
+    )
     const trxReceipt = await tx.wait()
-    // console.log('trxReceipt =', trxReceipt)
     const event = getEventFromTx(trxReceipt, 'TokenCreated')
     return event?.args[0]
   }
