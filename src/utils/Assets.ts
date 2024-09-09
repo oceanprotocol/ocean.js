@@ -99,30 +99,13 @@ export async function calculateTemplateIndex(
   }
   return index
 }
-// TODO: this for checking if is actually ACTIVE
-/**
- * 
-    const currentTokenCount = await factoryERC721.connect(owner).getCurrentTemplateCount(options);
-    for(i=1;i<=currentTokenCount;i++){
-        const tokenTemplate = await factoryERC721.connect(owner).getTokenTemplate(i,options);
-        console.log("\n\n------------\ntemplateIndex:"+i)
-        console.log(tokenTemplate)
-        const erc20Template = await ethers.getContractAt("ERC20Template", tokenTemplate["templateAddress"]);
-        const id=await erc20Template.connect(owner).getId()
-        console.log("templateId: "+id)
-        if(tokenTemplate.isActive && id==SEARCHED_TEMPLATE_ID || tokenTemplate["templateAddress"]==SEARCHED_TEMPLATE_ADDRESS){
-                               return i
-        }
-    }
-    return null     
-    ```
- */
 
 export async function calculateActiveTemplateIndex(
   owner: Signer,
   nftContractAddress: string, // addresses.ERC721Factory,
   template: string | number
 ): Promise<number> {
+  console.log('calculating active template index for template', template)
   // is an ID number?
   const isTemplateID = typeof template === 'number'
 
@@ -139,7 +122,7 @@ export async function calculateActiveTemplateIndex(
       ERC20Template.abi,
       owner
     )
-    console.log('erc20Template: ', erc20Template)
+    console.log('check for id?', isTemplateID)
 
     // check for ID
     if (isTemplateID) {
@@ -152,6 +135,7 @@ export async function calculateActiveTemplateIndex(
       return i
     }
   }
+  console.log('no template found for template id/address: ', template)
   return -1
 }
 /**
