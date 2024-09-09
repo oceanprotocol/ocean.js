@@ -18,6 +18,16 @@ import { FreCreationParams } from '../@types/FixedPrice'
 import { getEventFromTx } from './ContractUtils'
 import { ProviderInstance } from '../services/Provider'
 
+import { HardhatEthersHelpers } from '@nomiclabs/hardhat-ethers/types'
+import { HardhatRuntimeEnvironment } from 'hardhat/types'
+import hre from 'hardhat'
+
+const hardhatEthers = hre as HardhatRuntimeEnvironment & { ethers: any } & {
+  ethers: typeof ethers & HardhatEthersHelpers
+}
+
+// import * as hre from 'hardhat'
+
 export const DEVELOPMENT_CHAIN_ID = 8996
 // template address OR templateId
 export function isConfidentialEVM(network: string | number): boolean {
@@ -113,6 +123,38 @@ export async function calculateTemplateIndex(
     return null     
     ```
  */
+
+export async function calculateTemplateIndexV2(
+  owner: Signer,
+  nftContractAddress: string, // addresses.ERC721Factory,
+  template: string | number
+): Promise<number> {
+  // is an ID number?
+  const isTemplateID = typeof template === 'number'
+
+  const factoryERC721 = new NftFactory(nftContractAddress, owner)
+  const currentTokenCount = await factoryERC721.getCurrentTokenTemplateCount()
+  for (let i = 1; i <= currentTokenCount; i++) {
+    const tokenTemplate = await factoryERC721.getTokenTemplate(i)
+    console.log('\n\n------------\ntemplateIndex:' + i)
+    console.log(tokenTemplate)
+    const erc20Template = await hardhatEthers.ethers.getContractAt(
+      'ERC20Template',
+      tokenTemplate.templateAddress
+    )
+    // check for ID
+    if (isTemplateID) {
+      const id = await erc20Template.connect(owner).getId()
+      console.log('templateId: ' + id)
+      if (tokenTemplate.isActive && id.toString() === template) {
+        return i
+      }
+    } else if (tokenTemplate.isActive && tokenTemplate.templateAddress === template) {
+      return i
+    }
+  }
+  return -1
+}
 /**
  *
  * @param name asset name
@@ -159,6 +201,14 @@ export async function createAsset(
   const config = new ConfigHelper().getConfig(parseInt(String(chainID)))
 
   let templateIndex = await calculateTemplateIndex(chainID, template)
+
+  const templateIndexV2 = await calculateTemplateIndexV2(
+    owner,
+    nftContractAddress,
+    template
+  )
+  console.log('first template index:', templateIndex)
+  console.log('last template index:', templateIndexV2)
   if (templateIndex < 1) {
     // for testing purposes only
     if (chainID === DEVELOPMENT_CHAIN_ID) {

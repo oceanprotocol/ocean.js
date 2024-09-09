@@ -53,11 +53,13 @@
     "web3": "^1.8.0"
   },
   "dependencies": {
+    "@nomiclabs/hardhat-ethers": "^2.2.3",
     "@oceanprotocol/contracts": "^2.2.0",
     "cross-fetch": "^4.0.0",
     "crypto-js": "^4.1.1",
     "decimal.js": "^10.4.1",
-    "ethers": "^5.7.2"
+    "ethers": "^5.7.2",
+    "hardhat": "^2.22.10"
   },
   "devDependencies": {
     "@truffle/hdwallet-provider": "^2.0.14",
