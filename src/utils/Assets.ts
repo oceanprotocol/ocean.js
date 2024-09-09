@@ -128,10 +128,13 @@ export async function calculateActiveTemplateIndex(
     if (isTemplateID) {
       const id = await erc20Template.connect(owner).getId()
       console.log('templateId: ' + id)
-      if (tokenTemplate.isActive && id.toString() === template) {
+      if (tokenTemplate.isActive && id.toString() === template.toString()) {
         return i
       }
-    } else if (tokenTemplate.isActive && tokenTemplate.templateAddress === template) {
+    } else if (
+      tokenTemplate.isActive &&
+      tokenTemplate.templateAddress === template.toString()
+    ) {
       return i
     }
   }
