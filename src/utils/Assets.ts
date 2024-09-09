@@ -20,8 +20,11 @@ import { ProviderInstance } from '../services/Provider'
 
 import { HardhatEthersHelpers } from '@nomiclabs/hardhat-ethers/types'
 import { HardhatRuntimeEnvironment } from 'hardhat/types'
-import { getContractAtFromArtifact } from '@nomiclabs/hardhat-ethers/internal/helpers'
 import hre from 'hardhat'
+// eslint-disable-next-line import/no-named-default
+import ERC20Template from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC20Template.sol/ERC20Template.json'
+
+console.log('ABI', ERC20Template.abi)
 
 const hardhatEthers = hre as HardhatRuntimeEnvironment & { ethers: any } & {
   ethers: typeof ethers & HardhatEthersHelpers
@@ -141,14 +144,19 @@ export async function calculateTemplateIndexV2(
     console.log(tokenTemplate)
     console.log('hardhatEthers', hardhatEthers)
 
-    const artifact = await hre.artifacts.readArtifact('ERC20Template')
-
-    const erc20Template = await getContractAtFromArtifact(
-      hre,
-      artifact,
+    // const artifact = await hre.artifacts.readArtifact('ERC20Template')
+    const erc20Template = new ethers.Contract(
       tokenTemplate.templateAddress,
+      ERC20Template.abi,
       owner
     )
+
+    // const erc20Template = await getContractAtFromArtifact(
+    //   hre,
+    //   artifact,
+    //   tokenTemplate.templateAddress,
+    //   owner
+    // )
     console.log('erc20Template: ', erc20Template)
     // hardhatEthers.ethers.getContractAt(
     //   'ERC20Template',
