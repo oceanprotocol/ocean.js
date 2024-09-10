@@ -72,7 +72,7 @@ export function getOceanArtifactsAdressesByChainId(chain: number): any {
 }
 
 /**
- * Use this function if don't need to check if the template if active 
+ * Use this function if don't need to check if the template if active
  * (not 100% reliable if we need to check at smart contract level)
  * @param chainID the chain identifier
  * @param template the id or the template address
