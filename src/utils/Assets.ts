@@ -72,12 +72,13 @@ export function getOceanArtifactsAdressesByChainId(chain: number): any {
 }
 
 /**
- * Use this function if don't need to check if the template if active
+ * Use this function if don't need to check if the template if active 
+ * (not 100% reliable if we need to check at smart contract level)
  * @param chainID the chain identifier
  * @param template the id or the template address
  * @returns the index of the template from the 'ERC20Template' object
  */
-export async function calculateTemplateIndex(
+export async function getTemplateIndexOnList(
   chainID: number,
   template: string | number
 ): Promise<number> {
@@ -111,8 +112,8 @@ export async function calculateTemplateIndex(
  * Use this function to accurately calculate the template index, and also checking if the template is active
  * @param owner the signer account
  * @param nftContractAddress the nft contract address, usually artifactsAddresses.ERC721Factory
- * @param template the template ID or template address
- * @returns index of the template
+ * @param template the template ID or template address (from smart contract getId() function)
+ * @returns index of the template on the list
  */
 export async function calculateActiveTemplateIndex(
   owner: Signer,

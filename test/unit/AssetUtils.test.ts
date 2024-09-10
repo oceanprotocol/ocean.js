@@ -3,7 +3,7 @@ import { KNOWN_CONFIDENTIAL_EVMS } from '../../src/config'
 import { provider, getAddresses } from '../config'
 import {
   calculateActiveTemplateIndex,
-  calculateTemplateIndex,
+  getTemplateIndexOnList,
   isConfidentialEVM
 } from '../../src/utils'
 import { Signer } from 'ethers/lib/ethers'
@@ -42,25 +42,25 @@ describe('Asset utils (createAsset)', () => {
   })
 
   it('should get correct template index from contract artifacts (using SC address as template)', async () => {
-    const wrongOne = await calculateTemplateIndex(
+    const wrongOne = await getTemplateIndexOnList(
       KNOWN_CONFIDENTIAL_EVMS.networks[1].chainId, // testnet chain
       '12'
     )
     assert(wrongOne === -1, 'wrong template index, should be inexistent!')
 
-    const okIndex = await calculateTemplateIndex(
+    const okIndex = await getTemplateIndexOnList(
       KNOWN_CONFIDENTIAL_EVMS.networks[0].chainId, // mainnet chain
       '0x4dD281EB67DED07E76E413Df16176D66ae69e240'
     )
     assert(okIndex >= 1, 'wrong template index, should exist!')
 
-    const okIndexNonConfidential = await calculateTemplateIndex(
+    const okIndexNonConfidential = await getTemplateIndexOnList(
       11155111, // sepolia
       '0xDEfD0018969cd2d4E648209F876ADe184815f038'
     )
     assert(okIndexNonConfidential === 2, 'Should be template 2 for sepolia!')
 
-    const notOkIndexNonConfidential = await calculateTemplateIndex(
+    const notOkIndexNonConfidential = await getTemplateIndexOnList(
       11155111, // sepolia
       '0xDEfD0018969cd2d4E648209F876ADe184815f022' // wrong template
     )
@@ -68,25 +68,25 @@ describe('Asset utils (createAsset)', () => {
   })
 
   it('should get correct template index from contract artifacts (using template ID as template)', async () => {
-    const okTemplate = await calculateTemplateIndex(
+    const okTemplate = await getTemplateIndexOnList(
       KNOWN_CONFIDENTIAL_EVMS.networks[1].chainId, // testnet chain
       4
     )
     assert(okTemplate === 4, 'wrong template index, should be index 4!')
 
-    const wrongOne = await calculateTemplateIndex(
+    const wrongOne = await getTemplateIndexOnList(
       KNOWN_CONFIDENTIAL_EVMS.networks[0].chainId, // mainnet chain
       6
     )
     assert(wrongOne === -1, 'wrong template index, should only exist 5!')
 
-    const okIndexNonConfidential = await calculateTemplateIndex(
+    const okIndexNonConfidential = await getTemplateIndexOnList(
       11155111, // sepolia
       2 // ok template
     )
     assert(okIndexNonConfidential === 2, 'Should be template 2 for sepolia!')
 
-    const notOkIndexNonConfidential = await calculateTemplateIndex(
+    const notOkIndexNonConfidential = await getTemplateIndexOnList(
       11155111, // sepolia
       3 // wrong template
     )
@@ -94,7 +94,7 @@ describe('Asset utils (createAsset)', () => {
   })
 
   // checking if active by connecting to the smart contract as well
-  it('V2 - should get correct template index from contract artifacts (using template ID as template)', async () => {
+  it('Calculate index -  Should get correct template index from contract getId() (using template ID as template)', async () => {
     const okTemplate = await calculateActiveTemplateIndex(
       nftOwner,
       addresses.ERC721Factory,
