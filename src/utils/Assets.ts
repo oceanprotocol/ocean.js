@@ -18,7 +18,7 @@ import { FreCreationParams } from '../@types/FixedPrice'
 import { getEventFromTx } from './ContractUtils'
 import { ProviderInstance } from '../services/Provider'
 // eslint-disable-next-line import/no-named-default
-import ERC20Template from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC20Template.sol/ERC20Template.json'
+import ERC20Template from '@oceanprotocol/contracts/artifacts/contracts/interfaces/IERC20Template.sol/IERC20Template.json'
 
 // import * as hre from 'hardhat'
 
