@@ -1,12 +1,14 @@
 import * as sapphire from '@oasisprotocol/sapphire-paratime'
 import addresses from '@oceanprotocol/contracts/addresses/address.json'
-import { ethers } from 'ethers'
+import { ethers, Signer } from 'ethers'
 import { AccesslistFactory } from '../../src/contracts/AccessListFactory'
 import { AccessListContract } from '../../src/contracts/AccessList'
 import { NftFactory } from '../../src/contracts/NFTFactory'
 import { ZERO_ADDRESS } from '../../src/utils/Constants'
 import { assert } from 'console'
-import { AccessListData, Nft, NftCreateData } from '../../src'
+import { Datatoken4 } from '../../src/contracts/Datatoken4'
+import { AbiItem, Config, Nft, NftCreateData } from '../../src'
+import ERC20Template4 from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC20Template4.sol/ERC20Template4.json'
 
 describe('Sapphire tests', async () => {
   const provider = sapphire.wrap(
@@ -18,14 +20,6 @@ describe('Sapphire tests', async () => {
   )
 
   const addrs: any = addresses.oasis_saphire_testnet
-  const listData: AccessListData = {
-    name: 'ListName',
-    symbol: 'ListSymbol',
-    tokenURI: ['https://oceanprotocol.com/nft/'],
-    transferable: true,
-    owner: await wallet.getAddress(),
-    user: [await wallet.getAddress(), ZERO_ADDRESS]
-  }
   const nftData: NftCreateData = {
     name: 'NFTName',
     symbol: 'NFTSymbol',
@@ -44,6 +38,7 @@ describe('Sapphire tests', async () => {
   let nftToken: any
 
   let datatokenAddress: string
+  let datatoken: any
 
   const filesObject: any = [
     {
@@ -53,14 +48,35 @@ describe('Sapphire tests', async () => {
     }
   ]
 
+  const config: Config = {
+    chainId: 23295,
+    network: 'oasis_saphire_testnet',
+    nodeUri: 'https://testnet.sapphire.oasis.dev',
+    subgraphUri:
+      'https://v4.subgraph.sapphire-testnet.oceanprotocol.com/subgraphs/name/oceanprotocol/ocean-subgraph',
+    explorerUri: 'https://explorer.oasis.io/testnet/sapphire/',
+    gasFeeMultiplier: 1,
+    oceanTokenSymbol: 'OCEAN',
+    transactionPollingTimeout: 2,
+    transactionBlockTimeout: 3,
+    transactionConfirmationBlocks: 1,
+    web3Provider: provider
+  }
+
   it('Create Access List factory', () => {
     factoryContract = new AccesslistFactory(addrs.AccessListFactory, wallet, 23295)
     assert(factoryContract !== null, 'factory not created')
   })
 
   it('Create Access List contract', async () => {
-    listData.owner = await wallet.getAddress()
-    listAddress = await factoryContract.deployAccessListContract(listData)
+    listAddress = await (factoryContract as AccesslistFactory).deployAccessListContract(
+      'AllowList',
+      'ALLOW',
+      ['https://oceanprotocol.com/nft/'],
+      true,
+      await wallet.getAddress(),
+      [await wallet.getAddress(), ZERO_ADDRESS]
+    )
     assert(listAddress !== null)
     console.log('list address: ', listAddress)
     accessListToken = new AccessListContract(wallet, 23295)
@@ -94,5 +110,32 @@ describe('Sapphire tests', async () => {
       listAddress
     )
     assert(datatokenAddress, 'datatoken not created.')
+    console.log('datatoken: ', datatokenAddress)
+  })
+  it('Get Allow Access List', async () => {
+    datatoken = new Datatoken4(
+      wallet,
+      ethers.utils.toUtf8Bytes(JSON.stringify(filesObject)),
+      23295,
+      config,
+      ERC20Template4.abi as AbiItem[]
+    )
+    assert(
+      (await (nftToken as Nft).isDatatokenDeployed(nftAddress, datatokenAddress)) ===
+        true,
+      'datatoken not deployed'
+    )
+    // assert(
+    //   (await (datatoken as Datatoken4).getAllowlistContract(datatokenAddress)) ===
+    //     listAddress,
+    //   'no access list attached to datatoken.'
+    // )
+    const address = await wallet.getAddress()
+    console.log(
+      await (datatoken as Datatoken4).isDatatokenDeployer(datatokenAddress, address)
+    )
+    console.log(await (datatoken as Datatoken4).getAllowlistContract(datatokenAddress))
+
+    console.log(await (datatoken as Datatoken4).getId(datatokenAddress))
   })
 })

@@ -34,9 +34,9 @@ export class AccessListContract extends SmartContract {
    * Get Token Uri
    * @return {Promise<string>} Token URI
    */
-  public async getTokenUri(accessListAddress: string): Promise<string> {
+  public async getTokenUri(accessListAddress: string, tokenId: number): Promise<string> {
     const accessListContract = this.getContract(accessListAddress)
-    return await accessListContract.tokenURI()
+    return await accessListContract.tokenURI(tokenId)
   }
 
   /**
@@ -67,7 +67,7 @@ export class AccessListContract extends SmartContract {
   }
 
   /**
-   * Mint ERC721 contract
+   * Add address to access list
    * @param {String} accessListAddress AccessList contract address
    * @param {String} user Minter address
    * @param {String} tokenUri tokenURI
@@ -96,7 +96,7 @@ export class AccessListContract extends SmartContract {
   }
 
   /**
-   * Batch Mint ERC721 contract
+   * Batch add addresses to the access list
    * @param {String} accessListAddress AccessList contract address
    * @param {String} users Minter addresses
    * @param {String} tokenUris tokenURI
@@ -125,7 +125,7 @@ export class AccessListContract extends SmartContract {
   }
 
   /**
-   * Burn Access List
+   * Delete address from access list
    * @param {String} accessListAddress AccessList contract address
    * @param {Number} tokenId token ID
    * @param {Boolean} estimateGas if True, return gas estimate

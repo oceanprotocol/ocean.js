@@ -2,7 +2,7 @@ import { BigNumber, Signer } from 'ethers'
 import { Config } from '../config'
 import AccessListFactory from '@oceanprotocol/contracts/artifacts/contracts/accesslists/AccessListFactory.sol/AccessListFactory.json'
 import { generateDtName, sendTx, getEventFromTx, ZERO_ADDRESS } from '../utils'
-import { AbiItem, AccessListData, ReceiptOrEstimate } from '../@types'
+import { AbiItem, ReceiptOrEstimate } from '../@types'
 import { SmartContractWithAddress } from './SmartContractWithAddress'
 
 /**
@@ -39,22 +39,27 @@ export class AccesslistFactory extends SmartContractWithAddress {
    * @return {Promise<string|BigNumber>} The transaction hash or the gas estimate.
    */
   public async deployAccessListContract<G extends boolean = false>(
-    listData: AccessListData,
+    nameAccessList: string,
+    symbolAccessLis: string,
+    tokenURI: string[],
+    transferable: boolean,
+    owner: string,
+    user: string[],
     estimateGas?: G
   ): Promise<G extends false ? string : BigNumber> {
-    if (!listData.name || !listData.symbol) {
+    if (!nameAccessList || !symbolAccessLis) {
       const { name, symbol } = generateDtName()
-      listData.name = name
-      listData.symbol = symbol
+      nameAccessList = name
+      symbolAccessLis = symbol
     }
-    if (!listData.transferable) listData.transferable = true
+    if (!transferable) transferable = true
     const estGas = await this.contract.estimateGas.deployAccessListContract(
-      listData.name,
-      listData.symbol,
-      listData.transferable,
-      listData.owner,
-      listData.user,
-      listData.tokenURI
+      nameAccessList,
+      symbolAccessLis,
+      transferable,
+      owner,
+      user,
+      tokenURI
     )
     if (estimateGas) return <G extends false ? string : BigNumber>estGas
     // Invoke createToken function of the contract
@@ -62,13 +67,13 @@ export class AccesslistFactory extends SmartContractWithAddress {
       estGas,
       this.signer,
       this.config?.gasFeeMultiplier,
-      this.contract.functions.deployAccessListContract,
-      listData.name,
-      listData.symbol,
-      listData.transferable,
-      listData.owner,
-      listData.user,
-      listData.tokenURI
+      this.contract.deployAccessListContract,
+      nameAccessList,
+      symbolAccessLis,
+      transferable,
+      owner,
+      user,
+      tokenURI
     )
     const trxReceipt = await tx.wait()
     const events = getEventFromTx(trxReceipt, 'NewAccessList')

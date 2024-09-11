@@ -21,12 +21,3 @@ export interface NftCreateData {
   transferable: boolean
   owner: string
 }
-
-export interface AccessListData {
-  name: string
-  symbol: string
-  tokenURI: string[]
-  transferable: boolean
-  owner: string
-  user: string[]
-}

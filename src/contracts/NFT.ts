@@ -1,4 +1,4 @@
-import { BigNumber, ethers, providers } from 'ethers'
+import { BigNumber, ethers, Signer } from 'ethers'
 import ERC721Template from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC721Template.sol/ERC721Template.json'
 import { generateDtName, sendTx, getEventFromTx } from '../utils'
 import {
@@ -9,6 +9,10 @@ import {
   AbiItem
 } from '../@types'
 import { SmartContract } from './SmartContract'
+import {
+  calculateActiveTemplateIndex,
+  getOceanArtifactsAdressesByChainId
+} from '../utils/Asset'
 
 export class Nft extends SmartContract {
   getDefaultAbi() {
@@ -84,12 +88,19 @@ export class Nft extends SmartContract {
         addresses.push(denyAccessList)
       }
     }
+    const { chainId } = await nftContract.provider.getNetwork()
+    const artifacts = getOceanArtifactsAdressesByChainId(chainId)
+    templateIndex = await calculateActiveTemplateIndex(
+      nftContract.signer as Signer,
+      artifacts.ERC721Factory,
+      4
+    )
 
     const tx = await sendTx(
       estGas,
       this.signer,
       this.config?.gasFeeMultiplier,
-      nftContract.functions.createERC20,
+      nftContract.createERC20,
       templateIndex,
       [name, symbol],
       addresses,
@@ -780,6 +791,21 @@ export class Nft extends SmartContract {
   public async getTokenURI(nftAddress: string, id: number): Promise<string> {
     const nftContract = this.getContract(nftAddress)
     const data = await nftContract.tokenURI(id)
+    return data
+  }
+
+  /**
+   * Is datatoken deployed?
+   * @param {string} nftAddress - The address of the NFT.
+   * @param {string} datatokenAddress - The datatoken address.
+   * @returns {Promise<boolean>}
+   */
+  public async isDatatokenDeployed(
+    nftAddress: string,
+    datatokenAddress: string
+  ): Promise<boolean> {
+    const nftContract = this.getContract(nftAddress)
+    const data = await nftContract.isDeployed(datatokenAddress)
     return data
   }
 }
