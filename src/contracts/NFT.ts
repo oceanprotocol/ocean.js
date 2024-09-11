@@ -74,8 +74,6 @@ export class Nft extends SmartContract {
         artifacts.ERC721Factory,
         4
       )
-    } else {
-      templateIndex = 1
     }
     const estGas = await nftContract.estimateGas.createERC20(
       templateIndex,

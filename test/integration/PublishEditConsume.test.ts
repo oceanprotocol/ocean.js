@@ -11,8 +11,9 @@ import {
   transfer,
   amountToUnits
 } from '../../src'
-import { Files, Smartcontract } from '../../src/@types'
+import { AbiItem, Files, Smartcontract } from '../../src/@types'
 import { createAsset, orderAsset, updateAssetMetadata } from './helpers'
+import ERC20Template from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC20Template.sol/ERC20Template.json'
 
 let config: Config
 
@@ -336,7 +337,12 @@ describe('Publish consume test', async () => {
   })
 
   it('Should order the datasets', async () => {
-    datatoken = new Datatoken(consumerAccount, config.chainId)
+    datatoken = new Datatoken(
+      consumerAccount,
+      config.chainId,
+      config,
+      ERC20Template.abi as AbiItem[]
+    )
 
     urlOrderTx = await orderAsset(
       resolvedUrlAssetDdo.id,
