@@ -1,6 +1,6 @@
 import * as sapphire from '@oasisprotocol/sapphire-paratime'
 import addresses from '@oceanprotocol/contracts/addresses/address.json'
-import { ethers, Signer } from 'ethers'
+import { ethers } from 'ethers'
 import { AccesslistFactory } from '../../src/contracts/AccessListFactory'
 import { AccessListContract } from '../../src/contracts/AccessList'
 import { NftFactory } from '../../src/contracts/NFTFactory'
@@ -73,13 +73,17 @@ describe('Sapphire tests', async () => {
       'AllowList',
       'ALLOW',
       ['https://oceanprotocol.com/nft/'],
-      true,
+      false,
       await wallet.getAddress(),
       [await wallet.getAddress(), ZERO_ADDRESS]
     )
     assert(listAddress !== null)
     console.log('list address: ', listAddress)
     accessListToken = new AccessListContract(wallet, 23295)
+    console.log(
+      'deployed?: ',
+      await (factoryContract as AccesslistFactory).isDeployed(listAddress)
+    )
   })
   it('Create ERC721 factory', () => {
     nftFactory = new NftFactory(addrs.ERC721Factory, wallet, 23295)
@@ -107,8 +111,7 @@ describe('Sapphire tests', async () => {
       1,
       JSON.stringify(filesObject),
       addrs.AccessListFactory,
-      listAddress,
-      ZERO_ADDRESS
+      listAddress
     )
     assert(datatokenAddress, 'datatoken not created.')
     console.log('datatoken: ', datatokenAddress)

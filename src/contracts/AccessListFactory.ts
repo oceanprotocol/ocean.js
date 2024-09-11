@@ -40,22 +40,22 @@ export class AccesslistFactory extends SmartContractWithAddress {
    */
   public async deployAccessListContract<G extends boolean = false>(
     nameAccessList: string,
-    symbolAccessLis: string,
+    symbolAccessList: string,
     tokenURI: string[],
     transferable: boolean,
     owner: string,
     user: string[],
     estimateGas?: G
   ): Promise<G extends false ? string : BigNumber> {
-    if (!nameAccessList || !symbolAccessLis) {
+    if (!nameAccessList || !symbolAccessList) {
       const { name, symbol } = generateDtName()
       nameAccessList = name
-      symbolAccessLis = symbol
+      symbolAccessList = symbol
     }
-    if (!transferable) transferable = true
+    if (!transferable) transferable = false
     const estGas = await this.contract.estimateGas.deployAccessListContract(
       nameAccessList,
-      symbolAccessLis,
+      symbolAccessList,
       transferable,
       owner,
       user,
@@ -69,7 +69,7 @@ export class AccesslistFactory extends SmartContractWithAddress {
       this.config?.gasFeeMultiplier,
       this.contract.deployAccessListContract,
       nameAccessList,
-      symbolAccessLis,
+      symbolAccessList,
       transferable,
       owner,
       user,
@@ -97,6 +97,16 @@ export class AccesslistFactory extends SmartContractWithAddress {
   public async isSoulbound(contractAddress: string): Promise<boolean> {
     const isSoulbound = await this.contract.isSoulBound(contractAddress)
     return isSoulbound
+  }
+
+  /**
+   *  Is a list contract deployed?
+   * @param {String} contractAddress list contract address
+   * @return {Promise<boolean>} is deployed?
+   */
+  public async isDeployed(contractAddress: string): Promise<boolean> {
+    const isDeployed = await this.contract.isDeployed(contractAddress)
+    return isDeployed
   }
 
   /**

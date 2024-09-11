@@ -170,7 +170,7 @@ export class AccessListContract extends SmartContract {
       estGas,
       this.signer,
       this.config?.gasFeeMultiplier,
-      accessListContract.functions.transferOwnership,
+      accessListContract.transferOwnership,
       newOwner
     )
     return <ReceiptOrEstimate<G>>trxReceipt
@@ -194,7 +194,7 @@ export class AccessListContract extends SmartContract {
       estGas,
       this.signer,
       this.config?.gasFeeMultiplier,
-      accessListContract.functions.renounceOwnership
+      accessListContract.renounceOwnership
     )
     return <ReceiptOrEstimate<G>>trxReceipt
   }

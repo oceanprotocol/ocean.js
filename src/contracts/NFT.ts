@@ -89,9 +89,9 @@ export class Nft extends SmartContract {
 
     const addresses = [minter, paymentCollector, mpFeeAddress, feeToken]
     if (accessListContract) {
-      addresses.push(accessListContract)
+      addresses.push(accessListContract.toLowerCase())
       if (allowAccessList) {
-        addresses.push(allowAccessList)
+        addresses.push(allowAccessList.toLowerCase())
       }
       if (denyAccessList) {
         addresses.push(denyAccessList)
@@ -99,6 +99,7 @@ export class Nft extends SmartContract {
     }
 
     console.log(`templateIndex: `, templateIndex)
+    console.log(`addresses: `, addresses)
 
     const tx = await sendTx(
       estGas,
