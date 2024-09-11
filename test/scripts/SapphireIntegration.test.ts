@@ -78,7 +78,6 @@ describe('Sapphire tests', async () => {
       [await wallet.getAddress(), ZERO_ADDRESS]
     )
     assert(listAddress !== null)
-    console.log('list address: ', listAddress)
     accessListToken = new AccessListContract(wallet, 23295)
     assert(
       (await (factoryContract as AccesslistFactory).isDeployed(listAddress)) === true,
@@ -116,17 +115,17 @@ describe('Sapphire tests', async () => {
   })
   it('Get Allow Access List', async () => {
     const address = await wallet.getAddress()
-    assert(
-      (await (datatoken as Datatoken4).isDatatokenDeployer(datatokenAddress, address)) ===
-        true,
-      'no ERC20 deployer'
-    )
     datatoken = new Datatoken4(
-      wallet,
+      walletWrapped,
       ethers.utils.toUtf8Bytes(JSON.stringify(filesObject)),
       23295,
       config,
       ERC20Template4.abi as AbiItem[]
+    )
+    assert(
+      (await (datatoken as Datatoken4).isDatatokenDeployer(datatokenAddress, address)) ===
+        true,
+      'no ERC20 deployer'
     )
     assert(
       (await (nftToken as Nft).isDatatokenDeployed(nftAddress, datatokenAddress)) ===
@@ -136,6 +135,13 @@ describe('Sapphire tests', async () => {
     assert(
       (await (datatoken as Datatoken4).getAllowlistContract(datatokenAddress)) ===
         listAddress,
+      'no access list attached to datatoken.'
+    )
+  })
+  it('Get Deny Access List', async () => {
+    assert(
+      (await (datatoken as Datatoken4).getDenylistContract(datatokenAddress)) ===
+        ZERO_ADDRESS,
       'no access list attached to datatoken.'
     )
   })

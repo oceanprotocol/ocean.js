@@ -53,7 +53,7 @@ export class Datatoken4 extends Datatoken {
    * @param dtAddress datatoken address
    * @return {Promise<string>}
    */
-  public async getDenyListContract(dtAddress: string): Promise<string> {
+  public async getDenylistContract(dtAddress: string): Promise<string> {
     const dtContract = this.getContract(dtAddress, this.getDefaultAbi())
     const denyList = await dtContract.getDenyListContract()
     return denyList

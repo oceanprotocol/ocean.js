@@ -1,6 +1,6 @@
 import { BigNumber, ethers, Signer } from 'ethers'
 import ERC721Template from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC721Template.sol/ERC721Template.json'
-import { generateDtName, sendTx, getEventFromTx } from '../utils'
+import { generateDtName, sendTx, getEventFromTx, ZERO_ADDRESS } from '../utils'
 import {
   MetadataProof,
   MetadataAndTokenURI,
@@ -92,14 +92,15 @@ export class Nft extends SmartContract {
       addresses.push(accessListContract.toLowerCase())
       if (allowAccessList) {
         addresses.push(allowAccessList.toLowerCase())
+      } else {
+        addresses.push(ZERO_ADDRESS)
       }
       if (denyAccessList) {
         addresses.push(denyAccessList)
+      } else {
+        addresses.push(ZERO_ADDRESS)
       }
     }
-
-    console.log(`templateIndex: `, templateIndex)
-    console.log(`addresses: `, addresses)
 
     const tx = await sendTx(
       estGas,
