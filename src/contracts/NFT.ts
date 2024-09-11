@@ -66,6 +66,17 @@ export class Nft extends SmartContract {
     // Create 721contract object
     const nftContract = this.getContract(nftAddress)
 
+    const { chainId } = await nftContract.provider.getNetwork()
+    const artifacts = getOceanArtifactsAdressesByChainId(chainId)
+    if (filesObject) {
+      templateIndex = await calculateActiveTemplateIndex(
+        this.signer,
+        artifacts.ERC721Factory,
+        4
+      )
+    } else {
+      templateIndex = 1
+    }
     const estGas = await nftContract.estimateGas.createERC20(
       templateIndex,
       [name, symbol],
@@ -88,13 +99,6 @@ export class Nft extends SmartContract {
         addresses.push(denyAccessList)
       }
     }
-    const { chainId } = await nftContract.provider.getNetwork()
-    const artifacts = getOceanArtifactsAdressesByChainId(chainId)
-    templateIndex = await calculateActiveTemplateIndex(
-      this.signer,
-      artifacts.ERC721Factory,
-      4
-    )
 
     console.log(`templateIndex: `, templateIndex)
 
