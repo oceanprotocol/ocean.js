@@ -80,9 +80,9 @@ describe('Sapphire tests', async () => {
     assert(listAddress !== null)
     console.log('list address: ', listAddress)
     accessListToken = new AccessListContract(wallet, 23295)
-    console.log(
-      'deployed?: ',
-      await (factoryContract as AccesslistFactory).isDeployed(listAddress)
+    assert(
+      (await (factoryContract as AccesslistFactory).isDeployed(listAddress)) === true,
+      'access list not deployed'
     )
   })
   it('Create ERC721 factory', () => {
@@ -93,13 +93,12 @@ describe('Sapphire tests', async () => {
   it('Create ERC721 contract', async () => {
     nftData.owner = await wallet.getAddress()
     nftAddress = await (nftFactory as NftFactory).createNFT(nftData)
-    console.log('nftAddress: ', nftAddress)
     nftToken = new Nft(wallet, 23295)
   })
   it('Create Datatoken4 contract', async () => {
     datatokenAddress = await (nftToken as Nft).createDatatoken(
       nftAddress,
-      await walletWrapped.getAddress(),
+      await wallet.getAddress(),
       await wallet.getAddress(),
       await wallet.getAddress(),
       await wallet.getAddress(),
@@ -114,9 +113,14 @@ describe('Sapphire tests', async () => {
       listAddress
     )
     assert(datatokenAddress, 'datatoken not created.')
-    console.log('datatoken: ', datatokenAddress)
   })
   it('Get Allow Access List', async () => {
+    const address = await wallet.getAddress()
+    assert(
+      (await (datatoken as Datatoken4).isDatatokenDeployer(datatokenAddress, address)) ===
+        true,
+      'no ERC20 deployer'
+    )
     datatoken = new Datatoken4(
       wallet,
       ethers.utils.toUtf8Bytes(JSON.stringify(filesObject)),
@@ -129,17 +133,10 @@ describe('Sapphire tests', async () => {
         true,
       'datatoken not deployed'
     )
-    // assert(
-    //   (await (datatoken as Datatoken4).getAllowlistContract(datatokenAddress)) ===
-    //     listAddress,
-    //   'no access list attached to datatoken.'
-    // )
-    const address = await wallet.getAddress()
-    console.log(
-      await (datatoken as Datatoken4).isDatatokenDeployer(datatokenAddress, address)
+    assert(
+      (await (datatoken as Datatoken4).getAllowlistContract(datatokenAddress)) ===
+        listAddress,
+      'no access list attached to datatoken.'
     )
-    console.log(await (datatoken as Datatoken4).getAllowlistContract(datatokenAddress))
-
-    console.log(await (datatoken as Datatoken4).getId(datatokenAddress))
   })
 })

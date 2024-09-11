@@ -44,19 +44,6 @@ export class Datatoken4 extends Datatoken {
    */
   public async getAllowlistContract(dtAddress: string): Promise<string> {
     const dtContract = this.getContract(dtAddress, this.getDefaultAbi())
-    // const dtContract = new ethers.Contract(dtAddress, ERC20Template4.abi, this.signer)
-    // const factory = new ethers.ContractFactory(
-    //   ERC20Template4.abi,
-    //   ERC20Template4.bytecode,
-    //   this.signer
-    // )
-
-    // const contract = await factory.deploy()
-
-    // await contract.deployed()
-    // contract.attach(dtAddress)
-
-    console.log(await dtContract.getId())
     const allowList = await dtContract.getAllowListContract()
     return allowList
   }
@@ -67,7 +54,7 @@ export class Datatoken4 extends Datatoken {
    * @return {Promise<string>}
    */
   public async getDenyListContract(dtAddress: string): Promise<string> {
-    const dtContract = this.getContract(dtAddress)
+    const dtContract = this.getContract(dtAddress, this.getDefaultAbi())
     const denyList = await dtContract.getDenyListContract()
     return denyList
   }

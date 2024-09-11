@@ -42,7 +42,7 @@ export class AccesslistFactory extends SmartContractWithAddress {
     nameAccessList: string,
     symbolAccessList: string,
     tokenURI: string[],
-    transferable: boolean,
+    transferable: boolean = false,
     owner: string,
     user: string[],
     estimateGas?: G
@@ -52,7 +52,6 @@ export class AccesslistFactory extends SmartContractWithAddress {
       nameAccessList = name
       symbolAccessList = symbol
     }
-    if (!transferable) transferable = false
     const estGas = await this.contract.estimateGas.deployAccessListContract(
       nameAccessList,
       symbolAccessList,
