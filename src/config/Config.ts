@@ -45,11 +45,6 @@ export class Config {
   public nftFactoryAddress?: string
 
   /**
-   * ERC20 templates addresses
-   */
-  public eRC20Template?: any
-
-  /**
    * datatokens ABI
    * @type {string}
    */

@@ -72,43 +72,6 @@ export function getOceanArtifactsAdressesByChainId(chain: number): any {
 }
 
 /**
- * Use this function if don't need to check if the template if active
- * (not 100% reliable if we need to check at smart contract level)
- * @param chainID the chain identifier
- * @param template the id or the template address
- * @returns the index of the template from the 'ERC20Template' object
- */
-export async function getTemplateIndexOnList(
-  chainID: number,
-  template: string | number
-): Promise<number> {
-  let index = -1
-  const artifacts = await getOceanArtifactsAdressesByChainId(chainID)
-  if (artifacts) {
-    const templatesAvailable = artifacts.ERC20Template
-    if (templatesAvailable) {
-      // template address?
-      if (typeof template === 'string') {
-        const templateAddresses: any[] = Object.values(templatesAvailable)
-        index = templateAddresses.findIndex(function (item) {
-          return item === template
-        })
-      } else {
-        const templateIndexes = Object.keys(templatesAvailable)
-        index = templateIndexes.findIndex(function (item) {
-          return item.indexOf(template.toString()) !== -1
-        })
-      }
-      if (index !== -1) {
-        index += 1
-      }
-    }
-  }
-  // index or -1 if not found
-  return index
-}
-
-/**
  * Use this function to accurately calculate the template index, and also checking if the template is active
  * @param owner the signer account
  * @param nftContractAddress the nft contract address, usually artifactsAddresses.ERC721Factory
@@ -156,16 +119,14 @@ export async function calculateActiveTemplateIndex(
  * @param symbol asse symbol
  * @param owner owner address
  * @param assetUrl asset url
- * @param templateIndex 1,2 or 4
+ * @param templateIDorAddress either template address or id
  * @param ddo ddo
  * @param encryptDDO encrypt or not?
  * @param providerUrl the provider URL
  * @param providerFeeToken the provider fee token
  * @param nftContractAddress the nft contract address
  * @param aquariusInstance aquarius, could be node instance url
- * @param dispenserAddress dispenser address
- * @param fixedRateAddress fixed rate exchange address
- * @param baseTokenAddress base token address (ocean)
+ * @param filesObject if present and confidential evm, add it to token create params
  * @returns ddo id as string
  */
 export async function createAsset(
@@ -173,7 +134,7 @@ export async function createAsset(
   symbol: string,
   owner: Signer,
   assetUrl: any,
-  template: string | number, // If string, it's template address , otherwise, it's templateId
+  templateIDorAddress: string | number, // If string, it's template address , otherwise, it's templateId
   ddo: any,
   encryptDDO: boolean = true, // default is true
   providerUrl: string,
@@ -181,13 +142,9 @@ export async function createAsset(
   nftContractAddress: string, // addresses.ERC721Factory,
   aquariusInstance: Aquarius,
   filesObject?: any
-  // fixed rate
-  // dispenserAddress?: string,
-  // fixedRateAddress?: string,
-  // baseTokenAddress?: string // ocean token?
 ): Promise<string> {
-  const isAddress = typeof template === 'string'
-  const isTemplateIndex = typeof template === 'number'
+  const isAddress = typeof templateIDorAddress === 'string'
+  const isTemplateIndex = typeof templateIDorAddress === 'number'
   if (!isAddress && !isTemplateIndex) {
     throw new Error('Invalid template! Must be a "number" or a "string"')
   }
@@ -201,7 +158,7 @@ export async function createAsset(
   let templateIndex = await calculateActiveTemplateIndex(
     owner,
     nftContractAddress,
-    template
+    templateIDorAddress
   )
 
   if (templateIndex < 1) {
@@ -239,7 +196,7 @@ export async function createAsset(
   }
 
   // include fileObject in the DT constructor
-  if (config.confidentialEVM) {
+  if (config.confidentialEVM && templateIndex === 4) {
     datatokenParams.filesObject = filesObject
   }
 
@@ -291,8 +248,10 @@ export async function createAsset(
   // create the files encrypted string
   assetUrl.datatokenAddress = datatokenAddressAsset
   assetUrl.nftAddress = nftAddress
-  // if template 4 no need to encrypt it??
-  if (!config.confidentialEVM) {
+  // if confidential EVM no need to make encrypt call here
+  if (config.confidentialEVM) {
+    ddo.services[0].files = null // null on confidental EVM
+  } else {
     ddo.services[0].files = await ProviderInstance.encrypt(assetUrl, chainID, providerUrl)
   }
 
