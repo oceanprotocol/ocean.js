@@ -19,6 +19,8 @@ describe('Sapphire tests', async () => {
     new ethers.Wallet(process.env.PRIVATE_KEY, provider)
   )
 
+  const consumer = new ethers.Wallet(process.env.PRIVATE_KEY_CONSUMER, provider)
+
   const addrs: any = addresses.oasis_saphire_testnet
   const nftData: NftCreateData = {
     name: 'NFTName',
@@ -31,7 +33,9 @@ describe('Sapphire tests', async () => {
 
   let factoryContract: any
   let listAddress: string
+  let denyListAddress: string
   let accessListToken: any
+  let denyAccessListToken: any
 
   let nftFactory: any
   let nftAddress: string
@@ -78,7 +82,7 @@ describe('Sapphire tests', async () => {
       [await wallet.getAddress(), ZERO_ADDRESS]
     )
     assert(listAddress !== null)
-    accessListToken = new AccessListContract(wallet, 23295)
+    accessListToken = new AccessListContract(listAddress, wallet, 23295)
     assert(
       (await (factoryContract as AccesslistFactory).isDeployed(listAddress)) === true,
       'access list not deployed'
@@ -143,6 +147,59 @@ describe('Sapphire tests', async () => {
       (await (datatoken as Datatoken4).getDenylistContract(datatokenAddress)) ===
         ZERO_ADDRESS,
       'no access list attached to datatoken.'
+    )
+  })
+  it('Create Deny Access List', async () => {
+    denyListAddress = await (
+      factoryContract as AccesslistFactory
+    ).deployAccessListContract(
+      'DenyList',
+      'DENY',
+      ['https://oceanprotocol.com/nft/'],
+      false,
+      await consumer.getAddress(),
+      [await consumer.getAddress(), ZERO_ADDRESS]
+    )
+    assert(denyListAddress !== null, 'deny list not created')
+    assert(
+      (await (factoryContract as AccesslistFactory).isDeployed(denyListAddress)) === true,
+      'access list not deployed'
+    )
+  })
+  it('setDenyList for ERC20 Template 4', async () => {
+    const tx = await (datatoken as Datatoken4).setDenyListContract(
+      datatokenAddress,
+      denyListAddress,
+      await wallet.getAddress()
+    )
+    await tx.wait()
+    assert(
+      (await (datatoken as Datatoken4).getDenylistContract(datatokenAddress)) ===
+        denyListAddress,
+      'no access list attached to datatoken.'
+    )
+  })
+  it('delete address from deny list', async () => {
+    denyAccessListToken = new AccessListContract(denyListAddress, wallet, 23295)
+    const tx = await (denyAccessListToken as AccessListContract).burn(4)
+    await tx.wait()
+    assert(
+      (await (datatoken as Datatoken4).getDenylistContract(datatokenAddress)) ===
+        ZERO_ADDRESS,
+      'no access list attached to datatoken.'
+    )
+  })
+  it('add address from allow list', async () => {
+    const tx = await (accessListToken as AccessListContract).mint(
+      await consumer.getAddress(),
+      'https://oceanprotocol.com/nft/'
+    )
+    await tx.wait()
+    assert(
+      ((await (accessListToken as AccessListContract).balance(
+        await consumer.getAddress()
+      )) === '1.0',
+      'address of consumer not added.')
     )
   })
 })

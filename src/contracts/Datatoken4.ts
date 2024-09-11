@@ -1,6 +1,6 @@
 /* eslint-disable lines-between-class-members */
 import { Datatoken } from './Datatoken'
-import { Bytes, Signer, ethers } from 'ethers'
+import { Bytes, Signer } from 'ethers'
 import ERC20Template4 from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC20Template4.sol/ERC20Template4.json'
 import { AbiItem, ReceiptOrEstimate } from '../@types'
 import { AccessListContract } from './AccessList'
@@ -30,7 +30,6 @@ export class Datatoken4 extends Datatoken {
     abi?: AbiItem[]
   ) {
     super(signer, network, config, abi)
-    this.accessList = new AccessListContract(this.signer)
     this.abi = this.getDefaultAbi()
     // Wrap signer's address for encrypted data tx
     this.signer = sapphire.wrap(signer)
