@@ -107,7 +107,8 @@ describe('Sapphire tests', async () => {
       1,
       JSON.stringify(filesObject),
       addrs.AccessListFactory,
-      listAddress
+      listAddress,
+      ZERO_ADDRESS
     )
     assert(datatokenAddress, 'datatoken not created.')
     console.log('datatoken: ', datatokenAddress)

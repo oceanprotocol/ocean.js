@@ -91,10 +91,12 @@ export class Nft extends SmartContract {
     const { chainId } = await nftContract.provider.getNetwork()
     const artifacts = getOceanArtifactsAdressesByChainId(chainId)
     templateIndex = await calculateActiveTemplateIndex(
-      nftContract.signer as Signer,
+      this.signer,
       artifacts.ERC721Factory,
       4
     )
+
+    console.log(`templateIndex: `, templateIndex)
 
     const tx = await sendTx(
       estGas,
