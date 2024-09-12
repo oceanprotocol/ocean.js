@@ -577,7 +577,11 @@ export class NftFactory extends SmartContractWithAddress {
         dtParams.minter,
         dtParams.paymentCollector,
         dtParams.mpFeeAddress,
-        dtParams.feeToken
+        dtParams.feeToken,
+        // template 4 only, ignored for others
+        dtParams.accessListFactory,
+        dtParams.allowAccessList,
+        dtParams.denyAccessList
       ],
       uints: [
         await this.amountToUnits(null, dtParams.cap, 18),

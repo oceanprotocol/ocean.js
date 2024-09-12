@@ -154,8 +154,7 @@ export const configHelperNetworks: Config[] = [
     nodeUri: 'https://sapphire.oasis.io',
     subgraphUri: 'https://v4.subgraph.sapphire-mainnet.oceanprotocol.com/',
     explorerUri: 'https://explorer.oasis.io/mainnet/sapphire/',
-    gasFeeMultiplier: 1,
-    confidentialEVM: true
+    gasFeeMultiplier: 1
   },
   {
     ...configHelperNetworksBase,
@@ -165,8 +164,7 @@ export const configHelperNetworks: Config[] = [
     subgraphUri:
       'https://v4.subgraph.sapphire-testnet.oceanprotocol.com/subgraphs/name/oceanprotocol/ocean-subgraph',
     explorerUri: 'https://explorer.oasis.io/testnet/sapphire/',
-    gasFeeMultiplier: 1,
-    confidentialEVM: true
+    gasFeeMultiplier: 1
   },
   {
     ...configHelperNetworksBase,
@@ -207,7 +205,8 @@ export class ConfigHelper {
         veDelegationProxy,
         DFRewards,
         DFStrategyV1,
-        veFeeEstimate
+        veFeeEstimate,
+        AccessListFactory
       } = customAddresses[network]
       configAddresses = {
         nftFactoryAddress: ERC721Factory,
@@ -225,6 +224,7 @@ export class ConfigHelper {
         DFRewards,
         DFStrategyV1,
         veFeeEstimate,
+        accessListFactory: AccessListFactory,
         ...(process.env.AQUARIUS_URL && { metadataCacheUri: process.env.AQUARIUS_URL }),
         ...(process.env.PROVIDER_URL && { providerUri: process.env.PROVIDER_URL })
       }
@@ -246,7 +246,8 @@ export class ConfigHelper {
           veDelegationProxy,
           DFRewards,
           DFStrategyV1,
-          veFeeEstimate
+          veFeeEstimate,
+          AccessListFactory
         } = DefaultContractsAddresses[network]
         configAddresses = {
           nftFactoryAddress: ERC721Factory,
@@ -264,6 +265,7 @@ export class ConfigHelper {
           DFRewards,
           DFStrategyV1,
           veFeeEstimate,
+          accessListFactory: AccessListFactory,
           ...(process.env.AQUARIUS_URL && { metadataCacheUri: process.env.AQUARIUS_URL }),
           ...(process.env.PROVIDER_URL && { providerUri: process.env.PROVIDER_URL })
         }
@@ -313,6 +315,9 @@ export class ConfigHelper {
       filterBy === 'chainId'
         ? KNOWN_CONFIDENTIAL_EVMS.includes(Number(network))
         : network.toString().includes('oasis_sap')
+    if (config.confidentialEVM) {
+      config.accessListFactory = contractAddressesConfig.accessListFactory
+    }
 
     config = { ...config, ...contractAddressesConfig }
 

@@ -19,6 +19,7 @@ import { getEventFromTx } from './ContractUtils'
 import { ProviderInstance } from '../services/Provider'
 // eslint-disable-next-line import/no-named-default
 import ERC20Template from '@oceanprotocol/contracts/artifacts/contracts/interfaces/IERC20Template.sol/IERC20Template.json'
+import AccessListFactory from '@oceanprotocol/contracts/artifacts/contracts/accesslists/AccessListFactory.sol/AccessListFactory.json'
 
 // import * as hre from 'hardhat'
 
@@ -126,6 +127,8 @@ export async function calculateActiveTemplateIndex(
  * @param providerFeeToken the provider fee token
  * @param nftContractAddress the nft contract address
  * @param aquariusInstance aquarius, could be node instance url
+ * @param allowAccessList?: string,
+ * @param denyAccessList?: string
  * @returns ddo id as string
  */
 export async function createAsset(
@@ -139,7 +142,10 @@ export async function createAsset(
   providerUrl: string,
   providerFeeToken: string,
   aquariusInstance: Aquarius,
-  nftContractAddress?: string // addresses.ERC721Factory,
+  nftContractAddress?: string, // addresses.ERC721Factory,
+  accessListFactory?: string, // access list factory address
+  allowAccessList?: string, // allow list address
+  denyAccessList?: string // deny list address
 ): Promise<string> {
   const isAddress = typeof templateIDorAddress === 'string'
   const isTemplateIndex = typeof templateIDorAddress === 'number'
@@ -196,7 +202,14 @@ export async function createAsset(
 
   // include fileObject in the DT constructor
   if (config.confidentialEVM) {
+    // const accessListAddress = await createAccessListFactory(
+    //   config.accessListFactory,
+    //   owner
+    // )
     datatokenParams.filesObject = assetUrl
+    datatokenParams.accessListFactory = accessListFactory || config.accessListFactory
+    datatokenParams.allowAccessList = allowAccessList
+    datatokenParams.denyAccessList = denyAccessList
   }
 
   let bundleNFT
@@ -291,4 +304,38 @@ export async function createAsset(
     metadataHash
   )
   return ddo.id
+}
+
+/**
+ * deploy new access list factory if needed
+ * @param accessListFactory accessListFactory address
+ * @param owner owner account
+ * @param addressesList list of addresses to deploy
+ * @returns accessListFactory address
+ */
+export async function createAccessListFactory(
+  accessListFactory: string,
+  owner: Signer,
+  addressesList?: string[]
+): Promise<any> {
+  const factory = new ethers.Contract(accessListFactory, AccessListFactory.abi, owner)
+  const ownerAccount = await owner.getAddress()
+  try {
+    const accessListTx = await factory.deployAccessListContract(
+      'AllowList',
+      'ALLOW',
+      true,
+      ownerAccount,
+      addressesList || [ownerAccount],
+      ['https://oceanprotocol.com/nft/']
+    )
+    if (accessListTx && accessListTx.wait) {
+      const trxReceipt = await accessListTx.wait()
+      const events = getEventFromTx(trxReceipt, 'NewAccessList')
+      return events.args[0]
+    }
+  } catch (error) {
+    console.log('ERROR createAccessListFactory(): ', error)
+  }
+  return null
 }

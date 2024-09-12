@@ -182,4 +182,5 @@ export class Config {
 
   // is confidential evm
   confidentialEVM?: boolean
+  accessListFactory?: string
 }
