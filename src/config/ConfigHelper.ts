@@ -300,8 +300,15 @@ export class ConfigHelper {
       console.log(e)
       addresses = null
     }
-    const contractAddressesConfig = this.getAddressesFromEnv(config.network, addresses)
 
+    let contractAddressesConfig = this.getAddressesFromEnv(config.network, addresses)
+    // check oasis network name typos on addresses.json
+    if (!contractAddressesConfig && KNOWN_CONFIDENTIAL_EVMS.includes(config.chainId)) {
+      contractAddressesConfig = this.getAddressesFromEnv(
+        config.network.replaceAll('sapp', 'sap'),
+        addresses
+      )
+    }
     config.confidentialEVM =
       filterBy === 'chainId'
         ? KNOWN_CONFIDENTIAL_EVMS.includes(Number(network))

@@ -212,8 +212,8 @@ describe('Publish tests', async () => {
       true, // encrypted ddo
       providerUrl,
       ZERO_ADDRESS, // provider fee token
-      addresses.ERC721Factory, // nft template factory
-      aquarius
+      aquarius,
+      addresses.ERC721Factory // nft template factory
     )
 
     console.log('Published asset, ddo id:', asset)

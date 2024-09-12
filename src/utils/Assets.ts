@@ -118,7 +118,7 @@ export async function calculateActiveTemplateIndex(
  * @param name asset name
  * @param symbol asse symbol
  * @param owner owner address
- * @param assetUrl asset url
+ * @param assetUrl asset url, if present and confidential evm, add it to token create params
  * @param templateIDorAddress either template address or id
  * @param ddo ddo
  * @param encryptDDO encrypt or not?
@@ -126,22 +126,20 @@ export async function calculateActiveTemplateIndex(
  * @param providerFeeToken the provider fee token
  * @param nftContractAddress the nft contract address
  * @param aquariusInstance aquarius, could be node instance url
- * @param filesObject if present and confidential evm, add it to token create params
  * @returns ddo id as string
  */
 export async function createAsset(
   name: string,
   symbol: string,
   owner: Signer,
-  assetUrl: any,
+  assetUrl: any, // files object
   templateIDorAddress: string | number, // If string, it's template address , otherwise, it's templateId
   ddo: any,
   encryptDDO: boolean = true, // default is true
   providerUrl: string,
   providerFeeToken: string,
-  nftContractAddress: string, // addresses.ERC721Factory,
   aquariusInstance: Aquarius,
-  filesObject?: any
+  nftContractAddress?: string // addresses.ERC721Factory,
 ): Promise<string> {
   const isAddress = typeof templateIDorAddress === 'string'
   const isTemplateIndex = typeof templateIDorAddress === 'number'
@@ -152,8 +150,9 @@ export async function createAsset(
 
   const config = new ConfigHelper().getConfig(parseInt(String(chainID)))
 
-  // This function does not consider the fact the template could be disabled
-  // let templateIndex = await calculateTemplateIndex(chainID, template)
+  if (!nftContractAddress) {
+    nftContractAddress = config.nftFactoryAddress
+  }
 
   let templateIndex = await calculateActiveTemplateIndex(
     owner,
@@ -180,7 +179,7 @@ export async function createAsset(
   const nftParamsAsset: NftCreateData = {
     name,
     symbol,
-    templateIndex,
+    templateIndex: 1,
     tokenURI: 'aaa',
     transferable: true,
     owner: account
@@ -196,46 +195,50 @@ export async function createAsset(
   }
 
   // include fileObject in the DT constructor
-  if (config.confidentialEVM && templateIndex === 4) {
-    datatokenParams.filesObject = filesObject
+  if (config.confidentialEVM) {
+    datatokenParams.filesObject = assetUrl
   }
 
   let bundleNFT
-
-  if (!ddo.stats?.price?.value) {
-    bundleNFT = await nftFactory.createNftWithDatatoken(nftParamsAsset, datatokenParams)
-  } else if (ddo.stats?.price?.value === '0') {
-    const dispenserParams: DispenserCreationParams = {
-      dispenserAddress: config.dispenserAddress,
-      maxTokens: '1',
-      maxBalance: '100000000',
-      withMint: true,
-      allowedSwapper: ZERO_ADDRESS
+  try {
+    if (!ddo.stats?.price?.value) {
+      bundleNFT = await nftFactory.createNftWithDatatoken(nftParamsAsset, datatokenParams)
+    } else if (ddo.stats?.price?.value === '0') {
+      const dispenserParams: DispenserCreationParams = {
+        dispenserAddress: config.dispenserAddress,
+        maxTokens: '1',
+        maxBalance: '100000000',
+        withMint: true,
+        allowedSwapper: ZERO_ADDRESS
+      }
+      bundleNFT = await nftFactory.createNftWithDatatokenWithDispenser(
+        nftParamsAsset,
+        datatokenParams,
+        dispenserParams
+      )
+    } else {
+      // fixed price
+      const fixedPriceParams: FreCreationParams = {
+        fixedRateAddress: config.fixedRateExchangeAddress,
+        baseTokenAddress: config.oceanTokenAddress,
+        owner: account,
+        marketFeeCollector: account,
+        baseTokenDecimals: 18,
+        datatokenDecimals: 18,
+        fixedRate: ddo.stats.price.value,
+        marketFee: '0',
+        allowedConsumer: account,
+        withMint: true
+      }
+      bundleNFT = await nftFactory.createNftWithDatatokenWithFixedRate(
+        nftParamsAsset,
+        datatokenParams,
+        fixedPriceParams
+      )
     }
-    bundleNFT = await nftFactory.createNftWithDatatokenWithDispenser(
-      nftParamsAsset,
-      datatokenParams,
-      dispenserParams
-    )
-  } else {
-    // fixed price
-    const fixedPriceParams: FreCreationParams = {
-      fixedRateAddress: config.fixedRateExchangeAddress,
-      baseTokenAddress: config.oceanTokenAddress,
-      owner: account,
-      marketFeeCollector: account,
-      baseTokenDecimals: 18,
-      datatokenDecimals: 18,
-      fixedRate: ddo.stats.price.value,
-      marketFee: '0',
-      allowedConsumer: account,
-      withMint: true
-    }
-    bundleNFT = await nftFactory.createNftWithDatatokenWithFixedRate(
-      nftParamsAsset,
-      datatokenParams,
-      fixedPriceParams
-    )
+  } catch (err) {
+    console.log('ERROR creating NFT bundle', err)
+    return null
   }
 
   const trxReceipt = await bundleNFT.wait()
