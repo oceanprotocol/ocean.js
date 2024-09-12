@@ -192,6 +192,7 @@ export async function orderAsset(
     providerData: initializeData.providerFee.providerData,
     validUntil: initializeData.providerFee.validUntil
   }
+  console.log('provider fee: ', providerFees)
 
   // make the payment
   const tx = await datatoken.startOrder(
