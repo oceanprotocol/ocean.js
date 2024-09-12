@@ -19,6 +19,7 @@ let config: Config
 
 let aquarius: Aquarius
 let datatoken: Datatoken
+let datatokenConsumer: Datatoken
 let providerUrl: string
 let consumerAccount: Signer
 let publisherAccount: Signer
@@ -337,12 +338,7 @@ describe('Publish consume test', async () => {
   })
 
   it('Should order the datasets', async () => {
-    datatoken = new Datatoken(
-      consumerAccount,
-      config.chainId,
-      config,
-      ERC20Template.abi as AbiItem[]
-    )
+    datatokenConsumer = new Datatoken(consumerAccount, config.chainId)
 
     urlOrderTx = await orderAsset(
       resolvedUrlAssetDdo.id,
@@ -350,7 +346,7 @@ describe('Publish consume test', async () => {
       await consumerAccount.getAddress(),
       resolvedUrlAssetDdo.services[0].id,
       0,
-      datatoken,
+      datatokenConsumer,
       providerUrl
     )
     assert(urlOrderTx, 'Ordering url dataset failed.')
@@ -361,7 +357,7 @@ describe('Publish consume test', async () => {
       await consumerAccount.getAddress(),
       resolvedArweaveAssetDdo.services[0].id,
       0,
-      datatoken,
+      datatokenConsumer,
       providerUrl
     )
     assert(arwaveOrderTx, 'Ordering arwave dataset failed.')
@@ -372,7 +368,7 @@ describe('Publish consume test', async () => {
       await consumerAccount.getAddress(),
       resolvedOnchainAssetDdo.services[0].id,
       0,
-      datatoken,
+      datatokenConsumer,
       providerUrl
     )
     assert(onchainOrderTx, 'Ordering onchain dataset failed.')
@@ -383,7 +379,7 @@ describe('Publish consume test', async () => {
       await consumerAccount.getAddress(),
       resolvedIpfsAssetDdo.services[0].id,
       0,
-      datatoken,
+      datatokenConsumer,
       providerUrl
     )
     assert(ipfsOrderTx, 'Ordering ipfs dataset failed.')
@@ -394,7 +390,7 @@ describe('Publish consume test', async () => {
       await consumerAccount.getAddress(),
       resolvedGraphqlAssetDdo.services[0].id,
       0,
-      datatoken,
+      datatokenConsumer,
       providerUrl
     )
     assert(grapqlOrderTx, 'Ordering graphql dataset failed.')
