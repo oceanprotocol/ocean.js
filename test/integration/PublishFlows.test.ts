@@ -207,13 +207,12 @@ describe('Publish tests', async () => {
       'TEST',
       ownerAddress,
       assetUrl,
-      '0x13a9813e7CE3fdc867C23Ef9c084570B7F2abdeC', // template 1 on dev network
+      1, // template 1 on dev network
       fixedPriceDdo,
       true, // encrypted ddo
       providerUrl,
       ZERO_ADDRESS, // provider fee token
-      aquarius,
-      addresses.ERC721Factory // nft template factory
+      aquarius
     )
 
     console.log('Published asset, ddo id:', asset)

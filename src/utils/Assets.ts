@@ -125,7 +125,6 @@ export async function calculateActiveTemplateIndex(
  * @param encryptDDO encrypt or not?
  * @param providerUrl the provider URL
  * @param providerFeeToken the provider fee token
- * @param nftContractAddress the nft contract address
  * @param aquariusInstance aquarius, could be node instance url
  * @param allowAccessList?: string,
  * @param denyAccessList?: string
@@ -142,7 +141,6 @@ export async function createAsset(
   providerUrl: string,
   providerFeeToken: string,
   aquariusInstance: Aquarius,
-  nftContractAddress?: string, // addresses.ERC721Factory,
   accessListFactory?: string, // access list factory address
   allowAccessList?: string, // allow list address
   denyAccessList?: string // deny list address
@@ -156,13 +154,9 @@ export async function createAsset(
 
   const config = new ConfigHelper().getConfig(parseInt(String(chainID)))
 
-  if (!nftContractAddress) {
-    nftContractAddress = config.nftFactoryAddress
-  }
-
   let templateIndex = await calculateActiveTemplateIndex(
     owner,
-    nftContractAddress,
+    config.nftFactoryAddress,
     templateIDorAddress
   )
 
@@ -175,7 +169,7 @@ export async function createAsset(
 
   const nft = new Nft(owner, chainID)
 
-  const nftFactory = new NftFactory(nftContractAddress, owner)
+  const nftFactory = new NftFactory(config.nftFactoryAddress, owner)
 
   // get nft owner
   const account = await owner.getAddress()

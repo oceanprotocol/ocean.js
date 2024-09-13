@@ -307,7 +307,7 @@ export class ConfigHelper {
     // check oasis network name typos on addresses.json
     if (!contractAddressesConfig && KNOWN_CONFIDENTIAL_EVMS.includes(config.chainId)) {
       contractAddressesConfig = this.getAddressesFromEnv(
-        config.network.replaceAll('sapp', 'sap'),
+        config.network.replace('sapph', 'saph'),
         addresses
       )
     }
