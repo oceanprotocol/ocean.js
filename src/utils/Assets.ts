@@ -260,7 +260,7 @@ export async function createAsset(
   assetUrl.nftAddress = nftAddress
   // if confidential EVM no need to make encrypt call here
   if (config.confidentialEVM) {
-    ddo.services[0].files = null // null on confidental EVM
+    ddo.services[0].files = '' // on confidental EVM it needs to be empty string not null, for schema validation
   } else {
     ddo.services[0].files = await ProviderInstance.encrypt(assetUrl, chainID, providerUrl)
   }
