@@ -179,8 +179,21 @@ describe('Sapphire tests', async () => {
       'no access list attached to datatoken.'
     )
   })
-  it('delete address from deny list', async () => {
+  it('add address from deny list', async () => {
     denyAccessListToken = new AccessListContract(denyListAddress, wallet, 23295)
+    const tx = await (denyAccessListToken as AccessListContract).mint(
+      await consumer.getAddress(),
+      'https://oceanprotocol.com/nft/'
+    )
+    await tx.wait()
+    assert(
+      ((await (denyAccessListToken as AccessListContract).balance(
+        await consumer.getAddress()
+      )) === '1.0',
+      'address of consumer not added.')
+    )
+  })
+  it('delete address from deny list', async () => {
     const tx = await (denyAccessListToken as AccessListContract).burn(4)
     await tx.wait()
     assert(
@@ -189,7 +202,7 @@ describe('Sapphire tests', async () => {
       'no access list attached to datatoken.'
     )
   })
-  it('add address from allow list', async () => {
+  it('add address to allow list', async () => {
     const tx = await (accessListToken as AccessListContract).mint(
       await consumer.getAddress(),
       'https://oceanprotocol.com/nft/'
@@ -201,5 +214,10 @@ describe('Sapphire tests', async () => {
       )) === '1.0',
       'address of consumer not added.')
     )
+  })
+  it('add address from allow list', async () => {
+    accessListToken = new AccessListContract(listAddress, consumer, 23295)
+    const tokenUri = await (accessListToken as AccessListContract).getTokenUri(4)
+    assert(tokenUri === 'https://oceanprotocol.com/nft/', 'token uri not present.')
   })
 })
