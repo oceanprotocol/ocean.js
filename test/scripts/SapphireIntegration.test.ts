@@ -9,6 +9,7 @@ import { assert } from 'console'
 import { Datatoken4 } from '../../src/contracts/Datatoken4'
 import { AbiItem, Config, Nft, NftCreateData } from '../../src'
 import ERC20Template4 from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC20Template4.sol/ERC20Template4.json'
+import { getEventFromTx } from '../../src/utils'
 
 describe('Sapphire tests', async () => {
   const provider = sapphire.wrap(
@@ -43,6 +44,8 @@ describe('Sapphire tests', async () => {
 
   let datatokenAddress: string
   let datatoken: any
+
+  let tokenIdAddressAdded: number
 
   const filesObject: any = [
     {
@@ -157,8 +160,8 @@ describe('Sapphire tests', async () => {
       'DENY',
       ['https://oceanprotocol.com/nft/'],
       false,
-      await consumer.getAddress(),
-      [await consumer.getAddress(), ZERO_ADDRESS]
+      await wallet.getAddress(),
+      [await wallet.getAddress(), ZERO_ADDRESS]
     )
     assert(denyListAddress !== null, 'deny list not created')
     assert(
@@ -182,24 +185,33 @@ describe('Sapphire tests', async () => {
   it('add address from deny list', async () => {
     denyAccessListToken = new AccessListContract(denyListAddress, wallet, 23295)
     const tx = await (denyAccessListToken as AccessListContract).mint(
-      await consumer.getAddress(),
+      await wallet.getAddress(),
       'https://oceanprotocol.com/nft/'
     )
-    await tx.wait()
+    const txReceipt = await tx.wait()
+    const event = getEventFromTx(txReceipt, 'AddressAdded')
+    tokenIdAddressAdded = event.args[1]
+    assert(event, 'Cannot find AddressAdded event')
     assert(
       ((await (denyAccessListToken as AccessListContract).balance(
-        await consumer.getAddress()
+        await wallet.getAddress()
       )) === '1.0',
       'address of consumer not added.')
     )
   })
   it('delete address from deny list', async () => {
-    const tx = await (denyAccessListToken as AccessListContract).burn(4)
+    const tx = await (denyAccessListToken as AccessListContract).burn(tokenIdAddressAdded)
     await tx.wait()
     assert(
       (await (datatoken as Datatoken4).getDenylistContract(datatokenAddress)) ===
-        ZERO_ADDRESS,
+        denyListAddress,
       'no access list attached to datatoken.'
+    )
+    assert(
+      ((await (denyAccessListToken as AccessListContract).balance(
+        await wallet.getAddress()
+      )) === '0.0',
+      'address of consumer not removed.')
     )
   })
   it('add address to allow list', async () => {
@@ -207,7 +219,9 @@ describe('Sapphire tests', async () => {
       await consumer.getAddress(),
       'https://oceanprotocol.com/nft/'
     )
-    await tx.wait()
+    const txReceipt = await tx.wait()
+    const event = getEventFromTx(txReceipt, 'AddressAdded')
+    tokenIdAddressAdded = event.args[1]
     assert(
       ((await (accessListToken as AccessListContract).balance(
         await consumer.getAddress()
@@ -217,7 +231,9 @@ describe('Sapphire tests', async () => {
   })
   it('add address from allow list', async () => {
     accessListToken = new AccessListContract(listAddress, consumer, 23295)
-    const tokenUri = await (accessListToken as AccessListContract).getTokenUri(4)
+    const tokenUri = await (accessListToken as AccessListContract).getTokenUri(
+      tokenIdAddressAdded
+    )
     assert(tokenUri === 'https://oceanprotocol.com/nft/', 'token uri not present.')
   })
 })

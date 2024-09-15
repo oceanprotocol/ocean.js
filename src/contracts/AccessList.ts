@@ -49,6 +49,14 @@ export class AccessListContract extends SmartContractWithAddress {
   }
 
   /**
+   * Get Id
+   * @return {Promise<string>} Id
+   */
+  public async getId(): Promise<number> {
+    return await this.contract.getId()
+  }
+
+  /**
    * Get Name of Access list
    * @return {Promise<string>} Name
    */
