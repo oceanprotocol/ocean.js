@@ -229,11 +229,32 @@ describe('Sapphire tests', async () => {
       'address of consumer not added.')
     )
   })
-  it('add address from allow list', async () => {
+  it('get token URI', async () => {
     accessListToken = new AccessListContract(listAddress, consumer, 23295)
     const tokenUri = await (accessListToken as AccessListContract).getTokenUri(
       tokenIdAddressAdded
     )
     assert(tokenUri === 'https://oceanprotocol.com/nft/', 'token uri not present.')
+  })
+  it('set a new file object w encrypted transaction', async () => {
+    const newFileObject: any = [
+      {
+        url: 'https://raw.githubusercontent.com/oceanprotocol/c2d-examples/main/face-detection/faceDetection.js',
+        contentType: 'text/js',
+        encoding: 'UTF-8'
+      }
+    ]
+    const fileObjBytes = ethers.utils.toUtf8Bytes(JSON.stringify(newFileObject))
+    datatoken.setFileObj(fileObjBytes)
+    assert(
+      datatoken.fileObject === fileObjBytes,
+      'setter method does not work for file obj'
+    )
+    const tx = await (datatoken as Datatoken4).setFileObject(
+      datatokenAddress,
+      await walletWrapped.getAddress()
+    )
+    const txReceipt = await tx.wait()
+    assert(txReceipt.status === 1, 'tx not successful')
   })
 })

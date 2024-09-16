@@ -36,6 +36,10 @@ export class Datatoken4 extends Datatoken {
     this.fileObject = fileObject
   }
 
+  public setFileObj(fileObj: Bytes): void {
+    this.fileObject = fileObj
+  }
+
   /**
    * getAllowListContract - It returns the current allowList contract address
    * @param dtAddress datatoken address
@@ -71,6 +75,7 @@ export class Datatoken4 extends Datatoken {
     dtAddress: string,
     address: string,
     consumer: string,
+    confidentialEVM: boolean = true,
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
     if (!(await this.isDatatokenDeployer(dtAddress, consumer))) {
@@ -83,7 +88,7 @@ export class Datatoken4 extends Datatoken {
 
     const trxReceipt = await sendTx(
       estGas,
-      this.signer,
+      confidentialEVM === true ? sapphire.wrap(this.signer) : this.signer,
       this.config?.gasFeeMultiplier,
       dtContract.functions.setAllowListContract,
       address
@@ -105,6 +110,7 @@ export class Datatoken4 extends Datatoken {
     dtAddress: string,
     address: string,
     consumer: string,
+    confidentialEVM: boolean = true,
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
     if (!(await this.isDatatokenDeployer(dtAddress, consumer))) {
@@ -117,7 +123,7 @@ export class Datatoken4 extends Datatoken {
 
     const trxReceipt = await sendTx(
       estGas,
-      this.signer,
+      confidentialEVM === true ? sapphire.wrap(this.signer) : this.signer,
       this.config?.gasFeeMultiplier,
       dtContract.functions.setDenyListContract,
       address
@@ -136,7 +142,7 @@ export class Datatoken4 extends Datatoken {
   public async setFileObject<G extends boolean = false>(
     dtAddress: string,
     address: string,
-    fileObject: Bytes,
+    confidentialEVM: boolean = true,
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
     if (!(await this.isDatatokenDeployer(dtAddress, address))) {
@@ -144,15 +150,15 @@ export class Datatoken4 extends Datatoken {
     }
 
     const dtContract = this.getContract(dtAddress)
-    const estGas = await dtContract.estimateGas.setFilesObject(fileObject)
+    const estGas = await dtContract.estimateGas.setFilesObject(this.fileObject)
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
 
     const trxReceipt = await sendTx(
       estGas,
-      this.signer,
+      confidentialEVM === true ? sapphire.wrap(this.signer) : this.signer,
       this.config?.gasFeeMultiplier,
       dtContract.functions.setFilesObject,
-      fileObject
+      this.fileObject
     )
 
     return <ReceiptOrEstimate<G>>trxReceipt
