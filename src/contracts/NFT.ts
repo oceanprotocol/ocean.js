@@ -1,4 +1,4 @@
-import { BigNumber, ethers, Signer } from 'ethers'
+import { BigNumber, ethers } from 'ethers'
 import ERC721Template from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC721Template.sol/ERC721Template.json'
 import { generateDtName, sendTx, getEventFromTx, ZERO_ADDRESS } from '../utils'
 import {

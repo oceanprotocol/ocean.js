@@ -11,9 +11,8 @@ import {
   transfer,
   amountToUnits
 } from '../../src'
-import { AbiItem, Files, Smartcontract } from '../../src/@types'
+import { Files, Smartcontract } from '../../src/@types'
 import { createAsset, orderAsset, updateAssetMetadata } from './helpers'
-import ERC20Template from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC20Template.sol/ERC20Template.json'
 
 let config: Config
 
