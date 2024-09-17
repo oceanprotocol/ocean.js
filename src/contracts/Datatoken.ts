@@ -529,6 +529,7 @@ export class Datatoken extends SmartContract {
       providerFees,
       consumeMarketFee
     )
+    console.log(`trxReceipt: `, trxReceipt)
     return <ReceiptOrEstimate<G>>trxReceipt
   }
 
