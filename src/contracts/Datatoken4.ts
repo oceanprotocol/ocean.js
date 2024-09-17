@@ -163,4 +163,36 @@ export class Datatoken4 extends Datatoken {
 
     return <ReceiptOrEstimate<G>>trxReceipt
   }
+
+  /**
+   * getFileObject - It returns the consumer's file object encrypted format.
+   * @param {String} dtAddress datatoken address
+   * @param {Number} serviceId - service identifier
+   * @param {String} providerAddress
+   * @param {Bytes} providerSignature
+   * @param {Bytes} consumerData
+   * @param {Bytes} consumerSignature
+   * @param {String} consumerAddress
+   * @return {Promise<string>}
+   */
+  public async getFileObject(
+    dtAddress: string,
+    serviceId: number,
+    providerAddress: string,
+    providerSignature: Bytes,
+    consumerData: Bytes,
+    consumerSignature: Bytes,
+    consumerAddress: string
+  ): Promise<Bytes> {
+    const dtContract = this.getContract(dtAddress, this.getDefaultAbi())
+    const fileObject = await dtContract.getFileObject(
+      serviceId,
+      providerAddress,
+      providerSignature,
+      consumerData,
+      consumerSignature,
+      consumerAddress
+    )
+    return fileObject
+  }
 }
