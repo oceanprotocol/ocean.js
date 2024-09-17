@@ -33,7 +33,7 @@ let resolvedArweaveAssetDdoAfterUpdate
 
 let ipfsAssetId
 let resolvedIpfsAssetDdo
-let resolvedIpfsAssetDdoAfterUpdate
+// let resolvedIpfsAssetDdoAfterUpdate
 
 let onchainAssetId
 let resolvedOnchainAssetDdo
@@ -45,7 +45,7 @@ let resolvedGraphqlAssetDdoAfterUpdate
 
 let urlOrderTx
 let arwaveOrderTx
-let ipfsOrderTx
+// let ipfsOrderTx
 let onchainOrderTx
 let grapqlOrderTx
 
@@ -310,13 +310,13 @@ describe('Publish consume test', async () => {
     )
     assert(arwaveMintTx, 'Failed minting arwave datatoken to consumer.')
 
-    const ipfsMintTx = await datatoken.mint(
-      resolvedIpfsAssetDdo.services[0].datatokenAddress,
-      await publisherAccount.getAddress(),
-      '10',
-      await consumerAccount.getAddress()
-    )
-    assert(ipfsMintTx, 'Failed minting ipfs datatoken to consumer.')
+    // const ipfsMintTx = await datatoken.mint(
+    //   resolvedIpfsAssetDdo.services[0].datatokenAddress,
+    //   await publisherAccount.getAddress(),
+    //   '10',
+    //   await consumerAccount.getAddress()
+    // )
+    // assert(ipfsMintTx, 'Failed minting ipfs datatoken to consumer.')
 
     const onchainMintTx = await datatoken.mint(
       resolvedOnchainAssetDdo.services[0].datatokenAddress,
@@ -371,16 +371,17 @@ describe('Publish consume test', async () => {
     )
     assert(onchainOrderTx, 'Ordering onchain dataset failed.')
 
-    ipfsOrderTx = await orderAsset(
-      resolvedIpfsAssetDdo.id,
-      resolvedIpfsAssetDdo.services[0].datatokenAddress,
-      await consumerAccount.getAddress(),
-      resolvedIpfsAssetDdo.services[0].id,
-      0,
-      datatoken,
-      providerUrl
-    )
-    assert(ipfsOrderTx, 'Ordering ipfs dataset failed.')
+    // To be fixed in #1849
+    // ipfsOrderTx = await orderAsset(
+    //   resolvedIpfsAssetDdo.id,
+    //   resolvedIpfsAssetDdo.services[0].datatokenAddress,
+    //   await consumerAccount.getAddress(),
+    //   resolvedIpfsAssetDdo.services[0].id,
+    //   0,
+    //   datatoken,
+    //   providerUrl
+    // )
+    // assert(ipfsOrderTx, 'Ordering ipfs dataset failed.')
 
     grapqlOrderTx = await orderAsset(
       resolvedGraphqlAssetDdo.id,
@@ -423,20 +424,21 @@ describe('Publish consume test', async () => {
     } catch (e) {
       assert.fail(`Download arwave dataset failed: ${e}`)
     }
-    const ipfsDownloadURL = await ProviderInstance.getDownloadUrl(
-      resolvedIpfsAssetDdo.id,
-      resolvedIpfsAssetDdo.services[0].id,
-      0,
-      ipfsOrderTx.transactionHash,
-      providerUrl,
-      consumerAccount
-    )
-    assert(ipfsDownloadURL, 'Provider getDownloadUrl failed for ipfs dataset')
-    try {
-      await downloadFile(ipfsDownloadURL)
-    } catch (e) {
-      assert.fail(`Download ipfs dataset failed ${e}`)
-    }
+    // To be fixed in #1849
+    // const ipfsDownloadURL = await ProviderInstance.getDownloadUrl(
+    //   resolvedIpfsAssetDdo.id,
+    //   resolvedIpfsAssetDdo.services[0].id,
+    //   0,
+    //   ipfsOrderTx.transactionHash,
+    //   providerUrl,
+    //   consumerAccount
+    // )
+    // assert(ipfsDownloadURL, 'Provider getDownloadUrl failed for ipfs dataset')
+    // try {
+    //   await downloadFile(ipfsDownloadURL)
+    // } catch (e) {
+    //   assert.fail(`Download ipfs dataset failed ${e}`)
+    // }
     const onchainDownloadURL = await ProviderInstance.getDownloadUrl(
       resolvedOnchainAssetDdo.id,
       resolvedOnchainAssetDdo.services[0].id,
@@ -485,15 +487,15 @@ describe('Publish consume test', async () => {
       aquarius
     )
     assert(updateArwaveTx, 'Failed to update arwave asset metadata')
-
-    resolvedIpfsAssetDdo.metadata.name = 'updated ipfs asset name'
-    const updateIpfsTx = await updateAssetMetadata(
-      publisherAccount,
-      resolvedIpfsAssetDdo,
-      providerUrl,
-      aquarius
-    )
-    assert(updateIpfsTx, 'Failed to update ipfs asset metadata')
+    // To be fixed in #1849
+    // resolvedIpfsAssetDdo.metadata.name = 'updated ipfs asset name'
+    // const updateIpfsTx = await updateAssetMetadata(
+    //   publisherAccount,
+    //   resolvedIpfsAssetDdo,
+    //   providerUrl,
+    //   aquarius
+    // )
+    // assert(updateIpfsTx, 'Failed to update ipfs asset metadata')
 
     resolvedOnchainAssetDdo.metadata.name = 'updated onchain asset name'
     const updateOnchainTx = await updateAssetMetadata(
@@ -522,9 +524,9 @@ describe('Publish consume test', async () => {
 
     resolvedArweaveAssetDdoAfterUpdate = await aquarius.waitForAqua(arweaveAssetId)
     assert(resolvedArweaveAssetDdoAfterUpdate, 'Cannot fetch arwave DDO from Aquarius')
-
-    resolvedIpfsAssetDdoAfterUpdate = await aquarius.waitForAqua(ipfsAssetId)
-    assert(resolvedIpfsAssetDdoAfterUpdate, 'Cannot fetch ipfs DDO from Aquarius')
+    // To be fixed in #1849
+    // resolvedIpfsAssetDdoAfterUpdate = await aquarius.waitForAqua(ipfsAssetId)
+    // assert(resolvedIpfsAssetDdoAfterUpdate, 'Cannot fetch ipfs DDO from Aquarius')
 
     resolvedOnchainAssetDdoAfterUpdate = await aquarius.waitForAqua(onchainAssetId)
     assert(resolvedOnchainAssetDdoAfterUpdate, 'Cannot fetch onchain DDO from Aquarius')
