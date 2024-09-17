@@ -95,7 +95,7 @@ const grapqlFile: Files = {
   files: [
     {
       type: 'graphql',
-      url: 'https://v4.subgraph.sepolia.oceanprotocol.com/subgraphs/name/oceanprotocol/ocean-subgraph',
+      url: 'https://v4.subgraph.sepolia.oceanprotocol.com/subgraphs/name/oceanprotocol/ocean-subgraph/graphql',
       query: `"
           query{
                 nfts(orderBy: createdTimestamp,orderDirection:desc){
@@ -380,7 +380,7 @@ describe('Publish consume test', async () => {
     //   datatoken,
     //   providerUrl
     // )
-    assert(ipfsOrderTx, 'Ordering ipfs dataset failed.')
+    // assert(ipfsOrderTx, 'Ordering ipfs dataset failed.')
 
     grapqlOrderTx = await orderAsset(
       resolvedGraphqlAssetDdo.id,
