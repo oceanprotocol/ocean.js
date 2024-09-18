@@ -20,6 +20,7 @@ import { ProviderInstance } from '../services/Provider'
 // eslint-disable-next-line import/no-named-default
 import ERC20Template from '@oceanprotocol/contracts/artifacts/contracts/interfaces/IERC20Template.sol/IERC20Template.json'
 import AccessListFactory from '@oceanprotocol/contracts/artifacts/contracts/accesslists/AccessListFactory.sol/AccessListFactory.json'
+import ERC20Template4 from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC20Template4.sol/ERC20Template4.json'
 
 // import * as hre from 'hardhat'
 
@@ -196,10 +197,6 @@ export async function createAsset(
 
   // include fileObject in the DT constructor
   if (config.confidentialEVM) {
-    // const accessListAddress = await createAccessListFactory(
-    //   config.accessListFactory,
-    //   owner
-    // )
     datatokenParams.filesObject = assetUrl
     datatokenParams.accessListFactory = accessListFactory || config.accessListFactory
     datatokenParams.allowAccessList = allowAccessList
@@ -258,6 +255,24 @@ export async function createAsset(
   // create the files encrypted string
   assetUrl.datatokenAddress = datatokenAddressAsset
   assetUrl.nftAddress = nftAddress
+
+  if (config.confidentialEVM) {
+    // we need to update files object on the SC otherwise it will fail validation on provider
+    // because DDO datatokenAddress and nftAddress will not match the values on files object
+    const contract = new ethers.Contract(datatokenAddressAsset, ERC20Template4.abi, owner)
+    try {
+      const tx = await contract.setFilesObject(
+        ethers.utils.toUtf8Bytes(JSON.stringify(assetUrl))
+      )
+      if (tx.wait) {
+        await tx.wait()
+      }
+    } catch (err) {
+      console.log('Error updating files object with data token and nft addresses: ', err)
+      return null
+    }
+  }
+
   // if confidential EVM no need to make encrypt call here
   if (config.confidentialEVM) {
     ddo.services[0].files = '' // on confidental EVM it needs to be empty string not null, for schema validation
