@@ -31,8 +31,6 @@ export class Datatoken4 extends Datatoken {
   ) {
     super(signer, network, config, abi)
     this.abi = this.getDefaultAbi()
-    // Wrap signer's address for encrypted data tx
-    this.signer = sapphire.wrap(signer)
     this.fileObject = fileObject
   }
 
