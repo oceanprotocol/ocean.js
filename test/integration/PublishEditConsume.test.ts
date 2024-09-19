@@ -13,7 +13,7 @@ import {
 } from '../../src'
 import { Files, Smartcontract } from '../../src/@types'
 import { createAsset, orderAsset, updateAssetMetadata } from './helpers'
-import { axios } from 'axios'
+import * as axios from 'axios'
 
 let config: Config
 
