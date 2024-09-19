@@ -130,10 +130,11 @@ npm run test:integration:cover
 
 ### Sapphire Integration Tests
 
-Currently, there is used Oasis Sapphire Test network, please export the `PRIVATE_KEY` before testing.
-
+We are currently using the live Oasis Sapphire Test network for the integration tests.
+Please export the `PRIVATE_KEY` and `PRIVATE_KEY_CONSUMER` before running the tests.
 ```bash
 export PRIVATE_KEY='0x<YOUR_PRIVATE_KEY>'
+export PRIVATE_KEY_CONSUMER='0x<YOUR_CONSUMER_PRIVATE_KEY>'
 ```
 
 Then, you can execute the tests individually with:
