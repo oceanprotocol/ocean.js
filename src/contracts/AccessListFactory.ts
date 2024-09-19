@@ -34,7 +34,12 @@ export class AccesslistFactory extends SmartContractWithAddress {
 
   /**
    * Create new Access List Contract
-   * @param {AccessListData} listData The data needed to create an NFT.
+   * @param {string} nameAccessList The name for access list.
+   * @param {string} symbolAccessList The symbol for access list.
+   * @param {string[]} tokenURI Token URIs list.
+   * @param {boolean} transferable Default false, to be soulbound.
+   * @param {string} owner Owner of the access list.
+   * @param {string[]} user Users of the access lists as addresses.
    * @param {Boolean} [estimateGas] if True, return gas estimate
    * @return {Promise<string|BigNumber>} The transaction hash or the gas estimate.
    */
