@@ -62,21 +62,25 @@ export class AccesslistFactory extends SmartContractWithAddress {
     )
     if (estimateGas) return <G extends false ? string : BigNumber>estGas
     // Invoke createToken function of the contract
-    const tx = await sendTx(
-      estGas,
-      this.signer,
-      this.config?.gasFeeMultiplier,
-      this.contract.deployAccessListContract,
-      nameAccessList,
-      symbolAccessList,
-      transferable,
-      owner,
-      user,
-      tokenURI
-    )
-    const trxReceipt = await tx.wait()
-    const events = getEventFromTx(trxReceipt, 'NewAccessList')
-    return events.args[0]
+    try {
+      const tx = await sendTx(
+        estGas,
+        this.signer,
+        this.config?.gasFeeMultiplier,
+        this.contract.deployAccessListContract,
+        nameAccessList,
+        symbolAccessList,
+        transferable,
+        owner,
+        user,
+        tokenURI
+      )
+      const trxReceipt = await tx.wait()
+      const events = getEventFromTx(trxReceipt, 'NewAccessList')
+      return events.args[0]
+    } catch (e) {
+      console.error(`Creation of AccessList failed: ${e}`)
+    }
   }
 
   /**
@@ -113,7 +117,7 @@ export class AccesslistFactory extends SmartContractWithAddress {
    * @param {String} owner caller address
    * @param {Number} templateAddress address of the template we want to change
    * @param {Boolean} estimateGas if True, return gas estimate
-   * @return {Promise<ReceiptOrEstimate>} current token template count
+   * @return {Promise<ReceiptOrEstimate>} returns the transaction receipt or the estimateGas value, current token template count
    */
   public async changeTemplateAddress<G extends boolean = false>(
     owner: string,

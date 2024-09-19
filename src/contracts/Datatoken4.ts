@@ -69,7 +69,7 @@ export class Datatoken4 extends Datatoken {
    * @param {String} address Contract address
    * @param {String} consumer User address
    * @param {Boolean} estimateGas if True, return gas estimate
-   * @return {Promise<ReceiptOrEstimate>} transactionId
+   * @return {Promise<ReceiptOrEstimate>} returns the transaction receipt or the estimateGas value
    */
   public async setAllowListContract<G extends boolean = false>(
     dtAddress: string,
@@ -104,7 +104,7 @@ export class Datatoken4 extends Datatoken {
    * @param {String} address Contract address
    * @param {String} consumer User address
    * @param {Boolean} estimateGas if True, return gas estimate
-   * @return {Promise<ReceiptOrEstimate>} transactionId
+   * @return {Promise<ReceiptOrEstimate>} returns the transaction receipt or the estimateGas value
    */
   public async setDenyListContract<G extends boolean = false>(
     dtAddress: string,
@@ -137,7 +137,7 @@ export class Datatoken4 extends Datatoken {
    * @param {String} dtAddress Datatoken address
    * @param {String} address User address
    * @param {Boolean} estimateGas if True, return gas estimate
-   * @return {Promise<ReceiptOrEstimate>} transactionId
+   * @return {Promise<ReceiptOrEstimate>} returns the transaction receipt or the estimateGas value
    */
   public async setFileObject<G extends boolean = false>(
     dtAddress: string,
@@ -173,7 +173,7 @@ export class Datatoken4 extends Datatoken {
    * @param {Bytes} consumerData
    * @param {Bytes} consumerSignature
    * @param {String} consumerAddress
-   * @return {Promise<string>}
+   * @return {Promise<Bytes>} returns file object
    */
   public async getFileObject(
     dtAddress: string,

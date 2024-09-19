@@ -57,7 +57,7 @@ describe('Sapphire tests', async () => {
 
   const config: Config = {
     chainId: 23295,
-    network: 'oasis_saphire_testnet',
+    network: 'oasis_sapphire_testnet',
     nodeUri: 'https://testnet.sapphire.oasis.dev',
     subgraphUri:
       'https://v4.subgraph.sapphire-testnet.oceanprotocol.com/subgraphs/name/oceanprotocol/ocean-subgraph',

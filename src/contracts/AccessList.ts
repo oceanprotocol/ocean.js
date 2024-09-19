@@ -87,7 +87,7 @@ export class AccessListContract extends SmartContractWithAddress {
    * @param {String} user Minter address
    * @param {String} tokenUri tokenURI
    * @param {Boolean} estimateGas if True, return gas estimate
-   * @return {Promise<ReceiptOrEstimate>} transactionId
+   * @return {Promise<ReceiptOrEstimate>} returns the transaction receipt or the estimateGas value
    */
   public async mint<G extends boolean = false>(
     user: string,
@@ -113,7 +113,7 @@ export class AccessListContract extends SmartContractWithAddress {
    * @param {String} users Minter addresses
    * @param {String} tokenUris tokenURI
    * @param {Boolean} estimateGas if True, return gas estimate
-   * @return {Promise<ReceiptOrEstimate>} transactionId
+   * @return {Promise<ReceiptOrEstimate>} returns the transaction receipt or the estimateGas value
    */
   public async batchMint<G extends boolean = false>(
     users: Array<string>,
@@ -138,7 +138,7 @@ export class AccessListContract extends SmartContractWithAddress {
    * Delete address from access list
    * @param {Number} tokenId token ID
    * @param {Boolean} estimateGas if True, return gas estimate
-   * @return {Promise<ReceiptOrEstimate>} transactionId
+   * @return {Promise<ReceiptOrEstimate>} returns the transaction receipt or the estimateGas value
    */
   public async burn<G extends boolean = false>(
     tokenId: number,
@@ -161,7 +161,7 @@ export class AccessListContract extends SmartContractWithAddress {
    * Transfer Ownership of an access list, called by owner of access list
    * @param {Number} newOwner new owner of the access list
    * @param {Boolean} estimateGas if True, return gas estimate
-   * @return {Promise<ReceiptOrEstimate>} transactionId
+   * @return {Promise<ReceiptOrEstimate>} returns the transaction receipt or the estimateGas value
    */
   public async transferOwnership<G extends boolean = false>(
     newOwner: string,
@@ -183,7 +183,7 @@ export class AccessListContract extends SmartContractWithAddress {
   /**
    * Renounce Ownership of an access list, called by owner of access list
    * @param {Boolean} estimateGas if True, return gas estimate
-   * @return {Promise<ReceiptOrEstimate>} transactionId
+   * @return {Promise<ReceiptOrEstimate>} returns the transaction receipt or the estimateGas value
    */
   public async renounceOwnership<G extends boolean = false>(
     estimateGas?: G
