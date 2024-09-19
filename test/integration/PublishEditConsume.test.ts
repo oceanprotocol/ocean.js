@@ -13,6 +13,7 @@ import {
 } from '../../src'
 import { Files, Smartcontract } from '../../src/@types'
 import { createAsset, orderAsset, updateAssetMetadata } from './helpers'
+import { axios } from 'axios'
 
 let config: Config
 
@@ -68,17 +69,6 @@ const arweaveFile: Files = {
     {
       type: 'arweave',
       transactionId: 'USuWnUl3gLPhm4TPbmL6E2a2e2SWMCVo9yWCaapD-98'
-    }
-  ]
-}
-
-const ifpsFile: Files = {
-  datatokenAddress: '0x0',
-  nftAddress: '0x0',
-  files: [
-    {
-      type: 'ipfs',
-      hash: 'QmdMBw956S3i2H2ioS9cERrtxoLJuSsfjzCvkqoDgUa2xm'
     }
   ]
 }
@@ -144,6 +134,30 @@ function delay(interval: number) {
   return it('should delay', (done) => {
     setTimeout(() => done(), interval)
   }).timeout(interval + 100)
+}
+
+function uploadToIpfs(data: any): Promise<string> {
+  return new Promise((resolve, reject) => {
+    axios
+      .post(
+        'http://172.15.0.16:5001/api/v0/add',
+        '--------------------------a28d68b1c872c96f\r\nContent-Disposition: form-data; name="file"; filename="ddo.json"\r\nContent-Type: application/octet-stream\r\n\r\n' +
+          data +
+          '\r\n--------------------------a28d68b1c872c96f--\r\n',
+        {
+          headers: {
+            'Content-Type':
+              'multipart/form-data; boundary=------------------------a28d68b1c872c96f'
+          }
+        }
+      )
+      .then(function (response: any) {
+        resolve(response.data.Hash)
+      })
+      .catch(function (error: any) {
+        reject(error)
+      })
+  })
 }
 
 describe('Publish consume test', async () => {
@@ -221,12 +235,22 @@ describe('Publish consume test', async () => {
       aquarius
     )
     assert(urlAssetId, 'Failed to arwave publish DDO')
-
+    const ipfsCID = await uploadToIpfs(JSON.stringify(assetDdo))
+    const ipfsFile: Files = {
+      datatokenAddress: '0x0',
+      nftAddress: '0x0',
+      files: [
+        {
+          type: 'ipfs',
+          hash: ipfsCID
+        }
+      ]
+    }
     ipfsAssetId = await createAsset(
       'IpfsDatatoken',
       'IPFSDT',
       publisherAccount,
-      ifpsFile,
+      ipfsFile,
       assetDdo,
       providerUrl,
       addresses.ERC721Factory,
