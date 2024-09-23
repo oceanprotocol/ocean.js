@@ -235,7 +235,7 @@ describe('Publish consume test', async () => {
     addresses.ERC721Factory,
     aquarius
   )
-  assert(urlAssetId, 'Failed to arwave publish DDO')
+  assert(arweaveAssetId, 'Failed to arwave publish DDO')
   const ipfsCID = await uploadToIpfs(JSON.stringify(assetDdo))
   const ipfsFile: Files = {
     datatokenAddress: '0x0',
@@ -258,20 +258,6 @@ describe('Publish consume test', async () => {
     aquarius
   )
   assert(ipfsAssetId, 'Failed to publish ipfs DDO')
-})
-
-it('Should publish arwave asset', async () => {
-  arweaveAssetId = await createAsset(
-    'ArweaveDatatoken',
-    'ARWEAVEDT',
-    publisherAccount,
-    arweaveFile,
-    assetDdo,
-    providerUrl,
-    addresses.ERC721Factory,
-    aquarius
-  )
-  assert(arweaveAssetId, 'Failed to publish ipfs DDO')
 })
 
 it('Should publish onchain asset', async () => {
