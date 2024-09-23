@@ -73,7 +73,7 @@ jobs:
       - run: npm run test:unit:cover
       - uses: actions/upload-artifact@v4
         with:
-          name: coverage
+          name: coverage-unit
           path: coverage/
 
   test_integration:
@@ -145,7 +145,7 @@ jobs:
       - name: Upload coverage
         uses: actions/upload-artifact@v4
         with:
-          name: coverage
+          name: coverage-integration
           path: coverage/
 
   build:
@@ -182,7 +182,10 @@ jobs:
       - uses: actions/checkout@v3
       - uses: actions/download-artifact@v4
         with:
-          name: coverage
+          name: coverage-unit
+      - uses: actions/download-artifact@v4
+        with:
+          name: coverage-integration
 
       - uses: paambaati/codeclimate-action@v2.7.5
         env:
