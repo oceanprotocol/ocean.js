@@ -80,9 +80,8 @@ export class AccesslistFactory extends SmartContractWithAddress {
         user,
         tokenURI
       )
-      if (!tx || tx.status !== 1) {
-        const e =
-          'Tx for deploying new access list does not exist or status is not successful.'
+      if (!tx) {
+        const e = 'Tx for deploying new access list was not processed on chain.'
         console.error(e)
         throw e
       }
