@@ -80,6 +80,12 @@ export class AccesslistFactory extends SmartContractWithAddress {
         user,
         tokenURI
       )
+      if (!tx || tx.status !== 1) {
+        const e =
+          'Tx for deploying new access list does not exist or status is not successful.'
+        console.error(e)
+        throw e
+      }
       const trxReceipt = await tx.wait()
       const events = getEventFromTx(trxReceipt, 'NewAccessList')
       return events.args[0]
