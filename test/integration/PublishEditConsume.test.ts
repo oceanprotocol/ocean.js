@@ -369,17 +369,6 @@ describe('Publish consume test', async () => {
     assert(arwaveOrderTx, 'Ordering arwave dataset failed.')
   }).timeout(40000)
 
-  onchainOrderTx = await orderAsset(
-    resolvedOnchainAssetDdo.id,
-    resolvedOnchainAssetDdo.services[0].datatokenAddress,
-    await consumerAccount.getAddress(),
-    resolvedOnchainAssetDdo.services[0].id,
-    0,
-    datatoken,
-    providerUrl
-  )
-  assert(onchainOrderTx, 'Ordering onchain dataset failed.')
-
   // To be fixed in #1849
   // ipfsOrderTx = await orderAsset(
   //   resolvedIpfsAssetDdo.id,
