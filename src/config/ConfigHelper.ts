@@ -165,6 +165,16 @@ export const configHelperNetworks: Config[] = [
       'https://v4.subgraph.sapphire-testnet.oceanprotocol.com/subgraphs/name/oceanprotocol/ocean-subgraph',
     explorerUri: 'https://explorer.oasis.io/testnet/sapphire/',
     gasFeeMultiplier: 1
+  },
+  {
+    ...configHelperNetworksBase,
+    chainId: 32456,
+    network: 'pontus-x-devnet',
+    nodeUri: 'https://rpc.dev.pontus-x.eu',
+    metadataCacheUri: 'https://aquarius.dev.pontus-x.eu',
+    providerUri: 'https://provider.dev.pontus-x.eu',
+    subgraphUri: 'https://subgraph.dev.pontus-x.eu',
+    explorerUri: 'https://explorer.dev.pontus-x.eu/testnet/pontusx'
   }
 ]
 
