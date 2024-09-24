@@ -186,7 +186,6 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           name: coverage-integration
-
       - uses: paambaati/codeclimate-action@v2.7.5
         env:
           CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_REPORTER_ID }}

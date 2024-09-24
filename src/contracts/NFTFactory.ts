@@ -67,23 +67,27 @@ export class NftFactory extends SmartContractWithAddress {
     )
     if (estimateGas) return <G extends false ? string : BigNumber>estGas
     // Invoke createToken function of the contract
-    const tx = await sendTx(
-      estGas,
-      this.signer,
-      this.config?.gasFeeMultiplier,
-      this.contract.deployERC721Contract,
-      nftData.name,
-      nftData.symbol,
-      nftData.templateIndex,
-      ZERO_ADDRESS,
-      ZERO_ADDRESS,
-      nftData.tokenURI,
-      nftData.transferable,
-      nftData.owner
-    )
-    const trxReceipt = await tx.wait()
-    const events = getEventFromTx(trxReceipt, 'NFTCreated')
-    return events.args[0]
+    try {
+      const tx = await sendTx(
+        estGas,
+        this.signer,
+        this.config?.gasFeeMultiplier,
+        this.contract.deployERC721Contract,
+        nftData.name,
+        nftData.symbol,
+        nftData.templateIndex,
+        ZERO_ADDRESS,
+        ZERO_ADDRESS,
+        nftData.tokenURI,
+        nftData.transferable,
+        nftData.owner
+      )
+      const trxReceipt = await tx.wait()
+      const events = getEventFromTx(trxReceipt, 'NFTCreated')
+      return events.args[0]
+    } catch (e) {
+      console.error(`Creation of AccessList failed: ${e}`)
+    }
   }
 
   /**
