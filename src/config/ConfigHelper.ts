@@ -190,7 +190,8 @@ export class ConfigHelper {
         veDelegationProxy,
         DFRewards,
         DFStrategyV1,
-        veFeeEstimate
+        veFeeEstimate,
+        Router
       } = customAddresses[network]
       configAddresses = {
         nftFactoryAddress: ERC721Factory,
@@ -198,6 +199,7 @@ export class ConfigHelper {
         fixedRateExchangeAddress: FixedPrice,
         dispenserAddress: Dispenser,
         oceanTokenAddress: Ocean,
+        routerFactoryAddress: Router,
         chainId,
         startBlock,
         veAllocate,
@@ -229,7 +231,8 @@ export class ConfigHelper {
           veDelegationProxy,
           DFRewards,
           DFStrategyV1,
-          veFeeEstimate
+          veFeeEstimate,
+          Router
         } = DefaultContractsAddresses[network]
         configAddresses = {
           nftFactoryAddress: ERC721Factory,
@@ -237,6 +240,7 @@ export class ConfigHelper {
           fixedRateExchangeAddress: FixedPrice,
           dispenserAddress: Dispenser,
           oceanTokenAddress: Ocean,
+          routerFactoryAddress: Router,
           chainId,
           startBlock,
           veAllocate,

@@ -45,6 +45,12 @@ export class Config {
   public nftFactoryAddress?: string
 
   /**
+   * Router Factory address
+   * @type {string}
+   */
+  public routerFactoryAddress?: string
+
+  /**
    * datatokens ABI
    * @type {string}
    */
