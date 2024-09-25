@@ -200,6 +200,7 @@ export async function orderAsset(
     0,
     providerFees
   )
+  console.log(tx)
   const orderTx = await tx.wait()
   const orderStartedTx = getEventFromTx(orderTx, 'OrderStarted')
   return orderStartedTx
