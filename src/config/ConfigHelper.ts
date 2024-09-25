@@ -1,5 +1,6 @@
 // eslint-disable-next-line import/no-named-default
 import { default as DefaultContractsAddresses } from '@oceanprotocol/contracts/addresses/address.json'
+import fs from 'fs'
 import { Config } from '.'
 import { LoggerInstance } from '../utils'
 
@@ -39,15 +40,6 @@ export const configHelperNetworks: Config[] = [
     // metadataCacheUri: 'http://127.0.0.1:5000',
     // providerUri: 'http://127.0.0.1:8030/',
     // subgraphUri: 'http://127.0.0.1:9000/'
-  },
-  {
-    ...configHelperNetworksBase,
-    chainId: 5,
-    network: 'goerli',
-    nodeUri: 'https://goerli.infura.io/v3',
-    subgraphUri: 'https://v4.subgraph.goerli.oceanprotocol.com',
-    explorerUri: 'https://goerli.etherscan.io',
-    gasFeeMultiplier: 1.1
   },
   {
     ...configHelperNetworksBase,
@@ -149,11 +141,30 @@ export const configHelperNetworks: Config[] = [
   {
     ...configHelperNetworksBase,
     chainId: 11155420,
-    network: 'optimism-sepolia',
+    network: 'optimism_sepolia',
     nodeUri: 'https://sepolia.optimism.io',
     subgraphUri: 'https://v4.subgraph.optimism-sepolia.oceanprotocol.com',
     explorerUri: 'https://sepolia-optimism.etherscan.io/',
     gasFeeMultiplier: 1.1
+  },
+  {
+    ...configHelperNetworksBase,
+    chainId: 23294,
+    network: 'oasis_sapphire',
+    nodeUri: 'https://sapphire.oasis.io',
+    subgraphUri: 'https://v4.subgraph.sapphire-mainnet.oceanprotocol.com/',
+    explorerUri: 'https://explorer.oasis.io/mainnet/sapphire/',
+    gasFeeMultiplier: 1
+  },
+  {
+    ...configHelperNetworksBase,
+    chainId: 32456,
+    network: 'pontus-x-devnet',
+    nodeUri: 'https://rpc.dev.pontus-x.eu',
+    metadataCacheUri: 'https://aquarius.dev.pontus-x.eu',
+    providerUri: 'https://provider.dev.pontus-x.eu',
+    subgraphUri: 'https://subgraph.dev.pontus-x.eu',
+    explorerUri: 'https://explorer.dev.pontus-x.eu/testnet/pontusx'
   }
 ]
 
@@ -261,8 +272,14 @@ export class ConfigHelper {
 
     let addresses
     try {
-      addresses = JSON.parse(process.env.ADDRESS_FILE)
+      addresses = process.env.ADDRESS_FILE
+        ? JSON.parse(
+            // eslint-disable-next-line security/detect-non-literal-fs-filename
+            fs.readFileSync(process.env.ADDRESS_FILE, 'utf8')
+          )
+        : null
     } catch (e) {
+      console.log(e)
       addresses = null
     }
     const contractAddressesConfig = this.getAddressesFromEnv(config.network, addresses)
