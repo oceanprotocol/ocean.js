@@ -82,11 +82,17 @@ export class NftFactory extends SmartContractWithAddress {
         nftData.transferable,
         nftData.owner
       )
+      if (!tx) {
+        const e =
+          'Tx for deploying new NFT contract does not exist or status is not successful.'
+        console.error(e)
+        throw e
+      }
       const trxReceipt = await tx.wait()
       const events = getEventFromTx(trxReceipt, 'NFTCreated')
       return events.args[0]
     } catch (e) {
-      console.error(`Creation of AccessList failed: ${e}`)
+      console.error(`Creation of NFT failed: ${e}`)
     }
   }
 
