@@ -395,7 +395,7 @@ export class Provider {
       LoggerInstance.error(e)
       throw new Error(`Provider initialize failed url: ${initializeUrl} `)
     }
-    if (response?.ok) {
+    if (response?.status === 200) {
       const results: ProviderInitialize = await response.json()
       return results
     }
