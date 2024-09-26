@@ -174,6 +174,7 @@ export async function orderAsset(
   datatoken: Datatoken,
   providerUrl: string
 ) {
+  console.log(did)
   const initializeData = await ProviderInstance.initialize(
     did,
     serviceId,
@@ -181,8 +182,6 @@ export async function orderAsset(
     consumerAccount,
     providerUrl
   )
-
-  console.log(initializeData)
 
   const providerFees: ProviderFees = {
     providerFeeAddress: initializeData.providerFee.providerFeeAddress,
