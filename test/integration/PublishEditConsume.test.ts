@@ -391,9 +391,7 @@ describe('Publish consume test', async () => {
       providerUrl
     )
     assert(arwaveOrderTx, 'Ordering arwave dataset failed.')
-  }).timeout(40000)
-
-  it('Should order ipfs dataset', async () => {
+    setTimeout(() => {}, 100)
     ipfsOrderTx = await orderAsset(
       resolvedIpfsAssetDdo.id,
       resolvedIpfsAssetDdo.services[0].datatokenAddress,
@@ -404,7 +402,11 @@ describe('Publish consume test', async () => {
       providerUrl
     )
     assert(ipfsOrderTx, 'Ordering ipfs dataset failed.')
-  }).timeout(70000)
+  }).timeout(50000)
+
+  // it('Should order ipfs dataset', async () => {
+
+  // }).timeout(70000)
 
   it('Should order onchain dataset', async () => {
     onchainOrderTx = await orderAsset(
