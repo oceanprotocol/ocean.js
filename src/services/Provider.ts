@@ -389,6 +389,7 @@ export class Provider {
         headers: { 'Content-Type': 'application/json' },
         signal
       })
+      console.log(response)
     } catch (e) {
       LoggerInstance.error('Provider initialized failed: ')
       LoggerInstance.error(e)

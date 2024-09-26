@@ -394,7 +394,6 @@ describe('Publish consume test', async () => {
   }).timeout(40000)
 
   it('Should order ipfs dataset', async () => {
-    console.log(resolvedIpfsAssetDdo)
     ipfsOrderTx = await orderAsset(
       resolvedIpfsAssetDdo.id,
       resolvedIpfsAssetDdo.services[0].datatokenAddress,
