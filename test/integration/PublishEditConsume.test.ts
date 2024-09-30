@@ -73,17 +73,6 @@ const arweaveFile: Files = {
   ]
 }
 
-const ipfsFile: Files = {
-  datatokenAddress: '0x0',
-  nftAddress: '0x0',
-  files: [
-    {
-      type: 'ipfs',
-      hash: 'QmRhsp7eghZtW4PktPC2wAHdKoy2LiF1n6UXMKmAhqQJUA'
-    }
-  ]
-}
-
 const onchainFile: Files = {
   datatokenAddress: '0x0',
   nftAddress: '0x0',
@@ -145,6 +134,31 @@ function delay(interval: number) {
   return it('should delay', (done) => {
     setTimeout(() => done(), interval)
   }).timeout(interval + 100)
+}
+
+function uploadToIpfs(data: any): Promise<string> {
+  return new Promise((resolve, reject) => {
+    axios
+      .post(
+        'http://172.15.0.16:5001/api/v0/add',
+        '--------------------------a28d68b1c872c96f\r\nContent-Disposition: form-data; name="file"; filename="ddo.json"\r\nContent-Type: application/octet-stream\r\n\r\n' +
+          data +
+          '\r\n--------------------------a28d68b1c872c96f--\r\n',
+        {
+          headers: {
+            'Content-Type':
+              'multipart/form-data; boundary=------------------------a28d68b1c872c96f'
+          }
+        }
+      )
+      .then(function (response: any) {
+        console.log('hash: ', response.data.Hash)
+        resolve(response.data.Hash)
+      })
+      .catch(function (error: any) {
+        reject(error)
+      })
+  })
 }
 
 describe('Publish consume test', async () => {
@@ -224,7 +238,18 @@ describe('Publish consume test', async () => {
     )
     assert(arweaveAssetId, 'Failed to arwave publish DDO')
   })
-  it('Should publish arweave asset', async () => {
+  it('Should publish ipfs asset', async () => {
+    const ipfsCID = await uploadToIpfs(JSON.stringify(assetDdo))
+    const ipfsFile: Files = {
+      datatokenAddress: '0x0',
+      nftAddress: '0x0',
+      files: [
+        {
+          type: 'ipfs',
+          hash: ipfsCID
+        }
+      ]
+    }
     ipfsAssetId = await createAsset(
       'IpfsDatatoken',
       'IPFSDT',
