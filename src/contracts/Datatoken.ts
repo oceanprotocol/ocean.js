@@ -502,7 +502,7 @@ export class Datatoken extends SmartContract {
     consumeMarketFee?: ConsumeMarketFee,
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
-    const dtContract = this.getContract(dtAddress)
+    const dtContract = this.getContract(dtAddress, this.abi)
     if (!consumeMarketFee) {
       consumeMarketFee = {
         consumeMarketFeeAddress: ZERO_ADDRESS,

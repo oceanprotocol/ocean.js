@@ -190,7 +190,7 @@ export async function orderAsset(
         )
         const txApprove = typeof tx !== 'number' ? await tx.wait() : tx
         if (!txApprove) {
-          throw new Error(`Failed to appove ${exchange.baseToken} !`)
+          throw new Error(`Failed to approve ${exchange.baseToken} !`)
         }
         const freTx = await fre.buyDatatokens(
           exchange.exchangeId,
@@ -221,10 +221,12 @@ export async function orderAsset(
           price,
           false
         )
-
+        if (!tx) {
+          throw new Error(`Failed to approve ${exchange.baseToken} !`)
+        }
         const txApprove = typeof tx !== 'number' ? await tx.wait() : tx
         if (!txApprove) {
-          return
+          throw new Error(`Failed to confirm/mine approval transaction!`)
         }
         const txBuy = await datatoken.buyFromFreAndOrder(
           asset.datatokens[datatokenIndex].address,
