@@ -128,6 +128,22 @@ npm run test:integration
 npm run test:integration:cover
 ```
 
+### Sapphire Integration Tests
+
+We are currently using the live Oasis Sapphire Test network for the integration tests.
+Please export the `PRIVATE_KEY` and `PRIVATE_KEY_CONSUMER` before running the tests.
+```bash
+export PRIVATE_KEY='0x<YOUR_PRIVATE_KEY>'
+export PRIVATE_KEY_CONSUMER='0x<YOUR_CONSUMER_PRIVATE_KEY>'
+```
+
+Then, you can execute the tests individually with:
+
+```bash
+npm run test:sapphire
+```
+
+
 > Note: On macOS, changes to the `provider`, `metadataCache` and `subgraph` URLs are required, as their default `barge` IPs can not be accessed due to network constraints on macOS. Instead use `http://127.0.0.1` for each direct call to the mentioned services, but keep the internal `provider` URL (`http://172.15.0.4:8030`) hardcoded inside all DDO's `serviceEndpoint`, and when calling `nft.setMetadata()`.
 
 ## 🛳 Production
