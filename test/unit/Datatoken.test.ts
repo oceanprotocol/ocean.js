@@ -83,6 +83,7 @@ describe('Datatoken', () => {
       ZERO_ADDRESS,
       '0',
       '10000',
+      false,
       'ERC20B1',
       'ERC20DT1Symbol'
     )
