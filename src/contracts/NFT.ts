@@ -13,6 +13,7 @@ import {
   calculateActiveTemplateIndex,
   getOceanArtifactsAdressesByChainId
 } from '../utils/Asset'
+import * as sapphire from '@oasisprotocol/sapphire-paratime'
 
 export class Nft extends SmartContract {
   getDefaultAbi() {
@@ -44,6 +45,7 @@ export class Nft extends SmartContract {
     feeToken: string,
     feeAmount: string,
     cap: string,
+    confidentialEVM: boolean = false,
     name?: string,
     symbol?: string,
     templateIndex?: number,
@@ -104,7 +106,7 @@ export class Nft extends SmartContract {
 
     const tx = await sendTx(
       estGas,
-      this.signer,
+      confidentialEVM === true ? sapphire.wrap(this.signer) : this.signer,
       this.config?.gasFeeMultiplier,
       nftContract.createERC20,
       templateIndex,
