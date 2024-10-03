@@ -57,6 +57,7 @@ describe('NFT', () => {
       ZERO_ADDRESS,
       '0',
       '10000',
+      false,
       nftData.name,
       nftData.symbol,
       1
@@ -75,6 +76,7 @@ describe('NFT', () => {
         ZERO_ADDRESS,
         '0',
         '10000',
+        false,
         nftData.name,
         nftData.symbol,
         1

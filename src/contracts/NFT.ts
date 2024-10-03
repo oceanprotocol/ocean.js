@@ -46,7 +46,7 @@ export class Nft extends SmartContract {
     feeToken: string,
     feeAmount: string,
     cap: string,
-    confidentialEVM: boolean = false, // when using datatoken template id 4, tx should be encrypted because it contains files object.
+    confidentialEVM: boolean = false, // when using datatoken template id 4, flag should be set on true and tx will be encrypted because it contains files object.
     name?: string,
     symbol?: string,
     templateIndex?: number,
