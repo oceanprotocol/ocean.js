@@ -9,8 +9,8 @@ const MIN_GAS_FEE_SAPPHIRE = 10000000000 // recommended for mainnet and testnet 
 const POLYGON_NETWORK_ID = 137
 const MUMBAI_NETWORK_ID = 80001
 const SEPOLIA_NETWORK_ID = 11155111
-const SAPPHIRE_TESTNET_NETWORK_ID = 23295
-const SAPPHIRE_MAINNET_NETWORK_ID = 23294
+export const SAPPHIRE_TESTNET_NETWORK_ID = 23295
+export const SAPPHIRE_MAINNET_NETWORK_ID = 23294
 
 export function setContractDefaults(contract: Contract, config: Config): Contract {
   // TO DO - since ethers does not provide this

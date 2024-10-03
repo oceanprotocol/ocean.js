@@ -5,7 +5,11 @@ import ERC20Template4 from '@oceanprotocol/contracts/artifacts/contracts/templat
 import { AbiItem, ReceiptOrEstimate } from '../@types'
 import { AccessListContract } from './AccessList'
 import { Config } from '../config'
-import { sendTx } from '../utils'
+import {
+  sendTx,
+  SAPPHIRE_MAINNET_NETWORK_ID,
+  SAPPHIRE_TESTNET_NETWORK_ID
+} from '../utils'
 import * as sapphire from '@oasisprotocol/sapphire-paratime'
 
 export class Datatoken4 extends Datatoken {
@@ -81,12 +85,16 @@ export class Datatoken4 extends Datatoken {
     }
 
     const dtContract = this.getContract(dtAddress)
+    const { chainId } = await dtContract.provider.getNetwork()
     const estGas = await dtContract.estimateGas.setAllowListContract(address)
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
 
     const trxReceipt = await sendTx(
       estGas,
-      confidentialEVM === true ? sapphire.wrap(this.signer) : this.signer,
+      confidentialEVM === true &&
+        [SAPPHIRE_MAINNET_NETWORK_ID, SAPPHIRE_TESTNET_NETWORK_ID].includes(chainId)
+        ? sapphire.wrap(this.signer)
+        : this.signer,
       this.config?.gasFeeMultiplier,
       dtContract.functions.setAllowListContract,
       address
@@ -116,12 +124,16 @@ export class Datatoken4 extends Datatoken {
     }
 
     const dtContract = this.getContract(dtAddress)
+    const { chainId } = await dtContract.provider.getNetwork()
     const estGas = await dtContract.estimateGas.setDenyListContract(address)
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
 
     const trxReceipt = await sendTx(
       estGas,
-      confidentialEVM === true ? sapphire.wrap(this.signer) : this.signer,
+      confidentialEVM === true &&
+        [SAPPHIRE_MAINNET_NETWORK_ID, SAPPHIRE_TESTNET_NETWORK_ID].includes(chainId)
+        ? sapphire.wrap(this.signer)
+        : this.signer,
       this.config?.gasFeeMultiplier,
       dtContract.functions.setDenyListContract,
       address
@@ -148,12 +160,16 @@ export class Datatoken4 extends Datatoken {
     }
 
     const dtContract = this.getContract(dtAddress)
+    const { chainId } = await dtContract.provider.getNetwork()
     const estGas = await dtContract.estimateGas.setFilesObject(this.fileObject)
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
 
     const trxReceipt = await sendTx(
       estGas,
-      confidentialEVM === true ? sapphire.wrap(this.signer) : this.signer,
+      confidentialEVM === true &&
+        [SAPPHIRE_MAINNET_NETWORK_ID, SAPPHIRE_TESTNET_NETWORK_ID].includes(chainId)
+        ? sapphire.wrap(this.signer)
+        : this.signer,
       this.config?.gasFeeMultiplier,
       dtContract.functions.setFilesObject,
       this.fileObject

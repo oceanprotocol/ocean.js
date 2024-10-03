@@ -1,6 +1,13 @@
 import { BigNumber, ethers } from 'ethers'
 import ERC721Template from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC721Template.sol/ERC721Template.json'
-import { generateDtName, sendTx, getEventFromTx, ZERO_ADDRESS } from '../utils'
+import {
+  generateDtName,
+  sendTx,
+  getEventFromTx,
+  ZERO_ADDRESS,
+  SAPPHIRE_MAINNET_NETWORK_ID,
+  SAPPHIRE_TESTNET_NETWORK_ID
+} from '../utils'
 import {
   MetadataProof,
   MetadataAndTokenURI,
@@ -107,7 +114,10 @@ export class Nft extends SmartContract {
 
     const tx = await sendTx(
       estGas,
-      confidentialEVM === true ? sapphire.wrap(this.signer) : this.signer,
+      confidentialEVM === true &&
+        [SAPPHIRE_MAINNET_NETWORK_ID, SAPPHIRE_TESTNET_NETWORK_ID].includes(chainId)
+        ? sapphire.wrap(this.signer)
+        : this.signer,
       this.config?.gasFeeMultiplier,
       nftContract.createERC20,
       templateIndex,

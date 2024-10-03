@@ -144,7 +144,8 @@ describe('Publish tests', async () => {
     const bundleNFT = await factory.createNftWithDatatokenWithFixedRate(
       nftParams,
       datatokenParams,
-      fixedPriceParams
+      fixedPriceParams,
+      false
     )
     const trxReceipt = await bundleNFT.wait()
     // events have been emitted
@@ -236,7 +237,8 @@ describe('Publish tests', async () => {
     const bundleNFT = await factory.createNftWithDatatokenWithDispenser(
       nftParams,
       datatokenParams,
-      dispenserParams
+      dispenserParams,
+      false
     )
 
     const trxReceipt = await bundleNFT.wait()

@@ -326,7 +326,8 @@ describe('Marketplace flow tests', async () => {
     const bundleNFT = await factory.createNftWithDatatokenWithFixedRate(
       nftParams,
       datatokenParams,
-      freParams
+      freParams,
+      false
     )
 
     const trxReceipt = await bundleNFT.wait()
@@ -606,7 +607,8 @@ describe('Marketplace flow tests', async () => {
     const bundleNFT = await factory.createNftWithDatatokenWithDispenser(
       nftParams,
       datatokenParams,
-      dispenserParams
+      dispenserParams,
+      false
     )
     const trxReceipt = await bundleNFT.wait()
     const nftCreatedEvent = getEventFromTx(trxReceipt, 'NFTCreated')
