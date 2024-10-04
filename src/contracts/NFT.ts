@@ -12,7 +12,7 @@ import { SmartContract } from './SmartContract'
 import {
   calculateActiveTemplateIndex,
   getOceanArtifactsAdressesByChainId
-} from '../utils/Asset'
+} from '../utils/Assets'
 
 export class Nft extends SmartContract {
   getDefaultAbi() {
