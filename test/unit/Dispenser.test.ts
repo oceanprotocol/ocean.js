@@ -65,7 +65,7 @@ describe('Dispenser flow', () => {
   it('#createNftwithErc - should create an NFT and a Datatoken ', async () => {
     nftFactory = new NftFactory(addresses.ERC721Factory, factoryOwner)
 
-    const tx = await nftFactory.createNftWithDatatoken(nftData, dtParams, false)
+    const tx = await nftFactory.createNftWithDatatoken(nftData, dtParams)
     const trxReceipt = await tx.wait()
     const nftCreatedEvent = getEventFromTx(trxReceipt, 'NFTCreated')
     const tokenCreatedEvent = getEventFromTx(trxReceipt, 'TokenCreated')

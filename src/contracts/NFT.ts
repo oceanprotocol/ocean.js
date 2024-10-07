@@ -147,6 +147,7 @@ export class Nft extends SmartContract {
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
     const nftContract = this.getContract(nftAddress)
+    const { chainId } = await nftContract.provider.getNetwork()
 
     if ((await this.getNftOwner(nftAddress)) !== address) {
       throw new Error(`Caller is not NFT Owner`)
@@ -157,7 +158,10 @@ export class Nft extends SmartContract {
 
     const trxReceipt = await sendTx(
       estGas,
-      this.signer,
+      this.config.confidentialEVM === true &&
+        [SAPPHIRE_MAINNET_NETWORK_ID, SAPPHIRE_TESTNET_NETWORK_ID].includes(chainId)
+        ? sapphire.wrap(this.signer)
+        : this.signer,
       this.config?.gasFeeMultiplier,
       nftContract.addManager,
       manager
@@ -181,6 +185,7 @@ export class Nft extends SmartContract {
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
     const nftContract = this.getContract(nftAddress)
+    const { chainId } = await nftContract.provider.getNetwork()
 
     if ((await this.getNftOwner(nftAddress)) !== address) {
       throw new Error(`Caller is not NFT Owner`)
@@ -191,7 +196,10 @@ export class Nft extends SmartContract {
 
     const trxReceipt = await sendTx(
       estGas,
-      this.signer,
+      this.config.confidentialEVM === true &&
+        [SAPPHIRE_MAINNET_NETWORK_ID, SAPPHIRE_TESTNET_NETWORK_ID].includes(chainId)
+        ? sapphire.wrap(this.signer)
+        : this.signer,
       this.config?.gasFeeMultiplier,
       nftContract.removeManager,
       manager
@@ -215,6 +223,7 @@ export class Nft extends SmartContract {
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
     const nftContract = this.getContract(nftAddress)
+    const { chainId } = await nftContract.provider.getNetwork()
 
     if ((await this.getNftPermissions(nftAddress, address)).manager !== true) {
       throw new Error(`Caller is not Manager`)
@@ -226,7 +235,10 @@ export class Nft extends SmartContract {
 
     const trxReceipt = await sendTx(
       estGas,
-      this.signer,
+      this.config.confidentialEVM === true &&
+        [SAPPHIRE_MAINNET_NETWORK_ID, SAPPHIRE_TESTNET_NETWORK_ID].includes(chainId)
+        ? sapphire.wrap(this.signer)
+        : this.signer,
       this.config?.gasFeeMultiplier,
       nftContract.addToCreateERC20List,
       datatokenDeployer
@@ -250,6 +262,7 @@ export class Nft extends SmartContract {
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
     const nftContract = this.getContract(nftAddress)
+    const { chainId } = await nftContract.provider.getNetwork()
 
     if (
       (await this.getNftPermissions(nftAddress, address)).manager !== true ||
@@ -265,7 +278,10 @@ export class Nft extends SmartContract {
 
     const trxReceipt = await sendTx(
       estGas,
-      this.signer,
+      this.config.confidentialEVM === true &&
+        [SAPPHIRE_MAINNET_NETWORK_ID, SAPPHIRE_TESTNET_NETWORK_ID].includes(chainId)
+        ? sapphire.wrap(this.signer)
+        : this.signer,
       this.config?.gasFeeMultiplier,
       nftContract.removeFromCreateERC20List,
       datatokenDeployer
@@ -289,6 +305,7 @@ export class Nft extends SmartContract {
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
     const nftContract = this.getContract(nftAddress)
+    const { chainId } = await nftContract.provider.getNetwork()
 
     if ((await this.getNftPermissions(nftAddress, address)).manager !== true) {
       throw new Error(`Caller is not Manager`)
@@ -299,7 +316,10 @@ export class Nft extends SmartContract {
 
     const trxReceipt = await sendTx(
       estGas,
-      this.signer,
+      this.config.confidentialEVM === true &&
+        [SAPPHIRE_MAINNET_NETWORK_ID, SAPPHIRE_TESTNET_NETWORK_ID].includes(chainId)
+        ? sapphire.wrap(this.signer)
+        : this.signer,
       this.config?.gasFeeMultiplier,
       nftContract.addToMetadataList,
       metadataUpdater
@@ -322,7 +342,7 @@ export class Nft extends SmartContract {
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
     const nftContract = this.getContract(nftAddress)
-
+    const { chainId } = await nftContract.provider.getNetwork()
     if (
       (await this.getNftPermissions(nftAddress, address)).manager !== true ||
       (address !== metadataUpdater &&
@@ -336,7 +356,10 @@ export class Nft extends SmartContract {
 
     const trxReceipt = await sendTx(
       estGas,
-      this.signer,
+      this.config.confidentialEVM === true &&
+        [SAPPHIRE_MAINNET_NETWORK_ID, SAPPHIRE_TESTNET_NETWORK_ID].includes(chainId)
+        ? sapphire.wrap(this.signer)
+        : this.signer,
       this.config?.gasFeeMultiplier,
       nftContract.removeFromMetadataList,
       metadataUpdater
@@ -359,6 +382,7 @@ export class Nft extends SmartContract {
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
     const nftContract = this.getContract(nftAddress)
+    const { chainId } = await nftContract.provider.getNetwork()
 
     if ((await this.getNftPermissions(nftAddress, address)).manager !== true) {
       throw new Error(`Caller is not Manager`)
@@ -369,7 +393,10 @@ export class Nft extends SmartContract {
 
     const trxReceipt = await sendTx(
       estGas,
-      this.signer,
+      this.config.confidentialEVM === true &&
+        [SAPPHIRE_MAINNET_NETWORK_ID, SAPPHIRE_TESTNET_NETWORK_ID].includes(chainId)
+        ? sapphire.wrap(this.signer)
+        : this.signer,
       this.config?.gasFeeMultiplier,
       nftContract.addTo725StoreList,
       storeUpdater
@@ -393,7 +420,7 @@ export class Nft extends SmartContract {
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
     const nftContract = this.getContract(nftAddress)
-
+    const { chainId } = await nftContract.provider.getNetwork()
     if (
       (await this.getNftPermissions(nftAddress, address)).manager !== true ||
       (address !== storeUpdater &&
@@ -407,7 +434,10 @@ export class Nft extends SmartContract {
 
     const trxReceipt = await sendTx(
       estGas,
-      this.signer,
+      this.config.confidentialEVM === true &&
+        [SAPPHIRE_MAINNET_NETWORK_ID, SAPPHIRE_TESTNET_NETWORK_ID].includes(chainId)
+        ? sapphire.wrap(this.signer)
+        : this.signer,
       this.config?.gasFeeMultiplier,
       nftContract.removeFrom725StoreList,
       storeUpdater
@@ -432,7 +462,7 @@ export class Nft extends SmartContract {
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
     const nftContract = this.getContract(nftAddress)
-
+    const { chainId } = await nftContract.provider.getNetwork()
     if ((await this.getNftOwner(nftAddress)) !== address) {
       throw new Error(`Caller is not NFT Owner`)
     }
@@ -442,7 +472,10 @@ export class Nft extends SmartContract {
 
     const trxReceipt = await sendTx(
       estGas,
-      this.signer,
+      this.config.confidentialEVM === true &&
+        [SAPPHIRE_MAINNET_NETWORK_ID, SAPPHIRE_TESTNET_NETWORK_ID].includes(chainId)
+        ? sapphire.wrap(this.signer)
+        : this.signer,
       this.config?.gasFeeMultiplier,
       nftContract.cleanPermissions
     )
@@ -468,7 +501,7 @@ export class Nft extends SmartContract {
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
     const nftContract = this.getContract(nftAddress)
-
+    const { chainId } = await nftContract.provider.getNetwork()
     if ((await this.getNftOwner(nftAddress)) !== nftOwner) {
       throw new Error(`Caller is not NFT Owner`)
     }
@@ -484,7 +517,10 @@ export class Nft extends SmartContract {
 
     const trxReceipt = await sendTx(
       estGas,
-      this.signer,
+      this.config.confidentialEVM === true &&
+        [SAPPHIRE_MAINNET_NETWORK_ID, SAPPHIRE_TESTNET_NETWORK_ID].includes(chainId)
+        ? sapphire.wrap(this.signer)
+        : this.signer,
       this.config?.gasFeeMultiplier,
       nftContract.transferFrom,
       nftOwner,
@@ -513,7 +549,7 @@ export class Nft extends SmartContract {
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
     const nftContract = this.getContract(nftAddress)
-
+    const { chainId } = await nftContract.provider.getNetwork()
     if ((await this.getNftOwner(nftAddress)) !== nftOwner) {
       throw new Error(`Caller is not NFT Owner`)
     }
@@ -529,7 +565,10 @@ export class Nft extends SmartContract {
 
     const trxReceipt = await sendTx(
       estGas,
-      this.signer,
+      this.config.confidentialEVM === true &&
+        [SAPPHIRE_MAINNET_NETWORK_ID, SAPPHIRE_TESTNET_NETWORK_ID].includes(chainId)
+        ? sapphire.wrap(this.signer)
+        : this.signer,
       this.config?.gasFeeMultiplier,
       nftContract.safeTransferFrom,
       nftOwner,
@@ -652,7 +691,7 @@ export class Nft extends SmartContract {
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
     const nftContract = this.getContract(nftAddress)
-
+    const { chainId } = await nftContract.provider.getNetwork()
     if (!(await this.getNftPermissions(nftAddress, address)).updateMetadata) {
       throw new Error(`Caller is not Metadata updater`)
     }
@@ -662,7 +701,10 @@ export class Nft extends SmartContract {
 
     const trxReceipt = await sendTx(
       estGas,
-      this.signer,
+      this.config.confidentialEVM === true &&
+        [SAPPHIRE_MAINNET_NETWORK_ID, SAPPHIRE_TESTNET_NETWORK_ID].includes(chainId)
+        ? sapphire.wrap(this.signer)
+        : this.signer,
       this.config?.gasFeeMultiplier,
       nftContract.setMetaDataState,
       metadataState
@@ -683,13 +725,16 @@ export class Nft extends SmartContract {
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
     const nftContract = this.getContract(nftAddress)
-
+    const { chainId } = await nftContract.provider.getNetwork()
     const estGas = await nftContract.estimateGas.setTokenURI('1', data)
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
 
     const trxReceipt = await sendTx(
       estGas,
-      this.signer,
+      this.config.confidentialEVM === true &&
+        [SAPPHIRE_MAINNET_NETWORK_ID, SAPPHIRE_TESTNET_NETWORK_ID].includes(chainId)
+        ? sapphire.wrap(this.signer)
+        : this.signer,
       this.config?.gasFeeMultiplier,
       nftContract.setTokenURI,
       '1',
@@ -768,7 +813,7 @@ export class Nft extends SmartContract {
     }
 
     const nftContract = this.getContract(nftAddress)
-
+    const { chainId } = await nftContract.provider.getNetwork()
     const keyHash = ethers.utils.keccak256(key)
     const valueHex = ethers.utils.hexlify(ethers.utils.toUtf8Bytes(value))
 
@@ -776,7 +821,10 @@ export class Nft extends SmartContract {
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
     const trxReceipt = await sendTx(
       estGas,
-      this.signer,
+      this.config.confidentialEVM === true &&
+        [SAPPHIRE_MAINNET_NETWORK_ID, SAPPHIRE_TESTNET_NETWORK_ID].includes(chainId)
+        ? sapphire.wrap(this.signer)
+        : this.signer,
       this.config?.gasFeeMultiplier,
       nftContract.setNewData,
       keyHash,

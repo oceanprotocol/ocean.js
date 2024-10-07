@@ -87,8 +87,7 @@ describe('Fixed Rate unit test', () => {
       const tx = await nftFactory.createNftWithDatatokenWithFixedRate(
         nftData,
         dtParams,
-        freParams,
-        false
+        freParams
       )
       const trxReceipt = await tx.wait()
       const freCreatedEvent = getEventFromTx(trxReceipt, 'NewFixedRate')
@@ -482,8 +481,7 @@ describe('Fixed Rate unit test', () => {
       const tx = await nftFactory.createNftWithDatatokenWithFixedRate(
         nftData,
         dtParams,
-        freParams,
-        false
+        freParams
       )
       const trxReceipt = await tx.wait()
       const freCreatedEvent = getEventFromTx(trxReceipt, 'NewFixedRate')
@@ -831,8 +829,7 @@ describe('Fixed Rate unit test', () => {
       const tx = await nftFactory.createNftWithDatatokenWithFixedRate(
         nftData,
         dtParams,
-        freParams,
-        false
+        freParams
       )
       const txReceipt = await tx.wait()
       const tokenCreatedEvent = getEventFromTx(txReceipt, 'TokenCreated')
@@ -874,8 +871,7 @@ describe('Fixed Rate unit test', () => {
       const tx = await nftFactory.createNftWithDatatokenWithFixedRate(
         nftData,
         dtParams,
-        freParams,
-        false
+        freParams
       )
       const txReceipt = await tx.wait()
       const tokenCreatedEvent = getEventFromTx(txReceipt, 'TokenCreated')

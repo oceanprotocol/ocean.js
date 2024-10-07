@@ -137,8 +137,7 @@ describe('Router unit test', () => {
     const tx = await nftFactory.createNftWithDatatokenWithFixedRate(
       NFT_DATA,
       ERC_PARAMS,
-      freParams,
-      false
+      freParams
     )
     const trxReceipt = await tx.wait()
     // events have been emitted
@@ -174,8 +173,7 @@ describe('Router unit test', () => {
     const tx2 = await nftFactory.createNftWithDatatokenWithFixedRate(
       NFT_DATA,
       ERC_PARAMS,
-      freParams,
-      false
+      freParams
     )
     const trxReceipt2 = await tx2.wait()
     // events have been emitted

@@ -318,8 +318,7 @@ async function createAsset(
 
   const bundleNFT = await nftFactory.createNftWithDatatoken(
     nftParamsAsset,
-    datatokenParams,
-    false
+    datatokenParams
   )
 
   const trxReceipt = await bundleNFT.wait()
