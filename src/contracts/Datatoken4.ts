@@ -77,7 +77,6 @@ export class Datatoken4 extends Datatoken {
     dtAddress: string,
     address: string,
     consumer: string,
-    confidentialEVM: boolean = true,
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
     if (!(await this.isDatatokenDeployer(dtAddress, consumer))) {
@@ -91,7 +90,7 @@ export class Datatoken4 extends Datatoken {
 
     const trxReceipt = await sendTx(
       estGas,
-      confidentialEVM === true &&
+      this.config.confidentialEVM === true &&
         [SAPPHIRE_MAINNET_NETWORK_ID, SAPPHIRE_TESTNET_NETWORK_ID].includes(chainId)
         ? sapphire.wrap(this.signer)
         : this.signer,
@@ -116,7 +115,6 @@ export class Datatoken4 extends Datatoken {
     dtAddress: string,
     address: string,
     consumer: string,
-    confidentialEVM: boolean = true,
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
     if (!(await this.isDatatokenDeployer(dtAddress, consumer))) {
@@ -130,7 +128,7 @@ export class Datatoken4 extends Datatoken {
 
     const trxReceipt = await sendTx(
       estGas,
-      confidentialEVM === true &&
+      this.config.confidentialEVM === true &&
         [SAPPHIRE_MAINNET_NETWORK_ID, SAPPHIRE_TESTNET_NETWORK_ID].includes(chainId)
         ? sapphire.wrap(this.signer)
         : this.signer,
@@ -152,7 +150,6 @@ export class Datatoken4 extends Datatoken {
   public async setFileObject<G extends boolean = false>(
     dtAddress: string,
     address: string,
-    confidentialEVM: boolean = true,
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
     if (!(await this.isDatatokenDeployer(dtAddress, address))) {
@@ -166,7 +163,7 @@ export class Datatoken4 extends Datatoken {
 
     const trxReceipt = await sendTx(
       estGas,
-      confidentialEVM === true &&
+      this.config.confidentialEVM === true &&
         [SAPPHIRE_MAINNET_NETWORK_ID, SAPPHIRE_TESTNET_NETWORK_ID].includes(chainId)
         ? sapphire.wrap(this.signer)
         : this.signer,

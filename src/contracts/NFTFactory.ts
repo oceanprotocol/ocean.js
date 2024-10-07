@@ -454,7 +454,6 @@ export class NftFactory extends SmartContractWithAddress {
   public async createNftWithDatatoken<G extends boolean = false>(
     nftCreateData: NftCreateData,
     dtParams: DatatokenCreateParams,
-    confidentialEVM: boolean = false, // when using datatoken template id 4, flag should be set on true and tx will be encrypted because it contains files object.
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
     const ercCreateData = await this.getErcCreationParams(dtParams)
@@ -467,7 +466,7 @@ export class NftFactory extends SmartContractWithAddress {
 
     const trxReceipt = await sendTx(
       estGas,
-      confidentialEVM === true &&
+      this.config.confidentialEVM === true &&
         [SAPPHIRE_MAINNET_NETWORK_ID, SAPPHIRE_TESTNET_NETWORK_ID].includes(chainId)
         ? sapphire.wrap(this.signer)
         : this.signer,
@@ -493,7 +492,6 @@ export class NftFactory extends SmartContractWithAddress {
     nftCreateData: NftCreateData,
     dtParams: DatatokenCreateParams,
     freParams: FreCreationParams,
-    confidentialEVM: boolean = false, // when using datatoken template id 4, flag should be set on true and tx will be encrypted because it contains files object.
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
     const ercCreateData = await this.getErcCreationParams(dtParams)
@@ -509,7 +507,7 @@ export class NftFactory extends SmartContractWithAddress {
 
     const trxReceipt = await sendTx(
       estGas,
-      confidentialEVM === true &&
+      this.config.confidentialEVM === true &&
         [SAPPHIRE_MAINNET_NETWORK_ID, SAPPHIRE_TESTNET_NETWORK_ID].includes(chainId)
         ? sapphire.wrap(this.signer)
         : this.signer,
@@ -536,7 +534,6 @@ export class NftFactory extends SmartContractWithAddress {
     nftCreateData: NftCreateData,
     dtParams: DatatokenCreateParams,
     dispenserParams: DispenserCreationParams,
-    confidentialEVM: boolean = false, // when using datatoken template id 4, flag should be set on true and tx will be encrypted because it contains files object.
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
     const ercCreateData = await this.getErcCreationParams(dtParams)
@@ -563,7 +560,7 @@ export class NftFactory extends SmartContractWithAddress {
 
     const trxReceipt = await sendTx(
       estGas,
-      confidentialEVM === true &&
+      this.config.confidentialEVM === true &&
         [SAPPHIRE_MAINNET_NETWORK_ID, SAPPHIRE_TESTNET_NETWORK_ID].includes(chainId)
         ? sapphire.wrap(this.signer)
         : this.signer,
