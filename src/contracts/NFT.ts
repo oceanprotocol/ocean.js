@@ -1,6 +1,13 @@
 import { BigNumber, ethers } from 'ethers'
 import ERC721Template from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC721Template.sol/ERC721Template.json'
-import { generateDtName, sendTx, getEventFromTx, ZERO_ADDRESS } from '../utils'
+import {
+  generateDtName,
+  sendTx,
+  getEventFromTx,
+  ZERO_ADDRESS,
+  SAPPHIRE_MAINNET_NETWORK_ID,
+  SAPPHIRE_TESTNET_NETWORK_ID
+} from '../utils'
 import {
   MetadataProof,
   MetadataAndTokenURI,
@@ -13,6 +20,7 @@ import {
   calculateActiveTemplateIndex,
   getOceanArtifactsAdressesByChainId
 } from '../utils/Assets'
+import * as sapphire from '@oasisprotocol/sapphire-paratime'
 
 export class Nft extends SmartContract {
   getDefaultAbi() {
@@ -29,6 +37,7 @@ export class Nft extends SmartContract {
    * @param {String} feeToken address of the token marketplace wants to add fee on top
    * @param {String} feeAmount amount of feeToken to be transferred to mpFeeAddress on top, will be converted to WEI
    * @param {String} cap Maximum cap (Number) - will be converted to wei
+   * @param {boolean} confidentialEVM Flag for encrypting the tx on Sapphire when deploying Datatoken template id 4
    * @param {String} name Token name
    * @param {String} symbol Token symbol
    * @param {Number} templateIndex NFT template index
@@ -44,6 +53,7 @@ export class Nft extends SmartContract {
     feeToken: string,
     feeAmount: string,
     cap: string,
+    confidentialEVM: boolean = false, // when using datatoken template id 4, flag should be set on true and tx will be encrypted because it contains files object.
     name?: string,
     symbol?: string,
     templateIndex?: number,
@@ -104,7 +114,10 @@ export class Nft extends SmartContract {
 
     const tx = await sendTx(
       estGas,
-      this.signer,
+      confidentialEVM === true &&
+        [SAPPHIRE_MAINNET_NETWORK_ID, SAPPHIRE_TESTNET_NETWORK_ID].includes(chainId)
+        ? sapphire.wrap(this.signer)
+        : this.signer,
       this.config?.gasFeeMultiplier,
       nftContract.createERC20,
       templateIndex,

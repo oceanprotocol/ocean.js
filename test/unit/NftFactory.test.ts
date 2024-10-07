@@ -98,7 +98,7 @@ describe('Nft Factory test', () => {
 
   it('#createNftwithErc - should create an NFT and a Datatoken', async () => {
     // we prepare transaction parameters objects
-    const tx = await nftFactory.createNftWithDatatoken(nftData, dtParams)
+    const tx = await nftFactory.createNftWithDatatoken(nftData, dtParams, false)
     const trxReceipt = await tx.wait()
     const nftCreatedEvent = getEventFromTx(trxReceipt, 'NFTCreated')
     const tokenCreatedEvent = getEventFromTx(trxReceipt, 'TokenCreated')
@@ -114,7 +114,7 @@ describe('Nft Factory test', () => {
     const currentNFTCount = await nftFactory.getCurrentNFTCount()
     const currentTokenCount = await nftFactory.getCurrentTokenCount()
 
-    await nftFactory.createNftWithDatatoken(nftData, dtParams)
+    await nftFactory.createNftWithDatatoken(nftData, dtParams, false)
 
     expect((await nftFactory.getCurrentNFTCount()) === currentNFTCount + 1)
     expect((await nftFactory.getCurrentTokenCount()) === currentTokenCount + 1)
@@ -138,7 +138,8 @@ describe('Nft Factory test', () => {
     const tx = await nftFactory.createNftWithDatatokenWithFixedRate(
       nftData,
       dtParams,
-      freParams
+      freParams,
+      false
     )
     const trxReceipt = await tx.wait()
     // events have been emitted
@@ -166,7 +167,8 @@ describe('Nft Factory test', () => {
     const tx = await nftFactory.createNftWithDatatokenWithDispenser(
       nftData,
       dtParams,
-      dispenserParams
+      dispenserParams,
+      false
     )
     const trxReceipt = await tx.wait()
     // events have been emitted

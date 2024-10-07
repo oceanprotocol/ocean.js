@@ -111,6 +111,7 @@ describe('Sapphire tests', async () => {
       ZERO_ADDRESS,
       '0',
       '100000',
+      true,
       'ERC20T4',
       'ERC20DT1Symbol',
       1,

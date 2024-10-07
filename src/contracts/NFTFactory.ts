@@ -6,7 +6,9 @@ import {
   sendTx,
   getEventFromTx,
   getTokenDecimals,
-  LoggerInstance
+  LoggerInstance,
+  SAPPHIRE_MAINNET_NETWORK_ID,
+  SAPPHIRE_TESTNET_NETWORK_ID
 } from '../utils'
 import {
   AbiItem,
@@ -19,6 +21,7 @@ import {
   ReceiptOrEstimate
 } from '../@types'
 import { SmartContractWithAddress } from './SmartContractWithAddress'
+import * as sapphire from '@oasisprotocol/sapphire-paratime'
 
 /**
  * Provides an interface for NFT Factory contract
@@ -451,9 +454,11 @@ export class NftFactory extends SmartContractWithAddress {
   public async createNftWithDatatoken<G extends boolean = false>(
     nftCreateData: NftCreateData,
     dtParams: DatatokenCreateParams,
+    confidentialEVM: boolean = false, // when using datatoken template id 4, flag should be set on true and tx will be encrypted because it contains files object.
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
     const ercCreateData = await this.getErcCreationParams(dtParams)
+    const { chainId } = await this.contract.provider.getNetwork()
     const estGas = await this.contract.estimateGas.createNftWithErc20(
       nftCreateData,
       ercCreateData
@@ -462,7 +467,10 @@ export class NftFactory extends SmartContractWithAddress {
 
     const trxReceipt = await sendTx(
       estGas,
-      this.signer,
+      confidentialEVM === true &&
+        [SAPPHIRE_MAINNET_NETWORK_ID, SAPPHIRE_TESTNET_NETWORK_ID].includes(chainId)
+        ? sapphire.wrap(this.signer)
+        : this.signer,
       this.config?.gasFeeMultiplier,
       this.contract.createNftWithErc20,
       nftCreateData,
@@ -485,10 +493,12 @@ export class NftFactory extends SmartContractWithAddress {
     nftCreateData: NftCreateData,
     dtParams: DatatokenCreateParams,
     freParams: FreCreationParams,
+    confidentialEVM: boolean = false, // when using datatoken template id 4, flag should be set on true and tx will be encrypted because it contains files object.
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
     const ercCreateData = await this.getErcCreationParams(dtParams)
     const fixedData = await this.getFreCreationParams(freParams)
+    const { chainId } = await this.contract.provider.getNetwork()
 
     const estGas = await this.contract.estimateGas.createNftWithErc20WithFixedRate(
       nftCreateData,
@@ -499,7 +509,10 @@ export class NftFactory extends SmartContractWithAddress {
 
     const trxReceipt = await sendTx(
       estGas,
-      this.signer,
+      confidentialEVM === true &&
+        [SAPPHIRE_MAINNET_NETWORK_ID, SAPPHIRE_TESTNET_NETWORK_ID].includes(chainId)
+        ? sapphire.wrap(this.signer)
+        : this.signer,
       this.config?.gasFeeMultiplier,
       this.contract.createNftWithErc20WithFixedRate,
       nftCreateData,
@@ -523,9 +536,11 @@ export class NftFactory extends SmartContractWithAddress {
     nftCreateData: NftCreateData,
     dtParams: DatatokenCreateParams,
     dispenserParams: DispenserCreationParams,
+    confidentialEVM: boolean = false, // when using datatoken template id 4, flag should be set on true and tx will be encrypted because it contains files object.
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
     const ercCreateData = await this.getErcCreationParams(dtParams)
+    const { chainId } = await this.contract.provider.getNetwork()
 
     dispenserParams.maxBalance = await this.amountToUnits(
       null,
@@ -548,7 +563,10 @@ export class NftFactory extends SmartContractWithAddress {
 
     const trxReceipt = await sendTx(
       estGas,
-      this.signer,
+      confidentialEVM === true &&
+        [SAPPHIRE_MAINNET_NETWORK_ID, SAPPHIRE_TESTNET_NETWORK_ID].includes(chainId)
+        ? sapphire.wrap(this.signer)
+        : this.signer,
       this.config?.gasFeeMultiplier,
       this.contract.createNftWithErc20WithDispenser,
       nftCreateData,
