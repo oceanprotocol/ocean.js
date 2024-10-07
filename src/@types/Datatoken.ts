@@ -10,6 +10,10 @@ export interface DatatokenCreateParams {
   cap: string
   name?: string
   symbol?: string
+  filesObject?: any // file object for template 4
+  accessListFactory?: string // access list factory address
+  allowAccessList?: string //  Allow List Contract (if any)
+  denyAccessList?: string // Deny List Contract (if any)
 }
 
 export interface ConsumeMarketFee {

@@ -1,4 +1,4 @@
-import { BigNumber } from 'ethers'
+import { BigNumber, ethers } from 'ethers'
 import ERC721Factory from '@oceanprotocol/contracts/artifacts/contracts/ERC721Factory.sol/ERC721Factory.json'
 import {
   generateDtName,
@@ -598,20 +598,39 @@ export class NftFactory extends SmartContractWithAddress {
       }
     }
 
+    // common stuff for other templates
+    const addresses = [
+      dtParams.minter,
+      dtParams.paymentCollector,
+      dtParams.mpFeeAddress,
+      dtParams.feeToken
+    ]
+
+    if (dtParams.filesObject) {
+      // template 4 only, ignored for others
+      if (dtParams.accessListFactory) {
+        addresses.push(dtParams.accessListFactory)
+      }
+      if (dtParams.allowAccessList) {
+        addresses.push(dtParams.allowAccessList)
+      }
+
+      if (dtParams.denyAccessList) {
+        addresses.push(dtParams.denyAccessList)
+      }
+    }
+
     return {
       templateIndex: dtParams.templateIndex,
       strings: [dtParams.name || name, dtParams.symbol || symbol],
-      addresses: [
-        dtParams.minter,
-        dtParams.paymentCollector,
-        dtParams.mpFeeAddress,
-        dtParams.feeToken
-      ],
+      addresses,
       uints: [
         await this.amountToUnits(null, dtParams.cap, 18),
         await this.amountToUnits(null, dtParams.feeAmount, feeTokenDecimals)
       ],
-      bytess: []
+      bytess: dtParams.filesObject
+        ? [ethers.utils.toUtf8Bytes(JSON.stringify(dtParams.filesObject))]
+        : []
     }
   }
 

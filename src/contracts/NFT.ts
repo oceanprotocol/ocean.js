@@ -19,7 +19,7 @@ import { SmartContract } from './SmartContract'
 import {
   calculateActiveTemplateIndex,
   getOceanArtifactsAdressesByChainId
-} from '../utils/Asset'
+} from '../utils/Assets'
 import * as sapphire from '@oasisprotocol/sapphire-paratime'
 
 export class Nft extends SmartContract {

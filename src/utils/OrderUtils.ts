@@ -66,6 +66,7 @@ export async function orderAsset(
     )
 
   const templateIndex = await datatoken.getId(asset.datatokens[datatokenIndex].address)
+
   const fixedRates = await datatoken.getFixedRates(
     asset.datatokens[datatokenIndex].address
   )
@@ -137,7 +138,7 @@ export async function orderAsset(
           orderParams._consumeMarketFee
         )
       }
-      if (templateIndex === 2) {
+      if (templateIndex === 2 || templateIndex === 4) {
         return await datatoken.buyFromDispenserAndOrder(
           asset.services[serviceIndex].datatokenAddress,
           orderParams,
@@ -210,7 +211,7 @@ export async function orderAsset(
           orderParams._consumeMarketFee
         )
       }
-      if (templateIndex === 2) {
+      if (templateIndex === 2 || templateIndex === 4) {
         const tx: any = await approve(
           consumerAccount,
           config,
