@@ -1,9 +1,17 @@
 import { BigNumber, Signer } from 'ethers'
 import { Config } from '../config'
 import AccessListFactory from '@oceanprotocol/contracts/artifacts/contracts/accesslists/AccessListFactory.sol/AccessListFactory.json'
-import { generateDtName, sendTx, getEventFromTx, ZERO_ADDRESS } from '../utils'
+import {
+  generateDtName,
+  sendTx,
+  getEventFromTx,
+  ZERO_ADDRESS,
+  SAPPHIRE_MAINNET_NETWORK_ID,
+  SAPPHIRE_TESTNET_NETWORK_ID
+} from '../utils'
 import { AbiItem, ReceiptOrEstimate } from '../@types'
 import { SmartContractWithAddress } from './SmartContractWithAddress'
+import * as sapphire from '@oasisprotocol/sapphire-paratime'
 
 /**
  * Provides an interface for Access List Factory contract
@@ -67,10 +75,14 @@ export class AccesslistFactory extends SmartContractWithAddress {
     )
     if (estimateGas) return <G extends false ? string : BigNumber>estGas
     // Invoke createToken function of the contract
+    const { chainId } = await this.contract.provider.getNetwork()
     try {
       const tx = await sendTx(
         estGas,
-        this.signer,
+        this.config.confidentialEVM === true &&
+          [SAPPHIRE_MAINNET_NETWORK_ID, SAPPHIRE_TESTNET_NETWORK_ID].includes(chainId)
+          ? sapphire.wrap(this.signer)
+          : this.signer,
         this.config?.gasFeeMultiplier,
         this.contract.deployAccessListContract,
         nameAccessList,
@@ -144,10 +156,13 @@ export class AccesslistFactory extends SmartContractWithAddress {
 
     const estGas = await this.contract.estimateGas.changeTemplateAddress(templateAddress)
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-
+    const { chainId } = await this.contract.provider.getNetwork()
     const trxReceipt = await sendTx(
       estGas,
-      this.signer,
+      this.config.confidentialEVM === true &&
+        [SAPPHIRE_MAINNET_NETWORK_ID, SAPPHIRE_TESTNET_NETWORK_ID].includes(chainId)
+        ? sapphire.wrap(this.signer)
+        : this.signer,
       this.config?.gasFeeMultiplier,
       this.contract.functions.changeTemplateAddress,
       templateAddress

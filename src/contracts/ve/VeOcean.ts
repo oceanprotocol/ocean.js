@@ -1,7 +1,12 @@
 import veOceanABI from '@oceanprotocol/contracts/artifacts/contracts/ve/veOCEAN.vy/veOCEAN.json'
-import { sendTx } from '../../utils'
+import {
+  sendTx,
+  SAPPHIRE_MAINNET_NETWORK_ID,
+  SAPPHIRE_TESTNET_NETWORK_ID
+} from '../../utils'
 import { SmartContractWithAddress } from '../SmartContractWithAddress'
 import { ReceiptOrEstimate, AbiItem } from '../../@types'
+import * as sapphire from '@oasisprotocol/sapphire-paratime'
 /**
  * Provides an interface for veOcean contract
  */
@@ -28,11 +33,14 @@ export class VeOcean extends SmartContractWithAddress {
       unlockTime
     )
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-
+    const { chainId } = await this.contract.provider.getNetwork()
     // Invoke function of the contract
     const trxReceipt = await sendTx(
       estGas.add(20000),
-      this.signer,
+      this.config.confidentialEVM === true &&
+        [SAPPHIRE_MAINNET_NETWORK_ID, SAPPHIRE_TESTNET_NETWORK_ID].includes(chainId)
+        ? sapphire.wrap(this.signer)
+        : this.signer,
       this.config?.gasFeeMultiplier,
       this.contract.create_lock,
       amountFormatted,
@@ -57,11 +65,14 @@ export class VeOcean extends SmartContractWithAddress {
     const amountFormatted = await this.amountToUnits(await this.getToken(), amount)
     const estGas = await this.contract.estimateGas.deposit_for(toAddress, amountFormatted)
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-
+    const { chainId } = await this.contract.provider.getNetwork()
     // Invoke function of the contract
     const trxReceipt = await sendTx(
       estGas.add(20000),
-      this.signer,
+      this.config.confidentialEVM === true &&
+        [SAPPHIRE_MAINNET_NETWORK_ID, SAPPHIRE_TESTNET_NETWORK_ID].includes(chainId)
+        ? sapphire.wrap(this.signer)
+        : this.signer,
       this.config?.gasFeeMultiplier,
       this.contract.deposit_for,
       toAddress,
@@ -83,11 +94,14 @@ export class VeOcean extends SmartContractWithAddress {
     const amountFormatted = await this.amountToUnits(await this.getToken(), amount)
     const estGas = await this.contract.estimateGas.increase_amount(amountFormatted)
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-
+    const { chainId } = await this.contract.provider.getNetwork()
     // Invoke function of the contract
     const trxReceipt = await sendTx(
       estGas.add(20000),
-      this.signer,
+      this.config.confidentialEVM === true &&
+        [SAPPHIRE_MAINNET_NETWORK_ID, SAPPHIRE_TESTNET_NETWORK_ID].includes(chainId)
+        ? sapphire.wrap(this.signer)
+        : this.signer,
       this.config?.gasFeeMultiplier,
       this.contract.increase_amount,
       amountFormatted
@@ -107,11 +121,14 @@ export class VeOcean extends SmartContractWithAddress {
   ): Promise<ReceiptOrEstimate<G>> {
     const estGas = await this.contract.estimateGas.increase_unlock_time(unlockTime)
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-
+    const { chainId } = await this.contract.provider.getNetwork()
     // Invoke function of the contract
     const trxReceipt = await sendTx(
       estGas.add(20000),
-      this.signer,
+      this.config.confidentialEVM === true &&
+        [SAPPHIRE_MAINNET_NETWORK_ID, SAPPHIRE_TESTNET_NETWORK_ID].includes(chainId)
+        ? sapphire.wrap(this.signer)
+        : this.signer,
       this.config?.gasFeeMultiplier,
       this.contract.increase_unlock_time,
       unlockTime
@@ -129,11 +146,14 @@ export class VeOcean extends SmartContractWithAddress {
   ): Promise<ReceiptOrEstimate<G>> {
     const estGas = await this.contract.estimateGas.withdraw()
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-
+    const { chainId } = await this.contract.provider.getNetwork()
     // Invoke function of the contract
     const trxReceipt = await sendTx(
       estGas.add(20000),
-      this.signer,
+      this.config.confidentialEVM === true &&
+        [SAPPHIRE_MAINNET_NETWORK_ID, SAPPHIRE_TESTNET_NETWORK_ID].includes(chainId)
+        ? sapphire.wrap(this.signer)
+        : this.signer,
       this.config?.gasFeeMultiplier,
       this.contract.withdraw
     )

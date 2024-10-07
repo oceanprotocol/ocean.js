@@ -1,9 +1,14 @@
 import { Signer } from 'ethers'
 import AccessList from '@oceanprotocol/contracts/artifacts/contracts/accesslists/AccessList.sol/AccessList.json'
-import { sendTx } from '../utils'
+import {
+  sendTx,
+  SAPPHIRE_MAINNET_NETWORK_ID,
+  SAPPHIRE_TESTNET_NETWORK_ID
+} from '../utils'
 import { AbiItem, ReceiptOrEstimate } from '../@types'
 import { Config } from '../config'
 import { SmartContractWithAddress } from './SmartContractWithAddress'
+import * as sapphire from '@oasisprotocol/sapphire-paratime'
 
 export class AccessListContract extends SmartContractWithAddress {
   public abiEnterprise: AbiItem[]
@@ -96,10 +101,13 @@ export class AccessListContract extends SmartContractWithAddress {
   ): Promise<ReceiptOrEstimate<G>> {
     const estGas = await this.contract.estimateGas.mint(user, tokenUri)
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-
+    const { chainId } = await this.contract.provider.getNetwork()
     const trxReceipt = await sendTx(
       estGas,
-      this.signer,
+      this.config.confidentialEVM === true &&
+        [SAPPHIRE_MAINNET_NETWORK_ID, SAPPHIRE_TESTNET_NETWORK_ID].includes(chainId)
+        ? sapphire.wrap(this.signer)
+        : this.signer,
       this.config?.gasFeeMultiplier,
       this.contract.mint,
       user,
@@ -122,10 +130,13 @@ export class AccessListContract extends SmartContractWithAddress {
   ): Promise<ReceiptOrEstimate<G>> {
     const estGas = await this.contract.estimateGas.batchMint(users, tokenUris)
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-
+    const { chainId } = await this.contract.provider.getNetwork()
     const trxReceipt = await sendTx(
       estGas,
-      this.signer,
+      this.config.confidentialEVM === true &&
+        [SAPPHIRE_MAINNET_NETWORK_ID, SAPPHIRE_TESTNET_NETWORK_ID].includes(chainId)
+        ? sapphire.wrap(this.signer)
+        : this.signer,
       this.config?.gasFeeMultiplier,
       this.contract.batchMint,
       users,
@@ -146,10 +157,13 @@ export class AccessListContract extends SmartContractWithAddress {
   ): Promise<ReceiptOrEstimate<G>> {
     const estGas = await this.contract.estimateGas.burn(tokenId)
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-
+    const { chainId } = await this.contract.provider.getNetwork()
     const trxReceipt = await sendTx(
       estGas,
-      this.signer,
+      this.config.confidentialEVM === true &&
+        [SAPPHIRE_MAINNET_NETWORK_ID, SAPPHIRE_TESTNET_NETWORK_ID].includes(chainId)
+        ? sapphire.wrap(this.signer)
+        : this.signer,
       this.config?.gasFeeMultiplier,
       this.contract.burn,
       tokenId
@@ -169,10 +183,13 @@ export class AccessListContract extends SmartContractWithAddress {
   ): Promise<ReceiptOrEstimate<G>> {
     const estGas = await this.contract.estimateGas.transferOwnership(newOwner)
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-
+    const { chainId } = await this.contract.provider.getNetwork()
     const trxReceipt = await sendTx(
       estGas,
-      this.signer,
+      this.config.confidentialEVM === true &&
+        [SAPPHIRE_MAINNET_NETWORK_ID, SAPPHIRE_TESTNET_NETWORK_ID].includes(chainId)
+        ? sapphire.wrap(this.signer)
+        : this.signer,
       this.config?.gasFeeMultiplier,
       this.contract.transferOwnership,
       newOwner
@@ -190,10 +207,13 @@ export class AccessListContract extends SmartContractWithAddress {
   ): Promise<ReceiptOrEstimate<G>> {
     const estGas = await this.contract.estimateGas.renounceOwnership()
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-
+    const { chainId } = await this.contract.provider.getNetwork()
     const trxReceipt = await sendTx(
       estGas,
-      this.signer,
+      this.config.confidentialEVM === true &&
+        [SAPPHIRE_MAINNET_NETWORK_ID, SAPPHIRE_TESTNET_NETWORK_ID].includes(chainId)
+        ? sapphire.wrap(this.signer)
+        : this.signer,
       this.config?.gasFeeMultiplier,
       this.contract.renounceOwnership
     )

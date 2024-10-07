@@ -1,9 +1,14 @@
 import Decimal from 'decimal.js'
 import DispenserAbi from '@oceanprotocol/contracts/artifacts/contracts/pools/dispenser/Dispenser.sol/Dispenser.json'
-import { sendTx } from '../utils'
+import {
+  sendTx,
+  SAPPHIRE_MAINNET_NETWORK_ID,
+  SAPPHIRE_TESTNET_NETWORK_ID
+} from '../utils'
 import { Datatoken } from './Datatoken'
 import { SmartContractWithAddress } from './SmartContractWithAddress'
 import { DispenserToken, ReceiptOrEstimate, AbiItem } from '../@types'
+import * as sapphire from '@oasisprotocol/sapphire-paratime'
 
 export class Dispenser extends SmartContractWithAddress {
   getDefaultAbi() {
@@ -58,11 +63,14 @@ export class Dispenser extends SmartContractWithAddress {
       allowedSwapper
     )
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-
+    const { chainId } = await this.contract.provider.getNetwork()
     // Call createFixedRate contract method
     const trxReceipt = await sendTx(
       estGas,
-      this.signer,
+      this.config.confidentialEVM === true &&
+        [SAPPHIRE_MAINNET_NETWORK_ID, SAPPHIRE_TESTNET_NETWORK_ID].includes(chainId)
+        ? sapphire.wrap(this.signer)
+        : this.signer,
       this.config?.gasFeeMultiplier,
       this.contract.create,
       dtAddress,
@@ -95,10 +103,13 @@ export class Dispenser extends SmartContractWithAddress {
       this.amountToUnits(null, maxBalance, 18)
     )
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-
+    const { chainId } = await this.contract.provider.getNetwork()
     const trxReceipt = await sendTx(
       estGas,
-      this.signer,
+      this.config.confidentialEVM === true &&
+        [SAPPHIRE_MAINNET_NETWORK_ID, SAPPHIRE_TESTNET_NETWORK_ID].includes(chainId)
+        ? sapphire.wrap(this.signer)
+        : this.signer,
       this.config?.gasFeeMultiplier,
       this.contract.activate,
       dtAddress,
@@ -121,10 +132,13 @@ export class Dispenser extends SmartContractWithAddress {
   ): Promise<ReceiptOrEstimate<G>> {
     const estGas = await this.contract.estimateGas.deactivate(dtAddress)
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-
+    const { chainId } = await this.contract.provider.getNetwork()
     const trxReceipt = await sendTx(
       estGas,
-      this.signer,
+      this.config.confidentialEVM === true &&
+        [SAPPHIRE_MAINNET_NETWORK_ID, SAPPHIRE_TESTNET_NETWORK_ID].includes(chainId)
+        ? sapphire.wrap(this.signer)
+        : this.signer,
       this.config?.gasFeeMultiplier,
       this.contract.deactivate,
       dtAddress
@@ -150,10 +164,13 @@ export class Dispenser extends SmartContractWithAddress {
       newAllowedSwapper
     )
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-
+    const { chainId } = await this.contract.provider.getNetwork()
     const trxReceipt = await sendTx(
       estGas,
-      this.signer,
+      this.config.confidentialEVM === true &&
+        [SAPPHIRE_MAINNET_NETWORK_ID, SAPPHIRE_TESTNET_NETWORK_ID].includes(chainId)
+        ? sapphire.wrap(this.signer)
+        : this.signer,
       this.config?.gasFeeMultiplier,
       this.contract.setAllowedSwapper,
       dtAddress,
@@ -184,10 +201,13 @@ export class Dispenser extends SmartContractWithAddress {
       destination
     )
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-
+    const { chainId } = await this.contract.provider.getNetwork()
     const trxReceipt = await sendTx(
       estGas,
-      this.signer,
+      this.config.confidentialEVM === true &&
+        [SAPPHIRE_MAINNET_NETWORK_ID, SAPPHIRE_TESTNET_NETWORK_ID].includes(chainId)
+        ? sapphire.wrap(this.signer)
+        : this.signer,
       this.config?.gasFeeMultiplier,
       this.contract.dispense,
       dtAddress,
@@ -209,10 +229,13 @@ export class Dispenser extends SmartContractWithAddress {
   ): Promise<ReceiptOrEstimate<G>> {
     const estGas = await this.contract.estimateGas.ownerWithdraw(dtAddress)
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-
+    const { chainId } = await this.contract.provider.getNetwork()
     const trxReceipt = await sendTx(
       estGas,
-      this.signer,
+      this.config.confidentialEVM === true &&
+        [SAPPHIRE_MAINNET_NETWORK_ID, SAPPHIRE_TESTNET_NETWORK_ID].includes(chainId)
+        ? sapphire.wrap(this.signer)
+        : this.signer,
       this.config?.gasFeeMultiplier,
       this.contract.ownerWithdraw,
       dtAddress
