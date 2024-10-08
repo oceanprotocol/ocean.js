@@ -24,7 +24,7 @@ export abstract class SmartContract {
    */
   constructor(
     signer: Signer,
-    network: string | number,
+    network?: string | number,
     config?: Config,
     abi?: AbiItem[]
   ) {

@@ -17,7 +17,7 @@ export abstract class SmartContractWithAddress extends SmartContract {
   constructor(
     address: string,
     signer: Signer,
-    network: string | number,
+    network?: string | number,
     config?: Config,
     abi?: AbiItem[]
   ) {

@@ -44,7 +44,7 @@ export class Datatoken extends SmartContract {
    */
   constructor(
     signer: Signer,
-    network: string | number,
+    network?: string | number,
     config?: Config,
     abi?: AbiItem[],
     abiEnterprise?: AbiItem[]
