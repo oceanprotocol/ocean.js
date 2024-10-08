@@ -35,7 +35,8 @@ export class VeFeeDistributor extends SmartContractWithAddress {
     // Invoke function of the contract
     const trxReceipt = await sendTx(
       estGas.add(20000),
-      'confidentialEVM' in this.config &&
+      this.config &&
+        'confidentialEVM' in this.config &&
         this.config.confidentialEVM === true &&
         [SAPPHIRE_MAINNET_NETWORK_ID, SAPPHIRE_TESTNET_NETWORK_ID].includes(chainId)
         ? sapphire.wrap(this.signer)
@@ -65,7 +66,8 @@ export class VeFeeDistributor extends SmartContractWithAddress {
     // Invoke function of the contract
     const trxReceipt = await sendTx(
       estGas.add(20000),
-      'confidentialEVM' in this.config &&
+      this.config &&
+        'confidentialEVM' in this.config &&
         this.config.confidentialEVM === true &&
         [SAPPHIRE_MAINNET_NETWORK_ID, SAPPHIRE_TESTNET_NETWORK_ID].includes(chainId)
         ? sapphire.wrap(this.signer)

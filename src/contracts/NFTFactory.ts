@@ -219,7 +219,8 @@ export class NftFactory extends SmartContractWithAddress {
 
     const trxReceipt = await sendTx(
       estGas,
-      'confidentialEVM' in this.config &&
+      this.config &&
+        'confidentialEVM' in this.config &&
         this.config.confidentialEVM === true &&
         [SAPPHIRE_MAINNET_NETWORK_ID, SAPPHIRE_TESTNET_NETWORK_ID].includes(chainId)
         ? sapphire.wrap(this.signer)
@@ -259,7 +260,8 @@ export class NftFactory extends SmartContractWithAddress {
 
     const trxReceipt = await sendTx(
       estGas,
-      'confidentialEVM' in this.config &&
+      this.config &&
+        'confidentialEVM' in this.config &&
         this.config.confidentialEVM === true &&
         [SAPPHIRE_MAINNET_NETWORK_ID, SAPPHIRE_TESTNET_NETWORK_ID].includes(chainId)
         ? sapphire.wrap(this.signer)
@@ -302,7 +304,8 @@ export class NftFactory extends SmartContractWithAddress {
 
     const trxReceipt = await sendTx(
       estGas,
-      'confidentialEVM' in this.config &&
+      this.config &&
+        'confidentialEVM' in this.config &&
         this.config.confidentialEVM === true &&
         [SAPPHIRE_MAINNET_NETWORK_ID, SAPPHIRE_TESTNET_NETWORK_ID].includes(chainId)
         ? sapphire.wrap(this.signer)
@@ -339,7 +342,8 @@ export class NftFactory extends SmartContractWithAddress {
 
     const trxReceipt = await sendTx(
       estGas,
-      'confidentialEVM' in this.config &&
+      this.config &&
+        'confidentialEVM' in this.config &&
         this.config.confidentialEVM === true &&
         [SAPPHIRE_MAINNET_NETWORK_ID, SAPPHIRE_TESTNET_NETWORK_ID].includes(chainId)
         ? sapphire.wrap(this.signer)
@@ -383,7 +387,8 @@ export class NftFactory extends SmartContractWithAddress {
 
     const trxReceipt = await sendTx(
       estGas,
-      'confidentialEVM' in this.config &&
+      this.config &&
+        'confidentialEVM' in this.config &&
         this.config.confidentialEVM === true &&
         [SAPPHIRE_MAINNET_NETWORK_ID, SAPPHIRE_TESTNET_NETWORK_ID].includes(chainId)
         ? sapphire.wrap(this.signer)
@@ -427,7 +432,8 @@ export class NftFactory extends SmartContractWithAddress {
 
     const trxReceipt = await sendTx(
       estGas,
-      'confidentialEVM' in this.config &&
+      this.config &&
+        'confidentialEVM' in this.config &&
         this.config.confidentialEVM === true &&
         [SAPPHIRE_MAINNET_NETWORK_ID, SAPPHIRE_TESTNET_NETWORK_ID].includes(chainId)
         ? sapphire.wrap(this.signer)
@@ -464,7 +470,8 @@ export class NftFactory extends SmartContractWithAddress {
 
     const trxReceipt = await sendTx(
       estGas,
-      'confidentialEVM' in this.config &&
+      this.config &&
+        'confidentialEVM' in this.config &&
         this.config.confidentialEVM === true &&
         [SAPPHIRE_MAINNET_NETWORK_ID, SAPPHIRE_TESTNET_NETWORK_ID].includes(chainId)
         ? sapphire.wrap(this.signer)
@@ -500,7 +507,8 @@ export class NftFactory extends SmartContractWithAddress {
 
     const trxReceipt = await sendTx(
       estGas,
-      'confidentialEVM' in this.config &&
+      this.config &&
+        'confidentialEVM' in this.config &&
         this.config.confidentialEVM === true &&
         [SAPPHIRE_MAINNET_NETWORK_ID, SAPPHIRE_TESTNET_NETWORK_ID].includes(chainId)
         ? sapphire.wrap(this.signer)
@@ -542,7 +550,8 @@ export class NftFactory extends SmartContractWithAddress {
 
     const trxReceipt = await sendTx(
       estGas,
-      'confidentialEVM' in this.config &&
+      this.config &&
+        'confidentialEVM' in this.config &&
         this.config.confidentialEVM === true &&
         [SAPPHIRE_MAINNET_NETWORK_ID, SAPPHIRE_TESTNET_NETWORK_ID].includes(chainId)
         ? sapphire.wrap(this.signer)
@@ -596,7 +605,8 @@ export class NftFactory extends SmartContractWithAddress {
 
     const trxReceipt = await sendTx(
       estGas,
-      'confidentialEVM' in this.config &&
+      this.config &&
+        'confidentialEVM' in this.config &&
         this.config.confidentialEVM === true &&
         [SAPPHIRE_MAINNET_NETWORK_ID, SAPPHIRE_TESTNET_NETWORK_ID].includes(chainId)
         ? sapphire.wrap(this.signer)
