@@ -73,7 +73,8 @@ export class FixedRateExchange extends SmartContractWithAddress {
     const { chainId } = await this.contract.provider.getNetwork()
     const trxReceipt = await sendTx(
       estGas,
-      this.config.confidentialEVM === true &&
+      'confidentialEVM' in this.config &&
+        this.config.confidentialEVM === true &&
         [SAPPHIRE_MAINNET_NETWORK_ID, SAPPHIRE_TESTNET_NETWORK_ID].includes(chainId)
         ? sapphire.wrap(this.signer)
         : this.signer,
@@ -130,7 +131,8 @@ export class FixedRateExchange extends SmartContractWithAddress {
     const { chainId } = await this.contract.provider.getNetwork()
     const trxReceipt = await sendTx(
       estGas,
-      this.config.confidentialEVM === true &&
+      'confidentialEVM' in this.config &&
+        this.config.confidentialEVM === true &&
         [SAPPHIRE_MAINNET_NETWORK_ID, SAPPHIRE_TESTNET_NETWORK_ID].includes(chainId)
         ? sapphire.wrap(this.signer)
         : this.signer,
@@ -174,7 +176,8 @@ export class FixedRateExchange extends SmartContractWithAddress {
     const { chainId } = await this.contract.provider.getNetwork()
     const trxReceipt = await sendTx(
       estGas,
-      this.config.confidentialEVM === true &&
+      'confidentialEVM' in this.config &&
+        this.config.confidentialEVM === true &&
         [SAPPHIRE_MAINNET_NETWORK_ID, SAPPHIRE_TESTNET_NETWORK_ID].includes(chainId)
         ? sapphire.wrap(this.signer)
         : this.signer,
@@ -207,7 +210,8 @@ export class FixedRateExchange extends SmartContractWithAddress {
     const { chainId } = await this.contract.provider.getNetwork()
     const trxReceipt = await sendTx(
       estGas,
-      this.config.confidentialEVM === true &&
+      'confidentialEVM' in this.config &&
+        this.config.confidentialEVM === true &&
         [SAPPHIRE_MAINNET_NETWORK_ID, SAPPHIRE_TESTNET_NETWORK_ID].includes(chainId)
         ? sapphire.wrap(this.signer)
         : this.signer,
@@ -237,7 +241,8 @@ export class FixedRateExchange extends SmartContractWithAddress {
     const { chainId } = await this.contract.provider.getNetwork()
     const trxReceipt = await sendTx(
       estGas,
-      this.config.confidentialEVM === true &&
+      'confidentialEVM' in this.config &&
+        this.config.confidentialEVM === true &&
         [SAPPHIRE_MAINNET_NETWORK_ID, SAPPHIRE_TESTNET_NETWORK_ID].includes(chainId)
         ? sapphire.wrap(this.signer)
         : this.signer,
@@ -267,7 +272,8 @@ export class FixedRateExchange extends SmartContractWithAddress {
     const { chainId } = await this.contract.provider.getNetwork()
     const trxReceipt = await sendTx(
       estGas,
-      this.config.confidentialEVM === true &&
+      'confidentialEVM' in this.config &&
+        this.config.confidentialEVM === true &&
         [SAPPHIRE_MAINNET_NETWORK_ID, SAPPHIRE_TESTNET_NETWORK_ID].includes(chainId)
         ? sapphire.wrap(this.signer)
         : this.signer,
@@ -496,7 +502,8 @@ export class FixedRateExchange extends SmartContractWithAddress {
     const { chainId } = await this.contract.provider.getNetwork()
     const trxReceipt = await sendTx(
       estGas,
-      this.config.confidentialEVM === true &&
+      'confidentialEVM' in this.config &&
+        this.config.confidentialEVM === true &&
         [SAPPHIRE_MAINNET_NETWORK_ID, SAPPHIRE_TESTNET_NETWORK_ID].includes(chainId)
         ? sapphire.wrap(this.signer)
         : this.signer,
@@ -527,7 +534,8 @@ export class FixedRateExchange extends SmartContractWithAddress {
     const { chainId } = await this.contract.provider.getNetwork()
     const trxReceipt = await sendTx(
       estGas,
-      this.config.confidentialEVM === true &&
+      'confidentialEVM' in this.config &&
+        this.config.confidentialEVM === true &&
         [SAPPHIRE_MAINNET_NETWORK_ID, SAPPHIRE_TESTNET_NETWORK_ID].includes(chainId)
         ? sapphire.wrap(this.signer)
         : this.signer,
@@ -566,7 +574,8 @@ export class FixedRateExchange extends SmartContractWithAddress {
     const { chainId } = await this.contract.provider.getNetwork()
     const trxReceipt = await sendTx(
       estGas,
-      this.config.confidentialEVM === true &&
+      'confidentialEVM' in this.config &&
+        this.config.confidentialEVM === true &&
         [SAPPHIRE_MAINNET_NETWORK_ID, SAPPHIRE_TESTNET_NETWORK_ID].includes(chainId)
         ? sapphire.wrap(this.signer)
         : this.signer,
@@ -605,7 +614,8 @@ export class FixedRateExchange extends SmartContractWithAddress {
     const { chainId } = await this.contract.provider.getNetwork()
     const trxReceipt = await sendTx(
       estGas,
-      this.config.confidentialEVM === true &&
+      'confidentialEVM' in this.config &&
+        this.config.confidentialEVM === true &&
         [SAPPHIRE_MAINNET_NETWORK_ID, SAPPHIRE_TESTNET_NETWORK_ID].includes(chainId)
         ? sapphire.wrap(this.signer)
         : this.signer,
@@ -635,7 +645,8 @@ export class FixedRateExchange extends SmartContractWithAddress {
     const { chainId } = await this.contract.provider.getNetwork()
     const trxReceipt = await sendTx(
       estGas,
-      this.config.confidentialEVM === true &&
+      'confidentialEVM' in this.config &&
+        this.config.confidentialEVM === true &&
         [SAPPHIRE_MAINNET_NETWORK_ID, SAPPHIRE_TESTNET_NETWORK_ID].includes(chainId)
         ? sapphire.wrap(this.signer)
         : this.signer,
@@ -665,7 +676,8 @@ export class FixedRateExchange extends SmartContractWithAddress {
     const { chainId } = await this.contract.provider.getNetwork()
     const trxReceipt = await sendTx(
       estGas,
-      this.config.confidentialEVM === true &&
+      'confidentialEVM' in this.config &&
+        this.config.confidentialEVM === true &&
         [SAPPHIRE_MAINNET_NETWORK_ID, SAPPHIRE_TESTNET_NETWORK_ID].includes(chainId)
         ? sapphire.wrap(this.signer)
         : this.signer,
@@ -725,7 +737,8 @@ export class FixedRateExchange extends SmartContractWithAddress {
     const { chainId } = await this.contract.provider.getNetwork()
     const trxReceipt = await sendTx(
       estGas,
-      this.config.confidentialEVM === true &&
+      'confidentialEVM' in this.config &&
+        this.config.confidentialEVM === true &&
         [SAPPHIRE_MAINNET_NETWORK_ID, SAPPHIRE_TESTNET_NETWORK_ID].includes(chainId)
         ? sapphire.wrap(this.signer)
         : this.signer,
@@ -758,7 +771,8 @@ export class FixedRateExchange extends SmartContractWithAddress {
     const { chainId } = await this.contract.provider.getNetwork()
     const trxReceipt = await sendTx(
       estGas,
-      this.config.confidentialEVM === true &&
+      'confidentialEVM' in this.config &&
+        this.config.confidentialEVM === true &&
         [SAPPHIRE_MAINNET_NETWORK_ID, SAPPHIRE_TESTNET_NETWORK_ID].includes(chainId)
         ? sapphire.wrap(this.signer)
         : this.signer,
