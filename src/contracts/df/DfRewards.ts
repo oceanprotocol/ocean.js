@@ -1,8 +1,6 @@
 import dfRewardsABI from '@oceanprotocol/contracts/artifacts/contracts/df/DFRewards.sol/DFRewards.json'
 import {
-  sendTx,
-  SAPPHIRE_MAINNET_NETWORK_ID,
-  SAPPHIRE_TESTNET_NETWORK_ID
+  sendTx
 } from '../../utils'
 import { SmartContractWithAddress } from '../SmartContractWithAddress'
 import { AbiItem, ReceiptOrEstimate } from '../../@types'
@@ -50,9 +48,8 @@ export class DfRewards extends SmartContractWithAddress {
     const trxReceipt = await sendTx(
       estGas,
       this.config &&
-        'confidentialEVM' in this.config &&
-        this.config.confidentialEVM === true &&
-        [SAPPHIRE_MAINNET_NETWORK_ID, SAPPHIRE_TESTNET_NETWORK_ID].includes(chainId)
+        'sdk' in this.config &&
+        this.config.sdk === 'oasis'
         ? sapphire.wrap(this.signer)
         : this.signer,
       this.config?.gasFeeMultiplier,
@@ -86,14 +83,12 @@ export class DfRewards extends SmartContractWithAddress {
       tokenAddress
     )
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-    const { chainId } = await this.contract.provider.getNetwork()
     // Invoke function of the contract
     const trxReceipt = await sendTx(
       estGas,
       this.config &&
-        'confidentialEVM' in this.config &&
-        this.config.confidentialEVM === true &&
-        [SAPPHIRE_MAINNET_NETWORK_ID, SAPPHIRE_TESTNET_NETWORK_ID].includes(chainId)
+        'sdk' in this.config &&
+        this.config.sdk === 'oasis'
         ? sapphire.wrap(this.signer)
         : this.signer,
       this.config?.gasFeeMultiplier,

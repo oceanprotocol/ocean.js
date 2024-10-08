@@ -1,8 +1,6 @@
 import dfStrategyV1ABI from '@oceanprotocol/contracts/artifacts/contracts/df/DFStrategyV1.sol/DFStrategyV1.json'
 import {
-  sendTx,
-  SAPPHIRE_MAINNET_NETWORK_ID,
-  SAPPHIRE_TESTNET_NETWORK_ID
+  sendTx
 } from '../../utils'
 import { SmartContractWithAddress } from '../SmartContractWithAddress'
 import { ReceiptOrEstimate, AbiItem } from '../../@types'
@@ -48,14 +46,12 @@ export class DfStrategyV1 extends SmartContractWithAddress {
       tokenAddresses
     )
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-    const { chainId } = await this.contract.provider.getNetwork()
     // Invoke function of the contract
     const trxReceipt = await sendTx(
       estGas,
       this.config &&
-        'confidentialEVM' in this.config &&
-        this.config.confidentialEVM === true &&
-        [SAPPHIRE_MAINNET_NETWORK_ID, SAPPHIRE_TESTNET_NETWORK_ID].includes(chainId)
+        'sdk' in this.config &&
+        this.config.sdk === 'oasis'
         ? sapphire.wrap(this.signer)
         : this.signer,
       this.config?.gasFeeMultiplier,

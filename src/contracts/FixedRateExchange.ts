@@ -1,9 +1,7 @@
 import FixedRateExchangeAbi from '@oceanprotocol/contracts/artifacts/contracts/pools/fixedRate/FixedRateExchange.sol/FixedRateExchange.json'
 import {
   sendTx,
-  ZERO_ADDRESS,
-  SAPPHIRE_MAINNET_NETWORK_ID,
-  SAPPHIRE_TESTNET_NETWORK_ID
+  ZERO_ADDRESS
 } from '../utils'
 import {
   PriceAndFees,
@@ -70,13 +68,11 @@ export class FixedRateExchange extends SmartContractWithAddress {
       consumeMarketFeeFormatted
     )
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-    const { chainId } = await this.contract.provider.getNetwork()
     const trxReceipt = await sendTx(
       estGas,
       this.config &&
-        'confidentialEVM' in this.config &&
-        this.config.confidentialEVM === true &&
-        [SAPPHIRE_MAINNET_NETWORK_ID, SAPPHIRE_TESTNET_NETWORK_ID].includes(chainId)
+        'sdk' in this.config &&
+        this.config.sdk === 'oasis'
         ? sapphire.wrap(this.signer)
         : this.signer,
       this.config?.gasFeeMultiplier,
@@ -129,13 +125,11 @@ export class FixedRateExchange extends SmartContractWithAddress {
       consumeMarketFeeFormatted
     )
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-    const { chainId } = await this.contract.provider.getNetwork()
     const trxReceipt = await sendTx(
       estGas,
       this.config &&
-        'confidentialEVM' in this.config &&
-        this.config.confidentialEVM === true &&
-        [SAPPHIRE_MAINNET_NETWORK_ID, SAPPHIRE_TESTNET_NETWORK_ID].includes(chainId)
+        'sdk' in this.config &&
+        this.config.sdk === 'oasis'
         ? sapphire.wrap(this.signer)
         : this.signer,
       this.config?.gasFeeMultiplier,
@@ -175,13 +169,11 @@ export class FixedRateExchange extends SmartContractWithAddress {
       await this.amountToUnits(null, newRate, 18)
     )
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-    const { chainId } = await this.contract.provider.getNetwork()
     const trxReceipt = await sendTx(
       estGas,
       this.config &&
-        'confidentialEVM' in this.config &&
-        this.config.confidentialEVM === true &&
-        [SAPPHIRE_MAINNET_NETWORK_ID, SAPPHIRE_TESTNET_NETWORK_ID].includes(chainId)
+        'sdk' in this.config &&
+        this.config.sdk === 'oasis'
         ? sapphire.wrap(this.signer)
         : this.signer,
       this.config?.gasFeeMultiplier,
@@ -210,13 +202,11 @@ export class FixedRateExchange extends SmartContractWithAddress {
       newAllowedSwapper
     )
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-    const { chainId } = await this.contract.provider.getNetwork()
     const trxReceipt = await sendTx(
       estGas,
       this.config &&
-        'confidentialEVM' in this.config &&
-        this.config.confidentialEVM === true &&
-        [SAPPHIRE_MAINNET_NETWORK_ID, SAPPHIRE_TESTNET_NETWORK_ID].includes(chainId)
+        'sdk' in this.config &&
+        this.config.sdk === 'oasis'
         ? sapphire.wrap(this.signer)
         : this.signer,
       this.config?.gasFeeMultiplier,
@@ -242,13 +232,11 @@ export class FixedRateExchange extends SmartContractWithAddress {
     if (exchange.active === true) return null
     const estGas = await this.contract.estimateGas.toggleExchangeState(exchangeId)
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-    const { chainId } = await this.contract.provider.getNetwork()
     const trxReceipt = await sendTx(
       estGas,
       this.config &&
-        'confidentialEVM' in this.config &&
-        this.config.confidentialEVM === true &&
-        [SAPPHIRE_MAINNET_NETWORK_ID, SAPPHIRE_TESTNET_NETWORK_ID].includes(chainId)
+        'sdk' in this.config &&
+        this.config.sdk === 'oasis'
         ? sapphire.wrap(this.signer)
         : this.signer,
       this.config?.gasFeeMultiplier,
@@ -274,13 +262,11 @@ export class FixedRateExchange extends SmartContractWithAddress {
 
     const estGas = await this.contract.estimateGas.toggleExchangeState(exchangeId)
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-    const { chainId } = await this.contract.provider.getNetwork()
     const trxReceipt = await sendTx(
       estGas,
       this.config &&
-        'confidentialEVM' in this.config &&
-        this.config.confidentialEVM === true &&
-        [SAPPHIRE_MAINNET_NETWORK_ID, SAPPHIRE_TESTNET_NETWORK_ID].includes(chainId)
+        'sdk' in this.config &&
+        this.config.sdk === 'oasis'
         ? sapphire.wrap(this.signer)
         : this.signer,
       this.config?.gasFeeMultiplier,
@@ -505,13 +491,11 @@ export class FixedRateExchange extends SmartContractWithAddress {
 
     const estGas = await this.contract.estimateGas.toggleMintState(exchangeId, true)
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-    const { chainId } = await this.contract.provider.getNetwork()
     const trxReceipt = await sendTx(
       estGas,
       this.config &&
-        'confidentialEVM' in this.config &&
-        this.config.confidentialEVM === true &&
-        [SAPPHIRE_MAINNET_NETWORK_ID, SAPPHIRE_TESTNET_NETWORK_ID].includes(chainId)
+        'sdk' in this.config &&
+        this.config.sdk === 'oasis'
         ? sapphire.wrap(this.signer)
         : this.signer,
       this.config?.gasFeeMultiplier,
@@ -538,13 +522,11 @@ export class FixedRateExchange extends SmartContractWithAddress {
 
     const estGas = await this.contract.estimateGas.toggleMintState(exchangeId, false)
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-    const { chainId } = await this.contract.provider.getNetwork()
     const trxReceipt = await sendTx(
       estGas,
       this.config &&
-        'confidentialEVM' in this.config &&
-        this.config.confidentialEVM === true &&
-        [SAPPHIRE_MAINNET_NETWORK_ID, SAPPHIRE_TESTNET_NETWORK_ID].includes(chainId)
+        'sdk' in this.config &&
+        this.config.sdk === 'oasis'
         ? sapphire.wrap(this.signer)
         : this.signer,
       this.config?.gasFeeMultiplier,
@@ -579,13 +561,11 @@ export class FixedRateExchange extends SmartContractWithAddress {
 
     const estGas = await this.contract.estimateGas.collectBT(exchangeId, amountWei)
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-    const { chainId } = await this.contract.provider.getNetwork()
     const trxReceipt = await sendTx(
       estGas,
       this.config &&
-        'confidentialEVM' in this.config &&
-        this.config.confidentialEVM === true &&
-        [SAPPHIRE_MAINNET_NETWORK_ID, SAPPHIRE_TESTNET_NETWORK_ID].includes(chainId)
+        'sdk' in this.config &&
+        this.config.sdk === 'oasis'
         ? sapphire.wrap(this.signer)
         : this.signer,
       this.config?.gasFeeMultiplier,
@@ -620,13 +600,11 @@ export class FixedRateExchange extends SmartContractWithAddress {
 
     const estGas = await this.contract.estimateGas.collectDT(exchangeId, amountWei)
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-    const { chainId } = await this.contract.provider.getNetwork()
     const trxReceipt = await sendTx(
       estGas,
       this.config &&
-        'confidentialEVM' in this.config &&
-        this.config.confidentialEVM === true &&
-        [SAPPHIRE_MAINNET_NETWORK_ID, SAPPHIRE_TESTNET_NETWORK_ID].includes(chainId)
+        'sdk' in this.config &&
+        this.config.sdk === 'oasis'
         ? sapphire.wrap(this.signer)
         : this.signer,
       this.config?.gasFeeMultiplier,
@@ -652,13 +630,11 @@ export class FixedRateExchange extends SmartContractWithAddress {
 
     const estGas = await this.contract.estimateGas.collectMarketFee(exchangeId)
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-    const { chainId } = await this.contract.provider.getNetwork()
     const trxReceipt = await sendTx(
       estGas,
       this.config &&
-        'confidentialEVM' in this.config &&
-        this.config.confidentialEVM === true &&
-        [SAPPHIRE_MAINNET_NETWORK_ID, SAPPHIRE_TESTNET_NETWORK_ID].includes(chainId)
+        'sdk' in this.config &&
+        this.config.sdk === 'oasis'
         ? sapphire.wrap(this.signer)
         : this.signer,
       this.config?.gasFeeMultiplier,
@@ -684,13 +660,11 @@ export class FixedRateExchange extends SmartContractWithAddress {
 
     const estGas = await this.contract.estimateGas.collectOceanFee(exchangeId)
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-    const { chainId } = await this.contract.provider.getNetwork()
     const trxReceipt = await sendTx(
       estGas,
       this.config &&
-        'confidentialEVM' in this.config &&
-        this.config.confidentialEVM === true &&
-        [SAPPHIRE_MAINNET_NETWORK_ID, SAPPHIRE_TESTNET_NETWORK_ID].includes(chainId)
+        'sdk' in this.config &&
+        this.config.sdk === 'oasis'
         ? sapphire.wrap(this.signer)
         : this.signer,
       this.config?.gasFeeMultiplier,
@@ -746,13 +720,11 @@ export class FixedRateExchange extends SmartContractWithAddress {
       await this.amountToUnits(null, newMarketFee, 18)
     )
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-    const { chainId } = await this.contract.provider.getNetwork()
     const trxReceipt = await sendTx(
       estGas,
       this.config &&
-        'confidentialEVM' in this.config &&
-        this.config.confidentialEVM === true &&
-        [SAPPHIRE_MAINNET_NETWORK_ID, SAPPHIRE_TESTNET_NETWORK_ID].includes(chainId)
+        'sdk' in this.config &&
+        this.config.sdk === 'oasis'
         ? sapphire.wrap(this.signer)
         : this.signer,
       this.config?.gasFeeMultiplier,
@@ -781,13 +753,11 @@ export class FixedRateExchange extends SmartContractWithAddress {
       newMarketFeeCollector
     )
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-    const { chainId } = await this.contract.provider.getNetwork()
     const trxReceipt = await sendTx(
       estGas,
       this.config &&
-        'confidentialEVM' in this.config &&
-        this.config.confidentialEVM === true &&
-        [SAPPHIRE_MAINNET_NETWORK_ID, SAPPHIRE_TESTNET_NETWORK_ID].includes(chainId)
+        'sdk' in this.config &&
+        this.config.sdk === 'oasis'
         ? sapphire.wrap(this.signer)
         : this.signer,
       this.config?.gasFeeMultiplier,

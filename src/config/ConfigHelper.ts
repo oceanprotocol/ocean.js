@@ -35,11 +35,12 @@ export const configHelperNetworks: Config[] = [
     // comment th following configs if running on macOS
     metadataCacheUri: 'http://172.15.0.5:5000',
     providerUri: 'http://172.15.0.4:8030',
-    subgraphUri: 'https://172.15.0.15:8000'
+    subgraphUri: 'https://172.15.0.15:8000',
     // uncomment the following configs if running on macOS
     // metadataCacheUri: 'http://127.0.0.1:5000',
     // providerUri: 'http://127.0.0.1:8030/',
     // subgraphUri: 'http://127.0.0.1:9000/'
+    sdk: 'evm'
   },
   {
     ...configHelperNetworksBase,
@@ -48,7 +49,8 @@ export const configHelperNetworks: Config[] = [
     nodeUri: 'https://sepolia.infura.io/v3',
     subgraphUri: 'https://v4.subgraph.sepolia.oceanprotocol.com',
     explorerUri: 'https://sepolia.etherscan.io',
-    gasFeeMultiplier: 1.1
+    gasFeeMultiplier: 1.1,
+    sdk: 'evm'
   },
   {
     ...configHelperNetworksBase,
@@ -61,7 +63,8 @@ export const configHelperNetworks: Config[] = [
     transactionBlockTimeout: 150,
     transactionConfirmationBlocks: 5,
     transactionPollingTimeout: 1750,
-    gasFeeMultiplier: 1.05
+    gasFeeMultiplier: 1.05,
+    sdk: 'evm'
   },
   {
     ...configHelperNetworksBase,
@@ -71,7 +74,8 @@ export const configHelperNetworks: Config[] = [
     subgraphUri: 'https://v4.subgraph.polygon.oceanprotocol.com',
     explorerUri: 'https://polygonscan.com',
     oceanTokenSymbol: 'mOCEAN',
-    gasFeeMultiplier: 1.6
+    gasFeeMultiplier: 1.6,
+    sdk: 'evm'
   },
   {
     ...configHelperNetworksBase,
@@ -80,7 +84,8 @@ export const configHelperNetworks: Config[] = [
     nodeUri: 'https://rpc.gaiaxtestnet.oceanprotocol.com',
     providerUri: 'https://v4.provider.gaiaxtestnet.oceanprotocol.com',
     subgraphUri: 'https://v4.subgraph.gaiaxtestnet.oceanprotocol.com',
-    explorerUri: 'https://blockscout.gaiaxtestnet.oceanprotocol.com'
+    explorerUri: 'https://blockscout.gaiaxtestnet.oceanprotocol.com',
+    sdk: 'evm'
   },
   {
     ...configHelperNetworksBase,
@@ -89,7 +94,8 @@ export const configHelperNetworks: Config[] = [
     nodeUri: 'https://polygon-mumbai.infura.io/v3',
     subgraphUri: 'https://v4.subgraph.mumbai.oceanprotocol.com',
     explorerUri: 'https://mumbai.polygonscan.com',
-    gasFeeMultiplier: 1.1
+    gasFeeMultiplier: 1.1,
+    sdk: 'evm'
   },
   {
     ...configHelperNetworksBase,
@@ -98,7 +104,8 @@ export const configHelperNetworks: Config[] = [
     nodeUri: 'https://bsc-dataseed.binance.org',
     subgraphUri: 'https://v4.subgraph.bsc.oceanprotocol.com',
     explorerUri: 'https://bscscan.com/',
-    gasFeeMultiplier: 1.05
+    gasFeeMultiplier: 1.05,
+    sdk: 'evm'
   },
   {
     ...configHelperNetworksBase,
@@ -107,7 +114,8 @@ export const configHelperNetworks: Config[] = [
     nodeUri: 'https://rpc.energyweb.org',
     subgraphUri: 'https://v4.subgraph.energyweb.oceanprotocol.com',
     explorerUri: 'https://explorer.energyweb.org',
-    gasFeeMultiplier: 1.05
+    gasFeeMultiplier: 1.05,
+    sdk: 'evm'
   },
   {
     ...configHelperNetworksBase,
@@ -116,7 +124,8 @@ export const configHelperNetworks: Config[] = [
     nodeUri: 'https://moonriver.api.onfinality.io/public',
     subgraphUri: 'https://v4.subgraph.moonriver.oceanprotocol.com',
     explorerUri: 'https://moonriver.moonscan.io/',
-    gasFeeMultiplier: 1.05
+    gasFeeMultiplier: 1.05,
+    sdk: 'evm'
   },
   {
     ...configHelperNetworksBase,
@@ -127,7 +136,8 @@ export const configHelperNetworks: Config[] = [
     providerUri: 'https://provider.v4.genx.delta-dao.com',
     subgraphUri: 'https://subgraph.v4.genx.minimal-gaia-x.eu',
     explorerUri: 'https://explorer.genx.minimal-gaia-x.eu/',
-    gasFeeMultiplier: 1
+    gasFeeMultiplier: 1,
+    sdk: 'evm'
   },
   {
     ...configHelperNetworksBase,
@@ -136,7 +146,8 @@ export const configHelperNetworks: Config[] = [
     nodeUri: 'https://mainnet.optimism.io',
     subgraphUri: 'https://v4.subgraph.optimism.oceanprotocol.com',
     explorerUri: 'https://optimistic.etherscan.io/',
-    gasFeeMultiplier: 1.1
+    gasFeeMultiplier: 1.1,
+    sdk: 'evm'
   },
   {
     ...configHelperNetworksBase,
@@ -145,7 +156,8 @@ export const configHelperNetworks: Config[] = [
     nodeUri: 'https://sepolia.optimism.io',
     subgraphUri: 'https://v4.subgraph.optimism-sepolia.oceanprotocol.com',
     explorerUri: 'https://sepolia-optimism.etherscan.io/',
-    gasFeeMultiplier: 1.1
+    gasFeeMultiplier: 1.1,
+    sdk: 'evm'
   },
   {
     ...configHelperNetworksBase,
@@ -154,7 +166,8 @@ export const configHelperNetworks: Config[] = [
     nodeUri: 'https://sapphire.oasis.io',
     subgraphUri: 'https://v4.subgraph.sapphire-mainnet.oceanprotocol.com/',
     explorerUri: 'https://explorer.oasis.io/mainnet/sapphire/',
-    gasFeeMultiplier: 1
+    gasFeeMultiplier: 1,
+    sdk: 'oasis'
   },
   {
     ...configHelperNetworksBase,
@@ -164,7 +177,8 @@ export const configHelperNetworks: Config[] = [
     subgraphUri:
       'https://v4.subgraph.sapphire-testnet.oceanprotocol.com/subgraphs/name/oceanprotocol/ocean-subgraph',
     explorerUri: 'https://explorer.oasis.io/testnet/sapphire/',
-    gasFeeMultiplier: 1
+    gasFeeMultiplier: 1,
+    sdk: 'oasis'
   },
   {
     ...configHelperNetworksBase,
@@ -174,7 +188,8 @@ export const configHelperNetworks: Config[] = [
     metadataCacheUri: 'https://aquarius.dev.pontus-x.eu',
     providerUri: 'https://provider.dev.pontus-x.eu',
     subgraphUri: 'https://subgraph.dev.pontus-x.eu',
-    explorerUri: 'https://explorer.dev.pontus-x.eu/testnet/pontusx'
+    explorerUri: 'https://explorer.dev.pontus-x.eu/testnet/pontusx',
+    sdk: 'evm'
   }
 ]
 
@@ -315,13 +330,8 @@ export class ConfigHelper {
         addresses
       )
     }
-    config.confidentialEVM =
-      filterBy === 'chainId'
-        ? KNOWN_CONFIDENTIAL_EVMS.includes(Number(network))
-        : network.toString().includes('oasis_sap')
-    if (config.confidentialEVM) {
-      config.accessListFactory = contractAddressesConfig.accessListFactory
-    }
+    
+    config.accessListFactory = contractAddressesConfig.accessListFactory
 
     config = { ...config, ...contractAddressesConfig }
 

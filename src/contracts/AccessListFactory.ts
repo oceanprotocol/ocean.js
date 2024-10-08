@@ -5,9 +5,7 @@ import {
   generateDtName,
   sendTx,
   getEventFromTx,
-  ZERO_ADDRESS,
-  SAPPHIRE_MAINNET_NETWORK_ID,
-  SAPPHIRE_TESTNET_NETWORK_ID
+  ZERO_ADDRESS
 } from '../utils'
 import { AbiItem, ReceiptOrEstimate } from '../@types'
 import { SmartContractWithAddress } from './SmartContractWithAddress'
@@ -75,15 +73,14 @@ export class AccesslistFactory extends SmartContractWithAddress {
     )
     if (estimateGas) return <G extends false ? string : BigNumber>estGas
     // Invoke createToken function of the contract
-    const { chainId } = await this.contract.provider.getNetwork()
     try {
       const tx = await sendTx(
         estGas,
-        'confidentialEVM' in this.config &&
-          this.config.confidentialEVM === true &&
-          [SAPPHIRE_MAINNET_NETWORK_ID, SAPPHIRE_TESTNET_NETWORK_ID].includes(chainId)
-          ? sapphire.wrap(this.signer)
-          : this.signer,
+        this.config &&
+         'sdk' in this.config &&
+         this.config.sdk === 'oasis'
+         ? sapphire.wrap(this.signer)
+         : this.signer,
         this.config?.gasFeeMultiplier,
         this.contract.deployAccessListContract,
         nameAccessList,
@@ -157,13 +154,11 @@ export class AccesslistFactory extends SmartContractWithAddress {
 
     const estGas = await this.contract.estimateGas.changeTemplateAddress(templateAddress)
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-    const { chainId } = await this.contract.provider.getNetwork()
     const trxReceipt = await sendTx(
       estGas,
       this.config &&
-        'confidentialEVM' in this.config &&
-        this.config.confidentialEVM === true &&
-        [SAPPHIRE_MAINNET_NETWORK_ID, SAPPHIRE_TESTNET_NETWORK_ID].includes(chainId)
+        'sdk' in this.config &&
+        this.config.sdk === 'oasis'
         ? sapphire.wrap(this.signer)
         : this.signer,
       this.config?.gasFeeMultiplier,

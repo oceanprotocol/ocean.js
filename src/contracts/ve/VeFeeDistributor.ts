@@ -1,8 +1,6 @@
 import veFeeABI from '@oceanprotocol/contracts/artifacts/contracts/ve/veFeeDistributor.vy/veFeeDistributor.json'
 import {
-  sendTx,
-  SAPPHIRE_MAINNET_NETWORK_ID,
-  SAPPHIRE_TESTNET_NETWORK_ID
+  sendTx
 } from '../../utils'
 import { SmartContractWithAddress } from '../SmartContractWithAddress'
 import { ReceiptOrEstimate, AbiItem } from '../../@types'
@@ -30,15 +28,13 @@ export class VeFeeDistributor extends SmartContractWithAddress {
   ): Promise<ReceiptOrEstimate<G>> {
     const estGas = await this.contract.estimateGas.claim()
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-    const { chainId } = await this.contract.provider.getNetwork()
 
     // Invoke function of the contract
     const trxReceipt = await sendTx(
       estGas.add(20000),
       this.config &&
-        'confidentialEVM' in this.config &&
-        this.config.confidentialEVM === true &&
-        [SAPPHIRE_MAINNET_NETWORK_ID, SAPPHIRE_TESTNET_NETWORK_ID].includes(chainId)
+        'sdk' in this.config &&
+        this.config.sdk === 'oasis'
         ? sapphire.wrap(this.signer)
         : this.signer,
       this.config?.gasFeeMultiplier,
@@ -62,14 +58,12 @@ export class VeFeeDistributor extends SmartContractWithAddress {
   ): Promise<ReceiptOrEstimate<G>> {
     const estGas = await this.contract.estimateGas.claim_many(addresses)
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-    const { chainId } = await this.contract.provider.getNetwork()
     // Invoke function of the contract
     const trxReceipt = await sendTx(
       estGas.add(20000),
       this.config &&
-        'confidentialEVM' in this.config &&
-        this.config.confidentialEVM === true &&
-        [SAPPHIRE_MAINNET_NETWORK_ID, SAPPHIRE_TESTNET_NETWORK_ID].includes(chainId)
+        'sdk' in this.config &&
+        this.config.sdk === 'oasis'
         ? sapphire.wrap(this.signer)
         : this.signer,
       this.config?.gasFeeMultiplier,

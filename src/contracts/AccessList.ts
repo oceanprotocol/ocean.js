@@ -1,9 +1,7 @@
 import { Signer } from 'ethers'
 import AccessList from '@oceanprotocol/contracts/artifacts/contracts/accesslists/AccessList.sol/AccessList.json'
 import {
-  sendTx,
-  SAPPHIRE_MAINNET_NETWORK_ID,
-  SAPPHIRE_TESTNET_NETWORK_ID
+  sendTx
 } from '../utils'
 import { AbiItem, ReceiptOrEstimate } from '../@types'
 import { Config } from '../config'
@@ -101,13 +99,11 @@ export class AccessListContract extends SmartContractWithAddress {
   ): Promise<ReceiptOrEstimate<G>> {
     const estGas = await this.contract.estimateGas.mint(user, tokenUri)
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-    const { chainId } = await this.contract.provider.getNetwork()
     const trxReceipt = await sendTx(
       estGas,
       this.config &&
-        'confidentialEVM' in this.config &&
-        this.config.confidentialEVM === true &&
-        [SAPPHIRE_MAINNET_NETWORK_ID, SAPPHIRE_TESTNET_NETWORK_ID].includes(chainId)
+        'sdk' in this.config &&
+        this.config.sdk === 'oasis'
         ? sapphire.wrap(this.signer)
         : this.signer,
       this.config?.gasFeeMultiplier,
@@ -132,13 +128,11 @@ export class AccessListContract extends SmartContractWithAddress {
   ): Promise<ReceiptOrEstimate<G>> {
     const estGas = await this.contract.estimateGas.batchMint(users, tokenUris)
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-    const { chainId } = await this.contract.provider.getNetwork()
     const trxReceipt = await sendTx(
       estGas,
       this.config &&
-        'confidentialEVM' in this.config &&
-        this.config.confidentialEVM === true &&
-        [SAPPHIRE_MAINNET_NETWORK_ID, SAPPHIRE_TESTNET_NETWORK_ID].includes(chainId)
+        'sdk' in this.config &&
+        this.config.sdk === 'oasis'
         ? sapphire.wrap(this.signer)
         : this.signer,
       this.config?.gasFeeMultiplier,
@@ -161,13 +155,11 @@ export class AccessListContract extends SmartContractWithAddress {
   ): Promise<ReceiptOrEstimate<G>> {
     const estGas = await this.contract.estimateGas.burn(tokenId)
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-    const { chainId } = await this.contract.provider.getNetwork()
     const trxReceipt = await sendTx(
       estGas,
       this.config &&
-        'confidentialEVM' in this.config &&
-        this.config.confidentialEVM === true &&
-        [SAPPHIRE_MAINNET_NETWORK_ID, SAPPHIRE_TESTNET_NETWORK_ID].includes(chainId)
+        'sdk' in this.config &&
+        this.config.sdk === 'oasis'
         ? sapphire.wrap(this.signer)
         : this.signer,
       this.config?.gasFeeMultiplier,
@@ -189,13 +181,11 @@ export class AccessListContract extends SmartContractWithAddress {
   ): Promise<ReceiptOrEstimate<G>> {
     const estGas = await this.contract.estimateGas.transferOwnership(newOwner)
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-    const { chainId } = await this.contract.provider.getNetwork()
     const trxReceipt = await sendTx(
       estGas,
       this.config &&
-        'confidentialEVM' in this.config &&
-        this.config.confidentialEVM === true &&
-        [SAPPHIRE_MAINNET_NETWORK_ID, SAPPHIRE_TESTNET_NETWORK_ID].includes(chainId)
+        'sdk' in this.config &&
+        this.config.sdk === 'oasis'
         ? sapphire.wrap(this.signer)
         : this.signer,
       this.config?.gasFeeMultiplier,
@@ -215,13 +205,11 @@ export class AccessListContract extends SmartContractWithAddress {
   ): Promise<ReceiptOrEstimate<G>> {
     const estGas = await this.contract.estimateGas.renounceOwnership()
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-    const { chainId } = await this.contract.provider.getNetwork()
     const trxReceipt = await sendTx(
       estGas,
       this.config &&
-        'confidentialEVM' in this.config &&
-        this.config.confidentialEVM === true &&
-        [SAPPHIRE_MAINNET_NETWORK_ID, SAPPHIRE_TESTNET_NETWORK_ID].includes(chainId)
+        'sdk' in this.config &&
+        this.config.sdk === 'oasis'
         ? sapphire.wrap(this.signer)
         : this.signer,
       this.config?.gasFeeMultiplier,

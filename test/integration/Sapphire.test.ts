@@ -56,7 +56,7 @@ describe('Sapphire tests', async () => {
   ]
 
   const config: Config = {
-    confidentialEVM: true,
+    sdk: 'oasis',
     chainId: 23295,
     network: 'oasis_sapphire_testnet',
     nodeUri: 'https://testnet.sapphire.oasis.dev',

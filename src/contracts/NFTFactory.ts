@@ -6,9 +6,7 @@ import {
   sendTx,
   getEventFromTx,
   getTokenDecimals,
-  LoggerInstance,
-  SAPPHIRE_MAINNET_NETWORK_ID,
-  SAPPHIRE_TESTNET_NETWORK_ID
+  LoggerInstance
 } from '../utils'
 import {
   AbiItem,
@@ -58,7 +56,7 @@ export class NftFactory extends SmartContractWithAddress {
     if ((await this.getNFTTemplate(nftData.templateIndex)).isActive === false) {
       throw new Error(`Template is not active`)
     }
-    const { chainId } = await this.contract.provider.getNetwork()
+    
     const estGas = await this.contract.estimateGas.deployERC721Contract(
       nftData.name,
       nftData.symbol,
@@ -75,9 +73,8 @@ export class NftFactory extends SmartContractWithAddress {
       const tx = await sendTx(
         estGas,
         this.config &&
-          'confidentialEVM' in this.config &&
-          this.config.confidentialEVM === true &&
-          [SAPPHIRE_MAINNET_NETWORK_ID, SAPPHIRE_TESTNET_NETWORK_ID].includes(chainId)
+          'sdk' in this.config &&
+          this.config.sdk === 'oasis'
           ? sapphire.wrap(this.signer)
           : this.signer,
         this.config?.gasFeeMultiplier,
@@ -215,16 +212,15 @@ export class NftFactory extends SmartContractWithAddress {
     if (templateAddress === ZERO_ADDRESS) {
       throw new Error(`Template cannot be ZERO address`)
     }
-    const { chainId } = await this.contract.provider.getNetwork()
+    
     const estGas = await this.contract.estimateGas.add721TokenTemplate(templateAddress)
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
 
     const trxReceipt = await sendTx(
       estGas,
       this.config &&
-        'confidentialEVM' in this.config &&
-        this.config.confidentialEVM === true &&
-        [SAPPHIRE_MAINNET_NETWORK_ID, SAPPHIRE_TESTNET_NETWORK_ID].includes(chainId)
+        'sdk' in this.config &&
+        this.config.sdk === 'oasis'
         ? sapphire.wrap(this.signer)
         : this.signer,
       this.config?.gasFeeMultiplier,
@@ -256,16 +252,15 @@ export class NftFactory extends SmartContractWithAddress {
     if (templateIndex === 0) {
       throw new Error(`Template index cannot be ZERO`)
     }
-    const { chainId } = await this.contract.provider.getNetwork()
+    
     const estGas = await this.contract.estimateGas.disable721TokenTemplate(templateIndex)
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
 
     const trxReceipt = await sendTx(
       estGas,
       this.config &&
-        'confidentialEVM' in this.config &&
-        this.config.confidentialEVM === true &&
-        [SAPPHIRE_MAINNET_NETWORK_ID, SAPPHIRE_TESTNET_NETWORK_ID].includes(chainId)
+        'sdk' in this.config &&
+        this.config.sdk === 'oasis'
         ? sapphire.wrap(this.signer)
         : this.signer,
       this.config?.gasFeeMultiplier,
@@ -298,7 +293,7 @@ export class NftFactory extends SmartContractWithAddress {
     if (templateIndex === 0) {
       throw new Error(`Template index cannot be ZERO`)
     }
-    const { chainId } = await this.contract.provider.getNetwork()
+    
     const estGas = await this.contract.estimateGas.reactivate721TokenTemplate(
       templateIndex
     )
@@ -307,9 +302,8 @@ export class NftFactory extends SmartContractWithAddress {
     const trxReceipt = await sendTx(
       estGas,
       this.config &&
-        'confidentialEVM' in this.config &&
-        this.config.confidentialEVM === true &&
-        [SAPPHIRE_MAINNET_NETWORK_ID, SAPPHIRE_TESTNET_NETWORK_ID].includes(chainId)
+        'sdk' in this.config &&
+        this.config.sdk === 'oasis'
         ? sapphire.wrap(this.signer)
         : this.signer,
       this.config?.gasFeeMultiplier,
@@ -338,16 +332,15 @@ export class NftFactory extends SmartContractWithAddress {
     if (templateAddress === ZERO_ADDRESS) {
       throw new Error(`Template cannot be address ZERO`)
     }
-    const { chainId } = await this.contract.provider.getNetwork()
+    
     const estGas = await this.contract.estimateGas.addTokenTemplate(templateAddress)
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
 
     const trxReceipt = await sendTx(
       estGas,
       this.config &&
-        'confidentialEVM' in this.config &&
-        this.config.confidentialEVM === true &&
-        [SAPPHIRE_MAINNET_NETWORK_ID, SAPPHIRE_TESTNET_NETWORK_ID].includes(chainId)
+        'sdk' in this.config &&
+        this.config.sdk === 'oasis'
         ? sapphire.wrap(this.signer)
         : this.signer,
       this.config?.gasFeeMultiplier,
@@ -383,16 +376,15 @@ export class NftFactory extends SmartContractWithAddress {
     if ((await this.getTokenTemplate(templateIndex)).isActive === false) {
       throw new Error(`Template is already disabled`)
     }
-    const { chainId } = await this.contract.provider.getNetwork()
+    
     const estGas = await this.contract.estimateGas.disableTokenTemplate(templateIndex)
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
 
     const trxReceipt = await sendTx(
       estGas,
       this.config &&
-        'confidentialEVM' in this.config &&
-        this.config.confidentialEVM === true &&
-        [SAPPHIRE_MAINNET_NETWORK_ID, SAPPHIRE_TESTNET_NETWORK_ID].includes(chainId)
+        'sdk' in this.config &&
+        this.config.sdk === 'oasis'
         ? sapphire.wrap(this.signer)
         : this.signer,
       this.config?.gasFeeMultiplier,
@@ -428,16 +420,15 @@ export class NftFactory extends SmartContractWithAddress {
     if ((await this.getTokenTemplate(templateIndex)).isActive === true) {
       throw new Error(`Template is already active`)
     }
-    const { chainId } = await this.contract.provider.getNetwork()
+    
     const estGas = await this.contract.estimateGas.reactivateTokenTemplate(templateIndex)
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
 
     const trxReceipt = await sendTx(
       estGas,
       this.config &&
-        'confidentialEVM' in this.config &&
-        this.config.confidentialEVM === true &&
-        [SAPPHIRE_MAINNET_NETWORK_ID, SAPPHIRE_TESTNET_NETWORK_ID].includes(chainId)
+        'sdk' in this.config &&
+        this.config.sdk === 'oasis'
         ? sapphire.wrap(this.signer)
         : this.signer,
       this.config?.gasFeeMultiplier,
@@ -466,16 +457,15 @@ export class NftFactory extends SmartContractWithAddress {
     if (orders.length > 50) {
       throw new Error(`Too many orders`)
     }
-    const { chainId } = await this.contract.provider.getNetwork()
+    
     const estGas = await this.contract.estimateGas.startMultipleTokenOrder(orders)
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
 
     const trxReceipt = await sendTx(
       estGas,
       this.config &&
-        'confidentialEVM' in this.config &&
-        this.config.confidentialEVM === true &&
-        [SAPPHIRE_MAINNET_NETWORK_ID, SAPPHIRE_TESTNET_NETWORK_ID].includes(chainId)
+        'sdk' in this.config &&
+        this.config.sdk === 'oasis'
         ? sapphire.wrap(this.signer)
         : this.signer,
       this.config?.gasFeeMultiplier,
@@ -500,7 +490,7 @@ export class NftFactory extends SmartContractWithAddress {
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
     const ercCreateData = await this.getErcCreationParams(dtParams)
-    const { chainId } = await this.contract.provider.getNetwork()
+    
     const estGas = await this.contract.estimateGas.createNftWithErc20(
       nftCreateData,
       ercCreateData
@@ -510,9 +500,8 @@ export class NftFactory extends SmartContractWithAddress {
     const trxReceipt = await sendTx(
       estGas,
       this.config &&
-        'confidentialEVM' in this.config &&
-        this.config.confidentialEVM === true &&
-        [SAPPHIRE_MAINNET_NETWORK_ID, SAPPHIRE_TESTNET_NETWORK_ID].includes(chainId)
+        'sdk' in this.config &&
+        this.config.sdk === 'oasis'
         ? sapphire.wrap(this.signer)
         : this.signer,
       this.config?.gasFeeMultiplier,
@@ -541,7 +530,7 @@ export class NftFactory extends SmartContractWithAddress {
   ): Promise<ReceiptOrEstimate<G>> {
     const ercCreateData = await this.getErcCreationParams(dtParams)
     const fixedData = await this.getFreCreationParams(freParams)
-    const { chainId } = await this.contract.provider.getNetwork()
+    
 
     const estGas = await this.contract.estimateGas.createNftWithErc20WithFixedRate(
       nftCreateData,
@@ -553,9 +542,8 @@ export class NftFactory extends SmartContractWithAddress {
     const trxReceipt = await sendTx(
       estGas,
       this.config &&
-        'confidentialEVM' in this.config &&
-        this.config.confidentialEVM === true &&
-        [SAPPHIRE_MAINNET_NETWORK_ID, SAPPHIRE_TESTNET_NETWORK_ID].includes(chainId)
+        'sdk' in this.config &&
+        this.config.sdk === 'oasis'
         ? sapphire.wrap(this.signer)
         : this.signer,
       this.config?.gasFeeMultiplier,
@@ -584,7 +572,7 @@ export class NftFactory extends SmartContractWithAddress {
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
     const ercCreateData = await this.getErcCreationParams(dtParams)
-    const { chainId } = await this.contract.provider.getNetwork()
+    
 
     dispenserParams.maxBalance = await this.amountToUnits(
       null,
@@ -608,9 +596,8 @@ export class NftFactory extends SmartContractWithAddress {
     const trxReceipt = await sendTx(
       estGas,
       this.config &&
-        'confidentialEVM' in this.config &&
-        this.config.confidentialEVM === true &&
-        [SAPPHIRE_MAINNET_NETWORK_ID, SAPPHIRE_TESTNET_NETWORK_ID].includes(chainId)
+        'sdk' in this.config &&
+        this.config.sdk === 'oasis'
         ? sapphire.wrap(this.signer)
         : this.signer,
       this.config?.gasFeeMultiplier,

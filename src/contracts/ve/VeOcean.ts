@@ -1,8 +1,6 @@
 import veOceanABI from '@oceanprotocol/contracts/artifacts/contracts/ve/veOCEAN.vy/veOCEAN.json'
 import {
-  sendTx,
-  SAPPHIRE_MAINNET_NETWORK_ID,
-  SAPPHIRE_TESTNET_NETWORK_ID
+  sendTx
 } from '../../utils'
 import { SmartContractWithAddress } from '../SmartContractWithAddress'
 import { ReceiptOrEstimate, AbiItem } from '../../@types'
@@ -33,14 +31,12 @@ export class VeOcean extends SmartContractWithAddress {
       unlockTime
     )
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-    const { chainId } = await this.contract.provider.getNetwork()
     // Invoke function of the contract
     const trxReceipt = await sendTx(
       estGas.add(20000),
       this.config &&
-        'confidentialEVM' in this.config &&
-        this.config.confidentialEVM === true &&
-        [SAPPHIRE_MAINNET_NETWORK_ID, SAPPHIRE_TESTNET_NETWORK_ID].includes(chainId)
+        'sdk' in this.config &&
+        this.config.sdk === 'oasis'
         ? sapphire.wrap(this.signer)
         : this.signer,
       this.config?.gasFeeMultiplier,
@@ -67,14 +63,12 @@ export class VeOcean extends SmartContractWithAddress {
     const amountFormatted = await this.amountToUnits(await this.getToken(), amount)
     const estGas = await this.contract.estimateGas.deposit_for(toAddress, amountFormatted)
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-    const { chainId } = await this.contract.provider.getNetwork()
     // Invoke function of the contract
     const trxReceipt = await sendTx(
       estGas.add(20000),
       this.config &&
-        'confidentialEVM' in this.config &&
-        this.config.confidentialEVM === true &&
-        [SAPPHIRE_MAINNET_NETWORK_ID, SAPPHIRE_TESTNET_NETWORK_ID].includes(chainId)
+        'sdk' in this.config &&
+        this.config.sdk === 'oasis'
         ? sapphire.wrap(this.signer)
         : this.signer,
       this.config?.gasFeeMultiplier,
@@ -98,14 +92,12 @@ export class VeOcean extends SmartContractWithAddress {
     const amountFormatted = await this.amountToUnits(await this.getToken(), amount)
     const estGas = await this.contract.estimateGas.increase_amount(amountFormatted)
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-    const { chainId } = await this.contract.provider.getNetwork()
     // Invoke function of the contract
     const trxReceipt = await sendTx(
       estGas.add(20000),
       this.config &&
-        'confidentialEVM' in this.config &&
-        this.config.confidentialEVM === true &&
-        [SAPPHIRE_MAINNET_NETWORK_ID, SAPPHIRE_TESTNET_NETWORK_ID].includes(chainId)
+        'sdk' in this.config &&
+        this.config.sdk === 'oasis'
         ? sapphire.wrap(this.signer)
         : this.signer,
       this.config?.gasFeeMultiplier,
@@ -127,14 +119,12 @@ export class VeOcean extends SmartContractWithAddress {
   ): Promise<ReceiptOrEstimate<G>> {
     const estGas = await this.contract.estimateGas.increase_unlock_time(unlockTime)
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-    const { chainId } = await this.contract.provider.getNetwork()
     // Invoke function of the contract
     const trxReceipt = await sendTx(
       estGas.add(20000),
       this.config &&
-        'confidentialEVM' in this.config &&
-        this.config.confidentialEVM === true &&
-        [SAPPHIRE_MAINNET_NETWORK_ID, SAPPHIRE_TESTNET_NETWORK_ID].includes(chainId)
+        'sdk' in this.config &&
+        this.config.sdk === 'oasis'
         ? sapphire.wrap(this.signer)
         : this.signer,
       this.config?.gasFeeMultiplier,
@@ -154,14 +144,12 @@ export class VeOcean extends SmartContractWithAddress {
   ): Promise<ReceiptOrEstimate<G>> {
     const estGas = await this.contract.estimateGas.withdraw()
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-    const { chainId } = await this.contract.provider.getNetwork()
     // Invoke function of the contract
     const trxReceipt = await sendTx(
       estGas.add(20000),
       this.config &&
-        'confidentialEVM' in this.config &&
-        this.config.confidentialEVM === true &&
-        [SAPPHIRE_MAINNET_NETWORK_ID, SAPPHIRE_TESTNET_NETWORK_ID].includes(chainId)
+        'sdk' in this.config &&
+        this.config.sdk === 'oasis'
         ? sapphire.wrap(this.signer)
         : this.signer,
       this.config?.gasFeeMultiplier,
