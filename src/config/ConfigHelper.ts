@@ -206,6 +206,7 @@ export class ConfigHelper {
         DFRewards,
         DFStrategyV1,
         veFeeEstimate,
+        Router,
         AccessListFactory
       } = customAddresses[network]
       configAddresses = {
@@ -214,6 +215,7 @@ export class ConfigHelper {
         fixedRateExchangeAddress: FixedPrice,
         dispenserAddress: Dispenser,
         oceanTokenAddress: Ocean,
+        routerFactoryAddress: Router,
         chainId,
         startBlock,
         veAllocate,
@@ -247,6 +249,7 @@ export class ConfigHelper {
           DFRewards,
           DFStrategyV1,
           veFeeEstimate,
+          Router,
           AccessListFactory
         } = DefaultContractsAddresses[network]
         configAddresses = {
@@ -255,6 +258,7 @@ export class ConfigHelper {
           fixedRateExchangeAddress: FixedPrice,
           dispenserAddress: Dispenser,
           oceanTokenAddress: Ocean,
+          routerFactoryAddress: Router,
           chainId,
           startBlock,
           veAllocate,
