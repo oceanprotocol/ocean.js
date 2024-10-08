@@ -293,7 +293,11 @@ async function createAsset(
 ) {
   const nft = new Nft(owner, (await owner.provider.getNetwork()).chainId)
 
-  const nftFactory = new NftFactory(addresses.ERC721Factory, owner)
+  const nftFactory = new NftFactory(
+    addresses.ERC721Factory,
+    owner,
+    await owner.getChainId()
+  )
 
   const chain = (await owner.provider.getNetwork()).chainId
 

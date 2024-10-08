@@ -24,12 +24,12 @@ export abstract class SmartContract {
    */
   constructor(
     signer: Signer,
-    network?: string | number,
+    network: string | number,
     config?: Config,
     abi?: AbiItem[]
   ) {
     this.signer = signer
-    this.config = config || new ConfigHelper().getConfig(network || 'unknown')
+    this.config = config || new ConfigHelper().getConfig(network)
     this.abi = abi || this.getDefaultAbi()
   }
 

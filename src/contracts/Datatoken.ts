@@ -44,14 +44,14 @@ export class Datatoken extends SmartContract {
    */
   constructor(
     signer: Signer,
-    network?: string | number,
+    network: string | number,
     config?: Config,
     abi?: AbiItem[],
     abiEnterprise?: AbiItem[]
   ) {
     super(signer, network, config, abi)
     this.abiEnterprise = abiEnterprise || (ERC20TemplateEnterprise.abi as AbiItem[])
-    this.nft = new Nft(this.signer)
+    this.nft = new Nft(this.signer, network)
   }
 
   /**
