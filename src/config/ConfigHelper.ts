@@ -330,7 +330,7 @@ export class ConfigHelper {
         addresses
       )
     }
-    
+
     config.accessListFactory = contractAddressesConfig.accessListFactory
 
     config = { ...config, ...contractAddressesConfig }
