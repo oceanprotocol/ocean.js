@@ -74,7 +74,9 @@ export class NftFactory extends SmartContractWithAddress {
     try {
       const tx = await sendTx(
         estGas,
-        this.config.confidentialEVM === true &&
+        this.config &&
+          'confidentialEVM' in this.config &&
+          this.config.confidentialEVM === true &&
           [SAPPHIRE_MAINNET_NETWORK_ID, SAPPHIRE_TESTNET_NETWORK_ID].includes(chainId)
           ? sapphire.wrap(this.signer)
           : this.signer,
