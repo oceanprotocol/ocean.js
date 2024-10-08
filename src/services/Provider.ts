@@ -372,7 +372,7 @@ export class Provider {
     let initializeUrl = this.getEndpointURL(serviceEndpoints, 'initialize')
       ? this.getEndpointURL(serviceEndpoints, 'initialize').urlPath
       : null
-    console.log(initializeUrl)
+
     if (!initializeUrl) return null
     initializeUrl += `?documentId=${did}`
     initializeUrl += `&serviceId=${serviceId}`
@@ -389,7 +389,6 @@ export class Provider {
         headers: { 'Content-Type': 'application/json' },
         signal
       })
-      console.log(response)
     } catch (e) {
       LoggerInstance.error('Provider initialized failed: ')
       LoggerInstance.error(e)

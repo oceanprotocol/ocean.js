@@ -13,7 +13,6 @@ import {
 } from '../../src'
 import { Files, Smartcontract } from '../../src/@types'
 import { createAsset, orderAsset, updateAssetMetadata } from './helpers'
-import axios from 'axios'
 
 let config: Config
 
@@ -138,22 +137,20 @@ function delay(interval: number) {
 
 function uploadToIpfs(data: any): Promise<string> {
   return new Promise((resolve, reject) => {
-    axios
-      .post(
-        'http://172.15.0.16:5001/api/v0/add',
+    fetch('http://172.15.0.16:5001/api/v0/add', {
+      method: 'POST',
+      headers: {
+        'Content-Type':
+          'multipart/form-data; boundary=------------------------a28d68b1c872c96f'
+      },
+      body:
         '--------------------------a28d68b1c872c96f\r\nContent-Disposition: form-data; name="file"; filename="ddo.json"\r\nContent-Type: application/octet-stream\r\n\r\n' +
-          data +
-          '\r\n--------------------------a28d68b1c872c96f--\r\n',
-        {
-          headers: {
-            'Content-Type':
-              'multipart/form-data; boundary=------------------------a28d68b1c872c96f'
-          }
-        }
-      )
+        data +
+        '\r\n--------------------------a28d68b1c872c96f--\r\n'
+    })
       .then(function (response: any) {
-        console.log('hash: ', response.data.Hash)
-        resolve(response.data.Hash)
+        const resp = response.json()
+        resolve(resp.Hash)
       })
       .catch(function (error: any) {
         reject(error)

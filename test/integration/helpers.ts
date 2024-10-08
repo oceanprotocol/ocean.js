@@ -174,7 +174,6 @@ export async function orderAsset(
   datatoken: Datatoken,
   providerUrl: string
 ) {
-  console.log(did)
   const initializeData = await ProviderInstance.initialize(
     did,
     serviceId,
