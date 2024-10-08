@@ -510,7 +510,7 @@ export class Provider {
       )) + 1
     ).toString()
 
-    const signature = await this.signProviderRequest(signer, did + nonce)
+    const signature = await this.signProviderRequest(signer, did + nonce) // did + nonce
     let consumeUrl = downloadUrl
     consumeUrl += `?fileIndex=${fileIndex}`
     consumeUrl += `&documentId=${did}`

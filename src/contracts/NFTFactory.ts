@@ -1,4 +1,4 @@
-import { BigNumber } from 'ethers'
+import { BigNumber, ethers } from 'ethers'
 import ERC721Factory from '@oceanprotocol/contracts/artifacts/contracts/ERC721Factory.sol/ERC721Factory.json'
 import {
   generateDtName,
@@ -67,23 +67,33 @@ export class NftFactory extends SmartContractWithAddress {
     )
     if (estimateGas) return <G extends false ? string : BigNumber>estGas
     // Invoke createToken function of the contract
-    const tx = await sendTx(
-      estGas,
-      this.signer,
-      this.config?.gasFeeMultiplier,
-      this.contract.deployERC721Contract,
-      nftData.name,
-      nftData.symbol,
-      nftData.templateIndex,
-      ZERO_ADDRESS,
-      ZERO_ADDRESS,
-      nftData.tokenURI,
-      nftData.transferable,
-      nftData.owner
-    )
-    const trxReceipt = await tx.wait()
-    const events = getEventFromTx(trxReceipt, 'NFTCreated')
-    return events.args[0]
+    try {
+      const tx = await sendTx(
+        estGas,
+        this.signer,
+        this.config?.gasFeeMultiplier,
+        this.contract.deployERC721Contract,
+        nftData.name,
+        nftData.symbol,
+        nftData.templateIndex,
+        ZERO_ADDRESS,
+        ZERO_ADDRESS,
+        nftData.tokenURI,
+        nftData.transferable,
+        nftData.owner
+      )
+      if (!tx) {
+        const e =
+          'Tx for deploying new NFT contract does not exist or status is not successful.'
+        console.error(e)
+        throw e
+      }
+      const trxReceipt = await tx.wait()
+      const events = getEventFromTx(trxReceipt, 'NFTCreated')
+      return events.args[0]
+    } catch (e) {
+      console.error(`Creation of NFT failed: ${e}`)
+    }
   }
 
   /**
@@ -570,20 +580,39 @@ export class NftFactory extends SmartContractWithAddress {
       }
     }
 
+    // common stuff for other templates
+    const addresses = [
+      dtParams.minter,
+      dtParams.paymentCollector,
+      dtParams.mpFeeAddress,
+      dtParams.feeToken
+    ]
+
+    if (dtParams.filesObject) {
+      // template 4 only, ignored for others
+      if (dtParams.accessListFactory) {
+        addresses.push(dtParams.accessListFactory)
+      }
+      if (dtParams.allowAccessList) {
+        addresses.push(dtParams.allowAccessList)
+      }
+
+      if (dtParams.denyAccessList) {
+        addresses.push(dtParams.denyAccessList)
+      }
+    }
+
     return {
       templateIndex: dtParams.templateIndex,
       strings: [dtParams.name || name, dtParams.symbol || symbol],
-      addresses: [
-        dtParams.minter,
-        dtParams.paymentCollector,
-        dtParams.mpFeeAddress,
-        dtParams.feeToken
-      ],
+      addresses,
       uints: [
         await this.amountToUnits(null, dtParams.cap, 18),
         await this.amountToUnits(null, dtParams.feeAmount, feeTokenDecimals)
       ],
-      bytess: []
+      bytess: dtParams.filesObject
+        ? [ethers.utils.toUtf8Bytes(JSON.stringify(dtParams.filesObject))]
+        : []
     }
   }
 

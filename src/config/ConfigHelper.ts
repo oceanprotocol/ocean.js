@@ -158,6 +158,16 @@ export const configHelperNetworks: Config[] = [
   },
   {
     ...configHelperNetworksBase,
+    chainId: 23295,
+    network: 'oasis_sapphire_testnet',
+    nodeUri: 'https://testnet.sapphire.oasis.dev',
+    subgraphUri:
+      'https://v4.subgraph.sapphire-testnet.oceanprotocol.com/subgraphs/name/oceanprotocol/ocean-subgraph',
+    explorerUri: 'https://explorer.oasis.io/testnet/sapphire/',
+    gasFeeMultiplier: 1
+  },
+  {
+    ...configHelperNetworksBase,
     chainId: 32456,
     network: 'pontus-x-devnet',
     nodeUri: 'https://rpc.dev.pontus-x.eu',
@@ -166,6 +176,11 @@ export const configHelperNetworks: Config[] = [
     subgraphUri: 'https://subgraph.dev.pontus-x.eu',
     explorerUri: 'https://explorer.dev.pontus-x.eu/testnet/pontusx'
   }
+]
+
+export const KNOWN_CONFIDENTIAL_EVMS = [
+  23294, // oasis_sapphire
+  23295 // oasis_sapphire_testnet
 ]
 
 export class ConfigHelper {
@@ -191,7 +206,8 @@ export class ConfigHelper {
         DFRewards,
         DFStrategyV1,
         veFeeEstimate,
-        Router
+        Router,
+        AccessListFactory
       } = customAddresses[network]
       configAddresses = {
         nftFactoryAddress: ERC721Factory,
@@ -210,6 +226,7 @@ export class ConfigHelper {
         DFRewards,
         DFStrategyV1,
         veFeeEstimate,
+        accessListFactory: AccessListFactory,
         ...(process.env.AQUARIUS_URL && { metadataCacheUri: process.env.AQUARIUS_URL }),
         ...(process.env.PROVIDER_URL && { providerUri: process.env.PROVIDER_URL })
       }
@@ -232,7 +249,8 @@ export class ConfigHelper {
           DFRewards,
           DFStrategyV1,
           veFeeEstimate,
-          Router
+          Router,
+          AccessListFactory
         } = DefaultContractsAddresses[network]
         configAddresses = {
           nftFactoryAddress: ERC721Factory,
@@ -251,6 +269,7 @@ export class ConfigHelper {
           DFRewards,
           DFStrategyV1,
           veFeeEstimate,
+          accessListFactory: AccessListFactory,
           ...(process.env.AQUARIUS_URL && { metadataCacheUri: process.env.AQUARIUS_URL }),
           ...(process.env.PROVIDER_URL && { providerUri: process.env.PROVIDER_URL })
         }
@@ -267,6 +286,7 @@ export class ConfigHelper {
    */
   public getConfig(network: string | number, infuraProjectId?: string): Config {
     const filterBy = typeof network === 'string' ? 'network' : 'chainId'
+
     let config = configHelperNetworks.find((c) => c[filterBy] === network)
 
     if (!config) {
@@ -286,7 +306,23 @@ export class ConfigHelper {
       console.log(e)
       addresses = null
     }
-    const contractAddressesConfig = this.getAddressesFromEnv(config.network, addresses)
+
+    let contractAddressesConfig = this.getAddressesFromEnv(config.network, addresses)
+    // check oasis network name typos on addresses.json
+    if (!contractAddressesConfig && KNOWN_CONFIDENTIAL_EVMS.includes(config.chainId)) {
+      contractAddressesConfig = this.getAddressesFromEnv(
+        config.network.replace('sapph', 'saph'),
+        addresses
+      )
+    }
+    config.confidentialEVM =
+      filterBy === 'chainId'
+        ? KNOWN_CONFIDENTIAL_EVMS.includes(Number(network))
+        : network.toString().includes('oasis_sap')
+    if (config.confidentialEVM) {
+      config.accessListFactory = contractAddressesConfig.accessListFactory
+    }
+
     config = { ...config, ...contractAddressesConfig }
 
     const nodeUri = infuraProjectId

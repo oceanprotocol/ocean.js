@@ -22,6 +22,7 @@ import {
   Files
 } from '../../src/@types'
 
+import { createAsset } from '../../src/utils'
 function delay(interval: number) {
   return it('should delay', (done) => {
     setTimeout(() => done(), interval)
@@ -197,6 +198,25 @@ describe('Publish tests', async () => {
   })
 
   delay(19000)
+
+  it('should publish a dataset with fixed price (create NFT + Datoken + fixed price) using createAsset() fn', async () => {
+    const fixedPriceDdo: DDO = { ...genericAsset }
+    const ownerAddress = publisherAccount
+    const asset = await createAsset(
+      'test asset',
+      'TEST',
+      ownerAddress,
+      assetUrl,
+      1, // template 1 on dev network
+      fixedPriceDdo,
+      true, // encrypted ddo
+      providerUrl,
+      ZERO_ADDRESS, // provider fee token
+      aquarius
+    )
+
+    assert(asset !== null, 'Could not publish asset!')
+  })
 
   it('should resolve the fixed price dataset', async () => {
     const resolvedDDO = await aquarius.waitForAqua(fixedPricedDID)

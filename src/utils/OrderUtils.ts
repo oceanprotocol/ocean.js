@@ -66,6 +66,7 @@ export async function orderAsset(
     )
 
   const templateIndex = await datatoken.getId(asset.datatokens[datatokenIndex].address)
+
   const fixedRates = await datatoken.getFixedRates(
     asset.datatokens[datatokenIndex].address
   )
@@ -137,7 +138,7 @@ export async function orderAsset(
           orderParams._consumeMarketFee
         )
       }
-      if (templateIndex === 2) {
+      if (templateIndex === 2 || templateIndex === 4) {
         return await datatoken.buyFromDispenserAndOrder(
           asset.services[serviceIndex].datatokenAddress,
           orderParams,
@@ -189,7 +190,7 @@ export async function orderAsset(
         )
         const txApprove = typeof tx !== 'number' ? await tx.wait() : tx
         if (!txApprove) {
-          throw new Error(`Failed to appove ${exchange.baseToken} !`)
+          throw new Error(`Failed to approve ${exchange.baseToken} !`)
         }
         const freTx = await fre.buyDatatokens(
           exchange.exchangeId,
@@ -210,7 +211,7 @@ export async function orderAsset(
           orderParams._consumeMarketFee
         )
       }
-      if (templateIndex === 2) {
+      if (templateIndex === 2 || templateIndex === 4) {
         const tx: any = await approve(
           consumerAccount,
           config,
@@ -220,10 +221,12 @@ export async function orderAsset(
           price,
           false
         )
-
+        if (!tx) {
+          throw new Error(`Failed to approve ${exchange.baseToken} !`)
+        }
         const txApprove = typeof tx !== 'number' ? await tx.wait() : tx
         if (!txApprove) {
-          return
+          throw new Error(`Failed to confirm/mine approval transaction!`)
         }
         const txBuy = await datatoken.buyFromFreAndOrder(
           asset.datatokens[datatokenIndex].address,
