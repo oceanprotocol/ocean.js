@@ -1,12 +1,7 @@
 import { BigNumber, Signer } from 'ethers'
 import { Config } from '../config'
 import AccessListFactory from '@oceanprotocol/contracts/artifacts/contracts/accesslists/AccessListFactory.sol/AccessListFactory.json'
-import {
-  generateDtName,
-  sendTx,
-  getEventFromTx,
-  ZERO_ADDRESS
-} from '../utils'
+import { generateDtName, sendTx, getEventFromTx, ZERO_ADDRESS } from '../utils'
 import { AbiItem, ReceiptOrEstimate } from '../@types'
 import { SmartContractWithAddress } from './SmartContractWithAddress'
 import * as sapphire from '@oasisprotocol/sapphire-paratime'
@@ -76,11 +71,9 @@ export class AccesslistFactory extends SmartContractWithAddress {
     try {
       const tx = await sendTx(
         estGas,
-        this.config &&
-         'sdk' in this.config &&
-         this.config.sdk === 'oasis'
-         ? sapphire.wrap(this.signer)
-         : this.signer,
+        this.config && 'sdk' in this.config && this.config.sdk === 'oasis'
+          ? sapphire.wrap(this.signer)
+          : this.signer,
         this.config?.gasFeeMultiplier,
         this.contract.deployAccessListContract,
         nameAccessList,
@@ -156,9 +149,7 @@ export class AccesslistFactory extends SmartContractWithAddress {
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
     const trxReceipt = await sendTx(
       estGas,
-      this.config &&
-        'sdk' in this.config &&
-        this.config.sdk === 'oasis'
+      this.config && 'sdk' in this.config && this.config.sdk === 'oasis'
         ? sapphire.wrap(this.signer)
         : this.signer,
       this.config?.gasFeeMultiplier,

@@ -1,8 +1,5 @@
 import FixedRateExchangeAbi from '@oceanprotocol/contracts/artifacts/contracts/pools/fixedRate/FixedRateExchange.sol/FixedRateExchange.json'
-import {
-  sendTx,
-  ZERO_ADDRESS
-} from '../utils'
+import { sendTx, ZERO_ADDRESS } from '../utils'
 import {
   PriceAndFees,
   FeesInfo,
@@ -70,9 +67,7 @@ export class FixedRateExchange extends SmartContractWithAddress {
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
     const trxReceipt = await sendTx(
       estGas,
-      this.config &&
-        'sdk' in this.config &&
-        this.config.sdk === 'oasis'
+      this.config && 'sdk' in this.config && this.config.sdk === 'oasis'
         ? sapphire.wrap(this.signer)
         : this.signer,
       this.config?.gasFeeMultiplier,
@@ -127,9 +122,7 @@ export class FixedRateExchange extends SmartContractWithAddress {
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
     const trxReceipt = await sendTx(
       estGas,
-      this.config &&
-        'sdk' in this.config &&
-        this.config.sdk === 'oasis'
+      this.config && 'sdk' in this.config && this.config.sdk === 'oasis'
         ? sapphire.wrap(this.signer)
         : this.signer,
       this.config?.gasFeeMultiplier,
@@ -171,9 +164,7 @@ export class FixedRateExchange extends SmartContractWithAddress {
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
     const trxReceipt = await sendTx(
       estGas,
-      this.config &&
-        'sdk' in this.config &&
-        this.config.sdk === 'oasis'
+      this.config && 'sdk' in this.config && this.config.sdk === 'oasis'
         ? sapphire.wrap(this.signer)
         : this.signer,
       this.config?.gasFeeMultiplier,
@@ -204,9 +195,7 @@ export class FixedRateExchange extends SmartContractWithAddress {
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
     const trxReceipt = await sendTx(
       estGas,
-      this.config &&
-        'sdk' in this.config &&
-        this.config.sdk === 'oasis'
+      this.config && 'sdk' in this.config && this.config.sdk === 'oasis'
         ? sapphire.wrap(this.signer)
         : this.signer,
       this.config?.gasFeeMultiplier,
@@ -234,9 +223,7 @@ export class FixedRateExchange extends SmartContractWithAddress {
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
     const trxReceipt = await sendTx(
       estGas,
-      this.config &&
-        'sdk' in this.config &&
-        this.config.sdk === 'oasis'
+      this.config && 'sdk' in this.config && this.config.sdk === 'oasis'
         ? sapphire.wrap(this.signer)
         : this.signer,
       this.config?.gasFeeMultiplier,
@@ -264,9 +251,7 @@ export class FixedRateExchange extends SmartContractWithAddress {
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
     const trxReceipt = await sendTx(
       estGas,
-      this.config &&
-        'sdk' in this.config &&
-        this.config.sdk === 'oasis'
+      this.config && 'sdk' in this.config && this.config.sdk === 'oasis'
         ? sapphire.wrap(this.signer)
         : this.signer,
       this.config?.gasFeeMultiplier,
@@ -493,9 +478,7 @@ export class FixedRateExchange extends SmartContractWithAddress {
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
     const trxReceipt = await sendTx(
       estGas,
-      this.config &&
-        'sdk' in this.config &&
-        this.config.sdk === 'oasis'
+      this.config && 'sdk' in this.config && this.config.sdk === 'oasis'
         ? sapphire.wrap(this.signer)
         : this.signer,
       this.config?.gasFeeMultiplier,
@@ -524,9 +507,7 @@ export class FixedRateExchange extends SmartContractWithAddress {
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
     const trxReceipt = await sendTx(
       estGas,
-      this.config &&
-        'sdk' in this.config &&
-        this.config.sdk === 'oasis'
+      this.config && 'sdk' in this.config && this.config.sdk === 'oasis'
         ? sapphire.wrap(this.signer)
         : this.signer,
       this.config?.gasFeeMultiplier,
@@ -563,9 +544,7 @@ export class FixedRateExchange extends SmartContractWithAddress {
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
     const trxReceipt = await sendTx(
       estGas,
-      this.config &&
-        'sdk' in this.config &&
-        this.config.sdk === 'oasis'
+      this.config && 'sdk' in this.config && this.config.sdk === 'oasis'
         ? sapphire.wrap(this.signer)
         : this.signer,
       this.config?.gasFeeMultiplier,
@@ -602,9 +581,7 @@ export class FixedRateExchange extends SmartContractWithAddress {
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
     const trxReceipt = await sendTx(
       estGas,
-      this.config &&
-        'sdk' in this.config &&
-        this.config.sdk === 'oasis'
+      this.config && 'sdk' in this.config && this.config.sdk === 'oasis'
         ? sapphire.wrap(this.signer)
         : this.signer,
       this.config?.gasFeeMultiplier,
@@ -632,9 +609,7 @@ export class FixedRateExchange extends SmartContractWithAddress {
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
     const trxReceipt = await sendTx(
       estGas,
-      this.config &&
-        'sdk' in this.config &&
-        this.config.sdk === 'oasis'
+      this.config && 'sdk' in this.config && this.config.sdk === 'oasis'
         ? sapphire.wrap(this.signer)
         : this.signer,
       this.config?.gasFeeMultiplier,
@@ -662,9 +637,7 @@ export class FixedRateExchange extends SmartContractWithAddress {
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
     const trxReceipt = await sendTx(
       estGas,
-      this.config &&
-        'sdk' in this.config &&
-        this.config.sdk === 'oasis'
+      this.config && 'sdk' in this.config && this.config.sdk === 'oasis'
         ? sapphire.wrap(this.signer)
         : this.signer,
       this.config?.gasFeeMultiplier,
@@ -722,9 +695,7 @@ export class FixedRateExchange extends SmartContractWithAddress {
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
     const trxReceipt = await sendTx(
       estGas,
-      this.config &&
-        'sdk' in this.config &&
-        this.config.sdk === 'oasis'
+      this.config && 'sdk' in this.config && this.config.sdk === 'oasis'
         ? sapphire.wrap(this.signer)
         : this.signer,
       this.config?.gasFeeMultiplier,
@@ -755,9 +726,7 @@ export class FixedRateExchange extends SmartContractWithAddress {
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
     const trxReceipt = await sendTx(
       estGas,
-      this.config &&
-        'sdk' in this.config &&
-        this.config.sdk === 'oasis'
+      this.config && 'sdk' in this.config && this.config.sdk === 'oasis'
         ? sapphire.wrap(this.signer)
         : this.signer,
       this.config?.gasFeeMultiplier,

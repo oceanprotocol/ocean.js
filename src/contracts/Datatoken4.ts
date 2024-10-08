@@ -5,9 +5,7 @@ import ERC20Template4 from '@oceanprotocol/contracts/artifacts/contracts/templat
 import { AbiItem, ReceiptOrEstimate } from '../@types'
 import { AccessListContract } from './AccessList'
 import { Config } from '../config'
-import {
-  sendTx
-} from '../utils'
+import { sendTx } from '../utils'
 import * as sapphire from '@oasisprotocol/sapphire-paratime'
 
 export class Datatoken4 extends Datatoken {
@@ -87,9 +85,7 @@ export class Datatoken4 extends Datatoken {
 
     const trxReceipt = await sendTx(
       estGas,
-      this.config &&
-        'sdk' in this.config &&
-        this.config.sdk === 'oasis'
+      this.config && 'sdk' in this.config && this.config.sdk === 'oasis'
         ? sapphire.wrap(this.signer)
         : this.signer,
       this.config?.gasFeeMultiplier,
@@ -125,9 +121,7 @@ export class Datatoken4 extends Datatoken {
 
     const trxReceipt = await sendTx(
       estGas,
-      this.config &&
-        'sdk' in this.config &&
-        this.config.sdk === 'oasis'
+      this.config && 'sdk' in this.config && this.config.sdk === 'oasis'
         ? sapphire.wrap(this.signer)
         : this.signer,
       this.config?.gasFeeMultiplier,
@@ -160,9 +154,7 @@ export class Datatoken4 extends Datatoken {
 
     const trxReceipt = await sendTx(
       estGas,
-      this.config &&
-        'sdk' in this.config &&
-        this.config.sdk === 'oasis'
+      this.config && 'sdk' in this.config && this.config.sdk === 'oasis'
         ? sapphire.wrap(this.signer)
         : this.signer,
       this.config?.gasFeeMultiplier,

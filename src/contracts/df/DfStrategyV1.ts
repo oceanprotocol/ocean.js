@@ -1,7 +1,5 @@
 import dfStrategyV1ABI from '@oceanprotocol/contracts/artifacts/contracts/df/DFStrategyV1.sol/DFStrategyV1.json'
-import {
-  sendTx
-} from '../../utils'
+import { sendTx } from '../../utils'
 import { SmartContractWithAddress } from '../SmartContractWithAddress'
 import { ReceiptOrEstimate, AbiItem } from '../../@types'
 import * as sapphire from '@oasisprotocol/sapphire-paratime'
@@ -49,9 +47,7 @@ export class DfStrategyV1 extends SmartContractWithAddress {
     // Invoke function of the contract
     const trxReceipt = await sendTx(
       estGas,
-      this.config &&
-        'sdk' in this.config &&
-        this.config.sdk === 'oasis'
+      this.config && 'sdk' in this.config && this.config.sdk === 'oasis'
         ? sapphire.wrap(this.signer)
         : this.signer,
       this.config?.gasFeeMultiplier,
