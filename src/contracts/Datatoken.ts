@@ -18,6 +18,7 @@ import {
 import { Nft } from './NFT'
 import { Config } from '../config'
 import { SmartContract } from './SmartContract'
+import * as sapphire from '@oasisprotocol/sapphire-paratime'
 
 export class Datatoken extends SmartContract {
   public abiEnterprise: AbiItem[]
@@ -44,7 +45,7 @@ export class Datatoken extends SmartContract {
   ) {
     super(signer, network, config, abi)
     this.abiEnterprise = abiEnterprise || (ERC20TemplateEnterprise.abi as AbiItem[])
-    this.nft = new Nft(this.signer)
+    this.nft = new Nft(this.signer, network)
   }
 
   /**
@@ -62,7 +63,6 @@ export class Datatoken extends SmartContract {
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
     const dtContract = this.getContract(dtAddress)
-
     const estGas = await dtContract.estimateGas.approve(
       spender,
       amountToUnits(null, null, amount, 18)
@@ -71,7 +71,9 @@ export class Datatoken extends SmartContract {
 
     const trxReceipt = await sendTx(
       estGas,
-      this.signer,
+      this.config && 'sdk' in this.config && this.config.sdk === 'oasis'
+        ? sapphire.wrap(this.signer)
+        : this.signer,
       this.config?.gasFeeMultiplier,
       dtContract.approve,
       spender,
@@ -124,7 +126,9 @@ export class Datatoken extends SmartContract {
 
     const trxReceipt = await sendTx(
       estGas,
-      this.signer,
+      this.config && 'sdk' in this.config && this.config.sdk === 'oasis'
+        ? sapphire.wrap(this.signer)
+        : this.signer,
       this.config?.gasFeeMultiplier,
       dtContract.createFixedRate,
       fixedRateParams.fixedRateAddress,
@@ -166,7 +170,6 @@ export class Datatoken extends SmartContract {
     }
 
     const dtContract = this.getContract(dtAddress)
-
     if (!dispenserParams.allowedSwapper) dispenserParams.allowedSwapper = ZERO_ADDRESS
 
     dispenserParams.withMint = dispenserParams.withMint !== false
@@ -184,7 +187,9 @@ export class Datatoken extends SmartContract {
 
     const trxReceipt = await sendTx(
       estGas,
-      this.signer,
+      this.config && 'sdk' in this.config && this.config.sdk === 'oasis'
+        ? sapphire.wrap(this.signer)
+        : this.signer,
       this.config?.gasFeeMultiplier,
       dtContract.createDispenser,
       dispenserAddress,
@@ -213,7 +218,6 @@ export class Datatoken extends SmartContract {
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
     const dtContract = this.getContract(dtAddress)
-
     if ((await this.getPermissions(dtAddress, address)).minter !== true) {
       throw new Error(`Caller is not Minter`)
     }
@@ -228,7 +232,9 @@ export class Datatoken extends SmartContract {
 
       const trxReceipt = await sendTx(
         estGas,
-        this.signer,
+        this.config && 'sdk' in this.config && this.config.sdk === 'oasis'
+          ? sapphire.wrap(this.signer)
+          : this.signer,
         this.config?.gasFeeMultiplier,
         dtContract.mint,
         toAddress || address,
@@ -256,7 +262,6 @@ export class Datatoken extends SmartContract {
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
     const dtContract = this.getContract(dtAddress)
-
     if ((await this.isDatatokenDeployer(dtAddress, address)) !== true) {
       throw new Error(`Caller is not DatatokenDeployer`)
     }
@@ -266,7 +271,9 @@ export class Datatoken extends SmartContract {
 
     const trxReceipt = await sendTx(
       estGas,
-      this.signer,
+      this.config && 'sdk' in this.config && this.config.sdk === 'oasis'
+        ? sapphire.wrap(this.signer)
+        : this.signer,
       this.config?.gasFeeMultiplier,
       dtContract.addMinter,
       minter
@@ -291,7 +298,6 @@ export class Datatoken extends SmartContract {
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
     const dtContract = this.getContract(dtAddress)
-
     if ((await this.isDatatokenDeployer(dtAddress, address)) !== true) {
       throw new Error(`Caller is not DatatokenDeployer`)
     }
@@ -301,7 +307,9 @@ export class Datatoken extends SmartContract {
 
     const trxReceipt = await sendTx(
       estGas,
-      this.signer,
+      this.config && 'sdk' in this.config && this.config.sdk === 'oasis'
+        ? sapphire.wrap(this.signer)
+        : this.signer,
       this.config?.gasFeeMultiplier,
       dtContract.removeMinter,
       minter
@@ -326,7 +334,6 @@ export class Datatoken extends SmartContract {
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
     const dtContract = this.getContract(dtAddress)
-
     if ((await this.isDatatokenDeployer(dtAddress, address)) !== true) {
       throw new Error(`Caller is not DatatokenDeployer`)
     }
@@ -336,7 +343,9 @@ export class Datatoken extends SmartContract {
 
     const trxReceipt = await sendTx(
       estGas,
-      this.signer,
+      this.config && 'sdk' in this.config && this.config.sdk === 'oasis'
+        ? sapphire.wrap(this.signer)
+        : this.signer,
       this.config?.gasFeeMultiplier,
       dtContract.addPaymentManager,
       paymentManager
@@ -361,7 +370,6 @@ export class Datatoken extends SmartContract {
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
     const dtContract = this.getContract(dtAddress)
-
     if ((await this.isDatatokenDeployer(dtAddress, address)) !== true) {
       throw new Error(`Caller is not DatatokenDeployer`)
     }
@@ -371,7 +379,9 @@ export class Datatoken extends SmartContract {
 
     const trxReceipt = await sendTx(
       estGas,
-      this.signer,
+      this.config && 'sdk' in this.config && this.config.sdk === 'oasis'
+        ? sapphire.wrap(this.signer)
+        : this.signer,
       this.config?.gasFeeMultiplier,
       dtContract.removePaymentManager,
       paymentManager
@@ -413,7 +423,9 @@ export class Datatoken extends SmartContract {
 
     const trxReceipt = await sendTx(
       estGas,
-      this.signer,
+      this.config && 'sdk' in this.config && this.config.sdk === 'oasis'
+        ? sapphire.wrap(this.signer)
+        : this.signer,
       this.config?.gasFeeMultiplier,
       dtContract.setPaymentCollector,
       paymentCollector
@@ -469,13 +481,14 @@ export class Datatoken extends SmartContract {
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
     const dtContract = this.getContract(dtAddress)
-
     const estGas = await dtContract.estimateGas.transfer(toAddress, amount)
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
 
     const trxReceipt = await sendTx(
       estGas,
-      this.signer,
+      this.config && 'sdk' in this.config && this.config.sdk === 'oasis'
+        ? sapphire.wrap(this.signer)
+        : this.signer,
       this.config?.gasFeeMultiplier,
       dtContract.transfer,
       toAddress,
@@ -518,10 +531,11 @@ export class Datatoken extends SmartContract {
       consumeMarketFee
     )
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-
     const trxReceipt = await sendTx(
       estGas,
-      this.signer,
+      this.config && 'sdk' in this.config && this.config.sdk === 'oasis'
+        ? sapphire.wrap(this.signer)
+        : this.signer,
       this.config?.gasFeeMultiplier,
       dtContract.startOrder,
       consumer,
@@ -552,10 +566,11 @@ export class Datatoken extends SmartContract {
 
     const estGas = await dtContract.estimateGas.reuseOrder(orderTxId, providerFees)
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-
     const trxReceipt = await sendTx(
       estGas,
-      this.signer,
+      this.config && 'sdk' in this.config && this.config.sdk === 'oasis'
+        ? sapphire.wrap(this.signer)
+        : this.signer,
       this.config?.gasFeeMultiplier,
       dtContract.reuseOrder,
       orderTxId,
@@ -587,10 +602,11 @@ export class Datatoken extends SmartContract {
       freContractParams
     )
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-
     const trxReceipt = await sendTx(
       estGas,
-      this.signer,
+      this.config && 'sdk' in this.config && this.config.sdk === 'oasis'
+        ? sapphire.wrap(this.signer)
+        : this.signer,
       this.config?.gasFeeMultiplier,
       dtContract.buyFromFreAndOrder,
       orderParams,
@@ -620,10 +636,11 @@ export class Datatoken extends SmartContract {
       dispenserContract
     )
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-
     const trxReceipt = await sendTx(
       estGas,
-      this.signer,
+      this.config && 'sdk' in this.config && this.config.sdk === 'oasis'
+        ? sapphire.wrap(this.signer)
+        : this.signer,
       this.config?.gasFeeMultiplier,
       dtContract.buyFromDispenserAndOrder,
       orderParams,
@@ -652,7 +669,6 @@ export class Datatoken extends SmartContract {
     }
 
     const dtContract = this.getContract(dtAddress)
-
     const valueHex = ethers.utils.hexlify(ethers.utils.toUtf8Bytes(value))
 
     const estGas = await dtContract.estimateGas.setData(valueHex)
@@ -660,7 +676,9 @@ export class Datatoken extends SmartContract {
 
     const trxReceipt = await sendTx(
       estGas,
-      this.signer,
+      this.config && 'sdk' in this.config && this.config.sdk === 'oasis'
+        ? sapphire.wrap(this.signer)
+        : this.signer,
       this.config?.gasFeeMultiplier,
       dtContract.setData,
       valueHex
@@ -686,13 +704,14 @@ export class Datatoken extends SmartContract {
       throw new Error('Caller is NOT Nft Owner')
     }
     const dtContract = this.getContract(dtAddress)
-
     const estGas = await dtContract.estimateGas.cleanPermissions()
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
 
     const trxReceipt = await sendTx(
       estGas,
-      this.signer,
+      this.config && 'sdk' in this.config && this.config.sdk === 'oasis'
+        ? sapphire.wrap(this.signer)
+        : this.signer,
       this.config?.gasFeeMultiplier,
       dtContract.cleanPermissions
     )
@@ -856,10 +875,11 @@ export class Datatoken extends SmartContract {
       publishMarketFeeAmount
     )
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-
     const trxReceipt = await sendTx(
       estGas,
-      this.signer,
+      this.config && 'sdk' in this.config && this.config.sdk === 'oasis'
+        ? sapphire.wrap(this.signer)
+        : this.signer,
       this.config?.gasFeeMultiplier,
       dtContract.setPublishingMarketFee,
       publishMarketFeeAddress,

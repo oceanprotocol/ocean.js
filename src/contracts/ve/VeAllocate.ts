@@ -2,6 +2,7 @@ import veAllocateABI from '@oceanprotocol/contracts/artifacts/contracts/ve/veAll
 import { sendTx } from '../../utils'
 import { SmartContractWithAddress } from '../SmartContractWithAddress'
 import { ReceiptOrEstimate, AbiItem } from '../../@types'
+import * as sapphire from '@oasisprotocol/sapphire-paratime'
 /**
  * Provides an interface for veOcean contract
  */
@@ -30,7 +31,9 @@ export class VeAllocate extends SmartContractWithAddress {
     // Invoke function of the contract
     const trxReceipt = await sendTx(
       estGas.add(20000),
-      this.signer,
+      this.config && 'sdk' in this.config && this.config.sdk === 'oasis'
+        ? sapphire.wrap(this.signer)
+        : this.signer,
       this.config?.gasFeeMultiplier,
       this.contract.setAllocation,
       amount,
@@ -60,11 +63,12 @@ export class VeAllocate extends SmartContractWithAddress {
       chainId
     )
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-
     // Invoke function of the contract
     const trxReceipt = await sendTx(
       estGas.add(20000),
-      this.signer,
+      this.config && 'sdk' in this.config && this.config.sdk === 'oasis'
+        ? sapphire.wrap(this.signer)
+        : this.signer,
       this.config?.gasFeeMultiplier,
       this.contract.setBatchAllocation,
       amount,

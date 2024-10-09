@@ -69,7 +69,11 @@ describe('Fixed Rate unit test', () => {
       // CREATE AN Exchange
       // we prepare transaction parameters objects
 
-      const nftFactory = new NftFactory(addresses.ERC721Factory, exchangeOwner)
+      const nftFactory = new NftFactory(
+        addresses.ERC721Factory,
+        exchangeOwner,
+        await exchangeOwner.getChainId()
+      )
 
       const freParams: FreCreationParams = {
         fixedRateAddress: addresses.FixedPrice,
@@ -99,7 +103,11 @@ describe('Fixed Rate unit test', () => {
       // user1 has no dt1
       expect(await balance(user1, dtAddress, await user1.getAddress())).to.equal('0.0')
 
-      fixedRate = new FixedRateExchange(addresses.FixedPrice, exchangeOwner)
+      fixedRate = new FixedRateExchange(
+        addresses.FixedPrice,
+        exchangeOwner,
+        await exchangeOwner.getChainId()
+      )
       assert(fixedRate != null)
     })
 
@@ -197,7 +205,7 @@ describe('Fixed Rate unit test', () => {
 
     it('#buyDatatokens - user1 should buy some dt', async () => {
       // total supply is ZERO right now so dt owner mints 1000 DT and approves the fixed rate contract
-      const datatoken = new Datatoken(exchangeOwner)
+      const datatoken = new Datatoken(exchangeOwner, await exchangeOwner.getChainId())
       await datatoken.mint(
         dtAddress,
         await exchangeOwner.getAddress(),
@@ -238,7 +246,11 @@ describe('Fixed Rate unit test', () => {
       )
 
       // user1 buys 10 DT
-      fixedRate = new FixedRateExchange(addresses.FixedPrice, user1)
+      fixedRate = new FixedRateExchange(
+        addresses.FixedPrice,
+        user1,
+        await user1.getChainId()
+      )
       const amount = '10'
       const maxAmount = '11'
       const tx = await fixedRate.buyDatatokens(exchangeId, amount, maxAmount)
@@ -352,7 +364,11 @@ describe('Fixed Rate unit test', () => {
     })
 
     it('#setAllowedSwapper- should set an allowed swapper, if exchangeOwner', async () => {
-      fixedRate = new FixedRateExchange(addresses.FixedPrice, exchangeOwner)
+      fixedRate = new FixedRateExchange(
+        addresses.FixedPrice,
+        exchangeOwner,
+        await exchangeOwner.getChainId()
+      )
       await fixedRate.setAllowedSwapper(exchangeId, await user1.getAddress())
       expect(await fixedRate.getAllowedSwapper(exchangeId)).to.equal(
         await user1.getAddress()
@@ -365,7 +381,11 @@ describe('Fixed Rate unit test', () => {
     })
 
     it('#collectBasetokens- should collect BT in the contract, if exchangeOwner', async () => {
-      fixedRate = new FixedRateExchange(addresses.FixedPrice, user1)
+      fixedRate = new FixedRateExchange(
+        addresses.FixedPrice,
+        user1,
+        await user1.getChainId()
+      )
       // there are no bt in the contract
       expect((await fixedRate.getExchange(exchangeId)).btBalance).to.equal('0.0')
       // user1 buys 1 DT
@@ -380,7 +400,11 @@ describe('Fixed Rate unit test', () => {
     })
 
     it('#collectDatatokens- should collect DT in the contract, if exchangeOwner', async () => {
-      fixedRate = new FixedRateExchange(addresses.FixedPrice, exchangeOwner)
+      fixedRate = new FixedRateExchange(
+        addresses.FixedPrice,
+        exchangeOwner,
+        await exchangeOwner.getChainId()
+      )
       const result = await fixedRate.getExchange(exchangeId)
       // 9 dts left
       expect(result.dtBalance).to.equal('9.0')
@@ -395,7 +419,11 @@ describe('Fixed Rate unit test', () => {
     })
 
     it('#collectMarketFee- should collect marketFee and send it to marketFeeCollector, anyone can call it', async () => {
-      fixedRate = new FixedRateExchange(addresses.FixedPrice, user2)
+      fixedRate = new FixedRateExchange(
+        addresses.FixedPrice,
+        user2,
+        await user2.getChainId()
+      )
       let result = await fixedRate.getFeesInfo(exchangeId)
       // we made 2 swaps for 10 DT at rate 1, the fee is 0.1% for market and always in baseToken so it's 0.01 DAI
       // plus another swap for 1 DT
@@ -435,7 +463,11 @@ describe('Fixed Rate unit test', () => {
     })
 
     it('#updateMarketFee- should update Market fee if market fee collector', async () => {
-      fixedRate = new FixedRateExchange(addresses.FixedPrice, user2)
+      fixedRate = new FixedRateExchange(
+        addresses.FixedPrice,
+        user2,
+        await user2.getChainId()
+      )
       expect((await fixedRate.getFeesInfo(exchangeId)).marketFee).to.equal('0.001')
       // user2 is marketFeeCollector
       await fixedRate.updateMarketFee(exchangeId, '0.01')
@@ -444,7 +476,11 @@ describe('Fixed Rate unit test', () => {
     })
 
     it('#updateMarketFeeCollector - should update Market fee collector if market fee collector', async () => {
-      fixedRate = new FixedRateExchange(addresses.FixedPrice, user2)
+      fixedRate = new FixedRateExchange(
+        addresses.FixedPrice,
+        user2,
+        await user2.getChainId()
+      )
       expect((await fixedRate.getFeesInfo(exchangeId)).marketFeeCollector).to.equal(
         await user2.getAddress()
       )
@@ -463,7 +499,11 @@ describe('Fixed Rate unit test', () => {
       // since FRE is created without mint rights, owner has to send dt to that exchange
       // we prepare transaction parameters objects
 
-      const nftFactory = new NftFactory(addresses.ERC721Factory, exchangeOwner)
+      const nftFactory = new NftFactory(
+        addresses.ERC721Factory,
+        exchangeOwner,
+        await exchangeOwner.getChainId()
+      )
 
       const freParams: FreCreationParams = {
         fixedRateAddress: addresses.FixedPrice,
@@ -493,7 +533,11 @@ describe('Fixed Rate unit test', () => {
       // user1 has no dt1
       expect(await balance(user1, dtAddress, await user1.getAddress())).to.equal('0.0')
 
-      fixedRate = new FixedRateExchange(addresses.FixedPrice, exchangeOwner)
+      fixedRate = new FixedRateExchange(
+        addresses.FixedPrice,
+        exchangeOwner,
+        await exchangeOwner.getChainId()
+      )
       assert(fixedRate != null)
     })
 
@@ -587,7 +631,7 @@ describe('Fixed Rate unit test', () => {
 
     it('#buyDatatokens - user1 should buy some dt', async () => {
       // total supply is ZERO right now so dt owner mints 1000 DT and approves the fixed rate contract
-      const datatoken = new Datatoken(exchangeOwner)
+      const datatoken = new Datatoken(exchangeOwner, await exchangeOwner.getChainId())
       await datatoken.mint(
         dtAddress,
         await exchangeOwner.getAddress(),
@@ -620,7 +664,11 @@ describe('Fixed Rate unit test', () => {
       )
 
       // user1 buys 10 DT
-      fixedRate = new FixedRateExchange(addresses.FixedPrice, user1)
+      fixedRate = new FixedRateExchange(
+        addresses.FixedPrice,
+        user1,
+        await user1.getChainId()
+      )
       const amount = '10'
       const maxAmount = '11'
       const tx = await fixedRate.buyDatatokens(exchangeId, amount, maxAmount)
@@ -736,7 +784,11 @@ describe('Fixed Rate unit test', () => {
     })
 
     it('#setAllowedSwapper- should set an allowed swapper, if exchangeOwner', async () => {
-      fixedRate = new FixedRateExchange(addresses.FixedPrice, exchangeOwner)
+      fixedRate = new FixedRateExchange(
+        addresses.FixedPrice,
+        exchangeOwner,
+        await exchangeOwner.getChainId()
+      )
 
       await fixedRate.setAllowedSwapper(exchangeId, await user1.getAddress())
       expect(await fixedRate.getAllowedSwapper(exchangeId)).to.equal(
@@ -750,14 +802,22 @@ describe('Fixed Rate unit test', () => {
     })
 
     it('#collectBasetokens- should collect BT in the contract, if exchangeOwner', async () => {
-      fixedRate = new FixedRateExchange(addresses.FixedPrice, user1)
+      fixedRate = new FixedRateExchange(
+        addresses.FixedPrice,
+        user1,
+        await user1.getChainId()
+      )
 
       // there are no bt in the contract
       expect((await fixedRate.getExchange(exchangeId)).btBalance).to.equal('0.0')
       // user1 buys 1 DT
       await fixedRate.buyDatatokens(exchangeId, '1', '2')
       // 1 DAI in the contract
-      fixedRate = new FixedRateExchange(addresses.FixedPrice, exchangeOwner)
+      fixedRate = new FixedRateExchange(
+        addresses.FixedPrice,
+        exchangeOwner,
+        await exchangeOwner.getChainId()
+      )
 
       const exchangeDetails = await fixedRate.getExchange(exchangeId)
       expect(exchangeDetails.btBalance).to.equal('1.0')
@@ -781,7 +841,11 @@ describe('Fixed Rate unit test', () => {
     })
 
     it('#updateMarketFee- should update Market fee if market fee collector', async () => {
-      fixedRate = new FixedRateExchange(addresses.FixedPrice, user2)
+      fixedRate = new FixedRateExchange(
+        addresses.FixedPrice,
+        user2,
+        await user2.getChainId()
+      )
 
       expect((await fixedRate.getFeesInfo(exchangeId)).marketFee).to.equal('0.001')
       // user2 is marketFeeCollector
@@ -808,7 +872,11 @@ describe('Fixed Rate unit test', () => {
       // CREATE AN Exchange
       // we prepare transaction parameters objects
 
-      const nftFactory = new NftFactory(addresses.ERC721Factory, exchangeOwner)
+      const nftFactory = new NftFactory(
+        addresses.ERC721Factory,
+        exchangeOwner,
+        await exchangeOwner.getChainId()
+      )
 
       const freParams: FreCreationParams = {
         fixedRateAddress: addresses.FixedPrice,
@@ -836,7 +904,7 @@ describe('Fixed Rate unit test', () => {
 
       const datatokenAddress = tokenCreatedEvent.args.newTokenAddress
 
-      const datatoken = new Datatoken(exchangeOwner)
+      const datatoken = new Datatoken(exchangeOwner, await exchangeOwner.getChainId())
 
       const publishingMarketFee = await datatoken.getPublishingMarketFee(datatokenAddress)
 
@@ -850,7 +918,11 @@ describe('Fixed Rate unit test', () => {
       // CREATE AN Exchange
       // we prepare transaction parameters objects
 
-      const nftFactory = new NftFactory(addresses.ERC721Factory, exchangeOwner)
+      const nftFactory = new NftFactory(
+        addresses.ERC721Factory,
+        exchangeOwner,
+        await exchangeOwner.getChainId()
+      )
 
       const freParams: FreCreationParams = {
         fixedRateAddress: addresses.FixedPrice,
@@ -878,7 +950,7 @@ describe('Fixed Rate unit test', () => {
 
       const datatokenAddress = tokenCreatedEvent.args.newTokenAddress
 
-      const datatoken = new Datatoken(exchangeOwner)
+      const datatoken = new Datatoken(exchangeOwner, await exchangeOwner.getChainId())
 
       const publishingMarketFee = await datatoken.getPublishingMarketFee(datatokenAddress)
       assert(

@@ -82,7 +82,7 @@ describe('Router unit test', () => {
   })
 
   it('should initiate Router instance', async () => {
-    router = new Router(addresses.Router, user1)
+    router = new Router(addresses.Router, user1, await user1.getChainId())
   })
 
   it('#getOwner - should return actual owner', async () => {
@@ -107,7 +107,7 @@ describe('Router unit test', () => {
 
   it('#buyDatatokenBatch - should buy multiple DT in one call', async () => {
     // APPROVE DAI
-    const daiContract = new Datatoken(factoryOwner)
+    const daiContract = new Datatoken(factoryOwner, await factoryOwner.getChainId())
     await daiContract.transfer(addresses.MockDAI, await user1.getAddress(), DAI_AMOUNT)
 
     await approve(
@@ -133,7 +133,11 @@ describe('Router unit test', () => {
       withMint: true
     }
 
-    const nftFactory = new NftFactory(addresses.ERC721Factory, factoryOwner)
+    const nftFactory = new NftFactory(
+      addresses.ERC721Factory,
+      factoryOwner,
+      await factoryOwner.getChainId()
+    )
     const tx = await nftFactory.createNftWithDatatokenWithFixedRate(
       NFT_DATA,
       ERC_PARAMS,
@@ -152,7 +156,7 @@ describe('Router unit test', () => {
 
     const freId1 = NewFixedRateEvent.args.exchangeId
 
-    const datatoken = new Datatoken(factoryOwner)
+    const datatoken = new Datatoken(factoryOwner, await factoryOwner.getChainId())
     await datatoken.mint(
       datatokenAddress,
       await factoryOwner.getAddress(),
