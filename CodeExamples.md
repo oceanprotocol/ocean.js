@@ -326,7 +326,8 @@ you need to mint oceans to mentioned accounts only if you are using barge to tes
     const bundleNFT = await factory.createNftWithDatatokenWithFixedRate(
       nftParams,
       datatokenParams,
-      freParams
+      freParams,
+      false
     )
 
     const trxReceipt = await bundleNFT.wait()
@@ -606,7 +607,8 @@ Lets check that the download URL was successfully received
     const bundleNFT = await factory.createNftWithDatatokenWithDispenser(
       nftParams,
       datatokenParams,
-      dispenserParams
+      dispenserParams,
+      false
     )
     const trxReceipt = await bundleNFT.wait()
     const nftCreatedEvent = getEventFromTx(trxReceipt, 'NFTCreated')

@@ -29,7 +29,7 @@ export abstract class SmartContract {
     abi?: AbiItem[]
   ) {
     this.signer = signer
-    this.config = config || new ConfigHelper().getConfig(network || 'unknown')
+    this.config = config || new ConfigHelper().getConfig(network)
     this.abi = abi || this.getDefaultAbi()
   }
 
