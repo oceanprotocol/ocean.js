@@ -2,7 +2,6 @@ import dfRewardsABI from '@oceanprotocol/contracts/artifacts/contracts/df/DFRewa
 import { sendTx } from '../../utils'
 import { SmartContractWithAddress } from '../SmartContractWithAddress'
 import { AbiItem, ReceiptOrEstimate } from '../../@types'
-import * as sapphire from '@oasisprotocol/sapphire-paratime'
 
 /**
  * Provides an interface for DFRewards contract
@@ -44,9 +43,7 @@ export class DfRewards extends SmartContractWithAddress {
     // Invoke function of the contract
     const trxReceipt = await sendTx(
       estGas,
-      this.config && 'sdk' in this.config && this.config.sdk === 'oasis'
-        ? sapphire.wrap(this.signer)
-        : this.signer,
+      this.getSignerAccordingSdk(),
       this.config?.gasFeeMultiplier,
       this.contract.claimFor,
       userAddress,
@@ -81,9 +78,7 @@ export class DfRewards extends SmartContractWithAddress {
     // Invoke function of the contract
     const trxReceipt = await sendTx(
       estGas,
-      this.config && 'sdk' in this.config && this.config.sdk === 'oasis'
-        ? sapphire.wrap(this.signer)
-        : this.signer,
+      this.getSignerAccordingSdk(),
       this.config?.gasFeeMultiplier,
       this.contract.allocate,
       userAddresses,

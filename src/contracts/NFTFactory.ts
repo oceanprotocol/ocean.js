@@ -19,7 +19,6 @@ import {
   ReceiptOrEstimate
 } from '../@types'
 import { SmartContractWithAddress } from './SmartContractWithAddress'
-import * as sapphire from '@oasisprotocol/sapphire-paratime'
 
 /**
  * Provides an interface for NFT Factory contract
@@ -72,9 +71,7 @@ export class NftFactory extends SmartContractWithAddress {
     try {
       const tx = await sendTx(
         estGas,
-        this.config && 'sdk' in this.config && this.config.sdk === 'oasis'
-          ? sapphire.wrap(this.signer)
-          : this.signer,
+        this.getSignerAccordingSdk(),
         this.config?.gasFeeMultiplier,
         this.contract.deployERC721Contract,
         nftData.name,
@@ -216,9 +213,7 @@ export class NftFactory extends SmartContractWithAddress {
 
     const trxReceipt = await sendTx(
       estGas,
-      this.config && 'sdk' in this.config && this.config.sdk === 'oasis'
-        ? sapphire.wrap(this.signer)
-        : this.signer,
+      this.getSignerAccordingSdk(),
       this.config?.gasFeeMultiplier,
       this.contract.add721TokenTemplate,
       templateAddress
@@ -254,9 +249,7 @@ export class NftFactory extends SmartContractWithAddress {
 
     const trxReceipt = await sendTx(
       estGas,
-      this.config && 'sdk' in this.config && this.config.sdk === 'oasis'
-        ? sapphire.wrap(this.signer)
-        : this.signer,
+      this.getSignerAccordingSdk(),
       this.config?.gasFeeMultiplier,
       this.contract.disable721TokenTemplate,
       templateIndex
@@ -295,9 +288,7 @@ export class NftFactory extends SmartContractWithAddress {
 
     const trxReceipt = await sendTx(
       estGas,
-      this.config && 'sdk' in this.config && this.config.sdk === 'oasis'
-        ? sapphire.wrap(this.signer)
-        : this.signer,
+      this.getSignerAccordingSdk(),
       this.config?.gasFeeMultiplier,
       this.contract.reactivate721TokenTemplate,
       templateIndex
@@ -330,9 +321,7 @@ export class NftFactory extends SmartContractWithAddress {
 
     const trxReceipt = await sendTx(
       estGas,
-      this.config && 'sdk' in this.config && this.config.sdk === 'oasis'
-        ? sapphire.wrap(this.signer)
-        : this.signer,
+      this.getSignerAccordingSdk(),
       this.config?.gasFeeMultiplier,
       this.contract.addTokenTemplate,
       templateAddress
@@ -372,9 +361,7 @@ export class NftFactory extends SmartContractWithAddress {
 
     const trxReceipt = await sendTx(
       estGas,
-      this.config && 'sdk' in this.config && this.config.sdk === 'oasis'
-        ? sapphire.wrap(this.signer)
-        : this.signer,
+      this.getSignerAccordingSdk(),
       this.config?.gasFeeMultiplier,
       this.contract.disableTokenTemplate,
       templateIndex
@@ -414,9 +401,7 @@ export class NftFactory extends SmartContractWithAddress {
 
     const trxReceipt = await sendTx(
       estGas,
-      this.config && 'sdk' in this.config && this.config.sdk === 'oasis'
-        ? sapphire.wrap(this.signer)
-        : this.signer,
+      this.getSignerAccordingSdk(),
       this.config?.gasFeeMultiplier,
       this.contract.reactivateTokenTemplate,
       templateIndex
@@ -449,9 +434,7 @@ export class NftFactory extends SmartContractWithAddress {
 
     const trxReceipt = await sendTx(
       estGas,
-      this.config && 'sdk' in this.config && this.config.sdk === 'oasis'
-        ? sapphire.wrap(this.signer)
-        : this.signer,
+      this.getSignerAccordingSdk(),
       this.config?.gasFeeMultiplier,
       this.contract.startMultipleTokenOrder,
       orders
@@ -483,9 +466,7 @@ export class NftFactory extends SmartContractWithAddress {
 
     const trxReceipt = await sendTx(
       estGas,
-      this.config && 'sdk' in this.config && this.config.sdk === 'oasis'
-        ? sapphire.wrap(this.signer)
-        : this.signer,
+      this.getSignerAccordingSdk(),
       this.config?.gasFeeMultiplier,
       this.contract.createNftWithErc20,
       nftCreateData,
@@ -522,9 +503,7 @@ export class NftFactory extends SmartContractWithAddress {
 
     const trxReceipt = await sendTx(
       estGas,
-      this.config && 'sdk' in this.config && this.config.sdk === 'oasis'
-        ? sapphire.wrap(this.signer)
-        : this.signer,
+      this.getSignerAccordingSdk(),
       this.config?.gasFeeMultiplier,
       this.contract.createNftWithErc20WithFixedRate,
       nftCreateData,
@@ -573,9 +552,7 @@ export class NftFactory extends SmartContractWithAddress {
 
     const trxReceipt = await sendTx(
       estGas,
-      this.config && 'sdk' in this.config && this.config.sdk === 'oasis'
-        ? sapphire.wrap(this.signer)
-        : this.signer,
+      this.getSignerAccordingSdk(),
       this.config?.gasFeeMultiplier,
       this.contract.createNftWithErc20WithDispenser,
       nftCreateData,

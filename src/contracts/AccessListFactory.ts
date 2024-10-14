@@ -4,7 +4,6 @@ import AccessListFactory from '@oceanprotocol/contracts/artifacts/contracts/acce
 import { generateDtName, sendTx, getEventFromTx, ZERO_ADDRESS } from '../utils'
 import { AbiItem, ReceiptOrEstimate } from '../@types'
 import { SmartContractWithAddress } from './SmartContractWithAddress'
-import * as sapphire from '@oasisprotocol/sapphire-paratime'
 
 /**
  * Provides an interface for Access List Factory contract
@@ -71,9 +70,7 @@ export class AccesslistFactory extends SmartContractWithAddress {
     try {
       const tx = await sendTx(
         estGas,
-        this.config && 'sdk' in this.config && this.config.sdk === 'oasis'
-          ? sapphire.wrap(this.signer)
-          : this.signer,
+        this.getSignerAccordingSdk(),
         this.config?.gasFeeMultiplier,
         this.contract.deployAccessListContract,
         nameAccessList,
@@ -149,9 +146,7 @@ export class AccesslistFactory extends SmartContractWithAddress {
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
     const trxReceipt = await sendTx(
       estGas,
-      this.config && 'sdk' in this.config && this.config.sdk === 'oasis'
-        ? sapphire.wrap(this.signer)
-        : this.signer,
+      this.getSignerAccordingSdk(),
       this.config?.gasFeeMultiplier,
       this.contract.functions.changeTemplateAddress,
       templateAddress

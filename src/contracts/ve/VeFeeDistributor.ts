@@ -2,7 +2,6 @@ import veFeeABI from '@oceanprotocol/contracts/artifacts/contracts/ve/veFeeDistr
 import { sendTx } from '../../utils'
 import { SmartContractWithAddress } from '../SmartContractWithAddress'
 import { ReceiptOrEstimate, AbiItem } from '../../@types'
-import * as sapphire from '@oasisprotocol/sapphire-paratime'
 /**
  * Provides an interface for veOcean contract
  */
@@ -30,9 +29,7 @@ export class VeFeeDistributor extends SmartContractWithAddress {
     // Invoke function of the contract
     const trxReceipt = await sendTx(
       estGas.add(20000),
-      this.config && 'sdk' in this.config && this.config.sdk === 'oasis'
-        ? sapphire.wrap(this.signer)
-        : this.signer,
+      this.getSignerAccordingSdk(),
       this.config?.gasFeeMultiplier,
       this.contract.claim
     )
@@ -57,9 +54,7 @@ export class VeFeeDistributor extends SmartContractWithAddress {
     // Invoke function of the contract
     const trxReceipt = await sendTx(
       estGas.add(20000),
-      this.config && 'sdk' in this.config && this.config.sdk === 'oasis'
-        ? sapphire.wrap(this.signer)
-        : this.signer,
+      this.getSignerAccordingSdk(),
       this.config?.gasFeeMultiplier,
       this.contract.claim_many,
       addresses

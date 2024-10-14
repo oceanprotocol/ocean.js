@@ -2,7 +2,6 @@ import veOceanABI from '@oceanprotocol/contracts/artifacts/contracts/ve/veOCEAN.
 import { sendTx } from '../../utils'
 import { SmartContractWithAddress } from '../SmartContractWithAddress'
 import { ReceiptOrEstimate, AbiItem } from '../../@types'
-import * as sapphire from '@oasisprotocol/sapphire-paratime'
 /**
  * Provides an interface for veOcean contract
  */
@@ -32,9 +31,7 @@ export class VeOcean extends SmartContractWithAddress {
     // Invoke function of the contract
     const trxReceipt = await sendTx(
       estGas.add(20000),
-      this.config && 'sdk' in this.config && this.config.sdk === 'oasis'
-        ? sapphire.wrap(this.signer)
-        : this.signer,
+      this.getSignerAccordingSdk(),
       this.config?.gasFeeMultiplier,
       this.contract.create_lock,
       amountFormatted,
@@ -62,9 +59,7 @@ export class VeOcean extends SmartContractWithAddress {
     // Invoke function of the contract
     const trxReceipt = await sendTx(
       estGas.add(20000),
-      this.config && 'sdk' in this.config && this.config.sdk === 'oasis'
-        ? sapphire.wrap(this.signer)
-        : this.signer,
+      this.getSignerAccordingSdk(),
       this.config?.gasFeeMultiplier,
       this.contract.deposit_for,
       toAddress,
@@ -89,9 +84,7 @@ export class VeOcean extends SmartContractWithAddress {
     // Invoke function of the contract
     const trxReceipt = await sendTx(
       estGas.add(20000),
-      this.config && 'sdk' in this.config && this.config.sdk === 'oasis'
-        ? sapphire.wrap(this.signer)
-        : this.signer,
+      this.getSignerAccordingSdk(),
       this.config?.gasFeeMultiplier,
       this.contract.increase_amount,
       amountFormatted
@@ -114,9 +107,7 @@ export class VeOcean extends SmartContractWithAddress {
     // Invoke function of the contract
     const trxReceipt = await sendTx(
       estGas.add(20000),
-      this.config && 'sdk' in this.config && this.config.sdk === 'oasis'
-        ? sapphire.wrap(this.signer)
-        : this.signer,
+      this.getSignerAccordingSdk(),
       this.config?.gasFeeMultiplier,
       this.contract.increase_unlock_time,
       unlockTime
@@ -137,9 +128,7 @@ export class VeOcean extends SmartContractWithAddress {
     // Invoke function of the contract
     const trxReceipt = await sendTx(
       estGas.add(20000),
-      this.config && 'sdk' in this.config && this.config.sdk === 'oasis'
-        ? sapphire.wrap(this.signer)
-        : this.signer,
+      this.getSignerAccordingSdk(),
       this.config?.gasFeeMultiplier,
       this.contract.withdraw
     )

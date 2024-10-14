@@ -7,6 +7,7 @@ import {
   setContractDefaults,
   unitsToAmount
 } from '../utils'
+import * as sapphire from '@oasisprotocol/sapphire-paratime'
 
 export abstract class SmartContract {
   public signer: Signer
@@ -31,6 +32,12 @@ export abstract class SmartContract {
     this.signer = signer
     this.config = config || new ConfigHelper().getConfig(network)
     this.abi = abi || this.getDefaultAbi()
+  }
+
+  protected getSignerAccordingSdk() {
+    return this.config && 'sdk' in this.config && this.config.sdk === 'oasis'
+    ? sapphire.wrap(this.signer)
+    : this.signer
   }
 
   /**

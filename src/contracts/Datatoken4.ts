@@ -6,7 +6,6 @@ import { AbiItem, ReceiptOrEstimate } from '../@types'
 import { AccessListContract } from './AccessList'
 import { Config } from '../config'
 import { sendTx } from '../utils'
-import * as sapphire from '@oasisprotocol/sapphire-paratime'
 
 export class Datatoken4 extends Datatoken {
   public accessList: AccessListContract
@@ -85,9 +84,7 @@ export class Datatoken4 extends Datatoken {
 
     const trxReceipt = await sendTx(
       estGas,
-      this.config && 'sdk' in this.config && this.config.sdk === 'oasis'
-        ? sapphire.wrap(this.signer)
-        : this.signer,
+      this.getSignerAccordingSdk(),
       this.config?.gasFeeMultiplier,
       dtContract.functions.setAllowListContract,
       address
@@ -121,9 +118,7 @@ export class Datatoken4 extends Datatoken {
 
     const trxReceipt = await sendTx(
       estGas,
-      this.config && 'sdk' in this.config && this.config.sdk === 'oasis'
-        ? sapphire.wrap(this.signer)
-        : this.signer,
+      this.getSignerAccordingSdk(),
       this.config?.gasFeeMultiplier,
       dtContract.functions.setDenyListContract,
       address
@@ -154,9 +149,7 @@ export class Datatoken4 extends Datatoken {
 
     const trxReceipt = await sendTx(
       estGas,
-      this.config && 'sdk' in this.config && this.config.sdk === 'oasis'
-        ? sapphire.wrap(this.signer)
-        : this.signer,
+      this.getSignerAccordingSdk(),
       this.config?.gasFeeMultiplier,
       dtContract.functions.setFilesObject,
       this.fileObject
