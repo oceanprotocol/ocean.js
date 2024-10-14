@@ -36,8 +36,8 @@ export abstract class SmartContract {
 
   protected getSignerAccordingSdk() {
     return this.config && 'sdk' in this.config && this.config.sdk === 'oasis'
-    ? sapphire.wrap(this.signer)
-    : this.signer
+      ? sapphire.wrap(this.signer)
+      : this.signer
   }
 
   /**

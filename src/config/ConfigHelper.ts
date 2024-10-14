@@ -331,6 +331,14 @@ export class ConfigHelper {
       )
     }
 
+    if (!('sdk' in config) || config.sdk === null) {
+      if (KNOWN_CONFIDENTIAL_EVMS.includes(config.chainId)) {
+        config.sdk = 'oasis'
+      } else {
+        config.sdk = 'evm'
+      }
+    }
+    
     config.accessListFactory = contractAddressesConfig.accessListFactory
 
     config = { ...config, ...contractAddressesConfig }
