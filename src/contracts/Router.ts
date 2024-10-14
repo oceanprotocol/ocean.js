@@ -28,7 +28,7 @@ export class Router extends SmartContractWithAddress {
 
     const trxReceipt = await sendTx(
       estGas,
-      this.signer,
+      this.getSignerAccordingSdk(),
       this.config?.gasFeeMultiplier,
       this.contract.buyDTBatch,
       operations
@@ -93,7 +93,7 @@ export class Router extends SmartContractWithAddress {
 
     const trxReceipt = await sendTx(
       estGas,
-      this.signer,
+      this.getSignerAccordingSdk(),
       this.config?.gasFeeMultiplier,
       this.contract.addApprovedToken,
       tokenAddress
@@ -123,7 +123,7 @@ export class Router extends SmartContractWithAddress {
 
     const trxReceipt = await sendTx(
       estGas,
-      this.signer,
+      this.getSignerAccordingSdk(),
       this.config?.gasFeeMultiplier,
       this.contract.removeApprovedToken,
       tokenAddress
@@ -152,7 +152,7 @@ export class Router extends SmartContractWithAddress {
 
     const trxReceipt = await sendTx(
       estGas,
-      this.signer,
+      this.getSignerAccordingSdk(),
       this.config?.gasFeeMultiplier,
       this.contract.addFixedRateContract,
       tokenAddress
@@ -182,7 +182,7 @@ export class Router extends SmartContractWithAddress {
 
     const trxReceipt = await sendTx(
       estGas,
-      this.signer,
+      this.getSignerAccordingSdk(),
       this.config?.gasFeeMultiplier,
       this.contract.removeFixedRateContract,
       tokenAddress
@@ -212,7 +212,7 @@ export class Router extends SmartContractWithAddress {
 
     const trxReceipt = await sendTx(
       estGas,
-      this.signer,
+      this.getSignerAccordingSdk(),
       this.config?.gasFeeMultiplier,
       this.contract.addDispenserContract,
       tokenAddress
@@ -241,7 +241,7 @@ export class Router extends SmartContractWithAddress {
 
     const trxReceipt = await sendTx(
       estGas,
-      this.signer,
+      this.getSignerAccordingSdk(),
       this.config?.gasFeeMultiplier,
       this.contract.removeDispenserContract,
       tokenAddress
@@ -295,7 +295,7 @@ export class Router extends SmartContractWithAddress {
 
     const trxReceipt = await sendTx(
       estGas,
-      this.signer,
+      this.getSignerAccordingSdk(),
       this.config?.gasFeeMultiplier,
       this.contract.updateOPCFee,
       newSwapOceanFee,

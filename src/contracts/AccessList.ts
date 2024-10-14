@@ -96,10 +96,9 @@ export class AccessListContract extends SmartContractWithAddress {
   ): Promise<ReceiptOrEstimate<G>> {
     const estGas = await this.contract.estimateGas.mint(user, tokenUri)
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-
     const trxReceipt = await sendTx(
       estGas,
-      this.signer,
+      this.getSignerAccordingSdk(),
       this.config?.gasFeeMultiplier,
       this.contract.mint,
       user,
@@ -122,10 +121,9 @@ export class AccessListContract extends SmartContractWithAddress {
   ): Promise<ReceiptOrEstimate<G>> {
     const estGas = await this.contract.estimateGas.batchMint(users, tokenUris)
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-
     const trxReceipt = await sendTx(
       estGas,
-      this.signer,
+      this.getSignerAccordingSdk(),
       this.config?.gasFeeMultiplier,
       this.contract.batchMint,
       users,
@@ -146,10 +144,9 @@ export class AccessListContract extends SmartContractWithAddress {
   ): Promise<ReceiptOrEstimate<G>> {
     const estGas = await this.contract.estimateGas.burn(tokenId)
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-
     const trxReceipt = await sendTx(
       estGas,
-      this.signer,
+      this.getSignerAccordingSdk(),
       this.config?.gasFeeMultiplier,
       this.contract.burn,
       tokenId
@@ -169,10 +166,9 @@ export class AccessListContract extends SmartContractWithAddress {
   ): Promise<ReceiptOrEstimate<G>> {
     const estGas = await this.contract.estimateGas.transferOwnership(newOwner)
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-
     const trxReceipt = await sendTx(
       estGas,
-      this.signer,
+      this.getSignerAccordingSdk(),
       this.config?.gasFeeMultiplier,
       this.contract.transferOwnership,
       newOwner
@@ -190,10 +186,9 @@ export class AccessListContract extends SmartContractWithAddress {
   ): Promise<ReceiptOrEstimate<G>> {
     const estGas = await this.contract.estimateGas.renounceOwnership()
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-
     const trxReceipt = await sendTx(
       estGas,
-      this.signer,
+      this.getSignerAccordingSdk(),
       this.config?.gasFeeMultiplier,
       this.contract.renounceOwnership
     )

@@ -70,7 +70,7 @@ export class AccesslistFactory extends SmartContractWithAddress {
     try {
       const tx = await sendTx(
         estGas,
-        this.signer,
+        this.getSignerAccordingSdk(),
         this.config?.gasFeeMultiplier,
         this.contract.deployAccessListContract,
         nameAccessList,
@@ -144,10 +144,9 @@ export class AccesslistFactory extends SmartContractWithAddress {
 
     const estGas = await this.contract.estimateGas.changeTemplateAddress(templateAddress)
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-
     const trxReceipt = await sendTx(
       estGas,
-      this.signer,
+      this.getSignerAccordingSdk(),
       this.config?.gasFeeMultiplier,
       this.contract.functions.changeTemplateAddress,
       templateAddress

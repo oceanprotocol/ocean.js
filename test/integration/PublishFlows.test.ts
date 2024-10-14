@@ -94,8 +94,12 @@ describe('Publish tests', async () => {
   })
 
   it('initialize test classes', async () => {
-    nft = new Nft(publisherAccount)
-    factory = new NftFactory(addresses.ERC721Factory, publisherAccount)
+    nft = new Nft(publisherAccount, await publisherAccount.getChainId())
+    factory = new NftFactory(
+      addresses.ERC721Factory,
+      publisherAccount,
+      await publisherAccount.getChainId()
+    )
 
     await approve(
       publisherAccount,

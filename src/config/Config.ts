@@ -1,6 +1,8 @@
 import { AbiItem } from '../@types'
 import { LogLevel } from '../utils'
 
+type SDK = 'evm' | 'oasis'
+
 export class Config {
   /**
    * Ethereum node URL.
@@ -187,6 +189,6 @@ export class Config {
   veFeeEstimate?: string
 
   // is confidential evm
-  confidentialEVM?: boolean
+  sdk?: SDK
   accessListFactory?: string
 }
