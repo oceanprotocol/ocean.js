@@ -52,7 +52,9 @@ export async function orderAsset(
   let datatokenAddress: string
   let serviceId: string
   let dataTokenAddressFirstIndex: string
+  let did: string
   if (isVerifiableCredential(asset)) {
+    did = (asset as any).credentialSubject.id
     consumeMarketFeeToken =
       (asset as any).credentialSubject.stats.price.tokenAddress ||
       '0x0000000000000000000000000000000000000000'
@@ -60,6 +62,7 @@ export async function orderAsset(
     dataTokenAddressFirstIndex = (asset as any).credentialSubject.datatokens[0].address
     serviceId = (asset as any).credentialSubject.services[serviceIndex].id
   } else {
+    did = asset.id
     consumeMarketFeeToken =
       asset.stats.price.tokenAddress || '0x0000000000000000000000000000000000000000'
     datatokenAddress = asset.datatokens[datatokenIndex].address
@@ -75,12 +78,12 @@ export async function orderAsset(
 
   if (!datatokenAddress)
     throw new Error(
-      `The datatoken with index: ${datatokenIndex} does not exist for the asset with did: ${asset.id}`
+      `The datatoken with index: ${datatokenIndex} does not exist for the asset with did: ${did}`
     )
 
   if (!serviceId)
     throw new Error(
-      `There is no service with index: ${serviceIndex} defined for the asset with did: ${asset.id}`
+      `There is no service with index: ${serviceIndex} defined for the asset with did: ${did}`
     )
 
   const templateIndex = await datatoken.getId(datatokenAddress)
@@ -94,7 +97,7 @@ export async function orderAsset(
     providerFees ||
     (
       await ProviderInstance.initialize(
-        asset.id,
+        did,
         serviceId,
         0,
         await consumerAccount.getAddress(),
@@ -163,7 +166,7 @@ export async function orderAsset(
 
       if (!fixedRates[fixedRateIndex].id)
         throw new Error(
-          `There is no fixed rate exchange with index: ${serviceIndex} for the asset with did: ${asset.id}`
+          `There is no fixed rate exchange with index: ${serviceIndex} for the asset with did: ${did}`
         )
       const fees = await fre.getFeesInfo(fixedRates[fixedRateIndex].id)
       const exchange = await fre.getExchange(fixedRates[fixedRateIndex].id)
