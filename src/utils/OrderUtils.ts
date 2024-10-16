@@ -15,6 +15,7 @@ import {
   approveWei
 } from '../index'
 import Decimal from 'decimal.js'
+import { isVerifiableCredential } from './verifiableCredential'
 
 /**
  * Orders an asset based on the specified pricing schema and configuration.
@@ -47,44 +48,54 @@ export async function orderAsset(
   serviceIndex: number = 0,
   fixedRateIndex: number = 0
 ) {
+  let consumeMarketFeeToken: string
+  let datatokenAddress: string
+  let serviceId: string
+  let dataTokenAddressFirstIndex: string
+  if (isVerifiableCredential(asset)) {
+    consumeMarketFeeToken =
+      (asset as any).credentialSubject.stats.price.tokenAddress ||
+      '0x0000000000000000000000000000000000000000'
+    datatokenAddress = (asset as any).credentialSubject.datatokens[datatokenIndex].address
+    dataTokenAddressFirstIndex = (asset as any).credentialSubject.datatokens[0].address
+    serviceId = (asset as any).credentialSubject.services[serviceIndex].id
+  } else {
+    consumeMarketFeeToken =
+      asset.stats.price.tokenAddress || '0x0000000000000000000000000000000000000000'
+    datatokenAddress = asset.datatokens[datatokenIndex].address
+    dataTokenAddressFirstIndex = asset.datatokens[0].address
+    serviceId = asset.services[serviceIndex].id
+  }
   if (!consumeMarketOrderFee)
     consumeMarketOrderFee = {
       consumeMarketFeeAddress: '0x0000000000000000000000000000000000000000',
       consumeMarketFeeAmount: '0',
-      consumeMarketFeeToken:
-        asset.stats.price.tokenAddress || '0x0000000000000000000000000000000000000000'
+      consumeMarketFeeToken
     }
 
-  if (!asset.datatokens[datatokenIndex].address)
+  if (!datatokenAddress)
     throw new Error(
       `The datatoken with index: ${datatokenIndex} does not exist for the asset with did: ${asset.id}`
     )
 
-  if (!asset.services[serviceIndex].id)
+  if (!serviceId)
     throw new Error(
       `There is no service with index: ${serviceIndex} defined for the asset with did: ${asset.id}`
     )
 
-  const templateIndex = await datatoken.getId(asset.datatokens[datatokenIndex].address)
+  const templateIndex = await datatoken.getId(datatokenAddress)
 
-  const fixedRates = await datatoken.getFixedRates(
-    asset.datatokens[datatokenIndex].address
-  )
-  const dispensers = await datatoken.getDispensers(
-    asset.datatokens[datatokenIndex].address
-  )
-  const publishMarketFees = await datatoken.getPublishingMarketFee(
-    asset.datatokens[datatokenIndex].address
-  )
+  const fixedRates = await datatoken.getFixedRates(datatokenAddress)
+  const dispensers = await datatoken.getDispensers(datatokenAddress)
+  const publishMarketFees = await datatoken.getPublishingMarketFee(datatokenAddress)
   const pricingType =
     fixedRates.length > 0 ? 'fixed' : dispensers.length > 0 ? 'free' : 'NOT_ALLOWED'
-
   const fees =
     providerFees ||
     (
       await ProviderInstance.initialize(
         asset.id,
-        asset.services[serviceIndex].id,
+        serviceId,
         0,
         await consumerAccount.getAddress(),
         providerUrl || config.providerUri
@@ -103,7 +114,7 @@ export async function orderAsset(
         config,
         await consumerAccount.getAddress(),
         fees.providerFeeToken,
-        asset.services[0].datatokenAddress,
+        dataTokenAddressFirstIndex,
         fees.providerFeeAmount
       )
     } catch (error) {
@@ -122,7 +133,7 @@ export async function orderAsset(
       if (templateIndex === 1) {
         const dispenser = new Dispenser(config.dispenserAddress, consumerAccount)
         const dispenserTx = await dispenser.dispense(
-          asset.datatokens[datatokenIndex].address,
+          datatokenAddress,
           '1',
           await consumerAccount.getAddress()
         )
@@ -131,7 +142,7 @@ export async function orderAsset(
         }
         await dispenserTx.wait()
         return await datatoken.startOrder(
-          asset.datatokens[datatokenIndex].address,
+          datatokenAddress,
           orderParams.consumer,
           orderParams.serviceIndex,
           orderParams._providerFee,
@@ -140,7 +151,7 @@ export async function orderAsset(
       }
       if (templateIndex === 2 || templateIndex === 4) {
         return await datatoken.buyFromDispenserAndOrder(
-          asset.services[serviceIndex].datatokenAddress,
+          datatokenAddress,
           orderParams,
           config.dispenserAddress
         )
@@ -204,7 +215,7 @@ export async function orderAsset(
           throw new Error(`Failed to buy datatoken from fixed rate!`)
         }
         return await datatoken.startOrder(
-          asset.datatokens[datatokenIndex].address,
+          datatokenAddress,
           orderParams.consumer,
           orderParams.serviceIndex,
           orderParams._providerFee,
@@ -217,7 +228,7 @@ export async function orderAsset(
           config,
           await consumerAccount.getAddress(),
           exchange.baseToken,
-          asset.datatokens[datatokenIndex].address,
+          datatokenAddress,
           price,
           false
         )
@@ -229,7 +240,7 @@ export async function orderAsset(
           throw new Error(`Failed to confirm/mine approval transaction!`)
         }
         const txBuy = await datatoken.buyFromFreAndOrder(
-          asset.datatokens[datatokenIndex].address,
+          datatokenAddress,
           orderParams,
           freParams
         )
