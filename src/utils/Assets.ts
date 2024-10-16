@@ -26,9 +26,9 @@ import ERC20Template4 from '@oceanprotocol/contracts/artifacts/contracts/templat
 
 export const DEVELOPMENT_CHAIN_ID = 8996
 // template address OR templateId
-export function isConfidentialEVM(network: string | number): boolean {
+export function useOasisSDK(network: string | number): boolean {
   const config = new ConfigHelper().getConfig(network)
-  return config && config.confidentialEVM
+  return config && config.sdk === 'oasis'
 }
 
 /**
@@ -196,7 +196,7 @@ export async function createAsset(
   }
 
   // include fileObject in the DT constructor
-  if (config.confidentialEVM) {
+  if (config.sdk === 'oasis') {
     datatokenParams.filesObject = assetUrl
     datatokenParams.accessListFactory = accessListFactory || config.accessListFactory
     datatokenParams.allowAccessList = allowAccessList
@@ -256,7 +256,7 @@ export async function createAsset(
   assetUrl.datatokenAddress = datatokenAddressAsset
   assetUrl.nftAddress = nftAddress
 
-  if (config.confidentialEVM) {
+  if (config.sdk === 'oasis') {
     // we need to update files object on the SC otherwise it will fail validation on provider
     // because DDO datatokenAddress and nftAddress will not match the values on files object
     const contract = new ethers.Contract(datatokenAddressAsset, ERC20Template4.abi, owner)
@@ -274,7 +274,7 @@ export async function createAsset(
   }
 
   // if confidential EVM no need to make encrypt call here
-  if (config.confidentialEVM) {
+  if (config.sdk === 'oasis') {
     ddo.services[0].files = '' // on confidental EVM it needs to be empty string not null, for schema validation
   } else {
     ddo.services[0].files = await ProviderInstance.encrypt(assetUrl, chainID, providerUrl)

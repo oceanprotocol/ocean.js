@@ -1,6 +1,6 @@
 import { ethers, Signer, providers, Contract, ContractFunction, BigNumber } from 'ethers'
 
-import { Config } from '../config'
+import { Config, KNOWN_CONFIDENTIAL_EVMS } from '../config'
 import { LoggerInstance, minAbi } from '.'
 
 const MIN_GAS_FEE_POLYGON = 30000000000 // minimum recommended 30 gwei polygon main and mumbai fees
@@ -9,8 +9,6 @@ const MIN_GAS_FEE_SAPPHIRE = 10000000000 // recommended for mainnet and testnet 
 const POLYGON_NETWORK_ID = 137
 const MUMBAI_NETWORK_ID = 80001
 const SEPOLIA_NETWORK_ID = 11155111
-const SAPPHIRE_TESTNET_NETWORK_ID = 23295
-const SAPPHIRE_MAINNET_NETWORK_ID = 23294
 
 export function setContractDefaults(contract: Contract, config: Config): Contract {
   // TO DO - since ethers does not provide this
@@ -142,8 +140,7 @@ export async function sendTx(
           : chainId === SEPOLIA_NETWORK_ID &&
             Number(aggressiveFeePriorityFeePerGas) < MIN_GAS_FEE_SEPOLIA
           ? MIN_GAS_FEE_SEPOLIA
-          : (chainId === SAPPHIRE_MAINNET_NETWORK_ID ||
-              chainId === SAPPHIRE_TESTNET_NETWORK_ID) &&
+          : KNOWN_CONFIDENTIAL_EVMS.includes(chainId) &&
             Number(aggressiveFeePriorityFeePerGas) < MIN_GAS_FEE_SAPPHIRE
           ? MIN_GAS_FEE_SAPPHIRE
           : Number(aggressiveFeePriorityFeePerGas),
@@ -155,8 +152,7 @@ export async function sendTx(
           : chainId === SEPOLIA_NETWORK_ID &&
             Number(aggressiveFeePerGas) < MIN_GAS_FEE_SEPOLIA
           ? MIN_GAS_FEE_SEPOLIA
-          : (chainId === SAPPHIRE_MAINNET_NETWORK_ID ||
-              chainId === SAPPHIRE_TESTNET_NETWORK_ID) &&
+          : KNOWN_CONFIDENTIAL_EVMS.includes(chainId) &&
             Number(aggressiveFeePerGas) < MIN_GAS_FEE_SAPPHIRE
           ? MIN_GAS_FEE_SAPPHIRE
           : Number(aggressiveFeePerGas)
