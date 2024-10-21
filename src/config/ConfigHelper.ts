@@ -339,7 +339,10 @@ export class ConfigHelper {
       }
     }
 
-    if (!('accessListFactory' in contractAddressesConfig)) {
+    if (
+      'accessListFactory' in contractAddressesConfig &&
+      KNOWN_CONFIDENTIAL_EVMS.includes(config.chainId)
+    ) {
       config.accessListFactory = contractAddressesConfig.accessListFactory
     }
 
