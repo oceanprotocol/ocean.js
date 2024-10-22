@@ -48,27 +48,23 @@ export async function orderAsset(
   serviceIndex: number = 0,
   fixedRateIndex: number = 0
 ) {
-  let consumeMarketFeeToken: string
   let datatokenAddress: string
   let serviceId: string
   let dataTokenAddressFirstIndex: string
   let did: string
   if (isVerifiableCredential(asset)) {
     did = (asset as any).credentialSubject.id
-    consumeMarketFeeToken =
-      (asset as any).credentialSubject.stats.price.tokenAddress ||
-      '0x0000000000000000000000000000000000000000'
     datatokenAddress = (asset as any).credentialSubject.datatokens[datatokenIndex].address
     dataTokenAddressFirstIndex = (asset as any).credentialSubject.datatokens[0].address
     serviceId = (asset as any).credentialSubject.services[serviceIndex].id
   } else {
     did = asset.id
-    consumeMarketFeeToken =
-      asset.stats.price.tokenAddress || '0x0000000000000000000000000000000000000000'
     datatokenAddress = asset.datatokens[datatokenIndex].address
     dataTokenAddressFirstIndex = asset.datatokens[0].address
     serviceId = asset.services[serviceIndex].id
   }
+  const consumeMarketFeeToken =
+    asset.stats.price.tokenAddress || '0x0000000000000000000000000000000000000000'
   if (!consumeMarketOrderFee)
     consumeMarketOrderFee = {
       consumeMarketFeeAddress: '0x0000000000000000000000000000000000000000',

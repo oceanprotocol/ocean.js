@@ -1,4 +1,7 @@
 import { ConsumerParameter } from './ConsumerParameter'
+import { LanguageValueObject } from './LanguageValueObject'
+import { License } from './License'
+import { RemoteObject } from './RemoteObject'
 
 export interface MetadataAlgorithm {
   /**
@@ -83,9 +86,9 @@ export interface Metadata {
 
   /**
    * Details of what the resource is.
-   * @type {string}
+   * @type {string | LanguageValueObject}
    */
-  description: string
+  description: string | LanguageValueObject
 
   /**
    * Asset type. Includes "dataset" (e.g. csv file), "algorithm" (e.g. Python script).
@@ -103,9 +106,9 @@ export interface Metadata {
   /**
    * Short name referencing the license of the asset.
    * If it’s not specified, the following value will be added: “No License Specified”.
-   * @type {string}
+   * @type {string | License}
    */
-  license: string
+  license: string | License
 
   /**
    * Mapping of URL strings for data samples, or links to find out more information.
@@ -149,6 +152,10 @@ export interface Metadata {
    * @type {any}
    */
   additionalInformation?: any
+
+  displayTitle?: LanguageValueObject
+  providedBy?: string
+  attachments?: RemoteObject[]
 }
 
 export interface MetadataProof {

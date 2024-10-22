@@ -1,5 +1,8 @@
 import { ConsumerParameter } from './ConsumerParameter'
 import { Credentials } from './Credentials'
+import { LanguageValueObject } from './LanguageValueObject'
+import { RemoteObject } from './RemoteObject'
+import { State } from './State'
 
 export interface PublisherTrustedAlgorithm {
   /**
@@ -101,9 +104,9 @@ export interface Service {
 
   /**
    * Service description
-   * @type {string}
+   * @type {string | LanguageValueObject}
    */
-  description?: string
+  description?: string | LanguageValueObject
 
   /**
    * If service is of type compute, holds information about the compute-related privacy settings & resources.
@@ -122,4 +125,29 @@ export interface Service {
    * @type {any}
    */
   additionalInformation?: any
+
+  /**
+   * @type {LanguageValueObject}
+   */
+  displayName?: LanguageValueObject
+
+  /**
+   * Required if type asset
+   * @type {RemoteObject}
+   */
+  dataSchema?: RemoteObject
+
+  /**
+   * Required if type algo
+   * @type {RemoteObject}
+   */
+  inputSchema?: RemoteObject
+
+  /**
+   * Required if type algo
+   * @type {RemoteObject}
+   */
+  outputSchema?: RemoteObject
+
+  state?: State
 }
