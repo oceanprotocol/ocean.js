@@ -1,4 +1,5 @@
-import { DDO } from '.'
+import { DDOv4Type } from './DDO/versions/DDOv4'
+import { VerifiableCredentialType } from './DDO/versions/VerifiableCredential'
 
 export interface AssetNft {
   /**
@@ -137,7 +138,7 @@ export interface AssetLastEvent {
   datetime: string
 }
 
-export interface Asset extends DDO {
+export interface Asset extends DDOv4Type, VerifiableCredentialType {
   /**
    * Contains information about the ERC721 NFT contract which represents the intellectual property of the publisher.
    * @type {string}

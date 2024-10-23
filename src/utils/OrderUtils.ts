@@ -15,7 +15,7 @@ import {
   approveWei
 } from '../index'
 import Decimal from 'decimal.js'
-import { isVerifiableCredential } from './verifiableCredential'
+import { DDOFactory } from './DDO/DdoFactory'
 
 /**
  * Orders an asset based on the specified pricing schema and configuration.
@@ -48,21 +48,10 @@ export async function orderAsset(
   serviceIndex: number = 0,
   fixedRateIndex: number = 0
 ) {
-  let datatokenAddress: string
-  let serviceId: string
-  let dataTokenAddressFirstIndex: string
-  let did: string
-  if (isVerifiableCredential(asset)) {
-    did = (asset as any).credentialSubject.id
-    datatokenAddress = (asset as any).credentialSubject.datatokens[datatokenIndex].address
-    dataTokenAddressFirstIndex = (asset as any).credentialSubject.datatokens[0].address
-    serviceId = (asset as any).credentialSubject.services[serviceIndex].id
-  } else {
-    did = asset.id
-    datatokenAddress = asset.datatokens[datatokenIndex].address
-    dataTokenAddressFirstIndex = asset.datatokens[0].address
-    serviceId = asset.services[serviceIndex].id
-  }
+  const assetDDO = DDOFactory.createDDO(asset)
+  const { did, serviceId } = assetDDO.getOrderAssetParams(asset, serviceIndex)
+  const datatokenAddress = asset.datatokens[datatokenIndex].address
+  const dataTokenAddressFirstIndex = asset.datatokens[0].address
   const consumeMarketFeeToken =
     asset.stats.price.tokenAddress || '0x0000000000000000000000000000000000000000'
   if (!consumeMarketOrderFee)

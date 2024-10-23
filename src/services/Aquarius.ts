@@ -1,6 +1,7 @@
 import fetch from 'cross-fetch'
 import { LoggerInstance, sleep } from '../utils'
-import { Asset, DDO, ValidateMetadata } from '../@types'
+import { Asset, ValidateMetadata } from '../@types'
+import { DDO_V4 } from '../utils/DDO/DDO_V4'
 
 export interface SearchQuery {
   from?: number
@@ -91,7 +92,7 @@ export class Aquarius {
    * @param {AbortSignal} signal abort signal
    * @return {Promise<ValidateMetadata>}.
    */
-  public async validate(ddo: DDO, signal?: AbortSignal): Promise<ValidateMetadata> {
+  public async validate(ddo: any, signal?: AbortSignal): Promise<ValidateMetadata> {
     const status: ValidateMetadata = {
       valid: false
     }

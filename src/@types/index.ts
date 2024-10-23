@@ -1,5 +1,5 @@
 export * from './DDO/Credentials'
-export * from './DDO/DDO'
+export * from './DDO/versions/DDOv4'
 export * from './DDO/Event'
 export * from './DDO/Metadata'
 export * from './DDO/ConsumerParameter'

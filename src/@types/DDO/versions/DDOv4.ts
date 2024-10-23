@@ -1,29 +1,17 @@
-import { Service, Metadata, Credentials, Event } from '..'
+import { BaseDDOType } from './BaseDDO'
+import { Service, Metadata, Credentials, Event } from '../..'
 
 /**
  * DID Descriptor Object.
  * Contains metadata about the asset, and define access in at least one service.
  */
-export interface DDO {
-  /**
-   * Contexts used for validation.
-   * @type {string[]}
-   */
-  '@context': string[]
-
+export interface DDOv4Type extends BaseDDOType {
   /**
    * DID, descentralized ID.
    * Computed as sha256(address of NFT contract + chainId)
    * @type {string}
    */
-  id: string
-
-  /**
-   * Version information in SemVer notation
-   * referring to the DDO spec version
-   * @type {string}
-   */
-  version: string
+  id?: string
 
   /**
    * NFT contract address
