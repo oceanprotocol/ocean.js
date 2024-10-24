@@ -1,5 +1,6 @@
 import sha256 from 'crypto-js/sha256'
 import { ethers } from 'ethers'
+import { DDOFactory } from './DDO/DdoFactory'
 
 /**
  * Generates a valid DID
@@ -20,4 +21,8 @@ export function generateDid(nftAddress: string, chainId: number): string {
  */
 export function getHash(data: any): string {
   return sha256(data).toString()
+}
+
+export async function getDDOType(assetData: any) {
+  return DDOFactory.createDDO(assetData)
 }
