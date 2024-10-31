@@ -339,9 +339,7 @@ export class ConfigHelper {
       }
     }
 
-    if ('accessListFactory' in contractAddressesConfig && config.sdk === 'oasis') {
-      config.accessListFactory = contractAddressesConfig.accessListFactory
-    }
+    config.accessListFactory = contractAddressesConfig.accessListFactory
 
     config = { ...config, ...contractAddressesConfig }
 
