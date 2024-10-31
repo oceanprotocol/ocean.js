@@ -524,7 +524,7 @@ export class Provider {
     return consumeUrl
   }
 
-  /** Instruct the provider to start a compute job
+  /** Instruct the provider to start a compute job (Old C2D V1) Kept for now, for backwards compatibility
    * @param {string} providerUri The provider URI.
    * @param {Signer} signer The consumer signer object.
    * @param {string} computeEnv The compute environment.
@@ -535,7 +535,7 @@ export class Provider {
    * @param {ComputeOutput} output The compute job output settings.
    * @return {Promise<ComputeJob | ComputeJob[]>} The compute job or jobs.
    */
-  public async computeStart(
+  public async computeStartV1(
     providerUri: string,
     consumer: Signer,
     computeEnv: string,
@@ -577,6 +577,87 @@ export class Provider {
     payload.dataset = dataset
     payload.algorithm = algorithm
     if (additionalDatasets) payload.additionalDatasets = additionalDatasets
+    if (output) payload.output = output
+    if (!computeStartUrl) return null
+    let response
+    try {
+      response = await fetch(computeStartUrl, {
+        method: 'POST',
+        body: JSON.stringify(payload),
+        headers: { 'Content-Type': 'application/json' },
+        signal
+      })
+    } catch (e) {
+      LoggerInstance.error('Compute start failed:')
+      LoggerInstance.error(e)
+      LoggerInstance.error('Payload was:', payload)
+      throw new Error('HTTP request failed calling Provider')
+    }
+    if (response?.ok) {
+      const params = await response.json()
+      return params
+    }
+    LoggerInstance.error(
+      'Compute start failed: ',
+      response.status,
+      response.statusText,
+      await response.json()
+    )
+    LoggerInstance.error('Payload was:', payload)
+    return null
+  }
+
+  /** Instruct the provider to start a compute job (new C2D V2)
+   * @param {string} providerUri The provider URI.
+   * @param {Signer} signer The consumer signer object.
+   * @param {string} computeEnv The compute environment.
+   * @param {ComputeAsset} datasets The dataset to start compute on + additionalDatasets (the additional datasets if that is the case)
+   * @param {ComputeAlgorithm} algorithm The algorithm to start compute with.
+   * @param {AbortSignal} signal abort signal
+   * @param {ComputeOutput} output The compute job output settings.
+   * @return {Promise<ComputeJob | ComputeJob[]>} The compute job or jobs.
+   */
+  public async computeStart(
+    providerUri: string,
+    consumer: Signer,
+    computeEnv: string,
+    datasets: ComputeAsset[],
+    algorithm: ComputeAlgorithm,
+    signal?: AbortSignal,
+    output?: ComputeOutput
+  ): Promise<ComputeJob | ComputeJob[]> {
+    const providerEndpoints = await this.getEndpoints(providerUri)
+    const serviceEndpoints = await this.getServiceEndpoints(
+      providerUri,
+      providerEndpoints
+    )
+    const computeStartUrl = this.getEndpointURL(serviceEndpoints, 'computeStart')
+      ? this.getEndpointURL(serviceEndpoints, 'computeStart').urlPath
+      : null
+
+    const consumerAddress = await consumer.getAddress()
+    const nonce = (
+      (await this.getNonce(
+        providerUri,
+        consumerAddress,
+        signal,
+        providerEndpoints,
+        serviceEndpoints
+      )) + 1
+    ).toString()
+
+    let signatureMessage = consumerAddress
+    signatureMessage += datasets[0].documentId
+    signatureMessage += nonce
+    const signature = await this.signProviderRequest(consumer, signatureMessage)
+    const payload = Object()
+    payload.consumerAddress = consumerAddress
+    payload.signature = signature
+    payload.nonce = nonce
+    payload.environment = computeEnv
+    payload.datasets = datasets
+    payload.algorithm = algorithm
+
     if (output) payload.output = output
     if (!computeStartUrl) return null
     let response
