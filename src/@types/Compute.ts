@@ -59,7 +59,17 @@ export interface ComputeOutput {
   whitelist?: string[]
 }
 
+export enum EncryptMethod {
+  AES = 'AES',
+  ECIES = 'ECIES'
+}
+export interface BaseFileObject {
+  type: string
+  encryptedBy?: string
+  encryptMethod?: EncryptMethod
+}
 export interface ComputeAsset {
+  fileObject?: BaseFileObject // C2D v2
   documentId: string
   serviceId: string
   transferTxId?: string
