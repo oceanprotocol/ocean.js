@@ -102,7 +102,7 @@ const assetDdo = {
   '@context': ['https://w3id.org/did/v1'],
   id: 'did:op:efba17455c127a885ec7830d687a8f6e64f5ba559f8506f8723c1f10f05c049c',
   version: '4.1.0',
-  chainId: 4,
+  chainId: 8996,
   nftAddress: '0x0',
   metadata: {
     created: '2021-12-20T14:35:20Z',
