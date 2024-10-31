@@ -655,7 +655,7 @@ Let's have 5 minute of compute access
       providerUrl,
       consumerAccount,
       computeEnv.id,
-      assets[0],
+      assets,
       algo
     )
 
