@@ -655,7 +655,7 @@ describe('Compute-to-data example tests', async () => {
       providerUrl,
       consumerAccount,
       computeEnv.id,
-      assets[0],
+      assets,
       algo
     )
 
