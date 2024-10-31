@@ -626,6 +626,7 @@ export class Provider {
     signal?: AbortSignal,
     output?: ComputeOutput
   ): Promise<ComputeJob | ComputeJob[]> {
+    console.log('called new compute start method...')
     const providerEndpoints = await this.getEndpoints(providerUri)
     const serviceEndpoints = await this.getServiceEndpoints(
       providerUri,
@@ -655,9 +656,12 @@ export class Provider {
     payload.signature = signature
     payload.nonce = nonce
     payload.environment = computeEnv
+    // kept for backwards compatibility (tests running against existing provider)
+    payload.dataset = datasets[0]
+    // new field for C2D v2
     payload.datasets = datasets
     payload.algorithm = algorithm
-
+    // if (additionalDatasets) payload.additionalDatasets = additionalDatasets
     if (output) payload.output = output
     if (!computeStartUrl) return null
     let response
