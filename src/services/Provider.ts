@@ -615,6 +615,7 @@ export class Provider {
    * @param {ComputeAlgorithm} algorithm The algorithm to start compute with.
    * @param {AbortSignal} signal abort signal
    * @param {ComputeOutput} output The compute job output settings.
+   * @param {boolean} freeEnvironment is it a free environment? uses different route
    * @return {Promise<ComputeJob | ComputeJob[]>} The compute job or jobs.
    */
   public async computeStart(
@@ -624,7 +625,8 @@ export class Provider {
     datasets: ComputeAsset[],
     algorithm: ComputeAlgorithm,
     signal?: AbortSignal,
-    output?: ComputeOutput
+    output?: ComputeOutput,
+    freeEnvironment?: boolean
   ): Promise<ComputeJob | ComputeJob[]> {
     console.log('called new compute start method...')
     const providerEndpoints = await this.getEndpoints(providerUri)
@@ -632,9 +634,17 @@ export class Provider {
       providerUri,
       providerEndpoints
     )
-    const computeStartUrl = this.getEndpointURL(serviceEndpoints, 'computeStart')
-      ? this.getEndpointURL(serviceEndpoints, 'computeStart').urlPath
-      : null
+    let computeStartUrl = null
+
+    if (freeEnvironment) {
+      computeStartUrl = this.getEndpointURL(serviceEndpoints, 'freeCompute')
+        ? this.getEndpointURL(serviceEndpoints, 'freeCompute').urlPath
+        : null
+    } else {
+      computeStartUrl = this.getEndpointURL(serviceEndpoints, 'computeStart')
+        ? this.getEndpointURL(serviceEndpoints, 'computeStart').urlPath
+        : null
+    }
 
     const consumerAddress = await consumer.getAddress()
     const nonce = (
