@@ -22,6 +22,7 @@ export interface ComputeEnvironment {
   storageExpiry: number
   maxJobDuration: number
   lastSeen: number
+  free: boolean
 }
 
 export interface ComputeResult {
