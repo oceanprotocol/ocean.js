@@ -137,7 +137,8 @@ export async function handleComputeOrder(
   if (config.chainId !== chainID) {
     throw new Error('Chain ID from DDO is different than the configured network.')
   }
-  if (order.providerFee && order.providerFee.providerFeeAmount) {
+  const hasProviderFees = order.providerFee && order.providerFee.providerFeeAmount
+  if (hasProviderFees && Number(order.providerFee.providerFeeAmount) > 0) {
     await approveWei(
       payerAccount,
       config,

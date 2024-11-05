@@ -60,6 +60,12 @@ export interface ComputeOutput {
   whitelist?: string[]
 }
 
+export enum FileObjectType {
+  URL = 'url',
+  IPFS = 'ipfs',
+  ARWEAVE = 'arweave'
+}
+
 export enum EncryptMethod {
   AES = 'AES',
   ECIES = 'ECIES'
@@ -78,6 +84,7 @@ export interface ComputeAsset {
 }
 
 export interface ComputeAlgorithm {
+  fileObject?: BaseFileObject // C2D v2
   documentId?: string
   serviceId?: string
   meta?: MetadataAlgorithm
