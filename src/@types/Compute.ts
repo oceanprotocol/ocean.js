@@ -70,10 +70,29 @@ export enum EncryptMethod {
   AES = 'AES',
   ECIES = 'ECIES'
 }
+
+export interface HeadersObject {
+  [key: string]: string
+}
+
 export interface BaseFileObject {
   type: string
   encryptedBy?: string
   encryptMethod?: EncryptMethod
+}
+
+export interface UrlFileObject extends BaseFileObject {
+  url: string
+  method: string
+  headers?: [HeadersObject]
+}
+
+export interface IpfsFileObject extends BaseFileObject {
+  hash: string
+}
+
+export interface ArweaveFileObject extends BaseFileObject {
+  transactionId: string
 }
 export interface ComputeAsset {
   fileObject?: BaseFileObject // C2D v2
