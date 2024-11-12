@@ -627,7 +627,7 @@ describe('Compute-to-data example tests', async () => {
       computeEnv.id,
       computeValidUntil,
       providerUrl,
-      await consumerAccount.getAddress()
+      consumerAccount
     )
     /// ```
     /// <!--

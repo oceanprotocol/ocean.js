@@ -430,7 +430,7 @@ describe('Compute flow tests', async () => {
       computeEnv.id,
       computeValidUntil,
       providerUrl,
-      await consumerAccount.getAddress()
+      consumerAccount
     )
     assert(
       !('error' in providerInitializeComputeResults.algorithm),
@@ -501,7 +501,7 @@ describe('Compute flow tests', async () => {
       computeEnv.id,
       computeValidUntil,
       providerUrl,
-      await consumerAccount.getAddress()
+      consumerAccount
     )
     assert(
       providerInitializeComputeResults.algorithm.validOrder,
@@ -563,7 +563,7 @@ describe('Compute flow tests', async () => {
       computeEnv.id,
       computeValidUntil,
       providerUrl,
-      await consumerAccount.getAddress()
+      consumerAccount
     )
     assert(
       !('error' in providerInitializeComputeResults.algorithm),
@@ -641,7 +641,7 @@ describe('Compute flow tests', async () => {
       computeEnv.id,
       computeValidUntil,
       providerUrl,
-      await consumerAccount.getAddress()
+      consumerAccount
     )
     assert(
       providerInitializeComputeResults.algorithm.validOrder,
@@ -712,7 +712,7 @@ describe('Compute flow tests', async () => {
       computeEnv.id,
       computeValidUntil,
       providerUrl,
-      await consumerAccount.getAddress()
+      consumerAccount
     )
     assert(
       providerInitializeComputeResults.algorithm.validOrder,
@@ -797,7 +797,7 @@ describe('Compute flow tests', async () => {
       computeEnv.id,
       computeValidUntil,
       providerUrl,
-      await consumerAccount.getAddress()
+      consumerAccount
     )
     assert(
       providerInitializeComputeResults.algorithm.validOrder,

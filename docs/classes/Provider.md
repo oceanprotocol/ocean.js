@@ -485,7 +485,7 @@ Initializes the provider for a compute request.
 | `computeEnv` | `string` | The compute environment. |
 | `validUntil` | `number` | The job expiration date. |
 | `providerUri` | `string` | The provider URI. |
-| `accountId` | `string` | caller address |
+| `signer` | `Signer` | caller account |
 | `signal?` | `AbortSignal` | abort signal |
 
 #### Returns

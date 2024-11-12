@@ -627,7 +627,7 @@ Let's have 5 minute of compute access
       computeEnv.id,
       computeValidUntil,
       providerUrl,
-      await consumerAccount.getAddress()
+      consumerAccount
     )
 ```
 <!--
