@@ -418,7 +418,7 @@ export class Provider {
    * @param {AbortSignal} signal abort signal
    * @return {Promise<ProviderComputeInitialize>} ProviderComputeInitialize data
    */
-  public async initializeCompute(
+  public async initializeComputeV1(
     assets: ComputeAsset[],
     algorithm: ComputeAlgorithm,
     computeEnv: string,
@@ -442,6 +442,90 @@ export class Provider {
       ? this.getEndpointURL(serviceEndpoints, 'initializeCompute').urlPath
       : null
     if (!initializeUrl) return null
+    let response
+    try {
+      response = await fetch(initializeUrl, {
+        method: 'POST',
+        body: JSON.stringify(providerData),
+        headers: { 'Content-Type': 'application/json' },
+        signal
+      })
+    } catch (e) {
+      LoggerInstance.error('Initialize compute failed: ')
+      LoggerInstance.error(e)
+      throw new Error('ComputeJob cannot be initialized')
+    }
+    if (response?.ok) {
+      const params = await response.json()
+      return params
+    }
+    const resolvedResponse = await response.json()
+    LoggerInstance.error(
+      'Initialize compute failed: ',
+      response.status,
+      response.statusText,
+      resolvedResponse
+    )
+    LoggerInstance.error('Payload was:', providerData)
+    throw new Error(JSON.stringify(resolvedResponse))
+  }
+
+  /** Initializes the provider for a compute request.
+   * @param {ComputeAsset[]} assets The datasets array to initialize compute request.
+   * @param {ComputeAlgorithmber} algorithm The algorithm to use.
+   * @param {string} computeEnv The compute environment.
+   * @param {number} validUntil  The job expiration date.
+   * @param {string} providerUri The provider URI.
+   * @param {Signer} signer caller address
+   * @param {AbortSignal} signal abort signal
+   * @return {Promise<ProviderComputeInitialize>} ProviderComputeInitialize data
+   */
+  public async initializeCompute(
+    assets: ComputeAsset[],
+    algorithm: ComputeAlgorithm,
+    computeEnv: string,
+    validUntil: number,
+    providerUri: string,
+    signer: Signer,
+    signal?: AbortSignal
+  ): Promise<ProviderComputeInitializeResults> {
+    const providerEndpoints = await this.getEndpoints(providerUri)
+    const serviceEndpoints = await this.getServiceEndpoints(
+      providerUri,
+      providerEndpoints
+    )
+
+    // Diff from V1. We might need a signature to get the files object, specially if dealing with confidential evm and template 4
+    // otherwise it can be ignored
+    const consumerAddress = await signer.getAddress()
+    const nonce = (
+      (await this.getNonce(
+        providerUri,
+        consumerAddress,
+        signal,
+        providerEndpoints,
+        serviceEndpoints
+      )) + 1
+    ).toString()
+
+    // same signed message as for start compute (consumer address + did[0] + nonce)
+    let signatureMessage = consumerAddress
+    signatureMessage += assets[0].documentId
+    signatureMessage += nonce
+    const signature = await this.signProviderRequest(signer, signatureMessage)
+
+    const providerData = {
+      datasets: assets,
+      algorithm,
+      compute: { env: computeEnv, validUntil },
+      consumerAddress,
+      signature
+    }
+    const initializeUrl = this.getEndpointURL(serviceEndpoints, 'initializeCompute')
+      ? this.getEndpointURL(serviceEndpoints, 'initializeCompute').urlPath
+      : null
+    if (!initializeUrl) return null
+
     let response
     try {
       response = await fetch(initializeUrl, {
@@ -629,6 +713,8 @@ export class Provider {
     freeEnvironment?: boolean
   ): Promise<ComputeJob | ComputeJob[]> {
     console.log('called new compute start method...')
+    console.log('datasets: ', datasets)
+    console.log('algorithm: ', algorithm)
     const providerEndpoints = await this.getEndpoints(providerUri)
     const serviceEndpoints = await this.getServiceEndpoints(
       providerUri,
