@@ -1,9 +1,9 @@
 export interface Price {
-    value?: number
+  value?: number
 }
 
 export interface Stats {
-    allocated?: number
-    orders?: number
-    price?: Price
+  allocated?: number
+  orders?: number
+  price?: Price
 }
