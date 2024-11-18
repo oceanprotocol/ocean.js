@@ -430,7 +430,7 @@ describe('Compute flow tests', async () => {
       computeEnv.id,
       computeValidUntil,
       providerUrl,
-      await consumerAccount.getAddress()
+      consumerAccount
     )
     assert(
       !('error' in providerInitializeComputeResults.algorithm),
@@ -461,7 +461,7 @@ describe('Compute flow tests', async () => {
       providerUrl,
       consumerAccount,
       computeEnv.id,
-      assets[0],
+      assets,
       algo
     )
     freeEnvDatasetTxId = assets[0].transferTxId
@@ -501,7 +501,7 @@ describe('Compute flow tests', async () => {
       computeEnv.id,
       computeValidUntil,
       providerUrl,
-      await consumerAccount.getAddress()
+      consumerAccount
     )
     assert(
       providerInitializeComputeResults.algorithm.validOrder,
@@ -530,7 +530,7 @@ describe('Compute flow tests', async () => {
       providerUrl,
       consumerAccount,
       computeEnv.id,
-      assets[0],
+      assets,
       algo
     )
     assert(computeJobs, 'Cannot start compute job')
@@ -563,7 +563,7 @@ describe('Compute flow tests', async () => {
       computeEnv.id,
       computeValidUntil,
       providerUrl,
-      await consumerAccount.getAddress()
+      consumerAccount
     )
     assert(
       !('error' in providerInitializeComputeResults.algorithm),
@@ -594,7 +594,7 @@ describe('Compute flow tests', async () => {
       providerUrl,
       consumerAccount,
       computeEnv.id,
-      assets[0],
+      assets,
       algo
     )
     paidEnvDatasetTxId = assets[0].transferTxId
@@ -641,7 +641,7 @@ describe('Compute flow tests', async () => {
       computeEnv.id,
       computeValidUntil,
       providerUrl,
-      await consumerAccount.getAddress()
+      consumerAccount
     )
     assert(
       providerInitializeComputeResults.algorithm.validOrder,
@@ -670,7 +670,7 @@ describe('Compute flow tests', async () => {
       providerUrl,
       consumerAccount,
       computeEnv.id,
-      assets[0],
+      assets,
       algo
     )
     assert(computeJobs, 'Cannot start compute job')
@@ -712,7 +712,7 @@ describe('Compute flow tests', async () => {
       computeEnv.id,
       computeValidUntil,
       providerUrl,
-      await consumerAccount.getAddress()
+      consumerAccount
     )
     assert(
       providerInitializeComputeResults.algorithm.validOrder,
@@ -762,7 +762,7 @@ describe('Compute flow tests', async () => {
       providerUrl,
       consumerAccount,
       computeEnv.id,
-      assets[0],
+      assets,
       algo
     )
     // freeEnvDatasetTxId = assets[0].transferTxId
@@ -797,7 +797,7 @@ describe('Compute flow tests', async () => {
       computeEnv.id,
       computeValidUntil,
       providerUrl,
-      await consumerAccount.getAddress()
+      consumerAccount
     )
     assert(
       providerInitializeComputeResults.algorithm.validOrder,
@@ -846,7 +846,7 @@ describe('Compute flow tests', async () => {
       providerUrl,
       consumerAccount,
       computeEnv.id,
-      assets[0],
+      assets,
       algo
     )
     // freeEnvDatasetTxId = assets[0].transferTxId
