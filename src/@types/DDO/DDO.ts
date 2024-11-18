@@ -1,4 +1,5 @@
-import { Service, Metadata, Credentials, Event } from '..'
+import { Service, Metadata, Credentials, Event, Stats } from '..'
+import { Nft } from './Nft'
 
 /**
  * DID Descriptor Object.
@@ -61,4 +62,14 @@ export interface DDO {
    * @type {Event}
    */
   event?: Event
+  /**
+   * Describes the stats for the datasets, number of orders, price if applicable
+   * @type {Stats}
+   */
+  stats?: Stats
+  /**
+   * Describes the NFT object
+   * @type {Nft}
+   */
+  nft?: Nft
 }
