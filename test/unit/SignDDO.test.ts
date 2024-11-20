@@ -14,7 +14,7 @@ describe('Credential Signing and Verification Functions', () => {
   describe('signCredential', () => {
     it('should sign the credential locally using a private key', async () => {
       const privateKey =
-        '0xc594c6e5def4bab63ac29eed19a134c130388f74f019bc74b8f4389df2837a58'
+        '0xc494c6e5def4bab63ac29eed19a134c130355f74f019bc74b8f4389df2837a57'
 
       const result = await signCredential(mockVerifiableCredential, privateKey)
 
@@ -28,7 +28,7 @@ describe('Credential Signing and Verification Functions', () => {
   describe('verifyCredential', () => {
     it('should verify the signed credential with the correct public key', async () => {
       const privateKey =
-        '0xc594c6e5def4bab63ac29eed19a134c130388f74f019bc74b8f4389df2837a58'
+        '0xc494c6e5def4bab63ac29eed19a134c130355f74f019bc74b8f4389df2837a57'
       const wallet = new ethers.Wallet(privateKey)
       const { publicKey } = wallet._signingKey()
 
@@ -54,7 +54,7 @@ describe('Credential Signing and Verification Functions', () => {
 
     it('should throw an error if verification fails due to an invalid signature', async () => {
       const privateKey =
-        '0xc594c6e5def4bab63ac29eed19a134c130388f74f019bc74b8f4389df2837a58'
+        '0xc494c6e5def4bab63ac29eed19a134c130355f74f019bc74b8f4389df2837a57'
       const invalidPublicKey =
         '0x0491d20394c7c2b191c6db3a3a9e7eac21d9c6741dcf66010e0a743530d8c1b05656fb9b555ebc4162df5d1cf3e372a4e0230205932c27fcd998bdbe26399236f9'
 
