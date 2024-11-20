@@ -47,14 +47,14 @@ export async function signCredential(
   publicKeyHex: string
 ): Promise<SignedCredential> {
   try {
-    const key = await importJWK(issuerKeyJWK, 'ES256K')
+    const key = await importJWK(issuerKeyJWK, issuerKeyJWK.alg)
 
     const jws = await new SignJWT(verifiableCredential as unknown as JWTPayload)
-      .setProtectedHeader({ alg: 'ES256K' })
+      .setProtectedHeader({ alg: issuerKeyJWK.alg })
       .setIssuedAt()
       .setIssuer(publicKeyHex)
       .sign(key)
-    const header = { alg: 'ES256K' }
+    const header = { alg: issuerKeyJWK.alg }
 
     return { jws, header, issuer: publicKeyHex }
   } catch (error) {
