@@ -2,7 +2,7 @@ import { assert } from 'chai'
 import { ethers } from 'ethers'
 import { base64url } from 'jose'
 import { signCredential, verifyCredential } from '../../src/utils'
-import { IssuerKeyJWK } from '../../src/@types/IssuerSignature'
+import { IssuerKeyJWK, IssuerPublicKeyJWK } from '../../src/@types/IssuerSignature'
 
 const mockVerifiableCredential = {
   '@context': ['https://www.w3.org/2018/credentials/v1'],
@@ -18,7 +18,6 @@ describe('Credential Signing and Verification Functions', () => {
       const privateKey =
         '0xc494c6e5def4bab63ac29eed19a134c130355f74f019bc74b8f4389df2837a57'
       const wallet = new ethers.Wallet(privateKey)
-      const { publicKey } = wallet._signingKey()
       const privateKeyBuffer = Buffer.from(privateKey.substring(2), 'hex')
       const publicKeyHex = wallet._signingKey().publicKey
       const publicKeyBuffer = Buffer.from(publicKeyHex.substring(2), 'hex')
@@ -44,7 +43,16 @@ describe('Credential Signing and Verification Functions', () => {
         publicKeyHex
       )
 
-      const payload = await verifyCredential(jws, publicKey)
+      const publicJwk = {
+        kty: 'EC',
+        crv: 'secp256k1',
+        x,
+        y,
+        alg: 'ES256K',
+        use: 'sig'
+      }
+
+      const payload = await verifyCredential(jws, publicJwk)
       assert.deepEqual(
         {
           type: payload.type,
@@ -95,8 +103,23 @@ describe('Credential Signing and Verification Functions', () => {
         publicKey
       )
 
+      const invalidPublicKeyBuffer = Buffer.from(invalidPublicKey.substring(2), 'hex')
+      const invalidXBuffer = invalidPublicKeyBuffer.slice(1, 33)
+      const invalidYBuffer = invalidPublicKeyBuffer.slice(33, 65)
+
+      const invalidX = base64url.encode(invalidXBuffer as any as Uint8Array)
+      const invalidY = base64url.encode(invalidYBuffer as any as Uint8Array)
+      const publicJwk: IssuerPublicKeyJWK = {
+        kty: 'EC',
+        crv: 'secp256k1',
+        x: invalidX,
+        y: invalidY,
+        alg: 'ES256K',
+        use: 'sig'
+      }
+
       try {
-        await verifyCredential(jws, invalidPublicKey)
+        await verifyCredential(jws, publicJwk)
         assert.fail('Expected error to be thrown')
       } catch (error) {
         assert.include(

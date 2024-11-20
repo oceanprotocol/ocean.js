@@ -1,6 +1,11 @@
-import { base64url, importJWK, JWTPayload, jwtVerify, SignJWT } from 'jose'
+import { importJWK, JWTPayload, jwtVerify, SignJWT } from 'jose'
 import axios from 'axios'
-import { IssuerKey, IssuerKeyJWK, SignedCredential } from '../@types/IssuerSignature'
+import {
+  IssuerKey,
+  IssuerKeyJWK,
+  IssuerPublicKeyJWK,
+  SignedCredential
+} from '../@types/IssuerSignature'
 
 /**
  * Signs a verifiable credential using Walt.id's issuer API.
@@ -66,32 +71,15 @@ export async function signCredential(
 /**
  * Verifies a verifiable credential's JWS using the issuer's public key.
  * @param {string} jws - The JSON Web Signature (JWS) to verify.
- * @param {string} issuerPublicKey - The public key of the issuer in hexadecimal format.
+ * @param {IssuerPublicKeyJWK} issuerPublicKeyJWK - The public key JWK of the issuer.
  * @returns {Promise<JWTPayload>} - The verified payload of the credential.
  * @throws {Error} If the verification fails.
  */
 export async function verifyCredential(
   jws: string,
-  issuerPublicKey: string
+  issuerPublicKeyJWK: IssuerPublicKeyJWK
 ): Promise<JWTPayload> {
-  const publicKeyBuffer = Buffer.from(issuerPublicKey.substring(2), 'hex')
-  const xBuffer = publicKeyBuffer.slice(1, 33)
-  const yBuffer = publicKeyBuffer.slice(33, 65)
-
-  const x = base64url.encode(xBuffer as any as Uint8Array)
-  const y = base64url.encode(yBuffer as any as Uint8Array)
-
-  const publicJwk = {
-    kty: 'EC',
-    crv: 'secp256k1',
-    x,
-    y,
-    alg: 'ES256K',
-    use: 'sig'
-  }
-
-  const key = await importJWK(publicJwk, 'ES256K')
-
+  const key = await importJWK(issuerPublicKeyJWK, 'ES256K')
   try {
     const { payload } = await jwtVerify(jws, key)
     return payload
