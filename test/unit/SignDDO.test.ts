@@ -1,6 +1,6 @@
 import { assert } from 'chai'
-import { signCredential, verifyCredential } from '../../src'
 import { ethers } from 'ethers'
+import { signCredential, verifyCredential } from '../../src'
 
 const mockVerifiableCredential = {
   '@context': ['https://www.w3.org/2018/credentials/v1'],
@@ -12,7 +12,7 @@ const mockVerifiableCredential = {
 
 describe('Credential Signing and Verification Functions', () => {
   describe('signCredential', () => {
-    it('should sign the credential locally using a private key', async () => {
+    it('should sign the credential using a private key', async () => {
       const privateKey =
         '0xc494c6e5def4bab63ac29eed19a134c130355f74f019bc74b8f4389df2837a57'
 
