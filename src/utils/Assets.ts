@@ -153,11 +153,10 @@ export async function createAsset(
   }
   const chainID = (await owner.provider.getNetwork()).chainId
 
-  if (ddo.chainId !== chainID) {
-    throw new Error('Chain ID from DDO is different than the configured network.')
-  }
-  if (ddo.id) {
-    throw new Error('DID already filled in.')
+  if (ddo.chainId) {
+    if (ddo.chainId !== chainID) {
+      throw new Error('Chain ID from DDO is different than the configured network.')
+    }
   }
 
   const config = new ConfigHelper().getConfig(parseInt(String(chainID)))

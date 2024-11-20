@@ -133,6 +133,10 @@ export async function handleComputeOrder(
        - have validOrder and providerFees -> then order is valid but providerFees are not valid, we need to call reuseOrder and pay only providerFees
        - no validOrder -> we need to call startOrder, to pay 1 DT & providerFees
     */
+  const chainID = (await payerAccount.provider.getNetwork()).chainId
+  if (config.chainId !== chainID) {
+    throw new Error('Chain ID from DDO is different than the configured network.')
+  }
   if (order.providerFee && order.providerFee.providerFeeAmount) {
     await approveWei(
       payerAccount,
