@@ -37,7 +37,8 @@ export async function signCredentialWithWaltId(
 /**
  * Signs a verifiable credential locally using a private key.
  * @param {any} verifiableCredential - The verifiable credential to sign.
- * @param {string} issuerKeyJWK - the JWK from private key.
+ * @param {IssuerKeyJWK} issuerKeyJWK - the JWK from private key.
+ * @param {string} publicKeyHex - the public key
  * @returns {Promise<SignedCredential>} - The signed credential's JWS, header, and issuer information.
  * @throws {Error} If the signing process fails.
  */
