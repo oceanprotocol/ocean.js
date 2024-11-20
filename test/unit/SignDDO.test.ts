@@ -1,6 +1,6 @@
 import { assert } from 'chai'
 import { ethers } from 'ethers'
-import { signCredential, verifyCredential } from '../../src'
+import { signCredential, verifyCredential } from '../../src/utils'
 
 const mockVerifiableCredential = {
   '@context': ['https://www.w3.org/2018/credentials/v1'],
