@@ -1,6 +1,5 @@
 import { base64url, importJWK, JWTPayload, jwtVerify, SignJWT } from 'jose'
 import axios from 'axios'
-import { ethers } from 'ethers'
 import { IssuerKey, IssuerKeyJWK, SignedCredential } from '../@types/IssuerSignature'
 
 /**

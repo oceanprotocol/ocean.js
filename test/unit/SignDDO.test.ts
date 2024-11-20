@@ -1,7 +1,7 @@
 import { assert } from 'chai'
 import { ethers } from 'ethers'
-import { signCredential, verifyCredential } from '../../src/utils'
 import { base64url } from 'jose'
+import { signCredential, verifyCredential } from '../../src/utils'
 import { IssuerKeyJWK } from '../../src/@types/IssuerSignature'
 
 const mockVerifiableCredential = {
