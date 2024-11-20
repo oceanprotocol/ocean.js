@@ -1,6 +1,8 @@
 import { assert } from 'chai'
 import { ethers } from 'ethers'
 import { signCredential, verifyCredential } from '../../src/utils'
+import { base64url } from 'jose'
+import { IssuerKeyJWK } from '../../src/@types/IssuerSignature'
 
 const mockVerifiableCredential = {
   '@context': ['https://www.w3.org/2018/credentials/v1'],
@@ -11,28 +13,36 @@ const mockVerifiableCredential = {
 }
 
 describe('Credential Signing and Verification Functions', () => {
-  describe('signCredential', () => {
-    it('should sign the credential using a private key', async () => {
-      const privateKey =
-        '0xc494c6e5def4bab63ac29eed19a134c130355f74f019bc74b8f4389df2837a57'
-
-      const result = await signCredential(mockVerifiableCredential, privateKey)
-
-      assert.isString(result.jws, 'JWS should be a string')
-      assert.isObject(result.header, 'Header should be an object')
-      assert.equal(result.header.alg, 'ES256K', 'Algorithm should be ES256K')
-      assert.isString(result.issuer, 'Issuer should be a string')
-    })
-  })
-
-  describe('verifyCredential', () => {
+  describe('Sign and verify credential', () => {
     it('should verify the signed credential with the correct public key', async () => {
       const privateKey =
         '0xc494c6e5def4bab63ac29eed19a134c130355f74f019bc74b8f4389df2837a57'
       const wallet = new ethers.Wallet(privateKey)
       const { publicKey } = wallet._signingKey()
+      const privateKeyBuffer = Buffer.from(privateKey.substring(2), 'hex')
+      const publicKeyHex = wallet._signingKey().publicKey
+      const publicKeyBuffer = Buffer.from(publicKeyHex.substring(2), 'hex')
+      const xBuffer = publicKeyBuffer.slice(1, 33)
+      const yBuffer = publicKeyBuffer.slice(33, 65)
+      const d = base64url.encode(privateKeyBuffer as any as Uint8Array)
+      const x = base64url.encode(xBuffer as any as Uint8Array)
+      const y = base64url.encode(yBuffer as any as Uint8Array)
 
-      const { jws } = await signCredential(mockVerifiableCredential, privateKey)
+      const privateJwk: IssuerKeyJWK = {
+        kty: 'EC',
+        crv: 'secp256k1',
+        d,
+        x,
+        y,
+        alg: 'ES256K',
+        use: 'sig'
+      }
+
+      const { jws } = await signCredential(
+        mockVerifiableCredential,
+        privateJwk,
+        publicKeyHex
+      )
 
       const payload = await verifyCredential(jws, publicKey)
       assert.deepEqual(
@@ -58,7 +68,32 @@ describe('Credential Signing and Verification Functions', () => {
       const invalidPublicKey =
         '0x0491d20394c7c2b191c6db3a3a9e7eac21d9c6741dcf66010e0a743530d8c1b05656fb9b555ebc4162df5d1cf3e372a4e0230205932c27fcd998bdbe26399236f9'
 
-      const { jws } = await signCredential(mockVerifiableCredential, privateKey)
+      const wallet = new ethers.Wallet(privateKey)
+      const { publicKey } = wallet._signingKey()
+      const privateKeyBuffer = Buffer.from(privateKey.substring(2), 'hex')
+      const publicKeyHex = wallet._signingKey().publicKey
+      const publicKeyBuffer = Buffer.from(publicKeyHex.substring(2), 'hex')
+      const xBuffer = publicKeyBuffer.slice(1, 33)
+      const yBuffer = publicKeyBuffer.slice(33, 65)
+      const d = base64url.encode(privateKeyBuffer as any as Uint8Array)
+      const x = base64url.encode(xBuffer as any as Uint8Array)
+      const y = base64url.encode(yBuffer as any as Uint8Array)
+
+      const privateJwk: IssuerKeyJWK = {
+        kty: 'EC',
+        crv: 'secp256k1',
+        d,
+        x,
+        y,
+        alg: 'ES256K',
+        use: 'sig'
+      }
+
+      const { jws } = await signCredential(
+        mockVerifiableCredential,
+        privateJwk,
+        publicKey
+      )
 
       try {
         await verifyCredential(jws, invalidPublicKey)

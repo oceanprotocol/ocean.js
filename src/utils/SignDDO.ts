@@ -1,7 +1,7 @@
 import { base64url, importJWK, JWTPayload, jwtVerify, SignJWT } from 'jose'
 import axios from 'axios'
 import { ethers } from 'ethers'
-import { IssuerKey, SignedCredential } from '../@types/IssuerSignature'
+import { IssuerKey, IssuerKeyJWK, SignedCredential } from '../@types/IssuerSignature'
 
 /**
  * Signs a verifiable credential using Walt.id's issuer API.
@@ -37,40 +37,17 @@ export async function signCredentialWithWaltId(
 /**
  * Signs a verifiable credential locally using a private key.
  * @param {any} verifiableCredential - The verifiable credential to sign.
- * @param {string} privateKey - The private key.
+ * @param {string} issuerKeyJWK - the JWK from private key.
  * @returns {Promise<SignedCredential>} - The signed credential's JWS, header, and issuer information.
  * @throws {Error} If the signing process fails.
  */
 export async function signCredential(
   verifiableCredential: any,
-  privateKey: string
+  issuerKeyJWK: IssuerKeyJWK,
+  publicKeyHex: string
 ): Promise<SignedCredential> {
   try {
-    const wallet = new ethers.Wallet(privateKey)
-    const privateKeyBuffer = Buffer.from(privateKey.substring(2), 'hex')
-    const publicKeyHex = wallet._signingKey().publicKey
-    const publicKeyBuffer = Buffer.from(publicKeyHex.substring(2), 'hex')
-
-    // Extract x and y coordinates from the public key buffer
-    const xBuffer = publicKeyBuffer.slice(1, 33)
-    const yBuffer = publicKeyBuffer.slice(33, 65)
-
-    // Base64url-encode the values
-    const d = base64url.encode(privateKeyBuffer as any as Uint8Array)
-    const x = base64url.encode(xBuffer as any as Uint8Array)
-    const y = base64url.encode(yBuffer as any as Uint8Array)
-
-    const privateJwk = {
-      kty: 'EC',
-      crv: 'secp256k1',
-      d,
-      x,
-      y,
-      alg: 'ES256K',
-      use: 'sig'
-    }
-
-    const key = await importJWK(privateJwk, 'ES256K')
+    const key = await importJWK(issuerKeyJWK, 'ES256K')
 
     const jws = await new SignJWT(verifiableCredential as unknown as JWTPayload)
       .setProtectedHeader({ alg: 'ES256K' })
