@@ -1,4 +1,4 @@
-import { base64url, importJWK, JWTPayload, SignJWT } from 'jose'
+import { base64url, importJWK, JWTPayload, jwtVerify, SignJWT } from 'jose'
 import axios from 'axios'
 import { ethers } from 'ethers'
 import { IssuerKey, SignedCredential } from '../@types/IssuerSignature'
@@ -82,6 +82,44 @@ export async function signCredential(
     return { jws, header, issuer: publicKeyHex }
   } catch (error) {
     console.error('Error signing credential:', error)
+    throw error
+  }
+}
+
+/**
+ * Verifies a verifiable credential's JWS using the issuer's public key.
+ * @param {string} jws - The JSON Web Signature (JWS) to verify.
+ * @param {string} issuerPublicKey - The public key of the issuer in hexadecimal format.
+ * @returns {Promise<JWTPayload>} - The verified payload of the credential.
+ * @throws {Error} If the verification fails.
+ */
+export async function verifyCredential(
+  jws: string,
+  issuerPublicKey: string
+): Promise<JWTPayload> {
+  const publicKeyBuffer = Buffer.from(issuerPublicKey.substring(2), 'hex')
+  const xBuffer = publicKeyBuffer.slice(1, 33)
+  const yBuffer = publicKeyBuffer.slice(33, 65)
+
+  const x = base64url.encode(xBuffer as any as Uint8Array)
+  const y = base64url.encode(yBuffer as any as Uint8Array)
+
+  const publicJwk = {
+    kty: 'EC',
+    crv: 'secp256k1',
+    x,
+    y,
+    alg: 'ES256K',
+    use: 'sig'
+  }
+
+  const key = await importJWK(publicJwk, 'ES256K')
+
+  try {
+    const { payload } = await jwtVerify(jws, key)
+    return payload
+  } catch (error) {
+    console.error('Verification failed:', error)
     throw error
   }
 }
