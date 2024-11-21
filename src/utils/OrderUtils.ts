@@ -54,6 +54,10 @@ export async function orderAsset(
       consumeMarketFeeToken:
         asset.stats.price.tokenAddress || '0x0000000000000000000000000000000000000000'
     }
+  const chainID = (await consumerAccount.provider.getNetwork()).chainId
+  if (asset.chainId !== chainID) {
+    throw new Error('Chain ID from DDO is different than the configured network.')
+  }
 
   if (!asset.datatokens[datatokenIndex].address)
     throw new Error(
