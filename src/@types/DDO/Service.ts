@@ -1,4 +1,5 @@
 import { ConsumerParameter } from './ConsumerParameter'
+import { Credentials } from './Credentials'
 
 export interface PublisherTrustedAlgorithm {
   /**
@@ -79,6 +80,12 @@ export interface Service {
    * @type {string}
    */
   serviceEndpoint: string
+
+  /**
+   * Describes the credentials needed to access a service
+   * @type {Credentials}
+   */
+  credentials?: Credentials
 
   /**
    * Describing how long the service can be used after consumption is initiated.

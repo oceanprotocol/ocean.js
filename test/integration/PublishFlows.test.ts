@@ -22,6 +22,7 @@ import {
   Files
 } from '../../src/@types'
 
+import { createAsset } from '../../src/utils'
 function delay(interval: number) {
   return it('should delay', (done) => {
     setTimeout(() => done(), interval)
@@ -55,7 +56,7 @@ describe('Publish tests', async () => {
     '@context': ['https://w3id.org/did/v1'],
     id: '',
     version: '4.1.0',
-    chainId: 4,
+    chainId: 8996,
     nftAddress: '0x0',
     metadata: {
       created: '2021-12-20T14:35:20Z',
@@ -93,8 +94,12 @@ describe('Publish tests', async () => {
   })
 
   it('initialize test classes', async () => {
-    nft = new Nft(publisherAccount)
-    factory = new NftFactory(addresses.ERC721Factory, publisherAccount)
+    nft = new Nft(publisherAccount, await publisherAccount.getChainId())
+    factory = new NftFactory(
+      addresses.ERC721Factory,
+      publisherAccount,
+      await publisherAccount.getChainId()
+    )
 
     await approve(
       publisherAccount,
@@ -197,6 +202,25 @@ describe('Publish tests', async () => {
   })
 
   delay(19000)
+
+  it('should publish a dataset with fixed price (create NFT + Datoken + fixed price) using createAsset() fn', async () => {
+    const fixedPriceDdo: DDO = { ...genericAsset }
+    const ownerAddress = publisherAccount
+    const asset = await createAsset(
+      'test asset',
+      'TEST',
+      ownerAddress,
+      assetUrl,
+      1, // template 1 on dev network
+      fixedPriceDdo,
+      true, // encrypted ddo
+      providerUrl,
+      ZERO_ADDRESS, // provider fee token
+      aquarius
+    )
+
+    assert(asset !== null, 'Could not publish asset!')
+  })
 
   it('should resolve the fixed price dataset', async () => {
     const resolvedDDO = await aquarius.waitForAqua(fixedPricedDID)

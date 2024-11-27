@@ -1,5 +1,4 @@
 import { Service, Metadata, Credentials, Event } from '..'
-
 /**
  * DID Descriptor Object.
  * Contains metadata about the asset, and define access in at least one service.

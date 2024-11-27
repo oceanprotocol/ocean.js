@@ -167,7 +167,7 @@ Next, we define the metadata that will describe our data asset. This is what we 
     '@context': ['https://w3id.org/did/v1'],
     id: '',
     version: '4.1.0',
-    chainId: 4,
+    chainId: 8996,
     nftAddress: '0x0',
     metadata: {
       created: '2021-12-20T14:35:20Z',
@@ -289,7 +289,11 @@ you need to mint oceans to mentioned accounts only if you are using barge to tes
 
   ### 6.1 Publish a dataset (create NFT + Datatoken) with a fixed rate exchange
 ```Typescript
-    const factory = new NftFactory(addresses.ERC721Factory, publisherAccount)
+    const factory = new NftFactory(
+      addresses.ERC721Factory,
+      publisherAccount,
+      await publisherAccount.getChainId()
+    )
 
     const nftParams: NftCreateData = {
       name: FRE_NFT_NAME,
@@ -409,7 +413,11 @@ Now let's console log the DID to check everything is working
 
   ### 6.3 Marketplace displays fixed rate asset for sale
 ```Typescript
-    const fixedRate = new FixedRateExchange(freAddress, publisherAccount)
+    const fixedRate = new FixedRateExchange(
+      freAddress,
+      publisherAccount,
+      await publisherAccount.getChainId()
+    )
     const oceanAmount = await (
       await fixedRate.calcBaseInGivenDatatokensOut(freId, '1')
     ).baseTokenAmount
@@ -424,7 +432,7 @@ Now that the market has fetched those values it can display the asset on the fro
 
   ### 7.1 Consumer buys a fixed rate asset data asset, and downloads it
 ```Typescript
-    datatoken = new Datatoken(publisherAccount)
+    datatoken = new Datatoken(publisherAccount, await publisherAccount.getChainId())
     const DATATOKEN_AMOUNT = '10000'
 
     await datatoken.mint(
@@ -473,7 +481,11 @@ Before we call the contract we have to call `approve` so that the contract can m
       DATATOKEN_AMOUNT
     )
 
-    const fixedRate = new FixedRateExchange(freAddress, consumerAccount)
+    const fixedRate = new FixedRateExchange(
+      freAddress,
+      consumerAccount,
+      await consumerAccount.getChainId()
+    )
 ```
 Now we can make the contract call
 ```Typescript
@@ -517,7 +529,7 @@ Next, we need to initialize the provider
       validUntil: initializeData.providerFee.validUntil
     }
 
-    datatoken = new Datatoken(consumerAccount)
+    datatoken = new Datatoken(consumerAccount, await consumerAccount.getChainId())
 
 ```
 Lets now make the payment
@@ -574,7 +586,11 @@ Lets check that the download URL was successfully received
 
   ### 8.1 Publish a dataset (create NFT + Datatoken) with a dispenser
 ```Typescript
-    const factory = new NftFactory(addresses.ERC721Factory, publisherAccount)
+    const factory = new NftFactory(
+      addresses.ERC721Factory,
+      publisherAccount,
+      await publisherAccount.getChainId()
+    )
 
     const nftParams: NftCreateData = {
       name: DISP_NFT_NAME,
@@ -679,8 +695,12 @@ Now we need to encrypt file(s) using provider
 
   ### 9.1 Consumer gets a dispenser data asset, and downloads it
 ```Typescript
-    datatoken = new Datatoken(publisherAccount)
-    const dispenser = new Dispenser(addresses.Dispenser, consumerAccount)
+    datatoken = new Datatoken(publisherAccount, await publisherAccount.getChainId())
+    const dispenser = new Dispenser(
+      addresses.Dispenser,
+      consumerAccount,
+      await consumerAccount.getChainId()
+    )
 
     let consumerDTBalance = await balance(
       consumerAccount,
@@ -709,7 +729,7 @@ Now we need to encrypt file(s) using provider
     const resolvedDDO = await aquarius.waitForAqua(fixedDDO.id)
     assert(resolvedDDO, 'Cannot fetch DDO from Aquarius')
 
-    datatoken = new Datatoken(consumerAccount)
+    datatoken = new Datatoken(consumerAccount, await consumerAccount.getChainId())
 
 ```
 At this point we need to encrypt file(s) using provider
@@ -791,7 +811,7 @@ Here are the steps:
   ### 10.1 Add key-value pair to data NFT
 Let's start by using the `setData` method to update the nft key value store with some data
 ```Typescript
-    const nft = new Nft(publisherAccount)
+    const nft = new Nft(publisherAccount, await publisherAccount.getChainId())
     const data = 'SomeData'
     try {
       await nft.setData(

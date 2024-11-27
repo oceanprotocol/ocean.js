@@ -394,7 +394,7 @@ export class Provider {
       LoggerInstance.error(e)
       throw new Error(`Provider initialize failed url: ${initializeUrl} `)
     }
-    if (response?.ok) {
+    if (response?.status === 200) {
       const results: ProviderInitialize = await response.json()
       return results
     }
@@ -510,7 +510,7 @@ export class Provider {
       )) + 1
     ).toString()
 
-    const signature = await this.signProviderRequest(signer, did + nonce)
+    const signature = await this.signProviderRequest(signer, did + nonce) // did + nonce
     let consumeUrl = downloadUrl
     consumeUrl += `?fileIndex=${fileIndex}`
     consumeUrl += `&documentId=${did}`

@@ -58,11 +58,10 @@ export class Dispenser extends SmartContractWithAddress {
       allowedSwapper
     )
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-
     // Call createFixedRate contract method
     const trxReceipt = await sendTx(
       estGas,
-      this.signer,
+      this.getSignerAccordingSdk(),
       this.config?.gasFeeMultiplier,
       this.contract.create,
       dtAddress,
@@ -95,10 +94,9 @@ export class Dispenser extends SmartContractWithAddress {
       this.amountToUnits(null, maxBalance, 18)
     )
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-
     const trxReceipt = await sendTx(
       estGas,
-      this.signer,
+      this.getSignerAccordingSdk(),
       this.config?.gasFeeMultiplier,
       this.contract.activate,
       dtAddress,
@@ -121,10 +119,9 @@ export class Dispenser extends SmartContractWithAddress {
   ): Promise<ReceiptOrEstimate<G>> {
     const estGas = await this.contract.estimateGas.deactivate(dtAddress)
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-
     const trxReceipt = await sendTx(
       estGas,
-      this.signer,
+      this.getSignerAccordingSdk(),
       this.config?.gasFeeMultiplier,
       this.contract.deactivate,
       dtAddress
@@ -150,10 +147,9 @@ export class Dispenser extends SmartContractWithAddress {
       newAllowedSwapper
     )
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-
     const trxReceipt = await sendTx(
       estGas,
-      this.signer,
+      this.getSignerAccordingSdk(),
       this.config?.gasFeeMultiplier,
       this.contract.setAllowedSwapper,
       dtAddress,
@@ -184,10 +180,9 @@ export class Dispenser extends SmartContractWithAddress {
       destination
     )
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-
     const trxReceipt = await sendTx(
       estGas,
-      this.signer,
+      this.getSignerAccordingSdk(),
       this.config?.gasFeeMultiplier,
       this.contract.dispense,
       dtAddress,
@@ -209,10 +204,9 @@ export class Dispenser extends SmartContractWithAddress {
   ): Promise<ReceiptOrEstimate<G>> {
     const estGas = await this.contract.estimateGas.ownerWithdraw(dtAddress)
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-
     const trxReceipt = await sendTx(
       estGas,
-      this.signer,
+      this.getSignerAccordingSdk(),
       this.config?.gasFeeMultiplier,
       this.contract.ownerWithdraw,
       dtAddress

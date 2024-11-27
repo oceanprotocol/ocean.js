@@ -1,6 +1,8 @@
 import { AbiItem } from '../@types'
 import { LogLevel } from '../utils'
 
+type SDK = 'evm' | 'oasis'
+
 export class Config {
   /**
    * Ethereum node URL.
@@ -43,6 +45,12 @@ export class Config {
    * @type {string}
    */
   public nftFactoryAddress?: string
+
+  /**
+   * Router Factory address
+   * @type {string}
+   */
+  public routerFactoryAddress?: string
 
   /**
    * datatokens ABI
@@ -179,4 +187,8 @@ export class Config {
   DFRewards?: string
   DFStrategyV1?: string
   veFeeEstimate?: string
+
+  // is confidential evm
+  sdk?: SDK
+  accessListFactory?: string
 }

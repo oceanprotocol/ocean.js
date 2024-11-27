@@ -35,11 +35,12 @@ export const configHelperNetworks: Config[] = [
     // comment th following configs if running on macOS
     metadataCacheUri: 'http://172.15.0.5:5000',
     providerUri: 'http://172.15.0.4:8030',
-    subgraphUri: 'https://172.15.0.15:8000'
+    subgraphUri: 'https://172.15.0.15:8000',
     // uncomment the following configs if running on macOS
     // metadataCacheUri: 'http://127.0.0.1:5000',
     // providerUri: 'http://127.0.0.1:8030/',
     // subgraphUri: 'http://127.0.0.1:9000/'
+    sdk: 'evm'
   },
   {
     ...configHelperNetworksBase,
@@ -48,7 +49,8 @@ export const configHelperNetworks: Config[] = [
     nodeUri: 'https://sepolia.infura.io/v3',
     subgraphUri: 'https://v4.subgraph.sepolia.oceanprotocol.com',
     explorerUri: 'https://sepolia.etherscan.io',
-    gasFeeMultiplier: 1.1
+    gasFeeMultiplier: 1.1,
+    sdk: 'evm'
   },
   {
     ...configHelperNetworksBase,
@@ -61,7 +63,8 @@ export const configHelperNetworks: Config[] = [
     transactionBlockTimeout: 150,
     transactionConfirmationBlocks: 5,
     transactionPollingTimeout: 1750,
-    gasFeeMultiplier: 1.05
+    gasFeeMultiplier: 1.05,
+    sdk: 'evm'
   },
   {
     ...configHelperNetworksBase,
@@ -71,7 +74,8 @@ export const configHelperNetworks: Config[] = [
     subgraphUri: 'https://v4.subgraph.polygon.oceanprotocol.com',
     explorerUri: 'https://polygonscan.com',
     oceanTokenSymbol: 'mOCEAN',
-    gasFeeMultiplier: 1.6
+    gasFeeMultiplier: 1.6,
+    sdk: 'evm'
   },
   {
     ...configHelperNetworksBase,
@@ -80,7 +84,8 @@ export const configHelperNetworks: Config[] = [
     nodeUri: 'https://rpc.gaiaxtestnet.oceanprotocol.com',
     providerUri: 'https://v4.provider.gaiaxtestnet.oceanprotocol.com',
     subgraphUri: 'https://v4.subgraph.gaiaxtestnet.oceanprotocol.com',
-    explorerUri: 'https://blockscout.gaiaxtestnet.oceanprotocol.com'
+    explorerUri: 'https://blockscout.gaiaxtestnet.oceanprotocol.com',
+    sdk: 'evm'
   },
   {
     ...configHelperNetworksBase,
@@ -89,7 +94,8 @@ export const configHelperNetworks: Config[] = [
     nodeUri: 'https://polygon-mumbai.infura.io/v3',
     subgraphUri: 'https://v4.subgraph.mumbai.oceanprotocol.com',
     explorerUri: 'https://mumbai.polygonscan.com',
-    gasFeeMultiplier: 1.1
+    gasFeeMultiplier: 1.1,
+    sdk: 'evm'
   },
   {
     ...configHelperNetworksBase,
@@ -98,7 +104,8 @@ export const configHelperNetworks: Config[] = [
     nodeUri: 'https://bsc-dataseed.binance.org',
     subgraphUri: 'https://v4.subgraph.bsc.oceanprotocol.com',
     explorerUri: 'https://bscscan.com/',
-    gasFeeMultiplier: 1.05
+    gasFeeMultiplier: 1.05,
+    sdk: 'evm'
   },
   {
     ...configHelperNetworksBase,
@@ -107,7 +114,8 @@ export const configHelperNetworks: Config[] = [
     nodeUri: 'https://rpc.energyweb.org',
     subgraphUri: 'https://v4.subgraph.energyweb.oceanprotocol.com',
     explorerUri: 'https://explorer.energyweb.org',
-    gasFeeMultiplier: 1.05
+    gasFeeMultiplier: 1.05,
+    sdk: 'evm'
   },
   {
     ...configHelperNetworksBase,
@@ -116,7 +124,8 @@ export const configHelperNetworks: Config[] = [
     nodeUri: 'https://moonriver.api.onfinality.io/public',
     subgraphUri: 'https://v4.subgraph.moonriver.oceanprotocol.com',
     explorerUri: 'https://moonriver.moonscan.io/',
-    gasFeeMultiplier: 1.05
+    gasFeeMultiplier: 1.05,
+    sdk: 'evm'
   },
   {
     ...configHelperNetworksBase,
@@ -127,7 +136,8 @@ export const configHelperNetworks: Config[] = [
     providerUri: 'https://provider.v4.genx.delta-dao.com',
     subgraphUri: 'https://subgraph.v4.genx.minimal-gaia-x.eu',
     explorerUri: 'https://explorer.genx.minimal-gaia-x.eu/',
-    gasFeeMultiplier: 1
+    gasFeeMultiplier: 1,
+    sdk: 'evm'
   },
   {
     ...configHelperNetworksBase,
@@ -136,7 +146,8 @@ export const configHelperNetworks: Config[] = [
     nodeUri: 'https://mainnet.optimism.io',
     subgraphUri: 'https://v4.subgraph.optimism.oceanprotocol.com',
     explorerUri: 'https://optimistic.etherscan.io/',
-    gasFeeMultiplier: 1.1
+    gasFeeMultiplier: 1.1,
+    sdk: 'evm'
   },
   {
     ...configHelperNetworksBase,
@@ -145,7 +156,8 @@ export const configHelperNetworks: Config[] = [
     nodeUri: 'https://sepolia.optimism.io',
     subgraphUri: 'https://v4.subgraph.optimism-sepolia.oceanprotocol.com',
     explorerUri: 'https://sepolia-optimism.etherscan.io/',
-    gasFeeMultiplier: 1.1
+    gasFeeMultiplier: 1.1,
+    sdk: 'evm'
   },
   {
     ...configHelperNetworksBase,
@@ -154,7 +166,19 @@ export const configHelperNetworks: Config[] = [
     nodeUri: 'https://sapphire.oasis.io',
     subgraphUri: 'https://v4.subgraph.sapphire-mainnet.oceanprotocol.com/',
     explorerUri: 'https://explorer.oasis.io/mainnet/sapphire/',
-    gasFeeMultiplier: 1
+    gasFeeMultiplier: 1,
+    sdk: 'oasis'
+  },
+  {
+    ...configHelperNetworksBase,
+    chainId: 23295,
+    network: 'oasis_sapphire_testnet',
+    nodeUri: 'https://testnet.sapphire.oasis.dev',
+    subgraphUri:
+      'https://v4.subgraph.sapphire-testnet.oceanprotocol.com/subgraphs/name/oceanprotocol/ocean-subgraph',
+    explorerUri: 'https://explorer.oasis.io/testnet/sapphire/',
+    gasFeeMultiplier: 1,
+    sdk: 'oasis'
   },
   {
     ...configHelperNetworksBase,
@@ -164,8 +188,14 @@ export const configHelperNetworks: Config[] = [
     metadataCacheUri: 'https://aquarius.dev.pontus-x.eu',
     providerUri: 'https://provider.dev.pontus-x.eu',
     subgraphUri: 'https://subgraph.dev.pontus-x.eu',
-    explorerUri: 'https://explorer.dev.pontus-x.eu/testnet/pontusx'
+    explorerUri: 'https://explorer.dev.pontus-x.eu/testnet/pontusx',
+    sdk: 'evm'
   }
+]
+
+export const KNOWN_CONFIDENTIAL_EVMS = [
+  23294, // oasis_sapphire
+  23295 // oasis_sapphire_testnet
 ]
 
 export class ConfigHelper {
@@ -190,7 +220,9 @@ export class ConfigHelper {
         veDelegationProxy,
         DFRewards,
         DFStrategyV1,
-        veFeeEstimate
+        veFeeEstimate,
+        Router,
+        AccessListFactory
       } = customAddresses[network]
       configAddresses = {
         nftFactoryAddress: ERC721Factory,
@@ -198,6 +230,7 @@ export class ConfigHelper {
         fixedRateExchangeAddress: FixedPrice,
         dispenserAddress: Dispenser,
         oceanTokenAddress: Ocean,
+        routerFactoryAddress: Router,
         chainId,
         startBlock,
         veAllocate,
@@ -208,6 +241,7 @@ export class ConfigHelper {
         DFRewards,
         DFStrategyV1,
         veFeeEstimate,
+        accessListFactory: AccessListFactory,
         ...(process.env.AQUARIUS_URL && { metadataCacheUri: process.env.AQUARIUS_URL }),
         ...(process.env.PROVIDER_URL && { providerUri: process.env.PROVIDER_URL })
       }
@@ -229,7 +263,9 @@ export class ConfigHelper {
           veDelegationProxy,
           DFRewards,
           DFStrategyV1,
-          veFeeEstimate
+          veFeeEstimate,
+          Router,
+          AccessListFactory
         } = DefaultContractsAddresses[network]
         configAddresses = {
           nftFactoryAddress: ERC721Factory,
@@ -237,6 +273,7 @@ export class ConfigHelper {
           fixedRateExchangeAddress: FixedPrice,
           dispenserAddress: Dispenser,
           oceanTokenAddress: Ocean,
+          routerFactoryAddress: Router,
           chainId,
           startBlock,
           veAllocate,
@@ -247,6 +284,7 @@ export class ConfigHelper {
           DFRewards,
           DFStrategyV1,
           veFeeEstimate,
+          accessListFactory: AccessListFactory,
           ...(process.env.AQUARIUS_URL && { metadataCacheUri: process.env.AQUARIUS_URL }),
           ...(process.env.PROVIDER_URL && { providerUri: process.env.PROVIDER_URL })
         }
@@ -263,6 +301,7 @@ export class ConfigHelper {
    */
   public getConfig(network: string | number, infuraProjectId?: string): Config {
     const filterBy = typeof network === 'string' ? 'network' : 'chainId'
+
     let config = configHelperNetworks.find((c) => c[filterBy] === network)
 
     if (!config) {
@@ -282,7 +321,26 @@ export class ConfigHelper {
       console.log(e)
       addresses = null
     }
-    const contractAddressesConfig = this.getAddressesFromEnv(config.network, addresses)
+
+    let contractAddressesConfig = this.getAddressesFromEnv(config.network, addresses)
+    // check oasis network name typos on addresses.json
+    if (!contractAddressesConfig && KNOWN_CONFIDENTIAL_EVMS.includes(config.chainId)) {
+      contractAddressesConfig = this.getAddressesFromEnv(
+        config.network.replace('sapph', 'saph'),
+        addresses
+      )
+    }
+
+    if (!('sdk' in config) || config.sdk === null) {
+      if (KNOWN_CONFIDENTIAL_EVMS.includes(config.chainId)) {
+        config.sdk = 'oasis'
+      } else {
+        config.sdk = 'evm'
+      }
+    }
+
+    config.accessListFactory = contractAddressesConfig.accessListFactory
+
     config = { ...config, ...contractAddressesConfig }
 
     const nodeUri = infuraProjectId

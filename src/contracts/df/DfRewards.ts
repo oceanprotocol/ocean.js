@@ -40,11 +40,10 @@ export class DfRewards extends SmartContractWithAddress {
   ): Promise<ReceiptOrEstimate<G>> {
     const estGas = await this.contract.estimateGas.claimFor(userAddress, tokenAddress)
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-
     // Invoke function of the contract
     const trxReceipt = await sendTx(
       estGas,
-      this.signer,
+      this.getSignerAccordingSdk(),
       this.config?.gasFeeMultiplier,
       this.contract.claimFor,
       userAddress,
@@ -76,11 +75,10 @@ export class DfRewards extends SmartContractWithAddress {
       tokenAddress
     )
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-
     // Invoke function of the contract
     const trxReceipt = await sendTx(
       estGas,
-      this.signer,
+      this.getSignerAccordingSdk(),
       this.config?.gasFeeMultiplier,
       this.contract.allocate,
       userAddresses,
