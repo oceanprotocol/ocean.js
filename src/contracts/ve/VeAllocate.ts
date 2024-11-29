@@ -1,5 +1,5 @@
 import veAllocateABI from '@oceanprotocol/contracts/artifacts/contracts/ve/veAllocate.sol/veAllocate.json'
-import { sendTx } from '../../utils'
+import { sendTx } from '../../utils/ContractUtils'
 import { SmartContractWithAddress } from '../SmartContractWithAddress'
 import { ReceiptOrEstimate, AbiItem } from '../../@types'
 /**

@@ -8,13 +8,14 @@ import {
   AbiItem
 } from '../@types'
 import { SmartContract } from './SmartContract'
+
+import { generateDtName } from '../utils/DatatokenName'
+import { ZERO_ADDRESS } from '../utils/Constants'
+import { getEventFromTx, sendTx } from '../utils/ContractUtils'
 import {
   calculateActiveTemplateIndex,
   getOceanArtifactsAdressesByChainId
 } from '../utils/Assets'
-import { generateDtName } from '../utils/DatatokenName'
-import { ZERO_ADDRESS } from '../utils/Constants'
-import { getEventFromTx, sendTx } from '../utils/ContractUtils'
 
 export class Nft extends SmartContract {
   getDefaultAbi() {

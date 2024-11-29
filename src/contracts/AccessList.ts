@@ -1,6 +1,6 @@
 import { Signer } from 'ethers'
 import AccessList from '@oceanprotocol/contracts/artifacts/contracts/accesslists/AccessList.sol/AccessList.json'
-import { sendTx } from '../utils'
+import { sendTx } from '../utils/ContractUtils'
 import { AbiItem, ReceiptOrEstimate } from '../@types'
 import { Config } from '../config'
 import { SmartContractWithAddress } from './SmartContractWithAddress'
