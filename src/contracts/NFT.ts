@@ -1,6 +1,5 @@
 import { BigNumber, ethers } from 'ethers'
 import ERC721Template from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC721Template.sol/ERC721Template.json'
-import { generateDtName, sendTx, getEventFromTx, ZERO_ADDRESS } from '../utils'
 import {
   MetadataProof,
   MetadataAndTokenURI,
@@ -13,6 +12,9 @@ import {
   calculateActiveTemplateIndex,
   getOceanArtifactsAdressesByChainId
 } from '../utils/Assets'
+import { generateDtName } from '../utils/DatatokenName'
+import { ZERO_ADDRESS } from '../utils/Constants'
+import { getEventFromTx, sendTx } from '../utils/ContractUtils'
 
 export class Nft extends SmartContract {
   getDefaultAbi() {
