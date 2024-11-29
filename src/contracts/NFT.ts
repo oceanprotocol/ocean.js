@@ -15,7 +15,7 @@ import { getEventFromTx, sendTx } from '../utils/ContractUtils'
 import {
   calculateActiveTemplateIndex,
   getOceanArtifactsAdressesByChainId
-} from '../utils/Assets'
+} from '../utils/Adresses'
 
 export class Nft extends SmartContract {
   getDefaultAbi() {
