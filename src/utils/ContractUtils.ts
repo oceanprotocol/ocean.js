@@ -1,7 +1,8 @@
 import { ethers, Signer, providers, Contract, ContractFunction, BigNumber } from 'ethers'
 
 import { Config, KNOWN_CONFIDENTIAL_EVMS } from '../config'
-import { LoggerInstance, minAbi } from '.'
+import { LoggerInstance } from './Logger'
+import { minAbi } from './minAbi'
 
 const MIN_GAS_FEE_POLYGON = 30000000000 // minimum recommended 30 gwei polygon main and mumbai fees
 const MIN_GAS_FEE_SEPOLIA = 4000000000 // minimum 4 gwei for eth sepolia testnet
