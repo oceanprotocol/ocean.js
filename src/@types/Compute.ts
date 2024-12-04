@@ -22,6 +22,7 @@ export interface ComputeEnvironment {
   storageExpiry: number
   maxJobDuration: number
   lastSeen: number
+  free: boolean
 }
 
 export interface ComputeResult {
@@ -59,7 +60,42 @@ export interface ComputeOutput {
   whitelist?: string[]
 }
 
+export enum FileObjectType {
+  URL = 'url',
+  IPFS = 'ipfs',
+  ARWEAVE = 'arweave'
+}
+
+export enum EncryptMethod {
+  AES = 'AES',
+  ECIES = 'ECIES'
+}
+
+export interface HeadersObject {
+  [key: string]: string
+}
+
+export interface BaseFileObject {
+  type: string
+  encryptedBy?: string
+  encryptMethod?: EncryptMethod
+}
+
+export interface UrlFileObject extends BaseFileObject {
+  url: string
+  method: string
+  headers?: [HeadersObject]
+}
+
+export interface IpfsFileObject extends BaseFileObject {
+  hash: string
+}
+
+export interface ArweaveFileObject extends BaseFileObject {
+  transactionId: string
+}
 export interface ComputeAsset {
+  fileObject?: BaseFileObject // C2D v2
   documentId: string
   serviceId: string
   transferTxId?: string
@@ -67,6 +103,7 @@ export interface ComputeAsset {
 }
 
 export interface ComputeAlgorithm {
+  fileObject?: BaseFileObject // C2D v2
   documentId?: string
   serviceId?: string
   meta?: MetadataAlgorithm
