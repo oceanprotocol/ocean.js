@@ -1,5 +1,5 @@
 import dfStrategyV1ABI from '@oceanprotocol/contracts/artifacts/contracts/df/DFStrategyV1.sol/DFStrategyV1.json'
-import { sendTx } from '../../utils'
+import { sendTx } from '../../utils/ContractUtils'
 import { SmartContractWithAddress } from '../SmartContractWithAddress'
 import { ReceiptOrEstimate, AbiItem } from '../../@types'
 /**

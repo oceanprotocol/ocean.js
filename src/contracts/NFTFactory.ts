@@ -1,14 +1,6 @@
 import { BigNumber, ethers } from 'ethers'
 import ERC721Factory from '@oceanprotocol/contracts/artifacts/contracts/ERC721Factory.sol/ERC721Factory.json'
 import {
-  generateDtName,
-  ZERO_ADDRESS,
-  sendTx,
-  getEventFromTx,
-  getTokenDecimals,
-  LoggerInstance
-} from '../utils'
-import {
   AbiItem,
   FreCreationParams,
   DatatokenCreateParams,
@@ -19,6 +11,10 @@ import {
   ReceiptOrEstimate
 } from '../@types'
 import { SmartContractWithAddress } from './SmartContractWithAddress'
+import { generateDtName } from '../utils/DatatokenName'
+import { ZERO_ADDRESS } from '../utils/Constants'
+import { getEventFromTx, getTokenDecimals, sendTx } from '../utils/ContractUtils'
+import { LoggerInstance } from '../utils/Logger'
 
 /**
  * Provides an interface for NFT Factory contract

@@ -1,6 +1,7 @@
 import fetch from 'cross-fetch'
-import { LoggerInstance, sleep } from '../utils'
+import { LoggerInstance } from '../utils/Logger'
 import { Asset, DDO, ValidateMetadata } from '../@types'
+import { sleep } from '../utils/General'
 
 export interface SearchQuery {
   from?: number

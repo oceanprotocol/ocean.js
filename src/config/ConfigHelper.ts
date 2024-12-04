@@ -2,7 +2,7 @@
 import { default as DefaultContractsAddresses } from '@oceanprotocol/contracts/addresses/address.json'
 import fs from 'fs'
 import { Config } from '.'
-import { LoggerInstance } from '../utils'
+import { LoggerInstance } from '../utils/Logger'
 
 const configHelperNetworksBase: Config = {
   chainId: null,

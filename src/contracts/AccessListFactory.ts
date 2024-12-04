@@ -1,9 +1,11 @@
 import { BigNumber, Signer } from 'ethers'
 import { Config } from '../config'
 import AccessListFactory from '@oceanprotocol/contracts/artifacts/contracts/accesslists/AccessListFactory.sol/AccessListFactory.json'
-import { generateDtName, sendTx, getEventFromTx, ZERO_ADDRESS } from '../utils'
+import { sendTx, getEventFromTx } from '../utils/ContractUtils'
+import { ZERO_ADDRESS } from '../utils/Constants'
 import { AbiItem, ReceiptOrEstimate } from '../@types'
 import { SmartContractWithAddress } from './SmartContractWithAddress'
+import { generateDtName } from '../utils/DatatokenName'
 
 /**
  * Provides an interface for Access List Factory contract

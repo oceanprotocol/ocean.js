@@ -1,9 +1,9 @@
 import Decimal from 'decimal.js'
 import DispenserAbi from '@oceanprotocol/contracts/artifacts/contracts/pools/dispenser/Dispenser.sol/Dispenser.json'
-import { sendTx } from '../utils'
 import { Datatoken } from './Datatoken'
 import { SmartContractWithAddress } from './SmartContractWithAddress'
 import { DispenserToken, ReceiptOrEstimate, AbiItem } from '../@types'
+import { sendTx } from '../utils/ContractUtils'
 
 export class Dispenser extends SmartContractWithAddress {
   getDefaultAbi() {
