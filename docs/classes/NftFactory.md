@@ -817,7 +817,7 @@ Used as a proxy to order multiple services
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `orders` | [`TokenOrder`](../interfaces/TokenOrder.md)[] | array of of orders |
+| `orders` | [`TokenOrder`](../interfaces/TokenOrder.md)[] | array of orders |
 | `estimateGas?` | `G` | if True, return gas estimate |
 
 #### Returns

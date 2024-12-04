@@ -417,7 +417,7 @@ export class NftFactory extends SmartContractWithAddress {
    *          - consumeFeeTokens
    *          - publishMarketFeeTokens
    *          - ERC20 Datatokens
-   * @param {TokenOrder[]} orders array of of orders
+   * @param {TokenOrder[]} orders array of orders
    * @param {Boolean} [estimateGas] if True, return gas estimate
    * @return {Promise<ReceiptOrEstimate>} transaction receipt
    */

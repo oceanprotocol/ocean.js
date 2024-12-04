@@ -186,7 +186,7 @@ ___
 
 • **updated**: `string`
 
-Contains the the date of last update in ISO Date Time
+Contains the date of last update in ISO Date Time
 
 #### Defined in
 
