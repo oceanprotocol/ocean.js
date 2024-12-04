@@ -338,7 +338,7 @@ export class ConfigHelper {
         config.sdk = 'evm'
       }
     }
-    if ('accessListFactory' in contractAddressesConfig && config.sdk === 'oasis') {
+    if ('accessListFactory' in contractAddressesConfig) {
       config.accessListFactory = contractAddressesConfig.accessListFactory
     }
 
