@@ -70,7 +70,7 @@ export interface Metadata {
   created: string
 
   /**
-   * Contains the the date of last update in ISO Date Time
+   * Contains the date of last update in ISO Date Time
    * @type {string}
    */
   updated: string
