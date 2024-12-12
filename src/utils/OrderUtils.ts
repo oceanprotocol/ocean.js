@@ -1,20 +1,16 @@
 import { Signer } from 'ethers'
-import {
-  ProviderInstance,
-  Datatoken,
-  Dispenser,
-  Config,
-  OrderParams,
-  Asset,
-  FreOrderParams,
-  approve,
-  FixedRateExchange,
-  ConsumeMarketFee,
-  ProviderFees,
-  ZERO_ADDRESS,
-  approveWei
-} from '../index'
 import Decimal from 'decimal.js'
+import { Asset } from '../@types/Asset'
+import { Config } from '../config/Config'
+import { Datatoken } from '../contracts/Datatoken'
+import { ConsumeMarketFee, OrderParams } from '../@types/Datatoken'
+import { ProviderFees } from '../@types/Provider'
+import { ProviderInstance } from '../services/Provider'
+import { ZERO_ADDRESS } from './Constants'
+import { approve, approveWei } from './TokenUtils'
+import { Dispenser } from '../contracts/Dispenser'
+import { FixedRateExchange } from '../contracts/FixedRateExchange'
+import { FreOrderParams } from '../@types/FixedPrice'
 
 /**
  * Orders an asset based on the specified pricing schema and configuration.

@@ -1,8 +1,10 @@
 import Decimal from 'decimal.js'
 import { ethers, Signer } from 'ethers'
-import { amountToUnits, unitsToAmount, minAbi, sendTx, LoggerInstance } from '.'
 import { Config } from '../config'
 import { ReceiptOrEstimate, ReceiptOrDecimal } from '../@types'
+import { minAbi } from './minAbi'
+import { amountToUnits, sendTx, unitsToAmount } from './ContractUtils'
+import { LoggerInstance } from './Logger'
 
 /**
  * Approve spender to spent amount tokens

@@ -1,5 +1,5 @@
 import veFeeABI from '@oceanprotocol/contracts/artifacts/contracts/ve/veFeeDistributor.vy/veFeeDistributor.json'
-import { sendTx } from '../../utils'
+import { sendTx } from '../../utils/ContractUtils'
 import { SmartContractWithAddress } from '../SmartContractWithAddress'
 import { ReceiptOrEstimate, AbiItem } from '../../@types'
 /**

@@ -1,5 +1,5 @@
 import FactoryRouter from '@oceanprotocol/contracts/artifacts/contracts/pools/FactoryRouter.sol/FactoryRouter.json'
-import { sendTx } from '../utils'
+import { sendTx } from '../utils/ContractUtils'
 import { Operation, ReceiptOrEstimate, AbiItem } from '../@types'
 import { SmartContractWithAddress } from './SmartContractWithAddress'
 

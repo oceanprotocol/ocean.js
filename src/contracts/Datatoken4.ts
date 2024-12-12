@@ -5,7 +5,7 @@ import ERC20Template4 from '@oceanprotocol/contracts/artifacts/contracts/templat
 import { AbiItem, ReceiptOrEstimate } from '../@types'
 import { AccessListContract } from './AccessList'
 import { Config } from '../config'
-import { sendTx } from '../utils'
+import { sendTx } from '../utils/ContractUtils'
 
 export class Datatoken4 extends Datatoken {
   public accessList: AccessListContract

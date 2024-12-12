@@ -1,5 +1,5 @@
 import FixedRateExchangeAbi from '@oceanprotocol/contracts/artifacts/contracts/pools/fixedRate/FixedRateExchange.sol/FixedRateExchange.json'
-import { sendTx, ZERO_ADDRESS } from '../utils'
+import { sendTx } from '../utils/ContractUtils'
 import {
   PriceAndFees,
   FeesInfo,
@@ -8,6 +8,7 @@ import {
   AbiItem
 } from '../@types'
 import { SmartContractWithAddress } from './SmartContractWithAddress'
+import { ZERO_ADDRESS } from '../utils/Constants'
 
 export class FixedRateExchange extends SmartContractWithAddress {
   getDefaultAbi() {

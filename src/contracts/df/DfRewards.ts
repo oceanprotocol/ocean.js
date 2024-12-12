@@ -1,5 +1,5 @@
 import dfRewardsABI from '@oceanprotocol/contracts/artifacts/contracts/df/DFRewards.sol/DFRewards.json'
-import { sendTx } from '../../utils'
+import { sendTx } from '../../utils/ContractUtils'
 import { SmartContractWithAddress } from '../SmartContractWithAddress'
 import { AbiItem, ReceiptOrEstimate } from '../../@types'
 

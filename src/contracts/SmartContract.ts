@@ -1,13 +1,13 @@
 import { ethers, Signer, Contract } from 'ethers'
 import { AbiItem } from '../@types'
 import { Config, ConfigHelper } from '../config'
+import * as sapphire from '@oasisprotocol/sapphire-paratime'
 import {
   amountToUnits,
   getFairGasPrice,
   setContractDefaults,
   unitsToAmount
-} from '../utils'
-import * as sapphire from '@oasisprotocol/sapphire-paratime'
+} from '../utils/ContractUtils'
 
 export abstract class SmartContract {
   public signer: Signer
