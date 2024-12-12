@@ -17,6 +17,7 @@ import { ProviderInstance } from '../services/Provider'
 import AccessListFactory from '@oceanprotocol/contracts/artifacts/contracts/accesslists/AccessListFactory.sol/AccessListFactory.json'
 import ERC20Template4 from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC20Template4.sol/ERC20Template4.json'
 import { calculateActiveTemplateIndex } from './Adresses'
+import { FileObjectType } from '../@types'
 
 // import * as hre from 'hardhat'
 
@@ -113,6 +114,15 @@ export async function createAsset(
     mpFeeAddress: ZERO_ADDRESS
   }
 
+  if (
+    !assetUrl.type ||
+    ![FileObjectType.ARWEAVE, FileObjectType.IPFS, FileObjectType.URL].includes(
+      assetUrl.type.toLowerCase()
+    )
+  ) {
+    console.log('Missing or invalid files object type, defaulting to "url"')
+    assetUrl.type = FileObjectType.URL
+  }
   // include fileObject in the DT constructor
   if (config.sdk === 'oasis') {
     datatokenParams.filesObject = assetUrl
