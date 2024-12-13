@@ -504,7 +504,7 @@ describe('Marketplace flow tests', async () => {
     )
     console.log(`Consumer ${FRE_NFT_SYMBOL} balance after swap: ${consumerDTBalance}`)
 
-    const resolvedDDO = await aquarius.waitForAqua(fixedDDO.id)
+    const resolvedDDO = await aquarius.waitForIndexer(fixedDDO.id)
     assert(resolvedDDO, 'Cannot fetch DDO from Aquarius')
 
     /// ```
@@ -726,7 +726,7 @@ describe('Marketplace flow tests', async () => {
       `Consumer ${DISP_NFT_SYMBOL} balance after dispense: ${consumerDTBalance}`
     )
 
-    const resolvedDDO = await aquarius.waitForAqua(fixedDDO.id)
+    const resolvedDDO = await aquarius.waitForIndexer(fixedDDO.id)
     assert(resolvedDDO, 'Cannot fetch DDO from Aquarius')
 
     datatoken = new Datatoken(consumerAccount, await consumerAccount.getChainId())
