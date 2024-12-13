@@ -59,7 +59,9 @@ export class Aquarius {
   public async waitForAqua(
     did: string,
     txid?: string,
-    signal?: AbortSignal
+    signal?: AbortSignal,
+    interval: number = 3000,
+    maxRetries: number = 100
   ): Promise<Asset> {
     let tries = 0
     do {
@@ -80,9 +82,9 @@ export class Aquarius {
       } catch (e) {
         // do nothing
       }
-      await sleep(1500)
+      await sleep(interval)
       tries++
-    } while (tries < 100)
+    } while (tries < maxRetries)
     return null
   }
 
