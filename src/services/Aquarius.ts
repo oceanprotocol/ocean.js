@@ -64,6 +64,11 @@ export class Aquarius {
     maxRetries: number = 100
   ): Promise<Asset> {
     let tries = 0
+    // lets have a cap to prevent possible abuse as well
+    if (maxRetries > 500) {
+      LoggerInstance.warn('Max Limit exceeded, defaulting to 500 retries.')
+      maxRetries = 500
+    }
     do {
       try {
         const path = this.aquariusURL + '/api/aquarius/assets/ddo/' + did
