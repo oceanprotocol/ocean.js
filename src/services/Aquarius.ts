@@ -50,18 +50,25 @@ export class Aquarius {
   }
 
   /**
-   * Blocks until Aqua will cache the did (or the update for that did) or timeouts
+   * Blocks until Indexer will cache the did (or the update for that did) or timeouts
    * @param {string} did DID of the asset.
    * @param {string} txid used when the did exists and we expect an update with that txid.
    * @param {AbortSignal} signal abort signal
    * @return {Promise<Asset>} DDO of the asset.
    */
-  public async waitForAqua(
+  public async waitForIndexer(
     did: string,
     txid?: string,
-    signal?: AbortSignal
+    signal?: AbortSignal,
+    interval: number = 3000,
+    maxRetries: number = 100
   ): Promise<Asset> {
     let tries = 0
+    // lets have a cap to prevent possible abuse as well
+    if (maxRetries > 500) {
+      LoggerInstance.warn('Max Limit exceeded, defaulting to 500 retries.')
+      maxRetries = 500
+    }
     do {
       try {
         const path = this.aquariusURL + '/api/aquarius/assets/ddo/' + did
@@ -80,9 +87,9 @@ export class Aquarius {
       } catch (e) {
         // do nothing
       }
-      await sleep(1500)
+      await sleep(interval)
       tries++
-    } while (tries < 100)
+    } while (tries < maxRetries)
     return null
   }
 

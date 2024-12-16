@@ -304,19 +304,19 @@ describe('Publish consume test', async () => {
   delay(10000) // let's wait for aquarius to index the  assets
 
   it('Resolve published assets', async () => {
-    resolvedUrlAssetDdo = await aquarius.waitForAqua(urlAssetId)
+    resolvedUrlAssetDdo = await aquarius.waitForIndexer(urlAssetId)
     assert(resolvedUrlAssetDdo, 'Cannot fetch url DDO from Aquarius')
 
-    resolvedArweaveAssetDdo = await aquarius.waitForAqua(arweaveAssetId)
+    resolvedArweaveAssetDdo = await aquarius.waitForIndexer(arweaveAssetId)
     assert(resolvedArweaveAssetDdo, 'Cannot fetch arwave DDO from Aquarius')
 
-    resolvedIpfsAssetDdo = await aquarius.waitForAqua(ipfsAssetId)
+    resolvedIpfsAssetDdo = await aquarius.waitForIndexer(ipfsAssetId)
     assert(resolvedIpfsAssetDdo, 'Cannot fetch ipfs DDO from Aquarius')
 
-    resolvedOnchainAssetDdo = await aquarius.waitForAqua(onchainAssetId)
+    resolvedOnchainAssetDdo = await aquarius.waitForIndexer(onchainAssetId)
     assert(resolvedOnchainAssetDdo, 'Cannot fetch onchain DDO from Aquarius')
 
-    resolvedGraphqlAssetDdo = await aquarius.waitForAqua(grapqlAssetId)
+    resolvedGraphqlAssetDdo = await aquarius.waitForIndexer(grapqlAssetId)
     assert(resolvedGraphqlAssetDdo, 'Cannot fetch graphql DDO from Aquarius')
   })
 
@@ -557,19 +557,19 @@ describe('Publish consume test', async () => {
     delay(10000) // let's wait for aquarius to index the updated ddo's
 
     it('Should resolve updated datasets', async () => {
-      resolvedUrlAssetDdoAfterUpdate = await aquarius.waitForAqua(urlAssetId)
+      resolvedUrlAssetDdoAfterUpdate = await aquarius.waitForIndexer(urlAssetId)
       assert(resolvedUrlAssetDdoAfterUpdate, 'Cannot fetch url DDO from Aquarius')
 
-      resolvedArweaveAssetDdoAfterUpdate = await aquarius.waitForAqua(arweaveAssetId)
+      resolvedArweaveAssetDdoAfterUpdate = await aquarius.waitForIndexer(arweaveAssetId)
       assert(resolvedArweaveAssetDdoAfterUpdate, 'Cannot fetch arwave DDO from Aquarius')
       // To be fixed in #1849
       // resolvedIpfsAssetDdoAfterUpdate = await aquarius.waitForAqua(ipfsAssetId)
       // assert(resolvedIpfsAssetDdoAfterUpdate, 'Cannot fetch ipfs DDO from Aquarius')
 
-      resolvedOnchainAssetDdoAfterUpdate = await aquarius.waitForAqua(onchainAssetId)
+      resolvedOnchainAssetDdoAfterUpdate = await aquarius.waitForIndexer(onchainAssetId)
       assert(resolvedOnchainAssetDdoAfterUpdate, 'Cannot fetch onchain DDO from Aquarius')
 
-      resolvedGraphqlAssetDdoAfterUpdate = await aquarius.waitForAqua(grapqlAssetId)
+      resolvedGraphqlAssetDdoAfterUpdate = await aquarius.waitForIndexer(grapqlAssetId)
       assert(resolvedGraphqlAssetDdoAfterUpdate, 'Cannot fetch onchain DDO from Aquarius')
     })
   })
