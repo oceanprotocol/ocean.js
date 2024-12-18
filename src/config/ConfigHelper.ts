@@ -338,8 +338,9 @@ export class ConfigHelper {
         config.sdk = 'evm'
       }
     }
-
-    config.accessListFactory = contractAddressesConfig.accessListFactory
+    if (contractAddressesConfig && 'accessListFactory' in contractAddressesConfig) {
+      config.accessListFactory = contractAddressesConfig.accessListFactory
+    }
 
     config = { ...config, ...contractAddressesConfig }
 
