@@ -836,7 +836,7 @@ export class Provider {
     const signature = await this.signProviderRequest(signer, signatureMessage)
     const payload = Object()
     payload.signature = signature
-    payload.agreementId = this.noZeroX(agreementId)
+    payload.agreementId = agreementId // this.noZeroX(agreementId) #https://github.com/oceanprotocol/ocean.js/issues/1892
     payload.consumerAddress = consumerAddress
     payload.nonce = nonce
     if (jobId) payload.jobId = jobId
@@ -897,7 +897,7 @@ export class Provider {
       : null
 
     let url = `?consumerAddress=${consumerAddress}`
-    url += (agreementId && `&agreementId=${this.noZeroX(agreementId)}`) || ''
+    url += (agreementId && `&agreementId=${agreementId}`) || '' // ${this.noZeroX(agreementId)} #https://github.com/oceanprotocol/ocean.js/issues/1892
     url += (jobId && `&jobId=${jobId}`) || ''
 
     if (!computeStatusUrl) return null
@@ -1022,7 +1022,7 @@ export class Provider {
     signatureMessage += nonce
     const signature = await this.signProviderRequest(consumer, signatureMessage)
     const payload = Object()
-    payload.documentId = this.noZeroX(did)
+    payload.documentId = did // this.noZeroX(did) #https://github.com/oceanprotocol/ocean.js/issues/1892
     payload.consumerAddress = await consumer.getAddress()
     payload.jobId = jobId
     if (signature) payload.signature = signature
