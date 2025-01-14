@@ -348,13 +348,13 @@ describe('Compute flow tests', async () => {
   delay(10000)
 
   it('should resolve published datasets and algorithms', async () => {
-    resolvedDdoWith5mTimeout = await aquarius.waitForAqua(ddoWith5mTimeoutId)
+    resolvedDdoWith5mTimeout = await aquarius.waitForIndexer(ddoWith5mTimeoutId)
     assert(resolvedDdoWith5mTimeout, 'Cannot fetch DDO from Aquarius')
-    resolvedDdoWithNoTimeout = await aquarius.waitForAqua(ddoWithNoTimeoutId)
+    resolvedDdoWithNoTimeout = await aquarius.waitForIndexer(ddoWithNoTimeoutId)
     assert(resolvedDdoWithNoTimeout, 'Cannot fetch DDO from Aquarius')
-    resolvedAlgoDdoWith5mTimeout = await aquarius.waitForAqua(algoDdoWith5mTimeoutId)
+    resolvedAlgoDdoWith5mTimeout = await aquarius.waitForIndexer(algoDdoWith5mTimeoutId)
     assert(resolvedAlgoDdoWith5mTimeout, 'Cannot fetch DDO from Aquarius')
-    resolvedAlgoDdoWithNoTimeout = await aquarius.waitForAqua(algoDdoWithNoTimeoutId)
+    resolvedAlgoDdoWithNoTimeout = await aquarius.waitForIndexer(algoDdoWithNoTimeoutId)
     assert(resolvedAlgoDdoWithNoTimeout, 'Cannot fetch DDO from Aquarius')
   })
 

@@ -539,8 +539,8 @@ describe('Compute-to-data example tests', async () => {
 
   it('7.1 Resolve published datasets and algorithms', async () => {
     /// ```Typescript
-    resolvedDatasetDdo = await aquariusInstance.waitForAqua(datasetId)
-    resolvedAlgorithmDdo = await aquariusInstance.waitForAqua(algorithmId)
+    resolvedDatasetDdo = await aquariusInstance.waitForIndexer(datasetId)
+    resolvedAlgorithmDdo = await aquariusInstance.waitForIndexer(algorithmId)
     /// ```
     /// <!--
     assert(resolvedDatasetDdo, 'Cannot fetch DDO from Aquarius')

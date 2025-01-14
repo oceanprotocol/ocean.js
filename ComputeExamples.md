@@ -539,8 +539,8 @@ Now, let's check that we successfully published a algorithm (create NFT + Datato
 
   ### 7.1 Resolve published datasets and algorithms
 ```Typescript
-    resolvedDatasetDdo = await aquariusInstance.waitForAqua(datasetId)
-    resolvedAlgorithmDdo = await aquariusInstance.waitForAqua(algorithmId)
+    resolvedDatasetDdo = await aquariusInstance.waitForIndexer(datasetId)
+    resolvedAlgorithmDdo = await aquariusInstance.waitForIndexer(algorithmId)
 ```
 <!--
     assert(resolvedDatasetDdo, 'Cannot fetch DDO from Aquarius')

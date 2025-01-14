@@ -223,7 +223,7 @@ describe('Publish tests', async () => {
   })
 
   it('should resolve the fixed price dataset', async () => {
-    const resolvedDDO = await aquarius.waitForAqua(fixedPricedDID)
+    const resolvedDDO = await aquarius.waitForIndexer(fixedPricedDID)
     assert(resolvedDDO, 'Cannot fetch DDO from Aquarius')
   }).timeout(40000)
 
@@ -316,7 +316,7 @@ describe('Publish tests', async () => {
   delay(19000)
 
   it('should resolve the free dataset', async () => {
-    const resolvedDDO = await aquarius.waitForAqua(dispenserDID)
+    const resolvedDDO = await aquarius.waitForIndexer(dispenserDID)
     assert(resolvedDDO, 'Cannot fetch DDO from Aquarius')
   })
 })
