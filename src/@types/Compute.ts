@@ -27,6 +27,10 @@ export type ComputeResultType =
 // }
 
 // new V2 C2D Compute Environment specs
+export interface RunningPlatform {
+  architecture: string
+  os: string
+}
 
 export type ComputeResourceType = 'cpu' | 'memory' | 'storage'
 
@@ -43,6 +47,7 @@ export interface ComputeEnvFeesStructure {
 }
 export interface ComputeEnvironment {
   id: string
+  // legacy
   // cpuNumber: number
   // cpuType: string
   // gpuNumber: number
@@ -65,6 +70,7 @@ export interface ComputeEnvironment {
   maxJobDuration: number
   lastSeen: number
   free: boolean
+  platform?: RunningPlatform[] // array due to k8 support
 }
 
 export interface ComputeResult {
