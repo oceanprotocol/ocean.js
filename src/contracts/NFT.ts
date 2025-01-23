@@ -14,8 +14,8 @@ import { ZERO_ADDRESS } from '../utils/Constants'
 import { getEventFromTx, sendTx } from '../utils/ContractUtils'
 import {
   calculateActiveTemplateIndex,
-  getOceanArtifactsAdressesByChainId
-} from '../utils/Adresses'
+  getOceanArtifactsAddressesByChainId
+} from '../utils/Addresses'
 
 export class Nft extends SmartContract {
   getDefaultAbi() {
@@ -70,7 +70,7 @@ export class Nft extends SmartContract {
     const nftContract = this.getContract(nftAddress)
 
     const { chainId } = await nftContract.provider.getNetwork()
-    const artifacts = getOceanArtifactsAdressesByChainId(chainId)
+    const artifacts = getOceanArtifactsAddressesByChainId(chainId)
     if (filesObject) {
       templateIndex = await calculateActiveTemplateIndex(
         this.signer,
