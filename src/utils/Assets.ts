@@ -60,7 +60,8 @@ export async function createAsset(
 ): Promise<string> {
   const ddoInstance = DDOManager.getDDOClass(ddo)
   const { stats } = ddoInstance.getAssetFields()
-  let { chainId: ddoChainId, services, nftAddress } = ddoInstance.getDDOFields()
+  let { chainId: ddoChainId, nftAddress } = ddoInstance.getDDOFields()
+  const { services } = ddoInstance.getDDOFields()
 
   const isAddress = typeof templateIDorAddress === 'string'
   const isTemplateIndex = typeof templateIDorAddress === 'number'
@@ -203,9 +204,9 @@ export async function createAsset(
   services[0].serviceEndpoint = providerUrl
 
   nftAddress = nftAddressFromEvent
-  ddo.id =
-    'did:op:' +
-    crypto.SHA256(ethers.utils.getAddress(nftAddressFromEvent) + chainID.toString(10))
+
+  const id = ddoInstance.makeDid(nftAddress, ddoChainId.toString())
+  ddo = ddoInstance.updateFields({ id, nftAddress })
 
   let metadata
   let metadataHash
