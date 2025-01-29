@@ -2,7 +2,7 @@
 import { default as DefaultContractsAddresses } from '@oceanprotocol/contracts/addresses/address.json'
 import fs from 'fs'
 import { Config } from '.'
-import { LoggerInstance } from '../utils/Logger'
+import { LoggerInstance } from '../utils/Logger.js'
 
 const configHelperNetworksBase: Config = {
   chainId: null,
@@ -247,7 +247,7 @@ export class ConfigHelper {
       }
     } else {
       // no custom addresses structure was passed, trying to load default
-      if (DefaultContractsAddresses[network]) {
+      if ((DefaultContractsAddresses as { [key: string]: any })[network]) {
         const {
           FixedPrice,
           Dispenser,
@@ -266,7 +266,7 @@ export class ConfigHelper {
           veFeeEstimate,
           Router,
           AccessListFactory
-        } = DefaultContractsAddresses[network]
+        } = (DefaultContractsAddresses as { [key: string]: any })[network]
         configAddresses = {
           nftFactoryAddress: ERC721Factory,
           opfCommunityFeeCollector: OPFCommunityFeeCollector,

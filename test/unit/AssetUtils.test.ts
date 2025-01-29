@@ -1,9 +1,9 @@
 import { assert } from 'chai'
-import { KNOWN_CONFIDENTIAL_EVMS } from '../../src/config'
-import { provider, getAddresses } from '../config'
-import { calculateActiveTemplateIndex } from '../../src/utils/Adresses'
-import { useOasisSDK } from '../../src/utils/Assets'
-import { Signer } from 'ethers/lib/ethers'
+import { KNOWN_CONFIDENTIAL_EVMS } from '../../src/config/index.js'
+import { provider, getAddresses } from '../config.js'
+import { calculateActiveTemplateIndex } from '../../src/utils/Adresses.js'
+import { useOasisSDK } from '../../src/utils/Assets.js'
+import { Signer } from 'ethers/lib/ethers.js'
 
 let nftOwner: Signer
 let addresses: any

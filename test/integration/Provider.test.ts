@@ -1,8 +1,8 @@
 import { assert } from 'chai'
-import { getTestConfig, provider } from '../config'
-import { Config, Provider } from '../../src'
+import { getTestConfig, provider } from '../config.js'
+import { Config, Provider } from '../../src/index.js'
 import { Signer } from 'ethers'
-import { FileInfo } from '../../src/@types'
+import { FileInfo } from '../../src/@types/index.js'
 
 describe('Provider tests', async () => {
   let config: Config

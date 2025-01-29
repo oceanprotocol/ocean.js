@@ -1,2 +1,2 @@
-export * from './Aquarius'
-export * from './Provider'
+export * from './Aquarius.js'
+export * from './Provider.js'

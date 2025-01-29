@@ -79,7 +79,7 @@
 import fs from 'fs'
 import { assert } from 'chai'
 import { ethers, providers, Signer } from 'ethers'
-import { SHA256 } from 'crypto-js'
+import crypto from 'crypto-js'
 import { homedir } from 'os'
 import {
   approve,
@@ -109,8 +109,9 @@ import {
   getEventFromTx,
   DDO,
   LoggerInstance
-} from '../../src'
+} from '../../src/index.js'
 /// ```
+const { SHA256 } = crypto
 
 /// <!--
 describe('Marketplace flow tests', async () => {

@@ -1,7 +1,6 @@
 import { assert, expect } from 'chai'
-import { SHA256 } from 'crypto-js'
 import { ethers, Signer } from 'ethers'
-import { getTestConfig, getAddresses, provider } from '../config'
+import { getTestConfig, getAddresses, provider } from '../config.js'
 import {
   Config,
   ProviderInstance,
@@ -12,7 +11,7 @@ import {
   Nft,
   approve,
   getEventFromTx
-} from '../../src'
+} from '../../src/index.js'
 import {
   ValidateMetadata,
   DDO,
@@ -20,9 +19,12 @@ import {
   FreCreationParams,
   DispenserCreationParams,
   Files
-} from '../../src/@types'
+} from '../../src/@types/index.js'
 
-import { createAsset } from '../../src/utils'
+import { createAsset } from '../../src/utils/index.js'
+import crypto from 'crypto-js'
+const { SHA256 } = crypto
+
 function delay(interval: number) {
   return it('should delay', (done) => {
     setTimeout(() => done(), interval)
