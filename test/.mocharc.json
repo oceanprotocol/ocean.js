@@ -1,9 +1,8 @@
 {
-  "require": ["ts-node/register", "source-map-support/register", "mock-local-storage"],
+  "require": ["source-map-support/register", "mock-local-storage"],
   "full-trace": true,
   "bail": true,
   "exit": true,
   "timeout": "20000",
-  "extensions": ["ts"],
-  "spec": "test/**/*.test.ts"
+  "extensions": ["ts"]
 }
