@@ -16,7 +16,7 @@ import { ProviderInstance } from '../services/Provider.js'
 
 import AccessListFactory from '@oceanprotocol/contracts/artifacts/contracts/accesslists/AccessListFactory.sol/AccessListFactory.json'
 import ERC20Template4 from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC20Template4.sol/ERC20Template4.json'
-import { calculateActiveTemplateIndex } from './Adresses.js'
+import { calculateActiveTemplateIndex } from './Addresses.js'
 import { DDOManager } from '@oceanprotocol/ddo-js'
 // import * as hre from 'hardhat'
 

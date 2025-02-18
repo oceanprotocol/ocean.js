@@ -10,7 +10,7 @@ import { default as Addresses } from '@oceanprotocol/contracts/addresses/address
  * either from the env or from the ocean-contracts dir
  * @returns data or null
  */
-export function getOceanArtifactsAdresses(): any {
+export function getOceanArtifactsAddresses(): any {
   try {
     if (process.env.ADDRESS_FILE) {
       // eslint-disable-next-line security/detect-non-literal-fs-filename
@@ -29,10 +29,10 @@ export function getOceanArtifactsAdresses(): any {
  * is mispeled, best example "optimism_sepolia" vs "optimism-sepolia"
  * @returns data or null
  */
-export function getOceanArtifactsAdressesByChainId(chain: number): any {
+export function getOceanArtifactsAddressesByChainId(chain: number): any {
   try {
     // eslint-disable-next-line security/detect-non-literal-fs-filename
-    const data = getOceanArtifactsAdresses()
+    const data = getOceanArtifactsAddresses()
     if (data) {
       const networks = Object.keys(data)
       for (const network of networks) {

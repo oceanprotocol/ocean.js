@@ -119,12 +119,12 @@ jobs:
       - run: npm run build:metadata
       - name: Delete default runner images
         run: |
-          docker image rm node:18
-          docker image rm node:18-alpine
-          docker image rm node:20
-          docker image rm debian:10
-          docker image rm debian:11
-          docker image rm moby/buildkit:latest
+          docker image rm -f node:18
+          docker image rm -f node:18-alpine
+          docker image rm -f node:20
+          docker image rm -f debian:10
+          docker image rm -f debian:11
+          docker image rm -f moby/buildkit:latest
       - name: Wait for contracts deployment and C2D cluster to be ready
         working-directory: ${{ github.workspace }}/barge
         run: |

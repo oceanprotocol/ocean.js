@@ -105,6 +105,7 @@ export async function orderAsset(
         await consumerAccount.getAddress(),
         fees.providerFeeToken,
         services[0].datatokenAddress,
+        asset.services[serviceIndex].datatokenAddress,
         fees.providerFeeAmount
       )
     } catch (error) {

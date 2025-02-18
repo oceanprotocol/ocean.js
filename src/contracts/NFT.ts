@@ -14,9 +14,8 @@ import { ZERO_ADDRESS } from '../utils/Constants.js'
 import { getEventFromTx, sendTx } from '../utils/ContractUtils.js'
 import {
   calculateActiveTemplateIndex,
-  getOceanArtifactsAdressesByChainId
-} from '../utils/Adresses.js'
-
+  getOceanArtifactsAddressesByChainId
+} from '../utils/Addresses.js'
 export class Nft extends SmartContract {
   getDefaultAbi() {
     return ERC721Template.abi as AbiItem[]
@@ -70,7 +69,7 @@ export class Nft extends SmartContract {
     const nftContract = this.getContract(nftAddress)
 
     const { chainId } = await nftContract.provider.getNetwork()
-    const artifacts = getOceanArtifactsAdressesByChainId(chainId)
+    const artifacts = getOceanArtifactsAddressesByChainId(chainId)
     if (filesObject) {
       templateIndex = await calculateActiveTemplateIndex(
         this.signer,
