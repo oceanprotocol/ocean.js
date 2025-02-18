@@ -1,4 +1,3 @@
-import crypto from 'crypto-js'
 import { ethers, Signer } from 'ethers'
 import { ConfigHelper } from '../../src/config/index.js'
 import { hexlify } from 'ethers/lib/utils.js'
