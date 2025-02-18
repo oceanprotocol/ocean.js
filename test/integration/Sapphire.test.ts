@@ -1,26 +1,32 @@
 import * as sapphire from '@oasisprotocol/sapphire-paratime'
 import addresses from '@oceanprotocol/contracts/addresses/address.json'
 import { ethers } from 'ethers'
-import { AccesslistFactory } from '../../src/contracts/AccessListFactory'
-import { AccessListContract } from '../../src/contracts/AccessList'
-import { NftFactory } from '../../src/contracts/NFTFactory'
-import { ZERO_ADDRESS } from '../../src/utils/Constants'
+import { AccesslistFactory } from '../../src/contracts/AccessListFactory.js'
+import { AccessListContract } from '../../src/contracts/AccessList.js'
+import { NftFactory } from '../../src/contracts/NFTFactory.js'
+import { ZERO_ADDRESS } from '../../src/utils/Constants.js'
 import { assert } from 'console'
-import { Datatoken4 } from '../../src/contracts/Datatoken4'
-import { AbiItem, Config, Nft, NftCreateData } from '../../src'
+import { Datatoken4 } from '../../src/contracts/Datatoken4.js'
+import { AbiItem, Config, Nft, NftCreateData } from '../../src/index.js'
 import ERC20Template4 from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC20Template4.sol/ERC20Template4.json'
-import { getEventFromTx } from '../../src/utils'
+import { getEventFromTx } from '../../src/utils/index.js'
 
 describe('Sapphire tests', async () => {
   const provider = sapphire.wrap(
     ethers.getDefaultProvider(sapphire.NETWORKS.testnet.defaultGateway)
   )
-  const wallet = new ethers.Wallet(process.env.PRIVATE_KEY, provider)
-  const walletWrapped = sapphire.wrap(
-    new ethers.Wallet(process.env.PRIVATE_KEY, provider)
-  )
-
-  const consumer = new ethers.Wallet(process.env.PRIVATE_KEY_CONSUMER, provider)
+  const privateKey = process.env.PRIVATE_KEY
+  const privateKeyConsumer = process.env.PRIVATE_KEY_CONSUMER
+  if (!privateKey || !privateKeyConsumer) {
+    console.warn('Warning: One or more required private keys are missing.')
+  }
+  const wallet = privateKey ? new ethers.Wallet(privateKey, provider) : null
+  const walletWrapped = privateKey
+    ? sapphire.wrap(new ethers.Wallet(privateKey, provider))
+    : null
+  const consumer = privateKeyConsumer
+    ? new ethers.Wallet(privateKeyConsumer, provider)
+    : null
 
   const addrs: any = addresses.oasis_saphire_testnet
   const nftData: NftCreateData = {

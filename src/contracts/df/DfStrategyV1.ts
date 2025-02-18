@@ -1,6 +1,6 @@
 import dfStrategyV1ABI from '@oceanprotocol/contracts/artifacts/contracts/df/DFStrategyV1.sol/DFStrategyV1.json'
-import { sendTx } from '../../utils/ContractUtils'
-import { SmartContractWithAddress } from '../SmartContractWithAddress'
+import { sendTx } from '../../utils/ContractUtils.js'
+import { SmartContractWithAddress } from '../SmartContractWithAddress.js'
 import { ReceiptOrEstimate, AbiItem } from '../../@types'
 /**
  * Provides an interface for dfStrategyV1 contract

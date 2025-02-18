@@ -1,4 +1,4 @@
-import { AbiItem } from './Contracts'
+import { AbiItem } from './Contracts.js'
 
 interface FileTypeHeaders {
   [key: string]: string

@@ -1,11 +1,17 @@
 {
+  "extends": "../tsconfig.json",
   "compilerOptions": {
-    "resolveJsonModule": true,
-    "lib": ["es6", "es7"],
-    "module": "CommonJS",
-    "target": "ES5",
+    "moduleResolution": "node",
+    "module": "ESNext",
+    "target": "ESNext",
     "noUnusedLocals": false,
-    "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true
-  }
+    "allowSyntheticDefaultImports": true,
+    "outDir": "../dist/test",
+    "resolveJsonModule": true,  
+    "sourceMap": true
+  },
+  "ts-node": {
+    "esm": true
+  },
+  "include": ["../src/**/*", "**/*.ts"]
 }

@@ -1,4 +1,4 @@
-import { SHA256 } from 'crypto-js'
+import crypto from 'crypto-js'
 import { ethers, Signer } from 'ethers'
 import {
   Aquarius,
@@ -16,7 +16,7 @@ import {
   DDO,
   ProviderFees,
   getEventFromTx
-} from '../../src'
+} from '../../src/index.js'
 
 export async function createAsset(
   name: string,
@@ -74,7 +74,8 @@ export async function createAsset(
   ddo.services[0].serviceEndpoint = 'http://172.15.0.4:8030' // put back proviederUrl
 
   ddo.nftAddress = nftAddress
-  ddo.id = 'did:op:' + SHA256(ethers.utils.getAddress(nftAddress) + chain.toString(10))
+  ddo.id =
+    'did:op:' + crypto.SHA256(ethers.utils.getAddress(nftAddress) + chain.toString(10))
 
   const encryptedResponse = await ProviderInstance.encrypt(ddo, chain, providerUrl)
   const validateResult = await aquariusInstance.validate(ddo)

@@ -1,14 +1,14 @@
 import FixedRateExchangeAbi from '@oceanprotocol/contracts/artifacts/contracts/pools/fixedRate/FixedRateExchange.sol/FixedRateExchange.json'
-import { sendTx } from '../utils/ContractUtils'
+import { sendTx } from '../utils/ContractUtils.js'
 import {
   PriceAndFees,
   FeesInfo,
   FixedPriceExchange,
   ReceiptOrEstimate,
   AbiItem
-} from '../@types'
-import { SmartContractWithAddress } from './SmartContractWithAddress'
-import { ZERO_ADDRESS } from '../utils/Constants'
+} from '../@types/index.js'
+import { SmartContractWithAddress } from './SmartContractWithAddress.js'
+import { ZERO_ADDRESS } from '../utils/Constants.js'
 
 export class FixedRateExchange extends SmartContractWithAddress {
   getDefaultAbi() {

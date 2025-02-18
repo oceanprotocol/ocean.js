@@ -1,8 +1,8 @@
 import { ethers, Signer, providers, Contract, ContractFunction, BigNumber } from 'ethers'
 
-import { Config, KNOWN_CONFIDENTIAL_EVMS } from '../config'
-import { LoggerInstance } from './Logger'
-import { minAbi } from './minAbi'
+import { Config, KNOWN_CONFIDENTIAL_EVMS } from '../config/index.js'
+import { LoggerInstance } from './Logger.js'
+import { minAbi } from './minAbi.js'
 
 const MIN_GAS_FEE_POLYGON = 30000000000 // minimum recommended 30 gwei polygon main and mumbai fees
 const MIN_GAS_FEE_SEPOLIA = 4000000000 // minimum 4 gwei for eth sepolia testnet
@@ -97,8 +97,8 @@ export async function amountToUnits(
   return amountFormatted.toString()
 }
 
-export function getEventFromTx(txReceipt, eventName) {
-  return txReceipt?.events?.filter((log) => {
+export function getEventFromTx(txReceipt: any, eventName: any) {
+  return txReceipt?.events?.filter((log: any) => {
     return log.event === eventName
   })[0]
 }
@@ -121,7 +121,7 @@ export async function sendTx(
 ): Promise<providers.TransactionResponse> {
   const { chainId } = await signer.provider.getNetwork()
   const feeHistory = await signer.provider.getFeeData()
-  let overrides
+  let overrides: Record<string, any> = {}
   if (feeHistory.maxPriorityFeePerGas) {
     let aggressiveFeePriorityFeePerGas = feeHistory.maxPriorityFeePerGas.toString()
     let aggressiveFeePerGas = feeHistory.maxFeePerGas.toString()

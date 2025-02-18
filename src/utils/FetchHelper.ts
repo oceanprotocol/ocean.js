@@ -1,5 +1,5 @@
 import fetch from 'cross-fetch'
-import { DownloadResponse } from '../@types'
+import { DownloadResponse } from '../@types/index.js'
 
 /**
  * Triggers  a file download from the specified URL when called from a browser context.
