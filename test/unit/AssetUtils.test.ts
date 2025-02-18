@@ -1,7 +1,7 @@
 import { assert } from 'chai'
 import { KNOWN_CONFIDENTIAL_EVMS } from '../../src/config'
 import { provider, getAddresses } from '../config'
-import { calculateActiveTemplateIndex } from '../../src/utils/Adresses'
+import { calculateActiveTemplateIndex } from '../../src/utils/Addresses'
 import { useOasisSDK } from '../../src/utils/Assets'
 import { Signer } from 'ethers/lib/ethers'
 
