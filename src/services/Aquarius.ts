@@ -2,6 +2,8 @@ import fetch from 'cross-fetch'
 import { LoggerInstance } from '../utils/Logger'
 import { Asset, DDO, ValidateMetadata } from '../@types'
 import { sleep } from '../utils/General'
+import { Signer } from 'ethers'
+import { signRequest } from '../utils/SignatureUtils'
 
 export interface SearchQuery {
   from?: number
@@ -99,23 +101,60 @@ export class Aquarius {
    * @param {AbortSignal} signal abort signal
    * @return {Promise<ValidateMetadata>}.
    */
-  public async validate(ddo: DDO, signal?: AbortSignal): Promise<ValidateMetadata> {
+  public async validate(
+    ddo: DDO,
+    signer?: Signer,
+    signal?: AbortSignal
+  ): Promise<ValidateMetadata> {
     const status: ValidateMetadata = {
       valid: false
     }
     let jsonResponse
+    let response
     try {
       const path = this.aquariusURL + '/api/aquarius/assets/ddo/validate'
+      if (signer) {
+        const publisherAddress = await signer.getAddress()
+        // aquarius is always same url of other components with ocean nodes
+        const pathNonce = this.aquariusURL + '/api/services/nonce'
+        const responseNonce = await fetch(
+          pathNonce + `?userAddress=${publisherAddress}`,
+          {
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json' },
+            signal
+          }
+        )
+        let { nonce } = await responseNonce.json()
+        console.log(`[getNonce] Consumer: ${publisherAddress} nonce: ${nonce}`)
+        if (!nonce || nonce === null) {
+          nonce = '0'
+        }
 
-      const response = await fetch(path, {
-        method: 'POST',
-        body: JSON.stringify(ddo),
-        headers: { 'Content-Type': 'application/octet-stream' },
-        signal
-      })
-
-      jsonResponse = await response.json()
+        // same signed message as usual (did + nonce)
+        // the node will only validate (add his signature if there fields are present and are valid)
+        let signatureMessage = publisherAddress
+        signatureMessage += ddo.id + nonce
+        const signature = await signRequest(signer, signatureMessage)
+        const data = { ddo, publisherAddress, nonce, signature }
+        response = await fetch(path, {
+          method: 'POST',
+          body: JSON.stringify(data),
+          headers: { 'Content-Type': 'application/octet-stream' },
+          signal
+        })
+      } else {
+        // backwards compatibility, "old" way without signature stuff
+        // this will not validate on newer versions of Ocean Node (status:400), as the node will not add the validation signature
+        response = await fetch(path, {
+          method: 'POST',
+          body: JSON.stringify(ddo),
+          headers: { 'Content-Type': 'application/octet-stream' },
+          signal
+        })
+      }
       if (response.status === 200) {
+        jsonResponse = await response.json()
         status.valid = true
         status.hash = jsonResponse.hash
         status.proof = {
