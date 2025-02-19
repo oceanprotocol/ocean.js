@@ -55,7 +55,7 @@ jobs:
         with:
           repository: 'oceanprotocol/barge'
           path: 'barge'
-
+          ref: escrow-contracts
       - name: Run Ganache with Barge
         working-directory: ${{ github.workspace }}/barge
         run: |
