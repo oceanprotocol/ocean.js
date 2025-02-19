@@ -798,7 +798,7 @@ export class Provider {
   public async getComputeStartRoutes(
     providerUri: string,
     isFreeCompute: boolean = false
-  ): Promise<string> | null {
+  ): Promise<string | null> {
     const providerEndpoints = await this.getEndpoints(providerUri)
     const serviceEndpoints = await this.getServiceEndpoints(
       providerUri,
