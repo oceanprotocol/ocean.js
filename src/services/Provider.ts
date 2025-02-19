@@ -738,6 +738,8 @@ export class Provider {
         : null
     }
 
+    console.log('url: ', computeStartUrl)
+
     const consumerAddress = await consumer.getAddress()
     const nonce = (
       (await this.getNonce(
@@ -770,6 +772,7 @@ export class Provider {
     if (!computeStartUrl) {
       return null
     }
+    console.log('payload:', payload)
     let response
     try {
       response = await fetch(computeStartUrl, {

@@ -578,7 +578,6 @@ describe('Compute-to-data example tests', async () => {
   it('9.1 Fetch compute environments from provider', async () => {
     /// ```Typescript
     computeEnvs = await ProviderInstance.getComputeEnvironments(providerUrl)
-    console.log('FOUND computeEnvs: ', computeEnvs)
     /// ```
     /// <!--
     assert(computeEnvs, 'No Compute environments found')
