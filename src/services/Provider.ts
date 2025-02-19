@@ -728,6 +728,10 @@ export class Provider {
     )
     let computeStartUrl = null
 
+    console.log('freeEnvironment?', freeEnvironment)
+    console.log('chainId?', chainId)
+
+    console.log('serviceEndpoints?', serviceEndpoints)
     if (freeEnvironment || !chainId) {
       computeStartUrl = this.getEndpointURL(serviceEndpoints, 'freeCompute')
         ? this.getEndpointURL(serviceEndpoints, 'freeCompute').urlPath
@@ -738,9 +742,10 @@ export class Provider {
         : null
     }
 
-    console.log('url: ', computeStartUrl)
+    console.log('compute start url: ', computeStartUrl)
 
     const consumerAddress = await consumer.getAddress()
+    console.log('consumerAddress: ', consumerAddress)
     const nonce = (
       (await this.getNonce(
         providerUri,
@@ -751,10 +756,13 @@ export class Provider {
       )) + 1
     ).toString()
 
+    console.log('nonce: ', nonce)
+
     let signatureMessage = consumerAddress
     signatureMessage += datasets[0].documentId
     signatureMessage += nonce
     const signature = await this.signProviderRequest(consumer, signatureMessage)
+    console.log('signature: ', signature)
     const payload = Object()
     payload.consumerAddress = consumerAddress
     payload.signature = signature
