@@ -1,4 +1,5 @@
 import { ethers, Signer, providers } from 'ethers'
+import { LoggerInstance } from './Logger'
 
 /**
  * Signs the hash of a message using the provided signer.
@@ -22,4 +23,23 @@ export async function signHash(signer: Signer, message: string) {
   if (v === '0x01') v = '0x1c'
 
   return { v, r, s }
+}
+
+export async function signRequest(signer: Signer, message: string): Promise<string> {
+  const consumerMessage = ethers.utils.solidityKeccak256(
+    ['bytes'],
+    [ethers.utils.hexlify(ethers.utils.toUtf8Bytes(message))]
+  )
+  const messageHashBytes = ethers.utils.arrayify(consumerMessage)
+  const chainId = await signer.getChainId()
+  try {
+    return await signer.signMessage(messageHashBytes)
+  } catch (error) {
+    LoggerInstance.error('Sign message error: ', error)
+    if (chainId === 8996) {
+      return await (signer as providers.JsonRpcSigner)._legacySignMessage(
+        messageHashBytes
+      )
+    }
+  }
 }
