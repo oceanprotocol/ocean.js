@@ -97,7 +97,7 @@ ___
 
 ### computeStart
 
-▸ **computeStart**(`providerUri`, `consumer`, `computeEnv`, `dataset`, `algorithm`, `signal?`, `additionalDatasets?`, `output?`): `Promise`<[`ComputeJob`](../interfaces/ComputeJob.md) \| [`ComputeJob`](../interfaces/ComputeJob.md)[]\>
+▸ **computeStart**(`providerUri`, `signer`, `computeEnv`, `datasets`, `algorithm`, `resources`, `chainId`, `output?`, `freeEnvironment`, `signal?`): `Promise`<[`ComputeJob`](../interfaces/ComputeJob.md) \| [`ComputeJob`](../interfaces/ComputeJob.md)[]\>
 
 Instruct the provider to start a compute job
 
@@ -106,13 +106,15 @@ Instruct the provider to start a compute job
 | Name | Type | Description |
 | :------ | :------ | :------ |
 | `providerUri` | `string` | The provider URI. |
-| `consumer` | `Signer` | - |
+| `signer` | `Signer` | - | The consumer signer/account
 | `computeEnv` | `string` | The compute environment. |
-| `dataset` | [`ComputeAsset`](../interfaces/ComputeAsset.md) | The dataset to start compute on |
+| `datasets` | [`ComputeAsset`](../interfaces/ComputeAsset.md) | The dataset to start compute on |
 | `algorithm` | [`ComputeAlgorithm`](../interfaces/ComputeAlgorithm.md) | The algorithm to start compute with. |
-| `signal?` | `AbortSignal` | abort signal |
-| `additionalDatasets?` | [`ComputeAsset`](../interfaces/ComputeAsset.md)[] | The additional datasets if that is the case. |
+| `resources` | [`ComputeResourceRequest`](../interfaces/ComputeResourcesRequest.md) | The resources to start compute with. |
+| `chainId?` | [`number`] | The network for the payments |
 | `output?` | [`ComputeOutput`](../interfaces/ComputeOutput.md) | The compute job output settings. |
+| `signal?` | `AbortSignal` | abort signal |
+
 
 #### Returns
 
@@ -485,7 +487,7 @@ Initializes the provider for a compute request.
 | `computeEnv` | `string` | The compute environment. |
 | `validUntil` | `number` | The job expiration date. |
 | `providerUri` | `string` | The provider URI. |
-| `accountId` | `string` | caller address |
+| `signer` | `Signer` | caller account |
 | `signal?` | `AbortSignal` | abort signal |
 
 #### Returns
