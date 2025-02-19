@@ -7,7 +7,8 @@ import {
   Aquarius,
   Datatoken,
   sendTx,
-  amountToUnits
+  amountToUnits,
+  isDefined
 } from '../../src'
 import { ComputeJob, ComputeAsset, ComputeAlgorithm, Files } from '../../src/@types'
 import { createAsset, handleComputeOrder } from './helpers'
@@ -408,7 +409,7 @@ describe('Compute flow tests', async () => {
 
     // we choose the free env
     const computeEnv = computeEnvs[resolvedDdoWith5mTimeout.chainId].find(
-      (ce) => ce.priceMin === 0
+      (ce) => ce.priceMin === 0 || isDefined(ce.free)
     )
     assert(computeEnv, 'Cannot find the free compute env')
 
@@ -479,7 +480,7 @@ describe('Compute flow tests', async () => {
   it('should restart a computeJob without paying anything, because order is valid and providerFees are still valid', async () => {
     // we choose the free env
     const computeEnv = computeEnvs[resolvedDdoWith5mTimeout.chainId].find(
-      (ce) => ce.priceMin === 0
+      (ce) => ce.priceMin === 0 || isDefined(ce.free)
     )
     assert(computeEnv, 'Cannot find the free compute env')
 
@@ -541,7 +542,7 @@ describe('Compute flow tests', async () => {
   it('should start a computeJob on a paid environment', async () => {
     // we choose the paid env
     const computeEnv = computeEnvs[resolvedDdoWith5mTimeout.chainId].find(
-      (ce) => ce.priceMin !== 0
+      (ce) => ce.priceMin !== 0 || !isDefined(ce.free)
     )
     assert(computeEnv, 'Cannot find the paid compute env')
 
@@ -618,9 +619,9 @@ describe('Compute flow tests', async () => {
   it('should restart a computeJob on paid environment, without paying anything, because order is valid and providerFees are still valid', async () => {
     // we choose the paid env
     const computeEnv = computeEnvs[resolvedDdoWith5mTimeout.chainId].find(
-      (ce) => ce.priceMin !== 0
+      (ce) => ce.priceMin !== 0 || !isDefined(ce.free)
     )
-    assert(computeEnv, 'Cannot find the free compute env')
+    assert(computeEnv, 'Cannot find the paid compute env')
 
     const assets: ComputeAsset[] = [
       {
@@ -688,7 +689,7 @@ describe('Compute flow tests', async () => {
   it('should start a computeJob using the free environment, by paying only providerFee (reuseOrder)', async () => {
     // we choose the free env
     const computeEnv = computeEnvs[resolvedDdoWith5mTimeout.chainId].find(
-      (ce) => ce.priceMin === 0
+      (ce) => ce.priceMin === 0 || isDefined(ce.free)
     )
     assert(computeEnv, 'Cannot find the free compute env')
 
@@ -773,9 +774,9 @@ describe('Compute flow tests', async () => {
   it('should start a computeJob using the paid environment, by paying only providerFee (reuseOrder)', async () => {
     // we choose the paid env
     const computeEnv = computeEnvs[resolvedDdoWith5mTimeout.chainId].find(
-      (ce) => ce.priceMin !== 0
+      (ce) => ce.priceMin !== 0 || !isDefined(ce.free)
     )
-    assert(computeEnv, 'Cannot find the free compute env')
+    assert(computeEnv, 'Cannot find the paid compute env')
 
     const assets: ComputeAsset[] = [
       {

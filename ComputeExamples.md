@@ -144,7 +144,8 @@ import {
   configHelperNetworks,
   ConfigHelper,
   getEventFromTx,
-  amountToUnits
+  amountToUnits,
+  isDefined
 } from '@oceanprotocol/lib'
 ```
 
@@ -594,7 +595,7 @@ Now, let's check that we successfully published a algorithm (create NFT + Datato
 let's check the free compute environment
 ```Typescript
     const computeEnv = computeEnvs[resolvedDatasetDdo.chainId].find(
-      (ce) => ce.priceMin === 0
+      (ce) => ce.priceMin === 0 || isDefined(ce.free)
     )
     console.log('Free compute environment = ', computeEnv)
 ```

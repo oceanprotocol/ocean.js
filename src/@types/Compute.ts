@@ -45,8 +45,30 @@ export interface ComputeEnvFees {
 export interface ComputeEnvFeesStructure {
   [chainId: string]: ComputeEnvFees
 }
-export interface ComputeEnvironment {
+
+export interface ComputeResourceRequest {
   id: string
+  amount: number
+}
+
+export interface ComputeResource {
+  id: ComputeResourceType
+  type?: string
+  kind?: string
+  total: number // total number of specific resource
+  min: number // min number of resource needed for a job
+  max: number // max number of resource for a job
+  inUse?: number // for display purposes
+}
+
+export interface ComputeEnvironmentFreeOptions {
+  // only if a compute env exposes free jobs
+  storageExpiry?: number
+  maxJobDuration?: number
+  maxJobs?: number // maximum number of simultaneous free jobs
+  resources?: ComputeResource[]
+}
+export interface ComputeEnvironment {
   // legacy
   // cpuNumber: number
   // cpuType: string
@@ -55,22 +77,27 @@ export interface ComputeEnvironment {
   // ramGB: number
   // diskGB: number
   // priceMin: number
-  totalCpu: number // total cpu available for jobs
-  maxCpu: number // max cpu for a single job.  Imagine a K8 cluster with two nodes, each node with 10 cpus.  Total=20, but at most you can allocate 10 cpu for a job
-  totalRam: number // total gb of RAM
-  maxRam: number // max allocatable GB RAM for a single job.
-  maxDisk: number // max GB of disck allocatable for a single job
-  fees: ComputeEnvFeesStructure
+  // totalCpu: number // total cpu available for jobs
+  // maxCpu: number // max cpu for a single job.  Imagine a K8 cluster with two nodes, each node with 10 cpus.  Total=20, but at most you can allocate 10 cpu for a job
+  // totalRam: number // total gb of RAM
+  // maxRam: number // max allocatable GB RAM for a single job.
+  // maxDisk: number // max GB of disck allocatable for a single job
+  // currentJobs: number
+  // lastSeen: number
   // legacy
+  id: string
   description: string
-  currentJobs: number
-  maxJobs: number
   consumerAddress: string
-  storageExpiry: number
-  maxJobDuration: number
-  lastSeen: number
-  free: boolean
-  platform?: RunningPlatform[] // array due to k8 support
+  storageExpiry?: number // amount of seconds for storage
+  minJobDuration?: number // min billable seconds for a paid job
+  maxJobDuration?: number // max duration in seconds for a paid job
+  maxJobs?: number // maximum number of simultaneous paid jobs
+  runningJobs: number // amount of running jobs (paid jobs)
+  runningfreeJobs?: number // amount of running jobs (free jobs)
+  fees: ComputeEnvFeesStructure
+  resources?: ComputeResource[]
+  free?: ComputeEnvironmentFreeOptions
+  platform?: RunningPlatform
 }
 
 export interface ComputeResult {
@@ -158,9 +185,4 @@ export interface ComputeAlgorithm {
   transferTxId?: string
   algocustomdata?: { [key: string]: any }
   userdata?: { [key: string]: any }
-}
-
-export interface ComputeResourceRequest {
-  id: string
-  amount: number
 }

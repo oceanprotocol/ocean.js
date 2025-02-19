@@ -144,7 +144,8 @@ import {
   configHelperNetworks,
   ConfigHelper,
   getEventFromTx,
-  amountToUnits
+  amountToUnits,
+  isDefined
 } from '../../src'
 /// ```
 
@@ -577,6 +578,7 @@ describe('Compute-to-data example tests', async () => {
   it('9.1 Fetch compute environments from provider', async () => {
     /// ```Typescript
     computeEnvs = await ProviderInstance.getComputeEnvironments(providerUrl)
+    console.log('FOUND computeEnvs: ', computeEnvs)
     /// ```
     /// <!--
     assert(computeEnvs, 'No Compute environments found')
@@ -594,7 +596,7 @@ describe('Compute-to-data example tests', async () => {
     /// let's check the free compute environment
     /// ```Typescript
     const computeEnv = computeEnvs[resolvedDatasetDdo.chainId].find(
-      (ce) => ce.priceMin === 0
+      (ce) => ce.priceMin === 0 || isDefined(ce.free)
     )
     console.log('Free compute environment = ', computeEnv)
     /// ```
@@ -656,7 +658,11 @@ describe('Compute-to-data example tests', async () => {
       consumerAccount,
       computeEnv.id,
       assets,
-      algo
+      algo,
+      null,
+      null,
+      null,
+      true
     )
 
     /// ```
