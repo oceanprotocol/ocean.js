@@ -726,22 +726,8 @@ export class Provider {
       providerUri,
       providerEndpoints
     )
-    let computeStartUrl = null
-
-    console.log('freeEnvironment?', freeEnvironment)
-    console.log('chainId?', chainId)
-
-    console.log('serviceEndpoints?', serviceEndpoints)
-    if (freeEnvironment || !chainId) {
-      computeStartUrl = this.getEndpointURL(serviceEndpoints, 'freeCompute')
-        ? this.getEndpointURL(serviceEndpoints, 'freeCompute').urlPath
-        : null
-    } else {
-      computeStartUrl = this.getEndpointURL(serviceEndpoints, 'computeStart')
-        ? this.getEndpointURL(serviceEndpoints, 'computeStart').urlPath
-        : null
-    }
-
+    const isFree = freeEnvironment || !chainId
+    const computeStartUrl = await this.getComputeStartRoutes(providerUri, isFree)
     console.log('compute start url: ', computeStartUrl)
 
     const consumerAddress = await consumer.getAddress()
@@ -807,6 +793,28 @@ export class Provider {
     )
     LoggerInstance.error('Payload was:', payload)
     return null
+  }
+
+  public async getComputeStartRoutes(
+    providerUri: string,
+    isFreeCompute: boolean = false
+  ): Promise<string> | null {
+    const providerEndpoints = await this.getEndpoints(providerUri)
+    const serviceEndpoints = await this.getServiceEndpoints(
+      providerUri,
+      providerEndpoints
+    )
+    let computeStartUrl = null
+    if (isFreeCompute) {
+      computeStartUrl = this.getEndpointURL(serviceEndpoints, 'freeCompute')
+        ? this.getEndpointURL(serviceEndpoints, 'freeCompute').urlPath
+        : null
+    } else {
+      computeStartUrl = this.getEndpointURL(serviceEndpoints, 'computeStart')
+        ? this.getEndpointURL(serviceEndpoints, 'computeStart').urlPath
+        : null
+    }
+    return computeStartUrl
   }
 
   /** Instruct the provider to Stop the execution of a to stop a compute job.
