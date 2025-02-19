@@ -159,3 +159,8 @@ export interface ComputeAlgorithm {
   algocustomdata?: { [key: string]: any }
   userdata?: { [key: string]: any }
 }
+
+export interface ComputeResourceRequest {
+  id: string
+  amount: number
+}

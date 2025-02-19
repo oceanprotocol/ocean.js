@@ -16,7 +16,8 @@ import {
   UserCustomParameters,
   Ipfs,
   Smartcontract,
-  GraphqlQuery
+  GraphqlQuery,
+  ComputeResourceRequest
 } from '../@types'
 
 export class Provider {
@@ -618,6 +619,7 @@ export class Provider {
    * @param {ComputeAsset[]} additionalDatasets The additional datasets if that is the case.
    * @param {ComputeOutput} output The compute job output settings.
    * @return {Promise<ComputeJob | ComputeJob[]>} The compute job or jobs.
+   * @deprecated Use {@link computeStart} instead.
    */
   public async computeStartV1(
     providerUri: string,
@@ -697,9 +699,11 @@ export class Provider {
    * @param {string} computeEnv The compute environment.
    * @param {ComputeAsset} datasets The dataset to start compute on + additionalDatasets (the additional datasets if that is the case)
    * @param {ComputeAlgorithm} algorithm The algorithm to start compute with.
-   * @param {AbortSignal} signal abort signal
+   * @param {ComputeResourceRequest} resources The resources to start compute job with.
+   * @param {chainId} chainId The chain used to do payments
    * @param {ComputeOutput} output The compute job output settings.
    * @param {boolean} freeEnvironment is it a free environment? uses different route
+   * @param {AbortSignal} signal abort signal
    * @return {Promise<ComputeJob | ComputeJob[]>} The compute job or jobs.
    */
   public async computeStart(
@@ -708,9 +712,11 @@ export class Provider {
     computeEnv: string,
     datasets: ComputeAsset[],
     algorithm: ComputeAlgorithm,
-    signal?: AbortSignal,
+    resources?: ComputeResourceRequest[],
+    chainId?: number, // network used by payment (only for payed compute jobs)
     output?: ComputeOutput,
-    freeEnvironment?: boolean
+    freeEnvironment?: boolean, // optional, using together with chainId .. if chainId is present than is payed compute, if not is FREE environment
+    signal?: AbortSignal
   ): Promise<ComputeJob | ComputeJob[]> {
     console.log('called new compute start method...')
     console.log('datasets: ', datasets)
@@ -722,7 +728,7 @@ export class Provider {
     )
     let computeStartUrl = null
 
-    if (freeEnvironment) {
+    if (freeEnvironment || !chainId) {
       computeStartUrl = this.getEndpointURL(serviceEndpoints, 'freeCompute')
         ? this.getEndpointURL(serviceEndpoints, 'freeCompute').urlPath
         : null
@@ -752,14 +758,18 @@ export class Provider {
     payload.signature = signature
     payload.nonce = nonce
     payload.environment = computeEnv
+    payload.resources = resources
+    payload.chainId = chainId
     // kept for backwards compatibility (tests running against existing provider)
     payload.dataset = datasets[0]
     // new field for C2D v2
     payload.datasets = datasets
     payload.algorithm = algorithm
     // if (additionalDatasets) payload.additionalDatasets = additionalDatasets
-    if (output) payload.output = output
-    if (!computeStartUrl) return null
+    payload.output = output
+    if (!computeStartUrl) {
+      return null
+    }
     let response
     try {
       response = await fetch(computeStartUrl, {
