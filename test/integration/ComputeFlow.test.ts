@@ -461,7 +461,10 @@ describe('Compute flow tests', async () => {
       )
     }
 
-    freeComputeRouteSupport = await ProviderInstance.getComputeStartRoutes(providerUrl, true)
+    freeComputeRouteSupport = await ProviderInstance.getComputeStartRoutes(
+      providerUrl,
+      true
+    )
     if (freeComputeRouteSupport) {
       const computeJobs = await ProviderInstance.computeStart(
         providerUrl,
