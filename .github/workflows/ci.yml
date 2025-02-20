@@ -70,6 +70,9 @@ jobs:
           ls -la "$HOME/.ocean/ocean-contracts/artifacts/"
       - run: npm run build:metadata
       - run: npm run test:unit:cover
+      - name: docker logs for unit tests
+        run: docker logs ocean_aquarius_1 && docker logs ocean_provider_1 && docker logs ocean_provider2_1 && docker logs ocean_computetodata_1 && docker logs ocean-ocean-contracts-1
+        if: ${{ failure() }}
       - uses: actions/upload-artifact@v4
         with:
           name: coverage-unit
@@ -137,7 +140,7 @@ jobs:
         env:
           PROVIDER_URL: 'http://172.15.0.4:8030'
       - name: docker logs
-        run: docker logs ocean_aquarius_1 && docker logs ocean_provider_1 && docker logs ocean_provider2_1 && docker logs ocean_computetodata_1
+        run: docker logs ocean_aquarius_1 && docker logs ocean_provider_1 && docker logs ocean_provider2_1 && docker logs ocean_computetodata_1 && docker logs ocean-ocean-contracts-1
         if: ${{ failure() }}
       - name: Upload coverage
         uses: actions/upload-artifact@v4
