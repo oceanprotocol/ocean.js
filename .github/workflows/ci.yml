@@ -71,7 +71,7 @@ jobs:
       - run: npm run build:metadata
       - run: npm run test:unit:cover
       - name: docker logs for unit tests
-        run: docker logs ocean_aquarius_1 && docker logs ocean_provider_1 && docker logs ocean_provider2_1 && docker logs ocean_computetodata_1 && docker logs ocean-ocean-contracts-1
+        run:  docker logs ocean-ocean-contracts-1
         if: ${{ failure() }}
       - uses: actions/upload-artifact@v4
         with:
