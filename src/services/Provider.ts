@@ -727,8 +727,8 @@ export class Provider {
       providerUri,
       providerEndpoints
     )
-    const isFree = freeEnvironment ? true : !chainId
-    const computeStartUrl = await this.getComputeStartRoutes(providerUri, isFree)
+
+    const computeStartUrl = await this.getComputeStartRoutes(providerUri, freeEnvironment)
     console.log('compute start url: ', computeStartUrl)
 
     if (!computeStartUrl) {
