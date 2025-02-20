@@ -621,7 +621,11 @@ describe('Compute flow tests', async () => {
       consumerAccount,
       computeEnv.id,
       assets,
-      algo
+      algo,
+      null,
+      null,
+      null,
+      false
     )
     paidEnvDatasetTxId = assets[0].transferTxId
     paidEnvAlgoTxId = algo.transferTxId
@@ -697,7 +701,11 @@ describe('Compute flow tests', async () => {
       consumerAccount,
       computeEnv.id,
       assets,
-      algo
+      algo,
+      null,
+      null,
+      null,
+      false
     )
     assert(computeJobs, 'Cannot start compute job')
   })
@@ -882,7 +890,11 @@ describe('Compute flow tests', async () => {
       consumerAccount,
       computeEnv.id,
       assets,
-      algo
+      algo,
+      null,
+      null,
+      null,
+      false
     )
     // freeEnvDatasetTxId = assets[0].transferTxId
     // freeEnvAlgoTxId = algo.transferTxId
