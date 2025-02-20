@@ -144,7 +144,8 @@ import {
   configHelperNetworks,
   ConfigHelper,
   getEventFromTx,
-  amountToUnits
+  amountToUnits,
+  isDefined
 } from '@oceanprotocol/lib'
 ```
 
@@ -594,7 +595,7 @@ Now, let's check that we successfully published a algorithm (create NFT + Datato
 let's check the free compute environment
 ```Typescript
     const computeEnv = computeEnvs[resolvedDatasetDdo.chainId].find(
-      (ce) => ce.priceMin === 0
+      (ce) => ce.priceMin === 0 || isDefined(ce.free)
     )
     console.log('Free compute environment = ', computeEnv)
 ```
@@ -627,7 +628,7 @@ Let's have 5 minute of compute access
       computeEnv.id,
       computeValidUntil,
       providerUrl,
-      await consumerAccount.getAddress()
+      consumerAccount
     )
 ```
 <!--
@@ -655,7 +656,7 @@ Let's have 5 minute of compute access
       providerUrl,
       consumerAccount,
       computeEnv.id,
-      assets[0],
+      assets,
       algo
     )
 

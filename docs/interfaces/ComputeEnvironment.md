@@ -7,20 +7,21 @@
 ### Properties
 
 - [consumerAddress](ComputeEnvironment.md#consumeraddress)
-- [cpuNumber](ComputeEnvironment.md#cpunumber)
-- [cpuType](ComputeEnvironment.md#cputype)
+- [totalCpu](ComputeEnvironment.md#totalCpu)
+- [maxCpu](ComputeEnvironment.md#maxCpu)
+- [totalRam](ComputeEnvironment.md#totalRam)
+- [maxRam](ComputeEnvironment.md#maxRam)
+- [maxDisk](ComputeEnvironment.md#maxDisk)
 - [currentJobs](ComputeEnvironment.md#currentjobs)
-- [desc](ComputeEnvironment.md#desc)
-- [diskGB](ComputeEnvironment.md#diskgb)
-- [gpuNumber](ComputeEnvironment.md#gpunumber)
-- [gpuType](ComputeEnvironment.md#gputype)
+- [description](ComputeEnvironment.md#description)
+- [fees](ComputeEnvironment.md#ComputeEnvFeesStructure)
 - [id](ComputeEnvironment.md#id)
 - [lastSeen](ComputeEnvironment.md#lastseen)
 - [maxJobDuration](ComputeEnvironment.md#maxjobduration)
 - [maxJobs](ComputeEnvironment.md#maxjobs)
-- [priceMin](ComputeEnvironment.md#pricemin)
-- [ramGB](ComputeEnvironment.md#ramgb)
 - [storageExpiry](ComputeEnvironment.md#storageexpiry)
+- [lastSeen](ComputeEnvironment.md#lastSeen)
+- [free](ComputeEnvironment.md#free)
 
 ## Properties
 
@@ -30,27 +31,27 @@
 
 #### Defined in
 
-[@types/Compute.ts:21](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/Compute.ts#L21)
+[@types/Compute.ts:68](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/Compute.ts#L68)
 
 ___
 
-### cpuNumber
+### totalCpu
 
-• **cpuNumber**: `number`
+• **totalCpu**: `number`
 
 #### Defined in
 
-[@types/Compute.ts:11](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/Compute.ts#L11)
+[@types/Compute.ts:58](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/Compute.ts#L58)
 
 ___
 
-### cpuType
+### maxCpu
 
-• **cpuType**: `string`
+• **maxCpu**: `number`
 
 #### Defined in
 
-[@types/Compute.ts:12](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/Compute.ts#L12)
+[@types/Compute.ts:59](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/Compute.ts#L59)
 
 ___
 
@@ -60,47 +61,47 @@ ___
 
 #### Defined in
 
-[@types/Compute.ts:19](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/Compute.ts#L19)
+[@types/Compute.ts:66](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/Compute.ts#L66)
 
 ___
 
-### desc
+### description
 
-• **desc**: `string`
+• **description**: `string`
 
 #### Defined in
 
-[@types/Compute.ts:18](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/Compute.ts#L18)
+[@types/Compute.ts:65](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/Compute.ts#L65)
 
 ___
 
-### diskGB
+### maxDisk
 
-• **diskGB**: `number`
+• **maxDisk**: `number`
 
 #### Defined in
 
-[@types/Compute.ts:16](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/Compute.ts#L16)
+[@types/Compute.ts:62](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/Compute.ts#L62)
 
 ___
 
-### gpuNumber
+### maxRam
 
-• **gpuNumber**: `number`
+• **maxRam**: `number`
 
 #### Defined in
 
-[@types/Compute.ts:13](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/Compute.ts#L13)
+[@types/Compute.ts:61](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/Compute.ts#L61)
 
 ___
 
-### gpuType
+### totalRam
 
-• **gpuType**: `string`
+• **totalRam**: `number`
 
 #### Defined in
 
-[@types/Compute.ts:14](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/Compute.ts#L14)
+[@types/Compute.ts:60](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/Compute.ts#L60)
 
 ___
 
@@ -110,7 +111,7 @@ ___
 
 #### Defined in
 
-[@types/Compute.ts:10](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/Compute.ts#L10)
+[@types/Compute.ts:49](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/Compute.ts#L49)
 
 ___
 
@@ -120,7 +121,7 @@ ___
 
 #### Defined in
 
-[@types/Compute.ts:24](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/Compute.ts#L24)
+[@types/Compute.ts:71](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/Compute.ts#L71)
 
 ___
 
@@ -130,7 +131,7 @@ ___
 
 #### Defined in
 
-[@types/Compute.ts:23](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/Compute.ts#L23)
+[@types/Compute.ts:70](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/Compute.ts#L70)
 
 ___
 
@@ -140,27 +141,27 @@ ___
 
 #### Defined in
 
-[@types/Compute.ts:20](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/Compute.ts#L20)
+[@types/Compute.ts:67](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/Compute.ts#L67)
 
 ___
 
-### priceMin
+### fees
 
-• **priceMin**: `number`
+• **fees**: `ComputeEnvFeesStructure`
 
 #### Defined in
 
-[@types/Compute.ts:17](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/Compute.ts#L17)
+[@types/Compute.ts:63](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/Compute.ts#L63)
 
 ___
 
-### ramGB
+### free
 
-• **ramGB**: `number`
+• **free**: `boolean`
 
 #### Defined in
 
-[@types/Compute.ts:15](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/Compute.ts#L15)
+[@types/Compute.ts:72](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/Compute.ts#L72)
 
 ___
 
@@ -170,4 +171,14 @@ ___
 
 #### Defined in
 
-[@types/Compute.ts:22](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/Compute.ts#L22)
+[@types/Compute.ts:69](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/Compute.ts#L69)
+
+___
+
+### platform
+
+• **platform**: `RunningPlatform[]`
+
+#### Defined in
+
+[@types/Compute.ts:73](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/Compute.ts#L73)
