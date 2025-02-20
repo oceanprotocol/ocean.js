@@ -303,7 +303,7 @@ export class Provider {
   public async getComputeEnvironments(
     providerUri: string,
     signal?: AbortSignal
-  ): Promise<{ [chainId: number]: ComputeEnvironment[] }> {
+  ): Promise<ComputeEnvironment[]> {
     const providerEndpoints = await this.getEndpoints(providerUri)
     const serviceEndpoints = await this.getServiceEndpoints(
       providerUri,
@@ -325,10 +325,11 @@ export class Provider {
     }
     if (response?.ok) {
       const result = response.json()
-      if (Array.isArray(result)) {
-        const providerChain: number = providerEndpoints.chainId
-        return { [providerChain]: result }
-      }
+      // chain is not part of response
+      // if (Array.isArray(result)) {
+      //   const providerChain: number = providerEndpoints.chainId
+      //   return { [providerChain]: result }
+      // }
       return result
     }
     const resolvedResponse = await response.json()
