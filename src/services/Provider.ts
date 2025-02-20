@@ -731,6 +731,13 @@ export class Provider {
     const computeStartUrl = await this.getComputeStartRoutes(providerUri, isFree)
     console.log('compute start url: ', computeStartUrl)
 
+    if (!computeStartUrl) {
+      LoggerInstance.error(
+        'Compute start failed: Cannot get proper computeStart route (perhaps not implemented on provider?)'
+      )
+      return null
+    }
+
     const consumerAddress = await consumer.getAddress()
     console.log('consumerAddress: ', consumerAddress)
     const nonce = (
@@ -764,9 +771,6 @@ export class Provider {
     payload.algorithm = algorithm
     // if (additionalDatasets) payload.additionalDatasets = additionalDatasets
     payload.output = output
-    if (!computeStartUrl) {
-      return null
-    }
     console.log('payload:', payload)
     let response
     try {
