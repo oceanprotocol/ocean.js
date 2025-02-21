@@ -6,8 +6,6 @@ import { Datatoken, amountToUnits } from '../../src/'
 import { EscrowContract } from '../../src/contracts/Escrow'
 
 describe('Escrow payments flow', () => {
-  let factoryOwner: Signer
-  let user1: Signer
   let user2: Signer
   let Escrow: EscrowContract
   let datatoken: Datatoken
@@ -15,8 +13,6 @@ describe('Escrow payments flow', () => {
   let OCEAN
 
   before(async () => {
-    factoryOwner = (await provider.getSigner(0)) as Signer
-    user1 = (await provider.getSigner(3)) as Signer
     user2 = (await provider.getSigner(4)) as Signer
 
     addresses = await getAddresses()
@@ -41,7 +37,6 @@ describe('Escrow payments flow', () => {
     await Escrow.deposit(OCEAN, '100')
     const funds = await Escrow.getUserFunds(await user2.getAddress(), OCEAN)
     const available = BigNumber.from(funds[0])
-    console.log(`available: ${available}`)
     assert(available.toString() === (await amountToUnits(null, null, '100', 18)))
   })
 
@@ -49,6 +44,7 @@ describe('Escrow payments flow', () => {
     const tx = await Escrow.withdraw(OCEAN, '50')
     assert(tx, 'failed to withdraw half of available tokens')
     const funds = await Escrow.getUserFunds(await user2.getAddress(), OCEAN)
-    assert(funds.available === amountToUnits(null, null, '50', 18))
+    const available = BigNumber.from(funds[0])
+    assert(available.toString() === (await amountToUnits(null, null, '50', 18)))
   })
 })
