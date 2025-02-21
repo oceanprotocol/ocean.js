@@ -17,7 +17,7 @@ import {
   ProviderFees,
   getEventFromTx
 } from '../../src'
-
+// superseed by src/utils/CreateAsset
 export async function createAsset(
   name: string,
   symbol: string,
