@@ -38,11 +38,10 @@ describe('Escrow payments flow', () => {
         `${initialBalance + 1000}`
     )
     await datatoken.approve(OCEAN, addresses.Escrow, '1000')
-    const tx2 = await Escrow.deposit(OCEAN, '100')
-    console.log(`tx2: ${JSON.stringify(tx2)}`)
+    await Escrow.deposit(OCEAN, '100')
     const funds = await Escrow.getUserFunds(await user2.getAddress(), OCEAN)
     console.log(`funds: ${JSON.stringify(funds[0])}`)
-    const available = BigNumber.from(funds[0].hex)
+    const available = BigNumber.from(JSON.parse(funds[0]).hex)
     console.log(`available: ${available}`)
     assert(available.toString() === (await amountToUnits(null, null, '100', 18)))
   })
