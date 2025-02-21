@@ -37,6 +37,7 @@ export async function signRequest(signer: Signer, message: string): Promise<stri
   } catch (error) {
     LoggerInstance.error('Sign message error: ', error)
     if (chainId === 8996) {
+      console.log('Signing message with _legacySignMessage')
       return await (signer as providers.JsonRpcSigner)._legacySignMessage(
         messageHashBytes
       )

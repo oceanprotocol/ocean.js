@@ -157,9 +157,9 @@ export class Aquarius {
         console.log('nonce: ' + nonce + ' newNonce ' + newNonce)
         // same signed message as usual (did + nonce)
         // the node will only validate (add his signature if there fields are present and are valid)
-        let signatureMessage = publisherAddress
-        signatureMessage += ddo.id + newNonce
-        console.log('will sign the request...')
+        // let signatureMessage = publisherAddress
+        const signatureMessage = ddo.id + newNonce
+        console.log('will sign the request...', signatureMessage)
         const signature = await signRequest(signer, signatureMessage)
         console.log('signature: ', signature)
         const data = { ddo, publisherAddress, newNonce, signature }
