@@ -104,7 +104,7 @@ export async function updateAssetMetadata(
     providerUrl
   )
   const encryptedResponse = await providerResponse
-  const validateResult = await aquariusInstance.validate(updatedDdo, owner, providerUrl)
+  const validateResult = await aquariusInstance.validate(updatedDdo)
   const updateDdoTX = await nft.setMetadata(
     updatedDdo.nftAddress,
     await owner.getAddress(),

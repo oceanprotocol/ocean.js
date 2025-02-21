@@ -119,6 +119,7 @@ export class Aquarius {
       console.log('path: ', path)
       // Old aquarius API and node API (before publisherAddress, nonce and signature verification)
       const validateRequestLegacy = async function (): Promise<Response> {
+        console.log('using validateRequestLegacy()')
         response = await fetch(path, {
           method: 'POST',
           body: JSON.stringify(ddo),
@@ -156,8 +157,10 @@ export class Aquarius {
           signatureMessage += ddo.id + newNonce
           console.log('will sign the request...')
           const signature = await signRequest(signer, signatureMessage)
+          console.log('signature: ', signature)
           const data = { ddo, publisherAddress, newNonce, signature }
           console.log('will call validate path at ', path)
+          console.log('calldata: ', data)
           response = await fetch(path, {
             method: 'POST',
             body: JSON.stringify(data),
@@ -165,10 +168,10 @@ export class Aquarius {
             signal
           })
         } catch (e) {
+          console.error('GOT ERROR:', e)
           // retry with legacy path validation
           LoggerInstance.error(
             'Metadata validation failed using publisher signature validation (perhaps not supported or legacy Aquarius), retrying with legacy path...',
-            response.status,
             e.message
           )
           response = await validateRequestLegacy()
