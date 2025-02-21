@@ -171,7 +171,14 @@ export class Aquarius {
           headers: { 'Content-Type': 'application/octet-stream' },
           signal
         })
-        console.log('response was: ', await response.json())
+        const resp = await response.json()
+        if (resp && JSON.stringify(resp).includes('no version provided for DDO.')) {
+          // do it again
+          console.log('do it again')
+          response = await validateRequestLegacy()
+        } else {
+          jsonResponse = resp
+        }
       } catch (e) {
         console.error('GOT ERROR:', e)
         // retry with legacy path validation
@@ -189,7 +196,7 @@ export class Aquarius {
     if (!response) return status
 
     if (response.status === 200) {
-      jsonResponse = await response.json()
+      jsonResponse = jsonResponse || (await response.json())
       status.valid = true
       status.hash = jsonResponse.hash
       status.proof = {
