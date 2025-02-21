@@ -30,19 +30,19 @@ describe('Escrow payments flow', () => {
 
   it('User2 makes a deposit in Escrow', async () => {
     datatoken = new Datatoken(user2, await user2.getChainId())
-    console.log(
-      `(await datatoken.balance(OCEAN, await user2.getAddress())): ${await datatoken.balance(
-        OCEAN,
-        await user2.getAddress()
-      )}`
-    )
+    const initialBalance = await datatoken.balance(OCEAN, await user2.getAddress())
     await datatoken.approve(OCEAN, await user2.getAddress(), '1000')
     const tx = await datatoken.transfer(OCEAN, await user2.getAddress(), '1000')
-    console.log(`tx: ${tx}`)
-    assert((await datatoken.balance(OCEAN, await user2.getAddress())) !== '1000')
+    console.log(`tx: ${JSON.stringify(tx)}`)
+    assert(
+      (await datatoken.balance(OCEAN, await user2.getAddress())) !==
+        `${initialBalance + 1000}`
+    )
     await datatoken.approve(addresses.Escrow, await user2.getAddress(), '1000')
-    await Escrow.deposit(OCEAN, '100')
+    const tx2 = await Escrow.deposit(OCEAN, '100')
+    console.log(`tx2: ${JSON.stringify(tx2)}`)
     const funds = await Escrow.getUserFunds(await user2.getAddress(), OCEAN)
+    console.log(`funds: ${JSON.stringify(funds)}`)
     assert(funds.available === amountToUnits(null, null, '100', 18))
   })
 
