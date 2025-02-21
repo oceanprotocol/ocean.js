@@ -171,7 +171,7 @@ export class Aquarius {
           headers: { 'Content-Type': 'application/octet-stream' },
           signal
         })
-        console.log('response was: ', response.json())
+        console.log('response was: ', await response.json())
       } catch (e) {
         console.error('GOT ERROR:', e)
         // retry with legacy path validation
