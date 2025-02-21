@@ -130,13 +130,14 @@ export class Aquarius {
         if (!nonce || nonce === null) {
           nonce = '0'
         }
+        const newNonce = Number(nonce + 1).toString() // have to increase the previous
 
         // same signed message as usual (did + nonce)
         // the node will only validate (add his signature if there fields are present and are valid)
         let signatureMessage = publisherAddress
-        signatureMessage += ddo.id + nonce
+        signatureMessage += ddo.id + newNonce
         const signature = await signRequest(signer, signatureMessage)
-        const data = { ddo, publisherAddress, nonce, signature }
+        const data = { ddo, publisherAddress, newNonce, signature }
         response = await fetch(path, {
           method: 'POST',
           body: JSON.stringify(data),
