@@ -130,8 +130,8 @@ export class Aquarius {
         if (!nonce || nonce === null) {
           nonce = '0'
         }
-        const newNonce = Number(nonce + 1).toString() // have to increase the previous
-
+        const newNonce = (Number(nonce) + 1).toString() // have to increase the previous
+        console.log('nonce: ' + nonce + ' newNonce ' + newNonce)
         // same signed message as usual (did + nonce)
         // the node will only validate (add his signature if there fields are present and are valid)
         let signatureMessage = publisherAddress
