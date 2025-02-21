@@ -115,10 +115,10 @@ export class Aquarius {
 
     const path = this.aquariusURL + '/api/aquarius/assets/ddo/validate'
 
-    try {
-      console.log('path: ', path)
-      // Old aquarius API and node API (before publisherAddress, nonce and signature verification)
-      const validateRequestLegacy = async function (): Promise<Response> {
+    console.log('path: ', path)
+    // Old aquarius API and node API (before publisherAddress, nonce and signature verification)
+    const validateRequestLegacy = async function (): Promise<Response> {
+      try {
         console.log('using validateRequestLegacy()')
         response = await fetch(path, {
           method: 'POST',
@@ -127,9 +127,14 @@ export class Aquarius {
           signal
         })
         return response
+      } catch (error) {
+        LoggerInstance.error('Error validating metadata: ', error)
+        return null
       }
+    }
 
-      if (signer && providerUrl) {
+    if (signer && providerUrl) {
+      try {
         const publisherAddress = await signer.getAddress()
         // aquarius is always same url of other components with ocean nodes
         const pathNonce = providerUrl + '/api/services/nonce'
@@ -150,54 +155,53 @@ export class Aquarius {
         }
         const newNonce = (Number(nonce) + 1).toString() // have to increase the previous
         console.log('nonce: ' + nonce + ' newNonce ' + newNonce)
-        try {
-          // same signed message as usual (did + nonce)
-          // the node will only validate (add his signature if there fields are present and are valid)
-          let signatureMessage = publisherAddress
-          signatureMessage += ddo.id + newNonce
-          console.log('will sign the request...')
-          const signature = await signRequest(signer, signatureMessage)
-          console.log('signature: ', signature)
-          const data = { ddo, publisherAddress, newNonce, signature }
-          console.log('will call validate path at ', path)
-          console.log('calldata: ', data)
-          response = await fetch(path, {
-            method: 'POST',
-            body: JSON.stringify(data),
-            headers: { 'Content-Type': 'application/octet-stream' },
-            signal
-          })
-        } catch (e) {
-          console.error('GOT ERROR:', e)
-          // retry with legacy path validation
-          LoggerInstance.error(
-            'Metadata validation failed using publisher signature validation (perhaps not supported or legacy Aquarius), retrying with legacy path...',
-            e.message
-          )
-          response = await validateRequestLegacy()
-        }
-      } else {
-        // backwards compatibility, "old" way without signature stuff
-        // this will not validate on newer versions of Ocean Node (status:400), as the node will not add the validation signature
+        // same signed message as usual (did + nonce)
+        // the node will only validate (add his signature if there fields are present and are valid)
+        let signatureMessage = publisherAddress
+        signatureMessage += ddo.id + newNonce
+        console.log('will sign the request...')
+        const signature = await signRequest(signer, signatureMessage)
+        console.log('signature: ', signature)
+        const data = { ddo, publisherAddress, newNonce, signature }
+        console.log('will call validate path at ', path)
+        console.log('calldata: ', data)
+        response = await fetch(path, {
+          method: 'POST',
+          body: JSON.stringify(data),
+          headers: { 'Content-Type': 'application/octet-stream' },
+          signal
+        })
+      } catch (e) {
+        console.error('GOT ERROR:', e)
+        // retry with legacy path validation
+        LoggerInstance.error(
+          'Metadata validation failed using publisher signature validation (perhaps not supported or legacy Aquarius), retrying with legacy path...',
+          e.message
+        )
         response = await validateRequestLegacy()
       }
-      if (response.status === 200) {
-        jsonResponse = await response.json()
-        status.valid = true
-        status.hash = jsonResponse.hash
-        status.proof = {
-          validatorAddress: jsonResponse.publicKey,
-          r: jsonResponse.r[0],
-          s: jsonResponse.s[0],
-          v: jsonResponse.v
-        }
-      } else {
-        status.errors = jsonResponse
-        LoggerInstance.error('validate Metadata failed:', response.status, status.errors)
-      }
-    } catch (error) {
-      LoggerInstance.error('Error validating metadata: ', error)
+    } else {
+      // backwards compatibility, "old" way without signature stuff
+      // this will not validate on newer versions of Ocean Node (status:400), as the node will not add the validation signature
+      response = await validateRequestLegacy()
     }
+    if (!response) return status
+
+    if (response.status === 200) {
+      jsonResponse = await response.json()
+      status.valid = true
+      status.hash = jsonResponse.hash
+      status.proof = {
+        validatorAddress: jsonResponse.publicKey,
+        r: jsonResponse.r[0],
+        s: jsonResponse.s[0],
+        v: jsonResponse.v
+      }
+    } else {
+      status.errors = jsonResponse
+      LoggerInstance.error('validate Metadata failed:', response.status, status.errors)
+    }
+
     return status
   }
 
