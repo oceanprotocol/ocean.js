@@ -396,7 +396,11 @@ describe('Marketplace flow tests', async () => {
       providerUrl
     )
     const encryptedDDO = await providerResponse
-    const isAssetValid: ValidateMetadata = await aquarius.validate(fixedDDO)
+    const isAssetValid: ValidateMetadata = await aquarius.validate(
+      fixedDDO,
+      publisherAccount,
+      providerUrl
+    )
     assert(isAssetValid.valid === true, 'Published asset is not valid')
     await nft.setMetadata(
       freNftAddress,
@@ -676,7 +680,11 @@ describe('Marketplace flow tests', async () => {
       fixedDDO.chainId,
       providerUrl
     )
-    const isAssetValid: ValidateMetadata = await aquarius.validate(fixedDDO)
+    const isAssetValid: ValidateMetadata = await aquarius.validate(
+      fixedDDO,
+      publisherAccount,
+      providerUrl
+    )
     assert(isAssetValid.valid === true, 'Published asset is not valid')
     await nft.setMetadata(
       dispenserNftAddress,

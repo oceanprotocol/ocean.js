@@ -210,7 +210,7 @@ export async function createAsset(
   if (encryptDDO) {
     metadata = await ProviderInstance.encrypt(ddo, chainID, providerUrl)
     console.log('before validate, providerUrl: ', providerUrl)
-    const validateResult = await aquariusInstance.validate(ddo, owner)
+    const validateResult = await aquariusInstance.validate(ddo, owner, providerUrl)
     metadataHash = validateResult.hash
     flags = 2
   } else {

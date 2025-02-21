@@ -396,7 +396,7 @@ Now let's console log the DID to check everything is working
       providerUrl
     )
     const encryptedDDO = await providerResponse
-    const isAssetValid: ValidateMetadata = await aquarius.validate(fixedDDO)
+    const isAssetValid: ValidateMetadata = await aquarius.validate(fixedDDO, publisherAccount, providerUrl)
     assert(isAssetValid.valid === true, 'Published asset is not valid')
     await nft.setMetadata(
       freNftAddress,
@@ -408,7 +408,6 @@ Now let's console log the DID to check everything is working
       encryptedDDO,
       isAssetValid.hash
     )
-  })
 ```
 
   ### 6.3 Marketplace displays fixed rate asset for sale
@@ -676,7 +675,7 @@ Now we need to encrypt file(s) using provider
       fixedDDO.chainId,
       providerUrl
     )
-    const isAssetValid: ValidateMetadata = await aquarius.validate(fixedDDO)
+    const isAssetValid: ValidateMetadata = await aquarius.validate(fixedDDO, publisherAccount, providerUrl)
     assert(isAssetValid.valid === true, 'Published asset is not valid')
     await nft.setMetadata(
       dispenserNftAddress,

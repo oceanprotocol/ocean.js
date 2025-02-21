@@ -104,6 +104,7 @@ export class Aquarius {
   public async validate(
     ddo: DDO,
     signer?: Signer,
+    providerUrl?: string,
     signal?: AbortSignal
   ): Promise<ValidateMetadata> {
     const status: ValidateMetadata = {
@@ -111,13 +112,26 @@ export class Aquarius {
     }
     let jsonResponse
     let response
+
+    const path = this.aquariusURL + '/api/aquarius/assets/ddo/validate'
+
     try {
-      const path = this.aquariusURL + '/api/aquarius/assets/ddo/validate'
       console.log('path: ', path)
-      if (signer) {
+      // Old aquarius API and node API (before publisherAddress, nonce and signature verification)
+      const validateRequestLegacy = async function (): Promise<Response> {
+        response = await fetch(path, {
+          method: 'POST',
+          body: JSON.stringify(ddo),
+          headers: { 'Content-Type': 'application/octet-stream' },
+          signal
+        })
+        return response
+      }
+
+      if (signer && providerUrl) {
         const publisherAddress = await signer.getAddress()
         // aquarius is always same url of other components with ocean nodes
-        const pathNonce = this.aquariusURL + '/api/services/nonce'
+        const pathNonce = providerUrl + '/api/services/nonce'
         console.log('pathnonce', pathNonce)
         const responseNonce = await fetch(
           pathNonce + `?userAddress=${publisherAddress}`,
@@ -141,21 +155,27 @@ export class Aquarius {
         signatureMessage += ddo.id + newNonce
         const signature = await signRequest(signer, signatureMessage)
         const data = { ddo, publisherAddress, newNonce, signature }
-        response = await fetch(path, {
-          method: 'POST',
-          body: JSON.stringify(data),
-          headers: { 'Content-Type': 'application/octet-stream' },
-          signal
-        })
+
+        try {
+          response = await fetch(path, {
+            method: 'POST',
+            body: JSON.stringify(data),
+            headers: { 'Content-Type': 'application/octet-stream' },
+            signal
+          })
+        } catch (e) {
+          // retry with legacy path validation
+          LoggerInstance.error(
+            'Metadata validation failed using publisher signature validation (perhaps not supported or legacy Aquarius), retrying with legacy path...',
+            response.status,
+            e.message
+          )
+          response = await validateRequestLegacy()
+        }
       } else {
         // backwards compatibility, "old" way without signature stuff
         // this will not validate on newer versions of Ocean Node (status:400), as the node will not add the validation signature
-        response = await fetch(path, {
-          method: 'POST',
-          body: JSON.stringify(ddo),
-          headers: { 'Content-Type': 'application/octet-stream' },
-          signal
-        })
+        response = await validateRequestLegacy()
       }
       if (response.status === 200) {
         jsonResponse = await response.json()
