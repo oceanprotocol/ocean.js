@@ -52,7 +52,7 @@ export class EscrowContract extends SmartContractWithAddress {
    * Get Locks
    * @return {Promise<[]>} Locks
    */
-  public async getLocks(token: string, payer: string, payee: string): Promise<[]> {
+  public async getLocks(token: string, payer: string, payee: string): Promise<any[]> {
     return await this.contract.getLocks(token, payer, payee)
   }
 
@@ -64,7 +64,7 @@ export class EscrowContract extends SmartContractWithAddress {
     token: string,
     payer: string,
     payee: string
-  ): Promise<[]> {
+  ): Promise<any[]> {
     return await this.contract.getAuthorizations(token, payer, payee)
   }
 

@@ -58,7 +58,6 @@ describe('Escrow payments flow', () => {
       await user2.getAddress(),
       await user1.getAddress()
     )
-    console.log(`auths: ${JSON.stringify(auths)}`)
-    // assert(auths[0] === await user1.getAddress(), )
+    assert(auths[0][0] === (await user1.getAddress()), 'payee address not present')
   })
 })
