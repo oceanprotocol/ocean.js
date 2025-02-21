@@ -17,7 +17,7 @@ import {
   ProviderFees,
   getEventFromTx
 } from '../../src'
-
+// superseed by src/utils/CreateAsset
 export async function createAsset(
   name: string,
   symbol: string,
@@ -77,7 +77,7 @@ export async function createAsset(
   ddo.id = 'did:op:' + SHA256(ethers.utils.getAddress(nftAddress) + chain.toString(10))
 
   const encryptedResponse = await ProviderInstance.encrypt(ddo, chain, providerUrl)
-  const validateResult = await aquariusInstance.validate(ddo, owner, providerUrl)
+  const validateResult = await aquariusInstance.validate(ddo)
   await nft.setMetadata(
     nftAddress,
     await owner.getAddress(),

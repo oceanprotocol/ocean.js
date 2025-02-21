@@ -281,9 +281,9 @@ let agreementId: string
 
 /// Now we define the helper methods which we will use later to publish the dataset and algorithm, and also order them
 
-/// Add a `createAsset()`function.
+/// Add a `createAssetHelper()`function.
 /// ```Typescript
-async function createAsset(
+async function createAssetHelper(
   name: string,
   symbol: string,
   owner: Signer,
@@ -343,7 +343,7 @@ async function createAsset(
   ddo.id = 'did:op:' + SHA256(ethers.utils.getAddress(nftAddress) + chain.toString(10))
 
   const encryptedResponse = await ProviderInstance.encrypt(ddo, chain, providerUrl)
-  const validateResult = await aquariusInstance.validate(ddo, owner, providerUrl)
+  const validateResult = await aquariusInstance.validate(ddo)
   await nft.setMetadata(
     nftAddress,
     await owner.getAddress(),
@@ -503,7 +503,7 @@ describe('Compute-to-data example tests', async () => {
 
   it('6.1 Publish a dataset (create NFT + Datatoken) and set dataset metadata', async () => {
     /// ```Typescript
-    datasetId = await createAsset(
+    datasetId = await createAssetHelper(
       'D1Min',
       'D1M',
       publisherAccount,
@@ -520,7 +520,7 @@ describe('Compute-to-data example tests', async () => {
 
   it('6.2 Publish an algorithm (create NFT + Datatoken) and set algorithm metadata', async () => {
     /// ```Typescript
-    algorithmId = await createAsset(
+    algorithmId = await createAssetHelper(
       'D1Min',
       'D1M',
       publisherAccount,
