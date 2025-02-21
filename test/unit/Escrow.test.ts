@@ -42,7 +42,8 @@ describe('Escrow payments flow', () => {
     console.log(`tx2: ${JSON.stringify(tx2)}`)
     const funds = await Escrow.getUserFunds(await user2.getAddress(), OCEAN)
     console.log(`funds: ${JSON.stringify(funds)}`)
-    const available = BigNumber.from(funds[0].hex)
+    const available = BigNumber.from(funds[0].hex.toHexString())
+    console.log(`available: ${available}`)
     assert(available.toString() === (await amountToUnits(null, null, '100', 18)))
   })
 
