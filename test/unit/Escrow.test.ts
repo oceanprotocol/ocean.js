@@ -6,6 +6,7 @@ import { Datatoken, amountToUnits } from '../../src/'
 import { EscrowContract } from '../../src/contracts/Escrow'
 
 describe('Escrow payments flow', () => {
+  let user1: Signer
   let user2: Signer
   let Escrow: EscrowContract
   let datatoken: Datatoken
@@ -13,6 +14,7 @@ describe('Escrow payments flow', () => {
   let OCEAN
 
   before(async () => {
+    user1 = (await provider.getSigner(3)) as Signer
     user2 = (await provider.getSigner(4)) as Signer
 
     addresses = await getAddresses()
@@ -46,5 +48,17 @@ describe('Escrow payments flow', () => {
     const funds = await Escrow.getUserFunds(await user2.getAddress(), OCEAN)
     const available = BigNumber.from(funds[0])
     assert(available.toString() === (await amountToUnits(null, null, '50', 18)))
+  })
+
+  it('Authorize user1', async () => {
+    const tx = await Escrow.authorize(OCEAN, await user1.getAddress(), '20', '100', '3')
+    assert(tx, 'failed to authorize user1')
+    const auths = await Escrow.getAuthorizations(
+      OCEAN,
+      await user2.getAddress(),
+      await user1.getAddress()
+    )
+    console.log(`auths: ${JSON.stringify(auths)}`)
+    // assert(auths[0] === await user1.getAddress(), )
   })
 })
