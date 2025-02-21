@@ -141,7 +141,7 @@ export class EscrowContract extends SmartContractWithAddress {
     const maxLockedAmountParsed = amountToUnits(null, null, maxLockedAmount, 18)
     const maxLockSecondsParsed = amountToUnits(null, null, maxLockSeconds, 18)
     const maxLockCountsParsed = amountToUnits(null, null, maxLockCounts, 18)
-    const estGas = await this.contract.estimateGas.withdraw(
+    const estGas = await this.contract.estimateGas.authorize(
       token,
       payee,
       maxLockedAmountParsed,
