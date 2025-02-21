@@ -408,6 +408,7 @@ Now let's console log the DID to check everything is working
       encryptedDDO,
       isAssetValid.hash
     )
+  })
 ```
 
   ### 6.3 Marketplace displays fixed rate asset for sale
