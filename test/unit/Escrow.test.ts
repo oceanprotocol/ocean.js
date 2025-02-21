@@ -1,6 +1,6 @@
 import { assert } from 'chai'
 import { provider, getAddresses } from '../config'
-import { Signer } from 'ethers'
+import { BigNumber, Signer } from 'ethers'
 
 import { Datatoken, amountToUnits } from '../../src/'
 import { EscrowContract } from '../../src/contracts/Escrow'
@@ -42,7 +42,8 @@ describe('Escrow payments flow', () => {
     console.log(`tx2: ${JSON.stringify(tx2)}`)
     const funds = await Escrow.getUserFunds(await user2.getAddress(), OCEAN)
     console.log(`funds: ${JSON.stringify(funds)}`)
-    assert(funds.available === amountToUnits(null, null, '100', 18))
+    const available = BigNumber.from(funds[0].hex)
+    assert(available.toString() === (await amountToUnits(null, null, '100', 18)))
   })
 
   it('Withdraws funds', async () => {
