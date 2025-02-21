@@ -729,7 +729,6 @@ export class Provider {
     )
 
     const computeStartUrl = await this.getComputeStartRoutes(providerUri, freeEnvironment)
-    console.log('compute start url: ', computeStartUrl)
 
     if (!computeStartUrl) {
       LoggerInstance.error(
@@ -739,7 +738,6 @@ export class Provider {
     }
 
     const consumerAddress = await consumer.getAddress()
-    console.log('consumerAddress: ', consumerAddress)
     const nonce = (
       (await this.getNonce(
         providerUri,
@@ -750,13 +748,10 @@ export class Provider {
       )) + 1
     ).toString()
 
-    console.log('nonce: ', nonce)
-
     let signatureMessage = consumerAddress
     signatureMessage += datasets[0].documentId
     signatureMessage += nonce
     const signature = await this.signProviderRequest(consumer, signatureMessage)
-    console.log('signature: ', signature)
     const payload = Object()
     payload.consumerAddress = consumerAddress
     payload.signature = signature
@@ -771,7 +766,6 @@ export class Provider {
     payload.algorithm = algorithm
     // if (additionalDatasets) payload.additionalDatasets = additionalDatasets
     payload.output = output
-    console.log('payload:', payload)
     let response
     try {
       response = await fetch(computeStartUrl, {
