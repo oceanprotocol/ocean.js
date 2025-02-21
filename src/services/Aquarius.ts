@@ -113,10 +113,12 @@ export class Aquarius {
     let response
     try {
       const path = this.aquariusURL + '/api/aquarius/assets/ddo/validate'
+      console.log('path: ', path)
       if (signer) {
         const publisherAddress = await signer.getAddress()
         // aquarius is always same url of other components with ocean nodes
         const pathNonce = this.aquariusURL + '/api/services/nonce'
+        console.log('pathnonce', pathNonce)
         const responseNonce = await fetch(
           pathNonce + `?userAddress=${publisherAddress}`,
           {
@@ -125,6 +127,7 @@ export class Aquarius {
             signal
           }
         )
+        console.log('response: ', responseNonce)
         let { nonce } = await responseNonce.json()
         console.log(`[getNonce] Consumer: ${publisherAddress} nonce: ${nonce}`)
         if (!nonce || nonce === null) {
