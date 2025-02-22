@@ -18,7 +18,7 @@ import {
   getEventFromTx
 } from '../../src'
 // superseed by src/utils/CreateAsset
-export async function createAsset(
+export async function createAssetHelper(
   name: string,
   symbol: string,
   owner: Signer,
