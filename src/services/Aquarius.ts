@@ -115,11 +115,9 @@ export class Aquarius {
 
     const path = this.aquariusURL + '/api/aquarius/assets/ddo/validate'
 
-    console.log('path: ', path)
     // Old aquarius API and node API (before publisherAddress, nonce and signature verification)
     const validateRequestLegacy = async function (): Promise<Response> {
       try {
-        console.log('using validateRequestLegacy()')
         response = await fetch(path, {
           method: 'POST',
           body: JSON.stringify(ddo),
@@ -138,7 +136,6 @@ export class Aquarius {
         const publisherAddress = await signer.getAddress()
         // aquarius is always same url of other components with ocean nodes
         const pathNonce = providerUrl + '/api/services/nonce'
-        console.log('pathnonce', pathNonce)
         const responseNonce = await fetch(
           pathNonce + `?userAddress=${publisherAddress}`,
           {
@@ -147,24 +144,18 @@ export class Aquarius {
             signal
           }
         )
-        console.log('response: ', responseNonce)
         let { nonce } = await responseNonce.json()
         console.log(`[getNonce] Consumer: ${publisherAddress} nonce: ${nonce}`)
         if (!nonce || nonce === null) {
           nonce = '0'
         }
         const newNonce = (Number(nonce) + 1).toString() // have to increase the previous
-        console.log('nonce: ' + nonce + ' newNonce ' + newNonce)
         // same signed message as usual (did + nonce)
         // the node will only validate (add his signature if there fields are present and are valid)
         // let signatureMessage = publisherAddress
         const signatureMessage = ddo.id + newNonce
-        console.log('will sign the request...', signatureMessage)
         const signature = await signRequest(signer, signatureMessage)
-        console.log('signature: ', signature)
         const data = { ddo, publisherAddress, newNonce, signature }
-        console.log('will call validate path at ', path)
-        console.log('calldata: ', data)
         response = await fetch(path, {
           method: 'POST',
           body: JSON.stringify(data),
@@ -172,15 +163,14 @@ export class Aquarius {
           signal
         })
         const resp = await response.json()
+        // this is the legacy API version (especting just a DDO object in the body)
         if (resp && JSON.stringify(resp).includes('no version provided for DDO.')) {
-          // do it again
-          console.log('do it again')
+          // do it again, using the legacy API
           response = await validateRequestLegacy()
         } else {
           jsonResponse = resp
         }
       } catch (e) {
-        console.error('GOT ERROR:', e)
         // retry with legacy path validation
         LoggerInstance.error(
           'Metadata validation failed using publisher signature validation (perhaps not supported or legacy Aquarius), retrying with legacy path...',
