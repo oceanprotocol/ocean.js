@@ -716,7 +716,6 @@ export class Provider {
     resources?: ComputeResourceRequest[],
     chainId?: number, // network used by payment (only for payed compute jobs)
     output?: ComputeOutput,
-    freeEnvironment?: boolean, // optional, using together with chainId .. if chainId is present than is payed compute, if not is FREE environment
     signal?: AbortSignal
   ): Promise<ComputeJob | ComputeJob[]> {
     console.log('called new compute start method...')
@@ -817,7 +816,7 @@ export class Provider {
     output?: ComputeOutput,
     signal?: AbortSignal
   ): Promise<ComputeJob | ComputeJob[]> {
-    console.log('called new compute start method...')
+    console.log('called new free compute start method...')
     console.log('datasets: ', datasets)
     console.log('algorithm: ', algorithm)
     const providerEndpoints = await this.getEndpoints(providerUri)
