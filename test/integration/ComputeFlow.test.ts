@@ -466,7 +466,7 @@ describe('Compute flow tests', async () => {
       true
     )
     if (freeComputeRouteSupport) {
-      const computeJobs = await ProviderInstance.computeStart(
+      const computeJobs = await ProviderInstance.freeComputeStart(
         providerUrl,
         consumerAccount,
         computeEnv.id,
@@ -621,11 +621,7 @@ describe('Compute flow tests', async () => {
       consumerAccount,
       computeEnv.id,
       assets,
-      algo,
-      null,
-      null,
-      null,
-      false
+      algo
     )
     paidEnvDatasetTxId = assets[0].transferTxId
     paidEnvAlgoTxId = algo.transferTxId
@@ -701,11 +697,7 @@ describe('Compute flow tests', async () => {
       consumerAccount,
       computeEnv.id,
       assets,
-      algo,
-      null,
-      null,
-      null,
-      false
+      algo
     )
     assert(computeJobs, 'Cannot start compute job')
   })
@@ -890,11 +882,7 @@ describe('Compute flow tests', async () => {
       consumerAccount,
       computeEnv.id,
       assets,
-      algo,
-      null,
-      null,
-      null,
-      false
+      algo
     )
     // freeEnvDatasetTxId = assets[0].transferTxId
     // freeEnvAlgoTxId = algo.transferTxId

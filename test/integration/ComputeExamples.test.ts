@@ -658,16 +658,12 @@ describe('Compute-to-data example tests', async () => {
         )
       }
 
-      const computeJobs = await ProviderInstance.computeStart(
+      const computeJobs = await ProviderInstance.freeComputeStart(
         providerUrl,
         consumerAccount,
         computeEnv.id,
         assets,
-        algo,
-        null,
-        null,
-        null,
-        true
+        algo
       )
 
       /// ```

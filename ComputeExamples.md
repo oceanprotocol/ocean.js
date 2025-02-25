@@ -658,16 +658,12 @@ let's check the free compute environment
         )
       }
 
-      const computeJobs = await ProviderInstance.computeStart(
+      const computeJobs = await ProviderInstance.freeComputeStart(
         providerUrl,
         consumerAccount,
         computeEnv.id,
         assets,
-        algo,
-        null,
-        null,
-        null,
-        true
+        algo
       )
 
   ```
