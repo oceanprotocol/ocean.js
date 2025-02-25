@@ -283,7 +283,7 @@ ___
 
 ### getDownloadUrl
 
-▸ **getDownloadUrl**(`did`, `serviceId`, `fileIndex`, `transferTxId`, `providerUri`, `signer`, `userCustomParameters?`): `Promise`<`any`\>
+▸ **getDownloadUrl**(`did`, `serviceId`, `fileIndex`, `transferTxId`, `providerUri`, `signer`, `policyServerUrl?` `userCustomParameters?`): `Promise`<`any`\>
 
 Gets the download URL.
 
@@ -297,6 +297,7 @@ Gets the download URL.
 | `transferTxId` | `string` | The transfer transaction ID. |
 | `providerUri` | `string` | The provider URI. |
 | `signer` | `Signer` | The signer. |
+| `policyServerUrl` | `string` | The policy server URL (if any to be used). |
 | `userCustomParameters?` | [`UserCustomParameters`](../interfaces/UserCustomParameters.md) | The user custom parameters. |
 
 #### Returns
