@@ -131,8 +131,12 @@ export class Aquarius {
       }
     }
 
-    if (signer && providerUrl) {
+    if (signer) {
       try {
+        // make it optional and get from env if not present
+        if (!providerUrl) {
+          providerUrl = process.env.PROVIDER_URL
+        }
         const publisherAddress = await signer.getAddress()
         // aquarius is always same url of other components with ocean nodes
         const pathNonce = providerUrl + '/api/services/nonce'
