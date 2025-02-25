@@ -853,8 +853,7 @@ export class Provider {
       )) + 1
     ).toString()
 
-    let signatureMessage = consumerAddress
-    signatureMessage += datasets[0].documentId
+    let signatureMessage = datasets[0].documentId
     signatureMessage += nonce
     const signature = await this.signProviderRequest(consumer, signatureMessage)
     const payload = Object()
