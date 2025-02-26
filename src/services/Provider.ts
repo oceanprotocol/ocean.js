@@ -897,6 +897,87 @@ export class Provider {
     return null
   }
 
+  /**
+   *
+   * @param providerUri provider URL
+   * @param consumer consumer
+   * @param jobId jobId
+   * @param signal abort signal
+   * @returns logs response
+   */
+  public async computeStreamableLogs(
+    providerUri: string,
+    signer: Signer,
+    jobId: string,
+    signal?: AbortSignal
+  ): Promise<any> {
+    const providerEndpoints = await this.getEndpoints(providerUri)
+    const serviceEndpoints = await this.getServiceEndpoints(
+      providerUri,
+      providerEndpoints
+    )
+
+    const computeStreamableLogs = this.getEndpointURL(
+      serviceEndpoints,
+      'computeStreamableLogs'
+    )
+      ? this.getEndpointURL(serviceEndpoints, 'computeStreamableLogs').urlPath
+      : null
+
+    if (!computeStreamableLogs) {
+      LoggerInstance.error(
+        'Compute start failed: Cannot get proper computeStreamableLogs route (perhaps not implemented on provider?)'
+      )
+      return null
+    }
+    const consumerAddress = await signer.getAddress()
+    const nonce = (
+      (await this.getNonce(
+        providerUri,
+        consumerAddress,
+        signal,
+        providerEndpoints,
+        serviceEndpoints
+      )) + 1
+    ).toString()
+
+    // TODO: define teh signature to use (not implemented yet on node)
+    const signatureMessage = nonce
+    const signature = await this.signProviderRequest(signer, signatureMessage)
+    const payload = Object()
+    payload.consumerAddress = consumerAddress
+    payload.signature = signature
+    payload.nonce = nonce
+    payload.jobId = jobId
+
+    let response
+    try {
+      response = await fetch(computeStreamableLogs, {
+        method: 'POST',
+        body: JSON.stringify(payload),
+        headers: { 'Content-Type': 'application/json' },
+        signal
+      })
+    } catch (e) {
+      LoggerInstance.error('computeStreamableLogs failed:')
+      LoggerInstance.error(e)
+      LoggerInstance.error('Payload was:', payload)
+      throw new Error('HTTP request failed calling Provider')
+    }
+    if (response?.ok) {
+      const params = await response.json()
+      return params
+    }
+    LoggerInstance.error(
+      'computeStreamableLogs failed: ',
+      response.status,
+      response.statusText,
+      await response.json()
+    )
+    LoggerInstance.error('Payload was:', payload)
+    return null
+  }
+
   public async getComputeStartRoutes(
     providerUri: string,
     isFreeCompute: boolean = false

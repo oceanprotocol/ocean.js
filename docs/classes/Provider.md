@@ -503,6 +503,36 @@ ProviderComputeInitialize data
 
 ___
 
+
+### computeStreamableLogs
+
+▸ **computeStreamableLogs**(`providerUri`, `signer`, `jobId`, `signal?`): `Promise`<`any`\>
+
+Gets the streamable compute logs.
+
+#### Parameters
+
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `providerUri` | `string` | The provider URI. |
+| `signer` | `Signer` | The signer. |
+| `jobId` | `string` | The Job Id. |
+| `signal?` | `AbortSignal` | The abort signal. |
+
+
+#### Returns
+
+`Promise`<`any`\>
+
+The compute logs.
+
+#### Defined in
+
+[services/Provider.ts:908](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/services/Provider.ts#L908)
+
+___
+
+
 ### inputMatch
 
 ▸ `Private` **inputMatch**(`input`, `regexp`, `conversorName`): `Object`
