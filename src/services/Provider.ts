@@ -478,7 +478,7 @@ export class Provider {
    * @param {string} transferTxId - The transfer transaction ID.
    * @param {string} providerUri - The provider URI.
    * @param {Signer} signer - The signer.
-   * @param {Object} policyServer - The policy server (if any is to be used).
+   * @param {any} policyServer - The policy server (if any is to be used).
    * @param {UserCustomParameters} userCustomParameters - The user custom parameters.
    * @returns {Promise<any>} The download URL.
    */
@@ -489,7 +489,7 @@ export class Provider {
     transferTxId: string,
     providerUri: string,
     signer: Signer,
-    policyServer?: string,
+    policyServer?: any,
     userCustomParameters?: UserCustomParameters
   ): Promise<any> {
     const providerEndpoints = await this.getEndpoints(providerUri)

@@ -297,7 +297,7 @@ Gets the download URL.
 | `transferTxId` | `string` | The transfer transaction ID. |
 | `providerUri` | `string` | The provider URI. |
 | `signer` | `Signer` | The signer. |
-| `policyServer` | `Object` | The policy server (if any to be used). |
+| `policyServer` | `any` | The policy server (if any to be used). |
 | `userCustomParameters?` | [`UserCustomParameters`](../interfaces/UserCustomParameters.md) | The user custom parameters. |
 
 #### Returns
