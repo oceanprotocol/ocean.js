@@ -1,16 +1,17 @@
 import { Signer } from 'ethers'
 import Decimal from 'decimal.js'
-import { Asset } from '../@types/Asset'
-import { Config } from '../config/Config'
-import { Datatoken } from '../contracts/Datatoken'
-import { ConsumeMarketFee, OrderParams } from '../@types/Datatoken'
-import { ProviderFees } from '../@types/Provider'
-import { ProviderInstance } from '../services/Provider'
-import { ZERO_ADDRESS } from './Constants'
-import { approve, approveWei } from './TokenUtils'
-import { Dispenser } from '../contracts/Dispenser'
-import { FixedRateExchange } from '../contracts/FixedRateExchange'
-import { FreOrderParams } from '../@types/FixedPrice'
+import { Asset } from '../@types/Asset.js'
+import { Config } from '../config/Config.js'
+import { Datatoken } from '../contracts/Datatoken.js'
+import { ConsumeMarketFee, OrderParams } from '../@types/Datatoken.js'
+import { ProviderFees } from '../@types/Provider.js'
+import { ProviderInstance } from '../services/Provider.js'
+import { ZERO_ADDRESS } from './Constants.js'
+import { approve, approveWei } from './TokenUtils.js'
+import { Dispenser } from '../contracts/Dispenser.js'
+import { FixedRateExchange } from '../contracts/FixedRateExchange.js'
+import { FreOrderParams } from '../@types/FixedPrice.js'
+import { DDOManager } from '@oceanprotocol/ddo-js'
 
 /**
  * Orders an asset based on the specified pricing schema and configuration.
@@ -43,38 +44,38 @@ export async function orderAsset(
   serviceIndex: number = 0,
   fixedRateIndex: number = 0
 ) {
+  const ddoInstance = DDOManager.getDDOClass(asset)
+  const { datatokens, stats } = ddoInstance.getAssetFields()
+  const { chainId: assetChainId, services } = ddoInstance.getDDOFields()
   if (!consumeMarketOrderFee)
     consumeMarketOrderFee = {
       consumeMarketFeeAddress: '0x0000000000000000000000000000000000000000',
       consumeMarketFeeAmount: '0',
       consumeMarketFeeToken:
-        asset.stats.price.tokenAddress || '0x0000000000000000000000000000000000000000'
+        stats.price?.tokenAddress?.toString() ||
+        '0x0000000000000000000000000000000000000000'
     }
   const chainID = (await consumerAccount.provider.getNetwork()).chainId
-  if (asset.chainId !== chainID) {
+  if (assetChainId !== chainID) {
     throw new Error('Chain ID from DDO is different than the configured network.')
   }
 
-  if (!asset.datatokens[datatokenIndex].address)
+  if (!datatokens[datatokenIndex].address)
     throw new Error(
       `The datatoken with index: ${datatokenIndex} does not exist for the asset with did: ${asset.id}`
     )
 
-  if (!asset.services[serviceIndex].id)
+  if (!services[serviceIndex].id)
     throw new Error(
       `There is no service with index: ${serviceIndex} defined for the asset with did: ${asset.id}`
     )
 
-  const templateIndex = await datatoken.getId(asset.datatokens[datatokenIndex].address)
+  const templateIndex = await datatoken.getId(datatokens[datatokenIndex].address)
 
-  const fixedRates = await datatoken.getFixedRates(
-    asset.datatokens[datatokenIndex].address
-  )
-  const dispensers = await datatoken.getDispensers(
-    asset.datatokens[datatokenIndex].address
-  )
+  const fixedRates = await datatoken.getFixedRates(datatokens[datatokenIndex].address)
+  const dispensers = await datatoken.getDispensers(datatokens[datatokenIndex].address)
   const publishMarketFees = await datatoken.getPublishingMarketFee(
-    asset.datatokens[datatokenIndex].address
+    datatokens[datatokenIndex].address
   )
   const pricingType =
     fixedRates.length > 0 ? 'fixed' : dispensers.length > 0 ? 'free' : 'NOT_ALLOWED'
@@ -84,7 +85,7 @@ export async function orderAsset(
     (
       await ProviderInstance.initialize(
         asset.id,
-        asset.services[serviceIndex].id,
+        services[serviceIndex].id,
         0,
         await consumerAccount.getAddress(),
         providerUrl || config.providerUri
@@ -103,7 +104,7 @@ export async function orderAsset(
         config,
         await consumerAccount.getAddress(),
         fees.providerFeeToken,
-        asset.services[serviceIndex].datatokenAddress,
+        services[0].datatokenAddress,
         fees.providerFeeAmount
       )
     } catch (error) {
@@ -122,7 +123,7 @@ export async function orderAsset(
       if (templateIndex === 1) {
         const dispenser = new Dispenser(config.dispenserAddress, consumerAccount)
         const dispenserTx = await dispenser.dispense(
-          asset.datatokens[datatokenIndex].address,
+          datatokens[datatokenIndex].address,
           '1',
           await consumerAccount.getAddress()
         )
@@ -131,7 +132,7 @@ export async function orderAsset(
         }
         await dispenserTx.wait()
         return await datatoken.startOrder(
-          asset.datatokens[datatokenIndex].address,
+          datatokens[datatokenIndex].address,
           orderParams.consumer,
           orderParams.serviceIndex,
           orderParams._providerFee,
@@ -140,7 +141,7 @@ export async function orderAsset(
       }
       if (templateIndex === 2 || templateIndex === 4) {
         return await datatoken.buyFromDispenserAndOrder(
-          asset.services[serviceIndex].datatokenAddress,
+          services[serviceIndex].datatokenAddress,
           orderParams,
           config.dispenserAddress
         )
@@ -204,7 +205,7 @@ export async function orderAsset(
           throw new Error(`Failed to buy datatoken from fixed rate!`)
         }
         return await datatoken.startOrder(
-          asset.datatokens[datatokenIndex].address,
+          datatokens[datatokenIndex].address,
           orderParams.consumer,
           orderParams.serviceIndex,
           orderParams._providerFee,
@@ -217,7 +218,7 @@ export async function orderAsset(
           config,
           await consumerAccount.getAddress(),
           exchange.baseToken,
-          asset.datatokens[datatokenIndex].address,
+          datatokens[datatokenIndex].address,
           price,
           false
         )
@@ -229,7 +230,7 @@ export async function orderAsset(
           throw new Error(`Failed to confirm/mine approval transaction!`)
         }
         const txBuy = await datatoken.buyFromFreAndOrder(
-          asset.datatokens[datatokenIndex].address,
+          datatokens[datatokenIndex].address,
           orderParams,
           freParams
         )

@@ -1,10 +1,10 @@
 import Decimal from 'decimal.js'
 import { ethers, Signer } from 'ethers'
-import { Config } from '../config'
-import { ReceiptOrEstimate, ReceiptOrDecimal } from '../@types'
-import { minAbi } from './minAbi'
-import { amountToUnits, sendTx, unitsToAmount } from './ContractUtils'
-import { LoggerInstance } from './Logger'
+import { Config } from '../config/index.js'
+import { ReceiptOrEstimate, ReceiptOrDecimal } from '../@types/index.js'
+import { minAbi } from './minAbi.js'
+import { amountToUnits, sendTx, unitsToAmount } from './ContractUtils.js'
+import { LoggerInstance } from './Logger.js'
 
 /**
  * Approve spender to spent amount tokens
@@ -98,7 +98,7 @@ export async function approveWei<G extends boolean = false>(
       `ERROR: Failed to approve spender to spend tokens : ${e.message}`
     )
   }
-  return result
+  return result as ReceiptOrEstimate<G>
 }
 
 /**

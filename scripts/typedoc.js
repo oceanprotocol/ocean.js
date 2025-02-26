@@ -1,6 +1,9 @@
 #!/usr/bin/env node
 
 /* eslint-disable security/detect-non-literal-fs-filename */
+import { createRequire } from 'module';
+
+const require = createRequire(import.meta.url);
 
 const fs = require('fs')
 const TypeDoc = require('typedoc')

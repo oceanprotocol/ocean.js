@@ -1,7 +1,8 @@
 import fetch from 'cross-fetch'
-import { LoggerInstance } from '../utils/Logger'
-import { Asset, DDO, ValidateMetadata } from '../@types'
-import { sleep } from '../utils/General'
+import { LoggerInstance } from '../utils/Logger.js'
+import { Asset, DDO, ValidateMetadata } from '../@types/index.js'
+import { sleep } from '../utils/General.js'
+import { DDOManager } from '@oceanprotocol/ddo-js'
 
 export interface SearchQuery {
   from?: number
@@ -79,9 +80,11 @@ export class Aquarius {
         })
         if (response.ok) {
           const ddo = await response.json()
+          const ddoInstance = DDOManager.getDDOClass(ddo)
+          const { event } = ddoInstance.getAssetFields()
           if (txid) {
             // check tx
-            if (ddo.event && ddo.event.txid === txid) return ddo as Asset
+            if (event && event.txid === txid) return ddo as Asset
           } else return ddo as Asset
         }
       } catch (e) {

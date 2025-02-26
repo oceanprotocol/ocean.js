@@ -1,20 +1,20 @@
 import { ethers, Signer, Contract } from 'ethers'
-import { AbiItem } from '../@types'
-import { Config, ConfigHelper } from '../config'
+import { AbiItem } from '../@types/index.js'
+import { Config, ConfigHelper } from '../config/index.js'
 import * as sapphire from '@oasisprotocol/sapphire-paratime'
 import {
   amountToUnits,
   getFairGasPrice,
   setContractDefaults,
   unitsToAmount
-} from '../utils/ContractUtils'
+} from '../utils/ContractUtils.js'
 
 export abstract class SmartContract {
   public signer: Signer
   public config: Config
   public abi: AbiItem[]
 
-  abstract getDefaultAbi()
+  abstract getDefaultAbi(): any[]
 
   /**
    * Instantiate the smart contract.

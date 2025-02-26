@@ -1,5 +1,5 @@
 import { assert, expect } from 'chai'
-import { getTestConfig, provider, getAddresses } from '../config'
+import { getTestConfig, provider, getAddresses } from '../config.js'
 import { ethers, Signer } from 'ethers'
 import {
   NftFactory,
@@ -13,8 +13,12 @@ import {
   balance,
   Datatoken,
   getEventFromTx
-} from '../../src'
-import { ProviderFees, FreCreationParams, DatatokenCreateParams } from '../../src/@types'
+} from '../../src/index.js'
+import {
+  ProviderFees,
+  FreCreationParams,
+  DatatokenCreateParams
+} from '../../src/@types/index.js'
 
 describe('Nft Factory test', () => {
   let factoryOwner: Signer

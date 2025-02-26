@@ -1,9 +1,9 @@
 import Decimal from 'decimal.js'
 import DispenserAbi from '@oceanprotocol/contracts/artifacts/contracts/pools/dispenser/Dispenser.sol/Dispenser.json'
-import { Datatoken } from './Datatoken'
-import { SmartContractWithAddress } from './SmartContractWithAddress'
-import { DispenserToken, ReceiptOrEstimate, AbiItem } from '../@types'
-import { sendTx } from '../utils/ContractUtils'
+import { Datatoken } from './Datatoken.js'
+import { SmartContractWithAddress } from './SmartContractWithAddress.js'
+import { DispenserToken, ReceiptOrEstimate, AbiItem } from '../@types/index.js'
+import { sendTx } from '../utils/ContractUtils.js'
 
 export class Dispenser extends SmartContractWithAddress {
   getDefaultAbi() {
@@ -21,13 +21,13 @@ export class Dispenser extends SmartContractWithAddress {
       throw new Error(`Np dispenser found for the given datatoken address`)
     }
     const status = {
-      active: status2[0],
-      owner: status2[1],
-      isMinter: status2[2],
-      maxTokens: await this.unitsToAmount(null, status2[3], 18),
-      maxBalance: await this.unitsToAmount(null, status2[4], 18),
-      balance: await this.unitsToAmount(null, status2[5], 18),
-      allowedSwapper: status2[6]
+      active: status2.active,
+      owner: status2.owner,
+      isMinter: status2.isMinter,
+      maxTokens: await this.unitsToAmount(null, status2.maxTokens, 18),
+      maxBalance: await this.unitsToAmount(null, status2.maxBalance, 18),
+      balance: await this.unitsToAmount(null, status2.balance, 18),
+      allowedSwapper: status2.allowedSwapper
     }
     return status
   }

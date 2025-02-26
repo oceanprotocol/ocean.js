@@ -1,4 +1,4 @@
-import { LoggerInstance } from './Logger'
+import { LoggerInstance } from './Logger.js'
 
 const PREDEFINED_ERRORS = {
   datasets: {
@@ -83,7 +83,8 @@ export function getErrorMessage(err: string): string {
     if (key === 'error') {
       const message = error[key]
       const errorMessage =
-        PREDEFINED_ERRORS[key][message] || `Provider request failed: ${message}`
+        (PREDEFINED_ERRORS as Record<string, any>)[key]?.[message] ||
+        `Provider request failed: ${message}`
       return errorMessage
     } else {
       const errorObject = error[key]

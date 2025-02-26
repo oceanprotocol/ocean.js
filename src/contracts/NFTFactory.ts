@@ -9,12 +9,12 @@ import {
   Template,
   TokenOrder,
   ReceiptOrEstimate
-} from '../@types'
-import { SmartContractWithAddress } from './SmartContractWithAddress'
-import { generateDtName } from '../utils/DatatokenName'
-import { ZERO_ADDRESS } from '../utils/Constants'
-import { getEventFromTx, getTokenDecimals, sendTx } from '../utils/ContractUtils'
-import { LoggerInstance } from '../utils/Logger'
+} from '../@types/index.js'
+import { SmartContractWithAddress } from './SmartContractWithAddress.js'
+import { generateDtName } from '../utils/DatatokenName.js'
+import { ZERO_ADDRESS } from '../utils/Constants.js'
+import { getEventFromTx, getTokenDecimals, sendTx } from '../utils/ContractUtils.js'
+import { LoggerInstance } from '../utils/Logger.js'
 
 /**
  * Provides an interface for NFT Factory contract

@@ -1,5 +1,5 @@
-import { ConsumerParameter } from './ConsumerParameter'
-import { Credentials } from './Credentials'
+import { ConsumerParameter } from './ConsumerParameter.js'
+import { Credentials } from './Credentials.js'
 
 export interface PublisherTrustedAlgorithm {
   /**

@@ -1,5 +1,5 @@
 import { assert, expect } from 'chai'
-import { getTestConfig, provider, getAddresses } from '../config'
+import { getTestConfig, provider, getAddresses } from '../config.js'
 import { ethers, Signer } from 'ethers'
 import {
   NftFactory,
@@ -12,7 +12,7 @@ import {
   Config,
   amountToUnits,
   getEventFromTx
-} from '../../src'
+} from '../../src/index.js'
 import { DatatokenCreateParams, FreCreationParams, Operation } from '../../src/@types'
 
 describe('Router unit test', () => {

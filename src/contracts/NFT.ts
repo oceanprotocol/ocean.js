@@ -6,17 +6,16 @@ import {
   NftRoles,
   ReceiptOrEstimate,
   AbiItem
-} from '../@types'
-import { SmartContract } from './SmartContract'
+} from '../@types/index.js'
+import { SmartContract } from './SmartContract.js'
 
-import { generateDtName } from '../utils/DatatokenName'
-import { ZERO_ADDRESS } from '../utils/Constants'
-import { getEventFromTx, sendTx } from '../utils/ContractUtils'
+import { generateDtName } from '../utils/DatatokenName.js'
+import { ZERO_ADDRESS } from '../utils/Constants.js'
+import { getEventFromTx, sendTx } from '../utils/ContractUtils.js'
 import {
   calculateActiveTemplateIndex,
   getOceanArtifactsAddressesByChainId
-} from '../utils/Addresses'
-
+} from '../utils/Addresses.js'
 export class Nft extends SmartContract {
   getDefaultAbi() {
     return ERC721Template.abi as AbiItem[]
