@@ -55,10 +55,10 @@ jobs:
         with:
           repository: 'oceanprotocol/barge'
           path: 'barge'
-
       - name: Run Ganache with Barge
         working-directory: ${{ github.workspace }}/barge
         run: |
+          export CONTRACTS_VERSION=escrow
           bash -x start_ocean.sh  --no-aquarius --no-elasticsearch --no-provider --no-dashboard 2>&1 > start_ocean.log &
       - run: npm ci
       - name: Wait for contracts deployment
@@ -138,7 +138,7 @@ jobs:
         env:
           PROVIDER_URL: 'http://172.15.0.4:8030'
       - name: docker logs
-        run: docker logs ocean_aquarius_1 && docker logs ocean_provider_1 && docker logs ocean_provider2_1 && docker logs ocean_computetodata_1
+        run: docker logs ocean_aquarius_1 && docker logs ocean_provider_1 && docker logs ocean_provider2_1 && docker logs ocean_computetodata_1 && docker logs ocean-ocean-contracts-1
         if: ${{ failure() }}
       - name: Upload coverage
         uses: actions/upload-artifact@v4
