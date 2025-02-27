@@ -941,32 +941,32 @@ export class Provider {
       )) + 1
     ).toString()
 
+    let url = `?consumerAddress=${consumerAddress}`
+    url += `&jobId=${jobId}`
+    url += `&nonce=${nonce}`
+
     // TODO: define teh signature to use (not implemented yet on node)
     const signatureMessage = nonce
     const signature = await this.signProviderRequest(signer, signatureMessage)
-    const payload = Object()
-    payload.consumerAddress = consumerAddress
-    payload.signature = signature
-    payload.nonce = nonce
-    payload.jobId = jobId
+    url += `&signature=${signature}`
 
     let response
     try {
-      response = await fetch(computeStreamableLogs, {
-        method: 'POST',
-        body: JSON.stringify(payload),
+      response = await fetch(computeStreamableLogs + url, {
+        method: 'GET',
         headers: { 'Content-Type': 'application/json' },
         signal
       })
+      console.log('Raw response:', response)
     } catch (e) {
       LoggerInstance.error('computeStreamableLogs failed:')
       LoggerInstance.error(e)
-      LoggerInstance.error('Payload was:', payload)
       throw new Error('HTTP request failed calling Provider')
     }
-    if (response?.ok) {
-      const params = await response.json()
-      return params
+    if (response?.ok || response?.status === 200) {
+      // do not handle the response here
+      console.log('Response body:', response.body)
+      return response.body
     }
     LoggerInstance.error(
       'computeStreamableLogs failed: ',
@@ -974,7 +974,6 @@ export class Provider {
       response.statusText,
       await response.json()
     )
-    LoggerInstance.error('Payload was:', payload)
     return null
   }
 
