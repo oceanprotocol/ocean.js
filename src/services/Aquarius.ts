@@ -98,6 +98,8 @@ export class Aquarius {
   /**
    * Validate DDO content
    * @param {DDO} ddo DID Descriptor Object content.
+   * @param {signer} ddo publisher account.
+   * @param {providerUrl} provider url used to get the nonce.
    * @param {AbortSignal} signal abort signal
    * @return {Promise<ValidateMetadata>}.
    */
@@ -116,6 +118,7 @@ export class Aquarius {
     const path = this.aquariusURL + '/api/aquarius/assets/ddo/validate'
 
     // Old aquarius API and node API (before publisherAddress, nonce and signature verification)
+    // Older Providers (before updated Ocean Nodes)
     const validateRequestLegacy = async function (): Promise<Response> {
       try {
         response = await fetch(path, {
