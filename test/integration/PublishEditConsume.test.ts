@@ -12,7 +12,7 @@ import {
   amountToUnits
 } from '../../src'
 import { Files, Smartcontract } from '../../src/@types'
-import { createAsset, orderAsset, updateAssetMetadata } from './helpers'
+import { createAssetHelper, orderAsset, updateAssetMetadata } from './helpers'
 
 let config: Config
 
@@ -210,7 +210,7 @@ describe('Publish consume test', async () => {
   })
 
   it('Should publish url asset', async () => {
-    urlAssetId = await createAsset(
+    urlAssetId = await createAssetHelper(
       'UrlDatatoken',
       'URLDT',
       publisherAccount,
@@ -223,7 +223,7 @@ describe('Publish consume test', async () => {
     assert(urlAssetId, 'Failed to publish url DDO')
   })
   it('Should publish arweave asset', async () => {
-    arweaveAssetId = await createAsset(
+    arweaveAssetId = await createAssetHelper(
       'ArwaveDatatoken',
       'ARWAVEDT',
       publisherAccount,
@@ -247,7 +247,7 @@ describe('Publish consume test', async () => {
         }
       ]
     }
-    ipfsAssetId = await createAsset(
+    ipfsAssetId = await createAssetHelper(
       'IpfsDatatoken',
       'IPFSDT',
       publisherAccount,
@@ -274,7 +274,7 @@ describe('Publish consume test', async () => {
       chainId: 8996
     }
     onchainFile.files[0] = chainFile
-    onchainAssetId = await createAsset(
+    onchainAssetId = await createAssetHelper(
       'ChainDatatoken',
       'CHAINDT',
       publisherAccount,
@@ -288,7 +288,7 @@ describe('Publish consume test', async () => {
   })
 
   it('Should publish graphql asset', async () => {
-    grapqlAssetId = await createAsset(
+    grapqlAssetId = await createAssetHelper(
       'GraphDatatoken',
       'GRAPHDT',
       publisherAccount,
