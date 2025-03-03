@@ -822,7 +822,7 @@ describe('Marketplace flow tests', async () => {
         data
       )
     } catch (e) {
-      console.log('e = ', e)
+      console.log('error = ', e)
       assert.fail('Failed to set data in NFT ERC725 key value store', e)
     }
     /// ```
