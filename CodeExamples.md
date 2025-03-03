@@ -822,7 +822,7 @@ Let's start by using the `setData` method to update the nft key value store with
         data
       )
     } catch (e) {
-      console.log('e = ', e)
+      console.log('error = ', e)
       assert.fail('Failed to set data in NFT ERC725 key value store', e)
     }
 ```
