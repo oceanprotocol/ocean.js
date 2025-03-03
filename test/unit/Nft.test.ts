@@ -1,9 +1,15 @@
 import { assert } from 'chai'
-import sha256 from 'crypto-js/sha256'
+import sha256 from 'crypto-js/sha256.js'
 import { ethers, Signer } from 'ethers'
-import { getAddresses, provider } from '../config'
-import { NftFactory, NftCreateData, Nft, ZERO_ADDRESS, getEventFromTx } from '../../src'
-import { MetadataAndTokenURI } from '../../src/@types'
+import { getAddresses, provider } from '../config.js'
+import {
+  NftFactory,
+  NftCreateData,
+  Nft,
+  ZERO_ADDRESS,
+  getEventFromTx
+} from '../../src/index.js'
+import { MetadataAndTokenURI } from '../../src/@types/index.js'
 
 describe('NFT', () => {
   let nftOwner: Signer

@@ -79,7 +79,7 @@
 import fs from 'fs'
 import { assert } from 'chai'
 import { ethers, providers, Signer } from 'ethers'
-import { SHA256 } from 'crypto-js'
+import crypto from 'crypto-js'
 import { homedir } from 'os'
 import {
   approve,
@@ -109,8 +109,9 @@ import {
   getEventFromTx,
   DDO,
   LoggerInstance
-} from '../../src'
+} from '../../src/index.js'
 /// ```
+const { SHA256 } = crypto
 
 /// <!--
 describe('Marketplace flow tests', async () => {
@@ -165,7 +166,7 @@ describe('Marketplace flow tests', async () => {
   /// ```Typescript
   const genericAsset: DDO = {
     '@context': ['https://w3id.org/did/v1'],
-    id: '',
+    id: 'did:op',
     version: '4.1.0',
     chainId: 8996,
     nftAddress: '0x0',

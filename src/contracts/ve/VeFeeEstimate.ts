@@ -1,7 +1,7 @@
 import veFeeEstimate from '@oceanprotocol/contracts/artifacts/contracts/ve/veFeeEstimate.vy/veFeeEstimate.json'
-import { SmartContractWithAddress } from '../SmartContractWithAddress'
-import { VeOcean } from './VeOcean'
-import { AbiItem } from '../../@types'
+import { SmartContractWithAddress } from '../SmartContractWithAddress.js'
+import { VeOcean } from './VeOcean.js'
+import { AbiItem } from '../../@types/index.js'
 /**
  * Provides an interface for veOcean contract
  */

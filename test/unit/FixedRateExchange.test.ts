@@ -1,5 +1,5 @@
 import { assert, expect } from 'chai'
-import { getTestConfig, provider, getAddresses } from '../config'
+import { getTestConfig, provider, getAddresses } from '../config.js'
 import { ethers, Signer } from 'ethers'
 
 import {
@@ -15,7 +15,7 @@ import {
   Datatoken,
   getEventFromTx,
   amountToUnits
-} from '../../src'
+} from '../../src/index.js'
 import { FreCreationParams, DatatokenCreateParams } from '../../src/@types'
 
 describe('Fixed Rate unit test', () => {

@@ -1,6 +1,6 @@
 import fetch from 'cross-fetch'
 import { ethers, Signer, providers } from 'ethers'
-import { LoggerInstance } from '../utils/Logger'
+import { LoggerInstance } from '../utils/Logger.js'
 import {
   Arweave,
   FileInfo,

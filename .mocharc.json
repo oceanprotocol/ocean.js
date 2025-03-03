@@ -1,8 +1,8 @@
 {
   "require": ["source-map-support/register", "mock-local-storage"],
-  "full-trace": true,
+  "extension": ["ts"],
+  "timeout": 200000,
   "bail": true,
   "exit": true,
-  "timeout": "20000",
-  "extensions": ["ts"]
+  "fullTrace": true
 }
