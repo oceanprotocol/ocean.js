@@ -1,7 +1,7 @@
 import FactoryRouter from '@oceanprotocol/contracts/artifacts/contracts/pools/FactoryRouter.sol/FactoryRouter.json'
-import { sendTx } from '../utils/ContractUtils'
-import { Operation, ReceiptOrEstimate, AbiItem } from '../@types'
-import { SmartContractWithAddress } from './SmartContractWithAddress'
+import { sendTx } from '../utils/ContractUtils.js'
+import { Operation, ReceiptOrEstimate, AbiItem } from '../@types/index.js'
+import { SmartContractWithAddress } from './SmartContractWithAddress.js'
 
 /**
  * Provides an interface for FactoryRouter contract

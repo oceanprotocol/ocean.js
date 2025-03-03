@@ -1,6 +1,6 @@
 import { assert } from 'chai'
 import { ethers, Signer } from 'ethers'
-import { getTestConfig, getAddresses, provider } from '../config'
+import { getTestConfig, getAddresses, provider } from '../config.js'
 import {
   Config,
   ProviderInstance,
@@ -8,9 +8,14 @@ import {
   Datatoken,
   sendTx,
   amountToUnits
-} from '../../src'
-import { ComputeJob, ComputeAsset, ComputeAlgorithm, Files } from '../../src/@types'
-import { createAsset, handleComputeOrder } from './helpers'
+} from '../../src/index.js'
+import {
+  ComputeJob,
+  ComputeAsset,
+  ComputeAlgorithm,
+  Files
+} from '../../src/@types/index.js'
+import { createAsset, handleComputeOrder } from './helpers.js'
 
 let config: Config
 

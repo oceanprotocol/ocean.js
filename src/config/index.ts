@@ -1,2 +1,2 @@
-export * from './Config'
-export * from './ConfigHelper'
+export * from './Config.js'
+export * from './ConfigHelper.js'

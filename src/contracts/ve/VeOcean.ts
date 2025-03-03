@@ -1,7 +1,7 @@
 import veOceanABI from '@oceanprotocol/contracts/artifacts/contracts/ve/veOCEAN.vy/veOCEAN.json'
-import { sendTx } from '../../utils/ContractUtils'
-import { SmartContractWithAddress } from '../SmartContractWithAddress'
-import { ReceiptOrEstimate, AbiItem } from '../../@types'
+import { sendTx } from '../../utils/ContractUtils.js'
+import { SmartContractWithAddress } from '../SmartContractWithAddress.js'
+import { ReceiptOrEstimate, AbiItem } from '../../@types/index.js'
 /**
  * Provides an interface for veOcean contract
  */

@@ -1,16 +1,15 @@
 #!/usr/bin/env node
-'use strict'
+'use strict';
 
-const packageInfo = require('../package.json')
-const execSync = require('child_process').execSync
-
+import { execSync } from 'child_process';
+import packageInfo from '../package.json' assert { type: 'json' };
 process.stdout.write(
   JSON.stringify(
     {
-      version: require('../package.json').version,
-      commit: execSync(`git rev-parse HEAD`).toString().trim()
+      version: packageInfo.version,
+      commit: execSync('git rev-parse HEAD').toString().trim(),
     },
     null,
-    '  '
+    2
   )
-)
+);

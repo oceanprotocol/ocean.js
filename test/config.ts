@@ -1,8 +1,8 @@
 import { providers, Signer } from 'ethers'
 import fs from 'fs'
 import { homedir } from 'os'
-import { ConfigHelper, configHelperNetworks } from '../src/config'
-import { LoggerInstance, LogLevel } from '../src/utils'
+import { ConfigHelper, configHelperNetworks } from '../src/config/index.js'
+import { LoggerInstance, LogLevel } from '../src/utils/index.js'
 
 LoggerInstance.setLevel(LogLevel.Error)
 
