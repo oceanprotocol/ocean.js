@@ -32,7 +32,7 @@ describe('Provider tests', async () => {
     const fileinfo: FileInfo[] = await providerInstance.getFileInfo(
       {
         type: 'url',
-        url: 'https://dumps.wikimedia.org/enwiki/latest/enwiki-latest-abstract.xml.gz-rss.xml',
+        url: 'https://raw.githubusercontent.com/oceanprotocol/ocean-node/refs/heads/main/LICENSE',
         method: 'GET'
       },
       config.providerUri
