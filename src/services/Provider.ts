@@ -478,7 +478,7 @@ export class Provider {
    * @param {string} transferTxId - The transfer transaction ID.
    * @param {string} providerUri - The provider URI.
    * @param {Signer} signer - The signer.
-   * @param {string} policyServerUrl - The policy server url (if any is to be used).
+   * @param {any} policyServer - The policy server (if any is to be used).
    * @param {UserCustomParameters} userCustomParameters - The user custom parameters.
    * @returns {Promise<any>} The download URL.
    */
@@ -489,7 +489,7 @@ export class Provider {
     transferTxId: string,
     providerUri: string,
     signer: Signer,
-    policyServerUrl?: string,
+    policyServer?: any,
     userCustomParameters?: UserCustomParameters
   ): Promise<any> {
     const providerEndpoints = await this.getEndpoints(providerUri)
@@ -520,8 +520,8 @@ export class Provider {
     consumeUrl += `&serviceId=${serviceId}`
     consumeUrl += `&consumerAddress=${consumerAddress}`
     consumeUrl += `&nonce=${nonce}`
-    if (policyServerUrl) {
-      consumeUrl += `&policyServer=${policyServerUrl}`
+    if (policyServer) {
+      consumeUrl += '&policyServer=' + encodeURI(JSON.stringify(policyServer))
     }
 
     consumeUrl += `&signature=${signature}`
