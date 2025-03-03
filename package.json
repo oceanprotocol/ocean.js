@@ -34,8 +34,8 @@
     "test:unit": "npx tsx ./node_modules/mocha/bin/mocha.js --config ./test/.mocharc.json 'test/unit/**/*.test.ts' --verbose",
     "test:sapphire": "npm run mocha -- 'test/integration/Sapphire.test.ts'",
     "test:integration": "npx tsx ./node_modules/mocha/bin/mocha.js --config ./test/.mocharc.json 'test/integration/**/*.test.ts' --exclude 'test/integration/Sapphire.test.ts' --verbose",
-    "test:unit:cover": "NODE_OPTIONS='--import tsx' c8 --report-dir coverage/unit --extension .ts mocha --config ./test/.mocharc.json 'test/unit/**/*.test.ts' --verbose",
-    "test:integration:cover": "NODE_OPTIONS='--import tsx' c8 --report-dir coverage/integration --extension .ts mocha --config ./test/.mocharc.json 'test/integration/**/*.test.ts' --exclude 'test/integration/Sapphire.test.ts' --verbose",
+    "test:unit:cover": "nyc --report-dir coverage/unit npm run test:unit",
+    "test:integration:cover": "nyc --report-dir coverage/integration --no-clean npm run test:integration",
     "create:guide": "./scripts/createCodeExamples.sh test/integration/CodeExamples.test.ts",
     "create:guidec2d": "./scripts/createCodeExamples.sh test/integration/ComputeExamples.test.ts",
     "commit:guides": "./scripts/commitChanges.sh",
@@ -68,6 +68,7 @@
     "ethers": "^5.7.2"
   },
   "devDependencies": {
+    "@istanbuljs/nyc-config-typescript": "^1.0.2",
     "@truffle/hdwallet-provider": "^2.0.14",
     "@types/chai": "^4.3.1",
     "@types/chai-spies": "^1.0.3",
@@ -103,6 +104,7 @@
     "typescript": "^5.1.6"
   },
   "nyc": {
+    "extends": "@istanbuljs/nyc-config-typescript",
     "include": [
       "src/**/*.ts"
     ],
@@ -112,14 +114,12 @@
       "node_modules/**"
     ],
     "extension": [
-      ".ts"
-    ],
-    "require": [
-      "tsx"
+      ".ts",
+      ".tsx"
     ],
     "reporter": [
-      "text",
       "lcov",
+      "text",
       "html"
     ],
     "sourceMap": true,
