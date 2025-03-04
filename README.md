@@ -51,6 +51,15 @@ npm install @oceanprotocol/lib
 - Visit the [Ocean Protocol website](https://docs.oceanprotocol.com/) for general information about Ocean Protocol.
 - If you have any difficulties or if you have further questions about how to use ocean.js please reach out to us on [Discord](https://discord.gg/TnXjkR5).
 - If you notice any bugs or issues with ocean.js please [open an issue on github](https://github.com/oceanprotocol/ocean.js/issues/new?assignees=&labels=bug&template=bug_report.md&title=).
+- Developers using this library should ensure their tsconfig.json includes the necessary options:
+```
+{
+  "moduleResolution": "node",
+  "esModuleInterop": true,
+  "allowSyntheticDefaultImports": true
+}
+```
+- If using Next.js, they may need "moduleResolution": "bundler" for better compatibility.
 
 ## 🦑 Development
 
