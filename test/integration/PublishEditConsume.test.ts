@@ -1,6 +1,6 @@
 import { assert } from 'chai'
 import { ethers, Signer } from 'ethers'
-import { getTestConfig, getAddresses, provider } from '../config'
+import { getTestConfig, getAddresses, provider } from '../config.js'
 import {
   Config,
   ProviderInstance,
@@ -10,9 +10,9 @@ import {
   sendTx,
   transfer,
   amountToUnits
-} from '../../src'
-import { Files, Smartcontract } from '../../src/@types'
-import { createAsset, orderAsset, updateAssetMetadata } from './helpers'
+} from '../../src/index.js'
+import { Files, Smartcontract } from '../../src/@types/index.js'
+import { createAsset, orderAsset, updateAssetMetadata } from './helpers.js'
 
 let config: Config
 

@@ -119,7 +119,6 @@
 import fs from 'fs'
 import { homedir } from 'os'
 import { assert } from 'chai'
-import { SHA256 } from 'crypto-js'
 import { ethers, providers, Signer } from 'ethers'
 import {
   ProviderInstance,
@@ -146,8 +145,10 @@ import {
   getEventFromTx,
   amountToUnits,
   isDefined
-} from '../../src'
+} from '../../src/index.js'
 /// ```
+import crypto from 'crypto-js'
+const { SHA256 } = crypto
 
 /// ### 4.2. Constants and variables
 
