@@ -17,7 +17,7 @@ import AccessListFactory from '@oceanprotocol/contracts/artifacts/contracts/acce
 import ERC20Template4 from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC20Template4.sol/ERC20Template4.json'
 import { calculateActiveTemplateIndex } from './Addresses.js'
 import { DDOManager } from '@oceanprotocol/ddo-js'
-// import * as hre from 'hardhat'
+import { FileObjectType } from '../@types'
 
 export const DEVELOPMENT_CHAIN_ID = 8996
 // template address OR templateId
@@ -114,6 +114,15 @@ export async function createAsset(
     mpFeeAddress: ZERO_ADDRESS
   }
 
+  if (
+    !assetUrl.type ||
+    ![FileObjectType.ARWEAVE, FileObjectType.IPFS, FileObjectType.URL].includes(
+      assetUrl.type.toLowerCase()
+    )
+  ) {
+    console.log('Missing or invalid files object type, defaulting to "url"')
+    assetUrl.type = FileObjectType.URL
+  }
   // include fileObject in the DT constructor
   if (config.sdk === 'oasis') {
     datatokenParams.filesObject = assetUrl
