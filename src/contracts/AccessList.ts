@@ -1,9 +1,9 @@
 import { Signer } from 'ethers'
 import AccessList from '@oceanprotocol/contracts/artifacts/contracts/accesslists/AccessList.sol/AccessList.json'
-import { sendTx } from '../utils/ContractUtils'
-import { AbiItem, ReceiptOrEstimate } from '../@types'
-import { Config } from '../config'
-import { SmartContractWithAddress } from './SmartContractWithAddress'
+import { sendTx } from '../utils/ContractUtils.js'
+import { AbiItem, ReceiptOrEstimate } from '../@types/index.js'
+import { Config } from '../config/index.js'
+import { SmartContractWithAddress } from './SmartContractWithAddress.js'
 
 export class AccessListContract extends SmartContractWithAddress {
   public abiEnterprise: AbiItem[]

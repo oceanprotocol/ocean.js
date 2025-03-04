@@ -1,5 +1,5 @@
 import { assert } from 'chai'
-import { getTestConfig, provider, getAddresses } from '../config'
+import { getTestConfig, provider, getAddresses } from '../config.js'
 import {
   Config,
   approve,
@@ -9,7 +9,7 @@ import {
   VeAllocate,
   getEventFromTx,
   amountToUnits
-} from '../../src'
+} from '../../src/index.js'
 import { ethers, Signer } from 'ethers'
 describe('veOcean tests', () => {
   let config: Config
