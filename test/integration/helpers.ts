@@ -17,8 +17,8 @@ import {
   ProviderFees,
   getEventFromTx
 } from '../../src/index.js'
-
-export async function createAsset(
+// superseed by src/utils/CreateAsset
+export async function createAssetHelper(
   name: string,
   symbol: string,
   owner: Signer,

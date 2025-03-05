@@ -286,9 +286,9 @@ let hasFreeComputeSupport: boolean
 
 /// Now we define the helper methods which we will use later to publish the dataset and algorithm, and also order them
 
-/// Add a `createAsset()`function.
+/// Add a `createAssetHelper()`function.
 /// ```Typescript
-async function createAsset(
+async function createAssetHelper(
   name: string,
   symbol: string,
   owner: Signer,
@@ -508,7 +508,7 @@ describe('Compute-to-data example tests', async () => {
 
   it('6.1 Publish a dataset (create NFT + Datatoken) and set dataset metadata', async () => {
     /// ```Typescript
-    datasetId = await createAsset(
+    datasetId = await createAssetHelper(
       'D1Min',
       'D1M',
       publisherAccount,
@@ -525,7 +525,7 @@ describe('Compute-to-data example tests', async () => {
 
   it('6.2 Publish an algorithm (create NFT + Datatoken) and set algorithm metadata', async () => {
     /// ```Typescript
-    algorithmId = await createAsset(
+    algorithmId = await createAssetHelper(
       'D1Min',
       'D1M',
       publisherAccount,

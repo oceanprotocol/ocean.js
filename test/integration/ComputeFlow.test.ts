@@ -16,7 +16,7 @@ import {
   ComputeAlgorithm,
   Files
 } from '../../src/@types/index.js'
-import { createAsset, handleComputeOrder } from './helpers.js'
+import { createAssetHelper, handleComputeOrder } from './helpers.js'
 
 let config: Config
 
@@ -310,7 +310,7 @@ describe('Compute flow tests', async () => {
       amountToUnits(null, null, '1000', 18)
     )
 
-    ddoWith5mTimeoutId = await createAsset(
+    ddoWith5mTimeoutId = await createAssetHelper(
       'D1Min',
       'D1M',
       publisherAccount,
@@ -320,7 +320,7 @@ describe('Compute flow tests', async () => {
       addresses.ERC721Factory,
       aquarius
     )
-    ddoWithNoTimeoutId = await createAsset(
+    ddoWithNoTimeoutId = await createAssetHelper(
       'D1Min',
       'D1M',
       publisherAccount,
@@ -330,7 +330,7 @@ describe('Compute flow tests', async () => {
       addresses.ERC721Factory,
       aquarius
     )
-    algoDdoWith5mTimeoutId = await createAsset(
+    algoDdoWith5mTimeoutId = await createAssetHelper(
       'A1Min',
       'A1M',
       publisherAccount,
@@ -341,7 +341,7 @@ describe('Compute flow tests', async () => {
       aquarius
     )
 
-    algoDdoWithNoTimeoutId = await createAsset(
+    algoDdoWithNoTimeoutId = await createAssetHelper(
       'A1Min',
       'A1M',
       publisherAccount,
