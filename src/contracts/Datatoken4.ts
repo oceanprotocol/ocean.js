@@ -1,11 +1,11 @@
 /* eslint-disable lines-between-class-members */
-import { Datatoken } from './Datatoken'
+import { Datatoken } from './Datatoken.js'
 import { Bytes, Signer } from 'ethers'
 import ERC20Template4 from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC20Template4.sol/ERC20Template4.json'
-import { AbiItem, ReceiptOrEstimate } from '../@types'
-import { AccessListContract } from './AccessList'
-import { Config } from '../config'
-import { sendTx } from '../utils/ContractUtils'
+import { AbiItem, ReceiptOrEstimate } from '../@types/index.js'
+import { AccessListContract } from './AccessList.js'
+import { Config } from '../config/index.js'
+import { sendTx } from '../utils/ContractUtils.js'
 
 export class Datatoken4 extends Datatoken {
   public accessList: AccessListContract

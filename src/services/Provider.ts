@@ -1,6 +1,6 @@
 import fetch from 'cross-fetch'
 import { ethers, Signer, providers } from 'ethers'
-import { LoggerInstance } from '../utils/Logger'
+import { LoggerInstance } from '../utils/Logger.js'
 import {
   Arweave,
   FileInfo,
@@ -16,7 +16,8 @@ import {
   UserCustomParameters,
   Ipfs,
   Smartcontract,
-  GraphqlQuery
+  GraphqlQuery,
+  ComputeResourceRequest
 } from '../@types'
 
 export class Provider {
@@ -302,7 +303,7 @@ export class Provider {
   public async getComputeEnvironments(
     providerUri: string,
     signal?: AbortSignal
-  ): Promise<{ [chainId: number]: ComputeEnvironment[] }> {
+  ): Promise<ComputeEnvironment[]> {
     const providerEndpoints = await this.getEndpoints(providerUri)
     const serviceEndpoints = await this.getServiceEndpoints(
       providerUri,
@@ -324,10 +325,11 @@ export class Provider {
     }
     if (response?.ok) {
       const result = response.json()
-      if (Array.isArray(result)) {
-        const providerChain: number = providerEndpoints.chainId
-        return { [providerChain]: result }
-      }
+      // chain is not part of response
+      // if (Array.isArray(result)) {
+      //   const providerChain: number = providerEndpoints.chainId
+      //   return { [providerChain]: result }
+      // }
       return result
     }
     const resolvedResponse = await response.json()
@@ -418,7 +420,7 @@ export class Provider {
    * @param {AbortSignal} signal abort signal
    * @return {Promise<ProviderComputeInitialize>} ProviderComputeInitialize data
    */
-  public async initializeCompute(
+  public async initializeComputeV1(
     assets: ComputeAsset[],
     algorithm: ComputeAlgorithm,
     computeEnv: string,
@@ -442,6 +444,90 @@ export class Provider {
       ? this.getEndpointURL(serviceEndpoints, 'initializeCompute').urlPath
       : null
     if (!initializeUrl) return null
+    let response
+    try {
+      response = await fetch(initializeUrl, {
+        method: 'POST',
+        body: JSON.stringify(providerData),
+        headers: { 'Content-Type': 'application/json' },
+        signal
+      })
+    } catch (e) {
+      LoggerInstance.error('Initialize compute failed: ')
+      LoggerInstance.error(e)
+      throw new Error('ComputeJob cannot be initialized')
+    }
+    if (response?.ok) {
+      const params = await response.json()
+      return params
+    }
+    const resolvedResponse = await response.json()
+    LoggerInstance.error(
+      'Initialize compute failed: ',
+      response.status,
+      response.statusText,
+      resolvedResponse
+    )
+    LoggerInstance.error('Payload was:', providerData)
+    throw new Error(JSON.stringify(resolvedResponse))
+  }
+
+  /** Initializes the provider for a compute request.
+   * @param {ComputeAsset[]} assets The datasets array to initialize compute request.
+   * @param {ComputeAlgorithmber} algorithm The algorithm to use.
+   * @param {string} computeEnv The compute environment.
+   * @param {number} validUntil  The job expiration date.
+   * @param {string} providerUri The provider URI.
+   * @param {Signer} signer caller address
+   * @param {AbortSignal} signal abort signal
+   * @return {Promise<ProviderComputeInitialize>} ProviderComputeInitialize data
+   */
+  public async initializeCompute(
+    assets: ComputeAsset[],
+    algorithm: ComputeAlgorithm,
+    computeEnv: string,
+    validUntil: number,
+    providerUri: string,
+    signer: Signer,
+    signal?: AbortSignal
+  ): Promise<ProviderComputeInitializeResults> {
+    const providerEndpoints = await this.getEndpoints(providerUri)
+    const serviceEndpoints = await this.getServiceEndpoints(
+      providerUri,
+      providerEndpoints
+    )
+
+    // Diff from V1. We might need a signature to get the files object, specially if dealing with confidential evm and template 4
+    // otherwise it can be ignored
+    const consumerAddress = await signer.getAddress()
+    const nonce = (
+      (await this.getNonce(
+        providerUri,
+        consumerAddress,
+        signal,
+        providerEndpoints,
+        serviceEndpoints
+      )) + 1
+    ).toString()
+
+    // same signed message as for start compute (consumer address + did[0] + nonce)
+    let signatureMessage = consumerAddress
+    signatureMessage += assets[0].documentId
+    signatureMessage += nonce
+    const signature = await this.signProviderRequest(signer, signatureMessage)
+
+    const providerData = {
+      datasets: assets,
+      algorithm,
+      compute: { env: computeEnv, validUntil },
+      consumerAddress,
+      signature
+    }
+    const initializeUrl = this.getEndpointURL(serviceEndpoints, 'initializeCompute')
+      ? this.getEndpointURL(serviceEndpoints, 'initializeCompute').urlPath
+      : null
+    if (!initializeUrl) return null
+
     let response
     try {
       response = await fetch(initializeUrl, {
@@ -530,7 +616,7 @@ export class Provider {
     return consumeUrl
   }
 
-  /** Instruct the provider to start a compute job
+  /** Instruct the provider to start a compute job (Old C2D V1) Kept for now, for backwards compatibility
    * @param {string} providerUri The provider URI.
    * @param {Signer} signer The consumer signer object.
    * @param {string} computeEnv The compute environment.
@@ -540,8 +626,9 @@ export class Provider {
    * @param {ComputeAsset[]} additionalDatasets The additional datasets if that is the case.
    * @param {ComputeOutput} output The compute job output settings.
    * @return {Promise<ComputeJob | ComputeJob[]>} The compute job or jobs.
+   * @deprecated Use {@link computeStart} instead.
    */
-  public async computeStart(
+  public async computeStartV1(
     providerUri: string,
     consumer: Signer,
     computeEnv: string,
@@ -613,6 +700,305 @@ export class Provider {
     return null
   }
 
+  /** Instruct the provider to start a PAYED compute job (new C2D V2)
+   * @param {string} providerUri The provider URI.
+   * @param {Signer} signer The consumer signer object.
+   * @param {string} computeEnv The compute environment.
+   * @param {ComputeAsset} datasets The dataset to start compute on + additionalDatasets (the additional datasets if that is the case)
+   * @param {ComputeAlgorithm} algorithm The algorithm to start compute with.
+   * @param {ComputeResourceRequest} resources The resources to start compute job with.
+   * @param {chainId} chainId The chain used to do payments
+   * @param {ComputeOutput} output The compute job output settings.
+   * @param {boolean} freeEnvironment is it a free environment? uses different route
+   * @param {AbortSignal} signal abort signal
+   * @return {Promise<ComputeJob | ComputeJob[]>} The compute job or jobs.
+   */
+  public async computeStart(
+    providerUri: string,
+    consumer: Signer,
+    computeEnv: string,
+    datasets: ComputeAsset[],
+    algorithm: ComputeAlgorithm,
+    resources?: ComputeResourceRequest[],
+    chainId?: number, // network used by payment (only for payed compute jobs)
+    output?: ComputeOutput,
+    signal?: AbortSignal
+  ): Promise<ComputeJob | ComputeJob[]> {
+    console.log('called new compute start method...')
+    console.log('datasets: ', datasets)
+    console.log('algorithm: ', algorithm)
+    const providerEndpoints = await this.getEndpoints(providerUri)
+    const serviceEndpoints = await this.getServiceEndpoints(
+      providerUri,
+      providerEndpoints
+    )
+
+    const computeStartUrl = this.getEndpointURL(serviceEndpoints, 'computeStart')
+      ? this.getEndpointURL(serviceEndpoints, 'computeStart').urlPath
+      : null
+
+    if (!computeStartUrl) {
+      LoggerInstance.error(
+        'Compute start failed: Cannot get proper computeStart route (perhaps not implemented on provider?)'
+      )
+      return null
+    }
+
+    const consumerAddress = await consumer.getAddress()
+    const nonce = (
+      (await this.getNonce(
+        providerUri,
+        consumerAddress,
+        signal,
+        providerEndpoints,
+        serviceEndpoints
+      )) + 1
+    ).toString()
+
+    let signatureMessage = consumerAddress
+    signatureMessage += datasets[0].documentId
+    signatureMessage += nonce
+    const signature = await this.signProviderRequest(consumer, signatureMessage)
+    const payload = Object()
+    payload.consumerAddress = consumerAddress
+    payload.signature = signature
+    payload.nonce = nonce
+    payload.environment = computeEnv
+    payload.resources = resources
+    payload.chainId = chainId
+    // kept for backwards compatibility (tests running against existing provider)
+    payload.dataset = datasets[0]
+    // new field for C2D v2
+    payload.datasets = datasets
+    payload.algorithm = algorithm
+    // if (additionalDatasets) payload.additionalDatasets = additionalDatasets
+    payload.output = output
+    let response
+    try {
+      response = await fetch(computeStartUrl, {
+        method: 'POST',
+        body: JSON.stringify(payload),
+        headers: { 'Content-Type': 'application/json' },
+        signal
+      })
+    } catch (e) {
+      LoggerInstance.error('Compute start failed:')
+      LoggerInstance.error(e)
+      LoggerInstance.error('Payload was:', payload)
+      throw new Error('HTTP request failed calling Provider')
+    }
+    if (response?.ok) {
+      const params = await response.json()
+      return params
+    }
+    LoggerInstance.error(
+      'Compute start failed: ',
+      response.status,
+      response.statusText,
+      await response.json()
+    )
+    LoggerInstance.error('Payload was:', payload)
+    return null
+  }
+
+  /** Instruct the provider to start a FREE compute job (new C2D V2)
+   * @param {string} providerUri The provider URI.
+   * @param {Signer} signer The consumer signer object.
+   * @param {string} computeEnv The compute environment.
+   * @param {ComputeAsset} datasets The dataset to start compute on + additionalDatasets (the additional datasets if that is the case)
+   * @param {ComputeAlgorithm} algorithm The algorithm to start compute with.
+   * @param {ComputeResourceRequest} resources The resources to start compute job with.
+   * @param {ComputeOutput} output The compute job output settings.
+   * @param {AbortSignal} signal abort signal
+   * @return {Promise<ComputeJob | ComputeJob[]>} The compute job or jobs.
+   */
+  public async freeComputeStart(
+    providerUri: string,
+    consumer: Signer,
+    computeEnv: string,
+    datasets: ComputeAsset[],
+    algorithm: ComputeAlgorithm,
+    resources?: ComputeResourceRequest[],
+    output?: ComputeOutput,
+    signal?: AbortSignal
+  ): Promise<ComputeJob | ComputeJob[]> {
+    console.log('called new free compute start method...')
+    console.log('datasets: ', datasets)
+    console.log('algorithm: ', algorithm)
+    const providerEndpoints = await this.getEndpoints(providerUri)
+    const serviceEndpoints = await this.getServiceEndpoints(
+      providerUri,
+      providerEndpoints
+    )
+
+    const computeStartUrl = this.getEndpointURL(serviceEndpoints, 'freeCompute')
+      ? this.getEndpointURL(serviceEndpoints, 'freeCompute').urlPath
+      : null
+
+    if (!computeStartUrl) {
+      LoggerInstance.error(
+        'Compute start failed: Cannot get proper computeStart route (perhaps not implemented on provider?)'
+      )
+      return null
+    }
+
+    const consumerAddress = await consumer.getAddress()
+    const nonce = (
+      (await this.getNonce(
+        providerUri,
+        consumerAddress,
+        signal,
+        providerEndpoints,
+        serviceEndpoints
+      )) + 1
+    ).toString()
+
+    const signatureMessage = nonce // datasets[0].documentId
+    console.log('signatureMessage: ', signatureMessage)
+    const signature = await this.signProviderRequest(consumer, signatureMessage)
+    const payload = Object()
+    payload.consumerAddress = consumerAddress
+    payload.signature = signature
+    payload.nonce = nonce
+    payload.environment = computeEnv
+    payload.resources = resources
+    // kept for backwards compatibility (tests running against existing provider)
+    payload.dataset = datasets[0]
+    // new field for C2D v2
+    payload.datasets = datasets
+    payload.algorithm = algorithm
+    // if (additionalDatasets) payload.additionalDatasets = additionalDatasets
+    payload.output = output
+    let response
+    try {
+      response = await fetch(computeStartUrl, {
+        method: 'POST',
+        body: JSON.stringify(payload),
+        headers: { 'Content-Type': 'application/json' },
+        signal
+      })
+    } catch (e) {
+      LoggerInstance.error('Compute start failed:')
+      LoggerInstance.error(e)
+      LoggerInstance.error('Payload was:', payload)
+      throw new Error('HTTP request failed calling Provider')
+    }
+    if (response?.ok) {
+      const params = await response.json()
+      return params
+    }
+    LoggerInstance.error(
+      'Compute start failed: ',
+      response.status,
+      response.statusText,
+      await response.json()
+    )
+    LoggerInstance.error('Payload was:', payload)
+    return null
+  }
+
+  /**
+   *
+   * @param providerUri provider URL
+   * @param consumer consumer
+   * @param jobId jobId
+   * @param signal abort signal
+   * @returns logs response
+   */
+  public async computeStreamableLogs(
+    providerUri: string,
+    signer: Signer,
+    jobId: string,
+    signal?: AbortSignal
+  ): Promise<any> {
+    const providerEndpoints = await this.getEndpoints(providerUri)
+    const serviceEndpoints = await this.getServiceEndpoints(
+      providerUri,
+      providerEndpoints
+    )
+
+    const computeStreamableLogs = this.getEndpointURL(
+      serviceEndpoints,
+      'computeStreamableLogs'
+    )
+      ? this.getEndpointURL(serviceEndpoints, 'computeStreamableLogs').urlPath
+      : null
+
+    if (!computeStreamableLogs) {
+      LoggerInstance.error(
+        'Compute start failed: Cannot get proper computeStreamableLogs route (perhaps not implemented on provider?)'
+      )
+      return null
+    }
+    const consumerAddress = await signer.getAddress()
+    const nonce = (
+      (await this.getNonce(
+        providerUri,
+        consumerAddress,
+        signal,
+        providerEndpoints,
+        serviceEndpoints
+      )) + 1
+    ).toString()
+
+    let url = `?consumerAddress=${consumerAddress}`
+    url += `&jobId=${jobId}`
+    url += `&nonce=${nonce}`
+
+    // TODO: define teh signature to use (not implemented yet on node)
+    const signatureMessage = nonce
+    const signature = await this.signProviderRequest(signer, signatureMessage)
+    url += `&signature=${signature}`
+
+    let response
+    try {
+      response = await fetch(computeStreamableLogs + url, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+        signal
+      })
+      console.log('Raw response:', response)
+    } catch (e) {
+      LoggerInstance.error('computeStreamableLogs failed:')
+      LoggerInstance.error(e)
+      throw new Error('HTTP request failed calling Provider')
+    }
+    if (response?.ok || response?.status === 200) {
+      // do not handle the response here
+      console.log('Response body:', response.body)
+      return response.body
+    }
+    LoggerInstance.error(
+      'computeStreamableLogs failed: ',
+      response.status,
+      response.statusText,
+      await response.json()
+    )
+    return null
+  }
+
+  public async getComputeStartRoutes(
+    providerUri: string,
+    isFreeCompute: boolean = false
+  ): Promise<string | null> {
+    const providerEndpoints = await this.getEndpoints(providerUri)
+    const serviceEndpoints = await this.getServiceEndpoints(
+      providerUri,
+      providerEndpoints
+    )
+    let computeStartUrl = null
+    if (isFreeCompute) {
+      computeStartUrl = this.getEndpointURL(serviceEndpoints, 'freeCompute')
+        ? this.getEndpointURL(serviceEndpoints, 'freeCompute').urlPath
+        : null
+    } else {
+      computeStartUrl = this.getEndpointURL(serviceEndpoints, 'computeStart')
+        ? this.getEndpointURL(serviceEndpoints, 'computeStart').urlPath
+        : null
+    }
+    return computeStartUrl
+  }
+
   /** Instruct the provider to Stop the execution of a to stop a compute job.
    * @param {string} did the asset did
    * @param {string} consumerAddress The consumer address.
@@ -661,7 +1047,7 @@ export class Provider {
     const signature = await this.signProviderRequest(signer, signatureMessage)
     const payload = Object()
     payload.signature = signature
-    payload.agreementId = this.noZeroX(agreementId)
+    payload.agreementId = agreementId // this.noZeroX(agreementId) #https://github.com/oceanprotocol/ocean.js/issues/1892
     payload.consumerAddress = consumerAddress
     payload.nonce = nonce
     if (jobId) payload.jobId = jobId
@@ -722,7 +1108,7 @@ export class Provider {
       : null
 
     let url = `?consumerAddress=${consumerAddress}`
-    url += (agreementId && `&agreementId=${this.noZeroX(agreementId)}`) || ''
+    url += (agreementId && `&agreementId=${agreementId}`) || '' // ${this.noZeroX(agreementId)} #https://github.com/oceanprotocol/ocean.js/issues/1892
     url += (jobId && `&jobId=${jobId}`) || ''
 
     if (!computeStatusUrl) return null
@@ -847,7 +1233,7 @@ export class Provider {
     signatureMessage += nonce
     const signature = await this.signProviderRequest(consumer, signatureMessage)
     const payload = Object()
-    payload.documentId = this.noZeroX(did)
+    payload.documentId = did // this.noZeroX(did) #https://github.com/oceanprotocol/ocean.js/issues/1892
     payload.consumerAddress = await consumer.getAddress()
     payload.jobId = jobId
     if (signature) payload.signature = signature

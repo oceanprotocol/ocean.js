@@ -1,24 +1,23 @@
-import { SHA256 } from 'crypto-js'
 import { ethers, Signer } from 'ethers'
-import { ConfigHelper } from '../../src/config'
-import { hexlify } from 'ethers/lib/utils'
+import { ConfigHelper } from '../../src/config/index.js'
+import { hexlify } from 'ethers/lib/utils.js'
 import { createHash } from 'crypto'
-import { Aquarius } from '../services/Aquarius'
-import { NftFactory } from '../contracts/NFTFactory'
-import { Nft } from '../contracts/NFT'
-import { DatatokenCreateParams } from '../@types/Datatoken'
-import { NftCreateData } from '../@types/NFTFactory'
-import { ZERO_ADDRESS } from './Constants'
-import { DispenserCreationParams } from '../@types/Dispenser'
-import { FreCreationParams } from '../@types/FixedPrice'
-import { getEventFromTx } from './ContractUtils'
-import { ProviderInstance } from '../services/Provider'
+import { Aquarius } from '../services/Aquarius.js'
+import { NftFactory } from '../contracts/NFTFactory.js'
+import { Nft } from '../contracts/NFT.js'
+import { DatatokenCreateParams } from '../@types/Datatoken.js'
+import { NftCreateData } from '../@types/NFTFactory.js'
+import { ZERO_ADDRESS } from './Constants.js'
+import { DispenserCreationParams } from '../@types/Dispenser.js'
+import { FreCreationParams } from '../@types/FixedPrice.js'
+import { getEventFromTx } from './ContractUtils.js'
+import { ProviderInstance } from '../services/Provider.js'
 
 import AccessListFactory from '@oceanprotocol/contracts/artifacts/contracts/accesslists/AccessListFactory.sol/AccessListFactory.json'
 import ERC20Template4 from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC20Template4.sol/ERC20Template4.json'
-import { calculateActiveTemplateIndex } from './Addresses'
-
-// import * as hre from 'hardhat'
+import { calculateActiveTemplateIndex } from './Addresses.js'
+import { DDOManager } from '@oceanprotocol/ddo-js'
+import { FileObjectType } from '../@types'
 
 export const DEVELOPMENT_CHAIN_ID = 8996
 // template address OR templateId
@@ -58,6 +57,11 @@ export async function createAsset(
   allowAccessList?: string, // allow list address
   denyAccessList?: string // deny list address
 ): Promise<string> {
+  const ddoInstance = DDOManager.getDDOClass(ddo)
+  const { stats } = ddoInstance.getAssetFields()
+  let { chainId: ddoChainId, nftAddress } = ddoInstance.getDDOFields()
+  const { services } = ddoInstance.getDDOFields()
+
   const isAddress = typeof templateIDorAddress === 'string'
   const isTemplateIndex = typeof templateIDorAddress === 'number'
   if (!isAddress && !isTemplateIndex) {
@@ -65,10 +69,8 @@ export async function createAsset(
   }
   const chainID = (await owner.provider.getNetwork()).chainId
 
-  if (ddo.chainId) {
-    if (ddo.chainId !== chainID) {
-      throw new Error('Chain ID from DDO is different than the configured network.')
-    }
+  if (ddoChainId && ddoChainId !== chainID) {
+    throw new Error('Chain ID from DDO is different than the configured network.')
   }
 
   const config = new ConfigHelper().getConfig(parseInt(String(chainID)))
@@ -94,7 +96,6 @@ export async function createAsset(
   const account = await owner.getAddress()
 
   // from hex to number format
-  ddo.chainId = parseInt(chainID.toString(10))
   const nftParamsAsset: NftCreateData = {
     name,
     symbol,
@@ -113,6 +114,15 @@ export async function createAsset(
     mpFeeAddress: ZERO_ADDRESS
   }
 
+  if (
+    !assetUrl.type ||
+    ![FileObjectType.ARWEAVE, FileObjectType.IPFS, FileObjectType.URL].includes(
+      assetUrl.type.toLowerCase()
+    )
+  ) {
+    console.log('Missing or invalid files object type, defaulting to "url"')
+    assetUrl.type = FileObjectType.URL
+  }
   // include fileObject in the DT constructor
   if (config.sdk === 'oasis') {
     datatokenParams.filesObject = assetUrl
@@ -123,9 +133,9 @@ export async function createAsset(
 
   let bundleNFT
   try {
-    if (!ddo.stats?.price?.value) {
+    if (!stats?.price?.value) {
       bundleNFT = await nftFactory.createNftWithDatatoken(nftParamsAsset, datatokenParams)
-    } else if (ddo.stats?.price?.value === '0') {
+    } else if (stats?.price?.value.toString() === '0') {
       const dispenserParams: DispenserCreationParams = {
         dispenserAddress: config.dispenserAddress,
         maxTokens: '1',
@@ -147,7 +157,7 @@ export async function createAsset(
         marketFeeCollector: account,
         baseTokenDecimals: 18,
         datatokenDecimals: 18,
-        fixedRate: ddo.stats.price.value,
+        fixedRate: stats.price.value.toString(),
         marketFee: '0',
         allowedConsumer: account,
         withMint: true
@@ -168,11 +178,11 @@ export async function createAsset(
   const nftCreatedEvent = getEventFromTx(trxReceipt, 'NFTCreated')
   const tokenCreatedEvent = getEventFromTx(trxReceipt, 'TokenCreated')
 
-  const nftAddress = nftCreatedEvent.args.newTokenAddress
+  const nftAddressFromEvent = nftCreatedEvent.args.newTokenAddress
   const datatokenAddressAsset = tokenCreatedEvent.args.newTokenAddress
   // create the files encrypted string
   assetUrl.datatokenAddress = datatokenAddressAsset
-  assetUrl.nftAddress = nftAddress
+  assetUrl.nftAddress = nftAddressFromEvent
 
   if (config.sdk === 'oasis') {
     // we need to update files object on the SC otherwise it will fail validation on provider
@@ -193,16 +203,18 @@ export async function createAsset(
 
   // if confidential EVM no need to make encrypt call here
   if (config.sdk === 'oasis') {
-    ddo.services[0].files = '' // on confidental EVM it needs to be empty string not null, for schema validation
+    services[0].files = '' // on confidental EVM it needs to be empty string not null, for schema validation
   } else {
-    ddo.services[0].files = await ProviderInstance.encrypt(assetUrl, chainID, providerUrl)
+    services[0].files = await ProviderInstance.encrypt(assetUrl, chainID, providerUrl)
   }
 
-  ddo.services[0].datatokenAddress = datatokenAddressAsset
-  ddo.services[0].serviceEndpoint = providerUrl
+  services[0].datatokenAddress = datatokenAddressAsset
+  services[0].serviceEndpoint = providerUrl
 
-  ddo.nftAddress = nftAddress
-  ddo.id = 'did:op:' + SHA256(ethers.utils.getAddress(nftAddress) + chainID.toString(10))
+  nftAddress = nftAddressFromEvent
+
+  const id = ddoInstance.makeDid(nftAddress, ddoChainId.toString())
+  ddo = ddoInstance.updateFields({ id, nftAddress })
 
   let metadata
   let metadataHash

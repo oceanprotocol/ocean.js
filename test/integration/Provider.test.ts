@@ -1,8 +1,8 @@
 import { assert } from 'chai'
-import { getTestConfig, provider } from '../config'
-import { Config, Provider } from '../../src'
+import { getTestConfig, provider } from '../config.js'
+import { Config, Provider } from '../../src/index.js'
 import { Signer } from 'ethers'
-import { FileInfo } from '../../src/@types'
+import { FileInfo } from '../../src/@types/index.js'
 
 describe('Provider tests', async () => {
   let config: Config
@@ -32,7 +32,7 @@ describe('Provider tests', async () => {
     const fileinfo: FileInfo[] = await providerInstance.getFileInfo(
       {
         type: 'url',
-        url: 'https://raw.githubusercontent.com/oceanprotocol/ocean-node/refs/heads/main/LICENSE',
+        url: 'https://raw.githubusercontent.com/oceanprotocol/ocean.js/refs/heads/main/README.md',
         method: 'GET'
       },
       config.providerUri
