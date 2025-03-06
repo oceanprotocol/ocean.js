@@ -58,8 +58,9 @@ jobs:
       - name: Run Ganache with Barge
         working-directory: ${{ github.workspace }}/barge
         run: |
-          export CONTRACTS_VERSION=escrow
           bash -x start_ocean.sh  --no-aquarius --no-elasticsearch --no-provider --no-dashboard 2>&1 > start_ocean.log &
+        env:
+          CONTRACTS_VERSION: escrow  
       - run: npm ci
       - name: Wait for contracts deployment
         working-directory: ${{ github.workspace }}/barge
