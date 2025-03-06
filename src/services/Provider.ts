@@ -945,8 +945,8 @@ export class Provider {
     url += `&jobId=${jobId}`
     url += `&nonce=${nonce}`
 
-    // TODO: define teh signature to use (not implemented yet on node)
-    const signatureMessage = nonce
+    // consumer + jobId + nonce
+    const signatureMessage = `${consumerAddress}${jobId}${nonce}`
     const signature = await this.signProviderRequest(signer, signatureMessage)
     url += `&signature=${signature}`
 
