@@ -103,7 +103,7 @@ export async function orderAsset(
         config,
         await consumerAccount.getAddress(),
         fees.providerFeeToken,
-        asset.services[0].datatokenAddress,
+        asset.services[serviceIndex].datatokenAddress,
         fees.providerFeeAmount
       )
     } catch (error) {

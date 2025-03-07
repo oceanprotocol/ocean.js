@@ -18,7 +18,7 @@
 - [querySearch](Aquarius.md#querysearch)
 - [resolve](Aquarius.md#resolve)
 - [validate](Aquarius.md#validate)
-- [waitForAqua](Aquarius.md#waitforaqua)
+- [waitForIndexer](Aquarius.md#waitForIndexer)
 
 ## Constructors
 
@@ -146,11 +146,11 @@ Validate DDO content
 
 ___
 
-### waitForAqua
+### waitForIndexer
 
-▸ **waitForAqua**(`did`, `txid?`, `signal?`): `Promise`<[`Asset`](../interfaces/Asset.md)\>
+▸ **waitForIndexer**(`did`, `txid?`, `signal?`, `interval=3000`,`maxRetries=100`): `Promise`<[`Asset`](../interfaces/Asset.md)\>
 
-Blocks until Aqua will cache the did (or the update for that did) or timeouts
+Blocks until Indexer will cache the did (or the update for that did) or timeouts
 
 #### Parameters
 
@@ -159,6 +159,8 @@ Blocks until Aqua will cache the did (or the update for that did) or timeouts
 | `did` | `string` | DID of the asset. |
 | `txid?` | `string` | used when the did exists and we expect an update with that txid. |
 | `signal?` | `AbortSignal` | abort signal |
+| `interval` | `number` | retry interval in miliseconds. Default is 3000 |
+| `maxRetries` | `number` | max number of retries. Default is 100 |
 
 #### Returns
 
