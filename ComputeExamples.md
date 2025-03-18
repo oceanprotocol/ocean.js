@@ -119,7 +119,6 @@ Start by importing all of the necessary dependencies
 import fs from 'fs'
 import { homedir } from 'os'
 
-import { SHA256 } from 'crypto-js'
 import { ethers, providers, Signer } from 'ethers'
 import {
   ProviderInstance,
@@ -144,9 +143,12 @@ import {
   configHelperNetworks,
   ConfigHelper,
   getEventFromTx,
-  amountToUnits
-} from '@oceanprotocol/lib'
+  amountToUnits,
+  isDefined
+} from '../../src/index.js'
 ```
+import crypto from 'crypto-js'
+const { SHA256 } = crypto
 
 ### 4.2. Constants and variables
 
@@ -275,15 +277,18 @@ let resolvedAlgorithmDdo: DDO
 
 let computeJobId: string
 let agreementId: string
+
+let computeRoutePath: string
+let hasFreeComputeSupport: boolean
 ```
 
 ### 4.3 Helper methods
 
 Now we define the helper methods which we will use later to publish the dataset and algorithm, and also order them
 
-Add a `createAsset()`function.
+Add a `createAssetHelper()`function.
 ```Typescript
-async function createAsset(
+async function createAssetHelper(
   name: string,
   symbol: string,
   owner: Signer,
@@ -503,7 +508,7 @@ you need to mint oceans to mentioned accounts only if you are using barge to tes
 
   ### 6.1 Publish a dataset (create NFT + Datatoken) and set dataset metadata
 ```Typescript
-    datasetId = await createAsset(
+    datasetId = await createAssetHelper(
       'D1Min',
       'D1M',
       publisherAccount,
@@ -520,7 +525,7 @@ Now, let's check that we successfully published a dataset (create NFT + Datatoke
 
   ### 6.2 Publish an algorithm (create NFT + Datatoken) and set algorithm metadata
 ```Typescript
-    algorithmId = await createAsset(
+    algorithmId = await createAssetHelper(
       'D1Min',
       'D1M',
       publisherAccount,
@@ -594,7 +599,7 @@ Now, let's check that we successfully published a algorithm (create NFT + Datato
 let's check the free compute environment
 ```Typescript
     const computeEnv = computeEnvs[resolvedDatasetDdo.chainId].find(
-      (ce) => ce.priceMin === 0
+      (ce) => ce.priceMin === 0 || isDefined(ce.free)
     )
     console.log('Free compute environment = ', computeEnv)
 ```
@@ -602,111 +607,135 @@ let's check the free compute environment
     assert(computeEnv, 'Cannot find the free compute env')
 -->
 
-Let's have 5 minute of compute access
-```Typescript
-    const mytime = new Date()
-    const computeMinutes = 5
-    mytime.setMinutes(mytime.getMinutes() + computeMinutes)
-    const computeValidUntil = Math.floor(mytime.getTime() / 1000)
+    computeRoutePath = await ProviderInstance.getComputeStartRoutes(providerUrl, true)
+    if (isDefined(computeRoutePath)) {
+      hasFreeComputeSupport = true
+  Let's have 5 minute of compute access
+  ```Typescript
+      const mytime = new Date()
+      const computeMinutes = 5
+      mytime.setMinutes(mytime.getMinutes() + computeMinutes)
+      const computeValidUntil = Math.floor(mytime.getTime() / 1000)
 
-    const assets: ComputeAsset[] = [
-      {
-        documentId: resolvedDatasetDdo.id,
-        serviceId: resolvedDatasetDdo.services[0].id
+      const assets: ComputeAsset[] = [
+        {
+          documentId: resolvedDatasetDdo.id,
+          serviceId: resolvedDatasetDdo.services[0].id
+        }
+      ]
+      const dtAddressArray = [resolvedDatasetDdo.services[0].datatokenAddress]
+      const algo: ComputeAlgorithm = {
+        documentId: resolvedAlgorithmDdo.id,
+        serviceId: resolvedAlgorithmDdo.services[0].id
       }
-    ]
-    const dtAddressArray = [resolvedDatasetDdo.services[0].datatokenAddress]
-    const algo: ComputeAlgorithm = {
-      documentId: resolvedAlgorithmDdo.id,
-      serviceId: resolvedAlgorithmDdo.services[0].id
-    }
 
-    const providerInitializeComputeResults = await ProviderInstance.initializeCompute(
-      assets,
-      algo,
-      computeEnv.id,
-      computeValidUntil,
-      providerUrl,
-      await consumerAccount.getAddress()
-    )
-```
-<!--
-    assert(!('error' in providerInitializeComputeResults), 'Cannot order algorithm')
--->
-```Typescript
-    algo.transferTxId = await handleOrder(
-      providerInitializeComputeResults.algorithm,
-      resolvedAlgorithmDdo.services[0].datatokenAddress,
-      consumerAccount,
-      computeEnv.consumerAddress,
-      0
-    )
-    for (let i = 0; i < providerInitializeComputeResults.datasets.length; i++) {
-      assets[i].transferTxId = await handleOrder(
-        providerInitializeComputeResults.datasets[i],
-        dtAddressArray[i],
+      const providerInitializeComputeResults = await ProviderInstance.initializeCompute(
+        assets,
+        algo,
+        computeEnv.id,
+        computeValidUntil,
+        providerUrl,
+        consumerAccount
+      )
+  ```
+  <!--
+      assert(!('error' in providerInitializeComputeResults), 'Cannot order algorithm')
+  -->
+  ```Typescript
+      algo.transferTxId = await handleOrder(
+        providerInitializeComputeResults.algorithm,
+        resolvedAlgorithmDdo.services[0].datatokenAddress,
         consumerAccount,
         computeEnv.consumerAddress,
         0
       )
+      for (let i = 0; i < providerInitializeComputeResults.datasets.length; i++) {
+        assets[i].transferTxId = await handleOrder(
+          providerInitializeComputeResults.datasets[i],
+          dtAddressArray[i],
+          consumerAccount,
+          computeEnv.consumerAddress,
+          0
+        )
+      }
+
+      const computeJobs = await ProviderInstance.freeComputeStart(
+        providerUrl,
+        consumerAccount,
+        computeEnv.id,
+        assets,
+        algo
+      )
+
+  ```
+  <!--
+      assert(computeJobs, 'Cannot start compute job')
+  -->
+  Let's save the compute job it, we re going to use later
+  ```Typescript
+      computeJobId = computeJobs[0].jobId
+      // eslint-disable-next-line prefer-destructuring
+      agreementId = computeJobs[0].agreementId
+    } else {
+      assert(
+        computeRoutePath === null,
+        'Route path for free compute is not defined (perhaps because provider does not support it yet?)'
+      )
+      hasFreeComputeSupport = false
     }
-
-    const computeJobs = await ProviderInstance.computeStart(
-      providerUrl,
-      consumerAccount,
-      computeEnv.id,
-      assets[0],
-      algo
-    )
-
-```
-<!--
-    assert(computeJobs, 'Cannot start compute job')
--->
-Let's save the compute job it, we re going to use later
-```Typescript
-    computeJobId = computeJobs[0].jobId
-    // eslint-disable-next-line prefer-destructuring
-    agreementId = computeJobs[0].agreementId
   
 ```
 
 ## 11. Check compute status and get download compute results URL
   ### 11.1 Check compute status
-You can also add various delays so you see the various states of the compute job
-```Typescript
-    const jobStatus = await ProviderInstance.computeStatus(
-      providerUrl,
-      await consumerAccount.getAddress(),
-      computeJobId,
-      agreementId
-    )
-```
-<!--
-    assert(jobStatus, 'Cannot retrieve compute status!')
--->
-Now, let's see the current status of the previously started computer job
-```Typescript
-    console.log('Current status of the compute job: ', jobStatus)
+    if (!hasFreeComputeSupport) {
+      assert(
+        computeRoutePath === null,
+        'Compute route path for free compute is not defined (perhaps because provider does not support it yet?)'
+      )
+    } else {
+  You can also add various delays so you see the various states of the compute job
+  ```Typescript
+      const jobStatus = await ProviderInstance.computeStatus(
+        providerUrl,
+        await consumerAccount.getAddress(),
+        computeJobId,
+        agreementId
+      )
+  ```
+  <!--
+      assert(jobStatus, 'Cannot retrieve compute status!')
+  -->
+  Now, let's see the current status of the previously started computer job
+  ```Typescript
+      console.log('Current status of the compute job: ', jobStatus)
+    }
   
 ```
 
   ### 11.2 Get download compute results URL
-```Typescript
-    await sleep(10000)
-    const downloadURL = await ProviderInstance.getComputeResultUrl(
-      providerUrl,
-      consumerAccount,
-      computeJobId,
-      0
-    )
-```
-<!--
-    assert(downloadURL, 'Provider getComputeResultUrl failed!')
--->
-Let's check the compute results url for the specified index
-```Typescript
-    console.log(`Compute results URL: ${downloadURL}`)
+    if (!hasFreeComputeSupport) {
+      assert(
+        computeRoutePath === null,
+        'Compute route path for free compute is not defined (perhaps because provider does not support it yet?)'
+      )
+    } else {
+  ```Typescript
+      await sleep(10000)
+      const downloadURL = await ProviderInstance.getComputeResultUrl(
+        providerUrl,
+        consumerAccount,
+        computeJobId,
+        0
+      )
+  ```
+  <!--
+      assert(downloadURL, 'Provider getComputeResultUrl failed!')
+  -->
+  Let's check the compute results url for the specified index
+  ```Typescript
+      console.log(`Compute results URL: ${downloadURL}`)
+    }
   
 ```
 

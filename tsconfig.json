@@ -6,14 +6,15 @@
     "allowSyntheticDefaultImports": true,
     "lib": ["ESNext", "dom"],
     "declaration": true,
-    "module": "ESNext",
-    "target": "ESNext",
+    "module": "ES2020",
+    "target": "ES2020",
     "removeComments": false,
     "experimentalDecorators": true,
     "preserveConstEnums": true,
     "outDir": "./dist",
     "sourceMap": true,
+    "skipLibCheck": true,
   },
   "include": ["src/**/*"],
-  "exclude": ["node_modules", "test"]
+  "exclude": ["dist"]
 }

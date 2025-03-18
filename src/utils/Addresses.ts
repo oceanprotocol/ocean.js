@@ -1,9 +1,9 @@
 import { ethers, Signer } from 'ethers'
-import { NftFactory } from '../contracts/NFTFactory'
+import { NftFactory } from '../contracts/NFTFactory.js'
 import fs from 'fs'
 // eslint-disable-next-line import/no-named-default
 import ERC20Template from '@oceanprotocol/contracts/artifacts/contracts/interfaces/IERC20Template.sol/IERC20Template.json'
-// eslint-disable-next-line import/no-named-default
+// eslint-disable-next-line import/no-named-default, prettier/prettier
 import { default as Addresses } from '@oceanprotocol/contracts/addresses/address.json'
 /**
  * Get the artifacts address from the address.json file
