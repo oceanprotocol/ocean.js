@@ -131,11 +131,12 @@ export class Provider {
       [ethers.utils.hexlify(ethers.utils.toUtf8Bytes(message))]
     )
     const messageHashBytes = ethers.utils.arrayify(consumerMessage)
-    const chainId = await signer.getChainId()
     try {
       return await signer.signMessage(messageHashBytes)
     } catch (error) {
       LoggerInstance.error('Sign provider message error: ', error)
+      // Check if the user is using barge chain
+      const chainId = await signer.getChainId()
       if (chainId === 8996) {
         return await (signer as providers.JsonRpcSigner)._legacySignMessage(
           messageHashBytes
