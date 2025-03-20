@@ -422,9 +422,11 @@ export class Provider {
     assets: ComputeAsset[],
     algorithm: ComputeAlgorithm,
     computeEnv: string,
-    validUntil: number,
     providerUri: string,
     accountId: string,
+    chainId: number,
+    token: string,
+    maxJobDuration: number,
     signal?: AbortSignal
   ): Promise<ProviderComputeInitializeResults> {
     const providerEndpoints = await this.getEndpoints(providerUri)
@@ -432,11 +434,17 @@ export class Provider {
       providerUri,
       providerEndpoints
     )
+    const payment = {
+      chainId,
+      token,
+      maxJobDuration
+    }
     const providerData = {
       datasets: assets,
       algorithm,
-      compute: { env: computeEnv, validUntil },
-      consumerAddress: accountId
+      payment,
+      consumerAddress: accountId,
+      environment: computeEnv
     }
     const initializeUrl = this.getEndpointURL(serviceEndpoints, 'initializeCompute')
       ? this.getEndpointURL(serviceEndpoints, 'initializeCompute').urlPath

@@ -607,7 +607,7 @@ describe('Compute-to-data example tests', async () => {
     const mytime = new Date()
     const computeMinutes = 5
     mytime.setMinutes(mytime.getMinutes() + computeMinutes)
-    const computeValidUntil = Math.floor(mytime.getTime() / 1000)
+    const maxJobDuration = Math.floor(mytime.getTime() / 1000)
 
     const assets: ComputeAsset[] = [
       {
@@ -625,9 +625,11 @@ describe('Compute-to-data example tests', async () => {
       assets,
       algo,
       computeEnv.id,
-      computeValidUntil,
       providerUrl,
-      await consumerAccount.getAddress()
+      await consumerAccount.getAddress(),
+      await consumerAccount.getChainId(),
+      resolvedDatasetDdo.services[0].datatokenAddress,
+      maxJobDuration
     )
     /// ```
     /// <!--

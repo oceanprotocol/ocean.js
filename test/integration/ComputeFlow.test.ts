@@ -428,9 +428,11 @@ describe('Compute flow tests', async () => {
       assets,
       algo,
       computeEnv.id,
-      computeValidUntil,
       providerUrl,
-      await consumerAccount.getAddress()
+      await consumerAccount.getAddress(),
+      await consumerAccount.getChainId(),
+      resolvedDdoWith5mTimeout.services[0].datatokenAddress,
+      computeValidUntil
     )
     assert(
       !('error' in providerInitializeComputeResults.algorithm),
@@ -499,9 +501,11 @@ describe('Compute flow tests', async () => {
       assets,
       algo,
       computeEnv.id,
-      computeValidUntil,
       providerUrl,
-      await consumerAccount.getAddress()
+      await consumerAccount.getAddress(),
+      await consumerAccount.getChainId(),
+      resolvedDdoWith5mTimeout.services[0].datatokenAddress,
+      computeValidUntil
     )
     assert(
       providerInitializeComputeResults.algorithm.validOrder,
@@ -561,9 +565,11 @@ describe('Compute flow tests', async () => {
       assets,
       algo,
       computeEnv.id,
-      computeValidUntil,
       providerUrl,
-      await consumerAccount.getAddress()
+      await consumerAccount.getAddress(),
+      await consumerAccount.getChainId(),
+      resolvedDdoWith5mTimeout.services[0].datatokenAddress,
+      computeValidUntil
     )
     assert(
       !('error' in providerInitializeComputeResults.algorithm),
@@ -639,9 +645,11 @@ describe('Compute flow tests', async () => {
       assets,
       algo,
       computeEnv.id,
-      computeValidUntil,
       providerUrl,
-      await consumerAccount.getAddress()
+      await consumerAccount.getAddress(),
+      await consumerAccount.getChainId(),
+      resolvedDdoWith5mTimeout.services[0].datatokenAddress,
+      computeValidUntil
     )
     assert(
       providerInitializeComputeResults.algorithm.validOrder,
@@ -710,9 +718,11 @@ describe('Compute flow tests', async () => {
       assets,
       algo,
       computeEnv.id,
-      computeValidUntil,
       providerUrl,
-      await consumerAccount.getAddress()
+      await consumerAccount.getAddress(),
+      await consumerAccount.getChainId(),
+      resolvedDdoWith5mTimeout.services[0].datatokenAddress,
+      computeValidUntil
     )
     assert(
       providerInitializeComputeResults.algorithm.validOrder,
@@ -795,9 +805,11 @@ describe('Compute flow tests', async () => {
       assets,
       algo,
       computeEnv.id,
-      computeValidUntil,
       providerUrl,
-      await consumerAccount.getAddress()
+      await consumerAccount.getAddress(),
+      await consumerAccount.getChainId(),
+      resolvedDdoWith5mTimeout.services[0].datatokenAddress,
+      computeValidUntil
     )
     assert(
       providerInitializeComputeResults.algorithm.validOrder,
