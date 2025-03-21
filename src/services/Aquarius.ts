@@ -86,7 +86,8 @@ export class Aquarius {
           const { indexedMetadata } = ddoInstance.getAssetFields()
           if (txid) {
             // check tx
-            if (indexedMetadata.event && indexedMetadata.event.txid === txid) return ddo as Asset
+            if (indexedMetadata.event && indexedMetadata.event.txid === txid)
+              return ddo as Asset
           } else return ddo as Asset
         }
       } catch (e) {
