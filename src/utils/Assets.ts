@@ -136,7 +136,7 @@ export async function createAsset(
   try {
     if (!value) {
       bundleNFT = await nftFactory.createNftWithDatatoken(nftParamsAsset, datatokenParams)
-    } else if (value === '0') {
+    } else if (value.toString() === '0') {
       const dispenserParams: DispenserCreationParams = {
         dispenserAddress: config.dispenserAddress,
         maxTokens: '1',
