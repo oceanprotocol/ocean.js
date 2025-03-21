@@ -94,7 +94,7 @@
     "nyc": "^17.1.0",
     "ora": "5.4.1",
     "prettier": "^2.7.1",
-    "release-it": "^15.4.2",
+    "release-it": "^18.1.2",
     "source-map-support": "^0.5.21",
     "ts-node": "^10.9.2",
     "ts-node-register": "^1.0.0",
