@@ -192,9 +192,6 @@ jobs:
           INDEXING_RETRY_INTERVAL: 4000
           INDEXING_MAX_RETRIES: 120
           NODE_URL: 'http://127.0.0.1:8001'
-      - name: docker logs
-        run: docker logs ocean_aquarius_1 && docker logs ocean_provider_1 && docker logs ocean_provider2_1 && docker logs ocean_computetodata_1
-        if: ${{ failure() }}
       - name: Upload coverage
         uses: actions/upload-artifact@v4
         with:
