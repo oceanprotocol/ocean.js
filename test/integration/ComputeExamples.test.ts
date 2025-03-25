@@ -428,7 +428,11 @@ describe('Compute-to-data example tests', async () => {
     const config = new ConfigHelper().getConfig(
       parseInt(String((await publisherAccount.provider.getNetwork()).chainId))
     )
-    config.providerUri = process.env.PROVIDER_URL || config.providerUri
+    if (process.env.OCEAN_NODE_URL) {
+      config.providerUri = process.env.OCEAN_NODE_URL
+    } else {
+      config.providerUri = process.env.PROVIDER_URL || config.providerUri
+    }
     aquariusInstance = new Aquarius(config?.metadataCacheUri)
     providerUrl = config?.providerUri
     addresses = JSON.parse(
