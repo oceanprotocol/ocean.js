@@ -631,6 +631,7 @@ describe('Compute flow tests', async () => {
     paidEnvDatasetTxId = assets[0].transferTxId
     paidEnvAlgoTxId = algo.transferTxId
     assert(computeJobs, 'Cannot start compute job')
+    paidComputeJobId = computeJobs[0].jobId
     const jobStatus = (await ProviderInstance.computeStatus(
       providerUrl,
       await consumerAccount.getAddress(),
