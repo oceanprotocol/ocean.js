@@ -106,7 +106,7 @@ export class EscrowContract extends SmartContractWithAddress {
     amounts: string[],
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
-    const amountsParsed = amounts.map(amount => amountToUnits(null, null, amount, 18))
+    const amountsParsed = amounts.map((amount) => amountToUnits(null, null, amount, 18))
 
     const estGas = await this.contract.estimateGas.withdraw(tokens, amountsParsed)
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
