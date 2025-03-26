@@ -2,8 +2,8 @@ import { ethers, Signer } from 'ethers'
 import Decimal from 'decimal.js'
 import ERC20Template from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC20Template.sol/ERC20Template.json'
 import ERC20TemplateEnterprise from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC20TemplateEnterprise.sol/ERC20TemplateEnterprise.json'
-import { amountToUnits, sendTx } from '../utils/ContractUtils'
-import { ZERO_ADDRESS } from '../utils/Constants'
+import { amountToUnits, sendTx } from '../utils/ContractUtils.js'
+import { ZERO_ADDRESS } from '../utils/Constants.js'
 import {
   AbiItem,
   ConsumeMarketFee,
@@ -15,10 +15,10 @@ import {
   OrderParams,
   DatatokenRoles,
   ReceiptOrEstimate
-} from '../@types'
-import { Nft } from './NFT'
-import { Config } from '../config'
-import { SmartContract } from './SmartContract'
+} from '../@types/index.js'
+import { Nft } from './NFT.js'
+import { Config } from '../config/index.js'
+import { SmartContract } from './SmartContract.js'
 
 export class Datatoken extends SmartContract {
   public abiEnterprise: AbiItem[]

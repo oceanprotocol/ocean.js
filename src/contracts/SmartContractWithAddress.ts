@@ -1,7 +1,7 @@
 import { Signer, Contract } from 'ethers'
-import { AbiItem } from '../@types'
-import { Config } from '../config'
-import { SmartContract } from './SmartContract'
+import { AbiItem } from '../@types/index.js'
+import { Config } from '../config/index.js'
+import { SmartContract } from './SmartContract.js'
 export abstract class SmartContractWithAddress extends SmartContract {
   public address: string
   public contract: Contract

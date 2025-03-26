@@ -1,4 +1,4 @@
-import { SHA256 } from 'crypto-js'
+import crypto from 'crypto-js'
 import { ethers, Signer } from 'ethers'
 import {
   Aquarius,
@@ -16,9 +16,9 @@ import {
   DDO,
   ProviderFees,
   getEventFromTx
-} from '../../src'
-
-export async function createAsset(
+} from '../../src/index.js'
+// superseed by src/utils/CreateAsset
+export async function createAssetHelper(
   name: string,
   symbol: string,
   owner: Signer,
@@ -74,7 +74,8 @@ export async function createAsset(
   ddo.services[0].serviceEndpoint = 'http://172.15.0.4:8030' // put back proviederUrl
 
   ddo.nftAddress = nftAddress
-  ddo.id = 'did:op:' + SHA256(ethers.utils.getAddress(nftAddress) + chain.toString(10))
+  ddo.id =
+    'did:op:' + crypto.SHA256(ethers.utils.getAddress(nftAddress) + chain.toString(10))
 
   const encryptedResponse = await ProviderInstance.encrypt(ddo, chain, providerUrl)
   const validateResult = await aquariusInstance.validate(ddo)
@@ -137,7 +138,8 @@ export async function handleComputeOrder(
   if (config.chainId !== chainID) {
     throw new Error('Chain ID from DDO is different than the configured network.')
   }
-  if (order.providerFee && order.providerFee.providerFeeAmount) {
+  const hasProviderFees = order.providerFee && order.providerFee.providerFeeAmount
+  if (hasProviderFees && Number(order.providerFee.providerFeeAmount) > 0) {
     await approveWei(
       payerAccount,
       config,

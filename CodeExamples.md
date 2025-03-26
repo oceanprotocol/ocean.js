@@ -79,7 +79,7 @@ Start by importing all of the necessary dependencies
 import fs from 'fs'
 
 import { ethers, providers, Signer } from 'ethers'
-import { SHA256 } from 'crypto-js'
+import crypto from 'crypto-js'
 import { homedir } from 'os'
 import {
   approve,
@@ -109,8 +109,9 @@ import {
   getEventFromTx,
   DDO,
   LoggerInstance
-} from '@oceanprotocol/lib'
+} from '../../src/index.js'
 ```
+const { SHA256 } = crypto
 
 <!--
 describe('Marketplace flow tests
@@ -165,7 +166,7 @@ Next, we define the metadata that will describe our data asset. This is what we 
 ```Typescript
   const genericAsset: DDO = {
     '@context': ['https://w3id.org/did/v1'],
-    id: '',
+    id: 'did:op',
     version: '4.1.0',
     chainId: 8996,
     nftAddress: '0x0',
@@ -821,7 +822,7 @@ Let's start by using the `setData` method to update the nft key value store with
         data
       )
     } catch (e) {
-      console.log('e = ', e)
+      console.log('error = ', e)
       assert.fail('Failed to set data in NFT ERC725 key value store', e)
     }
 ```

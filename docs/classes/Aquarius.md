@@ -123,7 +123,7 @@ ___
 
 ### validate
 
-▸ **validate**(`ddo`, `signal?`): `Promise`<[`ValidateMetadata`](../interfaces/ValidateMetadata.md)\>
+▸ **validate**(`ddo`, `signal?`,`signer?`,`providerUrl?`): `Promise`<[`ValidateMetadata`](../interfaces/ValidateMetadata.md)\>
 
 Validate DDO content
 
@@ -132,6 +132,8 @@ Validate DDO content
 | Name | Type | Description |
 | :------ | :------ | :------ |
 | `ddo` | [`DDO`](../interfaces/DDO.md) | DID Descriptor Object content. |
+| `signer?` | `Signer` | publisher account (for signature). |
+| `providerUrl?` | `string` | Provider url (to get nonce) |
 | `signal?` | `AbortSignal` | abort signal |
 
 #### Returns
