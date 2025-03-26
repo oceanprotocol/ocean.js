@@ -491,10 +491,26 @@ describe('Marketplace flow tests', async () => {
       consumerAccount,
       await consumerAccount.getChainId()
     )
+    const oceanAmount = await fixedRate.calcBaseInGivenDatatokensOut(freId, '1')
+
+    await approve(
+      consumerAccount,
+      config,
+      await consumerAccount.getAddress(),
+      addresses.Ocean,
+      freAddress,
+      oceanAmount.baseTokenAmount
+    )
+
+    await new Promise((resolve) => setTimeout(resolve, 2000))
+
     /// ```
     /// Now we can make the contract call
     /// ```Typescript
-    await fixedRate.buyDatatokens(freId, '1', '2')
+
+    await fixedRate.buyDatatokens(freId, '1', oceanAmount.baseTokenAmount)
+
+    // await fixedRate.buyDatatokens(freId, '1', '2')
 
     consumerOCEANBalance = await balance(
       consumerAccount,
