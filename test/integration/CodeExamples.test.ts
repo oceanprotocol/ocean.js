@@ -493,13 +493,14 @@ describe('Marketplace flow tests', async () => {
     )
     const oceanAmount = await fixedRate.calcBaseInGivenDatatokensOut(freId, '1')
 
+    const largerAmount = ethers.utils.parseUnits(oceanAmount.baseTokenAmount, 18).mul(2)
     await approve(
       consumerAccount,
       config,
       await consumerAccount.getAddress(),
       addresses.Ocean,
       freAddress,
-      oceanAmount.baseTokenAmount
+      largerAmount.toString()
     )
 
     await new Promise((resolve) => setTimeout(resolve, 2000))
