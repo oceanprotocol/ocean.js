@@ -96,26 +96,28 @@ export class EscrowContract extends SmartContractWithAddress {
 
   /**
    * Withdraw funds
-   * @param {String} token Token address
-   * @param {String} amount tokenURI
+   * @param {String[]} tokens Array of token addresses
+   * @param {String[]} amounts Array of token amounts
    * @param {Boolean} estimateGas if True, return gas estimate
    * @return {Promise<ReceiptOrEstimate>} returns the transaction receipt or the estimateGas value
    */
   public async withdraw<G extends boolean = false>(
-    token: string,
-    amount: string,
+    tokens: string[],
+    amounts: string[],
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
-    const amountParsed = amountToUnits(null, null, amount, 18)
-    const estGas = await this.contract.estimateGas.withdraw(token, amountParsed)
+    const amountsParsed = amounts.map((amount) => amountToUnits(null, null, amount, 18))
+
+    const estGas = await this.contract.estimateGas.withdraw(tokens, amountsParsed)
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
+
     const trxReceipt = await sendTx(
       estGas,
       this.getSignerAccordingSdk(),
       this.config?.gasFeeMultiplier,
       this.contract.withdraw,
-      token,
-      amountParsed
+      tokens,
+      amountsParsed
     )
     return <ReceiptOrEstimate<G>>trxReceipt
   }

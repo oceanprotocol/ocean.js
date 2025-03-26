@@ -117,14 +117,6 @@ jobs:
           bash -x start_ocean.sh --with-provider2 --no-dashboard --with-c2d 2>&1 > start_ocean.log &
       - run: npm ci
       - run: npm run build:metadata
-      - name: Delete default runner images
-        run: |
-          docker image rm -f node:18
-          docker image rm -f node:18-alpine
-          docker image rm -f node:20
-          docker image rm -f debian:10
-          docker image rm -f debian:11
-          docker image rm -f moby/buildkit:latest
       - name: Wait for contracts deployment and C2D cluster to be ready
         working-directory: ${{ github.workspace }}/barge
         run: |

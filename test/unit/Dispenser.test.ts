@@ -1,5 +1,5 @@
 import { assert, expect } from 'chai'
-import { provider, getAddresses } from '../config'
+import { provider, getAddresses } from '../config.js'
 import { Signer } from 'ethers'
 
 import {
@@ -10,7 +10,7 @@ import {
   Dispenser,
   ZERO_ADDRESS,
   getEventFromTx
-} from '../../src/'
+} from '../../src/index.js'
 import { DatatokenCreateParams } from '../../src/@types'
 
 describe('Dispenser flow', () => {
