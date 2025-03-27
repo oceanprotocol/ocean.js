@@ -615,7 +615,7 @@ describe('Compute-to-data example tests', async () => {
       const mytime = new Date()
       const computeMinutes = 5
       mytime.setMinutes(mytime.getMinutes() + computeMinutes)
-      const computeValidUntil = Math.floor(mytime.getTime() / 1000)
+      const maxJobDuration = Math.floor(mytime.getTime() / 1000)
 
       const assets: ComputeAsset[] = [
         {
@@ -633,7 +633,7 @@ describe('Compute-to-data example tests', async () => {
         assets,
         algo,
         computeEnv.id,
-        computeValidUntil,
+        maxJobDuration,
         providerUrl,
         consumerAccount
       )
@@ -657,25 +657,34 @@ describe('Compute-to-data example tests', async () => {
           computeEnv.consumerAddress,
           0
         )
+        for (let i = 0; i < providerInitializeComputeResults.datasets.length; i++) {
+          assets[i].transferTxId = await handleOrder(
+            providerInitializeComputeResults.datasets[i],
+            dtAddressArray[i],
+            consumerAccount,
+            computeEnv.consumerAddress,
+            0
+          )
+        }
+
+        const computeJobs = await ProviderInstance.freeComputeStart(
+          providerUrl,
+          consumerAccount,
+          computeEnv.id,
+          assets,
+          algo
+        )
+
+        /// ```
+        /// <!--
+        assert(computeJobs, 'Cannot start compute job')
+        /// -->
+        /// Let's save the compute job it, we re going to use later
+        /// ```Typescript
+        computeJobId = computeJobs[0].jobId
+        // eslint-disable-next-line prefer-destructuring
+        agreementId = computeJobs[0].agreementId
       }
-
-      const computeJobs = await ProviderInstance.freeComputeStart(
-        providerUrl,
-        consumerAccount,
-        computeEnv.id,
-        assets,
-        algo
-      )
-
-      /// ```
-      /// <!--
-      assert(computeJobs, 'Cannot start compute job')
-      /// -->
-      /// Let's save the compute job it, we re going to use later
-      /// ```Typescript
-      computeJobId = computeJobs[0].jobId
-      // eslint-disable-next-line prefer-destructuring
-      agreementId = computeJobs[0].agreementId
     } else {
       assert(
         computeRoutePath === null,
