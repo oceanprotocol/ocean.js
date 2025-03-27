@@ -540,6 +540,15 @@ describe('Marketplace flow tests', async () => {
 
     console.log(`Provider fees: ${providerFees}`)
 
+    const approveTx = await approve(
+      consumerAccount,
+      config,
+      await consumerAccount.getAddress(),
+      freDatatokenAddress,
+      providerFees.providerFeeAddress,
+      '1'
+    )
+
     datatoken = new Datatoken(consumerAccount, await consumerAccount.getChainId())
 
     /// ```
