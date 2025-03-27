@@ -503,7 +503,13 @@ describe('Marketplace flow tests', async () => {
       largerAmount.toString()
     )
 
-    await new Promise((resolve) => setTimeout(resolve, 2000))
+    await new Promise((resolve) => setTimeout(resolve, 5000))
+
+    const allowance = await datatoken.allowance(
+      await consumerAccount.getAddress(),
+      freAddress
+    )
+    console.log(`Current allowance: ${allowance.toString()}`)
 
     /// ```
     /// Now we can make the contract call
