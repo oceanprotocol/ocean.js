@@ -632,11 +632,6 @@ describe('Compute flow tests', async () => {
     paidEnvAlgoTxId = algo.transferTxId
     assert(computeJobs, 'Cannot start compute job')
     paidComputeJobId = computeJobs[0].jobId
-  })
-
-  delay(100000)
-
-  it('Check compute status', async () => {
     const jobStatus = (await ProviderInstance.computeStatus(
       providerUrl,
       await consumerAccount.getAddress(),
@@ -646,8 +641,14 @@ describe('Compute flow tests', async () => {
     assert(jobStatus, 'Cannot retrieve compute status!')
   })
 
+  delay(15000)
+
   it('should restart a computeJob on paid environment, without paying anything, because order is valid and providerFees are still valid', async () => {
     // we choose the paid env
+
+    // Delay to ensure previous job is finished
+    await new Promise((resolve) => setTimeout(resolve, 15000))
+
     const computeEnv = computeEnvs[resolvedDdoWith5mTimeout.chainId].find(
       (ce) => ce.priceMin !== 0 || !isDefined(ce.free)
     )
