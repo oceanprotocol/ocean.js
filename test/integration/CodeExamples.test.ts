@@ -498,7 +498,7 @@ describe('Marketplace flow tests', async () => {
     /// Now we can make the contract call
     /// ```Typescript
 
-    await fixedRate.buyDatatokens(freId, '1', '10')
+    await fixedRate.buyDatatokens(freId, '1', '2')
 
     consumerOCEANBalance = await balance(
       consumerAccount,
@@ -538,6 +538,8 @@ describe('Marketplace flow tests', async () => {
       validUntil: initializeData.providerFee.validUntil
     }
 
+    console.log(`Provider fees: ${providerFees}`)
+
     datatoken = new Datatoken(consumerAccount, await consumerAccount.getChainId())
 
     /// ```
@@ -551,6 +553,8 @@ describe('Marketplace flow tests', async () => {
     )
     const orderTx = await tx.wait()
     const orderStartedTx = getEventFromTx(orderTx, 'OrderStarted')
+    console.log(`Order started, tx: ${orderStartedTx.transactionHash}`)
+
     /// ```
     /// Now we can get the url
     /// ```Typescript
