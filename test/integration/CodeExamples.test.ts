@@ -538,7 +538,7 @@ describe('Marketplace flow tests', async () => {
       validUntil: initializeData.providerFee.validUntil
     }
 
-    console.log(`Provider fees: ${providerFees}`)
+    console.log(`Provider fee amount: ${providerFees.providerFeeAmount}`)
 
     const approveTx = await approve(
       consumerAccount,
@@ -546,7 +546,7 @@ describe('Marketplace flow tests', async () => {
       await consumerAccount.getAddress(),
       freDatatokenAddress,
       providerFees.providerFeeAddress,
-      '1'
+      providerFees.providerFeeAmount
     )
 
     datatoken = new Datatoken(consumerAccount, await consumerAccount.getChainId())
