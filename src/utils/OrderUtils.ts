@@ -45,15 +45,13 @@ export async function orderAsset(
   fixedRateIndex: number = 0
 ) {
   const ddoInstance = DDOManager.getDDOClass(asset)
-  const { datatokens, stats } = ddoInstance.getAssetFields()
+  const { datatokens } = ddoInstance.getAssetFields()
   const { chainId: assetChainId, services } = ddoInstance.getDDOFields()
   if (!consumeMarketOrderFee)
     consumeMarketOrderFee = {
       consumeMarketFeeAddress: '0x0000000000000000000000000000000000000000',
       consumeMarketFeeAmount: '0',
-      consumeMarketFeeToken:
-        stats.price?.tokenAddress?.toString() ||
-        '0x0000000000000000000000000000000000000000'
+      consumeMarketFeeToken: '0x0000000000000000000000000000000000000000'
     }
   const chainID = (await consumerAccount.provider.getNetwork()).chainId
   if (assetChainId !== chainID) {

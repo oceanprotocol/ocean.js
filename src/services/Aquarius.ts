@@ -83,10 +83,11 @@ export class Aquarius {
         if (response.ok) {
           const ddo = await response.json()
           const ddoInstance = DDOManager.getDDOClass(ddo)
-          const { event } = ddoInstance.getAssetFields()
+          const { indexedMetadata } = ddoInstance.getAssetFields()
           if (txid) {
             // check tx
-            if (event && event.txid === txid) return ddo as Asset
+            if (indexedMetadata.event && indexedMetadata.event.txid === txid)
+              return ddo as Asset
           } else return ddo as Asset
         }
       } catch (e) {
