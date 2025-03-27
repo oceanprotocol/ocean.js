@@ -698,23 +698,14 @@ describe('Compute flow tests', async () => {
         assets[0].transferTxId === paidEnvDatasetTxId,
       'We should use the same orders, because no fess must be paid'
     )
-    try {
-      const computeJobs = await ProviderInstance.computeStart(
-        providerUrl,
-        consumerAccount,
-        computeEnv.id,
-        assets,
-        algo
-      )
-      assert(computeJobs, 'Cannot start compute job')
-    } catch (error) {
-      if (error.message.includes('agreementId')) {
-        console.log('Job already running with this agreementId - test successful')
-        return
-      } else {
-        throw error
-      }
-    }
+    const computeJobs = await ProviderInstance.computeStart(
+      providerUrl,
+      consumerAccount,
+      computeEnv.id,
+      assets,
+      algo
+    )
+    assert(computeJobs, 'Cannot start compute job')
   })
 
   // move to reuse Orders
