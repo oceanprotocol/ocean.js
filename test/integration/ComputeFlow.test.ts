@@ -641,8 +641,11 @@ describe('Compute flow tests', async () => {
     assert(jobStatus, 'Cannot retrieve compute status!')
   })
 
+  delay(15000)
+
   it('should restart a computeJob on paid environment, without paying anything, because order is valid and providerFees are still valid', async () => {
     // we choose the paid env
+
     const computeEnv = computeEnvs[resolvedDdoWith5mTimeout.chainId].find(
       (ce) => ce.priceMin !== 0 || !isDefined(ce.free)
     )
