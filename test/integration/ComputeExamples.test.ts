@@ -555,7 +555,7 @@ describe('Compute-to-data example tests', async () => {
     assert(resolvedDatasetDdo, 'Cannot fetch DDO from Aquarius')
     assert(resolvedAlgorithmDdo, 'Cannot fetch DDO from Aquarius')
     /// -->
-  }).timeout(40000) ///
+  }).timeout(80000) ///
 
   /// ## 8. Send datatokens to consumer
 
