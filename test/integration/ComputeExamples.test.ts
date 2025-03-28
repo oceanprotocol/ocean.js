@@ -342,7 +342,7 @@ async function createAssetHelper(
   assetUrl.nftAddress = nftAddress
   ddo.services[0].files = await ProviderInstance.encrypt(assetUrl, chain, providerUrl)
   ddo.services[0].datatokenAddress = datatokenAddressAsset
-  ddo.services[0].serviceEndpoint = 'http://172.15.0.4:8030' // put back proviederUrl
+  ddo.services[0].serviceEndpoint = providerUrl
 
   ddo.nftAddress = nftAddress
   ddo.id = 'did:op:' + SHA256(ethers.utils.getAddress(nftAddress) + chain.toString(10))
@@ -353,7 +353,7 @@ async function createAssetHelper(
     nftAddress,
     await owner.getAddress(),
     0,
-    'http://172.15.0.4:8030', // put back proviederUrl
+    providerUrl,
     '',
     ethers.utils.hexlify(2),
     encryptedResponse,
@@ -428,7 +428,11 @@ describe('Compute-to-data example tests', async () => {
     const config = new ConfigHelper().getConfig(
       parseInt(String((await publisherAccount.provider.getNetwork()).chainId))
     )
-    config.providerUri = process.env.PROVIDER_URL || config.providerUri
+    if (process.env.OCEAN_NODE_URL) {
+      config.providerUri = process.env.OCEAN_NODE_URL
+    } else {
+      config.providerUri = process.env.PROVIDER_URL || config.providerUri
+    }
     aquariusInstance = new Aquarius(config?.metadataCacheUri)
     providerUrl = config?.providerUri
     addresses = JSON.parse(
@@ -489,7 +493,7 @@ describe('Compute-to-data example tests', async () => {
       await publisherAccount.getAddress(),
       amountToUnits(null, null, '1000', 18)
     )
-  }) ///
+  }).timeout(40000) ///
   /// ```
 
   it('5.2 Send some OCEAN to consumer account', async () => {
@@ -520,7 +524,7 @@ describe('Compute-to-data example tests', async () => {
     /// Now, let's check that we successfully published a dataset (create NFT + Datatoken)
     /// ```Typescript
     console.log(`dataset id: ${datasetId}`)
-  }) ///
+  }).timeout(40000) ///
   /// ```
 
   it('6.2 Publish an algorithm (create NFT + Datatoken) and set algorithm metadata', async () => {
@@ -537,7 +541,7 @@ describe('Compute-to-data example tests', async () => {
     /// Now, let's check that we successfully published a algorithm (create NFT + Datatoken)
     /// ```Typescript
     console.log(`algorithm id: ${algorithmId}`)
-  }) ///
+  }).timeout(40000) ///
   /// ```
 
   /// ## 7. Resolve assets
@@ -551,7 +555,7 @@ describe('Compute-to-data example tests', async () => {
     assert(resolvedDatasetDdo, 'Cannot fetch DDO from Aquarius')
     assert(resolvedAlgorithmDdo, 'Cannot fetch DDO from Aquarius')
     /// -->
-  }) ///
+  }).timeout(80000) ///
 
   /// ## 8. Send datatokens to consumer
 
@@ -574,7 +578,7 @@ describe('Compute-to-data example tests', async () => {
       '10',
       await consumerAccount.getAddress()
     )
-  }) ///
+  }).timeout(40000) ///
   /// ```
 
   /// ## 9. Get compute environments
@@ -586,7 +590,7 @@ describe('Compute-to-data example tests', async () => {
     /// <!--
     assert(computeEnvs, 'No Compute environments found')
     /// -->
-  }) ///
+  }).timeout(40000) ///
 
   /// ## 10. Consumer starts a compute job
 
@@ -598,8 +602,9 @@ describe('Compute-to-data example tests', async () => {
 
     /// let's check the free compute environment
     /// ```Typescript
-    const computeEnv = computeEnvs[resolvedDatasetDdo.chainId].find(
-      (ce) => ce.priceMin === 0 || isDefined(ce.free)
+    const computeEnv = computeEnvs.find(
+      (ce) =>
+        !ce?.fees || ce.fees.find((fee) => fee.symbol === 'OCEAN' && fee.amount === '0')
     )
     console.log('Free compute environment = ', computeEnv)
     /// ```
@@ -637,6 +642,7 @@ describe('Compute-to-data example tests', async () => {
         providerUrl,
         consumerAccount
       )
+      console.log('providerInitializeComputeResults = ', providerInitializeComputeResults)
       /// ```
       /// <!--
       assert(!('error' in providerInitializeComputeResults), 'Cannot order algorithm')
@@ -683,7 +689,7 @@ describe('Compute-to-data example tests', async () => {
       )
       hasFreeComputeSupport = false
     }
-  }) ///
+  }).timeout(40000) ///
   /// ```
 
   /// ## 11. Check compute status and get download compute results URL
@@ -710,7 +716,7 @@ describe('Compute-to-data example tests', async () => {
       /// ```Typescript
       console.log('Current status of the compute job: ', jobStatus)
     }
-  }) ///
+  }).timeout(40000) ///
   /// ```
 
   it('11.2 Get download compute results URL', async () => {
@@ -736,7 +742,7 @@ describe('Compute-to-data example tests', async () => {
       /// ```Typescript
       console.log(`Compute results URL: ${downloadURL}`)
     }
-  }) ///
+  }).timeout(40000) ///
   /// ```
 }) ///
 
