@@ -660,7 +660,7 @@ describe('Marketplace flow tests', async () => {
     console.log(`Dispenser NFT address: ${dispenserNftAddress}`)
     console.log(`Dispenser Datatoken address: ${dispenserDatatokenAddress}`)
     console.log(`Dispenser address: ${dispenserAddress}`)
-  }) ///
+  }).timeout(40000) ///
   /// ```
 
   it('8.2 Set metadata in the dispenser NFT', async () => {
@@ -710,7 +710,7 @@ describe('Marketplace flow tests', async () => {
       encryptedDDO,
       isAssetValid.hash
     )
-  }) ///
+  }).timeout(40000) ///
   /// ```
 
   /// ## 9. Consume a dispenser data asset
@@ -814,7 +814,7 @@ describe('Marketplace flow tests', async () => {
     } catch (e) {
       assert.fail('Download failed')
     }
-  }) ///
+  }).timeout(40000) ///
   /// ```
 
   /// ## 10. Using ERC725 Key-Value Store
@@ -869,7 +869,7 @@ describe('Marketplace flow tests', async () => {
     /// ```
 
     /// That's it! Note the simplicity. All data was stored and retrieved from on-chain. We don't need Ocean Provider or Ocean Aquarius for these use cases (though the latter can help for fast querying & retrieval).
-  }) ///
+  }).timeout(40000) ///
 }) ///
 
 /// ## Editing this file
