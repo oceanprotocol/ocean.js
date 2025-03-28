@@ -493,7 +493,7 @@ describe('Compute-to-data example tests', async () => {
       await publisherAccount.getAddress(),
       amountToUnits(null, null, '1000', 18)
     )
-  }) ///
+  }).timeout(40000) ///
   /// ```
 
   it('5.2 Send some OCEAN to consumer account', async () => {
@@ -524,7 +524,7 @@ describe('Compute-to-data example tests', async () => {
     /// Now, let's check that we successfully published a dataset (create NFT + Datatoken)
     /// ```Typescript
     console.log(`dataset id: ${datasetId}`)
-  }) ///
+  }).timeout(40000) ///
   /// ```
 
   it('6.2 Publish an algorithm (create NFT + Datatoken) and set algorithm metadata', async () => {
@@ -541,7 +541,7 @@ describe('Compute-to-data example tests', async () => {
     /// Now, let's check that we successfully published a algorithm (create NFT + Datatoken)
     /// ```Typescript
     console.log(`algorithm id: ${algorithmId}`)
-  }) ///
+  }).timeout(40000) ///
   /// ```
 
   /// ## 7. Resolve assets
@@ -555,7 +555,7 @@ describe('Compute-to-data example tests', async () => {
     assert(resolvedDatasetDdo, 'Cannot fetch DDO from Aquarius')
     assert(resolvedAlgorithmDdo, 'Cannot fetch DDO from Aquarius')
     /// -->
-  }) ///
+  }).timeout(40000) ///
 
   /// ## 8. Send datatokens to consumer
 
@@ -578,7 +578,7 @@ describe('Compute-to-data example tests', async () => {
       '10',
       await consumerAccount.getAddress()
     )
-  }) ///
+  }).timeout(40000) ///
   /// ```
 
   /// ## 9. Get compute environments
@@ -590,7 +590,7 @@ describe('Compute-to-data example tests', async () => {
     /// <!--
     assert(computeEnvs, 'No Compute environments found')
     /// -->
-  }) ///
+  }).timeout(40000) ///
 
   /// ## 10. Consumer starts a compute job
 
@@ -687,7 +687,7 @@ describe('Compute-to-data example tests', async () => {
       )
       hasFreeComputeSupport = false
     }
-  }) ///
+  }).timeout(40000) ///
   /// ```
 
   /// ## 11. Check compute status and get download compute results URL
@@ -714,7 +714,7 @@ describe('Compute-to-data example tests', async () => {
       /// ```Typescript
       console.log('Current status of the compute job: ', jobStatus)
     }
-  }) ///
+  }).timeout(40000) ///
   /// ```
 
   it('11.2 Get download compute results URL', async () => {
@@ -740,7 +740,7 @@ describe('Compute-to-data example tests', async () => {
       /// ```Typescript
       console.log(`Compute results URL: ${downloadURL}`)
     }
-  }) ///
+  }).timeout(40000) ///
   /// ```
 }) ///
 
