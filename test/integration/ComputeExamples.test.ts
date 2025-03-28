@@ -604,8 +604,9 @@ describe('Compute-to-data example tests', async () => {
 
     /// let's check the free compute environment
     /// ```Typescript
-    const computeEnv = computeEnvs[resolvedDatasetDdo.chainId].find(
-      (ce) => ce.priceMin === 0 || isDefined(ce.free)
+    const computeEnv = computeEnvs.find(
+      (ce) =>
+        !ce?.fees || ce.fees.find((fee) => fee.symbol === 'OCEAN' && fee.amount === '0')
     )
     console.log('Free compute environment = ', computeEnv)
     /// ```
