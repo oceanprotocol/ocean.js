@@ -600,6 +600,8 @@ describe('Compute-to-data example tests', async () => {
       (await consumerAccount.provider.getNetwork()).chainId
     )
 
+    console.log('Compute environments: ', computeEnvs)
+
     /// let's check the free compute environment
     /// ```Typescript
     const computeEnv = computeEnvs[resolvedDatasetDdo.chainId].find(
