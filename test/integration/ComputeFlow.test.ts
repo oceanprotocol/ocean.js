@@ -85,7 +85,7 @@ const ddoWithNoTimeout = {
       type: 'compute',
       files: '',
       datatokenAddress: '0xa15024b732A8f2146423D14209eFd074e61964F3',
-      serviceEndpoint: 'http://172.15.0.4:8030',
+      serviceEndpoint: 'http://127.0.0.1:8001',
       timeout: 0,
       compute: {
         publisherTrustedAlgorithmPublishers: [],
@@ -122,7 +122,7 @@ const ddoWith5mTimeout = {
       type: 'compute',
       files: '',
       datatokenAddress: '0xa15024b732A8f2146423D14209eFd074e61964F3',
-      serviceEndpoint: 'http://172.15.0.4:8030',
+      serviceEndpoint: 'http://127.0.0.1:8001',
       timeout: 300,
       compute: {
         publisherTrustedAlgorithmPublishers: [],
@@ -180,7 +180,7 @@ const algoDdoWithNoTimeout = {
       type: 'access',
       files: '',
       datatokenAddress: '0xa15024b732A8f2146423D14209eFd074e61964F3',
-      serviceEndpoint: 'http://172.15.0.4:8030',
+      serviceEndpoint: 'http://127.0.0.1:8001',
       timeout: 0
     }
   ]
@@ -222,7 +222,7 @@ const algoDdoWith5mTimeout = {
       type: 'access',
       files: '',
       datatokenAddress: '0xa15024b732A8f2146423D14209eFd074e61964F3',
-      serviceEndpoint: 'http://172.15.0.4:8030',
+      serviceEndpoint: 'http://127.0.0.1:8001',
       timeout: 300
     }
   ]
