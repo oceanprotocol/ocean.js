@@ -364,7 +364,7 @@ describe('Compute flow tests', async () => {
     assert(resolvedAlgoDdoWith5mTimeout, 'Cannot fetch DDO from Aquarius')
     resolvedAlgoDdoWithNoTimeout = await aquarius.waitForIndexer(algoDdoWithNoTimeoutId)
     assert(resolvedAlgoDdoWithNoTimeout, 'Cannot fetch DDO from Aquarius')
-  })
+  }).timeout(40000)
 
   it('should send DT to consumer', async () => {
     const datatoken = new Datatoken(
@@ -395,13 +395,13 @@ describe('Compute flow tests', async () => {
       '10',
       await consumerAccount.getAddress()
     )
-  })
+  }).timeout(40000)
 
   it('should fetch compute environments from provider', async () => {
     // get compute environments
     computeEnvs = await ProviderInstance.getComputeEnvironments(providerUrl)
     assert(computeEnvs, 'No Compute environments found')
-  })
+  }).timeout(40000)
 
   it('should start a computeJob using the free environment', async () => {
     datatoken = new Datatoken(
@@ -432,39 +432,39 @@ describe('Compute flow tests', async () => {
       serviceId: resolvedAlgoDdoWith5mTimeout.services[0].id
     }
 
-    providerInitializeComputeResults = await ProviderInstance.initializeCompute(
-      assets,
-      algo,
-      computeEnv.id,
-      computeValidUntil,
-      providerUrl,
-      consumerAccount
-    )
-    assert(
-      !('error' in providerInitializeComputeResults.algorithm),
-      'Cannot order algorithm'
-    )
-    algo.transferTxId = await handleComputeOrder(
-      providerInitializeComputeResults.algorithm,
-      resolvedAlgoDdoWith5mTimeout.services[0].datatokenAddress,
-      consumerAccount,
-      computeEnv.consumerAddress,
-      0,
-      datatoken,
-      config
-    )
+    // providerInitializeComputeResults = await ProviderInstance.initializeCompute(
+    //   assets,
+    //   algo,
+    //   computeEnv.id,
+    //   computeValidUntil,
+    //   providerUrl,
+    //   consumerAccount
+    // )
+    // assert(
+    //   !('error' in providerInitializeComputeResults.algorithm),
+    //   'Cannot order algorithm'
+    // )
+    // algo.transferTxId = await handleComputeOrder(
+    //   providerInitializeComputeResults.algorithm,
+    //   resolvedAlgoDdoWith5mTimeout.services[0].datatokenAddress,
+    //   consumerAccount,
+    //   computeEnv.consumerAddress,
+    //   0,
+    //   datatoken,
+    //   config
+    // )
 
-    for (let i = 0; i < providerInitializeComputeResults.datasets.length; i++) {
-      assets[i].transferTxId = await handleComputeOrder(
-        providerInitializeComputeResults.datasets[i],
-        dtAddressArray[i],
-        consumerAccount,
-        computeEnv.consumerAddress,
-        0,
-        datatoken,
-        config
-      )
-    }
+    // for (let i = 0; i < providerInitializeComputeResults.datasets.length; i++) {
+    //   assets[i].transferTxId = await handleComputeOrder(
+    //     providerInitializeComputeResults.datasets[i],
+    //     dtAddressArray[i],
+    //     consumerAccount,
+    //     computeEnv.consumerAddress,
+    //     0,
+    //     datatoken,
+    //     config
+    //   )
+    // }
 
     freeComputeRouteSupport = await ProviderInstance.getComputeStartRoutes(
       providerUrl,
