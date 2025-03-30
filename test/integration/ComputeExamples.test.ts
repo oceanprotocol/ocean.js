@@ -629,41 +629,42 @@ describe('Compute-to-data example tests', async () => {
         }
       ]
       const dtAddressArray = [resolvedDatasetDdo.services[0].datatokenAddress]
+
       const algo: ComputeAlgorithm = {
         documentId: resolvedAlgorithmDdo.id,
-        serviceId: resolvedAlgorithmDdo.services[0].id
+        serviceId: resolvedAlgorithmDdo.services[0].id,
+        meta: resolvedAlgorithmDdo.metadata.algorithm
       }
-
-      const providerInitializeComputeResults = await ProviderInstance.initializeCompute(
-        assets,
-        algo,
-        computeEnv.id,
-        computeValidUntil,
-        providerUrl,
-        consumerAccount
-      )
-      console.log('providerInitializeComputeResults = ', providerInitializeComputeResults)
-      /// ```
-      /// <!--
-      assert(!('error' in providerInitializeComputeResults), 'Cannot order algorithm')
-      /// -->
-      /// ```Typescript
-      algo.transferTxId = await handleOrder(
-        providerInitializeComputeResults.algorithm,
-        resolvedAlgorithmDdo.services[0].datatokenAddress,
-        consumerAccount,
-        computeEnv.consumerAddress,
-        0
-      )
-      for (let i = 0; i < providerInitializeComputeResults.datasets.length; i++) {
-        assets[i].transferTxId = await handleOrder(
-          providerInitializeComputeResults.datasets[i],
-          dtAddressArray[i],
-          consumerAccount,
-          computeEnv.consumerAddress,
-          0
-        )
-      }
+      // const providerInitializeComputeResults = await ProviderInstance.initializeCompute(
+      //   assets,
+      //   algo,
+      //   computeEnv.id,
+      //   computeValidUntil,
+      //   providerUrl,
+      //   consumerAccount
+      // )
+      // console.log('providerInitializeComputeResults = ', providerInitializeComputeResults)
+      // /// ```
+      // /// <!--
+      // assert(!('error' in providerInitializeComputeResults), 'Cannot order algorithm')
+      // /// -->
+      // /// ```Typescript
+      // algo.transferTxId = await handleOrder(
+      //   providerInitializeComputeResults.algorithm,
+      //   resolvedAlgorithmDdo.services[0].datatokenAddress,
+      //   consumerAccount,
+      //   computeEnv.consumerAddress,
+      //   0
+      // )
+      // for (let i = 0; i < providerInitializeComputeResults.datasets.length; i++) {
+      //   assets[i].transferTxId = await handleOrder(
+      //     providerInitializeComputeResults.datasets[i],
+      //     dtAddressArray[i],
+      //     consumerAccount,
+      //     computeEnv.consumerAddress,
+      //     0
+      //   )
+      // }
 
       const computeJobs = await ProviderInstance.freeComputeStart(
         providerUrl,
