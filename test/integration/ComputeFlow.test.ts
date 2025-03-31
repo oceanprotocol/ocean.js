@@ -429,9 +429,11 @@ describe('Compute flow tests', async () => {
       }
     ]
     const dtAddressArray = [resolvedDdoWith5mTimeout.services[0].datatokenAddress]
+
     const algo: ComputeAlgorithm = {
       documentId: resolvedAlgoDdoWith5mTimeout.id,
-      serviceId: resolvedAlgoDdoWith5mTimeout.services[0].id
+      serviceId: resolvedAlgoDdoWith5mTimeout.services[0].id,
+      meta: resolvedAlgoDdoWith5mTimeout.metadata.algorithm
     }
 
     // providerInitializeComputeResults = await ProviderInstance.initializeCompute(
