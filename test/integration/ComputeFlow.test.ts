@@ -465,6 +465,15 @@ describe('Compute flow tests', async () => {
     }
   }).timeout(40000)
 
+  it('Check compute status', async () => {
+    const jobStatus = (await ProviderInstance.computeStatus(
+      providerUrl,
+      await consumerAccount.getAddress(),
+      freeComputeJobId
+    )) as ComputeJob
+    assert(jobStatus, 'Cannot retrieve compute status!')
+  }).timeout(40000)
+
   // move to start orders with initial txid's and provider fees
   it('should restart a computeJob without paying anything, because order is valid and providerFees are still valid', async () => {
     // we choose the free env
