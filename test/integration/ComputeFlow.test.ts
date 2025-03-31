@@ -482,6 +482,7 @@ describe('Compute flow tests', async () => {
         assets,
         algo
       )
+      console.log('Compute jobs: ', computeJobs)
       freeEnvDatasetTxId = assets[0].transferTxId
       freeEnvAlgoTxId = algo.transferTxId
       assert(computeJobs, 'Cannot start compute job')
