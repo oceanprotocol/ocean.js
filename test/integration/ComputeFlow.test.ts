@@ -478,9 +478,11 @@ describe('Compute flow tests', async () => {
   it('should restart a computeJob without paying anything, because order is valid and providerFees are still valid', async () => {
     // we choose the free env
     if (freeComputeRouteSupport) {
-      const computeEnv = computeEnvs[resolvedDdoWith5mTimeout.chainId].find(
-        (ce) => ce.priceMin === 0 || isDefined(ce.free)
+      const computeEnv = computeEnvs.find(
+        (ce) =>
+          !ce?.fees || ce.fees.find((fee) => fee.symbol === 'OCEAN' && fee.amount === '0')
       )
+      console.log('Free compute environment = ', computeEnv)
       assert(computeEnv, 'Cannot find the free compute env')
 
       const assets: ComputeAsset[] = [
@@ -526,7 +528,7 @@ describe('Compute flow tests', async () => {
           assets[0].transferTxId === freeEnvDatasetTxId,
         'We should use the same orders, because no fess must be paid'
       )
-      const computeJobs = await ProviderInstance.computeStart(
+      const computeJobs = await ProviderInstance.freeComputeStart(
         providerUrl,
         consumerAccount,
         computeEnv.id,
