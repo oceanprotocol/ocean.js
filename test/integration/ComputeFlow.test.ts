@@ -243,8 +243,9 @@ async function waitTillJobEnds(): Promise<number> {
         freeComputeJobId,
         resolvedDdoWith5mTimeout.id
       )) as ComputeJob
-      console.log('Job status code: ', jobStatus?.[0]?.status)
-      console.log('Job status text: ', jobStatus?.[0]?.statusText)
+      console.log('Job status: ', jobStatus)
+      // console.log('Job status code: ', jobStatus?.[0]?.status)
+      // console.log('Job status text: ', jobStatus?.[0]?.statusText)
       if (jobStatus?.[0]?.status === 70) {
         clearInterval(interval)
         resolve(jobStatus.status)
