@@ -240,12 +240,11 @@ async function waitTillJobEnds(): Promise<number> {
       const jobStatus = (await ProviderInstance.computeStatus(
         providerUrl,
         await consumerAccount.getAddress(),
-        freeComputeJobId,
-        resolvedDdoWith5mTimeout.id
+        freeComputeJobId
       )) as ComputeJob
       console.log('Job status: ', jobStatus)
-      // console.log('Job status code: ', jobStatus?.[0]?.status)
-      // console.log('Job status text: ', jobStatus?.[0]?.statusText)
+      console.log('Job status code: ', jobStatus?.[0]?.status)
+      console.log('Job status text: ', jobStatus?.[0]?.statusText)
       if (jobStatus?.[0]?.status === 70) {
         clearInterval(interval)
         resolve(jobStatus.status)

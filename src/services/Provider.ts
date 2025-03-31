@@ -1117,6 +1117,7 @@ export class Provider {
     if (!computeStatusUrl) return null
     let response
     try {
+      console.log('computeStatusUrl: ', computeStatusUrl + url)
       response = await fetch(computeStatusUrl + url, {
         method: 'GET',
         headers: { 'Content-Type': 'application/json' },
