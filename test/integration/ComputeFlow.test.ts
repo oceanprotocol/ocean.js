@@ -243,6 +243,8 @@ async function waitTillJobEnds(): Promise<number> {
         freeComputeJobId,
         resolvedDdoWith5mTimeout.id
       )) as ComputeJob
+      console.log('Job status code: ', jobStatus?.status)
+      console.log('Job status text: ', jobStatus?.statusText)
       if (jobStatus?.status === 70) {
         clearInterval(interval)
         resolve(jobStatus.status)
@@ -488,7 +490,7 @@ describe('Compute flow tests', async () => {
       assert(computeJobs, 'Cannot start compute job')
       freeComputeJobId = computeJobs[0].jobId
 
-      delay(100000)
+      // delay(100000)
 
       const jobFinished = await waitTillJobEnds()
       console.log('Job finished: ', jobFinished)
