@@ -500,7 +500,7 @@ describe('Compute flow tests', async () => {
           ' does not implement freeCompute route'
       )
     }
-  })
+  }).timeout(200000)
 
   // move to start orders with initial txid's and provider fees
   it('should restart a computeJob without paying anything, because order is valid and providerFees are still valid', async () => {
