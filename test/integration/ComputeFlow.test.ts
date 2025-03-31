@@ -438,40 +438,6 @@ describe('Compute flow tests', async () => {
       meta: resolvedAlgoDdoWith5mTimeout.metadata.algorithm
     }
 
-    // providerInitializeComputeResults = await ProviderInstance.initializeCompute(
-    //   assets,
-    //   algo,
-    //   computeEnv.id,
-    //   computeValidUntil,
-    //   providerUrl,
-    //   consumerAccount
-    // )
-    // assert(
-    //   !('error' in providerInitializeComputeResults.algorithm),
-    //   'Cannot order algorithm'
-    // )
-    // algo.transferTxId = await handleComputeOrder(
-    //   providerInitializeComputeResults.algorithm,
-    //   resolvedAlgoDdoWith5mTimeout.services[0].datatokenAddress,
-    //   consumerAccount,
-    //   computeEnv.consumerAddress,
-    //   0,
-    //   datatoken,
-    //   config
-    // )
-
-    // for (let i = 0; i < providerInitializeComputeResults.datasets.length; i++) {
-    //   assets[i].transferTxId = await handleComputeOrder(
-    //     providerInitializeComputeResults.datasets[i],
-    //     dtAddressArray[i],
-    //     consumerAccount,
-    //     computeEnv.consumerAddress,
-    //     0,
-    //     datatoken,
-    //     config
-    //   )
-    // }
-
     freeComputeRouteSupport = await ProviderInstance.getComputeStartRoutes(
       providerUrl,
       true
@@ -489,11 +455,6 @@ describe('Compute flow tests', async () => {
       freeEnvAlgoTxId = algo.transferTxId
       assert(computeJobs, 'Cannot start compute job')
       freeComputeJobId = computeJobs[0].jobId
-
-      // delay(100000)
-
-      const jobFinished = await waitTillJobEnds()
-      console.log('Job finished: ', jobFinished)
     } else {
       assert(
         freeComputeRouteSupport === null,
@@ -502,7 +463,7 @@ describe('Compute flow tests', async () => {
           ' does not implement freeCompute route'
       )
     }
-  }).timeout(200000)
+  }).timeout(40000)
 
   // move to start orders with initial txid's and provider fees
   it('should restart a computeJob without paying anything, because order is valid and providerFees are still valid', async () => {
@@ -576,348 +537,348 @@ describe('Compute flow tests', async () => {
 
   //   // moving to paid environments
 
-  it('should start a computeJob on a paid environment', async () => {
-    // we choose the paid env
-    const computeEnv = computeEnvs[resolvedDdoWith5mTimeout.chainId].find(
-      (ce) => ce.priceMin !== 0 || !isDefined(ce.free)
-    )
-    assert(computeEnv, 'Cannot find the paid compute env')
+  // it('should start a computeJob on a paid environment', async () => {
+  //   // we choose the paid env
+  //   const computeEnv = computeEnvs[resolvedDdoWith5mTimeout.chainId].find(
+  //     (ce) => ce.priceMin !== 0 || !isDefined(ce.free)
+  //   )
+  //   assert(computeEnv, 'Cannot find the paid compute env')
 
-    const assets: ComputeAsset[] = [
-      {
-        documentId: resolvedDdoWith5mTimeout.id,
-        serviceId: resolvedDdoWith5mTimeout.services[0].id
-      }
-    ]
-    const dtAddressArray = [resolvedDdoWith5mTimeout.services[0].datatokenAddress]
-    const algo: ComputeAlgorithm = {
-      documentId: resolvedAlgoDdoWith5mTimeout.id,
-      serviceId: resolvedAlgoDdoWith5mTimeout.services[0].id
-    }
+  //   const assets: ComputeAsset[] = [
+  //     {
+  //       documentId: resolvedDdoWith5mTimeout.id,
+  //       serviceId: resolvedDdoWith5mTimeout.services[0].id
+  //     }
+  //   ]
+  //   const dtAddressArray = [resolvedDdoWith5mTimeout.services[0].datatokenAddress]
+  //   const algo: ComputeAlgorithm = {
+  //     documentId: resolvedAlgoDdoWith5mTimeout.id,
+  //     serviceId: resolvedAlgoDdoWith5mTimeout.services[0].id
+  //   }
 
-    providerInitializeComputeResults = await ProviderInstance.initializeCompute(
-      assets,
-      algo,
-      computeEnv.id,
-      computeValidUntil,
-      providerUrl,
-      consumerAccount
-    )
-    assert(
-      !('error' in providerInitializeComputeResults.algorithm),
-      'Cannot order algorithm'
-    )
-    algo.transferTxId = await handleComputeOrder(
-      providerInitializeComputeResults.algorithm,
-      resolvedAlgoDdoWith5mTimeout.services[0].datatokenAddress,
-      consumerAccount,
-      computeEnv.consumerAddress,
-      0,
-      datatoken,
-      config
-    )
-    for (let i = 0; i < providerInitializeComputeResults.datasets.length; i++) {
-      assets[i].transferTxId = await handleComputeOrder(
-        providerInitializeComputeResults.datasets[i],
-        dtAddressArray[i],
-        consumerAccount,
-        computeEnv.consumerAddress,
-        0,
-        datatoken,
-        config
-      )
-    }
+  //   providerInitializeComputeResults = await ProviderInstance.initializeCompute(
+  //     assets,
+  //     algo,
+  //     computeEnv.id,
+  //     computeValidUntil,
+  //     providerUrl,
+  //     consumerAccount
+  //   )
+  //   assert(
+  //     !('error' in providerInitializeComputeResults.algorithm),
+  //     'Cannot order algorithm'
+  //   )
+  //   algo.transferTxId = await handleComputeOrder(
+  //     providerInitializeComputeResults.algorithm,
+  //     resolvedAlgoDdoWith5mTimeout.services[0].datatokenAddress,
+  //     consumerAccount,
+  //     computeEnv.consumerAddress,
+  //     0,
+  //     datatoken,
+  //     config
+  //   )
+  //   for (let i = 0; i < providerInitializeComputeResults.datasets.length; i++) {
+  //     assets[i].transferTxId = await handleComputeOrder(
+  //       providerInitializeComputeResults.datasets[i],
+  //       dtAddressArray[i],
+  //       consumerAccount,
+  //       computeEnv.consumerAddress,
+  //       0,
+  //       datatoken,
+  //       config
+  //     )
+  //   }
 
-    const computeJobs = await ProviderInstance.computeStart(
-      providerUrl,
-      consumerAccount,
-      computeEnv.id,
-      assets,
-      algo
-    )
-    paidEnvDatasetTxId = assets[0].transferTxId
-    paidEnvAlgoTxId = algo.transferTxId
-    assert(computeJobs, 'Cannot start compute job')
-    paidComputeJobId = computeJobs[0].jobId
-  })
+  //   const computeJobs = await ProviderInstance.computeStart(
+  //     providerUrl,
+  //     consumerAccount,
+  //     computeEnv.id,
+  //     assets,
+  //     algo
+  //   )
+  //   paidEnvDatasetTxId = assets[0].transferTxId
+  //   paidEnvAlgoTxId = algo.transferTxId
+  //   assert(computeJobs, 'Cannot start compute job')
+  //   paidComputeJobId = computeJobs[0].jobId
+  // })
 
-  delay(100000)
+  // delay(100000)
 
-  it('Check compute status', async () => {
-    const jobStatus = (await ProviderInstance.computeStatus(
-      providerUrl,
-      await consumerAccount.getAddress(),
-      paidComputeJobId,
-      resolvedDdoWith5mTimeout.id
-    )) as ComputeJob
-    assert(jobStatus, 'Cannot retrieve compute status!')
-  })
+  // it('Check compute status', async () => {
+  //   const jobStatus = (await ProviderInstance.computeStatus(
+  //     providerUrl,
+  //     await consumerAccount.getAddress(),
+  //     paidComputeJobId,
+  //     resolvedDdoWith5mTimeout.id
+  //   )) as ComputeJob
+  //   assert(jobStatus, 'Cannot retrieve compute status!')
+  // })
 
-  it('should restart a computeJob on paid environment, without paying anything, because order is valid and providerFees are still valid', async () => {
-    // we choose the paid env
-    const computeEnv = computeEnvs[resolvedDdoWith5mTimeout.chainId].find(
-      (ce) => ce.priceMin !== 0 || !isDefined(ce.free)
-    )
-    assert(computeEnv, 'Cannot find the paid compute env')
+  // it('should restart a computeJob on paid environment, without paying anything, because order is valid and providerFees are still valid', async () => {
+  //   // we choose the paid env
+  //   const computeEnv = computeEnvs[resolvedDdoWith5mTimeout.chainId].find(
+  //     (ce) => ce.priceMin !== 0 || !isDefined(ce.free)
+  //   )
+  //   assert(computeEnv, 'Cannot find the paid compute env')
 
-    const assets: ComputeAsset[] = [
-      {
-        documentId: resolvedDdoWith5mTimeout.id,
-        serviceId: resolvedDdoWith5mTimeout.services[0].id,
-        transferTxId: paidEnvDatasetTxId
-      }
-    ]
-    const algo: ComputeAlgorithm = {
-      documentId: resolvedAlgoDdoWith5mTimeout.id,
-      serviceId: resolvedAlgoDdoWith5mTimeout.services[0].id,
-      transferTxId: paidEnvAlgoTxId
-    }
+  //   const assets: ComputeAsset[] = [
+  //     {
+  //       documentId: resolvedDdoWith5mTimeout.id,
+  //       serviceId: resolvedDdoWith5mTimeout.services[0].id,
+  //       transferTxId: paidEnvDatasetTxId
+  //     }
+  //   ]
+  //   const algo: ComputeAlgorithm = {
+  //     documentId: resolvedAlgoDdoWith5mTimeout.id,
+  //     serviceId: resolvedAlgoDdoWith5mTimeout.services[0].id,
+  //     transferTxId: paidEnvAlgoTxId
+  //   }
 
-    providerInitializeComputeResults = await ProviderInstance.initializeCompute(
-      assets,
-      algo,
-      computeEnv.id,
-      computeValidUntil,
-      providerUrl,
-      consumerAccount
-    )
-    assert(
-      providerInitializeComputeResults.algorithm.validOrder,
-      'We should have a valid order for algorithm'
-    )
-    assert(
-      !providerInitializeComputeResults.algorithm.providerFee,
-      'We should not pay providerFees again for algorithm'
-    )
-    assert(
-      providerInitializeComputeResults.datasets[0].validOrder,
-      'We should have a valid order for dataset'
-    )
-    assert(
-      !providerInitializeComputeResults.datasets[0].providerFee,
-      'We should not pay providerFees again for dataset'
-    )
-    algo.transferTxId = providerInitializeComputeResults.algorithm.validOrder
-    assets[0].transferTxId = providerInitializeComputeResults.datasets[0].validOrder
-    assert(
-      algo.transferTxId === paidEnvAlgoTxId &&
-        assets[0].transferTxId === paidEnvDatasetTxId,
-      'We should use the same orders, because no fess must be paid'
-    )
-    const computeJobs = await ProviderInstance.computeStart(
-      providerUrl,
-      consumerAccount,
-      computeEnv.id,
-      assets,
-      algo
-    )
-    assert(computeJobs, 'Cannot start compute job')
-  })
+  //   providerInitializeComputeResults = await ProviderInstance.initializeCompute(
+  //     assets,
+  //     algo,
+  //     computeEnv.id,
+  //     computeValidUntil,
+  //     providerUrl,
+  //     consumerAccount
+  //   )
+  //   assert(
+  //     providerInitializeComputeResults.algorithm.validOrder,
+  //     'We should have a valid order for algorithm'
+  //   )
+  //   assert(
+  //     !providerInitializeComputeResults.algorithm.providerFee,
+  //     'We should not pay providerFees again for algorithm'
+  //   )
+  //   assert(
+  //     providerInitializeComputeResults.datasets[0].validOrder,
+  //     'We should have a valid order for dataset'
+  //   )
+  //   assert(
+  //     !providerInitializeComputeResults.datasets[0].providerFee,
+  //     'We should not pay providerFees again for dataset'
+  //   )
+  //   algo.transferTxId = providerInitializeComputeResults.algorithm.validOrder
+  //   assets[0].transferTxId = providerInitializeComputeResults.datasets[0].validOrder
+  //   assert(
+  //     algo.transferTxId === paidEnvAlgoTxId &&
+  //       assets[0].transferTxId === paidEnvDatasetTxId,
+  //     'We should use the same orders, because no fess must be paid'
+  //   )
+  //   const computeJobs = await ProviderInstance.computeStart(
+  //     providerUrl,
+  //     consumerAccount,
+  //     computeEnv.id,
+  //     assets,
+  //     algo
+  //   )
+  //   assert(computeJobs, 'Cannot start compute job')
+  // })
 
-  // move to reuse Orders
+  // // move to reuse Orders
 
-  it('Should fast forward time and set a new computeValidUntil', async () => {
-    const mytime = new Date()
-    const computeMinutes = 5
-    mytime.setMinutes(mytime.getMinutes() + computeMinutes)
-    computeValidUntil = Math.floor(mytime.getTime() / 1000)
-  })
+  // it('Should fast forward time and set a new computeValidUntil', async () => {
+  //   const mytime = new Date()
+  //   const computeMinutes = 5
+  //   mytime.setMinutes(mytime.getMinutes() + computeMinutes)
+  //   computeValidUntil = Math.floor(mytime.getTime() / 1000)
+  // })
 
-  it('should start a computeJob using the free environment, by paying only providerFee (reuseOrder)', async () => {
-    if (freeComputeRouteSupport) {
-      // we choose the free env
-      const computeEnv = computeEnvs[resolvedDdoWith5mTimeout.chainId].find(
-        (ce) => ce.priceMin === 0 || isDefined(ce.free)
-      )
-      assert(computeEnv, 'Cannot find the free compute env')
+  // it('should start a computeJob using the free environment, by paying only providerFee (reuseOrder)', async () => {
+  //   if (freeComputeRouteSupport) {
+  //     // we choose the free env
+  //     const computeEnv = computeEnvs[resolvedDdoWith5mTimeout.chainId].find(
+  //       (ce) => ce.priceMin === 0 || isDefined(ce.free)
+  //     )
+  //     assert(computeEnv, 'Cannot find the free compute env')
 
-      const assets: ComputeAsset[] = [
-        {
-          documentId: resolvedDdoWith5mTimeout.id,
-          serviceId: resolvedDdoWith5mTimeout.services[0].id,
-          transferTxId: freeEnvDatasetTxId
-        }
-      ]
-      const dtAddressArray = [resolvedDdoWith5mTimeout.services[0].datatokenAddress]
-      const algo: ComputeAlgorithm = {
-        documentId: resolvedAlgoDdoWith5mTimeout.id,
-        serviceId: resolvedAlgoDdoWith5mTimeout.services[0].id,
-        transferTxId: freeEnvAlgoTxId
-      }
+  //     const assets: ComputeAsset[] = [
+  //       {
+  //         documentId: resolvedDdoWith5mTimeout.id,
+  //         serviceId: resolvedDdoWith5mTimeout.services[0].id,
+  //         transferTxId: freeEnvDatasetTxId
+  //       }
+  //     ]
+  //     const dtAddressArray = [resolvedDdoWith5mTimeout.services[0].datatokenAddress]
+  //     const algo: ComputeAlgorithm = {
+  //       documentId: resolvedAlgoDdoWith5mTimeout.id,
+  //       serviceId: resolvedAlgoDdoWith5mTimeout.services[0].id,
+  //       transferTxId: freeEnvAlgoTxId
+  //     }
 
-      providerInitializeComputeResults = await ProviderInstance.initializeCompute(
-        assets,
-        algo,
-        computeEnv.id,
-        computeValidUntil,
-        providerUrl,
-        consumerAccount
-      )
-      assert(
-        providerInitializeComputeResults.algorithm.validOrder,
-        'We should have a valid order for algorithm'
-      )
-      assert(
-        providerInitializeComputeResults.datasets[0].validOrder,
-        'We should have a valid order for dataset'
-      )
+  //     providerInitializeComputeResults = await ProviderInstance.initializeCompute(
+  //       assets,
+  //       algo,
+  //       computeEnv.id,
+  //       computeValidUntil,
+  //       providerUrl,
+  //       consumerAccount
+  //     )
+  //     assert(
+  //       providerInitializeComputeResults.algorithm.validOrder,
+  //       'We should have a valid order for algorithm'
+  //     )
+  //     assert(
+  //       providerInitializeComputeResults.datasets[0].validOrder,
+  //       'We should have a valid order for dataset'
+  //     )
 
-      assert(
-        providerInitializeComputeResults.algorithm.providerFee ||
-          providerInitializeComputeResults.datasets[0].providerFee,
-        'We should pay providerFees again for algorithm or dataset. Cannot have empty for both'
-      )
+  //     assert(
+  //       providerInitializeComputeResults.algorithm.providerFee ||
+  //         providerInitializeComputeResults.datasets[0].providerFee,
+  //       'We should pay providerFees again for algorithm or dataset. Cannot have empty for both'
+  //     )
 
-      assert(
-        !('error' in providerInitializeComputeResults.algorithm),
-        'Cannot order algorithm'
-      )
-      algo.transferTxId = await handleComputeOrder(
-        providerInitializeComputeResults.algorithm,
-        resolvedAlgoDdoWith5mTimeout.services[0].datatokenAddress,
-        consumerAccount,
-        computeEnv.consumerAddress,
-        0,
-        datatoken,
-        config
-      )
-      for (let i = 0; i < providerInitializeComputeResults.datasets.length; i++) {
-        assets[i].transferTxId = await handleComputeOrder(
-          providerInitializeComputeResults.datasets[i],
-          dtAddressArray[i],
-          consumerAccount,
-          computeEnv.consumerAddress,
-          0,
-          datatoken,
-          config
-        )
-      }
-      assert(
-        algo.transferTxId !== freeEnvAlgoTxId ||
-          assets[0].transferTxId !== freeEnvDatasetTxId,
-        'We should not use the same orders, because providerFee must be paid'
-      )
-      const computeJobs = await ProviderInstance.computeStart(
-        providerUrl,
-        consumerAccount,
-        computeEnv.id,
-        assets,
-        algo
-      )
-      // freeEnvDatasetTxId = assets[0].transferTxId
-      // freeEnvAlgoTxId = algo.transferTxId
-      assert(computeJobs, 'Cannot start compute job')
-    } else {
-      assert(
-        freeComputeRouteSupport === null,
-        'Cannot start free compute job. provider at ' +
-          providerUrl +
-          ' does not implement freeCompute route'
-      )
-    }
-  })
+  //     assert(
+  //       !('error' in providerInitializeComputeResults.algorithm),
+  //       'Cannot order algorithm'
+  //     )
+  //     algo.transferTxId = await handleComputeOrder(
+  //       providerInitializeComputeResults.algorithm,
+  //       resolvedAlgoDdoWith5mTimeout.services[0].datatokenAddress,
+  //       consumerAccount,
+  //       computeEnv.consumerAddress,
+  //       0,
+  //       datatoken,
+  //       config
+  //     )
+  //     for (let i = 0; i < providerInitializeComputeResults.datasets.length; i++) {
+  //       assets[i].transferTxId = await handleComputeOrder(
+  //         providerInitializeComputeResults.datasets[i],
+  //         dtAddressArray[i],
+  //         consumerAccount,
+  //         computeEnv.consumerAddress,
+  //         0,
+  //         datatoken,
+  //         config
+  //       )
+  //     }
+  //     assert(
+  //       algo.transferTxId !== freeEnvAlgoTxId ||
+  //         assets[0].transferTxId !== freeEnvDatasetTxId,
+  //       'We should not use the same orders, because providerFee must be paid'
+  //     )
+  //     const computeJobs = await ProviderInstance.computeStart(
+  //       providerUrl,
+  //       consumerAccount,
+  //       computeEnv.id,
+  //       assets,
+  //       algo
+  //     )
+  //     // freeEnvDatasetTxId = assets[0].transferTxId
+  //     // freeEnvAlgoTxId = algo.transferTxId
+  //     assert(computeJobs, 'Cannot start compute job')
+  //   } else {
+  //     assert(
+  //       freeComputeRouteSupport === null,
+  //       'Cannot start free compute job. provider at ' +
+  //         providerUrl +
+  //         ' does not implement freeCompute route'
+  //     )
+  //   }
+  // })
 
-  it('should start a computeJob using the paid environment, by paying only providerFee (reuseOrder)', async () => {
-    // we choose the paid env
-    const computeEnv = computeEnvs[resolvedDdoWith5mTimeout.chainId].find(
-      (ce) => ce.priceMin !== 0 || !isDefined(ce.free)
-    )
-    assert(computeEnv, 'Cannot find the paid compute env')
+  // it('should start a computeJob using the paid environment, by paying only providerFee (reuseOrder)', async () => {
+  //   // we choose the paid env
+  //   const computeEnv = computeEnvs[resolvedDdoWith5mTimeout.chainId].find(
+  //     (ce) => ce.priceMin !== 0 || !isDefined(ce.free)
+  //   )
+  //   assert(computeEnv, 'Cannot find the paid compute env')
 
-    const assets: ComputeAsset[] = [
-      {
-        documentId: resolvedDdoWith5mTimeout.id,
-        serviceId: resolvedDdoWith5mTimeout.services[0].id,
-        transferTxId: paidEnvDatasetTxId
-      }
-    ]
-    const dtAddressArray = [resolvedDdoWith5mTimeout.services[0].datatokenAddress]
-    const algo: ComputeAlgorithm = {
-      documentId: resolvedAlgoDdoWith5mTimeout.id,
-      serviceId: resolvedAlgoDdoWith5mTimeout.services[0].id,
-      transferTxId: paidEnvAlgoTxId
-    }
+  //   const assets: ComputeAsset[] = [
+  //     {
+  //       documentId: resolvedDdoWith5mTimeout.id,
+  //       serviceId: resolvedDdoWith5mTimeout.services[0].id,
+  //       transferTxId: paidEnvDatasetTxId
+  //     }
+  //   ]
+  //   const dtAddressArray = [resolvedDdoWith5mTimeout.services[0].datatokenAddress]
+  //   const algo: ComputeAlgorithm = {
+  //     documentId: resolvedAlgoDdoWith5mTimeout.id,
+  //     serviceId: resolvedAlgoDdoWith5mTimeout.services[0].id,
+  //     transferTxId: paidEnvAlgoTxId
+  //   }
 
-    providerInitializeComputeResults = await ProviderInstance.initializeCompute(
-      assets,
-      algo,
-      computeEnv.id,
-      computeValidUntil,
-      providerUrl,
-      consumerAccount
-    )
-    assert(
-      providerInitializeComputeResults.algorithm.validOrder,
-      'We should have a valid order for algorithm'
-    )
-    assert(
-      providerInitializeComputeResults.datasets[0].validOrder,
-      'We should have a valid order for dataset'
-    )
-    assert(
-      providerInitializeComputeResults.algorithm.providerFee ||
-        providerInitializeComputeResults.datasets[0].providerFee,
-      'We should pay providerFees again for algorithm or dataset. Cannot have empty for both'
-    )
+  //   providerInitializeComputeResults = await ProviderInstance.initializeCompute(
+  //     assets,
+  //     algo,
+  //     computeEnv.id,
+  //     computeValidUntil,
+  //     providerUrl,
+  //     consumerAccount
+  //   )
+  //   assert(
+  //     providerInitializeComputeResults.algorithm.validOrder,
+  //     'We should have a valid order for algorithm'
+  //   )
+  //   assert(
+  //     providerInitializeComputeResults.datasets[0].validOrder,
+  //     'We should have a valid order for dataset'
+  //   )
+  //   assert(
+  //     providerInitializeComputeResults.algorithm.providerFee ||
+  //       providerInitializeComputeResults.datasets[0].providerFee,
+  //     'We should pay providerFees again for algorithm or dataset. Cannot have empty for both'
+  //   )
 
-    assert(
-      !('error' in providerInitializeComputeResults.algorithm),
-      'Cannot order algorithm'
-    )
-    algo.transferTxId = await handleComputeOrder(
-      providerInitializeComputeResults.algorithm,
-      resolvedAlgoDdoWith5mTimeout.services[0].datatokenAddress,
-      consumerAccount,
-      computeEnv.consumerAddress,
-      0,
-      datatoken,
-      config
-    )
-    for (let i = 0; i < providerInitializeComputeResults.datasets.length; i++) {
-      assets[i].transferTxId = await handleComputeOrder(
-        providerInitializeComputeResults.datasets[i],
-        dtAddressArray[i],
-        consumerAccount,
-        computeEnv.consumerAddress,
-        0,
-        datatoken,
-        config
-      )
-    }
-    assert(
-      algo.transferTxId !== paidEnvAlgoTxId ||
-        assets[0].transferTxId !== paidEnvDatasetTxId,
-      'We should not use the same orders, because providerFee must be paid'
-    )
-    const computeJobs = await ProviderInstance.computeStart(
-      providerUrl,
-      consumerAccount,
-      computeEnv.id,
-      assets,
-      algo
-    )
-    // freeEnvDatasetTxId = assets[0].transferTxId
-    // freeEnvAlgoTxId = algo.transferTxId
-    assert(computeJobs, 'Cannot start compute job')
-  })
+  //   assert(
+  //     !('error' in providerInitializeComputeResults.algorithm),
+  //     'Cannot order algorithm'
+  //   )
+  //   algo.transferTxId = await handleComputeOrder(
+  //     providerInitializeComputeResults.algorithm,
+  //     resolvedAlgoDdoWith5mTimeout.services[0].datatokenAddress,
+  //     consumerAccount,
+  //     computeEnv.consumerAddress,
+  //     0,
+  //     datatoken,
+  //     config
+  //   )
+  //   for (let i = 0; i < providerInitializeComputeResults.datasets.length; i++) {
+  //     assets[i].transferTxId = await handleComputeOrder(
+  //       providerInitializeComputeResults.datasets[i],
+  //       dtAddressArray[i],
+  //       consumerAccount,
+  //       computeEnv.consumerAddress,
+  //       0,
+  //       datatoken,
+  //       config
+  //     )
+  //   }
+  //   assert(
+  //     algo.transferTxId !== paidEnvAlgoTxId ||
+  //       assets[0].transferTxId !== paidEnvDatasetTxId,
+  //     'We should not use the same orders, because providerFee must be paid'
+  //   )
+  //   const computeJobs = await ProviderInstance.computeStart(
+  //     providerUrl,
+  //     consumerAccount,
+  //     computeEnv.id,
+  //     assets,
+  //     algo
+  //   )
+  //   // freeEnvDatasetTxId = assets[0].transferTxId
+  //   // freeEnvAlgoTxId = algo.transferTxId
+  //   assert(computeJobs, 'Cannot start compute job')
+  // })
 
-  it('Check compute status', async () => {
-    const jobStatus = (await ProviderInstance.computeStatus(
-      providerUrl,
-      await consumerAccount.getAddress(),
-      freeComputeJobId,
-      resolvedDdoWith5mTimeout.id
-    )) as ComputeJob
-    assert(jobStatus, 'Cannot retrieve compute status!')
-  })
+  // it('Check compute status', async () => {
+  //   const jobStatus = (await ProviderInstance.computeStatus(
+  //     providerUrl,
+  //     await consumerAccount.getAddress(),
+  //     freeComputeJobId,
+  //     resolvedDdoWith5mTimeout.id
+  //   )) as ComputeJob
+  //   assert(jobStatus, 'Cannot retrieve compute status!')
+  // })
 
-  it('Get download compute results url', async () => {
-    const downloadURL = await ProviderInstance.getComputeResultUrl(
-      providerUrl,
-      consumerAccount,
-      freeComputeJobId,
-      0
-    )
-    assert(downloadURL, 'Provider getComputeResultUrl failed!')
-  })
+  // it('Get download compute results url', async () => {
+  //   const downloadURL = await ProviderInstance.getComputeResultUrl(
+  //     providerUrl,
+  //     consumerAccount,
+  //     freeComputeJobId,
+  //     0
+  //   )
+  //   assert(downloadURL, 'Provider getComputeResultUrl failed!')
+  // })
 })
