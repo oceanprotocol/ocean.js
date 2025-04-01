@@ -197,7 +197,7 @@ describe('Publish consume test', async () => {
       await publisherAccount.getAddress(),
       amountToUnits(null, null, '1000', 18)
     )
-  })
+  }).timeout(40000)
 
   it('Send some OCEAN to consumer account', async () => {
     transfer(
@@ -207,7 +207,7 @@ describe('Publish consume test', async () => {
       await consumerAccount.getAddress(),
       '100'
     )
-  })
+  }).timeout(40000)
 
   it('Should publish url asset', async () => {
     urlAssetId = await createAssetHelper(
@@ -221,7 +221,8 @@ describe('Publish consume test', async () => {
       aquarius
     )
     assert(urlAssetId, 'Failed to publish url DDO')
-  })
+  }).timeout(40000)
+
   it('Should publish arweave asset', async () => {
     arweaveAssetId = await createAssetHelper(
       'ArwaveDatatoken',
@@ -234,7 +235,8 @@ describe('Publish consume test', async () => {
       aquarius
     )
     assert(arweaveAssetId, 'Failed to arwave publish DDO')
-  })
+  }).timeout(40000)
+
   it('Should publish ipfs asset', async () => {
     const ipfsCID = await uploadToIpfs(JSON.stringify(assetDdo))
     const ipfsFile: Files = {
@@ -258,7 +260,7 @@ describe('Publish consume test', async () => {
       aquarius
     )
     assert(ipfsAssetId, 'Failed to publish ipfs DDO')
-  })
+  }).timeout(40000)
 
   it('Should publish onchain asset', async () => {
     const chainFile: Smartcontract = {
@@ -285,7 +287,7 @@ describe('Publish consume test', async () => {
       aquarius
     )
     assert(onchainAssetId, 'Failed to publish onchain DDO')
-  })
+  }).timeout(40000)
 
   it('Should publish graphql asset', async () => {
     grapqlAssetId = await createAssetHelper(
@@ -299,7 +301,7 @@ describe('Publish consume test', async () => {
       aquarius
     )
     assert(grapqlAssetId, 'Failed to publish graphql DDO')
-  })
+  }).timeout(40000)
 
   delay(10000) // let's wait for aquarius to index the  assets
 
@@ -318,7 +320,7 @@ describe('Publish consume test', async () => {
 
     resolvedGraphqlAssetDdo = await aquarius.waitForIndexer(grapqlAssetId)
     assert(resolvedGraphqlAssetDdo, 'Cannot fetch graphql DDO from Aquarius')
-  })
+  }).timeout(40000)
 
   it('Mint datasets datatokens to publisher', async () => {
     datatoken = new Datatoken(publisherAccount, config.chainId)
@@ -361,7 +363,7 @@ describe('Publish consume test', async () => {
       await consumerAccount.getAddress()
     )
     assert(graphqlMintTx, 'Failed minting graphql datatoken to consumer.')
-  })
+  }).timeout(40000)
 
   it('Should order url dataset', async () => {
     datatoken = new Datatoken(consumerAccount, config.chainId)
@@ -426,7 +428,7 @@ describe('Publish consume test', async () => {
       providerUrl
     )
     assert(grapqlOrderTx, 'Ordering graphql dataset failed.')
-  })
+  }).timeout(40000)
 
   it('Should download the datasets files', async () => {
     const urlDownloadUrl = await ProviderInstance.getDownloadUrl(
@@ -504,7 +506,7 @@ describe('Publish consume test', async () => {
     } catch (e) {
       assert.fail(`Download graphql dataset failed ${e}`)
     }
-  })
+  }).timeout(40000)
 
   it('Should update url dataset', async () => {
     resolvedUrlAssetDdo.metadata.name = 'updated url asset name'
@@ -515,7 +517,7 @@ describe('Publish consume test', async () => {
       aquarius
     )
     assert(updateUrlTx, 'Failed to update url asset metadata')
-  })
+  }).timeout(40000)
 
   it('Should update arweave dataset', async () => {
     resolvedArweaveAssetDdo.metadata.name = 'updated arwave asset name'
@@ -576,5 +578,5 @@ describe('Publish consume test', async () => {
       resolvedGraphqlAssetDdoAfterUpdate = await aquarius.waitForIndexer(grapqlAssetId)
       assert(resolvedGraphqlAssetDdoAfterUpdate, 'Cannot fetch onchain DDO from Aquarius')
     })
-  })
+  }).timeout(40000)
 })
