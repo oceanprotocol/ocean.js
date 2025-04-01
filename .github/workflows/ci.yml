@@ -148,7 +148,7 @@ jobs:
         with:
           repository: 'oceanprotocol/ocean-node'
           path: 'ocean-node'
-          ref: 'main'
+          ref: 'fix/transferencoding+contentleght'
 
       - name: Start Ocean Node
         working-directory: ${{ github.workspace }}/ocean-node
