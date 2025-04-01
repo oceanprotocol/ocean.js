@@ -437,6 +437,7 @@ describe('Publish consume test', async () => {
       providerUrl,
       consumerAccount
     )
+    console.log('urlDownloadUrl', urlDownloadUrl)
     assert(urlDownloadUrl, 'Provider getDownloadUrl failed for url dataset')
     try {
       await downloadFile(urlDownloadUrl)
@@ -451,6 +452,7 @@ describe('Publish consume test', async () => {
       providerUrl,
       consumerAccount
     )
+    console.log('arwaveDownloadURL', arwaveDownloadURL)
     assert(arwaveDownloadURL, 'Provider getDownloadUrl failed for arwave dataset')
     try {
       await downloadFile(arwaveDownloadURL)
@@ -480,6 +482,7 @@ describe('Publish consume test', async () => {
       providerUrl,
       consumerAccount
     )
+    console.log('onchainDownloadURL', onchainDownloadURL)
     assert(onchainDownloadURL, 'Provider getDownloadUrl failed for onchain dataset')
     try {
       await downloadFile(onchainDownloadURL)
@@ -494,6 +497,7 @@ describe('Publish consume test', async () => {
       providerUrl,
       consumerAccount
     )
+    console.log('graphqlDownloadURL', graphqlDownloadURL)
     assert(graphqlDownloadURL, 'Provider getDownloadUrl failed for graphql dataset')
     try {
       await downloadFile(graphqlDownloadURL)
