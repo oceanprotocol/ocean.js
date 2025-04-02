@@ -59,8 +59,9 @@ describe('Provider tests', async () => {
   it('Alice tests getNonce', async () => {
     const nonce = await providerInstance.getNonce(
       config.providerUri,
-      '0xe2DD09d719Da89e5a3D0F2549c7E24566e947260'
+      '0xBE5449a6A97aD46c8558A3356267Ee5D2731ab5e'
     )
+    console.log('Nonce: ', nonce)
     assert(nonce, 'could not get nonce for the sent address')
   })
 })

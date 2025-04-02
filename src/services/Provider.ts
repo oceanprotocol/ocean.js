@@ -134,7 +134,7 @@ export class Provider {
     try {
       return await signer.signMessage(messageHashBytes)
     } catch (error) {
-      LoggerInstance.error('Sign provider message error: ', error)
+      // LoggerInstance.error('Sign provider message error: ', error)
       // Check if the user is using barge chain
       const chainId = await signer.getChainId()
       if (chainId === 8996) {
@@ -531,12 +531,14 @@ export class Provider {
 
     let response
     try {
+      console.log('Initialize compute url:', initializeUrl)
       response = await fetch(initializeUrl, {
         method: 'POST',
         body: JSON.stringify(providerData),
         headers: { 'Content-Type': 'application/json' },
         signal
       })
+      console.log('Raw response:', response)
     } catch (e) {
       LoggerInstance.error('Initialize compute failed: ')
       LoggerInstance.error(e)
@@ -1115,6 +1117,7 @@ export class Provider {
     if (!computeStatusUrl) return null
     let response
     try {
+      console.log('computeStatusUrl: ', computeStatusUrl + url)
       response = await fetch(computeStatusUrl + url, {
         method: 'GET',
         headers: { 'Content-Type': 'application/json' },
