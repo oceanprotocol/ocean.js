@@ -197,8 +197,7 @@ jobs:
         if: ${{ failure() }}
         run: |
           echo "========== Ocean Node Logs =========="
-          cat ${{ github.workspace }}/ocean-node/ocean-node.log || echo "Log file not found"
-
+          tac ${{ github.workspace }}/ocean-node/ocean-node.log || echo "Log file not found"
       - name: Upload coverage
         uses: actions/upload-artifact@v4
         with:
