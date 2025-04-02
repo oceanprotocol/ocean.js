@@ -489,7 +489,7 @@ describe('Publish consume test', async () => {
     try {
       await downloadFile(onchainDownloadURL)
     } catch (e) {
-      assert.fail(`Download onchain dataset failed ${e}`)
+      assert.fail(`Download onchain dataset failed: ${e}`)
     }
     const graphqlDownloadURL = await ProviderInstance.getDownloadUrl(
       resolvedGraphqlAssetDdo.id,
