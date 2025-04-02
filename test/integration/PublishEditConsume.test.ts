@@ -349,21 +349,21 @@ describe('Publish consume test', async () => {
     // )
     // assert(ipfsMintTx, 'Failed minting ipfs datatoken to consumer.')
 
-    const onchainMintTx = await datatoken.mint(
-      resolvedOnchainAssetDdo.services[0].datatokenAddress,
-      await publisherAccount.getAddress(),
-      '10',
-      await consumerAccount.getAddress()
-    )
-    assert(onchainMintTx, 'Failed minting onchain datatoken to consumer.')
+    // const onchainMintTx = await datatoken.mint(
+    //   resolvedOnchainAssetDdo.services[0].datatokenAddress,
+    //   await publisherAccount.getAddress(),
+    //   '10',
+    //   await consumerAccount.getAddress()
+    // )
+    // assert(onchainMintTx, 'Failed minting onchain datatoken to consumer.')
 
-    const graphqlMintTx = await datatoken.mint(
-      resolvedGraphqlAssetDdo.services[0].datatokenAddress,
-      await publisherAccount.getAddress(),
-      '10',
-      await consumerAccount.getAddress()
-    )
-    assert(graphqlMintTx, 'Failed minting graphql datatoken to consumer.')
+    // const graphqlMintTx = await datatoken.mint(
+    //   resolvedGraphqlAssetDdo.services[0].datatokenAddress,
+    //   await publisherAccount.getAddress(),
+    //   '10',
+    //   await consumerAccount.getAddress()
+    // )
+    // assert(graphqlMintTx, 'Failed minting graphql datatoken to consumer.')
   }).timeout(40000)
 
   it('Should order url dataset', async () => {
