@@ -163,8 +163,8 @@ describe('Publish consume test', async () => {
     publisherAccount = (await provider.getSigner(0)) as Signer
     consumerAccount = (await provider.getSigner(1)) as Signer
     config = await getTestConfig(publisherAccount)
-    aquarius = new Aquarius(config?.metadataCacheUri)
-    providerUrl = config?.providerUri
+    aquarius = new Aquarius(config?.oceanNodeUri)
+    providerUrl = config?.oceanNodeUri
     addresses = getAddresses()
   })
 

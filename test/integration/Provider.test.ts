@@ -24,7 +24,7 @@ describe('Provider tests', async () => {
   })
 
   it('Alice tests valid provider', async () => {
-    const valid = await providerInstance.isValidProvider(config.providerUri)
+    const valid = await providerInstance.isValidProvider(config.oceanNodeUri)
     assert(valid === true)
   })
 
@@ -35,7 +35,7 @@ describe('Provider tests', async () => {
         url: 'https://raw.githubusercontent.com/oceanprotocol/ocean.js/refs/heads/main/README.md',
         method: 'GET'
       },
-      config.providerUri
+      config.oceanNodeUri
     )
     assert(fileinfo[0].valid === true, 'Sent file is not valid')
   })
@@ -46,19 +46,19 @@ describe('Provider tests', async () => {
         type: 'arweave',
         transactionId: 'a4qJoQZa1poIv5guEzkfgZYSAD0uYm7Vw4zm_tCswVQ'
       },
-      config.providerUri
+      config.oceanNodeUri
     )
     assert(fileinfo[0].valid === true, 'Sent file is not valid')
   })
 
   it('Alice tests compute environments', async () => {
-    const computeEnvs = await providerInstance.getComputeEnvironments(config.providerUri)
+    const computeEnvs = await providerInstance.getComputeEnvironments(config.oceanNodeUri)
     assert(computeEnvs, 'No Compute environments found')
   })
 
   it('Alice tests getNonce', async () => {
     const nonce = await providerInstance.getNonce(
-      config.providerUri,
+      config.oceanNodeUri,
       '0xBE5449a6A97aD46c8558A3356267Ee5D2731ab5e'
     )
     console.log('Nonce: ', nonce)
