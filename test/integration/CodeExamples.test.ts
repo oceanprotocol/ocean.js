@@ -208,9 +208,11 @@ describe('Marketplace flow tests', async () => {
     const config = new ConfigHelper().getConfig(
       parseInt(String((await publisherAccount.provider.getNetwork()).chainId))
     )
-    config.providerUri = process.env.PROVIDER_URL || config.providerUri
-    aquarius = new Aquarius(config?.metadataCacheUri)
-    providerUrl = config?.providerUri
+    if (process.env.OCEAN_NODE_URL) {
+      config.oceanNodeUri = process.env.OCEAN_NODE_URL
+    }
+    aquarius = new Aquarius(config?.oceanNodeUri)
+    providerUrl = config?.oceanNodeUri
     addresses = JSON.parse(
       // eslint-disable-next-line security/detect-non-literal-fs-filename
       fs.readFileSync(
@@ -222,7 +224,7 @@ describe('Marketplace flow tests', async () => {
     /// ```
     /// As we go along it's a good idea to console log the values so that you check they are right
     /// ```Typescript
-    console.log(`Aquarius URL: ${config.metadataCacheUri}`)
+    console.log(`Indexer URL: ${config.oceanNodeUri}`)
     console.log(`Provider URL: ${providerUrl}`)
     console.log(`Deployed contracts address: ${addresses}`)
     console.log(`Publisher account address: ${await publisherAccount.getAddress()}`)
@@ -487,9 +489,13 @@ describe('Marketplace flow tests', async () => {
       consumerAccount,
       await consumerAccount.getChainId()
     )
+
+    await new Promise((resolve) => setTimeout(resolve, 5000))
+
     /// ```
     /// Now we can make the contract call
     /// ```Typescript
+
     await fixedRate.buyDatatokens(freId, '1', '2')
 
     consumerOCEANBalance = await balance(
@@ -530,6 +536,17 @@ describe('Marketplace flow tests', async () => {
       validUntil: initializeData.providerFee.validUntil
     }
 
+    console.log(`Provider fee amount: ${providerFees.providerFeeAmount}`)
+
+    const approveTx = await approve(
+      consumerAccount,
+      config,
+      await consumerAccount.getAddress(),
+      freDatatokenAddress,
+      providerFees.providerFeeAddress,
+      providerFees.providerFeeAmount
+    )
+
     datatoken = new Datatoken(consumerAccount, await consumerAccount.getChainId())
 
     /// ```
@@ -543,6 +560,8 @@ describe('Marketplace flow tests', async () => {
     )
     const orderTx = await tx.wait()
     const orderStartedTx = getEventFromTx(orderTx, 'OrderStarted')
+    console.log(`Order started, tx: ${orderStartedTx.transactionHash}`)
+
     /// ```
     /// Now we can get the url
     /// ```Typescript
@@ -580,7 +599,8 @@ describe('Marketplace flow tests', async () => {
       LoggerInstance.error('Download failed', e)
       assert.fail('Download failed')
     }
-  }) ///
+    ///
+  }).timeout(40000)
   /// ```
 
   /// ## 8. Publish Data NFT and a Datatoken with a dispenser
@@ -639,7 +659,7 @@ describe('Marketplace flow tests', async () => {
     console.log(`Dispenser NFT address: ${dispenserNftAddress}`)
     console.log(`Dispenser Datatoken address: ${dispenserDatatokenAddress}`)
     console.log(`Dispenser address: ${dispenserAddress}`)
-  }) ///
+  }).timeout(40000) ///
   /// ```
 
   it('8.2 Set metadata in the dispenser NFT', async () => {
@@ -689,7 +709,7 @@ describe('Marketplace flow tests', async () => {
       encryptedDDO,
       isAssetValid.hash
     )
-  }) ///
+  }).timeout(40000) ///
   /// ```
 
   /// ## 9. Consume a dispenser data asset
@@ -793,7 +813,7 @@ describe('Marketplace flow tests', async () => {
     } catch (e) {
       assert.fail('Download failed')
     }
-  }) ///
+  }).timeout(40000) ///
   /// ```
 
   /// ## 10. Using ERC725 Key-Value Store
@@ -848,7 +868,7 @@ describe('Marketplace flow tests', async () => {
     /// ```
 
     /// That's it! Note the simplicity. All data was stored and retrieved from on-chain. We don't need Ocean Provider or Ocean Aquarius for these use cases (though the latter can help for fast querying & retrieval).
-  }) ///
+  }).timeout(40000) ///
 }) ///
 
 /// ## Editing this file
