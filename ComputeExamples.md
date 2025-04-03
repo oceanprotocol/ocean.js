@@ -539,7 +539,8 @@ Now, let's check that we successfully published a dataset (create NFT + Datatoke
 Now, let's check that we successfully published a algorithm (create NFT + Datatoken)
 ```Typescript
     console.log(`algorithm id: ${algorithmId}`)
-  }).timeout(40000) ///
+    ///
+  }).timeout(40000)
 ```
 
 ## 7. Resolve assets
@@ -553,7 +554,8 @@ Now, let's check that we successfully published a algorithm (create NFT + Datato
     assert(resolvedDatasetDdo, 'Cannot fetch DDO from Aquarius')
     assert(resolvedAlgorithmDdo, 'Cannot fetch DDO from Aquarius')
 -->
-  }).timeout(80000) ///
+    ///
+  }).timeout(80000)
 
 ## 8. Send datatokens to consumer
 
