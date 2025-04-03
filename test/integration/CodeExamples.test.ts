@@ -597,11 +597,12 @@ describe('Marketplace flow tests', async () => {
       console.log(fileData)
     } catch (e) {
       LoggerInstance.error('Download failed', e)
+      /// <!--
       assert.fail('Download failed')
+      /// -->
     }
-    ///
+    /// ```
   }).timeout(40000)
-  /// ```
 
   /// ## 8. Publish Data NFT and a Datatoken with a dispenser
 
@@ -659,8 +660,8 @@ describe('Marketplace flow tests', async () => {
     console.log(`Dispenser NFT address: ${dispenserNftAddress}`)
     console.log(`Dispenser Datatoken address: ${dispenserDatatokenAddress}`)
     console.log(`Dispenser address: ${dispenserAddress}`)
-  }).timeout(40000) ///
-  /// ```
+    /// ```
+  }).timeout(40000)
 
   it('8.2 Set metadata in the dispenser NFT', async () => {
     /// ```Typescript
@@ -709,8 +710,8 @@ describe('Marketplace flow tests', async () => {
       encryptedDDO,
       isAssetValid.hash
     )
-  }).timeout(40000) ///
-  /// ```
+    /// ```
+  }).timeout(40000)
 
   /// ## 9. Consume a dispenser data asset
 
@@ -813,8 +814,8 @@ describe('Marketplace flow tests', async () => {
     } catch (e) {
       assert.fail('Download failed')
     }
-  }).timeout(40000) ///
-  /// ```
+    /// ```
+  }).timeout(40000)
 
   /// ## 10. Using ERC725 Key-Value Store
 

@@ -539,9 +539,8 @@ describe('Compute-to-data example tests', async () => {
     /// Now, let's check that we successfully published a algorithm (create NFT + Datatoken)
     /// ```Typescript
     console.log(`algorithm id: ${algorithmId}`)
-    ///
+    /// ```
   }).timeout(40000)
-  /// ```
 
   /// ## 7. Resolve assets
 
@@ -554,7 +553,6 @@ describe('Compute-to-data example tests', async () => {
     assert(resolvedDatasetDdo, 'Cannot fetch DDO from Aquarius')
     assert(resolvedAlgorithmDdo, 'Cannot fetch DDO from Aquarius')
     /// -->
-    ///
   }).timeout(80000)
 
   /// ## 8. Send datatokens to consumer
@@ -578,8 +576,8 @@ describe('Compute-to-data example tests', async () => {
       '10',
       await consumerAccount.getAddress()
     )
-  }).timeout(40000) ///
-  /// ```
+    /// ```
+  }).timeout(40000)
 
   /// ## 9. Get compute environments
 
@@ -590,7 +588,7 @@ describe('Compute-to-data example tests', async () => {
     /// <!--
     assert(computeEnvs, 'No Compute environments found')
     /// -->
-  }).timeout(40000) ///
+  }).timeout(40000)
 
   /// ## 10. Consumer starts a compute job
 
@@ -690,8 +688,8 @@ describe('Compute-to-data example tests', async () => {
       )
       hasFreeComputeSupport = false
     }
-  }).timeout(40000) ///
-  /// ```
+    /// ```
+  }).timeout(40000)
 
   /// ## 11. Check compute status and get download compute results URL
   it('11.1 Check compute status', async () => {
@@ -716,9 +714,9 @@ describe('Compute-to-data example tests', async () => {
       /// Now, let's see the current status of the previously started computer job
       /// ```Typescript
       console.log('Current status of the compute job: ', jobStatus)
+      /// ```
     }
   }).timeout(40000) ///
-  /// ```
 
   it('11.2 Get download compute results URL', async () => {
     if (!hasFreeComputeSupport) {
@@ -743,8 +741,8 @@ describe('Compute-to-data example tests', async () => {
       /// ```Typescript
       console.log(`Compute results URL: ${downloadURL}`)
     }
-  }).timeout(40000) ///
-  /// ```
+    /// ```
+  }).timeout(40000)
 }) ///
 
 /// ## Editing this file
