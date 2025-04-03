@@ -35,9 +35,7 @@ export const getTestConfig = async (signer: Signer) => {
   const config = new ConfigHelper().getConfig(parseInt(String(chainId)))
 
   if (process.env.OCEAN_NODE_URL) {
-    config.providerUri = process.env.OCEAN_NODE_URL
-  } else {
-    config.providerUri = process.env.PROVIDER_URL || config.providerUri
+    config.oceanNodeUri = process.env.OCEAN_NODE_URL
   }
 
   return config

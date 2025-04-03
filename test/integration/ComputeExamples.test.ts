@@ -429,12 +429,10 @@ describe('Compute-to-data example tests', async () => {
       parseInt(String((await publisherAccount.provider.getNetwork()).chainId))
     )
     if (process.env.OCEAN_NODE_URL) {
-      config.providerUri = process.env.OCEAN_NODE_URL
-    } else {
-      config.providerUri = process.env.PROVIDER_URL || config.providerUri
+      config.oceanNodeUri = process.env.OCEAN_NODE_URL
     }
-    aquariusInstance = new Aquarius(config?.metadataCacheUri)
-    providerUrl = config?.providerUri
+    aquariusInstance = new Aquarius(config?.oceanNodeUri)
+    providerUrl = config?.oceanNodeUri
     addresses = JSON.parse(
       // eslint-disable-next-line security/detect-non-literal-fs-filename
       fs.readFileSync(
@@ -447,7 +445,7 @@ describe('Compute-to-data example tests', async () => {
     /// ```
     /// As we go along it's a good idea to console log the values so that you check they are right. At the end of your `run(){ ... }` function add the following logs:
     /// ```Typescript
-    console.log(`Aquarius URL: ${config.metadataCacheUri}`)
+    console.log(`Indexer URL: ${config.oceanNodeUri}`)
     console.log(`Provider URL: ${providerUrl}`)
     console.log(`Deployed contracts address: ${addresses}`)
     console.log(`Publisher account address: ${publisherAccount}`)
