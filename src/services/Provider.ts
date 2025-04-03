@@ -15,8 +15,6 @@ import {
   UrlFile,
   UserCustomParameters,
   Ipfs,
-  Smartcontract,
-  GraphqlQuery,
   ComputeResourceRequest
 } from '../@types'
 
@@ -249,7 +247,7 @@ export class Provider {
    * @returns {Promise<FileInfo[]>} A promise that resolves with an array of file info objects.
    */
   public async getFileInfo(
-    file: UrlFile | Arweave | Ipfs | GraphqlQuery | Smartcontract,
+    file: UrlFile | Arweave | Ipfs,
     providerUri: string,
     withChecksum: boolean = false,
     signal?: AbortSignal
