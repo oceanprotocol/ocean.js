@@ -599,7 +599,8 @@ describe('Marketplace flow tests', async () => {
       LoggerInstance.error('Download failed', e)
       assert.fail('Download failed')
     }
-  }).timeout(40000) ///
+    ///
+  }).timeout(40000)
   /// ```
 
   /// ## 8. Publish Data NFT and a Datatoken with a dispenser
