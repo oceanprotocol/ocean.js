@@ -678,7 +678,6 @@ let's check the free compute environment
       // }
   -->
 
-  ```
   Let's start the free compute job
   ```Typescript
       const computeJobs = await ProviderInstance.freeComputeStart(
@@ -693,11 +692,13 @@ let's check the free compute environment
   <!--
       assert(computeJobs, 'Cannot start compute job')
   -->
+
   Let's save the compute job it, we re going to use later
   ```Typescript
       computeJobId = computeJobs[0].jobId
       // eslint-disable-next-line prefer-destructuring
       agreementId = computeJobs[0].agreementId
+  ```
     } else {
       assert(
         computeRoutePath === null,
@@ -705,7 +706,6 @@ let's check the free compute environment
       )
       hasFreeComputeSupport = false
     }
-```
 <!--
   }).timeout(40000)
 -->
