@@ -597,12 +597,12 @@ Lets check that the download URL was successfully received
       console.log(fileData)
     } catch (e) {
       LoggerInstance.error('Download failed', e)
-  <!--
-      assert.fail('Download failed')
-  -->
+      assert.fail('Download failed') ///
     }
 ```
+<!--
   }).timeout(40000)
+-->
 
 ## 8. Publish Data NFT and a Datatoken with a dispenser
 
@@ -661,8 +661,9 @@ Lets check that we managed to received all of those values without any problems
     console.log(`Dispenser Datatoken address: ${dispenserDatatokenAddress}`)
     console.log(`Dispenser address: ${dispenserAddress}`)
 ```
+<!--
   }).timeout(40000)
-
+-->
   ### 8.2 Set metadata in the dispenser NFT
 ```Typescript
     const nft = new Nft(
@@ -711,7 +712,9 @@ Now we need to encrypt file(s) using provider
       isAssetValid.hash
     )
 ```
+<!--
   }).timeout(40000)
+-->
 
 ## 9. Consume a dispenser data asset
 
@@ -815,7 +818,9 @@ Let's check we received the download URL ok
       assert.fail('Download failed')
     }
 ```
+<!--
   }).timeout(40000)
+-->
 
 ## 10. Using ERC725 Key-Value Store
 
@@ -869,7 +874,9 @@ Use the `getData` method to get the data stored in the nft key value store
 ```
 
 That's it! Note the simplicity. All data was stored and retrieved from on-chain. We don't need Ocean Provider or Ocean Aquarius for these use cases (though the latter can help for fast querying & retrieval).
-  }).timeout(40000) ///
+<!--
+  }).timeout(40000)
+-->
 
 
 ## Editing this file
