@@ -627,6 +627,9 @@ describe('Compute-to-data example tests', async () => {
       mytime.setMinutes(mytime.getMinutes() + computeMinutes)
       const computeValidUntil = Math.floor(mytime.getTime() / 1000)
 
+      /// ```
+      /// Let's prepare the dataset and algorithm assets to be used in the compute job
+      /// ```Typescript
       const assets: ComputeAsset[] = [
         {
           documentId: resolvedDatasetDdo.id,
@@ -640,6 +643,8 @@ describe('Compute-to-data example tests', async () => {
         serviceId: resolvedAlgorithmDdo.services[0].id,
         meta: resolvedAlgorithmDdo.metadata.algorithm
       }
+      /// ```
+
       /// <!--
       // const providerInitializeComputeResults = await ProviderInstance.initializeCompute(
       //   assets,
@@ -650,11 +655,11 @@ describe('Compute-to-data example tests', async () => {
       //   consumerAccount
       // )
       // console.log('providerInitializeComputeResults = ', providerInitializeComputeResults)
-      // /// ```
-      // /// <!--
+      //
+      //
       // assert(!('error' in providerInitializeComputeResults), 'Cannot order algorithm')
-      // /// -->
-      // /// ```Typescript
+      //
+      //
       // algo.transferTxId = await handleOrder(
       //   providerInitializeComputeResults.algorithm,
       //   resolvedAlgorithmDdo.services[0].datatokenAddress,
@@ -673,6 +678,9 @@ describe('Compute-to-data example tests', async () => {
       // }
       /// -->
 
+      /// ```
+      /// Let's start the free compute job
+      /// ```Typescript
       const computeJobs = await ProviderInstance.freeComputeStart(
         providerUrl,
         consumerAccount,
@@ -680,8 +688,8 @@ describe('Compute-to-data example tests', async () => {
         assets,
         algo
       )
-
       /// ```
+
       /// <!--
       assert(computeJobs, 'Cannot start compute job')
       /// -->
@@ -726,8 +734,8 @@ describe('Compute-to-data example tests', async () => {
       /// ```Typescript
       console.log('Current status of the compute job: ', jobStatus)
       /// ```
+      /// <!--
     }
-    /// <!--
   }).timeout(40000)
   /// -->
 
@@ -753,9 +761,9 @@ describe('Compute-to-data example tests', async () => {
       /// Let's check the compute results url for the specified index
       /// ```Typescript
       console.log(`Compute results URL: ${downloadURL}`)
+      /// ```
+      /// <!--
     }
-    /// ```
-    /// <!--
   }).timeout(40000)
 })
 /// -->
