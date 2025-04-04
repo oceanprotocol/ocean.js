@@ -163,8 +163,8 @@ describe('Publish consume test', async () => {
     publisherAccount = (await provider.getSigner(0)) as Signer
     consumerAccount = (await provider.getSigner(1)) as Signer
     config = await getTestConfig(publisherAccount)
-    aquarius = new Aquarius(config?.metadataCacheUri)
-    providerUrl = config?.providerUri
+    aquarius = new Aquarius(config?.oceanNodeUri)
+    providerUrl = config?.oceanNodeUri
     addresses = getAddresses()
   })
 
@@ -197,7 +197,7 @@ describe('Publish consume test', async () => {
       await publisherAccount.getAddress(),
       amountToUnits(null, null, '1000', 18)
     )
-  })
+  }).timeout(40000)
 
   it('Send some OCEAN to consumer account', async () => {
     transfer(
@@ -207,7 +207,7 @@ describe('Publish consume test', async () => {
       await consumerAccount.getAddress(),
       '100'
     )
-  })
+  }).timeout(40000)
 
   it('Should publish url asset', async () => {
     urlAssetId = await createAssetHelper(
@@ -221,7 +221,8 @@ describe('Publish consume test', async () => {
       aquarius
     )
     assert(urlAssetId, 'Failed to publish url DDO')
-  })
+  }).timeout(40000)
+
   it('Should publish arweave asset', async () => {
     arweaveAssetId = await createAssetHelper(
       'ArwaveDatatoken',
@@ -234,7 +235,8 @@ describe('Publish consume test', async () => {
       aquarius
     )
     assert(arweaveAssetId, 'Failed to arwave publish DDO')
-  })
+  }).timeout(40000)
+
   it('Should publish ipfs asset', async () => {
     const ipfsCID = await uploadToIpfs(JSON.stringify(assetDdo))
     const ipfsFile: Files = {
@@ -258,48 +260,49 @@ describe('Publish consume test', async () => {
       aquarius
     )
     assert(ipfsAssetId, 'Failed to publish ipfs DDO')
-  })
+  }).timeout(40000)
 
-  it('Should publish onchain asset', async () => {
-    const chainFile: Smartcontract = {
-      type: 'smartcontract',
-      address: addresses.Router,
-      abi: {
-        inputs: [],
-        name: 'swapOceanFee',
-        outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
-        stateMutability: 'view',
-        type: 'function'
-      },
-      chainId: 8996
-    }
-    onchainFile.files[0] = chainFile
-    onchainAssetId = await createAssetHelper(
-      'ChainDatatoken',
-      'CHAINDT',
-      publisherAccount,
-      onchainFile,
-      assetDdo,
-      providerUrl,
-      addresses.ERC721Factory,
-      aquarius
-    )
-    assert(onchainAssetId, 'Failed to publish onchain DDO')
-  })
+  // smartcontract & grapqhl datasets are not supported yet by ocean-node
+  // it('Should publish onchain asset', async () => {
+  //   const chainFile: Smartcontract = {
+  //     type: 'smartcontract',
+  //     address: addresses.Router,
+  //     abi: {
+  //       inputs: [],
+  //       name: 'swapOceanFee',
+  //       outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
+  //       stateMutability: 'view',
+  //       type: 'function'
+  //     },
+  //     chainId: 8996
+  //   }
+  //   onchainFile.files[0] = chainFile
+  //   onchainAssetId = await createAssetHelper(
+  //     'ChainDatatoken',
+  //     'CHAINDT',
+  //     publisherAccount,
+  //     onchainFile,
+  //     assetDdo,
+  //     providerUrl,
+  //     addresses.ERC721Factory,
+  //     aquarius
+  //   )
+  //   assert(onchainAssetId, 'Failed to publish onchain DDO')
+  // }).timeout(40000)
 
-  it('Should publish graphql asset', async () => {
-    grapqlAssetId = await createAssetHelper(
-      'GraphDatatoken',
-      'GRAPHDT',
-      publisherAccount,
-      grapqlFile,
-      assetDdo,
-      providerUrl,
-      addresses.ERC721Factory,
-      aquarius
-    )
-    assert(grapqlAssetId, 'Failed to publish graphql DDO')
-  })
+  // it('Should publish graphql asset', async () => {
+  //   grapqlAssetId = await createAssetHelper(
+  //     'GraphDatatoken',
+  //     'GRAPHDT',
+  //     publisherAccount,
+  //     grapqlFile,
+  //     assetDdo,
+  //     providerUrl,
+  //     addresses.ERC721Factory,
+  //     aquarius
+  //   )
+  //   assert(grapqlAssetId, 'Failed to publish graphql DDO')
+  // }).timeout(40000)
 
   delay(10000) // let's wait for aquarius to index the  assets
 
@@ -313,12 +316,12 @@ describe('Publish consume test', async () => {
     resolvedIpfsAssetDdo = await aquarius.waitForIndexer(ipfsAssetId)
     assert(resolvedIpfsAssetDdo, 'Cannot fetch ipfs DDO from Aquarius')
 
-    resolvedOnchainAssetDdo = await aquarius.waitForIndexer(onchainAssetId)
-    assert(resolvedOnchainAssetDdo, 'Cannot fetch onchain DDO from Aquarius')
+    // resolvedOnchainAssetDdo = await aquarius.waitForIndexer(onchainAssetId)
+    // assert(resolvedOnchainAssetDdo, 'Cannot fetch onchain DDO from Aquarius')
 
-    resolvedGraphqlAssetDdo = await aquarius.waitForIndexer(grapqlAssetId)
-    assert(resolvedGraphqlAssetDdo, 'Cannot fetch graphql DDO from Aquarius')
-  })
+    // resolvedGraphqlAssetDdo = await aquarius.waitForIndexer(grapqlAssetId)
+    // assert(resolvedGraphqlAssetDdo, 'Cannot fetch graphql DDO from Aquarius')
+  }).timeout(40000)
 
   it('Mint datasets datatokens to publisher', async () => {
     datatoken = new Datatoken(publisherAccount, config.chainId)
@@ -346,22 +349,22 @@ describe('Publish consume test', async () => {
     // )
     // assert(ipfsMintTx, 'Failed minting ipfs datatoken to consumer.')
 
-    const onchainMintTx = await datatoken.mint(
-      resolvedOnchainAssetDdo.services[0].datatokenAddress,
-      await publisherAccount.getAddress(),
-      '10',
-      await consumerAccount.getAddress()
-    )
-    assert(onchainMintTx, 'Failed minting onchain datatoken to consumer.')
+    // const onchainMintTx = await datatoken.mint(
+    //   resolvedOnchainAssetDdo.services[0].datatokenAddress,
+    //   await publisherAccount.getAddress(),
+    //   '10',
+    //   await consumerAccount.getAddress()
+    // )
+    // assert(onchainMintTx, 'Failed minting onchain datatoken to consumer.')
 
-    const graphqlMintTx = await datatoken.mint(
-      resolvedGraphqlAssetDdo.services[0].datatokenAddress,
-      await publisherAccount.getAddress(),
-      '10',
-      await consumerAccount.getAddress()
-    )
-    assert(graphqlMintTx, 'Failed minting graphql datatoken to consumer.')
-  })
+    // const graphqlMintTx = await datatoken.mint(
+    //   resolvedGraphqlAssetDdo.services[0].datatokenAddress,
+    //   await publisherAccount.getAddress(),
+    //   '10',
+    //   await consumerAccount.getAddress()
+    // )
+    // assert(graphqlMintTx, 'Failed minting graphql datatoken to consumer.')
+  }).timeout(40000)
 
   it('Should order url dataset', async () => {
     datatoken = new Datatoken(consumerAccount, config.chainId)
@@ -402,31 +405,32 @@ describe('Publish consume test', async () => {
   // )
   // assert(ipfsOrderTx, 'Ordering ipfs dataset failed.')
 
-  it('Should order onchain dataset', async () => {
-    onchainOrderTx = await orderAsset(
-      resolvedOnchainAssetDdo.id,
-      resolvedOnchainAssetDdo.services[0].datatokenAddress,
-      await consumerAccount.getAddress(),
-      resolvedOnchainAssetDdo.services[0].id,
-      0,
-      datatoken,
-      providerUrl
-    )
-    assert(onchainOrderTx, 'Ordering onchain dataset failed.')
-  }).timeout(40000)
+  // smartcontract & grapqhl datasets are not supported yet by ocean-node
+  // it('Should order onchain dataset', async () => {
+  //   onchainOrderTx = await orderAsset(
+  //     resolvedOnchainAssetDdo.id,
+  //     resolvedOnchainAssetDdo.services[0].datatokenAddress,
+  //     await consumerAccount.getAddress(),
+  //     resolvedOnchainAssetDdo.services[0].id,
+  //     0,
+  //     datatoken,
+  //     providerUrl
+  //   )
+  //   assert(onchainOrderTx, 'Ordering onchain dataset failed.')
+  // }).timeout(40000)
 
-  it('Should order graphQl dataset', async () => {
-    grapqlOrderTx = await orderAsset(
-      resolvedGraphqlAssetDdo.id,
-      resolvedGraphqlAssetDdo.services[0].datatokenAddress,
-      await consumerAccount.getAddress(),
-      resolvedGraphqlAssetDdo.services[0].id,
-      0,
-      datatoken,
-      providerUrl
-    )
-    assert(grapqlOrderTx, 'Ordering graphql dataset failed.')
-  })
+  // it('Should order graphQl dataset', async () => {
+  //   grapqlOrderTx = await orderAsset(
+  //     resolvedGraphqlAssetDdo.id,
+  //     resolvedGraphqlAssetDdo.services[0].datatokenAddress,
+  //     await consumerAccount.getAddress(),
+  //     resolvedGraphqlAssetDdo.services[0].id,
+  //     0,
+  //     datatoken,
+  //     providerUrl
+  //   )
+  //   assert(grapqlOrderTx, 'Ordering graphql dataset failed.')
+  // }).timeout(40000)
 
   it('Should download the datasets files', async () => {
     const urlDownloadUrl = await ProviderInstance.getDownloadUrl(
@@ -437,6 +441,7 @@ describe('Publish consume test', async () => {
       providerUrl,
       consumerAccount
     )
+    console.log('urlDownloadUrl', urlDownloadUrl)
     assert(urlDownloadUrl, 'Provider getDownloadUrl failed for url dataset')
     try {
       await downloadFile(urlDownloadUrl)
@@ -451,6 +456,7 @@ describe('Publish consume test', async () => {
       providerUrl,
       consumerAccount
     )
+    console.log('arwaveDownloadURL', arwaveDownloadURL)
     assert(arwaveDownloadURL, 'Provider getDownloadUrl failed for arwave dataset')
     try {
       await downloadFile(arwaveDownloadURL)
@@ -472,35 +478,39 @@ describe('Publish consume test', async () => {
     // } catch (e) {
     //   assert.fail(`Download ipfs dataset failed ${e}`)
     // }
-    const onchainDownloadURL = await ProviderInstance.getDownloadUrl(
-      resolvedOnchainAssetDdo.id,
-      resolvedOnchainAssetDdo.services[0].id,
-      0,
-      onchainOrderTx.transactionHash,
-      providerUrl,
-      consumerAccount
-    )
-    assert(onchainDownloadURL, 'Provider getDownloadUrl failed for onchain dataset')
-    try {
-      await downloadFile(onchainDownloadURL)
-    } catch (e) {
-      assert.fail(`Download onchain dataset failed ${e}`)
-    }
-    const graphqlDownloadURL = await ProviderInstance.getDownloadUrl(
-      resolvedGraphqlAssetDdo.id,
-      resolvedGraphqlAssetDdo.services[0].id,
-      0,
-      grapqlOrderTx.transactionHash,
-      providerUrl,
-      consumerAccount
-    )
-    assert(graphqlDownloadURL, 'Provider getDownloadUrl failed for graphql dataset')
-    try {
-      await downloadFile(graphqlDownloadURL)
-    } catch (e) {
-      assert.fail(`Download graphql dataset failed ${e}`)
-    }
-  })
+
+    // smartcontract & grapqhl datasets are not supported yet by ocean-node
+    // const onchainDownloadURL = await ProviderInstance.getDownloadUrl(
+    //   resolvedOnchainAssetDdo.id,
+    //   resolvedOnchainAssetDdo.services[0].id,
+    //   0,
+    //   onchainOrderTx.transactionHash,
+    //   providerUrl,
+    //   consumerAccount
+    // )
+    // console.log('onchainDownloadURL', onchainDownloadURL)
+    // assert(onchainDownloadURL, 'Provider getDownloadUrl failed for onchain dataset')
+    // try {
+    //   await downloadFile(onchainDownloadURL)
+    // } catch (e) {
+    //   assert.fail(`Download onchain dataset failed: ${e}`)
+    // }
+    // const graphqlDownloadURL = await ProviderInstance.getDownloadUrl(
+    //   resolvedGraphqlAssetDdo.id,
+    //   resolvedGraphqlAssetDdo.services[0].id,
+    //   0,
+    //   grapqlOrderTx.transactionHash,
+    //   providerUrl,
+    //   consumerAccount
+    // )
+    // console.log('graphqlDownloadURL', graphqlDownloadURL)
+    // assert(graphqlDownloadURL, 'Provider getDownloadUrl failed for graphql dataset')
+    // try {
+    //   await downloadFile(graphqlDownloadURL)
+    // } catch (e) {
+    //   assert.fail(`Download graphql dataset failed ${e}`)
+    // }
+  }).timeout(40000)
 
   it('Should update url dataset', async () => {
     resolvedUrlAssetDdo.metadata.name = 'updated url asset name'
@@ -511,7 +521,7 @@ describe('Publish consume test', async () => {
       aquarius
     )
     assert(updateUrlTx, 'Failed to update url asset metadata')
-  })
+  }).timeout(40000)
 
   it('Should update arweave dataset', async () => {
     resolvedArweaveAssetDdo.metadata.name = 'updated arwave asset name'
@@ -572,5 +582,5 @@ describe('Publish consume test', async () => {
       resolvedGraphqlAssetDdoAfterUpdate = await aquarius.waitForIndexer(grapqlAssetId)
       assert(resolvedGraphqlAssetDdoAfterUpdate, 'Cannot fetch onchain DDO from Aquarius')
     })
-  })
+  }).timeout(40000)
 })

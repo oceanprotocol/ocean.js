@@ -12,7 +12,7 @@ Here are the steps:
 7. [Resolve published datasets and algorithms](#7-resolve-assets)
 8. [Send datatokens to consumer](#8-send-datatokens-to-consumer)
 9. [Consumer fetches compute environment](#9-get-compute-environments)
-10. [Consumer starts a compute job using a free C2D environment](#10-consumer-starts-a-compute-job)
+10. [Consumer starts a free compute job using a free C2D environment](#10-consumer-starts-a-compute-job)
 11. [Check compute status and get download compute results url](#11-check-compute-status-and-get-download-compute-results-url)
 
 Let's go through each step.
@@ -342,7 +342,7 @@ async function createAssetHelper(
   assetUrl.nftAddress = nftAddress
   ddo.services[0].files = await ProviderInstance.encrypt(assetUrl, chain, providerUrl)
   ddo.services[0].datatokenAddress = datatokenAddressAsset
-  ddo.services[0].serviceEndpoint = 'http://172.15.0.4:8030' // put back proviederUrl
+  ddo.services[0].serviceEndpoint = providerUrl
 
   ddo.nftAddress = nftAddress
   ddo.id = 'did:op:' + SHA256(ethers.utils.getAddress(nftAddress) + chain.toString(10))
@@ -353,7 +353,7 @@ async function createAssetHelper(
     nftAddress,
     await owner.getAddress(),
     0,
-    'http://172.15.0.4:8030', // put back proviederUrl
+    providerUrl,
     '',
     ethers.utils.hexlify(2),
     encryptedResponse,
@@ -428,9 +428,11 @@ We need to load the configuration. Add the following code into your `run(){ }` f
     const config = new ConfigHelper().getConfig(
       parseInt(String((await publisherAccount.provider.getNetwork()).chainId))
     )
-    config.providerUri = process.env.PROVIDER_URL || config.providerUri
-    aquariusInstance = new Aquarius(config?.metadataCacheUri)
-    providerUrl = config?.providerUri
+    if (process.env.OCEAN_NODE_URL) {
+      config.oceanNodeUri = process.env.OCEAN_NODE_URL
+    }
+    aquariusInstance = new Aquarius(config?.oceanNodeUri)
+    providerUrl = config?.oceanNodeUri
     addresses = JSON.parse(
       // eslint-disable-next-line security/detect-non-literal-fs-filename
       fs.readFileSync(
@@ -443,7 +445,7 @@ We need to load the configuration. Add the following code into your `run(){ }` f
 ```
 As we go along it's a good idea to console log the values so that you check they are right. At the end of your `run(){ ... }` function add the following logs:
 ```Typescript
-    console.log(`Aquarius URL: ${config.metadataCacheUri}`)
+    console.log(`Indexer URL: ${config.oceanNodeUri}`)
     console.log(`Provider URL: ${providerUrl}`)
     console.log(`Deployed contracts address: ${addresses}`)
     console.log(`Publisher account address: ${publisherAccount}`)
@@ -489,8 +491,10 @@ you need to mint oceans to mentioned accounts only if you are using barge to tes
       await publisherAccount.getAddress(),
       amountToUnits(null, null, '1000', 18)
     )
-  
 ```
+<!--
+  }).timeout(40000) ///
+--->
 
   ### 5.2 Send some OCEAN to consumer account
 ```Typescript
@@ -520,8 +524,10 @@ you need to mint oceans to mentioned accounts only if you are using barge to tes
 Now, let's check that we successfully published a dataset (create NFT + Datatoken)
 ```Typescript
     console.log(`dataset id: ${datasetId}`)
-  
 ```
+<!--
+  }).timeout(40000)
+-->
 
   ### 6.2 Publish an algorithm (create NFT + Datatoken) and set algorithm metadata
 ```Typescript
@@ -537,9 +543,10 @@ Now, let's check that we successfully published a dataset (create NFT + Datatoke
 Now, let's check that we successfully published a algorithm (create NFT + Datatoken)
 ```Typescript
     console.log(`algorithm id: ${algorithmId}`)
-  
 ```
-
+<!--
+  }).timeout(40000)
+-->
 ## 7. Resolve assets
 
   ### 7.1 Resolve published datasets and algorithms
@@ -550,8 +557,8 @@ Now, let's check that we successfully published a algorithm (create NFT + Datato
 <!--
     assert(resolvedDatasetDdo, 'Cannot fetch DDO from Aquarius')
     assert(resolvedAlgorithmDdo, 'Cannot fetch DDO from Aquarius')
+  }).timeout(80000)
 -->
-  
 
 ## 8. Send datatokens to consumer
 
@@ -574,8 +581,10 @@ Now, let's check that we successfully published a algorithm (create NFT + Datato
       '10',
       await consumerAccount.getAddress()
     )
-  
 ```
+<!--
+  }).timeout(40000)
+-->
 
 ## 9. Get compute environments
 
@@ -585,10 +594,10 @@ Now, let's check that we successfully published a algorithm (create NFT + Datato
 ```
 <!--
     assert(computeEnvs, 'No Compute environments found')
+  }).timeout(40000)
 -->
-  
 
-## 10. Consumer starts a compute job
+## 10. Consumer starts a free compute job
 
   ### 10.1 Start a compute job using a free C2D environment
     datatoken = new Datatoken(
@@ -598,8 +607,9 @@ Now, let's check that we successfully published a algorithm (create NFT + Datato
 
 let's check the free compute environment
 ```Typescript
-    const computeEnv = computeEnvs[resolvedDatasetDdo.chainId].find(
-      (ce) => ce.priceMin === 0 || isDefined(ce.free)
+    const computeEnv = computeEnvs.find(
+      (ce) =>
+        !ce?.fees || ce.fees.find((fee) => fee.symbol === 'OCEAN' && fee.amount === '0')
     )
     console.log('Free compute environment = ', computeEnv)
 ```
@@ -617,6 +627,9 @@ let's check the free compute environment
       mytime.setMinutes(mytime.getMinutes() + computeMinutes)
       const computeValidUntil = Math.floor(mytime.getTime() / 1000)
 
+  ```
+  Let's prepare the dataset and algorithm assets to be used in the compute job
+  ```Typescript
       const assets: ComputeAsset[] = [
         {
           documentId: resolvedDatasetDdo.id,
@@ -624,41 +637,49 @@ let's check the free compute environment
         }
       ]
       const dtAddressArray = [resolvedDatasetDdo.services[0].datatokenAddress]
+
       const algo: ComputeAlgorithm = {
         documentId: resolvedAlgorithmDdo.id,
-        serviceId: resolvedAlgorithmDdo.services[0].id
+        serviceId: resolvedAlgorithmDdo.services[0].id,
+        meta: resolvedAlgorithmDdo.metadata.algorithm
       }
-
-      const providerInitializeComputeResults = await ProviderInstance.initializeCompute(
-        assets,
-        algo,
-        computeEnv.id,
-        computeValidUntil,
-        providerUrl,
-        consumerAccount
-      )
   ```
-  <!--
-      assert(!('error' in providerInitializeComputeResults), 'Cannot order algorithm')
-  -->
-  ```Typescript
-      algo.transferTxId = await handleOrder(
-        providerInitializeComputeResults.algorithm,
-        resolvedAlgorithmDdo.services[0].datatokenAddress,
-        consumerAccount,
-        computeEnv.consumerAddress,
-        0
-      )
-      for (let i = 0; i < providerInitializeComputeResults.datasets.length; i++) {
-        assets[i].transferTxId = await handleOrder(
-          providerInitializeComputeResults.datasets[i],
-          dtAddressArray[i],
-          consumerAccount,
-          computeEnv.consumerAddress,
-          0
-        )
-      }
 
+  <!--
+      // const providerInitializeComputeResults = await ProviderInstance.initializeCompute(
+      //   assets,
+      //   algo,
+      //   computeEnv.id,
+      //   computeValidUntil,
+      //   providerUrl,
+      //   consumerAccount
+      // )
+      // console.log('providerInitializeComputeResults = ', providerInitializeComputeResults)
+      //
+      //
+      // assert(!('error' in providerInitializeComputeResults), 'Cannot order algorithm')
+      //
+      //
+      // algo.transferTxId = await handleOrder(
+      //   providerInitializeComputeResults.algorithm,
+      //   resolvedAlgorithmDdo.services[0].datatokenAddress,
+      //   consumerAccount,
+      //   computeEnv.consumerAddress,
+      //   0
+      // )
+      // for (let i = 0; i < providerInitializeComputeResults.datasets.length; i++) {
+      //   assets[i].transferTxId = await handleOrder(
+      //     providerInitializeComputeResults.datasets[i],
+      //     dtAddressArray[i],
+      //     consumerAccount,
+      //     computeEnv.consumerAddress,
+      //     0
+      //   )
+      // }
+  -->
+
+  Let's start the free compute job
+  ```Typescript
       const computeJobs = await ProviderInstance.freeComputeStart(
         providerUrl,
         consumerAccount,
@@ -666,16 +687,18 @@ let's check the free compute environment
         assets,
         algo
       )
-
   ```
+
   <!--
       assert(computeJobs, 'Cannot start compute job')
   -->
+
   Let's save the compute job it, we re going to use later
   ```Typescript
       computeJobId = computeJobs[0].jobId
       // eslint-disable-next-line prefer-destructuring
       agreementId = computeJobs[0].agreementId
+  ```
     } else {
       assert(
         computeRoutePath === null,
@@ -683,8 +706,9 @@ let's check the free compute environment
       )
       hasFreeComputeSupport = false
     }
-  
-```
+<!--
+  }).timeout(40000)
+-->
 
 ## 11. Check compute status and get download compute results URL
   ### 11.1 Check compute status
@@ -709,9 +733,11 @@ let's check the free compute environment
   Now, let's see the current status of the previously started computer job
   ```Typescript
       console.log('Current status of the compute job: ', jobStatus)
+  ```
+  <!--
     }
-  
-```
+  }).timeout(40000)
+-->
 
   ### 11.2 Get download compute results URL
     if (!hasFreeComputeSupport) {
@@ -735,10 +761,12 @@ let's check the free compute environment
   Let's check the compute results url for the specified index
   ```Typescript
       console.log(`Compute results URL: ${downloadURL}`)
+  ```
+  <!--
     }
-  
-```
-
+  }).timeout(40000)
+})
+-->
 
 ## Editing this file
 Please note that ComputeExamples.md is an autogenerated file, you should not edit it directly.
