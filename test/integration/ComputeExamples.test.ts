@@ -678,7 +678,6 @@ describe('Compute-to-data example tests', async () => {
       // }
       /// -->
 
-      /// ```
       /// Let's start the free compute job
       /// ```Typescript
       const computeJobs = await ProviderInstance.freeComputeStart(
@@ -693,11 +692,13 @@ describe('Compute-to-data example tests', async () => {
       /// <!--
       assert(computeJobs, 'Cannot start compute job')
       /// -->
+
       /// Let's save the compute job it, we re going to use later
       /// ```Typescript
       computeJobId = computeJobs[0].jobId
       // eslint-disable-next-line prefer-destructuring
       agreementId = computeJobs[0].agreementId
+      /// ```
     } else {
       assert(
         computeRoutePath === null,
@@ -705,7 +706,6 @@ describe('Compute-to-data example tests', async () => {
       )
       hasFreeComputeSupport = false
     }
-    /// ```
     /// <!--
   }).timeout(40000)
   /// -->
