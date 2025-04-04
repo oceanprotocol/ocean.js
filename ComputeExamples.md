@@ -600,10 +600,12 @@ Now, let's check that we successfully published a algorithm (create NFT + Datato
 ## 10. Consumer starts a free compute job
 
   ### 10.1 Start a compute job using a free C2D environment
+<!--
     datatoken = new Datatoken(
       consumerAccount,
       (await consumerAccount.provider.getNetwork()).chainId
     )
+-->
 
 let's check the free compute environment
 ```Typescript
@@ -617,9 +619,12 @@ let's check the free compute environment
     assert(computeEnv, 'Cannot find the free compute env')
 -->
 
+<!--
     computeRoutePath = await ProviderInstance.getComputeStartRoutes(providerUrl, true)
     if (isDefined(computeRoutePath)) {
       hasFreeComputeSupport = true
+  -->
+
   Let's have 5 minute of compute access
   ```Typescript
       const mytime = new Date()
@@ -699,6 +704,7 @@ let's check the free compute environment
       // eslint-disable-next-line prefer-destructuring
       agreementId = computeJobs[0].agreementId
   ```
+  <!--
     } else {
       assert(
         computeRoutePath === null,
@@ -706,18 +712,19 @@ let's check the free compute environment
       )
       hasFreeComputeSupport = false
     }
-<!--
   }).timeout(40000)
 -->
 
 ## 11. Check compute status and get download compute results URL
   ### 11.1 Check compute status
+<!--
     if (!hasFreeComputeSupport) {
       assert(
         computeRoutePath === null,
         'Compute route path for free compute is not defined (perhaps because provider does not support it yet?)'
       )
     } else {
+  -->
   You can also add various delays so you see the various states of the compute job
   ```Typescript
       const jobStatus = await ProviderInstance.computeStatus(
@@ -740,12 +747,15 @@ let's check the free compute environment
 -->
 
   ### 11.2 Get download compute results URL
+<!--
     if (!hasFreeComputeSupport) {
       assert(
         computeRoutePath === null,
         'Compute route path for free compute is not defined (perhaps because provider does not support it yet?)'
       )
     } else {
+  -->
+
   ```Typescript
       await sleep(10000)
       const downloadURL = await ProviderInstance.getComputeResultUrl(
