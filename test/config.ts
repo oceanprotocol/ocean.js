@@ -33,7 +33,11 @@ export const provider = new providers.JsonRpcProvider(
 export const getTestConfig = async (signer: Signer) => {
   const { chainId } = await signer.provider.getNetwork()
   const config = new ConfigHelper().getConfig(parseInt(String(chainId)))
-  config.providerUri = process.env.PROVIDER_URL || config.providerUri
+
+  if (process.env.OCEAN_NODE_URL) {
+    config.oceanNodeUri = process.env.OCEAN_NODE_URL
+  }
+
   return config
 }
 

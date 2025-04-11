@@ -71,7 +71,7 @@ export async function createAssetHelper(
   assetUrl.nftAddress = nftAddress
   ddo.services[0].files = await ProviderInstance.encrypt(assetUrl, chain, providerUrl)
   ddo.services[0].datatokenAddress = datatokenAddressAsset
-  ddo.services[0].serviceEndpoint = 'http://172.15.0.4:8030' // put back proviederUrl
+  ddo.services[0].serviceEndpoint = providerUrl
 
   ddo.nftAddress = nftAddress
   ddo.id =
@@ -83,7 +83,7 @@ export async function createAssetHelper(
     nftAddress,
     await owner.getAddress(),
     0,
-    'http://172.15.0.4:8030', // put back proviederUrl
+    providerUrl,
     '',
     ethers.utils.hexlify(2),
     encryptedResponse,

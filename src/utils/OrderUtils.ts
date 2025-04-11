@@ -86,7 +86,7 @@ export async function orderAsset(
         services[serviceIndex].id,
         0,
         await consumerAccount.getAddress(),
-        providerUrl || config.providerUri
+        providerUrl || config.oceanNodeUri
       )
     ).providerFee
 
