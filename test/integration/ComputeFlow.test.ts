@@ -631,14 +631,7 @@ describe('Compute flow tests', async () => {
     paidEnvDatasetTxId = assets[0].transferTxId
     paidEnvAlgoTxId = algo.transferTxId
     assert(computeJobs, 'Cannot start compute job')
-    paidComputeJobId = computeJobs[0].jobId
-  })
-
-  delay(100000)
-
-  it('Check compute status', async () => {
     const jobStatus = (await ProviderInstance.computeStatus(
-      providerUrl,
       await consumerAccount.getAddress(),
       paidComputeJobId,
       resolvedDdoWith5mTimeout.id
