@@ -490,8 +490,6 @@ describe('Marketplace flow tests', async () => {
       await consumerAccount.getChainId()
     )
 
-    await new Promise((resolve) => setTimeout(resolve, 5000))
-
     /// ```
     /// Now we can make the contract call
     /// ```Typescript
