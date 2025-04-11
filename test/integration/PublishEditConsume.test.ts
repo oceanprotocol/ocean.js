@@ -11,7 +11,7 @@ import {
   transfer,
   amountToUnits
 } from '../../src/index.js'
-import { Files, Smartcontract } from '../../src/@types'
+import { Files } from '../../src/@types'
 import { createAssetHelper, orderAsset, updateAssetMetadata } from './helpers.js'
 
 let config: Config
@@ -45,7 +45,7 @@ let resolvedGraphqlAssetDdoAfterUpdate
 
 let urlOrderTx
 let arwaveOrderTx
-// let ipfsOrderTx
+let ipfsOrderTx
 let onchainOrderTx
 let grapqlOrderTx
 
@@ -72,31 +72,31 @@ const arweaveFile: Files = {
   ]
 }
 
-const onchainFile: Files = {
-  datatokenAddress: '0x0',
-  nftAddress: '0x0',
-  files: []
-}
+// const onchainFile: Files = {
+//   datatokenAddress: '0x0',
+//   nftAddress: '0x0',
+//   files: []
+// }
 
-const grapqlFile: Files = {
-  datatokenAddress: '0x0',
-  nftAddress: '0x0',
-  files: [
-    {
-      type: 'graphql',
-      url: 'https://v4.subgraph.sepolia.oceanprotocol.com/subgraphs/name/oceanprotocol/ocean-subgraph/graphql',
-      query: `"
-          query{
-                nfts(orderBy: createdTimestamp,orderDirection:desc){
-                     id
-                     symbol
-                     createdTimestamp
-                }
-               }
-               "`
-    }
-  ]
-}
+// const grapqlFile: Files = {
+//   datatokenAddress: '0x0',
+//   nftAddress: '0x0',
+//   files: [
+//     {
+//       type: 'graphql',
+//       url: 'https://v4.subgraph.sepolia.oceanprotocol.com/subgraphs/name/oceanprotocol/ocean-subgraph/graphql',
+//       query: `"
+//           query{
+//                 nfts(orderBy: createdTimestamp,orderDirection:desc){
+//                      id
+//                      symbol
+//                      createdTimestamp
+//                 }
+//                }
+//                "`
+//     }
+//   ]
+// }
 
 const assetDdo = {
   '@context': ['https://w3id.org/did/v1'],
@@ -260,7 +260,7 @@ describe('Publish consume test', async () => {
       aquarius
     )
     assert(ipfsAssetId, 'Failed to publish ipfs DDO')
-  }).timeout(40000)
+  }).timeout(60000)
 
   // smartcontract & grapqhl datasets are not supported yet by ocean-node
   // it('Should publish onchain asset', async () => {
@@ -341,13 +341,13 @@ describe('Publish consume test', async () => {
     )
     assert(arwaveMintTx, 'Failed minting arwave datatoken to consumer.')
 
-    // const ipfsMintTx = await datatoken.mint(
-    //   resolvedIpfsAssetDdo.services[0].datatokenAddress,
-    //   await publisherAccount.getAddress(),
-    //   '10',
-    //   await consumerAccount.getAddress()
-    // )
-    // assert(ipfsMintTx, 'Failed minting ipfs datatoken to consumer.')
+    const ipfsMintTx = await datatoken.mint(
+      resolvedIpfsAssetDdo.services[0].datatokenAddress,
+      await publisherAccount.getAddress(),
+      '10',
+      await consumerAccount.getAddress()
+    )
+    assert(ipfsMintTx, 'Failed minting ipfs datatoken to consumer.')
 
     // const onchainMintTx = await datatoken.mint(
     //   resolvedOnchainAssetDdo.services[0].datatokenAddress,
@@ -393,17 +393,18 @@ describe('Publish consume test', async () => {
     assert(arwaveOrderTx, 'Ordering arwave dataset failed.')
   }).timeout(40000)
 
-  // To be fixed in #1849
-  // ipfsOrderTx = await orderAsset(
-  //   resolvedIpfsAssetDdo.id,
-  //   resolvedIpfsAssetDdo.services[0].datatokenAddress,
-  //   await consumerAccount.getAddress(),
-  //   resolvedIpfsAssetDdo.services[0].id,
-  //   0,
-  //   datatoken,
-  //   providerUrl
-  // )
-  // assert(ipfsOrderTx, 'Ordering ipfs dataset failed.')
+  it('Should order IPFS dataset', async () => {
+    ipfsOrderTx = await orderAsset(
+      resolvedIpfsAssetDdo.id,
+      resolvedIpfsAssetDdo.services[0].datatokenAddress,
+      await consumerAccount.getAddress(),
+      resolvedIpfsAssetDdo.services[0].id,
+      0,
+      datatoken,
+      providerUrl
+    )
+    assert(ipfsOrderTx, 'Ordering ipfs dataset failed.')
+  }).timeout(40000)
 
   // smartcontract & grapqhl datasets are not supported yet by ocean-node
   // it('Should order onchain dataset', async () => {
@@ -463,21 +464,21 @@ describe('Publish consume test', async () => {
     } catch (e) {
       assert.fail(`Download arwave dataset failed: ${e}`)
     }
-    // To be fixed in #1849
-    // const ipfsDownloadURL = await ProviderInstance.getDownloadUrl(
-    //   resolvedIpfsAssetDdo.id,
-    //   resolvedIpfsAssetDdo.services[0].id,
-    //   0,
-    //   ipfsOrderTx.transactionHash,
-    //   providerUrl,
-    //   consumerAccount
-    // )
-    // assert(ipfsDownloadURL, 'Provider getDownloadUrl failed for ipfs dataset')
-    // try {
-    //   await downloadFile(ipfsDownloadURL)
-    // } catch (e) {
-    //   assert.fail(`Download ipfs dataset failed ${e}`)
-    // }
+
+    const ipfsDownloadURL = await ProviderInstance.getDownloadUrl(
+      resolvedIpfsAssetDdo.id,
+      resolvedIpfsAssetDdo.services[0].id,
+      0,
+      ipfsOrderTx.transactionHash,
+      providerUrl,
+      consumerAccount
+    )
+    assert(ipfsDownloadURL, 'Provider getDownloadUrl failed for ipfs dataset')
+    try {
+      await downloadFile(ipfsDownloadURL)
+    } catch (e) {
+      assert.fail(`Download ipfs dataset failed ${e}`)
+    }
 
     // smartcontract & grapqhl datasets are not supported yet by ocean-node
     // const onchainDownloadURL = await ProviderInstance.getDownloadUrl(
@@ -510,7 +511,7 @@ describe('Publish consume test', async () => {
     // } catch (e) {
     //   assert.fail(`Download graphql dataset failed ${e}`)
     // }
-  }).timeout(40000)
+  }).timeout(60000)
 
   it('Should update url dataset', async () => {
     resolvedUrlAssetDdo.metadata.name = 'updated url asset name'
