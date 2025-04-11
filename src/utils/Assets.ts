@@ -58,7 +58,7 @@ export async function createAsset(
   denyAccessList?: string // deny list address
 ): Promise<string> {
   const ddoInstance = DDOManager.getDDOClass(ddo)
-  const { stats } = ddoInstance.getAssetFields()
+  const { indexedMetadata } = ddoInstance.getAssetFields()
   let { chainId: ddoChainId, nftAddress } = ddoInstance.getDDOFields()
   const { services } = ddoInstance.getDDOFields()
 
@@ -132,10 +132,11 @@ export async function createAsset(
   }
 
   let bundleNFT
+  const value = indexedMetadata?.stats[0]?.prices[0]?.price
   try {
-    if (!stats?.price?.value) {
+    if (!value) {
       bundleNFT = await nftFactory.createNftWithDatatoken(nftParamsAsset, datatokenParams)
-    } else if (stats?.price?.value.toString() === '0') {
+    } else if (value.toString() === '0') {
       const dispenserParams: DispenserCreationParams = {
         dispenserAddress: config.dispenserAddress,
         maxTokens: '1',
@@ -157,7 +158,7 @@ export async function createAsset(
         marketFeeCollector: account,
         baseTokenDecimals: 18,
         datatokenDecimals: 18,
-        fixedRate: stats.price.value.toString(),
+        fixedRate: value.toString(),
         marketFee: '0',
         allowedConsumer: account,
         withMint: true
