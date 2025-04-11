@@ -597,7 +597,7 @@ describe('Marketplace flow tests', async () => {
       console.log(fileData)
     } catch (e) {
       LoggerInstance.error('Download failed', e)
-      assert.fail('Download failed') ///
+      assert.fail('Download failed')
     }
     /// ```
     /// <!--

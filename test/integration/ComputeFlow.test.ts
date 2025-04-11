@@ -242,9 +242,6 @@ async function waitTillJobEnds(): Promise<number> {
         await consumerAccount.getAddress(),
         freeComputeJobId
       )) as ComputeJob
-      console.log('Job status: ', jobStatus)
-      console.log('Job status code: ', jobStatus?.[0]?.status)
-      console.log('Job status text: ', jobStatus?.[0]?.statusText)
       if (jobStatus?.[0]?.status === 70) {
         clearInterval(interval)
         resolve(jobStatus.status)
@@ -421,7 +418,6 @@ describe('Compute flow tests', async () => {
       (ce) =>
         !ce?.fees || ce.fees.find((fee) => fee.symbol === 'OCEAN' && fee.amount === '0')
     )
-    console.log('Free compute environment = ', computeEnv)
     assert(computeEnv, 'Cannot find the free compute env')
 
     const assets: ComputeAsset[] = [
