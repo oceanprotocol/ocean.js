@@ -490,8 +490,6 @@ Before we call the contract we have to call `approve` so that the contract can m
       await consumerAccount.getChainId()
     )
 
-    await new Promise((resolve) => setTimeout(resolve, 5000))
-
 ```
 Now we can make the contract call
 ```Typescript
@@ -597,7 +595,7 @@ Lets check that the download URL was successfully received
       console.log(fileData)
     } catch (e) {
       LoggerInstance.error('Download failed', e)
-      assert.fail('Download failed') ///
+      assert.fail('Download failed')
     }
 ```
 <!--
