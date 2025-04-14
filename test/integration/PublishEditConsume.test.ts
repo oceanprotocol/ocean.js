@@ -239,6 +239,7 @@ describe('Publish consume test', async () => {
 
   it('Should publish ipfs asset', async () => {
     const ipfsCID = await uploadToIpfs(JSON.stringify(assetDdo))
+    console.log('ipfsCID', ipfsCID)
     const ipfsFile: Files = {
       datatokenAddress: '0x0',
       nftAddress: '0x0',
