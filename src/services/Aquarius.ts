@@ -141,7 +141,9 @@ export class Aquarius {
     if (signer) {
       try {
         // make it optional and get from env if not present
-        if (!providerUrl) {
+        if (process.env.OCEAN_NODE_URL) {
+          providerUrl = process.env.OCEAN_NODE_URL
+        } else {
           providerUrl = process.env.PROVIDER_URL
         }
         const publisherAddress = await signer.getAddress()
