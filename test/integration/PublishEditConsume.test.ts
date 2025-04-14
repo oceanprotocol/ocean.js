@@ -1,9 +1,10 @@
 import { assert } from 'chai'
 import { ethers, Signer } from 'ethers'
 import fs from 'fs'
-import path from 'path'
 import FormData from 'form-data'
 import fetch from 'node-fetch'
+import path from 'path'
+import { fileURLToPath } from 'url'
 import { getTestConfig, getAddresses, provider } from '../config.js'
 import {
   Config,
@@ -17,6 +18,9 @@ import {
 } from '../../src/index.js'
 import { Files } from '../../src/@types'
 import { createAssetHelper, orderAsset, updateAssetMetadata } from './helpers.js'
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
 
 let config: Config
 
