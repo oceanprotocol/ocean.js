@@ -1,5 +1,9 @@
 import { assert } from 'chai'
 import { ethers, Signer } from 'ethers'
+import fs from 'fs'
+import path from 'path'
+import FormData from 'form-data'
+import fetch from 'node-fetch'
 import { getTestConfig, getAddresses, provider } from '../config.js'
 import {
   Config,
@@ -134,29 +138,27 @@ function delay(interval: number) {
     setTimeout(() => done(), interval)
   }).timeout(interval + 100)
 }
+export async function uploadToIpfs(): Promise<string> {
+  const filePath = path.resolve(__dirname, 'oceanJS/test/integration/resources/data.json')
+  const fileStream = fs.createReadStream(filePath)
 
-function uploadToIpfs(data: any): Promise<string> {
-  return new Promise((resolve, reject) => {
-    fetch('http://172.15.0.16:5001/api/v0/add', {
+  const form = new FormData()
+  form.append('file', fileStream, 'data.json')
+
+  try {
+    const response = await fetch('http://172.15.0.16:5001/api/v0/add', {
       method: 'POST',
-      headers: {
-        'Content-Type':
-          'multipart/form-data; boundary=------------------------a28d68b1c872c96f'
-      },
-      body:
-        '--------------------------a28d68b1c872c96f\r\nContent-Disposition: form-data; name="file"; filename="./resources/data.json"\r\nContent-Type: application/octet-stream\r\n\r\n' +
-        data +
-        '\r\n--------------------------a28d68b1c872c96f--\r\n'
+      body: form,
+      headers: form.getHeaders()
     })
-      .then(function (response: any) {
-        const resp = response.json()
-        console.log('resp uploadToIpfs+ ', resp)
-        resolve(resp.Hash)
-      })
-      .catch(function (error: any) {
-        reject(error)
-      })
-  })
+    console.log('response: ', response)
+    const result = (await response.json()) as { Hash: string }
+    console.log('result: ', result)
+
+    return result.Hash
+  } catch (error) {
+    throw error
+  }
 }
 
 describe('Publish consume test', async () => {
@@ -239,7 +241,7 @@ describe('Publish consume test', async () => {
   }).timeout(40000)
 
   it('Should publish ipfs asset', async () => {
-    const ipfsCID = await uploadToIpfs(JSON.stringify(assetDdo))
+    const ipfsCID = await uploadToIpfs()
     console.log('ipfsCID', ipfsCID)
     const ipfsFile: Files = {
       datatokenAddress: '0x0',
