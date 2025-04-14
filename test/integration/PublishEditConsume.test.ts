@@ -157,6 +157,7 @@ export async function uploadToIpfs(): Promise<string> {
 
     return result.Hash
   } catch (error) {
+    console.error('Error uploading file to IPFS:', error)
     throw error
   }
 }
