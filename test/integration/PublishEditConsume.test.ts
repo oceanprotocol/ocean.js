@@ -156,10 +156,7 @@ export async function uploadToIpfs(): Promise<string> {
       body: form,
       headers: form.getHeaders()
     })
-    console.log('response: ', response)
     const result = (await response.json()) as { Hash: string }
-    console.log('result: ', result)
-
     return result.Hash
   } catch (error) {
     console.error('Error uploading file to IPFS:', error)
@@ -248,7 +245,6 @@ describe('Publish consume test', async () => {
 
   it('Should publish ipfs asset', async () => {
     const ipfsCID = await uploadToIpfs()
-    console.log('ipfsCID', ipfsCID)
     const ipfsFile: Files = {
       datatokenAddress: '0x0',
       nftAddress: '0x0',
