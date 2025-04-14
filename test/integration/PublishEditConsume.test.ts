@@ -143,7 +143,8 @@ function delay(interval: number) {
   }).timeout(interval + 100)
 }
 export async function uploadToIpfs(): Promise<string> {
-  const filePath = path.resolve(__dirname, 'test/integration/resources/data.json')
+  const filePath = path.resolve(__dirname, 'resources/data.json')
+
   const fileStream = fs.createReadStream(filePath)
 
   const form = new FormData()
