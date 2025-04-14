@@ -144,7 +144,7 @@ function uploadToIpfs(data: any): Promise<string> {
           'multipart/form-data; boundary=------------------------a28d68b1c872c96f'
       },
       body:
-        '--------------------------a28d68b1c872c96f\r\nContent-Disposition: form-data; name="file"; filename="ddo.json"\r\nContent-Type: application/octet-stream\r\n\r\n' +
+        '--------------------------a28d68b1c872c96f\r\nContent-Disposition: form-data; name="file"; filename="./resources/data.json"\r\nContent-Type: application/octet-stream\r\n\r\n' +
         data +
         '\r\n--------------------------a28d68b1c872c96f--\r\n'
     })
