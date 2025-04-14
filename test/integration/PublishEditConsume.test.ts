@@ -150,6 +150,7 @@ function uploadToIpfs(data: any): Promise<string> {
     })
       .then(function (response: any) {
         const resp = response.json()
+        console.log(JSON.stringify(resp))
         resolve(resp.Hash)
       })
       .catch(function (error: any) {
