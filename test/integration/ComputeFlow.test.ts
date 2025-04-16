@@ -7,8 +7,7 @@ import {
   Aquarius,
   Datatoken,
   sendTx,
-  amountToUnits,
-  isDefined
+  amountToUnits
 } from '../../src/index.js'
 import {
   ComputeJob,
@@ -16,7 +15,8 @@ import {
   ComputeAlgorithm,
   Files
 } from '../../src/@types/index.js'
-import { createAssetHelper, handleComputeOrder } from './helpers.js'
+import { createAssetHelper } from './helpers.js'
+import { DDO } from '@oceanprotocol/ddo-js'
 
 let config: Config
 
@@ -60,7 +60,7 @@ const assetUrl: Files = {
     }
   ]
 }
-const ddoWithNoTimeout = {
+const ddoWithNoTimeout: DDO = {
   '@context': ['https://w3id.org/did/v1'],
   id: 'did:op:efba17455c127a885ec7830d687a8f6e64f5ba559f8506f8723c1f10f05c049c',
   version: '4.1.0',
@@ -97,7 +97,7 @@ const ddoWithNoTimeout = {
   ]
 }
 
-const ddoWith5mTimeout = {
+const ddoWith5mTimeout: DDO = {
   '@context': ['https://w3id.org/did/v1'],
   id: 'did:op:efba17455c127a885ec7830d687a8f6e64f5ba559f8506f8723c1f10f05c049c',
   version: '4.1.0',
@@ -144,7 +144,7 @@ const algoAssetUrl: Files = {
     }
   ]
 }
-const algoDdoWithNoTimeout = {
+const algoDdoWithNoTimeout: DDO = {
   '@context': ['https://w3id.org/did/v1'],
   id: 'did:op:efba17455c127a885ec7830d687a8f6e64f5ba559f8506f8723c1f10f05c049c',
   version: '4.1.0',
@@ -186,7 +186,7 @@ const algoDdoWithNoTimeout = {
   ]
 }
 
-const algoDdoWith5mTimeout = {
+const algoDdoWith5mTimeout: DDO = {
   '@context': ['https://w3id.org/did/v1'],
   id: 'did:op:efba17455c127a885ec7830d687a8f6e64f5ba559f8506f8723c1f10f05c049c',
   version: '4.1.0',

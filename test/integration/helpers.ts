@@ -13,17 +13,17 @@ import {
   ConsumeMarketFee,
   Datatoken,
   Config,
-  DDO,
   ProviderFees,
   getEventFromTx
 } from '../../src/index.js'
+import { DDO } from '@oceanprotocol/ddo-js'
 // superseed by src/utils/CreateAsset
 export async function createAssetHelper(
   name: string,
   symbol: string,
   owner: Signer,
   assetUrl: any,
-  ddo: any,
+  ddo: DDO,
   providerUrl: string,
   nftContractAddress: string, // addresses.ERC721Factory,
   aquariusInstance: Aquarius
