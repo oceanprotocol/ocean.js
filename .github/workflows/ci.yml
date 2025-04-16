@@ -149,7 +149,6 @@ jobs:
         with:
           repository: 'oceanprotocol/ocean-node'
           path: 'ocean-node'
-          ref: 'feature/escrow_payments'
 
       - name: Start Ocean Node
         working-directory: ${{ github.workspace }}/ocean-node
