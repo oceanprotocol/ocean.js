@@ -114,24 +114,90 @@ jobs:
       - name: Run Barge
         working-directory: ${{ github.workspace }}/barge
         run: |
-          bash -x start_ocean.sh --with-provider2 --no-dashboard --with-c2d 2>&1 > start_ocean.log &
+          bash -x start_ocean.sh --no-aquarius --no-provider --no-dashboard --with-c2d --with-typesense 2>&1 > start_ocean.log &
       - run: npm ci
-      - run: npm run build:metadata
+      - run: npm run build
+      - run: docker image ls
+      - name: Delete default runner images
+        run: |
+          docker image rm -f node:20
+          docker image rm -f node:20-alpine
+          docker image rm -f node:18
+          docker image rm -f node:18-alpine
+          docker image rm -f debian:10
+          docker image rm -f debian:11
+          docker image rm -f ubuntu:22.04
+          docker image rm -f ubuntu:20.04
+          docker image rm -f moby/buildkit:latest
+          rm -rf /usr/share/swift/
+
       - name: Wait for contracts deployment and C2D cluster to be ready
         working-directory: ${{ github.workspace }}/barge
         run: |
           for i in $(seq 1 250); do
             sleep 10
             [ -f "$HOME/.ocean/ocean-contracts/artifacts/ready" -a -f "$HOME/.ocean/ocean-c2d/ready" ] && break
-            done
+          done
+
+      - name: docker logs
+        run: docker logs ocean_ocean-contracts_1 && docker logs ocean_kindcluster_1 && docker logs ocean_computetodata_1 && docker logs ocean_typesense_1
+        if: ${{ failure() }}
+
+      - name: Checkout Ocean Node
+        uses: actions/checkout@v3
+        with:
+          repository: 'oceanprotocol/ocean-node'
+          path: 'ocean-node'
+          ref: 'fix/transferencoding+contentleght'
+
+      - name: Start Ocean Node
+        working-directory: ${{ github.workspace }}/ocean-node
+        run: |
+          npm ci
+          npm run build
+          npm run start > ocean-node.log 2>&1 &
+        env:
+          PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
+          IPFS_GATEWAY: http://172.15.0.16:8080/
+          ARWEAVE_GATEWAY: https://arweave.net/
+          P2P_ipV4BindTcpPort: 8000
+          HTTP_API_PORT: 8001
+          RPCS: '{ "8996": {"rpc": "http://127.0.0.1:8545", "chainId": 8996, "network": "development", "chunkSize": 100} }'
+          DB_URL: 'http://localhost:9200'
+          DB_TYPE: 'elasticsearch'
+          FEE_TOKENS: '{ "1": "0x967da4048cD07aB37855c090aAF366e4ce1b9F48", "137": "0x282d8efCe846A88B159800bd4130ad77443Fa1A1", "80001": "0xd8992Ed72C445c35Cb4A2be468568Ed1079357c8", "56": "0xDCe07662CA8EbC241316a15B611c89711414Dd1a" }'
+          FEE_AMOUNT: '{ "amount": 0, "unit": "MB" }'
+          AUTHORIZED_DECRYPTERS: '["0xe2DD09d719Da89e5a3D0F2549c7E24566e947260","0x529043886F21D9bc1AE0feDb751e34265a246e47"]'
+          AUTHORIZED_PUBLISHERS: '["0xe2DD09d719Da89e5a3D0F2549c7E24566e947260","0x529043886F21D9bc1AE0feDb751e34265a246e47"]'
+          ALLOWED_ADMINS: '["0xe2DD09d719Da89e5a3D0F2549c7E24566e947260"]'
+          MAX_REQ_PER_MINUTE: 320
+          MAX_CONNECTIONS_PER_MINUTE: 500
+          DOCKER_COMPUTE_ENVIRONMENTS: '[{"socketPath":"/var/run/docker.sock","resources":[{"id":"disk","total":1000000000}],"storageExpiry":604800,"maxJobDuration":3600,"fees":{"1":[{"feeToken":"0x123","prices":[{"id":"cpu","price":1}]}]},"free":{"maxJobDuration":60,"maxJobs":3,"resources":[{"id":"cpu","max":1},{"id":"ram","max":1000000000},{"id":"disk","max":1000000000}]}}]'
+
+      - name: Check Ocean Node is running
+        run: |
+          for i in $(seq 1 30); do
+            if curl --output /dev/null --silent --head --fail "http://localhost:8001"; then
+              echo "Ocean Node is up"
+              exit 0
+            fi
+            sleep 10
+          done
+          echo "Ocean Node did not start in time"
+          exit 1
 
       - name: integration
         run: npm run test:integration:cover
         env:
-          PROVIDER_URL: 'http://172.15.0.4:8030'
-      - name: docker logs
-        run: docker logs ocean_aquarius_1 && docker logs ocean_provider_1 && docker logs ocean_provider2_1 && docker logs ocean_computetodata_1 && docker logs ocean-ocean-contracts-1
+          INDEXING_RETRY_INTERVAL: 4000
+          INDEXING_MAX_RETRIES: 120
+          OCEAN_NODE_URL: 'http://127.0.0.1:8001'
+
+      - name: Print Ocean Node Logs if tests fail
         if: ${{ failure() }}
+        run: |
+          echo "========== Ocean Node Logs =========="
+          tac ${{ github.workspace }}/ocean-node/ocean-node.log || echo "Log file not found"
       - name: Upload coverage
         uses: actions/upload-artifact@v4
         with:
