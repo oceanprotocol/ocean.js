@@ -1,4 +1,4 @@
-import { Metadata, MetadataAlgorithm } from '.'
+import { Metadata, MetadataAlgorithm } from '@oceanprotocol/ddo-js'
 
 export type ComputeResultType =
   | 'algorithmLog'

@@ -1,4 +1,4 @@
-import { MetadataProof } from '.'
+import { MetadataProof } from '@oceanprotocol/ddo-js'
 
 export interface MetadataAndTokenURI {
   metaDataState: number

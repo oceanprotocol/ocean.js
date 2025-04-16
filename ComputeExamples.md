@@ -136,7 +136,6 @@ import {
   ComputeAsset,
   Config,
   Files,
-  DDO,
   NftCreateData,
   DatatokenCreateParams,
   sendTx,
@@ -148,6 +147,7 @@ import {
 } from '../../src/index.js'
 ```
 import crypto from 'crypto-js'
+import { DDO } from '@oceanprotocol/ddo-js'
 const { SHA256 } = crypto
 
 ### 4.2. Constants and variables
