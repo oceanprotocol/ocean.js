@@ -1,6 +1,5 @@
 import { Signer } from 'ethers'
 import Decimal from 'decimal.js'
-import { Asset } from '../@types/Asset.js'
 import { Config } from '../config/Config.js'
 import { Datatoken } from '../contracts/Datatoken.js'
 import { ConsumeMarketFee, OrderParams } from '../@types/Datatoken.js'
@@ -11,7 +10,7 @@ import { approve, approveWei } from './TokenUtils.js'
 import { Dispenser } from '../contracts/Dispenser.js'
 import { FixedRateExchange } from '../contracts/FixedRateExchange.js'
 import { FreOrderParams } from '../@types/FixedPrice.js'
-import { DDOManager } from '@oceanprotocol/ddo-js'
+import { Asset, DDOManager } from '@oceanprotocol/ddo-js'
 
 /**
  * Orders an asset based on the specified pricing schema and configuration.

@@ -1,10 +1,9 @@
 import fetch from 'cross-fetch'
 import { LoggerInstance } from '../utils/Logger'
-import { Asset, DDO, ValidateMetadata } from '../@types/index.js'
 import { sleep } from '../utils/General.js'
 import { Signer } from 'ethers'
 import { signRequest } from '../utils/SignatureUtils.js'
-import { DDOManager } from '@oceanprotocol/ddo-js'
+import { Asset, DDO, DDOManager, ValidateMetadata } from '@oceanprotocol/ddo-js'
 
 export interface SearchQuery {
   from?: number
