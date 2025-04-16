@@ -17,16 +17,10 @@ export class Config {
   public providerAddress?: string
 
   /**
-   * Metadata Store URL.
+   * Ocean Node URL.
    * @type {string}
    */
-  public metadataCacheUri?: string
-
-  /**
-   * Provider URL.
-   * @type {string}
-   */
-  public providerUri?: string
+  public oceanNodeUri?: string
 
   /**
    * Web3 Provider.
@@ -136,12 +130,6 @@ export class Config {
    * @type {string}
    */
   network: string
-
-  /**
-   * Url of the relevant subgraph instance ex: https://subgraph.mainnet.oceanprotocol.com
-   * @type {string}
-   */
-  subgraphUri: string
 
   /**
    * Url of the  blockchain exporer ex: https://etherscan.io
