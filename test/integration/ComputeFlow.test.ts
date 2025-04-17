@@ -260,6 +260,8 @@ describe('Compute flow tests', async () => {
     aquarius = new Aquarius(config?.oceanNodeUri)
     providerUrl = config?.oceanNodeUri
     addresses = getAddresses()
+    console.log('addrs: ', JSON.stringify(addresses))
+    console.log('development: ', JSON.stringify(addresses.development))
     paymentToken = addresses.development.Ocean
   })
 
