@@ -33,6 +33,7 @@ let ddoWith5mTimeoutId
 let ddoWithNoTimeoutId
 let algoDdoWith5mTimeoutId
 let algoDdoWithNoTimeoutId
+let paymentToken: string
 
 let freeComputeJobId: string
 let paidComputeJobId: string
@@ -259,6 +260,7 @@ describe('Compute flow tests', async () => {
     aquarius = new Aquarius(config?.oceanNodeUri)
     providerUrl = config?.oceanNodeUri
     addresses = getAddresses()
+    paymentToken = addresses.development.Ocean
   })
 
   it('should publish datasets and algorithms', async () => {
@@ -475,6 +477,11 @@ describe('Compute flow tests', async () => {
 
   it('should start a computeJob on a paid environment', async () => {
     // we choose the paid env
+
+    process.env.DOCKER_COMPUTE_ENVIRONMENTS =
+      '":[{"feeToken":"' +
+      paymentToken +
+      '","prices":[{"id":"cpu","price":1}]}]},"free":{"maxJobDuration":60,"maxJobs":3,"resources":[{"id":"cpu","max":1},{"id":"ram","max":1000000000},{"id":"disk","max":1000000000}]}}]'
     computeEnvs = await ProviderInstance.getComputeEnvironments(providerUrl)
     console.log('compute envs: ', JSON.stringify(computeEnvs))
     const computeEnv = computeEnvs.find((ce) => ce.priceMin !== 0 || !isDefined(ce.free))
