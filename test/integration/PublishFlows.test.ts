@@ -13,8 +13,6 @@ import {
   getEventFromTx
 } from '../../src/index.js'
 import {
-  ValidateMetadata,
-  DDO,
   DatatokenCreateParams,
   FreCreationParams,
   DispenserCreationParams,
@@ -23,6 +21,7 @@ import {
 
 import { createAsset } from '../../src/utils/index.js'
 import crypto from 'crypto-js'
+import { DDO, ValidateMetadata } from '@oceanprotocol/ddo-js'
 const { SHA256 } = crypto
 
 function delay(interval: number) {

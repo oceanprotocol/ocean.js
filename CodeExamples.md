@@ -105,11 +105,10 @@ import {
   ConfigHelper,
   configHelperNetworks,
   amountToUnits,
-  ValidateMetadata,
   getEventFromTx,
-  DDO,
   LoggerInstance
 } from '../../src/index.js'
+import { DDO, ValidateMetadata } from '@oceanprotocol/ddo-js'
 ```
 const { SHA256 } = crypto
 
@@ -136,7 +135,7 @@ Now we define the variables which we will need later
   let dispenserNftAddress: string
   let dispenserDatatokenAddress: string
   let dispenserAddress: string
-  let fixedDDO
+  let fixedDDO: DDO
 ```
 
 We also define some constants that we will use:

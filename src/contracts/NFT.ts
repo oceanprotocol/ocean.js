@@ -1,7 +1,6 @@
 import { BigNumber, ethers } from 'ethers'
 import ERC721Template from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC721Template.sol/ERC721Template.json'
 import {
-  MetadataProof,
   MetadataAndTokenURI,
   NftRoles,
   ReceiptOrEstimate,
@@ -16,6 +15,7 @@ import {
   calculateActiveTemplateIndex,
   getOceanArtifactsAddressesByChainId
 } from '../utils/Addresses.js'
+import { MetadataProof } from '@oceanprotocol/ddo-js'
 export class Nft extends SmartContract {
   getDefaultAbi() {
     return ERC721Template.abi as AbiItem[]

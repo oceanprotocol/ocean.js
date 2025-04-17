@@ -16,7 +16,7 @@ import { ProviderInstance } from '../services/Provider.js'
 import AccessListFactory from '@oceanprotocol/contracts/artifacts/contracts/accesslists/AccessListFactory.sol/AccessListFactory.json'
 import ERC20Template4 from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC20Template4.sol/ERC20Template4.json'
 import { calculateActiveTemplateIndex } from './Addresses.js'
-import { DDOManager } from '@oceanprotocol/ddo-js'
+import { DDO, DDOManager } from '@oceanprotocol/ddo-js'
 import { FileObjectType } from '../@types'
 
 export const DEVELOPMENT_CHAIN_ID = 8996
@@ -48,7 +48,7 @@ export async function createAsset(
   owner: Signer,
   assetUrl: any, // files object
   templateIDorAddress: string | number, // If string, it's template address , otherwise, it's templateId
-  ddo: any,
+  ddo: DDO,
   encryptDDO: boolean = true, // default is true
   providerUrl: string,
   providerFeeToken: string,
@@ -215,7 +215,7 @@ export async function createAsset(
   nftAddress = nftAddressFromEvent
 
   const id = ddoInstance.makeDid(nftAddress, ddoChainId.toString())
-  ddo = ddoInstance.updateFields({ id, nftAddress })
+  ddo = ddoInstance.updateFields({ id, nftAddress }) as DDO
 
   let metadata
   let metadataHash
