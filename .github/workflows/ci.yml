@@ -150,6 +150,7 @@ jobs:
         with:
           repository: 'oceanprotocol/ocean-node'
           path: 'ocean-node'
+          ref: 'logs-c2d-env-fees'
       - name: Run Ocean address extraction for Development chain
         run: |
             if grep -q '"chainId":8996' "$ADDRESS_FILE"; then
