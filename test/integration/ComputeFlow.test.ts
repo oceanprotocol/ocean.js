@@ -7,7 +7,8 @@ import {
   Aquarius,
   Datatoken,
   sendTx,
-  amountToUnits
+  amountToUnits,
+  isDefined
 } from '../../src/index.js'
 import {
   ComputeJob,
@@ -15,7 +16,7 @@ import {
   ComputeAlgorithm,
   Files
 } from '../../src/@types/index.js'
-import { createAssetHelper } from './helpers.js'
+import { createAssetHelper, handleComputeOrder } from './helpers.js'
 import { DDO } from '@oceanprotocol/ddo-js'
 
 let config: Config
