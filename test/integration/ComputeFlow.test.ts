@@ -51,6 +51,8 @@ let computeValidUntil
 
 let freeComputeRouteSupport = null
 
+const computeJobDuration = 60 * 15 // 15 minutes
+
 const assetUrl: Files = {
   datatokenAddress: '0x0',
   nftAddress: '0x0',
@@ -477,14 +479,10 @@ describe('Compute flow tests', async () => {
 
   it('should start a computeJob on a paid environment', async () => {
     // we choose the paid env
-
-    process.env.DOCKER_COMPUTE_ENVIRONMENTS =
-      '":[{"feeToken":"' +
-      paymentToken +
-      '","prices":[{"id":"cpu","price":1}]}]},"free":{"maxJobDuration":60,"maxJobs":3,"resources":[{"id":"cpu","max":1},{"id":"ram","max":1000000000},{"id":"disk","max":1000000000}]}}]'
     computeEnvs = await ProviderInstance.getComputeEnvironments(providerUrl)
     console.log('compute envs: ', JSON.stringify(computeEnvs))
-    const computeEnv = computeEnvs.find((ce) => ce.priceMin !== 0 || !isDefined(ce.free))
+    const computeEnv = computeEnvs.find((ce) => !isDefined(ce.free))
+    console.log(`computeEnv`)
     assert(computeEnv, 'Cannot find the paid compute env')
 
     const assets: ComputeAsset[] = [
@@ -503,10 +501,14 @@ describe('Compute flow tests', async () => {
       assets,
       algo,
       computeEnv.id,
-      resolvedDdoWith5mTimeout.services[0].datatokenAddress,
+      paymentToken,
       computeValidUntil,
       providerUrl,
       consumerAccount
+    )
+    console.log(
+      `init compute response: `,
+      JSON.stringify(providerInitializeComputeResults)
     )
     assert(
       !('error' in providerInitializeComputeResults.algorithm),
@@ -532,15 +534,13 @@ describe('Compute flow tests', async () => {
         config
       )
     }
-    const currentTimestamp = Math.floor(Date.now() / 1000)
-    const futureTimestamp = currentTimestamp + 5 * 60
     const computeJobs = await ProviderInstance.computeStart(
       providerUrl,
       consumerAccount,
       computeEnv.id,
       assets,
       algo,
-      futureTimestamp,
+      computeJobDuration,
       dtAddressArray[0]
     )
     paidEnvDatasetTxId = assets[0].transferTxId
@@ -583,10 +583,14 @@ describe('Compute flow tests', async () => {
       assets,
       algo,
       computeEnv.id,
-      resolvedDdoWith5mTimeout.services[0].datatokenAddress,
+      paymentToken,
       computeValidUntil,
       providerUrl,
       consumerAccount
+    )
+    console.log(
+      `init compute response: `,
+      JSON.stringify(providerInitializeComputeResults)
     )
     assert(
       providerInitializeComputeResults.algorithm.validOrder,
@@ -611,16 +615,15 @@ describe('Compute flow tests', async () => {
         assets[0].transferTxId === paidEnvDatasetTxId,
       'We should use the same orders, because no fess must be paid'
     )
-    const currentTimestamp = Math.floor(Date.now() / 1000)
-    const futureTimestamp = currentTimestamp + 5 * 60
+
     const computeJobs = await ProviderInstance.computeStart(
       providerUrl,
       consumerAccount,
       computeEnv.id,
       assets,
       algo,
-      futureTimestamp,
-      resolvedDdoWith5mTimeout.services[0].datatokenAddress
+      computeJobDuration,
+      paymentToken
     )
     assert(computeJobs, 'Cannot start compute job')
   })
@@ -660,7 +663,7 @@ describe('Compute flow tests', async () => {
         assets,
         algo,
         computeEnv.id,
-        dtAddressArray[0],
+        paymentToken,
         computeValidUntil,
         providerUrl,
         consumerAccount
@@ -709,16 +712,14 @@ describe('Compute flow tests', async () => {
           assets[0].transferTxId !== freeEnvDatasetTxId,
         'We should not use the same orders, because providerFee must be paid'
       )
-      const currentTimestamp = Math.floor(Date.now() / 1000)
-      const futureTimestamp = currentTimestamp + 5 * 60
       const computeJobs = await ProviderInstance.computeStart(
         providerUrl,
         consumerAccount,
         computeEnv.id,
         assets,
         algo,
-        futureTimestamp,
-        dtAddressArray[0]
+        computeJobDuration,
+        paymentToken
       )
       // freeEnvDatasetTxId = assets[0].transferTxId
       // freeEnvAlgoTxId = algo.transferTxId
@@ -735,9 +736,7 @@ describe('Compute flow tests', async () => {
 
   it('should start a computeJob using the paid environment, by paying only providerFee (reuseOrder)', async () => {
     // we choose the paid env
-    const computeEnv = computeEnvs[resolvedDdoWith5mTimeout.chainId].find(
-      (ce) => ce.priceMin !== 0 || !isDefined(ce.free)
-    )
+    const computeEnv = computeEnvs.find((ce) => ce.priceMin !== 0 || !isDefined(ce.free))
     assert(computeEnv, 'Cannot find the paid compute env')
 
     const assets: ComputeAsset[] = [
@@ -806,16 +805,14 @@ describe('Compute flow tests', async () => {
         assets[0].transferTxId !== paidEnvDatasetTxId,
       'We should not use the same orders, because providerFee must be paid'
     )
-    const currentTimestamp = Math.floor(Date.now() / 1000)
-    const futureTimestamp = currentTimestamp + 5 * 60
     const computeJobs = await ProviderInstance.computeStart(
       providerUrl,
       consumerAccount,
       computeEnv.id,
       assets,
       algo,
-      futureTimestamp,
-      dtAddressArray[0]
+      computeJobDuration,
+      paymentToken
     )
     // freeEnvDatasetTxId = assets[0].transferTxId
     // freeEnvAlgoTxId = algo.transferTxId
