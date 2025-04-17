@@ -483,6 +483,7 @@ export class Provider {
    * @param {ComputeAsset[]} assets The datasets array to initialize compute request.
    * @param {ComputeAlgorithmber} algorithm The algorithm to use.
    * @param {string} computeEnv The compute environment.
+   * @param {string} token The payment token address.
    * @param {number} validUntil  The job expiration date.
    * @param {string} providerUri The provider URI.
    * @param {Signer} signer caller address
@@ -493,6 +494,7 @@ export class Provider {
     assets: ComputeAsset[],
     algorithm: ComputeAlgorithm,
     computeEnv: string,
+    token: string,
     validUntil: number,
     providerUri: string,
     signer: Signer,
@@ -526,7 +528,12 @@ export class Provider {
     const providerData = {
       datasets: assets,
       algorithm,
-      compute: { env: computeEnv, validUntil },
+      environment: computeEnv,
+      payment: {
+        chainId: await signer.getChainId(),
+        token
+      },
+      maxJobDuration: validUntil,
       consumerAddress,
       signature
     }
@@ -715,10 +722,11 @@ export class Provider {
    * @param {string} computeEnv The compute environment.
    * @param {ComputeAsset} datasets The dataset to start compute on + additionalDatasets (the additional datasets if that is the case)
    * @param {ComputeAlgorithm} algorithm The algorithm to start compute with.
+   * @param {number} maxJobDuration The compute job max execution time.
+   * @param {string} token The token address for compute payment.
    * @param {ComputeResourceRequest} resources The resources to start compute job with.
    * @param {chainId} chainId The chain used to do payments
    * @param {ComputeOutput} output The compute job output settings.
-   * @param {boolean} freeEnvironment is it a free environment? uses different route
    * @param {AbortSignal} signal abort signal
    * @return {Promise<ComputeJob | ComputeJob[]>} The compute job or jobs.
    */
@@ -728,6 +736,8 @@ export class Provider {
     computeEnv: string,
     datasets: ComputeAsset[],
     algorithm: ComputeAlgorithm,
+    maxJobDuration: number,
+    token: string,
     resources?: ComputeResourceRequest[],
     chainId?: number, // network used by payment (only for payed compute jobs)
     output?: ComputeOutput,
@@ -780,8 +790,20 @@ export class Provider {
     // new field for C2D v2
     payload.datasets = datasets
     payload.algorithm = algorithm
+    payload.maxJobDuration = maxJobDuration
+    let chainIdCompute: number
+    if (chainId) {
+      chainIdCompute = chainId
+    } else {
+      chainIdCompute = await consumer.getChainId()
+    }
+    payload.payment = {
+      chainIdCompute,
+      token
+    }
+    if (resources) payload.payment.resources = resources
     // if (additionalDatasets) payload.additionalDatasets = additionalDatasets
-    payload.output = output
+    if (output) payload.output = output
     let response
     try {
       response = await fetch(computeStartUrl, {
