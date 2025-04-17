@@ -475,6 +475,7 @@ describe('Compute flow tests', async () => {
 
   it('should start a computeJob on a paid environment', async () => {
     // we choose the paid env
+    console.log('compute envs: ', JSON.stringify(computeEnvs))
     const computeEnv = computeEnvs[resolvedDdoWith5mTimeout.chainId].find(
       (ce) => ce.priceMin !== 0 || !isDefined(ce.free)
     )

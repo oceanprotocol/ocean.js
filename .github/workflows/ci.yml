@@ -115,6 +115,7 @@ jobs:
       - name: Run Barge
         working-directory: ${{ github.workspace }}/barge
         run: |
+          export CONTRACTS_VERSION=v2.3.0
           bash -x start_ocean.sh --no-aquarius --no-provider --no-dashboard --with-c2d --with-typesense 2>&1 > start_ocean.log &
       - run: npm ci
       - run: npm run build
