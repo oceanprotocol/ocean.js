@@ -18,6 +18,7 @@ import {
 } from '../../src/index.js'
 import { Files } from '../../src/@types'
 import { createAssetHelper, orderAsset, updateAssetMetadata } from './helpers.js'
+import { DDO } from '@oceanprotocol/ddo-js'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -106,7 +107,7 @@ const arweaveFile: Files = {
 //   ]
 // }
 
-const assetDdo = {
+const assetDdo: DDO = {
   '@context': ['https://w3id.org/did/v1'],
   id: 'did:op:efba17455c127a885ec7830d687a8f6e64f5ba559f8506f8723c1f10f05c049c',
   version: '4.1.0',
