@@ -479,7 +479,7 @@ describe('Compute flow tests', async () => {
     computeEnvs = await ProviderInstance.getComputeEnvironments(providerUrl) // this does not return fees object
     console.log('compute envs: ', JSON.stringify(computeEnvs))
     const computeEnv = computeEnvs.find((ce) => !isDefined(ce.free))
-    console.log(`computeEnv`)
+    console.log(`computeEnv: `, JSON.stringify(computeEnv))
     assert(computeEnv, 'Cannot find the paid compute env')
 
     const assets: ComputeAsset[] = [
