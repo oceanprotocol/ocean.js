@@ -521,9 +521,9 @@ describe('Compute flow tests', async () => {
     )
     const { price } = computeEnv.fees[await consumerAccount.getChainId()][0].prices[0]
     assert(
-      ethers.utils
-        .parseUnits(providerInitializeComputeResults.payment.amount, 18)
-        .toNumber() ===
+      Number(
+        ethers.utils.formatUnits(providerInitializeComputeResults.payment.amount, 18)
+      ) ===
         (computeEnv.maxJobDuration / 60) * price,
       'Incorrect payment token amount'
     ) // 60 minutes per price 1 -> amount = 60
