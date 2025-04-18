@@ -277,6 +277,11 @@ export class ConfigHelper {
     const filterBy = typeof network === 'string' ? 'network' : 'chainId'
 
     let config = configHelperNetworks.find((c) => c[filterBy] === network)
+    LoggerInstance.log(
+      `config: ${JSON.stringify(config)}, configHelperNetworks: ${JSON.stringify(
+        configHelperNetworks
+      )}`
+    )
 
     if (!config) {
       LoggerInstance.error(`No config found for given network '${network}'`)

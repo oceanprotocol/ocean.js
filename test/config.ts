@@ -31,7 +31,7 @@ export const provider = new providers.JsonRpcProvider(
 // export const signer = wallet.connect(provider)
 
 export const getTestConfig = async (signer: Signer) => {
-  const { chainId } = await signer.provider.getNetwork()
+  const chainId = await signer.getChainId()
   const config = new ConfigHelper().getConfig(parseInt(String(chainId)))
 
   if (process.env.OCEAN_NODE_URL) {
