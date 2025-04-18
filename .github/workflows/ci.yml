@@ -153,7 +153,7 @@ jobs:
           ref: 'logs-c2d-env-fees'
       - name: Extract Ocean address using jq
         run: |
-            if [ "$(jq '.chainId' "$ADDRESS_FILE")" -eq 8996 ]; then
+            if [ "$(jq '.chainId' "$ADDRESS_FILE")" -eq "8996" ]; then
               OCEAN_ADDRESS=$(jq -r '.Ocean' "$ADDRESS_FILE")
               echo "OCEAN_ADDRESS_DEV=$OCEAN_ADDRESS" >> $GITHUB_ENV
               echo "Extracted Ocean address: $OCEAN_ADDRESS"
