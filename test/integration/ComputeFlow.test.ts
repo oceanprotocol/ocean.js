@@ -476,9 +476,9 @@ describe('Compute flow tests', async () => {
 
   it('should start a computeJob on a paid environment', async () => {
     // we choose the paid env
-    computeEnvs = await ProviderInstance.getComputeEnvironments(providerUrl) // this does not return fees object
+    computeEnvs = await ProviderInstance.getComputeEnvironments(providerUrl)
     console.log('compute envs: ', JSON.stringify(computeEnvs))
-    const computeEnv = computeEnvs.find((ce) => !isDefined(ce.free))
+    const computeEnv = computeEnvs[0] // it is only one environment with paid and free resources
     console.log(`computeEnv: `, JSON.stringify(computeEnv))
     assert(computeEnv, 'Cannot find the paid compute env')
 
