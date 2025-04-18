@@ -480,6 +480,7 @@ describe('Compute flow tests', async () => {
     console.log('compute envs: ', JSON.stringify(computeEnvs))
     const computeEnv = computeEnvs[0] // it is only one environment with paid and free resources
     console.log(`computeEnv: `, JSON.stringify(computeEnv))
+    computeEnv.fees.token = paymentToken
     assert(computeEnv, 'Cannot find the paid compute env')
 
     const assets: ComputeAsset[] = [

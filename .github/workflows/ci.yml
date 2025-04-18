@@ -151,9 +151,18 @@ jobs:
           repository: 'oceanprotocol/ocean-node'
           path: 'ocean-node'
           ref: 'logs-c2d-env-fees'
-
-            
-
+      - name: Extract Ocean address using jq
+        run: |
+            ADDRESS_FILE="$HOME/.ocean/address.json"
+            if [ "$(jq '.chainId' "$ADDRESS_FILE")" -eq 8996 ]; then
+              OCEAN_ADDRESS=$(jq -r '.Ocean' "$ADDRESS_FILE")
+              echo "OCEAN_ADDRESS_DEV=$OCEAN_ADDRESS" >> $GITHUB_ENV
+              echo "Extracted Ocean address: $OCEAN_ADDRESS"
+            fi
+  
+      - name: Use the extracted Ocean address
+        run: |
+            echo "Using Ocean address for development: ${{ secrets.OCEAN_ADDRESS_DEV }}
       - name: Start Ocean Node
         working-directory: ${{ github.workspace }}/ocean-node
         run: |
