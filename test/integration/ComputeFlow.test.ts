@@ -479,8 +479,6 @@ describe('Compute flow tests', async () => {
     computeEnvs = await ProviderInstance.getComputeEnvironments(providerUrl)
     console.log('compute envs: ', JSON.stringify(computeEnvs))
     const computeEnv = computeEnvs[0] // it is only one environment with paid and free resources
-    console.log(`computeEnv: `, JSON.stringify(computeEnv))
-    computeEnv.fees.token = paymentToken
     assert(computeEnv, 'Cannot find the paid compute env')
 
     const assets: ComputeAsset[] = [
@@ -508,6 +506,27 @@ describe('Compute flow tests', async () => {
       `init compute response: `,
       JSON.stringify(providerInitializeComputeResults)
     )
+    assert(providerInitializeComputeResults.payment, ' Payment structure does not exists')
+    assert(
+      providerInitializeComputeResults.payment.escrowAddress === addresses.Escrow,
+      'Incorrect escrow address'
+    )
+    assert(
+      providerInitializeComputeResults.payment.payee === computeEnv.consumerAddress,
+      'Incorrect payee address'
+    )
+    assert(
+      providerInitializeComputeResults.payment.token === paymentToken,
+      'Incorrect payment token address'
+    )
+    const { price } = computeEnv.fees[await consumerAccount.getChainId()][0].prices[0]
+    assert(
+      ethers.utils
+        .parseUnits(providerInitializeComputeResults.payment.amount, 18)
+        .toNumber() ===
+        (computeEnv.maxJobDuration / 60) * price,
+      'Incorrect payment token amount'
+    ) // 60 minutes per price 1 -> amount = 60
     assert(
       !('error' in providerInitializeComputeResults.algorithm),
       'Cannot order algorithm'
@@ -539,7 +558,7 @@ describe('Compute flow tests', async () => {
       assets,
       algo,
       computeJobDuration,
-      dtAddressArray[0]
+      paymentToken
     )
     paidEnvDatasetTxId = assets[0].transferTxId
     paidEnvAlgoTxId = algo.transferTxId
