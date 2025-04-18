@@ -534,7 +534,7 @@ describe('Compute flow tests', async () => {
     )
     // escrow adding funds for paid compute
     const escrow = new EscrowContract(
-      providerInitializeComputeResults.payment.escrow,
+      ethers.utils.getAddress(providerInitializeComputeResults.payment.escrow),
       consumerAccount
     )
     const paymentTokenContract = new Datatoken(consumerAccount)
@@ -543,16 +543,16 @@ describe('Compute flow tests', async () => {
       await consumerAccount.getAddress()
     )
     await paymentTokenContract.approve(
-      providerInitializeComputeResults.payment.escrow,
-      await consumerAccount.getAddress(),
+      ethers.utils.getAddress(paymentToken),
+      ethers.utils.getAddress(providerInitializeComputeResults.payment.escrow),
       balanceOfPaymentToken
     )
     await escrow.deposit(paymentToken, balanceOfPaymentToken)
     await escrow.authorize(
-      paymentToken,
-      computeEnv.consumerAddress,
+      ethers.utils.getAddress(paymentToken),
+      ethers.utils.getAddress(computeEnv.consumerAddress),
       balanceOfPaymentToken,
-      computeJobDuration.toString(),
+      providerInitializeComputeResults.payment.minLockSeconds,
       '10'
     )
     algo.transferTxId = await handleComputeOrder(
