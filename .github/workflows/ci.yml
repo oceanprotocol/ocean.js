@@ -160,7 +160,7 @@ jobs:
   
       - name: Use the extracted Ocean address
         run: |
-            echo "Using Ocean address for development: ${{ env.OCEAN_ADDRESS_DEV }}
+            echo "Using Ocean address for development: ${{ env.OCEAN_ADDRESS_DEV }}"
       - name: Start Ocean Node
         working-directory: ${{ github.workspace }}/ocean-node
         run: |
