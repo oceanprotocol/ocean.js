@@ -18,6 +18,7 @@ import {
 } from '../../src/@types/index.js'
 import { createAssetHelper, handleComputeOrder } from './helpers.js'
 import { DDO } from '@oceanprotocol/ddo-js'
+import { EscrowContract } from '../../src/contracts/Escrow.js'
 
 let config: Config
 
@@ -530,6 +531,29 @@ describe('Compute flow tests', async () => {
     assert(
       !('error' in providerInitializeComputeResults.algorithm),
       'Cannot order algorithm'
+    )
+    // escrow adding funds for paid compute
+    const escrow = new EscrowContract(
+      providerInitializeComputeResults.payment.escrow,
+      consumerAccount
+    )
+    const paymentTokenContract = new Datatoken(consumerAccount)
+    const balanceOfPaymentToken = await paymentTokenContract.balance(
+      paymentToken,
+      await consumerAccount.getAddress()
+    )
+    await paymentTokenContract.approve(
+      providerInitializeComputeResults.payment.escrow,
+      await consumerAccount.getAddress(),
+      balanceOfPaymentToken
+    )
+    await escrow.deposit(paymentToken, balanceOfPaymentToken)
+    await escrow.authorize(
+      paymentToken,
+      computeEnv.consumerAddress,
+      balanceOfPaymentToken,
+      computeJobDuration.toString(),
+      '10'
     )
     algo.transferTxId = await handleComputeOrder(
       providerInitializeComputeResults.algorithm,
