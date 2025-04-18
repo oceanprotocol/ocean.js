@@ -419,10 +419,7 @@ describe('Compute flow tests', async () => {
     computeValidUntil = Math.floor(mytime.getTime() / 1000)
 
     // we choose the free env
-    const computeEnv = computeEnvs.find(
-      (ce) =>
-        !ce?.fees || ce.fees.find((fee) => fee.symbol === 'OCEAN' && fee.amount === '0')
-    )
+    const computeEnv = computeEnvs.find((ce) => ce.priceMin === 0 || isDefined(ce.free))
     assert(computeEnv, 'Cannot find the free compute env')
 
     const assets: ComputeAsset[] = [
@@ -640,9 +637,7 @@ describe('Compute flow tests', async () => {
   it('should start a computeJob using the free environment, by paying only providerFee (reuseOrder)', async () => {
     if (freeComputeRouteSupport) {
       // we choose the free env
-      const computeEnv = computeEnvs[resolvedDdoWith5mTimeout.chainId].find(
-        (ce) => ce.priceMin === 0 || isDefined(ce.free)
-      )
+      const computeEnv = computeEnvs.find((ce) => ce.priceMin === 0 || isDefined(ce.free))
       assert(computeEnv, 'Cannot find the free compute env')
 
       const assets: ComputeAsset[] = [
