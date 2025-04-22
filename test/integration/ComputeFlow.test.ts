@@ -538,17 +538,11 @@ describe('Compute flow tests', async () => {
       ethers.utils.getAddress(providerInitializeComputeResults.payment.escrowAddress),
       consumerAccount
     )
-    console.log('escrow: ', escrow)
-    console.log(
-      'escrow addr: ',
-      ethers.utils.getAddress(providerInitializeComputeResults.payment.escrowAddress)
-    )
     const paymentTokenContract = new Datatoken(consumerAccount)
     const balanceOfPaymentToken = await paymentTokenContract.balance(
       paymentToken,
       await consumerAccount.getAddress()
     )
-    console.log('balance: ', balanceOfPaymentToken)
     await paymentTokenContract.approve(
       ethers.utils.getAddress(paymentToken),
       ethers.utils.getAddress(providerInitializeComputeResults.payment.escrowAddress),
