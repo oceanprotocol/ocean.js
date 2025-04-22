@@ -798,7 +798,7 @@ export class Provider {
       chainIdCompute = await consumer.getChainId()
     }
     payload.payment = {
-      chainIdCompute,
+      chainId: chainIdCompute,
       token
     }
     if (resources) payload.payment.resources = resources
