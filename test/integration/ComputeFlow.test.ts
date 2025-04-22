@@ -558,7 +558,7 @@ describe('Compute flow tests', async () => {
       ethers.utils.getAddress(paymentToken),
       ethers.utils.getAddress(computeEnv.consumerAddress),
       balanceOfPaymentToken,
-      providerInitializeComputeResults.payment.minLockSeconds,
+      providerInitializeComputeResults.payment.minLockSeconds.toString(),
       '10'
     )
     algo.transferTxId = await handleComputeOrder(
