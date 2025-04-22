@@ -14,7 +14,8 @@ import {
   ComputeJob,
   ComputeAsset,
   ComputeAlgorithm,
-  Files
+  Files,
+  ComputeOutput
 } from '../../src/@types/index.js'
 import { createAssetHelper, handleComputeOrder } from './helpers.js'
 import { DDO } from '@oceanprotocol/ddo-js'
@@ -588,7 +589,12 @@ describe('Compute flow tests', async () => {
       assets,
       algo,
       computeJobDuration,
-      paymentToken
+      paymentToken,
+      computeEnv.resources,
+      8996,
+      {
+        metadataUri: config?.oceanNodeUri
+      } as ComputeOutput
     )
     paidEnvDatasetTxId = assets[0].transferTxId
     paidEnvAlgoTxId = algo.transferTxId
