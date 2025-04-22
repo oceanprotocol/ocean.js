@@ -534,13 +534,13 @@ describe('Compute flow tests', async () => {
     )
     // escrow adding funds for paid compute
     const escrow = new EscrowContract(
-      ethers.utils.getAddress(providerInitializeComputeResults.payment.escrow),
+      ethers.utils.getAddress(providerInitializeComputeResults.payment.escrowAddress),
       consumerAccount
     )
     console.log('escrow: ', escrow)
     console.log(
       'escrow addr: ',
-      ethers.utils.getAddress(providerInitializeComputeResults.payment.escrow)
+      ethers.utils.getAddress(providerInitializeComputeResults.payment.escrowAddress)
     )
     const paymentTokenContract = new Datatoken(consumerAccount)
     const balanceOfPaymentToken = await paymentTokenContract.balance(
@@ -550,7 +550,7 @@ describe('Compute flow tests', async () => {
     console.log('balance: ', balanceOfPaymentToken)
     await paymentTokenContract.approve(
       ethers.utils.getAddress(paymentToken),
-      ethers.utils.getAddress(providerInitializeComputeResults.payment.escrow),
+      ethers.utils.getAddress(providerInitializeComputeResults.payment.escrowAddress),
       balanceOfPaymentToken
     )
     await escrow.deposit(paymentToken, balanceOfPaymentToken)
