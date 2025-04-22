@@ -783,8 +783,7 @@ export class Provider {
     payload.signature = signature
     payload.nonce = nonce
     payload.environment = computeEnv
-    payload.resources = resources
-    payload.chainId = chainId
+    if (resources) payload.resources = resources
     // kept for backwards compatibility (tests running against existing provider)
     payload.dataset = datasets[0]
     // new field for C2D v2
@@ -797,6 +796,7 @@ export class Provider {
     } else {
       chainIdCompute = await consumer.getChainId()
     }
+    payload.chainId = chainIdCompute
     payload.payment = {
       chainId: chainIdCompute,
       token
