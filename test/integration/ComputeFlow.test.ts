@@ -288,7 +288,7 @@ describe('Compute flow tests', async () => {
     const tokenContract = new ethers.Contract(addresses.Ocean, minAbi, publisherAccount)
     const estGasPublisher = await tokenContract.estimateGas.mint(
       await publisherAccount.getAddress(),
-      amountToUnits(null, null, '1000', 18)
+      amountToUnits(null, null, '100000', 18)
     )
 
     await sendTx(
@@ -297,13 +297,13 @@ describe('Compute flow tests', async () => {
       1,
       tokenContract.mint,
       await publisherAccount.getAddress(),
-      amountToUnits(null, null, '1000', 18)
+      amountToUnits(null, null, '100000', 18)
     )
 
     // mint ocean to consumer
     const estGasConsumer = await tokenContract.estimateGas.mint(
       await consumerAccount.getAddress(),
-      amountToUnits(null, null, '1000', 18)
+      amountToUnits(null, null, '100000', 18)
     )
 
     await sendTx(
@@ -312,7 +312,7 @@ describe('Compute flow tests', async () => {
       1,
       tokenContract.mint,
       await consumerAccount.getAddress(),
-      amountToUnits(null, null, '1000', 18)
+      amountToUnits(null, null, '100000', 18)
     )
 
     ddoWith5mTimeoutId = await createAssetHelper(
