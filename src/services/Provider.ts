@@ -783,13 +783,13 @@ export class Provider {
     payload.signature = signature
     payload.nonce = nonce
     payload.environment = computeEnv
+    payload.maxJobDuration = maxJobDuration
     if (resources) payload.resources = resources
     // kept for backwards compatibility (tests running against existing provider)
     payload.dataset = datasets[0]
     // new field for C2D v2
     payload.datasets = datasets
     payload.algorithm = algorithm
-    payload.maxJobDuration = maxJobDuration
     let chainIdCompute: number
     if (chainId) {
       chainIdCompute = chainId
@@ -799,7 +799,8 @@ export class Provider {
     payload.chainId = chainIdCompute
     payload.payment = {
       chainId: chainIdCompute,
-      token
+      token,
+      maxJobDuration
     }
     if (resources) payload.payment.resources = resources
     // if (additionalDatasets) payload.additionalDatasets = additionalDatasets
