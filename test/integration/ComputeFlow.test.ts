@@ -549,7 +549,7 @@ describe('Compute flow tests', async () => {
     )
     await paymentTokenPublisher.transfer(
       paymentToken,
-      await consumerAccount.getAddress(),
+      ethers.utils.getAddress(computeEnv.consumerAddress),
       balancePublisherPaymentToken
     )
     const balanceOfPaymentToken = await paymentTokenContract.balance(
@@ -565,7 +565,7 @@ describe('Compute flow tests', async () => {
     await escrow.deposit(paymentToken, balanceOfPaymentToken)
     await escrow.authorize(
       ethers.utils.getAddress(paymentToken),
-      await consumerAccount.getAddress(),
+      ethers.utils.getAddress(computeEnv.consumerAddress),
       balanceOfPaymentToken,
       providerInitializeComputeResults.payment.minLockSeconds.toString(),
       '10'
