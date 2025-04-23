@@ -94,9 +94,9 @@ const ddoWithNoTimeout: DDO = {
       serviceEndpoint: 'http://127.0.0.1:8001',
       timeout: 0,
       compute: {
-        publisherTrustedAlgorithmPublishers: [],
-        publisherTrustedAlgorithms: [],
-        allowRawAlgorithm: true,
+        publisherTrustedAlgorithmPublishers: [] as any,
+        publisherTrustedAlgorithms: [] as any,
+        allowRawAlgorithm: false,
         allowNetworkAccess: true
       }
     }
@@ -131,9 +131,9 @@ const ddoWith5mTimeout: DDO = {
       serviceEndpoint: 'http://127.0.0.1:8001',
       timeout: 300,
       compute: {
-        publisherTrustedAlgorithmPublishers: [],
-        publisherTrustedAlgorithms: [],
-        allowRawAlgorithm: true,
+        publisherTrustedAlgorithmPublishers: [] as any,
+        publisherTrustedAlgorithms: [] as any,
+        allowRawAlgorithm: false,
         allowNetworkAccess: true
       }
     }
