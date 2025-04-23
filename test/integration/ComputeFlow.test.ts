@@ -14,8 +14,7 @@ import {
   ComputeJob,
   ComputeAsset,
   ComputeAlgorithm,
-  Files,
-  ComputeOutput
+  Files
 } from '../../src/@types/index.js'
 import { createAssetHelper, handleComputeOrder } from './helpers.js'
 import { DDO } from '@oceanprotocol/ddo-js'
@@ -53,7 +52,7 @@ let computeValidUntil
 
 let freeComputeRouteSupport = null
 
-const computeJobDuration = 60 * 15 // 15 minutes
+const computeJobDuration = 60 * 5 // 15 minutes
 
 const assetUrl: Files = {
   datatokenAddress: '0x0',
