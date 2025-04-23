@@ -79,7 +79,7 @@ const ddoWithNoTimeout: DDO = {
     name: 'dfgdfgdg',
     description: 'd dfgd fgd dfg dfgdfgd dfgdf',
     tags: [''],
-    author: 'dd',
+    author: 'oceanprotocol',
     license: 'https://market.oceanprotocol.com/terms',
     additionalInformation: {
       termsAndConditions: true
@@ -87,7 +87,7 @@ const ddoWithNoTimeout: DDO = {
   },
   services: [
     {
-      id: 'notAnId',
+      id: '1155995dda741e93afe4b1c6ced2d01734a6ec69865cc0997daf1f4db7259a36',
       type: 'compute',
       files: '',
       datatokenAddress: '0xa15024b732A8f2146423D14209eFd074e61964F3',
@@ -124,7 +124,7 @@ const ddoWith5mTimeout: DDO = {
   },
   services: [
     {
-      id: 'notAnId',
+      id: '1155995dda741e93afe4b1c6ced2d01734a6ec69865cc0997daf1f4db7259a36',
       type: 'compute',
       files: '',
       datatokenAddress: '0xa15024b732A8f2146423D14209eFd074e61964F3',
@@ -182,7 +182,7 @@ const algoDdoWithNoTimeout: DDO = {
   },
   services: [
     {
-      id: 'notAnId',
+      id: 'db164c1b981e4d2974e90e61bda121512e6909c1035c908d68933ae4cfaba6b0',
       type: 'access',
       files: '',
       datatokenAddress: '0xa15024b732A8f2146423D14209eFd074e61964F3',
@@ -224,7 +224,7 @@ const algoDdoWith5mTimeout: DDO = {
   },
   services: [
     {
-      id: 'notAnId',
+      id: 'db164c1b981e4d2974e90e61bda121512e6909c1035c908d68933ae4cfaba6b0',
       type: 'access',
       files: '',
       datatokenAddress: '0xa15024b732A8f2146423D14209eFd074e61964F3',
