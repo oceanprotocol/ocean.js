@@ -52,7 +52,7 @@ let computeValidUntil
 
 let freeComputeRouteSupport = null
 
-const computeJobDuration = 60 * 5 // 15 minutes
+const computeJobDuration = 60 * 15 // 15 minutes
 
 const assetUrl: Files = {
   datatokenAddress: '0x0',
@@ -538,10 +538,25 @@ describe('Compute flow tests', async () => {
       consumerAccount
     )
     const paymentTokenContract = new Datatoken(consumerAccount)
+    const paymentTokenPublisher = new Datatoken(publisherAccount)
+    const balancePublisherPaymentToken = await paymentTokenPublisher.balance(
+      paymentToken,
+      await publisherAccount.getAddress()
+    )
+    assert(
+      ethers.utils.parseEther(balancePublisherPaymentToken) > ethers.BigNumber.from(0),
+      'Balance should be higher than 0'
+    )
+    await paymentTokenPublisher.transfer(
+      paymentToken,
+      await consumerAccount.getAddress(),
+      balancePublisherPaymentToken
+    )
     const balanceOfPaymentToken = await paymentTokenContract.balance(
       paymentToken,
       await consumerAccount.getAddress()
     )
+    console.log(`balance: ${balanceOfPaymentToken}`)
     await paymentTokenContract.approve(
       ethers.utils.getAddress(paymentToken),
       ethers.utils.getAddress(providerInitializeComputeResults.payment.escrowAddress),
