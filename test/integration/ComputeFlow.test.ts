@@ -585,10 +585,7 @@ describe('Compute flow tests', async () => {
       computeJobDuration,
       paymentToken,
       computeEnv.resources,
-      8996,
-      {
-        metadataUri: config?.oceanNodeUri
-      } as ComputeOutput
+      8996
     )
     paidEnvDatasetTxId = assets[0].transferTxId
     paidEnvAlgoTxId = algo.transferTxId
