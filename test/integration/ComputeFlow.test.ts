@@ -565,7 +565,7 @@ describe('Compute flow tests', async () => {
     await escrow.deposit(paymentToken, balanceOfPaymentToken)
     await escrow.authorize(
       ethers.utils.getAddress(paymentToken),
-      ethers.utils.getAddress(computeEnv.consumerAddress),
+      await consumerAccount.getAddress(),
       balanceOfPaymentToken,
       providerInitializeComputeResults.payment.minLockSeconds.toString(),
       '10'
