@@ -160,7 +160,7 @@ const algoDdoWithNoTimeout: DDO = {
     created: '2021-12-20T14:35:20Z',
     updated: '2021-12-20T14:35:20Z',
     type: 'algorithm',
-    name: 'dfgdfgdg',
+    name: 'Ocean.js Algo',
     description: 'd dfgd fgd dfg dfgdfgd dfgdf',
     tags: [''],
     author: 'dd',
