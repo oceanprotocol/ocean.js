@@ -586,10 +586,7 @@ describe('Compute flow tests', async () => {
       paymentToken
     )
     console.log(`funds available: ${JSON.stringify(funds)}`)
-    assert(
-      BigNumber.from(funds.toString()) > BigNumber.from(0),
-      'Should have funds in escrow'
-    )
+    assert(BigNumber.from(funds[0]) > BigNumber.from(0), 'Should have funds in escrow')
     assert(auth.length > 0, 'Should have authorization')
     assert(
       BigInt(auth[0].maxLockedAmount.toString()) > BigInt(0),
