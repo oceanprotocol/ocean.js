@@ -585,6 +585,7 @@ describe('Compute flow tests', async () => {
       await consumerAccount.getAddress(),
       paymentToken
     )
+    console.log(`funds available: ${JSON.stringify(funds)}`)
     assert(BigInt(funds.toString()) > BigInt(0), 'Should have funds in escrow')
     assert(auth.length > 0, 'Should have authorization')
     assert(
