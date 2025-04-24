@@ -557,6 +557,12 @@ describe('Compute flow tests', async () => {
       await consumerAccount.getAddress()
     )
     console.log(`balance: ${balanceOfPaymentToken}`)
+    console.log(
+      `balance consumeraddr: ${await paymentTokenContract.balance(
+        paymentToken,
+        computeEnv.consumerAddress
+      )}`
+    )
     await paymentTokenContract.approve(
       ethers.utils.getAddress(paymentToken),
       ethers.utils.getAddress(providerInitializeComputeResults.payment.escrowAddress),
