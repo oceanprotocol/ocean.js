@@ -1,5 +1,5 @@
 import { assert } from 'chai'
-import { ethers, Signer } from 'ethers'
+import { BigNumber, ethers, Signer } from 'ethers'
 import { getTestConfig, getAddresses, provider } from '../config.js'
 import {
   Config,
@@ -586,7 +586,10 @@ describe('Compute flow tests', async () => {
       paymentToken
     )
     console.log(`funds available: ${JSON.stringify(funds)}`)
-    assert(BigInt(funds.toString()) > BigInt(0), 'Should have funds in escrow')
+    assert(
+      BigNumber.from(funds.toString()) > BigNumber.from(0),
+      'Should have funds in escrow'
+    )
     assert(auth.length > 0, 'Should have authorization')
     assert(
       BigInt(auth[0].maxLockedAmount.toString()) > BigInt(0),
