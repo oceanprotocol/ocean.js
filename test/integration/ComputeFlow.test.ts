@@ -574,7 +574,26 @@ describe('Compute flow tests', async () => {
       ethers.utils.getAddress(computeEnv.consumerAddress),
       balanceOfPaymentToken,
       providerInitializeComputeResults.payment.minLockSeconds.toString(),
-      '10'
+      '5'
+    )
+    const auth = await escrow.getAuthorizations(
+      paymentToken,
+      await consumerAccount.getAddress(),
+      computeEnv.consumerAddress
+    )
+    const funds = await escrow.getUserFunds(
+      await consumerAccount.getAddress(),
+      paymentToken
+    )
+    assert(BigInt(funds.toString()) > BigInt(0), 'Should have funds in escrow')
+    assert(auth.length > 0, 'Should have authorization')
+    assert(
+      BigInt(auth[0].maxLockedAmount.toString()) > BigInt(0),
+      ' Should have maxLockedAmount in auth'
+    )
+    assert(
+      BigInt(auth[0].maxLockCounts.toString()) > BigInt(0),
+      ' Should have maxLockCounts in auth'
     )
     algo.transferTxId = await handleComputeOrder(
       providerInitializeComputeResults.algorithm,
