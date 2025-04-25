@@ -557,13 +557,7 @@ describe('Compute flow tests', async () => {
       paymentToken,
       await consumerAccount.getAddress()
     )
-    console.log(
-      `balance: ${await unitsToAmount(
-        consumerAccount,
-        paymentToken,
-        balanceOfPaymentToken
-      )}`
-    )
+    console.log(`balance: ${balanceOfPaymentToken}`)
     console.log(
       `balance consumeraddr: ${await paymentTokenContract.balance(
         paymentToken,
