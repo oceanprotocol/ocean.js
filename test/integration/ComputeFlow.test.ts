@@ -573,9 +573,9 @@ describe('Compute flow tests', async () => {
     await escrow.authorize(
       ethers.utils.getAddress(paymentToken),
       ethers.utils.getAddress(computeEnv.consumerAddress),
-      balanceOfPaymentToken,
+      (Number(balanceOfPaymentToken) / 4).toString(),
       providerInitializeComputeResults.payment.minLockSeconds.toString(),
-      '5'
+      '10'
     )
     const auth = await escrow.getAuthorizations(
       paymentToken,
@@ -607,6 +607,7 @@ describe('Compute flow tests', async () => {
       datatoken,
       config
     )
+    algo.meta = resolvedAlgoDdoWith5mTimeout.metadata.algorithm
     for (let i = 0; i < providerInitializeComputeResults.datasets.length; i++) {
       assets[i].transferTxId = await handleComputeOrder(
         providerInitializeComputeResults.datasets[i],
