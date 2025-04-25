@@ -8,6 +8,7 @@ import {
   Datatoken,
   sendTx,
   amountToUnits,
+  unitsToAmount,
   isDefined
 } from '../../src/index.js'
 import {
@@ -556,7 +557,9 @@ describe('Compute flow tests', async () => {
       paymentToken,
       await consumerAccount.getAddress()
     )
-    console.log(`balance: ${balanceOfPaymentToken}`)
+    console.log(
+      `balance: ${unitsToAmount(consumerAccount, paymentToken, balanceOfPaymentToken)}`
+    )
     console.log(
       `balance consumeraddr: ${await paymentTokenContract.balance(
         paymentToken,
@@ -568,7 +571,7 @@ describe('Compute flow tests', async () => {
       ethers.utils.getAddress(providerInitializeComputeResults.payment.escrowAddress),
       balanceOfPaymentToken
     )
-    await escrow.deposit(paymentToken, balanceOfPaymentToken)
+    await escrow.deposit(paymentToken, (Number(balanceOfPaymentToken) / 2).toString())
     await escrow.authorize(
       ethers.utils.getAddress(paymentToken),
       ethers.utils.getAddress(computeEnv.consumerAddress),
