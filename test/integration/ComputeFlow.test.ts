@@ -298,13 +298,13 @@ describe('Compute flow tests', async () => {
       1,
       tokenContract.mint,
       await publisherAccount.getAddress(),
-      amountToUnits(null, null, '100000', 18)
+      amountToUnits(null, null, '60000000', 18)
     )
 
     // mint ocean to consumer
     const estGasConsumer = await tokenContract.estimateGas.mint(
       await consumerAccount.getAddress(),
-      amountToUnits(null, null, '100000', 18)
+      amountToUnits(null, null, '60000000', 18)
     )
 
     await sendTx(
@@ -588,7 +588,7 @@ describe('Compute flow tests', async () => {
       await consumerAccount.getAddress(),
       paymentToken
     )
-    console.log(`funds available: ${JSON.stringify(funds)}`)
+    console.log(`funds available: ${BigNumber.from(funds[0])}`)
     assert(BigNumber.from(funds[0]) > BigNumber.from(0), 'Should have funds in escrow')
     assert(auth.length > 0, 'Should have authorization')
     assert(
