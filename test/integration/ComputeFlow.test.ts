@@ -558,7 +558,11 @@ describe('Compute flow tests', async () => {
       await consumerAccount.getAddress()
     )
     console.log(
-      `balance: ${unitsToAmount(consumerAccount, paymentToken, balanceOfPaymentToken)}`
+      `balance: ${await unitsToAmount(
+        consumerAccount,
+        paymentToken,
+        balanceOfPaymentToken
+      )}`
     )
     console.log(
       `balance consumeraddr: ${await paymentTokenContract.balance(
@@ -571,7 +575,7 @@ describe('Compute flow tests', async () => {
       ethers.utils.getAddress(providerInitializeComputeResults.payment.escrowAddress),
       balanceOfPaymentToken
     )
-    await escrow.deposit(paymentToken, (Number(balanceOfPaymentToken) / 2).toString())
+    await escrow.deposit(paymentToken, (Number(balanceOfPaymentToken) / 4).toString())
     await escrow.authorize(
       ethers.utils.getAddress(paymentToken),
       ethers.utils.getAddress(computeEnv.consumerAddress),
