@@ -599,6 +599,7 @@ describe('Compute flow tests', async () => {
       BigInt(auth[0].maxLockedAmount.toString()) > BigInt(0),
       ' Should have maxLockedAmount in auth'
     )
+    console.log(`max locked amount: ${BigInt(auth[0].maxLockedAmount.toString())}`)
     assert(
       BigInt(auth[0].maxLockCounts.toString()) > BigInt(0),
       ' Should have maxLockCounts in auth'
