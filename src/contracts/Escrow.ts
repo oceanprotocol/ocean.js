@@ -183,8 +183,11 @@ export class EscrowContract extends SmartContractWithAddress {
   ): Promise<ReceiptOrEstimate<G>> {
     const locks = await this.getLocks(token, payer, payee)
     console.log(`locks: ${JSON.stringify(locks)}`)
+    console.log(`jobId: ${jobId}`)
+    console.log(`jobId big: ${BigNumber.from(jobId)}`)
     for (const lock of locks) {
-      if (BigNumber.from(lock.jobId.toString()) === BigNumber.from(jobId)) {
+      console.log(`jobId lock[0]: ${BigNumber.from(lock[0])}`)
+      if (BigNumber.from(lock[0]) === BigNumber.from(jobId)) {
         const estGas = await this.contract.estimateGas.cancelExpiredLocks(
           jobId,
           token,

@@ -683,6 +683,7 @@ describe('Compute flow tests', async () => {
       // remove any auths
       await escrow.authorize(paymentToken, computeEnv.consumerAddress, '0', '0', '0')
     }
+    console.log(`auths after: ${JSON.stringify(auths)}`)
     const funds = await escrow.getUserFunds(
       await consumerAccount.getAddress(),
       paymentToken
