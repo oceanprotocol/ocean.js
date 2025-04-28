@@ -50,6 +50,7 @@ let freeEnvAlgoTxId
 let paidEnvDatasetTxId
 let paidEnvAlgoTxId
 let computeValidUntil
+let escrow: EscrowContract
 
 let freeComputeRouteSupport = null
 
@@ -534,7 +535,7 @@ describe('Compute flow tests', async () => {
       'Cannot order algorithm'
     )
     // escrow adding funds for paid compute
-    const escrow = new EscrowContract(
+    escrow = new EscrowContract(
       ethers.utils.getAddress(providerInitializeComputeResults.payment.escrowAddress),
       consumerAccount
     )
@@ -548,15 +549,9 @@ describe('Compute flow tests', async () => {
       ethers.utils.parseEther(balancePublisherPaymentToken) > ethers.BigNumber.from(0),
       'Balance should be higher than 0'
     )
-    const locks = await escrow.getLocks(
-      paymentToken,
-      await consumerAccount.getAddress(),
-      computeEnv.consumerAddress
-    )
-    console.log(`locks: ${JSON.stringify(locks)}`)
     const tx = await publisherAccount.sendTransaction({
       to: computeEnv.consumerAddress,
-      value: ethers.utils.parseEther('0.5')
+      value: ethers.utils.parseEther('1.5')
     })
     await tx.wait()
 
@@ -580,7 +575,7 @@ describe('Compute flow tests', async () => {
     await paymentTokenContract.approve(
       ethers.utils.getAddress(paymentToken),
       ethers.utils.getAddress(providerInitializeComputeResults.payment.escrowAddress),
-      balanceOfPaymentToken
+      (Number(balanceOfPaymentToken) * 2).toString()
     )
     await escrow.deposit(paymentToken, balanceOfPaymentToken)
     await escrow.authorize(
@@ -599,14 +594,12 @@ describe('Compute flow tests', async () => {
       await consumerAccount.getAddress(),
       paymentToken
     )
-    console.log(`funds available: ${BigNumber.from(funds[0])}`)
     assert(BigNumber.from(funds[0]) > BigNumber.from(0), 'Should have funds in escrow')
     assert(auth.length > 0, 'Should have authorization')
     assert(
       BigInt(auth[0].maxLockedAmount.toString()) > BigInt(0),
       ' Should have maxLockedAmount in auth'
     )
-    console.log(`max locked amount: ${BigInt(auth[0].maxLockedAmount.toString())}`)
     assert(
       BigInt(auth[0].maxLockCounts.toString()) > BigInt(0),
       ' Should have maxLockCounts in auth'
@@ -663,7 +656,8 @@ describe('Compute flow tests', async () => {
 
   it('should restart a computeJob on paid environment, without paying anything, because order is valid and providerFees are still valid', async () => {
     // we choose the paid env
-    const computeEnv = computeEnvs.find((ce) => ce.priceMin !== 0 || !isDefined(ce.free))
+    computeEnvs = await ProviderInstance.getComputeEnvironments(providerUrl)
+    const computeEnv = computeEnvs[0]
     assert(computeEnv, 'Cannot find the paid compute env')
 
     const assets: ComputeAsset[] = [
@@ -677,6 +671,42 @@ describe('Compute flow tests', async () => {
       documentId: resolvedAlgoDdoWith5mTimeout.id,
       serviceId: resolvedAlgoDdoWith5mTimeout.services[0].id,
       transferTxId: paidEnvAlgoTxId
+    }
+
+    const auths = await escrow.getAuthorizations(
+      paymentToken,
+      await consumerAccount.getAddress(),
+      computeEnv.consumerAddress
+    )
+    if (auths.length > 0) {
+      // remove any auths
+      await escrow.authorize(paymentToken, computeEnv.consumerAddress, '0', '0', '0')
+    }
+    const funds = await escrow.getUserFunds(
+      await consumerAccount.getAddress(),
+      paymentToken
+    )
+
+    let locks = await escrow.getLocks(
+      paymentToken,
+      await consumerAccount.getAddress(),
+      computeEnv.consumerAddress
+    )
+    console.log(`locks 1: ${JSON.stringify(locks)}`)
+
+    if (locks.length > 0) {
+      // cancel all locks
+      for (const lock of locks) {
+        try {
+          await escrow.cancelExpiredLocks(lock.jobId, lock.token, lock.payer, lock.payee)
+        } catch (e) {}
+      }
+      locks = await escrow.getLocks(
+        paymentToken,
+        await consumerAccount.getAddress(),
+        computeEnv.consumerAddress
+      )
+      console.log(`locks 2: ${JSON.stringify(locks)}`)
     }
 
     providerInitializeComputeResults = await ProviderInstance.initializeCompute(
@@ -714,6 +744,19 @@ describe('Compute flow tests', async () => {
       algo.transferTxId === paidEnvAlgoTxId &&
         assets[0].transferTxId === paidEnvDatasetTxId,
       'We should use the same orders, because no fess must be paid'
+    )
+    const paymentTokenContract = new Datatoken(consumerAccount)
+    const balanceOfPaymentToken = await paymentTokenContract.balance(
+      paymentToken,
+      await consumerAccount.getAddress()
+    )
+
+    await escrow.authorize(
+      ethers.utils.getAddress(paymentToken),
+      ethers.utils.getAddress(computeEnv.consumerAddress),
+      (Number(balanceOfPaymentToken) / 4).toString(),
+      providerInitializeComputeResults.payment.minLockSeconds.toString(),
+      '10'
     )
 
     const computeJobs = await ProviderInstance.computeStart(

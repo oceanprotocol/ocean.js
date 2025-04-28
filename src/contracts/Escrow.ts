@@ -164,4 +164,46 @@ export class EscrowContract extends SmartContractWithAddress {
     )
     return <ReceiptOrEstimate<G>>trxReceipt
   }
+
+  /**
+   * Cancel expired locks
+   * @param {String} jobId Job ID with hash
+   * @param {String} token Token address
+   * @param {String} payee, Payee address for the compute job,
+   * @param {String} payer, Payer address for the compute job
+   * @param {Boolean} estimateGas if True, return gas estimate
+   * @return {Promise<ReceiptOrEstimate>} returns the transaction receipt or the estimateGas value
+   */
+  public async cancelExpiredLocks<G extends boolean = false>(
+    jobId: string,
+    token: string,
+    payer: string,
+    payee: string,
+    estimateGas?: G
+  ): Promise<ReceiptOrEstimate<G>> {
+    const locks = await this.getLocks(token, payer, payee)
+    console.log(`locks: ${JSON.stringify(locks)}`)
+    for (const lock of locks) {
+      if (lock.jobId.toString() === jobId) {
+        const estGas = await this.contract.estimateGas.cancelExpiredLocks(
+          jobId,
+          token,
+          payer,
+          payee
+        )
+        if (estimateGas) return <ReceiptOrEstimate<G>>estGas
+        const trxReceipt = await sendTx(
+          estGas,
+          this.getSignerAccordingSdk(),
+          this.config?.gasFeeMultiplier,
+          this.contract.cancelExpiredLocks,
+          jobId,
+          token,
+          payer,
+          payee
+        )
+        return <ReceiptOrEstimate<G>>trxReceipt
+      }
+    }
+  }
 }
