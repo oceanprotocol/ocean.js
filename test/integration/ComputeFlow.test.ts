@@ -482,7 +482,7 @@ describe('Compute flow tests', async () => {
     console.log('compute envs: ', JSON.stringify(computeEnvs))
     const computeEnv = computeEnvs[0] // it is only one environment with paid and free resources
     assert(computeEnv, 'Cannot find the paid compute env')
-
+    console.log(`compute env: ${JSON.stringify(computeEnv)}`)
     const assets: ComputeAsset[] = [
       {
         documentId: resolvedDdoWith5mTimeout.id,
