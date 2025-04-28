@@ -564,6 +564,17 @@ describe('Compute flow tests', async () => {
         computeEnv.consumerAddress
       )}`
     )
+    const nodeWallet = new ethers.Wallet(
+      '0xc594c6e5def4bab63ac29eed19a134c130388f74f019bc74b8f4389df2837a58'
+    )
+    console.log(
+      `balance ocean token: ${await paymentTokenContract.balance(
+        paymentToken,
+        await nodeWallet.getAddress()
+      )}`
+    )
+    console.log(`balance addr eth: ${await nodeWallet.getBalance()}`)
+
     await paymentTokenContract.approve(
       ethers.utils.getAddress(paymentToken),
       ethers.utils.getAddress(providerInitializeComputeResults.payment.escrowAddress),
