@@ -551,6 +551,12 @@ describe('Compute flow tests', async () => {
     const nodeWallet = new ethers.Wallet(
       '0xc594c6e5def4bab63ac29eed19a134c130388f74f019bc74b8f4389df2837a58'
     )
+    const tx = await publisherAccount.sendTransaction({
+      to: computeEnv.consumerAddress,
+      value: ethers.utils.parseEther('0.5')
+    })
+    await tx.wait()
+    console.log(`tx: ${JSON.stringify(tx)}`)
     await paymentTokenPublisher.transfer(
       paymentToken,
       await nodeWallet.getAddress(),
