@@ -806,6 +806,7 @@ export class Provider {
     // if (additionalDatasets) payload.additionalDatasets = additionalDatasets
     if (output) payload.output = output
     let response
+    console.log(`start compute payload: ${JSON.stringify(payload)}`)
     try {
       response = await fetch(computeStartUrl, {
         method: 'POST',
