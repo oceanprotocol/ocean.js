@@ -554,7 +554,12 @@ describe('Compute flow tests', async () => {
     await paymentTokenPublisher.transfer(
       paymentToken,
       await nodeWallet.getAddress(),
-      balancePublisherPaymentToken
+      (Number(balancePublisherPaymentToken) / 2).toString()
+    )
+    await paymentTokenPublisher.transfer(
+      paymentToken,
+      ethers.utils.getAddress(computeEnv.consumerAddress),
+      (Number(balancePublisherPaymentToken) / 2).toString()
     )
     const balanceOfPaymentToken = await paymentTokenContract.balance(
       paymentToken,
