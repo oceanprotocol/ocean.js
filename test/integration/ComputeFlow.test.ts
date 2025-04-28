@@ -480,10 +480,8 @@ describe('Compute flow tests', async () => {
   it('should start a computeJob on a paid environment', async () => {
     // we choose the paid env
     computeEnvs = await ProviderInstance.getComputeEnvironments(providerUrl)
-    console.log('compute envs: ', JSON.stringify(computeEnvs))
     const computeEnv = computeEnvs[0] // it is only one environment with paid and free resources
     assert(computeEnv, 'Cannot find the paid compute env')
-    console.log(`compute env: ${JSON.stringify(computeEnv)}`)
     const assets: ComputeAsset[] = [
       {
         documentId: resolvedDdoWith5mTimeout.id,
@@ -678,6 +676,9 @@ describe('Compute flow tests', async () => {
       await consumerAccount.getAddress(),
       computeEnv.consumerAddress
     )
+
+    console.log(`auths: ${JSON.stringify(auths)}`)
+
     if (auths.length > 0) {
       // remove any auths
       await escrow.authorize(paymentToken, computeEnv.consumerAddress, '0', '0', '0')
@@ -686,7 +687,7 @@ describe('Compute flow tests', async () => {
       await consumerAccount.getAddress(),
       paymentToken
     )
-
+    console.log(`funds available: ${BigNumber.from(funds[0]).toString()}`)
     let locks = await escrow.getLocks(
       paymentToken,
       await consumerAccount.getAddress(),
@@ -718,10 +719,7 @@ describe('Compute flow tests', async () => {
       providerUrl,
       consumerAccount
     )
-    console.log(
-      `init compute response: `,
-      JSON.stringify(providerInitializeComputeResults)
-    )
+    console.log(`init response 2: `, JSON.stringify(providerInitializeComputeResults))
     assert(
       providerInitializeComputeResults.algorithm.validOrder,
       'We should have a valid order for algorithm'

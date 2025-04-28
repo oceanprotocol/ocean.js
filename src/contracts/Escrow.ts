@@ -1,4 +1,4 @@
-import { Signer } from 'ethers'
+import { Signer, BigNumber } from 'ethers'
 import Escrow from '@oceanprotocol/contracts/artifacts/contracts/escrow/Escrow.sol/Escrow.json'
 import { amountToUnits, sendTx } from '../utils/ContractUtils'
 import { AbiItem, ReceiptOrEstimate } from '../@types'
@@ -184,7 +184,7 @@ export class EscrowContract extends SmartContractWithAddress {
     const locks = await this.getLocks(token, payer, payee)
     console.log(`locks: ${JSON.stringify(locks)}`)
     for (const lock of locks) {
-      if (lock.jobId.toString() === jobId) {
+      if (BigNumber.from(lock.jobId.toString()) === BigNumber.from(jobId)) {
         const estGas = await this.contract.estimateGas.cancelExpiredLocks(
           jobId,
           token,
