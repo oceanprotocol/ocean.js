@@ -754,15 +754,18 @@ describe('Compute flow tests', async () => {
       providerInitializeComputeResults.datasets[0].validOrder,
       'We should have a valid order for dataset'
     )
-    // assert(
-    //   providerInitializeComputeResults.algorithm.providerFee ||
-    //     providerInitializeComputeResults.datasets[0].providerFee,
-    //   'We should pay providerFees again for algorithm or dataset. Cannot have empty for both'
-    // )
-
+    assert(providerInitializeComputeResults.payment, ' Payment structure does not exists')
     assert(
-      !('error' in providerInitializeComputeResults.algorithm),
-      'Cannot order algorithm'
+      providerInitializeComputeResults.payment.escrowAddress === addresses.Escrow,
+      'Incorrect escrow address'
+    )
+    assert(
+      providerInitializeComputeResults.payment.payee === computeEnv.consumerAddress,
+      'Incorrect payee address'
+    )
+    assert(
+      providerInitializeComputeResults.payment.token === paymentToken,
+      'Incorrect payment token address'
     )
     algo.transferTxId = await handleComputeOrder(
       providerInitializeComputeResults.algorithm,
@@ -784,6 +787,7 @@ describe('Compute flow tests', async () => {
         config
       )
     }
+    // reuse order is not executed due to initialize response which does not include provider fees.
     assert(
       algo.transferTxId !== paidEnvAlgoTxId ||
         assets[0].transferTxId !== paidEnvDatasetTxId,
