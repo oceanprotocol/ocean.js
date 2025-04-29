@@ -745,15 +745,15 @@ describe('Compute flow tests', async () => {
 
     console.log(`auths: ${JSON.stringify(auths)}`)
 
-    if (auths.length > 0) {
-      await escrow.authorize(
-        ethers.utils.getAddress(paymentToken),
-        ethers.utils.getAddress(computeEnv.consumerAddress),
-        '0',
-        '0',
-        '0'
-      )
-    }
+    // if (auths.length > 0) {
+    //   await escrow.authorize(
+    //     ethers.utils.getAddress(paymentToken),
+    //     ethers.utils.getAddress(computeEnv.consumerAddress),
+    //     '0',
+    //     '0',
+    //     '0'
+    //   )
+    // }
     console.log(`auths after: ${JSON.stringify(auths)}`)
 
     const computeJobs = await ProviderInstance.computeStart(
