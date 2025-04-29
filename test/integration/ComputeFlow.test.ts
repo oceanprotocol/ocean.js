@@ -430,7 +430,6 @@ describe('Compute flow tests', async () => {
         serviceId: resolvedDdoWith5mTimeout.services[0].id
       }
     ]
-    const dtAddressArray = [resolvedDdoWith5mTimeout.services[0].datatokenAddress]
 
     const algo: ComputeAlgorithm = {
       documentId: resolvedAlgoDdoWith5mTimeout.id,
@@ -498,7 +497,7 @@ describe('Compute flow tests', async () => {
       algo,
       computeEnv.id,
       paymentToken,
-      computeJobDuration,
+      computeValidUntil,
       providerUrl,
       consumerAccount
     )
