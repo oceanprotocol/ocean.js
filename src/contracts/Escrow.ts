@@ -190,10 +190,10 @@ export class EscrowContract extends SmartContractWithAddress {
       if (BigNumber.from(lock[0]).eq(BigNumber.from(jobId))) {
         console.log(`entered on condition`)
         const estGas = await this.contract.estimateGas.cancelExpiredLocks(
-          jobId,
-          token,
-          payer,
-          payee
+          [jobId],
+          [token],
+          [payer],
+          [payee]
         )
         if (estimateGas) return <ReceiptOrEstimate<G>>estGas
         const trxReceipt = await sendTx(
@@ -201,10 +201,10 @@ export class EscrowContract extends SmartContractWithAddress {
           this.getSignerAccordingSdk(),
           this.config?.gasFeeMultiplier,
           this.contract.cancelExpiredLocks,
-          jobId,
-          token,
-          payer,
-          payee
+          [jobId],
+          [token],
+          [payer],
+          [payee]
         )
         console.log(`trxReceipt: ${trxReceipt}`)
         return <ReceiptOrEstimate<G>>trxReceipt
