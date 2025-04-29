@@ -175,40 +175,30 @@ export class EscrowContract extends SmartContractWithAddress {
    * @return {Promise<ReceiptOrEstimate>} returns the transaction receipt or the estimateGas value
    */
   public async cancelExpiredLocks<G extends boolean = false>(
-    jobId: string,
-    token: string,
-    payer: string,
-    payee: string,
+    jobIds: string[],
+    tokens: string[],
+    payers: string[],
+    payees: string[],
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
-    const locks = await this.getLocks(token, payer, payee)
-    console.log(`locks: ${JSON.stringify(locks)}`)
-    console.log(`jobId: ${jobId}`)
-    console.log(`jobId big: ${BigNumber.from(jobId)}`)
-    for (const lock of locks) {
-      console.log(`jobId lock[0]: ${BigNumber.from(lock[0])}`)
-      if (BigNumber.from(lock[0]).eq(BigNumber.from(jobId))) {
-        console.log(`entered on condition`)
-        const estGas = await this.contract.estimateGas.cancelExpiredLocks(
-          [jobId],
-          [token],
-          [payer],
-          [payee]
-        )
-        if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-        const trxReceipt = await sendTx(
-          estGas,
-          this.getSignerAccordingSdk(),
-          this.config?.gasFeeMultiplier,
-          this.contract.cancelExpiredLocks,
-          [jobId],
-          [token],
-          [payer],
-          [payee]
-        )
-        console.log(`trxReceipt: ${trxReceipt}`)
-        return <ReceiptOrEstimate<G>>trxReceipt
-      }
-    }
+    const estGas = await this.contract.estimateGas.cancelExpiredLocks(
+      jobIds,
+      tokens,
+      payers,
+      payees
+    )
+    if (estimateGas) return <ReceiptOrEstimate<G>>estGas
+    const trxReceipt = await sendTx(
+      estGas,
+      this.getSignerAccordingSdk(),
+      this.config?.gasFeeMultiplier,
+      this.contract.cancelExpiredLocks,
+      jobIds,
+      tokens,
+      payers,
+      payees
+    )
+    console.log(`trxReceipt: ${JSON.stringify(trxReceipt)}`)
+    return <ReceiptOrEstimate<G>>trxReceipt
   }
 }

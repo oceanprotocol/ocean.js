@@ -687,7 +687,12 @@ describe('Compute flow tests', async () => {
       // cancel all locks
       for (const lock of locks) {
         try {
-          await escrow.cancelExpiredLocks(lock.jobId, lock.token, lock.payer, lock.payee)
+          await escrow.cancelExpiredLocks(
+            [lock.jobId],
+            [lock.token],
+            [lock.payer],
+            [lock.payee]
+          )
         } catch (e) {}
       }
       locks = await escrow.getLocks(
