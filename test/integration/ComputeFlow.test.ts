@@ -498,10 +498,11 @@ describe('Compute flow tests', async () => {
       algo,
       computeEnv.id,
       paymentToken,
-      computeValidUntil,
+      computeJobDuration,
       providerUrl,
       consumerAccount
     )
+    console.log(`init resp: ${JSON.stringify(providerInitializeComputeResults)}`)
     assert(providerInitializeComputeResults.payment, ' Payment structure does not exists')
     assert(
       providerInitializeComputeResults.payment.escrowAddress === addresses.Escrow,
