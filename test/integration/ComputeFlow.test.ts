@@ -8,7 +8,6 @@ import {
   Datatoken,
   sendTx,
   amountToUnits,
-  unitsToAmount,
   isDefined
 } from '../../src/index.js'
 import {
@@ -501,7 +500,6 @@ describe('Compute flow tests', async () => {
       providerUrl,
       consumerAccount
     )
-    console.log(`init resp: ${JSON.stringify(providerInitializeComputeResults)}`)
     assert(providerInitializeComputeResults.payment, ' Payment structure does not exists')
     assert(
       providerInitializeComputeResults.payment.escrowAddress === addresses.Escrow,
@@ -711,7 +709,6 @@ describe('Compute flow tests', async () => {
     const computeMinutes = 5
     mytime.setMinutes(mytime.getMinutes() + computeMinutes)
     computeValidUntil = Math.floor(mytime.getTime() / 1000)
-    console.log(`computeValidUntil: ${computeValidUntil}`)
   })
 
   it('should start a computeJob using the paid environment, by paying only providerFee (reuseOrder)', async () => {
@@ -742,9 +739,6 @@ describe('Compute flow tests', async () => {
       computeValidUntil,
       providerUrl,
       consumerAccount
-    )
-    console.log(
-      `initialize resp reuse: ${JSON.stringify(providerInitializeComputeResults)}`
     )
     assert(
       providerInitializeComputeResults.algorithm.validOrder,
