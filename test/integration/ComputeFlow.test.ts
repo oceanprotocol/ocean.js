@@ -676,27 +676,27 @@ describe('Compute flow tests', async () => {
       paymentToken
     )
     console.log(`funds available: ${BigNumber.from(funds[0]).toString()}`)
-    let locks = await escrow.getLocks(
-      paymentToken,
-      await consumerAccount.getAddress(),
-      computeEnv.consumerAddress
-    )
-    console.log(`locks 1: ${JSON.stringify(locks)}`)
+    // let locks = await escrow.getLocks(
+    //   paymentToken,
+    //   await consumerAccount.getAddress(),
+    //   computeEnv.consumerAddress
+    // )
+    // console.log(`locks 1: ${JSON.stringify(locks)}`)
 
-    if (locks.length > 0) {
-      // cancel all locks
-      for (const lock of locks) {
-        try {
-          await escrow.cancelExpiredLocks(lock.jobId, lock.token, lock.payer, lock.payee)
-        } catch (e) {}
-      }
-      locks = await escrow.getLocks(
-        paymentToken,
-        await consumerAccount.getAddress(),
-        computeEnv.consumerAddress
-      )
-      console.log(`locks 2: ${JSON.stringify(locks)}`)
-    }
+    // if (locks.length > 0) {
+    //   // cancel all locks
+    //   for (const lock of locks) {
+    //     try {
+    //       await escrow.cancelExpiredLocks(lock.jobId, lock.token, lock.payer, lock.payee)
+    //     } catch (e) {}
+    //   }
+    //   locks = await escrow.getLocks(
+    //     paymentToken,
+    //     await consumerAccount.getAddress(),
+    //     computeEnv.consumerAddress
+    //   )
+    //   console.log(`locks 2: ${JSON.stringify(locks)}`)
+    // }
 
     providerInitializeComputeResults = await ProviderInstance.initializeCompute(
       assets,
