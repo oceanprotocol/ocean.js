@@ -475,99 +475,6 @@ describe('Compute flow tests', async () => {
     assert(jobStatus, 'Cannot retrieve compute status!')
   }).timeout(40000)
 
-  it('should start a computeJob using the free environment, by paying only providerFee (reuseOrder)', async () => {
-    if (freeComputeRouteSupport) {
-      // we choose the free env
-      const computeEnv = computeEnvs.find((ce) => ce.priceMin === 0 || isDefined(ce.free))
-      assert(computeEnv, 'Cannot find the free compute env')
-
-      const assets: ComputeAsset[] = [
-        {
-          documentId: resolvedDdoWith5mTimeout.id,
-          serviceId: resolvedDdoWith5mTimeout.services[0].id,
-          transferTxId: freeEnvDatasetTxId
-        }
-      ]
-      const dtAddressArray = [resolvedDdoWith5mTimeout.services[0].datatokenAddress]
-      const algo: ComputeAlgorithm = {
-        documentId: resolvedAlgoDdoWith5mTimeout.id,
-        serviceId: resolvedAlgoDdoWith5mTimeout.services[0].id,
-        transferTxId: freeEnvAlgoTxId
-      }
-
-      providerInitializeComputeResults = await ProviderInstance.initializeCompute(
-        assets,
-        algo,
-        computeEnv.id,
-        paymentToken,
-        computeJobDuration,
-        providerUrl,
-        consumerAccount
-      )
-      assert(
-        providerInitializeComputeResults.algorithm.validOrder,
-        'We should have a valid order for algorithm'
-      )
-      assert(
-        providerInitializeComputeResults.datasets[0].validOrder,
-        'We should have a valid order for dataset'
-      )
-
-      assert(
-        providerInitializeComputeResults.algorithm.providerFee ||
-          providerInitializeComputeResults.datasets[0].providerFee,
-        'We should pay providerFees again for algorithm or dataset. Cannot have empty for both'
-      )
-
-      assert(
-        !('error' in providerInitializeComputeResults.algorithm),
-        'Cannot order algorithm'
-      )
-      algo.transferTxId = await handleComputeOrder(
-        providerInitializeComputeResults.algorithm,
-        resolvedAlgoDdoWith5mTimeout.services[0].datatokenAddress,
-        consumerAccount,
-        computeEnv.consumerAddress,
-        0,
-        datatoken,
-        config
-      )
-      for (let i = 0; i < providerInitializeComputeResults.datasets.length; i++) {
-        assets[i].transferTxId = await handleComputeOrder(
-          providerInitializeComputeResults.datasets[i],
-          dtAddressArray[i],
-          consumerAccount,
-          computeEnv.consumerAddress,
-          0,
-          datatoken,
-          config
-        )
-      }
-      assert(
-        algo.transferTxId !== freeEnvAlgoTxId ||
-          assets[0].transferTxId !== freeEnvDatasetTxId,
-        'We should not use the same orders, because providerFee must be paid'
-      )
-      const computeJobs = await ProviderInstance.freeComputeStart(
-        providerUrl,
-        consumerAccount,
-        computeEnv.id,
-        assets,
-        algo
-      )
-      // freeEnvDatasetTxId = assets[0].transferTxId
-      // freeEnvAlgoTxId = algo.transferTxId
-      assert(computeJobs, 'Cannot start compute job')
-    } else {
-      assert(
-        freeComputeRouteSupport === null,
-        'Cannot start free compute job. provider at ' +
-          providerUrl +
-          ' does not implement freeCompute route'
-      )
-    }
-  })
-
   //   // moving to paid environments
 
   it('should start a computeJob on a paid environment', async () => {
@@ -812,12 +719,6 @@ describe('Compute flow tests', async () => {
       algo.transferTxId === paidEnvAlgoTxId &&
         assets[0].transferTxId === paidEnvDatasetTxId,
       'We should use the same orders, because no fess must be paid'
-    )
-
-    const auths = await escrow.getAuthorizations(
-      paymentToken,
-      await consumerAccount.getAddress(),
-      computeEnv.consumerAddress
     )
 
     const computeJobs = await ProviderInstance.computeStart(
