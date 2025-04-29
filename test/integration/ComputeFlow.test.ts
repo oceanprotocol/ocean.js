@@ -660,33 +660,6 @@ describe('Compute flow tests', async () => {
       transferTxId: paidEnvAlgoTxId
     }
 
-    let locks = await escrow.getLocks(
-      paymentToken,
-      await consumerAccount.getAddress(),
-      computeEnv.consumerAddress
-    )
-    console.log(`locks 1: ${JSON.stringify(locks)}`)
-
-    if (locks.length > 0) {
-      // cancel all locks
-      for (const lock of locks) {
-        try {
-          await escrow.cancelExpiredLocks(
-            [lock.jobId],
-            [lock.token],
-            [lock.payer],
-            [lock.payee]
-          )
-        } catch (e) {}
-      }
-      locks = await escrow.getLocks(
-        paymentToken,
-        await consumerAccount.getAddress(),
-        computeEnv.consumerAddress
-      )
-      console.log(`locks 2: ${JSON.stringify(locks)}`)
-    }
-
     providerInitializeComputeResults = await ProviderInstance.initializeCompute(
       assets,
       algo,
@@ -696,7 +669,6 @@ describe('Compute flow tests', async () => {
       providerUrl,
       consumerAccount
     )
-    console.log(`init response 2: `, JSON.stringify(providerInitializeComputeResults))
     assert(
       providerInitializeComputeResults.algorithm.validOrder,
       'We should have a valid order for algorithm'
@@ -744,7 +716,8 @@ describe('Compute flow tests', async () => {
 
   it('should start a computeJob using the paid environment, by paying only providerFee (reuseOrder)', async () => {
     // we choose the paid env
-    const computeEnv = computeEnvs.find((ce) => ce.priceMin !== 0 || !isDefined(ce.free))
+    computeEnvs = await ProviderInstance.getComputeEnvironments(providerUrl)
+    const computeEnv = computeEnvs[0]
     assert(computeEnv, 'Cannot find the paid compute env')
 
     const assets: ComputeAsset[] = [
@@ -765,7 +738,7 @@ describe('Compute flow tests', async () => {
       assets,
       algo,
       computeEnv.id,
-      dtAddressArray[0],
+      paymentToken,
       computeJobDuration,
       providerUrl,
       consumerAccount
