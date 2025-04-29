@@ -150,6 +150,7 @@ jobs:
         with:
           repository: 'oceanprotocol/ocean-node'
           path: 'ocean-node'
+          ref: 'unique-job-id-generation'
       - name: Extract Ocean address using jq
         run: |
             OCEAN_ADDRESS=$(jq -r '.development | select(.chainId == 8996) | .Ocean' "$ADDRESS_FILE")
