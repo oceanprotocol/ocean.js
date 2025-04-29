@@ -671,19 +671,6 @@ describe('Compute flow tests', async () => {
       transferTxId: paidEnvAlgoTxId
     }
 
-    const auths = await escrow.getAuthorizations(
-      paymentToken,
-      await consumerAccount.getAddress(),
-      computeEnv.consumerAddress
-    )
-
-    console.log(`auths: ${JSON.stringify(auths)}`)
-
-    if (auths.length > 0) {
-      // remove any auths
-      await escrow.authorize(paymentToken, computeEnv.consumerAddress, '0', '0', '0')
-    }
-    console.log(`auths after: ${JSON.stringify(auths)}`)
     const funds = await escrow.getUserFunds(
       await consumerAccount.getAddress(),
       paymentToken
@@ -716,7 +703,7 @@ describe('Compute flow tests', async () => {
       algo,
       computeEnv.id,
       paymentToken,
-      computeValidUntil,
+      computeJobDuration,
       providerUrl,
       consumerAccount
     )
@@ -750,13 +737,24 @@ describe('Compute flow tests', async () => {
       await consumerAccount.getAddress()
     )
 
-    await escrow.authorize(
-      ethers.utils.getAddress(paymentToken),
-      ethers.utils.getAddress(computeEnv.consumerAddress),
-      (Number(balanceOfPaymentToken) / 4).toString(),
-      providerInitializeComputeResults.payment.minLockSeconds.toString(),
-      '10'
+    const auths = await escrow.getAuthorizations(
+      paymentToken,
+      await consumerAccount.getAddress(),
+      computeEnv.consumerAddress
     )
+
+    console.log(`auths: ${JSON.stringify(auths)}`)
+
+    if (auths.length === 0) {
+      await escrow.authorize(
+        ethers.utils.getAddress(paymentToken),
+        ethers.utils.getAddress(computeEnv.consumerAddress),
+        (Number(balanceOfPaymentToken) / 4).toString(),
+        providerInitializeComputeResults.payment.minLockSeconds.toString(),
+        '10'
+      )
+    }
+    console.log(`auths after: ${JSON.stringify(auths)}`)
 
     const computeJobs = await ProviderInstance.computeStart(
       providerUrl,
@@ -804,7 +802,7 @@ describe('Compute flow tests', async () => {
         algo,
         computeEnv.id,
         paymentToken,
-        computeValidUntil,
+        computeJobDuration,
         providerUrl,
         consumerAccount
       )
@@ -898,7 +896,7 @@ describe('Compute flow tests', async () => {
       algo,
       computeEnv.id,
       dtAddressArray[0],
-      computeValidUntil,
+      computeJobDuration,
       providerUrl,
       consumerAccount
     )
