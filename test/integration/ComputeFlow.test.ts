@@ -712,6 +712,7 @@ describe('Compute flow tests', async () => {
     const computeMinutes = 5
     mytime.setMinutes(mytime.getMinutes() + computeMinutes)
     computeValidUntil = Math.floor(mytime.getTime() / 1000)
+    console.log(`computeValidUntil: ${computeValidUntil}`)
   })
 
   it('should start a computeJob using the paid environment, by paying only providerFee (reuseOrder)', async () => {
@@ -739,7 +740,7 @@ describe('Compute flow tests', async () => {
       algo,
       computeEnv.id,
       paymentToken,
-      computeJobDuration,
+      computeValidUntil,
       providerUrl,
       consumerAccount
     )
