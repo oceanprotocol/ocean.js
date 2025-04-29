@@ -745,13 +745,13 @@ describe('Compute flow tests', async () => {
 
     console.log(`auths: ${JSON.stringify(auths)}`)
 
-    if (auths.length === 0) {
+    if (auths.length > 0) {
       await escrow.authorize(
         ethers.utils.getAddress(paymentToken),
         ethers.utils.getAddress(computeEnv.consumerAddress),
-        (Number(balanceOfPaymentToken) / 4).toString(),
-        providerInitializeComputeResults.payment.minLockSeconds.toString(),
-        '10'
+        '0',
+        '0',
+        '0'
       )
     }
     console.log(`auths after: ${JSON.stringify(auths)}`)

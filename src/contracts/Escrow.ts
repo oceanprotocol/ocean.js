@@ -187,7 +187,8 @@ export class EscrowContract extends SmartContractWithAddress {
     console.log(`jobId big: ${BigNumber.from(jobId)}`)
     for (const lock of locks) {
       console.log(`jobId lock[0]: ${BigNumber.from(lock[0])}`)
-      if (BigNumber.from(lock[0]) === BigNumber.from(jobId)) {
+      // eslint-disable-next-line eqeqeq
+      if (BigNumber.from(lock[0]) == BigNumber.from(jobId)) {
         console.log(`entered on condition`)
         const estGas = await this.contract.estimateGas.cancelExpiredLocks(
           jobId,
