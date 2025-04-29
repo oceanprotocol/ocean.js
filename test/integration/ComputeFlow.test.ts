@@ -51,7 +51,6 @@ let paidEnvDatasetTxId
 let paidEnvAlgoTxId
 let computeValidUntil
 let escrow: EscrowContract
-
 let freeComputeRouteSupport = null
 
 const computeJobDuration = 60 * 15 // 15 minutes
@@ -767,6 +766,7 @@ describe('Compute flow tests', async () => {
       providerInitializeComputeResults.payment.token === paymentToken,
       'Incorrect payment token address'
     )
+
     algo.transferTxId = await handleComputeOrder(
       providerInitializeComputeResults.algorithm,
       resolvedAlgoDdoWith5mTimeout.services[0].datatokenAddress,
@@ -787,11 +787,11 @@ describe('Compute flow tests', async () => {
         config
       )
     }
-    // reuse order is not executed due to initialize response which does not include provider fees.
+    // providerFees are not expired, meaning no reuseOrder triggered
     assert(
-      algo.transferTxId !== paidEnvAlgoTxId ||
-        assets[0].transferTxId !== paidEnvDatasetTxId,
-      'We should not use the same orders, because providerFee must be paid'
+      algo.transferTxId === paidEnvAlgoTxId ||
+        assets[0].transferTxId === paidEnvDatasetTxId,
+      'We should use the same orders, because providerFee is not expired'
     )
     const computeJobs = await ProviderInstance.computeStart(
       providerUrl,
