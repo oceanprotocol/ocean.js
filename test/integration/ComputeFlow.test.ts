@@ -500,6 +500,11 @@ describe('Compute flow tests', async () => {
       providerUrl,
       consumerAccount
     )
+    console.log(
+      `providerInitializeComputeResults1: ${JSON.stringify(
+        providerInitializeComputeResults
+      )}`
+    )
     assert(providerInitializeComputeResults.payment, ' Payment structure does not exists')
     assert(
       providerInitializeComputeResults.payment.escrowAddress === addresses.Escrow,
