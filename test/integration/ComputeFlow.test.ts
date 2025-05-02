@@ -474,6 +474,13 @@ describe('Compute flow tests', async () => {
 
   //   // moving to paid environments
 
+  it('Should fast forward time and set a new computeValidUntil', async () => {
+    const mytime = new Date()
+    const computeMinutes = 2
+    mytime.setMinutes(mytime.getMinutes() + computeMinutes)
+    computeValidUntil = Math.floor(mytime.getTime() / 1000)
+  })
+
   it('should start a computeJob on a paid environment', async () => {
     // we choose the paid env
     computeEnvs = await ProviderInstance.getComputeEnvironments(providerUrl)
@@ -490,7 +497,6 @@ describe('Compute flow tests', async () => {
       documentId: resolvedAlgoDdoWith5mTimeout.id,
       serviceId: resolvedAlgoDdoWith5mTimeout.services[0].id
     }
-
     providerInitializeComputeResults = await ProviderInstance.initializeCompute(
       assets,
       algo,
@@ -707,6 +713,8 @@ describe('Compute flow tests', async () => {
     assert(computeJobs, 'Cannot start compute job')
   })
 
+  delay(1200)
+
   // move to reuse Orders
 
   it('Should fast forward time and set a new computeValidUntil', async () => {
@@ -744,6 +752,11 @@ describe('Compute flow tests', async () => {
       computeValidUntil,
       providerUrl,
       consumerAccount
+    )
+    console.log(
+      `providerInitializeComputeResults2 reuse: ${JSON.stringify(
+        providerInitializeComputeResults
+      )}`
     )
     assert(
       providerInitializeComputeResults.algorithm.validOrder,
