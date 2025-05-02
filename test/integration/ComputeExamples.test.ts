@@ -609,10 +609,7 @@ describe('Compute-to-data example tests', async () => {
 
     /// let's check the free compute environment
     /// ```Typescript
-    const computeEnv = computeEnvs.find(
-      (ce) =>
-        !ce?.fees || ce.fees.find((fee) => fee.symbol === 'OCEAN' && fee.amount === '0')
-    )
+    const computeEnv = computeEnvs.find((ce) => isDefined(ce.free))
     console.log('Free compute environment = ', computeEnv)
     /// ```
     /// <!--
@@ -630,7 +627,7 @@ describe('Compute-to-data example tests', async () => {
       const mytime = new Date()
       const computeMinutes = 5
       mytime.setMinutes(mytime.getMinutes() + computeMinutes)
-      const computeValidUntil = Math.floor(mytime.getTime() / 1000)
+      const maxJobDuration = Math.floor(mytime.getTime() / 1000)
 
       /// ```
       /// Let's prepare the dataset and algorithm assets to be used in the compute job

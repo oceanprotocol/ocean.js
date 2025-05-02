@@ -1,4 +1,4 @@
-import { Signer } from 'ethers'
+import { Signer, BigNumber } from 'ethers'
 import Escrow from '@oceanprotocol/contracts/artifacts/contracts/escrow/Escrow.sol/Escrow.json'
 import { amountToUnits, sendTx } from '../utils/ContractUtils'
 import { AbiItem, ReceiptOrEstimate } from '../@types'
@@ -162,6 +162,43 @@ export class EscrowContract extends SmartContractWithAddress {
       maxLockSecondsParsed,
       maxLockCountsParsed
     )
+    return <ReceiptOrEstimate<G>>trxReceipt
+  }
+
+  /**
+   * Cancel expired locks
+   * @param {String} jobId Job ID with hash
+   * @param {String} token Token address
+   * @param {String} payee, Payee address for the compute job,
+   * @param {String} payer, Payer address for the compute job
+   * @param {Boolean} estimateGas if True, return gas estimate
+   * @return {Promise<ReceiptOrEstimate>} returns the transaction receipt or the estimateGas value
+   */
+  public async cancelExpiredLocks<G extends boolean = false>(
+    jobIds: string[],
+    tokens: string[],
+    payers: string[],
+    payees: string[],
+    estimateGas?: G
+  ): Promise<ReceiptOrEstimate<G>> {
+    const estGas = await this.contract.estimateGas.cancelExpiredLocks(
+      jobIds,
+      tokens,
+      payers,
+      payees
+    )
+    if (estimateGas) return <ReceiptOrEstimate<G>>estGas
+    const trxReceipt = await sendTx(
+      estGas,
+      this.getSignerAccordingSdk(),
+      this.config?.gasFeeMultiplier,
+      this.contract.cancelExpiredLocks,
+      jobIds,
+      tokens,
+      payers,
+      payees
+    )
+    console.log(`trxReceipt: ${JSON.stringify(trxReceipt)}`)
     return <ReceiptOrEstimate<G>>trxReceipt
   }
 }
