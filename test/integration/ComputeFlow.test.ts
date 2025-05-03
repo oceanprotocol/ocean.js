@@ -128,7 +128,7 @@ const ddoWith5mTimeout: DDO = {
       files: '',
       datatokenAddress: '0xa15024b732A8f2146423D14209eFd074e61964F3',
       serviceEndpoint: 'http://127.0.0.1:8001',
-      timeout: 120,
+      timeout: 60,
       compute: {
         publisherTrustedAlgorithmPublishers: [] as any,
         publisherTrustedAlgorithms: [] as any,
@@ -228,7 +228,7 @@ const algoDdoWith5mTimeout: DDO = {
       files: '',
       datatokenAddress: '0xa15024b732A8f2146423D14209eFd074e61964F3',
       serviceEndpoint: 'http://127.0.0.1:8001',
-      timeout: 120
+      timeout: 60
     }
   ]
 }
@@ -717,7 +717,7 @@ describe('Compute flow tests', async () => {
 
   it('Should fast forward time to make existing provider fees expire', async () => {
     // To fast forward the time, it is needed to send dummy txs on ganache.
-    const TWO_MINUTES = 2 * 60 * 1000
+    const TWO_MINUTES = 60 * 1000
     const startTime = Date.now()
 
     while (Date.now() - startTime < TWO_MINUTES) {
@@ -732,8 +732,8 @@ describe('Compute flow tests', async () => {
       }
     }
 
-    console.log('2 minutes passed. Stopping transactions.')
-  })
+    console.log('1 minute passed. Stopping transactions.')
+  }).timeout(80000)
 
   it('should start a computeJob using the paid environment, by paying only providerFee (reuseOrder)', async () => {
     // we choose the paid env
