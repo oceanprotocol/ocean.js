@@ -128,7 +128,7 @@ const ddoWith5mTimeout: DDO = {
       files: '',
       datatokenAddress: '0xa15024b732A8f2146423D14209eFd074e61964F3',
       serviceEndpoint: 'http://127.0.0.1:8001',
-      timeout: 300,
+      timeout: 120,
       compute: {
         publisherTrustedAlgorithmPublishers: [] as any,
         publisherTrustedAlgorithms: [] as any,
@@ -228,7 +228,7 @@ const algoDdoWith5mTimeout: DDO = {
       files: '',
       datatokenAddress: '0xa15024b732A8f2146423D14209eFd074e61964F3',
       serviceEndpoint: 'http://127.0.0.1:8001',
-      timeout: 300
+      timeout: 120
     }
   ]
 }
@@ -717,12 +717,12 @@ describe('Compute flow tests', async () => {
 
   // move to reuse Orders
 
-  it('Should fast forward time and set a new computeValidUntil', async () => {
-    const mytime = new Date()
-    const computeMinutes = 5
-    mytime.setMinutes(mytime.getMinutes() + computeMinutes)
-    computeValidUntil = Math.floor(mytime.getTime() / 1000)
-  })
+  // it('Should fast forward time and set a new computeValidUntil as maxJobDuration', async () => {
+  //   const mytime = new Date()
+  //   const computeMinutes = 2
+  //   mytime.setMinutes(mytime.getMinutes() + computeMinutes)
+  //   computeValidUntil = Math.floor(mytime.getTime() / 1000)
+  // })
 
   it('should start a computeJob using the paid environment, by paying only providerFee (reuseOrder)', async () => {
     // we choose the paid env
@@ -743,7 +743,7 @@ describe('Compute flow tests', async () => {
       serviceId: resolvedAlgoDdoWith5mTimeout.services[0].id,
       transferTxId: paidEnvAlgoTxId
     }
-
+    console.log(`compute valid until time: ${computeValidUntil}`)
     providerInitializeComputeResults = await ProviderInstance.initializeCompute(
       assets,
       algo,
@@ -757,6 +757,10 @@ describe('Compute flow tests', async () => {
       `providerInitializeComputeResults2 reuse: ${JSON.stringify(
         providerInitializeComputeResults
       )}`
+    )
+    assert(
+      providerInitializeComputeResults.algorithm.providerFee,
+      'We should have a providerFee for algorithm'
     )
     assert(
       providerInitializeComputeResults.algorithm.validOrder,
