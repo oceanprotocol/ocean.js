@@ -713,16 +713,27 @@ describe('Compute flow tests', async () => {
     assert(computeJobs, 'Cannot start compute job')
   })
 
-  delay(1200)
-
   // move to reuse Orders
 
-  // it('Should fast forward time and set a new computeValidUntil as maxJobDuration', async () => {
-  //   const mytime = new Date()
-  //   const computeMinutes = 2
-  //   mytime.setMinutes(mytime.getMinutes() + computeMinutes)
-  //   computeValidUntil = Math.floor(mytime.getTime() / 1000)
-  // })
+  it('Should fast forward time to make existing provider fees expire', async () => {
+    // To fast forward the time, it is needed to send dummy txs on ganache.
+    const TWO_MINUTES = 2 * 60 * 1000
+    const startTime = Date.now()
+
+    while (Date.now() - startTime < TWO_MINUTES) {
+      try {
+        const tx = await publisherAccount.sendTransaction({
+          to: await consumerAccount.getAddress(),
+          value: ethers.utils.parseEther('0.0001')
+        })
+        await tx.wait()
+      } catch (err) {
+        console.error('Transaction failed:', err)
+      }
+    }
+
+    console.log('2 minutes passed. Stopping transactions.')
+  })
 
   it('should start a computeJob using the paid environment, by paying only providerFee (reuseOrder)', async () => {
     // we choose the paid env
