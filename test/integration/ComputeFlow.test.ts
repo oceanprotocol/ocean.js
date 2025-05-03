@@ -30,18 +30,18 @@ let publisherAccount: Signer
 let providerInitializeComputeResults
 let computeEnvs
 let addresses: any
-let ddoWith5mTimeoutId
+let ddoWith2mTimeoutId
 let ddoWithNoTimeoutId
-let algoDdoWith5mTimeoutId
+let algoDdoWith2mTimeoutId
 let algoDdoWithNoTimeoutId
 let paymentToken: string
 
 let freeComputeJobId: string
 let paidComputeJobId: string
 
-let resolvedDdoWith5mTimeout
+let resolvedDdoWith2mTimeout
 let resolvedDdoWithNoTimeout
-let resolvedAlgoDdoWith5mTimeout
+let resolvedAlgoDdoWith2mTimeout
 let resolvedAlgoDdoWithNoTimeout
 
 let freeEnvDatasetTxId
@@ -102,7 +102,7 @@ const ddoWithNoTimeout: DDO = {
   ]
 }
 
-const ddoWith5mTimeout: DDO = {
+const ddoWith2mTimeout: DDO = {
   '@context': ['https://w3id.org/did/v1'],
   id: 'did:op:efba17455c127a885ec7830d687a8f6e64f5ba559f8506f8723c1f10f05c049c',
   version: '4.1.0',
@@ -191,7 +191,7 @@ const algoDdoWithNoTimeout: DDO = {
   ]
 }
 
-const algoDdoWith5mTimeout: DDO = {
+const algoDdoWith2mTimeout: DDO = {
   '@context': ['https://w3id.org/did/v1'],
   id: 'did:op:efba17455c127a885ec7830d687a8f6e64f5ba559f8506f8723c1f10f05c049c',
   version: '4.1.0',
@@ -315,12 +315,12 @@ describe('Compute flow tests', async () => {
       amountToUnits(null, null, '100000', 18)
     )
 
-    ddoWith5mTimeoutId = await createAssetHelper(
+    ddoWith2mTimeoutId = await createAssetHelper(
       'D1Min',
       'D1M',
       publisherAccount,
       assetUrl,
-      ddoWith5mTimeout,
+      ddoWith2mTimeout,
       providerUrl,
       addresses.ERC721Factory,
       aquarius
@@ -335,12 +335,12 @@ describe('Compute flow tests', async () => {
       addresses.ERC721Factory,
       aquarius
     )
-    algoDdoWith5mTimeoutId = await createAssetHelper(
+    algoDdoWith2mTimeoutId = await createAssetHelper(
       'A1Min',
       'A1M',
       publisherAccount,
       algoAssetUrl,
-      algoDdoWith5mTimeout,
+      algoDdoWith2mTimeout,
       providerUrl,
       addresses.ERC721Factory,
       aquarius
@@ -361,12 +361,12 @@ describe('Compute flow tests', async () => {
   delay(10000)
 
   it('should resolve published datasets and algorithms', async () => {
-    resolvedDdoWith5mTimeout = await aquarius.waitForIndexer(ddoWith5mTimeoutId)
-    assert(resolvedDdoWith5mTimeout, 'Cannot fetch DDO from Aquarius')
+    resolvedDdoWith2mTimeout = await aquarius.waitForIndexer(ddoWith2mTimeoutId)
+    assert(resolvedDdoWith2mTimeout, 'Cannot fetch DDO from Aquarius')
     resolvedDdoWithNoTimeout = await aquarius.waitForIndexer(ddoWithNoTimeoutId)
     assert(resolvedDdoWithNoTimeout, 'Cannot fetch DDO from Aquarius')
-    resolvedAlgoDdoWith5mTimeout = await aquarius.waitForIndexer(algoDdoWith5mTimeoutId)
-    assert(resolvedAlgoDdoWith5mTimeout, 'Cannot fetch DDO from Aquarius')
+    resolvedAlgoDdoWith2mTimeout = await aquarius.waitForIndexer(algoDdoWith2mTimeoutId)
+    assert(resolvedAlgoDdoWith2mTimeout, 'Cannot fetch DDO from Aquarius')
     resolvedAlgoDdoWithNoTimeout = await aquarius.waitForIndexer(algoDdoWithNoTimeoutId)
     assert(resolvedAlgoDdoWithNoTimeout, 'Cannot fetch DDO from Aquarius')
   }).timeout(40000)
@@ -377,7 +377,7 @@ describe('Compute flow tests', async () => {
       (await publisherAccount.provider.getNetwork()).chainId
     )
     await datatoken.mint(
-      resolvedDdoWith5mTimeout.services[0].datatokenAddress,
+      resolvedDdoWith2mTimeout.services[0].datatokenAddress,
       await publisherAccount.getAddress(),
       '10',
       await consumerAccount.getAddress()
@@ -389,7 +389,7 @@ describe('Compute flow tests', async () => {
       await consumerAccount.getAddress()
     )
     await datatoken.mint(
-      resolvedAlgoDdoWith5mTimeout.services[0].datatokenAddress,
+      resolvedAlgoDdoWith2mTimeout.services[0].datatokenAddress,
       await publisherAccount.getAddress(),
       '10',
       await consumerAccount.getAddress()
@@ -425,15 +425,15 @@ describe('Compute flow tests', async () => {
 
     const assets: ComputeAsset[] = [
       {
-        documentId: resolvedDdoWith5mTimeout.id,
-        serviceId: resolvedDdoWith5mTimeout.services[0].id
+        documentId: resolvedDdoWith2mTimeout.id,
+        serviceId: resolvedDdoWith2mTimeout.services[0].id
       }
     ]
 
     const algo: ComputeAlgorithm = {
-      documentId: resolvedAlgoDdoWith5mTimeout.id,
-      serviceId: resolvedAlgoDdoWith5mTimeout.services[0].id,
-      meta: resolvedAlgoDdoWith5mTimeout.metadata.algorithm
+      documentId: resolvedAlgoDdoWith2mTimeout.id,
+      serviceId: resolvedAlgoDdoWith2mTimeout.services[0].id,
+      meta: resolvedAlgoDdoWith2mTimeout.metadata.algorithm
     }
 
     freeComputeRouteSupport = await ProviderInstance.getComputeStartRoutes(
@@ -488,14 +488,14 @@ describe('Compute flow tests', async () => {
     assert(computeEnv, 'Cannot find the paid compute env')
     const assets: ComputeAsset[] = [
       {
-        documentId: resolvedDdoWith5mTimeout.id,
-        serviceId: resolvedDdoWith5mTimeout.services[0].id
+        documentId: resolvedDdoWith2mTimeout.id,
+        serviceId: resolvedDdoWith2mTimeout.services[0].id
       }
     ]
-    const dtAddressArray = [resolvedDdoWith5mTimeout.services[0].datatokenAddress]
+    const dtAddressArray = [resolvedDdoWith2mTimeout.services[0].datatokenAddress]
     const algo: ComputeAlgorithm = {
-      documentId: resolvedAlgoDdoWith5mTimeout.id,
-      serviceId: resolvedAlgoDdoWith5mTimeout.services[0].id
+      documentId: resolvedAlgoDdoWith2mTimeout.id,
+      serviceId: resolvedAlgoDdoWith2mTimeout.services[0].id
     }
     providerInitializeComputeResults = await ProviderInstance.initializeCompute(
       assets,
@@ -505,11 +505,6 @@ describe('Compute flow tests', async () => {
       computeValidUntil,
       providerUrl,
       consumerAccount
-    )
-    console.log(
-      `providerInitializeComputeResults1: ${JSON.stringify(
-        providerInitializeComputeResults
-      )}`
     )
     assert(providerInitializeComputeResults.payment, ' Payment structure does not exists')
     assert(
@@ -601,14 +596,14 @@ describe('Compute flow tests', async () => {
     )
     algo.transferTxId = await handleComputeOrder(
       providerInitializeComputeResults.algorithm,
-      resolvedAlgoDdoWith5mTimeout.services[0].datatokenAddress,
+      resolvedAlgoDdoWith2mTimeout.services[0].datatokenAddress,
       consumerAccount,
       computeEnv.consumerAddress,
       0,
       datatoken,
       config
     )
-    algo.meta = resolvedAlgoDdoWith5mTimeout.metadata.algorithm
+    algo.meta = resolvedAlgoDdoWith2mTimeout.metadata.algorithm
     for (let i = 0; i < providerInitializeComputeResults.datasets.length; i++) {
       assets[i].transferTxId = await handleComputeOrder(
         providerInitializeComputeResults.datasets[i],
@@ -644,7 +639,7 @@ describe('Compute flow tests', async () => {
       providerUrl,
       await consumerAccount.getAddress(),
       paidComputeJobId,
-      resolvedDdoWith5mTimeout.id
+      resolvedDdoWith2mTimeout.id
     )) as ComputeJob
     assert(jobStatus, 'Cannot retrieve compute status!')
   })
@@ -657,14 +652,14 @@ describe('Compute flow tests', async () => {
 
     const assets: ComputeAsset[] = [
       {
-        documentId: resolvedDdoWith5mTimeout.id,
-        serviceId: resolvedDdoWith5mTimeout.services[0].id,
+        documentId: resolvedDdoWith2mTimeout.id,
+        serviceId: resolvedDdoWith2mTimeout.services[0].id,
         transferTxId: paidEnvDatasetTxId
       }
     ]
     const algo: ComputeAlgorithm = {
-      documentId: resolvedAlgoDdoWith5mTimeout.id,
-      serviceId: resolvedAlgoDdoWith5mTimeout.services[0].id,
+      documentId: resolvedAlgoDdoWith2mTimeout.id,
+      serviceId: resolvedAlgoDdoWith2mTimeout.services[0].id,
       transferTxId: paidEnvAlgoTxId
     }
 
@@ -717,10 +712,10 @@ describe('Compute flow tests', async () => {
 
   it('Should fast forward time to make existing provider fees expire', async () => {
     // To fast forward the time, it is needed to send dummy txs on ganache.
-    const TWO_MINUTES = 60 * 1000
+    const waitingTime = 60 * 1000
     const startTime = Date.now()
 
-    while (Date.now() - startTime < TWO_MINUTES) {
+    while (Date.now() - startTime < waitingTime) {
       try {
         const tx = await publisherAccount.sendTransaction({
           to: await consumerAccount.getAddress(),
@@ -743,18 +738,17 @@ describe('Compute flow tests', async () => {
 
     const assets: ComputeAsset[] = [
       {
-        documentId: resolvedDdoWith5mTimeout.id,
-        serviceId: resolvedDdoWith5mTimeout.services[0].id,
+        documentId: resolvedDdoWith2mTimeout.id,
+        serviceId: resolvedDdoWith2mTimeout.services[0].id,
         transferTxId: paidEnvDatasetTxId
       }
     ]
-    const dtAddressArray = [resolvedDdoWith5mTimeout.services[0].datatokenAddress]
+    const dtAddressArray = [resolvedDdoWith2mTimeout.services[0].datatokenAddress]
     const algo: ComputeAlgorithm = {
-      documentId: resolvedAlgoDdoWith5mTimeout.id,
-      serviceId: resolvedAlgoDdoWith5mTimeout.services[0].id,
+      documentId: resolvedAlgoDdoWith2mTimeout.id,
+      serviceId: resolvedAlgoDdoWith2mTimeout.services[0].id,
       transferTxId: paidEnvAlgoTxId
     }
-    console.log(`compute valid until time: ${computeValidUntil}`)
     providerInitializeComputeResults = await ProviderInstance.initializeCompute(
       assets,
       algo,
@@ -764,22 +758,21 @@ describe('Compute flow tests', async () => {
       providerUrl,
       consumerAccount
     )
-    console.log(
-      `providerInitializeComputeResults2 reuse: ${JSON.stringify(
-        providerInitializeComputeResults
-      )}`
+    assert(
+      providerInitializeComputeResults.datasets[0].providerFee,
+      'We should have a providerFee for algorithm'
     )
     assert(
       providerInitializeComputeResults.algorithm.providerFee,
       'We should have a providerFee for algorithm'
     )
     assert(
-      providerInitializeComputeResults.algorithm.validOrder,
-      'We should have a valid order for algorithm'
+      providerInitializeComputeResults.algorithm.validOrder === false, // expired provider fees which is expected
+      'We should not have a valid order for algorithm'
     )
     assert(
-      providerInitializeComputeResults.datasets[0].validOrder,
-      'We should have a valid order for dataset'
+      providerInitializeComputeResults.datasets[0].validOrder === false, // expired provider fees which is expected
+      'We should not have a valid order for dataset'
     )
     assert(providerInitializeComputeResults.payment, ' Payment structure does not exists')
     assert(
@@ -797,7 +790,7 @@ describe('Compute flow tests', async () => {
 
     algo.transferTxId = await handleComputeOrder(
       providerInitializeComputeResults.algorithm,
-      resolvedAlgoDdoWith5mTimeout.services[0].datatokenAddress,
+      resolvedAlgoDdoWith2mTimeout.services[0].datatokenAddress,
       consumerAccount,
       computeEnv.consumerAddress,
       0,
@@ -815,11 +808,10 @@ describe('Compute flow tests', async () => {
         config
       )
     }
-    // providerFees are not expired, meaning no reuseOrder triggered
     assert(
-      algo.transferTxId === paidEnvAlgoTxId ||
-        assets[0].transferTxId === paidEnvDatasetTxId,
-      'We should use the same orders, because providerFee is not expired'
+      algo.transferTxId !== paidEnvAlgoTxId ||
+        assets[0].transferTxId !== paidEnvDatasetTxId,
+      'We should not use the same orders'
     )
     const computeJobs = await ProviderInstance.computeStart(
       providerUrl,
@@ -838,7 +830,7 @@ describe('Compute flow tests', async () => {
       providerUrl,
       await consumerAccount.getAddress(),
       freeComputeJobId,
-      resolvedDdoWith5mTimeout.id
+      resolvedDdoWith2mTimeout.id
     )) as ComputeJob
     assert(jobStatus, 'Cannot retrieve compute status!')
   })
