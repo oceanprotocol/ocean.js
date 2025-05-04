@@ -369,7 +369,7 @@ describe('Compute flow tests', async () => {
     assert(resolvedAlgoDdoWith2mTimeout, 'Cannot fetch DDO from Aquarius')
     resolvedAlgoDdoWithNoTimeout = await aquarius.waitForIndexer(algoDdoWithNoTimeoutId)
     assert(resolvedAlgoDdoWithNoTimeout, 'Cannot fetch DDO from Aquarius')
-  }).timeout(40000)
+  }).timeout(80000)
 
   it('should send DT to consumer', async () => {
     const datatoken = new Datatoken(
