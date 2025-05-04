@@ -172,7 +172,7 @@ jobs:
           ARWEAVE_GATEWAY: https://arweave.net/
           P2P_ipV4BindTcpPort: 8000
           HTTP_API_PORT: 8001
-          RPCS: '{ "8996": {"rpc": "http://127.0.0.1:8545", "chainId": 8996, "network": "development", "chunkSize": 4500} }'
+          RPCS: '{ "8996": {"rpc": "http://127.0.0.1:8545", "chainId": 8996, "network": "development", "chunkSize": 4000} }'
           DB_URL: 'http://localhost:9200'
           DB_TYPE: 'elasticsearch'
           FEE_TOKENS: '{ "1": "0x967da4048cD07aB37855c090aAF366e4ce1b9F48", "137": "0x282d8efCe846A88B159800bd4130ad77443Fa1A1", "80001": "0xd8992Ed72C445c35Cb4A2be468568Ed1079357c8", "56": "0xDCe07662CA8EbC241316a15B611c89711414Dd1a" }'

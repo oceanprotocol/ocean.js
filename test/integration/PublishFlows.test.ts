@@ -194,7 +194,7 @@ describe('Publish tests', async () => {
       await publisherAccount.getAddress(),
       0,
       providerUrl,
-      '0x123',
+      '',
       '0x02',
       encryptedResponse,
       isAssetValid.hash,
