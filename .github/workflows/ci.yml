@@ -115,7 +115,7 @@ jobs:
         working-directory: ${{ github.workspace }}/barge
         run: |
           export CONTRACTS_VERSION=v2.3.0
-          bash -x start_ocean.sh --no-aquarius --no-provider --no-dashboard --with-c2d --with-typesense 2>&1 > start_ocean.log &
+          bash -x start_ocean.sh --no-aquarius --no-provider --no-dashboard --with-typesense 2>&1 > start_ocean.log &
       - run: npm ci
       - run: npm run build
       - run: docker image ls
@@ -137,7 +137,7 @@ jobs:
         run: |
           for i in $(seq 1 250); do
             sleep 10
-            [ -f "$HOME/.ocean/ocean-contracts/artifacts/ready" -a -f "$HOME/.ocean/ocean-c2d/ready" ] && break
+            [ -f "$HOME/.ocean/ocean-contracts/artifacts/ready" ] && break
           done
           cat $ADDRESS_FILE
 
