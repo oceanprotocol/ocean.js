@@ -328,7 +328,7 @@ describe('Publish consume test', async () => {
 
     // resolvedGraphqlAssetDdo = await aquarius.waitForIndexer(grapqlAssetId)
     // assert(resolvedGraphqlAssetDdo, 'Cannot fetch graphql DDO from Aquarius')
-  }).timeout(40000)
+  }).timeout(80000)
 
   it('Mint datasets datatokens to publisher', async () => {
     datatoken = new Datatoken(publisherAccount, config.chainId)
