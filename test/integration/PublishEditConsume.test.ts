@@ -315,15 +315,12 @@ describe('Publish consume test', async () => {
 
   it('Resolve published assets', async () => {
     resolvedUrlAssetDdo = await aquarius.waitForIndexer(urlAssetId)
-    console.log(`resolvedUrlAssetDdo: ${JSON.stringify(resolvedUrlAssetDdo)}`)
     assert(resolvedUrlAssetDdo, 'Cannot fetch url DDO from Aquarius')
 
     resolvedArweaveAssetDdo = await aquarius.waitForIndexer(arweaveAssetId)
-    console.log(`resolvedArweaveAssetDdo: ${JSON.stringify(resolvedArweaveAssetDdo)}`)
     assert(resolvedArweaveAssetDdo, 'Cannot fetch arwave DDO from Aquarius')
 
     resolvedIpfsAssetDdo = await aquarius.waitForIndexer(ipfsAssetId)
-    console.log(`resolvedIpfsAssetDdo: ${JSON.stringify(resolvedIpfsAssetDdo)}`)
     assert(resolvedIpfsAssetDdo, 'Cannot fetch ipfs DDO from Aquarius')
 
     // resolvedOnchainAssetDdo = await aquarius.waitForIndexer(onchainAssetId)

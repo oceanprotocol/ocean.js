@@ -73,12 +73,12 @@ describe('Publish tests', async () => {
     },
     services: [
       {
-        id: 'testFakeId',
+        id: 'db164c1b981e4d2974e90e61bda121512e6909c1035c908d68933ae4cfaba6b0',
         type: 'access',
         description: 'Download service',
         files: '',
         datatokenAddress: '0x0',
-        serviceEndpoint: 'http://172.15.0.4:8030',
+        serviceEndpoint: 'http://127.0.0.1:8001',
         timeout: 0
       }
     ]
@@ -228,7 +228,7 @@ describe('Publish tests', async () => {
   it('should resolve the fixed price dataset', async () => {
     const resolvedDDO = await aquarius.waitForIndexer(fixedPricedDID)
     assert(resolvedDDO, 'Cannot fetch DDO from Aquarius')
-  }).timeout(40000)
+  }).timeout(80000)
 
   it('should publish a dataset with dispenser (create NFT + Datatoken + dispenser) with no defined MetadataProof', async () => {
     const dispenserDdo: DDO = { ...genericAsset }
