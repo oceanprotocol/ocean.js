@@ -223,6 +223,8 @@ describe('Publish tests', async () => {
     assert(asset !== null, 'Could not publish asset!')
   })
 
+  delay(20000) // let's wait for aquarius to index the  assets
+
   it('should resolve the fixed price dataset', async () => {
     const resolvedDDO = await aquarius.waitForIndexer(fixedPricedDID)
     assert(resolvedDDO, 'Cannot fetch DDO from Aquarius')
