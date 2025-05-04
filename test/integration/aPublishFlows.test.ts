@@ -228,7 +228,7 @@ describe('Publish tests', async () => {
   it('should resolve the fixed price dataset', async () => {
     const resolvedDDO = await aquarius.waitForIndexer(fixedPricedDID)
     assert(resolvedDDO, 'Cannot fetch DDO from Aquarius')
-  }).timeout(80000)
+  }).timeout(40000)
 
   it('should publish a dataset with dispenser (create NFT + Datatoken + dispenser) with no defined MetadataProof', async () => {
     const dispenserDdo: DDO = { ...genericAsset }
