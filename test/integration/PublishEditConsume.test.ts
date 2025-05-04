@@ -311,7 +311,7 @@ describe('Publish consume test', async () => {
   //   assert(grapqlAssetId, 'Failed to publish graphql DDO')
   // }).timeout(40000)
 
-  delay(10000) // let's wait for aquarius to index the  assets
+  delay(20000) // let's wait for aquarius to index the  assets
 
   it('Resolve published assets', async () => {
     resolvedUrlAssetDdo = await aquarius.waitForIndexer(urlAssetId)
