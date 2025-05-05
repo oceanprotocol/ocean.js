@@ -572,7 +572,7 @@ export class Provider {
       resolvedResponse
     )
     LoggerInstance.error('Payload was:', JSON.stringify(providerData))
-    throw new Error(JSON.stringify(resolvedResponse))
+    return resolvedResponse
   }
 
   /**

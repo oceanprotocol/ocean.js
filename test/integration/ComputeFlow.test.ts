@@ -877,7 +877,7 @@ describe('Compute flow tests', async () => {
     assert(downloadURL, 'Provider getComputeResultUrl failed!')
   })
 
-  it('should NOT start a computeJob using the paid environment, exceeding max resources', async () => {
+  it('should NOT initialize compute job using the paid environment, exceeding max resources', async () => {
     // we choose the paid env
     computeEnvs = await ProviderInstance.getComputeEnvironments(providerUrl)
     const computeEnv = computeEnvs[0]
@@ -905,7 +905,6 @@ describe('Compute flow tests', async () => {
         transferTxId: paidEnvDatasetTxId
       }
     ]
-    const dtAddressArray = [resolvedDdoWith2mTimeout.services[0].datatokenAddress]
     const algo: ComputeAlgorithm = {
       documentId: resolvedAlgoDdoWith2mTimeout.id,
       serviceId: resolvedAlgoDdoWith2mTimeout.services[0].id,
@@ -926,70 +925,15 @@ describe('Compute flow tests', async () => {
         providerInitializeComputeResults
       )}`
     )
-    // assert(
-    //   providerInitializeComputeResults.datasets[0].providerFee,
-    //   'We should have a providerFee for algorithm'
-    // )
-    // assert(
-    //   providerInitializeComputeResults.algorithm.providerFee,
-    //   'We should have a providerFee for algorithm'
-    // )
-    // assert(
-    //   providerInitializeComputeResults.algorithm.validOrder === false, // expired provider fees which is expected
-    //   'We should not have a valid order for algorithm'
-    // )
-    // assert(
-    //   providerInitializeComputeResults.datasets[0].validOrder === false, // expired provider fees which is expected
-    //   'We should not have a valid order for dataset'
-    // )
-    // assert(providerInitializeComputeResults.payment, ' Payment structure does not exists')
-    // assert(
-    //   providerInitializeComputeResults.payment.escrowAddress === addresses.Escrow,
-    //   'Incorrect escrow address'
-    // )
-    // assert(
-    //   providerInitializeComputeResults.payment.payee === computeEnv.consumerAddress,
-    //   'Incorrect payee address'
-    // )
-    // assert(
-    //   providerInitializeComputeResults.payment.token === paymentToken,
-    //   'Incorrect payment token address'
-    // )
-
-    // algo.transferTxId = await handleComputeOrder(
-    //   providerInitializeComputeResults.algorithm,
-    //   resolvedAlgoDdoWith2mTimeout.services[0].datatokenAddress,
-    //   consumerAccount,
-    //   computeEnv.consumerAddress,
-    //   0,
-    //   datatoken,
-    //   config
-    // )
-    // for (let i = 0; i < providerInitializeComputeResults.datasets.length; i++) {
-    //   assets[i].transferTxId = await handleComputeOrder(
-    //     providerInitializeComputeResults.datasets[i],
-    //     dtAddressArray[i],
-    //     consumerAccount,
-    //     computeEnv.consumerAddress,
-    //     0,
-    //     datatoken,
-    //     config
-    //   )
-    // }
-    // assert(
-    //   algo.transferTxId !== paidEnvAlgoTxId ||
-    //     assets[0].transferTxId !== paidEnvDatasetTxId,
-    //   'We should not use the same orders'
-    // )
-    // const computeJobs = await ProviderInstance.computeStart(
-    //   providerUrl,
-    //   consumerAccount,
-    //   computeEnv.id,
-    //   assets,
-    //   algo,
-    //   computeJobDuration,
-    //   paymentToken,
-    //   resources
-    // )
+    assert(
+      providerInitializeComputeResults.status.httpStatus === 500,
+      'Should throw 500 Internal Server Error'
+    )
+    assert(
+      providerInitializeComputeResults.status.error ===
+        'Stream not found: Error: Not enough cpu resources. Requested 5, but max is 4',
+      'Should log error about requesting amount too high for resources'
+    )
+    assert(providerInitializeComputeResults.stream === null, 'Should have stream null')
   })
 })
