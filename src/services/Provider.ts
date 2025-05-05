@@ -499,7 +499,7 @@ export class Provider {
     validUntil: number,
     providerUri: string,
     signer: Signer,
-    resources?: any,
+    resources: ComputeResourceRequest[],
     signal?: AbortSignal
   ): Promise<ProviderComputeInitializeResults> {
     const providerEndpoints = await this.getEndpoints(providerUri)
@@ -741,7 +741,7 @@ export class Provider {
     algorithm: ComputeAlgorithm,
     maxJobDuration: number,
     token: string,
-    resources?: ComputeResourceRequest[],
+    resources: ComputeResourceRequest[],
     chainId?: number, // network used by payment (only for payed compute jobs)
     output?: ComputeOutput,
     signal?: AbortSignal
@@ -787,7 +787,7 @@ export class Provider {
     payload.nonce = nonce
     payload.environment = computeEnv
     payload.maxJobDuration = maxJobDuration
-    if (resources) payload.resources = resources
+    payload.resources = resources
     // kept for backwards compatibility (tests running against existing provider)
     payload.dataset = datasets[0]
     // new field for C2D v2

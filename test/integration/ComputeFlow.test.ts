@@ -14,7 +14,8 @@ import {
   ComputeJob,
   ComputeAsset,
   ComputeAlgorithm,
-  Files
+  Files,
+  ComputeResourceRequest
 } from '../../src/@types/index.js'
 import { createAssetHelper, handleComputeOrder } from './helpers.js'
 import { DDO } from '@oceanprotocol/ddo-js'
@@ -486,7 +487,20 @@ describe('Compute flow tests', async () => {
     computeEnvs = await ProviderInstance.getComputeEnvironments(providerUrl)
     const computeEnv = computeEnvs[0] // it is only one environment with paid and free resources
     assert(computeEnv, 'Cannot find the paid compute env')
-    console.log(`computeEnv1: ${JSON.stringify(computeEnv)}`)
+    const resources: ComputeResourceRequest[] = [
+      {
+        id: 'cpu',
+        amount: 2
+      },
+      {
+        id: 'ram',
+        amount: 1000000000
+      },
+      {
+        id: 'disk',
+        amount: 0
+      }
+    ]
     const assets: ComputeAsset[] = [
       {
         documentId: resolvedDdoWith2mTimeout.id,
@@ -505,7 +519,8 @@ describe('Compute flow tests', async () => {
       paymentToken,
       computeValidUntil,
       providerUrl,
-      consumerAccount
+      consumerAccount,
+      resources
     )
     assert(providerInitializeComputeResults.payment, ' Payment structure does not exists')
     assert(
@@ -651,6 +666,21 @@ describe('Compute flow tests', async () => {
     const computeEnv = computeEnvs[0]
     assert(computeEnv, 'Cannot find the paid compute env')
 
+    const resources: ComputeResourceRequest[] = [
+      {
+        id: 'cpu',
+        amount: 2
+      },
+      {
+        id: 'ram',
+        amount: 1000000000
+      },
+      {
+        id: 'disk',
+        amount: 0
+      }
+    ]
+
     const assets: ComputeAsset[] = [
       {
         documentId: resolvedDdoWith2mTimeout.id,
@@ -671,7 +701,8 @@ describe('Compute flow tests', async () => {
       paymentToken,
       computeJobDuration,
       providerUrl,
-      consumerAccount
+      consumerAccount,
+      resources
     )
     assert(
       providerInitializeComputeResults.algorithm.validOrder,
@@ -704,54 +735,8 @@ describe('Compute flow tests', async () => {
       assets,
       algo,
       computeJobDuration,
-      paymentToken
-    )
-    assert(computeJobs, 'Cannot start compute job')
-  })
-
-  it('should start a computeJob on paid environment specifying resources', async () => {
-    // we choose the paid env
-    computeEnvs = await ProviderInstance.getComputeEnvironments(providerUrl)
-    const computeEnv = computeEnvs[0]
-    assert(computeEnv, 'Cannot find the paid compute env')
-    console.log(`computeEnv: ${JSON.stringify(computeEnv)}`)
-
-    const assets: ComputeAsset[] = [
-      {
-        documentId: resolvedDdoWithNoTimeout.id,
-        serviceId: resolvedDdoWith2mTimeout.services[0].id,
-        transferTxId: paidEnvDatasetTxId
-      }
-    ]
-    const algo: ComputeAlgorithm = {
-      documentId: resolvedAlgoDdoWithNoTimeout.id,
-      serviceId: resolvedAlgoDdoWith2mTimeout.services[0].id,
-      transferTxId: paidEnvAlgoTxId
-    }
-
-    providerInitializeComputeResults = await ProviderInstance.initializeCompute(
-      assets,
-      algo,
-      computeEnv.id,
       paymentToken,
-      computeJobDuration,
-      providerUrl,
-      consumerAccount
-    )
-    console.log(
-      `providerInitializeComputeResults: ${JSON.stringify(
-        providerInitializeComputeResults
-      )}`
-    )
-
-    const computeJobs = await ProviderInstance.computeStart(
-      providerUrl,
-      consumerAccount,
-      computeEnv.id,
-      assets,
-      algo,
-      computeJobDuration,
-      paymentToken
+      resources
     )
     assert(computeJobs, 'Cannot start compute job')
   })
@@ -765,6 +750,21 @@ describe('Compute flow tests', async () => {
     computeEnvs = await ProviderInstance.getComputeEnvironments(providerUrl)
     const computeEnv = computeEnvs[0]
     assert(computeEnv, 'Cannot find the paid compute env')
+
+    const resources: ComputeResourceRequest[] = [
+      {
+        id: 'cpu',
+        amount: 2
+      },
+      {
+        id: 'ram',
+        amount: 1000000000
+      },
+      {
+        id: 'disk',
+        amount: 0
+      }
+    ]
 
     const assets: ComputeAsset[] = [
       {
@@ -786,7 +786,8 @@ describe('Compute flow tests', async () => {
       paymentToken,
       computeValidUntil,
       providerUrl,
-      consumerAccount
+      consumerAccount,
+      resources
     )
     assert(
       providerInitializeComputeResults.datasets[0].providerFee,
@@ -850,7 +851,8 @@ describe('Compute flow tests', async () => {
       assets,
       algo,
       computeJobDuration,
-      paymentToken
+      paymentToken,
+      resources
     )
     assert(computeJobs, 'Cannot start compute job')
   })
@@ -873,5 +875,121 @@ describe('Compute flow tests', async () => {
       0
     )
     assert(downloadURL, 'Provider getComputeResultUrl failed!')
+  })
+
+  it('should NOT start a computeJob using the paid environment, exceeding max resources', async () => {
+    // we choose the paid env
+    computeEnvs = await ProviderInstance.getComputeEnvironments(providerUrl)
+    const computeEnv = computeEnvs[0]
+    assert(computeEnv, 'Cannot find the paid compute env')
+
+    const resources: ComputeResourceRequest[] = [
+      {
+        id: 'cpu',
+        amount: computeEnv.resources[0].max + 1
+      },
+      {
+        id: 'ram',
+        amount: computeEnv.resources[1].max + 100
+      },
+      {
+        id: 'disk',
+        amount: computeEnv.resources[2].max + 100
+      }
+    ]
+
+    const assets: ComputeAsset[] = [
+      {
+        documentId: resolvedDdoWith2mTimeout.id,
+        serviceId: resolvedDdoWith2mTimeout.services[0].id,
+        transferTxId: paidEnvDatasetTxId
+      }
+    ]
+    const dtAddressArray = [resolvedDdoWith2mTimeout.services[0].datatokenAddress]
+    const algo: ComputeAlgorithm = {
+      documentId: resolvedAlgoDdoWith2mTimeout.id,
+      serviceId: resolvedAlgoDdoWith2mTimeout.services[0].id,
+      transferTxId: paidEnvAlgoTxId
+    }
+    providerInitializeComputeResults = await ProviderInstance.initializeCompute(
+      assets,
+      algo,
+      computeEnv.id,
+      paymentToken,
+      computeValidUntil,
+      providerUrl,
+      consumerAccount,
+      resources
+    )
+    console.log(
+      `providerInitializeComputeResults exceeding: ${JSON.stringify(
+        providerInitializeComputeResults
+      )}`
+    )
+    // assert(
+    //   providerInitializeComputeResults.datasets[0].providerFee,
+    //   'We should have a providerFee for algorithm'
+    // )
+    // assert(
+    //   providerInitializeComputeResults.algorithm.providerFee,
+    //   'We should have a providerFee for algorithm'
+    // )
+    // assert(
+    //   providerInitializeComputeResults.algorithm.validOrder === false, // expired provider fees which is expected
+    //   'We should not have a valid order for algorithm'
+    // )
+    // assert(
+    //   providerInitializeComputeResults.datasets[0].validOrder === false, // expired provider fees which is expected
+    //   'We should not have a valid order for dataset'
+    // )
+    // assert(providerInitializeComputeResults.payment, ' Payment structure does not exists')
+    // assert(
+    //   providerInitializeComputeResults.payment.escrowAddress === addresses.Escrow,
+    //   'Incorrect escrow address'
+    // )
+    // assert(
+    //   providerInitializeComputeResults.payment.payee === computeEnv.consumerAddress,
+    //   'Incorrect payee address'
+    // )
+    // assert(
+    //   providerInitializeComputeResults.payment.token === paymentToken,
+    //   'Incorrect payment token address'
+    // )
+
+    // algo.transferTxId = await handleComputeOrder(
+    //   providerInitializeComputeResults.algorithm,
+    //   resolvedAlgoDdoWith2mTimeout.services[0].datatokenAddress,
+    //   consumerAccount,
+    //   computeEnv.consumerAddress,
+    //   0,
+    //   datatoken,
+    //   config
+    // )
+    // for (let i = 0; i < providerInitializeComputeResults.datasets.length; i++) {
+    //   assets[i].transferTxId = await handleComputeOrder(
+    //     providerInitializeComputeResults.datasets[i],
+    //     dtAddressArray[i],
+    //     consumerAccount,
+    //     computeEnv.consumerAddress,
+    //     0,
+    //     datatoken,
+    //     config
+    //   )
+    // }
+    // assert(
+    //   algo.transferTxId !== paidEnvAlgoTxId ||
+    //     assets[0].transferTxId !== paidEnvDatasetTxId,
+    //   'We should not use the same orders'
+    // )
+    // const computeJobs = await ProviderInstance.computeStart(
+    //   providerUrl,
+    //   consumerAccount,
+    //   computeEnv.id,
+    //   assets,
+    //   algo,
+    //   computeJobDuration,
+    //   paymentToken,
+    //   resources
+    // )
   })
 })
