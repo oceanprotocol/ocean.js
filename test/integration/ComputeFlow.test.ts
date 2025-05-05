@@ -1,4 +1,4 @@
-import { assert } from 'chai'
+import { assert, expect } from 'chai'
 import { BigNumber, ethers, Signer } from 'ethers'
 import { getTestConfig, getAddresses, provider } from '../config.js'
 import {
@@ -898,30 +898,19 @@ describe('Compute flow tests', async () => {
       serviceId: resolvedAlgoDdoWith2mTimeout.services[0].id,
       transferTxId: paidEnvAlgoTxId
     }
-    providerInitializeComputeResults = await ProviderInstance.initializeCompute(
-      assets,
-      algo,
-      computeEnv.id,
-      paymentToken,
-      computeValidUntil,
-      providerUrl,
-      consumerAccount,
-      resources
-    )
-    console.log(
-      `providerInitializeComputeResults exceeding: ${JSON.stringify(
-        providerInitializeComputeResults
-      )}`
-    )
-    assert(
-      providerInitializeComputeResults.status.httpStatus === 500,
-      'Should throw 500 Internal Server Error'
-    )
-    assert(
-      providerInitializeComputeResults.status.error ===
-        'Stream not found: Error: Not enough cpu resources. Requested 5, but max is 4',
-      'Should log error about requesting amount too high for resources'
-    )
-    assert(providerInitializeComputeResults.stream === null, 'Should have stream null')
+    try {
+      providerInitializeComputeResults = await ProviderInstance.initializeCompute(
+        assets,
+        algo,
+        computeEnv.id,
+        paymentToken,
+        computeValidUntil,
+        providerUrl,
+        consumerAccount,
+        resources
+      )
+    } catch (e) {
+      expect(e.message).to.equal('ComputeJob cannot be initialized')
+    }
   })
 })

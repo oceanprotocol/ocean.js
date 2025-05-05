@@ -558,7 +558,7 @@ export class Provider {
     } catch (e) {
       LoggerInstance.error('Initialize compute failed: ')
       LoggerInstance.error(e)
-      return response
+      throw new Error('ComputeJob cannot be initialized')
     }
     if (response?.ok) {
       const params = await response.json()
