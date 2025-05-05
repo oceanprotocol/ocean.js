@@ -1,9 +1,10 @@
-import { Signer } from 'ethers'
+import { ethers, Signer, BigNumber } from 'ethers'
 import Escrow from '@oceanprotocol/contracts/artifacts/contracts/escrow/Escrow.sol/Escrow.json'
 import { amountToUnits, sendTx } from '../utils/ContractUtils'
-import { AbiItem, ReceiptOrEstimate } from '../@types'
+import { AbiItem, ReceiptOrEstimate, ValidationResponse } from '../@types'
 import { Config } from '../config'
 import { SmartContractWithAddress } from './SmartContractWithAddress'
+import { Datatoken } from './Datatoken'
 
 export class EscrowContract extends SmartContractWithAddress {
   public abiEnterprise: AbiItem[]
@@ -69,9 +70,88 @@ export class EscrowContract extends SmartContractWithAddress {
   }
 
   /**
+   * Checks funds for escrow payment.
+   * Does authorization when needed.
+   * Does deposit when needed.
+   * @param {String} token as payment token for escrow
+   * @param {String} consumerAddress as consumerAddress for that environment
+   * @param {String} maxLockedAmount amount necessary to be paid for starting compute job,
+   * returned from initialize compute payment and used for authorize if needed.
+   * @param {String} maxLockSeconds max seconds to lock the payment,
+   * returned from initialize compute payment and used for authorize if needed.
+   * @param {String} maxLockCounts max lock counts,
+   * returned from initialize compute payment and used for authorize if needed.
+   * @return {Promise<ValidationResponse>} validation response
+   */
+  public async verifyFundsForEscrowPayment(
+    token: string,
+    consumerAddress: string,
+    maxLockedAmount?: string,
+    maxLockSeconds?: string,
+    maxLockCounts?: string
+  ): Promise<ValidationResponse> {
+    const { provider } = this.contract
+    const balanceNativeToken = await provider.getBalance(
+      ethers.utils.getAddress(consumerAddress)
+    )
+    if (balanceNativeToken === ethers.BigNumber.from(0)) {
+      return {
+        isValid: false,
+        message: 'Native token balance is 0. Please add funds'
+      }
+    }
+    const tokenContract = new Datatoken(this.signer)
+    const allowance = await tokenContract.allowance(
+      token,
+      await this.signer.getAddress(),
+      this.contract.address
+    )
+    if (BigNumber.from(allowance).lt(BigNumber.from(maxLockedAmount))) {
+      await tokenContract.approve(
+        ethers.utils.getAddress(token),
+        ethers.utils.getAddress(this.contract.address),
+        maxLockedAmount
+      )
+    }
+    const balancePaymentToken = await tokenContract.balance(
+      token,
+      await this.signer.getAddress()
+    )
+    if (ethers.utils.parseEther(balancePaymentToken) === ethers.BigNumber.from(0)) {
+      return {
+        isValid: false,
+        message: 'Payment token balance is 0. Please add funds'
+      }
+    }
+
+    const auths = await this.getAuthorizations(
+      token,
+      await this.signer.getAddress(),
+      consumerAddress
+    )
+    const funds = await this.getUserFunds(await this.signer.getAddress(), token)
+    if (BigNumber.from(funds[0]).eq(0)) {
+      await this.deposit(token, maxLockedAmount)
+    }
+    if (auths.length === 0) {
+      await this.authorize(
+        ethers.utils.getAddress(token),
+        ethers.utils.getAddress(consumerAddress),
+        maxLockedAmount,
+        maxLockSeconds,
+        maxLockCounts
+      )
+    }
+    return {
+      isValid: true,
+      message: ''
+    }
+  }
+
+  /**
    * Deposit funds
    * @param {String} token Token address
-   * @param {String} amount tokenURI
+   * @param {String} amount amount
    * @param {Boolean} estimateGas if True, return gas estimate
    * @return {Promise<ReceiptOrEstimate>} returns the transaction receipt or the estimateGas value
    */
@@ -106,7 +186,33 @@ export class EscrowContract extends SmartContractWithAddress {
     amounts: string[],
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
-    const amountsParsed = amounts.map((amount) => amountToUnits(null, null, amount, 18))
+    // check if funds exist in escrow in order to be withdrawed
+    const tokensWithSufficientFunds = []
+    const amountsWithSufficientFunds = []
+
+    if (tokens.length !== amounts.length) {
+      throw new Error('Tokens and amounts arrays must have the same length')
+    }
+
+    const userAddress = await this.signer.getAddress()
+
+    for (let i = 0; i < tokens.length; i++) {
+      const token = tokens[i]
+      const amount = BigNumber.from(amounts[i])
+
+      const funds = await this.getUserFunds(userAddress, token)
+      const available = BigNumber.from(funds[0])
+
+      if (amount.gt(0) && amount.lte(available)) {
+        tokensWithSufficientFunds.push(token)
+        amountsWithSufficientFunds.push(amounts[i])
+      } else {
+        console.log(`Insufficient funds for token ${token}`)
+      }
+    }
+    const amountsParsed = amountsWithSufficientFunds.map((amount) =>
+      amountToUnits(null, null, amount, 18)
+    )
 
     const estGas = await this.contract.estimateGas.withdraw(tokens, amountsParsed)
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
@@ -116,7 +222,7 @@ export class EscrowContract extends SmartContractWithAddress {
       this.getSignerAccordingSdk(),
       this.config?.gasFeeMultiplier,
       this.contract.withdraw,
-      tokens,
+      tokensWithSufficientFunds,
       amountsParsed
     )
     return <ReceiptOrEstimate<G>>trxReceipt
@@ -140,6 +246,15 @@ export class EscrowContract extends SmartContractWithAddress {
     maxLockCounts: string,
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
+    const auths = await this.getAuthorizations(
+      token,
+      await this.signer.getAddress(),
+      payee
+    )
+    if (auths.length !== 0) {
+      console.log(`Payee ${payee} already authorized`)
+      return null
+    }
     const maxLockedAmountParsed = amountToUnits(null, null, maxLockedAmount, 18)
     const maxLockSecondsParsed = amountToUnits(null, null, maxLockSeconds, 18)
     const maxLockCountsParsed = amountToUnits(null, null, maxLockCounts, 18)

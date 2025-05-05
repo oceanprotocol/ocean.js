@@ -815,6 +815,23 @@ export class Datatoken extends SmartContract {
   }
 
   /**
+   * Get Address Allowance for datatoken
+   * @param {String} dtAddress Datatoken adress
+   * @param {String} owner owner adress
+   * @param {String} spender spender adress
+   * @return {Promise<String>} allowance  Number of datatokens. Will be converted from wei
+   */
+  public async allowance(
+    datatokenAddress: string,
+    owner: string,
+    spender: string
+  ): Promise<string> {
+    const dtContract = this.getContract(datatokenAddress)
+    const allowance = await dtContract.allowance(owner, spender)
+    return await this.unitsToAmount(null, allowance, 18)
+  }
+
+  /**
    * Allows to set the fee required by the publisherMarket
    * only publishMarketFeeAddress can call it
    * @param {string} datatokenAddress Datatoken adress

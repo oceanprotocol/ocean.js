@@ -192,3 +192,8 @@ export interface ComputePayment {
   token: string
   maxJobDuration: number
 }
+
+export interface ValidationResponse {
+  isValid: boolean
+  message: string
+}

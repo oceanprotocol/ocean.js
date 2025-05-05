@@ -486,6 +486,7 @@ describe('Compute flow tests', async () => {
     computeEnvs = await ProviderInstance.getComputeEnvironments(providerUrl)
     const computeEnv = computeEnvs[0] // it is only one environment with paid and free resources
     assert(computeEnv, 'Cannot find the paid compute env')
+    console.log(`computeEnv1: ${JSON.stringify(computeEnv)}`)
     const assets: ComputeAsset[] = [
       {
         documentId: resolvedDdoWith2mTimeout.id,
@@ -694,6 +695,53 @@ describe('Compute flow tests', async () => {
       algo.transferTxId === paidEnvAlgoTxId &&
         assets[0].transferTxId === paidEnvDatasetTxId,
       'We should use the same orders, because no fess must be paid'
+    )
+
+    const computeJobs = await ProviderInstance.computeStart(
+      providerUrl,
+      consumerAccount,
+      computeEnv.id,
+      assets,
+      algo,
+      computeJobDuration,
+      paymentToken
+    )
+    assert(computeJobs, 'Cannot start compute job')
+  })
+
+  it('should start a computeJob on paid environment specifying resources', async () => {
+    // we choose the paid env
+    computeEnvs = await ProviderInstance.getComputeEnvironments(providerUrl)
+    const computeEnv = computeEnvs[0]
+    assert(computeEnv, 'Cannot find the paid compute env')
+    console.log(`computeEnv: ${JSON.stringify(computeEnv)}`)
+
+    const assets: ComputeAsset[] = [
+      {
+        documentId: resolvedDdoWithNoTimeout.id,
+        serviceId: resolvedDdoWith2mTimeout.services[0].id,
+        transferTxId: paidEnvDatasetTxId
+      }
+    ]
+    const algo: ComputeAlgorithm = {
+      documentId: resolvedAlgoDdoWithNoTimeout.id,
+      serviceId: resolvedAlgoDdoWith2mTimeout.services[0].id,
+      transferTxId: paidEnvAlgoTxId
+    }
+
+    providerInitializeComputeResults = await ProviderInstance.initializeCompute(
+      assets,
+      algo,
+      computeEnv.id,
+      paymentToken,
+      computeJobDuration,
+      providerUrl,
+      consumerAccount
+    )
+    console.log(
+      `providerInitializeComputeResults: ${JSON.stringify(
+        providerInitializeComputeResults
+      )}`
     )
 
     const computeJobs = await ProviderInstance.computeStart(

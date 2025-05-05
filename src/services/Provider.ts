@@ -499,6 +499,7 @@ export class Provider {
     validUntil: number,
     providerUri: string,
     signer: Signer,
+    resources?: any,
     signal?: AbortSignal
   ): Promise<ProviderComputeInitializeResults> {
     const providerEndpoints = await this.getEndpoints(providerUri)
@@ -526,13 +527,14 @@ export class Provider {
     signatureMessage += nonce
     const signature = await this.signProviderRequest(signer, signatureMessage)
 
-    const providerData = {
+    const providerData: Object = {
       datasets: assets,
       algorithm,
       environment: computeEnv,
       payment: {
         chainId: await signer.getChainId(),
-        token
+        token,
+        resources
       },
       maxJobDuration: validUntil,
       consumerAddress,
@@ -569,7 +571,7 @@ export class Provider {
       response.statusText,
       resolvedResponse
     )
-    LoggerInstance.error('Payload was:', providerData)
+    LoggerInstance.error('Payload was:', JSON.stringify(providerData))
     throw new Error(JSON.stringify(resolvedResponse))
   }
 
