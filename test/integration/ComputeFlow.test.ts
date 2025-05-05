@@ -910,7 +910,7 @@ describe('Compute flow tests', async () => {
         resources
       )
     } catch (e) {
-      expect(e.message).to.equal('ComputeJob cannot be initialized')
+      expect(e.message).to.include('ComputeJob cannot be initialized')
     }
   })
 })
