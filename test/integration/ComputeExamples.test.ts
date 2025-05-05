@@ -627,7 +627,6 @@ describe('Compute-to-data example tests', async () => {
       const mytime = new Date()
       const computeMinutes = 5
       mytime.setMinutes(mytime.getMinutes() + computeMinutes)
-      const maxJobDuration = Math.floor(mytime.getTime() / 1000)
 
       /// ```
       /// Let's prepare the dataset and algorithm assets to be used in the compute job

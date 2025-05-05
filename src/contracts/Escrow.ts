@@ -1,4 +1,4 @@
-import { Signer, BigNumber } from 'ethers'
+import { Signer } from 'ethers'
 import Escrow from '@oceanprotocol/contracts/artifacts/contracts/escrow/Escrow.sol/Escrow.json'
 import { amountToUnits, sendTx } from '../utils/ContractUtils'
 import { AbiItem, ReceiptOrEstimate } from '../@types'
@@ -198,7 +198,6 @@ export class EscrowContract extends SmartContractWithAddress {
       payers,
       payees
     )
-    console.log(`trxReceipt: ${JSON.stringify(trxReceipt)}`)
     return <ReceiptOrEstimate<G>>trxReceipt
   }
 }

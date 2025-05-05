@@ -15,7 +15,8 @@ import {
   UrlFile,
   UserCustomParameters,
   Ipfs,
-  ComputeResourceRequest
+  ComputeResourceRequest,
+  ComputePayment
 } from '../@types'
 
 export class Provider {
@@ -435,12 +436,12 @@ export class Provider {
       providerUri,
       providerEndpoints
     )
-    const payment = {
+    const payment: ComputePayment = {
       chainId,
       token,
       maxJobDuration
     }
-    const providerData = {
+    const payload: Object = {
       datasets: assets,
       algorithm,
       payment,
@@ -455,7 +456,7 @@ export class Provider {
     try {
       response = await fetch(initializeUrl, {
         method: 'POST',
-        body: JSON.stringify(providerData),
+        body: JSON.stringify(payload),
         headers: { 'Content-Type': 'application/json' },
         signal
       })
@@ -475,7 +476,7 @@ export class Provider {
       response.statusText,
       resolvedResponse
     )
-    LoggerInstance.error('Payload was:', providerData)
+    LoggerInstance.error('Payload was:', JSON.stringify(payload))
     throw new Error(JSON.stringify(resolvedResponse))
   }
 

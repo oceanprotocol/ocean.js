@@ -186,3 +186,9 @@ export interface ComputeAlgorithm {
   algocustomdata?: { [key: string]: any }
   userdata?: { [key: string]: any }
 }
+
+export interface ComputePayment {
+  chainId: number
+  token: string
+  maxJobDuration: number
+}
