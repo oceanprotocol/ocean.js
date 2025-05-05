@@ -236,7 +236,7 @@ const algoDdoWith2mTimeout: DDO = {
 function delay(interval: number) {
   return it('should delay', (done) => {
     setTimeout(() => done(), interval)
-  }).timeout(interval + 100)
+  }).timeout(interval + 200)
 }
 
 async function waitTillJobEnds(): Promise<number> {
@@ -644,7 +644,7 @@ describe('Compute flow tests', async () => {
     assert(jobStatus, 'Cannot retrieve compute status!')
   })
 
-  it('should restart a computeJob on paid environment, without paying anything, because order is valid and providerFees are still valid', async () => {
+  it('should restart a computeJob on paid environment, by paying only escrow lock for max job duration, because orders for assets are valid and providerFees are still valid', async () => {
     // we choose the paid env
     computeEnvs = await ProviderInstance.getComputeEnvironments(providerUrl)
     const computeEnv = computeEnvs[0]
@@ -710,27 +710,9 @@ describe('Compute flow tests', async () => {
 
   // move to reuse Orders
 
-  it('Should fast forward time to make existing provider fees expire', async () => {
-    // To fast forward the time, it is needed to send dummy txs on ganache.
-    const waitingTime = 60 * 1000
-    const startTime = Date.now()
+  delay(180000)
 
-    while (Date.now() - startTime < waitingTime) {
-      try {
-        const tx = await publisherAccount.sendTransaction({
-          to: await consumerAccount.getAddress(),
-          value: ethers.utils.parseEther('0.0001')
-        })
-        await tx.wait()
-      } catch (err) {
-        console.error('Transaction failed:', err)
-      }
-    }
-
-    console.log('1 minute passed. Stopping transactions.')
-  }).timeout(90000)
-
-  it('should start a computeJob using the paid environment, by paying only providerFee (reuseOrder)', async () => {
+  it('should start a computeJob using the paid environment, by paying the assets providerFees (reuseOrder) and paying escrow lock for max job duration', async () => {
     // we choose the paid env
     computeEnvs = await ProviderInstance.getComputeEnvironments(providerUrl)
     const computeEnv = computeEnvs[0]
