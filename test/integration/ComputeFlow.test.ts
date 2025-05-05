@@ -552,7 +552,6 @@ describe('Compute flow tests', async () => {
       ethers.utils.getAddress(providerInitializeComputeResults.payment.escrowAddress),
       consumerAccount
     )
-    const paymentTokenContract = new Datatoken(consumerAccount)
     const paymentTokenPublisher = new Datatoken(publisherAccount)
     const balancePublisherPaymentToken = await paymentTokenPublisher.balance(
       paymentToken,
@@ -573,21 +572,10 @@ describe('Compute flow tests', async () => {
       ethers.utils.getAddress(computeEnv.consumerAddress),
       (Number(balancePublisherPaymentToken) / 2).toString()
     )
-    const balanceOfPaymentToken = await paymentTokenContract.balance(
+    await escrow.verifyFundsForEscrowPayment(
       paymentToken,
-      await consumerAccount.getAddress()
-    )
-
-    await paymentTokenContract.approve(
-      ethers.utils.getAddress(paymentToken),
-      ethers.utils.getAddress(providerInitializeComputeResults.payment.escrowAddress),
-      (Number(balanceOfPaymentToken) * 2).toString()
-    )
-    await escrow.deposit(paymentToken, balanceOfPaymentToken)
-    await escrow.authorize(
-      ethers.utils.getAddress(paymentToken),
-      ethers.utils.getAddress(computeEnv.consumerAddress),
-      (Number(balanceOfPaymentToken) / 4).toString(),
+      computeEnv.consumerAddress,
+      providerInitializeComputeResults.payment.amount.toString(),
       providerInitializeComputeResults.payment.minLockSeconds.toString(),
       '10'
     )
