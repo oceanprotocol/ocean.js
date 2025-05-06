@@ -100,21 +100,23 @@ export class EscrowContract extends SmartContractWithAddress {
         message: 'Native token balance is 0. Please add funds'
       }
     }
-    console.log(`balanceNativeToken === BigNumber.from(0)`)
     const tokenContract = new Datatoken(this.signer)
     const allowance = await tokenContract.allowance(
       token,
       await this.signer.getAddress(),
       this.contract.address
     )
-    if (BigNumber.from(allowance).lt(BigNumber.from(maxLockedAmount))) {
+    if (
+      BigNumber.from(await this.amountToUnits(token, allowance, 18)).lt(
+        BigNumber.from(maxLockedAmount)
+      )
+    ) {
       await tokenContract.approve(
         ethers.utils.getAddress(token),
         ethers.utils.getAddress(this.contract.address),
         maxLockedAmount
       )
     }
-    console.log(`BigNumber.from(allowance).lt(BigNumber.from(maxLockedAmount))`)
     const balancePaymentToken = await tokenContract.balance(
       token,
       await this.signer.getAddress()
@@ -125,17 +127,15 @@ export class EscrowContract extends SmartContractWithAddress {
         message: 'Payment token balance is 0. Please add funds'
       }
     }
-    console.log(`ethers.utils.parseEther(balancePaymentToken) === BigNumber.from(0)`)
     const auths = await this.getAuthorizations(
       token,
       await this.signer.getAddress(),
       consumerAddress
     )
     const funds = await this.getUserFunds(await this.signer.getAddress(), token)
-    if (BigNumber.from(funds[0]) === BigNumber.from(0)) {
+    if (BigNumber.from(funds[0]).eq(BigNumber.from(0))) {
       await this.deposit(token, maxLockedAmount)
     }
-    console.log(`(BigNumber.from(funds[0]) === BigNumber.from(0)`)
     if (auths.length === 0) {
       await this.authorize(
         ethers.utils.getAddress(token),
