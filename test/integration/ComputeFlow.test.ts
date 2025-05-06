@@ -579,7 +579,7 @@ describe('Compute flow tests', async () => {
     await escrow.verifyFundsForEscrowPayment(
       paymentToken,
       computeEnv.consumerAddress,
-      await unitsToAmount(null, paymentToken, amountToDeposit),
+      await unitsToAmount(consumerAccount, paymentToken, amountToDeposit),
       providerInitializeComputeResults.payment.amount.toString(),
       providerInitializeComputeResults.payment.minLockSeconds.toString(),
       '10'
