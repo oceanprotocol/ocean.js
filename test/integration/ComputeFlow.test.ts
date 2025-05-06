@@ -8,7 +8,8 @@ import {
   Datatoken,
   sendTx,
   amountToUnits,
-  isDefined
+  isDefined,
+  unitsToAmount
 } from '../../src/index.js'
 import {
   ComputeJob,
@@ -578,7 +579,7 @@ describe('Compute flow tests', async () => {
     await escrow.verifyFundsForEscrowPayment(
       paymentToken,
       computeEnv.consumerAddress,
-      ethers.utils.parseUnits(amountToDeposit).toString(),
+      await unitsToAmount(null, paymentToken, amountToDeposit),
       providerInitializeComputeResults.payment.amount.toString(),
       providerInitializeComputeResults.payment.minLockSeconds.toString(),
       '10'

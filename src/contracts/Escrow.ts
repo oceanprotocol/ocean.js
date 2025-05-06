@@ -143,6 +143,9 @@ export class EscrowContract extends SmartContractWithAddress {
       console.log(`amountToDeposit: ${amountToDeposit}`)
       if (
         amountToDeposit &&
+        ethers.utils
+          .parseEther(balancePaymentToken)
+          .lte(ethers.utils.parseEther(amountToDeposit)) &&
         ethers.utils.parseEther(amountToDeposit) > BigNumber.from(maxLockedAmount)
       ) {
         await this.deposit(token, amountToDeposit)
