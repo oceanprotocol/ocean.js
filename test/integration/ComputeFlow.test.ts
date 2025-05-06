@@ -572,9 +572,13 @@ describe('Compute flow tests', async () => {
       ethers.utils.getAddress(computeEnv.consumerAddress),
       (Number(balancePublisherPaymentToken) / 2).toString()
     )
+    const amountToDeposit = (
+      providerInitializeComputeResults.payment.amount * 2
+    ).toString()
     await escrow.verifyFundsForEscrowPayment(
       paymentToken,
       computeEnv.consumerAddress,
+      ethers.utils.parseUnits(amountToDeposit).toString(),
       providerInitializeComputeResults.payment.amount.toString(),
       providerInitializeComputeResults.payment.minLockSeconds.toString(),
       '10'

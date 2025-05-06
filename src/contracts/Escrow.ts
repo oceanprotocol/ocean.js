@@ -75,6 +75,9 @@ export class EscrowContract extends SmartContractWithAddress {
    * Does deposit when needed.
    * @param {String} token as payment token for escrow
    * @param {String} consumerAddress as consumerAddress for that environment
+   * @param {String} amountToDeposit wanted amount for escrow lock deposit. If this is
+   * not provided and funds for escrow are 0 -> fallback to maxLockedAmount, else
+   * use balance of payment token.
    * @param {String} maxLockedAmount amount necessary to be paid for starting compute job,
    * returned from initialize compute payment and used for authorize if needed.
    * @param {String} maxLockSeconds max seconds to lock the payment,
@@ -86,6 +89,7 @@ export class EscrowContract extends SmartContractWithAddress {
   public async verifyFundsForEscrowPayment(
     token: string,
     consumerAddress: string,
+    amountToDeposit?: string,
     maxLockedAmount?: string,
     maxLockSeconds?: string,
     maxLockCounts?: string
@@ -134,9 +138,21 @@ export class EscrowContract extends SmartContractWithAddress {
     )
     const funds = await this.getUserFunds(await this.signer.getAddress(), token)
     if (BigNumber.from(funds[0]).eq(BigNumber.from(0))) {
-      console.log(`maxLockedAmount: ${maxLockedAmount}`)
+      console.log(`maxLockedAmount: ${await this.unitsToAmount(token, maxLockedAmount)}`)
       console.log(`balancePaymentToken: ${balancePaymentToken}`)
-      await this.deposit(token, balancePaymentToken)
+      console.log(`amountToDeposit: ${amountToDeposit}`)
+      if (
+        amountToDeposit &&
+        ethers.utils.parseEther(amountToDeposit) > BigNumber.from(maxLockedAmount)
+      ) {
+        await this.deposit(token, amountToDeposit)
+      } else if (
+        ethers.utils.parseEther(balancePaymentToken).lte(BigNumber.from(maxLockedAmount))
+      ) {
+        await this.deposit(token, await this.unitsToAmount(token, maxLockedAmount))
+      } else {
+        await this.deposit(token, balancePaymentToken)
+      }
     }
     if (auths.length === 0) {
       await this.authorize(
