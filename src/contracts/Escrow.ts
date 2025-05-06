@@ -134,6 +134,8 @@ export class EscrowContract extends SmartContractWithAddress {
     )
     const funds = await this.getUserFunds(await this.signer.getAddress(), token)
     if (BigNumber.from(funds[0]).eq(BigNumber.from(0))) {
+      console.log(`maxLockedAmount: ${maxLockedAmount}`)
+      console.log(`balancePaymentToken: ${balancePaymentToken}`)
       await this.deposit(token, balancePaymentToken)
     }
     if (auths.length === 0) {
