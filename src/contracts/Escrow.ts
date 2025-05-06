@@ -133,23 +133,17 @@ export class EscrowContract extends SmartContractWithAddress {
       consumerAddress
     )
     const funds = await this.getUserFunds(await this.signer.getAddress(), token)
-    if (
-      BigNumber.from(funds[0]).eq(BigNumber.from(0)) &&
-      ethers.utils.parseEther(balancePaymentToken).gt(BigNumber.from(maxLockedAmount))
-    ) {
-      if (
-        ethers.utils.parseEther(balancePaymentToken).gt(BigNumber.from(maxLockedAmount))
-      ) {
-        await this.deposit(token, maxLockedAmount)
-      } else {
-        await this.deposit(token, balancePaymentToken)
-      }
+    console.log(`fix funds`)
+    if (BigNumber.from(funds[0]).eq(BigNumber.from(0))) {
+      console.log(`entered here.`)
+      await this.deposit(token, balancePaymentToken)
     }
+    console.log(`error from here`)
     if (auths.length === 0) {
       await this.authorize(
         ethers.utils.getAddress(token),
         ethers.utils.getAddress(consumerAddress),
-        maxLockedAmount,
+        (Number(maxLockedAmount) / 2).toString(),
         maxLockSeconds,
         maxLockCounts
       )
