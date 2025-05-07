@@ -793,12 +793,7 @@ export class Provider {
     // new field for C2D v2
     payload.datasets = datasets
     payload.algorithm = algorithm
-    let chainIdCompute: number
-    if (chainId) {
-      chainIdCompute = chainId
-    } else {
-      chainIdCompute = await consumer.getChainId()
-    }
+    const chainIdCompute = chainId ?? (await consumer.getChainId())
     payload.chainId = chainIdCompute
     payload.payment = {
       chainId: chainIdCompute,
@@ -809,7 +804,6 @@ export class Provider {
     // if (additionalDatasets) payload.additionalDatasets = additionalDatasets
     if (output) payload.output = output
     let response
-    console.log(`start compute payload: ${JSON.stringify(payload)}`)
     try {
       response = await fetch(computeStartUrl, {
         method: 'POST',
