@@ -114,7 +114,8 @@ jobs:
       - name: Run Barge
         working-directory: ${{ github.workspace }}/barge
         run: |
-          bash -x start_ocean.sh --no-aquarius --no-provider --no-dashboard --with-c2d --with-typesense 2>&1 > start_ocean.log &
+          export CONTRACTS_VERSION=v2.3.0
+          bash -x start_ocean.sh --no-aquarius --no-provider --no-dashboard --with-typesense 2>&1 > start_ocean.log &
       - run: npm ci
       - run: npm run build
       - run: docker image ls
@@ -136,8 +137,9 @@ jobs:
         run: |
           for i in $(seq 1 250); do
             sleep 10
-            [ -f "$HOME/.ocean/ocean-contracts/artifacts/ready" -a -f "$HOME/.ocean/ocean-c2d/ready" ] && break
+            [ -f "$HOME/.ocean/ocean-contracts/artifacts/ready" ] && break
           done
+          cat $ADDRESS_FILE
 
       - name: docker logs
         run: docker logs ocean_ocean-contracts_1 && docker logs ocean_kindcluster_1 && docker logs ocean_computetodata_1 && docker logs ocean_typesense_1
@@ -148,7 +150,16 @@ jobs:
         with:
           repository: 'oceanprotocol/ocean-node'
           path: 'ocean-node'
-
+          ref: 'update-job-id-generation'
+      - name: Extract Ocean address using jq
+        run: |
+            OCEAN_ADDRESS=$(jq -r '.development | select(.chainId == 8996) | .Ocean' "$ADDRESS_FILE")
+            echo "OCEAN_ADDRESS_DEV=$OCEAN_ADDRESS" >> $GITHUB_ENV
+            echo "Extracted Ocean address: $OCEAN_ADDRESS"
+  
+      - name: Use the extracted Ocean address
+        run: |
+            echo "Using Ocean address for development: ${{ env.OCEAN_ADDRESS_DEV }}"
       - name: Start Ocean Node
         working-directory: ${{ github.workspace }}/ocean-node
         run: |
@@ -171,7 +182,7 @@ jobs:
           ALLOWED_ADMINS: '["0xe2DD09d719Da89e5a3D0F2549c7E24566e947260"]'
           MAX_REQ_PER_MINUTE: 320
           MAX_CONNECTIONS_PER_MINUTE: 500
-          DOCKER_COMPUTE_ENVIRONMENTS: '[{"socketPath":"/var/run/docker.sock","resources":[{"id":"disk","total":1000000000}],"storageExpiry":604800,"maxJobDuration":3600,"fees":{"1":[{"feeToken":"0x123","prices":[{"id":"cpu","price":1}]}]},"free":{"maxJobDuration":60,"maxJobs":3,"resources":[{"id":"cpu","max":1},{"id":"ram","max":1000000000},{"id":"disk","max":1000000000}]}}]'
+          DOCKER_COMPUTE_ENVIRONMENTS: '[{"socketPath":"/var/run/docker.sock","resources":[{"id":"disk","total":1000000000}],"storageExpiry":604800,"maxJobDuration":3600,"fees":{"8996":[{"feeToken": "${{ env.OCEAN_ADDRESS_DEV }}","prices":[{"id":"cpu","price":1}]}]},"free":{"maxJobDuration":60,"maxJobs":3,"resources":[{"id":"cpu","max":1},{"id":"ram","max":1000000000},{"id":"disk","max":1000000000}]}}]'
 
       - name: Check Ocean Node is running
         run: |

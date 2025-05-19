@@ -183,12 +183,11 @@ describe('Marketplace flow tests', async () => {
     },
     services: [
       {
-        id: 'testFakeId',
+        id: 'db164c1b981e4d2974e90e61bda121512e6909c1035c908d68933ae4cfaba6b0',
         type: 'access',
-        description: 'Download service',
         files: '',
-        datatokenAddress: '0x0',
-        serviceEndpoint: 'http://172.15.0.4:8030',
+        datatokenAddress: '0xa15024b732A8f2146423D14209eFd074e61964F3',
+        serviceEndpoint: 'http://127.0.0.1:8001',
         timeout: 0
       }
     ]
