@@ -186,7 +186,7 @@ const ALGORITHM_ASSET_URL: Files = {
 /// ```Typescript
 const DATASET_DDO: DDO = {
   '@context': ['https://w3id.org/did/v1'],
-  id: 'id:op:efba17455c127a885ec7830d687a8f6e64f5ba559f8506f8723c1f10f05c049c',
+  id: 'did:op:efba17455c127a885ec7830d687a8f6e64f5ba559f8506f8723c1f10f05c049c',
   version: '4.1.0',
   chainId: 8996,
   nftAddress: '0x0',
@@ -204,16 +204,16 @@ const DATASET_DDO: DDO = {
   },
   services: [
     {
-      id: 'notAnId',
+      id: '1155995dda741e93afe4b1c6ced2d01734a6ec69865cc0997daf1f4db7259a36',
       type: 'compute',
       files: '',
       datatokenAddress: '0xa15024b732A8f2146423D14209eFd074e61964F3',
-      serviceEndpoint: 'https://v4.provider.goerli.oceanprotocol.com/',
+      serviceEndpoint: 'http://127.0.0.1:8001',
       timeout: 300,
       compute: {
-        publisherTrustedAlgorithmPublishers: [],
-        publisherTrustedAlgorithms: [],
-        allowRawAlgorithm: true,
+        publisherTrustedAlgorithmPublishers: [] as any,
+        publisherTrustedAlgorithms: [] as any,
+        allowRawAlgorithm: false,
         allowNetworkAccess: true
       }
     }
@@ -251,11 +251,11 @@ const ALGORITHM_DDO: DDO = {
   },
   services: [
     {
-      id: 'notAnId',
+      id: 'db164c1b981e4d2974e90e61bda121512e6909c1035c908d68933ae4cfaba6b0',
       type: 'access',
       files: '',
       datatokenAddress: '0xa15024b732A8f2146423D14209eFd074e61964F3',
-      serviceEndpoint: 'https://v4.provider.goerli.oceanprotocol.com',
+      serviceEndpoint: 'http://127.0.0.1:8001',
       timeout: 300
     }
   ]
@@ -812,7 +812,10 @@ describe('Compute-to-data example tests', async () => {
         consumerAccount,
         resources
       )
-      console.log('providerInitializeComputeResults = ', providerInitializeComputeResults)
+      console.log(
+        'providerInitializeComputeResults = ',
+        JSON.stringify(providerInitializeComputeResults)
+      )
 
       assert(!('error' in providerInitializeComputeResults), 'Cannot order algorithm')
 
