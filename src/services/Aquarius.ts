@@ -62,7 +62,7 @@ export class Aquarius {
     did: string,
     txid?: string,
     signal?: AbortSignal,
-    interval: number = 3000,
+    interval: number = 30000,
     maxRetries: number = 100
   ): Promise<Asset> {
     let tries = 0
