@@ -914,8 +914,10 @@ describe('Compute flow tests', async () => {
         resources
       )
     } catch (e) {
-      console.log('err: ', e.message)
-      assert(e.message === `ComputeJob cannot be initialized: ${e}`)
+      assert(
+        e.message ===
+          `ComputeJob cannot be initialized: Error: Not enough cpu resources. Requested 5, but max is 4.`
+      )
     }
   })
 })

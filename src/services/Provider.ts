@@ -557,16 +557,12 @@ export class Provider {
       console.log('Raw response:', response)
       if (!response.ok) {
         const errorText = await response.text()
-        throw new Error(`Error initializeCompute response: ${errorText}`)
+        throw new Error(`${errorText}`)
       }
     } catch (e) {
       LoggerInstance.error('Initialize compute failed: ')
       LoggerInstance.error(e)
-      throw new Error(
-        `ComputeJob cannot be initialized: ${e.message}. Response: ${JSON.stringify(
-          response
-        )}`
-      )
+      throw new Error(`ComputeJob cannot be initialized: ${e.message}.`)
     }
     if (response?.ok) {
       const params = await response.json()
