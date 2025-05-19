@@ -483,6 +483,56 @@ describe('Compute flow tests', async () => {
     computeValidUntil = Math.floor(mytime.getTime() / 1000)
   })
 
+  it('should NOT initialize compute with the paid resources, exceeding max resources', async () => {
+    // we choose the paid env
+    computeEnvs = await ProviderInstance.getComputeEnvironments(providerUrl)
+    const computeEnv = computeEnvs[0]
+    assert(computeEnv, 'Cannot find the paid compute env')
+
+    const resources: ComputeResourceRequest[] = [
+      {
+        id: 'cpu',
+        amount: computeEnv.resources[0].max + 1
+      },
+      {
+        id: 'ram',
+        amount: computeEnv.resources[1].max + 100
+      },
+      {
+        id: 'disk',
+        amount: computeEnv.resources[2].max + 100
+      }
+    ]
+
+    const assets: ComputeAsset[] = [
+      {
+        documentId: resolvedDdoWith2mTimeout.id,
+        serviceId: resolvedDdoWith2mTimeout.services[0].id
+      }
+    ]
+    const algo: ComputeAlgorithm = {
+      documentId: resolvedAlgoDdoWith2mTimeout.id,
+      serviceId: resolvedAlgoDdoWith2mTimeout.services[0].id
+    }
+    try {
+      await ProviderInstance.initializeCompute(
+        assets,
+        algo,
+        computeEnv.id,
+        paymentToken,
+        computeValidUntil,
+        providerUrl,
+        consumerAccount,
+        resources
+      )
+    } catch (e) {
+      assert(
+        e.message ===
+          `ComputeJob cannot be initialized: Error: Not enough cpu resources. Requested 5, but max is 4.`
+      )
+    }
+  })
+
   it('should start a computeJob with paid resources', async () => {
     // we choose the paid env
     computeEnvs = await ProviderInstance.getComputeEnvironments(providerUrl)
@@ -868,56 +918,5 @@ describe('Compute flow tests', async () => {
       0
     )
     assert(downloadURL, 'Provider getComputeResultUrl failed!')
-  })
-  it('should NOT initialize compute with the paid resources, exceeding max resources', async () => {
-    // we choose the paid env
-    computeEnvs = await ProviderInstance.getComputeEnvironments(providerUrl)
-    const computeEnv = computeEnvs[0]
-    assert(computeEnv, 'Cannot find the paid compute env')
-
-    const resources: ComputeResourceRequest[] = [
-      {
-        id: 'cpu',
-        amount: computeEnv.resources[0].max + 1
-      },
-      {
-        id: 'ram',
-        amount: computeEnv.resources[1].max + 100
-      },
-      {
-        id: 'disk',
-        amount: computeEnv.resources[2].max + 100
-      }
-    ]
-
-    const assets: ComputeAsset[] = [
-      {
-        documentId: resolvedDdoWith2mTimeout.id,
-        serviceId: resolvedDdoWith2mTimeout.services[0].id,
-        transferTxId: paidEnvDatasetTxId
-      }
-    ]
-    const algo: ComputeAlgorithm = {
-      documentId: resolvedAlgoDdoWith2mTimeout.id,
-      serviceId: resolvedAlgoDdoWith2mTimeout.services[0].id,
-      transferTxId: paidEnvAlgoTxId
-    }
-    try {
-      await ProviderInstance.initializeCompute(
-        assets,
-        algo,
-        computeEnv.id,
-        paymentToken,
-        computeValidUntil,
-        providerUrl,
-        consumerAccount,
-        resources
-      )
-    } catch (e) {
-      assert(
-        e.message ===
-          `ComputeJob cannot be initialized: Error: Not enough cpu resources. Requested 5, but max is 4.`
-      )
-    }
   })
 })
