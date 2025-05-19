@@ -768,12 +768,14 @@ describe('Compute-to-data example tests', async () => {
 
       /// Let's have 5 minute of compute access
       /// ```Typescript
+
       const mytime = new Date()
       const computeMinutes = 5
       mytime.setMinutes(mytime.getMinutes() + computeMinutes)
       const computeValidUntil = Math.floor(mytime.getTime() / 1000)
 
       /// ```
+
       /// Let's prepare the dataset and algorithm assets to be used in the compute job
       /// ```Typescript
       const resources: ComputeResourceRequest[] = [
@@ -802,6 +804,10 @@ describe('Compute-to-data example tests', async () => {
         serviceId: resolvedAlgorithmDdo.services[0].id,
         meta: resolvedAlgorithmDdo.metadata.algorithm
       }
+      /// ```
+
+      /// Triggering initialize compute to see payment options
+      /// ```Typescript
       const providerInitializeComputeResults = await ProviderInstance.initializeCompute(
         assets,
         algo,
@@ -812,14 +818,21 @@ describe('Compute-to-data example tests', async () => {
         consumerAccount,
         resources
       )
+      /// <!--
       console.log(
         'providerInitializeComputeResults = ',
         JSON.stringify(providerInitializeComputeResults)
       )
+      /// -->
 
+      /// <!--
       assert(!('error' in providerInitializeComputeResults), 'Cannot order algorithm')
+      /// -->
+
+      /// ```
 
       /// Let's check funds for escrow payment
+      /// ```Typescript
       const escrow = new EscrowContract(
         ethers.utils.getAddress(providerInitializeComputeResults.payment.escrowAddress),
         consumerAccount
@@ -855,6 +868,10 @@ describe('Compute-to-data example tests', async () => {
         providerInitializeComputeResults.payment.minLockSeconds.toString(),
         '10'
       )
+      /// ```
+
+      /// Let's order assets
+      /// ```Typescript
 
       algo.transferTxId = await handleOrder(
         providerInitializeComputeResults.algorithm,
@@ -873,8 +890,6 @@ describe('Compute-to-data example tests', async () => {
         )
       }
       /// ```
-
-      /// -->
 
       /// Let's start compute job
       /// ```Typescript
@@ -947,7 +962,7 @@ describe('Compute-to-data example tests', async () => {
     if (!hasFreeComputeSupport) {
       assert(
         computeRoutePath === null,
-        'Compute route path for free compute is not defined (perhaps because provider does not support it yet?)'
+        'Compute route path for paid compute is not defined (perhaps because provider does not support it yet?)'
       )
     } else {
       /// -->
