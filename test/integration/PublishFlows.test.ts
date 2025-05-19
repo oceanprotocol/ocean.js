@@ -321,5 +321,5 @@ describe('Publish tests', async () => {
   it('should resolve the free dataset', async () => {
     const resolvedDDO = await aquarius.waitForIndexer(dispenserDID)
     assert(resolvedDDO, 'Cannot fetch DDO from Aquarius')
-  })
+  }).timeout(40000)
 })
