@@ -554,7 +554,11 @@ export class Provider {
         headers: { 'Content-Type': 'application/json' },
         signal
       })
-      console.log('Raw response:', JSON.stringify(response))
+      console.log('Raw response:', response)
+      if (!response.ok) {
+        const errorText = await response.text()
+        throw new Error(`Error initializeCompute response: ${errorText}`)
+      }
     } catch (e) {
       LoggerInstance.error('Initialize compute failed: ')
       LoggerInstance.error(e)
