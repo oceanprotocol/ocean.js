@@ -554,11 +554,15 @@ export class Provider {
         headers: { 'Content-Type': 'application/json' },
         signal
       })
-      console.log('Raw response:', response)
+      console.log('Raw response:', JSON.stringify(response))
     } catch (e) {
       LoggerInstance.error('Initialize compute failed: ')
       LoggerInstance.error(e)
-      throw new Error(`ComputeJob cannot be initialized: ${e.message}`)
+      throw new Error(
+        `ComputeJob cannot be initialized: ${e.message}. Response: ${JSON.stringify(
+          response
+        )}`
+      )
     }
     if (response?.ok) {
       const params = await response.json()

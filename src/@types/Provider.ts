@@ -1,3 +1,5 @@
+import { ethers } from 'ethers'
+
 export interface ProviderFees {
   providerFeeAddress: string
   providerFeeToken: string
@@ -22,9 +24,19 @@ export interface ProviderComputeInitialize {
   providerFee?: ProviderFees
 }
 
+export interface ProviderComputeInitializePayment {
+  escrowAddress: string
+  chainId: number
+  payee: string
+  token: string
+  amount: number
+  minLockSeconds: number
+}
+
 export interface ProviderComputeInitializeResults {
   algorithm?: ProviderComputeInitialize
   datasets?: ProviderComputeInitialize[]
+  payment?: ProviderComputeInitializePayment
 }
 
 export interface ServiceEndpoint {
