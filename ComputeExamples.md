@@ -821,18 +821,17 @@ let's select compute environment which have free and paid resources
         consumerAccount,
         resources
       )
-  <!--
+
       console.log(
         'providerInitializeComputeResults = ',
         JSON.stringify(providerInitializeComputeResults)
       )
-  -->
+
+  ```
 
   <!--
       assert(!('error' in providerInitializeComputeResults), 'Cannot order algorithm')
   -->
-
-  ```
 
   Let's check funds for escrow payment
   ```Typescript
