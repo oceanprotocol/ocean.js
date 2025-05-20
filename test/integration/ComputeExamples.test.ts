@@ -821,18 +821,17 @@ describe('Compute-to-data example tests', async () => {
         consumerAccount,
         resources
       )
-      /// <!--
+
       console.log(
         'providerInitializeComputeResults = ',
         JSON.stringify(providerInitializeComputeResults)
       )
-      /// -->
+
+      /// ```
 
       /// <!--
       assert(!('error' in providerInitializeComputeResults), 'Cannot order algorithm')
       /// -->
-
-      /// ```
 
       /// Let's check funds for escrow payment
       /// ```Typescript
