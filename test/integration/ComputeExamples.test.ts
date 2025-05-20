@@ -14,6 +14,8 @@
 /// 9. [Consumer fetches compute environment](#9-get-compute-environments)
 /// 10. [Consumer starts a free compute job using a free C2D environment](#10-consumer-starts-a-compute-job)
 /// 11. [Check compute status and get download compute results url](#11-check-compute-status-and-get-download-compute-results-url)
+/// 12. [Consumer starts a paid compute job](#12-consumer-starts-a-paid-compute-job)
+/// 13. [Check paid compute job status and get download compute results URL](#13-check-paid-compute-job-status-and-get-download-compute-results-url)
 
 /// Let's go through each step.
 
@@ -147,11 +149,11 @@ import {
   ComputeResourceRequest,
   unitsToAmount
 } from '../../src/index.js'
-/// ```
 import crypto from 'crypto-js'
 import { DDO } from '@oceanprotocol/ddo-js'
 import { EscrowContract } from '../../src/contracts/Escrow.js'
 const { SHA256 } = crypto
+/// ```
 
 /// ### 4.2. Constants and variables
 
@@ -740,6 +742,7 @@ describe('Compute-to-data example tests', async () => {
       /// <!--
     }
   }).timeout(40000)
+  /// -->
 
   /// ## 12. Consumer starts a paid compute job
 
@@ -927,7 +930,7 @@ describe('Compute-to-data example tests', async () => {
   }).timeout(40000)
   /// -->
 
-  /// ## 13. Check compute status and get download compute results URL
+  /// ## 13. Check paid compute job status and get download compute results URL
   it('13.1 Check compute status for paid compute job', async () => {
     /// <!--
     if (!hasFreeComputeSupport) {

@@ -819,16 +819,18 @@ export class Datatoken extends SmartContract {
    * @param {String} dtAddress Datatoken adress
    * @param {String} owner owner adress
    * @param {String} spender spender adress
+   * @param {Number} decimals numer of token decimals, default 18
    * @return {Promise<String>} allowance  Number of datatokens. Will be converted from wei
    */
   public async allowance(
     datatokenAddress: string,
     owner: string,
-    spender: string
+    spender: string,
+    decimals: number = 18
   ): Promise<string> {
     const dtContract = this.getContract(datatokenAddress)
     const allowance = await dtContract.allowance(owner, spender)
-    return await this.unitsToAmount(null, allowance, 18)
+    return await this.unitsToAmount(null, allowance, decimals)
   }
 
   /**

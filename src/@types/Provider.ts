@@ -1,5 +1,3 @@
-import { ethers } from 'ethers'
-
 export interface ProviderFees {
   providerFeeAddress: string
   providerFeeToken: string
