@@ -6,6 +6,7 @@ import {
   ProviderInstance,
   Aquarius,
   Datatoken,
+  EscrowContract,
   sendTx,
   amountToUnits,
   isDefined,
@@ -20,7 +21,6 @@ import {
 } from '../../src/@types/index.js'
 import { createAssetHelper, handleComputeOrder } from './helpers.js'
 import { DDO } from '@oceanprotocol/ddo-js'
-import { EscrowContract } from '../../src/contracts/Escrow.js'
 
 let config: Config
 
