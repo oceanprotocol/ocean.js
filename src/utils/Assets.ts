@@ -59,7 +59,9 @@ export async function createAsset(
 ): Promise<string> {
   const ddoInstance = DDOManager.getDDOClass(ddo)
   const { indexedMetadata } = ddoInstance.getAssetFields()
-  const value = ddoInstance.getDDOData()?.stats?.price?.value || indexedMetadata?.stats[0]?.prices[0]?.price
+  const value =
+    ddoInstance.getDDOData()?.stats?.price?.value ||
+    indexedMetadata?.stats[0]?.prices[0]?.price
   let { chainId: ddoChainId, nftAddress } = ddoInstance.getDDOFields()
   const { services } = ddoInstance.getDDOFields()
 
