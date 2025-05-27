@@ -118,10 +118,11 @@ export async function createAsset(
     mpFeeAddress: ZERO_ADDRESS
   }
 
+
   if (
-    !assetUrl.type ||
+    !assetUrl?.files[0].type ||
     ![FileObjectType.ARWEAVE, FileObjectType.IPFS, FileObjectType.URL].includes(
-      assetUrl.type.toLowerCase()
+      assetUrl?.files[0]?.type?.toLowerCase()
     )
   ) {
     console.log('Missing or invalid files object type, defaulting to "url"')
