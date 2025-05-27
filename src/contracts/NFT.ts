@@ -62,7 +62,7 @@ export class Nft extends SmartContract {
 
     // Generate name & symbol if not present
     if (!name || !symbol) {
-      ; ({ name, symbol } = generateDtName())
+      ;({ name, symbol } = generateDtName())
     }
 
     // Create 721contract object

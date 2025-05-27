@@ -442,7 +442,7 @@ describe('Compute-to-data example tests', async () => {
       // eslint-disable-next-line security/detect-non-literal-fs-filename
       fs.readFileSync(
         process.env.ADDRESS_FILE ||
-        `${homedir}/.ocean/ocean-contracts/artifacts/address.json`,
+          `${homedir}/.ocean/ocean-contracts/artifacts/address.json`,
         'utf8'
       )
     ).development
