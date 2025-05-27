@@ -59,6 +59,9 @@ export async function createAsset(
 ): Promise<string> {
   const ddoInstance = DDOManager.getDDOClass(ddo)
   const { indexedMetadata } = ddoInstance.getAssetFields()
+  const value =
+    ddoInstance.getDDOData()?.stats?.price?.value ||
+    indexedMetadata?.stats[0]?.prices[0]?.price
   let { chainId: ddoChainId, nftAddress } = ddoInstance.getDDOFields()
   const { services } = ddoInstance.getDDOFields()
 
@@ -132,7 +135,6 @@ export async function createAsset(
   }
 
   let bundleNFT
-  const value = indexedMetadata?.stats[0]?.prices[0]?.price
   try {
     if (!value) {
       bundleNFT = await nftFactory.createNftWithDatatoken(nftParamsAsset, datatokenParams)
