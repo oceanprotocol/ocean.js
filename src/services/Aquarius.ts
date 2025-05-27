@@ -167,7 +167,7 @@ export class Aquarius {
         // let signatureMessage = publisherAddress
         const signatureMessage = ddo.id + nextNonce
         const signature = await signRequest(signer, signatureMessage)
-        const data = { ...ddo, publisherAddress, nonce: nextNonce, signature }
+        const data = { ddo, publisherAddress, nonce: nextNonce, signature }
         response = await fetch(path, {
           method: 'POST',
           body: JSON.stringify(data),

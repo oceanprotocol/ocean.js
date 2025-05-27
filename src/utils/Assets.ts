@@ -118,7 +118,6 @@ export async function createAsset(
     mpFeeAddress: ZERO_ADDRESS
   }
 
-
   if (
     !assetUrl?.files[0].type ||
     ![FileObjectType.ARWEAVE, FileObjectType.IPFS, FileObjectType.URL].includes(
