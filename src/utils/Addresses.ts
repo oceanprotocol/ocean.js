@@ -56,12 +56,13 @@ export function getOceanArtifactsAddressesByChainId(chain: number): any {
 export async function calculateActiveTemplateIndex(
   owner: Signer,
   nftContractAddress: string, // addresses.ERC721Factory,
-  template: string | number
+  template: string | number,
+  chainID: number
 ): Promise<number> {
   // is an ID number?
   const isTemplateID = typeof template === 'number'
 
-  const factoryERC721 = new NftFactory(nftContractAddress, owner)
+  const factoryERC721 = new NftFactory(nftContractAddress, owner, chainID)
   const currentTokenCount = await factoryERC721.getCurrentTokenTemplateCount()
   for (let i = 1; i <= currentTokenCount; i++) {
     const tokenTemplate = await factoryERC721.getTokenTemplate(i)

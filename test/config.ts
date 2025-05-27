@@ -34,8 +34,8 @@ export const getTestConfig = async (signer: Signer) => {
   const chainId = await signer.getChainId()
   const config = new ConfigHelper().getConfig(parseInt(String(chainId)))
 
-  if (process.env.OCEAN_NODE_URL) {
-    config.oceanNodeUri = process.env.OCEAN_NODE_URL
+  if (process.env.NODE_URL) {
+    config.oceanNodeUri = process.env.NODE_URL
   }
 
   return config
@@ -46,7 +46,7 @@ export const getAddresses = () => {
     // eslint-disable-next-line security/detect-non-literal-fs-filename
     fs.readFileSync(
       process.env.ADDRESS_FILE ||
-        `${homedir}/.ocean/ocean-contracts/artifacts/address.json`,
+      `${homedir}/.ocean/ocean-contracts/artifacts/address.json`,
       'utf8'
     )
   )

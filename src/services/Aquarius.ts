@@ -140,8 +140,8 @@ export class Aquarius {
     if (signer) {
       try {
         // make it optional and get from env if not present
-        if (process.env.OCEAN_NODE_URL) {
-          providerUrl = process.env.OCEAN_NODE_URL
+        if (process.env.NODE_URL) {
+          providerUrl = process.env.NODE_URL
         } else {
           providerUrl = process.env.PROVIDER_URL
         }
@@ -167,7 +167,7 @@ export class Aquarius {
         // let signatureMessage = publisherAddress
         const signatureMessage = ddo.id + nextNonce
         const signature = await signRequest(signer, signatureMessage)
-        const data = { ddo, publisherAddress, nonce: nextNonce, signature }
+        const data = { ...ddo, publisherAddress, nonce: nextNonce, signature }
         response = await fetch(path, {
           method: 'POST',
           body: JSON.stringify(data),

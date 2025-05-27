@@ -81,7 +81,8 @@ export async function createAsset(
   let templateIndex = await calculateActiveTemplateIndex(
     owner,
     config.nftFactoryAddress,
-    templateIDorAddress
+    templateIDorAddress,
+    chainID
   )
 
   if (templateIndex < 1) {
@@ -93,7 +94,7 @@ export async function createAsset(
 
   const nft = new Nft(owner, chainID)
 
-  const nftFactory = new NftFactory(config.nftFactoryAddress, owner)
+  const nftFactory = new NftFactory(config.nftFactoryAddress, owner, chainID)
 
   // get nft owner
   const account = await owner.getAddress()
