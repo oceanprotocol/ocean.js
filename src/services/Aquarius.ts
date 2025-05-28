@@ -110,9 +110,12 @@ export class Aquarius {
     ddo: DDO,
     signer: Signer,
     providerUrl: string,
-    signal?: AbortSignal
+    signal?: AbortSignal,
+    useLegacyPath: boolean = false
   ): Promise<ValidateMetadata> {
-    const ddoValidateRoute = this.aquariusURL + '/api/aquarius/assets/ddo/validate'
+    const ddoValidateRoute = providerUrl + '/api/aquarius/assets/ddo/validate'
+    const pathNonce = providerUrl + '/api/services/nonce'
+
 
     try {
       // make it optional and get from env if not present
@@ -123,7 +126,6 @@ export class Aquarius {
       }
       const publisherAddress = await signer.getAddress()
       // aquarius is always same url of other components with ocean nodes
-      const pathNonce = providerUrl + '/api/services/nonce'
       const responseNonce = await fetch(pathNonce + `?userAddress=${publisherAddress}`, {
         method: 'GET',
         headers: { 'Content-Type': 'application/json' },
@@ -143,7 +145,7 @@ export class Aquarius {
       const data = { ddo, publisherAddress, nonce: nextNonce, signature }
       const response = await fetch(ddoValidateRoute, {
         method: 'POST',
-        body: JSON.stringify(data),
+        body: useLegacyPath ? JSON.stringify(ddo) : JSON.stringify(data),
         headers: { 'Content-Type': 'application/octet-stream' },
         signal
       })
