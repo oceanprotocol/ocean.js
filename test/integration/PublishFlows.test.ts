@@ -181,7 +181,7 @@ describe('Publish tests', async () => {
       SHA256(ethers.utils.getAddress(nftAddress) + config.chainId.toString(10))
 
     fixedPricedDID = fixedPriceDdo.id
-    const isAssetValid: ValidateMetadata = await aquarius.validate(fixedPriceDdo)
+    const isAssetValid: ValidateMetadata = await aquarius.validate(fixedPriceDdo, publisherAccount, providerUrl, null, true)
     assert(isAssetValid.valid === true, 'Published asset is not valid')
     const encryptedResponse = await ProviderInstance.encrypt(
       fixedPriceDdo,
@@ -294,7 +294,7 @@ describe('Publish tests', async () => {
       SHA256(ethers.utils.getAddress(nftAddress) + config.chainId.toString(10))
     dispenserDID = dispenserDdo.id
 
-    const isAssetValid: ValidateMetadata = await aquarius.validate(dispenserDdo)
+    const isAssetValid: ValidateMetadata = await aquarius.validate(dispenserDdo, publisherAccount, providerUrl, null, true)
     assert(isAssetValid.valid === true, 'Published asset is not valid')
 
     const encryptedDdo = await ProviderInstance.encrypt(

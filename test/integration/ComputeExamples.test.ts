@@ -353,7 +353,7 @@ async function createAssetHelper(
   ddo.id = 'did:op:' + SHA256(ethers.utils.getAddress(nftAddress) + chain.toString(10))
 
   const encryptedResponse = await ProviderInstance.encrypt(ddo, chain, providerUrl)
-  const validateResult = await aquariusInstance.validate(ddo, owner, providerUrl)
+  const validateResult = await aquariusInstance.validate(ddo, owner, providerUrl, null, true)
   await nft.setMetadata(
     nftAddress,
     await owner.getAddress(),
@@ -442,7 +442,7 @@ describe('Compute-to-data example tests', async () => {
       // eslint-disable-next-line security/detect-non-literal-fs-filename
       fs.readFileSync(
         process.env.ADDRESS_FILE ||
-          `${homedir}/.ocean/ocean-contracts/artifacts/address.json`,
+        `${homedir}/.ocean/ocean-contracts/artifacts/address.json`,
         'utf8'
       )
     ).development
