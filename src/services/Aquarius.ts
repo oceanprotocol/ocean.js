@@ -116,7 +116,6 @@ export class Aquarius {
     const ddoValidateRoute = providerUrl + '/api/aquarius/assets/ddo/validate'
     const pathNonce = providerUrl + '/api/services/nonce'
 
-
     try {
       // make it optional and get from env if not present
       if (process.env.NODE_URL) {

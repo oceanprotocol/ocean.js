@@ -215,7 +215,7 @@ describe('Marketplace flow tests', async () => {
       // eslint-disable-next-line security/detect-non-literal-fs-filename
       fs.readFileSync(
         process.env.ADDRESS_FILE ||
-        `${homedir}/.ocean/ocean-contracts/artifacts/address.json`,
+          `${homedir}/.ocean/ocean-contracts/artifacts/address.json`,
         'utf8'
       )
     ).development
@@ -398,7 +398,13 @@ describe('Marketplace flow tests', async () => {
     )
     const encryptedDDO = await providerResponse
 
-    const isAssetValid: ValidateMetadata = await aquarius.validate(fixedDDO, publisherAccount, providerUrl, null, true)
+    const isAssetValid: ValidateMetadata = await aquarius.validate(
+      fixedDDO,
+      publisherAccount,
+      providerUrl,
+      null,
+      true
+    )
     assert(isAssetValid.valid === true, 'Published asset is not valid')
     await nft.setMetadata(
       freNftAddress,
@@ -696,7 +702,13 @@ describe('Marketplace flow tests', async () => {
       fixedDDO.chainId,
       providerUrl
     )
-    const isAssetValid: ValidateMetadata = await aquarius.validate(fixedDDO, publisherAccount, providerUrl, null, true)
+    const isAssetValid: ValidateMetadata = await aquarius.validate(
+      fixedDDO,
+      publisherAccount,
+      providerUrl,
+      null,
+      true
+    )
     assert(isAssetValid.valid === true, 'Published asset is not valid')
     await nft.setMetadata(
       dispenserNftAddress,
