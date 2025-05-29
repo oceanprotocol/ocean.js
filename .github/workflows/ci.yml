@@ -49,20 +49,13 @@ jobs:
         with:
           repository: 'oceanprotocol/barge'
           path: 'barge'
+          ref: 'feature/barge_with_node'
       - name: Run Ganache with Barge
         working-directory: ${{ github.workspace }}/barge
         run: |
           export CONTRACTS_VERSION=v2.3.0
-          bash -x start_ocean.sh  --no-aquarius --no-elasticsearch --no-provider --no-dashboard 2>&1 > start_ocean.log &
+          bash -x start_ocean.sh --with-typesense 2>&1 > start_ocean.log &
       - run: npm ci
-      - name: Wait for contracts deployment
-        working-directory: ${{ github.workspace }}/barge
-        run: |
-          for i in $(seq 1 250); do
-            sleep 5
-            [ -f "$HOME/.ocean/ocean-contracts/artifacts/ready" ] && break
-            done
-          ls -la "$HOME/.ocean/ocean-contracts/artifacts/"
       - run: npm run build:metadata
       - run: npm run test:unit:cover
       - uses: actions/upload-artifact@v4
