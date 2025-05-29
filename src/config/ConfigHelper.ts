@@ -180,6 +180,13 @@ export class ConfigHelper {
           oceanNodeUri: process.env.NODE_URL
         }
       }
+
+      if (process.env.PROVIDER_URL) {
+        return {
+          oceanNodeUri: process.env.PROVIDER_URL
+        }
+      }
+
       return {}
     }
 
@@ -287,9 +294,9 @@ export class ConfigHelper {
     try {
       addresses = process.env.ADDRESS_FILE
         ? JSON.parse(
-            // eslint-disable-next-line security/detect-non-literal-fs-filename
-            fs.readFileSync(process.env.ADDRESS_FILE, 'utf8')
-          )
+          // eslint-disable-next-line security/detect-non-literal-fs-filename
+          fs.readFileSync(process.env.ADDRESS_FILE, 'utf8')
+        )
         : null
     } catch (e) {
       console.log(e)
