@@ -1,4 +1,4 @@
-import fetch from 'cross-fetch'
+import fetch from 'node-fetch'
 import { DownloadResponse } from '../@types/index.js'
 
 /**
@@ -39,22 +39,26 @@ export async function downloadFile(
   url: string,
   index?: number
 ): Promise<DownloadResponse> {
-  const response = await fetch(url)
+  const response = await fetch(url, {
+    headers: {
+      'Accept': '*/*',
+    },
+  })
+
   if (!response.ok) {
-    throw new Error('Response error.')
-  }
-  let filename: string
-  try {
-    filename = response.headers
-      .get('content-disposition')
-      .match(/attachment;filename=(.+)/)[1]
-  } catch {
-    try {
-      filename = url.split('/').pop()
-    } catch {
-      filename = `file${index}`
-    }
+    throw new Error('Response error: ' + response.status)
   }
 
-  return { data: await response.arrayBuffer(), filename }
+  let filename: string
+  try {
+    const contentDisposition = response.headers.get('content-disposition')
+    filename = contentDisposition
+      ? contentDisposition.match(/attachment;filename=(.+)/)[1]
+      : url.split('/').pop() || `file${index}`
+  } catch {
+    filename = url.split('/').pop() || `file${index}`
+  }
+
+  const data = await response.arrayBuffer()
+  return { data, filename }
 }

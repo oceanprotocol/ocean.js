@@ -440,7 +440,7 @@ describe('Publish consume test', async () => {
   //   assert(grapqlOrderTx, 'Ordering graphql dataset failed.')
   // }).timeout(40000)
 
-  it.skip('Should download the datasets files', async () => {
+  it('Should download the datasets files', async () => {
     const urlDownloadUrl = await ProviderInstance.getDownloadUrl(
       resolvedUrlAssetDdo.id,
       resolvedUrlAssetDdo.services[0].id,
