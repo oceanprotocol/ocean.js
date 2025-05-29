@@ -42,6 +42,8 @@ jobs:
           restore-keys: ${{ runner.os }}-test-unit-${{ env.cache-name }}-
       # Env var expansion workaround
       # https://docs.github.com/en/actions/reference/workflow-commands-for-github-actions#setting-an-environment-variable
+      - name: Set ADDRESS_FILE
+        run: echo "ADDRESS_FILE=${HOME}/.ocean/ocean-contracts/artifacts/address.json" >> $GITHUB_ENV
       - name: Checkout Barge
         uses: actions/checkout@v3
         with:
@@ -53,6 +55,26 @@ jobs:
         run: |
           export CONTRACTS_VERSION=v2.3.0
           bash -x start_ocean.sh --with-typesense 2>&1 > start_ocean.log &
+      - name: Wait for node to be ready
+        run: |
+          max_attempts=60
+          attempt=1
+          echo "Waiting for node container to be ready (timeout: 300s)..."
+          while [ $attempt -le $max_attempts ]; do
+            if [ "$(docker inspect -f '{{.State.Running}}' ocean-node-1 2>/dev/null)" = "true" ]; then
+              echo "Node container is running!"
+              break
+            fi
+            echo "Attempt $attempt/$max_attempts: Node container not ready yet, waiting..."
+            if [ $attempt -eq $max_attempts ]; then
+              echo "Error: Node container failed to start within 300 seconds"
+              docker ps -a
+              docker inspect ocean-node-1
+              exit 1
+            fi
+            sleep 10
+            attempt=$((attempt + 1))
+          done
       - run: npm ci
       - run: npm run build:metadata
       - run: npm run test:unit:cover
@@ -102,30 +124,29 @@ jobs:
         working-directory: ${{ github.workspace }}/barge
         run: |
             bash -x start_ocean.sh --with-typesense 2>&1 > start_ocean.log &
+      - name: Wait for node to be ready
+        run: |
+          max_attempts=60
+          attempt=1
+          echo "Waiting for node container to be ready (timeout: 300s)..."
+          while [ $attempt -le $max_attempts ]; do
+            if [ "$(docker inspect -f '{{.State.Running}}' ocean-node-1 2>/dev/null)" = "true" ]; then
+              echo "Node container is running!"
+              break
+            fi
+            echo "Attempt $attempt/$max_attempts: Node container not ready yet, waiting..."
+            if [ $attempt -eq $max_attempts ]; then
+              echo "Error: Node container failed to start within 300 seconds"
+              docker ps -a
+              docker inspect ocean-node-1
+              exit 1
+            fi
+            sleep 10
+            attempt=$((attempt + 1))
+          done
       - run: npm ci
       - run: npm run build
       
-      - name: Wait for node to be ready
-        run: |
-            max_attempts=60
-            attempt=1
-            echo "Waiting for node container to be ready (timeout: 300s)..."
-            while [ $attempt -le $max_attempts ]; do
-              if [ "$(docker inspect -f '{{.State.Running}}' ocean-node-1 2>/dev/null)" = "true" ]; then
-                echo "Node container is running!"
-                break
-              fi
-              echo "Attempt $attempt/$max_attempts: Node container not ready yet, waiting..."
-              if [ $attempt -eq $max_attempts ]; then
-                echo "Error: Node container failed to start within 300 seconds"
-                docker ps -a
-                docker inspect ocean-node-1
-                exit 1
-              fi
-              sleep 10
-              attempt=$((attempt + 1))
-            done
-
       - name: docker logs
         run: docker logs ocean_ocean-contracts_1 && docker logs ocean_kindcluster_1 && docker logs ocean_computetodata_1 && docker logs ocean_typesense_1
         if: ${{ failure() }}
