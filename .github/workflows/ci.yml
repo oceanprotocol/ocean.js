@@ -1,15 +1,9 @@
 name: 'CI'
 
 on:
-  push:
-    branches:
-      - main
-      - v3
-    tags:
-      - '**'
   pull_request:
     branches:
-      - '**'
+      - main
 
 jobs:
   lint:
@@ -103,6 +97,8 @@ jobs:
         with:
           repository: 'oceanprotocol/barge'
           path: 'barge'
+          ref: 'feature/barge_with_node'
+
       - name: Login to Docker Hub
         if: ${{ env.DOCKERHUB_PASSWORD && env.DOCKERHUB_USERNAME }}
         run: |
@@ -114,87 +110,34 @@ jobs:
       - name: Run Barge
         working-directory: ${{ github.workspace }}/barge
         run: |
-          export CONTRACTS_VERSION=v2.3.0
-          bash -x start_ocean.sh --no-aquarius --no-provider --no-dashboard --with-typesense 2>&1 > start_ocean.log &
+            bash -x start_ocean.sh --with-typesense 2>&1 > start_ocean.log &
       - run: npm ci
       - run: npm run build
-      - run: docker image ls
-      - name: Delete default runner images
+      
+      - name: Wait for node to be ready
         run: |
-          docker image rm -f node:20
-          docker image rm -f node:20-alpine
-          docker image rm -f node:18
-          docker image rm -f node:18-alpine
-          docker image rm -f debian:10
-          docker image rm -f debian:11
-          docker image rm -f ubuntu:22.04
-          docker image rm -f ubuntu:20.04
-          docker image rm -f moby/buildkit:latest
-          rm -rf /usr/share/swift/
-
-      - name: Wait for contracts deployment and C2D cluster to be ready
-        working-directory: ${{ github.workspace }}/barge
-        run: |
-          for i in $(seq 1 250); do
-            sleep 10
-            [ -f "$HOME/.ocean/ocean-contracts/artifacts/ready" ] && break
-          done
-          cat $ADDRESS_FILE
+            max_attempts=60
+            attempt=1
+            echo "Waiting for node container to be ready (timeout: 300s)..."
+            while [ $attempt -le $max_attempts ]; do
+              if [ "$(docker inspect -f '{{.State.Running}}' ocean-node-1 2>/dev/null)" = "true" ]; then
+                echo "Node container is running!"
+                break
+              fi
+              echo "Attempt $attempt/$max_attempts: Node container not ready yet, waiting..."
+              if [ $attempt -eq $max_attempts ]; then
+                echo "Error: Node container failed to start within 300 seconds"
+                docker ps -a
+                docker inspect ocean-node-1
+                exit 1
+              fi
+              sleep 10
+              attempt=$((attempt + 1))
+            done
 
       - name: docker logs
         run: docker logs ocean_ocean-contracts_1 && docker logs ocean_kindcluster_1 && docker logs ocean_computetodata_1 && docker logs ocean_typesense_1
         if: ${{ failure() }}
-
-      - name: Checkout Ocean Node
-        uses: actions/checkout@v3
-        with:
-          repository: 'oceanprotocol/ocean-node'
-          path: 'ocean-node'
-          ref: 'update-job-id-generation'
-      - name: Extract Ocean address using jq
-        run: |
-            OCEAN_ADDRESS=$(jq -r '.development | select(.chainId == 8996) | .Ocean' "$ADDRESS_FILE")
-            echo "OCEAN_ADDRESS_DEV=$OCEAN_ADDRESS" >> $GITHUB_ENV
-            echo "Extracted Ocean address: $OCEAN_ADDRESS"
-  
-      - name: Use the extracted Ocean address
-        run: |
-            echo "Using Ocean address for development: ${{ env.OCEAN_ADDRESS_DEV }}"
-      - name: Start Ocean Node
-        working-directory: ${{ github.workspace }}/ocean-node
-        run: |
-          npm ci
-          npm run build
-          npm run start > ocean-node.log 2>&1 &
-        env:
-          PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
-          IPFS_GATEWAY: http://172.15.0.16:8080/
-          ARWEAVE_GATEWAY: https://arweave.net/
-          P2P_ipV4BindTcpPort: 8000
-          HTTP_API_PORT: 8001
-          RPCS: '{ "8996": {"rpc": "http://127.0.0.1:8545", "chainId": 8996, "network": "development", "chunkSize": 100} }'
-          DB_URL: 'http://localhost:9200'
-          DB_TYPE: 'elasticsearch'
-          FEE_TOKENS: '{ "1": "0x967da4048cD07aB37855c090aAF366e4ce1b9F48", "137": "0x282d8efCe846A88B159800bd4130ad77443Fa1A1", "80001": "0xd8992Ed72C445c35Cb4A2be468568Ed1079357c8", "56": "0xDCe07662CA8EbC241316a15B611c89711414Dd1a" }'
-          FEE_AMOUNT: '{ "amount": 0, "unit": "MB" }'
-          AUTHORIZED_DECRYPTERS: '["0xe2DD09d719Da89e5a3D0F2549c7E24566e947260","0x529043886F21D9bc1AE0feDb751e34265a246e47"]'
-          AUTHORIZED_PUBLISHERS: '["0xe2DD09d719Da89e5a3D0F2549c7E24566e947260","0x529043886F21D9bc1AE0feDb751e34265a246e47"]'
-          ALLOWED_ADMINS: '["0xe2DD09d719Da89e5a3D0F2549c7E24566e947260"]'
-          MAX_REQ_PER_MINUTE: 320
-          MAX_CONNECTIONS_PER_MINUTE: 500
-          DOCKER_COMPUTE_ENVIRONMENTS: '[{"socketPath":"/var/run/docker.sock","resources":[{"id":"disk","total":1000000000}],"storageExpiry":604800,"maxJobDuration":3600,"fees":{"8996":[{"feeToken": "${{ env.OCEAN_ADDRESS_DEV }}","prices":[{"id":"cpu","price":1}]}]},"free":{"maxJobDuration":60,"maxJobs":3,"resources":[{"id":"cpu","max":1},{"id":"ram","max":1000000000},{"id":"disk","max":1000000000}]}}]'
-
-      - name: Check Ocean Node is running
-        run: |
-          for i in $(seq 1 30); do
-            if curl --output /dev/null --silent --head --fail "http://localhost:8001"; then
-              echo "Ocean Node is up"
-              exit 0
-            fi
-            sleep 10
-          done
-          echo "Ocean Node did not start in time"
-          exit 1
 
       - name: integration
         run: npm run test:integration:cover
