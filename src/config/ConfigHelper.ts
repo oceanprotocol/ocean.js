@@ -175,11 +175,18 @@ export class ConfigHelper {
     let configAddresses: Partial<Config>
 
     const getUris = () => {
-      if (process.env.OCEAN_NODE_URL) {
+      if (process.env.NODE_URL) {
         return {
-          oceanNodeUri: process.env.OCEAN_NODE_URL
+          oceanNodeUri: process.env.NODE_URL
         }
       }
+
+      if (process.env.PROVIDER_URL) {
+        return {
+          oceanNodeUri: process.env.PROVIDER_URL
+        }
+      }
+
       return {}
     }
 
