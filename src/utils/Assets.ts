@@ -81,7 +81,8 @@ export async function createAsset(
   let templateIndex = await calculateActiveTemplateIndex(
     owner,
     config.nftFactoryAddress,
-    templateIDorAddress
+    templateIDorAddress,
+    chainID
   )
 
   if (templateIndex < 1) {
@@ -93,7 +94,7 @@ export async function createAsset(
 
   const nft = new Nft(owner, chainID)
 
-  const nftFactory = new NftFactory(config.nftFactoryAddress, owner)
+  const nftFactory = new NftFactory(config.nftFactoryAddress, owner, chainID)
 
   // get nft owner
   const account = await owner.getAddress()
@@ -118,9 +119,9 @@ export async function createAsset(
   }
 
   if (
-    !assetUrl.type ||
+    !assetUrl?.files[0].type ||
     ![FileObjectType.ARWEAVE, FileObjectType.IPFS, FileObjectType.URL].includes(
-      assetUrl.type.toLowerCase()
+      assetUrl?.files[0]?.type?.toLowerCase()
     )
   ) {
     console.log('Missing or invalid files object type, defaulting to "url"')

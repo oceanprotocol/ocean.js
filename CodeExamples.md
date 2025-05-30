@@ -206,8 +206,8 @@ Next, we define the metadata that will describe our data asset. This is what we 
     const config = new ConfigHelper().getConfig(
       parseInt(String((await publisherAccount.provider.getNetwork()).chainId))
     )
-    if (process.env.OCEAN_NODE_URL) {
-      config.oceanNodeUri = process.env.OCEAN_NODE_URL
+    if (process.env.NODE_URL) {
+      config.oceanNodeUri = process.env.NODE_URL
     }
     aquarius = new Aquarius(config?.oceanNodeUri)
     providerUrl = config?.oceanNodeUri
@@ -397,7 +397,12 @@ Now let's console log the DID to check everything is working
       providerUrl
     )
     const encryptedDDO = await providerResponse
-    const isAssetValid: ValidateMetadata = await aquarius.validate(fixedDDO)
+
+    const isAssetValid: ValidateMetadata = await aquarius.validate(
+      fixedDDO,
+      publisherAccount,
+      providerUrl
+    )
     assert(isAssetValid.valid === true, 'Published asset is not valid')
     await nft.setMetadata(
       freNftAddress,
@@ -695,7 +700,11 @@ Now we need to encrypt file(s) using provider
       fixedDDO.chainId,
       providerUrl
     )
-    const isAssetValid: ValidateMetadata = await aquarius.validate(fixedDDO)
+    const isAssetValid: ValidateMetadata = await aquarius.validate(
+      fixedDDO,
+      publisherAccount,
+      providerUrl
+    )
     assert(isAssetValid.valid === true, 'Published asset is not valid')
     await nft.setMetadata(
       dispenserNftAddress,
