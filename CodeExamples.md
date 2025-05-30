@@ -401,9 +401,7 @@ Now let's console log the DID to check everything is working
     const isAssetValid: ValidateMetadata = await aquarius.validate(
       fixedDDO,
       publisherAccount,
-      providerUrl,
-      null,
-      true
+      providerUrl
     )
     assert(isAssetValid.valid === true, 'Published asset is not valid')
     await nft.setMetadata(
@@ -705,9 +703,7 @@ Now we need to encrypt file(s) using provider
     const isAssetValid: ValidateMetadata = await aquarius.validate(
       fixedDDO,
       publisherAccount,
-      providerUrl,
-      null,
-      true
+      providerUrl
     )
     assert(isAssetValid.valid === true, 'Published asset is not valid')
     await nft.setMetadata(
