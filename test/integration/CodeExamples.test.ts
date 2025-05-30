@@ -401,9 +401,7 @@ describe('Marketplace flow tests', async () => {
     const isAssetValid: ValidateMetadata = await aquarius.validate(
       fixedDDO,
       publisherAccount,
-      providerUrl,
-      null,
-      true
+      providerUrl
     )
     assert(isAssetValid.valid === true, 'Published asset is not valid')
     await nft.setMetadata(
@@ -705,9 +703,7 @@ describe('Marketplace flow tests', async () => {
     const isAssetValid: ValidateMetadata = await aquarius.validate(
       fixedDDO,
       publisherAccount,
-      providerUrl,
-      null,
-      true
+      providerUrl
     )
     assert(isAssetValid.valid === true, 'Published asset is not valid')
     await nft.setMetadata(

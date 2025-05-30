@@ -184,9 +184,7 @@ describe('Publish tests', async () => {
     const isAssetValid: ValidateMetadata = await aquarius.validate(
       fixedPriceDdo,
       publisherAccount,
-      providerUrl,
-      null,
-      true
+      providerUrl
     )
     assert(isAssetValid.valid === true, 'Published asset is not valid')
     const encryptedResponse = await ProviderInstance.encrypt(
@@ -303,9 +301,7 @@ describe('Publish tests', async () => {
     const isAssetValid: ValidateMetadata = await aquarius.validate(
       dispenserDdo,
       publisherAccount,
-      providerUrl,
-      null,
-      true
+      providerUrl
     )
     assert(isAssetValid.valid === true, 'Published asset is not valid')
 

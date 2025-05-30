@@ -110,8 +110,7 @@ export class Aquarius {
     ddo: DDO,
     signer: Signer,
     providerUrl: string,
-    signal?: AbortSignal,
-    useLegacyPath: boolean = false
+    signal?: AbortSignal
   ): Promise<ValidateMetadata> {
     const ddoValidateRoute = providerUrl + '/api/aquarius/assets/ddo/validate'
     const pathNonce = providerUrl + '/api/services/nonce'
@@ -144,7 +143,7 @@ export class Aquarius {
       const data = { ddo, publisherAddress, nonce: nextNonce, signature }
       const response = await fetch(ddoValidateRoute, {
         method: 'POST',
-        body: useLegacyPath ? JSON.stringify(ddo) : JSON.stringify(data),
+        body: JSON.stringify(data),
         headers: { 'Content-Type': 'application/octet-stream' },
         signal
       })
