@@ -116,12 +116,6 @@ export class Aquarius {
     const pathNonce = providerUrl + '/api/services/nonce'
 
     try {
-      // make it optional and get from env if not present
-      if (process.env.NODE_URL) {
-        providerUrl = process.env.NODE_URL
-      } else {
-        providerUrl = process.env.PROVIDER_URL
-      }
       const publisherAddress = await signer.getAddress()
       // aquarius is always same url of other components with ocean nodes
       const responseNonce = await fetch(pathNonce + `?userAddress=${publisherAddress}`, {
@@ -164,11 +158,7 @@ export class Aquarius {
         }
       }
     } catch (e) {
-      // retry with legacy path validation
-      LoggerInstance.error(
-        'Metadata validation failed using publisher signature validation (perhaps not supported or legacy Aquarius), retrying with legacy path...',
-        e.message
-      )
+      LoggerInstance.error('Metadata validation failed', e.message)
     }
   }
 

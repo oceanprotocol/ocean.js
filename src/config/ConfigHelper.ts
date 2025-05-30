@@ -181,12 +181,6 @@ export class ConfigHelper {
         }
       }
 
-      if (process.env.PROVIDER_URL) {
-        return {
-          oceanNodeUri: process.env.PROVIDER_URL
-        }
-      }
-
       return {}
     }
 

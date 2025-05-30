@@ -120,6 +120,19 @@ jobs:
           DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
           DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
 
+      - name: Delete default runner images
+        run: |
+          docker image rm -f node:20
+          docker image rm -f node:20-alpine
+          docker image rm -f node:18
+          docker image rm -f node:18-alpine
+          docker image rm -f debian:10
+          docker image rm -f debian:11
+          docker image rm -f ubuntu:22.04
+          docker image rm -f ubuntu:20.04
+          docker image rm -f moby/buildkit:latest
+          rm -rf /usr/share/swift/
+
       - name: Run Barge
         working-directory: ${{ github.workspace }}/barge
         run: |
@@ -144,11 +157,11 @@ jobs:
             sleep 10
             attempt=$((attempt + 1))
           done
-      - run: npm ci
-      - run: npm run build
-      
+
+      - run: npm ci && npm run build
+        
       - name: docker logs
-        run: docker logs ocean_ocean-contracts_1 && docker logs ocean_kindcluster_1 && docker logs ocean_computetodata_1 && docker logs ocean_typesense_1
+        run: docker logs ocean_ocean-contracts_1 && docker logs ocean_typesense_1 && docker logs ocean-node-1
         if: ${{ failure() }}
 
       - name: integration
@@ -157,7 +170,6 @@ jobs:
           INDEXING_RETRY_INTERVAL: 4000
           INDEXING_MAX_RETRIES: 120
           NODE_URL: 'http://127.0.0.1:8001'
-          PROVIDER_URL: 'http://172.15.0.3:8545'
 
       - name: Print Ocean Node Logs if tests fail
         if: ${{ failure() }}
