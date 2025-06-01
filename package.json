@@ -86,7 +86,7 @@
     "cross-env": "^7.0.3",
     "eslint": "^8.23.1",
     "eslint-config-oceanprotocol": "^2.0.3",
-    "eslint-config-prettier": "^9.0.0",
+    "eslint-config-prettier": "^10.1.5",
     "eslint-plugin-prettier": "^4.2.1",
     "fs": "0.0.1-security",
     "microbundle": "0.14.2",
