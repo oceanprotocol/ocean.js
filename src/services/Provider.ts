@@ -15,7 +15,8 @@ import {
   UrlFile,
   UserCustomParameters,
   Ipfs,
-  ComputeResourceRequest
+  ComputeResourceRequest,
+  ComputePayment
 } from '../@types'
 
 export class Provider {
@@ -423,9 +424,11 @@ export class Provider {
     assets: ComputeAsset[],
     algorithm: ComputeAlgorithm,
     computeEnv: string,
-    validUntil: number,
     providerUri: string,
     accountId: string,
+    chainId: number,
+    token: string,
+    maxJobDuration: number,
     signal?: AbortSignal
   ): Promise<ProviderComputeInitializeResults> {
     const providerEndpoints = await this.getEndpoints(providerUri)
@@ -433,11 +436,17 @@ export class Provider {
       providerUri,
       providerEndpoints
     )
-    const providerData = {
+    const payment: ComputePayment = {
+      chainId,
+      token,
+      maxJobDuration
+    }
+    const payload: Object = {
       datasets: assets,
       algorithm,
-      compute: { env: computeEnv, validUntil },
-      consumerAddress: accountId
+      payment,
+      consumerAddress: accountId,
+      environment: computeEnv
     }
     const initializeUrl = this.getEndpointURL(serviceEndpoints, 'initializeCompute')
       ? this.getEndpointURL(serviceEndpoints, 'initializeCompute').urlPath
@@ -447,7 +456,7 @@ export class Provider {
     try {
       response = await fetch(initializeUrl, {
         method: 'POST',
-        body: JSON.stringify(providerData),
+        body: JSON.stringify(payload),
         headers: { 'Content-Type': 'application/json' },
         signal
       })
@@ -467,7 +476,7 @@ export class Provider {
       response.statusText,
       resolvedResponse
     )
-    LoggerInstance.error('Payload was:', providerData)
+    LoggerInstance.error('Payload was:', JSON.stringify(payload))
     throw new Error(JSON.stringify(resolvedResponse))
   }
 
@@ -475,6 +484,7 @@ export class Provider {
    * @param {ComputeAsset[]} assets The datasets array to initialize compute request.
    * @param {ComputeAlgorithmber} algorithm The algorithm to use.
    * @param {string} computeEnv The compute environment.
+   * @param {string} token The payment token address.
    * @param {number} validUntil  The job expiration date.
    * @param {string} providerUri The provider URI.
    * @param {Signer} signer caller address
@@ -485,9 +495,11 @@ export class Provider {
     assets: ComputeAsset[],
     algorithm: ComputeAlgorithm,
     computeEnv: string,
+    token: string,
     validUntil: number,
     providerUri: string,
     signer: Signer,
+    resources: ComputeResourceRequest[],
     signal?: AbortSignal
   ): Promise<ProviderComputeInitializeResults> {
     const providerEndpoints = await this.getEndpoints(providerUri)
@@ -515,10 +527,16 @@ export class Provider {
     signatureMessage += nonce
     const signature = await this.signProviderRequest(signer, signatureMessage)
 
-    const providerData = {
+    const providerData: Object = {
       datasets: assets,
       algorithm,
-      compute: { env: computeEnv, validUntil },
+      environment: computeEnv,
+      payment: {
+        chainId: await signer.getChainId(),
+        token,
+        resources
+      },
+      maxJobDuration: validUntil,
       consumerAddress,
       signature
     }
@@ -537,10 +555,14 @@ export class Provider {
         signal
       })
       console.log('Raw response:', response)
+      if (!response.ok) {
+        const errorText = await response.text()
+        throw new Error(`${errorText}`)
+      }
     } catch (e) {
       LoggerInstance.error('Initialize compute failed: ')
       LoggerInstance.error(e)
-      throw new Error('ComputeJob cannot be initialized')
+      throw new Error(`ComputeJob cannot be initialized: ${e.message}.`)
     }
     if (response?.ok) {
       const params = await response.json()
@@ -553,7 +575,7 @@ export class Provider {
       response.statusText,
       resolvedResponse
     )
-    LoggerInstance.error('Payload was:', providerData)
+    LoggerInstance.error('Payload was:', JSON.stringify(providerData))
     throw new Error(JSON.stringify(resolvedResponse))
   }
 
@@ -707,10 +729,11 @@ export class Provider {
    * @param {string} computeEnv The compute environment.
    * @param {ComputeAsset} datasets The dataset to start compute on + additionalDatasets (the additional datasets if that is the case)
    * @param {ComputeAlgorithm} algorithm The algorithm to start compute with.
+   * @param {number} maxJobDuration The compute job max execution time.
+   * @param {string} token The token address for compute payment.
    * @param {ComputeResourceRequest} resources The resources to start compute job with.
    * @param {chainId} chainId The chain used to do payments
    * @param {ComputeOutput} output The compute job output settings.
-   * @param {boolean} freeEnvironment is it a free environment? uses different route
    * @param {AbortSignal} signal abort signal
    * @return {Promise<ComputeJob | ComputeJob[]>} The compute job or jobs.
    */
@@ -720,7 +743,9 @@ export class Provider {
     computeEnv: string,
     datasets: ComputeAsset[],
     algorithm: ComputeAlgorithm,
-    resources?: ComputeResourceRequest[],
+    maxJobDuration: number,
+    token: string,
+    resources: ComputeResourceRequest[],
     chainId?: number, // network used by payment (only for payed compute jobs)
     output?: ComputeOutput,
     signal?: AbortSignal
@@ -765,15 +790,23 @@ export class Provider {
     payload.signature = signature
     payload.nonce = nonce
     payload.environment = computeEnv
+    payload.maxJobDuration = maxJobDuration
     payload.resources = resources
-    payload.chainId = chainId
     // kept for backwards compatibility (tests running against existing provider)
     payload.dataset = datasets[0]
     // new field for C2D v2
     payload.datasets = datasets
     payload.algorithm = algorithm
+    const chainIdCompute = chainId ?? (await consumer.getChainId())
+    payload.chainId = chainIdCompute
+    payload.payment = {
+      chainId: chainIdCompute,
+      token,
+      maxJobDuration
+    }
+    if (resources) payload.payment.resources = resources
     // if (additionalDatasets) payload.additionalDatasets = additionalDatasets
-    payload.output = output
+    if (output) payload.output = output
     let response
     try {
       response = await fetch(computeStartUrl, {
