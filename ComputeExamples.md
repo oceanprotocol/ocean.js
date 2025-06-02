@@ -14,6 +14,8 @@ Here are the steps:
 9. [Consumer fetches compute environment](#9-get-compute-environments)
 10. [Consumer starts a free compute job using a free C2D environment](#10-consumer-starts-a-compute-job)
 11. [Check compute status and get download compute results url](#11-check-compute-status-and-get-download-compute-results-url)
+12. [Consumer starts a paid compute job](#12-consumer-starts-a-paid-compute-job)
+13. [Check paid compute job status and get download compute results URL](#13-check-paid-compute-job-status-and-get-download-compute-results-url)
 
 Let's go through each step.
 
@@ -143,12 +145,15 @@ import {
   ConfigHelper,
   getEventFromTx,
   amountToUnits,
-  isDefined
+  isDefined,
+  ComputeResourceRequest,
+  unitsToAmount
 } from '../../src/index.js'
-```
 import crypto from 'crypto-js'
 import { DDO } from '@oceanprotocol/ddo-js'
+import { EscrowContract } from '../../src/contracts/Escrow.js'
 const { SHA256 } = crypto
+```
 
 ### 4.2. Constants and variables
 
@@ -183,7 +188,7 @@ Next, we define the metadata for the dataset and algorithm that will describe ou
 ```Typescript
 const DATASET_DDO: DDO = {
   '@context': ['https://w3id.org/did/v1'],
-  id: 'id:op:efba17455c127a885ec7830d687a8f6e64f5ba559f8506f8723c1f10f05c049c',
+  id: 'did:op:efba17455c127a885ec7830d687a8f6e64f5ba559f8506f8723c1f10f05c049c',
   version: '4.1.0',
   chainId: 8996,
   nftAddress: '0x0',
@@ -201,16 +206,16 @@ const DATASET_DDO: DDO = {
   },
   services: [
     {
-      id: 'notAnId',
+      id: '1155995dda741e93afe4b1c6ced2d01734a6ec69865cc0997daf1f4db7259a36',
       type: 'compute',
       files: '',
       datatokenAddress: '0xa15024b732A8f2146423D14209eFd074e61964F3',
-      serviceEndpoint: 'https://v4.provider.goerli.oceanprotocol.com/',
+      serviceEndpoint: 'http://127.0.0.1:8001',
       timeout: 300,
       compute: {
-        publisherTrustedAlgorithmPublishers: [],
-        publisherTrustedAlgorithms: [],
-        allowRawAlgorithm: true,
+        publisherTrustedAlgorithmPublishers: [] as any,
+        publisherTrustedAlgorithms: [] as any,
+        allowRawAlgorithm: false,
         allowNetworkAccess: true
       }
     }
@@ -248,11 +253,11 @@ const ALGORITHM_DDO: DDO = {
   },
   services: [
     {
-      id: 'notAnId',
+      id: 'db164c1b981e4d2974e90e61bda121512e6909c1035c908d68933ae4cfaba6b0',
       type: 'access',
       files: '',
       datatokenAddress: '0xa15024b732A8f2146423D14209eFd074e61964F3',
-      serviceEndpoint: 'https://v4.provider.goerli.oceanprotocol.com',
+      serviceEndpoint: 'http://127.0.0.1:8001',
       timeout: 300
     }
   ]
@@ -348,7 +353,7 @@ async function createAssetHelper(
   ddo.id = 'did:op:' + SHA256(ethers.utils.getAddress(nftAddress) + chain.toString(10))
 
   const encryptedResponse = await ProviderInstance.encrypt(ddo, chain, providerUrl)
-  const validateResult = await aquariusInstance.validate(ddo)
+  const validateResult = await aquariusInstance.validate(ddo, owner, providerUrl)
   await nft.setMetadata(
     nftAddress,
     await owner.getAddress(),
@@ -428,8 +433,8 @@ We need to load the configuration. Add the following code into your `run(){ }` f
     const config = new ConfigHelper().getConfig(
       parseInt(String((await publisherAccount.provider.getNetwork()).chainId))
     )
-    if (process.env.OCEAN_NODE_URL) {
-      config.oceanNodeUri = process.env.OCEAN_NODE_URL
+    if (process.env.NODE_URL) {
+      config.oceanNodeUri = process.env.NODE_URL
     }
     aquariusInstance = new Aquarius(config?.oceanNodeUri)
     providerUrl = config?.oceanNodeUri
@@ -609,10 +614,7 @@ Now, let's check that we successfully published a algorithm (create NFT + Datato
 
 let's check the free compute environment
 ```Typescript
-    const computeEnv = computeEnvs.find(
-      (ce) =>
-        !ce?.fees || ce.fees.find((fee) => fee.symbol === 'OCEAN' && fee.amount === '0')
-    )
+    const computeEnv = computeEnvs.find((ce) => isDefined(ce.free))
     console.log('Free compute environment = ', computeEnv)
 ```
 <!--
@@ -630,7 +632,6 @@ let's check the free compute environment
       const mytime = new Date()
       const computeMinutes = 5
       mytime.setMinutes(mytime.getMinutes() + computeMinutes)
-      const computeValidUntil = Math.floor(mytime.getTime() / 1000)
 
   ```
   Let's prepare the dataset and algorithm assets to be used in the compute job
@@ -641,7 +642,6 @@ let's check the free compute environment
           serviceId: resolvedDatasetDdo.services[0].id
         }
       ]
-      const dtAddressArray = [resolvedDatasetDdo.services[0].datatokenAddress]
 
       const algo: ComputeAlgorithm = {
         documentId: resolvedAlgorithmDdo.id,
@@ -649,39 +649,6 @@ let's check the free compute environment
         meta: resolvedAlgorithmDdo.metadata.algorithm
       }
   ```
-
-  <!--
-      // const providerInitializeComputeResults = await ProviderInstance.initializeCompute(
-      //   assets,
-      //   algo,
-      //   computeEnv.id,
-      //   computeValidUntil,
-      //   providerUrl,
-      //   consumerAccount
-      // )
-      // console.log('providerInitializeComputeResults = ', providerInitializeComputeResults)
-      //
-      //
-      // assert(!('error' in providerInitializeComputeResults), 'Cannot order algorithm')
-      //
-      //
-      // algo.transferTxId = await handleOrder(
-      //   providerInitializeComputeResults.algorithm,
-      //   resolvedAlgorithmDdo.services[0].datatokenAddress,
-      //   consumerAccount,
-      //   computeEnv.consumerAddress,
-      //   0
-      // )
-      // for (let i = 0; i < providerInitializeComputeResults.datasets.length; i++) {
-      //   assets[i].transferTxId = await handleOrder(
-      //     providerInitializeComputeResults.datasets[i],
-      //     dtAddressArray[i],
-      //     consumerAccount,
-      //     computeEnv.consumerAddress,
-      //     0
-      //   )
-      // }
-  -->
 
   Let's start the free compute job
   ```Typescript
@@ -752,6 +719,252 @@ let's check the free compute environment
       assert(
         computeRoutePath === null,
         'Compute route path for free compute is not defined (perhaps because provider does not support it yet?)'
+      )
+    } else {
+  -->
+
+  ```Typescript
+      await sleep(10000)
+      const downloadURL = await ProviderInstance.getComputeResultUrl(
+        providerUrl,
+        consumerAccount,
+        computeJobId,
+        0
+      )
+  ```
+  <!--
+      assert(downloadURL, 'Provider getComputeResultUrl failed!')
+  -->
+  Let's check the compute results url for the specified index
+  ```Typescript
+      console.log(`Compute results URL: ${downloadURL}`)
+  ```
+  <!--
+    }
+  }).timeout(40000)
+-->
+
+## 12. Consumer starts a paid compute job
+
+  ### 12.1 Start a compute job using a paid C2D resources
+<!--
+    datatoken = new Datatoken(
+      consumerAccount,
+      (await consumerAccount.provider.getNetwork()).chainId
+    )
+-->
+
+let's select compute environment which have free and paid resources
+```Typescript
+    const computeEnv = computeEnvs[0]
+    console.log('Compute environment = ', computeEnv)
+```
+<!--
+    assert(computeEnv, 'Cannot find the compute env')
+-->
+
+<!--
+    const paymentToken = addresses.Ocean
+    computeRoutePath = await ProviderInstance.getComputeStartRoutes(providerUrl, false)
+    if (isDefined(computeRoutePath)) {
+  -->
+
+  Let's have 5 minute of compute access
+  ```Typescript
+
+      const mytime = new Date()
+      const computeMinutes = 5
+      mytime.setMinutes(mytime.getMinutes() + computeMinutes)
+      const computeValidUntil = Math.floor(mytime.getTime() / 1000)
+
+  ```
+
+  Let's prepare the dataset and algorithm assets to be used in the compute job
+  ```Typescript
+      const resources: ComputeResourceRequest[] = [
+        {
+          id: 'cpu',
+          amount: 2
+        },
+        {
+          id: 'ram',
+          amount: 1000000000
+        },
+        {
+          id: 'disk',
+          amount: 0
+        }
+      ]
+      const assets: ComputeAsset[] = [
+        {
+          documentId: resolvedDatasetDdo.id,
+          serviceId: resolvedDatasetDdo.services[0].id
+        }
+      ]
+      const dtAddressArray = [resolvedDatasetDdo.services[0].datatokenAddress]
+      const algo: ComputeAlgorithm = {
+        documentId: resolvedAlgorithmDdo.id,
+        serviceId: resolvedAlgorithmDdo.services[0].id,
+        meta: resolvedAlgorithmDdo.metadata.algorithm
+      }
+  ```
+
+  Triggering initialize compute to see payment options
+  ```Typescript
+      const providerInitializeComputeResults = await ProviderInstance.initializeCompute(
+        assets,
+        algo,
+        computeEnv.id,
+        paymentToken,
+        computeValidUntil,
+        providerUrl,
+        consumerAccount,
+        resources
+      )
+
+      console.log(
+        'providerInitializeComputeResults = ',
+        JSON.stringify(providerInitializeComputeResults)
+      )
+
+  ```
+
+  <!--
+      assert(!('error' in providerInitializeComputeResults), 'Cannot order algorithm')
+  -->
+
+  Let's check funds for escrow payment
+  ```Typescript
+      const escrow = new EscrowContract(
+        ethers.utils.getAddress(providerInitializeComputeResults.payment.escrowAddress),
+        consumerAccount
+      )
+      const paymentTokenPublisher = new Datatoken(publisherAccount)
+      const balancePublisherPaymentToken = await paymentTokenPublisher.balance(
+        paymentToken,
+        await publisherAccount.getAddress()
+      )
+      assert(
+        ethers.utils.parseEther(balancePublisherPaymentToken) > ethers.BigNumber.from(0),
+        'Balance should be higher than 0'
+      )
+      const tx = await publisherAccount.sendTransaction({
+        to: computeEnv.consumerAddress,
+        value: ethers.utils.parseEther('1.5')
+      })
+      await tx.wait()
+
+      await paymentTokenPublisher.transfer(
+        paymentToken,
+        ethers.utils.getAddress(computeEnv.consumerAddress),
+        (Number(balancePublisherPaymentToken) / 2).toString()
+      )
+      const amountToDeposit = (
+        providerInitializeComputeResults.payment.amount * 2
+      ).toString()
+      await escrow.verifyFundsForEscrowPayment(
+        paymentToken,
+        computeEnv.consumerAddress,
+        await unitsToAmount(consumerAccount, paymentToken, amountToDeposit),
+        providerInitializeComputeResults.payment.amount.toString(),
+        providerInitializeComputeResults.payment.minLockSeconds.toString(),
+        '10'
+      )
+  ```
+
+  Let's order assets
+  ```Typescript
+
+      algo.transferTxId = await handleOrder(
+        providerInitializeComputeResults.algorithm,
+        resolvedAlgorithmDdo.services[0].datatokenAddress,
+        consumerAccount,
+        computeEnv.consumerAddress,
+        0
+      )
+      for (let i = 0; i < providerInitializeComputeResults.datasets.length; i++) {
+        assets[i].transferTxId = await handleOrder(
+          providerInitializeComputeResults.datasets[i],
+          dtAddressArray[i],
+          consumerAccount,
+          computeEnv.consumerAddress,
+          0
+        )
+      }
+  ```
+
+  Let's start compute job
+  ```Typescript
+      const computeJobs = await ProviderInstance.computeStart(
+        providerUrl,
+        consumerAccount,
+        computeEnv.id,
+        assets,
+        algo,
+        computeValidUntil,
+        paymentToken,
+        resources,
+        (
+          await consumerAccount.provider.getNetwork()
+        ).chainId
+      )
+  ```
+
+  <!--
+      assert(computeJobs, 'Cannot start compute job')
+  -->
+
+  Let's save the compute job it, we re going to use later
+  ```Typescript
+      computeJobId = computeJobs[0].jobId
+  ```
+  <!--
+    } else {
+      assert(
+        computeRoutePath === null,
+        'Route path for free compute is not defined (perhaps because provider does not support it yet?)'
+      )
+      hasFreeComputeSupport = false
+    }
+  }).timeout(40000)
+-->
+
+## 13. Check paid compute job status and get download compute results URL
+  ### 13.1 Check compute status for paid compute job
+<!--
+    if (!hasFreeComputeSupport) {
+      assert(
+        computeRoutePath === null,
+        'Compute route path for free compute is not defined (perhaps because provider does not support it yet?)'
+      )
+    } else {
+  -->
+  You can also add various delays so you see the various states of the compute job
+  ```Typescript
+      const jobStatus = await ProviderInstance.computeStatus(
+        providerUrl,
+        await consumerAccount.getAddress(),
+        computeJobId
+      )
+  ```
+  <!--
+      assert(jobStatus, 'Cannot retrieve compute status!')
+  -->
+  Now, let's see the current status of the previously started computer job
+  ```Typescript
+      console.log('Current status of the compute job: ', jobStatus)
+  ```
+  <!--
+    }
+  }).timeout(40000)
+-->
+
+  ### 13.2 Get download compute results URL
+<!--
+    if (!hasFreeComputeSupport) {
+      assert(
+        computeRoutePath === null,
+        'Compute route path for paid compute is not defined (perhaps because provider does not support it yet?)'
       )
     } else {
   -->

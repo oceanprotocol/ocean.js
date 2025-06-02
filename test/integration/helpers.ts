@@ -78,7 +78,7 @@ export async function createAssetHelper(
     'did:op:' + crypto.SHA256(ethers.utils.getAddress(nftAddress) + chain.toString(10))
 
   const encryptedResponse = await ProviderInstance.encrypt(ddo, chain, providerUrl)
-  const validateResult = await aquariusInstance.validate(ddo)
+  const validateResult = await aquariusInstance.validate(ddo, owner, providerUrl)
   await nft.setMetadata(
     nftAddress,
     await owner.getAddress(),
@@ -105,7 +105,7 @@ export async function updateAssetMetadata(
     providerUrl
   )
   const encryptedResponse = await providerResponse
-  const validateResult = await aquariusInstance.validate(updatedDdo)
+  const validateResult = await aquariusInstance.validate(updatedDdo, owner, providerUrl)
   const updateDdoTX = await nft.setMetadata(
     updatedDdo.nftAddress,
     await owner.getAddress(),

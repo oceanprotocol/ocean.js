@@ -59,6 +59,9 @@ export async function createAsset(
 ): Promise<string> {
   const ddoInstance = DDOManager.getDDOClass(ddo)
   const { indexedMetadata } = ddoInstance.getAssetFields()
+  const value =
+    ddoInstance.getDDOData()?.stats?.price?.value ||
+    indexedMetadata?.stats[0]?.prices[0]?.price
   let { chainId: ddoChainId, nftAddress } = ddoInstance.getDDOFields()
   const { services } = ddoInstance.getDDOFields()
 
@@ -78,7 +81,8 @@ export async function createAsset(
   let templateIndex = await calculateActiveTemplateIndex(
     owner,
     config.nftFactoryAddress,
-    templateIDorAddress
+    templateIDorAddress,
+    chainID
   )
 
   if (templateIndex < 1) {
@@ -90,7 +94,7 @@ export async function createAsset(
 
   const nft = new Nft(owner, chainID)
 
-  const nftFactory = new NftFactory(config.nftFactoryAddress, owner)
+  const nftFactory = new NftFactory(config.nftFactoryAddress, owner, chainID)
 
   // get nft owner
   const account = await owner.getAddress()
@@ -115,9 +119,9 @@ export async function createAsset(
   }
 
   if (
-    !assetUrl.type ||
+    !assetUrl?.files[0].type ||
     ![FileObjectType.ARWEAVE, FileObjectType.IPFS, FileObjectType.URL].includes(
-      assetUrl.type.toLowerCase()
+      assetUrl?.files[0]?.type?.toLowerCase()
     )
   ) {
     console.log('Missing or invalid files object type, defaulting to "url"')
@@ -132,7 +136,6 @@ export async function createAsset(
   }
 
   let bundleNFT
-  const value = indexedMetadata?.stats[0]?.prices[0]?.price
   try {
     if (!value) {
       bundleNFT = await nftFactory.createNftWithDatatoken(nftParamsAsset, datatokenParams)
