@@ -75,9 +75,7 @@ jobs:
             sleep 10
             attempt=$((attempt + 1))
           done
-      - run: npm ci
-      - run: npm run build:metadata
-      - run: npm run test:unit:cover
+      - run: npm ci && npm run build:metadata && npm run test:unit:cover
       - uses: actions/upload-artifact@v4
         with:
           name: coverage-unit
