@@ -353,7 +353,7 @@ async function createAssetHelper(
   ddo.id = 'did:op:' + SHA256(ethers.utils.getAddress(nftAddress) + chain.toString(10))
 
   const encryptedResponse = await ProviderInstance.encrypt(ddo, chain, providerUrl)
-  const validateResult = await aquariusInstance.validate(ddo)
+  const validateResult = await aquariusInstance.validate(ddo, owner, providerUrl)
   await nft.setMetadata(
     nftAddress,
     await owner.getAddress(),
@@ -433,8 +433,8 @@ We need to load the configuration. Add the following code into your `run(){ }` f
     const config = new ConfigHelper().getConfig(
       parseInt(String((await publisherAccount.provider.getNetwork()).chainId))
     )
-    if (process.env.OCEAN_NODE_URL) {
-      config.oceanNodeUri = process.env.OCEAN_NODE_URL
+    if (process.env.NODE_URL) {
+      config.oceanNodeUri = process.env.NODE_URL
     }
     aquariusInstance = new Aquarius(config?.oceanNodeUri)
     providerUrl = config?.oceanNodeUri
