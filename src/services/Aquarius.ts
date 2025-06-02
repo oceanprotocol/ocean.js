@@ -108,111 +108,58 @@ export class Aquarius {
    */
   public async validate(
     ddo: DDO,
-    signer?: Signer,
-    providerUrl?: string,
+    signer: Signer,
+    providerUrl: string,
     signal?: AbortSignal
   ): Promise<ValidateMetadata> {
-    const status: ValidateMetadata = {
-      valid: false
-    }
-    let jsonResponse
-    let response
+    const ddoValidateRoute = providerUrl + '/api/aquarius/assets/ddo/validate'
+    const pathNonce = providerUrl + '/api/services/nonce'
 
-    const path = this.aquariusURL + '/api/aquarius/assets/ddo/validate'
-
-    // Old aquarius API and node API (before publisherAddress, nonce and signature verification)
-    // Older Providers (before updated Ocean Nodes)
-    const validateRequestLegacy = async function (): Promise<Response> {
-      try {
-        response = await fetch(path, {
-          method: 'POST',
-          body: JSON.stringify(ddo),
-          headers: { 'Content-Type': 'application/octet-stream' },
-          signal
-        })
-        return response
-      } catch (error) {
-        LoggerInstance.error('Error validating metadata: ', error)
-        return null
+    try {
+      const publisherAddress = await signer.getAddress()
+      // aquarius is always same url of other components with ocean nodes
+      const responseNonce = await fetch(pathNonce + `?userAddress=${publisherAddress}`, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+        signal
+      })
+      let { nonce } = await responseNonce.json()
+      console.log(`[getNonce] Consumer: ${publisherAddress} nonce: ${nonce}`)
+      if (!nonce || nonce === null) {
+        nonce = '0'
       }
-    }
-
-    if (signer) {
-      try {
-        // make it optional and get from env if not present
-        if (process.env.OCEAN_NODE_URL) {
-          providerUrl = process.env.OCEAN_NODE_URL
-        } else {
-          providerUrl = process.env.PROVIDER_URL
-        }
-        const publisherAddress = await signer.getAddress()
-        // aquarius is always same url of other components with ocean nodes
-        const pathNonce = providerUrl + '/api/services/nonce'
-        const responseNonce = await fetch(
-          pathNonce + `?userAddress=${publisherAddress}`,
-          {
-            method: 'GET',
-            headers: { 'Content-Type': 'application/json' },
-            signal
-          }
-        )
-        let { nonce } = await responseNonce.json()
-        console.log(`[getNonce] Consumer: ${publisherAddress} nonce: ${nonce}`)
-        if (!nonce || nonce === null) {
-          nonce = '0'
-        }
-        const nextNonce = (Number(nonce) + 1).toString() // have to increase the previous
-        // same signed message as usual (did + nonce)
-        // the node will only validate (add his signature if there fields are present and are valid)
-        // let signatureMessage = publisherAddress
-        const signatureMessage = ddo.id + nextNonce
-        const signature = await signRequest(signer, signatureMessage)
-        const data = { ddo, publisherAddress, nonce: nextNonce, signature }
-        response = await fetch(path, {
-          method: 'POST',
-          body: JSON.stringify(data),
-          headers: { 'Content-Type': 'application/octet-stream' },
-          signal
-        })
-        const resp = await response.json()
-        // this is the legacy API version (especting just a DDO object in the body)
-        if (resp && JSON.stringify(resp).includes('no version provided for DDO.')) {
-          // do it again, using the legacy API
-          response = await validateRequestLegacy()
-        } else {
-          jsonResponse = resp
-        }
-      } catch (e) {
-        // retry with legacy path validation
-        LoggerInstance.error(
-          'Metadata validation failed using publisher signature validation (perhaps not supported or legacy Aquarius), retrying with legacy path...',
-          e.message
-        )
-        response = await validateRequestLegacy()
+      const nextNonce = (Number(nonce) + 1).toString() // have to increase the previous
+      // same signed message as usual (did + nonce)
+      // the node will only validate (add his signature if there fields are present and are valid)
+      // let signatureMessage = publisherAddress
+      const signatureMessage = ddo.id + nextNonce
+      const signature = await signRequest(signer, signatureMessage)
+      const data = { ddo, publisherAddress, nonce: nextNonce, signature }
+      const response = await fetch(ddoValidateRoute, {
+        method: 'POST',
+        body: JSON.stringify(data),
+        headers: { 'Content-Type': 'application/octet-stream' },
+        signal
+      })
+      const jsonResponse = await response.json()
+      if (response.status !== 200) {
+        throw new Error('Metadata validation failed')
       }
-    } else {
-      // backwards compatibility, "old" way without signature stuff
-      // this will not validate on newer versions of Ocean Node (status:400), as the node will not add the validation signature
-      response = await validateRequestLegacy()
-    }
-    if (!response) return status
+      console.log('Ddo successfully validated')
 
-    if (response.status === 200) {
-      jsonResponse = jsonResponse || (await response.json())
-      status.valid = true
-      status.hash = jsonResponse.hash
-      status.proof = {
-        validatorAddress: jsonResponse.publicKey,
-        r: jsonResponse.r[0],
-        s: jsonResponse.s[0],
-        v: jsonResponse.v
+      return {
+        valid: true,
+        hash: jsonResponse.hash,
+        proof: {
+          validatorAddress: jsonResponse.publicKey,
+          r: jsonResponse.r[0],
+          s: jsonResponse.s[0],
+          v: jsonResponse.v
+        }
       }
-    } else {
-      status.errors = jsonResponse
-      LoggerInstance.error('validate Metadata failed:', response.status, status.errors)
+    } catch (e) {
+      LoggerInstance.error('Metadata validation failed', e.message)
     }
-
-    return status
   }
 
   /**
