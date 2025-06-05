@@ -30,12 +30,16 @@ export class Aquarius {
    * @param {AbortSignal} signal abort signal
    * @return {Promise<Asset>} Asset
    */
-  public async resolve(did: string, signal?: AbortSignal): Promise<Asset> {
+  public async resolve(
+    did: string,
+    signal?: AbortSignal,
+    authorization?: string
+  ): Promise<Asset> {
     const path = this.aquariusURL + '/api/aquarius/assets/ddo/' + did
     try {
       const response = await fetch(path, {
         method: 'GET',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', Authorization: authorization },
         signal
       })
 
@@ -63,7 +67,8 @@ export class Aquarius {
     txid?: string,
     signal?: AbortSignal,
     interval: number = 30000,
-    maxRetries: number = 100
+    maxRetries: number = 100,
+    authorization?: string
   ): Promise<Asset> {
     let tries = 0
     // lets have a cap to prevent possible abuse as well
@@ -76,7 +81,7 @@ export class Aquarius {
         const path = this.aquariusURL + '/api/aquarius/assets/ddo/' + did
         const response = await fetch(path, {
           method: 'GET',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json', Authorization: authorization },
           signal
         })
         if (response.ok) {
@@ -110,7 +115,8 @@ export class Aquarius {
     ddo: DDO,
     signer: Signer,
     providerUrl: string,
-    signal?: AbortSignal
+    signal?: AbortSignal,
+    authorization?: string
   ): Promise<ValidateMetadata> {
     const ddoValidateRoute = providerUrl + '/api/aquarius/assets/ddo/validate'
     const pathNonce = providerUrl + '/api/services/nonce'
@@ -120,7 +126,7 @@ export class Aquarius {
       // aquarius is always same url of other components with ocean nodes
       const responseNonce = await fetch(pathNonce + `?userAddress=${publisherAddress}`, {
         method: 'GET',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', Authorization: authorization },
         signal
       })
       let { nonce } = await responseNonce.json()
@@ -138,7 +144,10 @@ export class Aquarius {
       const response = await fetch(ddoValidateRoute, {
         method: 'POST',
         body: JSON.stringify(data),
-        headers: { 'Content-Type': 'application/octet-stream' },
+        headers: {
+          'Content-Type': 'application/octet-stream',
+          Authorization: authorization
+        },
         signal
       })
       const jsonResponse = await response.json()
@@ -168,14 +177,19 @@ export class Aquarius {
    * @param {AbortSignal} signal abort signal
    * @return {Promise<QueryResult>}
    */
-  public async getAssetMetadata(did: string, signal?: AbortSignal): Promise<any> {
+  public async getAssetMetadata(
+    did: string,
+    signal?: AbortSignal,
+    authorization?: string
+  ): Promise<any> {
     const path = this.aquariusURL + '/api/aquarius/assets/metadata/' + did
 
     try {
       const response = await fetch(path, {
         method: 'GET',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          Authorization: authorization
         },
         signal
       })
@@ -199,7 +213,11 @@ export class Aquarius {
    * @param {AbortSignal} signal abort signal
    * @return {Promise<QueryResult>}
    */
-  public async querySearch(query: SearchQuery, signal?: AbortSignal): Promise<any> {
+  public async querySearch(
+    query: SearchQuery,
+    signal?: AbortSignal,
+    authorization?: string
+  ): Promise<any> {
     const path = this.aquariusURL + '/api/aquarius/assets/query'
 
     try {
@@ -207,7 +225,8 @@ export class Aquarius {
         method: 'POST',
         body: JSON.stringify(query),
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          Authorization: authorization
         },
         signal
       })
