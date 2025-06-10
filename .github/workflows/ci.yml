@@ -134,7 +134,7 @@ jobs:
       - name: Run Barge
         working-directory: ${{ github.workspace }}/barge
         run: |
-            bash -x start_ocean.sh --with-typesense 2>&1 > start_ocean.log &
+            bash -x start_ocean.sh --with-typesense 2>&1 > ocean-node.log &
       - name: Wait for node to be ready
         run: |
           max_attempts=60
