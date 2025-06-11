@@ -134,6 +134,7 @@ jobs:
       - name: Run Barge
         working-directory: ${{ github.workspace }}/barge
         run: |
+            export NODE_VERSION=pr-952
             bash -x start_ocean.sh --with-typesense 2>&1 > start_ocean.log &
       - name: Wait for node to be ready
         run: |
