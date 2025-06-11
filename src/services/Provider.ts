@@ -1329,6 +1329,124 @@ export class Provider {
     throw new Error(JSON.stringify(resolvedResponse))
   }
 
+  /** Generates an auth token
+   * @param {Signer} consumer consumer Signer wallet object
+   * @param {string} providerUri The URI of the provider we want to query
+   * @param {AbortSignal} signal abort signal
+   * @return {Promise<ComputeJob | ComputeJob[]>}
+   */
+  public async generateAuthToken(
+    consumer: Signer,
+    providerUri: string,
+    signal?: AbortSignal
+  ): Promise<string> {
+    const consumerAddress = await consumer.getAddress()
+    const providerEndpoints = await this.getEndpoints(providerUri)
+    const serviceEndpoints = await this.getServiceEndpoints(
+      providerUri,
+      providerEndpoints
+    )
+    const url = this.getEndpointURL(serviceEndpoints, 'generateAuthToken').urlPath || null
+    const nonce = (
+      (await this.getNonce(
+        providerUri,
+        consumerAddress,
+        signal,
+        providerEndpoints,
+        serviceEndpoints
+      )) + 1
+    ).toString()
+
+    const signatureMessage = consumerAddress + nonce
+    const signature = await this.signProviderRequest(consumer, signatureMessage)
+
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        body: JSON.stringify({
+          address: consumerAddress,
+          signature,
+          nonce
+        }),
+        headers: { 'Content-Type': 'application/json' },
+        signal
+      })
+
+      if (!response?.ok) {
+        throw new Error(
+          `Failed to generate auth token: ${response.status} ${response.statusText}`
+        )
+      }
+      const params = await response.json()
+      return params?.token
+    } catch (e) {
+      LoggerInstance.error('Generate auth token failed:')
+      LoggerInstance.error(e)
+      throw new Error('HTTP request failed calling Provider')
+    }
+  }
+
+  /** Generates an auth token
+   * @param {Signer} consumer consumer Signer wallet object
+   * @param {string} token The auth token to invalidate
+   * @param {string} providerUri The URI of the provider we want to query
+   * @param {AbortSignal} signal abort signal
+   * @return {Promise<ComputeJob | ComputeJob[]>}
+   */
+  public async invalidateAuthToken(
+    consumer: Signer,
+    token: string,
+    providerUri: string,
+    signal?: AbortSignal
+  ): Promise<{ success: boolean }> {
+    const consumerAddress = await consumer.getAddress()
+    const providerEndpoints = await this.getEndpoints(providerUri)
+    const serviceEndpoints = await this.getServiceEndpoints(
+      providerUri,
+      providerEndpoints
+    )
+    const url =
+      this.getEndpointURL(serviceEndpoints, 'invalidateAuthToken').urlPath || null
+    const nonce = (
+      (await this.getNonce(
+        providerUri,
+        consumerAddress,
+        signal,
+        providerEndpoints,
+        serviceEndpoints
+      )) + 1
+    ).toString()
+
+    const signatureMessage = consumerAddress + nonce
+    const signature = await this.signProviderRequest(consumer, signatureMessage)
+
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        body: JSON.stringify({
+          address: consumerAddress,
+          signature,
+          token,
+          nonce
+        }),
+        headers: { 'Content-Type': 'application/json' },
+        signal
+      })
+
+      if (!response?.ok) {
+        throw new Error(
+          `Failed to invalidate auth token: ${response.status} ${response.statusText}`
+        )
+      }
+      const params = await response.json()
+      return params
+    } catch (e) {
+      LoggerInstance.error('Generate auth token failed:')
+      LoggerInstance.error(e)
+      throw new Error('HTTP request failed calling Provider')
+    }
+  }
+
   /** Check for a valid provider at URL
    * @param {String} url provider uri address
    * @param {AbortSignal} signal abort signal
