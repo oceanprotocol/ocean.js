@@ -134,7 +134,8 @@ jobs:
       - name: Run Barge
         working-directory: ${{ github.workspace }}/barge
         run: |
-            bash -x start_ocean.sh --with-typesense 2>&1 > start_ocean.log &
+            export NODE_VERSION=pr-950
+            bash -x start_ocean.sh --with-typesense 2>&1 > start-node.log &
       - name: Wait for node to be ready
         run: |
           max_attempts=60
@@ -173,7 +174,7 @@ jobs:
         if: ${{ failure() }}
         run: |
           echo "========== Ocean Node Logs =========="
-          tac ${{ github.workspace }}/ocean-node/ocean-node.log || echo "Log file not found"
+          tac ${{ github.workspace }}/ocean-node/start-node.log || echo "Log file not found"
       - name: Upload coverage
         uses: actions/upload-artifact@v4
         with:
