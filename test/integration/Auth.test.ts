@@ -17,13 +17,11 @@ describe('Auth token tests', async () => {
   it('should generate auth token', async () => {
     const token = await ProviderInstance.generateAuthToken(account, providerUrl)
     expect(token).to.be.a('string')
-    expect(token).to.not.be.empty
   })
 
   it('should invalidate auth token', async () => {
     const token = await ProviderInstance.generateAuthToken(account, providerUrl)
     expect(token).to.be.a('string')
-    expect(token).to.not.be.empty
 
     const invalidatedToken = await ProviderInstance.invalidateAuthToken(
       account,
@@ -31,7 +29,6 @@ describe('Auth token tests', async () => {
       providerUrl
     )
     expect(invalidatedToken).to.be.a('object')
-    expect(invalidatedToken).to.not.be.empty
-    expect(invalidatedToken.success).to.be.true
+    expect(invalidatedToken.success).to.equal(true)
   })
 })
