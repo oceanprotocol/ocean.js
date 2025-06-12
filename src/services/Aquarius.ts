@@ -138,7 +138,7 @@ export class Aquarius {
       // same signed message as usual (did + nonce)
       // the node will only validate (add his signature if there fields are present and are valid)
       // let signatureMessage = publisherAddress
-      const signatureMessage = ddo.id + nextNonce
+      const signatureMessage = publisherAddress + nextNonce
       const signature = await signRequest(signer, signatureMessage)
       const data = { ddo, publisherAddress, nonce: nextNonce, signature }
       const response = await fetch(ddoValidateRoute, {
