@@ -95,8 +95,8 @@ const ddoWithNoTimeout: DDO = {
       serviceEndpoint: 'http://127.0.0.1:8001',
       timeout: 0,
       compute: {
-        publisherTrustedAlgorithmPublishers: [] as any,
-        publisherTrustedAlgorithms: [] as any,
+        publisherTrustedAlgorithmPublishers: ['*'] as any,
+        publisherTrustedAlgorithms: ['*'] as any,
         allowRawAlgorithm: false,
         allowNetworkAccess: true
       }
@@ -132,8 +132,8 @@ const ddoWith2mTimeout: DDO = {
       serviceEndpoint: 'http://127.0.0.1:8001',
       timeout: 120,
       compute: {
-        publisherTrustedAlgorithmPublishers: [] as any,
-        publisherTrustedAlgorithms: [] as any,
+        publisherTrustedAlgorithmPublishers: ['*'] as any,
+        publisherTrustedAlgorithms: ['*'] as any,
         allowRawAlgorithm: false,
         allowNetworkAccess: true
       }
@@ -263,11 +263,6 @@ describe('Compute flow tests', async () => {
     consumerAccount = (await provider.getSigner(1)) as Signer
     config = await getTestConfig(publisherAccount)
     aquarius = new Aquarius(config?.oceanNodeUri)
-
-    if (process.env.NODE_URL) {
-      config.oceanNodeUri = process.env.NODE_URL
-    }
-
     providerUrl = config?.oceanNodeUri
     addresses = getAddresses()
     paymentToken = addresses.Ocean
@@ -464,8 +459,8 @@ describe('Compute flow tests', async () => {
       assert(
         freeComputeRouteSupport === null,
         'Cannot start free compute job. provider at ' +
-        providerUrl +
-        ' does not implement freeCompute route'
+          providerUrl +
+          ' does not implement freeCompute route'
       )
     }
   }).timeout(40000)
@@ -533,7 +528,7 @@ describe('Compute flow tests', async () => {
     } catch (e) {
       assert(
         e.message ===
-        `ComputeJob cannot be initialized: Error: Not enough cpu resources. Requested 5, but max is 4.`
+          `ComputeJob cannot be initialized: Error: Not enough cpu resources. Requested 5, but max is 4.`
       )
     }
   })
@@ -596,7 +591,7 @@ describe('Compute flow tests', async () => {
       Number(
         ethers.utils.formatUnits(providerInitializeComputeResults.payment.amount, 18)
       ) ===
-      (computeEnv.maxJobDuration / 60) * price,
+        (computeEnv.maxJobDuration / 60) * price,
       'Incorrect payment token amount'
     ) // 60 minutes per price 1 -> amount = 60
     assert(
@@ -772,7 +767,7 @@ describe('Compute flow tests', async () => {
     assets[0].transferTxId = providerInitializeComputeResults.datasets[0].validOrder
     assert(
       algo.transferTxId === paidEnvAlgoTxId &&
-      assets[0].transferTxId === paidEnvDatasetTxId,
+        assets[0].transferTxId === paidEnvDatasetTxId,
       'We should use the same orders, because no fess must be paid'
     )
 
@@ -889,7 +884,7 @@ describe('Compute flow tests', async () => {
     }
     assert(
       algo.transferTxId !== paidEnvAlgoTxId ||
-      assets[0].transferTxId !== paidEnvDatasetTxId,
+        assets[0].transferTxId !== paidEnvDatasetTxId,
       'We should not use the same orders'
     )
     const computeJobs = await ProviderInstance.computeStart(
