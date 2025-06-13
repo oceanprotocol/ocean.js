@@ -787,7 +787,6 @@ describe('Compute flow tests', async () => {
       resources
     )
 
-    console.log({ computeJobs })
     assert(computeJobs, 'Cannot start compute job')
   })
 
