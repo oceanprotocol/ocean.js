@@ -57,7 +57,7 @@ export async function calculateActiveTemplateIndex(
   owner: Signer,
   nftContractAddress: string, // addresses.ERC721Factory,
   template: string | number,
-  chainID: number
+  chainID?: number
 ): Promise<number> {
   // is an ID number?
   const isTemplateID = typeof template === 'number'

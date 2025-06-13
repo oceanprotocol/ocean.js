@@ -95,8 +95,8 @@ const ddoWithNoTimeout: DDO = {
       serviceEndpoint: 'http://127.0.0.1:8001',
       timeout: 0,
       compute: {
-        publisherTrustedAlgorithmPublishers: [] as any,
-        publisherTrustedAlgorithms: [] as any,
+        publisherTrustedAlgorithmPublishers: ['*'] as any,
+        publisherTrustedAlgorithms: ['*'] as any,
         allowRawAlgorithm: false,
         allowNetworkAccess: true
       }
@@ -132,8 +132,8 @@ const ddoWith2mTimeout: DDO = {
       serviceEndpoint: 'http://127.0.0.1:8001',
       timeout: 120,
       compute: {
-        publisherTrustedAlgorithmPublishers: [] as any,
-        publisherTrustedAlgorithms: [] as any,
+        publisherTrustedAlgorithmPublishers: ['*'] as any,
+        publisherTrustedAlgorithms: ['*'] as any,
         allowRawAlgorithm: false,
         allowNetworkAccess: true
       }
@@ -263,6 +263,11 @@ describe('Compute flow tests', async () => {
     consumerAccount = (await provider.getSigner(1)) as Signer
     config = await getTestConfig(publisherAccount)
     aquarius = new Aquarius(config?.oceanNodeUri)
+
+    if (process.env.NODE_URL) {
+      config.oceanNodeUri = process.env.NODE_URL
+    }
+
     providerUrl = config?.oceanNodeUri
     addresses = getAddresses()
     paymentToken = addresses.Ocean
@@ -781,6 +786,7 @@ describe('Compute flow tests', async () => {
       paymentToken,
       resources
     )
+
     assert(computeJobs, 'Cannot start compute job')
   })
 
