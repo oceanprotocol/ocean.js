@@ -25,9 +25,9 @@ export class Provider {
    * @param {string} providerUri - the provider url
    * @return {Promise<any>}
    */
-  async getEndpoints(providerUri: string): Promise<any> {
+  async getEndpoints(providerUri: string, authorization?: string): Promise<any> {
     try {
-      const endpoints = await this.getData(providerUri)
+      const endpoints = await this.getData(providerUri, authorization)
       return await endpoints.json()
     } catch (e) {
       LoggerInstance.error('Finding the service endpoints failed:', e)
@@ -87,7 +87,8 @@ export class Provider {
     consumerAddress: string,
     signal?: AbortSignal,
     providerEndpoints?: any,
-    serviceEndpoints?: ServiceEndpoint[]
+    serviceEndpoints?: ServiceEndpoint[],
+    authorization?: string
   ): Promise<number> {
     if (!providerEndpoints) {
       providerEndpoints = await this.getEndpoints(providerUri)
@@ -102,7 +103,7 @@ export class Provider {
     try {
       const response = await fetch(path + `?userAddress=${consumerAddress}`, {
         method: 'GET',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', Authorization: authorization },
         signal
       })
       const { nonce } = await response.json()
@@ -156,7 +157,8 @@ export class Provider {
     data: any,
     chainId: number,
     providerUri: string,
-    signal?: AbortSignal
+    signal?: AbortSignal,
+    authorization?: string
   ): Promise<string> {
     const providerEndpoints = await this.getEndpoints(providerUri)
     const serviceEndpoints = await this.getServiceEndpoints(
@@ -172,7 +174,10 @@ export class Provider {
       const response = await fetch(path, {
         method: 'POST',
         body: JSON.stringify(data),
-        headers: { 'Content-Type': 'application/octet-stream' },
+        headers: {
+          'Content-Type': 'application/octet-stream',
+          Authorization: authorization
+        },
         signal
       })
       return await response.text()
@@ -196,7 +201,8 @@ export class Provider {
     serviceId: string,
     providerUri: string,
     withChecksum: boolean = false,
-    signal?: AbortSignal
+    signal?: AbortSignal,
+    authorization?: string
   ): Promise<FileInfo[]> {
     const providerEndpoints = await this.getEndpoints(providerUri)
     const serviceEndpoints = await this.getServiceEndpoints(
@@ -214,7 +220,7 @@ export class Provider {
       response = await fetch(path, {
         method: 'POST',
         body: JSON.stringify(args),
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', Authorization: authorization },
         signal
       })
     } catch (e) {
@@ -251,7 +257,8 @@ export class Provider {
     file: UrlFile | Arweave | Ipfs,
     providerUri: string,
     withChecksum: boolean = false,
-    signal?: AbortSignal
+    signal?: AbortSignal,
+    authorization?: string
   ): Promise<FileInfo[]> {
     const providerEndpoints = await this.getEndpoints(providerUri)
     const serviceEndpoints = await this.getServiceEndpoints(
@@ -269,7 +276,7 @@ export class Provider {
       response = await fetch(path, {
         method: 'POST',
         body: JSON.stringify(args),
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', Authorization: authorization },
         signal
       })
     } catch (e) {
@@ -302,7 +309,8 @@ export class Provider {
    */
   public async getComputeEnvironments(
     providerUri: string,
-    signal?: AbortSignal
+    signal?: AbortSignal,
+    authorization?: string
   ): Promise<ComputeEnvironment[]> {
     const providerEndpoints = await this.getEndpoints(providerUri)
     const serviceEndpoints = await this.getServiceEndpoints(
@@ -315,7 +323,7 @@ export class Provider {
     try {
       response = await fetch(path, {
         method: 'GET',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', Authorization: authorization },
         signal
       })
     } catch (e) {
@@ -364,7 +372,8 @@ export class Provider {
     signal?: AbortSignal,
     userCustomParameters?: UserCustomParameters,
     computeEnv?: string,
-    validUntil?: number
+    validUntil?: number,
+    authorization?: string
   ): Promise<ProviderInitialize> {
     const providerEndpoints = await this.getEndpoints(providerUri)
     const serviceEndpoints = await this.getServiceEndpoints(
@@ -388,7 +397,7 @@ export class Provider {
     try {
       response = await fetch(initializeUrl, {
         method: 'GET',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', Authorization: authorization },
         signal
       })
     } catch (e) {
@@ -429,7 +438,8 @@ export class Provider {
     chainId: number,
     token: string,
     maxJobDuration: number,
-    signal?: AbortSignal
+    signal?: AbortSignal,
+    authorization?: string
   ): Promise<ProviderComputeInitializeResults> {
     const providerEndpoints = await this.getEndpoints(providerUri)
     const serviceEndpoints = await this.getServiceEndpoints(
@@ -457,7 +467,7 @@ export class Provider {
       response = await fetch(initializeUrl, {
         method: 'POST',
         body: JSON.stringify(payload),
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', Authorization: authorization },
         signal
       })
     } catch (e) {
@@ -500,7 +510,8 @@ export class Provider {
     providerUri: string,
     signer: Signer,
     resources: ComputeResourceRequest[],
-    signal?: AbortSignal
+    signal?: AbortSignal,
+    authorization?: string
   ): Promise<ProviderComputeInitializeResults> {
     const providerEndpoints = await this.getEndpoints(providerUri)
     const serviceEndpoints = await this.getServiceEndpoints(
@@ -551,7 +562,7 @@ export class Provider {
       response = await fetch(initializeUrl, {
         method: 'POST',
         body: JSON.stringify(providerData),
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', Authorization: authorization },
         signal
       })
       console.log('Raw response:', response)
@@ -599,7 +610,8 @@ export class Provider {
     providerUri: string,
     signer: Signer,
     policyServer?: any,
-    userCustomParameters?: UserCustomParameters
+    userCustomParameters?: UserCustomParameters,
+    authorization?: string
   ): Promise<any> {
     const providerEndpoints = await this.getEndpoints(providerUri)
     const serviceEndpoints = await this.getServiceEndpoints(
@@ -617,7 +629,8 @@ export class Provider {
         consumerAddress,
         null,
         providerEndpoints,
-        serviceEndpoints
+        serviceEndpoints,
+        authorization
       )) + 1
     ).toString()
 
@@ -659,7 +672,8 @@ export class Provider {
     algorithm: ComputeAlgorithm,
     signal?: AbortSignal,
     additionalDatasets?: ComputeAsset[],
-    output?: ComputeOutput
+    output?: ComputeOutput,
+    authorization?: string
   ): Promise<ComputeJob | ComputeJob[]> {
     const providerEndpoints = await this.getEndpoints(providerUri)
     const serviceEndpoints = await this.getServiceEndpoints(
@@ -700,7 +714,7 @@ export class Provider {
       response = await fetch(computeStartUrl, {
         method: 'POST',
         body: JSON.stringify(payload),
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', Authorization: authorization },
         signal
       })
     } catch (e) {
@@ -748,7 +762,8 @@ export class Provider {
     resources: ComputeResourceRequest[],
     chainId?: number, // network used by payment (only for payed compute jobs)
     output?: ComputeOutput,
-    signal?: AbortSignal
+    signal?: AbortSignal,
+    authorization?: string
   ): Promise<ComputeJob | ComputeJob[]> {
     console.log('called new compute start method...')
     console.log('datasets: ', datasets)
@@ -777,7 +792,8 @@ export class Provider {
         consumerAddress,
         signal,
         providerEndpoints,
-        serviceEndpoints
+        serviceEndpoints,
+        authorization
       )) + 1
     ).toString()
 
@@ -812,7 +828,7 @@ export class Provider {
       response = await fetch(computeStartUrl, {
         method: 'POST',
         body: JSON.stringify(payload),
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', Authorization: authorization },
         signal
       })
     } catch (e) {
@@ -854,7 +870,8 @@ export class Provider {
     algorithm: ComputeAlgorithm,
     resources?: ComputeResourceRequest[],
     output?: ComputeOutput,
-    signal?: AbortSignal
+    signal?: AbortSignal,
+    authorization?: string
   ): Promise<ComputeJob | ComputeJob[]> {
     console.log('called new free compute start method...')
     console.log('datasets: ', datasets)
@@ -883,7 +900,8 @@ export class Provider {
         consumerAddress,
         signal,
         providerEndpoints,
-        serviceEndpoints
+        serviceEndpoints,
+        authorization
       )) + 1
     ).toString()
 
@@ -908,7 +926,7 @@ export class Provider {
       response = await fetch(computeStartUrl, {
         method: 'POST',
         body: JSON.stringify(payload),
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', Authorization: authorization },
         signal
       })
     } catch (e) {
@@ -943,7 +961,8 @@ export class Provider {
     providerUri: string,
     signer: Signer,
     jobId: string,
-    signal?: AbortSignal
+    signal?: AbortSignal,
+    authorization?: string
   ): Promise<any> {
     const providerEndpoints = await this.getEndpoints(providerUri)
     const serviceEndpoints = await this.getServiceEndpoints(
@@ -988,7 +1007,7 @@ export class Provider {
     try {
       response = await fetch(computeStreamableLogs + url, {
         method: 'GET',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', Authorization: authorization },
         signal
       })
       console.log('Raw response:', response)
@@ -1049,7 +1068,8 @@ export class Provider {
     providerUri: string,
     signer: Signer,
     agreementId?: string,
-    signal?: AbortSignal
+    signal?: AbortSignal,
+    authorization?: string
   ): Promise<ComputeJob | ComputeJob[]> {
     const providerEndpoints = await this.getEndpoints(providerUri)
     const serviceEndpoints = await this.getServiceEndpoints(
@@ -1066,7 +1086,8 @@ export class Provider {
         consumerAddress,
         signal,
         providerEndpoints,
-        serviceEndpoints
+        serviceEndpoints,
+        authorization
       )) + 1
     ).toString()
 
@@ -1092,7 +1113,7 @@ export class Provider {
       response = await fetch(computeStopUrl, {
         method: 'PUT',
         body: JSON.stringify(payload),
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', Authorization: authorization },
         signal
       })
     } catch (e) {
@@ -1130,7 +1151,8 @@ export class Provider {
     consumerAddress: string,
     jobId?: string,
     agreementId?: string,
-    signal?: AbortSignal
+    signal?: AbortSignal,
+    authorization?: string
   ): Promise<ComputeJob | ComputeJob[]> {
     const providerEndpoints = await this.getEndpoints(providerUri)
     const serviceEndpoints = await this.getServiceEndpoints(
@@ -1151,7 +1173,7 @@ export class Provider {
       console.log('computeStatusUrl: ', computeStatusUrl + url)
       response = await fetch(computeStatusUrl + url, {
         method: 'GET',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', Authorization: authorization },
         signal
       })
     } catch (e) {
@@ -1193,7 +1215,8 @@ export class Provider {
     providerUri: string,
     consumer: Signer,
     jobId: string,
-    index: number
+    index: number,
+    authorization?: string
   ): Promise<string> {
     const providerEndpoints = await this.getEndpoints(providerUri)
     const serviceEndpoints = await this.getServiceEndpoints(
@@ -1210,7 +1233,8 @@ export class Provider {
         await consumer.getAddress(),
         null,
         providerEndpoints,
-        serviceEndpoints
+        serviceEndpoints,
+        authorization
       )) + 1
     ).toString()
     let signatureMessage = await consumer.getAddress()
@@ -1241,7 +1265,8 @@ export class Provider {
     consumer: Signer,
     jobId: string,
     providerUri: string,
-    signal?: AbortSignal
+    signal?: AbortSignal,
+    authorization?: string
   ): Promise<ComputeJob | ComputeJob[]> {
     const providerEndpoints = await this.getEndpoints(providerUri)
     const serviceEndpoints = await this.getServiceEndpoints(
@@ -1258,7 +1283,8 @@ export class Provider {
         await consumer.getAddress(),
         signal,
         providerEndpoints,
-        serviceEndpoints
+        serviceEndpoints,
+        authorization
       )) + 1
     ).toString()
 
@@ -1279,7 +1305,7 @@ export class Provider {
       response = await fetch(computeDeleteUrl, {
         method: 'DELETE',
         body: JSON.stringify(payload),
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', Authorization: authorization },
         signal
       })
     } catch (e) {
@@ -1303,16 +1329,138 @@ export class Provider {
     throw new Error(JSON.stringify(resolvedResponse))
   }
 
+  /** Generates an auth token
+   * @param {Signer} consumer consumer Signer wallet object
+   * @param {string} providerUri The URI of the provider we want to query
+   * @param {AbortSignal} signal abort signal
+   * @return {Promise<ComputeJob | ComputeJob[]>}
+   */
+  public async generateAuthToken(
+    consumer: Signer,
+    providerUri: string,
+    signal?: AbortSignal
+  ): Promise<string> {
+    const consumerAddress = await consumer.getAddress()
+    const providerEndpoints = await this.getEndpoints(providerUri)
+    const serviceEndpoints = await this.getServiceEndpoints(
+      providerUri,
+      providerEndpoints
+    )
+    const url = this.getEndpointURL(serviceEndpoints, 'generateAuthToken').urlPath || null
+    const nonce = (
+      (await this.getNonce(
+        providerUri,
+        consumerAddress,
+        signal,
+        providerEndpoints,
+        serviceEndpoints
+      )) + 1
+    ).toString()
+
+    const signatureMessage = consumerAddress + nonce
+    const signature = await this.signProviderRequest(consumer, signatureMessage)
+
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        body: JSON.stringify({
+          address: consumerAddress,
+          signature,
+          nonce
+        }),
+        headers: { 'Content-Type': 'application/json' },
+        signal
+      })
+
+      if (!response?.ok) {
+        throw new Error(
+          `Failed to generate auth token: ${response.status} ${response.statusText}`
+        )
+      }
+      const params = await response.json()
+      return params?.token
+    } catch (e) {
+      LoggerInstance.error('Generate auth token failed:')
+      LoggerInstance.error(e)
+      throw new Error('HTTP request failed calling Provider')
+    }
+  }
+
+  /** Generates an auth token
+   * @param {Signer} consumer consumer Signer wallet object
+   * @param {string} token The auth token to invalidate
+   * @param {string} providerUri The URI of the provider we want to query
+   * @param {AbortSignal} signal abort signal
+   * @return {Promise<ComputeJob | ComputeJob[]>}
+   */
+  public async invalidateAuthToken(
+    consumer: Signer,
+    token: string,
+    providerUri: string,
+    signal?: AbortSignal
+  ): Promise<{ success: boolean }> {
+    const consumerAddress = await consumer.getAddress()
+    const providerEndpoints = await this.getEndpoints(providerUri)
+    const serviceEndpoints = await this.getServiceEndpoints(
+      providerUri,
+      providerEndpoints
+    )
+    const url =
+      this.getEndpointURL(serviceEndpoints, 'invalidateAuthToken').urlPath || null
+    const nonce = (
+      (await this.getNonce(
+        providerUri,
+        consumerAddress,
+        signal,
+        providerEndpoints,
+        serviceEndpoints
+      )) + 1
+    ).toString()
+
+    const signatureMessage = consumerAddress + nonce
+    const signature = await this.signProviderRequest(consumer, signatureMessage)
+
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        body: JSON.stringify({
+          address: consumerAddress,
+          signature,
+          token,
+          nonce
+        }),
+        headers: { 'Content-Type': 'application/json' },
+        signal
+      })
+
+      if (!response?.ok) {
+        throw new Error(
+          `Failed to invalidate auth token: ${response.status} ${response.statusText}`
+        )
+      }
+      const params = await response.json()
+      return params
+    } catch (e) {
+      LoggerInstance.error('Generate auth token failed:')
+      LoggerInstance.error(e)
+      throw new Error('HTTP request failed calling Provider')
+    }
+  }
+
   /** Check for a valid provider at URL
    * @param {String} url provider uri address
    * @param {AbortSignal} signal abort signal
    * @return {Promise<boolean>} valid or not
    */
-  public async isValidProvider(url: string, signal?: AbortSignal): Promise<boolean> {
+  public async isValidProvider(
+    url: string,
+    signal?: AbortSignal,
+    authorization?: string
+  ): Promise<boolean> {
     try {
       const response = await fetch(url, {
         method: 'GET',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', Authorization: authorization },
         signal
       })
       if (response?.ok) {
@@ -1380,11 +1528,12 @@ export class Provider {
    * @param {string} url - The URL to fetch data from.
    * @returns A Promise that resolves to a Response object.
    */
-  private async getData(url: string): Promise<Response> {
+  private async getData(url: string, authorization?: string): Promise<Response> {
     return fetch(url, {
       method: 'GET',
       headers: {
-        'Content-type': 'application/json'
+        'Content-type': 'application/json',
+        Authorization: authorization
       }
     })
   }
