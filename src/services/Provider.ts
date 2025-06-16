@@ -498,6 +498,8 @@ export class Provider {
    * @param {number} validUntil  The job expiration date.
    * @param {string} providerUri The provider URI.
    * @param {Signer} signer caller address
+   * @param {ComputeResourceRequest[]} resources The resources to start compute job with.
+   * @param {number} chainId The chain used to do payments
    * @param {AbortSignal} signal abort signal
    * @return {Promise<ProviderComputeInitialize>} ProviderComputeInitialize data
    */
@@ -510,6 +512,7 @@ export class Provider {
     providerUri: string,
     signer: Signer,
     resources: ComputeResourceRequest[],
+    chainId?: number,
     signal?: AbortSignal,
     authorization?: string
   ): Promise<ProviderComputeInitializeResults> {
@@ -534,7 +537,7 @@ export class Provider {
 
     // same signed message as for start compute (consumer address + did[0] + nonce)
     let signatureMessage = consumerAddress
-    signatureMessage += assets[0].documentId
+    signatureMessage += assets[0]?.documentId
     signatureMessage += nonce
     const signature = await this.signProviderRequest(signer, signatureMessage)
 
@@ -543,7 +546,7 @@ export class Provider {
       algorithm,
       environment: computeEnv,
       payment: {
-        chainId: await signer.getChainId(),
+        chainId: chainId || (await signer.getChainId()),
         token,
         resources
       },
@@ -798,7 +801,7 @@ export class Provider {
     ).toString()
 
     let signatureMessage = consumerAddress
-    signatureMessage += datasets[0].documentId
+    signatureMessage += datasets[0]?.documentId
     signatureMessage += nonce
     const signature = await this.signProviderRequest(consumer, signatureMessage)
     const payload = Object()
@@ -813,7 +816,7 @@ export class Provider {
     // new field for C2D v2
     payload.datasets = datasets
     payload.algorithm = algorithm
-    const chainIdCompute = chainId ?? (await consumer.getChainId())
+    const chainIdCompute = chainId || (await consumer.getChainId())
     payload.chainId = chainIdCompute
     payload.payment = {
       chainId: chainIdCompute,
