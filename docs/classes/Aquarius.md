@@ -161,7 +161,7 @@ Blocks until Indexer will cache the did (or the update for that did) or timeouts
 | `did` | `string` | DID of the asset. |
 | `txid?` | `string` | used when the did exists and we expect an update with that txid. |
 | `signal?` | `AbortSignal` | abort signal |
-| `interval` | `number` | retry interval in miliseconds. Default is 3000 |
+| `interval` | `number` | retry interval in milliseconds. Default is 3000 |
 | `maxRetries` | `number` | max number of retries. Default is 100 |
 
 #### Returns
