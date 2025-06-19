@@ -819,7 +819,10 @@ describe('Compute-to-data example tests', async () => {
         computeValidUntil,
         providerUrl,
         consumerAccount,
-        resources
+        resources,
+        (
+          await consumerAccount.provider.getNetwork()
+        ).chainId
       )
 
       console.log(
