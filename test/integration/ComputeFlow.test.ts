@@ -793,7 +793,10 @@ describe('Compute flow tests', async () => {
       algo,
       computeJobDuration,
       paymentToken,
-      resources
+      resources,
+      (
+        await consumerAccount.provider.getNetwork()
+      ).chainId
     )
 
     assert(computeJobs, 'Cannot start compute job')
@@ -913,7 +916,10 @@ describe('Compute flow tests', async () => {
       algo,
       computeJobDuration,
       paymentToken,
-      resources
+      resources,
+      (
+        await consumerAccount.provider.getNetwork()
+      ).chainId
     )
     assert(computeJobs, 'Cannot start compute job')
   })

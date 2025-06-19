@@ -773,7 +773,7 @@ export class Provider {
     maxJobDuration: number,
     token: string,
     resources: ComputeResourceRequest[],
-    chainId?: number, // network used by payment (only for payed compute jobs)
+    chainId: number, // network used by payment (only for payed compute jobs)
     output?: ComputeOutput,
     signal?: AbortSignal
   ): Promise<ComputeJob | ComputeJob[]> {
