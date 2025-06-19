@@ -523,7 +523,7 @@ export class Provider {
     providerUri: string,
     signerOrAuthToken: Signer | string,
     resources: ComputeResourceRequest[],
-    chainId?: number,
+    chainId: number,
     signal?: AbortSignal
   ): Promise<ProviderComputeInitializeResults> {
     const providerEndpoints = await this.getEndpoints(providerUri)

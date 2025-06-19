@@ -528,7 +528,10 @@ describe('Compute flow tests', async () => {
         computeValidUntil,
         providerUrl,
         consumerAccount,
-        resources
+        resources,
+        (
+          await consumerAccount.provider.getNetwork()
+        ).chainId
       )
     } catch (e) {
       assert(
@@ -576,7 +579,10 @@ describe('Compute flow tests', async () => {
       computeValidUntil,
       providerUrl,
       consumerAccount,
-      resources
+      resources,
+      (
+        await consumerAccount.provider.getNetwork()
+      ).chainId
     )
     assert(providerInitializeComputeResults.payment, ' Payment structure does not exists')
     assert(
@@ -750,7 +756,10 @@ describe('Compute flow tests', async () => {
       computeJobDuration,
       providerUrl,
       consumerAccount,
-      resources
+      resources,
+      (
+        await consumerAccount.provider.getNetwork()
+      ).chainId
     )
     assert(
       providerInitializeComputeResults.algorithm.validOrder,
@@ -836,7 +845,10 @@ describe('Compute flow tests', async () => {
       computeValidUntil,
       providerUrl,
       consumerAccount,
-      resources
+      resources,
+      (
+        await consumerAccount.provider.getNetwork()
+      ).chainId
     )
     assert(
       providerInitializeComputeResults.datasets[0].providerFee,
