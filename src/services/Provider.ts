@@ -18,8 +18,29 @@ import {
   ComputeResourceRequest,
   ComputePayment
 } from '../@types'
+import { decodeJwt } from '../utils/Jwt.js'
 
 export class Provider {
+  private async getConsumerAddress(signerOrAuthToken: Signer | string): Promise<string> {
+    const isAuthToken = typeof signerOrAuthToken === 'string'
+    return isAuthToken
+      ? decodeJwt(signerOrAuthToken).address
+      : await signerOrAuthToken.getAddress()
+  }
+
+  private async getSignature(
+    signerOrAuthToken: Signer | string,
+    message: string
+  ): Promise<string | null> {
+    const isAuthToken = typeof signerOrAuthToken === 'string'
+    return isAuthToken ? null : await this.signProviderRequest(signerOrAuthToken, message)
+  }
+
+  private getAuthorization(signerOrAuthToken: Signer | string): string | undefined {
+    const isAuthToken = typeof signerOrAuthToken === 'string'
+    return isAuthToken ? signerOrAuthToken : undefined
+  }
+
   /**
    * Returns the provider endpoints
    * @param {string} providerUri - the provider url
@@ -87,8 +108,7 @@ export class Provider {
     consumerAddress: string,
     signal?: AbortSignal,
     providerEndpoints?: any,
-    serviceEndpoints?: ServiceEndpoint[],
-    authorization?: string
+    serviceEndpoints?: ServiceEndpoint[]
   ): Promise<number> {
     if (!providerEndpoints) {
       providerEndpoints = await this.getEndpoints(providerUri)
@@ -103,7 +123,7 @@ export class Provider {
     try {
       const response = await fetch(path + `?userAddress=${consumerAddress}`, {
         method: 'GET',
-        headers: { 'Content-Type': 'application/json', Authorization: authorization },
+        headers: { 'Content-Type': 'application/json' },
         signal
       })
       const { nonce } = await response.json()
@@ -157,8 +177,7 @@ export class Provider {
     data: any,
     chainId: number,
     providerUri: string,
-    signal?: AbortSignal,
-    authorization?: string
+    signal?: AbortSignal
   ): Promise<string> {
     const providerEndpoints = await this.getEndpoints(providerUri)
     const serviceEndpoints = await this.getServiceEndpoints(
@@ -174,10 +193,7 @@ export class Provider {
       const response = await fetch(path, {
         method: 'POST',
         body: JSON.stringify(data),
-        headers: {
-          'Content-Type': 'application/octet-stream',
-          Authorization: authorization
-        },
+        headers: { 'Content-Type': 'application/octet-stream' },
         signal
       })
       return await response.text()
@@ -201,8 +217,7 @@ export class Provider {
     serviceId: string,
     providerUri: string,
     withChecksum: boolean = false,
-    signal?: AbortSignal,
-    authorization?: string
+    signal?: AbortSignal
   ): Promise<FileInfo[]> {
     const providerEndpoints = await this.getEndpoints(providerUri)
     const serviceEndpoints = await this.getServiceEndpoints(
@@ -220,7 +235,7 @@ export class Provider {
       response = await fetch(path, {
         method: 'POST',
         body: JSON.stringify(args),
-        headers: { 'Content-Type': 'application/json', Authorization: authorization },
+        headers: { 'Content-Type': 'application/json' },
         signal
       })
     } catch (e) {
@@ -257,8 +272,7 @@ export class Provider {
     file: UrlFile | Arweave | Ipfs,
     providerUri: string,
     withChecksum: boolean = false,
-    signal?: AbortSignal,
-    authorization?: string
+    signal?: AbortSignal
   ): Promise<FileInfo[]> {
     const providerEndpoints = await this.getEndpoints(providerUri)
     const serviceEndpoints = await this.getServiceEndpoints(
@@ -276,7 +290,7 @@ export class Provider {
       response = await fetch(path, {
         method: 'POST',
         body: JSON.stringify(args),
-        headers: { 'Content-Type': 'application/json', Authorization: authorization },
+        headers: { 'Content-Type': 'application/json' },
         signal
       })
     } catch (e) {
@@ -309,8 +323,7 @@ export class Provider {
    */
   public async getComputeEnvironments(
     providerUri: string,
-    signal?: AbortSignal,
-    authorization?: string
+    signal?: AbortSignal
   ): Promise<ComputeEnvironment[]> {
     const providerEndpoints = await this.getEndpoints(providerUri)
     const serviceEndpoints = await this.getServiceEndpoints(
@@ -323,7 +336,7 @@ export class Provider {
     try {
       response = await fetch(path, {
         method: 'GET',
-        headers: { 'Content-Type': 'application/json', Authorization: authorization },
+        headers: { 'Content-Type': 'application/json' },
         signal
       })
     } catch (e) {
@@ -372,8 +385,7 @@ export class Provider {
     signal?: AbortSignal,
     userCustomParameters?: UserCustomParameters,
     computeEnv?: string,
-    validUntil?: number,
-    authorization?: string
+    validUntil?: number
   ): Promise<ProviderInitialize> {
     const providerEndpoints = await this.getEndpoints(providerUri)
     const serviceEndpoints = await this.getServiceEndpoints(
@@ -397,7 +409,7 @@ export class Provider {
     try {
       response = await fetch(initializeUrl, {
         method: 'GET',
-        headers: { 'Content-Type': 'application/json', Authorization: authorization },
+        headers: { 'Content-Type': 'application/json' },
         signal
       })
     } catch (e) {
@@ -438,8 +450,7 @@ export class Provider {
     chainId: number,
     token: string,
     maxJobDuration: number,
-    signal?: AbortSignal,
-    authorization?: string
+    signal?: AbortSignal
   ): Promise<ProviderComputeInitializeResults> {
     const providerEndpoints = await this.getEndpoints(providerUri)
     const serviceEndpoints = await this.getServiceEndpoints(
@@ -467,7 +478,7 @@ export class Provider {
       response = await fetch(initializeUrl, {
         method: 'POST',
         body: JSON.stringify(payload),
-        headers: { 'Content-Type': 'application/json', Authorization: authorization },
+        headers: { 'Content-Type': 'application/json' },
         signal
       })
     } catch (e) {
@@ -497,7 +508,7 @@ export class Provider {
    * @param {string} token The payment token address.
    * @param {number} validUntil  The job expiration date.
    * @param {string} providerUri The provider URI.
-   * @param {Signer} signer caller address
+   * @param {SignerOrAuthToken} signerOrAuthToken Signer or auth token
    * @param {ComputeResourceRequest[]} resources The resources to start compute job with.
    * @param {number} chainId The chain used to do payments
    * @param {AbortSignal} signal abort signal
@@ -510,21 +521,24 @@ export class Provider {
     token: string,
     validUntil: number,
     providerUri: string,
-    signer: Signer,
+    signerOrAuthToken: Signer | string,
     resources: ComputeResourceRequest[],
-    chainId?: number,
-    signal?: AbortSignal,
-    authorization?: string
+    chainId: number,
+    signal?: AbortSignal
   ): Promise<ProviderComputeInitializeResults> {
     const providerEndpoints = await this.getEndpoints(providerUri)
     const serviceEndpoints = await this.getServiceEndpoints(
       providerUri,
       providerEndpoints
     )
+    const initializeUrl = this.getEndpointURL(serviceEndpoints, 'initializeCompute')
+      ? this.getEndpointURL(serviceEndpoints, 'initializeCompute').urlPath
+      : null
+    if (!initializeUrl) return null
 
     // Diff from V1. We might need a signature to get the files object, specially if dealing with confidential evm and template 4
     // otherwise it can be ignored
-    const consumerAddress = await signer.getAddress()
+    const consumerAddress = await this.getConsumerAddress(signerOrAuthToken)
     const nonce = (
       (await this.getNonce(
         providerUri,
@@ -539,14 +553,14 @@ export class Provider {
     let signatureMessage = consumerAddress
     signatureMessage += assets[0]?.documentId
     signatureMessage += nonce
-    const signature = await this.signProviderRequest(signer, signatureMessage)
+    const signature = await this.getSignature(signerOrAuthToken, signatureMessage)
 
     const providerData: Object = {
       datasets: assets,
       algorithm,
       environment: computeEnv,
       payment: {
-        chainId: chainId || (await signer.getChainId()),
+        chainId,
         token,
         resources
       },
@@ -554,10 +568,6 @@ export class Provider {
       consumerAddress,
       signature
     }
-    const initializeUrl = this.getEndpointURL(serviceEndpoints, 'initializeCompute')
-      ? this.getEndpointURL(serviceEndpoints, 'initializeCompute').urlPath
-      : null
-    if (!initializeUrl) return null
 
     let response
     try {
@@ -565,7 +575,10 @@ export class Provider {
       response = await fetch(initializeUrl, {
         method: 'POST',
         body: JSON.stringify(providerData),
-        headers: { 'Content-Type': 'application/json', Authorization: authorization },
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: this.getAuthorization(signerOrAuthToken)
+        },
         signal
       })
       console.log('Raw response:', response)
@@ -600,7 +613,7 @@ export class Provider {
    * @param {number} fileIndex - The file index.
    * @param {string} transferTxId - The transfer transaction ID.
    * @param {string} providerUri - The provider URI.
-   * @param {Signer} signer - The signer.
+   * @param {SignerOrAuthToken} signerOrAuthToken - The signer or auth token.
    * @param {any} policyServer - The policy server (if any is to be used).
    * @param {UserCustomParameters} userCustomParameters - The user custom parameters.
    * @returns {Promise<any>} The download URL.
@@ -611,10 +624,9 @@ export class Provider {
     fileIndex: number,
     transferTxId: string,
     providerUri: string,
-    signer: Signer,
+    signerOrAuthToken: Signer | string,
     policyServer?: any,
-    userCustomParameters?: UserCustomParameters,
-    authorization?: string
+    userCustomParameters?: UserCustomParameters
   ): Promise<any> {
     const providerEndpoints = await this.getEndpoints(providerUri)
     const serviceEndpoints = await this.getServiceEndpoints(
@@ -625,19 +637,18 @@ export class Provider {
       ? this.getEndpointURL(serviceEndpoints, 'download').urlPath
       : null
     if (!downloadUrl) return null
-    const consumerAddress = await signer.getAddress()
+    const consumerAddress = await this.getConsumerAddress(signerOrAuthToken)
     const nonce = (
       (await this.getNonce(
         providerUri,
         consumerAddress,
         null,
         providerEndpoints,
-        serviceEndpoints,
-        authorization
+        serviceEndpoints
       )) + 1
     ).toString()
 
-    const signature = await this.signProviderRequest(signer, did + nonce) // did + nonce
+    const signature = await this.getSignature(signerOrAuthToken, did + nonce)
     let consumeUrl = downloadUrl
     consumeUrl += `?fileIndex=${fileIndex}`
     consumeUrl += `&documentId=${did}`
@@ -675,8 +686,7 @@ export class Provider {
     algorithm: ComputeAlgorithm,
     signal?: AbortSignal,
     additionalDatasets?: ComputeAsset[],
-    output?: ComputeOutput,
-    authorization?: string
+    output?: ComputeOutput
   ): Promise<ComputeJob | ComputeJob[]> {
     const providerEndpoints = await this.getEndpoints(providerUri)
     const serviceEndpoints = await this.getServiceEndpoints(
@@ -717,7 +727,7 @@ export class Provider {
       response = await fetch(computeStartUrl, {
         method: 'POST',
         body: JSON.stringify(payload),
-        headers: { 'Content-Type': 'application/json', Authorization: authorization },
+        headers: { 'Content-Type': 'application/json' },
         signal
       })
     } catch (e) {
@@ -742,7 +752,7 @@ export class Provider {
 
   /** Instruct the provider to start a PAYED compute job (new C2D V2)
    * @param {string} providerUri The provider URI.
-   * @param {Signer} signer The consumer signer object.
+   * @param {SignerOrAuthToken} signerOrAuthToken The consumer signer object or auth token.
    * @param {string} computeEnv The compute environment.
    * @param {ComputeAsset} datasets The dataset to start compute on + additionalDatasets (the additional datasets if that is the case)
    * @param {ComputeAlgorithm} algorithm The algorithm to start compute with.
@@ -756,17 +766,16 @@ export class Provider {
    */
   public async computeStart(
     providerUri: string,
-    consumer: Signer,
+    signerOrAuthToken: Signer | string,
     computeEnv: string,
     datasets: ComputeAsset[],
     algorithm: ComputeAlgorithm,
     maxJobDuration: number,
     token: string,
     resources: ComputeResourceRequest[],
-    chainId?: number, // network used by payment (only for payed compute jobs)
+    chainId: number, // network used by payment (only for payed compute jobs)
     output?: ComputeOutput,
-    signal?: AbortSignal,
-    authorization?: string
+    signal?: AbortSignal
   ): Promise<ComputeJob | ComputeJob[]> {
     console.log('called new compute start method...')
     console.log('datasets: ', datasets)
@@ -788,22 +797,21 @@ export class Provider {
       return null
     }
 
-    const consumerAddress = await consumer.getAddress()
+    const consumerAddress = await this.getConsumerAddress(signerOrAuthToken)
     const nonce = (
       (await this.getNonce(
         providerUri,
         consumerAddress,
         signal,
         providerEndpoints,
-        serviceEndpoints,
-        authorization
+        serviceEndpoints
       )) + 1
     ).toString()
 
     let signatureMessage = consumerAddress
     signatureMessage += datasets[0]?.documentId
     signatureMessage += nonce
-    const signature = await this.signProviderRequest(consumer, signatureMessage)
+    const signature = await this.getSignature(signerOrAuthToken, signatureMessage)
     const payload = Object()
     payload.consumerAddress = consumerAddress
     payload.signature = signature
@@ -816,10 +824,9 @@ export class Provider {
     // new field for C2D v2
     payload.datasets = datasets
     payload.algorithm = algorithm
-    const chainIdCompute = chainId || (await consumer.getChainId())
-    payload.chainId = chainIdCompute
+    payload.chainId = chainId
     payload.payment = {
-      chainId: chainIdCompute,
+      chainId,
       token,
       maxJobDuration
     }
@@ -831,7 +838,10 @@ export class Provider {
       response = await fetch(computeStartUrl, {
         method: 'POST',
         body: JSON.stringify(payload),
-        headers: { 'Content-Type': 'application/json', Authorization: authorization },
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: this.getAuthorization(signerOrAuthToken)
+        },
         signal
       })
     } catch (e) {
@@ -856,7 +866,7 @@ export class Provider {
 
   /** Instruct the provider to start a FREE compute job (new C2D V2)
    * @param {string} providerUri The provider URI.
-   * @param {Signer} signer The consumer signer object.
+   * @param {SignerOrAuthToken} signerOrAuthToken The consumer signer object or auth token.
    * @param {string} computeEnv The compute environment.
    * @param {ComputeAsset} datasets The dataset to start compute on + additionalDatasets (the additional datasets if that is the case)
    * @param {ComputeAlgorithm} algorithm The algorithm to start compute with.
@@ -867,14 +877,13 @@ export class Provider {
    */
   public async freeComputeStart(
     providerUri: string,
-    consumer: Signer,
+    signerOrAuthToken: Signer | string,
     computeEnv: string,
     datasets: ComputeAsset[],
     algorithm: ComputeAlgorithm,
     resources?: ComputeResourceRequest[],
     output?: ComputeOutput,
-    signal?: AbortSignal,
-    authorization?: string
+    signal?: AbortSignal
   ): Promise<ComputeJob | ComputeJob[]> {
     console.log('called new free compute start method...')
     console.log('datasets: ', datasets)
@@ -896,21 +905,20 @@ export class Provider {
       return null
     }
 
-    const consumerAddress = await consumer.getAddress()
+    const consumerAddress = await this.getConsumerAddress(signerOrAuthToken)
     const nonce = (
       (await this.getNonce(
         providerUri,
         consumerAddress,
         signal,
         providerEndpoints,
-        serviceEndpoints,
-        authorization
+        serviceEndpoints
       )) + 1
     ).toString()
 
     const signatureMessage = nonce // datasets[0].documentId
     console.log('signatureMessage: ', signatureMessage)
-    const signature = await this.signProviderRequest(consumer, signatureMessage)
+    const signature = await this.getSignature(signerOrAuthToken, signatureMessage)
     const payload = Object()
     payload.consumerAddress = consumerAddress
     payload.signature = signature
@@ -929,7 +937,10 @@ export class Provider {
       response = await fetch(computeStartUrl, {
         method: 'POST',
         body: JSON.stringify(payload),
-        headers: { 'Content-Type': 'application/json', Authorization: authorization },
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: this.getAuthorization(signerOrAuthToken)
+        },
         signal
       })
     } catch (e) {
@@ -955,18 +966,18 @@ export class Provider {
   /**
    *
    * @param providerUri provider URL
-   * @param consumer consumer
+   * @param signerOrAuthToken signer or auth token
    * @param jobId jobId
    * @param signal abort signal
    * @returns logs response
    */
   public async computeStreamableLogs(
     providerUri: string,
-    signer: Signer,
+    signerOrAuthToken: Signer | string,
     jobId: string,
-    signal?: AbortSignal,
-    authorization?: string
+    signal?: AbortSignal
   ): Promise<any> {
+    const isAuthToken = typeof signerOrAuthToken === 'string'
     const providerEndpoints = await this.getEndpoints(providerUri)
     const serviceEndpoints = await this.getServiceEndpoints(
       providerUri,
@@ -986,7 +997,7 @@ export class Provider {
       )
       return null
     }
-    const consumerAddress = await signer.getAddress()
+    const consumerAddress = await this.getConsumerAddress(signerOrAuthToken)
     const nonce = (
       (await this.getNonce(
         providerUri,
@@ -997,20 +1008,23 @@ export class Provider {
       )) + 1
     ).toString()
 
-    let url = `?consumerAddress=${consumerAddress}`
-    url += `&jobId=${jobId}`
-    url += `&nonce=${nonce}`
-
-    // consumer + jobId + nonce
-    const signatureMessage = `${consumerAddress}${jobId}${nonce}`
-    const signature = await this.signProviderRequest(signer, signatureMessage)
-    url += `&signature=${signature}`
+    let url = `?consumerAddress=${consumerAddress}&jobId=${jobId}`
+    // Is signer, add signature and nonce
+    if (!isAuthToken) {
+      const signatureMessage = `${consumerAddress}${jobId}${nonce}`
+      const signature = await this.getSignature(signerOrAuthToken, signatureMessage)
+      url += `&signature=${signature}`
+      url += `&nonce=${nonce}`
+    }
 
     let response
     try {
       response = await fetch(computeStreamableLogs + url, {
         method: 'GET',
-        headers: { 'Content-Type': 'application/json', Authorization: authorization },
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: this.getAuthorization(signerOrAuthToken)
+        },
         signal
       })
       console.log('Raw response:', response)
@@ -1060,7 +1074,7 @@ export class Provider {
    * @param {string} consumerAddress The consumer address.
    * @param {string} jobId the compute job id
    * @param {string} providerUri The provider URI.
-   * @param {Signer} signer The consumer signer object.
+   * @param {SignerOrAuthToken} signerOrAuthToken The consumer signer or auth token.
    * @param {AbortSignal} signal abort signal
    * @return {Promise<ComputeJob | ComputeJob[]>}
    */
@@ -1069,10 +1083,9 @@ export class Provider {
     consumerAddress: string,
     jobId: string,
     providerUri: string,
-    signer: Signer,
+    signerOrAuthToken: Signer | string,
     agreementId?: string,
-    signal?: AbortSignal,
-    authorization?: string
+    signal?: AbortSignal
   ): Promise<ComputeJob | ComputeJob[]> {
     const providerEndpoints = await this.getEndpoints(providerUri)
     const serviceEndpoints = await this.getServiceEndpoints(
@@ -1089,8 +1102,7 @@ export class Provider {
         consumerAddress,
         signal,
         providerEndpoints,
-        serviceEndpoints,
-        authorization
+        serviceEndpoints
       )) + 1
     ).toString()
 
@@ -1102,7 +1114,7 @@ export class Provider {
     // On provider service STOP route, we just check signature owner + jobId OR just owner if no jobId
     // signatureMessage += (agreementId && `${this.noZeroX(agreementId)}`) || ''
     // signatureMessage += nonce
-    const signature = await this.signProviderRequest(signer, signatureMessage)
+    const signature = await this.getSignature(signerOrAuthToken, signatureMessage)
     const payload = Object()
     payload.signature = signature
     payload.agreementId = agreementId // this.noZeroX(agreementId) #https://github.com/oceanprotocol/ocean.js/issues/1892
@@ -1116,7 +1128,10 @@ export class Provider {
       response = await fetch(computeStopUrl, {
         method: 'PUT',
         body: JSON.stringify(payload),
-        headers: { 'Content-Type': 'application/json', Authorization: authorization },
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: this.getAuthorization(signerOrAuthToken)
+        },
         signal
       })
     } catch (e) {
@@ -1209,18 +1224,18 @@ export class Provider {
 
   /** Get compute result url
    * @param {string} providerUri The URI of the provider we want to query
-   * @param {Signer} consumer consumer Signer wallet object
+   * @param {SignerOrAuthToken} signerOrAuthToken signer or auth token
    * @param {string} jobId The ID of a compute job.
    * @param {number} index Result index
    * @return {Promise<string>}
    */
   public async getComputeResultUrl(
     providerUri: string,
-    consumer: Signer,
+    signerOrAuthToken: Signer | string,
     jobId: string,
-    index: number,
-    authorization?: string
+    index: number
   ): Promise<string> {
+    const isAuthToken = typeof signerOrAuthToken === 'string'
     const providerEndpoints = await this.getEndpoints(providerUri)
     const serviceEndpoints = await this.getServiceEndpoints(
       providerUri,
@@ -1230,34 +1245,36 @@ export class Provider {
       ? this.getEndpointURL(serviceEndpoints, 'computeResult').urlPath
       : null
 
+    const consumerAddress = await this.getConsumerAddress(signerOrAuthToken)
     const nonce = (
       (await this.getNonce(
         providerUri,
-        await consumer.getAddress(),
+        consumerAddress,
         null,
         providerEndpoints,
-        serviceEndpoints,
-        authorization
+        serviceEndpoints
       )) + 1
     ).toString()
-    let signatureMessage = await consumer.getAddress()
+    let signatureMessage = consumerAddress
     signatureMessage += jobId
     signatureMessage += index.toString()
     signatureMessage += nonce
-    const signature = await this.signProviderRequest(consumer, signatureMessage)
+    const signature = await this.getSignature(signerOrAuthToken, signatureMessage)
     if (!computeResultUrl) return null
     let resultUrl = computeResultUrl
-    resultUrl += `?consumerAddress=${await consumer.getAddress()}`
+    resultUrl += `?consumerAddress=${consumerAddress}`
     resultUrl += `&jobId=${jobId}`
     resultUrl += `&index=${index.toString()}`
-    resultUrl += `&nonce=${nonce}`
-    resultUrl += (signature && `&signature=${signature}`) || ''
+    if (!isAuthToken) {
+      resultUrl += `&nonce=${nonce}`
+      resultUrl += `&signature=${signature}`
+    }
     return resultUrl
   }
 
   /** Deletes a compute job.
    * @param {string} did asset did
-   * @param {Signer} consumer consumer Signer wallet object
+   * @param {SignerOrAuthToken} signerOrAuthToken signer or auth token
    * @param {string} jobId the compute job ID
    * @param {string} providerUri The URI of the provider we want to query
    * @param {AbortSignal} signal abort signal
@@ -1265,11 +1282,10 @@ export class Provider {
    */
   public async computeDelete(
     did: string,
-    consumer: Signer,
+    signerOrAuthToken: Signer | string,
     jobId: string,
     providerUri: string,
-    signal?: AbortSignal,
-    authorization?: string
+    signal?: AbortSignal
   ): Promise<ComputeJob | ComputeJob[]> {
     const providerEndpoints = await this.getEndpoints(providerUri)
     const serviceEndpoints = await this.getServiceEndpoints(
@@ -1280,25 +1296,25 @@ export class Provider {
       ? this.getEndpointURL(serviceEndpoints, 'computeDelete').urlPath
       : null
 
+    const consumerAddress = await this.getConsumerAddress(signerOrAuthToken)
     const nonce = (
       (await this.getNonce(
         providerUri,
-        await consumer.getAddress(),
+        consumerAddress,
         signal,
         providerEndpoints,
-        serviceEndpoints,
-        authorization
+        serviceEndpoints
       )) + 1
     ).toString()
 
-    let signatureMessage = await consumer.getAddress()
+    let signatureMessage = consumerAddress
     signatureMessage += jobId || ''
     signatureMessage += (did && `${this.noZeroX(did)}`) || ''
     signatureMessage += nonce
-    const signature = await this.signProviderRequest(consumer, signatureMessage)
+    const signature = await this.getSignature(signerOrAuthToken, signatureMessage)
     const payload = Object()
     payload.documentId = did // this.noZeroX(did) #https://github.com/oceanprotocol/ocean.js/issues/1892
-    payload.consumerAddress = await consumer.getAddress()
+    payload.consumerAddress = consumerAddress
     payload.jobId = jobId
     if (signature) payload.signature = signature
 
@@ -1308,7 +1324,10 @@ export class Provider {
       response = await fetch(computeDeleteUrl, {
         method: 'DELETE',
         body: JSON.stringify(payload),
-        headers: { 'Content-Type': 'application/json', Authorization: authorization },
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: this.getAuthorization(signerOrAuthToken)
+        },
         signal
       })
     } catch (e) {
@@ -1455,15 +1474,11 @@ export class Provider {
    * @param {AbortSignal} signal abort signal
    * @return {Promise<boolean>} valid or not
    */
-  public async isValidProvider(
-    url: string,
-    signal?: AbortSignal,
-    authorization?: string
-  ): Promise<boolean> {
+  public async isValidProvider(url: string, signal?: AbortSignal): Promise<boolean> {
     try {
       const response = await fetch(url, {
         method: 'GET',
-        headers: { 'Content-Type': 'application/json', Authorization: authorization },
+        headers: { 'Content-Type': 'application/json' },
         signal
       })
       if (response?.ok) {

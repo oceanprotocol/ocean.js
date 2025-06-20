@@ -819,7 +819,10 @@ let's select compute environment which have free and paid resources
         computeValidUntil,
         providerUrl,
         consumerAccount,
-        resources
+        resources,
+        (
+          await consumerAccount.provider.getNetwork()
+        ).chainId
       )
 
       console.log(
