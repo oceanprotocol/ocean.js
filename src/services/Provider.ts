@@ -508,7 +508,7 @@ export class Provider {
    * @param {string} token The payment token address.
    * @param {number} validUntil  The job expiration date.
    * @param {string} providerUri The provider URI.
-   * @param {Signer} signerOrAuthToken Signer or auth token
+   * @param {SignerOrAuthToken} signerOrAuthToken Signer or auth token
    * @param {ComputeResourceRequest[]} resources The resources to start compute job with.
    * @param {number} chainId The chain used to do payments
    * @param {AbortSignal} signal abort signal
@@ -613,7 +613,7 @@ export class Provider {
    * @param {number} fileIndex - The file index.
    * @param {string} transferTxId - The transfer transaction ID.
    * @param {string} providerUri - The provider URI.
-   * @param {Signer} signerOrAuthToken - The signer or auth token.
+   * @param {SignerOrAuthToken} signerOrAuthToken - The signer or auth token.
    * @param {any} policyServer - The policy server (if any is to be used).
    * @param {UserCustomParameters} userCustomParameters - The user custom parameters.
    * @returns {Promise<any>} The download URL.
@@ -752,7 +752,7 @@ export class Provider {
 
   /** Instruct the provider to start a PAYED compute job (new C2D V2)
    * @param {string} providerUri The provider URI.
-   * @param {Signer} signerOrAuthToken The consumer signer object or auth token.
+   * @param {SignerOrAuthToken} signerOrAuthToken The consumer signer object or auth token.
    * @param {string} computeEnv The compute environment.
    * @param {ComputeAsset} datasets The dataset to start compute on + additionalDatasets (the additional datasets if that is the case)
    * @param {ComputeAlgorithm} algorithm The algorithm to start compute with.
@@ -866,7 +866,7 @@ export class Provider {
 
   /** Instruct the provider to start a FREE compute job (new C2D V2)
    * @param {string} providerUri The provider URI.
-   * @param {Signer} signerOrAuthToken The consumer signer object or auth token.
+   * @param {SignerOrAuthToken} signerOrAuthToken The consumer signer object or auth token.
    * @param {string} computeEnv The compute environment.
    * @param {ComputeAsset} datasets The dataset to start compute on + additionalDatasets (the additional datasets if that is the case)
    * @param {ComputeAlgorithm} algorithm The algorithm to start compute with.
@@ -977,6 +977,7 @@ export class Provider {
     jobId: string,
     signal?: AbortSignal
   ): Promise<any> {
+    const isAuthToken = typeof signerOrAuthToken === 'string'
     const providerEndpoints = await this.getEndpoints(providerUri)
     const serviceEndpoints = await this.getServiceEndpoints(
       providerUri,
@@ -1007,14 +1008,14 @@ export class Provider {
       )) + 1
     ).toString()
 
-    let url = `?consumerAddress=${consumerAddress}`
-    url += `&jobId=${jobId}`
-    url += `&nonce=${nonce}`
-
-    // consumer + jobId + nonce
-    const signatureMessage = `${consumerAddress}${jobId}${nonce}`
-    const signature = await this.getSignature(signerOrAuthToken, signatureMessage)
-    url += `&signature=${signature}`
+    let url = `?consumerAddress=${consumerAddress}&jobId=${jobId}`
+    // Is signer, add signature and nonce
+    if (!isAuthToken) {
+      const signatureMessage = `${consumerAddress}${jobId}${nonce}`
+      const signature = await this.getSignature(signerOrAuthToken, signatureMessage)
+      url += `&signature=${signature}`
+      url += `&nonce=${nonce}`
+    }
 
     let response
     try {
@@ -1073,7 +1074,7 @@ export class Provider {
    * @param {string} consumerAddress The consumer address.
    * @param {string} jobId the compute job id
    * @param {string} providerUri The provider URI.
-   * @param {Signer} signer The consumer signer object.
+   * @param {SignerOrAuthToken} signerOrAuthToken The consumer signer or auth token.
    * @param {AbortSignal} signal abort signal
    * @return {Promise<ComputeJob | ComputeJob[]>}
    */
@@ -1223,7 +1224,7 @@ export class Provider {
 
   /** Get compute result url
    * @param {string} providerUri The URI of the provider we want to query
-   * @param {Signer} signerOrAuthToken signer or auth token
+   * @param {SignerOrAuthToken} signerOrAuthToken signer or auth token
    * @param {string} jobId The ID of a compute job.
    * @param {number} index Result index
    * @return {Promise<string>}
@@ -1234,6 +1235,7 @@ export class Provider {
     jobId: string,
     index: number
   ): Promise<string> {
+    const isAuthToken = typeof signerOrAuthToken === 'string'
     const providerEndpoints = await this.getEndpoints(providerUri)
     const serviceEndpoints = await this.getServiceEndpoints(
       providerUri,
@@ -1263,14 +1265,16 @@ export class Provider {
     resultUrl += `?consumerAddress=${consumerAddress}`
     resultUrl += `&jobId=${jobId}`
     resultUrl += `&index=${index.toString()}`
-    resultUrl += `&nonce=${nonce}`
-    resultUrl += (signature && `&signature=${signature}`) || ''
+    if (!isAuthToken) {
+      resultUrl += `&nonce=${nonce}`
+      resultUrl += `&signature=${signature}`
+    }
     return resultUrl
   }
 
   /** Deletes a compute job.
    * @param {string} did asset did
-   * @param {Signer} signerOrAuthToken signer or auth token
+   * @param {SignerOrAuthToken} signerOrAuthToken signer or auth token
    * @param {string} jobId the compute job ID
    * @param {string} providerUri The URI of the provider we want to query
    * @param {AbortSignal} signal abort signal
