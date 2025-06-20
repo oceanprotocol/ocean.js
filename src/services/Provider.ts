@@ -905,10 +905,7 @@ export class Provider {
       return null
     }
 
-    const isAuthToken = typeof signerOrAuthToken === 'string'
-    const consumerAddress = isAuthToken
-      ? decodeJwt(signerOrAuthToken).address
-      : await signerOrAuthToken.getAddress()
+    const consumerAddress = await this.getConsumerAddress(signerOrAuthToken)
     const nonce = (
       (await this.getNonce(
         providerUri,
