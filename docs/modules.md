@@ -785,7 +785,7 @@ Simple blocking sleep function
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
-| `ms` | `number` | Number of miliseconds to wait |
+| `ms` | `number` | Number of milliseconds to wait |
 
 #### Returns
 
