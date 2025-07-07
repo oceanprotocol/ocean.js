@@ -963,6 +963,54 @@ export class Provider {
     return null
   }
 
+
+  async getComputeJobs(
+    address: string,
+    nodeUrl: string,
+    jobId?: string,
+    signal?: AbortSignal
+  ): Promise<ComputeJob | ComputeJob[]> {
+    const providerEndpoints = await this.getEndpoints(nodeUrl)
+    const serviceEndpoints = await this.getServiceEndpoints(
+      nodeUrl,
+      providerEndpoints
+    )
+    const computeJobUrl = this.getEndpointURL(serviceEndpoints, 'computeStatus')
+      ? this.getEndpointURL(serviceEndpoints, 'computeStatus').urlPath
+      : null
+
+    if (!computeJobUrl) {
+      LoggerInstance.error('Compute job failed: Cannot get proper computeStatus route')
+    }
+
+    let url = `?consumerAddress=${address}`
+    if (jobId) {
+      url += `&jobId=${jobId}`
+    }
+
+    let response
+    try {
+      response = await fetch(computeJobUrl + url, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+        signal
+      })
+    } catch (e) {
+      LoggerInstance.error('Compute job failed:')
+      LoggerInstance.error(e)
+      throw new Error('HTTP request failed calling Provider')
+    }
+
+    if (!response?.ok) {
+      LoggerInstance.error('Compute job failed:')
+      LoggerInstance.error(response.status, response.statusText, await response.json())
+      throw new Error('HTTP request failed calling Provider')
+    }
+
+    const responseBody = await response.json()
+    return responseBody
+  }
+
   /**
    *
    * @param providerUri provider URL
