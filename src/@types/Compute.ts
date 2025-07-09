@@ -107,6 +107,10 @@ export interface ComputeResult {
   index?: number
 }
 
+export type ComputeJobMetadata = {
+  [key: string]: string | number | boolean
+}
+
 export interface ComputeJob {
   owner: string
   did?: string
@@ -120,6 +124,7 @@ export interface ComputeJob {
   algoDID?: string
   agreementId?: string
   expireTimestamp: number
+  metadata?: ComputeJobMetadata
 }
 
 export interface ComputeOutput {
