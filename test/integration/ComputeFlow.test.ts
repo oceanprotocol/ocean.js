@@ -614,7 +614,7 @@ describe('Compute flow tests', async () => {
       Number(
         ethers.utils.formatUnits(providerInitializeComputeResults.payment.amount, 18)
       ) >=
-      (computeEnv.maxJobDuration / 60) * price,
+        (computeEnv.maxJobDuration / 60) * price,
       'Incorrect payment token amount'
     ) // 60 minutes per price 1 -> amount = 60
     assert(
