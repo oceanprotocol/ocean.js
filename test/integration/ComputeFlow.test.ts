@@ -610,6 +610,13 @@ describe('Compute flow tests', async () => {
       'Incorrect payment token address'
     )
     const { price } = computeEnv.fees[await consumerAccount.getChainId()][0].prices[0]
+    console.log(`price: ${price}`)
+    console.log(
+      `price1: ${Number(
+        ethers.utils.formatUnits(providerInitializeComputeResults.payment.amount, 18)
+      )}`
+    )
+    console.log(`price2: ${(computeEnv.maxJobDuration / 60) * price}`)
     assert(
       Number(
         ethers.utils.formatUnits(providerInitializeComputeResults.payment.amount, 18)
