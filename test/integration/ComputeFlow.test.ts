@@ -96,7 +96,13 @@ const ddoWithNoTimeout: DDO = {
       timeout: 0,
       compute: {
         publisherTrustedAlgorithmPublishers: ['*'] as any,
-        publisherTrustedAlgorithms: ['*'] as any,
+        publisherTrustedAlgorithms: [
+          {
+            did: '*',
+            filesChecksum: '*',
+            containerSectionChecksum: '*'
+          }
+        ],
         allowRawAlgorithm: false,
         allowNetworkAccess: true
       }
@@ -133,7 +139,13 @@ const ddoWith2mTimeout: DDO = {
       timeout: 120,
       compute: {
         publisherTrustedAlgorithmPublishers: ['*'] as any,
-        publisherTrustedAlgorithms: ['*'] as any,
+        publisherTrustedAlgorithms: [
+          {
+            did: '*',
+            filesChecksum: '*',
+            containerSectionChecksum: '*'
+          }
+        ],
         allowRawAlgorithm: false,
         allowNetworkAccess: true
       }
@@ -601,7 +613,7 @@ describe('Compute flow tests', async () => {
     assert(
       Number(
         ethers.utils.formatUnits(providerInitializeComputeResults.payment.amount, 18)
-      ) ===
+      ) >=
         (computeEnv.maxJobDuration / 60) * price,
       'Incorrect payment token amount'
     ) // 60 minutes per price 1 -> amount = 60

@@ -16,7 +16,8 @@ import {
   UserCustomParameters,
   Ipfs,
   ComputeResourceRequest,
-  ComputePayment
+  ComputePayment,
+  ComputeJobMetadata
 } from '../@types'
 import { decodeJwt } from '../utils/Jwt.js'
 
@@ -760,6 +761,7 @@ export class Provider {
    * @param {string} token The token address for compute payment.
    * @param {ComputeResourceRequest} resources The resources to start compute job with.
    * @param {chainId} chainId The chain used to do payments
+   * @param {ComputeJobMetadata} metadata The compute job metadata. Additional metadata to be stored in the database.
    * @param {ComputeOutput} output The compute job output settings.
    * @param {AbortSignal} signal abort signal
    * @return {Promise<ComputeJob | ComputeJob[]>} The compute job or jobs.
@@ -774,6 +776,7 @@ export class Provider {
     token: string,
     resources: ComputeResourceRequest[],
     chainId: number, // network used by payment (only for payed compute jobs)
+    metadata?: ComputeJobMetadata,
     output?: ComputeOutput,
     signal?: AbortSignal
   ): Promise<ComputeJob | ComputeJob[]> {
@@ -831,6 +834,7 @@ export class Provider {
       maxJobDuration
     }
     if (resources) payload.payment.resources = resources
+    if (metadata) payload.metadata = metadata
     // if (additionalDatasets) payload.additionalDatasets = additionalDatasets
     if (output) payload.output = output
     let response
@@ -871,6 +875,7 @@ export class Provider {
    * @param {ComputeAsset} datasets The dataset to start compute on + additionalDatasets (the additional datasets if that is the case)
    * @param {ComputeAlgorithm} algorithm The algorithm to start compute with.
    * @param {ComputeResourceRequest} resources The resources to start compute job with.
+   * @param {ComputeJobMetadata} metadata The compute job metadata. Additional metadata to be stored in the database.
    * @param {ComputeOutput} output The compute job output settings.
    * @param {AbortSignal} signal abort signal
    * @return {Promise<ComputeJob | ComputeJob[]>} The compute job or jobs.
@@ -882,6 +887,7 @@ export class Provider {
     datasets: ComputeAsset[],
     algorithm: ComputeAlgorithm,
     resources?: ComputeResourceRequest[],
+    metadata?: ComputeJobMetadata,
     output?: ComputeOutput,
     signal?: AbortSignal
   ): Promise<ComputeJob | ComputeJob[]> {
@@ -930,6 +936,7 @@ export class Provider {
     // new field for C2D v2
     payload.datasets = datasets
     payload.algorithm = algorithm
+    if (metadata) payload.metadata = metadata
     // if (additionalDatasets) payload.additionalDatasets = additionalDatasets
     payload.output = output
     let response
