@@ -19,6 +19,7 @@ import {
   ComputePayment
 } from '../@types'
 import { decodeJwt } from '../utils/Jwt.js'
+import { PolicyServer } from '../@types/PolicyServer.js'
 
 export class Provider {
   private async getConsumerAddress(signerOrAuthToken: Signer | string): Promise<string> {
@@ -511,6 +512,7 @@ export class Provider {
    * @param {SignerOrAuthToken} signerOrAuthToken Signer or auth token
    * @param {ComputeResourceRequest[]} resources The resources to start compute job with.
    * @param {number} chainId The chain used to do payments
+   * @param {PolicyServer} policyServer The policy server object.
    * @param {AbortSignal} signal abort signal
    * @return {Promise<ProviderComputeInitialize>} ProviderComputeInitialize data
    */
@@ -524,6 +526,7 @@ export class Provider {
     signerOrAuthToken: Signer | string,
     resources: ComputeResourceRequest[],
     chainId: number,
+    policyServer?: PolicyServer,
     signal?: AbortSignal
   ): Promise<ProviderComputeInitializeResults> {
     const providerEndpoints = await this.getEndpoints(providerUri)
@@ -555,7 +558,7 @@ export class Provider {
     signatureMessage += nonce
     const signature = await this.getSignature(signerOrAuthToken, signatureMessage)
 
-    const providerData: Object = {
+    const providerData: Record<string, any> = {
       datasets: assets,
       algorithm,
       environment: computeEnv,
@@ -568,6 +571,8 @@ export class Provider {
       consumerAddress,
       signature
     }
+
+    if (policyServer) providerData.policyServer = policyServer
 
     let response
     try {
@@ -614,7 +619,7 @@ export class Provider {
    * @param {string} transferTxId - The transfer transaction ID.
    * @param {string} providerUri - The provider URI.
    * @param {SignerOrAuthToken} signerOrAuthToken - The signer or auth token.
-   * @param {any} policyServer - The policy server (if any is to be used).
+   * @param {PolicyServer} policyServer - The policy server (if any is to be used).
    * @param {UserCustomParameters} userCustomParameters - The user custom parameters.
    * @returns {Promise<any>} The download URL.
    */
@@ -625,7 +630,7 @@ export class Provider {
     transferTxId: string,
     providerUri: string,
     signerOrAuthToken: Signer | string,
-    policyServer?: any,
+    policyServer?: PolicyServer,
     userCustomParameters?: UserCustomParameters
   ): Promise<any> {
     const providerEndpoints = await this.getEndpoints(providerUri)
@@ -761,6 +766,7 @@ export class Provider {
    * @param {ComputeResourceRequest} resources The resources to start compute job with.
    * @param {chainId} chainId The chain used to do payments
    * @param {ComputeOutput} output The compute job output settings.
+   * @param {PolicyServer} policyServer The policy server object.
    * @param {AbortSignal} signal abort signal
    * @return {Promise<ComputeJob | ComputeJob[]>} The compute job or jobs.
    */
@@ -775,6 +781,7 @@ export class Provider {
     resources: ComputeResourceRequest[],
     chainId: number, // network used by payment (only for payed compute jobs)
     output?: ComputeOutput,
+    policyServer?: PolicyServer,
     signal?: AbortSignal
   ): Promise<ComputeJob | ComputeJob[]> {
     console.log('called new compute start method...')
@@ -833,6 +840,7 @@ export class Provider {
     if (resources) payload.payment.resources = resources
     // if (additionalDatasets) payload.additionalDatasets = additionalDatasets
     if (output) payload.output = output
+    if (policyServer) payload.policyServer = policyServer
     let response
     try {
       response = await fetch(computeStartUrl, {
@@ -872,6 +880,7 @@ export class Provider {
    * @param {ComputeAlgorithm} algorithm The algorithm to start compute with.
    * @param {ComputeResourceRequest} resources The resources to start compute job with.
    * @param {ComputeOutput} output The compute job output settings.
+   * @param {PolicyServer} policyServer The policy server object.
    * @param {AbortSignal} signal abort signal
    * @return {Promise<ComputeJob | ComputeJob[]>} The compute job or jobs.
    */
@@ -883,6 +892,7 @@ export class Provider {
     algorithm: ComputeAlgorithm,
     resources?: ComputeResourceRequest[],
     output?: ComputeOutput,
+    policyServer?: PolicyServer,
     signal?: AbortSignal
   ): Promise<ComputeJob | ComputeJob[]> {
     console.log('called new free compute start method...')
@@ -932,6 +942,7 @@ export class Provider {
     payload.algorithm = algorithm
     // if (additionalDatasets) payload.additionalDatasets = additionalDatasets
     payload.output = output
+    if (policyServer) payload.policyServer = policyServer
     let response
     try {
       response = await fetch(computeStartUrl, {
