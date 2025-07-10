@@ -213,8 +213,14 @@ const DATASET_DDO: DDO = {
       serviceEndpoint: 'http://127.0.0.1:8001',
       timeout: 300,
       compute: {
-        publisherTrustedAlgorithmPublishers: ['*'] as any,
-        publisherTrustedAlgorithms: ['*'] as any,
+        publisherTrustedAlgorithmPublishers: ['*'],
+        publisherTrustedAlgorithms: [
+          {
+            did: '*',
+            filesChecksum: '*',
+            containerSectionChecksum: '*'
+          }
+        ],
         allowRawAlgorithm: false,
         allowNetworkAccess: true
       }
