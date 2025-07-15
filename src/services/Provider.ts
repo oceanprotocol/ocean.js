@@ -527,7 +527,7 @@ export class Provider {
     signerOrAuthToken: Signer | string,
     resources: ComputeResourceRequest[],
     chainId: number,
-    policyServer?: PolicyServer[],
+    policyServer?: any,
     signal?: AbortSignal
   ): Promise<ProviderComputeInitializeResults> {
     const providerEndpoints = await this.getEndpoints(providerUri)
@@ -631,7 +631,7 @@ export class Provider {
     transferTxId: string,
     providerUri: string,
     signerOrAuthToken: Signer | string,
-    policyServer?: PolicyServer[],
+    policyServer?: any,
     userCustomParameters?: UserCustomParameters
   ): Promise<any> {
     const providerEndpoints = await this.getEndpoints(providerUri)
@@ -784,7 +784,7 @@ export class Provider {
     chainId: number, // network used by payment (only for payed compute jobs)
     metadata?: ComputeJobMetadata,
     output?: ComputeOutput,
-    policyServer?: PolicyServer[],
+    policyServer?: any,
     signal?: AbortSignal
   ): Promise<ComputeJob | ComputeJob[]> {
     console.log('called new compute start method...')
@@ -898,7 +898,7 @@ export class Provider {
     resources?: ComputeResourceRequest[],
     metadata?: ComputeJobMetadata,
     output?: ComputeOutput,
-    policyServer?: PolicyServer[],
+    policyServer?: any,
     signal?: AbortSignal
   ): Promise<ComputeJob | ComputeJob[]> {
     console.log('called new free compute start method...')
