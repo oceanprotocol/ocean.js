@@ -169,7 +169,7 @@ jobs:
           NODE_URL: 'http://127.0.0.1:8001'
 
       - name: docker logs
-        run: docker logs ocean_ocean-contracts_1 && docker logs ocean_typesense_1 && docker logs ocean-node-1
+        run: docker logs ocean-ocean-contracts-1 && docker logs ocean-node-1
         if: ${{ failure() }}
 
       - name: Upload coverage
