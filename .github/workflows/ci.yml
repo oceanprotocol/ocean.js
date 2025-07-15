@@ -55,6 +55,8 @@ jobs:
         run: |
           export CONTRACTS_VERSION=v2.3.0
           bash -x start_ocean.sh --with-typesense 2>&1 > start_ocean.log &
+      - name: Install deps & build
+        run: npm ci && npm run build:metadata
       - name: Wait for node to be ready
         run: |
           max_attempts=60
@@ -75,7 +77,7 @@ jobs:
             sleep 10
             attempt=$((attempt + 1))
           done
-      - run: npm ci && npm run build:metadata && npm run test:unit:cover
+      - run: npm run test:unit:cover
       - uses: actions/upload-artifact@v4
         with:
           name: coverage-unit
@@ -135,6 +137,9 @@ jobs:
         working-directory: ${{ github.workspace }}/barge
         run: |
             bash -x start_ocean.sh --with-typesense 2>&1 > start-node.log &
+      - name: Install deps & build
+        run: npm ci && npm run build:metadata
+      
       - name: Wait for node to be ready
         run: |
           max_attempts=60
@@ -156,12 +161,6 @@ jobs:
             attempt=$((attempt + 1))
           done
 
-      - run: npm ci && npm run build
-        
-      - name: docker logs
-        run: docker logs ocean_ocean-contracts_1 && docker logs ocean_typesense_1 && docker logs ocean-node-1
-        if: ${{ failure() }}
-
       - name: integration
         run: npm run test:integration:cover
         env:
@@ -169,11 +168,10 @@ jobs:
           INDEXING_MAX_RETRIES: 120
           NODE_URL: 'http://127.0.0.1:8001'
 
-      - name: Print Ocean Node Logs if tests fail
+      - name: docker logs
+        run: docker logs ocean-ocean-contracts-1 && docker logs ocean-node-1
         if: ${{ failure() }}
-        run: |
-          echo "========== Ocean Node Logs =========="
-          tac ${{ github.workspace }}/barge/start-node.log || echo "Log file not found"
+
       - name: Upload coverage
         uses: actions/upload-artifact@v4
         with:
