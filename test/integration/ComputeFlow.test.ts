@@ -55,6 +55,7 @@ let escrow: EscrowContract
 let freeComputeRouteSupport = null
 
 const computeJobDuration = 60 * 15 // 15 minutes
+let computeMinutes: number
 
 const assetUrl: Files = {
   datatokenAddress: '0x0',
@@ -495,7 +496,7 @@ describe('Compute flow tests', async () => {
 
   it('Should fast forward time and set a new computeValidUntil', async () => {
     const mytime = new Date()
-    const computeMinutes = 2
+    computeMinutes = 2
     mytime.setMinutes(mytime.getMinutes() + computeMinutes)
     computeValidUntil = Math.floor(mytime.getTime() / 1000)
   })
@@ -613,8 +614,8 @@ describe('Compute flow tests', async () => {
     assert(
       Number(
         ethers.utils.formatUnits(providerInitializeComputeResults.payment.amount, 18)
-      ) >=
-        (computeEnv.maxJobDuration / 60) * price,
+      ) ===
+        (computeEnv.maxJobDuration / 60) * price * computeMinutes,
       'Incorrect payment token amount'
     ) // 60 minutes per price 1 -> amount = 60
     assert(
