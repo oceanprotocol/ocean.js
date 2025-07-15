@@ -158,10 +158,6 @@ jobs:
 
       - run: npm ci && npm run build
         
-      - name: docker logs
-        run: docker logs ocean_ocean-contracts_1 && docker logs ocean_typesense_1 && docker logs ocean-node-1
-        if: ${{ failure() }}
-
       - name: integration
         run: npm run test:integration:cover
         env:
@@ -169,11 +165,10 @@ jobs:
           INDEXING_MAX_RETRIES: 120
           NODE_URL: 'http://127.0.0.1:8001'
 
-      - name: Print Ocean Node Logs if tests fail
+      - name: docker logs
+        run: docker logs ocean_ocean-contracts_1 && docker logs ocean_typesense_1 && docker logs ocean-node-1
         if: ${{ failure() }}
-        run: |
-          echo "========== Ocean Node Logs =========="
-          tac ${{ github.workspace }}/ocean-node/start-node.log || echo "Log file not found"
+
       - name: Upload coverage
         uses: actions/upload-artifact@v4
         with:
