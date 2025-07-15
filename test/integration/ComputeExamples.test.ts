@@ -220,7 +220,7 @@ const DATASET_DDO: DDO = {
             filesChecksum: '*',
             containerSectionChecksum: '*'
           }
-        ],
+        ] as any,
         allowRawAlgorithm: false,
         allowNetworkAccess: true
       }
