@@ -214,7 +214,13 @@ const DATASET_DDO: DDO = {
       timeout: 300,
       compute: {
         publisherTrustedAlgorithmPublishers: ['*'] as any,
-        publisherTrustedAlgorithms: ['*'] as any,
+        publisherTrustedAlgorithms: [
+          {
+            did: '*',
+            filesChecksum: '*',
+            containerSectionChecksum: '*'
+          }
+        ] as any,
         allowRawAlgorithm: false,
         allowNetworkAccess: true
       }
