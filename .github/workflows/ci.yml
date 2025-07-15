@@ -55,6 +55,8 @@ jobs:
         run: |
           export CONTRACTS_VERSION=v2.3.0
           bash -x start_ocean.sh --with-typesense 2>&1 > start_ocean.log &
+      - name: Install deps & build
+        run: npm ci && npm run build:metadata
       - name: Wait for node to be ready
         run: |
           max_attempts=60
@@ -75,7 +77,7 @@ jobs:
             sleep 10
             attempt=$((attempt + 1))
           done
-      - run: npm ci && npm run build:metadata && npm run test:unit:cover
+      - run: npm run test:unit:cover
       - uses: actions/upload-artifact@v4
         with:
           name: coverage-unit
@@ -135,6 +137,9 @@ jobs:
         working-directory: ${{ github.workspace }}/barge
         run: |
             bash -x start_ocean.sh --with-typesense 2>&1 > start-node.log &
+      - name: Install deps & build
+        run: npm ci && npm run build:metadata
+      
       - name: Wait for node to be ready
         run: |
           max_attempts=60
@@ -156,8 +161,6 @@ jobs:
             attempt=$((attempt + 1))
           done
 
-      - run: npm ci && npm run build
-        
       - name: integration
         run: npm run test:integration:cover
         env:
