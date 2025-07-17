@@ -20,7 +20,6 @@ import {
   ComputeJobMetadata
 } from '../@types'
 import { decodeJwt } from '../utils/Jwt.js'
-import { PolicyServer } from '../@types/PolicyServer.js'
 
 export class Provider {
   private async getConsumerAddress(signerOrAuthToken: Signer | string): Promise<string> {
@@ -513,7 +512,7 @@ export class Provider {
    * @param {SignerOrAuthToken} signerOrAuthToken Signer or auth token
    * @param {ComputeResourceRequest[]} resources The resources to start compute job with.
    * @param {number} chainId The chain used to do payments
-   * @param {PolicyServer} policyServer Array of policy server objects.
+   * @param {any} policyServer Policy server data.
    * @param {AbortSignal} signal abort signal
    * @return {Promise<ProviderComputeInitialize>} ProviderComputeInitialize data
    */
@@ -620,7 +619,7 @@ export class Provider {
    * @param {string} transferTxId - The transfer transaction ID.
    * @param {string} providerUri - The provider URI.
    * @param {SignerOrAuthToken} signerOrAuthToken - The signer or auth token.
-   * @param {PolicyServer} policyServer - Array of policy server objects (if any is to be used).
+   * @param {any} policyServer Policy server data.
    * @param {UserCustomParameters} userCustomParameters - The user custom parameters.
    * @returns {Promise<any>} The download URL.
    */
@@ -768,7 +767,7 @@ export class Provider {
    * @param {chainId} chainId The chain used to do payments
    * @param {ComputeJobMetadata} metadata The compute job metadata. Additional metadata to be stored in the database.
    * @param {ComputeOutput} output The compute job output settings.
-   * @param {PolicyServer} policyServer Array of policy server objects.
+   * @param {any} policyServer Policy server data.
    * @param {AbortSignal} signal abort signal
    * @return {Promise<ComputeJob | ComputeJob[]>} The compute job or jobs.
    */
@@ -885,7 +884,7 @@ export class Provider {
    * @param {ComputeResourceRequest} resources The resources to start compute job with.
    * @param {ComputeJobMetadata} metadata The compute job metadata. Additional metadata to be stored in the database.
    * @param {ComputeOutput} output The compute job output settings.
-   * @param {PolicyServer} policyServer Array of policy server objects.
+   * @param {any} policyServer Policy server data.
    * @param {AbortSignal} signal abort signal
    * @return {Promise<ComputeJob | ComputeJob[]>} The compute job or jobs.
    */
