@@ -1,4 +1,4 @@
-import { BigNumber, ethers } from 'ethers'
+import { hexlify, keccak256, toUtf8Bytes, toUtf8String } from 'ethers'
 import ERC721Template from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC721Template.sol/ERC721Template.json'
 import {
   MetadataAndTokenURI,
@@ -54,7 +54,7 @@ export class Nft extends SmartContract {
     allowAccessList?: string,
     denyAccessList?: string,
     estimateGas?: G
-  ): Promise<G extends false ? string : BigNumber> {
+  ): Promise<G extends false ? string : BigInt> {
     if ((await this.getNftPermissions(nftAddress, address)).deployERC20 !== true) {
       throw new Error(`Caller is not DatatokenDeployer`)
     }
@@ -62,7 +62,7 @@ export class Nft extends SmartContract {
 
     // Generate name & symbol if not present
     if (!name || !symbol) {
-      ;({ name, symbol } = generateDtName())
+      ; ({ name, symbol } = generateDtName())
     }
 
     // Create 721contract object
@@ -78,7 +78,7 @@ export class Nft extends SmartContract {
         chainId
       )
     }
-    const estGas = await nftContract.estimateGas.createERC20(
+    const estGas = await nftContract.createERC20.estimateGas(
       templateIndex,
       [name, symbol],
       [minter, paymentCollector, mpFeeAddress, feeToken],
@@ -88,7 +88,7 @@ export class Nft extends SmartContract {
       ],
       []
     )
-    if (estimateGas) return <G extends false ? string : BigNumber>estGas
+    if (estimateGas) return <G extends false ? string : bigint>estGas
 
     const addresses = [minter, paymentCollector, mpFeeAddress, feeToken]
     if (accessListContract) {
@@ -117,7 +117,7 @@ export class Nft extends SmartContract {
         await this.amountToUnits(null, cap, 18),
         await this.amountToUnits(null, feeAmount, 18)
       ],
-      filesObject ? [ethers.utils.toUtf8Bytes(filesObject)] : []
+      filesObject ? [toUtf8Bytes(filesObject)] : []
     )
     const trxReceipt = await tx.wait()
     const event = getEventFromTx(trxReceipt, 'TokenCreated')
@@ -144,7 +144,7 @@ export class Nft extends SmartContract {
       throw new Error(`Caller is not NFT Owner`)
     }
 
-    const estGas = await nftContract.estimateGas.addManager(manager)
+    const estGas = await nftContract.addManager.estimateGas(manager)
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
 
     const trxReceipt = await sendTx(
@@ -178,7 +178,7 @@ export class Nft extends SmartContract {
       throw new Error(`Caller is not NFT Owner`)
     }
 
-    const estGas = await nftContract.estimateGas.removeManager(manager)
+    const estGas = await nftContract.removeManager.estimateGas(manager)
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
 
     const trxReceipt = await sendTx(
@@ -213,7 +213,7 @@ export class Nft extends SmartContract {
     }
 
     // Estimate gas for addToCreateERC20List method
-    const estGas = await nftContract.estimateGas.addToCreateERC20List(datatokenDeployer)
+    const estGas = await nftContract.addToCreateERC20List.estimateGas(datatokenDeployer)
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
 
     const trxReceipt = await sendTx(
@@ -250,7 +250,7 @@ export class Nft extends SmartContract {
     ) {
       throw new Error(`Caller is not Manager nor DatatokenDeployer`)
     }
-    const estGas = await nftContract.estimateGas.removeFromCreateERC20List(
+    const estGas = await nftContract.removeFromCreateERC20List.estimateGas(
       datatokenDeployer
     )
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
@@ -286,7 +286,7 @@ export class Nft extends SmartContract {
       throw new Error(`Caller is not Manager`)
     }
 
-    const estGas = await nftContract.estimateGas.addToMetadataList(metadataUpdater)
+    const estGas = await nftContract.addToMetadataList.estimateGas(metadataUpdater)
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
 
     const trxReceipt = await sendTx(
@@ -322,7 +322,7 @@ export class Nft extends SmartContract {
       throw new Error(`Caller is not Manager nor Metadata Updater`)
     }
 
-    const estGas = await nftContract.estimateGas.removeFromMetadataList(metadataUpdater)
+    const estGas = await nftContract.removeFromMetadataList.estimateGas(metadataUpdater)
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
 
     const trxReceipt = await sendTx(
@@ -355,7 +355,7 @@ export class Nft extends SmartContract {
       throw new Error(`Caller is not Manager`)
     }
 
-    const estGas = await nftContract.estimateGas.addTo725StoreList(storeUpdater)
+    const estGas = await nftContract.addTo725StoreList.estimateGas(storeUpdater)
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
 
     const trxReceipt = await sendTx(
@@ -392,7 +392,7 @@ export class Nft extends SmartContract {
       throw new Error(`Caller is not Manager nor storeUpdater`)
     }
 
-    const estGas = await nftContract.estimateGas.removeFrom725StoreList(storeUpdater)
+    const estGas = await nftContract.removeFrom725StoreList.estimateGas(storeUpdater)
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
 
     const trxReceipt = await sendTx(
@@ -426,7 +426,7 @@ export class Nft extends SmartContract {
       throw new Error(`Caller is not NFT Owner`)
     }
 
-    const estGas = await nftContract.estimateGas.cleanPermissions()
+    const estGas = await nftContract.cleanPermissions.estimateGas()
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
 
     const trxReceipt = await sendTx(
@@ -463,7 +463,7 @@ export class Nft extends SmartContract {
 
     const tokenIdentifier = tokenId || 1
 
-    const estGas = await nftContract.estimateGas.transferFrom(
+    const estGas = await nftContract.transferFrom.estimateGas(
       nftOwner,
       nftReceiver,
       tokenIdentifier
@@ -507,7 +507,7 @@ export class Nft extends SmartContract {
 
     const tokenIdentifier = tokenId || 1
 
-    const estGas = await nftContract.estimateGas.safeTransferFrom(
+    const estGas = await nftContract.safeTransferFrom.estimateGas(
       nftOwner,
       nftReceiver,
       tokenIdentifier
@@ -558,7 +558,7 @@ export class Nft extends SmartContract {
     if (!(await this.getNftPermissions(nftAddress, address)).updateMetadata) {
       throw new Error(`Caller is not Metadata updater`)
     }
-    const estGas = await nftContract.estimateGas.setMetaData(
+    const estGas = await nftContract.setMetaData.estimateGas(
       metadataState,
       metadataDecryptorUrl,
       metadataDecryptorAddress,
@@ -608,7 +608,7 @@ export class Nft extends SmartContract {
       ...metadataAndTokenURI,
       metadataProofs: metadataAndTokenURI.metadataProofs || []
     }
-    const estGas = await nftContract.estimateGas.setMetaDataAndTokenURI(
+    const estGas = await nftContract.setMetaDataAndTokenURI.estimateGas(
       sanitizedMetadataAndTokenURI
     )
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
@@ -643,7 +643,7 @@ export class Nft extends SmartContract {
       throw new Error(`Caller is not Metadata updater`)
     }
 
-    const estGas = await nftContract.estimateGas.setMetaDataState(metadataState)
+    const estGas = await nftContract.setMetaDataState.estimateGas(metadataState)
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
 
     const trxReceipt = await sendTx(
@@ -669,7 +669,7 @@ export class Nft extends SmartContract {
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
     const nftContract = this.getContract(nftAddress)
-    const estGas = await nftContract.estimateGas.setTokenURI('1', data)
+    const estGas = await nftContract.setTokenURI.estimateGas('1', data)
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
 
     const trxReceipt = await sendTx(
@@ -753,10 +753,10 @@ export class Nft extends SmartContract {
     }
 
     const nftContract = this.getContract(nftAddress)
-    const keyHash = ethers.utils.keccak256(key)
-    const valueHex = ethers.utils.hexlify(ethers.utils.toUtf8Bytes(value))
+    const keyHash = keccak256(key)
+    const valueHex = hexlify(toUtf8Bytes(value))
 
-    const estGas = await nftContract.estimateGas.setNewData(keyHash, valueHex)
+    const estGas = await nftContract.setNewData.estimateGas(keyHash, valueHex)
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
     const trxReceipt = await sendTx(
       estGas,
@@ -778,9 +778,9 @@ export class Nft extends SmartContract {
    */
   public async getData(nftAddress: string, key: string): Promise<string> {
     const nftContract = this.getContract(nftAddress)
-    const keyHash = ethers.utils.keccak256(key)
+    const keyHash = keccak256(key)
     const data = await nftContract.getData(keyHash)
-    return data ? ethers.utils.toUtf8String(data) : null
+    return data ? toUtf8String(data) : null
   }
 
   /**

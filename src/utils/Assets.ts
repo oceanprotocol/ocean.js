@@ -1,6 +1,5 @@
-import { ethers, Signer } from 'ethers'
+import { ethers, hexlify, Signer, toUtf8Bytes } from 'ethers'
 import { ConfigHelper } from '../../src/config/index.js'
-import { hexlify } from 'ethers/lib/utils.js'
 import { createHash } from 'crypto'
 import { Aquarius } from '../services/Aquarius.js'
 import { NftFactory } from '../contracts/NFTFactory.js'
@@ -72,7 +71,7 @@ export async function createAsset(
   }
   const chainID = (await owner.provider.getNetwork()).chainId
 
-  if (ddoChainId && ddoChainId !== chainID) {
+  if (ddoChainId && ddoChainId !== Number(chainID)) {
     throw new Error('Chain ID from DDO is different than the configured network.')
   }
 
@@ -82,19 +81,19 @@ export async function createAsset(
     owner,
     config.nftFactoryAddress,
     templateIDorAddress,
-    chainID
+    Number(chainID)
   )
 
   if (templateIndex < 1) {
     // for testing purposes only
-    if (chainID === DEVELOPMENT_CHAIN_ID) {
+    if (Number(chainID) === DEVELOPMENT_CHAIN_ID) {
       templateIndex = 1
     } else throw new Error(`Invalid template index: ${templateIndex}`)
   }
 
-  const nft = new Nft(owner, chainID)
+  const nft = new Nft(owner, Number(chainID))
 
-  const nftFactory = new NftFactory(config.nftFactoryAddress, owner, chainID)
+  const nftFactory = new NftFactory(config.nftFactoryAddress, owner, Number(chainID))
 
   // get nft owner
   const account = await owner.getAddress()
@@ -194,7 +193,7 @@ export async function createAsset(
     const contract = new ethers.Contract(datatokenAddressAsset, ERC20Template4.abi, owner)
     try {
       const tx = await contract.setFilesObject(
-        ethers.utils.toUtf8Bytes(JSON.stringify(assetUrl))
+        toUtf8Bytes(JSON.stringify(assetUrl))
       )
       if (tx.wait) {
         await tx.wait()
@@ -209,7 +208,7 @@ export async function createAsset(
   if (config.sdk === 'oasis') {
     services[0].files = '' // on confidental EVM it needs to be empty string not null, for schema validation
   } else {
-    services[0].files = await ProviderInstance.encrypt(assetUrl, chainID, providerUrl)
+    services[0].files = await ProviderInstance.encrypt(assetUrl, Number(chainID), providerUrl)
   }
 
   services[0].datatokenAddress = datatokenAddressAsset
@@ -224,7 +223,7 @@ export async function createAsset(
   let metadataHash
   let flags
   if (encryptDDO) {
-    metadata = await ProviderInstance.encrypt(ddo, chainID, providerUrl)
+    metadata = await ProviderInstance.encrypt(ddo, Number(chainID), providerUrl)
     const validateResult = await aquariusInstance.validate(ddo, owner, providerUrl)
     metadataHash = validateResult.hash
     flags = 2
@@ -242,7 +241,7 @@ export async function createAsset(
     0,
     providerUrl,
     '',
-    ethers.utils.hexlify(flags),
+    hexlify(flags),
     metadata,
     metadataHash
   )

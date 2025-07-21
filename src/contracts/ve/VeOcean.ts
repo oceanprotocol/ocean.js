@@ -23,14 +23,14 @@ export class VeOcean extends SmartContractWithAddress {
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
     const amountFormatted = await this.amountToUnits(await this.getToken(), amount)
-    const estGas = await this.contract.estimateGas.create_lock(
+    const estGas = await this.contract.create_lock.estimateGas(
       amountFormatted,
       unlockTime
     )
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
     // Invoke function of the contract
     const trxReceipt = await sendTx(
-      estGas.add(20000),
+      estGas + 20000n,
       this.getSignerAccordingSdk(),
       this.config?.gasFeeMultiplier,
       this.contract.create_lock,
@@ -54,11 +54,11 @@ export class VeOcean extends SmartContractWithAddress {
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
     const amountFormatted = await this.amountToUnits(await this.getToken(), amount)
-    const estGas = await this.contract.estimateGas.deposit_for(toAddress, amountFormatted)
+    const estGas = await this.contract.deposit_for.estimateGas(toAddress, amountFormatted)
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
     // Invoke function of the contract
     const trxReceipt = await sendTx(
-      estGas.add(20000),
+      estGas + 20000n,
       this.getSignerAccordingSdk(),
       this.config?.gasFeeMultiplier,
       this.contract.deposit_for,
@@ -79,11 +79,11 @@ export class VeOcean extends SmartContractWithAddress {
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
     const amountFormatted = await this.amountToUnits(await this.getToken(), amount)
-    const estGas = await this.contract.estimateGas.increase_amount(amountFormatted)
+    const estGas = await this.contract.increase_amount.estimateGas(amountFormatted)
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
     // Invoke function of the contract
     const trxReceipt = await sendTx(
-      estGas.add(20000),
+      estGas + 20000n,
       this.getSignerAccordingSdk(),
       this.config?.gasFeeMultiplier,
       this.contract.increase_amount,
@@ -102,11 +102,11 @@ export class VeOcean extends SmartContractWithAddress {
     unlockTime: number,
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
-    const estGas = await this.contract.estimateGas.increase_unlock_time(unlockTime)
+    const estGas = await this.contract.increase_unlock_time.estimateGas(unlockTime)
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
     // Invoke function of the contract
     const trxReceipt = await sendTx(
-      estGas.add(20000),
+      estGas + 20000n,
       this.getSignerAccordingSdk(),
       this.config?.gasFeeMultiplier,
       this.contract.increase_unlock_time,
@@ -123,11 +123,11 @@ export class VeOcean extends SmartContractWithAddress {
   public async withdraw<G extends boolean = false>(
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
-    const estGas = await this.contract.estimateGas.withdraw()
+    const estGas = await this.contract.withdraw.estimateGas()
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
     // Invoke function of the contract
     const trxReceipt = await sendTx(
-      estGas.add(20000),
+      estGas + 20000n,
       this.getSignerAccordingSdk(),
       this.config?.gasFeeMultiplier,
       this.contract.withdraw

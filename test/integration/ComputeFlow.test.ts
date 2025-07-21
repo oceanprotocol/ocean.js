@@ -1,5 +1,5 @@
 import { assert } from 'chai'
-import { BigNumber, ethers, Signer } from 'ethers'
+import { ethers, formatUnits, getAddress, parseEther, Signer } from 'ethers'
 import { getTestConfig, getAddresses, provider } from '../config.js'
 import {
   Config,
@@ -306,7 +306,7 @@ describe('Compute flow tests', async () => {
     ]
 
     const tokenContract = new ethers.Contract(addresses.Ocean, minAbi, publisherAccount)
-    const estGasPublisher = await tokenContract.estimateGas.mint(
+    const estGasPublisher = await tokenContract.mint.estimateGas(
       await publisherAccount.getAddress(),
       amountToUnits(null, null, '100000', 18)
     )
@@ -321,7 +321,7 @@ describe('Compute flow tests', async () => {
     )
 
     // mint ocean to consumer
-    const estGasConsumer = await tokenContract.estimateGas.mint(
+    const estGasConsumer = await tokenContract.mint.estimateGas(
       await consumerAccount.getAddress(),
       amountToUnits(null, null, '60000000', 18)
     )
@@ -392,9 +392,10 @@ describe('Compute flow tests', async () => {
   }).timeout(80000)
 
   it('should send DT to consumer', async () => {
+    const chainId = (await publisherAccount.provider.getNetwork()).chainId
     const datatoken = new Datatoken(
       publisherAccount,
-      (await publisherAccount.provider.getNetwork()).chainId
+      Number(chainId)
     )
     await datatoken.mint(
       resolvedDdoWith2mTimeout.services[0].datatokenAddress,
@@ -429,9 +430,10 @@ describe('Compute flow tests', async () => {
   }).timeout(40000)
 
   it('should start a computeJob using the free environment', async () => {
+    const chainId = (await consumerAccount.provider.getNetwork()).chainId
     datatoken = new Datatoken(
       consumerAccount,
-      (await consumerAccount.provider.getNetwork()).chainId
+      Number(chainId)
     )
     // let's have 5 minute of compute access
     const mytime = new Date()
@@ -477,8 +479,8 @@ describe('Compute flow tests', async () => {
       assert(
         freeComputeRouteSupport === null,
         'Cannot start free compute job. provider at ' +
-          providerUrl +
-          ' does not implement freeCompute route'
+        providerUrl +
+        ' does not implement freeCompute route'
       )
     }
   }).timeout(40000)
@@ -502,6 +504,7 @@ describe('Compute flow tests', async () => {
   })
 
   it('should NOT initialize compute with the paid resources, exceeding max resources', async () => {
+    const chainId = (await consumerAccount.provider.getNetwork()).chainId
     // we choose the paid env
     computeEnvs = await ProviderInstance.getComputeEnvironments(providerUrl)
     const computeEnv = computeEnvs[0]
@@ -543,18 +546,19 @@ describe('Compute flow tests', async () => {
         consumerAccount,
         resources,
         (
-          await consumerAccount.provider.getNetwork()
-        ).chainId
+          Number(chainId)
+        )
       )
     } catch (e) {
       assert(
         e.message ===
-          `ComputeJob cannot be initialized: Error: Not enough cpu resources. Requested 5, but max is 4.`
+        `ComputeJob cannot be initialized: Error: Not enough cpu resources. Requested 5, but max is 4.`
       )
     }
   })
 
   it('should start a computeJob with paid resources', async () => {
+    const chainId = (await consumerAccount.provider.getNetwork()).chainId
     // we choose the paid env
     computeEnvs = await ProviderInstance.getComputeEnvironments(providerUrl)
     const computeEnv = computeEnvs[0] // it is only one environment with paid and free resources
@@ -594,8 +598,8 @@ describe('Compute flow tests', async () => {
       consumerAccount,
       resources,
       (
-        await consumerAccount.provider.getNetwork()
-      ).chainId
+        Number(chainId)
+      )
     )
     assert(providerInitializeComputeResults.payment, ' Payment structure does not exists')
     assert(
@@ -610,12 +614,12 @@ describe('Compute flow tests', async () => {
       providerInitializeComputeResults.payment.token === paymentToken,
       'Incorrect payment token address'
     )
-    const { price } = computeEnv.fees[await consumerAccount.getChainId()][0].prices[0]
+    const { price } = computeEnv.fees[Number(chainId)][0].prices[0]
     assert(
       Number(
-        ethers.utils.formatUnits(providerInitializeComputeResults.payment.amount, 18)
+        formatUnits(providerInitializeComputeResults.payment.amount, 18)
       ) ===
-        (computeEnv.maxJobDuration / 60) * price * computeMinutes,
+      (computeEnv.maxJobDuration / 60) * price * computeMinutes,
       'Incorrect payment token amount'
     ) // 60 minutes per price 1 -> amount = 60
     assert(
@@ -624,7 +628,7 @@ describe('Compute flow tests', async () => {
     )
     // escrow adding funds for paid compute
     escrow = new EscrowContract(
-      ethers.utils.getAddress(providerInitializeComputeResults.payment.escrowAddress),
+      getAddress(providerInitializeComputeResults.payment.escrowAddress),
       consumerAccount
     )
     const paymentTokenPublisher = new Datatoken(publisherAccount)
@@ -633,18 +637,18 @@ describe('Compute flow tests', async () => {
       await publisherAccount.getAddress()
     )
     assert(
-      ethers.utils.parseEther(balancePublisherPaymentToken) > ethers.BigNumber.from(0),
+      parseEther(balancePublisherPaymentToken) > BigInt(0),
       'Balance should be higher than 0'
     )
     const tx = await publisherAccount.sendTransaction({
       to: computeEnv.consumerAddress,
-      value: ethers.utils.parseEther('1.5')
+      value: parseEther('1.5')
     })
     await tx.wait()
 
     await paymentTokenPublisher.transfer(
       paymentToken,
-      ethers.utils.getAddress(computeEnv.consumerAddress),
+      getAddress(computeEnv.consumerAddress),
       (Number(balancePublisherPaymentToken) / 2).toString()
     )
     const amountToDeposit = (
@@ -667,7 +671,7 @@ describe('Compute flow tests', async () => {
       await consumerAccount.getAddress(),
       paymentToken
     )
-    assert(BigNumber.from(funds[0]) > BigNumber.from(0), 'Should have funds in escrow')
+    assert(BigInt(funds[0]) > BigInt(0), 'Should have funds in escrow')
     assert(auth.length > 0, 'Should have authorization')
     assert(
       BigInt(auth[0].maxLockedAmount.toString()) > BigInt(0),
@@ -728,6 +732,7 @@ describe('Compute flow tests', async () => {
   })
 
   it('should restart a computeJob on paid resources, by paying only escrow lock for max job duration, because orders for assets are valid and providerFees are still valid', async () => {
+    const chainId = (await consumerAccount.provider.getNetwork()).chainId
     // we choose the paid env
     computeEnvs = await ProviderInstance.getComputeEnvironments(providerUrl)
     const computeEnv = computeEnvs[0]
@@ -770,9 +775,7 @@ describe('Compute flow tests', async () => {
       providerUrl,
       consumerAccount,
       resources,
-      (
-        await consumerAccount.provider.getNetwork()
-      ).chainId
+      Number(chainId)
     )
     assert(
       providerInitializeComputeResults.algorithm.validOrder,
@@ -794,7 +797,7 @@ describe('Compute flow tests', async () => {
     assets[0].transferTxId = providerInitializeComputeResults.datasets[0].validOrder
     assert(
       algo.transferTxId === paidEnvAlgoTxId &&
-        assets[0].transferTxId === paidEnvDatasetTxId,
+      assets[0].transferTxId === paidEnvDatasetTxId,
       'We should use the same orders, because no fess must be paid'
     )
 
@@ -807,9 +810,7 @@ describe('Compute flow tests', async () => {
       computeJobDuration,
       paymentToken,
       resources,
-      (
-        await consumerAccount.provider.getNetwork()
-      ).chainId
+      Number(chainId)
     )
 
     assert(computeJobs, 'Cannot start compute job')
@@ -820,6 +821,7 @@ describe('Compute flow tests', async () => {
   delay(180000)
 
   it('should start a computeJob using the paid resources, by paying the assets providerFees (reuseOrder) and paying escrow lock for max job duration', async () => {
+    const chainId = (await consumerAccount.provider.getNetwork()).chainId
     // we choose the paid env
     computeEnvs = await ProviderInstance.getComputeEnvironments(providerUrl)
     const computeEnv = computeEnvs[0]
@@ -862,9 +864,7 @@ describe('Compute flow tests', async () => {
       providerUrl,
       consumerAccount,
       resources,
-      (
-        await consumerAccount.provider.getNetwork()
-      ).chainId
+      Number(chainId)
     )
     assert(
       providerInitializeComputeResults.datasets[0].providerFee,
@@ -918,7 +918,7 @@ describe('Compute flow tests', async () => {
     }
     assert(
       algo.transferTxId !== paidEnvAlgoTxId ||
-        assets[0].transferTxId !== paidEnvDatasetTxId,
+      assets[0].transferTxId !== paidEnvDatasetTxId,
       'We should not use the same orders'
     )
     const computeJobs = await ProviderInstance.computeStart(
@@ -930,9 +930,7 @@ describe('Compute flow tests', async () => {
       computeJobDuration,
       paymentToken,
       resources,
-      (
-        await consumerAccount.provider.getNetwork()
-      ).chainId
+      Number(chainId)
     )
     assert(computeJobs, 'Cannot start compute job')
   })

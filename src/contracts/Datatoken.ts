@@ -1,4 +1,4 @@
-import { ethers, Signer } from 'ethers'
+import { hexlify, Signer, toUtf8Bytes } from 'ethers'
 import Decimal from 'decimal.js'
 import ERC20Template from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC20Template.sol/ERC20Template.json'
 import ERC20TemplateEnterprise from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC20TemplateEnterprise.sol/ERC20TemplateEnterprise.json'
@@ -63,7 +63,7 @@ export class Datatoken extends SmartContract {
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
     const dtContract = this.getContract(dtAddress)
-    const estGas = await dtContract.estimateGas.approve(
+    const estGas = await dtContract.approve.estimateGas(
       spender,
       amountToUnits(null, null, amount, 18)
     )
@@ -104,7 +104,7 @@ export class Datatoken extends SmartContract {
 
     // should check DatatokenDeployer role using NFT level ..
 
-    const estGas = await dtContract.estimateGas.createFixedRate(
+    const estGas = await dtContract.createFixedRate.estimateGas(
       fixedRateParams.fixedRateAddress,
       [
         fixedRateParams.baseTokenAddress,
@@ -172,7 +172,7 @@ export class Datatoken extends SmartContract {
 
     // should check DatatokenDeployer role using NFT level ..
 
-    const estGas = await dtContract.estimateGas.createDispenser(
+    const estGas = await dtContract.createDispenser.estimateGas(
       dispenserAddress,
       dispenserParams.maxTokens,
       dispenserParams.maxBalance,
@@ -218,7 +218,7 @@ export class Datatoken extends SmartContract {
 
     const capAvailble = await this.getCap(dtAddress)
     if (new Decimal(capAvailble).gte(amount)) {
-      const estGas = await dtContract.estimateGas.mint(
+      const estGas = await dtContract.mint.estimateGas(
         toAddress || address,
         amountToUnits(null, null, amount, 18)
       )
@@ -258,7 +258,7 @@ export class Datatoken extends SmartContract {
       throw new Error(`Caller is not DatatokenDeployer`)
     }
     // Estimate gas cost for addMinter method
-    const estGas = await dtContract.estimateGas.addMinter(minter)
+    const estGas = await dtContract.addMinter.estimateGas(minter)
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
 
     const trxReceipt = await sendTx(
@@ -292,7 +292,7 @@ export class Datatoken extends SmartContract {
       throw new Error(`Caller is not DatatokenDeployer`)
     }
 
-    const estGas = await dtContract.estimateGas.removeMinter(minter)
+    const estGas = await dtContract.removeMinter.estimateGas(minter)
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
 
     const trxReceipt = await sendTx(
@@ -326,7 +326,7 @@ export class Datatoken extends SmartContract {
       throw new Error(`Caller is not DatatokenDeployer`)
     }
 
-    const estGas = await dtContract.estimateGas.addPaymentManager(paymentManager)
+    const estGas = await dtContract.addPaymentManager.estimateGas(paymentManager)
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
 
     const trxReceipt = await sendTx(
@@ -360,7 +360,7 @@ export class Datatoken extends SmartContract {
       throw new Error(`Caller is not DatatokenDeployer`)
     }
 
-    const estGas = await dtContract.estimateGas.removePaymentManager(paymentManager)
+    const estGas = await dtContract.removePaymentManager.estimateGas(paymentManager)
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
 
     const trxReceipt = await sendTx(
@@ -402,7 +402,7 @@ export class Datatoken extends SmartContract {
       throw new Error(`Caller is not Fee Manager, owner or Datatoken Deployer`)
     }
 
-    const estGas = await dtContract.estimateGas.setPaymentCollector(paymentCollector)
+    const estGas = await dtContract.setPaymentCollector.estimateGas(paymentCollector)
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
 
     const trxReceipt = await sendTx(
@@ -463,7 +463,7 @@ export class Datatoken extends SmartContract {
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
     const dtContract = this.getContract(dtAddress)
-    const estGas = await dtContract.estimateGas.transfer(toAddress, amount)
+    const estGas = await dtContract.transfer.estimateGas(toAddress, amount)
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
 
     const trxReceipt = await sendTx(
@@ -504,7 +504,7 @@ export class Datatoken extends SmartContract {
       }
     }
 
-    const estGas = await dtContract.estimateGas.startOrder(
+    const estGas = await dtContract.startOrder.estimateGas(
       consumer,
       serviceIndex,
       providerFees,
@@ -542,7 +542,7 @@ export class Datatoken extends SmartContract {
   ): Promise<ReceiptOrEstimate<G>> {
     const dtContract = this.getContract(dtAddress)
 
-    const estGas = await dtContract.estimateGas.reuseOrder(orderTxId, providerFees)
+    const estGas = await dtContract.reuseOrder.estimateGas(orderTxId, providerFees)
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
     const trxReceipt = await sendTx(
       estGas,
@@ -573,7 +573,7 @@ export class Datatoken extends SmartContract {
 
     const freContractParams = await this.getFreOrderParams(freParams)
 
-    const estGas = await dtContract.estimateGas.buyFromFreAndOrder(
+    const estGas = await dtContract.buyFromFreAndOrder.estimateGas(
       orderParams,
       freContractParams
     )
@@ -605,7 +605,7 @@ export class Datatoken extends SmartContract {
   ): Promise<ReceiptOrEstimate<G>> {
     const dtContract = this.getContract(dtAddress, this.abiEnterprise)
 
-    const estGas = await dtContract.estimateGas.buyFromDispenserAndOrder(
+    const estGas = await dtContract.buyFromDispenserAndOrder.estimateGas(
       orderParams,
       dispenserContract
     )
@@ -641,9 +641,9 @@ export class Datatoken extends SmartContract {
     }
 
     const dtContract = this.getContract(dtAddress)
-    const valueHex = ethers.utils.hexlify(ethers.utils.toUtf8Bytes(value))
+    const valueHex = hexlify(toUtf8Bytes(value))
 
-    const estGas = await dtContract.estimateGas.setData(valueHex)
+    const estGas = await dtContract.setData.estimateGas(valueHex)
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
 
     const trxReceipt = await sendTx(
@@ -674,7 +674,7 @@ export class Datatoken extends SmartContract {
       throw new Error('Caller is NOT Nft Owner')
     }
     const dtContract = this.getContract(dtAddress)
-    const estGas = await dtContract.estimateGas.cleanPermissions()
+    const estGas = await dtContract.cleanPermissions.estimateGas()
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
 
     const trxReceipt = await sendTx(
@@ -856,7 +856,7 @@ export class Datatoken extends SmartContract {
     if (mktFeeAddress !== address) {
       throw new Error(`Caller is not the Publishing Market Fee Address`)
     }
-    const estGas = await dtContract.estimateGas.setPublishingMarketFee(
+    const estGas = await dtContract.setPublishingMarketFee.estimateGas(
       publishMarketFeeAddress,
       publishMarketFeeToken,
       publishMarketFeeAmount

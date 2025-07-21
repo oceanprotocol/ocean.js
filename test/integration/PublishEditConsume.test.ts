@@ -192,7 +192,7 @@ describe('Publish consume test', async () => {
     ]
 
     const tokenContract = new ethers.Contract(addresses.Ocean, minAbi, publisherAccount)
-    const estGas = await tokenContract.estimateGas.mint(
+    const estGas = await tokenContract.mint.estimateGas(
       await publisherAccount.getAddress(),
       amountToUnits(null, null, '1000', 18)
     )

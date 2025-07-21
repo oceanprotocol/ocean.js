@@ -70,10 +70,11 @@ describe('Nft Factory test', () => {
   })
 
   it('should initiate NFTFactory instance', async () => {
+    const chainId = (await nftOwner.provider.getNetwork()).chainId
     nftFactory = new NftFactory(
       addresses.ERC721Factory,
       nftOwner,
-      await nftOwner.getChainId()
+      Number(chainId)
     )
   })
 
@@ -99,7 +100,8 @@ describe('Nft Factory test', () => {
     nftAddress = await nftFactory.createNFT(nftData)
 
     // we check the created nft
-    const nftDatatoken = new Nft(nftOwner, await nftOwner.getChainId())
+    const chainId = (await nftOwner.provider.getNetwork()).chainId
+    const nftDatatoken = new Nft(nftOwner, Number(chainId))
     const tokenURI = await nftDatatoken.getTokenURI(nftAddress, 1)
     assert(tokenURI === nftData.tokenURI)
   })
@@ -195,10 +197,11 @@ describe('Nft Factory test', () => {
     const consumeFeeAddress = user2 // marketplace fee Collector
     const consumeFeeAmount = '0' // fee to be collected on top, requires approval
     const consumeFeeToken = addresses.MockDAI // token address for the feeAmount, in this case DAI
+    const chainId = (await consumer.provider.getNetwork()).chainId
     nftFactory = new NftFactory(
       addresses.ERC721Factory,
       consumer,
-      await consumer.getChainId()
+      Number(chainId)
     )
     // we reuse a DT created in a previous test
     expect(
@@ -206,7 +209,7 @@ describe('Nft Factory test', () => {
     ).to.equal(0)
 
     // dt owner mint DATA_TOKEN_AMOUNT to user1
-    const datatoken = new Datatoken(nftOwner, await nftOwner.getChainId())
+    const datatoken = new Datatoken(nftOwner, Number(chainId))
     datatoken.mint(
       dtAddress,
       await nftOwner.getAddress(),
@@ -323,10 +326,11 @@ describe('Nft Factory test', () => {
 
   it('#addNFTTemplate - should add a new NFT token template', async () => {
     const currentNFTTemplateCount = await nftFactory.getCurrentNFTTemplateCount()
+    const chainId = (await factoryOwner.provider.getNetwork()).chainId
     nftFactory = new NftFactory(
       addresses.ERC721Factory,
       factoryOwner,
-      await factoryOwner.getChainId()
+      Number(chainId)
     )
     await nftFactory.addNFTTemplate(
       await factoryOwner.getAddress(),
@@ -340,10 +344,11 @@ describe('Nft Factory test', () => {
 
   it('#disableNFTTemplate - should disable an NFT token template', async () => {
     const currentNFTTemplateCount = await nftFactory.getCurrentNFTTemplateCount()
+    const chainId = (await factoryOwner.provider.getNetwork()).chainId
     nftFactory = new NftFactory(
       addresses.ERC721Factory,
       factoryOwner,
-      await factoryOwner.getChainId()
+      Number(chainId)
     )
     let nftTemplate = await nftFactory.getNFTTemplate(currentNFTTemplateCount)
     assert(nftTemplate.isActive === true)
@@ -359,10 +364,11 @@ describe('Nft Factory test', () => {
 
   it('#reactivateNFTTemplate - should reactivate an NFT previously disabled token template', async () => {
     const currentNFTTemplateCount = await nftFactory.getCurrentNFTTemplateCount()
+    const chainId = (await factoryOwner.provider.getNetwork()).chainId
     nftFactory = new NftFactory(
       addresses.ERC721Factory,
       factoryOwner,
-      await factoryOwner.getChainId()
+      Number(chainId)
     )
     let nftTemplate = await nftFactory.getNFTTemplate(currentNFTTemplateCount)
     assert(nftTemplate.isActive === false)

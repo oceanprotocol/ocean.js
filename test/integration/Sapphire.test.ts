@@ -1,6 +1,6 @@
 import * as sapphire from '@oasisprotocol/sapphire-paratime'
 import addresses from '@oceanprotocol/contracts/addresses/address.json'
-import { ethers } from 'ethers'
+import { ethers, toUtf8Bytes } from 'ethers'
 import { AccesslistFactory } from '../../src/contracts/AccessListFactory.js'
 import { AccessListContract } from '../../src/contracts/AccessList.js'
 import { NftFactory } from '../../src/contracts/NFTFactory.js'
@@ -28,7 +28,8 @@ describe('Sapphire tests', async () => {
     ? new ethers.Wallet(privateKeyConsumer, provider)
     : null
 
-  const addrs: any = addresses.oasis_saphire_testnet
+  // const addrs: any = addresses.oasis_saphire_testnet
+  const addrs: any = addresses.oasis_sapphire_testnet
   const nftData: NftCreateData = {
     name: 'NFTName',
     symbol: 'NFTSymbol',
@@ -129,31 +130,31 @@ describe('Sapphire tests', async () => {
     const address = await wallet.getAddress()
     datatoken = new Datatoken4(
       walletWrapped,
-      ethers.utils.toUtf8Bytes(JSON.stringify(filesObject)),
+      toUtf8Bytes(JSON.stringify(filesObject)),
       23295,
       config,
       ERC20Template4.abi as AbiItem[]
     )
     assert(
       (await (datatoken as Datatoken4).isDatatokenDeployer(datatokenAddress, address)) ===
-        true,
+      true,
       'no ERC20 deployer'
     )
     assert(
       (await (nftToken as Nft).isDatatokenDeployed(nftAddress, datatokenAddress)) ===
-        true,
+      true,
       'datatoken not deployed'
     )
     assert(
       (await (datatoken as Datatoken4).getAllowlistContract(datatokenAddress)) ===
-        listAddress,
+      listAddress,
       'no access list attached to datatoken.'
     )
   })
   it('Get Deny Access List', async () => {
     assert(
       (await (datatoken as Datatoken4).getDenylistContract(datatokenAddress)) ===
-        ZERO_ADDRESS,
+      ZERO_ADDRESS,
       'no access list attached to datatoken.'
     )
   })
@@ -183,7 +184,7 @@ describe('Sapphire tests', async () => {
     await tx.wait()
     assert(
       (await (datatoken as Datatoken4).getDenylistContract(datatokenAddress)) ===
-        denyListAddress,
+      denyListAddress,
       'no access list attached to datatoken.'
     )
   })
@@ -201,7 +202,7 @@ describe('Sapphire tests', async () => {
       ((await (denyAccessListToken as AccessListContract).balance(
         await wallet.getAddress()
       )) === '1.0',
-      'address of consumer not added.')
+        'address of consumer not added.')
     )
   })
   it('delete address from deny list', async () => {
@@ -209,14 +210,14 @@ describe('Sapphire tests', async () => {
     await tx.wait()
     assert(
       (await (datatoken as Datatoken4).getDenylistContract(datatokenAddress)) ===
-        denyListAddress,
+      denyListAddress,
       'no access list attached to datatoken.'
     )
     assert(
       ((await (denyAccessListToken as AccessListContract).balance(
         await wallet.getAddress()
       )) === '0.0',
-      'address of consumer not removed.')
+        'address of consumer not removed.')
     )
   })
   it('add address to allow list', async () => {
@@ -231,7 +232,7 @@ describe('Sapphire tests', async () => {
       ((await (accessListToken as AccessListContract).balance(
         await consumer.getAddress()
       )) === '1.0',
-      'address of consumer not added.')
+        'address of consumer not added.')
     )
   })
   it('get token URI', async () => {
@@ -249,7 +250,7 @@ describe('Sapphire tests', async () => {
         encoding: 'UTF-8'
       }
     ]
-    const fileObjBytes = ethers.utils.toUtf8Bytes(JSON.stringify(newFileObject))
+    const fileObjBytes = toUtf8Bytes(JSON.stringify(newFileObject))
     datatoken.setFileObj(fileObjBytes)
     assert(
       datatoken.fileObject === fileObjBytes,

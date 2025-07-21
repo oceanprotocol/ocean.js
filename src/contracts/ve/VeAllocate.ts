@@ -24,12 +24,12 @@ export class VeAllocate extends SmartContractWithAddress {
     chainId: number,
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
-    const estGas = await this.contract.estimateGas.setAllocation(amount, nft, chainId)
+    const estGas = await this.contract.setAllocation.estimateGas(amount, nft, chainId)
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
 
     // Invoke function of the contract
     const trxReceipt = await sendTx(
-      estGas.add(20000),
+      estGas + 20000n,
       this.getSignerAccordingSdk(),
       this.config?.gasFeeMultiplier,
       this.contract.setAllocation,
@@ -54,7 +54,7 @@ export class VeAllocate extends SmartContractWithAddress {
     chainId: number[],
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
-    const estGas = await this.contract.estimateGas.setBatchAllocation(
+    const estGas = await this.contract.setBatchAllocation.estimateGas(
       amount,
       nft,
       chainId
@@ -62,7 +62,7 @@ export class VeAllocate extends SmartContractWithAddress {
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
     // Invoke function of the contract
     const trxReceipt = await sendTx(
-      estGas.add(20000),
+      estGas + 20000n,
       this.getSignerAccordingSdk(),
       this.config?.gasFeeMultiplier,
       this.contract.setBatchAllocation,

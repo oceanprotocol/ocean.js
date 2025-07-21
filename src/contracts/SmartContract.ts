@@ -88,7 +88,7 @@ export abstract class SmartContract {
     const abiToUse = abi || this.abi
     const contract = new ethers.Contract(
       address,
-      new ethers.utils.Interface(JSON.stringify(abiToUse)),
+      new ethers.Interface(JSON.stringify(abiToUse)),
       this.signer
     )
     return setContractDefaults(contract, this.config)

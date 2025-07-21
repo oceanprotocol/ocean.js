@@ -1,4 +1,4 @@
-import { ethers, Signer, providers, Contract, ContractFunction, BigNumber } from 'ethers'
+import { ethers, Signer, Contract, TransactionResponse, BaseContractMethod, formatUnits, parseUnits } from 'ethers'
 
 import { Config, KNOWN_CONFIDENTIAL_EVMS } from '../config/index.js'
 import { LoggerInstance } from './Logger.js'
@@ -36,8 +36,8 @@ export async function getFairGasPrice(
   gasFeeMultiplier: number
 ): Promise<string> {
   const price = await (await signer.provider.getFeeData()).gasPrice
-  const x = ethers.BigNumber.from(price.toString())
-  if (gasFeeMultiplier) return x.mul(gasFeeMultiplier).toBigInt().toString(10)
+  const x = BigInt(price.toString())
+  if (gasFeeMultiplier) return (x * BigInt(gasFeeMultiplier)).toString(10)
   else return x.toString()
 }
 
@@ -71,7 +71,7 @@ export async function unitsToAmount(
     decimals = 18
   }
 
-  const amountFormatted = ethers.utils.formatUnits(amount, decimals)
+  const amountFormatted = formatUnits(amount, decimals)
   return amountFormatted.toString()
 }
 
@@ -93,7 +93,7 @@ export async function amountToUnits(
   if (decimals === '0') {
     decimals = 18
   }
-  const amountFormatted = ethers.utils.parseUnits(amount, decimals)
+  const amountFormatted = parseUnits(amount, decimals)
   return amountFormatted.toString()
 }
 
@@ -113,12 +113,12 @@ export function getEventFromTx(txReceipt: any, eventName: any) {
  * @return {Promise<any>} transaction receipt
  */
 export async function sendTx(
-  estGas: BigNumber,
+  estGas: bigint,
   signer: Signer,
   gasFeeMultiplier: number,
-  functionToSend: ContractFunction,
+  functionToSend: BaseContractMethod,
   ...args: any[]
-): Promise<providers.TransactionResponse> {
+): Promise<TransactionResponse> {
   const { chainId } = await signer.provider.getNetwork()
   const feeHistory = await signer.provider.getFeeData()
   let overrides: Record<string, any> = {}
@@ -127,43 +127,43 @@ export async function sendTx(
     let aggressiveFeePerGas = feeHistory.maxFeePerGas.toString()
     if (gasFeeMultiplier > 1) {
       aggressiveFeePriorityFeePerGas = Math.round(
-        feeHistory.maxPriorityFeePerGas.toNumber() * gasFeeMultiplier
+        Number(feeHistory.maxPriorityFeePerGas) * gasFeeMultiplier
       ).toString()
       aggressiveFeePerGas = Math.round(
-        feeHistory.maxFeePerGas.toNumber() * gasFeeMultiplier
+        Number(feeHistory.maxFeePerGas) * gasFeeMultiplier
       ).toString()
     }
     overrides = {
       maxPriorityFeePerGas:
-        (chainId === MUMBAI_NETWORK_ID || chainId === POLYGON_NETWORK_ID) &&
-        Number(aggressiveFeePriorityFeePerGas) < MIN_GAS_FEE_POLYGON
+        (Number(chainId) === MUMBAI_NETWORK_ID || Number(chainId) === POLYGON_NETWORK_ID) &&
+          Number(aggressiveFeePriorityFeePerGas) < MIN_GAS_FEE_POLYGON
           ? MIN_GAS_FEE_POLYGON
-          : chainId === SEPOLIA_NETWORK_ID &&
+          : Number(chainId) === SEPOLIA_NETWORK_ID &&
             Number(aggressiveFeePriorityFeePerGas) < MIN_GAS_FEE_SEPOLIA
-          ? MIN_GAS_FEE_SEPOLIA
-          : KNOWN_CONFIDENTIAL_EVMS.includes(chainId) &&
-            Number(aggressiveFeePriorityFeePerGas) < MIN_GAS_FEE_SAPPHIRE
-          ? MIN_GAS_FEE_SAPPHIRE
-          : Number(aggressiveFeePriorityFeePerGas),
+            ? MIN_GAS_FEE_SEPOLIA
+            : KNOWN_CONFIDENTIAL_EVMS.includes(Number(chainId)) &&
+              Number(aggressiveFeePriorityFeePerGas) < MIN_GAS_FEE_SAPPHIRE
+              ? MIN_GAS_FEE_SAPPHIRE
+              : Number(aggressiveFeePriorityFeePerGas),
 
       maxFeePerGas:
-        (chainId === MUMBAI_NETWORK_ID || chainId === POLYGON_NETWORK_ID) &&
-        Number(aggressiveFeePerGas) < MIN_GAS_FEE_POLYGON
+        (Number(chainId) === MUMBAI_NETWORK_ID || Number(chainId) === POLYGON_NETWORK_ID) &&
+          Number(aggressiveFeePerGas) < MIN_GAS_FEE_POLYGON
           ? MIN_GAS_FEE_POLYGON
-          : chainId === SEPOLIA_NETWORK_ID &&
+          : Number(chainId) === SEPOLIA_NETWORK_ID &&
             Number(aggressiveFeePerGas) < MIN_GAS_FEE_SEPOLIA
-          ? MIN_GAS_FEE_SEPOLIA
-          : KNOWN_CONFIDENTIAL_EVMS.includes(chainId) &&
-            Number(aggressiveFeePerGas) < MIN_GAS_FEE_SAPPHIRE
-          ? MIN_GAS_FEE_SAPPHIRE
-          : Number(aggressiveFeePerGas)
+            ? MIN_GAS_FEE_SEPOLIA
+            : KNOWN_CONFIDENTIAL_EVMS.includes(Number(chainId)) &&
+              Number(aggressiveFeePerGas) < MIN_GAS_FEE_SAPPHIRE
+              ? MIN_GAS_FEE_SAPPHIRE
+              : Number(aggressiveFeePerGas)
     }
   } else {
     overrides = {
       gasPrice: feeHistory.gasPrice
     }
   }
-  overrides.gasLimit = estGas.add(20000)
+  overrides.gasLimit = estGas + 20000n
   try {
     const trxReceipt = await functionToSend(...args, overrides)
     await trxReceipt.wait()

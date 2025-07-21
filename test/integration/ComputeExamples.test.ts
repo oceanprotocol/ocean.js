@@ -121,7 +121,7 @@
 import fs from 'fs'
 import { homedir } from 'os'
 import { assert } from 'chai'
-import { ethers, providers, Signer } from 'ethers'
+import { ethers, getAddress, JsonRpcProvider, parseEther, Signer, toBeHex } from 'ethers'
 import {
   ProviderInstance,
   Aquarius,
@@ -307,17 +307,16 @@ async function createAssetHelper(
   ddo: DDO,
   providerUrl: string
 ) {
-  const nft = new Nft(owner, (await owner.provider.getNetwork()).chainId)
+  const chainId = (await owner.provider.getNetwork()).chainId
+  const nft = new Nft(owner, Number(chainId))
 
   const nftFactory = new NftFactory(
     addresses.ERC721Factory,
     owner,
-    await owner.getChainId()
+    Number(chainId)
   )
 
-  const chain = (await owner.provider.getNetwork()).chainId
-
-  ddo.chainId = parseInt(chain.toString(10))
+  ddo.chainId = Number(chainId)
   const nftParamsAsset: NftCreateData = {
     name,
     symbol,
@@ -351,14 +350,14 @@ async function createAssetHelper(
   // create the files encrypted string
   assetUrl.datatokenAddress = datatokenAddressAsset
   assetUrl.nftAddress = nftAddress
-  ddo.services[0].files = await ProviderInstance.encrypt(assetUrl, chain, providerUrl)
+  ddo.services[0].files = await ProviderInstance.encrypt(assetUrl, Number(chainId), providerUrl)
   ddo.services[0].datatokenAddress = datatokenAddressAsset
   ddo.services[0].serviceEndpoint = providerUrl
 
   ddo.nftAddress = nftAddress
-  ddo.id = 'did:op:' + SHA256(ethers.utils.getAddress(nftAddress) + chain.toString(10))
+  ddo.id = 'did:op:' + SHA256(ethers.getAddress(nftAddress) + chainId.toString(10))
 
-  const encryptedResponse = await ProviderInstance.encrypt(ddo, chain, providerUrl)
+  const encryptedResponse = await ProviderInstance.encrypt(ddo, Number(chainId), providerUrl)
   const validateResult = await aquariusInstance.validate(ddo, owner, providerUrl)
   await nft.setMetadata(
     nftAddress,
@@ -366,7 +365,7 @@ async function createAssetHelper(
     0,
     providerUrl,
     '',
-    ethers.utils.hexlify(2),
+    toBeHex(2),
     encryptedResponse,
     validateResult.hash
   )
@@ -431,7 +430,7 @@ describe('Compute-to-data example tests', async () => {
   /// We need to load the configuration. Add the following code into your `run(){ }` function
   /// ```Typescript
   before(async () => {
-    const provider = new providers.JsonRpcProvider(
+    const provider = new JsonRpcProvider(
       process.env.NODE_URI || configHelperNetworks[1].nodeUri
     )
     publisherAccount = (await provider.getSigner(0)) as Signer
@@ -448,7 +447,7 @@ describe('Compute-to-data example tests', async () => {
       // eslint-disable-next-line security/detect-non-literal-fs-filename
       fs.readFileSync(
         process.env.ADDRESS_FILE ||
-          `${homedir}/.ocean/ocean-contracts/artifacts/address.json`,
+        `${homedir}/.ocean/ocean-contracts/artifacts/address.json`,
         'utf8'
       )
     ).development
@@ -490,7 +489,7 @@ describe('Compute-to-data example tests', async () => {
     ]
 
     const tokenContract = new ethers.Contract(addresses.Ocean, minAbi, publisherAccount)
-    const estGasPublisher = await tokenContract.estimateGas.mint(
+    const estGasPublisher = await tokenContract.mint.estimateGas(
       await publisherAccount.getAddress(),
       amountToUnits(null, null, '1000', 18)
     )
@@ -575,9 +574,10 @@ describe('Compute-to-data example tests', async () => {
 
   it('8.1 Mint dataset and algorithm datatokens to publisher', async () => {
     /// ```Typescript
+    const chainId = (await publisherAccount.provider.getNetwork()).chainId
     const datatoken = new Datatoken(
       publisherAccount,
-      (await publisherAccount.provider.getNetwork()).chainId
+      Number(chainId)
     )
     await datatoken.mint(
       resolvedDatasetDdo.services[0].datatokenAddress,
@@ -612,9 +612,10 @@ describe('Compute-to-data example tests', async () => {
 
   it('10.1 Start a compute job using a free C2D environment', async () => {
     /// <!--
+    const chainId = (await consumerAccount.provider.getNetwork()).chainId
     datatoken = new Datatoken(
       consumerAccount,
-      (await consumerAccount.provider.getNetwork()).chainId
+      Number(chainId)
     )
     /// -->
 
@@ -754,9 +755,10 @@ describe('Compute-to-data example tests', async () => {
 
   it('12.1 Start a compute job using a paid C2D resources', async () => {
     /// <!--
+    const chainId = (await consumerAccount.provider.getNetwork()).chainId
     datatoken = new Datatoken(
       consumerAccount,
-      (await consumerAccount.provider.getNetwork()).chainId
+      Number(chainId)
     )
     /// -->
 
@@ -826,9 +828,7 @@ describe('Compute-to-data example tests', async () => {
         providerUrl,
         consumerAccount,
         resources,
-        (
-          await consumerAccount.provider.getNetwork()
-        ).chainId
+        Number(chainId)
       )
 
       console.log(
@@ -845,7 +845,7 @@ describe('Compute-to-data example tests', async () => {
       /// Let's check funds for escrow payment
       /// ```Typescript
       const escrow = new EscrowContract(
-        ethers.utils.getAddress(providerInitializeComputeResults.payment.escrowAddress),
+        getAddress(providerInitializeComputeResults.payment.escrowAddress),
         consumerAccount
       )
       const paymentTokenPublisher = new Datatoken(publisherAccount)
@@ -854,18 +854,18 @@ describe('Compute-to-data example tests', async () => {
         await publisherAccount.getAddress()
       )
       assert(
-        ethers.utils.parseEther(balancePublisherPaymentToken) > ethers.BigNumber.from(0),
+        parseEther(balancePublisherPaymentToken) > BigInt(0),
         'Balance should be higher than 0'
       )
       const tx = await publisherAccount.sendTransaction({
         to: computeEnv.consumerAddress,
-        value: ethers.utils.parseEther('1.5')
+        value: parseEther('1.5')
       })
       await tx.wait()
 
       await paymentTokenPublisher.transfer(
         paymentToken,
-        ethers.utils.getAddress(computeEnv.consumerAddress),
+        getAddress(computeEnv.consumerAddress),
         (Number(balancePublisherPaymentToken) / 2).toString()
       )
       const amountToDeposit = (
@@ -913,9 +913,7 @@ describe('Compute-to-data example tests', async () => {
         computeValidUntil,
         paymentToken,
         resources,
-        (
-          await consumerAccount.provider.getNetwork()
-        ).chainId
+        Number(chainId)
       )
       /// ```
 

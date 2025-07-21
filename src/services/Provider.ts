@@ -1,5 +1,5 @@
 import fetch from 'cross-fetch'
-import { ethers, Signer, providers } from 'ethers'
+import { ethers, JsonRpcSigner, Signer, toUtf8Bytes } from 'ethers'
 import { LoggerInstance } from '../utils/Logger.js'
 import {
   Arweave,
@@ -147,19 +147,17 @@ export class Provider {
     //  const isMetaMask = web3 && web3.currentProvider && (web3.currentProvider as any).isMetaMask
     //  if (isMetaMask) return await web3.eth.personal.sign(consumerMessage, accountId, password)
     //  await web3.eth.sign(consumerMessage, await signer.getAddress())
-    const consumerMessage = ethers.utils.solidityKeccak256(
-      ['bytes'],
-      [ethers.utils.hexlify(ethers.utils.toUtf8Bytes(message))]
-    )
-    const messageHashBytes = ethers.utils.arrayify(consumerMessage)
+    const consumerMessage = ethers.keccak256(toUtf8Bytes(message))
+    const messageHashBytes = ethers.getBytes(consumerMessage)
     try {
       return await signer.signMessage(messageHashBytes)
     } catch (error) {
       // LoggerInstance.error('Sign provider message error: ', error)
       // Check if the user is using barge chain
-      const chainId = await signer.getChainId()
+      const network = await signer.provider.getNetwork()
+      const chainId = Number(network.chainId)
       if (chainId === 8996) {
-        return await (signer as providers.JsonRpcSigner)._legacySignMessage(
+        return await (signer as JsonRpcSigner)._legacySignMessage(
           messageHashBytes
         )
       }

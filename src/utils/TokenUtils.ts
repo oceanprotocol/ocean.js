@@ -37,7 +37,7 @@ export async function approve<G extends boolean = false>(
     }
   }
   const amountFormatted = await amountToUnits(signer, tokenAddress, amount, tokenDecimals)
-  const estGas = await tokenContract.estimateGas.approve(spender, amountFormatted)
+  const estGas = await tokenContract.approve.estimateGas(spender, amountFormatted)
   if (estimateGas) return <ReceiptOrDecimal<G>>(<unknown>new Decimal(estGas.toString()))
 
   const trxReceipt = await sendTx(
@@ -75,13 +75,13 @@ export async function approveWei<G extends boolean = false>(
   const tokenContract = new ethers.Contract(tokenAddress, minAbi, signer)
   if (!force) {
     const currentAllowence = await allowanceWei(signer, tokenAddress, account, spender)
-    if (ethers.BigNumber.from(currentAllowence).gt(ethers.BigNumber.from(amount))) {
-      return <ReceiptOrEstimate<G>>ethers.BigNumber.from(currentAllowence)
+    if (BigInt(currentAllowence) > BigInt(amount)) {
+      return <ReceiptOrEstimate<G>>BigInt(currentAllowence)
     }
   }
   let result = null
 
-  const estGas = await tokenContract.estimateGas.approve(spender, amount)
+  const estGas = await tokenContract.approve.estimateGas(spender, amount)
   if (estimateGas) return <ReceiptOrEstimate<G>>estGas
 
   try {
@@ -120,7 +120,7 @@ export async function transfer<G extends boolean = false>(
 ): Promise<ReceiptOrEstimate<G>> {
   const tokenContract = new ethers.Contract(tokenAddress, minAbi, signer)
   const amountFormatted = await amountToUnits(signer, tokenAddress, amount)
-  const estGas = await tokenContract.estimateGas.transfer(recipient, amountFormatted)
+  const estGas = await tokenContract.transfer.estimateGas(recipient, amountFormatted)
   if (estimateGas) return <ReceiptOrEstimate<G>>estGas
 
   const trxReceipt = await sendTx(

@@ -1,5 +1,5 @@
 import crypto from 'crypto-js'
-import { ethers, Signer } from 'ethers'
+import { getAddress, Signer, toBeHex } from 'ethers'
 import {
   Aquarius,
   DatatokenCreateParams,
@@ -28,7 +28,8 @@ export async function createAssetHelper(
   nftContractAddress: string, // addresses.ERC721Factory,
   aquariusInstance: Aquarius
 ) {
-  const nft = new Nft(owner, (await owner.provider.getNetwork()).chainId)
+  const chainId = (await owner.provider.getNetwork()).chainId
+  const nft = new Nft(owner, Number(chainId))
 
   const nftFactory = new NftFactory(nftContractAddress, owner)
 
@@ -69,15 +70,15 @@ export async function createAssetHelper(
   // create the files encrypted string
   assetUrl.datatokenAddress = datatokenAddressAsset
   assetUrl.nftAddress = nftAddress
-  ddo.services[0].files = await ProviderInstance.encrypt(assetUrl, chain, providerUrl)
+  ddo.services[0].files = await ProviderInstance.encrypt(assetUrl, Number(chain), providerUrl)
   ddo.services[0].datatokenAddress = datatokenAddressAsset
   ddo.services[0].serviceEndpoint = providerUrl
 
   ddo.nftAddress = nftAddress
   ddo.id =
-    'did:op:' + crypto.SHA256(ethers.utils.getAddress(nftAddress) + chain.toString(10))
+    'did:op:' + crypto.SHA256(getAddress(nftAddress) + chain.toString(10))
 
-  const encryptedResponse = await ProviderInstance.encrypt(ddo, chain, providerUrl)
+  const encryptedResponse = await ProviderInstance.encrypt(ddo, Number(chain), providerUrl)
   const validateResult = await aquariusInstance.validate(ddo, owner, providerUrl)
   await nft.setMetadata(
     nftAddress,
@@ -85,7 +86,7 @@ export async function createAssetHelper(
     0,
     providerUrl,
     '',
-    ethers.utils.hexlify(2),
+    toBeHex(2),
     encryptedResponse,
     validateResult.hash
   )
@@ -98,7 +99,8 @@ export async function updateAssetMetadata(
   providerUrl: string,
   aquariusInstance: Aquarius
 ) {
-  const nft = new Nft(owner, (await owner.provider.getNetwork()).chainId)
+  const chainId = (await owner.provider.getNetwork()).chainId
+  const nft = new Nft(owner, Number(chainId))
   const providerResponse = await ProviderInstance.encrypt(
     updatedDdo,
     updatedDdo.chainId,
@@ -112,7 +114,7 @@ export async function updateAssetMetadata(
     0,
     providerUrl,
     '',
-    ethers.utils.hexlify(2),
+    toBeHex(2),
     encryptedResponse,
     validateResult.hash
   )
@@ -135,7 +137,7 @@ export async function handleComputeOrder(
        - no validOrder -> we need to call startOrder, to pay 1 DT & providerFees
     */
   const chainID = (await payerAccount.provider.getNetwork()).chainId
-  if (config.chainId !== chainID) {
+  if (config.chainId !== Number(chainID)) {
     throw new Error('Chain ID from DDO is different than the configured network.')
   }
   const hasProviderFees = order.providerFee && order.providerFee.providerFeeAmount

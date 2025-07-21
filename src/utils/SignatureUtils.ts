@@ -1,4 +1,4 @@
-import { ethers, Signer, providers } from 'ethers'
+import { Signer, providers, getBytes, solidityPackedKeccak256, toBeHex, toUtf8Bytes } from 'ethers'
 import { LoggerInstance } from './Logger'
 
 /**
@@ -11,7 +11,7 @@ export async function signHash(signer: Signer, message: string) {
   // Since ganache has no support yet for personal_sign, we must use the legacy implementation
   // const signedMessage = await user2.signMessage(message)
 
-  const messageHashBytes = ethers.utils.arrayify(message)
+  const messageHashBytes = getBytes(message)
   let signedMessage = await (signer as providers.JsonRpcSigner)._legacySignMessage(
     messageHashBytes
   )
@@ -26,17 +26,17 @@ export async function signHash(signer: Signer, message: string) {
 }
 
 export async function signRequest(signer: Signer, message: string): Promise<string> {
-  const consumerMessage = ethers.utils.solidityKeccak256(
+  const consumerMessage = solidityPackedKeccak256(
     ['bytes'],
-    [ethers.utils.hexlify(ethers.utils.toUtf8Bytes(message))]
+    [toBeHex(toUtf8Bytes(message))]
   )
-  const messageHashBytes = ethers.utils.arrayify(consumerMessage)
-  const chainId = await signer.getChainId()
+  const messageHashBytes = getBytes(consumerMessage)
+  const chainId = (await signer.provider.getNetwork()).chainId
   try {
     return await signer.signMessage(messageHashBytes)
   } catch (error) {
     LoggerInstance.error('Sign message error: ', error)
-    if (chainId === 8996) {
+    if (Number(chainId) === 8996) {
       console.log('Signing message with _legacySignMessage')
       return await (signer as providers.JsonRpcSigner)._legacySignMessage(
         messageHashBytes

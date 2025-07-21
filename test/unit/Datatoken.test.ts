@@ -1,6 +1,6 @@
 import { assert, expect } from 'chai'
 import { provider, getAddresses } from '../config.js'
-import { ethers, Signer } from 'ethers'
+import { ethers, parseUnits, Signer } from 'ethers'
 import {
   NftFactory,
   NftCreateData,
@@ -122,7 +122,7 @@ describe('Datatoken', () => {
 
     assert(
       (await nftDatatoken.isDatatokenDeployer(nftAddress, await user1.getAddress())) ===
-        false
+      false
     )
 
     await nftDatatoken.addDatatokenDeployer(
@@ -151,7 +151,7 @@ describe('Datatoken', () => {
   it('#addMinter - should FAIL TO add user1 as minter, if user has DatatokenDeployer permission', async () => {
     assert(
       (await nftDatatoken.isDatatokenDeployer(nftAddress, await user3.getAddress())) ===
-        false
+      false
     )
     assert(
       (await datatoken.getPermissions(datatokenAddress, await user2.getAddress()))
@@ -210,7 +210,7 @@ describe('Datatoken', () => {
   it('#createFixedRate - should FAIL create FRE if NOT DatatokenDeployer', async () => {
     assert(
       (await nftDatatoken.isDatatokenDeployer(nftAddress, await user3.getAddress())) ===
-        false
+      false
     )
     try {
       await datatoken.createFixedRate(
@@ -246,7 +246,7 @@ describe('Datatoken', () => {
     }
     assert(
       (await nftDatatoken.isDatatokenDeployer(nftAddress, await user3.getAddress())) ===
-        false
+      false
     )
     try {
       await datatoken.createDispenser(
@@ -264,7 +264,7 @@ describe('Datatoken', () => {
   it('#removeMinter - should FAIL to remove user1 as minter, if caller is NOT DatatokenDeployer', async () => {
     assert(
       (await nftDatatoken.isDatatokenDeployer(nftAddress, await user2.getAddress())) ===
-        false
+      false
     )
     assert(
       (await datatoken.getPermissions(datatokenAddress, await user1.getAddress()))
@@ -314,7 +314,7 @@ describe('Datatoken', () => {
   it('#addPaymentManager - should FAIL TO add user2 as paymentManager, if caller is NOT DatatokenDeployer', async () => {
     assert(
       (await nftDatatoken.isDatatokenDeployer(nftAddress, await user2.getAddress())) ===
-        false
+      false
     )
     assert(
       (await datatoken.getPermissions(datatokenAddress, await user3.getAddress()))
@@ -364,7 +364,7 @@ describe('Datatoken', () => {
   it('#removePaymentManager - should FAIL TO remove user2 as paymentManager, if nftDatatoken has DatatokenDeployer permission', async () => {
     assert(
       (await nftDatatoken.isDatatokenDeployer(nftAddress, await user3.getAddress())) ===
-        false
+      false
     )
     assert(
       (await datatoken.getPermissions(datatokenAddress, await user2.getAddress()))
@@ -432,7 +432,7 @@ describe('Datatoken', () => {
   it('#setPaymentCollector - should set a new paymentCollector, if PAYMENT MANAGER', async () => {
     assert(
       (await datatoken.getPaymentCollector(datatokenAddress)) ===
-        (await user1.getAddress())
+      (await user1.getAddress())
     )
 
     await datatoken.addPaymentManager(
@@ -454,7 +454,7 @@ describe('Datatoken', () => {
 
     assert(
       (await datatoken.getPaymentCollector(datatokenAddress)) ===
-        (await user3.getAddress())
+      (await user3.getAddress())
     )
   })
 
@@ -469,7 +469,7 @@ describe('Datatoken', () => {
 
     assert(
       (await datatoken.getPaymentCollector(datatokenAddress)) ===
-        (await user2.getAddress())
+      (await user2.getAddress())
     )
   })
 
@@ -491,7 +491,7 @@ describe('Datatoken', () => {
 
     assert(
       (await datatoken.getPaymentCollector(datatokenAddress)) ===
-        (await user3.getAddress())
+      (await user3.getAddress())
     )
   })
 
@@ -511,7 +511,7 @@ describe('Datatoken', () => {
     const providerFeeAmount = '0'
     const providerValidUntil = '0'
 
-    const message = ethers.utils.solidityKeccak256(
+    const message = ethers.solidityPackedKeccak256(
       ['bytes', 'address', 'address', 'uint256', 'uint256'],
       [
         ethers.utils.hexlify(ethers.utils.toUtf8Bytes(providerData)),
@@ -561,7 +561,7 @@ describe('Datatoken', () => {
     const providerFeeAmount = '0'
     const providerValidUntil = '0'
 
-    const message = ethers.utils.solidityKeccak256(
+    const message = ethers.solidityPackedKeccak256(
       ['bytes', 'address', 'address', 'uint256', 'uint256'],
       [
         ethers.utils.hexlify(ethers.utils.toUtf8Bytes(providerData)),
@@ -715,7 +715,7 @@ describe('Datatoken', () => {
 
     assert(
       (await datatoken.getPaymentCollector(datatokenAddress)) ===
-        (await user3.getAddress())
+      (await user3.getAddress())
     )
 
     assert(
@@ -732,7 +732,7 @@ describe('Datatoken', () => {
 
     assert(
       (await datatoken.getPaymentCollector(datatokenAddress)) ===
-        (await user3.getAddress())
+      (await user3.getAddress())
     )
 
     assert(
@@ -754,7 +754,7 @@ describe('Datatoken', () => {
 
     assert(
       (await datatoken.getPaymentCollector(datatokenAddress)) ===
-        (await user3.getAddress())
+      (await user3.getAddress())
     )
 
     assert(
@@ -767,7 +767,7 @@ describe('Datatoken', () => {
 
     assert(
       (await datatoken.getPaymentCollector(datatokenAddress)) ===
-        (await nftOwner.getAddress())
+      (await nftOwner.getAddress())
     )
 
     assert(
@@ -806,7 +806,7 @@ describe('Datatoken', () => {
     const OldData = 'SomeData'
     assert(
       (await nftDatatoken.isDatatokenDeployer(nftAddress, await user3.getAddress())) ===
-        false
+      false
     )
 
     try {
@@ -868,7 +868,7 @@ describe('Datatoken', () => {
         datatokenAddress,
         await user1.getAddress(),
         addresses.MockDAI,
-        ethers.utils.parseUnits('10').toString(),
+        parseUnits('10').toString(),
         await user1.getAddress()
       )
     } catch (e) {
@@ -880,15 +880,15 @@ describe('Datatoken', () => {
 
     assert(
       newPublishingMarketFee.publishMarketFeeAddress ===
-        originalPublishingMarketFee.publishMarketFeeAddress
+      originalPublishingMarketFee.publishMarketFeeAddress
     )
     assert(
       newPublishingMarketFee.publishMarketFeeToken ===
-        originalPublishingMarketFee.publishMarketFeeToken
+      originalPublishingMarketFee.publishMarketFeeToken
     )
     assert(
       newPublishingMarketFee.publishMarketFeeAmount ===
-        originalPublishingMarketFee.publishMarketFeeAmount
+      originalPublishingMarketFee.publishMarketFeeAmount
     )
   })
 
@@ -903,7 +903,7 @@ describe('Datatoken', () => {
         datatokenAddress,
         await user2.getAddress(),
         addresses.MockDAI,
-        ethers.utils.parseUnits('10').toString(),
+        parseUnits('10').toString(),
         await user2.getAddress()
       )
     } catch (e) {
@@ -918,7 +918,7 @@ describe('Datatoken', () => {
 
     assert(
       newPublishingMarketFee.publishMarketFeeAmount ===
-        ethers.utils.parseUnits('10').toString()
+      parseUnits('10').toString()
     )
     assert(newPublishingMarketFee.publishMarketFeeToken === addresses.MockDAI)
   })

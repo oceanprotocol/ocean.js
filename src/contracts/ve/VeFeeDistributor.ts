@@ -23,12 +23,12 @@ export class VeFeeDistributor extends SmartContractWithAddress {
   public async claim<G extends boolean = false>(
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
-    const estGas = await this.contract.estimateGas.claim()
+    const estGas = await this.contract.claim.estimateGas()
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
 
     // Invoke function of the contract
     const trxReceipt = await sendTx(
-      estGas.add(20000),
+      estGas + 20000n,
       this.getSignerAccordingSdk(),
       this.config?.gasFeeMultiplier,
       this.contract.claim
@@ -49,11 +49,11 @@ export class VeFeeDistributor extends SmartContractWithAddress {
     addresses: string[],
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
-    const estGas = await this.contract.estimateGas.claim_many(addresses)
+    const estGas = await this.contract.claim_many.estimateGas(addresses)
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
     // Invoke function of the contract
     const trxReceipt = await sendTx(
-      estGas.add(20000),
+      estGas + 20000n,
       this.getSignerAccordingSdk(),
       this.config?.gasFeeMultiplier,
       this.contract.claim_many,
