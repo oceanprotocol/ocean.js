@@ -474,8 +474,8 @@ describe('Compute flow tests', async () => {
       assert(
         freeComputeRouteSupport === null,
         'Cannot start free compute job. provider at ' +
-        providerUrl +
-        ' does not implement freeCompute route'
+          providerUrl +
+          ' does not implement freeCompute route'
       )
     }
   }).timeout(40000)
@@ -545,7 +545,7 @@ describe('Compute flow tests', async () => {
     } catch (e) {
       assert(
         e.message ===
-        `ComputeJob cannot be initialized: Error: Not enough cpu resources. Requested 5, but max is 4.`
+          `ComputeJob cannot be initialized: Error: Not enough cpu resources. Requested 5, but max is 4.`
       )
     }
   })
@@ -608,7 +608,7 @@ describe('Compute flow tests', async () => {
     const { price } = computeEnv.fees[Number(chainId)][0].prices[0]
     assert(
       Number(formatUnits(providerInitializeComputeResults.payment.amount, 18)) ===
-      (computeEnv.maxJobDuration / 60) * price * computeMinutes,
+        (computeEnv.maxJobDuration / 60) * price * computeMinutes,
       'Incorrect payment token amount'
     ) // 60 minutes per price 1 -> amount = 60
     assert(
@@ -786,7 +786,7 @@ describe('Compute flow tests', async () => {
     assets[0].transferTxId = providerInitializeComputeResults.datasets[0].validOrder
     assert(
       algo.transferTxId === paidEnvAlgoTxId &&
-      assets[0].transferTxId === paidEnvDatasetTxId,
+        assets[0].transferTxId === paidEnvDatasetTxId,
       'We should use the same orders, because no fess must be paid'
     )
 
@@ -907,7 +907,7 @@ describe('Compute flow tests', async () => {
     }
     assert(
       algo.transferTxId !== paidEnvAlgoTxId ||
-      assets[0].transferTxId !== paidEnvDatasetTxId,
+        assets[0].transferTxId !== paidEnvDatasetTxId,
       'We should not use the same orders'
     )
     const computeJobs = await ProviderInstance.computeStart(

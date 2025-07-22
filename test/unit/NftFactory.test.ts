@@ -1,6 +1,6 @@
 import { assert, expect } from 'chai'
 import { getTestConfig, provider, getAddresses } from '../config.js'
-import { ethers, Signer, toBeHex, toUtf8Bytes } from 'ethers'
+import { ethers, hexlify, Signer, toUtf8Bytes } from 'ethers'
 import {
   NftFactory,
   NftCreateData,
@@ -109,8 +109,8 @@ describe('Nft Factory test', () => {
     const nftCreatedEvent = getEventFromTx(trxReceipt, 'NFTCreated')
     const tokenCreatedEvent = getEventFromTx(trxReceipt, 'TokenCreated')
     // events have been emitted
-    expect(nftCreatedEvent.event === 'NFTCreated')
-    expect(tokenCreatedEvent.event === 'TokenCreated')
+    expect(nftCreatedEvent?.eventName === 'NFTCreated')
+    expect(tokenCreatedEvent?.eventName === 'TokenCreated')
     // stored for later use in startMultipleTokenOrder test
     nftAddress = nftCreatedEvent.args.newTokenAddress
     dtAddress = tokenCreatedEvent.args.newTokenAddress
@@ -151,9 +151,9 @@ describe('Nft Factory test', () => {
     const nftCreatedEvent = getEventFromTx(trxReceipt, 'NFTCreated')
     const TokenCreatedEvent = getEventFromTx(trxReceipt, 'TokenCreated')
     const NewFixedRateEvent = getEventFromTx(trxReceipt, 'NewFixedRate')
-    expect(nftCreatedEvent.event === 'NFTCreated')
-    expect(TokenCreatedEvent.event === 'TokenCreated')
-    expect(NewFixedRateEvent.event === 'NewFixedRate')
+    expect(nftCreatedEvent?.eventName === 'NFTCreated')
+    expect(TokenCreatedEvent?.eventName === 'TokenCreated')
+    expect(NewFixedRateEvent?.eventName === 'NewFixedRate')
 
     // stored for later use in startMultipleTokenOrder test
     dtAddress = TokenCreatedEvent.args.newTokenAddress
@@ -179,9 +179,9 @@ describe('Nft Factory test', () => {
     const nftCreatedEvent = getEventFromTx(trxReceipt, 'NFTCreated')
     const TokenCreatedEvent = getEventFromTx(trxReceipt, 'TokenCreated')
     const DispenserCreatedEvent = getEventFromTx(trxReceipt, 'DispenserCreated')
-    expect(nftCreatedEvent.event === 'NFTCreated')
-    expect(TokenCreatedEvent.event === 'TokenCreated')
-    expect(DispenserCreatedEvent.event === 'DispenserCreated')
+    expect(nftCreatedEvent?.eventName === 'NFTCreated')
+    expect(TokenCreatedEvent?.eventName === 'TokenCreated')
+    expect(DispenserCreatedEvent?.eventName === 'DispenserCreated')
 
     // stored for later use in startMultipleTokenOrder test
     dtAddress2 = TokenCreatedEvent.args.newTokenAddress
@@ -253,7 +253,7 @@ describe('Nft Factory test', () => {
     const message = ethers.solidityPackedKeccak256(
       ['bytes', 'address', 'address', 'uint256', 'uint256'],
       [
-        toUtf8Bytes(providerData),
+        hexlify(toUtf8Bytes(providerData)),
         await consumeFeeAddress.getAddress(),
         consumeFeeToken,
         consumeFeeAmount,
@@ -270,7 +270,7 @@ describe('Nft Factory test', () => {
       v,
       r,
       s,
-      providerData: toBeHex(providerData),
+      providerData: hexlify(toUtf8Bytes(providerData)),
       validUntil: providerValidUntil
     }
     const consumeMarketFee = {

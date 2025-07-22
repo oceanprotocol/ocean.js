@@ -5,6 +5,7 @@ import { ReceiptOrEstimate, ReceiptOrDecimal } from '../@types/index.js'
 import { minAbi } from './minAbi.js'
 import { amountToUnits, sendTx, unitsToAmount } from './ContractUtils.js'
 import { LoggerInstance } from './Logger.js'
+import BigNumber from 'bignumber.js'
 
 /**
  * Approve spender to spent amount tokens

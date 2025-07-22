@@ -5,7 +5,9 @@ import {
   TransactionResponse,
   BaseContractMethod,
   formatUnits,
-  parseUnits
+  parseUnits,
+  EventLog,
+  TransactionReceipt
 } from 'ethers'
 
 import { Config, KNOWN_CONFIDENTIAL_EVMS } from '../config/index.js'
@@ -106,10 +108,19 @@ export async function amountToUnits(
   return amountFormatted.toString()
 }
 
-export function getEventFromTx(txReceipt: any, eventName: any) {
-  return txReceipt?.events?.filter((log: any) => {
-    return log.event === eventName
+export function getEventFromTx(
+  txReceipt: TransactionReceipt,
+  eventName: string
+): EventLog | undefined {
+  if (!txReceipt || !txReceipt.logs) {
+    return undefined
+  }
+
+  const foundLog = txReceipt.logs.filter((log): log is EventLog => {
+    return log instanceof EventLog && log.eventName === eventName
   })[0]
+
+  return foundLog
 }
 
 /**
@@ -146,28 +157,28 @@ export async function sendTx(
       maxPriorityFeePerGas:
         (Number(chainId) === MUMBAI_NETWORK_ID ||
           Number(chainId) === POLYGON_NETWORK_ID) &&
-          Number(aggressiveFeePriorityFeePerGas) < MIN_GAS_FEE_POLYGON
+        Number(aggressiveFeePriorityFeePerGas) < MIN_GAS_FEE_POLYGON
           ? MIN_GAS_FEE_POLYGON
           : Number(chainId) === SEPOLIA_NETWORK_ID &&
             Number(aggressiveFeePriorityFeePerGas) < MIN_GAS_FEE_SEPOLIA
-            ? MIN_GAS_FEE_SEPOLIA
-            : KNOWN_CONFIDENTIAL_EVMS.includes(Number(chainId)) &&
-              Number(aggressiveFeePriorityFeePerGas) < MIN_GAS_FEE_SAPPHIRE
-              ? MIN_GAS_FEE_SAPPHIRE
-              : Number(aggressiveFeePriorityFeePerGas),
+          ? MIN_GAS_FEE_SEPOLIA
+          : KNOWN_CONFIDENTIAL_EVMS.includes(Number(chainId)) &&
+            Number(aggressiveFeePriorityFeePerGas) < MIN_GAS_FEE_SAPPHIRE
+          ? MIN_GAS_FEE_SAPPHIRE
+          : Number(aggressiveFeePriorityFeePerGas),
 
       maxFeePerGas:
         (Number(chainId) === MUMBAI_NETWORK_ID ||
           Number(chainId) === POLYGON_NETWORK_ID) &&
-          Number(aggressiveFeePerGas) < MIN_GAS_FEE_POLYGON
+        Number(aggressiveFeePerGas) < MIN_GAS_FEE_POLYGON
           ? MIN_GAS_FEE_POLYGON
           : Number(chainId) === SEPOLIA_NETWORK_ID &&
             Number(aggressiveFeePerGas) < MIN_GAS_FEE_SEPOLIA
-            ? MIN_GAS_FEE_SEPOLIA
-            : KNOWN_CONFIDENTIAL_EVMS.includes(Number(chainId)) &&
-              Number(aggressiveFeePerGas) < MIN_GAS_FEE_SAPPHIRE
-              ? MIN_GAS_FEE_SAPPHIRE
-              : Number(aggressiveFeePerGas)
+          ? MIN_GAS_FEE_SEPOLIA
+          : KNOWN_CONFIDENTIAL_EVMS.includes(Number(chainId)) &&
+            Number(aggressiveFeePerGas) < MIN_GAS_FEE_SAPPHIRE
+          ? MIN_GAS_FEE_SAPPHIRE
+          : Number(aggressiveFeePerGas)
     }
   } else {
     overrides = {

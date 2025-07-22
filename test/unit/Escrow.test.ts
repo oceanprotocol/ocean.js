@@ -4,6 +4,7 @@ import { Signer } from 'ethers'
 
 import { Datatoken, amountToUnits, unitsToAmount } from '../../src/'
 import { EscrowContract } from '../../src/contracts/Escrow'
+import BigNumber from 'bignumber.js'
 
 describe('Escrow payments flow', () => {
   let user1: Signer
@@ -48,7 +49,7 @@ describe('Escrow payments flow', () => {
 
     assert(
       (await datatoken.balance(OCEAN, await user2.getAddress())) !==
-      `${initialBalance + 1000}`
+        `${initialBalance + 1000}`
     )
 
     await datatoken.approve(OCEAN, addresses.Escrow, '1000')

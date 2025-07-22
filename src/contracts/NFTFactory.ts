@@ -99,7 +99,7 @@ export class NftFactory extends SmartContractWithAddress {
    */
   public async getCurrentNFTCount(): Promise<number> {
     const nftCount = await this.contract.getCurrentNFTCount()
-    return nftCount
+    return Number(nftCount)
   }
 
   /**
@@ -108,7 +108,7 @@ export class NftFactory extends SmartContractWithAddress {
    */
   public async getCurrentTokenCount(): Promise<number> {
     const tokenCount = await this.contract.getCurrentTokenCount()
-    return tokenCount
+    return Number(tokenCount)
   }
 
   /**
@@ -126,7 +126,7 @@ export class NftFactory extends SmartContractWithAddress {
    */
   public async getCurrentNFTTemplateCount(): Promise<number> {
     const count = await this.contract.getCurrentNFTTemplateCount()
-    return count
+    return Number(count)
   }
 
   /**
@@ -135,7 +135,7 @@ export class NftFactory extends SmartContractWithAddress {
    */
   public async getCurrentTokenTemplateCount(): Promise<number> {
     const count = await this.contract.getCurrentTemplateCount()
-    return count
+    return Number(count)
   }
 
   /**

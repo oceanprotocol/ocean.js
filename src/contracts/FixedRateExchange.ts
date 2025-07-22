@@ -49,12 +49,12 @@ export class FixedRateExchange extends SmartContractWithAddress {
     const dtAmountFormatted = await this.amountToUnits(
       exchange.datatoken,
       datatokenAmount,
-      +exchange.dtDecimals
+      Number(exchange.dtDecimals)
     )
     const maxBtFormatted = await this.amountToUnits(
       exchange.baseToken,
       maxBaseTokenAmount,
-      +exchange.btDecimals
+      Number(exchange.btDecimals)
     )
 
     const estGas = await this.contract.buyDT.estimateGas(
@@ -103,12 +103,12 @@ export class FixedRateExchange extends SmartContractWithAddress {
     const dtAmountFormatted = await this.amountToUnits(
       exchange.datatoken,
       datatokenAmount,
-      +exchange.dtDecimals
+      Number(exchange.dtDecimals)
     )
     const minBtFormatted = await this.amountToUnits(
       exchange.baseToken,
       minBaseTokenAmount,
-      +exchange.btDecimals
+      Number(exchange.btDecimals)
     )
     const estGas = await this.contract.sellDT.estimateGas(
       exchangeId,
@@ -267,7 +267,11 @@ export class FixedRateExchange extends SmartContractWithAddress {
   public async getDatatokenSupply(exchangeId: string): Promise<string> {
     const dtSupply = await this.contract.getDTSupply(exchangeId)
     const exchange = await this.getExchange(exchangeId)
-    return await this.unitsToAmount(exchange.datatoken, dtSupply, +exchange.dtDecimals)
+    return await this.unitsToAmount(
+      exchange.datatoken,
+      dtSupply,
+      Number(exchange.dtDecimals)
+    )
   }
 
   /**
@@ -278,7 +282,11 @@ export class FixedRateExchange extends SmartContractWithAddress {
   public async getBasetokenSupply(exchangeId: string): Promise<string> {
     const btSupply = await this.contract.getBTSupply(exchangeId)
     const exchange = await this.getExchange(exchangeId)
-    return await this.unitsToAmount(exchange.baseToken, btSupply, +exchange.btDecimals)
+    return await this.unitsToAmount(
+      exchange.baseToken,
+      btSupply,
+      Number(exchange.btDecimals)
+    )
   }
 
   /**
@@ -308,7 +316,7 @@ export class FixedRateExchange extends SmartContractWithAddress {
       await this.amountToUnits(
         fixedRateExchange.datatoken,
         datatokenAmount,
-        +fixedRateExchange.dtDecimals
+        Number(fixedRateExchange.dtDecimals)
       ),
       await this.amountToUnits(null, consumeMarketFee, 18)
     )
@@ -316,22 +324,22 @@ export class FixedRateExchange extends SmartContractWithAddress {
       baseTokenAmount: await this.unitsToAmount(
         fixedRateExchange.baseToken,
         outDT.baseTokenAmount,
-        +fixedRateExchange.btDecimals
+        Number(fixedRateExchange.btDecimals)
       ),
       marketFeeAmount: await this.unitsToAmount(
         fixedRateExchange.baseToken,
         outDT.publishMarketFeeAmount,
-        +fixedRateExchange.btDecimals
+        Number(fixedRateExchange.btDecimals)
       ),
       oceanFeeAmount: await this.unitsToAmount(
         fixedRateExchange.baseToken,
         outDT.oceanFeeAmount,
-        +fixedRateExchange.btDecimals
+        Number(fixedRateExchange.btDecimals)
       ),
       consumeMarketFeeAmount: await this.unitsToAmount(
         fixedRateExchange.baseToken,
         outDT.consumeMarketFeeAmount,
-        +fixedRateExchange.btDecimals
+        Number(fixedRateExchange.btDecimals)
       )
     } as PriceAndFees
     return priceAndFees
@@ -352,11 +360,19 @@ export class FixedRateExchange extends SmartContractWithAddress {
     const exchange = await this.getExchange(exchangeId)
     const amount = await this.contract.calcBaseOutGivenInDT(
       exchangeId,
-      await this.amountToUnits(exchange.datatoken, datatokenAmount, +exchange.dtDecimals),
+      await this.amountToUnits(
+        exchange.datatoken,
+        datatokenAmount,
+        Number(exchange.dtDecimals)
+      ),
       await this.amountToUnits(null, consumeMarketFee, 18)
     )
 
-    return await this.unitsToAmount(exchange.baseToken, amount[0], +exchange.btDecimals)
+    return await this.unitsToAmount(
+      exchange.baseToken,
+      amount[0],
+      Number(exchange.btDecimals)
+    )
   }
 
   /**
@@ -378,22 +394,22 @@ export class FixedRateExchange extends SmartContractWithAddress {
       dtBalance: await this.unitsToAmount(
         result.datatoken,
         result.dtBalance,
-        +result.dtDecimals
+        Number(result.dtDecimals)
       ),
       btBalance: await this.unitsToAmount(
         result.baseToken,
         result.btBalance,
-        +result.btDecimals
+        Number(result.btDecimals)
       ),
       dtSupply: await this.unitsToAmount(
         result.datatoken,
         result.dtSupply,
-        +result.dtDecimals
+        Number(result.dtDecimals)
       ),
       btSupply: await this.unitsToAmount(
         result.baseToken,
         result.btSupply,
-        +result.btDecimals
+        Number(result.btDecimals)
       ),
       fixedRate: await this.unitsToAmount(null, result.fixedRate, 18),
       exchangeId
@@ -416,12 +432,12 @@ export class FixedRateExchange extends SmartContractWithAddress {
       marketFeeAvailable: await this.unitsToAmount(
         exchange.baseToken,
         result.marketFeeAvailable,
-        +exchange.btDecimals
+        Number(exchange.btDecimals)
       ),
       oceanFeeAvailable: await this.unitsToAmount(
         exchange.baseToken,
         result.oceanFeeAvailable,
-        +exchange.btDecimals
+        Number(exchange.btDecimals)
       ),
 
       exchangeId
@@ -521,7 +537,7 @@ export class FixedRateExchange extends SmartContractWithAddress {
     const amountWei = await this.amountToUnits(
       fixedrate.baseToken,
       amount,
-      +fixedrate.btDecimals
+      Number(fixedrate.btDecimals)
     )
 
     const estGas = await this.contract.collectBT.estimateGas(exchangeId, amountWei)
@@ -556,7 +572,7 @@ export class FixedRateExchange extends SmartContractWithAddress {
     const amountWei = await this.amountToUnits(
       fixedrate.datatoken,
       amount,
-      +fixedrate.dtDecimals
+      Number(fixedrate.dtDecimals)
     )
 
     const estGas = await this.contract.collectDT.estimateGas(exchangeId, amountWei)

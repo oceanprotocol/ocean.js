@@ -2,6 +2,7 @@ import veOceanABI from '@oceanprotocol/contracts/artifacts/contracts/ve/veOCEAN.
 import { sendTx } from '../../utils/ContractUtils.js'
 import { SmartContractWithAddress } from '../SmartContractWithAddress.js'
 import { ReceiptOrEstimate, AbiItem } from '../../@types/index.js'
+import BigNumber from 'bignumber.js'
 /**
  * Provides an interface for veOcean contract
  */

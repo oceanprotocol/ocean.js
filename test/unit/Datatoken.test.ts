@@ -1,6 +1,6 @@
 import { assert, expect } from 'chai'
 import { provider, getAddresses } from '../config.js'
-import { ethers, parseUnits, Signer, toBeHex, toUtf8Bytes } from 'ethers'
+import { ethers, hexlify, parseUnits, Signer, toUtf8Bytes } from 'ethers'
 import {
   NftFactory,
   NftCreateData,
@@ -123,7 +123,7 @@ describe('Datatoken', () => {
 
     assert(
       (await nftDatatoken.isDatatokenDeployer(nftAddress, await user1.getAddress())) ===
-      false
+        false
     )
 
     await nftDatatoken.addDatatokenDeployer(
@@ -152,7 +152,7 @@ describe('Datatoken', () => {
   it('#addMinter - should FAIL TO add user1 as minter, if user has DatatokenDeployer permission', async () => {
     assert(
       (await nftDatatoken.isDatatokenDeployer(nftAddress, await user3.getAddress())) ===
-      false
+        false
     )
     assert(
       (await datatoken.getPermissions(datatokenAddress, await user2.getAddress()))
@@ -211,7 +211,7 @@ describe('Datatoken', () => {
   it('#createFixedRate - should FAIL create FRE if NOT DatatokenDeployer', async () => {
     assert(
       (await nftDatatoken.isDatatokenDeployer(nftAddress, await user3.getAddress())) ===
-      false
+        false
     )
     try {
       await datatoken.createFixedRate(
@@ -247,7 +247,7 @@ describe('Datatoken', () => {
     }
     assert(
       (await nftDatatoken.isDatatokenDeployer(nftAddress, await user3.getAddress())) ===
-      false
+        false
     )
     try {
       await datatoken.createDispenser(
@@ -265,7 +265,7 @@ describe('Datatoken', () => {
   it('#removeMinter - should FAIL to remove user1 as minter, if caller is NOT DatatokenDeployer', async () => {
     assert(
       (await nftDatatoken.isDatatokenDeployer(nftAddress, await user2.getAddress())) ===
-      false
+        false
     )
     assert(
       (await datatoken.getPermissions(datatokenAddress, await user1.getAddress()))
@@ -315,7 +315,7 @@ describe('Datatoken', () => {
   it('#addPaymentManager - should FAIL TO add user2 as paymentManager, if caller is NOT DatatokenDeployer', async () => {
     assert(
       (await nftDatatoken.isDatatokenDeployer(nftAddress, await user2.getAddress())) ===
-      false
+        false
     )
     assert(
       (await datatoken.getPermissions(datatokenAddress, await user3.getAddress()))
@@ -365,7 +365,7 @@ describe('Datatoken', () => {
   it('#removePaymentManager - should FAIL TO remove user2 as paymentManager, if nftDatatoken has DatatokenDeployer permission', async () => {
     assert(
       (await nftDatatoken.isDatatokenDeployer(nftAddress, await user3.getAddress())) ===
-      false
+        false
     )
     assert(
       (await datatoken.getPermissions(datatokenAddress, await user2.getAddress()))
@@ -433,7 +433,7 @@ describe('Datatoken', () => {
   it('#setPaymentCollector - should set a new paymentCollector, if PAYMENT MANAGER', async () => {
     assert(
       (await datatoken.getPaymentCollector(datatokenAddress)) ===
-      (await user1.getAddress())
+        (await user1.getAddress())
     )
 
     await datatoken.addPaymentManager(
@@ -455,7 +455,7 @@ describe('Datatoken', () => {
 
     assert(
       (await datatoken.getPaymentCollector(datatokenAddress)) ===
-      (await user3.getAddress())
+        (await user3.getAddress())
     )
   })
 
@@ -470,7 +470,7 @@ describe('Datatoken', () => {
 
     assert(
       (await datatoken.getPaymentCollector(datatokenAddress)) ===
-      (await user2.getAddress())
+        (await user2.getAddress())
     )
   })
 
@@ -492,7 +492,7 @@ describe('Datatoken', () => {
 
     assert(
       (await datatoken.getPaymentCollector(datatokenAddress)) ===
-      (await user3.getAddress())
+        (await user3.getAddress())
     )
   })
 
@@ -515,7 +515,7 @@ describe('Datatoken', () => {
     const message = ethers.solidityPackedKeccak256(
       ['bytes', 'address', 'address', 'uint256', 'uint256'],
       [
-        toUtf8Bytes(providerData),
+        hexlify(toUtf8Bytes(providerData)),
         await user3.getAddress(),
         providerFeeToken,
         providerFeeAmount,
@@ -532,7 +532,7 @@ describe('Datatoken', () => {
       v,
       r,
       s,
-      providerData: toBeHex(providerData),
+      providerData: hexlify(toUtf8Bytes(providerData)),
       validUntil: providerValidUntil
     }
     const order = await datatoken.startOrder(
@@ -565,7 +565,7 @@ describe('Datatoken', () => {
     const message = ethers.solidityPackedKeccak256(
       ['bytes', 'address', 'address', 'uint256', 'uint256'],
       [
-        toUtf8Bytes(providerData),
+        hexlify(toUtf8Bytes(providerData)),
         await user3.getAddress(),
         providerFeeToken,
         providerFeeAmount,
@@ -582,7 +582,7 @@ describe('Datatoken', () => {
       v,
       r,
       s,
-      providerData: toBeHex(providerData),
+      providerData: hexlify(toUtf8Bytes(providerData)),
       validUntil: providerValidUntil
     }
 
@@ -600,8 +600,8 @@ describe('Datatoken', () => {
     const orderReusedTx = getEventFromTx(reusedTx, 'OrderReused')
     const providerFeeTx = getEventFromTx(reusedTx, 'ProviderFee')
 
-    expect(orderReusedTx.event === 'OrderReused')
-    expect(providerFeeTx.event === 'ProviderFee')
+    expect(orderReusedTx?.eventName === 'OrderReused')
+    expect(providerFeeTx?.eventName === 'ProviderFee')
   })
 
   it('#buyFromDispenserAndOrder- Enterprise method', async () => {
@@ -612,7 +612,7 @@ describe('Datatoken', () => {
     const message = ethers.solidityPackedKeccak256(
       ['bytes', 'address', 'address', 'uint256', 'uint256'],
       [
-        toUtf8Bytes(providerData),
+        hexlify(toUtf8Bytes(providerData)),
         await user3.getAddress(),
         providerFeeToken,
         providerFeeAmount,
@@ -629,7 +629,7 @@ describe('Datatoken', () => {
       v,
       r,
       s,
-      providerData: toBeHex(providerData),
+      providerData: hexlify(toUtf8Bytes(providerData)),
       validUntil: providerValidUntil
     }
 
@@ -661,7 +661,7 @@ describe('Datatoken', () => {
     const message = ethers.solidityPackedKeccak256(
       ['bytes', 'address', 'address', 'uint256', 'uint256'],
       [
-        toUtf8Bytes(providerData),
+        hexlify(toUtf8Bytes(providerData)),
         await user3.getAddress(),
         providerFeeToken,
         providerFeeAmount,
@@ -678,7 +678,7 @@ describe('Datatoken', () => {
       v,
       r,
       s,
-      providerData: toBeHex(providerData),
+      providerData: hexlify(toUtf8Bytes(providerData)),
       validUntil: providerValidUntil
     }
 
@@ -716,7 +716,7 @@ describe('Datatoken', () => {
 
     assert(
       (await datatoken.getPaymentCollector(datatokenAddress)) ===
-      (await user3.getAddress())
+        (await user3.getAddress())
     )
 
     assert(
@@ -733,7 +733,7 @@ describe('Datatoken', () => {
 
     assert(
       (await datatoken.getPaymentCollector(datatokenAddress)) ===
-      (await user3.getAddress())
+        (await user3.getAddress())
     )
 
     assert(
@@ -755,7 +755,7 @@ describe('Datatoken', () => {
 
     assert(
       (await datatoken.getPaymentCollector(datatokenAddress)) ===
-      (await user3.getAddress())
+        (await user3.getAddress())
     )
 
     assert(
@@ -768,7 +768,7 @@ describe('Datatoken', () => {
 
     assert(
       (await datatoken.getPaymentCollector(datatokenAddress)) ===
-      (await nftOwner.getAddress())
+        (await nftOwner.getAddress())
     )
 
     assert(
@@ -807,7 +807,7 @@ describe('Datatoken', () => {
     const OldData = 'SomeData'
     assert(
       (await nftDatatoken.isDatatokenDeployer(nftAddress, await user3.getAddress())) ===
-      false
+        false
     )
 
     try {
@@ -881,15 +881,15 @@ describe('Datatoken', () => {
 
     assert(
       newPublishingMarketFee.publishMarketFeeAddress ===
-      originalPublishingMarketFee.publishMarketFeeAddress
+        originalPublishingMarketFee.publishMarketFeeAddress
     )
     assert(
       newPublishingMarketFee.publishMarketFeeToken ===
-      originalPublishingMarketFee.publishMarketFeeToken
+        originalPublishingMarketFee.publishMarketFeeToken
     )
     assert(
       newPublishingMarketFee.publishMarketFeeAmount ===
-      originalPublishingMarketFee.publishMarketFeeAmount
+        originalPublishingMarketFee.publishMarketFeeAmount
     )
   })
 

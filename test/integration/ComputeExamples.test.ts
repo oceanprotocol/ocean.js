@@ -152,6 +152,7 @@ import {
 import crypto from 'crypto-js'
 import { DDO } from '@oceanprotocol/ddo-js'
 import { EscrowContract } from '../../src/contracts/Escrow.js'
+import BigNumber from 'bignumber.js'
 const { SHA256 } = crypto
 /// ```
 
@@ -451,7 +452,7 @@ describe('Compute-to-data example tests', async () => {
       // eslint-disable-next-line security/detect-non-literal-fs-filename
       fs.readFileSync(
         process.env.ADDRESS_FILE ||
-        `${homedir}/.ocean/ocean-contracts/artifacts/address.json`,
+          `${homedir}/.ocean/ocean-contracts/artifacts/address.json`,
         'utf8'
       )
     ).development

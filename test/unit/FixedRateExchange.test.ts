@@ -17,6 +17,7 @@ import {
   amountToUnits
 } from '../../src/index.js'
 import { FreCreationParams, DatatokenCreateParams } from '../../src/@types'
+import BigNumber from 'bignumber.js'
 
 describe('Fixed Rate unit test', () => {
   let factoryOwner: Signer
@@ -264,11 +265,9 @@ describe('Fixed Rate unit test', () => {
         await unitsToAmount(user1, dtAddress, SwappedEvent.args.datatokenSwappedAmount)
       )
       expect(
-        (
-          new BigNumber(await amountToUnits(user1, addresses.MockDAI, daiBalanceBefore)).minus(
-            new BigNumber(SwappedEvent.args.baseTokenSwappedAmount)
-          )
-        ).toString()
+        new BigNumber(await amountToUnits(user1, addresses.MockDAI, daiBalanceBefore))
+          .minus(new BigNumber(SwappedEvent.args.baseTokenSwappedAmount))
+          .toString()
       ).to.equal(
         await amountToUnits(
           user1,
@@ -309,11 +308,9 @@ describe('Fixed Rate unit test', () => {
       expect(SwappedEvent.args.tokenOutAddress).to.equal(addresses.MockDAI)
       expect(await balance(user1, dtAddress, await user1.getAddress())).to.equal('0.0')
       expect(
-        (
-          new BigNumber(await amountToUnits(user1, addresses.MockDAI, daiBalanceBefore)).plus(
-            new BigNumber(SwappedEvent.args.baseTokenSwappedAmount)
-          )
-        ).toString()
+        new BigNumber(await amountToUnits(user1, addresses.MockDAI, daiBalanceBefore))
+          .plus(new BigNumber(SwappedEvent.args.baseTokenSwappedAmount))
+          .toString()
       ).to.equal(
         await amountToUnits(
           user1,
@@ -445,11 +442,11 @@ describe('Fixed Rate unit test', () => {
           await balance(user2, addresses.MockDAI, await user2.getAddress())
         )
       ).to.equal(
-        (
-          new BigNumber(await amountToUnits(user1, addresses.MockDAI, daiBalanceBeforeCollect)).plus(
-            new BigNumber(await amountToUnits(user1, addresses.MockDAI, '0.021'))
-          )
-        ).toString()
+        new BigNumber(
+          await amountToUnits(user1, addresses.MockDAI, daiBalanceBeforeCollect)
+        )
+          .plus(new BigNumber(await amountToUnits(user1, addresses.MockDAI, '0.021')))
+          .toString()
       )
     })
 
@@ -669,11 +666,9 @@ describe('Fixed Rate unit test', () => {
         await unitsToAmount(user1, dtAddress, SwappedEvent.args.datatokenSwappedAmount)
       )
       expect(
-        (
-          new BigNumber(await amountToUnits(user1, addresses.MockUSDC, usdcBalanceBefore)).minus(
-            new BigNumber(SwappedEvent.args.baseTokenSwappedAmount)
-          )
-        ).toString()
+        new BigNumber(await amountToUnits(user1, addresses.MockUSDC, usdcBalanceBefore))
+          .minus(new BigNumber(SwappedEvent.args.baseTokenSwappedAmount))
+          .toString()
       ).to.equal(
         await amountToUnits(
           user1,
@@ -714,11 +709,9 @@ describe('Fixed Rate unit test', () => {
       expect(SwappedEvent.args.tokenOutAddress).to.equal(addresses.MockUSDC)
       expect(await balance(user1, dtAddress, await user1.getAddress())).to.equal('0.0')
       expect(
-        (
-          new BigNumber(await amountToUnits(user1, addresses.MockUSDC, usdcBalanceBefore)).plus(
-            new BigNumber(SwappedEvent.args.baseTokenSwappedAmount)
-          )
-        ).toString()
+        new BigNumber(await amountToUnits(user1, addresses.MockUSDC, usdcBalanceBefore))
+          .plus(new BigNumber(SwappedEvent.args.baseTokenSwappedAmount))
+          .toString()
       ).to.equal(
         await amountToUnits(
           user1,
@@ -890,7 +883,7 @@ describe('Fixed Rate unit test', () => {
 
       assert(
         publishingMarketFee.publishMarketFeeAmount ===
-        parseUnits('0.123456789').toString()
+          parseUnits('0.123456789').toString()
       )
     })
 
@@ -936,7 +929,7 @@ describe('Fixed Rate unit test', () => {
       const publishingMarketFee = await datatoken.getPublishingMarketFee(datatokenAddress)
       assert(
         publishingMarketFee.publishMarketFeeAmount ===
-        parseUnits('987654321', 6).toString()
+          parseUnits('987654321', 6).toString()
       )
     })
   })

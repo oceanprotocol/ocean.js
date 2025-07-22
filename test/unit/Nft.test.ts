@@ -597,7 +597,7 @@ describe('NFT', () => {
       await nftOwner.getAddress()
     )
     let metadata = await nftDatatoken.getMetadata(nftAddress)
-    assert(metadata[2] === 1)
+    assert(metadata[2] === 1n)
 
     assert(
       (await nftDatatoken.getNftPermissions(nftAddress, await nftOwner.getAddress()))
@@ -607,12 +607,12 @@ describe('NFT', () => {
     await nftDatatoken.setMetadataState(nftAddress, await nftOwner.getAddress(), 2)
 
     metadata = await nftDatatoken.getMetadata(nftAddress)
-    assert(metadata[2] === 2)
+    assert(metadata[2] === 2n)
   })
 
   it('#setMetaDataState - should fail to update MetadataState if NOT metadataUpdater', async () => {
     let metadata = await nftDatatoken.getMetadata(nftAddress)
-    assert(metadata[2] === 2)
+    assert(metadata[2] === 2n)
     assert(
       (await nftDatatoken.getNftPermissions(nftAddress, await user3.getAddress()))
         .updateMetadata === false
@@ -624,7 +624,7 @@ describe('NFT', () => {
       assert(e.message === 'Caller is not Metadata updater')
     }
     metadata = await nftDatatoken.getMetadata(nftAddress)
-    assert(metadata[2] === 2)
+    assert(metadata[2] === 2n)
   })
 
   it('#setTokenURI - should update TokenURI', async () => {

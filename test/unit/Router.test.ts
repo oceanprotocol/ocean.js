@@ -151,7 +151,7 @@ describe('Router unit test', () => {
     const TokenCreatedEvent = getEventFromTx(trxReceipt, 'TokenCreated')
     const NewFixedRateEvent = getEventFromTx(trxReceipt, 'NewFixedRate')
 
-    expect(nftCreatedEvent.event === 'NFTCreated')
+    expect(nftCreatedEvent?.eventName === 'NFTCreated')
     const datatokenAddress = TokenCreatedEvent.args.newTokenAddress
 
     const fre1 = NewFixedRateEvent.args.exchangeContract

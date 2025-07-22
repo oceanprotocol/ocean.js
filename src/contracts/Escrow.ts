@@ -1,11 +1,11 @@
-import { Signer, getAddress, parseEther } from 'ethers';
-import Escrow from '@oceanprotocol/contracts/artifacts/contracts/escrow/Escrow.sol/Escrow.json';
-import { amountToUnits, sendTx } from '../utils/ContractUtils';
-import { AbiItem, ReceiptOrEstimate, ValidationResponse } from '../@types';
-import { Config } from '../config';
-import { SmartContractWithAddress } from './SmartContractWithAddress';
-import { Datatoken } from './Datatoken';
-import BigNumber from 'bignumber.js';
+import { Signer, getAddress, parseEther } from 'ethers'
+import Escrow from '@oceanprotocol/contracts/artifacts/contracts/escrow/Escrow.sol/Escrow.json'
+import { amountToUnits, sendTx } from '../utils/ContractUtils'
+import { AbiItem, ReceiptOrEstimate, ValidationResponse } from '../@types'
+import { Config } from '../config'
+import { SmartContractWithAddress } from './SmartContractWithAddress'
+import { Datatoken } from './Datatoken'
+import BigNumber from 'bignumber.js'
 
 export class EscrowContract extends SmartContractWithAddress {
   public abiEnterprise: AbiItem[]

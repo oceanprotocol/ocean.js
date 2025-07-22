@@ -721,7 +721,7 @@ export class Datatoken extends SmartContract {
   public async getDecimals(dtAddress: string): Promise<number> {
     const dtContract = this.getContract(dtAddress)
     const decimals = await dtContract.decimals()
-    return decimals
+    return Number(decimals)
   }
 
   /**
