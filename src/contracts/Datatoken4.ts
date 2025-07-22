@@ -1,6 +1,6 @@
 /* eslint-disable lines-between-class-members */
 import { Datatoken } from './Datatoken.js'
-import { Bytes, Signer } from 'ethers'
+import { Signer } from 'ethers'
 import ERC20Template4 from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC20Template4.sol/ERC20Template4.json'
 import { AbiItem, ReceiptOrEstimate } from '../@types/index.js'
 import { AccessListContract } from './AccessList.js'
@@ -9,7 +9,7 @@ import { sendTx } from '../utils/ContractUtils.js'
 
 export class Datatoken4 extends Datatoken {
   public accessList: AccessListContract
-  public fileObject: Bytes
+  public fileObject: Uint8Array
   getDefaultAbi() {
     return ERC20Template4.abi as AbiItem[]
   }
@@ -23,7 +23,7 @@ export class Datatoken4 extends Datatoken {
    */
   constructor(
     signer: Signer,
-    fileObject: Bytes,
+    fileObject: Uint8Array,
     network?: string | number,
     config?: Config,
     abi?: AbiItem[]
@@ -33,7 +33,7 @@ export class Datatoken4 extends Datatoken {
     this.fileObject = fileObject
   }
 
-  public setFileObj(fileObj: Bytes): void {
+  public setFileObj(fileObj: Uint8Array): void {
     this.fileObject = fileObj
   }
 
@@ -79,14 +79,14 @@ export class Datatoken4 extends Datatoken {
     }
 
     const dtContract = this.getContract(dtAddress)
-    const estGas = await dtContract.estimateGas.setAllowListContract(address)
+    const estGas = await dtContract.setAllowListContract.estimateGas(address)
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
 
     const trxReceipt = await sendTx(
       estGas,
       this.getSignerAccordingSdk(),
       this.config?.gasFeeMultiplier,
-      dtContract.functions.setAllowListContract,
+      dtContract.setAllowListContract,
       address
     )
 
@@ -113,14 +113,14 @@ export class Datatoken4 extends Datatoken {
     }
 
     const dtContract = this.getContract(dtAddress)
-    const estGas = await dtContract.estimateGas.setDenyListContract(address)
+    const estGas = await dtContract.setDenyListContract.estimateGas(address)
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
 
     const trxReceipt = await sendTx(
       estGas,
       this.getSignerAccordingSdk(),
       this.config?.gasFeeMultiplier,
-      dtContract.functions.setDenyListContract,
+      dtContract.setDenyListContract,
       address
     )
 
@@ -144,14 +144,14 @@ export class Datatoken4 extends Datatoken {
     }
 
     const dtContract = this.getContract(dtAddress)
-    const estGas = await dtContract.estimateGas.setFilesObject(this.fileObject)
+    const estGas = await dtContract.setFilesObject.estimateGas(this.fileObject)
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
 
     const trxReceipt = await sendTx(
       estGas,
       this.getSignerAccordingSdk(),
       this.config?.gasFeeMultiplier,
-      dtContract.functions.setFilesObject,
+      dtContract.setFilesObject,
       this.fileObject
     )
 
@@ -173,11 +173,11 @@ export class Datatoken4 extends Datatoken {
     dtAddress: string,
     serviceIndex: number,
     providerAddress: string,
-    providerSignature: Bytes,
-    consumerData: Bytes,
-    consumerSignature: Bytes,
+    providerSignature: Uint8Array,
+    consumerData: Uint8Array,
+    consumerSignature: Uint8Array,
     consumerAddress: string
-  ): Promise<Bytes> {
+  ): Promise<Uint8Array> {
     const dtContract = this.getContract(dtAddress, this.getDefaultAbi())
     const fileObject = await dtContract.getFileObject(
       serviceIndex,

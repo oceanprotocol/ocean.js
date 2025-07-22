@@ -2,6 +2,8 @@ import veAllocateABI from '@oceanprotocol/contracts/artifacts/contracts/ve/veAll
 import { sendTx } from '../../utils/ContractUtils.js'
 import { SmartContractWithAddress } from '../SmartContractWithAddress.js'
 import { ReceiptOrEstimate, AbiItem } from '../../@types/index.js'
+import BigNumber from 'bignumber.js'
+
 /**
  * Provides an interface for veOcean contract
  */
@@ -24,12 +26,12 @@ export class VeAllocate extends SmartContractWithAddress {
     chainId: number,
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
-    const estGas = await this.contract.estimateGas.setAllocation(amount, nft, chainId)
+    const estGas = await this.contract.setAllocation.estimateGas(amount, nft, chainId)
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
 
     // Invoke function of the contract
     const trxReceipt = await sendTx(
-      estGas.add(20000),
+      BigInt(new BigNumber(estGas).plus(20000n).toString()),
       this.getSignerAccordingSdk(),
       this.config?.gasFeeMultiplier,
       this.contract.setAllocation,
@@ -54,7 +56,7 @@ export class VeAllocate extends SmartContractWithAddress {
     chainId: number[],
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
-    const estGas = await this.contract.estimateGas.setBatchAllocation(
+    const estGas = await this.contract.setBatchAllocation.estimateGas(
       amount,
       nft,
       chainId
@@ -62,7 +64,7 @@ export class VeAllocate extends SmartContractWithAddress {
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
     // Invoke function of the contract
     const trxReceipt = await sendTx(
-      estGas.add(20000),
+      BigInt(new BigNumber(estGas).plus(20000n).toString()),
       this.getSignerAccordingSdk(),
       this.config?.gasFeeMultiplier,
       this.contract.setBatchAllocation,

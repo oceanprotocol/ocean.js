@@ -1,6 +1,6 @@
 import { assert } from 'chai'
 import sha256 from 'crypto-js/sha256.js'
-import { ethers, Signer } from 'ethers'
+import { Signer, toBeHex } from 'ethers'
 import { getAddresses, provider } from '../config.js'
 import {
   NftFactory,
@@ -549,12 +549,9 @@ describe('NFT', () => {
       1,
       'http://myprovider:8030',
       '0x123',
-      ethers.utils.hexlify(ethers.utils.toUtf8Bytes(await user2.getAddress())),
-      ethers.utils.hexlify(ethers.utils.toUtf8Bytes(await user2.getAddress())),
-      '0x' +
-        sha256(
-          ethers.utils.hexlify(ethers.utils.toUtf8Bytes(await user2.getAddress()))
-        ).toString()
+      toBeHex(await user2.getAddress()),
+      toBeHex(await user2.getAddress()),
+      '0x' + sha256(toBeHex(await user2.getAddress())).toString()
     )
 
     const metadata = await nftDatatoken.getMetadata(nftAddress)
@@ -574,12 +571,9 @@ describe('NFT', () => {
         1,
         'http://myprovider:8030',
         '0x123',
-        ethers.utils.hexlify(ethers.utils.toUtf8Bytes(await user2.getAddress())),
-        ethers.utils.hexlify(ethers.utils.toUtf8Bytes(await user2.getAddress())),
-        '0x' +
-          sha256(
-            ethers.utils.hexlify(ethers.utils.toUtf8Bytes(await user2.getAddress()))
-          ).toString()
+        toBeHex(await user2.getAddress()),
+        toBeHex(await user2.getAddress()),
+        '0x' + sha256(toBeHex(await user2.getAddress())).toString()
       )
       assert(false)
     } catch (e) {
@@ -603,7 +597,7 @@ describe('NFT', () => {
       await nftOwner.getAddress()
     )
     let metadata = await nftDatatoken.getMetadata(nftAddress)
-    assert(metadata[2] === 1)
+    assert(metadata[2] === 1n)
 
     assert(
       (await nftDatatoken.getNftPermissions(nftAddress, await nftOwner.getAddress()))
@@ -613,12 +607,12 @@ describe('NFT', () => {
     await nftDatatoken.setMetadataState(nftAddress, await nftOwner.getAddress(), 2)
 
     metadata = await nftDatatoken.getMetadata(nftAddress)
-    assert(metadata[2] === 2)
+    assert(metadata[2] === 2n)
   })
 
   it('#setMetaDataState - should fail to update MetadataState if NOT metadataUpdater', async () => {
     let metadata = await nftDatatoken.getMetadata(nftAddress)
-    assert(metadata[2] === 2)
+    assert(metadata[2] === 2n)
     assert(
       (await nftDatatoken.getNftPermissions(nftAddress, await user3.getAddress()))
         .updateMetadata === false
@@ -630,7 +624,7 @@ describe('NFT', () => {
       assert(e.message === 'Caller is not Metadata updater')
     }
     metadata = await nftDatatoken.getMetadata(nftAddress)
-    assert(metadata[2] === 2)
+    assert(metadata[2] === 2n)
   })
 
   it('#setTokenURI - should update TokenURI', async () => {
@@ -641,13 +635,13 @@ describe('NFT', () => {
   })
 
   it('#setMetaDataAndTokenURI - should update tokenURI and set metadata', async () => {
-    const data = ethers.utils.hexlify(ethers.utils.toUtf8Bytes(await user2.getAddress()))
+    const data = toBeHex(await user2.getAddress())
     const metadataAndTokenURI: MetadataAndTokenURI = {
       metaDataState: 1,
       metaDataDecryptorUrl: 'http://myprovider:8030',
       metaDataDecryptorAddress: '0x123',
-      flags: ethers.utils.hexlify(ethers.utils.toUtf8Bytes(await user1.getAddress())),
-      data: ethers.utils.hexlify(ethers.utils.toUtf8Bytes(await user1.getAddress())),
+      flags: toBeHex(await user1.getAddress()),
+      data: toBeHex(await user1.getAddress()),
       metaDataHash: '0x' + sha256(data).toString(),
       tokenId: 1,
       tokenURI: 'https://anothernewurl.com/nft/',

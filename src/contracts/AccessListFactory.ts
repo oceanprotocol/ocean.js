@@ -1,4 +1,4 @@
-import { BigNumber, Signer } from 'ethers'
+import { BigNumberish, Signer } from 'ethers'
 import { Config } from '../config/index.js'
 import AccessListFactory from '@oceanprotocol/contracts/artifacts/contracts/accesslists/AccessListFactory.sol/AccessListFactory.json'
 import { sendTx, getEventFromTx } from '../utils/ContractUtils.js'
@@ -53,13 +53,13 @@ export class AccesslistFactory extends SmartContractWithAddress {
     owner: string,
     user: string[],
     estimateGas?: G
-  ): Promise<G extends false ? string : BigNumber> {
+  ): Promise<G extends false ? string : BigNumberish> {
     if (!nameAccessList || !symbolAccessList) {
       const { name, symbol } = generateDtName()
       nameAccessList = name
       symbolAccessList = symbol
     }
-    const estGas = await this.contract.estimateGas.deployAccessListContract(
+    const estGas = await this.contract.deployAccessListContract.estimateGas(
       nameAccessList,
       symbolAccessList,
       transferable,
@@ -67,7 +67,7 @@ export class AccesslistFactory extends SmartContractWithAddress {
       user,
       tokenURI
     )
-    if (estimateGas) return <G extends false ? string : BigNumber>estGas
+    if (estimateGas) return <G extends false ? string : BigNumberish>estGas
     // Invoke createToken function of the contract
     try {
       const tx = await sendTx(
@@ -144,13 +144,13 @@ export class AccesslistFactory extends SmartContractWithAddress {
       throw new Error(`Template address cannot be ZERO address`)
     }
 
-    const estGas = await this.contract.estimateGas.changeTemplateAddress(templateAddress)
+    const estGas = await this.contract.changeTemplateAddress.estimateGas(templateAddress)
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
     const trxReceipt = await sendTx(
       estGas,
       this.getSignerAccordingSdk(),
       this.config?.gasFeeMultiplier,
-      this.contract.functions.changeTemplateAddress,
+      this.contract.changeTemplateAddress,
       templateAddress
     )
 

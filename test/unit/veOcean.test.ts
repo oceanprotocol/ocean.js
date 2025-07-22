@@ -11,6 +11,7 @@ import {
   amountToUnits
 } from '../../src/index.js'
 import { ethers, Signer } from 'ethers'
+
 describe('veOcean tests', () => {
   let config: Config
   let addresses: any
@@ -48,7 +49,7 @@ describe('veOcean tests', () => {
       }
     ]
     const tokenContract = new ethers.Contract(addresses.Ocean, minAbi, ownerAccount)
-    const estGas = await tokenContract.estimateGas.mint(
+    const estGas = await tokenContract.mint.estimateGas(
       await Alice.getAddress(),
       amountToUnits(null, null, '1000', 18)
     )
