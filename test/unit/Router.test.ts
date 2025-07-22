@@ -82,7 +82,7 @@ describe('Router unit test', () => {
   })
 
   it('should initiate Router instance', async () => {
-    const chainId = (await user1.provider.getNetwork()).chainId
+    const { chainId } = await user1.provider.getNetwork()
     router = new Router(addresses.Router, user1, Number(chainId))
   })
 
@@ -108,7 +108,7 @@ describe('Router unit test', () => {
 
   it('#buyDatatokenBatch - should buy multiple DT in one call', async () => {
     // APPROVE DAI
-    const chainId = (await factoryOwner.provider.getNetwork()).chainId
+    const { chainId } = await factoryOwner.provider.getNetwork()
     const daiContract = new Datatoken(factoryOwner, Number(chainId))
     await daiContract.transfer(addresses.MockDAI, await user1.getAddress(), DAI_AMOUNT)
 

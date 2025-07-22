@@ -28,7 +28,7 @@ export async function createAssetHelper(
   nftContractAddress: string, // addresses.ERC721Factory,
   aquariusInstance: Aquarius
 ) {
-  const chainId = (await owner.provider.getNetwork()).chainId
+  const { chainId } = await owner.provider.getNetwork()
   const nft = new Nft(owner, Number(chainId))
 
   const nftFactory = new NftFactory(nftContractAddress, owner)
@@ -70,15 +70,22 @@ export async function createAssetHelper(
   // create the files encrypted string
   assetUrl.datatokenAddress = datatokenAddressAsset
   assetUrl.nftAddress = nftAddress
-  ddo.services[0].files = await ProviderInstance.encrypt(assetUrl, Number(chain), providerUrl)
+  ddo.services[0].files = await ProviderInstance.encrypt(
+    assetUrl,
+    Number(chain),
+    providerUrl
+  )
   ddo.services[0].datatokenAddress = datatokenAddressAsset
   ddo.services[0].serviceEndpoint = providerUrl
 
   ddo.nftAddress = nftAddress
-  ddo.id =
-    'did:op:' + crypto.SHA256(getAddress(nftAddress) + chain.toString(10))
+  ddo.id = 'did:op:' + crypto.SHA256(getAddress(nftAddress) + chain.toString(10))
 
-  const encryptedResponse = await ProviderInstance.encrypt(ddo, Number(chain), providerUrl)
+  const encryptedResponse = await ProviderInstance.encrypt(
+    ddo,
+    Number(chain),
+    providerUrl
+  )
   const validateResult = await aquariusInstance.validate(ddo, owner, providerUrl)
   await nft.setMetadata(
     nftAddress,
@@ -99,7 +106,7 @@ export async function updateAssetMetadata(
   providerUrl: string,
   aquariusInstance: Aquarius
 ) {
-  const chainId = (await owner.provider.getNetwork()).chainId
+  const { chainId } = await owner.provider.getNetwork()
   const nft = new Nft(owner, Number(chainId))
   const providerResponse = await ProviderInstance.encrypt(
     updatedDdo,

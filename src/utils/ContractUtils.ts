@@ -1,8 +1,17 @@
-import { ethers, Signer, Contract, TransactionResponse, BaseContractMethod, formatUnits, parseUnits } from 'ethers'
+import {
+  ethers,
+  Signer,
+  Contract,
+  TransactionResponse,
+  BaseContractMethod,
+  formatUnits,
+  parseUnits
+} from 'ethers'
 
 import { Config, KNOWN_CONFIDENTIAL_EVMS } from '../config/index.js'
 import { LoggerInstance } from './Logger.js'
 import { minAbi } from './minAbi.js'
+import BigNumber from 'bignumber.js'
 
 const MIN_GAS_FEE_POLYGON = 30000000000 // minimum recommended 30 gwei polygon main and mumbai fees
 const MIN_GAS_FEE_SEPOLIA = 4000000000 // minimum 4 gwei for eth sepolia testnet
@@ -135,7 +144,8 @@ export async function sendTx(
     }
     overrides = {
       maxPriorityFeePerGas:
-        (Number(chainId) === MUMBAI_NETWORK_ID || Number(chainId) === POLYGON_NETWORK_ID) &&
+        (Number(chainId) === MUMBAI_NETWORK_ID ||
+          Number(chainId) === POLYGON_NETWORK_ID) &&
           Number(aggressiveFeePriorityFeePerGas) < MIN_GAS_FEE_POLYGON
           ? MIN_GAS_FEE_POLYGON
           : Number(chainId) === SEPOLIA_NETWORK_ID &&
@@ -147,7 +157,8 @@ export async function sendTx(
               : Number(aggressiveFeePriorityFeePerGas),
 
       maxFeePerGas:
-        (Number(chainId) === MUMBAI_NETWORK_ID || Number(chainId) === POLYGON_NETWORK_ID) &&
+        (Number(chainId) === MUMBAI_NETWORK_ID ||
+          Number(chainId) === POLYGON_NETWORK_ID) &&
           Number(aggressiveFeePerGas) < MIN_GAS_FEE_POLYGON
           ? MIN_GAS_FEE_POLYGON
           : Number(chainId) === SEPOLIA_NETWORK_ID &&
@@ -163,7 +174,7 @@ export async function sendTx(
       gasPrice: feeHistory.gasPrice
     }
   }
-  overrides.gasLimit = estGas + 20000n
+  overrides.gasLimit = BigInt(new BigNumber(estGas).plus(20000n).toString())
   try {
     const trxReceipt = await functionToSend(...args, overrides)
     await trxReceipt.wait()

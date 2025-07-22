@@ -28,7 +28,7 @@ export class VeFeeDistributor extends SmartContractWithAddress {
 
     // Invoke function of the contract
     const trxReceipt = await sendTx(
-      estGas + 20000n,
+      BigInt(new BigNumber(estGas).plus(20000n).toString()),
       this.getSignerAccordingSdk(),
       this.config?.gasFeeMultiplier,
       this.contract.claim
@@ -53,7 +53,7 @@ export class VeFeeDistributor extends SmartContractWithAddress {
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
     // Invoke function of the contract
     const trxReceipt = await sendTx(
-      estGas + 20000n,
+      BigInt(new BigNumber(estGas).plus(20000n).toString()),
       this.getSignerAccordingSdk(),
       this.config?.gasFeeMultiplier,
       this.contract.claim_many,

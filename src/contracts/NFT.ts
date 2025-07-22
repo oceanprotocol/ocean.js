@@ -62,20 +62,23 @@ export class Nft extends SmartContract {
 
     // Generate name & symbol if not present
     if (!name || !symbol) {
-      ; ({ name, symbol } = generateDtName())
+      ;({ name, symbol } = generateDtName())
     }
 
     // Create 721contract object
     const nftContract = this.getContract(nftAddress)
 
-    const { chainId } = await nftContract.provider.getNetwork()
-    const artifacts = getOceanArtifactsAddressesByChainId(chainId)
+    if (!this.signer.provider) {
+      throw new Error('Provider is required but not available')
+    }
+    const { chainId } = await this.signer.provider.getNetwork()
+    const artifacts = getOceanArtifactsAddressesByChainId(Number(chainId))
     if (filesObject) {
       templateIndex = await calculateActiveTemplateIndex(
         this.signer,
         artifacts.ERC721Factory,
         4,
-        chainId
+        Number(chainId)
       )
     }
     const estGas = await nftContract.createERC20.estimateGas(

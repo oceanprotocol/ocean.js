@@ -157,9 +157,7 @@ export class Provider {
       const network = await signer.provider.getNetwork()
       const chainId = Number(network.chainId)
       if (chainId === 8996) {
-        return await (signer as JsonRpcSigner)._legacySignMessage(
-          messageHashBytes
-        )
+        return await (signer as JsonRpcSigner)._legacySignMessage(messageHashBytes)
       }
     }
   }

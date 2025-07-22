@@ -109,7 +109,7 @@ describe('veOcean tests', () => {
       )
       assert(
         depositEvent.args[1].toString() ===
-        (await amountToUnits(null, null, amount, 18)).toString()
+          (await amountToUnits(null, null, amount, 18)).toString()
       )
       assert(depositEvent.args[2] > 0) // we cannot compare it to the actual untiLock, because contract will round it to weeks
       assert(depositEvent.args[1] > supplyEvent.args[0]) // supply has increased
@@ -183,7 +183,7 @@ describe('veOcean tests', () => {
     const allocationSetEvent = getEventFromTx(tx, 'AllocationSet')
     assert(
       allocationSetEvent.args[0].toLowerCase() ===
-      (await Alice.getAddress()).toLowerCase(),
+        (await Alice.getAddress()).toLowerCase(),
       'Incorect address'
     )
     assert(allocationSetEvent.args[1] === nft1, 'Incorect NFT address')
@@ -219,7 +219,7 @@ describe('veOcean tests', () => {
     const allocationSetEvent = getEventFromTx(tx, 'AllocationSetMultiple')
     assert(
       allocationSetEvent.args[0].toLowerCase() ===
-      (await Alice.getAddress()).toLowerCase()
+        (await Alice.getAddress()).toLowerCase()
     )
     assert(allocationSetEvent.args[1][0] === nft2)
     assert(allocationSetEvent.args[1][1] === nft3)

@@ -307,14 +307,10 @@ async function createAssetHelper(
   ddo: DDO,
   providerUrl: string
 ) {
-  const chainId = (await owner.provider.getNetwork()).chainId
+  const { chainId } = await owner.provider.getNetwork()
   const nft = new Nft(owner, Number(chainId))
 
-  const nftFactory = new NftFactory(
-    addresses.ERC721Factory,
-    owner,
-    Number(chainId)
-  )
+  const nftFactory = new NftFactory(addresses.ERC721Factory, owner, Number(chainId))
 
   ddo.chainId = Number(chainId)
   const nftParamsAsset: NftCreateData = {
@@ -350,14 +346,22 @@ async function createAssetHelper(
   // create the files encrypted string
   assetUrl.datatokenAddress = datatokenAddressAsset
   assetUrl.nftAddress = nftAddress
-  ddo.services[0].files = await ProviderInstance.encrypt(assetUrl, Number(chainId), providerUrl)
+  ddo.services[0].files = await ProviderInstance.encrypt(
+    assetUrl,
+    Number(chainId),
+    providerUrl
+  )
   ddo.services[0].datatokenAddress = datatokenAddressAsset
   ddo.services[0].serviceEndpoint = providerUrl
 
   ddo.nftAddress = nftAddress
   ddo.id = 'did:op:' + SHA256(ethers.getAddress(nftAddress) + chainId.toString(10))
 
-  const encryptedResponse = await ProviderInstance.encrypt(ddo, Number(chainId), providerUrl)
+  const encryptedResponse = await ProviderInstance.encrypt(
+    ddo,
+    Number(chainId),
+    providerUrl
+  )
   const validateResult = await aquariusInstance.validate(ddo, owner, providerUrl)
   await nft.setMetadata(
     nftAddress,
@@ -574,11 +578,8 @@ describe('Compute-to-data example tests', async () => {
 
   it('8.1 Mint dataset and algorithm datatokens to publisher', async () => {
     /// ```Typescript
-    const chainId = (await publisherAccount.provider.getNetwork()).chainId
-    const datatoken = new Datatoken(
-      publisherAccount,
-      Number(chainId)
-    )
+    const { chainId } = await publisherAccount.provider.getNetwork()
+    const datatoken = new Datatoken(publisherAccount, Number(chainId))
     await datatoken.mint(
       resolvedDatasetDdo.services[0].datatokenAddress,
       await publisherAccount.getAddress(),
@@ -612,11 +613,8 @@ describe('Compute-to-data example tests', async () => {
 
   it('10.1 Start a compute job using a free C2D environment', async () => {
     /// <!--
-    const chainId = (await consumerAccount.provider.getNetwork()).chainId
-    datatoken = new Datatoken(
-      consumerAccount,
-      Number(chainId)
-    )
+    const { chainId } = await consumerAccount.provider.getNetwork()
+    datatoken = new Datatoken(consumerAccount, Number(chainId))
     /// -->
 
     /// let's check the free compute environment
@@ -755,11 +753,8 @@ describe('Compute-to-data example tests', async () => {
 
   it('12.1 Start a compute job using a paid C2D resources', async () => {
     /// <!--
-    const chainId = (await consumerAccount.provider.getNetwork()).chainId
-    datatoken = new Datatoken(
-      consumerAccount,
-      Number(chainId)
-    )
+    const { chainId } = await consumerAccount.provider.getNetwork()
+    datatoken = new Datatoken(consumerAccount, Number(chainId))
     /// -->
 
     /// let's select compute environment which have free and paid resources
@@ -854,7 +849,7 @@ describe('Compute-to-data example tests', async () => {
         await publisherAccount.getAddress()
       )
       assert(
-        parseEther(balancePublisherPaymentToken) > BigInt(0),
+        new BigNumber(parseEther(balancePublisherPaymentToken)).isGreaterThan(0),
         'Balance should be higher than 0'
       )
       const tx = await publisherAccount.sendTransaction({

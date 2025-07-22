@@ -30,7 +30,7 @@ export class VeOcean extends SmartContractWithAddress {
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
     // Invoke function of the contract
     const trxReceipt = await sendTx(
-      estGas + 20000n,
+      BigInt(new BigNumber(estGas).plus(20000n).toString()),
       this.getSignerAccordingSdk(),
       this.config?.gasFeeMultiplier,
       this.contract.create_lock,
@@ -58,7 +58,7 @@ export class VeOcean extends SmartContractWithAddress {
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
     // Invoke function of the contract
     const trxReceipt = await sendTx(
-      estGas + 20000n,
+      BigInt(new BigNumber(estGas).plus(20000n).toString()),
       this.getSignerAccordingSdk(),
       this.config?.gasFeeMultiplier,
       this.contract.deposit_for,
@@ -83,7 +83,7 @@ export class VeOcean extends SmartContractWithAddress {
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
     // Invoke function of the contract
     const trxReceipt = await sendTx(
-      estGas + 20000n,
+      BigInt(new BigNumber(estGas).plus(20000n).toString()),
       this.getSignerAccordingSdk(),
       this.config?.gasFeeMultiplier,
       this.contract.increase_amount,
@@ -106,7 +106,7 @@ export class VeOcean extends SmartContractWithAddress {
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
     // Invoke function of the contract
     const trxReceipt = await sendTx(
-      estGas + 20000n,
+      BigInt(new BigNumber(estGas).plus(20000n).toString()),
       this.getSignerAccordingSdk(),
       this.config?.gasFeeMultiplier,
       this.contract.increase_unlock_time,
@@ -127,7 +127,7 @@ export class VeOcean extends SmartContractWithAddress {
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
     // Invoke function of the contract
     const trxReceipt = await sendTx(
-      estGas + 20000n,
+      BigInt(new BigNumber(estGas).plus(20000n).toString()),
       this.getSignerAccordingSdk(),
       this.config?.gasFeeMultiplier,
       this.contract.withdraw

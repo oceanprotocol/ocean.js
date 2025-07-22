@@ -5,6 +5,7 @@ import { AbiItem, ReceiptOrEstimate, ValidationResponse } from '../@types';
 import { Config } from '../config';
 import { SmartContractWithAddress } from './SmartContractWithAddress';
 import { Datatoken } from './Datatoken';
+import BigNumber from 'bignumber.js';
 
 export class EscrowContract extends SmartContractWithAddress {
   public abiEnterprise: AbiItem[]
@@ -94,11 +95,10 @@ export class EscrowContract extends SmartContractWithAddress {
     maxLockSeconds?: string,
     maxLockCounts?: string
   ): Promise<ValidationResponse> {
-    const { provider } = this.contract
-    const balanceNativeToken = await provider.getBalance(
+    const balanceNativeToken = await this.signer.provider?.getBalance(
       getAddress(consumerAddress)
     )
-    if (balanceNativeToken === BigInt(0)) {
+    if (new BigNumber(balanceNativeToken).isZero()) {
       return {
         isValid: false,
         message: 'Native token balance is 0. Please add funds'
@@ -111,7 +111,9 @@ export class EscrowContract extends SmartContractWithAddress {
       this.contract.target.toString()
     )
     if (
-      BigInt(await this.amountToUnits(token, allowance, 18)) < BigInt(maxLockedAmount)
+      new BigNumber(await this.amountToUnits(token, allowance, 18)).isLessThan(
+        new BigNumber(maxLockedAmount)
+      )
     ) {
       await tokenContract.approve(
         getAddress(token),
@@ -123,7 +125,7 @@ export class EscrowContract extends SmartContractWithAddress {
       token,
       await this.signer.getAddress()
     )
-    if (parseEther(balancePaymentToken) === BigInt(0)) {
+    if (new BigNumber(balancePaymentToken).isZero()) {
       return {
         isValid: false,
         message: 'Payment token balance is 0. Please add funds'
@@ -135,15 +137,21 @@ export class EscrowContract extends SmartContractWithAddress {
       consumerAddress
     )
     const funds = await this.getUserFunds(await this.signer.getAddress(), token)
-    if (BigInt(funds[0]) === BigInt(0)) {
+    if (new BigNumber(funds[0]).isZero()) {
       if (
         amountToDeposit &&
-        parseEther(balancePaymentToken) <= parseEther(amountToDeposit) &&
-        parseEther(amountToDeposit) > BigInt(maxLockedAmount)
+        new BigNumber(parseEther(balancePaymentToken)).isLessThanOrEqualTo(
+          new BigNumber(parseEther(amountToDeposit))
+        ) &&
+        new BigNumber(parseEther(amountToDeposit)).isGreaterThan(
+          new BigNumber(maxLockedAmount)
+        )
       ) {
         await this.deposit(token, amountToDeposit)
       } else if (
-        parseEther(balancePaymentToken) <= parseEther(maxLockedAmount)
+        new BigNumber(parseEther(balancePaymentToken)).isLessThanOrEqualTo(
+          new BigNumber(parseEther(maxLockedAmount))
+        )
       ) {
         await this.deposit(token, await this.unitsToAmount(token, maxLockedAmount))
       } else {
@@ -215,12 +223,12 @@ export class EscrowContract extends SmartContractWithAddress {
 
     for (let i = 0; i < tokens.length; i++) {
       const token = tokens[i]
-      const amount = BigInt(amounts[i])
+      const amount = new BigNumber(amounts[i])
 
       const funds = await this.getUserFunds(userAddress, token)
-      const available = BigInt(funds[0])
+      const available = new BigNumber(funds[0])
 
-      if (amount > 0n && amount <= available) {
+      if (amount.isGreaterThan(0) && amount.isLessThanOrEqualTo(available)) {
         tokensWithSufficientFunds.push(token)
         amountsWithSufficientFunds.push(amounts[i])
       } else {

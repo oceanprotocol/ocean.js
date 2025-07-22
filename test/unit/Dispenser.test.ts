@@ -58,22 +58,14 @@ describe('Dispenser flow', () => {
   })
 
   it('should initialize Dispenser class', async () => {
-    const chainId = (await factoryOwner.provider.getNetwork()).chainId
-    DispenserClass = new Dispenser(
-      addresses.Dispenser,
-      factoryOwner,
-      Number(chainId)
-    )
+    const { chainId } = await factoryOwner.provider.getNetwork()
+    DispenserClass = new Dispenser(addresses.Dispenser, factoryOwner, Number(chainId))
     assert(DispenserClass !== null)
   })
 
   it('#createNftwithErc - should create an NFT and a Datatoken ', async () => {
-    const chainId = (await factoryOwner.provider.getNetwork()).chainId
-    nftFactory = new NftFactory(
-      addresses.ERC721Factory,
-      factoryOwner,
-      Number(chainId)
-    )
+    const { chainId } = await factoryOwner.provider.getNetwork()
+    nftFactory = new NftFactory(addresses.ERC721Factory, factoryOwner, Number(chainId))
 
     const tx = await nftFactory.createNftWithDatatoken(nftData, dtParams)
     const trxReceipt = await tx.wait()
@@ -86,7 +78,7 @@ describe('Dispenser flow', () => {
   })
 
   it('Make user2 minter', async () => {
-    const chainId = (await factoryOwner.provider.getNetwork()).chainId
+    const { chainId } = await factoryOwner.provider.getNetwork()
     datatoken = new Datatoken(factoryOwner, Number(chainId))
     await datatoken.addMinter(
       dtAddress,
@@ -95,7 +87,7 @@ describe('Dispenser flow', () => {
     )
     assert(
       (await datatoken.getPermissions(dtAddress, await user2.getAddress())).minter ===
-      true
+        true
     )
   })
 
@@ -155,7 +147,7 @@ describe('Dispenser flow', () => {
       '1'
     )
     assert(check === true, 'isDispensable should return true')
-    const chainId = (await user2.provider.getNetwork()).chainId
+    const { chainId } = await user2.provider.getNetwork()
     const DispenserClassForUser2 = new Dispenser(
       addresses.Dispenser,
       user2,

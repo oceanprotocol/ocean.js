@@ -75,7 +75,7 @@ export async function approveWei<G extends boolean = false>(
   const tokenContract = new ethers.Contract(tokenAddress, minAbi, signer)
   if (!force) {
     const currentAllowence = await allowanceWei(signer, tokenAddress, account, spender)
-    if (BigInt(currentAllowence) > BigInt(amount)) {
+    if (new BigNumber(currentAllowence).isGreaterThan(new BigNumber(amount))) {
       return <ReceiptOrEstimate<G>>BigInt(currentAllowence)
     }
   }

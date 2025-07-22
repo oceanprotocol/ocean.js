@@ -568,7 +568,7 @@ export class NftFactory extends SmartContractWithAddress {
     let name: string, symbol: string
     // Generate name & symbol if not present
     if (!dtParams.name || !dtParams.symbol) {
-      ; ({ name, symbol } = generateDtName())
+      ;({ name, symbol } = generateDtName())
     }
 
     let feeTokenDecimals = 18

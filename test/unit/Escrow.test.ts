@@ -22,13 +22,13 @@ describe('Escrow payments flow', () => {
   })
 
   it('should initialize Escrow class', async () => {
-    const chainId = (await user2.provider.getNetwork()).chainId
+    const { chainId } = await user2.provider.getNetwork()
     Escrow = new EscrowContract(addresses.Escrow, user2, Number(chainId))
     assert(Escrow !== null)
   })
 
   it('User2 makes a deposit in Escrow', async () => {
-    const chainId = (await user2.provider.getNetwork()).chainId
+    const { chainId } = await user2.provider.getNetwork()
     datatoken = new Datatoken(user2, Number(chainId))
     const initialBalance = await datatoken.balance(OCEAN, await user2.getAddress())
     const initialDepositedEscrow = await Escrow.getUserFunds(
@@ -55,7 +55,7 @@ describe('Escrow payments flow', () => {
     await Escrow.deposit(OCEAN, '100')
 
     const funds = await Escrow.getUserFunds(await user2.getAddress(), OCEAN)
-    const available = BigInt(funds[0])
+    const available = new BigNumber(funds[0])
     const expectedAmount = await amountToUnits(
       null,
       null,
@@ -78,7 +78,7 @@ describe('Escrow payments flow', () => {
 
     assert(tx, 'failed to withdraw half of available tokens')
     const funds = await Escrow.getUserFunds(await user2.getAddress(), OCEAN)
-    const available = BigInt(funds[0])
+    const available = new BigNumber(funds[0])
     const expectedAmount = await amountToUnits(
       null,
       null,

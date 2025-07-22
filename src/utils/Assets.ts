@@ -192,9 +192,7 @@ export async function createAsset(
     // because DDO datatokenAddress and nftAddress will not match the values on files object
     const contract = new ethers.Contract(datatokenAddressAsset, ERC20Template4.abi, owner)
     try {
-      const tx = await contract.setFilesObject(
-        toUtf8Bytes(JSON.stringify(assetUrl))
-      )
+      const tx = await contract.setFilesObject(toUtf8Bytes(JSON.stringify(assetUrl)))
       if (tx.wait) {
         await tx.wait()
       }
@@ -208,7 +206,11 @@ export async function createAsset(
   if (config.sdk === 'oasis') {
     services[0].files = '' // on confidental EVM it needs to be empty string not null, for schema validation
   } else {
-    services[0].files = await ProviderInstance.encrypt(assetUrl, Number(chainID), providerUrl)
+    services[0].files = await ProviderInstance.encrypt(
+      assetUrl,
+      Number(chainID),
+      providerUrl
+    )
   }
 
   services[0].datatokenAddress = datatokenAddressAsset

@@ -137,24 +137,24 @@ describe('Sapphire tests', async () => {
     )
     assert(
       (await (datatoken as Datatoken4).isDatatokenDeployer(datatokenAddress, address)) ===
-      true,
+        true,
       'no ERC20 deployer'
     )
     assert(
       (await (nftToken as Nft).isDatatokenDeployed(nftAddress, datatokenAddress)) ===
-      true,
+        true,
       'datatoken not deployed'
     )
     assert(
       (await (datatoken as Datatoken4).getAllowlistContract(datatokenAddress)) ===
-      listAddress,
+        listAddress,
       'no access list attached to datatoken.'
     )
   })
   it('Get Deny Access List', async () => {
     assert(
       (await (datatoken as Datatoken4).getDenylistContract(datatokenAddress)) ===
-      ZERO_ADDRESS,
+        ZERO_ADDRESS,
       'no access list attached to datatoken.'
     )
   })
@@ -184,7 +184,7 @@ describe('Sapphire tests', async () => {
     await tx.wait()
     assert(
       (await (datatoken as Datatoken4).getDenylistContract(datatokenAddress)) ===
-      denyListAddress,
+        denyListAddress,
       'no access list attached to datatoken.'
     )
   })
@@ -202,7 +202,7 @@ describe('Sapphire tests', async () => {
       ((await (denyAccessListToken as AccessListContract).balance(
         await wallet.getAddress()
       )) === '1.0',
-        'address of consumer not added.')
+      'address of consumer not added.')
     )
   })
   it('delete address from deny list', async () => {
@@ -210,14 +210,14 @@ describe('Sapphire tests', async () => {
     await tx.wait()
     assert(
       (await (datatoken as Datatoken4).getDenylistContract(datatokenAddress)) ===
-      denyListAddress,
+        denyListAddress,
       'no access list attached to datatoken.'
     )
     assert(
       ((await (denyAccessListToken as AccessListContract).balance(
         await wallet.getAddress()
       )) === '0.0',
-        'address of consumer not removed.')
+      'address of consumer not removed.')
     )
   })
   it('add address to allow list', async () => {
@@ -232,7 +232,7 @@ describe('Sapphire tests', async () => {
       ((await (accessListToken as AccessListContract).balance(
         await consumer.getAddress()
       )) === '1.0',
-        'address of consumer not added.')
+      'address of consumer not added.')
     )
   })
   it('get token URI', async () => {

@@ -215,7 +215,7 @@ describe('Marketplace flow tests', async () => {
       // eslint-disable-next-line security/detect-non-literal-fs-filename
       fs.readFileSync(
         process.env.ADDRESS_FILE ||
-        `${homedir}/.ocean/ocean-contracts/artifacts/address.json`,
+          `${homedir}/.ocean/ocean-contracts/artifacts/address.json`,
         'utf8'
       )
     ).development
@@ -290,7 +290,7 @@ describe('Marketplace flow tests', async () => {
 
   it('6.1 Publish a dataset (create NFT + Datatoken) with a fixed rate exchange', async () => {
     /// ```Typescript
-    const chainId = (await publisherAccount.provider.getNetwork()).chainId
+    const { chainId } = await publisherAccount.provider.getNetwork()
     const factory = new NftFactory(
       addresses.ERC721Factory,
       publisherAccount,
@@ -358,11 +358,8 @@ describe('Marketplace flow tests', async () => {
 
   it('6.2 Set metadata in the fixed rate exchange NFT', async () => {
     /// ```Typescript
-    const chainId = (await publisherAccount.provider.getNetwork()).chainId
-    const nft = new Nft(
-      publisherAccount,
-      Number(chainId)
-    )
+    const { chainId } = await publisherAccount.provider.getNetwork()
+    const nft = new Nft(publisherAccount, Number(chainId))
 
     fixedDDO = { ...genericAsset }
 
@@ -372,8 +369,7 @@ describe('Marketplace flow tests', async () => {
 
     fixedDDO.chainId = Number(chainId)
     fixedDDO.id =
-      'did:op:' +
-      SHA256(getAddress(freNftAddress) + fixedDDO.chainId.toString(10))
+      'did:op:' + SHA256(getAddress(freNftAddress) + fixedDDO.chainId.toString(10))
     fixedDDO.nftAddress = freNftAddress
 
     /// ```
@@ -421,12 +417,8 @@ describe('Marketplace flow tests', async () => {
 
   it('6.3 Marketplace displays fixed rate asset for sale', async () => {
     /// ```Typescript
-    const chainId = (await publisherAccount.provider.getNetwork()).chainId
-    const fixedRate = new FixedRateExchange(
-      freAddress,
-      publisherAccount,
-      Number(chainId)
-    )
+    const { chainId } = await publisherAccount.provider.getNetwork()
+    const fixedRate = new FixedRateExchange(freAddress, publisherAccount, Number(chainId))
     const oceanAmount = await (
       await fixedRate.calcBaseInGivenDatatokensOut(freId, '1')
     ).baseTokenAmount
@@ -441,7 +433,7 @@ describe('Marketplace flow tests', async () => {
 
   it('7.1 Consumer buys a fixed rate asset data asset, and downloads it', async () => {
     /// ```Typescript
-    const chainId = (await publisherAccount.provider.getNetwork()).chainId
+    const { chainId } = await publisherAccount.provider.getNetwork()
     datatoken = new Datatoken(publisherAccount, Number(chainId))
     const DATATOKEN_AMOUNT = '10000'
 
@@ -491,11 +483,7 @@ describe('Marketplace flow tests', async () => {
       DATATOKEN_AMOUNT
     )
 
-    const fixedRate = new FixedRateExchange(
-      freAddress,
-      consumerAccount,
-      Number(chainId)
-    )
+    const fixedRate = new FixedRateExchange(freAddress, consumerAccount, Number(chainId))
 
     /// ```
     /// Now we can make the contract call
@@ -613,7 +601,7 @@ describe('Marketplace flow tests', async () => {
 
   it('8.1 Publish a dataset (create NFT + Datatoken) with a dispenser', async () => {
     /// ```Typescript
-    const chainId = (await publisherAccount.provider.getNetwork()).chainId
+    const { chainId } = await publisherAccount.provider.getNetwork()
     const factory = new NftFactory(
       addresses.ERC721Factory,
       publisherAccount,
@@ -672,11 +660,8 @@ describe('Marketplace flow tests', async () => {
   /// -->
   it('8.2 Set metadata in the dispenser NFT', async () => {
     /// ```Typescript
-    const chainId = (await publisherAccount.provider.getNetwork()).chainId
-    const nft = new Nft(
-      publisherAccount,
-      Number(chainId)
-    )
+    const { chainId } = await publisherAccount.provider.getNetwork()
+    const nft = new Nft(publisherAccount, Number(chainId))
 
     /// ```
     /// Lets start by updating the ddo and setting the did
@@ -684,8 +669,7 @@ describe('Marketplace flow tests', async () => {
     fixedDDO.chainId = Number(chainId)
 
     fixedDDO.id =
-      'did:op:' +
-      SHA256(getAddress(dispenserNftAddress) + fixedDDO.chainId.toString(10))
+      'did:op:' + SHA256(getAddress(dispenserNftAddress) + fixedDDO.chainId.toString(10))
     fixedDDO.nftAddress = dispenserNftAddress
     /// ```
     /// Now we need to encrypt file(s) using provider
@@ -731,13 +715,9 @@ describe('Marketplace flow tests', async () => {
 
   it('9.1 Consumer gets a dispenser data asset, and downloads it', async () => {
     /// ```Typescript
-    const chainId = (await publisherAccount.provider.getNetwork()).chainId
+    const { chainId } = await publisherAccount.provider.getNetwork()
     datatoken = new Datatoken(publisherAccount, Number(chainId))
-    const dispenser = new Dispenser(
-      addresses.Dispenser,
-      consumerAccount,
-      Number(chainId)
-    )
+    const dispenser = new Dispenser(addresses.Dispenser, consumerAccount, Number(chainId))
 
     let consumerDTBalance = await balance(
       consumerAccount,
@@ -850,7 +830,7 @@ describe('Marketplace flow tests', async () => {
   it('10.1 Add key-value pair to data NFT', async () => {
     /// Let's start by using the `setData` method to update the nft key value store with some data
     /// ```Typescript
-    const chainId = (await publisherAccount.provider.getNetwork()).chainId
+    const { chainId } = await publisherAccount.provider.getNetwork()
     const nft = new Nft(publisherAccount, Number(chainId))
     const data = 'SomeData'
     try {
