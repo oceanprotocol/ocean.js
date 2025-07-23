@@ -20,7 +20,7 @@ describe('veOcean tests', async () => {
   let ownerAccount: Signer
   let Alice: Signer
   let Bob: Signer
-  let tokenContract
+  let tokenContract: ethers.Contract
 
   before(async () => {
     ownerAccount = (await provider.getSigner(0)) as Signer
@@ -56,7 +56,7 @@ describe('veOcean tests', async () => {
       }
     ]
     tokenContract = new ethers.Contract(addresses.Ocean, minAbi, ownerAccount)
-    const estGas = await tokenContract.estimateGas.mint(
+    const estGas = await tokenContract.mint.estimateGas(
       await ownerAccount.getAddress(),
       amountToUnits(null, null, '10000', 18)
     )

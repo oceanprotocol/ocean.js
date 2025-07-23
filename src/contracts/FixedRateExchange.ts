@@ -49,15 +49,15 @@ export class FixedRateExchange extends SmartContractWithAddress {
     const dtAmountFormatted = await this.amountToUnits(
       exchange.datatoken,
       datatokenAmount,
-      +exchange.dtDecimals
+      Number(exchange.dtDecimals)
     )
     const maxBtFormatted = await this.amountToUnits(
       exchange.baseToken,
       maxBaseTokenAmount,
-      +exchange.btDecimals
+      Number(exchange.btDecimals)
     )
 
-    const estGas = await this.contract.estimateGas.buyDT(
+    const estGas = await this.contract.buyDT.estimateGas(
       exchangeId,
       dtAmountFormatted,
       maxBtFormatted,
@@ -103,14 +103,14 @@ export class FixedRateExchange extends SmartContractWithAddress {
     const dtAmountFormatted = await this.amountToUnits(
       exchange.datatoken,
       datatokenAmount,
-      +exchange.dtDecimals
+      Number(exchange.dtDecimals)
     )
     const minBtFormatted = await this.amountToUnits(
       exchange.baseToken,
       minBaseTokenAmount,
-      +exchange.btDecimals
+      Number(exchange.btDecimals)
     )
-    const estGas = await this.contract.estimateGas.sellDT(
+    const estGas = await this.contract.sellDT.estimateGas(
       exchangeId,
       dtAmountFormatted,
       minBtFormatted,
@@ -153,7 +153,7 @@ export class FixedRateExchange extends SmartContractWithAddress {
     newRate: string,
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
-    const estGas = await this.contract.estimateGas.setRate(
+    const estGas = await this.contract.setRate.estimateGas(
       exchangeId,
       await this.amountToUnits(null, newRate, 18)
     )
@@ -182,7 +182,7 @@ export class FixedRateExchange extends SmartContractWithAddress {
     newAllowedSwapper: string,
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
-    const estGas = await this.contract.estimateGas.setAllowedSwapper(
+    const estGas = await this.contract.setAllowedSwapper.estimateGas(
       exchangeId,
       newAllowedSwapper
     )
@@ -211,7 +211,7 @@ export class FixedRateExchange extends SmartContractWithAddress {
     const exchange = await this.getExchange(exchangeId)
     if (!exchange) return null
     if (exchange.active === true) return null
-    const estGas = await this.contract.estimateGas.toggleExchangeState(exchangeId)
+    const estGas = await this.contract.toggleExchangeState.estimateGas(exchangeId)
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
     const trxReceipt = await sendTx(
       estGas,
@@ -237,7 +237,7 @@ export class FixedRateExchange extends SmartContractWithAddress {
     if (!exchange) return null
     if (exchange.active === false) return null
 
-    const estGas = await this.contract.estimateGas.toggleExchangeState(exchangeId)
+    const estGas = await this.contract.toggleExchangeState.estimateGas(exchangeId)
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
     const trxReceipt = await sendTx(
       estGas,
@@ -267,7 +267,11 @@ export class FixedRateExchange extends SmartContractWithAddress {
   public async getDatatokenSupply(exchangeId: string): Promise<string> {
     const dtSupply = await this.contract.getDTSupply(exchangeId)
     const exchange = await this.getExchange(exchangeId)
-    return await this.unitsToAmount(exchange.datatoken, dtSupply, +exchange.dtDecimals)
+    return await this.unitsToAmount(
+      exchange.datatoken,
+      dtSupply,
+      Number(exchange.dtDecimals)
+    )
   }
 
   /**
@@ -278,7 +282,11 @@ export class FixedRateExchange extends SmartContractWithAddress {
   public async getBasetokenSupply(exchangeId: string): Promise<string> {
     const btSupply = await this.contract.getBTSupply(exchangeId)
     const exchange = await this.getExchange(exchangeId)
-    return await this.unitsToAmount(exchange.baseToken, btSupply, +exchange.btDecimals)
+    return await this.unitsToAmount(
+      exchange.baseToken,
+      btSupply,
+      Number(exchange.btDecimals)
+    )
   }
 
   /**
@@ -308,7 +316,7 @@ export class FixedRateExchange extends SmartContractWithAddress {
       await this.amountToUnits(
         fixedRateExchange.datatoken,
         datatokenAmount,
-        +fixedRateExchange.dtDecimals
+        Number(fixedRateExchange.dtDecimals)
       ),
       await this.amountToUnits(null, consumeMarketFee, 18)
     )
@@ -316,22 +324,22 @@ export class FixedRateExchange extends SmartContractWithAddress {
       baseTokenAmount: await this.unitsToAmount(
         fixedRateExchange.baseToken,
         outDT.baseTokenAmount,
-        +fixedRateExchange.btDecimals
+        Number(fixedRateExchange.btDecimals)
       ),
       marketFeeAmount: await this.unitsToAmount(
         fixedRateExchange.baseToken,
         outDT.publishMarketFeeAmount,
-        +fixedRateExchange.btDecimals
+        Number(fixedRateExchange.btDecimals)
       ),
       oceanFeeAmount: await this.unitsToAmount(
         fixedRateExchange.baseToken,
         outDT.oceanFeeAmount,
-        +fixedRateExchange.btDecimals
+        Number(fixedRateExchange.btDecimals)
       ),
       consumeMarketFeeAmount: await this.unitsToAmount(
         fixedRateExchange.baseToken,
         outDT.consumeMarketFeeAmount,
-        +fixedRateExchange.btDecimals
+        Number(fixedRateExchange.btDecimals)
       )
     } as PriceAndFees
     return priceAndFees
@@ -352,11 +360,19 @@ export class FixedRateExchange extends SmartContractWithAddress {
     const exchange = await this.getExchange(exchangeId)
     const amount = await this.contract.calcBaseOutGivenInDT(
       exchangeId,
-      await this.amountToUnits(exchange.datatoken, datatokenAmount, +exchange.dtDecimals),
+      await this.amountToUnits(
+        exchange.datatoken,
+        datatokenAmount,
+        Number(exchange.dtDecimals)
+      ),
       await this.amountToUnits(null, consumeMarketFee, 18)
     )
 
-    return await this.unitsToAmount(exchange.baseToken, amount[0], +exchange.btDecimals)
+    return await this.unitsToAmount(
+      exchange.baseToken,
+      amount[0],
+      Number(exchange.btDecimals)
+    )
   }
 
   /**
@@ -378,22 +394,22 @@ export class FixedRateExchange extends SmartContractWithAddress {
       dtBalance: await this.unitsToAmount(
         result.datatoken,
         result.dtBalance,
-        +result.dtDecimals
+        Number(result.dtDecimals)
       ),
       btBalance: await this.unitsToAmount(
         result.baseToken,
         result.btBalance,
-        +result.btDecimals
+        Number(result.btDecimals)
       ),
       dtSupply: await this.unitsToAmount(
         result.datatoken,
         result.dtSupply,
-        +result.dtDecimals
+        Number(result.dtDecimals)
       ),
       btSupply: await this.unitsToAmount(
         result.baseToken,
         result.btSupply,
-        +result.btDecimals
+        Number(result.btDecimals)
       ),
       fixedRate: await this.unitsToAmount(null, result.fixedRate, 18),
       exchangeId
@@ -416,12 +432,12 @@ export class FixedRateExchange extends SmartContractWithAddress {
       marketFeeAvailable: await this.unitsToAmount(
         exchange.baseToken,
         result.marketFeeAvailable,
-        +exchange.btDecimals
+        Number(exchange.btDecimals)
       ),
       oceanFeeAvailable: await this.unitsToAmount(
         exchange.baseToken,
         result.oceanFeeAvailable,
-        +exchange.btDecimals
+        Number(exchange.btDecimals)
       ),
 
       exchangeId
@@ -462,7 +478,7 @@ export class FixedRateExchange extends SmartContractWithAddress {
     if (!exchange) return null
     if (exchange.withMint === true) return null
 
-    const estGas = await this.contract.estimateGas.toggleMintState(exchangeId, true)
+    const estGas = await this.contract.toggleMintState.estimateGas(exchangeId, true)
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
     const trxReceipt = await sendTx(
       estGas,
@@ -489,7 +505,7 @@ export class FixedRateExchange extends SmartContractWithAddress {
     if (!exchange) return null
     if (exchange.withMint === false) return null
 
-    const estGas = await this.contract.estimateGas.toggleMintState(exchangeId, false)
+    const estGas = await this.contract.toggleMintState.estimateGas(exchangeId, false)
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
     const trxReceipt = await sendTx(
       estGas,
@@ -521,10 +537,10 @@ export class FixedRateExchange extends SmartContractWithAddress {
     const amountWei = await this.amountToUnits(
       fixedrate.baseToken,
       amount,
-      +fixedrate.btDecimals
+      Number(fixedrate.btDecimals)
     )
 
-    const estGas = await this.contract.estimateGas.collectBT(exchangeId, amountWei)
+    const estGas = await this.contract.collectBT.estimateGas(exchangeId, amountWei)
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
     const trxReceipt = await sendTx(
       estGas,
@@ -556,10 +572,10 @@ export class FixedRateExchange extends SmartContractWithAddress {
     const amountWei = await this.amountToUnits(
       fixedrate.datatoken,
       amount,
-      +fixedrate.dtDecimals
+      Number(fixedrate.dtDecimals)
     )
 
-    const estGas = await this.contract.estimateGas.collectDT(exchangeId, amountWei)
+    const estGas = await this.contract.collectDT.estimateGas(exchangeId, amountWei)
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
     const trxReceipt = await sendTx(
       estGas,
@@ -585,7 +601,7 @@ export class FixedRateExchange extends SmartContractWithAddress {
     const exchange = await this.getExchange(exchangeId)
     if (!exchange) return null
 
-    const estGas = await this.contract.estimateGas.collectMarketFee(exchangeId)
+    const estGas = await this.contract.collectMarketFee.estimateGas(exchangeId)
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
     const trxReceipt = await sendTx(
       estGas,
@@ -611,7 +627,7 @@ export class FixedRateExchange extends SmartContractWithAddress {
     const exchange = await this.getExchange(exchangeId)
     if (!exchange) return null
 
-    const estGas = await this.contract.estimateGas.collectOceanFee(exchangeId)
+    const estGas = await this.contract.collectOceanFee.estimateGas(exchangeId)
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
     const trxReceipt = await sendTx(
       estGas,
@@ -664,7 +680,7 @@ export class FixedRateExchange extends SmartContractWithAddress {
     newMarketFee: string,
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
-    const estGas = await this.contract.estimateGas.updateMarketFee(
+    const estGas = await this.contract.updateMarketFee.estimateGas(
       exchangeId,
       await this.amountToUnits(null, newMarketFee, 18)
     )
@@ -693,7 +709,7 @@ export class FixedRateExchange extends SmartContractWithAddress {
     newMarketFeeCollector: string,
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
-    const estGas = await this.contract.estimateGas.updateMarketFeeCollector(
+    const estGas = await this.contract.updateMarketFeeCollector.estimateGas(
       exchangeId,
       newMarketFeeCollector
     )

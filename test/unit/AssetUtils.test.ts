@@ -3,13 +3,13 @@ import { KNOWN_CONFIDENTIAL_EVMS } from '../../src/config/index.js'
 import { provider, getAddresses } from '../config.js'
 import { calculateActiveTemplateIndex } from '../../src/utils/Addresses.js'
 import { useOasisSDK } from '../../src/utils/Assets.js'
-import { Signer } from 'ethers/lib/ethers.js'
+import { Signer } from 'ethers'
 
 let nftOwner: Signer
 let addresses: any
 describe('Asset utils (createAsset)', () => {
   before(async () => {
-    nftOwner = (await provider.getSigner(0)) as Signer
+    nftOwner = await provider.getSigner(0)
     addresses = await getAddresses()
   })
 

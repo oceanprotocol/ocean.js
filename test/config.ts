@@ -1,4 +1,4 @@
-import { providers, Signer } from 'ethers'
+import { JsonRpcProvider, Signer } from 'ethers'
 import fs from 'fs'
 import { homedir } from 'os'
 import { ConfigHelper, configHelperNetworks } from '../src/config/index.js'
@@ -24,15 +24,15 @@ export interface Addresses {
 export const GAS_PRICE = '3000000000'
 
 // by default, we connect with development network
-export const provider = new providers.JsonRpcProvider(
+export const provider = new JsonRpcProvider(
   process.env.NODE_URI || configHelperNetworks[1].nodeUri
 )
 // const wallet = new Wallet.fromMnemonic(process.env.MNEMONIC);
 // export const signer = wallet.connect(provider)
 
 export const getTestConfig = async (signer: Signer) => {
-  const chainId = await signer.getChainId()
-  const config = new ConfigHelper().getConfig(parseInt(String(chainId)))
+  const network = await signer.provider?.getNetwork()
+  const config = new ConfigHelper().getConfig(Number(network?.chainId))
 
   if (process.env.NODE_URL) {
     config.oceanNodeUri = process.env.NODE_URL

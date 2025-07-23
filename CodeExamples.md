@@ -78,7 +78,7 @@ Start by importing all of the necessary dependencies
 ```Typescript
 import fs from 'fs'
 
-import { ethers, providers, Signer } from 'ethers'
+import { ethers, formatEther, getAddress, JsonRpcProvider, Signer, toBeHex } from 'ethers'
 import crypto from 'crypto-js'
 import { homedir } from 'os'
 import {
@@ -119,7 +119,7 @@ describe('Marketplace flow tests
 Now we define the variables which we will need later
 
 ```Typescript
-  let provider: ethers.providers.JsonRpcProvider
+  let provider: JsonRpcProvider
   let config: Config
   let aquarius: Aquarius
   let datatoken: Datatoken
@@ -197,7 +197,7 @@ Next, we define the metadata that will describe our data asset. This is what we 
 ## 5. Load the configuration, initialize accounts and deploy contracts
 ```Typescript
   
-    provider = new providers.JsonRpcProvider(
+    provider = new JsonRpcProvider(
       process.env.NODE_URI || configHelperNetworks[1].nodeUri
     )
     publisherAccount = (await provider.getSigner(0)) as Signer
@@ -252,7 +252,7 @@ you need to mint oceans to mentioned accounts only if you are using barge to tes
     ]
 
     const tokenContract = new ethers.Contract(addresses.Ocean, minAbi, publisherAccount)
-    const estGasPublisher = await tokenContract.estimateGas.mint(
+    const estGasPublisher = await tokenContract.mint.estimateGas(
       await publisherAccount.getAddress(),
       amountToUnits(null, null, '1000', 18)
     )
@@ -290,10 +290,11 @@ you need to mint oceans to mentioned accounts only if you are using barge to tes
 
   ### 6.1 Publish a dataset (create NFT + Datatoken) with a fixed rate exchange
 ```Typescript
+    const { chainId } = await publisherAccount.provider.getNetwork()
     const factory = new NftFactory(
       addresses.ERC721Factory,
       publisherAccount,
-      await publisherAccount.getChainId()
+      Number(chainId)
     )
 
     const nftParams: NftCreateData = {
@@ -357,10 +358,8 @@ Now let's console log each of those values to check everything is working
 
   ### 6.2 Set metadata in the fixed rate exchange NFT
 ```Typescript
-    const nft = new Nft(
-      publisherAccount,
-      (await publisherAccount.provider.getNetwork()).chainId
-    )
+    const { chainId } = await publisherAccount.provider.getNetwork()
+    const nft = new Nft(publisherAccount, Number(chainId))
 
     fixedDDO = { ...genericAsset }
 
@@ -368,10 +367,9 @@ Now let's console log each of those values to check everything is working
 Now we are going to update the ddo and set the did
 ```Typescript
 
-    fixedDDO.chainId = (await publisherAccount.provider.getNetwork()).chainId
+    fixedDDO.chainId = Number(chainId)
     fixedDDO.id =
-      'did:op:' +
-      SHA256(ethers.utils.getAddress(freNftAddress) + fixedDDO.chainId.toString(10))
+      'did:op:' + SHA256(getAddress(freNftAddress) + fixedDDO.chainId.toString(10))
     fixedDDO.nftAddress = freNftAddress
 
 ```
@@ -410,7 +408,7 @@ Now let's console log the DID to check everything is working
       0,
       providerUrl,
       '',
-      ethers.utils.hexlify(2),
+      toBeHex(2),
       encryptedDDO,
       isAssetValid.hash
     )
@@ -419,11 +417,8 @@ Now let's console log the DID to check everything is working
 
   ### 6.3 Marketplace displays fixed rate asset for sale
 ```Typescript
-    const fixedRate = new FixedRateExchange(
-      freAddress,
-      publisherAccount,
-      await publisherAccount.getChainId()
-    )
+    const { chainId } = await publisherAccount.provider.getNetwork()
+    const fixedRate = new FixedRateExchange(freAddress, publisherAccount, Number(chainId))
     const oceanAmount = await (
       await fixedRate.calcBaseInGivenDatatokensOut(freId, '1')
     ).baseTokenAmount
@@ -438,7 +433,8 @@ Now that the market has fetched those values it can display the asset on the fro
 
   ### 7.1 Consumer buys a fixed rate asset data asset, and downloads it
 ```Typescript
-    datatoken = new Datatoken(publisherAccount, await publisherAccount.getChainId())
+    const { chainId } = await publisherAccount.provider.getNetwork()
+    datatoken = new Datatoken(publisherAccount, Number(chainId))
     const DATATOKEN_AMOUNT = '10000'
 
     await datatoken.mint(
@@ -448,7 +444,7 @@ Now that the market has fetched those values it can display the asset on the fro
     )
 
     const consumerBalance = await provider.getBalance(await consumerAccount.getAddress())
-    const consumerETHBalance = ethers.utils.formatEther(consumerBalance)
+    const consumerETHBalance = formatEther(consumerBalance)
 
 ```
 Let's do a quick check of the consumer ETH balance before the swap
@@ -487,11 +483,7 @@ Before we call the contract we have to call `approve` so that the contract can m
       DATATOKEN_AMOUNT
     )
 
-    const fixedRate = new FixedRateExchange(
-      freAddress,
-      consumerAccount,
-      await consumerAccount.getChainId()
-    )
+    const fixedRate = new FixedRateExchange(freAddress, consumerAccount, Number(chainId))
 
 ```
 Now we can make the contract call
@@ -548,7 +540,7 @@ Next, we need to initialize the provider
       providerFees.providerFeeAmount
     )
 
-    datatoken = new Datatoken(consumerAccount, await consumerAccount.getChainId())
+    datatoken = new Datatoken(consumerAccount, Number(chainId))
 
 ```
 Lets now make the payment
@@ -609,10 +601,11 @@ Lets check that the download URL was successfully received
 
   ### 8.1 Publish a dataset (create NFT + Datatoken) with a dispenser
 ```Typescript
+    const { chainId } = await publisherAccount.provider.getNetwork()
     const factory = new NftFactory(
       addresses.ERC721Factory,
       publisherAccount,
-      await publisherAccount.getChainId()
+      Number(chainId)
     )
 
     const nftParams: NftCreateData = {
@@ -667,19 +660,16 @@ Lets check that we managed to received all of those values without any problems
 -->
   ### 8.2 Set metadata in the dispenser NFT
 ```Typescript
-    const nft = new Nft(
-      publisherAccount,
-      (await publisherAccount.provider.getNetwork()).chainId
-    )
+    const { chainId } = await publisherAccount.provider.getNetwork()
+    const nft = new Nft(publisherAccount, Number(chainId))
 
 ```
 Lets start by updating the ddo and setting the did
 ```Typescript
-    fixedDDO.chainId = (await publisherAccount.provider.getNetwork()).chainId
+    fixedDDO.chainId = Number(chainId)
 
     fixedDDO.id =
-      'did:op:' +
-      SHA256(ethers.utils.getAddress(dispenserNftAddress) + fixedDDO.chainId.toString(10))
+      'did:op:' + SHA256(getAddress(dispenserNftAddress) + fixedDDO.chainId.toString(10))
     fixedDDO.nftAddress = dispenserNftAddress
 ```
 Now we need to encrypt file(s) using provider
@@ -712,7 +702,7 @@ Now we need to encrypt file(s) using provider
       0,
       providerUrl,
       '',
-      ethers.utils.hexlify(2),
+      toBeHex(2),
       encryptedDDO,
       isAssetValid.hash
     )
@@ -725,12 +715,9 @@ Now we need to encrypt file(s) using provider
 
   ### 9.1 Consumer gets a dispenser data asset, and downloads it
 ```Typescript
-    datatoken = new Datatoken(publisherAccount, await publisherAccount.getChainId())
-    const dispenser = new Dispenser(
-      addresses.Dispenser,
-      consumerAccount,
-      await consumerAccount.getChainId()
-    )
+    const { chainId } = await publisherAccount.provider.getNetwork()
+    datatoken = new Datatoken(publisherAccount, Number(chainId))
+    const dispenser = new Dispenser(addresses.Dispenser, consumerAccount, Number(chainId))
 
     let consumerDTBalance = await balance(
       consumerAccount,
@@ -759,7 +746,7 @@ Now we need to encrypt file(s) using provider
     const resolvedDDO = await aquarius.waitForIndexer(fixedDDO.id)
     assert(resolvedDDO, 'Cannot fetch DDO from Aquarius')
 
-    datatoken = new Datatoken(consumerAccount, await consumerAccount.getChainId())
+    datatoken = new Datatoken(consumerAccount, Number(chainId))
 
 ```
 At this point we need to encrypt file(s) using provider
@@ -843,7 +830,8 @@ Here are the steps:
   ### 10.1 Add key-value pair to data NFT
 Let's start by using the `setData` method to update the nft key value store with some data
 ```Typescript
-    const nft = new Nft(publisherAccount, await publisherAccount.getChainId())
+    const { chainId } = await publisherAccount.provider.getNetwork()
+    const nft = new Nft(publisherAccount, Number(chainId))
     const data = 'SomeData'
     try {
       await nft.setData(

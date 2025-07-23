@@ -2,6 +2,7 @@ import veFeeABI from '@oceanprotocol/contracts/artifacts/contracts/ve/veFeeDistr
 import { sendTx } from '../../utils/ContractUtils.js'
 import { SmartContractWithAddress } from '../SmartContractWithAddress.js'
 import { ReceiptOrEstimate, AbiItem } from '../../@types/index.js'
+import BigNumber from 'bignumber.js'
 /**
  * Provides an interface for veOcean contract
  */
@@ -23,12 +24,12 @@ export class VeFeeDistributor extends SmartContractWithAddress {
   public async claim<G extends boolean = false>(
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
-    const estGas = await this.contract.estimateGas.claim()
+    const estGas = await this.contract.claim.estimateGas()
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
 
     // Invoke function of the contract
     const trxReceipt = await sendTx(
-      estGas.add(20000),
+      BigInt(new BigNumber(estGas).plus(20000n).toString()),
       this.getSignerAccordingSdk(),
       this.config?.gasFeeMultiplier,
       this.contract.claim
@@ -49,11 +50,11 @@ export class VeFeeDistributor extends SmartContractWithAddress {
     addresses: string[],
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
-    const estGas = await this.contract.estimateGas.claim_many(addresses)
+    const estGas = await this.contract.claim_many.estimateGas(addresses)
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
     // Invoke function of the contract
     const trxReceipt = await sendTx(
-      estGas.add(20000),
+      BigInt(new BigNumber(estGas).plus(20000n).toString()),
       this.getSignerAccordingSdk(),
       this.config?.gasFeeMultiplier,
       this.contract.claim_many,

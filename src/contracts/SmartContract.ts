@@ -85,10 +85,13 @@ export abstract class SmartContract {
    * @returns {Contract} - The contract instance
    */
   protected getContract(address: string, abi?: AbiItem[]): Contract {
+    if (!address) {
+      throw new Error('Contract address is required but not provided')
+    }
     const abiToUse = abi || this.abi
     const contract = new ethers.Contract(
       address,
-      new ethers.utils.Interface(JSON.stringify(abiToUse)),
+      new ethers.Interface(JSON.stringify(abiToUse)),
       this.signer
     )
     return setContractDefaults(contract, this.config)

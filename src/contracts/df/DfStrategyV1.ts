@@ -38,7 +38,7 @@ export class DfStrategyV1 extends SmartContractWithAddress {
     tokenAddresses: string[],
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
-    const estGas = await this.contract.estimateGas.claimMultiple(
+    const estGas = await this.contract.claimMultiple.estimateGas(
       userAddress,
       tokenAddresses
     )

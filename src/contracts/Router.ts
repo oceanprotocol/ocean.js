@@ -23,7 +23,7 @@ export class Router extends SmartContractWithAddress {
     operations: Operation[],
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
-    const estGas = await this.contract.estimateGas.buyDTBatch(operations)
+    const estGas = await this.contract.buyDTBatch.estimateGas(operations)
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
 
     const trxReceipt = await sendTx(
@@ -88,7 +88,7 @@ export class Router extends SmartContractWithAddress {
       throw new Error(`Caller is not Router Owner`)
     }
 
-    const estGas = await this.contract.estimateGas.addApprovedToken(tokenAddress)
+    const estGas = await this.contract.addApprovedToken.estimateGas(tokenAddress)
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
 
     const trxReceipt = await sendTx(
@@ -118,7 +118,7 @@ export class Router extends SmartContractWithAddress {
       throw new Error(`Caller is not Router Owner`)
     }
 
-    const estGas = await this.contract.estimateGas.removeApprovedToken(tokenAddress)
+    const estGas = await this.contract.removeApprovedToken.estimateGas(tokenAddress)
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
 
     const trxReceipt = await sendTx(
@@ -147,7 +147,7 @@ export class Router extends SmartContractWithAddress {
       throw new Error(`Caller is not Router Owner`)
     }
 
-    const estGas = await this.contract.estimateGas.addFixedRateContract(tokenAddress)
+    const estGas = await this.contract.addFixedRateContract.estimateGas(tokenAddress)
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
 
     const trxReceipt = await sendTx(
@@ -177,7 +177,7 @@ export class Router extends SmartContractWithAddress {
       throw new Error(`Caller is not Router Owner`)
     }
 
-    const estGas = await this.contract.estimateGas.removeFixedRateContract(tokenAddress)
+    const estGas = await this.contract.removeFixedRateContract.estimateGas(tokenAddress)
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
 
     const trxReceipt = await sendTx(
@@ -207,7 +207,7 @@ export class Router extends SmartContractWithAddress {
       throw new Error(`Caller is not Router Owner`)
     }
 
-    const estGas = await this.contract.estimateGas.addDispenserContract(tokenAddress)
+    const estGas = await this.contract.addDispenserContract.estimateGas(tokenAddress)
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
 
     const trxReceipt = await sendTx(
@@ -236,7 +236,7 @@ export class Router extends SmartContractWithAddress {
       throw new Error(`Caller is not Router Owner`)
     }
 
-    const estGas = await this.contract.estimateGas.removeDispenserContract(tokenAddress)
+    const estGas = await this.contract.removeDispenserContract.estimateGas(tokenAddress)
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
 
     const trxReceipt = await sendTx(
@@ -285,7 +285,7 @@ export class Router extends SmartContractWithAddress {
       throw new Error(`Caller is not Router Owner`)
     }
 
-    const estGas = await this.contract.estimateGas.updateOPCFee(
+    const estGas = await this.contract.updateOPCFee.estimateGas(
       newSwapOceanFee,
       newSwapNonOceanFee,
       newConsumeFee,

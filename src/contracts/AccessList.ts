@@ -94,7 +94,7 @@ export class AccessListContract extends SmartContractWithAddress {
     tokenUri: string,
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
-    const estGas = await this.contract.estimateGas.mint(user, tokenUri)
+    const estGas = await this.contract.mint.estimateGas(user, tokenUri)
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
     const trxReceipt = await sendTx(
       estGas,
@@ -119,7 +119,7 @@ export class AccessListContract extends SmartContractWithAddress {
     tokenUris: Array<string>,
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
-    const estGas = await this.contract.estimateGas.batchMint(users, tokenUris)
+    const estGas = await this.contract.batchMint.estimateGas(users, tokenUris)
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
     const trxReceipt = await sendTx(
       estGas,
@@ -142,7 +142,7 @@ export class AccessListContract extends SmartContractWithAddress {
     tokenId: number,
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
-    const estGas = await this.contract.estimateGas.burn(tokenId)
+    const estGas = await this.contract.burn.estimateGas(tokenId)
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
     const trxReceipt = await sendTx(
       estGas,
@@ -164,7 +164,7 @@ export class AccessListContract extends SmartContractWithAddress {
     newOwner: string,
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
-    const estGas = await this.contract.estimateGas.transferOwnership(newOwner)
+    const estGas = await this.contract.transferOwnership.estimateGas(newOwner)
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
     const trxReceipt = await sendTx(
       estGas,
@@ -184,7 +184,7 @@ export class AccessListContract extends SmartContractWithAddress {
   public async renounceOwnership<G extends boolean = false>(
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
-    const estGas = await this.contract.estimateGas.renounceOwnership()
+    const estGas = await this.contract.renounceOwnership.estimateGas()
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
     const trxReceipt = await sendTx(
       estGas,

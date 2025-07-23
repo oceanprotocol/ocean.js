@@ -1,6 +1,6 @@
 import * as sapphire from '@oasisprotocol/sapphire-paratime'
 import addresses from '@oceanprotocol/contracts/addresses/address.json'
-import { ethers } from 'ethers'
+import { ethers, toUtf8Bytes } from 'ethers'
 import { AccesslistFactory } from '../../src/contracts/AccessListFactory.js'
 import { AccessListContract } from '../../src/contracts/AccessList.js'
 import { NftFactory } from '../../src/contracts/NFTFactory.js'
@@ -28,7 +28,8 @@ describe('Sapphire tests', async () => {
     ? new ethers.Wallet(privateKeyConsumer, provider)
     : null
 
-  const addrs: any = addresses.oasis_saphire_testnet
+  // const addrs: any = addresses.oasis_saphire_testnet
+  const addrs: any = addresses.oasis_sapphire_testnet
   const nftData: NftCreateData = {
     name: 'NFTName',
     symbol: 'NFTSymbol',
@@ -129,7 +130,7 @@ describe('Sapphire tests', async () => {
     const address = await wallet.getAddress()
     datatoken = new Datatoken4(
       walletWrapped,
-      ethers.utils.toUtf8Bytes(JSON.stringify(filesObject)),
+      toUtf8Bytes(JSON.stringify(filesObject)),
       23295,
       config,
       ERC20Template4.abi as AbiItem[]
@@ -249,7 +250,7 @@ describe('Sapphire tests', async () => {
         encoding: 'UTF-8'
       }
     ]
-    const fileObjBytes = ethers.utils.toUtf8Bytes(JSON.stringify(newFileObject))
+    const fileObjBytes = toUtf8Bytes(JSON.stringify(newFileObject))
     datatoken.setFileObj(fileObjBytes)
     assert(
       datatoken.fileObject === fileObjBytes,

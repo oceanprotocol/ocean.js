@@ -1,4 +1,4 @@
-import { ethers, Signer, providers } from 'ethers'
+import { JsonRpcSigner, Signer, getBytes, keccak256, toUtf8Bytes } from 'ethers'
 import { LoggerInstance } from './Logger'
 
 /**
@@ -11,10 +11,8 @@ export async function signHash(signer: Signer, message: string) {
   // Since ganache has no support yet for personal_sign, we must use the legacy implementation
   // const signedMessage = await user2.signMessage(message)
 
-  const messageHashBytes = ethers.utils.arrayify(message)
-  let signedMessage = await (signer as providers.JsonRpcSigner)._legacySignMessage(
-    messageHashBytes
-  )
+  const messageHashBytes = getBytes(message)
+  let signedMessage = await (signer as JsonRpcSigner)._legacySignMessage(messageHashBytes)
   signedMessage = signedMessage.substr(2) // remove 0x
   const r = '0x' + signedMessage.slice(0, 64)
   const s = '0x' + signedMessage.slice(64, 128)
@@ -26,21 +24,19 @@ export async function signHash(signer: Signer, message: string) {
 }
 
 export async function signRequest(signer: Signer, message: string): Promise<string> {
-  const consumerMessage = ethers.utils.solidityKeccak256(
-    ['bytes'],
-    [ethers.utils.hexlify(ethers.utils.toUtf8Bytes(message))]
-  )
-  const messageHashBytes = ethers.utils.arrayify(consumerMessage)
-  const chainId = await signer.getChainId()
+  const consumerMessage = keccak256(toUtf8Bytes(message))
+  const messageHashBytes = getBytes(consumerMessage)
+  if (!signer.provider) {
+    throw new Error('Provider is required but not available')
+  }
+  const { chainId } = await signer.provider.getNetwork()
   try {
     return await signer.signMessage(messageHashBytes)
   } catch (error) {
     LoggerInstance.error('Sign message error: ', error)
-    if (chainId === 8996) {
+    if (Number(chainId) === 8996) {
       console.log('Signing message with _legacySignMessage')
-      return await (signer as providers.JsonRpcSigner)._legacySignMessage(
-        messageHashBytes
-      )
+      return await (signer as JsonRpcSigner)._legacySignMessage(messageHashBytes)
     }
   }
 }

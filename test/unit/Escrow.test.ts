@@ -1,9 +1,10 @@
 import { assert } from 'chai'
 import { provider, getAddresses } from '../config'
-import { BigNumber, Signer } from 'ethers'
+import { Signer } from 'ethers'
 
 import { Datatoken, amountToUnits, unitsToAmount } from '../../src/'
 import { EscrowContract } from '../../src/contracts/Escrow'
+import BigNumber from 'bignumber.js'
 
 describe('Escrow payments flow', () => {
   let user1: Signer
@@ -22,12 +23,14 @@ describe('Escrow payments flow', () => {
   })
 
   it('should initialize Escrow class', async () => {
-    Escrow = new EscrowContract(addresses.Escrow, user2, await user2.getChainId())
+    const { chainId } = await user2.provider.getNetwork()
+    Escrow = new EscrowContract(addresses.Escrow, user2, Number(chainId))
     assert(Escrow !== null)
   })
 
   it('User2 makes a deposit in Escrow', async () => {
-    datatoken = new Datatoken(user2, await user2.getChainId())
+    const { chainId } = await user2.provider.getNetwork()
+    datatoken = new Datatoken(user2, Number(chainId))
     const initialBalance = await datatoken.balance(OCEAN, await user2.getAddress())
     const initialDepositedEscrow = await Escrow.getUserFunds(
       await user2.getAddress(),
@@ -53,7 +56,7 @@ describe('Escrow payments flow', () => {
     await Escrow.deposit(OCEAN, '100')
 
     const funds = await Escrow.getUserFunds(await user2.getAddress(), OCEAN)
-    const available = BigNumber.from(funds[0])
+    const available = new BigNumber(funds[0])
     const expectedAmount = await amountToUnits(
       null,
       null,
@@ -76,7 +79,7 @@ describe('Escrow payments flow', () => {
 
     assert(tx, 'failed to withdraw half of available tokens')
     const funds = await Escrow.getUserFunds(await user2.getAddress(), OCEAN)
-    const available = BigNumber.from(funds[0])
+    const available = new BigNumber(funds[0])
     const expectedAmount = await amountToUnits(
       null,
       null,

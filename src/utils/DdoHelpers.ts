@@ -1,5 +1,5 @@
 import sha256 from 'crypto-js/sha256.js'
-import { ethers } from 'ethers'
+import { getAddress } from 'ethers'
 
 /**
  * Generates a valid DID
@@ -8,7 +8,7 @@ import { ethers } from 'ethers'
  * @returns {string} - The DID
  */
 export function generateDid(nftAddress: string, chainId: number): string {
-  nftAddress = ethers.utils.getAddress(nftAddress)
+  nftAddress = getAddress(nftAddress)
   const checksum = sha256(nftAddress + chainId.toString(10))
   return `did:op:${checksum.toString()}`
 }

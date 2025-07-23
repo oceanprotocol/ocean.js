@@ -1,6 +1,6 @@
 import { assert, expect } from 'chai'
 import { getTestConfig, provider, getAddresses } from '../config.js'
-import { ethers, Signer } from 'ethers'
+import { parseUnits, Signer } from 'ethers'
 import {
   NftFactory,
   NftCreateData,
@@ -34,10 +34,10 @@ describe('Router unit test', () => {
   const FEE_ZERO = '0'
   const DAI_AMOUNT = '100' // 100 DAI
   const CAP_AMOUNT = '1000000'
-  const AMOUNTS_IN = ethers.utils.parseUnits('1')
-  const AMOUNTS_OUT = ethers.utils.parseUnits('0.1')
-  const MAX_PRICE = ethers.utils.parseUnits('10')
-  const SWAP_MARKET_FEE = ethers.utils.parseUnits('0.1')
+  const AMOUNTS_IN = parseUnits('1')
+  const AMOUNTS_OUT = parseUnits('0.1')
+  const MAX_PRICE = parseUnits('10')
+  const SWAP_MARKET_FEE = parseUnits('0.1')
   let NFT_DATA: NftCreateData
   let ERC_PARAMS: DatatokenCreateParams
 
@@ -82,7 +82,8 @@ describe('Router unit test', () => {
   })
 
   it('should initiate Router instance', async () => {
-    router = new Router(addresses.Router, user1, await user1.getChainId())
+    const { chainId } = await user1.provider.getNetwork()
+    router = new Router(addresses.Router, user1, Number(chainId))
   })
 
   it('#getOwner - should return actual owner', async () => {
@@ -107,7 +108,8 @@ describe('Router unit test', () => {
 
   it('#buyDatatokenBatch - should buy multiple DT in one call', async () => {
     // APPROVE DAI
-    const daiContract = new Datatoken(factoryOwner, await factoryOwner.getChainId())
+    const { chainId } = await factoryOwner.provider.getNetwork()
+    const daiContract = new Datatoken(factoryOwner, Number(chainId))
     await daiContract.transfer(addresses.MockDAI, await user1.getAddress(), DAI_AMOUNT)
 
     await approve(
@@ -136,7 +138,7 @@ describe('Router unit test', () => {
     const nftFactory = new NftFactory(
       addresses.ERC721Factory,
       factoryOwner,
-      await factoryOwner.getChainId()
+      Number(chainId)
     )
     const tx = await nftFactory.createNftWithDatatokenWithFixedRate(
       NFT_DATA,
@@ -149,14 +151,14 @@ describe('Router unit test', () => {
     const TokenCreatedEvent = getEventFromTx(trxReceipt, 'TokenCreated')
     const NewFixedRateEvent = getEventFromTx(trxReceipt, 'NewFixedRate')
 
-    expect(nftCreatedEvent.event === 'NFTCreated')
+    expect(nftCreatedEvent?.eventName === 'NFTCreated')
     const datatokenAddress = TokenCreatedEvent.args.newTokenAddress
 
     const fre1 = NewFixedRateEvent.args.exchangeContract
 
     const freId1 = NewFixedRateEvent.args.exchangeId
 
-    const datatoken = new Datatoken(factoryOwner, await factoryOwner.getChainId())
+    const datatoken = new Datatoken(factoryOwner, Number(chainId))
     await datatoken.mint(
       datatokenAddress,
       await factoryOwner.getAddress(),
