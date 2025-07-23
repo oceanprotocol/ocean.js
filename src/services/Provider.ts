@@ -1083,17 +1083,14 @@ export class Provider {
   }
 
   /** Instruct the provider to Stop the execution of a to stop a compute job.
-   * @param {string} did the asset did
-   * @param {string} consumerAddress The consumer address.
    * @param {string} jobId the compute job id
    * @param {string} providerUri The provider URI.
    * @param {SignerOrAuthToken} signerOrAuthToken The consumer signer or auth token.
+   * @param {string} agreementId The agreement id.
    * @param {AbortSignal} signal abort signal
    * @return {Promise<ComputeJob | ComputeJob[]>}
    */
   public async computeStop(
-    did: string,
-    consumerAddress: string,
     jobId: string,
     providerUri: string,
     signerOrAuthToken: Signer | string,
@@ -1109,6 +1106,8 @@ export class Provider {
       ? this.getEndpointURL(serviceEndpoints, 'computeStop').urlPath
       : null
 
+    const consumerAddress = await this.getConsumerAddress(signerOrAuthToken)
+
     const nonce = (
       (await this.getNonce(
         providerUri,
@@ -1119,8 +1118,7 @@ export class Provider {
       )) + 1
     ).toString()
 
-    let signatureMessage = consumerAddress
-    signatureMessage += jobId || ''
+    const signatureMessage = consumerAddress + (jobId || '')
     // On current provider impl (and nodes) we DO NOT check this signature
     // On nodes we are signing again just the Nonce to send the request to Operator Service
     // on current provider we sign: {owner}{job_id}{nonce}" OR {owner}{nonce} if no jobId
@@ -1128,19 +1126,19 @@ export class Provider {
     // signatureMessage += (agreementId && `${this.noZeroX(agreementId)}`) || ''
     // signatureMessage += nonce
     const signature = await this.getSignature(signerOrAuthToken, signatureMessage)
-    const payload = Object()
-    payload.signature = signature
-    payload.agreementId = agreementId // this.noZeroX(agreementId) #https://github.com/oceanprotocol/ocean.js/issues/1892
-    payload.consumerAddress = consumerAddress
-    payload.nonce = nonce
-    if (jobId) payload.jobId = jobId
+    const queryParams = new URLSearchParams()
+    queryParams.set('consumerAddress', consumerAddress)
+    queryParams.set('signature', signature)
+    queryParams.set('nonce', nonce)
+    queryParams.set('jobId', jobId)
+    if (agreementId) queryParams.set('agreementId', agreementId)
 
-    if (!computeStopUrl) return null
+    const queryString = queryParams.toString()
+    if (!queryString) return null
     let response
     try {
-      response = await fetch(computeStopUrl, {
+      response = await fetch(computeStopUrl + '?' + queryString, {
         method: 'PUT',
-        body: JSON.stringify(payload),
         headers: {
           'Content-Type': 'application/json',
           Authorization: this.getAuthorization(signerOrAuthToken)
@@ -1150,7 +1148,6 @@ export class Provider {
     } catch (e) {
       LoggerInstance.error('Compute stop failed:')
       LoggerInstance.error(e)
-      LoggerInstance.error('Payload was:', payload)
       throw new Error('HTTP request failed calling Provider')
     }
 
@@ -1165,7 +1162,6 @@ export class Provider {
       response.statusText,
       resolvedResponse
     )
-    LoggerInstance.error('Payload was:', payload)
     throw new Error(JSON.stringify(resolvedResponse))
   }
 

@@ -216,7 +216,6 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           name: coverage-integration
-
   create_guide:
     runs-on: ubuntu-latest
     needs: [test_unit, test_integration]
