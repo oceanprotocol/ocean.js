@@ -1625,6 +1625,15 @@ export class Provider {
   /**
    * Private method that removes the leading 0x from a string.
    * @param {string} input - The input string.
+   * @returns The transformed string.
+   */
+  private noZeroX(input: string): string {
+    return this.zeroXTransformer(input, false)
+  }
+
+  /**
+   * Private method that removes the leading 0x from a string.
+   * @param {string} input - The input string.
    * @param {boolean} zeroOutput - Whether to include 0x in the output if the input is valid and zeroOutput is true.
    * @returns The transformed string.
    */
