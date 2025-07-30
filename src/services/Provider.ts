@@ -1529,7 +1529,6 @@ export class Provider {
 
     let response
     try {
-      console.log('PolicyServerPassthrough url:', initializeUrl)
       response = await fetch(initializeUrl, {
         method: 'POST',
         body: JSON.stringify(request),
@@ -1538,7 +1537,6 @@ export class Provider {
         },
         signal
       })
-      console.log('Raw response:', response)
       if (!response.ok) {
         const errorText = await response.text()
         throw new Error(`${errorText}`)
@@ -1588,7 +1586,6 @@ export class Provider {
 
     let response
     try {
-      console.log('initializePSVerification url:', initializeUrl)
       response = await fetch(initializeUrl, {
         method: 'POST',
         body: JSON.stringify(request),
@@ -1597,7 +1594,6 @@ export class Provider {
         },
         signal
       })
-      console.log('Raw response:', response)
       if (!response.ok) {
         const errorText = await response.text()
         throw new Error(`${errorText}`)
