@@ -17,7 +17,9 @@ import {
   Ipfs,
   ComputeResourceRequest,
   ComputePayment,
-  ComputeJobMetadata
+  ComputeJobMetadata,
+  PolicyServerInitializeCommand,
+  PolicyServerPassthroughCommand
 } from '../@types'
 import { decodeJwt } from '../utils/Jwt.js'
 
@@ -1503,6 +1505,117 @@ export class Provider {
       LoggerInstance.error(`Error validating provider: ${error.message}`)
       return false
     }
+  }
+
+  /** Sends a PolicyServer request to node to be passthrough to PS
+   * @param {string} providerUri The provider URI.
+   * @param {PolicyServerPassthroughCommand} request The request to be passed through to the Policy Server.
+   * @param {AbortSignal} signal abort signal
+   */
+  public async PolicyServerPassthrough(
+    providerUri: string,
+    request: PolicyServerPassthroughCommand,
+    signal?: AbortSignal
+  ): Promise<any> {
+    const providerEndpoints = await this.getEndpoints(providerUri)
+    const serviceEndpoints = await this.getServiceEndpoints(
+      providerUri,
+      providerEndpoints
+    )
+    const initializeUrl = this.getEndpointURL(serviceEndpoints, 'PolicyServerPassthrough')
+      ? this.getEndpointURL(serviceEndpoints, 'PolicyServerPassthrough').urlPath
+      : null
+    if (!initializeUrl) return null
+
+    let response
+    try {
+      response = await fetch(initializeUrl, {
+        method: 'POST',
+        body: JSON.stringify(request),
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        signal
+      })
+      if (!response.ok) {
+        const errorText = await response.text()
+        throw new Error(`${errorText}`)
+      }
+    } catch (e) {
+      LoggerInstance.error('PolicyServerPassthrough failed: ')
+      LoggerInstance.error(e)
+      throw new Error(`PolicyServerPassthrough failed: ${e.message}.`)
+    }
+    if (response?.ok) {
+      const params = await response.json()
+      return params
+    }
+    const resolvedResponse = await response.json()
+    LoggerInstance.error(
+      'PolicyServerPassthrough failed: ',
+      response.status,
+      response.statusText,
+      resolvedResponse
+    )
+    LoggerInstance.error('Payload was:', JSON.stringify(request))
+    throw new Error(JSON.stringify(resolvedResponse))
+  }
+
+  /** Initialize Policy Server verification
+   * @param {string} providerUri The provider URI.
+   * @param {PolicyServerInitializeCommand} request The request to be sent to the Policy Server.
+   * @param {AbortSignal} signal abort signal
+   */
+  public async initializePSVerification(
+    providerUri: string,
+    request: PolicyServerInitializeCommand,
+    signal?: AbortSignal
+  ): Promise<any> {
+    const providerEndpoints = await this.getEndpoints(providerUri)
+    const serviceEndpoints = await this.getServiceEndpoints(
+      providerUri,
+      providerEndpoints
+    )
+    const initializeUrl = this.getEndpointURL(
+      serviceEndpoints,
+      'initializePSVerification'
+    )
+      ? this.getEndpointURL(serviceEndpoints, 'initializePSVerification').urlPath
+      : null
+    if (!initializeUrl) return null
+
+    let response
+    try {
+      response = await fetch(initializeUrl, {
+        method: 'POST',
+        body: JSON.stringify(request),
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        signal
+      })
+      if (!response.ok) {
+        const errorText = await response.text()
+        throw new Error(`${errorText}`)
+      }
+    } catch (e) {
+      LoggerInstance.error('initializePSVerification failed: ')
+      LoggerInstance.error(e)
+      throw new Error(`initializePSVerification failed: ${e.message}.`)
+    }
+    if (response?.ok) {
+      const params = await response.json()
+      return params
+    }
+    const resolvedResponse = await response.json()
+    LoggerInstance.error(
+      'initializePSVerification failed: ',
+      response.status,
+      response.statusText,
+      resolvedResponse
+    )
+    LoggerInstance.error('Payload was:', JSON.stringify(request))
+    throw new Error(JSON.stringify(resolvedResponse))
   }
 
   /**
