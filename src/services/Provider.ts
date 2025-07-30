@@ -782,6 +782,7 @@ export class Provider {
     resources: ComputeResourceRequest[],
     chainId: number, // network used by payment (only for payed compute jobs)
     metadata?: ComputeJobMetadata,
+    additionalViewers?: string[],
     output?: ComputeOutput,
     policyServer?: any,
     signal?: AbortSignal
@@ -841,6 +842,7 @@ export class Provider {
     }
     if (resources) payload.payment.resources = resources
     if (metadata) payload.metadata = metadata
+    if (additionalViewers) payload.additionalViewers = additionalViewers
     // if (additionalDatasets) payload.additionalDatasets = additionalDatasets
     if (output) payload.output = output
     if (policyServer) payload.policyServer = policyServer
@@ -896,6 +898,7 @@ export class Provider {
     algorithm: ComputeAlgorithm,
     resources?: ComputeResourceRequest[],
     metadata?: ComputeJobMetadata,
+    additionalViewers?: string[],
     output?: ComputeOutput,
     policyServer?: any,
     signal?: AbortSignal
@@ -946,6 +949,7 @@ export class Provider {
     payload.datasets = datasets
     payload.algorithm = algorithm
     if (metadata) payload.metadata = metadata
+    if (additionalViewers) payload.additionalViewers = additionalViewers
     // if (additionalDatasets) payload.additionalDatasets = additionalDatasets
     payload.output = output
     if (policyServer) payload.policyServer = policyServer
