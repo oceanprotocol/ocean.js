@@ -50,7 +50,7 @@ export class Dispenser extends SmartContractWithAddress {
     allowedSwapper: string,
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
-    const estGas = await this.contract.estimateGas.create(
+    const estGas = await this.contract.create.estimateGas(
       dtAddress,
       this.amountToUnits(null, maxTokens, 18),
       this.amountToUnits(null, maxBalance, 18),
@@ -88,7 +88,7 @@ export class Dispenser extends SmartContractWithAddress {
     maxBalance: string,
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
-    const estGas = await this.contract.estimateGas.activate(
+    const estGas = await this.contract.activate.estimateGas(
       dtAddress,
       this.amountToUnits(null, maxTokens, 18),
       this.amountToUnits(null, maxBalance, 18)
@@ -117,7 +117,7 @@ export class Dispenser extends SmartContractWithAddress {
     dtAddress: string,
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
-    const estGas = await this.contract.estimateGas.deactivate(dtAddress)
+    const estGas = await this.contract.deactivate.estimateGas(dtAddress)
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
     const trxReceipt = await sendTx(
       estGas,
@@ -142,7 +142,7 @@ export class Dispenser extends SmartContractWithAddress {
     newAllowedSwapper: string,
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
-    const estGas = await this.contract.estimateGas.setAllowedSwapper(
+    const estGas = await this.contract.setAllowedSwapper.estimateGas(
       dtAddress,
       newAllowedSwapper
     )
@@ -174,7 +174,7 @@ export class Dispenser extends SmartContractWithAddress {
     destination: string,
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
-    const estGas = await this.contract.estimateGas.dispense(
+    const estGas = await this.contract.dispense.estimateGas(
       dtAddress,
       this.amountToUnits(null, amount, 18),
       destination
@@ -202,7 +202,7 @@ export class Dispenser extends SmartContractWithAddress {
     dtAddress: string,
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
-    const estGas = await this.contract.estimateGas.ownerWithdraw(dtAddress)
+    const estGas = await this.contract.ownerWithdraw.estimateGas(dtAddress)
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
     const trxReceipt = await sendTx(
       estGas,

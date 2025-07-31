@@ -1,6 +1,6 @@
 import { assert, expect } from 'chai'
 import { provider, getAddresses } from '../config.js'
-import { ethers, Signer } from 'ethers'
+import { ethers, hexlify, parseUnits, Signer, toUtf8Bytes } from 'ethers'
 import {
   NftFactory,
   NftCreateData,
@@ -40,6 +40,7 @@ describe('Datatoken', () => {
   }
 
   before(async () => {
+    console.log({ provider })
     nftOwner = (await provider.getSigner(0)) as Signer
     user1 = (await provider.getSigner(1)) as Signer
     user2 = (await provider.getSigner(2)) as Signer
@@ -511,10 +512,10 @@ describe('Datatoken', () => {
     const providerFeeAmount = '0'
     const providerValidUntil = '0'
 
-    const message = ethers.utils.solidityKeccak256(
+    const message = ethers.solidityPackedKeccak256(
       ['bytes', 'address', 'address', 'uint256', 'uint256'],
       [
-        ethers.utils.hexlify(ethers.utils.toUtf8Bytes(providerData)),
+        hexlify(toUtf8Bytes(providerData)),
         await user3.getAddress(),
         providerFeeToken,
         providerFeeAmount,
@@ -531,7 +532,7 @@ describe('Datatoken', () => {
       v,
       r,
       s,
-      providerData: ethers.utils.hexlify(ethers.utils.toUtf8Bytes(providerData)),
+      providerData: hexlify(toUtf8Bytes(providerData)),
       validUntil: providerValidUntil
     }
     const order = await datatoken.startOrder(
@@ -561,10 +562,10 @@ describe('Datatoken', () => {
     const providerFeeAmount = '0'
     const providerValidUntil = '0'
 
-    const message = ethers.utils.solidityKeccak256(
+    const message = ethers.solidityPackedKeccak256(
       ['bytes', 'address', 'address', 'uint256', 'uint256'],
       [
-        ethers.utils.hexlify(ethers.utils.toUtf8Bytes(providerData)),
+        hexlify(toUtf8Bytes(providerData)),
         await user3.getAddress(),
         providerFeeToken,
         providerFeeAmount,
@@ -581,7 +582,7 @@ describe('Datatoken', () => {
       v,
       r,
       s,
-      providerData: ethers.utils.hexlify(ethers.utils.toUtf8Bytes(providerData)),
+      providerData: hexlify(toUtf8Bytes(providerData)),
       validUntil: providerValidUntil
     }
 
@@ -599,8 +600,8 @@ describe('Datatoken', () => {
     const orderReusedTx = getEventFromTx(reusedTx, 'OrderReused')
     const providerFeeTx = getEventFromTx(reusedTx, 'ProviderFee')
 
-    expect(orderReusedTx.event === 'OrderReused')
-    expect(providerFeeTx.event === 'ProviderFee')
+    expect(orderReusedTx?.eventName === 'OrderReused')
+    expect(providerFeeTx?.eventName === 'ProviderFee')
   })
 
   it('#buyFromDispenserAndOrder- Enterprise method', async () => {
@@ -608,10 +609,10 @@ describe('Datatoken', () => {
     const providerFeeToken = ZERO_ADDRESS
     const providerFeeAmount = '0'
     const providerValidUntil = '0'
-    const message = ethers.utils.solidityKeccak256(
+    const message = ethers.solidityPackedKeccak256(
       ['bytes', 'address', 'address', 'uint256', 'uint256'],
       [
-        ethers.utils.hexlify(ethers.utils.toUtf8Bytes(providerData)),
+        hexlify(toUtf8Bytes(providerData)),
         await user3.getAddress(),
         providerFeeToken,
         providerFeeAmount,
@@ -628,7 +629,7 @@ describe('Datatoken', () => {
       v,
       r,
       s,
-      providerData: ethers.utils.hexlify(ethers.utils.toUtf8Bytes(providerData)),
+      providerData: hexlify(toUtf8Bytes(providerData)),
       validUntil: providerValidUntil
     }
 
@@ -657,10 +658,10 @@ describe('Datatoken', () => {
     const providerFeeAmount = '0'
     const providerValidUntil = '0'
 
-    const message = ethers.utils.solidityKeccak256(
+    const message = ethers.solidityPackedKeccak256(
       ['bytes', 'address', 'address', 'uint256', 'uint256'],
       [
-        ethers.utils.hexlify(ethers.utils.toUtf8Bytes(providerData)),
+        hexlify(toUtf8Bytes(providerData)),
         await user3.getAddress(),
         providerFeeToken,
         providerFeeAmount,
@@ -677,7 +678,7 @@ describe('Datatoken', () => {
       v,
       r,
       s,
-      providerData: ethers.utils.hexlify(ethers.utils.toUtf8Bytes(providerData)),
+      providerData: hexlify(toUtf8Bytes(providerData)),
       validUntil: providerValidUntil
     }
 
@@ -868,7 +869,7 @@ describe('Datatoken', () => {
         datatokenAddress,
         await user1.getAddress(),
         addresses.MockDAI,
-        ethers.utils.parseUnits('10').toString(),
+        parseUnits('10').toString(),
         await user1.getAddress()
       )
     } catch (e) {
@@ -903,7 +904,7 @@ describe('Datatoken', () => {
         datatokenAddress,
         await user2.getAddress(),
         addresses.MockDAI,
-        ethers.utils.parseUnits('10').toString(),
+        parseUnits('10').toString(),
         await user2.getAddress()
       )
     } catch (e) {
@@ -916,10 +917,7 @@ describe('Datatoken', () => {
     assert(newPublishingMarketFee !== originalPublishingMarketFee)
     assert(newPublishingMarketFee.publishMarketFeeAddress === (await user2.getAddress()))
 
-    assert(
-      newPublishingMarketFee.publishMarketFeeAmount ===
-        ethers.utils.parseUnits('10').toString()
-    )
+    assert(newPublishingMarketFee.publishMarketFeeAmount === parseUnits('10').toString())
     assert(newPublishingMarketFee.publishMarketFeeToken === addresses.MockDAI)
   })
 })

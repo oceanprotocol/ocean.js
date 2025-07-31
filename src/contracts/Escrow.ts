@@ -1,10 +1,11 @@
-import { ethers, Signer, BigNumber } from 'ethers'
+import { Signer, getAddress, parseEther } from 'ethers'
 import Escrow from '@oceanprotocol/contracts/artifacts/contracts/escrow/Escrow.sol/Escrow.json'
 import { amountToUnits, sendTx } from '../utils/ContractUtils'
 import { AbiItem, ReceiptOrEstimate, ValidationResponse } from '../@types'
 import { Config } from '../config'
 import { SmartContractWithAddress } from './SmartContractWithAddress'
 import { Datatoken } from './Datatoken'
+import BigNumber from 'bignumber.js'
 
 export class EscrowContract extends SmartContractWithAddress {
   public abiEnterprise: AbiItem[]
@@ -94,11 +95,10 @@ export class EscrowContract extends SmartContractWithAddress {
     maxLockSeconds?: string,
     maxLockCounts?: string
   ): Promise<ValidationResponse> {
-    const { provider } = this.contract
-    const balanceNativeToken = await provider.getBalance(
-      ethers.utils.getAddress(consumerAddress)
+    const balanceNativeToken = await this.signer.provider?.getBalance(
+      getAddress(consumerAddress)
     )
-    if (balanceNativeToken === BigNumber.from(0)) {
+    if (new BigNumber(balanceNativeToken).isZero()) {
       return {
         isValid: false,
         message: 'Native token balance is 0. Please add funds'
@@ -108,16 +108,16 @@ export class EscrowContract extends SmartContractWithAddress {
     const allowance = await tokenContract.allowance(
       token,
       await this.signer.getAddress(),
-      this.contract.address
+      this.contract.target.toString()
     )
     if (
-      BigNumber.from(await this.amountToUnits(token, allowance, 18)).lt(
-        BigNumber.from(maxLockedAmount)
+      new BigNumber(await this.amountToUnits(token, allowance, 18)).isLessThan(
+        new BigNumber(maxLockedAmount)
       )
     ) {
       await tokenContract.approve(
-        ethers.utils.getAddress(token),
-        ethers.utils.getAddress(this.contract.address),
+        getAddress(token),
+        getAddress(this.contract.target.toString()),
         maxLockedAmount
       )
     }
@@ -125,7 +125,7 @@ export class EscrowContract extends SmartContractWithAddress {
       token,
       await this.signer.getAddress()
     )
-    if (ethers.utils.parseEther(balancePaymentToken) === BigNumber.from(0)) {
+    if (new BigNumber(balancePaymentToken).isZero()) {
       return {
         isValid: false,
         message: 'Payment token balance is 0. Please add funds'
@@ -137,17 +137,21 @@ export class EscrowContract extends SmartContractWithAddress {
       consumerAddress
     )
     const funds = await this.getUserFunds(await this.signer.getAddress(), token)
-    if (BigNumber.from(funds[0]).eq(BigNumber.from(0))) {
+    if (new BigNumber(funds[0]).isZero()) {
       if (
         amountToDeposit &&
-        ethers.utils
-          .parseEther(balancePaymentToken)
-          .lte(ethers.utils.parseEther(amountToDeposit)) &&
-        ethers.utils.parseEther(amountToDeposit) > BigNumber.from(maxLockedAmount)
+        new BigNumber(parseEther(balancePaymentToken)).isLessThanOrEqualTo(
+          new BigNumber(parseEther(amountToDeposit))
+        ) &&
+        new BigNumber(parseEther(amountToDeposit)).isGreaterThan(
+          new BigNumber(maxLockedAmount)
+        )
       ) {
         await this.deposit(token, amountToDeposit)
       } else if (
-        ethers.utils.parseEther(balancePaymentToken).lte(BigNumber.from(maxLockedAmount))
+        new BigNumber(parseEther(balancePaymentToken)).isLessThanOrEqualTo(
+          new BigNumber(parseEther(maxLockedAmount))
+        )
       ) {
         await this.deposit(token, await this.unitsToAmount(token, maxLockedAmount))
       } else {
@@ -156,8 +160,8 @@ export class EscrowContract extends SmartContractWithAddress {
     }
     if (auths.length === 0) {
       await this.authorize(
-        ethers.utils.getAddress(token),
-        ethers.utils.getAddress(consumerAddress),
+        getAddress(token),
+        getAddress(consumerAddress),
         (Number(maxLockedAmount) / 2).toString(),
         maxLockSeconds,
         maxLockCounts
@@ -182,7 +186,7 @@ export class EscrowContract extends SmartContractWithAddress {
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
     const amountParsed = amountToUnits(null, null, amount, 18)
-    const estGas = await this.contract.estimateGas.deposit(token, amountParsed)
+    const estGas = await this.contract.deposit.estimateGas(token, amountParsed)
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
     const trxReceipt = await sendTx(
       estGas,
@@ -219,12 +223,12 @@ export class EscrowContract extends SmartContractWithAddress {
 
     for (let i = 0; i < tokens.length; i++) {
       const token = tokens[i]
-      const amount = BigNumber.from(amounts[i])
+      const amount = new BigNumber(amounts[i])
 
       const funds = await this.getUserFunds(userAddress, token)
-      const available = BigNumber.from(funds[0])
+      const available = new BigNumber(funds[0])
 
-      if (amount.gt(0) && amount.lte(available)) {
+      if (amount.isGreaterThan(0) && amount.isLessThanOrEqualTo(available)) {
         tokensWithSufficientFunds.push(token)
         amountsWithSufficientFunds.push(amounts[i])
       } else {
@@ -235,7 +239,7 @@ export class EscrowContract extends SmartContractWithAddress {
       amountToUnits(null, null, amount, 18)
     )
 
-    const estGas = await this.contract.estimateGas.withdraw(tokens, amountsParsed)
+    const estGas = await this.contract.withdraw.estimateGas(tokens, amountsParsed)
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
 
     const trxReceipt = await sendTx(
@@ -279,7 +283,7 @@ export class EscrowContract extends SmartContractWithAddress {
     const maxLockedAmountParsed = amountToUnits(null, null, maxLockedAmount, 18)
     const maxLockSecondsParsed = amountToUnits(null, null, maxLockSeconds, 18)
     const maxLockCountsParsed = amountToUnits(null, null, maxLockCounts, 18)
-    const estGas = await this.contract.estimateGas.authorize(
+    const estGas = await this.contract.authorize.estimateGas(
       token,
       payee,
       maxLockedAmountParsed,
@@ -317,7 +321,7 @@ export class EscrowContract extends SmartContractWithAddress {
     payees: string[],
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
-    const estGas = await this.contract.estimateGas.cancelExpiredLocks(
+    const estGas = await this.contract.cancelExpiredLocks.estimateGas(
       jobIds,
       tokens,
       payers,
