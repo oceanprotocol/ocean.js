@@ -51,6 +51,14 @@ export class EscrowContract extends SmartContractWithAddress {
   }
 
   /**
+   * Get User Tokens
+   * @return {Promise<any>} Array of tokens
+   */
+  public async getUserTokens(payer: string): Promise<any> {
+    return await this.contract.getUserTokens(payer)
+  }
+
+  /**
    * Get Locks
    * @return {Promise<[]>} Locks
    */
