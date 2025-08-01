@@ -93,7 +93,7 @@
     "eslint-plugin-prettier": "^4.2.1",
     "fs": "0.0.1-security",
     "microbundle": "^0.15.1",
-    "mocha": "^10.0.0",
+    "mocha": "^11.7.1",
     "mock-local-storage": "^1.1.24",
     "nyc": "^17.1.0",
     "ora": "5.4.1",
