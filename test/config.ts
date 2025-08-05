@@ -27,6 +27,7 @@ export const GAS_PRICE = '3000000000'
 export const provider = new JsonRpcProvider(
   process.env.NODE_URI || configHelperNetworks[1].nodeUri
 )
+
 // const wallet = new Wallet.fromMnemonic(process.env.MNEMONIC);
 // export const signer = wallet.connect(provider)
 
