@@ -1,4 +1,4 @@
-import { ethers, hexlify, Signer, toUtf8Bytes } from 'ethers'
+import { ethers, hexlify, Signer, toBeHex, toUtf8Bytes } from 'ethers'
 import { ConfigHelper } from '../../src/config/index.js'
 import { createHash } from 'crypto'
 import { Aquarius } from '../services/Aquarius.js'
@@ -243,7 +243,7 @@ export async function createAsset(
     0,
     providerUrl,
     '',
-    hexlify(flags),
+    toBeHex(flags),
     metadata,
     metadataHash
   )
