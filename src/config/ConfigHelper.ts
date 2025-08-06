@@ -8,7 +8,7 @@ const configHelperNetworksBase: Config = {
   chainId: null,
   network: 'unknown',
   nodeUri: 'http://127.0.0.1:8545',
-  oceanNodeUri: 'https://1.c2d.nodes.oceanprotocol.com:8000/',
+  oceanNodeUri: 'http://127.0.0.1:8001',
   explorerUri: null,
   oceanTokenAddress: null,
   oceanTokenSymbol: 'OCEAN',
@@ -30,7 +30,7 @@ export const configHelperNetworks: Config[] = [
     ...configHelperNetworksBase,
     chainId: 8996,
     network: 'development',
-    oceanNodeUri: 'https://1.c2d.nodes.oceanprotocol.com:8000/',
+    oceanNodeUri: 'http://127.0.0.1:8001',
     sdk: 'evm'
   },
   {
