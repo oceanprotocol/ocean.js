@@ -732,7 +732,7 @@ export class Datatoken extends SmartContract {
   public async getId(dtAddress: string): Promise<number> {
     const dtContract = this.getContract(dtAddress)
     const id = await dtContract.getId()
-    return id
+    return Number(id)
   }
 
   /**

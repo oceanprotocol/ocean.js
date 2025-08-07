@@ -81,7 +81,7 @@ export class VeAllocate extends SmartContractWithAddress {
    */
   public async getTotalAllocation(userAddress: string): Promise<number> {
     const allocation = await this.contract.getTotalAllocation(userAddress)
-    return allocation
+    return Number(allocation)
   }
 
   /** Get getveAllocation for address, nft, chainId
@@ -96,6 +96,6 @@ export class VeAllocate extends SmartContractWithAddress {
     chainId: string
   ): Promise<number> {
     const allocation = await this.contract.getveAllocation(userAddress, nft, chainId)
-    return allocation
+    return Number(allocation)
   }
 }

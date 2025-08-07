@@ -142,7 +142,7 @@ export class VeOcean extends SmartContractWithAddress {
    */
   public async getVotingPower(userAddress: string): Promise<number> {
     const balance = await this.contract.balanceOf(userAddress)
-    return balance
+    return Number(balance)
   }
 
   /** Get locked balance

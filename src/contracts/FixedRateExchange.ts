@@ -138,7 +138,7 @@ export class FixedRateExchange extends SmartContractWithAddress {
    */
   public async getNumberOfExchanges(): Promise<number> {
     const numExchanges = await this.contract.getNumberOfExchanges()
-    return numExchanges
+    return Number(numExchanges)
   }
 
   /**
