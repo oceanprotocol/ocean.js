@@ -200,5 +200,6 @@ export async function allowanceWei(
  */
 export async function decimals(signer: Signer, tokenAddress: string): Promise<number> {
   const tokenContract = new ethers.Contract(tokenAddress, minAbi, signer)
-  return await tokenContract.decimals()
+  const decimals = await tokenContract.decimals()
+  return Number(decimals)
 }

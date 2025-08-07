@@ -253,14 +253,16 @@ export class Router extends SmartContractWithAddress {
    * @return {Promise<number>} OPC fee for a specific baseToken
    */
   public async getOPCFee(baseToken: string): Promise<number> {
-    return await this.contract.getOPCFee(baseToken)
+    const fee = await this.contract.getOPCFee(baseToken)
+    return Number(fee)
   }
 
   /** Get Current OPF Fee
    * @return {Promise<number>} OPF fee
    */
   public async getCurrentOPCFee(): Promise<number> {
-    return await this.contract.swapOceanFee()
+    const fee = await this.contract.swapOceanFee()
+    return Number(fee)
   }
 
   /**
