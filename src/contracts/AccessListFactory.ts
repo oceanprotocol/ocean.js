@@ -43,7 +43,7 @@ export class AccesslistFactory extends SmartContractWithAddress {
    * @param {string} owner Owner of the access list.
    * @param {string[]} user Users of the access lists as addresses.
    * @param {Boolean} [estimateGas] if True, return gas estimate
-   * @return {Promise<string|BigNumber>} The transaction hash or the gas estimate.
+   * @return {Promise<string|BigNumber>} Deployed contract address
    */
   public async deployAccessListContract<G extends boolean = false>(
     nameAccessList: string,
