@@ -865,14 +865,15 @@ export class Provider {
       const params = await response.json()
       return params
     }
+    const resolvedResponse = await response.json()
     LoggerInstance.error(
       'Compute start failed: ',
       response.status,
       response.statusText,
-      await response.json()
+      resolvedResponse
     )
     LoggerInstance.error('Payload was:', payload)
-    return null
+    throw new Error(JSON.stringify(resolvedResponse))
   }
 
   /** Instruct the provider to start a FREE compute job (new C2D V2)
@@ -972,14 +973,15 @@ export class Provider {
       const params = await response.json()
       return params
     }
+    const resolvedResponse = await response.json()
     LoggerInstance.error(
       'Compute start failed: ',
       response.status,
       response.statusText,
-      await response.json()
+      resolvedResponse
     )
     LoggerInstance.error('Payload was:', payload)
-    return null
+    throw new Error(JSON.stringify(resolvedResponse))
   }
 
   /**
