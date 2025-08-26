@@ -1105,6 +1105,7 @@ export class Provider {
     agreementId?: string,
     signal?: AbortSignal
   ): Promise<ComputeJob | ComputeJob[]> {
+    const isAuthToken = typeof signerOrAuthToken === 'string'
     const providerEndpoints = await this.getEndpoints(providerUri)
     const serviceEndpoints = await this.getServiceEndpoints(
       providerUri,
@@ -1136,9 +1137,12 @@ export class Provider {
     const signature = await this.getSignature(signerOrAuthToken, signatureMessage)
     const queryParams = new URLSearchParams()
     queryParams.set('consumerAddress', consumerAddress)
-    queryParams.set('signature', signature)
     queryParams.set('nonce', nonce)
     queryParams.set('jobId', jobId)
+    if (!isAuthToken) {
+      queryParams.set('signature', signature)
+    }
+
     if (agreementId) queryParams.set('agreementId', agreementId)
 
     const queryString = queryParams.toString()
