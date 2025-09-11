@@ -1,4 +1,4 @@
-import { Metadata, MetadataAlgorithm } from '@oceanprotocol/ddo-js'
+import { Metadata, MetadataAlgorithm, ConsumerParameter } from '@oceanprotocol/ddo-js'
 
 export type ComputeResultType =
   | 'algorithmLog'
@@ -182,11 +182,24 @@ export interface ComputeAsset {
   userdata?: { [key: string]: any }
 }
 
+export interface ExtendedMetadataAlgorithm extends MetadataAlgorithm {
+  container: {
+    // retain existing properties
+    entrypoint: string
+    image: string
+    tag: string
+    checksum: string
+    dockerfile?: string // optional
+    additionalDockerFiles?: { [key: string]: any }
+    consumerParameters?: ConsumerParameter[]
+  }
+}
+
 export interface ComputeAlgorithm {
   fileObject?: BaseFileObject // C2D v2
   documentId?: string
   serviceId?: string
-  meta?: MetadataAlgorithm
+  meta?: ExtendedMetadataAlgorithm
   transferTxId?: string
   algocustomdata?: { [key: string]: any }
   userdata?: { [key: string]: any }
