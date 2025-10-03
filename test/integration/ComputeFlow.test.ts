@@ -734,7 +734,7 @@ describe('Compute flow tests', async () => {
       },
       {
         id: 'ram',
-        amount: 1000000000
+        amount: 2
       },
       {
         id: 'disk',
@@ -823,7 +823,7 @@ describe('Compute flow tests', async () => {
       },
       {
         id: 'ram',
-        amount: 1000000000
+        amount: 2
       },
       {
         id: 'disk',
