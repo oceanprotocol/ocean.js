@@ -57,6 +57,19 @@ export const configHelperNetworks: Config[] = [
   },
   {
     ...configHelperNetworksBase,
+    chainId: 8453,
+    network: 'base',
+    nodeUri: 'https://mainnet.base.org',
+    explorerUri: 'https://etherscan.io',
+    startBlock: 30562198,
+    transactionBlockTimeout: 150,
+    transactionConfirmationBlocks: 5,
+    transactionPollingTimeout: 1750,
+    gasFeeMultiplier: 1.05,
+    sdk: 'evm'
+  },
+  {
+    ...configHelperNetworksBase,
     chainId: 137,
     network: 'polygon',
     nodeUri: 'https://polygon-mainnet.infura.io/v3',
