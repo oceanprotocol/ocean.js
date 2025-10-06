@@ -792,7 +792,7 @@ describe('Compute-to-data example tests', async () => {
         },
         {
           id: 'ram',
-          amount: 1000000000
+          amount: 2
         },
         {
           id: 'disk',
