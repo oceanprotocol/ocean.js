@@ -792,7 +792,7 @@ let's select compute environment which have free and paid resources
         },
         {
           id: 'ram',
-          amount: 1000000000
+          amount: 2
         },
         {
           id: 'disk',
