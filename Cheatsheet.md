@@ -16,10 +16,9 @@ npm install @oceanprotocol/lib crypto-js ethers@5.7.2 typescript @types/node ts-
 ### Configuration
 
 ```bash
-export INDEXING_RETRY_INTERVAL=4000
-export INDEXING_MAX_RETRIES=120
-export NODE_URL='https://1.c2d.nodes.oceanprotocol.com'
+export NODE_URL='https://compute1.oceanprotocol.com'
 export PRIVATE_KEY=<replace_me>
+export RPC=<replace_me>
 ```
 
 ### Publish Flow
