@@ -66,7 +66,7 @@ cat > marketplace.js
 Install dependencies running the following command in your terminal:
 
 ```bash
-npm install @oceanprotocol/lib crypto-js ethers@5.7.2 typescript @types/node ts-node
+npm install @oceanprotocol/lib crypto-js ethers
 ```
 
 ## 4. Import dependencies and add variables and constants
