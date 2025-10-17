@@ -125,6 +125,10 @@ export interface ComputeJob {
   agreementId?: string
   expireTimestamp: number
   metadata?: ComputeJobMetadata
+  terminationDetails?: {
+    exitCode?: number
+    OOMKilled?: boolean
+  }
 }
 
 export interface ComputeOutput {
@@ -203,6 +207,7 @@ export interface ComputeAlgorithm {
   transferTxId?: string
   algocustomdata?: { [key: string]: any }
   userdata?: { [key: string]: any }
+  envs?: { [key: string]: string }
 }
 
 export interface ComputePayment {
