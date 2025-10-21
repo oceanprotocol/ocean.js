@@ -10,7 +10,7 @@
 
 ```bash
 npm init
-npm install @oceanprotocol/lib crypto-js ethers@5.7.2 typescript @types/node ts-node
+npm install @oceanprotocol/lib crypto-js ethers typescript @types/node ts-node
 ```
 
 ### Configuration
@@ -224,7 +224,7 @@ const resources: ComputeResourceRequest[] = [
 },
 {
     id: 'ram',
-    amount: 1000000000
+    amount: 2
 },
 {
     id: 'disk',

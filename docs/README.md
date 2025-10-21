@@ -81,13 +81,13 @@ npm run format
 
 Test suite for unit & integration tests is setup with [Mocha](https://mochajs.org) as test runner, and [nyc](https://github.com/istanbuljs/nyc) for coverage reporting. A combined coverage report is sent to CodeClimate via the `coverage` GitHub Actions job.
 
-Running all tests requires running Ocean Protocol components beforehand with [Barge](https://github.com/oceanprotocol/barge), which also runs a `ganache-cli` instance:
+Running all tests requires running Ocean Protocol components beforehand with [Barge](https://github.com/oceanprotocol/barge), which also runs a local blockchain instance:
 
 ```bash
 git clone https://github.com/oceanprotocol/barge
 cd barge
 
-./start_ocean.sh --with-provider2 --no-dashboard --with-c2d
+./start_ocean.sh
 ```
 
 You can then proceed to run in another terminal.

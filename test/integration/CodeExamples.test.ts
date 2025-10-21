@@ -45,7 +45,7 @@
 /// ```bash
 /// git clone https://github.com/oceanprotocol/barge.git
 /// cd barge/
-/// ./start_ocean.sh --with-provider2 --no-dashboard
+/// ./start_ocean.sh 
 /// ```
 
 /// ## 2. Create a new node.js project
@@ -215,7 +215,7 @@ describe('Marketplace flow tests', async () => {
       // eslint-disable-next-line security/detect-non-literal-fs-filename
       fs.readFileSync(
         process.env.ADDRESS_FILE ||
-          `${homedir}/.ocean/ocean-contracts/artifacts/address.json`,
+        `${homedir}/.ocean/ocean-contracts/artifacts/address.json`,
         'utf8'
       )
     ).development
