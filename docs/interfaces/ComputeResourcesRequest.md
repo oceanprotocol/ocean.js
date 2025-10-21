@@ -15,9 +15,11 @@
 
 • **id**: `string`
 
+Resource identifier (e.g., 'cpu', 'ram', 'disk')
+
 #### Defined in
 
-[@types/Compute.ts:63](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/Compute.ts#L63)
+[@types/Compute.ts:50](https://github.com/oceanprotocol/ocean.js/blob/main/src/@types/Compute.ts#L50)
 
 ___
 
@@ -25,6 +27,8 @@ ___
 
 • **amount**: `number`
 
+Amount of the specified resource to request. DISK and RAM are in GB, CPU is in number of cores.
+
 #### Defined in
 
-[@types/Compute.ts:64](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/Compute.ts#L64)
+[@types/Compute.ts:51](https://github.com/oceanprotocol/ocean.js/blob/main/src/@types/Compute.ts#L51)
