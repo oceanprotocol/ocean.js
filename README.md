@@ -13,9 +13,11 @@
 
 With ocean.js, you can:
 
-- **Publish** data services: downloadable files or compute-to-data. Create an ERC721 **data NFT** for each service, and ERC20 **datatoken** for access (1.0 datatokens to access).
-- **Sell** datatokens for a fixed price. Sell data NFTs.
-- **Transfer** data NFTs & datatokens to another owner, and **all other ERC721 & ERC20 actions** using [web3.js](https://web3js.readthedocs.io/en/v1.2.9/web3-eth-contract.html) etc.
+- **Publish** data services: downloadable files or compute-to-data (C2D). Create an ERC721 **data NFT** for each service, and ERC20 **datatoken** for access (1.0 datatokens to access).
+- **Consume** data: download files or run compute-to-data jobs on datasets while preserving data privacy.
+- **Sell** datatokens via fixed-rate exchanges or dispense them for free.
+- **Manage pricing**: create fixed-rate exchanges, dispensers, or use dynamic pricing mechanisms for your assets.
+- **Compute-to-Data**: run algorithms on the ocean network.
 
 ocean.js is part of the [Ocean Protocol](https://oceanprotocol.com) toolset.
 
@@ -23,6 +25,7 @@ This is in alpha state. If you run into problems, please open up a [new issue](h
 
 - [📚 Prerequisites](#-prerequisites)
 - [🏗 Installation & Usage](#-installation--usage)
+- [📖 Documentation](#-documentation)
 - [🦑 Development](#-development)
 - [✨ Code Style](#-code-style)
 - [👩‍🔬 Testing](#-testing)
@@ -46,7 +49,7 @@ This is in alpha state. If you run into problems, please open up a [new issue](h
 npm install @oceanprotocol/lib
 ```
 
-- Checkout our [code examples](CodeExamples.md) or [compute to data examples](C2DExamples.md) to see how you can use ocean.js.
+- Checkout our [code examples](CodeExamples.md), [compute-to-data examples](ComputeExamples.md), or [quick reference cheatsheet](Cheatsheet.md) to see how you can use ocean.js.
 - Refer to the [Ocean Protocol documentation](https://docs.oceanprotocol.com/) for more guides and tutorials.
 - Visit the [Ocean Protocol website](https://docs.oceanprotocol.com/) for general information about Ocean Protocol.
 - If you have any difficulties or if you have further questions about how to use ocean.js please reach out to us on [Discord](https://discord.gg/TnXjkR5).
@@ -60,6 +63,29 @@ npm install @oceanprotocol/lib
 }
 ```
 - If using Next.js, they may need "moduleResolution": "bundler" for better compatibility.
+
+## 📖 Documentation
+
+### Quick Start Guides
+
+- **[Code Examples](CodeExamples.md)**: Complete walkthrough of publishing and consuming datasets
+  - Creating Data NFTs and Datatokens
+  - Setting up fixed-rate exchanges and dispensers
+  - Buying and consuming data assets
+  - Using ERC725 key-value store
+
+- **[Compute-to-Data Examples](ComputeExamples.md)**: Comprehensive guide to C2D features
+  - Publishing datasets and algorithms for compute
+  - Starting free compute jobs
+  - Running paid compute jobs with custom resources
+  - Checking compute status and retrieving results
+
+- **[Cheatsheet](Cheatsheet.md)**: Quick reference for common operations
+  - Publishing datasets
+  - Consuming data
+  - Free and paid compute workflows
+  - Getting compute job status
+
 
 ## 🦑 Development
 
@@ -88,13 +114,13 @@ npm run format
 
 Test suite for unit & integration tests is setup with [Mocha](https://mochajs.org) as test runner, and [nyc](https://github.com/istanbuljs/nyc) for coverage reporting. A combined coverage report is sent to CodeClimate via the `coverage` GitHub Actions job.
 
-Running all tests requires running Ocean Protocol components beforehand with [Barge](https://github.com/oceanprotocol/barge), which also runs a `ganache-cli` instance:
+Running all tests requires running Ocean Protocol components beforehand with [Barge](https://github.com/oceanprotocol/barge), which also runs a local blockchain instance:
 
 ```bash
 git clone https://github.com/oceanprotocol/barge
 cd barge
 
-./start_ocean.sh --with-provider2 --no-dashboard --with-c2d
+./start_ocean.sh 
 ```
 
 You can then proceed to run in another terminal.
@@ -199,7 +225,7 @@ Further releases afterwards can be done with `npm run release` again and selecti
 ## 🏛 License
 
 ```
-Copyright ((C)) 2023 Ocean Protocol Foundation
+Copyright ((C)) 2025 Ocean Protocol Foundation
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.

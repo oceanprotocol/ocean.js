@@ -6,62 +6,31 @@
 
 ### Properties
 
-- [consumerAddress](ComputeEnvironment.md#consumeraddress)
-- [totalCpu](ComputeEnvironment.md#totalCpu)
-- [maxCpu](ComputeEnvironment.md#maxCpu)
-- [totalRam](ComputeEnvironment.md#totalRam)
-- [maxRam](ComputeEnvironment.md#maxRam)
-- [maxDisk](ComputeEnvironment.md#maxDisk)
-- [currentJobs](ComputeEnvironment.md#currentjobs)
-- [description](ComputeEnvironment.md#description)
-- [fees](ComputeEnvironment.md#ComputeEnvFeesStructure)
 - [id](ComputeEnvironment.md#id)
-- [lastSeen](ComputeEnvironment.md#lastseen)
+- [description](ComputeEnvironment.md#description)
+- [consumerAddress](ComputeEnvironment.md#consumeraddress)
+- [storageExpiry](ComputeEnvironment.md#storageexpiry)
+- [minJobDuration](ComputeEnvironment.md#minjobduration)
 - [maxJobDuration](ComputeEnvironment.md#maxjobduration)
 - [maxJobs](ComputeEnvironment.md#maxjobs)
-- [storageExpiry](ComputeEnvironment.md#storageexpiry)
-- [lastSeen](ComputeEnvironment.md#lastSeen)
+- [runningJobs](ComputeEnvironment.md#runningjobs)
+- [runningfreeJobs](ComputeEnvironment.md#runningfreejobs)
+- [fees](ComputeEnvironment.md#fees)
+- [resources](ComputeEnvironment.md#resources)
 - [free](ComputeEnvironment.md#free)
+- [platform](ComputeEnvironment.md#platform)
 
 ## Properties
 
-### consumerAddress
+### id
 
-• **consumerAddress**: `string`
+• **id**: `string`
 
-#### Defined in
-
-[@types/Compute.ts:68](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/Compute.ts#L68)
-
-___
-
-### totalCpu
-
-• **totalCpu**: `number`
+Unique identifier for the compute environment
 
 #### Defined in
 
-[@types/Compute.ts:58](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/Compute.ts#L58)
-
-___
-
-### maxCpu
-
-• **maxCpu**: `number`
-
-#### Defined in
-
-[@types/Compute.ts:59](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/Compute.ts#L59)
-
-___
-
-### currentJobs
-
-• **currentJobs**: `number`
-
-#### Defined in
-
-[@types/Compute.ts:66](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/Compute.ts#L66)
+[@types/Compute.ts:88](https://github.com/oceanprotocol/ocean.js/blob/main/src/@types/Compute.ts#L88)
 
 ___
 
@@ -69,79 +38,95 @@ ___
 
 • **description**: `string`
 
+Description of the compute environment
+
 #### Defined in
 
-[@types/Compute.ts:65](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/Compute.ts#L65)
+[@types/Compute.ts:89](https://github.com/oceanprotocol/ocean.js/blob/main/src/@types/Compute.ts#L89)
 
 ___
 
-### maxDisk
+### consumerAddress
 
-• **maxDisk**: `number`
+• **consumerAddress**: `string`
+
+Consumer address for the compute environment
 
 #### Defined in
 
-[@types/Compute.ts:62](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/Compute.ts#L62)
+[@types/Compute.ts:90](https://github.com/oceanprotocol/ocean.js/blob/main/src/@types/Compute.ts#L90)
 
 ___
 
-### maxRam
+### storageExpiry
 
-• **maxRam**: `number`
+• `Optional` **storageExpiry**: `number`
+
+Amount of seconds for storage
 
 #### Defined in
 
-[@types/Compute.ts:61](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/Compute.ts#L61)
+[@types/Compute.ts:91](https://github.com/oceanprotocol/ocean.js/blob/main/src/@types/Compute.ts#L91)
 
 ___
 
-### totalRam
+### minJobDuration
 
-• **totalRam**: `number`
+• `Optional` **minJobDuration**: `number`
 
-#### Defined in
-
-[@types/Compute.ts:60](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/Compute.ts#L60)
-
-___
-
-### id
-
-• **id**: `string`
+Minimum billable seconds for a paid job
 
 #### Defined in
 
-[@types/Compute.ts:49](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/Compute.ts#L49)
-
-___
-
-### lastSeen
-
-• **lastSeen**: `number`
-
-#### Defined in
-
-[@types/Compute.ts:71](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/Compute.ts#L71)
+[@types/Compute.ts:92](https://github.com/oceanprotocol/ocean.js/blob/main/src/@types/Compute.ts#L92)
 
 ___
 
 ### maxJobDuration
 
-• **maxJobDuration**: `number`
+• `Optional` **maxJobDuration**: `number`
+
+Maximum duration in seconds for a paid job
 
 #### Defined in
 
-[@types/Compute.ts:70](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/Compute.ts#L70)
+[@types/Compute.ts:93](https://github.com/oceanprotocol/ocean.js/blob/main/src/@types/Compute.ts#L93)
 
 ___
 
 ### maxJobs
 
-• **maxJobs**: `number`
+• `Optional` **maxJobs**: `number`
+
+Maximum number of simultaneous paid jobs
 
 #### Defined in
 
-[@types/Compute.ts:67](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/Compute.ts#L67)
+[@types/Compute.ts:94](https://github.com/oceanprotocol/ocean.js/blob/main/src/@types/Compute.ts#L94)
+
+___
+
+### runningJobs
+
+• **runningJobs**: `number`
+
+Amount of running jobs (paid jobs)
+
+#### Defined in
+
+[@types/Compute.ts:95](https://github.com/oceanprotocol/ocean.js/blob/main/src/@types/Compute.ts#L95)
+
+___
+
+### runningfreeJobs
+
+• `Optional` **runningfreeJobs**: `number`
+
+Amount of running jobs (free jobs)
+
+#### Defined in
+
+[@types/Compute.ts:96](https://github.com/oceanprotocol/ocean.js/blob/main/src/@types/Compute.ts#L96)
 
 ___
 
@@ -149,36 +134,44 @@ ___
 
 • **fees**: `ComputeEnvFeesStructure`
 
+Fee structure for the compute environment
+
 #### Defined in
 
-[@types/Compute.ts:63](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/Compute.ts#L63)
+[@types/Compute.ts:97](https://github.com/oceanprotocol/ocean.js/blob/main/src/@types/Compute.ts#L97)
+
+___
+
+### resources
+
+• `Optional` **resources**: `ComputeResource[]`
+
+Available compute resources (CPU, memory, storage)
+
+#### Defined in
+
+[@types/Compute.ts:98](https://github.com/oceanprotocol/ocean.js/blob/main/src/@types/Compute.ts#L98)
 
 ___
 
 ### free
 
-• **free**: `boolean`
+• `Optional` **free**: `ComputeEnvironmentFreeOptions`
+
+Free compute environment options
 
 #### Defined in
 
-[@types/Compute.ts:72](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/Compute.ts#L72)
-
-___
-
-### storageExpiry
-
-• **storageExpiry**: `number`
-
-#### Defined in
-
-[@types/Compute.ts:69](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/Compute.ts#L69)
+[@types/Compute.ts:99](https://github.com/oceanprotocol/ocean.js/blob/main/src/@types/Compute.ts#L99)
 
 ___
 
 ### platform
 
-• **platform**: `RunningPlatform[]`
+• `Optional` **platform**: `RunningPlatform`
+
+Platform information (architecture, OS)
 
 #### Defined in
 
-[@types/Compute.ts:73](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/Compute.ts#L73)
+[@types/Compute.ts:100](https://github.com/oceanprotocol/ocean.js/blob/main/src/@types/Compute.ts#L100)

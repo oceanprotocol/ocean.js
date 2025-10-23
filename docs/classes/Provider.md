@@ -15,6 +15,8 @@
 - [computeStart](Provider.md#computestart)
 - [computeStatus](Provider.md#computestatus)
 - [computeStop](Provider.md#computestop)
+- [freeComputeStart](Provider.md#freecomputestart)
+- [getComputeStartRoutes](Provider.md#getcomputestartroutes)
 - [encrypt](Provider.md#encrypt)
 - [getComputeEnvironments](Provider.md#getcomputeenvironments)
 - [getComputeResultUrl](Provider.md#getcomputeresulturl)
@@ -97,24 +99,28 @@ ___
 
 ### computeStart
 
-▸ **computeStart**(`providerUri`, `signer`, `computeEnv`, `datasets`, `algorithm`, `resources`, `chainId`, `output?`, `freeEnvironment`, `signal?`): `Promise`<[`ComputeJob`](../interfaces/ComputeJob.md) \| [`ComputeJob`](../interfaces/ComputeJob.md)[]\>
+▸ **computeStart**(`providerUri`, `signerOrAuthToken`, `computeEnv`, `datasets`, `algorithm`, `maxJobDuration`, `token`, `resources`, `chainId`, `metadata?`, `additionalViewers?`, `output?`, `policyServer?`, `signal?`): `Promise`<[`ComputeJob`](../interfaces/ComputeJob.md) \| [`ComputeJob`](../interfaces/ComputeJob.md)[]\>
 
-Instruct the provider to start a compute job
+Instruct the provider to start a PAID compute job (C2D V2)
 
 #### Parameters
 
 | Name | Type | Description |
 | :------ | :------ | :------ |
 | `providerUri` | `string` | The provider URI. |
-| `signer` | `Signer` | - | The consumer signer/account
-| `computeEnv` | `string` | The compute environment. |
-| `datasets` | [`ComputeAsset`](../interfaces/ComputeAsset.md) | The dataset to start compute on |
+| `signerOrAuthToken` | `Signer` \| `string` | The consumer signer object or auth token |
+| `computeEnv` | `string` | The compute environment ID. |
+| `datasets` | [`ComputeAsset`](../interfaces/ComputeAsset.md)[] | The datasets to start compute on (including additional datasets) |
 | `algorithm` | [`ComputeAlgorithm`](../interfaces/ComputeAlgorithm.md) | The algorithm to start compute with. |
-| `resources` | [`ComputeResourceRequest`](../interfaces/ComputeResourcesRequest.md) | The resources to start compute with. |
-| `chainId?` | [`number`] | The network for the payments |
+| `maxJobDuration` | `number` | The compute job max execution time. |
+| `token` | `string` | The token address for compute payment. |
+| `resources` | [`ComputeResourceRequest`](../interfaces/ComputeResourcesRequest.md)[] | The resources to start compute job with. |
+| `chainId` | `number` | The chain ID used for payments |
+| `metadata?` | `ComputeJobMetadata` | Additional metadata to be stored in the database. |
+| `additionalViewers?` | `string[]` | Additional addresses that can view the compute job results. |
 | `output?` | [`ComputeOutput`](../interfaces/ComputeOutput.md) | The compute job output settings. |
-| `signal?` | `AbortSignal` | abort signal |
-
+| `policyServer?` | `any` | Policy server data. |
+| `signal?` | `AbortSignal` | Abort signal |
 
 #### Returns
 
@@ -124,7 +130,7 @@ The compute job or jobs.
 
 #### Defined in
 
-[services/Provider.ts:516](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/services/Provider.ts#L516)
+[services/Provider.ts:772](https://github.com/oceanprotocol/ocean.js/blob/main/src/services/Provider.ts#L772)
 
 ___
 
@@ -179,6 +185,65 @@ Instruct the provider to Stop the execution of a to stop a compute job.
 #### Defined in
 
 [services/Provider.ts:587](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/services/Provider.ts#L587)
+
+___
+
+### freeComputeStart
+
+▸ **freeComputeStart**(`providerUri`, `signerOrAuthToken`, `computeEnv`, `datasets`, `algorithm`, `resources?`, `metadata?`, `additionalViewers?`, `output?`, `policyServer?`, `signal?`): `Promise`<[`ComputeJob`](../interfaces/ComputeJob.md) \| [`ComputeJob`](../interfaces/ComputeJob.md)[]\>
+
+Instruct the provider to start a FREE compute job (C2D V2)
+
+#### Parameters
+
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `providerUri` | `string` | The provider URI. |
+| `signerOrAuthToken` | `Signer` \| `string` | The consumer signer object or auth token |
+| `computeEnv` | `string` | The compute environment ID. |
+| `datasets` | [`ComputeAsset`](../interfaces/ComputeAsset.md)[] | The datasets to start compute on (including additional datasets) |
+| `algorithm` | [`ComputeAlgorithm`](../interfaces/ComputeAlgorithm.md) | The algorithm to start compute with. |
+| `resources?` | [`ComputeResourceRequest`](../interfaces/ComputeResourcesRequest.md)[] | The resources to start compute job with. |
+| `metadata?` | `ComputeJobMetadata` | Additional metadata to be stored in the database. |
+| `additionalViewers?` | `string[]` | Additional addresses that can view the compute job results. |
+| `output?` | [`ComputeOutput`](../interfaces/ComputeOutput.md) | The compute job output settings. |
+| `policyServer?` | `any` | Policy server data. |
+| `signal?` | `AbortSignal` | Abort signal |
+
+#### Returns
+
+`Promise`<[`ComputeJob`](../interfaces/ComputeJob.md) \| [`ComputeJob`](../interfaces/ComputeJob.md)[]\>
+
+The compute job or jobs.
+
+#### Defined in
+
+[services/Provider.ts:892](https://github.com/oceanprotocol/ocean.js/blob/main/src/services/Provider.ts#L892)
+
+___
+
+### getComputeStartRoutes
+
+▸ **getComputeStartRoutes**(`providerUri`, `isFreeCompute?`): `Promise`<`string` \| `null`\>
+
+Get the compute start route path for either free or paid compute
+
+#### Parameters
+
+| Name | Type | Default value | Description |
+| :------ | :------ | :------ | :------ |
+| `providerUri` | `string` | `undefined` | The provider URI. |
+| `isFreeCompute` | `boolean` | `false` | Whether to get the free compute route (true) or paid compute route (false). |
+
+#### Returns
+
+`Promise`<`string` \| `null`\>
+
+The compute start route path or null if not available.
+
+#### Defined in
+
+[services/Provider.ts:1071](https://github.com/oceanprotocol/ocean.js/blob/main/src/services/Provider.ts#L1071)
 
 ___
 

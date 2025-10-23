@@ -18,6 +18,8 @@
 - [results](ComputeJob.md#results)
 - [status](ComputeJob.md#status)
 - [statusText](ComputeJob.md#statustext)
+- [metadata](ComputeJob.md#metadata)
+- [terminationDetails](ComputeJob.md#terminationdetails)
 
 ## Properties
 
@@ -137,4 +139,35 @@ ___
 
 #### Defined in
 
-[@types/Compute.ts:41](https://github.com/oceanprotocol/ocean.js/blob/c99bc5c6/src/@types/Compute.ts#L41)
+[@types/Compute.ts:121](https://github.com/oceanprotocol/ocean.js/blob/main/src/@types/Compute.ts#L121)
+
+___
+
+### metadata
+
+• `Optional` **metadata**: `ComputeJobMetadata`
+
+Custom metadata associated with the compute job
+
+#### Defined in
+
+[@types/Compute.ts:127](https://github.com/oceanprotocol/ocean.js/blob/main/src/@types/Compute.ts#L127)
+
+___
+
+### terminationDetails
+
+• `Optional` **terminationDetails**: `object`
+
+Details about job termination
+
+#### Type declaration
+
+| Name | Type | Description |
+| :------ | :------ | :------ |
+| `exitCode?` | `number` | Exit code of the terminated job |
+| `OOMKilled?` | `boolean` | Whether the job was killed due to out-of-memory |
+
+#### Defined in
+
+[@types/Compute.ts:128](https://github.com/oceanprotocol/ocean.js/blob/main/src/@types/Compute.ts#L128)
