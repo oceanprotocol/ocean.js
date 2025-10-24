@@ -179,4 +179,5 @@ export class Config {
   // is confidential evm
   sdk?: SDK
   accessListFactory?: string
+  escrow?: string
 }
