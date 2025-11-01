@@ -767,6 +767,7 @@ export class Provider {
    * @param {ComputeOutput} output The compute job output settings.
    * @param {any} policyServer Policy server data.
    * @param {AbortSignal} signal abort signal
+   * @param {number} queueMaxWaitTime Maximum time in seconds to wait in the compute queue if resources are not available
    * @return {Promise<ComputeJob | ComputeJob[]>} The compute job or jobs.
    */
   public async computeStart(
@@ -783,7 +784,8 @@ export class Provider {
     additionalViewers?: string[],
     output?: ComputeOutput,
     policyServer?: any,
-    signal?: AbortSignal
+    signal?: AbortSignal,
+    queueMaxWaitTime?: number
   ): Promise<ComputeJob | ComputeJob[]> {
     console.log('called new compute start method...')
     console.log('datasets: ', datasets)
@@ -838,12 +840,13 @@ export class Provider {
       token,
       maxJobDuration
     }
-    if (resources) payload.payment.resources = resources
+    if (resources) payload.resources = resources
     if (metadata) payload.metadata = metadata
     if (additionalViewers) payload.additionalViewers = additionalViewers
     // if (additionalDatasets) payload.additionalDatasets = additionalDatasets
     if (output) payload.output = output
     if (policyServer) payload.policyServer = policyServer
+    if (queueMaxWaitTime) payload.queueMaxWaitTime = queueMaxWaitTime
     let response
     try {
       response = await fetch(computeStartUrl, {
@@ -887,6 +890,7 @@ export class Provider {
    * @param {ComputeOutput} output The compute job output settings.
    * @param {any} policyServer Policy server data.
    * @param {AbortSignal} signal abort signal
+   * @param {number} queueMaxWaitTime Maximum time in seconds to wait in the compute queue if resources are not available
    * @return {Promise<ComputeJob | ComputeJob[]>} The compute job or jobs.
    */
   public async freeComputeStart(
@@ -900,7 +904,8 @@ export class Provider {
     additionalViewers?: string[],
     output?: ComputeOutput,
     policyServer?: any,
-    signal?: AbortSignal
+    signal?: AbortSignal,
+    queueMaxWaitTime?: number
   ): Promise<ComputeJob | ComputeJob[]> {
     console.log('called new free compute start method...')
     console.log('datasets: ', datasets)
@@ -952,6 +957,7 @@ export class Provider {
     // if (additionalDatasets) payload.additionalDatasets = additionalDatasets
     payload.output = output
     if (policyServer) payload.policyServer = policyServer
+    if (queueMaxWaitTime) payload.queueMaxWaitTime = queueMaxWaitTime
     let response
     try {
       response = await fetch(computeStartUrl, {
