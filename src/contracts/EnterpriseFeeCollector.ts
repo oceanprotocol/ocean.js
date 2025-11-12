@@ -12,7 +12,7 @@ export class EnterpriseFeeCollectorContract extends SmartContractWithAddress {
   }
 
   /**
-   * Instantiate AccessList class
+   * Instantiate EnterpriseFeeCollectorContract class
    * @param {string} address The contract address.
    * @param {Signer} signer The signer object.
    * @param {string | number} [network] Network id or name
