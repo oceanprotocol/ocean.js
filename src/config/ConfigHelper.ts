@@ -202,7 +202,8 @@ export class ConfigHelper {
         DFStrategyV1,
         veFeeEstimate,
         Router,
-        AccessListFactory
+        AccessListFactory,
+        EnterpriseFeeCollector
       } = customAddresses[network]
       configAddresses = {
         nftFactoryAddress: ERC721Factory,
@@ -222,6 +223,7 @@ export class ConfigHelper {
         DFStrategyV1,
         veFeeEstimate,
         accessListFactory: AccessListFactory,
+        EnterpriseFeeCollector,
         ...getUris()
       }
     } else if ((DefaultContractsAddresses as { [key: string]: any })[network]) {
@@ -242,7 +244,8 @@ export class ConfigHelper {
         DFStrategyV1,
         veFeeEstimate,
         Router,
-        AccessListFactory
+        AccessListFactory,
+        EnterpriseFeeCollector
       } = (DefaultContractsAddresses as { [key: string]: any })[network]
       configAddresses = {
         nftFactoryAddress: ERC721Factory,
@@ -262,6 +265,7 @@ export class ConfigHelper {
         DFStrategyV1,
         veFeeEstimate,
         accessListFactory: AccessListFactory,
+        EnterpriseFeeCollector,
         ...getUris()
       }
     }

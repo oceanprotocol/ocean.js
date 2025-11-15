@@ -49,11 +49,9 @@ jobs:
         with:
           repository: 'oceanprotocol/barge'
           path: 'barge'
-          ref: 'feature/barge_with_node'
       - name: Run Ganache with Barge
         working-directory: ${{ github.workspace }}/barge
         run: |
-          export CONTRACTS_VERSION=v2.3.0
           bash -x start_ocean.sh --with-typesense 2>&1 > start_ocean.log &
       - name: Install deps & build
         run: npm ci && npm run build:metadata
@@ -110,7 +108,6 @@ jobs:
         with:
           repository: 'oceanprotocol/barge'
           path: 'barge'
-          ref: 'feature/barge_with_node'
 
       - name: Login to Docker Hub
         if: ${{ env.DOCKERHUB_PASSWORD && env.DOCKERHUB_USERNAME }}
@@ -119,19 +116,6 @@ jobs:
         env:
           DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
           DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
-
-      - name: Delete default runner images
-        run: |
-          docker image rm -f node:20
-          docker image rm -f node:20-alpine
-          docker image rm -f node:18
-          docker image rm -f node:18-alpine
-          docker image rm -f debian:10
-          docker image rm -f debian:11
-          docker image rm -f ubuntu:22.04
-          docker image rm -f ubuntu:20.04
-          docker image rm -f moby/buildkit:latest
-          rm -rf /usr/share/swift/
 
       - name: Run Barge
         working-directory: ${{ github.workspace }}/barge

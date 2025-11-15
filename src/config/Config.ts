@@ -83,6 +83,12 @@ export class Config {
   public opfCommunityFeeCollector?: string
 
   /**
+   * OPFCommunityFeeCollector
+   * @type {string}
+   */
+  public EnterpriseFeeCollector?: string
+
+  /**
    * SideStaking address
    * @type {string}
    */
