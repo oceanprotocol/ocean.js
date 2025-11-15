@@ -216,7 +216,8 @@ export class ConfigHelper {
         veFeeEstimate,
         Router,
         AccessListFactory,
-        Escrow
+        Escrow,
+        EnterpriseFeeCollector
       } = customAddresses[network]
       configAddresses = {
         nftFactoryAddress: ERC721Factory,
@@ -237,6 +238,7 @@ export class ConfigHelper {
         veFeeEstimate,
         accessListFactory: AccessListFactory,
         escrow: Escrow,
+        EnterpriseFeeCollector,
         ...getUris()
       }
     } else if ((DefaultContractsAddresses as { [key: string]: any })[network]) {
@@ -258,7 +260,8 @@ export class ConfigHelper {
         veFeeEstimate,
         Router,
         AccessListFactory,
-        Escrow
+        Escrow,
+        EnterpriseFeeCollector
       } = (DefaultContractsAddresses as { [key: string]: any })[network]
       configAddresses = {
         nftFactoryAddress: ERC721Factory,
@@ -279,6 +282,7 @@ export class ConfigHelper {
         veFeeEstimate,
         accessListFactory: AccessListFactory,
         escrow: Escrow,
+        EnterpriseFeeCollector,
         ...getUris()
       }
     }
