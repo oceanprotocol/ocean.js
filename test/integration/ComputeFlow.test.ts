@@ -10,7 +10,8 @@ import {
   sendTx,
   amountToUnits,
   isDefined,
-  unitsToAmount
+  unitsToAmount,
+  sleep
 } from '../../src/index.js'
 import {
   ComputeJob,
@@ -545,7 +546,9 @@ describe('Compute flow tests', async () => {
     } catch (e) {
       assert(
         e.message ===
-          `ComputeJob cannot be initialized: Error: Not enough cpu resources. Requested 5, but max is 4.`
+          `ComputeJob cannot be initialized: Error: Not enough cpu resources. Requested ${
+            computeEnv.resources[0].max + 1
+          }, but max is ${computeEnv.resources[0].max}.`
       )
     }
   })
@@ -708,7 +711,7 @@ describe('Compute flow tests', async () => {
     paidComputeJobId = computeJobs[0].jobId
   })
 
-  delay(100000)
+  delay(5000)
 
   it('Check compute status', async () => {
     const jobStatus = (await ProviderInstance.computeStatus(
@@ -719,6 +722,8 @@ describe('Compute flow tests', async () => {
     )) as ComputeJob
     assert(jobStatus, 'Cannot retrieve compute status!')
   })
+
+  delay(2000)
 
   it('should restart a computeJob on paid resources, by paying only escrow lock for max job duration, because orders for assets are valid and providerFees are still valid', async () => {
     const { chainId } = await consumerAccount.provider.getNetwork()
@@ -806,8 +811,11 @@ describe('Compute flow tests', async () => {
   })
 
   // move to reuse Orders
-
-  delay(180000)
+  const delayTimeout = Math.max(
+    resolvedDdoWith2mTimeout.services[0].timeout * 1000 + 1000,
+    resolvedAlgoDdoWith2mTimeout.services[0].timeout * 1000 + 1000
+  )
+  delay(delayTimeout)
 
   it('should start a computeJob using the paid resources, by paying the assets providerFees (reuseOrder) and paying escrow lock for max job duration', async () => {
     const { chainId } = await consumerAccount.provider.getNetwork()
@@ -855,6 +863,7 @@ describe('Compute flow tests', async () => {
       resources,
       Number(chainId)
     )
+    console.log(providerInitializeComputeResults)
     assert(
       providerInitializeComputeResults.datasets[0].providerFee,
       'We should have a providerFee for algorithm'
