@@ -822,12 +822,8 @@ export class Provider {
         serviceEndpoints
       )) + 1
     ).toString()
-    console.log('Nonce:' + nonce)
-
     const signatureMessage = String(consumerAddress + datasets[0]?.documentId + nonce)
-    console.log('signatureMessage:' + signatureMessage)
     const signature = await this.getSignature(signerOrAuthToken, signatureMessage)
-    console.log('signature:' + signature)
     const payload = Object()
     payload.consumerAddress = consumerAddress
     payload.signature = signature

@@ -120,9 +120,8 @@ jobs:
       - name: Run Barge
         working-directory: ${{ github.workspace }}/barge
         run: |
-          export NODE_VERSION=pr-1097    
           bash -x start_ocean.sh --with-typesense 2>&1 > start-node.log &
-            
+
       - name: Install deps & build
         run: npm ci && npm run build:metadata
       

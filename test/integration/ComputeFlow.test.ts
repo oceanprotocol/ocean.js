@@ -863,7 +863,6 @@ describe('Compute flow tests', async () => {
       resources,
       Number(chainId)
     )
-    console.log(providerInitializeComputeResults)
     assert(
       providerInitializeComputeResults.datasets[0].providerFee,
       'We should have a providerFee for algorithm'
