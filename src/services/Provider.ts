@@ -149,8 +149,13 @@ export class Provider {
     //  const isMetaMask = web3 && web3.currentProvider && (web3.currentProvider as any).isMetaMask
     //  if (isMetaMask) return await web3.eth.personal.sign(consumerMessage, accountId, password)
     //  await web3.eth.sign(consumerMessage, await signer.getAddress())
-    const consumerMessage = ethers.keccak256(toUtf8Bytes(message))
-    const messageHashBytes = ethers.getBytes(consumerMessage)
+    // const consumerMessage = ethers.keccak256(toUtf8Bytes(message))
+    // const messageHashBytes = ethers.getBytes(consumerMessage)
+    const consumerMessage = ethers.solidityPackedKeccak256(
+      ['bytes'],
+      [ethers.hexlify(ethers.toUtf8Bytes(message))]
+    )
+    const messageHashBytes = ethers.toBeArray(consumerMessage)
     try {
       return await signer.signMessage(messageHashBytes)
     } catch (error) {
