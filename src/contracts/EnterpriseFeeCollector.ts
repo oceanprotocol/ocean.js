@@ -5,8 +5,6 @@ import { Config } from '../config'
 import { SmartContractWithAddress } from './SmartContractWithAddress'
 
 export class EnterpriseFeeCollectorContract extends SmartContractWithAddress {
-  public abi: AbiItem[]
-
   getDefaultAbi() {
     return ContractABI.abi as AbiItem[]
   }
