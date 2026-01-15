@@ -291,9 +291,24 @@ export class EscrowContract extends SmartContractWithAddress {
       console.log(`Payee ${payee} already authorized`)
       return null
     }
-    const maxLockedAmountParsed = amountToUnits(null, null, maxLockedAmount, tokenDecimals ?? 18)
-    const maxLockSecondsParsed = amountToUnits(null, null, maxLockSeconds, tokenDecimals ?? 18)
-    const maxLockCountsParsed = amountToUnits(null, null, maxLockCounts, tokenDecimals ?? 18)
+    const maxLockedAmountParsed = amountToUnits(
+      null,
+      null,
+      maxLockedAmount,
+      tokenDecimals ?? 18
+    )
+    const maxLockSecondsParsed = amountToUnits(
+      null,
+      null,
+      maxLockSeconds,
+      tokenDecimals ?? 18
+    )
+    const maxLockCountsParsed = amountToUnits(
+      null,
+      null,
+      maxLockCounts,
+      tokenDecimals ?? 18
+    )
     const estGas = await this.contract.authorize.estimateGas(
       token,
       payee,
