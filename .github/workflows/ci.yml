@@ -108,6 +108,7 @@ jobs:
         with:
           repository: 'oceanprotocol/barge'
           path: 'barge'
+          branch: 'test-node-pr1156'
 
       - name: Login to Docker Hub
         if: ${{ env.DOCKERHUB_PASSWORD && env.DOCKERHUB_USERNAME }}
@@ -124,7 +125,7 @@ jobs:
 
       - name: Install deps & build
         run: npm ci && npm run build:metadata
-      
+
       - name: Wait for node to be ready
         run: |
           max_attempts=60
