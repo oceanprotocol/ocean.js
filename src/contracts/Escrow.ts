@@ -191,9 +191,10 @@ export class EscrowContract extends SmartContractWithAddress {
   public async deposit<G extends boolean = false>(
     token: string,
     amount: string,
-    estimateGas?: G
+    estimateGas?: G,
+    tokenDecimals?: number
   ): Promise<ReceiptOrEstimate<G>> {
-    const amountParsed = amountToUnits(null, null, amount, 18)
+    const amountParsed = amountToUnits(null, null, amount, tokenDecimals || 18)
     const estGas = await this.contract.deposit.estimateGas(token, amountParsed)
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
     const trxReceipt = await sendTx(
@@ -217,7 +218,8 @@ export class EscrowContract extends SmartContractWithAddress {
   public async withdraw<G extends boolean = false>(
     tokens: string[],
     amounts: string[],
-    estimateGas?: G
+    estimateGas?: G,
+    tokenDecimals?: number
   ): Promise<ReceiptOrEstimate<G>> {
     // check if funds exist in escrow in order to be withdrawed
     const tokensWithSufficientFunds = []
@@ -244,7 +246,7 @@ export class EscrowContract extends SmartContractWithAddress {
       }
     }
     const amountsParsed = amountsWithSufficientFunds.map((amount) =>
-      amountToUnits(null, null, amount, 18)
+      amountToUnits(null, null, amount, tokenDecimals ?? 18)
     )
 
     const estGas = await this.contract.withdraw.estimateGas(tokens, amountsParsed)
@@ -277,7 +279,8 @@ export class EscrowContract extends SmartContractWithAddress {
     maxLockedAmount: string,
     maxLockSeconds: string,
     maxLockCounts: string,
-    estimateGas?: G
+    estimateGas?: G,
+    tokenDecimals?: number
   ): Promise<ReceiptOrEstimate<G>> {
     const auths = await this.getAuthorizations(
       token,
@@ -288,9 +291,9 @@ export class EscrowContract extends SmartContractWithAddress {
       console.log(`Payee ${payee} already authorized`)
       return null
     }
-    const maxLockedAmountParsed = amountToUnits(null, null, maxLockedAmount, 18)
-    const maxLockSecondsParsed = amountToUnits(null, null, maxLockSeconds, 18)
-    const maxLockCountsParsed = amountToUnits(null, null, maxLockCounts, 18)
+    const maxLockedAmountParsed = amountToUnits(null, null, maxLockedAmount, tokenDecimals ?? 18)
+    const maxLockSecondsParsed = amountToUnits(null, null, maxLockSeconds, tokenDecimals ?? 18)
+    const maxLockCountsParsed = amountToUnits(null, null, maxLockCounts, tokenDecimals ?? 18)
     const estGas = await this.contract.authorize.estimateGas(
       token,
       payee,
