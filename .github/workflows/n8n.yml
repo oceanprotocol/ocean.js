@@ -1,0 +1,57 @@
+name: Trigger N8N Security Scan
+
+on:
+  issue_comment:
+    types: [created]
+
+jobs:
+  trigger-n8n:
+    if: github.event.issue.pull_request && contains(github.event.comment.body, '/run-security-scan')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Prepare hybrid payload
+        id: payload
+        run: |
+          echo "Building payload.json"
+          # Ensure overrides is always valid JSON
+          OVERRIDES='${{ github.event.inputs.overrides }}'
+          if [ -z "$OVERRIDES" ]; then
+            OVERRIDES="{}"
+          fi
+
+          cat <<EOF > payload.json
+          {
+            "htmlUrl": "${{ github.event.issue.html_url }}",
+            "repo": "${{ github.repository }}",
+            "owner": "${{ github.repository_owner }}",
+            "branch": "${{ github.ref_name }}",
+            "commit": "${{ github.sha }}",
+            "actor": "${{ github.actor }}",
+
+            "before": "${{ github.event.before || '' }}",
+            "after": "${{ github.event.after || '' }}",
+
+            "pr": ${{ github.event.pull_request.number || 'null' }},
+            "prIssue": ${{ github.event.issue.pull_request.number || 'null' }},
+            
+            "headSha": "${{ github.event.pull_request.head.sha || '' }}",
+            "headRef": "${{ github.event.pull_request.head.ref || '' }}",
+            "baseSha": "${{ github.event.pull_request.base.sha || '' }}",
+            "baseRef": "${{ github.event.pull_request.base.ref || '' }}",
+
+            "cloneUrl": "${{ github.event.repository.clone_url || '' }}",
+
+            "overrides": $OVERRIDES
+
+          }
+          EOF
+
+          echo "Payload built:"
+          cat payload.json
+
+      - name: Send payload to n8n webhook
+        run: |
+          curl -X POST \
+            -H "Content-Type: application/json" \
+            -d @payload.json \
+            https://pandoras-box.oceanprotocol.io/webhook/66d5c38a-7df7-4106-a8e3-f3070fcb6858
