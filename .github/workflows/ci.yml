@@ -57,6 +57,16 @@ jobs:
           echo "DB_USERNAME=elastic" >> $GITHUB_ENV
           echo "DB_PASSWORD=changeme" >> $GITHUB_ENV
 
+      - name: Patch node.yml to include DB credentials
+        working-directory: ${{ github.workspace }}/barge/compose-files
+        run: |
+          # Add DB_USERNAME and DB_PASSWORD to node.yml environment section
+          sed -i.bak '/DB_URL: \${DB_URL}/a\
+          DB_USERNAME: ${DB_USERNAME}\
+          DB_PASSWORD: ${DB_PASSWORD}' node.yml
+          echo "Patched node.yml:"
+          grep -A 5 "DB_URL" node.yml
+
       - name: Run Ganache with Barge
         working-directory: ${{ github.workspace }}/barge
         run: |
@@ -71,7 +81,14 @@ jobs:
           echo "Waiting for node container to be ready (timeout: 300s)..."
           while [ $attempt -le $max_attempts ]; do
             if [ "$(docker inspect -f '{{.State.Running}}' ocean-node-1 2>/dev/null)" = "true" ]; then
-              echo "Node container is running!"
+              echo "✓ Node container is running!"
+              echo ""
+              echo "=== Database Configuration Check ==="
+              docker exec ocean-node-1 printenv | grep -E "(DB_URL|DB_TYPE|DB_USERNAME|DB_PASSWORD)" || echo "⚠ DB variables not found"
+              echo ""
+              echo "=== Node Startup Logs (Database/Indexer) ==="
+              docker logs ocean-node-1 2>&1 | grep -i "database\|elastic\|indexer" | tail -25
+              echo ""
               break
             fi
             echo "Attempt $attempt/$max_attempts: Node container not ready yet, waiting..."
@@ -133,6 +150,16 @@ jobs:
           echo "DB_USERNAME=elastic" >> $GITHUB_ENV
           echo "DB_PASSWORD=changeme" >> $GITHUB_ENV
 
+      - name: Patch node.yml to include DB credentials
+        working-directory: ${{ github.workspace }}/barge/compose-files
+        run: |
+          # Add DB_USERNAME and DB_PASSWORD to node.yml environment section
+          sed -i.bak '/DB_URL: \${DB_URL}/a\
+          DB_USERNAME: ${DB_USERNAME}\
+          DB_PASSWORD: ${DB_PASSWORD}' node.yml
+          echo "Patched node.yml:"
+          grep -A 5 "DB_URL" node.yml
+
       - name: Run Barge
         working-directory: ${{ github.workspace }}/barge
         run: |
@@ -173,10 +200,10 @@ jobs:
               echo "✓ Node container is running!"
               echo ""
               echo "=== Database Configuration Check ==="
-              docker exec ocean-node-1 printenv | grep -E "(DB_URL|DB_TYPE|DB_USERNAME)" || echo "⚠ DB variables not found in container"
+              docker exec ocean-node-1 printenv | grep -E "(DB_URL|DB_TYPE|DB_USERNAME|DB_PASSWORD)" || echo "⚠ DB variables not found"
               echo ""
               echo "=== Node Startup Logs (Database/Indexer) ==="
-              docker logs ocean-node-1 2>&1 | grep -i "database\|elastic\|indexer" | tail -20
+              docker logs ocean-node-1 2>&1 | grep -i "database\|elastic\|indexer" | tail -25
               echo ""
               break
             fi
