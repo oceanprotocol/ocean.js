@@ -49,10 +49,19 @@ jobs:
         with:
           repository: 'oceanprotocol/barge'
           path: 'barge'
+
+      - name: Set Database Environment Variables
+        run: |
+          echo "DB_URL=http://172.15.0.6:9200" >> $GITHUB_ENV
+          echo "DB_TYPE=elasticsearch" >> $GITHUB_ENV
+          echo "DB_USERNAME=elastic" >> $GITHUB_ENV
+          echo "DB_PASSWORD=changeme" >> $GITHUB_ENV
+
       - name: Run Ganache with Barge
         working-directory: ${{ github.workspace }}/barge
         run: |
           bash -x start_ocean.sh --with-typesense 2>&1 > start_ocean.log &
+
       - name: Install deps & build
         run: npm ci && npm run build:metadata
       - name: Wait for node to be ready
@@ -117,18 +126,42 @@ jobs:
           DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
           DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
 
+      - name: Set Database Environment Variables
+        run: |
+          echo "DB_URL=http://172.15.0.6:9200" >> $GITHUB_ENV
+          echo "DB_TYPE=elasticsearch" >> $GITHUB_ENV
+          echo "DB_USERNAME=elastic" >> $GITHUB_ENV
+          echo "DB_PASSWORD=changeme" >> $GITHUB_ENV
+
       - name: Run Barge
         working-directory: ${{ github.workspace }}/barge
-        env:
-          DB_URL: 'http://172.15.0.6:9200'
-          DB_TYPE: 'elasticsearch'
-          DB_USERNAME: 'elastic'
-          DB_PASSWORD: 'changeme'
         run: |
           bash -x start_ocean.sh --with-typesense 2>&1 > start-node.log &
 
       - name: Install deps & build
         run: npm ci && npm run build:metadata
+
+      - name: Wait for Elasticsearch to be ready
+        run: |
+          max_attempts=30
+          attempt=1
+          echo "Waiting for Elasticsearch to be ready (timeout: 150s)..."
+          while [ $attempt -le $max_attempts ]; do
+            if curl -s http://localhost:9200/_cluster/health >/dev/null 2>&1; then
+              echo "✓ Elasticsearch is ready!"
+              curl -s http://localhost:9200/_cluster/health | jq '.' || true
+              break
+            fi
+            echo "Attempt $attempt/$max_attempts: Elasticsearch not ready yet, waiting..."
+            if [ $attempt -eq $max_attempts ]; then
+              echo "❌ Error: Elasticsearch failed to start within 150 seconds"
+              docker ps -a
+              docker logs ocean-elasticsearch-1 2>&1 || echo "Could not get elasticsearch logs"
+              exit 1
+            fi
+            sleep 5
+            attempt=$((attempt + 1))
+          done
 
       - name: Wait for node to be ready
         run: |
@@ -137,14 +170,22 @@ jobs:
           echo "Waiting for node container to be ready (timeout: 300s)..."
           while [ $attempt -le $max_attempts ]; do
             if [ "$(docker inspect -f '{{.State.Running}}' ocean-node-1 2>/dev/null)" = "true" ]; then
-              echo "Node container is running!"
+              echo "✓ Node container is running!"
+              echo ""
+              echo "=== Database Configuration Check ==="
+              docker exec ocean-node-1 printenv | grep -E "(DB_URL|DB_TYPE|DB_USERNAME)" || echo "⚠ DB variables not found in container"
+              echo ""
+              echo "=== Node Startup Logs (Database/Indexer) ==="
+              docker logs ocean-node-1 2>&1 | grep -i "database\|elastic\|indexer" | tail -20
+              echo ""
               break
             fi
             echo "Attempt $attempt/$max_attempts: Node container not ready yet, waiting..."
             if [ $attempt -eq $max_attempts ]; then
-              echo "Error: Node container failed to start within 300 seconds"
+              echo "❌ Error: Node container failed to start within 300 seconds"
               docker ps -a
               docker inspect ocean-node-1
+              docker logs ocean-node-1 2>&1 | tail -100
               exit 1
             fi
             sleep 10
