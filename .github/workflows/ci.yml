@@ -143,28 +143,6 @@ jobs:
       - name: Install deps & build
         run: npm ci && npm run build:metadata
 
-      - name: Wait for Elasticsearch to be ready
-        run: |
-          max_attempts=30
-          attempt=1
-          echo "Waiting for Elasticsearch to be ready (timeout: 150s)..."
-          while [ $attempt -le $max_attempts ]; do
-            if curl -s http://localhost:9200/_cluster/health >/dev/null 2>&1; then
-              echo "✓ Elasticsearch is ready!"
-              curl -s http://localhost:9200/_cluster/health | jq '.' || true
-              break
-            fi
-            echo "Attempt $attempt/$max_attempts: Elasticsearch not ready yet, waiting..."
-            if [ $attempt -eq $max_attempts ]; then
-              echo "❌ Error: Elasticsearch failed to start within 150 seconds"
-              docker ps -a
-              docker logs ocean-elasticsearch-1 2>&1 || echo "Could not get elasticsearch logs"
-              exit 1
-            fi
-            sleep 5
-            attempt=$((attempt + 1))
-          done
-
       - name: Wait for node to be ready
         run: |
           max_attempts=60
@@ -186,8 +164,8 @@ jobs:
             if [ $attempt -eq $max_attempts ]; then
               echo "❌ Error: Node container failed to start within 300 seconds"
               docker ps -a
-              docker inspect ocean-node-1
-              docker logs ocean-node-1 2>&1 | tail -100
+              docker inspect ocean-node-1 || true
+              docker logs ocean-node-1 2>&1 | tail -100 || true
               exit 1
             fi
             sleep 10
@@ -202,7 +180,12 @@ jobs:
           NODE_URL: 'http://127.0.0.1:8001'
 
       - name: docker logs
-        run: docker logs ocean-ocean-contracts-1 && docker logs ocean-node-1
+        run: |
+          echo "=== Ocean Contracts Logs ==="
+          docker logs ocean-ocean-contracts-1 2>&1 || echo "Container not found"
+          echo ""
+          echo "=== Ocean Node Logs ==="
+          docker logs ocean-node-1 2>&1 || echo "Container not found"
         if: ${{ failure() }}
 
       - name: Upload coverage
