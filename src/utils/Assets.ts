@@ -9,7 +9,7 @@ import { NftCreateData } from '../@types/NFTFactory.js'
 import { ZERO_ADDRESS } from './Constants.js'
 import { DispenserCreationParams } from '../@types/Dispenser.js'
 import { FreCreationParams } from '../@types/FixedPrice.js'
-import { getEventFromTx } from './ContractUtils.js'
+import { getEventFromTx, getTokenDecimals } from './ContractUtils.js'
 import { ProviderInstance } from '../services/Provider.js'
 
 import AccessListFactory from '@oceanprotocol/contracts/artifacts/contracts/accesslists/AccessListFactory.sol/AccessListFactory.json'
@@ -54,7 +54,9 @@ export async function createAsset(
   aquariusInstance: Aquarius,
   accessListFactory?: string, // access list factory address
   allowAccessList?: string, // allow list address
-  denyAccessList?: string // deny list address
+  denyAccessList?: string, // deny list address
+  baseToken?: string,
+  baseTokenDecimals?: number
 ): Promise<string> {
   const ddoInstance = DDOManager.getDDOClass(ddo)
   const { indexedMetadata } = ddoInstance.getAssetFields()
@@ -153,12 +155,15 @@ export async function createAsset(
       )
     } else {
       // fixed price
+      const baseTokenAddress = baseToken || config.oceanTokenAddress
+      baseTokenDecimals ||= await getTokenDecimals(this.signer, baseTokenAddress)
+
       const fixedPriceParams: FreCreationParams = {
         fixedRateAddress: config.fixedRateExchangeAddress,
         baseTokenAddress: config.oceanTokenAddress,
         owner: account,
         marketFeeCollector: account,
-        baseTokenDecimals: 18,
+        baseTokenDecimals,
         datatokenDecimals: 18,
         fixedRate: value.toString(),
         marketFee: '0',
