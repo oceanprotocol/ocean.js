@@ -6,26 +6,6 @@ export type ComputeResultType =
   | 'configrationLog'
   | 'publishLog'
 
-// OLD V1 ComputeEnvironment specs
-// export interface ComputeEnvironment {
-//   id: string
-//   cpuNumber: number
-//   cpuType: string
-//   gpuNumber: number
-//   gpuType: string
-//   ramGB: number
-//   diskGB: number
-//   priceMin: number
-//   desc: string
-//   currentJobs: number
-//   maxJobs: number
-//   consumerAddress: string
-//   storageExpiry: number
-//   maxJobDuration: number
-//   lastSeen: number
-//   free: boolean
-// }
-
 // new V2 C2D Compute Environment specs
 export interface RunningPlatform {
   architecture: string
@@ -69,22 +49,6 @@ export interface ComputeEnvironmentFreeOptions {
   resources?: ComputeResource[]
 }
 export interface ComputeEnvironment {
-  // legacy
-  // cpuNumber: number
-  // cpuType: string
-  // gpuNumber: number
-  // gpuType: string
-  // ramGB: number
-  // diskGB: number
-  // priceMin: number
-  // totalCpu: number // total cpu available for jobs
-  // maxCpu: number // max cpu for a single job.  Imagine a K8 cluster with two nodes, each node with 10 cpus.  Total=20, but at most you can allocate 10 cpu for a job
-  // totalRam: number // total gb of RAM
-  // maxRam: number // max allocatable GB RAM for a single job.
-  // maxDisk: number // max GB of disck allocatable for a single job
-  // currentJobs: number
-  // lastSeen: number
-  // legacy
   id: string
   description: string
   consumerAddress: string

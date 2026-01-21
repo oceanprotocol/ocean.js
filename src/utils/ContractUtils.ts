@@ -46,7 +46,7 @@ export async function getFairGasPrice(
   signer: Signer,
   gasFeeMultiplier: number
 ): Promise<string> {
-  const price = await (await signer.provider.getFeeData()).gasPrice
+  const price = (await signer.provider.getFeeData()).gasPrice
   const x = BigInt(price.toString())
   if (gasFeeMultiplier) return (x * BigInt(gasFeeMultiplier)).toString(10)
   else return x.toString()

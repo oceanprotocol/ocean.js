@@ -592,7 +592,7 @@ export class Nft extends SmartContract {
   /**
    *  Helper function to improve UX sets both MetaData & TokenURI in one tx
    * @param {String} nftAddress NFT contract address
-   * @param {String} address Caller address
+   * @param {String} metadataUpdater Caller address
    * @param {MetadataAndTokenURI} metadataAndTokenURI metaDataAndTokenURI object
    * @param {Boolean} estimateGas if True, return gas estimate
    * @return {Promise<ReceiptOrEstimate>} trxReceipt

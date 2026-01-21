@@ -15,8 +15,8 @@ export class Dispenser extends SmartContractWithAddress {
    * @param {String} dtAddress
    * @return {Promise<DispenserToken>}
    */
-  public async status(dtAdress: string): Promise<DispenserToken> {
-    const status2: DispenserToken = await this.contract.status(dtAdress)
+  public async status(dtAddress: string): Promise<DispenserToken> {
+    const status2: DispenserToken = await this.contract.status(dtAddress)
     if (!status2) {
       throw new Error(`Np dispenser found for the given datatoken address`)
     }
