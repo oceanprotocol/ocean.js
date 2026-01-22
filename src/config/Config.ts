@@ -173,15 +173,6 @@ export class Config {
    */
   gasFeeMultiplier: number
 
-  veAllocate?: string
-  veOCEAN?: string
-  veDelegation?: string
-  veFeeDistributor?: string
-  veDelegationProxy?: string
-  DFRewards?: string
-  DFStrategyV1?: string
-  veFeeEstimate?: string
-
   // is confidential evm
   sdk?: SDK
   accessListFactory?: string

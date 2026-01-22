@@ -14,8 +14,6 @@
 - [Config](classes/Config.md)
 - [ConfigHelper](classes/ConfigHelper.md)
 - [Datatoken](classes/Datatoken.md)
-- [DfRewards](classes/DfRewards.md)
-- [DfStrategyV1](classes/DfStrategyV1.md)
 - [Dispenser](classes/Dispenser.md)
 - [FixedRateExchange](classes/FixedRateExchange.md)
 - [Logger](classes/Logger.md)
@@ -25,10 +23,6 @@
 - [Router](classes/Router.md)
 - [SmartContract](classes/SmartContract.md)
 - [SmartContractWithAddress](classes/SmartContractWithAddress.md)
-- [VeAllocate](classes/VeAllocate.md)
-- [VeFeeDistributor](classes/VeFeeDistributor.md)
-- [VeFeeEstimate](classes/VeFeeEstimate.md)
-- [VeOcean](classes/VeOcean.md)
 
 ### Interfaces
 

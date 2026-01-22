@@ -1,5 +1,5 @@
 import fetch from 'cross-fetch'
-import { ethers, JsonRpcSigner, Signer, toUtf8Bytes } from 'ethers'
+import { ethers, JsonRpcSigner, Signer } from 'ethers'
 import { LoggerInstance } from '../utils/Logger.js'
 import {
   Arweave,
@@ -439,9 +439,11 @@ export class Provider {
    * @param {ComputeAsset[]} assets The datasets array to initialize compute request.
    * @param {ComputeAlgorithmber} algorithm The algorithm to use.
    * @param {string} computeEnv The compute environment.
-   * @param {number} validUntil  The job expiration date.
    * @param {string} providerUri The provider URI.
    * @param {string} accountId caller address
+   * @param {string} chainId The chain Id to start compute on
+   * @param {string} token The token to use for the compute payment
+   * @param {number} maxJobDuration The maximum duration the job can take
    * @param {AbortSignal} signal abort signal
    * @return {Promise<ProviderComputeInitialize>} ProviderComputeInitialize data
    */
@@ -676,7 +678,7 @@ export class Provider {
 
   /** Instruct the provider to start a compute job (Old C2D V1) Kept for now, for backwards compatibility
    * @param {string} providerUri The provider URI.
-   * @param {Signer} signer The consumer signer object.
+   * @param {Signer} consumer The consumer signer object.
    * @param {string} computeEnv The compute environment.
    * @param {ComputeAsset} dataset The dataset to start compute on
    * @param {ComputeAlgorithm} algorithm The algorithm to start compute with.

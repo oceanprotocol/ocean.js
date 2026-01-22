@@ -447,7 +447,6 @@ export class FixedRateExchange extends SmartContractWithAddress {
 
   /**
    * Returns all exchanges
-   * @param {String} exchangeId Exchang eId
    * @return {Promise<String[]>} Exchanges list
    */
   public async getExchanges(): Promise<string[]> {
@@ -664,7 +663,7 @@ export class FixedRateExchange extends SmartContractWithAddress {
    * @return {String} return exchange owner
    */
   async getExchangeOwner(exchangeId: string): Promise<string> {
-    const address = await (await this.getExchange(exchangeId)).exchangeOwner
+    const address = (await this.getExchange(exchangeId)).exchangeOwner
     return address
   }
 
