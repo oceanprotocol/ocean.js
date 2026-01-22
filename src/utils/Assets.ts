@@ -160,7 +160,7 @@ export async function createAsset(
 
       const fixedPriceParams: FreCreationParams = {
         fixedRateAddress: config.fixedRateExchangeAddress,
-        baseTokenAddress: config.oceanTokenAddress,
+        baseTokenAddress,
         owner: account,
         marketFeeCollector: account,
         baseTokenDecimals,
