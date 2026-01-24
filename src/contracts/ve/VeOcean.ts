@@ -15,15 +15,21 @@ export class VeOcean extends SmartContractWithAddress {
    * Deposit `amount` tokens for `userAddress` and lock until `unlockTime`
    * @param {String} amount Amount of tokens to be locked
    * @param {Number} unlockTime Timestamp for unlock
+   * @param {number} [tokenDecimals] optional number of decimals of the token
    * @param {Boolean} estimateGas if True, return gas estimate
    * @return {Promise<ReceiptOrEstimate>}
    */
   public async lockTokens<G extends boolean = false>(
     amount: string,
     unlockTime: number,
+    tokenDecimals?: number,
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
-    const amountFormatted = await this.amountToUnits(await this.getToken(), amount)
+    const amountFormatted = await this.amountToUnits(
+      await this.getToken(),
+      amount,
+      tokenDecimals
+    )
     const estGas = await this.contract.create_lock.estimateGas(
       amountFormatted,
       unlockTime
@@ -46,15 +52,21 @@ export class VeOcean extends SmartContractWithAddress {
    * Anyone (even a smart contract) can deposit for someone else, but cannot extend their locktime and deposit for a brand new user
    * @param {String} toAddress user address to deposit for
    * @param {String} amount Amount of tokens to be locked
+   * @param {number} [tokenDecimals] optional number of decimals of the token
    * @param {Boolean} estimateGas if True, return gas estimate
    * @return {Promise<ReceiptOrEstimate>}
    */
   public async depositFor<G extends boolean = false>(
     toAddress: string,
     amount: string,
+    tokenDecimals?: number,
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
-    const amountFormatted = await this.amountToUnits(await this.getToken(), amount)
+    const amountFormatted = await this.amountToUnits(
+      await this.getToken(),
+      amount,
+      tokenDecimals
+    )
     const estGas = await this.contract.deposit_for.estimateGas(toAddress, amountFormatted)
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
     // Invoke function of the contract
@@ -72,14 +84,20 @@ export class VeOcean extends SmartContractWithAddress {
   /**
    * Deposit `amount` additional tokens for `userAddress` without modifying the unlock time
    * @param {String} amount Amount of tokens to be locked
+   * @param {number} [tokenDecimals] optional number of decimals of the token
    * @param {Boolean} estimateGas if True, return gas estimate
    * @return {Promise<ReceiptOrEstimate>}
    */
   public async increaseAmount<G extends boolean = false>(
     amount: string,
+    tokenDecimals?: number,
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
-    const amountFormatted = await this.amountToUnits(await this.getToken(), amount)
+    const amountFormatted = await this.amountToUnits(
+      await this.getToken(),
+      amount,
+      tokenDecimals
+    )
     const estGas = await this.contract.increase_amount.estimateGas(amountFormatted)
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
     // Invoke function of the contract

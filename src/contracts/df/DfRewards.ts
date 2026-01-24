@@ -57,6 +57,7 @@ export class DfRewards extends SmartContractWithAddress {
    * @param {String[]} userAddresses array of users that will receive rewards
    * @param {String[]} amounts array of amounts
    * @param {String} tokenAddress token address
+   * @param {number} [tokenDecimals] optional number of decimals of the token
    * @param {Boolean} estimateGas if True, return gas estimate
    * @return {Promise<ReceiptOrEstimate>}
    */
@@ -64,10 +65,11 @@ export class DfRewards extends SmartContractWithAddress {
     userAddresses: string[],
     amounts: string[],
     tokenAddress: string,
+    tokenDecimals?: number,
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
     for (let i = 0; i < amounts.length; i++) {
-      amounts[i] = await this.amountToUnits(tokenAddress, amounts[i])
+      amounts[i] = await this.amountToUnits(tokenAddress, amounts[i], tokenDecimals)
     }
     const estGas = await this.contract.allocate.estimateGas(
       userAddresses,

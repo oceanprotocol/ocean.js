@@ -93,6 +93,7 @@ export class EscrowContract extends SmartContractWithAddress {
    * returned from initialize compute payment and used for authorize if needed.
    * @param {String} maxLockCounts max lock counts,
    * returned from initialize compute payment and used for authorize if needed.
+   * @param {number} [tokenDecimals] optional number of decimals of the token
    * @return {Promise<ValidationResponse>} validation response
    */
   public async verifyFundsForEscrowPayment(
@@ -101,7 +102,8 @@ export class EscrowContract extends SmartContractWithAddress {
     amountToDeposit?: string,
     maxLockedAmount?: string,
     maxLockSeconds?: string,
-    maxLockCounts?: string
+    maxLockCounts?: string,
+    tokenDecimals?: number
   ): Promise<ValidationResponse> {
     const balanceNativeToken = await this.signer.provider?.getBalance(
       getAddress(consumerAddress)
@@ -116,7 +118,8 @@ export class EscrowContract extends SmartContractWithAddress {
     const allowance = await tokenContract.allowance(
       token,
       await this.signer.getAddress(),
-      this.contract.target.toString()
+      this.contract.target.toString(),
+      tokenDecimals
     )
     if (
       new BigNumber(await this.amountToUnits(token, allowance, 18)).isLessThan(
@@ -155,15 +158,19 @@ export class EscrowContract extends SmartContractWithAddress {
           new BigNumber(maxLockedAmount)
         )
       ) {
-        await this.deposit(token, amountToDeposit)
+        await this.deposit(token, amountToDeposit, tokenDecimals)
       } else if (
         new BigNumber(parseEther(balancePaymentToken)).isLessThanOrEqualTo(
           new BigNumber(parseEther(maxLockedAmount))
         )
       ) {
-        await this.deposit(token, await this.unitsToAmount(token, maxLockedAmount))
+        await this.deposit(
+          token,
+          await this.unitsToAmount(token, maxLockedAmount, tokenDecimals),
+          tokenDecimals
+        )
       } else {
-        await this.deposit(token, balancePaymentToken)
+        await this.deposit(token, balancePaymentToken, tokenDecimals)
       }
     }
     if (auths.length === 0) {
@@ -185,15 +192,17 @@ export class EscrowContract extends SmartContractWithAddress {
    * Deposit funds
    * @param {String} token Token address
    * @param {String} amount amount
+   * @param {number} [tokenDecimals] optional number of decimals of the token
    * @param {Boolean} estimateGas if True, return gas estimate
    * @return {Promise<ReceiptOrEstimate>} returns the transaction receipt or the estimateGas value
    */
   public async deposit<G extends boolean = false>(
     token: string,
     amount: string,
+    tokenDecimals?: number,
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
-    const amountParsed = await this.amountToUnits(token, amount)
+    const amountParsed = await this.amountToUnits(token, amount, tokenDecimals)
     const estGas = await this.contract.deposit.estimateGas(token, amountParsed)
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
     const trxReceipt = await sendTx(
@@ -211,12 +220,14 @@ export class EscrowContract extends SmartContractWithAddress {
    * Withdraw funds
    * @param {String[]} tokens Array of token addresses
    * @param {String[]} amounts Array of token amounts
+   * @param {number} [tokenDecimals] optional number of decimals of the token
    * @param {Boolean} estimateGas if True, return gas estimate
    * @return {Promise<ReceiptOrEstimate>} returns the transaction receipt or the estimateGas value
    */
   public async withdraw<G extends boolean = false>(
     tokens: string[],
     amounts: string[],
+    tokenDecimals?: number,
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
     // check if funds exist in escrow in order to be withdrawed
@@ -245,7 +256,7 @@ export class EscrowContract extends SmartContractWithAddress {
     }
     const amountsParsed = await Promise.all(
       amountsWithSufficientFunds.map((amount, i) =>
-        this.amountToUnits(tokensWithSufficientFunds[i], amount)
+        this.amountToUnits(tokensWithSufficientFunds[i], amount, tokenDecimals)
       )
     )
 
@@ -270,6 +281,7 @@ export class EscrowContract extends SmartContractWithAddress {
    * @param {String} maxLockedAmount,
    * @param {String} maxLockSeconds,
    * @param {String} maxLockCounts,
+   * @param {number} [tokenDecimals] optional number of decimals of the token
    * @param {Boolean} estimateGas if True, return gas estimate
    * @return {Promise<ReceiptOrEstimate>} returns the transaction receipt or the estimateGas value
    */
@@ -279,6 +291,7 @@ export class EscrowContract extends SmartContractWithAddress {
     maxLockedAmount: string,
     maxLockSeconds: string,
     maxLockCounts: string,
+    tokenDecimals?: number,
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
     const auths = await this.getAuthorizations(
@@ -290,9 +303,21 @@ export class EscrowContract extends SmartContractWithAddress {
       console.log(`Payee ${payee} already authorized`)
       return null
     }
-    const maxLockedAmountParsed = await this.amountToUnits(token, maxLockedAmount)
-    const maxLockSecondsParsed = await this.amountToUnits(token, maxLockSeconds)
-    const maxLockCountsParsed = await this.amountToUnits(token, maxLockCounts)
+    const maxLockedAmountParsed = await this.amountToUnits(
+      token,
+      maxLockedAmount,
+      tokenDecimals
+    )
+    const maxLockSecondsParsed = await this.amountToUnits(
+      token,
+      maxLockSeconds,
+      tokenDecimals
+    )
+    const maxLockCountsParsed = await this.amountToUnits(
+      token,
+      maxLockCounts,
+      tokenDecimals
+    )
     const estGas = await this.contract.authorize.estimateGas(
       token,
       payee,
