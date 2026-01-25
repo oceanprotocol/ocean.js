@@ -10,8 +10,7 @@ import {
   sendTx,
   amountToUnits,
   isDefined,
-  unitsToAmount,
-  sleep
+  unitsToAmount
 } from '../../src/index.js'
 import {
   ComputeJob,

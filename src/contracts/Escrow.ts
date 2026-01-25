@@ -21,7 +21,6 @@ export class EscrowContract extends SmartContractWithAddress {
    * @param {string | number} [network] Network id or name
    * @param {Config} [config] The configuration object.
    * @param {AbiItem[]} [abi] ABI array of the smart contract
-   * @param {AbiItem[]} abiEnterprise Enterprise ABI array of the smart contract
    */
   constructor(
     address: string,
@@ -342,10 +341,10 @@ export class EscrowContract extends SmartContractWithAddress {
 
   /**
    * Cancel expired locks
-   * @param {String} jobId Job ID with hash
-   * @param {String} token Token address
-   * @param {String} payee, Payee address for the compute job,
-   * @param {String} payer, Payer address for the compute job
+   * @param {String[]} jobIds Job IDs with hash
+   * @param {String[]} tokens Token addresses
+   * @param {String[]} payers, Payer addresses for the compute job
+   * @param {String[]} payees, Payee addresses for the compute job,
    * @param {Boolean} estimateGas if True, return gas estimate
    * @return {Promise<ReceiptOrEstimate>} returns the transaction receipt or the estimateGas value
    */

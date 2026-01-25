@@ -1,4 +1,3 @@
-import { assert, expect } from 'chai'
 import { ethers, Signer } from 'ethers'
 import { getTestConfig, getAddresses, provider } from '../config.js'
 import {
