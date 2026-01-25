@@ -14,14 +14,16 @@ export class DfRewards extends SmartContractWithAddress {
   /** Get available DF Rewards for a token
    * @param {String} userAddress user address
    * @param {String} tokenAddress token address
+   * @param {number} [tokenDecimals] optional number of decimals of the token
    * @return {Promise<string>}
    */
   public async getAvailableRewards(
     userAddress: string,
-    tokenAddress: string
+    tokenAddress: string,
+    tokenDecimals?: number
   ): Promise<string> {
     const rewards = await this.contract.claimable(userAddress, tokenAddress)
-    const rewardsFormated = await this.unitsToAmount(tokenAddress, rewards)
+    const rewardsFormated = await this.unitsToAmount(tokenAddress, rewards, tokenDecimals)
 
     return rewardsFormated
   }
