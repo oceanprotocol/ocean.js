@@ -48,11 +48,16 @@ export class EnterpriseFeeCollectorContract extends SmartContractWithAddress {
    * Calculate fee
    * @param {string} token Token address
    * @param {string} amount Amount
+   * @param {number} [tokenDecimals] optional number of decimals of the token
    * @return {Promise<string>} Fee amount
    */
-  public async calculateFee(token: string, amount: number): Promise<any> {
-    const weiAmount = this.amountToUnits(token, amount.toString())
+  public async calculateFee(
+    token: string,
+    amount: number,
+    tokenDecimals?: number
+  ): Promise<any> {
+    const weiAmount = this.amountToUnits(token, amount.toString(), tokenDecimals)
     const amountWithFee = await this.contract.calculateFee(token, weiAmount)
-    return this.unitsToAmount(token, amountWithFee)
+    return this.unitsToAmount(token, amountWithFee, tokenDecimals)
   }
 }

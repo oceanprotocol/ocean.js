@@ -636,8 +636,8 @@ export class NftFactory extends SmartContractWithAddress {
       uints: [
         freParams.baseTokenDecimals,
         freParams.datatokenDecimals,
-        await this.amountToUnits(null, freParams.fixedRate, 18),
-        await this.amountToUnits(null, freParams.marketFee, 18),
+        await this.amountToUnits(null, freParams.fixedRate, freParams.datatokenDecimals),
+        await this.amountToUnits(null, freParams.marketFee, freParams.datatokenDecimals),
         withMint
       ]
     }

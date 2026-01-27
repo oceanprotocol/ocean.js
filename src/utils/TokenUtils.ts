@@ -109,6 +109,7 @@ export async function approveWei<G extends boolean = false>(
  * @param {string} tokenAddress - The address of the token
  * @param {string} recipient - The address of the tokens receiver
  * @param {String} amount amount of ERC20 Datatokens (not as wei)
+ * @param {number} [tokenDecimals] optional number of decimals of the token
  * @param {String} estimateGas  if true returns the gas estimate
  */
 export async function transfer<G extends boolean = false>(
@@ -117,10 +118,11 @@ export async function transfer<G extends boolean = false>(
   tokenAddress: string,
   recipient: string,
   amount: string,
+  tokenDecimals?: number,
   estimateGas?: G
 ): Promise<ReceiptOrEstimate<G>> {
   const tokenContract = new ethers.Contract(tokenAddress, minAbi, signer)
-  const amountFormatted = await amountToUnits(signer, tokenAddress, amount)
+  const amountFormatted = await amountToUnits(signer, tokenAddress, amount, tokenDecimals)
   const estGas = await tokenContract.transfer.estimateGas(recipient, amountFormatted)
   if (estimateGas) return <ReceiptOrEstimate<G>>estGas
 
