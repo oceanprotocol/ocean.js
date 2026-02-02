@@ -12,7 +12,7 @@ export interface RunningPlatform {
   os: string
 }
 
-export type ComputeResourceType = 'cpu' | 'memory' | 'storage'
+export type ComputeResourceType = 'cpu' | 'ram' | 'disk' | 'gpu'
 
 export interface ComputeResourcesPricingInfo {
   type: ComputeResourceType
@@ -32,8 +32,8 @@ export interface ComputeResourceRequest {
 }
 
 export interface ComputeResource {
-  id: ComputeResourceType
-  type?: string
+  id: string
+  type?: ComputeResourceType
   kind?: string
   total: number // total number of specific resource
   min: number // min number of resource needed for a job
