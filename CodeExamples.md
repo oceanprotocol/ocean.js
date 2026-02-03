@@ -380,7 +380,8 @@ Next, let's encrypt the file(s) using provider
     fixedDDO.services[0].files = await ProviderInstance.encrypt(
       ASSET_URL,
       fixedDDO.chainId,
-      providerUrl
+      providerUrl,
+      publisherAccount
     )
     fixedDDO.services[0].datatokenAddress = freDatatokenAddress
 
@@ -392,7 +393,8 @@ Now let's console log the DID to check everything is working
     const providerResponse = await ProviderInstance.encrypt(
       fixedDDO,
       fixedDDO.chainId,
-      providerUrl
+      providerUrl,
+      publisherAccount
     )
     const encryptedDDO = await providerResponse
 
@@ -679,7 +681,8 @@ Now we need to encrypt file(s) using provider
     fixedDDO.services[0].files = await ProviderInstance.encrypt(
       ASSET_URL,
       fixedDDO.chainId,
-      providerUrl
+      providerUrl,
+      publisherAccount
     )
     fixedDDO.services[0].datatokenAddress = dispenserDatatokenAddress
 
@@ -688,7 +691,8 @@ Now we need to encrypt file(s) using provider
     const encryptedDDO = await ProviderInstance.encrypt(
       fixedDDO,
       fixedDDO.chainId,
-      providerUrl
+      providerUrl,
+      publisherAccount
     )
     const isAssetValid: ValidateMetadata = await aquarius.validate(
       fixedDDO,

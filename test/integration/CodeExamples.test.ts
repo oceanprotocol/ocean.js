@@ -380,7 +380,8 @@ describe('Marketplace flow tests', async () => {
     fixedDDO.services[0].files = await ProviderInstance.encrypt(
       ASSET_URL,
       fixedDDO.chainId,
-      providerUrl
+      providerUrl,
+      publisherAccount
     )
     fixedDDO.services[0].datatokenAddress = freDatatokenAddress
 
@@ -392,7 +393,8 @@ describe('Marketplace flow tests', async () => {
     const providerResponse = await ProviderInstance.encrypt(
       fixedDDO,
       fixedDDO.chainId,
-      providerUrl
+      providerUrl,
+      publisherAccount
     )
     const encryptedDDO = await providerResponse
 
@@ -679,7 +681,8 @@ describe('Marketplace flow tests', async () => {
     fixedDDO.services[0].files = await ProviderInstance.encrypt(
       ASSET_URL,
       fixedDDO.chainId,
-      providerUrl
+      providerUrl,
+      publisherAccount
     )
     fixedDDO.services[0].datatokenAddress = dispenserDatatokenAddress
 
@@ -688,7 +691,8 @@ describe('Marketplace flow tests', async () => {
     const encryptedDDO = await ProviderInstance.encrypt(
       fixedDDO,
       fixedDDO.chainId,
-      providerUrl
+      providerUrl,
+      publisherAccount
     )
     const isAssetValid: ValidateMetadata = await aquarius.validate(
       fixedDDO,
