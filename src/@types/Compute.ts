@@ -12,10 +12,10 @@ export interface RunningPlatform {
   os: string
 }
 
-export type ComputeResourceType = 'cpu' | 'memory' | 'storage'
+export type ComputeResourceType = 'cpu' | 'ram' | 'disk' | 'gpu'
 
 export interface ComputeResourcesPricingInfo {
-  type: ComputeResourceType
+  id: string
   price: number
 }
 export interface ComputeEnvFees {
@@ -23,7 +23,7 @@ export interface ComputeEnvFees {
   prices: ComputeResourcesPricingInfo[]
 }
 export interface ComputeEnvFeesStructure {
-  [chainId: string]: ComputeEnvFees
+  [chainId: string]: ComputeEnvFees[]
 }
 
 export interface ComputeResourceRequest {
@@ -32,17 +32,25 @@ export interface ComputeResourceRequest {
 }
 
 export interface ComputeResource {
-  id: ComputeResourceType
-  type?: string
+  id: string
+  type?: ComputeResourceType
   kind?: string
-  total: number // total number of specific resource
-  min: number // min number of resource needed for a job
+  total?: number // total number of specific resource
+  min?: number // min number of resource needed for a job
   max: number // max number of resource for a job
+  description?: string
+  init?: { [key: string]: any }
   inUse?: number // for display purposes
+}
+
+export interface ComputeEnvironmentAccessOptions {
+  addresses?: string[]
+  accessLists?: any
 }
 
 export interface ComputeEnvironmentFreeOptions {
   // only if a compute env exposes free jobs
+  access?: ComputeEnvironmentAccessOptions
   storageExpiry?: number
   maxJobDuration?: number
   maxJobs?: number // maximum number of simultaneous free jobs
@@ -50,14 +58,21 @@ export interface ComputeEnvironmentFreeOptions {
 }
 export interface ComputeEnvironment {
   id: string
-  description: string
+  description?: string
   consumerAddress: string
+  access?: ComputeEnvironmentAccessOptions
   storageExpiry?: number // amount of seconds for storage
   minJobDuration?: number // min billable seconds for a paid job
   maxJobDuration?: number // max duration in seconds for a paid job
   maxJobs?: number // maximum number of simultaneous paid jobs
   runningJobs: number // amount of running jobs (paid jobs)
   runningfreeJobs?: number // amount of running jobs (free jobs)
+  queuedJobs?: number
+  queuedFreeJobs?: number
+  queMaxWaitTime?: number
+  queMaxWaitTimeFree?: number
+  runMaxWaitTime?: number
+  runMaxWaitTimeFree?: number
   fees: ComputeEnvFeesStructure
   resources?: ComputeResource[]
   free?: ComputeEnvironmentFreeOptions
