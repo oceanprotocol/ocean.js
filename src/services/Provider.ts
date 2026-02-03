@@ -210,7 +210,7 @@ export class Provider {
         ? this.getEndpointURL(serviceEndpoints, 'encrypt').urlPath
         : null) + `?chainId=${chainId}`
     if (!path) return null
-    path += `?nonce=${nonce}`
+    path += `&nonce=${nonce}`
     path += `&consumerAddress=${consumerAddress}`
     path += `&signature=${signature}`
 
