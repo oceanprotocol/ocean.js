@@ -181,6 +181,8 @@ export class Provider {
     data: any,
     chainId: number,
     providerUri: string,
+    signerOrAuthToken: Signer | string,
+    policyServer?: any,
     signal?: AbortSignal
   ): Promise<string> {
     const providerEndpoints = await this.getEndpoints(providerUri)
@@ -188,11 +190,30 @@ export class Provider {
       providerUri,
       providerEndpoints
     )
-    const path =
+    const consumerAddress = await this.getConsumerAddress(signerOrAuthToken)
+    const nonce = (
+      (await this.getNonce(
+        providerUri,
+        consumerAddress,
+        signal,
+        providerEndpoints,
+        serviceEndpoints
+      )) + 1
+    ).toString()
+
+    // same signed message as for start compute (consumer address + did[0] + nonce)
+    const signatureMessage = String(nonce)
+    const signature = await this.getSignature(signerOrAuthToken, signatureMessage)
+
+    let path =
       (this.getEndpointURL(serviceEndpoints, 'encrypt')
         ? this.getEndpointURL(serviceEndpoints, 'encrypt').urlPath
         : null) + `?chainId=${chainId}`
     if (!path) return null
+    path += `?nonce=${nonce}`
+    path += `&consumerAddress=${consumerAddress}`
+    path += `&signature=${signature}`
+
     try {
       const response = await fetch(path, {
         method: 'POST',

@@ -350,7 +350,8 @@ async function createAssetHelper(
   ddo.services[0].files = await ProviderInstance.encrypt(
     assetUrl,
     Number(chainId),
-    providerUrl
+    providerUrl,
+    owner
   )
   ddo.services[0].datatokenAddress = datatokenAddressAsset
   ddo.services[0].serviceEndpoint = providerUrl
@@ -361,7 +362,8 @@ async function createAssetHelper(
   const encryptedResponse = await ProviderInstance.encrypt(
     ddo,
     Number(chainId),
-    providerUrl
+    providerUrl,
+    owner
   )
   const validateResult = await aquariusInstance.validate(ddo, owner, providerUrl)
   await nft.setMetadata(
