@@ -214,7 +214,9 @@ export async function createAsset(
     services[0].files = await ProviderInstance.encrypt(
       assetUrl,
       Number(chainID),
-      providerUrl
+      providerUrl,
+      owner,
+      null
     )
   }
 
@@ -230,7 +232,13 @@ export async function createAsset(
   let metadataHash
   let flags
   if (encryptDDO) {
-    metadata = await ProviderInstance.encrypt(ddo, Number(chainID), providerUrl)
+    metadata = await ProviderInstance.encrypt(
+      ddo,
+      Number(chainID),
+      providerUrl,
+      owner,
+      null
+    )
     const validateResult = await aquariusInstance.validate(ddo, owner, providerUrl)
     metadataHash = validateResult.hash
     flags = 2
