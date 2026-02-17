@@ -1394,8 +1394,11 @@ export class Provider {
       )) + 1
     ).toString()
 
-    const signatureMessage = consumerAddress + nonce
-    const signature = await this.signProviderRequest(consumer, signatureMessage)
+    const signature = await this.getSignature(
+      consumer,
+      nonce,
+      PROTOCOL_COMMANDS.CREATE_AUTH_TOKEN
+    )
 
     try {
       const response = await fetch(url, {
