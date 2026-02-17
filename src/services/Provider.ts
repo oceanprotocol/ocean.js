@@ -1,5 +1,5 @@
 import fetch from 'cross-fetch'
-import { ethers, JsonRpcSigner, Signer } from 'ethers'
+import { Signer } from 'ethers'
 import { LoggerInstance } from '../utils/Logger.js'
 import {
   Arweave,
@@ -25,6 +25,7 @@ import {
 import { PROTOCOL_COMMANDS } from '../@types/Provider.js'
 import { decodeJwt } from '../utils/Jwt.js'
 import { eciesencrypt } from '../utils/eciesencrypt.js'
+import { signRequest } from '../utils/SignatureUtils.js'
 
 export class Provider {
   private async getConsumerAddress(signerOrAuthToken: Signer | string): Promise<string> {
@@ -44,7 +45,7 @@ export class Provider {
     const message = String(
       String(await signerOrAuthToken.getAddress()) + String(nonce) + String(command)
     )
-    return await this.signProviderRequest(signerOrAuthToken, message)
+    return signRequest(signerOrAuthToken, message)
   }
 
   private getAuthorization(signerOrAuthToken: Signer | string): string | undefined {
@@ -154,36 +155,6 @@ export class Provider {
     } catch (e) {
       LoggerInstance.error(e)
       throw new Error(e.message)
-    }
-  }
-
-  /**
-   * Sign a provider request with a signer.
-   * @param {Signer} signer - The signer to use.
-   * @param {string} message - The message to sign.
-   * @returns {Promise<string>} A promise that resolves with the signature.
-   */
-  public async signProviderRequest(signer: Signer, message: string): Promise<string> {
-    //  const isMetaMask = web3 && web3.currentProvider && (web3.currentProvider as any).isMetaMask
-    //  if (isMetaMask) return await web3.eth.personal.sign(consumerMessage, accountId, password)
-    //  await web3.eth.sign(consumerMessage, await signer.getAddress())
-    // const consumerMessage = ethers.keccak256(toUtf8Bytes(message))
-    // const messageHashBytes = ethers.getBytes(consumerMessage)
-    const consumerMessage = ethers.solidityPackedKeccak256(
-      ['bytes'],
-      [ethers.hexlify(ethers.toUtf8Bytes(message))]
-    )
-    const messageHashBytes = ethers.toBeArray(consumerMessage)
-    try {
-      return await signer.signMessage(messageHashBytes)
-    } catch (error) {
-      // LoggerInstance.error('Sign provider message error: ', error)
-      // Check if the user is using barge chain
-      const network = await signer.provider.getNetwork()
-      const chainId = Number(network.chainId)
-      if (chainId === 8996) {
-        return await (signer as JsonRpcSigner)._legacySignMessage(messageHashBytes)
-      }
     }
   }
 
@@ -605,7 +576,7 @@ export class Provider {
       let signatureMessage = consumerAddress
       signatureMessage += assets[0]?.documentId
       signatureMessage += nonce
-      signature = await this.signProviderRequest(signerOrAuthToken, signatureMessage)
+      signature = await signRequest(signerOrAuthToken, signatureMessage)
     }
 
     const providerData: Record<string, any> = {
@@ -779,7 +750,7 @@ export class Provider {
     let signatureMessage = consumerAddress
     signatureMessage += dataset.documentId
     signatureMessage += nonce
-    const signature = await this.signProviderRequest(consumer, signatureMessage)
+    const signature = await signRequest(consumer, signatureMessage)
     const payload = Object()
     payload.consumerAddress = consumerAddress
     payload.signature = signature
@@ -1458,7 +1429,7 @@ export class Provider {
     ).toString()
 
     const signatureMessage = consumerAddress + nonce
-    const signature = await this.signProviderRequest(consumer, signatureMessage)
+    const signature = await signRequest(consumer, signatureMessage)
 
     try {
       const response = await fetch(url, {

@@ -4,6 +4,7 @@ import { sleep } from '../utils/General.js'
 import { Signer } from 'ethers'
 import { signRequest } from '../utils/SignatureUtils.js'
 import { Asset, DDO, DDOManager, ValidateMetadata } from '@oceanprotocol/ddo-js'
+import { PROTOCOL_COMMANDS } from '../@types/Provider.js'
 
 export interface SearchQuery {
   from?: number
@@ -136,11 +137,12 @@ export class Aquarius {
         nonce = '0'
       }
       const nextNonce = (Number(nonce) + 1).toString() // have to increase the previous
-      // same signed message as usual (did + nonce)
-      // the node will only validate (add his signature if there fields are present and are valid)
-      // let signatureMessage = publisherAddress
-      const signatureMessage = publisherAddress + nextNonce
-      const signature = await signRequest(signer, signatureMessage)
+      const message = String(
+        String(await signer.getAddress()) +
+          String(nextNonce) +
+          String(PROTOCOL_COMMANDS.VALIDATE_DDO)
+      )
+      const signature = await signRequest(signer, message)
       const data = { ddo, publisherAddress, nonce: nextNonce, signature }
       const response = await fetch(ddoValidateRoute, {
         method: 'POST',
