@@ -73,7 +73,6 @@ export class Provider {
    * @return {string} The node public key
    */
   private async getNodePublicKey(providerUri: string): Promise<string> {
-    // TODO: Implement this function
     const providerEndpoints = await this.getEndpoints(providerUri)
     return providerEndpoints.nodePublicKey
   }
