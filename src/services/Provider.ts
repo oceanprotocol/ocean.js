@@ -189,10 +189,11 @@ export class Provider {
         serviceEndpoints
       )) + 1
     ).toString()
-
-    // same signed message as for start compute (consumer address + did[0] + nonce)
-    const signatureMessage = String(nonce)
-    const signature = await this.getSignature(signerOrAuthToken, nonce, signatureMessage)
+    const signature = await this.getSignature(
+      signerOrAuthToken,
+      nonce,
+      PROTOCOL_COMMANDS.ENCRYPT
+    )
 
     let path =
       (this.getEndpointURL(serviceEndpoints, 'encrypt')

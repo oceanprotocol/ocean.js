@@ -26,6 +26,12 @@ export class Aquarius {
     this.aquariusURL = aquariusURL
   }
 
+  // temp, untll we merge aquarius & provider
+  private getAuthorization(signerOrAuthToken: Signer | string): string | undefined {
+    const isAuthToken = typeof signerOrAuthToken === 'string'
+    return isAuthToken ? signerOrAuthToken : undefined
+  }
+
   /** Resolves a DID
    * @param {string} did DID of the asset.
    * @param {AbortSignal} signal abort signal
@@ -148,8 +154,8 @@ export class Aquarius {
         method: 'POST',
         body: JSON.stringify(data),
         headers: {
-          'Content-Type': 'application/octet-stream',
-          Authorization: authorization
+          'Content-Type': 'application/json',
+          Authorization: this.getAuthorization(signer)
         },
         signal
       })
@@ -157,8 +163,6 @@ export class Aquarius {
       if (response.status !== 200) {
         throw new Error('Metadata validation failed')
       }
-      console.log('Ddo successfully validated')
-
       return {
         valid: true,
         hash: jsonResponse.hash,
