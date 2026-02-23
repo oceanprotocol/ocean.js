@@ -1656,6 +1656,87 @@ export class Provider {
   }
 
   /**
+   * Download node logs as an admin.
+   * @param {string} providerUri - The provider URI.
+   * @param {Signer} signer - The admin signer.
+   * @param {string} startTime - Start time (epoch ms) to get logs from.
+   * @param {string} endTime - End time (epoch ms) to get logs to.
+   * @param {number} [maxLogs] - Maximum number of logs to retrieve (default: 100, max: 1000).
+   * @param {string} [moduleName] - Filter logs by module name.
+   * @param {string} [level] - Filter logs by log level.
+   * @param {number} [page] - Pagination page number.
+   * @param {AbortSignal} [signal] - An optional abort signal.
+   * @returns {Promise<any>} The logs response body stream.
+   */
+  public async downloadNodeLogs(
+    providerUri: string,
+    signer: Signer,
+    startTime: string,
+    endTime: string,
+    maxLogs?: number,
+    moduleName?: string,
+    level?: string,
+    page?: number,
+    signal?: AbortSignal
+  ): Promise<any> {
+    const providerEndpoints = await this.getEndpoints(providerUri)
+    const serviceEndpoints = await this.getServiceEndpoints(
+      providerUri,
+      providerEndpoints
+    )
+
+    const logsUrl = this.getEndpointURL(serviceEndpoints, 'logs')
+      ? this.getEndpointURL(serviceEndpoints, 'logs').urlPath
+      : null
+
+    if (!logsUrl) {
+      LoggerInstance.error(
+        'Download node logs failed: Cannot get proper logs route (perhaps not implemented on provider?)'
+      )
+      return null
+    }
+
+    const expiryTimestamp = Date.now() + 5 * 60 * 1000
+    const signature = await signer.signMessage(expiryTimestamp.toString())
+
+    let url = logsUrl + `?startTime=${startTime}&endTime=${endTime}`
+    if (maxLogs) url += `&maxLogs=${maxLogs}`
+    if (moduleName) url += `&moduleName=${moduleName}`
+    if (level) url += `&level=${level}`
+    if (page) url += `&page=${page}`
+
+    let response
+    try {
+      response = await fetch(url, {
+        method: 'POST',
+        body: JSON.stringify({
+          signature,
+          expiryTimestamp
+        }),
+        headers: { 'Content-Type': 'application/json' },
+        signal
+      })
+    } catch (e) {
+      LoggerInstance.error('Download node logs failed:')
+      LoggerInstance.error(e)
+      throw new Error('HTTP request failed calling Provider')
+    }
+
+    if (response?.ok) {
+      return response.body
+    }
+
+    const resolvedResponse = await response.json()
+    LoggerInstance.error(
+      'Download node logs failed: ',
+      response.status,
+      response.statusText,
+      resolvedResponse
+    )
+    throw new Error(JSON.stringify(resolvedResponse))
+  }
+
+  /**
    * Private method that removes the leading 0x from a string.
    * @param {string} input - The input string.
    * @returns The transformed string.
