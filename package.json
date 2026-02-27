@@ -56,7 +56,7 @@
     "web3": "^1.8.0"
   },
   "dependencies": {
-    "@oasisprotocol/sapphire-paratime": "^1.3.2",
+    "@oasisprotocol/sapphire-paratime": "^2.3.0",
     "@oceanprotocol/contracts": "^2.6.0",
     "@oceanprotocol/ddo-js": "^0.1.4",
     "@rdfjs/dataset": "^2.0.2",
