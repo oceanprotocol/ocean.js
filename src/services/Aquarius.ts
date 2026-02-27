@@ -4,6 +4,7 @@ import { sleep } from '../utils/General.js'
 import { Signer } from 'ethers'
 import { signRequest } from '../utils/SignatureUtils.js'
 import { Asset, DDO, DDOManager, ValidateMetadata } from '@oceanprotocol/ddo-js'
+import { PROTOCOL_COMMANDS } from '../@types/Provider.js'
 
 export interface SearchQuery {
   from?: number
@@ -23,6 +24,12 @@ export class Aquarius {
    */
   constructor(aquariusURL: string) {
     this.aquariusURL = aquariusURL
+  }
+
+  // temp, untll we merge aquarius & provider
+  private getAuthorization(signerOrAuthToken: Signer | string): string | undefined {
+    const isAuthToken = typeof signerOrAuthToken === 'string'
+    return isAuthToken ? signerOrAuthToken : undefined
   }
 
   /** Resolves a DID
@@ -136,18 +143,19 @@ export class Aquarius {
         nonce = '0'
       }
       const nextNonce = (Number(nonce) + 1).toString() // have to increase the previous
-      // same signed message as usual (did + nonce)
-      // the node will only validate (add his signature if there fields are present and are valid)
-      // let signatureMessage = publisherAddress
-      const signatureMessage = publisherAddress + nextNonce
-      const signature = await signRequest(signer, signatureMessage)
+      const message = String(
+        String(await signer.getAddress()) +
+          String(nextNonce) +
+          String(PROTOCOL_COMMANDS.VALIDATE_DDO)
+      )
+      const signature = await signRequest(signer, message)
       const data = { ddo, publisherAddress, nonce: nextNonce, signature }
       const response = await fetch(ddoValidateRoute, {
         method: 'POST',
         body: JSON.stringify(data),
         headers: {
-          'Content-Type': 'application/octet-stream',
-          Authorization: authorization
+          'Content-Type': 'application/json',
+          Authorization: this.getAuthorization(signer)
         },
         signal
       })
@@ -155,8 +163,6 @@ export class Aquarius {
       if (response.status !== 200) {
         throw new Error('Metadata validation failed')
       }
-      console.log('Ddo successfully validated')
-
       return {
         valid: true,
         hash: jsonResponse.hash,

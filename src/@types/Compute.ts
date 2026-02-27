@@ -199,3 +199,9 @@ export interface ValidationResponse {
   isValid: boolean
   message: string
 }
+
+export interface dockerRegistryAuth {
+  username?: string
+  password?: string
+  auth?: string
+}

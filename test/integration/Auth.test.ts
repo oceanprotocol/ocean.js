@@ -1,6 +1,6 @@
 import { Signer } from 'ethers'
 import { getTestConfig, provider } from '../config'
-import { ProviderInstance } from '../../src'
+import { ProviderInstance, sleep } from '../../src'
 import { expect } from 'chai'
 
 describe('Auth token tests', async () => {
@@ -18,11 +18,13 @@ describe('Auth token tests', async () => {
   })
 
   it('should generate auth token', async () => {
+    await sleep(100)
     const token = await ProviderInstance.generateAuthToken(account, providerUrl)
     expect(token).to.be.a('string')
   })
 
   it('should invalidate auth token', async () => {
+    await sleep(100)
     const token = await ProviderInstance.generateAuthToken(account, providerUrl)
     expect(token).to.be.a('string')
 

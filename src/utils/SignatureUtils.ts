@@ -1,4 +1,4 @@
-import { JsonRpcSigner, Signer, getBytes, keccak256, toUtf8Bytes } from 'ethers'
+import { JsonRpcSigner, Signer, getBytes, ethers } from 'ethers'
 import { LoggerInstance } from './Logger'
 
 /**
@@ -24,16 +24,17 @@ export async function signHash(signer: Signer, message: string) {
 }
 
 export async function signRequest(signer: Signer, message: string): Promise<string> {
-  const consumerMessage = keccak256(toUtf8Bytes(message))
-  const messageHashBytes = getBytes(consumerMessage)
-  if (!signer.provider) {
-    throw new Error('Provider is required but not available')
-  }
-  const { chainId } = await signer.provider.getNetwork()
+  const consumerMessage = ethers.solidityPackedKeccak256(
+    ['bytes'],
+    [ethers.hexlify(ethers.toUtf8Bytes(message))]
+  )
+  const messageHashBytes = ethers.toBeArray(consumerMessage)
   try {
     return await signer.signMessage(messageHashBytes)
   } catch (error) {
-    LoggerInstance.error('Sign message error: ', error)
+    // LoggerInstance.error('Sign message error: ', error)
+    const network = await signer.provider.getNetwork()
+    const chainId = Number(network.chainId)
     if (Number(chainId) === 8996) {
       console.log('Signing message with _legacySignMessage')
       return await (signer as JsonRpcSigner)._legacySignMessage(messageHashBytes)

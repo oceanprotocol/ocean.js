@@ -66,6 +66,7 @@
     "cross-fetch": "^4.0.0",
     "crypto-js": "^4.1.1",
     "decimal.js": "^10.4.1",
+    "eciesjs": "^0.4.5",
     "ethers": "^6.15.0",
     "form-data": "^2.3.3",
     "jsonwebtoken": "^9.0.2"

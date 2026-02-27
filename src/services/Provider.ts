@@ -1,5 +1,5 @@
 import fetch from 'cross-fetch'
-import { ethers, JsonRpcSigner, Signer } from 'ethers'
+import { Signer } from 'ethers'
 import { LoggerInstance } from '../utils/Logger.js'
 import {
   Arweave,
@@ -19,9 +19,13 @@ import {
   ComputePayment,
   ComputeJobMetadata,
   PolicyServerInitializeCommand,
-  PolicyServerPassthroughCommand
+  PolicyServerPassthroughCommand,
+  dockerRegistryAuth
 } from '../@types'
+import { PROTOCOL_COMMANDS } from '../@types/Provider.js'
 import { decodeJwt } from '../utils/Jwt.js'
+import { eciesencrypt } from '../utils/eciesencrypt.js'
+import { signRequest } from '../utils/SignatureUtils.js'
 
 export class Provider {
   private async getConsumerAddress(signerOrAuthToken: Signer | string): Promise<string> {
@@ -33,10 +37,15 @@ export class Provider {
 
   private async getSignature(
     signerOrAuthToken: Signer | string,
-    message: string
+    nonce: string,
+    command: string
   ): Promise<string | null> {
     const isAuthToken = typeof signerOrAuthToken === 'string'
-    return isAuthToken ? null : await this.signProviderRequest(signerOrAuthToken, message)
+    if (isAuthToken) return null
+    const message = String(
+      String(await signerOrAuthToken.getAddress()) + String(nonce) + String(command)
+    )
+    return signRequest(signerOrAuthToken, message)
   }
 
   private getAuthorization(signerOrAuthToken: Signer | string): string | undefined {
@@ -57,6 +66,15 @@ export class Provider {
       LoggerInstance.error('Finding the service endpoints failed:', e)
       throw new Error('HTTP request failed calling Provider')
     }
+  }
+
+  /**
+   * Returns the node public key
+   * @return {string} The node public key
+   */
+  private async getNodePublicKey(providerUri: string): Promise<string> {
+    const providerEndpoints = await this.getEndpoints(providerUri)
+    return providerEndpoints.nodePublicKey
   }
 
   /**
@@ -140,36 +158,6 @@ export class Provider {
   }
 
   /**
-   * Sign a provider request with a signer.
-   * @param {Signer} signer - The signer to use.
-   * @param {string} message - The message to sign.
-   * @returns {Promise<string>} A promise that resolves with the signature.
-   */
-  public async signProviderRequest(signer: Signer, message: string): Promise<string> {
-    //  const isMetaMask = web3 && web3.currentProvider && (web3.currentProvider as any).isMetaMask
-    //  if (isMetaMask) return await web3.eth.personal.sign(consumerMessage, accountId, password)
-    //  await web3.eth.sign(consumerMessage, await signer.getAddress())
-    // const consumerMessage = ethers.keccak256(toUtf8Bytes(message))
-    // const messageHashBytes = ethers.getBytes(consumerMessage)
-    const consumerMessage = ethers.solidityPackedKeccak256(
-      ['bytes'],
-      [ethers.hexlify(ethers.toUtf8Bytes(message))]
-    )
-    const messageHashBytes = ethers.toBeArray(consumerMessage)
-    try {
-      return await signer.signMessage(messageHashBytes)
-    } catch (error) {
-      // LoggerInstance.error('Sign provider message error: ', error)
-      // Check if the user is using barge chain
-      const network = await signer.provider.getNetwork()
-      const chainId = Number(network.chainId)
-      if (chainId === 8996) {
-        return await (signer as JsonRpcSigner)._legacySignMessage(messageHashBytes)
-      }
-    }
-  }
-
-  /**
    * Encrypt data using the Provider's own symmetric key
    * @param {string} data data in json format that needs to be sent , it can either be a DDO or a File array
    * @param {number} chainId network's id so provider can choose the corresponding Signer object
@@ -200,10 +188,11 @@ export class Provider {
         serviceEndpoints
       )) + 1
     ).toString()
-
-    // same signed message as for start compute (consumer address + did[0] + nonce)
-    const signatureMessage = String(nonce)
-    const signature = await this.getSignature(signerOrAuthToken, signatureMessage)
+    const signature = await this.getSignature(
+      signerOrAuthToken,
+      nonce,
+      PROTOCOL_COMMANDS.ENCRYPT
+    )
 
     let path =
       (this.getEndpointURL(serviceEndpoints, 'encrypt')
@@ -539,6 +528,7 @@ export class Provider {
    * @param {ComputeResourceRequest[]} resources The resources to start compute job with.
    * @param {number} chainId The chain used to do payments
    * @param {any} policyServer Policy server data.
+   * @param {dockerRegistryAuth} dockerRegistryAuth Docker registry authentication data.
    * @param {AbortSignal} signal abort signal
    * @return {Promise<ProviderComputeInitialize>} ProviderComputeInitialize data
    */
@@ -553,6 +543,7 @@ export class Provider {
     resources: ComputeResourceRequest[],
     chainId: number,
     policyServer?: any,
+    dockerRegistryAuth?: dockerRegistryAuth,
     signal?: AbortSignal
   ): Promise<ProviderComputeInitializeResults> {
     const providerEndpoints = await this.getEndpoints(providerUri)
@@ -579,10 +570,14 @@ export class Provider {
     ).toString()
 
     // same signed message as for start compute (consumer address + did[0] + nonce)
-    let signatureMessage = consumerAddress
-    signatureMessage += assets[0]?.documentId
-    signatureMessage += nonce
-    const signature = await this.getSignature(signerOrAuthToken, signatureMessage)
+    let signature
+    const isAuthToken = typeof signerOrAuthToken === 'string'
+    if (!isAuthToken) {
+      let signatureMessage = consumerAddress
+      signatureMessage += assets[0]?.documentId
+      signatureMessage += nonce
+      signature = await signRequest(signerOrAuthToken, signatureMessage)
+    }
 
     const providerData: Record<string, any> = {
       datasets: assets,
@@ -596,6 +591,15 @@ export class Provider {
       maxJobDuration: validUntil,
       consumerAddress,
       signature
+    }
+    if (dockerRegistryAuth) {
+      const nodeKey = await this.getNodePublicKey(providerUri)
+      if (nodeKey) {
+        providerData.dockerRegistryAuth = eciesencrypt(
+          nodeKey,
+          JSON.stringify(dockerRegistryAuth)
+        )
+      }
     }
 
     if (policyServer) providerData.policyServer = policyServer
@@ -679,7 +683,11 @@ export class Provider {
       )) + 1
     ).toString()
 
-    const signature = await this.getSignature(signerOrAuthToken, did + nonce)
+    const signature = await this.getSignature(
+      signerOrAuthToken,
+      nonce,
+      PROTOCOL_COMMANDS.DOWNLOAD
+    )
     let consumeUrl = downloadUrl
     consumeUrl += `?fileIndex=${fileIndex}`
     consumeUrl += `&documentId=${did}`
@@ -742,7 +750,7 @@ export class Provider {
     let signatureMessage = consumerAddress
     signatureMessage += dataset.documentId
     signatureMessage += nonce
-    const signature = await this.signProviderRequest(consumer, signatureMessage)
+    const signature = await signRequest(consumer, signatureMessage)
     const payload = Object()
     payload.consumerAddress = consumerAddress
     payload.signature = signature
@@ -845,8 +853,11 @@ export class Provider {
         serviceEndpoints
       )) + 1
     ).toString()
-    const signatureMessage = String(consumerAddress + datasets[0]?.documentId + nonce)
-    const signature = await this.getSignature(signerOrAuthToken, signatureMessage)
+    const signature = await this.getSignature(
+      signerOrAuthToken,
+      nonce,
+      PROTOCOL_COMMANDS.COMPUTE_START
+    )
     const payload = Object()
     payload.consumerAddress = consumerAddress
     payload.signature = signature
@@ -963,9 +974,11 @@ export class Provider {
       )) + 1
     ).toString()
 
-    const signatureMessage = nonce // datasets[0].documentId
-    console.log('signatureMessage: ', signatureMessage)
-    const signature = await this.getSignature(signerOrAuthToken, signatureMessage)
+    const signature = await this.getSignature(
+      signerOrAuthToken,
+      nonce,
+      PROTOCOL_COMMANDS.FREE_COMPUTE_START
+    )
     const payload = Object()
     payload.consumerAddress = consumerAddress
     payload.signature = signature
@@ -1063,8 +1076,11 @@ export class Provider {
     let url = `?consumerAddress=${consumerAddress}&jobId=${jobId}`
     // Is signer, add signature and nonce
     if (!isAuthToken) {
-      const signatureMessage = `${consumerAddress}${jobId}${nonce}`
-      const signature = await this.getSignature(signerOrAuthToken, signatureMessage)
+      const signature = await this.getSignature(
+        signerOrAuthToken,
+        nonce,
+        PROTOCOL_COMMANDS.COMPUTE_GET_STREAMABLE_LOGS
+      )
       url += `&signature=${signature}`
       url += `&nonce=${nonce}`
     }
@@ -1158,14 +1174,11 @@ export class Provider {
       )) + 1
     ).toString()
 
-    const signatureMessage = consumerAddress + (jobId || '')
-    // On current provider impl (and nodes) we DO NOT check this signature
-    // On nodes we are signing again just the Nonce to send the request to Operator Service
-    // on current provider we sign: {owner}{job_id}{nonce}" OR {owner}{nonce} if no jobId
-    // On provider service STOP route, we just check signature owner + jobId OR just owner if no jobId
-    // signatureMessage += (agreementId && `${this.noZeroX(agreementId)}`) || ''
-    // signatureMessage += nonce
-    const signature = await this.getSignature(signerOrAuthToken, signatureMessage)
+    const signature = await this.getSignature(
+      signerOrAuthToken,
+      nonce,
+      PROTOCOL_COMMANDS.COMPUTE_STOP
+    )
     const queryParams = new URLSearchParams()
     queryParams.set('consumerAddress', consumerAddress)
     queryParams.set('nonce', nonce)
@@ -1307,11 +1320,11 @@ export class Provider {
         serviceEndpoints
       )) + 1
     ).toString()
-    let signatureMessage = consumerAddress
-    signatureMessage += jobId
-    signatureMessage += index.toString()
-    signatureMessage += nonce
-    const signature = await this.getSignature(signerOrAuthToken, signatureMessage)
+    const signature = await this.getSignature(
+      signerOrAuthToken,
+      nonce,
+      PROTOCOL_COMMANDS.COMPUTE_GET_RESULT
+    )
     if (!computeResultUrl) return null
     let resultUrl = computeResultUrl
     resultUrl += `?consumerAddress=${consumerAddress}`
@@ -1322,85 +1335,6 @@ export class Provider {
       resultUrl += `&signature=${signature}`
     }
     return resultUrl
-  }
-
-  /** Deletes a compute job.
-   * @param {string} did asset did
-   * @param {SignerOrAuthToken} signerOrAuthToken signer or auth token
-   * @param {string} jobId the compute job ID
-   * @param {string} providerUri The URI of the provider we want to query
-   * @param {AbortSignal} signal abort signal
-   * @return {Promise<ComputeJob | ComputeJob[]>}
-   */
-  public async computeDelete(
-    did: string,
-    signerOrAuthToken: Signer | string,
-    jobId: string,
-    providerUri: string,
-    signal?: AbortSignal
-  ): Promise<ComputeJob | ComputeJob[]> {
-    const providerEndpoints = await this.getEndpoints(providerUri)
-    const serviceEndpoints = await this.getServiceEndpoints(
-      providerUri,
-      providerEndpoints
-    )
-    const computeDeleteUrl = this.getEndpointURL(serviceEndpoints, 'computeDelete')
-      ? this.getEndpointURL(serviceEndpoints, 'computeDelete').urlPath
-      : null
-
-    const consumerAddress = await this.getConsumerAddress(signerOrAuthToken)
-    const nonce = (
-      (await this.getNonce(
-        providerUri,
-        consumerAddress,
-        signal,
-        providerEndpoints,
-        serviceEndpoints
-      )) + 1
-    ).toString()
-
-    let signatureMessage = consumerAddress
-    signatureMessage += jobId || ''
-    signatureMessage += (did && `${this.noZeroX(did)}`) || ''
-    signatureMessage += nonce
-    const signature = await this.getSignature(signerOrAuthToken, signatureMessage)
-    const payload = Object()
-    payload.documentId = did // this.noZeroX(did) #https://github.com/oceanprotocol/ocean.js/issues/1892
-    payload.consumerAddress = consumerAddress
-    payload.jobId = jobId
-    if (signature) payload.signature = signature
-
-    if (!computeDeleteUrl) return null
-    let response
-    try {
-      response = await fetch(computeDeleteUrl, {
-        method: 'DELETE',
-        body: JSON.stringify(payload),
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: this.getAuthorization(signerOrAuthToken)
-        },
-        signal
-      })
-    } catch (e) {
-      LoggerInstance.error('Delete compute job failed:')
-      LoggerInstance.error(e)
-      LoggerInstance.error('Payload was:', payload)
-      throw new Error('HTTP request failed calling Provider')
-    }
-    if (response?.ok) {
-      const params = await response.json()
-      return params
-    }
-    const resolvedResponse = await response.json()
-    LoggerInstance.error(
-      'Delete compute job failed:',
-      response.status,
-      response.statusText,
-      resolvedResponse
-    )
-    LoggerInstance.error('Payload was:', payload)
-    throw new Error(JSON.stringify(resolvedResponse))
   }
 
   /** Generates an auth token
@@ -1431,8 +1365,11 @@ export class Provider {
       )) + 1
     ).toString()
 
-    const signatureMessage = consumerAddress + nonce
-    const signature = await this.signProviderRequest(consumer, signatureMessage)
+    const signature = await this.getSignature(
+      consumer,
+      nonce,
+      PROTOCOL_COMMANDS.CREATE_AUTH_TOKEN
+    )
 
     try {
       const response = await fetch(url, {
@@ -1492,7 +1429,7 @@ export class Provider {
     ).toString()
 
     const signatureMessage = consumerAddress + nonce
-    const signature = await this.signProviderRequest(consumer, signatureMessage)
+    const signature = await signRequest(consumer, signatureMessage)
 
     try {
       const response = await fetch(url, {
@@ -1695,10 +1632,18 @@ export class Provider {
       )
       return null
     }
+    const consumerAddress = await signer.getAddress()
+    const nonce = (
+      (await this.getNonce(
+        providerUri,
+        consumerAddress,
+        signal,
+        providerEndpoints,
+        serviceEndpoints
+      )) + 1
+    ).toString()
 
-    const expiryTimestamp = Date.now() + 5 * 60 * 1000
-    const signature = await signer.signMessage(expiryTimestamp.toString())
-
+    const signature = await this.getSignature(signer, nonce, PROTOCOL_COMMANDS.GET_LOGS)
     let url = logsUrl + `?startTime=${startTime}&endTime=${endTime}`
     if (maxLogs) url += `&maxLogs=${maxLogs}`
     if (moduleName) url += `&moduleName=${moduleName}`
@@ -1711,7 +1656,8 @@ export class Provider {
         method: 'POST',
         body: JSON.stringify({
           signature,
-          expiryTimestamp
+          nonce,
+          address: consumerAddress
         }),
         headers: { 'Content-Type': 'application/json' },
         signal
