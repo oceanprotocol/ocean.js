@@ -137,8 +137,6 @@ jobs:
         working-directory: ${{ github.workspace }}/barge
         run: |
           bash -x start_ocean.sh --with-typesense 2>&1 > start-node.log &
-        env:
-          NODE_VERSION: pr-1207
 
       - name: Install deps & build
         run: npm ci && npm run build:metadata
