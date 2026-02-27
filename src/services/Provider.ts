@@ -1632,10 +1632,18 @@ export class Provider {
       )
       return null
     }
+    const consumerAddress = await signer.getAddress()
+    const nonce = (
+      (await this.getNonce(
+        providerUri,
+        consumerAddress,
+        signal,
+        providerEndpoints,
+        serviceEndpoints
+      )) + 1
+    ).toString()
 
-    const expiryTimestamp = Date.now() + 5 * 60 * 1000
-    const signature = await signer.signMessage(expiryTimestamp.toString())
-
+    const signature = await this.getSignature(signer, nonce, PROTOCOL_COMMANDS.GET_LOGS)
     let url = logsUrl + `?startTime=${startTime}&endTime=${endTime}`
     if (maxLogs) url += `&maxLogs=${maxLogs}`
     if (moduleName) url += `&moduleName=${moduleName}`
@@ -1648,7 +1656,8 @@ export class Provider {
         method: 'POST',
         body: JSON.stringify({
           signature,
-          expiryTimestamp
+          nonce,
+          address: consumerAddress
         }),
         headers: { 'Content-Type': 'application/json' },
         signal
