@@ -137,7 +137,7 @@ import {
   ComputeAlgorithm,
   ComputeAsset,
   Config,
-  Files,
+  StorageObject,
   NftCreateData,
   DatatokenCreateParams,
   sendTx,
@@ -147,7 +147,8 @@ import {
   amountToUnits,
   isDefined,
   ComputeResourceRequest,
-  unitsToAmount
+  unitsToAmount,
+  AssetFiles
 } from '../../src/index.js'
 import crypto from 'crypto-js'
 import { DDO } from '@oceanprotocol/ddo-js'
@@ -160,29 +161,18 @@ const { SHA256 } = crypto
 
  We will need two files to publish, one as dataset and one as algorithm, so here we define the files that we intend to publish.
 ```Typescript
-const DATASET_ASSET_URL: Files = {
-  datatokenAddress: '0x0',
-  nftAddress: '0x0',
-  files: [
-    {
-      type: 'url',
-      url: 'https://raw.githubusercontent.com/oceanprotocol/testdatasets/main/shs_dataset_test.txt',
-      method: 'GET'
-    }
-  ]
+const DATASET_ASSET_URL: StorageObject = {
+  type: 'url',
+  url: 'https://raw.githubusercontent.com/oceanprotocol/testdatasets/main/shs_dataset_test.txt',
+  method: 'GET'
 }
 
-const ALGORITHM_ASSET_URL: Files = {
-  datatokenAddress: '0x0',
-  nftAddress: '0x0',
-  files: [
-    {
-      type: 'url',
-      url: 'https://raw.githubusercontent.com/oceanprotocol/testdatasets/main/shs_dataset_test.txt',
-      method: 'GET'
-    }
-  ]
+const ALGORITHM_ASSET_URL: StorageObject = {
+  type: 'url',
+  url: 'https://raw.githubusercontent.com/oceanprotocol/testdatasets/main/shs_dataset_test.txt',
+  method: 'GET'
 }
+
 ```
 
 Next, we define the metadata for the dataset and algorithm that will describe our data assets. This is what we call the DDOs
@@ -304,7 +294,7 @@ async function createAssetHelper(
   name: string,
   symbol: string,
   owner: Signer,
-  assetUrl: Files,
+  assetFiles: StorageObject[],
   ddo: DDO,
   providerUrl: string
 ) {
@@ -345,8 +335,11 @@ async function createAssetHelper(
   const nftAddress = nftCreatedEvent.args.newTokenAddress
   const datatokenAddressAsset = tokenCreatedEvent.args.newTokenAddress
   // create the files encrypted string
-  assetUrl.datatokenAddress = datatokenAddressAsset
-  assetUrl.nftAddress = nftAddress
+  const assetUrl: AssetFiles = {
+    nftAddress,
+    datatokenAddress: datatokenAddressAsset,
+    files: assetFiles
+  }
   ddo.services[0].files = await ProviderInstance.encrypt(
     assetUrl,
     Number(chainId),
@@ -533,7 +526,7 @@ you need to mint oceans to mentioned accounts only if you are using barge to tes
       'D1Min',
       'D1M',
       publisherAccount,
-      DATASET_ASSET_URL,
+      [DATASET_ASSET_URL],
       DATASET_DDO,
       providerUrl
     )
@@ -552,7 +545,7 @@ Now, let's check that we successfully published a dataset (create NFT + Datatoke
       'D1Min',
       'D1M',
       publisherAccount,
-      ALGORITHM_ASSET_URL,
+      [ALGORITHM_ASSET_URL],
       ALGORITHM_DDO,
       providerUrl
     )
