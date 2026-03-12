@@ -2,7 +2,7 @@ import fetch from 'cross-fetch'
 import { Signer } from 'ethers'
 import { LoggerInstance } from '../utils/Logger.js'
 import {
-  Arweave,
+  StorageObject,
   FileInfo,
   ComputeJob,
   ComputeOutput,
@@ -12,9 +12,7 @@ import {
   ProviderInitialize,
   ProviderComputeInitializeResults,
   ServiceEndpoint,
-  UrlFile,
   UserCustomParameters,
-  Ipfs,
   ComputeResourceRequest,
   ComputePayment,
   ComputeJobMetadata,
@@ -276,14 +274,14 @@ export class Provider {
 
   /**
    * Get File details (if possible)
-   * @param {UrlFile | Arweave | Ipfs | GraphqlQuery | Smartcontract} file one of the supported file structures
+   * @param {StorageObject} file one of the supported file structures
    * @param {string} providerUri uri of the provider that will be used to check the file
    * @param {boolean} [withChecksum=false] - Whether or not to include a checksum.
    * @param {AbortSignal} [signal] - An optional abort signal.
    * @returns {Promise<FileInfo[]>} A promise that resolves with an array of file info objects.
    */
   public async getFileInfo(
-    file: UrlFile | Arweave | Ipfs,
+    file: StorageObject,
     providerUri: string,
     withChecksum: boolean = false,
     signal?: AbortSignal
@@ -528,8 +526,8 @@ export class Provider {
    * @param {ComputeResourceRequest[]} resources The resources to start compute job with.
    * @param {number} chainId The chain used to do payments
    * @param {any} policyServer Policy server data.
-   * @param {dockerRegistryAuth} dockerRegistryAuth Docker registry authentication data.
    * @param {AbortSignal} signal abort signal
+   * @param {dockerRegistryAuth} dockerRegistryAuth Docker registry authentication data.
    * @return {Promise<ProviderComputeInitialize>} ProviderComputeInitialize data
    */
   public async initializeCompute(
@@ -543,8 +541,8 @@ export class Provider {
     resources: ComputeResourceRequest[],
     chainId: number,
     policyServer?: any,
-    dockerRegistryAuth?: dockerRegistryAuth,
-    signal?: AbortSignal
+    signal?: AbortSignal,
+    dockerRegistryAuth?: dockerRegistryAuth
   ): Promise<ProviderComputeInitializeResults> {
     const providerEndpoints = await this.getEndpoints(providerUri)
     const serviceEndpoints = await this.getServiceEndpoints(
@@ -705,91 +703,7 @@ export class Provider {
     return consumeUrl
   }
 
-  /** Instruct the provider to start a compute job (Old C2D V1) Kept for now, for backwards compatibility
-   * @param {string} providerUri The provider URI.
-   * @param {Signer} consumer The consumer signer object.
-   * @param {string} computeEnv The compute environment.
-   * @param {ComputeAsset} dataset The dataset to start compute on
-   * @param {ComputeAlgorithm} algorithm The algorithm to start compute with.
-   * @param {AbortSignal} signal abort signal
-   * @param {ComputeAsset[]} additionalDatasets The additional datasets if that is the case.
-   * @param {ComputeOutput} output The compute job output settings.
-   * @return {Promise<ComputeJob | ComputeJob[]>} The compute job or jobs.
-   * @deprecated Use {@link computeStart} instead.
-   */
-  public async computeStartV1(
-    providerUri: string,
-    consumer: Signer,
-    computeEnv: string,
-    dataset: ComputeAsset,
-    algorithm: ComputeAlgorithm,
-    signal?: AbortSignal,
-    additionalDatasets?: ComputeAsset[],
-    output?: ComputeOutput
-  ): Promise<ComputeJob | ComputeJob[]> {
-    const providerEndpoints = await this.getEndpoints(providerUri)
-    const serviceEndpoints = await this.getServiceEndpoints(
-      providerUri,
-      providerEndpoints
-    )
-    const computeStartUrl = this.getEndpointURL(serviceEndpoints, 'computeStart')
-      ? this.getEndpointURL(serviceEndpoints, 'computeStart').urlPath
-      : null
-
-    const consumerAddress = await consumer.getAddress()
-    const nonce = (
-      (await this.getNonce(
-        providerUri,
-        consumerAddress,
-        signal,
-        providerEndpoints,
-        serviceEndpoints
-      )) + 1
-    ).toString()
-
-    let signatureMessage = consumerAddress
-    signatureMessage += dataset.documentId
-    signatureMessage += nonce
-    const signature = await signRequest(consumer, signatureMessage)
-    const payload = Object()
-    payload.consumerAddress = consumerAddress
-    payload.signature = signature
-    payload.nonce = nonce
-    payload.environment = computeEnv
-    payload.dataset = dataset
-    payload.algorithm = algorithm
-    if (additionalDatasets) payload.additionalDatasets = additionalDatasets
-    if (output) payload.output = output
-    if (!computeStartUrl) return null
-    let response
-    try {
-      response = await fetch(computeStartUrl, {
-        method: 'POST',
-        body: JSON.stringify(payload),
-        headers: { 'Content-Type': 'application/json' },
-        signal
-      })
-    } catch (e) {
-      LoggerInstance.error('Compute start failed:')
-      LoggerInstance.error(e)
-      LoggerInstance.error('Payload was:', payload)
-      throw new Error('HTTP request failed calling Provider')
-    }
-    if (response?.ok) {
-      const params = await response.json()
-      return params
-    }
-    LoggerInstance.error(
-      'Compute start failed: ',
-      response.status,
-      response.statusText,
-      await response.json()
-    )
-    LoggerInstance.error('Payload was:', payload)
-    return null
-  }
-
-  /** Instruct the provider to start a PAYED compute job (new C2D V2)
+  /** Instruct the provider to start a PAYED compute job
    * @param {string} providerUri The provider URI.
    * @param {SignerOrAuthToken} signerOrAuthToken The consumer signer object or auth token.
    * @param {string} computeEnv The compute environment.
@@ -804,6 +718,7 @@ export class Provider {
    * @param {any} policyServer Policy server data.
    * @param {AbortSignal} signal abort signal
    * @param {number} queueMaxWaitTime Maximum time in seconds to wait in the compute queue if resources are not available
+   * @param {dockerRegistryAuth} dockerRegistryAuth Docker registry authentication data.
    * @return {Promise<ComputeJob | ComputeJob[]>} The compute job or jobs.
    */
   public async computeStart(
@@ -821,7 +736,8 @@ export class Provider {
     output?: ComputeOutput,
     policyServer?: any,
     signal?: AbortSignal,
-    queueMaxWaitTime?: number
+    queueMaxWaitTime?: number,
+    dockerRegistryAuth?: dockerRegistryAuth
   ): Promise<ComputeJob | ComputeJob[]> {
     console.log('called new compute start method...')
     console.log('datasets: ', datasets)
@@ -876,11 +792,25 @@ export class Provider {
       token,
       maxJobDuration
     }
+    if (dockerRegistryAuth) {
+      const nodeKey = await this.getNodePublicKey(providerUri)
+      if (nodeKey) {
+        payload.dockerRegistryAuth = eciesencrypt(
+          nodeKey,
+          JSON.stringify(dockerRegistryAuth)
+        )
+      }
+    }
     if (resources) payload.resources = resources
     if (metadata) payload.metadata = metadata
     if (additionalViewers) payload.additionalViewers = additionalViewers
     // if (additionalDatasets) payload.additionalDatasets = additionalDatasets
-    if (output) payload.output = output
+    if (output) {
+      const nodeKey = await this.getNodePublicKey(providerUri)
+      if (nodeKey) {
+        payload.output = eciesencrypt(nodeKey, JSON.stringify(output))
+      }
+    }
     if (policyServer) payload.policyServer = policyServer
     if (queueMaxWaitTime) payload.queueMaxWaitTime = queueMaxWaitTime
     let response
@@ -915,7 +845,7 @@ export class Provider {
     throw new Error(JSON.stringify(resolvedResponse))
   }
 
-  /** Instruct the provider to start a FREE compute job (new C2D V2)
+  /** Instruct the provider to start a FREE compute job
    * @param {string} providerUri The provider URI.
    * @param {SignerOrAuthToken} signerOrAuthToken The consumer signer object or auth token.
    * @param {string} computeEnv The compute environment.
@@ -927,6 +857,7 @@ export class Provider {
    * @param {any} policyServer Policy server data.
    * @param {AbortSignal} signal abort signal
    * @param {number} queueMaxWaitTime Maximum time in seconds to wait in the compute queue if resources are not available
+   * @param {dockerRegistryAuth} dockerRegistryAuth Docker registry authentication data.
    * @return {Promise<ComputeJob | ComputeJob[]>} The compute job or jobs.
    */
   public async freeComputeStart(
@@ -941,7 +872,8 @@ export class Provider {
     output?: ComputeOutput,
     policyServer?: any,
     signal?: AbortSignal,
-    queueMaxWaitTime?: number
+    queueMaxWaitTime?: number,
+    dockerRegistryAuth?: dockerRegistryAuth
   ): Promise<ComputeJob | ComputeJob[]> {
     console.log('called new free compute start method...')
     console.log('datasets: ', datasets)
@@ -992,8 +924,23 @@ export class Provider {
     payload.algorithm = algorithm
     if (metadata) payload.metadata = metadata
     if (additionalViewers) payload.additionalViewers = additionalViewers
+    if (dockerRegistryAuth) {
+      const nodeKey = await this.getNodePublicKey(providerUri)
+      if (nodeKey) {
+        payload.dockerRegistryAuth = eciesencrypt(
+          nodeKey,
+          JSON.stringify(dockerRegistryAuth)
+        )
+      }
+    }
     // if (additionalDatasets) payload.additionalDatasets = additionalDatasets
-    payload.output = output
+    if (output) {
+      const nodeKey = await this.getNodePublicKey(providerUri)
+      if (nodeKey) {
+        payload.output = eciesencrypt(nodeKey, JSON.stringify(output))
+      }
+    }
+
     if (policyServer) payload.policyServer = policyServer
     if (queueMaxWaitTime) payload.queueMaxWaitTime = queueMaxWaitTime
     let response
