@@ -1,4 +1,10 @@
-import { ProviderFees } from '.'
+import { ProviderFees, StorageObject } from '.'
+
+export interface AssetFiles {
+  nftAddress: string
+  datatokenAddress: string
+  files: StorageObject[]
+}
 
 export interface DatatokenCreateParams {
   templateIndex: number
@@ -10,7 +16,7 @@ export interface DatatokenCreateParams {
   cap: string
   name?: string
   symbol?: string
-  filesObject?: any // file object for template 4
+  filesObject?: AssetFiles // file object for template 4
   accessListFactory?: string // access list factory address
   allowAccessList?: string //  Allow List Contract (if any)
   denyAccessList?: string // Deny List Contract (if any)

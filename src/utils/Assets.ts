@@ -4,7 +4,7 @@ import { createHash } from 'crypto'
 import { Aquarius } from '../services/Aquarius.js'
 import { NftFactory } from '../contracts/NFTFactory.js'
 import { Nft } from '../contracts/NFT.js'
-import { DatatokenCreateParams } from '../@types/Datatoken.js'
+import { DatatokenCreateParams, AssetFiles } from '../@types/Datatoken.js'
 import { NftCreateData } from '../@types/NFTFactory.js'
 import { ZERO_ADDRESS } from './Constants.js'
 import { DispenserCreationParams } from '../@types/Dispenser.js'
@@ -16,7 +16,7 @@ import AccessListFactory from '@oceanprotocol/contracts/artifacts/contracts/acce
 import ERC20Template4 from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC20Template4.sol/ERC20Template4.json'
 import { calculateActiveTemplateIndex } from './Addresses.js'
 import { DDO, DDOManager } from '@oceanprotocol/ddo-js'
-import { FileObjectType } from '../@types'
+import { StorageObject } from '../@types/File.js'
 
 export const DEVELOPMENT_CHAIN_ID = 8996
 // template address OR templateId
@@ -30,7 +30,7 @@ export function useOasisSDK(network: string | number): boolean {
  * @param name asset name
  * @param symbol asse symbol
  * @param owner owner address
- * @param assetUrl asset url, if present and confidential evm, add it to token create params
+ * @param assetUrl An array of StorageObjects
  * @param templateIDorAddress either template address or id
  * @param ddo ddo
  * @param encryptDDO encrypt or not?
@@ -45,7 +45,7 @@ export async function createAsset(
   name: string,
   symbol: string,
   owner: Signer,
-  assetUrl: any, // files object
+  assetUrls: StorageObject[], // files object
   templateIDorAddress: string | number, // If string, it's template address , otherwise, it's templateId
   ddo: DDO,
   encryptDDO: boolean = true, // default is true
@@ -118,19 +118,15 @@ export async function createAsset(
     minter: account,
     mpFeeAddress: ZERO_ADDRESS
   }
-
-  if (
-    !assetUrl?.files[0].type ||
-    ![FileObjectType.ARWEAVE, FileObjectType.IPFS, FileObjectType.URL].includes(
-      assetUrl?.files[0]?.type?.toLowerCase()
-    )
-  ) {
-    console.log('Missing or invalid files object type, defaulting to "url"')
-    assetUrl.type = FileObjectType.URL
+  const assetFiles: AssetFiles = {
+    nftAddress: '0x0', // Will be updated after creating asset
+    datatokenAddress: '0x0', // Will be updated after creating asset
+    files: assetUrls
   }
+
   // include fileObject in the DT constructor
   if (config.sdk === 'oasis') {
-    datatokenParams.filesObject = assetUrl
+    datatokenParams.filesObject = assetFiles
     datatokenParams.accessListFactory = accessListFactory || config.accessListFactory
     datatokenParams.allowAccessList = allowAccessList
     datatokenParams.denyAccessList = denyAccessList
@@ -189,15 +185,15 @@ export async function createAsset(
   const nftAddressFromEvent = nftCreatedEvent.args.newTokenAddress
   const datatokenAddressAsset = tokenCreatedEvent.args.newTokenAddress
   // create the files encrypted string
-  assetUrl.datatokenAddress = datatokenAddressAsset
-  assetUrl.nftAddress = nftAddressFromEvent
+  assetFiles.datatokenAddress = datatokenAddressAsset
+  assetFiles.nftAddress = nftAddressFromEvent
 
   if (config.sdk === 'oasis') {
     // we need to update files object on the SC otherwise it will fail validation on provider
     // because DDO datatokenAddress and nftAddress will not match the values on files object
     const contract = new ethers.Contract(datatokenAddressAsset, ERC20Template4.abi, owner)
     try {
-      const tx = await contract.setFilesObject(toUtf8Bytes(JSON.stringify(assetUrl)))
+      const tx = await contract.setFilesObject(toUtf8Bytes(JSON.stringify(assetFiles)))
       if (tx.wait) {
         await tx.wait()
       }
@@ -212,7 +208,7 @@ export async function createAsset(
     services[0].files = '' // on confidental EVM it needs to be empty string not null, for schema validation
   } else {
     services[0].files = await ProviderInstance.encrypt(
-      assetUrl,
+      assetFiles,
       Number(chainID),
       providerUrl,
       owner,

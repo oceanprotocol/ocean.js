@@ -14,9 +14,10 @@ import {
   downloadFile,
   sendTx,
   transfer,
-  amountToUnits
+  amountToUnits,
+  StorageObject,
+  AssetFiles
 } from '../../src/index.js'
-import { Files } from '../../src/@types'
 import { createAssetHelper, orderAsset, updateAssetMetadata } from './helpers.js'
 import { DDO } from '@oceanprotocol/ddo-js'
 
@@ -58,54 +59,16 @@ let ipfsOrderTx
 let onchainOrderTx
 let grapqlOrderTx
 
-const urlFile: Files = {
-  datatokenAddress: '0x0',
-  nftAddress: '0x0',
-  files: [
-    {
-      type: 'url',
-      url: 'https://raw.githubusercontent.com/oceanprotocol/testdatasets/main/shs_dataset_test.txt',
-      method: 'GET'
-    }
-  ]
+const urlFile: StorageObject = {
+  type: 'url',
+  url: 'https://raw.githubusercontent.com/oceanprotocol/testdatasets/main/shs_dataset_test.txt',
+  method: 'GET'
 }
 
-const arweaveFile: Files = {
-  datatokenAddress: '0x0',
-  nftAddress: '0x0',
-  files: [
-    {
-      type: 'arweave',
-      transactionId: 'USuWnUl3gLPhm4TPbmL6E2a2e2SWMCVo9yWCaapD-98'
-    }
-  ]
+const arweaveFile: StorageObject = {
+  type: 'arweave',
+  transactionId: 'USuWnUl3gLPhm4TPbmL6E2a2e2SWMCVo9yWCaapD-98'
 }
-
-// const onchainFile: Files = {
-//   datatokenAddress: '0x0',
-//   nftAddress: '0x0',
-//   files: []
-// }
-
-// const grapqlFile: Files = {
-//   datatokenAddress: '0x0',
-//   nftAddress: '0x0',
-//   files: [
-//     {
-//       type: 'graphql',
-//       url: 'https://v4.subgraph.sepolia.oceanprotocol.com/subgraphs/name/oceanprotocol/ocean-subgraph/graphql',
-//       query: `"
-//           query{
-//                 nfts(orderBy: createdTimestamp,orderDirection:desc){
-//                      id
-//                      symbol
-//                      createdTimestamp
-//                 }
-//                }
-//                "`
-//     }
-//   ]
-// }
 
 const assetDdo: DDO = {
   '@context': ['https://w3id.org/did/v1'],
@@ -221,7 +184,7 @@ describe('Publish consume test', async () => {
       'UrlDatatoken',
       'URLDT',
       publisherAccount,
-      urlFile,
+      [urlFile],
       assetDdo,
       providerUrl,
       addresses.ERC721Factory,
@@ -235,7 +198,7 @@ describe('Publish consume test', async () => {
       'ArwaveDatatoken',
       'ARWAVEDT',
       publisherAccount,
-      arweaveFile,
+      [arweaveFile],
       assetDdo,
       providerUrl,
       addresses.ERC721Factory,
@@ -246,21 +209,16 @@ describe('Publish consume test', async () => {
 
   it('Should publish ipfs asset', async () => {
     const ipfsCID = await uploadToIpfs()
-    const ipfsFile: Files = {
-      datatokenAddress: '0x0',
-      nftAddress: '0x0',
-      files: [
-        {
-          type: 'ipfs',
-          hash: ipfsCID
-        }
-      ]
+    const ipfsFile: StorageObject = {
+      type: 'ipfs',
+      hash: ipfsCID
     }
+
     ipfsAssetId = await createAssetHelper(
       'IpfsDatatoken',
       'IPFSDT',
       publisherAccount,
-      ipfsFile,
+      [ipfsFile],
       assetDdo,
       providerUrl,
       addresses.ERC721Factory,
@@ -268,48 +226,6 @@ describe('Publish consume test', async () => {
     )
     assert(ipfsAssetId, 'Failed to publish ipfs DDO')
   }).timeout(60000)
-
-  // smartcontract & grapqhl datasets are not supported yet by ocean-node
-  // it('Should publish onchain asset', async () => {
-  //   const chainFile: Smartcontract = {
-  //     type: 'smartcontract',
-  //     address: addresses.Router,
-  //     abi: {
-  //       inputs: [],
-  //       name: 'swapOceanFee',
-  //       outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
-  //       stateMutability: 'view',
-  //       type: 'function'
-  //     },
-  //     chainId: 8996
-  //   }
-  //   onchainFile.files[0] = chainFile
-  //   onchainAssetId = await createAssetHelper(
-  //     'ChainDatatoken',
-  //     'CHAINDT',
-  //     publisherAccount,
-  //     onchainFile,
-  //     assetDdo,
-  //     providerUrl,
-  //     addresses.ERC721Factory,
-  //     aquarius
-  //   )
-  //   assert(onchainAssetId, 'Failed to publish onchain DDO')
-  // }).timeout(40000)
-
-  // it('Should publish graphql asset', async () => {
-  //   grapqlAssetId = await createAssetHelper(
-  //     'GraphDatatoken',
-  //     'GRAPHDT',
-  //     publisherAccount,
-  //     grapqlFile,
-  //     assetDdo,
-  //     providerUrl,
-  //     addresses.ERC721Factory,
-  //     aquarius
-  //   )
-  //   assert(grapqlAssetId, 'Failed to publish graphql DDO')
-  // }).timeout(40000)
 
   delay(20000) // let's wait for aquarius to index the  assets
 

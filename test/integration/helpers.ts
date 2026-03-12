@@ -14,7 +14,9 @@ import {
   Datatoken,
   Config,
   ProviderFees,
-  getEventFromTx
+  getEventFromTx,
+  StorageObject,
+  AssetFiles
 } from '../../src/index.js'
 import { DDO } from '@oceanprotocol/ddo-js'
 // superseed by src/utils/CreateAsset
@@ -22,7 +24,7 @@ export async function createAssetHelper(
   name: string,
   symbol: string,
   owner: Signer,
-  assetUrl: any,
+  assetFiles: StorageObject[],
   ddo: DDO,
   providerUrl: string,
   nftContractAddress: string, // addresses.ERC721Factory,
@@ -68,8 +70,11 @@ export async function createAssetHelper(
   const nftAddress = nftCreatedEvent.args.newTokenAddress
   const datatokenAddressAsset = tokenCreatedEvent.args.newTokenAddress
   // create the files encrypted string
-  assetUrl.datatokenAddress = datatokenAddressAsset
-  assetUrl.nftAddress = nftAddress
+  const assetUrl: AssetFiles = {
+    datatokenAddress: datatokenAddressAsset,
+    nftAddress,
+    files: assetFiles
+  }
   ddo.services[0].files = await ProviderInstance.encrypt(
     assetUrl,
     Number(chain),
