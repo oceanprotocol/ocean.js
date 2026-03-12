@@ -16,10 +16,11 @@ import {
   ComputeJob,
   ComputeAsset,
   ComputeAlgorithm,
-  Files,
+  StorageObject,
   ComputeResourceRequest
 } from '../../src/@types/index.js'
-import { createAssetHelper, handleComputeOrder } from './helpers.js'
+import { handleComputeOrder, createAssetHelper } from './helpers.js'
+
 import { DDO } from '@oceanprotocol/ddo-js'
 import BigNumber from 'bignumber.js'
 
@@ -58,17 +59,12 @@ let freeComputeRouteSupport = null
 const computeJobDuration = 60 * 15 // 15 minutes
 let computeMinutes: number
 
-const assetUrl: Files = {
-  datatokenAddress: '0x0',
-  nftAddress: '0x0',
-  files: [
-    {
-      type: 'url',
-      url: 'https://raw.githubusercontent.com/oceanprotocol/testdatasets/main/shs_dataset_test.txt',
-      method: 'GET'
-    }
-  ]
+const assetUrl: StorageObject = {
+  type: 'url',
+  url: 'https://raw.githubusercontent.com/oceanprotocol/testdatasets/main/shs_dataset_test.txt',
+  method: 'GET'
 }
+
 const ddoWithNoTimeout: DDO = {
   '@context': ['https://w3id.org/did/v1'],
   id: 'did:op:efba17455c127a885ec7830d687a8f6e64f5ba559f8506f8723c1f10f05c049c',
@@ -154,16 +150,10 @@ const ddoWith2mTimeout: DDO = {
     }
   ]
 }
-const algoAssetUrl: Files = {
-  datatokenAddress: '0x0',
-  nftAddress: '0x0',
-  files: [
-    {
-      type: 'url',
-      url: 'https://raw.githubusercontent.com/oceanprotocol/test-algorithm/master/javascript/algo.js',
-      method: 'GET'
-    }
-  ]
+const algoAssetUrl: StorageObject = {
+  type: 'url',
+  url: 'https://raw.githubusercontent.com/oceanprotocol/test-algorithm/master/javascript/algo.js',
+  method: 'GET'
 }
 const algoDdoWithNoTimeout: DDO = {
   '@context': ['https://w3id.org/did/v1'],
@@ -340,7 +330,7 @@ describe('Compute flow tests', async () => {
       'D1Min',
       'D1M',
       publisherAccount,
-      assetUrl,
+      [assetUrl],
       ddoWith2mTimeout,
       providerUrl,
       addresses.ERC721Factory,
@@ -350,7 +340,7 @@ describe('Compute flow tests', async () => {
       'D1Min',
       'D1M',
       publisherAccount,
-      assetUrl,
+      [assetUrl],
       ddoWithNoTimeout,
       providerUrl,
       addresses.ERC721Factory,
@@ -360,7 +350,7 @@ describe('Compute flow tests', async () => {
       'A1Min',
       'A1M',
       publisherAccount,
-      algoAssetUrl,
+      [algoAssetUrl],
       algoDdoWith2mTimeout,
       providerUrl,
       addresses.ERC721Factory,
@@ -371,7 +361,7 @@ describe('Compute flow tests', async () => {
       'A1Min',
       'A1M',
       publisherAccount,
-      algoAssetUrl,
+      [algoAssetUrl],
       algoDdoWithNoTimeout,
       providerUrl,
       addresses.ERC721Factory,

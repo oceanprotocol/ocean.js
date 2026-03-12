@@ -1,5 +1,5 @@
-import { Metadata, MetadataAlgorithm, ConsumerParameter } from '@oceanprotocol/ddo-js'
-
+import { MetadataAlgorithm, ConsumerParameter } from '@oceanprotocol/ddo-js'
+import { StorageObject, EncryptMethod } from './File'
 export type ComputeResultType =
   | 'algorithmLog'
   | 'output'
@@ -110,55 +110,18 @@ export interface ComputeJob {
   }
 }
 
+export interface ComputeOutputEncryption {
+  encryptMethod: EncryptMethod.AES // in future we will support more ciphers
+  key: string // AES symetric key
+}
+
 export interface ComputeOutput {
-  publishAlgorithmLog?: boolean
-  publishOutput?: boolean
-  providerAddress?: string
-  providerUri?: string
-  metadata?: Metadata
-  metadataUri?: string
-  nodeUri?: string
-  owner?: string
-  secretStoreUri?: string
-  whitelist?: string[]
+  remoteStorage?: StorageObject
+  encryption?: ComputeOutputEncryption
 }
 
-export enum FileObjectType {
-  URL = 'url',
-  IPFS = 'ipfs',
-  ARWEAVE = 'arweave'
-}
-
-export enum EncryptMethod {
-  AES = 'AES',
-  ECIES = 'ECIES'
-}
-
-export interface HeadersObject {
-  [key: string]: string
-}
-
-export interface BaseFileObject {
-  type: string
-  encryptedBy?: string
-  encryptMethod?: EncryptMethod
-}
-
-export interface UrlFileObject extends BaseFileObject {
-  url: string
-  method: string
-  headers?: [HeadersObject]
-}
-
-export interface IpfsFileObject extends BaseFileObject {
-  hash: string
-}
-
-export interface ArweaveFileObject extends BaseFileObject {
-  transactionId: string
-}
 export interface ComputeAsset {
-  fileObject?: BaseFileObject // C2D v2
+  fileObject?: StorageObject // C2D v2
   documentId: string
   serviceId: string
   transferTxId?: string
@@ -179,7 +142,7 @@ export interface ExtendedMetadataAlgorithm extends MetadataAlgorithm {
 }
 
 export interface ComputeAlgorithm {
-  fileObject?: BaseFileObject // C2D v2
+  fileObject?: StorageObject // C2D v2
   documentId?: string
   serviceId?: string
   meta?: ExtendedMetadataAlgorithm
