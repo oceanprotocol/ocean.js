@@ -441,15 +441,14 @@ export class P2pProvider {
     validUntil?: number
   ): Promise<ProviderInitialize> {
     const body: Record<string, any> = {
-      documentId: did,
+      ddoId: did,
       serviceId,
-      fileIndex,
       consumerAddress
     }
     if (userCustomParameters) body.userdata = userCustomParameters
     if (computeEnv) body.environment = computeEnv
     if (validUntil) body.validUntil = validUntil
-    return this.sendP2pCommand(nodeUri, PROTOCOL_COMMANDS.DOWNLOAD, body, null, signal)
+    return this.sendP2pCommand(nodeUri, PROTOCOL_COMMANDS.GET_FEES, body, null, signal)
   }
 
   /**
@@ -533,8 +532,9 @@ export class P2pProvider {
   }
 
   /**
-   * Execute a download via P2P DOWNLOAD command.
-   * Returns the raw stream data (async generator of Uint8Array chunks).
+   * Constructs an HTTP download URL from the P2P multiaddr.
+   * The actual file download happens via HTTP since there is no
+   * URL concept in P2P streaming.
    */
   public async getDownloadUrl(
     did: string,
@@ -553,23 +553,23 @@ export class P2pProvider {
       nonce,
       PROTOCOL_COMMANDS.DOWNLOAD
     )
-    const body: Record<string, any> = {
-      fileIndex,
-      documentId: did,
-      transferTxId,
-      serviceId,
-      consumerAddress,
-      nonce,
-      signature
+
+    const ipMatch = nodeUri.match(/\/(ip4|dns[46]?)\/([^/]+)/)
+    const host = ipMatch?.[2] || '127.0.0.1'
+    let consumeUrl = `http://${host}:8001/api/services/download`
+    consumeUrl += `?fileIndex=${fileIndex}`
+    consumeUrl += `&documentId=${did}`
+    consumeUrl += `&transferTxId=${transferTxId}`
+    consumeUrl += `&serviceId=${serviceId}`
+    consumeUrl += `&consumerAddress=${consumerAddress}`
+    consumeUrl += `&nonce=${nonce}`
+    if (policyServer) {
+      consumeUrl += '&policyServer=' + encodeURI(JSON.stringify(policyServer))
     }
-    if (policyServer) body.policyServer = policyServer
-    if (userCustomParameters) body.userdata = userCustomParameters
-    return this.sendP2pCommand(
-      nodeUri,
-      PROTOCOL_COMMANDS.DOWNLOAD,
-      body,
-      signerOrAuthToken
-    )
+    consumeUrl += `&signature=${signature}`
+    if (userCustomParameters)
+      consumeUrl += '&userdata=' + encodeURI(JSON.stringify(userCustomParameters))
+    return consumeUrl
   }
 
   /**
@@ -837,7 +837,7 @@ export class P2pProvider {
     did: string,
     signal?: AbortSignal
   ): Promise<any> {
-    return this.sendP2pCommand(nodeUri, PROTOCOL_COMMANDS.GET_DDO, { did }, null, signal)
+    return this.sendP2pCommand(nodeUri, PROTOCOL_COMMANDS.GET_DDO, { id: did }, null, signal)
   }
 
   /**

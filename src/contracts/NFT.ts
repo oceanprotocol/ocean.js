@@ -569,7 +569,7 @@ export class Nft extends SmartContract {
       const ipMatch = metadataDecryptorUrl.match(/\/ip4\/([^/]+)/)
       const dnsMatch = metadataDecryptorUrl.match(/\/dns[46]?\/([^/]+)/)
       const host = ipMatch?.[1] || dnsMatch?.[1] || '127.0.0.1'
-      decryptorUrl = `http://${host}:8001`
+      decryptorUrl = `http://localhost:8001`
     }
     const estGas = await nftContract.setMetaData.estimateGas(
       metadataState,
