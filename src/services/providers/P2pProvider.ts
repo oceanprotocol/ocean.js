@@ -837,7 +837,13 @@ export class P2pProvider {
     did: string,
     signal?: AbortSignal
   ): Promise<any> {
-    return this.sendP2pCommand(nodeUri, PROTOCOL_COMMANDS.GET_DDO, { id: did }, null, signal)
+    return this.sendP2pCommand(
+      nodeUri,
+      PROTOCOL_COMMANDS.GET_DDO,
+      { id: did },
+      null,
+      signal
+    )
   }
 
   /**
@@ -910,7 +916,10 @@ export class P2pProvider {
         signal
       )
       // STATUS response uses 'address' (ETH addr) while HTTP root uses 'providerAddress'
-    return !!(result && (result.address || result.providerAddress || result.providerAddresses))
+      return !!(
+        result &&
+        (result.address || result.providerAddress || result.providerAddresses)
+      )
     } catch {
       return false
     }
