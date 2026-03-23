@@ -93,6 +93,15 @@ jobs:
   test_integration:
     runs-on: ubuntu-latest
 
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - transport: http
+            node_url: 'http://127.0.0.1:8001'
+          - transport: p2p
+            node_url: '/ip4/172.15.0.5/tcp/9001/ws/p2p/16Uiu2HAmRkJeRYRghP3ETQCpdz8NsQzQE9RpSST7i5YNgWqH4dVE'
+
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v4
@@ -170,17 +179,17 @@ jobs:
             attempt=$((attempt + 1))
           done
 
-      - name: integration (HTTP)
-        run: npm run test:integration:cover
+      - name: integration (${{ matrix.transport }})
+        run: |
+          if [ "${{ matrix.transport }}" = "http" ]; then
+            npm run test:integration:cover
+          else
+            npm run test:integration
+          fi
         env:
           INDEXING_RETRY_INTERVAL: 4000
           INDEXING_MAX_RETRIES: 120
-          NODE_URL: 'http://127.0.0.1:8001'
-
-      - name: integration (P2P)
-        run: npm run test:integration
-        env:
-          NODE_URL: '/ip4/172.15.0.5/tcp/9001/ws/p2p/16Uiu2HAmRkJeRYRghP3ETQCpdz8NsQzQE9RpSST7i5YNgWqH4dVE'
+          NODE_URL: ${{ matrix.node_url }}
 
       - name: docker logs
         run: |
@@ -192,6 +201,7 @@ jobs:
         if: ${{ failure() }}
 
       - name: Upload coverage
+        if: matrix.transport == 'http'
         uses: actions/upload-artifact@v4
         with:
           name: coverage-integration
