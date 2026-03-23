@@ -19,6 +19,7 @@ import {
   dockerRegistryAuth
 } from '../../@types/index.js'
 import { decodeJwt } from '../../utils/Jwt.js'
+import { type DDO, type ValidateMetadata } from '@oceanprotocol/ddo-js'
 import { signRequest } from '../../utils/SignatureUtils.js'
 import { HttpProvider } from './HttpProvider.js'
 import { P2pProvider } from './P2pProvider.js'
@@ -418,6 +419,23 @@ export class BaseProvider {
     signal?: AbortSignal
   ): Promise<{ success: boolean }> {
     return this.getImpl(nodeUri).invalidateAuthToken(consumer, token, nodeUri, signal)
+  }
+
+  public async resolveDdo(
+    nodeUri: string,
+    did: string,
+    signal?: AbortSignal
+  ): Promise<any> {
+    return this.getImpl(nodeUri).resolveDdo(nodeUri, did, signal)
+  }
+
+  public async validateDdo(
+    nodeUri: string,
+    ddo: DDO,
+    signer: Signer,
+    signal?: AbortSignal
+  ): Promise<ValidateMetadata> {
+    return this.getImpl(nodeUri).validateDdo(nodeUri, ddo, signer, signal)
   }
 
   public async isValidProvider(url: string, signal?: AbortSignal): Promise<boolean> {

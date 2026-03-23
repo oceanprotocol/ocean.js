@@ -5,6 +5,8 @@ import { Signer } from 'ethers'
 import { signRequest } from '../utils/SignatureUtils.js'
 import { Asset, DDO, DDOManager, ValidateMetadata } from '@oceanprotocol/ddo-js'
 import { PROTOCOL_COMMANDS } from '../@types/Provider.js'
+import { isP2pUri } from './providers/BaseProvider.js'
+import { ProviderInstance } from './Provider.js'
 
 export interface SearchQuery {
   from?: number
@@ -42,6 +44,11 @@ export class Aquarius {
     signal?: AbortSignal,
     authorization?: string
   ): Promise<Asset> {
+    if (isP2pUri(this.aquariusURL)) {
+      const result = await ProviderInstance.resolveDdo(this.aquariusURL, did, signal)
+      if (result) return result as Asset
+      throw new Error('P2P request failed')
+    }
     const path = this.aquariusURL + '/api/aquarius/assets/ddo/' + did
     try {
       const response = await fetch(path, {
@@ -83,16 +90,22 @@ export class Aquarius {
       LoggerInstance.warn('Max Limit exceeded, defaulting to 500 retries.')
       maxRetries = 500
     }
+    const isP2p = isP2pUri(this.aquariusURL)
     do {
       try {
-        const path = this.aquariusURL + '/api/aquarius/assets/ddo/' + did
-        const response = await fetch(path, {
-          method: 'GET',
-          headers: { 'Content-Type': 'application/json', Authorization: authorization },
-          signal
-        })
-        if (response.ok) {
-          const ddo = await response.json()
+        let ddo: any
+        if (isP2p) {
+          ddo = await ProviderInstance.resolveDdo(this.aquariusURL, did, signal)
+        } else {
+          const path = this.aquariusURL + '/api/aquarius/assets/ddo/' + did
+          const response = await fetch(path, {
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json', Authorization: authorization },
+            signal
+          })
+          if (response.ok) ddo = await response.json()
+        }
+        if (ddo) {
           const ddoInstance = DDOManager.getDDOClass(ddo)
           const { indexedMetadata } = ddoInstance.getAssetFields()
           if (txid) {
@@ -126,6 +139,10 @@ export class Aquarius {
     signal?: AbortSignal,
     authorization?: string
   ): Promise<ValidateMetadata> {
+    if (isP2pUri(providerUrl)) {
+      return ProviderInstance.validateDdo(providerUrl, ddo, signer, signal)
+    }
+
     const ddoValidateRoute = providerUrl + '/api/aquarius/assets/ddo/validate'
     const pathNonce = providerUrl + '/api/services/nonce'
 

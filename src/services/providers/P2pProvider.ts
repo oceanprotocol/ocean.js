@@ -29,6 +29,7 @@ import {
   dockerRegistryAuth
 } from '../../@types/index.js'
 import { PROTOCOL_COMMANDS } from '../../@types/Provider.js'
+import { type DDO, type ValidateMetadata } from '@oceanprotocol/ddo-js'
 import { signRequest } from '../../utils/SignatureUtils.js'
 import { decodeJwt } from '../../utils/Jwt.js'
 
@@ -39,6 +40,36 @@ const DIAL_TIMEOUT_MS = 10_000
 
 let libp2pNode: Libp2p | null = null
 let lastBootstrapKey: string | null = null
+
+function bufToHex(val: any): string {
+  // JSON-string form: '{"type":"Buffer","data":[...]}'
+  if (typeof val === 'string') {
+    try {
+      const parsed = JSON.parse(val)
+      if (parsed?.type === 'Buffer' && Array.isArray(parsed.data)) {
+        return Buffer.from(parsed.data).toString()
+      }
+    } catch {}
+    return val
+  }
+  // Object form: {type:"Buffer", data:[...]}
+  if (val?.type === 'Buffer' && Array.isArray(val.data)) {
+    return Buffer.from(val.data).toString()
+  }
+  // Indexed-object form (Uint8Array serialized): {"0":48,"1":120,...}
+  if (
+    val !== null &&
+    typeof val === 'object' &&
+    '0' in val &&
+    typeof val[0] === 'number'
+  ) {
+    const bytes = Object.keys(val)
+      .sort((a, b) => Number(a) - Number(b))
+      .map((k) => val[k] as number)
+    return Buffer.from(bytes).toString()
+  }
+  return val
+}
 
 function bootstrapKey(addrs: Multiaddr[]): string {
   return addrs
@@ -205,7 +236,9 @@ export class P2pProvider {
 
       const res = response as Record<string, any> | null
       if (typeof res?.httpStatus === 'number' && res.httpStatus >= 400) {
-        throw new Error(res.error ?? 'Gateway node error')
+        throw new Error(
+          typeof res.error === 'string' ? res.error : JSON.stringify(res.error)
+        )
       }
 
       const errText = (typeof response === 'string' ? response : res?.error) ?? ''
@@ -324,11 +357,17 @@ export class P2pProvider {
     const result = await this.sendP2pCommand(
       nodeUri,
       PROTOCOL_COMMANDS.ENCRYPT,
-      { chainId, nonce, consumerAddress, signature, blob: typeof data === 'string' ? data : JSON.stringify(data) },
+      {
+        chainId,
+        nonce,
+        consumerAddress,
+        signature,
+        blob: typeof data === 'string' ? data : JSON.stringify(data)
+      },
       signerOrAuthToken,
       signal
     )
-    return typeof result === 'string' ? result : JSON.stringify(result)
+    return bufToHex(result)
   }
 
   /**
@@ -788,6 +827,52 @@ export class P2pProvider {
       signal
     )
     return result?.token ?? result
+  }
+
+  /**
+   * Resolve a DDO by DID via P2P GET_DDO command.
+   */
+  public async resolveDdo(
+    nodeUri: string,
+    did: string,
+    signal?: AbortSignal
+  ): Promise<any> {
+    return this.sendP2pCommand(nodeUri, PROTOCOL_COMMANDS.GET_DDO, { did }, null, signal)
+  }
+
+  /**
+   * Validate a DDO via P2P VALIDATE_DDO command.
+   */
+  public async validateDdo(
+    nodeUri: string,
+    ddo: DDO,
+    signer: Signer,
+    signal?: AbortSignal
+  ): Promise<ValidateMetadata> {
+    const publisherAddress = await signer.getAddress()
+    const nonce = (
+      (await this.getNonce(nodeUri, publisherAddress, signal)) + 1
+    ).toString()
+    const message = publisherAddress + nonce + PROTOCOL_COMMANDS.VALIDATE_DDO
+    const sig = await signRequest(signer, message)
+    const result = await this.sendP2pCommand(
+      nodeUri,
+      PROTOCOL_COMMANDS.VALIDATE_DDO,
+      { ddo, publisherAddress, nonce, signature: sig },
+      null,
+      signal
+    )
+    if (!result || result.error) return null
+    return {
+      valid: true,
+      hash: bufToHex(result.hash),
+      proof: {
+        validatorAddress: bufToHex(result.publicKey),
+        r: bufToHex(result.r?.[0] ?? result.r),
+        s: bufToHex(result.s?.[0] ?? result.s),
+        v: result.v
+      }
+    } as ValidateMetadata
   }
 
   /**

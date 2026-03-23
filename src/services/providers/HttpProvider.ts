@@ -21,6 +21,7 @@ import {
   dockerRegistryAuth
 } from '../../@types/index.js'
 import { PROTOCOL_COMMANDS } from '../../@types/Provider.js'
+import { type DDO, type ValidateMetadata } from '@oceanprotocol/ddo-js'
 import { eciesencrypt } from '../../utils/eciesencrypt.js'
 import { signRequest } from '../../utils/SignatureUtils.js'
 import { decodeJwt } from '../../utils/Jwt.js'
@@ -1586,6 +1587,49 @@ export class HttpProvider {
       return { valid: false, output: input }
     }
     return { valid: true, output: match[1] }
+  }
+
+  public async resolveDdo(
+    nodeUri: string,
+    did: string,
+    signal?: AbortSignal
+  ): Promise<any> {
+    const path = nodeUri + '/api/aquarius/assets/ddo/' + did
+    const response = await fetch(path, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
+      signal
+    })
+    if (response.ok) return response.json()
+    return null
+  }
+
+  public async validateDdo(
+    nodeUri: string,
+    ddo: DDO,
+    signer: Signer,
+    signal?: AbortSignal
+  ): Promise<ValidateMetadata> {
+    const publisherAddress = await signer.getAddress()
+    const nonceResp = await (
+      await this.getData(`${nodeUri}/api/services/nonce?userAddress=${publisherAddress}`)
+    ).json()
+    const nonce = (Number(nonceResp.nonce ?? 0) + 1).toString()
+    const message = publisherAddress + nonce + PROTOCOL_COMMANDS.VALIDATE_DDO
+    const signature = await signRequest(signer, message)
+    const response = await fetch(`${nodeUri}/api/aquarius/assets/ddo/validate`, {
+      method: 'POST',
+      body: JSON.stringify({ ddo, publisherAddress, nonce, signature }),
+      headers: { 'Content-Type': 'application/json' },
+      signal
+    })
+    if (!response.ok) return null
+    const j = await response.json()
+    return {
+      valid: true,
+      hash: j.hash,
+      proof: { validatorAddress: j.publicKey, r: j.r[0], s: j.s[0], v: j.v }
+    } as ValidateMetadata
   }
 
   private async getData(url: string, authorization?: string): Promise<Response> {
