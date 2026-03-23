@@ -402,7 +402,7 @@ export class P2pProvider {
     const result = await this.sendP2pCommand(
       nodeUri,
       PROTOCOL_COMMANDS.FILE_INFO,
-      { ...file, checksum: withChecksum },
+      { file, type: (file as any).type, checksum: withChecksum },
       null,
       signal
     )
@@ -909,7 +909,8 @@ export class P2pProvider {
         null,
         signal
       )
-      return !!(result && (result.providerAddress || result.providerAddresses))
+      // STATUS response uses 'address' (ETH addr) while HTTP root uses 'providerAddress'
+    return !!(result && (result.address || result.providerAddress || result.providerAddresses))
     } catch {
       return false
     }
