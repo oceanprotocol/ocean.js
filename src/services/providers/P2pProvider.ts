@@ -324,7 +324,7 @@ export class P2pProvider {
     const result = await this.sendP2pCommand(
       nodeUri,
       PROTOCOL_COMMANDS.ENCRYPT,
-      { chainId, nonce, consumerAddress, signature, blob: data },
+      { chainId, nonce, consumerAddress, signature, blob: typeof data === 'string' ? data : JSON.stringify(data) },
       signerOrAuthToken,
       signal
     )
