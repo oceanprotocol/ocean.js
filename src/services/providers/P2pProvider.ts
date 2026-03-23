@@ -596,13 +596,11 @@ export class P2pProvider {
     const consumerAddress = await this.getConsumerAddress(signerOrAuthToken)
     const nonce = ((await this.getNonce(nodeUri, consumerAddress, signal)) + 1).toString()
 
-    let signatureMessage = consumerAddress
-    signatureMessage += datasets[0]?.documentId
-    signatureMessage += nonce
-    const isAuthToken = typeof signerOrAuthToken === 'string'
-    const signature = isAuthToken
-      ? null
-      : await signRequest(signerOrAuthToken as Signer, signatureMessage)
+    const signature = await this.getSignature(
+      signerOrAuthToken,
+      nonce,
+      PROTOCOL_COMMANDS.COMPUTE_START
+    )
 
     const body: Record<string, any> = {
       environment: computeEnv,
@@ -656,10 +654,11 @@ export class P2pProvider {
     const consumerAddress = await this.getConsumerAddress(signerOrAuthToken)
     const nonce = ((await this.getNonce(nodeUri, consumerAddress, signal)) + 1).toString()
 
-    const isAuthToken = typeof signerOrAuthToken === 'string'
-    const signature = isAuthToken
-      ? null
-      : await signRequest(signerOrAuthToken as Signer, consumerAddress + nonce)
+    const signature = await this.getSignature(
+      signerOrAuthToken,
+      nonce,
+      PROTOCOL_COMMANDS.FREE_COMPUTE_START
+    )
 
     const body: Record<string, any> = {
       environment: computeEnv,
@@ -718,13 +717,14 @@ export class P2pProvider {
   }
 
   /**
-   * Not applicable for P2P — returns null.
+   * P2P compute doesn't use HTTP routes. Returns the nodeUri itself
+   * so callers that use this as a feature gate see compute as supported.
    */
   public async getComputeStartRoutes(
-    _nodeUri: string,
+    nodeUri: string,
     _isFreeCompute: boolean = false
   ): Promise<string | null> {
-    return null
+    return nodeUri
   }
 
   /**

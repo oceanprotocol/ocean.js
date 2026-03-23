@@ -101,7 +101,7 @@ export class BaseProvider {
     nodeUri: string,
     isFreeCompute: boolean = false
   ): Promise<string | null> {
-    return this.httpProvider.getComputeStartRoutes(nodeUri, isFreeCompute)
+    return this.getImpl(nodeUri).getComputeStartRoutes(nodeUri, isFreeCompute)
   }
 
   // --- Routed public methods ---
