@@ -91,6 +91,7 @@ jobs:
           path: coverage/
 
   test_integration:
+    name: test_integration (${{ matrix.transport }})
     runs-on: ubuntu-latest
 
     strategy:
