@@ -797,11 +797,14 @@ describe('Compute flow tests', async () => {
   })
 
   // move to reuse Orders
-  const delayTimeout = Math.max(
-    resolvedDdoWith2mTimeout.services[0].timeout * 1000 + 1000,
-    resolvedAlgoDdoWith2mTimeout.services[0].timeout * 1000 + 1000
-  )
-  delay(delayTimeout)
+  it('should delay', function (done) {
+    const delayTimeout = Math.max(
+      resolvedDdoWith2mTimeout.services[0].timeout * 1000 + 1000,
+      resolvedAlgoDdoWith2mTimeout.services[0].timeout * 1000 + 1000
+    )
+    this.timeout(delayTimeout + 200)
+    setTimeout(() => done(), delayTimeout)
+  })
 
   it('should start a computeJob using the paid resources, by paying the assets providerFees (reuseOrder) and paying escrow lock for max job duration', async () => {
     const { chainId } = await consumerAccount.provider.getNetwork()
