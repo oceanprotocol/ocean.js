@@ -455,6 +455,7 @@ export class Provider {
    * @param {number} chainId The chain used to do payments
    * @param {any} policyServer Policy server data.
    * @param {AbortSignal} signal abort signal
+   * @param {ComputeOutput} output The compute job output settings.
    * @param {dockerRegistryAuth} dockerRegistryAuth Docker registry authentication data.
    * @return {Promise<ProviderComputeInitialize>} ProviderComputeInitialize data
    */
@@ -470,6 +471,7 @@ export class Provider {
     chainId: number,
     policyServer?: any,
     signal?: AbortSignal,
+    output?: ComputeOutput,
     dockerRegistryAuth?: dockerRegistryAuth
   ): Promise<ProviderComputeInitializeResults> {
     const providerEndpoints = await this.getEndpoints(providerUri)
@@ -529,7 +531,12 @@ export class Provider {
     }
 
     if (policyServer) providerData.policyServer = policyServer
-
+    if (output) {
+      const nodeKey = await this.getNodePublicKey(providerUri)
+      if (nodeKey) {
+        providerData.output = eciesencrypt(nodeKey, JSON.stringify(output))
+      }
+    }
     let response
     try {
       console.log('Initialize compute url:', initializeUrl)
