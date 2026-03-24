@@ -24,32 +24,19 @@ import { PROTOCOL_COMMANDS } from '../../@types/Provider.js'
 import { type DDO, type ValidateMetadata } from '@oceanprotocol/ddo-js'
 import { eciesencrypt } from '../../utils/eciesencrypt.js'
 import { signRequest } from '../../utils/SignatureUtils.js'
-import { decodeJwt } from '../../utils/Jwt.js'
+import { getConsumerAddress, getSignature, getAuthorization } from './BaseProvider.js'
 
 export class HttpProvider {
-  protected async getConsumerAddress(
-    signerOrAuthToken: Signer | string
-  ): Promise<string> {
-    const isAuthToken = typeof signerOrAuthToken === 'string'
-    return isAuthToken
-      ? decodeJwt(signerOrAuthToken).address
-      : await signerOrAuthToken.getAddress()
+  protected getConsumerAddress(s: Signer | string) {
+    return getConsumerAddress(s)
   }
 
-  protected async getSignature(
-    signerOrAuthToken: Signer | string,
-    nonce: string,
-    command: string
-  ): Promise<string | null> {
-    if (typeof signerOrAuthToken === 'string') return null
-    const message = String(
-      String(await signerOrAuthToken.getAddress()) + String(nonce) + String(command)
-    )
-    return signRequest(signerOrAuthToken, message)
+  protected getSignature(s: Signer | string, nonce: string, command: string) {
+    return getSignature(s, nonce, command)
   }
 
-  protected getAuthorization(signerOrAuthToken: Signer | string): string | undefined {
-    return typeof signerOrAuthToken === 'string' ? signerOrAuthToken : undefined
+  protected getAuthorization(s: Signer | string) {
+    return getAuthorization(s)
   }
 
   /**

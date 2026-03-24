@@ -15,13 +15,40 @@ import {
   ComputeJobMetadata,
   PolicyServerInitializeCommand,
   PolicyServerPassthroughCommand,
-  dockerRegistryAuth
+  dockerRegistryAuth,
+  DownloadResponse
 } from '../../@types/index.js'
 import { type DDO, type ValidateMetadata } from '@oceanprotocol/ddo-js'
+import { decodeJwt } from '../../utils/Jwt.js'
+import { signRequest } from '../../utils/SignatureUtils.js'
 import { HttpProvider } from './HttpProvider.js'
 import { P2pProvider } from './P2pProvider.js'
 
 export { OCEAN_P2P_PROTOCOL } from './P2pProvider.js'
+
+export async function getConsumerAddress(
+  signerOrAuthToken: Signer | string
+): Promise<string> {
+  return typeof signerOrAuthToken === 'string'
+    ? decodeJwt(signerOrAuthToken).address
+    : signerOrAuthToken.getAddress()
+}
+
+export async function getSignature(
+  signerOrAuthToken: Signer | string,
+  nonce: string,
+  command: string
+): Promise<string | null> {
+  if (typeof signerOrAuthToken === 'string') return null
+  const message = String(
+    String(await signerOrAuthToken.getAddress()) + String(nonce) + String(command)
+  )
+  return signRequest(signerOrAuthToken, message)
+}
+
+export function getAuthorization(signerOrAuthToken: Signer | string): string | undefined {
+  return typeof signerOrAuthToken === 'string' ? signerOrAuthToken : undefined
+}
 
 export function isP2pUri(nodeUri: string): boolean {
   if (!nodeUri) return false
@@ -221,7 +248,7 @@ export class BaseProvider {
     signerOrAuthToken: Signer | string,
     policyServer?: any,
     userCustomParameters?: UserCustomParameters
-  ): Promise<any> {
+  ): Promise<string | DownloadResponse> {
     return this.getImpl(nodeUri).getDownloadUrl(
       did,
       serviceId,

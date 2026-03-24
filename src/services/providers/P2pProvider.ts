@@ -32,7 +32,7 @@ import {
 import { PROTOCOL_COMMANDS } from '../../@types/Provider.js'
 import { type DDO, type ValidateMetadata } from '@oceanprotocol/ddo-js'
 import { signRequest } from '../../utils/SignatureUtils.js'
-import { decodeJwt } from '../../utils/Jwt.js'
+import { getConsumerAddress, getSignature, getAuthorization } from './BaseProvider.js'
 
 export const OCEAN_P2P_PROTOCOL = '/ocean/nodes/1.0.0'
 const MAX_RETRIES = 5
@@ -117,29 +117,16 @@ function toUint8Array(chunk: Uint8Array | { subarray(): Uint8Array }): Uint8Arra
 }
 
 export class P2pProvider {
-  protected async getConsumerAddress(
-    signerOrAuthToken: Signer | string
-  ): Promise<string> {
-    const isAuthToken = typeof signerOrAuthToken === 'string'
-    return isAuthToken
-      ? decodeJwt(signerOrAuthToken).address
-      : await signerOrAuthToken.getAddress()
+  protected getConsumerAddress(s: Signer | string) {
+    return getConsumerAddress(s)
   }
 
-  protected async getSignature(
-    signerOrAuthToken: Signer | string,
-    nonce: string,
-    command: string
-  ): Promise<string | null> {
-    if (typeof signerOrAuthToken === 'string') return null
-    const message = String(
-      String(await signerOrAuthToken.getAddress()) + String(nonce) + String(command)
-    )
-    return signRequest(signerOrAuthToken, message)
+  protected getSignature(s: Signer | string, nonce: string, command: string) {
+    return getSignature(s, nonce, command)
   }
 
-  protected getAuthorization(signerOrAuthToken: Signer | string): string | undefined {
-    return typeof signerOrAuthToken === 'string' ? signerOrAuthToken : undefined
+  protected getAuthorization(s: Signer | string) {
+    return getAuthorization(s)
   }
 
   private async dialAndStream(
@@ -590,19 +577,22 @@ export class P2pProvider {
 
     const { lp, firstBytes } = await this.dialAndStream(nodeUri, payload)
 
-    // First lp frame is the status JSON
+    // First lp frame is the status JSON (if present). Some nodes send binary data
+    // directly without a status prefix — in that case JSON.parse throws SyntaxError
+    // and we treat the frame as the start of file data.
     const statusText = uint8ArrayToString(firstBytes)
+    let status: { httpStatus?: number; error?: string } | null = null
     try {
-      const status = JSON.parse(statusText)
-      if (typeof status?.httpStatus === 'number' && status.httpStatus >= 400) {
-        throw new Error(status.error ?? `P2P download error: ${status.httpStatus}`)
-      }
-    } catch (e) {
-      if (e.message?.startsWith('P2P download error')) throw e
+      status = JSON.parse(statusText)
+    } catch {
+      // Not JSON — first frame is file data, fall through to chunk collection
+    }
+    if (status && typeof status.httpStatus === 'number' && status.httpStatus >= 400) {
+      throw new Error(status.error ?? `P2P download error: ${status.httpStatus}`)
     }
 
-    // Remaining lp frames are raw binary file data
-    const chunks: Buffer[] = []
+    // Collect binary file data. If the first frame wasn't a status JSON, it's data.
+    const chunks: Buffer[] = status === null ? [Buffer.from(firstBytes)] : []
     try {
       while (true) {
         const chunk = await lp.read({ signal: AbortSignal.timeout(DIAL_TIMEOUT_MS) })
@@ -792,11 +782,11 @@ export class P2pProvider {
     const consumerAddress = await this.getConsumerAddress(signerOrAuthToken)
     const nonce = ((await this.getNonce(nodeUri, consumerAddress, signal)) + 1).toString()
 
-    const signatureMessage = consumerAddress + nonce + PROTOCOL_COMMANDS.COMPUTE_STOP
-    const isAuthToken = typeof signerOrAuthToken === 'string'
-    const signature = isAuthToken
-      ? null
-      : await signRequest(signerOrAuthToken as Signer, signatureMessage)
+    const signature = await this.getSignature(
+      signerOrAuthToken,
+      nonce,
+      PROTOCOL_COMMANDS.COMPUTE_STOP
+    )
 
     const body: Record<string, any> = { jobId, consumerAddress, nonce, signature }
     if (agreementId) body.agreementId = agreementId
