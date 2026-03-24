@@ -561,15 +561,13 @@ export class Nft extends SmartContract {
     if (!(await this.getNftPermissions(nftAddress, address)).updateMetadata) {
       throw new Error(`Caller is not Metadata updater`)
     }
-    // The on-chain decryptorUrl must be an HTTP URL so the indexer can use
-    // its HTTP decrypt path. When the caller passes a P2P multiaddr, extract
-    // the host and fall back to the default ocean-node HTTP port.
+    // The indexer's decryptDDO checks: valid HTTP URL → HTTP decrypt path,
+    // peer ID string → P2P decrypt (local or remote). When the caller passes
+    // a P2P multiaddr, extract the peer ID so the indexer routes correctly.
     let decryptorUrl = metadataDecryptorUrl
     if (metadataDecryptorUrl?.includes('/p2p/')) {
-      const ipMatch = metadataDecryptorUrl.match(/\/ip4\/([^/]+)/)
-      const dnsMatch = metadataDecryptorUrl.match(/\/dns[46]?\/([^/]+)/)
-      const host = ipMatch?.[1] || dnsMatch?.[1] || '127.0.0.1'
-      decryptorUrl = `http://localhost:8001`
+      const p2pMatch = metadataDecryptorUrl.match(/\/p2p\/([^/]+)/)
+      decryptorUrl = p2pMatch?.[1] ?? metadataDecryptorUrl
     }
     const estGas = await nftContract.setMetaData.estimateGas(
       metadataState,

@@ -26,7 +26,8 @@ import {
   ComputeJobMetadata,
   PolicyServerInitializeCommand,
   PolicyServerPassthroughCommand,
-  dockerRegistryAuth
+  dockerRegistryAuth,
+  DownloadResponse
 } from '../../@types/index.js'
 import { PROTOCOL_COMMANDS } from '../../@types/Provider.js'
 import { type DDO, type ValidateMetadata } from '@oceanprotocol/ddo-js'
@@ -137,6 +138,43 @@ export class P2pProvider {
     return typeof signerOrAuthToken === 'string' ? signerOrAuthToken : undefined
   }
 
+  private async dialAndStream(
+    nodeUri: string,
+    payload: Record<string, any>,
+    signal?: AbortSignal
+  ): Promise<{
+    lp: ReturnType<typeof lpStream>
+    firstBytes: Uint8Array
+    connection: Connection
+  }> {
+    const multiaddressesToDial = [nodeUri]
+      .filter((address) => isMultiaddr(multiaddr(address)))
+      .map((address) => multiaddr(address))
+
+    if (multiaddressesToDial.length === 0) {
+      throw new Error(`Invalid P2P multiaddr: ${nodeUri}`)
+    }
+
+    const node = await getOrCreateLibp2pNode(multiaddressesToDial)
+    const connection = await node.dial(multiaddressesToDial, {
+      signal: signal ?? AbortSignal.timeout(DIAL_TIMEOUT_MS)
+    })
+    const stream = await connection.newStream(OCEAN_P2P_PROTOCOL, {
+      signal: AbortSignal.timeout(DIAL_TIMEOUT_MS)
+    })
+    const lp = lpStream(stream)
+
+    await lp.write(uint8ArrayFromString(JSON.stringify(payload)), {
+      signal: AbortSignal.timeout(DIAL_TIMEOUT_MS)
+    })
+    await stream.close()
+
+    const firstChunk = await lp.read({ signal: AbortSignal.timeout(DIAL_TIMEOUT_MS) })
+    const firstBytes = toUint8Array(firstChunk)
+
+    return { lp, firstBytes, connection }
+  }
+
   private async sendP2pCommand(
     nodeUri: string,
     command: string,
@@ -155,30 +193,13 @@ export class P2pProvider {
         ...body
       }
 
-      const multiaddressesToDial = [nodeUri]
-        .filter((address) => isMultiaddr(multiaddr(address)))
-        .map((address) => multiaddr(address))
+      const {
+        lp,
+        firstBytes,
+        connection: conn
+      } = await this.dialAndStream(nodeUri, payload, signal)
+      connection = conn
 
-      if (multiaddressesToDial.length === 0) {
-        throw new Error(`Invalid P2P multiaddr: ${nodeUri}`)
-      }
-
-      const node = await getOrCreateLibp2pNode(multiaddressesToDial)
-      connection = await node.dial(multiaddressesToDial, {
-        signal: signal ?? AbortSignal.timeout(DIAL_TIMEOUT_MS)
-      })
-      const stream = await connection.newStream(OCEAN_P2P_PROTOCOL, {
-        signal: AbortSignal.timeout(DIAL_TIMEOUT_MS)
-      })
-      const lp = lpStream(stream)
-
-      await lp.write(uint8ArrayFromString(JSON.stringify(payload)), {
-        signal: AbortSignal.timeout(DIAL_TIMEOUT_MS)
-      })
-      await stream.close()
-
-      const firstChunk = await lp.read({ signal: AbortSignal.timeout(DIAL_TIMEOUT_MS) })
-      const firstBytes = toUint8Array(firstChunk)
       if (!firstBytes.length) {
         throw new Error('Gateway node error: no response from peer')
       }
@@ -532,9 +553,9 @@ export class P2pProvider {
   }
 
   /**
-   * Constructs an HTTP download URL from the P2P multiaddr.
-   * The actual file download happens via HTTP since there is no
-   * URL concept in P2P streaming.
+   * Sends a DOWNLOAD command to the peer via P2P, reads the binary stream
+   * directly from the lpStream, and returns a DownloadResponse.
+   * The node decrypts the service file and streams raw file data back.
    */
   public async getDownloadUrl(
     did: string,
@@ -545,7 +566,7 @@ export class P2pProvider {
     signerOrAuthToken: Signer | string,
     policyServer?: any,
     userCustomParameters?: UserCustomParameters
-  ): Promise<any> {
+  ): Promise<DownloadResponse> {
     const consumerAddress = await this.getConsumerAddress(signerOrAuthToken)
     const nonce = ((await this.getNonce(nodeUri, consumerAddress)) + 1).toString()
     const signature = await this.getSignature(
@@ -554,22 +575,54 @@ export class P2pProvider {
       PROTOCOL_COMMANDS.DOWNLOAD
     )
 
-    const ipMatch = nodeUri.match(/\/(ip4|dns[46]?)\/([^/]+)/)
-    const host = ipMatch?.[2] || '127.0.0.1'
-    let consumeUrl = `http://${host}:8001/api/services/download`
-    consumeUrl += `?fileIndex=${fileIndex}`
-    consumeUrl += `&documentId=${did}`
-    consumeUrl += `&transferTxId=${transferTxId}`
-    consumeUrl += `&serviceId=${serviceId}`
-    consumeUrl += `&consumerAddress=${consumerAddress}`
-    consumeUrl += `&nonce=${nonce}`
-    if (policyServer) {
-      consumeUrl += '&policyServer=' + encodeURI(JSON.stringify(policyServer))
+    const payload: Record<string, any> = {
+      command: PROTOCOL_COMMANDS.DOWNLOAD,
+      authorization: this.getAuthorization(signerOrAuthToken),
+      fileIndex,
+      documentId: did,
+      transferTxId,
+      serviceId,
+      consumerAddress,
+      nonce,
+      signature
     }
-    consumeUrl += `&signature=${signature}`
-    if (userCustomParameters)
-      consumeUrl += '&userdata=' + encodeURI(JSON.stringify(userCustomParameters))
-    return consumeUrl
+    if (policyServer) payload.policyServer = policyServer
+    if (userCustomParameters) payload.userData = userCustomParameters
+
+    const { lp, firstBytes } = await this.dialAndStream(nodeUri, payload)
+
+    // First lp frame is the status JSON
+    const statusText = uint8ArrayToString(firstBytes)
+    try {
+      const status = JSON.parse(statusText)
+      if (typeof status?.httpStatus === 'number' && status.httpStatus >= 400) {
+        throw new Error(status.error ?? `P2P download error: ${status.httpStatus}`)
+      }
+    } catch (e) {
+      if (e.message?.startsWith('P2P download error')) throw e
+    }
+
+    // Remaining lp frames are raw binary file data
+    const chunks: Buffer[] = []
+    try {
+      while (true) {
+        const chunk = await lp.read({ signal: AbortSignal.timeout(DIAL_TIMEOUT_MS) })
+        chunks.push(Buffer.from(toUint8Array(chunk)))
+      }
+    } catch (e) {
+      if (!(e instanceof UnexpectedEOFError)) {
+        throw e
+      }
+    }
+
+    const combined = Buffer.concat(chunks)
+    return {
+      data: combined.buffer.slice(
+        combined.byteOffset,
+        combined.byteOffset + combined.byteLength
+      ) as ArrayBuffer,
+      filename: `file${fileIndex}`
+    }
   }
 
   /**
