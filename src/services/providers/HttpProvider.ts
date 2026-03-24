@@ -147,7 +147,6 @@ export class HttpProvider {
         signal
       })
       const { nonce } = await response.json()
-      console.log(`[getNonce] Consumer: ${consumerAddress} nonce: ${nonce}`)
       const sanitizedNonce = !nonce || nonce === null ? 0 : Number(nonce)
       return sanitizedNonce
     } catch (e) {
@@ -576,7 +575,6 @@ export class HttpProvider {
 
     let response
     try {
-      console.log('Initialize compute url:', initializeUrl)
       response = await fetch(initializeUrl, {
         method: 'POST',
         body: JSON.stringify(providerData),
@@ -586,7 +584,6 @@ export class HttpProvider {
         },
         signal
       })
-      console.log('Raw response:', response)
       if (!response.ok) {
         const errorText = await response.text()
         throw new Error(`${errorText}`)
@@ -708,9 +705,6 @@ export class HttpProvider {
     queueMaxWaitTime?: number,
     dockerRegistryAuth?: dockerRegistryAuth
   ): Promise<ComputeJob | ComputeJob[]> {
-    console.log('called new compute start method...')
-    console.log('datasets: ', datasets)
-    console.log('algorithm: ', algorithm)
     const providerEndpoints = await this.getEndpoints(nodeUri)
     const serviceEndpoints = await this.getServiceEndpoints(nodeUri, providerEndpoints)
 
@@ -840,9 +834,6 @@ export class HttpProvider {
     queueMaxWaitTime?: number,
     dockerRegistryAuth?: dockerRegistryAuth
   ): Promise<ComputeJob | ComputeJob[]> {
-    console.log('called new free compute start method...')
-    console.log('datasets: ', datasets)
-    console.log('algorithm: ', algorithm)
     const providerEndpoints = await this.getEndpoints(nodeUri)
     const serviceEndpoints = await this.getServiceEndpoints(nodeUri, providerEndpoints)
 
@@ -999,14 +990,12 @@ export class HttpProvider {
         },
         signal
       })
-      console.log('Raw response:', response)
     } catch (e) {
       LoggerInstance.error('computeStreamableLogs failed:')
       LoggerInstance.error(e)
       throw new Error('HTTP request failed calling Provider')
     }
     if (response?.ok || response?.status === 200) {
-      console.log('Response body:', response.body)
       return response.body
     }
     LoggerInstance.error(
@@ -1147,7 +1136,6 @@ export class HttpProvider {
     if (!computeStatusUrl) return null
     let response
     try {
-      console.log('computeStatusUrl: ', computeStatusUrl + url)
       response = await fetch(computeStatusUrl + url, {
         method: 'GET',
         headers: { 'Content-Type': 'application/json', Authorization: authorization },

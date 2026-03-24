@@ -1,5 +1,4 @@
 import { Signer } from 'ethers'
-import { isMultiaddr, multiaddr } from '@multiformats/multiaddr'
 import {
   StorageObject,
   FileInfo,
@@ -18,9 +17,7 @@ import {
   PolicyServerPassthroughCommand,
   dockerRegistryAuth
 } from '../../@types/index.js'
-import { decodeJwt } from '../../utils/Jwt.js'
 import { type DDO, type ValidateMetadata } from '@oceanprotocol/ddo-js'
-import { signRequest } from '../../utils/SignatureUtils.js'
 import { HttpProvider } from './HttpProvider.js'
 import { P2pProvider } from './P2pProvider.js'
 
@@ -29,17 +26,9 @@ export { OCEAN_P2P_PROTOCOL } from './P2pProvider.js'
 export function isP2pUri(nodeUri: string): boolean {
   if (!nodeUri) return false
   if (nodeUri.startsWith('/')) return true
-  if (
-    nodeUri.startsWith('12D3') ||
-    nodeUri.startsWith('16Uiu') ||
-    nodeUri.startsWith('Qm')
+  return (
+    nodeUri.startsWith('12D3') || nodeUri.startsWith('16Uiu') || nodeUri.startsWith('Qm')
   )
-    return true
-  try {
-    return isMultiaddr(multiaddr(nodeUri))
-  } catch {
-    return false
-  }
 }
 
 export class BaseProvider {
@@ -48,33 +37,6 @@ export class BaseProvider {
 
   protected getImpl(nodeUri: string): HttpProvider | P2pProvider {
     return isP2pUri(nodeUri) ? this.p2pProvider : this.httpProvider
-  }
-
-  // --- Shared auth helpers ---
-
-  protected async getConsumerAddress(
-    signerOrAuthToken: Signer | string
-  ): Promise<string> {
-    const isAuthToken = typeof signerOrAuthToken === 'string'
-    return isAuthToken
-      ? decodeJwt(signerOrAuthToken).address
-      : await signerOrAuthToken.getAddress()
-  }
-
-  protected async getSignature(
-    signerOrAuthToken: Signer | string,
-    nonce: string,
-    command: string
-  ): Promise<string | null> {
-    if (typeof signerOrAuthToken === 'string') return null
-    const message = String(
-      String(await signerOrAuthToken.getAddress()) + String(nonce) + String(command)
-    )
-    return signRequest(signerOrAuthToken, message)
-  }
-
-  protected getAuthorization(signerOrAuthToken: Signer | string): string | undefined {
-    return typeof signerOrAuthToken === 'string' ? signerOrAuthToken : undefined
   }
 
   // --- HTTP-only helpers (always delegated to httpProvider) ---

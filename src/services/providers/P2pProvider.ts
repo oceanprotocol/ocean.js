@@ -85,6 +85,10 @@ async function getOrCreateLibp2pNode(multiaddresses: Multiaddr[]): Promise<Libp2
     return libp2pNode
   }
 
+  if (libp2pNode) {
+    await libp2pNode.stop()
+  }
+
   libp2pNode = await createLibp2p({
     addresses: { listen: [] },
     transports: [webSockets()],
@@ -155,21 +159,16 @@ export class P2pProvider {
       throw new Error(`Invalid P2P multiaddr: ${nodeUri}`)
     }
 
+    const opSignal = signal ?? AbortSignal.timeout(DIAL_TIMEOUT_MS)
     const node = await getOrCreateLibp2pNode(multiaddressesToDial)
-    const connection = await node.dial(multiaddressesToDial, {
-      signal: signal ?? AbortSignal.timeout(DIAL_TIMEOUT_MS)
-    })
-    const stream = await connection.newStream(OCEAN_P2P_PROTOCOL, {
-      signal: AbortSignal.timeout(DIAL_TIMEOUT_MS)
-    })
+    const connection = await node.dial(multiaddressesToDial, { signal: opSignal })
+    const stream = await connection.newStream(OCEAN_P2P_PROTOCOL, { signal: opSignal })
     const lp = lpStream(stream)
 
-    await lp.write(uint8ArrayFromString(JSON.stringify(payload)), {
-      signal: AbortSignal.timeout(DIAL_TIMEOUT_MS)
-    })
+    await lp.write(uint8ArrayFromString(JSON.stringify(payload)), { signal: opSignal })
     await stream.close()
 
-    const firstChunk = await lp.read({ signal: AbortSignal.timeout(DIAL_TIMEOUT_MS) })
+    const firstChunk = await lp.read({ signal: opSignal })
     const firstBytes = toUint8Array(firstChunk)
 
     return { lp, firstBytes, connection }

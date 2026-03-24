@@ -155,7 +155,6 @@ export class Aquarius {
         signal
       })
       let { nonce } = await responseNonce.json()
-      console.log(`[getNonce] Consumer: ${publisherAddress} nonce: ${nonce}`)
       if (!nonce || nonce === null) {
         nonce = '0'
       }
