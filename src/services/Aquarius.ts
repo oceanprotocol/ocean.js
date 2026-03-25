@@ -5,7 +5,7 @@ import { Signer } from 'ethers'
 import { signRequest } from '../utils/SignatureUtils.js'
 import { Asset, DDO, DDOManager, ValidateMetadata } from '@oceanprotocol/ddo-js'
 import { PROTOCOL_COMMANDS } from '../@types/Provider.js'
-import { isP2pUri } from './providers/BaseProvider.js'
+import { isP2pUri, getAuthorization } from './providers/BaseProvider.js'
 import { ProviderInstance } from './Provider.js'
 
 export interface SearchQuery {
@@ -26,12 +26,6 @@ export class Aquarius {
    */
   constructor(aquariusURL: string) {
     this.aquariusURL = aquariusURL
-  }
-
-  // temp, untll we merge aquarius & provider
-  private getAuthorization(signerOrAuthToken: Signer | string): string | undefined {
-    const isAuthToken = typeof signerOrAuthToken === 'string'
-    return isAuthToken ? signerOrAuthToken : undefined
   }
 
   /** Resolves a DID
@@ -171,7 +165,7 @@ export class Aquarius {
         body: JSON.stringify(data),
         headers: {
           'Content-Type': 'application/json',
-          Authorization: this.getAuthorization(signer)
+          Authorization: getAuthorization(signer)
         },
         signal
       })

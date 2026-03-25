@@ -1,11 +1,17 @@
-import { type Libp2p, createLibp2p } from 'libp2p'
+import { type Libp2p, type Libp2pOptions, createLibp2p } from 'libp2p'
 import { noise } from '@chainsafe/libp2p-noise'
 import { yamux } from '@chainsafe/libp2p-yamux'
 import { webSockets } from '@libp2p/websockets'
 import { bootstrap } from '@libp2p/bootstrap'
+import { tls } from '@libp2p/tls'
+import { identify } from '@libp2p/identify'
+import { kadDHT } from '@libp2p/kad-dht'
+import { ping } from '@libp2p/ping'
+import { mdns } from '@libp2p/mdns'
+import { peerIdFromString } from '@libp2p/peer-id'
 import { lpStream, UnexpectedEOFError } from '@libp2p/utils'
 import type { Connection } from '@libp2p/interface'
-import { isMultiaddr, multiaddr, type Multiaddr } from '@multiformats/multiaddr'
+import { multiaddr, type Multiaddr } from '@multiformats/multiaddr'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { Signer } from 'ethers'
@@ -20,7 +26,6 @@ import {
   ComputeEnvironment,
   ProviderInitialize,
   ProviderComputeInitializeResults,
-  ServiceEndpoint,
   UserCustomParameters,
   ComputeResourceRequest,
   ComputeJobMetadata,
@@ -35,41 +40,97 @@ import { signRequest } from '../../utils/SignatureUtils.js'
 import { getConsumerAddress, getSignature, getAuthorization } from './BaseProvider.js'
 
 export const OCEAN_P2P_PROTOCOL = '/ocean/nodes/1.0.0'
-const MAX_RETRIES = 5
-const RETRY_DELAY_MS = 1000
-const DIAL_TIMEOUT_MS = 10_000
+const OCEAN_DHT_PROTOCOL = '/ocean/nodes/1.0.0/kad/1.0.0'
+const DEFAULT_MAX_RETRIES = 5
+const DEFAULT_RETRY_DELAY_MS = 1000
+const DEFAULT_DIAL_TIMEOUT_MS = 10_000
 
+// Ocean Protocol public bootstrap nodes (WebSocket addresses)
+const DEFAULT_BOOTSTRAP_PEERS = [
+  '/dns4/bootstrap1.oncompute.ai/tcp/9001/ws/p2p/16Uiu2HAmLhRDqfufZiQnxvQs2XHhd6hwkLSPfjAQg1gH8wgRixiP',
+  '/dns4/bootstrap2.oncompute.ai/tcp/9001/ws/p2p/16Uiu2HAmHwzeVw7RpGopjZe6qNBJbzDDBdqtrSk7Gcx1emYsfgL4',
+  '/dns4/bootstrap3.oncompute.ai/tcp/9001/ws/p2p/16Uiu2HAmBKSeEP3v4tYEPsZsZv9VELinyMCsrVTJW9BvQeFXx28U',
+  '/dns4/bootstrap4.oncompute.ai/tcp/9001/ws/p2p/16Uiu2HAmSTVTArioKm2wVcyeASHYEsnx2ZNq467Z4GMDU4ErEPom'
+]
+
+export interface P2PConfig {
+  /**
+   * Bootstrap peer multiaddrs for DHT peer discovery.
+   * Required when dialing bare peer IDs; defaults to Ocean Protocol's
+   * public bootstrap nodes. Ignored if `libp2p.peerDiscovery` is set.
+   */
+  bootstrapPeers?: string[]
+  /** Timeout per dial + stream operation in ms. Default: 10000 */
+  dialTimeout?: number
+  /** Max retry attempts on connection errors. Default: 5 */
+  maxRetries?: number
+  /** Base delay between retries in ms. Default: 1000 */
+  retryDelay?: number
+  /**
+   * mDNS discovery interval in ms. Set to 0 to disable. Default: 20000
+   * Useful for local development — discovers peers on the same LAN without bootstrap nodes.
+   */
+  mDNSInterval?: number
+  /**
+   * Full libp2p node configuration. Fields provided here override ocean.js
+   * defaults (transports, encrypters, services, connectionManager, etc.).
+   * Unset fields keep ocean.js defaults.
+   */
+  libp2p?: Partial<Libp2pOptions>
+}
+
+let p2pConfig: P2PConfig = {}
 let libp2pNode: Libp2p | null = null
 let lastBootstrapKey: string | null = null
+let nodeCreation: Promise<Libp2p> | null = null
+const discoveredNodes = new Map<string, string[]>()
+
+/**
+ * Configure the internal libp2p node used for P2P transport.
+ * Call this once before making P2P requests, e.g.:
+ *   setupP2P({ bootstrapPeers: ['/ip4/1.2.3.4/tcp/9000/ws/p2p/16Uiu2...'] })
+ *
+ * Required when using bare peer IDs as nodeUri — the bootstrap peers
+ * provide DHT entry points so the peer can be located.
+ */
+export async function setupP2P(config: P2PConfig): Promise<void> {
+  p2pConfig = config
+  discoveredNodes.clear()
+  if (libp2pNode) {
+    Promise.resolve(libp2pNode.stop()).catch(() => {})
+    libp2pNode = null
+    lastBootstrapKey = null
+    nodeCreation = null
+  }
+
+  await getOrCreateLibp2pNode(
+    (config.bootstrapPeers ?? DEFAULT_BOOTSTRAP_PEERS).map(multiaddr)
+  )
+}
+
+/** Returns all peers discovered via mDNS or DHT bootstrap. */
+export function getDiscoveredNodes(): Array<{ peerId: string; multiaddrs: string[] }> {
+  return Array.from(discoveredNodes.entries()).map(([peerId, multiaddrs]) => ({
+    peerId,
+    multiaddrs
+  }))
+}
 
 function bufToHex(val: any): string {
-  // JSON-string form: '{"type":"Buffer","data":[...]}'
   if (typeof val === 'string') {
     try {
-      const parsed = JSON.parse(val)
-      if (parsed?.type === 'Buffer' && Array.isArray(parsed.data)) {
-        return Buffer.from(parsed.data).toString()
-      }
-    } catch {}
-    return val
+      val = JSON.parse(val)
+    } catch {
+      return val
+    }
   }
-  // Object form: {type:"Buffer", data:[...]}
-  if (val?.type === 'Buffer' && Array.isArray(val.data)) {
-    return Buffer.from(val.data).toString()
-  }
-  // Indexed-object form (Uint8Array serialized): {"0":48,"1":120,...}
-  if (
-    val !== null &&
-    typeof val === 'object' &&
-    '0' in val &&
-    typeof val[0] === 'number'
-  ) {
-    const bytes = Object.keys(val)
-      .sort((a, b) => Number(a) - Number(b))
-      .map((k) => val[k] as number)
-    return Buffer.from(bytes).toString()
-  }
-  return val
+  // {type:'Buffer', data:[...]} or indexed-object form {"0":48,"1":120,...}
+  const bytes = Array.isArray(val?.data)
+    ? val.data
+    : typeof val?.[0] === 'number'
+    ? Object.values(val)
+    : null
+  return bytes ? Buffer.from(bytes).toString() : val
 }
 
 function bootstrapKey(addrs: Multiaddr[]): string {
@@ -79,41 +140,84 @@ function bootstrapKey(addrs: Multiaddr[]): string {
     .join(',')
 }
 
-async function getOrCreateLibp2pNode(multiaddresses: Multiaddr[]): Promise<Libp2p> {
-  const key = bootstrapKey(multiaddresses)
-  if (libp2pNode && lastBootstrapKey === key) {
-    return libp2pNode
-  }
+async function getOrCreateLibp2pNode(bootstrapAddrs: Multiaddr[]): Promise<Libp2p> {
+  const key = bootstrapKey(bootstrapAddrs)
+  if (libp2pNode && lastBootstrapKey === key) return libp2pNode
+  if (nodeCreation) return nodeCreation
 
-  if (libp2pNode) {
-    await libp2pNode.stop()
-  }
+  if (libp2pNode) await libp2pNode.stop()
 
-  libp2pNode = await createLibp2p({
+  nodeCreation = createLibp2p({
     addresses: { listen: [] },
     transports: [webSockets()],
-    connectionEncrypters: [noise()],
+    connectionEncrypters: [noise(), tls()],
     streamMuxers: [yamux()],
     peerDiscovery: [
-      bootstrap({
-        list: multiaddresses.map((addr) => addr.toString()),
-        timeout: 10000
-      })
+      ...(bootstrapAddrs.length > 0
+        ? [bootstrap({ list: bootstrapAddrs.map(String), timeout: 10000 })]
+        : []),
+      ...((p2pConfig.mDNSInterval ?? 20000) > 0
+        ? [mdns({ interval: p2pConfig.mDNSInterval ?? 20000 })]
+        : [])
     ],
-    connectionManager: {
-      maxConnections: 100
+    services: {
+      identify: identify(),
+      ping: ping(),
+      dht: kadDHT({ protocol: OCEAN_DHT_PROTOCOL, clientMode: true })
     },
-    connectionMonitor: {
-      abortConnectionOnPingFailure: false
-    }
+    connectionManager: { maxConnections: 100 },
+    connectionMonitor: { abortConnectionOnPingFailure: false },
+    // User-supplied config overrides all defaults above.
+    // Cast needed: services generics can't be inferred through a Partial<Libp2pOptions> spread.
+    ...(p2pConfig.libp2p as any)
   })
-  lastBootstrapKey = key
-  await libp2pNode.start()
-  return libp2pNode
+    .then(async (node) => {
+      lastBootstrapKey = key
+      await node.start()
+      node.addEventListener('peer:discovery', (evt: any) => {
+        const peerInfo = evt.detail
+        if (!peerInfo?.id) return
+        const peerId = peerInfo.id.toString()
+        discoveredNodes.set(
+          peerId,
+          (peerInfo.multiaddrs ?? []).map((m: any) => m.toString())
+        )
+        if (
+          node.getConnections().length < 100 &&
+          node.getConnections(peerInfo.id).length === 0
+        ) {
+          node.dial(peerInfo.id, { signal: AbortSignal.timeout(10000) }).catch(() => {})
+        }
+      })
+      libp2pNode = node
+      nodeCreation = null
+      return node
+    })
+    .catch((err) => {
+      nodeCreation = null
+      throw err
+    })
+
+  return nodeCreation
 }
 
 function toUint8Array(chunk: Uint8Array | { subarray(): Uint8Array }): Uint8Array {
   return chunk instanceof Uint8Array ? chunk : chunk.subarray()
+}
+
+async function getConnection(nodeUri: string, signal: AbortSignal): Promise<Connection> {
+  if (nodeUri.startsWith('/')) {
+    const ma = multiaddr(nodeUri)
+    const node = await getOrCreateLibp2pNode(
+      (p2pConfig.bootstrapPeers ?? []).map(multiaddr)
+    )
+    return node.dial(ma, { signal })
+  }
+  const peerId = peerIdFromString(nodeUri)
+  const node = await getOrCreateLibp2pNode(
+    (p2pConfig.bootstrapPeers ?? DEFAULT_BOOTSTRAP_PEERS).map(multiaddr)
+  )
+  return node.dial(peerId, { signal })
 }
 
 export class P2pProvider {
@@ -138,17 +242,9 @@ export class P2pProvider {
     firstBytes: Uint8Array
     connection: Connection
   }> {
-    const multiaddressesToDial = [nodeUri]
-      .filter((address) => isMultiaddr(multiaddr(address)))
-      .map((address) => multiaddr(address))
-
-    if (multiaddressesToDial.length === 0) {
-      throw new Error(`Invalid P2P multiaddr: ${nodeUri}`)
-    }
-
-    const opSignal = signal ?? AbortSignal.timeout(DIAL_TIMEOUT_MS)
-    const node = await getOrCreateLibp2pNode(multiaddressesToDial)
-    const connection = await node.dial(multiaddressesToDial, { signal: opSignal })
+    const opSignal =
+      signal ?? AbortSignal.timeout(p2pConfig.dialTimeout ?? DEFAULT_DIAL_TIMEOUT_MS)
+    const connection = await getConnection(nodeUri, opSignal)
     const stream = await connection.newStream(OCEAN_P2P_PROTOCOL, { signal: opSignal })
     const lp = lpStream(stream)
 
@@ -206,7 +302,9 @@ export class P2pProvider {
           try {
             while (true) {
               const chunk = await lp.read({
-                signal: AbortSignal.timeout(DIAL_TIMEOUT_MS)
+                signal: AbortSignal.timeout(
+                  p2pConfig.dialTimeout ?? DEFAULT_DIAL_TIMEOUT_MS
+                )
               })
               yield toUint8Array(chunk)
             }
@@ -222,7 +320,9 @@ export class P2pProvider {
       const chunks: Uint8Array[] = [firstBytes]
       try {
         while (true) {
-          const chunk = await lp.read({ signal: AbortSignal.timeout(DIAL_TIMEOUT_MS) })
+          const chunk = await lp.read({
+            signal: AbortSignal.timeout(p2pConfig.dialTimeout ?? DEFAULT_DIAL_TIMEOUT_MS)
+          })
           chunks.push(toUint8Array(chunk))
         }
       } catch (e) {
@@ -249,8 +349,13 @@ export class P2pProvider {
       }
 
       const errText = (typeof response === 'string' ? response : res?.error) ?? ''
-      if (errText.includes('Cannot connect to peer') && retrialNumber < MAX_RETRIES) {
-        await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY_MS))
+      if (
+        errText.includes('Cannot connect to peer') &&
+        retrialNumber < (p2pConfig.maxRetries ?? DEFAULT_MAX_RETRIES)
+      ) {
+        await new Promise((resolve) =>
+          setTimeout(resolve, p2pConfig.retryDelay ?? DEFAULT_RETRY_DELAY_MS)
+        )
         return this.sendP2pCommand(
           nodeUri,
           command,
@@ -266,7 +371,7 @@ export class P2pProvider {
       const msg: string = err?.message ?? ''
       if (
         (msg.includes('closed') || msg.includes('reset')) &&
-        retrialNumber < MAX_RETRIES
+        retrialNumber < (p2pConfig.maxRetries ?? DEFAULT_MAX_RETRIES)
       ) {
         try {
           await connection?.close()
@@ -295,26 +400,6 @@ export class P2pProvider {
       LoggerInstance.error('P2P getEndpoints (STATUS) failed:', e)
       throw e
     }
-  }
-
-  /**
-   * Not applicable for P2P — returns an empty array.
-   */
-  public async getServiceEndpoints(
-    _providerEndpoint: string,
-    _endpoints: any
-  ): Promise<ServiceEndpoint[]> {
-    return []
-  }
-
-  /**
-   * Not applicable for P2P — returns null.
-   */
-  getEndpointURL(
-    _servicesEndpoints: ServiceEndpoint[],
-    _serviceName: string
-  ): ServiceEndpoint {
-    return null
   }
 
   /**
@@ -595,7 +680,9 @@ export class P2pProvider {
     const chunks: Buffer[] = status === null ? [Buffer.from(firstBytes)] : []
     try {
       while (true) {
-        const chunk = await lp.read({ signal: AbortSignal.timeout(DIAL_TIMEOUT_MS) })
+        const chunk = await lp.read({
+          signal: AbortSignal.timeout(p2pConfig.dialTimeout ?? DEFAULT_DIAL_TIMEOUT_MS)
+        })
         chunks.push(Buffer.from(toUint8Array(chunk)))
       }
     } catch (e) {

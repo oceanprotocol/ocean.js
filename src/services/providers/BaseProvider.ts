@@ -24,7 +24,12 @@ import { signRequest } from '../../utils/SignatureUtils.js'
 import { HttpProvider } from './HttpProvider.js'
 import { P2pProvider } from './P2pProvider.js'
 
-export { OCEAN_P2P_PROTOCOL } from './P2pProvider.js'
+export {
+  OCEAN_P2P_PROTOCOL,
+  setupP2P,
+  getDiscoveredNodes,
+  type P2PConfig
+} from './P2pProvider.js'
 
 export async function getConsumerAddress(
   signerOrAuthToken: Signer | string
@@ -66,24 +71,8 @@ export class BaseProvider {
     return isP2pUri(nodeUri) ? this.p2pProvider : this.httpProvider
   }
 
-  // --- HTTP-only helpers (always delegated to httpProvider) ---
-
   async getEndpoints(nodeUri: string, authorization?: string): Promise<any> {
     return this.getImpl(nodeUri).getEndpoints(nodeUri, authorization)
-  }
-
-  public async getServiceEndpoints(
-    providerEndpoint: string,
-    endpoints: any
-  ): Promise<ServiceEndpoint[]> {
-    return this.httpProvider.getServiceEndpoints(providerEndpoint, endpoints)
-  }
-
-  getEndpointURL(
-    servicesEndpoints: ServiceEndpoint[],
-    serviceName: string
-  ): ServiceEndpoint {
-    return this.httpProvider.getEndpointURL(servicesEndpoints, serviceName)
   }
 
   public async getComputeStartRoutes(

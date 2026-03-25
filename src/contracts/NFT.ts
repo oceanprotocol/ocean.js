@@ -561,9 +561,7 @@ export class Nft extends SmartContract {
     if (!(await this.getNftPermissions(nftAddress, address)).updateMetadata) {
       throw new Error(`Caller is not Metadata updater`)
     }
-    // The indexer's decryptDDO checks: valid HTTP URL → HTTP decrypt path,
-    // peer ID string → P2P decrypt (local or remote). When the caller passes
-    // a P2P multiaddr, extract the peer ID so the indexer routes correctly.
+    // Indexer expects a bare peer ID, not a full multiaddr, for P2P decrypt routing.
     let decryptorUrl = metadataDecryptorUrl
     if (metadataDecryptorUrl?.includes('/p2p/')) {
       const p2pMatch = metadataDecryptorUrl.match(/\/p2p\/([^/]+)/)
