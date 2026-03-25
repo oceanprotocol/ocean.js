@@ -19,7 +19,7 @@ describe('P2P connection warmup', () => {
 
     const bootstrapPeers = nodeUrl.startsWith('/')
       ? [nodeUrl]
-      : [`/ip4/127.0.0.1/tcp/9001/ws/p2p/${nodeUrl}`]
+      : [`/ip4/172.15.0.5/tcp/9001/ws/p2p/${nodeUrl}`]
 
     await setupP2P({ bootstrapPeers })
     while (

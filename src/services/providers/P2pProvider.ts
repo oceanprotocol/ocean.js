@@ -68,6 +68,12 @@ export interface P2PConfig {
   /** Base delay between retries in ms. Default: 1000 */
   retryDelay?: number
   /**
+   * Timeout for DHT peer lookup when dialing a bare peer ID, in ms. Default: 30000.
+   * Intentionally separate from dialTimeout — DHT resolution needs more time than
+   * a direct dial. Once a peer is found and connected, subsequent calls skip this.
+   */
+  dhtLookupTimeout?: number
+  /**
    * mDNS discovery interval in ms. Set to 0 to disable. Default: 20000
    * Useful for local development — discovers peers on the same LAN without bootstrap nodes.
    */
@@ -218,6 +224,16 @@ async function getConnection(nodeUri: string, signal: AbortSignal): Promise<Conn
   const node = await getOrCreateLibp2pNode(
     (p2pConfig.bootstrapPeers ?? DEFAULT_BOOTSTRAP_PEERS).map(multiaddr)
   )
+  // Return existing connection immediately — no DHT needed
+  const existing = node.getConnections(peerId)
+  if (existing.length > 0) return existing[0]
+
+  // Resolve peer ID → multiaddrs via DHT before dialing.
+  // Uses a separate 30s signal so a short dial signal doesn't abort the DHT
+  // lookup before it completes. Once findPeer resolves, dial() is instant
+  // (addresses are in peerStore).
+  const dhtSignal = AbortSignal.timeout(p2pConfig.dhtLookupTimeout ?? 60_000)
+  await node.peerRouting.findPeer(peerId, { signal: dhtSignal }).catch(() => {})
   return node.dial(peerId, { signal })
 }
 
