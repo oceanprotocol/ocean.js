@@ -427,8 +427,4 @@ export class BaseProvider {
   public getDiscoveredNodes(): Array<{ peerId: string; multiaddrs: string[] }> {
     return this.p2pProvider.getDiscoveredNodes()
   }
-
-  public async connectP2P(nodeUri: string, timeout?: number): Promise<void> {
-    return this.p2pProvider.connectP2P(nodeUri, timeout)
-  }
 }

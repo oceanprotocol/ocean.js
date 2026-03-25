@@ -89,7 +89,6 @@ export interface P2PConfig {
 export class P2pProvider {
   private p2pConfig: P2PConfig = {}
   private libp2pNode: Libp2p | null = null
-  private nodeCreation: Promise<Libp2p> | null = null
   private discoveredNodes = new Map<string, string[]>()
 
   /**
@@ -106,7 +105,6 @@ export class P2pProvider {
     if (this.libp2pNode) {
       Promise.resolve(this.libp2pNode.stop()).catch(() => {})
       this.libp2pNode = null
-      this.nodeCreation = null
     }
     await this.getOrCreateLibp2pNode()
   }
@@ -117,17 +115,6 @@ export class P2pProvider {
       peerId,
       multiaddrs
     }))
-  }
-
-  /**
-   * Pre-connect to a peer. Useful for warming up a connection before the
-   * first real request, especially for bare peer IDs that require DHT lookup.
-   */
-  public async connectP2P(nodeUri: string, timeout?: number): Promise<void> {
-    await this.getConnection(
-      nodeUri,
-      AbortSignal.timeout(timeout ?? DEFAULT_DIAL_TIMEOUT_MS)
-    )
   }
 
   private bufToHex(val: any): string {
@@ -149,13 +136,12 @@ export class P2pProvider {
 
   private async getOrCreateLibp2pNode(): Promise<Libp2p> {
     if (this.libp2pNode) return this.libp2pNode
-    if (this.nodeCreation) return this.nodeCreation
 
     const bootstrapAddrs = (this.p2pConfig.bootstrapPeers ?? DEFAULT_BOOTSTRAP_PEERS).map(
       multiaddr
     )
 
-    this.nodeCreation = createLibp2p({
+    const node = await createLibp2p({
       addresses: { listen: [] },
       transports: [webSockets()],
       connectionEncrypters: [noise(), tls()],
@@ -179,33 +165,26 @@ export class P2pProvider {
       // Cast needed: services generics can't be inferred through a Partial<Libp2pOptions> spread.
       ...(this.p2pConfig.libp2p as any)
     })
-      .then(async (node) => {
-        await node.start()
-        node.addEventListener('peer:discovery', (evt: any) => {
-          const peerInfo = evt.detail
-          if (!peerInfo?.id) return
-          const peerId = peerInfo.id.toString()
-          this.discoveredNodes.set(
-            peerId,
-            (peerInfo.multiaddrs ?? []).map((m: any) => m.toString())
-          )
-          if (
-            node.getConnections().length < 100 &&
-            node.getConnections(peerInfo.id).length === 0
-          ) {
-            node.dial(peerInfo.id, { signal: AbortSignal.timeout(10000) }).catch(() => {})
-          }
-        })
-        this.libp2pNode = node
-        this.nodeCreation = null
-        return node
-      })
-      .catch((err) => {
-        this.nodeCreation = null
-        throw err
-      })
 
-    return this.nodeCreation
+    await node.start()
+    node.addEventListener('peer:discovery', (evt: any) => {
+      const peerInfo = evt.detail
+      if (!peerInfo?.id) return
+      const peerId = peerInfo.id.toString()
+      this.discoveredNodes.set(
+        peerId,
+        (peerInfo.multiaddrs ?? []).map((m: any) => m.toString())
+      )
+      if (
+        node.getConnections().length < 100 &&
+        node.getConnections(peerInfo.id).length === 0
+      ) {
+        node.dial(peerInfo.id, { signal: AbortSignal.timeout(10000) }).catch(() => {})
+      }
+    })
+
+    this.libp2pNode = node
+    return node
   }
 
   private toUint8Array(chunk: Uint8Array | { subarray(): Uint8Array }): Uint8Array {
