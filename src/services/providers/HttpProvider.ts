@@ -14,7 +14,6 @@ import {
   ServiceEndpoint,
   UserCustomParameters,
   ComputeResourceRequest,
-  ComputePayment,
   ComputeJobMetadata,
   PolicyServerInitializeCommand,
   PolicyServerPassthroughCommand,
@@ -414,75 +413,6 @@ export class HttpProvider {
    * @param {ComputeAsset[]} assets The datasets array to initialize compute request.
    * @param {ComputeAlgorithmber} algorithm The algorithm to use.
    * @param {string} computeEnv The compute environment.
-   * @param {string} nodeUri The provider URI.
-   * @param {string} accountId caller address
-   * @param {string} chainId The chain Id to start compute on
-   * @param {string} token The token to use for the compute payment
-   * @param {number} maxJobDuration The maximum duration the job can take
-   * @param {AbortSignal} signal abort signal
-   * @return {Promise<ProviderComputeInitialize>} ProviderComputeInitialize data
-   */
-  public async initializeComputeV1(
-    assets: ComputeAsset[],
-    algorithm: ComputeAlgorithm,
-    computeEnv: string,
-    nodeUri: string,
-    accountId: string,
-    chainId: number,
-    token: string,
-    maxJobDuration: number,
-    signal?: AbortSignal
-  ): Promise<ProviderComputeInitializeResults> {
-    const providerEndpoints = await this.getEndpoints(nodeUri)
-    const serviceEndpoints = await this.getServiceEndpoints(nodeUri, providerEndpoints)
-    const payment: ComputePayment = {
-      chainId,
-      token,
-      maxJobDuration
-    }
-    const payload: Object = {
-      datasets: assets,
-      algorithm,
-      payment,
-      consumerAddress: accountId,
-      environment: computeEnv
-    }
-    const initializeUrl = this.getEndpointURL(serviceEndpoints, 'initializeCompute')
-      ? this.getEndpointURL(serviceEndpoints, 'initializeCompute').urlPath
-      : null
-    if (!initializeUrl) return null
-    let response
-    try {
-      response = await fetch(initializeUrl, {
-        method: 'POST',
-        body: JSON.stringify(payload),
-        headers: { 'Content-Type': 'application/json' },
-        signal
-      })
-    } catch (e) {
-      LoggerInstance.error('Initialize compute failed: ')
-      LoggerInstance.error(e)
-      throw new Error('ComputeJob cannot be initialized')
-    }
-    if (response?.ok) {
-      const params = await response.json()
-      return params
-    }
-    const resolvedResponse = await response.json()
-    LoggerInstance.error(
-      'Initialize compute failed: ',
-      response.status,
-      response.statusText,
-      resolvedResponse
-    )
-    LoggerInstance.error('Payload was:', JSON.stringify(payload))
-    throw new Error(JSON.stringify(resolvedResponse))
-  }
-
-  /** Initializes the provider for a compute request.
-   * @param {ComputeAsset[]} assets The datasets array to initialize compute request.
-   * @param {ComputeAlgorithmber} algorithm The algorithm to use.
-   * @param {string} computeEnv The compute environment.
    * @param {string} token The payment token address.
    * @param {number} validUntil  The job expiration date.
    * @param {string} nodeUri The provider URI.
@@ -506,6 +436,7 @@ export class HttpProvider {
     chainId: number,
     policyServer?: any,
     signal?: AbortSignal,
+    output?: ComputeOutput,
     dockerRegistryAuth?: dockerRegistryAuth
   ): Promise<ProviderComputeInitializeResults> {
     const providerEndpoints = await this.getEndpoints(nodeUri)
@@ -559,6 +490,10 @@ export class HttpProvider {
     }
 
     if (policyServer) providerData.policyServer = policyServer
+    if (output) {
+      const nodeKey = await this.getNodePublicKey(nodeUri)
+      if (nodeKey) providerData.output = eciesencrypt(nodeKey, JSON.stringify(output))
+    }
 
     let response
     try {

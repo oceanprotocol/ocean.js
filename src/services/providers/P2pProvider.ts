@@ -38,6 +38,7 @@ import { PROTOCOL_COMMANDS } from '../../@types/Provider.js'
 import { type DDO, type ValidateMetadata } from '@oceanprotocol/ddo-js'
 import { signRequest } from '../../utils/SignatureUtils.js'
 import { getConsumerAddress, getSignature, getAuthorization } from './BaseProvider.js'
+import { eciesencrypt } from '../../utils/eciesencrypt.js'
 
 export const OCEAN_P2P_PROTOCOL = '/ocean/nodes/1.0.0'
 const OCEAN_DHT_PROTOCOL = '/ocean/nodes/1.0.0/kad/1.0.0'
@@ -227,6 +228,11 @@ export class P2pProvider {
 
   protected getSignature(s: Signer | string, nonce: string, command: string) {
     return getSignature(s, nonce, command)
+  }
+
+  private async getNodePublicKey(nodeUri: string): Promise<string> {
+    const endpoints = await this.getEndpoints(nodeUri)
+    return endpoints?.nodePublicKey
   }
 
   protected getAuthorization(s: Signer | string) {
@@ -544,35 +550,6 @@ export class P2pProvider {
   }
 
   /**
-   * Initializes compute request (V1) via P2P.
-   */
-  public async initializeComputeV1(
-    assets: ComputeAsset[],
-    algorithm: ComputeAlgorithm,
-    computeEnv: string,
-    nodeUri: string,
-    accountId: string,
-    chainId: number,
-    token: string,
-    maxJobDuration: number,
-    signal?: AbortSignal
-  ): Promise<ProviderComputeInitializeResults> {
-    return this.sendP2pCommand(
-      nodeUri,
-      PROTOCOL_COMMANDS.COMPUTE_INITIALIZE,
-      {
-        datasets: assets,
-        algorithm,
-        environment: computeEnv,
-        payment: { chainId, token, maxJobDuration },
-        consumerAddress: accountId
-      },
-      null,
-      signal
-    )
-  }
-
-  /**
    * Initializes compute request via P2P.
    */
   public async initializeCompute(
@@ -587,6 +564,7 @@ export class P2pProvider {
     chainId: number,
     policyServer?: any,
     signal?: AbortSignal,
+    output?: ComputeOutput,
     dockerRegistryAuth?: dockerRegistryAuth
   ): Promise<ProviderComputeInitializeResults> {
     const consumerAddress = await this.getConsumerAddress(signerOrAuthToken)
@@ -613,6 +591,10 @@ export class P2pProvider {
     }
     if (dockerRegistryAuth) body.dockerRegistryAuth = dockerRegistryAuth
     if (policyServer) body.policyServer = policyServer
+    if (output) {
+      const nodeKey = await this.getNodePublicKey(nodeUri)
+      if (nodeKey) body.output = eciesencrypt(nodeKey, JSON.stringify(output))
+    }
 
     return this.sendP2pCommand(
       nodeUri,
@@ -747,10 +729,13 @@ export class P2pProvider {
     }
     if (metadata) body.metadata = metadata
     if (additionalViewers) body.additionalViewers = additionalViewers
-    if (output) body.output = output
     if (policyServer) body.policyServer = policyServer
     if (queueMaxWaitTime) body.queueMaxWaitTime = queueMaxWaitTime
     if (dockerRegistryAuth) body.dockerRegistryAuth = dockerRegistryAuth
+    if (output) {
+      const nodeKey = await this.getNodePublicKey(nodeUri)
+      if (nodeKey) body.output = eciesencrypt(nodeKey, JSON.stringify(output))
+    }
 
     const result = await this.sendP2pCommand(
       nodeUri,
@@ -801,10 +786,13 @@ export class P2pProvider {
     }
     if (metadata) body.metadata = metadata
     if (additionalViewers) body.additionalViewers = additionalViewers
-    if (output) body.output = output
     if (policyServer) body.policyServer = policyServer
     if (queueMaxWaitTime) body.queueMaxWaitTime = queueMaxWaitTime
     if (dockerRegistryAuth) body.dockerRegistryAuth = dockerRegistryAuth
+    if (output) {
+      const nodeKey = await this.getNodePublicKey(nodeUri)
+      if (nodeKey) body.output = eciesencrypt(nodeKey, JSON.stringify(output))
+    }
 
     const result = await this.sendP2pCommand(
       nodeUri,

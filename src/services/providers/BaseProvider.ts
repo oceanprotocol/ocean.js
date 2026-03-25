@@ -174,30 +174,6 @@ export class BaseProvider {
     )
   }
 
-  public async initializeComputeV1(
-    assets: ComputeAsset[],
-    algorithm: ComputeAlgorithm,
-    computeEnv: string,
-    nodeUri: string,
-    accountId: string,
-    chainId: number,
-    token: string,
-    maxJobDuration: number,
-    signal?: AbortSignal
-  ): Promise<ProviderComputeInitializeResults> {
-    return this.getImpl(nodeUri).initializeComputeV1(
-      assets,
-      algorithm,
-      computeEnv,
-      nodeUri,
-      accountId,
-      chainId,
-      token,
-      maxJobDuration,
-      signal
-    )
-  }
-
   public async initializeCompute(
     assets: ComputeAsset[],
     algorithm: ComputeAlgorithm,
@@ -210,6 +186,7 @@ export class BaseProvider {
     chainId: number,
     policyServer?: any,
     signal?: AbortSignal,
+    output?: ComputeOutput,
     dockerRegistryAuth?: dockerRegistryAuth
   ): Promise<ProviderComputeInitializeResults> {
     return this.getImpl(nodeUri).initializeCompute(
@@ -224,6 +201,7 @@ export class BaseProvider {
       chainId,
       policyServer,
       signal,
+      output,
       dockerRegistryAuth
     )
   }
