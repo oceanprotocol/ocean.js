@@ -54,7 +54,7 @@ let paidEnvDatasetTxId
 let paidEnvAlgoTxId
 let computeValidUntil
 let escrow: EscrowContract
-let freeComputeRouteSupport = null
+const freeComputeRouteSupport = null
 
 const computeJobDuration = 60 * 15 // 15 minutes
 let computeMinutes: number
@@ -443,31 +443,18 @@ describe('Compute flow tests', async () => {
       meta: resolvedAlgoDdoWith2mTimeout.metadata.algorithm
     }
 
-    freeComputeRouteSupport = await ProviderInstance.getComputeStartRoutes(
+    const computeJobs = await ProviderInstance.freeComputeStart(
       providerUrl,
-      true
+      consumerAccount,
+      computeEnv.id,
+      assets,
+      algo
     )
-    if (freeComputeRouteSupport) {
-      const computeJobs = await ProviderInstance.freeComputeStart(
-        providerUrl,
-        consumerAccount,
-        computeEnv.id,
-        assets,
-        algo
-      )
-      console.log('Compute jobs: ', computeJobs)
-      freeEnvDatasetTxId = assets[0].transferTxId
-      freeEnvAlgoTxId = algo.transferTxId
-      assert(computeJobs, 'Cannot start compute job')
-      freeComputeJobId = computeJobs[0].jobId
-    } else {
-      assert(
-        freeComputeRouteSupport === null,
-        'Cannot start free compute job. provider at ' +
-          providerUrl +
-          ' does not implement freeCompute route'
-      )
-    }
+    console.log('Compute jobs: ', computeJobs)
+    freeEnvDatasetTxId = assets[0].transferTxId
+    freeEnvAlgoTxId = algo.transferTxId
+    assert(computeJobs, 'Cannot start compute job')
+    freeComputeJobId = computeJobs[0].jobId
   }).timeout(40000)
 
   it('Check compute status', async () => {
@@ -797,11 +784,14 @@ describe('Compute flow tests', async () => {
   })
 
   // move to reuse Orders
-  const delayTimeout = Math.max(
-    resolvedDdoWith2mTimeout.services[0].timeout * 1000 + 1000,
-    resolvedAlgoDdoWith2mTimeout.services[0].timeout * 1000 + 1000
-  )
-  delay(delayTimeout)
+  it('should delay', function (done) {
+    const delayTimeout = Math.max(
+      resolvedDdoWith2mTimeout.services[0].timeout * 1000 + 1000,
+      resolvedAlgoDdoWith2mTimeout.services[0].timeout * 1000 + 1000
+    )
+    this.timeout(delayTimeout + 200)
+    setTimeout(() => done(), delayTimeout)
+  })
 
   it('should start a computeJob using the paid resources, by paying the assets providerFees (reuseOrder) and paying escrow lock for max job duration', async () => {
     const { chainId } = await consumerAccount.provider.getNetwork()

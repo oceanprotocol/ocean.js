@@ -15,8 +15,7 @@ import {
   sendTx,
   transfer,
   amountToUnits,
-  StorageObject,
-  AssetFiles
+  StorageObject
 } from '../../src/index.js'
 import { createAssetHelper, orderAsset, updateAssetMetadata } from './helpers.js'
 import { DDO } from '@oceanprotocol/ddo-js'
