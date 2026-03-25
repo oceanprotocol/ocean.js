@@ -929,25 +929,6 @@ export class HttpProvider {
     return null
   }
 
-  public async getComputeStartRoutes(
-    nodeUri: string,
-    isFreeCompute: boolean = false
-  ): Promise<string | null> {
-    const providerEndpoints = await this.getEndpoints(nodeUri)
-    const serviceEndpoints = await this.getServiceEndpoints(nodeUri, providerEndpoints)
-    let computeStartUrl = null
-    if (isFreeCompute) {
-      computeStartUrl = this.getEndpointURL(serviceEndpoints, 'freeCompute')
-        ? this.getEndpointURL(serviceEndpoints, 'freeCompute').urlPath
-        : null
-    } else {
-      computeStartUrl = this.getEndpointURL(serviceEndpoints, 'computeStart')
-        ? this.getEndpointURL(serviceEndpoints, 'computeStart').urlPath
-        : null
-    }
-    return computeStartUrl
-  }
-
   /** Instruct the provider to Stop the execution of a to stop a compute job.
    * @param {string} jobId the compute job id
    * @param {string} nodeUri The provider URI.

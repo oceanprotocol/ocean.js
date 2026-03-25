@@ -847,17 +847,6 @@ export class P2pProvider {
   }
 
   /**
-   * P2P compute doesn't use HTTP routes. Returns the nodeUri itself
-   * so callers that use this as a feature gate see compute as supported.
-   */
-  public async getComputeStartRoutes(
-    nodeUri: string,
-    _isFreeCompute: boolean = false
-  ): Promise<string | null> {
-    return nodeUri
-  }
-
-  /**
    * Stop a compute job via P2P.
    */
   public async computeStop(

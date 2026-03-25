@@ -66,19 +66,6 @@ export class BaseProvider {
     return isP2pUri(nodeUri) ? this.p2pProvider : this.httpProvider
   }
 
-  async getEndpoints(nodeUri: string, authorization?: string): Promise<any> {
-    return this.getImpl(nodeUri).getEndpoints(nodeUri, authorization)
-  }
-
-  public async getComputeStartRoutes(
-    nodeUri: string,
-    isFreeCompute: boolean = false
-  ): Promise<string | null> {
-    return this.getImpl(nodeUri).getComputeStartRoutes(nodeUri, isFreeCompute)
-  }
-
-  // --- Routed public methods ---
-
   public async getNonce(
     nodeUri: string,
     consumerAddress: string,
