@@ -22,14 +22,9 @@ import { type DDO, type ValidateMetadata } from '@oceanprotocol/ddo-js'
 import { decodeJwt } from '../../utils/Jwt.js'
 import { signRequest } from '../../utils/SignatureUtils.js'
 import { HttpProvider } from './HttpProvider.js'
-import { P2pProvider } from './P2pProvider.js'
+import { P2pProvider, type P2PConfig } from './P2pProvider.js'
 
-export {
-  OCEAN_P2P_PROTOCOL,
-  setupP2P,
-  getDiscoveredNodes,
-  type P2PConfig
-} from './P2pProvider.js'
+export { OCEAN_P2P_PROTOCOL, type P2PConfig } from './P2pProvider.js'
 
 export async function getConsumerAddress(
   signerOrAuthToken: Signer | string
@@ -436,5 +431,17 @@ export class BaseProvider {
       page,
       signal
     )
+  }
+
+  public async setupP2P(config: P2PConfig): Promise<void> {
+    return this.p2pProvider.setupP2P(config)
+  }
+
+  public getDiscoveredNodes(): Array<{ peerId: string; multiaddrs: string[] }> {
+    return this.p2pProvider.getDiscoveredNodes()
+  }
+
+  public async connectP2P(nodeUri: string, timeout?: number): Promise<void> {
+    return this.p2pProvider.connectP2P(nodeUri, timeout)
   }
 }

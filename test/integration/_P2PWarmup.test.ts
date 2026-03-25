@@ -1,10 +1,5 @@
 import { assert } from 'chai'
-import {
-  isP2pUri,
-  ProviderInstance,
-  getDiscoveredNodes,
-  setupP2P
-} from '../../src/index.js'
+import { isP2pUri, ProviderInstance } from '../../src/index.js'
 
 // This suite runs first (underscore prefix sorts before all letters).
 // It warms the libp2p node - every subsequent test reuses the connection.
@@ -21,10 +16,10 @@ describe('P2P connection warmup', () => {
       ? [nodeUrl]
       : [`/ip4/172.15.0.5/tcp/9001/ws/p2p/${nodeUrl}`]
 
-    await setupP2P({ bootstrapPeers })
+    await ProviderInstance.setupP2P({ bootstrapPeers })
     while (
-      getDiscoveredNodes().length === 0 ||
-      !getDiscoveredNodes().find((node) => node.peerId === nodeUrl)
+      ProviderInstance.getDiscoveredNodes().length === 0 ||
+      !ProviderInstance.getDiscoveredNodes().find((node) => node.peerId === nodeUrl)
     ) {
       console.log(`Waiting for P2P node to be discovered...`)
       await new Promise((resolve) => setTimeout(resolve, 2000))

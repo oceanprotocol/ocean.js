@@ -3,8 +3,6 @@ export {
   BaseProvider as Provider,
   isP2pUri,
   OCEAN_P2P_PROTOCOL,
-  setupP2P,
-  getDiscoveredNodes,
   type P2PConfig
 } from './providers/BaseProvider.js'
 
