@@ -672,7 +672,8 @@ export class HttpProvider {
     payload.payment = {
       chainId,
       token,
-      maxJobDuration
+      maxJobDuration,
+      resources
     }
     if (dockerRegistryAuth) {
       const nodeKey = await this.getNodePublicKey(nodeUri)
@@ -1020,12 +1021,13 @@ export class HttpProvider {
    */
   public async computeStatus(
     nodeUri: string,
-    consumerAddress: string,
+    signerOrAuthToken: Signer | string,
     jobId?: string,
     agreementId?: string,
-    signal?: AbortSignal,
-    authorization?: string
+    signal?: AbortSignal
   ): Promise<ComputeJob | ComputeJob[]> {
+    const consumerAddress = await getConsumerAddress(signerOrAuthToken)
+    const authorization = getAuthorization(signerOrAuthToken)
     const providerEndpoints = await this.getEndpoints(nodeUri)
     const serviceEndpoints = await this.getServiceEndpoints(nodeUri, providerEndpoints)
     const computeStatusUrl = this.getEndpointURL(serviceEndpoints, 'computeStatus')

@@ -312,19 +312,17 @@ export class BaseProvider {
 
   public async computeStatus(
     nodeUri: string,
-    consumerAddress: string,
+    signerOrAuthToken: Signer | string,
     jobId?: string,
     agreementId?: string,
-    signal?: AbortSignal,
-    authorization?: string
+    signal?: AbortSignal
   ): Promise<ComputeJob | ComputeJob[]> {
     return this.getImpl(nodeUri).computeStatus(
       nodeUri,
-      consumerAddress,
+      signerOrAuthToken,
       jobId,
       agreementId,
-      signal,
-      authorization
+      signal
     )
   }
 

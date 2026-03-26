@@ -727,7 +727,7 @@ export class P2pProvider {
       feeToken: token,
       resources,
       chainId,
-      payment: { chainId, token, maxJobDuration },
+      payment: { chainId, token, maxJobDuration, resources },
       consumerAddress,
       nonce,
       signature
@@ -881,17 +881,16 @@ export class P2pProvider {
    */
   public async computeStatus(
     nodeUri: string,
-    consumerAddress: string,
+    signerOrAuthToken: Signer | string,
     jobId?: string,
     agreementId?: string,
-    signal?: AbortSignal,
-    authorization?: string
+    signal?: AbortSignal
   ): Promise<ComputeJob | ComputeJob[]> {
+    const consumerAddress = await this.getConsumerAddress(signerOrAuthToken)
     const body: Record<string, any> = { consumerAddress }
     if (jobId) body.jobId = jobId
     if (agreementId) body.agreementId = agreementId
 
-    const signerOrAuthToken = authorization ?? null
     return this.sendP2pCommand(
       nodeUri,
       PROTOCOL_COMMANDS.COMPUTE_GET_STATUS,
