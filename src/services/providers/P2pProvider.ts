@@ -179,9 +179,13 @@ export class P2pProvider {
         node.getConnections().length < 100 &&
         node.getConnections(peerInfo.id).length === 0
       ) {
-        node.dial(peerInfo.id, { signal: AbortSignal.timeout(10000) }).catch((err: Error) => {
-          LoggerInstance.debug(`Failed to dial discovered peer ${peerId}: ${err.message}`)
-        })
+        node
+          .dial(peerInfo.id, { signal: AbortSignal.timeout(10000) })
+          .catch((err: Error) => {
+            LoggerInstance.debug(
+              `Failed to dial discovered peer ${peerId}: ${err.message}`
+            )
+          })
       }
     })
 
