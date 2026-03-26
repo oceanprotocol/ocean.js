@@ -250,7 +250,7 @@ async function waitTillJobEnds(): Promise<number> {
     const interval = setInterval(async () => {
       const jobStatus = (await ProviderInstance.computeStatus(
         providerUrl,
-        await consumerAccount.getAddress(),
+        consumerAccount,
         freeComputeJobId
       )) as ComputeJob
       if (jobStatus?.[0]?.status === 70) {
@@ -460,7 +460,7 @@ describe('Compute flow tests', async () => {
   it('Check compute status', async () => {
     const jobStatus = (await ProviderInstance.computeStatus(
       providerUrl,
-      await consumerAccount.getAddress(),
+      consumerAccount,
       freeComputeJobId
     )) as ComputeJob
     assert(jobStatus, 'Cannot retrieve compute status!')
@@ -689,7 +689,7 @@ describe('Compute flow tests', async () => {
   it('Check compute status', async () => {
     const jobStatus = (await ProviderInstance.computeStatus(
       providerUrl,
-      await consumerAccount.getAddress(),
+      consumerAccount,
       paidComputeJobId,
       resolvedDdoWith2mTimeout.id
     )) as ComputeJob
@@ -911,7 +911,7 @@ describe('Compute flow tests', async () => {
   it('Check compute status', async () => {
     const jobStatus = (await ProviderInstance.computeStatus(
       providerUrl,
-      await consumerAccount.getAddress(),
+      consumerAccount,
       freeComputeJobId,
       resolvedDdoWith2mTimeout.id
     )) as ComputeJob

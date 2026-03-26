@@ -677,7 +677,7 @@ describe('Compute-to-data example tests', async () => {
     /// ```Typescript
     const jobStatus = await ProviderInstance.computeStatus(
       providerUrl,
-      await consumerAccount.getAddress(),
+      consumerAccount,
       computeJobId,
       agreementId
     )
@@ -896,7 +896,7 @@ describe('Compute-to-data example tests', async () => {
     /// ```Typescript
     const jobStatus = await ProviderInstance.computeStatus(
       providerUrl,
-      await consumerAccount.getAddress(),
+      consumerAccount,
       computeJobId
     )
     /// ```
