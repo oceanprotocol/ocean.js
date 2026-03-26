@@ -280,8 +280,6 @@ let resolvedAlgorithmDdo: DDO
 let computeJobId: string
 let agreementId: string
 
-let computeRoutePath: string
-let hasFreeComputeSupport: boolean
 /// ```
 
 /// ### 4.3 Helper methods
@@ -622,126 +620,99 @@ describe('Compute-to-data example tests', async () => {
     assert(computeEnv, 'Cannot find the free compute env')
     /// -->
 
-    /// <!--
-    computeRoutePath = await ProviderInstance.getComputeStartRoutes(providerUrl, true)
-    if (isDefined(computeRoutePath)) {
-      hasFreeComputeSupport = true
-      /// -->
+    /// Let's have 5 minute of compute access
+    /// ```Typescript
+    const mytime = new Date()
+    const computeMinutes = 5
+    mytime.setMinutes(mytime.getMinutes() + computeMinutes)
 
-      /// Let's have 5 minute of compute access
-      /// ```Typescript
-      const mytime = new Date()
-      const computeMinutes = 5
-      mytime.setMinutes(mytime.getMinutes() + computeMinutes)
-
-      /// ```
-      /// Let's prepare the dataset and algorithm assets to be used in the compute job
-      /// ```Typescript
-      const assets: ComputeAsset[] = [
-        {
-          documentId: resolvedDatasetDdo.id,
-          serviceId: resolvedDatasetDdo.services[0].id
-        }
-      ]
-
-      const algo: ComputeAlgorithm = {
-        documentId: resolvedAlgorithmDdo.id,
-        serviceId: resolvedAlgorithmDdo.services[0].id,
-        meta: resolvedAlgorithmDdo.metadata.algorithm
+    /// ```
+    /// Let's prepare the dataset and algorithm assets to be used in the compute job
+    /// ```Typescript
+    const assets: ComputeAsset[] = [
+      {
+        documentId: resolvedDatasetDdo.id,
+        serviceId: resolvedDatasetDdo.services[0].id
       }
-      /// ```
+    ]
 
-      /// Let's start the free compute job
-      /// ```Typescript
-      const computeJobs = await ProviderInstance.freeComputeStart(
-        providerUrl,
-        consumerAccount,
-        computeEnv.id,
-        assets,
-        algo
-      )
-      /// ```
-
-      /// <!--
-      assert(computeJobs, 'Cannot start compute job')
-      /// -->
-
-      /// Let's save the compute job it, we re going to use later
-      /// ```Typescript
-      computeJobId = computeJobs[0].jobId
-      // eslint-disable-next-line prefer-destructuring
-      agreementId = computeJobs[0].agreementId
-      /// ```
-      /// <!--
-    } else {
-      assert(
-        computeRoutePath === null,
-        'Route path for free compute is not defined (perhaps because provider does not support it yet?)'
-      )
-      hasFreeComputeSupport = false
+    const algo: ComputeAlgorithm = {
+      documentId: resolvedAlgorithmDdo.id,
+      serviceId: resolvedAlgorithmDdo.services[0].id,
+      meta: resolvedAlgorithmDdo.metadata.algorithm
     }
+    /// ```
+
+    /// Let's start the free compute job
+    /// ```Typescript
+    const computeJobs = await ProviderInstance.freeComputeStart(
+      providerUrl,
+      consumerAccount,
+      computeEnv.id,
+      assets,
+      algo
+    )
+    /// ```
+
+    /// <!--
+    assert(computeJobs, 'Cannot start compute job')
+    /// -->
+
+    /// Let's save the compute job it, we re going to use later
+    /// ```Typescript
+    computeJobId = computeJobs[0].jobId
+    // eslint-disable-next-line prefer-destructuring
+    agreementId = computeJobs[0].agreementId
+    /// ```
+    /// <!--
   }).timeout(40000)
   /// -->
 
   /// ## 11. Check compute status and get download compute results URL
   it('11.1 Check compute status', async () => {
     /// <!--
-    if (!hasFreeComputeSupport) {
-      assert(
-        computeRoutePath === null,
-        'Compute route path for free compute is not defined (perhaps because provider does not support it yet?)'
-      )
-    } else {
-      /// -->
-      /// You can also add various delays so you see the various states of the compute job
-      /// ```Typescript
-      const jobStatus = await ProviderInstance.computeStatus(
-        providerUrl,
-        await consumerAccount.getAddress(),
-        computeJobId,
-        agreementId
-      )
-      /// ```
-      /// <!--
-      assert(jobStatus, 'Cannot retrieve compute status!')
-      /// -->
-      /// Now, let's see the current status of the previously started computer job
-      /// ```Typescript
-      console.log('Current status of the compute job: ', jobStatus)
-      /// ```
-      /// <!--
-    }
+
+    /// -->
+    /// You can also add various delays so you see the various states of the compute job
+    /// ```Typescript
+    const jobStatus = await ProviderInstance.computeStatus(
+      providerUrl,
+      consumerAccount,
+      computeJobId,
+      agreementId
+    )
+    /// ```
+    /// <!--
+    assert(jobStatus, 'Cannot retrieve compute status!')
+    /// -->
+    /// Now, let's see the current status of the previously started computer job
+    /// ```Typescript
+    console.log('Current status of the compute job: ', jobStatus)
+    /// ```
+    /// <!--
   }).timeout(40000)
   /// -->
 
   it('11.2 Get download compute results URL', async () => {
     /// <!--
-    if (!hasFreeComputeSupport) {
-      assert(
-        computeRoutePath === null,
-        'Compute route path for free compute is not defined (perhaps because provider does not support it yet?)'
-      )
-    } else {
-      /// -->
-
-      /// ```Typescript
-      await sleep(10000)
-      const downloadURL = await ProviderInstance.getComputeResultUrl(
-        providerUrl,
-        consumerAccount,
-        computeJobId,
-        0
-      )
-      /// ```
-      /// <!--
-      assert(downloadURL, 'Provider getComputeResultUrl failed!')
-      /// -->
-      /// Let's check the compute results url for the specified index
-      /// ```Typescript
-      console.log(`Compute results URL: ${downloadURL}`)
-      /// ```
-      /// <!--
-    }
+    /// -->
+    /// ```Typescript
+    await sleep(10000)
+    const downloadURL = await ProviderInstance.getComputeResultUrl(
+      providerUrl,
+      consumerAccount,
+      computeJobId,
+      0
+    )
+    /// ```
+    /// <!--
+    assert(downloadURL, 'Provider getComputeResultUrl failed!')
+    /// -->
+    /// Let's check the compute results url for the specified index
+    /// ```Typescript
+    console.log(`Compute results URL: ${downloadURL}`)
+    /// ```
+    /// <!--
   }).timeout(40000)
   /// -->
 
@@ -764,227 +735,203 @@ describe('Compute-to-data example tests', async () => {
 
     /// <!--
     const paymentToken = addresses.Ocean
-    computeRoutePath = await ProviderInstance.getComputeStartRoutes(providerUrl, false)
-    if (isDefined(computeRoutePath)) {
-      /// -->
 
-      /// Let's have 5 minute of compute access
-      /// ```Typescript
+    /// Let's have 5 minute of compute access
+    /// ```Typescript
 
-      const mytime = new Date()
-      const computeMinutes = 5
-      mytime.setMinutes(mytime.getMinutes() + computeMinutes)
-      const computeValidUntil = Math.floor(mytime.getTime() / 1000)
+    const mytime = new Date()
+    const computeMinutes = 5
+    mytime.setMinutes(mytime.getMinutes() + computeMinutes)
+    const computeValidUntil = Math.floor(mytime.getTime() / 1000)
 
-      /// ```
+    /// ```
 
-      /// Let's prepare the dataset and algorithm assets to be used in the compute job
-      /// ```Typescript
-      const resources: ComputeResourceRequest[] = [
-        {
-          id: 'cpu',
-          amount: 2
-        },
-        {
-          id: 'ram',
-          amount: 2
-        },
-        {
-          id: 'disk',
-          amount: 0
-        }
-      ]
-      const assets: ComputeAsset[] = [
-        {
-          documentId: resolvedDatasetDdo.id,
-          serviceId: resolvedDatasetDdo.services[0].id
-        }
-      ]
-      const dtAddressArray = [resolvedDatasetDdo.services[0].datatokenAddress]
-      const algo: ComputeAlgorithm = {
-        documentId: resolvedAlgorithmDdo.id,
-        serviceId: resolvedAlgorithmDdo.services[0].id,
-        meta: resolvedAlgorithmDdo.metadata.algorithm
+    /// Let's prepare the dataset and algorithm assets to be used in the compute job
+    /// ```Typescript
+    const resources: ComputeResourceRequest[] = [
+      {
+        id: 'cpu',
+        amount: 2
+      },
+      {
+        id: 'ram',
+        amount: 2
+      },
+      {
+        id: 'disk',
+        amount: 0
       }
-      /// ```
+    ]
+    const assets: ComputeAsset[] = [
+      {
+        documentId: resolvedDatasetDdo.id,
+        serviceId: resolvedDatasetDdo.services[0].id
+      }
+    ]
+    const dtAddressArray = [resolvedDatasetDdo.services[0].datatokenAddress]
+    const algo: ComputeAlgorithm = {
+      documentId: resolvedAlgorithmDdo.id,
+      serviceId: resolvedAlgorithmDdo.services[0].id,
+      meta: resolvedAlgorithmDdo.metadata.algorithm
+    }
+    /// ```
 
-      /// Triggering initialize compute to see payment options
-      /// ```Typescript
-      const providerInitializeComputeResults = await ProviderInstance.initializeCompute(
-        assets,
-        algo,
-        computeEnv.id,
-        paymentToken,
-        computeValidUntil,
-        providerUrl,
-        consumerAccount,
-        resources,
-        Number(chainId)
-      )
+    /// Triggering initialize compute to see payment options
+    /// ```Typescript
+    const providerInitializeComputeResults = await ProviderInstance.initializeCompute(
+      assets,
+      algo,
+      computeEnv.id,
+      paymentToken,
+      computeValidUntil,
+      providerUrl,
+      consumerAccount,
+      resources,
+      Number(chainId)
+    )
 
-      console.log(
-        'providerInitializeComputeResults = ',
-        JSON.stringify(providerInitializeComputeResults)
-      )
+    console.log(
+      'providerInitializeComputeResults = ',
+      JSON.stringify(providerInitializeComputeResults)
+    )
 
-      /// ```
+    /// ```
 
-      /// <!--
-      assert(!('error' in providerInitializeComputeResults), 'Cannot order algorithm')
-      /// -->
+    /// <!--
+    assert(!('error' in providerInitializeComputeResults), 'Cannot order algorithm')
+    /// -->
 
-      /// Let's check funds for escrow payment
-      /// ```Typescript
-      const escrow = new EscrowContract(
-        getAddress(providerInitializeComputeResults.payment.escrowAddress),
-        consumerAccount
-      )
-      const paymentTokenPublisher = new Datatoken(publisherAccount)
-      const balancePublisherPaymentToken = await paymentTokenPublisher.balance(
-        paymentToken,
-        await publisherAccount.getAddress()
-      )
-      assert(
-        new BigNumber(parseEther(balancePublisherPaymentToken)).isGreaterThan(0),
-        'Balance should be higher than 0'
-      )
-      const tx = await publisherAccount.sendTransaction({
-        to: computeEnv.consumerAddress,
-        value: parseEther('1.5')
-      })
-      await tx.wait()
+    /// Let's check funds for escrow payment
+    /// ```Typescript
+    const escrow = new EscrowContract(
+      getAddress(providerInitializeComputeResults.payment.escrowAddress),
+      consumerAccount
+    )
+    const paymentTokenPublisher = new Datatoken(publisherAccount)
+    const balancePublisherPaymentToken = await paymentTokenPublisher.balance(
+      paymentToken,
+      await publisherAccount.getAddress()
+    )
+    assert(
+      new BigNumber(parseEther(balancePublisherPaymentToken)).isGreaterThan(0),
+      'Balance should be higher than 0'
+    )
+    const tx = await publisherAccount.sendTransaction({
+      to: computeEnv.consumerAddress,
+      value: parseEther('1.5')
+    })
+    await tx.wait()
 
-      await paymentTokenPublisher.transfer(
-        paymentToken,
-        getAddress(computeEnv.consumerAddress),
-        (Number(balancePublisherPaymentToken) / 2).toString()
-      )
-      const amountToDeposit = (
-        providerInitializeComputeResults.payment.amount * 2
-      ).toString()
-      await escrow.verifyFundsForEscrowPayment(
-        paymentToken,
-        computeEnv.consumerAddress,
-        await unitsToAmount(consumerAccount, paymentToken, amountToDeposit),
-        providerInitializeComputeResults.payment.amount.toString(),
-        providerInitializeComputeResults.payment.minLockSeconds.toString(),
-        '10'
-      )
-      /// ```
+    await paymentTokenPublisher.transfer(
+      paymentToken,
+      getAddress(computeEnv.consumerAddress),
+      (Number(balancePublisherPaymentToken) / 2).toString()
+    )
+    const amountToDeposit = (
+      providerInitializeComputeResults.payment.amount * 2
+    ).toString()
+    await escrow.verifyFundsForEscrowPayment(
+      paymentToken,
+      computeEnv.consumerAddress,
+      await unitsToAmount(consumerAccount, paymentToken, amountToDeposit),
+      providerInitializeComputeResults.payment.amount.toString(),
+      providerInitializeComputeResults.payment.minLockSeconds.toString(),
+      '10'
+    )
+    /// ```
 
-      /// Let's order assets
-      /// ```Typescript
+    /// Let's order assets
+    /// ```Typescript
 
-      algo.transferTxId = await handleOrder(
-        providerInitializeComputeResults.algorithm,
-        resolvedAlgorithmDdo.services[0].datatokenAddress,
+    algo.transferTxId = await handleOrder(
+      providerInitializeComputeResults.algorithm,
+      resolvedAlgorithmDdo.services[0].datatokenAddress,
+      consumerAccount,
+      computeEnv.consumerAddress,
+      0
+    )
+    for (let i = 0; i < providerInitializeComputeResults.datasets.length; i++) {
+      assets[i].transferTxId = await handleOrder(
+        providerInitializeComputeResults.datasets[i],
+        dtAddressArray[i],
         consumerAccount,
         computeEnv.consumerAddress,
         0
       )
-      for (let i = 0; i < providerInitializeComputeResults.datasets.length; i++) {
-        assets[i].transferTxId = await handleOrder(
-          providerInitializeComputeResults.datasets[i],
-          dtAddressArray[i],
-          consumerAccount,
-          computeEnv.consumerAddress,
-          0
-        )
-      }
-      /// ```
-
-      /// Let's start compute job
-      /// ```Typescript
-      const computeJobs = await ProviderInstance.computeStart(
-        providerUrl,
-        consumerAccount,
-        computeEnv.id,
-        assets,
-        algo,
-        computeValidUntil,
-        paymentToken,
-        resources,
-        Number(chainId)
-      )
-      /// ```
-
-      /// <!--
-      assert(computeJobs, 'Cannot start compute job')
-      /// -->
-
-      /// Let's save the compute job it, we re going to use later
-      /// ```Typescript
-      computeJobId = computeJobs[0].jobId
-      /// ```
-      /// <!--
-    } else {
-      assert(
-        computeRoutePath === null,
-        'Route path for free compute is not defined (perhaps because provider does not support it yet?)'
-      )
-      hasFreeComputeSupport = false
     }
+    /// ```
+
+    /// Let's start compute job
+    /// ```Typescript
+    const computeJobs = await ProviderInstance.computeStart(
+      providerUrl,
+      consumerAccount,
+      computeEnv.id,
+      assets,
+      algo,
+      computeValidUntil,
+      paymentToken,
+      resources,
+      Number(chainId)
+    )
+    /// ```
+
+    /// <!--
+    assert(computeJobs, 'Cannot start compute job')
+    /// -->
+
+    /// Let's save the compute job it, we re going to use later
+    /// ```Typescript
+    computeJobId = computeJobs[0].jobId
+    /// ```
+    /// <!--
   }).timeout(40000)
   /// -->
 
   /// ## 13. Check paid compute job status and get download compute results URL
   it('13.1 Check compute status for paid compute job', async () => {
     /// <!--
-    if (!hasFreeComputeSupport) {
-      assert(
-        computeRoutePath === null,
-        'Compute route path for free compute is not defined (perhaps because provider does not support it yet?)'
-      )
-    } else {
-      /// -->
-      /// You can also add various delays so you see the various states of the compute job
-      /// ```Typescript
-      const jobStatus = await ProviderInstance.computeStatus(
-        providerUrl,
-        await consumerAccount.getAddress(),
-        computeJobId
-      )
-      /// ```
-      /// <!--
-      assert(jobStatus, 'Cannot retrieve compute status!')
-      /// -->
-      /// Now, let's see the current status of the previously started computer job
-      /// ```Typescript
-      console.log('Current status of the compute job: ', jobStatus)
-      /// ```
-      /// <!--
-    }
+    /// -->
+    /// You can also add various delays so you see the various states of the compute job
+    /// ```Typescript
+    const jobStatus = await ProviderInstance.computeStatus(
+      providerUrl,
+      consumerAccount,
+      computeJobId
+    )
+    /// ```
+    /// <!--
+    assert(jobStatus, 'Cannot retrieve compute status!')
+    /// -->
+    /// Now, let's see the current status of the previously started computer job
+    /// ```Typescript
+    console.log('Current status of the compute job: ', jobStatus)
+    /// ```
+    /// <!--
   }).timeout(40000)
   /// -->
 
   it('13.2 Get download compute results URL', async () => {
     /// <!--
-    if (!hasFreeComputeSupport) {
-      assert(
-        computeRoutePath === null,
-        'Compute route path for paid compute is not defined (perhaps because provider does not support it yet?)'
-      )
-    } else {
-      /// -->
+    /// -->
 
-      /// ```Typescript
-      await sleep(10000)
-      const downloadURL = await ProviderInstance.getComputeResultUrl(
-        providerUrl,
-        consumerAccount,
-        computeJobId,
-        0
-      )
-      /// ```
-      /// <!--
-      assert(downloadURL, 'Provider getComputeResultUrl failed!')
-      /// -->
-      /// Let's check the compute results url for the specified index
-      /// ```Typescript
-      console.log(`Compute results URL: ${downloadURL}`)
-      /// ```
-      /// <!--
-    }
+    /// ```Typescript
+    await sleep(10000)
+    const downloadURL = await ProviderInstance.getComputeResultUrl(
+      providerUrl,
+      consumerAccount,
+      computeJobId,
+      0
+    )
+    /// ```
+    /// <!--
+    assert(downloadURL, 'Provider getComputeResultUrl failed!')
+    /// -->
+    /// Let's check the compute results url for the specified index
+    /// ```Typescript
+    console.log(`Compute results URL: ${downloadURL}`)
+    /// ```
+    /// <!--
   }).timeout(40000)
 })
 /// -->

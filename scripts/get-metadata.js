@@ -2,7 +2,7 @@
 'use strict';
 
 import { execSync } from 'child_process';
-import packageInfo from '../package.json' assert { type: 'json' };
+import packageInfo from '../package.json' with { type: 'json' };
 process.stdout.write(
   JSON.stringify(
     {
