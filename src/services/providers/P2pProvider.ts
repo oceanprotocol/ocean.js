@@ -125,13 +125,13 @@ export class P2pProvider {
         return val
       }
     }
-    // {type:'Buffer', data:[...]} or indexed-object form {"0":48,"1":120,...}
-    const bytes = Array.isArray(val?.data)
-      ? val.data
-      : typeof val?.[0] === 'number'
-      ? Object.values(val)
-      : null
-    return bytes ? Buffer.from(bytes).toString() : val
+    if (val?.type === 'Buffer' && Array.isArray(val.data)) {
+      return Buffer.from(val.data).toString('hex')
+    }
+    if (val instanceof Uint8Array || Buffer.isBuffer(val)) {
+      return Buffer.from(val).toString('hex')
+    }
+    return val
   }
 
   private async getOrCreateLibp2pNode(): Promise<Libp2p> {
@@ -179,7 +179,9 @@ export class P2pProvider {
         node.getConnections().length < 100 &&
         node.getConnections(peerInfo.id).length === 0
       ) {
-        node.dial(peerInfo.id, { signal: AbortSignal.timeout(10000) }).catch(() => {})
+        node.dial(peerInfo.id, { signal: AbortSignal.timeout(10000) }).catch((err: Error) => {
+          LoggerInstance.debug(`Failed to dial discovered peer ${peerId}: ${err.message}`)
+        })
       }
     })
 
