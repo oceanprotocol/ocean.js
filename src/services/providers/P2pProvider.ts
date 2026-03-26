@@ -126,10 +126,10 @@ export class P2pProvider {
       }
     }
     if (val?.type === 'Buffer' && Array.isArray(val.data)) {
-      return Buffer.from(val.data).toString('hex')
+      return Buffer.from(val.data).toString()
     }
     if (val instanceof Uint8Array || Buffer.isBuffer(val)) {
-      return Buffer.from(val).toString('hex')
+      return Buffer.from(val).toString()
     }
     return val
   }
