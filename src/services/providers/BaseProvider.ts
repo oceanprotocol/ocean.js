@@ -1,3 +1,4 @@
+import { peerIdFromString } from '@libp2p/peer-id'
 import { Signer } from 'ethers'
 import {
   StorageObject,
@@ -53,9 +54,12 @@ export function getAuthorization(signerOrAuthToken: Signer | string): string | u
 export function isP2pUri(nodeUri: string): boolean {
   if (!nodeUri) return false
   if (nodeUri.startsWith('/')) return true
-  return (
-    nodeUri.startsWith('12D3') || nodeUri.startsWith('16Uiu') || nodeUri.startsWith('Qm')
-  )
+  try {
+    peerIdFromString(nodeUri)
+    return true
+  } catch {
+    return false
+  }
 }
 
 export class BaseProvider {
