@@ -677,7 +677,7 @@ You can also add various delays so you see the various states of the compute job
 ```Typescript
     const jobStatus = await ProviderInstance.computeStatus(
       providerUrl,
-      await consumerAccount.getAddress(),
+      consumerAccount,
       computeJobId,
       agreementId
     )
@@ -896,7 +896,7 @@ You can also add various delays so you see the various states of the compute job
 ```Typescript
     const jobStatus = await ProviderInstance.computeStatus(
       providerUrl,
-      await consumerAccount.getAddress(),
+      consumerAccount,
       computeJobId
     )
 ```
