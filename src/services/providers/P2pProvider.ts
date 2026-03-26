@@ -2,6 +2,7 @@ import { type Libp2p, type Libp2pOptions, createLibp2p } from 'libp2p'
 import { noise } from '@chainsafe/libp2p-noise'
 import { yamux } from '@chainsafe/libp2p-yamux'
 import { webSockets } from '@libp2p/websockets'
+import { tcp } from '@libp2p/tcp'
 import { bootstrap } from '@libp2p/bootstrap'
 import { tls } from '@libp2p/tls'
 import { identify } from '@libp2p/identify'
@@ -79,6 +80,12 @@ export interface P2PConfig {
    */
   mDNSInterval?: number
   /**
+   * Enable TCP transport in addition to WebSockets. Default: false.
+   * Required in Node.js/Electron environments to reach nodes over plain TCP.
+   * Do NOT enable in browser builds — TCP is not available in browsers.
+   */
+  enableTcp?: boolean
+  /**
    * Full libp2p node configuration. Fields provided here override ocean.js
    * defaults (transports, encrypters, services, connectionManager, etc.).
    * Unset fields keep ocean.js defaults.
@@ -143,7 +150,7 @@ export class P2pProvider {
 
     const node = await createLibp2p({
       addresses: { listen: [] },
-      transports: [webSockets()],
+      transports: [webSockets(), ...(this.p2pConfig.enableTcp ? [tcp()] : [])],
       connectionEncrypters: [noise(), tls()],
       streamMuxers: [yamux()],
       peerDiscovery: [
@@ -811,17 +818,24 @@ export class P2pProvider {
     jobId: string,
     signal?: AbortSignal
   ): Promise<any> {
+    const isAuthToken = typeof signerOrAuthToken === 'string'
+    if (isAuthToken) {
+      return this.sendP2pCommand(
+        nodeUri,
+        PROTOCOL_COMMANDS.COMPUTE_GET_STREAMABLE_LOGS,
+        { jobId },
+        signerOrAuthToken,
+        signal
+      )
+    }
+
     const consumerAddress = await this.getConsumerAddress(signerOrAuthToken)
     const nonce = ((await this.getNonce(nodeUri, consumerAddress, signal)) + 1).toString()
-    const isAuthToken = typeof signerOrAuthToken === 'string'
-    const signature = isAuthToken
-      ? null
-      : await this.getSignature(
-          signerOrAuthToken,
-          nonce,
-          PROTOCOL_COMMANDS.COMPUTE_GET_STREAMABLE_LOGS
-        )
-
+    const signature = await this.getSignature(
+      signerOrAuthToken,
+      nonce,
+      PROTOCOL_COMMANDS.COMPUTE_GET_STREAMABLE_LOGS
+    )
     return this.sendP2pCommand(
       nodeUri,
       PROTOCOL_COMMANDS.COMPUTE_GET_STREAMABLE_LOGS,
@@ -889,7 +903,46 @@ export class P2pProvider {
 
   /**
    * Get compute result as an async generator of Uint8Array chunks via P2P.
+   * Supports resumable downloads via `offset` (byte position to resume from).
    */
+  public async getComputeResult(
+    nodeUri: string,
+    signerOrAuthToken: Signer | string,
+    jobId: string,
+    index: number,
+    offset: number = 0
+  ): Promise<AsyncGenerator<Uint8Array>> {
+    const consumerAddress = await this.getConsumerAddress(signerOrAuthToken)
+    const payload = {
+      command: PROTOCOL_COMMANDS.COMPUTE_GET_RESULT,
+      authorization: this.getAuthorization(signerOrAuthToken),
+      jobId,
+      index,
+      offset,
+      consumerAddress
+    }
+
+    const { lp, firstBytes } = await this.dialAndStream(nodeUri, payload)
+
+    // First frame is always a status JSON
+    const status = JSON.parse(uint8ArrayToString(firstBytes))
+    if (typeof status?.httpStatus === 'number' && status.httpStatus >= 400) {
+      throw new Error(status.error ?? `P2P compute result error: ${status.httpStatus}`)
+    }
+
+    const dialTimeout = this.p2pConfig.dialTimeout ?? DEFAULT_DIAL_TIMEOUT_MS
+    return (async function* () {
+      try {
+        while (true) {
+          const chunk = await lp.read({ signal: AbortSignal.timeout(dialTimeout) })
+          yield chunk instanceof Uint8Array ? chunk : chunk.subarray()
+        }
+      } catch (e) {
+        if (!(e instanceof UnexpectedEOFError)) throw e
+      }
+    })()
+  }
+
   public async getComputeResultUrl(
     nodeUri: string,
     signerOrAuthToken: Signer | string,
@@ -903,8 +956,6 @@ export class P2pProvider {
       { jobId, index, consumerAddress },
       signerOrAuthToken
     )
-    // P2P returns an async generator for streaming results.
-    // Return as-is (callers need to handle the AsyncGenerator type).
     return result
   }
 
