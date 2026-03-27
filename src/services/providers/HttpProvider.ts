@@ -17,7 +17,8 @@ import {
   ComputeJobMetadata,
   PolicyServerInitializeCommand,
   PolicyServerPassthroughCommand,
-  dockerRegistryAuth
+  dockerRegistryAuth,
+  ComputeResultStream
 } from '../../@types/index.js'
 import { PROTOCOL_COMMANDS } from '../../@types/Provider.js'
 import { type DDO, type ValidateMetadata } from '@oceanprotocol/ddo-js'
@@ -1119,6 +1120,22 @@ export class HttpProvider {
       resultUrl += `&signature=${signature}`
     }
     return resultUrl
+  }
+
+  public async getComputeResult(
+    nodeUri: string,
+    signerOrAuthToken: Signer | string,
+    jobId: string,
+    index: number,
+    offset: number = 0
+  ): Promise<ComputeResultStream> {
+    const resultUrl = await this.getComputeResultUrl(nodeUri, signerOrAuthToken, jobId, index)
+    if (!resultUrl) throw new Error('Could not retrieve compute result URL')
+    const response = await fetch(resultUrl, {
+      headers: offset > 0 ? { Range: `bytes=${offset}-` } : {}
+    })
+    if (!response.ok) throw new Error(`Failed to fetch compute result: ${response.status}`)
+    return response.body as unknown as ComputeResultStream
   }
 
   /** Generates an auth token

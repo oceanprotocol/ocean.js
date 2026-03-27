@@ -33,7 +33,8 @@ import {
   PolicyServerInitializeCommand,
   PolicyServerPassthroughCommand,
   dockerRegistryAuth,
-  DownloadResponse
+  DownloadResponse,
+  ComputeResultStream
 } from '../../@types/index.js'
 import { PROTOCOL_COMMANDS } from '../../@types/Provider.js'
 import { type DDO, type ValidateMetadata } from '@oceanprotocol/ddo-js'
@@ -910,7 +911,7 @@ export class P2pProvider {
     jobId: string,
     index: number,
     offset: number = 0
-  ): Promise<AsyncGenerator<Uint8Array>> {
+  ): Promise<ComputeResultStream> {
     const consumerAddress = await this.getConsumerAddress(signerOrAuthToken)
     const payload = {
       command: PROTOCOL_COMMANDS.COMPUTE_GET_RESULT,

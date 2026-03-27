@@ -168,3 +168,5 @@ export interface dockerRegistryAuth {
   password?: string
   auth?: string
 }
+
+export type ComputeResultStream = AsyncIterable<Uint8Array>

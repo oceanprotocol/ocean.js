@@ -927,4 +927,19 @@ describe('Compute flow tests', async () => {
     )
     assert(downloadURL, 'Provider getComputeResultUrl failed!')
   })
+
+  it('Get compute result as stream', async () => {
+    const stream = await ProviderInstance.getComputeResult(
+      providerUrl,
+      consumerAccount,
+      freeComputeJobId,
+      0
+    )
+    assert(stream, 'getComputeResult returned no stream')
+    let totalBytes = 0
+    for await (const chunk of stream) {
+      totalBytes += chunk.length
+    }
+    assert(totalBytes > 0, 'getComputeResult stream returned no bytes')
+  }).timeout(60000)
 })

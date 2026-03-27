@@ -8,6 +8,7 @@ import {
   ComputeAlgorithm,
   ComputeAsset,
   ComputeEnvironment,
+  ComputeResultStream,
   ProviderInitialize,
   ProviderComputeInitializeResults,
   ServiceEndpoint,
@@ -342,6 +343,16 @@ export class BaseProvider {
       jobId,
       index
     )
+  }
+
+  public async getComputeResult(
+    nodeUri: string,
+    signerOrAuthToken: Signer | string,
+    jobId: string,
+    index: number,
+    offset: number = 0
+  ): Promise<ComputeResultStream> {
+    return this.getImpl(nodeUri).getComputeResult(nodeUri, signerOrAuthToken, jobId, index, offset)
   }
 
   public async generateAuthToken(
