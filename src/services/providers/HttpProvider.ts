@@ -1129,12 +1129,18 @@ export class HttpProvider {
     index: number,
     offset: number = 0
   ): Promise<ComputeResultStream> {
-    const resultUrl = await this.getComputeResultUrl(nodeUri, signerOrAuthToken, jobId, index)
+    const resultUrl = await this.getComputeResultUrl(
+      nodeUri,
+      signerOrAuthToken,
+      jobId,
+      index
+    )
     if (!resultUrl) throw new Error('Could not retrieve compute result URL')
     const response = await fetch(resultUrl, {
       headers: offset > 0 ? { Range: `bytes=${offset}-` } : {}
     })
-    if (!response.ok) throw new Error(`Failed to fetch compute result: ${response.status}`)
+    if (!response.ok)
+      throw new Error(`Failed to fetch compute result: ${response.status}`)
     return response.body as unknown as ComputeResultStream
   }
 

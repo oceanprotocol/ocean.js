@@ -352,7 +352,13 @@ export class BaseProvider {
     index: number,
     offset: number = 0
   ): Promise<ComputeResultStream> {
-    return this.getImpl(nodeUri).getComputeResult(nodeUri, signerOrAuthToken, jobId, index, offset)
+    return this.getImpl(nodeUri).getComputeResult(
+      nodeUri,
+      signerOrAuthToken,
+      jobId,
+      index,
+      offset
+    )
   }
 
   public async generateAuthToken(
