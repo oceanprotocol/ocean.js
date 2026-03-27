@@ -913,13 +913,24 @@ export class P2pProvider {
     offset: number = 0
   ): Promise<ComputeResultStream> {
     const consumerAddress = await this.getConsumerAddress(signerOrAuthToken)
-    const payload = {
+    const payload: Record<string, any> = {
       command: PROTOCOL_COMMANDS.COMPUTE_GET_RESULT,
-      authorization: this.getAuthorization(signerOrAuthToken),
       jobId,
       index,
       offset,
       consumerAddress
+    }
+
+    if (typeof signerOrAuthToken === 'string') {
+      payload.authorization = signerOrAuthToken
+    } else {
+      const nonce = ((await this.getNonce(nodeUri, consumerAddress)) + 1).toString()
+      payload.nonce = nonce
+      payload.signature = await this.getSignature(
+        signerOrAuthToken,
+        nonce,
+        PROTOCOL_COMMANDS.COMPUTE_GET_RESULT
+      )
     }
 
     const { lp, firstBytes } = await this.dialAndStream(nodeUri, payload)
