@@ -55,8 +55,6 @@ let resolvedGraphqlAssetDdoAfterUpdate
 let urlOrderTx
 let arwaveOrderTx
 let ipfsOrderTx
-let onchainOrderTx
-let grapqlOrderTx
 
 const urlFile: StorageObject = {
   type: 'url',

@@ -48,13 +48,10 @@ let resolvedDdoWithNoTimeout
 let resolvedAlgoDdoWith2mTimeout
 let resolvedAlgoDdoWithNoTimeout
 
-let freeEnvDatasetTxId
-let freeEnvAlgoTxId
 let paidEnvDatasetTxId
 let paidEnvAlgoTxId
 let computeValidUntil
 let escrow: EscrowContract
-const freeComputeRouteSupport = null
 
 const computeJobDuration = 60 * 15 // 15 minutes
 let computeMinutes: number
@@ -243,22 +240,6 @@ function delay(interval: number) {
   return it('should delay', (done) => {
     setTimeout(() => done(), interval)
   }).timeout(interval + 200)
-}
-
-async function waitTillJobEnds(): Promise<number> {
-  return new Promise((resolve) => {
-    const interval = setInterval(async () => {
-      const jobStatus = (await ProviderInstance.computeStatus(
-        providerUrl,
-        consumerAccount,
-        freeComputeJobId
-      )) as ComputeJob
-      if (jobStatus?.[0]?.status === 70) {
-        clearInterval(interval)
-        resolve(jobStatus.status)
-      }
-    }, 10000)
-  })
 }
 
 describe('Compute flow tests', async () => {
@@ -451,8 +432,6 @@ describe('Compute flow tests', async () => {
       algo
     )
     console.log('Compute jobs: ', computeJobs)
-    freeEnvDatasetTxId = assets[0].transferTxId
-    freeEnvAlgoTxId = algo.transferTxId
     assert(computeJobs, 'Cannot start compute job')
     freeComputeJobId = computeJobs[0].jobId
   }).timeout(40000)
