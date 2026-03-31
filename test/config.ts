@@ -1,7 +1,11 @@
 import { JsonRpcProvider, Signer } from 'ethers'
 import fs from 'fs'
 import { homedir } from 'os'
-import { ConfigHelper, configHelperNetworks } from '../src/config/index.js'
+import {
+  ConfigHelper,
+  configHelperNetworks,
+  getNodeEndpointConfig
+} from '../src/config/index.js'
 import { LoggerInstance, LogLevel } from '../src/utils/index.js'
 LoggerInstance.setLevel(LogLevel.Error)
 
@@ -33,9 +37,7 @@ export const getTestConfig = async (signer: Signer) => {
   const network = await signer.provider?.getNetwork()
   const config = new ConfigHelper().getConfig(Number(network?.chainId))
 
-  if (process.env.NODE_URL) {
-    config.oceanNodeUri = process.env.NODE_URL
-  }
+  Object.assign(config, getNodeEndpointConfig())
 
   return config
 }

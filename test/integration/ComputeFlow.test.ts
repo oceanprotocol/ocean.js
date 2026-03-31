@@ -248,11 +248,6 @@ describe('Compute flow tests', async () => {
     consumerAccount = (await provider.getSigner(1)) as Signer
     config = await getTestConfig(publisherAccount)
     aquarius = new Aquarius(config?.oceanNodeUri)
-
-    if (process.env.NODE_URL) {
-      config.oceanNodeUri = process.env.NODE_URL
-    }
-
     providerUrl = config?.oceanNodeUri
     addresses = getAddresses()
     paymentToken = addresses.Ocean

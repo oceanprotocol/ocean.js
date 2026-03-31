@@ -1,11 +1,11 @@
 import { assert } from 'chai'
-import { isP2pUri, ProviderInstance } from '../../src/index.js'
+import { isP2pUri, ProviderInstance, getNodeEndpointConfig } from '../../src/index.js'
 
 // This suite runs first (underscore prefix sorts before all letters).
 // It warms the libp2p node - every subsequent test reuses the connection.
 describe('P2P connection warmup', () => {
   it('should connect to the P2P node', async function () {
-    const nodeUrl = process.env.NODE_URL
+    const nodeUrl = getNodeEndpointConfig().oceanNodeUri
     if (!nodeUrl || !isP2pUri(nodeUrl)) {
       this.skip()
     }
