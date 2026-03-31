@@ -15,8 +15,7 @@ import {
   sendTx,
   transfer,
   amountToUnits,
-  StorageObject,
-  AssetFiles
+  StorageObject
 } from '../../src/index.js'
 import { createAssetHelper, orderAsset, updateAssetMetadata } from './helpers.js'
 import { DDO } from '@oceanprotocol/ddo-js'
@@ -56,8 +55,6 @@ let resolvedGraphqlAssetDdoAfterUpdate
 let urlOrderTx
 let arwaveOrderTx
 let ipfsOrderTx
-let onchainOrderTx
-let grapqlOrderTx
 
 const urlFile: StorageObject = {
   type: 'url',

@@ -561,9 +561,15 @@ export class Nft extends SmartContract {
     if (!(await this.getNftPermissions(nftAddress, address)).updateMetadata) {
       throw new Error(`Caller is not Metadata updater`)
     }
+    // Indexer expects a bare peer ID, not a full multiaddr, for P2P decrypt routing.
+    let decryptorUrl = metadataDecryptorUrl
+    if (metadataDecryptorUrl?.includes('/p2p/')) {
+      const p2pMatch = metadataDecryptorUrl.match(/\/p2p\/([^/]+)/)
+      decryptorUrl = p2pMatch?.[1] ?? metadataDecryptorUrl
+    }
     const estGas = await nftContract.setMetaData.estimateGas(
       metadataState,
-      metadataDecryptorUrl,
+      decryptorUrl,
       metadataDecryptorAddress,
       flags,
       data,
@@ -578,7 +584,7 @@ export class Nft extends SmartContract {
       this.config?.gasFeeMultiplier,
       nftContract.setMetaData,
       metadataState,
-      metadataDecryptorUrl,
+      decryptorUrl,
       metadataDecryptorAddress,
       flags,
       data,
