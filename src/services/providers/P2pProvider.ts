@@ -593,7 +593,14 @@ export class P2pProvider {
       nonce,
       signature
     }
-    if (dockerRegistryAuth) body.dockerRegistryAuth = dockerRegistryAuth
+    if (dockerRegistryAuth) {
+      const nodeKey = await this.getNodePublicKey(nodeUri)
+      if (nodeKey)
+        body.dockerRegistryAuth = eciesencrypt(
+          nodeKey,
+          JSON.stringify(dockerRegistryAuth)
+        )
+    }
     if (policyServer) body.policyServer = policyServer
     if (output) {
       const nodeKey = await this.getNodePublicKey(nodeUri)
@@ -737,7 +744,14 @@ export class P2pProvider {
     if (additionalViewers) body.additionalViewers = additionalViewers
     if (policyServer) body.policyServer = policyServer
     if (queueMaxWaitTime) body.queueMaxWaitTime = queueMaxWaitTime
-    if (dockerRegistryAuth) body.dockerRegistryAuth = dockerRegistryAuth
+    if (dockerRegistryAuth) {
+      const nodeKey = await this.getNodePublicKey(nodeUri)
+      if (nodeKey)
+        body.dockerRegistryAuth = eciesencrypt(
+          nodeKey,
+          JSON.stringify(dockerRegistryAuth)
+        )
+    }
     if (output) {
       const nodeKey = await this.getNodePublicKey(nodeUri)
       if (nodeKey) body.output = eciesencrypt(nodeKey, JSON.stringify(output))
@@ -794,7 +808,14 @@ export class P2pProvider {
     if (additionalViewers) body.additionalViewers = additionalViewers
     if (policyServer) body.policyServer = policyServer
     if (queueMaxWaitTime) body.queueMaxWaitTime = queueMaxWaitTime
-    if (dockerRegistryAuth) body.dockerRegistryAuth = dockerRegistryAuth
+    if (dockerRegistryAuth) {
+      const nodeKey = await this.getNodePublicKey(nodeUri)
+      if (nodeKey)
+        body.dockerRegistryAuth = eciesencrypt(
+          nodeKey,
+          JSON.stringify(dockerRegistryAuth)
+        )
+    }
     if (output) {
       const nodeKey = await this.getNodePublicKey(nodeUri)
       if (nodeKey) body.output = eciesencrypt(nodeKey, JSON.stringify(output))
