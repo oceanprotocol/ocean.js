@@ -100,9 +100,9 @@ jobs:
       matrix:
         include:
           - transport: http
-            node: "http://127.0.0.1:8001"
+            node_endpoint: "http://127.0.0.1:8001"
           - transport: p2p
-            node: "16Uiu2HAmRkJeRYRghP3ETQCpdz8NsQzQE9RpSST7i5YNgWqH4dVE"
+            node_endpoint: "16Uiu2HAmRkJeRYRghP3ETQCpdz8NsQzQE9RpSST7i5YNgWqH4dVE"
 
     steps:
       - uses: actions/checkout@v3
@@ -191,7 +191,7 @@ jobs:
         env:
           INDEXING_RETRY_INTERVAL: 4000
           INDEXING_MAX_RETRIES: 120
-          NODE: ${{ matrix.node }}
+          NODE_ENDPOINT: ${{ matrix.node_endpoint }}
 
       - name: docker logs
         run: |
@@ -216,21 +216,21 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
-        node: ["22", "20"]
+        node_endpoint: ["22", "20"]
 
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v4
         with:
-          node-version: ${{ matrix.node }}
+          node-version: ${{ matrix.node_endpoint }}
       - name: Cache node_modules
         uses: actions/cache@v4
         env:
           cache-name: cache-node-modules
         with:
           path: ~/.npm
-          key: ${{ runner.os }}-${{ matrix.node }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: ${{ runner.os }}-${{ matrix.node }}-build-${{ env.cache-name }}-
+          key: ${{ runner.os }}-${{ matrix.node_endpoint }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: ${{ runner.os }}-${{ matrix.node_endpoint }}-build-${{ env.cache-name }}-
       - run: npm ci
       - run: npm run build
       - run: npm run doc:json

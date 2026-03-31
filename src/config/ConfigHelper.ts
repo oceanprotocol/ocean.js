@@ -182,11 +182,10 @@ export const KNOWN_CONFIDENTIAL_EVMS = [
   23295 // oasis_sapphire_testnet
 ]
 
-// keep backward compatible NODE_URL for now
 export const getNodeEndpointConfig = (): Partial<Config> => {
-  if (process.env.NODE || process.env.NODE_URL) {
+  if (process.env.NODE_ENDPOINT || process.env.NODE_URL) {
     return {
-      oceanNodeUri: process.env.NODE || process.env.NODE_URL
+      oceanNodeUri: process.env.NODE_ENDPOINT || process.env.NODE_URL
     }
   }
 

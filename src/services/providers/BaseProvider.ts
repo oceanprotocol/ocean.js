@@ -52,9 +52,11 @@ export function getAuthorization(signerOrAuthToken: Signer | string): string | u
   return typeof signerOrAuthToken === 'string' ? signerOrAuthToken : undefined
 }
 
+const MULTIADDR_PREFIXES = ['/ip4/', '/ip6/', '/dns4/', '/dns6/', '/dns/', '/dnsaddr/']
+
 export function isP2pUri(nodeUri: string): boolean {
   if (!nodeUri) return false
-  if (nodeUri.startsWith('/')) return true
+  if (MULTIADDR_PREFIXES.some((p) => nodeUri.startsWith(p))) return true
   try {
     peerIdFromString(nodeUri)
     return true
