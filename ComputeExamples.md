@@ -143,6 +143,7 @@ import {
   sendTx,
   configHelperNetworks,
   ConfigHelper,
+  getNodeEndpointConfig,
   getEventFromTx,
   amountToUnits,
   isDefined,
@@ -436,9 +437,7 @@ We need to load the configuration. Add the following code into your `run(){ }` f
     const config = new ConfigHelper().getConfig(
       parseInt(String((await publisherAccount.provider.getNetwork()).chainId))
     )
-    if (process.env.NODE_URL) {
-      config.oceanNodeUri = process.env.NODE_URL
-    }
+    Object.assign(config, getNodeEndpointConfig())
     aquariusInstance = new Aquarius(config?.oceanNodeUri)
     providerUrl = config?.oceanNodeUri
     addresses = JSON.parse(
