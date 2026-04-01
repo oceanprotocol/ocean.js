@@ -4,11 +4,9 @@ import { yamux } from '@chainsafe/libp2p-yamux'
 import { webSockets } from '@libp2p/websockets'
 import { tcp } from '@libp2p/tcp'
 import { bootstrap } from '@libp2p/bootstrap'
-import { tls } from '@libp2p/tls'
 import { identify } from '@libp2p/identify'
 import { kadDHT } from '@libp2p/kad-dht'
 import { ping } from '@libp2p/ping'
-import { mdns } from '@libp2p/mdns'
 import { peerIdFromString } from '@libp2p/peer-id'
 import { lpStream, UnexpectedEOFError } from '@libp2p/utils'
 import type { Connection } from '@libp2p/interface'
@@ -91,6 +89,7 @@ export interface P2PConfig {
    * defaults (transports, encrypters, services, connectionManager, etc.).
    * Unset fields keep ocean.js defaults.
    */
+
   libp2p?: Partial<Libp2pOptions>
 }
 
@@ -152,15 +151,15 @@ export class P2pProvider {
     const node = await createLibp2p({
       addresses: { listen: [] },
       transports: [webSockets(), ...(this.p2pConfig.enableTcp ? [tcp()] : [])],
-      connectionEncrypters: [noise(), tls()],
+      connectionEncrypters: [noise()],
       streamMuxers: [yamux()],
       peerDiscovery: [
         ...(bootstrapAddrs.length > 0
           ? [bootstrap({ list: bootstrapAddrs.map(String), timeout: 10000 })]
-          : []),
-        ...((this.p2pConfig.mDNSInterval ?? 20000) > 0
-          ? [mdns({ interval: this.p2pConfig.mDNSInterval ?? 20000 })]
           : [])
+        // ...((this.p2pConfig.mDNSInterval ?? 20000) > 0
+        //   ? [mdns({ interval: this.p2pConfig.mDNSInterval ?? 20000 })]
+        //   : [])
       ],
       services: {
         identify: identify(),
@@ -1177,5 +1176,21 @@ export class P2pProvider {
     if (page) body.page = page
 
     return this.sendP2pCommand(nodeUri, PROTOCOL_COMMANDS.GET_LOGS, body, signer, signal)
+  }
+
+  /**
+   * Fetch node configuration via P2P. Accepts a pre-signed payload —
+   * the caller is responsible for nonce retrieval and signing.
+   */
+  public async fetchConfig(nodeUri: string, payload: Record<string, any>): Promise<any> {
+    return this.sendP2pCommand(nodeUri, PROTOCOL_COMMANDS.FETCH_CONFIG, payload)
+  }
+
+  /**
+   * Push node configuration via P2P. Accepts a pre-signed payload —
+   * the caller is responsible for nonce retrieval and signing.
+   */
+  public async pushConfig(nodeUri: string, payload: Record<string, any>): Promise<any> {
+    return this.sendP2pCommand(nodeUri, PROTOCOL_COMMANDS.PUSH_CONFIG, payload)
   }
 }

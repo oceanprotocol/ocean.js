@@ -448,4 +448,12 @@ export class BaseProvider {
   public getDiscoveredNodes(): Array<{ peerId: string; multiaddrs: string[] }> {
     return this.p2pProvider.getDiscoveredNodes()
   }
+
+  public async fetchConfig(nodeUri: string, payload: Record<string, any>): Promise<any> {
+    return this.p2pProvider.fetchConfig(nodeUri, payload)
+  }
+
+  public async pushConfig(nodeUri: string, payload: Record<string, any>): Promise<any> {
+    return this.p2pProvider.pushConfig(nodeUri, payload)
+  }
 }
