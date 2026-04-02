@@ -60,7 +60,6 @@ jobs:
       - name: Run Ganache with Barge
         working-directory: ${{ github.workspace }}/barge
         run: |
-          export CONTRACTS_VERSION=main &&
           bash -x start_ocean.sh --with-typesense 2>&1 > start_ocean.log &
 
       - name: Install deps & build
@@ -151,7 +150,7 @@ jobs:
       - name: Run Barge
         working-directory: ${{ github.workspace }}/barge
         run: |
-          export CONTRACTS_VERSION=main && bash -x start_ocean.sh --with-typesense 2>&1 > start-node.log &
+          bash -x start_ocean.sh --with-typesense 2>&1 > start-node.log &
 
       - name: Install deps & build
         run: npm ci && npm run build:metadata
