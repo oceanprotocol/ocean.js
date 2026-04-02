@@ -73,11 +73,7 @@ export interface P2PConfig {
    * a direct dial. Once a peer is found and connected, subsequent calls skip this.
    */
   dhtLookupTimeout?: number
-  /**
-   * mDNS discovery interval in ms. Set to 0 to disable. Default: 20000
-   * Useful for local development — discovers peers on the same LAN without bootstrap nodes.
-   */
-  mDNSInterval?: number
+
   /**
    * Enable TCP transport in addition to WebSockets. Default: false.
    * Required in Node.js/Electron environments to reach nodes over plain TCP.
@@ -192,9 +188,6 @@ export class P2pProvider {
         ...(bootstrapAddrs.length > 0
           ? [bootstrap({ list: bootstrapAddrs.map(String), timeout: 10000 })]
           : [])
-        // ...((this.p2pConfig.mDNSInterval ?? 20000) > 0
-        //   ? [mdns({ interval: this.p2pConfig.mDNSInterval ?? 20000 })]
-        //   : [])
       ],
       services: {
         identify: identify(),
