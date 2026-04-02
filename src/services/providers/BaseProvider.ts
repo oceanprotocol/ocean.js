@@ -449,6 +449,10 @@ export class BaseProvider {
     return this.p2pProvider.getDiscoveredNodes()
   }
 
+  public async getMultiaddrFromPeerId(peerId: string): Promise<string> {
+    return this.p2pProvider.getMultiaddrFromPeerId(peerId)
+  }
+
   public async fetchConfig(nodeUri: string, payload: Record<string, any>): Promise<any> {
     return this.p2pProvider.fetchConfig(nodeUri, payload)
   }

@@ -5,7 +5,7 @@ import { webSockets } from '@libp2p/websockets'
 import { tcp } from '@libp2p/tcp'
 import { bootstrap } from '@libp2p/bootstrap'
 import { identify } from '@libp2p/identify'
-import { kadDHT } from '@libp2p/kad-dht'
+import { EventTypes, KadDHT, kadDHT } from '@libp2p/kad-dht'
 import { ping } from '@libp2p/ping'
 import { peerIdFromString } from '@libp2p/peer-id'
 import { lpStream, UnexpectedEOFError } from '@libp2p/utils'
@@ -114,6 +114,41 @@ export class P2pProvider {
       this.libp2pNode = null
     }
     await this.getOrCreateLibp2pNode()
+  }
+
+  public async getMultiaddrFromPeerId(peerId: string): Promise<string> {
+    const appendedPeerId = (peerId: string) =>
+      peerId.includes('/p2p/') ? peerId : `${peerId}/p2p/${peerId}`
+    const node = await this.getOrCreateLibp2pNode()
+
+    // Check existing connections — remoteAddr.toString() gives the full multiaddr
+    const connection = node
+      .getConnections()
+      .find((c) => c.remotePeer.toString() === peerId)
+    if (connection?.remoteAddr) {
+      const addr = connection.remoteAddr.toString()
+      return appendedPeerId(addr)
+    }
+
+    // Check discovered nodes cache populated by peer:discovery events
+    const cached = this.discoveredNodes.get(peerId)
+    if (cached && cached.length > 0) {
+      const addr = cached[0]
+      return appendedPeerId(addr)
+    }
+
+    // DHT lookup as last resort
+    const dht = node.services.dht as KadDHT
+    for await (const event of dht.findPeer(peerIdFromString(peerId), {
+      signal: AbortSignal.timeout(20000)
+    })) {
+      if (event.type === EventTypes.FINAL_PEER && event.peer.multiaddrs.length > 0) {
+        const addr = event.peer.multiaddrs[0].toString()
+        return appendedPeerId(addr)
+      }
+    }
+
+    throw new Error(`No multiaddrs found for peer id ${peerId}`)
   }
 
   /** Returns all peers discovered via mDNS or DHT bootstrap. */
