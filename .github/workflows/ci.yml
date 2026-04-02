@@ -79,7 +79,11 @@ jobs:
             if [ $attempt -eq $max_attempts ]; then
               echo "Error: Node container failed to start within 300 seconds"
               docker ps -a
-              docker inspect ocean-node-1
+              docker inspect ocean-node-1 || true
+              echo "=== Barge startup script output ==="
+              cat ${{ github.workspace }}/barge/start_ocean.log || true
+              echo "=== Ocean Node Logs ==="
+              docker logs ocean-node-1 2>&1 | tail -100 || true
               exit 1
             fi
             sleep 10
@@ -195,6 +199,9 @@ jobs:
 
       - name: docker logs
         run: |
+          echo "=== Barge startup script output ==="
+          cat ${{ github.workspace }}/barge/start-node.log || true
+          echo ""
           echo "=== Ocean Contracts Logs ==="
           docker logs ocean-ocean-contracts-1 2>&1 || echo "Container not found"
           echo ""
