@@ -238,7 +238,7 @@ export class P2pProvider {
     return chunk instanceof Uint8Array ? chunk : chunk.subarray()
   }
 
-  private isBrowserDialable(ma: Multiaddr): boolean {
+  private isDialable(ma: Multiaddr): boolean {
     // Node.js can dial any transport (TCP, WS, WSS)
     if (typeof window === 'undefined') return true
 
@@ -248,8 +248,7 @@ export class P2pProvider {
   }
 
   private peerIdFromMultiaddr(ma: Multiaddr): string | null {
-    const str = ma.toString().replace(/\/p2p-circuit.*$/, '')
-    const parts = str.split('/p2p/')
+    const parts = ma.toString().split('/p2p/')
     return parts.length > 1 ? parts[parts.length - 1] : null
   }
 
@@ -260,7 +259,7 @@ export class P2pProvider {
     const node = await this.getOrCreateLibp2pNode()
 
     if (Array.isArray(nodeUri)) {
-      const dialable = nodeUri.filter((ma) => this.isBrowserDialable(ma))
+      const dialable = nodeUri.filter((ma) => this.isDialable(ma))
 
       if (dialable.length > 0) {
         LoggerInstance.debug(`[P2P] dial array: ${dialable.length} dialable addrs`)
@@ -285,7 +284,7 @@ export class P2pProvider {
 
     try {
       const ma = multiaddr(nodeUri)
-      if (this.isBrowserDialable(ma)) {
+      if (this.isDialable(ma)) {
         LoggerInstance.debug(`[P2P] dial single addr: ${ma}`)
         try {
           const conn = await node.dial(ma, { signal })
@@ -357,7 +356,7 @@ export class P2pProvider {
       LoggerInstance.debug(`[P2P] ${peerIdStr}: ${cached.length} cached addrs`)
     }
 
-    const cachedDialable = allAddrs.filter((ma) => this.isBrowserDialable(ma))
+    const cachedDialable = allAddrs.filter((ma) => this.isDialable(ma))
     if (cachedDialable.length === 0) {
       LoggerInstance.debug(
         `[P2P] ${peerIdStr}: no cached dialable addrs, querying DHT...`
@@ -379,7 +378,7 @@ export class P2pProvider {
     }
 
     const dialable = allAddrs
-      .filter((ma) => this.isBrowserDialable(ma))
+      .filter((ma) => this.isDialable(ma))
       .map((ma) => {
         const str = ma.toString()
         return str.includes('/p2p/') ? ma : multiaddr(`${str}/p2p/${peerIdStr}`)
@@ -468,7 +467,7 @@ export class P2pProvider {
 
       return { lp, firstBytes, connection }
     } catch (err: any) {
-      // Evict the connection so retries get a fresh one (critical for circuit relay data limits)
+      // Evict the connection so retries get a fresh on
       try {
         connection.abort(new Error('stream failed'))
       } catch {}
@@ -589,6 +588,7 @@ export class P2pProvider {
         LoggerInstance.debug(
           `[P2P] Stream reset/closed on attempt ${retrialNumber + 1}, retrying...`
         )
+
         // Connection already evicted by dialAndStream catch block.
         // Brief delay ensures libp2p fully cleans up before retry.
         await sleep(1000)
