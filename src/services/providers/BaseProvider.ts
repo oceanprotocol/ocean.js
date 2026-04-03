@@ -1,4 +1,5 @@
 import { peerIdFromString } from '@libp2p/peer-id'
+import { multiaddr, type Multiaddr } from '@multiformats/multiaddr'
 import { Signer } from 'ethers'
 import {
   StorageObject,
@@ -52,11 +53,13 @@ export function getAuthorization(signerOrAuthToken: Signer | string): string | u
   return typeof signerOrAuthToken === 'string' ? signerOrAuthToken : undefined
 }
 
-const MULTIADDR_PREFIXES = ['/ip4/', '/ip6/', '/dns4/', '/dns6/', '/dns/', '/dnsaddr/']
-
-export function isP2pUri(nodeUri: string): boolean {
+export function isP2pUri(nodeUri: string | Multiaddr[]): boolean {
+  if (Array.isArray(nodeUri)) return true
   if (!nodeUri) return false
-  if (MULTIADDR_PREFIXES.some((p) => nodeUri.startsWith(p))) return true
+  try {
+    multiaddr(nodeUri)
+    return true
+  } catch {}
   try {
     peerIdFromString(nodeUri)
     return true
@@ -69,12 +72,14 @@ export class BaseProvider {
   private httpProvider = new HttpProvider()
   private p2pProvider = new P2pProvider()
 
-  protected getImpl(nodeUri: string): HttpProvider | P2pProvider {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  protected getImpl(nodeUri: string | Multiaddr[]): any {
+    if (Array.isArray(nodeUri)) return this.p2pProvider
     return isP2pUri(nodeUri) ? this.p2pProvider : this.httpProvider
   }
 
   public async getNonce(
-    nodeUri: string,
+    nodeUri: string | Multiaddr[],
     consumerAddress: string,
     signal?: AbortSignal,
     providerEndpoints?: any,
@@ -92,7 +97,7 @@ export class BaseProvider {
   public async encrypt(
     data: any,
     chainId: number,
-    nodeUri: string,
+    nodeUri: string | Multiaddr[],
     signerOrAuthToken: Signer | string,
     policyServer?: any,
     signal?: AbortSignal
@@ -110,7 +115,7 @@ export class BaseProvider {
   public async checkDidFiles(
     did: string,
     serviceId: string,
-    nodeUri: string,
+    nodeUri: string | Multiaddr[],
     withChecksum: boolean = false,
     signal?: AbortSignal
   ): Promise<FileInfo[]> {
@@ -125,7 +130,7 @@ export class BaseProvider {
 
   public async getFileInfo(
     file: StorageObject,
-    nodeUri: string,
+    nodeUri: string | Multiaddr[],
     withChecksum: boolean = false,
     signal?: AbortSignal
   ): Promise<FileInfo[]> {
@@ -133,7 +138,7 @@ export class BaseProvider {
   }
 
   public async getComputeEnvironments(
-    nodeUri: string,
+    nodeUri: string | Multiaddr[],
     signal?: AbortSignal
   ): Promise<ComputeEnvironment[]> {
     return this.getImpl(nodeUri).getComputeEnvironments(nodeUri, signal)
@@ -144,7 +149,7 @@ export class BaseProvider {
     serviceId: string,
     fileIndex: number,
     consumerAddress: string,
-    nodeUri: string,
+    nodeUri: string | Multiaddr[],
     signal?: AbortSignal,
     userCustomParameters?: UserCustomParameters,
     computeEnv?: string,
@@ -169,7 +174,7 @@ export class BaseProvider {
     computeEnv: string,
     token: string,
     validUntil: number,
-    nodeUri: string,
+    nodeUri: string | Multiaddr[],
     signerOrAuthToken: Signer | string,
     resources: ComputeResourceRequest[],
     chainId: number,
@@ -200,7 +205,7 @@ export class BaseProvider {
     serviceId: string,
     fileIndex: number,
     transferTxId: string,
-    nodeUri: string,
+    nodeUri: string | Multiaddr[],
     signerOrAuthToken: Signer | string,
     policyServer?: any,
     userCustomParameters?: UserCustomParameters
@@ -218,7 +223,7 @@ export class BaseProvider {
   }
 
   public async computeStart(
-    nodeUri: string,
+    nodeUri: string | Multiaddr[],
     signerOrAuthToken: Signer | string,
     computeEnv: string,
     datasets: ComputeAsset[],
@@ -256,7 +261,7 @@ export class BaseProvider {
   }
 
   public async freeComputeStart(
-    nodeUri: string,
+    nodeUri: string | Multiaddr[],
     signerOrAuthToken: Signer | string,
     computeEnv: string,
     datasets: ComputeAsset[],
@@ -288,7 +293,7 @@ export class BaseProvider {
   }
 
   public async computeStreamableLogs(
-    nodeUri: string,
+    nodeUri: string | Multiaddr[],
     signerOrAuthToken: Signer | string,
     jobId: string,
     signal?: AbortSignal
@@ -303,7 +308,7 @@ export class BaseProvider {
 
   public async computeStop(
     jobId: string,
-    nodeUri: string,
+    nodeUri: string | Multiaddr[],
     signerOrAuthToken: Signer | string,
     agreementId?: string,
     signal?: AbortSignal
@@ -318,7 +323,7 @@ export class BaseProvider {
   }
 
   public async computeStatus(
-    nodeUri: string,
+    nodeUri: string | Multiaddr[],
     signerOrAuthToken: Signer | string,
     jobId?: string,
     agreementId?: string,
@@ -334,7 +339,7 @@ export class BaseProvider {
   }
 
   public async getComputeResultUrl(
-    nodeUri: string,
+    nodeUri: string | Multiaddr[],
     signerOrAuthToken: Signer | string,
     jobId: string,
     index: number
@@ -348,7 +353,7 @@ export class BaseProvider {
   }
 
   public async getComputeResult(
-    nodeUri: string,
+    nodeUri: string | Multiaddr[],
     signerOrAuthToken: Signer | string,
     jobId: string,
     index: number,
@@ -365,7 +370,7 @@ export class BaseProvider {
 
   public async generateAuthToken(
     consumer: Signer,
-    nodeUri: string,
+    nodeUri: string | Multiaddr[],
     signal?: AbortSignal
   ): Promise<string> {
     return this.getImpl(nodeUri).generateAuthToken(consumer, nodeUri, signal)
@@ -374,14 +379,14 @@ export class BaseProvider {
   public async invalidateAuthToken(
     consumer: Signer,
     token: string,
-    nodeUri: string,
+    nodeUri: string | Multiaddr[],
     signal?: AbortSignal
   ): Promise<{ success: boolean }> {
     return this.getImpl(nodeUri).invalidateAuthToken(consumer, token, nodeUri, signal)
   }
 
   public async resolveDdo(
-    nodeUri: string,
+    nodeUri: string | Multiaddr[],
     did: string,
     signal?: AbortSignal
   ): Promise<any> {
@@ -389,7 +394,7 @@ export class BaseProvider {
   }
 
   public async validateDdo(
-    nodeUri: string,
+    nodeUri: string | Multiaddr[],
     ddo: DDO,
     signer: Signer,
     signal?: AbortSignal
@@ -397,12 +402,15 @@ export class BaseProvider {
     return this.getImpl(nodeUri).validateDdo(nodeUri, ddo, signer, signal)
   }
 
-  public async isValidProvider(url: string, signal?: AbortSignal): Promise<boolean> {
+  public async isValidProvider(
+    url: string | Multiaddr[],
+    signal?: AbortSignal
+  ): Promise<boolean> {
     return this.getImpl(url).isValidProvider(url, signal)
   }
 
   public async PolicyServerPassthrough(
-    nodeUri: string,
+    nodeUri: string | Multiaddr[],
     request: PolicyServerPassthroughCommand,
     signal?: AbortSignal
   ): Promise<any> {
@@ -410,7 +418,7 @@ export class BaseProvider {
   }
 
   public async initializePSVerification(
-    nodeUri: string,
+    nodeUri: string | Multiaddr[],
     request: PolicyServerInitializeCommand,
     signal?: AbortSignal
   ): Promise<any> {
@@ -418,7 +426,7 @@ export class BaseProvider {
   }
 
   public async downloadNodeLogs(
-    nodeUri: string,
+    nodeUri: string | Multiaddr[],
     signer: Signer,
     startTime: string,
     endTime: string,
@@ -453,11 +461,17 @@ export class BaseProvider {
     return this.p2pProvider.getMultiaddrFromPeerId(peerId)
   }
 
-  public async fetchConfig(nodeUri: string, payload: Record<string, any>): Promise<any> {
+  public async fetchConfig(
+    nodeUri: string | Multiaddr[],
+    payload: Record<string, any>
+  ): Promise<any> {
     return this.p2pProvider.fetchConfig(nodeUri, payload)
   }
 
-  public async pushConfig(nodeUri: string, payload: Record<string, any>): Promise<any> {
+  public async pushConfig(
+    nodeUri: string | Multiaddr[],
+    payload: Record<string, any>
+  ): Promise<any> {
     return this.p2pProvider.pushConfig(nodeUri, payload)
   }
 }

@@ -10,7 +10,7 @@ import { ping } from '@libp2p/ping'
 import { peerIdFromString } from '@libp2p/peer-id'
 import { lpStream, UnexpectedEOFError } from '@libp2p/utils'
 import type { Connection } from '@libp2p/interface'
-import { multiaddr } from '@multiformats/multiaddr'
+import { multiaddr, type Multiaddr } from '@multiformats/multiaddr'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { Signer } from 'ethers'
@@ -232,12 +232,33 @@ export class P2pProvider {
     return chunk instanceof Uint8Array ? chunk : chunk.subarray()
   }
 
-  private async getConnection(nodeUri: string, signal: AbortSignal): Promise<Connection> {
-    if (nodeUri.startsWith('/')) {
+  private async getConnection(
+    nodeUri: string | Multiaddr[],
+    signal: AbortSignal
+  ): Promise<Connection> {
+    const checkMultiaddr = (ma: string | Multiaddr): ma is Multiaddr => {
+      try {
+        multiaddr(ma)
+        return true
+      } catch {
+        return false
+      }
+    }
+
+    if (Array.isArray(nodeUri)) {
+      const mas = nodeUri.filter(checkMultiaddr)
+      const node = await this.getOrCreateLibp2pNode()
+      return node.dial(mas, { signal })
+    }
+
+    try {
       const ma = multiaddr(nodeUri)
       const node = await this.getOrCreateLibp2pNode()
       return node.dial(ma, { signal })
+    } catch {
+      // not a valid multiaddr string — fall through to bare peer ID path
     }
+
     const peerId = peerIdFromString(nodeUri)
     const node = await this.getOrCreateLibp2pNode()
     // Return existing connection immediately — no DHT needed
@@ -261,7 +282,7 @@ export class P2pProvider {
     return getSignature(s, nonce, command)
   }
 
-  private async getNodePublicKey(nodeUri: string): Promise<string> {
+  private async getNodePublicKey(nodeUri: string | Multiaddr[]): Promise<string> {
     const endpoints = await this.getEndpoints(nodeUri)
     return endpoints?.nodePublicKey
   }
@@ -271,7 +292,7 @@ export class P2pProvider {
   }
 
   private async dialAndStream(
-    nodeUri: string,
+    nodeUri: string | Multiaddr[],
     payload: Record<string, any>,
     signal?: AbortSignal
   ): Promise<{
@@ -295,7 +316,7 @@ export class P2pProvider {
   }
 
   private async sendP2pCommand(
-    nodeUri: string,
+    nodeUri: string | Multiaddr[],
     command: string,
     body: Record<string, any>,
     signerOrAuthToken?: Signer | string | null,
@@ -430,7 +451,7 @@ export class P2pProvider {
    * Returns node status via P2P STATUS command.
    * @param {string} nodeUri - multiaddr of the node
    */
-  async getEndpoints(nodeUri: string): Promise<any> {
+  async getEndpoints(nodeUri: string | Multiaddr[]): Promise<any> {
     try {
       return await this.sendP2pCommand(nodeUri, PROTOCOL_COMMANDS.STATUS, {})
     } catch (e) {
@@ -443,7 +464,7 @@ export class P2pProvider {
    * Get current nonce from the node via P2P.
    */
   public async getNonce(
-    nodeUri: string,
+    nodeUri: string | Multiaddr[],
     consumerAddress: string,
     signal?: AbortSignal
   ): Promise<number> {
@@ -471,7 +492,7 @@ export class P2pProvider {
   public async encrypt(
     data: any,
     chainId: number,
-    nodeUri: string,
+    nodeUri: string | Multiaddr[],
     signerOrAuthToken: Signer | string,
     _policyServer?: any,
     signal?: AbortSignal
@@ -505,7 +526,7 @@ export class P2pProvider {
   public async checkDidFiles(
     did: string,
     serviceId: string,
-    nodeUri: string,
+    nodeUri: string | Multiaddr[],
     withChecksum: boolean = false,
     signal?: AbortSignal
   ): Promise<FileInfo[]> {
@@ -524,7 +545,7 @@ export class P2pProvider {
    */
   public async getFileInfo(
     file: StorageObject,
-    nodeUri: string,
+    nodeUri: string | Multiaddr[],
     withChecksum: boolean = false,
     signal?: AbortSignal
   ): Promise<FileInfo[]> {
@@ -542,7 +563,7 @@ export class P2pProvider {
    * Returns compute environments via P2P.
    */
   public async getComputeEnvironments(
-    nodeUri: string,
+    nodeUri: string | Multiaddr[],
     signal?: AbortSignal
   ): Promise<ComputeEnvironment[]> {
     const result = await this.sendP2pCommand(
@@ -563,7 +584,7 @@ export class P2pProvider {
     serviceId: string,
     fileIndex: number,
     consumerAddress: string,
-    nodeUri: string,
+    nodeUri: string | Multiaddr[],
     signal?: AbortSignal,
     userCustomParameters?: UserCustomParameters,
     computeEnv?: string,
@@ -589,7 +610,7 @@ export class P2pProvider {
     computeEnv: string,
     token: string,
     validUntil: number,
-    nodeUri: string,
+    nodeUri: string | Multiaddr[],
     signerOrAuthToken: Signer | string,
     resources: ComputeResourceRequest[],
     chainId: number,
@@ -653,7 +674,7 @@ export class P2pProvider {
     serviceId: string,
     fileIndex: number,
     transferTxId: string,
-    nodeUri: string,
+    nodeUri: string | Multiaddr[],
     signerOrAuthToken: Signer | string,
     policyServer?: any,
     userCustomParameters?: UserCustomParameters
@@ -727,7 +748,7 @@ export class P2pProvider {
    * Start a paid compute job via P2P.
    */
   public async computeStart(
-    nodeUri: string,
+    nodeUri: string | Multiaddr[],
     signerOrAuthToken: Signer | string,
     computeEnv: string,
     datasets: ComputeAsset[],
@@ -798,7 +819,7 @@ export class P2pProvider {
    * Start a free compute job via P2P.
    */
   public async freeComputeStart(
-    nodeUri: string,
+    nodeUri: string | Multiaddr[],
     signerOrAuthToken: Signer | string,
     computeEnv: string,
     datasets: ComputeAsset[],
@@ -862,7 +883,7 @@ export class P2pProvider {
    * Get streamable compute logs via P2P. Returns an async generator of Uint8Array chunks.
    */
   public async computeStreamableLogs(
-    nodeUri: string,
+    nodeUri: string | Multiaddr[],
     signerOrAuthToken: Signer | string,
     jobId: string,
     signal?: AbortSignal
@@ -899,7 +920,7 @@ export class P2pProvider {
    */
   public async computeStop(
     jobId: string,
-    nodeUri: string,
+    nodeUri: string | Multiaddr[],
     signerOrAuthToken: Signer | string,
     agreementId?: string,
     signal?: AbortSignal
@@ -929,7 +950,7 @@ export class P2pProvider {
    * Get compute status via P2P.
    */
   public async computeStatus(
-    nodeUri: string,
+    nodeUri: string | Multiaddr[],
     signerOrAuthToken: Signer | string,
     jobId?: string,
     agreementId?: string,
@@ -954,7 +975,7 @@ export class P2pProvider {
    * Supports resumable downloads via `offset` (byte position to resume from).
    */
   public async getComputeResult(
-    nodeUri: string,
+    nodeUri: string | Multiaddr[],
     signerOrAuthToken: Signer | string,
     jobId: string,
     index: number,
@@ -1003,7 +1024,7 @@ export class P2pProvider {
   }
 
   public async getComputeResultUrl(
-    nodeUri: string,
+    nodeUri: string | Multiaddr[],
     signerOrAuthToken: Signer | string,
     jobId: string,
     index: number
@@ -1023,7 +1044,7 @@ export class P2pProvider {
    */
   public async generateAuthToken(
     consumer: Signer,
-    nodeUri: string,
+    nodeUri: string | Multiaddr[],
     signal?: AbortSignal
   ): Promise<string> {
     const consumerAddress = await consumer.getAddress()
@@ -1047,7 +1068,7 @@ export class P2pProvider {
    * Resolve a DDO by DID via P2P GET_DDO command.
    */
   public async resolveDdo(
-    nodeUri: string,
+    nodeUri: string | Multiaddr[],
     did: string,
     signal?: AbortSignal
   ): Promise<any> {
@@ -1064,7 +1085,7 @@ export class P2pProvider {
    * Validate a DDO via P2P VALIDATE_DDO command.
    */
   public async validateDdo(
-    nodeUri: string,
+    nodeUri: string | Multiaddr[],
     ddo: DDO,
     signer: Signer,
     signal?: AbortSignal
@@ -1101,7 +1122,7 @@ export class P2pProvider {
   public async invalidateAuthToken(
     consumer: Signer,
     token: string,
-    nodeUri: string,
+    nodeUri: string | Multiaddr[],
     signal?: AbortSignal
   ): Promise<{ success: boolean }> {
     const consumerAddress = await consumer.getAddress()
@@ -1120,7 +1141,10 @@ export class P2pProvider {
   /**
    * Check if a P2P node is reachable by calling STATUS.
    */
-  public async isValidProvider(nodeUri: string, signal?: AbortSignal): Promise<boolean> {
+  public async isValidProvider(
+    nodeUri: string | Multiaddr[],
+    signal?: AbortSignal
+  ): Promise<boolean> {
     try {
       const result = await this.sendP2pCommand(
         nodeUri,
@@ -1143,7 +1167,7 @@ export class P2pProvider {
    * PolicyServer passthrough via P2P.
    */
   public async PolicyServerPassthrough(
-    nodeUri: string,
+    nodeUri: string | Multiaddr[],
     request: PolicyServerPassthroughCommand,
     signal?: AbortSignal
   ): Promise<any> {
@@ -1160,7 +1184,7 @@ export class P2pProvider {
    * Initialize Policy Server verification via P2P.
    */
   public async initializePSVerification(
-    nodeUri: string,
+    nodeUri: string | Multiaddr[],
     request: PolicyServerInitializeCommand,
     signal?: AbortSignal
   ): Promise<any> {
@@ -1177,7 +1201,7 @@ export class P2pProvider {
    * Download node logs via P2P.
    */
   public async downloadNodeLogs(
-    nodeUri: string,
+    nodeUri: string | Multiaddr[],
     signer: Signer,
     startTime: string,
     endTime: string,
@@ -1210,7 +1234,10 @@ export class P2pProvider {
    * Fetch node configuration via P2P. Accepts a pre-signed payload —
    * the caller is responsible for nonce retrieval and signing.
    */
-  public async fetchConfig(nodeUri: string, payload: Record<string, any>): Promise<any> {
+  public async fetchConfig(
+    nodeUri: string | Multiaddr[],
+    payload: Record<string, any>
+  ): Promise<any> {
     return this.sendP2pCommand(nodeUri, PROTOCOL_COMMANDS.FETCH_CONFIG, payload)
   }
 
@@ -1218,7 +1245,10 @@ export class P2pProvider {
    * Push node configuration via P2P. Accepts a pre-signed payload —
    * the caller is responsible for nonce retrieval and signing.
    */
-  public async pushConfig(nodeUri: string, payload: Record<string, any>): Promise<any> {
+  public async pushConfig(
+    nodeUri: string | Multiaddr[],
+    payload: Record<string, any>
+  ): Promise<any> {
     return this.sendP2pCommand(nodeUri, PROTOCOL_COMMANDS.PUSH_CONFIG, payload)
   }
 }
