@@ -432,13 +432,11 @@ export class HttpProvider {
     token: string,
     validUntil: number,
     nodeUri: string,
-    signerOrAuthToken: Signer | string,
+    consumerAddress: string,
     resources: ComputeResourceRequest[],
     chainId: number,
     policyServer?: any,
-    signal?: AbortSignal,
-    output?: ComputeOutput,
-    dockerRegistryAuth?: dockerRegistryAuth
+    signal?: AbortSignal
   ): Promise<ProviderComputeInitializeResults> {
     const providerEndpoints = await this.getEndpoints(nodeUri)
     const serviceEndpoints = await this.getServiceEndpoints(nodeUri, providerEndpoints)
@@ -446,26 +444,6 @@ export class HttpProvider {
       ? this.getEndpointURL(serviceEndpoints, 'initializeCompute').urlPath
       : null
     if (!initializeUrl) return null
-
-    const consumerAddress = await this.getConsumerAddress(signerOrAuthToken)
-    const nonce = (
-      (await this.getNonce(
-        nodeUri,
-        consumerAddress,
-        signal,
-        providerEndpoints,
-        serviceEndpoints
-      )) + 1
-    ).toString()
-
-    let signature
-    const isAuthToken = typeof signerOrAuthToken === 'string'
-    if (!isAuthToken) {
-      let signatureMessage = consumerAddress
-      signatureMessage += assets[0]?.documentId
-      signatureMessage += nonce
-      signature = await signRequest(signerOrAuthToken, signatureMessage)
-    }
 
     const providerData: Record<string, any> = {
       datasets: assets,
@@ -477,24 +455,9 @@ export class HttpProvider {
         resources
       },
       maxJobDuration: validUntil,
-      consumerAddress,
-      signature
+      consumerAddress
     }
-    if (dockerRegistryAuth) {
-      const nodeKey = await this.getNodePublicKey(nodeUri)
-      if (nodeKey) {
-        providerData.dockerRegistryAuth = eciesencrypt(
-          nodeKey,
-          JSON.stringify(dockerRegistryAuth)
-        )
-      }
-    }
-
     if (policyServer) providerData.policyServer = policyServer
-    if (output) {
-      const nodeKey = await this.getNodePublicKey(nodeUri)
-      if (nodeKey) providerData.output = eciesencrypt(nodeKey, JSON.stringify(output))
-    }
 
     let response
     try {
@@ -502,8 +465,7 @@ export class HttpProvider {
         method: 'POST',
         body: JSON.stringify(providerData),
         headers: {
-          'Content-Type': 'application/json',
-          Authorization: this.getAuthorization(signerOrAuthToken)
+          'Content-Type': 'application/json'
         },
         signal
       })

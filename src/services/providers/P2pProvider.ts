@@ -760,7 +760,8 @@ export class P2pProvider {
   }
 
   /**
-   * Initializes compute request via P2P.
+   * Initializes compute request via P2P. No auth required -- the node only
+   * validates parameters and applies rate limits.
    */
   public async initializeCompute(
     assets: ComputeAsset[],
@@ -769,55 +770,27 @@ export class P2pProvider {
     token: string,
     validUntil: number,
     nodeUri: string | Multiaddr[],
-    signerOrAuthToken: Signer | string,
+    consumerAddress: string,
     resources: ComputeResourceRequest[],
     chainId: number,
     policyServer?: any,
-    signal?: AbortSignal,
-    output?: ComputeOutput,
-    dockerRegistryAuth?: dockerRegistryAuth
+    signal?: AbortSignal
   ): Promise<ProviderComputeInitializeResults> {
-    const consumerAddress = await this.getConsumerAddress(signerOrAuthToken)
-    const nonce = ((await this.getNonce(nodeUri, consumerAddress, signal)) + 1).toString()
-
-    let signature: string | undefined
-    const isAuthToken = typeof signerOrAuthToken === 'string'
-    if (!isAuthToken) {
-      let signatureMessage = consumerAddress
-      signatureMessage += assets[0]?.documentId
-      signatureMessage += nonce
-      signature = await signRequest(signerOrAuthToken as Signer, signatureMessage)
-    }
-
     const body: Record<string, any> = {
       datasets: assets,
       algorithm,
       environment: computeEnv,
       payment: { chainId, token, resources },
       maxJobDuration: validUntil,
-      consumerAddress,
-      nonce,
-      signature
-    }
-    if (dockerRegistryAuth) {
-      const nodeKey = await this.getNodePublicKey(nodeUri)
-      if (nodeKey)
-        body.dockerRegistryAuth = eciesencrypt(
-          nodeKey,
-          JSON.stringify(dockerRegistryAuth)
-        )
+      consumerAddress
     }
     if (policyServer) body.policyServer = policyServer
-    if (output) {
-      const nodeKey = await this.getNodePublicKey(nodeUri)
-      if (nodeKey) body.output = eciesencrypt(nodeKey, JSON.stringify(output))
-    }
 
     return this.sendP2pCommand(
       nodeUri,
       PROTOCOL_COMMANDS.COMPUTE_INITIALIZE,
       body,
-      signerOrAuthToken,
+      null,
       signal
     )
   }

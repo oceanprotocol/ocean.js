@@ -175,13 +175,11 @@ export class BaseProvider {
     token: string,
     validUntil: number,
     nodeUri: string | Multiaddr[],
-    signerOrAuthToken: Signer | string,
+    consumerAddress: string,
     resources: ComputeResourceRequest[],
     chainId: number,
     policyServer?: any,
-    signal?: AbortSignal,
-    output?: ComputeOutput,
-    dockerRegistryAuth?: dockerRegistryAuth
+    signal?: AbortSignal
   ): Promise<ProviderComputeInitializeResults> {
     return this.getImpl(nodeUri).initializeCompute(
       assets,
@@ -190,13 +188,11 @@ export class BaseProvider {
       token,
       validUntil,
       nodeUri,
-      signerOrAuthToken,
+      consumerAddress,
       resources,
       chainId,
       policyServer,
-      signal,
-      output,
-      dockerRegistryAuth
+      signal
     )
   }
 
