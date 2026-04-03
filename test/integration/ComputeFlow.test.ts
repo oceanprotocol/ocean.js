@@ -489,7 +489,7 @@ describe('Compute flow tests', async () => {
         paymentToken,
         computeValidUntil,
         providerUrl,
-        consumerAccount,
+        await consumerAccount.getAddress(),
         resources,
         Number(chainId)
       )
@@ -538,7 +538,7 @@ describe('Compute flow tests', async () => {
       paymentToken,
       computeValidUntil,
       providerUrl,
-      consumerAccount,
+      await consumerAccount.getAddress(),
       resources,
       Number(chainId)
     )
@@ -714,7 +714,7 @@ describe('Compute flow tests', async () => {
       paymentToken,
       computeJobDuration,
       providerUrl,
-      consumerAccount,
+      await consumerAccount.getAddress(),
       resources,
       Number(chainId)
     )
@@ -809,7 +809,7 @@ describe('Compute flow tests', async () => {
       paymentToken,
       computeValidUntil,
       providerUrl,
-      consumerAccount,
+      await consumerAccount.getAddress(),
       resources,
       Number(chainId)
     )

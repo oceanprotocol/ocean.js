@@ -784,7 +784,7 @@ describe('Compute-to-data example tests', async () => {
       paymentToken,
       computeValidUntil,
       providerUrl,
-      consumerAccount,
+      await consumerAccount.getAddress(),
       resources,
       Number(chainId)
     )
