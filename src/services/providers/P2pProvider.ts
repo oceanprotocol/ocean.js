@@ -15,6 +15,7 @@ import { multiaddr, type Multiaddr } from '@multiformats/multiaddr'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { Signer } from 'ethers'
+import { sleep } from '../../utils/General.js'
 import { LoggerInstance } from '../../utils/Logger.js'
 import {
   StorageObject,
@@ -243,11 +244,12 @@ export class P2pProvider {
 
     // Browsers on HTTPS pages can only use WSS/TLS
     const str = ma.toString()
-    return str.includes('/wss/') || str.includes('/wss') || str.includes('/tls/ws')
+    return str.includes('/tls/sni')
   }
 
   private peerIdFromMultiaddr(ma: Multiaddr): string | null {
-    const parts = ma.toString().split('/p2p/')
+    const str = ma.toString().replace(/\/p2p-circuit.*$/, '')
+    const parts = str.split('/p2p/')
     return parts.length > 1 ? parts[parts.length - 1] : null
   }
 
@@ -257,41 +259,56 @@ export class P2pProvider {
   ): Promise<Connection> {
     const node = await this.getOrCreateLibp2pNode()
 
-    // --- Multiaddr array: try dialable addrs, fall back to peer ID ---
     if (Array.isArray(nodeUri)) {
-      const valid = nodeUri.filter((ma) => {
-        try { multiaddr(ma); return true } catch { return false }
-      })
-      const dialable = valid.filter((ma) => this.isBrowserDialable(ma))
+      const dialable = nodeUri.filter((ma) => this.isBrowserDialable(ma))
+
       if (dialable.length > 0) {
-        try { return await node.dial(dialable, { signal }) } catch {}
+        LoggerInstance.debug(`[P2P] dial array: ${dialable.length} dialable addrs`)
+        try {
+          const conn = await node.dial(dialable, { signal })
+          LoggerInstance.debug(`[P2P] dial array SUCCESS via ${conn.remoteAddr}`)
+          return conn
+        } catch (err: any) {
+          LoggerInstance.debug(`[P2P] dial array failed: ${err.message}`)
+        }
       }
-      for (const ma of valid) {
+
+      for (const ma of nodeUri) {
         const pid = this.peerIdFromMultiaddr(ma)
-        if (pid) return this.dialByPeerId(node, pid, signal)
+        if (pid) {
+          LoggerInstance.debug(`[P2P] Not multiaddrs, fallback to peerId: ${pid}`)
+          return this.dialByPeerId(node, pid, signal)
+        }
       }
       throw new Error('No valid addresses and no peer ID in multiaddrs')
     }
 
-    // --- Single string: try as multiaddr, fall back to bare peer ID ---
     try {
       const ma = multiaddr(nodeUri)
       if (this.isBrowserDialable(ma)) {
-        try { return await node.dial(ma, { signal }) } catch {}
+        LoggerInstance.debug(`[P2P] dial single addr: ${ma}`)
+        try {
+          const conn = await node.dial(ma, { signal })
+          LoggerInstance.debug(`[P2P] dial single SUCCESS via ${conn.remoteAddr}`)
+          return conn
+        } catch (err: any) {
+          LoggerInstance.debug(`[P2P] dial single failed: ${err.message}`)
+        }
       }
       const pid = this.peerIdFromMultiaddr(ma)
-      if (pid) return this.dialByPeerId(node, pid, signal)
+      if (pid) {
+        LoggerInstance.debug(`[P2P] single fallback -> dialByPeerId ${pid}`)
+        return this.dialByPeerId(node, pid, signal)
+      }
       throw new Error(`Cannot dial address: ${nodeUri}`)
     } catch (err: any) {
       if (err.message?.includes('Cannot dial')) throw err
     }
 
+    LoggerInstance.debug(`[P2P] bare peerId -> dialByPeerId ${nodeUri}`)
     return this.dialByPeerId(node, nodeUri, signal)
   }
 
-  /**
-   * Resolve a bare peer ID to a connection via cache, DHT, circuit relay.
-   */
   private async dialByPeerId(
     node: Libp2p,
     peerIdStr: string,
@@ -299,37 +316,68 @@ export class P2pProvider {
   ): Promise<Connection> {
     const peerId = peerIdFromString(peerIdStr)
 
-    const existing = node.getConnections(peerId)
-    if (existing.length > 0) return existing[0]
+    const existing = node.getConnections(peerId).filter((c) => c.status === 'open')
+    if (existing.length > 0) {
+      LoggerInstance.debug(
+        `[P2P] ${peerIdStr}: reusing existing connection via ${existing[0].remoteAddr}`
+      )
+      return existing[0]
+    }
 
-    // Collect multiaddrs from cache + DHT
+    // Wait briefly for bootstrap if node just started (0 connections)
+    if (node.getConnections().length === 0) {
+      LoggerInstance.debug(
+        `[P2P] ${peerIdStr}: no connections yet, waiting for bootstrap...`
+      )
+      await sleep(3000)
+      const after = node.getConnections(peerId)
+      if (after.length > 0) {
+        LoggerInstance.debug(`[P2P] ${peerIdStr}: connected during bootstrap wait`)
+        return after[0]
+      }
+    }
+
     const seen = new Set<string>()
     const allAddrs: Multiaddr[] = []
     const addAddr = (ma: Multiaddr) => {
       const key = ma.toString()
-      if (!seen.has(key)) { seen.add(key); allAddrs.push(ma) }
+      if (!seen.has(key)) {
+        seen.add(key)
+        allAddrs.push(ma)
+      }
     }
 
     const cached = this.discoveredNodes.get(peerIdStr)
     if (cached) {
       for (const addr of cached) {
-        try { addAddr(multiaddr(addr)) } catch {}
+        try {
+          addAddr(multiaddr(addr))
+        } catch {}
       }
+      LoggerInstance.debug(`[P2P] ${peerIdStr}: ${cached.length} cached addrs`)
     }
 
-    // Skip DHT if cache already has browser-dialable addrs
     const cachedDialable = allAddrs.filter((ma) => this.isBrowserDialable(ma))
     if (cachedDialable.length === 0) {
+      LoggerInstance.debug(
+        `[P2P] ${peerIdStr}: no cached dialable addrs, querying DHT...`
+      )
       try {
         const dhtSignal = AbortSignal.timeout(this.p2pConfig.dhtLookupTimeout ?? 60_000)
         const peerInfo = await node.peerRouting.findPeer(peerId, { signal: dhtSignal })
         for (const ma of peerInfo.multiaddrs) addAddr(ma)
+        LoggerInstance.debug(
+          `[P2P] ${peerIdStr}: DHT returned ${peerInfo.multiaddrs.length} addrs`
+        )
       } catch (err: any) {
-        LoggerInstance.debug(`DHT findPeer failed for ${peerIdStr}: ${err.message}`)
+        LoggerInstance.debug(`[P2P] ${peerIdStr}: DHT findPeer failed: ${err.message}`)
       }
+    } else {
+      LoggerInstance.debug(
+        `[P2P] ${peerIdStr}: ${cachedDialable.length} cached dialable addrs, skipping DHT`
+      )
     }
 
-    // Try browser-dialable addresses directly
     const dialable = allAddrs
       .filter((ma) => this.isBrowserDialable(ma))
       .map((ma) => {
@@ -337,47 +385,41 @@ export class P2pProvider {
         return str.includes('/p2p/') ? ma : multiaddr(`${str}/p2p/${peerIdStr}`)
       })
 
+    LoggerInstance.debug(
+      `[P2P] ${peerIdStr}: ${dialable.length}/${allAddrs.length} addrs are dialable`
+    )
+
     if (dialable.length > 0) {
+      LoggerInstance.debug(`[P2P] ${peerIdStr}: dialing ${dialable.map(String)}`)
       try {
-        return await node.dial(dialable, { signal })
-      } catch (err: any) {
-        LoggerInstance.debug(`Direct dial to ${peerIdStr} failed: ${err.message}`)
-      }
-    }
-
-    // Circuit relay: try all connected peers in parallel
-    const connections = node.getConnections()
-    const relayAddrs = connections.map((c) => {
-      const addr = c.remoteAddr.toString()
-      const base = addr.includes('/p2p/')
-        ? addr
-        : `${addr}/p2p/${c.remotePeer.toString()}`
-      return multiaddr(`${base}/p2p-circuit/p2p/${peerIdStr}`)
-    })
-
-    if (relayAddrs.length > 0) {
-      try {
-        return await Promise.any(
-          relayAddrs.map((ma) =>
-            node.dial(ma, { signal: AbortSignal.timeout(15_000) })
-          )
+        const conn = await node.dial(dialable, { signal })
+        LoggerInstance.debug(
+          `[P2P] ${peerIdStr}: SUCCESS via ${conn.remoteAddr} (limited=${
+            conn.limits != null
+          })`
         )
+        return conn
       } catch (err: any) {
-        const reasons = (err.errors ?? []).map((e: any) => e.message).join('; ')
-        LoggerInstance.debug(`Circuit relay failed for ${peerIdStr}: ${reasons}`)
+        LoggerInstance.debug(`[P2P] ${peerIdStr}: direct dial failed: ${err.message}`)
       }
     }
 
-    // Last resort: dial by peerId (uses peerStore addresses)
+    LoggerInstance.debug(`[P2P] ${peerIdStr}: last resort dial by peerId`)
     try {
-      return await node.dial(peerId, { signal: AbortSignal.timeout(10_000) })
+      const conn = await node.dial(peerId, { signal: AbortSignal.timeout(10_000) })
+      LoggerInstance.debug(
+        `[P2P] ${peerIdStr}: peerId dial SUCCESS via ${conn.remoteAddr} (limited=${
+          conn.limits != null
+        })`
+      )
+      return conn
     } catch {
       throw new Error(
         `Cannot reach peer ${peerIdStr}. ` +
-        (allAddrs.length > 0
-          ? `Found addrs: ${allAddrs.map(String).join(', ')} (none browser-dialable). `
-          : 'No addresses found. ') +
-        `Active connections: ${connections.length}.`
+          (allAddrs.length > 0
+            ? `Found addrs: ${allAddrs.map(String).join(', ')} (none browser-dialable). `
+            : 'No addresses found. ') +
+          `Active connections: ${node.getConnections().length}.`
       )
     }
   }
@@ -411,16 +453,27 @@ export class P2pProvider {
     const opSignal =
       signal ?? AbortSignal.timeout(this.p2pConfig.dialTimeout ?? DEFAULT_DIAL_TIMEOUT_MS)
     const connection = await this.getConnection(nodeUri, opSignal)
-    const stream = await connection.newStream(OCEAN_P2P_PROTOCOL, { signal: opSignal })
-    const lp = lpStream(stream)
+    try {
+      const stream = await connection.newStream(OCEAN_P2P_PROTOCOL, {
+        signal: opSignal,
+        runOnLimitedConnection: true
+      })
+      const lp = lpStream(stream)
 
-    await lp.write(uint8ArrayFromString(JSON.stringify(payload)), { signal: opSignal })
-    await stream.close()
+      await lp.write(uint8ArrayFromString(JSON.stringify(payload)), { signal: opSignal })
+      await stream.close()
 
-    const firstChunk = await lp.read({ signal: opSignal })
-    const firstBytes = this.toUint8Array(firstChunk)
+      const firstChunk = await lp.read({ signal: opSignal })
+      const firstBytes = this.toUint8Array(firstChunk)
 
-    return { lp, firstBytes, connection }
+      return { lp, firstBytes, connection }
+    } catch (err: any) {
+      // Evict the connection so retries get a fresh one (critical for circuit relay data limits)
+      try {
+        connection.abort(new Error('stream failed'))
+      } catch {}
+      throw err
+    }
   }
 
   private async sendP2pCommand(
@@ -431,7 +484,6 @@ export class P2pProvider {
     signal?: AbortSignal,
     retrialNumber: number = 0
   ): Promise<any> {
-    let connection: Connection | undefined
     try {
       const payload = {
         command,
@@ -441,12 +493,7 @@ export class P2pProvider {
         ...body
       }
 
-      const {
-        lp,
-        firstBytes,
-        connection: conn
-      } = await this.dialAndStream(nodeUri, payload, signal)
-      connection = conn
+      const { lp, firstBytes } = await this.dialAndStream(nodeUri, payload, signal)
 
       if (!firstBytes.length) {
         throw new Error('Gateway node error: no response from peer')
@@ -539,9 +586,12 @@ export class P2pProvider {
         (msg.includes('closed') || msg.includes('reset')) &&
         retrialNumber < (this.p2pConfig.maxRetries ?? DEFAULT_MAX_RETRIES)
       ) {
-        try {
-          await connection?.close()
-        } catch {}
+        LoggerInstance.debug(
+          `[P2P] Stream reset/closed on attempt ${retrialNumber + 1}, retrying...`
+        )
+        // Connection already evicted by dialAndStream catch block.
+        // Brief delay ensures libp2p fully cleans up before retry.
+        await sleep(1000)
         return this.sendP2pCommand(
           nodeUri,
           command,
