@@ -181,7 +181,11 @@ export class P2pProvider {
 
     const node = await createLibp2p({
       addresses: { listen: [] },
-      transports: [webSockets(), ...(this.p2pConfig.enableTcp ? [tcp()] : [])],
+      transports: [
+        webSockets(),
+        circuitRelayTransport(),
+        ...(this.p2pConfig.enableTcp ? [tcp()] : [])
+      ],
       connectionEncrypters: [noise()],
       streamMuxers: [yamux()],
       peerDiscovery: [
@@ -230,6 +234,16 @@ export class P2pProvider {
 
   private toUint8Array(chunk: Uint8Array | { subarray(): Uint8Array }): Uint8Array {
     return chunk instanceof Uint8Array ? chunk : chunk.subarray()
+  }
+
+  private isBrowserDialable(ma: Multiaddr): boolean {
+    const str = ma.toString()
+    return str.includes('/wss/') || str.includes('/wss') || str.includes('/tls/ws')
+  }
+
+  private peerIdFromMultiaddr(ma: Multiaddr): string | null {
+    const parts = ma.toString().split('/p2p/')
+    return parts.length > 1 ? parts[parts.length - 1] : null
   }
 
   private async getConnection(
