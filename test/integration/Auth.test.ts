@@ -11,9 +11,6 @@ describe('Auth token tests', async () => {
   before(async () => {
     account = (await provider.getSigner(0)) as Signer
     config = await getTestConfig(account)
-    if (process.env.NODE_URL) {
-      config.oceanNodeUri = process.env.NODE_URL
-    }
     providerUrl = config?.oceanNodeUri
   })
 
