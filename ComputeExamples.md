@@ -784,7 +784,7 @@ Triggering initialize compute to see payment options
       paymentToken,
       computeValidUntil,
       providerUrl,
-      consumerAccount,
+      await consumerAccount.getAddress(),
       resources,
       Number(chainId)
     )
