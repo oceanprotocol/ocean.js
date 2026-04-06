@@ -16,6 +16,12 @@
     }
   },
   "types": "./dist/types/index.d.ts",
+  "files": [
+    "dist",
+    "!dist/*.map",
+    "README.md",
+    "LICENSE"
+  ],
   "scripts": {
     "start": "npm run clean && npm run build:metadata && tsc -w",
     "build": "npm run clean && npm run build:metadata && microbundle build --format modern,esm,cjs,umd --compress --tsconfig tsconfig.json",
