@@ -12,8 +12,6 @@ import { peerIdFromString } from '@libp2p/peer-id'
 import { lpStream, UnexpectedEOFError } from '@libp2p/utils'
 import type { Connection } from '@libp2p/interface'
 import { multiaddr, type Multiaddr } from '@multiformats/multiaddr'
-import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
-import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { Signer } from 'ethers'
 import { sleep } from '../../utils/General.js'
 import { LoggerInstance } from '../../utils/Logger.js'
@@ -459,7 +457,9 @@ export class P2pProvider {
       })
       const lp = lpStream(stream)
 
-      await lp.write(uint8ArrayFromString(JSON.stringify(payload)), { signal: opSignal })
+      await lp.write(new TextEncoder().encode(JSON.stringify(payload)), {
+        signal: opSignal
+      })
       await stream.close()
 
       const firstChunk = await lp.read({ signal: opSignal })
@@ -498,7 +498,7 @@ export class P2pProvider {
         throw new Error('Gateway node error: no response from peer')
       }
 
-      const statusText = uint8ArrayToString(firstBytes)
+      const statusText = new TextDecoder().decode(firstBytes)
       try {
         const status = JSON.parse(statusText)
         if (typeof status?.httpStatus === 'number' && status.httpStatus >= 400) {
@@ -545,7 +545,7 @@ export class P2pProvider {
 
       let response: unknown
       for (let i = 0; i < chunks.length; i++) {
-        const text = uint8ArrayToString(chunks[i])
+        const text = new TextDecoder().decode(chunks[i])
         try {
           response = JSON.parse(text)
         } catch {
@@ -837,7 +837,7 @@ export class P2pProvider {
     // First lp frame is the status JSON (if present). Some nodes send binary data
     // directly without a status prefix — in that case JSON.parse throws SyntaxError
     // and we treat the frame as the start of file data.
-    const statusText = uint8ArrayToString(firstBytes)
+    const statusText = new TextDecoder().decode(firstBytes)
     let status: { httpStatus?: number; error?: string } | null = null
     try {
       status = JSON.parse(statusText)
@@ -1136,7 +1136,7 @@ export class P2pProvider {
     const { lp, firstBytes } = await this.dialAndStream(nodeUri, payload)
 
     // First frame is always a status JSON
-    const status = JSON.parse(uint8ArrayToString(firstBytes))
+    const status = JSON.parse(new TextDecoder().decode(firstBytes))
     if (typeof status?.httpStatus === 'number' && status.httpStatus >= 400) {
       throw new Error(status.error ?? `P2P compute result error: ${status.httpStatus}`)
     }
