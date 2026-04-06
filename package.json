@@ -7,10 +7,12 @@
   "umd:main": "dist/lib.umd.js",
   "module": "./dist/lib.module.mjs",
   "type": "module",
-  "export": {
-    "require": "./dist/lib.cjs",
-    "import": "./dist/lib.module.mjs",
-    "default": "./dist/lib.modern.mjs"
+  "exports": {
+    ".": {
+      "import": "./dist/lib.module.mjs",
+      "require": "./dist/lib.cjs",
+      "default": "./dist/lib.modern.mjs"
+    }
   },
   "types": "./dist/types/index.d.ts",
   "scripts": {
