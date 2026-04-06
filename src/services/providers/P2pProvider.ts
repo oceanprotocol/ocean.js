@@ -247,7 +247,10 @@ export class P2pProvider {
 
   private peerIdFromMultiaddr(ma: Multiaddr): string | null {
     const parts = ma.toString().split('/p2p/')
-    return parts.length > 1 ? parts[parts.length - 1] : null
+    if (parts.length <= 1) return null
+    // Strip trailing protocol components like /p2p-circuit
+    const raw = parts[parts.length - 1]
+    return raw.split('/')[0] || null
   }
 
   private async getConnection(
