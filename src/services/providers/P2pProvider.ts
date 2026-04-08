@@ -200,6 +200,10 @@ export class P2pProvider {
         ping: ping(),
         dht: kadDHT({ protocol: OCEAN_DHT_PROTOCOL, clientMode: true })
       },
+      // Without this we are blocking connection to plain ws - the bundler thinks we are in a browser.
+      // This also applies to local nodes.
+      // Browsers will still block connection if transport is not secure.
+      connectionGater: { denyDialMultiaddr: () => false },
       connectionManager: { maxConnections: 100 },
       connectionMonitor: { abortConnectionOnPingFailure: false },
       // User-supplied config overrides all defaults above.
