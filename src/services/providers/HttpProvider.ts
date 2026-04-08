@@ -18,7 +18,9 @@ import {
   PolicyServerInitializeCommand,
   PolicyServerPassthroughCommand,
   dockerRegistryAuth,
-  ComputeResultStream
+  ComputeResultStream,
+  NodeStatus,
+  NodeComputeJob
 } from '../../@types/index.js'
 import { PROTOCOL_COMMANDS } from '../../@types/Provider.js'
 import { type DDO, type ValidateMetadata } from '@oceanprotocol/ddo-js'
@@ -51,6 +53,38 @@ export class HttpProvider {
     } catch (e) {
       LoggerInstance.error('Finding the service endpoints failed:', e)
       throw new Error('HTTP request failed calling Provider')
+    }
+  }
+
+  public async getNodeStatus(nodeUri: string, signal?: AbortSignal): Promise<NodeStatus> {
+    return this.getEndpoints(nodeUri)
+  }
+
+  public async getNodeJobs(
+    nodeUri: string,
+    jobId?: string,
+    fromTimestamp?: number,
+    signal?: AbortSignal
+  ): Promise<NodeComputeJob[]> {
+    const providerEndpoints = await this.getEndpoints(nodeUri)
+    const serviceEndpoints = await this.getServiceEndpoints(nodeUri, providerEndpoints)
+    const endpoint = this.getEndpointURL(serviceEndpoints, 'jobs')
+    if (!endpoint?.urlPath) return []
+    const url = jobId ? endpoint.urlPath.replace(':job', jobId) : endpoint.urlPath
+    try {
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+        signal
+      })
+      if (response?.ok) {
+        const data = await response.json()
+        return Array.isArray(data?.jobs) ? data.jobs : []
+      }
+      return []
+    } catch (e) {
+      LoggerInstance.error('getNodeJobs failed:', e)
+      return []
     }
   }
 

@@ -32,7 +32,9 @@ import {
   PolicyServerPassthroughCommand,
   dockerRegistryAuth,
   DownloadResponse,
-  ComputeResultStream
+  ComputeResultStream,
+  NodeStatus,
+  NodeComputeJob
 } from '../../@types/index.js'
 import { PROTOCOL_COMMANDS } from '../../@types/Provider.js'
 import { type DDO, type ValidateMetadata } from '@oceanprotocol/ddo-js'
@@ -618,6 +620,37 @@ export class P2pProvider {
     } catch (e) {
       LoggerInstance.error('P2P getEndpoints (STATUS) failed:', e)
       throw e
+    }
+  }
+
+  public async getNodeStatus(
+    nodeUri: string | Multiaddr[],
+    signal?: AbortSignal
+  ): Promise<NodeStatus> {
+    return this.getEndpoints(nodeUri)
+  }
+
+  public async getNodeJobs(
+    nodeUri: string | Multiaddr[],
+    jobId?: string,
+    fromTimestamp?: number,
+    signal?: AbortSignal
+  ): Promise<NodeComputeJob[]> {
+    try {
+      const body: Record<string, any> = {}
+      if (jobId) body.jobId = jobId
+      if (fromTimestamp) body.fromTimestamp = fromTimestamp.toString()
+      const result = await this.sendP2pCommand(
+        nodeUri,
+        PROTOCOL_COMMANDS.JOBS,
+        body,
+        null,
+        signal
+      )
+      return Array.isArray(result) ? result : []
+    } catch (e) {
+      LoggerInstance.error('P2P getNodeJobs failed:', e)
+      return []
     }
   }
 

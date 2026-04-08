@@ -42,6 +42,16 @@ export interface ServiceEndpoint {
   method: string
   urlPath: string
 }
+
+export interface NodeStatus {
+  nodeId: string
+  chainIds: string[]
+  providerAddress: string
+  nodePublicKey: Record<string, number>
+  serviceEndpoints: Record<string, [string, string]>
+  software: string
+  version: string
+}
 export interface UserCustomParameters {
   [key: string]: any
 }

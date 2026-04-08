@@ -55,6 +55,19 @@ describe('Provider tests', async () => {
     assert(computeEnvs, 'No Compute environments found')
   })
 
+  it('Alice tests getNodeStatus', async () => {
+    const status = await ProviderInstance.getNodeStatus(config.oceanNodeUri)
+    assert(status, 'No status returned')
+    assert(status.providerAddress, 'Status missing provider address')
+    assert(status.nodeId, 'Status missing nodeId')
+    assert(Array.isArray(status.chainIds), 'Status missing chainIds')
+  })
+
+  it('Alice tests getNodeJobs', async () => {
+    const jobs = await ProviderInstance.getNodeJobs(config.oceanNodeUri)
+    assert(Array.isArray(jobs), 'Jobs should be an array')
+  })
+
   it('Alice tests getNonce', async () => {
     const nonce = await ProviderInstance.getNonce(
       config.oceanNodeUri,

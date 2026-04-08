@@ -19,7 +19,9 @@ import {
   PolicyServerInitializeCommand,
   PolicyServerPassthroughCommand,
   dockerRegistryAuth,
-  DownloadResponse
+  DownloadResponse,
+  NodeStatus,
+  NodeComputeJob
 } from '../../@types/index.js'
 import { type DDO, type ValidateMetadata } from '@oceanprotocol/ddo-js'
 import { decodeJwt } from '../../utils/Jwt.js'
@@ -443,6 +445,22 @@ export class BaseProvider {
       page,
       signal
     )
+  }
+
+  public async getNodeStatus(
+    nodeUri: string | Multiaddr[],
+    signal?: AbortSignal
+  ): Promise<NodeStatus> {
+    return this.getImpl(nodeUri).getNodeStatus(nodeUri, signal)
+  }
+
+  public async getNodeJobs(
+    nodeUri: string | Multiaddr[],
+    jobId?: string,
+    fromTimestamp?: number,
+    signal?: AbortSignal
+  ): Promise<NodeComputeJob[]> {
+    return this.getImpl(nodeUri).getNodeJobs(nodeUri, jobId, fromTimestamp, signal)
   }
 
   public async setupP2P(config: P2PConfig): Promise<void> {
