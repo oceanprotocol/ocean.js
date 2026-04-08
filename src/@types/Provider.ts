@@ -43,14 +43,46 @@ export interface ServiceEndpoint {
   urlPath: string
 }
 
+export interface NodeStatusProvider {
+  chainId: string
+  network: string
+}
+
+export interface NodeStatusIndexer {
+  chainId: string
+  network: string
+  block: string
+}
+
 export interface NodeStatus {
-  nodeId: string
-  chainIds: string[]
-  providerAddress: string
-  nodePublicKey: Record<string, number>
-  serviceEndpoints: Record<string, [string, string]>
-  software: string
+  id: string
+  publicKey: string
+  friendlyName: string
+  address: string
   version: string
+  http: boolean
+  p2p: boolean
+  provider: NodeStatusProvider[]
+  indexer: NodeStatusIndexer[]
+  escrowAddress: Record<string, string>
+  supportedStorage: Record<string, boolean>
+  platform: {
+    cpus: number
+    freemem: number
+    totalmem: number
+    loadavg: number[]
+    arch: string
+    machine: string
+    platform: string
+    osType: string
+    node: string
+  }
+  codeHash: string
+  allowedAdmins: {
+    addresses: string[]
+    accessLists: string[] | null
+  }
+  uptime: number
 }
 export interface UserCustomParameters {
   [key: string]: any

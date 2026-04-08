@@ -57,7 +57,23 @@ export class HttpProvider {
   }
 
   public async getNodeStatus(nodeUri: string, signal?: AbortSignal): Promise<NodeStatus> {
-    return this.getEndpoints(nodeUri)
+    const providerEndpoints = await this.getEndpoints(nodeUri)
+    const serviceEndpoints = await this.getServiceEndpoints(nodeUri, providerEndpoints)
+    const endpoint = this.getEndpointURL(serviceEndpoints, 'directCommand')
+    if (!endpoint?.urlPath) return null
+    try {
+      const response = await fetch(endpoint.urlPath, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ command: PROTOCOL_COMMANDS.STATUS }),
+        signal
+      })
+      if (response?.ok) return response.json()
+      return null
+    } catch (e) {
+      LoggerInstance.error('getNodeStatus failed:', e)
+      return null
+    }
   }
 
   public async getNodeJobs(

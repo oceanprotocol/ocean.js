@@ -58,9 +58,10 @@ describe('Provider tests', async () => {
   it('Alice tests getNodeStatus', async () => {
     const status = await ProviderInstance.getNodeStatus(config.oceanNodeUri)
     assert(status, 'No status returned')
-    assert(status.providerAddress, 'Status missing provider address')
-    assert(status.nodeId, 'Status missing nodeId')
-    assert(Array.isArray(status.chainIds), 'Status missing chainIds')
+    assert(status.id, 'Status missing id')
+    assert(status.address, 'Status missing address')
+    assert(status.version, 'Status missing version')
+    assert(Array.isArray(status.provider), 'Status missing provider array')
   })
 
   it('Alice tests getNodeJobs', async () => {
