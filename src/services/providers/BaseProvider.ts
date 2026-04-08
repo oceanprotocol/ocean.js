@@ -456,11 +456,10 @@ export class BaseProvider {
 
   public async getNodeJobs(
     nodeUri: string | Multiaddr[],
-    jobId?: string,
     fromTimestamp?: number,
     signal?: AbortSignal
   ): Promise<NodeComputeJob[]> {
-    return this.getImpl(nodeUri).getNodeJobs(nodeUri, jobId, fromTimestamp, signal)
+    return this.getImpl(nodeUri).getNodeJobs(nodeUri, fromTimestamp, signal)
   }
 
   public async setupP2P(config: P2PConfig): Promise<void> {

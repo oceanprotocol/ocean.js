@@ -636,13 +636,11 @@ export class P2pProvider {
 
   public async getNodeJobs(
     nodeUri: string | Multiaddr[],
-    jobId?: string,
     fromTimestamp?: number,
     signal?: AbortSignal
   ): Promise<NodeComputeJob[]> {
     try {
       const body: Record<string, any> = {}
-      if (jobId) body.jobId = jobId
       if (fromTimestamp) body.fromTimestamp = fromTimestamp.toString()
       const result = await this.sendP2pCommand(
         nodeUri,
@@ -966,7 +964,7 @@ export class P2pProvider {
     if (dockerRegistryAuth) {
       const nodeKey = await this.getNodePublicKey(nodeUri)
       if (nodeKey)
-        body.dockerRegistryAuth = eciesencrypt(
+        body.encryptedDockerRegistryAuth = eciesencrypt(
           nodeKey,
           JSON.stringify(dockerRegistryAuth)
         )
@@ -1030,7 +1028,7 @@ export class P2pProvider {
     if (dockerRegistryAuth) {
       const nodeKey = await this.getNodePublicKey(nodeUri)
       if (nodeKey)
-        body.dockerRegistryAuth = eciesencrypt(
+        body.encryptedDockerRegistryAuth = eciesencrypt(
           nodeKey,
           JSON.stringify(dockerRegistryAuth)
         )

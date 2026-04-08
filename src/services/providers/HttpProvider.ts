@@ -78,7 +78,6 @@ export class HttpProvider {
 
   public async getNodeJobs(
     nodeUri: string,
-    jobId?: string,
     fromTimestamp?: number,
     signal?: AbortSignal
   ): Promise<NodeComputeJob[]> {
@@ -86,7 +85,7 @@ export class HttpProvider {
     const serviceEndpoints = await this.getServiceEndpoints(nodeUri, providerEndpoints)
     const endpoint = this.getEndpointURL(serviceEndpoints, 'jobs')
     if (!endpoint?.urlPath) return []
-    let url = jobId ? endpoint.urlPath.replace(':job', jobId) : endpoint.urlPath
+    let url = endpoint.urlPath
     if (fromTimestamp) url += `?fromTimestamp=${fromTimestamp}`
     try {
       const response = await fetch(url, {
@@ -692,7 +691,7 @@ export class HttpProvider {
     if (dockerRegistryAuth) {
       const nodeKey = await this.getNodePublicKey(nodeUri)
       if (nodeKey) {
-        payload.dockerRegistryAuth = eciesencrypt(
+        payload.encryptedDockerRegistryAuth = eciesencrypt(
           nodeKey,
           JSON.stringify(dockerRegistryAuth)
         )
@@ -817,7 +816,7 @@ export class HttpProvider {
     if (dockerRegistryAuth) {
       const nodeKey = await this.getNodePublicKey(nodeUri)
       if (nodeKey) {
-        payload.dockerRegistryAuth = eciesencrypt(
+        payload.encryptedDockerRegistryAuth = eciesencrypt(
           nodeKey,
           JSON.stringify(dockerRegistryAuth)
         )
