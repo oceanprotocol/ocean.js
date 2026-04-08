@@ -70,7 +70,8 @@ export class HttpProvider {
     const serviceEndpoints = await this.getServiceEndpoints(nodeUri, providerEndpoints)
     const endpoint = this.getEndpointURL(serviceEndpoints, 'jobs')
     if (!endpoint?.urlPath) return []
-    const url = jobId ? endpoint.urlPath.replace(':job', jobId) : endpoint.urlPath
+    let url = jobId ? endpoint.urlPath.replace(':job', jobId) : endpoint.urlPath
+    if (fromTimestamp) url += `?fromTimestamp=${fromTimestamp}`
     try {
       const response = await fetch(url, {
         method: 'GET',
