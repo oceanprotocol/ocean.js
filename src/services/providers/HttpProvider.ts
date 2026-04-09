@@ -486,7 +486,10 @@ export class HttpProvider {
     resources: ComputeResourceRequest[],
     chainId: number,
     policyServer?: any,
-    signal?: AbortSignal
+    signal?: AbortSignal,
+    queueMaxWaitTime?: number,
+    dockerRegistryAuthData?: dockerRegistryAuth,
+    output?: ComputeOutput
   ): Promise<ProviderComputeInitializeResults> {
     const providerEndpoints = await this.getEndpoints(nodeUri)
     const serviceEndpoints = await this.getServiceEndpoints(nodeUri, providerEndpoints)
@@ -508,6 +511,20 @@ export class HttpProvider {
       consumerAddress
     }
     if (policyServer) providerData.policyServer = policyServer
+    if (queueMaxWaitTime) providerData.queueMaxWaitTime = queueMaxWaitTime
+    if (dockerRegistryAuthData) {
+      const nodeKey = await this.getNodePublicKey(nodeUri)
+      if (nodeKey) {
+        providerData.encryptedDockerRegistryAuth = eciesencrypt(
+          nodeKey,
+          JSON.stringify(dockerRegistryAuthData)
+        )
+      }
+    }
+    if (output) {
+      const nodeKey = await this.getNodePublicKey(nodeUri)
+      if (nodeKey) providerData.output = eciesencrypt(nodeKey, JSON.stringify(output))
+    }
 
     let response
     try {

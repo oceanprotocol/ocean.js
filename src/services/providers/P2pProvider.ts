@@ -94,8 +94,6 @@ export interface P2PConfig {
 export class P2pProvider {
   private p2pConfig: P2PConfig = {}
   private libp2pNode: Libp2p | null = null
-  private discoveredNodes = new Map<string, string[]>()
-
   /**
    * Configure the internal libp2p node used for P2P transport.
    * Call this once before making P2P requests, e.g.:
@@ -106,7 +104,6 @@ export class P2pProvider {
    */
   public async setupP2P(config: P2PConfig): Promise<void> {
     this.p2pConfig = config
-    this.discoveredNodes.clear()
     if (this.libp2pNode) {
       Promise.resolve(this.libp2pNode.stop()).catch(() => {})
       this.libp2pNode = null
@@ -128,12 +125,14 @@ export class P2pProvider {
       return appendedPeerId(addr)
     }
 
-    // Check discovered nodes cache populated by peer:discovery events
-    const cached = this.discoveredNodes.get(peerId)
-    if (cached && cached.length > 0) {
-      const addr = cached[0]
-      return appendedPeerId(addr)
-    }
+    // Check peerStore (populated by peer:discovery, DHT, and connections)
+    try {
+      const peerData = await node.peerStore.get(peerIdFromString(peerId))
+      if (peerData?.addresses?.length > 0) {
+        const addr = peerData.addresses[0].multiaddr.toString()
+        return appendedPeerId(addr)
+      }
+    } catch {}
 
     // DHT lookup as last resort
     const dht = node.services.dht as KadDHT
@@ -149,11 +148,15 @@ export class P2pProvider {
     throw new Error(`No multiaddrs found for peer id ${peerId}`)
   }
 
-  /** Returns all peers discovered via mDNS or DHT bootstrap. */
-  public getDiscoveredNodes(): Array<{ peerId: string; multiaddrs: string[] }> {
-    return Array.from(this.discoveredNodes.entries()).map(([peerId, multiaddrs]) => ({
-      peerId,
-      multiaddrs
+  /** Returns all peers known to the peerStore (discovered via bootstrap, DHT, or connections). */
+  public async getDiscoveredNodes(): Promise<
+    Array<{ peerId: string; multiaddrs: string[] }>
+  > {
+    if (!this.libp2pNode) return []
+    const allPeers = await this.libp2pNode.peerStore.all()
+    return allPeers.map((peer) => ({
+      peerId: peer.id.toString(),
+      multiaddrs: peer.addresses.map((a) => a.multiaddr.toString())
     }))
   }
 
@@ -216,10 +219,6 @@ export class P2pProvider {
       const peerInfo = evt.detail
       if (!peerInfo?.id) return
       const peerId = peerInfo.id.toString()
-      this.discoveredNodes.set(
-        peerId,
-        (peerInfo.multiaddrs ?? []).map((m: any) => m.toString())
-      )
       if (
         node.getConnections().length < 100 &&
         node.getConnections(peerInfo.id).length === 0
@@ -353,20 +352,24 @@ export class P2pProvider {
       }
     }
 
-    const cached = this.discoveredNodes.get(peerIdStr)
-    if (cached) {
-      for (const addr of cached) {
-        try {
-          addAddr(multiaddr(addr))
-        } catch {}
+    try {
+      const peerData = await node.peerStore.get(peerId)
+      if (peerData?.addresses) {
+        for (const addr of peerData.addresses) {
+          addAddr(addr.multiaddr)
+        }
+        LoggerInstance.debug(
+          `[P2P] ${peerIdStr}: ${peerData.addresses.length} peerStore addrs`
+        )
       }
-      LoggerInstance.debug(`[P2P] ${peerIdStr}: ${cached.length} cached addrs`)
+    } catch {
+      LoggerInstance.debug(`[P2P] ${peerIdStr}: not in peerStore`)
     }
 
-    const cachedDialable = allAddrs.filter((ma) => this.isDialable(ma))
-    if (cachedDialable.length === 0) {
+    const knownDialable = allAddrs.filter((ma) => this.isDialable(ma))
+    if (knownDialable.length === 0) {
       LoggerInstance.debug(
-        `[P2P] ${peerIdStr}: no cached dialable addrs, querying DHT...`
+        `[P2P] ${peerIdStr}: no dialable addrs in peerStore, querying DHT...`
       )
       try {
         const dhtSignal = AbortSignal.timeout(this.p2pConfig.dhtLookupTimeout ?? 60_000)
@@ -380,7 +383,7 @@ export class P2pProvider {
       }
     } else {
       LoggerInstance.debug(
-        `[P2P] ${peerIdStr}: ${cachedDialable.length} cached dialable addrs, skipping DHT`
+        `[P2P] ${peerIdStr}: ${knownDialable.length} dialable addrs from peerStore, skipping DHT`
       )
     }
 
@@ -423,7 +426,7 @@ export class P2pProvider {
       throw new Error(
         `Cannot reach peer ${peerIdStr}. ` +
           (allAddrs.length > 0
-            ? `Found addrs: ${allAddrs.map(String).join(', ')} (none browser-dialable). `
+            ? `Found addrs: ${allAddrs.map(String).join(', ')} (none dialable). `
             : 'No addresses found. ') +
           `Active connections: ${node.getConnections().length}.`
       )
@@ -812,7 +815,10 @@ export class P2pProvider {
     resources: ComputeResourceRequest[],
     chainId: number,
     policyServer?: any,
-    signal?: AbortSignal
+    signal?: AbortSignal,
+    queueMaxWaitTime?: number,
+    dockerRegistryAuthData?: dockerRegistryAuth,
+    output?: ComputeOutput
   ): Promise<ProviderComputeInitializeResults> {
     const body: Record<string, any> = {
       datasets: assets,
@@ -823,6 +829,20 @@ export class P2pProvider {
       consumerAddress
     }
     if (policyServer) body.policyServer = policyServer
+    if (queueMaxWaitTime) body.queueMaxWaitTime = queueMaxWaitTime
+    if (dockerRegistryAuthData) {
+      const nodeKey = await this.getNodePublicKey(nodeUri)
+      if (nodeKey) {
+        body.encryptedDockerRegistryAuth = eciesencrypt(
+          nodeKey,
+          JSON.stringify(dockerRegistryAuthData)
+        )
+      }
+    }
+    if (output) {
+      const nodeKey = await this.getNodePublicKey(nodeUri)
+      if (nodeKey) body.output = eciesencrypt(nodeKey, JSON.stringify(output))
+    }
 
     return this.sendP2pCommand(
       nodeUri,

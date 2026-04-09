@@ -181,7 +181,10 @@ export class BaseProvider {
     resources: ComputeResourceRequest[],
     chainId: number,
     policyServer?: any,
-    signal?: AbortSignal
+    signal?: AbortSignal,
+    queueMaxWaitTime?: number,
+    dockerRegistryAuthData?: dockerRegistryAuth,
+    output?: ComputeOutput
   ): Promise<ProviderComputeInitializeResults> {
     return this.getImpl(nodeUri).initializeCompute(
       assets,
@@ -194,7 +197,10 @@ export class BaseProvider {
       resources,
       chainId,
       policyServer,
-      signal
+      signal,
+      queueMaxWaitTime,
+      dockerRegistryAuthData,
+      output
     )
   }
 
@@ -466,7 +472,9 @@ export class BaseProvider {
     return this.p2pProvider.setupP2P(config)
   }
 
-  public getDiscoveredNodes(): Array<{ peerId: string; multiaddrs: string[] }> {
+  public async getDiscoveredNodes(): Promise<
+    Array<{ peerId: string; multiaddrs: string[] }>
+  > {
     return this.p2pProvider.getDiscoveredNodes()
   }
 
