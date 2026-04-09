@@ -127,3 +127,21 @@ export const PROTOCOL_COMMANDS = {
   GET_LOGS: 'getLogs',
   JOBS: 'jobs'
 }
+
+export interface NodeLogsParams {
+  logId?: string
+  startTime?: string
+  endTime?: string
+  maxLogs?: number
+  moduleName?: string
+  level?: string
+  page?: number
+}
+
+export interface NodeLogEntry {
+  timestamp: string
+  level: string
+  moduleName: string
+  message: string
+  meta?: Record<string, any>
+}

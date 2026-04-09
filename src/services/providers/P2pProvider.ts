@@ -36,7 +36,7 @@ import {
   NodeStatus,
   NodeComputeJob
 } from '../../@types/index.js'
-import { PROTOCOL_COMMANDS } from '../../@types/Provider.js'
+import { PROTOCOL_COMMANDS, NodeLogsParams, NodeLogEntry } from '../../@types/Provider.js'
 import { type DDO, type ValidateMetadata } from '@oceanprotocol/ddo-js'
 import { signRequest } from '../../utils/SignatureUtils.js'
 import { getConsumerAddress, getSignature, getAuthorization } from './BaseProvider.js'
@@ -1404,7 +1404,7 @@ export class P2pProvider {
     level?: string,
     page?: number,
     signal?: AbortSignal
-  ): Promise<any> {
+  ): Promise<NodeLogEntry[]> {
     const consumerAddress = await signer.getAddress()
     const nonce = ((await this.getNonce(nodeUri, consumerAddress, signal)) + 1).toString()
     const signature = await this.getSignature(signer, nonce, PROTOCOL_COMMANDS.GET_LOGS)
@@ -1422,6 +1422,25 @@ export class P2pProvider {
     if (page) body.page = page
 
     return this.sendP2pCommand(nodeUri, PROTOCOL_COMMANDS.GET_LOGS, body, signer, signal)
+  }
+
+  /**
+   * Fetch node logs via P2P with a pre-signed payload.
+   * P2P only — use downloadNodeLogs() for the auto-signed variant.
+   */
+  public async fetchNodeLogs(
+    nodeUri: string | Multiaddr[],
+    address: string,
+    signature: string,
+    nonce: string,
+    logParams?: NodeLogsParams
+  ): Promise<NodeLogEntry[]> {
+    return this.sendP2pCommand(nodeUri, PROTOCOL_COMMANDS.GET_LOGS, {
+      address,
+      signature,
+      nonce,
+      ...logParams
+    })
   }
 
   /**

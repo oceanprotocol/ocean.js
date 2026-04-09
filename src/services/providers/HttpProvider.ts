@@ -20,7 +20,8 @@ import {
   dockerRegistryAuth,
   ComputeResultStream,
   NodeStatus,
-  NodeComputeJob
+  NodeComputeJob,
+  NodeLogEntry
 } from '../../@types/index.js'
 import { PROTOCOL_COMMANDS } from '../../@types/Provider.js'
 import { type DDO, type ValidateMetadata } from '@oceanprotocol/ddo-js'
@@ -1439,7 +1440,7 @@ export class HttpProvider {
     level?: string,
     page?: number,
     signal?: AbortSignal
-  ): Promise<any> {
+  ): Promise<NodeLogEntry[]> {
     const providerEndpoints = await this.getEndpoints(nodeUri)
     const serviceEndpoints = await this.getServiceEndpoints(nodeUri, providerEndpoints)
 

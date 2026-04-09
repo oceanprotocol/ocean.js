@@ -21,7 +21,9 @@ import {
   dockerRegistryAuth,
   DownloadResponse,
   NodeStatus,
-  NodeComputeJob
+  NodeComputeJob,
+  NodeLogsParams,
+  NodeLogEntry
 } from '../../@types/index.js'
 import { type DDO, type ValidateMetadata } from '@oceanprotocol/ddo-js'
 import { decodeJwt } from '../../utils/Jwt.js'
@@ -439,7 +441,7 @@ export class BaseProvider {
     level?: string,
     page?: number,
     signal?: AbortSignal
-  ): Promise<any> {
+  ): Promise<NodeLogEntry[]> {
     return this.getImpl(nodeUri).downloadNodeLogs(
       nodeUri,
       signer,
@@ -484,6 +486,20 @@ export class BaseProvider {
 
   public async getMultiaddrFromPeerId(peerId: string): Promise<string> {
     return this.p2pProvider.getMultiaddrFromPeerId(peerId)
+  }
+
+  /**
+   * Fetch node logs via P2P with a pre-signed payload.
+   * For auto-signed log fetching (HTTP or P2P), use downloadNodeLogs().
+   */
+  public async fetchNodeLogs(
+    nodeUri: string | Multiaddr[],
+    address: string,
+    signature: string,
+    nonce: string,
+    logParams?: NodeLogsParams
+  ): Promise<NodeLogEntry[]> {
+    return this.p2pProvider.fetchNodeLogs(nodeUri, address, signature, nonce, logParams)
   }
 
   public async fetchConfig(
