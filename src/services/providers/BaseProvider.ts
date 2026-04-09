@@ -472,6 +472,10 @@ export class BaseProvider {
     return this.p2pProvider.setupP2P(config)
   }
 
+  public getLibp2pNode() {
+    return this.p2pProvider.getLibp2pNode()
+  }
+
   public async getDiscoveredNodes(): Promise<
     Array<{ peerId: string; multiaddrs: string[] }>
   > {

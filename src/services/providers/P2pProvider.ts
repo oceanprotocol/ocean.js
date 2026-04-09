@@ -148,6 +148,11 @@ export class P2pProvider {
     throw new Error(`No multiaddrs found for peer id ${peerId}`)
   }
 
+  /** Returns the underlying libp2p node instance, or null if P2P is not initialized. */
+  public getLibp2pNode(): Libp2p | null {
+    return this.libp2pNode ?? null
+  }
+
   /** Returns all peers known to the peerStore (discovered via bootstrap, DHT, or connections). */
   public async getDiscoveredNodes(): Promise<
     Array<{ peerId: string; multiaddrs: string[] }>
