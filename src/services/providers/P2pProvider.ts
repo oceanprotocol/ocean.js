@@ -1234,24 +1234,45 @@ export class P2pProvider {
   }
 
   /**
-   * Generate an auth token via P2P.
+   * Generate an auth token via P2P (auto-signs with Signer).
    */
   public async generateAuthToken(
     consumer: Signer,
     nodeUri: string | Multiaddr[],
     signal?: AbortSignal
   ): Promise<string> {
-    const consumerAddress = await consumer.getAddress()
-    const nonce = ((await this.getNonce(nodeUri, consumerAddress, signal)) + 1).toString()
+    const address = await consumer.getAddress()
+    const nonce = ((await this.getNonce(nodeUri, address, signal)) + 1).toString()
     const signature = await this.getSignature(
       consumer,
       nonce,
       PROTOCOL_COMMANDS.CREATE_AUTH_TOKEN
     )
+
     const result = await this.sendP2pCommand(
       nodeUri,
       PROTOCOL_COMMANDS.CREATE_AUTH_TOKEN,
-      { address: consumerAddress, signature, nonce },
+      { address, signature, nonce },
+      null,
+      signal
+    )
+    return result?.token ?? result
+  }
+
+  /**
+   * Generate an auth token from a pre-signed request (no Signer needed).
+   */
+  public async generateSignedAuthToken(
+    address: string,
+    signature: string,
+    nonce: string,
+    nodeUri: string | Multiaddr[],
+    signal?: AbortSignal
+  ): Promise<string> {
+    const result = await this.sendP2pCommand(
+      nodeUri,
+      PROTOCOL_COMMANDS.CREATE_AUTH_TOKEN,
+      { address, signature, nonce },
       null,
       signal
     )

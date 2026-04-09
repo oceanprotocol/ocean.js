@@ -382,6 +382,22 @@ export class BaseProvider {
     return this.getImpl(nodeUri).generateAuthToken(consumer, nodeUri, signal)
   }
 
+  public async generateSignedAuthToken(
+    address: string,
+    signature: string,
+    nonce: string,
+    nodeUri: string | Multiaddr[],
+    signal?: AbortSignal
+  ): Promise<string> {
+    return this.p2pProvider.generateSignedAuthToken(
+      address,
+      signature,
+      nonce,
+      nodeUri,
+      signal
+    )
+  }
+
   public async invalidateAuthToken(
     consumer: Signer,
     token: string,
