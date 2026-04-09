@@ -253,7 +253,7 @@ export class P2pProvider {
     // all implementations are clients
     this.libp2pNode.handle('/ocean/client/1.0.0', this.handleProtocolCommands)
     for (const role of this.p2pConfig.additionalRoles) {
-      this.libp2pNode.handle(`'/ocean/client/${role}/1.0.0'`, this.handleProtocolCommands)
+      this.libp2pNode.handle(`/ocean/client/${role}/1.0.0`, this.handleProtocolCommands)
     }
     return node
   }
