@@ -19,7 +19,9 @@ describe('P2P connection warmup', () => {
     await ProviderInstance.setupP2P({ bootstrapPeers })
     while (
       (await ProviderInstance.getDiscoveredNodes()).length === 0 ||
-      !(await ProviderInstance.getDiscoveredNodes()).find((node) => node.peerId === nodeUrl)
+      !(await ProviderInstance.getDiscoveredNodes()).find(
+        (node) => node.peerId === nodeUrl
+      )
     ) {
       console.log(`Waiting for P2P node to be discovered...`)
       await new Promise((resolve) => setTimeout(resolve, 2000))
