@@ -48,6 +48,37 @@ const DEFAULT_MAX_RETRIES = 5
 const DEFAULT_RETRY_DELAY_MS = 1000
 const DEFAULT_DIAL_TIMEOUT_MS = 10_000
 
+/**
+ * Optional request payload sent as LP frames after the command JSON; ends with an empty LP frame.
+ * This mirrors ocean-node's `p2pStreamBody` mechanism introduced for true streaming uploads.
+ */
+export type P2PRequestBodyStream = AsyncIterable<Uint8Array | ArrayBufferView | string>
+
+function toUint8ArrayChunk(chunk: unknown): Uint8Array {
+  if (chunk instanceof Uint8Array) return chunk
+  if (typeof chunk === 'string') return new TextEncoder().encode(chunk)
+  if (
+    chunk &&
+    typeof chunk === 'object' &&
+    ArrayBuffer.isView(chunk as ArrayBufferView)
+  ) {
+    const v = chunk as ArrayBufferView
+    return new Uint8Array(v.buffer, v.byteOffset, v.byteLength)
+  }
+  throw new Error('Unsupported chunk type for P2P request body')
+}
+
+async function writeP2pRequestBodyLp(
+  lp: ReturnType<typeof lpStream>,
+  body: P2PRequestBodyStream,
+  signal: AbortSignal
+): Promise<void> {
+  for await (const chunk of body as AsyncIterable<unknown>) {
+    await lp.write(toUint8ArrayChunk(chunk), { signal })
+  }
+  await lp.write(new Uint8Array(0), { signal })
+}
+
 // Ocean Protocol public bootstrap nodes (WebSocket addresses)
 const DEFAULT_BOOTSTRAP_PEERS = [
   '/dns4/bootstrap1.oncompute.ai/tcp/9001/ws/p2p/16Uiu2HAmLhRDqfufZiQnxvQs2XHhd6hwkLSPfjAQg1gH8wgRixiP',
@@ -458,7 +489,8 @@ export class P2pProvider {
   private async dialAndStream(
     nodeUri: string | Multiaddr[],
     payload: Record<string, any>,
-    signal?: AbortSignal
+    signal?: AbortSignal,
+    requestBody?: P2PRequestBodyStream
   ): Promise<{
     lp: ReturnType<typeof lpStream>
     firstBytes: Uint8Array
@@ -474,9 +506,17 @@ export class P2pProvider {
       })
       const lp = lpStream(stream)
 
-      await lp.write(new TextEncoder().encode(JSON.stringify(payload)), {
+      let outboundPayload = payload
+      if (requestBody) {
+        outboundPayload = { ...payload, p2pStreamBody: true }
+      }
+
+      await lp.write(new TextEncoder().encode(JSON.stringify(outboundPayload)), {
         signal: opSignal
       })
+      if (requestBody) {
+        await writeP2pRequestBodyLp(lp, requestBody, opSignal)
+      }
       await stream.close()
 
       const firstChunk = await lp.read({ signal: opSignal })
@@ -498,7 +538,8 @@ export class P2pProvider {
     body: Record<string, any>,
     signerOrAuthToken?: Signer | string | null,
     signal?: AbortSignal,
-    retrialNumber: number = 0
+    retrialNumber: number = 0,
+    requestBody?: P2PRequestBodyStream
   ): Promise<any> {
     try {
       const payload = {
@@ -509,7 +550,12 @@ export class P2pProvider {
         ...body
       }
 
-      const { lp, firstBytes } = await this.dialAndStream(nodeUri, payload, signal)
+      const { lp, firstBytes } = await this.dialAndStream(
+        nodeUri,
+        payload,
+        signal,
+        requestBody
+      )
 
       if (!firstBytes.length) {
         throw new Error('Gateway node error: no response from peer')
@@ -591,7 +637,8 @@ export class P2pProvider {
           body,
           signerOrAuthToken,
           signal,
-          retrialNumber + 1
+          retrialNumber + 1,
+          requestBody
         )
       }
 
@@ -615,7 +662,8 @@ export class P2pProvider {
           body,
           signerOrAuthToken,
           signal,
-          retrialNumber + 1
+          retrialNumber + 1,
+          requestBody
         )
       }
       throw new Error(`P2P command error: ${msg}`)
