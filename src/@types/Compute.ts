@@ -110,6 +110,29 @@ export interface ComputeJob {
   }
 }
 
+export interface ComputeJobPayment {
+  chainId: number
+  token: string
+  lockTx: string | null
+  claimTx: string | null
+  cancelTx: string | null
+  cost: number
+}
+
+export interface NodeComputeJob extends ComputeJob {
+  environment?: string
+  stopRequested?: boolean
+  resources?: ComputeResourceRequest[]
+  isFree?: boolean
+  algoStartTimestamp?: string
+  algoStopTimestamp?: string
+  payment?: ComputeJobPayment
+  algoDuration?: number
+  queueMaxWaitTime?: number
+  jobIdHash?: string
+  maxJobDuration?: number
+}
+
 export interface ComputeOutputEncryption {
   encryptMethod: EncryptMethod.AES // in future we will support more ciphers
   key: string // AES symetric key
@@ -168,3 +191,5 @@ export interface dockerRegistryAuth {
   password?: string
   auth?: string
 }
+
+export type ComputeResultStream = AsyncIterable<Uint8Array>

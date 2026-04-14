@@ -42,6 +42,48 @@ export interface ServiceEndpoint {
   method: string
   urlPath: string
 }
+
+export interface NodeStatusProvider {
+  chainId: string
+  network: string
+}
+
+export interface NodeStatusIndexer {
+  chainId: string
+  network: string
+  block: string
+}
+
+export interface NodeStatus {
+  id: string
+  publicKey: string
+  friendlyName: string
+  address: string
+  version: string
+  http: boolean
+  p2p: boolean
+  provider: NodeStatusProvider[]
+  indexer: NodeStatusIndexer[]
+  escrowAddress: Record<string, string>
+  supportedStorage: Record<string, boolean>
+  platform: {
+    cpus: number
+    freemem: number
+    totalmem: number
+    loadavg: number[]
+    arch: string
+    machine: string
+    platform: string
+    osType: string
+    node: string
+  }
+  codeHash: string
+  allowedAdmins: {
+    addresses: string[]
+    accessLists: string[] | null
+  }
+  uptime: number
+}
 export interface UserCustomParameters {
   [key: string]: any
 }
@@ -84,4 +126,22 @@ export const PROTOCOL_COMMANDS = {
   PUSH_CONFIG: 'pushConfig',
   GET_LOGS: 'getLogs',
   JOBS: 'jobs'
+}
+
+export interface NodeLogsParams {
+  logId?: string
+  startTime?: string
+  endTime?: string
+  maxLogs?: number
+  moduleName?: string
+  level?: string
+  page?: number
+}
+
+export interface NodeLogEntry {
+  timestamp: string
+  level: string
+  moduleName: string
+  message: string
+  meta?: Record<string, any>
 }

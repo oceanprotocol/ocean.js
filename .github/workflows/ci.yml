@@ -1,9 +1,9 @@
-name: 'CI'
+name: "CI"
 
 on:
   pull_request:
     branches:
-      - main
+      - '**'
 
 jobs:
   lint:
@@ -12,7 +12,7 @@ jobs:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: "22"
       - name: Cache node_modules
         uses: actions/cache@v4
         env:
@@ -31,7 +31,7 @@ jobs:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: "22"
       - name: Cache node_modules
         uses: actions/cache@v4
         env:
@@ -47,8 +47,8 @@ jobs:
       - name: Checkout Barge
         uses: actions/checkout@v3
         with:
-          repository: 'oceanprotocol/barge'
-          path: 'barge'
+          repository: "oceanprotocol/barge"
+          path: "barge"
 
       - name: Set Database Environment Variables
         run: |
@@ -60,7 +60,7 @@ jobs:
       - name: Run Ganache with Barge
         working-directory: ${{ github.workspace }}/barge
         run: |
-          bash -x start_ocean.sh --with-typesense 2>&1 > start_ocean.log &
+          bash -x start_ocean.sh 2>&1 > start_ocean.log &
 
       - name: Install deps & build
         run: npm ci && npm run build:metadata
@@ -78,7 +78,11 @@ jobs:
             if [ $attempt -eq $max_attempts ]; then
               echo "Error: Node container failed to start within 300 seconds"
               docker ps -a
-              docker inspect ocean-node-1
+              docker inspect ocean-node-1 || true
+              echo "=== Barge startup script output ==="
+              cat ${{ github.workspace }}/barge/start_ocean.log || true
+              echo "=== Ocean Node Logs ==="
+              docker logs ocean-node-1 2>&1 | tail -100 || true
               exit 1
             fi
             sleep 10
@@ -91,13 +95,23 @@ jobs:
           path: coverage/
 
   test_integration:
+    name: test_integration (${{ matrix.transport }})
     runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - transport: http
+            node_endpoint: "http://127.0.0.1:8001"
+          - transport: p2p
+            node_endpoint: "16Uiu2HAmRkJeRYRghP3ETQCpdz8NsQzQE9RpSST7i5YNgWqH4dVE"
 
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: "22"
       - name: Cache node_modules
         uses: actions/cache@v4
         env:
@@ -115,8 +129,8 @@ jobs:
       - name: Checkout Barge
         uses: actions/checkout@v3
         with:
-          repository: 'oceanprotocol/barge'
-          path: 'barge'
+          repository: "oceanprotocol/barge"
+          path: "barge"
 
       - name: Login to Docker Hub
         if: ${{ env.DOCKERHUB_PASSWORD && env.DOCKERHUB_USERNAME }}
@@ -136,7 +150,7 @@ jobs:
       - name: Run Barge
         working-directory: ${{ github.workspace }}/barge
         run: |
-          bash -x start_ocean.sh --with-typesense 2>&1 > start-node.log &
+          bash -x start_ocean.sh 2>&1 > start-node.log &
 
       - name: Install deps & build
         run: npm ci && npm run build:metadata
@@ -170,15 +184,23 @@ jobs:
             attempt=$((attempt + 1))
           done
 
-      - name: integration
-        run: npm run test:integration:cover
+      - name: integration (${{ matrix.transport }})
+        run: |
+          if [ "${{ matrix.transport }}" = "http" ]; then
+            npm run test:integration:cover
+          else
+            npm run test:integration
+          fi
         env:
           INDEXING_RETRY_INTERVAL: 4000
           INDEXING_MAX_RETRIES: 120
-          NODE_URL: 'http://127.0.0.1:8001'
+          NODE_ENDPOINT: ${{ matrix.node_endpoint }}
 
       - name: docker logs
         run: |
+          echo "=== Barge startup script output ==="
+          cat ${{ github.workspace }}/barge/start-node.log || true
+          echo ""
           echo "=== Ocean Contracts Logs ==="
           docker logs ocean-ocean-contracts-1 2>&1 || echo "Container not found"
           echo ""
@@ -187,6 +209,7 @@ jobs:
         if: ${{ failure() }}
 
       - name: Upload coverage
+        if: matrix.transport == 'http'
         uses: actions/upload-artifact@v4
         with:
           name: coverage-integration
@@ -199,7 +222,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
-        node: ['20', '18']
+        node: ["22", "20"]
 
     steps:
       - uses: actions/checkout@v3
@@ -237,13 +260,13 @@ jobs:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: "22"
 
       - name: checkout ocean.js repo
         uses: actions/checkout@v3
         with:
-          repository: 'oceanprotocol/ocean.js'
-          path: 'ocean.js'
+          repository: "oceanprotocol/ocean.js"
+          path: "ocean.js"
           ref: ${{ github.event.pull_request.head.sha }}
 
       - name: setup git config

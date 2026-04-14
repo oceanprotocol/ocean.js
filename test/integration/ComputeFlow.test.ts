@@ -48,13 +48,10 @@ let resolvedDdoWithNoTimeout
 let resolvedAlgoDdoWith2mTimeout
 let resolvedAlgoDdoWithNoTimeout
 
-let freeEnvDatasetTxId
-let freeEnvAlgoTxId
 let paidEnvDatasetTxId
 let paidEnvAlgoTxId
 let computeValidUntil
 let escrow: EscrowContract
-let freeComputeRouteSupport = null
 
 const computeJobDuration = 60 * 15 // 15 minutes
 let computeMinutes: number
@@ -245,33 +242,12 @@ function delay(interval: number) {
   }).timeout(interval + 200)
 }
 
-async function waitTillJobEnds(): Promise<number> {
-  return new Promise((resolve) => {
-    const interval = setInterval(async () => {
-      const jobStatus = (await ProviderInstance.computeStatus(
-        providerUrl,
-        await consumerAccount.getAddress(),
-        freeComputeJobId
-      )) as ComputeJob
-      if (jobStatus?.[0]?.status === 70) {
-        clearInterval(interval)
-        resolve(jobStatus.status)
-      }
-    }, 10000)
-  })
-}
-
 describe('Compute flow tests', async () => {
   before(async () => {
     publisherAccount = (await provider.getSigner(0)) as Signer
     consumerAccount = (await provider.getSigner(1)) as Signer
     config = await getTestConfig(publisherAccount)
     aquarius = new Aquarius(config?.oceanNodeUri)
-
-    if (process.env.NODE_URL) {
-      config.oceanNodeUri = process.env.NODE_URL
-    }
-
     providerUrl = config?.oceanNodeUri
     addresses = getAddresses()
     paymentToken = addresses.Ocean
@@ -443,37 +419,22 @@ describe('Compute flow tests', async () => {
       meta: resolvedAlgoDdoWith2mTimeout.metadata.algorithm
     }
 
-    freeComputeRouteSupport = await ProviderInstance.getComputeStartRoutes(
+    const computeJobs = await ProviderInstance.freeComputeStart(
       providerUrl,
-      true
+      consumerAccount,
+      computeEnv.id,
+      assets,
+      algo
     )
-    if (freeComputeRouteSupport) {
-      const computeJobs = await ProviderInstance.freeComputeStart(
-        providerUrl,
-        consumerAccount,
-        computeEnv.id,
-        assets,
-        algo
-      )
-      console.log('Compute jobs: ', computeJobs)
-      freeEnvDatasetTxId = assets[0].transferTxId
-      freeEnvAlgoTxId = algo.transferTxId
-      assert(computeJobs, 'Cannot start compute job')
-      freeComputeJobId = computeJobs[0].jobId
-    } else {
-      assert(
-        freeComputeRouteSupport === null,
-        'Cannot start free compute job. provider at ' +
-          providerUrl +
-          ' does not implement freeCompute route'
-      )
-    }
+    console.log('Compute jobs: ', computeJobs)
+    assert(computeJobs, 'Cannot start compute job')
+    freeComputeJobId = computeJobs[0].jobId
   }).timeout(40000)
 
   it('Check compute status', async () => {
     const jobStatus = (await ProviderInstance.computeStatus(
       providerUrl,
-      await consumerAccount.getAddress(),
+      consumerAccount,
       freeComputeJobId
     )) as ComputeJob
     assert(jobStatus, 'Cannot retrieve compute status!')
@@ -528,7 +489,7 @@ describe('Compute flow tests', async () => {
         paymentToken,
         computeValidUntil,
         providerUrl,
-        consumerAccount,
+        await consumerAccount.getAddress(),
         resources,
         Number(chainId)
       )
@@ -577,7 +538,7 @@ describe('Compute flow tests', async () => {
       paymentToken,
       computeValidUntil,
       providerUrl,
-      consumerAccount,
+      await consumerAccount.getAddress(),
       resources,
       Number(chainId)
     )
@@ -702,7 +663,7 @@ describe('Compute flow tests', async () => {
   it('Check compute status', async () => {
     const jobStatus = (await ProviderInstance.computeStatus(
       providerUrl,
-      await consumerAccount.getAddress(),
+      consumerAccount,
       paidComputeJobId,
       resolvedDdoWith2mTimeout.id
     )) as ComputeJob
@@ -753,7 +714,7 @@ describe('Compute flow tests', async () => {
       paymentToken,
       computeJobDuration,
       providerUrl,
-      consumerAccount,
+      await consumerAccount.getAddress(),
       resources,
       Number(chainId)
     )
@@ -797,11 +758,14 @@ describe('Compute flow tests', async () => {
   })
 
   // move to reuse Orders
-  const delayTimeout = Math.max(
-    resolvedDdoWith2mTimeout.services[0].timeout * 1000 + 1000,
-    resolvedAlgoDdoWith2mTimeout.services[0].timeout * 1000 + 1000
-  )
-  delay(delayTimeout)
+  it('should delay', function (done) {
+    const delayTimeout = Math.max(
+      resolvedDdoWith2mTimeout.services[0].timeout * 1000 + 1000,
+      resolvedAlgoDdoWith2mTimeout.services[0].timeout * 1000 + 1000
+    )
+    this.timeout(delayTimeout + 200)
+    setTimeout(() => done(), delayTimeout)
+  })
 
   it('should start a computeJob using the paid resources, by paying the assets providerFees (reuseOrder) and paying escrow lock for max job duration', async () => {
     const { chainId } = await consumerAccount.provider.getNetwork()
@@ -845,7 +809,7 @@ describe('Compute flow tests', async () => {
       paymentToken,
       computeValidUntil,
       providerUrl,
-      consumerAccount,
+      await consumerAccount.getAddress(),
       resources,
       Number(chainId)
     )
@@ -921,7 +885,7 @@ describe('Compute flow tests', async () => {
   it('Check compute status', async () => {
     const jobStatus = (await ProviderInstance.computeStatus(
       providerUrl,
-      await consumerAccount.getAddress(),
+      consumerAccount,
       freeComputeJobId,
       resolvedDdoWith2mTimeout.id
     )) as ComputeJob
@@ -937,4 +901,19 @@ describe('Compute flow tests', async () => {
     )
     assert(downloadURL, 'Provider getComputeResultUrl failed!')
   })
+
+  it('Get compute result as stream', async () => {
+    const stream = await ProviderInstance.getComputeResult(
+      providerUrl,
+      consumerAccount,
+      freeComputeJobId,
+      0
+    )
+    assert(stream, 'getComputeResult returned no stream')
+    let totalBytes = 0
+    for await (const chunk of stream) {
+      totalBytes += chunk.length
+    }
+    assert(totalBytes > 0, 'getComputeResult stream returned no bytes')
+  }).timeout(60000)
 })

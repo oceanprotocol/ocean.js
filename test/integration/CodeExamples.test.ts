@@ -104,6 +104,7 @@ import {
   sendTx,
   ConfigHelper,
   configHelperNetworks,
+  getNodeEndpointConfig,
   amountToUnits,
   getEventFromTx,
   LoggerInstance
@@ -206,9 +207,7 @@ describe('Marketplace flow tests', async () => {
     const config = new ConfigHelper().getConfig(
       parseInt(String((await publisherAccount.provider.getNetwork()).chainId))
     )
-    if (process.env.NODE_URL) {
-      config.oceanNodeUri = process.env.NODE_URL
-    }
+    Object.assign(config, getNodeEndpointConfig())
     aquarius = new Aquarius(config?.oceanNodeUri)
     providerUrl = config?.oceanNodeUri
     addresses = JSON.parse(

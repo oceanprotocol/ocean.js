@@ -29,16 +29,21 @@ export function downloadFileBrowser(url: string): void {
 }
 
 /**
- * Triggers  a file download from the specified URL when called from a browser context.
- * @param {string} url - The URL of the file to download
- * @param {number} [index] - The file index
- * @returns {Promise<void>} - A Promise that resolves when the file has been downloaded
+ * Downloads a file from a URL, or passes through an already-collected DownloadResponse
+ * (returned by P2P transport).
+ * @param {string | DownloadResponse} urlOrData - HTTP URL or pre-collected P2P response
+ * @param {number} [index] - The file index, used as fallback filename for URL downloads
+ * @returns {Promise<DownloadResponse>}
  */
 export async function downloadFile(
-  url: string,
+  urlOrData: string | DownloadResponse,
   index?: number
 ): Promise<DownloadResponse> {
-  const response = await fetch(url)
+  if (typeof urlOrData !== 'string') {
+    return urlOrData
+  }
+
+  const response = await fetch(urlOrData)
   if (!response.ok) {
     throw new Error('Response error.')
   }
@@ -49,7 +54,7 @@ export async function downloadFile(
       .match(/attachment;filename=(.+)/)[1]
   } catch {
     try {
-      filename = url.split('/').pop()
+      filename = urlOrData.split('/').pop()
     } catch {
       filename = `file${index}`
     }

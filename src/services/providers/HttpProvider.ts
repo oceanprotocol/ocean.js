@@ -1,0 +1,1590 @@
+import fetch from 'cross-fetch'
+import { Signer } from 'ethers'
+import { LoggerInstance } from '../../utils/Logger.js'
+import {
+  StorageObject,
+  FileInfo,
+  ComputeJob,
+  ComputeOutput,
+  ComputeAlgorithm,
+  ComputeAsset,
+  ComputeEnvironment,
+  ProviderInitialize,
+  ProviderComputeInitializeResults,
+  ServiceEndpoint,
+  UserCustomParameters,
+  ComputeResourceRequest,
+  ComputeJobMetadata,
+  PolicyServerInitializeCommand,
+  PolicyServerPassthroughCommand,
+  dockerRegistryAuth,
+  ComputeResultStream,
+  NodeStatus,
+  NodeComputeJob,
+  NodeLogEntry
+} from '../../@types/index.js'
+import { PROTOCOL_COMMANDS } from '../../@types/Provider.js'
+import { type DDO, type ValidateMetadata } from '@oceanprotocol/ddo-js'
+import { eciesencrypt } from '../../utils/eciesencrypt.js'
+import { signRequest } from '../../utils/SignatureUtils.js'
+import { getConsumerAddress, getSignature, getAuthorization } from './BaseProvider.js'
+
+export class HttpProvider {
+  protected getConsumerAddress(s: Signer | string) {
+    return getConsumerAddress(s)
+  }
+
+  protected getSignature(s: Signer | string, nonce: string, command: string) {
+    return getSignature(s, nonce, command)
+  }
+
+  protected getAuthorization(s: Signer | string) {
+    return getAuthorization(s)
+  }
+
+  /**
+   * Returns the provider endpoints
+   * @param {string} nodeUri - the provider url
+   * @return {Promise<any>}
+   */
+  async getEndpoints(nodeUri: string, authorization?: string): Promise<any> {
+    try {
+      const endpoints = await this.getData(nodeUri, authorization)
+      return await endpoints.json()
+    } catch (e) {
+      LoggerInstance.error('Finding the service endpoints failed:', e)
+      throw new Error('HTTP request failed calling Provider')
+    }
+  }
+
+  public async getNodeStatus(nodeUri: string, signal?: AbortSignal): Promise<NodeStatus> {
+    const providerEndpoints = await this.getEndpoints(nodeUri)
+    const serviceEndpoints = await this.getServiceEndpoints(nodeUri, providerEndpoints)
+    const endpoint = this.getEndpointURL(serviceEndpoints, 'directCommand')
+    if (!endpoint?.urlPath) return null
+    try {
+      const response = await fetch(endpoint.urlPath, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ command: PROTOCOL_COMMANDS.STATUS }),
+        signal
+      })
+      if (response?.ok) return response.json()
+      return null
+    } catch (e) {
+      LoggerInstance.error('getNodeStatus failed:', e)
+      return null
+    }
+  }
+
+  public async getNodeJobs(
+    nodeUri: string,
+    fromTimestamp?: number,
+    signal?: AbortSignal
+  ): Promise<NodeComputeJob[]> {
+    const providerEndpoints = await this.getEndpoints(nodeUri)
+    const serviceEndpoints = await this.getServiceEndpoints(nodeUri, providerEndpoints)
+    const endpoint = this.getEndpointURL(serviceEndpoints, 'jobs')
+    if (!endpoint?.urlPath) return []
+    let url = endpoint.urlPath
+    if (fromTimestamp) url += `?fromTimestamp=${fromTimestamp}`
+    try {
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+        signal
+      })
+      if (response?.ok) {
+        const data = await response.json()
+        return Array.isArray(data?.jobs) ? data.jobs : []
+      }
+      return []
+    } catch (e) {
+      LoggerInstance.error('getNodeJobs failed:', e)
+      return []
+    }
+  }
+
+  /**
+   * Returns the node public key
+   * @return {string} The node public key
+   */
+  private async getNodePublicKey(nodeUri: string): Promise<string> {
+    const providerEndpoints = await this.getEndpoints(nodeUri)
+    return providerEndpoints.nodePublicKey
+  }
+
+  /**
+   * This function returns the endpoint URL for a given service name.
+   * @param {ServiceEndpoint[]} servicesEndpoints - The array of service endpoints
+   * @param {string} serviceName - The name of the service
+   * @returns {ServiceEndpoint} The endpoint URL for the given service name
+   */
+  getEndpointURL(
+    servicesEndpoints: ServiceEndpoint[],
+    serviceName: string
+  ): ServiceEndpoint {
+    if (!servicesEndpoints) return null
+    return servicesEndpoints.find(
+      (s) => s.serviceName.toLowerCase() === serviceName.toLowerCase()
+    ) as ServiceEndpoint
+  }
+
+  /**
+   * This function returns an array of service endpoints for a given provider endpoint.
+   * @param {string} providerEndpoint - The provider endpoint
+   * @param {any} endpoints - The endpoints object
+   * @returns {ServiceEndpoint[]} An array of service endpoints
+   */
+  public async getServiceEndpoints(providerEndpoint: string, endpoints: any) {
+    const serviceEndpoints: ServiceEndpoint[] = []
+    for (const i in endpoints.serviceEndpoints) {
+      const endpoint: ServiceEndpoint = {
+        serviceName: i,
+        method: endpoints.serviceEndpoints[i][0],
+        urlPath:
+          providerEndpoint.replace(/\/+$/, '') +
+          '/' +
+          endpoints.serviceEndpoints[i][1].replace(/^\/+/, '')
+      }
+      serviceEndpoints.push(endpoint)
+    }
+    return serviceEndpoints
+  }
+
+  /**
+   * Get current nonce from the provider.
+   * @param {string} nodeUri provider uri address
+   * @param {string} consumerAddress Publisher address
+   * @param {AbortSignal} signal abort signal
+   * @param {string} providerEndpoints Identifier of the asset to be registered in ocean
+   * @param {string} serviceEndpoints document description object (DDO)=
+   * @return {Promise<string>} urlDetails
+   */
+  public async getNonce(
+    nodeUri: string,
+    consumerAddress: string,
+    signal?: AbortSignal,
+    providerEndpoints?: any,
+    serviceEndpoints?: ServiceEndpoint[]
+  ): Promise<number> {
+    if (!providerEndpoints) {
+      providerEndpoints = await this.getEndpoints(nodeUri)
+    }
+    if (!serviceEndpoints) {
+      serviceEndpoints = await this.getServiceEndpoints(nodeUri, providerEndpoints)
+    }
+    const path = this.getEndpointURL(serviceEndpoints, 'nonce')
+      ? this.getEndpointURL(serviceEndpoints, 'nonce').urlPath
+      : null
+    if (!path) return null
+    try {
+      const response = await fetch(path + `?userAddress=${consumerAddress}`, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+        signal
+      })
+      const { nonce } = await response.json()
+      const sanitizedNonce = !nonce || nonce === null ? 0 : Number(nonce)
+      return sanitizedNonce
+    } catch (e) {
+      LoggerInstance.error(e)
+      throw new Error(e.message)
+    }
+  }
+
+  /**
+   * Encrypt data using the Provider's own symmetric key
+   * @param {string} data data in json format that needs to be sent , it can either be a DDO or a File array
+   * @param {number} chainId network's id so provider can choose the corresponding Signer object
+   * @param {string} nodeUri provider uri address
+   * @param {AbortSignal} signal abort signal
+   * @return {Promise<string>} urlDetails
+   */
+  public async encrypt(
+    data: any,
+    chainId: number,
+    nodeUri: string,
+    signerOrAuthToken: Signer | string,
+    policyServer?: any,
+    signal?: AbortSignal
+  ): Promise<string> {
+    const providerEndpoints = await this.getEndpoints(nodeUri)
+    const serviceEndpoints = await this.getServiceEndpoints(nodeUri, providerEndpoints)
+    const consumerAddress = await this.getConsumerAddress(signerOrAuthToken)
+    const nonce = (
+      (await this.getNonce(
+        nodeUri,
+        consumerAddress,
+        signal,
+        providerEndpoints,
+        serviceEndpoints
+      )) + 1
+    ).toString()
+    const signature = await this.getSignature(
+      signerOrAuthToken,
+      nonce,
+      PROTOCOL_COMMANDS.ENCRYPT
+    )
+
+    let path =
+      (this.getEndpointURL(serviceEndpoints, 'encrypt')
+        ? this.getEndpointURL(serviceEndpoints, 'encrypt').urlPath
+        : null) + `?chainId=${chainId}`
+    if (!path) return null
+    path += `&nonce=${nonce}`
+    path += `&consumerAddress=${consumerAddress}`
+    path += `&signature=${signature}`
+
+    try {
+      const response = await fetch(path, {
+        method: 'POST',
+        body: JSON.stringify(data),
+        headers: { 'Content-Type': 'application/octet-stream' },
+        signal
+      })
+      return await response.text()
+    } catch (e) {
+      LoggerInstance.error(e)
+      throw new Error('HTTP request failed calling Provider')
+    }
+  }
+
+  /**
+   * Get file details for a given DID and service ID.
+   * @param {string} did - The DID to check.
+   * @param {string} serviceId - The service ID to check.
+   * @param {string} nodeUri - The URI of the provider.
+   * @param {boolean} [withChecksum=false] - Whether or not to include a checksum.
+   * @param {AbortSignal} [signal] - An optional abort signal.
+   * @returns {Promise<FileInfo[]>} A promise that resolves with an array of file info objects.
+   */
+  public async checkDidFiles(
+    did: string,
+    serviceId: string,
+    nodeUri: string,
+    withChecksum: boolean = false,
+    signal?: AbortSignal
+  ): Promise<FileInfo[]> {
+    const providerEndpoints = await this.getEndpoints(nodeUri)
+    const serviceEndpoints = await this.getServiceEndpoints(nodeUri, providerEndpoints)
+    const args = { did, serviceId, checksum: withChecksum }
+    const files: FileInfo[] = []
+    const path = this.getEndpointURL(serviceEndpoints, 'fileinfo')
+      ? this.getEndpointURL(serviceEndpoints, 'fileinfo').urlPath
+      : null
+    if (!path) return null
+    let response
+    try {
+      response = await fetch(path, {
+        method: 'POST',
+        body: JSON.stringify(args),
+        headers: { 'Content-Type': 'application/json' },
+        signal
+      })
+    } catch (e) {
+      LoggerInstance.error('File info call failed: ')
+      LoggerInstance.error(e)
+      throw new Error(e)
+    }
+    if (response?.ok) {
+      const results: FileInfo[] = await response.json()
+      for (const result of results) {
+        files.push(result)
+      }
+      return files
+    }
+    const resolvedResponse = await response.json()
+    LoggerInstance.error(
+      'File info call failed: ',
+      response.status,
+      response.statusText,
+      resolvedResponse
+    )
+    throw new Error(JSON.stringify(resolvedResponse))
+  }
+
+  /**
+   * Get File details (if possible)
+   * @param {StorageObject} file one of the supported file structures
+   * @param {string} nodeUri uri of the provider that will be used to check the file
+   * @param {boolean} [withChecksum=false] - Whether or not to include a checksum.
+   * @param {AbortSignal} [signal] - An optional abort signal.
+   * @returns {Promise<FileInfo[]>} A promise that resolves with an array of file info objects.
+   */
+  public async getFileInfo(
+    file: StorageObject,
+    nodeUri: string,
+    withChecksum: boolean = false,
+    signal?: AbortSignal
+  ): Promise<FileInfo[]> {
+    const providerEndpoints = await this.getEndpoints(nodeUri)
+    const serviceEndpoints = await this.getServiceEndpoints(nodeUri, providerEndpoints)
+    const args = { ...file, checksum: withChecksum }
+    const files: FileInfo[] = []
+    const path = this.getEndpointURL(serviceEndpoints, 'fileinfo')
+      ? this.getEndpointURL(serviceEndpoints, 'fileinfo').urlPath
+      : null
+    if (!path) return null
+    let response
+    try {
+      response = await fetch(path, {
+        method: 'POST',
+        body: JSON.stringify(args),
+        headers: { 'Content-Type': 'application/json' },
+        signal
+      })
+    } catch (e) {
+      LoggerInstance.error('File info call failed: ')
+      LoggerInstance.error(e)
+      throw new Error(e)
+    }
+    if (response?.ok) {
+      const results: FileInfo[] = await response.json()
+      for (const result of results) {
+        files.push(result)
+      }
+      return files
+    }
+    const resolvedResponse = await response.json()
+    LoggerInstance.error(
+      'File info call failed: ',
+      response.status,
+      response.statusText,
+      resolvedResponse
+    )
+    throw new Error(JSON.stringify(resolvedResponse))
+  }
+
+  /**
+   * Returns compute environments from a provider.
+   * @param {string} nodeUri - The URI of the provider.
+   * @param {AbortSignal} [signal] - An optional abort signal.
+   * @returns {Promise<ComputeEnvironment[]>} A promise that resolves with compute environments.
+   */
+  public async getComputeEnvironments(
+    nodeUri: string,
+    signal?: AbortSignal
+  ): Promise<ComputeEnvironment[]> {
+    const providerEndpoints = await this.getEndpoints(nodeUri)
+    const serviceEndpoints = await this.getServiceEndpoints(nodeUri, providerEndpoints)
+    const path = this.getEndpointURL(serviceEndpoints, 'computeEnvironments')?.urlPath
+    if (!path) return null
+    let response
+    try {
+      response = await fetch(path, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+        signal
+      })
+    } catch (e) {
+      LoggerInstance.error('Fetch compute env failed: ')
+      LoggerInstance.error(e)
+      throw new Error(e)
+    }
+    if (response?.ok) {
+      const result = response.json()
+      return result
+    }
+    const resolvedResponse = await response.json()
+    LoggerInstance.error(
+      'Fetch compute env failed: ',
+      response.status,
+      response.statusText,
+      resolvedResponse
+    )
+    throw new Error(JSON.stringify(resolvedResponse))
+  }
+
+  /**
+   * Initializes the provider for a service request.
+   * @param {string} did - The asset DID .
+   * @param {string} serviceId - The asset service ID.
+   * @param {number} fileIndex - The file index.
+   * @param {string} consumerAddress - The consumer address.
+   * @param {string} nodeUri - The URI of the provider.
+   * @param {AbortSignal} [signal] - The abort signal if any.
+   * @param {UserCustomParameters} [userCustomParameters] - The custom parameters if any.
+   * @param {string} [computeEnv] - The compute environment if any.
+   * @param {number} [validUntil] - The validity time if any.
+   * @returns {Promise<ProviderInitialize>} A promise that resolves with ProviderInitialize response.
+   */
+  public async initialize(
+    did: string,
+    serviceId: string,
+    fileIndex: number,
+    consumerAddress: string,
+    nodeUri: string,
+    signal?: AbortSignal,
+    userCustomParameters?: UserCustomParameters,
+    computeEnv?: string,
+    validUntil?: number
+  ): Promise<ProviderInitialize> {
+    const providerEndpoints = await this.getEndpoints(nodeUri)
+    const serviceEndpoints = await this.getServiceEndpoints(nodeUri, providerEndpoints)
+    let initializeUrl = this.getEndpointURL(serviceEndpoints, 'initialize')
+      ? this.getEndpointURL(serviceEndpoints, 'initialize').urlPath
+      : null
+
+    if (!initializeUrl) return null
+    initializeUrl += `?documentId=${did}`
+    initializeUrl += `&serviceId=${serviceId}`
+    initializeUrl += `&fileIndex=${fileIndex}`
+    initializeUrl += `&consumerAddress=${consumerAddress}`
+    if (userCustomParameters)
+      initializeUrl += '&userdata=' + encodeURI(JSON.stringify(userCustomParameters))
+    if (computeEnv) initializeUrl += '&environment=' + encodeURI(computeEnv)
+    if (validUntil) initializeUrl += '&validUntil=' + validUntil
+    let response
+    try {
+      response = await fetch(initializeUrl, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+        signal
+      })
+    } catch (e) {
+      LoggerInstance.error('Provider initialized failed: ')
+      LoggerInstance.error(e)
+      throw new Error(`Provider initialize failed url: ${initializeUrl} `)
+    }
+    if (response?.status === 200) {
+      const results: ProviderInitialize = await response.json()
+      return results
+    }
+    const resolvedResponse = await response.json()
+    LoggerInstance.error(
+      'Provider initialized failed: ',
+      response.status,
+      response.statusText,
+      resolvedResponse
+    )
+    throw new Error(JSON.stringify(resolvedResponse))
+  }
+
+  /** Initializes the provider for a compute request.
+   * @param {ComputeAsset[]} assets The datasets array to initialize compute request.
+   * @param {ComputeAlgorithmber} algorithm The algorithm to use.
+   * @param {string} computeEnv The compute environment.
+   * @param {string} token The payment token address.
+   * @param {number} validUntil  The job expiration date.
+   * @param {string} nodeUri The provider URI.
+   * @param {SignerOrAuthToken} signerOrAuthToken Signer or auth token
+   * @param {ComputeResourceRequest[]} resources The resources to start compute job with.
+   * @param {number} chainId The chain used to do payments
+   * @param {any} policyServer Policy server data.
+   * @param {AbortSignal} signal abort signal
+   * @param {dockerRegistryAuth} dockerRegistryAuth Docker registry authentication data.
+   * @return {Promise<ProviderComputeInitialize>} ProviderComputeInitialize data
+   */
+  public async initializeCompute(
+    assets: ComputeAsset[],
+    algorithm: ComputeAlgorithm,
+    computeEnv: string,
+    token: string,
+    validUntil: number,
+    nodeUri: string,
+    consumerAddress: string,
+    resources: ComputeResourceRequest[],
+    chainId: number,
+    policyServer?: any,
+    signal?: AbortSignal,
+    queueMaxWaitTime?: number,
+    dockerRegistryAuthData?: dockerRegistryAuth,
+    output?: ComputeOutput
+  ): Promise<ProviderComputeInitializeResults> {
+    const providerEndpoints = await this.getEndpoints(nodeUri)
+    const serviceEndpoints = await this.getServiceEndpoints(nodeUri, providerEndpoints)
+    const initializeUrl = this.getEndpointURL(serviceEndpoints, 'initializeCompute')
+      ? this.getEndpointURL(serviceEndpoints, 'initializeCompute').urlPath
+      : null
+    if (!initializeUrl) return null
+
+    const providerData: Record<string, any> = {
+      datasets: assets,
+      algorithm,
+      environment: computeEnv,
+      payment: {
+        chainId,
+        token,
+        resources
+      },
+      maxJobDuration: validUntil,
+      consumerAddress
+    }
+    if (policyServer) providerData.policyServer = policyServer
+    if (queueMaxWaitTime) providerData.queueMaxWaitTime = queueMaxWaitTime
+    if (dockerRegistryAuthData) {
+      const nodeKey = await this.getNodePublicKey(nodeUri)
+      if (nodeKey) {
+        providerData.encryptedDockerRegistryAuth = eciesencrypt(
+          nodeKey,
+          JSON.stringify(dockerRegistryAuthData)
+        )
+      }
+    }
+    if (output) {
+      const nodeKey = await this.getNodePublicKey(nodeUri)
+      if (nodeKey) providerData.output = eciesencrypt(nodeKey, JSON.stringify(output))
+    }
+
+    let response
+    try {
+      response = await fetch(initializeUrl, {
+        method: 'POST',
+        body: JSON.stringify(providerData),
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        signal
+      })
+      if (!response.ok) {
+        const errorText = await response.text()
+        throw new Error(`${errorText}`)
+      }
+    } catch (e) {
+      LoggerInstance.error('Initialize compute failed: ')
+      LoggerInstance.error(e)
+      throw new Error(`ComputeJob cannot be initialized: ${e.message}.`)
+    }
+    if (response?.ok) {
+      const params = await response.json()
+      return params
+    }
+    const resolvedResponse = await response.json()
+    LoggerInstance.error(
+      'Initialize compute failed: ',
+      response.status,
+      response.statusText,
+      resolvedResponse
+    )
+    LoggerInstance.error('Payload was:', JSON.stringify(providerData))
+    throw new Error(JSON.stringify(resolvedResponse))
+  }
+
+  /**
+   * Gets the download URL.
+   * @param {string} did - The DID.
+   * @param {string} serviceId - The service ID.
+   * @param {number} fileIndex - The file index.
+   * @param {string} transferTxId - The transfer transaction ID.
+   * @param {string} nodeUri - The provider URI.
+   * @param {SignerOrAuthToken} signerOrAuthToken - The signer or auth token.
+   * @param {any} policyServer Policy server data.
+   * @param {UserCustomParameters} userCustomParameters - The user custom parameters.
+   * @returns {Promise<any>} The download URL.
+   */
+  public async getDownloadUrl(
+    did: string,
+    serviceId: string,
+    fileIndex: number,
+    transferTxId: string,
+    nodeUri: string,
+    signerOrAuthToken: Signer | string,
+    policyServer?: any,
+    userCustomParameters?: UserCustomParameters
+  ): Promise<any> {
+    const providerEndpoints = await this.getEndpoints(nodeUri)
+    const serviceEndpoints = await this.getServiceEndpoints(nodeUri, providerEndpoints)
+    const downloadUrl = this.getEndpointURL(serviceEndpoints, 'download')
+      ? this.getEndpointURL(serviceEndpoints, 'download').urlPath
+      : null
+    if (!downloadUrl) return null
+    const consumerAddress = await this.getConsumerAddress(signerOrAuthToken)
+    const nonce = (
+      (await this.getNonce(
+        nodeUri,
+        consumerAddress,
+        null,
+        providerEndpoints,
+        serviceEndpoints
+      )) + 1
+    ).toString()
+
+    const signature = await this.getSignature(
+      signerOrAuthToken,
+      nonce,
+      PROTOCOL_COMMANDS.DOWNLOAD
+    )
+    let consumeUrl = downloadUrl
+    consumeUrl += `?fileIndex=${fileIndex}`
+    consumeUrl += `&documentId=${did}`
+    consumeUrl += `&transferTxId=${transferTxId}`
+    consumeUrl += `&serviceId=${serviceId}`
+    consumeUrl += `&consumerAddress=${consumerAddress}`
+    consumeUrl += `&nonce=${nonce}`
+    if (policyServer) {
+      consumeUrl += '&policyServer=' + encodeURI(JSON.stringify(policyServer))
+    }
+
+    consumeUrl += `&signature=${signature}`
+    if (userCustomParameters)
+      consumeUrl += '&userdata=' + encodeURI(JSON.stringify(userCustomParameters))
+    return consumeUrl
+  }
+
+  /** Instruct the provider to start a PAYED compute job
+   * @param {string} nodeUri The provider URI.
+   * @param {SignerOrAuthToken} signerOrAuthToken The consumer signer object or auth token.
+   * @param {string} computeEnv The compute environment.
+   * @param {ComputeAsset} datasets The dataset to start compute on + additionalDatasets (the additional datasets if that is the case)
+   * @param {ComputeAlgorithm} algorithm The algorithm to start compute with.
+   * @param {number} maxJobDuration The compute job max execution time.
+   * @param {string} token The token address for compute payment.
+   * @param {ComputeResourceRequest} resources The resources to start compute job with.
+   * @param {chainId} chainId The chain used to do payments
+   * @param {ComputeJobMetadata} metadata The compute job metadata. Additional metadata to be stored in the database.
+   * @param {ComputeOutput} output The compute job output settings.
+   * @param {any} policyServer Policy server data.
+   * @param {AbortSignal} signal abort signal
+   * @param {number} queueMaxWaitTime Maximum time in seconds to wait in the compute queue if resources are not available
+   * @param {dockerRegistryAuth} dockerRegistryAuth Docker registry authentication data.
+   * @return {Promise<ComputeJob | ComputeJob[]>} The compute job or jobs.
+   */
+  public async computeStart(
+    nodeUri: string,
+    signerOrAuthToken: Signer | string,
+    computeEnv: string,
+    datasets: ComputeAsset[],
+    algorithm: ComputeAlgorithm,
+    maxJobDuration: number,
+    token: string,
+    resources: ComputeResourceRequest[],
+    chainId: number,
+    metadata?: ComputeJobMetadata,
+    additionalViewers?: string[],
+    output?: ComputeOutput,
+    policyServer?: any,
+    signal?: AbortSignal,
+    queueMaxWaitTime?: number,
+    dockerRegistryAuth?: dockerRegistryAuth
+  ): Promise<ComputeJob | ComputeJob[]> {
+    const providerEndpoints = await this.getEndpoints(nodeUri)
+    const serviceEndpoints = await this.getServiceEndpoints(nodeUri, providerEndpoints)
+
+    const computeStartUrl = this.getEndpointURL(serviceEndpoints, 'computeStart')
+      ? this.getEndpointURL(serviceEndpoints, 'computeStart').urlPath
+      : null
+
+    if (!computeStartUrl) {
+      LoggerInstance.error(
+        'Compute start failed: Cannot get proper computeStart route (perhaps not implemented on provider?)'
+      )
+      return null
+    }
+
+    const consumerAddress = await this.getConsumerAddress(signerOrAuthToken)
+    const nonce = (
+      (await this.getNonce(
+        nodeUri,
+        consumerAddress,
+        signal,
+        providerEndpoints,
+        serviceEndpoints
+      )) + 1
+    ).toString()
+    const signature = await this.getSignature(
+      signerOrAuthToken,
+      nonce,
+      PROTOCOL_COMMANDS.COMPUTE_START
+    )
+    const payload = Object()
+    payload.consumerAddress = consumerAddress
+    payload.signature = signature
+    payload.nonce = nonce
+    payload.environment = computeEnv
+    payload.maxJobDuration = maxJobDuration
+    payload.resources = resources
+    // kept for backwards compatibility (tests running against existing provider)
+    payload.dataset = datasets[0]
+    // new field for C2D v2
+    payload.datasets = datasets
+    payload.algorithm = algorithm
+    payload.chainId = chainId
+    payload.payment = {
+      chainId,
+      token,
+      maxJobDuration,
+      resources
+    }
+    if (dockerRegistryAuth) {
+      const nodeKey = await this.getNodePublicKey(nodeUri)
+      if (nodeKey) {
+        payload.encryptedDockerRegistryAuth = eciesencrypt(
+          nodeKey,
+          JSON.stringify(dockerRegistryAuth)
+        )
+      }
+    }
+    if (resources) payload.resources = resources
+    if (metadata) payload.metadata = metadata
+    if (additionalViewers) payload.additionalViewers = additionalViewers
+    if (output) {
+      const nodeKey = await this.getNodePublicKey(nodeUri)
+      if (nodeKey) {
+        payload.output = eciesencrypt(nodeKey, JSON.stringify(output))
+      }
+    }
+    if (policyServer) payload.policyServer = policyServer
+    if (queueMaxWaitTime) payload.queueMaxWaitTime = queueMaxWaitTime
+    let response
+    try {
+      response = await fetch(computeStartUrl, {
+        method: 'POST',
+        body: JSON.stringify(payload),
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: this.getAuthorization(signerOrAuthToken)
+        },
+        signal
+      })
+    } catch (e) {
+      LoggerInstance.error('Compute start failed:')
+      LoggerInstance.error(e)
+      LoggerInstance.error('Payload was:', payload)
+      throw new Error('HTTP request failed calling Provider')
+    }
+    if (response?.ok) {
+      const params = await response.json()
+      return params
+    }
+    const resolvedResponse = await response.json()
+    LoggerInstance.error(
+      'Compute start failed: ',
+      response.status,
+      response.statusText,
+      resolvedResponse
+    )
+    LoggerInstance.error('Payload was:', payload)
+    throw new Error(JSON.stringify(resolvedResponse))
+  }
+
+  /** Instruct the provider to start a FREE compute job
+   * @param {string} nodeUri The provider URI.
+   * @param {SignerOrAuthToken} signerOrAuthToken The consumer signer object or auth token.
+   * @param {string} computeEnv The compute environment.
+   * @param {ComputeAsset} datasets The dataset to start compute on + additionalDatasets (the additional datasets if that is the case)
+   * @param {ComputeAlgorithm} algorithm The algorithm to start compute with.
+   * @param {ComputeResourceRequest} resources The resources to start compute job with.
+   * @param {ComputeJobMetadata} metadata The compute job metadata. Additional metadata to be stored in the database.
+   * @param {ComputeOutput} output The compute job output settings.
+   * @param {any} policyServer Policy server data.
+   * @param {AbortSignal} signal abort signal
+   * @param {number} queueMaxWaitTime Maximum time in seconds to wait in the compute queue if resources are not available
+   * @param {dockerRegistryAuth} dockerRegistryAuth Docker registry authentication data.
+   * @return {Promise<ComputeJob | ComputeJob[]>} The compute job or jobs.
+   */
+  public async freeComputeStart(
+    nodeUri: string,
+    signerOrAuthToken: Signer | string,
+    computeEnv: string,
+    datasets: ComputeAsset[],
+    algorithm: ComputeAlgorithm,
+    resources?: ComputeResourceRequest[],
+    metadata?: ComputeJobMetadata,
+    additionalViewers?: string[],
+    output?: ComputeOutput,
+    policyServer?: any,
+    signal?: AbortSignal,
+    queueMaxWaitTime?: number,
+    dockerRegistryAuth?: dockerRegistryAuth
+  ): Promise<ComputeJob | ComputeJob[]> {
+    const providerEndpoints = await this.getEndpoints(nodeUri)
+    const serviceEndpoints = await this.getServiceEndpoints(nodeUri, providerEndpoints)
+
+    const computeStartUrl = this.getEndpointURL(serviceEndpoints, 'freeCompute')
+      ? this.getEndpointURL(serviceEndpoints, 'freeCompute').urlPath
+      : null
+
+    if (!computeStartUrl) {
+      LoggerInstance.error(
+        'Compute start failed: Cannot get proper computeStart route (perhaps not implemented on provider?)'
+      )
+      return null
+    }
+
+    const consumerAddress = await this.getConsumerAddress(signerOrAuthToken)
+    const nonce = (
+      (await this.getNonce(
+        nodeUri,
+        consumerAddress,
+        signal,
+        providerEndpoints,
+        serviceEndpoints
+      )) + 1
+    ).toString()
+
+    const signature = await this.getSignature(
+      signerOrAuthToken,
+      nonce,
+      PROTOCOL_COMMANDS.FREE_COMPUTE_START
+    )
+    const payload = Object()
+    payload.consumerAddress = consumerAddress
+    payload.signature = signature
+    payload.nonce = nonce
+    payload.environment = computeEnv
+    payload.resources = resources
+    // kept for backwards compatibility (tests running against existing provider)
+    payload.dataset = datasets[0]
+    // new field for C2D v2
+    payload.datasets = datasets
+    payload.algorithm = algorithm
+    if (metadata) payload.metadata = metadata
+    if (additionalViewers) payload.additionalViewers = additionalViewers
+    if (dockerRegistryAuth) {
+      const nodeKey = await this.getNodePublicKey(nodeUri)
+      if (nodeKey) {
+        payload.encryptedDockerRegistryAuth = eciesencrypt(
+          nodeKey,
+          JSON.stringify(dockerRegistryAuth)
+        )
+      }
+    }
+    if (output) {
+      const nodeKey = await this.getNodePublicKey(nodeUri)
+      if (nodeKey) {
+        payload.output = eciesencrypt(nodeKey, JSON.stringify(output))
+      }
+    }
+
+    if (policyServer) payload.policyServer = policyServer
+    if (queueMaxWaitTime) payload.queueMaxWaitTime = queueMaxWaitTime
+    let response
+    try {
+      response = await fetch(computeStartUrl, {
+        method: 'POST',
+        body: JSON.stringify(payload),
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: this.getAuthorization(signerOrAuthToken)
+        },
+        signal
+      })
+    } catch (e) {
+      LoggerInstance.error('Compute start failed:')
+      LoggerInstance.error(e)
+      LoggerInstance.error('Payload was:', payload)
+      throw new Error('HTTP request failed calling Provider')
+    }
+    if (response?.ok) {
+      const params = await response.json()
+      return params
+    }
+    const resolvedResponse = await response.json()
+    LoggerInstance.error(
+      'Compute start failed: ',
+      response.status,
+      response.statusText,
+      resolvedResponse
+    )
+    LoggerInstance.error('Payload was:', payload)
+    throw new Error(JSON.stringify(resolvedResponse))
+  }
+
+  /**
+   * @param nodeUri provider URL
+   * @param signerOrAuthToken signer or auth token
+   * @param jobId jobId
+   * @param signal abort signal
+   * @returns logs response
+   */
+  public async computeStreamableLogs(
+    nodeUri: string,
+    signerOrAuthToken: Signer | string,
+    jobId: string,
+    signal?: AbortSignal
+  ): Promise<any> {
+    const isAuthToken = typeof signerOrAuthToken === 'string'
+    const providerEndpoints = await this.getEndpoints(nodeUri)
+    const serviceEndpoints = await this.getServiceEndpoints(nodeUri, providerEndpoints)
+
+    const computeStreamableLogs = this.getEndpointURL(
+      serviceEndpoints,
+      'computeStreamableLogs'
+    )
+      ? this.getEndpointURL(serviceEndpoints, 'computeStreamableLogs').urlPath
+      : null
+
+    if (!computeStreamableLogs) {
+      LoggerInstance.error(
+        'Compute start failed: Cannot get proper computeStreamableLogs route (perhaps not implemented on provider?)'
+      )
+      return null
+    }
+    const consumerAddress = await this.getConsumerAddress(signerOrAuthToken)
+    const nonce = (
+      (await this.getNonce(
+        nodeUri,
+        consumerAddress,
+        signal,
+        providerEndpoints,
+        serviceEndpoints
+      )) + 1
+    ).toString()
+
+    let url = `?consumerAddress=${consumerAddress}&jobId=${jobId}`
+    // Is signer, add signature and nonce
+    if (!isAuthToken) {
+      const signature = await this.getSignature(
+        signerOrAuthToken,
+        nonce,
+        PROTOCOL_COMMANDS.COMPUTE_GET_STREAMABLE_LOGS
+      )
+      url += `&signature=${signature}`
+      url += `&nonce=${nonce}`
+    }
+
+    let response
+    try {
+      response = await fetch(computeStreamableLogs + url, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: this.getAuthorization(signerOrAuthToken)
+        },
+        signal
+      })
+    } catch (e) {
+      LoggerInstance.error('computeStreamableLogs failed:')
+      LoggerInstance.error(e)
+      throw new Error('HTTP request failed calling Provider')
+    }
+    if (response?.ok || response?.status === 200) {
+      return response.body
+    }
+    LoggerInstance.error(
+      'computeStreamableLogs failed: ',
+      response.status,
+      response.statusText,
+      await response.json()
+    )
+    return null
+  }
+
+  /** Instruct the provider to Stop the execution of a to stop a compute job.
+   * @param {string} jobId the compute job id
+   * @param {string} nodeUri The provider URI.
+   * @param {SignerOrAuthToken} signerOrAuthToken The consumer signer or auth token.
+   * @param {string} agreementId The agreement id.
+   * @param {AbortSignal} signal abort signal
+   * @return {Promise<ComputeJob | ComputeJob[]>}
+   */
+  public async computeStop(
+    jobId: string,
+    nodeUri: string,
+    signerOrAuthToken: Signer | string,
+    agreementId?: string,
+    signal?: AbortSignal
+  ): Promise<ComputeJob | ComputeJob[]> {
+    const isAuthToken = typeof signerOrAuthToken === 'string'
+    const providerEndpoints = await this.getEndpoints(nodeUri)
+    const serviceEndpoints = await this.getServiceEndpoints(nodeUri, providerEndpoints)
+    const computeStopUrl = this.getEndpointURL(serviceEndpoints, 'computeStop')
+      ? this.getEndpointURL(serviceEndpoints, 'computeStop').urlPath
+      : null
+
+    const consumerAddress = await this.getConsumerAddress(signerOrAuthToken)
+
+    const nonce = (
+      (await this.getNonce(
+        nodeUri,
+        consumerAddress,
+        signal,
+        providerEndpoints,
+        serviceEndpoints
+      )) + 1
+    ).toString()
+
+    const signature = await this.getSignature(
+      signerOrAuthToken,
+      nonce,
+      PROTOCOL_COMMANDS.COMPUTE_STOP
+    )
+    const queryParams = new URLSearchParams()
+    queryParams.set('consumerAddress', consumerAddress)
+    queryParams.set('nonce', nonce)
+    queryParams.set('jobId', jobId)
+    if (!isAuthToken) {
+      queryParams.set('signature', signature)
+    }
+
+    if (agreementId) queryParams.set('agreementId', agreementId)
+
+    const queryString = queryParams.toString()
+    if (!queryString) return null
+    let response
+    try {
+      response = await fetch(computeStopUrl + '?' + queryString, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: this.getAuthorization(signerOrAuthToken)
+        },
+        signal
+      })
+    } catch (e) {
+      LoggerInstance.error('Compute stop failed:')
+      LoggerInstance.error(e)
+      throw new Error('HTTP request failed calling Provider')
+    }
+
+    if (response?.ok) {
+      const params = await response.json()
+      return params
+    }
+    const resolvedResponse = await response.json()
+    LoggerInstance.error(
+      'Compute stop failed: ',
+      response.status,
+      response.statusText,
+      resolvedResponse
+    )
+    throw new Error(JSON.stringify(resolvedResponse))
+  }
+
+  /** Get compute status for a specific jobId/documentId/owner.
+   * @param {string} nodeUri The URI of the provider we want to query
+   * @param {string} consumerAddress The consumer ethereum address
+   * @param {string} jobId The ID of a compute job.
+   * @param {string} agreementId The ID of the service agreement (tx id)
+   * @param {AbortSignal} signal abort signal
+   * @return {Promise<ComputeJob | ComputeJob[]>}
+   */
+  public async computeStatus(
+    nodeUri: string,
+    signerOrAuthToken: Signer | string,
+    jobId?: string,
+    agreementId?: string,
+    signal?: AbortSignal
+  ): Promise<ComputeJob | ComputeJob[]> {
+    const consumerAddress = await getConsumerAddress(signerOrAuthToken)
+    const authorization = getAuthorization(signerOrAuthToken)
+    const providerEndpoints = await this.getEndpoints(nodeUri)
+    const serviceEndpoints = await this.getServiceEndpoints(nodeUri, providerEndpoints)
+    const computeStatusUrl = this.getEndpointURL(serviceEndpoints, 'computeStatus')
+      ? this.getEndpointURL(serviceEndpoints, 'computeStatus').urlPath
+      : null
+
+    let url = `?consumerAddress=${consumerAddress}`
+    url += (agreementId && `&agreementId=${agreementId}`) || ''
+    url += (jobId && `&jobId=${jobId}`) || ''
+
+    if (!computeStatusUrl) return null
+    let response
+    try {
+      response = await fetch(computeStatusUrl + url, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json', Authorization: authorization },
+        signal
+      })
+    } catch (e) {
+      LoggerInstance.error('Get compute status failed')
+      LoggerInstance.error(e)
+      throw new Error(e)
+    }
+    if (response?.ok) {
+      const params = await response.json()
+      return params
+    }
+    LoggerInstance.error(
+      'Get compute status failed:',
+      response.status,
+      response.statusText
+    )
+    if (response?.ok) {
+      const params = await response.json()
+      return params
+    }
+    const resolvedResponse = await response.json()
+    LoggerInstance.error(
+      'Get compute status failed:',
+      response.status,
+      response.statusText,
+      resolvedResponse
+    )
+    throw new Error(JSON.stringify(resolvedResponse))
+  }
+
+  /** Get compute result url
+   * @param {string} nodeUri The URI of the provider we want to query
+   * @param {SignerOrAuthToken} signerOrAuthToken signer or auth token
+   * @param {string} jobId The ID of a compute job.
+   * @param {number} index Result index
+   * @return {Promise<string>}
+   */
+  public async getComputeResultUrl(
+    nodeUri: string,
+    signerOrAuthToken: Signer | string,
+    jobId: string,
+    index: number
+  ): Promise<string> {
+    const isAuthToken = typeof signerOrAuthToken === 'string'
+    const providerEndpoints = await this.getEndpoints(nodeUri)
+    const serviceEndpoints = await this.getServiceEndpoints(nodeUri, providerEndpoints)
+    const computeResultUrl = this.getEndpointURL(serviceEndpoints, 'computeResult')
+      ? this.getEndpointURL(serviceEndpoints, 'computeResult').urlPath
+      : null
+
+    const consumerAddress = await this.getConsumerAddress(signerOrAuthToken)
+    const nonce = (
+      (await this.getNonce(
+        nodeUri,
+        consumerAddress,
+        null,
+        providerEndpoints,
+        serviceEndpoints
+      )) + 1
+    ).toString()
+    const signature = await this.getSignature(
+      signerOrAuthToken,
+      nonce,
+      PROTOCOL_COMMANDS.COMPUTE_GET_RESULT
+    )
+    if (!computeResultUrl) return null
+    let resultUrl = computeResultUrl
+    resultUrl += `?consumerAddress=${consumerAddress}`
+    resultUrl += `&jobId=${jobId}`
+    resultUrl += `&index=${index.toString()}`
+    if (!isAuthToken) {
+      resultUrl += `&nonce=${nonce}`
+      resultUrl += `&signature=${signature}`
+    }
+    return resultUrl
+  }
+
+  public async getComputeResult(
+    nodeUri: string,
+    signerOrAuthToken: Signer | string,
+    jobId: string,
+    index: number,
+    offset: number = 0
+  ): Promise<ComputeResultStream> {
+    const resultUrl = await this.getComputeResultUrl(
+      nodeUri,
+      signerOrAuthToken,
+      jobId,
+      index
+    )
+    if (!resultUrl) throw new Error('Could not retrieve compute result URL')
+    const response = await fetch(resultUrl, {
+      headers: offset > 0 ? { Range: `bytes=${offset}-` } : {}
+    })
+    if (!response.ok)
+      throw new Error(`Failed to fetch compute result: ${response.status}`)
+    return response.body as unknown as ComputeResultStream
+  }
+
+  /** Generates an auth token
+   * @param {Signer} consumer consumer Signer wallet object
+   * @param {string} nodeUri The URI of the provider we want to query
+   * @param {AbortSignal} signal abort signal
+   * @return {Promise<string>}
+   */
+  public async generateAuthToken(
+    consumer: Signer,
+    nodeUri: string,
+    signal?: AbortSignal
+  ): Promise<string> {
+    const consumerAddress = await consumer.getAddress()
+    const providerEndpoints = await this.getEndpoints(nodeUri)
+    const serviceEndpoints = await this.getServiceEndpoints(nodeUri, providerEndpoints)
+    const url = this.getEndpointURL(serviceEndpoints, 'generateAuthToken').urlPath || null
+    const nonce = (
+      (await this.getNonce(
+        nodeUri,
+        consumerAddress,
+        signal,
+        providerEndpoints,
+        serviceEndpoints
+      )) + 1
+    ).toString()
+
+    const signature = await this.getSignature(
+      consumer,
+      nonce,
+      PROTOCOL_COMMANDS.CREATE_AUTH_TOKEN
+    )
+
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        body: JSON.stringify({
+          address: consumerAddress,
+          signature,
+          nonce
+        }),
+        headers: { 'Content-Type': 'application/json' },
+        signal
+      })
+
+      if (!response?.ok) {
+        throw new Error(
+          `Failed to generate auth token: ${response.status} ${response.statusText}`
+        )
+      }
+      const params = await response.json()
+      return params?.token
+    } catch (e) {
+      LoggerInstance.error('Generate auth token failed:')
+      LoggerInstance.error(e)
+      throw new Error('HTTP request failed calling Provider')
+    }
+  }
+
+  /** Invalidates an auth token
+   * @param {Signer} consumer consumer Signer wallet object
+   * @param {string} token The auth token to invalidate
+   * @param {string} nodeUri The URI of the provider we want to query
+   * @param {AbortSignal} signal abort signal
+   * @return {Promise<{ success: boolean }>}
+   */
+  public async invalidateAuthToken(
+    consumer: Signer,
+    token: string,
+    nodeUri: string,
+    signal?: AbortSignal
+  ): Promise<{ success: boolean }> {
+    const consumerAddress = await consumer.getAddress()
+    const providerEndpoints = await this.getEndpoints(nodeUri)
+    const serviceEndpoints = await this.getServiceEndpoints(nodeUri, providerEndpoints)
+    const url =
+      this.getEndpointURL(serviceEndpoints, 'invalidateAuthToken').urlPath || null
+    const nonce = (
+      (await this.getNonce(
+        nodeUri,
+        consumerAddress,
+        signal,
+        providerEndpoints,
+        serviceEndpoints
+      )) + 1
+    ).toString()
+
+    const signatureMessage = consumerAddress + nonce
+    const signature = await signRequest(consumer, signatureMessage)
+
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        body: JSON.stringify({
+          address: consumerAddress,
+          signature,
+          token,
+          nonce
+        }),
+        headers: { 'Content-Type': 'application/json' },
+        signal
+      })
+
+      if (!response?.ok) {
+        throw new Error(
+          `Failed to invalidate auth token: ${response.status} ${response.statusText}`
+        )
+      }
+      const params = await response.json()
+      return params
+    } catch (e) {
+      LoggerInstance.error('Generate auth token failed:')
+      LoggerInstance.error(e)
+      throw new Error('HTTP request failed calling Provider')
+    }
+  }
+
+  /** Check for a valid provider at URL
+   * @param {String} url provider uri address
+   * @param {AbortSignal} signal abort signal
+   * @return {Promise<boolean>} valid or not
+   */
+  public async isValidProvider(url: string, signal?: AbortSignal): Promise<boolean> {
+    try {
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+        signal
+      })
+      if (response?.ok) {
+        const params = await response.json()
+        if (params && (params.providerAddress || params.providerAddresses)) return true
+      }
+      return false
+    } catch (error) {
+      LoggerInstance.error(`Error validating provider: ${error.message}`)
+      return false
+    }
+  }
+
+  /** Sends a PolicyServer request to node to be passthrough to PS
+   * @param {string} nodeUri The provider URI.
+   * @param {PolicyServerPassthroughCommand} request The request to be passed through to the Policy Server.
+   * @param {AbortSignal} signal abort signal
+   */
+  public async PolicyServerPassthrough(
+    nodeUri: string,
+    request: PolicyServerPassthroughCommand,
+    signal?: AbortSignal
+  ): Promise<any> {
+    const providerEndpoints = await this.getEndpoints(nodeUri)
+    const serviceEndpoints = await this.getServiceEndpoints(nodeUri, providerEndpoints)
+    const initializeUrl = this.getEndpointURL(serviceEndpoints, 'PolicyServerPassthrough')
+      ? this.getEndpointURL(serviceEndpoints, 'PolicyServerPassthrough').urlPath
+      : null
+    if (!initializeUrl) return null
+
+    let response
+    try {
+      response = await fetch(initializeUrl, {
+        method: 'POST',
+        body: JSON.stringify(request),
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        signal
+      })
+      if (!response.ok) {
+        const errorText = await response.text()
+        throw new Error(`${errorText}`)
+      }
+    } catch (e) {
+      LoggerInstance.error('PolicyServerPassthrough failed: ')
+      LoggerInstance.error(e)
+      throw new Error(`PolicyServerPassthrough failed: ${e.message}.`)
+    }
+    if (response?.ok) {
+      const params = await response.json()
+      return params
+    }
+    const resolvedResponse = await response.json()
+    LoggerInstance.error(
+      'PolicyServerPassthrough failed: ',
+      response.status,
+      response.statusText,
+      resolvedResponse
+    )
+    LoggerInstance.error('Payload was:', JSON.stringify(request))
+    throw new Error(JSON.stringify(resolvedResponse))
+  }
+
+  /** Initialize Policy Server verification
+   * @param {string} nodeUri The provider URI.
+   * @param {PolicyServerInitializeCommand} request The request to be sent to the Policy Server.
+   * @param {AbortSignal} signal abort signal
+   */
+  public async initializePSVerification(
+    nodeUri: string,
+    request: PolicyServerInitializeCommand,
+    signal?: AbortSignal
+  ): Promise<any> {
+    const providerEndpoints = await this.getEndpoints(nodeUri)
+    const serviceEndpoints = await this.getServiceEndpoints(nodeUri, providerEndpoints)
+    const initializeUrl = this.getEndpointURL(
+      serviceEndpoints,
+      'initializePSVerification'
+    )
+      ? this.getEndpointURL(serviceEndpoints, 'initializePSVerification').urlPath
+      : null
+    if (!initializeUrl) return null
+
+    let response
+    try {
+      response = await fetch(initializeUrl, {
+        method: 'POST',
+        body: JSON.stringify(request),
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        signal
+      })
+      if (!response.ok) {
+        const errorText = await response.text()
+        throw new Error(`${errorText}`)
+      }
+    } catch (e) {
+      LoggerInstance.error('initializePSVerification failed: ')
+      LoggerInstance.error(e)
+      throw new Error(`initializePSVerification failed: ${e.message}.`)
+    }
+    if (response?.ok) {
+      const params = await response.json()
+      return params
+    }
+    const resolvedResponse = await response.json()
+    LoggerInstance.error(
+      'initializePSVerification failed: ',
+      response.status,
+      response.statusText,
+      resolvedResponse
+    )
+    LoggerInstance.error('Payload was:', JSON.stringify(request))
+    throw new Error(JSON.stringify(resolvedResponse))
+  }
+
+  /**
+   * Download node logs as an admin.
+   * @param {string} nodeUri - The provider URI.
+   * @param {Signer} signer - The admin signer.
+   * @param {string} startTime - Start time (epoch ms) to get logs from.
+   * @param {string} endTime - End time (epoch ms) to get logs to.
+   * @param {number} [maxLogs] - Maximum number of logs to retrieve (default: 100, max: 1000).
+   * @param {string} [moduleName] - Filter logs by module name.
+   * @param {string} [level] - Filter logs by log level.
+   * @param {number} [page] - Pagination page number.
+   * @param {AbortSignal} [signal] - An optional abort signal.
+   * @returns {Promise<any>} The logs response body stream.
+   */
+  public async downloadNodeLogs(
+    nodeUri: string,
+    signer: Signer,
+    startTime: string,
+    endTime: string,
+    maxLogs?: number,
+    moduleName?: string,
+    level?: string,
+    page?: number,
+    signal?: AbortSignal
+  ): Promise<NodeLogEntry[]> {
+    const providerEndpoints = await this.getEndpoints(nodeUri)
+    const serviceEndpoints = await this.getServiceEndpoints(nodeUri, providerEndpoints)
+
+    const logsUrl = this.getEndpointURL(serviceEndpoints, 'logs')
+      ? this.getEndpointURL(serviceEndpoints, 'logs').urlPath
+      : null
+
+    if (!logsUrl) {
+      LoggerInstance.error(
+        'Download node logs failed: Cannot get proper logs route (perhaps not implemented on provider?)'
+      )
+      return null
+    }
+    const consumerAddress = await signer.getAddress()
+    const nonce = (
+      (await this.getNonce(
+        nodeUri,
+        consumerAddress,
+        signal,
+        providerEndpoints,
+        serviceEndpoints
+      )) + 1
+    ).toString()
+
+    const signature = await this.getSignature(signer, nonce, PROTOCOL_COMMANDS.GET_LOGS)
+    let url = logsUrl + `?startTime=${startTime}&endTime=${endTime}`
+    if (maxLogs) url += `&maxLogs=${maxLogs}`
+    if (moduleName) url += `&moduleName=${moduleName}`
+    if (level) url += `&level=${level}`
+    if (page) url += `&page=${page}`
+
+    let response
+    try {
+      response = await fetch(url, {
+        method: 'POST',
+        body: JSON.stringify({
+          signature,
+          nonce,
+          address: consumerAddress
+        }),
+        headers: { 'Content-Type': 'application/json' },
+        signal
+      })
+    } catch (e) {
+      LoggerInstance.error('Download node logs failed:')
+      LoggerInstance.error(e)
+      throw new Error('HTTP request failed calling Provider')
+    }
+
+    if (response?.ok) {
+      return response.body
+    }
+
+    const resolvedResponse = await response.json()
+    LoggerInstance.error(
+      'Download node logs failed: ',
+      response.status,
+      response.statusText,
+      resolvedResponse
+    )
+    throw new Error(JSON.stringify(resolvedResponse))
+  }
+
+  private noZeroX(input: string): string {
+    return this.zeroXTransformer(input, false)
+  }
+
+  private zeroXTransformer(input = '', zeroOutput: boolean): string {
+    const { valid, output } = this.inputMatch(
+      input,
+      /^(?:0x)*([a-f0-9]+)$/i,
+      'zeroXTransformer'
+    )
+    return (zeroOutput && valid ? '0x' : '') + output
+  }
+
+  private inputMatch(
+    input: string,
+    regexp: RegExp,
+    conversorName: string
+  ): { valid: boolean; output: string } {
+    if (typeof input !== 'string') {
+      LoggerInstance.debug('Not input string:')
+      LoggerInstance.debug(input)
+      throw new Error(`[${conversorName}] Expected string, input type: ${typeof input}`)
+    }
+    const match = input.match(regexp)
+    if (!match) {
+      LoggerInstance.warn(`[${conversorName}] Input transformation failed.`)
+      return { valid: false, output: input }
+    }
+    return { valid: true, output: match[1] }
+  }
+
+  public async resolveDdo(
+    nodeUri: string,
+    did: string,
+    signal?: AbortSignal
+  ): Promise<any> {
+    const path = nodeUri + '/api/aquarius/assets/ddo/' + did
+    const response = await fetch(path, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
+      signal
+    })
+    if (response.ok) return response.json()
+    return null
+  }
+
+  public async validateDdo(
+    nodeUri: string,
+    ddo: DDO,
+    signer: Signer,
+    signal?: AbortSignal
+  ): Promise<ValidateMetadata> {
+    const publisherAddress = await signer.getAddress()
+    const nonceResp = await (
+      await this.getData(`${nodeUri}/api/services/nonce?userAddress=${publisherAddress}`)
+    ).json()
+    const nonce = (Number(nonceResp.nonce ?? 0) + 1).toString()
+    const message = publisherAddress + nonce + PROTOCOL_COMMANDS.VALIDATE_DDO
+    const signature = await signRequest(signer, message)
+    const response = await fetch(`${nodeUri}/api/aquarius/assets/ddo/validate`, {
+      method: 'POST',
+      body: JSON.stringify({ ddo, publisherAddress, nonce, signature }),
+      headers: { 'Content-Type': 'application/json' },
+      signal
+    })
+    if (!response.ok) return null
+    const j = await response.json()
+    return {
+      valid: true,
+      hash: j.hash,
+      proof: { validatorAddress: j.publicKey, r: j.r[0], s: j.s[0], v: j.v }
+    } as ValidateMetadata
+  }
+
+  private async getData(url: string, authorization?: string): Promise<Response> {
+    return fetch(url, {
+      method: 'GET',
+      headers: {
+        'Content-type': 'application/json',
+        Authorization: authorization
+      }
+    })
+  }
+}
