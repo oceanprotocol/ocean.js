@@ -10,11 +10,11 @@ import { EventTypes, KadDHT, kadDHT } from '@libp2p/kad-dht'
 import { ping } from '@libp2p/ping'
 import { peerIdFromString } from '@libp2p/peer-id'
 import { lpStream, UnexpectedEOFError } from '@libp2p/utils'
-import type { Connection } from '@libp2p/interface'
 import { multiaddr, type Multiaddr } from '@multiformats/multiaddr'
 import { Signer } from 'ethers'
 import { sleep } from '../../utils/General.js'
 import { LoggerInstance } from '../../utils/Logger.js'
+import type { Connection, Stream } from '@libp2p/interface'
 import {
   StorageObject,
   FileInfo,
@@ -120,6 +120,10 @@ export interface P2PConfig {
    */
 
   libp2p?: Partial<Libp2pOptions>
+
+  /** Additional roles to be marked. Will be used in the future */
+  /* Examples:  dashboard, cli , market , etc */
+  additionalRoles?: string[]
 }
 
 export class P2pProvider {
@@ -213,6 +217,13 @@ export class P2pProvider {
     return val
   }
 
+  private async handleProtocolCommands(stream: Stream, connection: Connection) {
+    // eslint-disable-next-line no-unused-vars
+    const { remotePeer, remoteAddr } = connection
+
+    // Reserved for future use: we advertise the protocol but do not handle incoming streams yet.
+  }
+
   private async getOrCreateLibp2pNode(): Promise<Libp2p> {
     if (this.libp2pNode) return this.libp2pNode
 
@@ -270,6 +281,12 @@ export class P2pProvider {
     })
 
     this.libp2pNode = node
+    // all implementations are clients
+    this.libp2pNode.handle('/ocean/client/1.0.0', this.handleProtocolCommands)
+    const additionalRoles = this.p2pConfig.additionalRoles ?? []
+    for (const role of additionalRoles) {
+      this.libp2pNode.handle(`/ocean/client/${role}/1.0.0`, this.handleProtocolCommands)
+    }
     return node
   }
 
