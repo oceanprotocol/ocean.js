@@ -1,4 +1,5 @@
 import { encrypt, PublicKey } from 'eciesjs'
+import { bytesToHex } from './bytes.js'
 
 type PublicKeyInput = string | Uint8Array | number[] | Record<number, number>
 
@@ -18,7 +19,7 @@ function normalizePublicKey(publicKey: PublicKeyInput): string {
             .map((key) => publicKey[Number(key)])
         )
 
-  return `0x${Buffer.from(bytes).toString('hex')}`
+  return `0x${bytesToHex(bytes)}`
 }
 
 /**
@@ -31,9 +32,9 @@ function normalizePublicKey(publicKey: PublicKeyInput): string {
 export function eciesencrypt(publicKey: PublicKeyInput, content: string) {
   // Encrypt using ECIES
   const key = PublicKey.fromHex(normalizePublicKey(publicKey))
-  const encrypted = encrypt(key.toHex(), Buffer.from(content))
+  const encrypted = encrypt(key.toHex(), new TextEncoder().encode(content))
 
   // Convert to hex string
-  const encryptedHex = Buffer.from(encrypted).toString('hex')
+  const encryptedHex = bytesToHex(new Uint8Array(encrypted))
   return encryptedHex
 }

@@ -1,6 +1,6 @@
 import { ethers, hexlify, Signer, toBeHex, toUtf8Bytes } from 'ethers'
 import { ConfigHelper } from '../../src/config/index.js'
-import { createHash } from 'crypto'
+import SHA256 from 'crypto-js/sha256.js'
 import { Aquarius } from '../services/Aquarius.js'
 import { NftFactory } from '../contracts/NFTFactory.js'
 import { Nft } from '../contracts/NFT.js'
@@ -240,9 +240,8 @@ export async function createAsset(
     flags = 2
   } else {
     const stringDDO = JSON.stringify(ddo)
-    const bytes = Buffer.from(stringDDO)
-    metadata = hexlify(bytes)
-    metadataHash = '0x' + createHash('sha256').update(metadata).digest('hex')
+    metadata = hexlify(toUtf8Bytes(stringDDO))
+    metadataHash = '0x' + SHA256(metadata).toString()
     flags = 0
   }
 

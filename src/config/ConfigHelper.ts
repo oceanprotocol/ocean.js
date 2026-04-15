@@ -1,6 +1,5 @@
 // eslint-disable-next-line import/no-named-default
 import { default as DefaultContractsAddresses } from '@oceanprotocol/contracts/addresses/address.json'
-import fs from 'fs'
 import { Config } from '.'
 import { LoggerInstance } from '../utils/Logger.js'
 
@@ -273,14 +272,15 @@ export class ConfigHelper {
       return null
     }
 
-    let addresses
+    let addresses = null
     try {
-      addresses = process.env.ADDRESS_FILE
-        ? JSON.parse(
-            // eslint-disable-next-line security/detect-non-literal-fs-filename
-            fs.readFileSync(process.env.ADDRESS_FILE, 'utf8')
-          )
-        : null
+      if (typeof window === 'undefined' && process.env.ADDRESS_FILE) {
+        // Node.js only: read custom address file from filesystem
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
+        const fs = require('fs')
+        // eslint-disable-next-line security/detect-non-literal-fs-filename
+        addresses = JSON.parse(fs.readFileSync(process.env.ADDRESS_FILE, 'utf8'))
+      }
     } catch (e) {
       console.log(e)
       addresses = null

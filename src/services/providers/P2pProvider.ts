@@ -14,6 +14,7 @@ import { multiaddr, type Multiaddr } from '@multiformats/multiaddr'
 import { Signer } from 'ethers'
 import { sleep } from '../../utils/General.js'
 import { LoggerInstance } from '../../utils/Logger.js'
+import { concatUint8Arrays } from '../../utils/bytes.js'
 import type { Connection, Stream } from '@libp2p/interface'
 import {
   StorageObject,
@@ -209,10 +210,10 @@ export class P2pProvider {
       }
     }
     if (val?.type === 'Buffer' && Array.isArray(val.data)) {
-      return Buffer.from(val.data).toString()
+      return new TextDecoder().decode(new Uint8Array(val.data))
     }
-    if (val instanceof Uint8Array || Buffer.isBuffer(val)) {
-      return Buffer.from(val).toString()
+    if (val instanceof Uint8Array) {
+      return new TextDecoder().decode(val)
     }
     return val
   }
@@ -977,7 +978,7 @@ export class P2pProvider {
     }
 
     // Collect binary file data. If the first frame wasn't a status JSON, it's data.
-    const chunks: Buffer[] = status === null ? [Buffer.from(firstBytes)] : []
+    const chunks: Uint8Array[] = status === null ? [new Uint8Array(firstBytes)] : []
     try {
       while (true) {
         const chunk = await lp.read({
@@ -985,7 +986,7 @@ export class P2pProvider {
             this.p2pConfig.dialTimeout ?? DEFAULT_DIAL_TIMEOUT_MS
           )
         })
-        chunks.push(Buffer.from(this.toUint8Array(chunk)))
+        chunks.push(new Uint8Array(this.toUint8Array(chunk)))
       }
     } catch (e) {
       if (!(e instanceof UnexpectedEOFError)) {
@@ -993,7 +994,7 @@ export class P2pProvider {
       }
     }
 
-    const combined = Buffer.concat(chunks)
+    const combined = concatUint8Arrays(chunks)
     return {
       data: combined.buffer.slice(
         combined.byteOffset,
