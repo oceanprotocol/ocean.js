@@ -149,6 +149,8 @@ jobs:
 
       - name: Run Barge
         working-directory: ${{ github.workspace }}/barge
+        env:
+          NODE_VERSION: pr-1329
         run: |
           bash -x start_ocean.sh 2>&1 > start-node.log &
 

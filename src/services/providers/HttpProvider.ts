@@ -21,13 +21,20 @@ import {
   ComputeResultStream,
   NodeStatus,
   NodeComputeJob,
-  NodeLogEntry
+  NodeLogEntry,
+  PersistentStorageAccessList,
+  PersistentStorageBucket,
+  PersistentStorageCreateBucketRequest,
+  PersistentStorageDeleteFileResponse,
+  PersistentStorageFileEntry,
+  PersistentStorageObject
 } from '../../@types/index.js'
 import { PROTOCOL_COMMANDS } from '../../@types/Provider.js'
 import { type DDO, type ValidateMetadata } from '@oceanprotocol/ddo-js'
 import { eciesencrypt } from '../../utils/eciesencrypt.js'
 import { signRequest } from '../../utils/SignatureUtils.js'
 import { getConsumerAddress, getSignature, getAuthorization } from './BaseProvider.js'
+import { type P2PRequestBodyStream } from './P2pProvider.js'
 
 export class HttpProvider {
   protected getConsumerAddress(s: Signer | string) {
@@ -40,6 +47,47 @@ export class HttpProvider {
 
   protected getAuthorization(s: Signer | string) {
     return getAuthorization(s)
+  }
+
+  private async getPersistentStorageSignaturePayload(
+    nodeUri: string,
+    signerOrAuthToken: Signer | string,
+    command: string,
+    signal?: AbortSignal
+  ): Promise<{ consumerAddress: string; nonce: string; signature: string }> {
+    if (typeof signerOrAuthToken === 'string') {
+      throw new Error(
+        'Persistent storage operations require a Signer because these commands require nonce/signature.'
+      )
+    }
+    const providerEndpoints = await this.getEndpoints(nodeUri)
+    const serviceEndpoints = await this.getServiceEndpoints(nodeUri, providerEndpoints)
+    const consumerAddress = await this.getConsumerAddress(signerOrAuthToken)
+    const nonce = (
+      (await this.getNonce(
+        nodeUri,
+        consumerAddress,
+        signal,
+        providerEndpoints,
+        serviceEndpoints
+      )) + 1
+    ).toString()
+    const signature = await this.getSignature(signerOrAuthToken, nonce, command)
+    if (!signature) throw new Error('Could not sign persistent storage request.')
+    return { consumerAddress, nonce, signature }
+  }
+
+  private resolvePersistentStorageRoute(
+    nodeUri: string,
+    serviceEndpoints: ServiceEndpoint[],
+    serviceNames: string[],
+    fallbackPath: string
+  ): string {
+    for (const serviceName of serviceNames) {
+      const endpoint = this.getEndpointURL(serviceEndpoints, serviceName)
+      if (endpoint?.urlPath) return endpoint.urlPath
+    }
+    return nodeUri.replace(/\/+$/, '') + fallbackPath
   }
 
   /**
@@ -1586,5 +1634,303 @@ export class HttpProvider {
         Authorization: authorization
       }
     })
+  }
+
+  public async createPersistentStorageBucket(
+    nodeUri: string,
+    signerOrAuthToken: Signer | string,
+    payload: PersistentStorageCreateBucketRequest,
+    signal?: AbortSignal
+  ): Promise<{
+    bucketId: string
+    owner: string
+    accessList: PersistentStorageAccessList[]
+  }> {
+    const providerEndpoints = await this.getEndpoints(nodeUri)
+    const serviceEndpoints = await this.getServiceEndpoints(nodeUri, providerEndpoints)
+    const route = this.resolvePersistentStorageRoute(
+      nodeUri,
+      serviceEndpoints,
+      ['persistentStorageCreateBucket'],
+      '/api/services/persistentStorage/buckets'
+    )
+    const authPayload = await this.getPersistentStorageSignaturePayload(
+      nodeUri,
+      signerOrAuthToken,
+      PROTOCOL_COMMANDS.PERSISTENT_STORAGE_CREATE_BUCKET,
+      signal
+    )
+    const response = await fetch(route, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        ...authPayload,
+        accessLists: payload.accessLists ?? []
+      }),
+      signal
+    })
+    if (!response.ok) throw new Error(await response.text())
+    return response.json()
+  }
+
+  public async getPersistentStorageBuckets(
+    nodeUri: string,
+    signerOrAuthToken: Signer | string,
+    owner: string,
+    chainId: number,
+    signal?: AbortSignal
+  ): Promise<PersistentStorageBucket[]> {
+    const providerEndpoints = await this.getEndpoints(nodeUri)
+    const serviceEndpoints = await this.getServiceEndpoints(nodeUri, providerEndpoints)
+    const route = this.resolvePersistentStorageRoute(
+      nodeUri,
+      serviceEndpoints,
+      ['persistentStorageGetBuckets'],
+      '/api/services/persistentStorage/buckets'
+    )
+    const authPayload = await this.getPersistentStorageSignaturePayload(
+      nodeUri,
+      signerOrAuthToken,
+      PROTOCOL_COMMANDS.PERSISTENT_STORAGE_GET_BUCKETS,
+      signal
+    )
+    const query = new URLSearchParams({
+      consumerAddress: authPayload.consumerAddress,
+      signature: authPayload.signature,
+      nonce: authPayload.nonce,
+      chainId: String(chainId),
+      owner
+    })
+    const response = await fetch(`${route}?${query.toString()}`, {
+      method: 'GET',
+      signal
+    })
+    if (!response.ok) throw new Error(await response.text())
+    return response.json()
+  }
+
+  public async listPersistentStorageFiles(
+    nodeUri: string,
+    signerOrAuthToken: Signer | string,
+    bucketId: string,
+    signal?: AbortSignal
+  ): Promise<PersistentStorageFileEntry[]> {
+    const providerEndpoints = await this.getEndpoints(nodeUri)
+    const serviceEndpoints = await this.getServiceEndpoints(nodeUri, providerEndpoints)
+    const routeBase = this.resolvePersistentStorageRoute(
+      nodeUri,
+      serviceEndpoints,
+      ['persistentStorageListFiles'],
+      `/api/services/persistentStorage/buckets/${encodeURIComponent(bucketId)}/files`
+    )
+    const authPayload = await this.getPersistentStorageSignaturePayload(
+      nodeUri,
+      signerOrAuthToken,
+      PROTOCOL_COMMANDS.PERSISTENT_STORAGE_LIST_FILES,
+      signal
+    )
+    const query = new URLSearchParams({
+      consumerAddress: authPayload.consumerAddress,
+      signature: authPayload.signature,
+      nonce: authPayload.nonce
+    })
+    const response = await fetch(`${routeBase}?${query.toString()}`, {
+      method: 'GET',
+      signal
+    })
+    if (!response.ok) throw new Error(await response.text())
+    return response.json()
+  }
+
+  public async getPersistentStorageFileObject(
+    nodeUri: string,
+    signerOrAuthToken: Signer | string,
+    bucketId: string,
+    fileName: string,
+    signal?: AbortSignal
+  ): Promise<PersistentStorageObject> {
+    const providerEndpoints = await this.getEndpoints(nodeUri)
+    const serviceEndpoints = await this.getServiceEndpoints(nodeUri, providerEndpoints)
+    const routeBase = this.resolvePersistentStorageRoute(
+      nodeUri,
+      serviceEndpoints,
+      ['persistentStorageGetFileObject'],
+      `/api/services/persistentStorage/buckets/${encodeURIComponent(
+        bucketId
+      )}/files/${encodeURIComponent(fileName)}/object`
+    )
+    const authPayload = await this.getPersistentStorageSignaturePayload(
+      nodeUri,
+      signerOrAuthToken,
+      PROTOCOL_COMMANDS.PERSISTENT_STORAGE_GET_FILE_OBJECT,
+      signal
+    )
+    const query = new URLSearchParams({
+      consumerAddress: authPayload.consumerAddress,
+      signature: authPayload.signature,
+      nonce: authPayload.nonce
+    })
+    const response = await fetch(`${routeBase}?${query.toString()}`, {
+      method: 'GET',
+      signal
+    })
+    if (!response.ok) throw new Error(await response.text())
+    return response.json()
+  }
+
+  public async uploadPersistentStorageFile(
+    nodeUri: string,
+    signerOrAuthToken: Signer | string,
+    bucketId: string,
+    fileName: string,
+    content: P2PRequestBodyStream,
+    signal?: AbortSignal
+  ): Promise<PersistentStorageFileEntry> {
+    const providerEndpoints = await this.getEndpoints(nodeUri)
+    const serviceEndpoints = await this.getServiceEndpoints(nodeUri, providerEndpoints)
+    const routeBase = this.resolvePersistentStorageRoute(
+      nodeUri,
+      serviceEndpoints,
+      ['persistentStorageUploadFile'],
+      `/api/services/persistentStorage/buckets/${encodeURIComponent(
+        bucketId
+      )}/files/${encodeURIComponent(fileName)}`
+    )
+    const authPayload = await this.getPersistentStorageSignaturePayload(
+      nodeUri,
+      signerOrAuthToken,
+      PROTOCOL_COMMANDS.PERSISTENT_STORAGE_UPLOAD_FILE,
+      signal
+    )
+    const query = new URLSearchParams({
+      consumerAddress: authPayload.consumerAddress,
+      signature: authPayload.signature,
+      nonce: authPayload.nonce
+    })
+
+    let body: BodyInit
+    // Node.js (cross-fetch/node-fetch): always use a Node Readable stream.
+    if (typeof window === 'undefined') {
+      const { Readable } = await import('stream')
+      const encoder = new TextEncoder()
+      const normalized = (async function* () {
+        for await (const chunk of content as AsyncIterable<unknown>) {
+          if (chunk instanceof Uint8Array) {
+            yield chunk
+            continue
+          }
+          if (typeof chunk === 'string') {
+            yield encoder.encode(chunk)
+            continue
+          }
+          if (chunk && typeof chunk === 'object' && ArrayBuffer.isView(chunk as any)) {
+            const v = chunk as ArrayBufferView
+            yield new Uint8Array(v.buffer, v.byteOffset, v.byteLength)
+            continue
+          }
+          throw new Error('Unsupported chunk type for HTTP persistent storage upload')
+        }
+      })()
+      body = Readable.from(normalized) as unknown as BodyInit
+    } else {
+      // Browser: wrap into ReadableStream.
+      const RS = (globalThis as any).ReadableStream as
+        | (new (opts: any) => ReadableStream)
+        | undefined
+      if (typeof RS !== 'function') {
+        throw new Error('ReadableStream is not available in this environment')
+      }
+      const encoder = new TextEncoder()
+      const iterator = (content as AsyncIterable<unknown>)[Symbol.asyncIterator]()
+      body = new RS({
+        async pull(controller: any) {
+          const { value, done } = await iterator.next()
+          if (done) {
+            controller.close()
+            return
+          }
+          if (value instanceof Uint8Array) {
+            controller.enqueue(value)
+            return
+          }
+          if (typeof value === 'string') {
+            controller.enqueue(encoder.encode(value))
+            return
+          }
+          if (value && typeof value === 'object' && ArrayBuffer.isView(value as any)) {
+            const v = value as ArrayBufferView
+            controller.enqueue(new Uint8Array(v.buffer, v.byteOffset, v.byteLength))
+            return
+          }
+          throw new Error('Unsupported chunk type for HTTP persistent storage upload')
+        },
+        async cancel() {
+          if (typeof iterator.return === 'function') {
+            await iterator.return()
+          }
+        }
+      }) as unknown as BodyInit
+    }
+
+    const uploadHeaders: Record<string, string> = {
+      'Content-Type': 'application/octet-stream'
+    }
+    const maybeAuth = this.getAuthorization(signerOrAuthToken)
+    if (maybeAuth) uploadHeaders.Authorization = maybeAuth
+
+    const response = await fetch(`${routeBase}?${query.toString()}`, {
+      method: 'POST',
+      body,
+      headers: {
+        ...uploadHeaders
+      },
+      signal
+    })
+    if (!response.ok) throw new Error(await response.text())
+    return response.json()
+  }
+
+  public async deletePersistentStorageFile(
+    nodeUri: string,
+    signerOrAuthToken: Signer | string,
+    bucketId: string,
+    fileName: string,
+    chainId: number,
+    signal?: AbortSignal
+  ): Promise<PersistentStorageDeleteFileResponse> {
+    const providerEndpoints = await this.getEndpoints(nodeUri)
+    const serviceEndpoints = await this.getServiceEndpoints(nodeUri, providerEndpoints)
+    const routeBase = this.resolvePersistentStorageRoute(
+      nodeUri,
+      serviceEndpoints,
+      ['persistentStorageDeleteFile'],
+      `/api/services/persistentStorage/buckets/${encodeURIComponent(
+        bucketId
+      )}/files/${encodeURIComponent(fileName)}`
+    )
+    const authPayload = await this.getPersistentStorageSignaturePayload(
+      nodeUri,
+      signerOrAuthToken,
+      PROTOCOL_COMMANDS.PERSISTENT_STORAGE_DELETE_FILE,
+      signal
+    )
+    const query = new URLSearchParams({
+      consumerAddress: authPayload.consumerAddress,
+      signature: authPayload.signature,
+      nonce: authPayload.nonce,
+      chainId: String(chainId)
+    })
+    const response = await fetch(`${routeBase}?${query.toString()}`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(this.getAuthorization(signerOrAuthToken)
+          ? { Authorization: this.getAuthorization(signerOrAuthToken) }
+          : {})
+      },
+      signal
+    })
+    if (!response.ok) throw new Error(await response.text())
+    return response.json()
   }
 }
