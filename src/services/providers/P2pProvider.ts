@@ -34,7 +34,13 @@ import {
   DownloadResponse,
   ComputeResultStream,
   NodeStatus,
-  NodeComputeJob
+  NodeComputeJob,
+  PersistentStorageAccessList,
+  PersistentStorageBucket,
+  PersistentStorageCreateBucketRequest,
+  PersistentStorageDeleteFileResponse,
+  PersistentStorageFileEntry,
+  PersistentStorageObject
 } from '../../@types/index.js'
 import { PROTOCOL_COMMANDS, NodeLogsParams, NodeLogEntry } from '../../@types/Provider.js'
 import { type DDO, type ValidateMetadata } from '@oceanprotocol/ddo-js'
@@ -1549,5 +1555,168 @@ export class P2pProvider {
     payload: Record<string, any>
   ): Promise<any> {
     return this.sendP2pCommand(nodeUri, PROTOCOL_COMMANDS.PUSH_CONFIG, payload)
+  }
+
+  private async getPersistentStorageSignaturePayload(
+    nodeUri: string | Multiaddr[],
+    signerOrAuthToken: Signer | string,
+    command: string,
+    signal?: AbortSignal
+  ): Promise<{ consumerAddress: string; nonce: string; signature: string }> {
+    if (typeof signerOrAuthToken === 'string') {
+      throw new Error(
+        'Persistent storage operations require a Signer because these commands require nonce/signature.'
+      )
+    }
+    const consumerAddress = await this.getConsumerAddress(signerOrAuthToken)
+    const nonce = ((await this.getNonce(nodeUri, consumerAddress, signal)) + 1).toString()
+    const signature = await this.getSignature(signerOrAuthToken, nonce, command)
+    if (!signature) {
+      throw new Error('Could not sign persistent storage request.')
+    }
+    return { consumerAddress, nonce, signature }
+  }
+
+  public async createPersistentStorageBucket(
+    nodeUri: string | Multiaddr[],
+    signerOrAuthToken: Signer | string,
+    payload: PersistentStorageCreateBucketRequest,
+    signal?: AbortSignal
+  ): Promise<{
+    bucketId: string
+    owner: string
+    accessList: PersistentStorageAccessList[]
+  }> {
+    const authPayload = await this.getPersistentStorageSignaturePayload(
+      nodeUri,
+      signerOrAuthToken,
+      PROTOCOL_COMMANDS.PERSISTENT_STORAGE_CREATE_BUCKET,
+      signal
+    )
+    return this.sendP2pCommand(
+      nodeUri,
+      PROTOCOL_COMMANDS.PERSISTENT_STORAGE_CREATE_BUCKET,
+      {
+        ...authPayload,
+        accessLists: payload.accessLists ?? []
+      },
+      signerOrAuthToken,
+      signal
+    )
+  }
+
+  public async getPersistentStorageBuckets(
+    nodeUri: string | Multiaddr[],
+    signerOrAuthToken: Signer | string,
+    owner: string,
+    chainId: number,
+    signal?: AbortSignal
+  ): Promise<PersistentStorageBucket[]> {
+    const authPayload = await this.getPersistentStorageSignaturePayload(
+      nodeUri,
+      signerOrAuthToken,
+      PROTOCOL_COMMANDS.PERSISTENT_STORAGE_GET_BUCKETS,
+      signal
+    )
+    const result = await this.sendP2pCommand(
+      nodeUri,
+      PROTOCOL_COMMANDS.PERSISTENT_STORAGE_GET_BUCKETS,
+      { ...authPayload, owner, chainId },
+      signerOrAuthToken,
+      signal
+    )
+    return Array.isArray(result) ? result : []
+  }
+
+  public async listPersistentStorageFiles(
+    nodeUri: string | Multiaddr[],
+    signerOrAuthToken: Signer | string,
+    bucketId: string,
+    signal?: AbortSignal
+  ): Promise<PersistentStorageFileEntry[]> {
+    const authPayload = await this.getPersistentStorageSignaturePayload(
+      nodeUri,
+      signerOrAuthToken,
+      PROTOCOL_COMMANDS.PERSISTENT_STORAGE_LIST_FILES,
+      signal
+    )
+    const result = await this.sendP2pCommand(
+      nodeUri,
+      PROTOCOL_COMMANDS.PERSISTENT_STORAGE_LIST_FILES,
+      { ...authPayload, bucketId },
+      signerOrAuthToken,
+      signal
+    )
+    return Array.isArray(result) ? result : []
+  }
+
+  public async getPersistentStorageFileObject(
+    nodeUri: string | Multiaddr[],
+    signerOrAuthToken: Signer | string,
+    bucketId: string,
+    fileName: string,
+    signal?: AbortSignal
+  ): Promise<PersistentStorageObject> {
+    const authPayload = await this.getPersistentStorageSignaturePayload(
+      nodeUri,
+      signerOrAuthToken,
+      PROTOCOL_COMMANDS.PERSISTENT_STORAGE_GET_FILE_OBJECT,
+      signal
+    )
+    return this.sendP2pCommand(
+      nodeUri,
+      PROTOCOL_COMMANDS.PERSISTENT_STORAGE_GET_FILE_OBJECT,
+      { ...authPayload, bucketId, fileName },
+      signerOrAuthToken,
+      signal
+    )
+  }
+
+  public async uploadPersistentStorageFile(
+    nodeUri: string | Multiaddr[],
+    signerOrAuthToken: Signer | string,
+    bucketId: string,
+    fileName: string,
+    content: P2PRequestBodyStream,
+    signal?: AbortSignal
+  ): Promise<PersistentStorageFileEntry> {
+    const authPayload = await this.getPersistentStorageSignaturePayload(
+      nodeUri,
+      signerOrAuthToken,
+      PROTOCOL_COMMANDS.PERSISTENT_STORAGE_UPLOAD_FILE,
+      signal
+    )
+    return this.sendP2pCommand(
+      nodeUri,
+      PROTOCOL_COMMANDS.PERSISTENT_STORAGE_UPLOAD_FILE,
+      { ...authPayload, bucketId, fileName },
+      signerOrAuthToken,
+      signal,
+      0,
+      content
+    )
+  }
+
+  public async deletePersistentStorageFile(
+    nodeUri: string | Multiaddr[],
+    signerOrAuthToken: Signer | string,
+    bucketId: string,
+    fileName: string,
+    chainId: number,
+    signal?: AbortSignal
+  ): Promise<PersistentStorageDeleteFileResponse> {
+    const authPayload = await this.getPersistentStorageSignaturePayload(
+      nodeUri,
+      signerOrAuthToken,
+      PROTOCOL_COMMANDS.PERSISTENT_STORAGE_DELETE_FILE,
+      signal
+    )
+    return this.sendP2pCommand(
+      nodeUri,
+      PROTOCOL_COMMANDS.PERSISTENT_STORAGE_DELETE_FILE,
+      { ...authPayload, bucketId, fileName, chainId },
+      signerOrAuthToken,
+      signal
+    )
   }
 }
