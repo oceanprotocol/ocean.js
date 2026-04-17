@@ -1,3 +1,4 @@
+import { AccessList } from './AccessList'
 export interface HeadersObject {
   [key: string]: string
 }
@@ -75,9 +76,7 @@ export type StorageObject =
   | FtpFileObject
   | PersistentStorageObject
 
-export interface PersistentStorageAccessList {
-  [key: string]: unknown
-}
+export type PersistentStorageAccessList = AccessList
 
 export interface PersistentStorageCreateBucketRequest {
   accessLists: PersistentStorageAccessList[]
