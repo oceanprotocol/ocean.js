@@ -2,6 +2,7 @@
 import { default as DefaultContractsAddresses } from '@oceanprotocol/contracts/addresses/address.json'
 import { Config } from '.'
 import { LoggerInstance } from '../utils/Logger.js'
+import fs from 'fs'
 
 const configHelperNetworksBase: Config = {
   chainId: null,
@@ -276,8 +277,6 @@ export class ConfigHelper {
     try {
       if (typeof window === 'undefined' && process.env.ADDRESS_FILE) {
         // Node.js only: read custom address file from filesystem
-        // eslint-disable-next-line @typescript-eslint/no-require-imports
-        const fs = require('fs')
         // eslint-disable-next-line security/detect-non-literal-fs-filename
         addresses = JSON.parse(fs.readFileSync(process.env.ADDRESS_FILE, 'utf8'))
       }

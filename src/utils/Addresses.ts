@@ -1,4 +1,5 @@
 import { ethers, Signer } from 'ethers'
+import fs from 'fs'
 import { NftFactory } from '../contracts/NFTFactory.js'
 // eslint-disable-next-line import/no-named-default
 import ERC20Template from '@oceanprotocol/contracts/artifacts/contracts/interfaces/IERC20Template.sol/IERC20Template.json'
@@ -13,8 +14,6 @@ export function getOceanArtifactsAddresses(): any {
   try {
     if (typeof window === 'undefined' && process.env.ADDRESS_FILE) {
       // Node.js only: read custom address file from filesystem
-      // eslint-disable-next-line @typescript-eslint/no-require-imports
-      const fs = require('fs')
       // eslint-disable-next-line security/detect-non-literal-fs-filename
       const data = fs.readFileSync(process.env.ADDRESS_FILE, 'utf8')
       return JSON.parse(data)
