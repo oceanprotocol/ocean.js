@@ -23,13 +23,19 @@ import {
   NodeStatus,
   NodeComputeJob,
   NodeLogsParams,
-  NodeLogEntry
+  NodeLogEntry,
+  PersistentStorageAccessList,
+  PersistentStorageBucket,
+  PersistentStorageCreateBucketRequest,
+  PersistentStorageDeleteFileResponse,
+  PersistentStorageFileEntry,
+  PersistentStorageObject
 } from '../../@types/index.js'
 import { type DDO, type ValidateMetadata } from '@oceanprotocol/ddo-js'
 import { decodeJwt } from '../../utils/Jwt.js'
 import { signRequest } from '../../utils/SignatureUtils.js'
 import { HttpProvider } from './HttpProvider.js'
-import { P2pProvider, type P2PConfig } from './P2pProvider.js'
+import { P2pProvider, type P2PConfig, type P2PRequestBodyStream } from './P2pProvider.js'
 
 export { OCEAN_P2P_PROTOCOL, type P2PConfig } from './P2pProvider.js'
 
@@ -516,6 +522,106 @@ export class BaseProvider {
     logParams?: NodeLogsParams
   ): Promise<NodeLogEntry[]> {
     return this.p2pProvider.fetchNodeLogs(nodeUri, address, signature, nonce, logParams)
+  }
+
+  public async createPersistentStorageBucket(
+    nodeUri: string | Multiaddr[],
+    signerOrAuthToken: Signer | string,
+    payload: PersistentStorageCreateBucketRequest,
+    signal?: AbortSignal
+  ): Promise<{
+    bucketId: string
+    owner: string
+    accessList: PersistentStorageAccessList[]
+  }> {
+    return this.getImpl(nodeUri).createPersistentStorageBucket(
+      nodeUri,
+      signerOrAuthToken,
+      payload,
+      signal
+    )
+  }
+
+  public async getPersistentStorageBuckets(
+    nodeUri: string | Multiaddr[],
+    signerOrAuthToken: Signer | string,
+    owner: string,
+    chainId: number,
+    signal?: AbortSignal
+  ): Promise<PersistentStorageBucket[]> {
+    return this.getImpl(nodeUri).getPersistentStorageBuckets(
+      nodeUri,
+      signerOrAuthToken,
+      owner,
+      chainId,
+      signal
+    )
+  }
+
+  public async listPersistentStorageFiles(
+    nodeUri: string | Multiaddr[],
+    signerOrAuthToken: Signer | string,
+    bucketId: string,
+    signal?: AbortSignal
+  ): Promise<PersistentStorageFileEntry[]> {
+    return this.getImpl(nodeUri).listPersistentStorageFiles(
+      nodeUri,
+      signerOrAuthToken,
+      bucketId,
+      signal
+    )
+  }
+
+  public async getPersistentStorageFileObject(
+    nodeUri: string | Multiaddr[],
+    signerOrAuthToken: Signer | string,
+    bucketId: string,
+    fileName: string,
+    signal?: AbortSignal
+  ): Promise<PersistentStorageObject> {
+    return this.getImpl(nodeUri).getPersistentStorageFileObject(
+      nodeUri,
+      signerOrAuthToken,
+      bucketId,
+      fileName,
+      signal
+    )
+  }
+
+  public async uploadPersistentStorageFile(
+    nodeUri: string | Multiaddr[],
+    signerOrAuthToken: Signer | string,
+    bucketId: string,
+    fileName: string,
+    content: P2PRequestBodyStream,
+    signal?: AbortSignal
+  ): Promise<PersistentStorageFileEntry> {
+    return this.getImpl(nodeUri).uploadPersistentStorageFile(
+      nodeUri,
+      signerOrAuthToken,
+      bucketId,
+      fileName,
+      content,
+      signal
+    )
+  }
+
+  public async deletePersistentStorageFile(
+    nodeUri: string | Multiaddr[],
+    signerOrAuthToken: Signer | string,
+    bucketId: string,
+    fileName: string,
+    chainId: number,
+    signal?: AbortSignal
+  ): Promise<PersistentStorageDeleteFileResponse> {
+    return this.getImpl(nodeUri).deletePersistentStorageFile(
+      nodeUri,
+      signerOrAuthToken,
+      bucketId,
+      fileName,
+      chainId,
+      signal
+    )
   }
 
   public async fetchConfig(

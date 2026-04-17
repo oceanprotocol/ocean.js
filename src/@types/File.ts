@@ -1,3 +1,4 @@
+import { AccessList } from './AccessList'
 export interface HeadersObject {
   [key: string]: string
 }
@@ -61,9 +62,40 @@ export interface FtpFileObject extends BaseFileObject {
   url: string
 }
 
+export interface PersistentStorageObject extends BaseFileObject {
+  type: 'nodePersistentStorage'
+  bucketId: string
+  fileName: string
+}
+
 export type StorageObject =
   | UrlFileObject
   | IpfsFileObject
   | ArweaveFileObject
   | S3FileObject
   | FtpFileObject
+  | PersistentStorageObject
+
+export type PersistentStorageAccessList = AccessList
+
+export interface PersistentStorageCreateBucketRequest {
+  accessLists: PersistentStorageAccessList[]
+}
+
+export interface PersistentStorageBucket {
+  bucketId: string
+  owner: string
+  createdAt: number
+  accessLists: PersistentStorageAccessList[]
+}
+
+export interface PersistentStorageFileEntry {
+  bucketId: string
+  name: string
+  size: number
+  lastModified: number
+}
+
+export interface PersistentStorageDeleteFileResponse {
+  success: boolean
+}

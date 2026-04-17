@@ -1,3 +1,4 @@
+import type { AccessList } from './AccessList.js'
 export interface ProviderFees {
   providerFeeAddress: string
   providerFeeToken: string
@@ -83,6 +84,9 @@ export interface NodeStatus {
     accessLists: string[] | null
   }
   uptime: number
+  persistentStorage?: {
+    accessLists?: AccessList[]
+  }
 }
 export interface UserCustomParameters {
   [key: string]: any
@@ -125,7 +129,13 @@ export const PROTOCOL_COMMANDS = {
   FETCH_CONFIG: 'fetchConfig',
   PUSH_CONFIG: 'pushConfig',
   GET_LOGS: 'getLogs',
-  JOBS: 'jobs'
+  JOBS: 'jobs',
+  PERSISTENT_STORAGE_CREATE_BUCKET: 'persistentStorageCreateBucket',
+  PERSISTENT_STORAGE_GET_BUCKETS: 'persistentStorageGetBuckets',
+  PERSISTENT_STORAGE_LIST_FILES: 'persistentStorageListFiles',
+  PERSISTENT_STORAGE_UPLOAD_FILE: 'persistentStorageUploadFile',
+  PERSISTENT_STORAGE_GET_FILE_OBJECT: 'persistentStorageGetFileObject',
+  PERSISTENT_STORAGE_DELETE_FILE: 'persistentStorageDeleteFile'
 }
 
 export interface NodeLogsParams {
