@@ -101,7 +101,6 @@ describe('Provider persistent storage tests', function () {
     config = await getTestConfig(ownerSigner)
     ownerAddress = await ownerSigner.getAddress()
     chainId = Number((await ownerSigner.provider?.getNetwork())?.chainId)
-    config = await getTestConfig(ownerSigner)
     providerUrl = config?.oceanNodeUri
     nodeUri = providerUrl
     const status = await ProviderInstance.getNodeStatus(providerUrl)
