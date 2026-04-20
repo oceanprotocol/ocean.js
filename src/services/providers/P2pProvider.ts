@@ -1563,11 +1563,9 @@ export class P2pProvider {
     signerOrAuthToken: Signer | string,
     command: string,
     signal?: AbortSignal
-  ): Promise<{ consumerAddress: string; nonce: string; signature: string }> {
+  ): Promise<{} | { consumerAddress: string; nonce: string; signature: string }> {
     if (typeof signerOrAuthToken === 'string') {
-      throw new Error(
-        'Persistent storage operations require a Signer because these commands require nonce/signature.'
-      )
+      return {}
     }
     const consumerAddress = await this.getConsumerAddress(signerOrAuthToken)
     const nonce = ((await this.getNonce(nodeUri, consumerAddress, signal)) + 1).toString()
@@ -1610,7 +1608,6 @@ export class P2pProvider {
     nodeUri: string | Multiaddr[],
     signerOrAuthToken: Signer | string,
     owner: string,
-    chainId: number,
     signal?: AbortSignal
   ): Promise<PersistentStorageBucket[]> {
     const authPayload = await this.getPersistentStorageSignaturePayload(
@@ -1622,7 +1619,7 @@ export class P2pProvider {
     const result = await this.sendP2pCommand(
       nodeUri,
       PROTOCOL_COMMANDS.PERSISTENT_STORAGE_GET_BUCKETS,
-      { ...authPayload, owner, chainId },
+      { ...authPayload, owner },
       signerOrAuthToken,
       signal
     )
@@ -1703,7 +1700,6 @@ export class P2pProvider {
     signerOrAuthToken: Signer | string,
     bucketId: string,
     fileName: string,
-    chainId: number,
     signal?: AbortSignal
   ): Promise<PersistentStorageDeleteFileResponse> {
     const authPayload = await this.getPersistentStorageSignaturePayload(
@@ -1715,7 +1711,7 @@ export class P2pProvider {
     return this.sendP2pCommand(
       nodeUri,
       PROTOCOL_COMMANDS.PERSISTENT_STORAGE_DELETE_FILE,
-      { ...authPayload, bucketId, fileName, chainId },
+      { ...authPayload, bucketId, fileName },
       signerOrAuthToken,
       signal
     )
