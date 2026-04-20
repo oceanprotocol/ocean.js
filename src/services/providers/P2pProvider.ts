@@ -1563,11 +1563,9 @@ export class P2pProvider {
     signerOrAuthToken: Signer | string,
     command: string,
     signal?: AbortSignal
-  ): Promise<{ consumerAddress: string; nonce: string; signature: string }> {
+  ): Promise<{} | { consumerAddress: string; nonce: string; signature: string }> {
     if (typeof signerOrAuthToken === 'string') {
-      throw new Error(
-        'Persistent storage operations require a Signer because these commands require nonce/signature.'
-      )
+      return {}
     }
     const consumerAddress = await this.getConsumerAddress(signerOrAuthToken)
     const nonce = ((await this.getNonce(nodeUri, consumerAddress, signal)) + 1).toString()

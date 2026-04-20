@@ -54,11 +54,9 @@ export class HttpProvider {
     signerOrAuthToken: Signer | string,
     command: string,
     signal?: AbortSignal
-  ): Promise<{ consumerAddress: string; nonce: string; signature: string }> {
+  ): Promise<{} | { consumerAddress: string; nonce: string; signature: string }> {
     if (typeof signerOrAuthToken === 'string') {
-      throw new Error(
-        'Persistent storage operations require a Signer because these commands require nonce/signature.'
-      )
+      return {}
     }
     const providerEndpoints = await this.getEndpoints(nodeUri)
     const serviceEndpoints = await this.getServiceEndpoints(nodeUri, providerEndpoints)
@@ -1660,9 +1658,13 @@ export class HttpProvider {
       PROTOCOL_COMMANDS.PERSISTENT_STORAGE_CREATE_BUCKET,
       signal
     )
+    const headers: Record<string, string> = { 'Content-Type': 'application/json' }
+    if (typeof signerOrAuthToken === 'string') {
+      headers.Authorization = signerOrAuthToken
+    }
     const response = await fetch(route, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers,
       body: JSON.stringify({
         ...authPayload,
         accessLists: payload.accessLists ?? []
@@ -1694,15 +1696,18 @@ export class HttpProvider {
       PROTOCOL_COMMANDS.PERSISTENT_STORAGE_GET_BUCKETS,
       signal
     )
+    const headers: Record<string, string> = {}
+    if (typeof signerOrAuthToken === 'string') {
+      headers.Authorization = signerOrAuthToken
+    }
     const query = new URLSearchParams({
-      consumerAddress: authPayload.consumerAddress,
-      signature: authPayload.signature,
-      nonce: authPayload.nonce,
+      ...authPayload,
       chainId: String(chainId),
       owner
     })
     const response = await fetch(`${route}?${query.toString()}`, {
       method: 'GET',
+      headers,
       signal
     })
     if (!response.ok) throw new Error(await response.text())
@@ -1729,13 +1734,17 @@ export class HttpProvider {
       PROTOCOL_COMMANDS.PERSISTENT_STORAGE_LIST_FILES,
       signal
     )
+    const headers: Record<string, string> = {}
+    if (typeof signerOrAuthToken === 'string') {
+      headers.Authorization = signerOrAuthToken
+    }
     const query = new URLSearchParams({
-      consumerAddress: authPayload.consumerAddress,
-      signature: authPayload.signature,
-      nonce: authPayload.nonce
+      ...authPayload
     })
+
     const response = await fetch(`${routeBase}?${query.toString()}`, {
       method: 'GET',
+      headers,
       signal
     })
     if (!response.ok) throw new Error(await response.text())
@@ -1766,12 +1775,15 @@ export class HttpProvider {
       signal
     )
     const query = new URLSearchParams({
-      consumerAddress: authPayload.consumerAddress,
-      signature: authPayload.signature,
-      nonce: authPayload.nonce
+      ...authPayload
     })
+    const headers: Record<string, string> = {}
+    if (typeof signerOrAuthToken === 'string') {
+      headers.Authorization = signerOrAuthToken
+    }
     const response = await fetch(`${routeBase}?${query.toString()}`, {
       method: 'GET',
+      headers,
       signal
     })
     if (!response.ok) throw new Error(await response.text())
@@ -1803,9 +1815,7 @@ export class HttpProvider {
       signal
     )
     const query = new URLSearchParams({
-      consumerAddress: authPayload.consumerAddress,
-      signature: authPayload.signature,
-      nonce: authPayload.nonce
+      ...authPayload
     })
 
     let body: BodyInit
@@ -1914,20 +1924,18 @@ export class HttpProvider {
       PROTOCOL_COMMANDS.PERSISTENT_STORAGE_DELETE_FILE,
       signal
     )
+    const headers: Record<string, string> = { 'Content-Type': 'application/json' }
+    if (typeof signerOrAuthToken === 'string') {
+      headers.Authorization = signerOrAuthToken
+    }
+
     const query = new URLSearchParams({
-      consumerAddress: authPayload.consumerAddress,
-      signature: authPayload.signature,
-      nonce: authPayload.nonce,
+      ...authPayload,
       chainId: String(chainId)
     })
     const response = await fetch(`${routeBase}?${query.toString()}`, {
       method: 'DELETE',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(this.getAuthorization(signerOrAuthToken)
-          ? { Authorization: this.getAuthorization(signerOrAuthToken) }
-          : {})
-      },
+      headers,
       signal
     })
     if (!response.ok) throw new Error(await response.text())
