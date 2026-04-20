@@ -170,8 +170,7 @@ describe('Provider persistent storage tests', function () {
     const buckets = await ProviderInstance.getPersistentStorageBuckets(
       nodeUri,
       ownerSigner,
-      ownerAddress,
-      chainId
+      ownerAddress
     )
     assert(
       buckets.some((bucket) => bucket.bucketId === bucketId),
@@ -182,8 +181,7 @@ describe('Provider persistent storage tests', function () {
       nodeUri,
       ownerSigner,
       bucketId,
-      fileName,
-      chainId
+      fileName
     )
     assert(deleted?.success === true, 'Delete did not return success=true')
   })
