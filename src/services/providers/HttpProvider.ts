@@ -1679,7 +1679,6 @@ export class HttpProvider {
     nodeUri: string,
     signerOrAuthToken: Signer | string,
     owner: string,
-    chainId: number,
     signal?: AbortSignal
   ): Promise<PersistentStorageBucket[]> {
     const providerEndpoints = await this.getEndpoints(nodeUri)
@@ -1702,7 +1701,6 @@ export class HttpProvider {
     }
     const query = new URLSearchParams({
       ...authPayload,
-      chainId: String(chainId),
       owner
     })
     const response = await fetch(`${route}?${query.toString()}`, {
@@ -1905,7 +1903,6 @@ export class HttpProvider {
     signerOrAuthToken: Signer | string,
     bucketId: string,
     fileName: string,
-    chainId: number,
     signal?: AbortSignal
   ): Promise<PersistentStorageDeleteFileResponse> {
     const providerEndpoints = await this.getEndpoints(nodeUri)
@@ -1930,8 +1927,7 @@ export class HttpProvider {
     }
 
     const query = new URLSearchParams({
-      ...authPayload,
-      chainId: String(chainId)
+      ...authPayload
     })
     const response = await fetch(`${routeBase}?${query.toString()}`, {
       method: 'DELETE',

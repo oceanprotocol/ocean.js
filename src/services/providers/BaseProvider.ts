@@ -546,14 +546,12 @@ export class BaseProvider {
     nodeUri: string | Multiaddr[],
     signerOrAuthToken: Signer | string,
     owner: string,
-    chainId: number,
     signal?: AbortSignal
   ): Promise<PersistentStorageBucket[]> {
     return this.getImpl(nodeUri).getPersistentStorageBuckets(
       nodeUri,
       signerOrAuthToken,
       owner,
-      chainId,
       signal
     )
   }
@@ -611,7 +609,6 @@ export class BaseProvider {
     signerOrAuthToken: Signer | string,
     bucketId: string,
     fileName: string,
-    chainId: number,
     signal?: AbortSignal
   ): Promise<PersistentStorageDeleteFileResponse> {
     return this.getImpl(nodeUri).deletePersistentStorageFile(
@@ -619,7 +616,6 @@ export class BaseProvider {
       signerOrAuthToken,
       bucketId,
       fileName,
-      chainId,
       signal
     )
   }
