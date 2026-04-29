@@ -142,6 +142,10 @@ export class BaseProvider {
     return isP2pUri(node) ? this.p2pProvider : this.httpProvider
   }
 
+  public getP2PProvider() {
+    return this.p2pProvider
+  }
+
   public async getNonce(
     nodeUri: OceanNode,
     consumerAddress: string,

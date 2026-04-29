@@ -5,8 +5,8 @@ import { webSockets } from '@libp2p/websockets'
 import { tcp } from '@libp2p/tcp'
 import { circuitRelayTransport } from '@libp2p/circuit-relay-v2'
 import { bootstrap } from '@libp2p/bootstrap'
-import { identify } from '@libp2p/identify'
-import { EventTypes, KadDHT, kadDHT } from '@libp2p/kad-dht'
+import { identify, identifyPush } from '@libp2p/identify'
+import { EventTypes, KadDHT, kadDHT, passthroughMapper } from '@libp2p/kad-dht'
 import { ping } from '@libp2p/ping'
 import { peerIdFromString } from '@libp2p/peer-id'
 import { lpStream, UnexpectedEOFError } from '@libp2p/utils'
@@ -56,6 +56,11 @@ import {
   isAgentSignature
 } from './BaseProvider.js'
 import { eciesencrypt } from '../../utils/eciesencrypt.js'
+import { CID } from 'multiformats/cid'
+import { sha256 } from 'multiformats/hashes/sha2'
+import * as multiFormatRaw from 'multiformats/codecs/raw'
+import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
+
 
 export const OCEAN_P2P_PROTOCOL = '/ocean/nodes/1.0.0'
 const OCEAN_DHT_PROTOCOL = '/ocean/nodes/1.0.0/kad/1.0.0'
@@ -262,8 +267,15 @@ export class P2pProvider {
       ],
       services: {
         identify: identify(),
+        identifyPush: identifyPush(),
         ping: ping(),
-        dht: kadDHT({ protocol: OCEAN_DHT_PROTOCOL, clientMode: true })
+        dht: kadDHT({
+          peerInfoMapper: passthroughMapper,
+          allowQueryWithZeroPeers: false,
+          kBucketSize: 20,
+          protocol: OCEAN_DHT_PROTOCOL,
+          clientMode: false // Servers can better query the network
+        })
       },
       // Without this we are blocking connection to plain ws - the bundler thinks we are in a browser.
       // This also applies to local nodes.
@@ -307,6 +319,41 @@ export class P2pProvider {
 
   private toUint8Array(chunk: Uint8Array | { subarray(): Uint8Array }): Uint8Array {
     return chunk instanceof Uint8Array ? chunk : chunk.subarray()
+  }
+
+  public async cidFromRawString(data: string) {
+    const hash = await sha256.digest(uint8ArrayFromString(data))
+    const cid = CID.create(1, multiFormatRaw.code, hash)
+    return cid
+  }
+
+  async getProvidersForString(
+    input: string,
+    timeout?: number
+  ): Promise<Array<{ id: string; multiaddrs: any[] }>> {
+    const node = await this.getOrCreateLibp2pNode()
+    const cid = await this.cidFromRawString(input)
+    const peersFound = []
+    const effectiveTimeout = timeout ?? 20000
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), effectiveTimeout)
+    try {
+      for await (const result of node.contentRouting.findProviders(cid, {
+        signal: controller.signal,
+        useCache: false,
+        useNetwork: true
+      })) {
+        peersFound.push(result)
+      }
+    } catch (err) {
+      if (err.name !== 'AbortError') console.error(err)
+    } finally {
+      clearTimeout(timeoutId)
+    }
+    return peersFound.map((peer) => ({
+      id: peer.id.toString(),
+      multiaddrs: peer.multiaddrs
+    }))
   }
 
   private isDialable(ma: Multiaddr): boolean {
