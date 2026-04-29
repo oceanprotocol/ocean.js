@@ -448,6 +448,16 @@ export class P2pProvider {
       )
       return conn
     } catch (err: any) {
+      if (!includeP2PCircuit && afterPFilter < beforePFilter) {
+        LoggerInstance.debug(
+          `[P2P] Direct dial failed, falling back to relayed addresses...`
+        )
+        return this.getConnection(
+          { nodeId: peerId ? peerId.toString() : '', multiaddress: addrs } as NodeP2P,
+          signal,
+          true
+        )
+      }
       throw new Error(
         `Cannot dial peer ${peerId?.toString()}. ` +
           (addrs.length > 0
@@ -486,7 +496,7 @@ export class P2pProvider {
     signerOrAuthToken: signerOrAuthTokenOrSignature,
     command: string,
     signal?: AbortSignal
-  ): Promise<{ consumerAddress: string; nonce: string; signature: string }> {
+  ): Promise<{ consumerAddress: string; nonce: string; signature: string | null }> {
     if (isAgentSignature(signerOrAuthToken)) {
       return {
         consumerAddress: signerOrAuthToken.consumerAddress,

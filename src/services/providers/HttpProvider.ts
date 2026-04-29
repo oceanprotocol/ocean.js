@@ -67,7 +67,7 @@ export class HttpProvider {
     signal?: AbortSignal,
     providerEndpoints?: any,
     serviceEndpoints?: any
-  ): Promise<{ consumerAddress: string; nonce: string; signature: string }> {
+  ): Promise<{ consumerAddress: string; nonce: string; signature: string | null }> {
     if (!providerEndpoints) providerEndpoints = await this.getEndpoints(nodeUri)
     if (!serviceEndpoints)
       serviceEndpoints = await this.getServiceEndpoints(nodeUri, providerEndpoints)
