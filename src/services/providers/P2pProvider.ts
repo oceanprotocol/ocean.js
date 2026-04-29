@@ -497,7 +497,6 @@ export class P2pProvider {
     const consumerAddress = await this.getConsumerAddress(signerOrAuthToken)
     const nonce = ((await this.getNonce(nodeUri, consumerAddress, signal)) + 1).toString()
     const signature = await this.getSignature(signerOrAuthToken, nonce, command)
-    if (!signature) throw new Error(`Could not sign command ${command}.`)
     return { consumerAddress, nonce, signature }
   }
 

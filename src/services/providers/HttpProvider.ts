@@ -78,11 +78,6 @@ export class HttpProvider {
         signature: signerOrAuthToken.signature
       }
     }
-    if (typeof signerOrAuthToken === 'string') {
-      throw new Error(
-        'Persistent storage operations require a Signer or AgentSignature (nonce/signature).'
-      )
-    }
 
     const consumerAddress = await this.getConsumerAddress(signerOrAuthToken)
     const nonce = (
