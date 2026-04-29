@@ -28,7 +28,7 @@ import {
   PersistentStorageDeleteFileResponse,
   PersistentStorageFileEntry,
   PersistentStorageObject,
-  signerOrAuthTokenOrSignature
+  SignerOrAuthTokenOrSignature
 } from '../../@types/index.js'
 import { PROTOCOL_COMMANDS } from '../../@types/Provider.js'
 import { type DDO, type ValidateMetadata } from '@oceanprotocol/ddo-js'
@@ -43,26 +43,25 @@ import {
 import { type P2PRequestBodyStream } from './P2pProvider.js'
 
 export class HttpProvider {
-  protected getConsumerAddress(s: signerOrAuthTokenOrSignature) {
-    if (isAgentSignature(s)) return s.consumerAddress
+  protected getConsumerAddress(s: SignerOrAuthTokenOrSignature) {
     return getConsumerAddress(s)
   }
 
   protected getSignature(
-    s: signerOrAuthTokenOrSignature,
+    s: SignerOrAuthTokenOrSignature,
     nonce: string,
     command: string
   ) {
     return getSignature(s, nonce, command)
   }
 
-  protected getAuthorization(s: signerOrAuthTokenOrSignature) {
+  protected getAuthorization(s: SignerOrAuthTokenOrSignature) {
     return getAuthorization(s)
   }
 
   private async getSignedCommandParams(
     nodeUri: string,
-    signerOrAuthToken: signerOrAuthTokenOrSignature,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
     command: string,
     signal?: AbortSignal,
     providerEndpoints?: any,
@@ -96,7 +95,7 @@ export class HttpProvider {
 
   private async getPersistentStorageSignaturePayload(
     nodeUri: string,
-    signerOrAuthToken: signerOrAuthTokenOrSignature,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
     command: string,
     signal?: AbortSignal,
     providerEndpoints?: any,
@@ -293,7 +292,7 @@ export class HttpProvider {
     data: any,
     chainId: number,
     nodeUri: string,
-    signerOrAuthToken: signerOrAuthTokenOrSignature,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
     policyServer?: any,
     signal?: AbortSignal
   ): Promise<string> {
@@ -660,7 +659,7 @@ export class HttpProvider {
     fileIndex: number,
     transferTxId: string,
     nodeUri: string,
-    signerOrAuthToken: signerOrAuthTokenOrSignature,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
     policyServer?: any,
     userCustomParameters?: UserCustomParameters
   ): Promise<any> {
@@ -715,7 +714,7 @@ export class HttpProvider {
    */
   public async computeStart(
     nodeUri: string,
-    signerOrAuthToken: signerOrAuthTokenOrSignature,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
     computeEnv: string,
     datasets: ComputeAsset[],
     algorithm: ComputeAlgorithm,
@@ -794,12 +793,13 @@ export class HttpProvider {
     if (queueMaxWaitTime) payload.queueMaxWaitTime = queueMaxWaitTime
     let response
     try {
+      const authHeader = this.getAuthorization(signerOrAuthToken)
       response = await fetch(computeStartUrl, {
         method: 'POST',
         body: JSON.stringify(payload),
         headers: {
           'Content-Type': 'application/json',
-          Authorization: this.getAuthorization(signerOrAuthToken)
+          ...(authHeader ? { Authorization: authHeader } : {})
         },
         signal
       })
@@ -841,7 +841,7 @@ export class HttpProvider {
    */
   public async freeComputeStart(
     nodeUri: string,
-    signerOrAuthToken: signerOrAuthTokenOrSignature,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
     computeEnv: string,
     datasets: ComputeAsset[],
     algorithm: ComputeAlgorithm,
@@ -909,14 +909,13 @@ export class HttpProvider {
     if (queueMaxWaitTime) payload.queueMaxWaitTime = queueMaxWaitTime
     let response
     try {
+      const authHeader = this.getAuthorization(signerOrAuthToken)
       response = await fetch(computeStartUrl, {
         method: 'POST',
         body: JSON.stringify(payload),
         headers: {
           'Content-Type': 'application/json',
-          ...(this.getAuthorization(signerOrAuthToken)
-            ? { Authorization: this.getAuthorization(signerOrAuthToken) }
-            : {})
+          ...(authHeader ? { Authorization: authHeader } : {})
         },
         signal
       })
@@ -950,7 +949,7 @@ export class HttpProvider {
    */
   public async computeStreamableLogs(
     nodeUri: string,
-    signerOrAuthToken: signerOrAuthTokenOrSignature,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
     jobId: string,
     signal?: AbortSignal
   ): Promise<any> {
@@ -989,13 +988,12 @@ export class HttpProvider {
 
     let response
     try {
+      const authHeader = this.getAuthorization(signerOrAuthToken)
       response = await fetch(computeStreamableLogs + url, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-          ...(this.getAuthorization(signerOrAuthToken)
-            ? { Authorization: this.getAuthorization(signerOrAuthToken) }
-            : {})
+          ...(authHeader ? { Authorization: authHeader } : {})
         },
         signal
       })
@@ -1027,7 +1025,7 @@ export class HttpProvider {
   public async computeStop(
     jobId: string,
     nodeUri: string,
-    signerOrAuthToken: signerOrAuthTokenOrSignature,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
     agreementId?: string,
     signal?: AbortSignal
   ): Promise<ComputeJob | ComputeJob[]> {
@@ -1060,13 +1058,12 @@ export class HttpProvider {
     if (!queryString) return null
     let response
     try {
+      const authHeader = this.getAuthorization(signerOrAuthToken)
       response = await fetch(computeStopUrl + '?' + queryString, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          ...(this.getAuthorization(signerOrAuthToken)
-            ? { Authorization: this.getAuthorization(signerOrAuthToken) }
-            : {})
+          ...(authHeader ? { Authorization: authHeader } : {})
         },
         signal
       })
@@ -1100,12 +1097,12 @@ export class HttpProvider {
    */
   public async computeStatus(
     nodeUri: string,
-    signerOrAuthToken: signerOrAuthTokenOrSignature,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
     jobId?: string,
     agreementId?: string,
     signal?: AbortSignal
   ): Promise<ComputeJob | ComputeJob[]> {
-    const consumerAddress = await getConsumerAddress(signerOrAuthToken)
+    const consumerAddress = await this.getConsumerAddress(signerOrAuthToken)
     const providerEndpoints = await this.getEndpoints(nodeUri)
     const serviceEndpoints = await this.getServiceEndpoints(nodeUri, providerEndpoints)
     const computeStatusUrl = this.getEndpointURL(serviceEndpoints, 'computeStatus')
@@ -1119,13 +1116,12 @@ export class HttpProvider {
     if (!computeStatusUrl) return null
     let response
     try {
+      const authHeader = this.getAuthorization(signerOrAuthToken)
       response = await fetch(computeStatusUrl + url, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-          ...(this.getAuthorization(signerOrAuthToken)
-            ? { Authorization: this.getAuthorization(signerOrAuthToken) }
-            : {})
+          ...(authHeader ? { Authorization: authHeader } : {})
         },
         signal
       })
@@ -1166,7 +1162,7 @@ export class HttpProvider {
    */
   public async getComputeResultUrl(
     nodeUri: string,
-    signerOrAuthToken: signerOrAuthTokenOrSignature,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
     jobId: string,
     index: number
   ): Promise<string> {
@@ -1199,7 +1195,7 @@ export class HttpProvider {
 
   public async getComputeResult(
     nodeUri: string,
-    signerOrAuthToken: signerOrAuthTokenOrSignature,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
     jobId: string,
     index: number,
     offset: number = 0
@@ -1477,7 +1473,7 @@ export class HttpProvider {
    */
   public async downloadNodeLogs(
     nodeUri: string,
-    signerOrAuthToken: signerOrAuthTokenOrSignature,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
     startTime: string,
     endTime: string,
     maxLogs?: number,
@@ -1515,6 +1511,7 @@ export class HttpProvider {
 
     let response
     try {
+      const authHeader = this.getAuthorization(signerOrAuthToken)
       response = await fetch(url, {
         method: 'POST',
         body: JSON.stringify({
@@ -1524,9 +1521,7 @@ export class HttpProvider {
         }),
         headers: {
           'Content-Type': 'application/json',
-          ...(this.getAuthorization(signerOrAuthToken)
-            ? { Authorization: this.getAuthorization(signerOrAuthToken) }
-            : {})
+          ...(authHeader ? { Authorization: authHeader } : {})
         },
         signal
       })
@@ -1636,7 +1631,7 @@ export class HttpProvider {
 
   public async createPersistentStorageBucket(
     nodeUri: string,
-    signerOrAuthToken: signerOrAuthTokenOrSignature,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
     payload: PersistentStorageCreateBucketRequest,
     signal?: AbortSignal
   ): Promise<{
@@ -1677,7 +1672,7 @@ export class HttpProvider {
 
   public async getPersistentStorageBuckets(
     nodeUri: string,
-    signerOrAuthToken: signerOrAuthTokenOrSignature,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
     owner: string,
     signal?: AbortSignal
   ): Promise<PersistentStorageBucket[]> {
@@ -1714,7 +1709,7 @@ export class HttpProvider {
 
   public async listPersistentStorageFiles(
     nodeUri: string,
-    signerOrAuthToken: signerOrAuthTokenOrSignature,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
     bucketId: string,
     signal?: AbortSignal
   ): Promise<PersistentStorageFileEntry[]> {
@@ -1751,7 +1746,7 @@ export class HttpProvider {
 
   public async getPersistentStorageFileObject(
     nodeUri: string,
-    signerOrAuthToken: signerOrAuthTokenOrSignature,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
     bucketId: string,
     fileName: string,
     signal?: AbortSignal
@@ -1790,7 +1785,7 @@ export class HttpProvider {
 
   public async uploadPersistentStorageFile(
     nodeUri: string,
-    signerOrAuthToken: signerOrAuthTokenOrSignature,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
     bucketId: string,
     fileName: string,
     content: P2PRequestBodyStream,
@@ -1880,17 +1875,14 @@ export class HttpProvider {
       }) as unknown as BodyInit
     }
 
-    const uploadHeaders: Record<string, string> = {
-      'Content-Type': 'application/octet-stream'
-    }
-    const maybeAuth = this.getAuthorization(signerOrAuthToken)
-    if (maybeAuth) uploadHeaders.Authorization = maybeAuth
-
+    const authHeader = this.getAuthorization(signerOrAuthToken)
     const response = await fetch(`${routeBase}?${query.toString()}`, {
       method: 'POST',
       body,
+
       headers: {
-        ...uploadHeaders
+        'Content-Type': 'application/octet-stream',
+        ...(authHeader ? { Authorization: authHeader } : {})
       },
       signal
     })
@@ -1900,7 +1892,7 @@ export class HttpProvider {
 
   public async deletePersistentStorageFile(
     nodeUri: string,
-    signerOrAuthToken: signerOrAuthTokenOrSignature,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
     bucketId: string,
     fileName: string,
     signal?: AbortSignal

@@ -171,4 +171,4 @@ export interface AgentSignature {
   signature: string
 }
 
-export type signerOrAuthTokenOrSignature = string | Signer | AgentSignature
+export type SignerOrAuthTokenOrSignature = string | Signer | AgentSignature

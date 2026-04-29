@@ -44,7 +44,7 @@ import {
   PersistentStorageObject,
   OceanNode,
   NodeP2P,
-  signerOrAuthTokenOrSignature
+  SignerOrAuthTokenOrSignature
 } from '../../@types/index.js'
 import { PROTOCOL_COMMANDS, NodeLogEntry } from '../../@types/Provider.js'
 import { type DDO, type ValidateMetadata } from '@oceanprotocol/ddo-js'
@@ -469,13 +469,12 @@ export class P2pProvider {
     }
   }
 
-  protected getConsumerAddress(s: signerOrAuthTokenOrSignature) {
-    if (isAgentSignature(s)) return s.consumerAddress
+  protected getConsumerAddress(s: SignerOrAuthTokenOrSignature) {
     return getConsumerAddress(s)
   }
 
   protected getSignature(
-    s: signerOrAuthTokenOrSignature,
+    s: SignerOrAuthTokenOrSignature,
     nonce: string,
     command: string
   ) {
@@ -487,13 +486,13 @@ export class P2pProvider {
     return endpoints?.nodePublicKey
   }
 
-  protected getAuthorization(s: signerOrAuthTokenOrSignature) {
+  protected getAuthorization(s: SignerOrAuthTokenOrSignature) {
     return getAuthorization(s)
   }
 
   private async getSignedCommandParams(
     nodeUri: OceanNode,
-    signerOrAuthToken: signerOrAuthTokenOrSignature,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
     command: string,
     signal?: AbortSignal
   ): Promise<{ consumerAddress: string; nonce: string; signature: string | null }> {
@@ -560,7 +559,7 @@ export class P2pProvider {
     nodeUri: OceanNode,
     command: string,
     body: Record<string, any>,
-    signerOrAuthToken?: signerOrAuthTokenOrSignature | null,
+    signerOrAuthToken?: SignerOrAuthTokenOrSignature | null,
     signal?: AbortSignal,
     retrialNumber: number = 0,
     requestBody?: P2PRequestBodyStream
@@ -769,7 +768,7 @@ export class P2pProvider {
     data: any,
     chainId: number,
     nodeUri: OceanNode,
-    signerOrAuthToken: signerOrAuthTokenOrSignature,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
     _policyServer?: any,
     signal?: AbortSignal
   ): Promise<string> {
@@ -940,7 +939,7 @@ export class P2pProvider {
     fileIndex: number,
     transferTxId: string,
     nodeUri: OceanNode,
-    signerOrAuthToken: signerOrAuthTokenOrSignature,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
     policyServer?: any,
     userCustomParameters?: UserCustomParameters
   ): Promise<DownloadResponse> {
@@ -1012,7 +1011,7 @@ export class P2pProvider {
    */
   public async computeStart(
     nodeUri: OceanNode,
-    signerOrAuthToken: signerOrAuthTokenOrSignature,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
     computeEnv: string,
     datasets: ComputeAsset[],
     algorithm: ComputeAlgorithm,
@@ -1081,7 +1080,7 @@ export class P2pProvider {
    */
   public async freeComputeStart(
     nodeUri: OceanNode,
-    signerOrAuthToken: signerOrAuthTokenOrSignature,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
     computeEnv: string,
     datasets: ComputeAsset[],
     algorithm: ComputeAlgorithm,
@@ -1143,7 +1142,7 @@ export class P2pProvider {
    */
   public async computeStreamableLogs(
     nodeUri: OceanNode,
-    signerOrAuthToken: signerOrAuthTokenOrSignature,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
     jobId: string,
     signal?: AbortSignal
   ): Promise<any> {
@@ -1179,7 +1178,7 @@ export class P2pProvider {
   public async computeStop(
     jobId: string,
     nodeUri: OceanNode,
-    signerOrAuthToken: signerOrAuthTokenOrSignature,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
     agreementId?: string,
     signal?: AbortSignal
   ): Promise<ComputeJob | ComputeJob[]> {
@@ -1207,7 +1206,7 @@ export class P2pProvider {
    */
   public async computeStatus(
     nodeUri: OceanNode,
-    signerOrAuthToken: signerOrAuthTokenOrSignature,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
     jobId?: string,
     agreementId?: string,
     signal?: AbortSignal
@@ -1232,7 +1231,7 @@ export class P2pProvider {
    */
   public async getComputeResult(
     nodeUri: OceanNode,
-    signerOrAuthToken: signerOrAuthTokenOrSignature,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
     jobId: string,
     index: number,
     offset: number = 0
@@ -1281,7 +1280,7 @@ export class P2pProvider {
 
   public async getComputeResultUrl(
     nodeUri: OceanNode,
-    signerOrAuthToken: signerOrAuthTokenOrSignature,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
     jobId: string,
     index: number
   ): Promise<string> {
@@ -1364,7 +1363,7 @@ export class P2pProvider {
   public async validateDdo(
     nodeUri: OceanNode,
     ddo: DDO,
-    signerOrAuthToken: signerOrAuthTokenOrSignature,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
     signal?: AbortSignal
   ): Promise<ValidateMetadata> {
     const {
@@ -1483,7 +1482,7 @@ export class P2pProvider {
    */
   public async downloadNodeLogs(
     nodeUri: OceanNode,
-    signerOrAuthToken: signerOrAuthTokenOrSignature,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
     startTime: string,
     endTime: string,
     maxLogs?: number,
@@ -1544,7 +1543,7 @@ export class P2pProvider {
 
   private async getPersistentStorageSignaturePayload(
     nodeUri: OceanNode,
-    signerOrAuthToken: signerOrAuthTokenOrSignature,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
     command: string,
     signal?: AbortSignal
   ): Promise<{ consumerAddress: string; nonce: string; signature: string }> {
@@ -1558,7 +1557,7 @@ export class P2pProvider {
 
   public async createPersistentStorageBucket(
     nodeUri: OceanNode,
-    signerOrAuthToken: signerOrAuthTokenOrSignature,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
     payload: PersistentStorageCreateBucketRequest,
     signal?: AbortSignal
   ): Promise<{
@@ -1586,7 +1585,7 @@ export class P2pProvider {
 
   public async getPersistentStorageBuckets(
     nodeUri: OceanNode,
-    signerOrAuthToken: signerOrAuthTokenOrSignature,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
     owner: string,
     signal?: AbortSignal
   ): Promise<PersistentStorageBucket[]> {
@@ -1608,7 +1607,7 @@ export class P2pProvider {
 
   public async listPersistentStorageFiles(
     nodeUri: OceanNode,
-    signerOrAuthToken: signerOrAuthTokenOrSignature,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
     bucketId: string,
     signal?: AbortSignal
   ): Promise<PersistentStorageFileEntry[]> {
@@ -1630,7 +1629,7 @@ export class P2pProvider {
 
   public async getPersistentStorageFileObject(
     nodeUri: OceanNode,
-    signerOrAuthToken: signerOrAuthTokenOrSignature,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
     bucketId: string,
     fileName: string,
     signal?: AbortSignal
@@ -1652,7 +1651,7 @@ export class P2pProvider {
 
   public async uploadPersistentStorageFile(
     nodeUri: OceanNode,
-    signerOrAuthToken: signerOrAuthTokenOrSignature,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
     bucketId: string,
     fileName: string,
     content: P2PRequestBodyStream,
@@ -1677,7 +1676,7 @@ export class P2pProvider {
 
   public async deletePersistentStorageFile(
     nodeUri: OceanNode,
-    signerOrAuthToken: signerOrAuthTokenOrSignature,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
     bucketId: string,
     fileName: string,
     signal?: AbortSignal
