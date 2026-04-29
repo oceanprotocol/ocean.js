@@ -103,7 +103,7 @@ export function isP2pUri(node: OceanNode): boolean {
   }
 
   // NodeP2P -> p2p
-  if (typeof node === 'object' && ('nodeId' in node || `multiaddress` in node)) {
+  if (typeof node === 'object' && ('nodeId' in node || 'multiaddress' in node)) {
     const nodeP2p = node as NodeP2P
     if (Array.isArray(nodeP2p.multiaddress) && nodeP2p.multiaddress.length > 0)
       return true

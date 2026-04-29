@@ -427,7 +427,7 @@ export class P2pProvider {
       if (!includeP2PCircuit && afterPFilter < beforePFilter) {
         // we have some p2p-circuit addrs, let's try them
         return this.getConnection(
-          { nodeId: peerId?.toString(), multiaddress: addrs },
+          { nodeId: peerId ? peerId.toString() : null, multiaddress: addrs },
           signal,
           true
         )
@@ -1360,7 +1360,7 @@ export class P2pProvider {
     signerOrAuthToken: signerOrAuthTokenOrSignature,
     signal?: AbortSignal
   ): Promise<ValidateMetadata> {
-    if (typeof signerOrAuthToken === 'string' && !isAgentSignature(signerOrAuthToken)) {
+    if (typeof signerOrAuthToken === 'string') {
       throw new Error(
         'validateDdo requires a Signer or AgentSignature (nonce/signature).'
       )
@@ -1487,7 +1487,7 @@ export class P2pProvider {
     page?: number,
     signal?: AbortSignal
   ): Promise<NodeLogEntry[]> {
-    if (typeof signerOrAuthToken === 'string' && !isAgentSignature(signerOrAuthToken)) {
+    if (typeof signerOrAuthToken === 'string') {
       throw new Error(
         'downloadNodeLogs requires a Signer or AgentSignature (nonce/signature).'
       )
