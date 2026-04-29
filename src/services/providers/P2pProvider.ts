@@ -46,7 +46,7 @@ import {
   NodeP2P,
   signerOrAuthTokenOrSignature
 } from '../../@types/index.js'
-import { PROTOCOL_COMMANDS, NodeLogsParams, NodeLogEntry } from '../../@types/Provider.js'
+import { PROTOCOL_COMMANDS, NodeLogEntry } from '../../@types/Provider.js'
 import { type DDO, type ValidateMetadata } from '@oceanprotocol/ddo-js'
 import { signRequest } from '../../utils/SignatureUtils.js'
 import {
@@ -481,6 +481,26 @@ export class P2pProvider {
     return getAuthorization(s)
   }
 
+  private async getSignedCommandParams(
+    nodeUri: OceanNode,
+    signerOrAuthToken: signerOrAuthTokenOrSignature,
+    command: string,
+    signal?: AbortSignal
+  ): Promise<{ consumerAddress: string; nonce: string; signature: string }> {
+    if (isAgentSignature(signerOrAuthToken)) {
+      return {
+        consumerAddress: signerOrAuthToken.consumerAddress,
+        nonce: signerOrAuthToken.nonce,
+        signature: signerOrAuthToken.signature
+      }
+    }
+    const consumerAddress = await this.getConsumerAddress(signerOrAuthToken)
+    const nonce = ((await this.getNonce(nodeUri, consumerAddress, signal)) + 1).toString()
+    const signature = await this.getSignature(signerOrAuthToken, nonce, command)
+    if (!signature) throw new Error(`Could not sign command ${command}.`)
+    return { consumerAddress, nonce, signature }
+  }
+
   private async dialAndStream(
     nodeUri: OceanNode,
     payload: Record<string, any>,
@@ -744,13 +764,12 @@ export class P2pProvider {
     _policyServer?: any,
     signal?: AbortSignal
   ): Promise<string> {
-    const consumerAddress = await this.getConsumerAddress(signerOrAuthToken)
-    const nonce = isAgentSignature(signerOrAuthToken)
-      ? signerOrAuthToken.nonce
-      : ((await this.getNonce(nodeUri, consumerAddress, signal)) + 1).toString()
-    const signature = isAgentSignature(signerOrAuthToken)
-      ? signerOrAuthToken.signature
-      : await this.getSignature(signerOrAuthToken, nonce, PROTOCOL_COMMANDS.ENCRYPT)
+    const { consumerAddress, nonce, signature } = await this.getSignedCommandParams(
+      nodeUri,
+      signerOrAuthToken,
+      PROTOCOL_COMMANDS.ENCRYPT,
+      signal
+    )
     const result = await this.sendP2pCommand(
       nodeUri,
       PROTOCOL_COMMANDS.ENCRYPT,
@@ -916,13 +935,11 @@ export class P2pProvider {
     policyServer?: any,
     userCustomParameters?: UserCustomParameters
   ): Promise<DownloadResponse> {
-    const consumerAddress = await this.getConsumerAddress(signerOrAuthToken)
-    const nonce = isAgentSignature(signerOrAuthToken)
-      ? signerOrAuthToken.nonce
-      : ((await this.getNonce(nodeUri, consumerAddress)) + 1).toString()
-    const signature = isAgentSignature(signerOrAuthToken)
-      ? signerOrAuthToken.signature
-      : await this.getSignature(signerOrAuthToken, nonce, PROTOCOL_COMMANDS.DOWNLOAD)
+    const { consumerAddress, nonce, signature } = await this.getSignedCommandParams(
+      nodeUri,
+      signerOrAuthToken,
+      PROTOCOL_COMMANDS.DOWNLOAD
+    )
 
     const payload: Record<string, any> = {
       command: PROTOCOL_COMMANDS.DOWNLOAD,
@@ -1002,14 +1019,12 @@ export class P2pProvider {
     queueMaxWaitTime?: number,
     dockerRegistryAuth?: dockerRegistryAuth
   ): Promise<ComputeJob | ComputeJob[]> {
-    const consumerAddress = await this.getConsumerAddress(signerOrAuthToken)
-    const nonce = isAgentSignature(signerOrAuthToken)
-      ? signerOrAuthToken.nonce
-      : ((await this.getNonce(nodeUri, consumerAddress, signal)) + 1).toString()
-
-    const signature = isAgentSignature(signerOrAuthToken)
-      ? signerOrAuthToken.signature
-      : await this.getSignature(signerOrAuthToken, nonce, PROTOCOL_COMMANDS.COMPUTE_START)
+    const { consumerAddress, nonce, signature } = await this.getSignedCommandParams(
+      nodeUri,
+      signerOrAuthToken,
+      PROTOCOL_COMMANDS.COMPUTE_START,
+      signal
+    )
 
     const body: Record<string, any> = {
       environment: computeEnv,
@@ -1070,18 +1085,12 @@ export class P2pProvider {
     queueMaxWaitTime?: number,
     dockerRegistryAuth?: dockerRegistryAuth
   ): Promise<ComputeJob | ComputeJob[]> {
-    const consumerAddress = await this.getConsumerAddress(signerOrAuthToken)
-    const nonce = isAgentSignature(signerOrAuthToken)
-      ? signerOrAuthToken.nonce
-      : ((await this.getNonce(nodeUri, consumerAddress, signal)) + 1).toString()
-
-    const signature = isAgentSignature(signerOrAuthToken)
-      ? signerOrAuthToken.signature
-      : await this.getSignature(
-          signerOrAuthToken,
-          nonce,
-          PROTOCOL_COMMANDS.FREE_COMPUTE_START
-        )
+    const { consumerAddress, nonce, signature } = await this.getSignedCommandParams(
+      nodeUri,
+      signerOrAuthToken,
+      PROTOCOL_COMMANDS.FREE_COMPUTE_START,
+      signal
+    )
 
     const body: Record<string, any> = {
       environment: computeEnv,
@@ -1140,17 +1149,12 @@ export class P2pProvider {
       )
     }
 
-    const consumerAddress = await this.getConsumerAddress(signerOrAuthToken)
-    const nonce = isAgentSignature(signerOrAuthToken)
-      ? signerOrAuthToken.nonce
-      : ((await this.getNonce(nodeUri, consumerAddress, signal)) + 1).toString()
-    const signature = isAgentSignature(signerOrAuthToken)
-      ? signerOrAuthToken.signature
-      : await this.getSignature(
-          signerOrAuthToken,
-          nonce,
-          PROTOCOL_COMMANDS.COMPUTE_GET_STREAMABLE_LOGS
-        )
+    const { consumerAddress, nonce, signature } = await this.getSignedCommandParams(
+      nodeUri,
+      signerOrAuthToken,
+      PROTOCOL_COMMANDS.COMPUTE_GET_STREAMABLE_LOGS,
+      signal
+    )
     return this.sendP2pCommand(
       nodeUri,
       PROTOCOL_COMMANDS.COMPUTE_GET_STREAMABLE_LOGS,
@@ -1170,14 +1174,12 @@ export class P2pProvider {
     agreementId?: string,
     signal?: AbortSignal
   ): Promise<ComputeJob | ComputeJob[]> {
-    const consumerAddress = await this.getConsumerAddress(signerOrAuthToken)
-    const nonce = isAgentSignature(signerOrAuthToken)
-      ? signerOrAuthToken.nonce
-      : ((await this.getNonce(nodeUri, consumerAddress, signal)) + 1).toString()
-
-    const signature = isAgentSignature(signerOrAuthToken)
-      ? signerOrAuthToken.signature
-      : await this.getSignature(signerOrAuthToken, nonce, PROTOCOL_COMMANDS.COMPUTE_STOP)
+    const { consumerAddress, nonce, signature } = await this.getSignedCommandParams(
+      nodeUri,
+      signerOrAuthToken,
+      PROTOCOL_COMMANDS.COMPUTE_STOP,
+      signal
+    )
 
     const body: Record<string, any> = { jobId, consumerAddress, nonce, signature }
     if (agreementId) body.agreementId = agreementId
@@ -1238,17 +1240,13 @@ export class P2pProvider {
     if (typeof signerOrAuthToken === 'string') {
       payload.authorization = signerOrAuthToken
     } else {
-      const nonce = isAgentSignature(signerOrAuthToken)
-        ? signerOrAuthToken.nonce
-        : ((await this.getNonce(nodeUri, consumerAddress)) + 1).toString()
+      const { nonce, signature } = await this.getSignedCommandParams(
+        nodeUri,
+        signerOrAuthToken,
+        PROTOCOL_COMMANDS.COMPUTE_GET_RESULT
+      )
       payload.nonce = nonce
-      payload.signature = isAgentSignature(signerOrAuthToken)
-        ? signerOrAuthToken.signature
-        : await this.getSignature(
-            signerOrAuthToken,
-            nonce,
-            PROTOCOL_COMMANDS.COMPUTE_GET_RESULT
-          )
+      payload.signature = signature
     }
 
     const { lp, firstBytes } = await this.dialAndStream(nodeUri, payload)
@@ -1360,22 +1358,20 @@ export class P2pProvider {
     signerOrAuthToken: signerOrAuthTokenOrSignature,
     signal?: AbortSignal
   ): Promise<ValidateMetadata> {
-    if (typeof signerOrAuthToken === 'string') {
-      throw new Error(
-        'validateDdo requires a Signer or AgentSignature (nonce/signature).'
-      )
-    }
-    const publisherAddress = await this.getConsumerAddress(signerOrAuthToken)
-    const nonce = isAgentSignature(signerOrAuthToken)
-      ? signerOrAuthToken.nonce
-      : ((await this.getNonce(nodeUri, publisherAddress, signal)) + 1).toString()
-    const sig = isAgentSignature(signerOrAuthToken)
-      ? signerOrAuthToken.signature
-      : await this.getSignature(signerOrAuthToken, nonce, PROTOCOL_COMMANDS.VALIDATE_DDO)
+    const {
+      consumerAddress: publisherAddress,
+      nonce,
+      signature
+    } = await this.getSignedCommandParams(
+      nodeUri,
+      signerOrAuthToken,
+      PROTOCOL_COMMANDS.VALIDATE_DDO,
+      signal
+    )
     const result = await this.sendP2pCommand(
       nodeUri,
       PROTOCOL_COMMANDS.VALIDATE_DDO,
-      { ddo, publisherAddress, nonce, signature: sig },
+      { ddo, publisherAddress, nonce, signature },
       null,
       signal
     )
@@ -1487,18 +1483,12 @@ export class P2pProvider {
     page?: number,
     signal?: AbortSignal
   ): Promise<NodeLogEntry[]> {
-    if (typeof signerOrAuthToken === 'string') {
-      throw new Error(
-        'downloadNodeLogs requires a Signer or AgentSignature (nonce/signature).'
-      )
-    }
-    const consumerAddress = await this.getConsumerAddress(signerOrAuthToken)
-    const nonce = isAgentSignature(signerOrAuthToken)
-      ? signerOrAuthToken.nonce
-      : ((await this.getNonce(nodeUri, consumerAddress, signal)) + 1).toString()
-    const signature = isAgentSignature(signerOrAuthToken)
-      ? signerOrAuthToken.signature
-      : await this.getSignature(signerOrAuthToken, nonce, PROTOCOL_COMMANDS.GET_LOGS)
+    const { consumerAddress, nonce, signature } = await this.getSignedCommandParams(
+      nodeUri,
+      signerOrAuthToken,
+      PROTOCOL_COMMANDS.GET_LOGS,
+      signal
+    )
 
     const body: Record<string, any> = {
       startTime,
@@ -1549,25 +1539,12 @@ export class P2pProvider {
     command: string,
     signal?: AbortSignal
   ): Promise<{ consumerAddress: string; nonce: string; signature: string }> {
-    if (isAgentSignature(signerOrAuthToken)) {
-      return {
-        consumerAddress: signerOrAuthToken.consumerAddress,
-        nonce: signerOrAuthToken.nonce,
-        signature: signerOrAuthToken.signature
-      }
-    }
     if (typeof signerOrAuthToken === 'string') {
       throw new Error(
         'Persistent storage operations require a Signer or AgentSignature (nonce/signature).'
       )
     }
-    const consumerAddress = await this.getConsumerAddress(signerOrAuthToken)
-    const nonce = ((await this.getNonce(nodeUri, consumerAddress, signal)) + 1).toString()
-    const signature = await this.getSignature(signerOrAuthToken, nonce, command)
-    if (!signature) {
-      throw new Error('Could not sign persistent storage request.')
-    }
-    return { consumerAddress, nonce, signature }
+    return this.getSignedCommandParams(nodeUri, signerOrAuthToken, command, signal)
   }
 
   public async createPersistentStorageBucket(

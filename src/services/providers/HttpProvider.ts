@@ -60,12 +60,17 @@ export class HttpProvider {
     return getAuthorization(s)
   }
 
-  private async getPersistentStorageSignaturePayload(
+  private async getSignedCommandParams(
     nodeUri: string,
     signerOrAuthToken: signerOrAuthTokenOrSignature,
     command: string,
-    signal?: AbortSignal
+    signal?: AbortSignal,
+    providerEndpoints?: any,
+    serviceEndpoints?: any
   ): Promise<{ consumerAddress: string; nonce: string; signature: string }> {
+    if (!providerEndpoints) providerEndpoints = await this.getEndpoints(nodeUri)
+    if (!serviceEndpoints)
+      serviceEndpoints = await this.getServiceEndpoints(nodeUri, providerEndpoints)
     if (isAgentSignature(signerOrAuthToken)) {
       return {
         consumerAddress: signerOrAuthToken.consumerAddress,
@@ -78,8 +83,7 @@ export class HttpProvider {
         'Persistent storage operations require a Signer or AgentSignature (nonce/signature).'
       )
     }
-    const providerEndpoints = await this.getEndpoints(nodeUri)
-    const serviceEndpoints = await this.getServiceEndpoints(nodeUri, providerEndpoints)
+
     const consumerAddress = await this.getConsumerAddress(signerOrAuthToken)
     const nonce = (
       (await this.getNonce(
@@ -93,6 +97,29 @@ export class HttpProvider {
     const signature = await this.getSignature(signerOrAuthToken, nonce, command)
     if (!signature) throw new Error('Could not sign persistent storage request.')
     return { consumerAddress, nonce, signature }
+  }
+
+  private async getPersistentStorageSignaturePayload(
+    nodeUri: string,
+    signerOrAuthToken: signerOrAuthTokenOrSignature,
+    command: string,
+    signal?: AbortSignal,
+    providerEndpoints?: any,
+    serviceEndpoints?: any
+  ): Promise<{ consumerAddress: string; nonce: string; signature: string }> {
+    if (typeof signerOrAuthToken === 'string') {
+      throw new Error(
+        'Persistent storage operations require a Signer or AgentSignature (nonce/signature).'
+      )
+    }
+    return this.getSignedCommandParams(
+      nodeUri,
+      signerOrAuthToken,
+      command,
+      signal,
+      providerEndpoints,
+      serviceEndpoints
+    )
   }
 
   private resolvePersistentStorageRoute(
@@ -277,21 +304,14 @@ export class HttpProvider {
   ): Promise<string> {
     const providerEndpoints = await this.getEndpoints(nodeUri)
     const serviceEndpoints = await this.getServiceEndpoints(nodeUri, providerEndpoints)
-    const consumerAddress = await this.getConsumerAddress(signerOrAuthToken)
-    const nonce = isAgentSignature(signerOrAuthToken)
-      ? signerOrAuthToken.nonce
-      : (
-          (await this.getNonce(
-            nodeUri,
-            consumerAddress,
-            signal,
-            providerEndpoints,
-            serviceEndpoints
-          )) + 1
-        ).toString()
-    const signature = isAgentSignature(signerOrAuthToken)
-      ? signerOrAuthToken.signature
-      : await this.getSignature(signerOrAuthToken, nonce, PROTOCOL_COMMANDS.ENCRYPT)
+    const { consumerAddress, nonce, signature } = await this.getSignedCommandParams(
+      nodeUri,
+      signerOrAuthToken,
+      PROTOCOL_COMMANDS.ENCRYPT,
+      signal,
+      providerEndpoints,
+      serviceEndpoints
+    )
 
     let path =
       (this.getEndpointURL(serviceEndpoints, 'encrypt')
@@ -655,22 +675,14 @@ export class HttpProvider {
       ? this.getEndpointURL(serviceEndpoints, 'download').urlPath
       : null
     if (!downloadUrl) return null
-    const consumerAddress = await this.getConsumerAddress(signerOrAuthToken)
-    const nonce = isAgentSignature(signerOrAuthToken)
-      ? signerOrAuthToken.nonce
-      : (
-          (await this.getNonce(
-            nodeUri,
-            consumerAddress,
-            null,
-            providerEndpoints,
-            serviceEndpoints
-          )) + 1
-        ).toString()
-
-    const signature = isAgentSignature(signerOrAuthToken)
-      ? signerOrAuthToken.signature
-      : await this.getSignature(signerOrAuthToken, nonce, PROTOCOL_COMMANDS.DOWNLOAD)
+    const { consumerAddress, nonce, signature } = await this.getSignedCommandParams(
+      nodeUri,
+      signerOrAuthToken,
+      PROTOCOL_COMMANDS.DOWNLOAD,
+      undefined,
+      providerEndpoints,
+      serviceEndpoints
+    )
     let consumeUrl = downloadUrl
     consumeUrl += `?fileIndex=${fileIndex}`
     consumeUrl += `&documentId=${did}`
@@ -738,21 +750,14 @@ export class HttpProvider {
       return null
     }
 
-    const consumerAddress = await this.getConsumerAddress(signerOrAuthToken)
-    const nonce = isAgentSignature(signerOrAuthToken)
-      ? signerOrAuthToken.nonce
-      : (
-          (await this.getNonce(
-            nodeUri,
-            consumerAddress,
-            signal,
-            providerEndpoints,
-            serviceEndpoints
-          )) + 1
-        ).toString()
-    const signature = isAgentSignature(signerOrAuthToken)
-      ? signerOrAuthToken.signature
-      : await this.getSignature(signerOrAuthToken, nonce, PROTOCOL_COMMANDS.COMPUTE_START)
+    const { consumerAddress, nonce, signature } = await this.getSignedCommandParams(
+      nodeUri,
+      signerOrAuthToken,
+      PROTOCOL_COMMANDS.COMPUTE_START,
+      signal,
+      providerEndpoints,
+      serviceEndpoints
+    )
     const payload = Object()
     payload.consumerAddress = consumerAddress
     payload.signature = signature
@@ -868,26 +873,14 @@ export class HttpProvider {
       return null
     }
 
-    const consumerAddress = await this.getConsumerAddress(signerOrAuthToken)
-    const nonce = isAgentSignature(signerOrAuthToken)
-      ? signerOrAuthToken.nonce
-      : (
-          (await this.getNonce(
-            nodeUri,
-            consumerAddress,
-            signal,
-            providerEndpoints,
-            serviceEndpoints
-          )) + 1
-        ).toString()
-
-    const signature = isAgentSignature(signerOrAuthToken)
-      ? signerOrAuthToken.signature
-      : await this.getSignature(
-          signerOrAuthToken,
-          nonce,
-          PROTOCOL_COMMANDS.FREE_COMPUTE_START
-        )
+    const { consumerAddress, nonce, signature } = await this.getSignedCommandParams(
+      nodeUri,
+      signerOrAuthToken,
+      PROTOCOL_COMMANDS.FREE_COMPUTE_START,
+      signal,
+      providerEndpoints,
+      serviceEndpoints
+    )
     const payload = Object()
     payload.consumerAddress = consumerAddress
     payload.signature = signature
@@ -983,29 +976,18 @@ export class HttpProvider {
       )
       return null
     }
-    const consumerAddress = await this.getConsumerAddress(signerOrAuthToken)
-    const nonce = isAgentSignature(signerOrAuthToken)
-      ? signerOrAuthToken.nonce
-      : (
-          (await this.getNonce(
-            nodeUri,
-            consumerAddress,
-            signal,
-            providerEndpoints,
-            serviceEndpoints
-          )) + 1
-        ).toString()
+    const { consumerAddress, nonce, signature } = await this.getSignedCommandParams(
+      nodeUri,
+      signerOrAuthToken,
+      PROTOCOL_COMMANDS.COMPUTE_GET_STREAMABLE_LOGS,
+      signal,
+      providerEndpoints,
+      serviceEndpoints
+    )
 
     let url = `?consumerAddress=${consumerAddress}&jobId=${jobId}`
     // Is signer, add signature and nonce
     if (!isAuthToken) {
-      const signature = isAgentSignature(signerOrAuthToken)
-        ? signerOrAuthToken.signature
-        : await this.getSignature(
-            signerOrAuthToken,
-            nonce,
-            PROTOCOL_COMMANDS.COMPUTE_GET_STREAMABLE_LOGS
-          )
       url += `&signature=${signature}`
       url += `&nonce=${nonce}`
     }
@@ -1061,23 +1043,14 @@ export class HttpProvider {
       ? this.getEndpointURL(serviceEndpoints, 'computeStop').urlPath
       : null
 
-    const consumerAddress = await this.getConsumerAddress(signerOrAuthToken)
-
-    const nonce = isAgentSignature(signerOrAuthToken)
-      ? signerOrAuthToken.nonce
-      : (
-          (await this.getNonce(
-            nodeUri,
-            consumerAddress,
-            signal,
-            providerEndpoints,
-            serviceEndpoints
-          )) + 1
-        ).toString()
-
-    const signature = isAgentSignature(signerOrAuthToken)
-      ? signerOrAuthToken.signature
-      : await this.getSignature(signerOrAuthToken, nonce, PROTOCOL_COMMANDS.COMPUTE_STOP)
+    const { consumerAddress, nonce, signature } = await this.getSignedCommandParams(
+      nodeUri,
+      signerOrAuthToken,
+      PROTOCOL_COMMANDS.COMPUTE_STOP,
+      signal,
+      providerEndpoints,
+      serviceEndpoints
+    )
     const queryParams = new URLSearchParams()
     queryParams.set('consumerAddress', consumerAddress)
     queryParams.set('nonce', nonce)
@@ -1209,25 +1182,14 @@ export class HttpProvider {
       ? this.getEndpointURL(serviceEndpoints, 'computeResult').urlPath
       : null
 
-    const consumerAddress = await this.getConsumerAddress(signerOrAuthToken)
-    const nonce = isAgentSignature(signerOrAuthToken)
-      ? signerOrAuthToken.nonce
-      : (
-          (await this.getNonce(
-            nodeUri,
-            consumerAddress,
-            null,
-            providerEndpoints,
-            serviceEndpoints
-          )) + 1
-        ).toString()
-    const signature = isAgentSignature(signerOrAuthToken)
-      ? signerOrAuthToken.signature
-      : await this.getSignature(
-          signerOrAuthToken,
-          nonce,
-          PROTOCOL_COMMANDS.COMPUTE_GET_RESULT
-        )
+    const { consumerAddress, nonce, signature } = await this.getSignedCommandParams(
+      nodeUri,
+      signerOrAuthToken,
+      PROTOCOL_COMMANDS.COMPUTE_GET_RESULT,
+      undefined,
+      providerEndpoints,
+      serviceEndpoints
+    )
     if (!computeResultUrl) return null
     let resultUrl = computeResultUrl
     resultUrl += `?consumerAddress=${consumerAddress}`
@@ -1542,22 +1504,14 @@ export class HttpProvider {
       )
       return null
     }
-    const consumerAddress = await this.getConsumerAddress(signerOrAuthToken)
-    const nonce = isAgentSignature(signerOrAuthToken)
-      ? signerOrAuthToken.nonce
-      : (
-          (await this.getNonce(
-            nodeUri,
-            consumerAddress,
-            signal,
-            providerEndpoints,
-            serviceEndpoints
-          )) + 1
-        ).toString()
-
-    const signature = isAgentSignature(signerOrAuthToken)
-      ? signerOrAuthToken.signature
-      : await this.getSignature(signerOrAuthToken, nonce, PROTOCOL_COMMANDS.GET_LOGS)
+    const { consumerAddress, nonce, signature } = await this.getSignedCommandParams(
+      nodeUri,
+      signerOrAuthToken,
+      PROTOCOL_COMMANDS.GET_LOGS,
+      signal,
+      providerEndpoints,
+      serviceEndpoints
+    )
     let url = logsUrl + `?startTime=${startTime}&endTime=${endTime}`
     if (maxLogs) url += `&maxLogs=${maxLogs}`
     if (moduleName) url += `&moduleName=${moduleName}`
