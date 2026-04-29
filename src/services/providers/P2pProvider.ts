@@ -427,7 +427,7 @@ export class P2pProvider {
       if (!includeP2PCircuit && afterPFilter < beforePFilter) {
         // we have some p2p-circuit addrs, let's try them
         return this.getConnection(
-          { nodeId: peerId ? peerId.toString() : null, multiaddress: addrs },
+          { nodeId: peerId ? peerId.toString() : '', multiaddress: addrs } as NodeP2P,
           signal,
           true
         )

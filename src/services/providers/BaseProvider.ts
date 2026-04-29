@@ -478,10 +478,10 @@ export class BaseProvider {
   public async validateDdo(
     nodeUri: OceanNode,
     ddo: DDO,
-    signer: Signer,
+    signerOrAuthToken: signerOrAuthTokenOrSignature,
     signal?: AbortSignal
   ): Promise<ValidateMetadata> {
-    return this.getImpl(nodeUri).validateDdo(nodeUri, ddo, signer, signal)
+    return this.getImpl(nodeUri).validateDdo(nodeUri, ddo, signerOrAuthToken, signal)
   }
 
   public async isValidProvider(url: OceanNode, signal?: AbortSignal): Promise<boolean> {
