@@ -15,7 +15,7 @@ import { Signer } from 'ethers'
 import { sleep } from '../../utils/General.js'
 import { LoggerInstance } from '../../utils/Logger.js'
 import { concatUint8Arrays } from '../../utils/bytes.js'
-import type { Connection, Stream } from '@libp2p/interface'
+import type { Connection, Stream, PeerId } from '@libp2p/interface'
 import {
   StorageObject,
   FileInfo,
@@ -41,7 +41,9 @@ import {
   PersistentStorageCreateBucketRequest,
   PersistentStorageDeleteFileResponse,
   PersistentStorageFileEntry,
-  PersistentStorageObject
+  PersistentStorageObject,
+  OceanNode,
+  NodeP2P
 } from '../../@types/index.js'
 import { PROTOCOL_COMMANDS, NodeLogsParams, NodeLogEntry } from '../../@types/Provider.js'
 import { type DDO, type ValidateMetadata } from '@oceanprotocol/ddo-js'
@@ -310,6 +312,14 @@ export class P2pProvider {
     return str.includes('/tls/sni')
   }
 
+  /**
+   * True when the multiaddr does not include the relay `p2p-circuit` protocol segment.
+   * (Direct / transport paths omit it; relay paths contain `/p2p-circuit/...`.)
+   */
+  private isNotP2PCircuit(ma: Multiaddr): boolean {
+    return !/\/p2p-circuit(\/|$)/.test(ma.toString())
+  }
+
   private peerIdFromMultiaddr(ma: Multiaddr): string | null {
     const parts = ma.toString().split('/p2p/')
     if (parts.length <= 1) return null
@@ -318,177 +328,113 @@ export class P2pProvider {
     return raw.split('/')[0] || null
   }
 
+  /* Dials a new connection */
   private async getConnection(
-    nodeUri: string | Multiaddr[],
-    signal: AbortSignal
+    nodeUri: OceanNode,
+    signal: AbortSignal,
+    includeP2PCircuit: boolean = false
   ): Promise<Connection> {
     const node = await this.getOrCreateLibp2pNode()
-
-    if (Array.isArray(nodeUri)) {
-      const dialable = nodeUri.filter((ma) => this.isDialable(ma))
-
-      if (dialable.length > 0) {
-        LoggerInstance.debug(`[P2P] dial array: ${dialable.length} dialable addrs`)
-        try {
-          const conn = await node.dial(dialable, { signal })
-          LoggerInstance.debug(`[P2P] dial array SUCCESS via ${conn.remoteAddr}`)
-          return conn
-        } catch (err: any) {
-          LoggerInstance.debug(`[P2P] dial array failed: ${err.message}`)
+    let peerId: PeerId | null = null
+    let addrs: Multiaddr[] = []
+    if (nodeUri && typeof nodeUri === 'string') {
+      try {
+        const addr = multiaddr(nodeUri)
+        addrs.push(addr)
+      } catch {}
+      try {
+        peerId = peerIdFromString(nodeUri)
+      } catch {}
+    }
+    if (typeof nodeUri === 'object' && nodeUri !== null && !Array.isArray(nodeUri)) {
+      if ('nodeId' in nodeUri || 'multiaddress' in nodeUri) {
+        const nodeP2p = nodeUri as NodeP2P
+        if (Array.isArray(nodeP2p.multiaddress) && nodeP2p.multiaddress.length > 0) {
+          for (const addr of nodeP2p.multiaddress) addrs.push(addr)
         }
-      }
-
-      for (const ma of nodeUri) {
-        const pid = this.peerIdFromMultiaddr(ma)
-        if (pid) {
-          LoggerInstance.debug(`[P2P] Not multiaddrs, fallback to peerId: ${pid}`)
-          return this.dialByPeerId(node, pid, signal)
-        }
-      }
-      throw new Error('No valid addresses and no peer ID in multiaddrs')
-    }
-
-    try {
-      const ma = multiaddr(nodeUri)
-      if (this.isDialable(ma)) {
-        LoggerInstance.debug(`[P2P] dial single addr: ${ma}`)
-        try {
-          const conn = await node.dial(ma, { signal })
-          LoggerInstance.debug(`[P2P] dial single SUCCESS via ${conn.remoteAddr}`)
-          return conn
-        } catch (err: any) {
-          LoggerInstance.debug(`[P2P] dial single failed: ${err.message}`)
-        }
-      }
-      const pid = this.peerIdFromMultiaddr(ma)
-      if (pid) {
-        LoggerInstance.debug(`[P2P] single fallback -> dialByPeerId ${pid}`)
-        return this.dialByPeerId(node, pid, signal)
-      }
-      throw new Error(`Cannot dial address: ${nodeUri}`)
-    } catch (err: any) {
-      if (err.message?.includes('Cannot dial')) throw err
-    }
-
-    LoggerInstance.debug(`[P2P] bare peerId -> dialByPeerId ${nodeUri}`)
-    return this.dialByPeerId(node, nodeUri, signal)
-  }
-
-  private async dialByPeerId(
-    node: Libp2p,
-    peerIdStr: string,
-    signal: AbortSignal
-  ): Promise<Connection> {
-    const peerId = peerIdFromString(peerIdStr)
-
-    const existing = node.getConnections(peerId).filter((c) => c.status === 'open')
-    if (existing.length > 0) {
-      LoggerInstance.debug(
-        `[P2P] ${peerIdStr}: reusing existing connection via ${existing[0].remoteAddr}`
-      )
-      return existing[0]
-    }
-
-    // Wait briefly for bootstrap if node just started (0 connections)
-    if (node.getConnections().length === 0) {
-      LoggerInstance.debug(
-        `[P2P] ${peerIdStr}: no connections yet, waiting for bootstrap...`
-      )
-      await sleep(3000)
-      const after = node.getConnections(peerId)
-      if (after.length > 0) {
-        LoggerInstance.debug(`[P2P] ${peerIdStr}: connected during bootstrap wait`)
-        return after[0]
+        if (nodeP2p.nodeId) peerId = peerIdFromString(nodeP2p.nodeId)
+      } else {
+        peerId = nodeUri as PeerId
       }
     }
 
-    const seen = new Set<string>()
-    const allAddrs: Multiaddr[] = []
-    const addAddr = (ma: Multiaddr) => {
-      const key = ma.toString()
-      if (!seen.has(key)) {
-        seen.add(key)
-        allAddrs.push(ma)
-      }
-    }
-
-    try {
-      const peerData = await node.peerStore.get(peerId)
-      if (peerData?.addresses) {
-        for (const addr of peerData.addresses) {
-          addAddr(addr.multiaddr)
-        }
+    // check if we already have a connection
+    if (peerId) {
+      const existing = node.getConnections(peerId).filter((c) => c.status === 'open')
+      if (existing.length > 0) {
         LoggerInstance.debug(
-          `[P2P] ${peerIdStr}: ${peerData.addresses.length} peerStore addrs`
+          `[P2P] ${peerId.toString()}: reusing existing connection via ${
+            existing[0].remoteAddr
+          }`
         )
+        return existing[0]
       }
-    } catch {
-      LoggerInstance.debug(`[P2P] ${peerIdStr}: not in peerStore`)
     }
-
-    const knownDialable = allAddrs.filter((ma) => this.isDialable(ma))
-    if (knownDialable.length === 0) {
-      LoggerInstance.debug(
-        `[P2P] ${peerIdStr}: no dialable addrs in peerStore, querying DHT...`
-      )
+    // let's build the ma addr & fetch from dht if needed
+    if (addrs.length < 1 && peerId) {
+      try {
+        const peerData = await node.peerStore.get(peerId)
+        if (peerData?.addresses) {
+          for (const addr of peerData.addresses) {
+            addrs.push(addr.multiaddr)
+          }
+          LoggerInstance.debug(
+            `[P2P] ${peerId.toString()}: ${peerData.addresses.length} peerStore addrs`
+          )
+        }
+      } catch {
+        LoggerInstance.debug(`[P2P] ${peerId.toString()}: not in peerStore`)
+      }
+    }
+    // if there are no known ma, search dht
+    if (addrs.length < 1 && peerId) {
       try {
         const dhtSignal = AbortSignal.timeout(this.p2pConfig.dhtLookupTimeout ?? 60_000)
         const peerInfo = await node.peerRouting.findPeer(peerId, { signal: dhtSignal })
-        for (const ma of peerInfo.multiaddrs) addAddr(ma)
+        for (const ma of peerInfo.multiaddrs) addrs.push(ma)
         LoggerInstance.debug(
-          `[P2P] ${peerIdStr}: DHT returned ${peerInfo.multiaddrs.length} addrs`
+          `[P2P] ${peerId.toString()}: DHT returned ${peerInfo.multiaddrs.length} addrs`
         )
       } catch (err: any) {
-        LoggerInstance.debug(`[P2P] ${peerIdStr}: DHT findPeer failed: ${err.message}`)
+        LoggerInstance.debug(
+          `[P2P] ${peerId.toString}: DHT findPeer failed: ${err.message}`
+        )
       }
-    } else {
-      LoggerInstance.debug(
-        `[P2P] ${peerIdStr}: ${knownDialable.length} dialable addrs from peerStore, skipping DHT`
-      )
     }
+    addrs = addrs.filter((ma) => this.isDialable(ma))
+    const beforePFilter = addrs.length
+    if (!includeP2PCircuit) addrs = addrs.filter((ma) => this.isNotP2PCircuit(ma))
 
-    const dialable = allAddrs
-      .filter((ma) => this.isDialable(ma))
-      .map((ma) => {
+    const afterPFilter = addrs.length
+
+    if (addrs.length < 1) {
+      // try with p2p-circuits if available
+      if (!includeP2PCircuit && afterPFilter > beforePFilter) {
+        return this.getConnection(nodeUri, signal, true)
+      }
+      throw new Error('No valid multiaddresses, cannot connect')
+    }
+    // normalize all mas if we have peerId
+    if (peerId) {
+      addrs = addrs.map((ma) => {
         const str = ma.toString()
-        return str.includes('/p2p/') ? ma : multiaddr(`${str}/p2p/${peerIdStr}`)
+        return str.includes('/p2p/') ? ma : multiaddr(`${str}/p2p/${peerId.toString()}`)
       })
-
-    LoggerInstance.debug(
-      `[P2P] ${peerIdStr}: ${dialable.length}/${allAddrs.length} addrs are dialable`
-    )
-
-    if (dialable.length > 0) {
-      LoggerInstance.debug(`[P2P] ${peerIdStr}: dialing ${dialable.map(String)}`)
-      try {
-        const conn = await node.dial(dialable, { signal })
-        LoggerInstance.debug(
-          `[P2P] ${peerIdStr}: SUCCESS via ${conn.remoteAddr} (limited=${
-            conn.limits != null
-          })`
-        )
-        return conn
-      } catch (err: any) {
-        LoggerInstance.debug(`[P2P] ${peerIdStr}: direct dial failed: ${err.message}`)
-      }
     }
-
-    LoggerInstance.debug(`[P2P] ${peerIdStr}: last resort dial by peerId`)
     try {
-      const conn = await node.dial(peerId, { signal: AbortSignal.timeout(10_000) })
+      const conn = await node.dial(addrs, { signal })
       LoggerInstance.debug(
-        `[P2P] ${peerIdStr}: peerId dial SUCCESS via ${conn.remoteAddr} (limited=${
-          conn.limits != null
-        })`
+        `[P2P] Dial SUCCESS via ${conn.remoteAddr} (limited=${conn.limits != null})`
       )
       return conn
-    } catch {
+    } catch (err: any) {
       throw new Error(
-        `Cannot reach peer ${peerIdStr}. ` +
-          (allAddrs.length > 0
-            ? `Found addrs: ${allAddrs.map(String).join(', ')} (none dialable). `
+        `Cannot dial peer ${peerId?.toString()}. ` +
+          (addrs.length > 0
+            ? `Found addrs: ${addrs.map(String).join(', ')}. `
             : 'No addresses found. ') +
-          `Active connections: ${node.getConnections().length}.`
+          `Active connections: ${node.getConnections().length}. ` +
+          err.message
       )
     }
   }
@@ -501,7 +447,7 @@ export class P2pProvider {
     return getSignature(s, nonce, command)
   }
 
-  private async getNodePublicKey(nodeUri: string | Multiaddr[]): Promise<string> {
+  private async getNodePublicKey(nodeUri: OceanNode): Promise<string> {
     const endpoints = await this.getEndpoints(nodeUri)
     return endpoints?.nodePublicKey
   }
@@ -511,7 +457,7 @@ export class P2pProvider {
   }
 
   private async dialAndStream(
-    nodeUri: string | Multiaddr[],
+    nodeUri: OceanNode,
     payload: Record<string, any>,
     signal?: AbortSignal,
     requestBody?: P2PRequestBodyStream
@@ -557,7 +503,7 @@ export class P2pProvider {
   }
 
   private async sendP2pCommand(
-    nodeUri: string | Multiaddr[],
+    nodeUri: OceanNode,
     command: string,
     body: Record<string, any>,
     signerOrAuthToken?: Signer | string | null,
@@ -698,7 +644,7 @@ export class P2pProvider {
    * Returns node status via P2P STATUS command.
    * @param {string} nodeUri - multiaddr of the node
    */
-  async getEndpoints(nodeUri: string | Multiaddr[]): Promise<any> {
+  async getEndpoints(nodeUri: OceanNode): Promise<any> {
     try {
       return await this.sendP2pCommand(nodeUri, PROTOCOL_COMMANDS.STATUS, {})
     } catch (e) {
@@ -708,14 +654,14 @@ export class P2pProvider {
   }
 
   public async getNodeStatus(
-    nodeUri: string | Multiaddr[],
+    nodeUri: OceanNode,
     signal?: AbortSignal
   ): Promise<NodeStatus> {
     return this.getEndpoints(nodeUri)
   }
 
   public async getNodeJobs(
-    nodeUri: string | Multiaddr[],
+    nodeUri: OceanNode,
     fromTimestamp?: number,
     signal?: AbortSignal
   ): Promise<NodeComputeJob[]> {
@@ -740,7 +686,7 @@ export class P2pProvider {
    * Get current nonce from the node via P2P.
    */
   public async getNonce(
-    nodeUri: string | Multiaddr[],
+    nodeUri: OceanNode,
     consumerAddress: string,
     signal?: AbortSignal
   ): Promise<number> {
@@ -768,7 +714,7 @@ export class P2pProvider {
   public async encrypt(
     data: any,
     chainId: number,
-    nodeUri: string | Multiaddr[],
+    nodeUri: OceanNode,
     signerOrAuthToken: Signer | string,
     _policyServer?: any,
     signal?: AbortSignal
@@ -802,7 +748,7 @@ export class P2pProvider {
   public async checkDidFiles(
     did: string,
     serviceId: string,
-    nodeUri: string | Multiaddr[],
+    nodeUri: OceanNode,
     withChecksum: boolean = false,
     signal?: AbortSignal
   ): Promise<FileInfo[]> {
@@ -821,7 +767,7 @@ export class P2pProvider {
    */
   public async getFileInfo(
     file: StorageObject,
-    nodeUri: string | Multiaddr[],
+    nodeUri: OceanNode,
     withChecksum: boolean = false,
     signal?: AbortSignal
   ): Promise<FileInfo[]> {
@@ -839,7 +785,7 @@ export class P2pProvider {
    * Returns compute environments via P2P.
    */
   public async getComputeEnvironments(
-    nodeUri: string | Multiaddr[],
+    nodeUri: OceanNode,
     signal?: AbortSignal
   ): Promise<ComputeEnvironment[]> {
     const result = await this.sendP2pCommand(
@@ -860,7 +806,7 @@ export class P2pProvider {
     serviceId: string,
     fileIndex: number,
     consumerAddress: string,
-    nodeUri: string | Multiaddr[],
+    nodeUri: OceanNode,
     signal?: AbortSignal,
     userCustomParameters?: UserCustomParameters,
     computeEnv?: string,
@@ -887,7 +833,7 @@ export class P2pProvider {
     computeEnv: string,
     token: string,
     validUntil: number,
-    nodeUri: string | Multiaddr[],
+    nodeUri: OceanNode,
     consumerAddress: string,
     resources: ComputeResourceRequest[],
     chainId: number,
@@ -940,7 +886,7 @@ export class P2pProvider {
     serviceId: string,
     fileIndex: number,
     transferTxId: string,
-    nodeUri: string | Multiaddr[],
+    nodeUri: OceanNode,
     signerOrAuthToken: Signer | string,
     policyServer?: any,
     userCustomParameters?: UserCustomParameters
@@ -1014,7 +960,7 @@ export class P2pProvider {
    * Start a paid compute job via P2P.
    */
   public async computeStart(
-    nodeUri: string | Multiaddr[],
+    nodeUri: OceanNode,
     signerOrAuthToken: Signer | string,
     computeEnv: string,
     datasets: ComputeAsset[],
@@ -1085,7 +1031,7 @@ export class P2pProvider {
    * Start a free compute job via P2P.
    */
   public async freeComputeStart(
-    nodeUri: string | Multiaddr[],
+    nodeUri: OceanNode,
     signerOrAuthToken: Signer | string,
     computeEnv: string,
     datasets: ComputeAsset[],
@@ -1149,7 +1095,7 @@ export class P2pProvider {
    * Get streamable compute logs via P2P. Returns an async generator of Uint8Array chunks.
    */
   public async computeStreamableLogs(
-    nodeUri: string | Multiaddr[],
+    nodeUri: OceanNode,
     signerOrAuthToken: Signer | string,
     jobId: string,
     signal?: AbortSignal
@@ -1186,7 +1132,7 @@ export class P2pProvider {
    */
   public async computeStop(
     jobId: string,
-    nodeUri: string | Multiaddr[],
+    nodeUri: OceanNode,
     signerOrAuthToken: Signer | string,
     agreementId?: string,
     signal?: AbortSignal
@@ -1216,7 +1162,7 @@ export class P2pProvider {
    * Get compute status via P2P.
    */
   public async computeStatus(
-    nodeUri: string | Multiaddr[],
+    nodeUri: OceanNode,
     signerOrAuthToken: Signer | string,
     jobId?: string,
     agreementId?: string,
@@ -1241,7 +1187,7 @@ export class P2pProvider {
    * Supports resumable downloads via `offset` (byte position to resume from).
    */
   public async getComputeResult(
-    nodeUri: string | Multiaddr[],
+    nodeUri: OceanNode,
     signerOrAuthToken: Signer | string,
     jobId: string,
     index: number,
@@ -1290,7 +1236,7 @@ export class P2pProvider {
   }
 
   public async getComputeResultUrl(
-    nodeUri: string | Multiaddr[],
+    nodeUri: OceanNode,
     signerOrAuthToken: Signer | string,
     jobId: string,
     index: number
@@ -1310,7 +1256,7 @@ export class P2pProvider {
    */
   public async generateAuthToken(
     consumer: Signer,
-    nodeUri: string | Multiaddr[],
+    nodeUri: OceanNode,
     signal?: AbortSignal
   ): Promise<string> {
     const address = await consumer.getAddress()
@@ -1338,7 +1284,7 @@ export class P2pProvider {
     address: string,
     signature: string,
     nonce: string,
-    nodeUri: string | Multiaddr[],
+    nodeUri: OceanNode,
     signal?: AbortSignal
   ): Promise<string> {
     const result = await this.sendP2pCommand(
@@ -1355,7 +1301,7 @@ export class P2pProvider {
    * Resolve a DDO by DID via P2P GET_DDO command.
    */
   public async resolveDdo(
-    nodeUri: string | Multiaddr[],
+    nodeUri: OceanNode,
     did: string,
     signal?: AbortSignal
   ): Promise<any> {
@@ -1372,7 +1318,7 @@ export class P2pProvider {
    * Validate a DDO via P2P VALIDATE_DDO command.
    */
   public async validateDdo(
-    nodeUri: string | Multiaddr[],
+    nodeUri: OceanNode,
     ddo: DDO,
     signer: Signer,
     signal?: AbortSignal
@@ -1409,7 +1355,7 @@ export class P2pProvider {
   public async invalidateAuthToken(
     consumer: Signer,
     token: string,
-    nodeUri: string | Multiaddr[],
+    nodeUri: OceanNode,
     signal?: AbortSignal
   ): Promise<{ success: boolean }> {
     const consumerAddress = await consumer.getAddress()
@@ -1429,7 +1375,7 @@ export class P2pProvider {
    * Check if a P2P node is reachable by calling STATUS.
    */
   public async isValidProvider(
-    nodeUri: string | Multiaddr[],
+    nodeUri: OceanNode,
     signal?: AbortSignal
   ): Promise<boolean> {
     try {
@@ -1454,7 +1400,7 @@ export class P2pProvider {
    * PolicyServer passthrough via P2P.
    */
   public async PolicyServerPassthrough(
-    nodeUri: string | Multiaddr[],
+    nodeUri: OceanNode,
     request: PolicyServerPassthroughCommand,
     signal?: AbortSignal
   ): Promise<any> {
@@ -1471,7 +1417,7 @@ export class P2pProvider {
    * Initialize Policy Server verification via P2P.
    */
   public async initializePSVerification(
-    nodeUri: string | Multiaddr[],
+    nodeUri: OceanNode,
     request: PolicyServerInitializeCommand,
     signal?: AbortSignal
   ): Promise<any> {
@@ -1488,7 +1434,7 @@ export class P2pProvider {
    * Download node logs via P2P.
    */
   public async downloadNodeLogs(
-    nodeUri: string | Multiaddr[],
+    nodeUri: OceanNode,
     signer: Signer,
     startTime: string,
     endTime: string,
@@ -1522,7 +1468,7 @@ export class P2pProvider {
    * P2P only — use downloadNodeLogs() for the auto-signed variant.
    */
   public async fetchNodeLogs(
-    nodeUri: string | Multiaddr[],
+    nodeUri: OceanNode,
     address: string,
     signature: string,
     nonce: string,
@@ -1541,7 +1487,7 @@ export class P2pProvider {
    * the caller is responsible for nonce retrieval and signing.
    */
   public async fetchConfig(
-    nodeUri: string | Multiaddr[],
+    nodeUri: OceanNode,
     payload: Record<string, any>
   ): Promise<any> {
     return this.sendP2pCommand(nodeUri, PROTOCOL_COMMANDS.FETCH_CONFIG, payload)
@@ -1552,14 +1498,14 @@ export class P2pProvider {
    * the caller is responsible for nonce retrieval and signing.
    */
   public async pushConfig(
-    nodeUri: string | Multiaddr[],
+    nodeUri: OceanNode,
     payload: Record<string, any>
   ): Promise<any> {
     return this.sendP2pCommand(nodeUri, PROTOCOL_COMMANDS.PUSH_CONFIG, payload)
   }
 
   private async getPersistentStorageSignaturePayload(
-    nodeUri: string | Multiaddr[],
+    nodeUri: OceanNode,
     signerOrAuthToken: Signer | string,
     command: string,
     signal?: AbortSignal
@@ -1577,7 +1523,7 @@ export class P2pProvider {
   }
 
   public async createPersistentStorageBucket(
-    nodeUri: string | Multiaddr[],
+    nodeUri: OceanNode,
     signerOrAuthToken: Signer | string,
     payload: PersistentStorageCreateBucketRequest,
     signal?: AbortSignal
@@ -1605,7 +1551,7 @@ export class P2pProvider {
   }
 
   public async getPersistentStorageBuckets(
-    nodeUri: string | Multiaddr[],
+    nodeUri: OceanNode,
     signerOrAuthToken: Signer | string,
     owner: string,
     signal?: AbortSignal
@@ -1627,7 +1573,7 @@ export class P2pProvider {
   }
 
   public async listPersistentStorageFiles(
-    nodeUri: string | Multiaddr[],
+    nodeUri: OceanNode,
     signerOrAuthToken: Signer | string,
     bucketId: string,
     signal?: AbortSignal
@@ -1649,7 +1595,7 @@ export class P2pProvider {
   }
 
   public async getPersistentStorageFileObject(
-    nodeUri: string | Multiaddr[],
+    nodeUri: OceanNode,
     signerOrAuthToken: Signer | string,
     bucketId: string,
     fileName: string,
@@ -1671,7 +1617,7 @@ export class P2pProvider {
   }
 
   public async uploadPersistentStorageFile(
-    nodeUri: string | Multiaddr[],
+    nodeUri: OceanNode,
     signerOrAuthToken: Signer | string,
     bucketId: string,
     fileName: string,
@@ -1696,7 +1642,7 @@ export class P2pProvider {
   }
 
   public async deletePersistentStorageFile(
-    nodeUri: string | Multiaddr[],
+    nodeUri: OceanNode,
     signerOrAuthToken: Signer | string,
     bucketId: string,
     fileName: string,

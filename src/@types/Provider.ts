@@ -1,3 +1,5 @@
+import { type Multiaddr } from '@multiformats/multiaddr'
+import type { PeerId } from '@libp2p/interface'
 import type { AccessList } from './AccessList.js'
 export interface ProviderFees {
   providerFeeAddress: string
@@ -43,6 +45,12 @@ export interface ServiceEndpoint {
   method: string
   urlPath: string
 }
+
+export interface NodeP2P {
+  nodeId: string
+  multiaddress?: Multiaddr[]
+}
+export type OceanNode = string | NodeP2P | PeerId
 
 export interface NodeStatusProvider {
   chainId: string
