@@ -1,4 +1,5 @@
 import { type Multiaddr } from '@multiformats/multiaddr'
+import { Signer } from 'ethers'
 import type { PeerId } from '@libp2p/interface'
 import type { AccessList } from './AccessList.js'
 export interface ProviderFees {
@@ -163,3 +164,11 @@ export interface NodeLogEntry {
   message: string
   meta?: Record<string, any>
 }
+
+export interface AgentSignature {
+  consumerAddress: string
+  nonce: string
+  signature: string
+}
+
+export type signerOrAuthTokenOrSignature = string | Signer | AgentSignature

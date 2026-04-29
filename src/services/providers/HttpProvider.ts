@@ -27,36 +27,56 @@ import {
   PersistentStorageCreateBucketRequest,
   PersistentStorageDeleteFileResponse,
   PersistentStorageFileEntry,
-  PersistentStorageObject
+  PersistentStorageObject,
+  signerOrAuthTokenOrSignature
 } from '../../@types/index.js'
 import { PROTOCOL_COMMANDS } from '../../@types/Provider.js'
 import { type DDO, type ValidateMetadata } from '@oceanprotocol/ddo-js'
 import { eciesencrypt } from '../../utils/eciesencrypt.js'
 import { signRequest } from '../../utils/SignatureUtils.js'
-import { getConsumerAddress, getSignature, getAuthorization } from './BaseProvider.js'
+import {
+  getConsumerAddress,
+  getSignature,
+  getAuthorization,
+  isAgentSignature
+} from './BaseProvider.js'
 import { type P2PRequestBodyStream } from './P2pProvider.js'
 
 export class HttpProvider {
-  protected getConsumerAddress(s: Signer | string) {
+  protected getConsumerAddress(s: signerOrAuthTokenOrSignature) {
+    if (isAgentSignature(s)) return s.consumerAddress
     return getConsumerAddress(s)
   }
 
-  protected getSignature(s: Signer | string, nonce: string, command: string) {
+  protected getSignature(
+    s: signerOrAuthTokenOrSignature,
+    nonce: string,
+    command: string
+  ) {
     return getSignature(s, nonce, command)
   }
 
-  protected getAuthorization(s: Signer | string) {
+  protected getAuthorization(s: signerOrAuthTokenOrSignature) {
     return getAuthorization(s)
   }
 
   private async getPersistentStorageSignaturePayload(
     nodeUri: string,
-    signerOrAuthToken: Signer | string,
+    signerOrAuthToken: signerOrAuthTokenOrSignature,
     command: string,
     signal?: AbortSignal
-  ): Promise<{} | { consumerAddress: string; nonce: string; signature: string }> {
+  ): Promise<{ consumerAddress: string; nonce: string; signature: string }> {
+    if (isAgentSignature(signerOrAuthToken)) {
+      return {
+        consumerAddress: signerOrAuthToken.consumerAddress,
+        nonce: signerOrAuthToken.nonce,
+        signature: signerOrAuthToken.signature
+      }
+    }
     if (typeof signerOrAuthToken === 'string') {
-      return {}
+      throw new Error(
+        'Persistent storage operations require a Signer or AgentSignature (nonce/signature).'
+      )
     }
     const providerEndpoints = await this.getEndpoints(nodeUri)
     const serviceEndpoints = await this.getServiceEndpoints(nodeUri, providerEndpoints)
@@ -251,27 +271,27 @@ export class HttpProvider {
     data: any,
     chainId: number,
     nodeUri: string,
-    signerOrAuthToken: Signer | string,
+    signerOrAuthToken: signerOrAuthTokenOrSignature,
     policyServer?: any,
     signal?: AbortSignal
   ): Promise<string> {
     const providerEndpoints = await this.getEndpoints(nodeUri)
     const serviceEndpoints = await this.getServiceEndpoints(nodeUri, providerEndpoints)
     const consumerAddress = await this.getConsumerAddress(signerOrAuthToken)
-    const nonce = (
-      (await this.getNonce(
-        nodeUri,
-        consumerAddress,
-        signal,
-        providerEndpoints,
-        serviceEndpoints
-      )) + 1
-    ).toString()
-    const signature = await this.getSignature(
-      signerOrAuthToken,
-      nonce,
-      PROTOCOL_COMMANDS.ENCRYPT
-    )
+    const nonce = isAgentSignature(signerOrAuthToken)
+      ? signerOrAuthToken.nonce
+      : (
+          (await this.getNonce(
+            nodeUri,
+            consumerAddress,
+            signal,
+            providerEndpoints,
+            serviceEndpoints
+          )) + 1
+        ).toString()
+    const signature = isAgentSignature(signerOrAuthToken)
+      ? signerOrAuthToken.signature
+      : await this.getSignature(signerOrAuthToken, nonce, PROTOCOL_COMMANDS.ENCRYPT)
 
     let path =
       (this.getEndpointURL(serviceEndpoints, 'encrypt')
@@ -625,7 +645,7 @@ export class HttpProvider {
     fileIndex: number,
     transferTxId: string,
     nodeUri: string,
-    signerOrAuthToken: Signer | string,
+    signerOrAuthToken: signerOrAuthTokenOrSignature,
     policyServer?: any,
     userCustomParameters?: UserCustomParameters
   ): Promise<any> {
@@ -636,21 +656,21 @@ export class HttpProvider {
       : null
     if (!downloadUrl) return null
     const consumerAddress = await this.getConsumerAddress(signerOrAuthToken)
-    const nonce = (
-      (await this.getNonce(
-        nodeUri,
-        consumerAddress,
-        null,
-        providerEndpoints,
-        serviceEndpoints
-      )) + 1
-    ).toString()
+    const nonce = isAgentSignature(signerOrAuthToken)
+      ? signerOrAuthToken.nonce
+      : (
+          (await this.getNonce(
+            nodeUri,
+            consumerAddress,
+            null,
+            providerEndpoints,
+            serviceEndpoints
+          )) + 1
+        ).toString()
 
-    const signature = await this.getSignature(
-      signerOrAuthToken,
-      nonce,
-      PROTOCOL_COMMANDS.DOWNLOAD
-    )
+    const signature = isAgentSignature(signerOrAuthToken)
+      ? signerOrAuthToken.signature
+      : await this.getSignature(signerOrAuthToken, nonce, PROTOCOL_COMMANDS.DOWNLOAD)
     let consumeUrl = downloadUrl
     consumeUrl += `?fileIndex=${fileIndex}`
     consumeUrl += `&documentId=${did}`
@@ -688,7 +708,7 @@ export class HttpProvider {
    */
   public async computeStart(
     nodeUri: string,
-    signerOrAuthToken: Signer | string,
+    signerOrAuthToken: signerOrAuthTokenOrSignature,
     computeEnv: string,
     datasets: ComputeAsset[],
     algorithm: ComputeAlgorithm,
@@ -719,20 +739,20 @@ export class HttpProvider {
     }
 
     const consumerAddress = await this.getConsumerAddress(signerOrAuthToken)
-    const nonce = (
-      (await this.getNonce(
-        nodeUri,
-        consumerAddress,
-        signal,
-        providerEndpoints,
-        serviceEndpoints
-      )) + 1
-    ).toString()
-    const signature = await this.getSignature(
-      signerOrAuthToken,
-      nonce,
-      PROTOCOL_COMMANDS.COMPUTE_START
-    )
+    const nonce = isAgentSignature(signerOrAuthToken)
+      ? signerOrAuthToken.nonce
+      : (
+          (await this.getNonce(
+            nodeUri,
+            consumerAddress,
+            signal,
+            providerEndpoints,
+            serviceEndpoints
+          )) + 1
+        ).toString()
+    const signature = isAgentSignature(signerOrAuthToken)
+      ? signerOrAuthToken.signature
+      : await this.getSignature(signerOrAuthToken, nonce, PROTOCOL_COMMANDS.COMPUTE_START)
     const payload = Object()
     payload.consumerAddress = consumerAddress
     payload.signature = signature
@@ -821,7 +841,7 @@ export class HttpProvider {
    */
   public async freeComputeStart(
     nodeUri: string,
-    signerOrAuthToken: Signer | string,
+    signerOrAuthToken: signerOrAuthTokenOrSignature,
     computeEnv: string,
     datasets: ComputeAsset[],
     algorithm: ComputeAlgorithm,
@@ -849,21 +869,25 @@ export class HttpProvider {
     }
 
     const consumerAddress = await this.getConsumerAddress(signerOrAuthToken)
-    const nonce = (
-      (await this.getNonce(
-        nodeUri,
-        consumerAddress,
-        signal,
-        providerEndpoints,
-        serviceEndpoints
-      )) + 1
-    ).toString()
+    const nonce = isAgentSignature(signerOrAuthToken)
+      ? signerOrAuthToken.nonce
+      : (
+          (await this.getNonce(
+            nodeUri,
+            consumerAddress,
+            signal,
+            providerEndpoints,
+            serviceEndpoints
+          )) + 1
+        ).toString()
 
-    const signature = await this.getSignature(
-      signerOrAuthToken,
-      nonce,
-      PROTOCOL_COMMANDS.FREE_COMPUTE_START
-    )
+    const signature = isAgentSignature(signerOrAuthToken)
+      ? signerOrAuthToken.signature
+      : await this.getSignature(
+          signerOrAuthToken,
+          nonce,
+          PROTOCOL_COMMANDS.FREE_COMPUTE_START
+        )
     const payload = Object()
     payload.consumerAddress = consumerAddress
     payload.signature = signature
@@ -936,7 +960,7 @@ export class HttpProvider {
    */
   public async computeStreamableLogs(
     nodeUri: string,
-    signerOrAuthToken: Signer | string,
+    signerOrAuthToken: signerOrAuthTokenOrSignature,
     jobId: string,
     signal?: AbortSignal
   ): Promise<any> {
@@ -958,24 +982,28 @@ export class HttpProvider {
       return null
     }
     const consumerAddress = await this.getConsumerAddress(signerOrAuthToken)
-    const nonce = (
-      (await this.getNonce(
-        nodeUri,
-        consumerAddress,
-        signal,
-        providerEndpoints,
-        serviceEndpoints
-      )) + 1
-    ).toString()
+    const nonce = isAgentSignature(signerOrAuthToken)
+      ? signerOrAuthToken.nonce
+      : (
+          (await this.getNonce(
+            nodeUri,
+            consumerAddress,
+            signal,
+            providerEndpoints,
+            serviceEndpoints
+          )) + 1
+        ).toString()
 
     let url = `?consumerAddress=${consumerAddress}&jobId=${jobId}`
     // Is signer, add signature and nonce
     if (!isAuthToken) {
-      const signature = await this.getSignature(
-        signerOrAuthToken,
-        nonce,
-        PROTOCOL_COMMANDS.COMPUTE_GET_STREAMABLE_LOGS
-      )
+      const signature = isAgentSignature(signerOrAuthToken)
+        ? signerOrAuthToken.signature
+        : await this.getSignature(
+            signerOrAuthToken,
+            nonce,
+            PROTOCOL_COMMANDS.COMPUTE_GET_STREAMABLE_LOGS
+          )
       url += `&signature=${signature}`
       url += `&nonce=${nonce}`
     }
@@ -1018,7 +1046,7 @@ export class HttpProvider {
   public async computeStop(
     jobId: string,
     nodeUri: string,
-    signerOrAuthToken: Signer | string,
+    signerOrAuthToken: signerOrAuthTokenOrSignature,
     agreementId?: string,
     signal?: AbortSignal
   ): Promise<ComputeJob | ComputeJob[]> {
@@ -1031,21 +1059,21 @@ export class HttpProvider {
 
     const consumerAddress = await this.getConsumerAddress(signerOrAuthToken)
 
-    const nonce = (
-      (await this.getNonce(
-        nodeUri,
-        consumerAddress,
-        signal,
-        providerEndpoints,
-        serviceEndpoints
-      )) + 1
-    ).toString()
+    const nonce = isAgentSignature(signerOrAuthToken)
+      ? signerOrAuthToken.nonce
+      : (
+          (await this.getNonce(
+            nodeUri,
+            consumerAddress,
+            signal,
+            providerEndpoints,
+            serviceEndpoints
+          )) + 1
+        ).toString()
 
-    const signature = await this.getSignature(
-      signerOrAuthToken,
-      nonce,
-      PROTOCOL_COMMANDS.COMPUTE_STOP
-    )
+    const signature = isAgentSignature(signerOrAuthToken)
+      ? signerOrAuthToken.signature
+      : await this.getSignature(signerOrAuthToken, nonce, PROTOCOL_COMMANDS.COMPUTE_STOP)
     const queryParams = new URLSearchParams()
     queryParams.set('consumerAddress', consumerAddress)
     queryParams.set('nonce', nonce)
@@ -1060,11 +1088,12 @@ export class HttpProvider {
     if (!queryString) return null
     let response
     try {
+      const auth = this.getAuthorization(signerOrAuthToken)
       response = await fetch(computeStopUrl + '?' + queryString, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: this.getAuthorization(signerOrAuthToken)
+          ...(auth ? { Authorization: auth } : {})
         },
         signal
       })
@@ -1098,7 +1127,7 @@ export class HttpProvider {
    */
   public async computeStatus(
     nodeUri: string,
-    signerOrAuthToken: Signer | string,
+    signerOrAuthToken: signerOrAuthTokenOrSignature,
     jobId?: string,
     agreementId?: string,
     signal?: AbortSignal
@@ -1160,7 +1189,7 @@ export class HttpProvider {
    */
   public async getComputeResultUrl(
     nodeUri: string,
-    signerOrAuthToken: Signer | string,
+    signerOrAuthToken: signerOrAuthTokenOrSignature,
     jobId: string,
     index: number
   ): Promise<string> {
@@ -1172,20 +1201,24 @@ export class HttpProvider {
       : null
 
     const consumerAddress = await this.getConsumerAddress(signerOrAuthToken)
-    const nonce = (
-      (await this.getNonce(
-        nodeUri,
-        consumerAddress,
-        null,
-        providerEndpoints,
-        serviceEndpoints
-      )) + 1
-    ).toString()
-    const signature = await this.getSignature(
-      signerOrAuthToken,
-      nonce,
-      PROTOCOL_COMMANDS.COMPUTE_GET_RESULT
-    )
+    const nonce = isAgentSignature(signerOrAuthToken)
+      ? signerOrAuthToken.nonce
+      : (
+          (await this.getNonce(
+            nodeUri,
+            consumerAddress,
+            null,
+            providerEndpoints,
+            serviceEndpoints
+          )) + 1
+        ).toString()
+    const signature = isAgentSignature(signerOrAuthToken)
+      ? signerOrAuthToken.signature
+      : await this.getSignature(
+          signerOrAuthToken,
+          nonce,
+          PROTOCOL_COMMANDS.COMPUTE_GET_RESULT
+        )
     if (!computeResultUrl) return null
     let resultUrl = computeResultUrl
     resultUrl += `?consumerAddress=${consumerAddress}`
@@ -1200,7 +1233,7 @@ export class HttpProvider {
 
   public async getComputeResult(
     nodeUri: string,
-    signerOrAuthToken: Signer | string,
+    signerOrAuthToken: signerOrAuthTokenOrSignature,
     jobId: string,
     index: number,
     offset: number = 0
@@ -1478,7 +1511,7 @@ export class HttpProvider {
    */
   public async downloadNodeLogs(
     nodeUri: string,
-    signer: Signer,
+    signerOrAuthToken: signerOrAuthTokenOrSignature,
     startTime: string,
     endTime: string,
     maxLogs?: number,
@@ -1500,18 +1533,22 @@ export class HttpProvider {
       )
       return null
     }
-    const consumerAddress = await signer.getAddress()
-    const nonce = (
-      (await this.getNonce(
-        nodeUri,
-        consumerAddress,
-        signal,
-        providerEndpoints,
-        serviceEndpoints
-      )) + 1
-    ).toString()
+    const consumerAddress = await this.getConsumerAddress(signerOrAuthToken)
+    const nonce = isAgentSignature(signerOrAuthToken)
+      ? signerOrAuthToken.nonce
+      : (
+          (await this.getNonce(
+            nodeUri,
+            consumerAddress,
+            signal,
+            providerEndpoints,
+            serviceEndpoints
+          )) + 1
+        ).toString()
 
-    const signature = await this.getSignature(signer, nonce, PROTOCOL_COMMANDS.GET_LOGS)
+    const signature = isAgentSignature(signerOrAuthToken)
+      ? signerOrAuthToken.signature
+      : await this.getSignature(signerOrAuthToken, nonce, PROTOCOL_COMMANDS.GET_LOGS)
     let url = logsUrl + `?startTime=${startTime}&endTime=${endTime}`
     if (maxLogs) url += `&maxLogs=${maxLogs}`
     if (moduleName) url += `&moduleName=${moduleName}`
@@ -1527,7 +1564,10 @@ export class HttpProvider {
           nonce,
           address: consumerAddress
         }),
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: this.getAuthorization(signerOrAuthToken)
+        },
         signal
       })
     } catch (e) {
@@ -1636,7 +1676,7 @@ export class HttpProvider {
 
   public async createPersistentStorageBucket(
     nodeUri: string,
-    signerOrAuthToken: Signer | string,
+    signerOrAuthToken: signerOrAuthTokenOrSignature,
     payload: PersistentStorageCreateBucketRequest,
     signal?: AbortSignal
   ): Promise<{
@@ -1677,7 +1717,7 @@ export class HttpProvider {
 
   public async getPersistentStorageBuckets(
     nodeUri: string,
-    signerOrAuthToken: Signer | string,
+    signerOrAuthToken: signerOrAuthTokenOrSignature,
     owner: string,
     signal?: AbortSignal
   ): Promise<PersistentStorageBucket[]> {
@@ -1714,7 +1754,7 @@ export class HttpProvider {
 
   public async listPersistentStorageFiles(
     nodeUri: string,
-    signerOrAuthToken: Signer | string,
+    signerOrAuthToken: signerOrAuthTokenOrSignature,
     bucketId: string,
     signal?: AbortSignal
   ): Promise<PersistentStorageFileEntry[]> {
@@ -1751,7 +1791,7 @@ export class HttpProvider {
 
   public async getPersistentStorageFileObject(
     nodeUri: string,
-    signerOrAuthToken: Signer | string,
+    signerOrAuthToken: signerOrAuthTokenOrSignature,
     bucketId: string,
     fileName: string,
     signal?: AbortSignal
@@ -1790,7 +1830,7 @@ export class HttpProvider {
 
   public async uploadPersistentStorageFile(
     nodeUri: string,
-    signerOrAuthToken: Signer | string,
+    signerOrAuthToken: signerOrAuthTokenOrSignature,
     bucketId: string,
     fileName: string,
     content: P2PRequestBodyStream,
@@ -1900,7 +1940,7 @@ export class HttpProvider {
 
   public async deletePersistentStorageFile(
     nodeUri: string,
-    signerOrAuthToken: Signer | string,
+    signerOrAuthToken: signerOrAuthTokenOrSignature,
     bucketId: string,
     fileName: string,
     signal?: AbortSignal

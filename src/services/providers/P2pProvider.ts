@@ -43,12 +43,18 @@ import {
   PersistentStorageFileEntry,
   PersistentStorageObject,
   OceanNode,
-  NodeP2P
+  NodeP2P,
+  signerOrAuthTokenOrSignature
 } from '../../@types/index.js'
 import { PROTOCOL_COMMANDS, NodeLogsParams, NodeLogEntry } from '../../@types/Provider.js'
 import { type DDO, type ValidateMetadata } from '@oceanprotocol/ddo-js'
 import { signRequest } from '../../utils/SignatureUtils.js'
-import { getConsumerAddress, getSignature, getAuthorization } from './BaseProvider.js'
+import {
+  getConsumerAddress,
+  getSignature,
+  getAuthorization,
+  isAgentSignature
+} from './BaseProvider.js'
 import { eciesencrypt } from '../../utils/eciesencrypt.js'
 
 export const OCEAN_P2P_PROTOCOL = '/ocean/nodes/1.0.0'
@@ -421,7 +427,7 @@ export class P2pProvider {
       if (!includeP2PCircuit && afterPFilter < beforePFilter) {
         // we have some p2p-circuit addrs, let's try them
         return this.getConnection(
-          { nodeId: peerId.toString(), multiaddress: addrs },
+          { nodeId: peerId?.toString(), multiaddress: addrs },
           signal,
           true
         )
@@ -453,11 +459,16 @@ export class P2pProvider {
     }
   }
 
-  protected getConsumerAddress(s: Signer | string) {
+  protected getConsumerAddress(s: signerOrAuthTokenOrSignature) {
+    if (isAgentSignature(s)) return s.consumerAddress
     return getConsumerAddress(s)
   }
 
-  protected getSignature(s: Signer | string, nonce: string, command: string) {
+  protected getSignature(
+    s: signerOrAuthTokenOrSignature,
+    nonce: string,
+    command: string
+  ) {
     return getSignature(s, nonce, command)
   }
 
@@ -466,7 +477,7 @@ export class P2pProvider {
     return endpoints?.nodePublicKey
   }
 
-  protected getAuthorization(s: Signer | string) {
+  protected getAuthorization(s: signerOrAuthTokenOrSignature) {
     return getAuthorization(s)
   }
 
@@ -520,7 +531,7 @@ export class P2pProvider {
     nodeUri: OceanNode,
     command: string,
     body: Record<string, any>,
-    signerOrAuthToken?: Signer | string | null,
+    signerOrAuthToken?: signerOrAuthTokenOrSignature | null,
     signal?: AbortSignal,
     retrialNumber: number = 0,
     requestBody?: P2PRequestBodyStream
@@ -729,17 +740,17 @@ export class P2pProvider {
     data: any,
     chainId: number,
     nodeUri: OceanNode,
-    signerOrAuthToken: Signer | string,
+    signerOrAuthToken: signerOrAuthTokenOrSignature,
     _policyServer?: any,
     signal?: AbortSignal
   ): Promise<string> {
     const consumerAddress = await this.getConsumerAddress(signerOrAuthToken)
-    const nonce = ((await this.getNonce(nodeUri, consumerAddress, signal)) + 1).toString()
-    const signature = await this.getSignature(
-      signerOrAuthToken,
-      nonce,
-      PROTOCOL_COMMANDS.ENCRYPT
-    )
+    const nonce = isAgentSignature(signerOrAuthToken)
+      ? signerOrAuthToken.nonce
+      : ((await this.getNonce(nodeUri, consumerAddress, signal)) + 1).toString()
+    const signature = isAgentSignature(signerOrAuthToken)
+      ? signerOrAuthToken.signature
+      : await this.getSignature(signerOrAuthToken, nonce, PROTOCOL_COMMANDS.ENCRYPT)
     const result = await this.sendP2pCommand(
       nodeUri,
       PROTOCOL_COMMANDS.ENCRYPT,
@@ -901,17 +912,17 @@ export class P2pProvider {
     fileIndex: number,
     transferTxId: string,
     nodeUri: OceanNode,
-    signerOrAuthToken: Signer | string,
+    signerOrAuthToken: signerOrAuthTokenOrSignature,
     policyServer?: any,
     userCustomParameters?: UserCustomParameters
   ): Promise<DownloadResponse> {
     const consumerAddress = await this.getConsumerAddress(signerOrAuthToken)
-    const nonce = ((await this.getNonce(nodeUri, consumerAddress)) + 1).toString()
-    const signature = await this.getSignature(
-      signerOrAuthToken,
-      nonce,
-      PROTOCOL_COMMANDS.DOWNLOAD
-    )
+    const nonce = isAgentSignature(signerOrAuthToken)
+      ? signerOrAuthToken.nonce
+      : ((await this.getNonce(nodeUri, consumerAddress)) + 1).toString()
+    const signature = isAgentSignature(signerOrAuthToken)
+      ? signerOrAuthToken.signature
+      : await this.getSignature(signerOrAuthToken, nonce, PROTOCOL_COMMANDS.DOWNLOAD)
 
     const payload: Record<string, any> = {
       command: PROTOCOL_COMMANDS.DOWNLOAD,
@@ -975,7 +986,7 @@ export class P2pProvider {
    */
   public async computeStart(
     nodeUri: OceanNode,
-    signerOrAuthToken: Signer | string,
+    signerOrAuthToken: signerOrAuthTokenOrSignature,
     computeEnv: string,
     datasets: ComputeAsset[],
     algorithm: ComputeAlgorithm,
@@ -992,13 +1003,13 @@ export class P2pProvider {
     dockerRegistryAuth?: dockerRegistryAuth
   ): Promise<ComputeJob | ComputeJob[]> {
     const consumerAddress = await this.getConsumerAddress(signerOrAuthToken)
-    const nonce = ((await this.getNonce(nodeUri, consumerAddress, signal)) + 1).toString()
+    const nonce = isAgentSignature(signerOrAuthToken)
+      ? signerOrAuthToken.nonce
+      : ((await this.getNonce(nodeUri, consumerAddress, signal)) + 1).toString()
 
-    const signature = await this.getSignature(
-      signerOrAuthToken,
-      nonce,
-      PROTOCOL_COMMANDS.COMPUTE_START
-    )
+    const signature = isAgentSignature(signerOrAuthToken)
+      ? signerOrAuthToken.signature
+      : await this.getSignature(signerOrAuthToken, nonce, PROTOCOL_COMMANDS.COMPUTE_START)
 
     const body: Record<string, any> = {
       environment: computeEnv,
@@ -1046,7 +1057,7 @@ export class P2pProvider {
    */
   public async freeComputeStart(
     nodeUri: OceanNode,
-    signerOrAuthToken: Signer | string,
+    signerOrAuthToken: signerOrAuthTokenOrSignature,
     computeEnv: string,
     datasets: ComputeAsset[],
     algorithm: ComputeAlgorithm,
@@ -1060,13 +1071,17 @@ export class P2pProvider {
     dockerRegistryAuth?: dockerRegistryAuth
   ): Promise<ComputeJob | ComputeJob[]> {
     const consumerAddress = await this.getConsumerAddress(signerOrAuthToken)
-    const nonce = ((await this.getNonce(nodeUri, consumerAddress, signal)) + 1).toString()
+    const nonce = isAgentSignature(signerOrAuthToken)
+      ? signerOrAuthToken.nonce
+      : ((await this.getNonce(nodeUri, consumerAddress, signal)) + 1).toString()
 
-    const signature = await this.getSignature(
-      signerOrAuthToken,
-      nonce,
-      PROTOCOL_COMMANDS.FREE_COMPUTE_START
-    )
+    const signature = isAgentSignature(signerOrAuthToken)
+      ? signerOrAuthToken.signature
+      : await this.getSignature(
+          signerOrAuthToken,
+          nonce,
+          PROTOCOL_COMMANDS.FREE_COMPUTE_START
+        )
 
     const body: Record<string, any> = {
       environment: computeEnv,
@@ -1110,7 +1125,7 @@ export class P2pProvider {
    */
   public async computeStreamableLogs(
     nodeUri: OceanNode,
-    signerOrAuthToken: Signer | string,
+    signerOrAuthToken: signerOrAuthTokenOrSignature,
     jobId: string,
     signal?: AbortSignal
   ): Promise<any> {
@@ -1126,12 +1141,16 @@ export class P2pProvider {
     }
 
     const consumerAddress = await this.getConsumerAddress(signerOrAuthToken)
-    const nonce = ((await this.getNonce(nodeUri, consumerAddress, signal)) + 1).toString()
-    const signature = await this.getSignature(
-      signerOrAuthToken,
-      nonce,
-      PROTOCOL_COMMANDS.COMPUTE_GET_STREAMABLE_LOGS
-    )
+    const nonce = isAgentSignature(signerOrAuthToken)
+      ? signerOrAuthToken.nonce
+      : ((await this.getNonce(nodeUri, consumerAddress, signal)) + 1).toString()
+    const signature = isAgentSignature(signerOrAuthToken)
+      ? signerOrAuthToken.signature
+      : await this.getSignature(
+          signerOrAuthToken,
+          nonce,
+          PROTOCOL_COMMANDS.COMPUTE_GET_STREAMABLE_LOGS
+        )
     return this.sendP2pCommand(
       nodeUri,
       PROTOCOL_COMMANDS.COMPUTE_GET_STREAMABLE_LOGS,
@@ -1147,18 +1166,18 @@ export class P2pProvider {
   public async computeStop(
     jobId: string,
     nodeUri: OceanNode,
-    signerOrAuthToken: Signer | string,
+    signerOrAuthToken: signerOrAuthTokenOrSignature,
     agreementId?: string,
     signal?: AbortSignal
   ): Promise<ComputeJob | ComputeJob[]> {
     const consumerAddress = await this.getConsumerAddress(signerOrAuthToken)
-    const nonce = ((await this.getNonce(nodeUri, consumerAddress, signal)) + 1).toString()
+    const nonce = isAgentSignature(signerOrAuthToken)
+      ? signerOrAuthToken.nonce
+      : ((await this.getNonce(nodeUri, consumerAddress, signal)) + 1).toString()
 
-    const signature = await this.getSignature(
-      signerOrAuthToken,
-      nonce,
-      PROTOCOL_COMMANDS.COMPUTE_STOP
-    )
+    const signature = isAgentSignature(signerOrAuthToken)
+      ? signerOrAuthToken.signature
+      : await this.getSignature(signerOrAuthToken, nonce, PROTOCOL_COMMANDS.COMPUTE_STOP)
 
     const body: Record<string, any> = { jobId, consumerAddress, nonce, signature }
     if (agreementId) body.agreementId = agreementId
@@ -1177,7 +1196,7 @@ export class P2pProvider {
    */
   public async computeStatus(
     nodeUri: OceanNode,
-    signerOrAuthToken: Signer | string,
+    signerOrAuthToken: signerOrAuthTokenOrSignature,
     jobId?: string,
     agreementId?: string,
     signal?: AbortSignal
@@ -1202,7 +1221,7 @@ export class P2pProvider {
    */
   public async getComputeResult(
     nodeUri: OceanNode,
-    signerOrAuthToken: Signer | string,
+    signerOrAuthToken: signerOrAuthTokenOrSignature,
     jobId: string,
     index: number,
     offset: number = 0
@@ -1219,13 +1238,17 @@ export class P2pProvider {
     if (typeof signerOrAuthToken === 'string') {
       payload.authorization = signerOrAuthToken
     } else {
-      const nonce = ((await this.getNonce(nodeUri, consumerAddress)) + 1).toString()
+      const nonce = isAgentSignature(signerOrAuthToken)
+        ? signerOrAuthToken.nonce
+        : ((await this.getNonce(nodeUri, consumerAddress)) + 1).toString()
       payload.nonce = nonce
-      payload.signature = await this.getSignature(
-        signerOrAuthToken,
-        nonce,
-        PROTOCOL_COMMANDS.COMPUTE_GET_RESULT
-      )
+      payload.signature = isAgentSignature(signerOrAuthToken)
+        ? signerOrAuthToken.signature
+        : await this.getSignature(
+            signerOrAuthToken,
+            nonce,
+            PROTOCOL_COMMANDS.COMPUTE_GET_RESULT
+          )
     }
 
     const { lp, firstBytes } = await this.dialAndStream(nodeUri, payload)
@@ -1251,7 +1274,7 @@ export class P2pProvider {
 
   public async getComputeResultUrl(
     nodeUri: OceanNode,
-    signerOrAuthToken: Signer | string,
+    signerOrAuthToken: signerOrAuthTokenOrSignature,
     jobId: string,
     index: number
   ): Promise<string> {
@@ -1334,15 +1357,21 @@ export class P2pProvider {
   public async validateDdo(
     nodeUri: OceanNode,
     ddo: DDO,
-    signer: Signer,
+    signerOrAuthToken: signerOrAuthTokenOrSignature,
     signal?: AbortSignal
   ): Promise<ValidateMetadata> {
-    const publisherAddress = await signer.getAddress()
-    const nonce = (
-      (await this.getNonce(nodeUri, publisherAddress, signal)) + 1
-    ).toString()
-    const message = publisherAddress + nonce + PROTOCOL_COMMANDS.VALIDATE_DDO
-    const sig = await signRequest(signer, message)
+    if (typeof signerOrAuthToken === 'string' && !isAgentSignature(signerOrAuthToken)) {
+      throw new Error(
+        'validateDdo requires a Signer or AgentSignature (nonce/signature).'
+      )
+    }
+    const publisherAddress = await this.getConsumerAddress(signerOrAuthToken)
+    const nonce = isAgentSignature(signerOrAuthToken)
+      ? signerOrAuthToken.nonce
+      : ((await this.getNonce(nodeUri, publisherAddress, signal)) + 1).toString()
+    const sig = isAgentSignature(signerOrAuthToken)
+      ? signerOrAuthToken.signature
+      : await this.getSignature(signerOrAuthToken, nonce, PROTOCOL_COMMANDS.VALIDATE_DDO)
     const result = await this.sendP2pCommand(
       nodeUri,
       PROTOCOL_COMMANDS.VALIDATE_DDO,
@@ -1449,7 +1478,7 @@ export class P2pProvider {
    */
   public async downloadNodeLogs(
     nodeUri: OceanNode,
-    signer: Signer,
+    signerOrAuthToken: signerOrAuthTokenOrSignature,
     startTime: string,
     endTime: string,
     maxLogs?: number,
@@ -1458,9 +1487,18 @@ export class P2pProvider {
     page?: number,
     signal?: AbortSignal
   ): Promise<NodeLogEntry[]> {
-    const consumerAddress = await signer.getAddress()
-    const nonce = ((await this.getNonce(nodeUri, consumerAddress, signal)) + 1).toString()
-    const signature = await this.getSignature(signer, nonce, PROTOCOL_COMMANDS.GET_LOGS)
+    if (typeof signerOrAuthToken === 'string' && !isAgentSignature(signerOrAuthToken)) {
+      throw new Error(
+        'downloadNodeLogs requires a Signer or AgentSignature (nonce/signature).'
+      )
+    }
+    const consumerAddress = await this.getConsumerAddress(signerOrAuthToken)
+    const nonce = isAgentSignature(signerOrAuthToken)
+      ? signerOrAuthToken.nonce
+      : ((await this.getNonce(nodeUri, consumerAddress, signal)) + 1).toString()
+    const signature = isAgentSignature(signerOrAuthToken)
+      ? signerOrAuthToken.signature
+      : await this.getSignature(signerOrAuthToken, nonce, PROTOCOL_COMMANDS.GET_LOGS)
 
     const body: Record<string, any> = {
       startTime,
@@ -1474,26 +1512,13 @@ export class P2pProvider {
     if (level) body.level = level
     if (page) body.page = page
 
-    return this.sendP2pCommand(nodeUri, PROTOCOL_COMMANDS.GET_LOGS, body, signer, signal)
-  }
-
-  /**
-   * Fetch node logs via P2P with a pre-signed payload.
-   * P2P only — use downloadNodeLogs() for the auto-signed variant.
-   */
-  public async fetchNodeLogs(
-    nodeUri: OceanNode,
-    address: string,
-    signature: string,
-    nonce: string,
-    logParams?: NodeLogsParams
-  ): Promise<NodeLogEntry[]> {
-    return this.sendP2pCommand(nodeUri, PROTOCOL_COMMANDS.GET_LOGS, {
-      address,
-      signature,
-      nonce,
-      ...logParams
-    })
+    return this.sendP2pCommand(
+      nodeUri,
+      PROTOCOL_COMMANDS.GET_LOGS,
+      body,
+      signerOrAuthToken,
+      signal
+    )
   }
 
   /**
@@ -1520,12 +1545,21 @@ export class P2pProvider {
 
   private async getPersistentStorageSignaturePayload(
     nodeUri: OceanNode,
-    signerOrAuthToken: Signer | string,
+    signerOrAuthToken: signerOrAuthTokenOrSignature,
     command: string,
     signal?: AbortSignal
-  ): Promise<{} | { consumerAddress: string; nonce: string; signature: string }> {
+  ): Promise<{ consumerAddress: string; nonce: string; signature: string }> {
+    if (isAgentSignature(signerOrAuthToken)) {
+      return {
+        consumerAddress: signerOrAuthToken.consumerAddress,
+        nonce: signerOrAuthToken.nonce,
+        signature: signerOrAuthToken.signature
+      }
+    }
     if (typeof signerOrAuthToken === 'string') {
-      return {}
+      throw new Error(
+        'Persistent storage operations require a Signer or AgentSignature (nonce/signature).'
+      )
     }
     const consumerAddress = await this.getConsumerAddress(signerOrAuthToken)
     const nonce = ((await this.getNonce(nodeUri, consumerAddress, signal)) + 1).toString()
@@ -1538,7 +1572,7 @@ export class P2pProvider {
 
   public async createPersistentStorageBucket(
     nodeUri: OceanNode,
-    signerOrAuthToken: Signer | string,
+    signerOrAuthToken: signerOrAuthTokenOrSignature,
     payload: PersistentStorageCreateBucketRequest,
     signal?: AbortSignal
   ): Promise<{
@@ -1566,7 +1600,7 @@ export class P2pProvider {
 
   public async getPersistentStorageBuckets(
     nodeUri: OceanNode,
-    signerOrAuthToken: Signer | string,
+    signerOrAuthToken: signerOrAuthTokenOrSignature,
     owner: string,
     signal?: AbortSignal
   ): Promise<PersistentStorageBucket[]> {
@@ -1588,7 +1622,7 @@ export class P2pProvider {
 
   public async listPersistentStorageFiles(
     nodeUri: OceanNode,
-    signerOrAuthToken: Signer | string,
+    signerOrAuthToken: signerOrAuthTokenOrSignature,
     bucketId: string,
     signal?: AbortSignal
   ): Promise<PersistentStorageFileEntry[]> {
@@ -1610,7 +1644,7 @@ export class P2pProvider {
 
   public async getPersistentStorageFileObject(
     nodeUri: OceanNode,
-    signerOrAuthToken: Signer | string,
+    signerOrAuthToken: signerOrAuthTokenOrSignature,
     bucketId: string,
     fileName: string,
     signal?: AbortSignal
@@ -1632,7 +1666,7 @@ export class P2pProvider {
 
   public async uploadPersistentStorageFile(
     nodeUri: OceanNode,
-    signerOrAuthToken: Signer | string,
+    signerOrAuthToken: signerOrAuthTokenOrSignature,
     bucketId: string,
     fileName: string,
     content: P2PRequestBodyStream,
@@ -1657,7 +1691,7 @@ export class P2pProvider {
 
   public async deletePersistentStorageFile(
     nodeUri: OceanNode,
-    signerOrAuthToken: Signer | string,
+    signerOrAuthToken: signerOrAuthTokenOrSignature,
     bucketId: string,
     fileName: string,
     signal?: AbortSignal
