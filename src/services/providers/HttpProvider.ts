@@ -926,7 +926,9 @@ export class HttpProvider {
         body: JSON.stringify(payload),
         headers: {
           'Content-Type': 'application/json',
-          Authorization: this.getAuthorization(signerOrAuthToken)
+          ...(this.getAuthorization(signerOrAuthToken)
+            ? { Authorization: this.getAuthorization(signerOrAuthToken) }
+            : {})
         },
         signal
       })
@@ -1014,7 +1016,9 @@ export class HttpProvider {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: this.getAuthorization(signerOrAuthToken)
+          ...(this.getAuthorization(signerOrAuthToken)
+            ? { Authorization: this.getAuthorization(signerOrAuthToken) }
+            : {})
         },
         signal
       })
@@ -1088,12 +1092,13 @@ export class HttpProvider {
     if (!queryString) return null
     let response
     try {
-      const auth = this.getAuthorization(signerOrAuthToken)
       response = await fetch(computeStopUrl + '?' + queryString, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          ...(auth ? { Authorization: auth } : {})
+          ...(this.getAuthorization(signerOrAuthToken)
+            ? { Authorization: this.getAuthorization(signerOrAuthToken) }
+            : {})
         },
         signal
       })
@@ -1133,7 +1138,6 @@ export class HttpProvider {
     signal?: AbortSignal
   ): Promise<ComputeJob | ComputeJob[]> {
     const consumerAddress = await getConsumerAddress(signerOrAuthToken)
-    const authorization = getAuthorization(signerOrAuthToken)
     const providerEndpoints = await this.getEndpoints(nodeUri)
     const serviceEndpoints = await this.getServiceEndpoints(nodeUri, providerEndpoints)
     const computeStatusUrl = this.getEndpointURL(serviceEndpoints, 'computeStatus')
@@ -1149,7 +1153,12 @@ export class HttpProvider {
     try {
       response = await fetch(computeStatusUrl + url, {
         method: 'GET',
-        headers: { 'Content-Type': 'application/json', Authorization: authorization },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(this.getAuthorization(signerOrAuthToken)
+            ? { Authorization: this.getAuthorization(signerOrAuthToken) }
+            : {})
+        },
         signal
       })
     } catch (e) {
@@ -1566,7 +1575,9 @@ export class HttpProvider {
         }),
         headers: {
           'Content-Type': 'application/json',
-          Authorization: this.getAuthorization(signerOrAuthToken)
+          ...(this.getAuthorization(signerOrAuthToken)
+            ? { Authorization: this.getAuthorization(signerOrAuthToken) }
+            : {})
         },
         signal
       })
