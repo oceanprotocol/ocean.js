@@ -337,11 +337,15 @@ export class P2pProvider {
     const node = await this.getOrCreateLibp2pNode()
     const hasDialable = () => addrs.some((ma) => this.isDialable(ma))
     let peerId: PeerId | null = null
-    let addrs: Multiaddr[] = []
+    const addrs: Multiaddr[] = []
     if (nodeUri && typeof nodeUri === 'string') {
       try {
         const addr = multiaddr(nodeUri)
         addrs.push(addr)
+        if (!peerId) {
+          const pidStr = this.peerIdFromMultiaddr(addr)
+          if (pidStr) peerId = peerIdFromString(pidStr)
+        }
       } catch {}
       try {
         if (!peerId) peerId = peerIdFromString(nodeUri)
@@ -402,33 +406,37 @@ export class P2pProvider {
         )
       } catch (err: any) {
         LoggerInstance.debug(
-          `[P2P] ${peerId.toString}: DHT findPeer failed: ${err.message}`
+          `[P2P] ${peerId.toString()}: DHT findPeer failed: ${err.message}`
         )
       }
     }
-    addrs = addrs.filter((ma) => this.isDialable(ma))
-    const beforePFilter = addrs.length
-    if (!includeP2PCircuit) addrs = addrs.filter((ma) => this.isNotP2PCircuit(ma))
+    let dialable = addrs.filter((ma) => this.isDialable(ma))
+    const beforePFilter = dialable.length
+    if (!includeP2PCircuit) dialable = dialable.filter((ma) => this.isNotP2PCircuit(ma))
 
-    const afterPFilter = addrs.length
+    const afterPFilter = dialable.length
 
-    if (addrs.length < 1) {
+    if (dialable.length < 1) {
       // try with p2p-circuits if available
       if (!includeP2PCircuit && afterPFilter < beforePFilter) {
         // we have some p2p-circuit addrs, let's try them
-        return this.getConnection(nodeUri, signal, true)
+        return this.getConnection(
+          { nodeId: peerId.toString(), multiaddress: addrs },
+          signal,
+          true
+        )
       }
       throw new Error('No valid multiaddresses, cannot connect')
     }
     // normalize all mas if we have peerId
     if (peerId) {
-      addrs = addrs.map((ma) => {
+      dialable = dialable.map((ma) => {
         const str = ma.toString()
         return str.includes('/p2p/') ? ma : multiaddr(`${str}/p2p/${peerId.toString()}`)
       })
     }
     try {
-      const conn = await node.dial(addrs, { signal })
+      const conn = await node.dial(dialable, { signal })
       LoggerInstance.debug(
         `[P2P] Dial SUCCESS via ${conn.remoteAddr} (limited=${conn.limits != null})`
       )
