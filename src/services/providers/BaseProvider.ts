@@ -91,14 +91,15 @@ export function isP2pUri(node: OceanNode): boolean {
     const nodeP2p = node as NodeP2P
     if (Array.isArray(nodeP2p.multiaddress) && nodeP2p.multiaddress.length > 0)
       return true
-    try {
-      multiaddr(nodeP2p.nodeId)
-      return true
-    } catch {}
-    try {
-      peerIdFromString(nodeP2p.nodeId)
-      return true
-    } catch {
+    if (nodeP2p.nodeId) {
+      try {
+        multiaddr(nodeP2p.nodeId)
+        return true
+      } catch {}
+      try {
+        peerIdFromString(nodeP2p.nodeId)
+        return true
+      } catch {}
       return false
     }
   }

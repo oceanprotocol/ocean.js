@@ -335,6 +335,7 @@ export class P2pProvider {
     includeP2PCircuit: boolean = false
   ): Promise<Connection> {
     const node = await this.getOrCreateLibp2pNode()
+    const hasDialable = () => addrs.some((ma) => this.isDialable(ma))
     let peerId: PeerId | null = null
     let addrs: Multiaddr[] = []
     if (nodeUri && typeof nodeUri === 'string') {
@@ -343,7 +344,7 @@ export class P2pProvider {
         addrs.push(addr)
       } catch {}
       try {
-        peerId = peerIdFromString(nodeUri)
+        if (!peerId) peerId = peerIdFromString(nodeUri)
       } catch {}
     }
     if (typeof nodeUri === 'object' && nodeUri !== null && !Array.isArray(nodeUri)) {
@@ -352,7 +353,11 @@ export class P2pProvider {
         if (Array.isArray(nodeP2p.multiaddress) && nodeP2p.multiaddress.length > 0) {
           for (const addr of nodeP2p.multiaddress) addrs.push(addr)
         }
-        if (nodeP2p.nodeId) peerId = peerIdFromString(nodeP2p.nodeId)
+        if (nodeP2p.nodeId) {
+          try {
+            peerId = peerIdFromString(nodeP2p.nodeId)
+          } catch {}
+        }
       } else {
         peerId = nodeUri as PeerId
       }
@@ -370,8 +375,8 @@ export class P2pProvider {
         return existing[0]
       }
     }
-    // let's build the ma addr & fetch from dht if needed
-    if (addrs.length < 1 && peerId) {
+    // if there are no dialable ma, search peerstore
+    if (!hasDialable() && peerId) {
       try {
         const peerData = await node.peerStore.get(peerId)
         if (peerData?.addresses) {
@@ -386,8 +391,8 @@ export class P2pProvider {
         LoggerInstance.debug(`[P2P] ${peerId.toString()}: not in peerStore`)
       }
     }
-    // if there are no known ma, search dht
-    if (addrs.length < 1 && peerId) {
+    // if there are no dialable ma, search dht
+    if (!hasDialable() && peerId) {
       try {
         const dhtSignal = AbortSignal.timeout(this.p2pConfig.dhtLookupTimeout ?? 60_000)
         const peerInfo = await node.peerRouting.findPeer(peerId, { signal: dhtSignal })
@@ -409,7 +414,8 @@ export class P2pProvider {
 
     if (addrs.length < 1) {
       // try with p2p-circuits if available
-      if (!includeP2PCircuit && afterPFilter > beforePFilter) {
+      if (!includeP2PCircuit && afterPFilter < beforePFilter) {
+        // we have some p2p-circuit addrs, let's try them
         return this.getConnection(nodeUri, signal, true)
       }
       throw new Error('No valid multiaddresses, cannot connect')
