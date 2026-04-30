@@ -65,8 +65,10 @@ export class HttpProvider {
     }
     if (typeof signerOrAuthToken === 'string') {
       return {
-        consumerAddress: await getConsumerAddress(signerOrAuthToken)
-      } as CompleteSignature
+        consumerAddress: await getConsumerAddress(signerOrAuthToken),
+        nonce: undefined,
+        signature: undefined
+      }
     }
     if (!providerEndpoints) providerEndpoints = await this.getEndpoints(nodeUri)
     if (!serviceEndpoints)
@@ -924,7 +926,6 @@ export class HttpProvider {
     jobId: string,
     signal?: AbortSignal
   ): Promise<any> {
-    const isAuthToken = typeof signerOrAuthToken === 'string'
     const providerEndpoints = await this.getEndpoints(nodeUri)
     const serviceEndpoints = await this.getServiceEndpoints(nodeUri, providerEndpoints)
 
@@ -950,12 +951,10 @@ export class HttpProvider {
       serviceEndpoints
     )
 
-    let url = `?consumerAddress=${consumerAddress}&jobId=${jobId}`
-    // Is signer, add signature and nonce
-    if (!isAuthToken) {
-      url += `&signature=${signature}`
-      url += `&nonce=${nonce}`
-    }
+    let url = `?jobId=${jobId}`
+    if (consumerAddress) url += `&consumerAddress=${consumerAddress}`
+    if (signature) url += `&signature=${signature}`
+    if (nonce) url += `&nonce=${nonce}`
 
     let response
     try {
