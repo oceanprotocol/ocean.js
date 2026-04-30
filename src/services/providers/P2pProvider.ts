@@ -329,8 +329,7 @@ export class P2pProvider {
 
   async getProvidersForString(
     input: string,
-    signal?: AbortSignal,
-    maxResults?: number
+    signal?: AbortSignal
   ): Promise<Array<{ id: string; multiaddrs: any[] }>> {
     const node = await this.getOrCreateLibp2pNode()
     const cid = await this.cidFromRawString(input)
@@ -342,11 +341,8 @@ export class P2pProvider {
         signal
       })) {
         peersFound.push(result)
-        if (maxResults !== undefined && peersFound.length >= maxResults) break
       }
-    } catch (err) {
-      if (err.name !== 'AbortError') console.error(err)
-    }
+    } catch (err) {}
     return peersFound.map((peer) => ({
       id: peer.id.toString(),
       multiaddrs: peer.multiaddrs
