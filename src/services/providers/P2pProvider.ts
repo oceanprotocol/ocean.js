@@ -60,6 +60,7 @@ import { CID } from 'multiformats/cid'
 import { sha256 } from 'multiformats/hashes/sha2'
 import * as multiFormatRaw from 'multiformats/codecs/raw'
 import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
+import { maxHeaderSize } from 'http'
 
 export const OCEAN_P2P_PROTOCOL = '/ocean/nodes/1.0.0'
 const OCEAN_DHT_PROTOCOL = '/ocean/nodes/1.0.0/kad/1.0.0'
@@ -273,7 +274,7 @@ export class P2pProvider {
           allowQueryWithZeroPeers: false,
           kBucketSize: 20,
           protocol: OCEAN_DHT_PROTOCOL,
-          clientMode: false // Servers can better query the network
+          clientMode: true // Servers can better query the network
         })
       },
       // Without this we are blocking connection to plain ws - the bundler thinks we are in a browser.
@@ -328,7 +329,8 @@ export class P2pProvider {
 
   async getProvidersForString(
     input: string,
-    timeout?: number
+    timeout?: number,
+    maxResults?: number
   ): Promise<Array<{ id: string; multiaddrs: any[] }>> {
     const node = await this.getOrCreateLibp2pNode()
     const cid = await this.cidFromRawString(input)
@@ -343,6 +345,7 @@ export class P2pProvider {
         useNetwork: true
       })) {
         peersFound.push(result)
+        if (maxResults !== undefined && peersFound.length >= maxResults) break
       }
     } catch (err) {
       if (err.name !== 'AbortError') console.error(err)
