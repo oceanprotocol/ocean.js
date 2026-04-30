@@ -165,10 +165,10 @@ export interface NodeLogEntry {
   meta?: Record<string, any>
 }
 
-export interface AgentSignature {
+export interface CompleteSignature {
   consumerAddress: string
   nonce: string
   signature: string
 }
 
-export type SignerOrAuthTokenOrSignature = string | Signer | AgentSignature
+export type SignerOrAuthTokenOrSignature = string | Signer | CompleteSignature

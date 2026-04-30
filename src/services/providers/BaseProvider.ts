@@ -31,7 +31,7 @@ import {
   PersistentStorageObject,
   OceanNode,
   NodeP2P,
-  AgentSignature,
+  CompleteSignature,
   SignerOrAuthTokenOrSignature
 } from '../../@types/index.js'
 import { type DDO, type ValidateMetadata } from '@oceanprotocol/ddo-js'
@@ -76,7 +76,7 @@ export function getAuthorization(
   return typeof signerOrAuthToken === 'string' ? signerOrAuthToken : undefined
 }
 
-export function isAgentSignature(v: unknown): v is AgentSignature {
+export function isAgentSignature(v: unknown): v is CompleteSignature {
   return (
     !!v &&
     typeof v === 'object' &&

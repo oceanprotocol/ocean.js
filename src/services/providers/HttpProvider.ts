@@ -28,7 +28,8 @@ import {
   PersistentStorageDeleteFileResponse,
   PersistentStorageFileEntry,
   PersistentStorageObject,
-  SignerOrAuthTokenOrSignature
+  SignerOrAuthTokenOrSignature,
+  CompleteSignature
 } from '../../@types/index.js'
 import { PROTOCOL_COMMANDS } from '../../@types/Provider.js'
 import { type DDO, type ValidateMetadata } from '@oceanprotocol/ddo-js'
@@ -43,18 +44,6 @@ import {
 import { type P2PRequestBodyStream } from './P2pProvider.js'
 
 export class HttpProvider {
-  protected getConsumerAddress(s: SignerOrAuthTokenOrSignature) {
-    return getConsumerAddress(s)
-  }
-
-  protected getSignature(
-    s: SignerOrAuthTokenOrSignature,
-    nonce: string,
-    command: string
-  ) {
-    return getSignature(s, nonce, command)
-  }
-
   protected getAuthorization(s: SignerOrAuthTokenOrSignature) {
     return getAuthorization(s)
   }
@@ -66,10 +55,7 @@ export class HttpProvider {
     signal?: AbortSignal,
     providerEndpoints?: any,
     serviceEndpoints?: any
-  ): Promise<{ consumerAddress: string; nonce: string; signature: string | null }> {
-    if (!providerEndpoints) providerEndpoints = await this.getEndpoints(nodeUri)
-    if (!serviceEndpoints)
-      serviceEndpoints = await this.getServiceEndpoints(nodeUri, providerEndpoints)
+  ): Promise<CompleteSignature> {
     if (isAgentSignature(signerOrAuthToken)) {
       return {
         consumerAddress: signerOrAuthToken.consumerAddress,
@@ -77,8 +63,18 @@ export class HttpProvider {
         signature: signerOrAuthToken.signature
       }
     }
+    if (typeof signerOrAuthToken === 'string') {
+      return {
+        consumerAddress: undefined,
+        nonce: undefined,
+        signature: undefined
+      }
+    }
+    if (!providerEndpoints) providerEndpoints = await this.getEndpoints(nodeUri)
+    if (!serviceEndpoints)
+      serviceEndpoints = await this.getServiceEndpoints(nodeUri, providerEndpoints)
 
-    const consumerAddress = await this.getConsumerAddress(signerOrAuthToken)
+    const consumerAddress = await getConsumerAddress(signerOrAuthToken)
     const nonce = (
       (await this.getNonce(
         nodeUri,
@@ -88,32 +84,9 @@ export class HttpProvider {
         serviceEndpoints
       )) + 1
     ).toString()
-    const signature = await this.getSignature(signerOrAuthToken, nonce, command)
+    const signature = await getSignature(signerOrAuthToken, nonce, command)
     if (!signature) throw new Error('Could not sign persistent storage request.')
     return { consumerAddress, nonce, signature }
-  }
-
-  private async getPersistentStorageSignaturePayload(
-    nodeUri: string,
-    signerOrAuthToken: SignerOrAuthTokenOrSignature,
-    command: string,
-    signal?: AbortSignal,
-    providerEndpoints?: any,
-    serviceEndpoints?: any
-  ): Promise<{ consumerAddress: string; nonce: string; signature: string }> {
-    if (typeof signerOrAuthToken === 'string') {
-      throw new Error(
-        'Persistent storage operations require a Signer or AgentSignature (nonce/signature).'
-      )
-    }
-    return this.getSignedCommandParams(
-      nodeUri,
-      signerOrAuthToken,
-      command,
-      signal,
-      providerEndpoints,
-      serviceEndpoints
-    )
   }
 
   private resolvePersistentStorageRoute(
@@ -1102,7 +1075,7 @@ export class HttpProvider {
     agreementId?: string,
     signal?: AbortSignal
   ): Promise<ComputeJob | ComputeJob[]> {
-    const consumerAddress = await this.getConsumerAddress(signerOrAuthToken)
+    const consumerAddress = await getConsumerAddress(signerOrAuthToken)
     const providerEndpoints = await this.getEndpoints(nodeUri)
     const serviceEndpoints = await this.getServiceEndpoints(nodeUri, providerEndpoints)
     const computeStatusUrl = this.getEndpointURL(serviceEndpoints, 'computeStatus')
@@ -1240,7 +1213,7 @@ export class HttpProvider {
       )) + 1
     ).toString()
 
-    const signature = await this.getSignature(
+    const signature = await getSignature(
       consumer,
       nonce,
       PROTOCOL_COMMANDS.CREATE_AUTH_TOKEN
@@ -1647,7 +1620,7 @@ export class HttpProvider {
       ['persistentStorageCreateBucket'],
       '/api/services/persistentStorage/buckets'
     )
-    const authPayload = await this.getPersistentStorageSignaturePayload(
+    const authPayload = await this.getSignedCommandParams(
       nodeUri,
       signerOrAuthToken,
       PROTOCOL_COMMANDS.PERSISTENT_STORAGE_CREATE_BUCKET,
@@ -1684,7 +1657,7 @@ export class HttpProvider {
       ['persistentStorageGetBuckets'],
       '/api/services/persistentStorage/buckets'
     )
-    const authPayload = await this.getPersistentStorageSignaturePayload(
+    const authPayload = await this.getSignedCommandParams(
       nodeUri,
       signerOrAuthToken,
       PROTOCOL_COMMANDS.PERSISTENT_STORAGE_GET_BUCKETS,
@@ -1721,7 +1694,7 @@ export class HttpProvider {
       ['persistentStorageListFiles'],
       `/api/services/persistentStorage/buckets/${encodeURIComponent(bucketId)}/files`
     )
-    const authPayload = await this.getPersistentStorageSignaturePayload(
+    const authPayload = await this.getSignedCommandParams(
       nodeUri,
       signerOrAuthToken,
       PROTOCOL_COMMANDS.PERSISTENT_STORAGE_LIST_FILES,
@@ -1761,7 +1734,7 @@ export class HttpProvider {
         bucketId
       )}/files/${encodeURIComponent(fileName)}/object`
     )
-    const authPayload = await this.getPersistentStorageSignaturePayload(
+    const authPayload = await this.getSignedCommandParams(
       nodeUri,
       signerOrAuthToken,
       PROTOCOL_COMMANDS.PERSISTENT_STORAGE_GET_FILE_OBJECT,
@@ -1801,7 +1774,7 @@ export class HttpProvider {
         bucketId
       )}/files/${encodeURIComponent(fileName)}`
     )
-    const authPayload = await this.getPersistentStorageSignaturePayload(
+    const authPayload = await this.getSignedCommandParams(
       nodeUri,
       signerOrAuthToken,
       PROTOCOL_COMMANDS.PERSISTENT_STORAGE_UPLOAD_FILE,
@@ -1907,7 +1880,7 @@ export class HttpProvider {
         bucketId
       )}/files/${encodeURIComponent(fileName)}`
     )
-    const authPayload = await this.getPersistentStorageSignaturePayload(
+    const authPayload = await this.getSignedCommandParams(
       nodeUri,
       signerOrAuthToken,
       PROTOCOL_COMMANDS.PERSISTENT_STORAGE_DELETE_FILE,
