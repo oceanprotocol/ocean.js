@@ -329,28 +329,23 @@ export class P2pProvider {
 
   async getProvidersForString(
     input: string,
-    timeout?: number,
+    signal?: AbortSignal,
     maxResults?: number
   ): Promise<Array<{ id: string; multiaddrs: any[] }>> {
     const node = await this.getOrCreateLibp2pNode()
     const cid = await this.cidFromRawString(input)
     const peersFound = []
-    const effectiveTimeout = timeout ?? 20000
-    const controller = new AbortController()
-    const timeoutId = setTimeout(() => controller.abort(), effectiveTimeout)
     try {
       for await (const result of node.contentRouting.findProviders(cid, {
-        signal: controller.signal,
         useCache: false,
-        useNetwork: true
+        useNetwork: true,
+        signal
       })) {
         peersFound.push(result)
         if (maxResults !== undefined && peersFound.length >= maxResults) break
       }
     } catch (err) {
       if (err.name !== 'AbortError') console.error(err)
-    } finally {
-      clearTimeout(timeoutId)
     }
     return peersFound.map((peer) => ({
       id: peer.id.toString(),
@@ -453,8 +448,8 @@ export class P2pProvider {
     // if there are no dialable ma, search dht
     if (!hasDialable() && peerId) {
       try {
-        const dhtSignal = AbortSignal.timeout(this.p2pConfig.dhtLookupTimeout ?? 60_000)
-        const peerInfo = await node.peerRouting.findPeer(peerId, { signal: dhtSignal })
+        // const dhtSignal = AbortSignal.timeout(this.p2pConfig.dhtLookupTimeout ?? 60_000)
+        const peerInfo = await node.peerRouting.findPeer(peerId, { signal })
         for (const ma of peerInfo.multiaddrs) addrs.push(ma)
         LoggerInstance.debug(
           `[P2P] ${peerId.toString()}: DHT returned ${peerInfo.multiaddrs.length} addrs`
