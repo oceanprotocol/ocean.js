@@ -65,10 +65,8 @@ export class HttpProvider {
     }
     if (typeof signerOrAuthToken === 'string') {
       return {
-        consumerAddress: await getConsumerAddress(signerOrAuthToken),
-        nonce: undefined,
-        signature: undefined
-      }
+        consumerAddress: await getConsumerAddress(signerOrAuthToken)
+      } as CompleteSignature
     }
     if (!providerEndpoints) providerEndpoints = await this.getEndpoints(nodeUri)
     if (!serviceEndpoints)
@@ -285,9 +283,9 @@ export class HttpProvider {
         ? this.getEndpointURL(serviceEndpoints, 'encrypt').urlPath
         : null) + `?chainId=${chainId}`
     if (!path) return null
-    path += `&nonce=${nonce}`
-    path += `&consumerAddress=${consumerAddress}`
-    path += `&signature=${signature}`
+    if (nonce) path += `&nonce=${nonce}`
+    if (consumerAddress) path += `&consumerAddress=${consumerAddress}`
+    if (signature) path += `&signature=${signature}`
 
     try {
       const response = await fetch(path, {
@@ -655,13 +653,13 @@ export class HttpProvider {
     consumeUrl += `&documentId=${did}`
     consumeUrl += `&transferTxId=${transferTxId}`
     consumeUrl += `&serviceId=${serviceId}`
-    consumeUrl += `&consumerAddress=${consumerAddress}`
-    consumeUrl += `&nonce=${nonce}`
+    if (consumerAddress) consumeUrl += `&consumerAddress=${consumerAddress}`
+    if (nonce) consumeUrl += `&nonce=${nonce}`
+    if (signature) consumeUrl += `&signature=${signature}`
     if (policyServer) {
       consumeUrl += '&policyServer=' + encodeURI(JSON.stringify(policyServer))
     }
 
-    consumeUrl += `&signature=${signature}`
     if (userCustomParameters)
       consumeUrl += '&userdata=' + encodeURI(JSON.stringify(userCustomParameters))
     return consumeUrl
@@ -1002,7 +1000,6 @@ export class HttpProvider {
     agreementId?: string,
     signal?: AbortSignal
   ): Promise<ComputeJob | ComputeJob[]> {
-    const isAuthToken = typeof signerOrAuthToken === 'string'
     const providerEndpoints = await this.getEndpoints(nodeUri)
     const serviceEndpoints = await this.getServiceEndpoints(nodeUri, providerEndpoints)
     const computeStopUrl = this.getEndpointURL(serviceEndpoints, 'computeStop')
@@ -1018,12 +1015,10 @@ export class HttpProvider {
       serviceEndpoints
     )
     const queryParams = new URLSearchParams()
-    queryParams.set('consumerAddress', consumerAddress)
-    queryParams.set('nonce', nonce)
+    if (consumerAddress) queryParams.set('consumerAddress', consumerAddress)
+    if (nonce) queryParams.set('nonce', nonce)
+    if (signature) queryParams.set('signature', signature)
     queryParams.set('jobId', jobId)
-    if (!isAuthToken) {
-      queryParams.set('signature', signature)
-    }
 
     if (agreementId) queryParams.set('agreementId', agreementId)
 

@@ -533,10 +533,8 @@ export class P2pProvider {
     }
     if (typeof signerOrAuthToken === 'string') {
       return {
-        consumerAddress: await getConsumerAddress(signerOrAuthToken),
-        nonce: undefined,
-        signature: undefined
-      }
+        consumerAddress: await getConsumerAddress(signerOrAuthToken)
+      } as CompleteSignature
     }
     const consumerAddress = await getConsumerAddress(signerOrAuthToken)
     const nonce = ((await this.getNonce(nodeUri, consumerAddress, signal)) + 1).toString()

@@ -45,8 +45,9 @@ export { OCEAN_P2P_PROTOCOL, type P2PConfig } from './P2pProvider.js'
 export async function getConsumerAddress(
   signerOrAuthToken: SignerOrAuthTokenOrSignature
 ): Promise<string> {
-  if (typeof signerOrAuthToken === 'string') return decodeJwt(signerOrAuthToken).address
   if (isAgentSignature(signerOrAuthToken)) return signerOrAuthToken.consumerAddress
+  if (typeof signerOrAuthToken === 'string') return decodeJwt(signerOrAuthToken).address
+
   return signerOrAuthToken.getAddress()
 }
 
@@ -56,10 +57,7 @@ export async function getSignature(
   command: string
 ): Promise<string | null> {
   if (typeof signerOrAuthToken === 'string') {
-    // it's either a signature already (0x..) or a jwt token
-    if (signerOrAuthToken.startsWith('0x')) {
-      return signerOrAuthToken
-    } else return null
+    return null
   }
   if (isAgentSignature(signerOrAuthToken)) {
     return signerOrAuthToken.signature
