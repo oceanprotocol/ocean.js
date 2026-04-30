@@ -86,20 +86,22 @@ export function isAgentSignature(v: unknown): v is CompleteSignature {
   )
 }
 
+function isPeerIdOrMultiAddr(param: string) {
+  try {
+    multiaddr(param)
+    return true
+  } catch {}
+  try {
+    peerIdFromString(param)
+    return true
+  } catch {
+    return false
+  }
+}
 export function isP2pUri(node: OceanNode): boolean {
   if (!node) return false
   if (typeof node === 'string') {
-    // Accept either peerId or multiaddr string as P2P
-    try {
-      multiaddr(node)
-      return true
-    } catch {}
-    try {
-      peerIdFromString(node)
-      return true
-    } catch {
-      return false
-    }
+    return isPeerIdOrMultiAddr(node)
   }
 
   // NodeP2P -> p2p
@@ -108,15 +110,7 @@ export function isP2pUri(node: OceanNode): boolean {
     if (Array.isArray(nodeP2p.multiaddress) && nodeP2p.multiaddress.length > 0)
       return true
     if (nodeP2p.nodeId) {
-      try {
-        multiaddr(nodeP2p.nodeId)
-        return true
-      } catch {}
-      try {
-        peerIdFromString(nodeP2p.nodeId)
-        return true
-      } catch {}
-      return false
+      return isPeerIdOrMultiAddr(nodeP2p.nodeId)
     }
   }
 
