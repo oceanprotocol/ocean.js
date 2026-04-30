@@ -533,7 +533,7 @@ export class P2pProvider {
     }
     if (typeof signerOrAuthToken === 'string') {
       return {
-        consumerAddress: undefined,
+        consumerAddress: await getConsumerAddress(signerOrAuthToken),
         nonce: undefined,
         signature: undefined
       }
@@ -1271,24 +1271,24 @@ export class P2pProvider {
     index: number,
     offset: number = 0
   ): Promise<ComputeResultStream> {
+    const { consumerAddress, nonce, signature } = await this.getSignedCommandParams(
+      nodeUri,
+      signerOrAuthToken,
+      PROTOCOL_COMMANDS.COMPUTE_GET_RESULT
+    )
     const payload: Record<string, any> = {
       command: PROTOCOL_COMMANDS.COMPUTE_GET_RESULT,
       jobId,
       index,
-      offset
+      offset,
+      consumerAddress
     }
 
     if (typeof signerOrAuthToken === 'string') {
       payload.authorization = signerOrAuthToken
     } else {
-      const { consumerAddress, nonce, signature } = await this.getSignedCommandParams(
-        nodeUri,
-        signerOrAuthToken,
-        PROTOCOL_COMMANDS.COMPUTE_GET_RESULT
-      )
       payload.nonce = nonce
       payload.signature = signature
-      payload.consumerAddress = consumerAddress
     }
 
     const { lp, firstBytes } = await this.dialAndStream(nodeUri, payload)
@@ -1414,7 +1414,7 @@ export class P2pProvider {
       nodeUri,
       PROTOCOL_COMMANDS.VALIDATE_DDO,
       { ddo, publisherAddress, nonce, signature },
-      null,
+      signerOrAuthToken,
       signal
     )
     if (!result || result.error) return null

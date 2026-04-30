@@ -65,7 +65,7 @@ export class HttpProvider {
     }
     if (typeof signerOrAuthToken === 'string') {
       return {
-        consumerAddress: undefined,
+        consumerAddress: await getConsumerAddress(signerOrAuthToken),
         nonce: undefined,
         signature: undefined
       }
@@ -1567,20 +1567,28 @@ export class HttpProvider {
   public async validateDdo(
     nodeUri: string,
     ddo: DDO,
-    signer: Signer,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
     signal?: AbortSignal
   ): Promise<ValidateMetadata> {
-    const publisherAddress = await signer.getAddress()
-    const nonceResp = await (
-      await this.getData(`${nodeUri}/api/services/nonce?userAddress=${publisherAddress}`)
-    ).json()
-    const nonce = (Number(nonceResp.nonce ?? 0) + 1).toString()
-    const message = publisherAddress + nonce + PROTOCOL_COMMANDS.VALIDATE_DDO
-    const signature = await signRequest(signer, message)
+    const {
+      consumerAddress: publisherAddress,
+      nonce,
+      signature
+    } = await this.getSignedCommandParams(
+      nodeUri,
+      signerOrAuthToken,
+      PROTOCOL_COMMANDS.VALIDATE_DDO,
+      signal
+    )
+
+    const authHeader = this.getAuthorization(signerOrAuthToken)
     const response = await fetch(`${nodeUri}/api/aquarius/assets/ddo/validate`, {
       method: 'POST',
       body: JSON.stringify({ ddo, publisherAddress, nonce, signature }),
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        ...(authHeader ? { Authorization: authHeader } : {})
+      },
       signal
     })
     if (!response.ok) return null
