@@ -5,8 +5,8 @@ import { webSockets } from '@libp2p/websockets'
 import { tcp } from '@libp2p/tcp'
 import { circuitRelayTransport } from '@libp2p/circuit-relay-v2'
 import { bootstrap } from '@libp2p/bootstrap'
-import { identify } from '@libp2p/identify'
-import { EventTypes, KadDHT, kadDHT } from '@libp2p/kad-dht'
+import { identify, identifyPush } from '@libp2p/identify'
+import { EventTypes, KadDHT, kadDHT, passthroughMapper } from '@libp2p/kad-dht'
 import { ping } from '@libp2p/ping'
 import { peerIdFromString } from '@libp2p/peer-id'
 import { lpStream, UnexpectedEOFError } from '@libp2p/utils'
@@ -15,7 +15,7 @@ import { Signer } from 'ethers'
 import { sleep } from '../../utils/General.js'
 import { LoggerInstance } from '../../utils/Logger.js'
 import { concatUint8Arrays } from '../../utils/bytes.js'
-import type { Connection, Stream } from '@libp2p/interface'
+import type { Connection, Stream, PeerId } from '@libp2p/interface'
 import {
   StorageObject,
   FileInfo,
@@ -41,13 +41,26 @@ import {
   PersistentStorageCreateBucketRequest,
   PersistentStorageDeleteFileResponse,
   PersistentStorageFileEntry,
-  PersistentStorageObject
+  PersistentStorageObject,
+  OceanNode,
+  NodeP2P,
+  SignerOrAuthTokenOrSignature,
+  CompleteSignature
 } from '../../@types/index.js'
-import { PROTOCOL_COMMANDS, NodeLogsParams, NodeLogEntry } from '../../@types/Provider.js'
+import { PROTOCOL_COMMANDS, NodeLogEntry } from '../../@types/Provider.js'
 import { type DDO, type ValidateMetadata } from '@oceanprotocol/ddo-js'
 import { signRequest } from '../../utils/SignatureUtils.js'
-import { getConsumerAddress, getSignature, getAuthorization } from './BaseProvider.js'
+import {
+  getConsumerAddress,
+  getSignature,
+  getAuthorization,
+  isAgentSignature
+} from './BaseProvider.js'
 import { eciesencrypt } from '../../utils/eciesencrypt.js'
+import { CID } from 'multiformats/cid'
+import { sha256 } from 'multiformats/hashes/sha2'
+import * as multiFormatRaw from 'multiformats/codecs/raw'
+import { fromString as uint8ArrayFromString } from 'uint8arrays/from-string'
 
 export const OCEAN_P2P_PROTOCOL = '/ocean/nodes/1.0.0'
 const OCEAN_DHT_PROTOCOL = '/ocean/nodes/1.0.0/kad/1.0.0'
@@ -254,8 +267,15 @@ export class P2pProvider {
       ],
       services: {
         identify: identify(),
+        identifyPush: identifyPush(),
         ping: ping(),
-        dht: kadDHT({ protocol: OCEAN_DHT_PROTOCOL, clientMode: true })
+        dht: kadDHT({
+          peerInfoMapper: passthroughMapper,
+          allowQueryWithZeroPeers: false,
+          kBucketSize: 20,
+          protocol: OCEAN_DHT_PROTOCOL,
+          clientMode: true // Servers can better query the network
+        })
       },
       // Without this we are blocking connection to plain ws - the bundler thinks we are in a browser.
       // This also applies to local nodes.
@@ -301,6 +321,34 @@ export class P2pProvider {
     return chunk instanceof Uint8Array ? chunk : chunk.subarray()
   }
 
+  public async cidFromRawString(data: string) {
+    const hash = await sha256.digest(uint8ArrayFromString(data))
+    const cid = CID.create(1, multiFormatRaw.code, hash)
+    return cid
+  }
+
+  async getProvidersForString(
+    input: string,
+    signal?: AbortSignal
+  ): Promise<Array<{ id: string; multiaddrs: any[] }>> {
+    const node = await this.getOrCreateLibp2pNode()
+    const cid = await this.cidFromRawString(input)
+    const peersFound = []
+    try {
+      for await (const result of node.contentRouting.findProviders(cid, {
+        useCache: false,
+        useNetwork: true,
+        signal
+      })) {
+        peersFound.push(result)
+      }
+    } catch (err) {}
+    return peersFound.map((peer) => ({
+      id: peer.id.toString(),
+      multiaddrs: peer.multiaddrs
+    }))
+  }
+
   private isDialable(ma: Multiaddr): boolean {
     // Node.js can dial any transport (TCP, WS, WSS)
     if (typeof window === 'undefined') return true
@@ -308,6 +356,14 @@ export class P2pProvider {
     // Browsers on HTTPS pages can only use WSS/TLS
     const str = ma.toString()
     return str.includes('/tls/sni')
+  }
+
+  /**
+   * True when the multiaddr does not include the relay `p2p-circuit` protocol segment.
+   * (Direct / transport paths omit it; relay paths contain `/p2p-circuit/...`.)
+   */
+  private isNotP2PCircuit(ma: Multiaddr): boolean {
+    return !/\/p2p-circuit(\/|$)/.test(ma.toString())
   }
 
   private peerIdFromMultiaddr(ma: Multiaddr): string | null {
@@ -318,200 +374,178 @@ export class P2pProvider {
     return raw.split('/')[0] || null
   }
 
+  /* Dials a new connection */
   private async getConnection(
-    nodeUri: string | Multiaddr[],
-    signal: AbortSignal
+    nodeUri: OceanNode,
+    signal: AbortSignal,
+    includeP2PCircuit: boolean = false
   ): Promise<Connection> {
     const node = await this.getOrCreateLibp2pNode()
-
-    if (Array.isArray(nodeUri)) {
-      const dialable = nodeUri.filter((ma) => this.isDialable(ma))
-
-      if (dialable.length > 0) {
-        LoggerInstance.debug(`[P2P] dial array: ${dialable.length} dialable addrs`)
-        try {
-          const conn = await node.dial(dialable, { signal })
-          LoggerInstance.debug(`[P2P] dial array SUCCESS via ${conn.remoteAddr}`)
-          return conn
-        } catch (err: any) {
-          LoggerInstance.debug(`[P2P] dial array failed: ${err.message}`)
-        }
-      }
-
-      for (const ma of nodeUri) {
-        const pid = this.peerIdFromMultiaddr(ma)
-        if (pid) {
-          LoggerInstance.debug(`[P2P] Not multiaddrs, fallback to peerId: ${pid}`)
-          return this.dialByPeerId(node, pid, signal)
-        }
-      }
-      throw new Error('No valid addresses and no peer ID in multiaddrs')
-    }
-
-    try {
-      const ma = multiaddr(nodeUri)
-      if (this.isDialable(ma)) {
-        LoggerInstance.debug(`[P2P] dial single addr: ${ma}`)
-        try {
-          const conn = await node.dial(ma, { signal })
-          LoggerInstance.debug(`[P2P] dial single SUCCESS via ${conn.remoteAddr}`)
-          return conn
-        } catch (err: any) {
-          LoggerInstance.debug(`[P2P] dial single failed: ${err.message}`)
-        }
-      }
-      const pid = this.peerIdFromMultiaddr(ma)
-      if (pid) {
-        LoggerInstance.debug(`[P2P] single fallback -> dialByPeerId ${pid}`)
-        return this.dialByPeerId(node, pid, signal)
-      }
-      throw new Error(`Cannot dial address: ${nodeUri}`)
-    } catch (err: any) {
-      if (err.message?.includes('Cannot dial')) throw err
-    }
-
-    LoggerInstance.debug(`[P2P] bare peerId -> dialByPeerId ${nodeUri}`)
-    return this.dialByPeerId(node, nodeUri, signal)
-  }
-
-  private async dialByPeerId(
-    node: Libp2p,
-    peerIdStr: string,
-    signal: AbortSignal
-  ): Promise<Connection> {
-    const peerId = peerIdFromString(peerIdStr)
-
-    const existing = node.getConnections(peerId).filter((c) => c.status === 'open')
-    if (existing.length > 0) {
-      LoggerInstance.debug(
-        `[P2P] ${peerIdStr}: reusing existing connection via ${existing[0].remoteAddr}`
-      )
-      return existing[0]
-    }
-
-    // Wait briefly for bootstrap if node just started (0 connections)
-    if (node.getConnections().length === 0) {
-      LoggerInstance.debug(
-        `[P2P] ${peerIdStr}: no connections yet, waiting for bootstrap...`
-      )
-      await sleep(3000)
-      const after = node.getConnections(peerId)
-      if (after.length > 0) {
-        LoggerInstance.debug(`[P2P] ${peerIdStr}: connected during bootstrap wait`)
-        return after[0]
-      }
-    }
-
-    const seen = new Set<string>()
-    const allAddrs: Multiaddr[] = []
-    const addAddr = (ma: Multiaddr) => {
-      const key = ma.toString()
-      if (!seen.has(key)) {
-        seen.add(key)
-        allAddrs.push(ma)
-      }
-    }
-
-    try {
-      const peerData = await node.peerStore.get(peerId)
-      if (peerData?.addresses) {
-        for (const addr of peerData.addresses) {
-          addAddr(addr.multiaddr)
-        }
-        LoggerInstance.debug(
-          `[P2P] ${peerIdStr}: ${peerData.addresses.length} peerStore addrs`
-        )
-      }
-    } catch {
-      LoggerInstance.debug(`[P2P] ${peerIdStr}: not in peerStore`)
-    }
-
-    const knownDialable = allAddrs.filter((ma) => this.isDialable(ma))
-    if (knownDialable.length === 0) {
-      LoggerInstance.debug(
-        `[P2P] ${peerIdStr}: no dialable addrs in peerStore, querying DHT...`
-      )
+    const hasDialable = () => addrs.some((ma) => this.isDialable(ma))
+    let peerId: PeerId | null = null
+    const addrs: Multiaddr[] = []
+    if (nodeUri && typeof nodeUri === 'string') {
       try {
-        const dhtSignal = AbortSignal.timeout(this.p2pConfig.dhtLookupTimeout ?? 60_000)
-        const peerInfo = await node.peerRouting.findPeer(peerId, { signal: dhtSignal })
-        for (const ma of peerInfo.multiaddrs) addAddr(ma)
+        const addr = multiaddr(nodeUri)
+        addrs.push(addr)
+        if (!peerId) {
+          const pidStr = this.peerIdFromMultiaddr(addr)
+          if (pidStr) peerId = peerIdFromString(pidStr)
+        }
+      } catch {}
+      try {
+        if (!peerId) peerId = peerIdFromString(nodeUri)
+      } catch {}
+    }
+    if (typeof nodeUri === 'object' && nodeUri !== null && !Array.isArray(nodeUri)) {
+      if ('nodeId' in nodeUri || 'multiaddress' in nodeUri) {
+        const nodeP2p = nodeUri as NodeP2P
+        if (Array.isArray(nodeP2p.multiaddress) && nodeP2p.multiaddress.length > 0) {
+          for (const addr of nodeP2p.multiaddress) addrs.push(addr)
+        }
+        if (nodeP2p.nodeId) {
+          try {
+            peerId = peerIdFromString(nodeP2p.nodeId)
+          } catch {}
+        }
+      } else {
+        peerId = nodeUri as PeerId
+      }
+    }
+
+    // check if we already have a connection
+    if (peerId) {
+      const existing = node.getConnections(peerId).filter((c) => c.status === 'open')
+      if (existing.length > 0) {
         LoggerInstance.debug(
-          `[P2P] ${peerIdStr}: DHT returned ${peerInfo.multiaddrs.length} addrs`
+          `[P2P] ${peerId.toString()}: reusing existing connection via ${
+            existing[0].remoteAddr
+          }`
+        )
+        return existing[0]
+      }
+    }
+    // if there are no dialable ma, search peerstore
+    if (!hasDialable() && peerId) {
+      try {
+        const peerData = await node.peerStore.get(peerId)
+        if (peerData?.addresses) {
+          for (const addr of peerData.addresses) {
+            addrs.push(addr.multiaddr)
+          }
+          LoggerInstance.debug(
+            `[P2P] ${peerId.toString()}: ${peerData.addresses.length} peerStore addrs`
+          )
+        }
+      } catch {
+        LoggerInstance.debug(`[P2P] ${peerId.toString()}: not in peerStore`)
+      }
+    }
+    // if there are no dialable ma, search dht
+    if (!hasDialable() && peerId) {
+      try {
+        // const dhtSignal = AbortSignal.timeout(this.p2pConfig.dhtLookupTimeout ?? 60_000)
+        const peerInfo = await node.peerRouting.findPeer(peerId, { signal })
+        for (const ma of peerInfo.multiaddrs) addrs.push(ma)
+        LoggerInstance.debug(
+          `[P2P] ${peerId.toString()}: DHT returned ${peerInfo.multiaddrs.length} addrs`
         )
       } catch (err: any) {
-        LoggerInstance.debug(`[P2P] ${peerIdStr}: DHT findPeer failed: ${err.message}`)
+        LoggerInstance.debug(
+          `[P2P] ${peerId.toString()}: DHT findPeer failed: ${err.message}`
+        )
       }
-    } else {
-      LoggerInstance.debug(
-        `[P2P] ${peerIdStr}: ${knownDialable.length} dialable addrs from peerStore, skipping DHT`
-      )
     }
+    let dialable = addrs.filter((ma) => this.isDialable(ma))
+    const beforePFilter = dialable.length
+    if (!includeP2PCircuit) dialable = dialable.filter((ma) => this.isNotP2PCircuit(ma))
 
-    const dialable = allAddrs
-      .filter((ma) => this.isDialable(ma))
-      .map((ma) => {
+    const afterPFilter = dialable.length
+
+    if (dialable.length < 1) {
+      // try with p2p-circuits if available
+      if (!includeP2PCircuit && afterPFilter < beforePFilter) {
+        // we have some p2p-circuit addrs, let's try them
+        return this.getConnection(
+          { nodeId: peerId ? peerId.toString() : '', multiaddress: addrs } as NodeP2P,
+          signal,
+          true
+        )
+      }
+      throw new Error('No valid multiaddresses, cannot connect')
+    }
+    // normalize all mas if we have peerId
+    if (peerId) {
+      dialable = dialable.map((ma) => {
         const str = ma.toString()
-        return str.includes('/p2p/') ? ma : multiaddr(`${str}/p2p/${peerIdStr}`)
+        return str.includes('/p2p/') ? ma : multiaddr(`${str}/p2p/${peerId.toString()}`)
       })
-
-    LoggerInstance.debug(
-      `[P2P] ${peerIdStr}: ${dialable.length}/${allAddrs.length} addrs are dialable`
-    )
-
-    if (dialable.length > 0) {
-      LoggerInstance.debug(`[P2P] ${peerIdStr}: dialing ${dialable.map(String)}`)
-      try {
-        const conn = await node.dial(dialable, { signal })
-        LoggerInstance.debug(
-          `[P2P] ${peerIdStr}: SUCCESS via ${conn.remoteAddr} (limited=${
-            conn.limits != null
-          })`
-        )
-        return conn
-      } catch (err: any) {
-        LoggerInstance.debug(`[P2P] ${peerIdStr}: direct dial failed: ${err.message}`)
-      }
     }
-
-    LoggerInstance.debug(`[P2P] ${peerIdStr}: last resort dial by peerId`)
     try {
-      const conn = await node.dial(peerId, { signal: AbortSignal.timeout(10_000) })
+      const conn = await node.dial(dialable, { signal })
       LoggerInstance.debug(
-        `[P2P] ${peerIdStr}: peerId dial SUCCESS via ${conn.remoteAddr} (limited=${
-          conn.limits != null
-        })`
+        `[P2P] Dial SUCCESS via ${conn.remoteAddr} (limited=${conn.limits != null})`
       )
       return conn
-    } catch {
+    } catch (err: any) {
+      if (!includeP2PCircuit && afterPFilter < beforePFilter) {
+        LoggerInstance.debug(
+          `[P2P] Direct dial failed, falling back to relayed addresses...`
+        )
+        return this.getConnection(
+          { nodeId: peerId ? peerId.toString() : '', multiaddress: addrs } as NodeP2P,
+          signal,
+          true
+        )
+      }
       throw new Error(
-        `Cannot reach peer ${peerIdStr}. ` +
-          (allAddrs.length > 0
-            ? `Found addrs: ${allAddrs.map(String).join(', ')} (none dialable). `
+        `Cannot dial peer ${peerId?.toString()}. ` +
+          (addrs.length > 0
+            ? `Found addrs: ${addrs.map(String).join(', ')}. `
             : 'No addresses found. ') +
-          `Active connections: ${node.getConnections().length}.`
+          `Active connections: ${node.getConnections().length}. ` +
+          err.message
       )
     }
   }
 
-  protected getConsumerAddress(s: Signer | string) {
-    return getConsumerAddress(s)
-  }
-
-  protected getSignature(s: Signer | string, nonce: string, command: string) {
-    return getSignature(s, nonce, command)
-  }
-
-  private async getNodePublicKey(nodeUri: string | Multiaddr[]): Promise<string> {
+  private async getNodePublicKey(nodeUri: OceanNode): Promise<string> {
     const endpoints = await this.getEndpoints(nodeUri)
     return endpoints?.nodePublicKey
   }
 
-  protected getAuthorization(s: Signer | string) {
+  protected getAuthorization(s: SignerOrAuthTokenOrSignature) {
     return getAuthorization(s)
   }
 
+  private async getSignedCommandParams(
+    nodeUri: OceanNode,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
+    command: string,
+    signal?: AbortSignal
+  ): Promise<CompleteSignature> {
+    if (isAgentSignature(signerOrAuthToken)) {
+      return {
+        consumerAddress: signerOrAuthToken.consumerAddress,
+        nonce: signerOrAuthToken.nonce,
+        signature: signerOrAuthToken.signature
+      }
+    }
+    if (typeof signerOrAuthToken === 'string') {
+      return {
+        consumerAddress: await getConsumerAddress(signerOrAuthToken),
+        nonce: undefined,
+        signature: undefined
+      }
+    }
+    const consumerAddress = await getConsumerAddress(signerOrAuthToken)
+    const nonce = ((await this.getNonce(nodeUri, consumerAddress, signal)) + 1).toString()
+    const signature = await getSignature(signerOrAuthToken, nonce, command)
+    return { consumerAddress, nonce, signature }
+  }
+
   private async dialAndStream(
-    nodeUri: string | Multiaddr[],
+    nodeUri: OceanNode,
     payload: Record<string, any>,
     signal?: AbortSignal,
     requestBody?: P2PRequestBodyStream
@@ -557,10 +591,10 @@ export class P2pProvider {
   }
 
   private async sendP2pCommand(
-    nodeUri: string | Multiaddr[],
+    nodeUri: OceanNode,
     command: string,
     body: Record<string, any>,
-    signerOrAuthToken?: Signer | string | null,
+    signerOrAuthToken?: SignerOrAuthTokenOrSignature | null,
     signal?: AbortSignal,
     retrialNumber: number = 0,
     requestBody?: P2PRequestBodyStream
@@ -698,7 +732,7 @@ export class P2pProvider {
    * Returns node status via P2P STATUS command.
    * @param {string} nodeUri - multiaddr of the node
    */
-  async getEndpoints(nodeUri: string | Multiaddr[]): Promise<any> {
+  async getEndpoints(nodeUri: OceanNode): Promise<any> {
     try {
       return await this.sendP2pCommand(nodeUri, PROTOCOL_COMMANDS.STATUS, {})
     } catch (e) {
@@ -708,14 +742,14 @@ export class P2pProvider {
   }
 
   public async getNodeStatus(
-    nodeUri: string | Multiaddr[],
+    nodeUri: OceanNode,
     signal?: AbortSignal
   ): Promise<NodeStatus> {
     return this.getEndpoints(nodeUri)
   }
 
   public async getNodeJobs(
-    nodeUri: string | Multiaddr[],
+    nodeUri: OceanNode,
     fromTimestamp?: number,
     signal?: AbortSignal
   ): Promise<NodeComputeJob[]> {
@@ -740,7 +774,7 @@ export class P2pProvider {
    * Get current nonce from the node via P2P.
    */
   public async getNonce(
-    nodeUri: string | Multiaddr[],
+    nodeUri: OceanNode,
     consumerAddress: string,
     signal?: AbortSignal
   ): Promise<number> {
@@ -768,17 +802,16 @@ export class P2pProvider {
   public async encrypt(
     data: any,
     chainId: number,
-    nodeUri: string | Multiaddr[],
-    signerOrAuthToken: Signer | string,
+    nodeUri: OceanNode,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
     _policyServer?: any,
     signal?: AbortSignal
   ): Promise<string> {
-    const consumerAddress = await this.getConsumerAddress(signerOrAuthToken)
-    const nonce = ((await this.getNonce(nodeUri, consumerAddress, signal)) + 1).toString()
-    const signature = await this.getSignature(
+    const { consumerAddress, nonce, signature } = await this.getSignedCommandParams(
+      nodeUri,
       signerOrAuthToken,
-      nonce,
-      PROTOCOL_COMMANDS.ENCRYPT
+      PROTOCOL_COMMANDS.ENCRYPT,
+      signal
     )
     const result = await this.sendP2pCommand(
       nodeUri,
@@ -802,7 +835,7 @@ export class P2pProvider {
   public async checkDidFiles(
     did: string,
     serviceId: string,
-    nodeUri: string | Multiaddr[],
+    nodeUri: OceanNode,
     withChecksum: boolean = false,
     signal?: AbortSignal
   ): Promise<FileInfo[]> {
@@ -821,7 +854,7 @@ export class P2pProvider {
    */
   public async getFileInfo(
     file: StorageObject,
-    nodeUri: string | Multiaddr[],
+    nodeUri: OceanNode,
     withChecksum: boolean = false,
     signal?: AbortSignal
   ): Promise<FileInfo[]> {
@@ -839,7 +872,7 @@ export class P2pProvider {
    * Returns compute environments via P2P.
    */
   public async getComputeEnvironments(
-    nodeUri: string | Multiaddr[],
+    nodeUri: OceanNode,
     signal?: AbortSignal
   ): Promise<ComputeEnvironment[]> {
     const result = await this.sendP2pCommand(
@@ -860,7 +893,7 @@ export class P2pProvider {
     serviceId: string,
     fileIndex: number,
     consumerAddress: string,
-    nodeUri: string | Multiaddr[],
+    nodeUri: OceanNode,
     signal?: AbortSignal,
     userCustomParameters?: UserCustomParameters,
     computeEnv?: string,
@@ -887,7 +920,7 @@ export class P2pProvider {
     computeEnv: string,
     token: string,
     validUntil: number,
-    nodeUri: string | Multiaddr[],
+    nodeUri: OceanNode,
     consumerAddress: string,
     resources: ComputeResourceRequest[],
     chainId: number,
@@ -940,16 +973,14 @@ export class P2pProvider {
     serviceId: string,
     fileIndex: number,
     transferTxId: string,
-    nodeUri: string | Multiaddr[],
-    signerOrAuthToken: Signer | string,
+    nodeUri: OceanNode,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
     policyServer?: any,
     userCustomParameters?: UserCustomParameters
   ): Promise<DownloadResponse> {
-    const consumerAddress = await this.getConsumerAddress(signerOrAuthToken)
-    const nonce = ((await this.getNonce(nodeUri, consumerAddress)) + 1).toString()
-    const signature = await this.getSignature(
+    const { consumerAddress, nonce, signature } = await this.getSignedCommandParams(
+      nodeUri,
       signerOrAuthToken,
-      nonce,
       PROTOCOL_COMMANDS.DOWNLOAD
     )
 
@@ -1014,8 +1045,8 @@ export class P2pProvider {
    * Start a paid compute job via P2P.
    */
   public async computeStart(
-    nodeUri: string | Multiaddr[],
-    signerOrAuthToken: Signer | string,
+    nodeUri: OceanNode,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
     computeEnv: string,
     datasets: ComputeAsset[],
     algorithm: ComputeAlgorithm,
@@ -1031,13 +1062,11 @@ export class P2pProvider {
     queueMaxWaitTime?: number,
     dockerRegistryAuth?: dockerRegistryAuth
   ): Promise<ComputeJob | ComputeJob[]> {
-    const consumerAddress = await this.getConsumerAddress(signerOrAuthToken)
-    const nonce = ((await this.getNonce(nodeUri, consumerAddress, signal)) + 1).toString()
-
-    const signature = await this.getSignature(
+    const { consumerAddress, nonce, signature } = await this.getSignedCommandParams(
+      nodeUri,
       signerOrAuthToken,
-      nonce,
-      PROTOCOL_COMMANDS.COMPUTE_START
+      PROTOCOL_COMMANDS.COMPUTE_START,
+      signal
     )
 
     const body: Record<string, any> = {
@@ -1085,8 +1114,8 @@ export class P2pProvider {
    * Start a free compute job via P2P.
    */
   public async freeComputeStart(
-    nodeUri: string | Multiaddr[],
-    signerOrAuthToken: Signer | string,
+    nodeUri: OceanNode,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
     computeEnv: string,
     datasets: ComputeAsset[],
     algorithm: ComputeAlgorithm,
@@ -1099,13 +1128,11 @@ export class P2pProvider {
     queueMaxWaitTime?: number,
     dockerRegistryAuth?: dockerRegistryAuth
   ): Promise<ComputeJob | ComputeJob[]> {
-    const consumerAddress = await this.getConsumerAddress(signerOrAuthToken)
-    const nonce = ((await this.getNonce(nodeUri, consumerAddress, signal)) + 1).toString()
-
-    const signature = await this.getSignature(
+    const { consumerAddress, nonce, signature } = await this.getSignedCommandParams(
+      nodeUri,
       signerOrAuthToken,
-      nonce,
-      PROTOCOL_COMMANDS.FREE_COMPUTE_START
+      PROTOCOL_COMMANDS.FREE_COMPUTE_START,
+      signal
     )
 
     const body: Record<string, any> = {
@@ -1149,8 +1176,8 @@ export class P2pProvider {
    * Get streamable compute logs via P2P. Returns an async generator of Uint8Array chunks.
    */
   public async computeStreamableLogs(
-    nodeUri: string | Multiaddr[],
-    signerOrAuthToken: Signer | string,
+    nodeUri: OceanNode,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
     jobId: string,
     signal?: AbortSignal
   ): Promise<any> {
@@ -1165,12 +1192,11 @@ export class P2pProvider {
       )
     }
 
-    const consumerAddress = await this.getConsumerAddress(signerOrAuthToken)
-    const nonce = ((await this.getNonce(nodeUri, consumerAddress, signal)) + 1).toString()
-    const signature = await this.getSignature(
+    const { consumerAddress, nonce, signature } = await this.getSignedCommandParams(
+      nodeUri,
       signerOrAuthToken,
-      nonce,
-      PROTOCOL_COMMANDS.COMPUTE_GET_STREAMABLE_LOGS
+      PROTOCOL_COMMANDS.COMPUTE_GET_STREAMABLE_LOGS,
+      signal
     )
     return this.sendP2pCommand(
       nodeUri,
@@ -1186,18 +1212,16 @@ export class P2pProvider {
    */
   public async computeStop(
     jobId: string,
-    nodeUri: string | Multiaddr[],
-    signerOrAuthToken: Signer | string,
+    nodeUri: OceanNode,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
     agreementId?: string,
     signal?: AbortSignal
   ): Promise<ComputeJob | ComputeJob[]> {
-    const consumerAddress = await this.getConsumerAddress(signerOrAuthToken)
-    const nonce = ((await this.getNonce(nodeUri, consumerAddress, signal)) + 1).toString()
-
-    const signature = await this.getSignature(
+    const { consumerAddress, nonce, signature } = await this.getSignedCommandParams(
+      nodeUri,
       signerOrAuthToken,
-      nonce,
-      PROTOCOL_COMMANDS.COMPUTE_STOP
+      PROTOCOL_COMMANDS.COMPUTE_STOP,
+      signal
     )
 
     const body: Record<string, any> = { jobId, consumerAddress, nonce, signature }
@@ -1216,13 +1240,13 @@ export class P2pProvider {
    * Get compute status via P2P.
    */
   public async computeStatus(
-    nodeUri: string | Multiaddr[],
-    signerOrAuthToken: Signer | string,
+    nodeUri: OceanNode,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
     jobId?: string,
     agreementId?: string,
     signal?: AbortSignal
   ): Promise<ComputeJob | ComputeJob[]> {
-    const consumerAddress = await this.getConsumerAddress(signerOrAuthToken)
+    const consumerAddress = await getConsumerAddress(signerOrAuthToken)
     const body: Record<string, any> = { consumerAddress }
     if (jobId) body.jobId = jobId
     if (agreementId) body.agreementId = agreementId
@@ -1241,13 +1265,17 @@ export class P2pProvider {
    * Supports resumable downloads via `offset` (byte position to resume from).
    */
   public async getComputeResult(
-    nodeUri: string | Multiaddr[],
-    signerOrAuthToken: Signer | string,
+    nodeUri: OceanNode,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
     jobId: string,
     index: number,
     offset: number = 0
   ): Promise<ComputeResultStream> {
-    const consumerAddress = await this.getConsumerAddress(signerOrAuthToken)
+    const { consumerAddress, nonce, signature } = await this.getSignedCommandParams(
+      nodeUri,
+      signerOrAuthToken,
+      PROTOCOL_COMMANDS.COMPUTE_GET_RESULT
+    )
     const payload: Record<string, any> = {
       command: PROTOCOL_COMMANDS.COMPUTE_GET_RESULT,
       jobId,
@@ -1259,13 +1287,8 @@ export class P2pProvider {
     if (typeof signerOrAuthToken === 'string') {
       payload.authorization = signerOrAuthToken
     } else {
-      const nonce = ((await this.getNonce(nodeUri, consumerAddress)) + 1).toString()
       payload.nonce = nonce
-      payload.signature = await this.getSignature(
-        signerOrAuthToken,
-        nonce,
-        PROTOCOL_COMMANDS.COMPUTE_GET_RESULT
-      )
+      payload.signature = signature
     }
 
     const { lp, firstBytes } = await this.dialAndStream(nodeUri, payload)
@@ -1290,12 +1313,12 @@ export class P2pProvider {
   }
 
   public async getComputeResultUrl(
-    nodeUri: string | Multiaddr[],
-    signerOrAuthToken: Signer | string,
+    nodeUri: OceanNode,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
     jobId: string,
     index: number
   ): Promise<string> {
-    const consumerAddress = await this.getConsumerAddress(signerOrAuthToken)
+    const consumerAddress = await getConsumerAddress(signerOrAuthToken)
     const result = await this.sendP2pCommand(
       nodeUri,
       PROTOCOL_COMMANDS.COMPUTE_GET_RESULT,
@@ -1310,12 +1333,12 @@ export class P2pProvider {
    */
   public async generateAuthToken(
     consumer: Signer,
-    nodeUri: string | Multiaddr[],
+    nodeUri: OceanNode,
     signal?: AbortSignal
   ): Promise<string> {
     const address = await consumer.getAddress()
     const nonce = ((await this.getNonce(nodeUri, address, signal)) + 1).toString()
-    const signature = await this.getSignature(
+    const signature = await getSignature(
       consumer,
       nonce,
       PROTOCOL_COMMANDS.CREATE_AUTH_TOKEN
@@ -1338,7 +1361,7 @@ export class P2pProvider {
     address: string,
     signature: string,
     nonce: string,
-    nodeUri: string | Multiaddr[],
+    nodeUri: OceanNode,
     signal?: AbortSignal
   ): Promise<string> {
     const result = await this.sendP2pCommand(
@@ -1355,7 +1378,7 @@ export class P2pProvider {
    * Resolve a DDO by DID via P2P GET_DDO command.
    */
   public async resolveDdo(
-    nodeUri: string | Multiaddr[],
+    nodeUri: OceanNode,
     did: string,
     signal?: AbortSignal
   ): Promise<any> {
@@ -1372,22 +1395,26 @@ export class P2pProvider {
    * Validate a DDO via P2P VALIDATE_DDO command.
    */
   public async validateDdo(
-    nodeUri: string | Multiaddr[],
+    nodeUri: OceanNode,
     ddo: DDO,
-    signer: Signer,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
     signal?: AbortSignal
   ): Promise<ValidateMetadata> {
-    const publisherAddress = await signer.getAddress()
-    const nonce = (
-      (await this.getNonce(nodeUri, publisherAddress, signal)) + 1
-    ).toString()
-    const message = publisherAddress + nonce + PROTOCOL_COMMANDS.VALIDATE_DDO
-    const sig = await signRequest(signer, message)
+    const {
+      consumerAddress: publisherAddress,
+      nonce,
+      signature
+    } = await this.getSignedCommandParams(
+      nodeUri,
+      signerOrAuthToken,
+      PROTOCOL_COMMANDS.VALIDATE_DDO,
+      signal
+    )
     const result = await this.sendP2pCommand(
       nodeUri,
       PROTOCOL_COMMANDS.VALIDATE_DDO,
-      { ddo, publisherAddress, nonce, signature: sig },
-      null,
+      { ddo, publisherAddress, nonce, signature },
+      signerOrAuthToken,
       signal
     )
     if (!result || result.error) return null
@@ -1409,7 +1436,7 @@ export class P2pProvider {
   public async invalidateAuthToken(
     consumer: Signer,
     token: string,
-    nodeUri: string | Multiaddr[],
+    nodeUri: OceanNode,
     signal?: AbortSignal
   ): Promise<{ success: boolean }> {
     const consumerAddress = await consumer.getAddress()
@@ -1429,7 +1456,7 @@ export class P2pProvider {
    * Check if a P2P node is reachable by calling STATUS.
    */
   public async isValidProvider(
-    nodeUri: string | Multiaddr[],
+    nodeUri: OceanNode,
     signal?: AbortSignal
   ): Promise<boolean> {
     try {
@@ -1454,7 +1481,7 @@ export class P2pProvider {
    * PolicyServer passthrough via P2P.
    */
   public async PolicyServerPassthrough(
-    nodeUri: string | Multiaddr[],
+    nodeUri: OceanNode,
     request: PolicyServerPassthroughCommand,
     signal?: AbortSignal
   ): Promise<any> {
@@ -1471,7 +1498,7 @@ export class P2pProvider {
    * Initialize Policy Server verification via P2P.
    */
   public async initializePSVerification(
-    nodeUri: string | Multiaddr[],
+    nodeUri: OceanNode,
     request: PolicyServerInitializeCommand,
     signal?: AbortSignal
   ): Promise<any> {
@@ -1488,8 +1515,8 @@ export class P2pProvider {
    * Download node logs via P2P.
    */
   public async downloadNodeLogs(
-    nodeUri: string | Multiaddr[],
-    signer: Signer,
+    nodeUri: OceanNode,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
     startTime: string,
     endTime: string,
     maxLogs?: number,
@@ -1498,9 +1525,12 @@ export class P2pProvider {
     page?: number,
     signal?: AbortSignal
   ): Promise<NodeLogEntry[]> {
-    const consumerAddress = await signer.getAddress()
-    const nonce = ((await this.getNonce(nodeUri, consumerAddress, signal)) + 1).toString()
-    const signature = await this.getSignature(signer, nonce, PROTOCOL_COMMANDS.GET_LOGS)
+    const { consumerAddress, nonce, signature } = await this.getSignedCommandParams(
+      nodeUri,
+      signerOrAuthToken,
+      PROTOCOL_COMMANDS.GET_LOGS,
+      signal
+    )
 
     const body: Record<string, any> = {
       startTime,
@@ -1514,26 +1544,13 @@ export class P2pProvider {
     if (level) body.level = level
     if (page) body.page = page
 
-    return this.sendP2pCommand(nodeUri, PROTOCOL_COMMANDS.GET_LOGS, body, signer, signal)
-  }
-
-  /**
-   * Fetch node logs via P2P with a pre-signed payload.
-   * P2P only — use downloadNodeLogs() for the auto-signed variant.
-   */
-  public async fetchNodeLogs(
-    nodeUri: string | Multiaddr[],
-    address: string,
-    signature: string,
-    nonce: string,
-    logParams?: NodeLogsParams
-  ): Promise<NodeLogEntry[]> {
-    return this.sendP2pCommand(nodeUri, PROTOCOL_COMMANDS.GET_LOGS, {
-      address,
-      signature,
-      nonce,
-      ...logParams
-    })
+    return this.sendP2pCommand(
+      nodeUri,
+      PROTOCOL_COMMANDS.GET_LOGS,
+      body,
+      signerOrAuthToken,
+      signal
+    )
   }
 
   /**
@@ -1541,7 +1558,7 @@ export class P2pProvider {
    * the caller is responsible for nonce retrieval and signing.
    */
   public async fetchConfig(
-    nodeUri: string | Multiaddr[],
+    nodeUri: OceanNode,
     payload: Record<string, any>
   ): Promise<any> {
     return this.sendP2pCommand(nodeUri, PROTOCOL_COMMANDS.FETCH_CONFIG, payload)
@@ -1552,33 +1569,27 @@ export class P2pProvider {
    * the caller is responsible for nonce retrieval and signing.
    */
   public async pushConfig(
-    nodeUri: string | Multiaddr[],
+    nodeUri: OceanNode,
     payload: Record<string, any>
   ): Promise<any> {
     return this.sendP2pCommand(nodeUri, PROTOCOL_COMMANDS.PUSH_CONFIG, payload)
   }
 
   private async getPersistentStorageSignaturePayload(
-    nodeUri: string | Multiaddr[],
-    signerOrAuthToken: Signer | string,
+    nodeUri: OceanNode,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
     command: string,
     signal?: AbortSignal
   ): Promise<{} | { consumerAddress: string; nonce: string; signature: string }> {
     if (typeof signerOrAuthToken === 'string') {
       return {}
     }
-    const consumerAddress = await this.getConsumerAddress(signerOrAuthToken)
-    const nonce = ((await this.getNonce(nodeUri, consumerAddress, signal)) + 1).toString()
-    const signature = await this.getSignature(signerOrAuthToken, nonce, command)
-    if (!signature) {
-      throw new Error('Could not sign persistent storage request.')
-    }
-    return { consumerAddress, nonce, signature }
+    return this.getSignedCommandParams(nodeUri, signerOrAuthToken, command, signal)
   }
 
   public async createPersistentStorageBucket(
-    nodeUri: string | Multiaddr[],
-    signerOrAuthToken: Signer | string,
+    nodeUri: OceanNode,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
     payload: PersistentStorageCreateBucketRequest,
     signal?: AbortSignal
   ): Promise<{
@@ -1586,7 +1597,7 @@ export class P2pProvider {
     owner: string
     accessList: PersistentStorageAccessList[]
   }> {
-    const authPayload = await this.getPersistentStorageSignaturePayload(
+    const authPayload = await this.getSignedCommandParams(
       nodeUri,
       signerOrAuthToken,
       PROTOCOL_COMMANDS.PERSISTENT_STORAGE_CREATE_BUCKET,
@@ -1605,12 +1616,12 @@ export class P2pProvider {
   }
 
   public async getPersistentStorageBuckets(
-    nodeUri: string | Multiaddr[],
-    signerOrAuthToken: Signer | string,
+    nodeUri: OceanNode,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
     owner: string,
     signal?: AbortSignal
   ): Promise<PersistentStorageBucket[]> {
-    const authPayload = await this.getPersistentStorageSignaturePayload(
+    const authPayload = await this.getSignedCommandParams(
       nodeUri,
       signerOrAuthToken,
       PROTOCOL_COMMANDS.PERSISTENT_STORAGE_GET_BUCKETS,
@@ -1627,12 +1638,12 @@ export class P2pProvider {
   }
 
   public async listPersistentStorageFiles(
-    nodeUri: string | Multiaddr[],
-    signerOrAuthToken: Signer | string,
+    nodeUri: OceanNode,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
     bucketId: string,
     signal?: AbortSignal
   ): Promise<PersistentStorageFileEntry[]> {
-    const authPayload = await this.getPersistentStorageSignaturePayload(
+    const authPayload = await this.getSignedCommandParams(
       nodeUri,
       signerOrAuthToken,
       PROTOCOL_COMMANDS.PERSISTENT_STORAGE_LIST_FILES,
@@ -1649,13 +1660,13 @@ export class P2pProvider {
   }
 
   public async getPersistentStorageFileObject(
-    nodeUri: string | Multiaddr[],
-    signerOrAuthToken: Signer | string,
+    nodeUri: OceanNode,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
     bucketId: string,
     fileName: string,
     signal?: AbortSignal
   ): Promise<PersistentStorageObject> {
-    const authPayload = await this.getPersistentStorageSignaturePayload(
+    const authPayload = await this.getSignedCommandParams(
       nodeUri,
       signerOrAuthToken,
       PROTOCOL_COMMANDS.PERSISTENT_STORAGE_GET_FILE_OBJECT,
@@ -1671,14 +1682,14 @@ export class P2pProvider {
   }
 
   public async uploadPersistentStorageFile(
-    nodeUri: string | Multiaddr[],
-    signerOrAuthToken: Signer | string,
+    nodeUri: OceanNode,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
     bucketId: string,
     fileName: string,
     content: P2PRequestBodyStream,
     signal?: AbortSignal
   ): Promise<PersistentStorageFileEntry> {
-    const authPayload = await this.getPersistentStorageSignaturePayload(
+    const authPayload = await this.getSignedCommandParams(
       nodeUri,
       signerOrAuthToken,
       PROTOCOL_COMMANDS.PERSISTENT_STORAGE_UPLOAD_FILE,
@@ -1696,13 +1707,13 @@ export class P2pProvider {
   }
 
   public async deletePersistentStorageFile(
-    nodeUri: string | Multiaddr[],
-    signerOrAuthToken: Signer | string,
+    nodeUri: OceanNode,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
     bucketId: string,
     fileName: string,
     signal?: AbortSignal
   ): Promise<PersistentStorageDeleteFileResponse> {
-    const authPayload = await this.getPersistentStorageSignaturePayload(
+    const authPayload = await this.getSignedCommandParams(
       nodeUri,
       signerOrAuthToken,
       PROTOCOL_COMMANDS.PERSISTENT_STORAGE_DELETE_FILE,

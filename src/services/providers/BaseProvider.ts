@@ -1,5 +1,5 @@
 import { peerIdFromString } from '@libp2p/peer-id'
-import { multiaddr, type Multiaddr } from '@multiformats/multiaddr'
+import { multiaddr } from '@multiformats/multiaddr'
 import { Signer } from 'ethers'
 import {
   StorageObject,
@@ -22,14 +22,17 @@ import {
   DownloadResponse,
   NodeStatus,
   NodeComputeJob,
-  NodeLogsParams,
   NodeLogEntry,
   PersistentStorageAccessList,
   PersistentStorageBucket,
   PersistentStorageCreateBucketRequest,
   PersistentStorageDeleteFileResponse,
   PersistentStorageFileEntry,
-  PersistentStorageObject
+  PersistentStorageObject,
+  OceanNode,
+  NodeP2P,
+  CompleteSignature,
+  SignerOrAuthTokenOrSignature
 } from '../../@types/index.js'
 import { type DDO, type ValidateMetadata } from '@oceanprotocol/ddo-js'
 import { decodeJwt } from '../../utils/Jwt.js'
@@ -40,42 +43,86 @@ import { P2pProvider, type P2PConfig, type P2PRequestBodyStream } from './P2pPro
 export { OCEAN_P2P_PROTOCOL, type P2PConfig } from './P2pProvider.js'
 
 export async function getConsumerAddress(
-  signerOrAuthToken: Signer | string
+  signerOrAuthToken: SignerOrAuthTokenOrSignature
 ): Promise<string> {
-  return typeof signerOrAuthToken === 'string'
-    ? decodeJwt(signerOrAuthToken).address
-    : signerOrAuthToken.getAddress()
+  if (isAgentSignature(signerOrAuthToken)) return signerOrAuthToken.consumerAddress
+  if (typeof signerOrAuthToken === 'string') return decodeJwt(signerOrAuthToken).address
+
+  return signerOrAuthToken.getAddress()
 }
 
 export async function getSignature(
-  signerOrAuthToken: Signer | string,
+  signerOrAuthToken: SignerOrAuthTokenOrSignature,
   nonce: string,
   command: string
 ): Promise<string | null> {
-  if (typeof signerOrAuthToken === 'string') return null
+  if (typeof signerOrAuthToken === 'string') {
+    return null
+  }
+  if (isAgentSignature(signerOrAuthToken)) {
+    return signerOrAuthToken.signature
+  }
   const message = String(
     String(await signerOrAuthToken.getAddress()) + String(nonce) + String(command)
   )
   return signRequest(signerOrAuthToken, message)
 }
 
-export function getAuthorization(signerOrAuthToken: Signer | string): string | undefined {
+export function getAuthorization(
+  signerOrAuthToken: SignerOrAuthTokenOrSignature
+): string | undefined {
   return typeof signerOrAuthToken === 'string' ? signerOrAuthToken : undefined
 }
 
-export function isP2pUri(nodeUri: string | Multiaddr[]): boolean {
-  if (Array.isArray(nodeUri)) return true
-  if (!nodeUri) return false
+export function isAgentSignature(v: unknown): v is CompleteSignature {
+  return (
+    !!v &&
+    typeof v === 'object' &&
+    typeof (v as any).consumerAddress === 'string' &&
+    typeof (v as any).nonce === 'string' &&
+    typeof (v as any).signature === 'string'
+  )
+}
+
+function isPeerIdOrMultiAddr(param: string) {
   try {
-    multiaddr(nodeUri)
+    multiaddr(param)
     return true
   } catch {}
   try {
-    peerIdFromString(nodeUri)
+    peerIdFromString(param)
     return true
   } catch {
     return false
   }
+}
+export function isP2pUri(node: OceanNode): boolean {
+  if (!node) return false
+  if (typeof node === 'string') {
+    return isPeerIdOrMultiAddr(node)
+  }
+
+  // NodeP2P -> p2p
+  if (typeof node === 'object' && ('nodeId' in node || 'multiaddress' in node)) {
+    const nodeP2p = node as NodeP2P
+    if (Array.isArray(nodeP2p.multiaddress) && nodeP2p.multiaddress.length > 0)
+      return true
+    if (nodeP2p.nodeId) {
+      return isPeerIdOrMultiAddr(nodeP2p.nodeId)
+    }
+  }
+
+  // PeerId (libp2p) -> p2p
+  if (typeof node === 'object' && typeof (node as any).toString === 'function') {
+    const s = String((node as any).toString())
+    try {
+      peerIdFromString(s)
+      return true
+    } catch {
+      return false
+    }
+  }
+  return false
 }
 
 export class BaseProvider {
@@ -83,13 +130,16 @@ export class BaseProvider {
   private p2pProvider = new P2pProvider()
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  protected getImpl(nodeUri: string | Multiaddr[]): any {
-    if (Array.isArray(nodeUri)) return this.p2pProvider
-    return isP2pUri(nodeUri) ? this.p2pProvider : this.httpProvider
+  protected getImpl(node: OceanNode): any {
+    return isP2pUri(node) ? this.p2pProvider : this.httpProvider
+  }
+
+  public getP2PProvider() {
+    return this.p2pProvider
   }
 
   public async getNonce(
-    nodeUri: string | Multiaddr[],
+    nodeUri: OceanNode,
     consumerAddress: string,
     signal?: AbortSignal,
     providerEndpoints?: any,
@@ -107,8 +157,8 @@ export class BaseProvider {
   public async encrypt(
     data: any,
     chainId: number,
-    nodeUri: string | Multiaddr[],
-    signerOrAuthToken: Signer | string,
+    nodeUri: OceanNode,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
     policyServer?: any,
     signal?: AbortSignal
   ): Promise<string> {
@@ -125,7 +175,7 @@ export class BaseProvider {
   public async checkDidFiles(
     did: string,
     serviceId: string,
-    nodeUri: string | Multiaddr[],
+    nodeUri: OceanNode,
     withChecksum: boolean = false,
     signal?: AbortSignal
   ): Promise<FileInfo[]> {
@@ -140,7 +190,7 @@ export class BaseProvider {
 
   public async getFileInfo(
     file: StorageObject,
-    nodeUri: string | Multiaddr[],
+    nodeUri: OceanNode,
     withChecksum: boolean = false,
     signal?: AbortSignal
   ): Promise<FileInfo[]> {
@@ -148,7 +198,7 @@ export class BaseProvider {
   }
 
   public async getComputeEnvironments(
-    nodeUri: string | Multiaddr[],
+    nodeUri: OceanNode,
     signal?: AbortSignal
   ): Promise<ComputeEnvironment[]> {
     return this.getImpl(nodeUri).getComputeEnvironments(nodeUri, signal)
@@ -159,7 +209,7 @@ export class BaseProvider {
     serviceId: string,
     fileIndex: number,
     consumerAddress: string,
-    nodeUri: string | Multiaddr[],
+    nodeUri: OceanNode,
     signal?: AbortSignal,
     userCustomParameters?: UserCustomParameters,
     computeEnv?: string,
@@ -184,7 +234,7 @@ export class BaseProvider {
     computeEnv: string,
     token: string,
     validUntil: number,
-    nodeUri: string | Multiaddr[],
+    nodeUri: OceanNode,
     consumerAddress: string,
     resources: ComputeResourceRequest[],
     chainId: number,
@@ -217,8 +267,8 @@ export class BaseProvider {
     serviceId: string,
     fileIndex: number,
     transferTxId: string,
-    nodeUri: string | Multiaddr[],
-    signerOrAuthToken: Signer | string,
+    nodeUri: OceanNode,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
     policyServer?: any,
     userCustomParameters?: UserCustomParameters
   ): Promise<string | DownloadResponse> {
@@ -235,8 +285,8 @@ export class BaseProvider {
   }
 
   public async computeStart(
-    nodeUri: string | Multiaddr[],
-    signerOrAuthToken: Signer | string,
+    nodeUri: OceanNode,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
     computeEnv: string,
     datasets: ComputeAsset[],
     algorithm: ComputeAlgorithm,
@@ -273,8 +323,8 @@ export class BaseProvider {
   }
 
   public async freeComputeStart(
-    nodeUri: string | Multiaddr[],
-    signerOrAuthToken: Signer | string,
+    nodeUri: OceanNode,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
     computeEnv: string,
     datasets: ComputeAsset[],
     algorithm: ComputeAlgorithm,
@@ -305,8 +355,8 @@ export class BaseProvider {
   }
 
   public async computeStreamableLogs(
-    nodeUri: string | Multiaddr[],
-    signerOrAuthToken: Signer | string,
+    nodeUri: OceanNode,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
     jobId: string,
     signal?: AbortSignal
   ): Promise<any> {
@@ -320,8 +370,8 @@ export class BaseProvider {
 
   public async computeStop(
     jobId: string,
-    nodeUri: string | Multiaddr[],
-    signerOrAuthToken: Signer | string,
+    nodeUri: OceanNode,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
     agreementId?: string,
     signal?: AbortSignal
   ): Promise<ComputeJob | ComputeJob[]> {
@@ -335,8 +385,8 @@ export class BaseProvider {
   }
 
   public async computeStatus(
-    nodeUri: string | Multiaddr[],
-    signerOrAuthToken: Signer | string,
+    nodeUri: OceanNode,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
     jobId?: string,
     agreementId?: string,
     signal?: AbortSignal
@@ -351,8 +401,8 @@ export class BaseProvider {
   }
 
   public async getComputeResultUrl(
-    nodeUri: string | Multiaddr[],
-    signerOrAuthToken: Signer | string,
+    nodeUri: OceanNode,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
     jobId: string,
     index: number
   ): Promise<string> {
@@ -365,8 +415,8 @@ export class BaseProvider {
   }
 
   public async getComputeResult(
-    nodeUri: string | Multiaddr[],
-    signerOrAuthToken: Signer | string,
+    nodeUri: OceanNode,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
     jobId: string,
     index: number,
     offset: number = 0
@@ -382,7 +432,7 @@ export class BaseProvider {
 
   public async generateAuthToken(
     consumer: Signer,
-    nodeUri: string | Multiaddr[],
+    nodeUri: OceanNode,
     signal?: AbortSignal
   ): Promise<string> {
     return this.getImpl(nodeUri).generateAuthToken(consumer, nodeUri, signal)
@@ -392,7 +442,7 @@ export class BaseProvider {
     address: string,
     signature: string,
     nonce: string,
-    nodeUri: string | Multiaddr[],
+    nodeUri: OceanNode,
     signal?: AbortSignal
   ): Promise<string> {
     return this.p2pProvider.generateSignedAuthToken(
@@ -407,14 +457,14 @@ export class BaseProvider {
   public async invalidateAuthToken(
     consumer: Signer,
     token: string,
-    nodeUri: string | Multiaddr[],
+    nodeUri: OceanNode,
     signal?: AbortSignal
   ): Promise<{ success: boolean }> {
     return this.getImpl(nodeUri).invalidateAuthToken(consumer, token, nodeUri, signal)
   }
 
   public async resolveDdo(
-    nodeUri: string | Multiaddr[],
+    nodeUri: OceanNode,
     did: string,
     signal?: AbortSignal
   ): Promise<any> {
@@ -422,23 +472,20 @@ export class BaseProvider {
   }
 
   public async validateDdo(
-    nodeUri: string | Multiaddr[],
+    nodeUri: OceanNode,
     ddo: DDO,
-    signer: Signer,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
     signal?: AbortSignal
   ): Promise<ValidateMetadata> {
-    return this.getImpl(nodeUri).validateDdo(nodeUri, ddo, signer, signal)
+    return this.getImpl(nodeUri).validateDdo(nodeUri, ddo, signerOrAuthToken, signal)
   }
 
-  public async isValidProvider(
-    url: string | Multiaddr[],
-    signal?: AbortSignal
-  ): Promise<boolean> {
+  public async isValidProvider(url: OceanNode, signal?: AbortSignal): Promise<boolean> {
     return this.getImpl(url).isValidProvider(url, signal)
   }
 
   public async PolicyServerPassthrough(
-    nodeUri: string | Multiaddr[],
+    nodeUri: OceanNode,
     request: PolicyServerPassthroughCommand,
     signal?: AbortSignal
   ): Promise<any> {
@@ -446,7 +493,7 @@ export class BaseProvider {
   }
 
   public async initializePSVerification(
-    nodeUri: string | Multiaddr[],
+    nodeUri: OceanNode,
     request: PolicyServerInitializeCommand,
     signal?: AbortSignal
   ): Promise<any> {
@@ -454,8 +501,8 @@ export class BaseProvider {
   }
 
   public async downloadNodeLogs(
-    nodeUri: string | Multiaddr[],
-    signer: Signer,
+    nodeUri: OceanNode,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
     startTime: string,
     endTime: string,
     maxLogs?: number,
@@ -466,7 +513,7 @@ export class BaseProvider {
   ): Promise<NodeLogEntry[]> {
     return this.getImpl(nodeUri).downloadNodeLogs(
       nodeUri,
-      signer,
+      signerOrAuthToken,
       startTime,
       endTime,
       maxLogs,
@@ -478,14 +525,14 @@ export class BaseProvider {
   }
 
   public async getNodeStatus(
-    nodeUri: string | Multiaddr[],
+    nodeUri: OceanNode,
     signal?: AbortSignal
   ): Promise<NodeStatus> {
     return this.getImpl(nodeUri).getNodeStatus(nodeUri, signal)
   }
 
   public async getNodeJobs(
-    nodeUri: string | Multiaddr[],
+    nodeUri: OceanNode,
     fromTimestamp?: number,
     signal?: AbortSignal
   ): Promise<NodeComputeJob[]> {
@@ -510,23 +557,9 @@ export class BaseProvider {
     return this.p2pProvider.getMultiaddrFromPeerId(peerId)
   }
 
-  /**
-   * Fetch node logs via P2P with a pre-signed payload.
-   * For auto-signed log fetching (HTTP or P2P), use downloadNodeLogs().
-   */
-  public async fetchNodeLogs(
-    nodeUri: string | Multiaddr[],
-    address: string,
-    signature: string,
-    nonce: string,
-    logParams?: NodeLogsParams
-  ): Promise<NodeLogEntry[]> {
-    return this.p2pProvider.fetchNodeLogs(nodeUri, address, signature, nonce, logParams)
-  }
-
   public async createPersistentStorageBucket(
-    nodeUri: string | Multiaddr[],
-    signerOrAuthToken: Signer | string,
+    nodeUri: OceanNode,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
     payload: PersistentStorageCreateBucketRequest,
     signal?: AbortSignal
   ): Promise<{
@@ -543,8 +576,8 @@ export class BaseProvider {
   }
 
   public async getPersistentStorageBuckets(
-    nodeUri: string | Multiaddr[],
-    signerOrAuthToken: Signer | string,
+    nodeUri: OceanNode,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
     owner: string,
     signal?: AbortSignal
   ): Promise<PersistentStorageBucket[]> {
@@ -557,8 +590,8 @@ export class BaseProvider {
   }
 
   public async listPersistentStorageFiles(
-    nodeUri: string | Multiaddr[],
-    signerOrAuthToken: Signer | string,
+    nodeUri: OceanNode,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
     bucketId: string,
     signal?: AbortSignal
   ): Promise<PersistentStorageFileEntry[]> {
@@ -571,8 +604,8 @@ export class BaseProvider {
   }
 
   public async getPersistentStorageFileObject(
-    nodeUri: string | Multiaddr[],
-    signerOrAuthToken: Signer | string,
+    nodeUri: OceanNode,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
     bucketId: string,
     fileName: string,
     signal?: AbortSignal
@@ -587,8 +620,8 @@ export class BaseProvider {
   }
 
   public async uploadPersistentStorageFile(
-    nodeUri: string | Multiaddr[],
-    signerOrAuthToken: Signer | string,
+    nodeUri: OceanNode,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
     bucketId: string,
     fileName: string,
     content: P2PRequestBodyStream,
@@ -605,8 +638,8 @@ export class BaseProvider {
   }
 
   public async deletePersistentStorageFile(
-    nodeUri: string | Multiaddr[],
-    signerOrAuthToken: Signer | string,
+    nodeUri: OceanNode,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
     bucketId: string,
     fileName: string,
     signal?: AbortSignal
@@ -621,14 +654,14 @@ export class BaseProvider {
   }
 
   public async fetchConfig(
-    nodeUri: string | Multiaddr[],
+    nodeUri: OceanNode,
     payload: Record<string, any>
   ): Promise<any> {
     return this.p2pProvider.fetchConfig(nodeUri, payload)
   }
 
   public async pushConfig(
-    nodeUri: string | Multiaddr[],
+    nodeUri: OceanNode,
     payload: Record<string, any>
   ): Promise<any> {
     return this.p2pProvider.pushConfig(nodeUri, payload)

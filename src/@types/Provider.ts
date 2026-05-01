@@ -1,3 +1,6 @@
+import { type Multiaddr } from '@multiformats/multiaddr'
+import { Signer } from 'ethers'
+import type { PeerId } from '@libp2p/interface'
 import type { AccessList } from './AccessList.js'
 export interface ProviderFees {
   providerFeeAddress: string
@@ -43,6 +46,12 @@ export interface ServiceEndpoint {
   method: string
   urlPath: string
 }
+
+export interface NodeP2P {
+  nodeId: string
+  multiaddress?: Multiaddr[]
+}
+export type OceanNode = string | NodeP2P | PeerId
 
 export interface NodeStatusProvider {
   chainId: string
@@ -155,3 +164,11 @@ export interface NodeLogEntry {
   message: string
   meta?: Record<string, any>
 }
+
+export interface CompleteSignature {
+  consumerAddress: string
+  nonce: string
+  signature: string
+}
+
+export type SignerOrAuthTokenOrSignature = string | Signer | CompleteSignature
