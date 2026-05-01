@@ -115,7 +115,7 @@
     "microbundle": "^0.15.1",
     "mocha": "^11.7.1",
     "mock-local-storage": "^1.1.24",
-    "nyc": "^17.1.0",
+    "nyc": "^18.0.0",
     "ora": "5.4.1",
     "prettier": "^2.7.1",
     "release-it": "^19.2.4",
