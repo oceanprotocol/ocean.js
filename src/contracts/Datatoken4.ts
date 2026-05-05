@@ -1,11 +1,15 @@
 /* eslint-disable lines-between-class-members */
 import { Datatoken } from './Datatoken.js'
-import { Signer } from 'ethers'
+import { Signer, TransactionRequest } from 'ethers'
 import ERC20Template4 from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC20Template4.sol/ERC20Template4.json'
 import { AbiItem, ReceiptOrEstimate } from '../@types/index.js'
 import { AccessListContract } from './AccessList.js'
 import { Config } from '../config/index.js'
-import { sendTx } from '../utils/ContractUtils.js'
+import {
+  buildTxOverrides,
+  buildUnsignedTx,
+  sendPreparedTransaction
+} from '../utils/ContractUtils.js'
 
 export class Datatoken4 extends Datatoken {
   public accessList: AccessListContract
@@ -77,20 +81,31 @@ export class Datatoken4 extends Datatoken {
     if (!(await this.isDatatokenDeployer(dtAddress, consumer))) {
       throw new Error(`User is not Datatoken Deployer`)
     }
-
     const dtContract = this.getContract(dtAddress)
     const estGas = await dtContract.setAllowListContract.estimateGas(address)
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
+    const tx = await this.setAllowListContractTx(dtAddress, address, consumer)
+    const trxReceipt = await sendPreparedTransaction(this.getSignerAccordingSdk(), tx)
+    return <ReceiptOrEstimate<G>>trxReceipt
+  }
 
-    const trxReceipt = await sendTx(
+  public async setAllowListContractTx(
+    dtAddress: string,
+    address: string,
+    consumer: string
+  ): Promise<TransactionRequest> {
+    if (!(await this.isDatatokenDeployer(dtAddress, consumer))) {
+      throw new Error(`User is not Datatoken Deployer`)
+    }
+
+    const dtContract = this.getContract(dtAddress)
+    const estGas = await dtContract.setAllowListContract.estimateGas(address)
+    const overrides = await buildTxOverrides(
       estGas,
       this.getSignerAccordingSdk(),
-      this.config?.gasFeeMultiplier,
-      dtContract.setAllowListContract,
-      address
+      this.config?.gasFeeMultiplier
     )
-
-    return <ReceiptOrEstimate<G>>trxReceipt
+    return buildUnsignedTx(dtContract.setAllowListContract, [address], overrides)
   }
 
   /** setDenyListContract
@@ -111,20 +126,31 @@ export class Datatoken4 extends Datatoken {
     if (!(await this.isDatatokenDeployer(dtAddress, consumer))) {
       throw new Error(`User is not Datatoken Deployer`)
     }
-
     const dtContract = this.getContract(dtAddress)
     const estGas = await dtContract.setDenyListContract.estimateGas(address)
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
+    const tx = await this.setDenyListContractTx(dtAddress, address, consumer)
+    const trxReceipt = await sendPreparedTransaction(this.getSignerAccordingSdk(), tx)
+    return <ReceiptOrEstimate<G>>trxReceipt
+  }
 
-    const trxReceipt = await sendTx(
+  public async setDenyListContractTx(
+    dtAddress: string,
+    address: string,
+    consumer: string
+  ): Promise<TransactionRequest> {
+    if (!(await this.isDatatokenDeployer(dtAddress, consumer))) {
+      throw new Error(`User is not Datatoken Deployer`)
+    }
+
+    const dtContract = this.getContract(dtAddress)
+    const estGas = await dtContract.setDenyListContract.estimateGas(address)
+    const overrides = await buildTxOverrides(
       estGas,
       this.getSignerAccordingSdk(),
-      this.config?.gasFeeMultiplier,
-      dtContract.setDenyListContract,
-      address
+      this.config?.gasFeeMultiplier
     )
-
-    return <ReceiptOrEstimate<G>>trxReceipt
+    return buildUnsignedTx(dtContract.setDenyListContract, [address], overrides)
   }
   /** setFileObject
    * This function allows to set file object in ecnrypted format, only by datatoken deployer
@@ -147,15 +173,27 @@ export class Datatoken4 extends Datatoken {
     const estGas = await dtContract.setFilesObject.estimateGas(this.fileObject)
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
 
-    const trxReceipt = await sendTx(
+    const tx = await this.setFileObjectTx(dtAddress, address)
+    const trxReceipt = await sendPreparedTransaction(this.getSignerAccordingSdk(), tx)
+    return <ReceiptOrEstimate<G>>trxReceipt
+  }
+
+  public async setFileObjectTx(
+    dtAddress: string,
+    address: string
+  ): Promise<TransactionRequest> {
+    if (!(await this.isDatatokenDeployer(dtAddress, address))) {
+      throw new Error(`User is not Datatoken Deployer`)
+    }
+
+    const dtContract = this.getContract(dtAddress)
+    const estGas = await dtContract.setFilesObject.estimateGas(this.fileObject)
+    const overrides = await buildTxOverrides(
       estGas,
       this.getSignerAccordingSdk(),
-      this.config?.gasFeeMultiplier,
-      dtContract.setFilesObject,
-      this.fileObject
+      this.config?.gasFeeMultiplier
     )
-
-    return <ReceiptOrEstimate<G>>trxReceipt
+    return buildUnsignedTx(dtContract.setFilesObject, [this.fileObject], overrides)
   }
 
   /**

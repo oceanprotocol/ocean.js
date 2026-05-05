@@ -1,6 +1,10 @@
-import { Signer, getAddress, parseEther } from 'ethers'
+import { Signer, TransactionRequest, getAddress, parseEther } from 'ethers'
 import Escrow from '@oceanprotocol/contracts/artifacts/contracts/escrow/Escrow.sol/Escrow.json'
-import { sendTx } from '../utils/ContractUtils'
+import {
+  buildTxOverrides,
+  buildUnsignedTx,
+  sendPreparedTransaction
+} from '../utils/ContractUtils'
 import { AbiItem, ReceiptOrEstimate, ValidationResponse } from '../@types'
 import { Config } from '../config'
 import { SmartContractWithAddress } from './SmartContractWithAddress'
@@ -201,18 +205,29 @@ export class EscrowContract extends SmartContractWithAddress {
     tokenDecimals?: number,
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
+    if (estimateGas) {
+      const amountParsed = await this.amountToUnits(token, amount, tokenDecimals)
+      const estGas = await this.contract.deposit.estimateGas(token, amountParsed)
+      return <ReceiptOrEstimate<G>>estGas
+    }
+    const tx = await this.depositTx(token, amount, tokenDecimals)
+    const trxReceipt = await sendPreparedTransaction(this.getSignerAccordingSdk(), tx)
+    return <ReceiptOrEstimate<G>>trxReceipt
+  }
+
+  public async depositTx(
+    token: string,
+    amount: string,
+    tokenDecimals?: number
+  ): Promise<TransactionRequest> {
     const amountParsed = await this.amountToUnits(token, amount, tokenDecimals)
     const estGas = await this.contract.deposit.estimateGas(token, amountParsed)
-    if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-    const trxReceipt = await sendTx(
+    const overrides = await buildTxOverrides(
       estGas,
       this.getSignerAccordingSdk(),
-      this.config?.gasFeeMultiplier,
-      this.contract.deposit,
-      token,
-      amountParsed
+      this.config?.gasFeeMultiplier
     )
-    return <ReceiptOrEstimate<G>>trxReceipt
+    return buildUnsignedTx(this.contract.deposit, [token, amountParsed], overrides)
   }
 
   /**
@@ -229,9 +244,55 @@ export class EscrowContract extends SmartContractWithAddress {
     tokenDecimals?: number,
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
+    const { tokensWithSufficientFunds, amountsParsed } = await this.prepareWithdrawInputs(
+      tokens,
+      amounts,
+      tokenDecimals
+    )
+    const estGas = await this.contract.withdraw.estimateGas(
+      tokensWithSufficientFunds,
+      amountsParsed
+    )
+    if (estimateGas) return <ReceiptOrEstimate<G>>estGas
+    const tx = await this.withdrawTx(tokens, amounts, tokenDecimals)
+    const trxReceipt = await sendPreparedTransaction(this.getSignerAccordingSdk(), tx)
+    return <ReceiptOrEstimate<G>>trxReceipt
+  }
+
+  public async withdrawTx(
+    tokens: string[],
+    amounts: string[],
+    tokenDecimals?: number
+  ): Promise<TransactionRequest> {
+    const { tokensWithSufficientFunds, amountsParsed } = await this.prepareWithdrawInputs(
+      tokens,
+      amounts,
+      tokenDecimals
+    )
+    const estGas = await this.contract.withdraw.estimateGas(
+      tokensWithSufficientFunds,
+      amountsParsed
+    )
+    const overrides = await buildTxOverrides(
+      estGas,
+      this.getSignerAccordingSdk(),
+      this.config?.gasFeeMultiplier
+    )
+    return buildUnsignedTx(
+      this.contract.withdraw,
+      [tokensWithSufficientFunds, amountsParsed],
+      overrides
+    )
+  }
+
+  private async prepareWithdrawInputs(
+    tokens: string[],
+    amounts: string[],
+    tokenDecimals?: number
+  ) {
     // check if funds exist in escrow in order to be withdrawed
-    const tokensWithSufficientFunds = []
-    const amountsWithSufficientFunds = []
+    const tokensWithSufficientFunds: string[] = []
+    const amountsWithSufficientFunds: string[] = []
 
     if (tokens.length !== amounts.length) {
       throw new Error('Tokens and amounts arrays must have the same length')
@@ -259,18 +320,7 @@ export class EscrowContract extends SmartContractWithAddress {
       )
     )
 
-    const estGas = await this.contract.withdraw.estimateGas(tokens, amountsParsed)
-    if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-
-    const trxReceipt = await sendTx(
-      estGas,
-      this.getSignerAccordingSdk(),
-      this.config?.gasFeeMultiplier,
-      this.contract.withdraw,
-      tokensWithSufficientFunds,
-      amountsParsed
-    )
-    return <ReceiptOrEstimate<G>>trxReceipt
+    return { tokensWithSufficientFunds, amountsWithSufficientFunds, amountsParsed }
   }
 
   /**
@@ -293,6 +343,95 @@ export class EscrowContract extends SmartContractWithAddress {
     tokenDecimals?: number,
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
+    const {
+      tokenArg,
+      payeeArg,
+      maxLockedAmountParsed,
+      maxLockSecondsParsed,
+      maxLockCountsParsed
+    } = await this.prepareAuthorizeInputs(
+      token,
+      payee,
+      maxLockedAmount,
+      maxLockSeconds,
+      maxLockCounts,
+      tokenDecimals
+    )
+    const estGas = await this.contract.authorize.estimateGas(
+      tokenArg,
+      payeeArg,
+      maxLockedAmountParsed,
+      maxLockSecondsParsed,
+      maxLockCountsParsed
+    )
+    if (estimateGas) return <ReceiptOrEstimate<G>>estGas
+    const tx = await this.authorizeTx(
+      token,
+      payee,
+      maxLockedAmount,
+      maxLockSeconds,
+      maxLockCounts,
+      tokenDecimals
+    )
+    const trxReceipt = await sendPreparedTransaction(this.getSignerAccordingSdk(), tx)
+    return <ReceiptOrEstimate<G>>trxReceipt
+  }
+
+  public async authorizeTx(
+    token: string,
+    payee: string,
+    maxLockedAmount: string,
+    maxLockSeconds: string,
+    maxLockCounts: string,
+    tokenDecimals?: number
+  ): Promise<TransactionRequest> {
+    const {
+      tokenArg,
+      payeeArg,
+      maxLockedAmountParsed,
+      maxLockSecondsParsed,
+      maxLockCountsParsed
+    } = await this.prepareAuthorizeInputs(
+      token,
+      payee,
+      maxLockedAmount,
+      maxLockSeconds,
+      maxLockCounts,
+      tokenDecimals
+    )
+    const estGas = await this.contract.authorize.estimateGas(
+      tokenArg,
+      payeeArg,
+      maxLockedAmountParsed,
+      maxLockSecondsParsed,
+      maxLockCountsParsed
+    )
+    const overrides = await buildTxOverrides(
+      estGas,
+      this.getSignerAccordingSdk(),
+      this.config?.gasFeeMultiplier
+    )
+    return buildUnsignedTx(
+      this.contract.authorize,
+      [
+        tokenArg,
+        payeeArg,
+        maxLockedAmountParsed,
+        maxLockSecondsParsed,
+        maxLockCountsParsed
+      ],
+      overrides
+    )
+  }
+
+  private async prepareAuthorizeInputs(
+    token: string,
+    payee: string,
+    maxLockedAmount: string,
+    maxLockSeconds: string,
+    maxLockCounts: string,
+    tokenDecimals?: number
+  ) {
     const auths = await this.getAuthorizations(
       token,
       await this.signer.getAddress(),
@@ -300,7 +439,7 @@ export class EscrowContract extends SmartContractWithAddress {
     )
     if (auths.length !== 0) {
       console.log(`Payee ${payee} already authorized`)
-      return null
+      throw new Error(`Payee ${payee} already authorized`)
     }
     const maxLockedAmountParsed = await this.amountToUnits(
       token,
@@ -317,26 +456,13 @@ export class EscrowContract extends SmartContractWithAddress {
       maxLockCounts,
       tokenDecimals
     )
-    const estGas = await this.contract.authorize.estimateGas(
-      token,
-      payee,
+    return {
+      tokenArg: token,
+      payeeArg: payee,
       maxLockedAmountParsed,
       maxLockSecondsParsed,
       maxLockCountsParsed
-    )
-    if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-    const trxReceipt = await sendTx(
-      estGas,
-      this.getSignerAccordingSdk(),
-      this.config?.gasFeeMultiplier,
-      this.contract.authorize,
-      token,
-      payee,
-      maxLockedAmountParsed,
-      maxLockSecondsParsed,
-      maxLockCountsParsed
-    )
-    return <ReceiptOrEstimate<G>>trxReceipt
+    }
   }
 
   /**
@@ -362,16 +488,32 @@ export class EscrowContract extends SmartContractWithAddress {
       payees
     )
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-    const trxReceipt = await sendTx(
-      estGas,
-      this.getSignerAccordingSdk(),
-      this.config?.gasFeeMultiplier,
-      this.contract.cancelExpiredLocks,
+    const tx = await this.cancelExpiredLocksTx(jobIds, tokens, payers, payees)
+    const trxReceipt = await sendPreparedTransaction(this.getSignerAccordingSdk(), tx)
+    return <ReceiptOrEstimate<G>>trxReceipt
+  }
+
+  public async cancelExpiredLocksTx(
+    jobIds: string[],
+    tokens: string[],
+    payers: string[],
+    payees: string[]
+  ): Promise<TransactionRequest> {
+    const estGas = await this.contract.cancelExpiredLocks.estimateGas(
       jobIds,
       tokens,
       payers,
       payees
     )
-    return <ReceiptOrEstimate<G>>trxReceipt
+    const overrides = await buildTxOverrides(
+      estGas,
+      this.getSignerAccordingSdk(),
+      this.config?.gasFeeMultiplier
+    )
+    return buildUnsignedTx(
+      this.contract.cancelExpiredLocks,
+      [jobIds, tokens, payers, payees],
+      overrides
+    )
   }
 }

@@ -3,6 +3,7 @@ import {
   Signer,
   Contract,
   TransactionResponse,
+  TransactionRequest,
   BaseContractMethod,
   formatUnits,
   parseUnits,
@@ -139,6 +140,15 @@ export async function sendTx(
   functionToSend: BaseContractMethod,
   ...args: any[]
 ): Promise<TransactionResponse> {
+  const overrides = await buildTxOverrides(estGas, signer, gasFeeMultiplier)
+  return sendPreparedTx(signer, functionToSend, args, overrides)
+}
+
+export async function buildTxOverrides(
+  estGas: bigint,
+  signer: Signer,
+  gasFeeMultiplier: number
+): Promise<Record<string, any>> {
   const { chainId } = await signer.provider.getNetwork()
   const feeHistory = await signer.provider.getFeeData()
   let overrides: Record<string, any> = {}
@@ -186,12 +196,44 @@ export async function sendTx(
     }
   }
   overrides.gasLimit = BigInt(new BigNumber(estGas).plus(20000n).toString())
+  return overrides
+}
+
+export async function buildUnsignedTx(
+  functionToSend: BaseContractMethod,
+  args: any[],
+  overrides: Record<string, any>
+): Promise<TransactionRequest> {
+  const tx = await functionToSend.populateTransaction(...args, overrides)
+  return tx
+}
+
+export async function sendPreparedTx(
+  signer: Signer,
+  functionToSend: BaseContractMethod,
+  args: any[],
+  overrides: Record<string, any>
+): Promise<TransactionResponse> {
   try {
     const trxReceipt = await functionToSend(...args, overrides)
     await trxReceipt.wait()
     return trxReceipt
   } catch (e) {
     LoggerInstance.error('Send tx error: ', e)
+    return null
+  }
+}
+
+export async function sendPreparedTransaction(
+  signer: Signer,
+  tx: TransactionRequest
+): Promise<TransactionResponse> {
+  try {
+    const trxReceipt = await signer.sendTransaction(tx)
+    await trxReceipt.wait()
+    return trxReceipt
+  } catch (e) {
+    LoggerInstance.error('Send prepared tx error: ', e)
     return null
   }
 }

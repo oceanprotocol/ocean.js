@@ -1,7 +1,12 @@
-import { BigNumberish, Signer } from 'ethers'
+import { BigNumberish, Signer, TransactionRequest } from 'ethers'
 import { Config } from '../config/index.js'
 import AccessListFactory from '@oceanprotocol/contracts/artifacts/contracts/accesslists/AccessListFactory.sol/AccessListFactory.json'
-import { sendTx, getEventFromTx } from '../utils/ContractUtils.js'
+import {
+  buildTxOverrides,
+  buildUnsignedTx,
+  sendPreparedTransaction,
+  getEventFromTx
+} from '../utils/ContractUtils.js'
 import { ZERO_ADDRESS } from '../utils/Constants.js'
 import { AbiItem, ReceiptOrEstimate } from '../@types/index.js'
 import { SmartContractWithAddress } from './SmartContractWithAddress.js'
@@ -54,34 +59,34 @@ export class AccesslistFactory extends SmartContractWithAddress {
     user: string[],
     estimateGas?: G
   ): Promise<G extends false ? string : BigNumberish> {
-    if (!nameAccessList || !symbolAccessList) {
-      const { name, symbol } = generateDtName()
-      nameAccessList = name
-      symbolAccessList = symbol
-    }
-    const estGas = await this.contract.deployAccessListContract.estimateGas(
+    const normalized = this.normalizeDeployAccessListInput(
       nameAccessList,
       symbolAccessList,
+      tokenURI,
       transferable,
       owner,
-      user,
-      tokenURI
+      user
+    )
+    const estGas = await this.contract.deployAccessListContract.estimateGas(
+      normalized.nameAccessList,
+      normalized.symbolAccessList,
+      normalized.transferable,
+      normalized.owner,
+      normalized.user,
+      normalized.tokenURI
     )
     if (estimateGas) return <G extends false ? string : BigNumberish>estGas
     // Invoke createToken function of the contract
     try {
-      const tx = await sendTx(
-        estGas,
-        this.getSignerAccordingSdk(),
-        this.config?.gasFeeMultiplier,
-        this.contract.deployAccessListContract,
+      const txReq = await this.deployAccessListContractTx(
         nameAccessList,
         symbolAccessList,
+        tokenURI,
         transferable,
         owner,
-        user,
-        tokenURI
+        user
       )
+      const tx = await sendPreparedTransaction(this.getSignerAccordingSdk(), txReq)
       if (!tx) {
         const e = 'Tx for deploying new access list was not processed on chain.'
         console.error(e)
@@ -93,6 +98,49 @@ export class AccesslistFactory extends SmartContractWithAddress {
     } catch (e) {
       console.error(`Creation of AccessList failed: ${e}`)
     }
+  }
+
+  public async deployAccessListContractTx(
+    nameAccessList: string,
+    symbolAccessList: string,
+    tokenURI: string[],
+    transferable: boolean = false,
+    owner: string,
+    user: string[]
+  ): Promise<TransactionRequest> {
+    const normalized = this.normalizeDeployAccessListInput(
+      nameAccessList,
+      symbolAccessList,
+      tokenURI,
+      transferable,
+      owner,
+      user
+    )
+    const estGas = await this.contract.deployAccessListContract.estimateGas(
+      normalized.nameAccessList,
+      normalized.symbolAccessList,
+      normalized.transferable,
+      normalized.owner,
+      normalized.user,
+      normalized.tokenURI
+    )
+    const overrides = await buildTxOverrides(
+      estGas,
+      this.getSignerAccordingSdk(),
+      this.config?.gasFeeMultiplier
+    )
+    return buildUnsignedTx(
+      this.contract.deployAccessListContract,
+      [
+        normalized.nameAccessList,
+        normalized.symbolAccessList,
+        normalized.transferable,
+        normalized.owner,
+        normalized.user,
+        normalized.tokenURI
+      ],
+      overrides
+    )
   }
 
   /**
@@ -146,14 +194,59 @@ export class AccesslistFactory extends SmartContractWithAddress {
 
     const estGas = await this.contract.changeTemplateAddress.estimateGas(templateAddress)
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-    const trxReceipt = await sendTx(
-      estGas,
-      this.getSignerAccordingSdk(),
-      this.config?.gasFeeMultiplier,
-      this.contract.changeTemplateAddress,
-      templateAddress
-    )
+    const txReq = await this.changeTemplateAddressTx(owner, templateAddress)
+    const trxReceipt = await sendPreparedTransaction(this.getSignerAccordingSdk(), txReq)
 
     return <ReceiptOrEstimate<G>>trxReceipt
+  }
+
+  public async changeTemplateAddressTx(
+    owner: string,
+    templateAddress: string
+  ): Promise<TransactionRequest> {
+    if ((await this.getOwner()) !== owner) {
+      throw new Error(`Caller is not Factory Owner`)
+    }
+
+    if (templateAddress === ZERO_ADDRESS) {
+      throw new Error(`Template address cannot be ZERO address`)
+    }
+
+    const estGas = await this.contract.changeTemplateAddress.estimateGas(templateAddress)
+    const overrides = await buildTxOverrides(
+      estGas,
+      this.getSignerAccordingSdk(),
+      this.config?.gasFeeMultiplier
+    )
+    return buildUnsignedTx(
+      this.contract.changeTemplateAddress,
+      [templateAddress],
+      overrides
+    )
+  }
+
+  private normalizeDeployAccessListInput(
+    nameAccessList: string,
+    symbolAccessList: string,
+    tokenURI: string[],
+    transferable: boolean,
+    owner: string,
+    user: string[]
+  ) {
+    let normalizedName = nameAccessList
+    let normalizedSymbol = symbolAccessList
+    if (!normalizedName || !normalizedSymbol) {
+      const { name, symbol } = generateDtName()
+      normalizedName = name
+      normalizedSymbol = symbol
+    }
+    return {
+      nameAccessList: normalizedName,
+      symbolAccessList: normalizedSymbol,
+      tokenURI,
+      transferable,
+      owner,
+      user
+    }
   }
 }
