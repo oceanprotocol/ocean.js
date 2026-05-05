@@ -45,7 +45,7 @@ export function setContractDefaults(contract: Contract, config: Config): Contrac
     if (config.transactionConfirmationBlocks)
       contract.transactionConfirmationBlocks = config.transactionConfirmationBlocks
     if (config.transactionPollingTimeout)
-      contract.transactionPollingTimeout = config.transactio nPollingTimeout
+      contract.transactionPollingTimeout = config.transactionPollingTimeout
   }
   */
   return contract
@@ -55,7 +55,7 @@ export function setContractDefaults(contract: Contract, config: Config): Contrac
  * Asynchronous function that returns a fair gas price based on the current gas price and a multiplier.
  * @param {Signer} signer - The signer object to use for fetching the current gas price.
  * @param {number} gasFeeMultiplier - The multiplier to apply to the current gas price. If not provided, the current gas price is returned as a string.
- * @returns A Promise that resolves to a string representation of  the fair gas price.
+ * @returns A Promise that resolves to a string representation of the fair gas price.
  */
 export async function getFairGasPrice(
   signer: Signer,
@@ -71,7 +71,7 @@ export async function getFairGasPrice(
  * Asynchronous function that returns the number of decimal places for a given token.
  * @param {Signer} signer - The signer object to use for fetching the token decimals.
  * @param {string} token - The address of the token contract.
- * @returns A Promise that resolves to the number of decimal p laces for the token.
+ * @returns A Promise that resolves to the number of decimal places for the token.
  */
 export async function getTokenDecimals(signer: Signer, token: string) {
   const tokenContract = new ethers.Contract(token, minAbi, signer)
@@ -84,7 +84,7 @@ export async function getTokenDecimals(signer: Signer, token: string) {
  * @param {string} token - The token to convert
  * @param {string} amount - The amount of units to convert
  * @param {number} [tokenDecimals] - The number of decimals in the token
- * @returns {Promise<string>} - The conver ted amount in tokens
+ * @returns {Promise<string>} - The converted amount in tokens
  */
 export async function unitsToAmount(
   signer: Signer,
@@ -107,7 +107,7 @@ export async function unitsToAmount(
  * @param {string} token - The token to convert
  * @param {string} amount - The amount of tokens to convert
  * @param {number} [tokenDecimals] - The number of decimals of the token
- * @returns {Promise<string>} - The conve rted amount in units
+ * @returns {Promise<string>} - The converted amount in units
  */
 export async function amountToUnits(
   signer: Signer,

@@ -290,37 +290,41 @@ export class EscrowContract extends SmartContractWithAddress {
     amounts: string[],
     tokenDecimals?: number
   ) {
-    // check if funds exist in escrow in order to be withdrawed
-    const tokensWithSufficientFunds: string[] = []
-    const amountsWithSufficientFunds: string[] = []
-
     if (tokens.length !== amounts.length) {
       throw new Error('Tokens and amounts arrays must have the same length')
     }
 
+    // Validate all requested withdrawals up front. We fail fast instead of silently
+    // filtering entries to avoid unexpected partial withdrawals.
     const userAddress = await this.signer.getAddress()
-
     for (let i = 0; i < tokens.length; i++) {
       const token = tokens[i]
       const amount = new BigNumber(amounts[i])
-
       const funds = await this.getUserFunds(userAddress, token)
       const available = new BigNumber(funds[0])
 
-      if (amount.isGreaterThan(0) && amount.isLessThanOrEqualTo(available)) {
-        tokensWithSufficientFunds.push(token)
-        amountsWithSufficientFunds.push(amounts[i])
-      } else {
-        console.log(`Insufficient funds for token ${token}`)
+      if (!amount.isGreaterThan(0)) {
+        throw new Error(
+          `Invalid withdraw amount for token ${token}: requested ${amounts[i]}, expected > 0`
+        )
+      }
+      if (amount.isGreaterThan(available)) {
+        throw new Error(
+          `Insufficient funds for token ${token}: requested ${
+            amounts[i]
+          }, available ${available.toString()}`
+        )
       }
     }
+
+    const tokensWithSufficientFunds = [...tokens]
     const amountsParsed = await Promise.all(
-      amountsWithSufficientFunds.map((amount, i) =>
+      amounts.map((amount, i) =>
         this.amountToUnits(tokensWithSufficientFunds[i], amount, tokenDecimals)
       )
     )
 
-    return { tokensWithSufficientFunds, amountsWithSufficientFunds, amountsParsed }
+    return { tokensWithSufficientFunds, amountsParsed }
   }
 
   /**
