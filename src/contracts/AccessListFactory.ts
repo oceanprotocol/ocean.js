@@ -4,8 +4,7 @@ import AccessListFactory from '@oceanprotocol/contracts/artifacts/contracts/acce
 import {
   buildTxOverrides,
   buildUnsignedTx,
-  sendPreparedTransaction,
-  getEventFromTx
+  sendPreparedTransaction
 } from '../utils/ContractUtils.js'
 import { ZERO_ADDRESS } from '../utils/Constants.js'
 import { AbiItem, ReceiptOrEstimate } from '../@types/index.js'
@@ -84,7 +83,8 @@ export class AccesslistFactory extends SmartContractWithAddress {
         tokenURI,
         transferable,
         owner,
-        user
+        user,
+        estGas
       )
       const tx = await sendPreparedTransaction(this.getSignerAccordingSdk(), txReq)
       if (!tx) {
@@ -93,8 +93,16 @@ export class AccesslistFactory extends SmartContractWithAddress {
         throw e
       }
       const trxReceipt = await tx.wait()
-      const events = getEventFromTx(trxReceipt, 'NewAccessList')
-      return events.args[0]
+      const parsedEvent = trxReceipt.logs
+        .map((log) => {
+          try {
+            return this.contract.interface.parseLog(log)
+          } catch {
+            return null
+          }
+        })
+        .find((event) => event?.name === 'NewAccessList')
+      return parsedEvent?.args?.[0]
     } catch (e) {
       console.error(`Creation of AccessList failed: ${e}`)
     }
@@ -106,7 +114,8 @@ export class AccesslistFactory extends SmartContractWithAddress {
     tokenURI: string[],
     transferable: boolean = false,
     owner: string,
-    user: string[]
+    user: string[],
+    estimatedGas?: bigint
   ): Promise<TransactionRequest> {
     const normalized = this.normalizeDeployAccessListInput(
       nameAccessList,
@@ -116,14 +125,16 @@ export class AccesslistFactory extends SmartContractWithAddress {
       owner,
       user
     )
-    const estGas = await this.contract.deployAccessListContract.estimateGas(
-      normalized.nameAccessList,
-      normalized.symbolAccessList,
-      normalized.transferable,
-      normalized.owner,
-      normalized.user,
-      normalized.tokenURI
-    )
+    const estGas =
+      estimatedGas ??
+      (await this.contract.deployAccessListContract.estimateGas(
+        normalized.nameAccessList,
+        normalized.symbolAccessList,
+        normalized.transferable,
+        normalized.owner,
+        normalized.user,
+        normalized.tokenURI
+      ))
     const overrides = await buildTxOverrides(
       estGas,
       this.getSignerAccordingSdk(),
@@ -194,7 +205,7 @@ export class AccesslistFactory extends SmartContractWithAddress {
 
     const estGas = await this.contract.changeTemplateAddress.estimateGas(templateAddress)
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-    const txReq = await this.changeTemplateAddressTx(owner, templateAddress)
+    const txReq = await this.changeTemplateAddressTx(owner, templateAddress, estGas)
     const trxReceipt = await sendPreparedTransaction(this.getSignerAccordingSdk(), txReq)
 
     return <ReceiptOrEstimate<G>>trxReceipt
@@ -202,7 +213,8 @@ export class AccesslistFactory extends SmartContractWithAddress {
 
   public async changeTemplateAddressTx(
     owner: string,
-    templateAddress: string
+    templateAddress: string,
+    estimatedGas?: bigint
   ): Promise<TransactionRequest> {
     if ((await this.getOwner()) !== owner) {
       throw new Error(`Caller is not Factory Owner`)
@@ -212,7 +224,9 @@ export class AccesslistFactory extends SmartContractWithAddress {
       throw new Error(`Template address cannot be ZERO address`)
     }
 
-    const estGas = await this.contract.changeTemplateAddress.estimateGas(templateAddress)
+    const estGas =
+      estimatedGas ??
+      (await this.contract.changeTemplateAddress.estimateGas(templateAddress))
     const overrides = await buildTxOverrides(
       estGas,
       this.getSignerAccordingSdk(),

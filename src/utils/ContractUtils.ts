@@ -10,6 +10,12 @@ import {
   EventLog,
   TransactionReceipt
 } from 'ethers'
+import ERC20Template from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC20Template.sol/ERC20Template.json'
+import ERC20TemplateEnterprise from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC20TemplateEnterprise.sol/ERC20TemplateEnterprise.json'
+import ERC721Template from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC721Template.sol/ERC721Template.json'
+import ERC721Factory from '@oceanprotocol/contracts/artifacts/contracts/ERC721Factory.sol/ERC721Factory.json'
+import FixedRateExchange from '@oceanprotocol/contracts/artifacts/contracts/pools/fixedRate/FixedRateExchange.sol/FixedRateExchange.json'
+import AccessListFactory from '@oceanprotocol/contracts/artifacts/contracts/accesslists/AccessListFactory.sol/AccessListFactory.json'
 
 import { Config, KNOWN_CONFIDENTIAL_EVMS } from '../config/index.js'
 import { LoggerInstance } from './Logger.js'
@@ -22,6 +28,14 @@ const MIN_GAS_FEE_SAPPHIRE = 10000000000 // recommended for mainnet and testnet 
 const POLYGON_NETWORK_ID = 137
 const MUMBAI_NETWORK_ID = 80001
 const SEPOLIA_NETWORK_ID = 11155111
+const EVENT_INTERFACES = [
+  new ethers.Interface(ERC20Template.abi),
+  new ethers.Interface(ERC20TemplateEnterprise.abi),
+  new ethers.Interface(ERC721Template.abi),
+  new ethers.Interface(ERC721Factory.abi),
+  new ethers.Interface(FixedRateExchange.abi),
+  new ethers.Interface(AccessListFactory.abi)
+]
 
 export function setContractDefaults(contract: Contract, config: Config): Contract {
   // TO DO - since ethers does not provide this
@@ -31,7 +45,7 @@ export function setContractDefaults(contract: Contract, config: Config): Contrac
     if (config.transactionConfirmationBlocks)
       contract.transactionConfirmationBlocks = config.transactionConfirmationBlocks
     if (config.transactionPollingTimeout)
-      contract.transactionPollingTimeout = config.transactionPollingTimeout
+      contract.transactionPollingTimeout = config.transactio nPollingTimeout
   }
   */
   return contract
@@ -41,7 +55,7 @@ export function setContractDefaults(contract: Contract, config: Config): Contrac
  * Asynchronous function that returns a fair gas price based on the current gas price and a multiplier.
  * @param {Signer} signer - The signer object to use for fetching the current gas price.
  * @param {number} gasFeeMultiplier - The multiplier to apply to the current gas price. If not provided, the current gas price is returned as a string.
- * @returns A Promise that resolves to a string representation of the fair gas price.
+ * @returns A Promise that resolves to a string representation of  the fair gas price.
  */
 export async function getFairGasPrice(
   signer: Signer,
@@ -57,7 +71,7 @@ export async function getFairGasPrice(
  * Asynchronous function that returns the number of decimal places for a given token.
  * @param {Signer} signer - The signer object to use for fetching the token decimals.
  * @param {string} token - The address of the token contract.
- * @returns A Promise that resolves to the number of decimal places for the token.
+ * @returns A Promise that resolves to the number of decimal p laces for the token.
  */
 export async function getTokenDecimals(signer: Signer, token: string) {
   const tokenContract = new ethers.Contract(token, minAbi, signer)
@@ -70,7 +84,7 @@ export async function getTokenDecimals(signer: Signer, token: string) {
  * @param {string} token - The token to convert
  * @param {string} amount - The amount of units to convert
  * @param {number} [tokenDecimals] - The number of decimals in the token
- * @returns {Promise<string>} - The converted amount in tokens
+ * @returns {Promise<string>} - The conver ted amount in tokens
  */
 export async function unitsToAmount(
   signer: Signer,
@@ -93,7 +107,7 @@ export async function unitsToAmount(
  * @param {string} token - The token to convert
  * @param {string} amount - The amount of tokens to convert
  * @param {number} [tokenDecimals] - The number of decimals of the token
- * @returns {Promise<string>} - The converted amount in units
+ * @returns {Promise<string>} - The conve rted amount in units
  */
 export async function amountToUnits(
   signer: Signer,
@@ -109,19 +123,39 @@ export async function amountToUnits(
   return amountFormatted.toString()
 }
 
-export function getEventFromTx(
-  txReceipt: TransactionReceipt,
-  eventName: string
-): EventLog | undefined {
+export function getEventFromTx(txReceipt: TransactionReceipt, eventName: string): any {
   if (!txReceipt || !txReceipt.logs) {
     return undefined
   }
 
   const foundLog = txReceipt.logs.filter((log): log is EventLog => {
-    return log instanceof EventLog && log.eventName === eventName
+    if (!(log instanceof EventLog) || log.eventName !== eventName) return false
+    const topic0 = log.topics?.[0]?.toLowerCase()
+    // Keep backward compatibility for receipts where ethers doesn't expose eventSignature.
+    if (!topic0 || !log.eventSignature) return true
+    return topic0 === ethers.id(log.eventSignature).toLowerCase()
   })[0]
+  if (foundLog) return foundLog
 
-  return foundLog
+  // Fallback for receipts created via signer.sendTransaction(txRequest).
+  for (const log of txReceipt.logs) {
+    for (const eventInterface of EVENT_INTERFACES) {
+      try {
+        const parsed = eventInterface.parseLog(log)
+        if (!parsed || parsed.name !== eventName) continue
+        return {
+          event: parsed.name,
+          eventName: parsed.name,
+          args: parsed.args,
+          topics: log.topics,
+          data: log.data
+        }
+      } catch {
+        // ignore non-matching log/interface pairs
+      }
+    }
+  }
+  return undefined
 }
 
 /**
@@ -131,7 +165,7 @@ export function getEventFromTx(
  * @param {number} gasFeeMultiplier number represinting the multiplier we apply to gas fees
  * @param {Function} functionToSend function that we need to send
  * @param {...any[]} args arguments of the function
- * @return {Promise<any>} transaction receipt
+ * @return {Promise<any>}  transaction receipt
  */
 export async function sendTx(
   estGas: bigint,

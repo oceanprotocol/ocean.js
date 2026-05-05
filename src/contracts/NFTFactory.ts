@@ -71,7 +71,7 @@ export class NftFactory extends SmartContractWithAddress {
     if (estimateGas) return <G extends false ? string : bigint>estGas
     // Invoke createToken function of the contract
     try {
-      const txReq = await this.createNFTTx(nftData)
+      const txReq = await this.createNFTTx(nftData, estGas)
       const tx = await sendPreparedTransaction(this.getSignerAccordingSdk(), txReq)
       if (!tx) {
         const e =
@@ -87,7 +87,10 @@ export class NftFactory extends SmartContractWithAddress {
     }
   }
 
-  public async createNFTTx(nftData: NftCreateData): Promise<TransactionRequest> {
+  public async createNFTTx(
+    nftData: NftCreateData,
+    estimatedGas?: bigint
+  ): Promise<TransactionRequest> {
     if (!nftData.templateIndex) nftData.templateIndex = 1
     if (!nftData.name || !nftData.symbol) {
       const { name, symbol } = generateDtName()
@@ -103,16 +106,18 @@ export class NftFactory extends SmartContractWithAddress {
     if ((await this.getNFTTemplate(nftData.templateIndex)).isActive === false) {
       throw new Error(`Template is not active`)
     }
-    const estGas = await this.contract.deployERC721Contract.estimateGas(
-      nftData.name,
-      nftData.symbol,
-      nftData.templateIndex,
-      ZERO_ADDRESS,
-      ZERO_ADDRESS,
-      nftData.tokenURI,
-      nftData.transferable,
-      nftData.owner
-    )
+    const estGas =
+      estimatedGas ??
+      (await this.contract.deployERC721Contract.estimateGas(
+        nftData.name,
+        nftData.symbol,
+        nftData.templateIndex,
+        ZERO_ADDRESS,
+        ZERO_ADDRESS,
+        nftData.tokenURI,
+        nftData.transferable,
+        nftData.owner
+      ))
     const overrides = await buildTxOverrides(
       estGas,
       this.getSignerAccordingSdk(),
@@ -248,20 +253,23 @@ export class NftFactory extends SmartContractWithAddress {
     const estGas = await this.contract.add721TokenTemplate.estimateGas(templateAddress)
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
 
-    const tx = await this.addNFTTemplateTx(address, templateAddress)
+    const tx = await this.addNFTTemplateTx(address, templateAddress, estGas)
     const trxReceipt = await sendPreparedTransaction(this.getSignerAccordingSdk(), tx)
     return <ReceiptOrEstimate<G>>trxReceipt
   }
 
   public async addNFTTemplateTx(
     address: string,
-    templateAddress: string
+    templateAddress: string,
+    estimatedGas?: bigint
   ): Promise<TransactionRequest> {
     if ((await this.getOwner()) !== address)
       throw new Error(`Caller is not Factory Owner`)
     if (templateAddress === ZERO_ADDRESS)
       throw new Error(`Template cannot be ZERO address`)
-    const estGas = await this.contract.add721TokenTemplate.estimateGas(templateAddress)
+    const estGas =
+      estimatedGas ??
+      (await this.contract.add721TokenTemplate.estimateGas(templateAddress))
     const overrides = await buildTxOverrides(
       estGas,
       this.getSignerAccordingSdk(),
@@ -300,7 +308,7 @@ export class NftFactory extends SmartContractWithAddress {
     const estGas = await this.contract.disable721TokenTemplate.estimateGas(templateIndex)
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
 
-    const tx = await this.disableNFTTemplateTx(address, templateIndex)
+    const tx = await this.disableNFTTemplateTx(address, templateIndex, estGas)
     const trxReceipt = await sendPreparedTransaction(this.getSignerAccordingSdk(), tx)
 
     return <ReceiptOrEstimate<G>>trxReceipt
@@ -308,14 +316,17 @@ export class NftFactory extends SmartContractWithAddress {
 
   public async disableNFTTemplateTx(
     address: string,
-    templateIndex: number
+    templateIndex: number,
+    estimatedGas?: bigint
   ): Promise<TransactionRequest> {
     if ((await this.getOwner()) !== address)
       throw new Error(`Caller is not Factory Owner`)
     if (templateIndex > (await this.getCurrentNFTTemplateCount()))
       throw new Error(`Template index doesnt exist`)
     if (templateIndex === 0) throw new Error(`Template index cannot be ZERO`)
-    const estGas = await this.contract.disable721TokenTemplate.estimateGas(templateIndex)
+    const estGas =
+      estimatedGas ??
+      (await this.contract.disable721TokenTemplate.estimateGas(templateIndex))
     const overrides = await buildTxOverrides(
       estGas,
       this.getSignerAccordingSdk(),
@@ -356,7 +367,7 @@ export class NftFactory extends SmartContractWithAddress {
     )
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
 
-    const tx = await this.reactivateNFTTemplateTx(address, templateIndex)
+    const tx = await this.reactivateNFTTemplateTx(address, templateIndex, estGas)
     const trxReceipt = await sendPreparedTransaction(this.getSignerAccordingSdk(), tx)
 
     return <ReceiptOrEstimate<G>>trxReceipt
@@ -364,16 +375,17 @@ export class NftFactory extends SmartContractWithAddress {
 
   public async reactivateNFTTemplateTx(
     address: string,
-    templateIndex: number
+    templateIndex: number,
+    estimatedGas?: bigint
   ): Promise<TransactionRequest> {
     if ((await this.getOwner()) !== address)
       throw new Error(`Caller is not Factory Owner`)
     if (templateIndex > (await this.getCurrentNFTTemplateCount()))
       throw new Error(`Template index doesnt exist`)
     if (templateIndex === 0) throw new Error(`Template index cannot be ZERO`)
-    const estGas = await this.contract.reactivate721TokenTemplate.estimateGas(
-      templateIndex
-    )
+    const estGas =
+      estimatedGas ??
+      (await this.contract.reactivate721TokenTemplate.estimateGas(templateIndex))
     const overrides = await buildTxOverrides(
       estGas,
       this.getSignerAccordingSdk(),
@@ -408,7 +420,7 @@ export class NftFactory extends SmartContractWithAddress {
     const estGas = await this.contract.addTokenTemplate.estimateGas(templateAddress)
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
 
-    const tx = await this.addTokenTemplateTx(address, templateAddress)
+    const tx = await this.addTokenTemplateTx(address, templateAddress, estGas)
     const trxReceipt = await sendPreparedTransaction(this.getSignerAccordingSdk(), tx)
 
     return <ReceiptOrEstimate<G>>trxReceipt
@@ -416,13 +428,15 @@ export class NftFactory extends SmartContractWithAddress {
 
   public async addTokenTemplateTx(
     address: string,
-    templateAddress: string
+    templateAddress: string,
+    estimatedGas?: bigint
   ): Promise<TransactionRequest> {
     if ((await this.getOwner()) !== address)
       throw new Error(`Caller is not Factory Owner`)
     if (templateAddress === ZERO_ADDRESS)
       throw new Error(`Template cannot be address ZERO`)
-    const estGas = await this.contract.addTokenTemplate.estimateGas(templateAddress)
+    const estGas =
+      estimatedGas ?? (await this.contract.addTokenTemplate.estimateGas(templateAddress))
     const overrides = await buildTxOverrides(
       estGas,
       this.getSignerAccordingSdk(),
@@ -460,7 +474,7 @@ export class NftFactory extends SmartContractWithAddress {
     const estGas = await this.contract.disableTokenTemplate.estimateGas(templateIndex)
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
 
-    const tx = await this.disableTokenTemplateTx(address, templateIndex)
+    const tx = await this.disableTokenTemplateTx(address, templateIndex, estGas)
     const trxReceipt = await sendPreparedTransaction(this.getSignerAccordingSdk(), tx)
 
     return <ReceiptOrEstimate<G>>trxReceipt
@@ -468,7 +482,8 @@ export class NftFactory extends SmartContractWithAddress {
 
   public async disableTokenTemplateTx(
     address: string,
-    templateIndex: number
+    templateIndex: number,
+    estimatedGas?: bigint
   ): Promise<TransactionRequest> {
     if ((await this.getOwner()) !== address)
       throw new Error(`Caller is not Factory Owner`)
@@ -477,7 +492,9 @@ export class NftFactory extends SmartContractWithAddress {
     if (templateIndex === 0) throw new Error(`Template index cannot be ZERO`)
     if ((await this.getTokenTemplate(templateIndex)).isActive === false)
       throw new Error(`Template is already disabled`)
-    const estGas = await this.contract.disableTokenTemplate.estimateGas(templateIndex)
+    const estGas =
+      estimatedGas ??
+      (await this.contract.disableTokenTemplate.estimateGas(templateIndex))
     const overrides = await buildTxOverrides(
       estGas,
       this.getSignerAccordingSdk(),
@@ -515,7 +532,7 @@ export class NftFactory extends SmartContractWithAddress {
     const estGas = await this.contract.reactivateTokenTemplate.estimateGas(templateIndex)
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
 
-    const tx = await this.reactivateTokenTemplateTx(address, templateIndex)
+    const tx = await this.reactivateTokenTemplateTx(address, templateIndex, estGas)
     const trxReceipt = await sendPreparedTransaction(this.getSignerAccordingSdk(), tx)
 
     return <ReceiptOrEstimate<G>>trxReceipt
@@ -523,7 +540,8 @@ export class NftFactory extends SmartContractWithAddress {
 
   public async reactivateTokenTemplateTx(
     address: string,
-    templateIndex: number
+    templateIndex: number,
+    estimatedGas?: bigint
   ): Promise<TransactionRequest> {
     if ((await this.getOwner()) !== address)
       throw new Error(`Caller is not Factory Owner`)
@@ -532,7 +550,9 @@ export class NftFactory extends SmartContractWithAddress {
     if (templateIndex === 0) throw new Error(`Template index cannot be ZERO`)
     if ((await this.getTokenTemplate(templateIndex)).isActive === true)
       throw new Error(`Template is already active`)
-    const estGas = await this.contract.reactivateTokenTemplate.estimateGas(templateIndex)
+    const estGas =
+      estimatedGas ??
+      (await this.contract.reactivateTokenTemplate.estimateGas(templateIndex))
     const overrides = await buildTxOverrides(
       estGas,
       this.getSignerAccordingSdk(),
@@ -567,17 +587,19 @@ export class NftFactory extends SmartContractWithAddress {
     const estGas = await this.contract.startMultipleTokenOrder.estimateGas(orders)
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
 
-    const tx = await this.startMultipleTokenOrderTx(orders)
+    const tx = await this.startMultipleTokenOrderTx(orders, estGas)
     const trxReceipt = await sendPreparedTransaction(this.getSignerAccordingSdk(), tx)
 
     return <ReceiptOrEstimate<G>>trxReceipt
   }
 
   public async startMultipleTokenOrderTx(
-    orders: TokenOrder[]
+    orders: TokenOrder[],
+    estimatedGas?: bigint
   ): Promise<TransactionRequest> {
     if (orders.length > 50) throw new Error(`Too many orders`)
-    const estGas = await this.contract.startMultipleTokenOrder.estimateGas(orders)
+    const estGas =
+      estimatedGas ?? (await this.contract.startMultipleTokenOrder.estimateGas(orders))
     const overrides = await buildTxOverrides(
       estGas,
       this.getSignerAccordingSdk(),
@@ -607,7 +629,7 @@ export class NftFactory extends SmartContractWithAddress {
     )
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
 
-    const tx = await this.createNftWithDatatokenTx(nftCreateData, dtParams)
+    const tx = await this.createNftWithDatatokenTx(nftCreateData, dtParams, estGas)
     const trxReceipt = await sendPreparedTransaction(this.getSignerAccordingSdk(), tx)
 
     return <ReceiptOrEstimate<G>>trxReceipt
@@ -615,13 +637,13 @@ export class NftFactory extends SmartContractWithAddress {
 
   public async createNftWithDatatokenTx(
     nftCreateData: NftCreateData,
-    dtParams: DatatokenCreateParams
+    dtParams: DatatokenCreateParams,
+    estimatedGas?: bigint
   ): Promise<TransactionRequest> {
     const ercCreateData = await this.getErcCreationParams(dtParams)
-    const estGas = await this.contract.createNftWithErc20.estimateGas(
-      nftCreateData,
-      ercCreateData
-    )
+    const estGas =
+      estimatedGas ??
+      (await this.contract.createNftWithErc20.estimateGas(nftCreateData, ercCreateData))
     const overrides = await buildTxOverrides(
       estGas,
       this.getSignerAccordingSdk(),
@@ -662,7 +684,8 @@ export class NftFactory extends SmartContractWithAddress {
     const tx = await this.createNftWithDatatokenWithFixedRateTx(
       nftCreateData,
       dtParams,
-      freParams
+      freParams,
+      estGas
     )
     const trxReceipt = await sendPreparedTransaction(this.getSignerAccordingSdk(), tx)
 
@@ -672,15 +695,18 @@ export class NftFactory extends SmartContractWithAddress {
   public async createNftWithDatatokenWithFixedRateTx(
     nftCreateData: NftCreateData,
     dtParams: DatatokenCreateParams,
-    freParams: FreCreationParams
+    freParams: FreCreationParams,
+    estimatedGas?: bigint
   ): Promise<TransactionRequest> {
     const ercCreateData = await this.getErcCreationParams(dtParams)
     const fixedData = await this.getFreCreationParams(freParams)
-    const estGas = await this.contract.createNftWithErc20WithFixedRate.estimateGas(
-      nftCreateData,
-      ercCreateData,
-      fixedData
-    )
+    const estGas =
+      estimatedGas ??
+      (await this.contract.createNftWithErc20WithFixedRate.estimateGas(
+        nftCreateData,
+        ercCreateData,
+        fixedData
+      ))
     const overrides = await buildTxOverrides(
       estGas,
       this.getSignerAccordingSdk(),
@@ -709,30 +735,24 @@ export class NftFactory extends SmartContractWithAddress {
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
     const ercCreateData = await this.getErcCreationParams(dtParams)
-
-    dispenserParams.maxBalance = await this.amountToUnits(
-      null,
-      dispenserParams.maxBalance,
-      18
-    )
-
-    dispenserParams.maxTokens = await this.amountToUnits(
-      null,
-      dispenserParams.maxTokens,
-      18
-    )
+    const dispenserParamsInUnits = {
+      ...dispenserParams,
+      maxBalance: await this.amountToUnits(null, dispenserParams.maxBalance, 18),
+      maxTokens: await this.amountToUnits(null, dispenserParams.maxTokens, 18)
+    }
 
     const estGas = await this.contract.createNftWithErc20WithDispenser.estimateGas(
       nftCreateData,
       ercCreateData,
-      dispenserParams
+      dispenserParamsInUnits
     )
     if (estimateGas) return <ReceiptOrEstimate<G>>estGas
 
     const tx = await this.createNftWithDatatokenWithDispenserTx(
       nftCreateData,
       dtParams,
-      dispenserParams
+      dispenserParams,
+      estGas
     )
     const trxReceipt = await sendPreparedTransaction(this.getSignerAccordingSdk(), tx)
 
@@ -742,24 +762,22 @@ export class NftFactory extends SmartContractWithAddress {
   public async createNftWithDatatokenWithDispenserTx(
     nftCreateData: NftCreateData,
     dtParams: DatatokenCreateParams,
-    dispenserParams: DispenserCreationParams
+    dispenserParams: DispenserCreationParams,
+    estimatedGas?: bigint
   ): Promise<TransactionRequest> {
     const ercCreateData = await this.getErcCreationParams(dtParams)
-    dispenserParams.maxBalance = await this.amountToUnits(
-      null,
-      dispenserParams.maxBalance,
-      18
-    )
-    dispenserParams.maxTokens = await this.amountToUnits(
-      null,
-      dispenserParams.maxTokens,
-      18
-    )
-    const estGas = await this.contract.createNftWithErc20WithDispenser.estimateGas(
-      nftCreateData,
-      ercCreateData,
-      dispenserParams
-    )
+    const dispenserParamsInUnits = {
+      ...dispenserParams,
+      maxBalance: await this.amountToUnits(null, dispenserParams.maxBalance, 18),
+      maxTokens: await this.amountToUnits(null, dispenserParams.maxTokens, 18)
+    }
+    const estGas =
+      estimatedGas ??
+      (await this.contract.createNftWithErc20WithDispenser.estimateGas(
+        nftCreateData,
+        ercCreateData,
+        dispenserParamsInUnits
+      ))
     const overrides = await buildTxOverrides(
       estGas,
       this.getSignerAccordingSdk(),
@@ -767,7 +785,7 @@ export class NftFactory extends SmartContractWithAddress {
     )
     return buildUnsignedTx(
       this.contract.createNftWithErc20WithDispenser,
-      [nftCreateData, ercCreateData, dispenserParams],
+      [nftCreateData, ercCreateData, dispenserParamsInUnits],
       overrides
     )
   }
