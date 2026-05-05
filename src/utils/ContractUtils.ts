@@ -147,6 +147,11 @@ export function getEventFromTx(txReceipt: TransactionReceipt, eventName: string)
           event: parsed.name,
           eventName: parsed.name,
           args: parsed.args,
+          transactionHash: log.transactionHash,
+          blockHash: log.blockHash,
+          blockNumber: log.blockNumber,
+          address: log.address,
+          logIndex: log.index,
           topics: log.topics,
           data: log.data
         }
