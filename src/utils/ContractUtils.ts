@@ -180,7 +180,7 @@ export async function sendTx(
   ...args: any[]
 ): Promise<TransactionResponse> {
   const overrides = await buildTxOverrides(estGas, signer, gasFeeMultiplier)
-  return sendPreparedTx(signer, functionToSend, args, overrides)
+  return sendPreparedTx(functionToSend, args, overrides)
 }
 
 export async function buildTxOverrides(
@@ -248,7 +248,6 @@ export async function buildUnsignedTx(
 }
 
 export async function sendPreparedTx(
-  signer: Signer,
   functionToSend: BaseContractMethod,
   args: any[],
   overrides: Record<string, any>

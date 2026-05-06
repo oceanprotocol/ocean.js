@@ -58,7 +58,7 @@ export class AccesslistFactory extends SmartContractWithAddress {
     user: string[],
     estimateGas?: G
   ): Promise<G extends false ? string : BigNumberish> {
-    const normalized = this.normalizeDeployAccessListInput(
+    const txReq = await this.deployAccessListContractTx(
       nameAccessList,
       symbolAccessList,
       tokenURI,
@@ -66,26 +66,9 @@ export class AccesslistFactory extends SmartContractWithAddress {
       owner,
       user
     )
-    const estGas = await this.contract.deployAccessListContract.estimateGas(
-      normalized.nameAccessList,
-      normalized.symbolAccessList,
-      normalized.transferable,
-      normalized.owner,
-      normalized.user,
-      normalized.tokenURI
-    )
-    if (estimateGas) return <G extends false ? string : BigNumberish>estGas
+    if (estimateGas) return <G extends false ? string : BigNumberish>txReq.gasLimit
     // Invoke createToken function of the contract
     try {
-      const txReq = await this.deployAccessListContractTx(
-        nameAccessList,
-        symbolAccessList,
-        tokenURI,
-        transferable,
-        owner,
-        user,
-        estGas
-      )
       const tx = await sendPreparedTransaction(this.getSignerAccordingSdk(), txReq)
       if (!tx) {
         const e = 'Tx for deploying new access list was not processed on chain.'
@@ -114,8 +97,7 @@ export class AccesslistFactory extends SmartContractWithAddress {
     tokenURI: string[],
     transferable: boolean = false,
     owner: string,
-    user: string[],
-    estimatedGas?: bigint
+    user: string[]
   ): Promise<TransactionRequest> {
     const normalized = this.normalizeDeployAccessListInput(
       nameAccessList,
@@ -125,16 +107,14 @@ export class AccesslistFactory extends SmartContractWithAddress {
       owner,
       user
     )
-    const estGas =
-      estimatedGas ??
-      (await this.contract.deployAccessListContract.estimateGas(
-        normalized.nameAccessList,
-        normalized.symbolAccessList,
-        normalized.transferable,
-        normalized.owner,
-        normalized.user,
-        normalized.tokenURI
-      ))
+    const estGas = await this.contract.deployAccessListContract.estimateGas(
+      normalized.nameAccessList,
+      normalized.symbolAccessList,
+      normalized.transferable,
+      normalized.owner,
+      normalized.user,
+      normalized.tokenURI
+    )
     const overrides = await buildTxOverrides(
       estGas,
       this.getSignerAccordingSdk(),
@@ -195,17 +175,8 @@ export class AccesslistFactory extends SmartContractWithAddress {
     templateAddress: string,
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
-    if ((await this.getOwner()) !== owner) {
-      throw new Error(`Caller is not Factory Owner`)
-    }
-
-    if (templateAddress === ZERO_ADDRESS) {
-      throw new Error(`Template address cannot be ZERO address`)
-    }
-
-    const estGas = await this.contract.changeTemplateAddress.estimateGas(templateAddress)
-    if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-    const txReq = await this.changeTemplateAddressTx(owner, templateAddress, estGas)
+    const txReq = await this.changeTemplateAddressTx(owner, templateAddress)
+    if (estimateGas) return <ReceiptOrEstimate<G>>txReq.gasLimit
     const trxReceipt = await sendPreparedTransaction(this.getSignerAccordingSdk(), txReq)
 
     return <ReceiptOrEstimate<G>>trxReceipt
@@ -213,8 +184,7 @@ export class AccesslistFactory extends SmartContractWithAddress {
 
   public async changeTemplateAddressTx(
     owner: string,
-    templateAddress: string,
-    estimatedGas?: bigint
+    templateAddress: string
   ): Promise<TransactionRequest> {
     if ((await this.getOwner()) !== owner) {
       throw new Error(`Caller is not Factory Owner`)
@@ -224,9 +194,7 @@ export class AccesslistFactory extends SmartContractWithAddress {
       throw new Error(`Template address cannot be ZERO address`)
     }
 
-    const estGas =
-      estimatedGas ??
-      (await this.contract.changeTemplateAddress.estimateGas(templateAddress))
+    const estGas = await this.contract.changeTemplateAddress.estimateGas(templateAddress)
     const overrides = await buildTxOverrides(
       estGas,
       this.getSignerAccordingSdk(),

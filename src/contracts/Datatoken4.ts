@@ -78,13 +78,8 @@ export class Datatoken4 extends Datatoken {
     consumer: string,
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
-    if (!(await this.isDatatokenDeployer(dtAddress, consumer))) {
-      throw new Error(`User is not Datatoken Deployer`)
-    }
-    const dtContract = this.getContract(dtAddress)
-    const estGas = await dtContract.setAllowListContract.estimateGas(address)
-    if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-    const tx = await this.setAllowListContractTx(dtAddress, address, consumer, estGas)
+    const tx = await this.setAllowListContractTx(dtAddress, address, consumer)
+    if (estimateGas) return <ReceiptOrEstimate<G>>tx.gasLimit
     const trxReceipt = await sendPreparedTransaction(this.getSignerAccordingSdk(), tx)
     return <ReceiptOrEstimate<G>>trxReceipt
   }
@@ -92,16 +87,14 @@ export class Datatoken4 extends Datatoken {
   public async setAllowListContractTx(
     dtAddress: string,
     address: string,
-    consumer: string,
-    estimatedGas?: bigint
+    consumer: string
   ): Promise<TransactionRequest> {
     if (!(await this.isDatatokenDeployer(dtAddress, consumer))) {
       throw new Error(`User is not Datatoken Deployer`)
     }
 
     const dtContract = this.getContract(dtAddress)
-    const estGas =
-      estimatedGas ?? (await dtContract.setAllowListContract.estimateGas(address))
+    const estGas = await dtContract.setAllowListContract.estimateGas(address)
     const overrides = await buildTxOverrides(
       estGas,
       this.getSignerAccordingSdk(),
@@ -125,13 +118,8 @@ export class Datatoken4 extends Datatoken {
     consumer: string,
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
-    if (!(await this.isDatatokenDeployer(dtAddress, consumer))) {
-      throw new Error(`User is not Datatoken Deployer`)
-    }
-    const dtContract = this.getContract(dtAddress)
-    const estGas = await dtContract.setDenyListContract.estimateGas(address)
-    if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-    const tx = await this.setDenyListContractTx(dtAddress, address, consumer, estGas)
+    const tx = await this.setDenyListContractTx(dtAddress, address, consumer)
+    if (estimateGas) return <ReceiptOrEstimate<G>>tx.gasLimit
     const trxReceipt = await sendPreparedTransaction(this.getSignerAccordingSdk(), tx)
     return <ReceiptOrEstimate<G>>trxReceipt
   }
@@ -139,16 +127,14 @@ export class Datatoken4 extends Datatoken {
   public async setDenyListContractTx(
     dtAddress: string,
     address: string,
-    consumer: string,
-    estimatedGas?: bigint
+    consumer: string
   ): Promise<TransactionRequest> {
     if (!(await this.isDatatokenDeployer(dtAddress, consumer))) {
       throw new Error(`User is not Datatoken Deployer`)
     }
 
     const dtContract = this.getContract(dtAddress)
-    const estGas =
-      estimatedGas ?? (await dtContract.setDenyListContract.estimateGas(address))
+    const estGas = await dtContract.setDenyListContract.estimateGas(address)
     const overrides = await buildTxOverrides(
       estGas,
       this.getSignerAccordingSdk(),
@@ -169,31 +155,22 @@ export class Datatoken4 extends Datatoken {
     address: string,
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
-    if (!(await this.isDatatokenDeployer(dtAddress, address))) {
-      throw new Error(`User is not Datatoken Deployer`)
-    }
-
-    const dtContract = this.getContract(dtAddress)
-    const estGas = await dtContract.setFilesObject.estimateGas(this.fileObject)
-    if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-
-    const tx = await this.setFileObjectTx(dtAddress, address, estGas)
+    const tx = await this.setFileObjectTx(dtAddress, address)
+    if (estimateGas) return <ReceiptOrEstimate<G>>tx.gasLimit
     const trxReceipt = await sendPreparedTransaction(this.getSignerAccordingSdk(), tx)
     return <ReceiptOrEstimate<G>>trxReceipt
   }
 
   public async setFileObjectTx(
     dtAddress: string,
-    address: string,
-    estimatedGas?: bigint
+    address: string
   ): Promise<TransactionRequest> {
     if (!(await this.isDatatokenDeployer(dtAddress, address))) {
       throw new Error(`User is not Datatoken Deployer`)
     }
 
     const dtContract = this.getContract(dtAddress)
-    const estGas =
-      estimatedGas ?? (await dtContract.setFilesObject.estimateGas(this.fileObject))
+    const estGas = await dtContract.setFilesObject.estimateGas(this.fileObject)
     const overrides = await buildTxOverrides(
       estGas,
       this.getSignerAccordingSdk(),

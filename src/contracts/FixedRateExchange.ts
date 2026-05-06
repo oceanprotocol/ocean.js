@@ -49,34 +49,12 @@ export class FixedRateExchange extends SmartContractWithAddress {
     consumeMarketFee: string = '0',
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
-    const exchange = await this.getExchange(exchangeId)
-    const consumeMarketFeeFormatted = await this.amountToUnits(null, consumeMarketFee, 18)
-    const dtAmountFormatted = await this.amountToUnits(
-      exchange.datatoken,
-      datatokenAmount,
-      Number(exchange.dtDecimals)
-    )
-    const maxBtFormatted = await this.amountToUnits(
-      exchange.baseToken,
-      maxBaseTokenAmount,
-      Number(exchange.btDecimals)
-    )
-
-    const estGas = await this.contract.buyDT.estimateGas(
-      exchangeId,
-      dtAmountFormatted,
-      maxBtFormatted,
-      consumeMarketAddress,
-      consumeMarketFeeFormatted
-    )
-    if (estimateGas) return <ReceiptOrEstimate<G>>estGas
     const tx = await this.buyDatatokensTx(
       exchangeId,
       datatokenAmount,
       maxBaseTokenAmount,
       consumeMarketAddress,
-      consumeMarketFee,
-      estGas
+      consumeMarketFee
     )
     const trxReceipt = await sendPreparedTransaction(this.getSignerAccordingSdk(), tx)
     return <ReceiptOrEstimate<G>>trxReceipt
@@ -87,8 +65,7 @@ export class FixedRateExchange extends SmartContractWithAddress {
     datatokenAmount: string,
     maxBaseTokenAmount: string,
     consumeMarketAddress: string = ZERO_ADDRESS,
-    consumeMarketFee: string = '0',
-    estimatedGas?: bigint
+    consumeMarketFee: string = '0'
   ): Promise<TransactionRequest> {
     const exchange = await this.getExchange(exchangeId)
     const consumeMarketFeeFormatted = await this.amountToUnits(null, consumeMarketFee, 18)
@@ -102,15 +79,13 @@ export class FixedRateExchange extends SmartContractWithAddress {
       maxBaseTokenAmount,
       Number(exchange.btDecimals)
     )
-    const estGas =
-      estimatedGas ??
-      (await this.contract.buyDT.estimateGas(
-        exchangeId,
-        dtAmountFormatted,
-        maxBtFormatted,
-        consumeMarketAddress,
-        consumeMarketFeeFormatted
-      ))
+    const estGas = await this.contract.buyDT.estimateGas(
+      exchangeId,
+      dtAmountFormatted,
+      maxBtFormatted,
+      consumeMarketAddress,
+      consumeMarketFeeFormatted
+    )
     const overrides = await buildTxOverrides(
       estGas,
       this.getSignerAccordingSdk(),
@@ -147,6 +122,24 @@ export class FixedRateExchange extends SmartContractWithAddress {
     consumeMarketFee: string = '0',
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
+    const tx = await this.sellDatatokensTx(
+      exchangeId,
+      datatokenAmount,
+      minBaseTokenAmount,
+      consumeMarketAddress,
+      consumeMarketFee
+    )
+    const trxReceipt = await sendPreparedTransaction(this.getSignerAccordingSdk(), tx)
+    return <ReceiptOrEstimate<G>>trxReceipt
+  }
+
+  public async sellDatatokensTx(
+    exchangeId: string,
+    datatokenAmount: string,
+    minBaseTokenAmount: string,
+    consumeMarketAddress: string = ZERO_ADDRESS,
+    consumeMarketFee: string = '0'
+  ): Promise<TransactionRequest> {
     const exchange = await this.getExchange(exchangeId)
     const consumeMarketFeeFormatted = await this.amountToUnits(null, consumeMarketFee, 18)
     const dtAmountFormatted = await this.amountToUnits(
@@ -166,48 +159,6 @@ export class FixedRateExchange extends SmartContractWithAddress {
       consumeMarketAddress,
       consumeMarketFeeFormatted
     )
-    if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-    const tx = await this.sellDatatokensTx(
-      exchangeId,
-      datatokenAmount,
-      minBaseTokenAmount,
-      consumeMarketAddress,
-      consumeMarketFee,
-      estGas
-    )
-    const trxReceipt = await sendPreparedTransaction(this.getSignerAccordingSdk(), tx)
-    return <ReceiptOrEstimate<G>>trxReceipt
-  }
-
-  public async sellDatatokensTx(
-    exchangeId: string,
-    datatokenAmount: string,
-    minBaseTokenAmount: string,
-    consumeMarketAddress: string = ZERO_ADDRESS,
-    consumeMarketFee: string = '0',
-    estimatedGas?: bigint
-  ): Promise<TransactionRequest> {
-    const exchange = await this.getExchange(exchangeId)
-    const consumeMarketFeeFormatted = await this.amountToUnits(null, consumeMarketFee, 18)
-    const dtAmountFormatted = await this.amountToUnits(
-      exchange.datatoken,
-      datatokenAmount,
-      Number(exchange.dtDecimals)
-    )
-    const minBtFormatted = await this.amountToUnits(
-      exchange.baseToken,
-      minBaseTokenAmount,
-      Number(exchange.btDecimals)
-    )
-    const estGas =
-      estimatedGas ??
-      (await this.contract.sellDT.estimateGas(
-        exchangeId,
-        dtAmountFormatted,
-        minBtFormatted,
-        consumeMarketAddress,
-        consumeMarketFeeFormatted
-      ))
     const overrides = await buildTxOverrides(
       estGas,
       this.getSignerAccordingSdk(),
@@ -247,10 +198,8 @@ export class FixedRateExchange extends SmartContractWithAddress {
     newRate: string,
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
-    const newRateUnits = await this.amountToUnits(null, newRate, 18)
-    const estGas = await this.contract.setRate.estimateGas(exchangeId, newRateUnits)
-    if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-    const tx = await this.setRateTx(exchangeId, newRate, estGas)
+    const tx = await this.setRateTx(exchangeId, newRate)
+    if (estimateGas) return <ReceiptOrEstimate<G>>tx.gasLimit
     const trxReceipt = await sendPreparedTransaction(this.getSignerAccordingSdk(), tx)
 
     return <ReceiptOrEstimate<G>>trxReceipt
@@ -258,12 +207,10 @@ export class FixedRateExchange extends SmartContractWithAddress {
 
   public async setRateTx(
     exchangeId: string,
-    newRate: string,
-    estimatedGas?: bigint
+    newRate: string
   ): Promise<TransactionRequest> {
     const newRateUnits = await this.amountToUnits(null, newRate, 18)
-    const estGas =
-      estimatedGas ?? (await this.contract.setRate.estimateGas(exchangeId, newRateUnits))
+    const estGas = await this.contract.setRate.estimateGas(exchangeId, newRateUnits)
     const overrides = await buildTxOverrides(
       estGas,
       this.getSignerAccordingSdk(),
@@ -284,24 +231,20 @@ export class FixedRateExchange extends SmartContractWithAddress {
     newAllowedSwapper: string,
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
-    const estGas = await this.contract.setAllowedSwapper.estimateGas(
-      exchangeId,
-      newAllowedSwapper
-    )
-    if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-    const tx = await this.setAllowedSwapperTx(exchangeId, newAllowedSwapper, estGas)
+    const tx = await this.setAllowedSwapperTx(exchangeId, newAllowedSwapper)
+    if (estimateGas) return <ReceiptOrEstimate<G>>tx.gasLimit
     const trxReceipt = await sendPreparedTransaction(this.getSignerAccordingSdk(), tx)
     return <ReceiptOrEstimate<G>>trxReceipt
   }
 
   public async setAllowedSwapperTx(
     exchangeId: string,
-    newAllowedSwapper: string,
-    estimatedGas?: bigint
+    newAllowedSwapper: string
   ): Promise<TransactionRequest> {
-    const estGas =
-      estimatedGas ??
-      (await this.contract.setAllowedSwapper.estimateGas(exchangeId, newAllowedSwapper))
+    const estGas = await this.contract.setAllowedSwapper.estimateGas(
+      exchangeId,
+      newAllowedSwapper
+    )
     const overrides = await buildTxOverrides(
       estGas,
       this.getSignerAccordingSdk(),
@@ -327,22 +270,17 @@ export class FixedRateExchange extends SmartContractWithAddress {
     const exchange = await this.getExchange(exchangeId)
     if (!exchange) return null
     if (exchange.active === true) return null
-    const estGas = await this.contract.toggleExchangeState.estimateGas(exchangeId)
-    if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-    const tx = await this.activateTx(exchangeId, estGas)
+    const tx = await this.activateTx(exchangeId)
+    if (estimateGas) return <ReceiptOrEstimate<G>>tx.gasLimit
     const trxReceipt = await sendPreparedTransaction(this.getSignerAccordingSdk(), tx)
     return <ReceiptOrEstimate<G>>trxReceipt
   }
 
-  public async activateTx(
-    exchangeId: string,
-    estimatedGas?: bigint
-  ): Promise<TransactionRequest> {
+  public async activateTx(exchangeId: string): Promise<TransactionRequest> {
     const exchange = await this.getExchange(exchangeId)
     if (!exchange) throw new Error('Exchange not found')
     if (exchange.active === true) throw new Error('Exchange already active')
-    const estGas =
-      estimatedGas ?? (await this.contract.toggleExchangeState.estimateGas(exchangeId))
+    const estGas = await this.contract.toggleExchangeState.estimateGas(exchangeId)
     const overrides = await buildTxOverrides(
       estGas,
       this.getSignerAccordingSdk(),
@@ -365,22 +303,17 @@ export class FixedRateExchange extends SmartContractWithAddress {
     if (!exchange) return null
     if (exchange.active === false) return null
 
-    const estGas = await this.contract.toggleExchangeState.estimateGas(exchangeId)
-    if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-    const tx = await this.deactivateTx(exchangeId, estGas)
+    const tx = await this.deactivateTx(exchangeId)
+    if (estimateGas) return <ReceiptOrEstimate<G>>tx.gasLimit
     const trxReceipt = await sendPreparedTransaction(this.getSignerAccordingSdk(), tx)
     return <ReceiptOrEstimate<G>>trxReceipt
   }
 
-  public async deactivateTx(
-    exchangeId: string,
-    estimatedGas?: bigint
-  ): Promise<TransactionRequest> {
+  public async deactivateTx(exchangeId: string): Promise<TransactionRequest> {
     const exchange = await this.getExchange(exchangeId)
     if (!exchange) throw new Error('Exchange not found')
     if (exchange.active === false) throw new Error('Exchange already inactive')
-    const estGas =
-      estimatedGas ?? (await this.contract.toggleExchangeState.estimateGas(exchangeId))
+    const estGas = await this.contract.toggleExchangeState.estimateGas(exchangeId)
     const overrides = await buildTxOverrides(
       estGas,
       this.getSignerAccordingSdk(),
@@ -617,22 +550,17 @@ export class FixedRateExchange extends SmartContractWithAddress {
     if (!exchange) return null
     if (exchange.withMint === true) return null
 
-    const estGas = await this.contract.toggleMintState.estimateGas(exchangeId, true)
-    if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-    const tx = await this.activateMintTx(exchangeId, estGas)
+    const tx = await this.activateMintTx(exchangeId)
+    if (estimateGas) return <ReceiptOrEstimate<G>>tx.gasLimit
     const trxReceipt = await sendPreparedTransaction(this.getSignerAccordingSdk(), tx)
     return <ReceiptOrEstimate<G>>trxReceipt
   }
 
-  public async activateMintTx(
-    exchangeId: string,
-    estimatedGas?: bigint
-  ): Promise<TransactionRequest> {
+  public async activateMintTx(exchangeId: string): Promise<TransactionRequest> {
     const exchange = await this.getExchange(exchangeId)
     if (!exchange) throw new Error('Exchange not found')
     if (exchange.withMint === true) throw new Error('Mint already active')
-    const estGas =
-      estimatedGas ?? (await this.contract.toggleMintState.estimateGas(exchangeId, true))
+    const estGas = await this.contract.toggleMintState.estimateGas(exchangeId, true)
     const overrides = await buildTxOverrides(
       estGas,
       this.getSignerAccordingSdk(),
@@ -655,22 +583,17 @@ export class FixedRateExchange extends SmartContractWithAddress {
     if (!exchange) return null
     if (exchange.withMint === false) return null
 
-    const estGas = await this.contract.toggleMintState.estimateGas(exchangeId, false)
-    if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-    const tx = await this.deactivateMintTx(exchangeId, estGas)
+    const tx = await this.deactivateMintTx(exchangeId)
+    if (estimateGas) return <ReceiptOrEstimate<G>>tx.gasLimit
     const trxReceipt = await sendPreparedTransaction(this.getSignerAccordingSdk(), tx)
     return <ReceiptOrEstimate<G>>trxReceipt
   }
 
-  public async deactivateMintTx(
-    exchangeId: string,
-    estimatedGas?: bigint
-  ): Promise<TransactionRequest> {
+  public async deactivateMintTx(exchangeId: string): Promise<TransactionRequest> {
     const exchange = await this.getExchange(exchangeId)
     if (!exchange) throw new Error('Exchange not found')
     if (exchange.withMint === false) throw new Error('Mint already inactive')
-    const estGas =
-      estimatedGas ?? (await this.contract.toggleMintState.estimateGas(exchangeId, false))
+    const estGas = await this.contract.toggleMintState.estimateGas(exchangeId, false)
     const overrides = await buildTxOverrides(
       estGas,
       this.getSignerAccordingSdk(),
@@ -691,27 +614,15 @@ export class FixedRateExchange extends SmartContractWithAddress {
     amount: string,
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
-    const exchange = await this.getExchange(exchangeId)
-    if (!exchange) return null
-
-    const fixedrate: FixedPriceExchange = await this.contract.getExchange(exchangeId)
-    const amountWei = await this.amountToUnits(
-      fixedrate.baseToken,
-      amount,
-      Number(fixedrate.btDecimals)
-    )
-
-    const estGas = await this.contract.collectBT.estimateGas(exchangeId, amountWei)
-    if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-    const tx = await this.collectBasetokensTx(exchangeId, amount, estGas)
+    const tx = await this.collectBasetokensTx(exchangeId, amount)
+    if (estimateGas) return <ReceiptOrEstimate<G>>tx.gasLimit
     const trxReceipt = await sendPreparedTransaction(this.getSignerAccordingSdk(), tx)
     return <ReceiptOrEstimate<G>>trxReceipt
   }
 
   public async collectBasetokensTx(
     exchangeId: string,
-    amount: string,
-    estimatedGas?: bigint
+    amount: string
   ): Promise<TransactionRequest> {
     const exchange = await this.getExchange(exchangeId)
     if (!exchange) throw new Error('Exchange not found')
@@ -721,8 +632,7 @@ export class FixedRateExchange extends SmartContractWithAddress {
       amount,
       Number(fixedrate.btDecimals)
     )
-    const estGas =
-      estimatedGas ?? (await this.contract.collectBT.estimateGas(exchangeId, amountWei))
+    const estGas = await this.contract.collectBT.estimateGas(exchangeId, amountWei)
     const overrides = await buildTxOverrides(
       estGas,
       this.getSignerAccordingSdk(),
@@ -743,27 +653,15 @@ export class FixedRateExchange extends SmartContractWithAddress {
     amount: string,
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
-    const exchange = await this.getExchange(exchangeId)
-    if (!exchange) return null
-
-    const fixedrate: FixedPriceExchange = await this.contract.getExchange(exchangeId)
-    const amountWei = await this.amountToUnits(
-      fixedrate.datatoken,
-      amount,
-      Number(fixedrate.dtDecimals)
-    )
-
-    const estGas = await this.contract.collectDT.estimateGas(exchangeId, amountWei)
-    if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-    const tx = await this.collectDatatokensTx(exchangeId, amount, estGas)
+    const tx = await this.collectDatatokensTx(exchangeId, amount)
+    if (estimateGas) return <ReceiptOrEstimate<G>>tx.gasLimit
     const trxReceipt = await sendPreparedTransaction(this.getSignerAccordingSdk(), tx)
     return <ReceiptOrEstimate<G>>trxReceipt
   }
 
   public async collectDatatokensTx(
     exchangeId: string,
-    amount: string,
-    estimatedGas?: bigint
+    amount: string
   ): Promise<TransactionRequest> {
     const exchange = await this.getExchange(exchangeId)
     if (!exchange) throw new Error('Exchange not found')
@@ -773,8 +671,7 @@ export class FixedRateExchange extends SmartContractWithAddress {
       amount,
       Number(fixedrate.dtDecimals)
     )
-    const estGas =
-      estimatedGas ?? (await this.contract.collectDT.estimateGas(exchangeId, amountWei))
+    const estGas = await this.contract.collectDT.estimateGas(exchangeId, amountWei)
     const overrides = await buildTxOverrides(
       estGas,
       this.getSignerAccordingSdk(),
@@ -796,21 +693,14 @@ export class FixedRateExchange extends SmartContractWithAddress {
     const exchange = await this.getExchange(exchangeId)
     if (!exchange) return null
 
-    const estGas = await this.contract.collectMarketFee.estimateGas(exchangeId)
-    if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-    const tx = await this.collectMarketFeeTx(exchangeId, estGas)
+    const tx = await this.collectMarketFeeTx(exchangeId)
+    if (estimateGas) return <ReceiptOrEstimate<G>>tx.gasLimit
     const trxReceipt = await sendPreparedTransaction(this.getSignerAccordingSdk(), tx)
     return <ReceiptOrEstimate<G>>trxReceipt
   }
 
-  public async collectMarketFeeTx(
-    exchangeId: string,
-    estimatedGas?: bigint
-  ): Promise<TransactionRequest> {
-    const exchange = await this.getExchange(exchangeId)
-    if (!exchange) throw new Error('Exchange not found')
-    const estGas =
-      estimatedGas ?? (await this.contract.collectMarketFee.estimateGas(exchangeId))
+  public async collectMarketFeeTx(exchangeId: string): Promise<TransactionRequest> {
+    const estGas = await this.contract.collectMarketFee.estimateGas(exchangeId)
     const overrides = await buildTxOverrides(
       estGas,
       this.getSignerAccordingSdk(),
@@ -829,24 +719,16 @@ export class FixedRateExchange extends SmartContractWithAddress {
     exchangeId: string,
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
-    const exchange = await this.getExchange(exchangeId)
-    if (!exchange) return null
-
-    const estGas = await this.contract.collectOceanFee.estimateGas(exchangeId)
-    if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-    const tx = await this.collectOceanFeeTx(exchangeId, estGas)
+    const tx = await this.collectOceanFeeTx(exchangeId)
+    if (estimateGas) return <ReceiptOrEstimate<G>>tx.gasLimit
     const trxReceipt = await sendPreparedTransaction(this.getSignerAccordingSdk(), tx)
     return <ReceiptOrEstimate<G>>trxReceipt
   }
 
-  public async collectOceanFeeTx(
-    exchangeId: string,
-    estimatedGas?: bigint
-  ): Promise<TransactionRequest> {
+  public async collectOceanFeeTx(exchangeId: string): Promise<TransactionRequest> {
     const exchange = await this.getExchange(exchangeId)
     if (!exchange) throw new Error('Exchange not found')
-    const estGas =
-      estimatedGas ?? (await this.contract.collectOceanFee.estimateGas(exchangeId))
+    const estGas = await this.contract.collectOceanFee.estimateGas(exchangeId)
     const overrides = await buildTxOverrides(
       estGas,
       this.getSignerAccordingSdk(),
@@ -895,26 +777,21 @@ export class FixedRateExchange extends SmartContractWithAddress {
     newMarketFee: string,
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
-    const newMarketFeeUnits = await this.amountToUnits(null, newMarketFee, 18)
-    const estGas = await this.contract.updateMarketFee.estimateGas(
-      exchangeId,
-      newMarketFeeUnits
-    )
-    if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-    const tx = await this.updateMarketFeeTx(exchangeId, newMarketFee, estGas)
+    const tx = await this.updateMarketFeeTx(exchangeId, newMarketFee)
+    if (estimateGas) return <ReceiptOrEstimate<G>>tx.gasLimit
     const trxReceipt = await sendPreparedTransaction(this.getSignerAccordingSdk(), tx)
     return <ReceiptOrEstimate<G>>trxReceipt
   }
 
   public async updateMarketFeeTx(
     exchangeId: string,
-    newMarketFee: string,
-    estimatedGas?: bigint
+    newMarketFee: string
   ): Promise<TransactionRequest> {
     const newMarketFeeUnits = await this.amountToUnits(null, newMarketFee, 18)
-    const estGas =
-      estimatedGas ??
-      (await this.contract.updateMarketFee.estimateGas(exchangeId, newMarketFeeUnits))
+    const estGas = await this.contract.updateMarketFee.estimateGas(
+      exchangeId,
+      newMarketFeeUnits
+    )
     const overrides = await buildTxOverrides(
       estGas,
       this.getSignerAccordingSdk(),
@@ -939,31 +816,20 @@ export class FixedRateExchange extends SmartContractWithAddress {
     newMarketFeeCollector: string,
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
-    const estGas = await this.contract.updateMarketFeeCollector.estimateGas(
-      exchangeId,
-      newMarketFeeCollector
-    )
-    if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-    const tx = await this.updateMarketFeeCollectorTx(
-      exchangeId,
-      newMarketFeeCollector,
-      estGas
-    )
+    const tx = await this.updateMarketFeeCollectorTx(exchangeId, newMarketFeeCollector)
+    if (estimateGas) return <ReceiptOrEstimate<G>>tx.gasLimit
     const trxReceipt = await sendPreparedTransaction(this.getSignerAccordingSdk(), tx)
     return <ReceiptOrEstimate<G>>trxReceipt
   }
 
   public async updateMarketFeeCollectorTx(
     exchangeId: string,
-    newMarketFeeCollector: string,
-    estimatedGas?: bigint
+    newMarketFeeCollector: string
   ): Promise<TransactionRequest> {
-    const estGas =
-      estimatedGas ??
-      (await this.contract.updateMarketFeeCollector.estimateGas(
-        exchangeId,
-        newMarketFeeCollector
-      ))
+    const estGas = await this.contract.updateMarketFeeCollector.estimateGas(
+      exchangeId,
+      newMarketFeeCollector
+    )
     const overrides = await buildTxOverrides(
       estGas,
       this.getSignerAccordingSdk(),

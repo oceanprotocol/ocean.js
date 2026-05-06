@@ -28,19 +28,14 @@ export class Router extends SmartContractWithAddress {
     operations: Operation[],
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
-    const estGas = await this.contract.buyDTBatch.estimateGas(operations)
-    if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-    const tx = await this.buyDatatokenBatchTx(operations, estGas)
+    const tx = await this.buyDatatokenBatchTx(operations)
+    if (estimateGas) return <ReceiptOrEstimate<G>>tx.gasLimit
     const trxReceipt = await sendPreparedTransaction(this.getSignerAccordingSdk(), tx)
     return <ReceiptOrEstimate<G>>trxReceipt
   }
 
-  public async buyDatatokenBatchTx(
-    operations: Operation[],
-    estimatedGas?: bigint
-  ): Promise<TransactionRequest> {
-    const estGas =
-      estimatedGas ?? (await this.contract.buyDTBatch.estimateGas(operations))
+  public async buyDatatokenBatchTx(operations: Operation[]): Promise<TransactionRequest> {
+    const estGas = await this.contract.buyDTBatch.estimateGas(operations)
     const overrides = await buildTxOverrides(
       estGas,
       this.getSignerAccordingSdk(),
@@ -96,14 +91,8 @@ export class Router extends SmartContractWithAddress {
     tokenAddress: string,
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
-    if ((await this.getOwner()) !== address) {
-      throw new Error(`Caller is not Router Owner`)
-    }
-
-    const estGas = await this.contract.addApprovedToken.estimateGas(tokenAddress)
-    if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-
-    const tx = await this.addApprovedTokenTx(address, tokenAddress, estGas)
+    const tx = await this.addApprovedTokenTx(address, tokenAddress)
+    if (estimateGas) return <ReceiptOrEstimate<G>>tx.gasLimit
     const trxReceipt = await sendPreparedTransaction(this.getSignerAccordingSdk(), tx)
 
     return <ReceiptOrEstimate<G>>trxReceipt
@@ -111,14 +100,12 @@ export class Router extends SmartContractWithAddress {
 
   public async addApprovedTokenTx(
     address: string,
-    tokenAddress: string,
-    estimatedGas?: bigint
+    tokenAddress: string
   ): Promise<TransactionRequest> {
     if ((await this.getOwner()) !== address) {
       throw new Error(`Caller is not Router Owner`)
     }
-    const estGas =
-      estimatedGas ?? (await this.contract.addApprovedToken.estimateGas(tokenAddress))
+    const estGas = await this.contract.addApprovedToken.estimateGas(tokenAddress)
     const overrides = await buildTxOverrides(
       estGas,
       this.getSignerAccordingSdk(),
@@ -139,28 +126,20 @@ export class Router extends SmartContractWithAddress {
     tokenAddress: string,
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
-    if ((await this.getOwner()) !== address) {
-      throw new Error(`Caller is not Router Owner`)
-    }
-
-    const estGas = await this.contract.removeApprovedToken.estimateGas(tokenAddress)
-    if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-
-    const tx = await this.removeApprovedTokenTx(address, tokenAddress, estGas)
+    const tx = await this.removeApprovedTokenTx(address, tokenAddress)
+    if (estimateGas) return <ReceiptOrEstimate<G>>tx.gasLimit
     const trxReceipt = await sendPreparedTransaction(this.getSignerAccordingSdk(), tx)
     return <ReceiptOrEstimate<G>>trxReceipt
   }
 
   public async removeApprovedTokenTx(
     address: string,
-    tokenAddress: string,
-    estimatedGas?: bigint
+    tokenAddress: string
   ): Promise<TransactionRequest> {
     if ((await this.getOwner()) !== address) {
       throw new Error(`Caller is not Router Owner`)
     }
-    const estGas =
-      estimatedGas ?? (await this.contract.removeApprovedToken.estimateGas(tokenAddress))
+    const estGas = await this.contract.removeApprovedToken.estimateGas(tokenAddress)
     const overrides = await buildTxOverrides(
       estGas,
       this.getSignerAccordingSdk(),
@@ -181,14 +160,8 @@ export class Router extends SmartContractWithAddress {
     tokenAddress: string,
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
-    if ((await this.getOwner()) !== address) {
-      throw new Error(`Caller is not Router Owner`)
-    }
-
-    const estGas = await this.contract.addFixedRateContract.estimateGas(tokenAddress)
-    if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-
-    const tx = await this.addFixedRateContractTx(address, tokenAddress, estGas)
+    const tx = await this.addFixedRateContractTx(address, tokenAddress)
+    if (estimateGas) return <ReceiptOrEstimate<G>>tx.gasLimit
     const trxReceipt = await sendPreparedTransaction(this.getSignerAccordingSdk(), tx)
 
     return <ReceiptOrEstimate<G>>trxReceipt
@@ -196,14 +169,12 @@ export class Router extends SmartContractWithAddress {
 
   public async addFixedRateContractTx(
     address: string,
-    tokenAddress: string,
-    estimatedGas?: bigint
+    tokenAddress: string
   ): Promise<TransactionRequest> {
     if ((await this.getOwner()) !== address) {
       throw new Error(`Caller is not Router Owner`)
     }
-    const estGas =
-      estimatedGas ?? (await this.contract.addFixedRateContract.estimateGas(tokenAddress))
+    const estGas = await this.contract.addFixedRateContract.estimateGas(tokenAddress)
     const overrides = await buildTxOverrides(
       estGas,
       this.getSignerAccordingSdk(),
@@ -224,14 +195,8 @@ export class Router extends SmartContractWithAddress {
     tokenAddress: string,
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
-    if ((await this.getOwner()) !== address) {
-      throw new Error(`Caller is not Router Owner`)
-    }
-
-    const estGas = await this.contract.removeFixedRateContract.estimateGas(tokenAddress)
-    if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-
-    const tx = await this.removeFixedRateContractTx(address, tokenAddress, estGas)
+    const tx = await this.removeFixedRateContractTx(address, tokenAddress)
+    if (estimateGas) return <ReceiptOrEstimate<G>>tx.gasLimit
     const trxReceipt = await sendPreparedTransaction(this.getSignerAccordingSdk(), tx)
 
     return <ReceiptOrEstimate<G>>trxReceipt
@@ -239,15 +204,12 @@ export class Router extends SmartContractWithAddress {
 
   public async removeFixedRateContractTx(
     address: string,
-    tokenAddress: string,
-    estimatedGas?: bigint
+    tokenAddress: string
   ): Promise<TransactionRequest> {
     if ((await this.getOwner()) !== address) {
       throw new Error(`Caller is not Router Owner`)
     }
-    const estGas =
-      estimatedGas ??
-      (await this.contract.removeFixedRateContract.estimateGas(tokenAddress))
+    const estGas = await this.contract.removeFixedRateContract.estimateGas(tokenAddress)
     const overrides = await buildTxOverrides(
       estGas,
       this.getSignerAccordingSdk(),
@@ -272,28 +234,20 @@ export class Router extends SmartContractWithAddress {
     tokenAddress: string,
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
-    if ((await this.getOwner()) !== address) {
-      throw new Error(`Caller is not Router Owner`)
-    }
-
-    const estGas = await this.contract.addDispenserContract.estimateGas(tokenAddress)
-    if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-
-    const tx = await this.addDispenserContractTx(address, tokenAddress, estGas)
+    const tx = await this.addDispenserContractTx(address, tokenAddress)
+    if (estimateGas) return <ReceiptOrEstimate<G>>tx.gasLimit
     const trxReceipt = await sendPreparedTransaction(this.getSignerAccordingSdk(), tx)
     return <ReceiptOrEstimate<G>>trxReceipt
   }
 
   public async addDispenserContractTx(
     address: string,
-    tokenAddress: string,
-    estimatedGas?: bigint
+    tokenAddress: string
   ): Promise<TransactionRequest> {
     if ((await this.getOwner()) !== address) {
       throw new Error(`Caller is not Router Owner`)
     }
-    const estGas =
-      estimatedGas ?? (await this.contract.addDispenserContract.estimateGas(tokenAddress))
+    const estGas = await this.contract.addDispenserContract.estimateGas(tokenAddress)
     const overrides = await buildTxOverrides(
       estGas,
       this.getSignerAccordingSdk(),
@@ -314,29 +268,20 @@ export class Router extends SmartContractWithAddress {
     tokenAddress: string,
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
-    if ((await this.getOwner()) !== address) {
-      throw new Error(`Caller is not Router Owner`)
-    }
-
-    const estGas = await this.contract.removeDispenserContract.estimateGas(tokenAddress)
-    if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-
-    const tx = await this.removeDispenserContractTx(address, tokenAddress, estGas)
+    const tx = await this.removeDispenserContractTx(address, tokenAddress)
+    if (estimateGas) return <ReceiptOrEstimate<G>>tx.gasLimit
     const trxReceipt = await sendPreparedTransaction(this.getSignerAccordingSdk(), tx)
     return <ReceiptOrEstimate<G>>trxReceipt
   }
 
   public async removeDispenserContractTx(
     address: string,
-    tokenAddress: string,
-    estimatedGas?: bigint
+    tokenAddress: string
   ): Promise<TransactionRequest> {
     if ((await this.getOwner()) !== address) {
       throw new Error(`Caller is not Router Owner`)
     }
-    const estGas =
-      estimatedGas ??
-      (await this.contract.removeDispenserContract.estimateGas(tokenAddress))
+    const estGas = await this.contract.removeDispenserContract.estimateGas(tokenAddress)
     const overrides = await buildTxOverrides(
       estGas,
       this.getSignerAccordingSdk(),
@@ -383,26 +328,14 @@ export class Router extends SmartContractWithAddress {
     newProviderFee: number,
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
-    if ((await this.getOwner()) !== address) {
-      throw new Error(`Caller is not Router Owner`)
-    }
-
-    const estGas = await this.contract.updateOPCFee.estimateGas(
-      newSwapOceanFee,
-      newSwapNonOceanFee,
-      newConsumeFee,
-      newProviderFee
-    )
-    if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-
     const tx = await this.updateOPCFeeTx(
       address,
       newSwapOceanFee,
       newSwapNonOceanFee,
       newConsumeFee,
-      newProviderFee,
-      estGas
+      newProviderFee
     )
+    if (estimateGas) return <ReceiptOrEstimate<G>>tx.gasLimit
     const trxReceipt = await sendPreparedTransaction(this.getSignerAccordingSdk(), tx)
 
     return <ReceiptOrEstimate<G>>trxReceipt
@@ -413,20 +346,17 @@ export class Router extends SmartContractWithAddress {
     newSwapOceanFee: number,
     newSwapNonOceanFee: number,
     newConsumeFee: number,
-    newProviderFee: number,
-    estimatedGas?: bigint
+    newProviderFee: number
   ): Promise<TransactionRequest> {
     if ((await this.getOwner()) !== address) {
       throw new Error(`Caller is not Router Owner`)
     }
-    const estGas =
-      estimatedGas ??
-      (await this.contract.updateOPCFee.estimateGas(
-        newSwapOceanFee,
-        newSwapNonOceanFee,
-        newConsumeFee,
-        newProviderFee
-      ))
+    const estGas = await this.contract.updateOPCFee.estimateGas(
+      newSwapOceanFee,
+      newSwapNonOceanFee,
+      newConsumeFee,
+      newProviderFee
+    )
     const overrides = await buildTxOverrides(
       estGas,
       this.getSignerAccordingSdk(),

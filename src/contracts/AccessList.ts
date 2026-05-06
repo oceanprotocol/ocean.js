@@ -99,19 +99,13 @@ export class AccessListContract extends SmartContractWithAddress {
     tokenUri: string,
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
-    const estGas = await this.contract.mint.estimateGas(user, tokenUri)
-    if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-    const tx = await this.mintTx(user, tokenUri, estGas)
+    const tx = await this.mintTx(user, tokenUri)
     const trxReceipt = await sendPreparedTransaction(this.getSignerAccordingSdk(), tx)
     return <ReceiptOrEstimate<G>>trxReceipt
   }
 
-  public async mintTx(
-    user: string,
-    tokenUri: string,
-    estimatedGas?: bigint
-  ): Promise<TransactionRequest> {
-    const estGas = estimatedGas ?? (await this.contract.mint.estimateGas(user, tokenUri))
+  public async mintTx(user: string, tokenUri: string): Promise<TransactionRequest> {
+    const estGas = await this.contract.mint.estimateGas(user, tokenUri)
     const overrides = await buildTxOverrides(
       estGas,
       this.getSignerAccordingSdk(),
@@ -132,20 +126,17 @@ export class AccessListContract extends SmartContractWithAddress {
     tokenUris: Array<string>,
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
-    const estGas = await this.contract.batchMint.estimateGas(users, tokenUris)
-    if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-    const tx = await this.batchMintTx(users, tokenUris, estGas)
+    const tx = await this.batchMintTx(users, tokenUris)
+    if (estimateGas) return <ReceiptOrEstimate<G>>tx.gasLimit
     const trxReceipt = await sendPreparedTransaction(this.getSignerAccordingSdk(), tx)
     return <ReceiptOrEstimate<G>>trxReceipt
   }
 
   public async batchMintTx(
     users: Array<string>,
-    tokenUris: Array<string>,
-    estimatedGas?: bigint
+    tokenUris: Array<string>
   ): Promise<TransactionRequest> {
-    const estGas =
-      estimatedGas ?? (await this.contract.batchMint.estimateGas(users, tokenUris))
+    const estGas = await this.contract.batchMint.estimateGas(users, tokenUris)
     const overrides = await buildTxOverrides(
       estGas,
       this.getSignerAccordingSdk(),
@@ -164,18 +155,14 @@ export class AccessListContract extends SmartContractWithAddress {
     tokenId: number,
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
-    const estGas = await this.contract.burn.estimateGas(tokenId)
-    if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-    const tx = await this.burnTx(tokenId, estGas)
+    const tx = await this.burnTx(tokenId)
+    if (estimateGas) return <ReceiptOrEstimate<G>>tx.gasLimit
     const trxReceipt = await sendPreparedTransaction(this.getSignerAccordingSdk(), tx)
     return <ReceiptOrEstimate<G>>trxReceipt
   }
 
-  public async burnTx(
-    tokenId: number,
-    estimatedGas?: bigint
-  ): Promise<TransactionRequest> {
-    const estGas = estimatedGas ?? (await this.contract.burn.estimateGas(tokenId))
+  public async burnTx(tokenId: number): Promise<TransactionRequest> {
+    const estGas = await this.contract.burn.estimateGas(tokenId)
     const overrides = await buildTxOverrides(
       estGas,
       this.getSignerAccordingSdk(),
@@ -194,19 +181,14 @@ export class AccessListContract extends SmartContractWithAddress {
     newOwner: string,
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
-    const estGas = await this.contract.transferOwnership.estimateGas(newOwner)
-    if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-    const tx = await this.transferOwnershipTx(newOwner, estGas)
+    const tx = await this.transferOwnershipTx(newOwner)
+    if (estimateGas) return <ReceiptOrEstimate<G>>tx.gasLimit
     const trxReceipt = await sendPreparedTransaction(this.getSignerAccordingSdk(), tx)
     return <ReceiptOrEstimate<G>>trxReceipt
   }
 
-  public async transferOwnershipTx(
-    newOwner: string,
-    estimatedGas?: bigint
-  ): Promise<TransactionRequest> {
-    const estGas =
-      estimatedGas ?? (await this.contract.transferOwnership.estimateGas(newOwner))
+  public async transferOwnershipTx(newOwner: string): Promise<TransactionRequest> {
+    const estGas = await this.contract.transferOwnership.estimateGas(newOwner)
     const overrides = await buildTxOverrides(
       estGas,
       this.getSignerAccordingSdk(),
@@ -223,15 +205,14 @@ export class AccessListContract extends SmartContractWithAddress {
   public async renounceOwnership<G extends boolean = false>(
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
-    const estGas = await this.contract.renounceOwnership.estimateGas()
-    if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-    const tx = await this.renounceOwnershipTx(estGas)
+    const tx = await this.renounceOwnershipTx()
+    if (estimateGas) return <ReceiptOrEstimate<G>>tx.gasLimit
     const trxReceipt = await sendPreparedTransaction(this.getSignerAccordingSdk(), tx)
     return <ReceiptOrEstimate<G>>trxReceipt
   }
 
-  public async renounceOwnershipTx(estimatedGas?: bigint): Promise<TransactionRequest> {
-    const estGas = estimatedGas ?? (await this.contract.renounceOwnership.estimateGas())
+  public async renounceOwnershipTx(): Promise<TransactionRequest> {
+    const estGas = await this.contract.renounceOwnership.estimateGas()
     const overrides = await buildTxOverrides(
       estGas,
       this.getSignerAccordingSdk(),
