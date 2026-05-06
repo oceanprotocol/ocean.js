@@ -1,9 +1,14 @@
 import Decimal from 'decimal.js'
+import { TransactionRequest } from 'ethers'
 import DispenserAbi from '@oceanprotocol/contracts/artifacts/contracts/pools/dispenser/Dispenser.sol/Dispenser.json'
 import { Datatoken } from './Datatoken.js'
 import { SmartContractWithAddress } from './SmartContractWithAddress.js'
 import { DispenserToken, ReceiptOrEstimate, AbiItem } from '../@types/index.js'
-import { sendTx } from '../utils/ContractUtils.js'
+import {
+  buildTxOverrides,
+  buildUnsignedTx,
+  sendPreparedTransaction
+} from '../utils/ContractUtils.js'
 
 export class Dispenser extends SmartContractWithAddress {
   getDefaultAbi() {
@@ -50,28 +55,44 @@ export class Dispenser extends SmartContractWithAddress {
     allowedSwapper: string,
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
+    const tx = await this.createTx(
+      dtAddress,
+      address,
+      maxTokens,
+      maxBalance,
+      allowedSwapper
+    )
+    if (estimateGas) return <ReceiptOrEstimate<G>>tx.gasLimit
+    const trxReceipt = await sendPreparedTransaction(this.getSignerAccordingSdk(), tx)
+    return <ReceiptOrEstimate<G>>trxReceipt
+  }
+
+  public async createTx(
+    dtAddress: string,
+    address: string,
+    maxTokens: string,
+    maxBalance: string,
+    allowedSwapper: string
+  ): Promise<TransactionRequest> {
+    const maxTokensUnits = await this.amountToUnits(null, maxTokens, 18)
+    const maxBalanceUnits = await this.amountToUnits(null, maxBalance, 18)
     const estGas = await this.contract.create.estimateGas(
       dtAddress,
-      this.amountToUnits(null, maxTokens, 18),
-      this.amountToUnits(null, maxBalance, 18),
+      maxTokensUnits,
+      maxBalanceUnits,
       address,
       allowedSwapper
     )
-    if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-    // Call createFixedRate contract method
-    const trxReceipt = await sendTx(
+    const overrides = await buildTxOverrides(
       estGas,
       this.getSignerAccordingSdk(),
-      this.config?.gasFeeMultiplier,
-      this.contract.create,
-      dtAddress,
-      this.amountToUnits(null, maxTokens, 18),
-      this.amountToUnits(null, maxBalance, 18),
-      address,
-      allowedSwapper
+      this.config?.gasFeeMultiplier
     )
-
-    return <ReceiptOrEstimate<G>>trxReceipt
+    return buildUnsignedTx(
+      this.contract.create,
+      [dtAddress, maxTokensUnits, maxBalanceUnits, address, allowedSwapper],
+      overrides
+    )
   }
 
   /**
@@ -88,23 +109,34 @@ export class Dispenser extends SmartContractWithAddress {
     maxBalance: string,
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
+    const tx = await this.activateTx(dtAddress, maxTokens, maxBalance)
+    if (estimateGas) return <ReceiptOrEstimate<G>>tx.gasLimit
+    const trxReceipt = await sendPreparedTransaction(this.getSignerAccordingSdk(), tx)
+    return <ReceiptOrEstimate<G>>trxReceipt
+  }
+
+  public async activateTx(
+    dtAddress: string,
+    maxTokens: string,
+    maxBalance: string
+  ): Promise<TransactionRequest> {
+    const maxTokensUnits = await this.amountToUnits(null, maxTokens, 18)
+    const maxBalanceUnits = await this.amountToUnits(null, maxBalance, 18)
     const estGas = await this.contract.activate.estimateGas(
       dtAddress,
-      this.amountToUnits(null, maxTokens, 18),
-      this.amountToUnits(null, maxBalance, 18)
+      maxTokensUnits,
+      maxBalanceUnits
     )
-    if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-    const trxReceipt = await sendTx(
+    const overrides = await buildTxOverrides(
       estGas,
       this.getSignerAccordingSdk(),
-      this.config?.gasFeeMultiplier,
-      this.contract.activate,
-      dtAddress,
-      this.amountToUnits(null, maxTokens, 18),
-      this.amountToUnits(null, maxBalance, 18)
+      this.config?.gasFeeMultiplier
     )
-
-    return <ReceiptOrEstimate<G>>trxReceipt
+    return buildUnsignedTx(
+      this.contract.activate,
+      [dtAddress, maxTokensUnits, maxBalanceUnits],
+      overrides
+    )
   }
 
   /**
@@ -117,17 +149,20 @@ export class Dispenser extends SmartContractWithAddress {
     dtAddress: string,
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
+    const tx = await this.deactivateTx(dtAddress)
+    if (estimateGas) return <ReceiptOrEstimate<G>>tx.gasLimit
+    const trxReceipt = await sendPreparedTransaction(this.getSignerAccordingSdk(), tx)
+    return <ReceiptOrEstimate<G>>trxReceipt
+  }
+
+  public async deactivateTx(dtAddress: string): Promise<TransactionRequest> {
     const estGas = await this.contract.deactivate.estimateGas(dtAddress)
-    if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-    const trxReceipt = await sendTx(
+    const overrides = await buildTxOverrides(
       estGas,
       this.getSignerAccordingSdk(),
-      this.config?.gasFeeMultiplier,
-      this.contract.deactivate,
-      dtAddress
+      this.config?.gasFeeMultiplier
     )
-
-    return <ReceiptOrEstimate<G>>trxReceipt
+    return buildUnsignedTx(this.contract.deactivate, [dtAddress], overrides)
   }
 
   /**
@@ -142,20 +177,30 @@ export class Dispenser extends SmartContractWithAddress {
     newAllowedSwapper: string,
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
+    const tx = await this.setAllowedSwapperTx(dtAddress, newAllowedSwapper)
+    if (estimateGas) return <ReceiptOrEstimate<G>>tx.gasLimit
+    const trxReceipt = await sendPreparedTransaction(this.getSignerAccordingSdk(), tx)
+    return <ReceiptOrEstimate<G>>trxReceipt
+  }
+
+  public async setAllowedSwapperTx(
+    dtAddress: string,
+    newAllowedSwapper: string
+  ): Promise<TransactionRequest> {
     const estGas = await this.contract.setAllowedSwapper.estimateGas(
       dtAddress,
       newAllowedSwapper
     )
-    if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-    const trxReceipt = await sendTx(
+    const overrides = await buildTxOverrides(
       estGas,
       this.getSignerAccordingSdk(),
-      this.config?.gasFeeMultiplier,
-      this.contract.setAllowedSwapper,
-      dtAddress,
-      newAllowedSwapper
+      this.config?.gasFeeMultiplier
     )
-    return <ReceiptOrEstimate<G>>trxReceipt
+    return buildUnsignedTx(
+      this.contract.setAllowedSwapper,
+      [dtAddress, newAllowedSwapper],
+      overrides
+    )
   }
 
   /**
@@ -174,22 +219,33 @@ export class Dispenser extends SmartContractWithAddress {
     destination: string,
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
+    const tx = await this.dispenseTx(dtAddress, amount, destination)
+    if (estimateGas) return <ReceiptOrEstimate<G>>tx.gasLimit
+    const trxReceipt = await sendPreparedTransaction(this.getSignerAccordingSdk(), tx)
+    return <ReceiptOrEstimate<G>>trxReceipt
+  }
+
+  public async dispenseTx(
+    dtAddress: string,
+    amount: string = '1',
+    destination: string
+  ): Promise<TransactionRequest> {
+    const amountUnits = await this.amountToUnits(null, amount, 18)
     const estGas = await this.contract.dispense.estimateGas(
       dtAddress,
-      this.amountToUnits(null, amount, 18),
+      amountUnits,
       destination
     )
-    if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-    const trxReceipt = await sendTx(
+    const overrides = await buildTxOverrides(
       estGas,
       this.getSignerAccordingSdk(),
-      this.config?.gasFeeMultiplier,
-      this.contract.dispense,
-      dtAddress,
-      this.amountToUnits(null, amount, 18),
-      destination
+      this.config?.gasFeeMultiplier
     )
-    return <ReceiptOrEstimate<G>>trxReceipt
+    return buildUnsignedTx(
+      this.contract.dispense,
+      [dtAddress, amountUnits, destination],
+      overrides
+    )
   }
 
   /**
@@ -202,17 +258,20 @@ export class Dispenser extends SmartContractWithAddress {
     dtAddress: string,
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
+    const tx = await this.ownerWithdrawTx(dtAddress)
+    if (estimateGas) return <ReceiptOrEstimate<G>>tx.gasLimit
+    const trxReceipt = await sendPreparedTransaction(this.getSignerAccordingSdk(), tx)
+    return <ReceiptOrEstimate<G>>trxReceipt
+  }
+
+  public async ownerWithdrawTx(dtAddress: string): Promise<TransactionRequest> {
     const estGas = await this.contract.ownerWithdraw.estimateGas(dtAddress)
-    if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-    const trxReceipt = await sendTx(
+    const overrides = await buildTxOverrides(
       estGas,
       this.getSignerAccordingSdk(),
-      this.config?.gasFeeMultiplier,
-      this.contract.ownerWithdraw,
-      dtAddress
+      this.config?.gasFeeMultiplier
     )
-
-    return <ReceiptOrEstimate<G>>trxReceipt
+    return buildUnsignedTx(this.contract.ownerWithdraw, [dtAddress], overrides)
   }
 
   /**

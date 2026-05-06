@@ -1,3 +1,4 @@
+export * from './Assets.js'
 export * from './Contracts.js'
 export * from './File.js'
 export * from './FileInfo.js'

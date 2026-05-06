@@ -10,7 +10,7 @@ import { approve, approveWei } from './TokenUtils.js'
 import { Dispenser } from '../contracts/Dispenser.js'
 import { FixedRateExchange } from '../contracts/FixedRateExchange.js'
 import { FreOrderParams } from '../@types/FixedPrice.js'
-import { Asset, DDOManager } from '@oceanprotocol/ddo-js'
+import { DDOManager, type Asset } from '@oceanprotocol/ddo-js'
 
 /**
  * Orders an asset based on the specified pricing schema and configuration.

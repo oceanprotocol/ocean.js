@@ -266,8 +266,8 @@ describe('Fixed Rate unit test', () => {
       )
       expect(
         new BigNumber(await amountToUnits(user1, addresses.MockDAI, daiBalanceBefore))
-          .minus(new BigNumber(SwappedEvent.args.baseTokenSwappedAmount))
-          .toString()
+          .minus(new BigNumber(SwappedEvent.args.baseTokenSwappedAmount.toString()))
+          .toFixed(0)
       ).to.equal(
         await amountToUnits(
           user1,
@@ -309,8 +309,8 @@ describe('Fixed Rate unit test', () => {
       expect(await balance(user1, dtAddress, await user1.getAddress())).to.equal('0.0')
       expect(
         new BigNumber(await amountToUnits(user1, addresses.MockDAI, daiBalanceBefore))
-          .plus(new BigNumber(SwappedEvent.args.baseTokenSwappedAmount))
-          .toString()
+          .plus(new BigNumber(SwappedEvent.args.baseTokenSwappedAmount.toString()))
+          .toFixed(0)
       ).to.equal(
         await amountToUnits(
           user1,
@@ -446,7 +446,7 @@ describe('Fixed Rate unit test', () => {
           await amountToUnits(user1, addresses.MockDAI, daiBalanceBeforeCollect)
         )
           .plus(new BigNumber(await amountToUnits(user1, addresses.MockDAI, '0.021')))
-          .toString()
+          .toFixed(0)
       )
     })
 
@@ -667,8 +667,8 @@ describe('Fixed Rate unit test', () => {
       )
       expect(
         new BigNumber(await amountToUnits(user1, addresses.MockUSDC, usdcBalanceBefore))
-          .minus(new BigNumber(SwappedEvent.args.baseTokenSwappedAmount))
-          .toString()
+          .minus(new BigNumber(SwappedEvent.args.baseTokenSwappedAmount.toString()))
+          .toFixed(0)
       ).to.equal(
         await amountToUnits(
           user1,
@@ -710,8 +710,8 @@ describe('Fixed Rate unit test', () => {
       expect(await balance(user1, dtAddress, await user1.getAddress())).to.equal('0.0')
       expect(
         new BigNumber(await amountToUnits(user1, addresses.MockUSDC, usdcBalanceBefore))
-          .plus(new BigNumber(SwappedEvent.args.baseTokenSwappedAmount))
-          .toString()
+          .plus(new BigNumber(SwappedEvent.args.baseTokenSwappedAmount.toString()))
+          .toFixed(0)
       ).to.equal(
         await amountToUnits(
           user1,

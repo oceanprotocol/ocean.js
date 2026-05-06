@@ -1,8 +1,13 @@
-import { hexlify, Signer, toUtf8Bytes } from 'ethers'
+import { TransactionRequest, hexlify, Signer, toUtf8Bytes } from 'ethers'
 import Decimal from 'decimal.js'
 import ERC20Template from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC20Template.sol/ERC20Template.json'
 import ERC20TemplateEnterprise from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC20TemplateEnterprise.sol/ERC20TemplateEnterprise.json'
-import { amountToUnits, sendTx } from '../utils/ContractUtils.js'
+import {
+  amountToUnits,
+  buildTxOverrides,
+  buildUnsignedTx,
+  sendPreparedTransaction
+} from '../utils/ContractUtils.js'
 import { ZERO_ADDRESS } from '../utils/Constants.js'
 import {
   AbiItem,
@@ -62,22 +67,26 @@ export class Datatoken extends SmartContract {
     amount: string,
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
-    const dtContract = this.getContract(dtAddress)
-    const estGas = await dtContract.approve.estimateGas(
-      spender,
-      amountToUnits(null, null, amount, 18)
-    )
-    if (estimateGas) return <ReceiptOrEstimate<G>>estGas
+    const tx = await this.approveTx(dtAddress, spender, amount)
+    if (estimateGas) return <ReceiptOrEstimate<G>>tx.gasLimit
+    const trxReceipt = await sendPreparedTransaction(this.getSignerAccordingSdk(), tx)
+    return <ReceiptOrEstimate<G>>trxReceipt
+  }
 
-    const trxReceipt = await sendTx(
+  public async approveTx(
+    dtAddress: string,
+    spender: string,
+    amount: string
+  ): Promise<TransactionRequest> {
+    const dtContract = this.getContract(dtAddress)
+    const amountUnits = await amountToUnits(null, null, amount, 18)
+    const estGas = await dtContract.approve.estimateGas(spender, amountUnits)
+    const overrides = await buildTxOverrides(
       estGas,
       this.getSignerAccordingSdk(),
-      this.config?.gasFeeMultiplier,
-      dtContract.approve,
-      spender,
-      amountToUnits(null, null, amount, 18)
+      this.config?.gasFeeMultiplier
     )
-    return <ReceiptOrEstimate<G>>trxReceipt
+    return buildUnsignedTx(dtContract.approve, [spender, amountUnits], overrides)
   }
 
   /**
@@ -94,55 +103,51 @@ export class Datatoken extends SmartContract {
     fixedRateParams: FreCreationParams,
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
+    const tx = await this.createFixedRateTx(dtAddress, address, fixedRateParams)
+    if (estimateGas) return <ReceiptOrEstimate<G>>tx.gasLimit
+    const trxReceipt = await sendPreparedTransaction(this.getSignerAccordingSdk(), tx)
+    return <ReceiptOrEstimate<G>>trxReceipt
+  }
+
+  public async createFixedRateTx(
+    dtAddress: string,
+    address: string,
+    fixedRateParams: FreCreationParams
+  ): Promise<TransactionRequest> {
     const dtContract = this.getContract(dtAddress)
     if (!(await this.isDatatokenDeployer(dtAddress, address))) {
       throw new Error(`User is not Datatoken Deployer`)
     }
-    if (!fixedRateParams.allowedConsumer) fixedRateParams.allowedConsumer = ZERO_ADDRESS
-
-    const withMint = fixedRateParams.withMint === false ? 0 : 1
-
-    // should check DatatokenDeployer role using NFT level ..
-
+    const safeAllowedConsumer = fixedRateParams.allowedConsumer || ZERO_ADDRESS
+    const safeWithMint = fixedRateParams.withMint === false ? 0 : 1
+    const addressArgs = [
+      fixedRateParams.baseTokenAddress,
+      fixedRateParams.owner,
+      fixedRateParams.marketFeeCollector,
+      safeAllowedConsumer
+    ]
+    const uintArgs = [
+      fixedRateParams.baseTokenDecimals,
+      fixedRateParams.datatokenDecimals,
+      fixedRateParams.fixedRate,
+      fixedRateParams.marketFee,
+      safeWithMint
+    ]
     const estGas = await dtContract.createFixedRate.estimateGas(
       fixedRateParams.fixedRateAddress,
-      [
-        fixedRateParams.baseTokenAddress,
-        fixedRateParams.owner,
-        fixedRateParams.marketFeeCollector,
-        fixedRateParams.allowedConsumer
-      ],
-      [
-        fixedRateParams.baseTokenDecimals,
-        fixedRateParams.datatokenDecimals,
-        fixedRateParams.fixedRate,
-        fixedRateParams.marketFee,
-        withMint
-      ]
+      addressArgs,
+      uintArgs
     )
-    if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-
-    const trxReceipt = await sendTx(
+    const overrides = await buildTxOverrides(
       estGas,
       this.getSignerAccordingSdk(),
-      this.config?.gasFeeMultiplier,
-      dtContract.createFixedRate,
-      fixedRateParams.fixedRateAddress,
-      [
-        fixedRateParams.baseTokenAddress,
-        fixedRateParams.owner,
-        fixedRateParams.marketFeeCollector,
-        fixedRateParams.allowedConsumer
-      ],
-      [
-        fixedRateParams.baseTokenDecimals,
-        fixedRateParams.datatokenDecimals,
-        fixedRateParams.fixedRate,
-        fixedRateParams.marketFee,
-        withMint
-      ]
+      this.config?.gasFeeMultiplier
     )
-    return <ReceiptOrEstimate<G>>trxReceipt
+    return buildUnsignedTx(
+      dtContract.createFixedRate,
+      [fixedRateParams.fixedRateAddress, addressArgs, uintArgs],
+      overrides
+    )
   }
 
   /**
@@ -161,38 +166,52 @@ export class Datatoken extends SmartContract {
     dispenserParams: DispenserParams,
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
+    const tx = await this.createDispenserTx(
+      dtAddress,
+      address,
+      dispenserAddress,
+      dispenserParams
+    )
+    if (estimateGas) return <ReceiptOrEstimate<G>>tx.gasLimit
+    const trxReceipt = await sendPreparedTransaction(this.getSignerAccordingSdk(), tx)
+    return <ReceiptOrEstimate<G>>trxReceipt
+  }
+
+  public async createDispenserTx(
+    dtAddress: string,
+    address: string,
+    dispenserAddress: string,
+    dispenserParams: DispenserParams
+  ): Promise<TransactionRequest> {
     if (!(await this.isDatatokenDeployer(dtAddress, address))) {
       throw new Error(`User is not Datatoken Deployer`)
     }
-
     const dtContract = this.getContract(dtAddress)
-    if (!dispenserParams.allowedSwapper) dispenserParams.allowedSwapper = ZERO_ADDRESS
-
-    dispenserParams.withMint = dispenserParams.withMint !== false
-
-    // should check DatatokenDeployer role using NFT level ..
-
+    const safeAllowedSwapper = dispenserParams.allowedSwapper || ZERO_ADDRESS
+    const safeWithMint = dispenserParams.withMint !== false
     const estGas = await dtContract.createDispenser.estimateGas(
       dispenserAddress,
       dispenserParams.maxTokens,
       dispenserParams.maxBalance,
-      dispenserParams.withMint,
-      dispenserParams.allowedSwapper
+      safeWithMint,
+      safeAllowedSwapper
     )
-    if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-
-    const trxReceipt = await sendTx(
+    const overrides = await buildTxOverrides(
       estGas,
       this.getSignerAccordingSdk(),
-      this.config?.gasFeeMultiplier,
-      dtContract.createDispenser,
-      dispenserAddress,
-      dispenserParams.maxTokens,
-      dispenserParams.maxBalance,
-      dispenserParams.withMint,
-      dispenserParams.allowedSwapper
+      this.config?.gasFeeMultiplier
     )
-    return <ReceiptOrEstimate<G>>trxReceipt
+    return buildUnsignedTx(
+      dtContract.createDispenser,
+      [
+        dispenserAddress,
+        dispenserParams.maxTokens,
+        dispenserParams.maxBalance,
+        safeWithMint,
+        safeAllowedSwapper
+      ],
+      overrides
+    )
   }
 
   /**
@@ -211,31 +230,35 @@ export class Datatoken extends SmartContract {
     toAddress?: string,
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
+    const tx = await this.mintTx(dtAddress, address, amount, toAddress)
+    if (estimateGas) return <ReceiptOrEstimate<G>>tx.gasLimit
+    const trxReceipt = await sendPreparedTransaction(this.getSignerAccordingSdk(), tx)
+    return <ReceiptOrEstimate<G>>trxReceipt
+  }
+
+  public async mintTx(
+    dtAddress: string,
+    address: string,
+    amount: string,
+    toAddress?: string
+  ): Promise<TransactionRequest> {
     const dtContract = this.getContract(dtAddress)
     if ((await this.getPermissions(dtAddress, address)).minter !== true) {
       throw new Error(`Caller is not Minter`)
     }
-
     const capAvailble = await this.getCap(dtAddress)
-    if (new Decimal(capAvailble).gte(amount)) {
-      const estGas = await dtContract.mint.estimateGas(
-        toAddress || address,
-        amountToUnits(null, null, amount, 18)
-      )
-      if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-
-      const trxReceipt = await sendTx(
-        estGas,
-        this.getSignerAccordingSdk(),
-        this.config?.gasFeeMultiplier,
-        dtContract.mint,
-        toAddress || address,
-        amountToUnits(null, null, amount, 18)
-      )
-      return <ReceiptOrEstimate<G>>trxReceipt
-    } else {
+    if (!new Decimal(capAvailble).gte(amount)) {
       throw new Error(`Mint amount exceeds cap available`)
     }
+    const amountUnits = await amountToUnits(null, null, amount, 18)
+    const recipient = toAddress || address
+    const estGas = await dtContract.mint.estimateGas(recipient, amountUnits)
+    const overrides = await buildTxOverrides(
+      estGas,
+      this.getSignerAccordingSdk(),
+      this.config?.gasFeeMultiplier
+    )
+    return buildUnsignedTx(dtContract.mint, [recipient, amountUnits], overrides)
   }
 
   /**
@@ -253,23 +276,28 @@ export class Datatoken extends SmartContract {
     minter: string,
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
-    const dtContract = this.getContract(dtAddress)
+    const tx = await this.addMinterTx(dtAddress, address, minter)
+    if (estimateGas) return <ReceiptOrEstimate<G>>tx.gasLimit
+    const trxReceipt = await sendPreparedTransaction(this.getSignerAccordingSdk(), tx)
+    return <ReceiptOrEstimate<G>>trxReceipt
+  }
+
+  public async addMinterTx(
+    dtAddress: string,
+    address: string,
+    minter: string
+  ): Promise<TransactionRequest> {
     if ((await this.isDatatokenDeployer(dtAddress, address)) !== true) {
       throw new Error(`Caller is not DatatokenDeployer`)
     }
-    // Estimate gas cost for addMinter method
+    const dtContract = this.getContract(dtAddress)
     const estGas = await dtContract.addMinter.estimateGas(minter)
-    if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-
-    const trxReceipt = await sendTx(
+    const overrides = await buildTxOverrides(
       estGas,
       this.getSignerAccordingSdk(),
-      this.config?.gasFeeMultiplier,
-      dtContract.addMinter,
-      minter
+      this.config?.gasFeeMultiplier
     )
-
-    return <ReceiptOrEstimate<G>>trxReceipt
+    return buildUnsignedTx(dtContract.addMinter, [minter], overrides)
   }
 
   /**
@@ -287,23 +315,28 @@ export class Datatoken extends SmartContract {
     minter: string,
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
-    const dtContract = this.getContract(dtAddress)
+    const tx = await this.removeMinterTx(dtAddress, address, minter)
+    if (estimateGas) return <ReceiptOrEstimate<G>>tx.gasLimit
+    const trxReceipt = await sendPreparedTransaction(this.getSignerAccordingSdk(), tx)
+    return <ReceiptOrEstimate<G>>trxReceipt
+  }
+
+  public async removeMinterTx(
+    dtAddress: string,
+    address: string,
+    minter: string
+  ): Promise<TransactionRequest> {
     if ((await this.isDatatokenDeployer(dtAddress, address)) !== true) {
       throw new Error(`Caller is not DatatokenDeployer`)
     }
-
+    const dtContract = this.getContract(dtAddress)
     const estGas = await dtContract.removeMinter.estimateGas(minter)
-    if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-
-    const trxReceipt = await sendTx(
+    const overrides = await buildTxOverrides(
       estGas,
       this.getSignerAccordingSdk(),
-      this.config?.gasFeeMultiplier,
-      dtContract.removeMinter,
-      minter
+      this.config?.gasFeeMultiplier
     )
-
-    return <ReceiptOrEstimate<G>>trxReceipt
+    return buildUnsignedTx(dtContract.removeMinter, [minter], overrides)
   }
 
   /**
@@ -321,23 +354,28 @@ export class Datatoken extends SmartContract {
     paymentManager: string,
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
-    const dtContract = this.getContract(dtAddress)
+    const tx = await this.addPaymentManagerTx(dtAddress, address, paymentManager)
+    if (estimateGas) return <ReceiptOrEstimate<G>>tx.gasLimit
+    const trxReceipt = await sendPreparedTransaction(this.getSignerAccordingSdk(), tx)
+    return <ReceiptOrEstimate<G>>trxReceipt
+  }
+
+  public async addPaymentManagerTx(
+    dtAddress: string,
+    address: string,
+    paymentManager: string
+  ): Promise<TransactionRequest> {
     if ((await this.isDatatokenDeployer(dtAddress, address)) !== true) {
       throw new Error(`Caller is not DatatokenDeployer`)
     }
-
+    const dtContract = this.getContract(dtAddress)
     const estGas = await dtContract.addPaymentManager.estimateGas(paymentManager)
-    if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-
-    const trxReceipt = await sendTx(
+    const overrides = await buildTxOverrides(
       estGas,
       this.getSignerAccordingSdk(),
-      this.config?.gasFeeMultiplier,
-      dtContract.addPaymentManager,
-      paymentManager
+      this.config?.gasFeeMultiplier
     )
-
-    return <ReceiptOrEstimate<G>>trxReceipt
+    return buildUnsignedTx(dtContract.addPaymentManager, [paymentManager], overrides)
   }
 
   /**
@@ -355,23 +393,28 @@ export class Datatoken extends SmartContract {
     paymentManager: string,
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
-    const dtContract = this.getContract(dtAddress)
+    const tx = await this.removePaymentManagerTx(dtAddress, address, paymentManager)
+    if (estimateGas) return <ReceiptOrEstimate<G>>tx.gasLimit
+    const trxReceipt = await sendPreparedTransaction(this.getSignerAccordingSdk(), tx)
+    return <ReceiptOrEstimate<G>>trxReceipt
+  }
+
+  public async removePaymentManagerTx(
+    dtAddress: string,
+    address: string,
+    paymentManager: string
+  ): Promise<TransactionRequest> {
     if ((await this.isDatatokenDeployer(dtAddress, address)) !== true) {
       throw new Error(`Caller is not DatatokenDeployer`)
     }
-
+    const dtContract = this.getContract(dtAddress)
     const estGas = await dtContract.removePaymentManager.estimateGas(paymentManager)
-    if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-
-    const trxReceipt = await sendTx(
+    const overrides = await buildTxOverrides(
       estGas,
       this.getSignerAccordingSdk(),
-      this.config?.gasFeeMultiplier,
-      dtContract.removePaymentManager,
-      paymentManager
+      this.config?.gasFeeMultiplier
     )
-
-    return <ReceiptOrEstimate<G>>trxReceipt
+    return buildUnsignedTx(dtContract.removePaymentManager, [paymentManager], overrides)
   }
 
   /**
@@ -390,6 +433,17 @@ export class Datatoken extends SmartContract {
     paymentCollector: string,
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
+    const tx = await this.setPaymentCollectorTx(dtAddress, address, paymentCollector)
+    if (estimateGas) return <ReceiptOrEstimate<G>>tx.gasLimit
+    const trxReceipt = await sendPreparedTransaction(this.getSignerAccordingSdk(), tx)
+    return <ReceiptOrEstimate<G>>trxReceipt
+  }
+
+  public async setPaymentCollectorTx(
+    dtAddress: string,
+    address: string,
+    paymentCollector: string
+  ): Promise<TransactionRequest> {
     const dtContract = this.getContract(dtAddress)
     const isPaymentManager = (await this.getPermissions(dtAddress, address))
       .paymentManager
@@ -401,18 +455,13 @@ export class Datatoken extends SmartContract {
     if (!isPaymentManager && !isNftOwner && !isDatatokenDeployer) {
       throw new Error(`Caller is not Fee Manager, owner or Datatoken Deployer`)
     }
-
     const estGas = await dtContract.setPaymentCollector.estimateGas(paymentCollector)
-    if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-
-    const trxReceipt = await sendTx(
+    const overrides = await buildTxOverrides(
       estGas,
       this.getSignerAccordingSdk(),
-      this.config?.gasFeeMultiplier,
-      dtContract.setPaymentCollector,
-      paymentCollector
+      this.config?.gasFeeMultiplier
     )
-    return <ReceiptOrEstimate<G>>trxReceipt
+    return buildUnsignedTx(dtContract.setPaymentCollector, [paymentCollector], overrides)
   }
 
   /**
@@ -462,19 +511,25 @@ export class Datatoken extends SmartContract {
     amount: string,
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
+    const tx = await this.transferWeiTx(dtAddress, toAddress, amount)
+    if (estimateGas) return <ReceiptOrEstimate<G>>tx.gasLimit
+    const trxReceipt = await sendPreparedTransaction(this.getSignerAccordingSdk(), tx)
+    return <ReceiptOrEstimate<G>>trxReceipt
+  }
+
+  public async transferWeiTx(
+    dtAddress: string,
+    toAddress: string,
+    amount: string
+  ): Promise<TransactionRequest> {
     const dtContract = this.getContract(dtAddress)
     const estGas = await dtContract.transfer.estimateGas(toAddress, amount)
-    if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-
-    const trxReceipt = await sendTx(
+    const overrides = await buildTxOverrides(
       estGas,
       this.getSignerAccordingSdk(),
-      this.config?.gasFeeMultiplier,
-      dtContract.transfer,
-      toAddress,
-      amount
+      this.config?.gasFeeMultiplier
     )
-    return <ReceiptOrEstimate<G>>trxReceipt
+    return buildUnsignedTx(dtContract.transfer, [toAddress, amount], overrides)
   }
 
   /**
@@ -495,33 +550,47 @@ export class Datatoken extends SmartContract {
     consumeMarketFee?: ConsumeMarketFee,
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
-    const dtContract = this.getContract(dtAddress, this.abi)
-    if (!consumeMarketFee) {
-      consumeMarketFee = {
-        consumeMarketFeeAddress: ZERO_ADDRESS,
-        consumeMarketFeeToken: ZERO_ADDRESS,
-        consumeMarketFeeAmount: '0'
-      }
-    }
+    const tx = await this.startOrderTx(
+      dtAddress,
+      consumer,
+      serviceIndex,
+      providerFees,
+      consumeMarketFee
+    )
+    if (estimateGas) return <ReceiptOrEstimate<G>>tx.gasLimit
+    const trxReceipt = await sendPreparedTransaction(this.getSignerAccordingSdk(), tx)
+    return <ReceiptOrEstimate<G>>trxReceipt
+  }
 
+  public async startOrderTx(
+    dtAddress: string,
+    consumer: string,
+    serviceIndex: number,
+    providerFees: ProviderFees,
+    consumeMarketFee?: ConsumeMarketFee
+  ): Promise<TransactionRequest> {
+    const dtContract = this.getContract(dtAddress, this.abi)
+    const safeConsumeMarketFee = consumeMarketFee || {
+      consumeMarketFeeAddress: ZERO_ADDRESS,
+      consumeMarketFeeToken: ZERO_ADDRESS,
+      consumeMarketFeeAmount: '0'
+    }
     const estGas = await dtContract.startOrder.estimateGas(
       consumer,
       serviceIndex,
       providerFees,
-      consumeMarketFee
+      safeConsumeMarketFee
     )
-    if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-    const trxReceipt = await sendTx(
+    const overrides = await buildTxOverrides(
       estGas,
       this.getSignerAccordingSdk(),
-      this.config?.gasFeeMultiplier,
-      dtContract.startOrder,
-      consumer,
-      serviceIndex,
-      providerFees,
-      consumeMarketFee
+      this.config?.gasFeeMultiplier
     )
-    return <ReceiptOrEstimate<G>>trxReceipt
+    return buildUnsignedTx(
+      dtContract.startOrder,
+      [consumer, serviceIndex, providerFees, safeConsumeMarketFee],
+      overrides
+    )
   }
 
   /**
@@ -540,19 +609,25 @@ export class Datatoken extends SmartContract {
     providerFees: ProviderFees,
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
-    const dtContract = this.getContract(dtAddress)
+    const tx = await this.reuseOrderTx(dtAddress, orderTxId, providerFees)
+    if (estimateGas) return <ReceiptOrEstimate<G>>tx.gasLimit
+    const trxReceipt = await sendPreparedTransaction(this.getSignerAccordingSdk(), tx)
+    return <ReceiptOrEstimate<G>>trxReceipt
+  }
 
+  public async reuseOrderTx(
+    dtAddress: string,
+    orderTxId: string,
+    providerFees: ProviderFees
+  ): Promise<TransactionRequest> {
+    const dtContract = this.getContract(dtAddress)
     const estGas = await dtContract.reuseOrder.estimateGas(orderTxId, providerFees)
-    if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-    const trxReceipt = await sendTx(
+    const overrides = await buildTxOverrides(
       estGas,
       this.getSignerAccordingSdk(),
-      this.config?.gasFeeMultiplier,
-      dtContract.reuseOrder,
-      orderTxId,
-      providerFees
+      this.config?.gasFeeMultiplier
     )
-    return <ReceiptOrEstimate<G>>trxReceipt
+    return buildUnsignedTx(dtContract.reuseOrder, [orderTxId, providerFees], overrides)
   }
 
   /**
@@ -569,24 +644,33 @@ export class Datatoken extends SmartContract {
     freParams: FreOrderParams,
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
+    const tx = await this.buyFromFreAndOrderTx(dtAddress, orderParams, freParams)
+    if (estimateGas) return <ReceiptOrEstimate<G>>tx.gasLimit
+    const trxReceipt = await sendPreparedTransaction(this.getSignerAccordingSdk(), tx)
+    return <ReceiptOrEstimate<G>>trxReceipt
+  }
+
+  public async buyFromFreAndOrderTx(
+    dtAddress: string,
+    orderParams: OrderParams,
+    freParams: FreOrderParams
+  ): Promise<TransactionRequest> {
     const dtContract = this.getContract(dtAddress, this.abiEnterprise)
-
     const freContractParams = await this.getFreOrderParams(freParams)
-
     const estGas = await dtContract.buyFromFreAndOrder.estimateGas(
       orderParams,
       freContractParams
     )
-    if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-    const trxReceipt = await sendTx(
+    const overrides = await buildTxOverrides(
       estGas,
       this.getSignerAccordingSdk(),
-      this.config?.gasFeeMultiplier,
-      dtContract.buyFromFreAndOrder,
-      orderParams,
-      freContractParams
+      this.config?.gasFeeMultiplier
     )
-    return <ReceiptOrEstimate<G>>trxReceipt
+    return buildUnsignedTx(
+      dtContract.buyFromFreAndOrder,
+      [orderParams, freContractParams],
+      overrides
+    )
   }
 
   /**
@@ -603,22 +687,36 @@ export class Datatoken extends SmartContract {
     dispenserContract: string,
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
-    const dtContract = this.getContract(dtAddress, this.abiEnterprise)
+    const tx = await this.buyFromDispenserAndOrderTx(
+      dtAddress,
+      orderParams,
+      dispenserContract
+    )
+    if (estimateGas) return <ReceiptOrEstimate<G>>tx.gasLimit
+    const trxReceipt = await sendPreparedTransaction(this.getSignerAccordingSdk(), tx)
+    return <ReceiptOrEstimate<G>>trxReceipt
+  }
 
+  public async buyFromDispenserAndOrderTx(
+    dtAddress: string,
+    orderParams: OrderParams,
+    dispenserContract: string
+  ): Promise<TransactionRequest> {
+    const dtContract = this.getContract(dtAddress, this.abiEnterprise)
     const estGas = await dtContract.buyFromDispenserAndOrder.estimateGas(
       orderParams,
       dispenserContract
     )
-    if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-    const trxReceipt = await sendTx(
+    const overrides = await buildTxOverrides(
       estGas,
       this.getSignerAccordingSdk(),
-      this.config?.gasFeeMultiplier,
-      dtContract.buyFromDispenserAndOrder,
-      orderParams,
-      dispenserContract
+      this.config?.gasFeeMultiplier
     )
-    return <ReceiptOrEstimate<G>>trxReceipt
+    return buildUnsignedTx(
+      dtContract.buyFromDispenserAndOrder,
+      [orderParams, dispenserContract],
+      overrides
+    )
   }
 
   /** setData
@@ -636,25 +734,29 @@ export class Datatoken extends SmartContract {
     value: string,
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
+    const tx = await this.setDataTx(dtAddress, address, value)
+    if (estimateGas) return <ReceiptOrEstimate<G>>tx.gasLimit
+    const trxReceipt = await sendPreparedTransaction(this.getSignerAccordingSdk(), tx)
+    return <ReceiptOrEstimate<G>>trxReceipt
+  }
+
+  public async setDataTx(
+    dtAddress: string,
+    address: string,
+    value: string
+  ): Promise<TransactionRequest> {
     if (!(await this.isDatatokenDeployer(dtAddress, address))) {
       throw new Error(`User is not Datatoken Deployer`)
     }
-
     const dtContract = this.getContract(dtAddress)
     const valueHex = hexlify(toUtf8Bytes(value))
-
     const estGas = await dtContract.setData.estimateGas(valueHex)
-    if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-
-    const trxReceipt = await sendTx(
+    const overrides = await buildTxOverrides(
       estGas,
       this.getSignerAccordingSdk(),
-      this.config?.gasFeeMultiplier,
-      dtContract.setData,
-      valueHex
+      this.config?.gasFeeMultiplier
     )
-
-    return <ReceiptOrEstimate<G>>trxReceipt
+    return buildUnsignedTx(dtContract.setData, [valueHex], overrides)
   }
 
   /**
@@ -670,21 +772,27 @@ export class Datatoken extends SmartContract {
     address: string,
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
+    const tx = await this.cleanPermissionsTx(dtAddress, address)
+    if (estimateGas) return <ReceiptOrEstimate<G>>tx.gasLimit
+    const trxReceipt = await sendPreparedTransaction(this.getSignerAccordingSdk(), tx)
+    return <ReceiptOrEstimate<G>>trxReceipt
+  }
+
+  public async cleanPermissionsTx(
+    dtAddress: string,
+    address: string
+  ): Promise<TransactionRequest> {
     if ((await this.nft.getNftOwner(await this.getNFTAddress(dtAddress))) !== address) {
       throw new Error('Caller is NOT Nft Owner')
     }
     const dtContract = this.getContract(dtAddress)
     const estGas = await dtContract.cleanPermissions.estimateGas()
-    if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-
-    const trxReceipt = await sendTx(
+    const overrides = await buildTxOverrides(
       estGas,
       this.getSignerAccordingSdk(),
-      this.config?.gasFeeMultiplier,
-      dtContract.cleanPermissions
+      this.config?.gasFeeMultiplier
     )
-
-    return <ReceiptOrEstimate<G>>trxReceipt
+    return buildUnsignedTx(dtContract.cleanPermissions, [], overrides)
   }
 
   /**
@@ -851,6 +959,25 @@ export class Datatoken extends SmartContract {
     address: string,
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
+    const tx = await this.setPublishingMarketFeeTx(
+      datatokenAddress,
+      publishMarketFeeAddress,
+      publishMarketFeeToken,
+      publishMarketFeeAmount,
+      address
+    )
+    if (estimateGas) return <ReceiptOrEstimate<G>>tx.gasLimit
+    const trxReceipt = await sendPreparedTransaction(this.getSignerAccordingSdk(), tx)
+    return <ReceiptOrEstimate<G>>trxReceipt
+  }
+
+  public async setPublishingMarketFeeTx(
+    datatokenAddress: string,
+    publishMarketFeeAddress: string,
+    publishMarketFeeToken: string,
+    publishMarketFeeAmount: string,
+    address: string
+  ): Promise<TransactionRequest> {
     const dtContract = this.getContract(datatokenAddress)
     const mktFeeAddress = (await dtContract.getPublishingMarketFee())[0]
     if (mktFeeAddress !== address) {
@@ -861,18 +988,16 @@ export class Datatoken extends SmartContract {
       publishMarketFeeToken,
       publishMarketFeeAmount
     )
-    if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-    const trxReceipt = await sendTx(
+    const overrides = await buildTxOverrides(
       estGas,
       this.getSignerAccordingSdk(),
-      this.config?.gasFeeMultiplier,
-      dtContract.setPublishingMarketFee,
-      publishMarketFeeAddress,
-      publishMarketFeeToken,
-      publishMarketFeeAmount
+      this.config?.gasFeeMultiplier
     )
-
-    return <ReceiptOrEstimate<G>>trxReceipt
+    return buildUnsignedTx(
+      dtContract.setPublishingMarketFee,
+      [publishMarketFeeAddress, publishMarketFeeToken, publishMarketFeeAmount],
+      overrides
+    )
   }
 
   /**

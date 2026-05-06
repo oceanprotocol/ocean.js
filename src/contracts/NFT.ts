@@ -1,4 +1,4 @@
-import { hexlify, keccak256, toUtf8Bytes, toUtf8String } from 'ethers'
+import { TransactionRequest, hexlify, keccak256, toUtf8Bytes, toUtf8String } from 'ethers'
 import ERC721Template from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC721Template.sol/ERC721Template.json'
 import {
   MetadataAndTokenURI,
@@ -10,12 +10,17 @@ import { SmartContract } from './SmartContract.js'
 
 import { generateDtName } from '../utils/DatatokenName.js'
 import { ZERO_ADDRESS } from '../utils/Constants.js'
-import { getEventFromTx, sendTx } from '../utils/ContractUtils.js'
+import {
+  buildTxOverrides,
+  buildUnsignedTx,
+  getEventFromTx,
+  sendPreparedTransaction
+} from '../utils/ContractUtils.js'
 import {
   calculateActiveTemplateIndex,
   getOceanArtifactsAddressesByChainId
 } from '../utils/Addresses.js'
-import { MetadataProof } from '@oceanprotocol/ddo-js'
+import type { MetadataProof } from '@oceanprotocol/ddo-js'
 export class Nft extends SmartContract {
   getDefaultAbi() {
     return ERC721Template.abi as AbiItem[]
@@ -55,19 +60,58 @@ export class Nft extends SmartContract {
     denyAccessList?: string,
     estimateGas?: G
   ): Promise<G extends false ? string : BigInt> {
+    const tx = await this.createDatatokenTx(
+      nftAddress,
+      address,
+      minter,
+      paymentCollector,
+      mpFeeAddress,
+      feeToken,
+      feeAmount,
+      cap,
+      name,
+      symbol,
+      templateIndex,
+      filesObject,
+      accessListContract,
+      allowAccessList,
+      denyAccessList
+    )
+    if (estimateGas) return <G extends false ? string : bigint>tx.gasLimit
+    const sentTx = await sendPreparedTransaction(this.getSignerAccordingSdk(), tx)
+    if (!sentTx) {
+      throw new Error('Failed to send createDatatoken transaction')
+    }
+    const trxReceipt = await sentTx.wait()
+    const event = getEventFromTx(trxReceipt, 'TokenCreated')
+    return event?.args[0]
+  }
+
+  public async createDatatokenTx(
+    nftAddress: string,
+    address: string,
+    minter: string,
+    paymentCollector: string,
+    mpFeeAddress: string,
+    feeToken: string,
+    feeAmount: string,
+    cap: string,
+    name?: string,
+    symbol?: string,
+    templateIndex?: number,
+    filesObject?: string,
+    accessListContract?: string,
+    allowAccessList?: string,
+    denyAccessList?: string
+  ): Promise<TransactionRequest> {
     if ((await this.getNftPermissions(nftAddress, address)).deployERC20 !== true) {
       throw new Error(`Caller is not DatatokenDeployer`)
     }
     if (!templateIndex) templateIndex = 1
-
-    // Generate name & symbol if not present
     if (!name || !symbol) {
       ;({ name, symbol } = generateDtName())
     }
-
-    // Create 721contract object
     const nftContract = this.getContract(nftAddress)
-
     if (!this.signer.provider) {
       throw new Error('Provider is required but not available')
     }
@@ -81,50 +125,34 @@ export class Nft extends SmartContract {
         Number(chainId)
       )
     }
-    const estGas = await nftContract.createERC20.estimateGas(
-      templateIndex,
-      [name, symbol],
-      [minter, paymentCollector, mpFeeAddress, feeToken],
-      [
-        await this.amountToUnits(null, cap, 18),
-        await this.amountToUnits(null, feeAmount, 18)
-      ],
-      []
-    )
-    if (estimateGas) return <G extends false ? string : bigint>estGas
-
     const addresses = [minter, paymentCollector, mpFeeAddress, feeToken]
     if (accessListContract) {
       addresses.push(accessListContract.toLowerCase())
-      if (allowAccessList) {
-        addresses.push(allowAccessList.toLowerCase())
-      } else {
-        addresses.push(ZERO_ADDRESS)
-      }
-      if (denyAccessList) {
-        addresses.push(denyAccessList)
-      } else {
-        addresses.push(ZERO_ADDRESS)
-      }
+      addresses.push(allowAccessList ? allowAccessList.toLowerCase() : ZERO_ADDRESS)
+      addresses.push(denyAccessList || ZERO_ADDRESS)
     }
-
-    const tx = await sendTx(
-      estGas,
-      this.getSignerAccordingSdk(),
-      this.config?.gasFeeMultiplier,
-      nftContract.createERC20,
+    const uintArgs = [
+      await this.amountToUnits(null, cap, 18),
+      await this.amountToUnits(null, feeAmount, 18)
+    ]
+    const bytesArgs = filesObject ? [toUtf8Bytes(filesObject)] : []
+    const estGas = await nftContract.createERC20.estimateGas(
       templateIndex,
       [name, symbol],
       addresses,
-      [
-        await this.amountToUnits(null, cap, 18),
-        await this.amountToUnits(null, feeAmount, 18)
-      ],
-      filesObject ? [toUtf8Bytes(filesObject)] : []
+      uintArgs,
+      bytesArgs
     )
-    const trxReceipt = await tx.wait()
-    const event = getEventFromTx(trxReceipt, 'TokenCreated')
-    return event?.args[0]
+    const overrides = await buildTxOverrides(
+      estGas,
+      this.getSignerAccordingSdk(),
+      this.config?.gasFeeMultiplier
+    )
+    return buildUnsignedTx(
+      nftContract.createERC20,
+      [templateIndex, [name, symbol], addresses, uintArgs, bytesArgs],
+      overrides
+    )
   }
 
   /**
@@ -141,24 +169,28 @@ export class Nft extends SmartContract {
     manager: string,
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
-    const nftContract = this.getContract(nftAddress)
+    const tx = await this.addManagerTx(nftAddress, address, manager)
+    if (estimateGas) return <ReceiptOrEstimate<G>>tx.gasLimit
+    const trxReceipt = await sendPreparedTransaction(this.getSignerAccordingSdk(), tx)
+    return <ReceiptOrEstimate<G>>trxReceipt
+  }
 
+  public async addManagerTx(
+    nftAddress: string,
+    address: string,
+    manager: string
+  ): Promise<TransactionRequest> {
+    const nftContract = this.getContract(nftAddress)
     if ((await this.getNftOwner(nftAddress)) !== address) {
       throw new Error(`Caller is not NFT Owner`)
     }
-
     const estGas = await nftContract.addManager.estimateGas(manager)
-    if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-
-    const trxReceipt = await sendTx(
+    const overrides = await buildTxOverrides(
       estGas,
       this.getSignerAccordingSdk(),
-      this.config?.gasFeeMultiplier,
-      nftContract.addManager,
-      manager
+      this.config?.gasFeeMultiplier
     )
-
-    return <ReceiptOrEstimate<G>>trxReceipt
+    return buildUnsignedTx(nftContract.addManager, [manager], overrides)
   }
 
   /**
@@ -175,24 +207,28 @@ export class Nft extends SmartContract {
     manager: string,
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
-    const nftContract = this.getContract(nftAddress)
+    const tx = await this.removeManagerTx(nftAddress, address, manager)
+    if (estimateGas) return <ReceiptOrEstimate<G>>tx.gasLimit
+    const trxReceipt = await sendPreparedTransaction(this.getSignerAccordingSdk(), tx)
+    return <ReceiptOrEstimate<G>>trxReceipt
+  }
 
+  public async removeManagerTx(
+    nftAddress: string,
+    address: string,
+    manager: string
+  ): Promise<TransactionRequest> {
+    const nftContract = this.getContract(nftAddress)
     if ((await this.getNftOwner(nftAddress)) !== address) {
       throw new Error(`Caller is not NFT Owner`)
     }
-
     const estGas = await nftContract.removeManager.estimateGas(manager)
-    if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-
-    const trxReceipt = await sendTx(
+    const overrides = await buildTxOverrides(
       estGas,
       this.getSignerAccordingSdk(),
-      this.config?.gasFeeMultiplier,
-      nftContract.removeManager,
-      manager
+      this.config?.gasFeeMultiplier
     )
-
-    return <ReceiptOrEstimate<G>>trxReceipt
+    return buildUnsignedTx(nftContract.removeManager, [manager], overrides)
   }
 
   /**
@@ -209,25 +245,32 @@ export class Nft extends SmartContract {
     datatokenDeployer: string,
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
-    const nftContract = this.getContract(nftAddress)
+    const tx = await this.addDatatokenDeployerTx(nftAddress, address, datatokenDeployer)
+    if (estimateGas) return <ReceiptOrEstimate<G>>tx.gasLimit
+    const trxReceipt = await sendPreparedTransaction(this.getSignerAccordingSdk(), tx)
+    return <ReceiptOrEstimate<G>>trxReceipt
+  }
 
+  public async addDatatokenDeployerTx(
+    nftAddress: string,
+    address: string,
+    datatokenDeployer: string
+  ): Promise<TransactionRequest> {
+    const nftContract = this.getContract(nftAddress)
     if ((await this.getNftPermissions(nftAddress, address)).manager !== true) {
       throw new Error(`Caller is not Manager`)
     }
-
-    // Estimate gas for addToCreateERC20List method
     const estGas = await nftContract.addToCreateERC20List.estimateGas(datatokenDeployer)
-    if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-
-    const trxReceipt = await sendTx(
+    const overrides = await buildTxOverrides(
       estGas,
       this.getSignerAccordingSdk(),
-      this.config?.gasFeeMultiplier,
-      nftContract.addToCreateERC20List,
-      datatokenDeployer
+      this.config?.gasFeeMultiplier
     )
-
-    return <ReceiptOrEstimate<G>>trxReceipt
+    return buildUnsignedTx(
+      nftContract.addToCreateERC20List,
+      [datatokenDeployer],
+      overrides
+    )
   }
 
   /**
@@ -244,8 +287,22 @@ export class Nft extends SmartContract {
     datatokenDeployer: string,
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
-    const nftContract = this.getContract(nftAddress)
+    const tx = await this.removeDatatokenDeployerTx(
+      nftAddress,
+      address,
+      datatokenDeployer
+    )
+    if (estimateGas) return <ReceiptOrEstimate<G>>tx.gasLimit
+    const trxReceipt = await sendPreparedTransaction(this.getSignerAccordingSdk(), tx)
+    return <ReceiptOrEstimate<G>>trxReceipt
+  }
 
+  public async removeDatatokenDeployerTx(
+    nftAddress: string,
+    address: string,
+    datatokenDeployer: string
+  ): Promise<TransactionRequest> {
+    const nftContract = this.getContract(nftAddress)
     if (
       (await this.getNftPermissions(nftAddress, address)).manager !== true ||
       (address === datatokenDeployer &&
@@ -256,17 +313,16 @@ export class Nft extends SmartContract {
     const estGas = await nftContract.removeFromCreateERC20List.estimateGas(
       datatokenDeployer
     )
-    if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-
-    const trxReceipt = await sendTx(
+    const overrides = await buildTxOverrides(
       estGas,
       this.getSignerAccordingSdk(),
-      this.config?.gasFeeMultiplier,
-      nftContract.removeFromCreateERC20List,
-      datatokenDeployer
+      this.config?.gasFeeMultiplier
     )
-
-    return <ReceiptOrEstimate<G>>trxReceipt
+    return buildUnsignedTx(
+      nftContract.removeFromCreateERC20List,
+      [datatokenDeployer],
+      overrides
+    )
   }
 
   /**
@@ -283,23 +339,28 @@ export class Nft extends SmartContract {
     metadataUpdater: string,
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
-    const nftContract = this.getContract(nftAddress)
+    const tx = await this.addMetadataUpdaterTx(nftAddress, address, metadataUpdater)
+    if (estimateGas) return <ReceiptOrEstimate<G>>tx.gasLimit
+    const trxReceipt = await sendPreparedTransaction(this.getSignerAccordingSdk(), tx)
+    return <ReceiptOrEstimate<G>>trxReceipt
+  }
 
+  public async addMetadataUpdaterTx(
+    nftAddress: string,
+    address: string,
+    metadataUpdater: string
+  ): Promise<TransactionRequest> {
+    const nftContract = this.getContract(nftAddress)
     if ((await this.getNftPermissions(nftAddress, address)).manager !== true) {
       throw new Error(`Caller is not Manager`)
     }
-
     const estGas = await nftContract.addToMetadataList.estimateGas(metadataUpdater)
-    if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-
-    const trxReceipt = await sendTx(
+    const overrides = await buildTxOverrides(
       estGas,
       this.getSignerAccordingSdk(),
-      this.config?.gasFeeMultiplier,
-      nftContract.addToMetadataList,
-      metadataUpdater
+      this.config?.gasFeeMultiplier
     )
-    return <ReceiptOrEstimate<G>>trxReceipt
+    return buildUnsignedTx(nftContract.addToMetadataList, [metadataUpdater], overrides)
   }
 
   /**
@@ -316,6 +377,17 @@ export class Nft extends SmartContract {
     metadataUpdater: string,
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
+    const tx = await this.removeMetadataUpdaterTx(nftAddress, address, metadataUpdater)
+    if (estimateGas) return <ReceiptOrEstimate<G>>tx.gasLimit
+    const trxReceipt = await sendPreparedTransaction(this.getSignerAccordingSdk(), tx)
+    return <ReceiptOrEstimate<G>>trxReceipt
+  }
+
+  public async removeMetadataUpdaterTx(
+    nftAddress: string,
+    address: string,
+    metadataUpdater: string
+  ): Promise<TransactionRequest> {
     const nftContract = this.getContract(nftAddress)
     if (
       (await this.getNftPermissions(nftAddress, address)).manager !== true ||
@@ -324,18 +396,17 @@ export class Nft extends SmartContract {
     ) {
       throw new Error(`Caller is not Manager nor Metadata Updater`)
     }
-
     const estGas = await nftContract.removeFromMetadataList.estimateGas(metadataUpdater)
-    if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-
-    const trxReceipt = await sendTx(
+    const overrides = await buildTxOverrides(
       estGas,
       this.getSignerAccordingSdk(),
-      this.config?.gasFeeMultiplier,
-      nftContract.removeFromMetadataList,
-      metadataUpdater
+      this.config?.gasFeeMultiplier
     )
-    return <ReceiptOrEstimate<G>>trxReceipt
+    return buildUnsignedTx(
+      nftContract.removeFromMetadataList,
+      [metadataUpdater],
+      overrides
+    )
   }
 
   /**
@@ -352,24 +423,28 @@ export class Nft extends SmartContract {
     storeUpdater: string,
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
-    const nftContract = this.getContract(nftAddress)
+    const tx = await this.addStoreUpdaterTx(nftAddress, address, storeUpdater)
+    if (estimateGas) return <ReceiptOrEstimate<G>>tx.gasLimit
+    const trxReceipt = await sendPreparedTransaction(this.getSignerAccordingSdk(), tx)
+    return <ReceiptOrEstimate<G>>trxReceipt
+  }
 
+  public async addStoreUpdaterTx(
+    nftAddress: string,
+    address: string,
+    storeUpdater: string
+  ): Promise<TransactionRequest> {
+    const nftContract = this.getContract(nftAddress)
     if ((await this.getNftPermissions(nftAddress, address)).manager !== true) {
       throw new Error(`Caller is not Manager`)
     }
-
     const estGas = await nftContract.addTo725StoreList.estimateGas(storeUpdater)
-    if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-
-    const trxReceipt = await sendTx(
+    const overrides = await buildTxOverrides(
       estGas,
       this.getSignerAccordingSdk(),
-      this.config?.gasFeeMultiplier,
-      nftContract.addTo725StoreList,
-      storeUpdater
+      this.config?.gasFeeMultiplier
     )
-
-    return <ReceiptOrEstimate<G>>trxReceipt
+    return buildUnsignedTx(nftContract.addTo725StoreList, [storeUpdater], overrides)
   }
 
   /**
@@ -386,6 +461,17 @@ export class Nft extends SmartContract {
     storeUpdater: string,
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
+    const tx = await this.removeStoreUpdaterTx(nftAddress, address, storeUpdater)
+    if (estimateGas) return <ReceiptOrEstimate<G>>tx.gasLimit
+    const trxReceipt = await sendPreparedTransaction(this.getSignerAccordingSdk(), tx)
+    return <ReceiptOrEstimate<G>>trxReceipt
+  }
+
+  public async removeStoreUpdaterTx(
+    nftAddress: string,
+    address: string,
+    storeUpdater: string
+  ): Promise<TransactionRequest> {
     const nftContract = this.getContract(nftAddress)
     if (
       (await this.getNftPermissions(nftAddress, address)).manager !== true ||
@@ -394,19 +480,13 @@ export class Nft extends SmartContract {
     ) {
       throw new Error(`Caller is not Manager nor storeUpdater`)
     }
-
     const estGas = await nftContract.removeFrom725StoreList.estimateGas(storeUpdater)
-    if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-
-    const trxReceipt = await sendTx(
+    const overrides = await buildTxOverrides(
       estGas,
       this.getSignerAccordingSdk(),
-      this.config?.gasFeeMultiplier,
-      nftContract.removeFrom725StoreList,
-      storeUpdater
+      this.config?.gasFeeMultiplier
     )
-
-    return <ReceiptOrEstimate<G>>trxReceipt
+    return buildUnsignedTx(nftContract.removeFrom725StoreList, [storeUpdater], overrides)
   }
 
   /**
@@ -424,22 +504,27 @@ export class Nft extends SmartContract {
     address: string,
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
+    const tx = await this.cleanPermissionsTx(nftAddress, address)
+    if (estimateGas) return <ReceiptOrEstimate<G>>tx.gasLimit
+    const trxReceipt = await sendPreparedTransaction(this.getSignerAccordingSdk(), tx)
+    return <ReceiptOrEstimate<G>>trxReceipt
+  }
+
+  public async cleanPermissionsTx(
+    nftAddress: string,
+    address: string
+  ): Promise<TransactionRequest> {
     const nftContract = this.getContract(nftAddress)
     if ((await this.getNftOwner(nftAddress)) !== address) {
       throw new Error(`Caller is not NFT Owner`)
     }
-
     const estGas = await nftContract.cleanPermissions.estimateGas()
-    if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-
-    const trxReceipt = await sendTx(
+    const overrides = await buildTxOverrides(
       estGas,
       this.getSignerAccordingSdk(),
-      this.config?.gasFeeMultiplier,
-      nftContract.cleanPermissions
+      this.config?.gasFeeMultiplier
     )
-
-    return <ReceiptOrEstimate<G>>trxReceipt
+    return buildUnsignedTx(nftContract.cleanPermissions, [], overrides)
   }
 
   /**
@@ -459,31 +544,38 @@ export class Nft extends SmartContract {
     tokenId?: number,
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
+    const tx = await this.transferNftTx(nftAddress, nftOwner, nftReceiver, tokenId)
+    if (estimateGas) return <ReceiptOrEstimate<G>>tx.gasLimit
+    const trxReceipt = await sendPreparedTransaction(this.getSignerAccordingSdk(), tx)
+    return <ReceiptOrEstimate<G>>trxReceipt
+  }
+
+  public async transferNftTx(
+    nftAddress: string,
+    nftOwner: string,
+    nftReceiver: string,
+    tokenId?: number
+  ): Promise<TransactionRequest> {
     const nftContract = this.getContract(nftAddress)
     if ((await this.getNftOwner(nftAddress)) !== nftOwner) {
       throw new Error(`Caller is not NFT Owner`)
     }
-
     const tokenIdentifier = tokenId || 1
-
     const estGas = await nftContract.transferFrom.estimateGas(
       nftOwner,
       nftReceiver,
       tokenIdentifier
     )
-    if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-
-    const trxReceipt = await sendTx(
+    const overrides = await buildTxOverrides(
       estGas,
       this.getSignerAccordingSdk(),
-      this.config?.gasFeeMultiplier,
-      nftContract.transferFrom,
-      nftOwner,
-      nftReceiver,
-      tokenIdentifier
+      this.config?.gasFeeMultiplier
     )
-
-    return <ReceiptOrEstimate<G>>trxReceipt
+    return buildUnsignedTx(
+      nftContract.transferFrom,
+      [nftOwner, nftReceiver, tokenIdentifier],
+      overrides
+    )
   }
 
   /**
@@ -503,31 +595,38 @@ export class Nft extends SmartContract {
     tokenId?: number,
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
+    const tx = await this.safeTransferNftTx(nftAddress, nftOwner, nftReceiver, tokenId)
+    if (estimateGas) return <ReceiptOrEstimate<G>>tx.gasLimit
+    const trxReceipt = await sendPreparedTransaction(this.getSignerAccordingSdk(), tx)
+    return <ReceiptOrEstimate<G>>trxReceipt
+  }
+
+  public async safeTransferNftTx(
+    nftAddress: string,
+    nftOwner: string,
+    nftReceiver: string,
+    tokenId?: number
+  ): Promise<TransactionRequest> {
     const nftContract = this.getContract(nftAddress)
     if ((await this.getNftOwner(nftAddress)) !== nftOwner) {
       throw new Error(`Caller is not NFT Owner`)
     }
-
     const tokenIdentifier = tokenId || 1
-
     const estGas = await nftContract.safeTransferFrom.estimateGas(
       nftOwner,
       nftReceiver,
       tokenIdentifier
     )
-    if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-
-    const trxReceipt = await sendTx(
+    const overrides = await buildTxOverrides(
       estGas,
       this.getSignerAccordingSdk(),
-      this.config?.gasFeeMultiplier,
-      nftContract.safeTransferFrom,
-      nftOwner,
-      nftReceiver,
-      tokenIdentifier
+      this.config?.gasFeeMultiplier
     )
-
-    return <ReceiptOrEstimate<G>>trxReceipt
+    return buildUnsignedTx(
+      nftContract.safeTransferFrom,
+      [nftOwner, nftReceiver, tokenIdentifier],
+      overrides
+    )
   }
 
   /**
@@ -556,12 +655,38 @@ export class Nft extends SmartContract {
     metadataProofs?: MetadataProof[],
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
+    const tx = await this.setMetadataTx(
+      nftAddress,
+      address,
+      metadataState,
+      metadataDecryptorUrl,
+      metadataDecryptorAddress,
+      flags,
+      data,
+      metadataHash,
+      metadataProofs
+    )
+    if (estimateGas) return <ReceiptOrEstimate<G>>tx.gasLimit
+    const trxReceipt = await sendPreparedTransaction(this.getSignerAccordingSdk(), tx)
+    return <ReceiptOrEstimate<G>>trxReceipt
+  }
+
+  public async setMetadataTx(
+    nftAddress: string,
+    address: string,
+    metadataState: number,
+    metadataDecryptorUrl: string,
+    metadataDecryptorAddress: string,
+    flags: string,
+    data: string,
+    metadataHash: string,
+    metadataProofs?: MetadataProof[]
+  ): Promise<TransactionRequest> {
     const nftContract = this.getContract(nftAddress)
     if (!metadataProofs) metadataProofs = []
     if (!(await this.getNftPermissions(nftAddress, address)).updateMetadata) {
       throw new Error(`Caller is not Metadata updater`)
     }
-    // Indexer expects a bare peer ID, not a full multiaddr, for P2P decrypt routing.
     let decryptorUrl = metadataDecryptorUrl
     if (metadataDecryptorUrl?.includes('/p2p/')) {
       const p2pMatch = metadataDecryptorUrl.match(/\/p2p\/([^/]+)/)
@@ -576,23 +701,24 @@ export class Nft extends SmartContract {
       metadataHash,
       metadataProofs
     )
-    if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-
-    const trxReceipt = await sendTx(
+    const overrides = await buildTxOverrides(
       estGas,
-      this.signer,
-      this.config?.gasFeeMultiplier,
-      nftContract.setMetaData,
-      metadataState,
-      decryptorUrl,
-      metadataDecryptorAddress,
-      flags,
-      data,
-      metadataHash,
-      metadataProofs
+      this.getSignerAccordingSdk(),
+      this.config?.gasFeeMultiplier
     )
-
-    return <ReceiptOrEstimate<G>>trxReceipt
+    return buildUnsignedTx(
+      nftContract.setMetaData,
+      [
+        metadataState,
+        decryptorUrl,
+        metadataDecryptorAddress,
+        flags,
+        data,
+        metadataHash,
+        metadataProofs
+      ],
+      overrides
+    )
   }
 
   /**
@@ -609,6 +735,21 @@ export class Nft extends SmartContract {
     metadataAndTokenURI: MetadataAndTokenURI,
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
+    const tx = await this.setMetadataAndTokenURITx(
+      nftAddress,
+      metadataUpdater,
+      metadataAndTokenURI
+    )
+    if (estimateGas) return <ReceiptOrEstimate<G>>tx.gasLimit
+    const trxReceipt = await sendPreparedTransaction(this.getSignerAccordingSdk(), tx)
+    return <ReceiptOrEstimate<G>>trxReceipt
+  }
+
+  public async setMetadataAndTokenURITx(
+    nftAddress: string,
+    metadataUpdater: string,
+    metadataAndTokenURI: MetadataAndTokenURI
+  ): Promise<TransactionRequest> {
     const nftContract = this.getContract(nftAddress)
     if (!(await this.getNftPermissions(nftAddress, metadataUpdater)).updateMetadata) {
       throw new Error(`Caller is not Metadata updater`)
@@ -620,17 +761,16 @@ export class Nft extends SmartContract {
     const estGas = await nftContract.setMetaDataAndTokenURI.estimateGas(
       sanitizedMetadataAndTokenURI
     )
-    if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-
-    const trxReceipt = await sendTx(
+    const overrides = await buildTxOverrides(
       estGas,
-      this.signer,
-      this.config?.gasFeeMultiplier,
-      nftContract.setMetaDataAndTokenURI,
-      sanitizedMetadataAndTokenURI
+      this.getSignerAccordingSdk(),
+      this.config?.gasFeeMultiplier
     )
-
-    return <ReceiptOrEstimate<G>>trxReceipt
+    return buildUnsignedTx(
+      nftContract.setMetaDataAndTokenURI,
+      [sanitizedMetadataAndTokenURI],
+      overrides
+    )
   }
 
   /**
@@ -647,22 +787,28 @@ export class Nft extends SmartContract {
     metadataState: number,
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
+    const tx = await this.setMetadataStateTx(nftAddress, address, metadataState)
+    if (estimateGas) return <ReceiptOrEstimate<G>>tx.gasLimit
+    const trxReceipt = await sendPreparedTransaction(this.getSignerAccordingSdk(), tx)
+    return <ReceiptOrEstimate<G>>trxReceipt
+  }
+
+  public async setMetadataStateTx(
+    nftAddress: string,
+    address: string,
+    metadataState: number
+  ): Promise<TransactionRequest> {
     const nftContract = this.getContract(nftAddress)
     if (!(await this.getNftPermissions(nftAddress, address)).updateMetadata) {
       throw new Error(`Caller is not Metadata updater`)
     }
-
     const estGas = await nftContract.setMetaDataState.estimateGas(metadataState)
-    if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-
-    const trxReceipt = await sendTx(
+    const overrides = await buildTxOverrides(
       estGas,
       this.getSignerAccordingSdk(),
-      this.config?.gasFeeMultiplier,
-      nftContract.setMetaDataState,
-      metadataState
+      this.config?.gasFeeMultiplier
     )
-    return <ReceiptOrEstimate<G>>trxReceipt
+    return buildUnsignedTx(nftContract.setMetaDataState, [metadataState], overrides)
   }
 
   /**
@@ -677,19 +823,24 @@ export class Nft extends SmartContract {
     data: string,
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
+    const tx = await this.setTokenURITx(nftAddress, data)
+    if (estimateGas) return <ReceiptOrEstimate<G>>tx.gasLimit
+    const trxReceipt = await sendPreparedTransaction(this.getSignerAccordingSdk(), tx)
+    return <ReceiptOrEstimate<G>>trxReceipt
+  }
+
+  public async setTokenURITx(
+    nftAddress: string,
+    data: string
+  ): Promise<TransactionRequest> {
     const nftContract = this.getContract(nftAddress)
     const estGas = await nftContract.setTokenURI.estimateGas('1', data)
-    if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-
-    const trxReceipt = await sendTx(
+    const overrides = await buildTxOverrides(
       estGas,
       this.getSignerAccordingSdk(),
-      this.config?.gasFeeMultiplier,
-      nftContract.setTokenURI,
-      '1',
-      data
+      this.config?.gasFeeMultiplier
     )
-    return <ReceiptOrEstimate<G>>trxReceipt
+    return buildUnsignedTx(nftContract.setTokenURI, ['1', data], overrides)
   }
 
   /**
@@ -757,26 +908,32 @@ export class Nft extends SmartContract {
     value: string,
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
+    const tx = await this.setDataTx(nftAddress, address, key, value)
+    if (estimateGas) return <ReceiptOrEstimate<G>>tx.gasLimit
+    const trxReceipt = await sendPreparedTransaction(this.getSignerAccordingSdk(), tx)
+
+    return <ReceiptOrEstimate<G>>trxReceipt
+  }
+
+  public async setDataTx(
+    nftAddress: string,
+    address: string,
+    key: string,
+    value: string
+  ): Promise<TransactionRequest> {
     if ((await this.getNftPermissions(nftAddress, address)).store !== true) {
       throw new Error(`User is not ERC20 store updater`)
     }
-
     const nftContract = this.getContract(nftAddress)
     const keyHash = keccak256(key)
     const valueHex = hexlify(toUtf8Bytes(value))
-
     const estGas = await nftContract.setNewData.estimateGas(keyHash, valueHex)
-    if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-    const trxReceipt = await sendTx(
+    const overrides = await buildTxOverrides(
       estGas,
       this.getSignerAccordingSdk(),
-      this.config?.gasFeeMultiplier,
-      nftContract.setNewData,
-      keyHash,
-      valueHex
+      this.config?.gasFeeMultiplier
     )
-
-    return <ReceiptOrEstimate<G>>trxReceipt
+    return buildUnsignedTx(nftContract.setNewData, [keyHash, valueHex], overrides)
   }
 
   /**
@@ -796,7 +953,8 @@ export class Nft extends SmartContract {
    * Gets the token URI of an NFT.
    * @param {string} nftAddress - The address of the NFT.
    * @param {number} id - The ID of the token.
-   * @returns {Promise&lt;string&gt;}
+   * @returns {Promise<string>}
+    
    */
   public async getTokenURI(nftAddress: string, id: number): Promise<string> {
     const nftContract = this.getContract(nftAddress)

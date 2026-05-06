@@ -3,12 +3,19 @@ import {
   Signer,
   Contract,
   TransactionResponse,
+  TransactionRequest,
   BaseContractMethod,
   formatUnits,
   parseUnits,
   EventLog,
   TransactionReceipt
 } from 'ethers'
+import ERC20Template from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC20Template.sol/ERC20Template.json'
+import ERC20TemplateEnterprise from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC20TemplateEnterprise.sol/ERC20TemplateEnterprise.json'
+import ERC721Template from '@oceanprotocol/contracts/artifacts/contracts/templates/ERC721Template.sol/ERC721Template.json'
+import ERC721Factory from '@oceanprotocol/contracts/artifacts/contracts/ERC721Factory.sol/ERC721Factory.json'
+import FixedRateExchange from '@oceanprotocol/contracts/artifacts/contracts/pools/fixedRate/FixedRateExchange.sol/FixedRateExchange.json'
+import AccessListFactory from '@oceanprotocol/contracts/artifacts/contracts/accesslists/AccessListFactory.sol/AccessListFactory.json'
 
 import { Config, KNOWN_CONFIDENTIAL_EVMS } from '../config/index.js'
 import { LoggerInstance } from './Logger.js'
@@ -21,6 +28,14 @@ const MIN_GAS_FEE_SAPPHIRE = 10000000000 // recommended for mainnet and testnet 
 const POLYGON_NETWORK_ID = 137
 const MUMBAI_NETWORK_ID = 80001
 const SEPOLIA_NETWORK_ID = 11155111
+const EVENT_INTERFACES = [
+  new ethers.Interface(ERC20Template.abi),
+  new ethers.Interface(ERC20TemplateEnterprise.abi),
+  new ethers.Interface(ERC721Template.abi),
+  new ethers.Interface(ERC721Factory.abi),
+  new ethers.Interface(FixedRateExchange.abi),
+  new ethers.Interface(AccessListFactory.abi)
+]
 
 export function setContractDefaults(contract: Contract, config: Config): Contract {
   // TO DO - since ethers does not provide this
@@ -108,19 +123,44 @@ export async function amountToUnits(
   return amountFormatted.toString()
 }
 
-export function getEventFromTx(
-  txReceipt: TransactionReceipt,
-  eventName: string
-): EventLog | undefined {
+export function getEventFromTx(txReceipt: TransactionReceipt, eventName: string): any {
   if (!txReceipt || !txReceipt.logs) {
     return undefined
   }
 
   const foundLog = txReceipt.logs.filter((log): log is EventLog => {
-    return log instanceof EventLog && log.eventName === eventName
+    if (!(log instanceof EventLog) || log.eventName !== eventName) return false
+    const topic0 = log.topics?.[0]?.toLowerCase()
+    // Keep backward compatibility for receipts where ethers doesn't expose eventSignature.
+    if (!topic0 || !log.eventSignature) return true
+    return topic0 === ethers.id(log.eventSignature).toLowerCase()
   })[0]
+  if (foundLog) return foundLog
 
-  return foundLog
+  // Fallback for receipts created via signer.sendTransaction(txRequest).
+  for (const log of txReceipt.logs) {
+    for (const eventInterface of EVENT_INTERFACES) {
+      try {
+        const parsed = eventInterface.parseLog(log)
+        if (!parsed || parsed.name !== eventName) continue
+        return {
+          event: parsed.name,
+          eventName: parsed.name,
+          args: parsed.args,
+          transactionHash: log.transactionHash,
+          blockHash: log.blockHash,
+          blockNumber: log.blockNumber,
+          address: log.address,
+          logIndex: log.index,
+          topics: log.topics,
+          data: log.data
+        }
+      } catch {
+        // ignore non-matching log/interface pairs
+      }
+    }
+  }
+  return undefined
 }
 
 /**
@@ -130,7 +170,7 @@ export function getEventFromTx(
  * @param {number} gasFeeMultiplier number represinting the multiplier we apply to gas fees
  * @param {Function} functionToSend function that we need to send
  * @param {...any[]} args arguments of the function
- * @return {Promise<any>} transaction receipt
+ * @return {Promise<any>}  transaction receipt
  */
 export async function sendTx(
   estGas: bigint,
@@ -139,6 +179,15 @@ export async function sendTx(
   functionToSend: BaseContractMethod,
   ...args: any[]
 ): Promise<TransactionResponse> {
+  const overrides = await buildTxOverrides(estGas, signer, gasFeeMultiplier)
+  return sendPreparedTx(functionToSend, args, overrides)
+}
+
+export async function buildTxOverrides(
+  estGas: bigint,
+  signer: Signer,
+  gasFeeMultiplier: number
+): Promise<Record<string, any>> {
   const { chainId } = await signer.provider.getNetwork()
   const feeHistory = await signer.provider.getFeeData()
   let overrides: Record<string, any> = {}
@@ -186,12 +235,43 @@ export async function sendTx(
     }
   }
   overrides.gasLimit = BigInt(new BigNumber(estGas).plus(20000n).toString())
+  return overrides
+}
+
+export async function buildUnsignedTx(
+  functionToSend: BaseContractMethod,
+  args: any[],
+  overrides: Record<string, any>
+): Promise<TransactionRequest> {
+  const tx = await functionToSend.populateTransaction(...args, overrides)
+  return tx
+}
+
+export async function sendPreparedTx(
+  functionToSend: BaseContractMethod,
+  args: any[],
+  overrides: Record<string, any>
+): Promise<TransactionResponse> {
   try {
     const trxReceipt = await functionToSend(...args, overrides)
     await trxReceipt.wait()
     return trxReceipt
   } catch (e) {
     LoggerInstance.error('Send tx error: ', e)
+    return null
+  }
+}
+
+export async function sendPreparedTransaction(
+  signer: Signer,
+  tx: TransactionRequest
+): Promise<TransactionResponse> {
+  try {
+    const trxReceipt = await signer.sendTransaction(tx)
+    await trxReceipt.wait()
+    return trxReceipt
+  } catch (e) {
+    LoggerInstance.error('Send prepared tx error: ', e)
     return null
   }
 }

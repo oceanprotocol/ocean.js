@@ -3,7 +3,12 @@ import { LoggerInstance } from '../utils/Logger'
 import { sleep } from '../utils/General.js'
 import { Signer } from 'ethers'
 import { signRequest } from '../utils/SignatureUtils.js'
-import { Asset, DDO, DDOManager, ValidateMetadata } from '@oceanprotocol/ddo-js'
+import {
+  DDOManager,
+  type Asset,
+  type DDO,
+  type ValidateMetadata
+} from '@oceanprotocol/ddo-js'
 import { PROTOCOL_COMMANDS } from '../@types/Provider.js'
 import { isP2pUri, getAuthorization } from './providers/BaseProvider.js'
 import { ProviderInstance } from './Provider.js'

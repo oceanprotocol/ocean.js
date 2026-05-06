@@ -1,5 +1,10 @@
 import FixedRateExchangeAbi from '@oceanprotocol/contracts/artifacts/contracts/pools/fixedRate/FixedRateExchange.sol/FixedRateExchange.json'
-import { sendTx } from '../utils/ContractUtils.js'
+import { TransactionRequest } from 'ethers'
+import {
+  buildTxOverrides,
+  buildUnsignedTx,
+  sendPreparedTransaction
+} from '../utils/ContractUtils.js'
 import {
   PriceAndFees,
   FeesInfo,
@@ -44,6 +49,25 @@ export class FixedRateExchange extends SmartContractWithAddress {
     consumeMarketFee: string = '0',
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
+    const tx = await this.buyDatatokensTx(
+      exchangeId,
+      datatokenAmount,
+      maxBaseTokenAmount,
+      consumeMarketAddress,
+      consumeMarketFee
+    )
+    if (estimateGas) return <ReceiptOrEstimate<G>>tx.gasLimit
+    const trxReceipt = await sendPreparedTransaction(this.getSignerAccordingSdk(), tx)
+    return <ReceiptOrEstimate<G>>trxReceipt
+  }
+
+  public async buyDatatokensTx(
+    exchangeId: string,
+    datatokenAmount: string,
+    maxBaseTokenAmount: string,
+    consumeMarketAddress: string = ZERO_ADDRESS,
+    consumeMarketFee: string = '0'
+  ): Promise<TransactionRequest> {
     const exchange = await this.getExchange(exchangeId)
     const consumeMarketFeeFormatted = await this.amountToUnits(null, consumeMarketFee, 18)
     const dtAmountFormatted = await this.amountToUnits(
@@ -56,7 +80,6 @@ export class FixedRateExchange extends SmartContractWithAddress {
       maxBaseTokenAmount,
       Number(exchange.btDecimals)
     )
-
     const estGas = await this.contract.buyDT.estimateGas(
       exchangeId,
       dtAmountFormatted,
@@ -64,20 +87,22 @@ export class FixedRateExchange extends SmartContractWithAddress {
       consumeMarketAddress,
       consumeMarketFeeFormatted
     )
-    if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-    const trxReceipt = await sendTx(
+    const overrides = await buildTxOverrides(
       estGas,
       this.getSignerAccordingSdk(),
-      this.config?.gasFeeMultiplier,
-      this.contract.buyDT,
-      exchangeId,
-      dtAmountFormatted,
-      maxBtFormatted,
-      consumeMarketAddress,
-      consumeMarketFeeFormatted
+      this.config?.gasFeeMultiplier
     )
-
-    return <ReceiptOrEstimate<G>>trxReceipt
+    return buildUnsignedTx(
+      this.contract.buyDT,
+      [
+        exchangeId,
+        dtAmountFormatted,
+        maxBtFormatted,
+        consumeMarketAddress,
+        consumeMarketFeeFormatted
+      ],
+      overrides
+    )
   }
 
   /**
@@ -98,6 +123,25 @@ export class FixedRateExchange extends SmartContractWithAddress {
     consumeMarketFee: string = '0',
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
+    const tx = await this.sellDatatokensTx(
+      exchangeId,
+      datatokenAmount,
+      minBaseTokenAmount,
+      consumeMarketAddress,
+      consumeMarketFee
+    )
+    if (estimateGas) return <ReceiptOrEstimate<G>>tx.gasLimit
+    const trxReceipt = await sendPreparedTransaction(this.getSignerAccordingSdk(), tx)
+    return <ReceiptOrEstimate<G>>trxReceipt
+  }
+
+  public async sellDatatokensTx(
+    exchangeId: string,
+    datatokenAmount: string,
+    minBaseTokenAmount: string,
+    consumeMarketAddress: string = ZERO_ADDRESS,
+    consumeMarketFee: string = '0'
+  ): Promise<TransactionRequest> {
     const exchange = await this.getExchange(exchangeId)
     const consumeMarketFeeFormatted = await this.amountToUnits(null, consumeMarketFee, 18)
     const dtAmountFormatted = await this.amountToUnits(
@@ -117,19 +161,22 @@ export class FixedRateExchange extends SmartContractWithAddress {
       consumeMarketAddress,
       consumeMarketFeeFormatted
     )
-    if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-    const trxReceipt = await sendTx(
+    const overrides = await buildTxOverrides(
       estGas,
       this.getSignerAccordingSdk(),
-      this.config?.gasFeeMultiplier,
-      this.contract.sellDT,
-      exchangeId,
-      dtAmountFormatted,
-      minBtFormatted,
-      consumeMarketAddress,
-      consumeMarketFeeFormatted
+      this.config?.gasFeeMultiplier
     )
-    return <ReceiptOrEstimate<G>>trxReceipt
+    return buildUnsignedTx(
+      this.contract.sellDT,
+      [
+        exchangeId,
+        dtAmountFormatted,
+        minBtFormatted,
+        consumeMarketAddress,
+        consumeMarketFeeFormatted
+      ],
+      overrides
+    )
   }
 
   /**
@@ -153,21 +200,25 @@ export class FixedRateExchange extends SmartContractWithAddress {
     newRate: string,
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
-    const estGas = await this.contract.setRate.estimateGas(
-      exchangeId,
-      await this.amountToUnits(null, newRate, 18)
-    )
-    if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-    const trxReceipt = await sendTx(
-      estGas,
-      this.getSignerAccordingSdk(),
-      this.config?.gasFeeMultiplier,
-      this.contract.setRate,
-      exchangeId,
-      await this.amountToUnits(null, newRate, 18)
-    )
+    const tx = await this.setRateTx(exchangeId, newRate)
+    if (estimateGas) return <ReceiptOrEstimate<G>>tx.gasLimit
+    const trxReceipt = await sendPreparedTransaction(this.getSignerAccordingSdk(), tx)
 
     return <ReceiptOrEstimate<G>>trxReceipt
+  }
+
+  public async setRateTx(
+    exchangeId: string,
+    newRate: string
+  ): Promise<TransactionRequest> {
+    const newRateUnits = await this.amountToUnits(null, newRate, 18)
+    const estGas = await this.contract.setRate.estimateGas(exchangeId, newRateUnits)
+    const overrides = await buildTxOverrides(
+      estGas,
+      this.getSignerAccordingSdk(),
+      this.config?.gasFeeMultiplier
+    )
+    return buildUnsignedTx(this.contract.setRate, [exchangeId, newRateUnits], overrides)
   }
 
   /**
@@ -182,20 +233,30 @@ export class FixedRateExchange extends SmartContractWithAddress {
     newAllowedSwapper: string,
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
+    const tx = await this.setAllowedSwapperTx(exchangeId, newAllowedSwapper)
+    if (estimateGas) return <ReceiptOrEstimate<G>>tx.gasLimit
+    const trxReceipt = await sendPreparedTransaction(this.getSignerAccordingSdk(), tx)
+    return <ReceiptOrEstimate<G>>trxReceipt
+  }
+
+  public async setAllowedSwapperTx(
+    exchangeId: string,
+    newAllowedSwapper: string
+  ): Promise<TransactionRequest> {
     const estGas = await this.contract.setAllowedSwapper.estimateGas(
       exchangeId,
       newAllowedSwapper
     )
-    if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-    const trxReceipt = await sendTx(
+    const overrides = await buildTxOverrides(
       estGas,
       this.getSignerAccordingSdk(),
-      this.config?.gasFeeMultiplier,
-      this.contract.setAllowedSwapper,
-      exchangeId,
-      newAllowedSwapper
+      this.config?.gasFeeMultiplier
     )
-    return <ReceiptOrEstimate<G>>trxReceipt
+    return buildUnsignedTx(
+      this.contract.setAllowedSwapper,
+      [exchangeId, newAllowedSwapper],
+      overrides
+    )
   }
 
   /**
@@ -211,16 +272,23 @@ export class FixedRateExchange extends SmartContractWithAddress {
     const exchange = await this.getExchange(exchangeId)
     if (!exchange) return null
     if (exchange.active === true) return null
+    const tx = await this.activateTx(exchangeId)
+    if (estimateGas) return <ReceiptOrEstimate<G>>tx.gasLimit
+    const trxReceipt = await sendPreparedTransaction(this.getSignerAccordingSdk(), tx)
+    return <ReceiptOrEstimate<G>>trxReceipt
+  }
+
+  public async activateTx(exchangeId: string): Promise<TransactionRequest> {
+    const exchange = await this.getExchange(exchangeId)
+    if (!exchange) throw new Error('Exchange not found')
+    if (exchange.active === true) throw new Error('Exchange already active')
     const estGas = await this.contract.toggleExchangeState.estimateGas(exchangeId)
-    if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-    const trxReceipt = await sendTx(
+    const overrides = await buildTxOverrides(
       estGas,
       this.getSignerAccordingSdk(),
-      this.config?.gasFeeMultiplier,
-      this.contract.toggleExchangeState,
-      exchangeId
+      this.config?.gasFeeMultiplier
     )
-    return <ReceiptOrEstimate<G>>trxReceipt
+    return buildUnsignedTx(this.contract.toggleExchangeState, [exchangeId], overrides)
   }
 
   /**
@@ -237,16 +305,23 @@ export class FixedRateExchange extends SmartContractWithAddress {
     if (!exchange) return null
     if (exchange.active === false) return null
 
+    const tx = await this.deactivateTx(exchangeId)
+    if (estimateGas) return <ReceiptOrEstimate<G>>tx.gasLimit
+    const trxReceipt = await sendPreparedTransaction(this.getSignerAccordingSdk(), tx)
+    return <ReceiptOrEstimate<G>>trxReceipt
+  }
+
+  public async deactivateTx(exchangeId: string): Promise<TransactionRequest> {
+    const exchange = await this.getExchange(exchangeId)
+    if (!exchange) throw new Error('Exchange not found')
+    if (exchange.active === false) throw new Error('Exchange already inactive')
     const estGas = await this.contract.toggleExchangeState.estimateGas(exchangeId)
-    if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-    const trxReceipt = await sendTx(
+    const overrides = await buildTxOverrides(
       estGas,
       this.getSignerAccordingSdk(),
-      this.config?.gasFeeMultiplier,
-      this.contract.toggleExchangeState,
-      exchangeId
+      this.config?.gasFeeMultiplier
     )
-    return <ReceiptOrEstimate<G>>trxReceipt
+    return buildUnsignedTx(this.contract.toggleExchangeState, [exchangeId], overrides)
   }
 
   /**
@@ -477,17 +552,23 @@ export class FixedRateExchange extends SmartContractWithAddress {
     if (!exchange) return null
     if (exchange.withMint === true) return null
 
+    const tx = await this.activateMintTx(exchangeId)
+    if (estimateGas) return <ReceiptOrEstimate<G>>tx.gasLimit
+    const trxReceipt = await sendPreparedTransaction(this.getSignerAccordingSdk(), tx)
+    return <ReceiptOrEstimate<G>>trxReceipt
+  }
+
+  public async activateMintTx(exchangeId: string): Promise<TransactionRequest> {
+    const exchange = await this.getExchange(exchangeId)
+    if (!exchange) throw new Error('Exchange not found')
+    if (exchange.withMint === true) throw new Error('Mint already active')
     const estGas = await this.contract.toggleMintState.estimateGas(exchangeId, true)
-    if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-    const trxReceipt = await sendTx(
+    const overrides = await buildTxOverrides(
       estGas,
       this.getSignerAccordingSdk(),
-      this.config?.gasFeeMultiplier,
-      this.contract.toggleMintState,
-      exchangeId,
-      true
+      this.config?.gasFeeMultiplier
     )
-    return <ReceiptOrEstimate<G>>trxReceipt
+    return buildUnsignedTx(this.contract.toggleMintState, [exchangeId, true], overrides)
   }
 
   /**
@@ -504,17 +585,23 @@ export class FixedRateExchange extends SmartContractWithAddress {
     if (!exchange) return null
     if (exchange.withMint === false) return null
 
+    const tx = await this.deactivateMintTx(exchangeId)
+    if (estimateGas) return <ReceiptOrEstimate<G>>tx.gasLimit
+    const trxReceipt = await sendPreparedTransaction(this.getSignerAccordingSdk(), tx)
+    return <ReceiptOrEstimate<G>>trxReceipt
+  }
+
+  public async deactivateMintTx(exchangeId: string): Promise<TransactionRequest> {
+    const exchange = await this.getExchange(exchangeId)
+    if (!exchange) throw new Error('Exchange not found')
+    if (exchange.withMint === false) throw new Error('Mint already inactive')
     const estGas = await this.contract.toggleMintState.estimateGas(exchangeId, false)
-    if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-    const trxReceipt = await sendTx(
+    const overrides = await buildTxOverrides(
       estGas,
       this.getSignerAccordingSdk(),
-      this.config?.gasFeeMultiplier,
-      this.contract.toggleMintState,
-      exchangeId,
-      false
+      this.config?.gasFeeMultiplier
     )
-    return <ReceiptOrEstimate<G>>trxReceipt
+    return buildUnsignedTx(this.contract.toggleMintState, [exchangeId, false], overrides)
   }
 
   /**
@@ -529,27 +616,31 @@ export class FixedRateExchange extends SmartContractWithAddress {
     amount: string,
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
-    const exchange = await this.getExchange(exchangeId)
-    if (!exchange) return null
+    const tx = await this.collectBasetokensTx(exchangeId, amount)
+    if (estimateGas) return <ReceiptOrEstimate<G>>tx.gasLimit
+    const trxReceipt = await sendPreparedTransaction(this.getSignerAccordingSdk(), tx)
+    return <ReceiptOrEstimate<G>>trxReceipt
+  }
 
+  public async collectBasetokensTx(
+    exchangeId: string,
+    amount: string
+  ): Promise<TransactionRequest> {
+    const exchange = await this.getExchange(exchangeId)
+    if (!exchange) throw new Error('Exchange not found')
     const fixedrate: FixedPriceExchange = await this.contract.getExchange(exchangeId)
     const amountWei = await this.amountToUnits(
       fixedrate.baseToken,
       amount,
       Number(fixedrate.btDecimals)
     )
-
     const estGas = await this.contract.collectBT.estimateGas(exchangeId, amountWei)
-    if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-    const trxReceipt = await sendTx(
+    const overrides = await buildTxOverrides(
       estGas,
       this.getSignerAccordingSdk(),
-      this.config?.gasFeeMultiplier,
-      this.contract.collectBT,
-      exchangeId,
-      amountWei
+      this.config?.gasFeeMultiplier
     )
-    return <ReceiptOrEstimate<G>>trxReceipt
+    return buildUnsignedTx(this.contract.collectBT, [exchangeId, amountWei], overrides)
   }
 
   /**
@@ -564,27 +655,31 @@ export class FixedRateExchange extends SmartContractWithAddress {
     amount: string,
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
-    const exchange = await this.getExchange(exchangeId)
-    if (!exchange) return null
+    const tx = await this.collectDatatokensTx(exchangeId, amount)
+    if (estimateGas) return <ReceiptOrEstimate<G>>tx.gasLimit
+    const trxReceipt = await sendPreparedTransaction(this.getSignerAccordingSdk(), tx)
+    return <ReceiptOrEstimate<G>>trxReceipt
+  }
 
+  public async collectDatatokensTx(
+    exchangeId: string,
+    amount: string
+  ): Promise<TransactionRequest> {
+    const exchange = await this.getExchange(exchangeId)
+    if (!exchange) throw new Error('Exchange not found')
     const fixedrate: FixedPriceExchange = await this.contract.getExchange(exchangeId)
     const amountWei = await this.amountToUnits(
       fixedrate.datatoken,
       amount,
       Number(fixedrate.dtDecimals)
     )
-
     const estGas = await this.contract.collectDT.estimateGas(exchangeId, amountWei)
-    if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-    const trxReceipt = await sendTx(
+    const overrides = await buildTxOverrides(
       estGas,
       this.getSignerAccordingSdk(),
-      this.config?.gasFeeMultiplier,
-      this.contract.collectDT,
-      exchangeId,
-      amountWei
+      this.config?.gasFeeMultiplier
     )
-    return <ReceiptOrEstimate<G>>trxReceipt
+    return buildUnsignedTx(this.contract.collectDT, [exchangeId, amountWei], overrides)
   }
 
   /**
@@ -600,17 +695,20 @@ export class FixedRateExchange extends SmartContractWithAddress {
     const exchange = await this.getExchange(exchangeId)
     if (!exchange) return null
 
+    const tx = await this.collectMarketFeeTx(exchangeId)
+    if (estimateGas) return <ReceiptOrEstimate<G>>tx.gasLimit
+    const trxReceipt = await sendPreparedTransaction(this.getSignerAccordingSdk(), tx)
+    return <ReceiptOrEstimate<G>>trxReceipt
+  }
+
+  public async collectMarketFeeTx(exchangeId: string): Promise<TransactionRequest> {
     const estGas = await this.contract.collectMarketFee.estimateGas(exchangeId)
-    if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-    const trxReceipt = await sendTx(
+    const overrides = await buildTxOverrides(
       estGas,
       this.getSignerAccordingSdk(),
-      this.config?.gasFeeMultiplier,
-      this.contract.collectMarketFee,
-      exchangeId
+      this.config?.gasFeeMultiplier
     )
-
-    return <ReceiptOrEstimate<G>>trxReceipt
+    return buildUnsignedTx(this.contract.collectMarketFee, [exchangeId], overrides)
   }
 
   /**
@@ -623,20 +721,22 @@ export class FixedRateExchange extends SmartContractWithAddress {
     exchangeId: string,
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
-    const exchange = await this.getExchange(exchangeId)
-    if (!exchange) return null
+    const tx = await this.collectOceanFeeTx(exchangeId)
+    if (estimateGas) return <ReceiptOrEstimate<G>>tx.gasLimit
+    const trxReceipt = await sendPreparedTransaction(this.getSignerAccordingSdk(), tx)
+    return <ReceiptOrEstimate<G>>trxReceipt
+  }
 
+  public async collectOceanFeeTx(exchangeId: string): Promise<TransactionRequest> {
+    const exchange = await this.getExchange(exchangeId)
+    if (!exchange) throw new Error('Exchange not found')
     const estGas = await this.contract.collectOceanFee.estimateGas(exchangeId)
-    if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-    const trxReceipt = await sendTx(
+    const overrides = await buildTxOverrides(
       estGas,
       this.getSignerAccordingSdk(),
-      this.config?.gasFeeMultiplier,
-      this.contract.collectOceanFee,
-      exchangeId
+      this.config?.gasFeeMultiplier
     )
-
-    return <ReceiptOrEstimate<G>>trxReceipt
+    return buildUnsignedTx(this.contract.collectOceanFee, [exchangeId], overrides)
   }
 
   /**
@@ -679,21 +779,31 @@ export class FixedRateExchange extends SmartContractWithAddress {
     newMarketFee: string,
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
+    const tx = await this.updateMarketFeeTx(exchangeId, newMarketFee)
+    if (estimateGas) return <ReceiptOrEstimate<G>>tx.gasLimit
+    const trxReceipt = await sendPreparedTransaction(this.getSignerAccordingSdk(), tx)
+    return <ReceiptOrEstimate<G>>trxReceipt
+  }
+
+  public async updateMarketFeeTx(
+    exchangeId: string,
+    newMarketFee: string
+  ): Promise<TransactionRequest> {
+    const newMarketFeeUnits = await this.amountToUnits(null, newMarketFee, 18)
     const estGas = await this.contract.updateMarketFee.estimateGas(
       exchangeId,
-      await this.amountToUnits(null, newMarketFee, 18)
+      newMarketFeeUnits
     )
-    if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-    const trxReceipt = await sendTx(
+    const overrides = await buildTxOverrides(
       estGas,
       this.getSignerAccordingSdk(),
-      this.config?.gasFeeMultiplier,
-      this.contract.updateMarketFee,
-      exchangeId,
-      await this.amountToUnits(null, newMarketFee, 18)
+      this.config?.gasFeeMultiplier
     )
-
-    return <ReceiptOrEstimate<G>>trxReceipt
+    return buildUnsignedTx(
+      this.contract.updateMarketFee,
+      [exchangeId, newMarketFeeUnits],
+      overrides
+    )
   }
 
   /**
@@ -708,20 +818,29 @@ export class FixedRateExchange extends SmartContractWithAddress {
     newMarketFeeCollector: string,
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
+    const tx = await this.updateMarketFeeCollectorTx(exchangeId, newMarketFeeCollector)
+    if (estimateGas) return <ReceiptOrEstimate<G>>tx.gasLimit
+    const trxReceipt = await sendPreparedTransaction(this.getSignerAccordingSdk(), tx)
+    return <ReceiptOrEstimate<G>>trxReceipt
+  }
+
+  public async updateMarketFeeCollectorTx(
+    exchangeId: string,
+    newMarketFeeCollector: string
+  ): Promise<TransactionRequest> {
     const estGas = await this.contract.updateMarketFeeCollector.estimateGas(
       exchangeId,
       newMarketFeeCollector
     )
-    if (estimateGas) return <ReceiptOrEstimate<G>>estGas
-    const trxReceipt = await sendTx(
+    const overrides = await buildTxOverrides(
       estGas,
       this.getSignerAccordingSdk(),
-      this.config?.gasFeeMultiplier,
-      this.contract.updateMarketFeeCollector,
-      exchangeId,
-      newMarketFeeCollector
+      this.config?.gasFeeMultiplier
     )
-
-    return <ReceiptOrEstimate<G>>trxReceipt
+    return buildUnsignedTx(
+      this.contract.updateMarketFeeCollector,
+      [exchangeId, newMarketFeeCollector],
+      overrides
+    )
   }
 }
