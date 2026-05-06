@@ -100,6 +100,7 @@ export class AccessListContract extends SmartContractWithAddress {
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
     const tx = await this.mintTx(user, tokenUri)
+    if (estimateGas) return <ReceiptOrEstimate<G>>tx.gasLimit
     const trxReceipt = await sendPreparedTransaction(this.getSignerAccordingSdk(), tx)
     return <ReceiptOrEstimate<G>>trxReceipt
   }

@@ -56,6 +56,7 @@ export class FixedRateExchange extends SmartContractWithAddress {
       consumeMarketAddress,
       consumeMarketFee
     )
+    if (estimateGas) return <ReceiptOrEstimate<G>>tx.gasLimit
     const trxReceipt = await sendPreparedTransaction(this.getSignerAccordingSdk(), tx)
     return <ReceiptOrEstimate<G>>trxReceipt
   }
@@ -129,6 +130,7 @@ export class FixedRateExchange extends SmartContractWithAddress {
       consumeMarketAddress,
       consumeMarketFee
     )
+    if (estimateGas) return <ReceiptOrEstimate<G>>tx.gasLimit
     const trxReceipt = await sendPreparedTransaction(this.getSignerAccordingSdk(), tx)
     return <ReceiptOrEstimate<G>>trxReceipt
   }

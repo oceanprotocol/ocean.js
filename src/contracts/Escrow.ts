@@ -206,6 +206,7 @@ export class EscrowContract extends SmartContractWithAddress {
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
     const tx = await this.depositTx(token, amount, tokenDecimals)
+    if (estimateGas) return <ReceiptOrEstimate<G>>tx.gasLimit
     const trxReceipt = await sendPreparedTransaction(this.getSignerAccordingSdk(), tx)
     return <ReceiptOrEstimate<G>>trxReceipt
   }
@@ -341,6 +342,7 @@ export class EscrowContract extends SmartContractWithAddress {
       maxLockCounts,
       tokenDecimals
     )
+    if (estimateGas) return <ReceiptOrEstimate<G>>tx.gasLimit
     const trxReceipt = await sendPreparedTransaction(this.getSignerAccordingSdk(), tx)
     return <ReceiptOrEstimate<G>>trxReceipt
   }

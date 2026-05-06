@@ -540,6 +540,7 @@ export class NftFactory extends SmartContractWithAddress {
       dtParams,
       freParams
     )
+    if (estimateGas) return <ReceiptOrEstimate<G>>tx.gasLimit
     const trxReceipt = await sendPreparedTransaction(this.getSignerAccordingSdk(), tx)
 
     return <ReceiptOrEstimate<G>>trxReceipt
@@ -589,6 +590,7 @@ export class NftFactory extends SmartContractWithAddress {
       dtParams,
       dispenserParams
     )
+    if (estimateGas) return <ReceiptOrEstimate<G>>tx.gasLimit
     const trxReceipt = await sendPreparedTransaction(this.getSignerAccordingSdk(), tx)
 
     return <ReceiptOrEstimate<G>>trxReceipt

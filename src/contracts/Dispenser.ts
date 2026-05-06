@@ -62,6 +62,7 @@ export class Dispenser extends SmartContractWithAddress {
       maxBalance,
       allowedSwapper
     )
+    if (estimateGas) return <ReceiptOrEstimate<G>>tx.gasLimit
     const trxReceipt = await sendPreparedTransaction(this.getSignerAccordingSdk(), tx)
     return <ReceiptOrEstimate<G>>trxReceipt
   }

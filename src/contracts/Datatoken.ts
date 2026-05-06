@@ -68,6 +68,7 @@ export class Datatoken extends SmartContract {
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
     const tx = await this.approveTx(dtAddress, spender, amount)
+    if (estimateGas) return <ReceiptOrEstimate<G>>tx.gasLimit
     const trxReceipt = await sendPreparedTransaction(this.getSignerAccordingSdk(), tx)
     return <ReceiptOrEstimate<G>>trxReceipt
   }
@@ -691,6 +692,7 @@ export class Datatoken extends SmartContract {
       orderParams,
       dispenserContract
     )
+    if (estimateGas) return <ReceiptOrEstimate<G>>tx.gasLimit
     const trxReceipt = await sendPreparedTransaction(this.getSignerAccordingSdk(), tx)
     return <ReceiptOrEstimate<G>>trxReceipt
   }

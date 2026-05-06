@@ -824,6 +824,7 @@ export class Nft extends SmartContract {
     estimateGas?: G
   ): Promise<ReceiptOrEstimate<G>> {
     const tx = await this.setTokenURITx(nftAddress, data)
+    if (estimateGas) return <ReceiptOrEstimate<G>>tx.gasLimit
     const trxReceipt = await sendPreparedTransaction(this.getSignerAccordingSdk(), tx)
     return <ReceiptOrEstimate<G>>trxReceipt
   }
@@ -952,8 +953,8 @@ export class Nft extends SmartContract {
    * Gets the token URI of an NFT.
    * @param {string} nftAddress - The address of the NFT.
    * @param {number} id - The ID of the token.
-   * @returns {Promise&lt;string&gt;}
-    if (estimateGas) return <ReceiptOrEstimate<G>>tx.gasLimit
+   * @returns {Promise<string>}
+    
    */
   public async getTokenURI(nftAddress: string, id: number): Promise<string> {
     const nftContract = this.getContract(nftAddress)
