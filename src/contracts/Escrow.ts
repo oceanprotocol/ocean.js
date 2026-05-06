@@ -354,7 +354,16 @@ export class EscrowContract extends SmartContractWithAddress {
     maxLockSeconds: string,
     maxLockCounts: string,
     tokenDecimals?: number
-  ): Promise<TransactionRequest> {
+  ): Promise<TransactionRequest | null> {
+    const auths = await this.getAuthorizations(
+      token,
+      await this.signer.getAddress(),
+      payee
+    )
+    if (auths.length !== 0) {
+      console.log(`Payee ${payee} already authorized`)
+      return null
+    }
     const {
       tokenArg,
       payeeArg,
