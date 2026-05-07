@@ -8,7 +8,6 @@ const require = createRequire(import.meta.url);
 const fs = require('fs')
 const TypeDoc = require('typedoc')
 const typescript = require('typescript')
-const ora = require('ora')
 const libJsPackage = require('../package.json')
 
 const { description, version } = libJsPackage
@@ -21,20 +20,17 @@ const files = ['./src/index.ts']
 const config = typescript.findConfigFile('./tsconfig.js', typescript.sys.fileExists)
 
 const generateJson = async () => {
-  const spinnerTypedoc = ora('Generating TypeDoc json...').start()
+  process.stdout.write('Generating TypeDoc json...\n')
 
-  // Setup our TypeDoc app
-  const app = new TypeDoc.Application()
-  app.options.addReader(new TypeDoc.TSConfigReader())
-  app.options.addReader(new TypeDoc.TypeDocReader())
-
-  app.bootstrap({
+  const app = await TypeDoc.Application.bootstrap({
     tsconfig: config,
     entryPoints: files
   })
 
-  const src = app.getEntryPoints()
-  const project = app.converter.convert(src)
+  const project = await app.convert()
+  if (!project) {
+    throw new Error('TypeDoc conversion failed.')
+  }
 
   // Generate the JSON file
   await app.generateJson(project, outPath)
@@ -54,7 +50,7 @@ const generateJson = async () => {
 
   fs.writeFileSync(outPath, JSON.stringify(jsonFinal, null, 2))
 
-  spinnerTypedoc.succeed('Generated TypeDoc json.')
+  process.stdout.write('Generated TypeDoc json.\n')
 }
 
 generateJson().catch(console.error)
