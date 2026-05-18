@@ -788,7 +788,7 @@ export class P2pProvider {
       )
       // ocean-node may return a plain number or { nonce: number }
       const nonceValue =
-        typeof result === 'number' ? result : result?.nonce ?? result ?? 0
+        typeof result === 'number' ? result : (result?.nonce ?? result ?? 0)
       return !nonceValue || nonceValue === null ? 0 : Number(nonceValue)
     } catch (e) {
       LoggerInstance.error('P2P getNonce failed:', e)
@@ -1362,12 +1362,13 @@ export class P2pProvider {
     signature: string,
     nonce: string,
     nodeUri: OceanNode,
+    validUntil?: number,
     signal?: AbortSignal
   ): Promise<string> {
     const result = await this.sendP2pCommand(
       nodeUri,
       PROTOCOL_COMMANDS.CREATE_AUTH_TOKEN,
-      { address, signature, nonce },
+      { address, signature, nonce, validUntil },
       null,
       signal
     )
