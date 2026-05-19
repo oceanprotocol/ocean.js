@@ -443,6 +443,7 @@ export class BaseProvider {
     signature: string,
     nonce: string,
     nodeUri: OceanNode,
+    validUntil?: number,
     signal?: AbortSignal
   ): Promise<string> {
     return this.p2pProvider.generateSignedAuthToken(
@@ -450,6 +451,7 @@ export class BaseProvider {
       signature,
       nonce,
       nodeUri,
+      validUntil,
       signal
     )
   }

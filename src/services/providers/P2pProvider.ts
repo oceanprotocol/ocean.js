@@ -1362,12 +1362,13 @@ export class P2pProvider {
     signature: string,
     nonce: string,
     nodeUri: OceanNode,
+    validUntil?: number,
     signal?: AbortSignal
   ): Promise<string> {
     const result = await this.sendP2pCommand(
       nodeUri,
       PROTOCOL_COMMANDS.CREATE_AUTH_TOKEN,
-      { address, signature, nonce },
+      { address, signature, nonce, validUntil },
       null,
       signal
     )
