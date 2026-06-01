@@ -27,7 +27,8 @@ import {
   PersistentStorageCreateBucketRequest,
   PersistentStorageDeleteFileResponse,
   PersistentStorageFileEntry,
-  PersistentStorageObject
+  PersistentStorageObject,
+  PersistentStorageUpdateBucketResponse
 } from '../../@types/index.js'
 import { PROTOCOL_COMMANDS } from '../../@types/Provider.js'
 import { type DDO, type ValidateMetadata } from '@oceanprotocol/ddo-js'
@@ -1643,6 +1644,7 @@ export class HttpProvider {
     bucketId: string
     owner: string
     accessList: PersistentStorageAccessList[]
+    label?: string | null
   }> {
     const providerEndpoints = await this.getEndpoints(nodeUri)
     const serviceEndpoints = await this.getServiceEndpoints(nodeUri, providerEndpoints)
@@ -1667,7 +1669,8 @@ export class HttpProvider {
       headers,
       body: JSON.stringify({
         ...authPayload,
-        accessLists: payload.accessLists ?? []
+        accessLists: payload.accessLists ?? [],
+        label: payload.label
       }),
       signal
     })
@@ -1932,6 +1935,45 @@ export class HttpProvider {
     const response = await fetch(`${routeBase}?${query.toString()}`, {
       method: 'DELETE',
       headers,
+      signal
+    })
+    if (!response.ok) throw new Error(await response.text())
+    return response.json()
+  }
+
+  public async updatePersistentStorageBucket(
+    nodeUri: string,
+    signerOrAuthToken: Signer | string,
+    bucketId: string,
+    label: string | null,
+    signal?: AbortSignal
+  ): Promise<PersistentStorageUpdateBucketResponse> {
+    const providerEndpoints = await this.getEndpoints(nodeUri)
+    const serviceEndpoints = await this.getServiceEndpoints(nodeUri, providerEndpoints)
+    const routeBase = this.resolvePersistentStorageRoute(
+      nodeUri,
+      serviceEndpoints,
+      ['persistentStorageUpdateBucket'],
+      `/api/services/persistentStorage/buckets/${encodeURIComponent(bucketId)}`
+    )
+    const authPayload = await this.getPersistentStorageSignaturePayload(
+      nodeUri,
+      signerOrAuthToken,
+      PROTOCOL_COMMANDS.PERSISTENT_STORAGE_UPDATE_BUCKET,
+      signal
+    )
+    const headers: Record<string, string> = { 'Content-Type': 'application/json' }
+    if (typeof signerOrAuthToken === 'string') {
+      headers.Authorization = signerOrAuthToken
+    }
+
+    const query = new URLSearchParams({
+      ...authPayload
+    })
+    const response = await fetch(`${routeBase}?${query.toString()}`, {
+      method: 'PATCH',
+      headers,
+      body: JSON.stringify({ label }),
       signal
     })
     if (!response.ok) throw new Error(await response.text())

@@ -41,7 +41,8 @@ import {
   PersistentStorageCreateBucketRequest,
   PersistentStorageDeleteFileResponse,
   PersistentStorageFileEntry,
-  PersistentStorageObject
+  PersistentStorageObject,
+  PersistentStorageUpdateBucketResponse
 } from '../../@types/index.js'
 import { PROTOCOL_COMMANDS, NodeLogsParams, NodeLogEntry } from '../../@types/Provider.js'
 import { type DDO, type ValidateMetadata } from '@oceanprotocol/ddo-js'
@@ -1585,6 +1586,7 @@ export class P2pProvider {
     bucketId: string
     owner: string
     accessList: PersistentStorageAccessList[]
+    label?: string | null
   }> {
     const authPayload = await this.getPersistentStorageSignaturePayload(
       nodeUri,
@@ -1597,8 +1599,31 @@ export class P2pProvider {
       PROTOCOL_COMMANDS.PERSISTENT_STORAGE_CREATE_BUCKET,
       {
         ...authPayload,
-        accessLists: payload.accessLists ?? []
+        accessLists: payload.accessLists ?? [],
+        label: payload.label
       },
+      signerOrAuthToken,
+      signal
+    )
+  }
+
+  public async updatePersistentStorageBucket(
+    nodeUri: string | Multiaddr[],
+    signerOrAuthToken: Signer | string,
+    bucketId: string,
+    label: string | null,
+    signal?: AbortSignal
+  ): Promise<PersistentStorageUpdateBucketResponse> {
+    const authPayload = await this.getPersistentStorageSignaturePayload(
+      nodeUri,
+      signerOrAuthToken,
+      PROTOCOL_COMMANDS.PERSISTENT_STORAGE_UPDATE_BUCKET,
+      signal
+    )
+    return this.sendP2pCommand(
+      nodeUri,
+      PROTOCOL_COMMANDS.PERSISTENT_STORAGE_UPDATE_BUCKET,
+      { ...authPayload, bucketId, label },
       signerOrAuthToken,
       signal
     )

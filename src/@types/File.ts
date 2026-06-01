@@ -80,6 +80,7 @@ export type PersistentStorageAccessList = AccessList
 
 export interface PersistentStorageCreateBucketRequest {
   accessLists: PersistentStorageAccessList[]
+  label?: string
 }
 
 export interface PersistentStorageBucket {
@@ -87,6 +88,7 @@ export interface PersistentStorageBucket {
   owner: string
   createdAt: number
   accessLists: PersistentStorageAccessList[]
+  label?: string | null
 }
 
 export interface PersistentStorageFileEntry {
@@ -98,4 +100,9 @@ export interface PersistentStorageFileEntry {
 
 export interface PersistentStorageDeleteFileResponse {
   success: boolean
+}
+
+export interface PersistentStorageUpdateBucketResponse {
+  bucketId: string
+  label: string | null
 }

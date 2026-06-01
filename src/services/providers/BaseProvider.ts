@@ -29,7 +29,8 @@ import {
   PersistentStorageCreateBucketRequest,
   PersistentStorageDeleteFileResponse,
   PersistentStorageFileEntry,
-  PersistentStorageObject
+  PersistentStorageObject,
+  PersistentStorageUpdateBucketResponse
 } from '../../@types/index.js'
 import { type DDO, type ValidateMetadata } from '@oceanprotocol/ddo-js'
 import { decodeJwt } from '../../utils/Jwt.js'
@@ -533,11 +534,28 @@ export class BaseProvider {
     bucketId: string
     owner: string
     accessList: PersistentStorageAccessList[]
+    label?: string | null
   }> {
     return this.getImpl(nodeUri).createPersistentStorageBucket(
       nodeUri,
       signerOrAuthToken,
       payload,
+      signal
+    )
+  }
+
+  public async updatePersistentStorageBucket(
+    nodeUri: string | Multiaddr[],
+    signerOrAuthToken: Signer | string,
+    bucketId: string,
+    label: string | null,
+    signal?: AbortSignal
+  ): Promise<PersistentStorageUpdateBucketResponse> {
+    return this.getImpl(nodeUri).updatePersistentStorageBucket(
+      nodeUri,
+      signerOrAuthToken,
+      bucketId,
+      label,
       signal
     )
   }
