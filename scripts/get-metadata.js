@@ -2,12 +2,20 @@
 'use strict';
 
 import { execSync } from 'child_process';
-import packageInfo from '../package.json' with { type: 'json' };
+import { createRequire } from 'module';
+const require = createRequire(import.meta.url);
+const packageInfo = require('../package.json');
+let commitHash = 'unknown';
+try {
+  commitHash = execSync('git rev-parse HEAD').toString().trim();
+} catch (e) {
+  console.warn('Not a git repository, skipping commit hash metadata.');
+}
 process.stdout.write(
   JSON.stringify(
     {
       version: packageInfo.version,
-      commit: execSync('git rev-parse HEAD').toString().trim(),
+      commit: commitHash
     },
     null,
     2
