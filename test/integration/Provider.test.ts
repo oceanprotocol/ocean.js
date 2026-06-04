@@ -156,6 +156,35 @@ describe('Provider persistent storage tests', function () {
     assert(fileObject?.fileName === fileName, 'File object has wrong file name')
   })
 
+  it('creates a bucket with a label and renames it', async () => {
+    const created = await ProviderInstance.createPersistentStorageBucket(
+      nodeUri,
+      ownerSigner,
+      {
+        accessLists: [],
+        label: 'oceanjs-label'
+      }
+    )
+    assert(created?.bucketId, 'Bucket id was not returned')
+    assert(created?.label === 'oceanjs-label', 'Bucket label was not returned')
+
+    const renamed = await ProviderInstance.updatePersistentStorageBucket(
+      nodeUri,
+      ownerSigner,
+      created.bucketId,
+      'oceanjs-renamed'
+    )
+    assert(renamed?.label === 'oceanjs-renamed', 'Rename did not return the new label')
+
+    const buckets = await ProviderInstance.getPersistentStorageBuckets(
+      nodeUri,
+      ownerSigner,
+      ownerAddress
+    )
+    const found = buckets.find((bucket) => bucket.bucketId === created.bucketId)
+    assert(found?.label === 'oceanjs-renamed', 'Renamed label not reflected in list')
+  })
+
   it('denies a non-owner not in bucket ACL', async () => {
     let denied = false
     try {

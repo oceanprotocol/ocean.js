@@ -140,6 +140,7 @@ export const PROTOCOL_COMMANDS = {
   GET_LOGS: 'getLogs',
   JOBS: 'jobs',
   PERSISTENT_STORAGE_CREATE_BUCKET: 'persistentStorageCreateBucket',
+  PERSISTENT_STORAGE_UPDATE_BUCKET: 'persistentStorageUpdateBucket',
   PERSISTENT_STORAGE_GET_BUCKETS: 'persistentStorageGetBuckets',
   PERSISTENT_STORAGE_LIST_FILES: 'persistentStorageListFiles',
   PERSISTENT_STORAGE_UPLOAD_FILE: 'persistentStorageUploadFile',

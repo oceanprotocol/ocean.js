@@ -29,6 +29,7 @@ import {
   PersistentStorageDeleteFileResponse,
   PersistentStorageFileEntry,
   PersistentStorageObject,
+  PersistentStorageUpdateBucketResponse,
   OceanNode,
   NodeP2P,
   CompleteSignature,
@@ -568,11 +569,28 @@ export class BaseProvider {
     bucketId: string
     owner: string
     accessList: PersistentStorageAccessList[]
+    label?: string | null
   }> {
     return this.getImpl(nodeUri).createPersistentStorageBucket(
       nodeUri,
       signerOrAuthToken,
       payload,
+      signal
+    )
+  }
+
+  public async updatePersistentStorageBucket(
+    nodeUri: OceanNode,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
+    bucketId: string,
+    label: string | null,
+    signal?: AbortSignal
+  ): Promise<PersistentStorageUpdateBucketResponse> {
+    return this.getImpl(nodeUri).updatePersistentStorageBucket(
+      nodeUri,
+      signerOrAuthToken,
+      bucketId,
+      label,
       signal
     )
   }

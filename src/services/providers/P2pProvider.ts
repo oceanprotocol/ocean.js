@@ -42,6 +42,7 @@ import {
   PersistentStorageDeleteFileResponse,
   PersistentStorageFileEntry,
   PersistentStorageObject,
+  PersistentStorageUpdateBucketResponse,
   OceanNode,
   NodeP2P,
   SignerOrAuthTokenOrSignature,
@@ -1576,18 +1577,6 @@ export class P2pProvider {
     return this.sendP2pCommand(nodeUri, PROTOCOL_COMMANDS.PUSH_CONFIG, payload)
   }
 
-  private async getPersistentStorageSignaturePayload(
-    nodeUri: OceanNode,
-    signerOrAuthToken: SignerOrAuthTokenOrSignature,
-    command: string,
-    signal?: AbortSignal
-  ): Promise<{} | { consumerAddress: string; nonce: string; signature: string }> {
-    if (typeof signerOrAuthToken === 'string') {
-      return {}
-    }
-    return this.getSignedCommandParams(nodeUri, signerOrAuthToken, command, signal)
-  }
-
   public async createPersistentStorageBucket(
     nodeUri: OceanNode,
     signerOrAuthToken: SignerOrAuthTokenOrSignature,
@@ -1597,6 +1586,7 @@ export class P2pProvider {
     bucketId: string
     owner: string
     accessList: PersistentStorageAccessList[]
+    label?: string | null
   }> {
     const authPayload = await this.getSignedCommandParams(
       nodeUri,
@@ -1609,8 +1599,31 @@ export class P2pProvider {
       PROTOCOL_COMMANDS.PERSISTENT_STORAGE_CREATE_BUCKET,
       {
         ...authPayload,
-        accessLists: payload.accessLists ?? []
+        accessLists: payload.accessLists ?? [],
+        label: payload.label
       },
+      signerOrAuthToken,
+      signal
+    )
+  }
+
+  public async updatePersistentStorageBucket(
+    nodeUri: OceanNode,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
+    bucketId: string,
+    label: string | null,
+    signal?: AbortSignal
+  ): Promise<PersistentStorageUpdateBucketResponse> {
+    const authPayload = await this.getSignedCommandParams(
+      nodeUri,
+      signerOrAuthToken,
+      PROTOCOL_COMMANDS.PERSISTENT_STORAGE_UPDATE_BUCKET,
+      signal
+    )
+    return this.sendP2pCommand(
+      nodeUri,
+      PROTOCOL_COMMANDS.PERSISTENT_STORAGE_UPDATE_BUCKET,
+      { ...authPayload, bucketId, label },
       signerOrAuthToken,
       signal
     )
