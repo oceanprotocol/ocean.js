@@ -301,7 +301,8 @@ export class BaseProvider {
     policyServer?: any,
     signal?: AbortSignal,
     queueMaxWaitTime?: number,
-    dockerRegistryAuth?: dockerRegistryAuth
+    dockerRegistryAuth?: dockerRegistryAuth,
+    outputBucketId?: string
   ): Promise<ComputeJob | ComputeJob[]> {
     return this.getImpl(nodeUri).computeStart(
       nodeUri,
@@ -319,7 +320,8 @@ export class BaseProvider {
       policyServer,
       signal,
       queueMaxWaitTime,
-      dockerRegistryAuth
+      dockerRegistryAuth,
+      outputBucketId
     )
   }
 
@@ -336,7 +338,8 @@ export class BaseProvider {
     policyServer?: any,
     signal?: AbortSignal,
     queueMaxWaitTime?: number,
-    dockerRegistryAuth?: dockerRegistryAuth
+    dockerRegistryAuth?: dockerRegistryAuth,
+    outputBucketId?: string
   ): Promise<ComputeJob | ComputeJob[]> {
     return this.getImpl(nodeUri).freeComputeStart(
       nodeUri,
@@ -351,7 +354,8 @@ export class BaseProvider {
       policyServer,
       signal,
       queueMaxWaitTime,
-      dockerRegistryAuth
+      dockerRegistryAuth,
+      outputBucketId
     )
   }
 

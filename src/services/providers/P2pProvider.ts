@@ -1061,7 +1061,8 @@ export class P2pProvider {
     policyServer?: any,
     signal?: AbortSignal,
     queueMaxWaitTime?: number,
-    dockerRegistryAuth?: dockerRegistryAuth
+    dockerRegistryAuth?: dockerRegistryAuth,
+    outputBucketId?: string
   ): Promise<ComputeJob | ComputeJob[]> {
     const { consumerAddress, nonce, signature } = await this.getSignedCommandParams(
       nodeUri,
@@ -1100,6 +1101,7 @@ export class P2pProvider {
       const nodeKey = await this.getNodePublicKey(nodeUri)
       if (nodeKey) body.output = eciesencrypt(nodeKey, JSON.stringify(output))
     }
+    if (outputBucketId) body.outputBucketId = outputBucketId
 
     const result = await this.sendP2pCommand(
       nodeUri,
@@ -1127,7 +1129,8 @@ export class P2pProvider {
     policyServer?: any,
     signal?: AbortSignal,
     queueMaxWaitTime?: number,
-    dockerRegistryAuth?: dockerRegistryAuth
+    dockerRegistryAuth?: dockerRegistryAuth,
+    outputBucketId?: string
   ): Promise<ComputeJob | ComputeJob[]> {
     const { consumerAddress, nonce, signature } = await this.getSignedCommandParams(
       nodeUri,
@@ -1162,6 +1165,7 @@ export class P2pProvider {
       const nodeKey = await this.getNodePublicKey(nodeUri)
       if (nodeKey) body.output = eciesencrypt(nodeKey, JSON.stringify(output))
     }
+    if (outputBucketId) body.outputBucketId = outputBucketId
 
     const result = await this.sendP2pCommand(
       nodeUri,

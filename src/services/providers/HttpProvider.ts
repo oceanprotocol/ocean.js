@@ -684,6 +684,7 @@ export class HttpProvider {
    * @param {AbortSignal} signal abort signal
    * @param {number} queueMaxWaitTime Maximum time in seconds to wait in the compute queue if resources are not available
    * @param {dockerRegistryAuth} dockerRegistryAuth Docker registry authentication data.
+   * @param {string} outputBucketId Persistent-storage bucket id to store job results in, mounted at /data/outputs. Mutually exclusive with output.
    * @return {Promise<ComputeJob | ComputeJob[]>} The compute job or jobs.
    */
   public async computeStart(
@@ -702,7 +703,8 @@ export class HttpProvider {
     policyServer?: any,
     signal?: AbortSignal,
     queueMaxWaitTime?: number,
-    dockerRegistryAuth?: dockerRegistryAuth
+    dockerRegistryAuth?: dockerRegistryAuth,
+    outputBucketId?: string
   ): Promise<ComputeJob | ComputeJob[]> {
     const providerEndpoints = await this.getEndpoints(nodeUri)
     const serviceEndpoints = await this.getServiceEndpoints(nodeUri, providerEndpoints)
@@ -763,6 +765,7 @@ export class HttpProvider {
         payload.output = eciesencrypt(nodeKey, JSON.stringify(output))
       }
     }
+    if (outputBucketId) payload.outputBucketId = outputBucketId
     if (policyServer) payload.policyServer = policyServer
     if (queueMaxWaitTime) payload.queueMaxWaitTime = queueMaxWaitTime
     let response
@@ -811,6 +814,7 @@ export class HttpProvider {
    * @param {AbortSignal} signal abort signal
    * @param {number} queueMaxWaitTime Maximum time in seconds to wait in the compute queue if resources are not available
    * @param {dockerRegistryAuth} dockerRegistryAuth Docker registry authentication data.
+   * @param {string} outputBucketId Persistent-storage bucket id to store job results in, mounted at /data/outputs. Mutually exclusive with output.
    * @return {Promise<ComputeJob | ComputeJob[]>} The compute job or jobs.
    */
   public async freeComputeStart(
@@ -826,7 +830,8 @@ export class HttpProvider {
     policyServer?: any,
     signal?: AbortSignal,
     queueMaxWaitTime?: number,
-    dockerRegistryAuth?: dockerRegistryAuth
+    dockerRegistryAuth?: dockerRegistryAuth,
+    outputBucketId?: string
   ): Promise<ComputeJob | ComputeJob[]> {
     const providerEndpoints = await this.getEndpoints(nodeUri)
     const serviceEndpoints = await this.getServiceEndpoints(nodeUri, providerEndpoints)
@@ -878,6 +883,7 @@ export class HttpProvider {
         payload.output = eciesencrypt(nodeKey, JSON.stringify(output))
       }
     }
+    if (outputBucketId) payload.outputBucketId = outputBucketId
 
     if (policyServer) payload.policyServer = policyServer
     if (queueMaxWaitTime) payload.queueMaxWaitTime = queueMaxWaitTime
