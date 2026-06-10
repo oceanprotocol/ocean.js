@@ -90,7 +90,7 @@
     "@libp2p/tcp": "^11.0.13",
     "@libp2p/websockets": "^10.1.6",
     "@multiformats/multiaddr": "^13.0.1",
-    "@oceanprotocol/contracts": "^2.7.0",
+    "@oceanprotocol/contracts": "^2.8.0",
     "@truffle/hdwallet-provider": "^2.0.14",
     "@types/chai": "^5.2.2",
     "@types/chai-spies": "^1.0.3",
