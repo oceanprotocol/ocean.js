@@ -18,13 +18,21 @@ export function responseBodyToAsyncIterable(
   }
   return (async function* () {
     const reader = body.getReader()
+    let reachedEnd = false
     try {
       for (;;) {
         const { value, done } = await reader.read()
-        if (done) break
+        if (done) {
+          reachedEnd = true
+          break
+        }
         if (value) yield value
       }
     } finally {
+      // If the consumer stopped early (break/return/throw before EOF), cancel the
+      // stream so the underlying socket is closed; releaseLock alone would leak it.
+      // On normal EOF the stream is already closed, so skip the cancel.
+      if (!reachedEnd) reader.cancel().catch(() => {})
       reader.releaseLock()
     }
   })()

@@ -1506,7 +1506,7 @@ export class HttpProvider {
     }
 
     if (response?.ok) {
-      return responseBodyToAsyncIterable(response.body) as unknown as NodeLogEntry[]
+      return (await response.json()) as NodeLogEntry[]
     }
 
     const resolvedResponse = await response.json()
