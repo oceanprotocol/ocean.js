@@ -325,8 +325,9 @@ export class BaseProvider {
       dockerRegistryAuth,
       outputBucketId
     )
+    const job = Array.isArray(jobs) ? jobs[0] : jobs
     try {
-      await this.notifyIncentiveBackendJobStarted(nodeUri, computeEnv, jobs)
+      await this.notifyIncentiveBackendJobStarted(nodeUri, computeEnv, job)
     } catch (e) {
       LoggerInstance.log('Call to incentive backend started endpoint failed')
     }
@@ -365,7 +366,12 @@ export class BaseProvider {
       dockerRegistryAuth,
       outputBucketId
     )
-    await this.notifyIncentiveBackendJobStarted(nodeUri, computeEnv, jobs)
+    const job = Array.isArray(jobs) ? jobs[0] : jobs
+    try {
+      await this.notifyIncentiveBackendJobStarted(nodeUri, computeEnv, job)
+    } catch (e) {
+      LoggerInstance.log('Call to incentive backend started endpoint failed')
+    }
     return jobs
   }
 
@@ -389,49 +395,35 @@ export class BaseProvider {
   /**
    * @param {string | Multiaddr[]} nodeUri The provider URI the job runs on.
    * @param {string} environment The compute environment the job runs in.
-   * @param {ComputeJob | ComputeJob[]} jobs The compute job(s) just started.
+   * @param {ComputeJob} job The compute job just started.
    */
   private async notifyIncentiveBackendJobStarted(
     nodeUri: string | Multiaddr[],
     environment: string,
-    jobs: ComputeJob | ComputeJob[]
+    job: ComputeJob
   ): Promise<void> {
     try {
       const incentiveBackendUrl = process.env.INCENTIVE_BACKEND_URL
-      if (!incentiveBackendUrl || !jobs) return
+      if (!incentiveBackendUrl || !job?.jobId) return
 
       const baseUrl = incentiveBackendUrl.replace(/\/+$/, '')
-      const jobList = Array.isArray(jobs) ? jobs : [jobs]
-      if (jobList.every((job) => !job?.jobId)) return
-
       const peerId = await this.resolveNodePeerId(nodeUri)
 
-      await Promise.all(
-        jobList
-          .filter((job) => job?.jobId)
-          .map((job) =>
-            fetch(`${baseUrl}/jobs/${encodeURIComponent(job.jobId)}/started`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                peerId,
-                owner: job.owner,
-                status: job.status,
-                statusText: job.statusText,
-                dateCreated: job.dateCreated,
-                environment,
-                maxJobDuration: (job as NodeComputeJob).maxJobDuration
-              })
-            }).catch((e) => {
-              LoggerInstance.error(
-                `Failed to notify incentive backend about job ${job.jobId}:`
-              )
-              LoggerInstance.error(e)
-            })
-          )
-      )
+      await fetch(`${baseUrl}/jobs/${encodeURIComponent(job.jobId)}/started`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          peerId,
+          owner: job.owner,
+          status: job.status,
+          statusText: job.statusText,
+          dateCreated: job.dateCreated,
+          environment,
+          maxJobDuration: (job as NodeComputeJob).maxJobDuration
+        })
+      })
     } catch (e) {
-      LoggerInstance.error('Failed to notify incentive backend about started job(s):')
+      LoggerInstance.error('Failed to notify incentive backend about started job:')
       LoggerInstance.error(e)
     }
   }
