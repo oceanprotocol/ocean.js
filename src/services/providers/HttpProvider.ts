@@ -1191,7 +1191,17 @@ export class HttpProvider {
     })
     if (!response.ok)
       throw new Error(`Failed to fetch compute result: ${response.status}`)
-    return response.body as unknown as ComputeResultStream
+    const body = response.body as unknown as AsyncIterable<Uint8Array>
+    return (async function* () {
+      try {
+        for await (const chunk of body) yield chunk
+      } catch (e: any) {
+        // node-fetch throws "Premature close" when the node ends a chunked result stream
+        // without a terminator it considers clean; treat that tail error as end-of-stream
+        // (parity with the P2P path, which swallows UnexpectedEOFError the same way).
+        if (!String(e?.message ?? '').includes('Premature close')) throw e
+      }
+    })()
   }
 
   /** Generates an auth token
