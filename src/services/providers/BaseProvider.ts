@@ -325,7 +325,11 @@ export class BaseProvider {
       dockerRegistryAuth,
       outputBucketId
     )
-    await this.notifyIncentiveBackendJobStarted(nodeUri, computeEnv, jobs)
+    try {
+      await this.notifyIncentiveBackendJobStarted(nodeUri, computeEnv, jobs)
+    } catch (e) {
+      LoggerInstance.log('Call to incentive backend started endpoint failed')
+    }
     return jobs
   }
 
