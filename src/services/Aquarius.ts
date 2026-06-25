@@ -1,4 +1,3 @@
-import fetch from 'cross-fetch'
 import { LoggerInstance } from '../utils/Logger'
 import { sleep } from '../utils/General.js'
 import { Signer } from 'ethers'

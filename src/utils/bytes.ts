@@ -5,6 +5,31 @@ export function bytesToHex(bytes: Uint8Array): string {
     .join('')
 }
 
+// Native `fetch` (undici / browsers) exposes `response.body` as a WHATWG
+// ReadableStream<Uint8Array>, unlike node-fetch v2 which returned a Node Readable.
+// `for await` over a ReadableStream works in Node 20+ but not in current browsers,
+// so wrap it in a portable async iterable used by every streaming-response method.
+export function responseBodyToAsyncIterable(
+  body: ReadableStream<Uint8Array> | null
+): AsyncIterable<Uint8Array> {
+  if (!body) return (async function* () {})()
+  if (typeof (body as any)[Symbol.asyncIterator] === 'function') {
+    return body as unknown as AsyncIterable<Uint8Array>
+  }
+  return (async function* () {
+    const reader = body.getReader()
+    try {
+      for (;;) {
+        const { value, done } = await reader.read()
+        if (done) break
+        if (value) yield value
+      }
+    } finally {
+      reader.releaseLock()
+    }
+  })()
+}
+
 export function concatUint8Arrays(arrays: Uint8Array[]): Uint8Array {
   const totalLength = arrays.reduce((sum, arr) => sum + arr.length, 0)
   const result = new Uint8Array(totalLength)

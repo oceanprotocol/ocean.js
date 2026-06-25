@@ -1,4 +1,3 @@
-import fetch from 'cross-fetch'
 import { Signer } from 'ethers'
 import { LoggerInstance } from '../../utils/Logger.js'
 import {
@@ -35,6 +34,7 @@ import {
 import { PROTOCOL_COMMANDS } from '../../@types/Provider.js'
 import { type DDO, type ValidateMetadata } from '@oceanprotocol/ddo-js'
 import { eciesencrypt } from '../../utils/eciesencrypt.js'
+import { responseBodyToAsyncIterable } from '../../utils/bytes.js'
 import { signRequest } from '../../utils/SignatureUtils.js'
 import {
   getConsumerAddress,
@@ -980,7 +980,7 @@ export class HttpProvider {
       throw new Error('HTTP request failed calling Provider')
     }
     if (response?.ok || response?.status === 200) {
-      return response.body
+      return responseBodyToAsyncIterable(response.body)
     }
     LoggerInstance.error(
       'computeStreamableLogs failed: ',
@@ -1186,7 +1186,7 @@ export class HttpProvider {
     })
     if (!response.ok)
       throw new Error(`Failed to fetch compute result: ${response.status}`)
-    return response.body as unknown as ComputeResultStream
+    return responseBodyToAsyncIterable(response.body)
   }
 
   /** Generates an auth token
@@ -1506,7 +1506,7 @@ export class HttpProvider {
     }
 
     if (response?.ok) {
-      return response.body
+      return responseBodyToAsyncIterable(response.body) as unknown as NodeLogEntry[]
     }
 
     const resolvedResponse = await response.json()
@@ -1795,81 +1795,57 @@ export class HttpProvider {
       ...authPayload
     })
 
-    let body: BodyInit
-    // Node.js (cross-fetch/node-fetch): always use a Node Readable stream.
-    if (typeof window === 'undefined') {
-      const { Readable } = await import('stream')
-      const encoder = new TextEncoder()
-      const normalized = (async function* () {
-        for await (const chunk of content as AsyncIterable<unknown>) {
-          if (chunk instanceof Uint8Array) {
-            yield chunk
-            continue
-          }
-          if (typeof chunk === 'string') {
-            yield encoder.encode(chunk)
-            continue
-          }
-          if (chunk && typeof chunk === 'object' && ArrayBuffer.isView(chunk as any)) {
-            const v = chunk as ArrayBufferView
-            yield new Uint8Array(v.buffer, v.byteOffset, v.byteLength)
-            continue
-          }
-          throw new Error('Unsupported chunk type for HTTP persistent storage upload')
-        }
-      })()
-      body = Readable.from(normalized) as unknown as BodyInit
-    } else {
-      // Browser: wrap into ReadableStream.
-      const RS = (globalThis as any).ReadableStream as
-        | (new (opts: any) => ReadableStream)
-        | undefined
-      if (typeof RS !== 'function') {
-        throw new Error('ReadableStream is not available in this environment')
-      }
-      const encoder = new TextEncoder()
-      const iterator = (content as AsyncIterable<unknown>)[Symbol.asyncIterator]()
-      body = new RS({
-        async pull(controller: any) {
-          const { value, done } = await iterator.next()
-          if (done) {
-            controller.close()
-            return
-          }
-          if (value instanceof Uint8Array) {
-            controller.enqueue(value)
-            return
-          }
-          if (typeof value === 'string') {
-            controller.enqueue(encoder.encode(value))
-            return
-          }
-          if (value && typeof value === 'object' && ArrayBuffer.isView(value as any)) {
-            const v = value as ArrayBufferView
-            controller.enqueue(new Uint8Array(v.buffer, v.byteOffset, v.byteLength))
-            return
-          }
-          throw new Error('Unsupported chunk type for HTTP persistent storage upload')
-        },
-        async cancel() {
-          if (typeof iterator.return === 'function') {
-            await iterator.return()
-          }
-        }
-      }) as unknown as BodyInit
+    // Stream the request body as a WHATWG ReadableStream in both Node (undici) and the
+    // browser. undici accepts a streamed body only with `duplex: 'half'` (not in the DOM
+    // RequestInit type, so the init object is cast below).
+    const RS = (globalThis as any).ReadableStream as
+      | (new (opts: any) => ReadableStream)
+      | undefined
+    if (typeof RS !== 'function') {
+      throw new Error('ReadableStream is not available in this environment')
     }
+    const encoder = new TextEncoder()
+    const iterator = (content as AsyncIterable<unknown>)[Symbol.asyncIterator]()
+    const body = new RS({
+      async pull(controller: any) {
+        const { value, done } = await iterator.next()
+        if (done) {
+          controller.close()
+          return
+        }
+        if (value instanceof Uint8Array) {
+          controller.enqueue(value)
+          return
+        }
+        if (typeof value === 'string') {
+          controller.enqueue(encoder.encode(value))
+          return
+        }
+        if (value && typeof value === 'object' && ArrayBuffer.isView(value as any)) {
+          const v = value as ArrayBufferView
+          controller.enqueue(new Uint8Array(v.buffer, v.byteOffset, v.byteLength))
+          return
+        }
+        throw new Error('Unsupported chunk type for HTTP persistent storage upload')
+      },
+      async cancel() {
+        if (typeof iterator.return === 'function') {
+          await iterator.return()
+        }
+      }
+    }) as unknown as BodyInit
 
     const authHeader = this.getAuthorization(signerOrAuthToken)
     const response = await fetch(`${routeBase}?${query.toString()}`, {
       method: 'POST',
       body,
-
+      duplex: 'half',
       headers: {
         'Content-Type': 'application/octet-stream',
         ...(authHeader ? { Authorization: authHeader } : {})
       },
       signal
-    })
+    } as RequestInit)
     if (!response.ok) throw new Error(await response.text())
     return response.json()
   }
