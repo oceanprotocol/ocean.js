@@ -145,7 +145,13 @@ export const PROTOCOL_COMMANDS = {
   PERSISTENT_STORAGE_LIST_FILES: 'persistentStorageListFiles',
   PERSISTENT_STORAGE_UPLOAD_FILE: 'persistentStorageUploadFile',
   PERSISTENT_STORAGE_GET_FILE_OBJECT: 'persistentStorageGetFileObject',
-  PERSISTENT_STORAGE_DELETE_FILE: 'persistentStorageDeleteFile'
+  PERSISTENT_STORAGE_DELETE_FILE: 'persistentStorageDeleteFile',
+  SERVICE_GET_TEMPLATES: 'serviceGetTemplates',
+  SERVICE_START: 'serviceStart',
+  SERVICE_STOP: 'serviceStop',
+  SERVICE_RESTART: 'serviceRestart',
+  SERVICE_GET_STATUS: 'serviceGetStatus',
+  SERVICE_EXTEND: 'serviceExtend'
 }
 
 export interface NodeLogsParams {

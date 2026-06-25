@@ -43,6 +43,11 @@ import {
   PersistentStorageFileEntry,
   PersistentStorageObject,
   PersistentStorageUpdateBucketResponse,
+  ServiceJob,
+  ServiceTemplatePublic,
+  ServiceStartParams,
+  ServiceUserData,
+  ServicePayment,
   OceanNode,
   NodeP2P,
   SignerOrAuthTokenOrSignature,
@@ -1744,5 +1749,157 @@ export class P2pProvider {
       signerOrAuthToken,
       signal
     )
+  }
+
+  // ── Service on Demand ────────────────────────────────────────────────
+
+  // Encrypts userData to the node's public key (ECIES). Objects are JSON-encoded
+  // then encrypted; an already-encrypted hex string is passed through unchanged.
+  private async encryptServiceUserData(
+    nodeUri: OceanNode,
+    userData?: ServiceUserData
+  ): Promise<string | undefined> {
+    if (userData === undefined || userData === null) return undefined
+    if (typeof userData === 'string') return userData
+    const nodeKey = await this.getNodePublicKey(nodeUri)
+    if (!nodeKey) throw new Error('Cannot resolve node public key to encrypt userData')
+    return eciesencrypt(nodeKey, JSON.stringify(userData))
+  }
+
+  public async getServiceTemplates(
+    nodeUri: OceanNode,
+    chainId?: number,
+    signal?: AbortSignal
+  ): Promise<ServiceTemplatePublic[]> {
+    const result = await this.sendP2pCommand(
+      nodeUri,
+      PROTOCOL_COMMANDS.SERVICE_GET_TEMPLATES,
+      { ...(chainId !== undefined ? { chainId } : {}) },
+      null,
+      signal
+    )
+    return Array.isArray(result) ? result : []
+  }
+
+  public async serviceStart(
+    nodeUri: OceanNode,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
+    params: ServiceStartParams,
+    signal?: AbortSignal
+  ): Promise<ServiceJob[]> {
+    const authPayload = await this.getSignedCommandParams(
+      nodeUri,
+      signerOrAuthToken,
+      PROTOCOL_COMMANDS.SERVICE_START,
+      signal
+    )
+    const { userData, ...rest } = params
+    const result = await this.sendP2pCommand(
+      nodeUri,
+      PROTOCOL_COMMANDS.SERVICE_START,
+      {
+        ...authPayload,
+        ...rest,
+        userData: await this.encryptServiceUserData(nodeUri, userData)
+      },
+      signerOrAuthToken,
+      signal
+    )
+    return Array.isArray(result) ? result : [result]
+  }
+
+  public async serviceStop(
+    nodeUri: OceanNode,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
+    serviceId: string,
+    signal?: AbortSignal
+  ): Promise<ServiceJob[]> {
+    const authPayload = await this.getSignedCommandParams(
+      nodeUri,
+      signerOrAuthToken,
+      PROTOCOL_COMMANDS.SERVICE_STOP,
+      signal
+    )
+    const result = await this.sendP2pCommand(
+      nodeUri,
+      PROTOCOL_COMMANDS.SERVICE_STOP,
+      { ...authPayload, serviceId },
+      signerOrAuthToken,
+      signal
+    )
+    return Array.isArray(result) ? result : [result]
+  }
+
+  public async serviceExtend(
+    nodeUri: OceanNode,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
+    serviceId: string,
+    additionalDuration: number,
+    payment: ServicePayment,
+    signal?: AbortSignal
+  ): Promise<ServiceJob[]> {
+    const authPayload = await this.getSignedCommandParams(
+      nodeUri,
+      signerOrAuthToken,
+      PROTOCOL_COMMANDS.SERVICE_EXTEND,
+      signal
+    )
+    const result = await this.sendP2pCommand(
+      nodeUri,
+      PROTOCOL_COMMANDS.SERVICE_EXTEND,
+      { ...authPayload, serviceId, additionalDuration, payment },
+      signerOrAuthToken,
+      signal
+    )
+    return Array.isArray(result) ? result : [result]
+  }
+
+  public async serviceRestart(
+    nodeUri: OceanNode,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
+    serviceId: string,
+    userData?: ServiceUserData,
+    signal?: AbortSignal
+  ): Promise<ServiceJob[]> {
+    const authPayload = await this.getSignedCommandParams(
+      nodeUri,
+      signerOrAuthToken,
+      PROTOCOL_COMMANDS.SERVICE_RESTART,
+      signal
+    )
+    const result = await this.sendP2pCommand(
+      nodeUri,
+      PROTOCOL_COMMANDS.SERVICE_RESTART,
+      {
+        ...authPayload,
+        serviceId,
+        userData: await this.encryptServiceUserData(nodeUri, userData)
+      },
+      signerOrAuthToken,
+      signal
+    )
+    return Array.isArray(result) ? result : [result]
+  }
+
+  public async getServiceStatus(
+    nodeUri: OceanNode,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
+    serviceId?: string,
+    signal?: AbortSignal
+  ): Promise<ServiceJob[]> {
+    const authPayload = await this.getSignedCommandParams(
+      nodeUri,
+      signerOrAuthToken,
+      PROTOCOL_COMMANDS.SERVICE_GET_STATUS,
+      signal
+    )
+    const result = await this.sendP2pCommand(
+      nodeUri,
+      PROTOCOL_COMMANDS.SERVICE_GET_STATUS,
+      { ...authPayload, ...(serviceId ? { serviceId } : {}) },
+      signerOrAuthToken,
+      signal
+    )
+    return Array.isArray(result) ? result : []
   }
 }
