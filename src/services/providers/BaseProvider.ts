@@ -378,12 +378,10 @@ export class BaseProvider {
   /**
    * Resolves the node's peerId for the given nodeUri via the node STATUS command,
    * whose `id` field is the peerId.
-   * @param {string | Multiaddr[]} nodeUri The provider URI.
+   * @param {OceanNode} nodeUri The provider URI.
    * @return {Promise<string | undefined>} The peerId, or undefined if unresolved.
    */
-  private async resolveNodePeerId(
-    nodeUri: string | Multiaddr[]
-  ): Promise<string | undefined> {
+  private async resolveNodePeerId(nodeUri: OceanNode): Promise<string | undefined> {
     try {
       const status = await this.getNodeStatus(nodeUri)
       return status?.id
@@ -393,12 +391,12 @@ export class BaseProvider {
   }
 
   /**
-   * @param {string | Multiaddr[]} nodeUri The provider URI the job runs on.
+   * @param {OceanNode} nodeUri The provider URI the job runs on.
    * @param {string} environment The compute environment the job runs in.
    * @param {ComputeJob} job The compute job just started.
    */
   private async notifyIncentiveBackendJobStarted(
-    nodeUri: string | Multiaddr[],
+    nodeUri: OceanNode,
     environment: string,
     job: ComputeJob
   ): Promise<void> {
