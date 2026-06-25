@@ -1808,25 +1808,34 @@ export class HttpProvider {
     const iterator = (content as AsyncIterable<unknown>)[Symbol.asyncIterator]()
     const body = new RS({
       async pull(controller: any) {
-        const { value, done } = await iterator.next()
-        if (done) {
-          controller.close()
-          return
+        try {
+          const { value, done } = await iterator.next()
+          if (done) {
+            controller.close()
+            return
+          }
+          if (value instanceof Uint8Array) {
+            controller.enqueue(value)
+            return
+          }
+          if (typeof value === 'string') {
+            controller.enqueue(encoder.encode(value))
+            return
+          }
+          if (value && typeof value === 'object' && ArrayBuffer.isView(value as any)) {
+            const v = value as ArrayBufferView
+            controller.enqueue(new Uint8Array(v.buffer, v.byteOffset, v.byteLength))
+            return
+          }
+          throw new Error('Unsupported chunk type for HTTP persistent storage upload')
+        } catch (e) {
+          // The stream won't call cancel() when pull() rejects, so close the source
+          // iterator here to release it before propagating the error.
+          if (typeof iterator.return === 'function') {
+            await iterator.return().catch(() => {})
+          }
+          throw e
         }
-        if (value instanceof Uint8Array) {
-          controller.enqueue(value)
-          return
-        }
-        if (typeof value === 'string') {
-          controller.enqueue(encoder.encode(value))
-          return
-        }
-        if (value && typeof value === 'object' && ArrayBuffer.isView(value as any)) {
-          const v = value as ArrayBufferView
-          controller.enqueue(new Uint8Array(v.buffer, v.byteOffset, v.byteLength))
-          return
-        }
-        throw new Error('Unsupported chunk type for HTTP persistent storage upload')
       },
       async cancel() {
         if (typeof iterator.return === 'function') {
