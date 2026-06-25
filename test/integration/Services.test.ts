@@ -48,6 +48,14 @@ describe('Service on Demand flow tests', () => {
   let expiresAt: number
 
   const SERVICE_DURATION = 300
+  // serviceStart now returns immediately (Starting); escrow + image pull run in a background
+  // pipeline (Starting → Locking → PullImage → Claiming → Running). extend/restart/stop may
+  // still do synchronous on-chain/Docker work, so give the calls headroom above the 10s P2P
+  // default; the long wait is the background pull, handled by pollUntil's timeout.
+  const OP_TIMEOUT_MS = 120000
+  const opSignal = () => AbortSignal.timeout(OP_TIMEOUT_MS)
+  // Background image pull (e.g. a multi-GB inference image) can take minutes on a cold node.
+  const RUNNING_TIMEOUT_MS = 540000
 
   // Returns the available (total - inUse) amount of an env resource matching a requirement.
   function availableFor(
@@ -185,33 +193,38 @@ describe('Service on Demand flow tests', () => {
 
   it('starts a service → Running with reachable endpoint, userData stripped', async function () {
     if (skipLifecycle) this.skip()
-    this.timeout(240000)
+    this.timeout(RUNNING_TIMEOUT_MS + 60000)
     const userConfigurable = template.userConfigurableEnvVars ?? []
     const userData: Record<string, unknown> = {}
     // Supply a valid value for the first user-configurable var, if any.
     if (userConfigurable[0]) userData[userConfigurable[0].key] = 'hello123'
 
-    const jobs = await ProviderInstance.serviceStart(providerUrl, consumerAccount, {
-      environment: servicesEnv.id,
-      image: template.image,
-      tag: template.tag,
-      checksum: template.checksum,
-      dockerfile: template.dockerfile,
-      exposedPorts: template.exposedPorts,
-      duration: SERVICE_DURATION,
-      resources: (servicesEnv.resources ?? [])
-        .filter((r) => r.id === 'cpu' || r.id === 'ram')
-        .map((r) => ({ id: r.id, amount: 1 })),
-      userData: Object.keys(userData).length ? userData : undefined,
-      payment: { chainId, token: paymentToken }
-    })
+    const jobs = await ProviderInstance.serviceStart(
+      providerUrl,
+      consumerAccount,
+      {
+        environment: servicesEnv.id,
+        image: template.image,
+        tag: template.tag,
+        checksum: template.checksum,
+        dockerfile: template.dockerfile,
+        exposedPorts: template.exposedPorts,
+        duration: SERVICE_DURATION,
+        resources: (servicesEnv.resources ?? [])
+          .filter((r) => r.id === 'cpu' || r.id === 'ram')
+          .map((r) => ({ id: r.id, amount: 1 })),
+        userData: Object.keys(userData).length ? userData : undefined,
+        payment: { chainId, token: paymentToken }
+      },
+      opSignal()
+    )
     assert(Array.isArray(jobs) && jobs.length === 1, 'expected a single service job')
     const [job] = jobs
     assert(job.serviceId, 'no serviceId returned')
     serviceId = job.serviceId
     expect((job as any).userData).to.equal(undefined)
-
-    const running = await pollUntil(ServiceStatusNumber.Running)
+    // start is non-blocking: the node returns Starting and advances in the background.
+    const running = await pollUntil(ServiceStatusNumber.Running, RUNNING_TIMEOUT_MS)
     assert(running.endpoints.length >= 1, 'expected at least one endpoint')
     hostPort = running.endpoints[0].hostPort
     expiresAt = running.expiresAt
@@ -246,7 +259,8 @@ describe('Service on Demand flow tests', () => {
       consumerAccount,
       serviceId,
       30,
-      { chainId, token: paymentToken }
+      { chainId, token: paymentToken },
+      opSignal()
     )
     const [job] = jobs
     expect(job.expiresAt).to.equal(expiresAt + 30 * 1000)
@@ -256,14 +270,20 @@ describe('Service on Demand flow tests', () => {
 
   it('restarts the service → new container, same hostPort + expiresAt', async function () {
     if (skipLifecycle || !serviceId) this.skip()
-    this.timeout(240000)
+    this.timeout(RUNNING_TIMEOUT_MS + 60000)
     const before = (
       await ProviderInstance.getServiceStatus(providerUrl, consumerAccount, serviceId)
     ).find((j) => j.serviceId === serviceId)
     const oldContainerId = before?.containerId
 
-    await ProviderInstance.serviceRestart(providerUrl, consumerAccount, serviceId)
-    const running = await pollUntil(ServiceStatusNumber.Running)
+    await ProviderInstance.serviceRestart(
+      providerUrl,
+      consumerAccount,
+      serviceId,
+      undefined,
+      opSignal()
+    )
+    const running = await pollUntil(ServiceStatusNumber.Running, RUNNING_TIMEOUT_MS)
     expect(running.containerId).to.not.equal(oldContainerId)
     expect(running.endpoints[0].hostPort).to.equal(hostPort)
     expect(running.expiresAt).to.equal(expiresAt)
@@ -275,7 +295,8 @@ describe('Service on Demand flow tests', () => {
     const jobs = await ProviderInstance.serviceStop(
       providerUrl,
       consumerAccount,
-      serviceId
+      serviceId,
+      opSignal()
     )
     const [job] = jobs
     expect(job.status).to.equal(ServiceStatusNumber.Stopped)
@@ -285,7 +306,12 @@ describe('Service on Demand flow tests', () => {
     // best-effort cleanup if a test bailed mid-flow
     if (serviceId && !skipLifecycle) {
       try {
-        await ProviderInstance.serviceStop(providerUrl, consumerAccount, serviceId)
+        await ProviderInstance.serviceStop(
+          providerUrl,
+          consumerAccount,
+          serviceId,
+          opSignal()
+        )
       } catch {
         /* ignore */
       }

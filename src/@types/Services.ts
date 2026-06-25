@@ -56,12 +56,14 @@ export interface ServiceJobEndpoint {
 
 /* eslint-disable no-unused-vars */
 export enum ServiceStatusNumber {
-  Starting = 10,
+  Starting = 10, // DB record created by the start handler; awaits background processing
   PullImage = 11, // pulling pre-built image from registry
   PullImageFailed = 12,
   BuildImage = 13, // building from Dockerfile
   BuildImageFailed = 14,
   VulnerableImage = 15, // image scan found critical vulnerabilities
+  Locking = 20, // escrow createLock in progress (funds locked, not yet claimed)
+  Claiming = 30, // payment phase: claimLock on success, or cancelLock if the image step failed
   Running = 40,
   Stopping = 50,
   Stopped = 70,
