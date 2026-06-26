@@ -5,6 +5,7 @@ import {
   Config,
   ProviderInstance,
   EscrowContract,
+  Datatoken,
   amountToUnits,
   sendTx
 } from '../../src/index.js'
@@ -187,16 +188,28 @@ describe('Service on Demand flow tests', () => {
     })
     await tx.wait()
 
+    // Deposit + authorize unconditionally with a large ceiling. The dev chain is shared
+    // across suites, so by the time this runs the consumer usually already has (dwindling)
+    // escrow funds — verifyFundsForEscrowPayment would then skip depositing, leaving just
+    // enough for start but not the later extend/restart locks. A fresh large deposit and a
+    // high maxLockedAmount cover the whole lifecycle (mirrors ocean-node's fundEscrow).
+    const fundAmount = '100000'
     const escrow = new EscrowContract(getAddress(addresses.Escrow), consumerAccount)
-    const res = await escrow.verifyFundsForEscrowPayment(
+    const datatoken = new Datatoken(consumerAccount)
+    await datatoken.approve(paymentToken, getAddress(addresses.Escrow), fundAmount)
+    await escrow.deposit(paymentToken, fundAmount)
+    await escrow.authorize(
       paymentToken,
       getAddress(servicesEnv.consumerAddress),
-      '10000', // amountToDeposit
-      '1000', // maxLockedAmount
+      fundAmount, // maxLockedAmount ceiling
       '86400', // maxLockSeconds
       '100' // maxLockCounts
     )
-    assert(res.isValid, `escrow funding failed: ${res.message}`)
+    const funds = await escrow.getUserFunds(
+      await consumerAccount.getAddress(),
+      paymentToken
+    )
+    assert(BigInt(funds[0].toString()) > 0n, 'should have escrow funds')
   })
 
   it('starts a service → Running with reachable endpoint, userData stripped', async function () {
