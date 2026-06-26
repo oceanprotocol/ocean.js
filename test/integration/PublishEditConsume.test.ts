@@ -1,8 +1,6 @@
 import { assert } from 'chai'
 import { ethers, Signer } from 'ethers'
 import fs from 'fs'
-import FormData from 'form-data'
-import fetch from 'node-fetch'
 import path from 'path'
 import { fileURLToPath } from 'url'
 import { getTestConfig, getAddresses, provider } from '../config.js'
@@ -106,16 +104,14 @@ function delay(interval: number) {
 export async function uploadToIpfs(): Promise<string> {
   const filePath = path.resolve(__dirname, 'resources/data.json')
 
-  const fileStream = fs.createReadStream(filePath)
-
   const form = new FormData()
-  form.append('file', fileStream, 'data.json')
+  form.append('file', new Blob([fs.readFileSync(filePath)]), 'data.json')
 
   try {
+    // Native fetch sets the multipart Content-Type + boundary from the FormData body.
     const response = await fetch('http://172.15.0.16:5001/api/v0/add', {
       method: 'POST',
-      body: form,
-      headers: form.getHeaders()
+      body: form
     })
     const result = (await response.json()) as { Hash: string }
     return result.Hash
