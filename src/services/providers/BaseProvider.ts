@@ -326,11 +326,7 @@ export class BaseProvider {
       outputBucketId
     )
     const job = Array.isArray(jobs) ? jobs[0] : jobs
-    try {
-      await this.notifyIncentiveBackendJobStarted(nodeUri, computeEnv, job)
-    } catch (e) {
-      LoggerInstance.log('Call to incentive backend started endpoint failed')
-    }
+    this.notifyIncentiveBackendJobStarted(nodeUri, computeEnv, job).catch(() => {})
     return jobs
   }
 
@@ -367,11 +363,7 @@ export class BaseProvider {
       outputBucketId
     )
     const job = Array.isArray(jobs) ? jobs[0] : jobs
-    try {
-      await this.notifyIncentiveBackendJobStarted(nodeUri, computeEnv, job)
-    } catch (e) {
-      LoggerInstance.log('Call to incentive backend started endpoint failed')
-    }
+    this.notifyIncentiveBackendJobStarted(nodeUri, computeEnv, job).catch(() => {})
     return jobs
   }
 
