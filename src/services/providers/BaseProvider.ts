@@ -36,6 +36,8 @@ import {
   SignerOrAuthTokenOrSignature
 } from '../../@types/index.js'
 import { type DDO, type ValidateMetadata } from '@oceanprotocol/ddo-js'
+import fetch from 'cross-fetch'
+import { LoggerInstance } from '../../utils/Logger.js'
 import { decodeJwt } from '../../utils/Jwt.js'
 import { signRequest } from '../../utils/SignatureUtils.js'
 import { HttpProvider } from './HttpProvider.js'
@@ -304,7 +306,7 @@ export class BaseProvider {
     dockerRegistryAuth?: dockerRegistryAuth,
     outputBucketId?: string
   ): Promise<ComputeJob | ComputeJob[]> {
-    return this.getImpl(nodeUri).computeStart(
+    const jobs = await this.getImpl(nodeUri).computeStart(
       nodeUri,
       signerOrAuthToken,
       computeEnv,
@@ -323,6 +325,9 @@ export class BaseProvider {
       dockerRegistryAuth,
       outputBucketId
     )
+    const job = Array.isArray(jobs) ? jobs[0] : jobs
+    this.notifyIncentiveBackendJobStarted(nodeUri, computeEnv, job).catch(() => {})
+    return jobs
   }
 
   public async freeComputeStart(
@@ -341,7 +346,7 @@ export class BaseProvider {
     dockerRegistryAuth?: dockerRegistryAuth,
     outputBucketId?: string
   ): Promise<ComputeJob | ComputeJob[]> {
-    return this.getImpl(nodeUri).freeComputeStart(
+    const jobs = await this.getImpl(nodeUri).freeComputeStart(
       nodeUri,
       signerOrAuthToken,
       computeEnv,
@@ -357,6 +362,60 @@ export class BaseProvider {
       dockerRegistryAuth,
       outputBucketId
     )
+    const job = Array.isArray(jobs) ? jobs[0] : jobs
+    this.notifyIncentiveBackendJobStarted(nodeUri, computeEnv, job).catch(() => {})
+    return jobs
+  }
+
+  /**
+   * Resolves the node's peerId for the given nodeUri via the node STATUS command,
+   * whose `id` field is the peerId.
+   * @param {OceanNode} nodeUri The provider URI.
+   * @return {Promise<string | undefined>} The peerId, or undefined if unresolved.
+   */
+  private async resolveNodePeerId(nodeUri: OceanNode): Promise<string | undefined> {
+    try {
+      const status = await this.getNodeStatus(nodeUri)
+      return status?.id
+    } catch {
+      return undefined
+    }
+  }
+
+  /**
+   * @param {OceanNode} nodeUri The provider URI the job runs on.
+   * @param {string} environment The compute environment the job runs in.
+   * @param {ComputeJob} job The compute job just started.
+   */
+  private async notifyIncentiveBackendJobStarted(
+    nodeUri: OceanNode,
+    environment: string,
+    job: ComputeJob
+  ): Promise<void> {
+    try {
+      const incentiveBackendUrl = process.env.INCENTIVE_BACKEND_URL
+      if (!incentiveBackendUrl || !job?.jobId) return
+
+      const baseUrl = incentiveBackendUrl.replace(/\/+$/, '')
+      const peerId = await this.resolveNodePeerId(nodeUri)
+
+      await fetch(`${baseUrl}/jobs/${encodeURIComponent(job.jobId)}/started`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          peerId,
+          owner: job.owner,
+          status: job.status,
+          statusText: job.statusText,
+          dateCreated: job.dateCreated,
+          environment,
+          maxJobDuration: (job as NodeComputeJob).maxJobDuration
+        })
+      })
+    } catch (e) {
+      LoggerInstance.error('Failed to notify incentive backend about started job:')
+      LoggerInstance.error(e)
+    }
   }
 
   public async computeStreamableLogs(
