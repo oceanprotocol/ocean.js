@@ -399,7 +399,10 @@ export class BaseProvider {
       const baseUrl = incentiveBackendUrl.replace(/\/+$/, '')
       const peerId = await this.resolveNodePeerId(nodeUri)
 
-      await fetch(`${baseUrl}/jobs/${encodeURIComponent(job.jobId)}/started`, {
+      const dashIndex = job.jobId.indexOf('-')
+      const bareJobId = dashIndex > 0 ? job.jobId.slice(dashIndex + 1) : job.jobId
+
+      await fetch(`${baseUrl}/jobs/${encodeURIComponent(bareJobId)}/started`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
