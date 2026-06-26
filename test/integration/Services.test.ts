@@ -198,13 +198,24 @@ describe('Service on Demand flow tests', () => {
     const datatoken = new Datatoken(consumerAccount)
     await datatoken.approve(paymentToken, getAddress(addresses.Escrow), fundAmount)
     await escrow.deposit(paymentToken, fundAmount)
-    await escrow.authorize(
+    // authorize() returns null (and would fail) when an authorization already exists for this
+    // payer/payee/token, so only create one when absent. A prior run's authorization is reused;
+    // its ceiling is ample for the small per-service locks. (The SDK can't update an existing
+    // authorization, only create a first one — re-authorization isn't possible here.)
+    const auths = await escrow.getAuthorizations(
       paymentToken,
-      getAddress(servicesEnv.consumerAddress),
-      fundAmount, // maxLockedAmount ceiling
-      '86400', // maxLockSeconds
-      '100' // maxLockCounts
+      await consumerAccount.getAddress(),
+      getAddress(servicesEnv.consumerAddress)
     )
+    if (!auths || auths.length === 0) {
+      await escrow.authorize(
+        paymentToken,
+        getAddress(servicesEnv.consumerAddress),
+        fundAmount, // maxLockedAmount ceiling
+        '86400', // maxLockSeconds
+        '100' // maxLockCounts
+      )
+    }
     const funds = await escrow.getUserFunds(
       await consumerAccount.getAddress(),
       paymentToken
