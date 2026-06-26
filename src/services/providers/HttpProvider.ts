@@ -1683,10 +1683,7 @@ export class HttpProvider {
     if (typeof signerOrAuthToken === 'string') {
       headers.Authorization = signerOrAuthToken
     }
-    const query = new URLSearchParams({
-      ...authPayload,
-      owner
-    })
+    const query = this.buildQuery({ ...authPayload, owner })
     const response = await fetch(`${route}?${query.toString()}`, {
       method: 'GET',
       headers,
@@ -1720,9 +1717,7 @@ export class HttpProvider {
     if (typeof signerOrAuthToken === 'string') {
       headers.Authorization = signerOrAuthToken
     }
-    const query = new URLSearchParams({
-      ...authPayload
-    })
+    const query = this.buildQuery({ ...authPayload })
 
     const response = await fetch(`${routeBase}?${query.toString()}`, {
       method: 'GET',
@@ -1756,9 +1751,7 @@ export class HttpProvider {
       PROTOCOL_COMMANDS.PERSISTENT_STORAGE_GET_FILE_OBJECT,
       signal
     )
-    const query = new URLSearchParams({
-      ...authPayload
-    })
+    const query = this.buildQuery({ ...authPayload })
     const headers: Record<string, string> = {}
     if (typeof signerOrAuthToken === 'string') {
       headers.Authorization = signerOrAuthToken
@@ -1796,9 +1789,7 @@ export class HttpProvider {
       PROTOCOL_COMMANDS.PERSISTENT_STORAGE_UPLOAD_FILE,
       signal
     )
-    const query = new URLSearchParams({
-      ...authPayload
-    })
+    const query = this.buildQuery({ ...authPayload })
 
     // Stream the request body as a WHATWG ReadableStream in both Node (undici) and the
     // browser. undici accepts a streamed body only with `duplex: 'half'` (not in the DOM
@@ -1892,9 +1883,7 @@ export class HttpProvider {
       headers.Authorization = signerOrAuthToken
     }
 
-    const query = new URLSearchParams({
-      ...authPayload
-    })
+    const query = this.buildQuery({ ...authPayload })
     const response = await fetch(`${routeBase}?${query.toString()}`, {
       method: 'DELETE',
       headers,
@@ -1930,9 +1919,7 @@ export class HttpProvider {
       headers.Authorization = signerOrAuthToken
     }
 
-    const query = new URLSearchParams({
-      ...authPayload
-    })
+    const query = this.buildQuery({ ...authPayload })
     const response = await fetch(`${routeBase}?${query.toString()}`, {
       method: 'PATCH',
       headers,
@@ -1966,6 +1953,18 @@ export class HttpProvider {
     const nodeKey = await this.getNodePublicKey(nodeUri)
     if (!nodeKey) throw new Error('Cannot resolve node public key to encrypt userData')
     return eciesencrypt(nodeKey, JSON.stringify(userData))
+  }
+
+  // Builds a query string, dropping undefined/null values. For auth-token credentials
+  // nonce/signature are undefined, and URLSearchParams would otherwise serialize them
+  // as the literal string "undefined".
+  private buildQuery(params: Record<string, string | undefined | null>): URLSearchParams {
+    return new URLSearchParams(
+      Object.entries(params).filter(([, v]) => v !== undefined && v !== null) as [
+        string,
+        string
+      ][]
+    )
   }
 
   /**
@@ -2038,7 +2037,8 @@ export class HttpProvider {
       signal
     })
     if (!response.ok) throw new Error(await response.text())
-    return response.json()
+    const data = await response.json()
+    return Array.isArray(data) ? data : [data]
   }
 
   /**
@@ -2073,7 +2073,8 @@ export class HttpProvider {
       signal
     })
     if (!response.ok) throw new Error(await response.text())
-    return response.json()
+    const data = await response.json()
+    return Array.isArray(data) ? data : [data]
   }
 
   /**
@@ -2110,7 +2111,8 @@ export class HttpProvider {
       signal
     })
     if (!response.ok) throw new Error(await response.text())
-    return response.json()
+    const data = await response.json()
+    return Array.isArray(data) ? data : [data]
   }
 
   /**
@@ -2151,7 +2153,8 @@ export class HttpProvider {
       signal
     })
     if (!response.ok) throw new Error(await response.text())
-    return response.json()
+    const data = await response.json()
+    return Array.isArray(data) ? data : [data]
   }
 
   /**
@@ -2176,13 +2179,10 @@ export class HttpProvider {
       providerEndpoints,
       serviceEndpoints
     )
-    // Drop undefined fields — for auth-token credentials nonce/signature are undefined,
-    // and URLSearchParams would otherwise serialize them as the literal string "undefined".
-    const query = new URLSearchParams(
-      Object.entries({ ...authPayload, ...(serviceId ? { serviceId } : {}) }).filter(
-        ([, v]) => v !== undefined && v !== null
-      ) as [string, string][]
-    )
+    const query = this.buildQuery({
+      ...authPayload,
+      ...(serviceId ? { serviceId } : {})
+    })
     const headers: Record<string, string> = {}
     if (typeof signerOrAuthToken === 'string') headers.Authorization = signerOrAuthToken
     const response = await fetch(`${route}?${query.toString()}`, {
