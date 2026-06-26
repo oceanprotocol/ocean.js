@@ -81,7 +81,8 @@ describe('Service on Demand flow tests', () => {
 
   async function pollUntil(
     target: ServiceStatusNumber,
-    timeoutMs = 180000
+    timeoutMs = 180000,
+    notContainerId?: string
   ): Promise<ServiceJob> {
     const deadline = Date.now() + timeoutMs
     while (Date.now() < deadline) {
@@ -91,7 +92,14 @@ describe('Service on Demand flow tests', () => {
         serviceId
       )
       const job = jobs.find((j) => j.serviceId === serviceId)
-      if (job && job.status === target) return job
+      // When notContainerId is set (restart), don't match until the new container appears,
+      // otherwise we could return the still-Running pre-restart container.
+      if (
+        job &&
+        job.status === target &&
+        (!notContainerId || job.containerId !== notContainerId)
+      )
+        return job
       if (
         job &&
         (job.status === ServiceStatusNumber.Error ||
@@ -199,6 +207,18 @@ describe('Service on Demand flow tests', () => {
     // Supply a valid value for the first user-configurable var, if any.
     if (userConfigurable[0]) userData[userConfigurable[0].key] = 'hello123'
 
+    // Request exactly what the chosen template requires (by resource id, at its min) — the
+    // same requiredResources the env was selected against. Fall back to the env's cpu/ram
+    // only when the template declares no id-based requirements.
+    const requiredById = (template.requiredResources ?? []).filter(
+      (r): r is TemplateResourceRequirement & { id: string } => typeof r.id === 'string'
+    )
+    const requestedResources = requiredById.length
+      ? requiredById.map((r) => ({ id: r.id, amount: r.min }))
+      : (servicesEnv.resources ?? [])
+          .filter((r) => r.id === 'cpu' || r.id === 'ram')
+          .map((r) => ({ id: r.id, amount: 1 }))
+
     const jobs = await ProviderInstance.serviceStart(
       providerUrl,
       consumerAccount,
@@ -210,9 +230,7 @@ describe('Service on Demand flow tests', () => {
         dockerfile: template.dockerfile,
         exposedPorts: template.exposedPorts,
         duration: SERVICE_DURATION,
-        resources: (servicesEnv.resources ?? [])
-          .filter((r) => r.id === 'cpu' || r.id === 'ram')
-          .map((r) => ({ id: r.id, amount: 1 })),
+        resources: requestedResources,
         userData: Object.keys(userData).length ? userData : undefined,
         payment: { chainId, token: paymentToken }
       },
@@ -283,7 +301,11 @@ describe('Service on Demand flow tests', () => {
       undefined,
       opSignal()
     )
-    const running = await pollUntil(ServiceStatusNumber.Running, RUNNING_TIMEOUT_MS)
+    const running = await pollUntil(
+      ServiceStatusNumber.Running,
+      RUNNING_TIMEOUT_MS,
+      oldContainerId
+    )
     expect(running.containerId).to.not.equal(oldContainerId)
     expect(running.endpoints[0].hostPort).to.equal(hostPort)
     expect(running.expiresAt).to.equal(expiresAt)

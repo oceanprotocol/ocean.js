@@ -1753,14 +1753,12 @@ export class P2pProvider {
 
   // ── Service on Demand ────────────────────────────────────────────────
 
-  // Encrypts userData to the node's public key (ECIES). Objects are JSON-encoded
-  // then encrypted; an already-encrypted hex string is passed through unchanged.
+  // Encrypts userData to the node's public key (ECIES): JSON-encode then encrypt.
   private async encryptServiceUserData(
     nodeUri: OceanNode,
     userData?: ServiceUserData
   ): Promise<string | undefined> {
     if (userData === undefined || userData === null) return undefined
-    if (typeof userData === 'string') return userData
     const nodeKey = await this.getNodePublicKey(nodeUri)
     if (!nodeKey) throw new Error('Cannot resolve node public key to encrypt userData')
     return eciesencrypt(nodeKey, JSON.stringify(userData))

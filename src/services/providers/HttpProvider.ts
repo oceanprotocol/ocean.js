@@ -1191,17 +1191,7 @@ export class HttpProvider {
     })
     if (!response.ok)
       throw new Error(`Failed to fetch compute result: ${response.status}`)
-    const body = response.body as unknown as AsyncIterable<Uint8Array>
-    return (async function* () {
-      try {
-        for await (const chunk of body) yield chunk
-      } catch (e: any) {
-        // node-fetch throws "Premature close" when the node ends a chunked result stream
-        // without a terminator it considers clean; treat that tail error as end-of-stream
-        // (parity with the P2P path, which swallows UnexpectedEOFError the same way).
-        if (!String(e?.message ?? '').includes('Premature close')) throw e
-      }
-    })()
+    return responseBodyToAsyncIterable(response.body)
   }
 
   /** Generates an auth token
@@ -1967,14 +1957,12 @@ export class HttpProvider {
     return nodeUri.replace(/\/+$/, '') + `/api/services/${route}`
   }
 
-  // Encrypts userData to the node's public key (ECIES). Objects are JSON-encoded
-  // then encrypted; an already-encrypted hex string is passed through unchanged.
+  // Encrypts userData to the node's public key (ECIES): JSON-encode then encrypt.
   private async encryptServiceUserData(
     nodeUri: string,
     userData?: ServiceUserData
   ): Promise<string | undefined> {
     if (userData === undefined || userData === null) return undefined
-    if (typeof userData === 'string') return userData
     const nodeKey = await this.getNodePublicKey(nodeUri)
     if (!nodeKey) throw new Error('Cannot resolve node public key to encrypt userData')
     return eciesencrypt(nodeKey, JSON.stringify(userData))
@@ -2188,10 +2176,13 @@ export class HttpProvider {
       providerEndpoints,
       serviceEndpoints
     )
-    const query = new URLSearchParams({
-      ...authPayload,
-      ...(serviceId ? { serviceId } : {})
-    })
+    // Drop undefined fields — for auth-token credentials nonce/signature are undefined,
+    // and URLSearchParams would otherwise serialize them as the literal string "undefined".
+    const query = new URLSearchParams(
+      Object.entries({ ...authPayload, ...(serviceId ? { serviceId } : {}) }).filter(
+        ([, v]) => v !== undefined && v !== null
+      ) as [string, string][]
+    )
     const headers: Record<string, string> = {}
     if (typeof signerOrAuthToken === 'string') headers.Authorization = signerOrAuthToken
     const response = await fetch(`${route}?${query.toString()}`, {

@@ -117,9 +117,10 @@ export interface ServicePayment {
   token: string
 }
 
-// `userData` may be a plain object (the client encrypts it with ECIES to the
-// node's public key) or an already ECIES-encrypted hex string (passed through).
-export type ServiceUserData = Record<string, unknown> | string
+// A plain key→value map of container env vars. The client always ECIES-encrypts it
+// to the node's public key before sending — callers never pass pre-encrypted data,
+// so a plaintext secret can never be forwarded unencrypted.
+export type ServiceUserData = Record<string, unknown>
 
 export interface ServiceStartParams {
   environment: string // required: the envId to run the service on
