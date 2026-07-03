@@ -5,7 +5,15 @@ import {
   buildUnsignedTx,
   sendPreparedTransaction
 } from '../utils/ContractUtils'
-import { AbiItem, ReceiptOrEstimate, ValidationResponse } from '../@types'
+import {
+  AbiItem,
+  ReceiptOrEstimate,
+  ValidationResponse,
+  DepositData,
+  PermitData,
+  AuthData,
+  LockData
+} from '../@types'
 import { Config } from '../config'
 import { SmartContractWithAddress } from './SmartContractWithAddress'
 import { Datatoken } from './Datatoken'
@@ -63,9 +71,13 @@ export class EscrowContract extends SmartContractWithAddress {
 
   /**
    * Get Locks
-   * @return {Promise<[]>} Locks
+   * @return {Promise<LockData[]>} Locks
    */
-  public async getLocks(token: string, payer: string, payee: string): Promise<any[]> {
+  public async getLocks(
+    token: string,
+    payer: string,
+    payee: string
+  ): Promise<LockData[]> {
     return await this.contract.getLocks(token, payer, payee)
   }
 
@@ -433,6 +445,248 @@ export class EscrowContract extends SmartContractWithAddress {
       maxLockSecondsParsed,
       maxLockCountsParsed
     }
+  }
+
+  /**
+   * Batch deposits, permits, and authorizations
+   * @param {DepositData[]} deposits
+   * @param {PermitData[]} permits
+   * @param {AuthData[]} auths
+   * @param {number} [tokenDecimals]
+   * @param {Boolean} estimateGas if True, return gas estimate
+   * @return {Promise<ReceiptOrEstimate>} returns the transaction receipt or the estimateGas value
+   */
+  public async bundle<G extends boolean = false>(
+    deposits: DepositData[],
+    permits: PermitData[],
+    auths: AuthData[],
+    tokenDecimals?: number,
+    estimateGas?: G
+  ): Promise<ReceiptOrEstimate<G>> {
+    const tx = await this.bundleTx(deposits, permits, auths, tokenDecimals)
+    if (estimateGas) return <ReceiptOrEstimate<G>>tx.gasLimit
+    const trxReceipt = await sendPreparedTransaction(this.getSignerAccordingSdk(), tx)
+    return <ReceiptOrEstimate<G>>trxReceipt
+  }
+
+  public async bundleTx(
+    deposits: DepositData[],
+    permits: PermitData[],
+    auths: AuthData[],
+    tokenDecimals?: number
+  ): Promise<TransactionRequest> {
+    const depositsParsed = await this.mapDeposits(deposits, tokenDecimals)
+    const permitsParsed = await this.mapPermits(permits, tokenDecimals)
+    const authsParsed = await this.mapAuths(auths, tokenDecimals)
+
+    const estGas = await this.contract.bundle.estimateGas(
+      depositsParsed,
+      permitsParsed,
+      authsParsed
+    )
+    const overrides = await buildTxOverrides(
+      estGas,
+      this.getSignerAccordingSdk(),
+      this.config?.gasFeeMultiplier
+    )
+    return buildUnsignedTx(
+      this.contract.bundle,
+      [depositsParsed, permitsParsed, authsParsed],
+      overrides
+    )
+  }
+
+  /**
+   * Extend an existing lock by updating amount/expiry.
+   * @param {string} jobId
+   * @param {string} token
+   * @param {string} payer
+   * @param {string} amount
+   * @param {string} expiry
+   * @param {number} [tokenDecimals]
+   * @param {Boolean} estimateGas if True, return gas estimate
+   * @return {Promise<ReceiptOrEstimate>} returns the transaction receipt or the estimateGas value
+   */
+  public async reLock<G extends boolean = false>(
+    jobId: string,
+    token: string,
+    payer: string,
+    amount: string,
+    expiry: string,
+    tokenDecimals?: number,
+    estimateGas?: G
+  ): Promise<ReceiptOrEstimate<G>> {
+    const tx = await this.reLockTx(jobId, token, payer, amount, expiry, tokenDecimals)
+    if (estimateGas) return <ReceiptOrEstimate<G>>tx.gasLimit
+    const trxReceipt = await sendPreparedTransaction(this.getSignerAccordingSdk(), tx)
+    return <ReceiptOrEstimate<G>>trxReceipt
+  }
+
+  public async reLockTx(
+    jobId: string,
+    token: string,
+    payer: string,
+    amount: string,
+    expiry: string,
+    tokenDecimals?: number
+  ): Promise<TransactionRequest> {
+    const amountParsed = await this.amountToUnits(token, amount, tokenDecimals)
+    const estGas = await this.contract.reLock.estimateGas(
+      jobId,
+      token,
+      payer,
+      amountParsed,
+      expiry
+    )
+    const overrides = await buildTxOverrides(
+      estGas,
+      this.getSignerAccordingSdk(),
+      this.config?.gasFeeMultiplier
+    )
+    return buildUnsignedTx(
+      this.contract.reLock,
+      [jobId, token, payer, amountParsed, expiry],
+      overrides
+    )
+  }
+
+  /**
+   * Extend multiple existing locks by updating amount/expiry.
+   * @param {string[]} jobIds
+   * @param {string[]} tokens
+   * @param {string[]} payers
+   * @param {string[]} amounts
+   * @param {string[]} expiries
+   * @param {number} [tokenDecimals]
+   * @param {Boolean} estimateGas if True, return gas estimate
+   * @return {Promise<ReceiptOrEstimate>} returns the transaction receipt or the estimateGas value
+   */
+  public async reLocks<G extends boolean = false>(
+    jobIds: string[],
+    tokens: string[],
+    payers: string[],
+    amounts: string[],
+    expiries: string[],
+    tokenDecimals?: number,
+    estimateGas?: G
+  ): Promise<ReceiptOrEstimate<G>> {
+    const tx = await this.reLocksTx(
+      jobIds,
+      tokens,
+      payers,
+      amounts,
+      expiries,
+      tokenDecimals
+    )
+    if (estimateGas) return <ReceiptOrEstimate<G>>tx.gasLimit
+    const trxReceipt = await sendPreparedTransaction(this.getSignerAccordingSdk(), tx)
+    return <ReceiptOrEstimate<G>>trxReceipt
+  }
+
+  public async reLocksTx(
+    jobIds: string[],
+    tokens: string[],
+    payers: string[],
+    amounts: string[],
+    expiries: string[],
+    tokenDecimals?: number
+  ): Promise<TransactionRequest> {
+    if (
+      jobIds.length !== tokens.length ||
+      jobIds.length !== payers.length ||
+      jobIds.length !== amounts.length ||
+      jobIds.length !== expiries.length
+    ) {
+      throw new Error('All reLocks input arrays must have the same length')
+    }
+
+    const amountsParsed = await Promise.all(
+      amounts.map((amount, index) =>
+        this.amountToUnits(tokens[index], amount, tokenDecimals)
+      )
+    )
+
+    const estGas = await this.contract.reLocks.estimateGas(
+      jobIds,
+      tokens,
+      payers,
+      amountsParsed,
+      expiries
+    )
+    const overrides = await buildTxOverrides(
+      estGas,
+      this.getSignerAccordingSdk(),
+      this.config?.gasFeeMultiplier
+    )
+    return buildUnsignedTx(
+      this.contract.reLocks,
+      [jobIds, tokens, payers, amountsParsed, expiries],
+      overrides
+    )
+  }
+
+  private async mapDeposits(
+    deposits: DepositData[],
+    tokenDecimals?: number
+  ): Promise<{ token: string; amount: string }[]> {
+    return Promise.all(
+      deposits.map(async (deposit) => ({
+        token: deposit.token,
+        amount: await this.amountToUnits(deposit.token, deposit.amount, tokenDecimals)
+      }))
+    )
+  }
+
+  private async mapPermits(
+    permits: PermitData[],
+    tokenDecimals?: number
+  ): Promise<
+    {
+      token: string
+      amount: string
+      deadline: string
+      v: number
+      r: string
+      s: string
+    }[]
+  > {
+    return Promise.all(
+      permits.map(async (permit) => ({
+        token: permit.token,
+        amount: await this.amountToUnits(permit.token, permit.amount, tokenDecimals),
+        deadline: permit.deadline,
+        v: permit.v,
+        r: permit.r,
+        s: permit.s
+      }))
+    )
+  }
+
+  private async mapAuths(
+    auths: AuthData[],
+    tokenDecimals?: number
+  ): Promise<
+    {
+      token: string
+      payee: string
+      maxLockedAmount: string
+      maxLockSeconds: string
+      maxLockCounts: string
+    }[]
+  > {
+    return Promise.all(
+      auths.map(async (auth) => ({
+        token: auth.token,
+        payee: auth.payee,
+        maxLockedAmount: await this.amountToUnits(
+          auth.token,
+          auth.maxLockedAmount,
+          tokenDecimals
+        ),
+        maxLockSeconds: auth.maxLockSeconds,
+        maxLockCounts: auth.maxLockCounts
+      }))
+    )
   }
 
   /**
