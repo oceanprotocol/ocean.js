@@ -78,7 +78,15 @@ export class EscrowContract extends SmartContractWithAddress {
     payer: string,
     payee: string
   ): Promise<LockData[]> {
-    return await this.contract.getLocks(token, payer, payee)
+    const locks: LockData[] = await this.contract.getLocks(token, payer, payee)
+    return locks.map((lock) => ({
+      jobId: lock.jobId.toString(),
+      payer: lock.payer,
+      amount: lock.amount.toString(),
+      expiry: lock.expiry.toString(),
+      token: lock.token,
+      startTime: lock.startTime.toString()
+    }))
   }
 
   /**
@@ -418,6 +426,19 @@ export class EscrowContract extends SmartContractWithAddress {
     )
   }
 
+  private assertSingleTokenForDecimalsOverride(
+    tokens: string[],
+    tokenDecimals?: number
+  ): void {
+    if (tokenDecimals === undefined) return
+    const uniqueTokens = new Set(tokens.map((token) => token.toLowerCase()))
+    if (uniqueTokens.size > 1) {
+      throw new Error(
+        'tokenDecimals cannot be used when the batch contains multiple different tokens'
+      )
+    }
+  }
+
   private async prepareAuthorizeInputs(
     token: string,
     payee: string,
@@ -470,6 +491,10 @@ export class EscrowContract extends SmartContractWithAddress {
     auths: AuthData[] = [],
     tokenDecimals?: number
   ): Promise<TransactionRequest> {
+    this.assertSingleTokenForDecimalsOverride(
+      [...deposits, ...permits, ...auths].map((item) => item.token),
+      tokenDecimals
+    )
     const depositsParsed = await this.mapDeposits(deposits || [], tokenDecimals)
     const permitsParsed = await this.mapPermits(permits || [], tokenDecimals)
     const authsParsed = await this.mapAuths(auths || [], tokenDecimals)
@@ -594,6 +619,7 @@ export class EscrowContract extends SmartContractWithAddress {
     ) {
       throw new Error('All reLocks input arrays must have the same length')
     }
+    this.assertSingleTokenForDecimalsOverride(tokens, tokenDecimals)
 
     const amountsParsed = await Promise.all(
       amounts.map((amount, index) =>
