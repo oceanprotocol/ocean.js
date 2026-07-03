@@ -354,6 +354,9 @@ export class EscrowContract extends SmartContractWithAddress {
       maxLockCounts,
       tokenDecimals
     )
+    if (!tx) {
+      return <ReceiptOrEstimate<G>>null
+    }
     if (estimateGas) return <ReceiptOrEstimate<G>>tx.gasLimit
     const trxReceipt = await sendPreparedTransaction(this.getSignerAccordingSdk(), tx)
     return <ReceiptOrEstimate<G>>trxReceipt
@@ -428,16 +431,8 @@ export class EscrowContract extends SmartContractWithAddress {
       maxLockedAmount,
       tokenDecimals
     )
-    const maxLockSecondsParsed = await this.amountToUnits(
-      token,
-      maxLockSeconds,
-      tokenDecimals
-    )
-    const maxLockCountsParsed = await this.amountToUnits(
-      token,
-      maxLockCounts,
-      tokenDecimals
-    )
+    const maxLockSecondsParsed = maxLockSeconds
+    const maxLockCountsParsed = maxLockCounts
     return {
       tokenArg: token,
       payeeArg: payee,
@@ -470,14 +465,14 @@ export class EscrowContract extends SmartContractWithAddress {
   }
 
   public async bundleTx(
-    deposits: DepositData[],
-    permits: PermitData[],
-    auths: AuthData[],
+    deposits: DepositData[] = [],
+    permits: PermitData[] = [],
+    auths: AuthData[] = [],
     tokenDecimals?: number
   ): Promise<TransactionRequest> {
-    const depositsParsed = await this.mapDeposits(deposits, tokenDecimals)
-    const permitsParsed = await this.mapPermits(permits, tokenDecimals)
-    const authsParsed = await this.mapAuths(auths, tokenDecimals)
+    const depositsParsed = await this.mapDeposits(deposits || [], tokenDecimals)
+    const permitsParsed = await this.mapPermits(permits || [], tokenDecimals)
+    const authsParsed = await this.mapAuths(auths || [], tokenDecimals)
 
     const estGas = await this.contract.bundle.estimateGas(
       depositsParsed,
