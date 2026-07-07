@@ -66,12 +66,11 @@ export async function getSignature(
   if (isAgentSignature(signerOrAuthToken)) {
     return signerOrAuthToken.signature
   }
-  const message = String(
+  const message =
     String(await signerOrAuthToken.getAddress()) +
-      String(nonce) +
-      String(command) +
-      String(issuerPeerId)
-  )
+    String(nonce) +
+    String(command) +
+    String(issuerPeerId)
   return signRequest(signerOrAuthToken, message)
 }
 

@@ -737,7 +737,13 @@ export class P2pProvider {
     signal?: AbortSignal
   ): Promise<NodeStatus> {
     try {
-      return await this.sendP2pCommand(nodeUri, PROTOCOL_COMMANDS.STATUS, {})
+      return await this.sendP2pCommand(
+        nodeUri,
+        PROTOCOL_COMMANDS.STATUS,
+        {},
+        null,
+        signal
+      )
     } catch (e) {
       LoggerInstance.error('P2P getNodeStatus (STATUS) failed:', e)
       throw e
