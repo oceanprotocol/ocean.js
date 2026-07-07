@@ -60,7 +60,7 @@ jobs:
       - name: Run Ganache with Barge
         working-directory: ${{ github.workspace }}/barge
         run: |
-          bash -x start_ocean.sh 2>&1 > start_ocean.log &
+          export NODE_VERSION=pr-1404 && bash -x start_ocean.sh 2>&1 > start_ocean.log &
 
       - name: Install deps & build
         run: npm ci && npm run build:metadata
@@ -150,7 +150,7 @@ jobs:
       - name: Run Barge
         working-directory: ${{ github.workspace }}/barge
         run: |
-          bash -x start_ocean.sh 2>&1 > start-node.log &
+          export NODE_VERSION=pr-1404 && bash -x start_ocean.sh 2>&1 > start-node.log &
 
       - name: Install deps & build
         run: npm ci && npm run build:metadata
