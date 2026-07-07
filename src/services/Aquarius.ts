@@ -157,10 +157,13 @@ export class Aquarius {
         nonce = '0'
       }
       const nextNonce = (Number(nonce) + 1).toString() // have to increase the previous
+      const issuerPeerId = (await ProviderInstance.getNodeStatus(providerUrl, signal))?.id
+      if (!issuerPeerId) throw new Error('Could not resolve node peerId for signature.')
       const message = String(
         String(await signer.getAddress()) +
           String(nextNonce) +
-          String(PROTOCOL_COMMANDS.VALIDATE_DDO)
+          String(PROTOCOL_COMMANDS.VALIDATE_DDO) +
+          String(issuerPeerId)
       )
       const signature = await signRequest(signer, message)
       const data = { ddo, publisherAddress, nonce: nextNonce, signature }

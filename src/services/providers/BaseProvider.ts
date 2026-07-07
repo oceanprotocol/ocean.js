@@ -57,7 +57,8 @@ export async function getConsumerAddress(
 export async function getSignature(
   signerOrAuthToken: SignerOrAuthTokenOrSignature,
   nonce: string,
-  command: string
+  command: string,
+  issuerPeerId: string
 ): Promise<string | null> {
   if (typeof signerOrAuthToken === 'string') {
     return null
@@ -66,7 +67,10 @@ export async function getSignature(
     return signerOrAuthToken.signature
   }
   const message = String(
-    String(await signerOrAuthToken.getAddress()) + String(nonce) + String(command)
+    String(await signerOrAuthToken.getAddress()) +
+      String(nonce) +
+      String(command) +
+      String(issuerPeerId)
   )
   return signRequest(signerOrAuthToken, message)
 }
