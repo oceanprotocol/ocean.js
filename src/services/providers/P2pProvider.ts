@@ -540,9 +540,7 @@ export class P2pProvider {
     }
     const consumerAddress = await getConsumerAddress(signerOrAuthToken)
     const nonce = ((await this.getNonce(nodeUri, consumerAddress, signal)) + 1).toString()
-    const issuerPeerId = (await this.getNodeStatus(nodeUri, signal))?.id
-    if (!issuerPeerId) throw new Error('Could not resolve node peerId for signature.')
-    const signature = await getSignature(signerOrAuthToken, nonce, command, issuerPeerId)
+    const signature = await getSignature(signerOrAuthToken, nonce, command)
     return { consumerAddress, nonce, signature }
   }
 
@@ -1447,13 +1445,10 @@ export class P2pProvider {
   ): Promise<{ success: boolean }> {
     const consumerAddress = await consumer.getAddress()
     const nonce = ((await this.getNonce(nodeUri, consumerAddress, signal)) + 1).toString()
-    const issuerPeerId = (await this.getNodeStatus(nodeUri, signal))?.id
-    if (!issuerPeerId) throw new Error('Could not resolve node peerId for signature.')
     const signature = await getSignature(
       consumer,
       nonce,
-      PROTOCOL_COMMANDS.INVALIDATE_AUTH_TOKEN,
-      issuerPeerId
+      PROTOCOL_COMMANDS.INVALIDATE_AUTH_TOKEN
     )
     return this.sendP2pCommand(
       nodeUri,

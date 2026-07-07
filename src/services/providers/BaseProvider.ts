@@ -58,7 +58,7 @@ export async function getSignature(
   signerOrAuthToken: SignerOrAuthTokenOrSignature,
   nonce: string,
   command: string,
-  issuerPeerId: string
+  issuerPeerId: string = ''
 ): Promise<string | null> {
   if (typeof signerOrAuthToken === 'string') {
     return null

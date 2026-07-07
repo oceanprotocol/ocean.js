@@ -84,9 +84,7 @@ export class HttpProvider {
         serviceEndpoints
       )) + 1
     ).toString()
-    const issuerPeerId = (await this.getNodeStatus(nodeUri, signal))?.id
-    if (!issuerPeerId) throw new Error('Could not resolve node peerId for signature.')
-    const signature = await getSignature(signerOrAuthToken, nonce, command, issuerPeerId)
+    const signature = await getSignature(signerOrAuthToken, nonce, command)
     if (!signature) throw new Error('Could not sign persistent storage request.')
     return { consumerAddress, nonce, signature }
   }
@@ -1278,13 +1276,10 @@ export class HttpProvider {
       )) + 1
     ).toString()
 
-    const issuerPeerId = (await this.getNodeStatus(nodeUri, signal))?.id
-    if (!issuerPeerId) throw new Error('Could not resolve node peerId for signature.')
     const signature = await getSignature(
       consumer,
       nonce,
-      PROTOCOL_COMMANDS.INVALIDATE_AUTH_TOKEN,
-      issuerPeerId
+      PROTOCOL_COMMANDS.INVALIDATE_AUTH_TOKEN
     )
 
     try {
