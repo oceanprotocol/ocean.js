@@ -151,7 +151,8 @@ export const PROTOCOL_COMMANDS = {
   SERVICE_STOP: 'serviceStop',
   SERVICE_RESTART: 'serviceRestart',
   SERVICE_GET_STATUS: 'serviceGetStatus',
-  SERVICE_EXTEND: 'serviceExtend'
+  SERVICE_EXTEND: 'serviceExtend',
+  SERVICE_GET_STREAMABLE_LOGS: 'serviceGetStreamableLogs'
 }
 
 export interface NodeLogsParams {

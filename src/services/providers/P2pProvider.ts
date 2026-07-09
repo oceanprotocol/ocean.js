@@ -634,6 +634,7 @@ export class P2pProvider {
 
       if (
         command === PROTOCOL_COMMANDS.COMPUTE_GET_STREAMABLE_LOGS ||
+        command === PROTOCOL_COMMANDS.SERVICE_GET_STREAMABLE_LOGS ||
         command === PROTOCOL_COMMANDS.COMPUTE_GET_RESULT
       ) {
         const streamableChunks = (async function* () {
@@ -1906,5 +1907,31 @@ export class P2pProvider {
       signal
     )
     return Array.isArray(result) ? result : []
+  }
+
+  /**
+   * Stream a running service's container logs via P2P. `since` optionally bounds the lower time
+   * (Unix seconds, or a relative duration like '30s'/'2h'); omit for the full history then live.
+   */
+  public async serviceGetStreamableLogs(
+    nodeUri: OceanNode,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
+    serviceId: string,
+    since?: string,
+    signal?: AbortSignal
+  ): Promise<any> {
+    const authPayload = await this.getSignedCommandParams(
+      nodeUri,
+      signerOrAuthToken,
+      PROTOCOL_COMMANDS.SERVICE_GET_STREAMABLE_LOGS,
+      signal
+    )
+    return this.sendP2pCommand(
+      nodeUri,
+      PROTOCOL_COMMANDS.SERVICE_GET_STREAMABLE_LOGS,
+      { ...authPayload, serviceId, ...(since ? { since } : {}) },
+      signerOrAuthToken,
+      signal
+    )
   }
 }

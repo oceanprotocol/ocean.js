@@ -828,6 +828,22 @@ export class BaseProvider {
     )
   }
 
+  public async serviceGetStreamableLogs(
+    nodeUri: OceanNode,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
+    serviceId: string,
+    since?: string,
+    signal?: AbortSignal
+  ): Promise<any> {
+    return this.getImpl(nodeUri).serviceGetStreamableLogs(
+      nodeUri,
+      signerOrAuthToken,
+      serviceId,
+      since,
+      signal
+    )
+  }
+
   public async fetchConfig(
     nodeUri: OceanNode,
     payload: Record<string, any>

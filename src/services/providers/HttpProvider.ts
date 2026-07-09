@@ -2199,4 +2199,45 @@ export class HttpProvider {
     const data = await response.json()
     return Array.isArray(data) ? data : []
   }
+
+  public async serviceGetStreamableLogs(
+    nodeUri: string,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
+    serviceId: string,
+    since?: string,
+    signal?: AbortSignal
+  ): Promise<any> {
+    const providerEndpoints = await this.getEndpoints(nodeUri)
+    const serviceEndpoints = await this.getServiceEndpoints(nodeUri, providerEndpoints)
+    const route = this.resolveServiceRoute(nodeUri, serviceEndpoints, 'serviceGetStreamableLogs')
+    const authPayload = await this.getSignedCommandParams(
+      nodeUri,
+      signerOrAuthToken,
+      PROTOCOL_COMMANDS.SERVICE_GET_STREAMABLE_LOGS,
+      signal,
+      providerEndpoints,
+      serviceEndpoints
+    )
+    const query = this.buildQuery({
+      ...authPayload,
+      serviceId,
+      ...(since ? { since } : {})
+    })
+    const headers: Record<string, string> = {}
+    if (typeof signerOrAuthToken === 'string') headers.Authorization = signerOrAuthToken
+    const response = await fetch(`${route}?${query.toString()}`, {
+      method: 'GET',
+      headers,
+      signal
+    })
+    if (response?.ok || response?.status === 200) {
+      return responseBodyToAsyncIterable(response.body)
+    }
+    LoggerInstance.error(
+      'serviceGetStreamableLogs failed: ',
+      response.status,
+      response.statusText
+    )
+    return null
+  }
 }
