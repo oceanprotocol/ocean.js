@@ -62,9 +62,9 @@ jobs:
         working-directory: ${{ github.workspace }}/barge
         run: |
           bash -x start_ocean.sh 2>&1 > start_ocean.log &
-        env: 
-          NODE_VERSION: "pr-1402"
-          
+        env:
+          CONTRACTS_VERSION: '2.9.0'
+          NODE_VERSION: "pr-1410"
       - name: Install deps & build
         run: npm ci && npm run build:metadata
       - name: Wait for node to be ready
@@ -155,9 +155,9 @@ jobs:
         working-directory: ${{ github.workspace }}/barge
         run: |
           bash -x start_ocean.sh 2>&1 > start-node.log &
-        env: 
-          NODE_VERSION: "pr-1402"
-
+        env:
+          CONTRACTS_VERSION: '2.9.0'
+          NODE_VERSION: "pr-1410"
       - name: Install deps & build
         run: npm ci && npm run build:metadata
 
