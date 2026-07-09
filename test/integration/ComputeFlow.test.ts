@@ -555,12 +555,27 @@ describe('Compute flow tests', async () => {
       providerInitializeComputeResults.payment.token === paymentToken,
       'Incorrect payment token address'
     )
-    const { price } = computeEnv.fees[Number(chainId)][0].prices[0]
+    // Pick the fee schedule for the token we're actually paying with, not just the first one.
+    const feeSchedule = computeEnv.fees[Number(chainId)].find(
+      (f) => f.feeToken.toLowerCase() === paymentToken.toLowerCase()
+    )
+    assert(feeSchedule, `No fee schedule for payment token ${paymentToken}`)
+    const { prices } = feeSchedule
+    // Unpriced resources default to 0 — mirrors the node's getResourcePrice, which returns 0
+    // for ids absent from `prices` (the env prices cpu only; ram/disk are billed free).
+    const priceFor = (id: string) => Number(prices.find((p) => p.id === id)?.price ?? 0)
+    // The node clamps the requested maxJobDuration down to env.maxJobDuration (the client sends
+    // validUntil), then bills ceil(duration / 60) minutes summed over every requested resource.
+    const durationMinutes = Math.ceil(computeEnv.maxJobDuration / 60)
+    const expectedAmount = resources.reduce(
+      (sum, r) => sum + priceFor(r.id) * r.amount * durationMinutes,
+      0
+    )
     assert(
       Number(formatUnits(providerInitializeComputeResults.payment.amount, 18)) ===
-        (computeEnv.maxJobDuration / 60) * price * computeMinutes,
+        expectedAmount,
       'Incorrect payment token amount'
-    ) // 60 minutes per price 1 -> amount = 60
+    )
     assert(
       !('error' in providerInitializeComputeResults.algorithm),
       'Cannot order algorithm'
