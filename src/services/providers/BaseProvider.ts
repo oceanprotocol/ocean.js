@@ -30,6 +30,11 @@ import {
   PersistentStorageFileEntry,
   PersistentStorageObject,
   PersistentStorageUpdateBucketResponse,
+  ServiceJob,
+  ServiceTemplatePublic,
+  ServiceStartParams,
+  ServiceUserData,
+  ServicePayment,
   OceanNode,
   NodeP2P,
   CompleteSignature,
@@ -738,6 +743,87 @@ export class BaseProvider {
       signerOrAuthToken,
       bucketId,
       fileName,
+      signal
+    )
+  }
+
+  // ── Service on Demand ────────────────────────────────────────────────
+
+  public async getServiceTemplates(
+    nodeUri: OceanNode,
+    chainId?: number,
+    signal?: AbortSignal
+  ): Promise<ServiceTemplatePublic[]> {
+    return this.getImpl(nodeUri).getServiceTemplates(nodeUri, chainId, signal)
+  }
+
+  public async serviceStart(
+    nodeUri: OceanNode,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
+    params: ServiceStartParams,
+    signal?: AbortSignal
+  ): Promise<ServiceJob[]> {
+    return this.getImpl(nodeUri).serviceStart(nodeUri, signerOrAuthToken, params, signal)
+  }
+
+  public async serviceStop(
+    nodeUri: OceanNode,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
+    serviceId: string,
+    signal?: AbortSignal
+  ): Promise<ServiceJob[]> {
+    return this.getImpl(nodeUri).serviceStop(
+      nodeUri,
+      signerOrAuthToken,
+      serviceId,
+      signal
+    )
+  }
+
+  public async serviceExtend(
+    nodeUri: OceanNode,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
+    serviceId: string,
+    additionalDuration: number,
+    payment: ServicePayment,
+    signal?: AbortSignal
+  ): Promise<ServiceJob[]> {
+    return this.getImpl(nodeUri).serviceExtend(
+      nodeUri,
+      signerOrAuthToken,
+      serviceId,
+      additionalDuration,
+      payment,
+      signal
+    )
+  }
+
+  public async serviceRestart(
+    nodeUri: OceanNode,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
+    serviceId: string,
+    userData?: ServiceUserData,
+    signal?: AbortSignal
+  ): Promise<ServiceJob[]> {
+    return this.getImpl(nodeUri).serviceRestart(
+      nodeUri,
+      signerOrAuthToken,
+      serviceId,
+      userData,
+      signal
+    )
+  }
+
+  public async getServiceStatus(
+    nodeUri: OceanNode,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
+    serviceId?: string,
+    signal?: AbortSignal
+  ): Promise<ServiceJob[]> {
+    return this.getImpl(nodeUri).getServiceStatus(
+      nodeUri,
+      signerOrAuthToken,
+      serviceId,
       signal
     )
   }

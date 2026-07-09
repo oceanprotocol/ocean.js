@@ -28,6 +28,11 @@ import {
   PersistentStorageFileEntry,
   PersistentStorageObject,
   PersistentStorageUpdateBucketResponse,
+  ServiceJob,
+  ServiceTemplatePublic,
+  ServiceStartParams,
+  ServiceUserData,
+  ServicePayment,
   SignerOrAuthTokenOrSignature,
   CompleteSignature
 } from '../../@types/index.js'
@@ -1683,10 +1688,7 @@ export class HttpProvider {
     if (typeof signerOrAuthToken === 'string') {
       headers.Authorization = signerOrAuthToken
     }
-    const query = new URLSearchParams({
-      ...authPayload,
-      owner
-    })
+    const query = this.buildQuery({ ...authPayload, owner })
     const response = await fetch(`${route}?${query.toString()}`, {
       method: 'GET',
       headers,
@@ -1720,9 +1722,7 @@ export class HttpProvider {
     if (typeof signerOrAuthToken === 'string') {
       headers.Authorization = signerOrAuthToken
     }
-    const query = new URLSearchParams({
-      ...authPayload
-    })
+    const query = this.buildQuery({ ...authPayload })
 
     const response = await fetch(`${routeBase}?${query.toString()}`, {
       method: 'GET',
@@ -1756,9 +1756,7 @@ export class HttpProvider {
       PROTOCOL_COMMANDS.PERSISTENT_STORAGE_GET_FILE_OBJECT,
       signal
     )
-    const query = new URLSearchParams({
-      ...authPayload
-    })
+    const query = this.buildQuery({ ...authPayload })
     const headers: Record<string, string> = {}
     if (typeof signerOrAuthToken === 'string') {
       headers.Authorization = signerOrAuthToken
@@ -1796,9 +1794,7 @@ export class HttpProvider {
       PROTOCOL_COMMANDS.PERSISTENT_STORAGE_UPLOAD_FILE,
       signal
     )
-    const query = new URLSearchParams({
-      ...authPayload
-    })
+    const query = this.buildQuery({ ...authPayload })
 
     // Stream the request body as a WHATWG ReadableStream in both Node (undici) and the
     // browser. undici accepts a streamed body only with `duplex: 'half'` (not in the DOM
@@ -1892,9 +1888,7 @@ export class HttpProvider {
       headers.Authorization = signerOrAuthToken
     }
 
-    const query = new URLSearchParams({
-      ...authPayload
-    })
+    const query = this.buildQuery({ ...authPayload })
     const response = await fetch(`${routeBase}?${query.toString()}`, {
       method: 'DELETE',
       headers,
@@ -1930,9 +1924,7 @@ export class HttpProvider {
       headers.Authorization = signerOrAuthToken
     }
 
-    const query = new URLSearchParams({
-      ...authPayload
-    })
+    const query = this.buildQuery({ ...authPayload })
     const response = await fetch(`${routeBase}?${query.toString()}`, {
       method: 'PATCH',
       headers,
@@ -1941,5 +1933,270 @@ export class HttpProvider {
     })
     if (!response.ok) throw new Error(await response.text())
     return response.json()
+  }
+
+  // ── Service on Demand ────────────────────────────────────────────────
+
+  // Resolves a /api/services/<route> URL: prefers the node's advertised endpoint
+  // (when present), otherwise falls back to the well-known path.
+  private resolveServiceRoute(
+    nodeUri: string,
+    serviceEndpoints: ServiceEndpoint[],
+    route: string
+  ): string {
+    const endpoint = this.getEndpointURL(serviceEndpoints, route)
+    if (endpoint?.urlPath) return endpoint.urlPath
+    return nodeUri.replace(/\/+$/, '') + `/api/services/${route}`
+  }
+
+  // Encrypts userData to the node's public key (ECIES): JSON-encode then encrypt.
+  private async encryptServiceUserData(
+    nodeUri: string,
+    userData?: ServiceUserData
+  ): Promise<string | undefined> {
+    if (userData === undefined || userData === null) return undefined
+    const nodeKey = await this.getNodePublicKey(nodeUri)
+    if (!nodeKey) throw new Error('Cannot resolve node public key to encrypt userData')
+    return eciesencrypt(nodeKey, JSON.stringify(userData))
+  }
+
+  // Builds a query string, dropping undefined/null values. For auth-token credentials
+  // nonce/signature are undefined, and URLSearchParams would otherwise serialize them
+  // as the literal string "undefined".
+  private buildQuery(params: Record<string, string | undefined | null>): URLSearchParams {
+    return new URLSearchParams(
+      Object.entries(params).filter(([, v]) => v !== undefined && v !== null) as [
+        string,
+        string
+      ][]
+    )
+  }
+
+  /**
+   * Lists the service templates published by the node. Public — no signature.
+   * @param {string} nodeUri The provider URI.
+   * @param {number} chainId Optional chain filter.
+   * @param {AbortSignal} signal abort signal.
+   * @return {Promise<ServiceTemplatePublic[]>} The sanitized template catalogue.
+   */
+  public async getServiceTemplates(
+    nodeUri: string,
+    chainId?: number,
+    signal?: AbortSignal
+  ): Promise<ServiceTemplatePublic[]> {
+    const providerEndpoints = await this.getEndpoints(nodeUri)
+    const serviceEndpoints = await this.getServiceEndpoints(nodeUri, providerEndpoints)
+    const route = this.resolveServiceRoute(nodeUri, serviceEndpoints, 'serviceTemplates')
+    const url = chainId !== undefined ? `${route}?chainId=${chainId}` : route
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
+      signal
+    })
+    if (!response.ok) throw new Error(await response.text())
+    const data = await response.json()
+    return Array.isArray(data) ? data : []
+  }
+
+  /**
+   * Starts an on-demand service container on a compute environment.
+   * @param {string} nodeUri The provider URI.
+   * @param {SignerOrAuthTokenOrSignature} signerOrAuthToken consumer signer / auth token.
+   * @param {ServiceStartParams} params Service start parameters.
+   * @param {AbortSignal} signal abort signal.
+   * @return {Promise<ServiceJob[]>} The created service job (single-element array).
+   */
+  public async serviceStart(
+    nodeUri: string,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
+    params: ServiceStartParams,
+    signal?: AbortSignal
+  ): Promise<ServiceJob[]> {
+    const providerEndpoints = await this.getEndpoints(nodeUri)
+    const serviceEndpoints = await this.getServiceEndpoints(nodeUri, providerEndpoints)
+    const route = this.resolveServiceRoute(nodeUri, serviceEndpoints, 'serviceStart')
+    const { consumerAddress, nonce, signature } = await this.getSignedCommandParams(
+      nodeUri,
+      signerOrAuthToken,
+      PROTOCOL_COMMANDS.SERVICE_START,
+      signal,
+      providerEndpoints,
+      serviceEndpoints
+    )
+    const { userData, ...rest } = params
+    const body: Record<string, any> = {
+      consumerAddress,
+      nonce,
+      signature,
+      ...rest,
+      userData: await this.encryptServiceUserData(nodeUri, userData)
+    }
+    const authHeader = this.getAuthorization(signerOrAuthToken)
+    const response = await fetch(route, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(authHeader ? { Authorization: authHeader } : {})
+      },
+      body: JSON.stringify(body),
+      signal
+    })
+    if (!response.ok) throw new Error(await response.text())
+    const data = await response.json()
+    return Array.isArray(data) ? data : [data]
+  }
+
+  /**
+   * Stops a running service.
+   * @return {Promise<ServiceJob[]>} The stopped service job (single-element array).
+   */
+  public async serviceStop(
+    nodeUri: string,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
+    serviceId: string,
+    signal?: AbortSignal
+  ): Promise<ServiceJob[]> {
+    const providerEndpoints = await this.getEndpoints(nodeUri)
+    const serviceEndpoints = await this.getServiceEndpoints(nodeUri, providerEndpoints)
+    const route = this.resolveServiceRoute(nodeUri, serviceEndpoints, 'serviceStop')
+    const authPayload = await this.getSignedCommandParams(
+      nodeUri,
+      signerOrAuthToken,
+      PROTOCOL_COMMANDS.SERVICE_STOP,
+      signal,
+      providerEndpoints,
+      serviceEndpoints
+    )
+    const authHeader = this.getAuthorization(signerOrAuthToken)
+    const response = await fetch(route, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(authHeader ? { Authorization: authHeader } : {})
+      },
+      body: JSON.stringify({ ...authPayload, serviceId }),
+      signal
+    })
+    if (!response.ok) throw new Error(await response.text())
+    const data = await response.json()
+    return Array.isArray(data) ? data : [data]
+  }
+
+  /**
+   * Extends a running service's expiry by paying for additional duration.
+   * @return {Promise<ServiceJob[]>} The updated service job (single-element array).
+   */
+  public async serviceExtend(
+    nodeUri: string,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
+    serviceId: string,
+    additionalDuration: number,
+    payment: ServicePayment,
+    signal?: AbortSignal
+  ): Promise<ServiceJob[]> {
+    const providerEndpoints = await this.getEndpoints(nodeUri)
+    const serviceEndpoints = await this.getServiceEndpoints(nodeUri, providerEndpoints)
+    const route = this.resolveServiceRoute(nodeUri, serviceEndpoints, 'serviceExtend')
+    const authPayload = await this.getSignedCommandParams(
+      nodeUri,
+      signerOrAuthToken,
+      PROTOCOL_COMMANDS.SERVICE_EXTEND,
+      signal,
+      providerEndpoints,
+      serviceEndpoints
+    )
+    const authHeader = this.getAuthorization(signerOrAuthToken)
+    const response = await fetch(route, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(authHeader ? { Authorization: authHeader } : {})
+      },
+      body: JSON.stringify({ ...authPayload, serviceId, additionalDuration, payment }),
+      signal
+    })
+    if (!response.ok) throw new Error(await response.text())
+    const data = await response.json()
+    return Array.isArray(data) ? data : [data]
+  }
+
+  /**
+   * Restarts a running service (recreates the container). When `userData` is
+   * supplied it REPLACES the stored userData; otherwise the stored one is reused.
+   * @return {Promise<ServiceJob[]>} The restarted service job (single-element array).
+   */
+  public async serviceRestart(
+    nodeUri: string,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
+    serviceId: string,
+    userData?: ServiceUserData,
+    signal?: AbortSignal
+  ): Promise<ServiceJob[]> {
+    const providerEndpoints = await this.getEndpoints(nodeUri)
+    const serviceEndpoints = await this.getServiceEndpoints(nodeUri, providerEndpoints)
+    const route = this.resolveServiceRoute(nodeUri, serviceEndpoints, 'serviceRestart')
+    const authPayload = await this.getSignedCommandParams(
+      nodeUri,
+      signerOrAuthToken,
+      PROTOCOL_COMMANDS.SERVICE_RESTART,
+      signal,
+      providerEndpoints,
+      serviceEndpoints
+    )
+    const authHeader = this.getAuthorization(signerOrAuthToken)
+    const response = await fetch(route, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(authHeader ? { Authorization: authHeader } : {})
+      },
+      body: JSON.stringify({
+        ...authPayload,
+        serviceId,
+        userData: await this.encryptServiceUserData(nodeUri, userData)
+      }),
+      signal
+    })
+    if (!response.ok) throw new Error(await response.text())
+    const data = await response.json()
+    return Array.isArray(data) ? data : [data]
+  }
+
+  /**
+   * Returns the caller's service jobs (userData stripped). Filter by `serviceId`,
+   * or omit it to list all of the caller's services. Requires a signature.
+   * @return {Promise<ServiceJob[]>} The matching service jobs.
+   */
+  public async getServiceStatus(
+    nodeUri: string,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
+    serviceId?: string,
+    signal?: AbortSignal
+  ): Promise<ServiceJob[]> {
+    const providerEndpoints = await this.getEndpoints(nodeUri)
+    const serviceEndpoints = await this.getServiceEndpoints(nodeUri, providerEndpoints)
+    const route = this.resolveServiceRoute(nodeUri, serviceEndpoints, 'serviceStatus')
+    const authPayload = await this.getSignedCommandParams(
+      nodeUri,
+      signerOrAuthToken,
+      PROTOCOL_COMMANDS.SERVICE_GET_STATUS,
+      signal,
+      providerEndpoints,
+      serviceEndpoints
+    )
+    const query = this.buildQuery({
+      ...authPayload,
+      ...(serviceId ? { serviceId } : {})
+    })
+    const headers: Record<string, string> = {}
+    if (typeof signerOrAuthToken === 'string') headers.Authorization = signerOrAuthToken
+    const response = await fetch(`${route}?${query.toString()}`, {
+      method: 'GET',
+      headers,
+      signal
+    })
+    if (!response.ok) throw new Error(await response.text())
+    const data = await response.json()
+    return Array.isArray(data) ? data : []
   }
 }
