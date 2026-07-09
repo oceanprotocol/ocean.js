@@ -55,7 +55,6 @@ import {
 } from '../../@types/index.js'
 import { PROTOCOL_COMMANDS, NodeLogEntry } from '../../@types/Provider.js'
 import { type DDO, type ValidateMetadata } from '@oceanprotocol/ddo-js'
-import { signRequest } from '../../utils/SignatureUtils.js'
 import {
   getConsumerAddress,
   getSignature,
@@ -516,8 +515,8 @@ export class P2pProvider {
   }
 
   private async getNodePublicKey(nodeUri: OceanNode): Promise<string> {
-    const endpoints = await this.getEndpoints(nodeUri)
-    return endpoints?.nodePublicKey
+    const status = await this.getNodeStatus(nodeUri)
+    return status?.publicKey
   }
 
   protected getAuthorization(s: SignerOrAuthTokenOrSignature) {
@@ -736,22 +735,24 @@ export class P2pProvider {
 
   /**
    * Returns node status via P2P STATUS command.
-   * @param {string} nodeUri - multiaddr of the node
+   * @param {OceanNode} nodeUri - multiaddr of the node
    */
-  async getEndpoints(nodeUri: OceanNode): Promise<any> {
-    try {
-      return await this.sendP2pCommand(nodeUri, PROTOCOL_COMMANDS.STATUS, {})
-    } catch (e) {
-      LoggerInstance.error('P2P getEndpoints (STATUS) failed:', e)
-      throw e
-    }
-  }
-
   public async getNodeStatus(
     nodeUri: OceanNode,
     signal?: AbortSignal
   ): Promise<NodeStatus> {
-    return this.getEndpoints(nodeUri)
+    try {
+      return await this.sendP2pCommand(
+        nodeUri,
+        PROTOCOL_COMMANDS.STATUS,
+        {},
+        null,
+        signal
+      )
+    } catch (e) {
+      LoggerInstance.error('P2P getNodeStatus (STATUS) failed:', e)
+      throw e
+    }
   }
 
   public async getNodeJobs(
@@ -1348,10 +1349,13 @@ export class P2pProvider {
   ): Promise<string> {
     const address = await consumer.getAddress()
     const nonce = ((await this.getNonce(nodeUri, address, signal)) + 1).toString()
+    const issuerPeerId = (await this.getNodeStatus(nodeUri, signal))?.id
+    if (!issuerPeerId) throw new Error('Could not resolve node peerId for signature.')
     const signature = await getSignature(
       consumer,
       nonce,
-      PROTOCOL_COMMANDS.CREATE_AUTH_TOKEN
+      PROTOCOL_COMMANDS.CREATE_AUTH_TOKEN,
+      issuerPeerId
     )
 
     const result = await this.sendP2pCommand(
@@ -1452,8 +1456,11 @@ export class P2pProvider {
   ): Promise<{ success: boolean }> {
     const consumerAddress = await consumer.getAddress()
     const nonce = ((await this.getNonce(nodeUri, consumerAddress, signal)) + 1).toString()
-    const signatureMessage = consumerAddress + nonce
-    const signature = await signRequest(consumer, signatureMessage)
+    const signature = await getSignature(
+      consumer,
+      nonce,
+      PROTOCOL_COMMANDS.INVALIDATE_AUTH_TOKEN
+    )
     return this.sendP2pCommand(
       nodeUri,
       PROTOCOL_COMMANDS.INVALIDATE_AUTH_TOKEN,

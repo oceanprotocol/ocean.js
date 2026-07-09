@@ -40,7 +40,6 @@ import { PROTOCOL_COMMANDS } from '../../@types/Provider.js'
 import { type DDO, type ValidateMetadata } from '@oceanprotocol/ddo-js'
 import { eciesencrypt } from '../../utils/eciesencrypt.js'
 import { responseBodyToAsyncIterable } from '../../utils/bytes.js'
-import { signRequest } from '../../utils/SignatureUtils.js'
 import {
   getConsumerAddress,
   getSignature,
@@ -1219,10 +1218,13 @@ export class HttpProvider {
       )) + 1
     ).toString()
 
+    const issuerPeerId = (await this.getNodeStatus(nodeUri, signal))?.id
+    if (!issuerPeerId) throw new Error('Could not resolve node peerId for signature.')
     const signature = await getSignature(
       consumer,
       nonce,
-      PROTOCOL_COMMANDS.CREATE_AUTH_TOKEN
+      PROTOCOL_COMMANDS.CREATE_AUTH_TOKEN,
+      issuerPeerId
     )
 
     try {
@@ -1279,8 +1281,11 @@ export class HttpProvider {
       )) + 1
     ).toString()
 
-    const signatureMessage = consumerAddress + nonce
-    const signature = await signRequest(consumer, signatureMessage)
+    const signature = await getSignature(
+      consumer,
+      nonce,
+      PROTOCOL_COMMANDS.INVALIDATE_AUTH_TOKEN
+    )
 
     try {
       const response = await fetch(url, {
