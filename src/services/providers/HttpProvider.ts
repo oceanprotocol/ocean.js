@@ -2209,7 +2209,11 @@ export class HttpProvider {
   ): Promise<any> {
     const providerEndpoints = await this.getEndpoints(nodeUri)
     const serviceEndpoints = await this.getServiceEndpoints(nodeUri, providerEndpoints)
-    const route = this.resolveServiceRoute(nodeUri, serviceEndpoints, 'serviceGetStreamableLogs')
+    const route = this.resolveServiceRoute(
+      nodeUri,
+      serviceEndpoints,
+      'serviceGetStreamableLogs'
+    )
     const authPayload = await this.getSignedCommandParams(
       nodeUri,
       signerOrAuthToken,
