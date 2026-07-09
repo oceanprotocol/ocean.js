@@ -56,11 +56,19 @@ export interface ComputeEnvironmentFreeOptions {
   maxJobs?: number // maximum number of simultaneous free jobs
   resources?: ComputeResource[]
 }
+// Per-environment capability flags. Both default to true node-side; only an
+// explicit false disables a capability. `services` gates Service-on-Demand.
+export interface ComputeEnvFeatures {
+  computeJobs?: boolean // false → COMPUTE_START + FREE_COMPUTE_START rejected
+  services?: boolean // false → SERVICE_START rejected; env not service-eligible
+}
+
 export interface ComputeEnvironment {
   id: string
   description?: string
   consumerAddress: string
   access?: ComputeEnvironmentAccessOptions
+  features?: ComputeEnvFeatures
   storageExpiry?: number // amount of seconds for storage
   minJobDuration?: number // min billable seconds for a paid job
   maxJobDuration?: number // max duration in seconds for a paid job
