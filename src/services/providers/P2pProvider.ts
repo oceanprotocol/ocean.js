@@ -1865,6 +1865,8 @@ export class P2pProvider {
     signerOrAuthToken: SignerOrAuthTokenOrSignature,
     serviceId: string,
     userData?: ServiceUserData,
+    dockerCmd?: string[],
+    dockerEntrypoint?: string[],
     signal?: AbortSignal
   ): Promise<ServiceJob[]> {
     const authPayload = await this.getSignedCommandParams(
@@ -1879,7 +1881,11 @@ export class P2pProvider {
       {
         ...authPayload,
         serviceId,
-        userData: await this.encryptServiceUserData(nodeUri, userData)
+        userData: await this.encryptServiceUserData(nodeUri, userData),
+        // Only send when supplied — an omitted override reuses the node's stored value, whereas an
+        // explicit [] REPLACES it with "no override" (matches ocean-node's restartService semantics).
+        ...(dockerCmd !== undefined ? { dockerCmd } : {}),
+        ...(dockerEntrypoint !== undefined ? { dockerEntrypoint } : {})
       },
       signerOrAuthToken,
       signal
