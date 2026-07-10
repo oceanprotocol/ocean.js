@@ -803,6 +803,8 @@ export class BaseProvider {
     signerOrAuthToken: SignerOrAuthTokenOrSignature,
     serviceId: string,
     userData?: ServiceUserData,
+    dockerCmd?: string[],
+    dockerEntrypoint?: string[],
     signal?: AbortSignal
   ): Promise<ServiceJob[]> {
     return this.getImpl(nodeUri).serviceRestart(
@@ -810,6 +812,8 @@ export class BaseProvider {
       signerOrAuthToken,
       serviceId,
       userData,
+      dockerCmd,
+      dockerEntrypoint,
       signal
     )
   }

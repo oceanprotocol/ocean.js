@@ -2121,8 +2121,10 @@ export class HttpProvider {
   }
 
   /**
-   * Restarts a running service (recreates the container). When `userData` is
-   * supplied it REPLACES the stored userData; otherwise the stored one is reused.
+   * Restarts a running service (recreates the container). When `userData`, `dockerCmd` or
+   * `dockerEntrypoint` is supplied it REPLACES the stored value;
+   * otherwise the stored one is reused.  Passing a new `dockerCmd` swaps the launch command
+   * (e.g. a different model) while keeping the same serviceId, host port and expiry.
    * @return {Promise<ServiceJob[]>} The restarted service job (single-element array).
    */
   public async serviceRestart(
@@ -2130,6 +2132,8 @@ export class HttpProvider {
     signerOrAuthToken: SignerOrAuthTokenOrSignature,
     serviceId: string,
     userData?: ServiceUserData,
+    dockerCmd?: string[],
+    dockerEntrypoint?: string[],
     signal?: AbortSignal
   ): Promise<ServiceJob[]> {
     const providerEndpoints = await this.getEndpoints(nodeUri)
@@ -2153,7 +2157,11 @@ export class HttpProvider {
       body: JSON.stringify({
         ...authPayload,
         serviceId,
-        userData: await this.encryptServiceUserData(nodeUri, userData)
+        userData: await this.encryptServiceUserData(nodeUri, userData),
+        // Only send when supplied — an omitted override reuses the node's stored value, whereas an
+        // explicit [] REPLACES it with "no override" (matches ocean-node's restartService semantics).
+        ...(dockerCmd !== undefined ? { dockerCmd } : {}),
+        ...(dockerEntrypoint !== undefined ? { dockerEntrypoint } : {})
       }),
       signal
     })
