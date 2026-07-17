@@ -1,7 +1,7 @@
 {
   "name": "@oceanprotocol/lib",
   "source": "./src/index.ts",
-  "version": "8.6.1",
+  "version": "9.0.0-next.4",
   "description": "JavaScript client library for Ocean Protocol",
   "main": "./dist/lib.cjs",
   "umd:main": "dist/lib.umd.js",
@@ -91,7 +91,7 @@
     "@libp2p/tcp": "^11.0.13",
     "@libp2p/websockets": "^10.1.6",
     "@multiformats/multiaddr": "^13.0.1",
-    "@oceanprotocol/contracts": "^2.8.0",
+    "@oceanprotocol/contracts": "^2.9.0",
     "@truffle/hdwallet-provider": "^2.0.14",
     "@types/chai": "^5.2.2",
     "@types/chai-spies": "^1.0.3",

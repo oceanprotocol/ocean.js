@@ -30,6 +30,13 @@ import {
   PersistentStorageFileEntry,
   PersistentStorageObject,
   PersistentStorageUpdateBucketResponse,
+  ServiceJob,
+  ServiceJobListed,
+  ServiceListFilters,
+  ServiceTemplatePublic,
+  ServiceStartParams,
+  ServiceUserData,
+  ServicePayment,
   OceanNode,
   NodeP2P,
   CompleteSignature,
@@ -57,7 +64,8 @@ export async function getConsumerAddress(
 export async function getSignature(
   signerOrAuthToken: SignerOrAuthTokenOrSignature,
   nonce: string,
-  command: string
+  command: string,
+  issuerPeerId: string = ''
 ): Promise<string | null> {
   if (typeof signerOrAuthToken === 'string') {
     return null
@@ -65,9 +73,11 @@ export async function getSignature(
   if (isAgentSignature(signerOrAuthToken)) {
     return signerOrAuthToken.signature
   }
-  const message = String(
-    String(await signerOrAuthToken.getAddress()) + String(nonce) + String(command)
-  )
+  const message =
+    String(await signerOrAuthToken.getAddress()) +
+    String(nonce) +
+    String(command) +
+    String(issuerPeerId)
   return signRequest(signerOrAuthToken, message)
 }
 
@@ -735,6 +745,116 @@ export class BaseProvider {
       signerOrAuthToken,
       bucketId,
       fileName,
+      signal
+    )
+  }
+
+  // ── Service on Demand ────────────────────────────────────────────────
+
+  public async getServiceTemplates(
+    nodeUri: OceanNode,
+    chainId?: number,
+    signal?: AbortSignal
+  ): Promise<ServiceTemplatePublic[]> {
+    return this.getImpl(nodeUri).getServiceTemplates(nodeUri, chainId, signal)
+  }
+
+  public async serviceStart(
+    nodeUri: OceanNode,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
+    params: ServiceStartParams,
+    signal?: AbortSignal
+  ): Promise<ServiceJob[]> {
+    return this.getImpl(nodeUri).serviceStart(nodeUri, signerOrAuthToken, params, signal)
+  }
+
+  public async serviceStop(
+    nodeUri: OceanNode,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
+    serviceId: string,
+    signal?: AbortSignal
+  ): Promise<ServiceJob[]> {
+    return this.getImpl(nodeUri).serviceStop(
+      nodeUri,
+      signerOrAuthToken,
+      serviceId,
+      signal
+    )
+  }
+
+  public async serviceExtend(
+    nodeUri: OceanNode,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
+    serviceId: string,
+    additionalDuration: number,
+    payment: ServicePayment,
+    signal?: AbortSignal
+  ): Promise<ServiceJob[]> {
+    return this.getImpl(nodeUri).serviceExtend(
+      nodeUri,
+      signerOrAuthToken,
+      serviceId,
+      additionalDuration,
+      payment,
+      signal
+    )
+  }
+
+  public async serviceRestart(
+    nodeUri: OceanNode,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
+    serviceId: string,
+    userData?: ServiceUserData,
+    dockerCmd?: string[],
+    dockerEntrypoint?: string[],
+    signal?: AbortSignal
+  ): Promise<ServiceJob[]> {
+    return this.getImpl(nodeUri).serviceRestart(
+      nodeUri,
+      signerOrAuthToken,
+      serviceId,
+      userData,
+      dockerCmd,
+      dockerEntrypoint,
+      signal
+    )
+  }
+
+  public async getServiceStatus(
+    nodeUri: OceanNode,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
+    serviceId?: string,
+    signal?: AbortSignal
+  ): Promise<ServiceJob[]> {
+    return this.getImpl(nodeUri).getServiceStatus(
+      nodeUri,
+      signerOrAuthToken,
+      serviceId,
+      signal
+    )
+  }
+
+  public async getServices(
+    nodeUri: OceanNode,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
+    filters?: ServiceListFilters,
+    signal?: AbortSignal
+  ): Promise<ServiceJobListed[]> {
+    return this.getImpl(nodeUri).getServices(nodeUri, signerOrAuthToken, filters, signal)
+  }
+
+  public async serviceGetStreamableLogs(
+    nodeUri: OceanNode,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
+    serviceId: string,
+    since?: string,
+    signal?: AbortSignal
+  ): Promise<any> {
+    return this.getImpl(nodeUri).serviceGetStreamableLogs(
+      nodeUri,
+      signerOrAuthToken,
+      serviceId,
+      since,
       signal
     )
   }
