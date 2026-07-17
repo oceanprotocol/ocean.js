@@ -412,7 +412,8 @@ export class BaseProvider {
           statusText: job.statusText,
           dateCreated: job.dateCreated,
           environment,
-          maxJobDuration: (job as NodeComputeJob).maxJobDuration
+          maxJobDuration: (job as NodeComputeJob).maxJobDuration,
+          jobName: job.metadata?.name
         })
       })
     } catch (e) {
