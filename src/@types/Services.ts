@@ -110,6 +110,32 @@ export interface ServiceJob {
   extendPayments?: ServiceJobPayment[] // one entry per successful SERVICE_EXTEND
 }
 
+// Returned by SERVICE_LIST, which is authenticated but NOT owner-scoped (any consumer
+// identity sees every owner's services). On top of the always-stripped userData, the
+// node removes everything that reveals HOW a service is configured — CMD/ENTRYPOINT
+// overrides and any inline Dockerfile. Identity, status, resources, endpoints and
+// payment metadata are kept; use the owner-scoped SERVICE_GET_STATUS for the full view.
+export type ServiceJobListed = Omit<
+  ServiceJob,
+  'dockerCmd' | 'dockerEntrypoint' | 'dockerfile' | 'additionalDockerFiles'
+>
+
+// Filters for SERVICE_LIST (getServices). With no filters the node returns only the
+// services currently holding a resource reservation — exactly what the engines count
+// against the shared pools: Running/Restarting/Stopping, the mid-start pipeline states,
+// paid Error (container died, restartable), and explicitly Stopped within the paid
+// window. Expired and never-paid jobs hold nothing and are not listed by default.
+export interface ServiceListFilters {
+  // filter to ONE specific status (any ServiceStatusNumber, incl. Expired); takes
+  // precedence over includeAllStatuses
+  status?: ServiceStatusNumber
+  // return services in EVERY status instead of only the resource-holding set
+  includeAllStatuses?: boolean
+  // only services created at/after this moment: ISO date string, or a Unix timestamp
+  // (seconds or milliseconds) as a string
+  fromTimestamp?: string
+}
+
 // ── Request shapes ─────────────────────────────────────────────────────
 
 export interface ServicePayment {

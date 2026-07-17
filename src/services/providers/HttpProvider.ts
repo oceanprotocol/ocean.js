@@ -29,6 +29,8 @@ import {
   PersistentStorageObject,
   PersistentStorageUpdateBucketResponse,
   ServiceJob,
+  ServiceJobListed,
+  ServiceListFilters,
   ServiceTemplatePublic,
   ServiceStartParams,
   ServiceUserData,
@@ -2195,6 +2197,48 @@ export class HttpProvider {
     const query = this.buildQuery({
       ...authPayload,
       ...(serviceId ? { serviceId } : {})
+    })
+    const headers: Record<string, string> = {}
+    if (typeof signerOrAuthToken === 'string') headers.Authorization = signerOrAuthToken
+    const response = await fetch(`${route}?${query.toString()}`, {
+      method: 'GET',
+      headers,
+      signal
+    })
+    if (!response.ok) throw new Error(await response.text())
+    const data = await response.json()
+    return Array.isArray(data) ? data : []
+  }
+
+  /**
+   * Node-wide service listing (SERVICE_LIST). Authenticated but NOT owner-scoped: any
+   * consumer identity sees every owner's services, listing-sanitized (no userData, no
+   * dockerCmd/dockerEntrypoint, no Dockerfile). Default (no filters) returns only the
+   * services currently holding a resource reservation; see ServiceListFilters.
+   * @return {Promise<ServiceJobListed[]>} The matching service jobs.
+   */
+  public async getServices(
+    nodeUri: string,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
+    filters?: ServiceListFilters,
+    signal?: AbortSignal
+  ): Promise<ServiceJobListed[]> {
+    const providerEndpoints = await this.getEndpoints(nodeUri)
+    const serviceEndpoints = await this.getServiceEndpoints(nodeUri, providerEndpoints)
+    const route = this.resolveServiceRoute(nodeUri, serviceEndpoints, 'serviceList')
+    const authPayload = await this.getSignedCommandParams(
+      nodeUri,
+      signerOrAuthToken,
+      PROTOCOL_COMMANDS.SERVICE_LIST,
+      signal,
+      providerEndpoints,
+      serviceEndpoints
+    )
+    const query = this.buildQuery({
+      ...authPayload,
+      ...(filters?.status !== undefined ? { status: String(filters.status) } : {}),
+      ...(filters?.includeAllStatuses ? { includeAllStatuses: 'true' } : {}),
+      ...(filters?.fromTimestamp ? { fromTimestamp: filters.fromTimestamp } : {})
     })
     const headers: Record<string, string> = {}
     if (typeof signerOrAuthToken === 'string') headers.Authorization = signerOrAuthToken
