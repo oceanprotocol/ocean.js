@@ -293,6 +293,56 @@ describe('Service on Demand flow tests', () => {
     )
   })
 
+  it('lists services node-wide via getServices (SERVICE_LIST, not owner-scoped)', async function () {
+    if (skipLifecycle || !serviceId) this.skip()
+
+    // default listing (resource-holding services only), called with a DIFFERENT
+    // identity than the owner — SERVICE_LIST is authenticated but not owner-scoped
+    const listed = await ProviderInstance.getServices(providerUrl, publisherAccount)
+    const job = listed.find((j) => j.serviceId === serviceId)
+    assert(job, "another consumer's default listing should include the running service")
+
+    // listing-sanitized: no userData, no CMD/ENTRYPOINT overrides, no Dockerfile
+    for (const field of [
+      'userData',
+      'dockerCmd',
+      'dockerEntrypoint',
+      'dockerfile',
+      'additionalDockerFiles'
+    ]) {
+      expect((job as any)[field], `${field} should be stripped`).to.equal(undefined)
+    }
+    assert(job.owner, 'identity fields are kept')
+    assert(job.payment, 'payment metadata is kept')
+
+    // status filter narrows to ONE specific status
+    const running = await ProviderInstance.getServices(providerUrl, consumerAccount, {
+      status: ServiceStatusNumber.Running
+    })
+    assert(
+      running.some((j) => j.serviceId === serviceId),
+      'status=Running should include the service'
+    )
+    const expired = await ProviderInstance.getServices(providerUrl, consumerAccount, {
+      status: ServiceStatusNumber.Expired
+    })
+    assert(
+      !expired.some((j) => j.serviceId === serviceId),
+      'status=Expired should not include the running service'
+    )
+
+    // fromTimestamp: a future moment excludes everything created so far
+    const future = new Date(Date.now() + 3600 * 1000).toISOString()
+    const none = await ProviderInstance.getServices(providerUrl, consumerAccount, {
+      includeAllStatuses: true,
+      fromTimestamp: future
+    })
+    assert(
+      !none.some((j) => j.serviceId === serviceId),
+      'a future fromTimestamp should exclude the service'
+    )
+  })
+
   it('extends the service → expiresAt advances, extendPayments grows', async function () {
     if (skipLifecycle || !serviceId) this.skip()
     this.timeout(120000)
@@ -322,6 +372,8 @@ describe('Service on Demand flow tests', () => {
       providerUrl,
       consumerAccount,
       serviceId,
+      undefined,
+      undefined,
       undefined,
       opSignal()
     )

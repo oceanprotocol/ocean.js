@@ -31,6 +31,8 @@ import {
   PersistentStorageObject,
   PersistentStorageUpdateBucketResponse,
   ServiceJob,
+  ServiceJobListed,
+  ServiceListFilters,
   ServiceTemplatePublic,
   ServiceStartParams,
   ServiceUserData,
@@ -830,6 +832,15 @@ export class BaseProvider {
       serviceId,
       signal
     )
+  }
+
+  public async getServices(
+    nodeUri: OceanNode,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
+    filters?: ServiceListFilters,
+    signal?: AbortSignal
+  ): Promise<ServiceJobListed[]> {
+    return this.getImpl(nodeUri).getServices(nodeUri, signerOrAuthToken, filters, signal)
   }
 
   public async serviceGetStreamableLogs(

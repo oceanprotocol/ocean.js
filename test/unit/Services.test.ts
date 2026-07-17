@@ -13,6 +13,7 @@ describe('Service on Demand client wiring', () => {
     expect(PROTOCOL_COMMANDS.SERVICE_STOP).to.equal('serviceStop')
     expect(PROTOCOL_COMMANDS.SERVICE_RESTART).to.equal('serviceRestart')
     expect(PROTOCOL_COMMANDS.SERVICE_GET_STATUS).to.equal('serviceGetStatus')
+    expect(PROTOCOL_COMMANDS.SERVICE_LIST).to.equal('serviceList')
     expect(PROTOCOL_COMMANDS.SERVICE_EXTEND).to.equal('serviceExtend')
   })
 
@@ -24,14 +25,15 @@ describe('Service on Demand client wiring', () => {
     expect(ServiceStatusNumber.Error).to.equal(99)
   })
 
-  it('ProviderInstance exposes the six service methods', () => {
+  it('ProviderInstance exposes the service methods', () => {
     for (const m of [
       'getServiceTemplates',
       'serviceStart',
       'serviceStop',
       'serviceExtend',
       'serviceRestart',
-      'getServiceStatus'
+      'getServiceStatus',
+      'getServices'
     ]) {
       assert(
         typeof (ProviderInstance as any)[m] === 'function',

@@ -44,6 +44,8 @@ import {
   PersistentStorageObject,
   PersistentStorageUpdateBucketResponse,
   ServiceJob,
+  ServiceJobListed,
+  ServiceListFilters,
   ServiceTemplatePublic,
   ServiceStartParams,
   ServiceUserData,
@@ -1909,6 +1911,39 @@ export class P2pProvider {
       nodeUri,
       PROTOCOL_COMMANDS.SERVICE_GET_STATUS,
       { ...authPayload, ...(serviceId ? { serviceId } : {}) },
+      signerOrAuthToken,
+      signal
+    )
+    return Array.isArray(result) ? result : []
+  }
+
+  /**
+   * Node-wide service listing (SERVICE_LIST) via P2P. Authenticated but NOT owner-scoped:
+   * any consumer identity sees every owner's services, listing-sanitized (no userData, no
+   * dockerCmd/dockerEntrypoint, no Dockerfile). Default (no filters) returns only the
+   * services currently holding a resource reservation; see ServiceListFilters.
+   */
+  public async getServices(
+    nodeUri: OceanNode,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
+    filters?: ServiceListFilters,
+    signal?: AbortSignal
+  ): Promise<ServiceJobListed[]> {
+    const authPayload = await this.getSignedCommandParams(
+      nodeUri,
+      signerOrAuthToken,
+      PROTOCOL_COMMANDS.SERVICE_LIST,
+      signal
+    )
+    const result = await this.sendP2pCommand(
+      nodeUri,
+      PROTOCOL_COMMANDS.SERVICE_LIST,
+      {
+        ...authPayload,
+        ...(filters?.status !== undefined ? { status: filters.status } : {}),
+        ...(filters?.includeAllStatuses ? { includeAllStatuses: true } : {}),
+        ...(filters?.fromTimestamp ? { fromTimestamp: filters.fromTimestamp } : {})
+      },
       signerOrAuthToken,
       signal
     )
