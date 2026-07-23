@@ -1942,7 +1942,8 @@ export class P2pProvider {
         ...authPayload,
         ...(filters?.status !== undefined ? { status: filters.status } : {}),
         ...(filters?.includeAllStatuses ? { includeAllStatuses: true } : {}),
-        ...(filters?.fromTimestamp ? { fromTimestamp: filters.fromTimestamp } : {})
+        ...(filters?.fromTimestamp ? { fromTimestamp: filters.fromTimestamp } : {}),
+        ...(filters?.updatedSince ? { updatedSince: filters.updatedSince } : {})
       },
       signerOrAuthToken,
       signal

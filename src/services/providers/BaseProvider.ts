@@ -446,11 +446,7 @@ export class BaseProvider {
       const baseUrl = incentiveBackendUrl.replace(/\/+$/, '')
       const peerId = await this.resolveNodePeerId(nodeUri)
 
-      const dashIndex = service.serviceId.indexOf('-')
-      const bareServiceId =
-        dashIndex > 0 ? service.serviceId.slice(dashIndex + 1) : service.serviceId
-
-      await fetch(`${baseUrl}/services/${encodeURIComponent(bareServiceId)}/started`, {
+      await fetch(`${baseUrl}/services/${encodeURIComponent(service.serviceId)}/started`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -463,6 +459,9 @@ export class BaseProvider {
           image: service.image,
           tag: service.tag,
           dockerCmd: service.dockerCmd,
+          exposedPorts: service.exposedPorts,
+          endpoints: service.endpoints,
+          resources: service.resources,
           duration: service.duration,
           expiresAt: service.expiresAt,
           payment: service.payment,
