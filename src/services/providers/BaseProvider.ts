@@ -431,6 +431,52 @@ export class BaseProvider {
     }
   }
 
+  /**
+   * @param {OceanNode} nodeUri The provider URI the service runs on.
+   * @param {ServiceJob} service The service job just started.
+   */
+  private async notifyIncentiveBackendServiceStarted(
+    nodeUri: OceanNode,
+    service: ServiceJob
+  ): Promise<void> {
+    try {
+      const incentiveBackendUrl = process.env.INCENTIVE_BACKEND_URL
+      if (!incentiveBackendUrl || !service?.serviceId) return
+
+      const baseUrl = incentiveBackendUrl.replace(/\/+$/, '')
+      const peerId = await this.resolveNodePeerId(nodeUri)
+
+      await fetch(
+        `${baseUrl}/services/${encodeURIComponent(service.serviceId)}/started`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            peerId,
+            clusterHash: service.clusterHash,
+            owner: service.owner,
+            status: service.status,
+            statusText: service.statusText,
+            environment: service.environment,
+            image: service.image,
+            tag: service.tag,
+            dockerCmd: service.dockerCmd,
+            exposedPorts: service.exposedPorts,
+            endpoints: service.endpoints,
+            resources: service.resources,
+            duration: service.duration,
+            expiresAt: service.expiresAt,
+            payment: service.payment,
+            dateCreated: service.dateCreated
+          })
+        }
+      )
+    } catch (e) {
+      LoggerInstance.error('Failed to notify incentive backend about started service:')
+      LoggerInstance.error(e)
+    }
+  }
+
   public async computeStreamableLogs(
     nodeUri: OceanNode,
     signerOrAuthToken: SignerOrAuthTokenOrSignature,
@@ -765,7 +811,17 @@ export class BaseProvider {
     params: ServiceStartParams,
     signal?: AbortSignal
   ): Promise<ServiceJob[]> {
-    return this.getImpl(nodeUri).serviceStart(nodeUri, signerOrAuthToken, params, signal)
+    const services = await this.getImpl(nodeUri).serviceStart(
+      nodeUri,
+      signerOrAuthToken,
+      params,
+      signal
+    )
+    const startedServices = Array.isArray(services) ? services : [services]
+    startedServices.forEach((service) => {
+      this.notifyIncentiveBackendServiceStarted(nodeUri, service).catch(() => {})
+    })
+    return services
   }
 
   public async serviceStop(

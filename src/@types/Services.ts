@@ -101,6 +101,7 @@ export interface ServiceJob {
   status: ServiceStatusNumber
   statusText: string
   dateCreated: string // ISO timestamp
+  updatedAt?: number // Unix ms; bumped on every status change (SERVICE_LIST updatedSince cursor)
   expiresAt: number // Unix ms timestamp
   duration: number // requested seconds
   exposedPorts: number[]
@@ -134,6 +135,9 @@ export interface ServiceListFilters {
   // only services created at/after this moment: ISO date string, or a Unix timestamp
   // (seconds or milliseconds) as a string
   fromTimestamp?: string
+  // only services updated (created OR any status change) at/after this moment, same
+  // formats as fromTimestamp; returns every status. The incremental-sync cursor.
+  updatedSince?: string
 }
 
 // ── Request shapes ─────────────────────────────────────────────────────

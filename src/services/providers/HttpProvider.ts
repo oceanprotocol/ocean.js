@@ -2238,7 +2238,8 @@ export class HttpProvider {
       ...authPayload,
       ...(filters?.status !== undefined ? { status: String(filters.status) } : {}),
       ...(filters?.includeAllStatuses ? { includeAllStatuses: 'true' } : {}),
-      ...(filters?.fromTimestamp ? { fromTimestamp: filters.fromTimestamp } : {})
+      ...(filters?.fromTimestamp ? { fromTimestamp: filters.fromTimestamp } : {}),
+      ...(filters?.updatedSince ? { updatedSince: filters.updatedSince } : {})
     })
     const headers: Record<string, string> = {}
     if (typeof signerOrAuthToken === 'string') headers.Authorization = signerOrAuthToken
