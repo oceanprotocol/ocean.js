@@ -152,18 +152,35 @@ export interface ServicePayment {
 // so a plaintext secret can never be forwarded unencrypted.
 export type ServiceUserData = Record<string, unknown>
 
-export interface ServiceStartParams {
-  environment: string // required: the envId to run the service on
-  image: string // base image name (or build label when dockerfile is set)
+// The container specification shared by serviceStart and serviceRestart. Every field is
+// optional here; the consuming type decides which are required (serviceStart re-declares
+// `image` as mandatory). `userData` is always ECIES-encrypted to the node before sending.
+export interface ServiceContainerSpec {
+  image?: string // base image name (or build label when dockerfile is set)
   tag?: string // pull by name:tag
   checksum?: string // pull by digest: "sha256:<64 hex>"
   dockerfile?: string // build from inline Dockerfile; requires allowImageBuild on the env
   additionalDockerFiles?: Record<string, string>
+  userData?: ServiceUserData
   dockerCmd?: string[] // exec-form CMD override (no shell)
   dockerEntrypoint?: string[]
+}
+
+// Optional container-spec overrides for serviceRestart. The node treats the restart
+// atomically ("all-or-nothing"): providing ANY of image/tag/checksum/dockerfile/
+// additionalDockerFiles switches it into RESPEC mode — the container is rebuilt entirely
+// from these values (`image` becomes mandatory, and exactly one of tag/checksum/dockerfile
+// applies) instead of being bounced on the stored spec (REUSE mode). Passing none of them
+// reuses the stored container spec unchanged. `userData`/`dockerCmd`/`dockerEntrypoint`
+// keep their replace-when-supplied semantics: an omitted value reuses the stored one, an
+// explicit value (including `[]`) REPLACES it.
+export type ServiceRestartParams = ServiceContainerSpec
+
+export interface ServiceStartParams extends ServiceContainerSpec {
+  environment: string // required: the envId to run the service on
+  image: string // required for start (base image name, or build label when dockerfile is set)
   exposedPorts?: number[]
   resources?: ComputeResourceRequest[]
   duration: number // seconds; capped by serviceOnDemand.maxDurationSeconds
-  userData?: ServiceUserData
   payment: ServicePayment
 }

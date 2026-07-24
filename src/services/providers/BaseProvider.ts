@@ -33,9 +33,9 @@ import {
   ServiceJob,
   ServiceJobListed,
   ServiceListFilters,
+  ServiceRestartParams,
   ServiceTemplatePublic,
   ServiceStartParams,
-  ServiceUserData,
   ServicePayment,
   OceanNode,
   NodeP2P,
@@ -860,18 +860,14 @@ export class BaseProvider {
     nodeUri: OceanNode,
     signerOrAuthToken: SignerOrAuthTokenOrSignature,
     serviceId: string,
-    userData?: ServiceUserData,
-    dockerCmd?: string[],
-    dockerEntrypoint?: string[],
+    params?: ServiceRestartParams,
     signal?: AbortSignal
   ): Promise<ServiceJob[]> {
     return this.getImpl(nodeUri).serviceRestart(
       nodeUri,
       signerOrAuthToken,
       serviceId,
-      userData,
-      dockerCmd,
-      dockerEntrypoint,
+      params,
       signal
     )
   }
