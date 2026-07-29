@@ -477,6 +477,30 @@ export class BaseProvider {
     }
   }
 
+  // Patches the incentive backend's record with the restarted service's new launch command
+  // (the backend derives the model from it), so a model edit isn't stuck on the first-start model.
+  private async notifyIncentiveBackendServiceRestarted(
+    nodeUri: OceanNode,
+    serviceId: string,
+    dockerCmd: string[]
+  ): Promise<void> {
+    try {
+      const incentiveBackendUrl = process.env.INCENTIVE_BACKEND_URL
+      if (!incentiveBackendUrl || !serviceId) return
+
+      const baseUrl = incentiveBackendUrl.replace(/\/+$/, '')
+
+      await fetch(`${baseUrl}/services/${encodeURIComponent(serviceId)}/restarted`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ dockerCmd })
+      })
+    } catch (e) {
+      LoggerInstance.error('Failed to notify incentive backend about restarted service:')
+      LoggerInstance.error(e)
+    }
+  }
+
   public async computeStreamableLogs(
     nodeUri: OceanNode,
     signerOrAuthToken: SignerOrAuthTokenOrSignature,
@@ -865,7 +889,7 @@ export class BaseProvider {
     dockerEntrypoint?: string[],
     signal?: AbortSignal
   ): Promise<ServiceJob[]> {
-    return this.getImpl(nodeUri).serviceRestart(
+    const services = await this.getImpl(nodeUri).serviceRestart(
       nodeUri,
       signerOrAuthToken,
       serviceId,
@@ -874,6 +898,11 @@ export class BaseProvider {
       dockerEntrypoint,
       signal
     )
+    // A model edit is a new dockerCmd; a pure reuse-restart sends none and changes nothing.
+    if (dockerCmd !== undefined) {
+      this.notifyIncentiveBackendServiceRestarted(nodeUri, serviceId, dockerCmd).catch(() => {})
+    }
+    return services
   }
 
   public async getServiceStatus(
