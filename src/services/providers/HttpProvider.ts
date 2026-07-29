@@ -31,6 +31,7 @@ import {
   ServiceJob,
   ServiceJobListed,
   ServiceListFilters,
+  ServiceRestartParams,
   ServiceTemplatePublic,
   ServiceStartParams,
   ServiceUserData,
@@ -2123,21 +2124,36 @@ export class HttpProvider {
   }
 
   /**
-   * Restarts a running service (recreates the container). When `userData`, `dockerCmd` or
-   * `dockerEntrypoint` is supplied it REPLACES the stored value;
-   * otherwise the stored one is reused.  Passing a new `dockerCmd` swaps the launch command
-   * (e.g. a different model) while keeping the same serviceId, host port and expiry.
+   * Restarts a running service (recreates the container) while keeping the same serviceId,
+   * payment, resources, host port(s) and expiry.
+   *
+   * The node treats the restart atomically. Passing no container-spec fields in `params`
+   * (REUSE mode) bounces the container on its stored spec unchanged. Passing ANY of
+   * `image`/`tag`/`checksum`/`dockerfile`/`additionalDockerFiles` (RESPEC mode) rebuilds the
+   * container entirely from `params`: `image` becomes mandatory, exactly one of
+   * `tag`/`checksum`/`dockerfile` applies, and a `dockerfile` requires `allowImageBuild` on
+   * the env (else the node replies 403). `userData`/`dockerCmd`/`dockerEntrypoint` are only
+   * sent when supplied — an omitted override reuses the node's stored value, whereas an
+   * explicit value (including `[]`) REPLACES it (matches ocean-node's restartService semantics).
    * @return {Promise<ServiceJob[]>} The restarted service job (single-element array).
    */
   public async serviceRestart(
     nodeUri: string,
     signerOrAuthToken: SignerOrAuthTokenOrSignature,
     serviceId: string,
-    userData?: ServiceUserData,
-    dockerCmd?: string[],
-    dockerEntrypoint?: string[],
+    params?: ServiceRestartParams,
     signal?: AbortSignal
   ): Promise<ServiceJob[]> {
+    const {
+      image,
+      tag,
+      checksum,
+      dockerfile,
+      additionalDockerFiles,
+      userData,
+      dockerCmd,
+      dockerEntrypoint
+    } = params ?? {}
     const providerEndpoints = await this.getEndpoints(nodeUri)
     const serviceEndpoints = await this.getServiceEndpoints(nodeUri, providerEndpoints)
     const route = this.resolveServiceRoute(nodeUri, serviceEndpoints, 'serviceRestart')
@@ -2160,8 +2176,13 @@ export class HttpProvider {
         ...authPayload,
         serviceId,
         userData: await this.encryptServiceUserData(nodeUri, userData),
-        // Only send when supplied — an omitted override reuses the node's stored value, whereas an
-        // explicit [] REPLACES it with "no override" (matches ocean-node's restartService semantics).
+        // Only send when supplied — an omitted field reuses the node's stored value, whereas an
+        // explicit value REPLACES it (matches ocean-node's restartService REUSE/RESPEC semantics).
+        ...(image !== undefined ? { image } : {}),
+        ...(tag !== undefined ? { tag } : {}),
+        ...(checksum !== undefined ? { checksum } : {}),
+        ...(dockerfile !== undefined ? { dockerfile } : {}),
+        ...(additionalDockerFiles !== undefined ? { additionalDockerFiles } : {}),
         ...(dockerCmd !== undefined ? { dockerCmd } : {}),
         ...(dockerEntrypoint !== undefined ? { dockerEntrypoint } : {})
       }),

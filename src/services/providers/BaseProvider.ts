@@ -33,9 +33,9 @@ import {
   ServiceJob,
   ServiceJobListed,
   ServiceListFilters,
+  ServiceRestartParams,
   ServiceTemplatePublic,
   ServiceStartParams,
-  ServiceUserData,
   ServicePayment,
   OceanNode,
   NodeP2P,
@@ -884,18 +884,14 @@ export class BaseProvider {
     nodeUri: OceanNode,
     signerOrAuthToken: SignerOrAuthTokenOrSignature,
     serviceId: string,
-    userData?: ServiceUserData,
-    dockerCmd?: string[],
-    dockerEntrypoint?: string[],
+    params?: ServiceRestartParams,
     signal?: AbortSignal
   ): Promise<ServiceJob[]> {
     const services = await this.getImpl(nodeUri).serviceRestart(
       nodeUri,
       signerOrAuthToken,
       serviceId,
-      userData,
-      dockerCmd,
-      dockerEntrypoint,
+      params,
       signal
     )
     // A model edit is a new dockerCmd; a pure reuse-restart sends none and changes nothing.

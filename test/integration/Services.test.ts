@@ -373,8 +373,6 @@ describe('Service on Demand flow tests', () => {
       consumerAccount,
       serviceId,
       undefined,
-      undefined,
-      undefined,
       opSignal()
     )
     const running = await pollUntil(

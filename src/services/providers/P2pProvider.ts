@@ -46,6 +46,7 @@ import {
   ServiceJob,
   ServiceJobListed,
   ServiceListFilters,
+  ServiceRestartParams,
   ServiceTemplatePublic,
   ServiceStartParams,
   ServiceUserData,
@@ -1866,11 +1867,19 @@ export class P2pProvider {
     nodeUri: OceanNode,
     signerOrAuthToken: SignerOrAuthTokenOrSignature,
     serviceId: string,
-    userData?: ServiceUserData,
-    dockerCmd?: string[],
-    dockerEntrypoint?: string[],
+    params?: ServiceRestartParams,
     signal?: AbortSignal
   ): Promise<ServiceJob[]> {
+    const {
+      image,
+      tag,
+      checksum,
+      dockerfile,
+      additionalDockerFiles,
+      userData,
+      dockerCmd,
+      dockerEntrypoint
+    } = params ?? {}
     const authPayload = await this.getSignedCommandParams(
       nodeUri,
       signerOrAuthToken,
@@ -1884,8 +1893,13 @@ export class P2pProvider {
         ...authPayload,
         serviceId,
         userData: await this.encryptServiceUserData(nodeUri, userData),
-        // Only send when supplied — an omitted override reuses the node's stored value, whereas an
-        // explicit [] REPLACES it with "no override" (matches ocean-node's restartService semantics).
+        // Only send when supplied — an omitted field reuses the node's stored value, whereas an
+        // explicit value REPLACES it (matches ocean-node's restartService REUSE/RESPEC semantics).
+        ...(image !== undefined ? { image } : {}),
+        ...(tag !== undefined ? { tag } : {}),
+        ...(checksum !== undefined ? { checksum } : {}),
+        ...(dockerfile !== undefined ? { dockerfile } : {}),
+        ...(additionalDockerFiles !== undefined ? { additionalDockerFiles } : {}),
         ...(dockerCmd !== undefined ? { dockerCmd } : {}),
         ...(dockerEntrypoint !== undefined ? { dockerEntrypoint } : {})
       },
