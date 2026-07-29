@@ -20,6 +20,7 @@ describe('Service on Demand client wiring', () => {
   it('ServiceStatusNumber enum mirrors the node status codes', () => {
     expect(ServiceStatusNumber.Starting).to.equal(10)
     expect(ServiceStatusNumber.Running).to.equal(40)
+    expect(ServiceStatusNumber.Restarting).to.equal(45)
     expect(ServiceStatusNumber.Stopped).to.equal(70)
     expect(ServiceStatusNumber.Expired).to.equal(75)
     expect(ServiceStatusNumber.Error).to.equal(99)
