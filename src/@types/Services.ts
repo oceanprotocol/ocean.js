@@ -65,6 +65,7 @@ export enum ServiceStatusNumber {
   Locking = 20, // escrow createLock in progress (funds locked, not yet claimed)
   Claiming = 30, // payment phase: claimLock on success, or cancelLock if the image step failed
   Running = 40,
+  Restarting = 45, // SERVICE_RESTART accepted; teardown + re-pull/build + new container in progress
   Stopping = 50,
   Stopped = 70,
   Expired = 75,
