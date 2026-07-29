@@ -489,15 +489,19 @@ export class BaseProvider {
 
       const baseUrl = incentiveBackendUrl.replace(/\/+$/, '')
 
-      await fetch(`${baseUrl}/services/${encodeURIComponent(serviceId)}/restarted`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          image: params.image,
-          tag: params.tag,
-          dockerCmd: params.dockerCmd
-        })
-      })
+      const response = await fetch(
+        `${baseUrl}/services/${encodeURIComponent(serviceId)}/restarted`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            image: params.image,
+            tag: params.tag,
+            dockerCmd: params.dockerCmd
+          })
+        }
+      )
+      if (!response.ok) throw new Error(`incentive backend responded ${response.status}`)
     } catch (e) {
       LoggerInstance.error('Failed to notify incentive backend about restarted service:')
       LoggerInstance.error(e)
