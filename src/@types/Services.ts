@@ -22,6 +22,15 @@ export interface UserConfigurableEnvVar {
   sensitive?: boolean // advisory hint for clients/UI (e.g. mask on input)
 }
 
+// ── Service template workflow ─────────────────────────────────────────
+// A workflow graph that can be selected when starting a service.
+export interface ServiceTemplateWorkflow {
+  id: string // [A-Za-z0-9_.-]+ — also the ?template= value the app UI deep-links to
+  name: string
+  description?: string
+  graph?: unknown // the workflow JSON, inlined by the node
+}
+
 // ── Public / sanitized template ───────────────────────────────────────
 // Returned by SERVICE_GET_TEMPLATES. `envVars` values are stripped (keys only).
 // Choosing a matching compute environment is the client's responsibility — see
@@ -42,6 +51,7 @@ export interface ServiceTemplatePublic {
   entrypoint?: string[] // Docker ENTRYPOINT override
   requiredResources?: TemplateResourceRequirement[]
   recommendedResources?: TemplateResourceRequirement[]
+  workflows?: ServiceTemplateWorkflow[]
 }
 
 // ── Runtime service job ────────────────────────────────────────────────
@@ -183,4 +193,5 @@ export interface ServiceStartParams extends ServiceContainerSpec {
   resources?: ComputeResourceRequest[]
   duration: number // seconds; capped by serviceOnDemand.maxDurationSeconds
   payment: ServicePayment
+  outputBucketId?: string // persistent-storage bucket bind-mounted at /data/outputs
 }
