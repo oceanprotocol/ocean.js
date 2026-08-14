@@ -8,11 +8,12 @@ describe('HttpProvider.getNodeJobs request construction', () => {
     globalThis.fetch = originalFetch
   })
 
-  // ocean-node registers this route as `/api/services/jobs/:job` with a REQUIRED (non-optional)
-  // param — confirmed by running the real route in isolation: a request with no segment after
-  // `/jobs/` 404s ("Cannot GET"), one with any literal segment (including the string ":job")
-  // reaches the handler. The node has never given a way to ask for "no filter" here, so the
-  // client sends the literal placeholder the node itself announces in its serviceEndpoints doc.
+  // ocean-node registers this route with a REQUIRED (non-optional) path param (named `:jobId`
+  // server-side as of ocean-node#1448, previously `:job`) — confirmed by running the real route
+  // in isolation: a request with no segment after `/jobs/` 404s ("Cannot GET"), one with any
+  // literal segment (including the string ":job") reaches the handler, since Express only cares
+  // that a segment is present, not its content. The node has never given a way to ask for "no
+  // filter" here, so the client sends a literal placeholder segment rather than omitting it.
   it('requests the literal :job path segment, not an interpolated value', async () => {
     let requestedUrl: string | undefined
     let requestedMethod: string | undefined
