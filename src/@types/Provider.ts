@@ -41,12 +41,6 @@ export interface ProviderComputeInitializeResults {
   payment?: ProviderComputeInitializePayment
 }
 
-export interface ServiceEndpoint {
-  serviceName: string
-  method: string
-  urlPath: string
-}
-
 export interface NodeP2P {
   nodeId: string
   multiaddress?: Multiaddr[]
