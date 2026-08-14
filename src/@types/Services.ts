@@ -56,7 +56,6 @@ export interface ServiceTemplatePublic {
 
 // ── Runtime service job ────────────────────────────────────────────────
 
-// Port mapping for a running service.
 export interface ServiceJobEndpoint {
   containerPort: number
   hostPort: number

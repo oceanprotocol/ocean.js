@@ -83,7 +83,7 @@ export class HttpProvider {
     const consumerAddress = await getConsumerAddress(signerOrAuthToken)
     const nonce = ((await this.getNonce(nodeUri, consumerAddress, signal)) + 1).toString()
     const signature = await getSignature(signerOrAuthToken, nonce, command)
-    if (!signature) throw new Error('Could not sign persistent storage request.')
+    if (!signature) throw new Error(`Could not sign ${command} request.`)
     return { consumerAddress, nonce, signature }
   }
 
