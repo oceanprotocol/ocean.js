@@ -544,14 +544,16 @@ export class BaseProvider {
     signerOrAuthToken: SignerOrAuthTokenOrSignature,
     jobId?: string,
     agreementId?: string,
-    signal?: AbortSignal
-  ): Promise<ComputeJob | ComputeJob[]> {
+    signal?: AbortSignal,
+    includeMetrics?: boolean
+  ): Promise<NodeComputeJob | NodeComputeJob[]> {
     return this.getImpl(nodeUri).computeStatus(
       nodeUri,
       signerOrAuthToken,
       jobId,
       agreementId,
-      signal
+      signal,
+      includeMetrics
     )
   }
 
@@ -917,13 +919,15 @@ export class BaseProvider {
     nodeUri: OceanNode,
     signerOrAuthToken: SignerOrAuthTokenOrSignature,
     serviceId?: string,
-    signal?: AbortSignal
+    signal?: AbortSignal,
+    includeMetrics?: boolean
   ): Promise<ServiceJob[]> {
     return this.getImpl(nodeUri).getServiceStatus(
       nodeUri,
       signerOrAuthToken,
       serviceId,
-      signal
+      signal,
+      includeMetrics
     )
   }
 
