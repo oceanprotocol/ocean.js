@@ -539,6 +539,19 @@ export class BaseProvider {
     )
   }
 
+  /**
+   * Get compute status for a specific jobId/documentId/owner.
+   * @param {boolean} includeMetrics Owner-only runtime metrics (`runtimeMetrics`) on the
+   *   returned job(s). To receive them, the node needs owner credentials: an auth token
+   *   (`signerOrAuthToken` as a string) is ALWAYS sent, regardless of this flag; a `Signer`'s
+   *   nonce+signature is only computed and sent when this flag is `true` (skipped otherwise
+   *   to avoid an extra nonce round-trip on every plain status poll). Omitted (default): the
+   *   node attaches metrics silently if valid owner credentials made it into the request
+   *   (true automatically for token callers, false for `Signer` callers unless this flag is
+   *   set), and returns exactly today's response otherwise. `true`: metrics are required —
+   *   this method also computes the `Signer`'s signature, and the node answers 400/401 if
+   *   credentials don't verify. `false`: metrics are never attached.
+   */
   public async computeStatus(
     nodeUri: OceanNode,
     signerOrAuthToken: SignerOrAuthTokenOrSignature,
@@ -915,6 +928,13 @@ export class BaseProvider {
     return services
   }
 
+  /**
+   * Returns the caller's service jobs (userData stripped). Filter by `serviceId`,
+   * or omit it to list all of the caller's services. Requires a signature.
+   * @param {boolean} includeMetrics Owner-only runtime metrics (`runtimeMetrics`) on the
+   *   returned service(s). This command is already authenticated, so metrics are included
+   *   BY DEFAULT (omitted / `undefined`); pass `false` to opt out.
+   */
   public async getServiceStatus(
     nodeUri: OceanNode,
     signerOrAuthToken: SignerOrAuthTokenOrSignature,

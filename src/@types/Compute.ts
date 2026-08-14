@@ -98,6 +98,8 @@ export type ComputeJobMetadata = {
   [key: string]: string | number | boolean
 }
 
+// GPU backend a device's metrics were sampled with. Only 'nvidia' (NVML) is emitted
+// today; 'amd' / 'intel' are reserved for when those backends exist.
 export type GpuVendor = 'nvidia' | 'amd' | 'intel'
 
 // Per-GPU runtime metrics. One entry per GPU resource the job/service holds. Only NVIDIA
