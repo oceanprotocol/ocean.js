@@ -11,7 +11,7 @@ import { ping } from '@libp2p/ping'
 import { peerIdFromString } from '@libp2p/peer-id'
 import { lpStream, UnexpectedEOFError } from '@libp2p/utils'
 import { multiaddr, type Multiaddr } from '@multiformats/multiaddr'
-import { Signer } from 'ethers'
+import { Signer, isAddress } from 'ethers'
 import { sleep } from '../../utils/General.js'
 import { LoggerInstance } from '../../utils/Logger.js'
 import { concatUint8Arrays } from '../../utils/bytes.js'
@@ -1501,34 +1501,81 @@ export class P2pProvider {
 
   /**
    * PolicyServer passthrough via P2P.
+   *
+   * The node authenticates the caller before anything reaches the Policy Server: the
+   * signed message is `consumerAddress + nonce + "PolicyServerPassthrough"`, or an auth
+   * token is sent instead. Requests without a credential are rejected with a 401.
    */
   public async PolicyServerPassthrough(
     nodeUri: OceanNode,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
     request: PolicyServerPassthroughCommand,
     signal?: AbortSignal
   ): Promise<any> {
+    if (!signerOrAuthToken)
+      throw new Error(
+        'PolicyServerPassthrough failed: a signer, auth token or signature is required.'
+      )
+    // the node injects fields into this object, so it has to be a keyed object. arrays are
+    // objects too, and would be forwarded as {"0":..,"1":..} with no action
+    if (
+      !request?.policyServerPassthrough ||
+      typeof request.policyServerPassthrough !== 'object' ||
+      Array.isArray(request.policyServerPassthrough)
+    )
+      throw new Error(
+        'PolicyServerPassthrough failed: "policyServerPassthrough" must be an object.'
+      )
+    const { consumerAddress, nonce, signature } = await this.getSignedCommandParams(
+      nodeUri,
+      signerOrAuthToken,
+      PROTOCOL_COMMANDS.POLICY_SERVER_PASSTHROUGH,
+      signal
+    )
+    if (!isAddress(consumerAddress))
+      throw new Error(
+        'PolicyServerPassthrough failed: "consumerAddress" is not a valid web3 address.'
+      )
     return this.sendP2pCommand(
       nodeUri,
       PROTOCOL_COMMANDS.POLICY_SERVER_PASSTHROUGH,
-      { ...request },
-      null,
+      { ...request, consumerAddress, nonce, signature },
+      signerOrAuthToken,
       signal
     )
   }
 
   /**
    * Initialize Policy Server verification via P2P.
+   *
+   * A distinct command from the passthrough, so the signed message uses its own command
+   * string: `consumerAddress + nonce + "PolicyServerInitialize"`.
    */
   public async initializePSVerification(
     nodeUri: OceanNode,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
     request: PolicyServerInitializeCommand,
     signal?: AbortSignal
   ): Promise<any> {
+    if (!signerOrAuthToken)
+      throw new Error(
+        'initializePSVerification failed: a signer, auth token or signature is required.'
+      )
+    const { consumerAddress, nonce, signature } = await this.getSignedCommandParams(
+      nodeUri,
+      signerOrAuthToken,
+      PROTOCOL_COMMANDS.POLICY_SERVER_INITIALIZE,
+      signal
+    )
+    if (!isAddress(consumerAddress))
+      throw new Error(
+        'initializePSVerification failed: "consumerAddress" is not a valid web3 address.'
+      )
     return this.sendP2pCommand(
       nodeUri,
-      PROTOCOL_COMMANDS.POLICY_SERVER_PASSTHROUGH,
-      { ...request },
-      null,
+      PROTOCOL_COMMANDS.POLICY_SERVER_INITIALIZE,
+      { ...request, consumerAddress, nonce, signature },
+      signerOrAuthToken,
       signal
     )
   }

@@ -643,18 +643,30 @@ export class BaseProvider {
 
   public async PolicyServerPassthrough(
     nodeUri: OceanNode,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
     request: PolicyServerPassthroughCommand,
     signal?: AbortSignal
   ): Promise<any> {
-    return this.getImpl(nodeUri).PolicyServerPassthrough(nodeUri, request, signal)
+    return this.getImpl(nodeUri).PolicyServerPassthrough(
+      nodeUri,
+      signerOrAuthToken,
+      request,
+      signal
+    )
   }
 
   public async initializePSVerification(
     nodeUri: OceanNode,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
     request: PolicyServerInitializeCommand,
     signal?: AbortSignal
   ): Promise<any> {
-    return this.getImpl(nodeUri).initializePSVerification(nodeUri, request, signal)
+    return this.getImpl(nodeUri).initializePSVerification(
+      nodeUri,
+      signerOrAuthToken,
+      request,
+      signal
+    )
   }
 
   public async downloadNodeLogs(

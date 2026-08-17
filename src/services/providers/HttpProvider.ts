@@ -1,5 +1,6 @@
-import { Signer } from 'ethers'
+import { Signer, isAddress } from 'ethers'
 import { LoggerInstance } from '../../utils/Logger.js'
+import { redactSensitiveFields } from '../../utils/General.js'
 import {
   StorageObject,
   FileInfo,
@@ -618,7 +619,10 @@ export class HttpProvider {
       response.statusText,
       resolvedResponse
     )
-    LoggerInstance.error('Payload was:', JSON.stringify(providerData))
+    LoggerInstance.error(
+      'Payload was:',
+      JSON.stringify(redactSensitiveFields(providerData))
+    )
     throw new Error(JSON.stringify(resolvedResponse))
   }
 
@@ -790,7 +794,7 @@ export class HttpProvider {
     } catch (e) {
       LoggerInstance.error('Compute start failed:')
       LoggerInstance.error(e)
-      LoggerInstance.error('Payload was:', payload)
+      LoggerInstance.error('Payload was:', redactSensitiveFields(payload))
       throw new Error('HTTP request failed calling Provider')
     }
     if (response?.ok) {
@@ -804,7 +808,7 @@ export class HttpProvider {
       response.statusText,
       resolvedResponse
     )
-    LoggerInstance.error('Payload was:', payload)
+    LoggerInstance.error('Payload was:', redactSensitiveFields(payload))
     throw new Error(JSON.stringify(resolvedResponse))
   }
 
@@ -909,7 +913,7 @@ export class HttpProvider {
     } catch (e) {
       LoggerInstance.error('Compute start failed:')
       LoggerInstance.error(e)
-      LoggerInstance.error('Payload was:', payload)
+      LoggerInstance.error('Payload was:', redactSensitiveFields(payload))
       throw new Error('HTTP request failed calling Provider')
     }
     if (response?.ok) {
@@ -923,7 +927,7 @@ export class HttpProvider {
       response.statusText,
       resolvedResponse
     )
-    LoggerInstance.error('Payload was:', payload)
+    LoggerInstance.error('Payload was:', redactSensitiveFields(payload))
     throw new Error(JSON.stringify(resolvedResponse))
   }
 
@@ -1341,15 +1345,37 @@ export class HttpProvider {
   }
 
   /** Sends a PolicyServer request to node to be passthrough to PS
+   *
+   * The node authenticates the caller before anything reaches the Policy Server, so a
+   * credential is mandatory: an auth token (sent as the `Authorization` header) or a
+   * signer / precomputed signature over `consumerAddress + nonce + "PolicyServerPassthrough"`.
+   * Requests without one are rejected with a 401. The verified `consumerAddress` is the one
+   * the node forwards, overwriting anything set inside `policyServerPassthrough`.
    * @param {string} nodeUri The provider URI.
+   * @param {SignerOrAuthTokenOrSignature} signerOrAuthToken The consumer signer object, auth token or signature.
    * @param {PolicyServerPassthroughCommand} request The request to be passed through to the Policy Server.
    * @param {AbortSignal} signal abort signal
    */
   public async PolicyServerPassthrough(
     nodeUri: string,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
     request: PolicyServerPassthroughCommand,
     signal?: AbortSignal
   ): Promise<any> {
+    if (!signerOrAuthToken)
+      throw new Error(
+        'PolicyServerPassthrough failed: a signer, auth token or signature is required.'
+      )
+    // the node injects fields into this object, so it has to be a keyed object. arrays are
+    // objects too, and would be forwarded as {"0":..,"1":..} with no action
+    if (
+      !request?.policyServerPassthrough ||
+      typeof request.policyServerPassthrough !== 'object' ||
+      Array.isArray(request.policyServerPassthrough)
+    )
+      throw new Error(
+        'PolicyServerPassthrough failed: "policyServerPassthrough" must be an object.'
+      )
     const providerEndpoints = await this.getEndpoints(nodeUri)
     const serviceEndpoints = await this.getServiceEndpoints(nodeUri, providerEndpoints)
     const initializeUrl = this.getEndpointURL(serviceEndpoints, 'PolicyServerPassthrough')
@@ -1357,13 +1383,29 @@ export class HttpProvider {
       : null
     if (!initializeUrl) return null
 
+    const { consumerAddress, nonce, signature } = await this.getSignedCommandParams(
+      nodeUri,
+      signerOrAuthToken,
+      PROTOCOL_COMMANDS.POLICY_SERVER_PASSTHROUGH,
+      signal,
+      providerEndpoints,
+      serviceEndpoints
+    )
+    if (!isAddress(consumerAddress))
+      throw new Error(
+        'PolicyServerPassthrough failed: "consumerAddress" is not a valid web3 address.'
+      )
+    const body = { ...request, consumerAddress, nonce, signature }
+    const authHeader = this.getAuthorization(signerOrAuthToken)
+
     let response
     try {
       response = await fetch(initializeUrl, {
         method: 'POST',
-        body: JSON.stringify(request),
+        body: JSON.stringify(body),
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          ...(authHeader ? { Authorization: authHeader } : {})
         },
         signal
       })
@@ -1387,20 +1429,31 @@ export class HttpProvider {
       response.statusText,
       resolvedResponse
     )
-    LoggerInstance.error('Payload was:', JSON.stringify(request))
+    LoggerInstance.error('Payload was:', JSON.stringify(redactSensitiveFields(body)))
     throw new Error(JSON.stringify(resolvedResponse))
   }
 
   /** Initialize Policy Server verification
+   *
+   * Authenticated exactly like `PolicyServerPassthrough`, but it is a distinct command, so
+   * the signed message uses its own command string:
+   * `consumerAddress + nonce + "PolicyServerInitialize"`. A signature is therefore scoped to
+   * one endpoint and cannot be replayed against the other.
    * @param {string} nodeUri The provider URI.
+   * @param {SignerOrAuthTokenOrSignature} signerOrAuthToken The consumer signer object, auth token or signature.
    * @param {PolicyServerInitializeCommand} request The request to be sent to the Policy Server.
    * @param {AbortSignal} signal abort signal
    */
   public async initializePSVerification(
     nodeUri: string,
+    signerOrAuthToken: SignerOrAuthTokenOrSignature,
     request: PolicyServerInitializeCommand,
     signal?: AbortSignal
   ): Promise<any> {
+    if (!signerOrAuthToken)
+      throw new Error(
+        'initializePSVerification failed: a signer, auth token or signature is required.'
+      )
     const providerEndpoints = await this.getEndpoints(nodeUri)
     const serviceEndpoints = await this.getServiceEndpoints(nodeUri, providerEndpoints)
     const initializeUrl = this.getEndpointURL(
@@ -1411,13 +1464,29 @@ export class HttpProvider {
       : null
     if (!initializeUrl) return null
 
+    const { consumerAddress, nonce, signature } = await this.getSignedCommandParams(
+      nodeUri,
+      signerOrAuthToken,
+      PROTOCOL_COMMANDS.POLICY_SERVER_INITIALIZE,
+      signal,
+      providerEndpoints,
+      serviceEndpoints
+    )
+    if (!isAddress(consumerAddress))
+      throw new Error(
+        'initializePSVerification failed: "consumerAddress" is not a valid web3 address.'
+      )
+    const body = { ...request, consumerAddress, nonce, signature }
+    const authHeader = this.getAuthorization(signerOrAuthToken)
+
     let response
     try {
       response = await fetch(initializeUrl, {
         method: 'POST',
-        body: JSON.stringify(request),
+        body: JSON.stringify(body),
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          ...(authHeader ? { Authorization: authHeader } : {})
         },
         signal
       })
@@ -1441,7 +1510,7 @@ export class HttpProvider {
       response.statusText,
       resolvedResponse
     )
-    LoggerInstance.error('Payload was:', JSON.stringify(request))
+    LoggerInstance.error('Payload was:', JSON.stringify(redactSensitiveFields(body)))
     throw new Error(JSON.stringify(resolvedResponse))
   }
 
